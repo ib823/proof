@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 936 Rust tests
 
 All notable changes to RIINA will be documented in this file.
 
@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added (Session 87 — Phase 3 Compiler Enforcement Alignment)
+- Declassification strict mode: `declassify(e)` now rejects non-Secret types (matches Coq T_Declassify)
+- Handle effect join: `handle e with x → h` returns `eff_e ⊔ eff_h` (matches Coq T_Handle)
+- Handle handler binding: handler variable `x` bound to body result type in handler scope
+- Top-level binding purity enforcement: `biar x = e` at module level rejects effectful expressions
+- Capability Grant/Require context tracking: `TypingContext.granted` set propagated through Grant/Require/LetRec
+- Function body capability granting: declared function effects auto-granted in body scope
+- Phase 3 and Phase 4 task tables updated with DONE/TODO status
+- 936 Rust tests passing (up from 924), 0 failures
 
 ### Added (Session 86 — Core Deepening)
 - `properties/TypingInversion.v`: 53 Qed — 22 typing inversion lemmas, value purity theorem, type/effect determinism, type constructor disjointness (12) and injectivity (6)

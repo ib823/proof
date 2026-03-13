@@ -466,12 +466,16 @@ mod tests {
     }
 
     #[test]
-    fn test_declassify_non_secret_is_identity() {
+    fn test_declassify_non_secret_is_rejected() {
         let ctx = Context::new();
         let declassify = Expr::Declassify(Box::new(Expr::Int(1)), Box::new(Expr::Unit));
-        let (ty, eff) = type_check(&ctx, &declassify).unwrap();
-        assert_eq!(ty, Ty::Int);
-        assert_eq!(eff, Effect::Pure);
+        // Strict mode: Coq T_Declassify requires TSecret(T), rejects non-secret
+        let result = type_check(&ctx, &declassify);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            TypeError::ExpectedSecret(Ty::Int) => {} // correct
+            other => panic!("Expected ExpectedSecret(Int), got {:?}", other),
+        }
     }
 
     // ── Prove ──
@@ -514,7 +518,9 @@ mod tests {
         let handle = Expr::Handle(Box::new(body), "x".into(), Box::new(handler));
         let (ty, eff) = type_check(&ctx, &handle).unwrap();
         assert_eq!(ty, Ty::Int);
-        assert_eq!(eff, Effect::Pure);
+        // Coq T_Handle: result effect is join of body effect and handler effect
+        // body = Write, handler = Pure → join = Write
+        assert_eq!(eff, Effect::Write);
     }
 
     // ── Capabilities (Require, Grant) ──
@@ -1201,13 +1207,16 @@ mod formalized_tests {
     }
 
     #[test]
-    fn test_declassify_non_secret_lenient() {
+    fn test_declassify_non_secret_rejected_strict() {
         let mut ctx = TypingContext::new();
-        // Declassifying non-secret is identity in lenient mode
+        // Strict mode: Coq T_Declassify requires TSecret(T), rejects non-secret
         let declassify = Expr::Declassify(Box::new(Expr::Int(42)), Box::new(Expr::Unit));
-        let (ty, eff) = type_check_full(&mut ctx, &declassify).unwrap();
-        assert_eq!(ty, Ty::Int);
-        assert_eq!(eff, Effect::Pure);
+        let result = type_check_full(&mut ctx, &declassify);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            TypeError::ExpectedSecret(Ty::Int) => {} // correct — matches Coq
+            other => panic!("Expected ExpectedSecret(Int), got {:?}", other),
+        }
     }
 
     // ── Effect accumulation ──

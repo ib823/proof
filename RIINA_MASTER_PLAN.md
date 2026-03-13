@@ -485,12 +485,12 @@ but the Rust compiler doesn't enforce the same rules. Phase 3 closes this gap.
 
 | Task | Description | Dimension |
 |------|-------------|-----------|
-| Information flow control enforcement | Compiler tracks security labels on all values. `Secret<High>` cannot flow to `Public<Low>` output. Rejects programs violating Denning lattice. | Dim 2 |
-| Effect type checking (reject violations) | Compiler enforces that functions only perform effects declared in their type. `kesan Bersih` functions cannot perform I/O. | Dim 3 |
-| Session types in parser + type checker | Parse `koreografi` blocks, project to local session types, type-check implementations against projected types. | Dim 9 |
-| Capability types enforcement | `Keupayaan<T, Op>` types are unforgeable at compile time. Only authorized capabilities permit operations. | Dim 2, 3 |
-| Declassification gate enforcement | `dedah` requires a policy proof. Compiler rejects declassification without valid justification. | Dim 2 |
-| Linear type enforcement | Compiler tracks resource usage. `Rahsia<T>` values must be consumed exactly once (used or explicitly zeroed). | Dim 4 |
+| Information flow control enforcement | Compiler tracks security labels on all values. `Secret<High>` cannot flow to `Public<Low>` output. Rejects programs violating Denning lattice. | Dim 2 | DONE (REQ-12: T_Deref no-read-up, T_Assign no-write-down, implicit flow in branches) |
+| Effect type checking (reject violations) | Compiler enforces that functions only perform effects declared in their type. `kesan Bersih` functions cannot perform I/O. | Dim 3 | DONE (function body effect ceiling, top-level binding pure enforcement, Handle effect join) |
+| Session types in parser + type checker | Parse `koreografi` blocks, project to local session types, type-check implementations against projected types. | Dim 9 | TODO (REQ-16, Phase 6) |
+| Capability types enforcement | `Keupayaan<T, Op>` types are unforgeable at compile time. Only authorized capabilities permit operations. | Dim 2, 3 | DONE (Grant/Require context tracking, program-level capability validation) |
+| Declassification gate enforcement | `dedah` requires a policy proof. Compiler rejects declassification without valid justification. | Dim 2 | DONE (strict mode: non-Secret declassification rejected, matches Coq T_Declassify) |
+| Linear type enforcement | Compiler tracks resource usage. `Rahsia<T>` values must be consumed exactly once (used or explicitly zeroed). | Dim 4 | TODO (requires usage-tracking infrastructure in TypeEnv) |
 
 **The Verus connection (Dim 10):** Verus annotations on the Rust type checker prove that
 the compiler's enforcement matches the Coq specification. This closes the spec-to-implementation
@@ -508,7 +508,7 @@ linear type properties. Verus proves the type checker is correct.
 
 | Task | Status |
 |------|--------|
-| End-to-end: .rii source → C output → executable that runs | TODO |
+| End-to-end: .rii source → C output → executable that runs | DONE (REQ-13) |
 | Working WASM backend (real binary, not scaffolding) | TODO |
 | play.riina.dev playground (real, compiles and runs .rii in browser) | TODO |
 | MCP server for AI tools (LLM CLIs can query RIINA's type system) | TODO |

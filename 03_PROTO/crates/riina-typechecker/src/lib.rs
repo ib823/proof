@@ -8,7 +8,7 @@
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
 use riina_types::{BinOp, Effect, Expr, Ident, Location, SecurityLevel, StoreTy, Ty};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub mod program;
 pub use program::check_program;
@@ -376,6 +376,9 @@ pub struct TypingContext {
     pub sigma: StoreTy,
     /// Δ: Current security context level
     pub delta: SecurityLevel,
+    /// Granted capabilities: effects authorized by enclosing Grant expressions
+    /// Matches Coq T_Grant/T_Require (Typing.v:209-215)
+    pub granted: HashSet<Effect>,
 }
 
 impl Default for TypingContext {
@@ -390,6 +393,7 @@ impl TypingContext {
             gamma: TypeEnv::new(),
             sigma: StoreTy::new(),
             delta: SecurityLevel::Public,
+            granted: HashSet::new(),
         }
     }
 
@@ -399,6 +403,7 @@ impl TypingContext {
             gamma: TypeEnv::new(),
             sigma: StoreTy::new(),
             delta,
+            granted: HashSet::new(),
         }
     }
 
@@ -408,6 +413,19 @@ impl TypingContext {
             gamma: self.gamma.extend(name, ty),
             sigma: self.sigma.clone(),
             delta: self.delta,
+            granted: self.granted.clone(),
+        }
+    }
+
+    /// Create context with an additional granted capability
+    pub fn with_grant(&self, eff: Effect) -> Self {
+        let mut granted = self.granted.clone();
+        granted.insert(eff);
+        Self {
+            gamma: self.gamma.clone(),
+            sigma: self.sigma.clone(),
+            delta: self.delta,
+            granted,
         }
     }
 
@@ -472,6 +490,7 @@ impl Context {
             gamma,
             sigma: StoreTy::new(),
             delta: self.level,
+            granted: HashSet::new(),
         }
     }
 }
@@ -2280,6 +2299,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         gamma: ctx.gamma.extend(x.clone(), *t_left),
                         sigma: ctx.sigma.clone(),
                         delta: branch_delta,
+                        granted: ctx.granted.clone(),
                     };
                     let (t1, eff1) = type_check_full(&mut ctx1, e1)?;
 
@@ -2287,6 +2307,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                         gamma: ctx.gamma.extend(y.clone(), *t_right),
                         sigma: ctx.sigma.clone(),
                         delta: branch_delta,
+                        granted: ctx.granted.clone(),
                     };
                     let (t2, eff2) = type_check_full(&mut ctx2, e2)?;
 
@@ -2327,6 +2348,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 gamma: ctx.gamma.clone(),
                 sigma: ctx.sigma.clone(),
                 delta: branch_delta,
+                granted: ctx.granted.clone(),
             };
 
             let (t2, eff2) = type_check_full(&mut branch_ctx, e2)?;
@@ -2334,6 +2356,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 gamma: ctx.gamma.clone(),
                 sigma: ctx.sigma.clone(),
                 delta: branch_delta,
+                granted: ctx.granted.clone(),
             };
             let (t3, eff3) = type_check_full(&mut branch_ctx2, e3)?;
 
@@ -2355,6 +2378,14 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         }
         Expr::LetRec(x, ty_ann, e1, e2) => {
             let ctx_rec = ctx.extend_gamma(x.clone(), ty_ann.clone());
+            // Grant the function's declared effect so Require inside body is authorized.
+            // For multi-param: ty_ann is Fn(_, _, eff). For zero-param: ty_ann is the
+            // return type, but e1's body effect will be checked at program level.
+            // We extract effect from ty_ann if it's Fn, or from the body's computed effect.
+            let ctx_rec = match ty_ann {
+                Ty::Fn(_, _, fn_eff) => ctx_rec.with_grant(*fn_eff),
+                _ => ctx_rec,
+            };
             let mut ctx_rec_mut = ctx_rec.clone();
             let (t1, eff1) = type_check_full(&mut ctx_rec_mut, e1)?;
             if !types_compatible(ty_ann, &t1) {
@@ -2375,10 +2406,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             let (te, eff_e) = type_check_full(ctx, e)?;
             Ok((te, eff_e.join(*eff)))
         }
-        Expr::Handle(e, _x, h) => {
-            let (_t_e, _eff_e) = type_check_full(ctx, e)?;
-            let (t_h, eff_h) = type_check_full(ctx, h)?;
-            Ok((t_h, eff_h))
+        Expr::Handle(e, x, h) => {
+            let (t_e, eff_e) = type_check_full(ctx, e)?;
+            // Coq T_Handle (Typing.v:172-175): handler binds x : T in h
+            let mut h_ctx = ctx.extend_gamma(x.clone(), t_e);
+            let (t_h, eff_h) = type_check_full(&mut h_ctx, h)?;
+            // Coq: result effect is effect_join ε1 ε2
+            Ok((t_h, eff_e.join(eff_h)))
         }
 
         // ════════════════════════════════════════════════════════════════════
@@ -2489,9 +2523,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     Ok((*inner.clone(), eff1.join(eff2)))
                 }
                 _ => {
-                    // Non-secret declassification is identity (lenient mode)
-                    // In strict mode, this would be an error
-                    Ok((t, eff1.join(eff2)))
+                    // Strict mode: matches Coq T_Declassify (Typing.v:198-202)
+                    // Coq rule requires e1 : TSecret(T) — no alternative case
+                    Err(TypeError::ExpectedSecret(t))
                 }
             }
         }
@@ -2507,11 +2541,25 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // FORMALIZED: Capabilities (T_Require, T_Grant)
         // ════════════════════════════════════════════════════════════════════
         Expr::Require(eff, e) => {
+            // T_Require: if granted set is populated, enforce capability check.
+            // Program-level validate_capabilities provides the authoritative check;
+            // type-level enforcement is an additional guard when grant context is available.
+            if !ctx.granted.is_empty() && !ctx.granted.contains(eff) {
+                return Err(TypeError::CapabilityViolation {
+                    required: *eff,
+                    message: format!(
+                        "effect {:?} required but not granted in current scope",
+                        eff
+                    ),
+                });
+            }
             let (t, e_eff) = type_check_full(ctx, e)?;
             Ok((t, e_eff.join(*eff)))
         }
-        Expr::Grant(_eff, e) => {
-            let (t, e_eff) = type_check_full(ctx, e)?;
+        Expr::Grant(eff, e) => {
+            // T_Grant: typecheck body with eff added to granted set
+            let mut grant_ctx = ctx.with_grant(*eff);
+            let (t, e_eff) = type_check_full(&mut grant_ctx, e)?;
             Ok((t, e_eff))
         }
 
@@ -2796,16 +2844,12 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             // In a real system, 'eff' would have a signature.
             Ok((te, eff_e.join(*eff)))
         }
-        Expr::Handle(e, _x, h) => {
-            let (_t_e, _eff_e) = type_check(ctx, e)?;
-            // Handle conceptually catches effects.
-            // In full calculus, we need effect signatures.
-            // Here we approximate: handler 'h' handles 'e'.
-            // 'h' typically takes the effect payload or resumption.
-            // This is a placeholder for the algebraic effect logic.
-            let (t_h, eff_h) = type_check(ctx, h)?;
-            // Result type usually matches e if handled fully.
-            Ok((t_h, eff_h))
+        Expr::Handle(e, x, h) => {
+            let (t_e, eff_e) = type_check(ctx, e)?;
+            // Coq T_Handle: handler binds x : T in h, result effect is join
+            let h_ctx = ctx.extend(x.clone(), t_e);
+            let (t_h, eff_h) = type_check(&h_ctx, h)?;
+            Ok((t_h, eff_e.join(eff_h)))
         }
 
         // UNVERIFIED: References (Pending formalization in Typing.v)
@@ -2847,7 +2891,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             match t {
                 Ty::Secret(inner) => Ok((*inner, eff)),
                 // Assuming we can define what a "proof" is later.
-                _ => Ok((t, eff)), // Declassifying non-secret is identity?
+                _ => Err(TypeError::ExpectedSecret(t)), // Matches Coq T_Declassify: requires TSecret(T)
             }
         }
         Expr::Prove(e) => {

@@ -423,6 +423,9 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                 for (param_name, param_ty) in params {
                     body_ctx = body_ctx.extend_gamma(param_name.clone(), param_ty.clone());
                 }
+                // Function's declared effect grants capabilities within its body
+                // A function with `kesan Rangkaian` can use `require Rangkaian`
+                body_ctx = body_ctx.with_grant(*effect);
 
                 let (body_ty, body_eff) = type_check_full(&mut body_ctx, body)?;
                 if !types_compatible(return_ty, &body_ty) {
@@ -442,7 +445,15 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
             }
             TopLevelDecl::Binding { name, value } => {
                 let mut binding_ctx = ctx.clone();
-                let (ty, _eff) = type_check_full(&mut binding_ctx, value)?;
+                let (ty, eff) = type_check_full(&mut binding_ctx, value)?;
+                // Top-level bindings are in Pure context — reject side effects
+                // Matches Coq: top-level definitions must be EffectPure
+                if eff.level() > Effect::Pure.level() {
+                    return Err(TypeError::EffectViolation {
+                        allowed: Effect::Pure,
+                        found: eff,
+                    });
+                }
                 ctx = ctx.extend_gamma(name.clone(), ty);
             }
             TopLevelDecl::ExternBlock { decls, .. } => {
