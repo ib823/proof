@@ -13,15 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `properties/TypingInversion.v`: 53 Qed — 22 typing inversion lemmas, value purity theorem, type/effect determinism, type constructor disjointness (12) and injectivity (6)
 - `domains/TaintSystemCorrectness.v`: 47 Qed — compile-time taint tracking with typing uniqueness proving 9 injection attack categories impossible (SQL, XSS, command, path traversal, LDAP, XML, header, template, eval)
 - Resolved 4 design decisions: D014 (fuel-based while loops), D019 (file-based modules), D020 (u64 core + signed library), D021 (infix operator desugaring)
-- Active Coq build: 8,143 Qed across 255 files, 0 Admitted, 1 justified axiom
-- Cross-prover total: 71,102 across 10 provers (riinac verify --full)
+- Active Coq build: 9,172 Qed across 259 files, 0 Admitted, 0 active axioms
 
 ### Added
-- Triple-prover verification complete: 86 theorems independently proved in Coq, Lean 4, and Isabelle/HOL
-- Lean 4 proofs: 7,900 theorems across 255 files
-- Isabelle/HOL proofs: 8,072 lemmas across 260 theory files
-- Active Lean builds reached 0 compiler-reported `sorry` warnings; strict secondary/tertiary prover closure still remains pending
-- Website: Triple-prover verification section on homepage and How page
+- Lean 4 active lane mechanized: 3,895 theorem/lemma declarations across 136 files, 0 sorry, 0 axioms
+- AlgebraicEffects.lean: 48 axioms eliminated via first-order defunctionalization + step-indexed typing (Appel-McAllester 2001)
+- Z3 security lattice verification: 25 properties verified (matching Coq Syntax.v lattice lemmas)
+- Isabelle/HOL smoke session: 1 compiled theory (RIINA_CORE, Syntax.thy)
+- Phase 2 prover closure gate passed for scoped provers (Lean, F*, TLA+, Alloy, Z3)
 
 ### Fixed
 - Coq 8.20.1 compatibility: migrated from Rocq 9.1, fixed all import paths (`Stdlib.*` → `Coq.*`), fixed API changes (`filter_length` → `filter_length_le`), fixed recursive definitions, updated proofs for new semantics
