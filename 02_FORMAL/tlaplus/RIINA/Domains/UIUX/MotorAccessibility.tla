@@ -125,6 +125,7 @@ Spec == Init /\ [][Next]_vars
 
 \* ===================================================================
 
+
 \* ===================================================================
 \* THEOREMS (derived from Coq proofs)
 \* ===================================================================
@@ -174,107 +175,52 @@ THEOREM action_type_exhaustive ==
   \A t \in ActionTypeSet :
       t = TapAction \/ t = SwipeAction \/ t = PinchAction \/
 
-\* 1
-THEOREM 1 ==
-  Touch Target Minimum Width ---- *)
-  (* Every interactive target in a WCAG-compliant layout is at least 44px wide *)
-  Theorem touch_target_minimum_width :
-    forall (layout : WCAGLayout) (t : TouchTarget),
-      In t (wl_targets layout) => tt_width t > = MIN_TOUCH_SIZE
 
 \* touch_target_minimum_width
 THEOREM touch_target_minimum_width ==
   \A layout \in Nat, t \in Nat :
-      In t (wl_targets layout) => tt_width t > = MIN_TOUCH_SIZE
+      In(t, wl_targets(layout)) => tt_width t > = MIN_TOUCH_SIZE
 
-\* 2
-THEOREM 2 ==
-  Touch Target Minimum Height ---- *)
-  (* Every interactive target in a WCAG-compliant layout is at least 44px tall *)
-  Theorem touch_target_minimum_height :
-    forall (layout : WCAGLayout) (t : TouchTarget),
-      In t (wl_targets layout) => tt_height t > = MIN_TOUCH_SIZE
 
 \* touch_target_minimum_height
 THEOREM touch_target_minimum_height ==
   \A layout \in Nat, t \in Nat :
-      In t (wl_targets layout) => tt_height t > = MIN_TOUCH_SIZE
+      In(t, wl_targets(layout)) => tt_height t > = MIN_TOUCH_SIZE
 
-\* 3
-THEOREM 3 ==
-  Touch Target Spacing ---- *)
-  (* Every interactive target has at least MIN_SPACING on all four sides *)
-  Theorem touch_target_spacing :
-    forall (layout : WCAGLayout) (t : TouchTarget),
-      In t (wl_targets layout) => tt_spacing_left t > = MIN_SPACING /\
 
 \* touch_target_spacing
 THEOREM touch_target_spacing ==
   \A layout \in Nat, t \in Nat :
-      In t (wl_targets layout) => tt_spacing_left t > = MIN_SPACING /\
+      In(t, wl_targets(layout)) => tt_spacing_left t > = MIN_SPACING /\
 
-\* 4
-THEOREM 4 ==
-  Touch Targets Not Overlapping ---- *)
-  (* No two distinct interactive targets in a WCAG layout overlap *)
-  Theorem touch_target_not_overlapping :
-    forall (layout : WCAGLayout) (a b : TouchTarget),
-      In a (wl_targets layout) => targets_no_overlap(a, b)
 
 \* touch_target_not_overlapping
 THEOREM touch_target_not_overlapping ==
   \A layout \in Nat, a \in Nat, b \in Nat :
-      In a (wl_targets layout) => targets_no_overlap(a, b)
+      In(a, wl_targets(layout)) => targets_no_overlap(a, b)
 
-\* 5
-THEOREM 5 ==
-  Close Button Reachable ---- *)
-  (* Every close/dismiss button is within thumb reach *)
-  Theorem close_button_reachable :
-    forall (layout : WCAGLayout) (t : TouchTarget),
-      In t (wl_targets layout) => tt_x t + tt_width t < = MAX_THUMB_REACH_X /\
 
 \* close_button_reachable
 THEOREM close_button_reachable ==
   \A layout \in Nat, t \in Nat :
-      In t (wl_targets layout) => tt_x t + tt_width t < = MAX_THUMB_REACH_X /\
+      In(t, wl_targets(layout)) => tt_x t + tt_width t < = MAX_THUMB_REACH_X /\
 
-\* 6
-THEOREM 6 ==
-  Corner Targets Enlarged ---- *)
-  (* Edge-positioned interactive targets have enlarged hit areas (>= 56px) *)
-  Theorem corner_targets_enlarged :
-    forall (layout : WCAGLayout) (t : TouchTarget),
-      In t (wl_targets layout) => tt_width t > = MIN_CORNER_SIZE /\ tt_height t >= MIN_CORNER_SIZE
 
 \* corner_targets_enlarged
 THEOREM corner_targets_enlarged ==
   \A layout \in Nat, t \in Nat :
-      In t (wl_targets layout) => tt_width t > = MIN_CORNER_SIZE /\ tt_height t >= MIN_CORNER_SIZE
+      In(t, wl_targets(layout)) => tt_width t > = MIN_CORNER_SIZE /\ tt_height t >= MIN_CORNER_SIZE
 
-\* 7
-THEOREM 7 ==
-  Nested Targets Resolved ---- *)
-  (* Every interactive target in the layout has nesting resolved *)
-  Theorem nested_targets_resolved :
-    forall (layout : WCAGLayout) (t : TouchTarget),
-      In t (wl_targets layout) => tt_nesting_depth(t) = 0 \/ tt_interactive t = false
 
 \* nested_targets_resolved
 THEOREM nested_targets_resolved ==
   \A layout \in Nat, t \in Nat :
-      In t (wl_targets layout) => tt_nesting_depth(t) = 0 \/ tt_interactive t = false
+      In(t, wl_targets(layout)) => tt_nesting_depth(t) = 0 \/ tt_interactive t = false
 
 \* corner_size_exceeds_minimum
 THEOREM corner_size_exceeds_minimum ==
   MIN_CORNER_SIZE > MIN_TOUCH_SIZE
 
-\* 8
-THEOREM 8 ==
-  All Interactive Elements Keyboard Accessible ---- *)
-  Theorem all_interactive_keyboard_accessible :
-    forall (sys : RIINA_KeyboardSystem) (e : UIElement),
-      In e (kb_elements (rk_state sys)) => keyboard_reachable (rk_state sys) (ue_id e)
 
 \* 54 additional theorems proven in Coq source
 

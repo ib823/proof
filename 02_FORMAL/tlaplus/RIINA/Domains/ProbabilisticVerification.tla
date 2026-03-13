@@ -61,25 +61,17 @@ Spec == Init /\ [][Next]_vars
 
 \* ===================================================================
 
+
 \* ===================================================================
 \* THEOREMS (derived from Coq proofs)
 \* ===================================================================
 
-\* 1
-THEOREM 1 ==
-  Uniform distribution has non-negative probabilities *)
-  Theorem uniform_nonneg : forall n (Hn : (0 < n)%nat),
-    all_nonneg (uniform_dist n Hn)
 
 \* uniform_nonneg
 THEOREM uniform_nonneg ==
   \A n \in Nat, Hn \in Nat, 0 \in Nat, n \in Nat, nat \in Nat :
       all_nonneg (uniform_dist n Hn)
 
-\* 2
-THEOREM 2 ==
-  Zero function is negligible *)
-  Theorem zero_negligible : negligible (fun _ => 0)
 
 \* zero_negligible
 THEOREM zero_negligible ==
@@ -93,13 +85,8 @@ THEOREM Qplus_lt_compat2 ==
 \* two_over_nSc_le_one_over_nc
 THEOREM two_over_nSc_le_one_over_nc ==
   \A n \in Nat, c \in Nat, nat \in Nat :
-      (n > 2)%nat => (1 # Pos.of_nat (n ^ S c)) + (1 # Pos.of_nat (n ^ S c)) < = 1 # Pos.of_nat (n ^ c)
+      n > 2)%nat => (1 # Pos.of_nat (n ^ S c)) + (1 # Pos.of_nat (n ^ S c)) < = 1 # Pos.of_nat (n ^ c
 
-\* 3
-THEOREM 3 ==
-  Sum of negligibles is negligible *)
-  Theorem negligible_sum : forall f g,
-    negligible f => negligible (fun n = > f n + g n)
 
 \* negligible_sum
 THEOREM negligible_sum ==
@@ -121,71 +108,42 @@ THEOREM fold_combine_self ==
   \A l \in Nat :
       fold_left (fun acc p = > acc + Qabs (fst p - snd p)) (combine l l) 0 == 0
 
-\* 4
-THEOREM 4 ==
-  Identical distributions are indistinguishable *)
-  Theorem identical_indist : forall f, comp_indist f f
 
 \* identical_indist
 THEOREM identical_indist ==
   \A f \in Nat :
       comp_indist(f, f)
 
-\* 5
-THEOREM 5 ==
-  Indistinguishability is reflexive *)
-  Theorem comp_indist_refl : forall f, comp_indist f f
 
 \* comp_indist_refl
 THEOREM comp_indist_refl ==
   \A f \in Nat :
       comp_indist(f, f)
 
-\* 6
-THEOREM 6 ==
-  XOR is self-inverse *)
-  Theorem xor_self_inverse : forall a b,
-    xor_nat (xor_nat a b) b = a
 
 \* xor_self_inverse
 THEOREM xor_self_inverse ==
   \A a \in Nat, b \in Nat :
       xor_nat (xor_nat a b) b = a
 
-\* 7
-THEOREM 7 ==
-  XOR is commutative *)
-  Theorem xor_comm : forall a b, xor_nat a b = xor_nat b a
 
 \* xor_comm
 THEOREM xor_comm ==
   \A a \in Nat, b \in Nat :
       xor_nat(a, b) = xor_nat(b, a)
 
-\* 8
-THEOREM 8 ==
-  XOR with zero is identity *)
-  Theorem xor_zero_id : forall a, xor_nat a 0 = a
 
 \* xor_zero_id
 THEOREM xor_zero_id ==
   \A a \in Nat :
       xor_nat(a, 0) = a
 
-\* 9
-THEOREM 9 ==
-  XOR is associative *)
-  Theorem xor_assoc : forall a b c, xor_nat (xor_nat a b) c = xor_nat a (xor_nat b c)
 
 \* xor_assoc
 THEOREM xor_assoc ==
   \A a \in Nat, b \in Nat, c \in Nat :
       xor_nat (xor_nat a b) c = xor_nat a (xor_nat b c)
 
-\* 10
-THEOREM 10 ==
-  XOR self is zero *)
-  Theorem xor_self_zero : forall a, xor_nat a a = 0%nat
 
 \* xor_self_zero
 THEOREM xor_self_zero ==

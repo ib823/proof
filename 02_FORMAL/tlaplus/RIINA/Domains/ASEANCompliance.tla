@@ -78,14 +78,11 @@ Spec == Init /\ [][Next]_vars
 
 \* ===================================================================
 
+
 \* ===================================================================
 \* THEOREMS (derived from Coq proofs)
 \* ===================================================================
 
-\* 1
-THEOREM 1 ==
-  Data Residency — data stays in declared jurisdiction  *)
-  (* ================================================================ *)
   
   Definition data_resident (d : DataItem) (loc : jurisdiction) : Prop :=
     data_jurisdiction d = loc.
@@ -96,12 +93,8 @@ THEOREM 1 ==
 \* data_residency
 THEOREM data_residency ==
   \A d \in Nat, DataItem \in Nat :
-      data_resident d (data_jurisdiction d)
+      data_resident(d, data_jurisdiction(d))
 
-\* 2
-THEOREM 2 ==
-  Cross-border transfer requires authorization          *)
-  (* ================================================================ *)
   
   Definition well_formed_transfer
     (agreements : Agreements) (trail : AuditTrail)
@@ -117,10 +110,6 @@ THEOREM cross_border_requires_auth ==
       (mkTransfer (data_id d) (data_jurisdiction d) target :: trail)
       d target
 
-\* 3
-THEOREM 3 ==
-  Jurisdiction ordering is a preorder                   *)
-  (* ================================================================ *)
   
   Theorem jurisdiction_leq_reflexive : forall j : jurisdiction,
     jurisdiction_leq j j
@@ -141,10 +130,6 @@ THEOREM jurisdiction_preorder ==
       jurisdiction_leq j j /\
     (forall j2 j3, jurisdiction_leq j j2 => jurisdiction_leq j j3)
 
-\* 4
-THEOREM 4 ==
-  Compliance composition — compliant legs compose       *)
-  (* ================================================================ *)
   
   Definition compliant_op (agreements : Agreements) (from to : jurisdiction) (cls : nat) : Prop :=
     from = to \/ authorized agreements from to cls.
@@ -158,11 +143,6 @@ THEOREM compliance_composition ==
   \A agreements \in Nat, j1 \in Nat, j2 \in Nat, j3 \in Nat, cls \in Nat :
       compliant_op agreements j1 j2 cls => compliant_op agreements j1 j2 cls /\ compliant_op agreements j2 j3 cls
 
-\* 5
-THEOREM 5 ==
-  Data sovereignty — local data cannot leave without    *)
-  (* policy check                                                     *)
-  (* ================================================================ *)
   
   Theorem data_sovereignty :
     forall (agreements : Agreements) (d : DataItem) (target : jurisdiction),
@@ -173,11 +153,6 @@ THEOREM data_sovereignty ==
   \A agreements \in Nat, d \in Nat, target \in Nat :
       data_jurisdiction d <> target => authorized agreements (data_jurisdiction d) target (data_classification d)
 
-\* 6
-THEOREM 6 ==
-  Authorization is downward-closed (transitive across   *)
-  (* classification levels)                                           *)
-  (* ================================================================ *)
   
   Theorem authorization_downward_closed :
     forall (agreements : Agreements) (from to : jurisdiction) (cls cls' : nat),
@@ -188,10 +163,6 @@ THEOREM authorization_downward_closed ==
   \A agreements \in Nat, from \in Nat, to \in Nat :
       authorized agreements from to cls => authorized agreements from to cls'
 
-\* 7
-THEOREM 7 ==
-  Audit trail completeness — every transfer is logged   *)
-  (* ================================================================ *)
   
   Definition log_transfer (trail : AuditTrail) (did from to : nat) : AuditTrail :=
     mkTransfer did from to :: trail.
@@ -210,11 +181,6 @@ THEOREM audit_trail_preservation ==
   \A trail \in Nat :
       transfer_logged trail did from to => transfer_logged (log_transfer trail did' from' to') did from to
 
-\* 8
-THEOREM 8 ==
-  Policy monotonicity — stricter policies subsume       *)
-  (* weaker ones                                                      *)
-  (* ================================================================ *)
   
   Definition policy_allows (threshold : nat) (cls : nat) : Prop :=
     cls <= threshold.
@@ -228,10 +194,6 @@ THEOREM policy_monotonicity ==
   \A strict \in Nat, weak \in Nat, cls \in Nat :
       policy_stricter(strict, weak) => policy_allows(weak, cls)
 
-\* 9
-THEOREM 9 ==
-  Same-jurisdiction transfers are always compliant      *)
-  (* ================================================================ *)
   
   Theorem same_jurisdiction_compliant :
     forall (agreements : Agreements) (j : jurisdiction) (cls : nat),
@@ -242,10 +204,6 @@ THEOREM same_jurisdiction_compliant ==
   \A agreements \in Nat, j \in Nat, cls \in Nat :
       compliant_op agreements j j cls
 
-\* 10
-THEOREM 10 ==
-  Audit trail length grows with each transfer          *)
-  (* ================================================================ *)
   
   Theorem audit_trail_grows :
     forall (trail : AuditTrail) (did from to : nat),
@@ -254,7 +212,7 @@ THEOREM 10 ==
 \* audit_trail_grows
 THEOREM audit_trail_grows ==
   \A trail \in Nat, did \in Nat, from \in Nat, to \in Nat :
-      length (log_transfer trail did from to) = S(length(trail))
+      length (log_transfer trail did from to) = S (length trail)
 
 \* local_only_blocks_cross_border
 THEOREM local_only_blocks_cross_border ==

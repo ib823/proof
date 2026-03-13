@@ -122,6 +122,7 @@ Spec == Init /\ [][Next]_vars
 
 \* ===================================================================
 
+
 \* ===================================================================
 \* THEOREMS (derived from Coq proofs)
 \* ===================================================================
@@ -146,9 +147,6 @@ THEOREM eff_le_trans ==
   \A e1 \in Nat, e2 \in Nat, e3 \in Nat :
       eff_le(e1, e2) => eff_le(e1, e3)
 
-\* 1
-THEOREM 1 ==
-  Pure programs are constant-time *)
   
   Theorem pure_is_constant_time : forall i,
     infer_effect i = Eff_pure => is_constant_time(i)
@@ -158,9 +156,6 @@ THEOREM pure_is_constant_time ==
   \A i \in Nat :
       infer_effect(i) = Eff_pure => is_constant_time(i)
 
-\* 2
-THEOREM 2 ==
-  Constant-time composition *)
   
   Theorem ct_composition : forall a b,
     is_constant_time a = true => is_constant_time (ISeq a b) = true
@@ -170,11 +165,6 @@ THEOREM ct_composition ==
   \A a \in Nat, b \in Nat :
       is_constant_time(a) => is_constant_time (ISeq a b) = true
 
-\* 3
-THEOREM 3 ==
-  Speculative safety implies no secret leakage *)
-  (** We model "no secret leakage" as: evaluation does not depend on
-      speculative side-channels, i.e., no secret branches exist. *)
   
   Lemma no_secret_branch : forall i,
     is_constant_time i = true => forall c t f, i <> IBranch Secret c t f
@@ -194,9 +184,6 @@ THEOREM spec_safe_implies_no_secret_leakage ==
   \A i \in Nat :
       no_speculative_annotation(i) => is_constant_time(i)
 
-\* 4
-THEOREM 4 ==
-  Effect ordering is a preorder *)
   
   Theorem effect_preorder_refl : forall e, eff_le e e = true
 
@@ -210,9 +197,6 @@ THEOREM effect_preorder_trans ==
   \A e1 \in Nat, e2 \in Nat, e3 \in Nat :
       eff_le(e1, e2) => eff_le(e1, e3)
 
-\* 5
-THEOREM 5 ==
-  Pure is bottom of the effect ordering *)
   
   Theorem pure_is_bottom : forall e, eff_le Eff_pure e = true
 
@@ -221,9 +205,6 @@ THEOREM pure_is_bottom ==
   \A e \in Nat :
       eff_le(Eff_pure, e)
 
-\* 6
-THEOREM 6 ==
-  Sequential composition preserves speculative safety *)
   
   Theorem seq_preserves_spec_safe : forall a b,
     is_spec_safe a = true => is_spec_safe (ISeq a b) = true
@@ -233,9 +214,6 @@ THEOREM seq_preserves_spec_safe ==
   \A a \in Nat, b \in Nat :
       is_spec_safe(a) => is_spec_safe (ISeq a b) = true
 
-\* 7
-THEOREM 7 ==
-  Secret-independent branching is constant-time *)
   
   Theorem public_branch_ct : forall c t f,
     is_constant_time c = true => is_constant_time (IBranch Public c t f) = true
@@ -245,12 +223,6 @@ THEOREM public_branch_ct ==
   \A c \in Nat, t \in Nat, f \in Nat :
       is_constant_time(c) => is_constant_time (IBranch Public c t f) = true
 
-\* 8
-THEOREM 8 ==
-  Effect annotation soundness *)
-  (** If a program is annotated with effect [e] and its inferred effect
-      is at most [e], then the annotation is sound. We prove that
-      the inferred effect of an annotated program joins to at least [e]. *)
   
   Definition effect_eq_dec (e1 e2 : effect) : {e1 = e2} + {e1 <> e2}
 

@@ -101,6 +101,7 @@ Spec == Init /\ [][Next]_vars
 
 \* ===================================================================
 
+
 \* ===================================================================
 \* THEOREMS (derived from Coq proofs)
 \* ===================================================================
@@ -130,9 +131,6 @@ THEOREM label_join_comm ==
   \A l1 \in Nat, l2 \in Nat :
       label_join(l1, l2) = label_join(l2, l1)
 
-\* 1
-THEOREM 1 ==
-  Source Non-Interference = =================================================================== *) => exists v2 l2, lookup env2 x = Some (v2, l2)
 
 \* lookup_some_both
 THEOREM lookup_some_both ==
@@ -144,18 +142,12 @@ THEOREM source_noninterference ==
   \A e \in Nat, env1 \in Nat, env2 \in Nat, v1 \in Nat, l1 \in Nat, v2 \in Nat, l2 \in Nat :
       src_low_equiv(env1, env2) => v1 = v2
 
-\* 2
-THEOREM 2 ==
-  Compilation Preserves Security Labels = =================================================================== *) => tgt_label_of_prog(prog) = l
 
 \* compilation_preserves_labels
 THEOREM compilation_preserves_labels ==
   \A env \in Nat, e \in Nat, v \in Nat, l \in Nat, prog \in Nat :
       src_eval(env, e) = Some (v, l) => tgt_label_of_prog(prog) = l
 
-\* 3
-THEOREM 3 ==
-  Target Non-Interference (for read-free programs) = =================================================================== *) => tgt_eval_fuel fuel env1 prog pc stk = tgt_eval_fuel fuel env2 prog pc stk
 
 \* tgt_eval_env_independent
 THEOREM tgt_eval_env_independent ==
@@ -167,48 +159,30 @@ THEOREM target_noninterference ==
   \A prog \in Nat, env1 \in Nat, env2 \in Nat, v1 \in Nat, l1 \in Nat, v2 \in Nat, l2 \in Nat, fuel \in Nat :
       tgt_eval_fuel fuel env1 prog 0 [] = Some (v1, l1) => v1 = v2
 
-\* 4
-THEOREM 4 ==
-  Semantic Preservation = =================================================================== *) => tgt_eval_fuel 3 env prog 0 [] = Some (v, l)
 
 \* semantic_preservation
 THEOREM semantic_preservation ==
   \A env \in Nat, e \in Nat, v \in Nat, l \in Nat, prog \in Nat :
       src_eval(env, e) = Some (v, l) => tgt_eval_fuel 3 env prog 0 [] = Some (v, l)
 
-\* 5
-THEOREM 5 ==
-  Security Composition = =================================================================== *) => v1 = v2 /\ v3 = v4
 
 \* security_composition
 THEOREM security_composition ==
   \A env1 \in Nat, env2 \in Nat, e1 \in Nat, e2 \in Nat, v1 \in Nat, l1 \in Nat, v2 \in Nat, l2 \in Nat, v3 \in Nat, l3 \in Nat, v4 \in Nat, l4 \in Nat :
       src_low_equiv(env1, env2) => v1 = v2 /\ v3 = v4
 
-\* 6
-THEOREM 6 ==
-  Label Monotonicity Through Compilation = =================================================================== *) => label_leb l (tgt_label_of_prog prog) = true
 
 \* label_monotonicity_compilation
 THEOREM label_monotonicity_compilation ==
   \A env \in Nat, e \in Nat, v \in Nat, l \in Nat, prog \in Nat :
       src_eval(env, e) = Some (v, l) => label_leb l (tgt_label_of_prog prog) = true
 
-\* 7
-THEOREM 7 ==
-  Constant-Time Property Preserved = =================================================================== *) => is_constant_time(prog)
 
 \* constant_time_preserved
 THEOREM constant_time_preserved ==
   \A env \in Nat, e \in Nat, v \in Nat, l \in Nat, prog \in Nat :
       src_eval(env, e) = Some (v, l) => is_constant_time(prog)
 
-\* 8
-THEOREM 8 ==
-  End-to-End Security = =================================================================== *) => exists tv1 tl1 tv2 tl2,
-      tgt_eval_fuel 3 env1 prog1 0 [] = Some (tv1, tl1) /\
-      tgt_eval_fuel 3 env2 prog2 0 [] = Some (tv2, tl2) /\
-      tv1 = tv2 /\ tl1 = Low /\ tl2 = Low
 
 \* end_to_end_security
 THEOREM end_to_end_security ==
@@ -218,9 +192,6 @@ THEOREM end_to_end_security ==
       tgt_eval_fuel 3 env2 prog2 0 [] = Some (tv2, tl2) /\
       tv1 = tv2 /\ tl1 = Low /\ tl2 = Low
 
-\* 9
-THEOREM 9 ==
-  Compiler Determinism = =================================================================== *) => prog1 = prog2
 
 \* compiler_determinism
 THEOREM compiler_determinism ==

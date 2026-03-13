@@ -91,6 +91,7 @@ Spec == Init /\ [][Next]_vars
 
 \* ===================================================================
 
+
 \* ===================================================================
 \* THEOREMS (derived from Coq proofs)
 \* ===================================================================
@@ -110,10 +111,7 @@ THEOREM formula_eqb_neq ==
   \A f1 \in Nat, f2 \in Nat :
       formula_eqb(f1, f2) = false => f1 # f2
 
-\* 1
-THEOREM 1 ==
   
-
 \* checker_soundness
 THEOREM checker_soundness ==
   \A ctx \in Nat, p \in Nat, f \in Nat :
@@ -124,10 +122,6 @@ THEOREM derives_sound ==
   \A ctx \in Nat, f \in Nat :
       derives(ctx, f) => sem(v, f)
 
-\* 2
-THEOREM 2 ==
-  Identity proof A => A is valid                                 *)
-  (* ========================================================================= *)
   
   Definition identity_proof (a : formula) : proof_term :=
     PImplIntro a (PAxiom 0).
@@ -140,10 +134,6 @@ THEOREM identity_proof_valid ==
   \A a \in Nat :
       check [] (identity_proof a) = Some (FImpl a a)
 
-\* 3
-THEOREM 3 ==
-  Composition of proofs (A => C in context, then intro A *)
-    PImplIntro a (PImplElim (PAxiom 2) (PImplElim (PAxiom 1) (PAxiom 0))).
   
   Theorem compose_proof_valid : forall a b c,
     check [FImpl a b; FImpl b c] (compose_proof a b c) = Some (FImpl a c)
@@ -153,10 +143,6 @@ THEOREM compose_proof_valid ==
   \A a \in Nat, b \in Nat, c \in Nat :
       check [FImpl a b; FImpl b c] (compose_proof a b c) = Some (FImpl a c)
 
-\* 4
-THEOREM 4 ==
-  Conjunction introduction is valid                              *)
-  (* ========================================================================= *)
   
   Definition conj_intro_proof (a b : formula) : proof_term :=
     PConjIntro (PAxiom 0) (PAxiom 1).
@@ -169,60 +155,26 @@ THEOREM conj_intro_valid ==
   \A a \in Nat, b \in Nat :
       check [a; b] (conj_intro_proof a b) = Some (FConj a b)
 
-\* 5a
-THEOREM 5a ==
-  Conjunction elimination left                                  *)
-  (* ========================================================================= *)
-  
-  Definition conj_elim_left (a b : formula) : proof_term :=
-    PConjElimL (PAxiom 0).
-  
-  Theorem conj_elim_left_valid : forall a b,
-    check [FConj a b] (conj_elim_left a b) = Some a
-
 \* conj_elim_left_valid
 THEOREM conj_elim_left_valid ==
   \A a \in Nat, b \in Nat :
       check [FConj a b] (conj_elim_left a b) = Some a
-
-\* 5b
-THEOREM 5b ==
-  Conjunction elimination right                                 *)
-  (* ========================================================================= *)
-  
-  Definition conj_elim_right (a b : formula) : proof_term :=
-    PConjElimR (PAxiom 0).
-  
-  Theorem conj_elim_right_valid : forall a b,
-    check [FConj a b] (conj_elim_right a b) = Some b
 
 \* conj_elim_right_valid
 THEOREM conj_elim_right_valid ==
   \A a \in Nat, b \in Nat :
       check [FConj a b] (conj_elim_right a b) = Some b
 
-\* 6
-THEOREM 6 ==
   
-
 \* checker_deterministic
 THEOREM checker_deterministic ==
   \A ctx \in Nat, p \in Nat, f1 \in Nat, f2 \in Nat :
       check(ctx, p) = Some f1 => f1 = f2
 
-\* 7
-THEOREM 7 ==
-  Invalid proofs are rejected                                    *)
-  (* ========================================================================= *)
-  
-  (* Applying a non-implication fails *)
-  Theorem invalid_modus_ponens_rejected : forall ctx p1 p2 a,
-    check ctx p1 = Some (FVar a) => check ctx (PImplElim p1 p2) = None
-
 \* invalid_modus_ponens_rejected
 THEOREM invalid_modus_ponens_rejected ==
   \A ctx \in Nat, p1 \in Nat, p2 \in Nat, a \in Nat :
-      check(ctx, p1) = Some(FVar(a)) => check ctx (PImplElim p1 p2) = None
+      check(ctx, p1) = Some (FVar a) => check ctx (PImplElim p1 p2) = None
 
 \* invalid_axiom_rejected
 THEOREM invalid_axiom_rejected ==
@@ -234,10 +186,6 @@ THEOREM invalid_mismatch_rejected ==
   \A ctx \in Nat, p1 \in Nat, p2 \in Nat, a \in Nat, a \in Nat, b \in Nat :
       check(ctx, p1) = Some (FImpl a b) => check ctx (PImplElim p1 p2) = None
 
-\* 8
-THEOREM 8 ==
-  Weakening — valid proof in Γ is valid in Γ,A                   *)
-  (* ========================================================================= *)
   
   (* We prove weakening for the derives relation (semantic level). *)
   

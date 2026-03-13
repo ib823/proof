@@ -131,6 +131,7 @@ Spec == Init /\ [][Next]_vars
 
 \* ===================================================================
 
+
 \* ===================================================================
 \* THEOREMS (derived from Coq proofs)
 \* ===================================================================
@@ -145,134 +146,71 @@ THEOREM formula_eqb_eq ==
   \A f1 \in Nat, f2 \in Nat :
       formula_eqb(f1, f2) => f1 = f2
 
-\* 1
-THEOREM 1 ==
-  Validator soundness — if validate_atomic accepts, the certificate
-     proves the right atomic formula *)
-  Theorem validator_soundness_atomic :
-    forall c n,
-      validate_atomic c n = true => cert_formula(c) = FAtom n
 
 \* validator_soundness_atomic
 THEOREM validator_soundness_atomic ==
   \A c \in Nat, n \in Nat :
       validate_atomic(c, n) => cert_formula(c) = FAtom n
 
-\* 2
-THEOREM 2 ==
-  Translation preserves formula structure (roundtrip A) *)
-  Theorem translation_preserves_structure_A :
-    forall f, translate_from_A (translate_to_A f) = f
 
 \* translation_preserves_structure_A
 THEOREM translation_preserves_structure_A ==
   \A f \in Nat :
-      translate_from_A(translate_to_A(f)) = f
+      translate_from_A (translate_to_A f) = f
 
-\* 3
-THEOREM 3 ==
-  Translation preserves formula structure (roundtrip B) *)
-  Theorem translation_preserves_structure_B :
-    forall f, translate_from_B (translate_to_B f) = f
 
 \* translation_preserves_structure_B
 THEOREM translation_preserves_structure_B ==
   \A f \in Nat :
-      translate_from_B(translate_to_B(f)) = f
+      translate_from_B (translate_to_B f) = f
 
-\* 4
-THEOREM 4 ==
-  Independent proofs that both validate give DualProver confidence *)
-  Theorem dual_prover_confidence :
-    forall vA vB,
-      vA = true => confidence_level(vA, vB) = DualProver
 
 \* dual_prover_confidence
 THEOREM dual_prover_confidence ==
   \A vA \in Nat, vB \in Nat :
       vA = true => confidence_level(vA, vB) = DualProver
 
-\* 5
-THEOREM 5 ==
-  DualProver confidence is at least as high as SingleProver *)
-  Theorem dual_ge_single : confidence_ge DualProver SingleProver
 
 \* dual_ge_single
 THEOREM dual_ge_single ==
   confidence_ge(DualProver, SingleProver)
 
-\* 6
-THEOREM 6 ==
-  Certificate composition — modus ponens.
-     If we have a certificate for A and a certificate for A => cert_formula (CertImplE cAB cA) = b
 
 \* certificate_composition
 THEOREM certificate_composition ==
   \A cA \in Nat, cAB \in Nat, a \in Nat, b \in Nat :
       cert_formula(cA) = a => cert_formula (CertImplE cAB cA) = b
 
-\* 7
-THEOREM 7 ==
-  Validator is deterministic *)
-  Theorem validator_deterministic :
-    forall asms c f r1 r2,
-      validate asms c f = r1 => r1 = r2
 
 \* validator_deterministic
 THEOREM validator_deterministic ==
   \A asms \in Nat, c \in Nat, f \in Nat, r1 \in Nat, r2 \in Nat :
       validate asms c f = r1 => r1 = r2
 
-\* 8
-THEOREM 8 ==
-  Formula equivalence is decidable *)
-  Theorem formula_eq_dec : forall f1 f2 : formula, {f1 = f2} + {f1 <> f2}
 
 \* formula_eq_dec
 THEOREM formula_eq_dec ==
   \A f1 \in Nat, f2 \in Nat, formula \in Nat :
       {f1 = f2} + {f1 <> f2}
 
-\* 9
-THEOREM 9 ==
-  Translation to A is injective *)
-  Theorem translate_to_A_injective :
-    forall f1 f2, translate_to_A f1 = translate_to_A f2 => f1 = f2
 
 \* translate_to_A_injective
 THEOREM translate_to_A_injective ==
   \A f1 \in Nat, f2 \in Nat :
       translate_to_A(f1) = translate_to_A(f2) => f1 = f2
 
-\* 10
-THEOREM 10 ==
-  Translation to B is injective *)
-  Theorem translate_to_B_injective :
-    forall f1 f2, translate_to_B f1 = translate_to_B f2 => f1 = f2
 
 \* translate_to_B_injective
 THEOREM translate_to_B_injective ==
   \A f1 \in Nat, f2 \in Nat :
       translate_to_B(f1) = translate_to_B(f2) => f1 = f2
 
-\* 11
-THEOREM 11 ==
-  Validator completeness for atomic formulas *)
-  Theorem validator_completeness_atomic :
-    forall n, validate_atomic (CertAtom n) n = true
 
 \* validator_completeness_atomic
 THEOREM validator_completeness_atomic ==
   \A n \in Nat :
       validate_atomic (CertAtom n) n = true
 
-\* 12
-THEOREM 12 ==
-  Both provers agree on translated structure —
-     translating to A and back, vs to B and back, yield the same formula *)
-  Theorem prover_agreement :
-    forall f,
-      translate_from_A (translate_to_A f) = translate_from_B (translate_to_B f)
 
 \* 21 additional theorems proven in Coq source
 

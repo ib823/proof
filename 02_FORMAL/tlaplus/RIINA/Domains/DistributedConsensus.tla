@@ -77,16 +77,11 @@ Spec == Init /\ [][Next]_vars
 
 \* ===================================================================
 
+
 \* ===================================================================
 \* THEOREMS (derived from Coq proofs)
 \* ===================================================================
 
-\* 1
-THEOREM 1 ==
-  Agreement ---
-     If the configuration satisfies decided_nodes_agree, then any two
-     honest decided nodes have the same decision. This is modeled as:
-     the agreement property is preserved by construction. *)
   
   Theorem agreement :
     forall c n1 n2,
@@ -97,11 +92,6 @@ THEOREM agreement ==
   \A c \in Nat, n1 \in Nat, n2 \in Nat :
       decided_nodes_agree(c) => node_decision(n1) = node_decision(n2)
 
-\* 2
-THEOREM 2 ==
-  Validity ---
-     If all honest nodes propose v, and the protocol decides based on
-     honest proposals, then the decision equals v. *)
   
   Theorem validity :
     forall c nd v,
@@ -112,11 +102,6 @@ THEOREM validity ==
   \A c \in Nat, nd \in Nat, v \in Nat :
       all_honest_propose(c, v) => node_decision(nd) = v
 
-\* 3
-THEOREM 3 ==
-  Quorum Intersection ---
-     Two quorums each of size > 2n/3 must overlap. We prove this
-     for abstract sizes: if |Q1| + |Q2| > total, they intersect. *)
   
   Lemma pigeonhole_overlap :
     forall (n a b : nat),
@@ -137,9 +122,6 @@ THEOREM quorum_intersection ==
   \A n \in Nat, q1s \in Nat, q2s \in Nat :
       3 * q1s > 2 * n => q1s + q2s > n
 
-\* 4
-THEOREM 4 ==
-  Round Monotonicity --- *)
   
   Theorem round_monotonicity :
     forall old new_,
@@ -155,9 +137,6 @@ THEOREM round_monotonicity_transitive ==
   \A a \in Nat, b \in Nat, c_ \in Nat :
       node_id(a) = node_id(b) => node_round c_ > = node_round(a)
 
-\* 5
-THEOREM 5 ==
-  Vote Uniqueness --- *)
   
   Theorem vote_uniqueness :
     forall c v1 v2,
@@ -168,10 +147,6 @@ THEOREM vote_uniqueness ==
   \A c \in Nat, v1 \in Nat, v2 \in Nat :
       honest_votes_once_per_round(c) => vote_value(v1) = vote_value(v2)
 
-\* 6
-THEOREM 6 ==
-  Quorum Sufficiency ---
-     When f < n/3, honest nodes (n - f) form a quorum (> 2n/3). *)
   
   Theorem quorum_sufficiency :
     forall n f : nat,
@@ -187,9 +162,6 @@ THEOREM honest_majority_in_quorum ==
   \A n \in Nat, f \in Nat, q \in Nat, nat \in Nat :
       3 * f < n => q - f > = 1
 
-\* 7
-THEOREM 7 ==
-  Message Integrity --- *)
   
   Theorem message_integrity :
     forall c m,
@@ -200,9 +172,6 @@ THEOREM message_integrity ==
   \A c \in Nat, m \in Nat :
       messages_from_honest_authentic(c) => msg_authentic(m)
 
-\* 8
-THEOREM 8 ==
-  Decision Stability --- *)
   
   Theorem decision_stability :
     forall nd_before nd_after,
@@ -213,10 +182,6 @@ THEOREM decision_stability ==
   \A nd_before \in Nat, nd_after \in Nat :
       decision_stable(nd_before, nd_after) => node_decided(nd_after)
 
-\* 9
-THEOREM 9 ==
-  BFT threshold arithmetic ---
-     The classical n >= 3f+1 bound *)
   
   Theorem bft_threshold :
     forall n f : nat,
@@ -227,10 +192,6 @@ THEOREM bft_threshold ==
   \A n \in Nat, f \in Nat, nat \in Nat :
       3 * f < n => n > = 3 * f + 1
 
-\* 10
-THEOREM 10 ==
-  Two quorums share an honest node ---
-     Combining quorum intersection with honest majority *)
   
   Theorem two_quorums_share_honest :
     forall n f q1 q2 : nat,
@@ -247,9 +208,6 @@ THEOREM two_quorums_share_honest ==
       (* overlap exceeds faults, so contains honest node *)
       q1 + q2 - n > f
 
-\* 11
-THEOREM 11 ==
-  BFT requires at least 4 nodes for f = 1 --- *) => n > = 4
 
 \* 19 additional theorems proven in Coq source
 

@@ -1,159 +1,102 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/properties/Declassification.v (16 harnesses)
-// Source mapping: scripts/generate-full-stack.py
-//
-// Kani bounded model checking harnesses for Declassification.
-// Layer 10: Verifies implementation invariants via bounded search.
+// Kani harnesses for Declassification.v
+// Source: 02_FORMAL/coq/properties/Declassification.v
 
 #![allow(unused)]
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[repr(u8)]
+enum SecurityLevel {
+    LPublic = 0, LInternal = 1, LSession = 2,
+    LUser = 3, LSystem = 4, LSecret = 5,
+}
+
+impl SecurityLevel {
+    fn num(self) -> u8 { self as u8 }
+    fn from_u8(v: u8) -> Option<Self> {
+        match v {
+            0 => Some(Self::LPublic), 1 => Some(Self::LInternal), 2 => Some(Self::LSession),
+            3 => Some(Self::LUser), 4 => Some(Self::LSystem), 5 => Some(Self::LSecret),
+            _ => None,
+        }
+    }
+    fn leq(self, other: Self) -> bool { self.num() <= other.num() }
+    fn join(self, other: Self) -> Self { if self.num() >= other.num() { self } else { other } }
+    fn meet(self, other: Self) -> Self { if self.num() <= other.num() { self } else { other } }
+}
+
+
+/// Declassification policy: from_level can declassify to to_level.
+#[derive(Debug, Clone, Copy)]
+struct DeclassPolicy { from: SecurityLevel, to: SecurityLevel, authorized: bool }
+
+impl DeclassPolicy {
+    fn valid(&self) -> bool {
+        // Declassification lowers security: from >= to
+        self.from.num() >= self.to.num() && self.authorized
+    }
+}
+
+/// Secret values are trivially related (information hiding).
+fn secrets_trivially_related(v1: u8, v2: u8) -> bool {
+    // At type TSecret, any two values are related regardless of content
+    let _ = (v1, v2);
+    true
+}
 
 #[cfg(kani)]
 mod verification {
     use super::*;
 
-    // val_rel_le_secret_trivial (matches Coq: Lemma val_rel_le_secret_trivial)
-    fn val_rel_le_secret_trivial_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_val_rel_le_secret_trivial() {
-        // Property obligation: val_rel_le_secret_trivial
-        assert!(val_rel_le_secret_trivial_obligation());
+    fn any_level() -> SecurityLevel {
+        let v: u8 = kani::any();
+        kani::assume(v <= 5);
+        SecurityLevel::from_u8(v).unwrap()
     }
 
-    // declassify_eval (matches Coq: Lemma declassify_eval)
-    fn declassify_eval_obligation() -> bool { true /* property verified by Coq */ }
-
+    /// Declassification requires authorization
     #[kani::proof]
-    fn check_declassify_eval() {
-        // Property obligation: declassify_eval
-        assert!(declassify_eval_obligation());
+    fn verify_declass_requires_auth() {
+        let from = any_level();
+        let to = any_level();
+        let policy = DeclassPolicy { from, to, authorized: false };
+        assert!(!policy.valid());
     }
 
-    // logical_relation_declassify_proven (matches Coq: Lemma logical_relation_declassify_proven)
-    fn logical_relation_declassify_proven_obligation() -> bool { true /* property verified by Coq */ }
-
+    /// Declassification must lower or maintain level
     #[kani::proof]
-    fn check_logical_relation_declassify_proven() {
-        // Property obligation: logical_relation_declassify_proven
-        assert!(logical_relation_declassify_proven_obligation());
+    fn verify_declass_lowers_level() {
+        let from = any_level();
+        let to = any_level();
+        let policy = DeclassPolicy { from, to, authorized: true };
+        if policy.valid() {
+            assert!(from.num() >= to.num());
+        }
     }
 
-    // value_multi_step_refl_decl (matches Coq: Lemma value_multi_step_refl_decl)
-    fn value_multi_step_refl_decl_obligation() -> bool { true /* property verified by Coq */ }
-
+    /// Secret values are trivially related (Coq: val_rel TSecret)
     #[kani::proof]
-    fn check_value_multi_step_refl_decl() {
-        // Property obligation: value_multi_step_refl_decl
-        assert!(value_multi_step_refl_decl_obligation());
+    fn verify_secrets_related() {
+        let v1: u8 = kani::any();
+        let v2: u8 = kani::any();
+        kani::assume(v1 < 16 && v2 < 16);
+        assert!(secrets_trivially_related(v1, v2));
     }
 
-    // eval_deterministic_cfg (matches Coq: Lemma eval_deterministic_cfg)
-    fn eval_deterministic_cfg_obligation() -> bool { true /* property verified by Coq */ }
-
+    /// Public to public declassification is always valid
     #[kani::proof]
-    fn check_eval_deterministic_cfg() {
-        // Property obligation: eval_deterministic_cfg
-        assert!(eval_deterministic_cfg_obligation());
+    fn verify_public_declass_valid() {
+        let policy = DeclassPolicy { from: SecurityLevel::LPublic, to: SecurityLevel::LPublic, authorized: true };
+        assert!(policy.valid());
     }
 
-    // eval_deterministic (matches Coq: Lemma eval_deterministic)
-    fn eval_deterministic_obligation() -> bool { true /* property verified by Coq */ }
-
+    /// Cannot declassify upward (escalation)
     #[kani::proof]
-    fn check_eval_deterministic() {
-        // Property obligation: eval_deterministic
-        assert!(eval_deterministic_obligation());
+    fn verify_no_upward_declass() {
+        let from = any_level();
+        let to = any_level();
+        kani::assume(to.num() > from.num());
+        let policy = DeclassPolicy { from, to, authorized: true };
+        assert!(!policy.valid());
     }
-
-    // declassify_policy_safe (matches Coq: Lemma declassify_policy_safe)
-    fn declassify_policy_safe_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_declassify_policy_safe() {
-        // Property obligation: declassify_policy_safe
-        assert!(declassify_policy_safe_obligation());
-    }
-
-    // classify_creates_secret (matches Coq: Lemma classify_creates_secret)
-    fn classify_creates_secret_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_classify_creates_secret() {
-        // Property obligation: classify_creates_secret
-        assert!(classify_creates_secret_obligation());
-    }
-
-    // double_classify_typed (matches Coq: Lemma double_classify_typed)
-    fn double_classify_typed_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_double_classify_typed() {
-        // Property obligation: double_classify_typed
-        assert!(double_classify_typed_obligation());
-    }
-
-    // classify_value (matches Coq: Lemma classify_value)
-    fn classify_value_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_classify_value() {
-        // Property obligation: classify_value
-        assert!(classify_value_obligation());
-    }
-
-    // classify_closed (matches Coq: Lemma classify_closed)
-    fn classify_closed_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_classify_closed() {
-        // Property obligation: classify_closed
-        assert!(classify_closed_obligation());
-    }
-
-    // declassify_requires_public_context (matches Coq: Lemma declassify_requires_public_context)
-    fn declassify_requires_public_context_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_declassify_requires_public_context() {
-        // Property obligation: declassify_requires_public_context
-        assert!(declassify_requires_public_context_obligation());
-    }
-
-    // secret_value_pure (matches Coq: Lemma secret_value_pure)
-    fn secret_value_pure_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_secret_value_pure() {
-        // Property obligation: secret_value_pure
-        assert!(secret_value_pure_obligation());
-    }
-
-    // declassify_deterministic (matches Coq: Lemma declassify_deterministic)
-    fn declassify_deterministic_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_declassify_deterministic() {
-        // Property obligation: declassify_deterministic
-        assert!(declassify_deterministic_obligation());
-    }
-
-    // declassify_result (matches Coq: Lemma declassify_result)
-    fn declassify_result_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_declassify_result() {
-        // Property obligation: declassify_result
-        assert!(declassify_result_obligation());
-    }
-
-    // declassification_zero_admits (matches Coq: Theorem declassification_zero_admits)
-    fn declassification_zero_admits_obligation() -> bool { true /* property verified by Coq */ }
-
-    #[kani::proof]
-    fn check_declassification_zero_admits() {
-        // Property obligation: declassification_zero_admits
-        assert!(declassification_zero_admits_obligation());
-    }
-
 }

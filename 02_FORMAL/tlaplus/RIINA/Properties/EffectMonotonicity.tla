@@ -1,133 +1,124 @@
 ---- MODULE EffectMonotonicity ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/properties/EffectMonotonicity.v (36 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/properties/EffectMonotonicity.v
+\* Effect-preserving transformations and monotonicity properties.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
-VARIABLES state
+CONSTANTS EffPure, EffRead, EffWrite, EffFileSystem, EffNetwork,
+          EffNetSecure, EffCrypto, EffRandom, EffSystem, EffTime, EffProcess
 
-\* Type invariant
+EffectSet == {EffPure, EffRead, EffWrite, EffFileSystem, EffNetwork,
+              EffNetSecure, EffCrypto, EffRandom, EffSystem, EffTime, EffProcess}
+
+\* effect_level (matches Coq: Definition effect_level)
+effect_level(e) ==
+  CASE e = EffPure       -> 0
+    [] e = EffRead        -> 1
+    [] e = EffWrite       -> 2
+    [] e = EffFileSystem  -> 3
+    [] e = EffNetwork     -> 4
+    [] e = EffNetSecure   -> 5
+    [] e = EffCrypto      -> 6
+    [] e = EffRandom      -> 7
+    [] e = EffSystem      -> 8
+    [] e = EffTime        -> 9
+    [] e = EffProcess     -> 10
+
+\* effect_join: least upper bound of effects
+effect_join(e1, e2) ==
+  IF effect_level(e1) >= effect_level(e2) THEN e1 ELSE e2
+
+\* effect_leq: effect ordering
+effect_leq(e1, e2) == effect_level(e1) <= effect_level(e2)
+
+VARIABLES eff1, eff2, eff3, joinResult, isMonotone
+
+vars == <<eff1, eff2, eff3, joinResult, isMonotone>>
+
 TypeOK ==
-  /\ state \in BOOLEAN
+  /\ eff1 \in EffectSet
+  /\ eff2 \in EffectSet
+  /\ eff3 \in EffectSet
+  /\ joinResult \in EffectSet
+  /\ isMonotone \in BOOLEAN
 
-\* Initial state
 Init ==
-  /\ state = TRUE
+  /\ eff1 \in EffectSet
+  /\ eff2 \in EffectSet
+  /\ eff3 \in EffectSet
+  /\ joinResult = effect_join(eff1, eff2)
+  /\ isMonotone = effect_leq(eff1, joinResult)
 
-\* app_pure_implies_parts_pure (matches Coq: Lemma app_pure_implies_parts_pure)
-THEOREM app_pure_implies_parts_pure == \A x \in BOOLEAN : Spec => []TypeOK
+ComputeJoin ==
+  /\ eff1' \in EffectSet
+  /\ eff2' \in EffectSet
+  /\ eff3' \in EffectSet
+  /\ joinResult' = effect_join(eff1', effect_join(eff2', eff3'))
+  /\ isMonotone' = effect_leq(eff1', joinResult')
 
-\* let_pure_implies_parts_pure (matches Coq: Lemma let_pure_implies_parts_pure)
-THEOREM let_pure_implies_parts_pure == \A x \in BOOLEAN : Spec => []TypeOK
+Next == ComputeJoin
 
-\* if_pure_implies_parts_pure (matches Coq: Lemma if_pure_implies_parts_pure)
-THEOREM if_pure_implies_parts_pure == \A x \in BOOLEAN : Spec => []TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* app_effect_geq_fn (matches Coq: Lemma app_effect_geq_fn)
-THEOREM app_effect_geq_fn == \A x \in BOOLEAN : Spec => []TypeOK
+\* app_pure_implies_parts_pure: if join is EffPure, all parts are EffPure
+THEOREM app_pure_implies_parts_pure ==
+  \A e1, e2, e3 \in EffectSet :
+    effect_join(e1, effect_join(e2, e3)) = EffPure
+    => e1 = EffPure /\ e2 = EffPure /\ e3 = EffPure
 
-\* app_effect_geq_arg1 (matches Coq: Lemma app_effect_geq_arg1)
-THEOREM app_effect_geq_arg1 == \A x \in BOOLEAN : Spec => []TypeOK
+\* let_pure_implies_parts_pure: join = EffPure implies both pure
+THEOREM let_pure_implies_parts_pure ==
+  \A e1, e2 \in EffectSet :
+    effect_join(e1, e2) = EffPure => e1 = EffPure /\ e2 = EffPure
 
-\* app_effect_geq_arg2 (matches Coq: Lemma app_effect_geq_arg2)
-THEOREM app_effect_geq_arg2 == \A x \in BOOLEAN : Spec => []TypeOK
+\* if_pure_implies_parts_pure: triple join pure implies all pure
+THEOREM if_pure_implies_parts_pure ==
+  \A e1, e2, e3 \in EffectSet :
+    effect_join(e1, effect_join(e2, e3)) = EffPure
+    => e1 = EffPure /\ e2 = EffPure /\ e3 = EffPure
 
-\* let_effect_geq_body (matches Coq: Lemma let_effect_geq_body)
-THEOREM let_effect_geq_body == \A x \in BOOLEAN : Spec => []TypeOK
+\* app_effect_geq_fn: application effect >= function body effect
+THEOREM app_effect_geq_fn ==
+  \A e_fn, e1, e2 \in EffectSet :
+    effect_leq(e_fn, effect_join(e_fn, effect_join(e1, e2)))
 
-\* let_effect_geq_cont (matches Coq: Lemma let_effect_geq_cont)
-THEOREM let_effect_geq_cont == \A x \in BOOLEAN : Spec => []TypeOK
+\* app_effect_geq_arg1: application effect >= first argument effect
+THEOREM app_effect_geq_arg1 ==
+  \A e_fn, e1, e2 \in EffectSet :
+    effect_leq(e1, effect_join(e_fn, effect_join(e1, e2)))
 
-\* fst_pure (matches Coq: Lemma fst_pure)
-THEOREM fst_pure == \A x \in BOOLEAN : Spec => []TypeOK
+\* effect_join_comm: join is commutative
+THEOREM effect_join_comm ==
+  \A e1, e2 \in EffectSet :
+    effect_join(e1, e2) = effect_join(e2, e1)
 
-\* snd_pure (matches Coq: Lemma snd_pure)
-THEOREM snd_pure == \A x \in BOOLEAN : Spec => []TypeOK
+\* effect_join_assoc: join is associative
+THEOREM effect_join_assoc ==
+  \A e1, e2, e3 \in EffectSet :
+    effect_join(e1, effect_join(e2, e3))
+    = effect_join(effect_join(e1, e2), e3)
 
-\* classify_pure (matches Coq: Lemma classify_pure)
-THEOREM classify_pure == \A x \in BOOLEAN : Spec => []TypeOK
+\* effect_join_idem: join is idempotent
+THEOREM effect_join_idem ==
+  \A e \in EffectSet : effect_join(e, e) = e
 
-\* prove_pure (matches Coq: Lemma prove_pure)
-THEOREM prove_pure == \A x \in BOOLEAN : Spec => []TypeOK
+\* effect_join_pure_l: EffPure is left identity
+THEOREM effect_join_pure_l ==
+  \A e \in EffectSet : effect_join(EffPure, e) = e
 
-\* effect_join_level_bound (matches Coq: Lemma effect_join_level_bound)
-THEOREM effect_join_level_bound == \A x \in BOOLEAN : Spec => []TypeOK
+\* effect_join_pure_r: EffPure is right identity
+THEOREM effect_join_pure_r ==
+  \A e \in EffectSet : effect_join(e, EffPure) = e
 
-\* effect_leq_join_both (matches Coq: Lemma effect_leq_join_both)
-THEOREM effect_leq_join_both == \A x \in BOOLEAN : Spec => []TypeOK
+\* effect_leq_refl: effect ordering is reflexive
+THEOREM effect_leq_refl ==
+  \A e \in EffectSet : effect_leq(e, e)
 
-\* effect_leq_both_join (matches Coq: Lemma effect_leq_both_join)
-THEOREM effect_leq_both_join == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* effect_join_pure_r (matches Coq: Lemma effect_join_pure_r)
-THEOREM effect_join_pure_r == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* tfn_injective (matches Coq: Lemma tfn_injective)
-THEOREM tfn_injective == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* tprod_injective (matches Coq: Lemma tprod_injective)
-THEOREM tprod_injective == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* tsum_injective (matches Coq: Lemma tsum_injective)
-THEOREM tsum_injective == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* tref_injective (matches Coq: Lemma tref_injective)
-THEOREM tref_injective == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* tsecret_injective (matches Coq: Lemma tsecret_injective)
-THEOREM tsecret_injective == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* tproof_injective (matches Coq: Lemma tproof_injective)
-THEOREM tproof_injective == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* tlist_injective (matches Coq: Lemma tlist_injective)
-THEOREM tlist_injective == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* toption_injective (matches Coq: Lemma toption_injective)
-THEOREM toption_injective == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* nested_let_effect (matches Coq: Lemma nested_let_effect)
-THEOREM nested_let_effect == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* sequential_pair_effect (matches Coq: Lemma sequential_pair_effect)
-THEOREM sequential_pair_effect == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* classify_preserves_effect (matches Coq: Lemma classify_preserves_effect)
-THEOREM classify_preserves_effect == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* prove_preserves_effect (matches Coq: Lemma prove_preserves_effect)
-THEOREM prove_preserves_effect == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* inl_preserves_effect (matches Coq: Lemma inl_preserves_effect)
-THEOREM inl_preserves_effect == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* inr_preserves_effect (matches Coq: Lemma inr_preserves_effect)
-THEOREM inr_preserves_effect == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* ref_introduces_write (matches Coq: Lemma ref_introduces_write)
-THEOREM ref_introduces_write == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* deref_introduces_read (matches Coq: Lemma deref_introduces_read)
-THEOREM deref_introduces_read == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* assign_introduces_write (matches Coq: Lemma assign_introduces_write)
-THEOREM assign_introduces_write == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* ref_not_pure (matches Coq: Lemma ref_not_pure)
-THEOREM ref_not_pure == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* deref_not_pure (matches Coq: Lemma deref_not_pure)
-THEOREM deref_not_pure == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* assign_not_pure (matches Coq: Lemma assign_not_pure)
-THEOREM assign_not_pure == \A x \in BOOLEAN : Spec => []TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<state>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
+\* effect_leq_trans: effect ordering is transitive
+THEOREM effect_leq_trans ==
+  \A e1, e2, e3 \in EffectSet :
+    effect_leq(e1, e2) /\ effect_leq(e2, e3)
+    => effect_leq(e1, e3)
 
 ====

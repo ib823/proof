@@ -66,6 +66,7 @@ Spec == Init /\ [][Next]_vars
 
 \* ===================================================================
 
+
 \* ===================================================================
 \* THEOREMS (derived from Coq proofs)
 \* ===================================================================
@@ -92,85 +93,42 @@ THEOREM multi_touch_always_synchronized ==
   \A mtg \in Nat :
       all_points_synchronized(mtg)
 
-\* 1
-THEOREM 1 ==
-  gesture_type_decidable — gesture types have decidable equality *)
-  Theorem gesture_type_decidable :
-    forall (g1 g2 : GestureType),
-      g1 = g2 \/ g1 <> g2
 
 \* gesture_type_decidable
 THEOREM gesture_type_decidable ==
   \A g1 \in GestureTypeSet, g2 \in GestureTypeSet :
       g1 = g2 \/ g1 <> g2
 
-\* 2
-THEOREM 2 ==
-  confidence_above_threshold — recognized gestures have high confidence *)
-  Theorem confidence_above_threshold :
-    forall (g : Gesture),
-      gesture_confidence g >= 99
 
 \* confidence_above_threshold
 THEOREM confidence_above_threshold ==
   \A g \in Nat :
       gesture_confidence g > = 99
 
-\* 3
-THEOREM 3 ==
-  single_tap_fast — no false double-tap delay for single taps *)
-  Theorem single_tap_fast :
-    forall (tap : SingleTapEvent),
-      double_tap_expected tap = false => actual_response_time(tap) = expected_response_time(tap)
 
 \* single_tap_fast
 THEOREM single_tap_fast ==
   \A tap \in Nat :
       double_tap_expected(tap) = false => actual_response_time(tap) = expected_response_time(tap)
 
-\* 4
-THEOREM 4 ==
-  swipe_direction_deterministic — direction is uniquely determined *)
-  Theorem swipe_direction_deterministic :
-    forall (ds : DirectedSwipe),
-      exists (d : SwipeDirection), ds_direction ds = d
 
 \* swipe_direction_deterministic
 THEOREM swipe_direction_deterministic ==
   \A ds \in Nat :
       exists (d : SwipeDirection), ds_direction ds = d
 
-\* 5
-THEOREM 5 ==
-  pinch_center_invariant — center is midpoint of fingers *)
-  Theorem pinch_center_invariant :
-    forall (pg : PinchGesture),
-      pinch_center_x pg = (pinch_finger1_x pg + pinch_finger2_x pg) / 2 /\
-      pinch_center_y pg = (pinch_finger1_y pg + pinch_finger2_y pg) / 2
 
 \* pinch_center_invariant
 THEOREM pinch_center_invariant ==
   \A pg \in Nat :
       pinch_center_x(pg) = (pinch_finger1_x pg + pinch_finger2_x pg) / 2 /\
 
-\* 6
-THEOREM 6 ==
-  rotation_angle_bounded — rotation within [-pi, pi] *)
-  Theorem rotation_angle_bounded :
-    forall (rg : RotationGesture),
-      - PI <= rotation_angle rg <= PI
 
 \* rotation_angle_bounded
 THEOREM rotation_angle_bounded ==
   \A rg \in Nat :
       - PI < = rotation_angle rg <= PI
 
-\* 7
-THEOREM 7 ==
-  gesture_recognizer_total — every touch sequence gets classified *)
-  Theorem gesture_recognizer_total :
-    forall (tc : nat) (dur : R),
-      exists (cls : TouchClassification), classify_touch tc dur = cls
 
 \* gesture_recognizer_total
 THEOREM gesture_recognizer_total ==
@@ -182,27 +140,12 @@ THEOREM gesture_recognizer_always_classifies ==
   \A tc \in Nat, dur \in Nat :
       classify_touch tc dur <> UnclassifiedTouch
 
-\* 8
-THEOREM 8 ==
-  no_ghost_touches — unrecognized sequences don't trigger actions *)
-  Theorem no_ghost_touches :
-    forall (te : TouchEvent),
-      te_classified te = false => te_action_triggered(te) = false
 
 \* no_ghost_touches
 THEOREM no_ghost_touches ==
   \A te \in Nat :
       te_classified(te) = false => te_action_triggered(te) = false
 
-\* 9
-THEOREM 9 ==
-  multi_touch_sorted — touch points processed in order *)
-  Fixpoint is_sorted (l : list nat) : Prop :=
-    match l with
-    | [] => True
-    | [_] => True
-    | x :: ((y :: _) as rest) => (x <= y)%nat /\ is_sorted rest
-    end.
   
   Theorem multi_touch_sorted_head :
     forall (x y : nat) (rest : list nat),
@@ -218,12 +161,6 @@ THEOREM multi_touch_sorted_tail ==
   \A x \in Nat, rest \in Nat :
       is_sorted (x :: rest) => is_sorted(rest)
 
-\* 10
-THEOREM 10 ==
-  gesture_cancel_safe — cancelled gesture reverts partial state *)
-  Theorem gesture_cancel_safe :
-    forall (cg : CancellableGesture),
-      cg_cancelled cg = true => cg_current_value(cg) = cg_original_value(cg)
 
 \* 13 additional theorems proven in Coq source
 
