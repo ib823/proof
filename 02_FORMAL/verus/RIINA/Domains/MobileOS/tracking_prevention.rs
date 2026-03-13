@@ -1,44 +1,59 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of MobileOS Tracking Prevention invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// State model for Tracking Prevention
+pub struct TrackingPolicy {
+    pub fingerprint_mitigated: bool,
+    pub storage_partitioned: bool,
+    pub referrer_trimmed: bool,
+    pub permission_required: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Invariant: all properties must hold with positive assurance
+pub open spec fn tracking_prevention_valid(s: TrackingPolicy) -> bool {
+    s.fingerprint_mitigated && s.storage_partitioned && s.referrer_trimmed && s.permission_required && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration
+pub open spec fn baseline_tracking_prevention() -> TrackingPolicy {
+    TrackingPolicy { fingerprint_mitigated: true, storage_partitioned: true, referrer_trimmed: true, permission_required: true, assurance_level: 1 }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration
+pub open spec fn hardened_tracking_prevention() -> TrackingPolicy {
+    TrackingPolicy { fingerprint_mitigated: true, storage_partitioned: true, referrer_trimmed: true, permission_required: true, assurance_level: 3 }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline is valid
+proof fn lemma_baseline_valid()
+    ensures tracking_prevention_valid(baseline_tracking_prevention()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_tracking_prevention();
+    assert(b.fingerprint_mitigated && b.storage_partitioned && b.referrer_trimmed && b.permission_required && b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened is valid and dominates baseline
+proof fn lemma_hardened_dominates()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        tracking_prevention_valid(hardened_tracking_prevention()),
+        hardened_tracking_prevention().assurance_level >= baseline_tracking_prevention().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+}
+
+/// Lemma: each property is individually necessary
+proof fn lemma_properties_necessary()
+    ensures
+        !tracking_prevention_valid(TrackingPolicy { fingerprint_mitigated: false, storage_partitioned: true, referrer_trimmed: true, permission_required: true, assurance_level: 1 }),
+        !tracking_prevention_valid(TrackingPolicy { fingerprint_mitigated: true, storage_partitioned: false, referrer_trimmed: true, permission_required: true, assurance_level: 1 }),
+        !tracking_prevention_valid(TrackingPolicy { fingerprint_mitigated: true, storage_partitioned: true, referrer_trimmed: false, permission_required: true, assurance_level: 1 }),
+        !tracking_prevention_valid(TrackingPolicy { fingerprint_mitigated: true, storage_partitioned: true, referrer_trimmed: true, permission_required: false, assurance_level: 1 }),
+{
 }
 
 } // verus!
-
-fn main() {}

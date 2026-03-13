@@ -239,7 +239,6 @@ THEOREM future_resolved_once ==
 \* actor_message_ordered
 THEOREM actor_message_ordered ==
   \A a \in Nat, seq1 \in Nat, seq2 \in Nat, m1 \in Nat, m2 \in Nat, i \in Nat, j \in Nat :
-      nth_error (ea_mailbox a) i = Some (seq1, m1) => seq1 <= seq2
 
 \* channel_bounded
 THEOREM channel_bounded ==

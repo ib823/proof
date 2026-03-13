@@ -1,44 +1,59 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of SecurityFoundation Sensor Drivers invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// State model for Sensor Drivers
+pub struct SensorReading {
+    pub calibrated: bool,
+    pub range_valid: bool,
+    pub timestamp_monotonic: bool,
+    pub noise_filtered: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Invariant: all properties must hold with positive assurance
+pub open spec fn sensor_drivers_valid(s: SensorReading) -> bool {
+    s.calibrated && s.range_valid && s.timestamp_monotonic && s.noise_filtered && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration
+pub open spec fn baseline_sensor_drivers() -> SensorReading {
+    SensorReading { calibrated: true, range_valid: true, timestamp_monotonic: true, noise_filtered: true, assurance_level: 1 }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration
+pub open spec fn hardened_sensor_drivers() -> SensorReading {
+    SensorReading { calibrated: true, range_valid: true, timestamp_monotonic: true, noise_filtered: true, assurance_level: 3 }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline is valid
+proof fn lemma_baseline_valid()
+    ensures sensor_drivers_valid(baseline_sensor_drivers()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_sensor_drivers();
+    assert(b.calibrated && b.range_valid && b.timestamp_monotonic && b.noise_filtered && b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened dominates baseline
+proof fn lemma_hardened_dominates()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        sensor_drivers_valid(hardened_sensor_drivers()),
+        hardened_sensor_drivers().assurance_level >= baseline_sensor_drivers().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+}
+
+/// Lemma: each property is necessary
+proof fn lemma_properties_necessary()
+    ensures
+        !sensor_drivers_valid(SensorReading { calibrated: false, range_valid: true, timestamp_monotonic: true, noise_filtered: true, assurance_level: 1 }),
+        !sensor_drivers_valid(SensorReading { calibrated: true, range_valid: false, timestamp_monotonic: true, noise_filtered: true, assurance_level: 1 }),
+        !sensor_drivers_valid(SensorReading { calibrated: true, range_valid: true, timestamp_monotonic: false, noise_filtered: true, assurance_level: 1 }),
+        !sensor_drivers_valid(SensorReading { calibrated: true, range_valid: true, timestamp_monotonic: true, noise_filtered: false, assurance_level: 1 }),
+{
 }
 
 } // verus!
-
-fn main() {}

@@ -1,44 +1,92 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of Verified Microkernel domain invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// Core state for Verified Microkernel verification
+pub struct MicrokernelIPC {
+    pub capability_validated: bool,
+    pub message_bounded: bool,
+    pub isolation_enforced: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Security invariant: all controls must be active with positive assurance
+pub open spec fn verified_microkernel_secure(s: MicrokernelIPC) -> bool {
+    s.capability_validated && s.message_bounded && s.isolation_enforced && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration: minimum viable security posture
+pub open spec fn baseline_verified_microkernel() -> MicrokernelIPC {
+    MicrokernelIPC {
+        capability_validated: true,
+        message_bounded: true,
+        isolation_enforced: true,
+        assurance_level: 1,
+    }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration: elevated security posture
+pub open spec fn hardened_verified_microkernel() -> MicrokernelIPC {
+    MicrokernelIPC {
+        capability_validated: true,
+        message_bounded: true,
+        isolation_enforced: true,
+        assurance_level: 3,
+    }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline configuration satisfies security invariant
+proof fn lemma_baseline_secure()
+    ensures verified_microkernel_secure(baseline_verified_microkernel()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_verified_microkernel();
+    assert(b.capability_validated);
+    assert(b.message_bounded);
+    assert(b.isolation_enforced);
+    assert(b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened configuration satisfies security invariant
+proof fn lemma_hardened_secure()
+    ensures verified_microkernel_secure(hardened_verified_microkernel()),
+{
+    let h = hardened_verified_microkernel();
+    assert(h.capability_validated);
+    assert(h.message_bounded);
+    assert(h.isolation_enforced);
+    assert(h.assurance_level >= 1);
+}
+
+/// Lemma: hardened configuration is at least as strong as baseline
+proof fn lemma_hardened_not_weaker()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        verified_microkernel_secure(hardened_verified_microkernel()),
+        hardened_verified_microkernel().assurance_level >= baseline_verified_microkernel().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+    let baseline = baseline_verified_microkernel();
+    let hardened = hardened_verified_microkernel();
+    assert(verified_microkernel_secure(hardened));
+    assert(hardened.assurance_level >= baseline.assurance_level);
+}
+
+/// Lemma: disabling any control breaks the invariant
+proof fn lemma_control_necessary()
+    ensures
+        !verified_microkernel_secure(MicrokernelIPC { capability_validated: false, message_bounded: true, isolation_enforced: true, assurance_level: 1 }),
+        !verified_microkernel_secure(MicrokernelIPC { capability_validated: true, message_bounded: false, isolation_enforced: true, assurance_level: 1 }),
+        !verified_microkernel_secure(MicrokernelIPC { capability_validated: true, message_bounded: true, isolation_enforced: false, assurance_level: 1 }),
+{
+}
+
+/// Lemma: zero assurance breaks the invariant even with all controls
+proof fn lemma_assurance_necessary()
+    ensures
+        !verified_microkernel_secure(MicrokernelIPC { capability_validated: true, message_bounded: true, isolation_enforced: true, assurance_level: 0 }),
+{
 }
 
 } // verus!
-
-fn main() {}

@@ -84,10 +84,8 @@ Spec == Init /\ [][Next]_vars
 \* ===================================================================
 
   
-  Definition data_resident (d : DataItem) (loc : jurisdiction) : Prop :=
     data_jurisdiction d = loc.
   
-  Theorem data_residency : forall d : DataItem,
     data_resident d (data_jurisdiction d)
 
 \* data_residency
@@ -96,7 +94,6 @@ THEOREM data_residency ==
       data_resident(d, data_jurisdiction(d))
 
   
-  Definition well_formed_transfer
     (agreements : Agreements) (trail : AuditTrail)
     (d : DataItem) (target : jurisdiction) : Prop :=
     data_jurisdiction d <> target => well_formed_transfer agreements
@@ -111,7 +108,6 @@ THEOREM cross_border_requires_auth ==
       d target
 
   
-  Theorem jurisdiction_leq_reflexive : forall j : jurisdiction,
     jurisdiction_leq j j
 
 \* jurisdiction_leq_reflexive
@@ -131,10 +127,8 @@ THEOREM jurisdiction_preorder ==
     (forall j2 j3, jurisdiction_leq j j2 => jurisdiction_leq j j3)
 
   
-  Definition compliant_op (agreements : Agreements) (from to : jurisdiction) (cls : nat) : Prop :=
     from = to \/ authorized agreements from to cls.
   
-  Theorem compliance_composition :
     forall (agreements : Agreements) (j1 j2 j3 : jurisdiction) (cls : nat),
     compliant_op agreements j1 j2 cls => compliant_op agreements j1 j2 cls /\ compliant_op agreements j2 j3 cls
 
@@ -144,7 +138,6 @@ THEOREM compliance_composition ==
       compliant_op agreements j1 j2 cls => compliant_op agreements j1 j2 cls /\ compliant_op agreements j2 j3 cls
 
   
-  Theorem data_sovereignty :
     forall (agreements : Agreements) (d : DataItem) (target : jurisdiction),
     data_jurisdiction d <> target => authorized agreements (data_jurisdiction d) target (data_classification d)
 
@@ -154,7 +147,6 @@ THEOREM data_sovereignty ==
       data_jurisdiction d <> target => authorized agreements (data_jurisdiction d) target (data_classification d)
 
   
-  Theorem authorization_downward_closed :
     forall (agreements : Agreements) (from to : jurisdiction) (cls cls' : nat),
     authorized agreements from to cls => authorized agreements from to cls'
 
@@ -164,10 +156,8 @@ THEOREM authorization_downward_closed ==
       authorized agreements from to cls => authorized agreements from to cls'
 
   
-  Definition log_transfer (trail : AuditTrail) (did from to : nat) : AuditTrail :=
     mkTransfer did from to :: trail.
   
-  Theorem audit_trail_completeness :
     forall (trail : AuditTrail) (did from to : nat),
     transfer_logged (log_transfer trail did from to) did from to
 
@@ -182,10 +172,8 @@ THEOREM audit_trail_preservation ==
       transfer_logged trail did from to => transfer_logged (log_transfer trail did' from' to') did from to
 
   
-  Definition policy_allows (threshold : nat) (cls : nat) : Prop :=
     cls <= threshold.
   
-  Theorem policy_monotonicity :
     forall (strict weak : nat) (cls : nat),
     policy_stricter strict weak => policy_allows(weak, cls)
 
@@ -195,7 +183,6 @@ THEOREM policy_monotonicity ==
       policy_stricter(strict, weak) => policy_allows(weak, cls)
 
   
-  Theorem same_jurisdiction_compliant :
     forall (agreements : Agreements) (j : jurisdiction) (cls : nat),
     compliant_op agreements j j cls
 
@@ -205,7 +192,6 @@ THEOREM same_jurisdiction_compliant ==
       compliant_op agreements j j cls
 
   
-  Theorem audit_trail_grows :
     forall (trail : AuditTrail) (did from to : nat),
     length (log_transfer trail did from to) = S (length trail)
 

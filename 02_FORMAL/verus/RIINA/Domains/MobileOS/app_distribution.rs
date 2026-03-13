@@ -1,44 +1,59 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of MobileOS App Distribution invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// State model for App Distribution
+pub struct AppPackage {
+    pub signature_valid: bool,
+    pub manifest_complete: bool,
+    pub permissions_declared: bool,
+    pub update_monotonic: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Invariant: all properties must hold with positive assurance
+pub open spec fn app_distribution_valid(s: AppPackage) -> bool {
+    s.signature_valid && s.manifest_complete && s.permissions_declared && s.update_monotonic && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration
+pub open spec fn baseline_app_distribution() -> AppPackage {
+    AppPackage { signature_valid: true, manifest_complete: true, permissions_declared: true, update_monotonic: true, assurance_level: 1 }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration
+pub open spec fn hardened_app_distribution() -> AppPackage {
+    AppPackage { signature_valid: true, manifest_complete: true, permissions_declared: true, update_monotonic: true, assurance_level: 3 }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline is valid
+proof fn lemma_baseline_valid()
+    ensures app_distribution_valid(baseline_app_distribution()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_app_distribution();
+    assert(b.signature_valid && b.manifest_complete && b.permissions_declared && b.update_monotonic && b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened is valid and dominates baseline
+proof fn lemma_hardened_dominates()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        app_distribution_valid(hardened_app_distribution()),
+        hardened_app_distribution().assurance_level >= baseline_app_distribution().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+}
+
+/// Lemma: each property is individually necessary
+proof fn lemma_properties_necessary()
+    ensures
+        !app_distribution_valid(AppPackage { signature_valid: false, manifest_complete: true, permissions_declared: true, update_monotonic: true, assurance_level: 1 }),
+        !app_distribution_valid(AppPackage { signature_valid: true, manifest_complete: false, permissions_declared: true, update_monotonic: true, assurance_level: 1 }),
+        !app_distribution_valid(AppPackage { signature_valid: true, manifest_complete: true, permissions_declared: false, update_monotonic: true, assurance_level: 1 }),
+        !app_distribution_valid(AppPackage { signature_valid: true, manifest_complete: true, permissions_declared: true, update_monotonic: false, assurance_level: 1 }),
+{
 }
 
 } // verus!
-
-fn main() {}

@@ -122,33 +122,15 @@ THEOREM derives_sound ==
   \A ctx \in Nat, f \in Nat :
       derives(ctx, f) => sem(v, f)
 
-  
-  Definition identity_proof (a : formula) : proof_term :=
-    PImplIntro a (PAxiom 0).
-  
-  Theorem identity_proof_valid : forall a,
-    check [] (identity_proof a) = Some (FImpl a a)
-
 \* identity_proof_valid
 THEOREM identity_proof_valid ==
   \A a \in Nat :
       check [] (identity_proof a) = Some (FImpl a a)
 
-  
-  Theorem compose_proof_valid : forall a b c,
-    check [FImpl a b; FImpl b c] (compose_proof a b c) = Some (FImpl a c)
-
 \* compose_proof_valid
 THEOREM compose_proof_valid ==
   \A a \in Nat, b \in Nat, c \in Nat :
       check [FImpl a b; FImpl b c] (compose_proof a b c) = Some (FImpl a c)
-
-  
-  Definition conj_intro_proof (a b : formula) : proof_term :=
-    PConjIntro (PAxiom 0) (PAxiom 1).
-  
-  Theorem conj_intro_valid : forall a b,
-    check [a; b] (conj_intro_proof a b) = Some (FConj a b)
 
 \* conj_intro_valid
 THEOREM conj_intro_valid ==
@@ -179,18 +161,11 @@ THEOREM invalid_modus_ponens_rejected ==
 \* invalid_axiom_rejected
 THEOREM invalid_axiom_rejected ==
   \A ctx \in Nat, n \in Nat :
-      nth_error(ctx, n) = None => check ctx (PAxiom n) = None
 
 \* invalid_mismatch_rejected
 THEOREM invalid_mismatch_rejected ==
   \A ctx \in Nat, p1 \in Nat, p2 \in Nat, a \in Nat, a \in Nat, b \in Nat :
       check(ctx, p1) = Some (FImpl a b) => check ctx (PImplElim p1 p2) = None
-
-  
-  (* We prove weakening for the derives relation (semantic level). *)
-  
-  Lemma nth_error_insert : forall (ctx : context) (n pos : nat) (a : formula),
-    pos <= n => nth_error(ctx, n) = nth_error (firstn pos ctx ++ a :: skipn pos ctx) (S n)
 
 \* nth_error_insert
 THEOREM nth_error_insert ==

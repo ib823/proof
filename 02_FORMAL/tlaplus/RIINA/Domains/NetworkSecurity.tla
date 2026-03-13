@@ -186,8 +186,6 @@ Spec == Init /\ [][Next]_vars
 \* net_001_man_in_the_middle_mitigated
 THEOREM net_001_man_in_the_middle_mitigated ==
   \A config \in Nat :
-      tls_mitm_defense_enabled(config) => (* With TLS and certificate pinning enabled, MITM attacks are mitigated
-         because attackers cannot present valid pinned certificates *)
       config >= 0
 
 \* net_002_arp_spoofing_mitigated

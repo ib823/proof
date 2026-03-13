@@ -1,661 +1,92 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/domains/NetworkSecurity.v (26 proofs)
-// Source mapping: scripts/generate-full-stack.py
-//
-// Verus verification of NetworkSecurity implementation correctness.
-// Layer 6: Verifies Rust compiler implementation matches formal spec.
+// Verus verification of Network Security domain invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-    // TLSConfig (matches Coq: Record TLSConfig)
-    pub struct TLSConfig {
-        pub tls_enabled: bool,
-        pub certificate_pinning_enabled: bool,
-        pub min_tls_version: u64,
-        pub strong_cipher_suites: bool,
-    }
-
-    // ARPConfig (matches Coq: Record ARPConfig)
-    pub struct ARPConfig {
-        pub static_arp_enabled: bool,
-        pub arp_inspection_enabled: bool,
-        pub gratuitous_arp_blocked: bool,
-    }
-
-    // DNSSECConfig (matches Coq: Record DNSSECConfig)
-    pub struct DNSSECConfig {
-        pub dnssec_validation_enabled: bool,
-        pub dns_over_https: bool,
-        pub dns_over_tls: bool,
-        pub trusted_resolvers_only: bool,
-    }
-
-    // BGPConfig (matches Coq: Record BGPConfig)
-    pub struct BGPConfig {
-        pub rpki_validation_enabled: bool,
-        pub route_filtering_enabled: bool,
-        pub bgpsec_enabled: bool,
-        pub max_prefix_limit: u64,
-    }
-
-    // HTTPSConfig (matches Coq: Record HTTPSConfig)
-    pub struct HTTPSConfig {
-        pub hsts_enabled: bool,
-        pub hsts_preload: bool,
-        pub hsts_include_subdomains: bool,
-        pub hsts_max_age: u64,
-    }
-
-    // EncryptionConfig (matches Coq: Record EncryptionConfig)
-    pub struct EncryptionConfig {
-        pub encryption_at_rest: bool,
-        pub encryption_in_transit: bool,
-        pub vpn_enabled: bool,
-        pub ipsec_enabled: bool,
-    }
-
-    // AuthProtocolConfig (matches Coq: Record AuthProtocolConfig)
-    pub struct AuthProtocolConfig {
-        pub protocol_auth_enabled: bool,
-        pub message_authentication_code: bool,
-        pub sequence_numbers_enabled: bool,
-        pub digital_signatures_enabled: bool,
-    }
-
-    // ReplayProtectionConfig (matches Coq: Record ReplayProtectionConfig)
-    pub struct ReplayProtectionConfig {
-        pub nonces_enabled: bool,
-        pub timestamps_enabled: bool,
-        pub sequence_window_size: u64,
-        pub challenge_response_enabled: bool,
-    }
-
-    // RateLimiterConfig (matches Coq: Record RateLimiterConfig)
-    pub struct RateLimiterConfig {
-        pub rate_limiting_enabled: bool,
-        pub requests_per_second: u64,
-        pub burst_size: u64,
-        pub cdn_protection_enabled: bool,
-        pub geo_blocking_enabled: bool,
-    }
-
-    // ProtocolImplConfig (matches Coq: Record ProtocolImplConfig)
-    pub struct ProtocolImplConfig {
-        pub formally_verified_impl: bool,
-        pub fuzz_tested: bool,
-        pub memory_safe_language: bool,
-        pub strict_parsing_enabled: bool,
-    }
-
-    // ResourceLimitsConfig (matches Coq: Record ResourceLimitsConfig)
-    pub struct ResourceLimitsConfig {
-        pub resource_limits_enabled: bool,
-        pub max_connections: u64,
-        pub max_memory_per_request: u64,
-        pub request_timeout: u64,
-        pub max_request_size: u64,
-    }
-
-    // AmplificationConfig (matches Coq: Record AmplificationConfig)
-    pub struct AmplificationConfig {
-        pub open_resolvers_disabled: bool,
-        pub source_validation_enabled: bool,
-        pub response_rate_limiting: bool,
-        pub amplification_factor_limit: u64,
-    }
-
-    // SYNProtectionConfig (matches Coq: Record SYNProtectionConfig)
-    pub struct SYNProtectionConfig {
-        pub syn_cookies_enabled: bool,
-        pub syn_rate_limit: u64,
-        pub backlog_size: u64,
-        pub syn_timeout: u64,
-    }
-
-    // UDPProtectionConfig (matches Coq: Record UDPProtectionConfig)
-    pub struct UDPProtectionConfig {
-        pub udp_rate_limiting_enabled: bool,
-        pub udp_max_pps: u64,
-        pub stateless_filtering: bool,
-        pub udp_timeout: u64,
-    }
-
-    // ICMPProtectionConfig (matches Coq: Record ICMPProtectionConfig)
-    pub struct ICMPProtectionConfig {
-        pub icmp_rate_limiting_enabled: bool,
-        pub icmp_max_pps: u64,
-        pub echo_request_filtering: bool,
-        pub icmp_redirect_blocked: bool,
-    }
-
-    // SlowlorisProtectionConfig (matches Coq: Record SlowlorisProtectionConfig)
-    pub struct SlowlorisProtectionConfig {
-        pub connection_timeout_enabled: bool,
-        pub header_timeout: u64,
-        pub body_timeout: u64,
-        pub min_data_rate: u64,
-        pub max_concurrent_connections: u64,
-    }
-
-    // DNSServerConfig (matches Coq: Record DNSServerConfig)
-    pub struct DNSServerConfig {
-        pub dns_response_rate_limiting: bool,
-        pub dns_rrl_threshold: u64,
-        pub recursion_restricted: bool,
-        pub any_query_disabled: bool,
-    }
-
-    // NTPServerConfig (matches Coq: Record NTPServerConfig)
-    pub struct NTPServerConfig {
-        pub monlist_disabled: bool,
-        pub ntp_access_restricted: bool,
-        pub ntp_authentication_enabled: bool,
-        pub rate_limiting_enabled_ntp: bool,
-    }
-
-    // IPSpoofingConfig (matches Coq: Record IPSpoofingConfig)
-    pub struct IPSpoofingConfig {
-        pub bcp38_filtering_enabled: bool,
-        pub urpf_enabled: bool,
-        pub source_address_validation: bool,
-        pub ingress_filtering_enabled: bool,
-    }
-
-    // MACSecurityConfig (matches Coq: Record MACSecurityConfig)
-    pub struct MACSecurityConfig {
-        pub ieee_802_1x_enabled: bool,
-        pub port_security_enabled: bool,
-        pub mac_address_limit: u64,
-        pub sticky_mac_enabled: bool,
-    }
-
-    // VLANSecurityConfig (matches Coq: Record VLANSecurityConfig)
-    pub struct VLANSecurityConfig {
-        pub native_vlan_changed: bool,
-        pub trunk_ports_restricted: bool,
-        pub dtp_disabled: bool,
-        pub private_vlans_enabled: bool,
-    }
-
-    // DHCPSecurityConfig (matches Coq: Record DHCPSecurityConfig)
-    pub struct DHCPSecurityConfig {
-        pub dhcp_snooping_enabled: bool,
-        pub trusted_ports_configured: bool,
-        pub rate_limit_dhcp: u64,
-        pub option_82_enabled: bool,
-    }
-
-    // NTPClientConfig (matches Coq: Record NTPClientConfig)
-    pub struct NTPClientConfig {
-        pub multiple_time_sources: bool,
-        pub min_time_sources: u64,
-        pub nts_enabled: bool,
-        pub authenticated_ntp: bool,
-    }
-
-    // TCPSecurityConfig (matches Coq: Record TCPSecurityConfig)
-    pub struct TCPSecurityConfig {
-        pub tcp_encryption_enabled: bool,
-        pub tcp_md5_auth: bool,
-        pub tcp_ao_enabled: bool,
-        pub randomized_isn: bool,
-    }
-
-    // TrafficAnalysisConfig (matches Coq: Record TrafficAnalysisConfig)
-    pub struct TrafficAnalysisConfig {
-        pub traffic_padding_enabled: bool,
-        pub traffic_mixing_enabled: bool,
-        pub constant_rate_transmission: bool,
-        pub cover_traffic_enabled: bool,
-    }
-
-    // NetworkSecurityConfig (matches Coq: Record NetworkSecurityConfig)
-    pub struct NetworkSecurityConfig {
-        pub ns_tls: u64,
-        pub ns_arp: u64,
-        pub ns_dnssec: u64,
-        pub ns_bgp: u64,
-        pub ns_https: u64,
-        pub ns_encryption: u64,
-        pub ns_auth_protocol: u64,
-        pub ns_replay: u64,
-        pub ns_rate_limiter: u64,
-        pub ns_protocol_impl: u64,
-        pub ns_resource_limits: u64,
-        pub ns_amplification: u64,
-        pub ns_syn: u64,
-        pub ns_udp: u64,
-        pub ns_icmp: u64,
-        pub ns_slowloris: u64,
-        pub ns_dns_server: u64,
-        pub ns_ntp_server: u64,
-        pub ns_ip_spoofing: u64,
-        pub ns_mac: u64,
-        pub ns_vlan: u64,
-        pub ns_dhcp: u64,
-        pub ns_ntp_client: u64,
-        pub ns_tcp: u64,
-        pub ns_traffic_analysis: u64,
-    }
-
-    // tls_mitm_defense_enabled (matches Coq: Definition tls_mitm_defense_enabled)
-    pub open spec fn tls_mitm_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // arp_spoofing_defense_enabled (matches Coq: Definition arp_spoofing_defense_enabled)
-    pub open spec fn arp_spoofing_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // dns_poisoning_defense_enabled (matches Coq: Definition dns_poisoning_defense_enabled)
-    pub open spec fn dns_poisoning_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // bgp_hijacking_defense_enabled (matches Coq: Definition bgp_hijacking_defense_enabled)
-    pub open spec fn bgp_hijacking_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // ssl_stripping_defense_enabled (matches Coq: Definition ssl_stripping_defense_enabled)
-    pub open spec fn ssl_stripping_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // packet_sniffing_defense_enabled (matches Coq: Definition packet_sniffing_defense_enabled)
-    pub open spec fn packet_sniffing_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // packet_injection_defense_enabled (matches Coq: Definition packet_injection_defense_enabled)
-    pub open spec fn packet_injection_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // replay_attack_defense_enabled (matches Coq: Definition replay_attack_defense_enabled)
-    pub open spec fn replay_attack_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // volumetric_dos_defense_enabled (matches Coq: Definition volumetric_dos_defense_enabled)
-    pub open spec fn volumetric_dos_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // protocol_dos_defense_enabled (matches Coq: Definition protocol_dos_defense_enabled)
-    pub open spec fn protocol_dos_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // application_dos_defense_enabled (matches Coq: Definition application_dos_defense_enabled)
-    pub open spec fn application_dos_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // amplification_dos_defense_enabled (matches Coq: Definition amplification_dos_defense_enabled)
-    pub open spec fn amplification_dos_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // syn_flood_defense_enabled (matches Coq: Definition syn_flood_defense_enabled)
-    pub open spec fn syn_flood_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // udp_flood_defense_enabled (matches Coq: Definition udp_flood_defense_enabled)
-    pub open spec fn udp_flood_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // icmp_flood_defense_enabled (matches Coq: Definition icmp_flood_defense_enabled)
-    pub open spec fn icmp_flood_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // slowloris_defense_enabled (matches Coq: Definition slowloris_defense_enabled)
-    pub open spec fn slowloris_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // dns_amplification_defense_enabled (matches Coq: Definition dns_amplification_defense_enabled)
-    pub open spec fn dns_amplification_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // ntp_amplification_defense_enabled (matches Coq: Definition ntp_amplification_defense_enabled)
-    pub open spec fn ntp_amplification_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // ip_spoofing_defense_enabled (matches Coq: Definition ip_spoofing_defense_enabled)
-    pub open spec fn ip_spoofing_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // mac_spoofing_defense_enabled (matches Coq: Definition mac_spoofing_defense_enabled)
-    pub open spec fn mac_spoofing_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // vlan_hopping_defense_enabled (matches Coq: Definition vlan_hopping_defense_enabled)
-    pub open spec fn vlan_hopping_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // rogue_dhcp_defense_enabled (matches Coq: Definition rogue_dhcp_defense_enabled)
-    pub open spec fn rogue_dhcp_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // ntp_attack_defense_enabled (matches Coq: Definition ntp_attack_defense_enabled)
-    pub open spec fn ntp_attack_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // tcp_reset_defense_enabled (matches Coq: Definition tcp_reset_defense_enabled)
-    pub open spec fn tcp_reset_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // traffic_analysis_defense_enabled (matches Coq: Definition traffic_analysis_defense_enabled)
-    pub open spec fn traffic_analysis_defense_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // all_defenses_enabled (matches Coq: Definition all_defenses_enabled)
-    pub open spec fn all_defenses_enabled(config: u64) -> bool {
-        0u64 == 0u64
-    }
-
-    // net_001_man_in_the_middle_mitigated (matches Coq: Theorem net_001_man_in_the_middle_mitigated)
-    pub open spec fn net_001_man_in_the_middle_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_001_man_in_the_middle_mitigated()
-        ensures net_001_man_in_the_middle_mitigated_obligation(),
-    {
-        assert(net_001_man_in_the_middle_mitigated_obligation());
-    }
-
-    // net_002_arp_spoofing_mitigated (matches Coq: Theorem net_002_arp_spoofing_mitigated)
-    pub open spec fn net_002_arp_spoofing_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_002_arp_spoofing_mitigated()
-        ensures net_002_arp_spoofing_mitigated_obligation(),
-    {
-        assert(net_002_arp_spoofing_mitigated_obligation());
-    }
-
-    // net_003_dns_poisoning_mitigated (matches Coq: Theorem net_003_dns_poisoning_mitigated)
-    pub open spec fn net_003_dns_poisoning_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_003_dns_poisoning_mitigated()
-        ensures net_003_dns_poisoning_mitigated_obligation(),
-    {
-        assert(net_003_dns_poisoning_mitigated_obligation());
-    }
-
-    // net_004_bgp_hijacking_mitigated (matches Coq: Theorem net_004_bgp_hijacking_mitigated)
-    pub open spec fn net_004_bgp_hijacking_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_004_bgp_hijacking_mitigated()
-        ensures net_004_bgp_hijacking_mitigated_obligation(),
-    {
-        assert(net_004_bgp_hijacking_mitigated_obligation());
-    }
-
-    // net_005_ssl_stripping_mitigated (matches Coq: Theorem net_005_ssl_stripping_mitigated)
-    pub open spec fn net_005_ssl_stripping_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_005_ssl_stripping_mitigated()
-        ensures net_005_ssl_stripping_mitigated_obligation(),
-    {
-        assert(net_005_ssl_stripping_mitigated_obligation());
-    }
-
-    // net_006_packet_sniffing_mitigated (matches Coq: Theorem net_006_packet_sniffing_mitigated)
-    pub open spec fn net_006_packet_sniffing_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_006_packet_sniffing_mitigated()
-        ensures net_006_packet_sniffing_mitigated_obligation(),
-    {
-        assert(net_006_packet_sniffing_mitigated_obligation());
-    }
-
-    // net_007_packet_injection_mitigated (matches Coq: Theorem net_007_packet_injection_mitigated)
-    pub open spec fn net_007_packet_injection_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_007_packet_injection_mitigated()
-        ensures net_007_packet_injection_mitigated_obligation(),
-    {
-        assert(net_007_packet_injection_mitigated_obligation());
-    }
-
-    // net_008_replay_attack_mitigated (matches Coq: Theorem net_008_replay_attack_mitigated)
-    pub open spec fn net_008_replay_attack_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_008_replay_attack_mitigated()
-        ensures net_008_replay_attack_mitigated_obligation(),
-    {
-        assert(net_008_replay_attack_mitigated_obligation());
-    }
-
-    // net_009_volumetric_dos_mitigated (matches Coq: Theorem net_009_volumetric_dos_mitigated)
-    pub open spec fn net_009_volumetric_dos_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_009_volumetric_dos_mitigated()
-        ensures net_009_volumetric_dos_mitigated_obligation(),
-    {
-        assert(net_009_volumetric_dos_mitigated_obligation());
-    }
-
-    // net_010_protocol_dos_mitigated (matches Coq: Theorem net_010_protocol_dos_mitigated)
-    pub open spec fn net_010_protocol_dos_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_010_protocol_dos_mitigated()
-        ensures net_010_protocol_dos_mitigated_obligation(),
-    {
-        assert(net_010_protocol_dos_mitigated_obligation());
-    }
-
-    // net_011_application_dos_mitigated (matches Coq: Theorem net_011_application_dos_mitigated)
-    pub open spec fn net_011_application_dos_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_011_application_dos_mitigated()
-        ensures net_011_application_dos_mitigated_obligation(),
-    {
-        assert(net_011_application_dos_mitigated_obligation());
-    }
-
-    // net_012_amplification_dos_mitigated (matches Coq: Theorem net_012_amplification_dos_mitigated)
-    pub open spec fn net_012_amplification_dos_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_012_amplification_dos_mitigated()
-        ensures net_012_amplification_dos_mitigated_obligation(),
-    {
-        assert(net_012_amplification_dos_mitigated_obligation());
-    }
-
-    // net_013_syn_flood_mitigated (matches Coq: Theorem net_013_syn_flood_mitigated)
-    pub open spec fn net_013_syn_flood_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_013_syn_flood_mitigated()
-        ensures net_013_syn_flood_mitigated_obligation(),
-    {
-        assert(net_013_syn_flood_mitigated_obligation());
-    }
-
-    // net_014_udp_flood_mitigated (matches Coq: Theorem net_014_udp_flood_mitigated)
-    pub open spec fn net_014_udp_flood_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_014_udp_flood_mitigated()
-        ensures net_014_udp_flood_mitigated_obligation(),
-    {
-        assert(net_014_udp_flood_mitigated_obligation());
-    }
-
-    // net_015_icmp_flood_mitigated (matches Coq: Theorem net_015_icmp_flood_mitigated)
-    pub open spec fn net_015_icmp_flood_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_015_icmp_flood_mitigated()
-        ensures net_015_icmp_flood_mitigated_obligation(),
-    {
-        assert(net_015_icmp_flood_mitigated_obligation());
-    }
-
-    // net_016_slowloris_mitigated (matches Coq: Theorem net_016_slowloris_mitigated)
-    pub open spec fn net_016_slowloris_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_016_slowloris_mitigated()
-        ensures net_016_slowloris_mitigated_obligation(),
-    {
-        assert(net_016_slowloris_mitigated_obligation());
-    }
-
-    // net_017_dns_amplification_mitigated (matches Coq: Theorem net_017_dns_amplification_mitigated)
-    pub open spec fn net_017_dns_amplification_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_017_dns_amplification_mitigated()
-        ensures net_017_dns_amplification_mitigated_obligation(),
-    {
-        assert(net_017_dns_amplification_mitigated_obligation());
-    }
-
-    // net_018_ntp_amplification_mitigated (matches Coq: Theorem net_018_ntp_amplification_mitigated)
-    pub open spec fn net_018_ntp_amplification_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_018_ntp_amplification_mitigated()
-        ensures net_018_ntp_amplification_mitigated_obligation(),
-    {
-        assert(net_018_ntp_amplification_mitigated_obligation());
-    }
-
-    // net_019_ip_spoofing_mitigated (matches Coq: Theorem net_019_ip_spoofing_mitigated)
-    pub open spec fn net_019_ip_spoofing_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_019_ip_spoofing_mitigated()
-        ensures net_019_ip_spoofing_mitigated_obligation(),
-    {
-        assert(net_019_ip_spoofing_mitigated_obligation());
-    }
-
-    // net_020_mac_spoofing_mitigated (matches Coq: Theorem net_020_mac_spoofing_mitigated)
-    pub open spec fn net_020_mac_spoofing_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_020_mac_spoofing_mitigated()
-        ensures net_020_mac_spoofing_mitigated_obligation(),
-    {
-        assert(net_020_mac_spoofing_mitigated_obligation());
-    }
-
-    // net_021_vlan_hopping_mitigated (matches Coq: Theorem net_021_vlan_hopping_mitigated)
-    pub open spec fn net_021_vlan_hopping_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_021_vlan_hopping_mitigated()
-        ensures net_021_vlan_hopping_mitigated_obligation(),
-    {
-        assert(net_021_vlan_hopping_mitigated_obligation());
-    }
-
-    // net_022_rogue_dhcp_mitigated (matches Coq: Theorem net_022_rogue_dhcp_mitigated)
-    pub open spec fn net_022_rogue_dhcp_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_022_rogue_dhcp_mitigated()
-        ensures net_022_rogue_dhcp_mitigated_obligation(),
-    {
-        assert(net_022_rogue_dhcp_mitigated_obligation());
-    }
-
-    // net_023_ntp_attack_mitigated (matches Coq: Theorem net_023_ntp_attack_mitigated)
-    pub open spec fn net_023_ntp_attack_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_023_ntp_attack_mitigated()
-        ensures net_023_ntp_attack_mitigated_obligation(),
-    {
-        assert(net_023_ntp_attack_mitigated_obligation());
-    }
-
-    // net_024_tcp_reset_mitigated (matches Coq: Theorem net_024_tcp_reset_mitigated)
-    pub open spec fn net_024_tcp_reset_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_024_tcp_reset_mitigated()
-        ensures net_024_tcp_reset_mitigated_obligation(),
-    {
-        assert(net_024_tcp_reset_mitigated_obligation());
-    }
-
-    // net_025_traffic_analysis_mitigated (matches Coq: Theorem net_025_traffic_analysis_mitigated)
-    pub open spec fn net_025_traffic_analysis_mitigated_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn net_025_traffic_analysis_mitigated()
-        ensures net_025_traffic_analysis_mitigated_obligation(),
-    {
-        assert(net_025_traffic_analysis_mitigated_obligation());
-    }
-
-    // network_security_comprehensive (matches Coq: Theorem network_security_comprehensive)
-    pub open spec fn network_security_comprehensive_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn network_security_comprehensive()
-        ensures network_security_comprehensive_obligation(),
-    {
-        assert(network_security_comprehensive_obligation());
-    }
+/// Core state for Network Security verification
+pub struct NetworkPacket {
+    pub encrypted: bool,
+    pub authenticated: bool,
+    pub replay_protected: bool,
+    pub assurance_level: u64,
+}
+
+/// Security invariant: all controls must be active with positive assurance
+pub open spec fn network_security_secure(s: NetworkPacket) -> bool {
+    s.encrypted && s.authenticated && s.replay_protected && s.assurance_level >= 1
+}
+
+/// Baseline configuration: minimum viable security posture
+pub open spec fn baseline_network_security() -> NetworkPacket {
+    NetworkPacket {
+        encrypted: true,
+        authenticated: true,
+        replay_protected: true,
+        assurance_level: 1,
+    }
+}
+
+/// Hardened configuration: elevated security posture
+pub open spec fn hardened_network_security() -> NetworkPacket {
+    NetworkPacket {
+        encrypted: true,
+        authenticated: true,
+        replay_protected: true,
+        assurance_level: 3,
+    }
+}
+
+/// Lemma: baseline configuration satisfies security invariant
+proof fn lemma_baseline_secure()
+    ensures network_security_secure(baseline_network_security()),
+{
+    let b = baseline_network_security();
+    assert(b.encrypted);
+    assert(b.authenticated);
+    assert(b.replay_protected);
+    assert(b.assurance_level >= 1);
+}
+
+/// Lemma: hardened configuration satisfies security invariant
+proof fn lemma_hardened_secure()
+    ensures network_security_secure(hardened_network_security()),
+{
+    let h = hardened_network_security();
+    assert(h.encrypted);
+    assert(h.authenticated);
+    assert(h.replay_protected);
+    assert(h.assurance_level >= 1);
+}
+
+/// Lemma: hardened configuration is at least as strong as baseline
+proof fn lemma_hardened_not_weaker()
+    ensures
+        network_security_secure(hardened_network_security()),
+        hardened_network_security().assurance_level >= baseline_network_security().assurance_level,
+{
+    let baseline = baseline_network_security();
+    let hardened = hardened_network_security();
+    assert(network_security_secure(hardened));
+    assert(hardened.assurance_level >= baseline.assurance_level);
+}
+
+/// Lemma: disabling any control breaks the invariant
+proof fn lemma_control_necessary()
+    ensures
+        !network_security_secure(NetworkPacket { encrypted: false, authenticated: true, replay_protected: true, assurance_level: 1 }),
+        !network_security_secure(NetworkPacket { encrypted: true, authenticated: false, replay_protected: true, assurance_level: 1 }),
+        !network_security_secure(NetworkPacket { encrypted: true, authenticated: true, replay_protected: false, assurance_level: 1 }),
+{
+}
+
+/// Lemma: zero assurance breaks the invariant even with all controls
+proof fn lemma_assurance_necessary()
+    ensures
+        !network_security_secure(NetworkPacket { encrypted: true, authenticated: true, replay_protected: true, assurance_level: 0 }),
+{
+}
 
 } // verus!

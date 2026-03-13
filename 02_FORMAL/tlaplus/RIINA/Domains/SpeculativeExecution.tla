@@ -148,7 +148,6 @@ THEOREM eff_le_trans ==
       eff_le(e1, e2) => eff_le(e1, e3)
 
   
-  Theorem pure_is_constant_time : forall i,
     infer_effect i = Eff_pure => is_constant_time(i)
 
 \* pure_is_constant_time
@@ -157,7 +156,6 @@ THEOREM pure_is_constant_time ==
       infer_effect(i) = Eff_pure => is_constant_time(i)
 
   
-  Theorem ct_composition : forall a b,
     is_constant_time a = true => is_constant_time (ISeq a b) = true
 
 \* ct_composition
@@ -166,7 +164,6 @@ THEOREM ct_composition ==
       is_constant_time(a) => is_constant_time (ISeq a b) = true
 
   
-  Lemma no_secret_branch : forall i,
     is_constant_time i = true => forall c t f, i <> IBranch Secret c t f
 
 \* no_secret_branch
@@ -185,8 +182,6 @@ THEOREM spec_safe_implies_no_secret_leakage ==
       no_speculative_annotation(i) => is_constant_time(i)
 
   
-  Theorem effect_preorder_refl : forall e, eff_le e e = true
-
 \* effect_preorder_refl
 THEOREM effect_preorder_refl ==
   \A e \in Nat :
@@ -198,15 +193,12 @@ THEOREM effect_preorder_trans ==
       eff_le(e1, e2) => eff_le(e1, e3)
 
   
-  Theorem pure_is_bottom : forall e, eff_le Eff_pure e = true
-
 \* pure_is_bottom
 THEOREM pure_is_bottom ==
   \A e \in Nat :
       eff_le(Eff_pure, e)
 
   
-  Theorem seq_preserves_spec_safe : forall a b,
     is_spec_safe a = true => is_spec_safe (ISeq a b) = true
 
 \* seq_preserves_spec_safe
@@ -215,7 +207,6 @@ THEOREM seq_preserves_spec_safe ==
       is_spec_safe(a) => is_spec_safe (ISeq a b) = true
 
   
-  Theorem public_branch_ct : forall c t f,
     is_constant_time c = true => is_constant_time (IBranch Public c t f) = true
 
 \* public_branch_ct
@@ -224,8 +215,6 @@ THEOREM public_branch_ct ==
       is_constant_time(c) => is_constant_time (IBranch Public c t f) = true
 
   
-  Definition effect_eq_dec (e1 e2 : effect) : {e1 = e2} + {e1 <> e2}
-
 \* annotation_soundness
 THEOREM annotation_soundness ==
   \A e \in Nat, i \in Nat :

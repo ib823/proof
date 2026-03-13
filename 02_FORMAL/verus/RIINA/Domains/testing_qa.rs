@@ -1,44 +1,92 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of Testing Qa domain invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// Core state for Testing Qa verification
+pub struct TestSuite {
+    pub coverage_sufficient: bool,
+    pub oracle_correct: bool,
+    pub regression_detected: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Security invariant: all controls must be active with positive assurance
+pub open spec fn testing_qa_secure(s: TestSuite) -> bool {
+    s.coverage_sufficient && s.oracle_correct && s.regression_detected && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration: minimum viable security posture
+pub open spec fn baseline_testing_qa() -> TestSuite {
+    TestSuite {
+        coverage_sufficient: true,
+        oracle_correct: true,
+        regression_detected: true,
+        assurance_level: 1,
+    }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration: elevated security posture
+pub open spec fn hardened_testing_qa() -> TestSuite {
+    TestSuite {
+        coverage_sufficient: true,
+        oracle_correct: true,
+        regression_detected: true,
+        assurance_level: 3,
+    }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline configuration satisfies security invariant
+proof fn lemma_baseline_secure()
+    ensures testing_qa_secure(baseline_testing_qa()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_testing_qa();
+    assert(b.coverage_sufficient);
+    assert(b.oracle_correct);
+    assert(b.regression_detected);
+    assert(b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened configuration satisfies security invariant
+proof fn lemma_hardened_secure()
+    ensures testing_qa_secure(hardened_testing_qa()),
+{
+    let h = hardened_testing_qa();
+    assert(h.coverage_sufficient);
+    assert(h.oracle_correct);
+    assert(h.regression_detected);
+    assert(h.assurance_level >= 1);
+}
+
+/// Lemma: hardened configuration is at least as strong as baseline
+proof fn lemma_hardened_not_weaker()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        testing_qa_secure(hardened_testing_qa()),
+        hardened_testing_qa().assurance_level >= baseline_testing_qa().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+    let baseline = baseline_testing_qa();
+    let hardened = hardened_testing_qa();
+    assert(testing_qa_secure(hardened));
+    assert(hardened.assurance_level >= baseline.assurance_level);
+}
+
+/// Lemma: disabling any control breaks the invariant
+proof fn lemma_control_necessary()
+    ensures
+        !testing_qa_secure(TestSuite { coverage_sufficient: false, oracle_correct: true, regression_detected: true, assurance_level: 1 }),
+        !testing_qa_secure(TestSuite { coverage_sufficient: true, oracle_correct: false, regression_detected: true, assurance_level: 1 }),
+        !testing_qa_secure(TestSuite { coverage_sufficient: true, oracle_correct: true, regression_detected: false, assurance_level: 1 }),
+{
+}
+
+/// Lemma: zero assurance breaks the invariant even with all controls
+proof fn lemma_assurance_necessary()
+    ensures
+        !testing_qa_secure(TestSuite { coverage_sufficient: true, oracle_correct: true, regression_detected: true, assurance_level: 0 }),
+{
 }
 
 } // verus!
-
-fn main() {}

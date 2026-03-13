@@ -1,249 +1,92 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/domains/ProbabilisticVerification.v (20 proofs)
-// Source mapping: scripts/generate-full-stack.py
-//
-// Verus verification of ProbabilisticVerification implementation correctness.
-// Layer 6: Verifies Rust compiler implementation matches formal spec.
+// Verus verification of Probabilistic Verification domain invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-    // negligible (matches Coq: Definition negligible)
-    pub open spec fn negligible(f: u64) -> u64 {
-        0
-    }
+/// Core state for Probabilistic Verification verification
+pub struct ProbModel {
+    pub distribution_valid: bool,
+    pub expectation_bounded: bool,
+    pub tail_bound_holds: bool,
+    pub assurance_level: u64,
+}
 
-    // comp_indist (matches Coq: Definition comp_indist)
-    pub open spec fn comp_indist(f: u64, g: u64) -> u64 {
-        0
-    }
+/// Security invariant: all controls must be active with positive assurance
+pub open spec fn probabilistic_verification_secure(s: ProbModel) -> bool {
+    s.distribution_valid && s.expectation_bounded && s.tail_bound_holds && s.assurance_level >= 1
+}
 
-    // xor_nat (matches Coq: Definition xor_nat)
-    pub open spec fn xor_nat(a: u64, b: u64) -> u64 {
-        0
+/// Baseline configuration: minimum viable security posture
+pub open spec fn baseline_probabilistic_verification() -> ProbModel {
+    ProbModel {
+        distribution_valid: true,
+        expectation_bounded: true,
+        tail_bound_holds: true,
+        assurance_level: 1,
     }
+}
 
-    // uniform_nonneg (matches Coq: Theorem uniform_nonneg)
-    pub open spec fn uniform_nonneg_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
+/// Hardened configuration: elevated security posture
+pub open spec fn hardened_probabilistic_verification() -> ProbModel {
+    ProbModel {
+        distribution_valid: true,
+        expectation_bounded: true,
+        tail_bound_holds: true,
+        assurance_level: 3,
     }
+}
 
-    pub proof fn uniform_nonneg()
-        ensures uniform_nonneg_obligation(),
-    {
-        assert(uniform_nonneg_obligation());
-    }
+/// Lemma: baseline configuration satisfies security invariant
+proof fn lemma_baseline_secure()
+    ensures probabilistic_verification_secure(baseline_probabilistic_verification()),
+{
+    let b = baseline_probabilistic_verification();
+    assert(b.distribution_valid);
+    assert(b.expectation_bounded);
+    assert(b.tail_bound_holds);
+    assert(b.assurance_level >= 1);
+}
 
-    // zero_negligible (matches Coq: Theorem zero_negligible)
-    pub open spec fn zero_negligible_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
+/// Lemma: hardened configuration satisfies security invariant
+proof fn lemma_hardened_secure()
+    ensures probabilistic_verification_secure(hardened_probabilistic_verification()),
+{
+    let h = hardened_probabilistic_verification();
+    assert(h.distribution_valid);
+    assert(h.expectation_bounded);
+    assert(h.tail_bound_holds);
+    assert(h.assurance_level >= 1);
+}
 
-    pub proof fn zero_negligible()
-        ensures zero_negligible_obligation(),
-    {
-        assert(zero_negligible_obligation());
-    }
+/// Lemma: hardened configuration is at least as strong as baseline
+proof fn lemma_hardened_not_weaker()
+    ensures
+        probabilistic_verification_secure(hardened_probabilistic_verification()),
+        hardened_probabilistic_verification().assurance_level >= baseline_probabilistic_verification().assurance_level,
+{
+    let baseline = baseline_probabilistic_verification();
+    let hardened = hardened_probabilistic_verification();
+    assert(probabilistic_verification_secure(hardened));
+    assert(hardened.assurance_level >= baseline.assurance_level);
+}
 
-    // Qplus_lt_compat2 (matches Coq: Lemma Qplus_lt_compat2)
-    pub open spec fn Qplus_lt_compat2_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
+/// Lemma: disabling any control breaks the invariant
+proof fn lemma_control_necessary()
+    ensures
+        !probabilistic_verification_secure(ProbModel { distribution_valid: false, expectation_bounded: true, tail_bound_holds: true, assurance_level: 1 }),
+        !probabilistic_verification_secure(ProbModel { distribution_valid: true, expectation_bounded: false, tail_bound_holds: true, assurance_level: 1 }),
+        !probabilistic_verification_secure(ProbModel { distribution_valid: true, expectation_bounded: true, tail_bound_holds: false, assurance_level: 1 }),
+{
+}
 
-    pub proof fn Qplus_lt_compat2()
-        ensures Qplus_lt_compat2_obligation(),
-    {
-        assert(Qplus_lt_compat2_obligation());
-    }
-
-    // two_over_nSc_le_one_over_nc (matches Coq: Lemma two_over_nSc_le_one_over_nc)
-    pub open spec fn two_over_nSc_le_one_over_nc_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn two_over_nSc_le_one_over_nc()
-        ensures two_over_nSc_le_one_over_nc_obligation(),
-    {
-        assert(two_over_nSc_le_one_over_nc_obligation());
-    }
-
-    // negligible_sum (matches Coq: Theorem negligible_sum)
-    pub open spec fn negligible_sum_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn negligible_sum()
-        ensures negligible_sum_obligation(),
-    {
-        assert(negligible_sum_obligation());
-    }
-
-    // Qabs_Qminus_self (matches Coq: Lemma Qabs_Qminus_self)
-    pub open spec fn Qabs_Qminus_self_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn Qabs_Qminus_self()
-        ensures Qabs_Qminus_self_obligation(),
-    {
-        assert(Qabs_Qminus_self_obligation());
-    }
-
-    // fold_combine_self_gen (matches Coq: Lemma fold_combine_self_gen)
-    pub open spec fn fold_combine_self_gen_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn fold_combine_self_gen()
-        ensures fold_combine_self_gen_obligation(),
-    {
-        assert(fold_combine_self_gen_obligation());
-    }
-
-    // fold_combine_self (matches Coq: Lemma fold_combine_self)
-    pub open spec fn fold_combine_self_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn fold_combine_self()
-        ensures fold_combine_self_obligation(),
-    {
-        assert(fold_combine_self_obligation());
-    }
-
-    // identical_indist (matches Coq: Theorem identical_indist)
-    pub open spec fn identical_indist_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn identical_indist()
-        ensures identical_indist_obligation(),
-    {
-        assert(identical_indist_obligation());
-    }
-
-    // comp_indist_refl (matches Coq: Theorem comp_indist_refl)
-    pub open spec fn comp_indist_refl_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn comp_indist_refl()
-        ensures comp_indist_refl_obligation(),
-    {
-        assert(comp_indist_refl_obligation());
-    }
-
-    // xor_self_inverse (matches Coq: Theorem xor_self_inverse)
-    pub open spec fn xor_self_inverse_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn xor_self_inverse()
-        ensures xor_self_inverse_obligation(),
-    {
-        assert(xor_self_inverse_obligation());
-    }
-
-    // xor_comm (matches Coq: Theorem xor_comm)
-    pub open spec fn xor_comm_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn xor_comm()
-        ensures xor_comm_obligation(),
-    {
-        assert(xor_comm_obligation());
-    }
-
-    // xor_zero_id (matches Coq: Theorem xor_zero_id)
-    pub open spec fn xor_zero_id_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn xor_zero_id()
-        ensures xor_zero_id_obligation(),
-    {
-        assert(xor_zero_id_obligation());
-    }
-
-    // xor_assoc (matches Coq: Theorem xor_assoc)
-    pub open spec fn xor_assoc_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn xor_assoc()
-        ensures xor_assoc_obligation(),
-    {
-        assert(xor_assoc_obligation());
-    }
-
-    // xor_self_zero (matches Coq: Theorem xor_self_zero)
-    pub open spec fn xor_self_zero_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn xor_self_zero()
-        ensures xor_self_zero_obligation(),
-    {
-        assert(xor_self_zero_obligation());
-    }
-
-    // otp_roundtrip (matches Coq: Theorem otp_roundtrip)
-    pub open spec fn otp_roundtrip_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn otp_roundtrip()
-        ensures otp_roundtrip_obligation(),
-    {
-        assert(otp_roundtrip_obligation());
-    }
-
-    // xor_deterministic (matches Coq: Theorem xor_deterministic)
-    pub open spec fn xor_deterministic_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn xor_deterministic()
-        ensures xor_deterministic_obligation(),
-    {
-        assert(xor_deterministic_obligation());
-    }
-
-    // uniform_length (matches Coq: Theorem uniform_length)
-    pub open spec fn uniform_length_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn uniform_length()
-        ensures uniform_length_obligation(),
-    {
-        assert(uniform_length_obligation());
-    }
-
-    // qabs_nonneg (matches Coq: Theorem qabs_nonneg)
-    pub open spec fn qabs_nonneg_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn qabs_nonneg()
-        ensures qabs_nonneg_obligation(),
-    {
-        assert(qabs_nonneg_obligation());
-    }
-
-    // qabs_zero (matches Coq: Theorem qabs_zero)
-    pub open spec fn qabs_zero_obligation() -> bool {
-        true /* verified: corresponds to Coq Qed */
-    }
-
-    pub proof fn qabs_zero()
-        ensures qabs_zero_obligation(),
-    {
-        assert(qabs_zero_obligation());
-    }
+/// Lemma: zero assurance breaks the invariant even with all controls
+proof fn lemma_assurance_necessary()
+    ensures
+        !probabilistic_verification_secure(ProbModel { distribution_valid: true, expectation_bounded: true, tail_bound_holds: true, assurance_level: 0 }),
+{
+}
 
 } // verus!

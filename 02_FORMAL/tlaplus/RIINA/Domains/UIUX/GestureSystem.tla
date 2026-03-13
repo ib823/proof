@@ -147,7 +147,6 @@ THEOREM no_ghost_touches ==
       te_classified(te) = false => te_action_triggered(te) = false
 
   
-  Theorem multi_touch_sorted_head :
     forall (x y : nat) (rest : list nat),
       is_sorted (x :: y :: rest) => (x < = y)%nat
 

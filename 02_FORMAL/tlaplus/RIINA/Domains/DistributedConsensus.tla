@@ -83,7 +83,6 @@ Spec == Init /\ [][Next]_vars
 \* ===================================================================
 
   
-  Theorem agreement :
     forall c n1 n2,
       decided_nodes_agree c => node_decision(n1) = node_decision(n2)
 
@@ -93,7 +92,6 @@ THEOREM agreement ==
       decided_nodes_agree(c) => node_decision(n1) = node_decision(n2)
 
   
-  Theorem validity :
     forall c nd v,
       all_honest_propose c v => node_decision(nd) = v
 
@@ -103,7 +101,6 @@ THEOREM validity ==
       all_honest_propose(c, v) => node_decision(nd) = v
 
   
-  Lemma pigeonhole_overlap :
     forall (n a b : nat),
       a <= n => a + b - n > = 1
 
@@ -123,7 +120,6 @@ THEOREM quorum_intersection ==
       3 * q1s > 2 * n => q1s + q2s > n
 
   
-  Theorem round_monotonicity :
     forall old new_,
       round_update old new_ => node_round new_ > = node_round(old)
 
@@ -138,7 +134,6 @@ THEOREM round_monotonicity_transitive ==
       node_id(a) = node_id(b) => node_round c_ > = node_round(a)
 
   
-  Theorem vote_uniqueness :
     forall c v1 v2,
       honest_votes_once_per_round c => vote_value(v1) = vote_value(v2)
 
@@ -148,7 +143,6 @@ THEOREM vote_uniqueness ==
       honest_votes_once_per_round(c) => vote_value(v1) = vote_value(v2)
 
   
-  Theorem quorum_sufficiency :
     forall n f : nat,
       n > 0 => 3 * (n - f) > 2 * n
 
@@ -163,7 +157,6 @@ THEOREM honest_majority_in_quorum ==
       3 * f < n => q - f > = 1
 
   
-  Theorem message_integrity :
     forall c m,
       messages_from_honest_authentic c => msg_authentic(m)
 
@@ -173,7 +166,6 @@ THEOREM message_integrity ==
       messages_from_honest_authentic(c) => msg_authentic(m)
 
   
-  Theorem decision_stability :
     forall nd_before nd_after,
       decision_stable nd_before nd_after => node_decided(nd_after)
 
@@ -183,7 +175,6 @@ THEOREM decision_stability ==
       decision_stable(nd_before, nd_after) => node_decided(nd_after)
 
   
-  Theorem bft_threshold :
     forall n f : nat,
       3 * f < n => n > = 3 * f + 1
 
@@ -193,11 +184,9 @@ THEOREM bft_threshold ==
       3 * f < n => n > = 3 * f + 1
 
   
-  Theorem two_quorums_share_honest :
     forall n f q1 q2 : nat,
       3 * f < n => (* overlap size *)
       q1 + q2 - n >= 1 /\
-      (* overlap exceeds faults, so contains honest node *)
       q1 + q2 - n > f
 
 \* two_quorums_share_honest
@@ -205,7 +194,6 @@ THEOREM two_quorums_share_honest ==
   \A n \in Nat, f \in Nat, q1 \in Nat, q2 \in Nat, nat \in Nat :
       3 * f < n => (* overlap size *)
       q1 + q2 - n >= 1 /\
-      (* overlap exceeds faults, so contains honest node *)
       q1 + q2 - n > f
 
 

@@ -84,7 +84,6 @@ tgt_label_of_prog(p) ==
 
 \* is_constant_time (matches Coq: Definition is_constant_time)
 is_constant_time(prog) ==
-  nth_error
 
 \* ===================================================================
 \* STATE MACHINE

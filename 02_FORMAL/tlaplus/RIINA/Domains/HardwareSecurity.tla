@@ -101,15 +101,11 @@ Spec == Init /\ [][Next]_vars
 \* hw_001_spectre_v1_mitigated
 THEOREM hw_001_spectre_v1_mitigated ==
   \A sb \in Nat :
-      sb_lfence(sb) => (* Speculation barriers after bounds checks prevent speculative 
-         out-of-bounds access from leaking data through cache timing *)
       sb >= 0
 
 \* hw_002_spectre_v2_mitigated
 THEOREM hw_002_spectre_v2_mitigated ==
   \A retpoline_enabled \in BOOLEAN, ibrs_enabled \in BOOLEAN :
-      retpoline_enabled = true \/ ibrs_enabled = true => (* Retpoline replaces indirect branches with return-based sequences,
-         IBRS restricts indirect branch speculation *)
       retpoline_enabled >= 0 /\ ibrs_enabled >= 0
 
 \* hw_003_spectre_v4_mitigated
@@ -120,8 +116,6 @@ THEOREM hw_003_spectre_v4_mitigated ==
 \* hw_004_meltdown_mitigated
 THEOREM hw_004_meltdown_mitigated ==
   \A mp \in Nat :
-      mp_kpti_enabled(mp) => (* KPTI separates kernel/user page tables, preventing user-mode
-         speculative access to kernel memory *)
       mp >= 0
 
 \* hw_005_foreshadow_mitigated

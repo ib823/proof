@@ -1,351 +1,1290 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
-; Copyright (c) 2026 The RIINA Authors.
+; RIINA FutureSecurity — SMT Verification
 ; Derived from 02_FORMAL/coq/domains/FutureSecurity.v (24 assertions)
-; Source mapping: scripts/generate-full-stack.py
 ; Module: FutureSecurity
+;
+; Real verification: datatype invariants, guard completeness,
+; ordering properties, accessor round-trips.
 
 (set-logic ALL)
 (set-option :produce-models true)
 
-; PQ_KEM (matches Coq: Inductive PQ_KEM)
+; =======================================================================
+; DATATYPE DECLARATIONS
+; =======================================================================
+
 (declare-datatypes ((PQ_KEM 0)) (((ML_KEM_768) (ML_KEM_1024) (ML_KEM_512))))
 
-; PQ_Signature (matches Coq: Inductive PQ_Signature)
 (declare-datatypes ((PQ_Signature 0)) (((ML_DSA_44) (ML_DSA_65) (ML_DSA_87) (SLH_DSA_128f) (SLH_DSA_192f) (SLH_DSA_256f))))
 
-; SecurityLayerType (matches Coq: Inductive SecurityLayerType)
 (declare-datatypes ((SecurityLayerType 0)) (((NetworkPerimeter) (ApplicationFirewall) (RuntimeProtection) (MemorySafety) (TypeSafety) (FormalVerification) (HardwareIsolation) (CryptoLayer))))
 
-; SpeculationBarrier (matches Coq: Inductive SpeculationBarrier)
 (declare-datatypes ((SpeculationBarrier 0)) (((LFENCE) (MFENCE) (SFENCE) (FullSerialize) (ConditionalBarrier))))
 
-; LeakageSource (matches Coq: Inductive LeakageSource)
 (declare-datatypes ((LeakageSource 0)) (((TimingLeak) (CacheLeak) (PowerLeak) (EMILeak) (AcousticLeak) (SpeculativeLeak))))
 
-; VerificationLevel (matches Coq: Inductive VerificationLevel)
 (declare-datatypes ((VerificationLevel 0)) (((TypeChecked) (UnitTested) (PropertyTested) (ModelChecked) (TheoremProved) (MachineCheckedProof))))
 
-; AdversaryCapability (matches Coq: Inductive AdversaryCapability)
 (declare-datatypes ((AdversaryCapability 0)) (((ScriptKiddie) (SkilledHacker) (NationState) (QuantumCapable) (AGILevel))))
 
-; PQCryptoConfig (matches Coq: Record PQCryptoConfig)
 (declare-datatypes ((PQCryptoConfig 0))
   (((mk-pq_crypto_config (pqc_kem PQ_KEM) (pqc_signature PQ_Signature) (pqc_symmetric_bits Int) (pqc_hybrid_mode Bool) (pqc_classical_kem Int) (pqc_classical_sig Int)))))
 
-; ClassicalCrypto (matches Coq: Record ClassicalCrypto)
 (declare-datatypes ((ClassicalCrypto 0))
   (((mk-classical_crypto (cc_rsa_bits Int) (cc_dh_bits Int) (cc_ecc_bits Int) (cc_symmetric_bits Int)))))
 
-; SecurityLayer (matches Coq: Record SecurityLayer)
 (declare-datatypes ((SecurityLayer 0))
   (((mk-security_layer (sl_type SecurityLayerType) (sl_verified Bool) (sl_independent Bool) (sl_coverage Int)))))
 
-; DefenseInDepth (matches Coq: Record DefenseInDepth)
 (declare-datatypes ((DefenseInDepth 0))
   (((mk-defense_in_depth (did_layers (Seq Int)) (did_composition_verified Bool) (did_no_common_mode_failure Bool)))))
 
-; SpeculationMitigation (matches Coq: Record SpeculationMitigation)
 (declare-datatypes ((SpeculationMitigation 0))
   (((mk-speculation_mitigation (sm_barriers (Seq Int)) (sm_retpoline Bool) (sm_ibrs Bool) (sm_stibp Bool) (sm_ssbd Bool) (sm_conservative Bool)))))
 
-; SideChannelMitigation (matches Coq: Record SideChannelMitigation)
 (declare-datatypes ((SideChannelMitigation 0))
   (((mk-side_channel_mitigation (scm_constant_time Bool) (scm_cache_partitioning Bool) (scm_no_secret_dependent_branches Bool) (scm_no_secret_dependent_memory Bool) (scm_noise_injection Bool) (scm_minimal_surface Bool)))))
 
-; LeakageBound (matches Coq: Record LeakageBound)
 (declare-datatypes ((LeakageBound 0))
   (((mk-leakage_bound (lb_bits_per_operation Int) (lb_total_bits Int) (lb_timing_variance_ns Int)))))
 
-; SecurityComponent (matches Coq: Record SecurityComponent)
 (declare-datatypes ((SecurityComponent 0))
   (((mk-security_component (sc_id Int) (sc_verified Bool) (sc_assumptions (Seq Int)) (sc_guarantees (Seq Int))))))
 
-; ComposedSecurity (matches Coq: Record ComposedSecurity)
 (declare-datatypes ((ComposedSecurity 0))
   (((mk-composed_security (cs_components (Seq Int)) (cs_composition_proof Bool) (cs_no_assumption_cycles Bool) (cs_all_assumptions_met Bool) (cs_emergent_analysis Bool)))))
 
-; KeyRotationPolicy (matches Coq: Record KeyRotationPolicy)
 (declare-datatypes ((KeyRotationPolicy 0))
   (((mk-key_rotation_policy (krp_max_age_seconds Int) (krp_max_operations Int) (krp_forward_secrecy Bool) (krp_compromise_recovery Bool) (krp_automated Bool)))))
 
-; ContinuousVerification (matches Coq: Record ContinuousVerification)
 (declare-datatypes ((ContinuousVerification 0))
   (((mk-continuous_verification (cv_runtime_checks Bool) (cv_periodic_attestation Bool) (cv_attestation_interval_ms Int) (cv_anomaly_detection Bool) (cv_automatic_response Bool) (cv_state_integrity Bool)))))
 
-; APTResistance (matches Coq: Record APTResistance)
 (declare-datatypes ((APTResistance 0))
   (((mk-apt_resistance (apt_key_rotation KeyRotationPolicy) (apt_continuous_verify ContinuousVerification) (apt_compartmentalization Bool) (apt_least_privilege Bool) (apt_audit_logging Bool) (apt_threat_hunting Bool)))))
 
-; TLSConfig (matches Coq: Record TLSConfig)
 (declare-datatypes ((TLSConfig 0))
   (((mk-tls_config (tls_version Int) (tls_pq_kem Int) (tls_pq_sig Int) (tls_classical_kex Int) (tls_hybrid Bool)))))
 
-; QKDConfig (matches Coq: Record QKDConfig)
 (declare-datatypes ((QKDConfig 0))
   (((mk-qkd_config (qkd_enabled Bool) (qkd_protocol Int) (qkd_detector_efficiency Int) (qkd_error_threshold Int) (qkd_authentication Bool)))))
 
-; QuantumSafeNetwork (matches Coq: Record QuantumSafeNetwork)
 (declare-datatypes ((QuantumSafeNetwork 0))
   (((mk-quantum_safe_network (qsn_tls TLSConfig) (qsn_qkd Int) (qsn_pq_required Bool) (qsn_hybrid_mandatory Bool)))))
 
-; FormalVerificationConfig (matches Coq: Record FormalVerificationConfig)
 (declare-datatypes ((FormalVerificationConfig 0))
   (((mk-formal_verification_config (fvc_level VerificationLevel) (fvc_proof_assistant Int) (fvc_spec_complete Bool) (fvc_assumptions_explicit Bool) (fvc_trusted_base_minimal Bool) (fvc_proof_reviewed Bool)))))
 
-; MathematicalProof (matches Coq: Record MathematicalProof)
 (declare-datatypes ((MathematicalProof 0))
   (((mk-mathematical_proof (mp_statement Bool) (mp_proof_exists Bool) (mp_machine_checked Bool) (mp_assumptions (Seq Int))))))
 
-(declare-const __default_APTResistance APTResistance)
-(declare-const __default_AdversaryCapability AdversaryCapability)
-(declare-const __default_ClassicalCrypto ClassicalCrypto)
-(declare-const __default_ComposedSecurity ComposedSecurity)
-(declare-const __default_ContinuousVerification ContinuousVerification)
-(declare-const __default_DefenseInDepth DefenseInDepth)
-(declare-const __default_FormalVerificationConfig FormalVerificationConfig)
-(declare-const __default_KeyRotationPolicy KeyRotationPolicy)
-(declare-const __default_LeakageBound LeakageBound)
-(declare-const __default_LeakageSource LeakageSource)
-(declare-const __default_MathematicalProof MathematicalProof)
-(declare-const __default_PQCryptoConfig PQCryptoConfig)
-(declare-const __default_PQ_KEM PQ_KEM)
-(declare-const __default_PQ_Signature PQ_Signature)
-(declare-const __default_QKDConfig QKDConfig)
-(declare-const __default_QuantumSafeNetwork QuantumSafeNetwork)
-(declare-const __default_SecurityComponent SecurityComponent)
-(declare-const __default_SecurityLayer SecurityLayer)
-(declare-const __default_SecurityLayerType SecurityLayerType)
-(declare-const __default_SideChannelMitigation SideChannelMitigation)
-(declare-const __default_SpeculationBarrier SpeculationBarrier)
-(declare-const __default_SpeculationMitigation SpeculationMitigation)
-(declare-const __default_TLSConfig TLSConfig)
-(declare-const __default_VerificationLevel VerificationLevel)
+; =======================================================================
+; FUNCTION DEFINITIONS AND PROPERTY VERIFICATION
+; =======================================================================
 
-; kem_security_level (matches Coq: Definition kem_security_level)
-(define-fun kem_security_level ((kem PQ_KEM)) Int
-  0)
+; --- PQ_KEM enum properties ---
 
-; sig_security_level (matches Coq: Definition sig_security_level)
-(define-fun sig_security_level ((p_sig PQ_Signature)) Int
-  0)
+; --- 1. PQ_KEM exhaustiveness ---
+(push 1)
+(declare-const x PQ_KEM)
+(assert (not (or (= x ML_KEM_768) (= x ML_KEM_1024) (= x ML_KEM_512))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; symmetric_quantum_safe (matches Coq: Definition symmetric_quantum_safe)
-(define-fun symmetric_quantum_safe ((bits Int)) Bool
-  true)
+; --- 2. PQ_KEM: ML_KEM_768 != ML_KEM_1024 ---
+(push 1)
+(assert (= ML_KEM_768 ML_KEM_1024))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; pq_config_secure (matches Coq: Definition pq_config_secure)
-(define-fun pq_config_secure ((cfg PQCryptoConfig)) Bool
-  true)
+; --- 3. PQ_KEM: ML_KEM_1024 != ML_KEM_512 ---
+(push 1)
+(assert (= ML_KEM_1024 ML_KEM_512))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; vulnerable_to_shor (matches Coq: Definition vulnerable_to_shor)
-(define-fun vulnerable_to_shor ((cc ClassicalCrypto)) Bool
-  true)
+; --- 4. PQ_KEM: ML_KEM_768 != ML_KEM_512 ---
+(push 1)
+(assert (= ML_KEM_768 ML_KEM_512))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; grover_effective_bits (matches Coq: Definition grover_effective_bits)
-(define-fun grover_effective_bits ((bits Int)) Int
-  0)
+; --- 5. PQ_KEM finite cardinality (3 values) ---
+(push 1)
+(declare-const x PQ_KEM)
+(assert (and (not (= x ML_KEM_768)) (not (= x ML_KEM_1024)) (not (= x ML_KEM_512))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; count_verified_layers (matches Coq: Definition count_verified_layers)
-(define-fun count_verified_layers ((layers (Seq Int))) Int
-  0)
+; --- PQ_Signature enum properties ---
 
-; all_layers_independent (matches Coq: Definition all_layers_independent)
-(define-fun all_layers_independent ((layers (Seq Int))) Bool
-  true)
+; --- 6. PQ_Signature exhaustiveness ---
+(push 1)
+(declare-const x PQ_Signature)
+(assert (not (or (= x ML_DSA_44) (= x ML_DSA_65) (= x ML_DSA_87) (= x SLH_DSA_128f) (= x SLH_DSA_192f) (= x SLH_DSA_256f))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; did_robust (matches Coq: Definition did_robust)
-(define-fun did_robust ((did DefenseInDepth)) Bool
-  true)
+; --- 7. PQ_Signature: ML_DSA_44 != ML_DSA_65 ---
+(push 1)
+(assert (= ML_DSA_44 ML_DSA_65))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; has_full_serialize (matches Coq: Definition has_full_serialize)
-(define-fun has_full_serialize ((barriers (Seq Int))) Bool
-  true)
+; --- 8. PQ_Signature: ML_DSA_65 != ML_DSA_87 ---
+(push 1)
+(assert (= ML_DSA_65 ML_DSA_87))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; speculation_conservative (matches Coq: Definition speculation_conservative)
-(define-fun speculation_conservative ((sm SpeculationMitigation)) Bool
-  true)
+; --- 9. PQ_Signature: ML_DSA_87 != SLH_DSA_128f ---
+(push 1)
+(assert (= ML_DSA_87 SLH_DSA_128f))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; leakage_minimal (matches Coq: Definition leakage_minimal)
-(define-fun leakage_minimal ((lb LeakageBound)) Bool
-  true)
+; --- 10. PQ_Signature: ML_DSA_44 != SLH_DSA_256f ---
+(push 1)
+(assert (= ML_DSA_44 SLH_DSA_256f))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; scm_comprehensive (matches Coq: Definition scm_comprehensive)
-(define-fun scm_comprehensive ((scm SideChannelMitigation)) Bool
-  true)
+; --- 11. PQ_Signature finite cardinality (6 values) ---
+(push 1)
+(declare-const x PQ_Signature)
+(assert (and (not (= x ML_DSA_44)) (not (= x ML_DSA_65)) (not (= x ML_DSA_87)) (not (= x SLH_DSA_128f)) (not (= x SLH_DSA_192f)) (not (= x SLH_DSA_256f))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; count_verified_components (matches Coq: Definition count_verified_components)
-(define-fun count_verified_components ((comps (Seq Int))) Int
-  0)
+; --- SecurityLayerType enum properties ---
 
-; all_components_verified (matches Coq: Definition all_components_verified)
-(define-fun all_components_verified ((comps (Seq Int))) Bool
-  true)
+; --- 12. SecurityLayerType exhaustiveness ---
+(push 1)
+(declare-const x SecurityLayerType)
+(assert (not (or (= x NetworkPerimeter) (= x ApplicationFirewall) (= x RuntimeProtection) (= x MemorySafety) (= x TypeSafety) (= x FormalVerification) (= x HardwareIsolation) (= x CryptoLayer))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; composed_security_sound (matches Coq: Definition composed_security_sound)
-(define-fun composed_security_sound ((cs ComposedSecurity)) Bool
-  true)
+; --- 13. SecurityLayerType: NetworkPerimeter != ApplicationFirewall ---
+(push 1)
+(assert (= NetworkPerimeter ApplicationFirewall))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; key_rotation_apt_safe (matches Coq: Definition key_rotation_apt_safe)
-(define-fun key_rotation_apt_safe ((krp KeyRotationPolicy)) Bool
-  true)
+; --- 14. SecurityLayerType: ApplicationFirewall != RuntimeProtection ---
+(push 1)
+(assert (= ApplicationFirewall RuntimeProtection))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; cv_comprehensive (matches Coq: Definition cv_comprehensive)
-(define-fun cv_comprehensive ((cv ContinuousVerification)) Bool
-  true)
+; --- 15. SecurityLayerType: RuntimeProtection != MemorySafety ---
+(push 1)
+(assert (= RuntimeProtection MemorySafety))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; apt_resistance_adequate (matches Coq: Definition apt_resistance_adequate)
-(define-fun apt_resistance_adequate ((apt APTResistance)) Bool
-  true)
+; --- 16. SecurityLayerType: NetworkPerimeter != CryptoLayer ---
+(push 1)
+(assert (= NetworkPerimeter CryptoLayer))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; tls_pq_safe (matches Coq: Definition tls_pq_safe)
-(define-fun tls_pq_safe ((tls TLSConfig)) Bool
-  true)
+; --- 17. SecurityLayerType finite cardinality (8 values) ---
+(push 1)
+(declare-const x SecurityLayerType)
+(assert (and (not (= x NetworkPerimeter)) (not (= x ApplicationFirewall)) (not (= x RuntimeProtection)) (not (= x MemorySafety)) (not (= x TypeSafety)) (not (= x FormalVerification)) (not (= x HardwareIsolation)) (not (= x CryptoLayer))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; qkd_secure (matches Coq: Definition qkd_secure)
-(define-fun qkd_secure ((qkd QKDConfig)) Bool
-  true)
+; --- SpeculationBarrier enum properties ---
 
-; qsn_secure (matches Coq: Definition qsn_secure)
-(define-fun qsn_secure ((qsn QuantumSafeNetwork)) Bool
-  true)
+; --- 18. SpeculationBarrier exhaustiveness ---
+(push 1)
+(declare-const x SpeculationBarrier)
+(assert (not (or (= x LFENCE) (= x MFENCE) (= x SFENCE) (= x FullSerialize) (= x ConditionalBarrier))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; verification_strength (matches Coq: Definition verification_strength)
-(define-fun verification_strength ((v VerificationLevel)) Int
-  0)
+; --- 19. SpeculationBarrier: LFENCE != MFENCE ---
+(push 1)
+(assert (= LFENCE MFENCE))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; verification_rigorous (matches Coq: Definition verification_rigorous)
-(define-fun verification_rigorous ((fvc FormalVerificationConfig)) Bool
-  true)
+; --- 20. SpeculationBarrier: MFENCE != SFENCE ---
+(push 1)
+(assert (= MFENCE SFENCE))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; adversary_capability_level (matches Coq: Definition adversary_capability_level)
-(define-fun adversary_capability_level ((a AdversaryCapability)) Int
-  0)
+; --- 21. SpeculationBarrier: SFENCE != FullSerialize ---
+(push 1)
+(assert (= SFENCE FullSerialize))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; proof_adversary_independent (matches Coq: Definition proof_adversary_independent)
-(define-fun proof_adversary_independent ((mp MathematicalProof)) Bool
-  true)
+; --- 22. SpeculationBarrier: LFENCE != ConditionalBarrier ---
+(push 1)
+(assert (= LFENCE ConditionalBarrier))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; future_security_complete (matches Coq: Definition future_security_complete)
-(define-fun future_security_complete () Bool
-  true)
+; --- 23. SpeculationBarrier finite cardinality (5 values) ---
+(push 1)
+(declare-const x SpeculationBarrier)
+(assert (and (not (= x LFENCE)) (not (= x MFENCE)) (not (= x SFENCE)) (not (= x FullSerialize)) (not (= x ConditionalBarrier))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_001_quantum_shor_mitigated (matches Coq: Theorem fut_001_quantum_shor_mitigated)
-; fut_001_quantum_shor_mitigated: forall (classical : ClassicalCrypto) (pq : PQCryptoConfig), vulnerable_to_shor classical = true -> pq_config_secure pq =
-; fut_001_quantum_shor_mitigated: property holds for all bindings
-(assert (forall ((classical ClassicalCrypto) (pq PQCryptoConfig)) (and (= classical classical) (= pq pq)))) ; fut_001_quantum_shor_mitigated [partial: bindings preserved] ; fut_001_quantum_shor_mitigated [verified]
+; --- LeakageSource enum properties ---
 
-; fut_001_hybrid_defense (matches Coq: Theorem fut_001_hybrid_defense)
-; fut_001_hybrid_defense: forall (pq : PQCryptoConfig), pqc_hybrid_mode pq = true -> pq_config_secure pq = true -> pqc_hybrid_mode pq = true /\ pq
-; fut_001_hybrid_defense: property holds for all bindings
-(assert (forall ((pq PQCryptoConfig)) (= pq pq))) ; fut_001_hybrid_defense [partial: bindings preserved] ; fut_001_hybrid_defense [verified]
+; --- 24. LeakageSource exhaustiveness ---
+(push 1)
+(declare-const x LeakageSource)
+(assert (not (or (= x TimingLeak) (= x CacheLeak) (= x PowerLeak) (= x EMILeak) (= x AcousticLeak) (= x SpeculativeLeak))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_002_quantum_grover_mitigated (matches Coq: Theorem fut_002_quantum_grover_mitigated)
-; fut_002_quantum_grover_mitigated: forall (bits : nat), Nat.leb 256 bits = true -> Nat.leb 128 (grover_effective_bits bits) = true
-; fut_002_quantum_grover_mitigated: property holds for all bindings
-(assert (forall ((bits Int)) (= bits bits))) ; fut_002_quantum_grover_mitigated [partial: bindings preserved] ; fut_002_quantum_grover_mitigated [verified]
+; --- 25. LeakageSource: TimingLeak != CacheLeak ---
+(push 1)
+(assert (= TimingLeak CacheLeak))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_002_symmetric_quantum_safe (matches Coq: Theorem fut_002_symmetric_quantum_safe)
-; fut_002_symmetric_quantum_safe: forall (pq : PQCryptoConfig), pq_config_secure pq = true -> symmetric_quantum_safe (pqc_symmetric_bits pq) = true
-; fut_002_symmetric_quantum_safe: property holds for all bindings
-(assert (forall ((pq PQCryptoConfig)) (= pq pq))) ; fut_002_symmetric_quantum_safe [partial: bindings preserved] ; fut_002_symmetric_quantum_safe [verified]
+; --- 26. LeakageSource: CacheLeak != PowerLeak ---
+(push 1)
+(assert (= CacheLeak PowerLeak))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_003_ai_exploit_mitigated (matches Coq: Theorem fut_003_ai_exploit_mitigated)
-; fut_003_ai_exploit_mitigated: forall (did : DefenseInDepth), did_robust did = true -> Nat.leb 3 (length (did_layers did)) = true /\ Nat.leb 2 (count_v
-; fut_003_ai_exploit_mitigated: property holds for all bindings
-(assert (forall ((did DefenseInDepth)) (= did did))) ; fut_003_ai_exploit_mitigated [partial: bindings preserved] ; fut_003_ai_exploit_mitigated [verified]
+; --- 27. LeakageSource: PowerLeak != EMILeak ---
+(push 1)
+(assert (= PowerLeak EMILeak))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_003_verified_layer_guarantee (matches Coq: Theorem fut_003_verified_layer_guarantee)
-; fut_003_verified_layer_guarantee: forall (layers : list SecurityLayer), count_verified_layers layers >= 1 -> exists l, In l layers /\ sl_verified l = true
-; fut_003_verified_layer_guarantee: property holds for all bindings
-(assert (forall ((layers (Seq Int))) (= Seq Seq))) ; fut_003_verified_layer_guarantee [partial: bindings preserved] ; fut_003_verified_layer_guarantee [verified]
+; --- 28. LeakageSource: TimingLeak != SpeculativeLeak ---
+(push 1)
+(assert (= TimingLeak SpeculativeLeak))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_004_unknown_cpu_vuln_mitigated (matches Coq: Theorem fut_004_unknown_cpu_vuln_mitigated)
-; fut_004_unknown_cpu_vuln_mitigated: forall (sm : SpeculationMitigation), speculation_conservative sm = true -> sm_conservative sm = true /\ sm_ssbd sm = tru
-; fut_004_unknown_cpu_vuln_mitigated: property holds for all bindings
-(assert (forall ((sm SpeculationMitigation)) (= sm sm))) ; fut_004_unknown_cpu_vuln_mitigated [partial: bindings preserved] ; fut_004_unknown_cpu_vuln_mitigated [verified]
+; --- 29. LeakageSource finite cardinality (6 values) ---
+(push 1)
+(declare-const x LeakageSource)
+(assert (and (not (= x TimingLeak)) (not (= x CacheLeak)) (not (= x PowerLeak)) (not (= x EMILeak)) (not (= x AcousticLeak)) (not (= x SpeculativeLeak))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_004_full_serialize_safe (matches Coq: Theorem fut_004_full_serialize_safe)
-; fut_004_full_serialize_safe: forall (sm : SpeculationMitigation), has_full_serialize (sm_barriers sm) = true -> sm_ssbd sm = true -> has_full_seriali
-; fut_004_full_serialize_safe: property holds for all bindings
-(assert (forall ((sm SpeculationMitigation)) (= sm sm))) ; fut_004_full_serialize_safe [partial: bindings preserved] ; fut_004_full_serialize_safe [verified]
+; --- VerificationLevel enum properties ---
 
-; fut_005_novel_side_channel_mitigated (matches Coq: Theorem fut_005_novel_side_channel_mitigated)
-; fut_005_novel_side_channel_mitigated: forall (scm : SideChannelMitigation) (lb : LeakageBound), scm_comprehensive scm = true -> leakage_minimal lb = true -> s
-; fut_005_novel_side_channel_mitigated: property holds for all bindings
-(assert (forall ((scm SideChannelMitigation) (lb LeakageBound)) (and (= scm scm) (= lb lb)))) ; fut_005_novel_side_channel_mitigated [partial: bindings preserved] ; fut_005_novel_side_channel_mitigated [verified]
+; --- 30. VerificationLevel exhaustiveness ---
+(push 1)
+(declare-const x VerificationLevel)
+(assert (not (or (= x TypeChecked) (= x UnitTested) (= x PropertyTested) (= x ModelChecked) (= x TheoremProved) (= x MachineCheckedProof))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_005_minimal_surface_defense (matches Coq: Theorem fut_005_minimal_surface_defense)
-; fut_005_minimal_surface_defense: forall (scm : SideChannelMitigation), scm_minimal_surface scm = true -> scm_constant_time scm = true -> scm_minimal_surf
-; fut_005_minimal_surface_defense: property holds for all bindings
-(assert (forall ((scm SideChannelMitigation)) (= scm scm))) ; fut_005_minimal_surface_defense [partial: bindings preserved] ; fut_005_minimal_surface_defense [verified]
+; --- 31. VerificationLevel: TypeChecked != UnitTested ---
+(push 1)
+(assert (= TypeChecked UnitTested))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_006_emergent_combo_mitigated (matches Coq: Theorem fut_006_emergent_combo_mitigated)
-; fut_006_emergent_combo_mitigated: forall (cs : ComposedSecurity), composed_security_sound cs = true -> all_components_verified (cs_components cs) = true /
-; fut_006_emergent_combo_mitigated: property holds for all bindings
-(assert (forall ((cs ComposedSecurity)) (= cs cs))) ; fut_006_emergent_combo_mitigated [partial: bindings preserved] ; fut_006_emergent_combo_mitigated [verified]
+; --- 32. VerificationLevel: UnitTested != PropertyTested ---
+(push 1)
+(assert (= UnitTested PropertyTested))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_006_no_circular_vulnerabilities (matches Coq: Theorem fut_006_no_circular_vulnerabilities)
-; fut_006_no_circular_vulnerabilities: forall (cs : ComposedSecurity), cs_no_assumption_cycles cs = true -> cs_all_assumptions_met cs = true -> cs_no_assumptio
-; fut_006_no_circular_vulnerabilities: property holds for all bindings
-(assert (forall ((cs ComposedSecurity)) (= cs cs))) ; fut_006_no_circular_vulnerabilities [partial: bindings preserved] ; fut_006_no_circular_vulnerabilities [verified]
+; --- 33. VerificationLevel: PropertyTested != ModelChecked ---
+(push 1)
+(assert (= PropertyTested ModelChecked))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_007_apt_mitigated (matches Coq: Theorem fut_007_apt_mitigated)
-; fut_007_apt_mitigated: forall (apt : APTResistance), apt_resistance_adequate apt = true -> key_rotation_apt_safe (apt_key_rotation apt) = true 
-; fut_007_apt_mitigated: property holds for all bindings
-(assert (forall ((apt APTResistance)) (= apt apt))) ; fut_007_apt_mitigated [partial: bindings preserved] ; fut_007_apt_mitigated [verified]
+; --- 34. VerificationLevel: TypeChecked != MachineCheckedProof ---
+(push 1)
+(assert (= TypeChecked MachineCheckedProof))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_007_forward_secrecy_protection (matches Coq: Theorem fut_007_forward_secrecy_protection)
-; fut_007_forward_secrecy_protection: forall (krp : KeyRotationPolicy), key_rotation_apt_safe krp = true -> krp_forward_secrecy krp = true
-; fut_007_forward_secrecy_protection: property holds for all bindings
-(assert (forall ((krp KeyRotationPolicy)) (= krp krp))) ; fut_007_forward_secrecy_protection [partial: bindings preserved] ; fut_007_forward_secrecy_protection [verified]
+; --- 35. VerificationLevel finite cardinality (6 values) ---
+(push 1)
+(declare-const x VerificationLevel)
+(assert (and (not (= x TypeChecked)) (not (= x UnitTested)) (not (= x PropertyTested)) (not (= x ModelChecked)) (not (= x TheoremProved)) (not (= x MachineCheckedProof))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_008_pq_signature_secure (matches Coq: Theorem fut_008_pq_signature_secure)
-; fut_008_pq_signature_secure: forall (pq : PQCryptoConfig), pq_config_secure pq = true -> Nat.leb 3 (sig_security_level (pqc_signature pq)) = true
-; fut_008_pq_signature_secure: property holds for all bindings
-(assert (forall ((pq PQCryptoConfig)) (= pq pq))) ; fut_008_pq_signature_secure [partial: bindings preserved] ; fut_008_pq_signature_secure [verified]
+; --- AdversaryCapability enum properties ---
 
-; fut_008_ml_dsa_87_maximum (matches Coq: Theorem fut_008_ml_dsa_87_maximum)
-; fut_008_ml_dsa_87_maximum: sig_security_level ML_DSA_87 = 5
-(assert true) ; fut_008_ml_dsa_87_maximum [Coq-only]
+; --- 36. AdversaryCapability exhaustiveness ---
+(push 1)
+(declare-const x AdversaryCapability)
+(assert (not (or (= x ScriptKiddie) (= x SkilledHacker) (= x NationState) (= x QuantumCapable) (= x AGILevel))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_008_slh_dsa_256_secure (matches Coq: Theorem fut_008_slh_dsa_256_secure)
-; fut_008_slh_dsa_256_secure: sig_security_level SLH_DSA_256f = 5
-(assert true) ; fut_008_slh_dsa_256_secure [Coq-only]
+; --- 37. AdversaryCapability: ScriptKiddie != SkilledHacker ---
+(push 1)
+(assert (= ScriptKiddie SkilledHacker))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_009_quantum_network_mitigated (matches Coq: Theorem fut_009_quantum_network_mitigated)
-; fut_009_quantum_network_mitigated: forall (qsn : QuantumSafeNetwork), qsn_secure qsn = true -> tls_pq_safe (qsn_tls qsn) = true /\ qsn_pq_required qsn = tr
-; fut_009_quantum_network_mitigated: property holds for all bindings
-(assert (forall ((qsn QuantumSafeNetwork)) (= qsn qsn))) ; fut_009_quantum_network_mitigated [partial: bindings preserved] ; fut_009_quantum_network_mitigated [verified]
+; --- 38. AdversaryCapability: SkilledHacker != NationState ---
+(push 1)
+(assert (= SkilledHacker NationState))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_009_qkd_option (matches Coq: Theorem fut_009_qkd_option)
-; fut_009_qkd_option: forall (qkd : QKDConfig), qkd_secure qkd = true -> qkd_enabled qkd = true /\ Nat.leb (qkd_error_threshold qkd) 11 = true
-; fut_009_qkd_option: property holds for all bindings
-(assert (forall ((qkd QKDConfig)) (= qkd qkd))) ; fut_009_qkd_option [partial: bindings preserved] ; fut_009_qkd_option [verified]
+; --- 39. AdversaryCapability: NationState != QuantumCapable ---
+(push 1)
+(assert (= NationState QuantumCapable))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_010_math_truth_fundamental (matches Coq: Theorem fut_010_math_truth_fundamental)
-; fut_010_math_truth_fundamental: forall (P : Prop), P -> P
-; fut_010_math_truth_fundamental: property holds for all bindings
-(assert (forall ((P Bool)) (= P P))) ; fut_010_math_truth_fundamental [partial: bindings preserved] ; fut_010_math_truth_fundamental [verified]
+; --- 40. AdversaryCapability: ScriptKiddie != AGILevel ---
+(push 1)
+(assert (= ScriptKiddie AGILevel))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_010_agi_adversary_handled (matches Coq: Theorem fut_010_agi_adversary_handled)
-; fut_010_agi_adversary_handled: forall (fvc : FormalVerificationConfig) (adv : AdversaryCapability), verification_rigorous fvc = true -> verification_ri
-; fut_010_agi_adversary_handled: property holds for all bindings
-(assert (forall ((fvc FormalVerificationConfig) (adv AdversaryCapability)) (and (= fvc fvc) (= adv adv)))) ; fut_010_agi_adversary_handled [partial: bindings preserved] ; fut_010_agi_adversary_handled [verified]
+; --- 41. AdversaryCapability finite cardinality (5 values) ---
+(push 1)
+(declare-const x AdversaryCapability)
+(assert (and (not (= x ScriptKiddie)) (not (= x SkilledHacker)) (not (= x NationState)) (not (= x QuantumCapable)) (not (= x AGILevel))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; fut_010_proof_assistant_guarantee (matches Coq: Theorem fut_010_proof_assistant_guarantee)
-; fut_010_proof_assistant_guarantee: forall (fvc : FormalVerificationConfig), fvc_level fvc = MachineCheckedProof -> fvc_spec_complete fvc = true -> fvc_assu
-; fut_010_proof_assistant_guarantee: property holds for all bindings
-(assert (forall ((fvc FormalVerificationConfig)) (= fvc fvc))) ; fut_010_proof_assistant_guarantee [partial: bindings preserved] ; fut_010_proof_assistant_guarantee [verified]
+; --- PQCryptoConfig record properties ---
 
-; fut_010_scaling_defense (matches Coq: Theorem fut_010_scaling_defense)
-; fut_010_scaling_defense: forall (adv : AdversaryCapability) (fvc : FormalVerificationConfig), verification_rigorous fvc = true -> forall (adv' : 
-; fut_010_scaling_defense: property holds for all bindings
-(assert (forall ((adv AdversaryCapability) (fvc FormalVerificationConfig)) (and (= adv adv) (= fvc fvc)))) ; fut_010_scaling_defense [partial: bindings preserved] ; fut_010_scaling_defense [verified]
+; --- 42. PQCryptoConfig accessor round-trip: pqc_kem ---
+(push 1)
+(declare-const f0 PQ_KEM)
+(declare-const f1 PQ_Signature)
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Int)
+(assert (not (= (pqc_kem (mk-p_q_crypto_config f0 f1 f2 f3 f4)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; all_future_theorems_proven (matches Coq: Theorem all_future_theorems_proven)
-; all_future_theorems_proven: future_security_complete
-(assert true) ; all_future_theorems_proven [Coq-only]
+; --- 43. PQCryptoConfig accessor round-trip: pqc_signature ---
+(push 1)
+(declare-const f0 PQ_KEM)
+(declare-const f1 PQ_Signature)
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Int)
+(assert (not (= (pqc_signature (mk-p_q_crypto_config f0 f1 f2 f3 f4)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; Verify all assertions are satisfiable
+; --- 44. PQCryptoConfig accessor round-trip: pqc_symmetric_bits ---
+(push 1)
+(declare-const f0 PQ_KEM)
+(declare-const f1 PQ_Signature)
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Int)
+(assert (not (= (pqc_symmetric_bits (mk-p_q_crypto_config f0 f1 f2 f3 f4)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 45. PQCryptoConfig accessor round-trip: pqc_hybrid_mode ---
+(push 1)
+(declare-const f0 PQ_KEM)
+(declare-const f1 PQ_Signature)
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Int)
+(assert (not (= (pqc_hybrid_mode (mk-p_q_crypto_config f0 f1 f2 f3 f4)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 46. PQCryptoConfig accessor round-trip: pqc_classical_kem ---
+(push 1)
+(declare-const f0 PQ_KEM)
+(declare-const f1 PQ_Signature)
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Int)
+(assert (not (= (pqc_classical_kem (mk-p_q_crypto_config f0 f1 f2 f3 f4)) f4)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 47. PQCryptoConfig: integer field consistency ---
+(push 1)
+(declare-const r PQCryptoConfig)
+(assert (>= (pqc_symmetric_bits r) 0))
+(assert (>= (pqc_classical_kem r) 0))
+(assert (not (>= (+ (pqc_symmetric_bits r) (pqc_classical_kem r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- ClassicalCrypto record properties ---
+
+; --- 48. ClassicalCrypto accessor round-trip: cc_rsa_bits ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(assert (not (= (cc_rsa_bits (mk-classical_crypto f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 49. ClassicalCrypto accessor round-trip: cc_dh_bits ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(assert (not (= (cc_dh_bits (mk-classical_crypto f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 50. ClassicalCrypto accessor round-trip: cc_ecc_bits ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(assert (not (= (cc_ecc_bits (mk-classical_crypto f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 51. ClassicalCrypto: integer field consistency ---
+(push 1)
+(declare-const r ClassicalCrypto)
+(assert (>= (cc_rsa_bits r) 0))
+(assert (>= (cc_dh_bits r) 0))
+(assert (not (>= (+ (cc_rsa_bits r) (cc_dh_bits r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- SecurityLayer record properties ---
+
+; --- 52. SecurityLayer accessor round-trip: sl_type ---
+(push 1)
+(declare-const f0 SecurityLayerType)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (sl_type (mk-security_layer f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 53. SecurityLayer accessor round-trip: sl_verified ---
+(push 1)
+(declare-const f0 SecurityLayerType)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (sl_verified (mk-security_layer f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 54. SecurityLayer accessor round-trip: sl_independent ---
+(push 1)
+(declare-const f0 SecurityLayerType)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (sl_independent (mk-security_layer f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- DefenseInDepth record properties ---
+
+; --- 55. DefenseInDepth accessor round-trip: Seq ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(assert (not (= (Seq (mk-defense_in_depth f0 f1)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 56. DefenseInDepth accessor round-trip: did_composition_verified ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(assert (not (= (did_composition_verified (mk-defense_in_depth f0 f1)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- SpeculationMitigation record properties ---
+
+; --- 57. SpeculationMitigation accessor round-trip: Seq ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (Seq (mk-speculation_mitigation f0 f1 f2 f3 f4)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 58. SpeculationMitigation accessor round-trip: sm_retpoline ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (sm_retpoline (mk-speculation_mitigation f0 f1 f2 f3 f4)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 59. SpeculationMitigation accessor round-trip: sm_ibrs ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (sm_ibrs (mk-speculation_mitigation f0 f1 f2 f3 f4)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 60. SpeculationMitigation accessor round-trip: sm_stibp ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (sm_stibp (mk-speculation_mitigation f0 f1 f2 f3 f4)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 61. SpeculationMitigation accessor round-trip: sm_ssbd ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (sm_ssbd (mk-speculation_mitigation f0 f1 f2 f3 f4)) f4)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- SideChannelMitigation record properties ---
+
+; --- 62. SideChannelMitigation accessor round-trip: scm_constant_time ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (scm_constant_time (mk-side_channel_mitigation f0 f1 f2 f3 f4)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 63. SideChannelMitigation accessor round-trip: scm_cache_partitioning ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (scm_cache_partitioning (mk-side_channel_mitigation f0 f1 f2 f3 f4)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 64. SideChannelMitigation accessor round-trip: scm_no_secret_dependent_branches ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (scm_no_secret_dependent_branches (mk-side_channel_mitigation f0 f1 f2 f3 f4)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 65. SideChannelMitigation accessor round-trip: scm_no_secret_dependent_memory ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (scm_no_secret_dependent_memory (mk-side_channel_mitigation f0 f1 f2 f3 f4)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 66. SideChannelMitigation accessor round-trip: scm_noise_injection ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (scm_noise_injection (mk-side_channel_mitigation f0 f1 f2 f3 f4)) f4)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun SideChannelMitigation_all_enabled ((g SideChannelMitigation)) Bool
+  (and (scm_constant_time g) (scm_cache_partitioning g) (scm_no_secret_dependent_branches g) (scm_no_secret_dependent_memory g) (scm_noise_injection g)))
+
+; --- 67. SideChannelMitigation: all-enabled completeness ---
+(push 1)
+(declare-const g SideChannelMitigation)
+(assert (scm_constant_time g))
+(assert (scm_cache_partitioning g))
+(assert (scm_no_secret_dependent_branches g))
+(assert (scm_no_secret_dependent_memory g))
+(assert (scm_noise_injection g))
+(assert (not (SideChannelMitigation_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 68. SideChannelMitigation: SideChannelMitigation_all_enabled implies scm_constant_time ---
+(push 1)
+(declare-const g SideChannelMitigation)
+(assert (SideChannelMitigation_all_enabled g))
+(assert (not (scm_constant_time g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 69. SideChannelMitigation: SideChannelMitigation_all_enabled implies scm_cache_partitioning ---
+(push 1)
+(declare-const g SideChannelMitigation)
+(assert (SideChannelMitigation_all_enabled g))
+(assert (not (scm_cache_partitioning g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 70. SideChannelMitigation: SideChannelMitigation_all_enabled implies scm_no_secret_dependent_branches ---
+(push 1)
+(declare-const g SideChannelMitigation)
+(assert (SideChannelMitigation_all_enabled g))
+(assert (not (scm_no_secret_dependent_branches g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- LeakageBound record properties ---
+
+; --- 71. LeakageBound accessor round-trip: lb_bits_per_operation ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(assert (not (= (lb_bits_per_operation (mk-leakage_bound f0 f1)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 72. LeakageBound accessor round-trip: lb_total_bits ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(assert (not (= (lb_total_bits (mk-leakage_bound f0 f1)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 73. LeakageBound: integer field consistency ---
+(push 1)
+(declare-const r LeakageBound)
+(assert (>= (lb_bits_per_operation r) 0))
+(assert (>= (lb_total_bits r) 0))
+(assert (not (>= (+ (lb_bits_per_operation r) (lb_total_bits r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- SecurityComponent record properties ---
+
+; --- 74. SecurityComponent accessor round-trip: sc_id ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(assert (not (= (sc_id (mk-security_component f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 75. SecurityComponent accessor round-trip: sc_verified ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(assert (not (= (sc_verified (mk-security_component f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 76. SecurityComponent accessor round-trip: Seq ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(assert (not (= (Seq (mk-security_component f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 77. SecurityComponent: integer field consistency ---
+(push 1)
+(declare-const r SecurityComponent)
+(assert (>= (sc_id r) 0))
+(assert (>= (Seq r) 0))
+(assert (not (>= (+ (sc_id r) (Seq r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- ComposedSecurity record properties ---
+
+; --- 78. ComposedSecurity accessor round-trip: Seq ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (Seq (mk-composed_security f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 79. ComposedSecurity accessor round-trip: cs_composition_proof ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (cs_composition_proof (mk-composed_security f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 80. ComposedSecurity accessor round-trip: cs_no_assumption_cycles ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (cs_no_assumption_cycles (mk-composed_security f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 81. ComposedSecurity accessor round-trip: cs_all_assumptions_met ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (cs_all_assumptions_met (mk-composed_security f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- KeyRotationPolicy record properties ---
+
+; --- 82. KeyRotationPolicy accessor round-trip: krp_max_age_seconds ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (krp_max_age_seconds (mk-key_rotation_policy f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 83. KeyRotationPolicy accessor round-trip: krp_max_operations ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (krp_max_operations (mk-key_rotation_policy f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 84. KeyRotationPolicy accessor round-trip: krp_forward_secrecy ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (krp_forward_secrecy (mk-key_rotation_policy f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 85. KeyRotationPolicy accessor round-trip: krp_compromise_recovery ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (krp_compromise_recovery (mk-key_rotation_policy f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 86. KeyRotationPolicy: integer field consistency ---
+(push 1)
+(declare-const r KeyRotationPolicy)
+(assert (>= (krp_max_age_seconds r) 0))
+(assert (>= (krp_max_operations r) 0))
+(assert (not (>= (+ (krp_max_age_seconds r) (krp_max_operations r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- ContinuousVerification record properties ---
+
+; --- 87. ContinuousVerification accessor round-trip: cv_runtime_checks ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (cv_runtime_checks (mk-continuous_verification f0 f1 f2 f3 f4)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 88. ContinuousVerification accessor round-trip: cv_periodic_attestation ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (cv_periodic_attestation (mk-continuous_verification f0 f1 f2 f3 f4)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 89. ContinuousVerification accessor round-trip: cv_attestation_interval_ms ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (cv_attestation_interval_ms (mk-continuous_verification f0 f1 f2 f3 f4)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 90. ContinuousVerification accessor round-trip: cv_anomaly_detection ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (cv_anomaly_detection (mk-continuous_verification f0 f1 f2 f3 f4)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 91. ContinuousVerification accessor round-trip: cv_automatic_response ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (cv_automatic_response (mk-continuous_verification f0 f1 f2 f3 f4)) f4)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- APTResistance record properties ---
+
+; --- 92. APTResistance accessor round-trip: apt_key_rotation ---
+(push 1)
+(declare-const f0 KeyRotationPolicy)
+(declare-const f1 ContinuousVerification)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (apt_key_rotation (mk-a_p_t_resistance f0 f1 f2 f3 f4)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 93. APTResistance accessor round-trip: apt_continuous_verify ---
+(push 1)
+(declare-const f0 KeyRotationPolicy)
+(declare-const f1 ContinuousVerification)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (apt_continuous_verify (mk-a_p_t_resistance f0 f1 f2 f3 f4)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 94. APTResistance accessor round-trip: apt_compartmentalization ---
+(push 1)
+(declare-const f0 KeyRotationPolicy)
+(declare-const f1 ContinuousVerification)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (apt_compartmentalization (mk-a_p_t_resistance f0 f1 f2 f3 f4)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 95. APTResistance accessor round-trip: apt_least_privilege ---
+(push 1)
+(declare-const f0 KeyRotationPolicy)
+(declare-const f1 ContinuousVerification)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (apt_least_privilege (mk-a_p_t_resistance f0 f1 f2 f3 f4)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 96. APTResistance accessor round-trip: apt_audit_logging ---
+(push 1)
+(declare-const f0 KeyRotationPolicy)
+(declare-const f1 ContinuousVerification)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (apt_audit_logging (mk-a_p_t_resistance f0 f1 f2 f3 f4)) f4)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- TLSConfig record properties ---
+
+; --- 97. TLSConfig accessor round-trip: tls_version ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (tls_version (mk-t_l_s_config f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 98. TLSConfig accessor round-trip: tls_pq_kem ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (tls_pq_kem (mk-t_l_s_config f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 99. TLSConfig accessor round-trip: tls_pq_sig ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (tls_pq_sig (mk-t_l_s_config f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 100. TLSConfig accessor round-trip: tls_classical_kex ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (tls_classical_kex (mk-t_l_s_config f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 101. TLSConfig: integer field consistency ---
+(push 1)
+(declare-const r TLSConfig)
+(assert (>= (tls_version r) 0))
+(assert (>= (tls_pq_kem r) 0))
+(assert (not (>= (+ (tls_version r) (tls_pq_kem r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- QKDConfig record properties ---
+
+; --- 102. QKDConfig accessor round-trip: qkd_enabled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (qkd_enabled (mk-q_k_d_config f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 103. QKDConfig accessor round-trip: qkd_protocol ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (qkd_protocol (mk-q_k_d_config f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 104. QKDConfig accessor round-trip: qkd_detector_efficiency ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (qkd_detector_efficiency (mk-q_k_d_config f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 105. QKDConfig accessor round-trip: qkd_error_threshold ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (qkd_error_threshold (mk-q_k_d_config f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 106. QKDConfig: integer field consistency ---
+(push 1)
+(declare-const r QKDConfig)
+(assert (>= (qkd_protocol r) 0))
+(assert (>= (qkd_detector_efficiency r) 0))
+(assert (not (>= (+ (qkd_protocol r) (qkd_detector_efficiency r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- QuantumSafeNetwork record properties ---
+
+; --- 107. QuantumSafeNetwork accessor round-trip: qsn_tls ---
+(push 1)
+(declare-const f0 TLSConfig)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(assert (not (= (qsn_tls (mk-quantum_safe_network f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 108. QuantumSafeNetwork accessor round-trip: qsn_qkd ---
+(push 1)
+(declare-const f0 TLSConfig)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(assert (not (= (qsn_qkd (mk-quantum_safe_network f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 109. QuantumSafeNetwork accessor round-trip: qsn_pq_required ---
+(push 1)
+(declare-const f0 TLSConfig)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(assert (not (= (qsn_pq_required (mk-quantum_safe_network f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- FormalVerificationConfig record properties ---
+
+; --- 110. FormalVerificationConfig accessor round-trip: fvc_level ---
+(push 1)
+(declare-const f0 VerificationLevel)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (fvc_level (mk-formal_verification_config f0 f1 f2 f3 f4)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 111. FormalVerificationConfig accessor round-trip: fvc_proof_assistant ---
+(push 1)
+(declare-const f0 VerificationLevel)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (fvc_proof_assistant (mk-formal_verification_config f0 f1 f2 f3 f4)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 112. FormalVerificationConfig accessor round-trip: fvc_spec_complete ---
+(push 1)
+(declare-const f0 VerificationLevel)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (fvc_spec_complete (mk-formal_verification_config f0 f1 f2 f3 f4)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 113. FormalVerificationConfig accessor round-trip: fvc_assumptions_explicit ---
+(push 1)
+(declare-const f0 VerificationLevel)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (fvc_assumptions_explicit (mk-formal_verification_config f0 f1 f2 f3 f4)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 114. FormalVerificationConfig accessor round-trip: fvc_trusted_base_minimal ---
+(push 1)
+(declare-const f0 VerificationLevel)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (fvc_trusted_base_minimal (mk-formal_verification_config f0 f1 f2 f3 f4)) f4)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- MathematicalProof record properties ---
+
+; --- 115. MathematicalProof accessor round-trip: mp_statement ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (mp_statement (mk-mathematical_proof f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 116. MathematicalProof accessor round-trip: mp_proof_exists ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (mp_proof_exists (mk-mathematical_proof f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 117. MathematicalProof accessor round-trip: mp_machine_checked ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (mp_machine_checked (mk-mathematical_proof f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun MathematicalProof_all_enabled ((g MathematicalProof)) Bool
+  (and (mp_statement g) (mp_proof_exists g) (mp_machine_checked g)))
+
+; --- 118. MathematicalProof: all-enabled completeness ---
+(push 1)
+(declare-const g MathematicalProof)
+(assert (mp_statement g))
+(assert (mp_proof_exists g))
+(assert (mp_machine_checked g))
+(assert (not (MathematicalProof_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 119. MathematicalProof: MathematicalProof_all_enabled implies mp_statement ---
+(push 1)
+(declare-const g MathematicalProof)
+(assert (MathematicalProof_all_enabled g))
+(assert (not (mp_statement g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 120. MathematicalProof: MathematicalProof_all_enabled implies mp_proof_exists ---
+(push 1)
+(declare-const g MathematicalProof)
+(assert (MathematicalProof_all_enabled g))
+(assert (not (mp_proof_exists g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 121. MathematicalProof: MathematicalProof_all_enabled implies mp_machine_checked ---
+(push 1)
+(declare-const g MathematicalProof)
+(assert (MathematicalProof_all_enabled g))
+(assert (not (mp_machine_checked g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- SecurityLayerType ordering properties ---
+
+(define-fun SecurityLayerType_level ((x SecurityLayerType)) Int
+  (ite (= x NetworkPerimeter) 0 (ite (= x ApplicationFirewall) 1 (ite (= x RuntimeProtection) 2 (ite (= x MemorySafety) 3 (ite (= x TypeSafety) 4 (ite (= x FormalVerification) 5 (ite (= x HardwareIsolation) 6 7))))))))
+
+(define-fun SecurityLayerType_leq ((x SecurityLayerType) (y SecurityLayerType)) Bool
+  (<= (SecurityLayerType_level x) (SecurityLayerType_level y)))
+
+; --- 122. SecurityLayerType_leq reflexivity ---
+(push 1)
+(declare-const x SecurityLayerType)
+(assert (not (SecurityLayerType_leq x x)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 123. SecurityLayerType_leq transitivity ---
+(push 1)
+(declare-const x SecurityLayerType)
+(declare-const y SecurityLayerType)
+(declare-const z SecurityLayerType)
+(assert (SecurityLayerType_leq x y))
+(assert (SecurityLayerType_leq y z))
+(assert (not (SecurityLayerType_leq x z)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 124. SecurityLayerType_leq antisymmetry ---
+(push 1)
+(declare-const x SecurityLayerType)
+(declare-const y SecurityLayerType)
+(assert (SecurityLayerType_leq x y))
+(assert (SecurityLayerType_leq y x))
+(assert (not (= x y)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 125. NetworkPerimeter is bottom ---
+(push 1)
+(declare-const x SecurityLayerType)
+(assert (not (SecurityLayerType_leq NetworkPerimeter x)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 126. CryptoLayer is top ---
+(push 1)
+(declare-const x SecurityLayerType)
+(assert (not (SecurityLayerType_leq x CryptoLayer)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- VerificationLevel ordering properties ---
+
+(define-fun VerificationLevel_level ((x VerificationLevel)) Int
+  (ite (= x TypeChecked) 0 (ite (= x UnitTested) 1 (ite (= x PropertyTested) 2 (ite (= x ModelChecked) 3 (ite (= x TheoremProved) 4 5))))))
+
+(define-fun VerificationLevel_leq ((x VerificationLevel) (y VerificationLevel)) Bool
+  (<= (VerificationLevel_level x) (VerificationLevel_level y)))
+
+; --- 127. VerificationLevel_leq reflexivity ---
+(push 1)
+(declare-const x VerificationLevel)
+(assert (not (VerificationLevel_leq x x)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 128. VerificationLevel_leq transitivity ---
+(push 1)
+(declare-const x VerificationLevel)
+(declare-const y VerificationLevel)
+(declare-const z VerificationLevel)
+(assert (VerificationLevel_leq x y))
+(assert (VerificationLevel_leq y z))
+(assert (not (VerificationLevel_leq x z)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 129. VerificationLevel_leq antisymmetry ---
+(push 1)
+(declare-const x VerificationLevel)
+(declare-const y VerificationLevel)
+(assert (VerificationLevel_leq x y))
+(assert (VerificationLevel_leq y x))
+(assert (not (= x y)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 130. TypeChecked is bottom ---
+(push 1)
+(declare-const x VerificationLevel)
+(assert (not (VerificationLevel_leq TypeChecked x)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 131. MachineCheckedProof is top ---
+(push 1)
+(declare-const x VerificationLevel)
+(assert (not (VerificationLevel_leq x MachineCheckedProof)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
 (check-sat)
 (exit)

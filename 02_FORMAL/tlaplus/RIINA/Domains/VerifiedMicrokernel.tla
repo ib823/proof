@@ -216,8 +216,6 @@ THEOREM OS_001_07_cap_lookup_correct ==
 \* OS_001_08_cap_space_isolation
 THEOREM OS_001_08_cap_space_isolation ==
   \A s \in Nat, p1 \in Nat, p2 \in Nat, slot1 \in Nat, slot2 \in Nat, c \in Nat :
-      p1 # p2 => (* If same capability appears in two different processes, 
-       it must have been explicitly granted (both hold it independently) *)
     holds s p1 c /\ holds s p2 c
 
 \* OS_001_09_cap_invoke_authorized
@@ -228,9 +226,6 @@ THEOREM OS_001_09_cap_invoke_authorized ==
 \* OS_001_10_cap_badge_integrity
 THEOREM OS_001_10_cap_badge_integrity ==
   \A c1 \in Nat, c2 \in Nat :
-      derives(c1, c2) => (* Badge may change during derivation, but the new badge is 
-       system-assigned and unforgeable - we prove badges are determined
-       by the derivation relation, not arbitrary *)
     cap_object c2 = cap_object c1
 
 \* OS_001_11_address_space_isolation

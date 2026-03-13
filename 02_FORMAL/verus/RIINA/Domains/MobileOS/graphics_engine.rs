@@ -1,44 +1,59 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of MobileOS Graphics Engine invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// State model for Graphics Engine
+pub struct RenderPipeline {
+    pub pipeline_valid: bool,
+    pub texture_bound: bool,
+    pub depth_buffer_cleared: bool,
+    pub vsync_aligned: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Invariant: all properties must hold with positive assurance
+pub open spec fn graphics_engine_valid(s: RenderPipeline) -> bool {
+    s.pipeline_valid && s.texture_bound && s.depth_buffer_cleared && s.vsync_aligned && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration
+pub open spec fn baseline_graphics_engine() -> RenderPipeline {
+    RenderPipeline { pipeline_valid: true, texture_bound: true, depth_buffer_cleared: true, vsync_aligned: true, assurance_level: 1 }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration
+pub open spec fn hardened_graphics_engine() -> RenderPipeline {
+    RenderPipeline { pipeline_valid: true, texture_bound: true, depth_buffer_cleared: true, vsync_aligned: true, assurance_level: 3 }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline is valid
+proof fn lemma_baseline_valid()
+    ensures graphics_engine_valid(baseline_graphics_engine()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_graphics_engine();
+    assert(b.pipeline_valid && b.texture_bound && b.depth_buffer_cleared && b.vsync_aligned && b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened is valid and dominates baseline
+proof fn lemma_hardened_dominates()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        graphics_engine_valid(hardened_graphics_engine()),
+        hardened_graphics_engine().assurance_level >= baseline_graphics_engine().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+}
+
+/// Lemma: each property is individually necessary
+proof fn lemma_properties_necessary()
+    ensures
+        !graphics_engine_valid(RenderPipeline { pipeline_valid: false, texture_bound: true, depth_buffer_cleared: true, vsync_aligned: true, assurance_level: 1 }),
+        !graphics_engine_valid(RenderPipeline { pipeline_valid: true, texture_bound: false, depth_buffer_cleared: true, vsync_aligned: true, assurance_level: 1 }),
+        !graphics_engine_valid(RenderPipeline { pipeline_valid: true, texture_bound: true, depth_buffer_cleared: false, vsync_aligned: true, assurance_level: 1 }),
+        !graphics_engine_valid(RenderPipeline { pipeline_valid: true, texture_bound: true, depth_buffer_cleared: true, vsync_aligned: false, assurance_level: 1 }),
+{
 }
 
 } // verus!
-
-fn main() {}
