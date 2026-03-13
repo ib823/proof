@@ -72,7 +72,7 @@ Never the reverse.
 - **Language:** RIINA (Bahasa Melayu keywords, `.rii` files)
 - **Coq proofs:** `02_FORMAL/coq/` (primary; see `RIINA_MASTER_PLAN.md` Part 2 for current verified counts)
 - **Rust prototype:** `03_PROTO/` (15 crates; see `RIINA_MASTER_PLAN.md` Part 2 for current verified test totals)
-- **Lean 4:** `02_FORMAL/lean/` (secondary; active lane builds, mechanized closure still pending)
+- **Lean 4:** `02_FORMAL/lean/` (secondary; active lane builds and is mechanized-ready)
 - **Specs:** `04_SPECS/`
 - **Examples:** `07_EXAMPLES/` (130 .rii files)
 

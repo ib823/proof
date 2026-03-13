@@ -179,7 +179,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 9,172 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 136 active-lane files, `lake build` passes, 0 `sorry`, 8 axioms | Secondary verification (compiled, not mechanized) |
+| **Lean proofs** | `02_FORMAL/lean/` | 136 active-lane files, `lake build` passes, 0 `sorry`, 0 axioms | Secondary verification (mechanized active lane) |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 1 compiled theory (`RIINA_CORE`) | Tertiary (closure started) |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
@@ -246,23 +246,18 @@ but the compiler does not yet enforce them.
 | Metric | Value | Notes |
 |--------|-------|-------|
 | `.lean` files in `02_FORMAL/lean/RIINA` | 136 | Strict mechanization gate scope (excludes `_wip`) |
-| Theorem/lemma declarations | 3,889 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
+| Theorem/lemma declarations | 3,895 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
 | `lake build RIINA` | PASSES | Full Lean lane builds successfully |
 | `sorry` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| `axiom` count (full lane) | 8 | All remaining axioms are in `Domains/AlgebraicEffects.lean` (typing relations — Lean 4 strict positivity limitation) |
-| Mechanized readiness | NOT READY | Pending zero `axiom` across the full Lean lane |
+| `axiom` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
+| Mechanized readiness | READY | Full active lane now has zero `sorry` and zero `axiom` |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
-**Honest assessment:** The full Lean namespace builds, so the current claim level is
-**compiled**. The strict active lane now has **0 `sorry`**, but it is still **not**
-mechanized-ready: 8 `axiom` remain, all in `02_FORMAL/lean/RIINA/Domains/AlgebraicEffects.lean`.
-These 8 axioms are **irreducible in pure Lean 4**: they axiomatize the typing relations
-(`comp_has_type`, `handler_has_type`) and their characterization lemmas. The underlying
-issue is that Lean 4 enforces strict positivity with no opt-out, and the `TyHOp` handler
-clause typing rule quantifies over well-typed continuations, placing `comp_has_type` in
-a strictly negative position. Coq handles this via `Unset Positivity Checking`.
-40 axioms were eliminated by redesigning `Comp`/`Handler` as first-order defunctionalized
-mutual inductives with explicit `BVar`/`KApp` constructors and substitution operations.
+**Honest assessment:** The full Lean namespace builds, and the strict active lane is now
+**mechanized-ready**: **0 `sorry`** and **0 `axiom`** across `02_FORMAL/lean/RIINA`
+excluding `_wip`. `Domains/AlgebraicEffects.lean` no longer relies on axioms for the
+typing relations; it uses a step-indexed `Nat → Prop` encoding that avoids Lean 4's
+strict-positivity restriction while preserving the active-lane theorem surface.
 
 ### Isabelle/HOL (Tertiary Prover)
 
@@ -342,7 +337,7 @@ research source, and detailed description.
 | REQ-03 | Single license (no contradictions) | P0 | DONE | 0 |
 | REQ-04 | Quarantine stub prover files | P1 | DONE | 0 |
 | REQ-05 | Coq active build: maintain 0 Admitted, 0 Axioms | P0 | DONE | Ongoing |
-| REQ-06 | Lean 4: full-lane build plus zero `sorry` / zero `axiom` | P1 | IN PROGRESS | 2 |
+| REQ-06 | Lean 4: full-lane build plus zero `sorry` / zero `axiom` | P1 | DONE | 2 |
 | REQ-07 | Isabelle: first successful build | P1 | DONE | 2 |
 | REQ-08 | F*: first real proof (not stub) | P2 | DONE | 2 |
 | REQ-09 | TLA+: first real spec (not stub) | P2 | DONE | 2 |
@@ -449,7 +444,7 @@ See Part 5 for detailed per-prover closure criteria.
 
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
-| Lean 4 | 136 files, 3,889 declarations, 0 `sorry`, 8 axioms | Full lane builds; 8 axioms remain (Lean 4 strict positivity limitation) | IN PROGRESS | Medium (remaining 8 require Lean language change or deep encoding) |
+| Lean 4 | 136 files, 3,895 declarations, 0 `sorry`, 0 axioms | Full lane builds; strict active lane mechanized via step-indexed `AlgebraicEffects` typing | DONE | High |
 | Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | 600-1,200 hrs | High |
 | F* | 1 smoke-compiled active module (3 lemmas) | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | 800-1,600 hrs | High (HACL* templates) |
 | TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | 150-300 hrs | Very High |
@@ -974,19 +969,19 @@ X = primary role, o = supporting role
 |--------|-------|
 | Files | 272 |
 | `.lean` files in `02_FORMAL/lean/RIINA` | 136 |
-| Theorem/lemma declarations | 3,879 |
+| Theorem/lemma declarations | 3,895 |
 | `sorry` (full lane) | 0 |
-| Axioms | 48 (all in AlgebraicEffects) |
+| Axioms | 0 |
 | `lake build RIINA` | PASSES |
-| Mechanized readiness | NOT MET |
+| Mechanized readiness | MET |
 
 **Closure criteria:**
 1. Port all core type system theorems from Coq (Progress ✓, Preservation ✓, Safety ✓)
 2. Achieve 0 `sorry` across `02_FORMAL/lean/RIINA` (DONE)
-3. Achieve 0 `axiom` across `02_FORMAL/lean/RIINA` for strict mechanized closure (pending: 8 remain, all in `Domains/AlgebraicEffects.lean` — typing relations blocked by Lean 4 strict positivity)
+3. Achieve 0 `axiom` across `02_FORMAL/lean/RIINA` for strict mechanized closure (DONE: `Domains/AlgebraicEffects.lean` now uses a step-indexed typing judgment)
 4. Keep the full RIINA Lean namespace compiling (`lake build RIINA` passes)
 
-**Status: ACTIVE LANE COMPILED; FULL MECHANIZED CLOSURE NOT MET.**
+**Status: ACTIVE LANE MECHANIZED CLOSURE MET.**
 **Key gotchas:** `mutual` blocks can't have doc comments, `import` must be first line,
 constructor names PascalCase, `induction` doesn't work on mutual inductives.
 

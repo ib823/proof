@@ -221,7 +221,7 @@ This is not a whitepaper. This is working software.
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
 | **Coq 8.20.1** (Primary) | 9,172 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
-| **Lean 4** (Secondary) | 3,889 theorem/lemma declarations in the active lane | 136 files build; 0 `sorry` and 8 axioms remain (typing relations blocked by strict positivity), so Lean is compiled but not mechanized |
+| **Lean 4** (Secondary) | 3,895 theorem/lemma declarations in the active lane | 136 files build; 0 `sorry`, 0 axioms; `AlgebraicEffects` now uses step-indexed typing, so the active lane is mechanized |
 | **Isabelle/HOL** (Tertiary) | 5 compiled lemmas in `RIINA_CORE` | 1 smoke-built theory; remaining `.thy` files are quarantined stubs |
 | **F\*** (Seed lane) | 3 compiled lemmas in `CryptographicSecurityActive` | 1 smoke-built active module; remaining `.fst` files are quarantined generated/transpiled stubs |
 | **TLA+** (Protocol seed lane) | 5 `THEOREM` declarations in `TelusProcurementProtocol` | 1 TLC-checked procurement spec; remaining `.tla` files are quarantined generated stubs |
@@ -316,7 +316,7 @@ riina/
 │   ├── compliance/         DO-178C, ISO-26262, Common Criteria models
 │   └── Industries/         Regulatory/domain formal models
 │
-├── 02_FORMAL/lean/          Lean 4 active lane (136 files, 3,879 declarations)
+├── 02_FORMAL/lean/          Lean 4 active lane (136 files, 3,895 declarations)
 │   └── RIINA/               Syntax, Semantics, Typing, Progress, Preservation,
 │                             TypeSafety, EffectAlgebra, EffectSystem, EffectGate,
 │                             NonInterference
