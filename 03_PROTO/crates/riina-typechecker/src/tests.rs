@@ -872,7 +872,7 @@ mod formalized_tests {
         register_builtin_types, type_check, type_check_full, types_compatible, Context, TypeError,
         TypingContext,
     };
-    use riina_types::{Effect, Expr, Location, SecurityLevel, StoreTy, Ty};
+    use riina_types::{BinOp, Effect, Expr, Location, SecurityLevel, StoreTy, Ty};
 
     // ── Basic value typing with new context ──
 
@@ -975,21 +975,141 @@ mod formalized_tests {
     }
 
     #[test]
-    fn test_assign_secret_in_public_context_fails() {
+    fn test_assign_secret_ref_in_public_context_ok() {
+        // REQ-12 (IFC): Writing UP is safe — Public context can write to Secret ref.
+        // Bell-LaPadula *-property: no-write-DOWN, but write-UP is allowed.
+        // Δ=Public, sl=Secret → Public ⊑ Secret → TRUE → allowed.
         let mut ctx = TypingContext::with_level(SecurityLevel::Public);
         let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Secret);
         let assign = Expr::Assign(Box::new(r), Box::new(Expr::Int(2)));
+        let (ty, _eff) = type_check_full(&mut ctx, &assign).unwrap();
+        assert_eq!(ty, Ty::Unit);
+    }
+
+    #[test]
+    fn test_assign_public_ref_in_secret_context_fails() {
+        // REQ-12 (IFC): Writing DOWN is blocked — Secret context cannot write
+        // to Public ref. This prevents implicit information flows where a branch
+        // guarded by secret data writes to a public reference.
+        // Δ=Secret, sl=Public → Secret ⊑ Public → FALSE → blocked.
+        let mut ctx = TypingContext::with_level(SecurityLevel::Secret);
+        let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Public);
+        let assign = Expr::Assign(Box::new(r), Box::new(Expr::Int(2)));
         match type_check_full(&mut ctx, &assign) {
-            Err(TypeError::SecurityViolation {
-                found,
-                expected,
+            Err(TypeError::ImplicitFlowViolation {
+                branch_level,
+                target_level,
                 context,
             }) => {
-                assert_eq!(found, SecurityLevel::Secret);
-                assert_eq!(expected, SecurityLevel::Public);
+                assert_eq!(branch_level, SecurityLevel::Secret);
+                assert_eq!(target_level, SecurityLevel::Public);
                 assert_eq!(context, "assignment");
             }
-            other => panic!("Expected SecurityViolation, got {:?}", other),
+            other => panic!("Expected ImplicitFlowViolation, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_assign_same_level_ok() {
+        // Assigning to a ref at the same level as context is always OK.
+        // Δ=User, sl=User → User ⊑ User → TRUE → allowed.
+        let mut ctx = TypingContext::with_level(SecurityLevel::User);
+        let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::User);
+        let assign = Expr::Assign(Box::new(r), Box::new(Expr::Int(2)));
+        let (ty, _eff) = type_check_full(&mut ctx, &assign).unwrap();
+        assert_eq!(ty, Ty::Unit);
+    }
+
+    #[test]
+    fn test_implicit_flow_secret_deref_then_assign_public() {
+        // The classic implicit flow attack:
+        // In a Secret context (required to deref secret ref),
+        // try to write the result to a public ref.
+        // This must be REJECTED.
+        let mut ctx = TypingContext::with_level(SecurityLevel::Secret);
+
+        // deref(ref 42 @Secret) — reads secret data (allowed: Secret ⊑ Secret)
+        let secret_ref = Expr::Ref(Box::new(Expr::Int(42)), SecurityLevel::Secret);
+        let deref = Expr::Deref(Box::new(secret_ref));
+
+        // ref 0 @Public — a public reference
+        let public_ref = Expr::Ref(Box::new(Expr::Int(0)), SecurityLevel::Public);
+
+        // if (deref secret_ref) > 0 then public_ref := 1 else public_ref := 0
+        // The deref is fine, the comparison is fine, but the assignments are implicit flows.
+        let cond = Expr::BinOp(
+            BinOp::Gt,
+            Box::new(deref),
+            Box::new(Expr::Int(0)),
+        );
+        let assign_then = Expr::Assign(
+            Box::new(public_ref.clone()),
+            Box::new(Expr::Int(1)),
+        );
+        let assign_else = Expr::Assign(
+            Box::new(Expr::Ref(Box::new(Expr::Int(0)), SecurityLevel::Public)),
+            Box::new(Expr::Int(0)),
+        );
+        let if_expr = Expr::If(
+            Box::new(cond),
+            Box::new(assign_then),
+            Box::new(assign_else),
+        );
+
+        // Must fail with ImplicitFlowViolation
+        match type_check_full(&mut ctx, &if_expr) {
+            Err(TypeError::ImplicitFlowViolation { .. }) => {
+                // Good: implicit flow prevented
+            }
+            other => panic!("Expected ImplicitFlowViolation, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_no_implicit_flow_when_writing_to_same_level() {
+        // In a Secret context, writing to Secret ref inside an if is OK.
+        let mut ctx = TypingContext::with_level(SecurityLevel::Secret);
+        let secret_ref = Expr::Ref(Box::new(Expr::Int(0)), SecurityLevel::Secret);
+        let assign = Expr::Assign(Box::new(secret_ref), Box::new(Expr::Int(1)));
+        let if_expr = Expr::If(
+            Box::new(Expr::Bool(true)),
+            Box::new(assign),
+            Box::new(Expr::Unit),
+        );
+        // Should succeed — no downward flow
+        type_check_full(&mut ctx, &if_expr).unwrap();
+    }
+
+    #[test]
+    fn test_bell_lapadula_deref_no_read_up() {
+        // T_Deref: No-read-up still enforced. Cannot deref Secret in Public context.
+        let mut ctx = TypingContext::with_level(SecurityLevel::Public);
+        let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Secret);
+        let deref = Expr::Deref(Box::new(r));
+        match type_check_full(&mut ctx, &deref) {
+            Err(TypeError::SecurityViolation {
+                found: SecurityLevel::Secret,
+                expected: SecurityLevel::Public,
+                context: "dereference",
+            }) => {} // Good: no-read-up enforced
+            other => panic!("Expected SecurityViolation (no-read-up), got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_bell_lapadula_assign_no_write_down() {
+        // T_Assign: No-write-down enforced at all levels.
+        // System context cannot write to Internal ref.
+        let mut ctx = TypingContext::with_level(SecurityLevel::System);
+        let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Internal);
+        let assign = Expr::Assign(Box::new(r), Box::new(Expr::Int(2)));
+        match type_check_full(&mut ctx, &assign) {
+            Err(TypeError::ImplicitFlowViolation {
+                branch_level: SecurityLevel::System,
+                target_level: SecurityLevel::Internal,
+                ..
+            }) => {} // Good: no-write-down enforced
+            other => panic!("Expected ImplicitFlowViolation (no-write-down), got {:?}", other),
         }
     }
 

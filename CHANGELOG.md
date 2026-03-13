@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
+**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 930 Rust tests
 
 All notable changes to RIINA will be documented in this file.
 
@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Active Coq build: 9,172 Qed across 259 files, 0 Admitted, 0 active axioms
 
 ### Added
+- REQ-12: Compiler enforces information flow control (Bell-LaPadula model)
+  - T_Assign: no-write-down (`Δ ⊑ sl`) prevents implicit flows through control structure
+  - T_Deref: no-read-up (`sl ⊑ Δ`) prevents unauthorized reads
+  - IFC-aware branching: If/Case elevate Δ in branches based on condition security level
+  - New `ImplicitFlowViolation` error (S0003) with clear diagnostics
+  - 7 new IFC enforcement tests (Bell-LaPadula, implicit flow prevention)
 - Lean 4 active lane mechanized: 3,895 theorem/lemma declarations across 136 files, 0 sorry, 0 axioms
 - AlgebraicEffects.lean: 48 axioms eliminated via first-order defunctionalization + step-indexed typing (Appel-McAllester 2001)
 - Z3 security lattice verification: 25 properties verified (matching Coq Syntax.v lattice lemmas)

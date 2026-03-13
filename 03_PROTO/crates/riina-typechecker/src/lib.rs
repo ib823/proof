@@ -53,6 +53,14 @@ pub enum TypeError {
     },
     /// Location not found in store typing
     LocationNotFound(Location),
+    /// Implicit information flow violation: branching on secret data
+    /// and writing to a lower-security reference inside the branch.
+    /// Matches Denning-style implicit flow prevention.
+    ImplicitFlowViolation {
+        branch_level: SecurityLevel,
+        target_level: SecurityLevel,
+        context: &'static str,
+    },
     /// Tainted data flowing to sensitive sink without sanitization
     /// Matches Coq SQLInjectionPrevention.v:92 (taint_safe predicate)
     TaintViolation {
@@ -119,6 +127,17 @@ impl std::fmt::Display for TypeError {
             }
             TypeError::LocationNotFound(loc) => {
                 write!(f, "Location not found in store: {}", loc)
+            }
+            TypeError::ImplicitFlowViolation {
+                branch_level,
+                target_level,
+                context,
+            } => {
+                write!(
+                    f,
+                    "Implicit flow violation in {}: branching on {:?} data cannot write to {:?} reference",
+                    context, branch_level, target_level
+                )
             }
             TypeError::TaintViolation {
                 taint_source,
@@ -220,6 +239,17 @@ impl TypeError {
             TypeError::ExpectedProof(_) => {
                 "Expected a Bukti<T> proof type. Use bukti(expr) to create one".to_string()
             }
+            TypeError::ImplicitFlowViolation {
+                branch_level,
+                target_level,
+                ..
+            } => {
+                format!(
+                    "Cannot write to {:?}-level reference inside a branch guarded by {:?}-level data. \
+                     Use a {:?}-level reference or declassify the condition first",
+                    target_level, branch_level, branch_level
+                )
+            }
             TypeError::TaintViolation {
                 taint_source,
                 required_sanitizer,
@@ -252,6 +282,7 @@ impl TypeError {
             TypeError::AnnotationMismatch { .. } => "T0009",
             TypeError::SecurityViolation { .. } => "S0001",
             TypeError::InvalidDeclassification { .. } => "S0002",
+            TypeError::ImplicitFlowViolation { .. } => "S0003",
             TypeError::CapabilityViolation { .. } => "CAP0001",
             TypeError::LocationNotFound(_) => "T0010",
             TypeError::TaintViolation { .. } => "TAINT001",
@@ -277,6 +308,9 @@ impl TypeError {
             },
             TypeError::InvalidDeclassification { .. } => {
                 Some("T_Declassify (Typing.v:196) — declass_ok predicate")
+            }
+            TypeError::ImplicitFlowViolation { .. } => {
+                Some("Denning implicit flow — Δ elevated in branch (NonInterference.v)")
             }
             TypeError::CapabilityViolation { .. } => Some("T_Require/T_Grant (Typing.v:207-213)"),
             TypeError::ExpectedRef(_) => Some("T_Deref (Typing.v:178) — operand must be TRef"),
@@ -2088,6 +2122,24 @@ fn declass_ok(secret_expr: &Expr, proof_expr: &Expr) -> Result<(), TypeError> {
     }
 }
 
+/// Extract the security level associated with a type.
+///
+/// This is used for implicit flow tracking: when branching on an expression
+/// whose type carries a security level, we elevate Δ in the branch bodies
+/// to prevent information leakage through control flow.
+///
+/// - `Secret(T)` → Secret (classified data)
+/// - `Labeled(T, l)` → l (explicitly labeled data)
+/// - `Ref(T, l)` after deref → l (reference security level)
+/// - All other types → Public (no security restriction)
+fn security_level_of_type(ty: &Ty) -> SecurityLevel {
+    match ty {
+        Ty::Secret(_) => SecurityLevel::Secret,
+        Ty::Labeled(_, l) => *l,
+        _ => SecurityLevel::Public,
+    }
+}
+
 /// Full typechecker with Coq-matching signature.
 ///
 /// Implements `has_type Γ Σ Δ e T ε` from Typing.v.
@@ -2213,17 +2265,30 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             }
             _ => Err(TypeError::ExpectedSum(ty.clone())),
         },
+        // REQ-12: IFC-aware case analysis — elevate Δ in branches
         Expr::Case(e, x, e1, y, e2) => {
             let (t, eff) = type_check_full(ctx, e)?;
             match t {
                 Ty::Sum(t_left, t_right) => {
-                    let ctx1 = ctx.extend_gamma(x.clone(), *t_left);
-                    let mut ctx1_mut = ctx1;
-                    let (t1, eff1) = type_check_full(&mut ctx1_mut, e1)?;
+                    // IFC: Elevate Δ based on scrutinee's security level
+                    let scrutinee_level = security_level_of_type(
+                        &Ty::Sum(t_left.clone(), t_right.clone()),
+                    );
+                    let branch_delta = ctx.delta.join(scrutinee_level);
 
-                    let ctx2 = ctx.extend_gamma(y.clone(), *t_right);
-                    let mut ctx2_mut = ctx2;
-                    let (t2, eff2) = type_check_full(&mut ctx2_mut, e2)?;
+                    let mut ctx1 = TypingContext {
+                        gamma: ctx.gamma.extend(x.clone(), *t_left),
+                        sigma: ctx.sigma.clone(),
+                        delta: branch_delta,
+                    };
+                    let (t1, eff1) = type_check_full(&mut ctx1, e1)?;
+
+                    let mut ctx2 = TypingContext {
+                        gamma: ctx.gamma.extend(y.clone(), *t_right),
+                        sigma: ctx.sigma.clone(),
+                        delta: branch_delta,
+                    };
+                    let (t2, eff2) = type_check_full(&mut ctx2, e2)?;
 
                     if t1 != t2 {
                         return Err(TypeError::TypeMismatch {
@@ -2239,7 +2304,8 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         }
 
         // ════════════════════════════════════════════════════════════════════
-        // VERIFIED: Control (T_If, T_Let, T_LetRec)
+        // FORMALIZED: Control (T_If, T_Let, T_LetRec)
+        // REQ-12: IFC-aware branching — elevate Δ in branch bodies
         // ════════════════════════════════════════════════════════════════════
         Expr::If(cond, e2, e3) => {
             let (t_cond, eff1) = type_check_full(ctx, cond)?;
@@ -2250,8 +2316,26 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 });
             }
 
-            let (t2, eff2) = type_check_full(ctx, e2)?;
-            let (t3, eff3) = type_check_full(ctx, e3)?;
+            // IFC: Elevate Δ in branches based on condition's security level.
+            // If the condition was derived from high-security data, the
+            // branches must execute at that elevated security level to prevent
+            // implicit flows through control structure.
+            let cond_level = security_level_of_type(&t_cond);
+            let branch_delta = ctx.delta.join(cond_level);
+
+            let mut branch_ctx = TypingContext {
+                gamma: ctx.gamma.clone(),
+                sigma: ctx.sigma.clone(),
+                delta: branch_delta,
+            };
+
+            let (t2, eff2) = type_check_full(&mut branch_ctx, e2)?;
+            let mut branch_ctx2 = TypingContext {
+                gamma: ctx.gamma.clone(),
+                sigma: ctx.sigma.clone(),
+                delta: branch_delta,
+            };
+            let (t3, eff3) = type_check_full(&mut branch_ctx2, e3)?;
 
             if t2 != t3 {
                 return Err(TypeError::TypeMismatch {
@@ -2334,18 +2418,25 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
         // T_Assign: has_type Γ Σ Δ e1 (TRef T l) ε1 →
         //           has_type Γ Σ Δ e2 T ε2 →
-        //           l ⊑ Δ →  (* SECURITY CHECK! *)
+        //           Δ ⊑ l →  (* NO-WRITE-DOWN: Bell-LaPadula *-property *)
         //           has_type Γ Σ Δ (EAssign e1 e2) TUnit (ε1 ⊔ ε2 ⊔ EffectWrite)
+        //
+        // IFC enforcement (REQ-12): The security context Δ must flow to the
+        // reference level l. This prevents implicit information flows where
+        // a branch guarded by secret data writes to a public reference.
+        // Combined with T_Deref (l ⊑ Δ, no-read-up), this gives Bell-LaPadula.
         Expr::Assign(e1, e2) => {
             let (t1, eff1) = type_check_full(ctx, e1)?;
             let (t2, eff2) = type_check_full(ctx, e2)?;
             match t1 {
                 Ty::Ref(inner, sl) => {
-                    // Security check: sl ⊑ Δ
-                    if !sl.leq(ctx.delta) {
-                        return Err(TypeError::SecurityViolation {
-                            found: sl,
-                            expected: ctx.delta,
+                    // IFC check: Δ ⊑ sl (no-write-down)
+                    // Program counter security level must flow to reference level.
+                    // Prevents: secret-context code writing to public references.
+                    if !ctx.delta.leq(sl) {
+                        return Err(TypeError::ImplicitFlowViolation {
+                            branch_level: ctx.delta,
+                            target_level: sl,
                             context: "assignment",
                         });
                     }

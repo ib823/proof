@@ -1,10 +1,10 @@
 {
-  "generated": "2026-03-13T06:33:35Z",
-  "generatedHuman": "March 13, 2026 at 06:33 UTC",
+  "generated": "2026-03-13T09:26:18Z",
+  "generatedHuman": "March 13, 2026 at 09:26 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "204cc530",
+    "commit": "cd3f3a72",
     "branch": "main"
   },
   "proofs": {
@@ -77,9 +77,9 @@
   },
   "smt": {
     "assertions": 0,
-    "assertionsRaw": 8663,
+    "assertionsRaw": 8720,
     "quarantined": true,
-    "files": 264,
+    "files": 265,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
@@ -133,7 +133,7 @@
         "fstar": "partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending",
         "tlaplus": "partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending",
         "alloy": "partial TelusProcurementAccessControl smoke model checked; full-lane executable Alloy checks across corpus still pending",
-        "smt": "require full-lane Z3 checks and zero generated placeholders",
+        "smt": "smoke artifact verified; full-lane Z3 checks and zero generated placeholders still required for mechanized",
         "verus": "require full-lane Verus checks and zero generated placeholders",
         "kani": "require full-lane Kani checks and zero generated placeholders",
         "tv": "require full-lane TV checks and zero generated placeholders"
@@ -174,7 +174,7 @@
   "rust": {
     "tests": 924,
     "testsVerified": 924,
-    "testsEstimated": 920,
+    "testsEstimated": 926,
     "testsSource": "cached_verified",
     "crates": 15
   },

@@ -73,6 +73,19 @@ impl SecurityLevel {
             other
         }
     }
+
+    /// Convert from numeric level back to SecurityLevel.
+    #[must_use]
+    pub const fn from_level(n: u8) -> Self {
+        match n {
+            0 => Self::Public,
+            1 => Self::Internal,
+            2 => Self::Session,
+            3 => Self::User,
+            4 => Self::System,
+            _ => Self::Secret,
+        }
+    }
 }
 
 /// Effects
