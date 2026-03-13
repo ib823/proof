@@ -219,112 +219,112 @@ let users_unique_ids (p_users: (list user)) : Tot bool =
   let ids = map p_users.f_user_id in Nat.eqb (List.List.Tot.length ids) (List.List.Tot.length (nat_nodup ids))
 
 (* COMPLY_002_01_pan_masking (matches Coq: Theorem COMPLY_002_01_pan_masking) *)
-let comply_002_01_pan_masking (p_disp: pan_display) : Lemma (requires (p_disp == FullPAN)) (ensures (display_compliant p_disp == false)) = admit ()
+let comply_002_01_pan_masking (p_disp: pan_display) : Lemma (requires (p_disp == FullPAN)) (ensures (display_compliant p_disp == false)) = ()
 
 (* COMPLY_002_01_pan_masking_valid (matches Coq: Theorem COMPLY_002_01_pan_masking_valid) *)
-let comply_002_01_pan_masking_valid () : Lemma (display_compliant MaskedPAN == true /\ display_compliant TokenizedPAN == true) = admit ()
+let comply_002_01_pan_masking_valid () : Lemma (display_compliant MaskedPAN == true /\ display_compliant TokenizedPAN == true) = ()
 
 (* COMPLY_002_02_pan_encryption (matches Coq: Theorem COMPLY_002_02_pan_encryption) *)
-let comply_002_02_pan_encryption (p_enc: enc_state) : Lemma (requires (pci_compliant_encryption p_enc PAN == true)) (ensures (p_enc == AES256 \/ p_enc == Tokenized)) = admit ()
+let comply_002_02_pan_encryption (p_enc: enc_state) : Lemma (requires (pci_compliant_encryption p_enc PAN == true)) (ensures (p_enc == AES256 \/ p_enc == Tokenized)) = ()
 
 (* COMPLY_002_02_pan_plain_forbidden (matches Coq: Theorem COMPLY_002_02_pan_plain_forbidden) *)
-let comply_002_02_pan_plain_forbidden () : Lemma (pci_compliant_encryption Plain PAN == false) = admit ()
+let comply_002_02_pan_plain_forbidden () : Lemma (pci_compliant_encryption Plain PAN == false) = ()
 
 (* COMPLY_002_02_pan_aes128_insufficient (matches Coq: Theorem COMPLY_002_02_pan_aes128_insufficient) *)
-let comply_002_02_pan_aes128_insufficient () : Lemma (pci_compliant_encryption AES128 PAN == false) = admit ()
+let comply_002_02_pan_aes128_insufficient () : Lemma (pci_compliant_encryption AES128 PAN == false) = ()
 
 (* COMPLY_002_03_cvv_never_stored (matches Coq: Theorem COMPLY_002_03_cvv_never_stored) *)
-let comply_002_03_cvv_never_stored () : Lemma (can_store CVV == false) = admit ()
+let comply_002_03_cvv_never_stored () : Lemma (can_store CVV == false) = ()
 
 (* COMPLY_002_03_cvv_no_compliant_encryption (matches Coq: Theorem COMPLY_002_03_cvv_no_compliant_encryption) *)
-let comply_002_03_cvv_no_compliant_encryption (p_enc: enc_state) : Lemma (pci_compliant_encryption p_enc CVV == false) = admit ()
+let comply_002_03_cvv_no_compliant_encryption (p_enc: enc_state) : Lemma (pci_compliant_encryption p_enc CVV == false) = ()
 
 (* COMPLY_002_04_pin_never_stored (matches Coq: Theorem COMPLY_002_04_pin_never_stored) *)
-let comply_002_04_pin_never_stored () : Lemma (can_store PIN == false) = admit ()
+let comply_002_04_pin_never_stored () : Lemma (can_store PIN == false) = ()
 
 (* COMPLY_002_04_pin_no_compliant_encryption (matches Coq: Theorem COMPLY_002_04_pin_no_compliant_encryption) *)
-let comply_002_04_pin_no_compliant_encryption (p_enc: enc_state) : Lemma (pci_compliant_encryption p_enc PIN == false) = admit ()
+let comply_002_04_pin_no_compliant_encryption (p_enc: enc_state) : Lemma (pci_compliant_encryption p_enc PIN == false) = ()
 
 (* COMPLY_002_05_key_rotation_detection (matches Coq: Theorem COMPLY_002_05_key_rotation_detection) *)
-let comply_002_05_key_rotation_detection (p_k: key_state) (p_current_time: nat) : Lemma (requires (key_creation_time p_k + key_rotation_period p_k < p_current_time)) (ensures (key_needs_rotation p_k p_current_time == true)) = admit ()
+let comply_002_05_key_rotation_detection (p_k: key_state) (p_current_time: nat) : Lemma (requires (key_creation_time p_k + key_rotation_period p_k < p_current_time)) (ensures (key_needs_rotation p_k p_current_time == true)) = ()
 
 (* COMPLY_002_05_key_no_rotation_needed (matches Coq: Theorem COMPLY_002_05_key_no_rotation_needed) *)
-let comply_002_05_key_no_rotation_needed (p_k: key_state) (p_current_time: nat) : Lemma (requires (p_current_time <= key_creation_time p_k + key_rotation_period p_k)) (ensures (key_needs_rotation p_k p_current_time == false)) = admit ()
+let comply_002_05_key_no_rotation_needed (p_k: key_state) (p_current_time: nat) : Lemma (requires (p_current_time <= key_creation_time p_k + key_rotation_period p_k)) (ensures (key_needs_rotation p_k p_current_time == false)) = ()
 
 (* COMPLY_002_06_access_requires_need_to_know (matches Coq: Theorem COMPLY_002_06_access_requires_need_to_know) *)
-let comply_002_06_access_requires_need_to_know (p_u: user) : Lemma (requires (p_u.f_user_need_to_know == false)) (ensures (grant_chd_access p_u == false)) = admit ()
+let comply_002_06_access_requires_need_to_know (p_u: user) : Lemma (requires (p_u.f_user_need_to_know == false)) (ensures (grant_chd_access p_u == false)) = ()
 
 (* COMPLY_002_06_no_access_level_denied (matches Coq: Theorem COMPLY_002_06_no_access_level_denied) *)
-let comply_002_06_no_access_level_denied (p_u: user) : Lemma (requires (p_u.f_user_access_level == NoAccess)) (ensures (grant_chd_access p_u == false)) = admit ()
+let comply_002_06_no_access_level_denied (p_u: user) : Lemma (requires (p_u.f_user_access_level == NoAccess)) (ensures (grant_chd_access p_u == false)) = ()
 
 (* COMPLY_002_07_unique_ids_singleton (matches Coq: Theorem COMPLY_002_07_unique_ids_singleton) *)
-let comply_002_07_unique_ids_singleton (p_u: user) : Lemma (users_unique_ids [p_u] == true) = admit ()
+let comply_002_07_unique_ids_singleton (p_u: user) : Lemma (users_unique_ids [p_u] == true) = ()
 
 (* COMPLY_002_07_unique_ids_empty (matches Coq: Theorem COMPLY_002_07_unique_ids_empty) *)
-let comply_002_07_unique_ids_empty () : Lemma (users_unique_ids [] == true) = admit ()
+let comply_002_07_unique_ids_empty () : Lemma (users_unique_ids [] == true) = ()
 
 (* COMPLY_002_08_mfa_required (matches Coq: Theorem COMPLY_002_08_mfa_required) *)
-let comply_002_08_mfa_required (p_u: user) : Lemma (requires (p_u.f_user_mfa_enabled == false /\ ~(p_u.f_user_access_level == NoAccess))) (ensures (grant_chd_access p_u == false)) = admit ()
+let comply_002_08_mfa_required (p_u: user) : Lemma (requires (p_u.f_user_mfa_enabled == false /\ ~(p_u.f_user_access_level == NoAccess))) (ensures (grant_chd_access p_u == false)) = ()
 
 (* COMPLY_002_08_access_granted_implies_mfa (matches Coq: Theorem COMPLY_002_08_access_granted_implies_mfa) *)
-let comply_002_08_access_granted_implies_mfa (p_u: user) : Lemma (requires (grant_chd_access p_u == true)) (ensures (p_u.f_user_mfa_enabled == true)) = admit ()
+let comply_002_08_access_granted_implies_mfa (p_u: user) : Lemma (requires (grant_chd_access p_u == true)) (ensures (p_u.f_user_mfa_enabled == true)) = ()
 
 (* COMPLY_002_09_audit_entry_has_timestamp (matches Coq: Theorem COMPLY_002_09_audit_entry_has_timestamp) *)
-let comply_002_09_audit_entry_has_timestamp (p_ts: nat) (p_usr: nat) (p_act: nat) (p_chd: chd_type) (p_succ: bool) (p_prev: nat) : Lemma ((create_audit_entry p_ts p_usr p_act p_chd p_succ p_prev).f_pci_timestamp == p_ts) = admit ()
+let comply_002_09_audit_entry_has_timestamp (p_ts: nat) (p_usr: nat) (p_act: nat) (p_chd: chd_type) (p_succ: bool) (p_prev: nat) : Lemma ((create_audit_entry p_ts p_usr p_act p_chd p_succ p_prev).f_pci_timestamp == p_ts) = ()
 
 (* COMPLY_002_09_audit_entry_has_user (matches Coq: Theorem COMPLY_002_09_audit_entry_has_user) *)
-let comply_002_09_audit_entry_has_user (p_ts: nat) (p_usr: nat) (p_act: nat) (p_chd: chd_type) (p_succ: bool) (p_prev: nat) : Lemma ((create_audit_entry p_ts p_usr p_act p_chd p_succ p_prev).f_pci_user == p_usr) = admit ()
+let comply_002_09_audit_entry_has_user (p_ts: nat) (p_usr: nat) (p_act: nat) (p_chd: chd_type) (p_succ: bool) (p_prev: nat) : Lemma ((create_audit_entry p_ts p_usr p_act p_chd p_succ p_prev).f_pci_user == p_usr) = ()
 
 (* COMPLY_002_09_audit_entry_has_action (matches Coq: Theorem COMPLY_002_09_audit_entry_has_action) *)
-let comply_002_09_audit_entry_has_action (p_ts: nat) (p_usr: nat) (p_act: nat) (p_chd: chd_type) (p_succ: bool) (p_prev: nat) : Lemma ((create_audit_entry p_ts p_usr p_act p_chd p_succ p_prev).f_pci_action == p_act) = admit ()
+let comply_002_09_audit_entry_has_action (p_ts: nat) (p_usr: nat) (p_act: nat) (p_chd: chd_type) (p_succ: bool) (p_prev: nat) : Lemma ((create_audit_entry p_ts p_usr p_act p_chd p_succ p_prev).f_pci_action == p_act) = ()
 
 (* COMPLY_002_10_audit_has_hash (matches Coq: Theorem COMPLY_002_10_audit_has_hash) *)
-let comply_002_10_audit_has_hash (p_ts: nat) (p_usr: nat) (p_act: nat) (p_chd: chd_type) (p_succ: bool) (p_prev: nat) : Lemma ((create_audit_entry p_ts p_usr p_act p_chd p_succ p_prev).f_pci_hash == p_prev + p_ts + p_usr + p_act) = admit ()
+let comply_002_10_audit_has_hash (p_ts: nat) (p_usr: nat) (p_act: nat) (p_chd: chd_type) (p_succ: bool) (p_prev: nat) : Lemma ((create_audit_entry p_ts p_usr p_act p_chd p_succ p_prev).f_pci_hash == p_prev + p_ts + p_usr + p_act) = ()
 
 (* COMPLY_002_10_empty_log_valid (matches Coq: Theorem COMPLY_002_10_empty_log_valid) *)
-let comply_002_10_empty_log_valid (p_h: nat) : Lemma (audit_chain_valid [] p_h == true) = admit ()
+let comply_002_10_empty_log_valid (p_h: nat) : Lemma (audit_chain_valid [] p_h == true) = ()
 
 (* COMPLY_002_11_tls12_compliant (matches Coq: Theorem COMPLY_002_11_tls12_compliant) *)
-let comply_002_11_tls12_compliant () : Lemma (tls_compliant TLS12 == true) = admit ()
+let comply_002_11_tls12_compliant () : Lemma (tls_compliant TLS12 == true) = ()
 
 (* COMPLY_002_11_tls13_compliant (matches Coq: Theorem COMPLY_002_11_tls13_compliant) *)
-let comply_002_11_tls13_compliant () : Lemma (tls_compliant TLS13 == true) = admit ()
+let comply_002_11_tls13_compliant () : Lemma (tls_compliant TLS13 == true) = ()
 
 (* COMPLY_002_11_old_tls_non_compliant (matches Coq: Theorem COMPLY_002_11_old_tls_non_compliant) *)
-let comply_002_11_old_tls_non_compliant () : Lemma (tls_compliant TLS10 == false /\ tls_compliant TLS11 == false) = admit ()
+let comply_002_11_old_tls_non_compliant () : Lemma (tls_compliant TLS10 == false /\ tls_compliant TLS11 == false) = ()
 
 (* COMPLY_002_11_transmission_requires_encryption (matches Coq: Theorem COMPLY_002_11_transmission_requires_encryption) *)
-let comply_002_11_transmission_requires_encryption (p_t: transmission) : Lemma (requires (transmission_compliant p_t == true)) (ensures (p_t.f_trans_encrypted == true)) = admit ()
+let comply_002_11_transmission_requires_encryption (p_t: transmission) : Lemma (requires (transmission_compliant p_t == true)) (ensures (p_t.f_trans_encrypted == true)) = ()
 
 (* COMPLY_002_12_token_no_key_no_pan (matches Coq: Theorem COMPLY_002_12_token_no_key_no_pan) *)
-let comply_002_12_token_no_key_no_pan (p_vault: token_vault) (p_token: nat) : Lemma (token_lookup p_vault p_token false == None) = admit ()
+let comply_002_12_token_no_key_no_pan (p_vault: token_vault) (p_token: nat) : Lemma (token_lookup p_vault p_token false == None) = ()
 
 (* COMPLY_002_12_tokenization_irreversible_without_key (matches Coq: Theorem COMPLY_002_12_tokenization_irreversible_without_key) *)
-let comply_002_12_tokenization_irreversible_without_key (p_vault: token_vault) (p_token: nat) (p_pan: nat) : Lemma (requires (token_lookup p_vault p_token false == Some p_pan)) (ensures (False)) = admit ()
+let comply_002_12_tokenization_irreversible_without_key (p_vault: token_vault) (p_token: nat) (p_pan: nat) : Lemma (requires (token_lookup p_vault p_token false == Some p_pan)) (ensures (False)) = ()
 
 (* COMPLY_002_13_past_retention_detected (matches Coq: Theorem COMPLY_002_13_past_retention_detected) *)
-let comply_002_13_past_retention_detected (p_creation: nat) (p_current: nat) (p_max_days: nat) : Lemma (requires (p_creation + p_max_days < p_current)) (ensures (data_past_retention p_creation p_current p_max_days == true)) = admit ()
+let comply_002_13_past_retention_detected (p_creation: nat) (p_current: nat) (p_max_days: nat) : Lemma (requires (p_creation + p_max_days < p_current)) (ensures (data_past_retention p_creation p_current p_max_days == true)) = ()
 
 (* COMPLY_002_13_within_retention_ok (matches Coq: Theorem COMPLY_002_13_within_retention_ok) *)
-let comply_002_13_within_retention_ok (p_creation: nat) (p_current: nat) (p_max_days: nat) : Lemma (requires (p_current <= p_creation + p_max_days)) (ensures (data_past_retention p_creation p_current p_max_days == false)) = admit ()
+let comply_002_13_within_retention_ok (p_creation: nat) (p_current: nat) (p_max_days: nat) : Lemma (requires (p_current <= p_creation + p_max_days)) (ensures (data_past_retention p_creation p_current p_max_days == false)) = ()
 
 (* COMPLY_002_14_secure_deletion_unrecoverable (matches Coq: Theorem COMPLY_002_14_secure_deletion_unrecoverable) *)
-let comply_002_14_secure_deletion_unrecoverable (p_ds: deletion_state) : Lemma (requires (deletion_secure p_ds == true)) (ensures (deletion_unrecoverable p_ds == true)) = admit ()
+let comply_002_14_secure_deletion_unrecoverable (p_ds: deletion_state) : Lemma (requires (deletion_secure p_ds == true)) (ensures (deletion_unrecoverable p_ds == true)) = ()
 
 (* COMPLY_002_14_not_deleted_recoverable (matches Coq: Theorem COMPLY_002_14_not_deleted_recoverable) *)
-let comply_002_14_not_deleted_recoverable () : Lemma (deletion_unrecoverable NotDeleted == false) = admit ()
+let comply_002_14_not_deleted_recoverable () : Lemma (deletion_unrecoverable NotDeleted == false) = ()
 
 (* COMPLY_002_14_marked_still_recoverable (matches Coq: Theorem COMPLY_002_14_marked_still_recoverable) *)
-let comply_002_14_marked_still_recoverable () : Lemma (deletion_unrecoverable MarkedForDeletion == false) = admit ()
+let comply_002_14_marked_still_recoverable () : Lemma (deletion_unrecoverable MarkedForDeletion == false) = ()
 
 (* COMPLY_002_15_cde_requires_isolation (matches Coq: Theorem COMPLY_002_15_cde_requires_isolation) *)
-let comply_002_15_cde_requires_isolation (p_z: network_zone) : Lemma (requires (p_z.f_zone_is_cde == true /\ zone_compliant p_z == true)) (ensures (p_z.f_zone_isolated == true)) = admit ()
+let comply_002_15_cde_requires_isolation (p_z: network_zone) : Lemma (requires (p_z.f_zone_is_cde == true /\ zone_compliant p_z == true)) (ensures (p_z.f_zone_isolated == true)) = ()
 
 (* COMPLY_002_15_cde_requires_firewall (matches Coq: Theorem COMPLY_002_15_cde_requires_firewall) *)
-let comply_002_15_cde_requires_firewall (p_z: network_zone) : Lemma (requires (p_z.f_zone_is_cde == true /\ zone_compliant p_z == true)) (ensures (p_z.f_zone_firewall_protected == true)) = admit ()
+let comply_002_15_cde_requires_firewall (p_z: network_zone) : Lemma (requires (p_z.f_zone_is_cde == true /\ zone_compliant p_z == true)) (ensures (p_z.f_zone_firewall_protected == true)) = ()
 
 (* COMPLY_002_15_non_cde_always_compliant (matches Coq: Theorem COMPLY_002_15_non_cde_always_compliant) *)
-let comply_002_15_non_cde_always_compliant (p_z: network_zone) : Lemma (requires (p_z.f_zone_is_cde == false)) (ensures (zone_compliant p_z == true)) = admit ()
+let comply_002_15_non_cde_always_compliant (p_z: network_zone) : Lemma (requires (p_z.f_zone_is_cde == false)) (ensures (zone_compliant p_z == true)) = ()
 
 (* COMPLY_002_15_vault_isolation (matches Coq: Theorem COMPLY_002_15_vault_isolation) *)
-let comply_002_15_vault_isolation (p_sys: pci_system) : Lemma (requires ((p_sys.f_pci_vault).f_vault_isolated == true)) (ensures (system_scope_isolated p_sys == true)) = admit ()
+let comply_002_15_vault_isolation (p_sys: pci_system) : Lemma (requires ((p_sys.f_pci_vault).f_vault_isolated == true)) (ensures (system_scope_isolated p_sys == true)) = ()

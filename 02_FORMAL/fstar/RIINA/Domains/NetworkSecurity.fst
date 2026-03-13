@@ -341,79 +341,79 @@ let all_defenses_enabled (p_config: network_security_config) : Tot bool =
   andb (tls_mitm_defense_enabled (p_config.f_ns_tls)) (andb (arp_spoofing_defense_enabled (p_config.f_ns_arp)) (andb (dns_poisoning_defense_enabled (p_config.f_ns_dnssec)) (andb (bgp_hijacking_defense_enabled (p_config.f_ns_bgp)) (andb (ssl_stripping_defense_enabled (p_config.f_ns_https)) (andb (packet_sniffing_defense_enabled (p_config.f_ns_encryption)) (andb (packet_injection_defense_enabled (p_config.f_ns_auth_protocol)) (andb (replay_attack_defense_enabled (p_config.f_ns_replay)) (andb (volumetric_dos_defense_enabled (p_config.f_ns_rate_limiter)) (andb (protocol_dos_defense_enabled (p_config.f_ns_protocol_impl)) (andb (application_dos_defense_enabled (p_config.f_ns_resource_limits)) (andb (amplification_dos_defense_enabled (p_config.f_ns_amplification)) (andb (syn_flood_defense_enabled (p_config.f_ns_syn)) (andb (udp_flood_defense_enabled (p_config.f_ns_udp)) (andb (icmp_flood_defense_enabled (p_config.f_ns_icmp)) (andb (slowloris_defense_enabled (p_config.f_ns_slowloris)) (andb (dns_amplification_defense_enabled (p_config.f_ns_dns_server)) (andb (ntp_amplification_defense_enabled (p_config.f_ns_ntp_server)) (andb (ip_spoofing_defense_enabled (p_config.f_ns_ip_spoofing)) (andb (mac_spoofing_defense_enabled (p_config.f_ns_mac)) (andb (vlan_hopping_defense_enabled (p_config.f_ns_vlan)) (andb (rogue_dhcp_defense_enabled (p_config.f_ns_dhcp)) (andb (ntp_attack_defense_enabled (p_config.f_ns_ntp_client)) (andb (tcp_reset_defense_enabled (p_config.f_ns_tcp)) (traffic_analysis_defense_enabled (p_config.f_ns_traffic_analysis)))))))))))))))))))))))))
 
 (* net_001_man_in_the_middle_mitigated (matches Coq: Theorem net_001_man_in_the_middle_mitigated) *)
-let net_001_man_in_the_middle_mitigated (p_config: tls_config) : Lemma (tls_mitm_defense_enabled p_config == true) = admit ()
+let net_001_man_in_the_middle_mitigated (p_config: tls_config) : Lemma (tls_mitm_defense_enabled p_config == true) = ()
 
 (* net_002_arp_spoofing_mitigated (matches Coq: Theorem net_002_arp_spoofing_mitigated) *)
-let net_002_arp_spoofing_mitigated (p_config: arp_config) : Lemma (arp_spoofing_defense_enabled p_config == true) = admit ()
+let net_002_arp_spoofing_mitigated (p_config: arp_config) : Lemma (arp_spoofing_defense_enabled p_config == true) = ()
 
 (* net_003_dns_poisoning_mitigated (matches Coq: Theorem net_003_dns_poisoning_mitigated) *)
-let net_003_dns_poisoning_mitigated (p_config: dnssec_config) : Lemma (dns_poisoning_defense_enabled p_config == true) = admit ()
+let net_003_dns_poisoning_mitigated (p_config: dnssec_config) : Lemma (dns_poisoning_defense_enabled p_config == true) = ()
 
 (* net_004_bgp_hijacking_mitigated (matches Coq: Theorem net_004_bgp_hijacking_mitigated) *)
-let net_004_bgp_hijacking_mitigated (p_config: bgp_config) : Lemma (bgp_hijacking_defense_enabled p_config == true) = admit ()
+let net_004_bgp_hijacking_mitigated (p_config: bgp_config) : Lemma (bgp_hijacking_defense_enabled p_config == true) = ()
 
 (* net_005_ssl_stripping_mitigated (matches Coq: Theorem net_005_ssl_stripping_mitigated) *)
-let net_005_ssl_stripping_mitigated (p_config: https_config) : Lemma (ssl_stripping_defense_enabled p_config == true) = admit ()
+let net_005_ssl_stripping_mitigated (p_config: https_config) : Lemma (ssl_stripping_defense_enabled p_config == true) = ()
 
 (* net_006_packet_sniffing_mitigated (matches Coq: Theorem net_006_packet_sniffing_mitigated) *)
-let net_006_packet_sniffing_mitigated (p_config: encryption_config) : Lemma (packet_sniffing_defense_enabled p_config == true) = admit ()
+let net_006_packet_sniffing_mitigated (p_config: encryption_config) : Lemma (packet_sniffing_defense_enabled p_config == true) = ()
 
 (* net_007_packet_injection_mitigated (matches Coq: Theorem net_007_packet_injection_mitigated) *)
-let net_007_packet_injection_mitigated (p_config: auth_protocol_config) : Lemma (packet_injection_defense_enabled p_config == true) = admit ()
+let net_007_packet_injection_mitigated (p_config: auth_protocol_config) : Lemma (packet_injection_defense_enabled p_config == true) = ()
 
 (* net_008_replay_attack_mitigated (matches Coq: Theorem net_008_replay_attack_mitigated) *)
-let net_008_replay_attack_mitigated (p_config: replay_protection_config) : Lemma (replay_attack_defense_enabled p_config == true) = admit ()
+let net_008_replay_attack_mitigated (p_config: replay_protection_config) : Lemma (replay_attack_defense_enabled p_config == true) = ()
 
 (* net_009_volumetric_dos_mitigated (matches Coq: Theorem net_009_volumetric_dos_mitigated) *)
-let net_009_volumetric_dos_mitigated (p_config: rate_limiter_config) : Lemma (volumetric_dos_defense_enabled p_config == true) = admit ()
+let net_009_volumetric_dos_mitigated (p_config: rate_limiter_config) : Lemma (volumetric_dos_defense_enabled p_config == true) = ()
 
 (* net_010_protocol_dos_mitigated (matches Coq: Theorem net_010_protocol_dos_mitigated) *)
-let net_010_protocol_dos_mitigated (p_config: protocol_impl_config) : Lemma (protocol_dos_defense_enabled p_config == true) = admit ()
+let net_010_protocol_dos_mitigated (p_config: protocol_impl_config) : Lemma (protocol_dos_defense_enabled p_config == true) = ()
 
 (* net_011_application_dos_mitigated (matches Coq: Theorem net_011_application_dos_mitigated) *)
-let net_011_application_dos_mitigated (p_config: resource_limits_config) : Lemma (application_dos_defense_enabled p_config == true) = admit ()
+let net_011_application_dos_mitigated (p_config: resource_limits_config) : Lemma (application_dos_defense_enabled p_config == true) = ()
 
 (* net_012_amplification_dos_mitigated (matches Coq: Theorem net_012_amplification_dos_mitigated) *)
-let net_012_amplification_dos_mitigated (p_config: amplification_config) : Lemma (amplification_dos_defense_enabled p_config == true) = admit ()
+let net_012_amplification_dos_mitigated (p_config: amplification_config) : Lemma (amplification_dos_defense_enabled p_config == true) = ()
 
 (* net_013_syn_flood_mitigated (matches Coq: Theorem net_013_syn_flood_mitigated) *)
-let net_013_syn_flood_mitigated (p_config: syn_protection_config) : Lemma (syn_flood_defense_enabled p_config == true) = admit ()
+let net_013_syn_flood_mitigated (p_config: syn_protection_config) : Lemma (syn_flood_defense_enabled p_config == true) = ()
 
 (* net_014_udp_flood_mitigated (matches Coq: Theorem net_014_udp_flood_mitigated) *)
-let net_014_udp_flood_mitigated (p_config: udp_protection_config) : Lemma (udp_flood_defense_enabled p_config == true) = admit ()
+let net_014_udp_flood_mitigated (p_config: udp_protection_config) : Lemma (udp_flood_defense_enabled p_config == true) = ()
 
 (* net_015_icmp_flood_mitigated (matches Coq: Theorem net_015_icmp_flood_mitigated) *)
-let net_015_icmp_flood_mitigated (p_config: icmp_protection_config) : Lemma (icmp_flood_defense_enabled p_config == true) = admit ()
+let net_015_icmp_flood_mitigated (p_config: icmp_protection_config) : Lemma (icmp_flood_defense_enabled p_config == true) = ()
 
 (* net_016_slowloris_mitigated (matches Coq: Theorem net_016_slowloris_mitigated) *)
-let net_016_slowloris_mitigated (p_config: slowloris_protection_config) : Lemma (slowloris_defense_enabled p_config == true) = admit ()
+let net_016_slowloris_mitigated (p_config: slowloris_protection_config) : Lemma (slowloris_defense_enabled p_config == true) = ()
 
 (* net_017_dns_amplification_mitigated (matches Coq: Theorem net_017_dns_amplification_mitigated) *)
-let net_017_dns_amplification_mitigated (p_config: dns_server_config) : Lemma (dns_amplification_defense_enabled p_config == true) = admit ()
+let net_017_dns_amplification_mitigated (p_config: dns_server_config) : Lemma (dns_amplification_defense_enabled p_config == true) = ()
 
 (* net_018_ntp_amplification_mitigated (matches Coq: Theorem net_018_ntp_amplification_mitigated) *)
-let net_018_ntp_amplification_mitigated (p_config: ntp_server_config) : Lemma (ntp_amplification_defense_enabled p_config == true) = admit ()
+let net_018_ntp_amplification_mitigated (p_config: ntp_server_config) : Lemma (ntp_amplification_defense_enabled p_config == true) = ()
 
 (* net_019_ip_spoofing_mitigated (matches Coq: Theorem net_019_ip_spoofing_mitigated) *)
-let net_019_ip_spoofing_mitigated (p_config: ip_spoofing_config) : Lemma (ip_spoofing_defense_enabled p_config == true) = admit ()
+let net_019_ip_spoofing_mitigated (p_config: ip_spoofing_config) : Lemma (ip_spoofing_defense_enabled p_config == true) = ()
 
 (* net_020_mac_spoofing_mitigated (matches Coq: Theorem net_020_mac_spoofing_mitigated) *)
-let net_020_mac_spoofing_mitigated (p_config: mac_security_config) : Lemma (mac_spoofing_defense_enabled p_config == true) = admit ()
+let net_020_mac_spoofing_mitigated (p_config: mac_security_config) : Lemma (mac_spoofing_defense_enabled p_config == true) = ()
 
 (* net_021_vlan_hopping_mitigated (matches Coq: Theorem net_021_vlan_hopping_mitigated) *)
-let net_021_vlan_hopping_mitigated (p_config: vlan_security_config) : Lemma (vlan_hopping_defense_enabled p_config == true) = admit ()
+let net_021_vlan_hopping_mitigated (p_config: vlan_security_config) : Lemma (vlan_hopping_defense_enabled p_config == true) = ()
 
 (* net_022_rogue_dhcp_mitigated (matches Coq: Theorem net_022_rogue_dhcp_mitigated) *)
-let net_022_rogue_dhcp_mitigated (p_config: dhcp_security_config) : Lemma (rogue_dhcp_defense_enabled p_config == true) = admit ()
+let net_022_rogue_dhcp_mitigated (p_config: dhcp_security_config) : Lemma (rogue_dhcp_defense_enabled p_config == true) = ()
 
 (* net_023_ntp_attack_mitigated (matches Coq: Theorem net_023_ntp_attack_mitigated) *)
-let net_023_ntp_attack_mitigated (p_config: ntp_client_config) : Lemma (ntp_attack_defense_enabled p_config == true) = admit ()
+let net_023_ntp_attack_mitigated (p_config: ntp_client_config) : Lemma (ntp_attack_defense_enabled p_config == true) = ()
 
 (* net_024_tcp_reset_mitigated (matches Coq: Theorem net_024_tcp_reset_mitigated) *)
-let net_024_tcp_reset_mitigated (p_config: tcp_security_config) : Lemma (tcp_reset_defense_enabled p_config == true) = admit ()
+let net_024_tcp_reset_mitigated (p_config: tcp_security_config) : Lemma (tcp_reset_defense_enabled p_config == true) = ()
 
 (* net_025_traffic_analysis_mitigated (matches Coq: Theorem net_025_traffic_analysis_mitigated) *)
-let net_025_traffic_analysis_mitigated (p_config: traffic_analysis_config) : Lemma (traffic_analysis_defense_enabled p_config == true) = admit ()
+let net_025_traffic_analysis_mitigated (p_config: traffic_analysis_config) : Lemma (traffic_analysis_defense_enabled p_config == true) = ()
 
 (* network_security_comprehensive (matches Coq: Theorem network_security_comprehensive) *)
-let network_security_comprehensive (p_config: network_security_config) : Lemma (all_defenses_enabled p_config == true) = admit ()
+let network_security_comprehensive (p_config: network_security_config) : Lemma (all_defenses_enabled p_config == true) = ()

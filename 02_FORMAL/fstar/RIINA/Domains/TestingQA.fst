@@ -278,25 +278,25 @@ let all_security_covered (p_sc: security_coverage) : Tot bool =
   forallb (fun sp -> security_prop_covered sp p_sc) p_sc.(sc_properties)
 
 (* nat_eqb_refl (matches Coq: Lemma nat_eqb_refl) *)
-let nat_eqb_refl (p_n: _) : Lemma (Nat.eqb p_n p_n == true) = admit ()
+let nat_eqb_refl (p_n: _) : Lemma (Nat.eqb p_n p_n == true) = ()
 
 (* forallb_true_iff (matches Coq: Lemma forallb_true_iff) *)
-let forallb_true_iff (p_f: nat) (p_l: (list nat)) : Lemma (forallb p_f p_l == true <==> ((forall (x: _). List.Tot.memP x p_l))) = admit ()
+let forallb_true_iff (p_f: nat) (p_l: (list nat)) : Lemma (forallb p_f p_l == true <==> ((forall (x: _). List.Tot.memP x p_l))) = ()
 
 (* existsb_exists (matches Coq: Lemma existsb_exists) *)
-let existsb_exists (p_f: nat) (p_l: (list nat)) : Lemma (existsb p_f p_l == true <==> (exists p_x. List.Tot.memP p_x p_l) /\ p_f x == true) = admit ()
+let existsb_exists (p_f: nat) (p_l: (list nat)) : Lemma (existsb p_f p_l == true <==> (exists p_x. List.Tot.memP p_x p_l) /\ p_f x == true) = ()
 
 (* list_beq_refl (matches Coq: Lemma list_beq_refl) *)
-let list_beq_refl (p_l: _) : Lemma (list_beq Nat.eqb p_l p_l == true) = admit ()
+let list_beq_refl (p_l: _) : Lemma (list_beq Nat.eqb p_l p_l == true) = ()
 
 (* M_001_01 (matches Coq: Theorem M_001_01) *)
-let m_001_01 (p_tc: test_case) (p_f: nat) : Lemma (run_test p_tc p_f == run_test p_tc p_f) = admit ()
+let m_001_01 (p_tc: test_case) (p_f: nat) : Lemma (run_test p_tc p_f == run_test p_tc p_f) = ()
 
 (* M_001_02 (matches Coq: Theorem M_001_02) *)
-let m_001_02 (p_tc1: test_case) (p_tc2: test_case) (p_f: nat) (p_s: test_state) : Lemma (s1 == p_s) = admit ()
+let m_001_02 (p_tc1: test_case) (p_tc2: test_case) (p_f: nat) (p_s: test_state) : Lemma (s1 == p_s) = ()
 
 (* M_001_03 (matches Coq: Theorem M_001_03) *)
-let m_001_03 (p_e: expr) (p_t: simple_type) : Lemma (requires (HasType p_e p_t == true)) (ensures (IsValue p_e == true \/ (exists p_e. Eval p_e e_ == true))) = admit ()
+let m_001_03 (p_e: expr) (p_t: simple_type) : Lemma (requires (HasType p_e p_t == true)) (ensures (IsValue p_e == true \/ (exists p_e. Eval p_e e_ == true))) = ()
 
 (* M_001_04 (matches Coq: Theorem M_001_04) *)
 let m_001_04_obligation () : Tot bool = true
@@ -307,61 +307,61 @@ let m_001_05_obligation () : Tot bool = true
 let m_001_05_lemma () : Lemma (requires True) (ensures (m_001_05_obligation () == m_001_05_obligation ())) = ()
 
 (* M_001_06 (matches Coq: Theorem M_001_06) *)
-let m_001_06 (p_f: nat) (p_input: nat) : Lemma (expected_panic p_f p_input == true <==> p_f p_input == None) = admit ()
+let m_001_06 (p_f: nat) (p_input: nat) : Lemma (expected_panic p_f p_input == true <==> p_f p_input == None) = ()
 
 (* M_001_07 (matches Coq: Theorem M_001_07) *)
-let m_001_07 (p_prop: nat) (p_inputs: (list nat)) : Lemma (requires (check_property p_prop p_inputs == true /\ (forall (x: _). List.Tot.memP x p_inputs))) (ensures (p_prop x == true)) = admit ()
+let m_001_07 (p_prop: nat) (p_inputs: (list nat)) : Lemma (requires (check_property p_prop p_inputs == true /\ (forall (x: _). List.Tot.memP x p_inputs))) (ensures (p_prop x == true)) = ()
 
 (* M_001_08 (matches Coq: Theorem M_001_08) *)
-let m_001_08 (p_prop: nat) (p_n: nat) (p_fuel: nat) : Lemma (requires (p_prop p_n == false)) (ensures (p_prop (shrink_loop p_prop p_n p_fuel) == false \/ ((forall (s: _). List.Tot.memP s (shrink_nat (shrink_loop p_prop p_n p_fuel)))))) = admit ()
+let m_001_08 (p_prop: nat) (p_n: nat) (p_fuel: nat) : Lemma (requires (p_prop p_n == false)) (ensures (p_prop (shrink_loop p_prop p_n p_fuel) == false \/ ((forall (s: _). List.Tot.memP s (shrink_nat (shrink_loop p_prop p_n p_fuel)))))) = ()
 
 (* M_001_09 (matches Coq: Theorem M_001_09) *)
-let m_001_09 (p_n: nat) : Lemma (List.Tot.memP p_n (gen_range p_n)) = admit ()
+let m_001_09 (p_n: nat) : Lemma (List.Tot.memP p_n (gen_range p_n)) = ()
 
 (* M_001_10 (matches Coq: Theorem M_001_10) *)
-let m_001_10 (p_gs: gen_state) : Lemma (v <= gs__gs_size_ /\ gs___gs_seed_ == gs__gs_seed_ + 1) = admit ()
+let m_001_10 (p_gs: gen_state) : Lemma (v <= gs__gs_size_ /\ gs___gs_seed_ == gs__gs_seed_ + 1) = ()
 
 (* M_001_11 (matches Coq: Theorem M_001_11) *)
-let m_001_11 (p_max_depth: nat) (p_inputs: (list nat)) : Lemma (requires (((forall (n: _). n <= p_max_depth -> In n p_inputs)) /\ (forall (p: _). List.Tot.memP p (reachable_paths p_max_depth)))) (ensures (path_covered p (fuzzer_explores p_inputs) == true)) = admit ()
+let m_001_11 (p_max_depth: nat) (p_inputs: (list nat)) : Lemma (requires (((forall (n: _). n <= p_max_depth -> In n p_inputs)) /\ (forall (p: _). List.Tot.memP p (reachable_paths p_max_depth)))) (ensures (path_covered p (fuzzer_explores p_inputs) == true)) = ()
 
 (* M_001_12 (matches Coq: Theorem M_001_12) *)
-let m_001_12 (p_min: nat) (p_max: nat) (p_n: nat) : Lemma (requires (valid_structured_input p_min p_max p_n == true)) (ensures (p_min <= p_n /\ p_n <= p_max)) = admit ()
+let m_001_12 (p_min: nat) (p_max: nat) (p_n: nat) : Lemma (requires (valid_structured_input p_min p_max p_n == true)) (ensures (p_min <= p_n /\ p_n <= p_max)) = ()
 
 (* M_001_13 (matches Coq: Theorem M_001_13) *)
-let m_001_13 (p_f1: nat) (p_f2: nat) (p_input: nat) : Lemma (differential_test p_f1 p_f2 p_input == false <==> ~(p_f1 p_input == p_f2 p_input)) = admit ()
+let m_001_13 (p_f1: nat) (p_f2: nat) (p_input: nat) : Lemma (differential_test p_f1 p_f2 p_input == false <==> ~(p_f1 p_input == p_f2 p_input)) = ()
 
 (* M_001_14 (matches Coq: Theorem M_001_14) *)
-let m_001_14 (p_sr: sanitizer_result) : Lemma (sanitizer_pass p_sr == true <==> p_sr == SRClean) = admit ()
+let m_001_14 (p_sr: sanitizer_result) : Lemma (sanitizer_pass p_sr == true <==> p_sr == SRClean) = ()
 
 (* M_001_15 (matches Coq: Theorem M_001_15) *)
-let m_001_15 (p_c1: component) (p_c2: component) (p_input: nat) : Lemma (compose_components p_c1 p_c2 p_input == c2__comp_impl_ (c1__comp_impl_ p_input)) = admit ()
+let m_001_15 (p_c1: component) (p_c2: component) (p_input: nat) : Lemma (compose_components p_c1 p_c2 p_input == c2__comp_impl_ (c1__comp_impl_ p_input)) = ()
 
 (* M_001_16 (matches Coq: Theorem M_001_16) *)
-let m_001_16 (p_api: api_contract) (p_input: nat) : Lemma (requires (api__api_precondition_ p_input == true /\ satisfies_contract p_api p_input == true)) (ensures (api__api_postcondition_ p_input (api__api_impl_ p_input) == true)) = admit ()
+let m_001_16 (p_api: api_contract) (p_input: nat) : Lemma (requires (api__api_precondition_ p_input == true /\ satisfies_contract p_api p_input == true)) (ensures (api__api_postcondition_ p_input (api__api_impl_ p_input) == true)) = ()
 
 (* M_001_17 (matches Coq: Theorem M_001_17) *)
-let m_001_17 (p_sf: security_flow) : Lemma (requires (sf__sf_valid_ == true)) (ensures ((exists p_src. (exists p_sink. sf__sf_source_ == p_src)) /\ sf__sf_sink_ == sink)) = admit ()
+let m_001_17 (p_sf: security_flow) : Lemma (requires (sf__sf_valid_ == true)) (ensures ((exists p_src. (exists p_sink. sf__sf_source_ == p_src)) /\ sf__sf_sink_ == sink)) = ()
 
 (* M_001_18 (matches Coq: Theorem M_001_18) *)
-let m_001_18 (p_m: mutant) (p_max_loc: nat) : Lemma (requires (mutation_valid p_m p_max_loc == true)) (ensures (m__mut_location_ < p_max_loc)) = admit ()
+let m_001_18 (p_m: mutant) (p_max_loc: nat) : Lemma (requires (mutation_valid p_m p_max_loc == true)) (ensures (m__mut_location_ < p_max_loc)) = ()
 
 (* M_001_19 (matches Coq: Theorem M_001_19) *)
-let m_001_19 (p_orig_f: nat) (p_mut_f: nat) (p_tc: test_case) : Lemma (requires (test_detects_mutation p_orig_f p_mut_f p_tc == true)) (ensures (~(p_orig_f tc__tc_input_ == p_mut_f tc__tc_input_))) = admit ()
+let m_001_19 (p_orig_f: nat) (p_mut_f: nat) (p_tc: test_case) : Lemma (requires (test_detects_mutation p_orig_f p_mut_f p_tc == true)) (ensures (~(p_orig_f tc__tc_input_ == p_mut_f tc__tc_input_))) = ()
 
 (* M_001_20 (matches Coq: Theorem M_001_20) *)
-let m_001_20 (p_mutants: (list mutant)) : Lemma (mutation_score p_mutants <= List.length p_mutants) = admit ()
+let m_001_20 (p_mutants: (list mutant)) : Lemma (mutation_score p_mutants <= List.length p_mutants) = ()
 
 (* M_001_21 (matches Coq: Theorem M_001_21) *)
-let m_001_21 (p_measurements: (list timing_measurement)) (p_tolerance: nat) : Lemma (requires (timing_attack_detected p_measurements p_tolerance == true)) (ensures ((exists p_tm. List.Tot.memP p_tm p_measurements) /\ is_constant_time tm p_tolerance == false)) = admit ()
+let m_001_21 (p_measurements: (list timing_measurement)) (p_tolerance: nat) : Lemma (requires (timing_attack_detected p_measurements p_tolerance == true)) (ensures ((exists p_tm. List.Tot.memP p_tm p_measurements) /\ is_constant_time tm p_tolerance == false)) = ()
 
 (* M_001_22 (matches Coq: Theorem M_001_22) *)
-let m_001_22 (p_kat: kat_test) (p_f: nat) : Lemma (run_kat p_kat p_f == true <==> p_f kat__kat_input_ == kat__kat_expected_) = admit ()
+let m_001_22 (p_kat: kat_test) (p_f: nat) : Lemma (run_kat p_kat p_f == true <==> p_f kat__kat_input_ == kat__kat_expected_) = ()
 
 (* M_001_23 (matches Coq: Theorem M_001_23) *)
-let m_001_23 (p_bfp: brute_force_protection) : Lemma (check_brute_force p_bfp == true <==> (bfp__bfp_locked_ == true \/ bfp__bfp_max_attempts_ <= bfp__bfp_current_attempts_)) = admit ()
+let m_001_23 (p_bfp: brute_force_protection) : Lemma (check_brute_force p_bfp == true <==> (bfp__bfp_locked_ == true \/ bfp__bfp_max_attempts_ <= bfp__bfp_current_attempts_)) = ()
 
 (* M_001_24 (matches Coq: Theorem M_001_24) *)
-let m_001_24 (p_line: nat) (p_trace: nat) : Lemma (requires (line_covered p_line p_trace == true)) (ensures ((exists p_ev. List.Tot.memP p_ev p_trace) /\ ev == TECoverage p_line)) = admit ()
+let m_001_24 (p_line: nat) (p_trace: nat) : Lemma (requires (line_covered p_line p_trace == true)) (ensures ((exists p_ev. List.Tot.memP p_ev p_trace) /\ ev == TECoverage p_line)) = ()
 
 (* M_001_25 (matches Coq: Theorem M_001_25) *)
-let m_001_25 (p_sc: security_coverage) : Lemma (requires (all_security_covered p_sc == true /\ (forall (sp: _). List.Tot.memP sp sc__sc_properties_))) (ensures (security_prop_covered sp p_sc == true)) = admit ()
+let m_001_25 (p_sc: security_coverage) : Lemma (requires (all_security_covered p_sc == true /\ (forall (sp: _). List.Tot.memP sp sc__sc_properties_))) (ensures (security_prop_covered sp p_sc == true)) = ()

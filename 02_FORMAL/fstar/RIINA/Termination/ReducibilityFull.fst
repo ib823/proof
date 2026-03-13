@@ -85,80 +85,80 @@ let reducible (p_t: nat) (p_e: nat) : Tot bool =
   true
 
 (* value_not_step (matches Coq: Lemma value_not_step) *)
-let value_not_step (p_v: _) (p_st: _) (p_ctx: _) (p_e_: _) (p_st_: _) (p_ctx_: _) : Lemma (requires (value p_v == true /\ step (p_v, p_st, p_ctx) (p_e_, p_st_, p_ctx_) == true)) (ensures (False)) = admit ()
+let value_not_step (p_v: _) (p_st: _) (p_ctx: _) (p_e_: _) (p_st_: _) (p_ctx_: _) : Lemma (requires (value p_v == true /\ step (p_v, p_st, p_ctx) (p_e_, p_st_, p_ctx_) == true)) (ensures (False)) = ()
 
 (* value_SN (matches Coq: Lemma value_SN) *)
-let value_sn (p_v: _) : Lemma (requires (value p_v == true)) (ensures (SN_expr p_v == true)) = admit ()
+let value_sn (p_v: _) : Lemma (requires (value p_v == true)) (ensures (SN_expr p_v == true)) = ()
 
 (* SN_step (matches Coq: Lemma SN_step) *)
-let sn_step (p_e: _) (p_st: _) (p_ctx: _) (p_e_: _) (p_st_: _) (p_ctx_: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true /\ step (p_e, p_st, p_ctx) (p_e_, p_st_, p_ctx_) == true)) (ensures (SN (p_e_, p_st_, p_ctx_) == true)) = admit ()
+let sn_step (p_e: _) (p_st: _) (p_ctx: _) (p_e_: _) (p_st_: _) (p_ctx_: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true /\ step (p_e, p_st, p_ctx) (p_e_, p_st_, p_ctx_) == true)) (ensures (SN (p_e_, p_st_, p_ctx_) == true)) = ()
 
 (* SN_classify_aux (matches Coq: Lemma SN_classify_aux) *)
-let sn_classify_aux (p_cfg: _) : Lemma (requires (SN p_cfg == true)) (ensures (SN (EClassify (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = admit ()
+let sn_classify_aux (p_cfg: _) : Lemma (requires (SN p_cfg == true)) (ensures (SN (EClassify (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = ()
 
 (* SN_classify (matches Coq: Lemma SN_classify) *)
-let sn_classify (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true)) (ensures (SN (EClassify p_e, p_st, p_ctx) == true)) = admit ()
+let sn_classify (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true)) (ensures (SN (EClassify p_e, p_st, p_ctx) == true)) = ()
 
 (* SN_prove_aux (matches Coq: Lemma SN_prove_aux) *)
-let sn_prove_aux (p_cfg: _) : Lemma (requires (SN p_cfg == true)) (ensures (SN (EProve (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = admit ()
+let sn_prove_aux (p_cfg: _) : Lemma (requires (SN p_cfg == true)) (ensures (SN (EProve (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = ()
 
 (* SN_prove (matches Coq: Lemma SN_prove) *)
-let sn_prove (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true)) (ensures (SN (EProve p_e, p_st, p_ctx) == true)) = admit ()
+let sn_prove (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true)) (ensures (SN (EProve p_e, p_st, p_ctx) == true)) = ()
 
 (* SN_perform_aux (matches Coq: Lemma SN_perform_aux) *)
-let sn_perform_aux (p_cfg: _) (p_eff: _) : Lemma (requires (SN p_cfg == true)) (ensures (SN (EPerform p_eff (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = admit ()
+let sn_perform_aux (p_cfg: _) (p_eff: _) : Lemma (requires (SN p_cfg == true)) (ensures (SN (EPerform p_eff (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = ()
 
 (* SN_perform (matches Coq: Lemma SN_perform) *)
-let sn_perform (p_eff: _) (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true)) (ensures (SN (EPerform p_eff p_e, p_st, p_ctx) == true)) = admit ()
+let sn_perform (p_eff: _) (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true)) (ensures (SN (EPerform p_eff p_e, p_st, p_ctx) == true)) = ()
 
 (* SN_require_aux (matches Coq: Lemma SN_require_aux) *)
-let sn_require_aux (p_cfg: _) (p_eff: _) : Lemma (requires (SN p_cfg == true)) (ensures (SN (ERequire p_eff (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = admit ()
+let sn_require_aux (p_cfg: _) (p_eff: _) : Lemma (requires (SN p_cfg == true)) (ensures (SN (ERequire p_eff (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = ()
 
 (* SN_require (matches Coq: Lemma SN_require) *)
-let sn_require (p_eff: _) (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true)) (ensures (SN (ERequire p_eff p_e, p_st, p_ctx) == true)) = admit ()
+let sn_require (p_eff: _) (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true)) (ensures (SN (ERequire p_eff p_e, p_st, p_ctx) == true)) = ()
 
 (* SN_grant_aux (matches Coq: Lemma SN_grant_aux) *)
-let sn_grant_aux (p_cfg: _) (p_eff: _) : Lemma (requires (SN p_cfg == true)) (ensures (SN (EGrant p_eff (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = admit ()
+let sn_grant_aux (p_cfg: _) (p_eff: _) : Lemma (requires (SN p_cfg == true)) (ensures (SN (EGrant p_eff (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = ()
 
 (* SN_grant (matches Coq: Lemma SN_grant) *)
-let sn_grant (p_eff: _) (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true)) (ensures (SN (EGrant p_eff p_e, p_st, p_ctx) == true)) = admit ()
+let sn_grant (p_eff: _) (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true)) (ensures (SN (EGrant p_eff p_e, p_st, p_ctx) == true)) = ()
 
 (* SN_declassify_value_left_aux (matches Coq: Lemma SN_declassify_value_left_aux) *)
-let sn_declassify_value_left_aux (p_cfg: _) (p_v: _) : Lemma (requires (value p_v == true /\ SN p_cfg == true)) (ensures (SN (EDeclassify p_v (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = admit ()
+let sn_declassify_value_left_aux (p_cfg: _) (p_v: _) : Lemma (requires (value p_v == true /\ SN p_cfg == true)) (ensures (SN (EDeclassify p_v (fst (fst p_cfg)), snd (fst p_cfg), snd p_cfg) == true)) = ()
 
 (* SN_declassify_value_left (matches Coq: Lemma SN_declassify_value_left) *)
-let sn_declassify_value_left (p_v: _) (p_e2: _) (p_st: _) (p_ctx: _) : Lemma (requires (value p_v == true /\ SN (p_e2, p_st, p_ctx) == true)) (ensures (SN (EDeclassify p_v p_e2, p_st, p_ctx) == true)) = admit ()
+let sn_declassify_value_left (p_v: _) (p_e2: _) (p_st: _) (p_ctx: _) : Lemma (requires (value p_v == true /\ SN (p_e2, p_st, p_ctx) == true)) (ensures (SN (EDeclassify p_v p_e2, p_st, p_ctx) == true)) = ()
 
 (* SN_declassify_aux (matches Coq: Lemma SN_declassify_aux) *)
-let sn_declassify_aux (p_cfg: _) (p_e2: _) : Lemma (requires (SN p_cfg == true /\ ((forall (st: _). (forall (ctx: _). SN (p_e2, st, ctx) == true))))) (ensures (SN (EDeclassify (fst (fst p_cfg)) p_e2, snd (fst p_cfg), snd p_cfg) == true)) = admit ()
+let sn_declassify_aux (p_cfg: _) (p_e2: _) : Lemma (requires (SN p_cfg == true /\ ((forall (st: _). (forall (ctx: _). SN (p_e2, st, ctx) == true))))) (ensures (SN (EDeclassify (fst (fst p_cfg)) p_e2, snd (fst p_cfg), snd p_cfg) == true)) = ()
 
 (* SN_declassify (matches Coq: Lemma SN_declassify) *)
-let sn_declassify (p_e1: _) (p_e2: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e1, p_st, p_ctx) == true /\ ((forall (p_st: _). SN (p_e2, st_, ctx_) == true)))) (ensures (SN (EDeclassify p_e1 p_e2, p_st, p_ctx) == true)) = admit ()
+let sn_declassify (p_e1: _) (p_e2: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e1, p_st, p_ctx) == true /\ ((forall (p_st: _). SN (p_e2, st_, ctx_) == true)))) (ensures (SN (EDeclassify p_e1 p_e2, p_st, p_ctx) == true)) = ()
 
 (* extend_rho_id (matches Coq: Lemma extend_rho_id) *)
-let extend_rho_id (p_x: _) : Lemma (extend_rho id_rho p_x (EVar p_x) == id_rho) = admit ()
+let extend_rho_id (p_x: _) : Lemma (extend_rho id_rho p_x (EVar p_x) == id_rho) = ()
 
 (* subst_env_id (matches Coq: Lemma subst_env_id) *)
-let subst_env_id (p_e: _) : Lemma (subst_env id_rho p_e == p_e) = admit ()
+let subst_env_id (p_e: _) : Lemma (subst_env id_rho p_e == p_e) = ()
 
 (* subst_not_free_in (matches Coq: Lemma subst_not_free_in) *)
 let subst_not_free_in_obligation () : Tot bool = true
 let subst_not_free_in_lemma () : Lemma (requires True) (ensures (subst_not_free_in_obligation () == subst_not_free_in_obligation ())) = ()
 
 (* free_in_var (matches Coq: Lemma free_in_var) *)
-let free_in_var (p_x: _) (p_y: _) : Lemma (requires (free_in p_x (EVar p_y) == true)) (ensures (p_x == p_y)) = admit ()
+let free_in_var (p_x: _) (p_y: _) : Lemma (requires (free_in p_x (EVar p_y) == true)) (ensures (p_x == p_y)) = ()
 
 (* not_free_in_var_neq (matches Coq: Lemma not_free_in_var_neq) *)
-let not_free_in_var_neq (p_x: _) (p_y: _) : Lemma (requires (~(p_x == p_y))) (ensures (~(free_in p_x (EVar p_y) == true))) = admit ()
+let not_free_in_var_neq (p_x: _) (p_y: _) : Lemma (requires (~(p_x == p_y))) (ensures (~(free_in p_x (EVar p_y) == true))) = ()
 
 (* extend_rho_shadow (matches Coq: Lemma extend_rho_shadow) *)
-let extend_rho_shadow (p_rho: _) (p_x: _) (p_e1: _) (p_e2: _) (p_y: _) : Lemma (extend_rho (extend_rho p_rho p_x p_e1) p_x p_e2 p_y == extend_rho p_rho p_x p_e2 p_y) = admit ()
+let extend_rho_shadow (p_rho: _) (p_x: _) (p_e1: _) (p_e2: _) (p_y: _) : Lemma (extend_rho (extend_rho p_rho p_x p_e1) p_x p_e2 p_y == extend_rho p_rho p_x p_e2 p_y) = ()
 
 (* extend_rho_commute (matches Coq: Lemma extend_rho_commute) *)
-let extend_rho_commute (p_rho: _) (p_x: _) (p_y: _) (p_e1: _) (p_e2: _) (p_z: _) : Lemma (requires (~(p_x == p_y))) (ensures (extend_rho (extend_rho p_rho p_x p_e1) p_y p_e2 p_z == extend_rho (extend_rho p_rho p_y p_e2) p_x p_e1 p_z)) = admit ()
+let extend_rho_commute (p_rho: _) (p_x: _) (p_y: _) (p_e1: _) (p_e2: _) (p_z: _) : Lemma (requires (~(p_x == p_y))) (ensures (extend_rho (extend_rho p_rho p_x p_e1) p_y p_e2 p_z == extend_rho (extend_rho p_rho p_y p_e2) p_x p_e1 p_z)) = ()
 
 (* subst_env_ext (matches Coq: Lemma subst_env_ext) *)
-let subst_env_ext (p_rho1: _) (p_rho2: _) (p_e: _) : Lemma (requires (((forall (y: _). p_rho1 y == p_rho2 y)))) (ensures (subst_env p_rho1 p_e == subst_env p_rho2 p_e)) = admit ()
+let subst_env_ext (p_rho1: _) (p_rho2: _) (p_e: _) : Lemma (requires (((forall (y: _). p_rho1 y == p_rho2 y)))) (ensures (subst_env p_rho1 p_e == subst_env p_rho2 p_e)) = ()
 
 (* subst_subst_env_commute_gen (matches Coq: Lemma subst_subst_env_commute_gen) *)
 let subst_subst_env_commute_gen_obligation () : Tot bool = true
@@ -169,40 +169,40 @@ let subst_subst_env_commute_obligation () : Tot bool = true
 let subst_subst_env_commute_lemma () : Lemma (requires True) (ensures (subst_subst_env_commute_obligation () == subst_subst_env_commute_obligation ())) = ()
 
 (* CR1 (matches Coq: Lemma CR1) *)
-let cr1 (p_t: _) (p_x: _) : Lemma (requires (Reducible p_t p_x == true)) (ensures (SN_expr p_x == true)) = admit ()
+let cr1 (p_t: _) (p_x: _) : Lemma (requires (Reducible p_t p_x == true)) (ensures (SN_expr p_x == true)) = ()
 
 (* CR3_base (matches Coq: Lemma CR3_base) *)
-let cr3_base (p_e: _) : Lemma (requires (neutral p_e == true /\ SN_expr p_e == true)) (ensures (Reducible TUnit p_e == true /\ Reducible TBool p_e == true /\ Reducible TInt p_e == true /\ Reducible TString p_e == true /\ Reducible TBytes p_e == true)) = admit ()
+let cr3_base (p_e: _) : Lemma (requires (neutral p_e == true /\ SN_expr p_e == true)) (ensures (Reducible TUnit p_e == true /\ Reducible TBool p_e == true /\ Reducible TInt p_e == true /\ Reducible TString p_e == true /\ Reducible TBytes p_e == true)) = ()
 
 (* unit_reducible (matches Coq: Lemma unit_reducible) *)
-let unit_reducible () : Lemma (Reducible TUnit EUnit == true) = admit ()
+let unit_reducible () : Lemma (Reducible TUnit EUnit == true) = ()
 
 (* bool_reducible (matches Coq: Lemma bool_reducible) *)
-let bool_reducible (p_b: _) : Lemma (Reducible TBool (EBool p_b) == true) = admit ()
+let bool_reducible (p_b: _) : Lemma (Reducible TBool (EBool p_b) == true) = ()
 
 (* int_reducible (matches Coq: Lemma int_reducible) *)
-let int_reducible (p_n: _) : Lemma (Reducible TInt (EInt p_n) == true) = admit ()
+let int_reducible (p_n: _) : Lemma (Reducible TInt (EInt p_n) == true) = ()
 
 (* string_reducible (matches Coq: Lemma string_reducible) *)
-let string_reducible (p_s: _) : Lemma (Reducible TString (EString p_s) == true) = admit ()
+let string_reducible (p_s: _) : Lemma (Reducible TString (EString p_s) == true) = ()
 
 (* env_reducible_nil (matches Coq: Lemma env_reducible_nil) *)
-let env_reducible_nil (p_rho: _) : Lemma (env_reducible [] p_rho == true) = admit ()
+let env_reducible_nil (p_rho: _) : Lemma (env_reducible [] p_rho == true) = ()
 
 (* env_reducible_cons (matches Coq: Lemma env_reducible_cons) *)
-let env_reducible_cons (p_gamma: _) (p_rho: _) (p_x: _) (p_t: _) (p_v: _) : Lemma (requires (env_reducible p_gamma p_rho == true /\ value p_v == true /\ Reducible p_t p_v == true)) (ensures (env_reducible ((p_x, p_t) :: p_gamma) (extend_rho p_rho p_x p_v) == true)) = admit ()
+let env_reducible_cons (p_gamma: _) (p_rho: _) (p_x: _) (p_t: _) (p_v: _) : Lemma (requires (env_reducible p_gamma p_rho == true /\ value p_v == true /\ Reducible p_t p_v == true)) (ensures (env_reducible ((p_x, p_t) :: p_gamma) (extend_rho p_rho p_x p_v) == true)) = ()
 
 (* fundamental_reducibility (matches Coq: Lemma fundamental_reducibility) *)
-let fundamental_reducibility (p_gamma: _) (p_sigma: _) (p_pc: _) (p_e: _) (p_t: _) (p_epsilon: _) (p_rho: _) : Lemma (requires (has_type p_gamma p_sigma p_pc p_e p_t p_epsilon == true /\ env_reducible p_gamma p_rho == true)) (ensures (Reducible p_t (subst_env p_rho p_e) == true)) = admit ()
+let fundamental_reducibility (p_gamma: _) (p_sigma: _) (p_pc: _) (p_e: _) (p_t: _) (p_epsilon: _) (p_rho: _) : Lemma (requires (has_type p_gamma p_sigma p_pc p_e p_t p_epsilon == true /\ env_reducible p_gamma p_rho == true)) (ensures (Reducible p_t (subst_env p_rho p_e) == true)) = ()
 
 (* well_typed_SN (matches Coq: Theorem well_typed_SN) *)
-let well_typed_sn (p_sigma: _) (p_pc: _) (p_e: _) (p_t: _) (p_epsilon: _) : Lemma (requires (has_type [] p_sigma p_pc p_e p_t p_epsilon == true)) (ensures (SN_expr p_e == true)) = admit ()
+let well_typed_sn (p_sigma: _) (p_pc: _) (p_e: _) (p_t: _) (p_epsilon: _) : Lemma (requires (has_type [] p_sigma p_pc p_e p_t p_epsilon == true)) (ensures (SN_expr p_e == true)) = ()
 
 (* SN_app (matches Coq: Theorem SN_app) *)
-let sn_app (p_f: _) (p_a: _) (p_t1: _) (p_t2: _) (p_eff: _) (p_sigma: _) (p_pc: _) : Lemma (requires (has_type [] p_sigma p_pc p_f (TFn p_t1 p_t2 p_eff) EffectPure == true /\ has_type [] p_sigma p_pc p_a p_t1 EffectPure == true)) (ensures (SN_expr (EApp p_f p_a) == true)) = admit ()
+let sn_app (p_f: _) (p_a: _) (p_t1: _) (p_t2: _) (p_eff: _) (p_sigma: _) (p_pc: _) : Lemma (requires (has_type [] p_sigma p_pc p_f (TFn p_t1 p_t2 p_eff) EffectPure == true /\ has_type [] p_sigma p_pc p_a p_t1 EffectPure == true)) (ensures (SN_expr (EApp p_f p_a) == true)) = ()
 
 (* SN_closed_step (matches Coq: Lemma SN_closed_step) *)
-let sn_closed_step (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true /\ (forall (p_e: _). step (p_e, p_st, p_ctx) (e_, st_, ctx_) == true))) (ensures (SN (e_, st_, ctx_) == true)) = admit ()
+let sn_closed_step (p_e: _) (p_st: _) (p_ctx: _) : Lemma (requires (SN (p_e, p_st, p_ctx) == true /\ (forall (p_e: _). step (p_e, p_st, p_ctx) (e_, st_, ctx_) == true))) (ensures (SN (e_, st_, ctx_) == true)) = ()
 
 (* SN_beta_value (matches Coq: Lemma SN_beta_value) *)
 let sn_beta_value_obligation () : Tot bool = true

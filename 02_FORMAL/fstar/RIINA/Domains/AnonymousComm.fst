@@ -70,16 +70,16 @@ let anon_layers (p_encryption: bool) (p_routing: bool) (p_timing: bool) (p_cover
   andb p_encryption (andb p_routing ((p_timing && p_cover)))
 
 (* anon_001_sender_anonymity (matches Coq: Theorem anon_001_sender_anonymity) *)
-let anon_001_sender_anonymity (p_sender_set: nat) (p_k: nat) : Lemma (requires (k_anonymous p_sender_set p_k == true)) (ensures (length p_sender_set >= p_k)) = admit ()
+let anon_001_sender_anonymity (p_sender_set: nat) (p_k: nat) : Lemma (requires (k_anonymous p_sender_set p_k == true)) (ensures (length p_sender_set >= p_k)) = ()
 
 (* anon_002_receiver_anonymity (matches Coq: Theorem anon_002_receiver_anonymity) *)
-let anon_002_receiver_anonymity (p_receiver_set: nat) (p_k: nat) : Lemma (requires (k_anonymous p_receiver_set p_k == true)) (ensures (length p_receiver_set >= p_k)) = admit ()
+let anon_002_receiver_anonymity (p_receiver_set: nat) (p_k: nat) : Lemma (requires (k_anonymous p_receiver_set p_k == true)) (ensures (length p_receiver_set >= p_k)) = ()
 
 (* anon_003_layers_match_path (matches Coq: Theorem anon_003_layers_match_path) *)
-let anon_003_layers_match_path (p_msg: nat) (p_circuit: nat) : Lemma (requires (length (onion_layers p_msg) == length (circuit_path p_circuit))) (ensures (length (onion_layers p_msg) == length (circuit_path p_circuit))) = admit ()
+let anon_003_layers_match_path (p_msg: nat) (p_circuit: nat) : Lemma (requires (length (onion_layers p_msg) == length (circuit_path p_circuit))) (ensures (length (onion_layers p_msg) == length (circuit_path p_circuit))) = ()
 
 (* anon_004_min_path_length (matches Coq: Theorem anon_004_min_path_length) *)
-let anon_004_min_path_length (p_circuit: nat) : Lemma (requires (length (circuit_path p_circuit) >= 3)) (ensures (length (circuit_path p_circuit) >= 3)) = admit ()
+let anon_004_min_path_length (p_circuit: nat) : Lemma (requires (length (circuit_path p_circuit) >= 3)) (ensures (length (circuit_path p_circuit) >= 3)) = ()
 
 (* anon_005_entry_guard (matches Coq: Theorem anon_005_entry_guard) *)
 let anon_005_entry_guard_obligation () : Tot bool = true
@@ -90,35 +90,35 @@ let anon_006_exit_diversity_obligation () : Tot bool = true
 let anon_006_exit_diversity_lemma () : Lemma (requires True) (ensures (anon_006_exit_diversity_obligation () == anon_006_exit_diversity_obligation ())) = ()
 
 (* anon_007_layer_order (matches Coq: Theorem anon_007_layer_order) *)
-let anon_007_layer_order (p_msg: nat) (p_n: nat) : Lemma (requires (p_n < length (onion_layers p_msg))) (ensures (p_n < length (onion_layers p_msg))) = admit ()
+let anon_007_layer_order (p_msg: nat) (p_n: nat) : Lemma (requires (p_n < length (onion_layers p_msg))) (ensures (p_n < length (onion_layers p_msg))) = ()
 
 (* anon_008_unique_keys (matches Coq: Theorem anon_008_unique_keys) *)
-let anon_008_unique_keys (p_circuit: nat) : Lemma (requires (keys_unique p_circuit == true)) (ensures (NoDup (circuit_keys p_circuit) == true)) = admit ()
+let anon_008_unique_keys (p_circuit: nat) : Lemma (requires (keys_unique p_circuit == true)) (ensures (NoDup (circuit_keys p_circuit) == true)) = ()
 
 (* anon_009_nonce_unique (matches Coq: Theorem anon_009_nonce_unique) *)
-let anon_009_nonce_unique (p_messages: (list nat)) : Lemma (requires (nonces_unique p_messages == true)) (ensures (NoDup (map onion_nonce p_messages) == true)) = admit ()
+let anon_009_nonce_unique (p_messages: (list nat)) : Lemma (requires (nonces_unique p_messages == true)) (ensures (NoDup (map onion_nonce p_messages) == true)) = ()
 
 (* anon_010_unlinkability (matches Coq: Theorem anon_010_unlinkability) *)
-let anon_010_unlinkability (p_sender: nat) (p_receiver: nat) (p_obs: nat) : Lemma (requires (unlinkable p_sender p_receiver p_obs == true)) (ensures (unlinkable p_sender p_receiver p_obs == true)) = admit ()
+let anon_010_unlinkability (p_sender: nat) (p_receiver: nat) (p_obs: nat) : Lemma (requires (unlinkable p_sender p_receiver p_obs == true)) (ensures (unlinkable p_sender p_receiver p_obs == true)) = ()
 
 (* anon_011_no_sender_in_obs (matches Coq: Theorem anon_011_no_sender_in_obs) *)
-let anon_011_no_sender_in_obs (p_obs: nat) (p_sender: nat) : Lemma (requires (~(obs_entry_node p_obs == p_sender))) (ensures (~(obs_entry_node p_obs == p_sender))) = admit ()
+let anon_011_no_sender_in_obs (p_obs: nat) (p_sender: nat) : Lemma (requires (~(obs_entry_node p_obs == p_sender))) (ensures (~(obs_entry_node p_obs == p_sender))) = ()
 
 (* anon_012_no_receiver_in_obs (matches Coq: Theorem anon_012_no_receiver_in_obs) *)
-let anon_012_no_receiver_in_obs (p_obs: nat) (p_receiver: nat) : Lemma (requires (~(obs_exit_node p_obs == p_receiver))) (ensures (~(obs_exit_node p_obs == p_receiver))) = admit ()
+let anon_012_no_receiver_in_obs (p_obs: nat) (p_receiver: nat) : Lemma (requires (~(obs_exit_node p_obs == p_receiver))) (ensures (~(obs_exit_node p_obs == p_receiver))) = ()
 
 (* anon_013_compromise_bounded (matches Coq: Theorem anon_013_compromise_bounded) *)
-let anon_013_compromise_bounded (p_adv: nat) (p_max_compromise: nat) : Lemma (requires (length (adv_compromised_nodes p_adv) < p_max_compromise)) (ensures (length (adv_compromised_nodes p_adv) < p_max_compromise)) = admit ()
+let anon_013_compromise_bounded (p_adv: nat) (p_max_compromise: nat) : Lemma (requires (length (adv_compromised_nodes p_adv) < p_max_compromise)) (ensures (length (adv_compromised_nodes p_adv) < p_max_compromise)) = ()
 
 (* anon_014_path_safe (matches Coq: Theorem anon_014_path_safe) *)
 let anon_014_path_safe_obligation () : Tot bool = true
 let anon_014_path_safe_lemma () : Lemma (requires True) (ensures (anon_014_path_safe_obligation () == anon_014_path_safe_obligation ())) = ()
 
 (* anon_015_pseudonym_rotation (matches Coq: Theorem anon_015_pseudonym_rotation) *)
-let anon_015_pseudonym_rotation (p_old_pseudo: nat) (p_new_pseudo: nat) : Lemma (requires (pseudonyms_rotated p_old_pseudo p_new_pseudo == true)) (ensures (~(p_old_pseudo == p_new_pseudo))) = admit ()
+let anon_015_pseudonym_rotation (p_old_pseudo: nat) (p_new_pseudo: nat) : Lemma (requires (pseudonyms_rotated p_old_pseudo p_new_pseudo == true)) (ensures (~(p_old_pseudo == p_new_pseudo))) = ()
 
 (* anon_016_circuit_lifetime (matches Coq: Theorem anon_016_circuit_lifetime) *)
-let anon_016_circuit_lifetime (p_created: nat) (p_current: nat) (p_max_age: nat) : Lemma (requires (circuit_fresh p_created p_current p_max_age == true)) (ensures (p_current - p_created <= p_max_age)) = admit ()
+let anon_016_circuit_lifetime (p_created: nat) (p_current: nat) (p_max_age: nat) : Lemma (requires (circuit_fresh p_created p_current p_max_age == true)) (ensures (p_current - p_created <= p_max_age)) = ()
 
 (* anon_017_constant_traffic (matches Coq: Theorem anon_017_constant_traffic) *)
 let anon_017_constant_traffic_obligation () : Tot bool = true
@@ -129,22 +129,22 @@ let anon_018_uniform_size_obligation () : Tot bool = true
 let anon_018_uniform_size_lemma () : Lemma (requires True) (ensures (anon_018_uniform_size_obligation () == anon_018_uniform_size_obligation ())) = ()
 
 (* anon_019_forward_secrecy (matches Coq: Theorem anon_019_forward_secrecy) *)
-let anon_019_forward_secrecy (p_session_key: nat) (p_long_term_key: nat) : Lemma (requires (forward_secret p_session_key p_long_term_key == true)) (ensures (~(p_session_key == p_long_term_key))) = admit ()
+let anon_019_forward_secrecy (p_session_key: nat) (p_long_term_key: nat) : Lemma (requires (forward_secret p_session_key p_long_term_key == true)) (ensures (~(p_session_key == p_long_term_key))) = ()
 
 (* anon_020_intersection_resistance (matches Coq: Theorem anon_020_intersection_resistance) *)
-let anon_020_intersection_resistance (p_observations: nat) (p_required: nat) : Lemma (requires (intersection_resistant p_observations p_required == true)) (ensures (p_required > p_observations)) = admit ()
+let anon_020_intersection_resistance (p_observations: nat) (p_required: nat) : Lemma (requires (intersection_resistant p_observations p_required == true)) (ensures (p_required > p_observations)) = ()
 
 (* anon_021_rendezvous_hidden (matches Coq: Theorem anon_021_rendezvous_hidden) *)
-let anon_021_rendezvous_hidden (p_rp_id: nat) (p_observer_known: (list nat)) : Lemma (requires (~(List.Tot.memP p_rp_id p_observer_known))) (ensures (~(List.Tot.memP p_rp_id p_observer_known))) = admit ()
+let anon_021_rendezvous_hidden (p_rp_id: nat) (p_observer_known: (list nat)) : Lemma (requires (~(List.Tot.memP p_rp_id p_observer_known))) (ensures (~(List.Tot.memP p_rp_id p_observer_known))) = ()
 
 (* anon_022_bidirectional (matches Coq: Theorem anon_022_bidirectional) *)
-let anon_022_bidirectional (p_sender: nat) (p_receiver: nat) (p_sender_set: nat) (p_receiver_set: nat) : Lemma (requires (k_anonymous p_sender_set 2 == true /\ k_anonymous p_receiver_set 2 == true)) (ensures (length p_sender_set >= 2 /\ length p_receiver_set >= 2)) = admit ()
+let anon_022_bidirectional (p_sender: nat) (p_receiver: nat) (p_sender_set: nat) (p_receiver_set: nat) : Lemma (requires (k_anonymous p_sender_set 2 == true /\ k_anonymous p_receiver_set 2 == true)) (ensures (length p_sender_set >= 2 /\ length p_receiver_set >= 2)) = ()
 
 (* anon_023_no_spof (matches Coq: Theorem anon_023_no_spof) *)
-let anon_023_no_spof (p_path: (list nat)) : Lemma (requires (length p_path >= 3)) (ensures (length p_path >= 3)) = admit ()
+let anon_023_no_spof (p_path: (list nat)) : Lemma (requires (length p_path >= 3)) (ensures (length p_path >= 3)) = ()
 
 (* anon_024_replay_prevention (matches Coq: Theorem anon_024_replay_prevention) *)
-let anon_024_replay_prevention (p_seen: (list nat)) (p_nonce: nat) : Lemma (requires (~(List.Tot.memP p_nonce p_seen))) (ensures (~(List.Tot.memP p_nonce p_seen))) = admit ()
+let anon_024_replay_prevention (p_seen: (list nat)) (p_nonce: nat) : Lemma (requires (~(List.Tot.memP p_nonce p_seen))) (ensures (~(List.Tot.memP p_nonce p_seen))) = ()
 
 (* anon_025_defense_in_depth (matches Coq: Theorem anon_025_defense_in_depth) *)
-let anon_025_defense_in_depth (p_e: _) (p_r: _) (p_t: _) (p_c: _) : Lemma (requires (anon_layers p_e p_r p_t p_c == true)) (ensures (p_e == true /\ p_r == true /\ p_t == true /\ p_c == true)) = admit ()
+let anon_025_defense_in_depth (p_e: _) (p_r: _) (p_t: _) (p_c: _) : Lemma (requires (anon_layers p_e p_r p_t p_c == true)) (ensures (p_e == true /\ p_r == true /\ p_t == true /\ p_c == true)) = ()

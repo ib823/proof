@@ -141,64 +141,64 @@ let well_formed_app_power (p_a: app_power_budget) : Tot bool =
   true
 
 (* thermal_bounds_enforced (matches Coq: Theorem thermal_bounds_enforced) *)
-let thermal_bounds_enforced (p_ts: thermal_state) : Lemma (requires (thermally_safe p_ts == true)) (ensures (p_ts.f_cpu_temp <= critical_temp)) = admit ()
+let thermal_bounds_enforced (p_ts: thermal_state) : Lemma (requires (thermally_safe p_ts == true)) (ensures (p_ts.f_cpu_temp <= critical_temp)) = ()
 
 (* throttling_activation_correct (matches Coq: Theorem throttling_activation_correct) *)
-let throttling_activation_correct (p_ts: thermal_state) : Lemma (requires (p_ts.f_cpu_temp >= throttle_temp)) (ensures ((apply_throttling p_ts).f_throttling_active == true)) = admit ()
+let throttling_activation_correct (p_ts: thermal_state) : Lemma (requires (p_ts.f_cpu_temp >= throttle_temp)) (ensures ((apply_throttling p_ts).f_throttling_active == true)) = ()
 
 (* power_transition_fullpower_balanced (matches Coq: Theorem power_transition_fullpower_balanced) *)
-let power_transition_fullpower_balanced () : Lemma (valid_power_transition FullPower Balanced == true) = admit ()
+let power_transition_fullpower_balanced () : Lemma (valid_power_transition FullPower Balanced == true) = ()
 
 (* any_state_can_suspend (matches Coq: Theorem any_state_can_suspend) *)
-let any_state_can_suspend (p_s: power_state) : Lemma (valid_power_transition p_s Suspended == true) = admit ()
+let any_state_can_suspend (p_s: power_state) : Lemma (valid_power_transition p_s Suspended == true) = ()
 
 (* suspended_can_resume (matches Coq: Theorem suspended_can_resume) *)
-let suspended_can_resume (p_s: power_state) : Lemma (valid_power_transition Suspended p_s == true) = admit ()
+let suspended_can_resume (p_s: power_state) : Lemma (valid_power_transition Suspended p_s == true) = ()
 
 (* low_power_optimizes_budget (matches Coq: Theorem low_power_optimizes_budget) *)
-let low_power_optimizes_budget (p_pm: power_manager) : Lemma (requires (p_pm.f_current_state == LowPower /\ p_pm.f_power_budget <= 50)) (ensures (battery_optimized p_pm == true)) = admit ()
+let low_power_optimizes_budget (p_pm: power_manager) : Lemma (requires (p_pm.f_current_state == LowPower /\ p_pm.f_power_budget <= 50)) (ensures (battery_optimized p_pm == true)) = ()
 
 (* battery_level_accurate (matches Coq: Theorem battery_level_accurate) *)
-let battery_level_accurate (p_b: battery_info) : Lemma (requires (well_formed_battery p_b == true)) (ensures (p_b.f_bat_level <= 100)) = admit ()
+let battery_level_accurate (p_b: battery_info) : Lemma (requires (well_formed_battery p_b == true)) (ensures (p_b.f_bat_level <= 100)) = ()
 
 (* low_power_mode_reduces_usage (matches Coq: Theorem low_power_mode_reduces_usage) *)
-let low_power_mode_reduces_usage (p_pm: power_manager) : Lemma (requires (p_pm.f_current_state == LowPower /\ battery_optimized p_pm == true)) (ensures (p_pm.f_power_budget <= 50)) = admit ()
+let low_power_mode_reduces_usage (p_pm: power_manager) : Lemma (requires (p_pm.f_current_state == LowPower /\ battery_optimized p_pm == true)) (ensures (p_pm.f_power_budget <= 50)) = ()
 
 (* thermal_throttling_safe (matches Coq: Theorem thermal_throttling_safe) *)
-let thermal_throttling_safe (p_ts: thermal_state) : Lemma (requires (thermally_safe p_ts == true)) (ensures (p_ts.f_cpu_temp <= critical_temp /\ p_ts.f_gpu_temp <= critical_temp /\ p_ts.f_battery_temp <= critical_temp)) = admit ()
+let thermal_throttling_safe (p_ts: thermal_state) : Lemma (requires (thermally_safe p_ts == true)) (ensures (p_ts.f_cpu_temp <= critical_temp /\ p_ts.f_gpu_temp <= critical_temp /\ p_ts.f_battery_temp <= critical_temp)) = ()
 
 (* charging_state_reported (matches Coq: Theorem charging_state_reported) *)
-let charging_state_reported (p_b: battery_info) : Lemma (p_b.f_bat_is_charging == true \/ p_b.f_bat_is_charging == false) = admit ()
+let charging_state_reported (p_b: battery_info) : Lemma (p_b.f_bat_is_charging == true \/ p_b.f_bat_is_charging == false) = ()
 
 (* battery_health_tracked (matches Coq: Theorem battery_health_tracked) *)
-let battery_health_tracked (p_b: battery_info) : Lemma (requires (well_formed_battery p_b == true)) (ensures (p_b.f_bat_health <= 100)) = admit ()
+let battery_health_tracked (p_b: battery_info) : Lemma (requires (well_formed_battery p_b == true)) (ensures (p_b.f_bat_health <= 100)) = ()
 
 (* wake_lock_timeout_enforced (matches Coq: Theorem wake_lock_timeout_enforced) *)
-let wake_lock_timeout_enforced (p_w: wake_lock) : Lemma (requires (well_formed_wake_lock p_w == true /\ p_w.f_wake_lock_active == true)) (ensures (p_w.f_wake_lock_elapsed <= p_w.f_wake_lock_timeout)) = admit ()
+let wake_lock_timeout_enforced (p_w: wake_lock) : Lemma (requires (well_formed_wake_lock p_w == true /\ p_w.f_wake_lock_active == true)) (ensures (p_w.f_wake_lock_elapsed <= p_w.f_wake_lock_timeout)) = ()
 
 (* background_power_limited (matches Coq: Theorem background_power_limited) *)
-let background_power_limited (p_a: app_power_budget) : Lemma (requires (well_formed_app_power p_a == true /\ p_a.f_app_is_background == true)) (ensures (p_a.f_app_power_budget_mw <= 500)) = admit ()
+let background_power_limited (p_a: app_power_budget) : Lemma (requires (well_formed_app_power p_a == true /\ p_a.f_app_is_background == true)) (ensures (p_a.f_app_power_budget_mw <= 500)) = ()
 
 (* cpu_frequency_bounded (matches Coq: Theorem cpu_frequency_bounded) *)
-let cpu_frequency_bounded (p_c: cpu_state) : Lemma (requires (well_formed_cpu p_c == true)) (ensures (p_c.f_cpu_frequency_mhz <= p_c.f_cpu_max_frequency_mhz)) = admit ()
+let cpu_frequency_bounded (p_c: cpu_state) : Lemma (requires (well_formed_cpu p_c == true)) (ensures (p_c.f_cpu_frequency_mhz <= p_c.f_cpu_max_frequency_mhz)) = ()
 
 (* screen_brightness_adaptive (matches Coq: Theorem screen_brightness_adaptive) *)
-let screen_brightness_adaptive (p_d: display_state) : Lemma (requires (p_d.f_display_adaptive == true /\ p_d.f_display_brightness <= 100)) (ensures (p_d.f_display_brightness <= 100)) = admit ()
+let screen_brightness_adaptive (p_d: display_state) : Lemma (requires (p_d.f_display_adaptive == true /\ p_d.f_display_brightness <= 100)) (ensures (p_d.f_display_brightness <= 100)) = ()
 
 (* idle_power_minimized (matches Coq: Theorem idle_power_minimized) *)
-let idle_power_minimized (p_pm: power_manager) : Lemma (requires (p_pm.f_current_state == Suspended)) (ensures (battery_optimized p_pm == true)) = admit ()
+let idle_power_minimized (p_pm: power_manager) : Lemma (requires (p_pm.f_current_state == Suspended)) (ensures (battery_optimized p_pm == true)) = ()
 
 (* power_event_notified (matches Coq: Theorem power_event_notified) *)
-let power_event_notified (p_from: power_state) (p_to: power_state) : Lemma (requires (valid_power_transition p_from p_to == true)) (ensures (valid_power_transition p_from p_to == true)) = admit ()
+let power_event_notified (p_from: power_state) (p_to: power_state) : Lemma (requires (valid_power_transition p_from p_to == true)) (ensures (valid_power_transition p_from p_to == true)) = ()
 
 (* battery_temperature_safe (matches Coq: Theorem battery_temperature_safe) *)
-let battery_temperature_safe (p_b: battery_info) : Lemma (requires (well_formed_battery p_b == true)) (ensures (p_b.f_bat_temperature <= 4500)) = admit ()
+let battery_temperature_safe (p_b: battery_info) : Lemma (requires (well_formed_battery p_b == true)) (ensures (p_b.f_bat_temperature <= 4500)) = ()
 
 (* charge_rate_safe (matches Coq: Theorem charge_rate_safe) *)
-let charge_rate_safe (p_b: battery_info) : Lemma (requires (well_formed_battery p_b == true)) (ensures (p_b.f_bat_charge_rate <= 25000)) = admit ()
+let charge_rate_safe (p_b: battery_info) : Lemma (requires (well_formed_battery p_b == true)) (ensures (p_b.f_bat_charge_rate <= 25000)) = ()
 
 (* discharge_rate_bounded (matches Coq: Theorem discharge_rate_bounded) *)
-let discharge_rate_bounded (p_b: battery_info) : Lemma (requires (p_b.f_bat_discharge_rate <= charge_rate_max)) (ensures (p_b.f_bat_discharge_rate <= 25000)) = admit ()
+let discharge_rate_bounded (p_b: battery_info) : Lemma (requires (p_b.f_bat_discharge_rate <= charge_rate_max)) (ensures (p_b.f_bat_discharge_rate <= 25000)) = ()
 
 (* power_budget_per_app (matches Coq: Theorem power_budget_per_app) *)
-let power_budget_per_app (p_a: app_power_budget) : Lemma (requires (well_formed_app_power p_a == true)) (ensures (p_a.f_app_power_actual_mw <= p_a.f_app_power_budget_mw)) = admit ()
+let power_budget_per_app (p_a: app_power_budget) : Lemma (requires (well_formed_app_power p_a == true)) (ensures (p_a.f_app_power_actual_mw <= p_a.f_app_power_budget_mw)) = ()

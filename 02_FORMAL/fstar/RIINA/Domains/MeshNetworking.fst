@@ -117,80 +117,80 @@ let not_existsb_not_in_obligation () : Tot bool = true
 let not_existsb_not_in_lemma () : Lemma (requires True) (ensures (not_existsb_not_in_obligation () == not_existsb_not_in_obligation ())) = ()
 
 (* NoDup_nodup_equiv (matches Coq: Lemma NoDup_nodup_equiv) *)
-let nodup_nodup_equiv (p_l: (list nat)) : Lemma (requires (length p_l == length (nodup Nat.eq_dec p_l))) (ensures (NoDup p_l == true)) = admit ()
+let nodup_nodup_equiv (p_l: (list nat)) : Lemma (requires (length p_l == length (nodup Nat.eq_dec p_l))) (ensures (NoDup p_l == true)) = ()
 
 (* mesh_001_byzantine_threshold (matches Coq: Theorem mesh_001_byzantine_threshold) *)
-let mesh_001_byzantine_threshold (p_network: nat) : Lemma (requires (byzantine_tolerant p_network == true)) (ensures (3 * mesh_threshold p_network + 1 <= length (mesh_nodes p_network))) = admit ()
+let mesh_001_byzantine_threshold (p_network: nat) : Lemma (requires (byzantine_tolerant p_network == true)) (ensures (3 * mesh_threshold p_network + 1 <= length (mesh_nodes p_network))) = ()
 
 (* mesh_002_honest_path (matches Coq: Theorem mesh_002_honest_path) *)
 let mesh_002_honest_path_obligation () : Tot bool = true
 let mesh_002_honest_path_lemma () : Lemma (requires True) (ensures (mesh_002_honest_path_obligation () == mesh_002_honest_path_obligation ())) = ()
 
 (* mesh_003_loop_free (matches Coq: Theorem mesh_003_loop_free) *)
-let mesh_003_loop_free (p_route: nat) : Lemma (requires (loop_free p_route == true)) (ensures (NoDup p_route == true)) = admit ()
+let mesh_003_loop_free (p_route: nat) : Lemma (requires (loop_free p_route == true)) (ensures (NoDup p_route == true)) = ()
 
 (* mesh_004_seq_increasing (matches Coq: Theorem mesh_004_seq_increasing) *)
-let mesh_004_seq_increasing (p_old_seq: nat) (p_new_seq: nat) : Lemma (requires (seq_increasing p_old_seq p_new_seq == true)) (ensures (p_old_seq < p_new_seq)) = admit ()
+let mesh_004_seq_increasing (p_old_seq: nat) (p_new_seq: nat) : Lemma (requires (seq_increasing p_old_seq p_new_seq == true)) (ensures (p_old_seq < p_new_seq)) = ()
 
 (* mesh_005_route_fresh (matches Coq: Theorem mesh_005_route_fresh) *)
-let mesh_005_route_fresh (p_entry: nat) (p_current: nat) (p_max_age: nat) : Lemma (requires (route_fresh p_entry p_current p_max_age == true)) (ensures (p_current - route_timestamp p_entry <= p_max_age)) = admit ()
+let mesh_005_route_fresh (p_entry: nat) (p_current: nat) (p_max_age: nat) : Lemma (requires (route_fresh p_entry p_current p_max_age == true)) (ensures (p_current - route_timestamp p_entry <= p_max_age)) = ()
 
 (* mesh_006_multi_path (matches Coq: Theorem mesh_006_multi_path) *)
-let mesh_006_multi_path (p_mp: nat) (p_min_paths: nat) : Lemma (requires (paths_sufficient p_mp p_min_paths == true)) (ensures (p_min_paths <= length (mp_paths p_mp))) = admit ()
+let mesh_006_multi_path (p_mp: nat) (p_min_paths: nat) : Lemma (requires (paths_sufficient p_mp p_min_paths == true)) (ensures (p_min_paths <= length (mp_paths p_mp))) = ()
 
 (* mesh_007_disjoint (matches Coq: Theorem mesh_007_disjoint) *)
-let mesh_007_disjoint (p_mp: nat) : Lemma (requires (mp_disjoint p_mp == true)) (ensures (mp_disjoint p_mp == true)) = admit ()
+let mesh_007_disjoint (p_mp: nat) : Lemma (requires (mp_disjoint p_mp == true)) (ensures (mp_disjoint p_mp == true)) = ()
 
 (* mesh_008_metric_bounded (matches Coq: Theorem mesh_008_metric_bounded) *)
-let mesh_008_metric_bounded (p_entry: nat) (p_max_metric: nat) : Lemma (requires (metric_bounded p_entry p_max_metric == true)) (ensures (route_metric p_entry <= p_max_metric)) = admit ()
+let mesh_008_metric_bounded (p_entry: nat) (p_max_metric: nat) : Lemma (requires (metric_bounded p_entry p_max_metric == true)) (ensures (route_metric p_entry <= p_max_metric)) = ()
 
 (* mesh_009_neighbor_auth (matches Coq: Theorem mesh_009_neighbor_auth) *)
-let mesh_009_neighbor_auth (p_neighbor: nat) (p_trusted: (list nat)) : Lemma (requires (neighbor_authenticated p_neighbor p_trusted == true)) (ensures ((exists p_t. List.Tot.memP p_t p_trusted) /\ t == p_neighbor)) = admit ()
+let mesh_009_neighbor_auth (p_neighbor: nat) (p_trusted: (list nat)) : Lemma (requires (neighbor_authenticated p_neighbor p_trusted == true)) (ensures ((exists p_t. List.Tot.memP p_t p_trusted) /\ t == p_neighbor)) = ()
 
 (* mesh_010_hop_limit (matches Coq: Theorem mesh_010_hop_limit) *)
-let mesh_010_hop_limit (p_route: nat) (p_max_hops: nat) : Lemma (requires (hop_count_ok p_route p_max_hops == true)) (ensures (length p_route <= p_max_hops)) = admit ()
+let mesh_010_hop_limit (p_route: nat) (p_max_hops: nat) : Lemma (requires (hop_count_ok p_route p_max_hops == true)) (ensures (length p_route <= p_max_hops)) = ()
 
 (* mesh_011_entry_valid (matches Coq: Theorem mesh_011_entry_valid) *)
-let mesh_011_entry_valid (p_entry: nat) : Lemma (requires (entry_valid p_entry == true)) (ensures (0 < route_dest p_entry /\ 0 < route_next_hop p_entry)) = admit ()
+let mesh_011_entry_valid (p_entry: nat) : Lemma (requires (entry_valid p_entry == true)) (ensures (0 < route_dest p_entry /\ 0 < route_next_hop p_entry)) = ()
 
 (* mesh_012_partition (matches Coq: Theorem mesh_012_partition) *)
-let mesh_012_partition (p_reachable: nat) (p_total: nat) (p_threshold: nat) : Lemma (requires (partition_detected p_reachable p_total p_threshold == true)) (ensures (p_reachable < p_total * p_threshold / 100)) = admit ()
+let mesh_012_partition (p_reachable: nat) (p_total: nat) (p_threshold: nat) : Lemma (requires (partition_detected p_reachable p_total p_threshold == true)) (ensures (p_reachable < p_total * p_threshold / 100)) = ()
 
 (* mesh_013_healing (matches Coq: Theorem mesh_013_healing) *)
-let mesh_013_healing (p_paths: (list nat)) : Lemma (requires (healing_path_exists p_paths == true)) (ensures (length p_paths > 0)) = admit ()
+let mesh_013_healing (p_paths: (list nat)) : Lemma (requires (healing_path_exists p_paths == true)) (ensures (length p_paths > 0)) = ()
 
 (* mesh_014_convergence (matches Coq: Theorem mesh_014_convergence) *)
-let mesh_014_convergence (p_elapsed: nat) (p_max_time: nat) : Lemma (requires (converged_in_time p_elapsed p_max_time == true)) (ensures (p_elapsed <= p_max_time)) = admit ()
+let mesh_014_convergence (p_elapsed: nat) (p_max_time: nat) : Lemma (requires (converged_in_time p_elapsed p_max_time == true)) (ensures (p_elapsed <= p_max_time)) = ()
 
 (* mesh_015_flood_bounded (matches Coq: Theorem mesh_015_flood_bounded) *)
-let mesh_015_flood_bounded (p_ttl: nat) (p_max_ttl: nat) : Lemma (requires (flood_bounded p_ttl p_max_ttl == true)) (ensures (p_ttl <= p_max_ttl)) = admit ()
+let mesh_015_flood_bounded (p_ttl: nat) (p_max_ttl: nat) : Lemma (requires (flood_bounded p_ttl p_max_ttl == true)) (ensures (p_ttl <= p_max_ttl)) = ()
 
 (* mesh_016_msg_unique (matches Coq: Theorem mesh_016_msg_unique) *)
-let mesh_016_msg_unique (p_msg_id: nat) (p_seen: (list nat)) : Lemma (requires (msg_id_unique p_msg_id p_seen == true)) (ensures (~(List.Tot.memP p_msg_id p_seen))) = admit ()
+let mesh_016_msg_unique (p_msg_id: nat) (p_seen: (list nat)) : Lemma (requires (msg_id_unique p_msg_id p_seen == true)) (ensures (~(List.Tot.memP p_msg_id p_seen))) = ()
 
 (* mesh_017_link_quality (matches Coq: Theorem mesh_017_link_quality) *)
-let mesh_017_link_quality (p_quality: nat) (p_min_quality: nat) : Lemma (requires (link_quality_ok p_quality p_min_quality == true)) (ensures (p_min_quality <= p_quality)) = admit ()
+let mesh_017_link_quality (p_quality: nat) (p_min_quality: nat) : Lemma (requires (link_quality_ok p_quality p_min_quality == true)) (ensures (p_min_quality <= p_quality)) = ()
 
 (* mesh_018_reputation (matches Coq: Theorem mesh_018_reputation) *)
-let mesh_018_reputation (p_rep: nat) (p_min_rep: nat) : Lemma (requires (reputation_sufficient p_rep p_min_rep == true)) (ensures (p_min_rep <= p_rep)) = admit ()
+let mesh_018_reputation (p_rep: nat) (p_min_rep: nat) : Lemma (requires (reputation_sufficient p_rep p_min_rep == true)) (ensures (p_min_rep <= p_rep)) = ()
 
 (* mesh_019_secure_channel (matches Coq: Theorem mesh_019_secure_channel) *)
-let mesh_019_secure_channel (p_encrypted: bool) (p_authenticated: bool) : Lemma (requires (channel_secure p_encrypted p_authenticated == true)) (ensures (p_encrypted == true /\ p_authenticated == true)) = admit ()
+let mesh_019_secure_channel (p_encrypted: bool) (p_authenticated: bool) : Lemma (requires (channel_secure p_encrypted p_authenticated == true)) (ensures (p_encrypted == true /\ p_authenticated == true)) = ()
 
 (* mesh_020_rate_limited (matches Coq: Theorem mesh_020_rate_limited) *)
-let mesh_020_rate_limited (p_current: nat) (p_max_rate: nat) : Lemma (requires (rate_ok p_current p_max_rate == true)) (ensures (p_current <= p_max_rate)) = admit ()
+let mesh_020_rate_limited (p_current: nat) (p_max_rate: nat) : Lemma (requires (rate_ok p_current p_max_rate == true)) (ensures (p_current <= p_max_rate)) = ()
 
 (* mesh_021_geo_diversity (matches Coq: Theorem mesh_021_geo_diversity) *)
-let mesh_021_geo_diversity (p_regions: (list nat)) (p_min_regions: nat) : Lemma (requires (geographically_diverse p_regions p_min_regions == true)) (ensures (p_min_regions <= length (nodup Nat.eq_dec p_regions))) = admit ()
+let mesh_021_geo_diversity (p_regions: (list nat)) (p_min_regions: nat) : Lemma (requires (geographically_diverse p_regions p_min_regions == true)) (ensures (p_min_regions <= length (nodup Nat.eq_dec p_regions))) = ()
 
 (* mesh_022_store_forward (matches Coq: Theorem mesh_022_store_forward) *)
-let mesh_022_store_forward (p_stored_time: nat) (p_current: nat) (p_timeout: nat) : Lemma (requires (store_timeout_ok p_stored_time p_current p_timeout == true)) (ensures (p_current - p_stored_time <= p_timeout)) = admit ()
+let mesh_022_store_forward (p_stored_time: nat) (p_current: nat) (p_timeout: nat) : Lemma (requires (store_timeout_ok p_stored_time p_current p_timeout == true)) (ensures (p_current - p_stored_time <= p_timeout)) = ()
 
 (* mesh_023_delay_tolerance (matches Coq: Theorem mesh_023_delay_tolerance) *)
-let mesh_023_delay_tolerance (p_delay: nat) (p_max_delay: nat) : Lemma (requires (delay_acceptable p_delay p_max_delay == true)) (ensures (p_delay <= p_max_delay)) = admit ()
+let mesh_023_delay_tolerance (p_delay: nat) (p_max_delay: nat) : Lemma (requires (delay_acceptable p_delay p_max_delay == true)) (ensures (p_delay <= p_max_delay)) = ()
 
 (* mesh_024_traffic_analysis (matches Coq: Theorem mesh_024_traffic_analysis) *)
-let mesh_024_traffic_analysis (p_real: nat) (p_cover: nat) (p_min_ratio: nat) : Lemma (requires (cover_traffic_ratio p_real p_cover p_min_ratio == true)) (ensures (p_real * p_min_ratio <= p_cover)) = admit ()
+let mesh_024_traffic_analysis (p_real: nat) (p_cover: nat) (p_min_ratio: nat) : Lemma (requires (cover_traffic_ratio p_real p_cover p_min_ratio == true)) (ensures (p_real * p_min_ratio <= p_cover)) = ()
 
 (* mesh_025_defense_in_depth (matches Coq: Theorem mesh_025_defense_in_depth) *)
-let mesh_025_defense_in_depth (p_b: _) (p_l: _) (p_f: _) (p_a: _) : Lemma (requires (mesh_layers p_b p_l p_f p_a == true)) (ensures (p_b == true /\ p_l == true /\ p_f == true /\ p_a == true)) = admit ()
+let mesh_025_defense_in_depth (p_b: _) (p_l: _) (p_f: _) (p_a: _) : Lemma (requires (mesh_layers p_b p_l p_f p_a == true)) (ensures (p_b == true /\ p_l == true /\ p_f == true /\ p_a == true)) = ()

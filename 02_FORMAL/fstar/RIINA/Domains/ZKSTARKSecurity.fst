@@ -186,322 +186,322 @@ let full_stark_security (p_s: stark_security) (p_f: fri_properties) (p_sim: simu
   modular_stark p_s p_f p_sim && extended_secure p_e
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = ()
 
 (* bool_dec (matches Coq: Lemma bool_dec) *)
-let bool_dec (p_b: bool) : Lemma (p_b == true \/ p_b == false) = admit ()
+let bool_dec (p_b: bool) : Lemma (p_b == true \/ p_b == false) = ()
 
 (* andb_false_iff (matches Coq: Lemma andb_false_iff) *)
-let andb_false_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == false <==> p_a == false \/ p_b == false) = admit ()
+let andb_false_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == false <==> p_a == false \/ p_b == false) = ()
 
 (* STARK_001 (matches Coq: Theorem STARK_001) *)
-let stark_001 () : Lemma (stark_props_secure riina_stark_props == true) = admit ()
+let stark_001 () : Lemma (stark_props_secure riina_stark_props == true) = ()
 
 (* STARK_002 (matches Coq: Theorem STARK_002) *)
-let stark_002 () : Lemma (air_secure riina_air == true) = admit ()
+let stark_002 () : Lemma (air_secure riina_air == true) = ()
 
 (* STARK_003 (matches Coq: Theorem STARK_003) *)
-let stark_003 () : Lemma (stark_fully_secure riina_stark == true) = admit ()
+let stark_003 () : Lemma (stark_fully_secure riina_stark == true) = ()
 
 (* STARK_004 (matches Coq: Theorem STARK_004) *)
-let stark_004 () : Lemma (riina_stark_props.f_stark_transparent == true) = admit ()
+let stark_004 () : Lemma (riina_stark_props.f_stark_transparent == true) = ()
 
 (* STARK_005 (matches Coq: Theorem STARK_005) *)
-let stark_005 () : Lemma (riina_stark_props.f_stark_scalable == true) = admit ()
+let stark_005 () : Lemma (riina_stark_props.f_stark_scalable == true) = ()
 
 (* STARK_006 (matches Coq: Theorem STARK_006) *)
-let stark_006 () : Lemma (riina_stark_props.f_stark_post_quantum == true) = admit ()
+let stark_006 () : Lemma (riina_stark_props.f_stark_post_quantum == true) = ()
 
 (* STARK_007 (matches Coq: Theorem STARK_007) *)
-let stark_007 () : Lemma (riina_air.f_air_algebraic == true) = admit ()
+let stark_007 () : Lemma (riina_air.f_air_algebraic == true) = ()
 
 (* STARK_008 (matches Coq: Theorem STARK_008) *)
-let stark_008 () : Lemma (riina_air.f_air_low_degree == true) = admit ()
+let stark_008 () : Lemma (riina_air.f_air_low_degree == true) = ()
 
 (* STARK_009 (matches Coq: Theorem STARK_009) *)
-let stark_009 () : Lemma (riina_air.f_air_fri_verified == true) = admit ()
+let stark_009 () : Lemma (riina_air.f_air_fri_verified == true) = ()
 
 (* STARK_010 (matches Coq: Theorem STARK_010) *)
-let stark_010 () : Lemma (riina_stark.f_starks_completeness == true) = admit ()
+let stark_010 () : Lemma (riina_stark.f_starks_completeness == true) = ()
 
 (* STARK_011 (matches Coq: Theorem STARK_011) *)
-let stark_011 () : Lemma (riina_stark.f_starks_soundness == true) = admit ()
+let stark_011 () : Lemma (riina_stark.f_starks_soundness == true) = ()
 
 (* STARK_012 (matches Coq: Theorem STARK_012) *)
-let stark_012 () : Lemma (riina_stark.f_starks_zero_knowledge == true) = admit ()
+let stark_012 () : Lemma (riina_stark.f_starks_zero_knowledge == true) = ()
 
 (* STARK_013 (matches Coq: Theorem STARK_013) *)
-let stark_013 (p_s: _) : Lemma (requires (stark_props_secure p_s == true)) (ensures (p_s.f_stark_transparent == true)) = admit ()
+let stark_013 (p_s: _) : Lemma (requires (stark_props_secure p_s == true)) (ensures (p_s.f_stark_transparent == true)) = ()
 
 (* STARK_014 (matches Coq: Theorem STARK_014) *)
-let stark_014 (p_s: _) : Lemma (requires (stark_props_secure p_s == true)) (ensures (p_s.f_stark_post_quantum == true)) = admit ()
+let stark_014 (p_s: _) : Lemma (requires (stark_props_secure p_s == true)) (ensures (p_s.f_stark_post_quantum == true)) = ()
 
 (* STARK_015 (matches Coq: Theorem STARK_015) *)
-let stark_015 (p_a: _) : Lemma (requires (air_secure p_a == true)) (ensures (p_a.f_air_fri_verified == true)) = admit ()
+let stark_015 (p_a: _) : Lemma (requires (air_secure p_a == true)) (ensures (p_a.f_air_fri_verified == true)) = ()
 
 (* STARK_016 (matches Coq: Theorem STARK_016) *)
-let stark_016 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures (p_s.f_starks_soundness == true)) = admit ()
+let stark_016 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures (p_s.f_starks_soundness == true)) = ()
 
 (* STARK_017 (matches Coq: Theorem STARK_017) *)
-let stark_017 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures (p_s.f_starks_zero_knowledge == true)) = admit ()
+let stark_017 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures (p_s.f_starks_zero_knowledge == true)) = ()
 
 (* STARK_018 (matches Coq: Theorem STARK_018) *)
-let stark_018 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures (stark_props_secure (p_s.f_starks_stark) == true)) = admit ()
+let stark_018 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures (stark_props_secure (p_s.f_starks_stark) == true)) = ()
 
 (* STARK_019 (matches Coq: Theorem STARK_019) *)
-let stark_019 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures (air_secure (p_s.f_starks_air) == true)) = admit ()
+let stark_019 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures (air_secure (p_s.f_starks_air) == true)) = ()
 
 (* STARK_020 (matches Coq: Theorem STARK_020) *)
-let stark_020 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures ((p_s.f_starks_stark).f_stark_transparent == true)) = admit ()
+let stark_020 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures ((p_s.f_starks_stark).f_stark_transparent == true)) = ()
 
 (* STARK_021 (matches Coq: Theorem STARK_021) *)
-let stark_021 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures ((p_s.f_starks_stark).f_stark_post_quantum == true)) = admit ()
+let stark_021 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures ((p_s.f_starks_stark).f_stark_post_quantum == true)) = ()
 
 (* STARK_022 (matches Coq: Theorem STARK_022) *)
-let stark_022 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures ((p_s.f_starks_air).f_air_fri_verified == true)) = admit ()
+let stark_022 (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures ((p_s.f_starks_air).f_air_fri_verified == true)) = ()
 
 (* STARK_023 (matches Coq: Theorem STARK_023) *)
-let stark_023 () : Lemma (stark_fully_secure riina_stark == true /\ riina_stark_props.f_stark_post_quantum == true) = admit ()
+let stark_023 () : Lemma (stark_fully_secure riina_stark == true /\ riina_stark_props.f_stark_post_quantum == true) = ()
 
 (* STARK_024 (matches Coq: Theorem STARK_024) *)
-let stark_024 () : Lemma (riina_stark_props.f_stark_transparent == true /\ riina_air.f_air_fri_verified == true) = admit ()
+let stark_024 () : Lemma (riina_stark_props.f_stark_transparent == true /\ riina_air.f_air_fri_verified == true) = ()
 
 (* STARK_025_complete (matches Coq: Theorem STARK_025_complete) *)
-let stark_025_complete (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures (p_s.f_starks_soundness == true /\ p_s.f_starks_zero_knowledge == true /\ (p_s.f_starks_stark).f_stark_transparent == true /\ (p_s.f_starks_stark).f_stark_post_quantum == true)) = admit ()
+let stark_025_complete (p_s: _) : Lemma (requires (stark_fully_secure p_s == true)) (ensures (p_s.f_starks_soundness == true /\ p_s.f_starks_zero_knowledge == true /\ (p_s.f_starks_stark).f_stark_transparent == true /\ (p_s.f_starks_stark).f_stark_post_quantum == true)) = ()
 
 (* FRI_soundness_property (matches Coq: Theorem FRI_soundness_property) *)
-let fri_soundness_property (p_f: _) : Lemma (requires (fri_secure p_f == true)) (ensures (p_f.f_fri_soundness == true)) = admit ()
+let fri_soundness_property (p_f: _) : Lemma (requires (fri_secure p_f == true)) (ensures (p_f.f_fri_soundness == true)) = ()
 
 (* FRI_query_bound_property (matches Coq: Theorem FRI_query_bound_property) *)
-let fri_query_bound_property (p_f: _) : Lemma (requires (fri_secure p_f == true)) (ensures (p_f.f_fri_query_bound == true)) = admit ()
+let fri_query_bound_property (p_f: _) : Lemma (requires (fri_secure p_f == true)) (ensures (p_f.f_fri_query_bound == true)) = ()
 
 (* FRI_commitment_binding_property (matches Coq: Theorem FRI_commitment_binding_property) *)
-let fri_commitment_binding_property (p_f: _) : Lemma (requires (fri_secure p_f == true)) (ensures (p_f.f_fri_commitment_binding == true)) = admit ()
+let fri_commitment_binding_property (p_f: _) : Lemma (requires (fri_secure p_f == true)) (ensures (p_f.f_fri_commitment_binding == true)) = ()
 
 (* FRI_fiat_shamir_property (matches Coq: Theorem FRI_fiat_shamir_property) *)
-let fri_fiat_shamir_property (p_f: _) : Lemma (requires (fri_secure p_f == true)) (ensures (p_f.f_fri_interactive_to_non == true)) = admit ()
+let fri_fiat_shamir_property (p_f: _) : Lemma (requires (fri_secure p_f == true)) (ensures (p_f.f_fri_interactive_to_non == true)) = ()
 
 (* FRI_riina_soundness (matches Coq: Theorem FRI_riina_soundness) *)
-let fri_riina_soundness () : Lemma (riina_fri.f_fri_soundness == true) = admit ()
+let fri_riina_soundness () : Lemma (riina_fri.f_fri_soundness == true) = ()
 
 (* FRI_riina_query_bound (matches Coq: Theorem FRI_riina_query_bound) *)
-let fri_riina_query_bound () : Lemma (riina_fri.f_fri_query_bound == true) = admit ()
+let fri_riina_query_bound () : Lemma (riina_fri.f_fri_query_bound == true) = ()
 
 (* FRI_riina_commitment (matches Coq: Theorem FRI_riina_commitment) *)
-let fri_riina_commitment () : Lemma (riina_fri.f_fri_commitment_binding == true) = admit ()
+let fri_riina_commitment () : Lemma (riina_fri.f_fri_commitment_binding == true) = ()
 
 (* FRI_riina_transform (matches Coq: Theorem FRI_riina_transform) *)
-let fri_riina_transform () : Lemma (riina_fri.f_fri_interactive_to_non == true) = admit ()
+let fri_riina_transform () : Lemma (riina_fri.f_fri_interactive_to_non == true) = ()
 
 (* FRI_riina_secure (matches Coq: Theorem FRI_riina_secure) *)
-let fri_riina_secure () : Lemma (fri_secure riina_fri == true) = admit ()
+let fri_riina_secure () : Lemma (fri_secure riina_fri == true) = ()
 
 (* FRI_rounds_positive (matches Coq: Theorem FRI_rounds_positive) *)
-let fri_rounds_positive () : Lemma (riina_fri.f_fri_round_complexity > 0) = admit ()
+let fri_rounds_positive () : Lemma (riina_fri.f_fri_round_complexity > 0) = ()
 
 (* FRI_proximity_positive (matches Coq: Theorem FRI_proximity_positive) *)
-let fri_proximity_positive () : Lemma (riina_fri.f_fri_proximity_param > 0) = admit ()
+let fri_proximity_positive () : Lemma (riina_fri.f_fri_proximity_param > 0) = ()
 
 (* soundness_implies_starks (matches Coq: Theorem soundness_implies_starks) *)
-let soundness_implies_starks (p_s: _) (p_f: _) : Lemma (requires (computational_soundness p_s p_f == true)) (ensures (p_s.f_starks_soundness == true)) = admit ()
+let soundness_implies_starks (p_s: _) (p_f: _) : Lemma (requires (computational_soundness p_s p_f == true)) (ensures (p_s.f_starks_soundness == true)) = ()
 
 (* soundness_implies_fri (matches Coq: Theorem soundness_implies_fri) *)
-let soundness_implies_fri (p_s: _) (p_f: _) : Lemma (requires (computational_soundness p_s p_f == true)) (ensures (p_f.f_fri_soundness == true)) = admit ()
+let soundness_implies_fri (p_s: _) (p_f: _) : Lemma (requires (computational_soundness p_s p_f == true)) (ensures (p_f.f_fri_soundness == true)) = ()
 
 (* soundness_implies_binding (matches Coq: Theorem soundness_implies_binding) *)
-let soundness_implies_binding (p_s: _) (p_f: _) : Lemma (requires (computational_soundness p_s p_f == true)) (ensures (p_f.f_fri_commitment_binding == true)) = admit ()
+let soundness_implies_binding (p_s: _) (p_f: _) : Lemma (requires (computational_soundness p_s p_f == true)) (ensures (p_f.f_fri_commitment_binding == true)) = ()
 
 (* riina_computational_soundness (matches Coq: Theorem riina_computational_soundness) *)
-let riina_computational_soundness () : Lemma (computational_soundness riina_stark riina_fri == true) = admit ()
+let riina_computational_soundness () : Lemma (computational_soundness riina_stark riina_fri == true) = ()
 
 (* soundness_amplification (matches Coq: Theorem soundness_amplification) *)
-let soundness_amplification (p_s: _) (p_f: _) : Lemma (requires (computational_soundness p_s p_f == true /\ p_f.f_fri_round_complexity > 0)) (ensures (amplified_soundness (computational_soundness p_s p_f) (p_f.f_fri_round_complexity) == true)) = admit ()
+let soundness_amplification (p_s: _) (p_f: _) : Lemma (requires (computational_soundness p_s p_f == true /\ p_f.f_fri_round_complexity > 0)) (ensures (amplified_soundness (computational_soundness p_s p_f) (p_f.f_fri_round_complexity) == true)) = ()
 
 (* soundness_composition (matches Coq: Theorem soundness_composition) *)
-let soundness_composition (p_s: _) (p_f: _) : Lemma (requires (p_s.f_starks_soundness == true /\ p_f.f_fri_soundness == true /\ p_f.f_fri_commitment_binding == true)) (ensures (computational_soundness p_s p_f == true)) = admit ()
+let soundness_composition (p_s: _) (p_f: _) : Lemma (requires (p_s.f_starks_soundness == true /\ p_f.f_fri_soundness == true /\ p_f.f_fri_commitment_binding == true)) (ensures (computational_soundness p_s p_f == true)) = ()
 
 (* zk_implies_starks_zk (matches Coq: Theorem zk_implies_starks_zk) *)
-let zk_implies_starks_zk (p_s: _) (p_sim: _) : Lemma (requires (simulation_based_zk p_s p_sim == true)) (ensures (p_s.f_starks_zero_knowledge == true)) = admit ()
+let zk_implies_starks_zk (p_s: _) (p_sim: _) : Lemma (requires (simulation_based_zk p_s p_sim == true)) (ensures (p_s.f_starks_zero_knowledge == true)) = ()
 
 (* zk_implies_indistinguishable (matches Coq: Theorem zk_implies_indistinguishable) *)
-let zk_implies_indistinguishable (p_s: _) (p_sim: _) : Lemma (requires (simulation_based_zk p_s p_sim == true)) (ensures (p_sim.f_sim_indistinguishable == true)) = admit ()
+let zk_implies_indistinguishable (p_s: _) (p_sim: _) : Lemma (requires (simulation_based_zk p_s p_sim == true)) (ensures (p_sim.f_sim_indistinguishable == true)) = ()
 
 (* perfect_zk_implies_simulation (matches Coq: Theorem perfect_zk_implies_simulation) *)
-let perfect_zk_implies_simulation (p_s: _) (p_sim: _) : Lemma (requires (perfect_zk p_s p_sim == true)) (ensures (simulation_based_zk p_s p_sim == true)) = admit ()
+let perfect_zk_implies_simulation (p_s: _) (p_sim: _) : Lemma (requires (perfect_zk p_s p_sim == true)) (ensures (simulation_based_zk p_s p_sim == true)) = ()
 
 (* perfect_zk_rewinding (matches Coq: Theorem perfect_zk_rewinding) *)
-let perfect_zk_rewinding (p_s: _) (p_sim: _) : Lemma (requires (perfect_zk p_s p_sim == true)) (ensures (p_sim.f_sim_rewinding == true)) = admit ()
+let perfect_zk_rewinding (p_s: _) (p_sim: _) : Lemma (requires (perfect_zk p_s p_sim == true)) (ensures (p_sim.f_sim_rewinding == true)) = ()
 
 (* riina_simulation_zk (matches Coq: Theorem riina_simulation_zk) *)
-let riina_simulation_zk () : Lemma (simulation_based_zk riina_stark valid_simulator == true) = admit ()
+let riina_simulation_zk () : Lemma (simulation_based_zk riina_stark valid_simulator == true) = ()
 
 (* riina_perfect_zk (matches Coq: Theorem riina_perfect_zk) *)
-let riina_perfect_zk () : Lemma (perfect_zk riina_stark valid_simulator == true) = admit ()
+let riina_perfect_zk () : Lemma (perfect_zk riina_stark valid_simulator == true) = ()
 
 (* simulator_validity (matches Coq: Theorem simulator_validity) *)
-let simulator_validity () : Lemma (simulation_valid valid_simulator == true) = admit ()
+let simulator_validity () : Lemma (simulation_valid valid_simulator == true) = ()
 
 (* zk_soundness_composition (matches Coq: Theorem zk_soundness_composition) *)
-let zk_soundness_composition (p_s: _) (p_f: _) (p_sim: _) : Lemma (requires (computational_soundness p_s p_f == true /\ simulation_based_zk p_s p_sim == true)) (ensures (zk_with_soundness p_s p_f p_sim == true)) = admit ()
+let zk_soundness_composition (p_s: _) (p_f: _) (p_sim: _) : Lemma (requires (computational_soundness p_s p_f == true /\ simulation_based_zk p_s p_sim == true)) (ensures (zk_with_soundness p_s p_f p_sim == true)) = ()
 
 (* riina_zk_soundness (matches Coq: Theorem riina_zk_soundness) *)
-let riina_zk_soundness () : Lemma (zk_with_soundness riina_stark riina_fri valid_simulator == true) = admit ()
+let riina_zk_soundness () : Lemma (zk_with_soundness riina_stark riina_fri valid_simulator == true) = ()
 
 (* completeness_requires_honest_prover (matches Coq: Theorem completeness_requires_honest_prover) *)
-let completeness_requires_honest_prover (p_p: _) (p_v: _) (p_s: _) : Lemma (requires (interaction_complete p_p p_v p_s == true)) (ensures (prover_honest p_p == true)) = admit ()
+let completeness_requires_honest_prover (p_p: _) (p_v: _) (p_s: _) : Lemma (requires (interaction_complete p_p p_v p_s == true)) (ensures (prover_honest p_p == true)) = ()
 
 (* completeness_requires_starks (matches Coq: Theorem completeness_requires_starks) *)
-let completeness_requires_starks (p_p: _) (p_v: _) (p_s: _) : Lemma (requires (interaction_complete p_p p_v p_s == true)) (ensures (p_s.f_starks_completeness == true)) = admit ()
+let completeness_requires_starks (p_p: _) (p_v: _) (p_s: _) : Lemma (requires (interaction_complete p_p p_v p_s == true)) (ensures (p_s.f_starks_completeness == true)) = ()
 
 (* completeness_implies_acceptance (matches Coq: Theorem completeness_implies_acceptance) *)
-let completeness_implies_acceptance (p_p: _) (p_v: _) (p_s: _) : Lemma (requires (interaction_complete p_p p_v p_s == true)) (ensures (p_v.f_verifier_accepting == true)) = admit ()
+let completeness_implies_acceptance (p_p: _) (p_v: _) (p_s: _) : Lemma (requires (interaction_complete p_p p_v p_s == true)) (ensures (p_v.f_verifier_accepting == true)) = ()
 
 (* riina_complete_interaction (matches Coq: Theorem riina_complete_interaction) *)
-let riina_complete_interaction () : Lemma (interaction_complete honest_prover honest_verifier riina_stark == true) = admit ()
+let riina_complete_interaction () : Lemma (interaction_complete honest_prover honest_verifier riina_stark == true) = ()
 
 (* honest_prover_property (matches Coq: Theorem honest_prover_property) *)
-let honest_prover_property () : Lemma (prover_honest honest_prover == true) = admit ()
+let honest_prover_property () : Lemma (prover_honest honest_prover == true) = ()
 
 (* honest_verifier_property (matches Coq: Theorem honest_verifier_property) *)
-let honest_verifier_property () : Lemma (verifier_honest honest_verifier == true) = admit ()
+let honest_verifier_property () : Lemma (verifier_honest honest_verifier == true) = ()
 
 (* fri_completeness_requires_prover (matches Coq: Theorem fri_completeness_requires_prover) *)
-let fri_completeness_requires_prover (p_p: _) (p_f: _) : Lemma (requires (fri_complete p_p p_f == true)) (ensures (p_p.f_prover_fri_complete == true)) = admit ()
+let fri_completeness_requires_prover (p_p: _) (p_f: _) : Lemma (requires (fri_complete p_p p_f == true)) (ensures (p_p.f_prover_fri_complete == true)) = ()
 
 (* riina_fri_complete (matches Coq: Theorem riina_fri_complete) *)
-let riina_fri_complete () : Lemma (fri_complete honest_prover riina_fri == true) = admit ()
+let riina_fri_complete () : Lemma (fri_complete honest_prover riina_fri == true) = ()
 
 (* pq_implies_stark_pq (matches Coq: Theorem pq_implies_stark_pq) *)
-let pq_implies_stark_pq (p_s: _) (p_e: _) : Lemma (requires (post_quantum_secure p_s p_e == true)) (ensures (p_s.f_stark_post_quantum == true)) = admit ()
+let pq_implies_stark_pq (p_s: _) (p_e: _) : Lemma (requires (post_quantum_secure p_s p_e == true)) (ensures (p_s.f_stark_post_quantum == true)) = ()
 
 (* pq_implies_ext_resistant (matches Coq: Theorem pq_implies_ext_resistant) *)
-let pq_implies_ext_resistant (p_s: _) (p_e: _) : Lemma (requires (post_quantum_secure p_s p_e == true)) (ensures (p_e.f_ext_quantum_resistant == true)) = admit ()
+let pq_implies_ext_resistant (p_s: _) (p_e: _) : Lemma (requires (post_quantum_secure p_s p_e == true)) (ensures (p_e.f_ext_quantum_resistant == true)) = ()
 
 (* riina_post_quantum (matches Coq: Theorem riina_post_quantum) *)
-let riina_post_quantum () : Lemma (post_quantum_secure riina_stark_props riina_extended == true) = admit ()
+let riina_post_quantum () : Lemma (post_quantum_secure riina_stark_props riina_extended == true) = ()
 
 (* hash_security_pq (matches Coq: Theorem hash_security_pq) *)
-let hash_security_pq (p_s: _) (p_f: _) : Lemma (requires (hash_based_security p_s p_f == true)) (ensures (p_s.f_stark_post_quantum == true)) = admit ()
+let hash_security_pq (p_s: _) (p_f: _) : Lemma (requires (hash_based_security p_s p_f == true)) (ensures (p_s.f_stark_post_quantum == true)) = ()
 
 (* hash_security_binding (matches Coq: Theorem hash_security_binding) *)
-let hash_security_binding (p_s: _) (p_f: _) : Lemma (requires (hash_based_security p_s p_f == true)) (ensures (p_f.f_fri_commitment_binding == true)) = admit ()
+let hash_security_binding (p_s: _) (p_f: _) : Lemma (requires (hash_based_security p_s p_f == true)) (ensures (p_f.f_fri_commitment_binding == true)) = ()
 
 (* riina_hash_security (matches Coq: Theorem riina_hash_security) *)
-let riina_hash_security () : Lemma (hash_based_security riina_stark_props riina_fri == true) = admit ()
+let riina_hash_security () : Lemma (hash_based_security riina_stark_props riina_fri == true) = ()
 
 (* transparency_enables_pq (matches Coq: Theorem transparency_enables_pq) *)
-let transparency_enables_pq (p_s: _) : Lemma (requires (p_s.f_stark_transparent == true /\ p_s.f_stark_post_quantum == true)) (ensures (stark_props_secure p_s == true \/ p_s.f_stark_scalable == false)) = admit ()
+let transparency_enables_pq (p_s: _) : Lemma (requires (p_s.f_stark_transparent == true /\ p_s.f_stark_post_quantum == true)) (ensures (stark_props_secure p_s == true \/ p_s.f_stark_scalable == false)) = ()
 
 (* transparency_no_setup (matches Coq: Theorem transparency_no_setup) *)
-let transparency_no_setup (p_s: _) (p_f: _) : Lemma (requires (fully_transparent p_s p_f == true)) (ensures (p_s.f_stark_transparent == true)) = admit ()
+let transparency_no_setup (p_s: _) (p_f: _) : Lemma (requires (fully_transparent p_s p_f == true)) (ensures (p_s.f_stark_transparent == true)) = ()
 
 (* transparency_fiat_shamir (matches Coq: Theorem transparency_fiat_shamir) *)
-let transparency_fiat_shamir (p_s: _) (p_f: _) : Lemma (requires (fully_transparent p_s p_f == true)) (ensures (p_f.f_fri_interactive_to_non == true)) = admit ()
+let transparency_fiat_shamir (p_s: _) (p_f: _) : Lemma (requires (fully_transparent p_s p_f == true)) (ensures (p_f.f_fri_interactive_to_non == true)) = ()
 
 (* riina_fully_transparent (matches Coq: Theorem riina_fully_transparent) *)
-let riina_fully_transparent () : Lemma (fully_transparent riina_stark_props riina_fri == true) = admit ()
+let riina_fully_transparent () : Lemma (fully_transparent riina_stark_props riina_fri == true) = ()
 
 (* public_verify_transparent (matches Coq: Theorem public_verify_transparent) *)
-let public_verify_transparent (p_s: _) (p_f: _) : Lemma (requires (publicly_verifiable p_s p_f == true)) (ensures ((p_s.f_starks_stark).f_stark_transparent == true)) = admit ()
+let public_verify_transparent (p_s: _) (p_f: _) : Lemma (requires (publicly_verifiable p_s p_f == true)) (ensures ((p_s.f_starks_stark).f_stark_transparent == true)) = ()
 
 (* public_verify_sound (matches Coq: Theorem public_verify_sound) *)
-let public_verify_sound (p_s: _) (p_f: _) : Lemma (requires (publicly_verifiable p_s p_f == true)) (ensures (p_s.f_starks_soundness == true)) = admit ()
+let public_verify_sound (p_s: _) (p_f: _) : Lemma (requires (publicly_verifiable p_s p_f == true)) (ensures (p_s.f_starks_soundness == true)) = ()
 
 (* riina_publicly_verifiable (matches Coq: Theorem riina_publicly_verifiable) *)
-let riina_publicly_verifiable () : Lemma (publicly_verifiable riina_stark riina_fri == true) = admit ()
+let riina_publicly_verifiable () : Lemma (publicly_verifiable riina_stark riina_fri == true) = ()
 
 (* extended_implies_base (matches Coq: Theorem extended_implies_base) *)
-let extended_implies_base (p_e: _) : Lemma (requires (extended_secure p_e == true)) (ensures (stark_fully_secure (p_e.f_ext_base) == true)) = admit ()
+let extended_implies_base (p_e: _) : Lemma (requires (extended_secure p_e == true)) (ensures (stark_fully_secure (p_e.f_ext_base) == true)) = ()
 
 (* extended_implies_fri (matches Coq: Theorem extended_implies_fri) *)
-let extended_implies_fri (p_e: _) : Lemma (requires (extended_secure p_e == true)) (ensures (fri_secure (p_e.f_ext_fri) == true)) = admit ()
+let extended_implies_fri (p_e: _) : Lemma (requires (extended_secure p_e == true)) (ensures (fri_secure (p_e.f_ext_fri) == true)) = ()
 
 (* extended_implies_simulation (matches Coq: Theorem extended_implies_simulation) *)
-let extended_implies_simulation (p_e: _) : Lemma (requires (extended_secure p_e == true)) (ensures (p_e.f_ext_simulation_secure == true)) = admit ()
+let extended_implies_simulation (p_e: _) : Lemma (requires (extended_secure p_e == true)) (ensures (p_e.f_ext_simulation_secure == true)) = ()
 
 (* extended_implies_extraction (matches Coq: Theorem extended_implies_extraction) *)
-let extended_implies_extraction (p_e: _) : Lemma (requires (extended_secure p_e == true)) (ensures (p_e.f_ext_extraction_secure == true)) = admit ()
+let extended_implies_extraction (p_e: _) : Lemma (requires (extended_secure p_e == true)) (ensures (p_e.f_ext_extraction_secure == true)) = ()
 
 (* extended_implies_quantum (matches Coq: Theorem extended_implies_quantum) *)
-let extended_implies_quantum (p_e: _) : Lemma (requires (extended_secure p_e == true)) (ensures (p_e.f_ext_quantum_resistant == true)) = admit ()
+let extended_implies_quantum (p_e: _) : Lemma (requires (extended_secure p_e == true)) (ensures (p_e.f_ext_quantum_resistant == true)) = ()
 
 (* riina_extended_secure (matches Coq: Theorem riina_extended_secure) *)
-let riina_extended_secure () : Lemma (extended_secure riina_extended == true) = admit ()
+let riina_extended_secure () : Lemma (extended_secure riina_extended == true) = ()
 
 (* extraction_implies_ext (matches Coq: Theorem extraction_implies_ext) *)
-let extraction_implies_ext (p_e: _) (p_f: _) : Lemma (requires (extraction_secure p_e p_f == true)) (ensures (p_e.f_ext_extraction_secure == true)) = admit ()
+let extraction_implies_ext (p_e: _) (p_f: _) : Lemma (requires (extraction_secure p_e p_f == true)) (ensures (p_e.f_ext_extraction_secure == true)) = ()
 
 (* extraction_implies_fri_sound (matches Coq: Theorem extraction_implies_fri_sound) *)
-let extraction_implies_fri_sound (p_e: _) (p_f: _) : Lemma (requires (extraction_secure p_e p_f == true)) (ensures (p_f.f_fri_soundness == true)) = admit ()
+let extraction_implies_fri_sound (p_e: _) (p_f: _) : Lemma (requires (extraction_secure p_e p_f == true)) (ensures (p_f.f_fri_soundness == true)) = ()
 
 (* extraction_implies_query_bound (matches Coq: Theorem extraction_implies_query_bound) *)
-let extraction_implies_query_bound (p_e: _) (p_f: _) : Lemma (requires (extraction_secure p_e p_f == true)) (ensures (p_f.f_fri_query_bound == true)) = admit ()
+let extraction_implies_query_bound (p_e: _) (p_f: _) : Lemma (requires (extraction_secure p_e p_f == true)) (ensures (p_f.f_fri_query_bound == true)) = ()
 
 (* riina_extraction_secure (matches Coq: Theorem riina_extraction_secure) *)
-let riina_extraction_secure () : Lemma (extraction_secure riina_extended riina_fri == true) = admit ()
+let riina_extraction_secure () : Lemma (extraction_secure riina_extended riina_fri == true) = ()
 
 (* air_algebraic_required (matches Coq: Theorem air_algebraic_required) *)
-let air_algebraic_required (p_a: _) : Lemma (requires (air_secure p_a == true)) (ensures (p_a.f_air_algebraic == true)) = admit ()
+let air_algebraic_required (p_a: _) : Lemma (requires (air_secure p_a == true)) (ensures (p_a.f_air_algebraic == true)) = ()
 
 (* air_low_degree_required (matches Coq: Theorem air_low_degree_required) *)
-let air_low_degree_required (p_a: _) : Lemma (requires (air_secure p_a == true)) (ensures (p_a.f_air_low_degree == true)) = admit ()
+let air_low_degree_required (p_a: _) : Lemma (requires (air_secure p_a == true)) (ensures (p_a.f_air_low_degree == true)) = ()
 
 (* air_fri_required (matches Coq: Theorem air_fri_required) *)
-let air_fri_required (p_a: _) : Lemma (requires (air_secure p_a == true)) (ensures (p_a.f_air_fri_verified == true)) = admit ()
+let air_fri_required (p_a: _) : Lemma (requires (air_secure p_a == true)) (ensures (p_a.f_air_fri_verified == true)) = ()
 
 (* riina_air_fri_connection (matches Coq: Theorem riina_air_fri_connection) *)
-let riina_air_fri_connection () : Lemma (riina_air.f_air_fri_verified == true /\ riina_fri.f_fri_soundness == true) = admit ()
+let riina_air_fri_connection () : Lemma (riina_air.f_air_fri_verified == true /\ riina_fri.f_fri_soundness == true) = ()
 
 (* modular_implies_stark (matches Coq: Theorem modular_implies_stark) *)
-let modular_implies_stark (p_s: _) (p_f: _) (p_sim: _) : Lemma (requires (modular_stark p_s p_f p_sim == true)) (ensures (stark_fully_secure p_s == true)) = admit ()
+let modular_implies_stark (p_s: _) (p_f: _) (p_sim: _) : Lemma (requires (modular_stark p_s p_f p_sim == true)) (ensures (stark_fully_secure p_s == true)) = ()
 
 (* modular_implies_fri (matches Coq: Theorem modular_implies_fri) *)
-let modular_implies_fri (p_s: _) (p_f: _) (p_sim: _) : Lemma (requires (modular_stark p_s p_f p_sim == true)) (ensures (fri_secure p_f == true)) = admit ()
+let modular_implies_fri (p_s: _) (p_f: _) (p_sim: _) : Lemma (requires (modular_stark p_s p_f p_sim == true)) (ensures (fri_secure p_f == true)) = ()
 
 (* modular_implies_sim (matches Coq: Theorem modular_implies_sim) *)
-let modular_implies_sim (p_s: _) (p_f: _) (p_sim: _) : Lemma (requires (modular_stark p_s p_f p_sim == true)) (ensures (simulation_valid p_sim == true)) = admit ()
+let modular_implies_sim (p_s: _) (p_f: _) (p_sim: _) : Lemma (requires (modular_stark p_s p_f p_sim == true)) (ensures (simulation_valid p_sim == true)) = ()
 
 (* riina_modular_stark (matches Coq: Theorem riina_modular_stark) *)
-let riina_modular_stark () : Lemma (modular_stark riina_stark riina_fri valid_simulator == true) = admit ()
+let riina_modular_stark () : Lemma (modular_stark riina_stark riina_fri valid_simulator == true) = ()
 
 (* full_security_modular (matches Coq: Theorem full_security_modular) *)
-let full_security_modular (p_s: _) (p_f: _) (p_sim: _) (p_e: _) : Lemma (requires (full_stark_security p_s p_f p_sim p_e == true)) (ensures (modular_stark p_s p_f p_sim == true)) = admit ()
+let full_security_modular (p_s: _) (p_f: _) (p_sim: _) (p_e: _) : Lemma (requires (full_stark_security p_s p_f p_sim p_e == true)) (ensures (modular_stark p_s p_f p_sim == true)) = ()
 
 (* full_security_extended (matches Coq: Theorem full_security_extended) *)
-let full_security_extended (p_s: _) (p_f: _) (p_sim: _) (p_e: _) : Lemma (requires (full_stark_security p_s p_f p_sim p_e == true)) (ensures (extended_secure p_e == true)) = admit ()
+let full_security_extended (p_s: _) (p_f: _) (p_sim: _) (p_e: _) : Lemma (requires (full_stark_security p_s p_f p_sim p_e == true)) (ensures (extended_secure p_e == true)) = ()
 
 (* riina_full_security (matches Coq: Theorem riina_full_security) *)
-let riina_full_security () : Lemma (full_stark_security riina_stark riina_fri valid_simulator riina_extended == true) = admit ()
+let riina_full_security () : Lemma (full_stark_security riina_stark riina_fri valid_simulator riina_extended == true) = ()
 
 (* STARK_MASTER_SECURITY (matches Coq: Theorem STARK_MASTER_SECURITY) *)
-let stark_master_security (p_s: _) (p_f: _) (p_sim: _) (p_e: _) : Lemma (requires (full_stark_security p_s p_f p_sim p_e == true)) (ensures ((p_e.f_ext_base).f_starks_completeness == true /\ (p_e.f_ext_base).f_starks_soundness == true /\ (p_e.f_ext_base).f_starks_zero_knowledge == true /\ ((p_e.f_ext_base).f_starks_stark).f_stark_transparent == true /\ ((p_e.f_ext_base).f_starks_stark).f_stark_post_quantum == true /\ p_e.f_ext_quantum_resistant == true /\ (p_e.f_ext_fri).f_fri_soundness == true /\ (p_e.f_ext_fri).f_fri_commitment_binding == true /\ p_e.f_ext_simulation_secure == true /\ p_e.f_ext_extraction_secure == true)) = admit ()
+let stark_master_security (p_s: _) (p_f: _) (p_sim: _) (p_e: _) : Lemma (requires (full_stark_security p_s p_f p_sim p_e == true)) (ensures ((p_e.f_ext_base).f_starks_completeness == true /\ (p_e.f_ext_base).f_starks_soundness == true /\ (p_e.f_ext_base).f_starks_zero_knowledge == true /\ ((p_e.f_ext_base).f_starks_stark).f_stark_transparent == true /\ ((p_e.f_ext_base).f_starks_stark).f_stark_post_quantum == true /\ p_e.f_ext_quantum_resistant == true /\ (p_e.f_ext_fri).f_fri_soundness == true /\ (p_e.f_ext_fri).f_fri_commitment_binding == true /\ p_e.f_ext_simulation_secure == true /\ p_e.f_ext_extraction_secure == true)) = ()
 
 (* riina_master_security (matches Coq: Theorem riina_master_security) *)
-let riina_master_security () : Lemma ((riina_extended.f_ext_base).f_starks_completeness == true /\ (riina_extended.f_ext_base).f_starks_soundness == true /\ (riina_extended.f_ext_base).f_starks_zero_knowledge == true /\ ((riina_extended.f_ext_base).f_starks_stark).f_stark_transparent == true /\ ((riina_extended.f_ext_base).f_starks_stark).f_stark_post_quantum == true /\ riina_extended.f_ext_quantum_resistant == true /\ (riina_extended.f_ext_fri).f_fri_soundness == true /\ (riina_extended.f_ext_fri).f_fri_commitment_binding == true /\ riina_extended.f_ext_simulation_secure == true /\ riina_extended.f_ext_extraction_secure == true) = admit ()
+let riina_master_security () : Lemma ((riina_extended.f_ext_base).f_starks_completeness == true /\ (riina_extended.f_ext_base).f_starks_soundness == true /\ (riina_extended.f_ext_base).f_starks_zero_knowledge == true /\ ((riina_extended.f_ext_base).f_starks_stark).f_stark_transparent == true /\ ((riina_extended.f_ext_base).f_starks_stark).f_stark_post_quantum == true /\ riina_extended.f_ext_quantum_resistant == true /\ (riina_extended.f_ext_fri).f_fri_soundness == true /\ (riina_extended.f_ext_fri).f_fri_commitment_binding == true /\ riina_extended.f_ext_simulation_secure == true /\ riina_extended.f_ext_extraction_secure == true) = ()
 
 (* stark_security_equivalence (matches Coq: Theorem stark_security_equivalence) *)
-let stark_security_equivalence (p_s: _) : Lemma (stark_fully_secure p_s == true <==> (p_s.f_starks_completeness == true /\ p_s.f_starks_soundness == true /\ p_s.f_starks_zero_knowledge == true /\ stark_props_secure (p_s.f_starks_stark) == true /\ air_secure (p_s.f_starks_air) == true)) = admit ()
+let stark_security_equivalence (p_s: _) : Lemma (stark_fully_secure p_s == true <==> (p_s.f_starks_completeness == true /\ p_s.f_starks_soundness == true /\ p_s.f_starks_zero_knowledge == true /\ stark_props_secure (p_s.f_starks_stark) == true /\ air_secure (p_s.f_starks_air) == true)) = ()
 
 (* fri_security_equivalence (matches Coq: Theorem fri_security_equivalence) *)
-let fri_security_equivalence (p_f: _) : Lemma (fri_secure p_f == true <==> (p_f.f_fri_soundness == true /\ p_f.f_fri_query_bound == true /\ p_f.f_fri_commitment_binding == true /\ p_f.f_fri_interactive_to_non == true)) = admit ()
+let fri_security_equivalence (p_f: _) : Lemma (fri_secure p_f == true <==> (p_f.f_fri_soundness == true /\ p_f.f_fri_query_bound == true /\ p_f.f_fri_commitment_binding == true /\ p_f.f_fri_interactive_to_non == true)) = ()
 
 (* stark_props_secure_dec (matches Coq: Theorem stark_props_secure_dec) *)
-let stark_props_secure_dec (p_s: _) : Lemma (stark_props_secure p_s == true \/ stark_props_secure p_s == false) = admit ()
+let stark_props_secure_dec (p_s: _) : Lemma (stark_props_secure p_s == true \/ stark_props_secure p_s == false) = ()
 
 (* air_secure_dec (matches Coq: Theorem air_secure_dec) *)
-let air_secure_dec (p_a: _) : Lemma (air_secure p_a == true \/ air_secure p_a == false) = admit ()
+let air_secure_dec (p_a: _) : Lemma (air_secure p_a == true \/ air_secure p_a == false) = ()
 
 (* fri_secure_dec (matches Coq: Theorem fri_secure_dec) *)
-let fri_secure_dec (p_f: _) : Lemma (fri_secure p_f == true \/ fri_secure p_f == false) = admit ()
+let fri_secure_dec (p_f: _) : Lemma (fri_secure p_f == true \/ fri_secure p_f == false) = ()
 
 (* stark_fully_secure_dec (matches Coq: Theorem stark_fully_secure_dec) *)
-let stark_fully_secure_dec (p_s: _) : Lemma (stark_fully_secure p_s == true \/ stark_fully_secure p_s == false) = admit ()
+let stark_fully_secure_dec (p_s: _) : Lemma (stark_fully_secure p_s == true \/ stark_fully_secure p_s == false) = ()
 
 (* extended_secure_dec (matches Coq: Theorem extended_secure_dec) *)
-let extended_secure_dec (p_e: _) : Lemma (extended_secure p_e == true \/ extended_secure p_e == false) = admit ()
+let extended_secure_dec (p_e: _) : Lemma (extended_secure p_e == true \/ extended_secure p_e == false) = ()

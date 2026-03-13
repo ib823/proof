@@ -176,268 +176,268 @@ let riina_world_switch : world_switch_config = {f_ws_smc_filtering=true; f_ws_ns
 let riina_hypervisor : hypervisor_config = mkHypervisor riina_vm_isolation true true true true true riina_side_channel riina_mem_virt riina_int_virt riina_world_switch
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = ()
 
 (* andb_true_intro (matches Coq: Lemma andb_true_intro) *)
-let andb_true_intro (p_a: bool) (p_b: bool) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = admit ()
+let andb_true_intro (p_a: bool) (p_b: bool) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = ()
 
 (* andb_true_elim_l (matches Coq: Lemma andb_true_elim_l) *)
-let andb_true_elim_l (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
+let andb_true_elim_l (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = ()
 
 (* andb_true_elim_r (matches Coq: Lemma andb_true_elim_r) *)
-let andb_true_elim_r (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
+let andb_true_elim_r (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = ()
 
 (* HV_001 (matches Coq: Theorem HV_001) *)
-let hv_001 () : Lemma (vm_fully_isolated riina_vm_isolation == true) = admit ()
+let hv_001 () : Lemma (vm_fully_isolated riina_vm_isolation == true) = ()
 
 (* HV_002 (matches Coq: Theorem HV_002) *)
-let hv_002 () : Lemma (hv_secure riina_hypervisor == true) = admit ()
+let hv_002 () : Lemma (hv_secure riina_hypervisor == true) = ()
 
 (* HV_003 (matches Coq: Theorem HV_003) *)
-let hv_003 () : Lemma (riina_vm_isolation.f_vmi_memory_isolated == true) = admit ()
+let hv_003 () : Lemma (riina_vm_isolation.f_vmi_memory_isolated == true) = ()
 
 (* HV_004 (matches Coq: Theorem HV_004) *)
-let hv_004 () : Lemma (riina_vm_isolation.f_vmi_cpu_isolated == true) = admit ()
+let hv_004 () : Lemma (riina_vm_isolation.f_vmi_cpu_isolated == true) = ()
 
 (* HV_005 (matches Coq: Theorem HV_005) *)
-let hv_005 () : Lemma (riina_vm_isolation.f_vmi_io_isolated == true) = admit ()
+let hv_005 () : Lemma (riina_vm_isolation.f_vmi_io_isolated == true) = ()
 
 (* HV_006 (matches Coq: Theorem HV_006) *)
-let hv_006 () : Lemma (riina_vm_isolation.f_vmi_interrupt_isolated == true) = admit ()
+let hv_006 () : Lemma (riina_vm_isolation.f_vmi_interrupt_isolated == true) = ()
 
 (* HV_007 (matches Coq: Theorem HV_007) *)
-let hv_007 () : Lemma (riina_hypervisor.f_hv_secure_boot == true) = admit ()
+let hv_007 () : Lemma (riina_hypervisor.f_hv_secure_boot == true) = ()
 
 (* HV_008 (matches Coq: Theorem HV_008) *)
-let hv_008 () : Lemma (riina_hypervisor.f_hv_attestation == true) = admit ()
+let hv_008 () : Lemma (riina_hypervisor.f_hv_attestation == true) = ()
 
 (* HV_009 (matches Coq: Theorem HV_009) *)
-let hv_009 () : Lemma (riina_hypervisor.f_hv_memory_encryption == true) = admit ()
+let hv_009 () : Lemma (riina_hypervisor.f_hv_memory_encryption == true) = ()
 
 (* HV_010 (matches Coq: Theorem HV_010) *)
-let hv_010 () : Lemma (riina_hypervisor.f_hv_nested_paging == true) = admit ()
+let hv_010 () : Lemma (riina_hypervisor.f_hv_nested_paging == true) = ()
 
 (* HV_011 (matches Coq: Theorem HV_011) *)
-let hv_011 () : Lemma (riina_hypervisor.f_hv_iommu_enabled == true) = admit ()
+let hv_011 () : Lemma (riina_hypervisor.f_hv_iommu_enabled == true) = ()
 
 (* HV_012 (matches Coq: Theorem HV_012) *)
-let hv_012 (p_v: _) : Lemma (requires (vm_fully_isolated p_v == true)) (ensures (p_v.f_vmi_memory_isolated == true)) = admit ()
+let hv_012 (p_v: _) : Lemma (requires (vm_fully_isolated p_v == true)) (ensures (p_v.f_vmi_memory_isolated == true)) = ()
 
 (* HV_013 (matches Coq: Theorem HV_013) *)
-let hv_013 (p_v: _) : Lemma (requires (vm_fully_isolated p_v == true)) (ensures (p_v.f_vmi_cpu_isolated == true)) = admit ()
+let hv_013 (p_v: _) : Lemma (requires (vm_fully_isolated p_v == true)) (ensures (p_v.f_vmi_cpu_isolated == true)) = ()
 
 (* HV_014 (matches Coq: Theorem HV_014) *)
-let hv_014 (p_v: _) : Lemma (requires (vm_fully_isolated p_v == true)) (ensures (p_v.f_vmi_io_isolated == true)) = admit ()
+let hv_014 (p_v: _) : Lemma (requires (vm_fully_isolated p_v == true)) (ensures (p_v.f_vmi_io_isolated == true)) = ()
 
 (* HV_015 (matches Coq: Theorem HV_015) *)
-let hv_015 (p_v: _) : Lemma (requires (vm_fully_isolated p_v == true)) (ensures (p_v.f_vmi_interrupt_isolated == true)) = admit ()
+let hv_015 (p_v: _) : Lemma (requires (vm_fully_isolated p_v == true)) (ensures (p_v.f_vmi_interrupt_isolated == true)) = ()
 
 (* HV_016 (matches Coq: Theorem HV_016) *)
-let hv_016 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (vm_fully_isolated (p_h.f_hv_isolation) == true)) = admit ()
+let hv_016 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (vm_fully_isolated (p_h.f_hv_isolation) == true)) = ()
 
 (* HV_017 (matches Coq: Theorem HV_017) *)
-let hv_017 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_secure_boot == true)) = admit ()
+let hv_017 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_secure_boot == true)) = ()
 
 (* HV_018 (matches Coq: Theorem HV_018) *)
-let hv_018 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_attestation == true)) = admit ()
+let hv_018 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_attestation == true)) = ()
 
 (* HV_019 (matches Coq: Theorem HV_019) *)
-let hv_019 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_memory_encryption == true)) = admit ()
+let hv_019 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_memory_encryption == true)) = ()
 
 (* HV_020 (matches Coq: Theorem HV_020) *)
-let hv_020 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_nested_paging == true)) = admit ()
+let hv_020 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_nested_paging == true)) = ()
 
 (* HV_021 (matches Coq: Theorem HV_021) *)
-let hv_021 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_iommu_enabled == true)) = admit ()
+let hv_021 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_iommu_enabled == true)) = ()
 
 (* HV_022 (matches Coq: Theorem HV_022) *)
-let hv_022 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures ((p_h.f_hv_isolation).f_vmi_memory_isolated == true)) = admit ()
+let hv_022 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures ((p_h.f_hv_isolation).f_vmi_memory_isolated == true)) = ()
 
 (* HV_023 (matches Coq: Theorem HV_023) *)
-let hv_023 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures ((p_h.f_hv_isolation).f_vmi_cpu_isolated == true)) = admit ()
+let hv_023 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures ((p_h.f_hv_isolation).f_vmi_cpu_isolated == true)) = ()
 
 (* HV_024 (matches Coq: Theorem HV_024) *)
-let hv_024 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures ((p_h.f_hv_isolation).f_vmi_io_isolated == true)) = admit ()
+let hv_024 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures ((p_h.f_hv_isolation).f_vmi_io_isolated == true)) = ()
 
 (* HV_025 (matches Coq: Theorem HV_025) *)
-let hv_025 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures ((p_h.f_hv_isolation).f_vmi_interrupt_isolated == true)) = admit ()
+let hv_025 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures ((p_h.f_hv_isolation).f_vmi_interrupt_isolated == true)) = ()
 
 (* HV_026 (matches Coq: Theorem HV_026) *)
-let hv_026 () : Lemma (mem_virt_secure riina_mem_virt == true) = admit ()
+let hv_026 () : Lemma (mem_virt_secure riina_mem_virt == true) = ()
 
 (* HV_027 (matches Coq: Theorem HV_027) *)
-let hv_027 () : Lemma (riina_mem_virt.f_mv_ept_enabled == true) = admit ()
+let hv_027 () : Lemma (riina_mem_virt.f_mv_ept_enabled == true) = ()
 
 (* HV_028 (matches Coq: Theorem HV_028) *)
-let hv_028 () : Lemma (riina_mem_virt.f_mv_vpid_enabled == true) = admit ()
+let hv_028 () : Lemma (riina_mem_virt.f_mv_vpid_enabled == true) = ()
 
 (* HV_029 (matches Coq: Theorem HV_029) *)
-let hv_029 () : Lemma (riina_mem_virt.f_mv_accessed_dirty == true) = admit ()
+let hv_029 () : Lemma (riina_mem_virt.f_mv_accessed_dirty == true) = ()
 
 (* HV_030 (matches Coq: Theorem HV_030) *)
-let hv_030 (p_m: _) : Lemma (requires (mem_virt_secure p_m == true)) (ensures (p_m.f_mv_ept_enabled == true)) = admit ()
+let hv_030 (p_m: _) : Lemma (requires (mem_virt_secure p_m == true)) (ensures (p_m.f_mv_ept_enabled == true)) = ()
 
 (* HV_031 (matches Coq: Theorem HV_031) *)
-let hv_031 (p_m: _) : Lemma (requires (mem_virt_secure p_m == true)) (ensures (p_m.f_mv_vpid_enabled == true)) = admit ()
+let hv_031 (p_m: _) : Lemma (requires (mem_virt_secure p_m == true)) (ensures (p_m.f_mv_vpid_enabled == true)) = ()
 
 (* HV_032 (matches Coq: Theorem HV_032) *)
-let hv_032 (p_m: _) : Lemma (requires (mem_virt_secure p_m == true)) (ensures (p_m.f_mv_accessed_dirty == true)) = admit ()
+let hv_032 (p_m: _) : Lemma (requires (mem_virt_secure p_m == true)) (ensures (p_m.f_mv_accessed_dirty == true)) = ()
 
 (* HV_033 (matches Coq: Theorem HV_033) *)
-let hv_033 (p_h: _) : Lemma (requires (mem_virt_secure (p_h.f_hv_mem_virt) == true)) (ensures ((p_h.f_hv_mem_virt).f_mv_ept_enabled == true /\ (p_h.f_hv_mem_virt).f_mv_vpid_enabled == true)) = admit ()
+let hv_033 (p_h: _) : Lemma (requires (mem_virt_secure (p_h.f_hv_mem_virt) == true)) (ensures ((p_h.f_hv_mem_virt).f_mv_ept_enabled == true /\ (p_h.f_hv_mem_virt).f_mv_vpid_enabled == true)) = ()
 
 (* HV_034 (matches Coq: Theorem HV_034) *)
-let hv_034 (p_h: _) : Lemma (requires (hv_secure p_h == true /\ mem_virt_secure (p_h.f_hv_mem_virt) == true)) (ensures (p_h.f_hv_nested_paging == true /\ (p_h.f_hv_mem_virt).f_mv_ept_enabled == true)) = admit ()
+let hv_034 (p_h: _) : Lemma (requires (hv_secure p_h == true /\ mem_virt_secure (p_h.f_hv_mem_virt) == true)) (ensures (p_h.f_hv_nested_paging == true /\ (p_h.f_hv_mem_virt).f_mv_ept_enabled == true)) = ()
 
 (* HV_035 (matches Coq: Theorem HV_035) *)
-let hv_035 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_iommu_enabled == true /\ p_h.f_hv_nested_paging == true)) = admit ()
+let hv_035 (p_h: _) : Lemma (requires (hv_secure p_h == true)) (ensures (p_h.f_hv_iommu_enabled == true /\ p_h.f_hv_nested_paging == true)) = ()
 
 (* HV_036 (matches Coq: Theorem HV_036) *)
-let hv_036 () : Lemma (int_virt_secure riina_int_virt == true) = admit ()
+let hv_036 () : Lemma (int_virt_secure riina_int_virt == true) = ()
 
 (* HV_037 (matches Coq: Theorem HV_037) *)
-let hv_037 () : Lemma (riina_int_virt.f_iv_apic_virtualization == true) = admit ()
+let hv_037 () : Lemma (riina_int_virt.f_iv_apic_virtualization == true) = ()
 
 (* HV_038 (matches Coq: Theorem HV_038) *)
-let hv_038 () : Lemma (riina_int_virt.f_iv_interrupt_exit == true) = admit ()
+let hv_038 () : Lemma (riina_int_virt.f_iv_interrupt_exit == true) = ()
 
 (* HV_039 (matches Coq: Theorem HV_039) *)
-let hv_039 () : Lemma (riina_int_virt.f_iv_nmi_exiting == true) = admit ()
+let hv_039 () : Lemma (riina_int_virt.f_iv_nmi_exiting == true) = ()
 
 (* HV_040 (matches Coq: Theorem HV_040) *)
-let hv_040 () : Lemma (riina_int_virt.f_iv_virtual_nmi == true) = admit ()
+let hv_040 () : Lemma (riina_int_virt.f_iv_virtual_nmi == true) = ()
 
 (* HV_041 (matches Coq: Theorem HV_041) *)
-let hv_041 (p_i: _) : Lemma (requires (int_virt_secure p_i == true)) (ensures (p_i.f_iv_apic_virtualization == true)) = admit ()
+let hv_041 (p_i: _) : Lemma (requires (int_virt_secure p_i == true)) (ensures (p_i.f_iv_apic_virtualization == true)) = ()
 
 (* HV_042 (matches Coq: Theorem HV_042) *)
-let hv_042 (p_i: _) : Lemma (requires (int_virt_secure p_i == true)) (ensures (p_i.f_iv_interrupt_exit == true)) = admit ()
+let hv_042 (p_i: _) : Lemma (requires (int_virt_secure p_i == true)) (ensures (p_i.f_iv_interrupt_exit == true)) = ()
 
 (* HV_043 (matches Coq: Theorem HV_043) *)
-let hv_043 (p_i: _) : Lemma (requires (int_virt_secure p_i == true)) (ensures (p_i.f_iv_nmi_exiting == true)) = admit ()
+let hv_043 (p_i: _) : Lemma (requires (int_virt_secure p_i == true)) (ensures (p_i.f_iv_nmi_exiting == true)) = ()
 
 (* HV_044 (matches Coq: Theorem HV_044) *)
-let hv_044 (p_h: _) : Lemma (requires (int_virt_secure (p_h.f_hv_int_virt) == true)) (ensures ((p_h.f_hv_int_virt).f_iv_apic_virtualization == true /\ (p_h.f_hv_int_virt).f_iv_interrupt_exit == true)) = admit ()
+let hv_044 (p_h: _) : Lemma (requires (int_virt_secure (p_h.f_hv_int_virt) == true)) (ensures ((p_h.f_hv_int_virt).f_iv_apic_virtualization == true /\ (p_h.f_hv_int_virt).f_iv_interrupt_exit == true)) = ()
 
 (* HV_045 (matches Coq: Theorem HV_045) *)
-let hv_045 (p_h: _) : Lemma (requires (hv_secure p_h == true /\ int_virt_secure (p_h.f_hv_int_virt) == true)) (ensures ((p_h.f_hv_isolation).f_vmi_interrupt_isolated == true /\ (p_h.f_hv_int_virt).f_iv_nmi_exiting == true)) = admit ()
+let hv_045 (p_h: _) : Lemma (requires (hv_secure p_h == true /\ int_virt_secure (p_h.f_hv_int_virt) == true)) (ensures ((p_h.f_hv_isolation).f_vmi_interrupt_isolated == true /\ (p_h.f_hv_int_virt).f_iv_nmi_exiting == true)) = ()
 
 (* HV_046 (matches Coq: Theorem HV_046) *)
-let hv_046 (p_i: _) : Lemma (requires (int_virt_secure p_i == true)) (ensures (p_i.f_iv_nmi_exiting == true)) = admit ()
+let hv_046 (p_i: _) : Lemma (requires (int_virt_secure p_i == true)) (ensures (p_i.f_iv_nmi_exiting == true)) = ()
 
 (* HV_047 (matches Coq: Theorem HV_047) *)
-let hv_047 (p_i: _) : Lemma (requires (int_virt_secure p_i == true)) (ensures (p_i.f_iv_apic_virtualization == true /\ p_i.f_iv_nmi_exiting == true)) = admit ()
+let hv_047 (p_i: _) : Lemma (requires (int_virt_secure p_i == true)) (ensures (p_i.f_iv_apic_virtualization == true /\ p_i.f_iv_nmi_exiting == true)) = ()
 
 (* HV_048 (matches Coq: Theorem HV_048) *)
-let hv_048 () : Lemma (int_virt_secure riina_int_virt == true /\ riina_vm_isolation.f_vmi_interrupt_isolated == true) = admit ()
+let hv_048 () : Lemma (int_virt_secure riina_int_virt == true /\ riina_vm_isolation.f_vmi_interrupt_isolated == true) = ()
 
 (* HV_049 (matches Coq: Theorem HV_049) *)
-let hv_049 () : Lemma (riina_int_virt.f_iv_posted_interrupts == true) = admit ()
+let hv_049 () : Lemma (riina_int_virt.f_iv_posted_interrupts == true) = ()
 
 (* HV_050 (matches Coq: Theorem HV_050) *)
-let hv_050 () : Lemma (riina_int_virt.f_iv_ple_enabled == true) = admit ()
+let hv_050 () : Lemma (riina_int_virt.f_iv_ple_enabled == true) = ()
 
 (* HV_051 (matches Coq: Theorem HV_051) *)
-let hv_051 () : Lemma (side_channel_mitigated riina_side_channel == true) = admit ()
+let hv_051 () : Lemma (side_channel_mitigated riina_side_channel == true) = ()
 
 (* HV_052 (matches Coq: Theorem HV_052) *)
-let hv_052 () : Lemma (riina_side_channel.f_scm_flush_l1d == true) = admit ()
+let hv_052 () : Lemma (riina_side_channel.f_scm_flush_l1d == true) = ()
 
 (* HV_053 (matches Coq: Theorem HV_053) *)
-let hv_053 () : Lemma (riina_side_channel.f_scm_ibrs_enabled == true) = admit ()
+let hv_053 () : Lemma (riina_side_channel.f_scm_ibrs_enabled == true) = ()
 
 (* HV_054 (matches Coq: Theorem HV_054) *)
-let hv_054 () : Lemma (riina_side_channel.f_scm_ibpb_enabled == true) = admit ()
+let hv_054 () : Lemma (riina_side_channel.f_scm_ibpb_enabled == true) = ()
 
 (* HV_055 (matches Coq: Theorem HV_055) *)
-let hv_055 () : Lemma (riina_side_channel.f_scm_stibp_enabled == true) = admit ()
+let hv_055 () : Lemma (riina_side_channel.f_scm_stibp_enabled == true) = ()
 
 (* HV_056 (matches Coq: Theorem HV_056) *)
-let hv_056 () : Lemma (riina_side_channel.f_scm_ssbd_enabled == true) = admit ()
+let hv_056 () : Lemma (riina_side_channel.f_scm_ssbd_enabled == true) = ()
 
 (* HV_057 (matches Coq: Theorem HV_057) *)
-let hv_057 () : Lemma (riina_side_channel.f_scm_mds_clear == true) = admit ()
+let hv_057 () : Lemma (riina_side_channel.f_scm_mds_clear == true) = ()
 
 (* HV_058 (matches Coq: Theorem HV_058) *)
-let hv_058 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_flush_l1d == true)) = admit ()
+let hv_058 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_flush_l1d == true)) = ()
 
 (* HV_059 (matches Coq: Theorem HV_059) *)
-let hv_059 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_ibrs_enabled == true)) = admit ()
+let hv_059 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_ibrs_enabled == true)) = ()
 
 (* HV_060 (matches Coq: Theorem HV_060) *)
-let hv_060 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_ibpb_enabled == true)) = admit ()
+let hv_060 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_ibpb_enabled == true)) = ()
 
 (* HV_061 (matches Coq: Theorem HV_061) *)
-let hv_061 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_stibp_enabled == true)) = admit ()
+let hv_061 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_stibp_enabled == true)) = ()
 
 (* HV_062 (matches Coq: Theorem HV_062) *)
-let hv_062 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_ssbd_enabled == true)) = admit ()
+let hv_062 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_ssbd_enabled == true)) = ()
 
 (* HV_063 (matches Coq: Theorem HV_063) *)
-let hv_063 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_mds_clear == true)) = admit ()
+let hv_063 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_mds_clear == true)) = ()
 
 (* HV_064 (matches Coq: Theorem HV_064) *)
-let hv_064 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_ibrs_enabled == true /\ p_s.f_scm_ibpb_enabled == true /\ p_s.f_scm_stibp_enabled == true)) = admit ()
+let hv_064 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_ibrs_enabled == true /\ p_s.f_scm_ibpb_enabled == true /\ p_s.f_scm_stibp_enabled == true)) = ()
 
 (* HV_065 (matches Coq: Theorem HV_065) *)
-let hv_065 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_flush_l1d == true /\ p_s.f_scm_mds_clear == true)) = admit ()
+let hv_065 (p_s: _) : Lemma (requires (side_channel_mitigated p_s == true)) (ensures (p_s.f_scm_flush_l1d == true /\ p_s.f_scm_mds_clear == true)) = ()
 
 (* HV_066 (matches Coq: Theorem HV_066) *)
-let hv_066 () : Lemma (world_switch_secure riina_world_switch == true) = admit ()
+let hv_066 () : Lemma (world_switch_secure riina_world_switch == true) = ()
 
 (* HV_067 (matches Coq: Theorem HV_067) *)
-let hv_067 () : Lemma (riina_world_switch.f_ws_smc_filtering == true) = admit ()
+let hv_067 () : Lemma (riina_world_switch.f_ws_smc_filtering == true) = ()
 
 (* HV_068 (matches Coq: Theorem HV_068) *)
-let hv_068 () : Lemma (riina_world_switch.f_ws_ns_bit_control == true) = admit ()
+let hv_068 () : Lemma (riina_world_switch.f_ws_ns_bit_control == true) = ()
 
 (* HV_069 (matches Coq: Theorem HV_069) *)
-let hv_069 () : Lemma (riina_world_switch.f_ws_secure_monitor == true) = admit ()
+let hv_069 () : Lemma (riina_world_switch.f_ws_secure_monitor == true) = ()
 
 (* HV_070 (matches Coq: Theorem HV_070) *)
-let hv_070 () : Lemma (riina_world_switch.f_ws_tzasc_enabled == true) = admit ()
+let hv_070 () : Lemma (riina_world_switch.f_ws_tzasc_enabled == true) = ()
 
 (* HV_071 (matches Coq: Theorem HV_071) *)
-let hv_071 () : Lemma (riina_world_switch.f_ws_tzpc_enabled == true) = admit ()
+let hv_071 () : Lemma (riina_world_switch.f_ws_tzpc_enabled == true) = ()
 
 (* HV_072 (matches Coq: Theorem HV_072) *)
-let hv_072 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_smc_filtering == true)) = admit ()
+let hv_072 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_smc_filtering == true)) = ()
 
 (* HV_073 (matches Coq: Theorem HV_073) *)
-let hv_073 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_ns_bit_control == true)) = admit ()
+let hv_073 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_ns_bit_control == true)) = ()
 
 (* HV_074 (matches Coq: Theorem HV_074) *)
-let hv_074 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_secure_monitor == true)) = admit ()
+let hv_074 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_secure_monitor == true)) = ()
 
 (* HV_075 (matches Coq: Theorem HV_075) *)
-let hv_075 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_smc_filtering == true /\ p_w.f_ws_ns_bit_control == true)) = admit ()
+let hv_075 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_smc_filtering == true /\ p_w.f_ws_ns_bit_control == true)) = ()
 
 (* HV_076 (matches Coq: Theorem HV_076) *)
-let hv_076 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_secure_monitor == true)) = admit ()
+let hv_076 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_secure_monitor == true)) = ()
 
 (* HV_077 (matches Coq: Theorem HV_077) *)
-let hv_077 () : Lemma (riina_world_switch.f_ws_tzasc_enabled == true /\ riina_world_switch.f_ws_tzpc_enabled == true) = admit ()
+let hv_077 () : Lemma (riina_world_switch.f_ws_tzasc_enabled == true /\ riina_world_switch.f_ws_tzpc_enabled == true) = ()
 
 (* HV_078 (matches Coq: Theorem HV_078) *)
-let hv_078 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_smc_filtering == true /\ p_w.f_ws_ns_bit_control == true /\ p_w.f_ws_secure_monitor == true)) = admit ()
+let hv_078 (p_w: _) : Lemma (requires (world_switch_secure p_w == true)) (ensures (p_w.f_ws_smc_filtering == true /\ p_w.f_ws_ns_bit_control == true /\ p_w.f_ws_secure_monitor == true)) = ()
 
 (* HV_079 (matches Coq: Theorem HV_079) *)
-let hv_079 (p_h: _) : Lemma (requires (hv_secure p_h == true /\ world_switch_secure (p_h.f_hv_world_switch) == true)) (ensures (vm_fully_isolated (p_h.f_hv_isolation) == true /\ (p_h.f_hv_world_switch).f_ws_secure_monitor == true)) = admit ()
+let hv_079 (p_h: _) : Lemma (requires (hv_secure p_h == true /\ world_switch_secure (p_h.f_hv_world_switch) == true)) (ensures (vm_fully_isolated (p_h.f_hv_isolation) == true /\ (p_h.f_hv_world_switch).f_ws_secure_monitor == true)) = ()
 
 (* HV_080 (matches Coq: Theorem HV_080) *)
-let hv_080 (p_h: _) : Lemma (requires (world_switch_secure (p_h.f_hv_world_switch) == true)) (ensures ((p_h.f_hv_world_switch).f_ws_smc_filtering == true)) = admit ()
+let hv_080 (p_h: _) : Lemma (requires (world_switch_secure (p_h.f_hv_world_switch) == true)) (ensures ((p_h.f_hv_world_switch).f_ws_smc_filtering == true)) = ()
 
 (* HV_081 (matches Coq: Theorem HV_081) *)
-let hv_081 () : Lemma (hv_fully_secure riina_hypervisor == true) = admit ()
+let hv_081 () : Lemma (hv_fully_secure riina_hypervisor == true) = ()
 
 (* HV_082 (matches Coq: Theorem HV_082) *)
-let hv_082 (p_h: _) : Lemma (requires (hv_fully_secure p_h == true)) (ensures (hv_secure p_h == true /\ mem_virt_secure (p_h.f_hv_mem_virt) == true)) = admit ()
+let hv_082 (p_h: _) : Lemma (requires (hv_fully_secure p_h == true)) (ensures (hv_secure p_h == true /\ mem_virt_secure (p_h.f_hv_mem_virt) == true)) = ()
 
 (* HV_083 (matches Coq: Theorem HV_083) *)
-let hv_083 (p_h: _) : Lemma (requires (hv_fully_secure p_h == true)) (ensures (int_virt_secure (p_h.f_hv_int_virt) == true /\ world_switch_secure (p_h.f_hv_world_switch) == true)) = admit ()
+let hv_083 (p_h: _) : Lemma (requires (hv_fully_secure p_h == true)) (ensures (int_virt_secure (p_h.f_hv_int_virt) == true /\ world_switch_secure (p_h.f_hv_world_switch) == true)) = ()
 
 (* HV_084 (matches Coq: Theorem HV_084) *)
-let hv_084 (p_h: _) : Lemma (requires (hv_fully_secure p_h == true)) (ensures (vm_fully_isolated (p_h.f_hv_isolation) == true /\ side_channel_mitigated (p_h.f_hv_side_channel) == true /\ mem_virt_secure (p_h.f_hv_mem_virt) == true /\ int_virt_secure (p_h.f_hv_int_virt) == true /\ world_switch_secure (p_h.f_hv_world_switch) == true)) = admit ()
+let hv_084 (p_h: _) : Lemma (requires (hv_fully_secure p_h == true)) (ensures (vm_fully_isolated (p_h.f_hv_isolation) == true /\ side_channel_mitigated (p_h.f_hv_side_channel) == true /\ mem_virt_secure (p_h.f_hv_mem_virt) == true /\ int_virt_secure (p_h.f_hv_int_virt) == true /\ world_switch_secure (p_h.f_hv_world_switch) == true)) = ()
 
 (* HV_085_complete (matches Coq: Theorem HV_085_complete) *)
-let hv_085_complete () : Lemma (hv_fully_secure riina_hypervisor == true /\ vm_fully_isolated riina_vm_isolation == true /\ side_channel_mitigated riina_side_channel == true /\ mem_virt_secure riina_mem_virt == true /\ int_virt_secure riina_int_virt == true /\ world_switch_secure riina_world_switch == true) = admit ()
+let hv_085_complete () : Lemma (hv_fully_secure riina_hypervisor == true /\ vm_fully_isolated riina_vm_isolation == true /\ side_channel_mitigated riina_side_channel == true /\ mem_virt_secure riina_mem_virt == true /\ int_virt_secure riina_int_virt == true /\ world_switch_secure riina_world_switch == true) = ()

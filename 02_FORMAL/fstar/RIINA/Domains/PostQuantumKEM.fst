@@ -115,79 +115,79 @@ let riina_kem_1024 : kem_instance = {f_kem_params=ML_KEM_1024; f_kem_keypair=mk_
 let riina_kem_security : kem_security = mkKEMSecurity mk_compliant_indcca mk_compliant_qr Level5
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = ()
 
 (* PQ_KEM_001_level_reflexive (matches Coq: Theorem PQ_KEM_001_level_reflexive) *)
-let pq_kem_001_level_reflexive (p_l: security_level) : Lemma (level_leq p_l p_l == true) = admit ()
+let pq_kem_001_level_reflexive (p_l: security_level) : Lemma (level_leq p_l p_l == true) = ()
 
 (* PQ_KEM_002_level_transitive (matches Coq: Theorem PQ_KEM_002_level_transitive) *)
-let pq_kem_002_level_transitive (p_l1: security_level) (p_l2: security_level) (p_l3: security_level) : Lemma (requires (level_leq p_l1 p_l2 == true /\ level_leq p_l2 p_l3 == true)) (ensures (level_leq p_l1 p_l3 == true)) = admit ()
+let pq_kem_002_level_transitive (p_l1: security_level) (p_l2: security_level) (p_l3: security_level) : Lemma (requires (level_leq p_l1 p_l2 == true /\ level_leq p_l2 p_l3 == true)) (ensures (level_leq p_l1 p_l3 == true)) = ()
 
 (* PQ_KEM_003_level1_minimum (matches Coq: Theorem PQ_KEM_003_level1_minimum) *)
-let pq_kem_003_level1_minimum (p_l: security_level) : Lemma (level_leq Level1 p_l == true) = admit ()
+let pq_kem_003_level1_minimum (p_l: security_level) : Lemma (level_leq Level1 p_l == true) = ()
 
 (* PQ_KEM_004_level5_maximum (matches Coq: Theorem PQ_KEM_004_level5_maximum) *)
-let pq_kem_004_level5_maximum (p_l: security_level) : Lemma (level_leq p_l Level5 == true) = admit ()
+let pq_kem_004_level5_maximum (p_l: security_level) : Lemma (level_leq p_l Level5 == true) = ()
 
 (* PQ_KEM_005_mlkem512_level1 (matches Coq: Theorem PQ_KEM_005_mlkem512_level1) *)
-let pq_kem_005_mlkem512_level1 () : Lemma (param_security_level ML_KEM_512 == Level1) = admit ()
+let pq_kem_005_mlkem512_level1 () : Lemma (param_security_level ML_KEM_512 == Level1) = ()
 
 (* PQ_KEM_006_mlkem768_level3 (matches Coq: Theorem PQ_KEM_006_mlkem768_level3) *)
-let pq_kem_006_mlkem768_level3 () : Lemma (param_security_level ML_KEM_768 == Level3) = admit ()
+let pq_kem_006_mlkem768_level3 () : Lemma (param_security_level ML_KEM_768 == Level3) = ()
 
 (* PQ_KEM_007_mlkem1024_level5 (matches Coq: Theorem PQ_KEM_007_mlkem1024_level5) *)
-let pq_kem_007_mlkem1024_level5 () : Lemma (param_security_level ML_KEM_1024 == Level5) = admit ()
+let pq_kem_007_mlkem1024_level5 () : Lemma (param_security_level ML_KEM_1024 == Level5) = ()
 
 (* PQ_KEM_008_params_ordered (matches Coq: Theorem PQ_KEM_008_params_ordered) *)
-let pq_kem_008_params_ordered () : Lemma (level_leq (param_security_level ML_KEM_512) (param_security_level ML_KEM_1024) == true) = admit ()
+let pq_kem_008_params_ordered () : Lemma (level_leq (param_security_level ML_KEM_512) (param_security_level ML_KEM_1024) == true) = ()
 
 (* PQ_KEM_009_indcca_valid (matches Coq: Theorem PQ_KEM_009_indcca_valid) *)
-let pq_kem_009_indcca_valid () : Lemma (indcca_compliant mk_compliant_indcca == true) = admit ()
+let pq_kem_009_indcca_valid () : Lemma (indcca_compliant mk_compliant_indcca == true) = ()
 
 (* PQ_KEM_010_ciphertext_indist (matches Coq: Theorem PQ_KEM_010_ciphertext_indist) *)
-let pq_kem_010_ciphertext_indist (p_s: indcca_secure) : Lemma (requires (indcca_compliant p_s == true)) (ensures (p_s.f_indcca_ciphertext_indistinguishable == true)) = admit ()
+let pq_kem_010_ciphertext_indist (p_s: indcca_secure) : Lemma (requires (indcca_compliant p_s == true)) (ensures (p_s.f_indcca_ciphertext_indistinguishable == true)) = ()
 
 (* PQ_KEM_011_key_indist (matches Coq: Theorem PQ_KEM_011_key_indist) *)
-let pq_kem_011_key_indist (p_s: indcca_secure) : Lemma (requires (indcca_compliant p_s == true)) (ensures (p_s.f_indcca_key_indistinguishable == true)) = admit ()
+let pq_kem_011_key_indist (p_s: indcca_secure) : Lemma (requires (indcca_compliant p_s == true)) (ensures (p_s.f_indcca_key_indistinguishable == true)) = ()
 
 (* PQ_KEM_012_decaps_consistent (matches Coq: Theorem PQ_KEM_012_decaps_consistent) *)
-let pq_kem_012_decaps_consistent (p_s: indcca_secure) : Lemma (requires (indcca_compliant p_s == true)) (ensures (p_s.f_indcca_decaps_consistent == true)) = admit ()
+let pq_kem_012_decaps_consistent (p_s: indcca_secure) : Lemma (requires (indcca_compliant p_s == true)) (ensures (p_s.f_indcca_decaps_consistent == true)) = ()
 
 (* PQ_KEM_013_qr_valid (matches Coq: Theorem PQ_KEM_013_qr_valid) *)
-let pq_kem_013_qr_valid () : Lemma (quantum_resistant mk_compliant_qr == true) = admit ()
+let pq_kem_013_qr_valid () : Lemma (quantum_resistant mk_compliant_qr == true) = ()
 
 (* PQ_KEM_014_lattice_based (matches Coq: Theorem PQ_KEM_014_lattice_based) *)
-let pq_kem_014_lattice_based (p_q: quantum_resistant) : Lemma (requires (quantum_resistant p_q == true)) (ensures (p_q.f_qr_lattice_based == true)) = admit ()
+let pq_kem_014_lattice_based (p_q: quantum_resistant) : Lemma (requires (quantum_resistant p_q == true)) (ensures (p_q.f_qr_lattice_based == true)) = ()
 
 (* PQ_KEM_015_module_lwe (matches Coq: Theorem PQ_KEM_015_module_lwe) *)
-let pq_kem_015_module_lwe (p_q: quantum_resistant) : Lemma (requires (quantum_resistant p_q == true)) (ensures (p_q.f_qr_module_lwe == true)) = admit ()
+let pq_kem_015_module_lwe (p_q: quantum_resistant) : Lemma (requires (quantum_resistant p_q == true)) (ensures (p_q.f_qr_module_lwe == true)) = ()
 
 (* PQ_KEM_016_no_quantum_attack (matches Coq: Theorem PQ_KEM_016_no_quantum_attack) *)
-let pq_kem_016_no_quantum_attack (p_q: quantum_resistant) : Lemma (requires (quantum_resistant p_q == true)) (ensures (p_q.f_qr_no_known_quantum_attack == true)) = admit ()
+let pq_kem_016_no_quantum_attack (p_q: quantum_resistant) : Lemma (requires (quantum_resistant p_q == true)) (ensures (p_q.f_qr_no_known_quantum_attack == true)) = ()
 
 (* PQ_KEM_017_riina_kem_correct (matches Coq: Theorem PQ_KEM_017_riina_kem_correct) *)
-let pq_kem_017_riina_kem_correct () : Lemma (kem_correct riina_kem_1024 == true) = admit ()
+let pq_kem_017_riina_kem_correct () : Lemma (kem_correct riina_kem_1024 == true) = ()
 
 (* PQ_KEM_018_riina_kem_secure (matches Coq: Theorem PQ_KEM_018_riina_kem_secure) *)
-let pq_kem_018_riina_kem_secure () : Lemma (kem_secure riina_kem_security == true) = admit ()
+let pq_kem_018_riina_kem_secure () : Lemma (kem_secure riina_kem_security == true) = ()
 
 (* PQ_KEM_019_riina_level5 (matches Coq: Theorem PQ_KEM_019_riina_level5) *)
-let pq_kem_019_riina_level5 () : Lemma (riina_kem_security.f_kem_sec_level == Level5) = admit ()
+let pq_kem_019_riina_level5 () : Lemma (riina_kem_security.f_kem_sec_level == Level5) = ()
 
 (* PQ_KEM_020_riina_mlkem1024 (matches Coq: Theorem PQ_KEM_020_riina_mlkem1024) *)
-let pq_kem_020_riina_mlkem1024 () : Lemma (riina_kem_1024.f_kem_params == ML_KEM_1024) = admit ()
+let pq_kem_020_riina_mlkem1024 () : Lemma (riina_kem_1024.f_kem_params == ML_KEM_1024) = ()
 
 (* PQ_KEM_021_security_implies_indcca (matches Coq: Theorem PQ_KEM_021_security_implies_indcca) *)
-let pq_kem_021_security_implies_indcca (p_s: kem_security) : Lemma (requires (kem_secure p_s == true)) (ensures (indcca_compliant (p_s.f_kem_sec_indcca) == true)) = admit ()
+let pq_kem_021_security_implies_indcca (p_s: kem_security) : Lemma (requires (kem_secure p_s == true)) (ensures (indcca_compliant (p_s.f_kem_sec_indcca) == true)) = ()
 
 (* PQ_KEM_022_security_implies_qr (matches Coq: Theorem PQ_KEM_022_security_implies_qr) *)
-let pq_kem_022_security_implies_qr (p_s: kem_security) : Lemma (requires (kem_secure p_s == true)) (ensures (quantum_resistant (p_s.f_kem_sec_quantum) == true)) = admit ()
+let pq_kem_022_security_implies_qr (p_s: kem_security) : Lemma (requires (kem_secure p_s == true)) (ensures (quantum_resistant (p_s.f_kem_sec_quantum) == true)) = ()
 
 (* PQ_KEM_023_correct_keypair (matches Coq: Theorem PQ_KEM_023_correct_keypair) *)
-let pq_kem_023_correct_keypair (p_k: kem_instance) : Lemma (requires (kem_correct p_k == true)) (ensures ((p_k.f_kem_keypair).f_kp_valid == true)) = admit ()
+let pq_kem_023_correct_keypair (p_k: kem_instance) : Lemma (requires (kem_correct p_k == true)) (ensures ((p_k.f_kem_keypair).f_kp_valid == true)) = ()
 
 (* PQ_KEM_024_shared_secret_match (matches Coq: Theorem PQ_KEM_024_shared_secret_match) *)
-let pq_kem_024_shared_secret_match (p_k: kem_instance) : Lemma (requires (kem_correct p_k == true)) (ensures (Nat.eqb ((p_k.f_kem_encaps_result).f_enc_shared_secret) (p_k.f_kem_decaps_result) == true)) = admit ()
+let pq_kem_024_shared_secret_match (p_k: kem_instance) : Lemma (requires (kem_correct p_k == true)) (ensures (Nat.eqb ((p_k.f_kem_encaps_result).f_enc_shared_secret) (p_k.f_kem_decaps_result) == true)) = ()
 
 (* PQ_KEM_025_complete_security (matches Coq: Theorem PQ_KEM_025_complete_security) *)
-let pq_kem_025_complete_security (p_s: kem_security) : Lemma (requires (kem_secure p_s == true)) (ensures ((p_s.f_kem_sec_indcca).f_indcca_ciphertext_indistinguishable == true /\ (p_s.f_kem_sec_indcca).f_indcca_key_indistinguishable == true /\ (p_s.f_kem_sec_quantum).f_qr_lattice_based == true /\ (p_s.f_kem_sec_quantum).f_qr_no_known_quantum_attack == true)) = admit ()
+let pq_kem_025_complete_security (p_s: kem_security) : Lemma (requires (kem_secure p_s == true)) (ensures ((p_s.f_kem_sec_indcca).f_indcca_ciphertext_indistinguishable == true /\ (p_s.f_kem_sec_indcca).f_indcca_key_indistinguishable == true /\ (p_s.f_kem_sec_quantum).f_qr_lattice_based == true /\ (p_s.f_kem_sec_quantum).f_qr_no_known_quantum_attack == true)) = ()

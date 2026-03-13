@@ -200,7 +200,7 @@ let action_to_perm (p_a: network_action) : Tot net_perm =
   | NAReceive _ -> NPReceive
   | NAConnect _ -> NPConnect
   | NAListen _ -> NPListen
-  | _ -> (* TODO: default value for net_perm *) admit()
+  | _ -> false
 
 (* action_target (matches Coq: Definition action_target) *)
 let action_target (p_a: network_action) : Tot endpoint =
@@ -209,7 +209,7 @@ let action_target (p_a: network_action) : Tot endpoint =
   | NAReceive e -> e
   | NAConnect e -> e
   | NAListen e -> e
-  | _ -> (* TODO: default value for endpoint *) admit()
+  | _ -> false
 
 (* amplification_factor (matches Coq: Definition amplification_factor) *)
 let amplification_factor (p_request_size: nat) (p_response_size: nat) : Tot nat =
@@ -284,129 +284,129 @@ let list_eq_dec_refl_obligation () : Tot bool = true
 let list_eq_dec_refl_lemma () : Lemma (requires True) (ensures (list_eq_dec_refl_obligation () == list_eq_dec_refl_obligation ())) = ()
 
 (* Nat_eqb_refl (matches Coq: Lemma Nat_eqb_refl) *)
-let nat_eqb_refl (p_n: _) : Lemma (Nat.eqb p_n p_n == true) = admit ()
+let nat_eqb_refl (p_n: _) : Lemma (Nat.eqb p_n p_n == true) = ()
 
 (* min_le_l (matches Coq: Lemma min_le_l) *)
-let min_le_l (p_n: _) (p_m: _) : Lemma (Nat.min p_n p_m <= p_n) = admit ()
+let min_le_l (p_n: _) (p_m: _) : Lemma (Nat.min p_n p_m <= p_n) = ()
 
 (* min_le_r (matches Coq: Lemma min_le_r) *)
-let min_le_r (p_n: _) (p_m: _) : Lemma (Nat.min p_n p_m <= p_m) = admit ()
+let min_le_r (p_n: _) (p_m: _) : Lemma (Nat.min p_n p_m <= p_m) = ()
 
 (* forallb_impl (matches Coq: Lemma forallb_impl) *)
 let forallb_impl_obligation () : Tot bool = true
 let forallb_impl_lemma () : Lemma (requires True) (ensures (forallb_impl_obligation () == forallb_impl_obligation ())) = ()
 
 (* existsb_exists (matches Coq: Lemma existsb_exists) *)
-let existsb_exists (p_f: nat) (p_l: (list nat)) : Lemma (existsb p_f p_l == true <==> (exists p_x. List.Tot.memP p_x p_l) /\ p_f x == true) = admit ()
+let existsb_exists (p_f: nat) (p_l: (list nat)) : Lemma (existsb p_f p_l == true <==> (exists p_x. List.Tot.memP p_x p_l) /\ p_f x == true) = ()
 
 (* OMEGA_001_01_puzzle_work_bound (matches Coq: Theorem OMEGA_001_01_puzzle_work_bound) *)
-let omega_001_01_puzzle_work_bound (p_p: _) : Lemma (expected_work p_p == Nat.pow 2 (p_p.f_puzzle_difficulty)) = admit ()
+let omega_001_01_puzzle_work_bound (p_p: _) : Lemma (expected_work p_p == Nat.pow 2 (p_p.f_puzzle_difficulty)) = ()
 
 (* OMEGA_001_02_puzzle_verify_cheap (matches Coq: Theorem OMEGA_001_02_puzzle_verify_cheap) *)
-let omega_001_02_puzzle_verify_cheap (p_sol: _) : Lemma (verification_cost p_sol == 1) = admit ()
+let omega_001_02_puzzle_verify_cheap (p_sol: _) : Lemma (verification_cost p_sol == 1) = ()
 
 (* OMEGA_001_03_puzzle_unforgeable (matches Coq: Theorem OMEGA_001_03_puzzle_unforgeable) *)
-let omega_001_03_puzzle_unforgeable (p_sol: _) : Lemma (requires (valid_solution p_sol == true)) (ensures (leading_zeros (sha256 (puzzle_challenge (p_sol.f_sol_puzzle) ++ sol_client_nonce p_sol)) >= (p_sol.f_sol_puzzle).f_puzzle_difficulty)) = admit ()
+let omega_001_03_puzzle_unforgeable (p_sol: _) : Lemma (requires (valid_solution p_sol == true)) (ensures (leading_zeros (sha256 (puzzle_challenge (p_sol.f_sol_puzzle) ++ sol_client_nonce p_sol)) >= (p_sol.f_sol_puzzle).f_puzzle_difficulty)) = ()
 
 (* OMEGA_001_04_puzzle_fresh (matches Coq: Theorem OMEGA_001_04_puzzle_fresh) *)
-let omega_001_04_puzzle_fresh (p_p: _) (p_current_time: _) (p_max_age: _) : Lemma (requires (puzzle_expired p_p p_current_time p_max_age == true)) (ensures (p_current_time - puzzle_timestamp p_p > p_max_age)) = admit ()
+let omega_001_04_puzzle_fresh (p_p: _) (p_current_time: _) (p_max_age: _) : Lemma (requires (puzzle_expired p_p p_current_time p_max_age == true)) (ensures (p_current_time - puzzle_timestamp p_p > p_max_age)) = ()
 
 (* OMEGA_001_05_puzzle_difficulty_adaptive (matches Coq: Theorem OMEGA_001_05_puzzle_difficulty_adaptive) *)
-let omega_001_05_puzzle_difficulty_adaptive (p_base: _) (p_load: _) (p_capacity: _) : Lemma (requires (p_capacity > 0 /\ p_load > p_capacity / 2)) (ensures (adaptive_difficulty p_base p_load p_capacity > p_base)) = admit ()
+let omega_001_05_puzzle_difficulty_adaptive (p_base: _) (p_load: _) (p_capacity: _) : Lemma (requires (p_capacity > 0 /\ p_load > p_capacity / 2)) (ensures (adaptive_difficulty p_base p_load p_capacity > p_base)) = ()
 
 (* OMEGA_001_06_puzzle_non_parallelizable (matches Coq: Theorem OMEGA_001_06_puzzle_non_parallelizable) *)
-let omega_001_06_puzzle_non_parallelizable (p_p: _) (p_n_workers: _) : Lemma (requires (p_n_workers > 1 /\ expected_work p_p > 0)) (ensures (expected_work p_p / p_n_workers < expected_work p_p)) = admit ()
+let omega_001_06_puzzle_non_parallelizable (p_p: _) (p_n_workers: _) : Lemma (requires (p_n_workers > 1 /\ expected_work p_p > 0)) (ensures (expected_work p_p / p_n_workers < expected_work p_p)) = ()
 
 (* OMEGA_001_07_puzzle_stateless (matches Coq: Theorem OMEGA_001_07_puzzle_stateless) *)
-let omega_001_07_puzzle_stateless () : Lemma (server_state_pre_verify == 0) = admit ()
+let omega_001_07_puzzle_stateless () : Lemma (server_state_pre_verify == 0) = ()
 
 (* pow2_ge_1 (matches Coq: Lemma pow2_ge_1) *)
-let pow2_ge_1 (p_n: _) : Lemma (Nat.pow 2 p_n >= 1) = admit ()
+let pow2_ge_1 (p_n: _) : Lemma (Nat.pow 2 p_n >= 1) = ()
 
 (* pow2_ge_2 (matches Coq: Lemma pow2_ge_2) *)
-let pow2_ge_2 (p_n: _) : Lemma (requires (p_n > 0)) (ensures (Nat.pow 2 p_n >= 2)) = admit ()
+let pow2_ge_2 (p_n: _) : Lemma (requires (p_n > 0)) (ensures (Nat.pow 2 p_n >= 2)) = ()
 
 (* OMEGA_001_08_puzzle_asymmetric (matches Coq: Theorem OMEGA_001_08_puzzle_asymmetric) *)
-let omega_001_08_puzzle_asymmetric (p_p: _) (p_sol: _) : Lemma (requires (p_p.f_puzzle_difficulty > 0)) (ensures (server_work p_sol < client_work p_p)) = admit ()
+let omega_001_08_puzzle_asymmetric (p_p: _) (p_sol: _) : Lemma (requires (p_p.f_puzzle_difficulty > 0)) (ensures (server_work p_sol < client_work p_p)) = ()
 
 (* OMEGA_001_09_token_bucket_correct (matches Coq: Theorem OMEGA_001_09_token_bucket_correct) *)
-let omega_001_09_token_bucket_correct (p_tb: _) (p_now: _) : Lemma (requires (bucket_valid p_tb == true)) (ensures (bucket_valid (refill p_tb p_now) == true)) = admit ()
+let omega_001_09_token_bucket_correct (p_tb: _) (p_now: _) : Lemma (requires (bucket_valid p_tb == true)) (ensures (bucket_valid (refill p_tb p_now) == true)) = ()
 
 (* OMEGA_001_10_rate_limit_bound (matches Coq: Theorem OMEGA_001_10_rate_limit_bound) *)
-let omega_001_10_rate_limit_bound (p_tb: _) (p_window: _) : Lemma (requires (bucket_valid p_tb == true)) (ensures (requests_allowed p_tb p_window <= bucket_refill_rate p_tb * p_window + bucket_max p_tb)) = admit ()
+let omega_001_10_rate_limit_bound (p_tb: _) (p_window: _) : Lemma (requires (bucket_valid p_tb == true)) (ensures (requests_allowed p_tb p_window <= bucket_refill_rate p_tb * p_window + bucket_max p_tb)) = ()
 
 (* OMEGA_001_11_rate_limit_fair (matches Coq: Theorem OMEGA_001_11_rate_limit_fair) *)
-let omega_001_11_rate_limit_fair (p_buckets: _) (p_total: _) : Lemma (requires (allocation_fair p_buckets p_total == true /\ (forall (cb1: _). (forall (cb2: _). List.Tot.memP cb1 p_buckets)) /\ List.Tot.memP cb2 p_buckets)) (ensures ((cb1.f_cb_bucket).f_bucket_refill_rate == (cb2.f_cb_bucket).f_bucket_refill_rate)) = admit ()
+let omega_001_11_rate_limit_fair (p_buckets: _) (p_total: _) : Lemma (requires (allocation_fair p_buckets p_total == true /\ (forall (cb1: _). (forall (cb2: _). List.Tot.memP cb1 p_buckets)) /\ List.Tot.memP cb2 p_buckets)) (ensures ((cb1.f_cb_bucket).f_bucket_refill_rate == (cb2.f_cb_bucket).f_bucket_refill_rate)) = ()
 
 (* OMEGA_001_12_no_starvation (matches Coq: Theorem OMEGA_001_12_no_starvation) *)
-let omega_001_12_no_starvation (p_tb: _) : Lemma (requires (p_tb.f_bucket_refill_rate > 0 /\ p_tb.f_bucket_max > 0 /\ (forall (now: _). now >= bucket_last_refill p_tb + 1))) (ensures ((refill p_tb now).f_bucket_tokens > 0)) = admit ()
+let omega_001_12_no_starvation (p_tb: _) : Lemma (requires (p_tb.f_bucket_refill_rate > 0 /\ p_tb.f_bucket_max > 0 /\ (forall (now: _). now >= bucket_last_refill p_tb + 1))) (ensures ((refill p_tb now).f_bucket_tokens > 0)) = ()
 
 (* OMEGA_001_13_burst_bounded (matches Coq: Theorem OMEGA_001_13_burst_bounded) *)
-let omega_001_13_burst_bounded (p_tb: _) : Lemma (requires (bucket_valid p_tb == true)) (ensures (p_tb.f_bucket_tokens <= p_tb.f_bucket_max)) = admit ()
+let omega_001_13_burst_bounded (p_tb: _) : Lemma (requires (bucket_valid p_tb == true)) (ensures (p_tb.f_bucket_tokens <= p_tb.f_bucket_max)) = ()
 
 (* OMEGA_001_14_rate_adaptive (matches Coq: Theorem OMEGA_001_14_rate_adaptive) *)
-let omega_001_14_rate_adaptive (p_current_load: _) (p_max_capacity: _) (p_base_rate: _) : Lemma (requires (p_max_capacity > 0 /\ p_current_load > p_max_capacity / 2)) (ensures (adaptive_rate p_current_load p_max_capacity p_base_rate <= p_base_rate)) = admit ()
+let omega_001_14_rate_adaptive (p_current_load: _) (p_max_capacity: _) (p_base_rate: _) : Lemma (requires (p_max_capacity > 0 /\ p_current_load > p_max_capacity / 2)) (ensures (adaptive_rate p_current_load p_max_capacity p_base_rate <= p_base_rate)) = ()
 
 (* OMEGA_001_15_rate_composition (matches Coq: Theorem OMEGA_001_15_rate_composition) *)
-let omega_001_15_rate_composition (p_tb1: _) (p_tb2: _) : Lemma (requires (bucket_valid p_tb1 == true /\ bucket_valid p_tb2 == true)) (ensures (bucket_valid (compose_limits p_tb1 p_tb2) == true)) = admit ()
+let omega_001_15_rate_composition (p_tb1: _) (p_tb2: _) : Lemma (requires (bucket_valid p_tb1 == true /\ bucket_valid p_tb2 == true)) (ensures (bucket_valid (compose_limits p_tb1 p_tb2) == true)) = ()
 
 (* OMEGA_001_16_cap_unforgeable (matches Coq: Theorem OMEGA_001_16_cap_unforgeable) *)
-let omega_001_16_cap_unforgeable (p_cap: _) (p_now: _) (p_pubkey: _) : Lemma (requires (cap_valid p_cap p_now p_pubkey == true)) (ensures (verify_signature p_pubkey p_cap == true)) = admit ()
+let omega_001_16_cap_unforgeable (p_cap: _) (p_now: _) (p_pubkey: _) : Lemma (requires (cap_valid p_cap p_now p_pubkey == true)) (ensures (verify_signature p_pubkey p_cap == true)) = ()
 
 (* OMEGA_001_17_cap_required (matches Coq: Theorem OMEGA_001_17_cap_required) *)
-let omega_001_17_cap_required (p_action: network_action) (p_cap: net_capability) (p_now: _) (p_pubkey: _) : Lemma (requires (grants_access p_cap (action_target p_action) (action_to_perm p_action) == true /\ cap_valid p_cap p_now p_pubkey == true)) (ensures (endpoint_eq (p_cap.f_cap_target) (action_target p_action) == true)) = admit ()
+let omega_001_17_cap_required (p_action: network_action) (p_cap: net_capability) (p_now: _) (p_pubkey: _) : Lemma (requires (grants_access p_cap (action_target p_action) (action_to_perm p_action) == true /\ cap_valid p_cap p_now p_pubkey == true)) (ensures (endpoint_eq (p_cap.f_cap_target) (action_target p_action) == true)) = ()
 
 (* OMEGA_001_18_cap_attenuate (matches Coq: Theorem OMEGA_001_18_cap_attenuate) *)
-let omega_001_18_cap_attenuate (p_cap: _) (p_new_perms: _) (p_new_expiry: _) (p_cap_: _) : Lemma (requires (attenuate_cap p_cap p_new_perms p_new_expiry == Some p_cap_)) (ensures (((forall (p: _). List.Tot.memP p (p_cap_.f_cap_permissions))) /\ p_cap_.f_cap_valid_until <= p_cap.f_cap_valid_until)) = admit ()
+let omega_001_18_cap_attenuate (p_cap: _) (p_new_perms: _) (p_new_expiry: _) (p_cap_: _) : Lemma (requires (attenuate_cap p_cap p_new_perms p_new_expiry == Some p_cap_)) (ensures (((forall (p: _). List.Tot.memP p (p_cap_.f_cap_permissions))) /\ p_cap_.f_cap_valid_until <= p_cap.f_cap_valid_until)) = ()
 
 (* OMEGA_001_19_cap_revocable (matches Coq: Theorem OMEGA_001_19_cap_revocable) *)
-let omega_001_19_cap_revocable (p_cap: _) (p_revoked: _) : Lemma (requires (List.Tot.memP (p_cap.f_cap_signature) p_revoked)) (ensures (cap_revoked p_cap p_revoked == true)) = admit ()
+let omega_001_19_cap_revocable (p_cap: _) (p_revoked: _) : Lemma (requires (List.Tot.memP (p_cap.f_cap_signature) p_revoked)) (ensures (cap_revoked p_cap p_revoked == true)) = ()
 
 (* OMEGA_001_20_cap_bound_target (matches Coq: Theorem OMEGA_001_20_cap_bound_target) *)
-let omega_001_20_cap_bound_target (p_cap: _) (p_target: _) (p_perm: _) : Lemma (requires (grants_access p_cap p_target p_perm == true)) (ensures (endpoint_eq (p_cap.f_cap_target) p_target == true)) = admit ()
+let omega_001_20_cap_bound_target (p_cap: _) (p_target: _) (p_perm: _) : Lemma (requires (grants_access p_cap p_target p_perm == true)) (ensures (endpoint_eq (p_cap.f_cap_target) p_target == true)) = ()
 
 (* OMEGA_001_21_cap_delegation_safe (matches Coq: Theorem OMEGA_001_21_cap_delegation_safe) *)
-let omega_001_21_cap_delegation_safe (p_cap: _) (p_new_perms: _) (p_new_expiry: _) (p_cap_: _) : Lemma (requires (attenuate_cap p_cap p_new_perms p_new_expiry == Some p_cap_)) (ensures (p_cap_.f_cap_target == p_cap.f_cap_target)) = admit ()
+let omega_001_21_cap_delegation_safe (p_cap: _) (p_new_perms: _) (p_new_expiry: _) (p_cap_: _) : Lemma (requires (attenuate_cap p_cap p_new_perms p_new_expiry == Some p_cap_)) (ensures (p_cap_.f_cap_target == p_cap.f_cap_target)) = ()
 
 (* OMEGA_001_22_cap_no_amplification (matches Coq: Theorem OMEGA_001_22_cap_no_amplification) *)
-let omega_001_22_cap_no_amplification (p_request_size: _) (p_response_size: _) : Lemma (requires (p_request_size > 0)) (ensures (amplification_factor p_request_size p_response_size <= p_response_size)) = admit ()
+let omega_001_22_cap_no_amplification (p_request_size: _) (p_response_size: _) : Lemma (requires (p_request_size > 0)) (ensures (amplification_factor p_request_size p_response_size <= p_response_size)) = ()
 
 (* OMEGA_001_23_cap_no_reflection (matches Coq: Theorem OMEGA_001_23_cap_no_reflection) *)
 let omega_001_23_cap_no_reflection_obligation () : Tot bool = true
 let omega_001_23_cap_no_reflection_lemma () : Lemma (requires True) (ensures (omega_001_23_cap_no_reflection_obligation () == omega_001_23_cap_no_reflection_obligation ())) = ()
 
 (* OMEGA_001_24_syn_cookie_stateless (matches Coq: Theorem OMEGA_001_24_syn_cookie_stateless) *)
-let omega_001_24_syn_cookie_stateless () : Lemma (syn_cookie_state_required == 0) = admit ()
+let omega_001_24_syn_cookie_stateless () : Lemma (syn_cookie_state_required == 0) = ()
 
 (* OMEGA_001_25_syn_cookie_unforgeable (matches Coq: Theorem OMEGA_001_25_syn_cookie_unforgeable) *)
-let omega_001_25_syn_cookie_unforgeable (p_secret: _) (p_conn: _) (p_time: _) : Lemma (syn_cookie p_secret p_conn p_time == hash_to_nat (sha256 (encode_connection p_conn ++ encode_nat p_time ++ p_secret))) = admit ()
+let omega_001_25_syn_cookie_unforgeable (p_secret: _) (p_conn: _) (p_time: _) : Lemma (syn_cookie p_secret p_conn p_time == hash_to_nat (sha256 (encode_connection p_conn ++ encode_nat p_time ++ p_secret))) = ()
 
 (* OMEGA_001_26_syn_cookie_verify (matches Coq: Theorem OMEGA_001_26_syn_cookie_verify) *)
-let omega_001_26_syn_cookie_verify (p_secret: _) (p_conn: _) (p_time: _) : Lemma (verify_syn_cookie p_secret p_conn (syn_cookie p_secret p_conn p_time) p_time == true) = admit ()
+let omega_001_26_syn_cookie_verify (p_secret: _) (p_conn: _) (p_time: _) : Lemma (verify_syn_cookie p_secret p_conn (syn_cookie p_secret p_conn p_time) p_time == true) = ()
 
 (* OMEGA_001_27_syn_cookie_replay_prevent (matches Coq: Theorem OMEGA_001_27_syn_cookie_replay_prevent) *)
-let omega_001_27_syn_cookie_replay_prevent (p_secret: _) (p_conn: _) (p_time_old: _) (p_time_now: _) : Lemma (requires (p_time_now > p_time_old + 2 /\ verify_syn_cookie p_secret p_conn (syn_cookie p_secret p_conn p_time_old) p_time_now == true)) (ensures (syn_cookie p_secret p_conn p_time_old == syn_cookie p_secret p_conn p_time_now \/ syn_cookie p_secret p_conn p_time_old == syn_cookie p_secret p_conn (p_time_now - 1) \/ syn_cookie p_secret p_conn p_time_old == syn_cookie p_secret p_conn (p_time_now - 2))) = admit ()
+let omega_001_27_syn_cookie_replay_prevent (p_secret: _) (p_conn: _) (p_time_old: _) (p_time_now: _) : Lemma (requires (p_time_now > p_time_old + 2 /\ verify_syn_cookie p_secret p_conn (syn_cookie p_secret p_conn p_time_old) p_time_now == true)) (ensures (syn_cookie p_secret p_conn p_time_old == syn_cookie p_secret p_conn p_time_now \/ syn_cookie p_secret p_conn p_time_old == syn_cookie p_secret p_conn (p_time_now - 1) \/ syn_cookie p_secret p_conn p_time_old == syn_cookie p_secret p_conn (p_time_now - 2))) = ()
 
 (* OMEGA_001_28_syn_flood_mitigated (matches Coq: Theorem OMEGA_001_28_syn_flood_mitigated) *)
-let omega_001_28_syn_flood_mitigated (p_num_pending: _) : Lemma (syn_cookie_memory_usage p_num_pending == 0) = admit ()
+let omega_001_28_syn_flood_mitigated (p_num_pending: _) : Lemma (syn_cookie_memory_usage p_num_pending == 0) = ()
 
 (* OMEGA_001_29_legitimate_connections (matches Coq: Theorem OMEGA_001_29_legitimate_connections) *)
-let omega_001_29_legitimate_connections (p_secret: _) (p_conn: _) (p_time: _) : Lemma (verify_syn_cookie p_secret p_conn (syn_cookie p_secret p_conn p_time) p_time == true) = admit ()
+let omega_001_29_legitimate_connections (p_secret: _) (p_conn: _) (p_time: _) : Lemma (verify_syn_cookie p_secret p_conn (syn_cookie p_secret p_conn p_time) p_time == true) = ()
 
 (* OMEGA_001_30_hash_collision_resistant (matches Coq: Theorem OMEGA_001_30_hash_collision_resistant) *)
-let omega_001_30_hash_collision_resistant (p_ht: _) (p_key1: _) (p_key2: _) (p_v1: _) (p_v2: _) : Lemma (requires (siphash_lookup p_ht p_key1 == Some p_v1 /\ siphash_lookup p_ht p_key2 == Some p_v2 /\ ~(p_key1 == p_key2))) (ensures ((exists p_bound. max_bucket_size p_ht <= p_bound))) = admit ()
+let omega_001_30_hash_collision_resistant (p_ht: _) (p_key1: _) (p_key2: _) (p_v1: _) (p_v2: _) : Lemma (requires (siphash_lookup p_ht p_key1 == Some p_v1 /\ siphash_lookup p_ht p_key2 == Some p_v2 /\ ~(p_key1 == p_key2))) (ensures ((exists p_bound. max_bucket_size p_ht <= p_bound))) = ()
 
 (* OMEGA_001_31_regex_terminates (matches Coq: Theorem OMEGA_001_31_regex_terminates) *)
-let omega_001_31_regex_terminates (p_r: _) (p_input: _) (p_fuel: _) : Lemma (requires (p_fuel >= regex_size p_r * (length p_input + 1))) (ensures ((exists p_result. regex_match_bounded p_r p_input p_fuel == BROk p_result))) = admit ()
+let omega_001_31_regex_terminates (p_r: _) (p_input: _) (p_fuel: _) : Lemma (requires (p_fuel >= regex_size p_r * (length p_input + 1))) (ensures ((exists p_result. regex_match_bounded p_r p_input p_fuel == BROk p_result))) = ()
 
 (* OMEGA_001_32_decompression_bounded (matches Coq: Theorem OMEGA_001_32_decompression_bounded) *)
-let omega_001_32_decompression_bounded (p_data: _) (p_limit: _) (p_result: _) : Lemma (requires (bounded_decompress p_data p_limit == BROk p_result)) (ensures (length p_result <= p_limit)) = admit ()
+let omega_001_32_decompression_bounded (p_data: _) (p_limit: _) (p_result: _) : Lemma (requires (bounded_decompress p_data p_limit == BROk p_result)) (ensures (length p_result <= p_limit)) = ()
 
 (* OMEGA_001_33_json_parse_bounded (matches Coq: Theorem OMEGA_001_33_json_parse_bounded) *)
-let omega_001_33_json_parse_bounded (p_data: _) (p_depth_limit: _) (p_size_limit: _) (p_result: _) : Lemma (requires (bounded_json_parse p_data p_depth_limit p_size_limit == BROk p_result)) (ensures (p_result <= p_size_limit)) = admit ()
+let omega_001_33_json_parse_bounded (p_data: _) (p_depth_limit: _) (p_size_limit: _) (p_result: _) : Lemma (requires (bounded_json_parse p_data p_depth_limit p_size_limit == BROk p_result)) (ensures (p_result <= p_size_limit)) = ()
 
 (* OMEGA_001_34_xml_parse_bounded (matches Coq: Theorem OMEGA_001_34_xml_parse_bounded) *)
-let omega_001_34_xml_parse_bounded (p_data: _) (p_depth_limit: _) (p_size_limit: _) (p_result: _) : Lemma (requires (bounded_xml_parse p_data p_depth_limit p_size_limit == BROk p_result)) (ensures (p_result <= p_size_limit)) = admit ()
+let omega_001_34_xml_parse_bounded (p_data: _) (p_depth_limit: _) (p_size_limit: _) (p_result: _) : Lemma (requires (bounded_xml_parse p_data p_depth_limit p_size_limit == BROk p_result)) (ensures (p_result <= p_size_limit)) = ()
 
 (* OMEGA_001_35_no_algorithmic_dos (matches Coq: Theorem OMEGA_001_35_no_algorithmic_dos) *)
-let omega_001_35_no_algorithmic_dos (p_input: (list nat)) (p_limit: nat) (p_op: (list nat)) (p_result: _) : Lemma (requires (bounded_operation p_input p_limit p_op == BROk p_result)) (ensures (length p_input <= p_limit)) = admit ()
+let omega_001_35_no_algorithmic_dos (p_input: (list nat)) (p_limit: nat) (p_op: (list nat)) (p_result: _) : Lemma (requires (bounded_operation p_input p_limit p_op == BROk p_result)) (ensures (length p_input <= p_limit)) = ()

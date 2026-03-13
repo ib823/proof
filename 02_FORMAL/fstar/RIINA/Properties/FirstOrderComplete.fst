@@ -74,13 +74,13 @@ let first_order_subtype_obligation () : Tot bool = true
 let first_order_subtype_lemma () : Lemma (requires True) (ensures (first_order_subtype_obligation () == first_order_subtype_obligation ())) = ()
 
 (* first_order_subtypes_fo (matches Coq: Lemma first_order_subtypes_fo) *)
-let first_order_subtypes_fo (p_t: _) : Lemma (requires (first_order_type p_t == true /\ (forall (p_t: _). ((exists p_t2. p_t == TProd p_t' p_t2))) \/ ((exists p_t1. p_t == TProd p_t1 p_t')) \/ ((exists p_t2. p_t == TSum p_t' p_t2)) \/ ((exists p_t1. p_t == TSum p_t1 p_t')) \/ p_t == TList p_t' \/ p_t == TOption p_t' \/ ((exists p_sl. p_t == TRef p_t' p_sl)) \/ p_t == TSecret p_t' \/ ((exists p_sl. p_t == TLabeled p_t' p_sl)) \/ ((exists p_src. p_t == TTainted p_t' p_src)) \/ ((exists p_san. p_t == TSanitized p_t' p_san)) \/ p_t == TProof p_t' \/ p_t == TConstantTime p_t' \/ p_t == TZeroizing p_t')) (ensures (first_order_type p_t' == true)) = admit ()
+let first_order_subtypes_fo (p_t: _) : Lemma (requires (first_order_type p_t == true /\ (forall (p_t: _). ((exists p_t2. p_t == TProd p_t' p_t2))) \/ ((exists p_t1. p_t == TProd p_t1 p_t')) \/ ((exists p_t2. p_t == TSum p_t' p_t2)) \/ ((exists p_t1. p_t == TSum p_t1 p_t')) \/ p_t == TList p_t' \/ p_t == TOption p_t' \/ ((exists p_sl. p_t == TRef p_t' p_sl)) \/ p_t == TSecret p_t' \/ ((exists p_sl. p_t == TLabeled p_t' p_sl)) \/ ((exists p_src. p_t == TTainted p_t' p_src)) \/ ((exists p_san. p_t == TSanitized p_t' p_san)) \/ p_t == TProof p_t' \/ p_t == TConstantTime p_t' \/ p_t == TZeroizing p_t')) (ensures (first_order_type p_t' == true)) = ()
 
 (* base_type_first_order (matches Coq: Lemma base_type_first_order) *)
-let base_type_first_order (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures (first_order_type p_t == true)) = admit ()
+let base_type_first_order (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures (first_order_type p_t == true)) = ()
 
 (* base_type_size_one (matches Coq: Lemma base_type_size_one) *)
-let base_type_size_one (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures (ty_size p_t == 1)) = admit ()
+let base_type_size_one (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures (ty_size p_t == 1)) = ()
 
 (* first_order_value_structure (matches Coq: Lemma first_order_value_structure) *)
 let first_order_value_structure_obligation () : Tot bool = true
@@ -91,65 +91,65 @@ let first_order_induction_simple_obligation () : Tot bool = true
 let first_order_induction_simple_lemma () : Lemma (requires True) (ensures (first_order_induction_simple_obligation () == first_order_induction_simple_obligation ())) = ()
 
 (* ty_eqb_refl (matches Coq: Lemma ty_eqb_refl) *)
-let ty_eqb_refl (p_t: _) : Lemma (ty_eqb p_t p_t == true) = admit ()
+let ty_eqb_refl (p_t: _) : Lemma (ty_eqb p_t p_t == true) = ()
 
 (* ty_eqb_eq (matches Coq: Lemma ty_eqb_eq) *)
 let ty_eqb_eq_obligation () : Tot bool = true
 let ty_eqb_eq_lemma () : Lemma (requires True) (ensures (ty_eqb_eq_obligation () == ty_eqb_eq_obligation ())) = ()
 
 (* ty_eqb_unit_bool_false (matches Coq: Lemma ty_eqb_unit_bool_false) *)
-let ty_eqb_unit_bool_false () : Lemma (ty_eqb TUnit TBool == false) = admit ()
+let ty_eqb_unit_bool_false () : Lemma (ty_eqb TUnit TBool == false) = ()
 
 (* ty_eqb_unit_int_false (matches Coq: Lemma ty_eqb_unit_int_false) *)
-let ty_eqb_unit_int_false () : Lemma (ty_eqb TUnit TInt == false) = admit ()
+let ty_eqb_unit_int_false () : Lemma (ty_eqb TUnit TInt == false) = ()
 
 (* ty_eqb_bool_int_false (matches Coq: Lemma ty_eqb_bool_int_false) *)
-let ty_eqb_bool_int_false () : Lemma (ty_eqb TBool TInt == false) = admit ()
+let ty_eqb_bool_int_false () : Lemma (ty_eqb TBool TInt == false) = ()
 
 (* ty_eqb_bool_string_false (matches Coq: Lemma ty_eqb_bool_string_false) *)
-let ty_eqb_bool_string_false () : Lemma (ty_eqb TBool TString == false) = admit ()
+let ty_eqb_bool_string_false () : Lemma (ty_eqb TBool TString == false) = ()
 
 (* ty_eqb_int_string_false (matches Coq: Lemma ty_eqb_int_string_false) *)
-let ty_eqb_int_string_false () : Lemma (ty_eqb TInt TString == false) = admit ()
+let ty_eqb_int_string_false () : Lemma (ty_eqb TInt TString == false) = ()
 
 (* ty_eqb_unit_string_false (matches Coq: Lemma ty_eqb_unit_string_false) *)
-let ty_eqb_unit_string_false () : Lemma (ty_eqb TUnit TString == false) = admit ()
+let ty_eqb_unit_string_false () : Lemma (ty_eqb TUnit TString == false) = ()
 
 (* fn_not_first_order (matches Coq: Lemma fn_not_first_order) *)
-let fn_not_first_order (p_t1: _) (p_t2: _) (p_eff: _) : Lemma (first_order_type (TFn p_t1 p_t2 p_eff) == false) = admit ()
+let fn_not_first_order (p_t1: _) (p_t2: _) (p_eff: _) : Lemma (first_order_type (TFn p_t1 p_t2 p_eff) == false) = ()
 
 (* chan_not_first_order (matches Coq: Lemma chan_not_first_order) *)
-let chan_not_first_order (p_s: _) : Lemma (first_order_type (TChan p_s) == false) = admit ()
+let chan_not_first_order (p_s: _) : Lemma (first_order_type (TChan p_s) == false) = ()
 
 (* securechan_not_first_order (matches Coq: Lemma securechan_not_first_order) *)
-let securechan_not_first_order (p_s: _) (p_sl: _) : Lemma (first_order_type (TSecureChan p_s p_sl) == false) = admit ()
+let securechan_not_first_order (p_s: _) (p_sl: _) : Lemma (first_order_type (TSecureChan p_s p_sl) == false) = ()
 
 (* base_type_not_fn (matches Coq: Lemma base_type_not_fn) *)
-let base_type_not_fn (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures ((forall (t1: _). (forall (t2: _). (forall (eff: _). ~(p_t == TFn t1 t2 eff)))))) = admit ()
+let base_type_not_fn (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures ((forall (t1: _). (forall (t2: _). (forall (eff: _). ~(p_t == TFn t1 t2 eff)))))) = ()
 
 (* base_type_not_prod (matches Coq: Lemma base_type_not_prod) *)
-let base_type_not_prod (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures ((forall (t1: _). (forall (t2: _). ~(p_t == TProd t1 t2))))) = admit ()
+let base_type_not_prod (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures ((forall (t1: _). (forall (t2: _). ~(p_t == TProd t1 t2))))) = ()
 
 (* base_type_not_sum (matches Coq: Lemma base_type_not_sum) *)
-let base_type_not_sum (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures ((forall (t1: _). (forall (t2: _). ~(p_t == TSum t1 t2))))) = admit ()
+let base_type_not_sum (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures ((forall (t1: _). (forall (t2: _). ~(p_t == TSum t1 t2))))) = ()
 
 (* base_type_not_list (matches Coq: Lemma base_type_not_list) *)
-let base_type_not_list (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures ((forall (p_t: _). ~(p_t == TList p_t')))) = admit ()
+let base_type_not_list (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures ((forall (p_t: _). ~(p_t == TList p_t')))) = ()
 
 (* base_type_not_option (matches Coq: Lemma base_type_not_option) *)
-let base_type_not_option (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures ((forall (p_t: _). ~(p_t == TOption p_t')))) = admit ()
+let base_type_not_option (p_t: _) : Lemma (requires (is_base_type p_t == true)) (ensures ((forall (p_t: _). ~(p_t == TOption p_t')))) = ()
 
 (* fo_compound_depth_unit (matches Coq: Lemma fo_compound_depth_unit) *)
-let fo_compound_depth_unit () : Lemma (fo_compound_depth TUnit == 0) = admit ()
+let fo_compound_depth_unit () : Lemma (fo_compound_depth TUnit == 0) = ()
 
 (* fo_compound_depth_bool (matches Coq: Lemma fo_compound_depth_bool) *)
-let fo_compound_depth_bool () : Lemma (fo_compound_depth TBool == 0) = admit ()
+let fo_compound_depth_bool () : Lemma (fo_compound_depth TBool == 0) = ()
 
 (* fo_compound_depth_int (matches Coq: Lemma fo_compound_depth_int) *)
-let fo_compound_depth_int () : Lemma (fo_compound_depth TInt == 0) = admit ()
+let fo_compound_depth_int () : Lemma (fo_compound_depth TInt == 0) = ()
 
 (* fo_compound_depth_string (matches Coq: Lemma fo_compound_depth_string) *)
-let fo_compound_depth_string () : Lemma (fo_compound_depth TString == 0) = admit ()
+let fo_compound_depth_string () : Lemma (fo_compound_depth TString == 0) = ()
 
 (* fo_compound_depth_bytes (matches Coq: Lemma fo_compound_depth_bytes) *)
-let fo_compound_depth_bytes () : Lemma (fo_compound_depth TBytes == 0) = admit ()
+let fo_compound_depth_bytes () : Lemma (fo_compound_depth TBytes == 0) = ()

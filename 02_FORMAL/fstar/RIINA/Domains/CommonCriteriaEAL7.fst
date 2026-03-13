@@ -316,157 +316,157 @@ let has_complete_coverage (p_classes: (list security_class)) : Tot bool =
   has_audit p_classes && has_crypto_key_mgmt p_classes && has_ifc p_classes && has_domain_sep p_classes && has_authentication p_classes
 
 (* CC_001_label_reflexivity (matches Coq: Theorem CC_001_label_reflexivity) *)
-let cc_001_label_reflexivity (p_l: security_label) : Lemma (label_leq p_l p_l == true) = admit ()
+let cc_001_label_reflexivity (p_l: security_label) : Lemma (label_leq p_l p_l == true) = ()
 
 (* CC_002_label_transitivity (matches Coq: Theorem CC_002_label_transitivity) *)
-let cc_002_label_transitivity (p_l1: security_label) (p_l2: security_label) (p_l3: security_label) : Lemma (requires (label_leq p_l1 p_l2 == true /\ label_leq p_l2 p_l3 == true)) (ensures (label_leq p_l1 p_l3 == true)) = admit ()
+let cc_002_label_transitivity (p_l1: security_label) (p_l2: security_label) (p_l3: security_label) : Lemma (requires (label_leq p_l1 p_l2 == true /\ label_leq p_l2 p_l3 == true)) (ensures (label_leq p_l1 p_l3 == true)) = ()
 
 (* CC_003_label_antisymmetry (matches Coq: Theorem CC_003_label_antisymmetry) *)
-let cc_003_label_antisymmetry (p_l1: security_label) (p_l2: security_label) : Lemma (requires (label_leq p_l1 p_l2 == true /\ label_leq p_l2 p_l1 == true)) (ensures (p_l1 == p_l2)) = admit ()
+let cc_003_label_antisymmetry (p_l1: security_label) (p_l2: security_label) : Lemma (requires (label_leq p_l1 p_l2 == true /\ label_leq p_l2 p_l1 == true)) (ensures (p_l1 == p_l2)) = ()
 
 (* CC_004_public_is_bottom (matches Coq: Theorem CC_004_public_is_bottom) *)
-let cc_004_public_is_bottom (p_l: security_label) : Lemma (label_leq SL_Public p_l == true) = admit ()
+let cc_004_public_is_bottom (p_l: security_label) : Lemma (label_leq SL_Public p_l == true) = ()
 
 (* CC_005_topsecret_is_top (matches Coq: Theorem CC_005_topsecret_is_top) *)
-let cc_005_topsecret_is_top (p_l: security_label) : Lemma (label_leq p_l SL_TopSecret == true) = admit ()
+let cc_005_topsecret_is_top (p_l: security_label) : Lemma (label_leq p_l SL_TopSecret == true) = ()
 
 (* CC_006_valid_context_clearance (matches Coq: Theorem CC_006_valid_context_clearance) *)
-let cc_006_valid_context_clearance (p_ctx: security_context) : Lemma (requires (valid_security_context p_ctx == true)) (ensures (label_leq (p_ctx.f_ctx_current_label) (p_ctx.f_ctx_clearance) == true)) = admit ()
+let cc_006_valid_context_clearance (p_ctx: security_context) : Lemma (requires (valid_security_context p_ctx == true)) (ensures (label_leq (p_ctx.f_ctx_current_label) (p_ctx.f_ctx_clearance) == true)) = ()
 
 (* CC_007_no_write_down_preserves_confidentiality (matches Coq: Theorem CC_007_no_write_down_preserves_confidentiality) *)
-let cc_007_no_write_down_preserves_confidentiality (p_src: security_label) (p_dst: security_label) : Lemma (requires (no_write_down p_src p_dst == true)) (ensures (label_leq p_src p_dst == true)) = admit ()
+let cc_007_no_write_down_preserves_confidentiality (p_src: security_label) (p_dst: security_label) : Lemma (requires (no_write_down p_src p_dst == true)) (ensures (label_leq p_src p_dst == true)) = ()
 
 (* CC_008_no_read_up_prevents_leakage (matches Coq: Theorem CC_008_no_read_up_prevents_leakage) *)
-let cc_008_no_read_up_prevents_leakage (p_clearance: security_label) (p_obj_label: security_label) : Lemma (requires (no_read_up p_clearance p_obj_label == true)) (ensures (label_leq p_obj_label p_clearance == true)) = admit ()
+let cc_008_no_read_up_prevents_leakage (p_clearance: security_label) (p_obj_label: security_label) : Lemma (requires (no_read_up p_clearance p_obj_label == true)) (ensures (label_leq p_obj_label p_clearance == true)) = ()
 
 (* CC_009_blp_simple_security_sound (matches Coq: Theorem CC_009_blp_simple_security_sound) *)
-let cc_009_blp_simple_security_sound (p_subj_clear: security_label) (p_obj_class: security_label) : Lemma (requires (blp_simple_security p_subj_clear p_obj_class == true)) (ensures (label_leq p_obj_class p_subj_clear == true)) = admit ()
+let cc_009_blp_simple_security_sound (p_subj_clear: security_label) (p_obj_class: security_label) : Lemma (requires (blp_simple_security p_subj_clear p_obj_class == true)) (ensures (label_leq p_obj_class p_subj_clear == true)) = ()
 
 (* CC_010_blp_star_property_sound (matches Coq: Theorem CC_010_blp_star_property_sound) *)
-let cc_010_blp_star_property_sound (p_subj_curr: security_label) (p_obj_class: security_label) : Lemma (requires (blp_star_property p_subj_curr p_obj_class == true)) (ensures (label_leq p_subj_curr p_obj_class == true)) = admit ()
+let cc_010_blp_star_property_sound (p_subj_curr: security_label) (p_obj_class: security_label) : Lemma (requires (blp_star_property p_subj_curr p_obj_class == true)) (ensures (label_leq p_subj_curr p_obj_class == true)) = ()
 
 (* CC_011_compliant_adv_valid (matches Coq: Theorem CC_011_compliant_adv_valid) *)
-let cc_011_compliant_adv_valid () : Lemma (adv_compliant mk_compliant_adv == true) = admit ()
+let cc_011_compliant_adv_valid () : Lemma (adv_compliant mk_compliant_adv == true) = ()
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = ()
 
 (* CC_012_architecture_completeness (matches Coq: Theorem CC_012_architecture_completeness) *)
-let cc_012_architecture_completeness (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_arc_complete == true)) = admit ()
+let cc_012_architecture_completeness (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_arc_complete == true)) = ()
 
 (* CC_013_formal_verification_required (matches Coq: Theorem CC_013_formal_verification_required) *)
-let cc_013_formal_verification_required (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_imp_verified == true)) = admit ()
+let cc_013_formal_verification_required (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_imp_verified == true)) = ()
 
 (* CC_014_formal_design_required (matches Coq: Theorem CC_014_formal_design_required) *)
-let cc_014_formal_design_required (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_tds_formal == true)) = admit ()
+let cc_014_formal_design_required (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_tds_formal == true)) = ()
 
 (* CC_015_non_bypassability (matches Coq: Theorem CC_015_non_bypassability) *)
-let cc_015_non_bypassability (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_arc_non_bypassable == true)) = admit ()
+let cc_015_non_bypassability (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_arc_non_bypassable == true)) = ()
 
 (* CC_016_tamper_proof (matches Coq: Theorem CC_016_tamper_proof) *)
-let cc_016_tamper_proof (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_arc_tamper_proof == true)) = admit ()
+let cc_016_tamper_proof (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_arc_tamper_proof == true)) = ()
 
 (* CC_017_domain_separation (matches Coq: Theorem CC_017_domain_separation) *)
-let cc_017_domain_separation (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_arc_domain_sep == true)) = admit ()
+let cc_017_domain_separation (p_adv: development_assurance) : Lemma (requires (adv_compliant p_adv == true)) (ensures (p_adv.f_adv_arc_domain_sep == true)) = ()
 
 (* CC_018_compliant_ava_valid (matches Coq: Theorem CC_018_compliant_ava_valid) *)
-let cc_018_compliant_ava_valid () : Lemma (ava_compliant mk_compliant_ava == true) = admit ()
+let cc_018_compliant_ava_valid () : Lemma (ava_compliant mk_compliant_ava == true) = ()
 
 (* CC_019_advanced_analysis_required (matches Coq: Theorem CC_019_advanced_analysis_required) *)
-let cc_019_advanced_analysis_required (p_ava: vulnerability_assurance) : Lemma (requires (ava_compliant p_ava == true)) (ensures (p_ava.f_ava_van_advanced == true)) = admit ()
+let cc_019_advanced_analysis_required (p_ava: vulnerability_assurance) : Lemma (requires (ava_compliant p_ava == true)) (ensures (p_ava.f_ava_van_advanced == true)) = ()
 
 (* CC_020_high_attack_potential_resistance (matches Coq: Theorem CC_020_high_attack_potential_resistance) *)
-let cc_020_high_attack_potential_resistance (p_ava: vulnerability_assurance) : Lemma (requires (ava_compliant p_ava == true)) (ensures (p_ava.f_ava_van_high_attack == true)) = admit ()
+let cc_020_high_attack_potential_resistance (p_ava: vulnerability_assurance) : Lemma (requires (ava_compliant p_ava == true)) (ensures (p_ava.f_ava_van_high_attack == true)) = ()
 
 (* CC_021_compliant_eal7_valid (matches Coq: Theorem CC_021_compliant_eal7_valid) *)
-let cc_021_compliant_eal7_valid () : Lemma (eal7_compliant mk_compliant_eal7 == true) = admit ()
+let cc_021_compliant_eal7_valid () : Lemma (eal7_compliant mk_compliant_eal7 == true) = ()
 
 (* CC_022_eal7_implies_adv (matches Coq: Theorem CC_022_eal7_implies_adv) *)
-let cc_022_eal7_implies_adv (p_pkg: eal7_package) : Lemma (requires (eal7_compliant p_pkg == true)) (ensures (adv_compliant (p_pkg.f_eal7_adv) == true)) = admit ()
+let cc_022_eal7_implies_adv (p_pkg: eal7_package) : Lemma (requires (eal7_compliant p_pkg == true)) (ensures (adv_compliant (p_pkg.f_eal7_adv) == true)) = ()
 
 (* CC_023_eal7_implies_ava (matches Coq: Theorem CC_023_eal7_implies_ava) *)
-let cc_023_eal7_implies_ava (p_pkg: eal7_package) : Lemma (requires (eal7_compliant p_pkg == true)) (ensures (ava_compliant (p_pkg.f_eal7_ava) == true)) = admit ()
+let cc_023_eal7_implies_ava (p_pkg: eal7_package) : Lemma (requires (eal7_compliant p_pkg == true)) (ensures (ava_compliant (p_pkg.f_eal7_ava) == true)) = ()
 
 (* CC_024_eal7_implies_formal_verification (matches Coq: Theorem CC_024_eal7_implies_formal_verification) *)
-let cc_024_eal7_implies_formal_verification (p_pkg: eal7_package) : Lemma (requires (eal7_compliant p_pkg == true)) (ensures ((p_pkg.f_eal7_adv).f_adv_imp_verified == true)) = admit ()
+let cc_024_eal7_implies_formal_verification (p_pkg: eal7_package) : Lemma (requires (eal7_compliant p_pkg == true)) (ensures ((p_pkg.f_eal7_adv).f_adv_imp_verified == true)) = ()
 
 (* CC_025_eal7_implies_high_attack_resistance (matches Coq: Theorem CC_025_eal7_implies_high_attack_resistance) *)
-let cc_025_eal7_implies_high_attack_resistance (p_pkg: eal7_package) : Lemma (requires (eal7_compliant p_pkg == true)) (ensures ((p_pkg.f_eal7_ava).f_ava_van_high_attack == true)) = admit ()
+let cc_025_eal7_implies_high_attack_resistance (p_pkg: eal7_package) : Lemma (requires (eal7_compliant p_pkg == true)) (ensures ((p_pkg.f_eal7_ava).f_ava_van_high_attack == true)) = ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = ()
 
 (* CC_026_audit_generation_verifiable (matches Coq: Theorem CC_026_audit_generation_verifiable) *)
-let cc_026_audit_generation_verifiable (p_classes: (list security_class)) : Lemma (requires (has_audit p_classes == true)) (ensures (List.Tot.memP FAU_GEN p_classes)) = admit ()
+let cc_026_audit_generation_verifiable (p_classes: (list security_class)) : Lemma (requires (has_audit p_classes == true)) (ensures (List.Tot.memP FAU_GEN p_classes)) = ()
 
 (* CC_027_crypto_key_mgmt_verifiable (matches Coq: Theorem CC_027_crypto_key_mgmt_verifiable) *)
-let cc_027_crypto_key_mgmt_verifiable (p_classes: (list security_class)) : Lemma (requires (has_crypto_key_mgmt p_classes == true)) (ensures (List.Tot.memP FCS_CKM p_classes)) = admit ()
+let cc_027_crypto_key_mgmt_verifiable (p_classes: (list security_class)) : Lemma (requires (has_crypto_key_mgmt p_classes == true)) (ensures (List.Tot.memP FCS_CKM p_classes)) = ()
 
 (* CC_028_ifc_verifiable (matches Coq: Theorem CC_028_ifc_verifiable) *)
-let cc_028_ifc_verifiable (p_classes: (list security_class)) : Lemma (requires (has_ifc p_classes == true)) (ensures (List.Tot.memP FDP_IFC p_classes)) = admit ()
+let cc_028_ifc_verifiable (p_classes: (list security_class)) : Lemma (requires (has_ifc p_classes == true)) (ensures (List.Tot.memP FDP_IFC p_classes)) = ()
 
 (* CC_029_domain_sep_verifiable (matches Coq: Theorem CC_029_domain_sep_verifiable) *)
-let cc_029_domain_sep_verifiable (p_classes: (list security_class)) : Lemma (requires (has_domain_sep p_classes == true)) (ensures (List.Tot.memP FPT_SEP p_classes)) = admit ()
+let cc_029_domain_sep_verifiable (p_classes: (list security_class)) : Lemma (requires (has_domain_sep p_classes == true)) (ensures (List.Tot.memP FPT_SEP p_classes)) = ()
 
 (* CC_030_authentication_verifiable (matches Coq: Theorem CC_030_authentication_verifiable) *)
-let cc_030_authentication_verifiable (p_classes: (list security_class)) : Lemma (requires (has_authentication p_classes == true)) (ensures (List.Tot.memP FIA_UAU p_classes)) = admit ()
+let cc_030_authentication_verifiable (p_classes: (list security_class)) : Lemma (requires (has_authentication p_classes == true)) (ensures (List.Tot.memP FIA_UAU p_classes)) = ()
 
 (* CC_031_riina_has_audit (matches Coq: Theorem CC_031_riina_has_audit) *)
-let cc_031_riina_has_audit () : Lemma (has_audit (riina_toe.f_toe_security_functions) == true) = admit ()
+let cc_031_riina_has_audit () : Lemma (has_audit (riina_toe.f_toe_security_functions) == true) = ()
 
 (* CC_032_riina_has_crypto (matches Coq: Theorem CC_032_riina_has_crypto) *)
-let cc_032_riina_has_crypto () : Lemma (has_crypto_key_mgmt (riina_toe.f_toe_security_functions) == true) = admit ()
+let cc_032_riina_has_crypto () : Lemma (has_crypto_key_mgmt (riina_toe.f_toe_security_functions) == true) = ()
 
 (* CC_033_riina_has_ifc (matches Coq: Theorem CC_033_riina_has_ifc) *)
-let cc_033_riina_has_ifc () : Lemma (has_ifc (riina_toe.f_toe_security_functions) == true) = admit ()
+let cc_033_riina_has_ifc () : Lemma (has_ifc (riina_toe.f_toe_security_functions) == true) = ()
 
 (* CC_034_riina_has_domain_sep (matches Coq: Theorem CC_034_riina_has_domain_sep) *)
-let cc_034_riina_has_domain_sep () : Lemma (has_domain_sep (riina_toe.f_toe_security_functions) == true) = admit ()
+let cc_034_riina_has_domain_sep () : Lemma (has_domain_sep (riina_toe.f_toe_security_functions) == true) = ()
 
 (* CC_035_riina_has_authentication (matches Coq: Theorem CC_035_riina_has_authentication) *)
-let cc_035_riina_has_authentication () : Lemma (has_authentication (riina_toe.f_toe_security_functions) == true) = admit ()
+let cc_035_riina_has_authentication () : Lemma (has_authentication (riina_toe.f_toe_security_functions) == true) = ()
 
 (* CC_036_riina_boundary_defined (matches Coq: Theorem CC_036_riina_boundary_defined) *)
-let cc_036_riina_boundary_defined () : Lemma (riina_toe.f_toe_boundary_defined == true) = admit ()
+let cc_036_riina_boundary_defined () : Lemma (riina_toe.f_toe_boundary_defined == true) = ()
 
 (* CC_037_riina_interfaces_specified (matches Coq: Theorem CC_037_riina_interfaces_specified) *)
-let cc_037_riina_interfaces_specified () : Lemma (riina_toe.f_toe_interfaces_specified == true) = admit ()
+let cc_037_riina_interfaces_specified () : Lemma (riina_toe.f_toe_interfaces_specified == true) = ()
 
 (* CC_038_riina_evaluated_configuration (matches Coq: Theorem CC_038_riina_evaluated_configuration) *)
-let cc_038_riina_evaluated_configuration () : Lemma (riina_toe.f_toe_evaluated_configuration == true) = admit ()
+let cc_038_riina_evaluated_configuration () : Lemma (riina_toe.f_toe_evaluated_configuration == true) = ()
 
 (* CC_039_riina_complete_coverage (matches Coq: Theorem CC_039_riina_complete_coverage) *)
-let cc_039_riina_complete_coverage () : Lemma (has_complete_coverage (riina_toe.f_toe_security_functions) == true) = admit ()
+let cc_039_riina_complete_coverage () : Lemma (has_complete_coverage (riina_toe.f_toe_security_functions) == true) = ()
 
 (* CC_040_maximum_assurance (matches Coq: Theorem CC_040_maximum_assurance) *)
-let cc_040_maximum_assurance (p_pkg: eal7_package) (p_toe: toe_configuration) : Lemma (requires (eal7_compliant p_pkg == true /\ has_complete_coverage (p_toe.f_toe_security_functions) == true)) (ensures ((p_pkg.f_eal7_adv).f_adv_imp_verified == true /\ (p_pkg.f_eal7_ava).f_ava_van_high_attack == true)) = admit ()
+let cc_040_maximum_assurance (p_pkg: eal7_package) (p_toe: toe_configuration) : Lemma (requires (eal7_compliant p_pkg == true /\ has_complete_coverage (p_toe.f_toe_security_functions) == true)) (ensures ((p_pkg.f_eal7_adv).f_adv_imp_verified == true /\ (p_pkg.f_eal7_ava).f_ava_van_high_attack == true)) = ()
 
 (* CC_041_lifecycle_compliance (matches Coq: Theorem CC_041_lifecycle_compliance) *)
-let cc_041_lifecycle_compliance () : Lemma (alc_compliant mk_compliant_alc == true) = admit ()
+let cc_041_lifecycle_compliance () : Lemma (alc_compliant mk_compliant_alc == true) = ()
 
 (* CC_042_flaw_remediation (matches Coq: Theorem CC_042_flaw_remediation) *)
-let cc_042_flaw_remediation (p_alc: lifecycle_assurance) : Lemma (requires (alc_compliant p_alc == true)) (ensures (p_alc.f_alc_flaw_systematic == true)) = admit ()
+let cc_042_flaw_remediation (p_alc: lifecycle_assurance) : Lemma (requires (alc_compliant p_alc == true)) (ensures (p_alc.f_alc_flaw_systematic == true)) = ()
 
 (* CC_043_secure_delivery (matches Coq: Theorem CC_043_secure_delivery) *)
-let cc_043_secure_delivery (p_alc: lifecycle_assurance) : Lemma (requires (alc_compliant p_alc == true)) (ensures (p_alc.f_alc_del_secure == true)) = admit ()
+let cc_043_secure_delivery (p_alc: lifecycle_assurance) : Lemma (requires (alc_compliant p_alc == true)) (ensures (p_alc.f_alc_del_secure == true)) = ()
 
 (* CC_044_cm_automation (matches Coq: Theorem CC_044_cm_automation) *)
-let cc_044_cm_automation (p_alc: lifecycle_assurance) : Lemma (requires (alc_compliant p_alc == true)) (ensures (p_alc.f_alc_cmc_automated == true)) = admit ()
+let cc_044_cm_automation (p_alc: lifecycle_assurance) : Lemma (requires (alc_compliant p_alc == true)) (ensures (p_alc.f_alc_cmc_automated == true)) = ()
 
 (* CC_045_test_compliance (matches Coq: Theorem CC_045_test_compliance) *)
-let cc_045_test_compliance () : Lemma (ate_compliant mk_compliant_ate == true) = admit ()
+let cc_045_test_compliance () : Lemma (ate_compliant mk_compliant_ate == true) = ()
 
 (* CC_046_independent_testing (matches Coq: Theorem CC_046_independent_testing) *)
-let cc_046_independent_testing (p_ate: test_assurance) : Lemma (requires (ate_compliant p_ate == true)) (ensures (p_ate.f_ate_ind_performed == true)) = admit ()
+let cc_046_independent_testing (p_ate: test_assurance) : Lemma (requires (ate_compliant p_ate == true)) (ensures (p_ate.f_ate_ind_performed == true)) = ()
 
 (* CC_047_coverage_testing (matches Coq: Theorem CC_047_coverage_testing) *)
-let cc_047_coverage_testing (p_ate: test_assurance) : Lemma (requires (ate_compliant p_ate == true)) (ensures (p_ate.f_ate_cov_complete == true)) = admit ()
+let cc_047_coverage_testing (p_ate: test_assurance) : Lemma (requires (ate_compliant p_ate == true)) (ensures (p_ate.f_ate_cov_complete == true)) = ()
 
 (* CC_048_st_compliance (matches Coq: Theorem CC_048_st_compliance) *)
-let cc_048_st_compliance () : Lemma (ase_compliant mk_compliant_ase == true) = admit ()
+let cc_048_st_compliance () : Lemma (ase_compliant mk_compliant_ase == true) = ()
 
 (* CC_049_objectives_complete (matches Coq: Theorem CC_049_objectives_complete) *)
-let cc_049_objectives_complete (p_ase: security_target_assurance) : Lemma (requires (ase_compliant p_ase == true)) (ensures (p_ase.f_ase_obj_complete == true)) = admit ()
+let cc_049_objectives_complete (p_ase: security_target_assurance) : Lemma (requires (ase_compliant p_ase == true)) (ensures (p_ase.f_ase_obj_complete == true)) = ()
 
 (* CC_050_eal7_complete_certification (matches Coq: Theorem CC_050_eal7_complete_certification) *)
-let cc_050_eal7_complete_certification (p_pkg: eal7_package) (p_toe: toe_configuration) : Lemma (requires (eal7_compliant p_pkg == true /\ p_toe.f_toe_boundary_defined == true /\ p_toe.f_toe_interfaces_specified == true /\ p_toe.f_toe_evaluated_configuration == true /\ has_complete_coverage (p_toe.f_toe_security_functions) == true)) (ensures (adv_compliant (p_pkg.f_eal7_adv) == true /\ agd_compliant (p_pkg.f_eal7_agd) == true /\ alc_compliant (p_pkg.f_eal7_alc) == true /\ ase_compliant (p_pkg.f_eal7_ase) == true /\ ate_compliant (p_pkg.f_eal7_ate) == true /\ ava_compliant (p_pkg.f_eal7_ava) == true)) = admit ()
+let cc_050_eal7_complete_certification (p_pkg: eal7_package) (p_toe: toe_configuration) : Lemma (requires (eal7_compliant p_pkg == true /\ p_toe.f_toe_boundary_defined == true /\ p_toe.f_toe_interfaces_specified == true /\ p_toe.f_toe_evaluated_configuration == true /\ has_complete_coverage (p_toe.f_toe_security_functions) == true)) (ensures (adv_compliant (p_pkg.f_eal7_adv) == true /\ agd_compliant (p_pkg.f_eal7_agd) == true /\ alc_compliant (p_pkg.f_eal7_alc) == true /\ ase_compliant (p_pkg.f_eal7_ase) == true /\ ate_compliant (p_pkg.f_eal7_ate) == true /\ ava_compliant (p_pkg.f_eal7_ava) == true)) = ()

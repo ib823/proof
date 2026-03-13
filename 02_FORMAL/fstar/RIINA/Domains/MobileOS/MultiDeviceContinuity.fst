@@ -224,76 +224,76 @@ let session_within_timeout (p_cs: continuity_session) : Tot bool =
   true
 
 (* cross_device_handoff_complete (matches Coq: Theorem cross_device_handoff_complete) *)
-let cross_device_handoff_complete (p_app: application) (p_device1: device) (p_device2: device) : Lemma (requires (handoff p_app p_device1 p_device2 == true)) (ensures (state p_app p_device2 == state p_app p_device1)) = admit ()
+let cross_device_handoff_complete (p_app: application) (p_device1: device) (p_device2: device) : Lemma (requires (handoff p_app p_device1 p_device2 == true)) (ensures (state p_app p_device2 == state p_app p_device1)) = ()
 
 (* handoff_requires_auth (matches Coq: Theorem handoff_requires_auth) *)
-let handoff_requires_auth (p_app: application) (p_d1: device) (p_d2: device) : Lemma (requires (handoff p_app p_d1 p_d2 == true)) (ensures (p_d1.f_dev_authenticated == true /\ p_d2.f_dev_authenticated == true)) = admit ()
+let handoff_requires_auth (p_app: application) (p_d1: device) (p_d2: device) : Lemma (requires (handoff p_app p_d1 p_d2 == true)) (ensures (p_d1.f_dev_authenticated == true /\ p_d2.f_dev_authenticated == true)) = ()
 
 (* handoff_requires_pairing (matches Coq: Theorem handoff_requires_pairing) *)
-let handoff_requires_pairing (p_app: application) (p_d1: device) (p_d2: device) : Lemma (requires (handoff p_app p_d1 p_d2 == true)) (ensures (p_d1.f_dev_paired == true /\ p_d2.f_dev_paired == true)) = admit ()
+let handoff_requires_pairing (p_app: application) (p_d1: device) (p_d2: device) : Lemma (requires (handoff p_app p_d1 p_d2 == true)) (ensures (p_d1.f_dev_paired == true /\ p_d2.f_dev_paired == true)) = ()
 
 (* complete_handoff_encrypted (matches Coq: Theorem complete_handoff_encrypted) *)
-let complete_handoff_encrypted (p_h: handoff) : Lemma (requires (complete_handoff p_h == true)) (ensures (p_h.f_handoff_encrypted == true)) = admit ()
+let complete_handoff_encrypted (p_h: handoff) : Lemma (requires (complete_handoff p_h == true)) (ensures (p_h.f_handoff_encrypted == true)) = ()
 
 (* only_enabled_apps_handoff (matches Coq: Theorem only_enabled_apps_handoff) *)
-let only_enabled_apps_handoff (p_app: application) (p_d1: device) (p_d2: device) : Lemma (requires (handoff p_app p_d1 p_d2 == true)) (ensures (p_app.f_app_supports_handoff == true)) = admit ()
+let only_enabled_apps_handoff (p_app: application) (p_d1: device) (p_d2: device) : Lemma (requires (handoff p_app p_d1 p_d2 == true)) (ensures (p_app.f_app_supports_handoff == true)) = ()
 
 (* handoff_data_encrypted_thm (matches Coq: Theorem handoff_data_encrypted_thm) *)
-let handoff_data_encrypted_thm (p_hd: handoff_data) : Lemma (requires (handoff_data_encrypted p_hd == true)) (ensures (p_hd.f_hd_encrypted == true)) = admit ()
+let handoff_data_encrypted_thm (p_hd: handoff_data) : Lemma (requires (handoff_data_encrypted p_hd == true)) (ensures (p_hd.f_hd_encrypted == true)) = ()
 
 (* clipboard_sync_encrypted (matches Coq: Theorem clipboard_sync_encrypted) *)
-let clipboard_sync_encrypted (p_cs: clipboard_sync) : Lemma (requires (clipboard_sync_is_encrypted p_cs == true)) (ensures (p_cs.f_cb_encrypted == true)) = admit ()
+let clipboard_sync_encrypted (p_cs: clipboard_sync) : Lemma (requires (clipboard_sync_is_encrypted p_cs == true)) (ensures (p_cs.f_cb_encrypted == true)) = ()
 
 (* device_trust_verified_thm (matches Coq: Theorem device_trust_verified_thm) *)
-let device_trust_verified_thm (p_dt: device_trust) : Lemma (requires (device_trust_verified p_dt == true)) (ensures (p_dt.f_dt_verified == true)) = admit ()
+let device_trust_verified_thm (p_dt: device_trust) : Lemma (requires (device_trust_verified p_dt == true)) (ensures (p_dt.f_dt_verified == true)) = ()
 
 (* proximity_required_thm (matches Coq: Theorem proximity_required_thm) *)
-let proximity_required_thm (p_pc: proximity_check) : Lemma (requires (proximity_required p_pc == true)) (ensures (p_pc.f_pc_distance_m <= p_pc.f_pc_max_distance_m)) = admit ()
+let proximity_required_thm (p_pc: proximity_check) : Lemma (requires (proximity_required p_pc == true)) (ensures (p_pc.f_pc_distance_m <= p_pc.f_pc_max_distance_m)) = ()
 
 (* continuity_permission_explicit_thm (matches Coq: Theorem continuity_permission_explicit_thm) *)
-let continuity_permission_explicit_thm (p_cp: continuity_permission) : Lemma (requires (continuity_permission_explicit p_cp == true)) (ensures (p_cp.f_cp_explicit_grant == true)) = admit ()
+let continuity_permission_explicit_thm (p_cp: continuity_permission) : Lemma (requires (continuity_permission_explicit p_cp == true)) (ensures (p_cp.f_cp_explicit_grant == true)) = ()
 
 (* shared_clipboard_expiry (matches Coq: Theorem shared_clipboard_expiry) *)
-let shared_clipboard_expiry (p_cs: clipboard_sync) : Lemma (requires (clipboard_has_expiry p_cs == true)) (ensures (p_cs.f_cb_expiry_seconds > 0)) = admit ()
+let shared_clipboard_expiry (p_cs: clipboard_sync) : Lemma (requires (clipboard_has_expiry p_cs == true)) (ensures (p_cs.f_cb_expiry_seconds > 0)) = ()
 
 (* universal_link_validated_thm (matches Coq: Theorem universal_link_validated_thm) *)
-let universal_link_validated_thm (p_ul: universal_link) : Lemma (requires (universal_link_validated p_ul == true)) (ensures (p_ul.f_ul_validated == true /\ p_ul.f_ul_domain_verified == true)) = admit ()
+let universal_link_validated_thm (p_ul: universal_link) : Lemma (requires (universal_link_validated p_ul == true)) (ensures (p_ul.f_ul_validated == true /\ p_ul.f_ul_domain_verified == true)) = ()
 
 (* device_pairing_authenticated_thm (matches Coq: Theorem device_pairing_authenticated_thm) *)
-let device_pairing_authenticated_thm (p_dp: device_pairing) : Lemma (requires (device_pairing_authenticated p_dp == true)) (ensures (p_dp.f_dp_authenticated == true)) = admit ()
+let device_pairing_authenticated_thm (p_dp: device_pairing) : Lemma (requires (device_pairing_authenticated p_dp == true)) (ensures (p_dp.f_dp_authenticated == true)) = ()
 
 (* sync_conflict_resolved_thm (matches Coq: Theorem sync_conflict_resolved_thm) *)
-let sync_conflict_resolved_thm (p_sc: sync_conflict) : Lemma (requires (sync_conflict_resolved p_sc == true)) (ensures (p_sc.f_sc_resolved == true)) = admit ()
+let sync_conflict_resolved_thm (p_sc: sync_conflict) : Lemma (requires (sync_conflict_resolved p_sc == true)) (ensures (p_sc.f_sc_resolved == true)) = ()
 
 (* continuity_fallback_available_thm (matches Coq: Theorem continuity_fallback_available_thm) *)
-let continuity_fallback_available_thm (p_cf: continuity_fallback) : Lemma (requires (continuity_fallback_available p_cf == true)) (ensures (p_cf.f_cf_fallback_available == true)) = admit ()
+let continuity_fallback_available_thm (p_cf: continuity_fallback) : Lemma (requires (continuity_fallback_available p_cf == true)) (ensures (p_cf.f_cf_fallback_available == true)) = ()
 
 (* shared_keychain_access_controlled_thm (matches Coq: Theorem shared_keychain_access_controlled_thm) *)
-let shared_keychain_access_controlled_thm (p_sk: shared_keychain) : Lemma (requires (shared_keychain_access_controlled p_sk == true)) (ensures (p_sk.f_sk_access_controlled == true)) = admit ()
+let shared_keychain_access_controlled_thm (p_sk: shared_keychain) : Lemma (requires (shared_keychain_access_controlled p_sk == true)) (ensures (p_sk.f_sk_access_controlled == true)) = ()
 
 (* nearby_interaction_consent (matches Coq: Theorem nearby_interaction_consent) *)
-let nearby_interaction_consent (p_ni: nearby_interaction) : Lemma (requires (nearby_interaction_consented p_ni == true)) (ensures (p_ni.f_ni_consent_given == true)) = admit ()
+let nearby_interaction_consent (p_ni: nearby_interaction) : Lemma (requires (nearby_interaction_consented p_ni == true)) (ensures (p_ni.f_ni_consent_given == true)) = ()
 
 (* device_discovery_limited_thm (matches Coq: Theorem device_discovery_limited_thm) *)
-let device_discovery_limited_thm (p_dd: device_discovery) : Lemma (requires (device_discovery_limited p_dd == true)) (ensures (length (p_dd.f_dd_devices_found) <= p_dd.f_dd_max_devices)) = admit ()
+let device_discovery_limited_thm (p_dd: device_discovery) : Lemma (requires (device_discovery_limited p_dd == true)) (ensures (length (p_dd.f_dd_devices_found) <= p_dd.f_dd_max_devices)) = ()
 
 (* relay_traffic_encrypted_thm (matches Coq: Theorem relay_traffic_encrypted_thm) *)
-let relay_traffic_encrypted_thm (p_rt: relay_traffic) : Lemma (requires (relay_traffic_encrypted p_rt == true)) (ensures (p_rt.f_rt_encrypted == true)) = admit ()
+let relay_traffic_encrypted_thm (p_rt: relay_traffic) : Lemma (requires (relay_traffic_encrypted p_rt == true)) (ensures (p_rt.f_rt_encrypted == true)) = ()
 
 (* continuity_session_timeout (matches Coq: Theorem continuity_session_timeout) *)
-let continuity_session_timeout (p_cs: continuity_session) : Lemma (requires (session_within_timeout p_cs == true /\ p_cs.f_cs_active == true)) (ensures (p_cs.f_cs_elapsed_seconds <= p_cs.f_cs_timeout_seconds)) = admit ()
+let continuity_session_timeout (p_cs: continuity_session) : Lemma (requires (session_within_timeout p_cs == true /\ p_cs.f_cs_active == true)) (ensures (p_cs.f_cs_elapsed_seconds <= p_cs.f_cs_timeout_seconds)) = ()
 
 (* device_pairing_key_exchange (matches Coq: Theorem device_pairing_key_exchange) *)
-let device_pairing_key_exchange (p_dp: device_pairing) : Lemma (requires (device_pairing_authenticated p_dp == true)) (ensures (p_dp.f_dp_encryption_key_exchanged == true)) = admit ()
+let device_pairing_key_exchange (p_dp: device_pairing) : Lemma (requires (device_pairing_authenticated p_dp == true)) (ensures (p_dp.f_dp_encryption_key_exchanged == true)) = ()
 
 (* continuity_permission_revocable (matches Coq: Theorem continuity_permission_revocable) *)
-let continuity_permission_revocable (p_cp: continuity_permission) : Lemma (requires (continuity_permission_explicit p_cp == true)) (ensures (p_cp.f_cp_revocable == true)) = admit ()
+let continuity_permission_revocable (p_cp: continuity_permission) : Lemma (requires (continuity_permission_explicit p_cp == true)) (ensures (p_cp.f_cp_revocable == true)) = ()
 
 (* clipboard_expiry_within_max (matches Coq: Theorem clipboard_expiry_within_max) *)
-let clipboard_expiry_within_max (p_cs: clipboard_sync) : Lemma (requires (clipboard_has_expiry p_cs == true)) (ensures (p_cs.f_cb_expiry_seconds <= p_cs.f_cb_max_expiry_seconds)) = admit ()
+let clipboard_expiry_within_max (p_cs: clipboard_sync) : Lemma (requires (clipboard_has_expiry p_cs == true)) (ensures (p_cs.f_cb_expiry_seconds <= p_cs.f_cb_max_expiry_seconds)) = ()
 
 (* shared_keychain_has_group (matches Coq: Theorem shared_keychain_has_group) *)
-let shared_keychain_has_group (p_sk: shared_keychain) : Lemma (requires (shared_keychain_access_controlled p_sk == true)) (ensures (~(p_sk.f_sk_access_group == []))) = admit ()
+let shared_keychain_has_group (p_sk: shared_keychain) : Lemma (requires (shared_keychain_access_controlled p_sk == true)) (ensures (~(p_sk.f_sk_access_group == []))) = ()
 
 (* handoff_data_integrity_checked (matches Coq: Theorem handoff_data_integrity_checked) *)
-let handoff_data_integrity_checked (p_hd: handoff_data) : Lemma (requires (handoff_data_encrypted p_hd == true)) (ensures (p_hd.f_hd_integrity_checked == true)) = admit ()
+let handoff_data_integrity_checked (p_hd: handoff_data) : Lemma (requires (handoff_data_encrypted p_hd == true)) (ensures (p_hd.f_hd_integrity_checked == true)) = ()

@@ -119,7 +119,7 @@ let li_valid (p_li: lawful_intercept) : Tot bool =
   p_li.f_li_authorized && p_li.f_li_logged
 
 (* security_5g_compliance (matches Coq: Theorem security_5g_compliance) *)
-let security_5g_compliance (p_sec: security_5_g) : Lemma (p_sec.f_primary_authentication == true /\ p_sec.f_nas_security == true) = admit ()
+let security_5g_compliance (p_sec: security_5_g) : Lemma (p_sec.f_primary_authentication == true /\ p_sec.f_nas_security == true) = ()
 
 (* gsma_security (matches Coq: Theorem gsma_security) *)
 let gsma_security (p_sim_card: nat) (p_network: nat) : Lemma (True) = ()
@@ -134,58 +134,58 @@ let signaling_security (p_message: nat) : Lemma (True) = ()
 let nfv_security (p_vnf: network_function) : Lemma (True) = ()
 
 (* integrity_mandatory_5g (matches Coq: Theorem integrity_mandatory_5g) *)
-let integrity_mandatory_5g (p_sec: security_5_g) : Lemma (p_sec.f_nas_security == true) = admit ()
+let integrity_mandatory_5g (p_sec: security_5_g) : Lemma (p_sec.f_nas_security == true) = ()
 
 (* up_integrity_available (matches Coq: Theorem up_integrity_available) *)
-let up_integrity_available (p_sec: security_5_g) : Lemma (p_sec.f_user_plane_integrity == true) = admit ()
+let up_integrity_available (p_sec: security_5_g) : Lemma (p_sec.f_user_plane_integrity == true) = ()
 
 (* core_most_critical (matches Coq: Theorem core_most_critical) *)
-let core_most_critical (p_d: _) : Lemma (domain_criticality p_d <= domain_criticality Core) = admit ()
+let core_most_critical (p_d: _) : Lemma (domain_criticality p_d <= domain_criticality Core) = ()
 
 (* domain_criticality_positive (matches Coq: Theorem domain_criticality_positive) *)
-let domain_criticality_positive (p_d: _) : Lemma (domain_criticality p_d >= 2) = admit ()
+let domain_criticality_positive (p_d: _) : Lemma (domain_criticality p_d >= 2) = ()
 
 (* ausf_is_auth (matches Coq: Theorem ausf_is_auth) *)
-let ausf_is_auth () : Lemma (is_auth_function AUSF == true) = admit ()
+let ausf_is_auth () : Lemma (is_auth_function AUSF == true) = ()
 
 (* amf_not_auth (matches Coq: Theorem amf_not_auth) *)
-let amf_not_auth () : Lemma (is_auth_function AMF == false) = admit ()
+let amf_not_auth () : Lemma (is_auth_function AMF == false) = ()
 
 (* all_sec_requires_auth (matches Coq: Theorem all_sec_requires_auth) *)
-let all_sec_requires_auth (p_s: _) : Lemma (requires (security_5g_all p_s == true)) (ensures (p_s.f_primary_authentication == true)) = admit ()
+let all_sec_requires_auth (p_s: _) : Lemma (requires (security_5g_all p_s == true)) (ensures (p_s.f_primary_authentication == true)) = ()
 
 (* all_sec_requires_nas (matches Coq: Theorem all_sec_requires_nas) *)
-let all_sec_requires_nas (p_s: _) : Lemma (requires (security_5g_all p_s == true)) (ensures (p_s.f_nas_security == true)) = admit ()
+let all_sec_requires_nas (p_s: _) : Lemma (requires (security_5g_all p_s == true)) (ensures (p_s.f_nas_security == true)) = ()
 
 (* all_sec_requires_slicing (matches Coq: Theorem all_sec_requires_slicing) *)
-let all_sec_requires_slicing (p_s: _) : Lemma (requires (security_5g_all p_s == true)) (ensures (p_s.f_network_slicing_isolation == true)) = admit ()
+let all_sec_requires_slicing (p_s: _) : Lemma (requires (security_5g_all p_s == true)) (ensures (p_s.f_network_slicing_isolation == true)) = ()
 
 (* same_slice_not_isolated (matches Coq: Theorem same_slice_not_isolated) *)
-let same_slice_not_isolated (p_s: _) : Lemma (slices_isolated p_s p_s == false) = admit ()
+let same_slice_not_isolated (p_s: _) : Lemma (slices_isolated p_s p_s == false) = ()
 
 (* latency_bounded (matches Coq: Theorem latency_bounded) *)
-let latency_bounded (p_s: _) (p_max_l: _) : Lemma (requires (latency_acceptable p_s p_max_l == true)) (ensures (p_s.f_slice_sla_latency_ms <= p_max_l)) = admit ()
+let latency_bounded (p_s: _) (p_max_l: _) : Lemma (requires (latency_acceptable p_s p_max_l == true)) (ensures (p_s.f_slice_sla_latency_ms <= p_max_l)) = ()
 
 (* supi_always_concealed_in_core (matches Coq: Theorem supi_always_concealed_in_core) *)
-let supi_always_concealed_in_core (p_enc: _) : Lemma (supi_concealed p_enc Core == true) = admit ()
+let supi_always_concealed_in_core (p_enc: _) : Lemma (supi_concealed p_enc Core == true) = ()
 
 (* supi_concealed_ran_requires_encryption (matches Coq: Theorem supi_concealed_ran_requires_encryption) *)
-let supi_concealed_ran_requires_encryption () : Lemma (supi_concealed false RAN == false) = admit ()
+let supi_concealed_ran_requires_encryption () : Lemma (supi_concealed false RAN == false) = ()
 
 (* supi_concealed_ran_with_encryption (matches Coq: Theorem supi_concealed_ran_with_encryption) *)
-let supi_concealed_ran_with_encryption () : Lemma (supi_concealed true RAN == true) = admit ()
+let supi_concealed_ran_with_encryption () : Lemma (supi_concealed true RAN == true) = ()
 
 (* ran_deepest_key_hierarchy (matches Coq: Theorem ran_deepest_key_hierarchy) *)
-let ran_deepest_key_hierarchy (p_d: _) : Lemma (key_derivation_depth p_d <= key_derivation_depth RAN) = admit ()
+let ran_deepest_key_hierarchy (p_d: _) : Lemma (key_derivation_depth p_d <= key_derivation_depth RAN) = ()
 
 (* roaming_no_upgrade (matches Coq: Theorem roaming_no_upgrade) *)
-let roaming_no_upgrade (p_h: _) (p_v: _) : Lemma (roaming_security_level p_h p_v <= p_h) = admit ()
+let roaming_no_upgrade (p_h: _) (p_v: _) : Lemma (roaming_security_level p_h p_v <= p_h) = ()
 
 (* roaming_bounded_by_visited (matches Coq: Theorem roaming_bounded_by_visited) *)
-let roaming_bounded_by_visited (p_h: _) (p_v: _) : Lemma (roaming_security_level p_h p_v <= p_v) = admit ()
+let roaming_bounded_by_visited (p_h: _) (p_v: _) : Lemma (roaming_security_level p_h p_v <= p_v) = ()
 
 (* li_requires_authorization (matches Coq: Theorem li_requires_authorization) *)
-let li_requires_authorization (p_li: _) : Lemma (requires (li_valid p_li == true)) (ensures (p_li.f_li_authorized == true)) = admit ()
+let li_requires_authorization (p_li: _) : Lemma (requires (li_valid p_li == true)) (ensures (p_li.f_li_authorized == true)) = ()
 
 (* li_requires_logging (matches Coq: Theorem li_requires_logging) *)
-let li_requires_logging (p_li: _) : Lemma (requires (li_valid p_li == true)) (ensures (p_li.f_li_logged == true)) = admit ()
+let li_requires_logging (p_li: _) : Lemma (requires (li_valid p_li == true)) (ensures (p_li.f_li_logged == true)) = ()

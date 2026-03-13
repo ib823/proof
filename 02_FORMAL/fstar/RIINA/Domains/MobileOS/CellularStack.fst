@@ -243,73 +243,73 @@ let carrier_lock_enforced (p_cl: carrier_lock) : Tot bool =
   true
 
 (* baseband_isolation (matches Coq: Theorem baseband_isolation) *)
-let baseband_isolation (p_baseband: baseband_processor) (p_ap_mem: memory) : Lemma (requires (baseband_properly_isolated p_baseband == true /\ p_baseband.f_bb_isolated == true /\ is_ap_memory p_ap_mem == true)) (ensures (~(can_access_mem p_baseband p_ap_mem == true))) = admit ()
+let baseband_isolation (p_baseband: baseband_processor) (p_ap_mem: memory) : Lemma (requires (baseband_properly_isolated p_baseband == true /\ p_baseband.f_bb_isolated == true /\ is_ap_memory p_ap_mem == true)) (ensures (~(can_access_mem p_baseband p_ap_mem == true))) = ()
 
 (* call_handoff_is_seamless (matches Coq: Theorem call_handoff_is_seamless) *)
-let call_handoff_is_seamless (p_call: call) (p_handoff: handoff) : Lemma (requires (seamless_handoff_system p_call p_handoff == true /\ during_call p_call p_handoff == true /\ p_handoff.f_handoff_seamless == true)) (ensures (no_audio_gap p_call == true)) = admit ()
+let call_handoff_is_seamless (p_call: call) (p_handoff: handoff) : Lemma (requires (seamless_handoff_system p_call p_handoff == true /\ during_call p_call p_handoff == true /\ p_handoff.f_handoff_seamless == true)) (ensures (no_audio_gap p_call == true)) = ()
 
 (* isolation_preserves_separation (matches Coq: Theorem isolation_preserves_separation) *)
-let isolation_preserves_separation (p_bb: baseband_processor) : Lemma (requires (p_bb.f_bb_isolated == true /\ p_bb.f_bb_accessible_memory == [])) (ensures ((forall (m: _). ~(can_access_mem p_bb m == true)))) = admit ()
+let isolation_preserves_separation (p_bb: baseband_processor) : Lemma (requires (p_bb.f_bb_isolated == true /\ p_bb.f_bb_accessible_memory == [])) (ensures ((forall (m: _). ~(can_access_mem p_bb m == true)))) = ()
 
 (* baseband_isolation_contrapositive (matches Coq: Theorem baseband_isolation_contrapositive) *)
-let baseband_isolation_contrapositive (p_bb: baseband_processor) (p_m: memory) : Lemma (requires (baseband_properly_isolated p_bb == true /\ p_bb.f_bb_isolated == true /\ can_access_mem p_bb p_m == true)) (ensures (~(is_ap_memory p_m == true))) = admit ()
+let baseband_isolation_contrapositive (p_bb: baseband_processor) (p_m: memory) : Lemma (requires (baseband_properly_isolated p_bb == true /\ p_bb.f_bb_isolated == true /\ can_access_mem p_bb p_m == true)) (ensures (~(is_ap_memory p_m == true))) = ()
 
 (* imsi_protected_thm (matches Coq: Theorem imsi_protected_thm) *)
-let imsi_protected_thm (p_ip: imsi_protection) : Lemma (requires (imsi_protected p_ip == true)) (ensures (p_ip.f_imsi_encrypted == true)) = admit ()
+let imsi_protected_thm (p_ip: imsi_protection) : Lemma (requires (imsi_protected p_ip == true)) (ensures (p_ip.f_imsi_encrypted == true)) = ()
 
 (* baseband_isolated_thm (matches Coq: Theorem baseband_isolated_thm) *)
-let baseband_isolated_thm (p_bbi: baseband_isolation) : Lemma (requires (baseband_fully_isolated p_bbi == true)) (ensures (p_bbi.f_bbi_memory_isolated == true)) = admit ()
+let baseband_isolated_thm (p_bbi: baseband_isolation) : Lemma (requires (baseband_fully_isolated p_bbi == true)) (ensures (p_bbi.f_bbi_memory_isolated == true)) = ()
 
 (* sim_authentication_complete_thm (matches Coq: Theorem sim_authentication_complete_thm) *)
-let sim_authentication_complete_thm (p_sa: sim_auth) : Lemma (requires (sim_authentication_complete p_sa == true)) (ensures (p_sa.f_sim_auth_complete == true)) = admit ()
+let sim_authentication_complete_thm (p_sa: sim_auth) : Lemma (requires (sim_authentication_complete p_sa == true)) (ensures (p_sa.f_sim_auth_complete == true)) = ()
 
 (* data_roaming_permission (matches Coq: Theorem data_roaming_permission) *)
-let data_roaming_permission (p_rc: roaming_config) : Lemma (requires (data_roaming_permitted p_rc == true /\ p_rc.f_roaming_enabled == true)) (ensures (p_rc.f_roaming_user_consented == true)) = admit ()
+let data_roaming_permission (p_rc: roaming_config) : Lemma (requires (data_roaming_permitted p_rc == true /\ p_rc.f_roaming_enabled == true)) (ensures (p_rc.f_roaming_user_consented == true)) = ()
 
 (* cellular_encryption_enforced_thm (matches Coq: Theorem cellular_encryption_enforced_thm) *)
-let cellular_encryption_enforced_thm (p_ce: cellular_encryption) : Lemma (requires (cellular_encryption_enforced p_ce == true)) (ensures (p_ce.f_cell_encrypted == true)) = admit ()
+let cellular_encryption_enforced_thm (p_ce: cellular_encryption) : Lemma (requires (cellular_encryption_enforced p_ce == true)) (ensures (p_ce.f_cell_encrypted == true)) = ()
 
 (* stingray_detection_thm (matches Coq: Theorem stingray_detection_thm) *)
-let stingray_detection_thm (p_ct: cell_tower_info) : Lemma (requires (stingray_detection p_ct == true /\ p_ct.f_tower_anomaly_detected == true)) (ensures (p_ct.f_tower_stingray_suspected == true)) = admit ()
+let stingray_detection_thm (p_ct: cell_tower_info) : Lemma (requires (stingray_detection p_ct == true /\ p_ct.f_tower_anomaly_detected == true)) (ensures (p_ct.f_tower_stingray_suspected == true)) = ()
 
 (* sms_encryption_available_thm (matches Coq: Theorem sms_encryption_available_thm) *)
-let sms_encryption_available_thm (p_sms: sms_message) : Lemma (requires (sms_encryption_available p_sms == true /\ p_sms.f_sms_rcs_enabled == true)) (ensures (p_sms.f_sms_encrypted == true)) = admit ()
+let sms_encryption_available_thm (p_sms: sms_message) : Lemma (requires (sms_encryption_available p_sms == true /\ p_sms.f_sms_rcs_enabled == true)) (ensures (p_sms.f_sms_encrypted == true)) = ()
 
 (* volte_quality_guaranteed_thm (matches Coq: Theorem volte_quality_guaranteed_thm) *)
-let volte_quality_guaranteed_thm (p_vc: vo_lte_call) : Lemma (requires (volte_quality_guaranteed p_vc == true)) (ensures (p_vc.f_volte_quality_score >= p_vc.f_volte_min_quality)) = admit ()
+let volte_quality_guaranteed_thm (p_vc: vo_lte_call) : Lemma (requires (volte_quality_guaranteed p_vc == true)) (ensures (p_vc.f_volte_quality_score >= p_vc.f_volte_min_quality)) = ()
 
 (* esim_activation_secure_thm (matches Coq: Theorem esim_activation_secure_thm) *)
-let esim_activation_secure_thm (p_ea: e_sim_activation) : Lemma (requires (esim_activation_secure p_ea == true)) (ensures (p_ea.f_esim_profile_encrypted == true)) = admit ()
+let esim_activation_secure_thm (p_ea: e_sim_activation) : Lemma (requires (esim_activation_secure p_ea == true)) (ensures (p_ea.f_esim_profile_encrypted == true)) = ()
 
 (* carrier_settings_validated_thm (matches Coq: Theorem carrier_settings_validated_thm) *)
-let carrier_settings_validated_thm (p_cs: carrier_settings) : Lemma (requires (carrier_settings_validated p_cs == true)) (ensures (p_cs.f_carrier_validated == true)) = admit ()
+let carrier_settings_validated_thm (p_cs: carrier_settings) : Lemma (requires (carrier_settings_validated p_cs == true)) (ensures (p_cs.f_carrier_validated == true)) = ()
 
 (* data_usage_tracked_thm (matches Coq: Theorem data_usage_tracked_thm) *)
-let data_usage_tracked_thm (p_du: data_usage) : Lemma (requires (data_usage_tracked p_du == true)) (ensures (p_du.f_du_tracked == true)) = admit ()
+let data_usage_tracked_thm (p_du: data_usage) : Lemma (requires (data_usage_tracked p_du == true)) (ensures (p_du.f_du_tracked == true)) = ()
 
 (* cellular_failover_handled_thm (matches Coq: Theorem cellular_failover_handled_thm) *)
-let cellular_failover_handled_thm (p_cf: cellular_failover) : Lemma (requires (cellular_failover_handled p_cf == true)) (ensures (p_cf.f_fo_failover_handled == true)) = admit ()
+let cellular_failover_handled_thm (p_cf: cellular_failover) : Lemma (requires (cellular_failover_handled p_cf == true)) (ensures (p_cf.f_fo_failover_handled == true)) = ()
 
 (* signal_strength_accurate_thm (matches Coq: Theorem signal_strength_accurate_thm) *)
-let signal_strength_accurate_thm (p_sm: signal_measurement) : Lemma (requires (signal_strength_accurate p_sm == true)) (ensures (p_sm.f_sm_accurate == true)) = admit ()
+let signal_strength_accurate_thm (p_sm: signal_measurement) : Lemma (requires (signal_strength_accurate p_sm == true)) (ensures (p_sm.f_sm_accurate == true)) = ()
 
 (* emergency_call_always_available_thm (matches Coq: Theorem emergency_call_always_available_thm) *)
-let emergency_call_always_available_thm (p_ec: emergency_call) : Lemma (requires (emergency_call_always_available p_ec == true)) (ensures (p_ec.f_ec_available == true)) = admit ()
+let emergency_call_always_available_thm (p_ec: emergency_call) : Lemma (requires (emergency_call_always_available p_ec == true)) (ensures (p_ec.f_ec_available == true)) = ()
 
 (* carrier_lock_enforced_thm (matches Coq: Theorem carrier_lock_enforced_thm) *)
-let carrier_lock_enforced_thm (p_cl: carrier_lock) : Lemma (requires (carrier_lock_enforced p_cl == true /\ p_cl.f_cl_locked == true)) (ensures (p_cl.f_cl_enforced == true)) = admit ()
+let carrier_lock_enforced_thm (p_cl: carrier_lock) : Lemma (requires (carrier_lock_enforced p_cl == true /\ p_cl.f_cl_locked == true)) (ensures (p_cl.f_cl_enforced == true)) = ()
 
 (* imsi_not_exposed (matches Coq: Theorem imsi_not_exposed) *)
-let imsi_not_exposed (p_ip: imsi_protection) : Lemma (requires (imsi_protected p_ip == true)) (ensures (p_ip.f_imsi_exposed == false)) = admit ()
+let imsi_not_exposed (p_ip: imsi_protection) : Lemma (requires (imsi_protected p_ip == true)) (ensures (p_ip.f_imsi_exposed == false)) = ()
 
 (* baseband_dma_blocked (matches Coq: Theorem baseband_dma_blocked) *)
-let baseband_dma_blocked (p_bbi: baseband_isolation) : Lemma (requires (baseband_fully_isolated p_bbi == true)) (ensures (p_bbi.f_bbi_dma_blocked == true)) = admit ()
+let baseband_dma_blocked (p_bbi: baseband_isolation) : Lemma (requires (baseband_fully_isolated p_bbi == true)) (ensures (p_bbi.f_bbi_dma_blocked == true)) = ()
 
 (* sim_mutual_auth_thm (matches Coq: Theorem sim_mutual_auth_thm) *)
-let sim_mutual_auth_thm (p_sa: sim_auth) : Lemma (requires (sim_authentication_complete p_sa == true)) (ensures (p_sa.f_sim_mutual_auth == true)) = admit ()
+let sim_mutual_auth_thm (p_sa: sim_auth) : Lemma (requires (sim_authentication_complete p_sa == true)) (ensures (p_sa.f_sim_mutual_auth == true)) = ()
 
 (* emergency_call_any_network (matches Coq: Theorem emergency_call_any_network) *)
-let emergency_call_any_network (p_ec: emergency_call) : Lemma (requires (emergency_call_always_available p_ec == true)) (ensures (p_ec.f_ec_any_network == true)) = admit ()
+let emergency_call_any_network (p_ec: emergency_call) : Lemma (requires (emergency_call_always_available p_ec == true)) (ensures (p_ec.f_ec_any_network == true)) = ()
 
 (* esim_activation_code_valid_thm (matches Coq: Theorem esim_activation_code_valid_thm) *)
-let esim_activation_code_valid_thm (p_ea: e_sim_activation) : Lemma (requires (esim_activation_secure p_ea == true)) (ensures (p_ea.f_esim_activation_code_valid == true)) = admit ()
+let esim_activation_code_valid_thm (p_ea: e_sim_activation) : Lemma (requires (esim_activation_secure p_ea == true)) (ensures (p_ea.f_esim_activation_code_valid == true)) = ()

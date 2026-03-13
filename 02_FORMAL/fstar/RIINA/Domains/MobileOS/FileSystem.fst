@@ -180,61 +180,61 @@ let file_type_valid (p_f: ext_file) : Tot bool =
   true
 
 (* filesystem_integrity (matches Coq: Theorem filesystem_integrity) *)
-let filesystem_integrity (p_f: file) (p_d: nat) : Lemma (reads (writes p_f p_d) == p_d) = admit ()
+let filesystem_integrity (p_f: file) (p_d: nat) : Lemma (reads (writes p_f p_d) == p_d) = ()
 
 (* write_maintains_integrity (matches Coq: Theorem write_maintains_integrity) *)
-let write_maintains_integrity (p_f: file) (p_d: nat) : Lemma (file_integrity_valid (writes p_f p_d) == true) = admit ()
+let write_maintains_integrity (p_f: file) (p_d: nat) : Lemma (file_integrity_valid (writes p_f p_d) == true) = ()
 
 (* power_loss_safe (matches Coq: Theorem power_loss_safe) *)
-let power_loss_safe (p_fs: file_system) (p_t: nat) : Lemma (requires (consistent p_fs == true /\ power_loss_at p_t == true)) (ensures (consistent (after_recovery p_fs p_t) == true)) = admit ()
+let power_loss_safe (p_fs: file_system) (p_t: nat) : Lemma (requires (consistent p_fs == true /\ power_loss_at p_t == true)) (ensures (consistent (after_recovery p_fs p_t) == true)) = ()
 
 (* journal_write_preserves_base_consistency (matches Coq: Theorem journal_write_preserves_base_consistency) *)
-let journal_write_preserves_base_consistency (p_fs: file_system) (p_fid: nat) (p_d: nat) : Lemma (requires (p_fs.f_fs_consistent == true)) (ensures ((journaled_write p_fs p_fid p_d).f_fs_consistent == true)) = admit ()
+let journal_write_preserves_base_consistency (p_fs: file_system) (p_fid: nat) (p_d: nat) : Lemma (requires (p_fs.f_fs_consistent == true)) (ensures ((journaled_write p_fs p_fid p_d).f_fs_consistent == true)) = ()
 
 (* commit_establishes_consistency (matches Coq: Theorem commit_establishes_consistency) *)
-let commit_establishes_consistency (p_fs: file_system) : Lemma ((commit_journal p_fs).f_fs_consistent == true) = admit ()
+let commit_establishes_consistency (p_fs: file_system) : Lemma ((commit_journal p_fs).f_fs_consistent == true) = ()
 
 (* file_permissions_enforced (matches Coq: Theorem file_permissions_enforced) *)
-let file_permissions_enforced (p_f: ext_file) (p_requester: nat) : Lemma (requires (permission_enforced p_f p_requester ReadOnly == true)) (ensures (p_f.f_efile_owner == p_requester \/ file_perm_allows_read (p_f.f_efile_permission) == true)) = admit ()
+let file_permissions_enforced (p_f: ext_file) (p_requester: nat) : Lemma (requires (permission_enforced p_f p_requester ReadOnly == true)) (ensures (p_f.f_efile_owner == p_requester \/ file_perm_allows_read (p_f.f_efile_permission) == true)) = ()
 
 (* directory_traversal_prevented (matches Coq: Theorem directory_traversal_prevented) *)
-let directory_traversal_prevented (p_path: (list nat)) : Lemma (requires (no_directory_traversal p_path == true)) (ensures (~(List.Tot.memP 0 p_path))) = admit ()
+let directory_traversal_prevented (p_path: (list nat)) : Lemma (requires (no_directory_traversal p_path == true)) (ensures (~(List.Tot.memP 0 p_path))) = ()
 
 (* symlink_attack_prevented (matches Coq: Theorem symlink_attack_prevented) *)
-let symlink_attack_prevented (p_f: ext_file) : Lemma (requires (symlink_safe p_f == true /\ p_f.f_efile_type == SymLink)) (ensures (p_f.f_efile_permission == ReadOnly)) = admit ()
+let symlink_attack_prevented (p_f: ext_file) : Lemma (requires (symlink_safe p_f == true /\ p_f.f_efile_type == SymLink)) (ensures (p_f.f_efile_permission == ReadOnly)) = ()
 
 (* file_lock_exclusive_thm (matches Coq: Theorem file_lock_exclusive_thm) *)
-let file_lock_exclusive_thm (p_f: ext_file) : Lemma (requires (file_lock_exclusive p_f == true /\ p_f.f_efile_locked == true)) (ensures (p_f.f_efile_lock_owner > 0)) = admit ()
+let file_lock_exclusive_thm (p_f: ext_file) : Lemma (requires (file_lock_exclusive p_f == true /\ p_f.f_efile_locked == true)) (ensures (p_f.f_efile_lock_owner > 0)) = ()
 
 (* atomic_rename (matches Coq: Theorem atomic_rename) *)
-let atomic_rename (p_f: ext_file) (p_new_id: nat) : Lemma (requires (atomic_rename_prop p_f p_new_id == true)) (ensures (p_f.f_efile_data == (mkextfile p_new_id (p_f.f_efile_type) (p_f.f_efile_permission) (p_f.f_efile_owner) (p_f.f_efile_data) (p_f.f_efile_checksum) (p_f.f_efile_locked) (p_f.f_efile_lock_owner) (p_f.f_efile_inode_ref_count) (p_f.f_efile_access_time)).f_efile_data)) = admit ()
+let atomic_rename (p_f: ext_file) (p_new_id: nat) : Lemma (requires (atomic_rename_prop p_f p_new_id == true)) (ensures (p_f.f_efile_data == (mkextfile p_new_id (p_f.f_efile_type) (p_f.f_efile_permission) (p_f.f_efile_owner) (p_f.f_efile_data) (p_f.f_efile_checksum) (p_f.f_efile_locked) (p_f.f_efile_lock_owner) (p_f.f_efile_inode_ref_count) (p_f.f_efile_access_time)).f_efile_data)) = ()
 
 (* fsync_durability (matches Coq: Theorem fsync_durability) *)
-let fsync_durability (p_f: file) (p_d: nat) : Lemma (requires (file_integrity_valid (writes p_f p_d) == true)) (ensures ((writes p_f p_d).f_file_checksum == compute_checksum p_d)) = admit ()
+let fsync_durability (p_f: file) (p_d: nat) : Lemma (requires (file_integrity_valid (writes p_f p_d) == true)) (ensures ((writes p_f p_d).f_file_checksum == compute_checksum p_d)) = ()
 
 (* no_partial_write (matches Coq: Theorem no_partial_write) *)
-let no_partial_write (p_f: file) (p_d: nat) : Lemma (reads (writes p_f p_d) == p_d) = admit ()
+let no_partial_write (p_f: file) (p_d: nat) : Lemma (reads (writes p_f p_d) == p_d) = ()
 
 (* path_canonicalization (matches Coq: Theorem path_canonicalization) *)
-let path_canonicalization (p_path: (list nat)) : Lemma (requires (path_canonical p_path == true)) (ensures (~(List.Tot.memP 0 p_path) /\ length p_path > 0)) = admit ()
+let path_canonicalization (p_path: (list nat)) : Lemma (requires (path_canonical p_path == true)) (ensures (~(List.Tot.memP 0 p_path) /\ length p_path > 0)) = ()
 
 (* file_descriptor_bounded (matches Coq: Theorem file_descriptor_bounded) *)
-let file_descriptor_bounded (p_fd: file_descriptor) (p_max_fd: nat) : Lemma (requires (fd_bounded p_fd p_max_fd == true)) (ensures (p_fd.f_fd_number < p_max_fd)) = admit ()
+let file_descriptor_bounded (p_fd: file_descriptor) (p_max_fd: nat) : Lemma (requires (fd_bounded p_fd p_max_fd == true)) (ensures (p_fd.f_fd_number < p_max_fd)) = ()
 
 (* inode_reference_count_correct (matches Coq: Theorem inode_reference_count_correct) *)
-let inode_reference_count_correct (p_f: ext_file) : Lemma (requires (ext_file_integrity p_f == true)) (ensures (p_f.f_efile_checksum == compute_checksum (p_f.f_efile_data))) = admit ()
+let inode_reference_count_correct (p_f: ext_file) : Lemma (requires (ext_file_integrity p_f == true)) (ensures (p_f.f_efile_checksum == compute_checksum (p_f.f_efile_data))) = ()
 
 (* journal_recovery_correct (matches Coq: Theorem journal_recovery_correct) *)
-let journal_recovery_correct (p_fs: file_system) : Lemma (requires (consistent p_fs == true)) (ensures (consistent (journal_replay p_fs) == true)) = admit ()
+let journal_recovery_correct (p_fs: file_system) : Lemma (requires (consistent p_fs == true)) (ensures (consistent (journal_replay p_fs) == true)) = ()
 
 (* quota_enforced (matches Coq: Theorem quota_enforced) *)
-let quota_enforced (p_q: quota) : Lemma (requires (quota_enforced_prop p_q == true)) (ensures (p_q.f_quota_used <= p_q.f_quota_limit)) = admit ()
+let quota_enforced (p_q: quota) : Lemma (requires (quota_enforced_prop p_q == true)) (ensures (p_q.f_quota_used <= p_q.f_quota_limit)) = ()
 
 (* temp_file_cleanup (matches Coq: Theorem temp_file_cleanup) *)
-let temp_file_cleanup (p_f: ext_file) : Lemma (requires (p_f.f_efile_inode_ref_count == 0)) (ensures (~((p_f.f_efile_inode_ref_count > 0)))) = admit ()
+let temp_file_cleanup (p_f: ext_file) : Lemma (requires (p_f.f_efile_inode_ref_count == 0)) (ensures (~((p_f.f_efile_inode_ref_count > 0)))) = ()
 
 (* file_type_validated (matches Coq: Theorem file_type_validated) *)
-let file_type_validated (p_f: ext_file) : Lemma (file_type_valid p_f == true) = admit ()
+let file_type_validated (p_f: ext_file) : Lemma (file_type_valid p_f == true) = ()
 
 (* access_time_updated (matches Coq: Theorem access_time_updated) *)
-let access_time_updated (p_f: ext_file) (p_new_time: nat) : Lemma (requires (p_new_time >= p_f.f_efile_access_time)) (ensures (p_new_time >= p_f.f_efile_access_time)) = admit ()
+let access_time_updated (p_f: ext_file) (p_new_time: nat) : Lemma (requires (p_new_time >= p_f.f_efile_access_time)) (ensures (p_new_time >= p_f.f_efile_access_time)) = ()

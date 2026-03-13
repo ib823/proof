@@ -82,85 +82,85 @@ let public_hospital_nehr_mandatory (p_r: nat) : Tot bool =
   true
 
 (* hib_req_1 (matches Coq: Theorem hib_req_1) *)
-let hib_req_1 (p_r: nat) : Lemma (requires (sgh_encrypted p_r == true /\ sgh_access_controlled p_r == true /\ sgh_cybersecurity_adequate p_r == true)) (ensures (hib_cybersecurity p_r == true)) = admit ()
+let hib_req_1 (p_r: nat) : Lemma (requires (sgh_encrypted p_r == true /\ sgh_access_controlled p_r == true /\ sgh_cybersecurity_adequate p_r == true)) (ensures (hib_cybersecurity p_r == true)) = ()
 
 (* hib_req_2 (matches Coq: Theorem hib_req_2) *)
-let hib_req_2 (p_r: nat) : Lemma (requires (sgh_nehr_shared p_r == true /\ sgh_encrypted p_r == true)) (ensures (nehr_sharing_compliant p_r == true)) = admit ()
+let hib_req_2 (p_r: nat) : Lemma (requires (sgh_nehr_shared p_r == true /\ sgh_encrypted p_r == true)) (ensures (nehr_sharing_compliant p_r == true)) = ()
 
 (* hib_req_3 (matches Coq: Theorem hib_req_3) *)
-let hib_req_3 (p_r: nat) : Lemma (requires (sgh_audit_logged p_r == true)) (ensures (hib_audit_compliant p_r == true)) = admit ()
+let hib_req_3 (p_r: nat) : Lemma (requires (sgh_audit_logged p_r == true)) (ensures (hib_audit_compliant p_r == true)) = ()
 
 (* hib_req_4 (matches Coq: Theorem hib_req_4) *)
-let hib_req_4 (p_r: nat) : Lemma (requires (hib_cybersecurity p_r == true /\ hib_audit_compliant p_r == true)) (ensures (sensitive_health_protected p_r == true)) = admit ()
+let hib_req_4 (p_r: nat) : Lemma (requires (hib_cybersecurity p_r == true /\ hib_audit_compliant p_r == true)) (ensures (sensitive_health_protected p_r == true)) = ()
 
 (* hib_prohibited_insurance (matches Coq: Theorem hib_prohibited_insurance) *)
-let hib_prohibited_insurance () : Lemma (~(use_permitted InsuranceUnderwriting == true)) = admit ()
+let hib_prohibited_insurance () : Lemma (~(use_permitted InsuranceUnderwriting == true)) = ()
 
 (* hib_prohibited_employment (matches Coq: Theorem hib_prohibited_employment) *)
-let hib_prohibited_employment () : Lemma (~(use_permitted Employment == true)) = admit ()
+let hib_prohibited_employment () : Lemma (~(use_permitted Employment == true)) = ()
 
 (* hib_treatment_allowed (matches Coq: Theorem hib_treatment_allowed) *)
-let hib_treatment_allowed () : Lemma (use_permitted Treatment == true) = admit ()
+let hib_treatment_allowed () : Lemma (use_permitted Treatment == true) = ()
 
 (* hib_composition (matches Coq: Theorem hib_composition) *)
-let hib_composition (p_r: nat) : Lemma (requires (hib_cybersecurity p_r == true /\ hib_audit_compliant p_r == true /\ nehr_sharing_compliant p_r == true)) (ensures (hib_fully_compliant p_r == true)) = admit ()
+let hib_composition (p_r: nat) : Lemma (requires (hib_cybersecurity p_r == true /\ hib_audit_compliant p_r == true /\ nehr_sharing_compliant p_r == true)) (ensures (hib_fully_compliant p_r == true)) = ()
 
 (* sg_provider_coverage (matches Coq: Theorem sg_provider_coverage) *)
-let sg_provider_coverage (p_p: sg_healthcare_provider) : Lemma (List.Tot.memP p_p all_sg_providers) = admit ()
+let sg_provider_coverage (p_p: sg_healthcare_provider) : Lemma (List.Tot.memP p_p all_sg_providers) = ()
 
 (* health_category_coverage (matches Coq: Theorem health_category_coverage) *)
-let health_category_coverage (p_c: health_info_category) : Lemma (List.Tot.memP p_c all_health_categories) = admit ()
+let health_category_coverage (p_c: health_info_category) : Lemma (List.Tot.memP p_c all_health_categories) = ()
 
 (* patient_access_right (matches Coq: Theorem patient_access_right) *)
-let patient_access_right (p_req: nat) : Lemma (requires (par_responded_at p_req <= par_requested_at p_req + hib_access_deadline /\ par_data_provided p_req == true)) (ensures (patient_access_fulfilled p_req == true)) = admit ()
+let patient_access_right (p_req: nat) : Lemma (requires (par_responded_at p_req <= par_requested_at p_req + hib_access_deadline /\ par_data_provided p_req == true)) (ensures (patient_access_fulfilled p_req == true)) = ()
 
 (* patient_access_late_violation (matches Coq: Theorem patient_access_late_violation) *)
-let patient_access_late_violation (p_req: nat) : Lemma (requires (par_requested_at p_req + hib_access_deadline < par_responded_at p_req)) (ensures (~((par_responded_at p_req <= par_requested_at p_req + hib_access_deadline)))) = admit ()
+let patient_access_late_violation (p_req: nat) : Lemma (requires (par_requested_at p_req + hib_access_deadline < par_responded_at p_req)) (ensures (~((par_responded_at p_req <= par_requested_at p_req + hib_access_deadline)))) = ()
 
 (* data_correction_logged (matches Coq: Theorem data_correction_logged) *)
-let data_correction_logged (p_c: nat) : Lemma (requires (hdc_audit_logged p_c == true /\ ~(hdc_old_value_hash p_c == hdc_new_value_hash p_c))) (ensures (correction_properly_logged p_c == true)) = admit ()
+let data_correction_logged (p_c: nat) : Lemma (requires (hdc_audit_logged p_c == true /\ ~(hdc_old_value_hash p_c == hdc_new_value_hash p_c))) (ensures (correction_properly_logged p_c == true)) = ()
 
 (* cross_institutional_exchange (matches Coq: Theorem cross_institutional_exchange) *)
-let cross_institutional_exchange (p_ex: nat) : Lemma (requires (hde_patient_consent p_ex == true /\ hde_encrypted p_ex == true /\ hde_purpose_treatment p_ex == true /\ hde_audit_logged_exchange p_ex == true)) (ensures (exchange_authorized p_ex == true)) = admit ()
+let cross_institutional_exchange (p_ex: nat) : Lemma (requires (hde_patient_consent p_ex == true /\ hde_encrypted p_ex == true /\ hde_purpose_treatment p_ex == true /\ hde_audit_logged_exchange p_ex == true)) (ensures (exchange_authorized p_ex == true)) = ()
 
 (* general_health_not_sensitive (matches Coq: Theorem general_health_not_sensitive) *)
-let general_health_not_sensitive () : Lemma (~(sg_health_sensitive GeneralHealth == true)) = admit ()
+let general_health_not_sensitive () : Lemma (~(sg_health_sensitive GeneralHealth == true)) = ()
 
 (* mental_health_is_sensitive (matches Coq: Theorem mental_health_is_sensitive) *)
-let mental_health_is_sensitive () : Lemma (sg_health_sensitive MentalHealthSG == true) = admit ()
+let mental_health_is_sensitive () : Lemma (sg_health_sensitive MentalHealthSG == true) = ()
 
 (* hiv_sti_is_sensitive (matches Coq: Theorem hiv_sti_is_sensitive) *)
-let hiv_sti_is_sensitive () : Lemma (sg_health_sensitive HIV_STI_SG == true) = admit ()
+let hiv_sti_is_sensitive () : Lemma (sg_health_sensitive HIV_STI_SG == true) = ()
 
 (* genetic_info_is_sensitive (matches Coq: Theorem genetic_info_is_sensitive) *)
-let genetic_info_is_sensitive () : Lemma (sg_health_sensitive GeneticInfo == true) = admit ()
+let genetic_info_is_sensitive () : Lemma (sg_health_sensitive GeneticInfo == true) = ()
 
 (* nehr_requires_encryption (matches Coq: Theorem nehr_requires_encryption) *)
-let nehr_requires_encryption (p_r: nat) : Lemma (requires (nehr_sharing_compliant p_r == true)) (ensures (sgh_encrypted p_r == true)) = admit ()
+let nehr_requires_encryption (p_r: nat) : Lemma (requires (nehr_sharing_compliant p_r == true)) (ensures (sgh_encrypted p_r == true)) = ()
 
 (* nehr_requires_sharing (matches Coq: Theorem nehr_requires_sharing) *)
-let nehr_requires_sharing (p_r: nat) : Lemma (requires (nehr_sharing_compliant p_r == true)) (ensures (sgh_nehr_shared p_r == true)) = admit ()
+let nehr_requires_sharing (p_r: nat) : Lemma (requires (nehr_sharing_compliant p_r == true)) (ensures (sgh_nehr_shared p_r == true)) = ()
 
 (* use_type_coverage (matches Coq: Theorem use_type_coverage) *)
-let use_type_coverage (p_u: use_type) : Lemma (List.Tot.memP p_u all_use_types) = admit ()
+let use_type_coverage (p_u: use_type) : Lemma (List.Tot.memP p_u all_use_types) = ()
 
 (* research_allowed (matches Coq: Theorem research_allowed) *)
-let research_allowed () : Lemma (use_permitted Research == true) = admit ()
+let research_allowed () : Lemma (use_permitted Research == true) = ()
 
 (* public_health_allowed (matches Coq: Theorem public_health_allowed) *)
-let public_health_allowed () : Lemma (use_permitted PublicHealth == true) = admit ()
+let public_health_allowed () : Lemma (use_permitted PublicHealth == true) = ()
 
 (* hib_full_implies_cybersecurity (matches Coq: Theorem hib_full_implies_cybersecurity) *)
-let hib_full_implies_cybersecurity (p_r: nat) : Lemma (requires (hib_fully_compliant p_r == true)) (ensures (hib_cybersecurity p_r == true)) = admit ()
+let hib_full_implies_cybersecurity (p_r: nat) : Lemma (requires (hib_fully_compliant p_r == true)) (ensures (hib_cybersecurity p_r == true)) = ()
 
 (* hib_full_implies_audit (matches Coq: Theorem hib_full_implies_audit) *)
-let hib_full_implies_audit (p_r: nat) : Lemma (requires (hib_fully_compliant p_r == true)) (ensures (hib_audit_compliant p_r == true)) = admit ()
+let hib_full_implies_audit (p_r: nat) : Lemma (requires (hib_fully_compliant p_r == true)) (ensures (hib_audit_compliant p_r == true)) = ()
 
 (* hib_full_implies_nehr (matches Coq: Theorem hib_full_implies_nehr) *)
-let hib_full_implies_nehr (p_r: nat) : Lemma (requires (hib_fully_compliant p_r == true)) (ensures (nehr_sharing_compliant p_r == true)) = admit ()
+let hib_full_implies_nehr (p_r: nat) : Lemma (requires (hib_fully_compliant p_r == true)) (ensures (nehr_sharing_compliant p_r == true)) = ()
 
 (* cybersecurity_eliminates_penalty (matches Coq: Theorem cybersecurity_eliminates_penalty) *)
-let cybersecurity_eliminates_penalty (p_r: nat) : Lemma (requires (hib_cybersecurity p_r == true)) (ensures (~(hib_penalty_exposure p_r == true))) = admit ()
+let cybersecurity_eliminates_penalty (p_r: nat) : Lemma (requires (hib_cybersecurity p_r == true)) (ensures (~(hib_penalty_exposure p_r == true))) = ()
 
 (* public_hospital_must_share (matches Coq: Theorem public_hospital_must_share) *)
-let public_hospital_must_share (p_r: nat) : Lemma (requires (sgh_provider_type p_r == PublicHospital /\ sgh_nehr_shared p_r == true)) (ensures (public_hospital_nehr_mandatory p_r == true)) = admit ()
+let public_hospital_must_share (p_r: nat) : Lemma (requires (sgh_provider_type p_r == PublicHospital /\ sgh_nehr_shared p_r == true)) (ensures (public_hospital_nehr_mandatory p_r == true)) = ()

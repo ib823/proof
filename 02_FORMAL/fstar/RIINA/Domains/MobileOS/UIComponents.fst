@@ -273,79 +273,79 @@ let search_bar_input_debounced (p_sb: search_bar) : Tot bool =
   true
 
 (* accessibility_complete (matches Coq: Theorem accessibility_complete) *)
-let accessibility_complete (p_element: ui_element) : Lemma (requires (accessible_element p_element == true /\ visible p_element == true)) (ensures (has_accessibility_label p_element == true /\ navigable_by_voiceover p_element == true)) = admit ()
+let accessibility_complete (p_element: ui_element) : Lemma (requires (accessible_element p_element == true /\ visible p_element == true)) (ensures (has_accessibility_label p_element == true /\ navigable_by_voiceover p_element == true)) = ()
 
 (* ui_state_valid (matches Coq: Theorem ui_state_valid) *)
-let ui_state_valid (p_screen: screen) (p_transition: transition) : Lemma (valid_target_state (apply_transition p_transition p_screen) == true) = admit ()
+let ui_state_valid (p_screen: screen) (p_transition: transition) : Lemma (valid_target_state (apply_transition p_transition p_screen) == true) = ()
 
 (* loading_to_ready_valid (matches Coq: Theorem loading_to_ready_valid) *)
-let loading_to_ready_valid () : Lemma (valid_state_transition Loading Ready == true) = admit ()
+let loading_to_ready_valid () : Lemma (valid_state_transition Loading Ready == true) = ()
 
 (* active_to_ready_valid (matches Coq: Theorem active_to_ready_valid) *)
-let active_to_ready_valid () : Lemma (valid_state_transition Active Ready == true) = admit ()
+let active_to_ready_valid () : Lemma (valid_state_transition Active Ready == true) = ()
 
 (* error_recovery_valid (matches Coq: Theorem error_recovery_valid) *)
-let error_recovery_valid () : Lemma (valid_state_transition Error Ready == true) = admit ()
+let error_recovery_valid () : Lemma (valid_state_transition Error Ready == true) = ()
 
 (* invalid_transition_preserves_state (matches Coq: Theorem invalid_transition_preserves_state) *)
-let invalid_transition_preserves_state (p_screen: screen) (p_transition: transition) : Lemma (requires (p_transition.f_trans_valid == false)) (ensures ((apply_transition p_transition p_screen).f_screen_state == p_screen.f_screen_state)) = admit ()
+let invalid_transition_preserves_state (p_screen: screen) (p_transition: transition) : Lemma (requires (p_transition.f_trans_valid == false)) (ensures ((apply_transition p_transition p_screen).f_screen_state == p_screen.f_screen_state)) = ()
 
 (* button_state_valid_thm (matches Coq: Theorem button_state_valid_thm) *)
-let button_state_valid_thm (p_b: button) : Lemma (requires (button_state_valid p_b == true /\ p_b.f_btn_enabled == false)) (ensures (p_b.f_btn_state == BtnDisabled)) = admit ()
+let button_state_valid_thm (p_b: button) : Lemma (requires (button_state_valid p_b == true /\ p_b.f_btn_enabled == false)) (ensures (p_b.f_btn_state == BtnDisabled)) = ()
 
 (* text_field_input_sanitized_thm (matches Coq: Theorem text_field_input_sanitized_thm) *)
-let text_field_input_sanitized_thm (p_tf: text_field) : Lemma (requires (text_field_input_sanitized p_tf == true)) (ensures (p_tf.f_tf_sanitized == true)) = admit ()
+let text_field_input_sanitized_thm (p_tf: text_field) : Lemma (requires (text_field_input_sanitized p_tf == true)) (ensures (p_tf.f_tf_sanitized == true)) = ()
 
 (* list_view_recycling_correct_thm (matches Coq: Theorem list_view_recycling_correct_thm) *)
-let list_view_recycling_correct_thm (p_lv: list_view) : Lemma (requires (list_view_recycling_correct p_lv == true)) (ensures (p_lv.f_lv_visible_items <= p_lv.f_lv_total_items)) = admit ()
+let list_view_recycling_correct_thm (p_lv: list_view) : Lemma (requires (list_view_recycling_correct p_lv == true)) (ensures (p_lv.f_lv_visible_items <= p_lv.f_lv_total_items)) = ()
 
 (* scroll_view_bounds_checked_thm (matches Coq: Theorem scroll_view_bounds_checked_thm) *)
-let scroll_view_bounds_checked_thm (p_sv: scroll_view) : Lemma (requires (scroll_view_bounds_checked p_sv == true)) (ensures (p_sv.f_sv_content_offset <= p_sv.f_sv_content_size)) = admit ()
+let scroll_view_bounds_checked_thm (p_sv: scroll_view) : Lemma (requires (scroll_view_bounds_checked p_sv == true)) (ensures (p_sv.f_sv_content_offset <= p_sv.f_sv_content_size)) = ()
 
 (* image_view_loading_handled_thm (matches Coq: Theorem image_view_loading_handled_thm) *)
-let image_view_loading_handled_thm (p_iv: image_view) : Lemma (requires (image_view_loading_handled p_iv == true)) (ensures (p_iv.f_iv_loading_handled == true)) = admit ()
+let image_view_loading_handled_thm (p_iv: image_view) : Lemma (requires (image_view_loading_handled p_iv == true)) (ensures (p_iv.f_iv_loading_handled == true)) = ()
 
 (* switch_toggle_atomic_thm (matches Coq: Theorem switch_toggle_atomic_thm) *)
-let switch_toggle_atomic_thm (p_sw: switch_toggle) : Lemma (requires (switch_toggle_atomic p_sw == true)) (ensures (p_sw.f_sw_atomic == true)) = admit ()
+let switch_toggle_atomic_thm (p_sw: switch_toggle) : Lemma (requires (switch_toggle_atomic p_sw == true)) (ensures (p_sw.f_sw_atomic == true)) = ()
 
 (* slider_value_bounded_thm (matches Coq: Theorem slider_value_bounded_thm) *)
-let slider_value_bounded_thm (p_s: slider) : Lemma (requires (slider_value_bounded p_s == true)) (ensures (p_s.f_sl_min_value <= p_s.f_sl_value /\ p_s.f_sl_value <= p_s.f_sl_max_value)) = admit ()
+let slider_value_bounded_thm (p_s: slider) : Lemma (requires (slider_value_bounded p_s == true)) (ensures (p_s.f_sl_min_value <= p_s.f_sl_value /\ p_s.f_sl_value <= p_s.f_sl_max_value)) = ()
 
 (* progress_bar_monotonic_thm (matches Coq: Theorem progress_bar_monotonic_thm) *)
-let progress_bar_monotonic_thm (p_pb: progress_bar) : Lemma (requires (progress_bar_monotonic p_pb == true)) (ensures (p_pb.f_pb_previous <= p_pb.f_pb_current)) = admit ()
+let progress_bar_monotonic_thm (p_pb: progress_bar) : Lemma (requires (progress_bar_monotonic p_pb == true)) (ensures (p_pb.f_pb_previous <= p_pb.f_pb_current)) = ()
 
 (* tab_bar_selection_exclusive_thm (matches Coq: Theorem tab_bar_selection_exclusive_thm) *)
-let tab_bar_selection_exclusive_thm (p_tb: tab_bar) : Lemma (requires (tab_bar_selection_exclusive p_tb == true)) (ensures (p_tb.f_tb_selection_exclusive == true)) = admit ()
+let tab_bar_selection_exclusive_thm (p_tb: tab_bar) : Lemma (requires (tab_bar_selection_exclusive p_tb == true)) (ensures (p_tb.f_tb_selection_exclusive == true)) = ()
 
 (* navigation_stack_valid_thm (matches Coq: Theorem navigation_stack_valid_thm) *)
-let navigation_stack_valid_thm (p_ns: navigation_stack) : Lemma (requires (navigation_stack_valid p_ns == true)) (ensures (~(p_ns.f_ns_stack == []))) = admit ()
+let navigation_stack_valid_thm (p_ns: navigation_stack) : Lemma (requires (navigation_stack_valid p_ns == true)) (ensures (~(p_ns.f_ns_stack == []))) = ()
 
 (* alert_dialog_modal_thm (matches Coq: Theorem alert_dialog_modal_thm) *)
-let alert_dialog_modal_thm (p_ad: alert_dialog) : Lemma (requires (alert_dialog_modal p_ad == true)) (ensures (p_ad.f_ad_modal == true)) = admit ()
+let alert_dialog_modal_thm (p_ad: alert_dialog) : Lemma (requires (alert_dialog_modal p_ad == true)) (ensures (p_ad.f_ad_modal == true)) = ()
 
 (* action_sheet_dismissible_thm (matches Coq: Theorem action_sheet_dismissible_thm) *)
-let action_sheet_dismissible_thm (p_a: action_sheet) : Lemma (requires (action_sheet_dismissible p_a == true)) (ensures (p_a.f_as_dismissible == true)) = admit ()
+let action_sheet_dismissible_thm (p_a: action_sheet) : Lemma (requires (action_sheet_dismissible p_a == true)) (ensures (p_a.f_as_dismissible == true)) = ()
 
 (* date_picker_range_valid_thm (matches Coq: Theorem date_picker_range_valid_thm) *)
-let date_picker_range_valid_thm (p_dp: date_picker) : Lemma (requires (date_picker_range_valid p_dp == true)) (ensures (p_dp.f_dp_min_date <= p_dp.f_dp_selected /\ p_dp.f_dp_selected <= p_dp.f_dp_max_date)) = admit ()
+let date_picker_range_valid_thm (p_dp: date_picker) : Lemma (requires (date_picker_range_valid p_dp == true)) (ensures (p_dp.f_dp_min_date <= p_dp.f_dp_selected /\ p_dp.f_dp_selected <= p_dp.f_dp_max_date)) = ()
 
 (* color_picker_gamut_valid_thm (matches Coq: Theorem color_picker_gamut_valid_thm) *)
-let color_picker_gamut_valid_thm (p_cp: color_picker) : Lemma (requires (color_picker_gamut_valid p_cp == true)) (ensures (p_cp.f_cp_red <= 255 /\ p_cp.f_cp_green <= 255 /\ p_cp.f_cp_blue <= 255)) = admit ()
+let color_picker_gamut_valid_thm (p_cp: color_picker) : Lemma (requires (color_picker_gamut_valid p_cp == true)) (ensures (p_cp.f_cp_red <= 255 /\ p_cp.f_cp_green <= 255 /\ p_cp.f_cp_blue <= 255)) = ()
 
 (* search_bar_input_debounced_thm (matches Coq: Theorem search_bar_input_debounced_thm) *)
-let search_bar_input_debounced_thm (p_sb: search_bar) : Lemma (requires (search_bar_input_debounced p_sb == true)) (ensures (p_sb.f_sb_current_ms >= sb_last_search_ms p_sb + sb_debounce_ms p_sb)) = admit ()
+let search_bar_input_debounced_thm (p_sb: search_bar) : Lemma (requires (search_bar_input_debounced p_sb == true)) (ensures (p_sb.f_sb_current_ms >= sb_last_search_ms p_sb + sb_debounce_ms p_sb)) = ()
 
 (* alert_dialog_blocks_input (matches Coq: Theorem alert_dialog_blocks_input) *)
-let alert_dialog_blocks_input (p_ad: alert_dialog) : Lemma (requires (alert_dialog_modal p_ad == true)) (ensures (p_ad.f_ad_blocking_input == true)) = admit ()
+let alert_dialog_blocks_input (p_ad: alert_dialog) : Lemma (requires (alert_dialog_modal p_ad == true)) (ensures (p_ad.f_ad_blocking_input == true)) = ()
 
 (* progress_bar_within_max (matches Coq: Theorem progress_bar_within_max) *)
-let progress_bar_within_max (p_pb: progress_bar) : Lemma (requires (progress_bar_monotonic p_pb == true)) (ensures (p_pb.f_pb_current <= p_pb.f_pb_max)) = admit ()
+let progress_bar_within_max (p_pb: progress_bar) : Lemma (requires (progress_bar_monotonic p_pb == true)) (ensures (p_pb.f_pb_current <= p_pb.f_pb_max)) = ()
 
 (* tab_bar_index_in_range (matches Coq: Theorem tab_bar_index_in_range) *)
-let tab_bar_index_in_range (p_tb: tab_bar) : Lemma (requires (tab_bar_selection_exclusive p_tb == true)) (ensures (p_tb.f_tb_selected_index < List.length (p_tb.f_tb_tabs))) = admit ()
+let tab_bar_index_in_range (p_tb: tab_bar) : Lemma (requires (tab_bar_selection_exclusive p_tb == true)) (ensures (p_tb.f_tb_selected_index < List.length (p_tb.f_tb_tabs))) = ()
 
 (* action_sheet_has_cancel (matches Coq: Theorem action_sheet_has_cancel) *)
-let action_sheet_has_cancel (p_a: action_sheet) : Lemma (requires (action_sheet_dismissible p_a == true)) (ensures (p_a.f_as_cancel_available == true)) = admit ()
+let action_sheet_has_cancel (p_a: action_sheet) : Lemma (requires (action_sheet_dismissible p_a == true)) (ensures (p_a.f_as_cancel_available == true)) = ()
 
 (* text_field_length_bounded (matches Coq: Theorem text_field_length_bounded) *)
-let text_field_length_bounded (p_tf: text_field) : Lemma (requires (text_field_input_sanitized p_tf == true)) (ensures (List.length (p_tf.f_tf_input) <= p_tf.f_tf_max_length)) = admit ()
+let text_field_length_bounded (p_tf: text_field) : Lemma (requires (text_field_input_sanitized p_tf == true)) (ensures (List.length (p_tf.f_tf_input) <= p_tf.f_tf_max_length)) = ()

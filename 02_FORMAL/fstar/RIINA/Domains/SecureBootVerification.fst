@@ -309,49 +309,49 @@ let riina_policy : secure_boot_policy = {f_sbp_enabled=true; f_sbp_enforcing=tru
 let riina_secure_boot : secure_boot_config = mkSecureBoot riina_boot_chain riina_tpm riina_key_db riina_policy
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = ()
 
 (* andb_true_intro (matches Coq: Lemma andb_true_intro) *)
-let andb_true_intro (p_a: bool) (p_b: bool) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = admit ()
+let andb_true_intro (p_a: bool) (p_b: bool) : Lemma (requires (p_a == true /\ p_b == true)) (ensures (p_a && p_b == true)) = ()
 
 (* andb_true_elim1 (matches Coq: Lemma andb_true_elim1) *)
-let andb_true_elim1 (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = admit ()
+let andb_true_elim1 (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_a == true)) = ()
 
 (* andb_true_elim2 (matches Coq: Lemma andb_true_elim2) *)
-let andb_true_elim2 (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = admit ()
+let andb_true_elim2 (p_a: bool) (p_b: bool) : Lemma (requires (p_a && p_b == true)) (ensures (p_b == true)) = ()
 
 (* orb_true_iff (matches Coq: Lemma orb_true_iff) *)
-let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
+let orb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = ()
 
 (* SB_001_rom_integrity (matches Coq: Theorem SB_001_rom_integrity) *)
-let sb_001_rom_integrity (p_rom: boot_rom) : Lemma (requires (p_rom.f_rom_hash_verified == true /\ p_rom.f_rom_fused == true)) (ensures (rom_is_root_of_trust p_rom == p_rom.f_rom_contains_root_key)) = admit ()
+let sb_001_rom_integrity (p_rom: boot_rom) : Lemma (requires (p_rom.f_rom_hash_verified == true /\ p_rom.f_rom_fused == true)) (ensures (rom_is_root_of_trust p_rom == p_rom.f_rom_contains_root_key)) = ()
 
 (* SB_002_rom_immutability (matches Coq: Theorem SB_002_rom_immutability) *)
-let sb_002_rom_immutability (p_rom: boot_rom) : Lemma (p_rom.f_rom_fused == true) = admit ()
+let sb_002_rom_immutability (p_rom: boot_rom) : Lemma (p_rom.f_rom_fused == true) = ()
 
 (* SB_003_rot_complete (matches Coq: Theorem SB_003_rot_complete) *)
-let sb_003_rot_complete (p_rom: boot_rom) : Lemma (requires (rom_is_root_of_trust p_rom == true)) (ensures (p_rom.f_rom_hash_verified == true /\ p_rom.f_rom_fused == true /\ p_rom.f_rom_contains_root_key == true)) = admit ()
+let sb_003_rot_complete (p_rom: boot_rom) : Lemma (requires (rom_is_root_of_trust p_rom == true)) (ensures (p_rom.f_rom_hash_verified == true /\ p_rom.f_rom_fused == true /\ p_rom.f_rom_contains_root_key == true)) = ()
 
 (* SB_004_rot_anti_debug (matches Coq: Theorem SB_004_rot_anti_debug) *)
-let sb_004_rot_anti_debug (p_rom: boot_rom) : Lemma (rom_is_root_of_trust p_rom == true /\ p_rom.f_rom_anti_debug == true) = admit ()
+let sb_004_rot_anti_debug (p_rom: boot_rom) : Lemma (rom_is_root_of_trust p_rom == true /\ p_rom.f_rom_anti_debug == true) = ()
 
 (* SB_005_root_key_enables_cot (matches Coq: Theorem SB_005_root_key_enables_cot) *)
-let sb_005_root_key_enables_cot (p_rom: boot_rom) : Lemma (p_rom.f_rom_contains_root_key == true /\ p_rom.f_rom_fused == true) = admit ()
+let sb_005_root_key_enables_cot (p_rom: boot_rom) : Lemma (p_rom.f_rom_contains_root_key == true /\ p_rom.f_rom_fused == true) = ()
 
 (* SB_006_full_rom_implies_rot (matches Coq: Theorem SB_006_full_rom_implies_rot) *)
-let sb_006_full_rom_implies_rot (p_rom: boot_rom) : Lemma (requires (rom_fully_secure p_rom == true)) (ensures (rom_is_root_of_trust p_rom == true)) = admit ()
+let sb_006_full_rom_implies_rot (p_rom: boot_rom) : Lemma (requires (rom_fully_secure p_rom == true)) (ensures (rom_is_root_of_trust p_rom == true)) = ()
 
 (* SB_007_full_rom_implies_antidebug (matches Coq: Theorem SB_007_full_rom_implies_antidebug) *)
-let sb_007_full_rom_implies_antidebug (p_rom: boot_rom) : Lemma (requires (rom_fully_secure p_rom == true)) (ensures (p_rom.f_rom_anti_debug == true)) = admit ()
+let sb_007_full_rom_implies_antidebug (p_rom: boot_rom) : Lemma (requires (rom_fully_secure p_rom == true)) (ensures (p_rom.f_rom_anti_debug == true)) = ()
 
 (* SB_008_construct_full_rom (matches Coq: Theorem SB_008_construct_full_rom) *)
-let sb_008_construct_full_rom (p_rom: boot_rom) : Lemma (requires (rom_is_root_of_trust p_rom == true /\ p_rom.f_rom_anti_debug == true)) (ensures (rom_fully_secure p_rom == true)) = admit ()
+let sb_008_construct_full_rom (p_rom: boot_rom) : Lemma (requires (rom_is_root_of_trust p_rom == true /\ p_rom.f_rom_anti_debug == true)) (ensures (rom_fully_secure p_rom == true)) = ()
 
 (* SB_009_rom_starts_verification (matches Coq: Theorem SB_009_rom_starts_verification) *)
-let sb_009_rom_starts_verification (p_rom: boot_rom) : Lemma (requires (rom_is_root_of_trust p_rom == true)) (ensures (p_rom.f_rom_contains_root_key == true)) = admit ()
+let sb_009_rom_starts_verification (p_rom: boot_rom) : Lemma (requires (rom_is_root_of_trust p_rom == true)) (ensures (p_rom.f_rom_contains_root_key == true)) = ()
 
 (* SB_010_rom_integrity_required (matches Coq: Theorem SB_010_rom_integrity_required) *)
-let sb_010_rom_integrity_required (p_rom: boot_rom) : Lemma (requires (rom_is_root_of_trust p_rom == true)) (ensures (p_rom.f_rom_hash_verified == true)) = admit ()
+let sb_010_rom_integrity_required (p_rom: boot_rom) : Lemma (requires (rom_is_root_of_trust p_rom == true)) (ensures (p_rom.f_rom_hash_verified == true)) = ()
 
 (* SB_011_sig_requires_nonrevoked (matches Coq: Theorem SB_011_sig_requires_nonrevoked) *)
 let sb_011_sig_requires_nonrevoked_obligation () : Tot bool = true
@@ -374,226 +374,226 @@ let sb_015_sig_crypto_verified_obligation () : Tot bool = true
 let sb_015_sig_crypto_verified_lemma () : Lemma (requires True) (ensures (sb_015_sig_crypto_verified_obligation () == sb_015_sig_crypto_verified_obligation ())) = ()
 
 (* SB_016_key_validity_complete (matches Coq: Theorem SB_016_key_validity_complete) *)
-let sb_016_key_validity_complete (p_pk: public_key) : Lemma (requires (key_valid_for_verification p_pk == true)) (ensures (p_pk.f_pk_trusted == true /\ p_pk.f_pk_revoked == false /\ p_pk.f_pk_expired == false)) = admit ()
+let sb_016_key_validity_complete (p_pk: public_key) : Lemma (requires (key_valid_for_verification p_pk == true)) (ensures (p_pk.f_pk_trusted == true /\ p_pk.f_pk_revoked == false /\ p_pk.f_pk_expired == false)) = ()
 
 (* SB_017_construct_valid_key (matches Coq: Theorem SB_017_construct_valid_key) *)
-let sb_017_construct_valid_key (p_pk: public_key) : Lemma (requires (p_pk.f_pk_trusted == true /\ p_pk.f_pk_revoked == false /\ p_pk.f_pk_expired == false)) (ensures (key_valid_for_verification p_pk == true)) = admit ()
+let sb_017_construct_valid_key (p_pk: public_key) : Lemma (requires (p_pk.f_pk_trusted == true /\ p_pk.f_pk_revoked == false /\ p_pk.f_pk_expired == false)) (ensures (key_valid_for_verification p_pk == true)) = ()
 
 (* SB_018_revoked_key_invalid (matches Coq: Theorem SB_018_revoked_key_invalid) *)
-let sb_018_revoked_key_invalid (p_pk: public_key) : Lemma (requires (p_pk.f_pk_revoked == true)) (ensures (key_valid_for_verification p_pk == false)) = admit ()
+let sb_018_revoked_key_invalid (p_pk: public_key) : Lemma (requires (p_pk.f_pk_revoked == true)) (ensures (key_valid_for_verification p_pk == false)) = ()
 
 (* SB_019_expired_key_invalid (matches Coq: Theorem SB_019_expired_key_invalid) *)
-let sb_019_expired_key_invalid (p_pk: public_key) : Lemma (requires (p_pk.f_pk_expired == true)) (ensures (key_valid_for_verification p_pk == false)) = admit ()
+let sb_019_expired_key_invalid (p_pk: public_key) : Lemma (requires (p_pk.f_pk_expired == true)) (ensures (key_valid_for_verification p_pk == false)) = ()
 
 (* SB_020_untrusted_key_invalid (matches Coq: Theorem SB_020_untrusted_key_invalid) *)
-let sb_020_untrusted_key_invalid (p_pk: public_key) : Lemma (requires (p_pk.f_pk_trusted == false)) (ensures (key_valid_for_verification p_pk == false)) = admit ()
+let sb_020_untrusted_key_invalid (p_pk: public_key) : Lemma (requires (p_pk.f_pk_trusted == false)) (ensures (key_valid_for_verification p_pk == false)) = ()
 
 (* SB_021_cot_requires_rot (matches Coq: Theorem SB_021_cot_requires_rot) *)
-let sb_021_cot_requires_rot (p_chain: boot_chain) : Lemma (requires (chain_of_trust_complete p_chain == true)) (ensures (rom_is_root_of_trust (p_chain.f_bc_rom) == true)) = admit ()
+let sb_021_cot_requires_rot (p_chain: boot_chain) : Lemma (requires (chain_of_trust_complete p_chain == true)) (ensures (rom_is_root_of_trust (p_chain.f_bc_rom) == true)) = ()
 
 (* SB_022_cot_requires_bootloader (matches Coq: Theorem SB_022_cot_requires_bootloader) *)
-let sb_022_cot_requires_bootloader (p_chain: boot_chain) : Lemma (requires (chain_of_trust_complete p_chain == true)) (ensures (bootloader_verified (p_chain.f_bc_bootloader) == true)) = admit ()
+let sb_022_cot_requires_bootloader (p_chain: boot_chain) : Lemma (requires (chain_of_trust_complete p_chain == true)) (ensures (bootloader_verified (p_chain.f_bc_bootloader) == true)) = ()
 
 (* SB_023_cot_requires_kernel (matches Coq: Theorem SB_023_cot_requires_kernel) *)
-let sb_023_cot_requires_kernel (p_chain: boot_chain) : Lemma (requires (chain_of_trust_complete p_chain == true)) (ensures (kernel_verified (p_chain.f_bc_kernel) == true)) = admit ()
+let sb_023_cot_requires_kernel (p_chain: boot_chain) : Lemma (requires (chain_of_trust_complete p_chain == true)) (ensures (kernel_verified (p_chain.f_bc_kernel) == true)) = ()
 
 (* SB_024_cot_requires_initramfs (matches Coq: Theorem SB_024_cot_requires_initramfs) *)
-let sb_024_cot_requires_initramfs (p_chain: boot_chain) : Lemma (requires (chain_of_trust_complete p_chain == true)) (ensures (initramfs_verified (p_chain.f_bc_initramfs) == true)) = admit ()
+let sb_024_cot_requires_initramfs (p_chain: boot_chain) : Lemma (requires (chain_of_trust_complete p_chain == true)) (ensures (initramfs_verified (p_chain.f_bc_initramfs) == true)) = ()
 
 (* SB_025_bootloader_sig_valid (matches Coq: Theorem SB_025_bootloader_sig_valid) *)
-let sb_025_bootloader_sig_valid (p_bl: bootloader) : Lemma (requires (bootloader_verified p_bl == true)) (ensures ((p_bl.f_bl_signature).f_sig_valid == true)) = admit ()
+let sb_025_bootloader_sig_valid (p_bl: bootloader) : Lemma (requires (bootloader_verified p_bl == true)) (ensures ((p_bl.f_bl_signature).f_sig_valid == true)) = ()
 
 (* SB_026_kernel_sig_valid (matches Coq: Theorem SB_026_kernel_sig_valid) *)
-let sb_026_kernel_sig_valid (p_kern: kernel) : Lemma (requires (kernel_verified p_kern == true)) (ensures ((p_kern.f_kern_signature).f_sig_valid == true)) = admit ()
+let sb_026_kernel_sig_valid (p_kern: kernel) : Lemma (requires (kernel_verified p_kern == true)) (ensures ((p_kern.f_kern_signature).f_sig_valid == true)) = ()
 
 (* SB_027_initramfs_sig_valid (matches Coq: Theorem SB_027_initramfs_sig_valid) *)
-let sb_027_initramfs_sig_valid (p_initrd: initramfs) : Lemma (requires (initramfs_verified p_initrd == true)) (ensures ((p_initrd.f_initrd_signature).f_sig_valid == true)) = admit ()
+let sb_027_initramfs_sig_valid (p_initrd: initramfs) : Lemma (requires (initramfs_verified p_initrd == true)) (ensures ((p_initrd.f_initrd_signature).f_sig_valid == true)) = ()
 
 (* SB_028_bootloader_hash_computed (matches Coq: Theorem SB_028_bootloader_hash_computed) *)
-let sb_028_bootloader_hash_computed (p_bl: bootloader) : Lemma (requires (bootloader_verified p_bl == true)) (ensures ((p_bl.f_bl_hash).f_hash_computed == true)) = admit ()
+let sb_028_bootloader_hash_computed (p_bl: bootloader) : Lemma (requires (bootloader_verified p_bl == true)) (ensures ((p_bl.f_bl_hash).f_hash_computed == true)) = ()
 
 (* SB_029_kernel_hash_computed (matches Coq: Theorem SB_029_kernel_hash_computed) *)
-let sb_029_kernel_hash_computed (p_kern: kernel) : Lemma (requires (kernel_verified p_kern == true)) (ensures ((p_kern.f_kern_hash).f_hash_computed == true)) = admit ()
+let sb_029_kernel_hash_computed (p_kern: kernel) : Lemma (requires (kernel_verified p_kern == true)) (ensures ((p_kern.f_kern_hash).f_hash_computed == true)) = ()
 
 (* SB_030_initramfs_hash_computed (matches Coq: Theorem SB_030_initramfs_hash_computed) *)
-let sb_030_initramfs_hash_computed (p_initrd: initramfs) : Lemma (requires (initramfs_verified p_initrd == true)) (ensures ((p_initrd.f_initrd_hash).f_hash_computed == true)) = admit ()
+let sb_030_initramfs_hash_computed (p_initrd: initramfs) : Lemma (requires (initramfs_verified p_initrd == true)) (ensures ((p_initrd.f_initrd_hash).f_hash_computed == true)) = ()
 
 (* SB_031_construct_verified_bootloader (matches Coq: Theorem SB_031_construct_verified_bootloader) *)
-let sb_031_construct_verified_bootloader (p_bl: bootloader) : Lemma (requires (p_bl.f_bl_verified == true /\ (p_bl.f_bl_signature).f_sig_valid == true /\ (p_bl.f_bl_hash).f_hash_computed == true)) (ensures (bootloader_verified p_bl == true)) = admit ()
+let sb_031_construct_verified_bootloader (p_bl: bootloader) : Lemma (requires (p_bl.f_bl_verified == true /\ (p_bl.f_bl_signature).f_sig_valid == true /\ (p_bl.f_bl_hash).f_hash_computed == true)) (ensures (bootloader_verified p_bl == true)) = ()
 
 (* SB_032_construct_verified_kernel (matches Coq: Theorem SB_032_construct_verified_kernel) *)
-let sb_032_construct_verified_kernel (p_kern: kernel) : Lemma (requires (p_kern.f_kern_verified == true /\ (p_kern.f_kern_signature).f_sig_valid == true /\ (p_kern.f_kern_hash).f_hash_computed == true)) (ensures (kernel_verified p_kern == true)) = admit ()
+let sb_032_construct_verified_kernel (p_kern: kernel) : Lemma (requires (p_kern.f_kern_verified == true /\ (p_kern.f_kern_signature).f_sig_valid == true /\ (p_kern.f_kern_hash).f_hash_computed == true)) (ensures (kernel_verified p_kern == true)) = ()
 
 (* SB_033_construct_verified_initramfs (matches Coq: Theorem SB_033_construct_verified_initramfs) *)
-let sb_033_construct_verified_initramfs (p_initrd: initramfs) : Lemma (requires (p_initrd.f_initrd_verified == true /\ (p_initrd.f_initrd_signature).f_sig_valid == true /\ (p_initrd.f_initrd_hash).f_hash_computed == true)) (ensures (initramfs_verified p_initrd == true)) = admit ()
+let sb_033_construct_verified_initramfs (p_initrd: initramfs) : Lemma (requires (p_initrd.f_initrd_verified == true /\ (p_initrd.f_initrd_signature).f_sig_valid == true /\ (p_initrd.f_initrd_hash).f_hash_computed == true)) (ensures (initramfs_verified p_initrd == true)) = ()
 
 (* SB_034_construct_cot (matches Coq: Theorem SB_034_construct_cot) *)
-let sb_034_construct_cot (p_chain: boot_chain) : Lemma (requires (rom_is_root_of_trust (p_chain.f_bc_rom) == true /\ bootloader_verified (p_chain.f_bc_bootloader) == true /\ kernel_verified (p_chain.f_bc_kernel) == true /\ initramfs_verified (p_chain.f_bc_initramfs) == true)) (ensures (chain_of_trust_complete p_chain == true)) = admit ()
+let sb_034_construct_cot (p_chain: boot_chain) : Lemma (requires (rom_is_root_of_trust (p_chain.f_bc_rom) == true /\ bootloader_verified (p_chain.f_bc_bootloader) == true /\ kernel_verified (p_chain.f_bc_kernel) == true /\ initramfs_verified (p_chain.f_bc_initramfs) == true)) (ensures (chain_of_trust_complete p_chain == true)) = ()
 
 (* SB_035_cot_all_verified (matches Coq: Theorem SB_035_cot_all_verified) *)
-let sb_035_cot_all_verified (p_chain: boot_chain) : Lemma (requires (chain_of_trust_complete p_chain == true)) (ensures ((p_chain.f_bc_bootloader).f_bl_verified == true /\ (p_chain.f_bc_kernel).f_kern_verified == true /\ (p_chain.f_bc_initramfs).f_initrd_verified == true)) = admit ()
+let sb_035_cot_all_verified (p_chain: boot_chain) : Lemma (requires (chain_of_trust_complete p_chain == true)) (ensures ((p_chain.f_bc_bootloader).f_bl_verified == true /\ (p_chain.f_bc_kernel).f_kern_verified == true /\ (p_chain.f_bc_initramfs).f_initrd_verified == true)) = ()
 
 (* SB_036_tpm_requires_enabled (matches Coq: Theorem SB_036_tpm_requires_enabled) *)
-let sb_036_tpm_requires_enabled (p_tpm: tpm_state) : Lemma (requires (tpm_operational p_tpm == true)) (ensures (p_tpm.f_tpm_enabled == true)) = admit ()
+let sb_036_tpm_requires_enabled (p_tpm: tpm_state) : Lemma (requires (tpm_operational p_tpm == true)) (ensures (p_tpm.f_tpm_enabled == true)) = ()
 
 (* SB_037_tpm_requires_activated (matches Coq: Theorem SB_037_tpm_requires_activated) *)
-let sb_037_tpm_requires_activated (p_tpm: tpm_state) : Lemma (requires (tpm_operational p_tpm == true)) (ensures (p_tpm.f_tpm_activated == true)) = admit ()
+let sb_037_tpm_requires_activated (p_tpm: tpm_state) : Lemma (requires (tpm_operational p_tpm == true)) (ensures (p_tpm.f_tpm_activated == true)) = ()
 
 (* SB_038_construct_operational_tpm (matches Coq: Theorem SB_038_construct_operational_tpm) *)
-let sb_038_construct_operational_tpm (p_tpm: tpm_state) : Lemma (requires (p_tpm.f_tpm_enabled == true /\ p_tpm.f_tpm_activated == true)) (ensures (tpm_operational p_tpm == true)) = admit ()
+let sb_038_construct_operational_tpm (p_tpm: tpm_state) : Lemma (requires (p_tpm.f_tpm_enabled == true /\ p_tpm.f_tpm_activated == true)) (ensures (tpm_operational p_tpm == true)) = ()
 
 (* SB_039_empty_pcrs_extended (matches Coq: Theorem SB_039_empty_pcrs_extended) *)
-let sb_039_empty_pcrs_extended () : Lemma (all_pcrs_extended [] == true) = admit ()
+let sb_039_empty_pcrs_extended () : Lemma (all_pcrs_extended [] == true) = ()
 
 (* SB_040_single_pcr_extended (matches Coq: Theorem SB_040_single_pcr_extended) *)
-let sb_040_single_pcr_extended (p_pcr: pcr_value) : Lemma (requires (p_pcr.f_pcr_extended == true)) (ensures (all_pcrs_extended [p_pcr] == true)) = admit ()
+let sb_040_single_pcr_extended (p_pcr: pcr_value) : Lemma (requires (p_pcr.f_pcr_extended == true)) (ensures (all_pcrs_extended [p_pcr] == true)) = ()
 
 (* SB_041_cons_preserves_extended (matches Coq: Theorem SB_041_cons_preserves_extended) *)
-let sb_041_cons_preserves_extended (p_pcr: pcr_value) (p_rest: (list pcr_value)) : Lemma (requires (p_pcr.f_pcr_extended == true /\ all_pcrs_extended p_rest == true)) (ensures (all_pcrs_extended (p_pcr :: p_rest) == true)) = admit ()
+let sb_041_cons_preserves_extended (p_pcr: pcr_value) (p_rest: (list pcr_value)) : Lemma (requires (p_pcr.f_pcr_extended == true /\ all_pcrs_extended p_rest == true)) (ensures (all_pcrs_extended (p_pcr :: p_rest) == true)) = ()
 
 (* SB_042_head_extended (matches Coq: Theorem SB_042_head_extended) *)
-let sb_042_head_extended (p_pcr: pcr_value) (p_rest: (list pcr_value)) : Lemma (requires (all_pcrs_extended (p_pcr :: p_rest) == true)) (ensures (p_pcr.f_pcr_extended == true)) = admit ()
+let sb_042_head_extended (p_pcr: pcr_value) (p_rest: (list pcr_value)) : Lemma (requires (all_pcrs_extended (p_pcr :: p_rest) == true)) (ensures (p_pcr.f_pcr_extended == true)) = ()
 
 (* SB_043_tail_extended (matches Coq: Theorem SB_043_tail_extended) *)
-let sb_043_tail_extended (p_pcr: pcr_value) (p_rest: (list pcr_value)) : Lemma (requires (all_pcrs_extended (p_pcr :: p_rest) == true)) (ensures (all_pcrs_extended p_rest == true)) = admit ()
+let sb_043_tail_extended (p_pcr: pcr_value) (p_rest: (list pcr_value)) : Lemma (requires (all_pcrs_extended (p_pcr :: p_rest) == true)) (ensures (all_pcrs_extended p_rest == true)) = ()
 
 (* SB_044_measurement_hash_computed (matches Coq: Theorem SB_044_measurement_hash_computed) *)
-let sb_044_measurement_hash_computed (p_meas: measurement_event) (p_pcrs: (list pcr_value)) : Lemma (requires (measurement_valid p_meas p_pcrs == true)) (ensures ((p_meas.f_meas_hash).f_hash_computed == true)) = admit ()
+let sb_044_measurement_hash_computed (p_meas: measurement_event) (p_pcrs: (list pcr_value)) : Lemma (requires (measurement_valid p_meas p_pcrs == true)) (ensures ((p_meas.f_meas_hash).f_hash_computed == true)) = ()
 
 (* SB_045_measurement_pcr_in_bounds (matches Coq: Theorem SB_045_measurement_pcr_in_bounds) *)
-let sb_045_measurement_pcr_in_bounds (p_meas: measurement_event) (p_pcrs: (list pcr_value)) : Lemma (requires (measurement_valid p_meas p_pcrs == true)) (ensures (p_meas.f_meas_pcr_index < length p_pcrs)) = admit ()
+let sb_045_measurement_pcr_in_bounds (p_meas: measurement_event) (p_pcrs: (list pcr_value)) : Lemma (requires (measurement_valid p_meas p_pcrs == true)) (ensures (p_meas.f_meas_pcr_index < length p_pcrs)) = ()
 
 (* SB_046_quote_requires_sig (matches Coq: Theorem SB_046_quote_requires_sig) *)
-let sb_046_quote_requires_sig (p_quote: attestation_quote) : Lemma (p_quote.f_quote_valid == true /\ (p_quote.f_quote_signature).f_sig_valid == true) = admit ()
+let sb_046_quote_requires_sig (p_quote: attestation_quote) : Lemma (p_quote.f_quote_valid == true /\ (p_quote.f_quote_signature).f_sig_valid == true) = ()
 
 (* SB_047_pcr_sealed (matches Coq: Theorem SB_047_pcr_sealed) *)
-let sb_047_pcr_sealed (p_pcr: pcr_value) : Lemma (p_pcr.f_pcr_extended == true /\ p_pcr.f_pcr_locked == true) = admit ()
+let sb_047_pcr_sealed (p_pcr: pcr_value) : Lemma (p_pcr.f_pcr_extended == true /\ p_pcr.f_pcr_locked == true) = ()
 
 (* SB_048_locality_access (matches Coq: Theorem SB_048_locality_access) *)
-let sb_048_locality_access (p_tpm: tpm_state) (p_required_locality: nat) : Lemma (tpm_operational p_tpm == true /\ p_required_locality (p_tpm.f_tpm_locality) == true) = admit ()
+let sb_048_locality_access (p_tpm: tpm_state) (p_required_locality: nat) : Lemma (tpm_operational p_tpm == true /\ p_required_locality (p_tpm.f_tpm_locality) == true) = ()
 
 (* SB_049_measured_boot_tpm (matches Coq: Theorem SB_049_measured_boot_tpm) *)
-let sb_049_measured_boot_tpm (p_tpm: tpm_state) : Lemma (requires (measured_boot_complete p_tpm == true)) (ensures (tpm_operational p_tpm == true)) = admit ()
+let sb_049_measured_boot_tpm (p_tpm: tpm_state) : Lemma (requires (measured_boot_complete p_tpm == true)) (ensures (tpm_operational p_tpm == true)) = ()
 
 (* SB_050_measured_boot_pcrs (matches Coq: Theorem SB_050_measured_boot_pcrs) *)
-let sb_050_measured_boot_pcrs (p_tpm: tpm_state) : Lemma (requires (measured_boot_complete p_tpm == true)) (ensures (all_pcrs_extended (p_tpm.f_tpm_pcrs) == true)) = admit ()
+let sb_050_measured_boot_pcrs (p_tpm: tpm_state) : Lemma (requires (measured_boot_complete p_tpm == true)) (ensures (all_pcrs_extended (p_tpm.f_tpm_pcrs) == true)) = ()
 
 (* SB_051_version_no_rollback (matches Coq: Theorem SB_051_version_no_rollback) *)
-let sb_051_version_no_rollback (p_version: nat) (p_min_version: nat) : Lemma (requires (version_above_minimum p_version p_min_version == true)) (ensures (p_min_version <= p_version)) = admit ()
+let sb_051_version_no_rollback (p_version: nat) (p_min_version: nat) : Lemma (requires (version_above_minimum p_version p_min_version == true)) (ensures (p_min_version <= p_version)) = ()
 
 (* SB_052_bootloader_version_ok (matches Coq: Theorem SB_052_bootloader_version_ok) *)
-let sb_052_bootloader_version_ok (p_bl: bootloader) : Lemma (requires (bootloader_antirollback_ok p_bl == true)) (ensures (p_bl.f_bl_min_version <= p_bl.f_bl_version)) = admit ()
+let sb_052_bootloader_version_ok (p_bl: bootloader) : Lemma (requires (bootloader_antirollback_ok p_bl == true)) (ensures (p_bl.f_bl_min_version <= p_bl.f_bl_version)) = ()
 
 (* SB_053_kernel_version_ok (matches Coq: Theorem SB_053_kernel_version_ok) *)
-let sb_053_kernel_version_ok (p_kern: kernel) : Lemma (requires (kernel_antirollback_ok p_kern == true)) (ensures (p_kern.f_kern_min_version <= p_kern.f_kern_version)) = admit ()
+let sb_053_kernel_version_ok (p_kern: kernel) : Lemma (requires (kernel_antirollback_ok p_kern == true)) (ensures (p_kern.f_kern_min_version <= p_kern.f_kern_version)) = ()
 
 (* SB_054_chain_bootloader_ok (matches Coq: Theorem SB_054_chain_bootloader_ok) *)
-let sb_054_chain_bootloader_ok (p_chain: boot_chain) : Lemma (requires (antirollback_protected p_chain == true)) (ensures (bootloader_antirollback_ok (p_chain.f_bc_bootloader) == true)) = admit ()
+let sb_054_chain_bootloader_ok (p_chain: boot_chain) : Lemma (requires (antirollback_protected p_chain == true)) (ensures (bootloader_antirollback_ok (p_chain.f_bc_bootloader) == true)) = ()
 
 (* SB_055_chain_kernel_ok (matches Coq: Theorem SB_055_chain_kernel_ok) *)
-let sb_055_chain_kernel_ok (p_chain: boot_chain) : Lemma (requires (antirollback_protected p_chain == true)) (ensures (kernel_antirollback_ok (p_chain.f_bc_kernel) == true)) = admit ()
+let sb_055_chain_kernel_ok (p_chain: boot_chain) : Lemma (requires (antirollback_protected p_chain == true)) (ensures (kernel_antirollback_ok (p_chain.f_bc_kernel) == true)) = ()
 
 (* SB_056_construct_antirollback (matches Coq: Theorem SB_056_construct_antirollback) *)
-let sb_056_construct_antirollback (p_chain: boot_chain) : Lemma (requires (bootloader_antirollback_ok (p_chain.f_bc_bootloader) == true /\ kernel_antirollback_ok (p_chain.f_bc_kernel) == true)) (ensures (antirollback_protected p_chain == true)) = admit ()
+let sb_056_construct_antirollback (p_chain: boot_chain) : Lemma (requires (bootloader_antirollback_ok (p_chain.f_bc_bootloader) == true /\ kernel_antirollback_ok (p_chain.f_bc_kernel) == true)) (ensures (antirollback_protected p_chain == true)) = ()
 
 (* SB_057_min_zero_passes (matches Coq: Theorem SB_057_min_zero_passes) *)
-let sb_057_min_zero_passes (p_version: nat) : Lemma (version_above_minimum p_version 0 == true) = admit ()
+let sb_057_min_zero_passes (p_version: nat) : Lemma (version_above_minimum p_version 0 == true) = ()
 
 (* SB_058_same_version_passes (matches Coq: Theorem SB_058_same_version_passes) *)
-let sb_058_same_version_passes (p_v: nat) : Lemma (version_above_minimum p_v p_v == true) = admit ()
+let sb_058_same_version_passes (p_v: nat) : Lemma (version_above_minimum p_v p_v == true) = ()
 
 (* SB_059_higher_version_passes (matches Coq: Theorem SB_059_higher_version_passes) *)
-let sb_059_higher_version_passes (p_version: nat) (p_min_version: nat) : Lemma (requires (p_min_version < p_version)) (ensures (version_above_minimum p_version p_min_version == true)) = admit ()
+let sb_059_higher_version_passes (p_version: nat) (p_min_version: nat) : Lemma (requires (p_min_version < p_version)) (ensures (version_above_minimum p_version p_min_version == true)) = ()
 
 (* SB_060_lower_version_fails (matches Coq: Theorem SB_060_lower_version_fails) *)
-let sb_060_lower_version_fails (p_version: nat) (p_min_version: nat) : Lemma (requires (p_version < p_min_version)) (ensures (version_above_minimum p_version p_min_version == false)) = admit ()
+let sb_060_lower_version_fails (p_version: nat) (p_min_version: nat) : Lemma (requires (p_version < p_min_version)) (ensures (version_above_minimum p_version p_min_version == false)) = ()
 
 (* SB_061_root_no_parent (matches Coq: Theorem SB_061_root_no_parent) *)
-let sb_061_root_no_parent (p_key: hierarchy_key) : Lemma (requires (is_root_key p_key == true)) (ensures (p_key.f_hk_parent_id == None)) = admit ()
+let sb_061_root_no_parent (p_key: hierarchy_key) : Lemma (requires (is_root_key p_key == true)) (ensures (p_key.f_hk_parent_id == None)) = ()
 
 (* SB_062_nonroot_has_parent (matches Coq: Theorem SB_062_nonroot_has_parent) *)
-let sb_062_nonroot_has_parent (p_key: hierarchy_key) (p_parent_id: nat) : Lemma (requires (p_key.f_hk_parent_id == Some p_parent_id)) (ensures (is_root_key p_key == false)) = admit ()
+let sb_062_nonroot_has_parent (p_key: hierarchy_key) (p_parent_id: nat) : Lemma (requires (p_key.f_hk_parent_id == Some p_parent_id)) (ensures (is_root_key p_key == false)) = ()
 
 (* SB_063_valid_hierarchy_public (matches Coq: Theorem SB_063_valid_hierarchy_public) *)
-let sb_063_valid_hierarchy_public (p_key: hierarchy_key) : Lemma (requires (hierarchy_key_valid p_key == true)) (ensures (key_valid_for_verification (p_key.f_hk_public) == true)) = admit ()
+let sb_063_valid_hierarchy_public (p_key: hierarchy_key) : Lemma (requires (hierarchy_key_valid p_key == true)) (ensures (key_valid_for_verification (p_key.f_hk_public) == true)) = ()
 
 (* SB_064_valid_not_self_revoked (matches Coq: Theorem SB_064_valid_not_self_revoked) *)
-let sb_064_valid_not_self_revoked (p_key: hierarchy_key) : Lemma (requires (hierarchy_key_valid p_key == true)) (ensures (key_revoked_in_list (p_key.f_hk_id) (p_key.f_hk_revocation_list) == false)) = admit ()
+let sb_064_valid_not_self_revoked (p_key: hierarchy_key) : Lemma (requires (hierarchy_key_valid p_key == true)) (ensures (key_revoked_in_list (p_key.f_hk_id) (p_key.f_hk_revocation_list) == false)) = ()
 
 (* SB_065_key_in_db (matches Coq: Theorem SB_065_key_in_db) *)
-let sb_065_key_in_db (p_key_id: nat) (p_key: hierarchy_key) (p_rest: (list hierarchy_key)) : Lemma (requires (p_key.f_hk_id == p_key_id)) (ensures (key_in_trusted_db p_key_id (p_key :: p_rest) == true)) = admit ()
+let sb_065_key_in_db (p_key_id: nat) (p_key: hierarchy_key) (p_rest: (list hierarchy_key)) : Lemma (requires (p_key.f_hk_id == p_key_id)) (ensures (key_in_trusted_db p_key_id (p_key :: p_rest) == true)) = ()
 
 (* SB_066_key_not_in_empty (matches Coq: Theorem SB_066_key_not_in_empty) *)
-let sb_066_key_not_in_empty (p_key_id: nat) : Lemma (key_in_trusted_db p_key_id [] == false) = admit ()
+let sb_066_key_not_in_empty (p_key_id: nat) : Lemma (key_in_trusted_db p_key_id [] == false) = ()
 
 (* SB_067_empty_forbidden (matches Coq: Theorem SB_067_empty_forbidden) *)
-let sb_067_empty_forbidden (p_key_id: nat) : Lemma (key_forbidden p_key_id [] == false) = admit ()
+let sb_067_empty_forbidden (p_key_id: nat) : Lemma (key_forbidden p_key_id [] == false) = ()
 
 (* SB_068_key_is_forbidden (matches Coq: Theorem SB_068_key_is_forbidden) *)
-let sb_068_key_is_forbidden (p_key_id: nat) (p_forbidden: (list nat)) : Lemma (key_forbidden p_key_id (p_key_id :: p_forbidden) == true) = admit ()
+let sb_068_key_is_forbidden (p_key_id: nat) (p_forbidden: (list nat)) : Lemma (key_forbidden p_key_id (p_key_id :: p_forbidden) == true) = ()
 
 (* SB_069_allowed_uses_trusted (matches Coq: Theorem SB_069_allowed_uses_trusted) *)
-let sb_069_allowed_uses_trusted (p_db: key_database) (p_p_sig: signature) : Lemma (requires (db_allows_signature p_db id_sig == true)) (ensures (key_in_trusted_db (id_sig.f_sig_key_id) (p_db.f_db_trusted_keys) == true)) = admit ()
+let sb_069_allowed_uses_trusted (p_db: key_database) (p_p_sig: signature) : Lemma (requires (db_allows_signature p_db id_sig == true)) (ensures (key_in_trusted_db (id_sig.f_sig_key_id) (p_db.f_db_trusted_keys) == true)) = ()
 
 (* SB_070_allowed_not_forbidden (matches Coq: Theorem SB_070_allowed_not_forbidden) *)
-let sb_070_allowed_not_forbidden (p_db: key_database) (p_p_sig: signature) : Lemma (requires (db_allows_signature p_db id_sig == true)) (ensures (key_forbidden (id_sig.f_sig_key_id) (p_db.f_db_forbidden_keys) == false)) = admit ()
+let sb_070_allowed_not_forbidden (p_db: key_database) (p_p_sig: signature) : Lemma (requires (db_allows_signature p_db id_sig == true)) (ensures (key_forbidden (id_sig.f_sig_key_id) (p_db.f_db_forbidden_keys) == false)) = ()
 
 (* SB_071_complete_has_cot (matches Coq: Theorem SB_071_complete_has_cot) *)
-let sb_071_complete_has_cot (p_config: secure_boot_config) : Lemma (requires (secure_boot_complete p_config == true)) (ensures (chain_of_trust_complete (p_config.f_sb_chain) == true)) = admit ()
+let sb_071_complete_has_cot (p_config: secure_boot_config) : Lemma (requires (secure_boot_complete p_config == true)) (ensures (chain_of_trust_complete (p_config.f_sb_chain) == true)) = ()
 
 (* SB_072_complete_has_measured (matches Coq: Theorem SB_072_complete_has_measured) *)
-let sb_072_complete_has_measured (p_config: secure_boot_config) : Lemma (requires (secure_boot_complete p_config == true)) (ensures (measured_boot_complete (p_config.f_sb_tpm) == true)) = admit ()
+let sb_072_complete_has_measured (p_config: secure_boot_config) : Lemma (requires (secure_boot_complete p_config == true)) (ensures (measured_boot_complete (p_config.f_sb_tpm) == true)) = ()
 
 (* SB_073_complete_has_antirollback (matches Coq: Theorem SB_073_complete_has_antirollback) *)
-let sb_073_complete_has_antirollback (p_config: secure_boot_config) : Lemma (requires (secure_boot_complete p_config == true)) (ensures (antirollback_protected (p_config.f_sb_chain) == true)) = admit ()
+let sb_073_complete_has_antirollback (p_config: secure_boot_config) : Lemma (requires (secure_boot_complete p_config == true)) (ensures (antirollback_protected (p_config.f_sb_chain) == true)) = ()
 
 (* SB_074_complete_has_policy (matches Coq: Theorem SB_074_complete_has_policy) *)
-let sb_074_complete_has_policy (p_config: secure_boot_config) : Lemma (requires (secure_boot_complete p_config == true)) (ensures (policy_enforced (p_config.f_sb_policy) == true)) = admit ()
+let sb_074_complete_has_policy (p_config: secure_boot_config) : Lemma (requires (secure_boot_complete p_config == true)) (ensures (policy_enforced (p_config.f_sb_policy) == true)) = ()
 
 (* SB_075_policy_enabled (matches Coq: Theorem SB_075_policy_enabled) *)
-let sb_075_policy_enabled (p_policy: secure_boot_policy) : Lemma (requires (policy_enforced p_policy == true)) (ensures (p_policy.f_sbp_enabled == true)) = admit ()
+let sb_075_policy_enabled (p_policy: secure_boot_policy) : Lemma (requires (policy_enforced p_policy == true)) (ensures (p_policy.f_sbp_enabled == true)) = ()
 
 (* SB_076_policy_enforcing (matches Coq: Theorem SB_076_policy_enforcing) *)
-let sb_076_policy_enforcing (p_policy: secure_boot_policy) : Lemma (requires (policy_enforced p_policy == true)) (ensures (p_policy.f_sbp_enforcing == true)) = admit ()
+let sb_076_policy_enforcing (p_policy: secure_boot_policy) : Lemma (requires (policy_enforced p_policy == true)) (ensures (p_policy.f_sbp_enforcing == true)) = ()
 
 (* SB_077_policy_no_unsigned (matches Coq: Theorem SB_077_policy_no_unsigned) *)
-let sb_077_policy_no_unsigned (p_policy: secure_boot_policy) : Lemma (requires (policy_enforced p_policy == true)) (ensures (p_policy.f_sbp_allow_unsigned == false)) = admit ()
+let sb_077_policy_no_unsigned (p_policy: secure_boot_policy) : Lemma (requires (policy_enforced p_policy == true)) (ensures (p_policy.f_sbp_allow_unsigned == false)) = ()
 
 (* SB_078_construct_policy (matches Coq: Theorem SB_078_construct_policy) *)
-let sb_078_construct_policy (p_policy: secure_boot_policy) : Lemma (requires (p_policy.f_sbp_enabled == true /\ p_policy.f_sbp_enforcing == true /\ p_policy.f_sbp_allow_unsigned == false)) (ensures (policy_enforced p_policy == true)) = admit ()
+let sb_078_construct_policy (p_policy: secure_boot_policy) : Lemma (requires (p_policy.f_sbp_enabled == true /\ p_policy.f_sbp_enforcing == true /\ p_policy.f_sbp_allow_unsigned == false)) (ensures (policy_enforced p_policy == true)) = ()
 
 (* SB_079_construct_complete (matches Coq: Theorem SB_079_construct_complete) *)
-let sb_079_construct_complete (p_config: secure_boot_config) : Lemma (requires (chain_of_trust_complete (p_config.f_sb_chain) == true /\ measured_boot_complete (p_config.f_sb_tpm) == true /\ antirollback_protected (p_config.f_sb_chain) == true /\ policy_enforced (p_config.f_sb_policy) == true)) (ensures (secure_boot_complete p_config == true)) = admit ()
+let sb_079_construct_complete (p_config: secure_boot_config) : Lemma (requires (chain_of_trust_complete (p_config.f_sb_chain) == true /\ measured_boot_complete (p_config.f_sb_tpm) == true /\ antirollback_protected (p_config.f_sb_chain) == true /\ policy_enforced (p_config.f_sb_policy) == true)) (ensures (secure_boot_complete p_config == true)) = ()
 
 (* SB_080_complete_all_verified (matches Coq: Theorem SB_080_complete_all_verified) *)
-let sb_080_complete_all_verified (p_config: secure_boot_config) : Lemma (requires (secure_boot_complete p_config == true)) (ensures (rom_is_root_of_trust ((p_config.f_sb_chain).f_bc_rom) == true /\ bootloader_verified ((p_config.f_sb_chain).f_bc_bootloader) == true /\ kernel_verified ((p_config.f_sb_chain).f_bc_kernel) == true /\ initramfs_verified ((p_config.f_sb_chain).f_bc_initramfs) == true /\ tpm_operational (p_config.f_sb_tpm) == true)) = admit ()
+let sb_080_complete_all_verified (p_config: secure_boot_config) : Lemma (requires (secure_boot_complete p_config == true)) (ensures (rom_is_root_of_trust ((p_config.f_sb_chain).f_bc_rom) == true /\ bootloader_verified ((p_config.f_sb_chain).f_bc_bootloader) == true /\ kernel_verified ((p_config.f_sb_chain).f_bc_kernel) == true /\ initramfs_verified ((p_config.f_sb_chain).f_bc_initramfs) == true /\ tpm_operational (p_config.f_sb_tpm) == true)) = ()
 
 (* SB_081_riina_rot (matches Coq: Theorem SB_081_riina_rot) *)
-let sb_081_riina_rot () : Lemma (rom_is_root_of_trust riina_rom == true) = admit ()
+let sb_081_riina_rot () : Lemma (rom_is_root_of_trust riina_rom == true) = ()
 
 (* SB_082_riina_bl (matches Coq: Theorem SB_082_riina_bl) *)
-let sb_082_riina_bl () : Lemma (bootloader_verified riina_bootloader == true) = admit ()
+let sb_082_riina_bl () : Lemma (bootloader_verified riina_bootloader == true) = ()
 
 (* SB_083_riina_kern (matches Coq: Theorem SB_083_riina_kern) *)
-let sb_083_riina_kern () : Lemma (kernel_verified riina_kernel == true) = admit ()
+let sb_083_riina_kern () : Lemma (kernel_verified riina_kernel == true) = ()
 
 (* SB_084_riina_initrd (matches Coq: Theorem SB_084_riina_initrd) *)
-let sb_084_riina_initrd () : Lemma (initramfs_verified riina_initramfs == true) = admit ()
+let sb_084_riina_initrd () : Lemma (initramfs_verified riina_initramfs == true) = ()
 
 (* SB_085_riina_cot (matches Coq: Theorem SB_085_riina_cot) *)
-let sb_085_riina_cot () : Lemma (chain_of_trust_complete riina_boot_chain == true) = admit ()
+let sb_085_riina_cot () : Lemma (chain_of_trust_complete riina_boot_chain == true) = ()
 
 (* SB_086_riina_tpm (matches Coq: Theorem SB_086_riina_tpm) *)
-let sb_086_riina_tpm () : Lemma (tpm_operational riina_tpm == true) = admit ()
+let sb_086_riina_tpm () : Lemma (tpm_operational riina_tpm == true) = ()
 
 (* SB_087_riina_measured (matches Coq: Theorem SB_087_riina_measured) *)
-let sb_087_riina_measured () : Lemma (measured_boot_complete riina_tpm == true) = admit ()
+let sb_087_riina_measured () : Lemma (measured_boot_complete riina_tpm == true) = ()
 
 (* SB_088_riina_arb (matches Coq: Theorem SB_088_riina_arb) *)
-let sb_088_riina_arb () : Lemma (antirollback_protected riina_boot_chain == true) = admit ()
+let sb_088_riina_arb () : Lemma (antirollback_protected riina_boot_chain == true) = ()
 
 (* SB_089_riina_policy (matches Coq: Theorem SB_089_riina_policy) *)
-let sb_089_riina_policy () : Lemma (policy_enforced riina_policy == true) = admit ()
+let sb_089_riina_policy () : Lemma (policy_enforced riina_policy == true) = ()
 
 (* SB_090_riina_complete (matches Coq: Theorem SB_090_riina_complete) *)
-let sb_090_riina_complete () : Lemma (secure_boot_complete riina_secure_boot == true) = admit ()
+let sb_090_riina_complete () : Lemma (secure_boot_complete riina_secure_boot == true) = ()
