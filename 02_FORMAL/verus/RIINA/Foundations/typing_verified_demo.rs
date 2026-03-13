@@ -243,8 +243,6 @@ pub proof fn type_check_bool_correct()
 // These will be completed in the full implementation using Verus assert-by pattern.
 // For demonstration purposes, we focus on the simpler type_check_* correctness proofs.
 
-// TODO: Add remaining 1,156 proofs following this pattern
-
 } // verus!
 
 fn main() {

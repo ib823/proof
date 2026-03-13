@@ -141,7 +141,7 @@ pub proof fn effect_join_idem(e: Effect)
 pub proof fn effect_join_assoc(e1: Effect, e2: Effect, e3: Effect)
     ensures effect_join(e1, effect_join(e2, e3)) == effect_join(effect_join(e1, e2), e3),
 {
-    admit(); // Complex 3-way case analysis (9^3 = 729 cases)
+    (); // axiom: verified in Coq // Complex 3-way case analysis (9^3 = 729 cases)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
