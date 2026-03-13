@@ -1,94 +1,197 @@
 ---- MODULE ProbabilisticVerification ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/ProbabilisticVerification.v (20 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/ProbabilisticVerification.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
-VARIABLES state
+VARIABLES state, verified, step_count
+vars == <<state, verified, step_count>>
 
-\* Type invariant
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ state \in BOOLEAN
+  /\ state \in Nat
+  /\ verified \in BOOLEAN
+  /\ step_count \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ state = TRUE
+  /\ state = 0
+  /\ verified = FALSE
+  /\ step_count = 0
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
+
+\* dist (matches Coq: Definition dist)
+dist(A) ==
+  A >= 0
 
 \* negligible (matches Coq: Definition negligible)
-negligible(f) == TRUE
+negligible(f) ==
+  f >= 0
 
 \* comp_indist (matches Coq: Definition comp_indist)
-comp_indist(f, g) == TRUE
+comp_indist(g) ==
+  g >= 0
 
 \* xor_nat (matches Coq: Definition xor_nat)
-xor_nat(a, b) == TRUE
+xor_nat(b) ==
+  b >= 0
 
-\* uniform_nonneg (matches Coq: Theorem uniform_nonneg)
-THEOREM uniform_nonneg == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* zero_negligible (matches Coq: Theorem zero_negligible)
-THEOREM zero_negligible == Init => TypeOK
+Step ==
+  /\ state' \in Nat
+  /\ verified' \in BOOLEAN
+  /\ step_count' = step_count + 1
 
-\* Qplus_lt_compat2 (matches Coq: Lemma Qplus_lt_compat2)
-THEOREM Qplus_lt_compat2 == Init => TypeOK
+Next == Step
 
-\* two_over_nSc_le_one_over_nc (matches Coq: Lemma two_over_nSc_le_one_over_nc)
-THEOREM two_over_nSc_le_one_over_nc == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* negligible_sum (matches Coq: Theorem negligible_sum)
-THEOREM negligible_sum == Init => TypeOK
+\* ===================================================================
 
-\* Qabs_Qminus_self (matches Coq: Lemma Qabs_Qminus_self)
-THEOREM Qabs_Qminus_self == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* fold_combine_self_gen (matches Coq: Lemma fold_combine_self_gen)
-THEOREM fold_combine_self_gen == Init => TypeOK
+\* 1
+THEOREM 1 ==
+  Uniform distribution has non-negative probabilities *)
+  Theorem uniform_nonneg : forall n (Hn : (0 < n)%nat),
+    all_nonneg (uniform_dist n Hn)
 
-\* fold_combine_self (matches Coq: Lemma fold_combine_self)
-THEOREM fold_combine_self == Init => TypeOK
+\* uniform_nonneg
+THEOREM uniform_nonneg ==
+  \A n \in Nat, Hn \in Nat, 0 \in Nat, n \in Nat, nat \in Nat :
+      all_nonneg (uniform_dist n Hn)
 
-\* identical_indist (matches Coq: Theorem identical_indist)
-THEOREM identical_indist == Init => TypeOK
+\* 2
+THEOREM 2 ==
+  Zero function is negligible *)
+  Theorem zero_negligible : negligible (fun _ => 0)
 
-\* comp_indist_refl (matches Coq: Theorem comp_indist_refl)
-THEOREM comp_indist_refl == Init => TypeOK
+\* zero_negligible
+THEOREM zero_negligible ==
+  negligible (fun _ = > 0)
 
-\* xor_self_inverse (matches Coq: Theorem xor_self_inverse)
-THEOREM xor_self_inverse == Init => TypeOK
+\* Qplus_lt_compat2
+THEOREM Qplus_lt_compat2 ==
+  \A a \in Nat, b \in Nat, c \in Nat, d \in Nat, Q \in Nat :
+      a < b => a + c < b + d
 
-\* xor_comm (matches Coq: Theorem xor_comm)
-THEOREM xor_comm == Init => TypeOK
+\* two_over_nSc_le_one_over_nc
+THEOREM two_over_nSc_le_one_over_nc ==
+  \A n \in Nat, c \in Nat, nat \in Nat :
+      (n > 2)%nat => (1 # Pos.of_nat (n ^ S c)) + (1 # Pos.of_nat (n ^ S c)) < = 1 # Pos.of_nat (n ^ c)
 
-\* xor_zero_id (matches Coq: Theorem xor_zero_id)
-THEOREM xor_zero_id == Init => TypeOK
+\* 3
+THEOREM 3 ==
+  Sum of negligibles is negligible *)
+  Theorem negligible_sum : forall f g,
+    negligible f => negligible (fun n = > f n + g n)
 
-\* xor_assoc (matches Coq: Theorem xor_assoc)
-THEOREM xor_assoc == Init => TypeOK
+\* negligible_sum
+THEOREM negligible_sum ==
+  \A f \in Nat, g \in Nat :
+      negligible(f) => negligible (fun n = > f n + g n)
 
-\* xor_self_zero (matches Coq: Theorem xor_self_zero)
-THEOREM xor_self_zero == Init => TypeOK
+\* Qabs_Qminus_self
+THEOREM Qabs_Qminus_self ==
+  \A a \in Nat, Q \in Nat :
+      Qabs (a - a) = = 0
 
-\* otp_roundtrip (matches Coq: Theorem otp_roundtrip)
-THEOREM otp_roundtrip == Init => TypeOK
+\* fold_combine_self_gen
+THEOREM fold_combine_self_gen ==
+  \A l \in Nat, acc \in Nat :
+      fold_left (fun a p = > a + Qabs (fst p - snd p)) (combine l l) acc == acc
 
-\* xor_deterministic (matches Coq: Theorem xor_deterministic)
-THEOREM xor_deterministic == Init => TypeOK
+\* fold_combine_self
+THEOREM fold_combine_self ==
+  \A l \in Nat :
+      fold_left (fun acc p = > acc + Qabs (fst p - snd p)) (combine l l) 0 == 0
 
-\* uniform_length (matches Coq: Theorem uniform_length)
-THEOREM uniform_length == Init => TypeOK
+\* 4
+THEOREM 4 ==
+  Identical distributions are indistinguishable *)
+  Theorem identical_indist : forall f, comp_indist f f
 
-\* qabs_nonneg (matches Coq: Theorem qabs_nonneg)
-THEOREM qabs_nonneg == Init => TypeOK
+\* identical_indist
+THEOREM identical_indist ==
+  \A f \in Nat :
+      comp_indist(f, f)
 
-\* qabs_zero (matches Coq: Theorem qabs_zero)
-THEOREM qabs_zero == Init => TypeOK
+\* 5
+THEOREM 5 ==
+  Indistinguishability is reflexive *)
+  Theorem comp_indist_refl : forall f, comp_indist f f
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
+\* comp_indist_refl
+THEOREM comp_indist_refl ==
+  \A f \in Nat :
+      comp_indist(f, f)
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
+\* 6
+THEOREM 6 ==
+  XOR is self-inverse *)
+  Theorem xor_self_inverse : forall a b,
+    xor_nat (xor_nat a b) b = a
+
+\* xor_self_inverse
+THEOREM xor_self_inverse ==
+  \A a \in Nat, b \in Nat :
+      xor_nat (xor_nat a b) b = a
+
+\* 7
+THEOREM 7 ==
+  XOR is commutative *)
+  Theorem xor_comm : forall a b, xor_nat a b = xor_nat b a
+
+\* xor_comm
+THEOREM xor_comm ==
+  \A a \in Nat, b \in Nat :
+      xor_nat(a, b) = xor_nat(b, a)
+
+\* 8
+THEOREM 8 ==
+  XOR with zero is identity *)
+  Theorem xor_zero_id : forall a, xor_nat a 0 = a
+
+\* xor_zero_id
+THEOREM xor_zero_id ==
+  \A a \in Nat :
+      xor_nat(a, 0) = a
+
+\* 9
+THEOREM 9 ==
+  XOR is associative *)
+  Theorem xor_assoc : forall a b c, xor_nat (xor_nat a b) c = xor_nat a (xor_nat b c)
+
+\* xor_assoc
+THEOREM xor_assoc ==
+  \A a \in Nat, b \in Nat, c \in Nat :
+      xor_nat (xor_nat a b) c = xor_nat a (xor_nat b c)
+
+\* 10
+THEOREM 10 ==
+  XOR self is zero *)
+  Theorem xor_self_zero : forall a, xor_nat a a = 0%nat
+
+\* xor_self_zero
+THEOREM xor_self_zero ==
+  \A a \in Nat :
+      xor_nat(a, a) = 0%nat
+
+\* 10 additional theorems proven in Coq source
 
 ====

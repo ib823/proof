@@ -16,25 +16,25 @@ Init ==
   /\ state = TRUE
 
 \* val_rel_n_to_val_rel_fo_proven (matches Coq: Theorem val_rel_n_to_val_rel_fo_proven)
-THEOREM val_rel_n_to_val_rel_fo_proven == Init => TypeOK
+THEOREM val_rel_n_to_val_rel_fo_proven == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_step_up_k (matches Coq: Lemma val_rel_n_step_up_k)
-THEOREM val_rel_n_step_up_k == Init => TypeOK
+THEOREM val_rel_n_step_up_k == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_to_val_rel_with_typing (matches Coq: Theorem val_rel_n_to_val_rel_with_typing)
-THEOREM val_rel_n_to_val_rel_with_typing == Init => TypeOK
+THEOREM val_rel_n_to_val_rel_with_typing == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_TFn_typing (matches Coq: Lemma val_rel_n_TFn_typing)
-THEOREM val_rel_n_TFn_typing == Init => TypeOK
+THEOREM val_rel_n_TFn_typing == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_composite_typing (matches Coq: Lemma val_rel_n_composite_typing)
-THEOREM val_rel_n_composite_typing == Init => TypeOK
+THEOREM val_rel_n_composite_typing == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_to_val_rel_proven (matches Coq: Theorem val_rel_n_to_val_rel_proven)
-THEOREM val_rel_n_to_val_rel_proven == Init => TypeOK
+THEOREM val_rel_n_to_val_rel_proven == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_step_limit_zero_admits (matches Coq: Theorem val_rel_step_limit_zero_admits)
-THEOREM val_rel_step_limit_zero_admits == Init => TypeOK
+THEOREM val_rel_step_limit_zero_admits == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

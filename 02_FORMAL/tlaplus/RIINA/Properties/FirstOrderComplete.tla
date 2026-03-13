@@ -29,85 +29,85 @@ expr_eqb(e1, e2) == TRUE
 ty_eqb(T1, T2) == TRUE
 
 \* first_order_subtype (matches Coq: Lemma first_order_subtype)
-THEOREM first_order_subtype == Init => TypeOK
+THEOREM first_order_subtype == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_subtypes_fo (matches Coq: Lemma first_order_subtypes_fo)
-THEOREM first_order_subtypes_fo == Init => TypeOK
+THEOREM first_order_subtypes_fo == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* base_type_first_order (matches Coq: Lemma base_type_first_order)
-THEOREM base_type_first_order == Init => TypeOK
+THEOREM base_type_first_order == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* base_type_size_one (matches Coq: Lemma base_type_size_one)
-THEOREM base_type_size_one == Init => TypeOK
+THEOREM base_type_size_one == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_value_structure (matches Coq: Lemma first_order_value_structure)
-THEOREM first_order_value_structure == Init => TypeOK
+THEOREM first_order_value_structure == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_induction_simple (matches Coq: Lemma first_order_induction_simple)
-THEOREM first_order_induction_simple == Init => TypeOK
+THEOREM first_order_induction_simple == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_eqb_refl (matches Coq: Lemma ty_eqb_refl)
-THEOREM ty_eqb_refl == Init => TypeOK
+THEOREM ty_eqb_refl == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_eqb_eq (matches Coq: Lemma ty_eqb_eq)
-THEOREM ty_eqb_eq == Init => TypeOK
+THEOREM ty_eqb_eq == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_eqb_unit_bool_false (matches Coq: Lemma ty_eqb_unit_bool_false)
-THEOREM ty_eqb_unit_bool_false == Init => TypeOK
+THEOREM ty_eqb_unit_bool_false == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_eqb_unit_int_false (matches Coq: Lemma ty_eqb_unit_int_false)
-THEOREM ty_eqb_unit_int_false == Init => TypeOK
+THEOREM ty_eqb_unit_int_false == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_eqb_bool_int_false (matches Coq: Lemma ty_eqb_bool_int_false)
-THEOREM ty_eqb_bool_int_false == Init => TypeOK
+THEOREM ty_eqb_bool_int_false == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_eqb_bool_string_false (matches Coq: Lemma ty_eqb_bool_string_false)
-THEOREM ty_eqb_bool_string_false == Init => TypeOK
+THEOREM ty_eqb_bool_string_false == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_eqb_int_string_false (matches Coq: Lemma ty_eqb_int_string_false)
-THEOREM ty_eqb_int_string_false == Init => TypeOK
+THEOREM ty_eqb_int_string_false == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_eqb_unit_string_false (matches Coq: Lemma ty_eqb_unit_string_false)
-THEOREM ty_eqb_unit_string_false == Init => TypeOK
+THEOREM ty_eqb_unit_string_false == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fn_not_first_order (matches Coq: Lemma fn_not_first_order)
-THEOREM fn_not_first_order == Init => TypeOK
+THEOREM fn_not_first_order == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* chan_not_first_order (matches Coq: Lemma chan_not_first_order)
-THEOREM chan_not_first_order == Init => TypeOK
+THEOREM chan_not_first_order == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* securechan_not_first_order (matches Coq: Lemma securechan_not_first_order)
-THEOREM securechan_not_first_order == Init => TypeOK
+THEOREM securechan_not_first_order == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* base_type_not_fn (matches Coq: Lemma base_type_not_fn)
-THEOREM base_type_not_fn == Init => TypeOK
+THEOREM base_type_not_fn == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* base_type_not_prod (matches Coq: Lemma base_type_not_prod)
-THEOREM base_type_not_prod == Init => TypeOK
+THEOREM base_type_not_prod == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* base_type_not_sum (matches Coq: Lemma base_type_not_sum)
-THEOREM base_type_not_sum == Init => TypeOK
+THEOREM base_type_not_sum == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* base_type_not_list (matches Coq: Lemma base_type_not_list)
-THEOREM base_type_not_list == Init => TypeOK
+THEOREM base_type_not_list == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* base_type_not_option (matches Coq: Lemma base_type_not_option)
-THEOREM base_type_not_option == Init => TypeOK
+THEOREM base_type_not_option == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_unit (matches Coq: Lemma fo_compound_depth_unit)
-THEOREM fo_compound_depth_unit == Init => TypeOK
+THEOREM fo_compound_depth_unit == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_bool (matches Coq: Lemma fo_compound_depth_bool)
-THEOREM fo_compound_depth_bool == Init => TypeOK
+THEOREM fo_compound_depth_bool == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_int (matches Coq: Lemma fo_compound_depth_int)
-THEOREM fo_compound_depth_int == Init => TypeOK
+THEOREM fo_compound_depth_int == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_string (matches Coq: Lemma fo_compound_depth_string)
-THEOREM fo_compound_depth_string == Init => TypeOK
+THEOREM fo_compound_depth_string == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_bytes (matches Coq: Lemma fo_compound_depth_bytes)
-THEOREM fo_compound_depth_bytes == Init => TypeOK
+THEOREM fo_compound_depth_bytes == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

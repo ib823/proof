@@ -1,19 +1,28 @@
 ---- MODULE PostQuantumSignatures ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/PostQuantumSignatures.v (26 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/PostQuantumSignatures.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* SecurityLevel (matches Coq: Inductive SecurityLevel)
 CONSTANTS Level1, Level3, Level5
 
+SecurityLevelSet == {Level1, Level3, Level5}
+
 \* SignatureScheme (matches Coq: Inductive SignatureScheme)
 CONSTANTS ML_DSA_44, ML_DSA_65, ML_DSA_87, SLH_DSA_128s, SLH_DSA_192s, SLH_DSA_256s
 
+SignatureSchemeSet == {ML_DSA_44, ML_DSA_65, ML_DSA_87, SLH_DSA_128s, SLH_DSA_192s, SLH_DSA_256s}
+
 \* SchemeCategory (matches Coq: Inductive SchemeCategory)
 CONSTANTS Lattice_Based, Hash_Based
+
+SchemeCategorySet == {Lattice_Based, Hash_Based}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* SigningKeyPair (matches Coq: Record SigningKeyPair)
 VARIABLES skp_public, skp_secret, skp_valid
@@ -30,23 +39,22 @@ VARIABLES eufcma_unforgeable, eufcma_strong_unforgeability, eufcma_adaptive_secu
 \* SigQuantumResistant (matches Coq: Record SigQuantumResistant)
 VARIABLES sqr_post_quantum, sqr_no_shor_attack, sqr_conservative_params
 
-\* HashBasedProperties (matches Coq: Record HashBasedProperties)
-VARIABLES hb_stateless, hb_hash_function_secure, hb_few_time_signature
+vars == <<skp_public, skp_secret, skp_valid, sig_value, sig_valid, sig_scheme, sig_keypair, sig_message, sig_signature, sig_verification, eufcma_unforgeable, eufcma_strong_unforgeability, eufcma_adaptive_security, sqr_post_quantum, sqr_no_shor_attack, sqr_conservative_params>>
 
-\* SignatureSecurity (matches Coq: Record SignatureSecurity)
-VARIABLES sig_sec_eufcma, sig_sec_quantum, sig_sec_level
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
 
-\* Type invariant
 TypeOK ==
-  /\ skp_public \in BOOLEAN
-  /\ skp_secret \in BOOLEAN
+  /\ skp_public \in Nat
+  /\ skp_secret \in Nat
   /\ skp_valid \in BOOLEAN
-  /\ sig_value \in BOOLEAN
+  /\ sig_value \in Nat
   /\ sig_valid \in BOOLEAN
-  /\ sig_scheme \in BOOLEAN
-  /\ sig_keypair \in BOOLEAN
-  /\ sig_message \in BOOLEAN
-  /\ sig_signature \in BOOLEAN
+  /\ sig_scheme \in SignatureSchemeSet
+  /\ sig_keypair \in Nat
+  /\ sig_message \in Nat
+  /\ sig_signature \in Nat
   /\ sig_verification \in BOOLEAN
   /\ eufcma_unforgeable \in BOOLEAN
   /\ eufcma_strong_unforgeability \in BOOLEAN
@@ -54,162 +62,251 @@ TypeOK ==
   /\ sqr_post_quantum \in BOOLEAN
   /\ sqr_no_shor_attack \in BOOLEAN
   /\ sqr_conservative_params \in BOOLEAN
-  /\ hb_stateless \in BOOLEAN
-  /\ hb_hash_function_secure \in BOOLEAN
-  /\ hb_few_time_signature \in BOOLEAN
-  /\ sig_sec_eufcma \in BOOLEAN
-  /\ sig_sec_quantum \in BOOLEAN
-  /\ sig_sec_level \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ skp_public = TRUE
-  /\ skp_secret = TRUE
-  /\ skp_valid = TRUE
-  /\ sig_value = TRUE
-  /\ sig_valid = TRUE
-  /\ sig_scheme = TRUE
-  /\ sig_keypair = TRUE
-  /\ sig_message = TRUE
-  /\ sig_signature = TRUE
-  /\ sig_verification = TRUE
-  /\ eufcma_unforgeable = TRUE
-  /\ eufcma_strong_unforgeability = TRUE
-  /\ eufcma_adaptive_security = TRUE
-  /\ sqr_post_quantum = TRUE
-  /\ sqr_no_shor_attack = TRUE
-  /\ sqr_conservative_params = TRUE
-  /\ hb_stateless = TRUE
-  /\ hb_hash_function_secure = TRUE
-  /\ hb_few_time_signature = TRUE
-  /\ sig_sec_eufcma = TRUE
-  /\ sig_sec_quantum = TRUE
-  /\ sig_sec_level = TRUE
+  /\ skp_public = 0
+  /\ skp_secret = 0
+  /\ skp_valid = FALSE
+  /\ sig_value = 0
+  /\ sig_valid = FALSE
+  /\ sig_scheme = ML_DSA_44
+  /\ sig_keypair = 0
+  /\ sig_message = 0
+  /\ sig_signature = 0
+  /\ sig_verification = FALSE
+  /\ eufcma_unforgeable = FALSE
+  /\ eufcma_strong_unforgeability = FALSE
+  /\ eufcma_adaptive_security = FALSE
+  /\ sqr_post_quantum = FALSE
+  /\ sqr_no_shor_attack = FALSE
+  /\ sqr_conservative_params = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
+
+\* SIGNATURE_EXAMPLE_VALUE (matches Coq: Definition SIGNATURE_EXAMPLE_VALUE)
+SIGNATURE_EXAMPLE_VALUE ==
+  0
 
 \* scheme_category (matches Coq: Definition scheme_category)
-scheme_category(s) == TRUE
+scheme_category(s) ==
+    CASE s = ML_DSA_44 | ML_DSA_65 | ML_DSA_87 -> Lattice_Based
+      [] s = SLH_DSA_128s | SLH_DSA_192s | SLH_DSA_256s -> Hash_Based
 
 \* scheme_security_level (matches Coq: Definition scheme_security_level)
-scheme_security_level(s) == TRUE
+scheme_security_level(s) ==
+    CASE s = ML_DSA_44 | SLH_DSA_128s -> Level1
+      [] s = ML_DSA_65 | SLH_DSA_192s -> Level3
+      [] s = ML_DSA_87 | SLH_DSA_256s -> Level5
 
 \* level_leq (matches Coq: Definition level_leq)
-level_leq(l1, l2) == TRUE
+level_leq(l2) ==
+    CASE l1 = Level1, _ -> TRUE
+      [] l1 = Level3, Level1 -> FALSE
+      [] l1 = Level3, _ -> TRUE
+      [] l1 = Level5, Level5 -> TRUE
+      [] l1 = Level5, _ -> FALSE
+
+\* PublicKey (matches Coq: Definition PublicKey)
+PublicKey ==
+  0
+
+\* SecretKey (matches Coq: Definition SecretKey)
+SecretKey ==
+  0
+
+\* Message (matches Coq: Definition Message)
+Message ==
+  0
+
+\* Signature (matches Coq: Definition Signature)
+Signature ==
+  0
 
 \* eufcma_compliant (matches Coq: Definition eufcma_compliant)
-eufcma_compliant(e) == TRUE
+eufcma_compliant(e) ==
+  eufcma_unforgeable /\ eufcma_strong_unforgeability /\ eufcma_adaptive_security
 
 \* sig_quantum_resistant (matches Coq: Definition sig_quantum_resistant)
-sig_quantum_resistant(q) == TRUE
+sig_quantum_resistant(q) ==
+  sqr_post_quantum /\ sqr_no_shor_attack /\ sqr_conservative_params
 
 \* sig_secure (matches Coq: Definition sig_secure)
-sig_secure(s) == TRUE
+sig_secure(s) ==
+  eufcma_compliant (sig_sec_eufcma s) /\ sig_quantum_resistant (sig_sec_quantum s)
 
 \* sig_correct (matches Coq: Definition sig_correct)
-sig_correct(si) == TRUE
+sig_correct(si) ==
+  skp_valid (sig_keypair si) /\ sig_valid (sig_signature si) /\ sig_verification
 
 \* mk_valid_sig_keypair (matches Coq: Definition mk_valid_sig_keypair)
-mk_valid_sig_keypair == TRUE
+mk_valid_sig_keypair ==
+  0
 
 \* mk_valid_signature (matches Coq: Definition mk_valid_signature)
-mk_valid_signature == TRUE
+mk_valid_signature ==
+  0
 
 \* mk_compliant_eufcma (matches Coq: Definition mk_compliant_eufcma)
-mk_compliant_eufcma == TRUE
+mk_compliant_eufcma ==
+  0
 
 \* mk_compliant_sig_qr (matches Coq: Definition mk_compliant_sig_qr)
-mk_compliant_sig_qr == TRUE
+mk_compliant_sig_qr ==
+  0
 
 \* riina_sig_ml_dsa_87 (matches Coq: Definition riina_sig_ml_dsa_87)
-riina_sig_ml_dsa_87 == TRUE
+riina_sig_ml_dsa_87 ==
+  0
 
 \* riina_sig_slh_dsa_256s (matches Coq: Definition riina_sig_slh_dsa_256s)
-riina_sig_slh_dsa_256s == TRUE
+riina_sig_slh_dsa_256s ==
+  0
 
 \* riina_sig_security (matches Coq: Definition riina_sig_security)
-riina_sig_security == TRUE
+riina_sig_security ==
+  0
 
-\* andb_true_iff (matches Coq: Lemma andb_true_iff)
-THEOREM andb_true_iff == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* PQ_SIG_001_mldsa_lattice (matches Coq: Theorem PQ_SIG_001_mldsa_lattice)
-THEOREM PQ_SIG_001_mldsa_lattice == Init => TypeOK
+UpdateSigningKeyPair ==
+  /\ skp_public' \in 0..100
+  /\ skp_secret' \in 0..100
+  /\ skp_valid' \in BOOLEAN
+  /\ UNCHANGED <<sig_value, sig_valid, sig_scheme, sig_keypair, sig_message, sig_signature, sig_verification, eufcma_unforgeable, eufcma_strong_unforgeability, eufcma_adaptive_security, sqr_post_quantum, sqr_no_shor_attack, sqr_conservative_params>>
 
-\* PQ_SIG_002_slhdsa_hash (matches Coq: Theorem PQ_SIG_002_slhdsa_hash)
-THEOREM PQ_SIG_002_slhdsa_hash == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* PQ_SIG_003_mldsa87_level5 (matches Coq: Theorem PQ_SIG_003_mldsa87_level5)
-THEOREM PQ_SIG_003_mldsa87_level5 == Init => TypeOK
+Next == UpdateSigningKeyPair \/ ValidateState
 
-\* PQ_SIG_004_slhdsa256_level5 (matches Coq: Theorem PQ_SIG_004_slhdsa256_level5)
-THEOREM PQ_SIG_004_slhdsa256_level5 == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* PQ_SIG_005_level_reflexive (matches Coq: Theorem PQ_SIG_005_level_reflexive)
-THEOREM PQ_SIG_005_level_reflexive == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* PQ_SIG_006_level5_max (matches Coq: Theorem PQ_SIG_006_level5_max)
-THEOREM PQ_SIG_006_level5_max == Init => TypeOK
+\* andb_true_iff
+THEOREM andb_true_iff ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true < => a = true /\ b = true
 
-\* PQ_SIG_007_eufcma_valid (matches Coq: Theorem PQ_SIG_007_eufcma_valid)
-THEOREM PQ_SIG_007_eufcma_valid == Init => TypeOK
+\* PQ_SIG_001_mldsa_lattice
+THEOREM PQ_SIG_001_mldsa_lattice ==
+  scheme_category(ML_DSA_87) = Lattice_Based
 
-\* PQ_SIG_008_unforgeable (matches Coq: Theorem PQ_SIG_008_unforgeable)
-THEOREM PQ_SIG_008_unforgeable == Init => TypeOK
+\* PQ_SIG_002_slhdsa_hash
+THEOREM PQ_SIG_002_slhdsa_hash ==
+  scheme_category(SLH_DSA_256s) = Hash_Based
 
-\* PQ_SIG_009_strong_unforgeable (matches Coq: Theorem PQ_SIG_009_strong_unforgeable)
-THEOREM PQ_SIG_009_strong_unforgeable == Init => TypeOK
+\* PQ_SIG_003_mldsa87_level5
+THEOREM PQ_SIG_003_mldsa87_level5 ==
+  scheme_security_level(ML_DSA_87) = Level5
 
-\* PQ_SIG_010_adaptive (matches Coq: Theorem PQ_SIG_010_adaptive)
-THEOREM PQ_SIG_010_adaptive == Init => TypeOK
+\* PQ_SIG_004_slhdsa256_level5
+THEOREM PQ_SIG_004_slhdsa256_level5 ==
+  scheme_security_level(SLH_DSA_256s) = Level5
 
-\* PQ_SIG_011_qr_valid (matches Coq: Theorem PQ_SIG_011_qr_valid)
-THEOREM PQ_SIG_011_qr_valid == Init => TypeOK
+\* PQ_SIG_005_level_reflexive
+THEOREM PQ_SIG_005_level_reflexive ==
+  \A l \in Nat, SecurityLevel \in Nat :
+      level_leq(l, l) = TRUE
 
-\* PQ_SIG_012_post_quantum (matches Coq: Theorem PQ_SIG_012_post_quantum)
-THEOREM PQ_SIG_012_post_quantum == Init => TypeOK
+\* PQ_SIG_006_level5_max
+THEOREM PQ_SIG_006_level5_max ==
+  \A l \in Nat, SecurityLevel \in Nat :
+      level_leq(l, Level5) = TRUE
 
-\* PQ_SIG_013_no_shor (matches Coq: Theorem PQ_SIG_013_no_shor)
-THEOREM PQ_SIG_013_no_shor == Init => TypeOK
+\* PQ_SIG_007_eufcma_valid
+THEOREM PQ_SIG_007_eufcma_valid ==
+  eufcma_compliant(mk_compliant_eufcma) = TRUE
 
-\* PQ_SIG_014_conservative (matches Coq: Theorem PQ_SIG_014_conservative)
-THEOREM PQ_SIG_014_conservative == Init => TypeOK
+\* PQ_SIG_008_unforgeable
+THEOREM PQ_SIG_008_unforgeable ==
+  \A e \in Nat, EUFCMASecure \in Nat :
+      eufcma_compliant(e) => eufcma_unforgeable(e)
 
-\* PQ_SIG_015_riina_sig_secure (matches Coq: Theorem PQ_SIG_015_riina_sig_secure)
-THEOREM PQ_SIG_015_riina_sig_secure == Init => TypeOK
+\* PQ_SIG_009_strong_unforgeable
+THEOREM PQ_SIG_009_strong_unforgeable ==
+  \A e \in Nat, EUFCMASecure \in Nat :
+      eufcma_compliant(e) => eufcma_strong_unforgeability(e)
 
-\* PQ_SIG_016_riina_level5 (matches Coq: Theorem PQ_SIG_016_riina_level5)
-THEOREM PQ_SIG_016_riina_level5 == Init => TypeOK
+\* PQ_SIG_010_adaptive
+THEOREM PQ_SIG_010_adaptive ==
+  \A e \in Nat, EUFCMASecure \in Nat :
+      eufcma_compliant(e) => eufcma_adaptive_security(e)
 
-\* PQ_SIG_017_riina_mldsa_correct (matches Coq: Theorem PQ_SIG_017_riina_mldsa_correct)
-THEOREM PQ_SIG_017_riina_mldsa_correct == Init => TypeOK
+\* PQ_SIG_011_qr_valid
+THEOREM PQ_SIG_011_qr_valid ==
+  sig_quantum_resistant(mk_compliant_sig_qr) = TRUE
 
-\* PQ_SIG_018_riina_slhdsa_correct (matches Coq: Theorem PQ_SIG_018_riina_slhdsa_correct)
-THEOREM PQ_SIG_018_riina_slhdsa_correct == Init => TypeOK
+\* PQ_SIG_012_post_quantum
+THEOREM PQ_SIG_012_post_quantum ==
+  \A q \in Nat, SigQuantumResistant \in Nat :
+      sig_quantum_resistant(q) => sqr_post_quantum(q)
 
-\* PQ_SIG_019_riina_scheme_mldsa (matches Coq: Theorem PQ_SIG_019_riina_scheme_mldsa)
-THEOREM PQ_SIG_019_riina_scheme_mldsa == Init => TypeOK
+\* PQ_SIG_013_no_shor
+THEOREM PQ_SIG_013_no_shor ==
+  \A q \in Nat, SigQuantumResistant \in Nat :
+      sig_quantum_resistant(q) => sqr_no_shor_attack(q)
 
-\* PQ_SIG_020_riina_scheme_slhdsa (matches Coq: Theorem PQ_SIG_020_riina_scheme_slhdsa)
-THEOREM PQ_SIG_020_riina_scheme_slhdsa == Init => TypeOK
+\* PQ_SIG_014_conservative
+THEOREM PQ_SIG_014_conservative ==
+  \A q \in Nat, SigQuantumResistant \in Nat :
+      sig_quantum_resistant(q) => sqr_conservative_params(q)
 
-\* PQ_SIG_021_security_implies_eufcma (matches Coq: Theorem PQ_SIG_021_security_implies_eufcma)
-THEOREM PQ_SIG_021_security_implies_eufcma == Init => TypeOK
+\* PQ_SIG_015_riina_sig_secure
+THEOREM PQ_SIG_015_riina_sig_secure ==
+  sig_secure(riina_sig_security) = TRUE
 
-\* PQ_SIG_022_security_implies_qr (matches Coq: Theorem PQ_SIG_022_security_implies_qr)
-THEOREM PQ_SIG_022_security_implies_qr == Init => TypeOK
+\* PQ_SIG_016_riina_level5
+THEOREM PQ_SIG_016_riina_level5 ==
+  sig_sec_level(riina_sig_security) = Level5
 
-\* PQ_SIG_023_correct_key (matches Coq: Theorem PQ_SIG_023_correct_key)
-THEOREM PQ_SIG_023_correct_key == Init => TypeOK
+\* PQ_SIG_017_riina_mldsa_correct
+THEOREM PQ_SIG_017_riina_mldsa_correct ==
+  sig_correct(riina_sig_ml_dsa_87) = TRUE
 
-\* PQ_SIG_024_correct_verify (matches Coq: Theorem PQ_SIG_024_correct_verify)
-THEOREM PQ_SIG_024_correct_verify == Init => TypeOK
+\* PQ_SIG_018_riina_slhdsa_correct
+THEOREM PQ_SIG_018_riina_slhdsa_correct ==
+  sig_correct(riina_sig_slh_dsa_256s) = TRUE
 
-\* PQ_SIG_025_complete_security (matches Coq: Theorem PQ_SIG_025_complete_security)
-THEOREM PQ_SIG_025_complete_security == Init => TypeOK
+\* PQ_SIG_019_riina_scheme_mldsa
+THEOREM PQ_SIG_019_riina_scheme_mldsa ==
+  sig_scheme(riina_sig_ml_dsa_87) = ML_DSA_87
 
-\* Next-state relation
-Next == UNCHANGED <<skp_public, skp_secret, skp_valid, sig_value, sig_valid, sig_scheme, sig_keypair, sig_message, sig_signature, sig_verification, eufcma_unforgeable, eufcma_strong_unforgeability, eufcma_adaptive_security, sqr_post_quantum, sqr_no_shor_attack, sqr_conservative_params, hb_stateless, hb_hash_function_secure, hb_few_time_signature, sig_sec_eufcma, sig_sec_quantum, sig_sec_level>>
+\* PQ_SIG_020_riina_scheme_slhdsa
+THEOREM PQ_SIG_020_riina_scheme_slhdsa ==
+  sig_scheme(riina_sig_slh_dsa_256s) = SLH_DSA_256s
 
-\* Specification
-Spec == Init /\ [][Next]_<<skp_public, skp_secret, skp_valid, sig_value, sig_valid, sig_scheme, sig_keypair, sig_message, sig_signature, sig_verification, eufcma_unforgeable, eufcma_strong_unforgeability, eufcma_adaptive_security, sqr_post_quantum, sqr_no_shor_attack, sqr_conservative_params, hb_stateless, hb_hash_function_secure, hb_few_time_signature, sig_sec_eufcma, sig_sec_quantum, sig_sec_level>>
+\* PQ_SIG_021_security_implies_eufcma
+THEOREM PQ_SIG_021_security_implies_eufcma ==
+  \A s \in Nat, SignatureSecurity \in Nat :
+      sig_secure(s) => eufcma_compliant (sig_sec_eufcma s) = true
+
+\* PQ_SIG_022_security_implies_qr
+THEOREM PQ_SIG_022_security_implies_qr ==
+  \A s \in Nat, SignatureSecurity \in Nat :
+      sig_secure(s) => sig_quantum_resistant (sig_sec_quantum s) = true
+
+\* PQ_SIG_023_correct_key
+THEOREM PQ_SIG_023_correct_key ==
+  \A si \in Nat, SignatureInstance \in Nat :
+      sig_correct(si) => skp_valid (sig_keypair si) = true
+
+\* PQ_SIG_024_correct_verify
+THEOREM PQ_SIG_024_correct_verify ==
+  \A si \in Nat, SignatureInstance \in Nat :
+      sig_correct(si) => sig_verification(si)
+
+\* 1 additional theorems proven in Coq source
 
 ====

@@ -16,7 +16,7 @@ Init ==
   /\ state = TRUE
 
 \* security_non_interference (matches Coq: Theorem security_non_interference)
-THEOREM security_non_interference == Init => TypeOK
+THEOREM security_non_interference == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

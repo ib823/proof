@@ -43,445 +43,445 @@ step_up_at(n) == TRUE
 step_up_and_fundamental(n) == TRUE
 
 \* closed_expr_lam (matches Coq: Lemma closed_expr_lam)
-THEOREM closed_expr_lam == Init => TypeOK
+THEOREM closed_expr_lam == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_pair (matches Coq: Lemma closed_expr_pair)
-THEOREM closed_expr_pair == Init => TypeOK
+THEOREM closed_expr_pair == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_pair_inv (matches Coq: Lemma closed_expr_pair_inv)
-THEOREM closed_expr_pair_inv == Init => TypeOK
+THEOREM closed_expr_pair_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_inl (matches Coq: Lemma closed_expr_inl)
-THEOREM closed_expr_inl == Init => TypeOK
+THEOREM closed_expr_inl == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_inr (matches Coq: Lemma closed_expr_inr)
-THEOREM closed_expr_inr == Init => TypeOK
+THEOREM closed_expr_inr == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_closed_left_n (matches Coq: Lemma val_rel_closed_left_n)
-THEOREM val_rel_closed_left_n == Init => TypeOK
+THEOREM val_rel_closed_left_n == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_closed_right_n (matches Coq: Lemma val_rel_closed_right_n)
-THEOREM val_rel_closed_right_n == Init => TypeOK
+THEOREM val_rel_closed_right_n == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_value_left_n (matches Coq: Lemma val_rel_value_left_n)
-THEOREM val_rel_value_left_n == Init => TypeOK
+THEOREM val_rel_value_left_n == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_value_right_n (matches Coq: Lemma val_rel_value_right_n)
-THEOREM val_rel_value_right_n == Init => TypeOK
+THEOREM val_rel_value_right_n == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_closed_left (matches Coq: Lemma val_rel_closed_left)
-THEOREM val_rel_closed_left == Init => TypeOK
+THEOREM val_rel_closed_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_closed_right (matches Coq: Lemma val_rel_closed_right)
-THEOREM val_rel_closed_right == Init => TypeOK
+THEOREM val_rel_closed_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_value_left (matches Coq: Lemma val_rel_value_left)
-THEOREM val_rel_value_left == Init => TypeOK
+THEOREM val_rel_value_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_value_right (matches Coq: Lemma val_rel_value_right)
-THEOREM val_rel_value_right == Init => TypeOK
+THEOREM val_rel_value_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* free_in_subst_rho (matches Coq: Lemma free_in_subst_rho)
-THEOREM free_in_subst_rho == Init => TypeOK
+THEOREM free_in_subst_rho == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_n_mono_store (matches Coq: Lemma env_rel_n_mono_store)
-THEOREM env_rel_n_mono_store == Init => TypeOK
+THEOREM env_rel_n_mono_store == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_mono_store (matches Coq: Lemma env_rel_mono_store)
-THEOREM env_rel_mono_store == Init => TypeOK
+THEOREM env_rel_mono_store == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_typed_lookup (matches Coq: Lemma env_typed_lookup)
-THEOREM env_typed_lookup == Init => TypeOK
+THEOREM env_typed_lookup == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* typing_nil_closed (matches Coq: Lemma typing_nil_closed)
-THEOREM typing_nil_closed == Init => TypeOK
+THEOREM typing_nil_closed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_typed_closed (matches Coq: Lemma env_typed_closed)
-THEOREM env_typed_closed == Init => TypeOK
+THEOREM env_typed_closed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_typed_extend (matches Coq: Lemma env_typed_extend)
-THEOREM env_typed_extend == Init => TypeOK
+THEOREM env_typed_extend == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_subst_rho (matches Coq: Lemma value_subst_rho)
-THEOREM value_subst_rho == Init => TypeOK
+THEOREM value_subst_rho == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* declass_ok_subst_rho (matches Coq: Lemma declass_ok_subst_rho)
-THEOREM declass_ok_subst_rho == Init => TypeOK
+THEOREM declass_ok_subst_rho == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* subst_rho_typing_general (matches Coq: Lemma subst_rho_typing_general)
-THEOREM subst_rho_typing_general == Init => TypeOK
+THEOREM subst_rho_typing_general == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* subst_rho_preserves_typing (matches Coq: Lemma subst_rho_preserves_typing)
-THEOREM subst_rho_preserves_typing == Init => TypeOK
+THEOREM subst_rho_preserves_typing == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_implies_env_typed (matches Coq: Lemma env_rel_implies_env_typed)
-THEOREM env_rel_implies_env_typed == Init => TypeOK
+THEOREM env_rel_implies_env_typed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* lam_typing_from_env_rel (matches Coq: Lemma lam_typing_from_env_rel)
-THEOREM lam_typing_from_env_rel == Init => TypeOK
+THEOREM lam_typing_from_env_rel == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_at_type_store_weaken (matches Coq: Lemma val_rel_at_type_store_weaken)
-THEOREM val_rel_at_type_store_weaken == Init => TypeOK
+THEOREM val_rel_at_type_store_weaken == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_store_weaken (matches Coq: Lemma val_rel_n_store_weaken)
-THEOREM val_rel_n_store_weaken == Init => TypeOK
+THEOREM val_rel_n_store_weaken == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_unit_early (matches Coq: Lemma closed_expr_unit_early)
-THEOREM closed_expr_unit_early == Init => TypeOK
+THEOREM closed_expr_unit_early == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_loc_early (matches Coq: Lemma closed_expr_loc_early)
-THEOREM closed_expr_loc_early == Init => TypeOK
+THEOREM closed_expr_loc_early == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_loc_general (matches Coq: Lemma val_rel_n_loc_general)
-THEOREM val_rel_n_loc_general == Init => TypeOK
+THEOREM val_rel_n_loc_general == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_unit_general (matches Coq: Lemma val_rel_n_unit_general)
-THEOREM val_rel_n_unit_general == Init => TypeOK
+THEOREM val_rel_n_unit_general == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_max_update_single (matches Coq: Lemma store_max_update_single)
-THEOREM store_max_update_single == Init => TypeOK
+THEOREM store_max_update_single == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_max_update_eq (matches Coq: Lemma store_max_update_eq)
-THEOREM store_max_update_eq == Init => TypeOK
+THEOREM store_max_update_eq == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_n_alloc_fresh (matches Coq: Lemma store_rel_n_alloc_fresh)
-THEOREM store_rel_n_alloc_fresh == Init => TypeOK
+THEOREM store_rel_n_alloc_fresh == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_vals_rel_alloc_fresh (matches Coq: Lemma store_vals_rel_alloc_fresh)
-THEOREM store_vals_rel_alloc_fresh == Init => TypeOK
+THEOREM store_vals_rel_alloc_fresh == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_fo_extract (matches Coq: Lemma val_rel_n_fo_extract)
-THEOREM val_rel_n_fo_extract == Init => TypeOK
+THEOREM val_rel_n_fo_extract == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* stores_agree_low_fo_alloc_fresh (matches Coq: Lemma stores_agree_low_fo_alloc_fresh)
-THEOREM stores_agree_low_fo_alloc_fresh == Init => TypeOK
+THEOREM stores_agree_low_fo_alloc_fresh == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_n_update_existing (matches Coq: Lemma store_rel_n_update_existing)
-THEOREM store_rel_n_update_existing == Init => TypeOK
+THEOREM store_rel_n_update_existing == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_vals_rel_update_existing (matches Coq: Lemma store_vals_rel_update_existing)
-THEOREM store_vals_rel_update_existing == Init => TypeOK
+THEOREM store_vals_rel_update_existing == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* stores_agree_low_fo_update_existing (matches Coq: Lemma stores_agree_low_fo_update_existing)
-THEOREM stores_agree_low_fo_update_existing == Init => TypeOK
+THEOREM stores_agree_low_fo_update_existing == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_to_val_rel (matches Coq: Lemma val_rel_n_to_val_rel)
-THEOREM val_rel_n_to_val_rel == Init => TypeOK
+THEOREM val_rel_n_to_val_rel == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_to_val_rel_any (matches Coq: Lemma val_rel_n_to_val_rel_any)
-THEOREM val_rel_n_to_val_rel_any == Init => TypeOK
+THEOREM val_rel_n_to_val_rel_any == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_rho_closed (matches Coq: Lemma env_rel_rho_closed)
-THEOREM env_rel_rho_closed == Init => TypeOK
+THEOREM env_rel_rho_closed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* lam_closedness_contradiction (matches Coq: Lemma lam_closedness_contradiction)
-THEOREM lam_closedness_contradiction == Init => TypeOK
+THEOREM lam_closedness_contradiction == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* lam_closedness_contradiction2 (matches Coq: Lemma lam_closedness_contradiction2)
-THEOREM lam_closedness_contradiction2 == Init => TypeOK
+THEOREM lam_closedness_contradiction2 == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_no_free_all_single (matches Coq: Lemma rho_no_free_all_single)
-THEOREM rho_no_free_all_single == Init => TypeOK
+THEOREM rho_no_free_all_single == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_closed_left (matches Coq: Lemma env_rel_closed_left)
-THEOREM env_rel_closed_left == Init => TypeOK
+THEOREM env_rel_closed_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_closed_right (matches Coq: Lemma env_rel_closed_right)
-THEOREM env_rel_closed_right == Init => TypeOK
+THEOREM env_rel_closed_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_except_subst_rho_shadow (matches Coq: Lemma closed_except_subst_rho_shadow)
-THEOREM closed_except_subst_rho_shadow == Init => TypeOK
+THEOREM closed_except_subst_rho_shadow == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* subst_not_free (matches Coq: Lemma subst_not_free)
-THEOREM subst_not_free == Init => TypeOK
+THEOREM subst_not_free == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_shadow_id (matches Coq: Lemma rho_shadow_id)
-THEOREM rho_shadow_id == Init => TypeOK
+THEOREM rho_shadow_id == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_shadow_identity (matches Coq: Lemma rho_shadow_identity)
-THEOREM rho_shadow_identity == Init => TypeOK
+THEOREM rho_shadow_identity == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* subst_rho_identity (matches Coq: Lemma subst_rho_identity)
-THEOREM subst_rho_identity == Init => TypeOK
+THEOREM subst_rho_identity == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* subst_rho_id (matches Coq: Lemma subst_rho_id)
-THEOREM subst_rho_id == Init => TypeOK
+THEOREM subst_rho_id == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_shadow_single_eq (matches Coq: Lemma rho_shadow_single_eq)
-THEOREM rho_shadow_single_eq == Init => TypeOK
+THEOREM rho_shadow_single_eq == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_shadow_single_id (matches Coq: Lemma rho_shadow_single_id)
-THEOREM rho_shadow_single_id == Init => TypeOK
+THEOREM rho_shadow_single_id == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* subst_rho_single (matches Coq: Lemma subst_rho_single)
-THEOREM subst_rho_single == Init => TypeOK
+THEOREM subst_rho_single == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_shadow_extend_same (matches Coq: Lemma rho_shadow_extend_same)
-THEOREM rho_shadow_extend_same == Init => TypeOK
+THEOREM rho_shadow_extend_same == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_shadow_shadow_same (matches Coq: Lemma rho_shadow_shadow_same)
-THEOREM rho_shadow_shadow_same == Init => TypeOK
+THEOREM rho_shadow_shadow_same == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_shadow_shadow_comm (matches Coq: Lemma rho_shadow_shadow_comm)
-THEOREM rho_shadow_shadow_comm == Init => TypeOK
+THEOREM rho_shadow_shadow_comm == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_shadow_extend_comm (matches Coq: Lemma rho_shadow_extend_comm)
-THEOREM rho_shadow_extend_comm == Init => TypeOK
+THEOREM rho_shadow_extend_comm == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_no_free_extend (matches Coq: Lemma rho_no_free_extend)
-THEOREM rho_no_free_extend == Init => TypeOK
+THEOREM rho_no_free_extend == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* rho_no_free_shadow (matches Coq: Lemma rho_no_free_shadow)
-THEOREM rho_no_free_shadow == Init => TypeOK
+THEOREM rho_no_free_shadow == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* subst_rho_extend (matches Coq: Lemma subst_rho_extend)
-THEOREM subst_rho_extend == Init => TypeOK
+THEOREM subst_rho_extend == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_empty_n (matches Coq: Lemma env_rel_empty_n)
-THEOREM env_rel_empty_n == Init => TypeOK
+THEOREM env_rel_empty_n == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_empty (matches Coq: Lemma env_rel_empty)
-THEOREM env_rel_empty == Init => TypeOK
+THEOREM env_rel_empty == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_extend_n (matches Coq: Lemma env_rel_extend_n)
-THEOREM env_rel_extend_n == Init => TypeOK
+THEOREM env_rel_extend_n == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_extend (matches Coq: Lemma env_rel_extend)
-THEOREM env_rel_extend == Init => TypeOK
+THEOREM env_rel_extend == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_trans (matches Coq: Lemma multi_step_trans)
-THEOREM multi_step_trans == Init => TypeOK
+THEOREM multi_step_trans == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_app1 (matches Coq: Lemma multi_step_app1)
-THEOREM multi_step_app1 == Init => TypeOK
+THEOREM multi_step_app1 == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_app2 (matches Coq: Lemma multi_step_app2)
-THEOREM multi_step_app2 == Init => TypeOK
+THEOREM multi_step_app2 == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_pair1 (matches Coq: Lemma multi_step_pair1)
-THEOREM multi_step_pair1 == Init => TypeOK
+THEOREM multi_step_pair1 == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_pair2 (matches Coq: Lemma multi_step_pair2)
-THEOREM multi_step_pair2 == Init => TypeOK
+THEOREM multi_step_pair2 == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_fst (matches Coq: Lemma multi_step_fst)
-THEOREM multi_step_fst == Init => TypeOK
+THEOREM multi_step_fst == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_snd (matches Coq: Lemma multi_step_snd)
-THEOREM multi_step_snd == Init => TypeOK
+THEOREM multi_step_snd == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_inl (matches Coq: Lemma multi_step_inl)
-THEOREM multi_step_inl == Init => TypeOK
+THEOREM multi_step_inl == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_inr (matches Coq: Lemma multi_step_inr)
-THEOREM multi_step_inr == Init => TypeOK
+THEOREM multi_step_inr == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_case (matches Coq: Lemma multi_step_case)
-THEOREM multi_step_case == Init => TypeOK
+THEOREM multi_step_case == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_if (matches Coq: Lemma multi_step_if)
-THEOREM multi_step_if == Init => TypeOK
+THEOREM multi_step_if == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_let (matches Coq: Lemma multi_step_let)
-THEOREM multi_step_let == Init => TypeOK
+THEOREM multi_step_let == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_classify (matches Coq: Lemma multi_step_classify)
-THEOREM multi_step_classify == Init => TypeOK
+THEOREM multi_step_classify == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_prove (matches Coq: Lemma multi_step_prove)
-THEOREM multi_step_prove == Init => TypeOK
+THEOREM multi_step_prove == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_require (matches Coq: Lemma multi_step_require)
-THEOREM multi_step_require == Init => TypeOK
+THEOREM multi_step_require == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_grant (matches Coq: Lemma multi_step_grant)
-THEOREM multi_step_grant == Init => TypeOK
+THEOREM multi_step_grant == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_perform (matches Coq: Lemma multi_step_perform)
-THEOREM multi_step_perform == Init => TypeOK
+THEOREM multi_step_perform == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_handle (matches Coq: Lemma multi_step_handle)
-THEOREM multi_step_handle == Init => TypeOK
+THEOREM multi_step_handle == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_ref (matches Coq: Lemma multi_step_ref)
-THEOREM multi_step_ref == Init => TypeOK
+THEOREM multi_step_ref == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_deref (matches Coq: Lemma multi_step_deref)
-THEOREM multi_step_deref == Init => TypeOK
+THEOREM multi_step_deref == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_assign1 (matches Coq: Lemma multi_step_assign1)
-THEOREM multi_step_assign1 == Init => TypeOK
+THEOREM multi_step_assign1 == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_assign2 (matches Coq: Lemma multi_step_assign2)
-THEOREM multi_step_assign2 == Init => TypeOK
+THEOREM multi_step_assign2 == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* exp_rel_of_val_rel (matches Coq: Lemma exp_rel_of_val_rel)
-THEOREM exp_rel_of_val_rel == Init => TypeOK
+THEOREM exp_rel_of_val_rel == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* exp_rel_of_val_rel_step (matches Coq: Lemma exp_rel_of_val_rel_step)
-THEOREM exp_rel_of_val_rel_step == Init => TypeOK
+THEOREM exp_rel_of_val_rel_step == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* exp_rel_of_val_rel_n (matches Coq: Lemma exp_rel_of_val_rel_n)
-THEOREM exp_rel_of_val_rel_n == Init => TypeOK
+THEOREM exp_rel_of_val_rel_n == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_pair_inv (matches Coq: Lemma value_pair_inv)
-THEOREM value_pair_inv == Init => TypeOK
+THEOREM value_pair_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_inl_inv (matches Coq: Lemma value_inl_inv)
-THEOREM value_inl_inv == Init => TypeOK
+THEOREM value_inl_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_inr_inv (matches Coq: Lemma value_inr_inv)
-THEOREM value_inr_inv == Init => TypeOK
+THEOREM value_inr_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_inl_inv (matches Coq: Lemma closed_expr_inl_inv)
-THEOREM closed_expr_inl_inv == Init => TypeOK
+THEOREM closed_expr_inl_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_inr_inv (matches Coq: Lemma closed_expr_inr_inv)
-THEOREM closed_expr_inr_inv == Init => TypeOK
+THEOREM closed_expr_inr_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_prod_decompose (matches Coq: Lemma val_rel_n_prod_decompose)
-THEOREM val_rel_n_prod_decompose == Init => TypeOK
+THEOREM val_rel_n_prod_decompose == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_of_first_order (matches Coq: Lemma val_rel_n_of_first_order)
-THEOREM val_rel_n_of_first_order == Init => TypeOK
+THEOREM val_rel_n_of_first_order == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_to_val_rel_fo (matches Coq: Lemma val_rel_n_to_val_rel_fo)
-THEOREM val_rel_n_to_val_rel_fo == Init => TypeOK
+THEOREM val_rel_n_to_val_rel_fo == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_at_type_to_val_rel_fo (matches Coq: Lemma val_rel_at_type_to_val_rel_fo)
-THEOREM val_rel_at_type_to_val_rel_fo == Init => TypeOK
+THEOREM val_rel_at_type_to_val_rel_fo == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* has_type_pair_inv (matches Coq: Lemma has_type_pair_inv)
-THEOREM has_type_pair_inv == Init => TypeOK
+THEOREM has_type_pair_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_prod_fst (matches Coq: Lemma val_rel_n_prod_fst)
-THEOREM val_rel_n_prod_fst == Init => TypeOK
+THEOREM val_rel_n_prod_fst == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_prod_snd (matches Coq: Lemma val_rel_n_prod_snd)
-THEOREM val_rel_n_prod_snd == Init => TypeOK
+THEOREM val_rel_n_prod_snd == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_typing_ho (matches Coq: Lemma val_rel_n_typing_ho)
-THEOREM val_rel_n_typing_ho == Init => TypeOK
+THEOREM val_rel_n_typing_ho == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* has_type_inl_inv (matches Coq: Lemma has_type_inl_inv)
-THEOREM has_type_inl_inv == Init => TypeOK
+THEOREM has_type_inl_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* has_type_inr_inv (matches Coq: Lemma has_type_inr_inv)
-THEOREM has_type_inr_inv == Init => TypeOK
+THEOREM has_type_inr_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* has_type_classify_inv (matches Coq: Lemma has_type_classify_inv)
-THEOREM has_type_classify_inv == Init => TypeOK
+THEOREM has_type_classify_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* has_type_prove_inv (matches Coq: Lemma has_type_prove_inv)
-THEOREM has_type_prove_inv == Init => TypeOK
+THEOREM has_type_prove_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_prod_compose (matches Coq: Lemma val_rel_n_prod_compose)
-THEOREM val_rel_n_prod_compose == Init => TypeOK
+THEOREM val_rel_n_prod_compose == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_from_prod_fst (matches Coq: Lemma val_rel_n_from_prod_fst)
-THEOREM val_rel_n_from_prod_fst == Init => TypeOK
+THEOREM val_rel_n_from_prod_fst == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_from_prod_snd (matches Coq: Lemma val_rel_n_from_prod_snd)
-THEOREM val_rel_n_from_prod_snd == Init => TypeOK
+THEOREM val_rel_n_from_prod_snd == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_sum_inl (matches Coq: Lemma val_rel_n_sum_inl)
-THEOREM val_rel_n_sum_inl == Init => TypeOK
+THEOREM val_rel_n_sum_inl == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_sum_inr (matches Coq: Lemma val_rel_n_sum_inr)
-THEOREM val_rel_n_sum_inr == Init => TypeOK
+THEOREM val_rel_n_sum_inr == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_sum_decompose (matches Coq: Lemma val_rel_n_sum_decompose)
-THEOREM val_rel_n_sum_decompose == Init => TypeOK
+THEOREM val_rel_n_sum_decompose == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_from_sum_inl (matches Coq: Lemma val_rel_n_from_sum_inl)
-THEOREM val_rel_n_from_sum_inl == Init => TypeOK
+THEOREM val_rel_n_from_sum_inl == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_from_sum_inr (matches Coq: Lemma val_rel_n_from_sum_inr)
-THEOREM val_rel_n_from_sum_inr == Init => TypeOK
+THEOREM val_rel_n_from_sum_inr == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_prod_fst_at (matches Coq: Lemma val_rel_n_prod_fst_at)
-THEOREM val_rel_n_prod_fst_at == Init => TypeOK
+THEOREM val_rel_n_prod_fst_at == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_prod_snd_at (matches Coq: Lemma val_rel_n_prod_snd_at)
-THEOREM val_rel_n_prod_snd_at == Init => TypeOK
+THEOREM val_rel_n_prod_snd_at == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_unit (matches Coq: Lemma closed_expr_unit)
-THEOREM closed_expr_unit == Init => TypeOK
+THEOREM closed_expr_unit == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_bool (matches Coq: Lemma closed_expr_bool)
-THEOREM closed_expr_bool == Init => TypeOK
+THEOREM closed_expr_bool == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_int (matches Coq: Lemma closed_expr_int)
-THEOREM closed_expr_int == Init => TypeOK
+THEOREM closed_expr_int == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_string (matches Coq: Lemma closed_expr_string)
-THEOREM closed_expr_string == Init => TypeOK
+THEOREM closed_expr_string == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* closed_expr_loc (matches Coq: Lemma closed_expr_loc)
-THEOREM closed_expr_loc == Init => TypeOK
+THEOREM closed_expr_loc == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_unit (matches Coq: Lemma val_rel_unit)
-THEOREM val_rel_unit == Init => TypeOK
+THEOREM val_rel_unit == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_bool (matches Coq: Lemma val_rel_bool)
-THEOREM val_rel_bool == Init => TypeOK
+THEOREM val_rel_bool == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_bool_eq (matches Coq: Lemma val_rel_n_bool_eq)
-THEOREM val_rel_n_bool_eq == Init => TypeOK
+THEOREM val_rel_n_bool_eq == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_int (matches Coq: Lemma val_rel_int)
-THEOREM val_rel_int == Init => TypeOK
+THEOREM val_rel_int == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_classify (matches Coq: Lemma val_rel_n_classify)
-THEOREM val_rel_n_classify == Init => TypeOK
+THEOREM val_rel_n_classify == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_prove (matches Coq: Lemma val_rel_n_prove)
-THEOREM val_rel_n_prove == Init => TypeOK
+THEOREM val_rel_n_prove == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_string (matches Coq: Lemma val_rel_string)
-THEOREM val_rel_string == Init => TypeOK
+THEOREM val_rel_string == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_loc (matches Coq: Lemma val_rel_loc)
-THEOREM val_rel_loc == Init => TypeOK
+THEOREM val_rel_loc == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fundamental_at_0 (matches Coq: Lemma fundamental_at_0)
-THEOREM fundamental_at_0 == Init => TypeOK
+THEOREM fundamental_at_0 == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_up_at_0 (matches Coq: Lemma step_up_at_0)
-THEOREM step_up_at_0 == Init => TypeOK
+THEOREM step_up_at_0 == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_preservation_aux (matches Coq: Lemma multi_step_preservation_aux)
-THEOREM multi_step_preservation_aux == Init => TypeOK
+THEOREM multi_step_preservation_aux == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_preservation (matches Coq: Lemma multi_step_preservation)
-THEOREM multi_step_preservation == Init => TypeOK
+THEOREM multi_step_preservation == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* has_type_level_irrelevant (matches Coq: Lemma has_type_level_irrelevant)
-THEOREM has_type_level_irrelevant == Init => TypeOK
+THEOREM has_type_level_irrelevant == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_wf_fresh_not_in_ty (matches Coq: Lemma store_wf_fresh_not_in_ty)
-THEOREM store_wf_fresh_not_in_ty == Init => TypeOK
+THEOREM store_wf_fresh_not_in_ty == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_n_same_fresh (matches Coq: Lemma store_rel_n_same_fresh)
-THEOREM store_rel_n_same_fresh == Init => TypeOK
+THEOREM store_rel_n_same_fresh == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* logical_relation (matches Coq: Theorem logical_relation)
-THEOREM logical_relation == Init => TypeOK
+THEOREM logical_relation == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_up_and_fundamental_mutual (matches Coq: Theorem step_up_and_fundamental_mutual)
-THEOREM step_up_and_fundamental_mutual == Init => TypeOK
+THEOREM step_up_and_fundamental_mutual == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_closed (matches Coq: Lemma val_rel_closed)
-THEOREM val_rel_closed == Init => TypeOK
+THEOREM val_rel_closed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* env_rel_single (matches Coq: Lemma env_rel_single)
-THEOREM env_rel_single == Init => TypeOK
+THEOREM env_rel_single == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* non_interference_stmt (matches Coq: Theorem non_interference_stmt)
-THEOREM non_interference_stmt == Init => TypeOK
+THEOREM non_interference_stmt == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* subst_rho_declassify_dist (matches Coq: Lemma subst_rho_declassify_dist)
-THEOREM subst_rho_declassify_dist == Init => TypeOK
+THEOREM subst_rho_declassify_dist == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

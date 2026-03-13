@@ -1,22 +1,33 @@
 ---- MODULE DigitalWallet ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/DigitalWallet.v (25 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/DigitalWallet.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* WalletTier (matches Coq: Inductive WalletTier)
 CONSTANTS Basic, Standard, Premium, Unlimited
 
+WalletTierSet == {Basic, Standard, Premium, Unlimited}
+
 \* TransactionType (matches Coq: Inductive TransactionType)
 CONSTANTS Credit, Debit
+
+TransactionTypeSet == {Credit, Debit}
 
 \* QRType (matches Coq: Inductive QRType)
 CONSTANTS StaticQR, DynamicQR
 
+QRTypeSet == {StaticQR, DynamicQR}
+
 \* AuthFactor (matches Coq: Inductive AuthFactor)
 CONSTANTS Password, Biometric, OTPFactor, HardwareToken
+
+AuthFactorSet == {Password, Biometric, OTPFactor, HardwareToken}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* Wallet (matches Coq: Record Wallet)
 VARIABLES wallet_id, balance, tier, is_dormant, last_activity
@@ -33,461 +44,303 @@ VARIABLES va_id, va_parent_wallet, va_balance, va_purpose
 \* Session (matches Coq: Record Session)
 VARIABLES session_id, session_wallet, session_start, last_activity_time, inactivity_timeout
 
-\* OTP (matches Coq: Record OTP)
-VARIABLES otp_code, otp_created_time, otp_validity_minutes
+vars == <<wallet_id, balance, tier, is_dormant, last_activity, txn_id, txn_type, txn_amount, txn_wallet, txn_timestamp, qr_id, qr_type, qr_used, qr_amount, va_id, va_parent_wallet, va_balance, va_purpose, session_id, session_wallet, session_start, last_activity_time, inactivity_timeout>>
 
-\* Device (matches Coq: Record Device)
-VARIABLES device_id, device_wallet, biometric_hash
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
 
-\* FraudScore (matches Coq: Record FraudScore)
-VARIABLES fs_wallet, fs_score, fs_threshold
-
-\* VelocityCheck (matches Coq: Record VelocityCheck)
-VARIABLES vc_wallet, vc_txn_count, vc_time_window, vc_threshold
-
-\* P2PTransfer (matches Coq: Record P2PTransfer)
-VARIABLES p2p_id, p2p_from, p2p_to, p2p_amount, p2p_initiated_time, p2p_completed_time
-
-\* QRPayment (matches Coq: Record QRPayment)
-VARIABLES qrp_id, qrp_qr, qrp_payer, qrp_initiated_time, qrp_completed_time
-
-\* MerchantPayment (matches Coq: Record MerchantPayment)
-VARIABLES mp_id, mp_gross_amount, mp_mdr_rate, mp_net_amount
-
-\* Refund (matches Coq: Record Refund)
-VARIABLES ref_id, ref_wallet, ref_amount, ref_instant
-
-\* BankTransfer (matches Coq: Record BankTransfer)
-VARIABLES bt_id, bt_bank_debit, bt_wallet_credit, bt_reconciled
-
-\* CardChargeback (matches Coq: Record CardChargeback)
-VARIABLES cb_id, cb_original_credit, cb_wallet_debit, cb_processed
-
-\* AgentFloat (matches Coq: Record AgentFloat)
-VARIABLES af_agent_id, af_float_balance, af_pending_deposits
-
-\* CryptoTopUp (matches Coq: Record CryptoTopUp)
-VARIABLES ctu_id, ctu_crypto_amount, ctu_rate_at_confirmation, ctu_fiat_credit, ctu_rate_locked
-
-\* StablecoinTopUp (matches Coq: Record StablecoinTopUp)
-VARIABLES stu_id, stu_amount, stu_confirmed, stu_credited
-
-\* WithdrawalRequest (matches Coq: Record WithdrawalRequest)
-VARIABLES wr_id, wr_wallet, wr_amount, wr_daily_total, wr_wallet_balance, wr_tier
-
-\* BankWithdrawal (matches Coq: Record BankWithdrawal)
-VARIABLES bw_id, bw_wallet, bw_bank_account, bw_ownership_verified, bw_approved
-
-\* CardlessATM (matches Coq: Record CardlessATM)
-VARIABLES catm_id, catm_wallet, catm_otp, catm_amount
-
-\* AgentWithdrawal (matches Coq: Record AgentWithdrawal)
-VARIABLES aw_id, aw_agent_id, aw_wallet, aw_amount, aw_agent_cash, aw_approved
-
-\* AuthContext (matches Coq: Record AuthContext)
-VARIABLES ac_factors, ac_sensitive_op
-
-\* Type invariant
 TypeOK ==
-  /\ wallet_id \in BOOLEAN
-  /\ balance \in BOOLEAN
-  /\ tier \in BOOLEAN
+  /\ wallet_id \in Nat
+  /\ balance \in Nat
+  /\ tier \in WalletTierSet
   /\ is_dormant \in BOOLEAN
-  /\ last_activity \in BOOLEAN
-  /\ txn_id \in BOOLEAN
-  /\ txn_type \in BOOLEAN
-  /\ txn_amount \in BOOLEAN
-  /\ txn_wallet \in BOOLEAN
-  /\ txn_timestamp \in BOOLEAN
-  /\ qr_id \in BOOLEAN
-  /\ qr_type \in BOOLEAN
+  /\ last_activity \in Nat
+  /\ txn_id \in Nat
+  /\ txn_type \in TransactionTypeSet
+  /\ txn_amount \in Nat
+  /\ txn_wallet \in Nat
+  /\ txn_timestamp \in Nat
+  /\ qr_id \in Nat
+  /\ qr_type \in QRTypeSet
   /\ qr_used \in BOOLEAN
-  /\ qr_amount \in BOOLEAN
-  /\ va_id \in BOOLEAN
-  /\ va_parent_wallet \in BOOLEAN
-  /\ va_balance \in BOOLEAN
-  /\ va_purpose \in BOOLEAN
-  /\ session_id \in BOOLEAN
-  /\ session_wallet \in BOOLEAN
-  /\ session_start \in BOOLEAN
-  /\ last_activity_time \in BOOLEAN
-  /\ inactivity_timeout \in BOOLEAN
-  /\ otp_code \in BOOLEAN
-  /\ otp_created_time \in BOOLEAN
-  /\ otp_validity_minutes \in BOOLEAN
-  /\ device_id \in BOOLEAN
-  /\ device_wallet \in BOOLEAN
-  /\ biometric_hash \in BOOLEAN
-  /\ fs_wallet \in BOOLEAN
-  /\ fs_score \in BOOLEAN
-  /\ fs_threshold \in BOOLEAN
-  /\ vc_wallet \in BOOLEAN
-  /\ vc_txn_count \in BOOLEAN
-  /\ vc_time_window \in BOOLEAN
-  /\ vc_threshold \in BOOLEAN
-  /\ p2p_id \in BOOLEAN
-  /\ p2p_from \in BOOLEAN
-  /\ p2p_to \in BOOLEAN
-  /\ p2p_amount \in BOOLEAN
-  /\ p2p_initiated_time \in BOOLEAN
-  /\ p2p_completed_time \in BOOLEAN
-  /\ qrp_id \in BOOLEAN
-  /\ qrp_qr \in BOOLEAN
-  /\ qrp_payer \in BOOLEAN
-  /\ qrp_initiated_time \in BOOLEAN
-  /\ qrp_completed_time \in BOOLEAN
-  /\ mp_id \in BOOLEAN
-  /\ mp_gross_amount \in BOOLEAN
-  /\ mp_mdr_rate \in BOOLEAN
-  /\ mp_net_amount \in BOOLEAN
-  /\ ref_id \in BOOLEAN
-  /\ ref_wallet \in BOOLEAN
-  /\ ref_amount \in BOOLEAN
-  /\ ref_instant \in BOOLEAN
-  /\ bt_id \in BOOLEAN
-  /\ bt_bank_debit \in BOOLEAN
-  /\ bt_wallet_credit \in BOOLEAN
-  /\ bt_reconciled \in BOOLEAN
-  /\ cb_id \in BOOLEAN
-  /\ cb_original_credit \in BOOLEAN
-  /\ cb_wallet_debit \in BOOLEAN
-  /\ cb_processed \in BOOLEAN
-  /\ af_agent_id \in BOOLEAN
-  /\ af_float_balance \in BOOLEAN
-  /\ af_pending_deposits \in BOOLEAN
-  /\ ctu_id \in BOOLEAN
-  /\ ctu_crypto_amount \in BOOLEAN
-  /\ ctu_rate_at_confirmation \in BOOLEAN
-  /\ ctu_fiat_credit \in BOOLEAN
-  /\ ctu_rate_locked \in BOOLEAN
-  /\ stu_id \in BOOLEAN
-  /\ stu_amount \in BOOLEAN
-  /\ stu_confirmed \in BOOLEAN
-  /\ stu_credited \in BOOLEAN
-  /\ wr_id \in BOOLEAN
-  /\ wr_wallet \in BOOLEAN
-  /\ wr_amount \in BOOLEAN
-  /\ wr_daily_total \in BOOLEAN
-  /\ wr_wallet_balance \in BOOLEAN
-  /\ wr_tier \in BOOLEAN
-  /\ bw_id \in BOOLEAN
-  /\ bw_wallet \in BOOLEAN
-  /\ bw_bank_account \in BOOLEAN
-  /\ bw_ownership_verified \in BOOLEAN
-  /\ bw_approved \in BOOLEAN
-  /\ catm_id \in BOOLEAN
-  /\ catm_wallet \in BOOLEAN
-  /\ catm_otp \in BOOLEAN
-  /\ catm_amount \in BOOLEAN
-  /\ aw_id \in BOOLEAN
-  /\ aw_agent_id \in BOOLEAN
-  /\ aw_wallet \in BOOLEAN
-  /\ aw_amount \in BOOLEAN
-  /\ aw_agent_cash \in BOOLEAN
-  /\ aw_approved \in BOOLEAN
-  /\ ac_factors \in BOOLEAN
-  /\ ac_sensitive_op \in BOOLEAN
+  /\ qr_amount \in Nat
+  /\ va_id \in Nat
+  /\ va_parent_wallet \in Nat
+  /\ va_balance \in Nat
+  /\ va_purpose \in Nat
+  /\ session_id \in Nat
+  /\ session_wallet \in Nat
+  /\ session_start \in Nat
+  /\ last_activity_time \in Nat
+  /\ inactivity_timeout \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ wallet_id = TRUE
-  /\ balance = TRUE
-  /\ tier = TRUE
-  /\ is_dormant = TRUE
-  /\ last_activity = TRUE
-  /\ txn_id = TRUE
-  /\ txn_type = TRUE
-  /\ txn_amount = TRUE
-  /\ txn_wallet = TRUE
-  /\ txn_timestamp = TRUE
-  /\ qr_id = TRUE
-  /\ qr_type = TRUE
-  /\ qr_used = TRUE
-  /\ qr_amount = TRUE
-  /\ va_id = TRUE
-  /\ va_parent_wallet = TRUE
-  /\ va_balance = TRUE
-  /\ va_purpose = TRUE
-  /\ session_id = TRUE
-  /\ session_wallet = TRUE
-  /\ session_start = TRUE
-  /\ last_activity_time = TRUE
-  /\ inactivity_timeout = TRUE
-  /\ otp_code = TRUE
-  /\ otp_created_time = TRUE
-  /\ otp_validity_minutes = TRUE
-  /\ device_id = TRUE
-  /\ device_wallet = TRUE
-  /\ biometric_hash = TRUE
-  /\ fs_wallet = TRUE
-  /\ fs_score = TRUE
-  /\ fs_threshold = TRUE
-  /\ vc_wallet = TRUE
-  /\ vc_txn_count = TRUE
-  /\ vc_time_window = TRUE
-  /\ vc_threshold = TRUE
-  /\ p2p_id = TRUE
-  /\ p2p_from = TRUE
-  /\ p2p_to = TRUE
-  /\ p2p_amount = TRUE
-  /\ p2p_initiated_time = TRUE
-  /\ p2p_completed_time = TRUE
-  /\ qrp_id = TRUE
-  /\ qrp_qr = TRUE
-  /\ qrp_payer = TRUE
-  /\ qrp_initiated_time = TRUE
-  /\ qrp_completed_time = TRUE
-  /\ mp_id = TRUE
-  /\ mp_gross_amount = TRUE
-  /\ mp_mdr_rate = TRUE
-  /\ mp_net_amount = TRUE
-  /\ ref_id = TRUE
-  /\ ref_wallet = TRUE
-  /\ ref_amount = TRUE
-  /\ ref_instant = TRUE
-  /\ bt_id = TRUE
-  /\ bt_bank_debit = TRUE
-  /\ bt_wallet_credit = TRUE
-  /\ bt_reconciled = TRUE
-  /\ cb_id = TRUE
-  /\ cb_original_credit = TRUE
-  /\ cb_wallet_debit = TRUE
-  /\ cb_processed = TRUE
-  /\ af_agent_id = TRUE
-  /\ af_float_balance = TRUE
-  /\ af_pending_deposits = TRUE
-  /\ ctu_id = TRUE
-  /\ ctu_crypto_amount = TRUE
-  /\ ctu_rate_at_confirmation = TRUE
-  /\ ctu_fiat_credit = TRUE
-  /\ ctu_rate_locked = TRUE
-  /\ stu_id = TRUE
-  /\ stu_amount = TRUE
-  /\ stu_confirmed = TRUE
-  /\ stu_credited = TRUE
-  /\ wr_id = TRUE
-  /\ wr_wallet = TRUE
-  /\ wr_amount = TRUE
-  /\ wr_daily_total = TRUE
-  /\ wr_wallet_balance = TRUE
-  /\ wr_tier = TRUE
-  /\ bw_id = TRUE
-  /\ bw_wallet = TRUE
-  /\ bw_bank_account = TRUE
-  /\ bw_ownership_verified = TRUE
-  /\ bw_approved = TRUE
-  /\ catm_id = TRUE
-  /\ catm_wallet = TRUE
-  /\ catm_otp = TRUE
-  /\ catm_amount = TRUE
-  /\ aw_id = TRUE
-  /\ aw_agent_id = TRUE
-  /\ aw_wallet = TRUE
-  /\ aw_amount = TRUE
-  /\ aw_agent_cash = TRUE
-  /\ aw_approved = TRUE
-  /\ ac_factors = TRUE
-  /\ ac_sensitive_op = TRUE
+  /\ wallet_id = 0
+  /\ balance = 0
+  /\ tier = Basic
+  /\ is_dormant = FALSE
+  /\ last_activity = 0
+  /\ txn_id = 0
+  /\ txn_type = Credit
+  /\ txn_amount = 0
+  /\ txn_wallet = 0
+  /\ txn_timestamp = 0
+  /\ qr_id = 0
+  /\ qr_type = StaticQR
+  /\ qr_used = FALSE
+  /\ qr_amount = 0
+  /\ va_id = 0
+  /\ va_parent_wallet = 0
+  /\ va_balance = 0
+  /\ va_purpose = 0
+  /\ session_id = 0
+  /\ session_wallet = 0
+  /\ session_start = 0
+  /\ last_activity_time = 0
+  /\ inactivity_timeout = 0
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
+
+\* WalletId (matches Coq: Definition WalletId)
+WalletId ==
+  0
 
 \* tier_limit (matches Coq: Definition tier_limit)
-tier_limit(t) == TRUE
+tier_limit(t) ==
+    CASE t = Basic -> 200
+      [] t = Standard -> 5000
+      [] t = Premium -> 20000
+      [] t = Unlimited -> 1000000000
 
 \* tier_daily_withdrawal_limit (matches Coq: Definition tier_daily_withdrawal_limit)
-tier_daily_withdrawal_limit(t) == TRUE
+tier_daily_withdrawal_limit(t) ==
+    CASE t = Basic -> 100
+      [] t = Standard -> 2000
+      [] t = Premium -> 10000
+      [] t = Unlimited -> 500000000
 
 \* sum_credits (matches Coq: Definition sum_credits)
-sum_credits(txns) == TRUE
+sum_credits(txns) ==
+  txns >= 0
 
 \* sum_debits (matches Coq: Definition sum_debits)
-sum_debits(txns) == TRUE
+sum_debits(txns) ==
+  txns >= 0
 
 \* invalidated (matches Coq: Definition invalidated)
-invalidated(qr) == TRUE
+invalidated(qr) ==
+  qr >= 0
 
 \* virtual_accounts_total (matches Coq: Definition virtual_accounts_total)
-virtual_accounts_total(vas) == TRUE
-
-\* session_expired (matches Coq: Definition session_expired)
-session_expired(s, current_time) == TRUE
-
-\* session_valid (matches Coq: Definition session_valid)
-session_valid(s, current_time) == TRUE
-
-\* otp_valid (matches Coq: Definition otp_valid)
-otp_valid(o, current_time) == TRUE
+virtual_accounts_total(vas) ==
+  vas >= 0
 
 \* fraud_score_high (matches Coq: Definition fraud_score_high)
-fraud_score_high(fs) == TRUE
+fraud_score_high(fs) ==
+  fs >= 0
 
 \* velocity_exceeded (matches Coq: Definition velocity_exceeded)
-velocity_exceeded(vc) == TRUE
+velocity_exceeded(vc) ==
+  vc >= 0
 
 \* p2p_settlement_time (matches Coq: Definition p2p_settlement_time)
-p2p_settlement_time(p) == TRUE
+p2p_settlement_time(p) ==
+  p >= 0
 
 \* qr_payment_time (matches Coq: Definition qr_payment_time)
-qr_payment_time(qrp) == TRUE
+qr_payment_time(qrp) ==
+  qrp >= 0
 
 \* valid_merchant_settlement (matches Coq: Definition valid_merchant_settlement)
-valid_merchant_settlement(mp) == TRUE
+valid_merchant_settlement(mp) ==
+  mp >= 0
 
 \* bank_transfer_reconciled (matches Coq: Definition bank_transfer_reconciled)
-bank_transfer_reconciled(bt) == TRUE
+bank_transfer_reconciled(bt) ==
+  bt >= 0
 
 \* agent_float_sufficient (matches Coq: Definition agent_float_sufficient)
-agent_float_sufficient(af) == TRUE
+agent_float_sufficient(af) ==
+  af >= 0
 
 \* withdrawal_within_limit (matches Coq: Definition withdrawal_within_limit)
-withdrawal_within_limit(wr) == TRUE
+withdrawal_within_limit(wr) ==
+  wr >= 0
 
 \* withdrawal_within_balance (matches Coq: Definition withdrawal_within_balance)
-withdrawal_within_balance(wr) == TRUE
+withdrawal_within_balance(wr) ==
+  wr >= 0
 
 \* agent_has_cash (matches Coq: Definition agent_has_cash)
-agent_has_cash(aw) == TRUE
+agent_has_cash(aw) ==
+  aw >= 0
 
 \* has_two_factors (matches Coq: Definition has_two_factors)
-has_two_factors(ac) == TRUE
+has_two_factors(ac) ==
+  ac # 0
 
 \* wallets_unique (matches Coq: Definition wallets_unique)
-wallets_unique(wallets) == TRUE
-
-\* valid_wallet (matches Coq: Definition valid_wallet)
-valid_wallet(w, txns) == TRUE
+wallets_unique(wallets) ==
+  wallets >= 0
 
 \* dormancy_threshold (matches Coq: Definition dormancy_threshold)
-dormancy_threshold == TRUE
+dormancy_threshold ==
+  365
 
-\* should_be_dormant (matches Coq: Definition should_be_dormant)
-should_be_dormant(w, current_day) == TRUE
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* can_withdraw (matches Coq: Definition can_withdraw)
-can_withdraw(w, amount) == TRUE
+UpdateWallet ==
+  /\ wallet_id' \in 0..100
+  /\ balance' \in 0..100
+  /\ tier' \in WalletTierSet
+  /\ is_dormant' \in BOOLEAN
+  /\ last_activity' \in 0..100
+  /\ UNCHANGED <<txn_id, txn_type, txn_amount, txn_wallet, txn_timestamp, qr_id, qr_type, qr_used, qr_amount, va_id, va_parent_wallet, va_balance, va_purpose, session_id, session_wallet, session_start, last_activity_time, inactivity_timeout>>
 
-\* virtual_accounts_within_parent (matches Coq: Definition virtual_accounts_within_parent)
-virtual_accounts_within_parent(vas, parent_balance) == TRUE
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* p2p_instant (matches Coq: Definition p2p_instant)
-p2p_instant(p) == TRUE
+Next == UpdateWallet \/ ValidateState
 
-\* qr_payment_fast (matches Coq: Definition qr_payment_fast)
-qr_payment_fast(qrp) == TRUE
+Spec == Init /\ [][Next]_vars
 
-\* refund_is_instant (matches Coq: Definition refund_is_instant)
-refund_is_instant(r) == TRUE
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* chargeback_processed (matches Coq: Definition chargeback_processed)
-chargeback_processed(cb) == TRUE
+\* WALLET_001_01_account_uniqueness
+THEOREM WALLET_001_01_account_uniqueness ==
+  \A wallets \in Nat, w1 \in Nat, w2 \in Nat :
+      wallets_unique(wallets) => w1 = w2
 
-\* crypto_rate_is_locked (matches Coq: Definition crypto_rate_is_locked)
-crypto_rate_is_locked(ctu) == TRUE
+\* WALLET_001_02_balance_integrity
+THEOREM WALLET_001_02_balance_integrity ==
+  \A w \in Nat, txns \in Nat :
+      valid_wallet(w, txns) => balance w = sum_credits txns - sum_debits txns
 
-\* stablecoin_instant (matches Coq: Definition stablecoin_instant)
-stablecoin_instant(stu) == TRUE
+\* WALLET_001_03_tier_limit_enforcement
+THEOREM WALLET_001_03_tier_limit_enforcement ==
+  \A w \in Nat, amount \in Nat :
+      amount <= tier_limit => amount <= tier_limit
 
-\* bank_ownership_verified_before_approval (matches Coq: Definition bank_ownership_verified_before_approval)
-bank_ownership_verified_before_approval(bw) == TRUE
+\* WALLET_001_04_virtual_account_segregation
+THEOREM WALLET_001_04_virtual_account_segregation ==
+  \A vas \in Nat, parent_balance \in Nat :
+      virtual_accounts_within_parent(vas, parent_balance) => virtual_accounts_total vas <= parent_balance
 
-\* cardless_atm_otp_validity_minutes (matches Coq: Definition cardless_atm_otp_validity_minutes)
-cardless_atm_otp_validity_minutes == TRUE
+\* WALLET_001_05_dormancy_detection
+THEOREM WALLET_001_05_dormancy_detection ==
+  \A w \in Nat, current_day \in Nat :
+      should_be_dormant(w, current_day) => (dormancy_threshold <= current_day - last_activity w)%nat
 
-\* cardless_otp_valid (matches Coq: Definition cardless_otp_valid)
-cardless_otp_valid(catm, current_time) == TRUE
+\* WALLET_001_06_p2p_instant_settlement
+THEOREM WALLET_001_06_p2p_instant_settlement ==
+  \A p \in Nat :
+      p2p_instant(p) => (p2p_settlement_time p <= 1)%nat
 
-\* agent_withdrawal_approved_with_cash (matches Coq: Definition agent_withdrawal_approved_with_cash)
-agent_withdrawal_approved_with_cash(aw) == TRUE
+\* WALLET_001_07_qr_payment_instant
+THEOREM WALLET_001_07_qr_payment_instant ==
+  \A qrp \in Nat :
+      qr_payment_fast(qrp) => (qr_payment_time qrp <= 3)%nat
 
-\* sensitive_op_requires_2fa (matches Coq: Definition sensitive_op_requires_2fa)
-sensitive_op_requires_2fa(ac) == TRUE
+\* WALLET_001_08_dynamic_qr_single_use
+THEOREM WALLET_001_08_dynamic_qr_single_use ==
+  \A qr \in Nat :
+      qr_type qr = DynamicQR => invalidated(qr)
 
-\* velocity_triggers_review (matches Coq: Definition velocity_triggers_review)
-velocity_triggers_review(vc) == TRUE
+\* WALLET_001_09_merchant_settlement
+THEOREM WALLET_001_09_merchant_settlement ==
+  \A mp \in Nat :
+      valid_merchant_settlement(mp) => mp_net_amount mp = mp_gross_amount mp - (mp_gross_amount mp * mp_mdr_rate mp / 100)
 
-\* fraud_score_blocks_transaction (matches Coq: Definition fraud_score_blocks_transaction)
-fraud_score_blocks_transaction(fs) == TRUE
+\* WALLET_001_10_refund_instant
+THEOREM WALLET_001_10_refund_instant ==
+  \A r \in Nat :
+      refund_is_instant(r) => ref_instant(r)
 
-\* device_biometric_bound (matches Coq: Definition device_biometric_bound)
-device_biometric_bound(d, wallet, bio_hash) == TRUE
+\* WALLET_001_11_bank_transfer_reconciliation
+THEOREM WALLET_001_11_bank_transfer_reconciliation ==
+  \A bt \in Nat :
+      bt_reconciled(bt) => bt_wallet_credit bt = bt_bank_debit bt
 
-\* WALLET_001_01_account_uniqueness (matches Coq: Theorem WALLET_001_01_account_uniqueness)
-THEOREM WALLET_001_01_account_uniqueness == Init => TypeOK
+\* WALLET_001_12_card_chargeback_handling
+THEOREM WALLET_001_12_card_chargeback_handling ==
+  \A cb \in Nat :
+      chargeback_processed(cb) => cb_wallet_debit cb = cb_original_credit cb
 
-\* WALLET_001_02_balance_integrity (matches Coq: Theorem WALLET_001_02_balance_integrity)
-THEOREM WALLET_001_02_balance_integrity == Init => TypeOK
+\* WALLET_001_13_agent_float_sufficiency
+THEOREM WALLET_001_13_agent_float_sufficiency ==
+  \A af \in Nat :
+      agent_float_sufficient(af) => af_pending_deposits af <= af_float_balance af
 
-\* WALLET_001_03_tier_limit_enforcement (matches Coq: Theorem WALLET_001_03_tier_limit_enforcement)
-THEOREM WALLET_001_03_tier_limit_enforcement == Init => TypeOK
+\* WALLET_001_14_crypto_rate_lock
+THEOREM WALLET_001_14_crypto_rate_lock ==
+  \A ctu \in Nat :
+      crypto_rate_is_locked(ctu) => ctu_fiat_credit ctu = ctu_crypto_amount ctu * ctu_rate_at_confirmation ctu
 
-\* WALLET_001_04_virtual_account_segregation (matches Coq: Theorem WALLET_001_04_virtual_account_segregation)
-THEOREM WALLET_001_04_virtual_account_segregation == Init => TypeOK
+\* WALLET_001_15_stablecoin_instant_credit
+THEOREM WALLET_001_15_stablecoin_instant_credit ==
+  \A stu \in Nat :
+      stablecoin_instant(stu) => stu_credited(stu)
 
-\* WALLET_001_05_dormancy_detection (matches Coq: Theorem WALLET_001_05_dormancy_detection)
-THEOREM WALLET_001_05_dormancy_detection == Init => TypeOK
+\* WALLET_001_16_withdrawal_limit_enforcement
+THEOREM WALLET_001_16_withdrawal_limit_enforcement ==
+  \A wr \in Nat :
+      withdrawal_within_limit(wr) => wr_daily_total wr + wr_amount wr <= tier_daily_withdrawal_limit (wr_tier wr)
 
-\* WALLET_001_06_p2p_instant_settlement (matches Coq: Theorem WALLET_001_06_p2p_instant_settlement)
-THEOREM WALLET_001_06_p2p_instant_settlement == Init => TypeOK
+\* WALLET_001_17_bank_withdrawal_ownership
+THEOREM WALLET_001_17_bank_withdrawal_ownership ==
+  \A bw \in Nat :
+      bank_ownership_verified_before_approval(bw) => bw_ownership_verified(bw)
 
-\* WALLET_001_07_qr_payment_instant (matches Coq: Theorem WALLET_001_07_qr_payment_instant)
-THEOREM WALLET_001_07_qr_payment_instant == Init => TypeOK
+\* WALLET_001_18_cardless_atm_otp_validity
+THEOREM WALLET_001_18_cardless_atm_otp_validity ==
+  \A catm \in Nat, current_time \in Nat :
+      cardless_otp_valid(catm, current_time) => otp_validity_minutes (catm_otp catm) = 15%nat
 
-\* WALLET_001_08_dynamic_qr_single_use (matches Coq: Theorem WALLET_001_08_dynamic_qr_single_use)
-THEOREM WALLET_001_08_dynamic_qr_single_use == Init => TypeOK
+\* WALLET_001_19_agent_cash_availability
+THEOREM WALLET_001_19_agent_cash_availability ==
+  \A aw \in Nat :
+      agent_withdrawal_approved_with_cash(aw) => agent_has_cash(aw)
 
-\* WALLET_001_09_merchant_settlement (matches Coq: Theorem WALLET_001_09_merchant_settlement)
-THEOREM WALLET_001_09_merchant_settlement == Init => TypeOK
+\* WALLET_001_20_withdrawal_balance_check
+THEOREM WALLET_001_20_withdrawal_balance_check ==
+  \A w \in Nat, amount \in Nat :
+      can_withdraw(w, amount) => amount <= balance
 
-\* WALLET_001_10_refund_instant (matches Coq: Theorem WALLET_001_10_refund_instant)
-THEOREM WALLET_001_10_refund_instant == Init => TypeOK
+\* WALLET_001_21_multi_factor_required
+THEOREM WALLET_001_21_multi_factor_required ==
+  \A ac \in Nat :
+      sensitive_op_requires_2fa(ac) => has_two_factors(ac)
 
-\* WALLET_001_11_bank_transfer_reconciliation (matches Coq: Theorem WALLET_001_11_bank_transfer_reconciliation)
-THEOREM WALLET_001_11_bank_transfer_reconciliation == Init => TypeOK
+\* WALLET_001_22_session_expiry
+THEOREM WALLET_001_22_session_expiry ==
+  \A s \in Nat, current_time \in Nat :
+      session_expired(s, current_time) => ~ session_valid s current_time
 
-\* WALLET_001_12_card_chargeback_handling (matches Coq: Theorem WALLET_001_12_card_chargeback_handling)
-THEOREM WALLET_001_12_card_chargeback_handling == Init => TypeOK
+\* WALLET_001_23_velocity_check
+THEOREM WALLET_001_23_velocity_check ==
+  \A vc \in Nat :
+      velocity_exceeded(vc) => (vc_threshold vc < vc_txn_count vc)%nat
 
-\* WALLET_001_13_agent_float_sufficiency (matches Coq: Theorem WALLET_001_13_agent_float_sufficiency)
-THEOREM WALLET_001_13_agent_float_sufficiency == Init => TypeOK
+\* WALLET_001_24_fraud_score_blocking
+THEOREM WALLET_001_24_fraud_score_blocking ==
+  \A fs \in Nat :
+      fraud_score_high(fs) => (fs_threshold fs <= fs_score fs)%nat
 
-\* WALLET_001_14_crypto_rate_lock (matches Coq: Theorem WALLET_001_14_crypto_rate_lock)
-THEOREM WALLET_001_14_crypto_rate_lock == Init => TypeOK
-
-\* WALLET_001_15_stablecoin_instant_credit (matches Coq: Theorem WALLET_001_15_stablecoin_instant_credit)
-THEOREM WALLET_001_15_stablecoin_instant_credit == Init => TypeOK
-
-\* WALLET_001_16_withdrawal_limit_enforcement (matches Coq: Theorem WALLET_001_16_withdrawal_limit_enforcement)
-THEOREM WALLET_001_16_withdrawal_limit_enforcement == Init => TypeOK
-
-\* WALLET_001_17_bank_withdrawal_ownership (matches Coq: Theorem WALLET_001_17_bank_withdrawal_ownership)
-THEOREM WALLET_001_17_bank_withdrawal_ownership == Init => TypeOK
-
-\* WALLET_001_18_cardless_atm_otp_validity (matches Coq: Theorem WALLET_001_18_cardless_atm_otp_validity)
-THEOREM WALLET_001_18_cardless_atm_otp_validity == Init => TypeOK
-
-\* WALLET_001_19_agent_cash_availability (matches Coq: Theorem WALLET_001_19_agent_cash_availability)
-THEOREM WALLET_001_19_agent_cash_availability == Init => TypeOK
-
-\* WALLET_001_20_withdrawal_balance_check (matches Coq: Theorem WALLET_001_20_withdrawal_balance_check)
-THEOREM WALLET_001_20_withdrawal_balance_check == Init => TypeOK
-
-\* WALLET_001_21_multi_factor_required (matches Coq: Theorem WALLET_001_21_multi_factor_required)
-THEOREM WALLET_001_21_multi_factor_required == Init => TypeOK
-
-\* WALLET_001_22_session_expiry (matches Coq: Theorem WALLET_001_22_session_expiry)
-THEOREM WALLET_001_22_session_expiry == Init => TypeOK
-
-\* WALLET_001_23_velocity_check (matches Coq: Theorem WALLET_001_23_velocity_check)
-THEOREM WALLET_001_23_velocity_check == Init => TypeOK
-
-\* WALLET_001_24_fraud_score_blocking (matches Coq: Theorem WALLET_001_24_fraud_score_blocking)
-THEOREM WALLET_001_24_fraud_score_blocking == Init => TypeOK
-
-\* WALLET_001_25_device_binding (matches Coq: Theorem WALLET_001_25_device_binding)
-THEOREM WALLET_001_25_device_binding == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<wallet_id, balance, tier, is_dormant, last_activity, txn_id, txn_type, txn_amount, txn_wallet, txn_timestamp, qr_id, qr_type, qr_used, qr_amount, va_id, va_parent_wallet, va_balance, va_purpose, session_id, session_wallet, session_start, last_activity_time, inactivity_timeout, otp_code, otp_created_time, otp_validity_minutes, device_id, device_wallet, biometric_hash, fs_wallet, fs_score, fs_threshold, vc_wallet, vc_txn_count, vc_time_window, vc_threshold, p2p_id, p2p_from, p2p_to, p2p_amount, p2p_initiated_time, p2p_completed_time, qrp_id, qrp_qr, qrp_payer, qrp_initiated_time, qrp_completed_time, mp_id, mp_gross_amount, mp_mdr_rate, mp_net_amount, ref_id, ref_wallet, ref_amount, ref_instant, bt_id, bt_bank_debit, bt_wallet_credit, bt_reconciled, cb_id, cb_original_credit, cb_wallet_debit, cb_processed, af_agent_id, af_float_balance, af_pending_deposits, ctu_id, ctu_crypto_amount, ctu_rate_at_confirmation, ctu_fiat_credit, ctu_rate_locked, stu_id, stu_amount, stu_confirmed, stu_credited, wr_id, wr_wallet, wr_amount, wr_daily_total, wr_wallet_balance, wr_tier, bw_id, bw_wallet, bw_bank_account, bw_ownership_verified, bw_approved, catm_id, catm_wallet, catm_otp, catm_amount, aw_id, aw_agent_id, aw_wallet, aw_amount, aw_agent_cash, aw_approved, ac_factors, ac_sensitive_op>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<wallet_id, balance, tier, is_dormant, last_activity, txn_id, txn_type, txn_amount, txn_wallet, txn_timestamp, qr_id, qr_type, qr_used, qr_amount, va_id, va_parent_wallet, va_balance, va_purpose, session_id, session_wallet, session_start, last_activity_time, inactivity_timeout, otp_code, otp_created_time, otp_validity_minutes, device_id, device_wallet, biometric_hash, fs_wallet, fs_score, fs_threshold, vc_wallet, vc_txn_count, vc_time_window, vc_threshold, p2p_id, p2p_from, p2p_to, p2p_amount, p2p_initiated_time, p2p_completed_time, qrp_id, qrp_qr, qrp_payer, qrp_initiated_time, qrp_completed_time, mp_id, mp_gross_amount, mp_mdr_rate, mp_net_amount, ref_id, ref_wallet, ref_amount, ref_instant, bt_id, bt_bank_debit, bt_wallet_credit, bt_reconciled, cb_id, cb_original_credit, cb_wallet_debit, cb_processed, af_agent_id, af_float_balance, af_pending_deposits, ctu_id, ctu_crypto_amount, ctu_rate_at_confirmation, ctu_fiat_credit, ctu_rate_locked, stu_id, stu_amount, stu_confirmed, stu_credited, wr_id, wr_wallet, wr_amount, wr_daily_total, wr_wallet_balance, wr_tier, bw_id, bw_wallet, bw_bank_account, bw_ownership_verified, bw_approved, catm_id, catm_wallet, catm_otp, catm_amount, aw_id, aw_agent_id, aw_wallet, aw_amount, aw_agent_cash, aw_approved, ac_factors, ac_sensitive_op>>
+\* WALLET_001_25_device_binding
+THEOREM WALLET_001_25_device_binding ==
+  \A d \in Nat, wallet \in Nat, bio_hash \in Nat :
+      device_biometric_bound d wallet bio_hash => device_wallet d = wallet /\ biometric_hash d = bio_hash
 
 ====

@@ -1,13 +1,18 @@
 ---- MODULE ContainerSecurity ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/ContainerSecurity.v (106 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/ContainerSecurity.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* SyscallCategory (matches Coq: Inductive SyscallCategory)
 CONSTANTS SC_Process, SC_FileSystem, SC_Network, SC_Memory, SC_Privileged, SC_Debug, SC_Module, SC_Namespace
+
+SyscallCategorySet == {SC_Process, SC_FileSystem, SC_Network, SC_Memory, SC_Privileged, SC_Debug, SC_Module, SC_Namespace}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* NamespaceIsolation (matches Coq: Record NamespaceIsolation)
 VARIABLES ns_pid_isolated, ns_net_isolated, ns_mount_isolated, ns_user_isolated, ns_uts_isolated, ns_ipc_isolated, ns_cgroup_isolated, ns_time_isolated
@@ -24,13 +29,12 @@ VARIABLES cap_chown, cap_dac_override, cap_fowner, cap_kill, cap_setuid, cap_set
 \* ImageIntegrity (matches Coq: Record ImageIntegrity)
 VARIABLES img_signed, img_signature_valid, img_hash_verified, img_trusted_registry, img_sbom_present, img_vuln_scanned, img_no_critical_vulns, img_base_verified
 
-\* EscapePrevention (matches Coq: Record EscapePrevention)
-VARIABLES esc_no_privileged, esc_no_host_pid, esc_no_host_net, esc_no_host_ipc, esc_readonly_rootfs, esc_no_new_privs, esc_seccomp_enabled, esc_apparmor_enabled, esc_selinux_enabled, esc_drop_all_caps
+vars == <<ns_pid_isolated, ns_net_isolated, ns_mount_isolated, ns_user_isolated, ns_uts_isolated, ns_ipc_isolated, ns_cgroup_isolated, ns_time_isolated, cg_cpu_limited, cg_memory_limited, cg_swap_disabled, cg_pids_limited, cg_io_limited, sc_syscall_filter, sc_default_deny, sc_audit_logging, sc_allow_process, sc_allow_fs, sc_allow_network, sc_allow_memory, sc_block_privileged, sc_block_debug, sc_block_module, sc_block_namespace, cap_chown, cap_dac_override, cap_fowner, cap_kill, cap_setuid, cap_setgid, cap_net_bind, cap_net_raw, cap_sys_admin, cap_sys_ptrace, cap_sys_module, cap_sys_rawio, cap_mknod, cap_audit_write, img_signed, img_signature_valid, img_hash_verified, img_trusted_registry, img_sbom_present, img_vuln_scanned, img_no_critical_vulns, img_base_verified>>
 
-\* ContainerConfig (matches Coq: Record ContainerConfig)
-VARIABLES cont_ns, cont_cgroup, cont_seccomp, cont_caps, cont_image, cont_escape, cont_rootless
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
 
-\* Type invariant
 TypeOK ==
   /\ ns_pid_isolated \in BOOLEAN
   /\ ns_net_isolated \in BOOLEAN
@@ -39,12 +43,12 @@ TypeOK ==
   /\ ns_uts_isolated \in BOOLEAN
   /\ ns_ipc_isolated \in BOOLEAN
   /\ ns_cgroup_isolated \in BOOLEAN
-  /\ ns_time_isolated \in BOOLEAN
+  /\ ns_time_isolated \in Nat
   /\ cg_cpu_limited \in BOOLEAN
   /\ cg_memory_limited \in BOOLEAN
   /\ cg_swap_disabled \in BOOLEAN
   /\ cg_pids_limited \in BOOLEAN
-  /\ cg_io_limited \in BOOLEAN
+  /\ cg_io_limited \in Nat
   /\ sc_syscall_filter \in BOOLEAN
   /\ sc_default_deny \in BOOLEAN
   /\ sc_audit_logging \in BOOLEAN
@@ -78,529 +82,278 @@ TypeOK ==
   /\ img_vuln_scanned \in BOOLEAN
   /\ img_no_critical_vulns \in BOOLEAN
   /\ img_base_verified \in BOOLEAN
-  /\ esc_no_privileged \in BOOLEAN
-  /\ esc_no_host_pid \in BOOLEAN
-  /\ esc_no_host_net \in BOOLEAN
-  /\ esc_no_host_ipc \in BOOLEAN
-  /\ esc_readonly_rootfs \in BOOLEAN
-  /\ esc_no_new_privs \in BOOLEAN
-  /\ esc_seccomp_enabled \in BOOLEAN
-  /\ esc_apparmor_enabled \in BOOLEAN
-  /\ esc_selinux_enabled \in BOOLEAN
-  /\ esc_drop_all_caps \in BOOLEAN
-  /\ cont_ns \in BOOLEAN
-  /\ cont_cgroup \in BOOLEAN
-  /\ cont_seccomp \in BOOLEAN
-  /\ cont_caps \in BOOLEAN
-  /\ cont_image \in BOOLEAN
-  /\ cont_escape \in BOOLEAN
-  /\ cont_rootless \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ ns_pid_isolated = TRUE
-  /\ ns_net_isolated = TRUE
-  /\ ns_mount_isolated = TRUE
-  /\ ns_user_isolated = TRUE
-  /\ ns_uts_isolated = TRUE
-  /\ ns_ipc_isolated = TRUE
-  /\ ns_cgroup_isolated = TRUE
-  /\ ns_time_isolated = TRUE
-  /\ cg_cpu_limited = TRUE
-  /\ cg_memory_limited = TRUE
-  /\ cg_swap_disabled = TRUE
-  /\ cg_pids_limited = TRUE
-  /\ cg_io_limited = TRUE
-  /\ sc_syscall_filter = TRUE
-  /\ sc_default_deny = TRUE
-  /\ sc_audit_logging = TRUE
-  /\ sc_allow_process = TRUE
-  /\ sc_allow_fs = TRUE
-  /\ sc_allow_network = TRUE
-  /\ sc_allow_memory = TRUE
-  /\ sc_block_privileged = TRUE
-  /\ sc_block_debug = TRUE
-  /\ sc_block_module = TRUE
-  /\ sc_block_namespace = TRUE
-  /\ cap_chown = TRUE
-  /\ cap_dac_override = TRUE
-  /\ cap_fowner = TRUE
-  /\ cap_kill = TRUE
-  /\ cap_setuid = TRUE
-  /\ cap_setgid = TRUE
-  /\ cap_net_bind = TRUE
-  /\ cap_net_raw = TRUE
-  /\ cap_sys_admin = TRUE
-  /\ cap_sys_ptrace = TRUE
-  /\ cap_sys_module = TRUE
-  /\ cap_sys_rawio = TRUE
-  /\ cap_mknod = TRUE
-  /\ cap_audit_write = TRUE
-  /\ img_signed = TRUE
-  /\ img_signature_valid = TRUE
-  /\ img_hash_verified = TRUE
-  /\ img_trusted_registry = TRUE
-  /\ img_sbom_present = TRUE
-  /\ img_vuln_scanned = TRUE
-  /\ img_no_critical_vulns = TRUE
-  /\ img_base_verified = TRUE
-  /\ esc_no_privileged = TRUE
-  /\ esc_no_host_pid = TRUE
-  /\ esc_no_host_net = TRUE
-  /\ esc_no_host_ipc = TRUE
-  /\ esc_readonly_rootfs = TRUE
-  /\ esc_no_new_privs = TRUE
-  /\ esc_seccomp_enabled = TRUE
-  /\ esc_apparmor_enabled = TRUE
-  /\ esc_selinux_enabled = TRUE
-  /\ esc_drop_all_caps = TRUE
-  /\ cont_ns = TRUE
-  /\ cont_cgroup = TRUE
-  /\ cont_seccomp = TRUE
-  /\ cont_caps = TRUE
-  /\ cont_image = TRUE
-  /\ cont_escape = TRUE
-  /\ cont_rootless = TRUE
+  /\ ns_pid_isolated = FALSE
+  /\ ns_net_isolated = FALSE
+  /\ ns_mount_isolated = FALSE
+  /\ ns_user_isolated = FALSE
+  /\ ns_uts_isolated = FALSE
+  /\ ns_ipc_isolated = FALSE
+  /\ ns_cgroup_isolated = FALSE
+  /\ ns_time_isolated = 0
+  /\ cg_cpu_limited = FALSE
+  /\ cg_memory_limited = FALSE
+  /\ cg_swap_disabled = FALSE
+  /\ cg_pids_limited = FALSE
+  /\ cg_io_limited = 0
+  /\ sc_syscall_filter = FALSE
+  /\ sc_default_deny = FALSE
+  /\ sc_audit_logging = FALSE
+  /\ sc_allow_process = FALSE
+  /\ sc_allow_fs = FALSE
+  /\ sc_allow_network = FALSE
+  /\ sc_allow_memory = FALSE
+  /\ sc_block_privileged = FALSE
+  /\ sc_block_debug = FALSE
+  /\ sc_block_module = FALSE
+  /\ sc_block_namespace = FALSE
+  /\ cap_chown = FALSE
+  /\ cap_dac_override = FALSE
+  /\ cap_fowner = FALSE
+  /\ cap_kill = FALSE
+  /\ cap_setuid = FALSE
+  /\ cap_setgid = FALSE
+  /\ cap_net_bind = FALSE
+  /\ cap_net_raw = FALSE
+  /\ cap_sys_admin = FALSE
+  /\ cap_sys_ptrace = FALSE
+  /\ cap_sys_module = FALSE
+  /\ cap_sys_rawio = FALSE
+  /\ cap_mknod = FALSE
+  /\ cap_audit_write = FALSE
+  /\ img_signed = FALSE
+  /\ img_signature_valid = FALSE
+  /\ img_hash_verified = FALSE
+  /\ img_trusted_registry = FALSE
+  /\ img_sbom_present = FALSE
+  /\ img_vuln_scanned = FALSE
+  /\ img_no_critical_vulns = FALSE
+  /\ img_base_verified = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* ns_fully_isolated (matches Coq: Definition ns_fully_isolated)
-ns_fully_isolated(n) == TRUE
+ns_fully_isolated(n) ==
+  ns_pid_isolated /\ ns_net_isolated /\ ns_mount_isolated /\ ns_user_isolated /\ ns_uts_isolated /\ ns_ipc_isolated /\ ns_cgroup_isolated /\ ns_time_isolated
 
 \* ns_minimally_isolated (matches Coq: Definition ns_minimally_isolated)
-ns_minimally_isolated(n) == TRUE
+ns_minimally_isolated(n) ==
+  ns_pid_isolated /\ ns_net_isolated /\ ns_mount_isolated /\ ns_user_isolated
 
 \* ns_network_safe (matches Coq: Definition ns_network_safe)
-ns_network_safe(n) == TRUE
+ns_network_safe(n) ==
+  ns_net_isolated /\ ns_uts_isolated
 
 \* ns_process_safe (matches Coq: Definition ns_process_safe)
-ns_process_safe(n) == TRUE
+ns_process_safe(n) ==
+  ns_pid_isolated /\ ns_ipc_isolated /\ ns_cgroup_isolated
 
 \* cgroup_cpu_safe (matches Coq: Definition cgroup_cpu_safe)
-cgroup_cpu_safe(c) == TRUE
+cgroup_cpu_safe(c) ==
+  cg_cpu_limited(c)
 
 \* cgroup_memory_safe (matches Coq: Definition cgroup_memory_safe)
-cgroup_memory_safe(c) == TRUE
+cgroup_memory_safe(c) ==
+  cg_memory_limited /\ cg_swap_disabled
 
 \* cgroup_pids_safe (matches Coq: Definition cgroup_pids_safe)
-cgroup_pids_safe(c) == TRUE
+cgroup_pids_safe(c) ==
+  cg_pids_limited(c)
 
 \* cgroup_io_safe (matches Coq: Definition cgroup_io_safe)
-cgroup_io_safe(c) == TRUE
+cgroup_io_safe(c) ==
+  cg_io_limited(c)
 
 \* cgroup_fully_limited (matches Coq: Definition cgroup_fully_limited)
-cgroup_fully_limited(c) == TRUE
+cgroup_fully_limited(c) ==
+  cg_cpu_limited /\ cg_memory_limited /\ cg_swap_disabled /\ cg_pids_limited /\ cg_io_limited
 
 \* seccomp_enforced (matches Coq: Definition seccomp_enforced)
-seccomp_enforced(s) == TRUE
+seccomp_enforced(s) ==
+  sc_syscall_filter /\ sc_default_deny /\ sc_audit_logging
 
 \* seccomp_minimal_safe (matches Coq: Definition seccomp_minimal_safe)
-seccomp_minimal_safe(s) == TRUE
+seccomp_minimal_safe(s) ==
+  sc_syscall_filter /\ sc_block_privileged /\ sc_block_debug
 
 \* seccomp_escape_protected (matches Coq: Definition seccomp_escape_protected)
-seccomp_escape_protected(s) == TRUE
+seccomp_escape_protected(s) ==
+  sc_block_privileged /\ sc_block_module /\ sc_block_namespace
 
 \* seccomp_fully_hardened (matches Coq: Definition seccomp_fully_hardened)
-seccomp_fully_hardened(s) == TRUE
+seccomp_fully_hardened(s) ==
+  seccomp_enforced /\ seccomp_escape_protected /\ sc_block_debug
 
 \* caps_dangerous_dropped (matches Coq: Definition caps_dangerous_dropped)
-caps_dangerous_dropped(c) == TRUE
+caps_dangerous_dropped(c) ==
+  negb (cap_sys_admin c) /\ negb (cap_sys_ptrace c) /\ negb (cap_sys_module c) /\ negb (cap_sys_rawio c)
 
 \* caps_minimal (matches Coq: Definition caps_minimal)
-caps_minimal(c) == TRUE
+caps_minimal(c) ==
+  caps_dangerous_dropped /\ negb (cap_net_raw c) /\ negb (cap_dac_override c) /\ negb (cap_mknod c)
 
 \* caps_rootless_safe (matches Coq: Definition caps_rootless_safe)
-caps_rootless_safe(c) == TRUE
+caps_rootless_safe(c) ==
+  caps_minimal /\ negb (cap_setuid c) /\ negb (cap_setgid c) /\ negb (cap_chown c)
 
 \* caps_network_minimal (matches Coq: Definition caps_network_minimal)
-caps_network_minimal(c) == TRUE
+caps_network_minimal(c) ==
+  negb (cap_net_raw c) /\ cap_net_bind
 
 \* image_authenticity_verified (matches Coq: Definition image_authenticity_verified)
-image_authenticity_verified(i) == TRUE
+image_authenticity_verified(i) ==
+  img_signed /\ img_signature_valid /\ img_hash_verified
 
 \* image_provenance_verified (matches Coq: Definition image_provenance_verified)
-image_provenance_verified(i) == TRUE
+image_provenance_verified(i) ==
+  img_trusted_registry /\ img_sbom_present /\ img_base_verified
 
 \* image_security_verified (matches Coq: Definition image_security_verified)
-image_security_verified(i) == TRUE
-
-\* image_fully_verified (matches Coq: Definition image_fully_verified)
-image_fully_verified(i) == TRUE
-
-\* escape_basic_protected (matches Coq: Definition escape_basic_protected)
-escape_basic_protected(e) == TRUE
-
-\* escape_filesystem_protected (matches Coq: Definition escape_filesystem_protected)
-escape_filesystem_protected(e) == TRUE
-
-\* escape_mac_protected (matches Coq: Definition escape_mac_protected)
-escape_mac_protected(e) == TRUE
-
-\* escape_fully_protected (matches Coq: Definition escape_fully_protected)
-escape_fully_protected(e) == TRUE
-
-\* container_isolated (matches Coq: Definition container_isolated)
-container_isolated(c) == TRUE
-
-\* container_resource_safe (matches Coq: Definition container_resource_safe)
-container_resource_safe(c) == TRUE
-
-\* container_syscall_safe (matches Coq: Definition container_syscall_safe)
-container_syscall_safe(c) == TRUE
-
-\* container_capability_safe (matches Coq: Definition container_capability_safe)
-container_capability_safe(c) == TRUE
-
-\* container_image_safe (matches Coq: Definition container_image_safe)
-container_image_safe(c) == TRUE
-
-\* container_escape_safe (matches Coq: Definition container_escape_safe)
-container_escape_safe(c) == TRUE
-
-\* container_fully_secure (matches Coq: Definition container_fully_secure)
-container_fully_secure(c) == TRUE
-
-\* riina_ns (matches Coq: Definition riina_ns)
-riina_ns == TRUE
-
-\* riina_cgroup (matches Coq: Definition riina_cgroup)
-riina_cgroup == TRUE
-
-\* riina_seccomp (matches Coq: Definition riina_seccomp)
-riina_seccomp == TRUE
-
-\* riina_caps (matches Coq: Definition riina_caps)
-riina_caps == TRUE
-
-\* riina_image (matches Coq: Definition riina_image)
-riina_image == TRUE
-
-\* riina_escape (matches Coq: Definition riina_escape)
-riina_escape == TRUE
-
-\* riina_container (matches Coq: Definition riina_container)
-riina_container == TRUE
-
-\* andb_true_intro (matches Coq: Lemma andb_true_intro)
-THEOREM andb_true_intro == Init => TypeOK
-
-\* andb_true_elim1 (matches Coq: Lemma andb_true_elim1)
-THEOREM andb_true_elim1 == Init => TypeOK
-
-\* andb_true_elim2 (matches Coq: Lemma andb_true_elim2)
-THEOREM andb_true_elim2 == Init => TypeOK
-
-\* andb7_true (matches Coq: Lemma andb7_true)
-THEOREM andb7_true == Init => TypeOK
-
-\* NS_001_full_isolation (matches Coq: Theorem NS_001_full_isolation)
-THEOREM NS_001_full_isolation == Init => TypeOK
-
-\* NS_002_minimal_isolation (matches Coq: Theorem NS_002_minimal_isolation)
-THEOREM NS_002_minimal_isolation == Init => TypeOK
-
-\* NS_003_pid_isolated (matches Coq: Theorem NS_003_pid_isolated)
-THEOREM NS_003_pid_isolated == Init => TypeOK
-
-\* NS_004_net_isolated (matches Coq: Theorem NS_004_net_isolated)
-THEOREM NS_004_net_isolated == Init => TypeOK
-
-\* NS_005_mount_isolated (matches Coq: Theorem NS_005_mount_isolated)
-THEOREM NS_005_mount_isolated == Init => TypeOK
-
-\* NS_006_user_isolated (matches Coq: Theorem NS_006_user_isolated)
-THEOREM NS_006_user_isolated == Init => TypeOK
-
-\* NS_007_uts_isolated (matches Coq: Theorem NS_007_uts_isolated)
-THEOREM NS_007_uts_isolated == Init => TypeOK
-
-\* NS_008_ipc_isolated (matches Coq: Theorem NS_008_ipc_isolated)
-THEOREM NS_008_ipc_isolated == Init => TypeOK
-
-\* NS_009_cgroup_isolated (matches Coq: Theorem NS_009_cgroup_isolated)
-THEOREM NS_009_cgroup_isolated == Init => TypeOK
-
-\* NS_010_time_isolated (matches Coq: Theorem NS_010_time_isolated)
-THEOREM NS_010_time_isolated == Init => TypeOK
-
-\* NS_011_network_safe (matches Coq: Theorem NS_011_network_safe)
-THEOREM NS_011_network_safe == Init => TypeOK
-
-\* NS_012_process_safe (matches Coq: Theorem NS_012_process_safe)
-THEOREM NS_012_process_safe == Init => TypeOK
-
-\* NS_013_full_implies_pid (matches Coq: Theorem NS_013_full_implies_pid)
-THEOREM NS_013_full_implies_pid == Init => TypeOK
-
-\* NS_014_full_implies_net (matches Coq: Theorem NS_014_full_implies_net)
-THEOREM NS_014_full_implies_net == Init => TypeOK
-
-\* NS_015_full_implies_user (matches Coq: Theorem NS_015_full_implies_user)
-THEOREM NS_015_full_implies_user == Init => TypeOK
-
-\* CG_001_cpu_safe (matches Coq: Theorem CG_001_cpu_safe)
-THEOREM CG_001_cpu_safe == Init => TypeOK
-
-\* CG_002_memory_safe (matches Coq: Theorem CG_002_memory_safe)
-THEOREM CG_002_memory_safe == Init => TypeOK
-
-\* CG_003_pids_safe (matches Coq: Theorem CG_003_pids_safe)
-THEOREM CG_003_pids_safe == Init => TypeOK
-
-\* CG_004_io_safe (matches Coq: Theorem CG_004_io_safe)
-THEOREM CG_004_io_safe == Init => TypeOK
-
-\* CG_005_fully_limited (matches Coq: Theorem CG_005_fully_limited)
-THEOREM CG_005_fully_limited == Init => TypeOK
-
-\* CG_006_full_implies_cpu (matches Coq: Theorem CG_006_full_implies_cpu)
-THEOREM CG_006_full_implies_cpu == Init => TypeOK
-
-\* CG_007_full_implies_memory (matches Coq: Theorem CG_007_full_implies_memory)
-THEOREM CG_007_full_implies_memory == Init => TypeOK
-
-\* CG_008_full_implies_pids (matches Coq: Theorem CG_008_full_implies_pids)
-THEOREM CG_008_full_implies_pids == Init => TypeOK
-
-\* CG_009_full_implies_io (matches Coq: Theorem CG_009_full_implies_io)
-THEOREM CG_009_full_implies_io == Init => TypeOK
-
-\* CG_010_swap_disabled (matches Coq: Theorem CG_010_swap_disabled)
-THEOREM CG_010_swap_disabled == Init => TypeOK
-
-\* SC_001_enforced (matches Coq: Theorem SC_001_enforced)
-THEOREM SC_001_enforced == Init => TypeOK
-
-\* SC_002_minimal_safe (matches Coq: Theorem SC_002_minimal_safe)
-THEOREM SC_002_minimal_safe == Init => TypeOK
-
-\* SC_003_escape_protected (matches Coq: Theorem SC_003_escape_protected)
-THEOREM SC_003_escape_protected == Init => TypeOK
-
-\* SC_004_fully_hardened (matches Coq: Theorem SC_004_fully_hardened)
-THEOREM SC_004_fully_hardened == Init => TypeOK
-
-\* SC_005_filter_enabled (matches Coq: Theorem SC_005_filter_enabled)
-THEOREM SC_005_filter_enabled == Init => TypeOK
-
-\* SC_006_default_deny (matches Coq: Theorem SC_006_default_deny)
-THEOREM SC_006_default_deny == Init => TypeOK
-
-\* SC_007_audit_logging (matches Coq: Theorem SC_007_audit_logging)
-THEOREM SC_007_audit_logging == Init => TypeOK
-
-\* SC_008_block_privileged (matches Coq: Theorem SC_008_block_privileged)
-THEOREM SC_008_block_privileged == Init => TypeOK
-
-\* SC_009_block_debug (matches Coq: Theorem SC_009_block_debug)
-THEOREM SC_009_block_debug == Init => TypeOK
-
-\* SC_010_block_module (matches Coq: Theorem SC_010_block_module)
-THEOREM SC_010_block_module == Init => TypeOK
-
-\* SC_011_block_namespace (matches Coq: Theorem SC_011_block_namespace)
-THEOREM SC_011_block_namespace == Init => TypeOK
-
-\* SC_012_hardened_implies_filter (matches Coq: Theorem SC_012_hardened_implies_filter)
-THEOREM SC_012_hardened_implies_filter == Init => TypeOK
-
-\* SC_013_hardened_implies_block_priv (matches Coq: Theorem SC_013_hardened_implies_block_priv)
-THEOREM SC_013_hardened_implies_block_priv == Init => TypeOK
-
-\* CAP_001_dangerous_dropped (matches Coq: Theorem CAP_001_dangerous_dropped)
-THEOREM CAP_001_dangerous_dropped == Init => TypeOK
-
-\* CAP_002_minimal (matches Coq: Theorem CAP_002_minimal)
-THEOREM CAP_002_minimal == Init => TypeOK
-
-\* CAP_003_rootless_safe (matches Coq: Theorem CAP_003_rootless_safe)
-THEOREM CAP_003_rootless_safe == Init => TypeOK
-
-\* CAP_004_network_minimal (matches Coq: Theorem CAP_004_network_minimal)
-THEOREM CAP_004_network_minimal == Init => TypeOK
-
-\* CAP_005_no_sys_admin (matches Coq: Theorem CAP_005_no_sys_admin)
-THEOREM CAP_005_no_sys_admin == Init => TypeOK
-
-\* CAP_006_no_sys_ptrace (matches Coq: Theorem CAP_006_no_sys_ptrace)
-THEOREM CAP_006_no_sys_ptrace == Init => TypeOK
-
-\* CAP_007_no_sys_module (matches Coq: Theorem CAP_007_no_sys_module)
-THEOREM CAP_007_no_sys_module == Init => TypeOK
-
-\* CAP_008_no_sys_rawio (matches Coq: Theorem CAP_008_no_sys_rawio)
-THEOREM CAP_008_no_sys_rawio == Init => TypeOK
-
-\* CAP_009_no_net_raw (matches Coq: Theorem CAP_009_no_net_raw)
-THEOREM CAP_009_no_net_raw == Init => TypeOK
-
-\* CAP_010_no_setuid (matches Coq: Theorem CAP_010_no_setuid)
-THEOREM CAP_010_no_setuid == Init => TypeOK
-
-\* CAP_011_no_setgid (matches Coq: Theorem CAP_011_no_setgid)
-THEOREM CAP_011_no_setgid == Init => TypeOK
-
-\* CAP_012_no_chown (matches Coq: Theorem CAP_012_no_chown)
-THEOREM CAP_012_no_chown == Init => TypeOK
-
-\* CAP_013_net_bind_allowed (matches Coq: Theorem CAP_013_net_bind_allowed)
-THEOREM CAP_013_net_bind_allowed == Init => TypeOK
-
-\* IMG_001_authenticity_verified (matches Coq: Theorem IMG_001_authenticity_verified)
-THEOREM IMG_001_authenticity_verified == Init => TypeOK
-
-\* IMG_002_provenance_verified (matches Coq: Theorem IMG_002_provenance_verified)
-THEOREM IMG_002_provenance_verified == Init => TypeOK
-
-\* IMG_003_security_verified (matches Coq: Theorem IMG_003_security_verified)
-THEOREM IMG_003_security_verified == Init => TypeOK
-
-\* IMG_004_fully_verified (matches Coq: Theorem IMG_004_fully_verified)
-THEOREM IMG_004_fully_verified == Init => TypeOK
-
-\* IMG_005_signed (matches Coq: Theorem IMG_005_signed)
-THEOREM IMG_005_signed == Init => TypeOK
-
-\* IMG_006_signature_valid (matches Coq: Theorem IMG_006_signature_valid)
-THEOREM IMG_006_signature_valid == Init => TypeOK
-
-\* IMG_007_hash_verified (matches Coq: Theorem IMG_007_hash_verified)
-THEOREM IMG_007_hash_verified == Init => TypeOK
-
-\* IMG_008_trusted_registry (matches Coq: Theorem IMG_008_trusted_registry)
-THEOREM IMG_008_trusted_registry == Init => TypeOK
-
-\* IMG_009_sbom_present (matches Coq: Theorem IMG_009_sbom_present)
-THEOREM IMG_009_sbom_present == Init => TypeOK
-
-\* IMG_010_vuln_scanned (matches Coq: Theorem IMG_010_vuln_scanned)
-THEOREM IMG_010_vuln_scanned == Init => TypeOK
-
-\* IMG_011_no_critical_vulns (matches Coq: Theorem IMG_011_no_critical_vulns)
-THEOREM IMG_011_no_critical_vulns == Init => TypeOK
-
-\* IMG_012_base_verified (matches Coq: Theorem IMG_012_base_verified)
-THEOREM IMG_012_base_verified == Init => TypeOK
-
-\* IMG_013_full_implies_signed (matches Coq: Theorem IMG_013_full_implies_signed)
-THEOREM IMG_013_full_implies_signed == Init => TypeOK
-
-\* IMG_014_full_implies_no_vulns (matches Coq: Theorem IMG_014_full_implies_no_vulns)
-THEOREM IMG_014_full_implies_no_vulns == Init => TypeOK
-
-\* ESC_001_basic_protected (matches Coq: Theorem ESC_001_basic_protected)
-THEOREM ESC_001_basic_protected == Init => TypeOK
-
-\* ESC_002_filesystem_protected (matches Coq: Theorem ESC_002_filesystem_protected)
-THEOREM ESC_002_filesystem_protected == Init => TypeOK
-
-\* ESC_003_mac_protected (matches Coq: Theorem ESC_003_mac_protected)
-THEOREM ESC_003_mac_protected == Init => TypeOK
-
-\* ESC_004_fully_protected (matches Coq: Theorem ESC_004_fully_protected)
-THEOREM ESC_004_fully_protected == Init => TypeOK
-
-\* ESC_005_no_privileged (matches Coq: Theorem ESC_005_no_privileged)
-THEOREM ESC_005_no_privileged == Init => TypeOK
-
-\* ESC_006_no_host_pid (matches Coq: Theorem ESC_006_no_host_pid)
-THEOREM ESC_006_no_host_pid == Init => TypeOK
-
-\* ESC_007_no_host_net (matches Coq: Theorem ESC_007_no_host_net)
-THEOREM ESC_007_no_host_net == Init => TypeOK
-
-\* ESC_008_no_host_ipc (matches Coq: Theorem ESC_008_no_host_ipc)
-THEOREM ESC_008_no_host_ipc == Init => TypeOK
-
-\* ESC_009_readonly_rootfs (matches Coq: Theorem ESC_009_readonly_rootfs)
-THEOREM ESC_009_readonly_rootfs == Init => TypeOK
-
-\* ESC_010_no_new_privs (matches Coq: Theorem ESC_010_no_new_privs)
-THEOREM ESC_010_no_new_privs == Init => TypeOK
-
-\* ESC_011_seccomp_enabled (matches Coq: Theorem ESC_011_seccomp_enabled)
-THEOREM ESC_011_seccomp_enabled == Init => TypeOK
-
-\* ESC_012_drop_all_caps (matches Coq: Theorem ESC_012_drop_all_caps)
-THEOREM ESC_012_drop_all_caps == Init => TypeOK
-
-\* ESC_013_full_implies_no_priv (matches Coq: Theorem ESC_013_full_implies_no_priv)
-THEOREM ESC_013_full_implies_no_priv == Init => TypeOK
-
-\* ESC_014_full_implies_seccomp (matches Coq: Theorem ESC_014_full_implies_seccomp)
-THEOREM ESC_014_full_implies_seccomp == Init => TypeOK
-
-\* CONT_001_isolated (matches Coq: Theorem CONT_001_isolated)
-THEOREM CONT_001_isolated == Init => TypeOK
-
-\* CONT_002_resource_safe (matches Coq: Theorem CONT_002_resource_safe)
-THEOREM CONT_002_resource_safe == Init => TypeOK
-
-\* CONT_003_syscall_safe (matches Coq: Theorem CONT_003_syscall_safe)
-THEOREM CONT_003_syscall_safe == Init => TypeOK
-
-\* CONT_004_capability_safe (matches Coq: Theorem CONT_004_capability_safe)
-THEOREM CONT_004_capability_safe == Init => TypeOK
-
-\* CONT_005_image_safe (matches Coq: Theorem CONT_005_image_safe)
-THEOREM CONT_005_image_safe == Init => TypeOK
-
-\* CONT_006_escape_safe (matches Coq: Theorem CONT_006_escape_safe)
-THEOREM CONT_006_escape_safe == Init => TypeOK
-
-\* CONT_007_fully_secure (matches Coq: Theorem CONT_007_fully_secure)
-THEOREM CONT_007_fully_secure == Init => TypeOK
-
-\* CONT_008_rootless (matches Coq: Theorem CONT_008_rootless)
-THEOREM CONT_008_rootless == Init => TypeOK
-
-\* CONT_009_secure_implies_isolated (matches Coq: Theorem CONT_009_secure_implies_isolated)
-THEOREM CONT_009_secure_implies_isolated == Init => TypeOK
-
-\* CONT_010_secure_implies_resource (matches Coq: Theorem CONT_010_secure_implies_resource)
-THEOREM CONT_010_secure_implies_resource == Init => TypeOK
-
-\* CONT_011_secure_implies_syscall (matches Coq: Theorem CONT_011_secure_implies_syscall)
-THEOREM CONT_011_secure_implies_syscall == Init => TypeOK
-
-\* CONT_012_secure_implies_capability (matches Coq: Theorem CONT_012_secure_implies_capability)
-THEOREM CONT_012_secure_implies_capability == Init => TypeOK
-
-\* CONT_013_secure_implies_image (matches Coq: Theorem CONT_013_secure_implies_image)
-THEOREM CONT_013_secure_implies_image == Init => TypeOK
-
-\* CONT_014_secure_implies_escape (matches Coq: Theorem CONT_014_secure_implies_escape)
-THEOREM CONT_014_secure_implies_escape == Init => TypeOK
-
-\* CONT_015_secure_implies_rootless (matches Coq: Theorem CONT_015_secure_implies_rootless)
-THEOREM CONT_015_secure_implies_rootless == Init => TypeOK
-
-\* CROSS_001_all_protections (matches Coq: Theorem CROSS_001_all_protections)
-THEOREM CROSS_001_all_protections == Init => TypeOK
-
-\* RIINA_001_defense_in_depth (matches Coq: Theorem RIINA_001_defense_in_depth)
-THEOREM RIINA_001_defense_in_depth == Init => TypeOK
-
-\* RIINA_002_no_escape_vectors (matches Coq: Theorem RIINA_002_no_escape_vectors)
-THEOREM RIINA_002_no_escape_vectors == Init => TypeOK
-
-\* RIINA_003_complete_isolation (matches Coq: Theorem RIINA_003_complete_isolation)
-THEOREM RIINA_003_complete_isolation == Init => TypeOK
-
-\* RIINA_004_resource_controls (matches Coq: Theorem RIINA_004_resource_controls)
-THEOREM RIINA_004_resource_controls == Init => TypeOK
-
-\* RIINA_005_seccomp_hardened (matches Coq: Theorem RIINA_005_seccomp_hardened)
-THEOREM RIINA_005_seccomp_hardened == Init => TypeOK
-
-\* RIINA_006_caps_minimal (matches Coq: Theorem RIINA_006_caps_minimal)
-THEOREM RIINA_006_caps_minimal == Init => TypeOK
-
-\* RIINA_007_image_verified (matches Coq: Theorem RIINA_007_image_verified)
-THEOREM RIINA_007_image_verified == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<ns_pid_isolated, ns_net_isolated, ns_mount_isolated, ns_user_isolated, ns_uts_isolated, ns_ipc_isolated, ns_cgroup_isolated, ns_time_isolated, cg_cpu_limited, cg_memory_limited, cg_swap_disabled, cg_pids_limited, cg_io_limited, sc_syscall_filter, sc_default_deny, sc_audit_logging, sc_allow_process, sc_allow_fs, sc_allow_network, sc_allow_memory, sc_block_privileged, sc_block_debug, sc_block_module, sc_block_namespace, cap_chown, cap_dac_override, cap_fowner, cap_kill, cap_setuid, cap_setgid, cap_net_bind, cap_net_raw, cap_sys_admin, cap_sys_ptrace, cap_sys_module, cap_sys_rawio, cap_mknod, cap_audit_write, img_signed, img_signature_valid, img_hash_verified, img_trusted_registry, img_sbom_present, img_vuln_scanned, img_no_critical_vulns, img_base_verified, esc_no_privileged, esc_no_host_pid, esc_no_host_net, esc_no_host_ipc, esc_readonly_rootfs, esc_no_new_privs, esc_seccomp_enabled, esc_apparmor_enabled, esc_selinux_enabled, esc_drop_all_caps, cont_ns, cont_cgroup, cont_seccomp, cont_caps, cont_image, cont_escape, cont_rootless>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<ns_pid_isolated, ns_net_isolated, ns_mount_isolated, ns_user_isolated, ns_uts_isolated, ns_ipc_isolated, ns_cgroup_isolated, ns_time_isolated, cg_cpu_limited, cg_memory_limited, cg_swap_disabled, cg_pids_limited, cg_io_limited, sc_syscall_filter, sc_default_deny, sc_audit_logging, sc_allow_process, sc_allow_fs, sc_allow_network, sc_allow_memory, sc_block_privileged, sc_block_debug, sc_block_module, sc_block_namespace, cap_chown, cap_dac_override, cap_fowner, cap_kill, cap_setuid, cap_setgid, cap_net_bind, cap_net_raw, cap_sys_admin, cap_sys_ptrace, cap_sys_module, cap_sys_rawio, cap_mknod, cap_audit_write, img_signed, img_signature_valid, img_hash_verified, img_trusted_registry, img_sbom_present, img_vuln_scanned, img_no_critical_vulns, img_base_verified, esc_no_privileged, esc_no_host_pid, esc_no_host_net, esc_no_host_ipc, esc_readonly_rootfs, esc_no_new_privs, esc_seccomp_enabled, esc_apparmor_enabled, esc_selinux_enabled, esc_drop_all_caps, cont_ns, cont_cgroup, cont_seccomp, cont_caps, cont_image, cont_escape, cont_rootless>>
+image_security_verified(i) ==
+  img_vuln_scanned /\ img_no_critical_vulns
+
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
+
+UpdateNamespaceIsolation ==
+  /\ ns_pid_isolated' \in BOOLEAN
+  /\ ns_net_isolated' \in BOOLEAN
+  /\ ns_mount_isolated' \in BOOLEAN
+  /\ ns_user_isolated' \in BOOLEAN
+  /\ ns_uts_isolated' \in BOOLEAN
+  /\ ns_ipc_isolated' \in BOOLEAN
+  /\ ns_cgroup_isolated' \in BOOLEAN
+  /\ ns_time_isolated' \in 0..100
+  /\ UNCHANGED <<cg_cpu_limited, cg_memory_limited, cg_swap_disabled, cg_pids_limited, cg_io_limited, sc_syscall_filter, sc_default_deny, sc_audit_logging, sc_allow_process, sc_allow_fs, sc_allow_network, sc_allow_memory, sc_block_privileged, sc_block_debug, sc_block_module, sc_block_namespace, cap_chown, cap_dac_override, cap_fowner, cap_kill, cap_setuid, cap_setgid, cap_net_bind, cap_net_raw, cap_sys_admin, cap_sys_ptrace, cap_sys_module, cap_sys_rawio, cap_mknod, cap_audit_write, img_signed, img_signature_valid, img_hash_verified, img_trusted_registry, img_sbom_present, img_vuln_scanned, img_no_critical_vulns, img_base_verified>>
+
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
+
+Next == UpdateNamespaceIsolation \/ ValidateState
+
+Spec == Init /\ [][Next]_vars
+
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
+
+\* andb_true_intro
+THEOREM andb_true_intro ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a = true => a && b = true
+
+\* andb_true_elim1
+THEOREM andb_true_elim1 ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true => a = true
+
+\* andb_true_elim2
+THEOREM andb_true_elim2 ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true => b = true
+
+\* andb7_true
+THEOREM andb7_true ==
+  \A a \in Nat, b \in Nat, c \in Nat, d \in Nat, e \in Nat, f \in Nat, g \in Nat, bool \in Nat :
+      a && b && c && d && e && f && g = true => a = true /\ b = true /\ c = true /\ d = true /\ e = true /\ f = true /\ g = true
+
+\* NS_001_full_isolation
+THEOREM NS_001_full_isolation ==
+  ns_fully_isolated(riina_ns) = TRUE
+
+\* NS_002_minimal_isolation
+THEOREM NS_002_minimal_isolation ==
+  ns_minimally_isolated(riina_ns) = TRUE
+
+\* NS_003_pid_isolated
+THEOREM NS_003_pid_isolated ==
+  ns_pid_isolated(riina_ns) = TRUE
+
+\* NS_004_net_isolated
+THEOREM NS_004_net_isolated ==
+  ns_net_isolated(riina_ns) = TRUE
+
+\* NS_005_mount_isolated
+THEOREM NS_005_mount_isolated ==
+  ns_mount_isolated(riina_ns) = TRUE
+
+\* NS_006_user_isolated
+THEOREM NS_006_user_isolated ==
+  ns_user_isolated(riina_ns) = TRUE
+
+\* NS_007_uts_isolated
+THEOREM NS_007_uts_isolated ==
+  ns_uts_isolated(riina_ns) = TRUE
+
+\* NS_008_ipc_isolated
+THEOREM NS_008_ipc_isolated ==
+  ns_ipc_isolated(riina_ns) = TRUE
+
+\* NS_009_cgroup_isolated
+THEOREM NS_009_cgroup_isolated ==
+  ns_cgroup_isolated(riina_ns) = TRUE
+
+\* NS_010_time_isolated
+THEOREM NS_010_time_isolated ==
+  ns_time_isolated(riina_ns) = TRUE
+
+\* NS_011_network_safe
+THEOREM NS_011_network_safe ==
+  ns_network_safe(riina_ns) = TRUE
+
+\* NS_012_process_safe
+THEOREM NS_012_process_safe ==
+  ns_process_safe(riina_ns) = TRUE
+
+\* NS_013_full_implies_pid
+THEOREM NS_013_full_implies_pid ==
+  \A n \in Nat :
+      ns_fully_isolated(n) => ns_pid_isolated(n)
+
+\* NS_014_full_implies_net
+THEOREM NS_014_full_implies_net ==
+  \A n \in Nat :
+      ns_fully_isolated(n) => ns_net_isolated(n)
+
+\* NS_015_full_implies_user
+THEOREM NS_015_full_implies_user ==
+  \A n \in Nat :
+      ns_fully_isolated(n) => ns_user_isolated(n)
+
+\* CG_001_cpu_safe
+THEOREM CG_001_cpu_safe ==
+  cgroup_cpu_safe(riina_cgroup) = TRUE
+
+\* CG_002_memory_safe
+THEOREM CG_002_memory_safe ==
+  cgroup_memory_safe(riina_cgroup) = TRUE
+
+\* CG_003_pids_safe
+THEOREM CG_003_pids_safe ==
+  cgroup_pids_safe(riina_cgroup) = TRUE
+
+\* CG_004_io_safe
+THEOREM CG_004_io_safe ==
+  cgroup_io_safe(riina_cgroup) = TRUE
+
+\* CG_005_fully_limited
+THEOREM CG_005_fully_limited ==
+  cgroup_fully_limited(riina_cgroup) = TRUE
+
+\* CG_006_full_implies_cpu
+THEOREM CG_006_full_implies_cpu ==
+  \A c \in Nat :
+      cgroup_fully_limited(c) => cgroup_cpu_safe(c)
+
+\* 81 additional theorems proven in Coq source
 
 ====

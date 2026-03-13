@@ -1,142 +1,279 @@
 ---- MODULE MultiProverValidation ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/MultiProverValidation.v (24 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/MultiProverValidation.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* formula (matches Coq: Inductive formula)
 CONSTANTS FAtom, FNot, FAnd, FImpl
 
+formulaSet == {FAtom, FNot, FAnd, FImpl}
+
 \* certificate (matches Coq: Inductive certificate)
 CONSTANTS CertAtom, CertNotI, CertAndI, CertImplE, CertAssume
+
+certificateSet == {CertAtom, CertNotI, CertAndI, CertImplE, CertAssume}
 
 \* proverA_repr (matches Coq: Inductive proverA_repr)
 CONSTANTS PA_Atom, PA_Neg, PA_Conj, PA_Arrow
 
+proverA_reprSet == {PA_Atom, PA_Neg, PA_Conj, PA_Arrow}
+
 \* proverB_repr (matches Coq: Inductive proverB_repr)
 CONSTANTS PB_Var, PB_Not, PB_And, PB_If
+
+proverB_reprSet == {PB_Var, PB_Not, PB_And, PB_If}
 
 \* confidence (matches Coq: Inductive confidence)
 CONSTANTS NoConfidence, SingleProver, DualProver
 
-VARIABLES state
+confidenceSet == {NoConfidence, SingleProver, DualProver}
 
-\* Type invariant
+VARIABLES state, verified, step_count
+vars == <<state, verified, step_count>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ state \in BOOLEAN
+  /\ state \in Nat
+  /\ verified \in BOOLEAN
+  /\ step_count \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ state = TRUE
+  /\ state = 0
+  /\ verified = FALSE
+  /\ step_count = 0
 
-\* formula_eqb (matches Coq: Definition formula_eqb)
-formula_eqb(f1, f2) == TRUE
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
-\* cert_formula (matches Coq: Definition cert_formula)
-cert_formula(c) == TRUE
-
-\* translate_to_A (matches Coq: Definition translate_to_A)
-translate_to_A(f) == TRUE
-
-\* translate_to_B (matches Coq: Definition translate_to_B)
-translate_to_B(f) == TRUE
-
-\* translate_from_A (matches Coq: Definition translate_from_A)
-translate_from_A(r) == TRUE
-
-\* translate_from_B (matches Coq: Definition translate_from_B)
-translate_from_B(r) == TRUE
-
-\* validate (matches Coq: Definition validate)
-validate(asms, c, target) == TRUE
-
-\* validate_atomic (matches Coq: Definition validate_atomic)
-validate_atomic(c, n) == TRUE
+\* assumptions (matches Coq: Definition assumptions)
+assumptions ==
+  0
 
 \* confidence_level (matches Coq: Definition confidence_level)
-confidence_level(validA, validB) == TRUE
+confidence_level(validB) ==
+    CASE validA = true, true -> DualProver
+      [] validA = true, false -> SingleProver
+      [] validA = false, true -> SingleProver
+      [] validA = false, false -> NoConfidence
 
 \* confidence_ge (matches Coq: Definition confidence_ge)
-confidence_ge(c1, c2) == TRUE
+confidence_ge(c2) ==
+    CASE c1 = DualProver, _ -> True
+      [] c1 = SingleProver, NoConfidence -> True
+      [] c1 = SingleProver, SingleProver -> True
+      [] c1 = NoConfidence, NoConfidence -> True
+      [] c1 = _, _ -> False
 
-\* formula_eqb_refl (matches Coq: Lemma formula_eqb_refl)
-THEOREM formula_eqb_refl == Init => TypeOK
+\* formula_eqb (matches Coq: Definition formula_eqb)
+formula_eqb(f2) ==
+    CASE f1 = FAtom n1, FAtom n2 -> Nat
 
-\* formula_eqb_eq (matches Coq: Lemma formula_eqb_eq)
-THEOREM formula_eqb_eq == Init => TypeOK
+\* cert_formula (matches Coq: Definition cert_formula)
+cert_formula(c) ==
+    CASE c = CertAtom n -> FAtom
+      [] c = CertNotI f _ -> FNot
+      [] c = CertAndI c1 c2 -> FAnd
+      [] c = CertImplE c1 c2 -> match
+      [] c = FImpl _ b -> b
+      [] c = other -> other
+      [] c = CertAssume f -> f
 
-\* validator_soundness_atomic (matches Coq: Theorem validator_soundness_atomic)
-THEOREM validator_soundness_atomic == Init => TypeOK
+\* translate_to_A (matches Coq: Definition translate_to_A)
+translate_to_A(f) ==
+    CASE f = FAtom n -> PA_Atom
+      [] f = FNot g -> PA_Neg
+      [] f = FAnd g h -> PA_Conj
+      [] f = FImpl g h -> PA_Arrow
 
-\* translation_preserves_structure_A (matches Coq: Theorem translation_preserves_structure_A)
-THEOREM translation_preserves_structure_A == Init => TypeOK
+\* translate_to_B (matches Coq: Definition translate_to_B)
+translate_to_B(f) ==
+    CASE f = FAtom n -> PB_Var
+      [] f = FNot g -> PB_Not
+      [] f = FAnd g h -> PB_And
+      [] f = FImpl g h -> PB_If
 
-\* translation_preserves_structure_B (matches Coq: Theorem translation_preserves_structure_B)
-THEOREM translation_preserves_structure_B == Init => TypeOK
+\* translate_from_A (matches Coq: Definition translate_from_A)
+translate_from_A(r) ==
+    CASE r = PA_Atom n -> FAtom
+      [] r = PA_Neg g -> FNot
+      [] r = PA_Conj g h -> FAnd
+      [] r = PA_Arrow g h -> FImpl
 
-\* dual_prover_confidence (matches Coq: Theorem dual_prover_confidence)
-THEOREM dual_prover_confidence == Init => TypeOK
+\* translate_from_B (matches Coq: Definition translate_from_B)
+translate_from_B(r) ==
+    CASE r = PB_Var n -> FAtom
+      [] r = PB_Not g -> FNot
+      [] r = PB_And g h -> FAnd
+      [] r = PB_If g h -> FImpl
 
-\* dual_ge_single (matches Coq: Theorem dual_ge_single)
-THEOREM dual_ge_single == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* certificate_composition (matches Coq: Theorem certificate_composition)
-THEOREM certificate_composition == Init => TypeOK
+Step ==
+  /\ state' \in Nat
+  /\ verified' \in BOOLEAN
+  /\ step_count' = step_count + 1
 
-\* validator_deterministic (matches Coq: Theorem validator_deterministic)
-THEOREM validator_deterministic == Init => TypeOK
+Next == Step
 
-\* formula_eq_dec (matches Coq: Theorem formula_eq_dec)
-THEOREM formula_eq_dec == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* translate_to_A_injective (matches Coq: Theorem translate_to_A_injective)
-THEOREM translate_to_A_injective == Init => TypeOK
+\* ===================================================================
 
-\* translate_to_B_injective (matches Coq: Theorem translate_to_B_injective)
-THEOREM translate_to_B_injective == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* validator_completeness_atomic (matches Coq: Theorem validator_completeness_atomic)
-THEOREM validator_completeness_atomic == Init => TypeOK
+\* formula_eqb_refl
+THEOREM formula_eqb_refl ==
+  \A f \in Nat :
+      formula_eqb(f, f)
 
-\* prover_agreement (matches Coq: Theorem prover_agreement)
-THEOREM prover_agreement == Init => TypeOK
+\* formula_eqb_eq
+THEOREM formula_eqb_eq ==
+  \A f1 \in Nat, f2 \in Nat :
+      formula_eqb(f1, f2) => f1 = f2
 
-\* confidence_symmetric (matches Coq: Theorem confidence_symmetric)
-THEOREM confidence_symmetric == Init => TypeOK
+\* 1
+THEOREM 1 ==
+  Validator soundness — if validate_atomic accepts, the certificate
+     proves the right atomic formula *)
+  Theorem validator_soundness_atomic :
+    forall c n,
+      validate_atomic c n = true => cert_formula(c) = FAtom n
 
-\* no_confidence_means_both_fail (matches Coq: Theorem no_confidence_means_both_fail)
-THEOREM no_confidence_means_both_fail == Init => TypeOK
+\* validator_soundness_atomic
+THEOREM validator_soundness_atomic ==
+  \A c \in Nat, n \in Nat :
+      validate_atomic(c, n) => cert_formula(c) = FAtom n
 
-\* single_prover_means_one_true (matches Coq: Theorem single_prover_means_one_true)
-THEOREM single_prover_means_one_true == Init => TypeOK
+\* 2
+THEOREM 2 ==
+  Translation preserves formula structure (roundtrip A) *)
+  Theorem translation_preserves_structure_A :
+    forall f, translate_from_A (translate_to_A f) = f
 
-\* dual_prover_means_both_true (matches Coq: Theorem dual_prover_means_both_true)
-THEOREM dual_prover_means_both_true == Init => TypeOK
+\* translation_preserves_structure_A
+THEOREM translation_preserves_structure_A ==
+  \A f \in Nat :
+      translate_from_A(translate_to_A(f)) = f
 
-\* confidence_ge_refl (matches Coq: Theorem confidence_ge_refl)
-THEOREM confidence_ge_refl == Init => TypeOK
+\* 3
+THEOREM 3 ==
+  Translation preserves formula structure (roundtrip B) *)
+  Theorem translation_preserves_structure_B :
+    forall f, translate_from_B (translate_to_B f) = f
 
-\* confidence_ge_trans (matches Coq: Theorem confidence_ge_trans)
-THEOREM confidence_ge_trans == Init => TypeOK
+\* translation_preserves_structure_B
+THEOREM translation_preserves_structure_B ==
+  \A f \in Nat :
+      translate_from_B(translate_to_B(f)) = f
 
-\* confidence_monotone_add_valid (matches Coq: Theorem confidence_monotone_add_valid)
-THEOREM confidence_monotone_add_valid == Init => TypeOK
+\* 4
+THEOREM 4 ==
+  Independent proofs that both validate give DualProver confidence *)
+  Theorem dual_prover_confidence :
+    forall vA vB,
+      vA = true => confidence_level(vA, vB) = DualProver
 
-\* cert_and_sub_formulas (matches Coq: Theorem cert_and_sub_formulas)
-THEOREM cert_and_sub_formulas == Init => TypeOK
+\* dual_prover_confidence
+THEOREM dual_prover_confidence ==
+  \A vA \in Nat, vB \in Nat :
+      vA = true => confidence_level(vA, vB) = DualProver
 
-\* formula_eqb_sym (matches Coq: Theorem formula_eqb_sym)
-THEOREM formula_eqb_sym == Init => TypeOK
+\* 5
+THEOREM 5 ==
+  DualProver confidence is at least as high as SingleProver *)
+  Theorem dual_ge_single : confidence_ge DualProver SingleProver
 
-\* validate_atomic_non_atom (matches Coq: Theorem validate_atomic_non_atom)
-THEOREM validate_atomic_non_atom == Init => TypeOK
+\* dual_ge_single
+THEOREM dual_ge_single ==
+  confidence_ge(DualProver, SingleProver)
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
+\* 6
+THEOREM 6 ==
+  Certificate composition — modus ponens.
+     If we have a certificate for A and a certificate for A => cert_formula (CertImplE cAB cA) = b
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
+\* certificate_composition
+THEOREM certificate_composition ==
+  \A cA \in Nat, cAB \in Nat, a \in Nat, b \in Nat :
+      cert_formula(cA) = a => cert_formula (CertImplE cAB cA) = b
+
+\* 7
+THEOREM 7 ==
+  Validator is deterministic *)
+  Theorem validator_deterministic :
+    forall asms c f r1 r2,
+      validate asms c f = r1 => r1 = r2
+
+\* validator_deterministic
+THEOREM validator_deterministic ==
+  \A asms \in Nat, c \in Nat, f \in Nat, r1 \in Nat, r2 \in Nat :
+      validate asms c f = r1 => r1 = r2
+
+\* 8
+THEOREM 8 ==
+  Formula equivalence is decidable *)
+  Theorem formula_eq_dec : forall f1 f2 : formula, {f1 = f2} + {f1 <> f2}
+
+\* formula_eq_dec
+THEOREM formula_eq_dec ==
+  \A f1 \in Nat, f2 \in Nat, formula \in Nat :
+      {f1 = f2} + {f1 <> f2}
+
+\* 9
+THEOREM 9 ==
+  Translation to A is injective *)
+  Theorem translate_to_A_injective :
+    forall f1 f2, translate_to_A f1 = translate_to_A f2 => f1 = f2
+
+\* translate_to_A_injective
+THEOREM translate_to_A_injective ==
+  \A f1 \in Nat, f2 \in Nat :
+      translate_to_A(f1) = translate_to_A(f2) => f1 = f2
+
+\* 10
+THEOREM 10 ==
+  Translation to B is injective *)
+  Theorem translate_to_B_injective :
+    forall f1 f2, translate_to_B f1 = translate_to_B f2 => f1 = f2
+
+\* translate_to_B_injective
+THEOREM translate_to_B_injective ==
+  \A f1 \in Nat, f2 \in Nat :
+      translate_to_B(f1) = translate_to_B(f2) => f1 = f2
+
+\* 11
+THEOREM 11 ==
+  Validator completeness for atomic formulas *)
+  Theorem validator_completeness_atomic :
+    forall n, validate_atomic (CertAtom n) n = true
+
+\* validator_completeness_atomic
+THEOREM validator_completeness_atomic ==
+  \A n \in Nat :
+      validate_atomic (CertAtom n) n = true
+
+\* 12
+THEOREM 12 ==
+  Both provers agree on translated structure —
+     translating to A and back, vs to B and back, yield the same formula *)
+  Theorem prover_agreement :
+    forall f,
+      translate_from_A (translate_to_A f) = translate_from_B (translate_to_B f)
+
+\* 21 additional theorems proven in Coq source
 
 ====

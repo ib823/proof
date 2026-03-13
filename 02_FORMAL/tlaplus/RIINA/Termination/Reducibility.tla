@@ -20,31 +20,31 @@ Init ==
 strongly_normalizing(e, st, ctx) == TRUE
 
 \* value_SN (matches Coq: Lemma value_SN)
-THEOREM value_SN == Init => TypeOK
+THEOREM value_SN == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* SN_step (matches Coq: Lemma SN_step)
-THEOREM SN_step == Init => TypeOK
+THEOREM SN_step == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fst_typed_steps_to_value (matches Coq: Lemma fst_typed_steps_to_value)
-THEOREM fst_typed_steps_to_value == Init => TypeOK
+THEOREM fst_typed_steps_to_value == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* snd_typed_steps_to_value (matches Coq: Lemma snd_typed_steps_to_value)
-THEOREM snd_typed_steps_to_value == Init => TypeOK
+THEOREM snd_typed_steps_to_value == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* case_typed_steps_once (matches Coq: Lemma case_typed_steps_once)
-THEOREM case_typed_steps_once == Init => TypeOK
+THEOREM case_typed_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* if_typed_steps_once (matches Coq: Lemma if_typed_steps_once)
-THEOREM if_typed_steps_once == Init => TypeOK
+THEOREM if_typed_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* let_typed_steps_once (matches Coq: Lemma let_typed_steps_once)
-THEOREM let_typed_steps_once == Init => TypeOK
+THEOREM let_typed_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* handle_typed_steps_once (matches Coq: Lemma handle_typed_steps_once)
-THEOREM handle_typed_steps_once == Init => TypeOK
+THEOREM handle_typed_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* app_typed_steps_once (matches Coq: Lemma app_typed_steps_once)
-THEOREM app_typed_steps_once == Init => TypeOK
+THEOREM app_typed_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

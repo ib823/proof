@@ -1,106 +1,206 @@
 ---- MODULE MLSafetyTypes ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/MLSafetyTypes.v (24 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/MLSafetyTypes.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
-VARIABLES state
+VARIABLES state, verified, step_count
+vars == <<state, verified, step_count>>
 
-\* Type invariant
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ state \in BOOLEAN
+  /\ state \in Nat
+  /\ verified \in BOOLEAN
+  /\ step_count \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ state = TRUE
+  /\ state = 0
+  /\ verified = FALSE
+  /\ step_count = 0
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
+
+\* shape (matches Coq: Definition shape)
+shape ==
+  0
 
 \* shape_eq (matches Coq: Definition shape_eq)
-shape_eq(s1, s2) == TRUE
+shape_eq(s2) ==
+  s2 >= 0
+
+\* matmul_compat (matches Coq: Definition matmul_compat)
+matmul_compat(s2) ==
+    CASE s1 = _, _ -> None
 
 \* dp_compose (matches Coq: Definition dp_compose)
-dp_compose(d1, d2) == TRUE
+dp_compose(d2) ==
+  d2 >= 0
 
-\* lipschitz_bound (matches Coq: Definition lipschitz_bound)
-lipschitz_bound(k, f) == TRUE
+\* compose_fn (matches Coq: Definition compose_fn)
+compose_fn(g) ==
+  g >= 0
 
-\* forallb_combine_refl (matches Coq: Lemma forallb_combine_refl)
-THEOREM forallb_combine_refl == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* forallb_combine_sym (matches Coq: Lemma forallb_combine_sym)
-THEOREM forallb_combine_sym == Init => TypeOK
+Step ==
+  /\ state' \in Nat
+  /\ verified' \in BOOLEAN
+  /\ step_count' = step_count + 1
 
-\* shape_eq_refl (matches Coq: Theorem shape_eq_refl)
-THEOREM shape_eq_refl == Init => TypeOK
+Next == Step
 
-\* shape_eq_sym (matches Coq: Theorem shape_eq_sym)
-THEOREM shape_eq_sym == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* matmul_shape_correct (matches Coq: Theorem matmul_shape_correct)
-THEOREM matmul_shape_correct == Init => TypeOK
+\* ===================================================================
 
-\* matmul_incompat (matches Coq: Theorem matmul_incompat)
-THEOREM matmul_incompat == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* dp_composition_additive (matches Coq: Theorem dp_composition_additive)
-THEOREM dp_composition_additive == Init => TypeOK
+\* forallb_combine_refl
+THEOREM forallb_combine_refl ==
+  \A s \in Nat :
+      forallb (fun p = > fst p =? snd p) (combine s s) = true
 
-\* dp_compose_assoc (matches Coq: Theorem dp_compose_assoc)
-THEOREM dp_compose_assoc == Init => TypeOK
+\* forallb_combine_sym
+THEOREM forallb_combine_sym ==
+  \A s1 \in Nat, s2 \in Nat :
+      forallb (fun p = > fst p =? snd p) (combine s1 s2) =
 
-\* lipschitz_compose (matches Coq: Theorem lipschitz_compose)
-THEOREM lipschitz_compose == Init => TypeOK
+\* 1
+THEOREM 1 ==
+  shape_eq is reflexive *)
+  Theorem shape_eq_refl : forall s, shape_eq s s = true
 
-\* lipschitz_id (matches Coq: Theorem lipschitz_id)
-THEOREM lipschitz_id == Init => TypeOK
+\* shape_eq_refl
+THEOREM shape_eq_refl ==
+  \A s \in Nat :
+      shape_eq(s, s)
 
-\* lipschitz_const (matches Coq: Theorem lipschitz_const)
-THEOREM lipschitz_const == Init => TypeOK
+\* 2
+THEOREM 2 ==
+  shape_eq is symmetric *)
+  Theorem shape_eq_sym : forall s1 s2, shape_eq s1 s2 = shape_eq s2 s1
 
-\* dp_queries_additive (matches Coq: Theorem dp_queries_additive)
-THEOREM dp_queries_additive == Init => TypeOK
+\* shape_eq_sym
+THEOREM shape_eq_sym ==
+  \A s1 \in Nat, s2 \in Nat :
+      shape_eq(s1, s2) = shape_eq(s2, s1)
 
-\* dp_compose_zero_l (matches Coq: Theorem dp_compose_zero_l)
-THEOREM dp_compose_zero_l == Init => TypeOK
+\* 3
+THEOREM 3 ==
+  matmul produces correct output shape *)
+  Theorem matmul_shape_correct : forall r1 c1 c2 s,
+    matmul_compat [r1; c1] [c1; c2] = Some s => s = [r1; c2]
 
-\* dp_compose_zero_r (matches Coq: Theorem dp_compose_zero_r)
-THEOREM dp_compose_zero_r == Init => TypeOK
+\* matmul_shape_correct
+THEOREM matmul_shape_correct ==
+  \A r1 \in Nat, c1 \in Nat, c2 \in Nat, s \in Nat :
+      matmul_compat [r1; c1] [c1; c2] = Some s => s = [r1; c2]
 
-\* dp_compose_comm (matches Coq: Theorem dp_compose_comm)
-THEOREM dp_compose_comm == Init => TypeOK
+\* 4
+THEOREM 4 ==
+  matmul fails on incompatible inner dims *)
+  Theorem matmul_incompat : forall r1 c1 r2 c2,
+    c1 <> r2 => matmul_compat [r1; c1] [r2; c2] = None
 
-\* shape_eq_implies_same_length (matches Coq: Theorem shape_eq_implies_same_length)
-THEOREM shape_eq_implies_same_length == Init => TypeOK
+\* matmul_incompat
+THEOREM matmul_incompat ==
+  \A r1 \in Nat, c1 \in Nat, r2 \in Nat, c2 \in Nat :
+      c1 # r2 => matmul_compat [r1; c1] [r2; c2] = None
 
-\* shape_eq_nil (matches Coq: Theorem shape_eq_nil)
-THEOREM shape_eq_nil == Init => TypeOK
+\* 5
+THEOREM 5 ==
+  DP sequential composition — epsilon adds *)
+  Theorem dp_composition_additive : forall d1 d2,
+    dp_epsilon (dp_compose d1 d2) = dp_epsilon d1 + dp_epsilon d2
 
-\* shape_eq_singleton (matches Coq: Theorem shape_eq_singleton)
-THEOREM shape_eq_singleton == Init => TypeOK
+\* dp_composition_additive
+THEOREM dp_composition_additive ==
+  \A d1 \in Nat, d2 \in Nat :
+      dp_epsilon (dp_compose d1 d2) = dp_epsilon d1 + dp_epsilon d2
 
-\* matmul_square (matches Coq: Theorem matmul_square)
-THEOREM matmul_square == Init => TypeOK
+\* 6
+THEOREM 6 ==
+  DP composition is associative *)
+  Theorem dp_compose_assoc : forall d1 d2 d3,
+    dp_compose (dp_compose d1 d2) d3 = dp_compose d1 (dp_compose d2 d3)
 
-\* matmul_col_vector (matches Coq: Theorem matmul_col_vector)
-THEOREM matmul_col_vector == Init => TypeOK
+\* dp_compose_assoc
+THEOREM dp_compose_assoc ==
+  \A d1 \in Nat, d2 \in Nat, d3 \in Nat :
+      dp_compose (dp_compose d1 d2) d3 = dp_compose d1 (dp_compose d2 d3)
 
-\* dp_epsilon_nonneg (matches Coq: Theorem dp_epsilon_nonneg)
-THEOREM dp_epsilon_nonneg == Init => TypeOK
+\* 7
+THEOREM 7 ==
+  Composition of Lipschitz functions *)
+  Theorem lipschitz_compose : forall k1 k2 f g,
+    lipschitz_bound k1 f => lipschitz_bound (k1 * k2) (compose_fn f g)
 
-\* lipschitz_mono (matches Coq: Theorem lipschitz_mono)
-THEOREM lipschitz_mono == Init => TypeOK
+\* lipschitz_compose
+THEOREM lipschitz_compose ==
+  \A k1 \in Nat, k2 \in Nat, f \in Nat, g \in Nat :
+      lipschitz_bound(k1, f) => lipschitz_bound (k1 * k2) (compose_fn f g)
 
-\* compose_fn_assoc (matches Coq: Theorem compose_fn_assoc)
-THEOREM compose_fn_assoc == Init => TypeOK
+\* 8
+THEOREM 8 ==
+  Identity is 1-Lipschitz *)
+  Theorem lipschitz_id : lipschitz_bound 1 (fun x => x)
 
-\* compose_fn_id_l (matches Coq: Theorem compose_fn_id_l)
-THEOREM compose_fn_id_l == Init => TypeOK
+\* lipschitz_id
+THEOREM lipschitz_id ==
+  lipschitz_bound 1 (fun x = > x)
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
+\* 9
+THEOREM 9 ==
+  Constant function is 0-Lipschitz *)
+  Theorem lipschitz_const : forall c, lipschitz_bound 0 (fun _ => c)
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
+\* lipschitz_const
+THEOREM lipschitz_const ==
+  \A c \in Nat :
+      lipschitz_bound 0 (fun _ = > c)
+
+\* 10
+THEOREM 10 ==
+  DP composition preserves query count *)
+  Theorem dp_queries_additive : forall d1 d2,
+    dp_queries (dp_compose d1 d2) = dp_queries d1 + dp_queries d2
+
+\* dp_queries_additive
+THEOREM dp_queries_additive ==
+  \A d1 \in Nat, d2 \in Nat :
+      dp_queries (dp_compose d1 d2) = dp_queries d1 + dp_queries d2
+
+\* 11
+THEOREM 11 ==
+  DP composition with zero-epsilon is identity for epsilon *)
+  Theorem dp_compose_zero_l : forall d,
+    dp_epsilon (dp_compose (mkDP 0 0) d) = dp_epsilon d
+
+\* dp_compose_zero_l
+THEOREM dp_compose_zero_l ==
+  \A d \in Nat :
+      dp_epsilon (dp_compose (mkDP 0 0) d) = dp_epsilon(d)
+
+\* 12
+THEOREM 12 ==
+  DP composition with zero-epsilon is identity for epsilon (right) *)
+  Theorem dp_compose_zero_r : forall d,
+    dp_epsilon (dp_compose d (mkDP 0 0)) = dp_epsilon d
+
+\* 21 additional theorems proven in Coq source
 
 ====

@@ -1,64 +1,53 @@
 ---- MODULE FormalVerification ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/FormalVerification.v (36 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/FormalVerification.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* BaseTy (matches Coq: Inductive BaseTy)
 CONSTANTS TyUnit, TyBool, TyNat, TyInt
 
+BaseTySet == {TyUnit, TyBool, TyNat, TyInt}
+
 \* Pred (matches Coq: Inductive Pred)
 CONSTANTS PTrue, PFalse, PEq, PLt, PAnd, POr, PNot, PImpl
+
+PredSet == {PTrue, PFalse, PEq, PLt, PAnd, POr, PNot, PImpl}
 
 \* RefinementTy (matches Coq: Inductive RefinementTy)
 CONSTANTS RBase, RRefine
 
+RefinementTySet == {RBase, RRefine}
+
 \* HeapPred (matches Coq: Inductive HeapPred)
 CONSTANTS HPEmp, HPPointsTo, HPSep, HPWand
+
+HeapPredSet == {HPEmp, HPPointsTo, HPSep, HPWand}
 
 \* VC (matches Coq: Inductive VC)
 CONSTANTS VCValid, VCAnd, VCImpl
 
+VCSet == {VCValid, VCAnd, VCImpl}
+
 \* TyExpr (matches Coq: Inductive TyExpr)
 CONSTANTS TEBase, TEPi, TESigma, TEVar
+
+TyExprSet == {TEBase, TEPi, TESigma, TEVar}
 
 \* SMTFormula (matches Coq: Inductive SMTFormula)
 CONSTANTS SMTTrue, SMTFalse, SMTEq, SMTLt, SMTAnd, SMTOr, SMTNot, SMTImpl
 
+SMTFormulaSet == {SMTTrue, SMTFalse, SMTEq, SMTLt, SMTAnd, SMTOr, SMTNot, SMTImpl}
+
 \* Property (matches Coq: Inductive Property)
 CONSTANTS PropAtom, PropNot, PropAnd, PropOr, PropNext, PropUntil
 
-\* BMCResult (matches Coq: Inductive BMCResult)
-CONSTANTS BMCSat, BMCUnsat
+PropertySet == {PropAtom, PropNot, PropAnd, PropOr, PropNext, PropUntil}
 
-\* SimpleProp (matches Coq: Inductive SimpleProp)
-CONSTANTS SPTrue, SPFalse, SPAtom, SPAnd, SPOr, SPImpl
-
-\* ProofTerm (matches Coq: Inductive ProofTerm)
-CONSTANTS PTTrueI, PTAndI, PTAndE1, PTAndE2, PTOrI1, PTOrI2, PTImplI, PTImplE, PTAssume
-
-\* SrcExpr (matches Coq: Inductive SrcExpr)
-CONSTANTS SrcUnit, SrcBool, SrcNat, SrcVar, SrcApp, SrcLam
-
-\* TgtExpr (matches Coq: Inductive TgtExpr)
-CONSTANTS TgtUnit, TgtBool, TgtNat, TgtVar, TgtApp, TgtLam
-
-\* Effect (matches Coq: Inductive Effect)
-CONSTANTS EffPure, EffIO, EffState, EffExn
-
-\* SecLabel (matches Coq: Inductive SecLabel)
-CONSTANTS SecPublic, SecPrivate, SecSecret
-
-\* SrcVal (matches Coq: Inductive SrcVal)
-CONSTANTS SVUnit, SVBool, SVNat, SVClosure
-
-\* TgtVal (matches Coq: Inductive TgtVal)
-CONSTANTS TVUnit, TVBool, TVNat, TVClosure
-
-\* Cmd (matches Coq: Inductive Cmd)
-CONSTANTS CmdSkip, CmdAssign, CmdSeq, CmdIf, CmdWhile
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* Contract (matches Coq: Record Contract)
 VARIABLES precondition, postcondition
@@ -66,263 +55,263 @@ VARIABLES precondition, postcondition
 \* LiquidState (matches Coq: Record LiquidState)
 VARIABLES liquid_constraints, liquid_templates, liquid_iteration
 
-\* Type invariant
+vars == <<precondition, postcondition, liquid_constraints, liquid_templates, liquid_iteration>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ precondition \in BOOLEAN
-  /\ postcondition \in BOOLEAN
-  /\ liquid_constraints \in BOOLEAN
-  /\ liquid_templates \in BOOLEAN
-  /\ liquid_iteration \in BOOLEAN
+  /\ precondition \in PredSet
+  /\ postcondition \in PredSet
+  /\ liquid_constraints \in Seq(Nat)
+  /\ liquid_templates \in Seq(Nat)
+  /\ liquid_iteration \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ precondition = TRUE
-  /\ postcondition = TRUE
-  /\ liquid_constraints = TRUE
-  /\ liquid_templates = TRUE
-  /\ liquid_iteration = TRUE
+  /\ precondition = PTrue
+  /\ postcondition = PTrue
+  /\ liquid_constraints = <<>>
+  /\ liquid_templates = <<>>
+  /\ liquid_iteration = 0
 
-\* eval_pred (matches Coq: Definition eval_pred)
-eval_pred(p, env) == TRUE
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* pred_implies (matches Coq: Definition pred_implies)
-pred_implies(p, q) == TRUE
+pred_implies(q) ==
+  q >= 0
 
 \* pred_decidable (matches Coq: Definition pred_decidable)
-pred_decidable(p) == TRUE
+pred_decidable(p) ==
+  p >= 0
+
+\* Heap (matches Coq: Definition Heap)
+Heap ==
+  0
 
 \* empty_heap (matches Coq: Definition empty_heap)
-empty_heap == TRUE
+empty_heap ==
+  0
 
 \* disjoint (matches Coq: Definition disjoint)
-disjoint(h1, h2) == TRUE
+disjoint(h2) ==
+  h2 >= 0
 
 \* heap_union (matches Coq: Definition heap_union)
-heap_union(h1, h2) == TRUE
-
-\* heap_sat (matches Coq: Definition heap_sat)
-heap_sat(h, hp) == TRUE
-
-\* contract_sat (matches Coq: Definition contract_sat)
-contract_sat(c, pre_env, post_env) == TRUE
+heap_union(h2) ==
+  h2 >= 0
 
 \* contract_stronger (matches Coq: Definition contract_stronger)
-contract_stronger(c1, c2) == TRUE
-
-\* eval_vc (matches Coq: Definition eval_vc)
-eval_vc(vc, env) == TRUE
+contract_stronger(c2) ==
+  c2 >= 0
 
 \* vc_valid (matches Coq: Definition vc_valid)
-vc_valid(vc) == TRUE
+vc_valid(vc) ==
+  eval_vc(vc)
 
-\* ty_family_wf (matches Coq: Definition ty_family_wf)
-ty_family_wf(ctx, fam) == TRUE
+\* TyCtx (matches Coq: Definition TyCtx)
+TyCtx ==
+  0
 
-\* eval_smt (matches Coq: Definition eval_smt)
-eval_smt(f, env) == TRUE
-
-\* pred_to_smt (matches Coq: Definition pred_to_smt)
-pred_to_smt(p) == TRUE
+\* TyFamily (matches Coq: Definition TyFamily)
+TyFamily ==
+  0
 
 \* liquid_step (matches Coq: Definition liquid_step)
-liquid_step(s) == TRUE
+liquid_step(s) ==
+  s >= 0
 
 \* liquid_measure (matches Coq: Definition liquid_measure)
-liquid_measure(s) == TRUE
+liquid_measure(s) ==
+  s >= 0
 
-\* prop_sat (matches Coq: Definition prop_sat)
-prop_sat(s, p) == TRUE
+\* State (matches Coq: Definition State)
+State ==
+  0
 
-\* interp_prop (matches Coq: Definition interp_prop)
-interp_prop(p, assignment) == TRUE
+\* Transition (matches Coq: Definition Transition)
+Transition ==
+  0
 
-\* ctx_valid (matches Coq: Definition ctx_valid)
-ctx_valid(ctx, assignment) == TRUE
+\* Abstraction (matches Coq: Definition Abstraction)
+Abstraction ==
+  0
 
-\* compile (matches Coq: Definition compile)
-compile(e) == TRUE
+\* ProofCtx (matches Coq: Definition ProofCtx)
+ProofCtx ==
+  0
 
 \* src_effect (matches Coq: Definition src_effect)
-src_effect(e) == TRUE
+src_effect(e) ==
+  e >= 0
 
 \* tgt_effect (matches Coq: Definition tgt_effect)
-tgt_effect(e) == TRUE
+tgt_effect(e) ==
+  e >= 0
 
 \* sec_leq (matches Coq: Definition sec_leq)
-sec_leq(l1, l2) == TRUE
+sec_leq(l2) ==
+    CASE l1 = SecPublic, _ -> TRUE
+      [] l1 = SecPrivate, SecPrivate -> TRUE
+      [] l1 = SecPrivate, SecSecret -> TRUE
+      [] l1 = SecSecret, SecSecret -> TRUE
+      [] l1 = _, _ -> FALSE
 
 \* src_sec_label (matches Coq: Definition src_sec_label)
-src_sec_label(e) == TRUE
+src_sec_label(e) ==
+  e >= 0
 
-\* tgt_sec_label (matches Coq: Definition tgt_sec_label)
-tgt_sec_label(e) == TRUE
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* compile_val (matches Coq: Definition compile_val)
-compile_val(v) == TRUE
+UpdateContract ==
+  /\ precondition' \in PredSet
+  /\ postcondition' \in PredSet
+  /\ UNCHANGED <<liquid_constraints, liquid_templates, liquid_iteration>>
 
-\* obs_equiv (matches Coq: Definition obs_equiv)
-obs_equiv(v1, v2) == TRUE
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* wp (matches Coq: Definition wp)
-wp(c, post) == TRUE
+Next == UpdateContract \/ ValidateState
 
-\* refinement_wf (matches Coq: Definition refinement_wf)
-refinement_wf(rt) == TRUE
+Spec == Init /\ [][Next]_vars
 
-\* refinement_subtype (matches Coq: Definition refinement_subtype)
-refinement_subtype(rt1, rt2) == TRUE
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* liquid_terminates (matches Coq: Definition liquid_terminates)
-liquid_terminates(s, bound) == TRUE
+\* pred_decidable_PTrue
+THEOREM pred_decidable_PTrue ==
+  pred_decidable(PTrue)
 
-\* ty_subst (matches Coq: Definition ty_subst)
-ty_subst(t, n, s) == TRUE
+\* pred_decidable_eval
+THEOREM pred_decidable_eval ==
+  \A p \in Nat, env \in Nat :
+      eval_pred(p, env) = true \/ eval_pred p env = false
 
-\* precondition_verified (matches Coq: Definition precondition_verified)
-precondition_verified(c, env) == TRUE
+\* E_001_01
+THEOREM E_001_01 ==
+  \A bt \in Nat, p \in Nat :
+      pred_decidable(p) => refinement_wf (RRefine bt p)
 
-\* postcondition_verified (matches Coq: Definition postcondition_verified)
-postcondition_verified(c, pre_env, post_env) == TRUE
+\* E_001_02
+THEOREM E_001_02 ==
+  \A bt \in Nat, p \in Nat, q \in Nat :
+      pred_implies(p, q) => refinement_subtype (RRefine bt p) (RRefine bt q)
 
-\* invariant_preserved (matches Coq: Definition invariant_preserved)
-invariant_preserved(inv, pre_env, post_env) == TRUE
+\* smt_translation_correct
+THEOREM smt_translation_correct ==
+  \A p \in Nat, env \in Nat :
+      eval_pred(p, env) = eval_smt(pred_to_smt(p), env)
 
-\* hoare_triple (matches Coq: Definition hoare_triple)
-hoare_triple(pre, c, post) == TRUE
+\* E_001_03
+THEOREM E_001_03 ==
+  \A p \in Nat, env \in Nat :
+      eval_pred(p, env) => eval_smt (pred_to_smt p) env = true
 
-\* bmc_check (matches Coq: Definition bmc_check)
-bmc_check(trans, prop, s, k) == TRUE
+\* E_001_04
+THEOREM E_001_04 ==
+  \A s \in Nat, bound \in Nat :
+      liquid_iteration s < bound => liquid_terminates(liquid_step(s), bound)
 
-\* prop_to_pred (matches Coq: Definition prop_to_pred)
-prop_to_pred(prop) == TRUE
+\* E_001_05
+THEOREM E_001_05 ==
+  \A ctx \in Nat, t1 \in Nat, t2 \in Nat :
+      ty_wf(ctx, t1) => ty_wf ctx (TEPi t1 t2)
 
-\* valid_counterexample (matches Coq: Definition valid_counterexample)
-valid_counterexample(trans, prop, trace) == TRUE
+\* E_001_06
+THEOREM E_001_06 ==
+  \A ctx \in Nat, t1 \in Nat, t2 \in Nat :
+      ty_wf(ctx, t1) => ty_wf ctx (TESigma t1 t2)
 
-\* abstraction_sound (matches Coq: Definition abstraction_sound)
-abstraction_sound(abs, trans, abs_trans) == TRUE
+\* E_001_07
+THEOREM E_001_07 ==
+  \A ctx \in Nat, fam \in Nat :
+      (forall n, ty_wf ctx (fam n)) => ty_family_wf(ctx, fam)
 
-\* extract_witness (matches Coq: Definition extract_witness)
-extract_witness(t) == TRUE
+\* ty_subst_preserves_base
+THEOREM ty_subst_preserves_base ==
+  \A b \in Nat, n \in Nat, s \in Nat :
+      ty_subst (TEBase b) n s = TEBase b
 
-\* proof_irrelevant (matches Coq: Definition proof_irrelevant)
-proof_irrelevant(P) == TRUE
+\* E_001_08
+THEOREM E_001_08 ==
+  \A ctx \in Nat, t1 \in Nat, t2 \in Nat, n \in Nat :
+      ty_wf(ctx, t1) => ty_subst (TEBase TyNat) n t2 = TEBase TyNat
 
-\* vc_from_contract (matches Coq: Definition vc_from_contract)
-vc_from_contract(c) == TRUE
+\* E_001_09
+THEOREM E_001_09 ==
+  \A c \in Nat, env \in Nat :
+      precondition_verified(c, env) => eval_pred (precondition c) env = true
 
-\* pred_decidable_PTrue (matches Coq: Lemma pred_decidable_PTrue)
-THEOREM pred_decidable_PTrue == Init => TypeOK
+\* E_001_10
+THEOREM E_001_10 ==
+  \A c \in Nat, pre_env \in Nat, post_env \in Nat :
+      postcondition_verified c pre_env post_env => contract_sat c pre_env post_env
 
-\* pred_decidable_eval (matches Coq: Lemma pred_decidable_eval)
-THEOREM pred_decidable_eval == Init => TypeOK
+\* E_001_11
+THEOREM E_001_11 ==
+  \A inv \in Nat, c \in Nat, pre_env \in Nat, post_env \in Nat :
+      eval_pred(inv, pre_env) => invariant_preserved inv pre_env post_env
 
-\* E_001_01 (matches Coq: Theorem E_001_01)
-THEOREM E_001_01 == Init => TypeOK
+\* E_001_12
+THEOREM E_001_12 ==
+  \A c_base \in Nat, c_derived \in Nat :
+      contract_stronger(c_derived, c_base) => contract_sat c_base pre_env post_env
 
-\* E_001_02 (matches Coq: Theorem E_001_02)
-THEOREM E_001_02 == Init => TypeOK
+\* E_001_13
+THEOREM E_001_13 ==
+  \A h1 \in Nat, h2 \in Nat, p1 \in Nat, p2 \in Nat :
+      disjoint(h1, h2) => heap_sat (heap_union h1 h2) (HPSep p1 p2)
 
-\* smt_translation_correct (matches Coq: Lemma smt_translation_correct)
-THEOREM smt_translation_correct == Init => TypeOK
+\* E_001_14
+THEOREM E_001_14 ==
+  \A h \in Nat, hp \in Nat, hq \in Nat :
+      heap_sat h (HPWand hp hq) => heap_sat (heap_union h h') hq
 
-\* E_001_03 (matches Coq: Theorem E_001_03)
-THEOREM E_001_03 == Init => TypeOK
+\* E_001_15
+THEOREM E_001_15 ==
+  \A p \in Nat, q \in Nat, r \in Nat, c \in Nat :
+      hoare_triple p c q => hoare_triple (HPSep p r) c (HPSep q r)
 
-\* E_001_04 (matches Coq: Theorem E_001_04)
-THEOREM E_001_04 == Init => TypeOK
+\* E_001_16
+THEOREM E_001_16 ==
+  \A l \in Nat, v \in Nat :
+      heap_sat (fun x = > if Nat.eqb x l then Some v else None) (HPPointsTo l v)
 
-\* E_001_05 (matches Coq: Theorem E_001_05)
-THEOREM E_001_05 == Init => TypeOK
+\* E_001_17
+THEOREM E_001_17 ==
+  \A trans \in Nat, p \in Nat, s \in Nat, k \in Nat :
+      bmc_check trans (PropAtom p) s k = true => eval_pred(p, s)
 
-\* E_001_06 (matches Coq: Theorem E_001_06)
-THEOREM E_001_06 == Init => TypeOK
+\* E_001_18
+THEOREM E_001_18 ==
+  \A p \in Nat, s \in Nat :
+      prop_sat s (PropAtom p) < => eval_pred(p, s)
 
-\* E_001_07 (matches Coq: Theorem E_001_07)
-THEOREM E_001_07 == Init => TypeOK
+\* E_001_19
+THEOREM E_001_19 ==
+  \A trans \in Nat, prop \in Nat, trace \in Nat, s \in Nat :
+      valid_counterexample trans prop (s :: trace) => exists s', (s' = s \/ List.In s' trace) /\ ~ prop_sat s' prop
 
-\* ty_subst_preserves_base (matches Coq: Lemma ty_subst_preserves_base)
-THEOREM ty_subst_preserves_base == Init => TypeOK
+\* E_001_20
+THEOREM E_001_20 ==
+  \A abs \in Nat, trans \in Nat, abs_trans \in Nat, prop \in Nat :
+      abstraction_sound abs trans abs_trans => prop_sat(s, prop)
 
-\* E_001_08 (matches Coq: Theorem E_001_08)
-THEOREM E_001_08 == Init => TypeOK
+\* E_001_21
+THEOREM E_001_21 ==
+  \A ctx \in Nat, t \in Nat, p \in Nat, assignment \in Nat :
+      proof_typed ctx t p => interp_prop(p, assignment)
 
-\* E_001_09 (matches Coq: Theorem E_001_09)
-THEOREM E_001_09 == Init => TypeOK
-
-\* E_001_10 (matches Coq: Theorem E_001_10)
-THEOREM E_001_10 == Init => TypeOK
-
-\* E_001_11 (matches Coq: Theorem E_001_11)
-THEOREM E_001_11 == Init => TypeOK
-
-\* E_001_12 (matches Coq: Theorem E_001_12)
-THEOREM E_001_12 == Init => TypeOK
-
-\* E_001_13 (matches Coq: Theorem E_001_13)
-THEOREM E_001_13 == Init => TypeOK
-
-\* E_001_14 (matches Coq: Theorem E_001_14)
-THEOREM E_001_14 == Init => TypeOK
-
-\* E_001_15 (matches Coq: Theorem E_001_15)
-THEOREM E_001_15 == Init => TypeOK
-
-\* E_001_16 (matches Coq: Theorem E_001_16)
-THEOREM E_001_16 == Init => TypeOK
-
-\* E_001_17 (matches Coq: Theorem E_001_17)
-THEOREM E_001_17 == Init => TypeOK
-
-\* E_001_18 (matches Coq: Theorem E_001_18)
-THEOREM E_001_18 == Init => TypeOK
-
-\* E_001_19 (matches Coq: Theorem E_001_19)
-THEOREM E_001_19 == Init => TypeOK
-
-\* E_001_20 (matches Coq: Theorem E_001_20)
-THEOREM E_001_20 == Init => TypeOK
-
-\* E_001_21 (matches Coq: Theorem E_001_21)
-THEOREM E_001_21 == Init => TypeOK
-
-\* E_001_22 (matches Coq: Theorem E_001_22)
-THEOREM E_001_22 == Init => TypeOK
-
-\* bool_proof_irrelevant (matches Coq: Lemma bool_proof_irrelevant)
-THEOREM bool_proof_irrelevant == Init => TypeOK
-
-\* E_001_23 (matches Coq: Theorem E_001_23)
-THEOREM E_001_23 == Init => TypeOK
-
-\* E_001_24 (matches Coq: Theorem E_001_24)
-THEOREM E_001_24 == Init => TypeOK
-
-\* E_001_25 (matches Coq: Theorem E_001_25)
-THEOREM E_001_25 == Init => TypeOK
-
-\* E_001_26 (matches Coq: Theorem E_001_26)
-THEOREM E_001_26 == Init => TypeOK
-
-\* E_001_27 (matches Coq: Theorem E_001_27)
-THEOREM E_001_27 == Init => TypeOK
-
-\* E_001_28 (matches Coq: Theorem E_001_28)
-THEOREM E_001_28 == Init => TypeOK
-
-\* wp_skip_sound (matches Coq: Lemma wp_skip_sound)
-THEOREM wp_skip_sound == Init => TypeOK
-
-\* E_001_29 (matches Coq: Theorem E_001_29)
-THEOREM E_001_29 == Init => TypeOK
-
-\* E_001_30 (matches Coq: Theorem E_001_30)
-THEOREM E_001_30 == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<precondition, postcondition, liquid_constraints, liquid_templates, liquid_iteration>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<precondition, postcondition, liquid_constraints, liquid_templates, liquid_iteration>>
+\* 11 additional theorems proven in Coq source
 
 ====

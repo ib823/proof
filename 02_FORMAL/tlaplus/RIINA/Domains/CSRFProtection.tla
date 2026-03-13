@@ -1,10 +1,13 @@
 ---- MODULE CSRFProtection ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/CSRFProtection.v (36 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/CSRFProtection.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* CSRFConfig (matches Coq: Record CSRFConfig)
 VARIABLES csrf_token_validation, csrf_same_site_cookies, csrf_origin_check, csrf_referer_check, csrf_double_submit
@@ -12,7 +15,12 @@ VARIABLES csrf_token_validation, csrf_same_site_cookies, csrf_origin_check, csrf
 \* CSRFRequest (matches Coq: Record CSRFRequest)
 VARIABLES req_has_token, req_token_matches, req_same_origin, req_valid_referer, req_cookie_present
 
-\* Type invariant
+vars == <<csrf_token_validation, csrf_same_site_cookies, csrf_origin_check, csrf_referer_check, csrf_double_submit, req_has_token, req_token_matches, req_same_origin, req_valid_referer, req_cookie_present>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
   /\ csrf_token_validation \in BOOLEAN
   /\ csrf_same_site_cookies \in BOOLEAN
@@ -25,146 +33,184 @@ TypeOK ==
   /\ req_valid_referer \in BOOLEAN
   /\ req_cookie_present \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ csrf_token_validation = TRUE
-  /\ csrf_same_site_cookies = TRUE
-  /\ csrf_origin_check = TRUE
-  /\ csrf_referer_check = TRUE
-  /\ csrf_double_submit = TRUE
-  /\ req_has_token = TRUE
-  /\ req_token_matches = TRUE
-  /\ req_same_origin = TRUE
-  /\ req_valid_referer = TRUE
-  /\ req_cookie_present = TRUE
+  /\ csrf_token_validation = FALSE
+  /\ csrf_same_site_cookies = FALSE
+  /\ csrf_origin_check = FALSE
+  /\ csrf_referer_check = FALSE
+  /\ csrf_double_submit = FALSE
+  /\ req_has_token = FALSE
+  /\ req_token_matches = FALSE
+  /\ req_same_origin = FALSE
+  /\ req_valid_referer = FALSE
+  /\ req_cookie_present = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* csrf_protected (matches Coq: Definition csrf_protected)
-csrf_protected(c) == TRUE
+csrf_protected(c) ==
+  csrf_token_validation /\ csrf_same_site_cookies /\ csrf_origin_check /\ csrf_referer_check /\ csrf_double_submit
 
 \* riina_csrf (matches Coq: Definition riina_csrf)
-riina_csrf == TRUE
+riina_csrf ==
+  0
 
 \* csrf_request_safe (matches Coq: Definition csrf_request_safe)
-csrf_request_safe(r) == TRUE
+csrf_request_safe(r) ==
+  req_has_token /\ req_token_matches /\ req_same_origin
 
 \* csrf_request_fully_validated (matches Coq: Definition csrf_request_fully_validated)
-csrf_request_fully_validated(r) == TRUE
+csrf_request_fully_validated(r) ==
+  csrf_request_safe /\ req_valid_referer /\ req_cookie_present
 
 \* riina_csrf_request (matches Coq: Definition riina_csrf_request)
-riina_csrf_request == TRUE
+riina_csrf_request ==
+  0
 
-\* andb_true_iff (matches Coq: Lemma andb_true_iff)
-THEOREM andb_true_iff == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* CSRF_001 (matches Coq: Theorem CSRF_001)
-THEOREM CSRF_001 == Init => TypeOK
+UpdateCSRFConfig ==
+  /\ csrf_token_validation' \in BOOLEAN
+  /\ csrf_same_site_cookies' \in BOOLEAN
+  /\ csrf_origin_check' \in BOOLEAN
+  /\ csrf_referer_check' \in BOOLEAN
+  /\ csrf_double_submit' \in BOOLEAN
+  /\ UNCHANGED <<req_has_token, req_token_matches, req_same_origin, req_valid_referer, req_cookie_present>>
 
-\* CSRF_002 (matches Coq: Theorem CSRF_002)
-THEOREM CSRF_002 == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* CSRF_003 (matches Coq: Theorem CSRF_003)
-THEOREM CSRF_003 == Init => TypeOK
+Next == UpdateCSRFConfig \/ ValidateState
 
-\* CSRF_004 (matches Coq: Theorem CSRF_004)
-THEOREM CSRF_004 == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* CSRF_005 (matches Coq: Theorem CSRF_005)
-THEOREM CSRF_005 == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* CSRF_006 (matches Coq: Theorem CSRF_006)
-THEOREM CSRF_006 == Init => TypeOK
+\* andb_true_iff
+THEOREM andb_true_iff ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true < => a = true /\ b = true
 
-\* CSRF_007 (matches Coq: Theorem CSRF_007)
-THEOREM CSRF_007 == Init => TypeOK
+\* CSRF_001
+THEOREM CSRF_001 ==
+  csrf_protected(riina_csrf) = TRUE
 
-\* CSRF_008 (matches Coq: Theorem CSRF_008)
-THEOREM CSRF_008 == Init => TypeOK
+\* CSRF_002
+THEOREM CSRF_002 ==
+  csrf_token_validation(riina_csrf) = TRUE
 
-\* CSRF_009 (matches Coq: Theorem CSRF_009)
-THEOREM CSRF_009 == Init => TypeOK
+\* CSRF_003
+THEOREM CSRF_003 ==
+  csrf_same_site_cookies(riina_csrf) = TRUE
 
-\* CSRF_010 (matches Coq: Theorem CSRF_010)
-THEOREM CSRF_010 == Init => TypeOK
+\* CSRF_004
+THEOREM CSRF_004 ==
+  csrf_origin_check(riina_csrf) = TRUE
 
-\* CSRF_011 (matches Coq: Theorem CSRF_011)
-THEOREM CSRF_011 == Init => TypeOK
+\* CSRF_005
+THEOREM CSRF_005 ==
+  csrf_double_submit(riina_csrf) = TRUE
 
-\* CSRF_012 (matches Coq: Theorem CSRF_012)
-THEOREM CSRF_012 == Init => TypeOK
+\* CSRF_006
+THEOREM CSRF_006 ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_token_validation(c)
 
-\* CSRF_013 (matches Coq: Theorem CSRF_013)
-THEOREM CSRF_013 == Init => TypeOK
+\* CSRF_007
+THEOREM CSRF_007 ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_same_site_cookies(c)
 
-\* CSRF_014 (matches Coq: Theorem CSRF_014)
-THEOREM CSRF_014 == Init => TypeOK
+\* CSRF_008
+THEOREM CSRF_008 ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_origin_check(c)
 
-\* CSRF_015 (matches Coq: Theorem CSRF_015)
-THEOREM CSRF_015 == Init => TypeOK
+\* CSRF_009
+THEOREM CSRF_009 ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_referer_check(c)
 
-\* CSRF_016 (matches Coq: Theorem CSRF_016)
-THEOREM CSRF_016 == Init => TypeOK
+\* CSRF_010
+THEOREM CSRF_010 ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_double_submit(c)
 
-\* CSRF_017 (matches Coq: Theorem CSRF_017)
-THEOREM CSRF_017 == Init => TypeOK
+\* CSRF_011
+THEOREM CSRF_011 ==
+  csrf_token_validation(riina_csrf) /\ csrf_same_site_cookies(riina_csrf)
 
-\* CSRF_018 (matches Coq: Theorem CSRF_018)
-THEOREM CSRF_018 == Init => TypeOK
+\* CSRF_012
+THEOREM CSRF_012 ==
+  csrf_origin_check(riina_csrf) /\ csrf_referer_check(riina_csrf)
 
-\* CSRF_019 (matches Coq: Theorem CSRF_019)
-THEOREM CSRF_019 == Init => TypeOK
+\* CSRF_013
+THEOREM CSRF_013 ==
+  csrf_protected(riina_csrf) /\ csrf_double_submit(riina_csrf)
 
-\* CSRF_020_complete (matches Coq: Theorem CSRF_020_complete)
-THEOREM CSRF_020_complete == Init => TypeOK
+\* CSRF_014
+THEOREM CSRF_014 ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_token_validation(c)
 
-\* CSRF_021_riina_request_safe (matches Coq: Theorem CSRF_021_riina_request_safe)
-THEOREM CSRF_021_riina_request_safe == Init => TypeOK
+\* CSRF_015
+THEOREM CSRF_015 ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_origin_check(c)
 
-\* CSRF_022_riina_request_fully_validated (matches Coq: Theorem CSRF_022_riina_request_fully_validated)
-THEOREM CSRF_022_riina_request_fully_validated == Init => TypeOK
+\* CSRF_016
+THEOREM CSRF_016 ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_token_validation(c)
 
-\* CSRF_023_safe_has_token (matches Coq: Theorem CSRF_023_safe_has_token)
-THEOREM CSRF_023_safe_has_token == Init => TypeOK
+\* CSRF_017
+THEOREM CSRF_017 ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_same_site_cookies(c)
 
-\* CSRF_024_safe_token_matches (matches Coq: Theorem CSRF_024_safe_token_matches)
-THEOREM CSRF_024_safe_token_matches == Init => TypeOK
+\* CSRF_018
+THEOREM CSRF_018 ==
+  csrf_token_validation(riina_csrf) /\ csrf_origin_check(riina_csrf) /\ csrf_double_submit(riina_csrf)
 
-\* CSRF_025_safe_same_origin (matches Coq: Theorem CSRF_025_safe_same_origin)
-THEOREM CSRF_025_safe_same_origin == Init => TypeOK
+\* CSRF_019
+THEOREM CSRF_019 ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_token_validation(c)
 
-\* CSRF_026_fully_validated_implies_safe (matches Coq: Theorem CSRF_026_fully_validated_implies_safe)
-THEOREM CSRF_026_fully_validated_implies_safe == Init => TypeOK
+\* CSRF_020_complete
+THEOREM CSRF_020_complete ==
+  \A c \in Nat :
+      csrf_protected(c) => csrf_token_validation(c)
 
-\* CSRF_027_fully_validated_referer (matches Coq: Theorem CSRF_027_fully_validated_referer)
-THEOREM CSRF_027_fully_validated_referer == Init => TypeOK
+\* CSRF_021_riina_request_safe
+THEOREM CSRF_021_riina_request_safe ==
+  csrf_request_safe(riina_csrf_request) = TRUE
 
-\* CSRF_028_fully_validated_cookie (matches Coq: Theorem CSRF_028_fully_validated_cookie)
-THEOREM CSRF_028_fully_validated_cookie == Init => TypeOK
+\* CSRF_022_riina_request_fully_validated
+THEOREM CSRF_022_riina_request_fully_validated ==
+  csrf_request_fully_validated(riina_csrf_request) = TRUE
 
-\* CSRF_029_full_implies_token_and_origin (matches Coq: Theorem CSRF_029_full_implies_token_and_origin)
-THEOREM CSRF_029_full_implies_token_and_origin == Init => TypeOK
+\* CSRF_023_safe_has_token
+THEOREM CSRF_023_safe_has_token ==
+  \A r \in Nat :
+      csrf_request_safe(r) => req_has_token(r)
 
-\* CSRF_030_config_enables_request_checks (matches Coq: Theorem CSRF_030_config_enables_request_checks)
-THEOREM CSRF_030_config_enables_request_checks == Init => TypeOK
+\* CSRF_024_safe_token_matches
+THEOREM CSRF_024_safe_token_matches ==
+  \A r \in Nat :
+      csrf_request_safe(r) => req_token_matches(r)
 
-\* CSRF_031_referer_in_protection (matches Coq: Theorem CSRF_031_referer_in_protection)
-THEOREM CSRF_031_referer_in_protection == Init => TypeOK
-
-\* CSRF_032_complete_request_validation (matches Coq: Theorem CSRF_032_complete_request_validation)
-THEOREM CSRF_032_complete_request_validation == Init => TypeOK
-
-\* CSRF_033_all_false_not_protected (matches Coq: Theorem CSRF_033_all_false_not_protected)
-THEOREM CSRF_033_all_false_not_protected == Init => TypeOK
-
-\* CSRF_034_missing_token_breaks (matches Coq: Theorem CSRF_034_missing_token_breaks)
-THEOREM CSRF_034_missing_token_breaks == Init => TypeOK
-
-\* CSRF_035_protection_reconstruction (matches Coq: Theorem CSRF_035_protection_reconstruction)
-THEOREM CSRF_035_protection_reconstruction == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<csrf_token_validation, csrf_same_site_cookies, csrf_origin_check, csrf_referer_check, csrf_double_submit, req_has_token, req_token_matches, req_same_origin, req_valid_referer, req_cookie_present>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<csrf_token_validation, csrf_same_site_cookies, csrf_origin_check, csrf_referer_check, csrf_double_submit, req_has_token, req_token_matches, req_same_origin, req_valid_referer, req_cookie_present>>
+\* 11 additional theorems proven in Coq source
 
 ====

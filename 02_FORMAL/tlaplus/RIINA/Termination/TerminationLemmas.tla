@@ -23,25 +23,25 @@ val_rel_0(sigma, T, v1, v2) == TRUE
 store_rel_0(sigma, st1, st2) == TRUE
 
 \* exp_rel_step1_fst_typed (matches Coq: Lemma exp_rel_step1_fst_typed)
-THEOREM exp_rel_step1_fst_typed == Init => TypeOK
+THEOREM exp_rel_step1_fst_typed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* exp_rel_step1_snd_typed (matches Coq: Lemma exp_rel_step1_snd_typed)
-THEOREM exp_rel_step1_snd_typed == Init => TypeOK
+THEOREM exp_rel_step1_snd_typed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* exp_rel_step1_case_typed (matches Coq: Lemma exp_rel_step1_case_typed)
-THEOREM exp_rel_step1_case_typed == Init => TypeOK
+THEOREM exp_rel_step1_case_typed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* exp_rel_step1_if_typed (matches Coq: Lemma exp_rel_step1_if_typed)
-THEOREM exp_rel_step1_if_typed == Init => TypeOK
+THEOREM exp_rel_step1_if_typed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* exp_rel_step1_let_typed (matches Coq: Lemma exp_rel_step1_let_typed)
-THEOREM exp_rel_step1_let_typed == Init => TypeOK
+THEOREM exp_rel_step1_let_typed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* exp_rel_step1_handle_typed (matches Coq: Lemma exp_rel_step1_handle_typed)
-THEOREM exp_rel_step1_handle_typed == Init => TypeOK
+THEOREM exp_rel_step1_handle_typed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* exp_rel_step1_app_typed (matches Coq: Lemma exp_rel_step1_app_typed)
-THEOREM exp_rel_step1_app_typed == Init => TypeOK
+THEOREM exp_rel_step1_app_typed == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

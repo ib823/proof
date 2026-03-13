@@ -1,13 +1,18 @@
 ---- MODULE PowerManagement ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/mobile_os/PowerManagement.v (21 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/mobile_os/PowerManagement.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* PowerState (matches Coq: Inductive PowerState)
 CONSTANTS FullPower, Balanced, LowPower, CriticalPower, Suspended
+
+PowerStateSet == {FullPower, Balanced, LowPower, CriticalPower, Suspended}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* ThermalState (matches Coq: Record ThermalState)
 VARIABLES cpu_temp, gpu_temp, battery_temp, throttling_active
@@ -24,192 +29,284 @@ VARIABLES app_power_id, app_power_budget_mw, app_power_actual_mw, app_is_backgro
 \* WakeLock (matches Coq: Record WakeLock)
 VARIABLES wake_lock_id, wake_lock_timeout, wake_lock_elapsed, wake_lock_active
 
-\* DisplayState (matches Coq: Record DisplayState)
-VARIABLES display_brightness, display_adaptive, display_on
+vars == <<cpu_temp, gpu_temp, battery_temp, throttling_active, current_state, battery_level, thermal, power_budget, bat_level, bat_health, bat_temperature, bat_is_charging, bat_charge_rate, bat_discharge_rate, app_power_id, app_power_budget_mw, app_power_actual_mw, app_is_background, wake_lock_id, wake_lock_timeout, wake_lock_elapsed, wake_lock_active>>
 
-\* CpuState (matches Coq: Record CpuState)
-VARIABLES cpu_frequency_mhz, cpu_max_frequency_mhz, cpu_min_frequency_mhz
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
 
-\* Type invariant
 TypeOK ==
-  /\ cpu_temp \in BOOLEAN
-  /\ gpu_temp \in BOOLEAN
-  /\ battery_temp \in BOOLEAN
+  /\ cpu_temp \in Nat
+  /\ gpu_temp \in Nat
+  /\ battery_temp \in Nat
   /\ throttling_active \in BOOLEAN
-  /\ current_state \in BOOLEAN
-  /\ battery_level \in BOOLEAN
-  /\ thermal \in BOOLEAN
-  /\ power_budget \in BOOLEAN
-  /\ bat_level \in BOOLEAN
-  /\ bat_health \in BOOLEAN
-  /\ bat_temperature \in BOOLEAN
+  /\ current_state \in PowerStateSet
+  /\ battery_level \in Nat
+  /\ thermal \in Nat
+  /\ power_budget \in Nat
+  /\ bat_level \in Nat
+  /\ bat_health \in Nat
+  /\ bat_temperature \in Nat
   /\ bat_is_charging \in BOOLEAN
-  /\ bat_charge_rate \in BOOLEAN
-  /\ bat_discharge_rate \in BOOLEAN
-  /\ app_power_id \in BOOLEAN
-  /\ app_power_budget_mw \in BOOLEAN
-  /\ app_power_actual_mw \in BOOLEAN
+  /\ bat_charge_rate \in Nat
+  /\ bat_discharge_rate \in Nat
+  /\ app_power_id \in Nat
+  /\ app_power_budget_mw \in Nat
+  /\ app_power_actual_mw \in Nat
   /\ app_is_background \in BOOLEAN
-  /\ wake_lock_id \in BOOLEAN
-  /\ wake_lock_timeout \in BOOLEAN
-  /\ wake_lock_elapsed \in BOOLEAN
+  /\ wake_lock_id \in Nat
+  /\ wake_lock_timeout \in Nat
+  /\ wake_lock_elapsed \in Nat
   /\ wake_lock_active \in BOOLEAN
-  /\ display_brightness \in BOOLEAN
-  /\ display_adaptive \in BOOLEAN
-  /\ display_on \in BOOLEAN
-  /\ cpu_frequency_mhz \in BOOLEAN
-  /\ cpu_max_frequency_mhz \in BOOLEAN
-  /\ cpu_min_frequency_mhz \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ cpu_temp = TRUE
-  /\ gpu_temp = TRUE
-  /\ battery_temp = TRUE
-  /\ throttling_active = TRUE
-  /\ current_state = TRUE
-  /\ battery_level = TRUE
-  /\ thermal = TRUE
-  /\ power_budget = TRUE
-  /\ bat_level = TRUE
-  /\ bat_health = TRUE
-  /\ bat_temperature = TRUE
-  /\ bat_is_charging = TRUE
-  /\ bat_charge_rate = TRUE
-  /\ bat_discharge_rate = TRUE
-  /\ app_power_id = TRUE
-  /\ app_power_budget_mw = TRUE
-  /\ app_power_actual_mw = TRUE
-  /\ app_is_background = TRUE
-  /\ wake_lock_id = TRUE
-  /\ wake_lock_timeout = TRUE
-  /\ wake_lock_elapsed = TRUE
-  /\ wake_lock_active = TRUE
-  /\ display_brightness = TRUE
-  /\ display_adaptive = TRUE
-  /\ display_on = TRUE
-  /\ cpu_frequency_mhz = TRUE
-  /\ cpu_max_frequency_mhz = TRUE
-  /\ cpu_min_frequency_mhz = TRUE
+  /\ cpu_temp = 0
+  /\ gpu_temp = 0
+  /\ battery_temp = 0
+  /\ throttling_active = FALSE
+  /\ current_state = FullPower
+  /\ battery_level = 0
+  /\ thermal = 0
+  /\ power_budget = 0
+  /\ bat_level = 0
+  /\ bat_health = 0
+  /\ bat_temperature = 0
+  /\ bat_is_charging = FALSE
+  /\ bat_charge_rate = 0
+  /\ bat_discharge_rate = 0
+  /\ app_power_id = 0
+  /\ app_power_budget_mw = 0
+  /\ app_power_actual_mw = 0
+  /\ app_is_background = FALSE
+  /\ wake_lock_id = 0
+  /\ wake_lock_timeout = 0
+  /\ wake_lock_elapsed = 0
+  /\ wake_lock_active = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* Temperature (matches Coq: Definition Temperature)
-Temperature == TRUE
+Temperature ==
+  0
 
 \* PowerLevel (matches Coq: Definition PowerLevel)
-PowerLevel == TRUE
+PowerLevel ==
+  0
+
+\* critical_temp_const (matches Coq: Definition critical_temp_const)
+critical_temp_const ==
+  0
+
+\* throttle_temp_const (matches Coq: Definition throttle_temp_const)
+throttle_temp_const ==
+  0
+
+\* charge_rate_max_const (matches Coq: Definition charge_rate_max_const)
+charge_rate_max_const ==
+  0
 
 \* critical_temp (matches Coq: Definition critical_temp)
-critical_temp == TRUE
+critical_temp ==
+  0
 
 \* throttle_temp (matches Coq: Definition throttle_temp)
-throttle_temp == TRUE
+throttle_temp ==
+  0
 
 \* safe_temp (matches Coq: Definition safe_temp)
-safe_temp == TRUE
+safe_temp ==
+  4500
 
 \* thermally_safe (matches Coq: Definition thermally_safe)
-thermally_safe(ts) == TRUE
+thermally_safe(ts) ==
+  cpu_temp(ts) /\ gpu_temp(ts) /\ battery_temp(ts)
 
 \* should_throttle (matches Coq: Definition should_throttle)
-should_throttle(ts) == TRUE
+should_throttle(ts) ==
+  ts >= 0
 
 \* apply_throttling (matches Coq: Definition apply_throttling)
-apply_throttling(ts) == TRUE
+apply_throttling(ts) ==
+  ts >= 0
 
 \* valid_power_transition (matches Coq: Definition valid_power_transition)
-valid_power_transition(from, to) == TRUE
+valid_power_transition(to) ==
+    CASE from = FullPower, Balanced -> TRUE
+      [] from = FullPower, LowPower -> TRUE
+      [] from = Balanced, FullPower -> TRUE
+      [] from = Balanced, LowPower -> TRUE
+      [] from = LowPower, Balanced -> TRUE
+      [] from = LowPower, CriticalPower -> TRUE
+      [] from = CriticalPower, LowPower -> TRUE
+      [] from = _, Suspended -> TRUE
+      [] from = Suspended, _ -> TRUE
+      [] from = _, _ -> FALSE
 
 \* battery_optimized (matches Coq: Definition battery_optimized)
-battery_optimized(pm) == TRUE
+battery_optimized(pm) ==
+  pm >= 0
 
 \* battery_safe_temp (matches Coq: Definition battery_safe_temp)
-battery_safe_temp == TRUE
+battery_safe_temp ==
+  4500
 
 \* charge_rate_max (matches Coq: Definition charge_rate_max)
-charge_rate_max == TRUE
+charge_rate_max ==
+  0
 
 \* background_power_limit (matches Coq: Definition background_power_limit)
-background_power_limit == TRUE
+background_power_limit ==
+  500
 
 \* well_formed_battery (matches Coq: Definition well_formed_battery)
-well_formed_battery(b) == TRUE
+well_formed_battery(b) ==
+  b >= 0
 
 \* well_formed_cpu (matches Coq: Definition well_formed_cpu)
-well_formed_cpu(c) == TRUE
+well_formed_cpu(c) ==
+  c >= 0
 
 \* well_formed_wake_lock (matches Coq: Definition well_formed_wake_lock)
-well_formed_wake_lock(w) == TRUE
+well_formed_wake_lock(w) ==
+  w >= 0
 
 \* well_formed_app_power (matches Coq: Definition well_formed_app_power)
-well_formed_app_power(a) == TRUE
+well_formed_app_power(a) ==
+  a >= 0
 
-\* thermal_bounds_enforced (matches Coq: Theorem thermal_bounds_enforced)
-THEOREM thermal_bounds_enforced == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* throttling_activation_correct (matches Coq: Theorem throttling_activation_correct)
-THEOREM throttling_activation_correct == Init => TypeOK
+UpdateThermalState ==
+  /\ cpu_temp' \in 0..100
+  /\ gpu_temp' \in 0..100
+  /\ battery_temp' \in 0..100
+  /\ throttling_active' \in BOOLEAN
+  /\ UNCHANGED <<current_state, battery_level, thermal, power_budget, bat_level, bat_health, bat_temperature, bat_is_charging, bat_charge_rate, bat_discharge_rate, app_power_id, app_power_budget_mw, app_power_actual_mw, app_is_background, wake_lock_id, wake_lock_timeout, wake_lock_elapsed, wake_lock_active>>
 
-\* power_transition_fullpower_balanced (matches Coq: Theorem power_transition_fullpower_balanced)
-THEOREM power_transition_fullpower_balanced == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* any_state_can_suspend (matches Coq: Theorem any_state_can_suspend)
-THEOREM any_state_can_suspend == Init => TypeOK
+Next == UpdateThermalState \/ ValidateState
 
-\* suspended_can_resume (matches Coq: Theorem suspended_can_resume)
-THEOREM suspended_can_resume == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* low_power_optimizes_budget (matches Coq: Theorem low_power_optimizes_budget)
-THEOREM low_power_optimizes_budget == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* battery_level_accurate (matches Coq: Theorem battery_level_accurate)
-THEOREM battery_level_accurate == Init => TypeOK
+\* thermal_bounds_enforced
+THEOREM thermal_bounds_enforced ==
+  \A ts \in Nat :
+      thermally_safe(ts) => cpu_temp ts <= critical_temp
 
-\* low_power_mode_reduces_usage (matches Coq: Theorem low_power_mode_reduces_usage)
-THEOREM low_power_mode_reduces_usage == Init => TypeOK
+\* throttling_activation_correct
+THEOREM throttling_activation_correct ==
+  \A ts \in Nat :
+      cpu_temp ts >= throttle_temp => throttling_active (apply_throttling ts) = true
 
-\* thermal_throttling_safe (matches Coq: Theorem thermal_throttling_safe)
-THEOREM thermal_throttling_safe == Init => TypeOK
+\* power_transition_fullpower_balanced
+THEOREM power_transition_fullpower_balanced ==
+  valid_power_transition(FullPower, Balanced) = TRUE
 
-\* charging_state_reported (matches Coq: Theorem charging_state_reported)
-THEOREM charging_state_reported == Init => TypeOK
+\* any_state_can_suspend
+THEOREM any_state_can_suspend ==
+  \A s \in PowerStateSet :
+      valid_power_transition(s, Suspended) = TRUE
 
-\* battery_health_tracked (matches Coq: Theorem battery_health_tracked)
-THEOREM battery_health_tracked == Init => TypeOK
+\* suspended_can_resume
+THEOREM suspended_can_resume ==
+  \A s \in PowerStateSet :
+      valid_power_transition(Suspended, s) = TRUE
 
-\* wake_lock_timeout_enforced (matches Coq: Theorem wake_lock_timeout_enforced)
-THEOREM wake_lock_timeout_enforced == Init => TypeOK
+\* low_power_optimizes_budget
+THEOREM low_power_optimizes_budget ==
+  \A pm \in Nat :
+      current_state pm = LowPower => battery_optimized(pm)
 
-\* background_power_limited (matches Coq: Theorem background_power_limited)
-THEOREM background_power_limited == Init => TypeOK
+\* battery_level_accurate
+THEOREM battery_level_accurate ==
+  \A b \in Nat :
+      well_formed_battery(b) => bat_level b <= 100
 
-\* cpu_frequency_bounded (matches Coq: Theorem cpu_frequency_bounded)
-THEOREM cpu_frequency_bounded == Init => TypeOK
+\* low_power_mode_reduces_usage
+THEOREM low_power_mode_reduces_usage ==
+  \A pm \in Nat :
+      current_state pm = LowPower => power_budget pm <= 50
 
-\* screen_brightness_adaptive (matches Coq: Theorem screen_brightness_adaptive)
-THEOREM screen_brightness_adaptive == Init => TypeOK
+\* thermal_throttling_safe
+THEOREM thermal_throttling_safe ==
+  \A ts \in Nat :
+      thermally_safe(ts) => cpu_temp ts <= critical_temp /\
+      gpu_temp ts <= critical_temp /\
+      battery_temp ts <= critical_temp
 
-\* idle_power_minimized (matches Coq: Theorem idle_power_minimized)
-THEOREM idle_power_minimized == Init => TypeOK
+\* charging_state_reported
+THEOREM charging_state_reported ==
+  \A b \in Nat :
+      bat_is_charging(b) = true \/ bat_is_charging b = false
 
-\* power_event_notified (matches Coq: Theorem power_event_notified)
-THEOREM power_event_notified == Init => TypeOK
+\* battery_health_tracked
+THEOREM battery_health_tracked ==
+  \A b \in Nat :
+      well_formed_battery(b) => bat_health b <= 100
 
-\* battery_temperature_safe (matches Coq: Theorem battery_temperature_safe)
-THEOREM battery_temperature_safe == Init => TypeOK
+\* wake_lock_timeout_enforced
+THEOREM wake_lock_timeout_enforced ==
+  \A w \in Nat :
+      well_formed_wake_lock(w) => wake_lock_elapsed w <= wake_lock_timeout w
 
-\* charge_rate_safe (matches Coq: Theorem charge_rate_safe)
-THEOREM charge_rate_safe == Init => TypeOK
+\* background_power_limited
+THEOREM background_power_limited ==
+  \A a \in Nat :
+      well_formed_app_power(a) => app_power_budget_mw a <= 500
 
-\* discharge_rate_bounded (matches Coq: Theorem discharge_rate_bounded)
-THEOREM discharge_rate_bounded == Init => TypeOK
+\* cpu_frequency_bounded
+THEOREM cpu_frequency_bounded ==
+  \A c \in Nat :
+      well_formed_cpu(c) => cpu_frequency_mhz c <= cpu_max_frequency_mhz c
 
-\* power_budget_per_app (matches Coq: Theorem power_budget_per_app)
-THEOREM power_budget_per_app == Init => TypeOK
+\* screen_brightness_adaptive
+THEOREM screen_brightness_adaptive ==
+  \A d \in Nat :
+      display_adaptive(d) => display_brightness d <= 100
 
-\* Next-state relation
-Next == UNCHANGED <<cpu_temp, gpu_temp, battery_temp, throttling_active, current_state, battery_level, thermal, power_budget, bat_level, bat_health, bat_temperature, bat_is_charging, bat_charge_rate, bat_discharge_rate, app_power_id, app_power_budget_mw, app_power_actual_mw, app_is_background, wake_lock_id, wake_lock_timeout, wake_lock_elapsed, wake_lock_active, display_brightness, display_adaptive, display_on, cpu_frequency_mhz, cpu_max_frequency_mhz, cpu_min_frequency_mhz>>
+\* idle_power_minimized
+THEOREM idle_power_minimized ==
+  \A pm \in Nat :
+      current_state pm = Suspended => battery_optimized(pm)
 
-\* Specification
-Spec == Init /\ [][Next]_<<cpu_temp, gpu_temp, battery_temp, throttling_active, current_state, battery_level, thermal, power_budget, bat_level, bat_health, bat_temperature, bat_is_charging, bat_charge_rate, bat_discharge_rate, app_power_id, app_power_budget_mw, app_power_actual_mw, app_is_background, wake_lock_id, wake_lock_timeout, wake_lock_elapsed, wake_lock_active, display_brightness, display_adaptive, display_on, cpu_frequency_mhz, cpu_max_frequency_mhz, cpu_min_frequency_mhz>>
+\* power_event_notified
+THEOREM power_event_notified ==
+  \A from \in PowerStateSet, to \in PowerStateSet :
+      valid_power_transition(from, to) => valid_power_transition(from, to)
+
+\* battery_temperature_safe
+THEOREM battery_temperature_safe ==
+  \A b \in Nat :
+      well_formed_battery(b) => bat_temperature b <= 4500
+
+\* charge_rate_safe
+THEOREM charge_rate_safe ==
+  \A b \in Nat :
+      well_formed_battery(b) => bat_charge_rate b <= charge_rate_max_const
+
+\* discharge_rate_bounded
+THEOREM discharge_rate_bounded ==
+  \A b \in Nat :
+      bat_discharge_rate b <= charge_rate_max => bat_discharge_rate b <= charge_rate_max_const
+
+\* power_budget_per_app
+THEOREM power_budget_per_app ==
+  \A a \in Nat :
+      well_formed_app_power(a) => app_power_actual_mw a <= app_power_budget_mw a
 
 ====

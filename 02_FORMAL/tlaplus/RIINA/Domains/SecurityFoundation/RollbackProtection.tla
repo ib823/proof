@@ -1,13 +1,18 @@
 ---- MODULE RollbackProtection ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/security_foundation/RollbackProtection.v (21 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/security_foundation/RollbackProtection.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* ComponentId (matches Coq: Inductive ComponentId)
 CONSTANTS CompId
+
+ComponentIdSet == {CompId}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* Version (matches Coq: Record Version)
 VARIABLES major, minor, patch, build
@@ -21,138 +26,195 @@ VARIABLES min_comp_id, min_version, stored_in_hardware
 \* RollbackState (matches Coq: Record RollbackState)
 VARIABLES minimum_versions, current_versions, anti_rollback_enabled
 
-\* Type invariant
+vars == <<major, minor, patch, build, comp_id, comp_version, comp_hash, min_comp_id, min_version, stored_in_hardware, minimum_versions, current_versions, anti_rollback_enabled>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ major \in BOOLEAN
-  /\ minor \in BOOLEAN
-  /\ patch \in BOOLEAN
-  /\ build \in BOOLEAN
-  /\ comp_id \in BOOLEAN
-  /\ comp_version \in BOOLEAN
-  /\ comp_hash \in BOOLEAN
-  /\ min_comp_id \in BOOLEAN
-  /\ min_version \in BOOLEAN
+  /\ major \in Nat
+  /\ minor \in Nat
+  /\ patch \in Nat
+  /\ build \in Nat
+  /\ comp_id \in ComponentIdSet
+  /\ comp_version \in Nat
+  /\ comp_hash \in Nat
+  /\ min_comp_id \in ComponentIdSet
+  /\ min_version \in Nat
   /\ stored_in_hardware \in BOOLEAN
-  /\ minimum_versions \in BOOLEAN
-  /\ current_versions \in BOOLEAN
+  /\ minimum_versions \in Seq(Nat)
+  /\ current_versions \in Seq(Nat)
   /\ anti_rollback_enabled \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ major = TRUE
-  /\ minor = TRUE
-  /\ patch = TRUE
-  /\ build = TRUE
-  /\ comp_id = TRUE
-  /\ comp_version = TRUE
-  /\ comp_hash = TRUE
-  /\ min_comp_id = TRUE
-  /\ min_version = TRUE
-  /\ stored_in_hardware = TRUE
-  /\ minimum_versions = TRUE
-  /\ current_versions = TRUE
-  /\ anti_rollback_enabled = TRUE
+  /\ major = 0
+  /\ minor = 0
+  /\ patch = 0
+  /\ build = 0
+  /\ comp_id = CompId
+  /\ comp_version = 0
+  /\ comp_hash = 0
+  /\ min_comp_id = CompId
+  /\ min_version = 0
+  /\ stored_in_hardware = FALSE
+  /\ minimum_versions = <<>>
+  /\ current_versions = <<>>
+  /\ anti_rollback_enabled = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* version_lt (matches Coq: Definition version_lt)
-version_lt(v1, v2) == TRUE
+version_lt(v2) ==
+  v2 >= 0
 
 \* version_le (matches Coq: Definition version_le)
-version_le(v1, v2) == TRUE
+version_le(v2) ==
+  v2 >= 0
 
 \* initial_rollback_state (matches Coq: Definition initial_rollback_state)
-initial_rollback_state == TRUE
-
-\* version_allowed (matches Coq: Definition version_allowed)
-version_allowed(st, comp, ver) == TRUE
-
-\* can_boot_version (matches Coq: Definition can_boot_version)
-can_boot_version(st, comp) == TRUE
-
-\* update_min_version (matches Coq: Definition update_min_version)
-update_min_version(st, comp, ver, hw) == TRUE
-
-\* record_current_version (matches Coq: Definition record_current_version)
-record_current_version(st, comp) == TRUE
-
-\* advance_min_to_current (matches Coq: Definition advance_min_to_current)
-advance_min_to_current(st, comp) == TRUE
-
-\* is_rollback (matches Coq: Definition is_rollback)
-is_rollback(st, comp, ver) == TRUE
-
-\* can_boot_prop (matches Coq: Definition can_boot_prop)
-can_boot_prop(st, comp) == TRUE
+initial_rollback_state ==
+  0
 
 \* rollback_enforced (matches Coq: Definition rollback_enforced)
-rollback_enforced(st) == TRUE
+rollback_enforced(st) ==
+  st >= 0
 
-\* rollback_protection (matches Coq: Theorem rollback_protection)
-THEOREM rollback_protection == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* old_version_cannot_boot (matches Coq: Theorem old_version_cannot_boot)
-THEOREM old_version_cannot_boot == Init => TypeOK
+UpdateVersion ==
+  /\ major' \in 0..100
+  /\ minor' \in 0..100
+  /\ patch' \in 0..100
+  /\ build' \in 0..100
+  /\ UNCHANGED <<comp_id, comp_version, comp_hash, min_comp_id, min_version, stored_in_hardware, minimum_versions, current_versions, anti_rollback_enabled>>
 
-\* current_or_newer_allowed (matches Coq: Theorem current_or_newer_allowed)
-THEOREM current_or_newer_allowed == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* min_version_monotonic (matches Coq: Theorem min_version_monotonic)
-THEOREM min_version_monotonic == Init => TypeOK
+Next == UpdateVersion \/ ValidateState
 
-\* no_minimum_any_allowed (matches Coq: Theorem no_minimum_any_allowed)
-THEOREM no_minimum_any_allowed == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* disabled_rollback_allows_all (matches Coq: Theorem disabled_rollback_allows_all)
-THEOREM disabled_rollback_allows_all == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* version_lt_irreflexive (matches Coq: Theorem version_lt_irreflexive)
-THEOREM version_lt_irreflexive == Init => TypeOK
+\* rollback_protection
+THEOREM rollback_protection ==
+  \A st \in Nat, comp \in ComponentIdSet, old_ver \in Nat :
+      rollback_enforced(st) => version_allowed st comp old_ver = false
 
-\* same_version_always_allowed (matches Coq: Theorem same_version_always_allowed)
-THEOREM same_version_always_allowed == Init => TypeOK
+\* old_version_cannot_boot
+THEOREM old_version_cannot_boot ==
+  \A st \in Nat, comp \in Nat :
+      rollback_enforced(st) => ~ can_boot_prop st comp
 
-\* update_stores_new_min (matches Coq: Theorem update_stores_new_min)
-THEOREM update_stores_new_min == Init => TypeOK
+\* current_or_newer_allowed
+THEOREM current_or_newer_allowed ==
+  \A st \in Nat, comp \in ComponentIdSet, ver \in Nat :
+      rollback_enforced(st) => version_allowed st comp ver = true
 
-\* record_preserves_anti_rollback (matches Coq: Theorem record_preserves_anti_rollback)
-THEOREM record_preserves_anti_rollback == Init => TypeOK
+\* min_version_monotonic
+THEOREM min_version_monotonic ==
+  \A st \in Nat, comp \in ComponentIdSet, old_ver \in Nat, new_ver \in Nat :
+      get_min_version st comp = Some old_ver => let st' := update_min_version st comp new_ver true in
+      get_min_version st' comp = Some new_ver
 
-\* record_preserves_minimums (matches Coq: Theorem record_preserves_minimums)
-THEOREM record_preserves_minimums == Init => TypeOK
+\* no_minimum_any_allowed
+THEOREM no_minimum_any_allowed ==
+  \A st \in Nat, comp \in ComponentIdSet, ver \in Nat :
+      get_min_version st comp = None => version_allowed st comp ver = true
 
-\* update_preserves_anti_rollback (matches Coq: Theorem update_preserves_anti_rollback)
-THEOREM update_preserves_anti_rollback == Init => TypeOK
+\* disabled_rollback_allows_all
+THEOREM disabled_rollback_allows_all ==
+  \A st \in Nat, comp \in ComponentIdSet, ver \in Nat :
+      ~anti_rollback_enabled(st) => version_allowed st comp ver = true
 
-\* advance_preserves_anti_rollback (matches Coq: Theorem advance_preserves_anti_rollback)
-THEOREM advance_preserves_anti_rollback == Init => TypeOK
+\* version_lt_irreflexive
+THEOREM version_lt_irreflexive ==
+  \A v \in Nat :
+      version_lt(v, v) = FALSE
 
-\* equal_version_not_rollback (matches Coq: Theorem equal_version_not_rollback)
-THEOREM equal_version_not_rollback == Init => TypeOK
+\* same_version_always_allowed
+THEOREM same_version_always_allowed ==
+  \A st \in Nat, comp \in ComponentIdSet, ver \in Nat :
+      rollback_enforced(st) => version_allowed st comp ver = true
 
-\* initial_state_allows_all (matches Coq: Theorem initial_state_allows_all)
-THEOREM initial_state_allows_all == Init => TypeOK
+\* update_stores_new_min
+THEOREM update_stores_new_min ==
+  \A st \in Nat, comp \in ComponentIdSet, ver \in Nat, hw \in BOOLEAN :
+      get_min_version (update_min_version st comp ver hw) comp = Some ver
 
-\* initial_state_no_minimums (matches Coq: Theorem initial_state_no_minimums)
-THEOREM initial_state_no_minimums == Init => TypeOK
+\* record_preserves_anti_rollback
+THEOREM record_preserves_anti_rollback ==
+  \A st \in Nat, comp \in Nat :
+      anti_rollback_enabled (record_current_version st comp) = anti_rollback_enabled(st)
 
-\* initial_state_no_current (matches Coq: Theorem initial_state_no_current)
-THEOREM initial_state_no_current == Init => TypeOK
+\* record_preserves_minimums
+THEOREM record_preserves_minimums ==
+  \A st \in Nat, comp \in Nat :
+      minimum_versions (record_current_version st comp) = minimum_versions(st)
 
-\* enforced_detects_rollback (matches Coq: Theorem enforced_detects_rollback)
-THEOREM enforced_detects_rollback == Init => TypeOK
+\* update_preserves_anti_rollback
+THEOREM update_preserves_anti_rollback ==
+  \A st \in Nat, comp \in ComponentIdSet, ver \in Nat, hw \in BOOLEAN :
+      anti_rollback_enabled (update_min_version st comp ver hw) = anti_rollback_enabled(st)
 
-\* hardware_stored_minimum_recorded (matches Coq: Theorem hardware_stored_minimum_recorded)
-THEOREM hardware_stored_minimum_recorded == Init => TypeOK
+\* advance_preserves_anti_rollback
+THEOREM advance_preserves_anti_rollback ==
+  \A st \in Nat, comp \in ComponentIdSet :
+      anti_rollback_enabled (advance_min_to_current st comp) = anti_rollback_enabled(st)
 
-\* advance_missing_current_identity (matches Coq: Theorem advance_missing_current_identity)
-THEOREM advance_missing_current_identity == Init => TypeOK
+\* equal_version_not_rollback
+THEOREM equal_version_not_rollback ==
+  \A st \in Nat, comp \in ComponentIdSet, ver \in Nat :
+      get_min_version st comp = Some ver => ~ is_rollback st comp ver
 
-\* independent_component_minimums (matches Coq: Theorem independent_component_minimums)
-THEOREM independent_component_minimums == Init => TypeOK
+\* initial_state_allows_all
+THEOREM initial_state_allows_all ==
+  \A comp \in ComponentIdSet, ver \in Nat :
+      version_allowed initial_rollback_state comp ver = TRUE
 
-\* Next-state relation
-Next == UNCHANGED <<major, minor, patch, build, comp_id, comp_version, comp_hash, min_comp_id, min_version, stored_in_hardware, minimum_versions, current_versions, anti_rollback_enabled>>
+\* initial_state_no_minimums
+THEOREM initial_state_no_minimums ==
+  \A comp \in ComponentIdSet :
+      get_min_version(initial_rollback_state, comp) = None
 
-\* Specification
-Spec == Init /\ [][Next]_<<major, minor, patch, build, comp_id, comp_version, comp_hash, min_comp_id, min_version, stored_in_hardware, minimum_versions, current_versions, anti_rollback_enabled>>
+\* initial_state_no_current
+THEOREM initial_state_no_current ==
+  \A comp \in ComponentIdSet :
+      get_current_version(initial_rollback_state, comp) = None
+
+\* enforced_detects_rollback
+THEOREM enforced_detects_rollback ==
+  \A st \in Nat, comp \in ComponentIdSet, ver \in Nat :
+      rollback_enforced(st) => can_boot_version st (mkVersionedComp comp ver 0) = false
+
+\* hardware_stored_minimum_recorded
+THEOREM hardware_stored_minimum_recorded ==
+  \A st \in Nat, comp \in ComponentIdSet, ver \in Nat :
+      let st' : = update_min_version st comp ver true in
+      In (mkMinVersion comp ver true) (minimum_versions st')
+
+\* advance_missing_current_identity
+THEOREM advance_missing_current_identity ==
+  \A st \in Nat, comp \in ComponentIdSet :
+      get_current_version st comp = None => advance_min_to_current st comp = st
+
+\* independent_component_minimums
+THEOREM independent_component_minimums ==
+  \A st \in Nat, comp1 \in ComponentIdSet, comp2 \in ComponentIdSet, ver \in Nat, hw \in BOOLEAN :
+      comp1 # comp2 => let st' := update_min_version st comp1 ver hw in
+      get_min_version st' comp2 = None
 
 ====

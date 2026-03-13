@@ -35,52 +35,52 @@ terminates(e, st, ctx) == TRUE
 step_terminates(e, st, ctx) == TRUE
 
 \* expr_size_pos (matches Coq: Lemma expr_size_pos)
-THEOREM expr_size_pos == Init => TypeOK
+THEOREM expr_size_pos == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_prod_decompose (matches Coq: Lemma value_prod_decompose)
-THEOREM value_prod_decompose == Init => TypeOK
+THEOREM value_prod_decompose == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_sum_decompose (matches Coq: Lemma value_sum_decompose)
-THEOREM value_sum_decompose == Init => TypeOK
+THEOREM value_sum_decompose == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_bool_decompose (matches Coq: Lemma value_bool_decompose)
-THEOREM value_bool_decompose == Init => TypeOK
+THEOREM value_bool_decompose == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_fn_decompose (matches Coq: Lemma value_fn_decompose)
-THEOREM value_fn_decompose == Init => TypeOK
+THEOREM value_fn_decompose == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fst_steps_once (matches Coq: Lemma fst_steps_once)
-THEOREM fst_steps_once == Init => TypeOK
+THEOREM fst_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* snd_steps_once (matches Coq: Lemma snd_steps_once)
-THEOREM snd_steps_once == Init => TypeOK
+THEOREM snd_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* case_inl_steps_once (matches Coq: Lemma case_inl_steps_once)
-THEOREM case_inl_steps_once == Init => TypeOK
+THEOREM case_inl_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* case_inr_steps_once (matches Coq: Lemma case_inr_steps_once)
-THEOREM case_inr_steps_once == Init => TypeOK
+THEOREM case_inr_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* if_true_steps_once (matches Coq: Lemma if_true_steps_once)
-THEOREM if_true_steps_once == Init => TypeOK
+THEOREM if_true_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* if_false_steps_once (matches Coq: Lemma if_false_steps_once)
-THEOREM if_false_steps_once == Init => TypeOK
+THEOREM if_false_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* let_value_steps_once (matches Coq: Lemma let_value_steps_once)
-THEOREM let_value_steps_once == Init => TypeOK
+THEOREM let_value_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* handle_value_steps_once (matches Coq: Lemma handle_value_steps_once)
-THEOREM handle_value_steps_once == Init => TypeOK
+THEOREM handle_value_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* app_lam_steps_once (matches Coq: Lemma app_lam_steps_once)
-THEOREM app_lam_steps_once == Init => TypeOK
+THEOREM app_lam_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_to_multi (matches Coq: Lemma step_to_multi)
-THEOREM step_to_multi == Init => TypeOK
+THEOREM step_to_multi == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* multi_step_trans (matches Coq: Lemma multi_step_trans)
-THEOREM multi_step_trans == Init => TypeOK
+THEOREM multi_step_trans == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

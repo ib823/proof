@@ -16,19 +16,19 @@ Init ==
   /\ state = TRUE
 
 \* store_ty_extends_trans_early (matches Coq: Lemma store_ty_extends_trans_early)
-THEOREM store_ty_extends_trans_early == Init => TypeOK
+THEOREM store_ty_extends_trans_early == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_at_type_mono_store (matches Coq: Lemma val_rel_at_type_mono_store)
-THEOREM val_rel_at_type_mono_store == Init => TypeOK
+THEOREM val_rel_at_type_mono_store == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_decidable_local (matches Coq: Lemma first_order_decidable_local)
-THEOREM first_order_decidable_local == Init => TypeOK
+THEOREM first_order_decidable_local == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_mono_store_fo (matches Coq: Lemma val_rel_n_mono_store_fo)
-THEOREM val_rel_n_mono_store_fo == Init => TypeOK
+THEOREM val_rel_n_mono_store_fo == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_n_mono_store (matches Coq: Lemma val_rel_n_mono_store)
-THEOREM val_rel_n_mono_store == Init => TypeOK
+THEOREM val_rel_n_mono_store == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

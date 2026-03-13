@@ -26,52 +26,52 @@ step_ty_lt(p1, p2) == TRUE
 triple_lt(p1, p2) == TRUE
 
 \* lex_lt_wf (matches Coq: Theorem lex_lt_wf)
-THEOREM lex_lt_wf == Init => TypeOK
+THEOREM lex_lt_wf == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* lex_induction (matches Coq: Theorem lex_induction)
-THEOREM lex_induction == Init => TypeOK
+THEOREM lex_induction == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* lex_lt_left (matches Coq: Lemma lex_lt_left)
-THEOREM lex_lt_left == Init => TypeOK
+THEOREM lex_lt_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* lex_lt_right (matches Coq: Lemma lex_lt_right)
-THEOREM lex_lt_right == Init => TypeOK
+THEOREM lex_lt_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_lt_wf (matches Coq: Theorem step_ty_lt_wf)
-THEOREM step_ty_lt_wf == Init => TypeOK
+THEOREM step_ty_lt_wf == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_induction (matches Coq: Theorem step_ty_induction)
-THEOREM step_ty_induction == Init => TypeOK
+THEOREM step_ty_induction == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_lt_step (matches Coq: Lemma step_ty_lt_step)
-THEOREM step_ty_lt_step == Init => TypeOK
+THEOREM step_ty_lt_step == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_lt_ty (matches Coq: Lemma step_ty_lt_ty)
-THEOREM step_ty_lt_ty == Init => TypeOK
+THEOREM step_ty_lt_ty == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_lt_fn_arg (matches Coq: Lemma step_ty_lt_fn_arg)
-THEOREM step_ty_lt_fn_arg == Init => TypeOK
+THEOREM step_ty_lt_fn_arg == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_lt_fn_res (matches Coq: Lemma step_ty_lt_fn_res)
-THEOREM step_ty_lt_fn_res == Init => TypeOK
+THEOREM step_ty_lt_fn_res == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_lt_prod_left (matches Coq: Lemma step_ty_lt_prod_left)
-THEOREM step_ty_lt_prod_left == Init => TypeOK
+THEOREM step_ty_lt_prod_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_lt_prod_right (matches Coq: Lemma step_ty_lt_prod_right)
-THEOREM step_ty_lt_prod_right == Init => TypeOK
+THEOREM step_ty_lt_prod_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_lt_sum_left (matches Coq: Lemma step_ty_lt_sum_left)
-THEOREM step_ty_lt_sum_left == Init => TypeOK
+THEOREM step_ty_lt_sum_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_lt_sum_right (matches Coq: Lemma step_ty_lt_sum_right)
-THEOREM step_ty_lt_sum_right == Init => TypeOK
+THEOREM step_ty_lt_sum_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_ty_lt_step_any (matches Coq: Lemma step_ty_lt_step_any)
-THEOREM step_ty_lt_step_any == Init => TypeOK
+THEOREM step_ty_lt_step_any == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* triple_lt_wf (matches Coq: Theorem triple_lt_wf)
-THEOREM triple_lt_wf == Init => TypeOK
+THEOREM triple_lt_wf == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

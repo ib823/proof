@@ -1,19 +1,28 @@
 ---- MODULE IOMMUProtection ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/security_foundation/IOMMUProtection.v (22 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/security_foundation/IOMMUProtection.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* DeviceId (matches Coq: Inductive DeviceId)
 CONSTANTS DevId
 
+DeviceIdSet == {DevId}
+
 \* VMId (matches Coq: Inductive VMId)
 CONSTANTS VM
 
+VMIdSet == {VM}
+
 \* Address (matches Coq: Inductive Address)
 CONSTANTS Addr
+
+AddressSet == {Addr}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* Device (matches Coq: Record Device)
 VARIABLES dev_id, dev_bus, dev_function
@@ -27,126 +36,193 @@ VARIABLES config_device, config_allowed_base, config_allowed_size, config_locked
 \* IOMMU (matches Coq: Record IOMMU)
 VARIABLES iommu_id, iommu_configs, iommu_enabled
 
-\* Type invariant
+vars == <<dev_id, dev_bus, dev_function, vm_id, vm_dma_base, vm_dma_size, config_device, config_allowed_base, config_allowed_size, config_locked, iommu_id, iommu_configs, iommu_enabled>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ dev_id \in BOOLEAN
-  /\ dev_bus \in BOOLEAN
-  /\ dev_function \in BOOLEAN
-  /\ vm_id \in BOOLEAN
-  /\ vm_dma_base \in BOOLEAN
-  /\ vm_dma_size \in BOOLEAN
-  /\ config_device \in BOOLEAN
-  /\ config_allowed_base \in BOOLEAN
-  /\ config_allowed_size \in BOOLEAN
+  /\ dev_id \in DeviceIdSet
+  /\ dev_bus \in Nat
+  /\ dev_function \in Nat
+  /\ vm_id \in VMIdSet
+  /\ vm_dma_base \in Nat
+  /\ vm_dma_size \in Nat
+  /\ config_device \in DeviceIdSet
+  /\ config_allowed_base \in Nat
+  /\ config_allowed_size \in Nat
   /\ config_locked \in BOOLEAN
-  /\ iommu_id \in BOOLEAN
-  /\ iommu_configs \in BOOLEAN
+  /\ iommu_id \in Nat
+  /\ iommu_configs \in Seq(Nat)
   /\ iommu_enabled \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ dev_id = TRUE
-  /\ dev_bus = TRUE
-  /\ dev_function = TRUE
-  /\ vm_id = TRUE
-  /\ vm_dma_base = TRUE
-  /\ vm_dma_size = TRUE
-  /\ config_device = TRUE
-  /\ config_allowed_base = TRUE
-  /\ config_allowed_size = TRUE
-  /\ config_locked = TRUE
-  /\ iommu_id = TRUE
-  /\ iommu_configs = TRUE
-  /\ iommu_enabled = TRUE
+  /\ dev_id = DevId
+  /\ dev_bus = 0
+  /\ dev_function = 0
+  /\ vm_id = VM
+  /\ vm_dma_base = 0
+  /\ vm_dma_size = 0
+  /\ config_device = DevId
+  /\ config_allowed_base = 0
+  /\ config_allowed_size = 0
+  /\ config_locked = FALSE
+  /\ iommu_id = 0
+  /\ iommu_configs = <<>>
+  /\ iommu_enabled = FALSE
 
-\* find_device_config (matches Coq: Definition find_device_config)
-find_device_config(dev, configs) == TRUE
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
-\* address_in_range (matches Coq: Definition address_in_range)
-address_in_range(addr, cfg) == TRUE
-
-\* iommu_permits_dma (matches Coq: Definition iommu_permits_dma)
-iommu_permits_dma(iommu, dev, addr) == TRUE
-
-\* guest_isolated_from_iommu (matches Coq: Definition guest_isolated_from_iommu)
-guest_isolated_from_iommu(vm, iommu) == TRUE
+\* iommu_config (matches Coq: Definition iommu_config)
+iommu_config(iommu) ==
+  iommu >= 0
 
 \* kernel_region_base (matches Coq: Definition kernel_region_base)
-kernel_region_base == TRUE
+kernel_region_base ==
+  0
 
 \* kernel_region_size (matches Coq: Definition kernel_region_size)
-kernel_region_size == TRUE
+kernel_region_size ==
+  4096
 
-\* dma_isolation (matches Coq: Theorem dma_isolation)
-THEOREM dma_isolation == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* iommu_config_protected (matches Coq: Theorem iommu_config_protected)
-THEOREM iommu_config_protected == Init => TypeOK
+UpdateDevice ==
+  /\ dev_id' \in DeviceIdSet
+  /\ dev_bus' \in 0..100
+  /\ dev_function' \in 0..100
+  /\ UNCHANGED <<vm_id, vm_dma_base, vm_dma_size, config_device, config_allowed_base, config_allowed_size, config_locked, iommu_id, iommu_configs, iommu_enabled>>
 
-\* iommu_config_protected_v2 (matches Coq: Theorem iommu_config_protected_v2)
-THEOREM iommu_config_protected_v2 == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* dma_requires_iommu_enabled (matches Coq: Theorem dma_requires_iommu_enabled)
-THEOREM dma_requires_iommu_enabled == Init => TypeOK
+Next == UpdateDevice \/ ValidateState
 
-\* unconfigured_device_no_dma (matches Coq: Theorem unconfigured_device_no_dma)
-THEOREM unconfigured_device_no_dma == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* out_of_range_dma_blocked (matches Coq: Theorem out_of_range_dma_blocked)
-THEOREM out_of_range_dma_blocked == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* iommu_lockdown_effective (matches Coq: Theorem iommu_lockdown_effective)
-THEOREM iommu_lockdown_effective == Init => TypeOK
+\* dma_isolation
+THEOREM dma_isolation ==
+  \A dev \in Nat, addr \in AddressSet, iommu \in Nat :
+      ~ iommu_permits_dma iommu dev addr => ~ can_dma_access dev addr iommu
 
-\* dma_isolation_enforced (matches Coq: Theorem dma_isolation_enforced)
-THEOREM dma_isolation_enforced == Init => TypeOK
+\* iommu_config_protected
+THEOREM iommu_config_protected ==
+  \A guest \in Nat, cfg \in Nat :
+      ~ can_modify_config guest cfg
 
-\* device_address_bounded (matches Coq: Theorem device_address_bounded)
-THEOREM device_address_bounded == Init => TypeOK
+\* iommu_config_protected_v2
+THEOREM iommu_config_protected_v2 ==
+  \A guest \in Nat, iommu \in Nat :
+      forall cfg, In cfg (iommu_config iommu) => ~ can_modify_config guest cfg
 
-\* mapping_table_consistent (matches Coq: Theorem mapping_table_consistent)
-THEOREM mapping_table_consistent == Init => TypeOK
+\* dma_requires_iommu_enabled
+THEOREM dma_requires_iommu_enabled ==
+  \A dev \in Nat, addr \in AddressSet, iommu \in Nat :
+      ~iommu_enabled(iommu) => ~ iommu_permits_dma iommu dev addr
 
-\* no_dma_to_kernel (matches Coq: Theorem no_dma_to_kernel)
-THEOREM no_dma_to_kernel == Init => TypeOK
+\* unconfigured_device_no_dma
+THEOREM unconfigured_device_no_dma ==
+  \A dev \in Nat, addr \in AddressSet, iommu \in Nat :
+      find_device_config (dev_id dev) (iommu_configs iommu) = None => ~ iommu_permits_dma iommu dev addr
 
-\* iommu_bypass_impossible (matches Coq: Theorem iommu_bypass_impossible)
-THEOREM iommu_bypass_impossible == Init => TypeOK
+\* out_of_range_dma_blocked
+THEOREM out_of_range_dma_blocked ==
+  \A dev \in Nat, n \in Nat, iommu \in Nat, cfg \in Nat :
+      find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg => ~ iommu_permits_dma iommu dev (Addr n)
 
-\* address_range_lower_bound (matches Coq: Theorem address_range_lower_bound)
-THEOREM address_range_lower_bound == Init => TypeOK
+\* iommu_lockdown_effective
+THEOREM iommu_lockdown_effective ==
+  \A iommu \in Nat, guest \in Nat :
+      guest_isolated_from_iommu(guest, iommu) => config_locked(cfg)
 
-\* address_range_upper_bound (matches Coq: Theorem address_range_upper_bound)
-THEOREM address_range_upper_bound == Init => TypeOK
+\* dma_isolation_enforced
+THEOREM dma_isolation_enforced ==
+  \A dev \in Nat, addr \in AddressSet, iommu \in Nat :
+      can_dma_access dev addr iommu => iommu_enabled(iommu)
 
-\* device_identity_verified (matches Coq: Theorem device_identity_verified)
-THEOREM device_identity_verified == Init => TypeOK
+\* device_address_bounded
+THEOREM device_address_bounded ==
+  \A dev \in Nat, n \in Nat, iommu \in Nat, cfg \in Nat :
+      iommu_permits_dma iommu dev (Addr n) => address_in_range(n, cfg)
 
-\* empty_config_denies_all (matches Coq: Theorem empty_config_denies_all)
-THEOREM empty_config_denies_all == Init => TypeOK
+\* mapping_table_consistent
+THEOREM mapping_table_consistent ==
+  \A dev \in DeviceIdSet, configs \in Nat, cfg1 \in Nat, cfg2 \in Nat :
+      find_device_config dev configs = Some cfg1 => cfg1 = cfg2
 
-\* disabled_iommu_denies_all (matches Coq: Theorem disabled_iommu_denies_all)
-THEOREM disabled_iommu_denies_all == Init => TypeOK
+\* no_dma_to_kernel
+THEOREM no_dma_to_kernel ==
+  \A dev \in Nat, addr \in Nat, iommu \in Nat, cfg \in Nat :
+      find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg => address_in_range addr cfg = false
 
-\* locked_config_invariant (matches Coq: Theorem locked_config_invariant)
-THEOREM locked_config_invariant == Init => TypeOK
+\* iommu_bypass_impossible
+THEOREM iommu_bypass_impossible ==
+  \A dev \in Nat, addr \in AddressSet, iommu \in Nat :
+      iommu_enabled(iommu) => ~ can_dma_access dev addr iommu
 
-\* zero_size_config_denies (matches Coq: Theorem zero_size_config_denies)
-THEOREM zero_size_config_denies == Init => TypeOK
+\* address_range_lower_bound
+THEOREM address_range_lower_bound ==
+  \A addr \in Nat, cfg \in Nat :
+      address_in_range(addr, cfg) => config_allowed_base cfg <= addr
 
-\* find_device_config_none_not_in (matches Coq: Theorem find_device_config_none_not_in)
-THEOREM find_device_config_none_not_in == Init => TypeOK
+\* address_range_upper_bound
+THEOREM address_range_upper_bound ==
+  \A addr \in Nat, cfg \in Nat :
+      address_in_range(addr, cfg) => addr < config_allowed_base cfg + config_allowed_size cfg
 
-\* find_device_config_some_matches (matches Coq: Theorem find_device_config_some_matches)
-THEOREM find_device_config_some_matches == Init => TypeOK
+\* device_identity_verified
+THEOREM device_identity_verified ==
+  \A dev \in Nat, addr \in AddressSet, iommu \in Nat :
+      can_dma_access dev addr iommu => exists cfg, find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg
 
-\* independent_device_configs (matches Coq: Theorem independent_device_configs)
-THEOREM independent_device_configs == Init => TypeOK
+\* empty_config_denies_all
+THEOREM empty_config_denies_all ==
+  \A dev \in Nat, addr \in AddressSet :
+      let iommu : = mkIOMMU 0 [] true in
+      ~ can_dma_access dev addr iommu
 
-\* Next-state relation
-Next == UNCHANGED <<dev_id, dev_bus, dev_function, vm_id, vm_dma_base, vm_dma_size, config_device, config_allowed_base, config_allowed_size, config_locked, iommu_id, iommu_configs, iommu_enabled>>
+\* disabled_iommu_denies_all
+THEOREM disabled_iommu_denies_all ==
+  \A dev \in Nat, addr \in AddressSet, iommu \in Nat :
+      ~iommu_enabled(iommu) => ~ can_dma_access dev addr iommu
 
-\* Specification
-Spec == Init /\ [][Next]_<<dev_id, dev_bus, dev_function, vm_id, vm_dma_base, vm_dma_size, config_device, config_allowed_base, config_allowed_size, config_locked, iommu_id, iommu_configs, iommu_enabled>>
+\* locked_config_invariant
+THEOREM locked_config_invariant ==
+  \A guest \in Nat, iommu \in Nat, cfg \in Nat :
+      guest_isolated_from_iommu(guest, iommu) => config_locked(cfg)
+
+\* zero_size_config_denies
+THEOREM zero_size_config_denies ==
+  \A addr \in Nat, cfg \in Nat :
+      config_allowed_size cfg = 0 => address_in_range addr cfg = false
+
+\* find_device_config_none_not_in
+THEOREM find_device_config_none_not_in ==
+  \A dev \in DeviceIdSet, configs \in Nat :
+      find_device_config dev configs = None => config_device cfg <> dev
+
+\* find_device_config_some_matches
+THEOREM find_device_config_some_matches ==
+  \A dev \in DeviceIdSet, configs \in Nat, cfg \in Nat :
+      find_device_config dev configs = Some cfg => config_device cfg = dev
+
+\* independent_device_configs
+THEOREM independent_device_configs ==
+  \A dev1 \in Nat, dev2 \in Nat, iommu \in Nat, cfg1 \in Nat, cfg2 \in Nat :
+      dev_id dev1 <> dev_id dev2 => config_device cfg1 <> config_device cfg2
 
 ====

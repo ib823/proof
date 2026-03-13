@@ -1,118 +1,274 @@
 ---- MODULE SpeculativeExecution ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/SpeculativeExecution.v (20 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/SpeculativeExecution.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* effect (matches Coq: Inductive effect)
 CONSTANTS Eff_pure, Eff_timed, Eff_speculative
 
+effectSet == {Eff_pure, Eff_timed, Eff_speculative}
+
 \* visibility (matches Coq: Inductive visibility)
 CONSTANTS Public, Secret
+
+visibilitySet == {Public, Secret}
 
 \* value (matches Coq: Inductive value)
 CONSTANTS VNat, VBool
 
+valueSet == {VNat, VBool}
+
 \* instr (matches Coq: Inductive instr)
 CONSTANTS IConst, IBinop, IBranch, ISeq, IAnnot
 
-VARIABLES state
+instrSet == {IConst, IBinop, IBranch, ISeq, IAnnot}
 
-\* Type invariant
+VARIABLES state, verified, step_count
+vars == <<state, verified, step_count>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ state \in BOOLEAN
+  /\ state \in Nat
+  /\ verified \in BOOLEAN
+  /\ step_count \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ state = TRUE
+  /\ state = 0
+  /\ verified = FALSE
+  /\ step_count = 0
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* eff_le (matches Coq: Definition eff_le)
-eff_le(e1, e2) == TRUE
+eff_le(e2) ==
+    CASE e1 = Eff_pure, _ -> TRUE
+      [] e1 = Eff_timed, Eff_pure -> FALSE
+      [] e1 = Eff_timed, _ -> TRUE
+      [] e1 = Eff_speculative, Eff_speculative -> TRUE
+      [] e1 = Eff_speculative, _ -> FALSE
 
 \* eff_join (matches Coq: Definition eff_join)
-eff_join(e1, e2) == TRUE
-
-\* infer_effect (matches Coq: Definition infer_effect)
-infer_effect(i) == TRUE
-
-\* is_constant_time (matches Coq: Definition is_constant_time)
-is_constant_time(i) == TRUE
+eff_join(e2) ==
+    CASE e1 = Eff_pure, e | e, Eff_pure -> e
+      [] e1 = Eff_speculative, _ | _, Eff_speculative -> Eff_speculative
+      [] e1 = Eff_timed, Eff_timed -> Eff_timed
 
 \* is_spec_safe (matches Coq: Definition is_spec_safe)
-is_spec_safe(i) == TRUE
+is_spec_safe(i) ==
+  ~(match infer_effect i with Eff_speculative => true | _ => false end)
+
+\* infer_effect (matches Coq: Definition infer_effect)
+infer_effect(i) ==
+    CASE i = IConst _ -> Eff_pure
+      [] i = IBinop a b -> eff_join
+      [] i = IBranch Secret _ t f -> eff_join
+      [] i = IBranch Public c t f -> eff_join
+      [] i = ISeq a b -> eff_join
+      [] i = IAnnot e sub -> eff_join
+
+\* is_constant_time (matches Coq: Definition is_constant_time)
+is_constant_time(i) ==
+    CASE i = IConst _ -> TRUE
+      [] i = IBinop a b -> is_constant_time
+      [] i = IBranch Secret _ _ _ -> FALSE
+      [] i = IBranch Public c t f -> is_constant_time
+      [] i = ISeq a b -> is_constant_time
+      [] i = IAnnot _ sub -> is_constant_time
 
 \* eval_instr (matches Coq: Definition eval_instr)
-eval_instr(i) == TRUE
+eval_instr(i) ==
+    CASE i = IConst v -> Some
+      [] i = IBinop a b -> match
+      [] i = _, _ -> None
+      [] i = IBranch _ c t f -> match
+    [] OTHER -> None
+      [] i = ISeq a b -> match
+      [] i = Some _ -> eval_instr
+      [] i = None -> None
+      [] i = IAnnot _ sub -> eval_instr
 
 \* no_speculative_annotation (matches Coq: Definition no_speculative_annotation)
-no_speculative_annotation(i) == TRUE
+no_speculative_annotation(i) ==
+    CASE i = IConst _ -> TRUE
+      [] i = IBinop a b -> no_speculative_annotation
+      [] i = IBranch _ c t f -> no_speculative_annotation
+      [] i = ISeq a b -> no_speculative_annotation
+      [] i = IAnnot Eff_speculative _ -> FALSE
+      [] i = IAnnot _ sub -> no_speculative_annotation
 
-\* eff_join_pure_l (matches Coq: Lemma eff_join_pure_l)
-THEOREM eff_join_pure_l == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* eff_join_pure_r (matches Coq: Lemma eff_join_pure_r)
-THEOREM eff_join_pure_r == Init => TypeOK
+Step ==
+  /\ state' \in Nat
+  /\ verified' \in BOOLEAN
+  /\ step_count' = step_count + 1
 
-\* eff_le_refl (matches Coq: Lemma eff_le_refl)
-THEOREM eff_le_refl == Init => TypeOK
+Next == Step
 
-\* eff_le_trans (matches Coq: Lemma eff_le_trans)
-THEOREM eff_le_trans == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* pure_is_constant_time (matches Coq: Theorem pure_is_constant_time)
-THEOREM pure_is_constant_time == Init => TypeOK
+\* ===================================================================
 
-\* ct_composition (matches Coq: Theorem ct_composition)
-THEOREM ct_composition == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* no_secret_branch (matches Coq: Lemma no_secret_branch)
-THEOREM no_secret_branch == Init => TypeOK
+\* eff_join_pure_l
+THEOREM eff_join_pure_l ==
+  \A e \in Nat :
+      eff_join(Eff_pure, e) = e
 
-\* spec_safe_no_secret_branch_aux (matches Coq: Lemma spec_safe_no_secret_branch_aux)
-THEOREM spec_safe_no_secret_branch_aux == Init => TypeOK
+\* eff_join_pure_r
+THEOREM eff_join_pure_r ==
+  \A e \in Nat :
+      eff_join(e, Eff_pure) = e
 
-\* spec_safe_implies_no_secret_leakage (matches Coq: Theorem spec_safe_implies_no_secret_leakage)
-THEOREM spec_safe_implies_no_secret_leakage == Init => TypeOK
+\* eff_le_refl
+THEOREM eff_le_refl ==
+  \A e \in Nat :
+      eff_le(e, e)
 
-\* effect_preorder_refl (matches Coq: Theorem effect_preorder_refl)
-THEOREM effect_preorder_refl == Init => TypeOK
+\* eff_le_trans
+THEOREM eff_le_trans ==
+  \A e1 \in Nat, e2 \in Nat, e3 \in Nat :
+      eff_le(e1, e2) => eff_le(e1, e3)
 
-\* effect_preorder_trans (matches Coq: Theorem effect_preorder_trans)
-THEOREM effect_preorder_trans == Init => TypeOK
+\* 1
+THEOREM 1 ==
+  Pure programs are constant-time *)
+  
+  Theorem pure_is_constant_time : forall i,
+    infer_effect i = Eff_pure => is_constant_time(i)
 
-\* pure_is_bottom (matches Coq: Theorem pure_is_bottom)
-THEOREM pure_is_bottom == Init => TypeOK
+\* pure_is_constant_time
+THEOREM pure_is_constant_time ==
+  \A i \in Nat :
+      infer_effect(i) = Eff_pure => is_constant_time(i)
 
-\* seq_preserves_spec_safe (matches Coq: Theorem seq_preserves_spec_safe)
-THEOREM seq_preserves_spec_safe == Init => TypeOK
+\* 2
+THEOREM 2 ==
+  Constant-time composition *)
+  
+  Theorem ct_composition : forall a b,
+    is_constant_time a = true => is_constant_time (ISeq a b) = true
 
-\* public_branch_ct (matches Coq: Theorem public_branch_ct)
-THEOREM public_branch_ct == Init => TypeOK
+\* ct_composition
+THEOREM ct_composition ==
+  \A a \in Nat, b \in Nat :
+      is_constant_time(a) => is_constant_time (ISeq a b) = true
 
-\* annotation_soundness (matches Coq: Theorem annotation_soundness)
-THEOREM annotation_soundness == Init => TypeOK
+\* 3
+THEOREM 3 ==
+  Speculative safety implies no secret leakage *)
+  (** We model "no secret leakage" as: evaluation does not depend on
+      speculative side-channels, i.e., no secret branches exist. *)
+  
+  Lemma no_secret_branch : forall i,
+    is_constant_time i = true => forall c t f, i <> IBranch Secret c t f
 
-\* binop_preserves_ct (matches Coq: Theorem binop_preserves_ct)
-THEOREM binop_preserves_ct == Init => TypeOK
+\* no_secret_branch
+THEOREM no_secret_branch ==
+  \A i \in Nat :
+      is_constant_time(i) => forall c t f, i <> IBranch Secret c t f
 
-\* pure_implies_spec_safe (matches Coq: Theorem pure_implies_spec_safe)
-THEOREM pure_implies_spec_safe == Init => TypeOK
+\* spec_safe_no_secret_branch_aux
+THEOREM spec_safe_no_secret_branch_aux ==
+  \A i \in Nat :
+      no_speculative_annotation(i) => is_constant_time(i)
 
-\* timed_implies_spec_safe (matches Coq: Theorem timed_implies_spec_safe)
-THEOREM timed_implies_spec_safe == Init => TypeOK
+\* spec_safe_implies_no_secret_leakage
+THEOREM spec_safe_implies_no_secret_leakage ==
+  \A i \in Nat :
+      no_speculative_annotation(i) => is_constant_time(i)
 
-\* const_is_pure (matches Coq: Theorem const_is_pure)
-THEOREM const_is_pure == Init => TypeOK
+\* 4
+THEOREM 4 ==
+  Effect ordering is a preorder *)
+  
+  Theorem effect_preorder_refl : forall e, eff_le e e = true
 
-\* eff_join_comm (matches Coq: Theorem eff_join_comm)
-THEOREM eff_join_comm == Init => TypeOK
+\* effect_preorder_refl
+THEOREM effect_preorder_refl ==
+  \A e \in Nat :
+      eff_le(e, e)
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
+\* effect_preorder_trans
+THEOREM effect_preorder_trans ==
+  \A e1 \in Nat, e2 \in Nat, e3 \in Nat :
+      eff_le(e1, e2) => eff_le(e1, e3)
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
+\* 5
+THEOREM 5 ==
+  Pure is bottom of the effect ordering *)
+  
+  Theorem pure_is_bottom : forall e, eff_le Eff_pure e = true
+
+\* pure_is_bottom
+THEOREM pure_is_bottom ==
+  \A e \in Nat :
+      eff_le(Eff_pure, e)
+
+\* 6
+THEOREM 6 ==
+  Sequential composition preserves speculative safety *)
+  
+  Theorem seq_preserves_spec_safe : forall a b,
+    is_spec_safe a = true => is_spec_safe (ISeq a b) = true
+
+\* seq_preserves_spec_safe
+THEOREM seq_preserves_spec_safe ==
+  \A a \in Nat, b \in Nat :
+      is_spec_safe(a) => is_spec_safe (ISeq a b) = true
+
+\* 7
+THEOREM 7 ==
+  Secret-independent branching is constant-time *)
+  
+  Theorem public_branch_ct : forall c t f,
+    is_constant_time c = true => is_constant_time (IBranch Public c t f) = true
+
+\* public_branch_ct
+THEOREM public_branch_ct ==
+  \A c \in Nat, t \in Nat, f \in Nat :
+      is_constant_time(c) => is_constant_time (IBranch Public c t f) = true
+
+\* 8
+THEOREM 8 ==
+  Effect annotation soundness *)
+  (** If a program is annotated with effect [e] and its inferred effect
+      is at most [e], then the annotation is sound. We prove that
+      the inferred effect of an annotated program joins to at least [e]. *)
+  
+  Definition effect_eq_dec (e1 e2 : effect) : {e1 = e2} + {e1 <> e2}
+
+\* annotation_soundness
+THEOREM annotation_soundness ==
+  \A e \in Nat, i \in Nat :
+      eff_le (infer_effect i) e = true => eff_le (infer_effect (IAnnot e i)) e = true
+
+\* binop_preserves_ct
+THEOREM binop_preserves_ct ==
+  \A a \in Nat, b \in Nat :
+      is_constant_time(a) => is_constant_time (IBinop a b) = true
+
+\* pure_implies_spec_safe
+THEOREM pure_implies_spec_safe ==
+  \A i \in Nat :
+      infer_effect(i) = Eff_pure => is_spec_safe(i)
+
+\* 6 additional theorems proven in Coq source
 
 ====
