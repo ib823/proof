@@ -33,7 +33,7 @@ cd 03_PROTO && cargo test --all && cd ..
 
 | Directory | What | Language |
 |-----------|------|---------|
-| `02_FORMAL/` | Formal proofs (9,172 Coq Qed + 8,923 Lean + 9,165 Isabelle, 10 provers) | Coq/Lean/Isabelle + 7 more |
+| `02_FORMAL/` | Formal proofs (Coq primary, Lean active lane compiled, additional smoke lanes) | Coq/Lean/Isabelle + 7 more |
 | `03_PROTO/crates/` | Compiler (15 crates) | Rust |
 | `04_SPECS/` | Language specifications | Markdown |
 | `05_TOOLING/` | Crypto primitives, build tools | Rust |

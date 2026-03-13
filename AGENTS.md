@@ -70,9 +70,9 @@ Never the reverse.
 ## Quick Reference
 
 - **Language:** RIINA (Bahasa Melayu keywords, `.rii` files)
-- **Coq proofs:** `02_FORMAL/coq/` (primary, 8,946 Qed active, 0 Admitted)
-- **Rust prototype:** `03_PROTO/` (905 tests, 15 crates)
-- **Lean 4:** `02_FORMAL/lean/` (33 compiled theorems, toolchain v4.16.0)
+- **Coq proofs:** `02_FORMAL/coq/` (primary; see `RIINA_MASTER_PLAN.md` Part 2 for current verified counts)
+- **Rust prototype:** `03_PROTO/` (15 crates; see `RIINA_MASTER_PLAN.md` Part 2 for current verified test totals)
+- **Lean 4:** `02_FORMAL/lean/` (secondary; active lane builds, mechanized closure still pending)
 - **Specs:** `04_SPECS/`
 - **Examples:** `07_EXAMPLES/` (130 .rii files)
 

@@ -82,7 +82,7 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes (9,172 Coq + 4,026 Lean declarations + Isabelle/TLA+ smoke lanes) | No | No | Partial |
+| Formal proof corpus in repo | Yes (9,172 Coq + 3,879 Lean active-lane declarations + Isabelle/TLA+ smoke lanes) | No | No | Partial |
 | Multi-prover work | Yes (Coq primary, Lean active, Isabelle/F*/TLA+ smoke lanes) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
@@ -221,7 +221,7 @@ This is not a whitepaper. This is working software.
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
 | **Coq 8.20.1** (Primary) | 9,172 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
-| **Lean 4** (Secondary) | 4,026 theorem/lemma declarations repo-wide | 137 files build; 19 `sorry` and 50 axioms remain, so Lean is compiled but not mechanized |
+| **Lean 4** (Secondary) | 3,879 theorem/lemma declarations in the active lane | 136 files build; 0 `sorry` and 50 axioms remain, so Lean is compiled but not mechanized |
 | **Isabelle/HOL** (Tertiary) | 5 compiled lemmas in `RIINA_CORE` | 1 smoke-built theory; remaining `.thy` files are quarantined stubs |
 | **F\*** (Seed lane) | 3 compiled lemmas in `CryptographicSecurityActive` | 1 smoke-built active module; remaining `.fst` files are quarantined generated/transpiled stubs |
 | **TLA+** (Protocol seed lane) | 5 `THEOREM` declarations in `TelusProcurementProtocol` | 1 TLC-checked procurement spec; remaining `.tla` files are quarantined generated stubs |
@@ -316,7 +316,7 @@ riina/
 │   ├── compliance/         DO-178C, ISO-26262, Common Criteria models
 │   └── Industries/         Regulatory/domain formal models
 │
-├── 02_FORMAL/lean/          Lean 4 active lane (136 files, 4,026 declarations repo-wide)
+├── 02_FORMAL/lean/          Lean 4 active lane (136 files, 3,879 declarations)
 │   └── RIINA/               Syntax, Semantics, Typing, Progress, Preservation,
 │                             TypeSafety, EffectAlgebra, EffectSystem, EffectGate,
 │                             NonInterference

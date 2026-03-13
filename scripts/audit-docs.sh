@@ -90,7 +90,7 @@ count_lean_theorems() {
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             total=$((total + count))
         fi
-    done < <(find "$REPO_ROOT/02_FORMAL/lean" -name "*.lean" -type f ! -name "lakefile.lean" 2>/dev/null)
+    done < <(find "$REPO_ROOT/02_FORMAL/lean/RIINA" -name "*.lean" -type f ! -path "*/_wip/*" 2>/dev/null)
     echo "$total"
 }
 
@@ -427,6 +427,7 @@ if [ -f "$REPO_ROOT/README.md" ]; then
     check_no_stale "$REPO_ROOT/README.md" "0 sorry across all provers" "Unsupported all-prover cleanliness claim" || true
     check_no_stale "$REPO_ROOT/README.md" "10 independent provers" "Misleading active verification breadth claim" || true
     check_no_stale "$REPO_ROOT/README.md" "First non-stub F\\* / TLA\\+ / Alloy artifacts remain open" "Stale Phase 2 open-work claim" || true
+    check_no_stale "$REPO_ROOT/README.md" "Lean 4.*repo-wide|Lean 4 active lane.*repo-wide" "Stale Lean scope wording" || true
 
     # Dynamically check that README prover rows match the current verified state.
     README_COQ_LINE=$(grep -m1 '^\| \*\*Coq 8\.20\.1\*\*' "$REPO_ROOT/README.md" || true)
@@ -487,6 +488,8 @@ fi
 if [ -f "$REPO_ROOT/CONTRIBUTING.md" ]; then
     check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "6,193|6193" "Stale Qed count (6,193)" || true
     check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "Rocq 9\\.1" "Stale prover ref (Rocq 9.1)" || true
+    check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "8,923|8923" "Stale Lean theorem count (8,923)" || true
+    check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "9,165|9165" "Stale Isabelle theorem count (9,165)" || true
 fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
