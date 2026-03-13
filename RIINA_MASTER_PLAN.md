@@ -461,7 +461,13 @@ See Part 5 for detailed per-prover closure criteria.
 **Parallelization:** Lean and F* can run in parallel (different skill sets). TLA+, Alloy, Z3
 are cheap and fast. Verus is the critical path (most hours, medium achievability).
 
-**Gate:** Each prover has ≥1 non-trivial compiled/checked proof.
+**Gate:** Each Phase 2 prover (Lean, F*, TLA+, Alloy, Z3) has ≥1 non-trivial compiled/checked
+proof. Verus, Kani, and TV are Phase 3 scope per the effort table.
+
+**Gate status (2026-03-13): PASSED. Phase 2 complete for scoped provers.**
+Lean (3,895 declarations, mechanized), F* (3 lemmas), TLA+ (5 theorems),
+Alloy (6 assertions), Z3 (25 verified assertions). Isabelle also has 1 compiled
+theory from Phase 2 work. Verus/Kani/TV remain at 0 (Phase 3 scope).
 
 ---
 
