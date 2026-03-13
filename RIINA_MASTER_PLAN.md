@@ -179,7 +179,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 9,172 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 136 active-lane files, `lake build` passes, 0 `sorry`, 48 axioms | Secondary verification (compiled, not mechanized) |
+| **Lean proofs** | `02_FORMAL/lean/` | 136 active-lane files, `lake build` passes, 0 `sorry`, 8 axioms | Secondary verification (compiled, not mechanized) |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 1 compiled theory (`RIINA_CORE`) | Tertiary (closure started) |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
@@ -246,16 +246,23 @@ but the compiler does not yet enforce them.
 | Metric | Value | Notes |
 |--------|-------|-------|
 | `.lean` files in `02_FORMAL/lean/RIINA` | 136 | Strict mechanization gate scope (excludes `_wip`) |
-| Theorem/lemma declarations | 3,879 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
+| Theorem/lemma declarations | 3,889 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
 | `lake build RIINA` | PASSES | Full Lean lane builds successfully |
 | `sorry` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| `axiom` count (full lane) | 48 | All remaining axioms are in `Domains/AlgebraicEffects.lean` |
+| `axiom` count (full lane) | 8 | All remaining axioms are in `Domains/AlgebraicEffects.lean` (typing relations — Lean 4 strict positivity limitation) |
 | Mechanized readiness | NOT READY | Pending zero `axiom` across the full Lean lane |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
 **Honest assessment:** The full Lean namespace builds, so the current claim level is
 **compiled**. The strict active lane now has **0 `sorry`**, but it is still **not**
-mechanized-ready: 48 `axiom` remain, all in `02_FORMAL/lean/RIINA/Domains/AlgebraicEffects.lean`.
+mechanized-ready: 8 `axiom` remain, all in `02_FORMAL/lean/RIINA/Domains/AlgebraicEffects.lean`.
+These 8 axioms are **irreducible in pure Lean 4**: they axiomatize the typing relations
+(`comp_has_type`, `handler_has_type`) and their characterization lemmas. The underlying
+issue is that Lean 4 enforces strict positivity with no opt-out, and the `TyHOp` handler
+clause typing rule quantifies over well-typed continuations, placing `comp_has_type` in
+a strictly negative position. Coq handles this via `Unset Positivity Checking`.
+40 axioms were eliminated by redesigning `Comp`/`Handler` as first-order defunctionalized
+mutual inductives with explicit `BVar`/`KApp` constructors and substitution operations.
 
 ### Isabelle/HOL (Tertiary Prover)
 
@@ -442,7 +449,7 @@ See Part 5 for detailed per-prover closure criteria.
 
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
-| Lean 4 | 136 files, 3,879 declarations, 0 `sorry`, 48 axioms | Full lane builds; mechanized closure still pending | IN PROGRESS | High |
+| Lean 4 | 136 files, 3,889 declarations, 0 `sorry`, 8 axioms | Full lane builds; 8 axioms remain (Lean 4 strict positivity limitation) | IN PROGRESS | Medium (remaining 8 require Lean language change or deep encoding) |
 | Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | 600-1,200 hrs | High |
 | F* | 1 smoke-compiled active module (3 lemmas) | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | 800-1,600 hrs | High (HACL* templates) |
 | TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | 150-300 hrs | Very High |
@@ -976,7 +983,7 @@ X = primary role, o = supporting role
 **Closure criteria:**
 1. Port all core type system theorems from Coq (Progress ✓, Preservation ✓, Safety ✓)
 2. Achieve 0 `sorry` across `02_FORMAL/lean/RIINA` (DONE)
-3. Achieve 0 `axiom` across `02_FORMAL/lean/RIINA` for strict mechanized closure (pending: 48 remain, all in `Domains/AlgebraicEffects.lean`)
+3. Achieve 0 `axiom` across `02_FORMAL/lean/RIINA` for strict mechanized closure (pending: 8 remain, all in `Domains/AlgebraicEffects.lean` — typing relations blocked by Lean 4 strict positivity)
 4. Keep the full RIINA Lean namespace compiling (`lake build RIINA` passes)
 
 **Status: ACTIVE LANE COMPILED; FULL MECHANIZED CLOSURE NOT MET.**
