@@ -1,413 +1,1520 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
-; Copyright (c) 2026 The RIINA Authors.
+; RIINA AIMLSecurity — SMT Verification
 ; Derived from 02_FORMAL/coq/domains/AIMLSecurity.v (42 assertions)
-; Source mapping: scripts/generate-full-stack.py
 ; Module: AIMLSecurity
+;
+; Real verification: datatype invariants, guard completeness,
+; ordering properties, accessor round-trips.
 
 (set-logic ALL)
 (set-option :produce-models true)
 
-; AttackState (matches Coq: Inductive AttackState)
+; =======================================================================
+; DATATYPE DECLARATIONS
+; =======================================================================
+
 (declare-datatypes ((AttackState 0)) (((AttackPossible) (AttackMitigated))))
 
-; AIAttackType (matches Coq: Inductive AIAttackType)
 (declare-datatypes ((AIAttackType 0)) (((AdversarialExamples) (ModelPoisoning) (DataPoisoning) (ModelExtraction) (MembershipInference) (ModelInversion) (BackdoorAttack) (PromptInjection) (Jailbreaking) (AIGeneratedMalware) (Deepfakes) (FederatedLearningAttack) (GradientLeakage) (EvasionAttack) (ModelDoS) (CrossPromptInjection) (AIAgentSwarms) (MCPServerExploitation))))
 
-; SecurityLevel (matches Coq: Inductive SecurityLevel)
 (declare-datatypes ((SecurityLevel 0)) (((Critical) (High) (Medium) (Low))))
 
-; DifferentialPrivacy (matches Coq: Record DifferentialPrivacy)
 (declare-datatypes ((DifferentialPrivacy 0))
   (((mk-differential_privacy (dp_epsilon Int) (dp_delta Int) (dp_noise_added Bool) (dp_clipping_applied Bool)))))
 
-; InputValidation (matches Coq: Record InputValidation)
 (declare-datatypes ((InputValidation 0))
   (((mk-input_validation (iv_max_length Int) (iv_sanitized Bool) (iv_sandboxed Bool) (iv_filtered Bool)))))
 
-; AccessControl (matches Coq: Record AccessControl)
 (declare-datatypes ((AccessControl 0))
   (((mk-access_control (ac_authenticated Bool) (ac_authorized Bool) (ac_rate_limited Bool) (ac_logged Bool)))))
 
-; ModelWatermark (matches Coq: Record ModelWatermark)
 (declare-datatypes ((ModelWatermark 0))
   (((mk-model_watermark (mw_embedded Bool) (mw_verifiable Bool) (mw_robust Bool)))))
 
-; TrainingPipeline (matches Coq: Record TrainingPipeline)
 (declare-datatypes ((TrainingPipeline 0))
   (((mk-training_pipeline (tp_data_verified Bool) (tp_source_trusted Bool) (tp_integrity_checked Bool) (tp_reproducible Bool)))))
 
-; RobustTraining (matches Coq: Record RobustTraining)
 (declare-datatypes ((RobustTraining 0))
   (((mk-robust_training (rt_adversarial_training Bool) (rt_certified_defense Bool) (rt_ensemble_used Bool) (rt_input_preprocessing Bool)))))
 
-; PrivacyGuarantees (matches Coq: Record PrivacyGuarantees)
 (declare-datatypes ((PrivacyGuarantees 0))
   (((mk-privacy_guarantees (pg_output_perturbed Bool) (pg_intermediate_hidden Bool) (pg_access_controlled Bool) (pg_aggregation_only Bool)))))
 
-; DetectionSystem (matches Coq: Record DetectionSystem)
 (declare-datatypes ((DetectionSystem 0))
   (((mk-detection_system (ds_enabled Bool) (ds_multi_modal Bool) (ds_threshold_set Bool) (ds_alerts_enabled Bool)))))
 
-; ProvenanceTracking (matches Coq: Record ProvenanceTracking)
 (declare-datatypes ((ProvenanceTracking 0))
   (((mk-provenance_tracking (pt_origin_tracked Bool) (pt_chain_verified Bool) (pt_metadata_preserved Bool) (pt_tamper_evident Bool)))))
 
-; SecureAggregation (matches Coq: Record SecureAggregation)
 (declare-datatypes ((SecureAggregation 0))
   (((mk-secure_aggregation (sa_encrypted Bool) (sa_masked Bool) (sa_threshold_scheme Bool) (sa_byzantine_resilient Bool)))))
 
-; ResourceLimits (matches Coq: Record ResourceLimits)
 (declare-datatypes ((ResourceLimits 0))
   (((mk-resource_limits (rl_compute_bounded Bool) (rl_memory_bounded Bool) (rl_time_bounded Bool) (rl_batch_limited Bool)))))
 
-; SafetyTraining (matches Coq: Record SafetyTraining)
 (declare-datatypes ((SafetyTraining 0))
   (((mk-safety_training (st_rlhf_applied Bool) (st_red_teamed Bool) (st_safety_filters Bool) (st_refusal_trained Bool)))))
 
-; DefenseInDepth (matches Coq: Record DefenseInDepth)
 (declare-datatypes ((DefenseInDepth 0))
   (((mk-defense_in_depth (did_multiple_layers Bool) (did_diverse_methods Bool) (did_fail_safe Bool) (did_monitoring Bool)))))
 
-; InputIsolation (matches Coq: Record InputIsolation)
 (declare-datatypes ((InputIsolation 0))
   (((mk-input_isolation (ii_context_separated Bool) (ii_privilege_separated Bool) (ii_output_filtered Bool) (ii_injection_markers Bool)))))
 
-; AgentVerification (matches Coq: Record AgentVerification)
 (declare-datatypes ((AgentVerification 0))
   (((mk-agent_verification (av_identity_verified Bool) (av_capability_bounded Bool) (av_communication_secure Bool) (av_consensus_required Bool)))))
 
-; ProtocolVerification (matches Coq: Record ProtocolVerification)
 (declare-datatypes ((ProtocolVerification 0))
   (((mk-protocol_verification (pv_schema_validated Bool) (pv_auth_required Bool) (pv_integrity_checked Bool) (pv_replay_protected Bool)))))
 
-; AnomalyDetection (matches Coq: Record AnomalyDetection)
 (declare-datatypes ((AnomalyDetection 0))
   (((mk-anomaly_detection (ad_statistical_analysis Bool) (ad_outlier_removal Bool) (ad_distribution_check Bool)))))
 
-; BackdoorDetection (matches Coq: Record BackdoorDetection)
 (declare-datatypes ((BackdoorDetection 0))
   (((mk-backdoor_detection (bd_trigger_reverse_eng Bool) (bd_activation_analysis Bool) (bd_spectral_analysis Bool)))))
 
-(declare-const __default_AIAttackType AIAttackType)
-(declare-const __default_AccessControl AccessControl)
-(declare-const __default_AgentVerification AgentVerification)
-(declare-const __default_AnomalyDetection AnomalyDetection)
-(declare-const __default_AttackState AttackState)
-(declare-const __default_BackdoorDetection BackdoorDetection)
-(declare-const __default_DefenseInDepth DefenseInDepth)
-(declare-const __default_DetectionSystem DetectionSystem)
-(declare-const __default_DifferentialPrivacy DifferentialPrivacy)
-(declare-const __default_InputIsolation InputIsolation)
-(declare-const __default_InputValidation InputValidation)
-(declare-const __default_ModelWatermark ModelWatermark)
-(declare-const __default_PrivacyGuarantees PrivacyGuarantees)
-(declare-const __default_ProtocolVerification ProtocolVerification)
-(declare-const __default_ProvenanceTracking ProvenanceTracking)
-(declare-const __default_ResourceLimits ResourceLimits)
-(declare-const __default_RobustTraining RobustTraining)
-(declare-const __default_SafetyTraining SafetyTraining)
-(declare-const __default_SecureAggregation SecureAggregation)
-(declare-const __default_SecurityLevel SecurityLevel)
-(declare-const __default_TrainingPipeline TrainingPipeline)
-
-; all_true (matches Coq: Definition all_true)
-(define-fun all_true ((l (Seq Int))) Bool
-  true)
-
-; adversarial_examples_protected (matches Coq: Definition adversarial_examples_protected)
-(define-fun adversarial_examples_protected ((rt RobustTraining) (iv InputValidation)) Bool
-  true)
-
-; model_poisoning_protected (matches Coq: Definition model_poisoning_protected)
-(define-fun model_poisoning_protected ((tp TrainingPipeline)) Bool
-  true)
-
-; data_poisoning_protected (matches Coq: Definition data_poisoning_protected)
-(define-fun data_poisoning_protected ((tp TrainingPipeline)) Bool
-  true)
-
-; model_extraction_protected (matches Coq: Definition model_extraction_protected)
-(define-fun model_extraction_protected ((ac AccessControl) (mw ModelWatermark)) Bool
-  true)
-
-; membership_inference_protected (matches Coq: Definition membership_inference_protected)
-(define-fun membership_inference_protected ((dp DifferentialPrivacy)) Bool
-  true)
-
-; strong_dp_protection (matches Coq: Definition strong_dp_protection)
-(define-fun strong_dp_protection ((dp DifferentialPrivacy)) Bool
-  true)
-
-; model_inversion_protected (matches Coq: Definition model_inversion_protected)
-(define-fun model_inversion_protected ((pg PrivacyGuarantees) (dp DifferentialPrivacy)) Bool
-  true)
-
-; backdoor_attack_protected (matches Coq: Definition backdoor_attack_protected)
-(define-fun backdoor_attack_protected ((tp TrainingPipeline) (ds DetectionSystem)) Bool
-  true)
-
-; prompt_injection_protected (matches Coq: Definition prompt_injection_protected)
-(define-fun prompt_injection_protected ((iv InputValidation)) Bool
-  true)
-
-; jailbreaking_protected (matches Coq: Definition jailbreaking_protected)
-(define-fun jailbreaking_protected ((st SafetyTraining) (iv InputValidation)) Bool
-  true)
-
-; ai_malware_protected (matches Coq: Definition ai_malware_protected)
-(define-fun ai_malware_protected ((did DefenseInDepth) (ds DetectionSystem)) Bool
-  true)
-
-; deepfakes_protected (matches Coq: Definition deepfakes_protected)
-(define-fun deepfakes_protected ((ds DetectionSystem) (pt ProvenanceTracking)) Bool
-  true)
-
-; federated_learning_protected (matches Coq: Definition federated_learning_protected)
-(define-fun federated_learning_protected ((sa SecureAggregation) (dp DifferentialPrivacy)) Bool
-  true)
-
-; gradient_leakage_protected (matches Coq: Definition gradient_leakage_protected)
-(define-fun gradient_leakage_protected ((dp DifferentialPrivacy) (sa SecureAggregation)) Bool
-  true)
-
-; gradient_protection_strong (matches Coq: Definition gradient_protection_strong)
-(define-fun gradient_protection_strong ((dp DifferentialPrivacy)) Bool
-  true)
-
-; evasion_attack_protected (matches Coq: Definition evasion_attack_protected)
-(define-fun evasion_attack_protected ((rt RobustTraining) (ds DetectionSystem)) Bool
-  true)
-
-; model_dos_protected (matches Coq: Definition model_dos_protected)
-(define-fun model_dos_protected ((rl ResourceLimits) (ac AccessControl)) Bool
-  true)
-
-; cross_prompt_injection_protected (matches Coq: Definition cross_prompt_injection_protected)
-(define-fun cross_prompt_injection_protected ((ii InputIsolation) (iv InputValidation)) Bool
-  true)
-
-; ai_agent_swarms_protected (matches Coq: Definition ai_agent_swarms_protected)
-(define-fun ai_agent_swarms_protected ((av AgentVerification) (rl ResourceLimits)) Bool
-  true)
-
-; mcp_server_exploitation_protected (matches Coq: Definition mcp_server_exploitation_protected)
-(define-fun mcp_server_exploitation_protected ((pv ProtocolVerification) (ac AccessControl)) Bool
-  true)
-
-; mitigation_transitive (matches Coq: Definition mitigation_transitive)
-(define-fun mitigation_transitive ((m1 Bool) (m2 Bool)) Bool
-  true)
-
-; all_true_single (matches Coq: Lemma all_true_single)
-; all_true_single: forall b, all_true [b] = b
-; all_true_single: property holds for all bindings
-(assert (forall ((b Bool)) (= b b))) ; all_true_single [partial: bindings preserved] ; all_true_single [verified]
-
-; all_true_cons (matches Coq: Lemma all_true_cons)
-; all_true_cons: forall h t, all_true (h :: t) = true <-> h = true /\ all_true t = true
-; all_true_cons: property holds for all bindings
-(assert (forall ((h Bool) (t Bool)) (and (= h h) (= t t)))) ; all_true_cons [partial: bindings preserved] ; all_true_cons [verified]
-
-; ai_001_adversarial_examples_mitigated (matches Coq: Theorem ai_001_adversarial_examples_mitigated)
-; ai_001_adversarial_examples_mitigated: forall (rt : RobustTraining) (iv : InputValidation), rt_adversarial_training rt = true -> rt_certified_defense rt = true
-; ai_001_adversarial_examples_mitigated: property holds for all bindings
-(assert (forall ((rt RobustTraining) (iv InputValidation)) (and (= rt rt) (= iv iv)))) ; ai_001_adversarial_examples_mitigated [partial: bindings preserved] ; ai_001_adversarial_examples_mitigated [verified]
-
-; ai_001_adversarial_examples_strong_defense (matches Coq: Theorem ai_001_adversarial_examples_strong_defense)
-; ai_001_adversarial_examples_strong_defense: forall (rt : RobustTraining) (iv : InputValidation), rt_adversarial_training rt = true -> rt_ensemble_used rt = true -> 
-; ai_001_adversarial_examples_strong_defense: property holds for all bindings
-(assert (forall ((rt RobustTraining) (iv InputValidation)) (and (= rt rt) (= iv iv)))) ; ai_001_adversarial_examples_strong_defense [partial: bindings preserved] ; ai_001_adversarial_examples_strong_defense [verified]
-
-; ai_002_model_poisoning_mitigated (matches Coq: Theorem ai_002_model_poisoning_mitigated)
-; ai_002_model_poisoning_mitigated: forall (tp : TrainingPipeline), tp_data_verified tp = true -> tp_source_trusted tp = true -> tp_integrity_checked tp = t
-; ai_002_model_poisoning_mitigated: property holds for all bindings
-(assert (forall ((tp TrainingPipeline)) (= tp tp))) ; ai_002_model_poisoning_mitigated [partial: bindings preserved] ; ai_002_model_poisoning_mitigated [verified]
-
-; ai_002_model_poisoning_complete_verification (matches Coq: Theorem ai_002_model_poisoning_complete_verification)
-; ai_002_model_poisoning_complete_verification: forall (tp : TrainingPipeline), tp_data_verified tp = true -> tp_source_trusted tp = true -> tp_integrity_checked tp = t
-; ai_002_model_poisoning_complete_verification: property holds for all bindings
-(assert (forall ((tp TrainingPipeline)) (= tp tp))) ; ai_002_model_poisoning_complete_verification [partial: bindings preserved] ; ai_002_model_poisoning_complete_verification [verified]
-
-; ai_003_data_poisoning_mitigated (matches Coq: Theorem ai_003_data_poisoning_mitigated)
-; ai_003_data_poisoning_mitigated: forall (tp : TrainingPipeline), tp_integrity_checked tp = true -> tp_data_verified tp = true -> tp_source_trusted tp = t
-; ai_003_data_poisoning_mitigated: property holds for all bindings
-(assert (forall ((tp TrainingPipeline)) (= tp tp))) ; ai_003_data_poisoning_mitigated [partial: bindings preserved] ; ai_003_data_poisoning_mitigated [verified]
-
-; ai_003_data_poisoning_with_anomaly_detection (matches Coq: Theorem ai_003_data_poisoning_with_anomaly_detection)
-; ai_003_data_poisoning_with_anomaly_detection: forall (tp : TrainingPipeline) (ad : AnomalyDetection), tp_integrity_checked tp = true -> ad_statistical_analysis ad = t
-; ai_003_data_poisoning_with_anomaly_detection: property holds for all bindings
-(assert (forall ((tp TrainingPipeline) (ad AnomalyDetection)) (and (= tp tp) (= ad ad)))) ; ai_003_data_poisoning_with_anomaly_detection [partial: bindings preserved] ; ai_003_data_poisoning_with_anomaly_detection [verified]
-
-; ai_004_model_extraction_mitigated (matches Coq: Theorem ai_004_model_extraction_mitigated)
-; ai_004_model_extraction_mitigated: forall (ac : AccessControl) (mw : ModelWatermark), ac_authenticated ac = true -> ac_authorized ac = true -> ac_rate_limi
-; ai_004_model_extraction_mitigated: property holds for all bindings
-(assert (forall ((ac AccessControl) (mw ModelWatermark)) (and (= ac ac) (= mw mw)))) ; ai_004_model_extraction_mitigated [partial: bindings preserved] ; ai_004_model_extraction_mitigated [verified]
-
-; ai_004_watermark_robustness (matches Coq: Theorem ai_004_watermark_robustness)
-; ai_004_watermark_robustness: forall (mw : ModelWatermark), mw_embedded mw = true -> mw_verifiable mw = true -> mw_robust mw = true -> all_true [mw_em
-; ai_004_watermark_robustness: property holds for all bindings
-(assert (forall ((mw ModelWatermark)) (= mw mw))) ; ai_004_watermark_robustness [partial: bindings preserved] ; ai_004_watermark_robustness [verified]
-
-; ai_005_membership_inference_mitigated (matches Coq: Theorem ai_005_membership_inference_mitigated)
-; ai_005_membership_inference_mitigated: forall (dp : DifferentialPrivacy), dp_noise_added dp = true -> dp_clipping_applied dp = true -> dp_epsilon dp <= 1 -> me
-; ai_005_membership_inference_mitigated: property holds for all bindings
-(assert (forall ((dp DifferentialPrivacy)) (= dp dp))) ; ai_005_membership_inference_mitigated [partial: bindings preserved] ; ai_005_membership_inference_mitigated [verified]
-
-; ai_005_strong_differential_privacy (matches Coq: Theorem ai_005_strong_differential_privacy)
-; ai_005_strong_differential_privacy: forall (dp : DifferentialPrivacy), strong_dp_protection dp -> membership_inference_protected dp = true
-; ai_005_strong_differential_privacy: property holds for all bindings
-(assert (forall ((dp DifferentialPrivacy)) (= dp dp))) ; ai_005_strong_differential_privacy [partial: bindings preserved] ; ai_005_strong_differential_privacy [verified]
-
-; ai_006_model_inversion_mitigated (matches Coq: Theorem ai_006_model_inversion_mitigated)
-; ai_006_model_inversion_mitigated: forall (pg : PrivacyGuarantees) (dp : DifferentialPrivacy), pg_output_perturbed pg = true -> pg_intermediate_hidden pg =
-; ai_006_model_inversion_mitigated: property holds for all bindings
-(assert (forall ((pg PrivacyGuarantees) (dp DifferentialPrivacy)) (and (= pg pg) (= dp dp)))) ; ai_006_model_inversion_mitigated [partial: bindings preserved] ; ai_006_model_inversion_mitigated [verified]
-
-; ai_006_complete_privacy_protection (matches Coq: Theorem ai_006_complete_privacy_protection)
-; ai_006_complete_privacy_protection: forall (pg : PrivacyGuarantees), pg_output_perturbed pg = true -> pg_intermediate_hidden pg = true -> pg_access_controll
-; ai_006_complete_privacy_protection: property holds for all bindings
-(assert (forall ((pg PrivacyGuarantees)) (= pg pg))) ; ai_006_complete_privacy_protection [partial: bindings preserved] ; ai_006_complete_privacy_protection [verified]
-
-; ai_007_backdoor_attack_mitigated (matches Coq: Theorem ai_007_backdoor_attack_mitigated)
-; ai_007_backdoor_attack_mitigated: forall (tp : TrainingPipeline) (ds : DetectionSystem), tp_data_verified tp = true -> tp_source_trusted tp = true -> tp_r
-; ai_007_backdoor_attack_mitigated: property holds for all bindings
-(assert (forall ((tp TrainingPipeline) (ds DetectionSystem)) (and (= tp tp) (= ds ds)))) ; ai_007_backdoor_attack_mitigated [partial: bindings preserved] ; ai_007_backdoor_attack_mitigated [verified]
-
-; ai_007_backdoor_detection_complete (matches Coq: Theorem ai_007_backdoor_detection_complete)
-; ai_007_backdoor_detection_complete: forall (bd : BackdoorDetection) (tp : TrainingPipeline), bd_trigger_reverse_eng bd = true -> bd_activation_analysis bd =
-; ai_007_backdoor_detection_complete: property holds for all bindings
-(assert (forall ((bd BackdoorDetection) (tp TrainingPipeline)) (and (= bd bd) (= tp tp)))) ; ai_007_backdoor_detection_complete [partial: bindings preserved] ; ai_007_backdoor_detection_complete [verified]
-
-; ai_008_prompt_injection_mitigated (matches Coq: Theorem ai_008_prompt_injection_mitigated)
-; ai_008_prompt_injection_mitigated: forall (iv : InputValidation), iv_sanitized iv = true -> iv_sandboxed iv = true -> iv_filtered iv = true -> iv_max_lengt
-; ai_008_prompt_injection_mitigated: property holds for all bindings
-(assert (forall ((iv InputValidation)) (= iv iv))) ; ai_008_prompt_injection_mitigated [partial: bindings preserved] ; ai_008_prompt_injection_mitigated [verified]
-
-; ai_008_complete_input_validation (matches Coq: Theorem ai_008_complete_input_validation)
-; ai_008_complete_input_validation: forall (iv : InputValidation), iv_sanitized iv = true -> iv_sandboxed iv = true -> iv_filtered iv = true -> all_true [iv
-; ai_008_complete_input_validation: property holds for all bindings
-(assert (forall ((iv InputValidation)) (= iv iv))) ; ai_008_complete_input_validation [partial: bindings preserved] ; ai_008_complete_input_validation [verified]
-
-; ai_009_jailbreaking_mitigated (matches Coq: Theorem ai_009_jailbreaking_mitigated)
-; ai_009_jailbreaking_mitigated: forall (st : SafetyTraining) (iv : InputValidation), st_rlhf_applied st = true -> st_red_teamed st = true -> st_safety_f
-; ai_009_jailbreaking_mitigated: property holds for all bindings
-(assert (forall ((st SafetyTraining) (iv InputValidation)) (and (= st st) (= iv iv)))) ; ai_009_jailbreaking_mitigated [partial: bindings preserved] ; ai_009_jailbreaking_mitigated [verified]
-
-; ai_009_complete_safety_training (matches Coq: Theorem ai_009_complete_safety_training)
-; ai_009_complete_safety_training: forall (st : SafetyTraining), st_rlhf_applied st = true -> st_red_teamed st = true -> st_safety_filters st = true -> st_
-; ai_009_complete_safety_training: property holds for all bindings
-(assert (forall ((st SafetyTraining)) (= st st))) ; ai_009_complete_safety_training [partial: bindings preserved] ; ai_009_complete_safety_training [verified]
-
-; ai_010_ai_generated_malware_mitigated (matches Coq: Theorem ai_010_ai_generated_malware_mitigated)
-; ai_010_ai_generated_malware_mitigated: forall (did : DefenseInDepth) (ds : DetectionSystem), did_multiple_layers did = true -> did_diverse_methods did = true -
-; ai_010_ai_generated_malware_mitigated: property holds for all bindings
-(assert (forall ((did DefenseInDepth) (ds DetectionSystem)) (and (= did did) (= ds ds)))) ; ai_010_ai_generated_malware_mitigated [partial: bindings preserved] ; ai_010_ai_generated_malware_mitigated [verified]
-
-; ai_010_defense_in_depth_complete (matches Coq: Theorem ai_010_defense_in_depth_complete)
-; ai_010_defense_in_depth_complete: forall (did : DefenseInDepth), did_multiple_layers did = true -> did_diverse_methods did = true -> did_fail_safe did = t
-; ai_010_defense_in_depth_complete: property holds for all bindings
-(assert (forall ((did DefenseInDepth)) (= did did))) ; ai_010_defense_in_depth_complete [partial: bindings preserved] ; ai_010_defense_in_depth_complete [verified]
-
-; ai_011_deepfakes_mitigated (matches Coq: Theorem ai_011_deepfakes_mitigated)
-; ai_011_deepfakes_mitigated: forall (ds : DetectionSystem) (pt : ProvenanceTracking), ds_enabled ds = true -> ds_multi_modal ds = true -> ds_threshol
-; ai_011_deepfakes_mitigated: property holds for all bindings
-(assert (forall ((ds DetectionSystem) (pt ProvenanceTracking)) (and (= ds ds) (= pt pt)))) ; ai_011_deepfakes_mitigated [partial: bindings preserved] ; ai_011_deepfakes_mitigated [verified]
-
-; ai_011_complete_provenance (matches Coq: Theorem ai_011_complete_provenance)
-; ai_011_complete_provenance: forall (pt : ProvenanceTracking), pt_origin_tracked pt = true -> pt_chain_verified pt = true -> pt_metadata_preserved pt
-; ai_011_complete_provenance: property holds for all bindings
-(assert (forall ((pt ProvenanceTracking)) (= pt pt))) ; ai_011_complete_provenance [partial: bindings preserved] ; ai_011_complete_provenance [verified]
-
-; ai_012_federated_learning_attack_mitigated (matches Coq: Theorem ai_012_federated_learning_attack_mitigated)
-; ai_012_federated_learning_attack_mitigated: forall (sa : SecureAggregation) (dp : DifferentialPrivacy), sa_encrypted sa = true -> sa_masked sa = true -> sa_threshol
-; ai_012_federated_learning_attack_mitigated: property holds for all bindings
-(assert (forall ((sa SecureAggregation) (dp DifferentialPrivacy)) (and (= sa sa) (= dp dp)))) ; ai_012_federated_learning_attack_mitigated [partial: bindings preserved] ; ai_012_federated_learning_attack_mitigated [verified]
-
-; ai_012_complete_secure_aggregation (matches Coq: Theorem ai_012_complete_secure_aggregation)
-; ai_012_complete_secure_aggregation: forall (sa : SecureAggregation), sa_encrypted sa = true -> sa_masked sa = true -> sa_threshold_scheme sa = true -> sa_by
-; ai_012_complete_secure_aggregation: property holds for all bindings
-(assert (forall ((sa SecureAggregation)) (= sa sa))) ; ai_012_complete_secure_aggregation [partial: bindings preserved] ; ai_012_complete_secure_aggregation [verified]
-
-; ai_013_gradient_leakage_mitigated (matches Coq: Theorem ai_013_gradient_leakage_mitigated)
-; ai_013_gradient_leakage_mitigated: forall (dp : DifferentialPrivacy) (sa : SecureAggregation), dp_noise_added dp = true -> dp_clipping_applied dp = true ->
-; ai_013_gradient_leakage_mitigated: property holds for all bindings
-(assert (forall ((dp DifferentialPrivacy) (sa SecureAggregation)) (and (= dp dp) (= sa sa)))) ; ai_013_gradient_leakage_mitigated [partial: bindings preserved] ; ai_013_gradient_leakage_mitigated [verified]
-
-; ai_013_gradient_protection_strong (matches Coq: Theorem ai_013_gradient_protection_strong)
-; ai_013_gradient_protection_strong: forall (dp : DifferentialPrivacy), gradient_protection_strong dp -> andb (dp_noise_added dp) (dp_clipping_applied dp) = 
-; ai_013_gradient_protection_strong: property holds for all bindings
-(assert (forall ((dp DifferentialPrivacy)) (= dp dp))) ; ai_013_gradient_protection_strong [partial: bindings preserved] ; ai_013_gradient_protection_strong [verified]
-
-; ai_014_evasion_attack_mitigated (matches Coq: Theorem ai_014_evasion_attack_mitigated)
-; ai_014_evasion_attack_mitigated: forall (rt : RobustTraining) (ds : DetectionSystem), rt_adversarial_training rt = true -> rt_certified_defense rt = true
-; ai_014_evasion_attack_mitigated: property holds for all bindings
-(assert (forall ((rt RobustTraining) (ds DetectionSystem)) (and (= rt rt) (= ds ds)))) ; ai_014_evasion_attack_mitigated [partial: bindings preserved] ; ai_014_evasion_attack_mitigated [verified]
-
-; ai_014_certified_robustness (matches Coq: Theorem ai_014_certified_robustness)
-; ai_014_certified_robustness: forall (rt : RobustTraining), rt_adversarial_training rt = true -> rt_certified_defense rt = true -> rt_ensemble_used rt
-; ai_014_certified_robustness: property holds for all bindings
-(assert (forall ((rt RobustTraining)) (= rt rt))) ; ai_014_certified_robustness [partial: bindings preserved] ; ai_014_certified_robustness [verified]
-
-; ai_015_model_dos_mitigated (matches Coq: Theorem ai_015_model_dos_mitigated)
-; ai_015_model_dos_mitigated: forall (rl : ResourceLimits) (ac : AccessControl), rl_compute_bounded rl = true -> rl_memory_bounded rl = true -> rl_tim
-; ai_015_model_dos_mitigated: property holds for all bindings
-(assert (forall ((rl ResourceLimits) (ac AccessControl)) (and (= rl rl) (= ac ac)))) ; ai_015_model_dos_mitigated [partial: bindings preserved] ; ai_015_model_dos_mitigated [verified]
-
-; ai_015_complete_resource_limits (matches Coq: Theorem ai_015_complete_resource_limits)
-; ai_015_complete_resource_limits: forall (rl : ResourceLimits), rl_compute_bounded rl = true -> rl_memory_bounded rl = true -> rl_time_bounded rl = true -
-; ai_015_complete_resource_limits: property holds for all bindings
-(assert (forall ((rl ResourceLimits)) (= rl rl))) ; ai_015_complete_resource_limits [partial: bindings preserved] ; ai_015_complete_resource_limits [verified]
-
-; ai_016_cross_prompt_injection_mitigated (matches Coq: Theorem ai_016_cross_prompt_injection_mitigated)
-; ai_016_cross_prompt_injection_mitigated: forall (ii : InputIsolation) (iv : InputValidation), ii_context_separated ii = true -> ii_privilege_separated ii = true 
-; ai_016_cross_prompt_injection_mitigated: property holds for all bindings
-(assert (forall ((ii InputIsolation) (iv InputValidation)) (and (= ii ii) (= iv iv)))) ; ai_016_cross_prompt_injection_mitigated [partial: bindings preserved] ; ai_016_cross_prompt_injection_mitigated [verified]
-
-; ai_016_complete_input_isolation (matches Coq: Theorem ai_016_complete_input_isolation)
-; ai_016_complete_input_isolation: forall (ii : InputIsolation), ii_context_separated ii = true -> ii_privilege_separated ii = true -> ii_output_filtered i
-; ai_016_complete_input_isolation: property holds for all bindings
-(assert (forall ((ii InputIsolation)) (= ii ii))) ; ai_016_complete_input_isolation [partial: bindings preserved] ; ai_016_complete_input_isolation [verified]
-
-; ai_017_ai_agent_swarms_mitigated (matches Coq: Theorem ai_017_ai_agent_swarms_mitigated)
-; ai_017_ai_agent_swarms_mitigated: forall (av : AgentVerification) (rl : ResourceLimits), av_identity_verified av = true -> av_capability_bounded av = true
-; ai_017_ai_agent_swarms_mitigated: property holds for all bindings
-(assert (forall ((av AgentVerification) (rl ResourceLimits)) (and (= av av) (= rl rl)))) ; ai_017_ai_agent_swarms_mitigated [partial: bindings preserved] ; ai_017_ai_agent_swarms_mitigated [verified]
-
-; ai_017_complete_agent_verification (matches Coq: Theorem ai_017_complete_agent_verification)
-; ai_017_complete_agent_verification: forall (av : AgentVerification), av_identity_verified av = true -> av_capability_bounded av = true -> av_communication_s
-; ai_017_complete_agent_verification: property holds for all bindings
-(assert (forall ((av AgentVerification)) (= av av))) ; ai_017_complete_agent_verification [partial: bindings preserved] ; ai_017_complete_agent_verification [verified]
-
-; ai_018_mcp_server_exploitation_mitigated (matches Coq: Theorem ai_018_mcp_server_exploitation_mitigated)
-; ai_018_mcp_server_exploitation_mitigated: forall (pv : ProtocolVerification) (ac : AccessControl), pv_schema_validated pv = true -> pv_auth_required pv = true -> 
-; ai_018_mcp_server_exploitation_mitigated: property holds for all bindings
-(assert (forall ((pv ProtocolVerification) (ac AccessControl)) (and (= pv pv) (= ac ac)))) ; ai_018_mcp_server_exploitation_mitigated [partial: bindings preserved] ; ai_018_mcp_server_exploitation_mitigated [verified]
-
-; ai_018_complete_protocol_verification (matches Coq: Theorem ai_018_complete_protocol_verification)
-; ai_018_complete_protocol_verification: forall (pv : ProtocolVerification), pv_schema_validated pv = true -> pv_auth_required pv = true -> pv_integrity_checked 
-; ai_018_complete_protocol_verification: property holds for all bindings
-(assert (forall ((pv ProtocolVerification)) (= pv pv))) ; ai_018_complete_protocol_verification [partial: bindings preserved] ; ai_018_complete_protocol_verification [verified]
-
-; composition_strengthens_security (matches Coq: Theorem composition_strengthens_security)
-; composition_strengthens_security: forall (b1 b2 b3 : bool), b1 = true -> b2 = true -> b3 = true -> andb b1 (andb b2 b3) = true
-; composition_strengthens_security: property holds for all bindings
-(assert (forall ((b1 Bool) (b2 Bool) (b3 Bool)) (and (= b1 b1) (= b2 b2) (= b3 b3)))) ; composition_strengthens_security [partial: bindings preserved] ; composition_strengthens_security [verified]
-
-; mitigation_transitivity (matches Coq: Theorem mitigation_transitivity)
-; mitigation_transitivity: forall (base enhanced : bool), base = true -> implb base enhanced = true -> enhanced = true
-; mitigation_transitivity: property holds for all bindings
-(assert (forall ((base Bool) (enhanced Bool)) (and (= base base) (= enhanced enhanced)))) ; mitigation_transitivity [partial: bindings preserved] ; mitigation_transitivity [verified]
-
-; defense_layer_accumulation (matches Coq: Theorem defense_layer_accumulation)
-; defense_layer_accumulation: forall (layer1 layer2 layer3 layer4 : bool), layer1 = true -> layer2 = true -> layer3 = true -> layer4 = true -> all_tru
-; defense_layer_accumulation: property holds for all bindings
-(assert (forall ((layer1 Bool) (layer2 Bool) (layer3 Bool) (layer4 Bool)) (and (= layer1 layer1) (= layer2 layer2) (= layer3 layer3) (= layer4 layer4)))) ; defense_layer_accumulation [partial: bindings preserved] ; defense_layer_accumulation [verified]
-
-; privacy_security_coexistence (matches Coq: Theorem privacy_security_coexistence)
-; privacy_security_coexistence: forall (dp : DifferentialPrivacy) (ac : AccessControl), dp_noise_added dp = true -> dp_clipping_applied dp = true -> ac_
-; privacy_security_coexistence: property holds for all bindings
-(assert (forall ((dp DifferentialPrivacy) (ac AccessControl)) (and (= dp dp) (= ac ac)))) ; privacy_security_coexistence [partial: bindings preserved] ; privacy_security_coexistence [verified]
-
-; Verify all assertions are satisfiable
+; =======================================================================
+; FUNCTION DEFINITIONS AND PROPERTY VERIFICATION
+; =======================================================================
+
+; --- 1. AttackState exhaustiveness ---
+(push 1)
+(declare-const x AttackState)
+(assert (not (or (= x AttackPossible) (= x AttackMitigated))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 2. AttackState: AttackPossible != AttackMitigated ---
+(push 1)
+(assert (= AttackPossible AttackMitigated))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 3. AttackState finite cardinality (2 values) ---
+(push 1)
+(declare-const x AttackState)
+(assert (and (not (= x AttackPossible)) (not (= x AttackMitigated))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 4. AIAttackType exhaustiveness ---
+(push 1)
+(declare-const x AIAttackType)
+(assert (not (or (= x AdversarialExamples) (= x ModelPoisoning) (= x DataPoisoning) (= x ModelExtraction) (= x MembershipInference) (= x ModelInversion) (= x BackdoorAttack) (= x PromptInjection) (= x Jailbreaking) (= x AIGeneratedMalware) (= x Deepfakes) (= x FederatedLearningAttack) (= x GradientLeakage) (= x EvasionAttack) (= x ModelDoS) (= x CrossPromptInjection) (= x AIAgentSwarms) (= x MCPServerExploitation))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 5. AIAttackType: AdversarialExamples != ModelPoisoning ---
+(push 1)
+(assert (= AdversarialExamples ModelPoisoning))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 6. AIAttackType: ModelPoisoning != DataPoisoning ---
+(push 1)
+(assert (= ModelPoisoning DataPoisoning))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 7. AIAttackType: DataPoisoning != ModelExtraction ---
+(push 1)
+(assert (= DataPoisoning ModelExtraction))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 8. AIAttackType: AdversarialExamples != MCPServerExploitation ---
+(push 1)
+(assert (= AdversarialExamples MCPServerExploitation))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 9. AIAttackType finite cardinality (18 values) ---
+(push 1)
+(declare-const x AIAttackType)
+(assert (and (not (= x AdversarialExamples)) (not (= x ModelPoisoning)) (not (= x DataPoisoning)) (not (= x ModelExtraction)) (not (= x MembershipInference)) (not (= x ModelInversion)) (not (= x BackdoorAttack)) (not (= x PromptInjection)) (not (= x Jailbreaking)) (not (= x AIGeneratedMalware)) (not (= x Deepfakes)) (not (= x FederatedLearningAttack)) (not (= x GradientLeakage)) (not (= x EvasionAttack)) (not (= x ModelDoS)) (not (= x CrossPromptInjection)) (not (= x AIAgentSwarms)) (not (= x MCPServerExploitation))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 10. SecurityLevel exhaustiveness ---
+(push 1)
+(declare-const x SecurityLevel)
+(assert (not (or (= x Critical) (= x High) (= x Medium) (= x Low))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 11. SecurityLevel: Critical != High ---
+(push 1)
+(assert (= Critical High))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 12. SecurityLevel: High != Medium ---
+(push 1)
+(assert (= High Medium))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 13. SecurityLevel: Medium != Low ---
+(push 1)
+(assert (= Medium Low))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 14. SecurityLevel: Critical != Low ---
+(push 1)
+(assert (= Critical Low))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 15. SecurityLevel finite cardinality (4 values) ---
+(push 1)
+(declare-const x SecurityLevel)
+(assert (and (not (= x Critical)) (not (= x High)) (not (= x Medium)) (not (= x Low))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 16. DifferentialPrivacy accessor round-trip: dp_epsilon ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (dp_epsilon (mk-differential_privacy f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 17. DifferentialPrivacy accessor round-trip: dp_delta ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (dp_delta (mk-differential_privacy f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 18. DifferentialPrivacy accessor round-trip: dp_noise_added ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (dp_noise_added (mk-differential_privacy f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 19. DifferentialPrivacy accessor round-trip: dp_clipping_applied ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (dp_clipping_applied (mk-differential_privacy f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 20. DifferentialPrivacy: non-negative int fields sum ---
+(push 1)
+(declare-const r DifferentialPrivacy)
+(assert (>= (dp_epsilon r) 0))
+(assert (>= (dp_delta r) 0))
+(assert (not (>= (+ (dp_epsilon r) (dp_delta r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 21. InputValidation accessor round-trip: iv_max_length ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (iv_max_length (mk-input_validation f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 22. InputValidation accessor round-trip: iv_sanitized ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (iv_sanitized (mk-input_validation f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 23. InputValidation accessor round-trip: iv_sandboxed ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (iv_sandboxed (mk-input_validation f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 24. InputValidation accessor round-trip: iv_filtered ---
+(push 1)
+(declare-const f0 Int)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (iv_filtered (mk-input_validation f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 25. AccessControl accessor round-trip: ac_authenticated ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ac_authenticated (mk-access_control f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 26. AccessControl accessor round-trip: ac_authorized ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ac_authorized (mk-access_control f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 27. AccessControl accessor round-trip: ac_rate_limited ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ac_rate_limited (mk-access_control f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 28. AccessControl accessor round-trip: ac_logged ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ac_logged (mk-access_control f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun AccessControl_all_enabled ((g AccessControl)) Bool
+  (and (ac_authenticated g) (ac_authorized g) (ac_rate_limited g) (ac_logged g)))
+
+; --- 29. AccessControl: all-enabled completeness ---
+(push 1)
+(declare-const g AccessControl)
+(assert (ac_authenticated g))
+(assert (ac_authorized g))
+(assert (ac_rate_limited g))
+(assert (ac_logged g))
+(assert (not (AccessControl_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 30. AccessControl: AccessControl_all_enabled implies ac_authenticated ---
+(push 1)
+(declare-const g AccessControl)
+(assert (AccessControl_all_enabled g))
+(assert (not (ac_authenticated g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 31. AccessControl: AccessControl_all_enabled implies ac_authorized ---
+(push 1)
+(declare-const g AccessControl)
+(assert (AccessControl_all_enabled g))
+(assert (not (ac_authorized g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 32. AccessControl: AccessControl_all_enabled implies ac_rate_limited ---
+(push 1)
+(declare-const g AccessControl)
+(assert (AccessControl_all_enabled g))
+(assert (not (ac_rate_limited g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 33. ModelWatermark accessor round-trip: mw_embedded ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (mw_embedded (mk-model_watermark f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 34. ModelWatermark accessor round-trip: mw_verifiable ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (mw_verifiable (mk-model_watermark f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 35. ModelWatermark accessor round-trip: mw_robust ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (mw_robust (mk-model_watermark f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun ModelWatermark_all_enabled ((g ModelWatermark)) Bool
+  (and (mw_embedded g) (mw_verifiable g) (mw_robust g)))
+
+; --- 36. ModelWatermark: all-enabled completeness ---
+(push 1)
+(declare-const g ModelWatermark)
+(assert (mw_embedded g))
+(assert (mw_verifiable g))
+(assert (mw_robust g))
+(assert (not (ModelWatermark_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 37. ModelWatermark: ModelWatermark_all_enabled implies mw_embedded ---
+(push 1)
+(declare-const g ModelWatermark)
+(assert (ModelWatermark_all_enabled g))
+(assert (not (mw_embedded g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 38. ModelWatermark: ModelWatermark_all_enabled implies mw_verifiable ---
+(push 1)
+(declare-const g ModelWatermark)
+(assert (ModelWatermark_all_enabled g))
+(assert (not (mw_verifiable g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 39. ModelWatermark: ModelWatermark_all_enabled implies mw_robust ---
+(push 1)
+(declare-const g ModelWatermark)
+(assert (ModelWatermark_all_enabled g))
+(assert (not (mw_robust g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 40. TrainingPipeline accessor round-trip: tp_data_verified ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (tp_data_verified (mk-training_pipeline f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 41. TrainingPipeline accessor round-trip: tp_source_trusted ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (tp_source_trusted (mk-training_pipeline f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 42. TrainingPipeline accessor round-trip: tp_integrity_checked ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (tp_integrity_checked (mk-training_pipeline f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 43. TrainingPipeline accessor round-trip: tp_reproducible ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (tp_reproducible (mk-training_pipeline f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun TrainingPipeline_all_enabled ((g TrainingPipeline)) Bool
+  (and (tp_data_verified g) (tp_source_trusted g) (tp_integrity_checked g) (tp_reproducible g)))
+
+; --- 44. TrainingPipeline: all-enabled completeness ---
+(push 1)
+(declare-const g TrainingPipeline)
+(assert (tp_data_verified g))
+(assert (tp_source_trusted g))
+(assert (tp_integrity_checked g))
+(assert (tp_reproducible g))
+(assert (not (TrainingPipeline_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 45. TrainingPipeline: TrainingPipeline_all_enabled implies tp_data_verified ---
+(push 1)
+(declare-const g TrainingPipeline)
+(assert (TrainingPipeline_all_enabled g))
+(assert (not (tp_data_verified g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 46. TrainingPipeline: TrainingPipeline_all_enabled implies tp_source_trusted ---
+(push 1)
+(declare-const g TrainingPipeline)
+(assert (TrainingPipeline_all_enabled g))
+(assert (not (tp_source_trusted g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 47. TrainingPipeline: TrainingPipeline_all_enabled implies tp_integrity_checked ---
+(push 1)
+(declare-const g TrainingPipeline)
+(assert (TrainingPipeline_all_enabled g))
+(assert (not (tp_integrity_checked g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 48. RobustTraining accessor round-trip: rt_adversarial_training ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (rt_adversarial_training (mk-robust_training f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 49. RobustTraining accessor round-trip: rt_certified_defense ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (rt_certified_defense (mk-robust_training f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 50. RobustTraining accessor round-trip: rt_ensemble_used ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (rt_ensemble_used (mk-robust_training f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 51. RobustTraining accessor round-trip: rt_input_preprocessing ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (rt_input_preprocessing (mk-robust_training f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun RobustTraining_all_enabled ((g RobustTraining)) Bool
+  (and (rt_adversarial_training g) (rt_certified_defense g) (rt_ensemble_used g) (rt_input_preprocessing g)))
+
+; --- 52. RobustTraining: all-enabled completeness ---
+(push 1)
+(declare-const g RobustTraining)
+(assert (rt_adversarial_training g))
+(assert (rt_certified_defense g))
+(assert (rt_ensemble_used g))
+(assert (rt_input_preprocessing g))
+(assert (not (RobustTraining_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 53. RobustTraining: RobustTraining_all_enabled implies rt_adversarial_training ---
+(push 1)
+(declare-const g RobustTraining)
+(assert (RobustTraining_all_enabled g))
+(assert (not (rt_adversarial_training g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 54. RobustTraining: RobustTraining_all_enabled implies rt_certified_defense ---
+(push 1)
+(declare-const g RobustTraining)
+(assert (RobustTraining_all_enabled g))
+(assert (not (rt_certified_defense g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 55. RobustTraining: RobustTraining_all_enabled implies rt_ensemble_used ---
+(push 1)
+(declare-const g RobustTraining)
+(assert (RobustTraining_all_enabled g))
+(assert (not (rt_ensemble_used g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 56. PrivacyGuarantees accessor round-trip: pg_output_perturbed ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pg_output_perturbed (mk-privacy_guarantees f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 57. PrivacyGuarantees accessor round-trip: pg_intermediate_hidden ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pg_intermediate_hidden (mk-privacy_guarantees f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 58. PrivacyGuarantees accessor round-trip: pg_access_controlled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pg_access_controlled (mk-privacy_guarantees f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 59. PrivacyGuarantees accessor round-trip: pg_aggregation_only ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pg_aggregation_only (mk-privacy_guarantees f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun PrivacyGuarantees_all_enabled ((g PrivacyGuarantees)) Bool
+  (and (pg_output_perturbed g) (pg_intermediate_hidden g) (pg_access_controlled g) (pg_aggregation_only g)))
+
+; --- 60. PrivacyGuarantees: all-enabled completeness ---
+(push 1)
+(declare-const g PrivacyGuarantees)
+(assert (pg_output_perturbed g))
+(assert (pg_intermediate_hidden g))
+(assert (pg_access_controlled g))
+(assert (pg_aggregation_only g))
+(assert (not (PrivacyGuarantees_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 61. PrivacyGuarantees: PrivacyGuarantees_all_enabled implies pg_output_perturbed ---
+(push 1)
+(declare-const g PrivacyGuarantees)
+(assert (PrivacyGuarantees_all_enabled g))
+(assert (not (pg_output_perturbed g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 62. PrivacyGuarantees: PrivacyGuarantees_all_enabled implies pg_intermediate_hidden ---
+(push 1)
+(declare-const g PrivacyGuarantees)
+(assert (PrivacyGuarantees_all_enabled g))
+(assert (not (pg_intermediate_hidden g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 63. PrivacyGuarantees: PrivacyGuarantees_all_enabled implies pg_access_controlled ---
+(push 1)
+(declare-const g PrivacyGuarantees)
+(assert (PrivacyGuarantees_all_enabled g))
+(assert (not (pg_access_controlled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 64. DetectionSystem accessor round-trip: ds_enabled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ds_enabled (mk-detection_system f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 65. DetectionSystem accessor round-trip: ds_multi_modal ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ds_multi_modal (mk-detection_system f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 66. DetectionSystem accessor round-trip: ds_threshold_set ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ds_threshold_set (mk-detection_system f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 67. DetectionSystem accessor round-trip: ds_alerts_enabled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ds_alerts_enabled (mk-detection_system f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun DetectionSystem_all_enabled ((g DetectionSystem)) Bool
+  (and (ds_enabled g) (ds_multi_modal g) (ds_threshold_set g) (ds_alerts_enabled g)))
+
+; --- 68. DetectionSystem: all-enabled completeness ---
+(push 1)
+(declare-const g DetectionSystem)
+(assert (ds_enabled g))
+(assert (ds_multi_modal g))
+(assert (ds_threshold_set g))
+(assert (ds_alerts_enabled g))
+(assert (not (DetectionSystem_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 69. DetectionSystem: DetectionSystem_all_enabled implies ds_enabled ---
+(push 1)
+(declare-const g DetectionSystem)
+(assert (DetectionSystem_all_enabled g))
+(assert (not (ds_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 70. DetectionSystem: DetectionSystem_all_enabled implies ds_multi_modal ---
+(push 1)
+(declare-const g DetectionSystem)
+(assert (DetectionSystem_all_enabled g))
+(assert (not (ds_multi_modal g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 71. DetectionSystem: DetectionSystem_all_enabled implies ds_threshold_set ---
+(push 1)
+(declare-const g DetectionSystem)
+(assert (DetectionSystem_all_enabled g))
+(assert (not (ds_threshold_set g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 72. ProvenanceTracking accessor round-trip: pt_origin_tracked ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pt_origin_tracked (mk-provenance_tracking f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 73. ProvenanceTracking accessor round-trip: pt_chain_verified ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pt_chain_verified (mk-provenance_tracking f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 74. ProvenanceTracking accessor round-trip: pt_metadata_preserved ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pt_metadata_preserved (mk-provenance_tracking f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 75. ProvenanceTracking accessor round-trip: pt_tamper_evident ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pt_tamper_evident (mk-provenance_tracking f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun ProvenanceTracking_all_enabled ((g ProvenanceTracking)) Bool
+  (and (pt_origin_tracked g) (pt_chain_verified g) (pt_metadata_preserved g) (pt_tamper_evident g)))
+
+; --- 76. ProvenanceTracking: all-enabled completeness ---
+(push 1)
+(declare-const g ProvenanceTracking)
+(assert (pt_origin_tracked g))
+(assert (pt_chain_verified g))
+(assert (pt_metadata_preserved g))
+(assert (pt_tamper_evident g))
+(assert (not (ProvenanceTracking_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 77. ProvenanceTracking: ProvenanceTracking_all_enabled implies pt_origin_tracked ---
+(push 1)
+(declare-const g ProvenanceTracking)
+(assert (ProvenanceTracking_all_enabled g))
+(assert (not (pt_origin_tracked g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 78. ProvenanceTracking: ProvenanceTracking_all_enabled implies pt_chain_verified ---
+(push 1)
+(declare-const g ProvenanceTracking)
+(assert (ProvenanceTracking_all_enabled g))
+(assert (not (pt_chain_verified g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 79. ProvenanceTracking: ProvenanceTracking_all_enabled implies pt_metadata_preserved ---
+(push 1)
+(declare-const g ProvenanceTracking)
+(assert (ProvenanceTracking_all_enabled g))
+(assert (not (pt_metadata_preserved g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 80. SecureAggregation accessor round-trip: sa_encrypted ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (sa_encrypted (mk-secure_aggregation f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 81. SecureAggregation accessor round-trip: sa_masked ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (sa_masked (mk-secure_aggregation f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 82. SecureAggregation accessor round-trip: sa_threshold_scheme ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (sa_threshold_scheme (mk-secure_aggregation f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 83. SecureAggregation accessor round-trip: sa_byzantine_resilient ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (sa_byzantine_resilient (mk-secure_aggregation f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun SecureAggregation_all_enabled ((g SecureAggregation)) Bool
+  (and (sa_encrypted g) (sa_masked g) (sa_threshold_scheme g) (sa_byzantine_resilient g)))
+
+; --- 84. SecureAggregation: all-enabled completeness ---
+(push 1)
+(declare-const g SecureAggregation)
+(assert (sa_encrypted g))
+(assert (sa_masked g))
+(assert (sa_threshold_scheme g))
+(assert (sa_byzantine_resilient g))
+(assert (not (SecureAggregation_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 85. SecureAggregation: SecureAggregation_all_enabled implies sa_encrypted ---
+(push 1)
+(declare-const g SecureAggregation)
+(assert (SecureAggregation_all_enabled g))
+(assert (not (sa_encrypted g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 86. SecureAggregation: SecureAggregation_all_enabled implies sa_masked ---
+(push 1)
+(declare-const g SecureAggregation)
+(assert (SecureAggregation_all_enabled g))
+(assert (not (sa_masked g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 87. SecureAggregation: SecureAggregation_all_enabled implies sa_threshold_scheme ---
+(push 1)
+(declare-const g SecureAggregation)
+(assert (SecureAggregation_all_enabled g))
+(assert (not (sa_threshold_scheme g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 88. ResourceLimits accessor round-trip: rl_compute_bounded ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (rl_compute_bounded (mk-resource_limits f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 89. ResourceLimits accessor round-trip: rl_memory_bounded ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (rl_memory_bounded (mk-resource_limits f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 90. ResourceLimits accessor round-trip: rl_time_bounded ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (rl_time_bounded (mk-resource_limits f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 91. ResourceLimits accessor round-trip: rl_batch_limited ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (rl_batch_limited (mk-resource_limits f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun ResourceLimits_all_enabled ((g ResourceLimits)) Bool
+  (and (rl_compute_bounded g) (rl_memory_bounded g) (rl_time_bounded g) (rl_batch_limited g)))
+
+; --- 92. ResourceLimits: all-enabled completeness ---
+(push 1)
+(declare-const g ResourceLimits)
+(assert (rl_compute_bounded g))
+(assert (rl_memory_bounded g))
+(assert (rl_time_bounded g))
+(assert (rl_batch_limited g))
+(assert (not (ResourceLimits_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 93. ResourceLimits: ResourceLimits_all_enabled implies rl_compute_bounded ---
+(push 1)
+(declare-const g ResourceLimits)
+(assert (ResourceLimits_all_enabled g))
+(assert (not (rl_compute_bounded g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 94. ResourceLimits: ResourceLimits_all_enabled implies rl_memory_bounded ---
+(push 1)
+(declare-const g ResourceLimits)
+(assert (ResourceLimits_all_enabled g))
+(assert (not (rl_memory_bounded g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 95. ResourceLimits: ResourceLimits_all_enabled implies rl_time_bounded ---
+(push 1)
+(declare-const g ResourceLimits)
+(assert (ResourceLimits_all_enabled g))
+(assert (not (rl_time_bounded g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 96. SafetyTraining accessor round-trip: st_rlhf_applied ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (st_rlhf_applied (mk-safety_training f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 97. SafetyTraining accessor round-trip: st_red_teamed ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (st_red_teamed (mk-safety_training f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 98. SafetyTraining accessor round-trip: st_safety_filters ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (st_safety_filters (mk-safety_training f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 99. SafetyTraining accessor round-trip: st_refusal_trained ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (st_refusal_trained (mk-safety_training f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun SafetyTraining_all_enabled ((g SafetyTraining)) Bool
+  (and (st_rlhf_applied g) (st_red_teamed g) (st_safety_filters g) (st_refusal_trained g)))
+
+; --- 100. SafetyTraining: all-enabled completeness ---
+(push 1)
+(declare-const g SafetyTraining)
+(assert (st_rlhf_applied g))
+(assert (st_red_teamed g))
+(assert (st_safety_filters g))
+(assert (st_refusal_trained g))
+(assert (not (SafetyTraining_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 101. SafetyTraining: SafetyTraining_all_enabled implies st_rlhf_applied ---
+(push 1)
+(declare-const g SafetyTraining)
+(assert (SafetyTraining_all_enabled g))
+(assert (not (st_rlhf_applied g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 102. SafetyTraining: SafetyTraining_all_enabled implies st_red_teamed ---
+(push 1)
+(declare-const g SafetyTraining)
+(assert (SafetyTraining_all_enabled g))
+(assert (not (st_red_teamed g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 103. SafetyTraining: SafetyTraining_all_enabled implies st_safety_filters ---
+(push 1)
+(declare-const g SafetyTraining)
+(assert (SafetyTraining_all_enabled g))
+(assert (not (st_safety_filters g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 104. DefenseInDepth accessor round-trip: did_multiple_layers ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (did_multiple_layers (mk-defense_in_depth f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 105. DefenseInDepth accessor round-trip: did_diverse_methods ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (did_diverse_methods (mk-defense_in_depth f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 106. DefenseInDepth accessor round-trip: did_fail_safe ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (did_fail_safe (mk-defense_in_depth f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 107. DefenseInDepth accessor round-trip: did_monitoring ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (did_monitoring (mk-defense_in_depth f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun DefenseInDepth_all_enabled ((g DefenseInDepth)) Bool
+  (and (did_multiple_layers g) (did_diverse_methods g) (did_fail_safe g) (did_monitoring g)))
+
+; --- 108. DefenseInDepth: all-enabled completeness ---
+(push 1)
+(declare-const g DefenseInDepth)
+(assert (did_multiple_layers g))
+(assert (did_diverse_methods g))
+(assert (did_fail_safe g))
+(assert (did_monitoring g))
+(assert (not (DefenseInDepth_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 109. DefenseInDepth: DefenseInDepth_all_enabled implies did_multiple_layers ---
+(push 1)
+(declare-const g DefenseInDepth)
+(assert (DefenseInDepth_all_enabled g))
+(assert (not (did_multiple_layers g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 110. DefenseInDepth: DefenseInDepth_all_enabled implies did_diverse_methods ---
+(push 1)
+(declare-const g DefenseInDepth)
+(assert (DefenseInDepth_all_enabled g))
+(assert (not (did_diverse_methods g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 111. DefenseInDepth: DefenseInDepth_all_enabled implies did_fail_safe ---
+(push 1)
+(declare-const g DefenseInDepth)
+(assert (DefenseInDepth_all_enabled g))
+(assert (not (did_fail_safe g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 112. InputIsolation accessor round-trip: ii_context_separated ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ii_context_separated (mk-input_isolation f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 113. InputIsolation accessor round-trip: ii_privilege_separated ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ii_privilege_separated (mk-input_isolation f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 114. InputIsolation accessor round-trip: ii_output_filtered ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ii_output_filtered (mk-input_isolation f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 115. InputIsolation accessor round-trip: ii_injection_markers ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (ii_injection_markers (mk-input_isolation f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun InputIsolation_all_enabled ((g InputIsolation)) Bool
+  (and (ii_context_separated g) (ii_privilege_separated g) (ii_output_filtered g) (ii_injection_markers g)))
+
+; --- 116. InputIsolation: all-enabled completeness ---
+(push 1)
+(declare-const g InputIsolation)
+(assert (ii_context_separated g))
+(assert (ii_privilege_separated g))
+(assert (ii_output_filtered g))
+(assert (ii_injection_markers g))
+(assert (not (InputIsolation_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 117. InputIsolation: InputIsolation_all_enabled implies ii_context_separated ---
+(push 1)
+(declare-const g InputIsolation)
+(assert (InputIsolation_all_enabled g))
+(assert (not (ii_context_separated g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 118. InputIsolation: InputIsolation_all_enabled implies ii_privilege_separated ---
+(push 1)
+(declare-const g InputIsolation)
+(assert (InputIsolation_all_enabled g))
+(assert (not (ii_privilege_separated g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 119. InputIsolation: InputIsolation_all_enabled implies ii_output_filtered ---
+(push 1)
+(declare-const g InputIsolation)
+(assert (InputIsolation_all_enabled g))
+(assert (not (ii_output_filtered g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 120. AgentVerification accessor round-trip: av_identity_verified ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (av_identity_verified (mk-agent_verification f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 121. AgentVerification accessor round-trip: av_capability_bounded ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (av_capability_bounded (mk-agent_verification f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 122. AgentVerification accessor round-trip: av_communication_secure ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (av_communication_secure (mk-agent_verification f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 123. AgentVerification accessor round-trip: av_consensus_required ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (av_consensus_required (mk-agent_verification f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun AgentVerification_all_enabled ((g AgentVerification)) Bool
+  (and (av_identity_verified g) (av_capability_bounded g) (av_communication_secure g) (av_consensus_required g)))
+
+; --- 124. AgentVerification: all-enabled completeness ---
+(push 1)
+(declare-const g AgentVerification)
+(assert (av_identity_verified g))
+(assert (av_capability_bounded g))
+(assert (av_communication_secure g))
+(assert (av_consensus_required g))
+(assert (not (AgentVerification_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 125. AgentVerification: AgentVerification_all_enabled implies av_identity_verified ---
+(push 1)
+(declare-const g AgentVerification)
+(assert (AgentVerification_all_enabled g))
+(assert (not (av_identity_verified g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 126. AgentVerification: AgentVerification_all_enabled implies av_capability_bounded ---
+(push 1)
+(declare-const g AgentVerification)
+(assert (AgentVerification_all_enabled g))
+(assert (not (av_capability_bounded g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 127. AgentVerification: AgentVerification_all_enabled implies av_communication_secure ---
+(push 1)
+(declare-const g AgentVerification)
+(assert (AgentVerification_all_enabled g))
+(assert (not (av_communication_secure g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 128. ProtocolVerification accessor round-trip: pv_schema_validated ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pv_schema_validated (mk-protocol_verification f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 129. ProtocolVerification accessor round-trip: pv_auth_required ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pv_auth_required (mk-protocol_verification f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 130. ProtocolVerification accessor round-trip: pv_integrity_checked ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pv_integrity_checked (mk-protocol_verification f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 131. ProtocolVerification accessor round-trip: pv_replay_protected ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (pv_replay_protected (mk-protocol_verification f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun ProtocolVerification_all_enabled ((g ProtocolVerification)) Bool
+  (and (pv_schema_validated g) (pv_auth_required g) (pv_integrity_checked g) (pv_replay_protected g)))
+
+; --- 132. ProtocolVerification: all-enabled completeness ---
+(push 1)
+(declare-const g ProtocolVerification)
+(assert (pv_schema_validated g))
+(assert (pv_auth_required g))
+(assert (pv_integrity_checked g))
+(assert (pv_replay_protected g))
+(assert (not (ProtocolVerification_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 133. ProtocolVerification: ProtocolVerification_all_enabled implies pv_schema_validated ---
+(push 1)
+(declare-const g ProtocolVerification)
+(assert (ProtocolVerification_all_enabled g))
+(assert (not (pv_schema_validated g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 134. ProtocolVerification: ProtocolVerification_all_enabled implies pv_auth_required ---
+(push 1)
+(declare-const g ProtocolVerification)
+(assert (ProtocolVerification_all_enabled g))
+(assert (not (pv_auth_required g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 135. ProtocolVerification: ProtocolVerification_all_enabled implies pv_integrity_checked ---
+(push 1)
+(declare-const g ProtocolVerification)
+(assert (ProtocolVerification_all_enabled g))
+(assert (not (pv_integrity_checked g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 136. AnomalyDetection accessor round-trip: ad_statistical_analysis ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (ad_statistical_analysis (mk-anomaly_detection f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 137. AnomalyDetection accessor round-trip: ad_outlier_removal ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (ad_outlier_removal (mk-anomaly_detection f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 138. AnomalyDetection accessor round-trip: ad_distribution_check ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (ad_distribution_check (mk-anomaly_detection f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun AnomalyDetection_all_enabled ((g AnomalyDetection)) Bool
+  (and (ad_statistical_analysis g) (ad_outlier_removal g) (ad_distribution_check g)))
+
+; --- 139. AnomalyDetection: all-enabled completeness ---
+(push 1)
+(declare-const g AnomalyDetection)
+(assert (ad_statistical_analysis g))
+(assert (ad_outlier_removal g))
+(assert (ad_distribution_check g))
+(assert (not (AnomalyDetection_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 140. AnomalyDetection: AnomalyDetection_all_enabled implies ad_statistical_analysis ---
+(push 1)
+(declare-const g AnomalyDetection)
+(assert (AnomalyDetection_all_enabled g))
+(assert (not (ad_statistical_analysis g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 141. AnomalyDetection: AnomalyDetection_all_enabled implies ad_outlier_removal ---
+(push 1)
+(declare-const g AnomalyDetection)
+(assert (AnomalyDetection_all_enabled g))
+(assert (not (ad_outlier_removal g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 142. AnomalyDetection: AnomalyDetection_all_enabled implies ad_distribution_check ---
+(push 1)
+(declare-const g AnomalyDetection)
+(assert (AnomalyDetection_all_enabled g))
+(assert (not (ad_distribution_check g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 143. BackdoorDetection accessor round-trip: bd_trigger_reverse_eng ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (bd_trigger_reverse_eng (mk-backdoor_detection f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 144. BackdoorDetection accessor round-trip: bd_activation_analysis ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (bd_activation_analysis (mk-backdoor_detection f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 145. BackdoorDetection accessor round-trip: bd_spectral_analysis ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (bd_spectral_analysis (mk-backdoor_detection f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun BackdoorDetection_all_enabled ((g BackdoorDetection)) Bool
+  (and (bd_trigger_reverse_eng g) (bd_activation_analysis g) (bd_spectral_analysis g)))
+
+; --- 146. BackdoorDetection: all-enabled completeness ---
+(push 1)
+(declare-const g BackdoorDetection)
+(assert (bd_trigger_reverse_eng g))
+(assert (bd_activation_analysis g))
+(assert (bd_spectral_analysis g))
+(assert (not (BackdoorDetection_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 147. BackdoorDetection: BackdoorDetection_all_enabled implies bd_trigger_reverse_eng ---
+(push 1)
+(declare-const g BackdoorDetection)
+(assert (BackdoorDetection_all_enabled g))
+(assert (not (bd_trigger_reverse_eng g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 148. BackdoorDetection: BackdoorDetection_all_enabled implies bd_activation_analysis ---
+(push 1)
+(declare-const g BackdoorDetection)
+(assert (BackdoorDetection_all_enabled g))
+(assert (not (bd_activation_analysis g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 149. BackdoorDetection: BackdoorDetection_all_enabled implies bd_spectral_analysis ---
+(push 1)
+(declare-const g BackdoorDetection)
+(assert (BackdoorDetection_all_enabled g))
+(assert (not (bd_spectral_analysis g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun SecurityLevel_level ((x SecurityLevel)) Int
+  (ite (= x Critical) 0 (ite (= x High) 1 (ite (= x Medium) 2 3))))
+
+(define-fun SecurityLevel_leq ((x SecurityLevel) (y SecurityLevel)) Bool
+  (<= (SecurityLevel_level x) (SecurityLevel_level y)))
+
+; --- 150. SecurityLevel_leq reflexivity ---
+(push 1)
+(declare-const x SecurityLevel)
+(assert (not (SecurityLevel_leq x x)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 151. SecurityLevel_leq transitivity ---
+(push 1)
+(declare-const x SecurityLevel)
+(declare-const y SecurityLevel)
+(declare-const z SecurityLevel)
+(assert (SecurityLevel_leq x y))
+(assert (SecurityLevel_leq y z))
+(assert (not (SecurityLevel_leq x z)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 152. SecurityLevel_leq antisymmetry ---
+(push 1)
+(declare-const x SecurityLevel)
+(declare-const y SecurityLevel)
+(assert (SecurityLevel_leq x y))
+(assert (SecurityLevel_leq y x))
+(assert (not (= x y)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 153. Critical is bottom ---
+(push 1)
+(declare-const x SecurityLevel)
+(assert (not (SecurityLevel_leq Critical x)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 154. Low is top ---
+(push 1)
+(declare-const x SecurityLevel)
+(assert (not (SecurityLevel_leq x Low)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
 (check-sat)
 (exit)
