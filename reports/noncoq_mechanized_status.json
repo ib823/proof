@@ -82,10 +82,13 @@
     },
     "smt": {
       "full_exec_ok": false,
-      "files": 264,
+      "smoke_ok": true,
+      "smoke_file": "RIINA/Active/SecurityLatticeVerification.smt2",
+      "smoke_verified_assertions": 25,
+      "files": 265,
       "generated_files": 7,
       "mechanized_ready": false,
-      "pending": "require full-lane Z3 checks and zero generated placeholders"
+      "pending": "smoke artifact verified; full-lane Z3 checks and zero generated placeholders still required for mechanized"
     },
     "verus": {
       "full_exec_ok": false,

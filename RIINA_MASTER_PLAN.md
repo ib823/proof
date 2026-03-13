@@ -281,14 +281,18 @@ smoke session. The remaining 274 `.thy` files are still unverified transpiled st
 | TLA+ smoke theorem count | 5 | TLC-checked procurement smoke model counts 5 `THEOREM` declarations |
 | Alloy active smoke model | 1 | `RIINA/Active/TelusProcurementAccessControl.als` |
 | Alloy checked assertions | 6 | Alloy `exec` smoke run checks 6 assertions in the active model |
-| SMT / Verus / Kani / TV | 0 real artifacts | Still quarantined generated corpora |
+| SMT (Z3) active verification | 1 | `RIINA/Active/SecurityLatticeVerification.smt2` + `verify_security_lattice.py` |
+| SMT (Z3) verified assertions | 25 | Z3-verified security lattice properties (matching 22 Coq lemmas + 3 IFC properties) |
+| Verus / Kani / TV | 0 real artifacts | Still quarantined generated corpora |
 
 **Honest assessment:** F* now has one manually maintained smoke-compiled module with three
 real lemmas, TLA+ now has one manually maintained TLC-checked procurement smoke model with
-five counted `THEOREM` declarations, and Alloy now has one manually maintained bounded
-access-control model with six checked assertions. The remaining `.fst` / `.tla` / `.als`
-files, and all other extended prover lanes, are still generated placeholders and must not
-be counted as verified proofs.
+five counted `THEOREM` declarations, Alloy now has one manually maintained bounded
+access-control model with six checked assertions, and SMT/Z3 now has one manually
+maintained security lattice verification with 25 Z3-verified properties (encoding the
+6-level Denning lattice from `02_FORMAL/coq/foundations/Syntax.v`). The remaining
+`.fst` / `.tla` / `.als` / `.smt2` files, and all other extended prover lanes (Verus,
+Kani, TV), are still generated placeholders and must not be counted as verified proofs.
 
 ### Rust Prototype
 
@@ -449,7 +453,7 @@ See Part 5 for detailed per-prover closure criteria.
 | F* | 1 smoke-compiled active module (3 lemmas) | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | 800-1,600 hrs | High (HACL* templates) |
 | TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | 150-300 hrs | Very High |
 | Alloy | 1 smoke-checked active model (6 assertions) | Access control model verified | DONE | Very High |
-| SMT/Z3 | 0 real queries | Refinement type checking in riinac | 200-400 hrs | Very High |
+| SMT/Z3 | 1 active verification (25 Z3-verified assertions) | Security lattice verified; refinement type checking next | DONE (smoke) | Very High |
 | Verus | 0 real annotations | Type checker implementation verified | 1,200-2,400 hrs | Medium |
 | Kani | 0 real harnesses | Bounded model checking of type checker | 200-400 hrs | High |
 | TV | 0 real validations | C backend translation validation | 200-400 hrs | High |
