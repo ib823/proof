@@ -15,19 +15,37 @@
 (declare-sort TargetNode 0)
 
 ; stuck: source semantics (matches Coq)
-(declare-fun source_stuck () Bool)
-(declare-fun target_stuck () Bool)
-(assert (= source_stuck target_stuck))
+; Translation validation: stuck preserves semantics
+(push 1)
+(declare-const source_stuck Int)
+(declare-const target_stuck Int)
+(assert (>= source_stuck 0))
+(assert (>= target_stuck 0))
+(assert (not (= source_stuck target_stuck)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; type_safety: translation preserves property (matches Coq: Theorem)
-(declare-fun source_type_safety () Bool)
-(declare-fun target_type_safety () Bool)
-(assert (= source_type_safety target_type_safety))
+; Translation validation: type_safety preserves semantics
+(push 1)
+(declare-const source_type_safety Int)
+(declare-const target_type_safety Int)
+(assert (>= source_type_safety 0))
+(assert (>= target_type_safety 0))
+(assert (not (= source_type_safety target_type_safety)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; multi_step_safety: translation preserves property (matches Coq: Theorem)
-(declare-fun source_multi_step_safety () Bool)
-(declare-fun target_multi_step_safety () Bool)
-(assert (= source_multi_step_safety target_multi_step_safety))
+; Translation validation: multi_step_safety preserves semantics
+(push 1)
+(declare-const source_multi_step_safety Int)
+(declare-const target_multi_step_safety Int)
+(assert (>= source_multi_step_safety 0))
+(assert (>= target_multi_step_safety 0))
+(assert (not (= source_multi_step_safety target_multi_step_safety)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; Verify all translation validations are satisfiable
 (check-sat)

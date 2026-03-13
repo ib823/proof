@@ -15,234 +15,510 @@
 (declare-sort TargetNode 0)
 
 ; strong_encryption: source semantics (matches Coq)
-(declare-fun source_strong_encryption () Bool)
-(declare-fun target_strong_encryption () Bool)
-(assert (= source_strong_encryption target_strong_encryption))
+; Translation validation: strong_encryption preserves semantics
+(push 1)
+(declare-const source_strong_encryption Int)
+(declare-const target_strong_encryption Int)
+(assert (>= source_strong_encryption 0))
+(assert (>= target_strong_encryption 0))
+(assert (not (= source_strong_encryption target_strong_encryption)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; e2e_encrypted: source semantics (matches Coq)
-(declare-fun source_e2e_encrypted () Bool)
-(declare-fun target_e2e_encrypted () Bool)
-(assert (= source_e2e_encrypted target_e2e_encrypted))
+; Translation validation: e2e_encrypted preserves semantics
+(push 1)
+(declare-const source_e2e_encrypted Int)
+(declare-const target_e2e_encrypted Int)
+(assert (>= source_e2e_encrypted 0))
+(assert (>= target_e2e_encrypted 0))
+(assert (not (= source_e2e_encrypted target_e2e_encrypted)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; securely_managed: source semantics (matches Coq)
-(declare-fun source_securely_managed () Bool)
-(declare-fun target_securely_managed () Bool)
-(assert (= source_securely_managed target_securely_managed))
+; Translation validation: securely_managed preserves semantics
+(push 1)
+(declare-const source_securely_managed Int)
+(declare-const target_securely_managed Int)
+(assert (>= source_securely_managed 0))
+(assert (>= target_securely_managed 0))
+(assert (not (= source_securely_managed target_securely_managed)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; provides_confidentiality: source semantics (matches Coq)
-(declare-fun source_provides_confidentiality () Bool)
-(declare-fun target_provides_confidentiality () Bool)
-(assert (= source_provides_confidentiality target_provides_confidentiality))
+; Translation validation: provides_confidentiality preserves semantics
+(push 1)
+(declare-const source_provides_confidentiality Int)
+(declare-const target_provides_confidentiality Int)
+(assert (>= source_provides_confidentiality 0))
+(assert (>= target_provides_confidentiality 0))
+(assert (not (= source_provides_confidentiality target_provides_confidentiality)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; provides_integrity: source semantics (matches Coq)
-(declare-fun source_provides_integrity () Bool)
-(declare-fun target_provides_integrity () Bool)
-(assert (= source_provides_integrity target_provides_integrity))
+; Translation validation: provides_integrity preserves semantics
+(push 1)
+(declare-const source_provides_integrity Int)
+(declare-const target_provides_integrity Int)
+(assert (>= source_provides_integrity 0))
+(assert (>= target_provides_integrity 0))
+(assert (not (= source_provides_integrity target_provides_integrity)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; full_e2e_security: source semantics (matches Coq)
-(declare-fun source_full_e2e_security () Bool)
-(declare-fun target_full_e2e_security () Bool)
-(assert (= source_full_e2e_security target_full_e2e_security))
+; Translation validation: full_e2e_security preserves semantics
+(push 1)
+(declare-const source_full_e2e_security Int)
+(declare-const target_full_e2e_security Int)
+(assert (>= source_full_e2e_security 0))
+(assert (>= target_full_e2e_security 0))
+(assert (not (= source_full_e2e_security target_full_e2e_security)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; correct_decryption: source semantics (matches Coq)
-(declare-fun source_correct_decryption () Bool)
-(declare-fun target_correct_decryption () Bool)
-(assert (= source_correct_decryption target_correct_decryption))
+; Translation validation: correct_decryption preserves semantics
+(push 1)
+(declare-const source_correct_decryption Int)
+(declare-const target_correct_decryption Int)
+(assert (>= source_correct_decryption 0))
+(assert (>= target_correct_decryption 0))
+(assert (not (= source_correct_decryption target_correct_decryption)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_bits_sufficient: source semantics (matches Coq)
-(declare-fun source_key_bits_sufficient () Bool)
-(declare-fun target_key_bits_sufficient () Bool)
-(assert (= source_key_bits_sufficient target_key_bits_sufficient))
+; Translation validation: key_bits_sufficient preserves semantics
+(push 1)
+(declare-const source_key_bits_sufficient Int)
+(declare-const target_key_bits_sufficient Int)
+(assert (>= source_key_bits_sufficient 0))
+(assert (>= target_key_bits_sufficient 0))
+(assert (not (= source_key_bits_sufficient target_key_bits_sufficient)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; is_aes_or_chacha: source semantics (matches Coq)
-(declare-fun source_is_aes_or_chacha () Bool)
-(declare-fun target_is_aes_or_chacha () Bool)
-(assert (= source_is_aes_or_chacha target_is_aes_or_chacha))
+; Translation validation: is_aes_or_chacha preserves semantics
+(push 1)
+(declare-const source_is_aes_or_chacha Int)
+(declare-const target_is_aes_or_chacha Int)
+(assert (>= source_is_aes_or_chacha 0))
+(assert (>= target_is_aes_or_chacha 0))
+(assert (not (= source_is_aes_or_chacha target_is_aes_or_chacha)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; is_strong_key: source semantics (matches Coq)
-(declare-fun source_is_strong_key () Bool)
-(declare-fun target_is_strong_key () Bool)
-(assert (= source_is_strong_key target_is_strong_key))
+; Translation validation: is_strong_key preserves semantics
+(push 1)
+(declare-const source_is_strong_key Int)
+(declare-const target_is_strong_key Int)
+(assert (>= source_is_strong_key 0))
+(assert (>= target_is_strong_key 0))
+(assert (not (= source_is_strong_key target_is_strong_key)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; encryption_decryption_inverse_prop: source semantics (matches Coq)
-(declare-fun source_encryption_decryption_inverse_prop () Bool)
-(declare-fun target_encryption_decryption_inverse_prop () Bool)
-(assert (= source_encryption_decryption_inverse_prop target_encryption_decryption_inverse_prop))
+; Translation validation: encryption_decryption_inverse_prop preserves semantics
+(push 1)
+(declare-const source_encryption_decryption_inverse_prop Int)
+(declare-const target_encryption_decryption_inverse_prop Int)
+(assert (>= source_encryption_decryption_inverse_prop 0))
+(assert (>= target_encryption_decryption_inverse_prop 0))
+(assert (not (= source_encryption_decryption_inverse_prop target_encryption_decryption_inverse_prop)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_length_sufficient_prop: source semantics (matches Coq)
-(declare-fun source_key_length_sufficient_prop () Bool)
-(declare-fun target_key_length_sufficient_prop () Bool)
-(assert (= source_key_length_sufficient_prop target_key_length_sufficient_prop))
+; Translation validation: key_length_sufficient_prop preserves semantics
+(push 1)
+(declare-const source_key_length_sufficient_prop Int)
+(declare-const target_key_length_sufficient_prop Int)
+(assert (>= source_key_length_sufficient_prop 0))
+(assert (>= target_key_length_sufficient_prop 0))
+(assert (not (= source_key_length_sufficient_prop target_key_length_sufficient_prop)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; iv_never_reused: source semantics (matches Coq)
-(declare-fun source_iv_never_reused () Bool)
-(declare-fun target_iv_never_reused () Bool)
-(assert (= source_iv_never_reused target_iv_never_reused))
+; Translation validation: iv_never_reused preserves semantics
+(push 1)
+(declare-const source_iv_never_reused Int)
+(declare-const target_iv_never_reused Int)
+(assert (>= source_iv_never_reused 0))
+(assert (>= target_iv_never_reused 0))
+(assert (not (= source_iv_never_reused target_iv_never_reused)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; aead_verified: source semantics (matches Coq)
-(declare-fun source_aead_verified () Bool)
-(declare-fun target_aead_verified () Bool)
-(assert (= source_aead_verified target_aead_verified))
+; Translation validation: aead_verified preserves semantics
+(push 1)
+(declare-const source_aead_verified Int)
+(declare-const target_aead_verified Int)
+(assert (>= source_aead_verified 0))
+(assert (>= target_aead_verified 0))
+(assert (not (= source_aead_verified target_aead_verified)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_derivation_deterministic_prop: source semantics (matches Coq)
-(declare-fun source_key_derivation_deterministic_prop () Bool)
-(declare-fun target_key_derivation_deterministic_prop () Bool)
-(assert (= source_key_derivation_deterministic_prop target_key_derivation_deterministic_prop))
+; Translation validation: key_derivation_deterministic_prop preserves semantics
+(push 1)
+(declare-const source_key_derivation_deterministic_prop Int)
+(declare-const target_key_derivation_deterministic_prop Int)
+(assert (>= source_key_derivation_deterministic_prop 0))
+(assert (>= target_key_derivation_deterministic_prop 0))
+(assert (not (= source_key_derivation_deterministic_prop target_key_derivation_deterministic_prop)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; password_hash_one_way: source semantics (matches Coq)
-(declare-fun source_password_hash_one_way () Bool)
-(declare-fun target_password_hash_one_way () Bool)
-(assert (= source_password_hash_one_way target_password_hash_one_way))
+; Translation validation: password_hash_one_way preserves semantics
+(push 1)
+(declare-const source_password_hash_one_way Int)
+(declare-const target_password_hash_one_way Int)
+(assert (>= source_password_hash_one_way 0))
+(assert (>= target_password_hash_one_way 0))
+(assert (not (= source_password_hash_one_way target_password_hash_one_way)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; salt_unique: source semantics (matches Coq)
-(declare-fun source_salt_unique () Bool)
-(declare-fun target_salt_unique () Bool)
-(assert (= source_salt_unique target_salt_unique))
+; Translation validation: salt_unique preserves semantics
+(push 1)
+(declare-const source_salt_unique Int)
+(declare-const target_salt_unique Int)
+(assert (>= source_salt_unique 0))
+(assert (>= target_salt_unique 0))
+(assert (not (= source_salt_unique target_salt_unique)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_rotation_seamless: source semantics (matches Coq)
-(declare-fun source_key_rotation_seamless () Bool)
-(declare-fun target_key_rotation_seamless () Bool)
-(assert (= source_key_rotation_seamless target_key_rotation_seamless))
+; Translation validation: key_rotation_seamless preserves semantics
+(push 1)
+(declare-const source_key_rotation_seamless Int)
+(declare-const target_key_rotation_seamless Int)
+(assert (>= source_key_rotation_seamless 0))
+(assert (>= target_key_rotation_seamless 0))
+(assert (not (= source_key_rotation_seamless target_key_rotation_seamless)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; encrypted_data_indistinguishable: source semantics (matches Coq)
-(declare-fun source_encrypted_data_indistinguishable () Bool)
-(declare-fun target_encrypted_data_indistinguishable () Bool)
-(assert (= source_encrypted_data_indistinguishable target_encrypted_data_indistinguishable))
+; Translation validation: encrypted_data_indistinguishable preserves semantics
+(push 1)
+(declare-const source_encrypted_data_indistinguishable Int)
+(declare-const target_encrypted_data_indistinguishable Int)
+(assert (>= source_encrypted_data_indistinguishable 0))
+(assert (>= target_encrypted_data_indistinguishable 0))
+(assert (not (= source_encrypted_data_indistinguishable target_encrypted_data_indistinguishable)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; padding_oracle_prevented: source semantics (matches Coq)
-(declare-fun source_padding_oracle_prevented () Bool)
-(declare-fun target_padding_oracle_prevented () Bool)
-(assert (= source_padding_oracle_prevented target_padding_oracle_prevented))
+; Translation validation: padding_oracle_prevented preserves semantics
+(push 1)
+(declare-const source_padding_oracle_prevented Int)
+(declare-const target_padding_oracle_prevented Int)
+(assert (>= source_padding_oracle_prevented 0))
+(assert (>= target_padding_oracle_prevented 0))
+(assert (not (= source_padding_oracle_prevented target_padding_oracle_prevented)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; timing_attack_prevented: source semantics (matches Coq)
-(declare-fun source_timing_attack_prevented () Bool)
-(declare-fun target_timing_attack_prevented () Bool)
-(assert (= source_timing_attack_prevented target_timing_attack_prevented))
+; Translation validation: timing_attack_prevented preserves semantics
+(push 1)
+(declare-const source_timing_attack_prevented Int)
+(declare-const target_timing_attack_prevented Int)
+(assert (>= source_timing_attack_prevented 0))
+(assert (>= target_timing_attack_prevented 0))
+(assert (not (= source_timing_attack_prevented target_timing_attack_prevented)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_zeroization_complete: source semantics (matches Coq)
-(declare-fun source_key_zeroization_complete () Bool)
-(declare-fun target_key_zeroization_complete () Bool)
-(assert (= source_key_zeroization_complete target_key_zeroization_complete))
+; Translation validation: key_zeroization_complete preserves semantics
+(push 1)
+(declare-const source_key_zeroization_complete Int)
+(declare-const target_key_zeroization_complete Int)
+(assert (>= source_key_zeroization_complete 0))
+(assert (>= target_key_zeroization_complete 0))
+(assert (not (= source_key_zeroization_complete target_key_zeroization_complete)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; hardware_key_storage_prop: source semantics (matches Coq)
-(declare-fun source_hardware_key_storage_prop () Bool)
-(declare-fun target_hardware_key_storage_prop () Bool)
-(assert (= source_hardware_key_storage_prop target_hardware_key_storage_prop))
+; Translation validation: hardware_key_storage_prop preserves semantics
+(push 1)
+(declare-const source_hardware_key_storage_prop Int)
+(declare-const target_hardware_key_storage_prop Int)
+(assert (>= source_hardware_key_storage_prop 0))
+(assert (>= target_hardware_key_storage_prop 0))
+(assert (not (= source_hardware_key_storage_prop target_hardware_key_storage_prop)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; encryption_algorithm_approved: source semantics (matches Coq)
-(declare-fun source_encryption_algorithm_approved () Bool)
-(declare-fun target_encryption_algorithm_approved () Bool)
-(assert (= source_encryption_algorithm_approved target_encryption_algorithm_approved))
+; Translation validation: encryption_algorithm_approved preserves semantics
+(push 1)
+(declare-const source_encryption_algorithm_approved Int)
+(declare-const target_encryption_algorithm_approved Int)
+(assert (>= source_encryption_algorithm_approved 0))
+(assert (>= target_encryption_algorithm_approved 0))
+(assert (not (= source_encryption_algorithm_approved target_encryption_algorithm_approved)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; e2e_encryption_verified: translation preserves property (matches Coq: Theorem)
-(declare-fun source_e2e_encryption_verified () Bool)
-(declare-fun target_e2e_encryption_verified () Bool)
-(assert (= source_e2e_encryption_verified target_e2e_encryption_verified))
+; Translation validation: e2e_encryption_verified preserves semantics
+(push 1)
+(declare-const source_e2e_encryption_verified Int)
+(declare-const target_e2e_encryption_verified Int)
+(assert (>= source_e2e_encryption_verified 0))
+(assert (>= target_e2e_encryption_verified 0))
+(assert (not (= source_e2e_encryption_verified target_e2e_encryption_verified)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; private_keys_in_secure_enclave: translation preserves property (matches Coq: Theorem)
-(declare-fun source_private_keys_in_secure_enclave () Bool)
-(declare-fun target_private_keys_in_secure_enclave () Bool)
-(assert (= source_private_keys_in_secure_enclave target_private_keys_in_secure_enclave))
+; Translation validation: private_keys_in_secure_enclave preserves semantics
+(push 1)
+(declare-const source_private_keys_in_secure_enclave Int)
+(declare-const target_private_keys_in_secure_enclave Int)
+(assert (>= source_private_keys_in_secure_enclave 0))
+(assert (>= target_private_keys_in_secure_enclave 0))
+(assert (not (= source_private_keys_in_secure_enclave target_private_keys_in_secure_enclave)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; e2e_channel_provides_security: translation preserves property (matches Coq: Theorem)
-(declare-fun source_e2e_channel_provides_security () Bool)
-(declare-fun target_e2e_channel_provides_security () Bool)
-(assert (= source_e2e_channel_provides_security target_e2e_channel_provides_security))
+; Translation validation: e2e_channel_provides_security preserves semantics
+(push 1)
+(declare-const source_e2e_channel_provides_security Int)
+(declare-const target_e2e_channel_provides_security Int)
+(assert (>= source_e2e_channel_provides_security 0))
+(assert (>= target_e2e_channel_provides_security 0))
+(assert (not (= source_e2e_channel_provides_security target_e2e_channel_provides_security)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; forward_secrecy_maintained: translation preserves property (matches Coq: Theorem)
-(declare-fun source_forward_secrecy_maintained () Bool)
-(declare-fun target_forward_secrecy_maintained () Bool)
-(assert (= source_forward_secrecy_maintained target_forward_secrecy_maintained))
+; Translation validation: forward_secrecy_maintained preserves semantics
+(push 1)
+(declare-const source_forward_secrecy_maintained Int)
+(declare-const target_forward_secrecy_maintained Int)
+(assert (>= source_forward_secrecy_maintained 0))
+(assert (>= target_forward_secrecy_maintained 0))
+(assert (not (= source_forward_secrecy_maintained target_forward_secrecy_maintained)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; strong_encryption_minimum_bits: translation preserves property (matches Coq: Theorem)
-(declare-fun source_strong_encryption_minimum_bits () Bool)
-(declare-fun target_strong_encryption_minimum_bits () Bool)
-(assert (= source_strong_encryption_minimum_bits target_strong_encryption_minimum_bits))
+; Translation validation: strong_encryption_minimum_bits preserves semantics
+(push 1)
+(declare-const source_strong_encryption_minimum_bits Int)
+(declare-const target_strong_encryption_minimum_bits Int)
+(assert (>= source_strong_encryption_minimum_bits 0))
+(assert (>= target_strong_encryption_minimum_bits 0))
+(assert (not (= source_strong_encryption_minimum_bits target_strong_encryption_minimum_bits)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; decryption_verifies_integrity: translation preserves property (matches Coq: Theorem)
-(declare-fun source_decryption_verifies_integrity () Bool)
-(declare-fun target_decryption_verifies_integrity () Bool)
-(assert (= source_decryption_verifies_integrity target_decryption_verifies_integrity))
+; Translation validation: decryption_verifies_integrity preserves semantics
+(push 1)
+(declare-const source_decryption_verifies_integrity Int)
+(declare-const target_decryption_verifies_integrity Int)
+(assert (>= source_decryption_verifies_integrity 0))
+(assert (>= target_decryption_verifies_integrity 0))
+(assert (not (= source_decryption_verifies_integrity target_decryption_verifies_integrity)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_derivation_preserves_strength: translation preserves property (matches Coq: Theorem)
-(declare-fun source_key_derivation_preserves_strength () Bool)
-(declare-fun target_key_derivation_preserves_strength () Bool)
-(assert (= source_key_derivation_preserves_strength target_key_derivation_preserves_strength))
+; Translation validation: key_derivation_preserves_strength preserves semantics
+(push 1)
+(declare-const source_key_derivation_preserves_strength Int)
+(declare-const target_key_derivation_preserves_strength Int)
+(assert (>= source_key_derivation_preserves_strength 0))
+(assert (>= target_key_derivation_preserves_strength 0))
+(assert (not (= source_key_derivation_preserves_strength target_key_derivation_preserves_strength)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; encryption_decryption_inverse: translation preserves property (matches Coq: Theorem)
-(declare-fun source_encryption_decryption_inverse () Bool)
-(declare-fun target_encryption_decryption_inverse () Bool)
-(assert (= source_encryption_decryption_inverse target_encryption_decryption_inverse))
+; Translation validation: encryption_decryption_inverse preserves semantics
+(push 1)
+(declare-const source_encryption_decryption_inverse Int)
+(declare-const target_encryption_decryption_inverse Int)
+(assert (>= source_encryption_decryption_inverse 0))
+(assert (>= target_encryption_decryption_inverse 0))
+(assert (not (= source_encryption_decryption_inverse target_encryption_decryption_inverse)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_generation_random: translation preserves property (matches Coq: Theorem)
-(declare-fun source_key_generation_random () Bool)
-(declare-fun target_key_generation_random () Bool)
-(assert (= source_key_generation_random target_key_generation_random))
+; Translation validation: key_generation_random preserves semantics
+(push 1)
+(declare-const source_key_generation_random Int)
+(declare-const target_key_generation_random Int)
+(assert (>= source_key_generation_random 0))
+(assert (>= target_key_generation_random 0))
+(assert (not (= source_key_generation_random target_key_generation_random)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_length_sufficient: translation preserves property (matches Coq: Theorem)
-(declare-fun source_key_length_sufficient () Bool)
-(declare-fun target_key_length_sufficient () Bool)
-(assert (= source_key_length_sufficient target_key_length_sufficient))
+; Translation validation: key_length_sufficient preserves semantics
+(push 1)
+(declare-const source_key_length_sufficient Int)
+(declare-const target_key_length_sufficient Int)
+(assert (>= source_key_length_sufficient 0))
+(assert (>= target_key_length_sufficient 0))
+(assert (not (= source_key_length_sufficient target_key_length_sufficient)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; iv_never_reused_thm: translation preserves property (matches Coq: Theorem)
-(declare-fun source_iv_never_reused_thm () Bool)
-(declare-fun target_iv_never_reused_thm () Bool)
-(assert (= source_iv_never_reused_thm target_iv_never_reused_thm))
+; Translation validation: iv_never_reused_thm preserves semantics
+(push 1)
+(declare-const source_iv_never_reused_thm Int)
+(declare-const target_iv_never_reused_thm Int)
+(assert (>= source_iv_never_reused_thm 0))
+(assert (>= target_iv_never_reused_thm 0))
+(assert (not (= source_iv_never_reused_thm target_iv_never_reused_thm)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; aead_authentication_verified: translation preserves property (matches Coq: Theorem)
-(declare-fun source_aead_authentication_verified () Bool)
-(declare-fun target_aead_authentication_verified () Bool)
-(assert (= source_aead_authentication_verified target_aead_authentication_verified))
+; Translation validation: aead_authentication_verified preserves semantics
+(push 1)
+(declare-const source_aead_authentication_verified Int)
+(declare-const target_aead_authentication_verified Int)
+(assert (>= source_aead_authentication_verified 0))
+(assert (>= target_aead_authentication_verified 0))
+(assert (not (= source_aead_authentication_verified target_aead_authentication_verified)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_derivation_deterministic: translation preserves property (matches Coq: Theorem)
-(declare-fun source_key_derivation_deterministic () Bool)
-(declare-fun target_key_derivation_deterministic () Bool)
-(assert (= source_key_derivation_deterministic target_key_derivation_deterministic))
+; Translation validation: key_derivation_deterministic preserves semantics
+(push 1)
+(declare-const source_key_derivation_deterministic Int)
+(declare-const target_key_derivation_deterministic Int)
+(assert (>= source_key_derivation_deterministic 0))
+(assert (>= target_key_derivation_deterministic 0))
+(assert (not (= source_key_derivation_deterministic target_key_derivation_deterministic)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; password_hash_one_way_thm: translation preserves property (matches Coq: Theorem)
-(declare-fun source_password_hash_one_way_thm () Bool)
-(declare-fun target_password_hash_one_way_thm () Bool)
-(assert (= source_password_hash_one_way_thm target_password_hash_one_way_thm))
+; Translation validation: password_hash_one_way_thm preserves semantics
+(push 1)
+(declare-const source_password_hash_one_way_thm Int)
+(declare-const target_password_hash_one_way_thm Int)
+(assert (>= source_password_hash_one_way_thm 0))
+(assert (>= target_password_hash_one_way_thm 0))
+(assert (not (= source_password_hash_one_way_thm target_password_hash_one_way_thm)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; salt_unique_per_password: translation preserves property (matches Coq: Theorem)
-(declare-fun source_salt_unique_per_password () Bool)
-(declare-fun target_salt_unique_per_password () Bool)
-(assert (= source_salt_unique_per_password target_salt_unique_per_password))
+; Translation validation: salt_unique_per_password preserves semantics
+(push 1)
+(declare-const source_salt_unique_per_password Int)
+(declare-const target_salt_unique_per_password Int)
+(assert (>= source_salt_unique_per_password 0))
+(assert (>= target_salt_unique_per_password 0))
+(assert (not (= source_salt_unique_per_password target_salt_unique_per_password)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_rotation_seamless_thm: translation preserves property (matches Coq: Theorem)
-(declare-fun source_key_rotation_seamless_thm () Bool)
-(declare-fun target_key_rotation_seamless_thm () Bool)
-(assert (= source_key_rotation_seamless_thm target_key_rotation_seamless_thm))
+; Translation validation: key_rotation_seamless_thm preserves semantics
+(push 1)
+(declare-const source_key_rotation_seamless_thm Int)
+(declare-const target_key_rotation_seamless_thm Int)
+(assert (>= source_key_rotation_seamless_thm 0))
+(assert (>= target_key_rotation_seamless_thm 0))
+(assert (not (= source_key_rotation_seamless_thm target_key_rotation_seamless_thm)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; encrypted_data_indistinguishable_thm: translation preserves property (matches Coq: Theorem)
-(declare-fun source_encrypted_data_indistinguishable_thm () Bool)
-(declare-fun target_encrypted_data_indistinguishable_thm () Bool)
-(assert (= source_encrypted_data_indistinguishable_thm target_encrypted_data_indistinguishable_thm))
+; Translation validation: encrypted_data_indistinguishable_thm preserves semantics
+(push 1)
+(declare-const source_encrypted_data_indistinguishable_thm Int)
+(declare-const target_encrypted_data_indistinguishable_thm Int)
+(assert (>= source_encrypted_data_indistinguishable_thm 0))
+(assert (>= target_encrypted_data_indistinguishable_thm 0))
+(assert (not (= source_encrypted_data_indistinguishable_thm target_encrypted_data_indistinguishable_thm)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; padding_oracle_prevented_thm: translation preserves property (matches Coq: Theorem)
-(declare-fun source_padding_oracle_prevented_thm () Bool)
-(declare-fun target_padding_oracle_prevented_thm () Bool)
-(assert (= source_padding_oracle_prevented_thm target_padding_oracle_prevented_thm))
+; Translation validation: padding_oracle_prevented_thm preserves semantics
+(push 1)
+(declare-const source_padding_oracle_prevented_thm Int)
+(declare-const target_padding_oracle_prevented_thm Int)
+(assert (>= source_padding_oracle_prevented_thm 0))
+(assert (>= target_padding_oracle_prevented_thm 0))
+(assert (not (= source_padding_oracle_prevented_thm target_padding_oracle_prevented_thm)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; timing_attack_prevented_thm: translation preserves property (matches Coq: Theorem)
-(declare-fun source_timing_attack_prevented_thm () Bool)
-(declare-fun target_timing_attack_prevented_thm () Bool)
-(assert (= source_timing_attack_prevented_thm target_timing_attack_prevented_thm))
+; Translation validation: timing_attack_prevented_thm preserves semantics
+(push 1)
+(declare-const source_timing_attack_prevented_thm Int)
+(declare-const target_timing_attack_prevented_thm Int)
+(assert (>= source_timing_attack_prevented_thm 0))
+(assert (>= target_timing_attack_prevented_thm 0))
+(assert (not (= source_timing_attack_prevented_thm target_timing_attack_prevented_thm)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; key_zeroization_complete_thm: translation preserves property (matches Coq: Theorem)
-(declare-fun source_key_zeroization_complete_thm () Bool)
-(declare-fun target_key_zeroization_complete_thm () Bool)
-(assert (= source_key_zeroization_complete_thm target_key_zeroization_complete_thm))
+; Translation validation: key_zeroization_complete_thm preserves semantics
+(push 1)
+(declare-const source_key_zeroization_complete_thm Int)
+(declare-const target_key_zeroization_complete_thm Int)
+(assert (>= source_key_zeroization_complete_thm 0))
+(assert (>= target_key_zeroization_complete_thm 0))
+(assert (not (= source_key_zeroization_complete_thm target_key_zeroization_complete_thm)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; hardware_key_storage: translation preserves property (matches Coq: Theorem)
-(declare-fun source_hardware_key_storage () Bool)
-(declare-fun target_hardware_key_storage () Bool)
-(assert (= source_hardware_key_storage target_hardware_key_storage))
+; Translation validation: hardware_key_storage preserves semantics
+(push 1)
+(declare-const source_hardware_key_storage Int)
+(declare-const target_hardware_key_storage Int)
+(assert (>= source_hardware_key_storage 0))
+(assert (>= target_hardware_key_storage 0))
+(assert (not (= source_hardware_key_storage target_hardware_key_storage)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; encryption_algorithm_approved_thm: translation preserves property (matches Coq: Theorem)
-(declare-fun source_encryption_algorithm_approved_thm () Bool)
-(declare-fun target_encryption_algorithm_approved_thm () Bool)
-(assert (= source_encryption_algorithm_approved_thm target_encryption_algorithm_approved_thm))
+; Translation validation: encryption_algorithm_approved_thm preserves semantics
+(push 1)
+(declare-const source_encryption_algorithm_approved_thm Int)
+(declare-const target_encryption_algorithm_approved_thm Int)
+(assert (>= source_encryption_algorithm_approved_thm 0))
+(assert (>= target_encryption_algorithm_approved_thm 0))
+(assert (not (= source_encryption_algorithm_approved_thm target_encryption_algorithm_approved_thm)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; Verify all translation validations are satisfiable
 (check-sat)

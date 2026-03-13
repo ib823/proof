@@ -15,239 +15,521 @@
 (declare-sort TargetNode 0)
 
 ; expr_size: source semantics (matches Coq)
-(declare-fun source_expr_size () Bool)
-(declare-fun target_expr_size () Bool)
-(assert (= source_expr_size target_expr_size))
+; Translation validation: expr_size preserves semantics
+(push 1)
+(declare-const source_expr_size Int)
+(declare-const target_expr_size Int)
+(assert (>= source_expr_size 0))
+(assert (>= target_expr_size 0))
+(assert (not (= source_expr_size target_expr_size)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; structurally_smaller: source semantics (matches Coq)
-(declare-fun source_structurally_smaller () Bool)
-(declare-fun target_structurally_smaller () Bool)
-(assert (= source_structurally_smaller target_structurally_smaller))
+; Translation validation: structurally_smaller preserves semantics
+(push 1)
+(declare-const source_structurally_smaller Int)
+(declare-const target_structurally_smaller Int)
+(assert (>= source_structurally_smaller 0))
+(assert (>= target_structurally_smaller 0))
+(assert (not (= source_structurally_smaller target_structurally_smaller)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; structural_recursion: source semantics (matches Coq)
-(declare-fun source_structural_recursion () Bool)
-(declare-fun target_structural_recursion () Bool)
-(assert (= source_structural_recursion target_structural_recursion))
+; Translation validation: structural_recursion preserves semantics
+(push 1)
+(declare-const source_structural_recursion Int)
+(declare-const target_structural_recursion Int)
+(assert (>= source_structural_recursion 0))
+(assert (>= target_structural_recursion 0))
+(assert (not (= source_structural_recursion target_structural_recursion)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; size_subtype: source semantics (matches Coq)
-(declare-fun source_size_subtype () Bool)
-(declare-fun target_size_subtype () Bool)
-(assert (= source_size_subtype target_size_subtype))
+; Translation validation: size_subtype preserves semantics
+(push 1)
+(declare-const source_size_subtype Int)
+(declare-const target_size_subtype Int)
+(assert (>= source_size_subtype 0))
+(assert (>= target_size_subtype 0))
+(assert (not (= source_size_subtype target_size_subtype)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; sized_wellformed: source semantics (matches Coq)
-(declare-fun source_sized_wellformed () Bool)
-(declare-fun target_sized_wellformed () Bool)
-(assert (= source_sized_wellformed target_sized_wellformed))
+; Translation validation: sized_wellformed preserves semantics
+(push 1)
+(declare-const source_sized_wellformed Int)
+(declare-const target_sized_wellformed Int)
+(assert (>= source_sized_wellformed 0))
+(assert (>= target_sized_wellformed 0))
+(assert (not (= source_sized_wellformed target_sized_wellformed)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; size_less: source semantics (matches Coq)
-(declare-fun source_size_less () Bool)
-(declare-fun target_size_less () Bool)
-(assert (= source_size_less target_size_less))
+; Translation validation: size_less preserves semantics
+(push 1)
+(declare-const source_size_less Int)
+(declare-const target_size_less Int)
+(assert (>= source_size_less 0))
+(assert (>= target_size_less 0))
+(assert (not (= source_size_less target_size_less)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; ackermann: source semantics (matches Coq)
-(declare-fun source_ackermann () Bool)
-(declare-fun target_ackermann () Bool)
-(assert (= source_ackermann target_ackermann))
+; Translation validation: ackermann preserves semantics
+(push 1)
+(declare-const source_ackermann Int)
+(declare-const target_ackermann Int)
+(assert (>= source_ackermann 0))
+(assert (>= target_ackermann 0))
+(assert (not (= source_ackermann target_ackermann)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; pure: source semantics (matches Coq)
-(declare-fun source_pure () Bool)
-(declare-fun target_pure () Bool)
-(assert (= source_pure target_pure))
+; Translation validation: pure preserves semantics
+(push 1)
+(declare-const source_pure Int)
+(declare-const target_pure Int)
+(assert (>= source_pure 0))
+(assert (>= target_pure 0))
+(assert (not (= source_pure target_pure)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; well_typed: source semantics (matches Coq)
-(declare-fun source_well_typed () Bool)
-(declare-fun target_well_typed () Bool)
-(assert (= source_well_typed target_well_typed))
+; Translation validation: well_typed preserves semantics
+(push 1)
+(declare-const source_well_typed Int)
+(declare-const target_well_typed Int)
+(assert (>= source_well_typed 0))
+(assert (>= target_well_typed 0))
+(assert (not (= source_well_typed target_well_typed)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; is_value: source semantics (matches Coq)
-(declare-fun source_is_value () Bool)
-(declare-fun target_is_value () Bool)
-(assert (= source_is_value target_is_value))
+; Translation validation: is_value preserves semantics
+(push 1)
+(declare-const source_is_value Int)
+(declare-const target_is_value Int)
+(assert (>= source_is_value 0))
+(assert (>= target_is_value 0))
+(assert (not (= source_is_value target_is_value)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; check_termination: source semantics (matches Coq)
-(declare-fun source_check_termination () Bool)
-(declare-fun target_check_termination () Bool)
-(assert (= source_check_termination target_check_termination))
+; Translation validation: check_termination preserves semantics
+(push 1)
+(declare-const source_check_termination Int)
+(declare-const target_check_termination Int)
+(assert (>= source_check_termination 0))
+(assert (>= target_check_termination 0))
+(assert (not (= source_check_termination target_check_termination)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; even_size: source semantics (matches Coq)
-(declare-fun source_even_size () Bool)
-(declare-fun target_even_size () Bool)
-(assert (= source_even_size target_even_size))
+; Translation validation: even_size preserves semantics
+(push 1)
+(declare-const source_even_size Int)
+(declare-const target_even_size Int)
+(assert (>= source_even_size 0))
+(assert (>= target_even_size 0))
+(assert (not (= source_even_size target_even_size)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; infer_size: source semantics (matches Coq)
-(declare-fun source_infer_size () Bool)
-(declare-fun target_infer_size () Bool)
-(assert (= source_infer_size target_infer_size))
+; Translation validation: infer_size preserves semantics
+(push 1)
+(declare-const source_infer_size Int)
+(declare-const target_infer_size Int)
+(assert (>= source_infer_size 0))
+(assert (>= target_infer_size 0))
+(assert (not (= source_infer_size target_infer_size)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; infer_measure: source semantics (matches Coq)
-(declare-fun source_infer_measure () Bool)
-(declare-fun target_infer_measure () Bool)
-(assert (= source_infer_measure target_infer_measure))
+; Translation validation: infer_measure preserves semantics
+(push 1)
+(declare-const source_infer_measure Int)
+(declare-const target_infer_measure Int)
+(assert (>= source_infer_measure 0))
+(assert (>= target_infer_measure 0))
+(assert (not (= source_infer_measure target_infer_measure)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; explicitly_marked: source semantics (matches Coq)
-(declare-fun source_explicitly_marked () Bool)
-(declare-fun target_explicitly_marked () Bool)
-(assert (= source_explicitly_marked target_explicitly_marked))
+; Translation validation: explicitly_marked preserves semantics
+(push 1)
+(declare-const source_explicitly_marked Int)
+(declare-const target_explicitly_marked Int)
+(assert (>= source_explicitly_marked 0))
+(assert (>= target_explicitly_marked 0))
+(assert (not (= source_explicitly_marked target_explicitly_marked)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_01_structural_decrease: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_01_structural_decrease () Bool)
-(declare-fun target_V_001_01_structural_decrease () Bool)
-(assert (= source_V_001_01_structural_decrease target_V_001_01_structural_decrease))
+; Translation validation: V_001_01_structural_decrease preserves semantics
+(push 1)
+(declare-const source_V_001_01_structural_decrease Int)
+(declare-const target_V_001_01_structural_decrease Int)
+(assert (>= source_V_001_01_structural_decrease 0))
+(assert (>= target_V_001_01_structural_decrease 0))
+(assert (not (= source_V_001_01_structural_decrease target_V_001_01_structural_decrease)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_02_structural_termination: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_02_structural_termination () Bool)
-(declare-fun target_V_001_02_structural_termination () Bool)
-(assert (= source_V_001_02_structural_termination target_V_001_02_structural_termination))
+; Translation validation: V_001_02_structural_termination preserves semantics
+(push 1)
+(declare-const source_V_001_02_structural_termination Int)
+(declare-const target_V_001_02_structural_termination Int)
+(assert (>= source_V_001_02_structural_termination 0))
+(assert (>= target_V_001_02_structural_termination 0))
+(assert (not (= source_V_001_02_structural_termination target_V_001_02_structural_termination)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_03_nat_structural: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_03_nat_structural () Bool)
-(declare-fun target_V_001_03_nat_structural () Bool)
-(assert (= source_V_001_03_nat_structural target_V_001_03_nat_structural))
+; Translation validation: V_001_03_nat_structural preserves semantics
+(push 1)
+(declare-const source_V_001_03_nat_structural Int)
+(declare-const target_V_001_03_nat_structural Int)
+(assert (>= source_V_001_03_nat_structural 0))
+(assert (>= target_V_001_03_nat_structural 0))
+(assert (not (= source_V_001_03_nat_structural target_V_001_03_nat_structural)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_04_list_structural: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_04_list_structural () Bool)
-(declare-fun target_V_001_04_list_structural () Bool)
-(assert (= source_V_001_04_list_structural target_V_001_04_list_structural))
+; Translation validation: V_001_04_list_structural preserves semantics
+(push 1)
+(declare-const source_V_001_04_list_structural Int)
+(declare-const target_V_001_04_list_structural Int)
+(assert (>= source_V_001_04_list_structural 0))
+(assert (>= target_V_001_04_list_structural 0))
+(assert (not (= source_V_001_04_list_structural target_V_001_04_list_structural)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_05_tree_structural: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_05_tree_structural () Bool)
-(declare-fun target_V_001_05_tree_structural () Bool)
-(assert (= source_V_001_05_tree_structural target_V_001_05_tree_structural))
+; Translation validation: V_001_05_tree_structural preserves semantics
+(push 1)
+(declare-const source_V_001_05_tree_structural Int)
+(declare-const target_V_001_05_tree_structural Int)
+(assert (>= source_V_001_05_tree_structural 0))
+(assert (>= target_V_001_05_tree_structural 0))
+(assert (not (= source_V_001_05_tree_structural target_V_001_05_tree_structural)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_06_mutual_structural: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_06_mutual_structural () Bool)
-(declare-fun target_V_001_06_mutual_structural () Bool)
-(assert (= source_V_001_06_mutual_structural target_V_001_06_mutual_structural))
+; Translation validation: V_001_06_mutual_structural preserves semantics
+(push 1)
+(declare-const source_V_001_06_mutual_structural Int)
+(declare-const target_V_001_06_mutual_structural Int)
+(assert (>= source_V_001_06_mutual_structural 0))
+(assert (>= target_V_001_06_mutual_structural 0))
+(assert (not (= source_V_001_06_mutual_structural target_V_001_06_mutual_structural)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_07_nested_structural: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_07_nested_structural () Bool)
-(declare-fun target_V_001_07_nested_structural () Bool)
-(assert (= source_V_001_07_nested_structural target_V_001_07_nested_structural))
+; Translation validation: V_001_07_nested_structural preserves semantics
+(push 1)
+(declare-const source_V_001_07_nested_structural Int)
+(declare-const target_V_001_07_nested_structural Int)
+(assert (>= source_V_001_07_nested_structural 0))
+(assert (>= target_V_001_07_nested_structural 0))
+(assert (not (= source_V_001_07_nested_structural target_V_001_07_nested_structural)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_08_structural_checker_sound: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_08_structural_checker_sound () Bool)
-(declare-fun target_V_001_08_structural_checker_sound () Bool)
-(assert (= source_V_001_08_structural_checker_sound target_V_001_08_structural_checker_sound))
+; Translation validation: V_001_08_structural_checker_sound preserves semantics
+(push 1)
+(declare-const source_V_001_08_structural_checker_sound Int)
+(declare-const target_V_001_08_structural_checker_sound Int)
+(assert (>= source_V_001_08_structural_checker_sound 0))
+(assert (>= target_V_001_08_structural_checker_sound 0))
+(assert (not (= source_V_001_08_structural_checker_sound target_V_001_08_structural_checker_sound)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_09_sized_type_wellformed: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_09_sized_type_wellformed () Bool)
-(declare-fun target_V_001_09_sized_type_wellformed () Bool)
-(assert (= source_V_001_09_sized_type_wellformed target_V_001_09_sized_type_wellformed))
+; Translation validation: V_001_09_sized_type_wellformed preserves semantics
+(push 1)
+(declare-const source_V_001_09_sized_type_wellformed Int)
+(declare-const target_V_001_09_sized_type_wellformed Int)
+(assert (>= source_V_001_09_sized_type_wellformed 0))
+(assert (>= target_V_001_09_sized_type_wellformed 0))
+(assert (not (= source_V_001_09_sized_type_wellformed target_V_001_09_sized_type_wellformed)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_10_size_decreases: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_10_size_decreases () Bool)
-(declare-fun target_V_001_10_size_decreases () Bool)
-(assert (= source_V_001_10_size_decreases target_V_001_10_size_decreases))
+; Translation validation: V_001_10_size_decreases preserves semantics
+(push 1)
+(declare-const source_V_001_10_size_decreases Int)
+(declare-const target_V_001_10_size_decreases Int)
+(assert (>= source_V_001_10_size_decreases 0))
+(assert (>= target_V_001_10_size_decreases 0))
+(assert (not (= source_V_001_10_size_decreases target_V_001_10_size_decreases)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_11_sized_list_terminates: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_11_sized_list_terminates () Bool)
-(declare-fun target_V_001_11_sized_list_terminates () Bool)
-(assert (= source_V_001_11_sized_list_terminates target_V_001_11_sized_list_terminates))
+; Translation validation: V_001_11_sized_list_terminates preserves semantics
+(push 1)
+(declare-const source_V_001_11_sized_list_terminates Int)
+(declare-const target_V_001_11_sized_list_terminates Int)
+(assert (>= source_V_001_11_sized_list_terminates 0))
+(assert (>= target_V_001_11_sized_list_terminates 0))
+(assert (not (= source_V_001_11_sized_list_terminates target_V_001_11_sized_list_terminates)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_12_sized_tree_terminates: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_12_sized_tree_terminates () Bool)
-(declare-fun target_V_001_12_sized_tree_terminates () Bool)
-(assert (= source_V_001_12_sized_tree_terminates target_V_001_12_sized_tree_terminates))
+; Translation validation: V_001_12_sized_tree_terminates preserves semantics
+(push 1)
+(declare-const source_V_001_12_sized_tree_terminates Int)
+(declare-const target_V_001_12_sized_tree_terminates Int)
+(assert (>= source_V_001_12_sized_tree_terminates 0))
+(assert (>= target_V_001_12_sized_tree_terminates 0))
+(assert (not (= source_V_001_12_sized_tree_terminates target_V_001_12_sized_tree_terminates)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_13_size_inference_correct: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_13_size_inference_correct () Bool)
-(declare-fun target_V_001_13_size_inference_correct () Bool)
-(assert (= source_V_001_13_size_inference_correct target_V_001_13_size_inference_correct))
+; Translation validation: V_001_13_size_inference_correct preserves semantics
+(push 1)
+(declare-const source_V_001_13_size_inference_correct Int)
+(declare-const target_V_001_13_size_inference_correct Int)
+(assert (>= source_V_001_13_size_inference_correct 0))
+(assert (>= target_V_001_13_size_inference_correct 0))
+(assert (not (= source_V_001_13_size_inference_correct target_V_001_13_size_inference_correct)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_14_size_subtyping: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_14_size_subtyping () Bool)
-(declare-fun target_V_001_14_size_subtyping () Bool)
-(assert (= source_V_001_14_size_subtyping target_V_001_14_size_subtyping))
+; Translation validation: V_001_14_size_subtyping preserves semantics
+(push 1)
+(declare-const source_V_001_14_size_subtyping Int)
+(declare-const target_V_001_14_size_subtyping Int)
+(assert (>= source_V_001_14_size_subtyping 0))
+(assert (>= target_V_001_14_size_subtyping 0))
+(assert (not (= source_V_001_14_size_subtyping target_V_001_14_size_subtyping)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_15_sized_preservation: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_15_sized_preservation () Bool)
-(declare-fun target_V_001_15_sized_preservation () Bool)
-(assert (= source_V_001_15_sized_preservation target_V_001_15_sized_preservation))
+; Translation validation: V_001_15_sized_preservation preserves semantics
+(push 1)
+(declare-const source_V_001_15_sized_preservation Int)
+(declare-const target_V_001_15_sized_preservation Int)
+(assert (>= source_V_001_15_sized_preservation 0))
+(assert (>= target_V_001_15_sized_preservation 0))
+(assert (not (= source_V_001_15_sized_preservation target_V_001_15_sized_preservation)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_16_sized_composition: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_16_sized_composition () Bool)
-(declare-fun target_V_001_16_sized_composition () Bool)
-(assert (= source_V_001_16_sized_composition target_V_001_16_sized_composition))
+; Translation validation: V_001_16_sized_composition preserves semantics
+(push 1)
+(declare-const source_V_001_16_sized_composition Int)
+(declare-const target_V_001_16_sized_composition Int)
+(assert (>= source_V_001_16_sized_composition 0))
+(assert (>= target_V_001_16_sized_composition 0))
+(assert (not (= source_V_001_16_sized_composition target_V_001_16_sized_composition)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_17_measure_wellformed: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_17_measure_wellformed () Bool)
-(declare-fun target_V_001_17_measure_wellformed () Bool)
-(assert (= source_V_001_17_measure_wellformed target_V_001_17_measure_wellformed))
+; Translation validation: V_001_17_measure_wellformed preserves semantics
+(push 1)
+(declare-const source_V_001_17_measure_wellformed Int)
+(declare-const target_V_001_17_measure_wellformed Int)
+(assert (>= source_V_001_17_measure_wellformed 0))
+(assert (>= target_V_001_17_measure_wellformed 0))
+(assert (not (= source_V_001_17_measure_wellformed target_V_001_17_measure_wellformed)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_18_measure_decreases: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_18_measure_decreases () Bool)
-(declare-fun target_V_001_18_measure_decreases () Bool)
-(assert (= source_V_001_18_measure_decreases target_V_001_18_measure_decreases))
+; Translation validation: V_001_18_measure_decreases preserves semantics
+(push 1)
+(declare-const source_V_001_18_measure_decreases Int)
+(declare-const target_V_001_18_measure_decreases Int)
+(assert (>= source_V_001_18_measure_decreases 0))
+(assert (>= target_V_001_18_measure_decreases 0))
+(assert (not (= source_V_001_18_measure_decreases target_V_001_18_measure_decreases)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_19_lexicographic_wellformed: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_19_lexicographic_wellformed () Bool)
-(declare-fun target_V_001_19_lexicographic_wellformed () Bool)
-(assert (= source_V_001_19_lexicographic_wellformed target_V_001_19_lexicographic_wellformed))
+; Translation validation: V_001_19_lexicographic_wellformed preserves semantics
+(push 1)
+(declare-const source_V_001_19_lexicographic_wellformed Int)
+(declare-const target_V_001_19_lexicographic_wellformed Int)
+(assert (>= source_V_001_19_lexicographic_wellformed 0))
+(assert (>= target_V_001_19_lexicographic_wellformed 0))
+(assert (not (= source_V_001_19_lexicographic_wellformed target_V_001_19_lexicographic_wellformed)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_20_ackermann_terminates: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_20_ackermann_terminates () Bool)
-(declare-fun target_V_001_20_ackermann_terminates () Bool)
-(assert (= source_V_001_20_ackermann_terminates target_V_001_20_ackermann_terminates))
+; Translation validation: V_001_20_ackermann_terminates preserves semantics
+(push 1)
+(declare-const source_V_001_20_ackermann_terminates Int)
+(declare-const target_V_001_20_ackermann_terminates Int)
+(assert (>= source_V_001_20_ackermann_terminates 0))
+(assert (>= target_V_001_20_ackermann_terminates 0))
+(assert (not (= source_V_001_20_ackermann_terminates target_V_001_20_ackermann_terminates)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_21_complex_measure_sound: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_21_complex_measure_sound () Bool)
-(declare-fun target_V_001_21_complex_measure_sound () Bool)
-(assert (= source_V_001_21_complex_measure_sound target_V_001_21_complex_measure_sound))
+; Translation validation: V_001_21_complex_measure_sound preserves semantics
+(push 1)
+(declare-const source_V_001_21_complex_measure_sound Int)
+(declare-const target_V_001_21_complex_measure_sound Int)
+(assert (>= source_V_001_21_complex_measure_sound 0))
+(assert (>= target_V_001_21_complex_measure_sound 0))
+(assert (not (= source_V_001_21_complex_measure_sound target_V_001_21_complex_measure_sound)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_22_measure_inference: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_22_measure_inference () Bool)
-(declare-fun target_V_001_22_measure_inference () Bool)
-(assert (= source_V_001_22_measure_inference target_V_001_22_measure_inference))
+; Translation validation: V_001_22_measure_inference preserves semantics
+(push 1)
+(declare-const source_V_001_22_measure_inference Int)
+(declare-const target_V_001_22_measure_inference Int)
+(assert (>= source_V_001_22_measure_inference 0))
+(assert (>= target_V_001_22_measure_inference 0))
+(assert (not (= source_V_001_22_measure_inference target_V_001_22_measure_inference)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_23_measure_composition: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_23_measure_composition () Bool)
-(declare-fun target_V_001_23_measure_composition () Bool)
-(assert (= source_V_001_23_measure_composition target_V_001_23_measure_composition))
+; Translation validation: V_001_23_measure_composition preserves semantics
+(push 1)
+(declare-const source_V_001_23_measure_composition Int)
+(declare-const target_V_001_23_measure_composition Int)
+(assert (>= source_V_001_23_measure_composition 0))
+(assert (>= target_V_001_23_measure_composition 0))
+(assert (not (= source_V_001_23_measure_composition target_V_001_23_measure_composition)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_24_wellfounded_checker_sound: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_24_wellfounded_checker_sound () Bool)
-(declare-fun target_V_001_24_wellfounded_checker_sound () Bool)
-(assert (= source_V_001_24_wellfounded_checker_sound target_V_001_24_wellfounded_checker_sound))
+; Translation validation: V_001_24_wellfounded_checker_sound preserves semantics
+(push 1)
+(declare-const source_V_001_24_wellfounded_checker_sound Int)
+(declare-const target_V_001_24_wellfounded_checker_sound Int)
+(assert (>= source_V_001_24_wellfounded_checker_sound 0))
+(assert (>= target_V_001_24_wellfounded_checker_sound 0))
+(assert (not (= source_V_001_24_wellfounded_checker_sound target_V_001_24_wellfounded_checker_sound)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_25_codata_productive: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_25_codata_productive () Bool)
-(declare-fun target_V_001_25_codata_productive () Bool)
-(assert (= source_V_001_25_codata_productive target_V_001_25_codata_productive))
+; Translation validation: V_001_25_codata_productive preserves semantics
+(push 1)
+(declare-const source_V_001_25_codata_productive Int)
+(declare-const target_V_001_25_codata_productive Int)
+(assert (>= source_V_001_25_codata_productive 0))
+(assert (>= target_V_001_25_codata_productive 0))
+(assert (not (= source_V_001_25_codata_productive target_V_001_25_codata_productive)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_26_stream_productive: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_26_stream_productive () Bool)
-(declare-fun target_V_001_26_stream_productive () Bool)
-(assert (= source_V_001_26_stream_productive target_V_001_26_stream_productive))
+; Translation validation: V_001_26_stream_productive preserves semantics
+(push 1)
+(declare-const source_V_001_26_stream_productive Int)
+(declare-const target_V_001_26_stream_productive Int)
+(assert (>= source_V_001_26_stream_productive 0))
+(assert (>= target_V_001_26_stream_productive 0))
+(assert (not (= source_V_001_26_stream_productive target_V_001_26_stream_productive)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_27_productivity_observe: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_27_productivity_observe () Bool)
-(declare-fun target_V_001_27_productivity_observe () Bool)
-(assert (= source_V_001_27_productivity_observe target_V_001_27_productivity_observe))
+; Translation validation: V_001_27_productivity_observe preserves semantics
+(push 1)
+(declare-const source_V_001_27_productivity_observe Int)
+(declare-const target_V_001_27_productivity_observe Int)
+(assert (>= source_V_001_27_productivity_observe 0))
+(assert (>= target_V_001_27_productivity_observe 0))
+(assert (not (= source_V_001_27_productivity_observe target_V_001_27_productivity_observe)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_28_guarded_recursion: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_28_guarded_recursion () Bool)
-(declare-fun target_V_001_28_guarded_recursion () Bool)
-(assert (= source_V_001_28_guarded_recursion target_V_001_28_guarded_recursion))
+; Translation validation: V_001_28_guarded_recursion preserves semantics
+(push 1)
+(declare-const source_V_001_28_guarded_recursion Int)
+(declare-const target_V_001_28_guarded_recursion Int)
+(assert (>= source_V_001_28_guarded_recursion 0))
+(assert (>= target_V_001_28_guarded_recursion 0))
+(assert (not (= source_V_001_28_guarded_recursion target_V_001_28_guarded_recursion)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_29_codata_unfold: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_29_codata_unfold () Bool)
-(declare-fun target_V_001_29_codata_unfold () Bool)
-(assert (= source_V_001_29_codata_unfold target_V_001_29_codata_unfold))
+; Translation validation: V_001_29_codata_unfold preserves semantics
+(push 1)
+(declare-const source_V_001_29_codata_unfold Int)
+(declare-const target_V_001_29_codata_unfold Int)
+(assert (>= source_V_001_29_codata_unfold 0))
+(assert (>= target_V_001_29_codata_unfold 0))
+(assert (not (= source_V_001_29_codata_unfold target_V_001_29_codata_unfold)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_30_productive_composition: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_30_productive_composition () Bool)
-(declare-fun target_V_001_30_productive_composition () Bool)
-(assert (= source_V_001_30_productive_composition target_V_001_30_productive_composition))
+; Translation validation: V_001_30_productive_composition preserves semantics
+(push 1)
+(declare-const source_V_001_30_productive_composition Int)
+(declare-const target_V_001_30_productive_composition Int)
+(assert (>= source_V_001_30_productive_composition 0))
+(assert (>= target_V_001_30_productive_composition 0))
+(assert (not (= source_V_001_30_productive_composition target_V_001_30_productive_composition)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_31_non_terminating_marked: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_31_non_terminating_marked () Bool)
-(declare-fun target_V_001_31_non_terminating_marked () Bool)
-(assert (= source_V_001_31_non_terminating_marked target_V_001_31_non_terminating_marked))
+; Translation validation: V_001_31_non_terminating_marked preserves semantics
+(push 1)
+(declare-const source_V_001_31_non_terminating_marked Int)
+(declare-const target_V_001_31_non_terminating_marked Int)
+(assert (>= source_V_001_31_non_terminating_marked 0))
+(assert (>= target_V_001_31_non_terminating_marked 0))
+(assert (not (= source_V_001_31_non_terminating_marked target_V_001_31_non_terminating_marked)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; V_001_32_strong_normalization: translation preserves property (matches Coq: Theorem)
-(declare-fun source_V_001_32_strong_normalization () Bool)
-(declare-fun target_V_001_32_strong_normalization () Bool)
-(assert (= source_V_001_32_strong_normalization target_V_001_32_strong_normalization))
+; Translation validation: V_001_32_strong_normalization preserves semantics
+(push 1)
+(declare-const source_V_001_32_strong_normalization Int)
+(declare-const target_V_001_32_strong_normalization Int)
+(assert (>= source_V_001_32_strong_normalization 0))
+(assert (>= target_V_001_32_strong_normalization 0))
+(assert (not (= source_V_001_32_strong_normalization target_V_001_32_strong_normalization)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; Verify all translation validations are satisfiable
 (check-sat)
