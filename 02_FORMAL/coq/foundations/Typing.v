@@ -181,11 +181,13 @@ Inductive has_type : type_env -> store_ty -> security_level ->
 
   | T_Deref : forall Γ Σ Δ e T l ε,
       has_type Γ Σ Δ e (TRef T l) ε ->
+      sec_leq_dec l Δ = true ->
       has_type Γ Σ Δ (EDeref e) T (effect_join ε EffectRead)
 
   | T_Assign : forall Γ Σ Δ e1 e2 T l ε1 ε2,
       has_type Γ Σ Δ e1 (TRef T l) ε1 ->
       has_type Γ Σ Δ e2 T ε2 ->
+      sec_leq_dec Δ l = true ->
       has_type Γ Σ Δ (EAssign e1 e2) TUnit (effect_join ε1 (effect_join ε2 EffectWrite))
 
   (* Security *)
@@ -264,8 +266,8 @@ Proof.
     | G S D eff e T ε Ht IHt
     | G S D e x h T1 T2 ε1 ε2 Ht1 IHt1 Ht2 IHt2
     | G S D e T l ε Ht IHt
-    | G S D e T l ε Ht IHt
-    | G S D e1 e2 T l ε1 ε2 Ht1 IHt1 Ht2 IHt2
+    | G S D e T l ε Ht IHt Hread
+    | G S D e1 e2 T l ε1 ε2 Ht1 IHt1 Ht2 IHt2 Hwrite
     | G S D e T ε Ht IHt
     | G S D e1 e2 T ε1 ε2 Ht1 IHt1 Ht2 IHt2 Hok
     | G S D e T ε Ht IHt
@@ -413,16 +415,11 @@ Proof.
       ];
     subst; split; reflexivity.
   - (* T_Deref *)
-    first
-      [ specialize (IHt _ _ H4) as [HT Heps]
-      | specialize (IHt _ _ H5) as [HT Heps]
-      | specialize (IHt _ _ H6) as [HT Heps]
-      | specialize (IHt _ _ H7) as [HT Heps]
-      | specialize (IHt _ _ H8) as [HT Heps]
-      | specialize (IHt _ _ H9) as [HT Heps]
-      | specialize (IHt _ _ H10) as [HT Heps]
-      ];
-    inversion HT; subst; split; reflexivity.
+    match goal with
+    | Ht' : has_type _ _ _ _ (TRef _ _) _ |- _ =>
+        specialize (IHt _ _ Ht') as [HT Heps];
+        inversion HT; subst; split; reflexivity
+    end.
   - (* T_Assign *)
     match goal with
     | Ht1' : has_type _ _ _ _ _ _,

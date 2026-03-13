@@ -185,12 +185,13 @@ Lemma inversion_deref : forall Γ Σ Δ e T ε,
   has_type Γ Σ Δ (EDeref e) T ε ->
   exists l ε',
     has_type Γ Σ Δ e (TRef T l) ε' /\
+    sec_leq_dec l Δ = true /\
     ε = effect_join ε' EffectRead.
 Proof.
   intros Γ Σ Δ e T ε Hty.
   inversion Hty; subst.
   eexists. eexists.
-  split; eauto.
+  split; [| split]; eauto.
 Qed.
 
 (** Assign inversion *)
@@ -199,13 +200,14 @@ Lemma inversion_assign : forall Γ Σ Δ e1 e2 T ε,
   exists T' l ε1 ε2,
     has_type Γ Σ Δ e1 (TRef T' l) ε1 /\
     has_type Γ Σ Δ e2 T' ε2 /\
+    sec_leq_dec Δ l = true /\
     T = TUnit /\
     ε = effect_join ε1 (effect_join ε2 EffectWrite).
 Proof.
   intros Γ Σ Δ e1 e2 T ε Hty.
   inversion Hty; subst.
   eexists. eexists. eexists. eexists.
-  split; [| split; [| split]]; eauto.
+  split; [| split; [| split; [| split]]]; eauto.
 Qed.
 
 (** Perform inversion *)
