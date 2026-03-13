@@ -1,16 +1,16 @@
 {
-  "generated": "2026-03-13T10:02:22Z",
-  "generatedHuman": "March 13, 2026 at 10:02 UTC",
+  "generated": "2026-03-13T13:41:09Z",
+  "generatedHuman": "March 13, 2026 at 13:41 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "99dea846",
+    "commit": "82713a63",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 9172,
+    "qedActive": 9171,
     "qedDeprecated": 758,
-    "qedTotal": 9930,
+    "qedTotal": 9929,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
@@ -57,29 +57,29 @@
   },
   "tlaplus": {
     "theorems": 5,
-    "theoremsRaw": 8668,
+    "theoremsRaw": 8678,
     "compiledTheorems": 5,
     "smokeBuildOk": true,
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
     "quarantined": true,
-    "files": 265,
+    "files": 267,
     "prover": "TLA+"
   },
   "alloy": {
     "assertions": 6,
-    "assertionsRaw": 8415,
+    "assertionsRaw": 8434,
     "compiledAssertions": 6,
     "smokeBuildOk": true,
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
     "quarantined": true,
-    "files": 258,
+    "files": 260,
     "prover": "Alloy 6"
   },
   "smt": {
     "assertions": 0,
-    "assertionsRaw": 8720,
+    "assertionsRaw": 8786,
     "quarantined": true,
-    "files": 265,
+    "files": 267,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
@@ -91,21 +91,21 @@
   },
   "kani": {
     "harnesses": 0,
-    "harnessesRaw": 2998,
+    "harnessesRaw": 3019,
     "quarantined": true,
-    "files": 259,
+    "files": 261,
     "prover": "Kani"
   },
   "tv": {
     "validations": 0,
-    "validationsRaw": 12691,
+    "validationsRaw": 12725,
     "quarantined": true,
-    "files": 264,
+    "files": 266,
     "prover": "Translation Validation"
   },
   "multiProver": {
     "tripleProverTheorems": 0,
-    "totalProofsAllProvers": 13086,
+    "totalProofsAllProvers": 13085,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -124,9 +124,9 @@
     "tvStatus": "generated",
     "runtimeProofStatus": "generated",
     "nonCoqMechanization": {
-      "reportFresh": true,
+      "reportFresh": false,
       "overallMechanized": false,
-      "source": "strict_report",
+      "source": "cached_metrics",
       "pending": {
         "lean": "none",
         "isabelle": "partial RIINA_CORE smoke build verified; full RIINA+RIINA_Domains build still pending",
@@ -150,7 +150,7 @@
       }
     },
     "coqTiers": {
-      "core": 1622,
+      "core": 1621,
       "domain": 7550,
       "domainTrivial": 859
     }

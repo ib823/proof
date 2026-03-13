@@ -768,7 +768,7 @@ fn parse_alloy_command_rows(output: &str) -> Vec<(usize, String)> {
 }
 
 fn parse_alloy_exec_status(output: &str) -> Option<String> {
-    let normalized = output.replace('\u{0008}', " ").replace('\r', " ");
+    let normalized = output.replace(['\u{0008}', '\r'], " ");
     normalized
         .lines()
         .filter_map(|line| {
@@ -781,7 +781,7 @@ fn parse_alloy_exec_status(output: &str) -> Option<String> {
             }
             trimmed.split_whitespace().last().map(str::to_string)
         })
-        .last()
+        .next_back()
 }
 
 /// Count `(assert ` occurrences in `.smt2` files (excluding `.tv.smt2`).
@@ -1796,7 +1796,7 @@ fn newest_mtime(dir: &Path, ext: &str) -> Option<SystemTime> {
                 } else if path.extension().and_then(|e| e.to_str()) == Some(ext) {
                     if let Ok(meta) = fs::metadata(&path) {
                         if let Ok(mt) = meta.modified() {
-                            if best.map_or(true, |b| mt > b) {
+                            if best.is_none_or(|b| mt > b) {
                                 *best = Some(mt);
                             }
                         }
@@ -2186,7 +2186,7 @@ fn compile_fstar(fstar_dir: &Path) -> CheckResult {
     let result = match detect_fstar() {
         ToolStatus::Found(fstar_path) => {
             eprintln!("  fstar found: {}", fstar_path.display());
-            let args = vec![
+            let args = [
                 "--cache_checked_modules".to_string(),
                 "--cache_dir".to_string(),
                 cache_dir.to_string_lossy().into_owned(),
@@ -2293,7 +2293,7 @@ fn compile_tlaplus(tlaplus_dir: &Path) -> CheckResult {
             ));
             let _ = fs::create_dir_all(&meta_dir);
 
-            let sany_args = vec![
+            let sany_args = [
                 "-cp".to_string(),
                 tla2tools_jar.to_string_lossy().into_owned(),
                 "tla2sany.SANY".to_string(),
@@ -2460,7 +2460,7 @@ fn compile_alloy(alloy_dir: &Path) -> CheckResult {
                 .and_then(|p| p.parent())
                 .unwrap_or(alloy_dir);
             let class = "org.alloytools.alloy.core.infra.Alloy";
-            let commands_args = vec![
+            let commands_args = [
                 "-cp".to_string(),
                 alloy_jar.to_string_lossy().into_owned(),
                 class.to_string(),
@@ -2506,7 +2506,7 @@ fn compile_alloy(alloy_dir: &Path) -> CheckResult {
                         ));
                         let _ = fs::create_dir_all(&exec_dir);
                         let idx_str = idx.to_string();
-                        let exec_args = vec![
+                        let exec_args = [
                             "-cp".to_string(),
                             alloy_jar.to_string_lossy().into_owned(),
                             class.to_string(),
