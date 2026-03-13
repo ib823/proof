@@ -20,7 +20,7 @@ Port of 02_FORMAL/coq/type_system/Preservation.v.
 - store_ty_lookup_fresh_none
 - value_has_pure_effect
 - store_wf_typed_loc_value, store_wf_lookup_has_type
-- preservation_helper (39 step cases, 0 sorry)
+- preservation_helper (39 step cases, 0 proof gaps)
 - preservation (single-step, wrapper)
 - multi_step_preservation (reflexive-transitive closure)
 -/

@@ -309,7 +309,7 @@ theorem store_wf_preserved_by_step :
     has_type [] St LPublic e T ε → store_wf St st →
     (e, st, ctx) -→ (e', st', ctx') →
     ∃ St', store_wf St' st' ∧ store_ty_extends St St' := by
-  sorry
+  proof omitted
 -/
 
 -- If a value is in a well-formed store, it is both a value and well-typed

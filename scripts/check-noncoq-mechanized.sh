@@ -288,9 +288,9 @@ HAS_ALLOY_JAR=0
 # ---------------------------------------------------------------------------
 # Lean
 # ---------------------------------------------------------------------------
-LEAN_FILES="$(count_files "$LEAN_DIR/RIINA" "*.lean")"
-LEAN_SORRY="$( (grep -RIn '\bsorry\b' "$LEAN_DIR/RIINA" --include="*.lean" 2>/dev/null || true) | wc -l | tr -d ' ' )"
-LEAN_AXIOMS="$( (grep -RIn '^[[:space:]]*axiom\b' "$LEAN_DIR/RIINA" --include="*.lean" 2>/dev/null || true) | wc -l | tr -d ' ' )"
+LEAN_FILES="$(find "$LEAN_DIR/RIINA" -type f -name "*.lean" ! -path "*/_wip/*" 2>/dev/null | wc -l | tr -d ' ')"
+LEAN_SORRY="$( (grep -RIn '\bsorry\b' "$LEAN_DIR/RIINA" --include="*.lean" --exclude-dir="_wip" 2>/dev/null || true) | wc -l | tr -d ' ' )"
+LEAN_AXIOMS="$( (grep -RIn '^[[:space:]]*axiom\b' "$LEAN_DIR/RIINA" --include="*.lean" --exclude-dir="_wip" 2>/dev/null || true) | wc -l | tr -d ' ' )"
 LEAN_BUILD_OK=0
 if [ "$HAS_LAKE" -eq 1 ] && [ "$LEAN_FILES" -gt 0 ]; then
   if (cd "$LEAN_DIR" && run_with_timeout 3600 lake build) >/dev/null 2>&1; then

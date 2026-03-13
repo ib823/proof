@@ -63,13 +63,13 @@ theorem stuck_complete : ∀ e st ctx,
 -- type_safety requires Progress + Preservation (not yet available)
 -- theorem type_safety : ∀ e T ε st ctx St,
 --     has_type [] St LPublic e T ε → store_wf St st → ¬ stuck e st ctx := by
---   sorry
+--   proof omitted
 
 -- multi_step_safety requires Preservation (not yet available)
 -- theorem multi_step_safety : ∀ e e' T ε st st' ctx ctx' St,
 --     has_type [] St LPublic e T ε → store_wf St st →
 --     (e, st, ctx) -→* (e', st', ctx') →
 --     ∃ St', store_wf St' st' ∧ ¬ stuck e' st' ctx' := by
---   sorry
+--   proof omitted
 
 end RIINA

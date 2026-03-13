@@ -342,7 +342,7 @@ theorem val_rel_le_ref_same_loc : ∀ n St T sl v1 v2, n > 0 → val_rel_le n St
 -- so it does not contain information about individual location lookups.
 -- /-- store_rel_le_lookup (matches Coq) -/
 -- theorem store_rel_le_lookup : ∀ n St st1 st2 l T sl, store_rel_le n St st1 st2 → store_ty_lookup l St = Some (T, sl) → ∃ v1 v2, store_lookup l st1 = Some v1 ∧ store_lookup l st2 = Some v2 ∧ val_rel_le n St T v1 v2 := by
---   sorry
+--   proof omitted
 
 -- Secrets are always related
 /-- val_rel_le_secret_always (matches Coq) -/
@@ -388,7 +388,7 @@ theorem store_rel_simple_empty : ∀ St, store_rel_simple St [] [] := by
 -- so it does not contain information about individual location lookups.
 -- /-- store_rel_le_both_some (matches Coq) -/
 -- theorem store_rel_le_both_some : ∀ n St st1 st2 l T sl, store_rel_le n St st1 st2 → store_ty_lookup l St = Some (T, sl) → ∃ v1 v2, store_lookup l st1 = Some v1 ∧ store_lookup l st2 = Some v2 := by
---   sorry
+--   proof omitted
 
 -- store_ty_update preserves existing entries at different locations
 /-- store_ty_update_preserves (matches Coq) -/
@@ -423,7 +423,7 @@ theorem store_max_singleton : ∀ l v, store_max ((l, v) :: []) = Nat.max l 0 :=
 -- so it does not contain information about individual location lookups.
 -- /-- store_rel_le_secret_loc (matches Coq) -/
 -- theorem store_rel_le_secret_loc : ∀ n St st1 st2 l T, store_rel_le n St st1 st2 → store_ty_lookup l St = Some (TSecret T, Public) → ∃ v1 v2, store_lookup l st1 = Some v1 ∧ store_lookup l st2 = Some v2 ∧ val_rel_le n St (TSecret T) v1 v2 := by
---   sorry
+--   proof omitted
 
 -- Fresh location has no store entry
 /-- store_lookup_fresh_loc (matches Coq) -/

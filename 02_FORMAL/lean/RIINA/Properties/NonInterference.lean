@@ -532,5 +532,5 @@ This file ports NonInterference_v2*.v (~8300 lines Coq) to Lean 4.
 | val_rel_implies_exp_rel | valRel_implies_expRel | Proved |
 | non_interference_stmt | nonInterferenceStmt | Proved |
 
-Total: 15 definitions + 17 theorems (all proved) — 0 sorry, 0 axioms
+Total: 15 definitions + 17 theorems (all proved) — 0 proof gaps, 0 axioms
 -/

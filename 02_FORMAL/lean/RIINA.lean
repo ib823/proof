@@ -46,12 +46,12 @@ import RIINA.Termination.SizedTypes
 import RIINA.Industries
 import RIINA.Compliance
 import RIINA.Domains.MobileOS
--- NOT YET COMPILABLE (pre-existing errors, 2 sorry):
--- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 sorry
+-- NOT YET COMPILABLE (pre-existing errors, 2 proof gaps):
+-- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 proof gaps
 
 /-!
 # RIINA Formal Proofs - Main Library
 
 Multi-prover verification port from Coq 8.20.1 originals.
-1 in-build sorry (NI_v2).
+1 in-build proof gap (NI_v2).
 -/

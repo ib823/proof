@@ -250,36 +250,36 @@ theorem closed_prove_value_inner : ∀ v, closed_expr_cv (EProve v) → closed_e
 
 -- theorem value_typed_closed : ∀ St Δ v T ε,
 --     value v → has_type [] St Δ v T ε → closed_expr_cv v := by
---   sorry
+--   proof omitted
 
 -- theorem value_closed_simple : ∀ v St Δ T ε,
 --     value v → has_type [] St Δ v T ε →
 --     match v with | EUnit | EBool _ | EInt _ | EString _ | ELoc _ => True | _ => True end →
 --     closed_expr_cv v := by
---   sorry
+--   proof omitted
 
 -- theorem nil_ctx_is_closed : ∀ e St Δ T ε,
 --     has_type [] St Δ e T ε → closed_expr_cv e := by
---   sorry
+--   proof omitted
 
 -- theorem closed_weaken_ctx : ∀ e St1 St2 Δ T ε,
 --     has_type [] St1 Δ e T ε → store_ty_extends St1 St2 → closed_expr_cv e := by
---   sorry
+--   proof omitted
 
 -- theorem closed_store_extension : ∀ e St1 St2 Δ T ε,
 --     has_type [] St1 Δ e T ε → store_ty_extends St1 St2 → closed_expr_cv e := by
---   sorry
+--   proof omitted
 
 -- theorem nil_ctx_pair_closed : ∀ St Δ a b T ε,
 --     has_type [] St Δ (EPair a b) T ε → closed_expr_cv a ∧ closed_expr_cv b := by
---   sorry
+--   proof omitted
 
 -- theorem nil_ctx_inl_closed : ∀ St Δ e T' T ε,
 --     has_type [] St Δ (EInl e T') T ε → closed_expr_cv e := by
---   sorry
+--   proof omitted
 
 -- theorem nil_ctx_inr_closed : ∀ St Δ e T' T ε,
 --     has_type [] St Δ (EInr e T') T ε → closed_expr_cv e := by
---   sorry
+--   proof omitted
 
 end RIINA

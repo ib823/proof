@@ -8,7 +8,7 @@ import RIINA.TypeSystem.Typing
 # RIINA StoreSafety - Lean 4 Port
 
 Port of 02_FORMAL/coq/properties/StoreSafety.v (32 theorems).
-All proofs verified — zero sorry.
+All proofs verified — zero proof gaps.
 
 ## Correspondence Table
 

@@ -445,7 +445,9 @@ fn glob_lean_files(dir: &Path) -> Vec<PathBuf> {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.is_dir() {
-                    walk(&path, files);
+                    if path.file_name().and_then(|n| n.to_str()) != Some("_wip") {
+                        walk(&path, files);
+                    }
                 } else if path.extension().and_then(|e| e.to_str()) == Some("lean") {
                     if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
                         if name != "lakefile.lean" {
@@ -3202,7 +3204,7 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
     }
 
     #[test]
-    fn test_glob_lean_files_excludes_lakefile() {
+    fn test_glob_lean_files_excludes_lakefile_and_wip() {
         let lean_dir = PathBuf::from("/workspaces/proof/02_FORMAL/lean");
         if lean_dir.exists() {
             let files = glob_lean_files(&lean_dir);
@@ -3211,6 +3213,10 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
                     f.file_name().and_then(|n| n.to_str()),
                     Some("lakefile.lean"),
                     "lakefile.lean should be excluded"
+                );
+                assert!(
+                    !f.components().any(|c| c.as_os_str() == "_wip"),
+                    "_wip Lean files should be excluded"
                 );
             }
             assert!(!files.is_empty(), "Should find at least one .lean file");

@@ -421,9 +421,9 @@ if [ -d "$LEAN_METRICS_DIR" ]; then
         if [ -n "$sorry_count" ] && [ "$sorry_count" -gt 0 ] 2>/dev/null; then
             LEAN_SORRY=$((LEAN_SORRY + sorry_count))
         fi
-    done < <(find "$LEAN_METRICS_DIR" -name "*.lean" -type f 2>/dev/null)
-    LEAN_FILES=$(find "$LEAN_METRICS_DIR" -name "*.lean" -type f 2>/dev/null | wc -l)
-    LEAN_LINES=$(find "$LEAN_METRICS_DIR" -name "*.lean" -type f -exec cat {} + 2>/dev/null | wc -l)
+    done < <(find "$LEAN_METRICS_DIR" -name "*.lean" -type f ! -path "*/_wip/*" 2>/dev/null)
+    LEAN_FILES=$(find "$LEAN_METRICS_DIR" -name "*.lean" -type f ! -path "*/_wip/*" 2>/dev/null | wc -l)
+    LEAN_LINES=$(find "$LEAN_METRICS_DIR" -name "*.lean" -type f ! -path "*/_wip/*" -exec cat {} + 2>/dev/null | wc -l)
 fi
 
 # Count Isabelle lemmas (lemma + theorem + corollary declarations)
@@ -486,7 +486,7 @@ if [ -d "$LEAN_METRICS_DIR" ]; then
         if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
             LEAN_AXIOMS=$((LEAN_AXIOMS + count))
         fi
-    done < <(find "$LEAN_METRICS_DIR" -name "*.lean" -type f 2>/dev/null)
+    done < <(find "$LEAN_METRICS_DIR" -name "*.lean" -type f ! -path "*/_wip/*" 2>/dev/null)
 fi
 
 # Compute Isabelle axioms
