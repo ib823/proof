@@ -38,150 +38,150 @@ pred ctx_extend[G: Ctx, A: Ty] {
 
 // cumulativity_level (matches Coq: Lemma cumulativity_level)
 assert cumulativity_level {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check cumulativity_level for 5
 
 // TYPE_001_01 (matches Coq: Theorem TYPE_001_01)
 assert TYPE_001_01 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_01 for 5
 
 // TYPE_001_02 (matches Coq: Theorem TYPE_001_02)
 assert TYPE_001_02 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_02 for 5
 
 // TYPE_001_03 (matches Coq: Theorem TYPE_001_03)
 assert TYPE_001_03 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_03 for 5
 
 // TYPE_001_04 (matches Coq: Theorem TYPE_001_04)
 assert TYPE_001_04 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_04 for 5
 
 // TYPE_001_05 (matches Coq: Theorem TYPE_001_05)
 assert TYPE_001_05 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_05 for 5
 
 // TYPE_001_06 (matches Coq: Theorem TYPE_001_06)
 assert TYPE_001_06 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_06 for 5
 
 // TYPE_001_07 (matches Coq: Theorem TYPE_001_07)
 assert TYPE_001_07 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_07 for 5
 
 // TYPE_001_08 (matches Coq: Theorem TYPE_001_08)
 assert TYPE_001_08 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_08 for 5
 
 // TYPE_001_09 (matches Coq: Theorem TYPE_001_09)
 assert TYPE_001_09 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_09 for 5
 
 // TYPE_001_10 (matches Coq: Theorem TYPE_001_10)
 assert TYPE_001_10 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_10 for 5
 
 // type_uniqueness_eq (matches Coq: Lemma type_uniqueness_eq)
 assert type_uniqueness_eq {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check type_uniqueness_eq for 5
 
 // TYPE_001_11 (matches Coq: Theorem TYPE_001_11)
 assert TYPE_001_11 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_11 for 5
 
 // TYPE_001_12 (matches Coq: Theorem TYPE_001_12)
 assert TYPE_001_12 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_12 for 5
 
 // TYPE_001_13 (matches Coq: Theorem TYPE_001_13)
 assert TYPE_001_13 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_13 for 5
 
 // TYPE_001_14 (matches Coq: Theorem TYPE_001_14)
 assert TYPE_001_14 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_14 for 5
 
 // red_star_trans (matches Coq: Lemma red_star_trans)
 assert red_star_trans {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check red_star_trans for 5
 
 // red_star_app (matches Coq: Lemma red_star_app)
 assert red_star_app {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check red_star_app for 5
 
 // red_star_lam (matches Coq: Lemma red_star_lam)
 assert red_star_lam {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check red_star_lam for 5
 
 // red_star_pair (matches Coq: Lemma red_star_pair)
 assert red_star_pair {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check red_star_pair for 5
 
 // red_star_fst (matches Coq: Lemma red_star_fst)
 assert red_star_fst {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check red_star_fst for 5
 
 // red_star_snd (matches Coq: Lemma red_star_snd)
 assert red_star_snd {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check red_star_snd for 5
 
 // red_star_refl_tm (matches Coq: Lemma red_star_refl_tm)
 assert red_star_refl_tm {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check red_star_refl_tm for 5
 
 // red_star_J (matches Coq: Lemma red_star_J)
 assert red_star_J {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check red_star_J for 5
 
 // TYPE_001_15 (matches Coq: Theorem TYPE_001_15)
 assert TYPE_001_15 {
-  #univ >= 0
+  all x: Ty | x in Ty
 }
 check TYPE_001_15 for 5

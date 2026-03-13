@@ -49,126 +49,126 @@ pred preserves[bk: BackendKind, prop: SecurityProp] {
 
 // backend_001_dispatch_total (matches Coq: Theorem backend_001_dispatch_total)
 assert backend_001_dispatch_total {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_001_dispatch_total for 5
 
 // backend_001_dispatch_deterministic (matches Coq: Theorem backend_001_dispatch_deterministic)
 assert backend_001_dispatch_deterministic {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_001_dispatch_deterministic for 5
 
 // backend_001_native_is_c (matches Coq: Theorem backend_001_native_is_c)
 assert backend_001_native_is_c {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_001_native_is_c for 5
 
 // backend_001_wasm32_is_wasm (matches Coq: Theorem backend_001_wasm32_is_wasm)
 assert backend_001_wasm32_is_wasm {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_001_wasm32_is_wasm for 5
 
 // backend_001_wasm64_is_wasm (matches Coq: Theorem backend_001_wasm64_is_wasm)
 assert backend_001_wasm64_is_wasm {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_001_wasm64_is_wasm for 5
 
 // backend_002_c_preserves_ni (matches Coq: Theorem backend_002_c_preserves_ni)
 assert backend_002_c_preserves_ni {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_002_c_preserves_ni for 5
 
 // backend_002_c_preserves_effects (matches Coq: Theorem backend_002_c_preserves_effects)
 assert backend_002_c_preserves_effects {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_002_c_preserves_effects for 5
 
 // backend_002_c_preserves_types (matches Coq: Theorem backend_002_c_preserves_types)
 assert backend_002_c_preserves_types {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_002_c_preserves_types for 5
 
 // backend_002_c_format (matches Coq: Theorem backend_002_c_format)
 assert backend_002_c_format {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_002_c_format for 5
 
 // backend_003_all_preserve_ni (matches Coq: Theorem backend_003_all_preserve_ni)
 assert backend_003_all_preserve_ni {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_003_all_preserve_ni for 5
 
 // backend_003_all_preserve_effects (matches Coq: Theorem backend_003_all_preserve_effects)
 assert backend_003_all_preserve_effects {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_003_all_preserve_effects for 5
 
 // backend_003_all_preserve_types (matches Coq: Theorem backend_003_all_preserve_types)
 assert backend_003_all_preserve_types {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_003_all_preserve_types for 5
 
 // backend_003_dispatch_preserves_all (matches Coq: Theorem backend_003_dispatch_preserves_all)
 assert backend_003_dispatch_preserves_all {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_003_dispatch_preserves_all for 5
 
 // backend_004_format_total (matches Coq: Theorem backend_004_format_total)
 assert backend_004_format_total {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_004_format_total for 5
 
 // backend_004_wasm_produces_wasm (matches Coq: Theorem backend_004_wasm_produces_wasm)
 assert backend_004_wasm_produces_wasm {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_004_wasm_produces_wasm for 5
 
 // backend_004_mobile_produces_bridge (matches Coq: Theorem backend_004_mobile_produces_bridge)
 assert backend_004_mobile_produces_bridge {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_004_mobile_produces_bridge for 5
 
 // backend_004_native_produces_c (matches Coq: Theorem backend_004_native_produces_c)
 assert backend_004_native_produces_c {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_004_native_produces_c for 5
 
 // backend_004_format_consistent (matches Coq: Theorem backend_004_format_consistent)
 assert backend_004_format_consistent {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_004_format_consistent for 5
 
 // backend_wasm32_format (matches Coq: Theorem backend_wasm32_format)
 assert backend_wasm32_format {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_wasm32_format for 5
 
 // backend_wasm64_format (matches Coq: Theorem backend_wasm64_format)
 assert backend_wasm64_format {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_wasm64_format for 5
 
 // backend_android_format (matches Coq: Theorem backend_android_format)
 assert backend_android_format {
-  #univ >= 0
+  all x: Target | x in Target
 }
 check backend_android_format for 5

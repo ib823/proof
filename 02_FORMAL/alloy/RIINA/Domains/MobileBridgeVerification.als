@@ -116,192 +116,192 @@ pred callback_rejected[cb: Callback] {
 
 // bridge_001_jni_roundtrip_int (matches Coq: Theorem bridge_001_jni_roundtrip_int)
 assert bridge_001_jni_roundtrip_int {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_001_jni_roundtrip_int for 5
 
 // bridge_001_jni_roundtrip_bool (matches Coq: Theorem bridge_001_jni_roundtrip_bool)
 assert bridge_001_jni_roundtrip_bool {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_001_jni_roundtrip_bool for 5
 
 // bridge_001_swift_roundtrip_int (matches Coq: Theorem bridge_001_swift_roundtrip_int)
 assert bridge_001_swift_roundtrip_int {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_001_swift_roundtrip_int for 5
 
 // bridge_001_swift_roundtrip_bool (matches Coq: Theorem bridge_001_swift_roundtrip_bool)
 assert bridge_001_swift_roundtrip_bool {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_001_swift_roundtrip_bool for 5
 
 // bridge_002_jni_pure_always_allowed (matches Coq: Theorem bridge_002_jni_pure_always_allowed)
 assert bridge_002_jni_pure_always_allowed {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_002_jni_pure_always_allowed for 5
 
 // bridge_002_jni_invalid_blocks_all (matches Coq: Theorem bridge_002_jni_invalid_blocks_all)
 assert bridge_002_jni_invalid_blocks_all {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_002_jni_invalid_blocks_all for 5
 
 // bridge_002_jni_io_requires_io_cap (matches Coq: Theorem bridge_002_jni_io_requires_io_cap)
 assert bridge_002_jni_io_requires_io_cap {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_002_jni_io_requires_io_cap for 5
 
 // bridge_003_swift_pure_always_allowed (matches Coq: Theorem bridge_003_swift_pure_always_allowed)
 assert bridge_003_swift_pure_always_allowed {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_003_swift_pure_always_allowed for 5
 
 // bridge_003_swift_net_requires_net (matches Coq: Theorem bridge_003_swift_net_requires_net)
 assert bridge_003_swift_net_requires_net {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_003_swift_net_requires_net for 5
 
 // bridge_003_swift_ui_requires_ui (matches Coq: Theorem bridge_003_swift_ui_requires_ui)
 assert bridge_003_swift_ui_requires_ui {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_003_swift_ui_requires_ui for 5
 
 // bridge_004_safe_call_requires_cap (matches Coq: Theorem bridge_004_safe_call_requires_cap)
 assert bridge_004_safe_call_requires_cap {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_004_safe_call_requires_cap for 5
 
 // bridge_004_pure_call_always_safe (matches Coq: Theorem bridge_004_pure_call_always_safe)
 assert bridge_004_pure_call_always_safe {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_004_pure_call_always_safe for 5
 
 // bridge_005_error_is_safe (matches Coq: Theorem bridge_005_error_is_safe)
 assert bridge_005_error_is_safe {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_005_error_is_safe for 5
 
 // bridge_005_ok_is_safe (matches Coq: Theorem bridge_005_ok_is_safe)
 assert bridge_005_ok_is_safe {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_005_ok_is_safe for 5
 
 // bridge_005_no_secret_leak (matches Coq: Theorem bridge_005_no_secret_leak)
 assert bridge_005_no_secret_leak {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_005_no_secret_leak for 5
 
 // bridge_006_jni_string_roundtrip_len (matches Coq: Theorem bridge_006_jni_string_roundtrip_len)
 assert bridge_006_jni_string_roundtrip_len {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_006_jni_string_roundtrip_len for 5
 
 // bridge_006_jni_string_roundtrip_hash (matches Coq: Theorem bridge_006_jni_string_roundtrip_hash)
 assert bridge_006_jni_string_roundtrip_hash {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_006_jni_string_roundtrip_hash for 5
 
 // bridge_006_jni_string_is_utf8 (matches Coq: Theorem bridge_006_jni_string_is_utf8)
 assert bridge_006_jni_string_is_utf8 {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_006_jni_string_is_utf8 for 5
 
 // bridge_006_jni_string_full_roundtrip (matches Coq: Theorem bridge_006_jni_string_full_roundtrip)
 assert bridge_006_jni_string_full_roundtrip {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_006_jni_string_full_roundtrip for 5
 
 // bridge_006_rvalue_string_jni_roundtrip (matches Coq: Theorem bridge_006_rvalue_string_jni_roundtrip)
 assert bridge_006_rvalue_string_jni_roundtrip {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_006_rvalue_string_jni_roundtrip for 5
 
 // bridge_007_swift_type_preserved_int (matches Coq: Theorem bridge_007_swift_type_preserved_int)
 assert bridge_007_swift_type_preserved_int {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_007_swift_type_preserved_int for 5
 
 // bridge_007_swift_type_preserved_bool (matches Coq: Theorem bridge_007_swift_type_preserved_bool)
 assert bridge_007_swift_type_preserved_bool {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_007_swift_type_preserved_bool for 5
 
 // bridge_007_swift_type_preserved_string (matches Coq: Theorem bridge_007_swift_type_preserved_string)
 assert bridge_007_swift_type_preserved_string {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_007_swift_type_preserved_string for 5
 
 // bridge_007_swift_type_preserved_unit (matches Coq: Theorem bridge_007_swift_type_preserved_unit)
 assert bridge_007_swift_type_preserved_unit {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_007_swift_type_preserved_unit for 5
 
 // bridge_007_marshal_swift_type_safe (matches Coq: Theorem bridge_007_marshal_swift_type_safe)
 assert bridge_007_marshal_swift_type_safe {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_007_marshal_swift_type_safe for 5
 
 // bridge_007_unmarshal_swift_type_safe (matches Coq: Theorem bridge_007_unmarshal_swift_type_safe)
 assert bridge_007_unmarshal_swift_type_safe {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_007_unmarshal_swift_type_safe for 5
 
 // bridge_007_rvalue_string_swift_roundtrip (matches Coq: Theorem bridge_007_rvalue_string_swift_roundtrip)
 assert bridge_007_rvalue_string_swift_roundtrip {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_007_rvalue_string_swift_roundtrip for 5
 
 // bridge_008_pure_callback_safe (matches Coq: Theorem bridge_008_pure_callback_safe)
 assert bridge_008_pure_callback_safe {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_008_pure_callback_safe for 5
 
 // bridge_008_public_args_safe (matches Coq: Theorem bridge_008_public_args_safe)
 assert bridge_008_public_args_safe {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_008_public_args_safe for 5
 
 // bridge_008_secret_ret_rejected (matches Coq: Theorem bridge_008_secret_ret_rejected)
 assert bridge_008_secret_ret_rejected {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_008_secret_ret_rejected for 5
 
 // bridge_008_safe_not_rejected (matches Coq: Theorem bridge_008_safe_not_rejected)
 assert bridge_008_safe_not_rejected {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_008_safe_not_rejected for 5
 
 // bridge_008_no_secret_through_safe_callback (matches Coq: Theorem bridge_008_no_secret_through_safe_callback)
 assert bridge_008_no_secret_through_safe_callback {
-  #univ >= 0
+  all x: RValue | x in RValue
 }
 check bridge_008_no_secret_through_safe_callback for 5

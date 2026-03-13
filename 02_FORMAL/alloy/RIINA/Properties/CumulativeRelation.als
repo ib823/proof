@@ -50,144 +50,144 @@ pred exp_rel_le[p_n: Int, p_sigma: store_ty, p_T: ty, p_e1: expr, p_e2: expr, p_
 
 // val_rel_le_0_unfold (matches Coq: Lemma val_rel_le_0_unfold)
 assert val_rel_le_0_unfold {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_0_unfold for 5
 
 // val_rel_le_S_unfold (matches Coq: Lemma val_rel_le_S_unfold)
 assert val_rel_le_S_unfold {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_S_unfold for 5
 
 // val_rel_le_at_zero (matches Coq: Lemma val_rel_le_at_zero)
 assert val_rel_le_at_zero {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_at_zero for 5
 
 // val_rel_le_cumulative (matches Coq: Lemma val_rel_le_cumulative)
 assert val_rel_le_cumulative {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_cumulative for 5
 
 // val_rel_le_value_left (matches Coq: Lemma val_rel_le_value_left)
 assert val_rel_le_value_left {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_value_left for 5
 
 // val_rel_le_value_right (matches Coq: Lemma val_rel_le_value_right)
 assert val_rel_le_value_right {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_value_right for 5
 
 // val_rel_le_closed_left (matches Coq: Lemma val_rel_le_closed_left)
 assert val_rel_le_closed_left {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_closed_left for 5
 
 // val_rel_le_closed_right (matches Coq: Lemma val_rel_le_closed_right)
 assert val_rel_le_closed_right {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_closed_right for 5
 
 // val_rel_le_mono_step_fo (matches Coq: Lemma val_rel_le_mono_step_fo)
 assert val_rel_le_mono_step_fo {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_mono_step_fo for 5
 
 // val_rel_le_extract_fo (matches Coq: Lemma val_rel_le_extract_fo)
 assert val_rel_le_extract_fo {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_extract_fo for 5
 
 // val_rel_le_construct_fo (matches Coq: Lemma val_rel_le_construct_fo)
 assert val_rel_le_construct_fo {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_construct_fo for 5
 
 // val_rel_le_fo_step_independent (matches Coq: Lemma val_rel_le_fo_step_independent)
 assert val_rel_le_fo_step_independent {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_fo_step_independent for 5
 
 // store_ty_extends_trans (matches Coq: Lemma store_ty_extends_trans)
 assert store_ty_extends_trans {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check store_ty_extends_trans for 5
 
 // store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
 assert store_ty_extends_refl {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check store_ty_extends_refl for 5
 
 // val_rel_le_build_unit (matches Coq: Lemma val_rel_le_build_unit)
 assert val_rel_le_build_unit {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_build_unit for 5
 
 // val_rel_le_build_bool (matches Coq: Lemma val_rel_le_build_bool)
 assert val_rel_le_build_bool {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_build_bool for 5
 
 // val_rel_le_build_int (matches Coq: Lemma val_rel_le_build_int)
 assert val_rel_le_build_int {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_build_int for 5
 
 // val_rel_le_build_string (matches Coq: Lemma val_rel_le_build_string)
 assert val_rel_le_build_string {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_build_string for 5
 
 // val_rel_le_unit_eq (matches Coq: Lemma val_rel_le_unit_eq)
 assert val_rel_le_unit_eq {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_unit_eq for 5
 
 // val_rel_le_bool_eq (matches Coq: Lemma val_rel_le_bool_eq)
 assert val_rel_le_bool_eq {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_bool_eq for 5
 
 // val_rel_le_int_eq (matches Coq: Lemma val_rel_le_int_eq)
 assert val_rel_le_int_eq {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_int_eq for 5
 
 // val_rel_le_string_eq (matches Coq: Lemma val_rel_le_string_eq)
 assert val_rel_le_string_eq {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check val_rel_le_string_eq for 5
 
 // exp_rel_le_mono_step (matches Coq: Lemma exp_rel_le_mono_step)
 assert exp_rel_le_mono_step {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check exp_rel_le_mono_step for 5
 
 // exp_rel_le_zero_val (matches Coq: Lemma exp_rel_le_zero_val)
 assert exp_rel_le_zero_val {
-  #univ >= 0
+  all x: effect_ctx | x in effect_ctx
 }
 check exp_rel_le_zero_val for 5

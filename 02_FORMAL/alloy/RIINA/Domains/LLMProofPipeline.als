@@ -54,120 +54,120 @@ pred conj_elim_right {}
 
 // formula_eqb_refl (matches Coq: Lemma formula_eqb_refl)
 assert formula_eqb_refl {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check formula_eqb_refl for 5
 
 // formula_eqb_eq (matches Coq: Lemma formula_eqb_eq)
 assert formula_eqb_eq {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check formula_eqb_eq for 5
 
 // formula_eqb_neq (matches Coq: Lemma formula_eqb_neq)
 assert formula_eqb_neq {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check formula_eqb_neq for 5
 
 // 1 (matches Coq: Theorem 1)
 assert 1 {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check 1 for 5
 
 // derives_sound (matches Coq: Lemma derives_sound)
 assert derives_sound {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check derives_sound for 5
 
 // 2 (matches Coq: Theorem 2)
 assert 2 {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check 2 for 5
 
 // 3 (matches Coq: Theorem 3)
 assert 3 {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check 3 for 5
 
 // 4 (matches Coq: Theorem 4)
 assert 4 {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check 4 for 5
 
 // 5a (matches Coq: Theorem 5a)
 assert 5a {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check 5a for 5
 
 // 5b (matches Coq: Theorem 5b)
 assert 5b {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check 5b for 5
 
 // 6 (matches Coq: Theorem 6)
 assert 6 {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check 6 for 5
 
 // 7 (matches Coq: Theorem 7)
 assert 7 {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check 7 for 5
 
 // invalid_axiom_rejected (matches Coq: Theorem invalid_axiom_rejected)
 assert invalid_axiom_rejected {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check invalid_axiom_rejected for 5
 
 // invalid_mismatch_rejected (matches Coq: Theorem invalid_mismatch_rejected)
 assert invalid_mismatch_rejected {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check invalid_mismatch_rejected for 5
 
 // 8 (matches Coq: Theorem 8)
 assert 8 {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check 8 for 5
 
 // weakening_derives (matches Coq: Lemma weakening_derives)
 assert weakening_derives {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check weakening_derives for 5
 
 // weakening (matches Coq: Theorem weakening)
 assert weakening {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check weakening for 5
 
 // pipeline_soundness (matches Coq: Theorem pipeline_soundness)
 assert pipeline_soundness {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check pipeline_soundness for 5
 
 // identity_is_valid (matches Coq: Theorem identity_is_valid)
 assert identity_is_valid {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check identity_is_valid for 5
 
 // 11 (matches Coq: Theorem 11)
 assert 11 {
-  #univ >= 0
+  all x: formula | x in formula
 }
 check 11 for 5

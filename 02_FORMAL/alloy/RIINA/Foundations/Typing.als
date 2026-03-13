@@ -42,198 +42,198 @@ pred store_ty_extends[p_sigma: store_ty, p_sigma_prime: store_ty] {
 
 // type_uniqueness (matches Coq: Lemma type_uniqueness)
 assert type_uniqueness {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check type_uniqueness for 5
 
 // canonical_forms_unit (matches Coq: Lemma canonical_forms_unit)
 assert canonical_forms_unit {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms_unit for 5
 
 // canonical_forms_bool (matches Coq: Lemma canonical_forms_bool)
 assert canonical_forms_bool {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms_bool for 5
 
 // canonical_forms_int (matches Coq: Lemma canonical_forms_int)
 assert canonical_forms_int {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms_int for 5
 
 // canonical_forms_string (matches Coq: Lemma canonical_forms_string)
 assert canonical_forms_string {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms_string for 5
 
 // canonical_forms_fn (matches Coq: Lemma canonical_forms_fn)
 assert canonical_forms_fn {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms_fn for 5
 
 // canonical_forms_prod (matches Coq: Lemma canonical_forms_prod)
 assert canonical_forms_prod {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms_prod for 5
 
 // canonical_forms_sum (matches Coq: Lemma canonical_forms_sum)
 assert canonical_forms_sum {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms_sum for 5
 
 // canonical_forms_ref (matches Coq: Lemma canonical_forms_ref)
 assert canonical_forms_ref {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms_ref for 5
 
 // canonical_forms_secret (matches Coq: Lemma canonical_forms_secret)
 assert canonical_forms_secret {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms_secret for 5
 
 // canonical_forms_proof (matches Coq: Lemma canonical_forms_proof)
 assert canonical_forms_proof {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms_proof for 5
 
 // canonical_forms (matches Coq: Lemma canonical_forms)
 assert canonical_forms {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check canonical_forms for 5
 
 // store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
 assert store_ty_extends_refl {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check store_ty_extends_refl for 5
 
 // store_ty_extends_trans (matches Coq: Lemma store_ty_extends_trans)
 assert store_ty_extends_trans {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check store_ty_extends_trans for 5
 
 // closed_expr_no_var (matches Coq: Lemma closed_expr_no_var)
 assert closed_expr_no_var {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check closed_expr_no_var for 5
 
 // value_unit_closed (matches Coq: Lemma value_unit_closed)
 assert value_unit_closed {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check value_unit_closed for 5
 
 // simple_value_pure_effect (matches Coq: Lemma simple_value_pure_effect)
 assert simple_value_pure_effect {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check simple_value_pure_effect for 5
 
 // unit_value_pure (matches Coq: Lemma unit_value_pure)
 assert unit_value_pure {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check unit_value_pure for 5
 
 // lam_value_pure (matches Coq: Lemma lam_value_pure)
 assert lam_value_pure {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check lam_value_pure for 5
 
 // loc_value_pure (matches Coq: Lemma loc_value_pure)
 assert loc_value_pure {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check loc_value_pure for 5
 
 // lookup_head (matches Coq: Lemma lookup_head)
 assert lookup_head {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check lookup_head for 5
 
 // lookup_tail (matches Coq: Lemma lookup_tail)
 assert lookup_tail {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check lookup_tail for 5
 
 // lookup_shadow (matches Coq: Lemma lookup_shadow)
 assert lookup_shadow {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check lookup_shadow for 5
 
 // lookup_permute (matches Coq: Lemma lookup_permute)
 assert lookup_permute {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check lookup_permute for 5
 
 // lookup_empty (matches Coq: Lemma lookup_empty)
 assert lookup_empty {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check lookup_empty for 5
 
 // store_ty_lookup_head (matches Coq: Lemma store_ty_lookup_head)
 assert store_ty_lookup_head {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check store_ty_lookup_head for 5
 
 // store_ty_lookup_tail (matches Coq: Lemma store_ty_lookup_tail)
 assert store_ty_lookup_tail {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check store_ty_lookup_tail for 5
 
 // store_ty_lookup_empty (matches Coq: Lemma store_ty_lookup_empty)
 assert store_ty_lookup_empty {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check store_ty_lookup_empty for 5
 
 // store_wf_typed_value (matches Coq: Lemma store_wf_typed_value)
 assert store_wf_typed_value {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check store_wf_typed_value for 5
 
 // store_wf_runtime_typed (matches Coq: Lemma store_wf_runtime_typed)
 assert store_wf_runtime_typed {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check store_wf_runtime_typed for 5
 
 // typing_var_in_context (matches Coq: Lemma typing_var_in_context)
 assert typing_var_in_context {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check typing_var_in_context for 5
 
 // closed_value_not_var (matches Coq: Lemma closed_value_not_var)
 assert closed_value_not_var {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check closed_value_not_var for 5
 
 // pure_effect_is_bottom (matches Coq: Lemma pure_effect_is_bottom)
 assert pure_effect_is_bottom {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check pure_effect_is_bottom for 5

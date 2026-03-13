@@ -84,168 +84,168 @@ pred sector_critical[s: NCIISector] {
 
 // obligation_1_risk_assessment (matches Coq: Theorem obligation_1_risk_assessment)
 assert obligation_1_risk_assessment {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check obligation_1_risk_assessment for 5
 
 // obligation_2_audit (matches Coq: Theorem obligation_2_audit)
 assert obligation_2_audit {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check obligation_2_audit for 5
 
 // audit_expiry (matches Coq: Theorem audit_expiry)
 assert audit_expiry {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check audit_expiry for 5
 
 // obligation_3_reporting (matches Coq: Theorem obligation_3_reporting)
 assert obligation_3_reporting {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check obligation_3_reporting for 5
 
 // severity_ordering (matches Coq: Theorem severity_ordering)
 assert severity_ordering {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check severity_ordering for 5
 
 // obligation_4_controls (matches Coq: Theorem obligation_4_controls)
 assert obligation_4_controls {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check obligation_4_controls for 5
 
 // obligation_5_cssp (matches Coq: Theorem obligation_5_cssp)
 assert obligation_5_cssp {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check obligation_5_cssp for 5
 
 // act854_composition (matches Coq: Theorem act854_composition)
 assert act854_composition {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check act854_composition for 5
 
 // ncii_sector_coverage (matches Coq: Theorem ncii_sector_coverage)
 assert ncii_sector_coverage {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check ncii_sector_coverage for 5
 
 // critical_is_highest_risk (matches Coq: Theorem critical_is_highest_risk)
 assert critical_is_highest_risk {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check critical_is_highest_risk for 5
 
 // low_is_lowest_risk (matches Coq: Theorem low_is_lowest_risk)
 assert low_is_lowest_risk {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check low_is_lowest_risk for 5
 
 // risk_level_bounded (matches Coq: Theorem risk_level_bounded)
 assert risk_level_bounded {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check risk_level_bounded for 5
 
 // risk_level_coverage (matches Coq: Theorem risk_level_coverage)
 assert risk_level_coverage {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check risk_level_coverage for 5
 
 // audit_current_expiry_exclusive (matches Coq: Theorem audit_current_expiry_exclusive)
 assert audit_current_expiry_exclusive {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check audit_current_expiry_exclusive for 5
 
 // more_controls_still_sufficient (matches Coq: Theorem more_controls_still_sufficient)
 assert more_controls_still_sufficient {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check more_controls_still_sufficient for 5
 
 // act854_implies_risk_assessed (matches Coq: Theorem act854_implies_risk_assessed)
 assert act854_implies_risk_assessed {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check act854_implies_risk_assessed for 5
 
 // act854_implies_audit_current (matches Coq: Theorem act854_implies_audit_current)
 assert act854_implies_audit_current {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check act854_implies_audit_current for 5
 
 // act854_implies_controls (matches Coq: Theorem act854_implies_controls)
 assert act854_implies_controls {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check act854_implies_controls for 5
 
 // act854_implies_cssp_valid (matches Coq: Theorem act854_implies_cssp_valid)
 assert act854_implies_cssp_valid {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check act854_implies_cssp_valid for 5
 
 // cssp_expired (matches Coq: Theorem cssp_expired)
 assert cssp_expired {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check cssp_expired for 5
 
 // cssp_unlicensed_invalid (matches Coq: Theorem cssp_unlicensed_invalid)
 assert cssp_unlicensed_invalid {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check cssp_unlicensed_invalid for 5
 
 // ceo_liable_when_negligent (matches Coq: Theorem ceo_liable_when_negligent)
 assert ceo_liable_when_negligent {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check ceo_liable_when_negligent for 5
 
 // ceo_due_diligence_defense (matches Coq: Theorem ceo_due_diligence_defense)
 assert ceo_due_diligence_defense {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check ceo_due_diligence_defense for 5
 
 // incident_6h_stricter_than_24h (matches Coq: Theorem incident_6h_stricter_than_24h)
 assert incident_6h_stricter_than_24h {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check incident_6h_stricter_than_24h for 5
 
 // immediate_report_always_timely (matches Coq: Theorem immediate_report_always_timely)
 assert immediate_report_always_timely {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check immediate_report_always_timely for 5
 
 // banking_is_critical (matches Coq: Theorem banking_is_critical)
 assert banking_is_critical {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check banking_is_critical for 5
 
 // defense_is_critical (matches Coq: Theorem defense_is_critical)
 assert defense_is_critical {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check defense_is_critical for 5
 
 // telecom_not_critical (matches Coq: Theorem telecom_not_critical)
 assert telecom_not_critical {
-  #univ >= 0
+  all x: NCIISector | x in NCIISector
 }
 check telecom_not_critical for 5

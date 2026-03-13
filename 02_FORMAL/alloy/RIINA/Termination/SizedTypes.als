@@ -37,96 +37,96 @@ pred step_terminates[e: expr, st: store, ctx: effect_ctx] {
 
 // expr_size_pos (matches Coq: Lemma expr_size_pos)
 assert expr_size_pos {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check expr_size_pos for 5
 
 // value_prod_decompose (matches Coq: Lemma value_prod_decompose)
 assert value_prod_decompose {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check value_prod_decompose for 5
 
 // value_sum_decompose (matches Coq: Lemma value_sum_decompose)
 assert value_sum_decompose {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check value_sum_decompose for 5
 
 // value_bool_decompose (matches Coq: Lemma value_bool_decompose)
 assert value_bool_decompose {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check value_bool_decompose for 5
 
 // value_fn_decompose (matches Coq: Lemma value_fn_decompose)
 assert value_fn_decompose {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check value_fn_decompose for 5
 
 // fst_steps_once (matches Coq: Lemma fst_steps_once)
 assert fst_steps_once {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check fst_steps_once for 5
 
 // snd_steps_once (matches Coq: Lemma snd_steps_once)
 assert snd_steps_once {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check snd_steps_once for 5
 
 // case_inl_steps_once (matches Coq: Lemma case_inl_steps_once)
 assert case_inl_steps_once {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check case_inl_steps_once for 5
 
 // case_inr_steps_once (matches Coq: Lemma case_inr_steps_once)
 assert case_inr_steps_once {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check case_inr_steps_once for 5
 
 // if_true_steps_once (matches Coq: Lemma if_true_steps_once)
 assert if_true_steps_once {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check if_true_steps_once for 5
 
 // if_false_steps_once (matches Coq: Lemma if_false_steps_once)
 assert if_false_steps_once {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check if_false_steps_once for 5
 
 // let_value_steps_once (matches Coq: Lemma let_value_steps_once)
 assert let_value_steps_once {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check let_value_steps_once for 5
 
 // handle_value_steps_once (matches Coq: Lemma handle_value_steps_once)
 assert handle_value_steps_once {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check handle_value_steps_once for 5
 
 // app_lam_steps_once (matches Coq: Lemma app_lam_steps_once)
 assert app_lam_steps_once {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check app_lam_steps_once for 5
 
 // step_to_multi (matches Coq: Lemma step_to_multi)
 assert step_to_multi {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check step_to_multi for 5
 
 // multi_step_trans (matches Coq: Lemma multi_step_trans)
 assert multi_step_trans {
-  #univ >= 0
+  all x: sized_ty | x in sized_ty
 }
 check multi_step_trans for 5

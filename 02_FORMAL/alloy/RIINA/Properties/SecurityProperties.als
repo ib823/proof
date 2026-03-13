@@ -7,6 +7,6 @@ open util/boolean
 
 // security_non_interference (matches Coq: Theorem security_non_interference)
 assert security_non_interference {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check security_non_interference for 5

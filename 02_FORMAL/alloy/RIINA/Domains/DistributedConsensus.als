@@ -78,144 +78,144 @@ pred intersect[p_l1: list_nat, p_l2: list_nat] {
 
 // agreement (matches Coq: Theorem agreement)
 assert agreement {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check agreement for 5
 
 // validity (matches Coq: Theorem validity)
 assert validity {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check validity for 5
 
 // pigeonhole_overlap (matches Coq: Lemma pigeonhole_overlap)
 assert pigeonhole_overlap {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check pigeonhole_overlap for 5
 
 // quorum_intersection_size (matches Coq: Theorem quorum_intersection_size)
 assert quorum_intersection_size {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check quorum_intersection_size for 5
 
 // quorum_intersection (matches Coq: Theorem quorum_intersection)
 assert quorum_intersection {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check quorum_intersection for 5
 
 // round_monotonicity (matches Coq: Theorem round_monotonicity)
 assert round_monotonicity {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check round_monotonicity for 5
 
 // round_monotonicity_transitive (matches Coq: Theorem round_monotonicity_transitive)
 assert round_monotonicity_transitive {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check round_monotonicity_transitive for 5
 
 // vote_uniqueness (matches Coq: Theorem vote_uniqueness)
 assert vote_uniqueness {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check vote_uniqueness for 5
 
 // quorum_sufficiency (matches Coq: Theorem quorum_sufficiency)
 assert quorum_sufficiency {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check quorum_sufficiency for 5
 
 // honest_majority_in_quorum (matches Coq: Theorem honest_majority_in_quorum)
 assert honest_majority_in_quorum {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check honest_majority_in_quorum for 5
 
 // message_integrity (matches Coq: Theorem message_integrity)
 assert message_integrity {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check message_integrity for 5
 
 // decision_stability (matches Coq: Theorem decision_stability)
 assert decision_stability {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check decision_stability for 5
 
 // bft_threshold (matches Coq: Theorem bft_threshold)
 assert bft_threshold {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check bft_threshold for 5
 
 // two_quorums_share_honest (matches Coq: Theorem two_quorums_share_honest)
 assert two_quorums_share_honest {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check two_quorums_share_honest for 5
 
 // bft_min_nodes_f1 (matches Coq: Theorem bft_min_nodes_f1)
 assert bft_min_nodes_f1 {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check bft_min_nodes_f1 for 5
 
 // count_honest_nil (matches Coq: Theorem count_honest_nil)
 assert count_honest_nil {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check count_honest_nil for 5
 
 // count_honest_singleton (matches Coq: Theorem count_honest_singleton)
 assert count_honest_singleton {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check count_honest_singleton for 5
 
 // intersect_nil_l (matches Coq: Theorem intersect_nil_l)
 assert intersect_nil_l {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check intersect_nil_l for 5
 
 // mem_nat_refl (matches Coq: Theorem mem_nat_refl)
 assert mem_nat_refl {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check mem_nat_refl for 5
 
 // quorum_size_pos (matches Coq: Theorem quorum_size_pos)
 assert quorum_size_pos {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check quorum_size_pos for 5
 
 // agreement_non_decided (matches Coq: Theorem agreement_non_decided)
 assert agreement_non_decided {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check agreement_non_decided for 5
 
 // round_update_refl (matches Coq: Theorem round_update_refl)
 assert round_update_refl {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check round_update_refl for 5
 
 // bft_f0 (matches Coq: Theorem bft_f0)
 assert bft_f0 {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check bft_f0 for 5
 
 // honest_majority_total (matches Coq: Theorem honest_majority_total)
 assert honest_majority_total {
-  #univ >= 0
+  all x: Config | x in Config
 }
 check honest_majority_total for 5

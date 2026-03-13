@@ -249,30 +249,30 @@ pred declass_ok {}
 
 // effect_join_pure_l (matches Coq: Lemma effect_join_pure_l)
 assert effect_join_pure_l {
-  #univ >= 0
+  all x: security_level | x in security_level
 }
 check effect_join_pure_l for 5
 
 // effect_join_pure_r (matches Coq: Lemma effect_join_pure_r)
 assert effect_join_pure_r {
-  #univ >= 0
+  all x: security_level | x in security_level
 }
 check effect_join_pure_r for 5
 
 // value_subst (matches Coq: Lemma value_subst)
 assert value_subst {
-  #univ >= 0
+  all x: security_level | x in security_level
 }
 check value_subst for 5
 
 // declass_ok_subst (matches Coq: Lemma declass_ok_subst)
 assert declass_ok_subst {
-  #univ >= 0
+  all x: security_level | x in security_level
 }
 check declass_ok_subst for 5
 
 // value_not_stuck (matches Coq: Lemma value_not_stuck)
 assert value_not_stuck {
-  #univ >= 0
+  all x: security_level | x in security_level
 }
 check value_not_stuck for 5

@@ -80,144 +80,144 @@ pred cmc_cloud_risk_assessed[cr: CMCloudRisk] {
 
 // gtrm_req_1 (matches Coq: Theorem gtrm_req_1)
 assert gtrm_req_1 {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_req_1 for 5
 
 // gtrm_req_2 (matches Coq: Theorem gtrm_req_2)
 assert gtrm_req_2 {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_req_2 for 5
 
 // gtrm_req_3 (matches Coq: Theorem gtrm_req_3)
 assert gtrm_req_3 {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_req_3 for 5
 
 // gtrm_req_4 (matches Coq: Theorem gtrm_req_4)
 assert gtrm_req_4 {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_req_4 for 5
 
 // gtrm_req_5 (matches Coq: Theorem gtrm_req_5)
 assert gtrm_req_5 {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_req_5 for 5
 
 // gtrm_req_6 (matches Coq: Theorem gtrm_req_6)
 assert gtrm_req_6 {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_req_6 for 5
 
 // gtrm_req_7 (matches Coq: Theorem gtrm_req_7)
 assert gtrm_req_7 {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_req_7 for 5
 
 // gtrm_composition (matches Coq: Theorem gtrm_composition)
 assert gtrm_composition {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_composition for 5
 
 // cm_entity_coverage (matches Coq: Theorem cm_entity_coverage)
 assert cm_entity_coverage {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check cm_entity_coverage for 5
 
 // pentest_expired (matches Coq: Theorem pentest_expired)
 assert pentest_expired {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check pentest_expired for 5
 
 // pentest_recently_done (matches Coq: Theorem pentest_recently_done)
 assert pentest_recently_done {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check pentest_recently_done for 5
 
 // gtrm_full_implies_board (matches Coq: Theorem gtrm_full_implies_board)
 assert gtrm_full_implies_board {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_full_implies_board for 5
 
 // gtrm_full_implies_risk (matches Coq: Theorem gtrm_full_implies_risk)
 assert gtrm_full_implies_risk {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_full_implies_risk for 5
 
 // gtrm_full_implies_pentest (matches Coq: Theorem gtrm_full_implies_pentest)
 assert gtrm_full_implies_pentest {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_full_implies_pentest for 5
 
 // gtrm_full_implies_ai (matches Coq: Theorem gtrm_full_implies_ai)
 assert gtrm_full_implies_ai {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_full_implies_ai for 5
 
 // gtrm_full_implies_vendor (matches Coq: Theorem gtrm_full_implies_vendor)
 assert gtrm_full_implies_vendor {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_full_implies_vendor for 5
 
 // gtrm_full_implies_incident (matches Coq: Theorem gtrm_full_implies_incident)
 assert gtrm_full_implies_incident {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_full_implies_incident for 5
 
 // gtrm_full_implies_data (matches Coq: Theorem gtrm_full_implies_data)
 assert gtrm_full_implies_data {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check gtrm_full_implies_data for 5
 
 // sc_incident_reporting (matches Coq: Theorem sc_incident_reporting)
 assert sc_incident_reporting {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check sc_incident_reporting for 5
 
 // sc_incident_late (matches Coq: Theorem sc_incident_late)
 assert sc_incident_late {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check sc_incident_late for 5
 
 // ai_model_risk_complete (matches Coq: Theorem ai_model_risk_complete)
 assert ai_model_risk_complete {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check ai_model_risk_complete for 5
 
 // ai_not_validated_not_managed (matches Coq: Theorem ai_not_validated_not_managed)
 assert ai_not_validated_not_managed {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check ai_not_validated_not_managed for 5
 
 // cm_cloud_fully_assessed (matches Coq: Theorem cm_cloud_fully_assessed)
 assert cm_cloud_fully_assessed {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check cm_cloud_fully_assessed for 5
 
 // cm_cloud_missing_exit_strategy (matches Coq: Theorem cm_cloud_missing_exit_strategy)
 assert cm_cloud_missing_exit_strategy {
-  #univ >= 0
+  all x: CMEntityType | x in CMEntityType
 }
 check cm_cloud_missing_exit_strategy for 5

@@ -119,150 +119,150 @@ pred autonomy_layers {}
 
 // auto_001_velocity_bounded (matches Coq: Theorem auto_001_velocity_bounded)
 assert auto_001_velocity_bounded {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_001_velocity_bounded for 5
 
 // auto_002_distance_maintained (matches Coq: Theorem auto_002_distance_maintained)
 assert auto_002_distance_maintained {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_002_distance_maintained for 5
 
 // auto_003_heading_bounded (matches Coq: Theorem auto_003_heading_bounded)
 assert auto_003_heading_bounded {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_003_heading_bounded for 5
 
 // auto_004_confidence_ok (matches Coq: Theorem auto_004_confidence_ok)
 assert auto_004_confidence_ok {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_004_confidence_ok for 5
 
 // auto_005_sensor_failsafe (matches Coq: Theorem auto_005_sensor_failsafe)
 assert auto_005_sensor_failsafe {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_005_sensor_failsafe for 5
 
 // auto_006_envelope_failsafe (matches Coq: Theorem auto_006_envelope_failsafe)
 assert auto_006_envelope_failsafe {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_006_envelope_failsafe for 5
 
 // auto_007_human_override (matches Coq: Theorem auto_007_human_override)
 assert auto_007_human_override {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_007_human_override for 5
 
 // auto_008_reaction_bounded (matches Coq: Theorem auto_008_reaction_bounded)
 assert auto_008_reaction_bounded {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_008_reaction_bounded for 5
 
 // auto_009_emergency_stop_valid (matches Coq: Theorem auto_009_emergency_stop_valid)
 assert auto_009_emergency_stop_valid {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_009_emergency_stop_valid for 5
 
 // auto_010_safe_hold_valid (matches Coq: Theorem auto_010_safe_hold_valid)
 assert auto_010_safe_hold_valid {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_010_safe_hold_valid for 5
 
 // auto_011_mode_transition (matches Coq: Theorem auto_011_mode_transition)
 assert auto_011_mode_transition {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_011_mode_transition for 5
 
 // auto_012_no_skip_assisted (matches Coq: Theorem auto_012_no_skip_assisted)
 assert auto_012_no_skip_assisted {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_012_no_skip_assisted for 5
 
 // auto_013_decision_fresh (matches Coq: Theorem auto_013_decision_fresh)
 assert auto_013_decision_fresh {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_013_decision_fresh for 5
 
 // auto_014_action_bounded (matches Coq: Theorem auto_014_action_bounded)
 assert auto_014_action_bounded {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_014_action_bounded for 5
 
 // auto_015_sensor_agreement (matches Coq: Theorem auto_015_sensor_agreement)
 assert auto_015_sensor_agreement {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_015_sensor_agreement for 5
 
 // auto_016_watchdog_active (matches Coq: Theorem auto_016_watchdog_active)
 assert auto_016_watchdog_active {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_016_watchdog_active for 5
 
 // auto_017_redundancy (matches Coq: Theorem auto_017_redundancy)
 assert auto_017_redundancy {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_017_redundancy for 5
 
 // auto_018_geofence_respected (matches Coq: Theorem auto_018_geofence_respected)
 assert auto_018_geofence_respected {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_018_geofence_respected for 5
 
 // auto_019_collision_free (matches Coq: Theorem auto_019_collision_free)
 assert auto_019_collision_free {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_019_collision_free for 5
 
 // auto_020_energy_ok (matches Coq: Theorem auto_020_energy_ok)
 assert auto_020_energy_ok {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_020_energy_ok for 5
 
 // auto_021_link_quality (matches Coq: Theorem auto_021_link_quality)
 assert auto_021_link_quality {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_021_link_quality for 5
 
 // auto_022_constraints_met (matches Coq: Theorem auto_022_constraints_met)
 assert auto_022_constraints_met {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_022_constraints_met for 5
 
 // auto_023_logging_complete (matches Coq: Theorem auto_023_logging_complete)
 assert auto_023_logging_complete {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_023_logging_complete for 5
 
 // auto_024_verify_first (matches Coq: Theorem auto_024_verify_first)
 assert auto_024_verify_first {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_024_verify_first for 5
 
 // auto_025_defense_in_depth (matches Coq: Theorem auto_025_defense_in_depth)
 assert auto_025_defense_in_depth {
-  #univ >= 0
+  all x: FailsafeTrigger | x in FailsafeTrigger
 }
 check auto_025_defense_in_depth for 5

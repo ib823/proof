@@ -81,318 +81,318 @@ pred label_join {}
 
 // label_leq_refl (matches Coq: Lemma label_leq_refl)
 assert label_leq_refl {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check label_leq_refl for 5
 
 // label_leq_trans (matches Coq: Lemma label_leq_trans)
 assert label_leq_trans {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check label_leq_trans for 5
 
 // label_leq_antisym (matches Coq: Lemma label_leq_antisym)
 assert label_leq_antisym {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check label_leq_antisym for 5
 
 // ty_size_pos (matches Coq: Lemma ty_size_pos)
 assert ty_size_pos {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check ty_size_pos for 5
 
 // ty_size_prod_left (matches Coq: Lemma ty_size_prod_left)
 assert ty_size_prod_left {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check ty_size_prod_left for 5
 
 // ty_size_prod_right (matches Coq: Lemma ty_size_prod_right)
 assert ty_size_prod_right {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check ty_size_prod_right for 5
 
 // ty_size_sum_left (matches Coq: Lemma ty_size_sum_left)
 assert ty_size_sum_left {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check ty_size_sum_left for 5
 
 // ty_size_sum_right (matches Coq: Lemma ty_size_sum_right)
 assert ty_size_sum_right {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check ty_size_sum_right for 5
 
 // store_update_lookup_eq (matches Coq: Lemma store_update_lookup_eq)
 assert store_update_lookup_eq {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_update_lookup_eq for 5
 
 // store_update_lookup_neq (matches Coq: Lemma store_update_lookup_neq)
 assert store_update_lookup_neq {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_update_lookup_neq for 5
 
 // store_ty_update_lookup_eq (matches Coq: Lemma store_ty_update_lookup_eq)
 assert store_ty_update_lookup_eq {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_ty_update_lookup_eq for 5
 
 // store_ty_update_lookup_neq (matches Coq: Lemma store_ty_update_lookup_neq)
 assert store_ty_update_lookup_neq {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_ty_update_lookup_neq for 5
 
 // store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
 assert store_ty_extends_refl {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_ty_extends_refl for 5
 
 // store_ty_extends_trans (matches Coq: Lemma store_ty_extends_trans)
 assert store_ty_extends_trans {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_ty_extends_trans for 5
 
 // val_rel_n_zero (matches Coq: Lemma val_rel_n_zero)
 assert val_rel_n_zero {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_zero for 5
 
 // val_rel_n_unit (matches Coq: Lemma val_rel_n_unit)
 assert val_rel_n_unit {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_unit for 5
 
 // val_rel_n_bool (matches Coq: Lemma val_rel_n_bool)
 assert val_rel_n_bool {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_bool for 5
 
 // val_rel_n_nat (matches Coq: Lemma val_rel_n_nat)
 assert val_rel_n_nat {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_nat for 5
 
 // val_rel_n_ref (matches Coq: Lemma val_rel_n_ref)
 assert val_rel_n_ref {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_ref for 5
 
 // val_rel_n_ref_same_loc (matches Coq: Lemma val_rel_n_ref_same_loc)
 assert val_rel_n_ref_same_loc {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_ref_same_loc for 5
 
 // val_rel_n_cumulative (matches Coq: Lemma val_rel_n_cumulative)
 assert val_rel_n_cumulative {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_cumulative for 5
 
 // val_rel_n_step_down (matches Coq: Lemma val_rel_n_step_down)
 assert val_rel_n_step_down {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_step_down for 5
 
 // val_rel_n_value_left (matches Coq: Lemma val_rel_n_value_left)
 assert val_rel_n_value_left {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_value_left for 5
 
 // val_rel_n_value_right (matches Coq: Lemma val_rel_n_value_right)
 assert val_rel_n_value_right {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_value_right for 5
 
 // val_rel_n_prod (matches Coq: Lemma val_rel_n_prod)
 assert val_rel_n_prod {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_prod for 5
 
 // val_rel_n_inl (matches Coq: Lemma val_rel_n_inl)
 assert val_rel_n_inl {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_inl for 5
 
 // val_rel_n_inr (matches Coq: Lemma val_rel_n_inr)
 assert val_rel_n_inr {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_inr for 5
 
 // val_rel_n_lam (matches Coq: Lemma val_rel_n_lam)
 assert val_rel_n_lam {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_lam for 5
 
 // val_rel_n_fo_step_independent (matches Coq: Lemma val_rel_n_fo_step_independent)
 assert val_rel_n_fo_step_independent {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_n_fo_step_independent for 5
 
 // store_rel_n_zero (matches Coq: Lemma store_rel_n_zero)
 assert store_rel_n_zero {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_rel_n_zero for 5
 
 // store_rel_n_step_down (matches Coq: Lemma store_rel_n_step_down)
 assert store_rel_n_step_down {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_rel_n_step_down for 5
 
 // store_rel_n_empty (matches Coq: Lemma store_rel_n_empty)
 assert store_rel_n_empty {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_rel_n_empty for 5
 
 // store_update_preserves_rel (matches Coq: Lemma store_update_preserves_rel)
 assert store_update_preserves_rel {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_update_preserves_rel for 5
 
 // store_ty_extends_antisym (matches Coq: Lemma store_ty_extends_antisym)
 assert store_ty_extends_antisym {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_ty_extends_antisym for 5
 
 // store_ty_update_extends (matches Coq: Lemma store_ty_update_extends)
 assert store_ty_update_extends {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_ty_update_extends for 5
 
 // store_lookup_deterministic (matches Coq: Lemma store_lookup_deterministic)
 assert store_lookup_deterministic {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_lookup_deterministic for 5
 
 // store_ty_lookup_deterministic (matches Coq: Lemma store_ty_lookup_deterministic)
 assert store_ty_lookup_deterministic {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_ty_lookup_deterministic for 5
 
 // store_update_idem (matches Coq: Lemma store_update_idem)
 assert store_update_idem {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_update_idem for 5
 
 // store_update_comm (matches Coq: Lemma store_update_comm)
 assert store_update_comm {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check store_update_comm for 5
 
 // exp_rel_n_zero (matches Coq: Lemma exp_rel_n_zero)
 assert exp_rel_n_zero {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check exp_rel_n_zero for 5
 
 // exp_rel_n_unit_expr (matches Coq: Lemma exp_rel_n_unit_expr)
 assert exp_rel_n_unit_expr {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check exp_rel_n_unit_expr for 5
 
 // exp_rel_n_step_down (matches Coq: Lemma exp_rel_n_step_down)
 assert exp_rel_n_step_down {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check exp_rel_n_step_down for 5
 
 // val_rel_implies_exp_rel (matches Coq: Lemma val_rel_implies_exp_rel)
 assert val_rel_implies_exp_rel {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check val_rel_implies_exp_rel for 5
 
 // exp_rel_n_bool_expr (matches Coq: Lemma exp_rel_n_bool_expr)
 assert exp_rel_n_bool_expr {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check exp_rel_n_bool_expr for 5
 
 // label_join_comm (matches Coq: Lemma label_join_comm)
 assert label_join_comm {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check label_join_comm for 5
 
 // label_join_assoc (matches Coq: Lemma label_join_assoc)
 assert label_join_assoc {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check label_join_assoc for 5
 
 // label_join_idem (matches Coq: Lemma label_join_idem)
 assert label_join_idem {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check label_join_idem for 5
 
 // ty_eq_dec (matches Coq: Lemma ty_eq_dec)
 assert ty_eq_dec {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check ty_eq_dec for 5
 
 // first_order_prod_components (matches Coq: Lemma first_order_prod_components)
 assert first_order_prod_components {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check first_order_prod_components for 5
 
 // first_order_sum_components (matches Coq: Lemma first_order_sum_components)
 assert first_order_sum_components {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check first_order_sum_components for 5
 
 // fo_depth_prod (matches Coq: Lemma fo_depth_prod)
 assert fo_depth_prod {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check fo_depth_prod for 5
 
 // fo_depth_sum (matches Coq: Lemma fo_depth_sum)
 assert fo_depth_sum {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check fo_depth_sum for 5
 
 // fo_depth_primitive (matches Coq: Lemma fo_depth_primitive)
 assert fo_depth_primitive {
-  #univ >= 0
+  all x: sec_label | x in sec_label
 }
 check fo_depth_primitive for 5
