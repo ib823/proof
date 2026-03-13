@@ -22,13 +22,12 @@ This file uses a first-order defunctionalized encoding:
 - Explicit substitution operations (`substBVar`, `substK`) replace
   higher-order function application
 
-The `Comp`/`Handler` types, constructors, functions, and operational semantics
-are all real definitions (zero axioms). Only the typing relations
-(`comp_has_type`, `handler_has_type`) remain axiomatized because their
-constructors inherently require non-positive occurrences of the typing
-judgment (the handler typing rule quantifies over well-typed continuations).
+The `Comp`/`Handler` types, constructors, functions, operational semantics, and
+typing relations are all real definitions. The typing relations use a
+step-indexed encoding (`Nat → Prop`) rather than Coq's non-strictly-positive
+mutual inductive presentation, avoiding any positivity bypass.
 
-Previous version: 48 axioms. This version: 8 axioms.
+Previous version: 48 axioms. This version: 0 axioms.
 
 ## Correspondence Table
 
@@ -57,9 +56,9 @@ Previous version: 48 axioms. This version: 8 axioms.
 | is_return | is_return | OK (real function) |
 | count_continuation_uses | count_continuation_uses | OK (real function) |
 | compose_handlers | compose_handlers | OK (real function) |
-| comp_has_type | comp_has_type | AXIOM (strict positivity) |
+| comp_has_type | comp_has_type | OK (step-indexed) |
 | val_has_type | val_has_type | OK (real inductive) |
-| handler_has_type | handler_has_type | AXIOM (strict positivity) |
+| handler_has_type | handler_has_type | OK (step-indexed) |
 | is_pure | is_pure | OK (real inductive) |
 | deep_step | deep_step | OK (real inductive) |
 | shallow_step | shallow_step | OK (real inductive) |
@@ -386,46 +385,137 @@ inductive eval_pure : Comp → Val → Prop where
       eval_pure (.CBind c body) v2
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- AXIOMATIZED TYPING RELATIONS (8 axioms — down from 48)
+-- STEP-INDEXED TYPING RELATIONS (zero axioms)
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- Computation and handler typing must remain axiomatized.
--- Reason: the TyHOp rule for handler typing requires quantifying over
--- "all well-typed continuations", which puts comp_has_type in a strictly
--- negative position. Lean 4 enforces strict positivity for all inductives
--- with no opt-out (unlike Coq's `Unset Positivity Checking`).
+-- Lean cannot admit the Coq-style mutual inductive typing judgment because the
+-- handler operation rule quantifies over well-typed continuations. We model the
+-- same judgment as a stratified `Nat → Prop` family instead: each successor step
+-- may refer only to the previous index. The public judgment is the limit
+-- (`∀ n, ...`), so no unsafe escape hatch is needed.
 
-axiom comp_has_type : Comp → CompTy → Prop
-axiom handler_has_type : Handler → EffectRow → BaseTy → EffectRow → Prop
+mutual
+def comp_has_type_at : Nat → Comp → CompTy → Prop
+  | 0, _, _ => True
+  | _ + 1, .CReturn v, .CTyPure t => val_has_type v t
+  | _ + 1, .CReturn v, .CTyEff t sig => sig = empty_row ∧ val_has_type v t
+  | _ + 1, .CPerform op v, .CTyEff t sig =>
+      t = (opSignature op).opOutputTy ∧
+      val_has_type v (opSignature op).opInputTy ∧
+      op ∈ sig
+  | n + 1, .CHandle c h, .CTyEff t sig' =>
+      ∃ sig, comp_has_type_at n c (.CTyEff t sig) ∧
+        handler_has_type_at n h sig t sig'
+  | n + 1, .CBind c body, .CTyEff t2 sig =>
+      ∃ t1, comp_has_type_at n c (.CTyEff t1 sig) ∧
+        ∀ v, val_has_type v t1 →
+          comp_has_type_at n (body.substBVar 0 v) (.CTyEff t2 sig)
+  | _ + 1, _, _ => False
 
--- Characterization axioms (correspond to Coq typing rule constructors)
+def handler_has_type_at : Nat → Handler → EffectRow → BaseTy → EffectRow → Prop
+  | 0, _, _, _, _ => True
+  | n + 1, .HReturn body, handled, t, sig =>
+      handled = [] ∧
+      ∀ v, val_has_type v t →
+        comp_has_type_at n (body.substBVar 0 v) (.CTyEff t sig)
+  | n + 1, .HOp op body rest, handled, t, sig =>
+      ∃ handledTail, handled = op :: handledTail ∧
+        (∀ v kBody,
+          val_has_type v (opSignature op).opInputTy →
+          (∀ r, val_has_type r (opSignature op).opOutputTy →
+            comp_has_type_at n (kBody.substBVar 0 r) (.CTyEff t sig)) →
+          comp_has_type_at n ((body.substBVar 0 v).substK kBody) (.CTyEff t sig)) ∧
+        handler_has_type_at n rest handledTail t sig
+end
 
-axiom comp_has_type_perform : ∀ (op : EffectOp) (v : Val) (sig : EffectSig),
+def comp_has_type (c : Comp) (ct : CompTy) : Prop :=
+  ∀ n, comp_has_type_at n c ct
+
+def handler_has_type (h : Handler) (handled : EffectRow) (t : BaseTy) (sig : EffectRow) : Prop :=
+  ∀ n, handler_has_type_at n h handled t sig
+
+theorem comp_has_type_perform : ∀ (op : EffectOp) (v : Val) (sig : EffectSig),
   val_has_type v (opSignature op).opInputTy →
   op ∈ sig →
-  comp_has_type (Comp.CPerform op v) (CompTy.CTyEff (opSignature op).opOutputTy sig)
+  comp_has_type (Comp.CPerform op v) (CompTy.CTyEff (opSignature op).opOutputTy sig) := by
+  intro op v sig hv hop n
+  cases n with
+  | zero =>
+      trivial
+  | succ n =>
+      simp [comp_has_type_at, hv, hop]
 
-axiom comp_has_type_handle : ∀ (h : Handler) (c : Comp) (t : BaseTy) (sig sig' : EffectRow),
+theorem comp_has_type_handle : ∀ (h : Handler) (c : Comp) (t : BaseTy) (sig sig' : EffectRow),
   comp_has_type c (CompTy.CTyEff t sig) →
   handler_has_type h sig t sig' →
-  comp_has_type (Comp.CHandle c h) (CompTy.CTyEff t sig')
+  comp_has_type (Comp.CHandle c h) (CompTy.CTyEff t sig') := by
+  intro h c t sig sig' hc hh n
+  cases n with
+  | zero =>
+      trivial
+  | succ n =>
+      exact ⟨sig, hc n, hh n⟩
 
-axiom comp_has_type_subsume : ∀ (op : EffectOp) (v : Val) (sig sig' : EffectRow),
+theorem comp_has_type_subsume : ∀ (op : EffectOp) (v : Val) (sig sig' : EffectRow),
   comp_has_type (Comp.CPerform op v) (CompTy.CTyEff (opSignature op).opOutputTy sig) →
   incl sig sig' →
-  comp_has_type (Comp.CPerform op v) (CompTy.CTyEff (opSignature op).opOutputTy sig')
+  comp_has_type (Comp.CPerform op v) (CompTy.CTyEff (opSignature op).opOutputTy sig') := by
+  intro op v sig sig' hty hsub n
+  cases n with
+  | zero =>
+      trivial
+  | succ n =>
+      have hstep := hty (Nat.succ n)
+      simp [comp_has_type_at] at hstep ⊢
+      rcases hstep with ⟨hv, hop⟩
+      exact ⟨hv, hsub op hop⟩
 
-axiom pure_typed_is_pure : ∀ (c : Comp) (t : BaseTy),
-  comp_has_type c (CompTy.CTyPure t) → is_pure c
+theorem pure_typed_is_pure : ∀ (c : Comp) (t : BaseTy),
+  comp_has_type c (CompTy.CTyPure t) → is_pure c := by
+  intro c t hty
+  have h1 := hty 1
+  cases c <;> simp [comp_has_type_at] at h1
+  case CReturn v =>
+    exact is_pure.PureReturn v
 
-axiom handler_compose_type : ∀ (h1 h2 : Handler) (t : BaseTy) (sig : EffectRow),
+theorem handler_compose_type : ∀ (h1 h2 : Handler) (t : BaseTy) (sig : EffectRow),
   handler_has_type h1 (handler_effects h1) t sig →
   handler_has_type h2 (handler_effects h2) t sig →
   (∀ op, op ∈ handler_effects h1 → op ∉ handler_effects h2) →
   handler_has_type (compose_handlers h1 h2) (handler_effects h1 ++ handler_effects h2) t sig
+  | .HReturn _, h2, _, _, _, hh2, _ => by
+      simpa [handler_has_type, handler_has_type_at, handler_effects, compose_handlers]
+        using hh2
+  | .HOp op body rest, h2, t, sig, hh1, hh2, hdisj => by
+      intro n
+      cases n with
+      | zero =>
+          trivial
+      | succ n =>
+          have hh1s := hh1 (Nat.succ n)
+          simp [handler_has_type, handler_has_type_at, handler_effects] at hh1s
+          rcases hh1s with ⟨hbody, hrest⟩
+          have hrestAll : handler_has_type rest (handler_effects rest) t sig := by
+            intro m
+            have hm := hh1 (Nat.succ m)
+            simp [handler_has_type, handler_has_type_at, handler_effects] at hm
+            rcases hm with ⟨_hbody, hrestAt⟩
+            simpa using hrestAt
+          have hdisjRest : ∀ op', op' ∈ handler_effects rest → op' ∉ handler_effects h2 := by
+            intro op' hop'
+            exact hdisj op' (by simp [handler_effects, hop'])
+          have hrestCompose :
+              handler_has_type (compose_handlers rest h2)
+                (handler_effects rest ++ handler_effects h2) t sig :=
+            handler_compose_type rest h2 t sig hrestAll hh2 hdisjRest
+          refine ⟨handler_effects rest ++ handler_effects h2, rfl, hbody, hrestCompose n⟩
 
-axiom effect_safe_empty_row : ∀ (c : Comp) (t : BaseTy),
-  comp_has_type c (CompTy.CTyEff t empty_row) → (∀ op v, c ≠ Comp.CPerform op v)
+theorem effect_safe_empty_row : ∀ (c : Comp) (t : BaseTy),
+  comp_has_type c (CompTy.CTyEff t empty_row) → (∀ op v, c ≠ Comp.CPerform op v) := by
+  intro c t hty op v hEq
+  subst hEq
+  have h1 := hty 1
+  simp [comp_has_type_at, empty_row] at h1
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- DEFINITIONS FOR THEOREMS
@@ -507,7 +597,7 @@ private theorem nodup_get?_injective {α : Type} [DecidableEq α] :
     ∀ (l : List α) (hnd : List.Nodup l) (i j : Nat) (x : α),
     l.get? i = some x → l.get? j = some x → i = j
   | [], _, _, _, _, hi, _ => absurd hi (by simp [List.get?])
-  | a :: as, hnd, 0, 0, _, _, _ => rfl
+  | a :: as, _, 0, 0, _, _, _ => rfl
   | a :: as, hnd, 0, j + 1, x, hi, hj => by
     exfalso
     rw [List.nodup_cons] at hnd
