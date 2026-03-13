@@ -1,44 +1,59 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of MobileOS Animation System invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// State model for Animation System
+pub struct AnimationState {
+    pub frame_rate_bounded: bool,
+    pub duration_positive: bool,
+    pub easing_monotonic: bool,
+    pub interpolation_continuous: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Invariant: all properties must hold with positive assurance
+pub open spec fn animation_system_valid(s: AnimationState) -> bool {
+    s.frame_rate_bounded && s.duration_positive && s.easing_monotonic && s.interpolation_continuous && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration
+pub open spec fn baseline_animation_system() -> AnimationState {
+    AnimationState { frame_rate_bounded: true, duration_positive: true, easing_monotonic: true, interpolation_continuous: true, assurance_level: 1 }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration
+pub open spec fn hardened_animation_system() -> AnimationState {
+    AnimationState { frame_rate_bounded: true, duration_positive: true, easing_monotonic: true, interpolation_continuous: true, assurance_level: 3 }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline is valid
+proof fn lemma_baseline_valid()
+    ensures animation_system_valid(baseline_animation_system()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_animation_system();
+    assert(b.frame_rate_bounded && b.duration_positive && b.easing_monotonic && b.interpolation_continuous && b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened is valid and dominates baseline
+proof fn lemma_hardened_dominates()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        animation_system_valid(hardened_animation_system()),
+        hardened_animation_system().assurance_level >= baseline_animation_system().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+}
+
+/// Lemma: each property is individually necessary
+proof fn lemma_properties_necessary()
+    ensures
+        !animation_system_valid(AnimationState { frame_rate_bounded: false, duration_positive: true, easing_monotonic: true, interpolation_continuous: true, assurance_level: 1 }),
+        !animation_system_valid(AnimationState { frame_rate_bounded: true, duration_positive: false, easing_monotonic: true, interpolation_continuous: true, assurance_level: 1 }),
+        !animation_system_valid(AnimationState { frame_rate_bounded: true, duration_positive: true, easing_monotonic: false, interpolation_continuous: true, assurance_level: 1 }),
+        !animation_system_valid(AnimationState { frame_rate_bounded: true, duration_positive: true, easing_monotonic: true, interpolation_continuous: false, assurance_level: 1 }),
+{
 }
 
 } // verus!
-
-fn main() {}

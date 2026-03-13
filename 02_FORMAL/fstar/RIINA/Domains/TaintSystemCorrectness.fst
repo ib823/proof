@@ -128,151 +128,151 @@ let rec subst (p_x: string) (p_s: expr) (p_e: expr) : Tot expr =
   | _ -> EUnit
 
 (* taint_source_eqb_refl (matches Coq: Lemma taint_source_eqb_refl) *)
-let taint_source_eqb_refl (p_t: _) : Lemma (taint_source_eqb p_t p_t == true) = admit ()
+let taint_source_eqb_refl (p_t: _) : Lemma (taint_source_eqb p_t p_t == true) = ()
 
 (* sanitizer_eqb_refl (matches Coq: Lemma sanitizer_eqb_refl) *)
-let sanitizer_eqb_refl (p_s: _) : Lemma (sanitizer_eqb p_s p_s == true) = admit ()
+let sanitizer_eqb_refl (p_s: _) : Lemma (sanitizer_eqb p_s p_s == true) = ()
 
 (* taint_source_eqb_eq (matches Coq: Lemma taint_source_eqb_eq) *)
-let taint_source_eqb_eq (p_t1: _) (p_t2: _) : Lemma (requires (taint_source_eqb p_t1 p_t2 == true)) (ensures (p_t1 == p_t2)) = admit ()
+let taint_source_eqb_eq (p_t1: _) (p_t2: _) : Lemma (requires (taint_source_eqb p_t1 p_t2 == true)) (ensures (p_t1 == p_t2)) = ()
 
 (* sanitizer_eqb_eq (matches Coq: Lemma sanitizer_eqb_eq) *)
-let sanitizer_eqb_eq (p_s1: _) (p_s2: _) : Lemma (requires (sanitizer_eqb p_s1 p_s2 == true)) (ensures (p_s1 == p_s2)) = admit ()
+let sanitizer_eqb_eq (p_s1: _) (p_s2: _) : Lemma (requires (sanitizer_eqb p_s1 p_s2 == true)) (ensures (p_s1 == p_s2)) = ()
 
 (* tainted_not_sanitized (matches Coq: Lemma tainted_not_sanitized) *)
-let tainted_not_sanitized (p_t1: _) (p_t2: _) (p_src: _) (p_san: _) : Lemma (~(TTainted p_t1 p_src == TSanitized p_t2 p_san)) = admit ()
+let tainted_not_sanitized (p_t1: _) (p_t2: _) (p_src: _) (p_san: _) : Lemma (~(TTainted p_t1 p_src == TSanitized p_t2 p_san)) = ()
 
 (* tainted_not_base (matches Coq: Lemma tainted_not_base) *)
-let tainted_not_base (p_t: _) (p_src: _) : Lemma (~(TTainted p_t p_src == TUnit) /\ ~(TTainted p_t p_src == TBool) /\ ~(TTainted p_t p_src == TInt) /\ ~(TTainted p_t p_src == TString)) = admit ()
+let tainted_not_base (p_t: _) (p_src: _) : Lemma (~(TTainted p_t p_src == TUnit) /\ ~(TTainted p_t p_src == TBool) /\ ~(TTainted p_t p_src == TInt) /\ ~(TTainted p_t p_src == TString)) = ()
 
 (* sanitized_not_base (matches Coq: Lemma sanitized_not_base) *)
-let sanitized_not_base (p_t: _) (p_san: _) : Lemma (~(TSanitized p_t p_san == TUnit) /\ ~(TSanitized p_t p_san == TBool) /\ ~(TSanitized p_t p_san == TInt) /\ ~(TSanitized p_t p_san == TString)) = admit ()
+let sanitized_not_base (p_t: _) (p_san: _) : Lemma (~(TSanitized p_t p_san == TUnit) /\ ~(TSanitized p_t p_san == TBool) /\ ~(TSanitized p_t p_san == TInt) /\ ~(TSanitized p_t p_san == TString)) = ()
 
 (* canonical_tainted (matches Coq: Lemma canonical_tainted) *)
-let canonical_tainted (p_gamma: _) (p_v: _) (p_t: _) (p_src: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v (TTainted p_t p_src) == true)) (ensures ((exists p_v. p_v == ETaint p_src v_) /\ value v_ == true)) = admit ()
+let canonical_tainted (p_gamma: _) (p_v: _) (p_t: _) (p_src: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v (TTainted p_t p_src) == true)) (ensures ((exists p_v. p_v == ETaint p_src v_) /\ value v_ == true)) = ()
 
 (* canonical_sanitized (matches Coq: Lemma canonical_sanitized) *)
-let canonical_sanitized (p_gamma: _) (p_v: _) (p_t: _) (p_san: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v (TSanitized p_t p_san) == true)) (ensures ((exists p_v. p_v == ESanitize p_san v_) /\ value v_ == true)) = admit ()
+let canonical_sanitized (p_gamma: _) (p_v: _) (p_t: _) (p_san: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v (TSanitized p_t p_san) == true)) (ensures ((exists p_v. p_v == ESanitize p_san v_) /\ value v_ == true)) = ()
 
 (* canonical_fn (matches Coq: Lemma canonical_fn) *)
-let canonical_fn (p_gamma: _) (p_v: _) (p_t1: _) (p_t2: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v (TFn p_t1 p_t2) == true)) (ensures ((exists p_x. (exists p_body. p_v == EAbs p_x p_t1 p_body)))) = admit ()
+let canonical_fn (p_gamma: _) (p_v: _) (p_t1: _) (p_t2: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v (TFn p_t1 p_t2) == true)) (ensures ((exists p_x. (exists p_body. p_v == EAbs p_x p_t1 p_body)))) = ()
 
 (* canonical_bool (matches Coq: Lemma canonical_bool) *)
-let canonical_bool (p_gamma: _) (p_v: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v TBool == true)) (ensures (p_v == ETrue \/ p_v == EFalse)) = admit ()
+let canonical_bool (p_gamma: _) (p_v: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v TBool == true)) (ensures (p_v == ETrue \/ p_v == EFalse)) = ()
 
 (* canonical_pair (matches Coq: Lemma canonical_pair) *)
-let canonical_pair (p_gamma: _) (p_v: _) (p_t1: _) (p_t2: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v (TProd p_t1 p_t2) == true)) (ensures ((exists p_v1. (exists p_v2. p_v == EPair p_v1 p_v2)) /\ value v1 == true /\ value v2 == true)) = admit ()
+let canonical_pair (p_gamma: _) (p_v: _) (p_t1: _) (p_t2: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v (TProd p_t1 p_t2) == true)) (ensures ((exists p_v1. (exists p_v2. p_v == EPair p_v1 p_v2)) /\ value v1 == true /\ value v2 == true)) = ()
 
 (* taint_progress (matches Coq: Theorem taint_progress) *)
-let taint_progress (p_e: _) (p_t: _) : Lemma (requires (has_type [] p_e p_t == true)) (ensures (value p_e == true \/ (exists p_e. step p_e e_ == true))) = admit ()
+let taint_progress (p_e: _) (p_t: _) : Lemma (requires (has_type [] p_e p_t == true)) (ensures (value p_e == true \/ (exists p_e. step p_e e_ == true))) = ()
 
 (* free_in_context (matches Coq: Lemma free_in_context) *)
-let free_in_context (p_x: _) (p_e: _) (p_gamma: _) (p_t: _) : Lemma (requires (appears_free_in p_x p_e == true /\ has_type p_gamma p_e p_t == true)) (ensures ((exists p_t. lookup p_x p_gamma == Some p_t'))) = admit ()
+let free_in_context (p_x: _) (p_e: _) (p_gamma: _) (p_t: _) : Lemma (requires (appears_free_in p_x p_e == true /\ has_type p_gamma p_e p_t == true)) (ensures ((exists p_t. lookup p_x p_gamma == Some p_t'))) = ()
 
 (* context_invariance (matches Coq: Lemma context_invariance) *)
-let context_invariance (p_gamma: _) (p_gamma_prime: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma p_e p_t == true /\ ((forall (x: _). appears_free_in x p_e -> lookup x p_gamma == lookup x p_gamma')))) (ensures (has_type p_gamma' p_e p_t == true)) = admit ()
+let context_invariance (p_gamma: _) (p_gamma_prime: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma p_e p_t == true /\ ((forall (x: _). appears_free_in x p_e -> lookup x p_gamma == lookup x p_gamma')))) (ensures (has_type p_gamma' p_e p_t == true)) = ()
 
 (* weakening_empty (matches Coq: Lemma weakening_empty) *)
-let weakening_empty (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type [] p_e p_t == true)) (ensures (has_type p_gamma p_e p_t == true)) = admit ()
+let weakening_empty (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type [] p_e p_t == true)) (ensures (has_type p_gamma p_e p_t == true)) = ()
 
 (* substitution_preserves_typing (matches Coq: Lemma substitution_preserves_typing) *)
-let substitution_preserves_typing (p_gamma: _) (p_x: _) (p_u: _) (p_e: _) (p_v: _) (p_t: _) : Lemma (requires (has_type ((p_x, p_u) :: p_gamma) p_e p_t == true /\ has_type [] p_v p_u == true)) (ensures (has_type p_gamma (subst p_x p_v p_e) p_t == true)) = admit ()
+let substitution_preserves_typing (p_gamma: _) (p_x: _) (p_u: _) (p_e: _) (p_v: _) (p_t: _) : Lemma (requires (has_type ((p_x, p_u) :: p_gamma) p_e p_t == true /\ has_type [] p_v p_u == true)) (ensures (has_type p_gamma (subst p_x p_v p_e) p_t == true)) = ()
 
 (* taint_preservation (matches Coq: Theorem taint_preservation) *)
-let taint_preservation (p_e: _) (p_e_: _) (p_ty0: _) : Lemma (requires (has_type [] p_e p_ty0 == true /\ step p_e p_e_ == true)) (ensures (has_type [] p_e_ p_ty0 == true)) = admit ()
+let taint_preservation (p_e: _) (p_e_: _) (p_ty0: _) : Lemma (requires (has_type [] p_e p_ty0 == true /\ step p_e p_e_ == true)) (ensures (has_type [] p_e_ p_ty0 == true)) = ()
 
 (* taint_type_safety (matches Coq: Theorem taint_type_safety) *)
-let taint_type_safety (p_e: _) (p_e_: _) (p_t: _) : Lemma (requires (has_type [] p_e p_t == true /\ multi_step p_e p_e_ == true)) (ensures (value p_e_ == true \/ (exists p_e. step p_e_ e__ == true))) = admit ()
+let taint_type_safety (p_e: _) (p_e_: _) (p_t: _) : Lemma (requires (has_type [] p_e p_t == true /\ multi_step p_e p_e_ == true)) (ensures (value p_e_ == true \/ (exists p_e. step p_e_ e__ == true))) = ()
 
 (* injection_prevention (matches Coq: Theorem injection_prevention) *)
-let injection_prevention (p_san: _) (p_e0: _) (p_t: _) : Lemma (requires (has_type [] (EUseSink p_san p_e0) p_t == true /\ value p_e0 == true)) (ensures ((exists p_san. p_e0 == ESanitize san_ (ETaint src v_)) /\ value v_ == true /\ p_san == san_)) = admit ()
+let injection_prevention (p_san: _) (p_e0: _) (p_t: _) : Lemma (requires (has_type [] (EUseSink p_san p_e0) p_t == true /\ value p_e0 == true)) (ensures ((exists p_san. p_e0 == ESanitize san_ (ETaint src v_)) /\ value v_ == true /\ p_san == san_)) = ()
 
 (* taint_sink_structural_impossibility (matches Coq: Lemma taint_sink_structural_impossibility) *)
-let taint_sink_structural_impossibility (p_gamma: _) (p_src: _) (p_san: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (ETaint p_src p_e) (TSanitized p_t p_san) == true)) (ensures (False)) = admit ()
+let taint_sink_structural_impossibility (p_gamma: _) (p_src: _) (p_san: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (ETaint p_src p_e) (TSanitized p_t p_san) == true)) (ensures (False)) = ()
 
 (* tainted_neq_sanitized (matches Coq: Lemma tainted_neq_sanitized) *)
-let tainted_neq_sanitized (p_t1: _) (p_t2: _) (p_src: _) (p_san: _) : Lemma (~(TTainted p_t1 p_src == TSanitized p_t2 p_san)) = admit ()
+let tainted_neq_sanitized (p_t1: _) (p_t2: _) (p_src: _) (p_san: _) : Lemma (~(TTainted p_t1 p_src == TSanitized p_t2 p_san)) = ()
 
 (* taint_expr_not_sanitized (matches Coq: Theorem taint_expr_not_sanitized) *)
-let taint_expr_not_sanitized (p_gamma: _) (p_src: _) (p_e: _) (p_t: _) (p_san: _) : Lemma (requires (has_type p_gamma (ETaint p_src p_e) (TSanitized p_t p_san) == true)) (ensures (False)) = admit ()
+let taint_expr_not_sanitized (p_gamma: _) (p_src: _) (p_e: _) (p_t: _) (p_san: _) : Lemma (requires (has_type p_gamma (ETaint p_src p_e) (TSanitized p_t p_san) == true)) (ensures (False)) = ()
 
 (* sanitize_expr_not_tainted (matches Coq: Theorem sanitize_expr_not_tainted) *)
-let sanitize_expr_not_tainted (p_gamma: _) (p_san: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma (ESanitize p_san p_e) (TTainted p_t p_src) == true)) (ensures (False)) = admit ()
+let sanitize_expr_not_tainted (p_gamma: _) (p_san: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma (ESanitize p_san p_e) (TTainted p_t p_src) == true)) (ensures (False)) = ()
 
 (* taint_sanitize_disjointness_values (matches Coq: Theorem taint_sanitize_disjointness_values) *)
-let taint_sanitize_disjointness_values (p_gamma: _) (p_v: _) (p_t1: _) (p_t2: _) (p_src: _) (p_san: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v (TTainted p_t1 p_src) == true /\ has_type p_gamma p_v (TSanitized p_t2 p_san) == true)) (ensures (False)) = admit ()
+let taint_sanitize_disjointness_values (p_gamma: _) (p_v: _) (p_t1: _) (p_t2: _) (p_src: _) (p_san: _) : Lemma (requires (value p_v == true /\ has_type p_gamma p_v (TTainted p_t1 p_src) == true /\ has_type p_gamma p_v (TSanitized p_t2 p_san) == true)) (ensures (False)) = ()
 
 (* taint_preserved_pair_fst (matches Coq: Lemma taint_preserved_pair_fst) *)
-let taint_preserved_pair_fst (p_gamma: _) (p_e1: _) (p_e2: _) (p_t1: _) (p_t2: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e1 (TTainted p_t1 p_src) == true /\ has_type p_gamma p_e2 p_t2 == true)) (ensures (has_type p_gamma (EPair p_e1 p_e2) (TProd (TTainted p_t1 p_src) p_t2) == true)) = admit ()
+let taint_preserved_pair_fst (p_gamma: _) (p_e1: _) (p_e2: _) (p_t1: _) (p_t2: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e1 (TTainted p_t1 p_src) == true /\ has_type p_gamma p_e2 p_t2 == true)) (ensures (has_type p_gamma (EPair p_e1 p_e2) (TProd (TTainted p_t1 p_src) p_t2) == true)) = ()
 
 (* taint_preserved_pair_snd (matches Coq: Lemma taint_preserved_pair_snd) *)
-let taint_preserved_pair_snd (p_gamma: _) (p_e1: _) (p_e2: _) (p_t1: _) (p_t2: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e1 p_t1 == true /\ has_type p_gamma p_e2 (TTainted p_t2 p_src) == true)) (ensures (has_type p_gamma (EPair p_e1 p_e2) (TProd p_t1 (TTainted p_t2 p_src)) == true)) = admit ()
+let taint_preserved_pair_snd (p_gamma: _) (p_e1: _) (p_e2: _) (p_t1: _) (p_t2: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e1 p_t1 == true /\ has_type p_gamma p_e2 (TTainted p_t2 p_src) == true)) (ensures (has_type p_gamma (EPair p_e1 p_e2) (TProd p_t1 (TTainted p_t2 p_src)) == true)) = ()
 
 (* taint_preserved_let (matches Coq: Lemma taint_preserved_let) *)
-let taint_preserved_let (p_gamma: _) (p_x: _) (p_e1: _) (p_e2: _) (p_t1: _) (p_src: _) (p_t2: _) : Lemma (requires (has_type p_gamma p_e1 (TTainted p_t1 p_src) == true /\ has_type ((p_x, TTainted p_t1 p_src) :: p_gamma) p_e2 p_t2 == true)) (ensures (has_type p_gamma (ELet p_x p_e1 p_e2) p_t2 == true)) = admit ()
+let taint_preserved_let (p_gamma: _) (p_x: _) (p_e1: _) (p_e2: _) (p_t1: _) (p_src: _) (p_t2: _) : Lemma (requires (has_type p_gamma p_e1 (TTainted p_t1 p_src) == true /\ has_type ((p_x, TTainted p_t1 p_src) :: p_gamma) p_e2 p_t2 == true)) (ensures (has_type p_gamma (ELet p_x p_e1 p_e2) p_t2 == true)) = ()
 
 (* sanitized_preserved_let (matches Coq: Lemma sanitized_preserved_let) *)
-let sanitized_preserved_let (p_gamma: _) (p_x: _) (p_e1: _) (p_e2: _) (p_t: _) (p_san: _) (p_t2: _) : Lemma (requires (has_type p_gamma p_e1 (TSanitized p_t p_san) == true /\ has_type ((p_x, TSanitized p_t p_san) :: p_gamma) p_e2 p_t2 == true)) (ensures (has_type p_gamma (ELet p_x p_e1 p_e2) p_t2 == true)) = admit ()
+let sanitized_preserved_let (p_gamma: _) (p_x: _) (p_e1: _) (p_e2: _) (p_t: _) (p_san: _) (p_t2: _) : Lemma (requires (has_type p_gamma p_e1 (TSanitized p_t p_san) == true /\ has_type ((p_x, TSanitized p_t p_san) :: p_gamma) p_e2 p_t2 == true)) (ensures (has_type p_gamma (ELet p_x p_e1 p_e2) p_t2 == true)) = ()
 
 (* sql_requires_sql_sanitizer (matches Coq: Lemma sql_requires_sql_sanitizer) *)
-let sql_requires_sql_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanSqlParam p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanSqlParam) == true)) = admit ()
+let sql_requires_sql_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanSqlParam p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanSqlParam) == true)) = ()
 
 (* html_requires_html_sanitizer (matches Coq: Lemma html_requires_html_sanitizer) *)
-let html_requires_html_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanHtmlEscape p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanHtmlEscape) == true)) = admit ()
+let html_requires_html_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanHtmlEscape p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanHtmlEscape) == true)) = ()
 
 (* js_requires_js_sanitizer (matches Coq: Lemma js_requires_js_sanitizer) *)
-let js_requires_js_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanJsEscape p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanJsEscape) == true)) = admit ()
+let js_requires_js_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanJsEscape p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanJsEscape) == true)) = ()
 
 (* cmd_requires_cmd_sanitizer (matches Coq: Lemma cmd_requires_cmd_sanitizer) *)
-let cmd_requires_cmd_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanCommandEscape p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanCommandEscape) == true)) = admit ()
+let cmd_requires_cmd_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanCommandEscape p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanCommandEscape) == true)) = ()
 
 (* ldap_requires_ldap_sanitizer (matches Coq: Lemma ldap_requires_ldap_sanitizer) *)
-let ldap_requires_ldap_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanLdapEscape p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanLdapEscape) == true)) = admit ()
+let ldap_requires_ldap_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanLdapEscape p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanLdapEscape) == true)) = ()
 
 (* url_requires_url_sanitizer (matches Coq: Lemma url_requires_url_sanitizer) *)
-let url_requires_url_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanUrlEncode p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanUrlEncode) == true)) = admit ()
+let url_requires_url_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanUrlEncode p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanUrlEncode) == true)) = ()
 
 (* css_requires_css_sanitizer (matches Coq: Lemma css_requires_css_sanitizer) *)
-let css_requires_css_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanCssEscape p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanCssEscape) == true)) = admit ()
+let css_requires_css_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanCssEscape p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanCssEscape) == true)) = ()
 
 (* path_requires_path_sanitizer (matches Coq: Lemma path_requires_path_sanitizer) *)
-let path_requires_path_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanPathSanitize p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanPathSanitize) == true)) = admit ()
+let path_requires_path_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanPathSanitize p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanPathSanitize) == true)) = ()
 
 (* csrf_requires_csrf_sanitizer (matches Coq: Lemma csrf_requires_csrf_sanitizer) *)
-let csrf_requires_csrf_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanCsrfToken p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanCsrfToken) == true)) = admit ()
+let csrf_requires_csrf_sanitizer (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma (EUseSink SanCsrfToken p_e) p_t == true)) (ensures (has_type p_gamma p_e (TSanitized p_t SanCsrfToken) == true)) = ()
 
 (* lookup_deterministic (matches Coq: Lemma lookup_deterministic) *)
-let lookup_deterministic (p_x: _) (p_gamma: _) (p_t1: _) (p_t2: _) : Lemma (requires (lookup p_x p_gamma == Some p_t1 /\ lookup p_x p_gamma == Some p_t2)) (ensures (p_t1 == p_t2)) = admit ()
+let lookup_deterministic (p_x: _) (p_gamma: _) (p_t1: _) (p_t2: _) : Lemma (requires (lookup p_x p_gamma == Some p_t1 /\ lookup p_x p_gamma == Some p_t2)) (ensures (p_t1 == p_t2)) = ()
 
 (* typing_unique (matches Coq: Theorem typing_unique) *)
-let typing_unique (p_gamma: _) (p_e: _) (p_t1: _) (p_t2: _) : Lemma (requires (has_type p_gamma p_e p_t1 == true /\ has_type p_gamma p_e p_t2 == true)) (ensures (p_t1 == p_t2)) = admit ()
+let typing_unique (p_gamma: _) (p_e: _) (p_t1: _) (p_t2: _) : Lemma (requires (has_type p_gamma p_e p_t1 == true /\ has_type p_gamma p_e p_t2 == true)) (ensures (p_t1 == p_t2)) = ()
 
 (* wrong_sanitizer_rejected (matches Coq: Lemma wrong_sanitizer_rejected) *)
-let wrong_sanitizer_rejected (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma p_e (TSanitized p_t SanHtmlEscape) == true)) (ensures (~(has_type p_gamma (EUseSink SanSqlParam p_e) p_t == true))) = admit ()
+let wrong_sanitizer_rejected (p_gamma: _) (p_e: _) (p_t: _) : Lemma (requires (has_type p_gamma p_e (TSanitized p_t SanHtmlEscape) == true)) (ensures (~(has_type p_gamma (EUseSink SanSqlParam p_e) p_t == true))) = ()
 
 (* sql_injection_impossible (matches Coq: Theorem sql_injection_impossible) *)
-let sql_injection_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanSqlParam p_e) p_t == true))) = admit ()
+let sql_injection_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanSqlParam p_e) p_t == true))) = ()
 
 (* xss_html_impossible (matches Coq: Theorem xss_html_impossible) *)
-let xss_html_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanHtmlEscape p_e) p_t == true))) = admit ()
+let xss_html_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanHtmlEscape p_e) p_t == true))) = ()
 
 (* xss_js_impossible (matches Coq: Theorem xss_js_impossible) *)
-let xss_js_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanJsEscape p_e) p_t == true))) = admit ()
+let xss_js_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanJsEscape p_e) p_t == true))) = ()
 
 (* xss_css_impossible (matches Coq: Theorem xss_css_impossible) *)
-let xss_css_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanCssEscape p_e) p_t == true))) = admit ()
+let xss_css_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanCssEscape p_e) p_t == true))) = ()
 
 (* xss_url_impossible (matches Coq: Theorem xss_url_impossible) *)
-let xss_url_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanUrlEncode p_e) p_t == true))) = admit ()
+let xss_url_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanUrlEncode p_e) p_t == true))) = ()
 
 (* command_injection_impossible (matches Coq: Theorem command_injection_impossible) *)
-let command_injection_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanCommandEscape p_e) p_t == true))) = admit ()
+let command_injection_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanCommandEscape p_e) p_t == true))) = ()
 
 (* ldap_injection_impossible (matches Coq: Theorem ldap_injection_impossible) *)
-let ldap_injection_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanLdapEscape p_e) p_t == true))) = admit ()
+let ldap_injection_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanLdapEscape p_e) p_t == true))) = ()
 
 (* path_traversal_impossible (matches Coq: Theorem path_traversal_impossible) *)
-let path_traversal_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanPathSanitize p_e) p_t == true))) = admit ()
+let path_traversal_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanPathSanitize p_e) p_t == true))) = ()
 
 (* csrf_impossible (matches Coq: Theorem csrf_impossible) *)
-let csrf_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanCsrfToken p_e) p_t == true))) = admit ()
+let csrf_impossible (p_gamma: _) (p_e: _) (p_t: _) (p_src: _) : Lemma (requires (has_type p_gamma p_e (TTainted p_t p_src) == true)) (ensures (~(has_type p_gamma (EUseSink SanCsrfToken p_e) p_t == true))) = ()

@@ -1,13 +1,18 @@
 ---- MODULE CryptographicSecurity ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/CryptographicSecurity.v (76 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/CryptographicSecurity.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* TagVerifyResult (matches Coq: Inductive TagVerifyResult)
 CONSTANTS TagValid, TagInvalid, TagError
+
+TagVerifyResultSet == {TagValid, TagInvalid, TagError}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* ConstantTimeOp (matches Coq: Record ConstantTimeOp)
 VARIABLES ct_operation, ct_no_secret_branch, ct_no_secret_addr, ct_no_variable_time, ct_is_constant
@@ -24,524 +29,290 @@ VARIABLES aead_algorithm, aead_key_bits, aead_nonce_bits, aead_tag_bits, aead_co
 \* HashConfig (matches Coq: Record HashConfig)
 VARIABLES hash_algorithm, hash_output_bits, hash_length_ext_safe
 
-\* RNGConfig (matches Coq: Record RNGConfig)
-VARIABLES rng_hardware_seeded, rng_reseeded_regularly, rng_prediction_resistant, rng_output_bits
+vars == <<ct_operation, ct_no_secret_branch, ct_no_secret_addr, ct_no_variable_time, ct_is_constant, key_bits, key_algorithm, key_usage, key_extractable, key_hardware_bound, nt_used, nt_counter, nt_max_uses, aead_algorithm, aead_key_bits, aead_nonce_bits, aead_tag_bits, aead_constant_time, hash_algorithm, hash_output_bits, hash_length_ext_safe>>
 
-\* ProtocolConfig (matches Coq: Record ProtocolConfig)
-VARIABLES proto_min_version, proto_allowed_ciphers, proto_fallback_disabled, proto_forward_secrecy
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
 
-\* PQConfig (matches Coq: Record PQConfig)
-VARIABLES pq_kem_algorithm, pq_sig_algorithm, pq_security_level, pq_hybrid_mode
-
-\* MRAEADConfig (matches Coq: Record MRAEADConfig)
-VARIABLES mraead_siv_mode, mraead_deterministic, mraead_base
-
-\* CertConfig (matches Coq: Record CertConfig)
-VARIABLES cert_ct_required, cert_pinning, cert_revocation_check, cert_ocsp_stapling
-
-\* EncryptionScheme (matches Coq: Record EncryptionScheme)
-VARIABLES enc_key_bits, enc_nonce_bits, enc_tag_bits, enc_block_size, enc_is_authenticated
-
-\* KDFConfig (matches Coq: Record KDFConfig)
-VARIABLES kdf_algorithm, kdf_output_bits, kdf_salt_bits, kdf_iterations, kdf_memory_cost
-
-\* DerivedKey (matches Coq: Record DerivedKey)
-VARIABLES dk_parent_key, dk_derived_key, dk_context, dk_purpose, dk_kdf_config
-
-\* MACConfig (matches Coq: Record MACConfig)
-VARIABLES mac_algorithm, mac_key_bits, mac_tag_bits, mac_constant_time
-
-\* CounterNonce (matches Coq: Record CounterNonce)
-VARIABLES cn_prefix, cn_counter, cn_max_value
-
-\* FullCryptoConfig (matches Coq: Record FullCryptoConfig)
-VARIABLES fc_ct_op, fc_aead, fc_hash, fc_rng, fc_proto, fc_pq, fc_key, fc_cert, fc_mraead, fc_kdf, fc_mac, fc_enc
-
-\* Type invariant
 TypeOK ==
-  /\ ct_operation \in BOOLEAN
+  /\ ct_operation \in Nat
   /\ ct_no_secret_branch \in BOOLEAN
   /\ ct_no_secret_addr \in BOOLEAN
   /\ ct_no_variable_time \in BOOLEAN
   /\ ct_is_constant \in BOOLEAN
-  /\ key_bits \in BOOLEAN
-  /\ key_algorithm \in BOOLEAN
-  /\ key_usage \in BOOLEAN
+  /\ key_bits \in Nat
+  /\ key_algorithm \in Nat
+  /\ key_usage \in Seq(Nat)
   /\ key_extractable \in BOOLEAN
   /\ key_hardware_bound \in BOOLEAN
-  /\ nt_used \in BOOLEAN
-  /\ nt_counter \in BOOLEAN
-  /\ nt_max_uses \in BOOLEAN
-  /\ aead_algorithm \in BOOLEAN
-  /\ aead_key_bits \in BOOLEAN
-  /\ aead_nonce_bits \in BOOLEAN
-  /\ aead_tag_bits \in BOOLEAN
+  /\ nt_used \in Seq(Nat)
+  /\ nt_counter \in Nat
+  /\ nt_max_uses \in Nat
+  /\ aead_algorithm \in Nat
+  /\ aead_key_bits \in Nat
+  /\ aead_nonce_bits \in Nat
+  /\ aead_tag_bits \in Nat
   /\ aead_constant_time \in BOOLEAN
-  /\ hash_algorithm \in BOOLEAN
-  /\ hash_output_bits \in BOOLEAN
+  /\ hash_algorithm \in Nat
+  /\ hash_output_bits \in Nat
   /\ hash_length_ext_safe \in BOOLEAN
-  /\ rng_hardware_seeded \in BOOLEAN
-  /\ rng_reseeded_regularly \in BOOLEAN
-  /\ rng_prediction_resistant \in BOOLEAN
-  /\ rng_output_bits \in BOOLEAN
-  /\ proto_min_version \in BOOLEAN
-  /\ proto_allowed_ciphers \in BOOLEAN
-  /\ proto_fallback_disabled \in BOOLEAN
-  /\ proto_forward_secrecy \in BOOLEAN
-  /\ pq_kem_algorithm \in BOOLEAN
-  /\ pq_sig_algorithm \in BOOLEAN
-  /\ pq_security_level \in BOOLEAN
-  /\ pq_hybrid_mode \in BOOLEAN
-  /\ mraead_siv_mode \in BOOLEAN
-  /\ mraead_deterministic \in BOOLEAN
-  /\ mraead_base \in BOOLEAN
-  /\ cert_ct_required \in BOOLEAN
-  /\ cert_pinning \in BOOLEAN
-  /\ cert_revocation_check \in BOOLEAN
-  /\ cert_ocsp_stapling \in BOOLEAN
-  /\ enc_key_bits \in BOOLEAN
-  /\ enc_nonce_bits \in BOOLEAN
-  /\ enc_tag_bits \in BOOLEAN
-  /\ enc_block_size \in BOOLEAN
-  /\ enc_is_authenticated \in BOOLEAN
-  /\ kdf_algorithm \in BOOLEAN
-  /\ kdf_output_bits \in BOOLEAN
-  /\ kdf_salt_bits \in BOOLEAN
-  /\ kdf_iterations \in BOOLEAN
-  /\ kdf_memory_cost \in BOOLEAN
-  /\ dk_parent_key \in BOOLEAN
-  /\ dk_derived_key \in BOOLEAN
-  /\ dk_context \in BOOLEAN
-  /\ dk_purpose \in BOOLEAN
-  /\ dk_kdf_config \in BOOLEAN
-  /\ mac_algorithm \in BOOLEAN
-  /\ mac_key_bits \in BOOLEAN
-  /\ mac_tag_bits \in BOOLEAN
-  /\ mac_constant_time \in BOOLEAN
-  /\ cn_prefix \in BOOLEAN
-  /\ cn_counter \in BOOLEAN
-  /\ cn_max_value \in BOOLEAN
-  /\ fc_ct_op \in BOOLEAN
-  /\ fc_aead \in BOOLEAN
-  /\ fc_hash \in BOOLEAN
-  /\ fc_rng \in BOOLEAN
-  /\ fc_proto \in BOOLEAN
-  /\ fc_pq \in BOOLEAN
-  /\ fc_key \in BOOLEAN
-  /\ fc_cert \in BOOLEAN
-  /\ fc_mraead \in BOOLEAN
-  /\ fc_kdf \in BOOLEAN
-  /\ fc_mac \in BOOLEAN
-  /\ fc_enc \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ ct_operation = TRUE
-  /\ ct_no_secret_branch = TRUE
-  /\ ct_no_secret_addr = TRUE
-  /\ ct_no_variable_time = TRUE
-  /\ ct_is_constant = TRUE
-  /\ key_bits = TRUE
-  /\ key_algorithm = TRUE
-  /\ key_usage = TRUE
-  /\ key_extractable = TRUE
-  /\ key_hardware_bound = TRUE
-  /\ nt_used = TRUE
-  /\ nt_counter = TRUE
-  /\ nt_max_uses = TRUE
-  /\ aead_algorithm = TRUE
-  /\ aead_key_bits = TRUE
-  /\ aead_nonce_bits = TRUE
-  /\ aead_tag_bits = TRUE
-  /\ aead_constant_time = TRUE
-  /\ hash_algorithm = TRUE
-  /\ hash_output_bits = TRUE
-  /\ hash_length_ext_safe = TRUE
-  /\ rng_hardware_seeded = TRUE
-  /\ rng_reseeded_regularly = TRUE
-  /\ rng_prediction_resistant = TRUE
-  /\ rng_output_bits = TRUE
-  /\ proto_min_version = TRUE
-  /\ proto_allowed_ciphers = TRUE
-  /\ proto_fallback_disabled = TRUE
-  /\ proto_forward_secrecy = TRUE
-  /\ pq_kem_algorithm = TRUE
-  /\ pq_sig_algorithm = TRUE
-  /\ pq_security_level = TRUE
-  /\ pq_hybrid_mode = TRUE
-  /\ mraead_siv_mode = TRUE
-  /\ mraead_deterministic = TRUE
-  /\ mraead_base = TRUE
-  /\ cert_ct_required = TRUE
-  /\ cert_pinning = TRUE
-  /\ cert_revocation_check = TRUE
-  /\ cert_ocsp_stapling = TRUE
-  /\ enc_key_bits = TRUE
-  /\ enc_nonce_bits = TRUE
-  /\ enc_tag_bits = TRUE
-  /\ enc_block_size = TRUE
-  /\ enc_is_authenticated = TRUE
-  /\ kdf_algorithm = TRUE
-  /\ kdf_output_bits = TRUE
-  /\ kdf_salt_bits = TRUE
-  /\ kdf_iterations = TRUE
-  /\ kdf_memory_cost = TRUE
-  /\ dk_parent_key = TRUE
-  /\ dk_derived_key = TRUE
-  /\ dk_context = TRUE
-  /\ dk_purpose = TRUE
-  /\ dk_kdf_config = TRUE
-  /\ mac_algorithm = TRUE
-  /\ mac_key_bits = TRUE
-  /\ mac_tag_bits = TRUE
-  /\ mac_constant_time = TRUE
-  /\ cn_prefix = TRUE
-  /\ cn_counter = TRUE
-  /\ cn_max_value = TRUE
-  /\ fc_ct_op = TRUE
-  /\ fc_aead = TRUE
-  /\ fc_hash = TRUE
-  /\ fc_rng = TRUE
-  /\ fc_proto = TRUE
-  /\ fc_pq = TRUE
-  /\ fc_key = TRUE
-  /\ fc_cert = TRUE
-  /\ fc_mraead = TRUE
-  /\ fc_kdf = TRUE
-  /\ fc_mac = TRUE
-  /\ fc_enc = TRUE
+  /\ ct_operation = 0
+  /\ ct_no_secret_branch = FALSE
+  /\ ct_no_secret_addr = FALSE
+  /\ ct_no_variable_time = FALSE
+  /\ ct_is_constant = FALSE
+  /\ key_bits = 0
+  /\ key_algorithm = 0
+  /\ key_usage = <<>>
+  /\ key_extractable = FALSE
+  /\ key_hardware_bound = FALSE
+  /\ nt_used = <<>>
+  /\ nt_counter = 0
+  /\ nt_max_uses = 0
+  /\ aead_algorithm = 0
+  /\ aead_key_bits = 0
+  /\ aead_nonce_bits = 0
+  /\ aead_tag_bits = 0
+  /\ aead_constant_time = FALSE
+  /\ hash_algorithm = 0
+  /\ hash_output_bits = 0
+  /\ hash_length_ext_safe = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
+
+\* KDF_MIN_ITERATIONS (matches Coq: Definition KDF_MIN_ITERATIONS)
+KDF_MIN_ITERATIONS ==
+  0
 
 \* ct_valid (matches Coq: Definition ct_valid)
-ct_valid(op) == TRUE
+ct_valid(op) ==
+  ct_no_secret_branch /\ ct_no_secret_addr /\ ct_no_variable_time /\ ct_is_constant
 
 \* riina_ct_op (matches Coq: Definition riina_ct_op)
-riina_ct_op == TRUE
+riina_ct_op ==
+  0
 
 \* key_secure (matches Coq: Definition key_secure)
-key_secure(k) == TRUE
+key_secure(k) ==
+  key_bits(k) /\ key_extractable(k)
 
 \* key_strong (matches Coq: Definition key_strong)
-key_strong(k) == TRUE
+key_strong(k) ==
+  k >= 0
 
 \* riina_key (matches Coq: Definition riina_key)
-riina_key == TRUE
-
-\* nonce_fresh (matches Coq: Definition nonce_fresh)
-nonce_fresh(nt, n) == TRUE
+riina_key ==
+  0
 
 \* nonce_counter_safe (matches Coq: Definition nonce_counter_safe)
-nonce_counter_safe(nt) == TRUE
+nonce_counter_safe(nt) ==
+  nt_counter(nt) /\ nt_max_uses(nt)
 
 \* aead_secure (matches Coq: Definition aead_secure)
-aead_secure(cfg) == TRUE
+aead_secure(cfg) ==
+  aead_algorithm(cfg) /\ aead_key_bits(cfg) /\ aead_nonce_bits(cfg) /\ aead_tag_bits(cfg) /\ aead_constant_time(cfg)
 
 \* riina_aead (matches Coq: Definition riina_aead)
-riina_aead == TRUE
+riina_aead ==
+  0
 
 \* hash_secure (matches Coq: Definition hash_secure)
-hash_secure(h) == TRUE
+hash_secure(h) ==
+  hash_output_bits(h) /\ hash_length_ext_safe(h)
 
 \* riina_hash (matches Coq: Definition riina_hash)
-riina_hash == TRUE
+riina_hash ==
+  0
 
 \* rng_secure (matches Coq: Definition rng_secure)
-rng_secure(rng) == TRUE
+rng_secure(rng) ==
+  rng_hardware_seeded(rng) /\ rng_reseeded_regularly(rng) /\ rng_prediction_resistant(rng) /\ rng_output_bits(rng)
 
 \* riina_rng (matches Coq: Definition riina_rng)
-riina_rng == TRUE
+riina_rng ==
+  0
 
 \* proto_secure (matches Coq: Definition proto_secure)
-proto_secure(pc) == TRUE
+proto_secure(pc) ==
+  proto_min_version(pc) /\ proto_fallback_disabled(pc) /\ proto_forward_secrecy(pc)
 
 \* riina_proto (matches Coq: Definition riina_proto)
-riina_proto == TRUE
+riina_proto ==
+  0
 
 \* pq_secure (matches Coq: Definition pq_secure)
-pq_secure(pq) == TRUE
+pq_secure(pq) ==
+  pq_kem_algorithm(pq) /\ pq_sig_algorithm(pq) /\ pq_security_level(pq) /\ pq_hybrid_mode(pq)
 
 \* riina_pq (matches Coq: Definition riina_pq)
-riina_pq == TRUE
+riina_pq ==
+  0
 
 \* mraead_secure (matches Coq: Definition mraead_secure)
-mraead_secure(mr) == TRUE
+mraead_secure(mr) ==
+  mraead_siv_mode /\ aead_secure (mraead_base mr)
 
 \* riina_mraead (matches Coq: Definition riina_mraead)
-riina_mraead == TRUE
+riina_mraead ==
+  0
 
 \* cert_secure (matches Coq: Definition cert_secure)
-cert_secure(cc) == TRUE
-
-\* riina_cert (matches Coq: Definition riina_cert)
-riina_cert == TRUE
-
-\* encrypt_decrypt_inverse_property (matches Coq: Definition encrypt_decrypt_inverse_property)
-encrypt_decrypt_inverse_property(scheme, encrypt, decrypt) == TRUE
-
-\* riina_enc_scheme (matches Coq: Definition riina_enc_scheme)
-riina_enc_scheme == TRUE
-
-\* kdf_secure (matches Coq: Definition kdf_secure)
-kdf_secure(cfg) == TRUE
-
-\* riina_kdf (matches Coq: Definition riina_kdf)
-riina_kdf == TRUE
-
-\* derived_key_valid (matches Coq: Definition derived_key_valid)
-derived_key_valid(dk) == TRUE
-
-\* mac_secure (matches Coq: Definition mac_secure)
-mac_secure(cfg) == TRUE
-
-\* riina_mac (matches Coq: Definition riina_mac)
-riina_mac == TRUE
-
-\* tag_compare_ct (matches Coq: Definition tag_compare_ct)
-tag_compare_ct(expected, actual) == TRUE
-
-\* counter_nonce_valid (matches Coq: Definition counter_nonce_valid)
-counter_nonce_valid(cn) == TRUE
-
-\* nonce_in_set (matches Coq: Definition nonce_in_set)
-nonce_in_set(n, ns) == TRUE
-
-\* full_crypto_secure (matches Coq: Definition full_crypto_secure)
-full_crypto_secure(fc) == TRUE
-
-\* riina_full_crypto (matches Coq: Definition riina_full_crypto)
-riina_full_crypto == TRUE
-
-\* andb_true_iff (matches Coq: Lemma andb_true_iff)
-THEOREM andb_true_iff == Init => TypeOK
-
-\* andb3_true_iff (matches Coq: Lemma andb3_true_iff)
-THEOREM andb3_true_iff == Init => TypeOK
-
-\* negb_true_iff (matches Coq: Lemma negb_true_iff)
-THEOREM negb_true_iff == Init => TypeOK
-
-\* leb_le (matches Coq: Lemma leb_le)
-THEOREM leb_le == Init => TypeOK
-
-\* cry_001_timing_side_channel_mitigated (matches Coq: Theorem cry_001_timing_side_channel_mitigated)
-THEOREM cry_001_timing_side_channel_mitigated == Init => TypeOK
-
-\* cry_001a_riina_timing_safe (matches Coq: Theorem cry_001a_riina_timing_safe)
-THEOREM cry_001a_riina_timing_safe == Init => TypeOK
-
-\* cry_002_spa_mitigated (matches Coq: Theorem cry_002_spa_mitigated)
-THEOREM cry_002_spa_mitigated == Init => TypeOK
-
-\* cry_003_dpa_mitigated (matches Coq: Theorem cry_003_dpa_mitigated)
-THEOREM cry_003_dpa_mitigated == Init => TypeOK
-
-\* cry_004_em_analysis_mitigated (matches Coq: Theorem cry_004_em_analysis_mitigated)
-THEOREM cry_004_em_analysis_mitigated == Init => TypeOK
-
-\* cry_005_acoustic_analysis_mitigated (matches Coq: Theorem cry_005_acoustic_analysis_mitigated)
-THEOREM cry_005_acoustic_analysis_mitigated == Init => TypeOK
-
-\* cry_006_cache_timing_mitigated (matches Coq: Theorem cry_006_cache_timing_mitigated)
-THEOREM cry_006_cache_timing_mitigated == Init => TypeOK
-
-\* cry_007_padding_oracle_mitigated (matches Coq: Theorem cry_007_padding_oracle_mitigated)
-THEOREM cry_007_padding_oracle_mitigated == Init => TypeOK
-
-\* cry_007a_riina_aead_padding_safe (matches Coq: Theorem cry_007a_riina_aead_padding_safe)
-THEOREM cry_007a_riina_aead_padding_safe == Init => TypeOK
-
-\* cry_008_chosen_plaintext_mitigated (matches Coq: Theorem cry_008_chosen_plaintext_mitigated)
-THEOREM cry_008_chosen_plaintext_mitigated == Init => TypeOK
-
-\* cry_009_chosen_ciphertext_mitigated (matches Coq: Theorem cry_009_chosen_ciphertext_mitigated)
-THEOREM cry_009_chosen_ciphertext_mitigated == Init => TypeOK
-
-\* cry_010_known_plaintext_mitigated (matches Coq: Theorem cry_010_known_plaintext_mitigated)
-THEOREM cry_010_known_plaintext_mitigated == Init => TypeOK
-
-\* cry_011_mitm_mitigated (matches Coq: Theorem cry_011_mitm_mitigated)
-THEOREM cry_011_mitm_mitigated == Init => TypeOK
-
-\* cry_011a_riina_key_mitm_safe (matches Coq: Theorem cry_011a_riina_key_mitm_safe)
-THEOREM cry_011a_riina_key_mitm_safe == Init => TypeOK
-
-\* cry_012_birthday_attack_mitigated (matches Coq: Theorem cry_012_birthday_attack_mitigated)
-THEOREM cry_012_birthday_attack_mitigated == Init => TypeOK
-
-\* cry_012a_riina_hash_birthday_safe (matches Coq: Theorem cry_012a_riina_hash_birthday_safe)
-THEOREM cry_012a_riina_hash_birthday_safe == Init => TypeOK
-
-\* cry_013_length_extension_mitigated (matches Coq: Theorem cry_013_length_extension_mitigated)
-THEOREM cry_013_length_extension_mitigated == Init => TypeOK
-
-\* cry_014_downgrade_attack_mitigated (matches Coq: Theorem cry_014_downgrade_attack_mitigated)
-THEOREM cry_014_downgrade_attack_mitigated == Init => TypeOK
-
-\* cry_014a_riina_proto_downgrade_safe (matches Coq: Theorem cry_014a_riina_proto_downgrade_safe)
-THEOREM cry_014a_riina_proto_downgrade_safe == Init => TypeOK
-
-\* cry_015_protocol_attack_mitigated (matches Coq: Theorem cry_015_protocol_attack_mitigated)
-THEOREM cry_015_protocol_attack_mitigated == Init => TypeOK
-
-\* cry_016_implementation_flaw_mitigated (matches Coq: Theorem cry_016_implementation_flaw_mitigated)
-THEOREM cry_016_implementation_flaw_mitigated == Init => TypeOK
-
-\* cry_017_rng_attack_mitigated (matches Coq: Theorem cry_017_rng_attack_mitigated)
-THEOREM cry_017_rng_attack_mitigated == Init => TypeOK
-
-\* cry_017a_riina_rng_secure (matches Coq: Theorem cry_017a_riina_rng_secure)
-THEOREM cry_017a_riina_rng_secure == Init => TypeOK
-
-\* cry_018_key_reuse_mitigated (matches Coq: Theorem cry_018_key_reuse_mitigated)
-THEOREM cry_018_key_reuse_mitigated == Init => TypeOK
-
-\* cry_019_weak_keys_mitigated (matches Coq: Theorem cry_019_weak_keys_mitigated)
-THEOREM cry_019_weak_keys_mitigated == Init => TypeOK
-
-\* cry_020_related_key_attack_mitigated (matches Coq: Theorem cry_020_related_key_attack_mitigated)
-THEOREM cry_020_related_key_attack_mitigated == Init => TypeOK
-
-\* cry_020a_riina_key_related_safe (matches Coq: Theorem cry_020a_riina_key_related_safe)
-THEOREM cry_020a_riina_key_related_safe == Init => TypeOK
-
-\* cry_021_differential_cryptanalysis_mitigated (matches Coq: Theorem cry_021_differential_cryptanalysis_mitigated)
-THEOREM cry_021_differential_cryptanalysis_mitigated == Init => TypeOK
-
-\* cry_022_linear_cryptanalysis_mitigated (matches Coq: Theorem cry_022_linear_cryptanalysis_mitigated)
-THEOREM cry_022_linear_cryptanalysis_mitigated == Init => TypeOK
-
-\* cry_023_algebraic_attack_mitigated (matches Coq: Theorem cry_023_algebraic_attack_mitigated)
-THEOREM cry_023_algebraic_attack_mitigated == Init => TypeOK
-
-\* cry_024_quantum_attack_mitigated (matches Coq: Theorem cry_024_quantum_attack_mitigated)
-THEOREM cry_024_quantum_attack_mitigated == Init => TypeOK
-
-\* cry_024a_riina_pq_secure (matches Coq: Theorem cry_024a_riina_pq_secure)
-THEOREM cry_024a_riina_pq_secure == Init => TypeOK
-
-\* cry_025_harvest_now_decrypt_later_mitigated (matches Coq: Theorem cry_025_harvest_now_decrypt_later_mitigated)
-THEOREM cry_025_harvest_now_decrypt_later_mitigated == Init => TypeOK
-
-\* cry_026_key_extraction_mitigated (matches Coq: Theorem cry_026_key_extraction_mitigated)
-THEOREM cry_026_key_extraction_mitigated == Init => TypeOK
-
-\* cry_027_nonce_misuse_mitigated (matches Coq: Theorem cry_027_nonce_misuse_mitigated)
-THEOREM cry_027_nonce_misuse_mitigated == Init => TypeOK
-
-\* cry_027a_riina_mraead_secure (matches Coq: Theorem cry_027a_riina_mraead_secure)
-THEOREM cry_027a_riina_mraead_secure == Init => TypeOK
-
-\* cry_028_certificate_attack_mitigated (matches Coq: Theorem cry_028_certificate_attack_mitigated)
-THEOREM cry_028_certificate_attack_mitigated == Init => TypeOK
-
-\* cry_028a_riina_cert_secure (matches Coq: Theorem cry_028a_riina_cert_secure)
-THEOREM cry_028a_riina_cert_secure == Init => TypeOK
-
-\* cry_029_random_fault_mitigated (matches Coq: Theorem cry_029_random_fault_mitigated)
-THEOREM cry_029_random_fault_mitigated == Init => TypeOK
-
-\* cry_030_bleichenbacher_mitigated (matches Coq: Theorem cry_030_bleichenbacher_mitigated)
-THEOREM cry_030_bleichenbacher_mitigated == Init => TypeOK
-
-\* cry_031_whisper_leak_mitigated (matches Coq: Theorem cry_031_whisper_leak_mitigated)
-THEOREM cry_031_whisper_leak_mitigated == Init => TypeOK
-
-\* complete_ct_security (matches Coq: Theorem complete_ct_security)
-THEOREM complete_ct_security == Init => TypeOK
-
-\* complete_aead_security (matches Coq: Theorem complete_aead_security)
-THEOREM complete_aead_security == Init => TypeOK
-
-\* riina_complete_crypto_security (matches Coq: Theorem riina_complete_crypto_security)
-THEOREM riina_complete_crypto_security == Init => TypeOK
-
-\* enc_001_length_preservation (matches Coq: Theorem enc_001_length_preservation)
-THEOREM enc_001_length_preservation == Init => TypeOK
-
-\* enc_002_key_size_requirement (matches Coq: Theorem enc_002_key_size_requirement)
-THEOREM enc_002_key_size_requirement == Init => TypeOK
-
-\* enc_003_riina_key_size_valid (matches Coq: Theorem enc_003_riina_key_size_valid)
-THEOREM enc_003_riina_key_size_valid == Init => TypeOK
-
-\* enc_004_riina_nonce_size_valid (matches Coq: Theorem enc_004_riina_nonce_size_valid)
-THEOREM enc_004_riina_nonce_size_valid == Init => TypeOK
-
-\* enc_005_riina_tag_size_valid (matches Coq: Theorem enc_005_riina_tag_size_valid)
-THEOREM enc_005_riina_tag_size_valid == Init => TypeOK
-
-\* enc_006_riina_is_authenticated (matches Coq: Theorem enc_006_riina_is_authenticated)
-THEOREM enc_006_riina_is_authenticated == Init => TypeOK
-
-\* kdf_001_riina_kdf_secure (matches Coq: Theorem kdf_001_riina_kdf_secure)
-THEOREM kdf_001_riina_kdf_secure == Init => TypeOK
-
-\* kdf_002_kdf_output_sufficient (matches Coq: Theorem kdf_002_kdf_output_sufficient)
-THEOREM kdf_002_kdf_output_sufficient == Init => TypeOK
-
-\* kdf_003_kdf_salt_sufficient (matches Coq: Theorem kdf_003_kdf_salt_sufficient)
-THEOREM kdf_003_kdf_salt_sufficient == Init => TypeOK
-
-\* kdf_004_kdf_approved_algorithm (matches Coq: Theorem kdf_004_kdf_approved_algorithm)
-THEOREM kdf_004_kdf_approved_algorithm == Init => TypeOK
-
-\* dk_001_valid_implies_secure_kdf (matches Coq: Theorem dk_001_valid_implies_secure_kdf)
-THEOREM dk_001_valid_implies_secure_kdf == Init => TypeOK
-
-\* mac_001_riina_mac_secure (matches Coq: Theorem mac_001_riina_mac_secure)
-THEOREM mac_001_riina_mac_secure == Init => TypeOK
-
-\* mac_002_mac_key_sufficient (matches Coq: Theorem mac_002_mac_key_sufficient)
-THEOREM mac_002_mac_key_sufficient == Init => TypeOK
-
-\* mac_003_mac_tag_sufficient (matches Coq: Theorem mac_003_mac_tag_sufficient)
-THEOREM mac_003_mac_tag_sufficient == Init => TypeOK
-
-\* mac_004_mac_constant_time (matches Coq: Theorem mac_004_mac_constant_time)
-THEOREM mac_004_mac_constant_time == Init => TypeOK
-
-\* tag_001_equal_tags_valid (matches Coq: Theorem tag_001_equal_tags_valid)
-THEOREM tag_001_equal_tags_valid == Init => TypeOK
-
-\* tag_002_tag_compare_reflexive (matches Coq: Theorem tag_002_tag_compare_reflexive)
-THEOREM tag_002_tag_compare_reflexive == Init => TypeOK
-
-\* nonce_001_counter_incrementable (matches Coq: Theorem nonce_001_counter_incrementable)
-THEOREM nonce_001_counter_incrementable == Init => TypeOK
-
-\* nonce_002_increment_changes_nonce (matches Coq: Theorem nonce_002_increment_changes_nonce)
-THEOREM nonce_002_increment_changes_nonce == Init => TypeOK
-
-\* nonce_003_different_counters_different_nonces (matches Coq: Theorem nonce_003_different_counters_different_nonces)
-THEOREM nonce_003_different_counters_different_nonces == Init => TypeOK
-
-\* nonce_004_empty_set_no_collision (matches Coq: Theorem nonce_004_empty_set_no_collision)
-THEOREM nonce_004_empty_set_no_collision == Init => TypeOK
-
-\* nonce_005_add_increases_size (matches Coq: Theorem nonce_005_add_increases_size)
-THEOREM nonce_005_add_increases_size == Init => TypeOK
-
-\* full_001_riina_full_crypto_secure (matches Coq: Theorem full_001_riina_full_crypto_secure)
-THEOREM full_001_riina_full_crypto_secure == Init => TypeOK
-
-\* full_002_full_implies_ct (matches Coq: Theorem full_002_full_implies_ct)
-THEOREM full_002_full_implies_ct == Init => TypeOK
-
-\* full_003_full_implies_authenticated (matches Coq: Theorem full_003_full_implies_authenticated)
-THEOREM full_003_full_implies_authenticated == Init => TypeOK
-
-\* full_004_full_implies_pq_ready (matches Coq: Theorem full_004_full_implies_pq_ready)
-THEOREM full_004_full_implies_pq_ready == Init => TypeOK
-
-\* full_005_full_implies_kdf_secure (matches Coq: Theorem full_005_full_implies_kdf_secure)
-THEOREM full_005_full_implies_kdf_secure == Init => TypeOK
-
-\* full_006_full_implies_mac_secure (matches Coq: Theorem full_006_full_implies_mac_secure)
-THEOREM full_006_full_implies_mac_secure == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<ct_operation, ct_no_secret_branch, ct_no_secret_addr, ct_no_variable_time, ct_is_constant, key_bits, key_algorithm, key_usage, key_extractable, key_hardware_bound, nt_used, nt_counter, nt_max_uses, aead_algorithm, aead_key_bits, aead_nonce_bits, aead_tag_bits, aead_constant_time, hash_algorithm, hash_output_bits, hash_length_ext_safe, rng_hardware_seeded, rng_reseeded_regularly, rng_prediction_resistant, rng_output_bits, proto_min_version, proto_allowed_ciphers, proto_fallback_disabled, proto_forward_secrecy, pq_kem_algorithm, pq_sig_algorithm, pq_security_level, pq_hybrid_mode, mraead_siv_mode, mraead_deterministic, mraead_base, cert_ct_required, cert_pinning, cert_revocation_check, cert_ocsp_stapling, enc_key_bits, enc_nonce_bits, enc_tag_bits, enc_block_size, enc_is_authenticated, kdf_algorithm, kdf_output_bits, kdf_salt_bits, kdf_iterations, kdf_memory_cost, dk_parent_key, dk_derived_key, dk_context, dk_purpose, dk_kdf_config, mac_algorithm, mac_key_bits, mac_tag_bits, mac_constant_time, cn_prefix, cn_counter, cn_max_value, fc_ct_op, fc_aead, fc_hash, fc_rng, fc_proto, fc_pq, fc_key, fc_cert, fc_mraead, fc_kdf, fc_mac, fc_enc>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<ct_operation, ct_no_secret_branch, ct_no_secret_addr, ct_no_variable_time, ct_is_constant, key_bits, key_algorithm, key_usage, key_extractable, key_hardware_bound, nt_used, nt_counter, nt_max_uses, aead_algorithm, aead_key_bits, aead_nonce_bits, aead_tag_bits, aead_constant_time, hash_algorithm, hash_output_bits, hash_length_ext_safe, rng_hardware_seeded, rng_reseeded_regularly, rng_prediction_resistant, rng_output_bits, proto_min_version, proto_allowed_ciphers, proto_fallback_disabled, proto_forward_secrecy, pq_kem_algorithm, pq_sig_algorithm, pq_security_level, pq_hybrid_mode, mraead_siv_mode, mraead_deterministic, mraead_base, cert_ct_required, cert_pinning, cert_revocation_check, cert_ocsp_stapling, enc_key_bits, enc_nonce_bits, enc_tag_bits, enc_block_size, enc_is_authenticated, kdf_algorithm, kdf_output_bits, kdf_salt_bits, kdf_iterations, kdf_memory_cost, dk_parent_key, dk_derived_key, dk_context, dk_purpose, dk_kdf_config, mac_algorithm, mac_key_bits, mac_tag_bits, mac_constant_time, cn_prefix, cn_counter, cn_max_value, fc_ct_op, fc_aead, fc_hash, fc_rng, fc_proto, fc_pq, fc_key, fc_cert, fc_mraead, fc_kdf, fc_mac, fc_enc>>
+cert_secure(cc) ==
+  cert_ct_required /\ cert_revocation_check
+
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
+
+UpdateConstantTimeOp ==
+  /\ ct_operation' \in 0..100
+  /\ ct_no_secret_branch' \in BOOLEAN
+  /\ ct_no_secret_addr' \in BOOLEAN
+  /\ ct_no_variable_time' \in BOOLEAN
+  /\ ct_is_constant' \in BOOLEAN
+  /\ UNCHANGED <<key_bits, key_algorithm, key_usage, key_extractable, key_hardware_bound, nt_used, nt_counter, nt_max_uses, aead_algorithm, aead_key_bits, aead_nonce_bits, aead_tag_bits, aead_constant_time, hash_algorithm, hash_output_bits, hash_length_ext_safe>>
+
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
+
+Next == UpdateConstantTimeOp \/ ValidateState
+
+Spec == Init /\ [][Next]_vars
+
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
+
+\* andb_true_iff
+THEOREM andb_true_iff ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true < => a = true /\ b = true
+
+\* andb3_true_iff
+THEOREM andb3_true_iff ==
+  \A a \in Nat, b \in Nat, c \in Nat, bool \in Nat :
+      a && b && c = true < => a = true /\ b = true /\ c = true
+
+\* negb_true_iff
+THEOREM negb_true_iff ==
+  \A b \in Nat, bool \in Nat :
+      negb(b) => b = false
+
+\* leb_le
+THEOREM leb_le ==
+  \A n \in Nat, m \in Nat, nat \in Nat :
+      (n <=? m) = true < => n <= m
+
+\* cry_001_timing_side_channel_mitigated
+THEOREM cry_001_timing_side_channel_mitigated ==
+  \A op \in Nat :
+      ct_valid(op) => ct_is_constant(op)
+
+\* cry_001a_riina_timing_safe
+THEOREM cry_001a_riina_timing_safe ==
+  ct_valid(riina_ct_op) = TRUE
+
+\* cry_002_spa_mitigated
+THEOREM cry_002_spa_mitigated ==
+  \A op \in Nat :
+      ct_valid(op) => ct_no_secret_branch(op)
+
+\* cry_003_dpa_mitigated
+THEOREM cry_003_dpa_mitigated ==
+  \A op \in Nat :
+      ct_valid(op) => ct_no_secret_branch(op)
+
+\* cry_004_em_analysis_mitigated
+THEOREM cry_004_em_analysis_mitigated ==
+  \A op \in Nat :
+      ct_valid(op) => ct_no_secret_addr(op)
+
+\* cry_005_acoustic_analysis_mitigated
+THEOREM cry_005_acoustic_analysis_mitigated ==
+  \A op \in Nat :
+      ct_valid(op) => ct_no_variable_time(op)
+
+\* cry_006_cache_timing_mitigated
+THEOREM cry_006_cache_timing_mitigated ==
+  \A op \in Nat :
+      ct_valid(op) => ct_no_secret_addr(op)
+
+\* cry_007_padding_oracle_mitigated
+THEOREM cry_007_padding_oracle_mitigated ==
+  \A cfg \in Nat :
+      aead_secure(cfg) => (128 <=? aead_tag_bits cfg) = true
+
+\* cry_007a_riina_aead_padding_safe
+THEOREM cry_007a_riina_aead_padding_safe ==
+  aead_secure(riina_aead) = TRUE
+
+\* cry_008_chosen_plaintext_mitigated
+THEOREM cry_008_chosen_plaintext_mitigated ==
+  \A cfg \in Nat :
+      aead_secure(cfg) => (aead_algorithm cfg <=? 1) = true
+
+\* cry_009_chosen_ciphertext_mitigated
+THEOREM cry_009_chosen_ciphertext_mitigated ==
+  \A cfg \in Nat :
+      aead_secure(cfg) => (128 <=? aead_tag_bits cfg) = true /\ aead_constant_time cfg = true
+
+\* cry_010_known_plaintext_mitigated
+THEOREM cry_010_known_plaintext_mitigated ==
+  \A cfg \in Nat :
+      aead_secure(cfg) => (128 <=? aead_key_bits cfg) = true
+
+\* cry_011_mitm_mitigated
+THEOREM cry_011_mitm_mitigated ==
+  \A k \in Nat :
+      key_secure(k) => (128 <=? key_bits k) = true
+
+\* cry_011a_riina_key_mitm_safe
+THEOREM cry_011a_riina_key_mitm_safe ==
+  key_secure(riina_key) = TRUE
+
+\* cry_012_birthday_attack_mitigated
+THEOREM cry_012_birthday_attack_mitigated ==
+  \A h \in Nat :
+      hash_secure(h) => (256 <=? hash_output_bits h) = true
+
+\* cry_012a_riina_hash_birthday_safe
+THEOREM cry_012a_riina_hash_birthday_safe ==
+  hash_secure(riina_hash) = TRUE
+
+\* cry_013_length_extension_mitigated
+THEOREM cry_013_length_extension_mitigated ==
+  \A h \in Nat :
+      hash_secure(h) => hash_length_ext_safe(h)
+
+\* cry_014_downgrade_attack_mitigated
+THEOREM cry_014_downgrade_attack_mitigated ==
+  \A pc \in Nat :
+      proto_secure(pc) => proto_fallback_disabled(pc)
+
+\* cry_014a_riina_proto_downgrade_safe
+THEOREM cry_014a_riina_proto_downgrade_safe ==
+  proto_secure(riina_proto) = TRUE
+
+\* cry_015_protocol_attack_mitigated
+THEOREM cry_015_protocol_attack_mitigated ==
+  \A pc \in Nat :
+      proto_secure(pc) => proto_forward_secrecy(pc)
+
+\* cry_016_implementation_flaw_mitigated
+THEOREM cry_016_implementation_flaw_mitigated ==
+  \A op \in Nat, cfg \in Nat :
+      ct_valid(op) => ct_is_constant(op)
+
+\* 51 additional theorems proven in Coq source
 
 ====

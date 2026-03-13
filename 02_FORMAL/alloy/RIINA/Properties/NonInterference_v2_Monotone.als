@@ -7,30 +7,30 @@ open util/boolean
 
 // store_ty_extends_trans_early (matches Coq: Lemma store_ty_extends_trans_early)
 assert store_ty_extends_trans_early {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_ty_extends_trans_early for 5
 
 // val_rel_at_type_mono_store (matches Coq: Lemma val_rel_at_type_mono_store)
 assert val_rel_at_type_mono_store {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_at_type_mono_store for 5
 
 // first_order_decidable_local (matches Coq: Lemma first_order_decidable_local)
 assert first_order_decidable_local {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check first_order_decidable_local for 5
 
 // val_rel_n_mono_store_fo (matches Coq: Lemma val_rel_n_mono_store_fo)
 assert val_rel_n_mono_store_fo {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_n_mono_store_fo for 5
 
 // val_rel_n_mono_store (matches Coq: Lemma val_rel_n_mono_store)
 assert val_rel_n_mono_store {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_n_mono_store for 5

@@ -1,239 +1,267 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/foundations/Typing.v (33 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/typing
+// Derived from 02_FORMAL/coq/foundations/Typing.v
+// Models: type environments, store typing, typing judgment
+module riina/foundations/Typing
 
-open util/boolean
+abstract sig Type {}
+one sig TUnit extends Type {}
+one sig TBool extends Type {}
+one sig TInt extends Type {}
+one sig TString extends Type {}
+sig TFnType extends Type { dom: one Type, cod: one Type }
+sig TProdType extends Type { left: one Type, right: one Type }
 
-abstract sig expr {}
-abstract sig ident {}
-abstract sig loc {}
-abstract sig security_level {}
-abstract sig store {}
-abstract sig store_ty {}
-abstract sig ty {}
-abstract sig type_env {}
+abstract sig SecurityLevel {}
+one sig SPublic extends SecurityLevel {}
+one sig SSecret extends SecurityLevel {}
 
-// lookup (matches Coq: Definition lookup)
-pred lookup[p_x: ident, p_gamma: type_env] {
-  some p_x
+sig TRefType extends Type { inner: one Type, secLvl: one SecurityLevel }
+
+sig Binding {
+  name: one Int,
+  bindType: one Type
 }
 
-// store_ty_update (matches Coq: Definition store_ty_update)
-pred store_ty_update[p_l: loc, p_T: ty, p_sl: security_level, p_sigma: store_ty] {
-  some p_l
+sig TypeEnv {
+  bindings: set Binding
 }
 
-// free_in (matches Coq: Definition free_in)
-pred free_in[p_x: ident, p_e: expr] {
-  some p_x
+fun lookup[env: TypeEnv, x: Int]: set Type {
+  { t: Type | some b: env.bindings | b.name = x and b.bindType = t }
 }
 
-// store_wf (matches Coq: Definition store_wf)
-pred store_wf[p_sigma: store_ty, p_st: store] {
-  some p_sigma
+sig StoreTypeEntry {
+  stLoc: one Int,
+  stType: one Type,
+  stLevel: one SecurityLevel
 }
 
-// store_ty_extends (matches Coq: Definition store_ty_extends)
-pred store_ty_extends[p_sigma: store_ty, p_sigma_prime: store_ty] {
-  some p_sigma
+sig StoreTyping {
+  stEntries: set StoreTypeEntry
 }
 
-// type_uniqueness (matches Coq: Lemma type_uniqueness)
+fun store_ty_lookup[sigma: StoreTyping, l: Int]: set Type {
+  { t: Type | some e: sigma.stEntries | e.stLoc = l and e.stType = t }
+}
+
+pred store_wf[sigma: StoreTyping] {
+  all e: sigma.stEntries | some e.stType
+  all disj e1, e2: sigma.stEntries | e1.stLoc != e2.stLoc
+}
+
+pred store_ty_extends[sigma: StoreTyping, sigma2: StoreTyping] {
+  sigma.stEntries in sigma2.stEntries
+}
+
+abstract sig Effect {}
+one sig EffPure extends Effect {}
+one sig EffIO extends Effect {}
+
+sig TypingJudgment {
+  env: one TypeEnv,
+  storeTy: one StoreTyping,
+  secCtx: one SecurityLevel,
+  resultType: one Type,
+  resultEffect: one Effect,
+  isValue: one Int
+}
+
+fact ValuesPure {
+  all j: TypingJudgment | j.isValue = 1 implies j.resultEffect = EffPure
+}
+
 assert type_uniqueness {
-  #univ >= 0
+  all j1, j2: TypingJudgment |
+    (j1.env = j2.env and j1.storeTy = j2.storeTy and j1.secCtx = j2.secCtx
+     and j1.isValue = j2.isValue and j1.isValue = 1) implies
+      j1.resultType = j2.resultType
 }
-check type_uniqueness for 5
+check type_uniqueness for 6
 
-// canonical_forms_unit (matches Coq: Lemma canonical_forms_unit)
 assert canonical_forms_unit {
-  #univ >= 0
+  all j: TypingJudgment |
+    (j.resultType = TUnit and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check canonical_forms_unit for 5
+check canonical_forms_unit for 6
 
-// canonical_forms_bool (matches Coq: Lemma canonical_forms_bool)
 assert canonical_forms_bool {
-  #univ >= 0
+  all j: TypingJudgment |
+    (j.resultType = TBool and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check canonical_forms_bool for 5
+check canonical_forms_bool for 6
 
-// canonical_forms_int (matches Coq: Lemma canonical_forms_int)
 assert canonical_forms_int {
-  #univ >= 0
+  all j: TypingJudgment |
+    (j.resultType = TInt and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check canonical_forms_int for 5
+check canonical_forms_int for 6
 
-// canonical_forms_string (matches Coq: Lemma canonical_forms_string)
 assert canonical_forms_string {
-  #univ >= 0
+  all j: TypingJudgment |
+    (j.resultType = TString and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check canonical_forms_string for 5
+check canonical_forms_string for 6
 
-// canonical_forms_fn (matches Coq: Lemma canonical_forms_fn)
 assert canonical_forms_fn {
-  #univ >= 0
+  all j: TypingJudgment |
+    (some j.resultType & TFnType and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check canonical_forms_fn for 5
+check canonical_forms_fn for 6
 
-// canonical_forms_prod (matches Coq: Lemma canonical_forms_prod)
 assert canonical_forms_prod {
-  #univ >= 0
+  all j: TypingJudgment |
+    (some j.resultType & TProdType and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check canonical_forms_prod for 5
+check canonical_forms_prod for 6
 
-// canonical_forms_sum (matches Coq: Lemma canonical_forms_sum)
 assert canonical_forms_sum {
-  #univ >= 0
+  all j: TypingJudgment | j.isValue = 1 implies j.resultEffect = EffPure
 }
-check canonical_forms_sum for 5
+check canonical_forms_sum for 6
 
-// canonical_forms_ref (matches Coq: Lemma canonical_forms_ref)
 assert canonical_forms_ref {
-  #univ >= 0
+  all j: TypingJudgment |
+    (some j.resultType & TRefType and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check canonical_forms_ref for 5
+check canonical_forms_ref for 6
 
-// canonical_forms_secret (matches Coq: Lemma canonical_forms_secret)
 assert canonical_forms_secret {
-  #univ >= 0
+  all j: TypingJudgment | j.isValue = 1 implies some j.resultType
 }
-check canonical_forms_secret for 5
+check canonical_forms_secret for 6
 
-// canonical_forms_proof (matches Coq: Lemma canonical_forms_proof)
 assert canonical_forms_proof {
-  #univ >= 0
+  all j: TypingJudgment | j.isValue = 1 implies some j.resultType
 }
-check canonical_forms_proof for 5
+check canonical_forms_proof for 6
 
-// canonical_forms (matches Coq: Lemma canonical_forms)
 assert canonical_forms {
-  #univ >= 0
+  all j: TypingJudgment | j.isValue = 1 implies (j.resultEffect = EffPure and some j.resultType)
 }
-check canonical_forms for 5
+check canonical_forms for 6
 
-// store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
 assert store_ty_extends_refl {
-  #univ >= 0
+  all sigma: StoreTyping | store_ty_extends[sigma, sigma]
 }
-check store_ty_extends_refl for 5
+check store_ty_extends_refl for 6
 
-// store_ty_extends_trans (matches Coq: Lemma store_ty_extends_trans)
 assert store_ty_extends_trans {
-  #univ >= 0
+  all s1, s2, s3: StoreTyping |
+    (store_ty_extends[s1, s2] and store_ty_extends[s2, s3]) implies store_ty_extends[s1, s3]
 }
-check store_ty_extends_trans for 5
+check store_ty_extends_trans for 6
 
-// closed_expr_no_var (matches Coq: Lemma closed_expr_no_var)
 assert closed_expr_no_var {
-  #univ >= 0
+  all j: TypingJudgment | no j.env.bindings implies j.isValue = 1
 }
-check closed_expr_no_var for 5
+check closed_expr_no_var for 6
 
-// value_unit_closed (matches Coq: Lemma value_unit_closed)
 assert value_unit_closed {
-  #univ >= 0
+  all j: TypingJudgment |
+    (j.resultType = TUnit and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check value_unit_closed for 5
+check value_unit_closed for 6
 
-// simple_value_pure_effect (matches Coq: Lemma simple_value_pure_effect)
 assert simple_value_pure_effect {
-  #univ >= 0
+  all j: TypingJudgment | j.isValue = 1 implies j.resultEffect = EffPure
 }
-check simple_value_pure_effect for 5
+check simple_value_pure_effect for 6
 
-// unit_value_pure (matches Coq: Lemma unit_value_pure)
 assert unit_value_pure {
-  #univ >= 0
+  all j: TypingJudgment |
+    (j.resultType = TUnit and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check unit_value_pure for 5
+check unit_value_pure for 6
 
-// lam_value_pure (matches Coq: Lemma lam_value_pure)
 assert lam_value_pure {
-  #univ >= 0
+  all j: TypingJudgment |
+    (some j.resultType & TFnType and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check lam_value_pure for 5
+check lam_value_pure for 6
 
-// loc_value_pure (matches Coq: Lemma loc_value_pure)
 assert loc_value_pure {
-  #univ >= 0
+  all j: TypingJudgment |
+    (some j.resultType & TRefType and j.isValue = 1) implies j.resultEffect = EffPure
 }
-check loc_value_pure for 5
+check loc_value_pure for 6
 
-// lookup_head (matches Coq: Lemma lookup_head)
 assert lookup_head {
-  #univ >= 0
+  all env: TypeEnv, b: Binding |
+    b in env.bindings implies b.bindType in lookup[env, b.name]
 }
-check lookup_head for 5
+check lookup_head for 6
 
-// lookup_tail (matches Coq: Lemma lookup_tail)
 assert lookup_tail {
-  #univ >= 0
+  all env: TypeEnv, x: Int |
+    some lookup[env, x] implies (some b: env.bindings | b.name = x)
 }
-check lookup_tail for 5
+check lookup_tail for 6
 
-// lookup_shadow (matches Coq: Lemma lookup_shadow)
 assert lookup_shadow {
-  #univ >= 0
+  all env: TypeEnv, b1, b2: env.bindings |
+    b1.name = b2.name implies b1.bindType = b2.bindType
 }
-check lookup_shadow for 5
+check lookup_shadow for 6
 
-// lookup_permute (matches Coq: Lemma lookup_permute)
 assert lookup_permute {
-  #univ >= 0
+  all env: TypeEnv, x: Int |
+    some lookup[env, x] iff (some b: env.bindings | b.name = x)
 }
-check lookup_permute for 5
+check lookup_permute for 6
 
-// lookup_empty (matches Coq: Lemma lookup_empty)
 assert lookup_empty {
-  #univ >= 0
+  all env: TypeEnv | no env.bindings implies (all x: Int | no lookup[env, x])
 }
-check lookup_empty for 5
+check lookup_empty for 6
 
-// store_ty_lookup_head (matches Coq: Lemma store_ty_lookup_head)
 assert store_ty_lookup_head {
-  #univ >= 0
+  all sigma: StoreTyping, e: StoreTypeEntry |
+    e in sigma.stEntries implies e.stType in store_ty_lookup[sigma, e.stLoc]
 }
-check store_ty_lookup_head for 5
+check store_ty_lookup_head for 6
 
-// store_ty_lookup_tail (matches Coq: Lemma store_ty_lookup_tail)
 assert store_ty_lookup_tail {
-  #univ >= 0
+  all sigma: StoreTyping, l: Int |
+    some store_ty_lookup[sigma, l] implies (some e: sigma.stEntries | e.stLoc = l)
 }
-check store_ty_lookup_tail for 5
+check store_ty_lookup_tail for 6
 
-// store_ty_lookup_empty (matches Coq: Lemma store_ty_lookup_empty)
 assert store_ty_lookup_empty {
-  #univ >= 0
+  all sigma: StoreTyping |
+    no sigma.stEntries implies (all l: Int | no store_ty_lookup[sigma, l])
 }
-check store_ty_lookup_empty for 5
+check store_ty_lookup_empty for 6
 
-// store_wf_typed_value (matches Coq: Lemma store_wf_typed_value)
 assert store_wf_typed_value {
-  #univ >= 0
+  all sigma: StoreTyping |
+    store_wf[sigma] implies (all e: sigma.stEntries | some e.stType)
 }
-check store_wf_typed_value for 5
+check store_wf_typed_value for 6
 
-// store_wf_runtime_typed (matches Coq: Lemma store_wf_runtime_typed)
 assert store_wf_runtime_typed {
-  #univ >= 0
+  all sigma: StoreTyping |
+    store_wf[sigma] implies (all disj e1, e2: sigma.stEntries | e1.stLoc != e2.stLoc)
 }
-check store_wf_runtime_typed for 5
+check store_wf_runtime_typed for 6
 
-// typing_var_in_context (matches Coq: Lemma typing_var_in_context)
 assert typing_var_in_context {
-  #univ >= 0
+  all env: TypeEnv, x: Int |
+    some lookup[env, x] implies (some b: env.bindings | b.name = x)
 }
-check typing_var_in_context for 5
+check typing_var_in_context for 6
 
-// closed_value_not_var (matches Coq: Lemma closed_value_not_var)
 assert closed_value_not_var {
-  #univ >= 0
+  all j: TypingJudgment |
+    (j.isValue = 1 and no j.env.bindings) implies some j.resultType
 }
-check closed_value_not_var for 5
+check closed_value_not_var for 6
 
-// pure_effect_is_bottom (matches Coq: Lemma pure_effect_is_bottom)
 assert pure_effect_is_bottom {
-  #univ >= 0
+  all j: TypingJudgment | j.isValue = 1 implies j.resultEffect = EffPure
 }
-check pure_effect_is_bottom for 5
+check pure_effect_is_bottom for 6
+
+pred ExampleTyping {
+  some j: TypingJudgment | j.resultType = TBool and j.isValue = 1
+}
+run ExampleTyping for 6

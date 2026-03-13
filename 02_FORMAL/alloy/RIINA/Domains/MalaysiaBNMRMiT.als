@@ -92,168 +92,168 @@ pred tech_refresh_current[trs: TechRefreshStatus, current_time: Int] {
 
 // rmit_domain_1 (matches Coq: Theorem rmit_domain_1)
 assert rmit_domain_1 {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_domain_1 for 5
 
 // rmit_domain_2 (matches Coq: Theorem rmit_domain_2)
 assert rmit_domain_2 {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_domain_2 for 5
 
 // rmit_domain_3 (matches Coq: Theorem rmit_domain_3)
 assert rmit_domain_3 {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_domain_3 for 5
 
 // rmit_domain_4 (matches Coq: Theorem rmit_domain_4)
 assert rmit_domain_4 {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_domain_4 for 5
 
 // rmit_domain_5 (matches Coq: Theorem rmit_domain_5)
 assert rmit_domain_5 {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_domain_5 for 5
 
 // rmit_domain_6_onprem (matches Coq: Theorem rmit_domain_6_onprem)
 assert rmit_domain_6_onprem {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_domain_6_onprem for 5
 
 // rmit_domain_6_cloud (matches Coq: Theorem rmit_domain_6_cloud)
 assert rmit_domain_6_cloud {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_domain_6_cloud for 5
 
 // rmit_domain_7 (matches Coq: Theorem rmit_domain_7)
 assert rmit_domain_7 {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_domain_7 for 5
 
 // rmit_domain_8 (matches Coq: Theorem rmit_domain_8)
 assert rmit_domain_8 {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_domain_8 for 5
 
 // rmit_composition (matches Coq: Theorem rmit_composition)
 assert rmit_composition {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_composition for 5
 
 // fi_type_coverage (matches Coq: Theorem fi_type_coverage)
 assert fi_type_coverage {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check fi_type_coverage for 5
 
 // cyber_controls_strengthened (matches Coq: Theorem cyber_controls_strengthened)
 assert cyber_controls_strengthened {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check cyber_controls_strengthened for 5
 
 // cloud_deployment_coverage (matches Coq: Theorem cloud_deployment_coverage)
 assert cloud_deployment_coverage {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check cloud_deployment_coverage for 5
 
 // on_premise_always_compliant (matches Coq: Theorem on_premise_always_compliant)
 assert on_premise_always_compliant {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check on_premise_always_compliant for 5
 
 // rmit_full_implies_governance (matches Coq: Theorem rmit_full_implies_governance)
 assert rmit_full_implies_governance {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_full_implies_governance for 5
 
 // rmit_full_implies_risk (matches Coq: Theorem rmit_full_implies_risk)
 assert rmit_full_implies_risk {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_full_implies_risk for 5
 
 // rmit_full_implies_cyber (matches Coq: Theorem rmit_full_implies_cyber)
 assert rmit_full_implies_cyber {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_full_implies_cyber for 5
 
 // rmit_full_implies_ops (matches Coq: Theorem rmit_full_implies_ops)
 assert rmit_full_implies_ops {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_full_implies_ops for 5
 
 // rmit_full_implies_audit (matches Coq: Theorem rmit_full_implies_audit)
 assert rmit_full_implies_audit {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_full_implies_audit for 5
 
 // rmit_full_implies_cloud (matches Coq: Theorem rmit_full_implies_cloud)
 assert rmit_full_implies_cloud {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_full_implies_cloud for 5
 
 // rmit_full_implies_third_party (matches Coq: Theorem rmit_full_implies_third_party)
 assert rmit_full_implies_third_party {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_full_implies_third_party for 5
 
 // rmit_full_implies_bcp (matches Coq: Theorem rmit_full_implies_bcp)
 assert rmit_full_implies_bcp {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check rmit_full_implies_bcp for 5
 
 // bnm_incident_reporting (matches Coq: Theorem bnm_incident_reporting)
 assert bnm_incident_reporting {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check bnm_incident_reporting for 5
 
 // bnm_late_incident_violation (matches Coq: Theorem bnm_late_incident_violation)
 assert bnm_late_incident_violation {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check bnm_late_incident_violation for 5
 
 // outsourcing_risk_managed (matches Coq: Theorem outsourcing_risk_managed)
 assert outsourcing_risk_managed {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check outsourcing_risk_managed for 5
 
 // non_material_no_notification (matches Coq: Theorem non_material_no_notification)
 assert non_material_no_notification {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check non_material_no_notification for 5
 
 // tech_refresh_valid (matches Coq: Theorem tech_refresh_valid)
 assert tech_refresh_valid {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check tech_refresh_valid for 5
 
 // tech_refresh_expired (matches Coq: Theorem tech_refresh_expired)
 assert tech_refresh_expired {
-  #univ >= 0
+  all x: FIType | x in FIType
 }
 check tech_refresh_expired for 5

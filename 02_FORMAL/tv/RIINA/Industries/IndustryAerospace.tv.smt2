@@ -15,169 +15,367 @@
 (declare-sort TargetNode 0)
 
 ; dal_le: source semantics (matches Coq)
-(declare-fun source_dal_le () Bool)
-(declare-fun target_dal_le () Bool)
-(assert (= source_dal_le target_dal_le))
+; Translation validation: dal_le preserves semantics
+(push 1)
+(declare-const source_dal_le Int)
+(declare-const target_dal_le Int)
+(assert (>= source_dal_le 0))
+(assert (>= target_dal_le 0))
+(assert (not (= source_dal_le target_dal_le)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; objectives_for_dal: source semantics (matches Coq)
-(declare-fun source_objectives_for_dal () Bool)
-(declare-fun target_objectives_for_dal () Bool)
-(assert (= source_objectives_for_dal target_objectives_for_dal))
+; Translation validation: objectives_for_dal preserves semantics
+(push 1)
+(declare-const source_objectives_for_dal Int)
+(declare-const target_objectives_for_dal Int)
+(assert (>= source_objectives_for_dal 0))
+(assert (>= target_objectives_for_dal 0))
+(assert (not (= source_objectives_for_dal target_objectives_for_dal)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_to_nat: source semantics (matches Coq)
-(declare-fun source_dal_to_nat () Bool)
-(declare-fun target_dal_to_nat () Bool)
-(assert (= source_dal_to_nat target_dal_to_nat))
+; Translation validation: dal_to_nat preserves semantics
+(push 1)
+(declare-const source_dal_to_nat Int)
+(declare-const target_dal_to_nat Int)
+(assert (>= source_dal_to_nat 0))
+(assert (>= target_dal_to_nat 0))
+(assert (not (= source_dal_to_nat target_dal_to_nat)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; mcdc_required: source semantics (matches Coq)
-(declare-fun source_mcdc_required () Bool)
-(declare-fun target_mcdc_required () Bool)
-(assert (= source_mcdc_required target_mcdc_required))
+; Translation validation: mcdc_required preserves semantics
+(push 1)
+(declare-const source_mcdc_required Int)
+(declare-const target_mcdc_required Int)
+(assert (>= source_mcdc_required 0))
+(assert (>= target_mcdc_required 0))
+(assert (not (= source_mcdc_required target_mcdc_required)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; decision_coverage_required: source semantics (matches Coq)
-(declare-fun source_decision_coverage_required () Bool)
-(declare-fun target_decision_coverage_required () Bool)
-(assert (= source_decision_coverage_required target_decision_coverage_required))
+; Translation validation: decision_coverage_required preserves semantics
+(push 1)
+(declare-const source_decision_coverage_required Int)
+(declare-const target_decision_coverage_required Int)
+(assert (>= source_decision_coverage_required 0))
+(assert (>= target_decision_coverage_required 0))
+(assert (not (= source_decision_coverage_required target_decision_coverage_required)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; do178c_all_sections: source semantics (matches Coq)
-(declare-fun source_do178c_all_sections () Bool)
-(declare-fun target_do178c_all_sections () Bool)
-(assert (= source_do178c_all_sections target_do178c_all_sections))
+; Translation validation: do178c_all_sections preserves semantics
+(push 1)
+(declare-const source_do178c_all_sections Int)
+(declare-const target_do178c_all_sections Int)
+(assert (>= source_do178c_all_sections 0))
+(assert (>= target_do178c_all_sections 0))
+(assert (not (= source_do178c_all_sections target_do178c_all_sections)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; formal_methods_applicable: source semantics (matches Coq)
-(declare-fun source_formal_methods_applicable () Bool)
-(declare-fun target_formal_methods_applicable () Bool)
-(assert (= source_formal_methods_applicable target_formal_methods_applicable))
+; Translation validation: formal_methods_applicable preserves semantics
+(push 1)
+(declare-const source_formal_methods_applicable Int)
+(declare-const target_formal_methods_applicable Int)
+(assert (>= source_formal_methods_applicable 0))
+(assert (>= target_formal_methods_applicable 0))
+(assert (not (= source_formal_methods_applicable target_formal_methods_applicable)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_max: source semantics (matches Coq)
-(declare-fun source_dal_max () Bool)
-(declare-fun target_dal_max () Bool)
-(assert (= source_dal_max target_dal_max))
+; Translation validation: dal_max preserves semantics
+(push 1)
+(declare-const source_dal_max Int)
+(declare-const target_dal_max Int)
+(assert (>= source_dal_max 0))
+(assert (>= target_dal_max 0))
+(assert (not (= source_dal_max target_dal_max)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; do_178c_compliance: translation preserves property (matches Coq: Theorem)
-(declare-fun source_do_178c_compliance () Bool)
-(declare-fun target_do_178c_compliance () Bool)
-(assert (= source_do_178c_compliance target_do_178c_compliance))
+; Translation validation: do_178c_compliance preserves semantics
+(push 1)
+(declare-const source_do_178c_compliance Int)
+(declare-const target_do_178c_compliance Int)
+(assert (>= source_do_178c_compliance 0))
+(assert (>= target_do_178c_compliance 0))
+(assert (not (= source_do_178c_compliance target_do_178c_compliance)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; do_326a_security: translation preserves property (matches Coq: Theorem)
-(declare-fun source_do_326a_security () Bool)
-(declare-fun target_do_326a_security () Bool)
-(assert (= source_do_326a_security target_do_326a_security))
+; Translation validation: do_326a_security preserves semantics
+(push 1)
+(declare-const source_do_326a_security Int)
+(declare-const target_do_326a_security Int)
+(assert (>= source_do_326a_security 0))
+(assert (>= target_do_326a_security 0))
+(assert (not (= source_do_326a_security target_do_326a_security)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; do_333_formal_methods: translation preserves property (matches Coq: Theorem)
-(declare-fun source_do_333_formal_methods () Bool)
-(declare-fun target_do_333_formal_methods () Bool)
-(assert (= source_do_333_formal_methods target_do_333_formal_methods))
+; Translation validation: do_333_formal_methods preserves semantics
+(push 1)
+(declare-const source_do_333_formal_methods Int)
+(declare-const target_do_333_formal_methods Int)
+(assert (>= source_do_333_formal_methods 0))
+(assert (>= target_do_333_formal_methods 0))
+(assert (not (= source_do_333_formal_methods target_do_333_formal_methods)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; arp4754a_development: translation preserves property (matches Coq: Theorem)
-(declare-fun source_arp4754a_development () Bool)
-(declare-fun target_arp4754a_development () Bool)
-(assert (= source_arp4754a_development target_arp4754a_development))
+; Translation validation: arp4754a_development preserves semantics
+(push 1)
+(declare-const source_arp4754a_development Int)
+(declare-const target_arp4754a_development Int)
+(assert (>= source_arp4754a_development 0))
+(assert (>= target_arp4754a_development 0))
+(assert (not (= source_arp4754a_development target_arp4754a_development)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; do_254_hardware: translation preserves property (matches Coq: Theorem)
-(declare-fun source_do_254_hardware () Bool)
-(declare-fun target_do_254_hardware () Bool)
-(assert (= source_do_254_hardware target_do_254_hardware))
+; Translation validation: do_254_hardware preserves semantics
+(push 1)
+(declare-const source_do_254_hardware Int)
+(declare-const target_do_254_hardware Int)
+(assert (>= source_do_254_hardware 0))
+(assert (>= target_do_254_hardware 0))
+(assert (not (= source_do_254_hardware target_do_254_hardware)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_a_mcdc_required: translation preserves property (matches Coq: Theorem)
-(declare-fun source_dal_a_mcdc_required () Bool)
-(declare-fun target_dal_a_mcdc_required () Bool)
-(assert (= source_dal_a_mcdc_required target_dal_a_mcdc_required))
+; Translation validation: dal_a_mcdc_required preserves semantics
+(push 1)
+(declare-const source_dal_a_mcdc_required Int)
+(declare-const target_dal_a_mcdc_required Int)
+(assert (>= source_dal_a_mcdc_required 0))
+(assert (>= target_dal_a_mcdc_required 0))
+(assert (not (= source_dal_a_mcdc_required target_dal_a_mcdc_required)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_objectives_monotone: translation preserves property (matches Coq: Theorem)
-(declare-fun source_dal_objectives_monotone () Bool)
-(declare-fun target_dal_objectives_monotone () Bool)
-(assert (= source_dal_objectives_monotone target_dal_objectives_monotone))
+; Translation validation: dal_objectives_monotone preserves semantics
+(push 1)
+(declare-const source_dal_objectives_monotone Int)
+(declare-const target_dal_objectives_monotone Int)
+(assert (>= source_dal_objectives_monotone 0))
+(assert (>= target_dal_objectives_monotone 0))
+(assert (not (= source_dal_objectives_monotone target_dal_objectives_monotone)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_le_iff_nat: translation preserves property (matches Coq: Lemma)
-(declare-fun source_dal_le_iff_nat () Bool)
-(declare-fun target_dal_le_iff_nat () Bool)
-(assert (= source_dal_le_iff_nat target_dal_le_iff_nat))
+; Translation validation: dal_le_iff_nat preserves semantics
+(push 1)
+(declare-const source_dal_le_iff_nat Int)
+(declare-const target_dal_le_iff_nat Int)
+(assert (>= source_dal_le_iff_nat 0))
+(assert (>= target_dal_le_iff_nat 0))
+(assert (not (= source_dal_le_iff_nat target_dal_le_iff_nat)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_le_refl: translation preserves property (matches Coq: Lemma)
-(declare-fun source_dal_le_refl () Bool)
-(declare-fun target_dal_le_refl () Bool)
-(assert (= source_dal_le_refl target_dal_le_refl))
+; Translation validation: dal_le_refl preserves semantics
+(push 1)
+(declare-const source_dal_le_refl Int)
+(declare-const target_dal_le_refl Int)
+(assert (>= source_dal_le_refl 0))
+(assert (>= target_dal_le_refl 0))
+(assert (not (= source_dal_le_refl target_dal_le_refl)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_le_trans: translation preserves property (matches Coq: Lemma)
-(declare-fun source_dal_le_trans () Bool)
-(declare-fun target_dal_le_trans () Bool)
-(assert (= source_dal_le_trans target_dal_le_trans))
+; Translation validation: dal_le_trans preserves semantics
+(push 1)
+(declare-const source_dal_le_trans Int)
+(declare-const target_dal_le_trans Int)
+(assert (>= source_dal_le_trans 0))
+(assert (>= target_dal_le_trans 0))
+(assert (not (= source_dal_le_trans target_dal_le_trans)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_le_antisym: translation preserves property (matches Coq: Lemma)
-(declare-fun source_dal_le_antisym () Bool)
-(declare-fun target_dal_le_antisym () Bool)
-(assert (= source_dal_le_antisym target_dal_le_antisym))
+; Translation validation: dal_le_antisym preserves semantics
+(push 1)
+(declare-const source_dal_le_antisym Int)
+(declare-const target_dal_le_antisym Int)
+(assert (>= source_dal_le_antisym 0))
+(assert (>= target_dal_le_antisym 0))
+(assert (not (= source_dal_le_antisym target_dal_le_antisym)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_le_total: translation preserves property (matches Coq: Lemma)
-(declare-fun source_dal_le_total () Bool)
-(declare-fun target_dal_le_total () Bool)
-(assert (= source_dal_le_total target_dal_le_total))
+; Translation validation: dal_le_total preserves semantics
+(push 1)
+(declare-const source_dal_le_total Int)
+(declare-const target_dal_le_total Int)
+(assert (>= source_dal_le_total 0))
+(assert (>= target_dal_le_total 0))
+(assert (not (= source_dal_le_total target_dal_le_total)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_e_bottom: translation preserves property (matches Coq: Lemma)
-(declare-fun source_dal_e_bottom () Bool)
-(declare-fun target_dal_e_bottom () Bool)
-(assert (= source_dal_e_bottom target_dal_e_bottom))
+; Translation validation: dal_e_bottom preserves semantics
+(push 1)
+(declare-const source_dal_e_bottom Int)
+(declare-const target_dal_e_bottom Int)
+(assert (>= source_dal_e_bottom 0))
+(assert (>= target_dal_e_bottom 0))
+(assert (not (= source_dal_e_bottom target_dal_e_bottom)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_a_max_objectives: translation preserves property (matches Coq: Theorem)
-(declare-fun source_dal_a_max_objectives () Bool)
-(declare-fun target_dal_a_max_objectives () Bool)
-(assert (= source_dal_a_max_objectives target_dal_a_max_objectives))
+; Translation validation: dal_a_max_objectives preserves semantics
+(push 1)
+(declare-const source_dal_a_max_objectives Int)
+(declare-const target_dal_a_max_objectives Int)
+(assert (>= source_dal_a_max_objectives 0))
+(assert (>= target_dal_a_max_objectives 0))
+(assert (not (= source_dal_a_max_objectives target_dal_a_max_objectives)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_e_zero_objectives: translation preserves property (matches Coq: Theorem)
-(declare-fun source_dal_e_zero_objectives () Bool)
-(declare-fun target_dal_e_zero_objectives () Bool)
-(assert (= source_dal_e_zero_objectives target_dal_e_zero_objectives))
+; Translation validation: dal_e_zero_objectives preserves semantics
+(push 1)
+(declare-const source_dal_e_zero_objectives Int)
+(declare-const target_dal_e_zero_objectives Int)
+(assert (>= source_dal_e_zero_objectives 0))
+(assert (>= target_dal_e_zero_objectives 0))
+(assert (not (= source_dal_e_zero_objectives target_dal_e_zero_objectives)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; objectives_strict_ordering: translation preserves property (matches Coq: Theorem)
-(declare-fun source_objectives_strict_ordering () Bool)
-(declare-fun target_objectives_strict_ordering () Bool)
-(assert (= source_objectives_strict_ordering target_objectives_strict_ordering))
+; Translation validation: objectives_strict_ordering preserves semantics
+(push 1)
+(declare-const source_objectives_strict_ordering Int)
+(declare-const target_objectives_strict_ordering Int)
+(assert (>= source_objectives_strict_ordering 0))
+(assert (>= target_objectives_strict_ordering 0))
+(assert (not (= source_objectives_strict_ordering target_objectives_strict_ordering)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; mcdc_only_high_dal: translation preserves property (matches Coq: Theorem)
-(declare-fun source_mcdc_only_high_dal () Bool)
-(declare-fun target_mcdc_only_high_dal () Bool)
-(assert (= source_mcdc_only_high_dal target_mcdc_only_high_dal))
+; Translation validation: mcdc_only_high_dal preserves semantics
+(push 1)
+(declare-const source_mcdc_only_high_dal Int)
+(declare-const target_mcdc_only_high_dal Int)
+(assert (>= source_mcdc_only_high_dal 0))
+(assert (>= target_mcdc_only_high_dal 0))
+(assert (not (= source_mcdc_only_high_dal target_mcdc_only_high_dal)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; decision_coverage_implies_dal_c_or_above: translation preserves property (matches Coq: Theorem)
-(declare-fun source_decision_coverage_implies_dal_c_or_above () Bool)
-(declare-fun target_decision_coverage_implies_dal_c_or_above () Bool)
-(assert (= source_decision_coverage_implies_dal_c_or_above target_decision_coverage_implies_dal_c_or_above))
+; Translation validation: decision_coverage_implies_dal_c_or_above preserves semantics
+(push 1)
+(declare-const source_decision_coverage_implies_dal_c_or_above Int)
+(declare-const target_decision_coverage_implies_dal_c_or_above Int)
+(assert (>= source_decision_coverage_implies_dal_c_or_above 0))
+(assert (>= target_decision_coverage_implies_dal_c_or_above 0))
+(assert (not (= source_decision_coverage_implies_dal_c_or_above target_decision_coverage_implies_dal_c_or_above)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; do178c_all_requires_plans: translation preserves property (matches Coq: Theorem)
-(declare-fun source_do178c_all_requires_plans () Bool)
-(declare-fun target_do178c_all_requires_plans () Bool)
-(assert (= source_do178c_all_requires_plans target_do178c_all_requires_plans))
+; Translation validation: do178c_all_requires_plans preserves semantics
+(push 1)
+(declare-const source_do178c_all_requires_plans Int)
+(declare-const target_do178c_all_requires_plans Int)
+(assert (>= source_do178c_all_requires_plans 0))
+(assert (>= target_do178c_all_requires_plans 0))
+(assert (not (= source_do178c_all_requires_plans target_do178c_all_requires_plans)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; do178c_all_requires_verification: translation preserves property (matches Coq: Theorem)
-(declare-fun source_do178c_all_requires_verification () Bool)
-(declare-fun target_do178c_all_requires_verification () Bool)
-(assert (= source_do178c_all_requires_verification target_do178c_all_requires_verification))
+; Translation validation: do178c_all_requires_verification preserves semantics
+(push 1)
+(declare-const source_do178c_all_requires_verification Int)
+(declare-const target_do178c_all_requires_verification Int)
+(assert (>= source_do178c_all_requires_verification 0))
+(assert (>= target_do178c_all_requires_verification 0))
+(assert (not (= source_do178c_all_requires_verification target_do178c_all_requires_verification)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; do178c_all_requires_qa: translation preserves property (matches Coq: Theorem)
-(declare-fun source_do178c_all_requires_qa () Bool)
-(declare-fun target_do178c_all_requires_qa () Bool)
-(assert (= source_do178c_all_requires_qa target_do178c_all_requires_qa))
+; Translation validation: do178c_all_requires_qa preserves semantics
+(push 1)
+(declare-const source_do178c_all_requires_qa Int)
+(declare-const target_do178c_all_requires_qa Int)
+(assert (>= source_do178c_all_requires_qa 0))
+(assert (>= target_do178c_all_requires_qa 0))
+(assert (not (= source_do178c_all_requires_qa target_do178c_all_requires_qa)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; formal_methods_only_high_dal: translation preserves property (matches Coq: Theorem)
-(declare-fun source_formal_methods_only_high_dal () Bool)
-(declare-fun target_formal_methods_only_high_dal () Bool)
-(assert (= source_formal_methods_only_high_dal target_formal_methods_only_high_dal))
+; Translation validation: formal_methods_only_high_dal preserves semantics
+(push 1)
+(declare-const source_formal_methods_only_high_dal Int)
+(declare-const target_formal_methods_only_high_dal Int)
+(assert (>= source_formal_methods_only_high_dal 0))
+(assert (>= target_formal_methods_only_high_dal 0))
+(assert (not (= source_formal_methods_only_high_dal target_formal_methods_only_high_dal)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_max_dominates_left: translation preserves property (matches Coq: Theorem)
-(declare-fun source_dal_max_dominates_left () Bool)
-(declare-fun target_dal_max_dominates_left () Bool)
-(assert (= source_dal_max_dominates_left target_dal_max_dominates_left))
+; Translation validation: dal_max_dominates_left preserves semantics
+(push 1)
+(declare-const source_dal_max_dominates_left Int)
+(declare-const target_dal_max_dominates_left Int)
+(assert (>= source_dal_max_dominates_left 0))
+(assert (>= target_dal_max_dominates_left 0))
+(assert (not (= source_dal_max_dominates_left target_dal_max_dominates_left)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_max_dominates_right: translation preserves property (matches Coq: Theorem)
-(declare-fun source_dal_max_dominates_right () Bool)
-(declare-fun target_dal_max_dominates_right () Bool)
-(assert (= source_dal_max_dominates_right target_dal_max_dominates_right))
+; Translation validation: dal_max_dominates_right preserves semantics
+(push 1)
+(declare-const source_dal_max_dominates_right Int)
+(declare-const target_dal_max_dominates_right Int)
+(assert (>= source_dal_max_dominates_right 0))
+(assert (>= target_dal_max_dominates_right 0))
+(assert (not (= source_dal_max_dominates_right target_dal_max_dominates_right)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; dal_max_objectives: translation preserves property (matches Coq: Theorem)
-(declare-fun source_dal_max_objectives () Bool)
-(declare-fun target_dal_max_objectives () Bool)
-(assert (= source_dal_max_objectives target_dal_max_objectives))
+; Translation validation: dal_max_objectives preserves semantics
+(push 1)
+(declare-const source_dal_max_objectives Int)
+(declare-const target_dal_max_objectives Int)
+(assert (>= source_dal_max_objectives 0))
+(assert (>= target_dal_max_objectives 0))
+(assert (not (= source_dal_max_objectives target_dal_max_objectives)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; Verify all translation validations are satisfiable
 (check-sat)

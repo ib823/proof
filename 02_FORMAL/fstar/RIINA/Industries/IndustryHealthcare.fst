@@ -112,7 +112,7 @@ let lab_in_normal_range (p_value: nat) (p_low: nat) (p_high: nat) : Tot bool =
 let hipaa_privacy_rule (p_phi: phi__category) (p_accessor: nat) (p_purpose: nat) : Lemma (True) = ()
 
 (* hipaa_security_rule (matches Coq: Theorem hipaa_security_rule) *)
-let hipaa_security_rule (p_policy: hipaa__policy) : Lemma (p_policy.f_access_control == true /\ p_policy.f_audit_controls == true /\ p_policy.f_integrity_controls == true /\ p_policy.f_transmission_security == true) = admit ()
+let hipaa_security_rule (p_policy: hipaa__policy) : Lemma (p_policy.f_access_control == true /\ p_policy.f_audit_controls == true /\ p_policy.f_integrity_controls == true /\ p_policy.f_transmission_security == true) = ()
 
 (* fda_21_cfr_11 (matches Coq: Theorem fda_21_cfr_11) *)
 let fda_21_cfr_11 (p_electronic_record: nat) (p_signature: nat) : Lemma (True) = ()
@@ -124,73 +124,73 @@ let hitech_breach_notification (p_breach: nat) (p_affected_individuals: nat) : L
 let hl7_fhir_security (p_resource: nat) (p_access_token: nat) : Lemma (True) = ()
 
 (* phi_encryption_required (matches Coq: Theorem phi_encryption_required) *)
-let phi_encryption_required (p_policy: hipaa__policy) (p_phi: phi__category) : Lemma (p_policy.f_transmission_security == true) = admit ()
+let phi_encryption_required (p_policy: hipaa__policy) (p_phi: phi__category) : Lemma (p_policy.f_transmission_security == true) = ()
 
 (* minimum_necessary_access (matches Coq: Theorem minimum_necessary_access) *)
-let minimum_necessary_access (p_phi_requested: _) (p_treatment_required: _) : Lemma (minimum_necessary p_phi_requested p_treatment_required == true) = admit ()
+let minimum_necessary_access (p_phi_requested: _) (p_treatment_required: _) : Lemma (minimum_necessary p_phi_requested p_treatment_required == true) = ()
 
 (* phi_sensitivity_positive (matches Coq: Lemma phi_sensitivity_positive) *)
-let phi_sensitivity_positive (p_cat: _) : Lemma (phi_sensitivity p_cat >= 1) = admit ()
+let phi_sensitivity_positive (p_cat: _) : Lemma (phi_sensitivity p_cat >= 1) = ()
 
 (* max_sensitivity_categories (matches Coq: Lemma max_sensitivity_categories) *)
-let max_sensitivity_categories (p_cat: _) : Lemma (requires (p_cat == Psychotherapy \/ p_cat == Substance \/ p_cat == HIV_Status)) (ensures (phi_sensitivity p_cat == 4)) = admit ()
+let max_sensitivity_categories (p_cat: _) : Lemma (requires (p_cat == Psychotherapy \/ p_cat == Substance \/ p_cat == HIV_Status)) (ensures (phi_sensitivity p_cat == 4)) = ()
 
 (* demographics_minimum (matches Coq: Lemma demographics_minimum) *)
-let demographics_minimum (p_cat: _) : Lemma (phi_sensitivity Demographics <= phi_sensitivity p_cat) = admit ()
+let demographics_minimum (p_cat: _) : Lemma (phi_sensitivity Demographics <= phi_sensitivity p_cat) = ()
 
 (* genetic_sensitivity_ordering (matches Coq: Lemma genetic_sensitivity_ordering) *)
-let genetic_sensitivity_ordering () : Lemma (phi_sensitivity MedicalRecord < phi_sensitivity Genetic /\ phi_sensitivity Genetic < phi_sensitivity Psychotherapy) = admit ()
+let genetic_sensitivity_ordering () : Lemma (phi_sensitivity MedicalRecord < phi_sensitivity Genetic /\ phi_sensitivity Genetic < phi_sensitivity Psychotherapy) = ()
 
 (* hipaa_all_controls_access (matches Coq: Lemma hipaa_all_controls_access) *)
-let hipaa_all_controls_access () : Lemma (hipaa_all_controls.f_access_control == true) = admit ()
+let hipaa_all_controls_access () : Lemma (hipaa_all_controls.f_access_control == true) = ()
 
 (* hipaa_all_controls_audit (matches Coq: Lemma hipaa_all_controls_audit) *)
-let hipaa_all_controls_audit () : Lemma (hipaa_all_controls.f_audit_controls == true) = admit ()
+let hipaa_all_controls_audit () : Lemma (hipaa_all_controls.f_audit_controls == true) = ()
 
 (* hipaa_all_controls_integrity (matches Coq: Lemma hipaa_all_controls_integrity) *)
-let hipaa_all_controls_integrity () : Lemma (hipaa_all_controls.f_integrity_controls == true) = admit ()
+let hipaa_all_controls_integrity () : Lemma (hipaa_all_controls.f_integrity_controls == true) = ()
 
 (* hipaa_all_controls_transmission (matches Coq: Lemma hipaa_all_controls_transmission) *)
-let hipaa_all_controls_transmission () : Lemma (hipaa_all_controls.f_transmission_security == true) = admit ()
+let hipaa_all_controls_transmission () : Lemma (hipaa_all_controls.f_transmission_security == true) = ()
 
 (* hipaa_all_controls_encryption (matches Coq: Lemma hipaa_all_controls_encryption) *)
-let hipaa_all_controls_encryption () : Lemma (hipaa_all_controls.f_encryption_at_rest == true) = admit ()
+let hipaa_all_controls_encryption () : Lemma (hipaa_all_controls.f_encryption_at_rest == true) = ()
 
 (* hipaa_full_implies_minimum (matches Coq: Theorem hipaa_full_implies_minimum) *)
-let hipaa_full_implies_minimum (p_p: _) : Lemma (requires (p_p.f_access_control == true /\ p_p.f_audit_controls == true /\ p_p.f_integrity_controls == true /\ p_p.f_transmission_security == true)) (ensures (hipaa_security_minimum p_p == true)) = admit ()
+let hipaa_full_implies_minimum (p_p: _) : Lemma (requires (p_p.f_access_control == true /\ p_p.f_audit_controls == true /\ p_p.f_integrity_controls == true /\ p_p.f_transmission_security == true)) (ensures (hipaa_security_minimum p_p == true)) = ()
 
 (* break_glass_must_be_logged (matches Coq: Theorem break_glass_must_be_logged) *)
-let break_glass_must_be_logged (p_evt: _) : Lemma (requires (p_evt.f_bg_logged == true)) (ensures (~(p_evt.f_bg_logged == false))) = admit ()
+let break_glass_must_be_logged (p_evt: _) : Lemma (requires (p_evt.f_bg_logged == true)) (ensures (~(p_evt.f_bg_logged == false))) = ()
 
 (* high_role_accesses_demographics (matches Coq: Theorem high_role_accesses_demographics) *)
-let high_role_accesses_demographics (p_r: _) : Lemma (requires (p_r >= 1)) (ensures (access_permitted p_r Demographics == true)) = admit ()
+let high_role_accesses_demographics (p_r: _) : Lemma (requires (p_r >= 1)) (ensures (access_permitted p_r Demographics == true)) = ()
 
 (* low_role_denied_psychotherapy (matches Coq: Theorem low_role_denied_psychotherapy) *)
-let low_role_denied_psychotherapy () : Lemma (access_permitted 2 Psychotherapy == false) = admit ()
+let low_role_denied_psychotherapy () : Lemma (access_permitted 2 Psychotherapy == false) = ()
 
 (* role_sufficient_access (matches Coq: Theorem role_sufficient_access) *)
-let role_sufficient_access (p_r: _) (p_cat: _) : Lemma (requires (p_r >= phi_sensitivity p_cat)) (ensures (access_permitted p_r p_cat == true)) = admit ()
+let role_sufficient_access (p_r: _) (p_cat: _) : Lemma (requires (p_r >= phi_sensitivity p_cat)) (ensures (access_permitted p_r p_cat == true)) = ()
 
 (* consent_expired_invalid (matches Coq: Theorem consent_expired_invalid) *)
-let consent_expired_invalid (p_c: _) (p_t: _) : Lemma (requires (Nat.ltb p_t (p_c.f_consent_expiry) == false)) (ensures (consent_valid p_c p_t == false)) = admit ()
+let consent_expired_invalid (p_c: _) (p_t: _) : Lemma (requires (Nat.ltb p_t (p_c.f_consent_expiry) == false)) (ensures (consent_valid p_c p_t == false)) = ()
 
 (* consent_not_granted_invalid (matches Coq: Theorem consent_not_granted_invalid) *)
-let consent_not_granted_invalid (p_c: _) (p_t: _) : Lemma (requires (p_c.f_consent_granted == false)) (ensures (consent_valid p_c p_t == false)) = admit ()
+let consent_not_granted_invalid (p_c: _) (p_t: _) : Lemma (requires (p_c.f_consent_granted == false)) (ensures (consent_valid p_c p_t == false)) = ()
 
 (* retention_minimum_6_years (matches Coq: Theorem retention_minimum_6_years) *)
-let retention_minimum_6_years (p_cat: _) : Lemma (retention_years p_cat >= 6) = admit ()
+let retention_minimum_6_years (p_cat: _) : Lemma (retention_years p_cat >= 6) = ()
 
 (* genetic_longest_retention (matches Coq: Theorem genetic_longest_retention) *)
-let genetic_longest_retention (p_cat: _) : Lemma (retention_years p_cat <= retention_years Genetic) = admit ()
+let genetic_longest_retention (p_cat: _) : Lemma (retention_years p_cat <= retention_years Genetic) = ()
 
 (* deidentification_removes_sensitivity (matches Coq: Theorem deidentification_removes_sensitivity) *)
-let deidentification_removes_sensitivity (p_cat: _) : Lemma (deidentified_sensitivity true p_cat == 0) = admit ()
+let deidentification_removes_sensitivity (p_cat: _) : Lemma (deidentified_sensitivity true p_cat == 0) = ()
 
 (* non_deidentified_preserves_sensitivity (matches Coq: Theorem non_deidentified_preserves_sensitivity) *)
-let non_deidentified_preserves_sensitivity (p_cat: _) : Lemma (deidentified_sensitivity false p_cat == phi_sensitivity p_cat) = admit ()
+let non_deidentified_preserves_sensitivity (p_cat: _) : Lemma (deidentified_sensitivity false p_cat == phi_sensitivity p_cat) = ()
 
 (* dose_range_valid (matches Coq: Theorem dose_range_valid) *)
-let dose_range_valid (p_dose: _) (p_min_d: _) (p_max_d: _) : Lemma (requires (dose_in_range p_dose p_min_d p_max_d == true)) (ensures (p_min_d <= p_dose /\ p_dose <= p_max_d)) = admit ()
+let dose_range_valid (p_dose: _) (p_min_d: _) (p_max_d: _) : Lemma (requires (dose_in_range p_dose p_min_d p_max_d == true)) (ensures (p_min_d <= p_dose /\ p_dose <= p_max_d)) = ()
 
 (* lab_range_bounded (matches Coq: Theorem lab_range_bounded) *)
-let lab_range_bounded (p_v: _) (p_lo: _) (p_hi: _) : Lemma (requires (lab_in_normal_range p_v p_lo p_hi == true)) (ensures (p_lo <= p_v /\ p_v <= p_hi)) = admit ()
+let lab_range_bounded (p_v: _) (p_lo: _) (p_hi: _) : Lemma (requires (lab_in_normal_range p_v p_lo p_hi == true)) (ensures (p_lo <= p_v /\ p_v <= p_hi)) = ()

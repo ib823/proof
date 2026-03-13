@@ -15,189 +15,411 @@
 (declare-sort TargetNode 0)
 
 ; sat_pred: source semantics (matches Coq)
-(declare-fun source_sat_pred () Bool)
-(declare-fun target_sat_pred () Bool)
-(assert (= source_sat_pred target_sat_pred))
+; Translation validation: sat_pred preserves semantics
+(push 1)
+(declare-const source_sat_pred Int)
+(declare-const target_sat_pred Int)
+(assert (>= source_sat_pred 0))
+(assert (>= target_sat_pred 0))
+(assert (not (= source_sat_pred target_sat_pred)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; pred_implies: source semantics (matches Coq)
-(declare-fun source_pred_implies () Bool)
-(declare-fun target_pred_implies () Bool)
-(assert (= source_pred_implies target_pred_implies))
+; Translation validation: pred_implies preserves semantics
+(push 1)
+(declare-const source_pred_implies Int)
+(declare-const target_pred_implies Int)
+(assert (>= source_pred_implies 0))
+(assert (>= target_pred_implies 0))
+(assert (not (= source_pred_implies target_pred_implies)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; inhabits_refinement: source semantics (matches Coq)
-(declare-fun source_inhabits_refinement () Bool)
-(declare-fun target_inhabits_refinement () Bool)
-(assert (= source_inhabits_refinement target_inhabits_refinement))
+; Translation validation: inhabits_refinement preserves semantics
+(push 1)
+(declare-const source_inhabits_refinement Int)
+(declare-const target_inhabits_refinement Int)
+(assert (>= source_inhabits_refinement 0))
+(assert (>= target_inhabits_refinement 0))
+(assert (not (= source_inhabits_refinement target_inhabits_refinement)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; lookup: source semantics (matches Coq)
-(declare-fun source_lookup () Bool)
-(declare-fun target_lookup () Bool)
-(assert (= source_lookup target_lookup))
+; Translation validation: lookup preserves semantics
+(push 1)
+(declare-const source_lookup Int)
+(declare-const target_lookup Int)
+(assert (>= source_lookup 0))
+(assert (>= target_lookup 0))
+(assert (not (= source_lookup target_lookup)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; lookup_val: source semantics (matches Coq)
-(declare-fun source_lookup_val () Bool)
-(declare-fun target_lookup_val () Bool)
-(assert (= source_lookup_val target_lookup_val))
+; Translation validation: lookup_val preserves semantics
+(push 1)
+(declare-const source_lookup_val Int)
+(declare-const target_lookup_val Int)
+(assert (>= source_lookup_val 0))
+(assert (>= target_lookup_val 0))
+(assert (not (= source_lookup_val target_lookup_val)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; eval: source semantics (matches Coq)
-(declare-fun source_eval () Bool)
-(declare-fun target_eval () Bool)
-(assert (= source_eval target_eval))
+; Translation validation: eval preserves semantics
+(push 1)
+(declare-const source_eval Int)
+(declare-const target_eval Int)
+(assert (>= source_eval 0))
+(assert (>= target_eval 0))
+(assert (not (= source_eval target_eval)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; do_subst: source semantics (matches Coq)
-(declare-fun source_do_subst () Bool)
-(declare-fun target_do_subst () Bool)
-(assert (= source_do_subst target_do_subst))
+; Translation validation: do_subst preserves semantics
+(push 1)
+(declare-const source_do_subst Int)
+(declare-const target_do_subst Int)
+(assert (>= source_do_subst 0))
+(assert (>= target_do_subst 0))
+(assert (not (= source_do_subst target_do_subst)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; is_null: source semantics (matches Coq)
-(declare-fun source_is_null () Bool)
-(declare-fun target_is_null () Bool)
-(assert (= source_is_null target_is_null))
+; Translation validation: is_null preserves semantics
+(push 1)
+(declare-const source_is_null Int)
+(declare-const target_is_null Int)
+(assert (>= source_is_null 0))
+(assert (>= target_is_null 0))
+(assert (not (= source_is_null target_is_null)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; is_non_null: source semantics (matches Coq)
-(declare-fun source_is_non_null () Bool)
-(declare-fun target_is_non_null () Bool)
-(assert (= source_is_non_null target_is_non_null))
+; Translation validation: is_non_null preserves semantics
+(push 1)
+(declare-const source_is_non_null Int)
+(declare-const target_is_non_null Int)
+(assert (>= source_is_non_null 0))
+(assert (>= target_is_non_null 0))
+(assert (not (= source_is_non_null target_is_non_null)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; bounds_pred: source semantics (matches Coq)
-(declare-fun source_bounds_pred () Bool)
-(declare-fun target_bounds_pred () Bool)
-(assert (= source_bounds_pred target_bounds_pred))
+; Translation validation: bounds_pred preserves semantics
+(push 1)
+(declare-const source_bounds_pred Int)
+(declare-const target_bounds_pred Int)
+(assert (>= source_bounds_pred 0))
+(assert (>= target_bounds_pred 0))
+(assert (not (= source_bounds_pred target_bounds_pred)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; non_null_pred: source semantics (matches Coq)
-(declare-fun source_non_null_pred () Bool)
-(declare-fun target_non_null_pred () Bool)
-(assert (= source_non_null_pred target_non_null_pred))
+; Translation validation: non_null_pred preserves semantics
+(push 1)
+(declare-const source_non_null_pred Int)
+(declare-const target_non_null_pred Int)
+(assert (>= source_non_null_pred 0))
+(assert (>= target_non_null_pred 0))
+(assert (not (= source_non_null_pred target_non_null_pred)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; array_index_pred: source semantics (matches Coq)
-(declare-fun source_array_index_pred () Bool)
-(declare-fun target_array_index_pred () Bool)
-(assert (= source_array_index_pred target_array_index_pred))
+; Translation validation: array_index_pred preserves semantics
+(push 1)
+(declare-const source_array_index_pred Int)
+(declare-const target_array_index_pred Int)
+(assert (>= source_array_index_pred 0))
+(assert (>= target_array_index_pred 0))
+(assert (not (= source_array_index_pred target_array_index_pred)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; positive_pred: source semantics (matches Coq)
-(declare-fun source_positive_pred () Bool)
-(declare-fun target_positive_pred () Bool)
-(assert (= source_positive_pred target_positive_pred))
+; Translation validation: positive_pred preserves semantics
+(push 1)
+(declare-const source_positive_pred Int)
+(declare-const target_positive_pred Int)
+(assert (>= source_positive_pred 0))
+(assert (>= target_positive_pred 0))
+(assert (not (= source_positive_pred target_positive_pred)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_01_refinement_subtyping: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_01_refinement_subtyping () Bool)
-(declare-fun target_TYPE_004_01_refinement_subtyping () Bool)
-(assert (= source_TYPE_004_01_refinement_subtyping target_TYPE_004_01_refinement_subtyping))
+; Translation validation: TYPE_004_01_refinement_subtyping preserves semantics
+(push 1)
+(declare-const source_TYPE_004_01_refinement_subtyping Int)
+(declare-const target_TYPE_004_01_refinement_subtyping Int)
+(assert (>= source_TYPE_004_01_refinement_subtyping 0))
+(assert (>= target_TYPE_004_01_refinement_subtyping 0))
+(assert (not (= source_TYPE_004_01_refinement_subtyping target_TYPE_004_01_refinement_subtyping)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_02_refinement_introduction: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_02_refinement_introduction () Bool)
-(declare-fun target_TYPE_004_02_refinement_introduction () Bool)
-(assert (= source_TYPE_004_02_refinement_introduction target_TYPE_004_02_refinement_introduction))
+; Translation validation: TYPE_004_02_refinement_introduction preserves semantics
+(push 1)
+(declare-const source_TYPE_004_02_refinement_introduction Int)
+(declare-const target_TYPE_004_02_refinement_introduction Int)
+(assert (>= source_TYPE_004_02_refinement_introduction 0))
+(assert (>= target_TYPE_004_02_refinement_introduction 0))
+(assert (not (= source_TYPE_004_02_refinement_introduction target_TYPE_004_02_refinement_introduction)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_03_refinement_elimination: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_03_refinement_elimination () Bool)
-(declare-fun target_TYPE_004_03_refinement_elimination () Bool)
-(assert (= source_TYPE_004_03_refinement_elimination target_TYPE_004_03_refinement_elimination))
+; Translation validation: TYPE_004_03_refinement_elimination preserves semantics
+(push 1)
+(declare-const source_TYPE_004_03_refinement_elimination Int)
+(declare-const target_TYPE_004_03_refinement_elimination Int)
+(assert (>= source_TYPE_004_03_refinement_elimination 0))
+(assert (>= target_TYPE_004_03_refinement_elimination 0))
+(assert (not (= source_TYPE_004_03_refinement_elimination target_TYPE_004_03_refinement_elimination)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_04_refinement_conjunction: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_04_refinement_conjunction () Bool)
-(declare-fun target_TYPE_004_04_refinement_conjunction () Bool)
-(assert (= source_TYPE_004_04_refinement_conjunction target_TYPE_004_04_refinement_conjunction))
+; Translation validation: TYPE_004_04_refinement_conjunction preserves semantics
+(push 1)
+(declare-const source_TYPE_004_04_refinement_conjunction Int)
+(declare-const target_TYPE_004_04_refinement_conjunction Int)
+(assert (>= source_TYPE_004_04_refinement_conjunction 0))
+(assert (>= target_TYPE_004_04_refinement_conjunction 0))
+(assert (not (= source_TYPE_004_04_refinement_conjunction target_TYPE_004_04_refinement_conjunction)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_05_dependent_function_refinement: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_05_dependent_function_refinement () Bool)
-(declare-fun target_TYPE_004_05_dependent_function_refinement () Bool)
-(assert (= source_TYPE_004_05_dependent_function_refinement target_TYPE_004_05_dependent_function_refinement))
+; Translation validation: TYPE_004_05_dependent_function_refinement preserves semantics
+(push 1)
+(declare-const source_TYPE_004_05_dependent_function_refinement Int)
+(declare-const target_TYPE_004_05_dependent_function_refinement Int)
+(assert (>= source_TYPE_004_05_dependent_function_refinement 0))
+(assert (>= target_TYPE_004_05_dependent_function_refinement 0))
+(assert (not (= source_TYPE_004_05_dependent_function_refinement target_TYPE_004_05_dependent_function_refinement)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_06_refinement_substitution: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_06_refinement_substitution () Bool)
-(declare-fun target_TYPE_004_06_refinement_substitution () Bool)
-(assert (= source_TYPE_004_06_refinement_substitution target_TYPE_004_06_refinement_substitution))
+; Translation validation: TYPE_004_06_refinement_substitution preserves semantics
+(push 1)
+(declare-const source_TYPE_004_06_refinement_substitution Int)
+(declare-const target_TYPE_004_06_refinement_substitution Int)
+(assert (>= source_TYPE_004_06_refinement_substitution 0))
+(assert (>= target_TYPE_004_06_refinement_substitution 0))
+(assert (not (= source_TYPE_004_06_refinement_substitution target_TYPE_004_06_refinement_substitution)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_07_smt_decidability: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_07_smt_decidability () Bool)
-(declare-fun target_TYPE_004_07_smt_decidability () Bool)
-(assert (= source_TYPE_004_07_smt_decidability target_TYPE_004_07_smt_decidability))
+; Translation validation: TYPE_004_07_smt_decidability preserves semantics
+(push 1)
+(declare-const source_TYPE_004_07_smt_decidability Int)
+(declare-const target_TYPE_004_07_smt_decidability Int)
+(assert (>= source_TYPE_004_07_smt_decidability 0))
+(assert (>= target_TYPE_004_07_smt_decidability 0))
+(assert (not (= source_TYPE_004_07_smt_decidability target_TYPE_004_07_smt_decidability)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_08_bounds_checking: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_08_bounds_checking () Bool)
-(declare-fun target_TYPE_004_08_bounds_checking () Bool)
-(assert (= source_TYPE_004_08_bounds_checking target_TYPE_004_08_bounds_checking))
+; Translation validation: TYPE_004_08_bounds_checking preserves semantics
+(push 1)
+(declare-const source_TYPE_004_08_bounds_checking Int)
+(declare-const target_TYPE_004_08_bounds_checking Int)
+(assert (>= source_TYPE_004_08_bounds_checking 0))
+(assert (>= target_TYPE_004_08_bounds_checking 0))
+(assert (not (= source_TYPE_004_08_bounds_checking target_TYPE_004_08_bounds_checking)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_09_non_null_refinement: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_09_non_null_refinement () Bool)
-(declare-fun target_TYPE_004_09_non_null_refinement () Bool)
-(assert (= source_TYPE_004_09_non_null_refinement target_TYPE_004_09_non_null_refinement))
+; Translation validation: TYPE_004_09_non_null_refinement preserves semantics
+(push 1)
+(declare-const source_TYPE_004_09_non_null_refinement Int)
+(declare-const target_TYPE_004_09_non_null_refinement Int)
+(assert (>= source_TYPE_004_09_non_null_refinement 0))
+(assert (>= target_TYPE_004_09_non_null_refinement 0))
+(assert (not (= source_TYPE_004_09_non_null_refinement target_TYPE_004_09_non_null_refinement)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_10_array_bounds_safety: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_10_array_bounds_safety () Bool)
-(declare-fun target_TYPE_004_10_array_bounds_safety () Bool)
-(assert (= source_TYPE_004_10_array_bounds_safety target_TYPE_004_10_array_bounds_safety))
+; Translation validation: TYPE_004_10_array_bounds_safety preserves semantics
+(push 1)
+(declare-const source_TYPE_004_10_array_bounds_safety Int)
+(declare-const target_TYPE_004_10_array_bounds_safety Int)
+(assert (>= source_TYPE_004_10_array_bounds_safety 0))
+(assert (>= target_TYPE_004_10_array_bounds_safety 0))
+(assert (not (= source_TYPE_004_10_array_bounds_safety target_TYPE_004_10_array_bounds_safety)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_11_positive_refinement: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_11_positive_refinement () Bool)
-(declare-fun target_TYPE_004_11_positive_refinement () Bool)
-(assert (= source_TYPE_004_11_positive_refinement target_TYPE_004_11_positive_refinement))
+; Translation validation: TYPE_004_11_positive_refinement preserves semantics
+(push 1)
+(declare-const source_TYPE_004_11_positive_refinement Int)
+(declare-const target_TYPE_004_11_positive_refinement Int)
+(assert (>= source_TYPE_004_11_positive_refinement 0))
+(assert (>= target_TYPE_004_11_positive_refinement 0))
+(assert (not (= source_TYPE_004_11_positive_refinement target_TYPE_004_11_positive_refinement)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_12_refinement_preservation: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_12_refinement_preservation () Bool)
-(declare-fun target_TYPE_004_12_refinement_preservation () Bool)
-(assert (= source_TYPE_004_12_refinement_preservation target_TYPE_004_12_refinement_preservation))
+; Translation validation: TYPE_004_12_refinement_preservation preserves semantics
+(push 1)
+(declare-const source_TYPE_004_12_refinement_preservation Int)
+(declare-const target_TYPE_004_12_refinement_preservation Int)
+(assert (>= source_TYPE_004_12_refinement_preservation 0))
+(assert (>= target_TYPE_004_12_refinement_preservation 0))
+(assert (not (= source_TYPE_004_12_refinement_preservation target_TYPE_004_12_refinement_preservation)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_13_pred_true_satisfied: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_13_pred_true_satisfied () Bool)
-(declare-fun target_TYPE_004_13_pred_true_satisfied () Bool)
-(assert (= source_TYPE_004_13_pred_true_satisfied target_TYPE_004_13_pred_true_satisfied))
+; Translation validation: TYPE_004_13_pred_true_satisfied preserves semantics
+(push 1)
+(declare-const source_TYPE_004_13_pred_true_satisfied Int)
+(declare-const target_TYPE_004_13_pred_true_satisfied Int)
+(assert (>= source_TYPE_004_13_pred_true_satisfied 0))
+(assert (>= target_TYPE_004_13_pred_true_satisfied 0))
+(assert (not (= source_TYPE_004_13_pred_true_satisfied target_TYPE_004_13_pred_true_satisfied)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_14_pred_false_unsatisfied: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_14_pred_false_unsatisfied () Bool)
-(declare-fun target_TYPE_004_14_pred_false_unsatisfied () Bool)
-(assert (= source_TYPE_004_14_pred_false_unsatisfied target_TYPE_004_14_pred_false_unsatisfied))
+; Translation validation: TYPE_004_14_pred_false_unsatisfied preserves semantics
+(push 1)
+(declare-const source_TYPE_004_14_pred_false_unsatisfied Int)
+(declare-const target_TYPE_004_14_pred_false_unsatisfied Int)
+(assert (>= source_TYPE_004_14_pred_false_unsatisfied 0))
+(assert (>= target_TYPE_004_14_pred_false_unsatisfied 0))
+(assert (not (= source_TYPE_004_14_pred_false_unsatisfied target_TYPE_004_14_pred_false_unsatisfied)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_15_pred_and_comm: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_15_pred_and_comm () Bool)
-(declare-fun target_TYPE_004_15_pred_and_comm () Bool)
-(assert (= source_TYPE_004_15_pred_and_comm target_TYPE_004_15_pred_and_comm))
+; Translation validation: TYPE_004_15_pred_and_comm preserves semantics
+(push 1)
+(declare-const source_TYPE_004_15_pred_and_comm Int)
+(declare-const target_TYPE_004_15_pred_and_comm Int)
+(assert (>= source_TYPE_004_15_pred_and_comm 0))
+(assert (>= target_TYPE_004_15_pred_and_comm 0))
+(assert (not (= source_TYPE_004_15_pred_and_comm target_TYPE_004_15_pred_and_comm)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_16_pred_or_comm: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_16_pred_or_comm () Bool)
-(declare-fun target_TYPE_004_16_pred_or_comm () Bool)
-(assert (= source_TYPE_004_16_pred_or_comm target_TYPE_004_16_pred_or_comm))
+; Translation validation: TYPE_004_16_pred_or_comm preserves semantics
+(push 1)
+(declare-const source_TYPE_004_16_pred_or_comm Int)
+(declare-const target_TYPE_004_16_pred_or_comm Int)
+(assert (>= source_TYPE_004_16_pred_or_comm 0))
+(assert (>= target_TYPE_004_16_pred_or_comm 0))
+(assert (not (= source_TYPE_004_16_pred_or_comm target_TYPE_004_16_pred_or_comm)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_17_pred_implies_ptrue: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_17_pred_implies_ptrue () Bool)
-(declare-fun target_TYPE_004_17_pred_implies_ptrue () Bool)
-(assert (= source_TYPE_004_17_pred_implies_ptrue target_TYPE_004_17_pred_implies_ptrue))
+; Translation validation: TYPE_004_17_pred_implies_ptrue preserves semantics
+(push 1)
+(declare-const source_TYPE_004_17_pred_implies_ptrue Int)
+(declare-const target_TYPE_004_17_pred_implies_ptrue Int)
+(assert (>= source_TYPE_004_17_pred_implies_ptrue 0))
+(assert (>= target_TYPE_004_17_pred_implies_ptrue 0))
+(assert (not (= source_TYPE_004_17_pred_implies_ptrue target_TYPE_004_17_pred_implies_ptrue)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_18_pred_pfalse_implies: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_18_pred_pfalse_implies () Bool)
-(declare-fun target_TYPE_004_18_pred_pfalse_implies () Bool)
-(assert (= source_TYPE_004_18_pred_pfalse_implies target_TYPE_004_18_pred_pfalse_implies))
+; Translation validation: TYPE_004_18_pred_pfalse_implies preserves semantics
+(push 1)
+(declare-const source_TYPE_004_18_pred_pfalse_implies Int)
+(declare-const target_TYPE_004_18_pred_pfalse_implies Int)
+(assert (>= source_TYPE_004_18_pred_pfalse_implies 0))
+(assert (>= target_TYPE_004_18_pred_pfalse_implies 0))
+(assert (not (= source_TYPE_004_18_pred_pfalse_implies target_TYPE_004_18_pred_pfalse_implies)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_19_subtype_refl: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_19_subtype_refl () Bool)
-(declare-fun target_TYPE_004_19_subtype_refl () Bool)
-(assert (= source_TYPE_004_19_subtype_refl target_TYPE_004_19_subtype_refl))
+; Translation validation: TYPE_004_19_subtype_refl preserves semantics
+(push 1)
+(declare-const source_TYPE_004_19_subtype_refl Int)
+(declare-const target_TYPE_004_19_subtype_refl Int)
+(assert (>= source_TYPE_004_19_subtype_refl 0))
+(assert (>= target_TYPE_004_19_subtype_refl 0))
+(assert (not (= source_TYPE_004_19_subtype_refl target_TYPE_004_19_subtype_refl)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_20_pred_double_neg: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_20_pred_double_neg () Bool)
-(declare-fun target_TYPE_004_20_pred_double_neg () Bool)
-(assert (= source_TYPE_004_20_pred_double_neg target_TYPE_004_20_pred_double_neg))
+; Translation validation: TYPE_004_20_pred_double_neg preserves semantics
+(push 1)
+(declare-const source_TYPE_004_20_pred_double_neg Int)
+(declare-const target_TYPE_004_20_pred_double_neg Int)
+(assert (>= source_TYPE_004_20_pred_double_neg 0))
+(assert (>= target_TYPE_004_20_pred_double_neg 0))
+(assert (not (= source_TYPE_004_20_pred_double_neg target_TYPE_004_20_pred_double_neg)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_21_eval_val: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_21_eval_val () Bool)
-(declare-fun target_TYPE_004_21_eval_val () Bool)
-(assert (= source_TYPE_004_21_eval_val target_TYPE_004_21_eval_val))
+; Translation validation: TYPE_004_21_eval_val preserves semantics
+(push 1)
+(declare-const source_TYPE_004_21_eval_val Int)
+(declare-const target_TYPE_004_21_eval_val Int)
+(assert (>= source_TYPE_004_21_eval_val 0))
+(assert (>= target_TYPE_004_21_eval_val 0))
+(assert (not (= source_TYPE_004_21_eval_val target_TYPE_004_21_eval_val)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_22_pred_impl_refl: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_22_pred_impl_refl () Bool)
-(declare-fun target_TYPE_004_22_pred_impl_refl () Bool)
-(assert (= source_TYPE_004_22_pred_impl_refl target_TYPE_004_22_pred_impl_refl))
+; Translation validation: TYPE_004_22_pred_impl_refl preserves semantics
+(push 1)
+(declare-const source_TYPE_004_22_pred_impl_refl Int)
+(declare-const target_TYPE_004_22_pred_impl_refl Int)
+(assert (>= source_TYPE_004_22_pred_impl_refl 0))
+(assert (>= target_TYPE_004_22_pred_impl_refl 0))
+(assert (not (= source_TYPE_004_22_pred_impl_refl target_TYPE_004_22_pred_impl_refl)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_23_pred_and_assoc: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_23_pred_and_assoc () Bool)
-(declare-fun target_TYPE_004_23_pred_and_assoc () Bool)
-(assert (= source_TYPE_004_23_pred_and_assoc target_TYPE_004_23_pred_and_assoc))
+; Translation validation: TYPE_004_23_pred_and_assoc preserves semantics
+(push 1)
+(declare-const source_TYPE_004_23_pred_and_assoc Int)
+(declare-const target_TYPE_004_23_pred_and_assoc Int)
+(assert (>= source_TYPE_004_23_pred_and_assoc 0))
+(assert (>= target_TYPE_004_23_pred_and_assoc 0))
+(assert (not (= source_TYPE_004_23_pred_and_assoc target_TYPE_004_23_pred_and_assoc)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; TYPE_004_24_pred_or_assoc: translation preserves property (matches Coq: Theorem)
-(declare-fun source_TYPE_004_24_pred_or_assoc () Bool)
-(declare-fun target_TYPE_004_24_pred_or_assoc () Bool)
-(assert (= source_TYPE_004_24_pred_or_assoc target_TYPE_004_24_pred_or_assoc))
+; Translation validation: TYPE_004_24_pred_or_assoc preserves semantics
+(push 1)
+(declare-const source_TYPE_004_24_pred_or_assoc Int)
+(declare-const target_TYPE_004_24_pred_or_assoc Int)
+(assert (>= source_TYPE_004_24_pred_or_assoc 0))
+(assert (>= target_TYPE_004_24_pred_or_assoc 0))
+(assert (not (= source_TYPE_004_24_pred_or_assoc target_TYPE_004_24_pred_or_assoc)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; Verify all translation validations are satisfiable
 (check-sat)

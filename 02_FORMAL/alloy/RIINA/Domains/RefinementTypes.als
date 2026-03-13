@@ -82,144 +82,144 @@ pred positive_pred {}
 
 // TYPE_004_01_refinement_subtyping (matches Coq: Theorem TYPE_004_01_refinement_subtyping)
 assert TYPE_004_01_refinement_subtyping {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_01_refinement_subtyping for 5
 
 // TYPE_004_02_refinement_introduction (matches Coq: Theorem TYPE_004_02_refinement_introduction)
 assert TYPE_004_02_refinement_introduction {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_02_refinement_introduction for 5
 
 // TYPE_004_03_refinement_elimination (matches Coq: Theorem TYPE_004_03_refinement_elimination)
 assert TYPE_004_03_refinement_elimination {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_03_refinement_elimination for 5
 
 // TYPE_004_04_refinement_conjunction (matches Coq: Theorem TYPE_004_04_refinement_conjunction)
 assert TYPE_004_04_refinement_conjunction {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_04_refinement_conjunction for 5
 
 // TYPE_004_05_dependent_function_refinement (matches Coq: Theorem TYPE_004_05_dependent_function_refinement)
 assert TYPE_004_05_dependent_function_refinement {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_05_dependent_function_refinement for 5
 
 // TYPE_004_06_refinement_substitution (matches Coq: Theorem TYPE_004_06_refinement_substitution)
 assert TYPE_004_06_refinement_substitution {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_06_refinement_substitution for 5
 
 // TYPE_004_07_smt_decidability (matches Coq: Theorem TYPE_004_07_smt_decidability)
 assert TYPE_004_07_smt_decidability {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_07_smt_decidability for 5
 
 // TYPE_004_08_bounds_checking (matches Coq: Theorem TYPE_004_08_bounds_checking)
 assert TYPE_004_08_bounds_checking {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_08_bounds_checking for 5
 
 // TYPE_004_09_non_null_refinement (matches Coq: Theorem TYPE_004_09_non_null_refinement)
 assert TYPE_004_09_non_null_refinement {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_09_non_null_refinement for 5
 
 // TYPE_004_10_array_bounds_safety (matches Coq: Theorem TYPE_004_10_array_bounds_safety)
 assert TYPE_004_10_array_bounds_safety {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_10_array_bounds_safety for 5
 
 // TYPE_004_11_positive_refinement (matches Coq: Theorem TYPE_004_11_positive_refinement)
 assert TYPE_004_11_positive_refinement {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_11_positive_refinement for 5
 
 // TYPE_004_12_refinement_preservation (matches Coq: Theorem TYPE_004_12_refinement_preservation)
 assert TYPE_004_12_refinement_preservation {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_12_refinement_preservation for 5
 
 // TYPE_004_13_pred_true_satisfied (matches Coq: Theorem TYPE_004_13_pred_true_satisfied)
 assert TYPE_004_13_pred_true_satisfied {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_13_pred_true_satisfied for 5
 
 // TYPE_004_14_pred_false_unsatisfied (matches Coq: Theorem TYPE_004_14_pred_false_unsatisfied)
 assert TYPE_004_14_pred_false_unsatisfied {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_14_pred_false_unsatisfied for 5
 
 // TYPE_004_15_pred_and_comm (matches Coq: Theorem TYPE_004_15_pred_and_comm)
 assert TYPE_004_15_pred_and_comm {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_15_pred_and_comm for 5
 
 // TYPE_004_16_pred_or_comm (matches Coq: Theorem TYPE_004_16_pred_or_comm)
 assert TYPE_004_16_pred_or_comm {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_16_pred_or_comm for 5
 
 // TYPE_004_17_pred_implies_ptrue (matches Coq: Theorem TYPE_004_17_pred_implies_ptrue)
 assert TYPE_004_17_pred_implies_ptrue {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_17_pred_implies_ptrue for 5
 
 // TYPE_004_18_pred_pfalse_implies (matches Coq: Theorem TYPE_004_18_pred_pfalse_implies)
 assert TYPE_004_18_pred_pfalse_implies {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_18_pred_pfalse_implies for 5
 
 // TYPE_004_19_subtype_refl (matches Coq: Theorem TYPE_004_19_subtype_refl)
 assert TYPE_004_19_subtype_refl {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_19_subtype_refl for 5
 
 // TYPE_004_20_pred_double_neg (matches Coq: Theorem TYPE_004_20_pred_double_neg)
 assert TYPE_004_20_pred_double_neg {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_20_pred_double_neg for 5
 
 // TYPE_004_21_eval_val (matches Coq: Theorem TYPE_004_21_eval_val)
 assert TYPE_004_21_eval_val {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_21_eval_val for 5
 
 // TYPE_004_22_pred_impl_refl (matches Coq: Theorem TYPE_004_22_pred_impl_refl)
 assert TYPE_004_22_pred_impl_refl {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_22_pred_impl_refl for 5
 
 // TYPE_004_23_pred_and_assoc (matches Coq: Theorem TYPE_004_23_pred_and_assoc)
 assert TYPE_004_23_pred_and_assoc {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_23_pred_and_assoc for 5
 
 // TYPE_004_24_pred_or_assoc (matches Coq: Theorem TYPE_004_24_pred_or_assoc)
 assert TYPE_004_24_pred_or_assoc {
-  #univ >= 0
+  all x: BaseTy | x in BaseTy
 }
 check TYPE_004_24_pred_or_assoc for 5

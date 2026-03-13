@@ -1,21 +1,33 @@
 ---- MODULE MeltdownDefense ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/MeltdownDefense.v (30 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/MeltdownDefense.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* MeltdownVariant (matches Coq: Inductive MeltdownVariant)
 CONSTANTS Meltdown_US, Meltdown_P, Meltdown_RW, Meltdown_PK, Meltdown_BR
 
+MeltdownVariantSet == {Meltdown_US, Meltdown_P, Meltdown_RW, Meltdown_PK, Meltdown_BR}
+
 \* MeltdownDefense (matches Coq: Inductive MeltdownDefense)
 CONSTANTS KPTI, L1TF_Flush, TSX_Disable, MDS_Clear
+
+MeltdownDefenseSet == {KPTI, L1TF_Flush, TSX_Disable, MDS_Clear}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* MeltdownDefenseConfig (matches Coq: Record MeltdownDefenseConfig)
 VARIABLES mdc_us_protected, mdc_p_protected, mdc_rw_protected, mdc_pk_protected, mdc_br_protected, mdc_kpti_enabled, mdc_l1tf_mitigated
 
-\* Type invariant
+vars == <<mdc_us_protected, mdc_p_protected, mdc_rw_protected, mdc_pk_protected, mdc_br_protected, mdc_kpti_enabled, mdc_l1tf_mitigated>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
   /\ mdc_us_protected \in BOOLEAN
   /\ mdc_p_protected \in BOOLEAN
@@ -25,122 +37,182 @@ TypeOK ==
   /\ mdc_kpti_enabled \in BOOLEAN
   /\ mdc_l1tf_mitigated \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ mdc_us_protected = TRUE
-  /\ mdc_p_protected = TRUE
-  /\ mdc_rw_protected = TRUE
-  /\ mdc_pk_protected = TRUE
-  /\ mdc_br_protected = TRUE
-  /\ mdc_kpti_enabled = TRUE
-  /\ mdc_l1tf_mitigated = TRUE
+  /\ mdc_us_protected = FALSE
+  /\ mdc_p_protected = FALSE
+  /\ mdc_rw_protected = FALSE
+  /\ mdc_pk_protected = FALSE
+  /\ mdc_br_protected = FALSE
+  /\ mdc_kpti_enabled = FALSE
+  /\ mdc_l1tf_mitigated = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* all_meltdown_protected (matches Coq: Definition all_meltdown_protected)
-all_meltdown_protected(c) == TRUE
+all_meltdown_protected(c) ==
+  mdc_us_protected /\ mdc_p_protected /\ mdc_rw_protected /\ mdc_pk_protected /\ mdc_br_protected
 
 \* meltdown_mitigations_enabled (matches Coq: Definition meltdown_mitigations_enabled)
-meltdown_mitigations_enabled(c) == TRUE
+meltdown_mitigations_enabled(c) ==
+  mdc_kpti_enabled /\ mdc_l1tf_mitigated
 
 \* meltdown_fully_protected (matches Coq: Definition meltdown_fully_protected)
-meltdown_fully_protected(c) == TRUE
+meltdown_fully_protected(c) ==
+  all_meltdown_protected /\ meltdown_mitigations_enabled
 
 \* riina_meltdown_config (matches Coq: Definition riina_meltdown_config)
-riina_meltdown_config == TRUE
+riina_meltdown_config ==
+  0
 
-\* andb_true_iff (matches Coq: Lemma andb_true_iff)
-THEOREM andb_true_iff == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* MELTDOWN_001_all_variants (matches Coq: Theorem MELTDOWN_001_all_variants)
-THEOREM MELTDOWN_001_all_variants == Init => TypeOK
+UpdateMeltdownDefenseConfig ==
+  /\ mdc_us_protected' \in BOOLEAN
+  /\ mdc_p_protected' \in BOOLEAN
+  /\ mdc_rw_protected' \in BOOLEAN
+  /\ mdc_pk_protected' \in BOOLEAN
+  /\ mdc_br_protected' \in BOOLEAN
+  /\ mdc_kpti_enabled' \in BOOLEAN
+  /\ mdc_l1tf_mitigated' \in BOOLEAN
 
-\* MELTDOWN_002_mitigations (matches Coq: Theorem MELTDOWN_002_mitigations)
-THEOREM MELTDOWN_002_mitigations == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* MELTDOWN_003_fully_protected (matches Coq: Theorem MELTDOWN_003_fully_protected)
-THEOREM MELTDOWN_003_fully_protected == Init => TypeOK
+Next == UpdateMeltdownDefenseConfig \/ ValidateState
 
-\* MELTDOWN_004_us_required (matches Coq: Theorem MELTDOWN_004_us_required)
-THEOREM MELTDOWN_004_us_required == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* MELTDOWN_005_p_required (matches Coq: Theorem MELTDOWN_005_p_required)
-THEOREM MELTDOWN_005_p_required == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* MELTDOWN_006_kpti_required (matches Coq: Theorem MELTDOWN_006_kpti_required)
-THEOREM MELTDOWN_006_kpti_required == Init => TypeOK
+\* andb_true_iff
+THEOREM andb_true_iff ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true < => a = true /\ b = true
 
-\* MELTDOWN_007_l1tf_required (matches Coq: Theorem MELTDOWN_007_l1tf_required)
-THEOREM MELTDOWN_007_l1tf_required == Init => TypeOK
+\* MELTDOWN_001_all_variants
+THEOREM MELTDOWN_001_all_variants ==
+  all_meltdown_protected(riina_meltdown_config) = TRUE
 
-\* MELTDOWN_008_full_implies_variants (matches Coq: Theorem MELTDOWN_008_full_implies_variants)
-THEOREM MELTDOWN_008_full_implies_variants == Init => TypeOK
+\* MELTDOWN_002_mitigations
+THEOREM MELTDOWN_002_mitigations ==
+  meltdown_mitigations_enabled(riina_meltdown_config) = TRUE
 
-\* MELTDOWN_009_full_implies_mitigations (matches Coq: Theorem MELTDOWN_009_full_implies_mitigations)
-THEOREM MELTDOWN_009_full_implies_mitigations == Init => TypeOK
+\* MELTDOWN_003_fully_protected
+THEOREM MELTDOWN_003_fully_protected ==
+  meltdown_fully_protected(riina_meltdown_config) = TRUE
 
-\* MELTDOWN_010_riina_kpti (matches Coq: Theorem MELTDOWN_010_riina_kpti)
-THEOREM MELTDOWN_010_riina_kpti == Init => TypeOK
+\* MELTDOWN_004_us_required
+THEOREM MELTDOWN_004_us_required ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      all_meltdown_protected(c) => mdc_us_protected(c)
 
-\* MELTDOWN_011_riina_l1tf (matches Coq: Theorem MELTDOWN_011_riina_l1tf)
-THEOREM MELTDOWN_011_riina_l1tf == Init => TypeOK
+\* MELTDOWN_005_p_required
+THEOREM MELTDOWN_005_p_required ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      all_meltdown_protected(c) => mdc_p_protected(c)
 
-\* MELTDOWN_012_full_implies_kpti (matches Coq: Theorem MELTDOWN_012_full_implies_kpti)
-THEOREM MELTDOWN_012_full_implies_kpti == Init => TypeOK
+\* MELTDOWN_006_kpti_required
+THEOREM MELTDOWN_006_kpti_required ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_mitigations_enabled(c) => mdc_kpti_enabled(c)
 
-\* MELTDOWN_013_full_implies_us (matches Coq: Theorem MELTDOWN_013_full_implies_us)
-THEOREM MELTDOWN_013_full_implies_us == Init => TypeOK
+\* MELTDOWN_007_l1tf_required
+THEOREM MELTDOWN_007_l1tf_required ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_mitigations_enabled(c) => mdc_l1tf_mitigated(c)
 
-\* MELTDOWN_014_riina_us (matches Coq: Theorem MELTDOWN_014_riina_us)
-THEOREM MELTDOWN_014_riina_us == Init => TypeOK
+\* MELTDOWN_008_full_implies_variants
+THEOREM MELTDOWN_008_full_implies_variants ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_fully_protected(c) => all_meltdown_protected(c)
 
-\* MELTDOWN_015_complete_defense (matches Coq: Theorem MELTDOWN_015_complete_defense)
-THEOREM MELTDOWN_015_complete_defense == Init => TypeOK
+\* MELTDOWN_009_full_implies_mitigations
+THEOREM MELTDOWN_009_full_implies_mitigations ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_fully_protected(c) => meltdown_mitigations_enabled(c)
 
-\* MELTDOWN_016_rw_required (matches Coq: Theorem MELTDOWN_016_rw_required)
-THEOREM MELTDOWN_016_rw_required == Init => TypeOK
+\* MELTDOWN_010_riina_kpti
+THEOREM MELTDOWN_010_riina_kpti ==
+  mdc_kpti_enabled(riina_meltdown_config) = TRUE
 
-\* MELTDOWN_017_pk_required (matches Coq: Theorem MELTDOWN_017_pk_required)
-THEOREM MELTDOWN_017_pk_required == Init => TypeOK
+\* MELTDOWN_011_riina_l1tf
+THEOREM MELTDOWN_011_riina_l1tf ==
+  mdc_l1tf_mitigated(riina_meltdown_config) = TRUE
 
-\* MELTDOWN_018_br_required (matches Coq: Theorem MELTDOWN_018_br_required)
-THEOREM MELTDOWN_018_br_required == Init => TypeOK
+\* MELTDOWN_012_full_implies_kpti
+THEOREM MELTDOWN_012_full_implies_kpti ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_fully_protected(c) => mdc_kpti_enabled(c)
 
-\* MELTDOWN_019_full_implies_l1tf (matches Coq: Theorem MELTDOWN_019_full_implies_l1tf)
-THEOREM MELTDOWN_019_full_implies_l1tf == Init => TypeOK
+\* MELTDOWN_013_full_implies_us
+THEOREM MELTDOWN_013_full_implies_us ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_fully_protected(c) => mdc_us_protected(c)
 
-\* MELTDOWN_020_full_implies_p (matches Coq: Theorem MELTDOWN_020_full_implies_p)
-THEOREM MELTDOWN_020_full_implies_p == Init => TypeOK
+\* MELTDOWN_014_riina_us
+THEOREM MELTDOWN_014_riina_us ==
+  mdc_us_protected(riina_meltdown_config) = TRUE
 
-\* MELTDOWN_021_full_implies_rw (matches Coq: Theorem MELTDOWN_021_full_implies_rw)
-THEOREM MELTDOWN_021_full_implies_rw == Init => TypeOK
+\* MELTDOWN_015_complete_defense
+THEOREM MELTDOWN_015_complete_defense ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_fully_protected(c) => mdc_us_protected(c)
 
-\* MELTDOWN_022_full_implies_pk (matches Coq: Theorem MELTDOWN_022_full_implies_pk)
-THEOREM MELTDOWN_022_full_implies_pk == Init => TypeOK
+\* MELTDOWN_016_rw_required
+THEOREM MELTDOWN_016_rw_required ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      all_meltdown_protected(c) => mdc_rw_protected(c)
 
-\* MELTDOWN_023_full_implies_br (matches Coq: Theorem MELTDOWN_023_full_implies_br)
-THEOREM MELTDOWN_023_full_implies_br == Init => TypeOK
+\* MELTDOWN_017_pk_required
+THEOREM MELTDOWN_017_pk_required ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      all_meltdown_protected(c) => mdc_pk_protected(c)
 
-\* MELTDOWN_024_riina_p (matches Coq: Theorem MELTDOWN_024_riina_p)
-THEOREM MELTDOWN_024_riina_p == Init => TypeOK
+\* MELTDOWN_018_br_required
+THEOREM MELTDOWN_018_br_required ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      all_meltdown_protected(c) => mdc_br_protected(c)
 
-\* MELTDOWN_025_riina_rw (matches Coq: Theorem MELTDOWN_025_riina_rw)
-THEOREM MELTDOWN_025_riina_rw == Init => TypeOK
+\* MELTDOWN_019_full_implies_l1tf
+THEOREM MELTDOWN_019_full_implies_l1tf ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_fully_protected(c) => mdc_l1tf_mitigated(c)
 
-\* MELTDOWN_026_riina_pk (matches Coq: Theorem MELTDOWN_026_riina_pk)
-THEOREM MELTDOWN_026_riina_pk == Init => TypeOK
+\* MELTDOWN_020_full_implies_p
+THEOREM MELTDOWN_020_full_implies_p ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_fully_protected(c) => mdc_p_protected(c)
 
-\* MELTDOWN_027_riina_br (matches Coq: Theorem MELTDOWN_027_riina_br)
-THEOREM MELTDOWN_027_riina_br == Init => TypeOK
+\* MELTDOWN_021_full_implies_rw
+THEOREM MELTDOWN_021_full_implies_rw ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_fully_protected(c) => mdc_rw_protected(c)
 
-\* MELTDOWN_028_variant_mitigation_composition (matches Coq: Theorem MELTDOWN_028_variant_mitigation_composition)
-THEOREM MELTDOWN_028_variant_mitigation_composition == Init => TypeOK
+\* MELTDOWN_022_full_implies_pk
+THEOREM MELTDOWN_022_full_implies_pk ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_fully_protected(c) => mdc_pk_protected(c)
 
-\* MELTDOWN_029_complete_decomposition (matches Coq: Theorem MELTDOWN_029_complete_decomposition)
-THEOREM MELTDOWN_029_complete_decomposition == Init => TypeOK
+\* MELTDOWN_023_full_implies_br
+THEOREM MELTDOWN_023_full_implies_br ==
+  \A c \in Nat, MeltdownDefenseConfig \in Nat :
+      meltdown_fully_protected(c) => mdc_br_protected(c)
 
-\* Next-state relation
-Next == UNCHANGED <<mdc_us_protected, mdc_p_protected, mdc_rw_protected, mdc_pk_protected, mdc_br_protected, mdc_kpti_enabled, mdc_l1tf_mitigated>>
+\* MELTDOWN_024_riina_p
+THEOREM MELTDOWN_024_riina_p ==
+  mdc_p_protected(riina_meltdown_config) = TRUE
 
-\* Specification
-Spec == Init /\ [][Next]_<<mdc_us_protected, mdc_p_protected, mdc_rw_protected, mdc_pk_protected, mdc_br_protected, mdc_kpti_enabled, mdc_l1tf_mitigated>>
+\* 5 additional theorems proven in Coq source
 
 ====

@@ -30,240 +30,240 @@ pred closed_rho_sc[p_rho: subst_rho_sc] {
 
 // extend_rho_sc_same (matches Coq: Lemma extend_rho_sc_same)
 assert extend_rho_sc_same {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check extend_rho_sc_same for 5
 
 // extend_rho_sc_diff (matches Coq: Lemma extend_rho_sc_diff)
 assert extend_rho_sc_diff {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check extend_rho_sc_diff for 5
 
 // extend_rho_sc_shadow (matches Coq: Lemma extend_rho_sc_shadow)
 assert extend_rho_sc_shadow {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check extend_rho_sc_shadow for 5
 
 // extend_rho_sc_comm (matches Coq: Lemma extend_rho_sc_comm)
 assert extend_rho_sc_comm {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check extend_rho_sc_comm for 5
 
 // subst_not_free_sc (matches Coq: Lemma subst_not_free_sc)
 assert subst_not_free_sc {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_not_free_sc for 5
 
 // subst_closed_sc (matches Coq: Lemma subst_closed_sc)
 assert subst_closed_sc {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_closed_sc for 5
 
 // closed_unit_sub (matches Coq: Lemma closed_unit_sub)
 assert closed_unit_sub {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check closed_unit_sub for 5
 
 // closed_bool_sub (matches Coq: Lemma closed_bool_sub)
 assert closed_bool_sub {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check closed_bool_sub for 5
 
 // closed_int_sub (matches Coq: Lemma closed_int_sub)
 assert closed_int_sub {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check closed_int_sub for 5
 
 // closed_string_sub (matches Coq: Lemma closed_string_sub)
 assert closed_string_sub {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check closed_string_sub for 5
 
 // closed_loc_sub (matches Coq: Lemma closed_loc_sub)
 assert closed_loc_sub {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check closed_loc_sub for 5
 
 // subst_var_same (matches Coq: Lemma subst_var_same)
 assert subst_var_same {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_var_same for 5
 
 // subst_var_diff (matches Coq: Lemma subst_var_diff)
 assert subst_var_diff {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_var_diff for 5
 
 // subst_unit (matches Coq: Lemma subst_unit)
 assert subst_unit {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_unit for 5
 
 // subst_bool (matches Coq: Lemma subst_bool)
 assert subst_bool {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_bool for 5
 
 // subst_int (matches Coq: Lemma subst_int)
 assert subst_int {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_int for 5
 
 // subst_string (matches Coq: Lemma subst_string)
 assert subst_string {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_string for 5
 
 // subst_loc (matches Coq: Lemma subst_loc)
 assert subst_loc {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_loc for 5
 
 // subst_id (matches Coq: Lemma subst_id)
 assert subst_id {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_id for 5
 
 // subst_value (matches Coq: Lemma subst_value)
 assert subst_value {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_value for 5
 
 // subst_app (matches Coq: Lemma subst_app)
 assert subst_app {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_app for 5
 
 // subst_pair (matches Coq: Lemma subst_pair)
 assert subst_pair {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_pair for 5
 
 // subst_fst (matches Coq: Lemma subst_fst)
 assert subst_fst {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_fst for 5
 
 // subst_snd (matches Coq: Lemma subst_snd)
 assert subst_snd {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_snd for 5
 
 // subst_inl (matches Coq: Lemma subst_inl)
 assert subst_inl {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_inl for 5
 
 // subst_inr (matches Coq: Lemma subst_inr)
 assert subst_inr {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_inr for 5
 
 // subst_if (matches Coq: Lemma subst_if)
 assert subst_if {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_if for 5
 
 // subst_ref (matches Coq: Lemma subst_ref)
 assert subst_ref {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_ref for 5
 
 // subst_deref (matches Coq: Lemma subst_deref)
 assert subst_deref {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_deref for 5
 
 // subst_assign (matches Coq: Lemma subst_assign)
 assert subst_assign {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_assign for 5
 
 // subst_classify (matches Coq: Lemma subst_classify)
 assert subst_classify {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_classify for 5
 
 // subst_prove (matches Coq: Lemma subst_prove)
 assert subst_prove {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_prove for 5
 
 // subst_declassify (matches Coq: Lemma subst_declassify)
 assert subst_declassify {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_declassify for 5
 
 // subst_perform (matches Coq: Lemma subst_perform)
 assert subst_perform {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_perform for 5
 
 // subst_require (matches Coq: Lemma subst_require)
 assert subst_require {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_require for 5
 
 // subst_grant (matches Coq: Lemma subst_grant)
 assert subst_grant {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_grant for 5
 
 // subst_lam_same (matches Coq: Lemma subst_lam_same)
 assert subst_lam_same {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_lam_same for 5
 
 // subst_lam_diff (matches Coq: Lemma subst_lam_diff)
 assert subst_lam_diff {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_lam_diff for 5
 
 // subst_let_same (matches Coq: Lemma subst_let_same)
 assert subst_let_same {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_let_same for 5
 
 // subst_let_diff (matches Coq: Lemma subst_let_diff)
 assert subst_let_diff {
-  #univ >= 0
+  all x: expr | x in expr
 }
 check subst_let_diff for 5

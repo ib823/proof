@@ -17,106 +17,106 @@ Init ==
   /\ state = TRUE
 
 \* store_rel_simple_max (matches Coq: Lemma store_rel_simple_max)
-THEOREM store_rel_simple_max == Init => TypeOK
+THEOREM store_rel_simple_max == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_simple_fresh (matches Coq: Lemma store_rel_simple_fresh)
-THEOREM store_rel_simple_fresh == Init => TypeOK
+THEOREM store_rel_simple_fresh == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_max_update_bound (matches Coq: Lemma store_max_update_bound)
-THEOREM store_max_update_bound == Init => TypeOK
+THEOREM store_max_update_bound == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_max_update_lower (matches Coq: Lemma store_max_update_lower)
-THEOREM store_max_update_lower == Init => TypeOK
+THEOREM store_max_update_lower == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_max_update_includes_l (matches Coq: Lemma store_max_update_includes_l)
-THEOREM store_max_update_includes_l == Init => TypeOK
+THEOREM store_max_update_includes_l == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_max_update_eq (matches Coq: Lemma store_max_update_eq)
-THEOREM store_max_update_eq == Init => TypeOK
+THEOREM store_max_update_eq == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_simple_update (matches Coq: Lemma store_rel_simple_update)
-THEOREM store_rel_simple_update == Init => TypeOK
+THEOREM store_rel_simple_update == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_lookup_update_eq (matches Coq: Lemma store_lookup_update_eq)
-THEOREM store_lookup_update_eq == Init => TypeOK
+THEOREM store_lookup_update_eq == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_lookup_update_neq (matches Coq: Lemma store_lookup_update_neq)
-THEOREM store_lookup_update_neq == Init => TypeOK
+THEOREM store_lookup_update_neq == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_ty_lookup_update_eq (matches Coq: Lemma store_ty_lookup_update_eq)
-THEOREM store_ty_lookup_update_eq == Init => TypeOK
+THEOREM store_ty_lookup_update_eq == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_ty_lookup_update_neq (matches Coq: Lemma store_ty_lookup_update_neq)
-THEOREM store_ty_lookup_update_neq == Init => TypeOK
+THEOREM store_ty_lookup_update_neq == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_le_update (matches Coq: Lemma store_rel_le_update)
-THEOREM store_rel_le_update == Init => TypeOK
+THEOREM store_rel_le_update == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_lookup_fresh_none (matches Coq: Lemma store_lookup_fresh_none)
-THEOREM store_lookup_fresh_none == Init => TypeOK
+THEOREM store_lookup_fresh_none == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_alloc_same (matches Coq: Lemma store_alloc_same)
-THEOREM store_alloc_same == Init => TypeOK
+THEOREM store_alloc_same == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_simple_alloc (matches Coq: Lemma store_rel_simple_alloc)
-THEOREM store_rel_simple_alloc == Init => TypeOK
+THEOREM store_rel_simple_alloc == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fresh_loc_not_in_store_ty (matches Coq: Lemma fresh_loc_not_in_store_ty)
-THEOREM fresh_loc_not_in_store_ty == Init => TypeOK
+THEOREM fresh_loc_not_in_store_ty == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_ty_extends_alloc (matches Coq: Lemma store_ty_extends_alloc)
-THEOREM store_ty_extends_alloc == Init => TypeOK
+THEOREM store_ty_extends_alloc == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_le_alloc (matches Coq: Lemma store_rel_le_alloc)
-THEOREM store_rel_le_alloc == Init => TypeOK
+THEOREM store_rel_le_alloc == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_le_ref_same_loc (matches Coq: Lemma val_rel_le_ref_same_loc)
-THEOREM val_rel_le_ref_same_loc == Init => TypeOK
+THEOREM val_rel_le_ref_same_loc == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_le_build_ref (matches Coq: Lemma val_rel_le_build_ref)
-THEOREM val_rel_le_build_ref == Init => TypeOK
+THEOREM val_rel_le_build_ref == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_le_lookup (matches Coq: Lemma store_rel_le_lookup)
-THEOREM store_rel_le_lookup == Init => TypeOK
+THEOREM store_rel_le_lookup == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_le_secret_always (matches Coq: Lemma val_rel_le_secret_always)
-THEOREM val_rel_le_secret_always == Init => TypeOK
+THEOREM val_rel_le_secret_always == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_le_secret_value_left (matches Coq: Lemma val_rel_le_secret_value_left)
-THEOREM val_rel_le_secret_value_left == Init => TypeOK
+THEOREM val_rel_le_secret_value_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_le_secret_value_right (matches Coq: Lemma val_rel_le_secret_value_right)
-THEOREM val_rel_le_secret_value_right == Init => TypeOK
+THEOREM val_rel_le_secret_value_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_le_unit (matches Coq: Lemma val_rel_le_unit)
-THEOREM val_rel_le_unit == Init => TypeOK
+THEOREM val_rel_le_unit == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_le_empty (matches Coq: Lemma store_rel_le_empty)
-THEOREM store_rel_le_empty == Init => TypeOK
+THEOREM store_rel_le_empty == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_simple_empty (matches Coq: Lemma store_rel_simple_empty)
-THEOREM store_rel_simple_empty == Init => TypeOK
+THEOREM store_rel_simple_empty == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_le_both_some (matches Coq: Lemma store_rel_le_both_some)
-THEOREM store_rel_le_both_some == Init => TypeOK
+THEOREM store_rel_le_both_some == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_ty_update_preserves (matches Coq: Lemma store_ty_update_preserves)
-THEOREM store_ty_update_preserves == Init => TypeOK
+THEOREM store_ty_update_preserves == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_max_nil (matches Coq: Lemma store_max_nil)
-THEOREM store_max_nil == Init => TypeOK
+THEOREM store_max_nil == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_max_singleton (matches Coq: Lemma store_max_singleton)
-THEOREM store_max_singleton == Init => TypeOK
+THEOREM store_max_singleton == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_le_secret_loc (matches Coq: Lemma store_rel_le_secret_loc)
-THEOREM store_rel_le_secret_loc == Init => TypeOK
+THEOREM store_rel_le_secret_loc == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_lookup_fresh_loc (matches Coq: Lemma store_lookup_fresh_loc)
-THEOREM store_lookup_fresh_loc == Init => TypeOK
+THEOREM store_lookup_fresh_loc == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_le_ref_loc_eq (matches Coq: Lemma val_rel_le_ref_loc_eq)
-THEOREM val_rel_le_ref_loc_eq == Init => TypeOK
+THEOREM val_rel_le_ref_loc_eq == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

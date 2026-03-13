@@ -1,44 +1,59 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of SecurityFoundation Rollback Protection invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// State model for Rollback Protection
+pub struct VersionCounter {
+    pub monotonic: bool,
+    pub persisted: bool,
+    pub tamper_evident: bool,
+    pub recovery_safe: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Invariant: all properties must hold with positive assurance
+pub open spec fn rollback_protection_valid(s: VersionCounter) -> bool {
+    s.monotonic && s.persisted && s.tamper_evident && s.recovery_safe && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration
+pub open spec fn baseline_rollback_protection() -> VersionCounter {
+    VersionCounter { monotonic: true, persisted: true, tamper_evident: true, recovery_safe: true, assurance_level: 1 }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration
+pub open spec fn hardened_rollback_protection() -> VersionCounter {
+    VersionCounter { monotonic: true, persisted: true, tamper_evident: true, recovery_safe: true, assurance_level: 3 }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline is valid
+proof fn lemma_baseline_valid()
+    ensures rollback_protection_valid(baseline_rollback_protection()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_rollback_protection();
+    assert(b.monotonic && b.persisted && b.tamper_evident && b.recovery_safe && b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened dominates baseline
+proof fn lemma_hardened_dominates()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        rollback_protection_valid(hardened_rollback_protection()),
+        hardened_rollback_protection().assurance_level >= baseline_rollback_protection().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+}
+
+/// Lemma: each property is necessary
+proof fn lemma_properties_necessary()
+    ensures
+        !rollback_protection_valid(VersionCounter { monotonic: false, persisted: true, tamper_evident: true, recovery_safe: true, assurance_level: 1 }),
+        !rollback_protection_valid(VersionCounter { monotonic: true, persisted: false, tamper_evident: true, recovery_safe: true, assurance_level: 1 }),
+        !rollback_protection_valid(VersionCounter { monotonic: true, persisted: true, tamper_evident: false, recovery_safe: true, assurance_level: 1 }),
+        !rollback_protection_valid(VersionCounter { monotonic: true, persisted: true, tamper_evident: true, recovery_safe: false, assurance_level: 1 }),
+{
 }
 
 } // verus!
-
-fn main() {}

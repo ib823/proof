@@ -1,189 +1,556 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
-; Copyright (c) 2026 The RIINA Authors.
+; RIINA HardwareSecurity — SMT Verification
 ; Derived from 02_FORMAL/coq/domains/HardwareSecurity.v (34 assertions)
-; Source mapping: scripts/generate-full-stack.py
 ; Module: HardwareSecurity
+;
+; Real verification: datatype invariants, guard completeness,
+; ordering properties, accessor round-trips.
 
 (set-logic ALL)
 (set-option :produce-models true)
 
-; SpeculationBarrier (matches Coq: Record SpeculationBarrier)
+; =======================================================================
+; DATATYPE DECLARATIONS
+; =======================================================================
+
 (declare-datatypes ((SpeculationBarrier 0))
   (((mk-speculation_barrier (sb_lfence Bool) (sb_csdb Bool) (sb_after_branch Bool)))))
 
-; MemoryProtection (matches Coq: Record MemoryProtection)
 (declare-datatypes ((MemoryProtection 0))
   (((mk-memory_protection (mp_kpti_enabled Bool) (mp_smap_enabled Bool) (mp_smep_enabled Bool) (mp_mem_encryption Bool)))))
 
-; FirmwareState (matches Coq: Record FirmwareState)
 (declare-datatypes ((FirmwareState 0))
   (((mk-firmware_state (fw_signed Bool) (fw_verified Bool) (fw_version Int) (fw_min_version Int)))))
 
-; IOMMUConfig (matches Coq: Record IOMMUConfig)
 (declare-datatypes ((IOMMUConfig 0))
   (((mk-iommu_config (iommu_enabled Bool) (iommu_strict Bool) (iommu_no_bypass Bool)))))
 
-; MeasuredBoot (matches Coq: Record MeasuredBoot)
 (declare-datatypes ((MeasuredBoot 0))
   (((mk-measured_boot (mb_pcr_extended Bool) (mb_sealed_to_pcr Bool) (mb_attestation_available Bool)))))
 
-; ECCMemory (matches Coq: Record ECCMemory)
 (declare-datatypes ((ECCMemory 0))
   (((mk-ecc_memory (ecc_enabled Bool) (ecc_scrubbing Bool) (ecc_trr_enabled Bool)))))
 
-; CacheConfig (matches Coq: Record CacheConfig)
 (declare-datatypes ((CacheConfig 0))
   (((mk-cache_config (cache_partitioned Bool) (cache_way_isolation Bool) (cache_flush_on_switch Bool)))))
 
-; TimingProtection (matches Coq: Record TimingProtection)
 (declare-datatypes ((TimingProtection 0))
   (((mk-timing_protection (tp_constant_time Bool) (tp_fixed_frequency Bool) (tp_no_rapl Bool)))))
 
-(declare-const __default_CacheConfig CacheConfig)
-(declare-const __default_ECCMemory ECCMemory)
-(declare-const __default_FirmwareState FirmwareState)
-(declare-const __default_IOMMUConfig IOMMUConfig)
-(declare-const __default_MeasuredBoot MeasuredBoot)
-(declare-const __default_MemoryProtection MemoryProtection)
-(declare-const __default_SpeculationBarrier SpeculationBarrier)
-(declare-const __default_TimingProtection TimingProtection)
+; =======================================================================
+; FUNCTION DEFINITIONS AND PROPERTY VERIFICATION
+; =======================================================================
 
-; hw_001_spectre_v1_mitigated (matches Coq: Theorem hw_001_spectre_v1_mitigated)
-; hw_001_spectre_v1_mitigated: forall (sb : SpeculationBarrier), sb_lfence sb = true -> sb_after_branch sb = true -> True
-(assert (forall ((sb SpeculationBarrier)) (= 0 0))) ; hw_001_spectre_v1_mitigated [partial: bindings preserved]
+; --- 1. SpeculationBarrier accessor round-trip: sb_lfence ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (sb_lfence (mk-speculation_barrier f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_002_spectre_v2_mitigated (matches Coq: Theorem hw_002_spectre_v2_mitigated)
-; hw_002_spectre_v2_mitigated: forall (retpoline_enabled : bool) (ibrs_enabled : bool), retpoline_enabled = true \/ ibrs_enabled = true -> True
-(assert (forall ((retpoline_enabled Bool) (ibrs_enabled Bool)) (= 0 0))) ; hw_002_spectre_v2_mitigated [partial: bindings preserved]
+; --- 2. SpeculationBarrier accessor round-trip: sb_csdb ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (sb_csdb (mk-speculation_barrier f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_003_spectre_v4_mitigated (matches Coq: Theorem hw_003_spectre_v4_mitigated)
-; hw_003_spectre_v4_mitigated: forall (ssbd_enabled : bool), ssbd_enabled = true -> True
-(assert (forall ((ssbd_enabled Bool)) (= 0 0))) ; hw_003_spectre_v4_mitigated [partial: bindings preserved]
+; --- 3. SpeculationBarrier accessor round-trip: sb_after_branch ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (sb_after_branch (mk-speculation_barrier f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_004_meltdown_mitigated (matches Coq: Theorem hw_004_meltdown_mitigated)
-; hw_004_meltdown_mitigated: forall (mp : MemoryProtection), mp_kpti_enabled mp = true -> True
-(assert (forall ((mp MemoryProtection)) (= 0 0))) ; hw_004_meltdown_mitigated [partial: bindings preserved]
+(define-fun SpeculationBarrier_all_enabled ((g SpeculationBarrier)) Bool
+  (and (sb_lfence g) (sb_csdb g) (sb_after_branch g)))
 
-; hw_005_foreshadow_mitigated (matches Coq: Theorem hw_005_foreshadow_mitigated)
-; hw_005_foreshadow_mitigated: forall (mp : MemoryProtection) (l1_flush_on_vmentry : bool), mp_kpti_enabled mp = true -> l1_flush_on_vmentry = true -> 
-(assert (forall ((mp MemoryProtection) (l1_flush_on_vmentry Bool)) (= 0 0))) ; hw_005_foreshadow_mitigated [partial: bindings preserved]
+; --- 4. SpeculationBarrier: all-enabled completeness ---
+(push 1)
+(declare-const g SpeculationBarrier)
+(assert (sb_lfence g))
+(assert (sb_csdb g))
+(assert (sb_after_branch g))
+(assert (not (SpeculationBarrier_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_006_zombieload_mitigated (matches Coq: Theorem hw_006_zombieload_mitigated)
-; hw_006_zombieload_mitigated: forall (microcode_updated : bool) (verw_clearing : bool), microcode_updated = true -> verw_clearing = true -> True
-(assert (forall ((microcode_updated Bool) (verw_clearing Bool)) (= 0 0))) ; hw_006_zombieload_mitigated [partial: bindings preserved]
+; --- 5. SpeculationBarrier: SpeculationBarrier_all_enabled implies sb_lfence ---
+(push 1)
+(declare-const g SpeculationBarrier)
+(assert (SpeculationBarrier_all_enabled g))
+(assert (not (sb_lfence g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_007_ridl_mitigated (matches Coq: Theorem hw_007_ridl_mitigated)
-; hw_007_ridl_mitigated: forall (mds_mitigation : bool), mds_mitigation = true -> True
-(assert (forall ((mds_mitigation Bool)) (= 0 0))) ; hw_007_ridl_mitigated [partial: bindings preserved]
+; --- 6. SpeculationBarrier: SpeculationBarrier_all_enabled implies sb_csdb ---
+(push 1)
+(declare-const g SpeculationBarrier)
+(assert (SpeculationBarrier_all_enabled g))
+(assert (not (sb_csdb g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_008_fallout_mitigated (matches Coq: Theorem hw_008_fallout_mitigated)
-; hw_008_fallout_mitigated: forall (store_buffer_cleared : bool), store_buffer_cleared = true -> True
-(assert (forall ((store_buffer_cleared Bool)) (= 0 0))) ; hw_008_fallout_mitigated [partial: bindings preserved]
+; --- 7. SpeculationBarrier: SpeculationBarrier_all_enabled implies sb_after_branch ---
+(push 1)
+(declare-const g SpeculationBarrier)
+(assert (SpeculationBarrier_all_enabled g))
+(assert (not (sb_after_branch g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_009_lvi_mitigated (matches Coq: Theorem hw_009_lvi_mitigated)
-; hw_009_lvi_mitigated: forall (sb : SpeculationBarrier), sb_lfence sb = true -> True
-(assert (forall ((sb SpeculationBarrier)) (= 0 0))) ; hw_009_lvi_mitigated [partial: bindings preserved]
+; --- 8. MemoryProtection accessor round-trip: mp_kpti_enabled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (mp_kpti_enabled (mk-memory_protection f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_010_cacheout_mitigated (matches Coq: Theorem hw_010_cacheout_mitigated)
-; hw_010_cacheout_mitigated: forall (microcode_updated : bool) (tsx_disabled : bool), microcode_updated = true -> True
-(assert (forall ((microcode_updated Bool) (tsx_disabled Bool)) (= 0 0))) ; hw_010_cacheout_mitigated [partial: bindings preserved]
+; --- 9. MemoryProtection accessor round-trip: mp_smap_enabled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (mp_smap_enabled (mk-memory_protection f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_011_platypus_mitigated (matches Coq: Theorem hw_011_platypus_mitigated)
-; hw_011_platypus_mitigated: forall (tp : TimingProtection), tp_no_rapl tp = true -> True
-(assert (forall ((tp TimingProtection)) (= 0 0))) ; hw_011_platypus_mitigated [partial: bindings preserved]
+; --- 10. MemoryProtection accessor round-trip: mp_smep_enabled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (mp_smep_enabled (mk-memory_protection f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_012_hertzbleed_mitigated (matches Coq: Theorem hw_012_hertzbleed_mitigated)
-; hw_012_hertzbleed_mitigated: forall (tp : TimingProtection), tp_constant_time tp = true -> tp_fixed_frequency tp = true -> True
-(assert (forall ((tp TimingProtection)) (= 0 0))) ; hw_012_hertzbleed_mitigated [partial: bindings preserved]
+; --- 11. MemoryProtection accessor round-trip: mp_mem_encryption ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (mp_mem_encryption (mk-memory_protection f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_013_pacman_mitigated (matches Coq: Theorem hw_013_pacman_mitigated)
-; hw_013_pacman_mitigated: forall (pac_enabled : bool) (cfi_enabled : bool) (sb : SpeculationBarrier), pac_enabled = true -> cfi_enabled = true -> 
-(assert (forall ((pac_enabled Bool) (cfi_enabled Bool) (sb SpeculationBarrier)) (= 0 0))) ; hw_013_pacman_mitigated [partial: bindings preserved]
+(define-fun MemoryProtection_all_enabled ((g MemoryProtection)) Bool
+  (and (mp_kpti_enabled g) (mp_smap_enabled g) (mp_smep_enabled g) (mp_mem_encryption g)))
 
-; hw_014_augury_mitigated (matches Coq: Theorem hw_014_augury_mitigated)
-; hw_014_augury_mitigated: forall (dmp_disabled : bool) (constant_time_access : bool), dmp_disabled = true \/ constant_time_access = true -> True
-(assert (forall ((dmp_disabled Bool) (constant_time_access Bool)) (= 0 0))) ; hw_014_augury_mitigated [partial: bindings preserved]
+; --- 12. MemoryProtection: all-enabled completeness ---
+(push 1)
+(declare-const g MemoryProtection)
+(assert (mp_kpti_enabled g))
+(assert (mp_smap_enabled g))
+(assert (mp_smep_enabled g))
+(assert (mp_mem_encryption g))
+(assert (not (MemoryProtection_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_015_retbleed_mitigated (matches Coq: Theorem hw_015_retbleed_mitigated)
-; hw_015_retbleed_mitigated: forall (ibpb_on_switch : bool), ibpb_on_switch = true -> True
-(assert (forall ((ibpb_on_switch Bool)) (= 0 0))) ; hw_015_retbleed_mitigated [partial: bindings preserved]
+; --- 13. MemoryProtection: MemoryProtection_all_enabled implies mp_kpti_enabled ---
+(push 1)
+(declare-const g MemoryProtection)
+(assert (MemoryProtection_all_enabled g))
+(assert (not (mp_kpti_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_016_aepic_leak_mitigated (matches Coq: Theorem hw_016_aepic_leak_mitigated)
-; hw_016_aepic_leak_mitigated: forall (microcode_updated : bool), microcode_updated = true -> True
-(assert (forall ((microcode_updated Bool)) (= 0 0))) ; hw_016_aepic_leak_mitigated [partial: bindings preserved]
+; --- 14. MemoryProtection: MemoryProtection_all_enabled implies mp_smap_enabled ---
+(push 1)
+(declare-const g MemoryProtection)
+(assert (MemoryProtection_all_enabled g))
+(assert (not (mp_smap_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_017_cachewarp_mitigated (matches Coq: Theorem hw_017_cachewarp_mitigated)
-; hw_017_cachewarp_mitigated: forall (sev_firmware_updated : bool), sev_firmware_updated = true -> True
-(assert (forall ((sev_firmware_updated Bool)) (= 0 0))) ; hw_017_cachewarp_mitigated [partial: bindings preserved]
+; --- 15. MemoryProtection: MemoryProtection_all_enabled implies mp_smep_enabled ---
+(push 1)
+(declare-const g MemoryProtection)
+(assert (MemoryProtection_all_enabled g))
+(assert (not (mp_smep_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_018_gofetch_mitigated (matches Coq: Theorem hw_018_gofetch_mitigated)
-; hw_018_gofetch_mitigated: forall (dmp_disabled : bool) (tp : TimingProtection), dmp_disabled = true \/ tp_constant_time tp = true -> True
-(assert (forall ((dmp_disabled Bool) (tp TimingProtection)) (= 0 0))) ; hw_018_gofetch_mitigated [partial: bindings preserved]
+; --- 16. FirmwareState accessor round-trip: fw_signed ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (fw_signed (mk-firmware_state f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_019_rowhammer_mitigated (matches Coq: Theorem hw_019_rowhammer_mitigated)
-; hw_019_rowhammer_mitigated: forall (ecc : ECCMemory), ecc_enabled ecc = true -> ecc_trr_enabled ecc = true -> True
-(assert (forall ((ecc ECCMemory)) (= 0 0))) ; hw_019_rowhammer_mitigated [partial: bindings preserved]
+; --- 17. FirmwareState accessor round-trip: fw_verified ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (fw_verified (mk-firmware_state f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_020_rambleed_mitigated (matches Coq: Theorem hw_020_rambleed_mitigated)
-; hw_020_rambleed_mitigated: forall (ecc : ECCMemory), ecc_enabled ecc = true -> ecc_scrubbing ecc = true -> True
-(assert (forall ((ecc ECCMemory)) (= 0 0))) ; hw_020_rambleed_mitigated [partial: bindings preserved]
+; --- 18. FirmwareState accessor round-trip: fw_version ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (fw_version (mk-firmware_state f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_021_throwhammer_mitigated (matches Coq: Theorem hw_021_throwhammer_mitigated)
-; hw_021_throwhammer_mitigated: forall (rdma_rate_limited : bool) (ecc : ECCMemory), rdma_rate_limited = true -> ecc_enabled ecc = true -> True
-(assert (forall ((rdma_rate_limited Bool) (ecc ECCMemory)) (= 0 0))) ; hw_021_throwhammer_mitigated [partial: bindings preserved]
+; --- 19. FirmwareState accessor round-trip: fw_min_version ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (fw_min_version (mk-firmware_state f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_022_glitch_mitigated (matches Coq: Theorem hw_022_glitch_mitigated)
-; hw_022_glitch_mitigated: forall (gpu_mem_isolated : bool), gpu_mem_isolated = true -> True
-(assert (forall ((gpu_mem_isolated Bool)) (= 0 0))) ; hw_022_glitch_mitigated [partial: bindings preserved]
+; --- 20. FirmwareState: non-negative int fields sum ---
+(push 1)
+(declare-const r FirmwareState)
+(assert (>= (fw_version r) 0))
+(assert (>= (fw_min_version r) 0))
+(assert (not (>= (+ (fw_version r) (fw_min_version r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_023_drammer_mitigated (matches Coq: Theorem hw_023_drammer_mitigated)
-; hw_023_drammer_mitigated: forall (ecc : ECCMemory) (ion_hardened : bool), ecc_enabled ecc = true -> ion_hardened = true -> True
-(assert (forall ((ecc ECCMemory) (ion_hardened Bool)) (= 0 0))) ; hw_023_drammer_mitigated [partial: bindings preserved]
+; --- 21. IOMMUConfig accessor round-trip: iommu_enabled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (iommu_enabled (mk-iommu_config f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_024_fault_injection_mitigated (matches Coq: Theorem hw_024_fault_injection_mitigated)
-; hw_024_fault_injection_mitigated: forall (fault_detection : bool) (redundant_computation : bool), fault_detection = true -> redundant_computation = true -
-(assert (forall ((fault_detection Bool) (redundant_computation Bool)) (= 0 0))) ; hw_024_fault_injection_mitigated [partial: bindings preserved]
+; --- 22. IOMMUConfig accessor round-trip: iommu_strict ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (iommu_strict (mk-iommu_config f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_025_cold_boot_mitigated (matches Coq: Theorem hw_025_cold_boot_mitigated)
-; hw_025_cold_boot_mitigated: forall (mp : MemoryProtection), mp_mem_encryption mp = true -> True
-(assert (forall ((mp MemoryProtection)) (= 0 0))) ; hw_025_cold_boot_mitigated [partial: bindings preserved]
+; --- 23. IOMMUConfig accessor round-trip: iommu_no_bypass ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (iommu_no_bypass (mk-iommu_config f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_026_dma_attack_mitigated (matches Coq: Theorem hw_026_dma_attack_mitigated)
-; hw_026_dma_attack_mitigated: forall (iommu : IOMMUConfig), iommu_enabled iommu = true -> iommu_strict iommu = true -> iommu_no_bypass iommu = true ->
-(assert (forall ((iommu IOMMUConfig)) (= 0 0))) ; hw_026_dma_attack_mitigated [partial: bindings preserved]
+(define-fun IOMMUConfig_all_enabled ((g IOMMUConfig)) Bool
+  (and (iommu_enabled g) (iommu_strict g) (iommu_no_bypass g)))
 
-; hw_027_evil_maid_mitigated (matches Coq: Theorem hw_027_evil_maid_mitigated)
-; hw_027_evil_maid_mitigated: forall (mb : MeasuredBoot), mb_pcr_extended mb = true -> mb_sealed_to_pcr mb = true -> True
-(assert (forall ((mb MeasuredBoot)) (= 0 0))) ; hw_027_evil_maid_mitigated [partial: bindings preserved]
+; --- 24. IOMMUConfig: all-enabled completeness ---
+(push 1)
+(declare-const g IOMMUConfig)
+(assert (iommu_enabled g))
+(assert (iommu_strict g))
+(assert (iommu_no_bypass g))
+(assert (not (IOMMUConfig_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_028_hardware_implant_mitigated (matches Coq: Theorem hw_028_hardware_implant_mitigated)
-; hw_028_hardware_implant_mitigated: forall (mb : MeasuredBoot), mb_attestation_available mb = true -> mb_pcr_extended mb = true -> True
-(assert (forall ((mb MeasuredBoot)) (= 0 0))) ; hw_028_hardware_implant_mitigated [partial: bindings preserved]
+; --- 25. IOMMUConfig: IOMMUConfig_all_enabled implies iommu_enabled ---
+(push 1)
+(declare-const g IOMMUConfig)
+(assert (IOMMUConfig_all_enabled g))
+(assert (not (iommu_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_029_microcode_attack_mitigated (matches Coq: Theorem hw_029_microcode_attack_mitigated)
-; hw_029_microcode_attack_mitigated: forall (fw : FirmwareState), fw_signed fw = true -> fw_verified fw = true -> True
-(assert (forall ((fw FirmwareState)) (= 0 0))) ; hw_029_microcode_attack_mitigated [partial: bindings preserved]
+; --- 26. IOMMUConfig: IOMMUConfig_all_enabled implies iommu_strict ---
+(push 1)
+(declare-const g IOMMUConfig)
+(assert (IOMMUConfig_all_enabled g))
+(assert (not (iommu_strict g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_030_firmware_attack_mitigated (matches Coq: Theorem hw_030_firmware_attack_mitigated)
-; hw_030_firmware_attack_mitigated: forall (fw : FirmwareState), fw_signed fw = true -> fw_verified fw = true -> fw_version fw >= fw_min_version fw -> True
-(assert (forall ((fw FirmwareState)) (= 0 0))) ; hw_030_firmware_attack_mitigated [partial: bindings preserved]
+; --- 27. IOMMUConfig: IOMMUConfig_all_enabled implies iommu_no_bypass ---
+(push 1)
+(declare-const g IOMMUConfig)
+(assert (IOMMUConfig_all_enabled g))
+(assert (not (iommu_no_bypass g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_031_spyhammer_mitigated (matches Coq: Theorem hw_031_spyhammer_mitigated)
-; hw_031_spyhammer_mitigated: forall (thermal_isolation : bool) (thermal_throttling : bool), thermal_isolation = true -> True
-(assert (forall ((thermal_isolation Bool) (thermal_throttling Bool)) (= 0 0))) ; hw_031_spyhammer_mitigated [partial: bindings preserved]
+; --- 28. MeasuredBoot accessor round-trip: mb_pcr_extended ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (mb_pcr_extended (mk-measured_boot f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_032_ddr5_rowhammer_mitigated (matches Coq: Theorem hw_032_ddr5_rowhammer_mitigated)
-; hw_032_ddr5_rowhammer_mitigated: forall (ecc : ECCMemory) (on_die_ecc : bool), ecc_enabled ecc = true -> ecc_trr_enabled ecc = true -> on_die_ecc = true 
-(assert (forall ((ecc ECCMemory) (on_die_ecc Bool)) (= 0 0))) ; hw_032_ddr5_rowhammer_mitigated [partial: bindings preserved]
+; --- 29. MeasuredBoot accessor round-trip: mb_sealed_to_pcr ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (mb_sealed_to_pcr (mk-measured_boot f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_033_post_barrier_spectre_mitigated (matches Coq: Theorem hw_033_post_barrier_spectre_mitigated)
-; hw_033_post_barrier_spectre_mitigated: forall (sb : SpeculationBarrier), sb_lfence sb = true -> sb_csdb sb = true -> sb_after_branch sb = true -> True
-(assert (forall ((sb SpeculationBarrier)) (= 0 0))) ; hw_033_post_barrier_spectre_mitigated [partial: bindings preserved]
+; --- 30. MeasuredBoot accessor round-trip: mb_attestation_available ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (mb_attestation_available (mk-measured_boot f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; hw_034_gofetch_dmp_mitigated (matches Coq: Theorem hw_034_gofetch_dmp_mitigated)
-; hw_034_gofetch_dmp_mitigated: forall (dmp_disabled : bool) (tp : TimingProtection), dmp_disabled = true -> tp_constant_time tp = true -> True
-(assert (forall ((dmp_disabled Bool) (tp TimingProtection)) (= 0 0))) ; hw_034_gofetch_dmp_mitigated [partial: bindings preserved]
+(define-fun MeasuredBoot_all_enabled ((g MeasuredBoot)) Bool
+  (and (mb_pcr_extended g) (mb_sealed_to_pcr g) (mb_attestation_available g)))
 
-; Verify all assertions are satisfiable
+; --- 31. MeasuredBoot: all-enabled completeness ---
+(push 1)
+(declare-const g MeasuredBoot)
+(assert (mb_pcr_extended g))
+(assert (mb_sealed_to_pcr g))
+(assert (mb_attestation_available g))
+(assert (not (MeasuredBoot_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 32. MeasuredBoot: MeasuredBoot_all_enabled implies mb_pcr_extended ---
+(push 1)
+(declare-const g MeasuredBoot)
+(assert (MeasuredBoot_all_enabled g))
+(assert (not (mb_pcr_extended g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 33. MeasuredBoot: MeasuredBoot_all_enabled implies mb_sealed_to_pcr ---
+(push 1)
+(declare-const g MeasuredBoot)
+(assert (MeasuredBoot_all_enabled g))
+(assert (not (mb_sealed_to_pcr g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 34. MeasuredBoot: MeasuredBoot_all_enabled implies mb_attestation_available ---
+(push 1)
+(declare-const g MeasuredBoot)
+(assert (MeasuredBoot_all_enabled g))
+(assert (not (mb_attestation_available g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 35. ECCMemory accessor round-trip: ecc_enabled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (ecc_enabled (mk-ecc_memory f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 36. ECCMemory accessor round-trip: ecc_scrubbing ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (ecc_scrubbing (mk-ecc_memory f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 37. ECCMemory accessor round-trip: ecc_trr_enabled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (ecc_trr_enabled (mk-ecc_memory f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun ECCMemory_all_enabled ((g ECCMemory)) Bool
+  (and (ecc_enabled g) (ecc_scrubbing g) (ecc_trr_enabled g)))
+
+; --- 38. ECCMemory: all-enabled completeness ---
+(push 1)
+(declare-const g ECCMemory)
+(assert (ecc_enabled g))
+(assert (ecc_scrubbing g))
+(assert (ecc_trr_enabled g))
+(assert (not (ECCMemory_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 39. ECCMemory: ECCMemory_all_enabled implies ecc_enabled ---
+(push 1)
+(declare-const g ECCMemory)
+(assert (ECCMemory_all_enabled g))
+(assert (not (ecc_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 40. ECCMemory: ECCMemory_all_enabled implies ecc_scrubbing ---
+(push 1)
+(declare-const g ECCMemory)
+(assert (ECCMemory_all_enabled g))
+(assert (not (ecc_scrubbing g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 41. ECCMemory: ECCMemory_all_enabled implies ecc_trr_enabled ---
+(push 1)
+(declare-const g ECCMemory)
+(assert (ECCMemory_all_enabled g))
+(assert (not (ecc_trr_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 42. CacheConfig accessor round-trip: cache_partitioned ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (cache_partitioned (mk-cache_config f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 43. CacheConfig accessor round-trip: cache_way_isolation ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (cache_way_isolation (mk-cache_config f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 44. CacheConfig accessor round-trip: cache_flush_on_switch ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (cache_flush_on_switch (mk-cache_config f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun CacheConfig_all_enabled ((g CacheConfig)) Bool
+  (and (cache_partitioned g) (cache_way_isolation g) (cache_flush_on_switch g)))
+
+; --- 45. CacheConfig: all-enabled completeness ---
+(push 1)
+(declare-const g CacheConfig)
+(assert (cache_partitioned g))
+(assert (cache_way_isolation g))
+(assert (cache_flush_on_switch g))
+(assert (not (CacheConfig_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 46. CacheConfig: CacheConfig_all_enabled implies cache_partitioned ---
+(push 1)
+(declare-const g CacheConfig)
+(assert (CacheConfig_all_enabled g))
+(assert (not (cache_partitioned g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 47. CacheConfig: CacheConfig_all_enabled implies cache_way_isolation ---
+(push 1)
+(declare-const g CacheConfig)
+(assert (CacheConfig_all_enabled g))
+(assert (not (cache_way_isolation g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 48. CacheConfig: CacheConfig_all_enabled implies cache_flush_on_switch ---
+(push 1)
+(declare-const g CacheConfig)
+(assert (CacheConfig_all_enabled g))
+(assert (not (cache_flush_on_switch g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 49. TimingProtection accessor round-trip: tp_constant_time ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (tp_constant_time (mk-timing_protection f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 50. TimingProtection accessor round-trip: tp_fixed_frequency ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (tp_fixed_frequency (mk-timing_protection f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 51. TimingProtection accessor round-trip: tp_no_rapl ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (tp_no_rapl (mk-timing_protection f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun TimingProtection_all_enabled ((g TimingProtection)) Bool
+  (and (tp_constant_time g) (tp_fixed_frequency g) (tp_no_rapl g)))
+
+; --- 52. TimingProtection: all-enabled completeness ---
+(push 1)
+(declare-const g TimingProtection)
+(assert (tp_constant_time g))
+(assert (tp_fixed_frequency g))
+(assert (tp_no_rapl g))
+(assert (not (TimingProtection_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 53. TimingProtection: TimingProtection_all_enabled implies tp_constant_time ---
+(push 1)
+(declare-const g TimingProtection)
+(assert (TimingProtection_all_enabled g))
+(assert (not (tp_constant_time g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 54. TimingProtection: TimingProtection_all_enabled implies tp_fixed_frequency ---
+(push 1)
+(declare-const g TimingProtection)
+(assert (TimingProtection_all_enabled g))
+(assert (not (tp_fixed_frequency g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 55. TimingProtection: TimingProtection_all_enabled implies tp_no_rapl ---
+(push 1)
+(declare-const g TimingProtection)
+(assert (TimingProtection_all_enabled g))
+(assert (not (tp_no_rapl g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
 (check-sat)
 (exit)

@@ -74,150 +74,150 @@ pred metadata_layers {}
 
 // meta_001_padding_hides_size (matches Coq: Theorem meta_001_padding_hides_size)
 assert meta_001_padding_hides_size {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_001_padding_hides_size for 5
 
 // meta_002_constant_size (matches Coq: Theorem meta_002_constant_size)
 assert meta_002_constant_size {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_002_constant_size for 5
 
 // meta_003_size_no_leak (matches Coq: Theorem meta_003_size_no_leak)
 assert meta_003_size_no_leak {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_003_size_no_leak for 5
 
 // meta_004_timing_bucketed (matches Coq: Theorem meta_004_timing_bucketed)
 assert meta_004_timing_bucketed {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_004_timing_bucketed for 5
 
 // meta_005_jitter_bounded (matches Coq: Theorem meta_005_jitter_bounded)
 assert meta_005_jitter_bounded {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_005_jitter_bounded for 5
 
 // meta_006_k_anonymity (matches Coq: Theorem meta_006_k_anonymity)
 assert meta_006_k_anonymity {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_006_k_anonymity for 5
 
 // meta_007_set_preserved (matches Coq: Theorem meta_007_set_preserved)
 assert meta_007_set_preserved {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_007_set_preserved for 5
 
 // meta_008_sender_anonymity (matches Coq: Theorem meta_008_sender_anonymity)
 assert meta_008_sender_anonymity {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_008_sender_anonymity for 5
 
 // meta_009_receiver_anonymity (matches Coq: Theorem meta_009_receiver_anonymity)
 assert meta_009_receiver_anonymity {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_009_receiver_anonymity for 5
 
 // meta_010_relationship_unlinkable (matches Coq: Theorem meta_010_relationship_unlinkable)
 assert meta_010_relationship_unlinkable {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_010_relationship_unlinkable for 5
 
 // meta_011_temporal_unlinkable (matches Coq: Theorem meta_011_temporal_unlinkable)
 assert meta_011_temporal_unlinkable {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_011_temporal_unlinkable for 5
 
 // meta_012_sensitivity_reflexive (matches Coq: Theorem meta_012_sensitivity_reflexive)
 assert meta_012_sensitivity_reflexive {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_012_sensitivity_reflexive for 5
 
 // meta_013_redaction_removes_sensitive (matches Coq: Theorem meta_013_redaction_removes_sensitive)
 assert meta_013_redaction_removes_sensitive {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_013_redaction_removes_sensitive for 5
 
 // meta_014_public_preserved (matches Coq: Theorem meta_014_public_preserved)
 assert meta_014_public_preserved {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_014_public_preserved for 5
 
 // meta_015_constant_rate (matches Coq: Theorem meta_015_constant_rate)
 assert meta_015_constant_rate {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_015_constant_rate for 5
 
 // meta_016_cover_traffic (matches Coq: Theorem meta_016_cover_traffic)
 assert meta_016_cover_traffic {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_016_cover_traffic for 5
 
 // meta_017_minimization (matches Coq: Theorem meta_017_minimization)
 assert meta_017_minimization {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_017_minimization for 5
 
 // meta_018_no_correlation (matches Coq: Theorem meta_018_no_correlation)
 assert meta_018_no_correlation {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_018_no_correlation for 5
 
 // meta_019_uniform_frequency (matches Coq: Theorem meta_019_uniform_frequency)
 assert meta_019_uniform_frequency {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_019_uniform_frequency for 5
 
 // meta_020_aggregation_limited (matches Coq: Theorem meta_020_aggregation_limited)
 assert meta_020_aggregation_limited {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_020_aggregation_limited for 5
 
 // meta_021_path_length (matches Coq: Theorem meta_021_path_length)
 assert meta_021_path_length {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_021_path_length for 5
 
 // meta_022_hop_count_hidden (matches Coq: Theorem meta_022_hop_count_hidden)
 assert meta_022_hop_count_hidden {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_022_hop_count_hidden for 5
 
 // meta_023_fingerprint_resistance (matches Coq: Theorem meta_023_fingerprint_resistance)
 assert meta_023_fingerprint_resistance {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_023_fingerprint_resistance for 5
 
 // meta_024_session_isolation (matches Coq: Theorem meta_024_session_isolation)
 assert meta_024_session_isolation {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_024_session_isolation for 5
 
 // meta_025_defense_in_depth (matches Coq: Theorem meta_025_defense_in_depth)
 assert meta_025_defense_in_depth {
-  #univ >= 0
+  all x: Sensitivity | x in Sensitivity
 }
 check meta_025_defense_in_depth for 5

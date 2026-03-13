@@ -1,13 +1,18 @@
 ---- MODULE AuthenticationProtocols ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/AuthenticationProtocols.v (102 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/AuthenticationProtocols.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* TokenValidation (matches Coq: Inductive TokenValidation)
 CONSTANTS TokenValid, TokenExpired, TokenInvalid, TokenRevoked
+
+TokenValidationSet == {TokenValid, TokenExpired, TokenInvalid, TokenRevoked}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* PasswordSecurity (matches Coq: Record PasswordSecurity)
 VARIABLES pwd_bcrypt_argon, pwd_salt_unique, pwd_min_entropy, pwd_breach_check
@@ -24,565 +29,285 @@ VARIABLES bcrypt_cost_factor, bcrypt_salt_bits, bcrypt_output_bits
 \* MFASecurity (matches Coq: Record MFASecurity)
 VARIABLES mfa_totp_support, mfa_webauthn, mfa_backup_codes, mfa_recovery
 
-\* TOTPConfig (matches Coq: Record TOTPConfig)
-VARIABLES totp_secret_bits, totp_digits, totp_period, totp_hash_alg, totp_drift_window
+vars == <<pwd_bcrypt_argon, pwd_salt_unique, pwd_min_entropy, pwd_breach_check, pbkdf2_iterations, pbkdf2_salt_bits, pbkdf2_output_bits, pbkdf2_hash_alg, argon2_time_cost, argon2_memory_cost, argon2_parallelism, argon2_salt_bits, argon2_output_bits, argon2_variant, bcrypt_cost_factor, bcrypt_salt_bits, bcrypt_output_bits, mfa_totp_support, mfa_webauthn, mfa_backup_codes, mfa_recovery>>
 
-\* WebAuthnConfig (matches Coq: Record WebAuthnConfig)
-VARIABLES webauthn_attestation, webauthn_user_verification, webauthn_resident_key, webauthn_challenge_bits, webauthn_timeout_ms
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
 
-\* SessionSecurity (matches Coq: Record SessionSecurity)
-VARIABLES sess_secure_token, sess_rotation, sess_timeout, sess_binding
-
-\* SessionTokenConfig (matches Coq: Record SessionTokenConfig)
-VARIABLES token_entropy_bits, token_expiry_seconds, token_rotation, token_binding, token_secure_flag, token_httponly_flag, token_samesite
-
-\* OAuth2Config (matches Coq: Record OAuth2Config)
-VARIABLES oauth2_pkce, oauth2_state_param, oauth2_nonce_param, oauth2_token_binding, oauth2_code_bits, oauth2_code_expiry, oauth2_refresh_rotation
-
-\* OIDCConfig (matches Coq: Record OIDCConfig)
-VARIABLES oidc_base, oidc_id_token_alg, oidc_id_token_expiry, oidc_userinfo_signed, oidc_claims_verified
-
-\* ChallengeConfig (matches Coq: Record ChallengeConfig)
-VARIABLES challenge_bits, challenge_expiry_ms, challenge_single_use, challenge_bound, challenge_signed
-
-\* NonceTracker (matches Coq: Record NonceTracker)
-VARIABLES nonce_size_bits, nonce_window_size, nonce_timestamp_bound, nonce_counter_mode
-
-\* AuthConfig (matches Coq: Record AuthConfig)
-VARIABLES auth_pwd, auth_mfa, auth_session
-
-\* Type invariant
 TypeOK ==
   /\ pwd_bcrypt_argon \in BOOLEAN
   /\ pwd_salt_unique \in BOOLEAN
   /\ pwd_min_entropy \in BOOLEAN
   /\ pwd_breach_check \in BOOLEAN
-  /\ pbkdf2_iterations \in BOOLEAN
-  /\ pbkdf2_salt_bits \in BOOLEAN
-  /\ pbkdf2_output_bits \in BOOLEAN
-  /\ pbkdf2_hash_alg \in BOOLEAN
-  /\ argon2_time_cost \in BOOLEAN
-  /\ argon2_memory_cost \in BOOLEAN
-  /\ argon2_parallelism \in BOOLEAN
-  /\ argon2_salt_bits \in BOOLEAN
-  /\ argon2_output_bits \in BOOLEAN
-  /\ argon2_variant \in BOOLEAN
-  /\ bcrypt_cost_factor \in BOOLEAN
-  /\ bcrypt_salt_bits \in BOOLEAN
-  /\ bcrypt_output_bits \in BOOLEAN
+  /\ pbkdf2_iterations \in Nat
+  /\ pbkdf2_salt_bits \in Nat
+  /\ pbkdf2_output_bits \in Nat
+  /\ pbkdf2_hash_alg \in Nat
+  /\ argon2_time_cost \in Nat
+  /\ argon2_memory_cost \in Nat
+  /\ argon2_parallelism \in Nat
+  /\ argon2_salt_bits \in Nat
+  /\ argon2_output_bits \in Nat
+  /\ argon2_variant \in Nat
+  /\ bcrypt_cost_factor \in Nat
+  /\ bcrypt_salt_bits \in Nat
+  /\ bcrypt_output_bits \in Nat
   /\ mfa_totp_support \in BOOLEAN
   /\ mfa_webauthn \in BOOLEAN
   /\ mfa_backup_codes \in BOOLEAN
   /\ mfa_recovery \in BOOLEAN
-  /\ totp_secret_bits \in BOOLEAN
-  /\ totp_digits \in BOOLEAN
-  /\ totp_period \in BOOLEAN
-  /\ totp_hash_alg \in BOOLEAN
-  /\ totp_drift_window \in BOOLEAN
-  /\ webauthn_attestation \in BOOLEAN
-  /\ webauthn_user_verification \in BOOLEAN
-  /\ webauthn_resident_key \in BOOLEAN
-  /\ webauthn_challenge_bits \in BOOLEAN
-  /\ webauthn_timeout_ms \in BOOLEAN
-  /\ sess_secure_token \in BOOLEAN
-  /\ sess_rotation \in BOOLEAN
-  /\ sess_timeout \in BOOLEAN
-  /\ sess_binding \in BOOLEAN
-  /\ token_entropy_bits \in BOOLEAN
-  /\ token_expiry_seconds \in BOOLEAN
-  /\ token_rotation \in BOOLEAN
-  /\ token_binding \in BOOLEAN
-  /\ token_secure_flag \in BOOLEAN
-  /\ token_httponly_flag \in BOOLEAN
-  /\ token_samesite \in BOOLEAN
-  /\ oauth2_pkce \in BOOLEAN
-  /\ oauth2_state_param \in BOOLEAN
-  /\ oauth2_nonce_param \in BOOLEAN
-  /\ oauth2_token_binding \in BOOLEAN
-  /\ oauth2_code_bits \in BOOLEAN
-  /\ oauth2_code_expiry \in BOOLEAN
-  /\ oauth2_refresh_rotation \in BOOLEAN
-  /\ oidc_base \in BOOLEAN
-  /\ oidc_id_token_alg \in BOOLEAN
-  /\ oidc_id_token_expiry \in BOOLEAN
-  /\ oidc_userinfo_signed \in BOOLEAN
-  /\ oidc_claims_verified \in BOOLEAN
-  /\ challenge_bits \in BOOLEAN
-  /\ challenge_expiry_ms \in BOOLEAN
-  /\ challenge_single_use \in BOOLEAN
-  /\ challenge_bound \in BOOLEAN
-  /\ challenge_signed \in BOOLEAN
-  /\ nonce_size_bits \in BOOLEAN
-  /\ nonce_window_size \in BOOLEAN
-  /\ nonce_timestamp_bound \in BOOLEAN
-  /\ nonce_counter_mode \in BOOLEAN
-  /\ auth_pwd \in BOOLEAN
-  /\ auth_mfa \in BOOLEAN
-  /\ auth_session \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ pwd_bcrypt_argon = TRUE
-  /\ pwd_salt_unique = TRUE
-  /\ pwd_min_entropy = TRUE
-  /\ pwd_breach_check = TRUE
-  /\ pbkdf2_iterations = TRUE
-  /\ pbkdf2_salt_bits = TRUE
-  /\ pbkdf2_output_bits = TRUE
-  /\ pbkdf2_hash_alg = TRUE
-  /\ argon2_time_cost = TRUE
-  /\ argon2_memory_cost = TRUE
-  /\ argon2_parallelism = TRUE
-  /\ argon2_salt_bits = TRUE
-  /\ argon2_output_bits = TRUE
-  /\ argon2_variant = TRUE
-  /\ bcrypt_cost_factor = TRUE
-  /\ bcrypt_salt_bits = TRUE
-  /\ bcrypt_output_bits = TRUE
-  /\ mfa_totp_support = TRUE
-  /\ mfa_webauthn = TRUE
-  /\ mfa_backup_codes = TRUE
-  /\ mfa_recovery = TRUE
-  /\ totp_secret_bits = TRUE
-  /\ totp_digits = TRUE
-  /\ totp_period = TRUE
-  /\ totp_hash_alg = TRUE
-  /\ totp_drift_window = TRUE
-  /\ webauthn_attestation = TRUE
-  /\ webauthn_user_verification = TRUE
-  /\ webauthn_resident_key = TRUE
-  /\ webauthn_challenge_bits = TRUE
-  /\ webauthn_timeout_ms = TRUE
-  /\ sess_secure_token = TRUE
-  /\ sess_rotation = TRUE
-  /\ sess_timeout = TRUE
-  /\ sess_binding = TRUE
-  /\ token_entropy_bits = TRUE
-  /\ token_expiry_seconds = TRUE
-  /\ token_rotation = TRUE
-  /\ token_binding = TRUE
-  /\ token_secure_flag = TRUE
-  /\ token_httponly_flag = TRUE
-  /\ token_samesite = TRUE
-  /\ oauth2_pkce = TRUE
-  /\ oauth2_state_param = TRUE
-  /\ oauth2_nonce_param = TRUE
-  /\ oauth2_token_binding = TRUE
-  /\ oauth2_code_bits = TRUE
-  /\ oauth2_code_expiry = TRUE
-  /\ oauth2_refresh_rotation = TRUE
-  /\ oidc_base = TRUE
-  /\ oidc_id_token_alg = TRUE
-  /\ oidc_id_token_expiry = TRUE
-  /\ oidc_userinfo_signed = TRUE
-  /\ oidc_claims_verified = TRUE
-  /\ challenge_bits = TRUE
-  /\ challenge_expiry_ms = TRUE
-  /\ challenge_single_use = TRUE
-  /\ challenge_bound = TRUE
-  /\ challenge_signed = TRUE
-  /\ nonce_size_bits = TRUE
-  /\ nonce_window_size = TRUE
-  /\ nonce_timestamp_bound = TRUE
-  /\ nonce_counter_mode = TRUE
-  /\ auth_pwd = TRUE
-  /\ auth_mfa = TRUE
-  /\ auth_session = TRUE
+  /\ pwd_bcrypt_argon = FALSE
+  /\ pwd_salt_unique = FALSE
+  /\ pwd_min_entropy = FALSE
+  /\ pwd_breach_check = FALSE
+  /\ pbkdf2_iterations = 0
+  /\ pbkdf2_salt_bits = 0
+  /\ pbkdf2_output_bits = 0
+  /\ pbkdf2_hash_alg = 0
+  /\ argon2_time_cost = 0
+  /\ argon2_memory_cost = 0
+  /\ argon2_parallelism = 0
+  /\ argon2_salt_bits = 0
+  /\ argon2_output_bits = 0
+  /\ argon2_variant = 0
+  /\ bcrypt_cost_factor = 0
+  /\ bcrypt_salt_bits = 0
+  /\ bcrypt_output_bits = 0
+  /\ mfa_totp_support = FALSE
+  /\ mfa_webauthn = FALSE
+  /\ mfa_backup_codes = FALSE
+  /\ mfa_recovery = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
+
+\* PBKDF2_ITER_MIN (matches Coq: Definition PBKDF2_ITER_MIN)
+PBKDF2_ITER_MIN ==
+  0
+
+\* ARGON2_MEMORY_MIN (matches Coq: Definition ARGON2_MEMORY_MIN)
+ARGON2_MEMORY_MIN ==
+  0
+
+\* WEBAUTHN_TIMEOUT_MIN_MS (matches Coq: Definition WEBAUTHN_TIMEOUT_MIN_MS)
+WEBAUTHN_TIMEOUT_MIN_MS ==
+  0
+
+\* WEBAUTHN_TIMEOUT_MAX_MS (matches Coq: Definition WEBAUTHN_TIMEOUT_MAX_MS)
+WEBAUTHN_TIMEOUT_MAX_MS ==
+  0
+
+\* WEBAUTHN_TIMEOUT_DEFAULT_MS (matches Coq: Definition WEBAUTHN_TIMEOUT_DEFAULT_MS)
+WEBAUTHN_TIMEOUT_DEFAULT_MS ==
+  0
+
+\* SESSION_EXPIRY_MIN_S (matches Coq: Definition SESSION_EXPIRY_MIN_S)
+SESSION_EXPIRY_MIN_S ==
+  0
+
+\* SESSION_EXPIRY_MAX_S (matches Coq: Definition SESSION_EXPIRY_MAX_S)
+SESSION_EXPIRY_MAX_S ==
+  0
+
+\* CHALLENGE_EXPIRY_MAX_MS (matches Coq: Definition CHALLENGE_EXPIRY_MAX_MS)
+CHALLENGE_EXPIRY_MAX_MS ==
+  0
+
+\* CHALLENGE_EXPIRY_DEFAULT_MS (matches Coq: Definition CHALLENGE_EXPIRY_DEFAULT_MS)
+CHALLENGE_EXPIRY_DEFAULT_MS ==
+  0
+
+\* NONCE_WINDOW_DEFAULT (matches Coq: Definition NONCE_WINDOW_DEFAULT)
+NONCE_WINDOW_DEFAULT ==
+  0
 
 \* pbkdf2_secure (matches Coq: Definition pbkdf2_secure)
-pbkdf2_secure(cfg) == TRUE
+pbkdf2_secure(cfg) ==
+  pbkdf2_iterations(cfg) /\ pbkdf2_salt_bits(cfg) /\ pbkdf2_output_bits(cfg) /\ pbkdf2_hash_alg(cfg)
 
 \* riina_pbkdf2 (matches Coq: Definition riina_pbkdf2)
-riina_pbkdf2 == TRUE
+riina_pbkdf2 ==
+  0
 
 \* argon2_secure (matches Coq: Definition argon2_secure)
-argon2_secure(cfg) == TRUE
+argon2_secure(cfg) ==
+  argon2_time_cost(cfg) /\ argon2_memory_cost(cfg) /\ argon2_parallelism(cfg) /\ argon2_salt_bits(cfg) /\ argon2_output_bits(cfg)
 
 \* riina_argon2 (matches Coq: Definition riina_argon2)
-riina_argon2 == TRUE
+riina_argon2 ==
+  0
 
 \* bcrypt_secure (matches Coq: Definition bcrypt_secure)
-bcrypt_secure(cfg) == TRUE
+bcrypt_secure(cfg) ==
+  bcrypt_cost_factor(cfg) /\ bcrypt_salt_bits(cfg) /\ bcrypt_output_bits(cfg)
 
 \* riina_bcrypt (matches Coq: Definition riina_bcrypt)
-riina_bcrypt == TRUE
+riina_bcrypt ==
+  0
 
 \* totp_secure (matches Coq: Definition totp_secure)
-totp_secure(cfg) == TRUE
+totp_secure(cfg) ==
+  totp_secret_bits(cfg) /\ totp_digits(cfg) /\ totp_period(cfg) /\ totp_drift_window(cfg)
 
 \* riina_totp (matches Coq: Definition riina_totp)
-riina_totp == TRUE
+riina_totp ==
+  0
 
 \* webauthn_secure (matches Coq: Definition webauthn_secure)
-webauthn_secure(cfg) == TRUE
+webauthn_secure(cfg) ==
+  webauthn_user_verification(cfg) /\ webauthn_challenge_bits(cfg) /\ webauthn_timeout_ms(cfg) /\ webauthn_timeout_ms(cfg)
 
 \* riina_webauthn (matches Coq: Definition riina_webauthn)
-riina_webauthn == TRUE
-
-\* session_token_secure (matches Coq: Definition session_token_secure)
-session_token_secure(cfg) == TRUE
-
-\* riina_session_token (matches Coq: Definition riina_session_token)
-riina_session_token == TRUE
-
-\* oauth2_secure (matches Coq: Definition oauth2_secure)
-oauth2_secure(cfg) == TRUE
-
-\* riina_oauth2 (matches Coq: Definition riina_oauth2)
-riina_oauth2 == TRUE
-
-\* oidc_secure (matches Coq: Definition oidc_secure)
-oidc_secure(cfg) == TRUE
-
-\* riina_oidc (matches Coq: Definition riina_oidc)
-riina_oidc == TRUE
-
-\* challenge_secure (matches Coq: Definition challenge_secure)
-challenge_secure(cfg) == TRUE
-
-\* riina_challenge (matches Coq: Definition riina_challenge)
-riina_challenge == TRUE
-
-\* replay_prevention_secure (matches Coq: Definition replay_prevention_secure)
-replay_prevention_secure(cfg) == TRUE
-
-\* riina_nonce_tracker (matches Coq: Definition riina_nonce_tracker)
-riina_nonce_tracker == TRUE
-
-\* password_secure (matches Coq: Definition password_secure)
-password_secure(p) == TRUE
-
-\* mfa_secure (matches Coq: Definition mfa_secure)
-mfa_secure(m) == TRUE
-
-\* session_secure (matches Coq: Definition session_secure)
-session_secure(s) == TRUE
-
-\* auth_complete (matches Coq: Definition auth_complete)
-auth_complete(a) == TRUE
-
-\* riina_pwd (matches Coq: Definition riina_pwd)
-riina_pwd == TRUE
-
-\* riina_mfa (matches Coq: Definition riina_mfa)
-riina_mfa == TRUE
-
-\* riina_session (matches Coq: Definition riina_session)
-riina_session == TRUE
-
-\* riina_auth (matches Coq: Definition riina_auth)
-riina_auth == TRUE
-
-\* andb_true_iff (matches Coq: Lemma andb_true_iff)
-THEOREM andb_true_iff == Init => TypeOK
-
-\* andb3_true_iff (matches Coq: Lemma andb3_true_iff)
-THEOREM andb3_true_iff == Init => TypeOK
-
-\* negb_true_iff (matches Coq: Lemma negb_true_iff)
-THEOREM negb_true_iff == Init => TypeOK
-
-\* leb_le (matches Coq: Lemma leb_le)
-THEOREM leb_le == Init => TypeOK
-
-\* ltb_lt (matches Coq: Lemma ltb_lt)
-THEOREM ltb_lt == Init => TypeOK
-
-\* AUTH_001 (matches Coq: Theorem AUTH_001)
-THEOREM AUTH_001 == Init => TypeOK
-
-\* AUTH_002 (matches Coq: Theorem AUTH_002)
-THEOREM AUTH_002 == Init => TypeOK
-
-\* AUTH_003 (matches Coq: Theorem AUTH_003)
-THEOREM AUTH_003 == Init => TypeOK
-
-\* AUTH_004 (matches Coq: Theorem AUTH_004)
-THEOREM AUTH_004 == Init => TypeOK
-
-\* AUTH_005 (matches Coq: Theorem AUTH_005)
-THEOREM AUTH_005 == Init => TypeOK
-
-\* AUTH_006 (matches Coq: Theorem AUTH_006)
-THEOREM AUTH_006 == Init => TypeOK
-
-\* AUTH_007 (matches Coq: Theorem AUTH_007)
-THEOREM AUTH_007 == Init => TypeOK
-
-\* AUTH_008 (matches Coq: Theorem AUTH_008)
-THEOREM AUTH_008 == Init => TypeOK
-
-\* AUTH_009 (matches Coq: Theorem AUTH_009)
-THEOREM AUTH_009 == Init => TypeOK
-
-\* AUTH_010 (matches Coq: Theorem AUTH_010)
-THEOREM AUTH_010 == Init => TypeOK
-
-\* AUTH_011 (matches Coq: Theorem AUTH_011)
-THEOREM AUTH_011 == Init => TypeOK
-
-\* AUTH_012 (matches Coq: Theorem AUTH_012)
-THEOREM AUTH_012 == Init => TypeOK
-
-\* AUTH_013 (matches Coq: Theorem AUTH_013)
-THEOREM AUTH_013 == Init => TypeOK
-
-\* AUTH_014 (matches Coq: Theorem AUTH_014)
-THEOREM AUTH_014 == Init => TypeOK
-
-\* AUTH_015 (matches Coq: Theorem AUTH_015)
-THEOREM AUTH_015 == Init => TypeOK
-
-\* AUTH_016 (matches Coq: Theorem AUTH_016)
-THEOREM AUTH_016 == Init => TypeOK
-
-\* AUTH_017 (matches Coq: Theorem AUTH_017)
-THEOREM AUTH_017 == Init => TypeOK
-
-\* AUTH_018 (matches Coq: Theorem AUTH_018)
-THEOREM AUTH_018 == Init => TypeOK
-
-\* AUTH_019 (matches Coq: Theorem AUTH_019)
-THEOREM AUTH_019 == Init => TypeOK
-
-\* AUTH_020 (matches Coq: Theorem AUTH_020)
-THEOREM AUTH_020 == Init => TypeOK
-
-\* AUTH_021 (matches Coq: Theorem AUTH_021)
-THEOREM AUTH_021 == Init => TypeOK
-
-\* AUTH_022 (matches Coq: Theorem AUTH_022)
-THEOREM AUTH_022 == Init => TypeOK
-
-\* AUTH_023 (matches Coq: Theorem AUTH_023)
-THEOREM AUTH_023 == Init => TypeOK
-
-\* AUTH_024 (matches Coq: Theorem AUTH_024)
-THEOREM AUTH_024 == Init => TypeOK
-
-\* AUTH_025_complete (matches Coq: Theorem AUTH_025_complete)
-THEOREM AUTH_025_complete == Init => TypeOK
-
-\* PBKDF2_001_riina_secure (matches Coq: Theorem PBKDF2_001_riina_secure)
-THEOREM PBKDF2_001_riina_secure == Init => TypeOK
-
-\* PBKDF2_002_sufficient_iterations (matches Coq: Theorem PBKDF2_002_sufficient_iterations)
-THEOREM PBKDF2_002_sufficient_iterations == Init => TypeOK
-
-\* PBKDF2_003_sufficient_salt (matches Coq: Theorem PBKDF2_003_sufficient_salt)
-THEOREM PBKDF2_003_sufficient_salt == Init => TypeOK
-
-\* PBKDF2_004_sufficient_output (matches Coq: Theorem PBKDF2_004_sufficient_output)
-THEOREM PBKDF2_004_sufficient_output == Init => TypeOK
-
-\* PBKDF2_005_approved_algorithm (matches Coq: Theorem PBKDF2_005_approved_algorithm)
-THEOREM PBKDF2_005_approved_algorithm == Init => TypeOK
-
-\* PBKDF2_006_work_factor (matches Coq: Theorem PBKDF2_006_work_factor)
-THEOREM PBKDF2_006_work_factor == Init => TypeOK
-
-\* ARGON2_001_riina_secure (matches Coq: Theorem ARGON2_001_riina_secure)
-THEOREM ARGON2_001_riina_secure == Init => TypeOK
-
-\* ARGON2_002_sufficient_time (matches Coq: Theorem ARGON2_002_sufficient_time)
-THEOREM ARGON2_002_sufficient_time == Init => TypeOK
-
-\* ARGON2_003_sufficient_memory (matches Coq: Theorem ARGON2_003_sufficient_memory)
-THEOREM ARGON2_003_sufficient_memory == Init => TypeOK
-
-\* ARGON2_004_argon2id_variant (matches Coq: Theorem ARGON2_004_argon2id_variant)
-THEOREM ARGON2_004_argon2id_variant == Init => TypeOK
-
-\* ARGON2_005_memory_hardness (matches Coq: Theorem ARGON2_005_memory_hardness)
-THEOREM ARGON2_005_memory_hardness == Init => TypeOK
-
-\* ARGON2_006_parallelism (matches Coq: Theorem ARGON2_006_parallelism)
-THEOREM ARGON2_006_parallelism == Init => TypeOK
-
-\* BCRYPT_001_riina_secure (matches Coq: Theorem BCRYPT_001_riina_secure)
-THEOREM BCRYPT_001_riina_secure == Init => TypeOK
-
-\* BCRYPT_002_sufficient_cost (matches Coq: Theorem BCRYPT_002_sufficient_cost)
-THEOREM BCRYPT_002_sufficient_cost == Init => TypeOK
-
-\* BCRYPT_003_fixed_salt (matches Coq: Theorem BCRYPT_003_fixed_salt)
-THEOREM BCRYPT_003_fixed_salt == Init => TypeOK
-
-\* BCRYPT_004_fixed_output (matches Coq: Theorem BCRYPT_004_fixed_output)
-THEOREM BCRYPT_004_fixed_output == Init => TypeOK
-
-\* BCRYPT_005_exponential_work (matches Coq: Theorem BCRYPT_005_exponential_work)
-THEOREM BCRYPT_005_exponential_work == Init => TypeOK
-
-\* TOTP_001_riina_secure (matches Coq: Theorem TOTP_001_riina_secure)
-THEOREM TOTP_001_riina_secure == Init => TypeOK
-
-\* TOTP_002_sufficient_secret (matches Coq: Theorem TOTP_002_sufficient_secret)
-THEOREM TOTP_002_sufficient_secret == Init => TypeOK
-
-\* TOTP_003_sufficient_digits (matches Coq: Theorem TOTP_003_sufficient_digits)
-THEOREM TOTP_003_sufficient_digits == Init => TypeOK
-
-\* TOTP_004_standard_period (matches Coq: Theorem TOTP_004_standard_period)
-THEOREM TOTP_004_standard_period == Init => TypeOK
-
-\* TOTP_005_limited_drift (matches Coq: Theorem TOTP_005_limited_drift)
-THEOREM TOTP_005_limited_drift == Init => TypeOK
-
-\* TOTP_006_brute_force_resistant (matches Coq: Theorem TOTP_006_brute_force_resistant)
-THEOREM TOTP_006_brute_force_resistant == Init => TypeOK
-
-\* WEBAUTHN_001_riina_secure (matches Coq: Theorem WEBAUTHN_001_riina_secure)
-THEOREM WEBAUTHN_001_riina_secure == Init => TypeOK
-
-\* WEBAUTHN_002_user_verification (matches Coq: Theorem WEBAUTHN_002_user_verification)
-THEOREM WEBAUTHN_002_user_verification == Init => TypeOK
-
-\* WEBAUTHN_003_challenge_entropy (matches Coq: Theorem WEBAUTHN_003_challenge_entropy)
-THEOREM WEBAUTHN_003_challenge_entropy == Init => TypeOK
-
-\* WEBAUTHN_004_timeout_range (matches Coq: Theorem WEBAUTHN_004_timeout_range)
-THEOREM WEBAUTHN_004_timeout_range == Init => TypeOK
-
-\* WEBAUTHN_005_impersonation_prevention (matches Coq: Theorem WEBAUTHN_005_impersonation_prevention)
-THEOREM WEBAUTHN_005_impersonation_prevention == Init => TypeOK
-
-\* SESSION_001_riina_secure (matches Coq: Theorem SESSION_001_riina_secure)
-THEOREM SESSION_001_riina_secure == Init => TypeOK
-
-\* SESSION_002_sufficient_entropy (matches Coq: Theorem SESSION_002_sufficient_entropy)
-THEOREM SESSION_002_sufficient_entropy == Init => TypeOK
-
-\* SESSION_003_rotation_enabled (matches Coq: Theorem SESSION_003_rotation_enabled)
-THEOREM SESSION_003_rotation_enabled == Init => TypeOK
-
-\* SESSION_004_binding_enabled (matches Coq: Theorem SESSION_004_binding_enabled)
-THEOREM SESSION_004_binding_enabled == Init => TypeOK
-
-\* SESSION_005_secure_flag (matches Coq: Theorem SESSION_005_secure_flag)
-THEOREM SESSION_005_secure_flag == Init => TypeOK
-
-\* SESSION_006_httponly_flag (matches Coq: Theorem SESSION_006_httponly_flag)
-THEOREM SESSION_006_httponly_flag == Init => TypeOK
-
-\* SESSION_007_samesite_protection (matches Coq: Theorem SESSION_007_samesite_protection)
-THEOREM SESSION_007_samesite_protection == Init => TypeOK
-
-\* SESSION_008_guessing_resistant (matches Coq: Theorem SESSION_008_guessing_resistant)
-THEOREM SESSION_008_guessing_resistant == Init => TypeOK
-
-\* OAUTH2_001_riina_secure (matches Coq: Theorem OAUTH2_001_riina_secure)
-THEOREM OAUTH2_001_riina_secure == Init => TypeOK
-
-\* OAUTH2_002_pkce_required (matches Coq: Theorem OAUTH2_002_pkce_required)
-THEOREM OAUTH2_002_pkce_required == Init => TypeOK
-
-\* OAUTH2_003_state_required (matches Coq: Theorem OAUTH2_003_state_required)
-THEOREM OAUTH2_003_state_required == Init => TypeOK
-
-\* OAUTH2_004_code_entropy (matches Coq: Theorem OAUTH2_004_code_entropy)
-THEOREM OAUTH2_004_code_entropy == Init => TypeOK
-
-\* OAUTH2_005_short_code_expiry (matches Coq: Theorem OAUTH2_005_short_code_expiry)
-THEOREM OAUTH2_005_short_code_expiry == Init => TypeOK
-
-\* OAUTH2_006_refresh_rotation (matches Coq: Theorem OAUTH2_006_refresh_rotation)
-THEOREM OAUTH2_006_refresh_rotation == Init => TypeOK
-
-\* OAUTH2_007_code_interception_prevention (matches Coq: Theorem OAUTH2_007_code_interception_prevention)
-THEOREM OAUTH2_007_code_interception_prevention == Init => TypeOK
-
-\* OIDC_001_riina_secure (matches Coq: Theorem OIDC_001_riina_secure)
-THEOREM OIDC_001_riina_secure == Init => TypeOK
-
-\* OIDC_002_secure_base (matches Coq: Theorem OIDC_002_secure_base)
-THEOREM OIDC_002_secure_base == Init => TypeOK
-
-\* OIDC_003_strong_signing (matches Coq: Theorem OIDC_003_strong_signing)
-THEOREM OIDC_003_strong_signing == Init => TypeOK
-
-\* OIDC_004_short_id_expiry (matches Coq: Theorem OIDC_004_short_id_expiry)
-THEOREM OIDC_004_short_id_expiry == Init => TypeOK
-
-\* OIDC_005_claims_verified (matches Coq: Theorem OIDC_005_claims_verified)
-THEOREM OIDC_005_claims_verified == Init => TypeOK
-
-\* OIDC_006_inherits_pkce (matches Coq: Theorem OIDC_006_inherits_pkce)
-THEOREM OIDC_006_inherits_pkce == Init => TypeOK
-
-\* CHALLENGE_001_riina_secure (matches Coq: Theorem CHALLENGE_001_riina_secure)
-THEOREM CHALLENGE_001_riina_secure == Init => TypeOK
-
-\* CHALLENGE_002_sufficient_entropy (matches Coq: Theorem CHALLENGE_002_sufficient_entropy)
-THEOREM CHALLENGE_002_sufficient_entropy == Init => TypeOK
-
-\* CHALLENGE_003_short_expiry (matches Coq: Theorem CHALLENGE_003_short_expiry)
-THEOREM CHALLENGE_003_short_expiry == Init => TypeOK
-
-\* CHALLENGE_004_single_use (matches Coq: Theorem CHALLENGE_004_single_use)
-THEOREM CHALLENGE_004_single_use == Init => TypeOK
-
-\* CHALLENGE_005_session_bound (matches Coq: Theorem CHALLENGE_005_session_bound)
-THEOREM CHALLENGE_005_session_bound == Init => TypeOK
-
-\* CHALLENGE_006_guessing_resistant (matches Coq: Theorem CHALLENGE_006_guessing_resistant)
-THEOREM CHALLENGE_006_guessing_resistant == Init => TypeOK
-
-\* CHALLENGE_007_replay_prevention (matches Coq: Theorem CHALLENGE_007_replay_prevention)
-THEOREM CHALLENGE_007_replay_prevention == Init => TypeOK
-
-\* REPLAY_001_riina_secure (matches Coq: Theorem REPLAY_001_riina_secure)
-THEOREM REPLAY_001_riina_secure == Init => TypeOK
-
-\* REPLAY_002_sufficient_nonce (matches Coq: Theorem REPLAY_002_sufficient_nonce)
-THEOREM REPLAY_002_sufficient_nonce == Init => TypeOK
-
-\* REPLAY_003_sufficient_window (matches Coq: Theorem REPLAY_003_sufficient_window)
-THEOREM REPLAY_003_sufficient_window == Init => TypeOK
-
-\* REPLAY_004_bounded_timestamp (matches Coq: Theorem REPLAY_004_bounded_timestamp)
-THEOREM REPLAY_004_bounded_timestamp == Init => TypeOK
-
-\* REPLAY_005_window_prevents_replay (matches Coq: Theorem REPLAY_005_window_prevents_replay)
-THEOREM REPLAY_005_window_prevents_replay == Init => TypeOK
-
-\* REPLAY_006_limited_attack_window (matches Coq: Theorem REPLAY_006_limited_attack_window)
-THEOREM REPLAY_006_limited_attack_window == Init => TypeOK
-
-\* COMPOSITE_001_password_hashing_secure (matches Coq: Theorem COMPOSITE_001_password_hashing_secure)
-THEOREM COMPOSITE_001_password_hashing_secure == Init => TypeOK
-
-\* COMPOSITE_002_mfa_complete (matches Coq: Theorem COMPOSITE_002_mfa_complete)
-THEOREM COMPOSITE_002_mfa_complete == Init => TypeOK
-
-\* COMPOSITE_003_session_complete (matches Coq: Theorem COMPOSITE_003_session_complete)
-THEOREM COMPOSITE_003_session_complete == Init => TypeOK
-
-\* COMPOSITE_004_challenge_complete (matches Coq: Theorem COMPOSITE_004_challenge_complete)
-THEOREM COMPOSITE_004_challenge_complete == Init => TypeOK
-
-\* COMPOSITE_005_riina_auth_complete (matches Coq: Theorem COMPOSITE_005_riina_auth_complete)
-THEOREM COMPOSITE_005_riina_auth_complete == Init => TypeOK
-
-\* COMPOSITE_006_auth_implies_all (matches Coq: Theorem COMPOSITE_006_auth_implies_all)
-THEOREM COMPOSITE_006_auth_implies_all == Init => TypeOK
-
-\* TOKEN_001_valid_not_expired (matches Coq: Theorem TOKEN_001_valid_not_expired)
-THEOREM TOKEN_001_valid_not_expired == Init => TypeOK
-
-\* TOKEN_002_valid_not_invalid (matches Coq: Theorem TOKEN_002_valid_not_invalid)
-THEOREM TOKEN_002_valid_not_invalid == Init => TypeOK
-
-\* TOKEN_003_valid_not_revoked (matches Coq: Theorem TOKEN_003_valid_not_revoked)
-THEOREM TOKEN_003_valid_not_revoked == Init => TypeOK
-
-\* TOKEN_004_expired_not_valid (matches Coq: Theorem TOKEN_004_expired_not_valid)
-THEOREM TOKEN_004_expired_not_valid == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<pwd_bcrypt_argon, pwd_salt_unique, pwd_min_entropy, pwd_breach_check, pbkdf2_iterations, pbkdf2_salt_bits, pbkdf2_output_bits, pbkdf2_hash_alg, argon2_time_cost, argon2_memory_cost, argon2_parallelism, argon2_salt_bits, argon2_output_bits, argon2_variant, bcrypt_cost_factor, bcrypt_salt_bits, bcrypt_output_bits, mfa_totp_support, mfa_webauthn, mfa_backup_codes, mfa_recovery, totp_secret_bits, totp_digits, totp_period, totp_hash_alg, totp_drift_window, webauthn_attestation, webauthn_user_verification, webauthn_resident_key, webauthn_challenge_bits, webauthn_timeout_ms, sess_secure_token, sess_rotation, sess_timeout, sess_binding, token_entropy_bits, token_expiry_seconds, token_rotation, token_binding, token_secure_flag, token_httponly_flag, token_samesite, oauth2_pkce, oauth2_state_param, oauth2_nonce_param, oauth2_token_binding, oauth2_code_bits, oauth2_code_expiry, oauth2_refresh_rotation, oidc_base, oidc_id_token_alg, oidc_id_token_expiry, oidc_userinfo_signed, oidc_claims_verified, challenge_bits, challenge_expiry_ms, challenge_single_use, challenge_bound, challenge_signed, nonce_size_bits, nonce_window_size, nonce_timestamp_bound, nonce_counter_mode, auth_pwd, auth_mfa, auth_session>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<pwd_bcrypt_argon, pwd_salt_unique, pwd_min_entropy, pwd_breach_check, pbkdf2_iterations, pbkdf2_salt_bits, pbkdf2_output_bits, pbkdf2_hash_alg, argon2_time_cost, argon2_memory_cost, argon2_parallelism, argon2_salt_bits, argon2_output_bits, argon2_variant, bcrypt_cost_factor, bcrypt_salt_bits, bcrypt_output_bits, mfa_totp_support, mfa_webauthn, mfa_backup_codes, mfa_recovery, totp_secret_bits, totp_digits, totp_period, totp_hash_alg, totp_drift_window, webauthn_attestation, webauthn_user_verification, webauthn_resident_key, webauthn_challenge_bits, webauthn_timeout_ms, sess_secure_token, sess_rotation, sess_timeout, sess_binding, token_entropy_bits, token_expiry_seconds, token_rotation, token_binding, token_secure_flag, token_httponly_flag, token_samesite, oauth2_pkce, oauth2_state_param, oauth2_nonce_param, oauth2_token_binding, oauth2_code_bits, oauth2_code_expiry, oauth2_refresh_rotation, oidc_base, oidc_id_token_alg, oidc_id_token_expiry, oidc_userinfo_signed, oidc_claims_verified, challenge_bits, challenge_expiry_ms, challenge_single_use, challenge_bound, challenge_signed, nonce_size_bits, nonce_window_size, nonce_timestamp_bound, nonce_counter_mode, auth_pwd, auth_mfa, auth_session>>
+riina_webauthn ==
+  0
+
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
+
+UpdatePasswordSecurity ==
+  /\ pwd_bcrypt_argon' \in BOOLEAN
+  /\ pwd_salt_unique' \in BOOLEAN
+  /\ pwd_min_entropy' \in BOOLEAN
+  /\ pwd_breach_check' \in BOOLEAN
+  /\ UNCHANGED <<pbkdf2_iterations, pbkdf2_salt_bits, pbkdf2_output_bits, pbkdf2_hash_alg, argon2_time_cost, argon2_memory_cost, argon2_parallelism, argon2_salt_bits, argon2_output_bits, argon2_variant, bcrypt_cost_factor, bcrypt_salt_bits, bcrypt_output_bits, mfa_totp_support, mfa_webauthn, mfa_backup_codes, mfa_recovery>>
+
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
+
+Next == UpdatePasswordSecurity \/ ValidateState
+
+Spec == Init /\ [][Next]_vars
+
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
+
+\* andb_true_iff
+THEOREM andb_true_iff ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true < => a = true /\ b = true
+
+\* andb3_true_iff
+THEOREM andb3_true_iff ==
+  \A a \in Nat, b \in Nat, c \in Nat, bool \in Nat :
+      a && b && c = true < => a = true /\ b = true /\ c = true
+
+\* negb_true_iff
+THEOREM negb_true_iff ==
+  \A b \in Nat, bool \in Nat :
+      negb(b) => b = false
+
+\* leb_le
+THEOREM leb_le ==
+  \A n \in Nat, m \in Nat, nat \in Nat :
+      (n <=? m) = true < => n <= m
+
+\* ltb_lt
+THEOREM ltb_lt ==
+  \A n \in Nat, m \in Nat, nat \in Nat :
+      (n <? m) = true < => n < m
+
+\* AUTH_001
+THEOREM AUTH_001 ==
+  password_secure(riina_pwd) = TRUE
+
+\* AUTH_002
+THEOREM AUTH_002 ==
+  mfa_secure(riina_mfa) = TRUE
+
+\* AUTH_003
+THEOREM AUTH_003 ==
+  session_secure(riina_session) = TRUE
+
+\* AUTH_004
+THEOREM AUTH_004 ==
+  auth_complete(riina_auth) = TRUE
+
+\* AUTH_005
+THEOREM AUTH_005 ==
+  pwd_bcrypt_argon(riina_pwd) = TRUE
+
+\* AUTH_006
+THEOREM AUTH_006 ==
+  mfa_webauthn(riina_mfa) = TRUE
+
+\* AUTH_007
+THEOREM AUTH_007 ==
+  sess_secure_token(riina_session) = TRUE
+
+\* AUTH_008
+THEOREM AUTH_008 ==
+  \A p \in Nat :
+      password_secure(p) => pwd_bcrypt_argon(p)
+
+\* AUTH_009
+THEOREM AUTH_009 ==
+  \A p \in Nat :
+      password_secure(p) => pwd_salt_unique(p)
+
+\* AUTH_010
+THEOREM AUTH_010 ==
+  \A m \in Nat :
+      mfa_secure(m) => mfa_webauthn(m)
+
+\* AUTH_011
+THEOREM AUTH_011 ==
+  \A s \in Nat :
+      session_secure(s) => sess_secure_token(s)
+
+\* AUTH_012
+THEOREM AUTH_012 ==
+  \A s \in Nat :
+      session_secure(s) => sess_rotation(s)
+
+\* AUTH_013
+THEOREM AUTH_013 ==
+  \A a \in Nat :
+      auth_complete(a) => password_secure (auth_pwd a) = true
+
+\* AUTH_014
+THEOREM AUTH_014 ==
+  \A a \in Nat :
+      auth_complete(a) => mfa_secure (auth_mfa a) = true
+
+\* AUTH_015
+THEOREM AUTH_015 ==
+  \A a \in Nat :
+      auth_complete(a) => session_secure (auth_session a) = true
+
+\* AUTH_016
+THEOREM AUTH_016 ==
+  \A a \in Nat :
+      auth_complete(a) => pwd_bcrypt_argon (auth_pwd a) = true
+
+\* AUTH_017
+THEOREM AUTH_017 ==
+  \A a \in Nat :
+      auth_complete(a) => mfa_webauthn (auth_mfa a) = true
+
+\* AUTH_018
+THEOREM AUTH_018 ==
+  \A a \in Nat :
+      auth_complete(a) => sess_secure_token (auth_session a) = true
+
+\* AUTH_019
+THEOREM AUTH_019 ==
+  password_secure(riina_pwd) /\ mfa_secure(riina_mfa)
+
+\* AUTH_020
+THEOREM AUTH_020 ==
+  pwd_bcrypt_argon(riina_pwd) /\ mfa_webauthn(riina_mfa)
+
+\* 77 additional theorems proven in Coq source
 
 ====

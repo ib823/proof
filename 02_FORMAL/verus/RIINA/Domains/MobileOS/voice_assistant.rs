@@ -1,44 +1,59 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of MobileOS Voice Assistant invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// State model for Voice Assistant
+pub struct VoiceSession {
+    pub audio_on_device: bool,
+    pub wake_word_detected: bool,
+    pub intent_classified: bool,
+    pub privacy_preserved: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Invariant: all properties must hold with positive assurance
+pub open spec fn voice_assistant_valid(s: VoiceSession) -> bool {
+    s.audio_on_device && s.wake_word_detected && s.intent_classified && s.privacy_preserved && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration
+pub open spec fn baseline_voice_assistant() -> VoiceSession {
+    VoiceSession { audio_on_device: true, wake_word_detected: true, intent_classified: true, privacy_preserved: true, assurance_level: 1 }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration
+pub open spec fn hardened_voice_assistant() -> VoiceSession {
+    VoiceSession { audio_on_device: true, wake_word_detected: true, intent_classified: true, privacy_preserved: true, assurance_level: 3 }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline is valid
+proof fn lemma_baseline_valid()
+    ensures voice_assistant_valid(baseline_voice_assistant()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_voice_assistant();
+    assert(b.audio_on_device && b.wake_word_detected && b.intent_classified && b.privacy_preserved && b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened is valid and dominates baseline
+proof fn lemma_hardened_dominates()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        voice_assistant_valid(hardened_voice_assistant()),
+        hardened_voice_assistant().assurance_level >= baseline_voice_assistant().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+}
+
+/// Lemma: each property is individually necessary
+proof fn lemma_properties_necessary()
+    ensures
+        !voice_assistant_valid(VoiceSession { audio_on_device: false, wake_word_detected: true, intent_classified: true, privacy_preserved: true, assurance_level: 1 }),
+        !voice_assistant_valid(VoiceSession { audio_on_device: true, wake_word_detected: false, intent_classified: true, privacy_preserved: true, assurance_level: 1 }),
+        !voice_assistant_valid(VoiceSession { audio_on_device: true, wake_word_detected: true, intent_classified: false, privacy_preserved: true, assurance_level: 1 }),
+        !voice_assistant_valid(VoiceSession { audio_on_device: true, wake_word_detected: true, intent_classified: true, privacy_preserved: false, assurance_level: 1 }),
+{
 }
 
 } // verus!
-
-fn main() {}

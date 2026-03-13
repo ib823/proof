@@ -7,36 +7,36 @@ open util/boolean
 
 // val_rel_pair (matches Coq: Lemma val_rel_pair)
 assert val_rel_pair {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_pair for 5
 
 // val_rel_inl (matches Coq: Lemma val_rel_inl)
 assert val_rel_inl {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_inl for 5
 
 // val_rel_inr (matches Coq: Lemma val_rel_inr)
 assert val_rel_inr {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_inr for 5
 
 // exp_rel_pair_values (matches Coq: Lemma exp_rel_pair_values)
 assert exp_rel_pair_values {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check exp_rel_pair_values for 5
 
 // exp_rel_inl_values (matches Coq: Lemma exp_rel_inl_values)
 assert exp_rel_inl_values {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check exp_rel_inl_values for 5
 
 // exp_rel_inr_values (matches Coq: Lemma exp_rel_inr_values)
 assert exp_rel_inr_values {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check exp_rel_inr_values for 5

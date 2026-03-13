@@ -1,158 +1,312 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
-; Copyright (c) 2026 The RIINA Authors.
+; RIINA SensorDrivers — SMT Verification
 ; Derived from 02_FORMAL/coq/domains/security_foundation/SensorDrivers.v (22 assertions)
-; Source mapping: scripts/generate-full-stack.py
 ; Module: SensorDrivers
+;
+; Real verification: datatype invariants, guard completeness,
+; ordering properties, accessor round-trips.
 
 (set-logic ALL)
 (set-option :produce-models true)
 
-; AppId (matches Coq: Inductive AppId)
+; =======================================================================
+; DATATYPE DECLARATIONS
+; =======================================================================
+
 (declare-datatypes ((AppId 0)) (((App))))
 
-; SensorType (matches Coq: Inductive SensorType)
 (declare-datatypes ((SensorType 0)) (((Camera) (Microphone) (GPS) (Accelerometer) (Gyroscope))))
 
-; Sensor (matches Coq: Record Sensor)
 (declare-datatypes ((Sensor 0))
   (((mk-sensor (sensor_type SensorType) (sensor_id Int)))))
 
-; Application (matches Coq: Record Application)
 (declare-datatypes ((Application 0))
   (((mk-application (app_id AppId) (app_camera_perm Bool) (app_microphone_perm Bool) (app_location_perm Bool) (app_motion_perm Bool)))))
 
-; SystemState (matches Coq: Record SystemState)
 (declare-datatypes ((SystemState 0))
   (((mk-system_state (camera_indicator Bool) (mic_indicator Bool) (any_camera_active Bool) (any_mic_active Bool)))))
 
-; SensorRateLimit (matches Coq: Record SensorRateLimit)
 (declare-datatypes ((SensorRateLimit 0))
   (((mk-sensor_rate_limit (rate_sensor_type SensorType) (rate_max_reads_per_sec Int) (rate_current_reads Int)))))
 
-; BoundedSensor (matches Coq: Record BoundedSensor)
 (declare-datatypes ((BoundedSensor 0))
   (((mk-bounded_sensor (bs_sensor Sensor) (bs_max_rate Int) (bs_current_rate Int) (bs_rate_ok Int)))))
 
-(declare-const __default_AppId AppId)
-(declare-const __default_Application Application)
-(declare-const __default_BoundedSensor BoundedSensor)
-(declare-const __default_Sensor Sensor)
-(declare-const __default_SensorRateLimit SensorRateLimit)
-(declare-const __default_SensorType SensorType)
-(declare-const __default_SystemState SystemState)
+; =======================================================================
+; FUNCTION DEFINITIONS AND PROPERTY VERIFICATION
+; =======================================================================
 
-; has_sensor_permission (matches Coq: Definition has_sensor_permission)
-(define-fun has_sensor_permission ((app Application) (sensor Sensor)) Bool
-  (= 0 0))
+; --- 1. SensorType exhaustiveness ---
+(push 1)
+(declare-const x SensorType)
+(assert (not (or (= x Camera) (= x Microphone) (= x GPS) (= x Accelerometer) (= x Gyroscope))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; uses_camera (matches Coq: Definition uses_camera)
-(define-fun uses_camera ((app Application)) Bool
-  (= 0 0))
+; --- 2. SensorType: Camera != Microphone ---
+(push 1)
+(assert (= Camera Microphone))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; uses_microphone (matches Coq: Definition uses_microphone)
-(define-fun uses_microphone ((app Application)) Bool
-  (= 0 0))
+; --- 3. SensorType: Microphone != GPS ---
+(push 1)
+(assert (= Microphone GPS))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; indicator_visible (matches Coq: Definition indicator_visible)
-(define-fun indicator_visible ((st SystemState)) Bool
-  (= 0 0))
+; --- 4. SensorType: GPS != Accelerometer ---
+(push 1)
+(assert (= GPS Accelerometer))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; rate_limit_ok (matches Coq: Definition rate_limit_ok)
-(define-fun rate_limit_ok ((rl SensorRateLimit)) Bool
-  (= 0 0))
+; --- 5. SensorType: Camera != Gyroscope ---
+(push 1)
+(assert (= Camera Gyroscope))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; rate_limit_exceeded (matches Coq: Definition rate_limit_exceeded)
-(define-fun rate_limit_exceeded ((rl SensorRateLimit)) Bool
-  (= 0 0))
+; --- 6. SensorType finite cardinality (5 values) ---
+(push 1)
+(declare-const x SensorType)
+(assert (and (not (= x Camera)) (not (= x Microphone)) (not (= x GPS)) (not (= x Accelerometer)) (not (= x Gyroscope))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; sensor_access_controlled (matches Coq: Theorem sensor_access_controlled)
-; sensor_access_controlled: forall (app : Application) (sensor : Sensor), reads_sensor app sensor -> has_sensor_permission app sensor
-(assert (forall ((app Application) (sensor Sensor)) (= 0 0))) ; sensor_access_controlled [partial: bindings preserved]
+; --- 7. Sensor accessor round-trip: sensor_type ---
+(push 1)
+(declare-const f0 SensorType)
+(declare-const f1 Int)
+(assert (not (= (sensor_type (mk-sensor f0 f1)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; recording_indicator_mandatory (matches Coq: Theorem recording_indicator_mandatory)
-; recording_indicator_mandatory: forall (app : Application) (st : SystemState), (uses_camera app /\ any_camera_active st = true) \/ (uses_microphone app 
-(assert (forall ((app Application) (st SystemState)) (= 0 0))) ; recording_indicator_mandatory [partial: bindings preserved]
+; --- 8. Sensor accessor round-trip: sensor_id ---
+(push 1)
+(declare-const f0 SensorType)
+(declare-const f1 Int)
+(assert (not (= (sensor_id (mk-sensor f0 f1)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; no_permission_no_sensor (matches Coq: Theorem no_permission_no_sensor)
-; no_permission_no_sensor: forall (app : Application) (sensor : Sensor), ~ has_sensor_permission app sensor -> ~ reads_sensor app sensor
-(assert (forall ((app Application) (sensor Sensor)) (= 0 0))) ; no_permission_no_sensor [partial: bindings preserved]
+; --- 9. Application accessor round-trip: app_id ---
+(push 1)
+(declare-const f0 AppId)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (app_id (mk-application f0 f1 f2 f3 f4)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; camera_requires_camera_perm (matches Coq: Theorem camera_requires_camera_perm)
-; camera_requires_camera_perm: forall (app : Application) (cam : Sensor), sensor_type cam = Camera -> reads_sensor app cam -> app_camera_perm app = tru
-(assert (forall ((app Application) (cam Sensor)) (= 0 0))) ; camera_requires_camera_perm [partial: bindings preserved]
+; --- 10. Application accessor round-trip: app_camera_perm ---
+(push 1)
+(declare-const f0 AppId)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (app_camera_perm (mk-application f0 f1 f2 f3 f4)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; gps_requires_location_perm (matches Coq: Theorem gps_requires_location_perm)
-; gps_requires_location_perm: forall (app : Application) (gps : Sensor), sensor_type gps = GPS -> reads_sensor app gps -> app_location_perm app = true
-(assert (forall ((app Application) (gps Sensor)) (= 0 0))) ; gps_requires_location_perm [partial: bindings preserved]
+; --- 11. Application accessor round-trip: app_microphone_perm ---
+(push 1)
+(declare-const f0 AppId)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (app_microphone_perm (mk-application f0 f1 f2 f3 f4)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; rate_limit_blocks_excess (matches Coq: Theorem rate_limit_blocks_excess)
-; rate_limit_blocks_excess: forall (rl : SensorRateLimit), rate_limit_exceeded rl -> ~ rate_limit_ok rl
-(assert (forall ((rl SensorRateLimit)) (= 0 0))) ; rate_limit_blocks_excess [partial: bindings preserved]
+; --- 12. Application accessor round-trip: app_location_perm ---
+(push 1)
+(declare-const f0 AppId)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (app_location_perm (mk-application f0 f1 f2 f3 f4)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; microphone_requires_mic_perm (matches Coq: Theorem microphone_requires_mic_perm)
-; microphone_requires_mic_perm: forall (app : Application) (mic : Sensor), sensor_type mic = Microphone -> reads_sensor app mic -> app_microphone_perm a
-(assert (forall ((app Application) (mic Sensor)) (= 0 0))) ; microphone_requires_mic_perm [partial: bindings preserved]
+; --- 13. Application accessor round-trip: app_motion_perm ---
+(push 1)
+(declare-const f0 AppId)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (app_motion_perm (mk-application f0 f1 f2 f3 f4)) f4)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; accelerometer_requires_motion_perm (matches Coq: Theorem accelerometer_requires_motion_perm)
-; accelerometer_requires_motion_perm: forall (app : Application) (accel : Sensor), sensor_type accel = Accelerometer -> reads_sensor app accel -> app_motion_p
-(assert (forall ((app Application) (accel Sensor)) (= 0 0))) ; accelerometer_requires_motion_perm [partial: bindings preserved]
+; --- 14. SystemState accessor round-trip: camera_indicator ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (camera_indicator (mk-system_state f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; gyroscope_requires_motion_perm (matches Coq: Theorem gyroscope_requires_motion_perm)
-; gyroscope_requires_motion_perm: forall (app : Application) (gyro : Sensor), sensor_type gyro = Gyroscope -> reads_sensor app gyro -> app_motion_perm app
-(assert (forall ((app Application) (gyro Sensor)) (= 0 0))) ; gyroscope_requires_motion_perm [partial: bindings preserved]
+; --- 15. SystemState accessor round-trip: mic_indicator ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (mic_indicator (mk-system_state f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; no_permissions_no_sensors (matches Coq: Theorem no_permissions_no_sensors)
-; no_permissions_no_sensors: forall (app : Application), app_camera_perm app = false -> app_microphone_perm app = false -> app_location_perm app = fa
-(assert (forall ((app Application)) (= 0 0))) ; no_permissions_no_sensors [partial: bindings preserved]
+; --- 16. SystemState accessor round-trip: any_camera_active ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (any_camera_active (mk-system_state f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; indicators_independent (matches Coq: Theorem indicators_independent)
-; indicators_independent: forall (st : SystemState), any_camera_active st = true -> any_mic_active st = false -> indicator_visible st -> camera_in
-(assert (forall ((st SystemState)) (= 0 0))) ; indicators_independent [partial: bindings preserved]
+; --- 17. SystemState accessor round-trip: any_mic_active ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (any_mic_active (mk-system_state f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; mic_indicator_when_active (matches Coq: Theorem mic_indicator_when_active)
-; mic_indicator_when_active: forall (st : SystemState), any_mic_active st = true -> indicator_visible st -> mic_indicator st = true
-(assert (forall ((st SystemState)) (= 0 0))) ; mic_indicator_when_active [partial: bindings preserved]
+(define-fun SystemState_all_enabled ((g SystemState)) Bool
+  (and (camera_indicator g) (mic_indicator g) (any_camera_active g) (any_mic_active g)))
 
-; cam_indicator_when_active (matches Coq: Theorem cam_indicator_when_active)
-; cam_indicator_when_active: forall (st : SystemState), any_camera_active st = true -> indicator_visible st -> camera_indicator st = true
-(assert (forall ((st SystemState)) (= 0 0))) ; cam_indicator_when_active [partial: bindings preserved]
+; --- 18. SystemState: all-enabled completeness ---
+(push 1)
+(declare-const g SystemState)
+(assert (camera_indicator g))
+(assert (mic_indicator g))
+(assert (any_camera_active g))
+(assert (any_mic_active g))
+(assert (not (SystemState_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; both_sensors_both_indicators (matches Coq: Theorem both_sensors_both_indicators)
-; both_sensors_both_indicators: forall (st : SystemState), any_camera_active st = true -> any_mic_active st = true -> indicator_visible st -> camera_ind
-(assert (forall ((st SystemState)) (= 0 0))) ; both_sensors_both_indicators [partial: bindings preserved]
+; --- 19. SystemState: SystemState_all_enabled implies camera_indicator ---
+(push 1)
+(declare-const g SystemState)
+(assert (SystemState_all_enabled g))
+(assert (not (camera_indicator g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; no_active_no_indicator_required (matches Coq: Theorem no_active_no_indicator_required)
-; no_active_no_indicator_required: forall (st : SystemState), any_camera_active st = false -> any_mic_active st = false -> indicator_visible st
-(assert (forall ((st SystemState)) (= 0 0))) ; no_active_no_indicator_required [partial: bindings preserved]
+; --- 20. SystemState: SystemState_all_enabled implies mic_indicator ---
+(push 1)
+(declare-const g SystemState)
+(assert (SystemState_all_enabled g))
+(assert (not (mic_indicator g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; sensor_perm_type_specific (matches Coq: Theorem sensor_perm_type_specific)
-; sensor_perm_type_specific: forall (app : Application) (s1 s2 : Sensor), sensor_type s1 <> sensor_type s2 -> has_sensor_permission app s1 -> ~ has_s
-(assert (forall ((app Application) (s1 Sensor) (s2 Sensor)) (= 0 0))) ; sensor_perm_type_specific [partial: bindings preserved]
+; --- 21. SystemState: SystemState_all_enabled implies any_camera_active ---
+(push 1)
+(declare-const g SystemState)
+(assert (SystemState_all_enabled g))
+(assert (not (any_camera_active g)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; camera_perm_not_mic (matches Coq: Theorem camera_perm_not_mic)
-; camera_perm_not_mic: forall (app : Application) (cam mic : Sensor), sensor_type cam = Camera -> sensor_type mic = Microphone -> app_camera_pe
-(assert (forall ((app Application) (cam Sensor) (mic Sensor)) (= 0 0))) ; camera_perm_not_mic [partial: bindings preserved]
+; --- 22. SensorRateLimit accessor round-trip: rate_sensor_type ---
+(push 1)
+(declare-const f0 SensorType)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(assert (not (= (rate_sensor_type (mk-sensor_rate_limit f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; motion_perm_covers_both (matches Coq: Theorem motion_perm_covers_both)
-; motion_perm_covers_both: forall (app : Application) (accel gyro : Sensor), sensor_type accel = Accelerometer -> sensor_type gyro = Gyroscope -> a
-(assert (forall ((app Application) (accel Sensor) (gyro Sensor)) (= 0 0))) ; motion_perm_covers_both [partial: bindings preserved]
+; --- 23. SensorRateLimit accessor round-trip: rate_max_reads_per_sec ---
+(push 1)
+(declare-const f0 SensorType)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(assert (not (= (rate_max_reads_per_sec (mk-sensor_rate_limit f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; sensor_reading_valid (matches Coq: Theorem sensor_reading_valid)
-; sensor_reading_valid: forall (app : Application) (sensor : Sensor), reads_sensor app sensor -> match sensor_type sensor with | Camera => app_c
-(assert (forall ((app Application) (sensor Sensor)) (= 0 0))) ; sensor_reading_valid [partial: bindings preserved]
+; --- 24. SensorRateLimit accessor round-trip: rate_current_reads ---
+(push 1)
+(declare-const f0 SensorType)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(assert (not (= (rate_current_reads (mk-sensor_rate_limit f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; bounded_sensor_rate_valid (matches Coq: Theorem bounded_sensor_rate_valid)
-; bounded_sensor_rate_valid: forall (bs : BoundedSensor), bs_current_rate bs <= bs_max_rate bs
-(assert (forall ((bs BoundedSensor)) (= 0 0))) ; bounded_sensor_rate_valid [partial: bindings preserved]
+; --- 25. SensorRateLimit: non-negative int fields sum ---
+(push 1)
+(declare-const r SensorRateLimit)
+(assert (>= (rate_max_reads_per_sec r) 0))
+(assert (>= (rate_current_reads r) 0))
+(assert (not (>= (+ (rate_max_reads_per_sec r) (rate_current_reads r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; revoke_all_blocks_all_types (matches Coq: Theorem revoke_all_blocks_all_types)
-; revoke_all_blocks_all_types: forall (app : Application), app_camera_perm app = false -> app_microphone_perm app = false -> app_location_perm app = fa
-(assert (forall ((app Application)) (= 0 0))) ; revoke_all_blocks_all_types [partial: bindings preserved]
+; --- 26. BoundedSensor accessor round-trip: bs_sensor ---
+(push 1)
+(declare-const f0 Sensor)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (bs_sensor (mk-bounded_sensor f0 f1 f2 f3)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; gps_independent_of_camera (matches Coq: Theorem gps_independent_of_camera)
-; gps_independent_of_camera: forall (app : Application) (gps_sensor : Sensor), sensor_type gps_sensor = GPS -> app_camera_perm app = false -> app_loc
-(assert (forall ((app Application) (gps_sensor Sensor)) (= 0 0))) ; gps_independent_of_camera [partial: bindings preserved]
+; --- 27. BoundedSensor accessor round-trip: bs_max_rate ---
+(push 1)
+(declare-const f0 Sensor)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (bs_max_rate (mk-bounded_sensor f0 f1 f2 f3)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; Verify all assertions are satisfiable
+; --- 28. BoundedSensor accessor round-trip: bs_current_rate ---
+(push 1)
+(declare-const f0 Sensor)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (bs_current_rate (mk-bounded_sensor f0 f1 f2 f3)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 29. BoundedSensor accessor round-trip: bs_rate_ok ---
+(push 1)
+(declare-const f0 Sensor)
+(declare-const f1 Int)
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (bs_rate_ok (mk-bounded_sensor f0 f1 f2 f3)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 30. BoundedSensor: non-negative int fields sum ---
+(push 1)
+(declare-const r BoundedSensor)
+(assert (>= (bs_max_rate r) 0))
+(assert (>= (bs_current_rate r) 0))
+(assert (not (>= (+ (bs_max_rate r) (bs_current_rate r)) 0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
 (check-sat)
 (exit)

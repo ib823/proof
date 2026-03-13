@@ -1,10 +1,13 @@
 ---- MODULE BufferOverflowPrevention ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/BufferOverflowPrevention.v (22 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/BufferOverflowPrevention.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* Buffer (matches Coq: Record Buffer)
 VARIABLES buf_size, buf_used
@@ -12,114 +15,175 @@ VARIABLES buf_size, buf_used
 \* OverflowPrevention (matches Coq: Record OverflowPrevention)
 VARIABLES op_bounds_check_write, op_bounds_check_read, op_null_terminator_check, op_integer_overflow_check, op_stack_canaries
 
-\* Type invariant
+vars == <<buf_size, buf_used, op_bounds_check_write, op_bounds_check_read, op_null_terminator_check, op_integer_overflow_check, op_stack_canaries>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ buf_size \in BOOLEAN
-  /\ buf_used \in BOOLEAN
+  /\ buf_size \in Nat
+  /\ buf_used \in Nat
   /\ op_bounds_check_write \in BOOLEAN
   /\ op_bounds_check_read \in BOOLEAN
   /\ op_null_terminator_check \in BOOLEAN
   /\ op_integer_overflow_check \in BOOLEAN
   /\ op_stack_canaries \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ buf_size = TRUE
-  /\ buf_used = TRUE
-  /\ op_bounds_check_write = TRUE
-  /\ op_bounds_check_read = TRUE
-  /\ op_null_terminator_check = TRUE
-  /\ op_integer_overflow_check = TRUE
-  /\ op_stack_canaries = TRUE
+  /\ buf_size = 0
+  /\ buf_used = 0
+  /\ op_bounds_check_write = FALSE
+  /\ op_bounds_check_read = FALSE
+  /\ op_null_terminator_check = FALSE
+  /\ op_integer_overflow_check = FALSE
+  /\ op_stack_canaries = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* buffer_valid (matches Coq: Definition buffer_valid)
-buffer_valid(b) == TRUE
-
-\* buffer_can_write (matches Coq: Definition buffer_can_write)
-buffer_can_write(b, n) == TRUE
-
-\* buffer_can_read (matches Coq: Definition buffer_can_read)
-buffer_can_read(b, offset, len) == TRUE
+buffer_valid(b) ==
+  b # 0
 
 \* overflow_protected (matches Coq: Definition overflow_protected)
-overflow_protected(p) == TRUE
+overflow_protected(p) ==
+  op_bounds_check_write /\ op_bounds_check_read /\ op_null_terminator_check /\ op_integer_overflow_check /\ op_stack_canaries
 
 \* riina_overflow_config (matches Coq: Definition riina_overflow_config)
-riina_overflow_config == TRUE
+riina_overflow_config ==
+  0
 
 \* test_buffer (matches Coq: Definition test_buffer)
-test_buffer == TRUE
+test_buffer ==
+  0
 
-\* andb_true_iff (matches Coq: Lemma andb_true_iff)
-THEOREM andb_true_iff == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* BOF_001_test_buffer_valid (matches Coq: Theorem BOF_001_test_buffer_valid)
-THEOREM BOF_001_test_buffer_valid == Init => TypeOK
+UpdateBuffer ==
+  /\ buf_size' \in 0..100
+  /\ buf_used' \in 0..100
+  /\ UNCHANGED <<op_bounds_check_write, op_bounds_check_read, op_null_terminator_check, op_integer_overflow_check, op_stack_canaries>>
 
-\* BOF_002_can_write_bounds (matches Coq: Theorem BOF_002_can_write_bounds)
-THEOREM BOF_002_can_write_bounds == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* BOF_003_cannot_write_beyond (matches Coq: Theorem BOF_003_cannot_write_beyond)
-THEOREM BOF_003_cannot_write_beyond == Init => TypeOK
+Next == UpdateBuffer \/ ValidateState
 
-\* BOF_004_can_read_used (matches Coq: Theorem BOF_004_can_read_used)
-THEOREM BOF_004_can_read_used == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* BOF_005_cannot_read_beyond (matches Coq: Theorem BOF_005_cannot_read_beyond)
-THEOREM BOF_005_cannot_read_beyond == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* BOF_006_riina_protected (matches Coq: Theorem BOF_006_riina_protected)
-THEOREM BOF_006_riina_protected == Init => TypeOK
+\* andb_true_iff
+THEOREM andb_true_iff ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true < => a = true /\ b = true
 
-\* BOF_007_bounds_check_write (matches Coq: Theorem BOF_007_bounds_check_write)
-THEOREM BOF_007_bounds_check_write == Init => TypeOK
+\* BOF_001_test_buffer_valid
+THEOREM BOF_001_test_buffer_valid ==
+  buffer_valid(test_buffer) = TRUE
 
-\* BOF_008_bounds_check_read (matches Coq: Theorem BOF_008_bounds_check_read)
-THEOREM BOF_008_bounds_check_read == Init => TypeOK
+\* BOF_002_can_write_bounds
+THEOREM BOF_002_can_write_bounds ==
+  buffer_can_write(test_buffer, 50) = TRUE
 
-\* BOF_009_integer_overflow (matches Coq: Theorem BOF_009_integer_overflow)
-THEOREM BOF_009_integer_overflow == Init => TypeOK
+\* BOF_003_cannot_write_beyond
+THEOREM BOF_003_cannot_write_beyond ==
+  buffer_can_write(test_buffer, 51) = FALSE
 
-\* BOF_010_stack_canaries (matches Coq: Theorem BOF_010_stack_canaries)
-THEOREM BOF_010_stack_canaries == Init => TypeOK
+\* BOF_004_can_read_used
+THEOREM BOF_004_can_read_used ==
+  buffer_can_read test_buffer 0 50 = TRUE
 
-\* BOF_011_valid_implies_bounds (matches Coq: Theorem BOF_011_valid_implies_bounds)
-THEOREM BOF_011_valid_implies_bounds == Init => TypeOK
+\* BOF_005_cannot_read_beyond
+THEOREM BOF_005_cannot_read_beyond ==
+  buffer_can_read test_buffer 0 51 = FALSE
 
-\* BOF_012_riina_bounds_write (matches Coq: Theorem BOF_012_riina_bounds_write)
-THEOREM BOF_012_riina_bounds_write == Init => TypeOK
+\* BOF_006_riina_protected
+THEOREM BOF_006_riina_protected ==
+  overflow_protected(riina_overflow_config) = TRUE
 
-\* BOF_013_riina_canaries (matches Coq: Theorem BOF_013_riina_canaries)
-THEOREM BOF_013_riina_canaries == Init => TypeOK
+\* BOF_007_bounds_check_write
+THEOREM BOF_007_bounds_check_write ==
+  \A p \in Nat, OverflowPrevention \in Nat :
+      overflow_protected(p) => op_bounds_check_write(p)
 
-\* BOF_014_zero_write_safe (matches Coq: Theorem BOF_014_zero_write_safe)
-THEOREM BOF_014_zero_write_safe == Init => TypeOK
+\* BOF_008_bounds_check_read
+THEOREM BOF_008_bounds_check_read ==
+  \A p \in Nat, OverflowPrevention \in Nat :
+      overflow_protected(p) => op_bounds_check_read(p)
 
-\* BOF_015_complete_prevention (matches Coq: Theorem BOF_015_complete_prevention)
-THEOREM BOF_015_complete_prevention == Init => TypeOK
+\* BOF_009_integer_overflow
+THEOREM BOF_009_integer_overflow ==
+  \A p \in Nat, OverflowPrevention \in Nat :
+      overflow_protected(p) => op_integer_overflow_check(p)
 
-\* BOF_016_write_bounded (matches Coq: Theorem BOF_016_write_bounded)
-THEOREM BOF_016_write_bounded == Init => TypeOK
+\* BOF_010_stack_canaries
+THEOREM BOF_010_stack_canaries ==
+  \A p \in Nat, OverflowPrevention \in Nat :
+      overflow_protected(p) => op_stack_canaries(p)
 
-\* BOF_017_read_start_within (matches Coq: Theorem BOF_017_read_start_within)
-THEOREM BOF_017_read_start_within == Init => TypeOK
+\* BOF_011_valid_implies_bounds
+THEOREM BOF_011_valid_implies_bounds ==
+  \A b \in Nat, Buffer \in Nat :
+      buffer_valid(b) => Nat.leb (buf_used b) (buf_size b) = true
 
-\* BOF_018_zero_read_safe (matches Coq: Theorem BOF_018_zero_read_safe)
-THEOREM BOF_018_zero_read_safe == Init => TypeOK
+\* BOF_012_riina_bounds_write
+THEOREM BOF_012_riina_bounds_write ==
+  op_bounds_check_write(riina_overflow_config) = TRUE
 
-\* BOF_019_full_buffer_no_write (matches Coq: Theorem BOF_019_full_buffer_no_write)
-THEOREM BOF_019_full_buffer_no_write == Init => TypeOK
+\* BOF_013_riina_canaries
+THEOREM BOF_013_riina_canaries ==
+  op_stack_canaries(riina_overflow_config) = TRUE
 
-\* BOF_020_null_terminator_check (matches Coq: Theorem BOF_020_null_terminator_check)
-THEOREM BOF_020_null_terminator_check == Init => TypeOK
+\* BOF_014_zero_write_safe
+THEOREM BOF_014_zero_write_safe ==
+  \A b \in Nat, Buffer \in Nat :
+      buffer_valid(b) => buffer_can_write(b, 0)
 
-\* BOF_021_valid_after_write (matches Coq: Theorem BOF_021_valid_after_write)
-THEOREM BOF_021_valid_after_write == Init => TypeOK
+\* BOF_015_complete_prevention
+THEOREM BOF_015_complete_prevention ==
+  \A p \in Nat, OverflowPrevention \in Nat :
+      overflow_protected(p) => op_bounds_check_write(p)
 
-\* Next-state relation
-Next == UNCHANGED <<buf_size, buf_used, op_bounds_check_write, op_bounds_check_read, op_null_terminator_check, op_integer_overflow_check, op_stack_canaries>>
+\* BOF_016_write_bounded
+THEOREM BOF_016_write_bounded ==
+  \A b \in Nat, n \in Nat, nat \in Nat :
+      buffer_can_write (mkBuffer b 0) n = true => n <= b
 
-\* Specification
-Spec == Init /\ [][Next]_<<buf_size, buf_used, op_bounds_check_write, op_bounds_check_read, op_null_terminator_check, op_integer_overflow_check, op_stack_canaries>>
+\* BOF_017_read_start_within
+THEOREM BOF_017_read_start_within ==
+  \A b \in Nat, offset \in Nat, len \in Nat :
+      buffer_can_read b offset len = true => offset <= buf_used
+
+\* BOF_018_zero_read_safe
+THEOREM BOF_018_zero_read_safe ==
+  \A b \in Nat, Buffer \in Nat :
+      buffer_can_read b 0 0 = TRUE
+
+\* BOF_019_full_buffer_no_write
+THEOREM BOF_019_full_buffer_no_write ==
+  \A sz \in Nat, nat \in Nat :
+      buffer_can_write (mkBuffer sz sz) 1 = FALSE
+
+\* BOF_020_null_terminator_check
+THEOREM BOF_020_null_terminator_check ==
+  \A p \in Nat, OverflowPrevention \in Nat :
+      overflow_protected(p) => op_null_terminator_check(p)
+
+\* BOF_021_valid_after_write
+THEOREM BOF_021_valid_after_write ==
+  \A b \in Nat, n \in Nat, nat \in Nat :
+      buffer_can_write (mkBuffer (b + n) b) n = TRUE
 
 ====

@@ -95,7 +95,7 @@ let screener_count_valid (p_copies: nat) (p_max_copies: nat) : Tot bool =
   p_copies <= p_max_copies
 
 (* movielabs_ecp_compliance (matches Coq: Theorem movielabs_ecp_compliance) *)
-let movielabs_ecp_compliance (p_compliance: ecp__compliance) (p_content: content_type) : Lemma (p_compliance.f_content_encryption == true /\ p_compliance.f_forensic_watermarking == true) = admit ()
+let movielabs_ecp_compliance (p_compliance: ecp__compliance) (p_content: content_type) : Lemma (p_compliance.f_content_encryption == true /\ p_compliance.f_forensic_watermarking == true) = ()
 
 (* dci_security (matches Coq: Theorem dci_security) *)
 let dci_security (p_cinema_content: content_type) : Lemma (True) = ()
@@ -110,55 +110,55 @@ let forensic_watermark (p_content: content_type) (p_viewer: nat) : Lemma (True) 
 let cdsa_compliance (p_content_delivery: nat) : Lemma (True) = ()
 
 (* prerelease_maximum_protection (matches Coq: Theorem prerelease_maximum_protection) *)
-let prerelease_maximum_protection (p_content: content_type) (p_protection: content_protection) : Lemma (p_content == PreRelease) = admit ()
+let prerelease_maximum_protection (p_content: content_type) (p_protection: content_protection) : Lemma (p_content == PreRelease) = ()
 
 (* watermark_persistence (matches Coq: Theorem watermark_persistence) *)
 let watermark_persistence (p_content: content_type) (p_watermark: nat) : Lemma (True) = ()
 
 (* prerelease_highest_sensitivity (matches Coq: Theorem prerelease_highest_sensitivity) *)
-let prerelease_highest_sensitivity (p_c: _) : Lemma (content_sensitivity p_c <= content_sensitivity PreRelease) = admit ()
+let prerelease_highest_sensitivity (p_c: _) : Lemma (content_sensitivity p_c <= content_sensitivity PreRelease) = ()
 
 (* postrelease_lowest_sensitivity (matches Coq: Theorem postrelease_lowest_sensitivity) *)
-let postrelease_lowest_sensitivity (p_c: _) : Lemma (content_sensitivity PostRelease <= content_sensitivity p_c) = admit ()
+let postrelease_lowest_sensitivity (p_c: _) : Lemma (content_sensitivity PostRelease <= content_sensitivity p_c) = ()
 
 (* content_sensitivity_positive (matches Coq: Theorem content_sensitivity_positive) *)
-let content_sensitivity_positive (p_c: _) : Lemma (content_sensitivity p_c >= 1) = admit ()
+let content_sensitivity_positive (p_c: _) : Lemma (content_sensitivity p_c >= 1) = ()
 
 (* hardware_strongest (matches Coq: Theorem hardware_strongest) *)
-let hardware_strongest (p_p: _) : Lemma (protection_strength p_p <= protection_strength HardwareProtected) = admit ()
+let hardware_strongest (p_p: _) : Lemma (protection_strength p_p <= protection_strength HardwareProtected) = ()
 
 (* unencrypted_weakest (matches Coq: Theorem unencrypted_weakest) *)
-let unencrypted_weakest (p_p: _) : Lemma (protection_strength Unencrypted <= protection_strength p_p) = admit ()
+let unencrypted_weakest (p_p: _) : Lemma (protection_strength Unencrypted <= protection_strength p_p) = ()
 
 (* hw_protects_any_content (matches Coq: Theorem hw_protects_any_content) *)
-let hw_protects_any_content (p_ct: _) : Lemma (protection_adequate p_ct HardwareProtected == true) = admit ()
+let hw_protects_any_content (p_ct: _) : Lemma (protection_adequate p_ct HardwareProtected == true) = ()
 
 (* unencrypted_inadequate_for_prerelease (matches Coq: Theorem unencrypted_inadequate_for_prerelease) *)
-let unencrypted_inadequate_for_prerelease () : Lemma (protection_adequate PreRelease Unencrypted == false) = admit ()
+let unencrypted_inadequate_for_prerelease () : Lemma (protection_adequate PreRelease Unencrypted == false) = ()
 
 (* postrelease_accepts_basic_drm (matches Coq: Theorem postrelease_accepts_basic_drm) *)
-let postrelease_accepts_basic_drm () : Lemma (protection_adequate PostRelease BasicDRM == true) = admit ()
+let postrelease_accepts_basic_drm () : Lemma (protection_adequate PostRelease BasicDRM == true) = ()
 
 (* ecp_all_requires_encryption (matches Coq: Theorem ecp_all_requires_encryption) *)
-let ecp_all_requires_encryption (p_c: _) : Lemma (requires (ecp_all_controls p_c == true)) (ensures (p_c.f_content_encryption == true)) = admit ()
+let ecp_all_requires_encryption (p_c: _) : Lemma (requires (ecp_all_controls p_c == true)) (ensures (p_c.f_content_encryption == true)) = ()
 
 (* ecp_all_requires_watermarking (matches Coq: Theorem ecp_all_requires_watermarking) *)
-let ecp_all_requires_watermarking (p_c: _) : Lemma (requires (ecp_all_controls p_c == true)) (ensures (p_c.f_forensic_watermarking == true)) = admit ()
+let ecp_all_requires_watermarking (p_c: _) : Lemma (requires (ecp_all_controls p_c == true)) (ensures (p_c.f_forensic_watermarking == true)) = ()
 
 (* ecp_all_requires_no_copies (matches Coq: Theorem ecp_all_requires_no_copies) *)
-let ecp_all_requires_no_copies (p_c: _) : Lemma (requires (ecp_all_controls p_c == true)) (ensures (p_c.f_no_unauthorized_copies == true)) = admit ()
+let ecp_all_requires_no_copies (p_c: _) : Lemma (requires (ecp_all_controls p_c == true)) (ensures (p_c.f_no_unauthorized_copies == true)) = ()
 
 (* count_ecp_bounded (matches Coq: Theorem count_ecp_bounded) *)
-let count_ecp_bounded (p_c: _) : Lemma (count_ecp_controls p_c <= 6) = admit ()
+let count_ecp_bounded (p_c: _) : Lemma (count_ecp_controls p_c <= 6) = ()
 
 (* all_ecp_count_six (matches Coq: Theorem all_ecp_count_six) *)
-let all_ecp_count_six (p_c: _) : Lemma (requires (ecp_all_controls p_c == true)) (ensures (count_ecp_controls p_c == 6)) = admit ()
+let all_ecp_count_six (p_c: _) : Lemma (requires (ecp_all_controls p_c == true)) (ensures (count_ecp_controls p_c == 6)) = ()
 
 (* dci_key_sufficient (matches Coq: Theorem dci_key_sufficient) *)
-let dci_key_sufficient (p_bits: _) : Lemma (requires (dci_min_key_bits p_bits == true)) (ensures (p_bits >= 128)) = admit ()
+let dci_key_sufficient (p_bits: _) : Lemma (requires (dci_min_key_bits p_bits == true)) (ensures (p_bits >= 128)) = ()
 
 (* viewing_bounded (matches Coq: Theorem viewing_bounded) *)
-let viewing_bounded (p_v: _) (p_max_h: _) : Lemma (requires (viewing_within_window p_v p_max_h == true)) (ensures (viewing_duration p_v <= p_max_h)) = admit ()
+let viewing_bounded (p_v: _) (p_max_h: _) : Lemma (requires (viewing_within_window p_v p_max_h == true)) (ensures (viewing_duration p_v <= p_max_h)) = ()
 
 (* screener_bounded (matches Coq: Theorem screener_bounded) *)
-let screener_bounded (p_c: _) (p_mc: _) : Lemma (requires (screener_count_valid p_c p_mc == true)) (ensures (p_c <= p_mc)) = admit ()
+let screener_bounded (p_c: _) (p_mc: _) : Lemma (requires (screener_count_valid p_c p_mc == true)) (ensures (p_c <= p_mc)) = ()

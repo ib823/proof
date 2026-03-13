@@ -1,19 +1,28 @@
 ---- MODULE ConstantTimeCrypto ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/ConstantTimeCrypto.v (26 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/ConstantTimeCrypto.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* TimingOperation (matches Coq: Inductive TimingOperation)
 CONSTANTS Op_Branch, Op_MemAccess, Op_Division, Op_Multiply, Op_TableLookup
 
+TimingOperationSet == {Op_Branch, Op_MemAccess, Op_Division, Op_Multiply, Op_TableLookup}
+
 \* CTOperation (matches Coq: Inductive CTOperation)
 CONSTANTS CT_Select, CT_MaskedLoad, CT_CTDiv, CT_CTMul, CT_ScatterGather
 
+CTOperationSet == {CT_Select, CT_MaskedLoad, CT_CTDiv, CT_CTMul, CT_ScatterGather}
+
 \* CryptoOperation (matches Coq: Inductive CryptoOperation)
 CONSTANTS Crypto_AES_Encrypt, Crypto_AES_Decrypt, Crypto_SHA256, Crypto_ChaCha20, Crypto_Poly1305, Crypto_ECDSA_Sign, Crypto_ECDSA_Verify, Crypto_RSA_Decrypt, Crypto_KeyCompare
+
+CryptoOperationSet == {Crypto_AES_Encrypt, Crypto_AES_Decrypt, Crypto_SHA256, Crypto_ChaCha20, Crypto_Poly1305, Crypto_ECDSA_Sign, Crypto_ECDSA_Verify, Crypto_RSA_Decrypt, Crypto_KeyCompare}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* ConstantTimeConfig (matches Coq: Record ConstantTimeConfig)
 VARIABLES ct_no_secret_branches, ct_no_secret_addresses, ct_no_variable_time_ops, ct_no_cache_timing, ct_branchless_compare, ct_masked_memory, ct_constant_loops
@@ -21,7 +30,12 @@ VARIABLES ct_no_secret_branches, ct_no_secret_addresses, ct_no_variable_time_ops
 \* CryptoImplementation (matches Coq: Record CryptoImplementation)
 VARIABLES ci_operation, ci_constant_time, ci_no_table_lookups, ci_bitsliced
 
-\* Type invariant
+vars == <<ct_no_secret_branches, ct_no_secret_addresses, ct_no_variable_time_ops, ct_no_cache_timing, ct_branchless_compare, ct_masked_memory, ct_constant_loops, ci_operation, ci_constant_time, ci_no_table_lookups, ci_bitsliced>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
   /\ ct_no_secret_branches \in BOOLEAN
   /\ ct_no_secret_addresses \in BOOLEAN
@@ -30,131 +44,205 @@ TypeOK ==
   /\ ct_branchless_compare \in BOOLEAN
   /\ ct_masked_memory \in BOOLEAN
   /\ ct_constant_loops \in BOOLEAN
-  /\ ci_operation \in BOOLEAN
+  /\ ci_operation \in CryptoOperationSet
   /\ ci_constant_time \in BOOLEAN
   /\ ci_no_table_lookups \in BOOLEAN
   /\ ci_bitsliced \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ ct_no_secret_branches = TRUE
-  /\ ct_no_secret_addresses = TRUE
-  /\ ct_no_variable_time_ops = TRUE
-  /\ ct_no_cache_timing = TRUE
-  /\ ct_branchless_compare = TRUE
-  /\ ct_masked_memory = TRUE
-  /\ ct_constant_loops = TRUE
-  /\ ci_operation = TRUE
-  /\ ci_constant_time = TRUE
-  /\ ci_no_table_lookups = TRUE
-  /\ ci_bitsliced = TRUE
+  /\ ct_no_secret_branches = FALSE
+  /\ ct_no_secret_addresses = FALSE
+  /\ ct_no_variable_time_ops = FALSE
+  /\ ct_no_cache_timing = FALSE
+  /\ ct_branchless_compare = FALSE
+  /\ ct_masked_memory = FALSE
+  /\ ct_constant_loops = FALSE
+  /\ ci_operation = Crypto_AES_Encrypt
+  /\ ci_constant_time = FALSE
+  /\ ci_no_table_lookups = FALSE
+  /\ ci_bitsliced = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* ct_branch_free (matches Coq: Definition ct_branch_free)
-ct_branch_free(c) == TRUE
+ct_branch_free(c) ==
+  ct_no_secret_branches /\ ct_branchless_compare
 
 \* ct_memory_safe (matches Coq: Definition ct_memory_safe)
-ct_memory_safe(c) == TRUE
+ct_memory_safe(c) ==
+  ct_no_secret_addresses /\ ct_masked_memory /\ ct_no_cache_timing
 
 \* ct_operation_safe (matches Coq: Definition ct_operation_safe)
-ct_operation_safe(c) == TRUE
+ct_operation_safe(c) ==
+  ct_no_variable_time_ops /\ ct_constant_loops
 
 \* fully_constant_time (matches Coq: Definition fully_constant_time)
-fully_constant_time(c) == TRUE
+fully_constant_time(c) ==
+  ct_branch_free /\ ct_memory_safe /\ ct_operation_safe
 
 \* crypto_safe (matches Coq: Definition crypto_safe)
-crypto_safe(p_impl) == TRUE
+crypto_safe(impl) ==
+  ci_constant_time /\ ci_no_table_lookups
 
 \* riina_ct_config (matches Coq: Definition riina_ct_config)
-riina_ct_config == TRUE
+riina_ct_config ==
+  0
 
 \* riina_aes (matches Coq: Definition riina_aes)
-riina_aes == TRUE
+riina_aes ==
+  0
 
 \* riina_sha256 (matches Coq: Definition riina_sha256)
-riina_sha256 == TRUE
+riina_sha256 ==
+  0
 
-\* andb_true_iff (matches Coq: Lemma andb_true_iff)
-THEOREM andb_true_iff == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* CT_001_branch_free (matches Coq: Theorem CT_001_branch_free)
-THEOREM CT_001_branch_free == Init => TypeOK
+UpdateConstantTimeConfig ==
+  /\ ct_no_secret_branches' \in BOOLEAN
+  /\ ct_no_secret_addresses' \in BOOLEAN
+  /\ ct_no_variable_time_ops' \in BOOLEAN
+  /\ ct_no_cache_timing' \in BOOLEAN
+  /\ ct_branchless_compare' \in BOOLEAN
+  /\ ct_masked_memory' \in BOOLEAN
+  /\ ct_constant_loops' \in BOOLEAN
+  /\ UNCHANGED <<ci_operation, ci_constant_time, ci_no_table_lookups, ci_bitsliced>>
 
-\* CT_002_memory_safe (matches Coq: Theorem CT_002_memory_safe)
-THEOREM CT_002_memory_safe == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* CT_003_operation_safe (matches Coq: Theorem CT_003_operation_safe)
-THEOREM CT_003_operation_safe == Init => TypeOK
+Next == UpdateConstantTimeConfig \/ ValidateState
 
-\* CT_004_fully_ct (matches Coq: Theorem CT_004_fully_ct)
-THEOREM CT_004_fully_ct == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* CT_005_no_secret_branches (matches Coq: Theorem CT_005_no_secret_branches)
-THEOREM CT_005_no_secret_branches == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* CT_006_branchless_compare (matches Coq: Theorem CT_006_branchless_compare)
-THEOREM CT_006_branchless_compare == Init => TypeOK
+\* andb_true_iff
+THEOREM andb_true_iff ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true < => a = true /\ b = true
 
-\* CT_007_no_secret_addresses (matches Coq: Theorem CT_007_no_secret_addresses)
-THEOREM CT_007_no_secret_addresses == Init => TypeOK
+\* CT_001_branch_free
+THEOREM CT_001_branch_free ==
+  ct_branch_free(riina_ct_config) = TRUE
 
-\* CT_008_no_cache_timing (matches Coq: Theorem CT_008_no_cache_timing)
-THEOREM CT_008_no_cache_timing == Init => TypeOK
+\* CT_002_memory_safe
+THEOREM CT_002_memory_safe ==
+  ct_memory_safe(riina_ct_config) = TRUE
 
-\* CT_009_no_var_time (matches Coq: Theorem CT_009_no_var_time)
-THEOREM CT_009_no_var_time == Init => TypeOK
+\* CT_003_operation_safe
+THEOREM CT_003_operation_safe ==
+  ct_operation_safe(riina_ct_config) = TRUE
 
-\* CT_010_constant_loops (matches Coq: Theorem CT_010_constant_loops)
-THEOREM CT_010_constant_loops == Init => TypeOK
+\* CT_004_fully_ct
+THEOREM CT_004_fully_ct ==
+  fully_constant_time(riina_ct_config) = TRUE
 
-\* CT_011_full_implies_branch (matches Coq: Theorem CT_011_full_implies_branch)
-THEOREM CT_011_full_implies_branch == Init => TypeOK
+\* CT_005_no_secret_branches
+THEOREM CT_005_no_secret_branches ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      ct_branch_free(c) => ct_no_secret_branches(c)
 
-\* CT_012_full_implies_memory (matches Coq: Theorem CT_012_full_implies_memory)
-THEOREM CT_012_full_implies_memory == Init => TypeOK
+\* CT_006_branchless_compare
+THEOREM CT_006_branchless_compare ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      ct_branch_free(c) => ct_branchless_compare(c)
 
-\* CT_013_full_implies_op (matches Coq: Theorem CT_013_full_implies_op)
-THEOREM CT_013_full_implies_op == Init => TypeOK
+\* CT_007_no_secret_addresses
+THEOREM CT_007_no_secret_addresses ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      ct_memory_safe(c) => ct_no_secret_addresses(c)
 
-\* CT_014_riina_aes_safe (matches Coq: Theorem CT_014_riina_aes_safe)
-THEOREM CT_014_riina_aes_safe == Init => TypeOK
+\* CT_008_no_cache_timing
+THEOREM CT_008_no_cache_timing ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      ct_memory_safe(c) => ct_no_cache_timing(c)
 
-\* CT_015_riina_sha256_safe (matches Coq: Theorem CT_015_riina_sha256_safe)
-THEOREM CT_015_riina_sha256_safe == Init => TypeOK
+\* CT_009_no_var_time
+THEOREM CT_009_no_var_time ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      ct_operation_safe(c) => ct_no_variable_time_ops(c)
 
-\* CT_016_riina_aes_ct (matches Coq: Theorem CT_016_riina_aes_ct)
-THEOREM CT_016_riina_aes_ct == Init => TypeOK
+\* CT_010_constant_loops
+THEOREM CT_010_constant_loops ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      ct_operation_safe(c) => ct_constant_loops(c)
 
-\* CT_017_riina_aes_bitsliced (matches Coq: Theorem CT_017_riina_aes_bitsliced)
-THEOREM CT_017_riina_aes_bitsliced == Init => TypeOK
+\* CT_011_full_implies_branch
+THEOREM CT_011_full_implies_branch ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      fully_constant_time(c) => ct_branch_free(c)
 
-\* CT_018_safe_implies_ct (matches Coq: Theorem CT_018_safe_implies_ct)
-THEOREM CT_018_safe_implies_ct == Init => TypeOK
+\* CT_012_full_implies_memory
+THEOREM CT_012_full_implies_memory ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      fully_constant_time(c) => ct_memory_safe(c)
 
-\* CT_019_safe_implies_no_tables (matches Coq: Theorem CT_019_safe_implies_no_tables)
-THEOREM CT_019_safe_implies_no_tables == Init => TypeOK
+\* CT_013_full_implies_op
+THEOREM CT_013_full_implies_op ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      fully_constant_time(c) => ct_operation_safe(c)
 
-\* CT_020_riina_no_branches (matches Coq: Theorem CT_020_riina_no_branches)
-THEOREM CT_020_riina_no_branches == Init => TypeOK
+\* CT_014_riina_aes_safe
+THEOREM CT_014_riina_aes_safe ==
+  crypto_safe(riina_aes) = TRUE
 
-\* CT_021_riina_no_addresses (matches Coq: Theorem CT_021_riina_no_addresses)
-THEOREM CT_021_riina_no_addresses == Init => TypeOK
+\* CT_015_riina_sha256_safe
+THEOREM CT_015_riina_sha256_safe ==
+  crypto_safe(riina_sha256) = TRUE
 
-\* CT_022_full_implies_no_branches (matches Coq: Theorem CT_022_full_implies_no_branches)
-THEOREM CT_022_full_implies_no_branches == Init => TypeOK
+\* CT_016_riina_aes_ct
+THEOREM CT_016_riina_aes_ct ==
+  ci_constant_time(riina_aes) = TRUE
 
-\* CT_023_full_implies_no_cache (matches Coq: Theorem CT_023_full_implies_no_cache)
-THEOREM CT_023_full_implies_no_cache == Init => TypeOK
+\* CT_017_riina_aes_bitsliced
+THEOREM CT_017_riina_aes_bitsliced ==
+  ci_bitsliced(riina_aes) = TRUE
 
-\* CT_024_full_implies_const_loops (matches Coq: Theorem CT_024_full_implies_const_loops)
-THEOREM CT_024_full_implies_const_loops == Init => TypeOK
+\* CT_018_safe_implies_ct
+THEOREM CT_018_safe_implies_ct ==
+  \A impl \in Nat, CryptoImplementation \in Nat :
+      crypto_safe(impl) => ci_constant_time(impl)
 
-\* CT_025_complete_ct_security (matches Coq: Theorem CT_025_complete_ct_security)
-THEOREM CT_025_complete_ct_security == Init => TypeOK
+\* CT_019_safe_implies_no_tables
+THEOREM CT_019_safe_implies_no_tables ==
+  \A impl \in Nat, CryptoImplementation \in Nat :
+      crypto_safe(impl) => ci_no_table_lookups(impl)
 
-\* Next-state relation
-Next == UNCHANGED <<ct_no_secret_branches, ct_no_secret_addresses, ct_no_variable_time_ops, ct_no_cache_timing, ct_branchless_compare, ct_masked_memory, ct_constant_loops, ci_operation, ci_constant_time, ci_no_table_lookups, ci_bitsliced>>
+\* CT_020_riina_no_branches
+THEOREM CT_020_riina_no_branches ==
+  ct_no_secret_branches(riina_ct_config) = TRUE
 
-\* Specification
-Spec == Init /\ [][Next]_<<ct_no_secret_branches, ct_no_secret_addresses, ct_no_variable_time_ops, ct_no_cache_timing, ct_branchless_compare, ct_masked_memory, ct_constant_loops, ci_operation, ci_constant_time, ci_no_table_lookups, ci_bitsliced>>
+\* CT_021_riina_no_addresses
+THEOREM CT_021_riina_no_addresses ==
+  ct_no_secret_addresses(riina_ct_config) = TRUE
+
+\* CT_022_full_implies_no_branches
+THEOREM CT_022_full_implies_no_branches ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      fully_constant_time(c) => ct_no_secret_branches(c)
+
+\* CT_023_full_implies_no_cache
+THEOREM CT_023_full_implies_no_cache ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      fully_constant_time(c) => ct_no_cache_timing(c)
+
+\* CT_024_full_implies_const_loops
+THEOREM CT_024_full_implies_const_loops ==
+  \A c \in Nat, ConstantTimeConfig \in Nat :
+      fully_constant_time(c) => ct_constant_loops(c)
+
+\* 1 additional theorems proven in Coq source
 
 ====

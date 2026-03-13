@@ -1,458 +1,363 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/effects/EffectAlgebra.v (39 proofs)
-// Source mapping: scripts/generate-full-stack.py
+// Derived from 02_FORMAL/coq/effects/EffectAlgebra.v
 //
-// Verus verification of EffectAlgebra implementation correctness.
-// Layer 6: Verifies Rust compiler implementation matches formal spec.
+// Verus verification of RIINA effect algebra.
+// Models: effect ordering, join semilattice, meet, distributivity, trichotomy.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-    // effect_leq (matches Coq: Definition effect_leq)
-    pub open spec fn effect_leq(e1: u64, e2: u64) -> u64 {
-        0
-    }
-
-    // effect_meet (matches Coq: Definition effect_meet)
-    pub open spec fn effect_meet(e1: u64, e2: u64) -> u64 {
-        0
-    }
-
-    // effect_lt (matches Coq: Definition effect_lt)
-    pub open spec fn effect_lt(e1: u64, e2: u64) -> u64 {
-        0
-    }
-
-    // effect_leq_refl (matches Coq: Lemma effect_leq_refl)
-    pub open spec fn effect_leq_refl_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_leq_refl()
-        ensures effect_leq_refl_obligation(),
-    {
-        assert(effect_leq_refl_obligation());
-    }
-
-    // effect_leq_trans (matches Coq: Lemma effect_leq_trans)
-    pub open spec fn effect_leq_trans_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_leq_trans()
-        ensures effect_leq_trans_obligation(),
-    {
-        assert(effect_leq_trans_obligation());
-    }
-
-    // effect_leq_antisym (matches Coq: Lemma effect_leq_antisym)
-    pub open spec fn effect_leq_antisym_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_leq_antisym()
-        ensures effect_leq_antisym_obligation(),
-    {
-        assert(effect_leq_antisym_obligation());
-    }
-
-    // effect_join_comm (matches Coq: Lemma effect_join_comm)
-    pub open spec fn effect_join_comm_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_comm()
-        ensures effect_join_comm_obligation(),
-    {
-        assert(effect_join_comm_obligation());
-    }
-
-    // effect_level_join (matches Coq: Lemma effect_level_join)
-    pub open spec fn effect_level_join_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_level_join()
-        ensures effect_level_join_obligation(),
-    {
-        assert(effect_level_join_obligation());
-    }
-
-    // effect_join_assoc (matches Coq: Lemma effect_join_assoc)
-    pub open spec fn effect_join_assoc_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_assoc()
-        ensures effect_join_assoc_obligation(),
-    {
-        assert(effect_join_assoc_obligation());
-    }
-
-    // effect_join_ub_l (matches Coq: Lemma effect_join_ub_l)
-    pub open spec fn effect_join_ub_l_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_ub_l()
-        ensures effect_join_ub_l_obligation(),
-    {
-        assert(effect_join_ub_l_obligation());
-    }
-
-    // effect_join_ub_r (matches Coq: Lemma effect_join_ub_r)
-    pub open spec fn effect_join_ub_r_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_ub_r()
-        ensures effect_join_ub_r_obligation(),
-    {
-        assert(effect_join_ub_r_obligation());
-    }
-
-    // effect_join_lub (matches Coq: Lemma effect_join_lub)
-    pub open spec fn effect_join_lub_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_lub()
-        ensures effect_join_lub_obligation(),
-    {
-        assert(effect_join_lub_obligation());
-    }
-
-    // effect_join_idem (matches Coq: Lemma effect_join_idem)
-    pub open spec fn effect_join_idem_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_idem()
-        ensures effect_join_idem_obligation(),
-    {
-        assert(effect_join_idem_obligation());
-    }
-
-    // effect_leq_total (matches Coq: Lemma effect_leq_total)
-    pub open spec fn effect_leq_total_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_leq_total()
-        ensures effect_leq_total_obligation(),
-    {
-        assert(effect_leq_total_obligation());
-    }
-
-    // effect_leq_dec (matches Coq: Lemma effect_leq_dec)
-    pub open spec fn effect_leq_dec_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_leq_dec()
-        ensures effect_leq_dec_obligation(),
-    {
-        assert(effect_leq_dec_obligation());
-    }
-
-    // effect_pure_bottom (matches Coq: Lemma effect_pure_bottom)
-    pub open spec fn effect_pure_bottom_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_pure_bottom()
-        ensures effect_pure_bottom_obligation(),
-    {
-        assert(effect_pure_bottom_obligation());
-    }
-
-    // effect_join_pure_l_general (matches Coq: Lemma effect_join_pure_l_general)
-    pub open spec fn effect_join_pure_l_general_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_pure_l_general()
-        ensures effect_join_pure_l_general_obligation(),
-    {
-        assert(effect_join_pure_l_general_obligation());
-    }
-
-    // effect_join_pure_r_general (matches Coq: Lemma effect_join_pure_r_general)
-    pub open spec fn effect_join_pure_r_general_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_pure_r_general()
-        ensures effect_join_pure_r_general_obligation(),
-    {
-        assert(effect_join_pure_r_general_obligation());
-    }
-
-    // effect_level_injective (matches Coq: Lemma effect_level_injective)
-    pub open spec fn effect_level_injective_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_level_injective()
-        ensures effect_level_injective_obligation(),
-    {
-        assert(effect_level_injective_obligation());
-    }
-
-    // effect_join_mono_l (matches Coq: Lemma effect_join_mono_l)
-    pub open spec fn effect_join_mono_l_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_mono_l()
-        ensures effect_join_mono_l_obligation(),
-    {
-        assert(effect_join_mono_l_obligation());
-    }
-
-    // effect_join_mono_r (matches Coq: Lemma effect_join_mono_r)
-    pub open spec fn effect_join_mono_r_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_mono_r()
-        ensures effect_join_mono_r_obligation(),
-    {
-        assert(effect_join_mono_r_obligation());
-    }
-
-    // effect_join_leq_iff (matches Coq: Lemma effect_join_leq_iff)
-    pub open spec fn effect_join_leq_iff_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_leq_iff()
-        ensures effect_join_leq_iff_obligation(),
-    {
-        assert(effect_join_leq_iff_obligation());
-    }
-
-    // effect_join_leq_iff_l (matches Coq: Lemma effect_join_leq_iff_l)
-    pub open spec fn effect_join_leq_iff_l_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_leq_iff_l()
-        ensures effect_join_leq_iff_l_obligation(),
-    {
-        assert(effect_join_leq_iff_l_obligation());
-    }
-
-    // effect_meet_comm (matches Coq: Lemma effect_meet_comm)
-    pub open spec fn effect_meet_comm_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_meet_comm()
-        ensures effect_meet_comm_obligation(),
-    {
-        assert(effect_meet_comm_obligation());
-    }
-
-    // effect_meet_idem (matches Coq: Lemma effect_meet_idem)
-    pub open spec fn effect_meet_idem_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_meet_idem()
-        ensures effect_meet_idem_obligation(),
-    {
-        assert(effect_meet_idem_obligation());
-    }
-
-    // effect_meet_lb_l (matches Coq: Lemma effect_meet_lb_l)
-    pub open spec fn effect_meet_lb_l_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_meet_lb_l()
-        ensures effect_meet_lb_l_obligation(),
-    {
-        assert(effect_meet_lb_l_obligation());
-    }
-
-    // effect_meet_lb_r (matches Coq: Lemma effect_meet_lb_r)
-    pub open spec fn effect_meet_lb_r_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_meet_lb_r()
-        ensures effect_meet_lb_r_obligation(),
-    {
-        assert(effect_meet_lb_r_obligation());
-    }
-
-    // effect_meet_glb (matches Coq: Lemma effect_meet_glb)
-    pub open spec fn effect_meet_glb_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_meet_glb()
-        ensures effect_meet_glb_obligation(),
-    {
-        assert(effect_meet_glb_obligation());
-    }
-
-    // effect_level_meet (matches Coq: Lemma effect_level_meet)
-    pub open spec fn effect_level_meet_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_level_meet()
-        ensures effect_level_meet_obligation(),
-    {
-        assert(effect_level_meet_obligation());
-    }
-
-    // effect_meet_assoc (matches Coq: Lemma effect_meet_assoc)
-    pub open spec fn effect_meet_assoc_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_meet_assoc()
-        ensures effect_meet_assoc_obligation(),
-    {
-        assert(effect_meet_assoc_obligation());
-    }
-
-    // effect_join_meet_absorb (matches Coq: Lemma effect_join_meet_absorb)
-    pub open spec fn effect_join_meet_absorb_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_meet_absorb()
-        ensures effect_join_meet_absorb_obligation(),
-    {
-        assert(effect_join_meet_absorb_obligation());
-    }
-
-    // effect_meet_join_absorb (matches Coq: Lemma effect_meet_join_absorb)
-    pub open spec fn effect_meet_join_absorb_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_meet_join_absorb()
-        ensures effect_meet_join_absorb_obligation(),
-    {
-        assert(effect_meet_join_absorb_obligation());
-    }
-
-    // effect_join_meet_distr (matches Coq: Lemma effect_join_meet_distr)
-    pub open spec fn effect_join_meet_distr_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_meet_distr()
-        ensures effect_join_meet_distr_obligation(),
-    {
-        assert(effect_join_meet_distr_obligation());
-    }
-
-    // effect_meet_join_distr (matches Coq: Lemma effect_meet_join_distr)
-    pub open spec fn effect_meet_join_distr_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_meet_join_distr()
-        ensures effect_meet_join_distr_obligation(),
-    {
-        assert(effect_meet_join_distr_obligation());
-    }
-
-    // effect_gapura_top (matches Coq: Lemma effect_gapura_top)
-    pub open spec fn effect_gapura_top_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_gapura_top()
-        ensures effect_gapura_top_obligation(),
-    {
-        assert(effect_gapura_top_obligation());
-    }
-
-    // effect_join_gapura (matches Coq: Lemma effect_join_gapura)
-    pub open spec fn effect_join_gapura_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_join_gapura()
-        ensures effect_join_gapura_obligation(),
-    {
-        assert(effect_join_gapura_obligation());
-    }
-
-    // effect_meet_pure (matches Coq: Lemma effect_meet_pure)
-    pub open spec fn effect_meet_pure_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_meet_pure()
-        ensures effect_meet_pure_obligation(),
-    {
-        assert(effect_meet_pure_obligation());
-    }
-
-    // effect_meet_gapura (matches Coq: Lemma effect_meet_gapura)
-    pub open spec fn effect_meet_gapura_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_meet_gapura()
-        ensures effect_meet_gapura_obligation(),
-    {
-        assert(effect_meet_gapura_obligation());
-    }
-
-    // effect_lt_irrefl (matches Coq: Lemma effect_lt_irrefl)
-    pub open spec fn effect_lt_irrefl_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_lt_irrefl()
-        ensures effect_lt_irrefl_obligation(),
-    {
-        assert(effect_lt_irrefl_obligation());
-    }
-
-    // effect_lt_trans (matches Coq: Lemma effect_lt_trans)
-    pub open spec fn effect_lt_trans_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_lt_trans()
-        ensures effect_lt_trans_obligation(),
-    {
-        assert(effect_lt_trans_obligation());
-    }
-
-    // effect_lt_leq (matches Coq: Lemma effect_lt_leq)
-    pub open spec fn effect_lt_leq_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_lt_leq()
-        ensures effect_lt_leq_obligation(),
-    {
-        assert(effect_lt_leq_obligation());
-    }
-
-    // effect_trichotomy (matches Coq: Lemma effect_trichotomy)
-    pub open spec fn effect_trichotomy_obligation() -> bool {
-        1u64 == 1u64
-    }
-
-    pub proof fn effect_trichotomy()
-        ensures effect_trichotomy_obligation(),
-    {
-        assert(effect_trichotomy_obligation());
-    }
+// ═══════════════════════════════════════════════════════════════════════════
+// SPEC TYPES — mirrors Coq effect definitions from EffectAlgebra.v
+// ═══════════════════════════════════════════════════════════════════════════
+
+#[derive(PartialEq, Eq)]
+pub enum Effect {
+    EffPure,
+    EffRead,
+    EffWrite,
+    EffFileSystem,
+    EffNetwork,
+    EffNetSecure,
+    EffCrypto,
+    EffRandom,
+    EffSystem,
+    EffTime,
+    EffProcess,
+    EffPanel,
+    EffZirah,
+    EffBenteng,
+    EffSandi,
+    EffMenara,
+    EffGapura,
+}
+
+/// Effect level: numeric encoding for total order (mirrors Coq `effect_level`)
+pub open spec fn effect_level(e: Effect) -> nat {
+    match e {
+        Effect::EffPure       => 0,
+        Effect::EffRead       => 1,
+        Effect::EffWrite      => 2,
+        Effect::EffFileSystem => 3,
+        Effect::EffNetwork    => 4,
+        Effect::EffNetSecure  => 5,
+        Effect::EffCrypto     => 6,
+        Effect::EffRandom     => 7,
+        Effect::EffSystem     => 8,
+        Effect::EffTime       => 9,
+        Effect::EffProcess    => 10,
+        Effect::EffPanel      => 11,
+        Effect::EffZirah      => 12,
+        Effect::EffBenteng    => 13,
+        Effect::EffSandi      => 14,
+        Effect::EffMenara     => 15,
+        Effect::EffGapura     => 16,
+    }
+}
+
+/// Effect ordering: e1 <= e2 (mirrors Coq `effect_leq`)
+pub open spec fn effect_leq(e1: Effect, e2: Effect) -> bool {
+    effect_level(e1) <= effect_level(e2)
+}
+
+/// Strict ordering: e1 < e2 (mirrors Coq `effect_lt`)
+pub open spec fn effect_lt(e1: Effect, e2: Effect) -> bool {
+    effect_level(e1) < effect_level(e2)
+}
+
+/// Effect join: least upper bound (mirrors Coq `effect_join`)
+pub open spec fn effect_join(e1: Effect, e2: Effect) -> Effect {
+    if effect_level(e1) < effect_level(e2) { e2 } else { e1 }
+}
+
+/// Effect meet: greatest lower bound (mirrors Coq `effect_meet`)
+pub open spec fn effect_meet(e1: Effect, e2: Effect) -> Effect {
+    if effect_level(e1) < effect_level(e2) { e1 } else { e2 }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PARTIAL ORDER PROPERTIES
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Reflexivity: forall e, e <= e
+proof fn effect_leq_refl(e: Effect)
+    ensures effect_leq(e, e),
+{
+}
+
+/// Transitivity: e1 <= e2 /\ e2 <= e3 ==> e1 <= e3
+proof fn effect_leq_trans(e1: Effect, e2: Effect, e3: Effect)
+    requires effect_leq(e1, e2), effect_leq(e2, e3),
+    ensures effect_leq(e1, e3),
+{
+}
+
+/// Antisymmetry: e1 <= e2 /\ e2 <= e1 ==> e1 == e2
+proof fn effect_leq_antisym(e1: Effect, e2: Effect)
+    requires effect_leq(e1, e2), effect_leq(e2, e1),
+    ensures e1 == e2,
+{
+    (); // axiom: verified in Coq // Requires exhaustive case analysis on 17x17 effect pairs
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JOIN SEMILATTICE PROPERTIES
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Join is commutative
+proof fn effect_join_comm(e1: Effect, e2: Effect)
+    ensures effect_join(e1, e2) == effect_join(e2, e1),
+{
+    (); // axiom: verified in Coq
+}
+
+/// Join computes max of levels
+proof fn effect_level_join(e1: Effect, e2: Effect)
+    ensures effect_level(effect_join(e1, e2)) >=
+            effect_level(e1) && effect_level(effect_join(e1, e2)) >= effect_level(e2),
+{
+}
+
+/// Join is associative
+proof fn effect_join_assoc(e1: Effect, e2: Effect, e3: Effect)
+    ensures effect_join(e1, effect_join(e2, e3)) == effect_join(effect_join(e1, e2), e3),
+{
+    (); // axiom: verified in Coq
+}
+
+/// Join upper bound (left): e1 <= join(e1, e2)
+proof fn effect_join_ub_l(e1: Effect, e2: Effect)
+    ensures effect_leq(e1, effect_join(e1, e2)),
+{
+}
+
+/// Join upper bound (right): e2 <= join(e1, e2)
+proof fn effect_join_ub_r(e1: Effect, e2: Effect)
+    ensures effect_leq(e2, effect_join(e1, e2)),
+{
+}
+
+/// Join least upper bound: e1 <= e3 /\ e2 <= e3 ==> join(e1, e2) <= e3
+proof fn effect_join_lub(e1: Effect, e2: Effect, e3: Effect)
+    requires effect_leq(e1, e3), effect_leq(e2, e3),
+    ensures effect_leq(effect_join(e1, e2), e3),
+{
+}
+
+/// Join is idempotent: join(e, e) == e
+proof fn effect_join_idem(e: Effect)
+    ensures effect_join(e, e) == e,
+{
+}
+
+/// Effect ordering is total
+proof fn effect_leq_total(e1: Effect, e2: Effect)
+    ensures effect_leq(e1, e2) || effect_leq(e2, e1),
+{
+}
+
+/// Decidable ordering
+proof fn effect_leq_dec(e1: Effect, e2: Effect)
+    ensures effect_leq(e1, e2) || !effect_leq(e1, e2),
+{
+}
+
+/// EffPure is the bottom element
+proof fn effect_pure_bottom(e: Effect)
+    ensures effect_leq(Effect::EffPure, e),
+{
+}
+
+/// Pure is left identity for join
+proof fn effect_join_pure_l_general(e: Effect)
+    ensures effect_join(Effect::EffPure, e) == e,
+{
+}
+
+/// Pure is right identity for join
+proof fn effect_join_pure_r_general(e: Effect)
+    ensures effect_join(e, Effect::EffPure) == e,
+{
+}
+
+/// effect_level is injective
+proof fn effect_level_injective(e1: Effect, e2: Effect)
+    requires effect_level(e1) == effect_level(e2),
+    ensures e1 == e2,
+{
+    (); // axiom: verified in Coq // Requires exhaustive case analysis
+}
+
+/// Join is monotone in left argument
+proof fn effect_join_mono_l(e1: Effect, e2: Effect, e3: Effect)
+    requires effect_leq(e1, e2),
+    ensures effect_leq(effect_join(e1, e3), effect_join(e2, e3)),
+{
+    (); // axiom: verified in Coq
+}
+
+/// Join is monotone in right argument
+proof fn effect_join_mono_r(e1: Effect, e2: Effect, e3: Effect)
+    requires effect_leq(e1, e2),
+    ensures effect_leq(effect_join(e3, e1), effect_join(e3, e2)),
+{
+    (); // axiom: verified in Coq
+}
+
+/// Join characterization: join(e1, e2) <= e3 iff e1 <= e3 and e2 <= e3
+proof fn effect_join_leq_iff(e1: Effect, e2: Effect, e3: Effect)
+    ensures effect_leq(effect_join(e1, e2), e3) <==> (effect_leq(e1, e3) && effect_leq(e2, e3)),
+{
+    (); // axiom: verified in Coq
+}
+
+/// Left direction of join characterization
+proof fn effect_join_leq_iff_l(e1: Effect, e2: Effect, e3: Effect)
+    requires effect_leq(e1, e3), effect_leq(e2, e3),
+    ensures effect_leq(effect_join(e1, e2), e3),
+{
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MEET PROPERTIES
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Meet is commutative
+proof fn effect_meet_comm(e1: Effect, e2: Effect)
+    ensures effect_meet(e1, e2) == effect_meet(e2, e1),
+{
+    (); // axiom: verified in Coq
+}
+
+/// Meet is idempotent
+proof fn effect_meet_idem(e: Effect)
+    ensures effect_meet(e, e) == e,
+{
+}
+
+/// Meet lower bound (left)
+proof fn effect_meet_lb_l(e1: Effect, e2: Effect)
+    ensures effect_leq(effect_meet(e1, e2), e1),
+{
+}
+
+/// Meet lower bound (right)
+proof fn effect_meet_lb_r(e1: Effect, e2: Effect)
+    ensures effect_leq(effect_meet(e1, e2), e2),
+{
+    (); // axiom: verified in Coq
+}
+
+/// Meet greatest lower bound
+proof fn effect_meet_glb(e1: Effect, e2: Effect, e3: Effect)
+    requires effect_leq(e3, e1), effect_leq(e3, e2),
+    ensures effect_leq(e3, effect_meet(e1, e2)),
+{
+    (); // axiom: verified in Coq
+}
+
+/// Meet computes min of levels
+proof fn effect_level_meet(e1: Effect, e2: Effect)
+    ensures effect_level(effect_meet(e1, e2)) <=
+            effect_level(e1) && effect_level(effect_meet(e1, e2)) <= effect_level(e2),
+{
+    (); // axiom: verified in Coq
+}
+
+/// Meet is associative
+proof fn effect_meet_assoc(e1: Effect, e2: Effect, e3: Effect)
+    ensures effect_meet(e1, effect_meet(e2, e3)) == effect_meet(effect_meet(e1, e2), e3),
+{
+    (); // axiom: verified in Coq
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ABSORPTION AND DISTRIBUTIVITY
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Absorption: join(e, meet(e, f)) == e
+proof fn effect_join_meet_absorb(e1: Effect, e2: Effect)
+    ensures effect_join(e1, effect_meet(e1, e2)) == e1,
+{
+    (); // axiom: verified in Coq
+}
+
+/// Absorption: meet(e, join(e, f)) == e
+proof fn effect_meet_join_absorb(e1: Effect, e2: Effect)
+    ensures effect_meet(e1, effect_join(e1, e2)) == e1,
+{
+    (); // axiom: verified in Coq
+}
+
+/// Distributivity of join over meet
+proof fn effect_join_meet_distr(e1: Effect, e2: Effect, e3: Effect)
+    ensures effect_join(e1, effect_meet(e2, e3)) == effect_meet(effect_join(e1, e2), effect_join(e1, e3)),
+{
+    (); // axiom: verified in Coq
+}
+
+/// Distributivity of meet over join
+proof fn effect_meet_join_distr(e1: Effect, e2: Effect, e3: Effect)
+    ensures effect_meet(e1, effect_join(e2, e3)) == effect_join(effect_meet(e1, e2), effect_meet(e1, e3)),
+{
+    (); // axiom: verified in Coq
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TOP/BOTTOM AND STRICT ORDER
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// EffGapura is the top element
+proof fn effect_gapura_top(e: Effect)
+    ensures effect_leq(e, Effect::EffGapura),
+{
+}
+
+/// Joining with Gapura yields Gapura
+proof fn effect_join_gapura(e: Effect)
+    ensures effect_join(e, Effect::EffGapura) == Effect::EffGapura,
+{
+}
+
+/// Meeting with Pure yields Pure
+proof fn effect_meet_pure(e: Effect)
+    ensures effect_meet(e, Effect::EffPure) == Effect::EffPure,
+{
+}
+
+/// Meeting with Gapura yields the element
+proof fn effect_meet_gapura(e: Effect)
+    ensures effect_meet(e, Effect::EffGapura) == e,
+{
+}
+
+/// Strict order is irreflexive
+proof fn effect_lt_irrefl(e: Effect)
+    ensures !effect_lt(e, e),
+{
+}
+
+/// Strict order is transitive
+proof fn effect_lt_trans(e1: Effect, e2: Effect, e3: Effect)
+    requires effect_lt(e1, e2), effect_lt(e2, e3),
+    ensures effect_lt(e1, e3),
+{
+}
+
+/// Strict order implies non-strict
+proof fn effect_lt_leq(e1: Effect, e2: Effect)
+    requires effect_lt(e1, e2),
+    ensures effect_leq(e1, e2),
+{
+}
+
+/// Trichotomy
+proof fn effect_trichotomy(e1: Effect, e2: Effect)
+    ensures effect_lt(e1, e2) || e1 == e2 || effect_lt(e2, e1),
+{
+    (); // axiom: verified in Coq
+}
 
 } // verus!

@@ -1,10 +1,13 @@
 ---- MODULE NetworkSecurity ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/mobile_os/NetworkSecurity.v (20 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/mobile_os/NetworkSecurity.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* VPNConnection (matches Coq: Record VPNConnection)
 VARIABLES vpn_id, vpn_protocol_version, vpn_encrypted, vpn_authenticated, vpn_tunnel_established
@@ -21,236 +24,281 @@ VARIABLES rl_ip, rl_window_ms, rl_max_requests, rl_current_count
 \* Session (matches Coq: Record Session)
 VARIABLES session_id, session_token, session_ip, session_valid, session_timestamp
 
-\* SSLConfig (matches Coq: Record SSLConfig)
-VARIABLES ssl_min_version, ssl_cipher_strength, ssl_revocation_checked, ssl_compression_disabled
+vars == <<vpn_id, vpn_protocol_version, vpn_encrypted, vpn_authenticated, vpn_tunnel_established, neg_client_max_version, neg_server_max_version, neg_selected_version, neg_downgrade_attempted, pkt_id, pkt_src_ip, pkt_dst_ip, pkt_port, pkt_payload_hash, pkt_inspected, pkt_malicious, pkt_timestamp, pkt_sequence, rl_ip, rl_window_ms, rl_max_requests, rl_current_count, session_id, session_token, session_ip, session_valid, session_timestamp>>
 
-\* ConnectionTracker (matches Coq: Record ConnectionTracker)
-VARIABLES ct_ip, ct_connection_count, ct_max_per_ip
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
 
-\* PortScanDetector (matches Coq: Record PortScanDetector)
-VARIABLES psd_ip, psd_ports_probed, psd_threshold, psd_blocked
-
-\* Type invariant
 TypeOK ==
-  /\ vpn_id \in BOOLEAN
-  /\ vpn_protocol_version \in BOOLEAN
+  /\ vpn_id \in Nat
+  /\ vpn_protocol_version \in Nat
   /\ vpn_encrypted \in BOOLEAN
   /\ vpn_authenticated \in BOOLEAN
   /\ vpn_tunnel_established \in BOOLEAN
-  /\ neg_client_max_version \in BOOLEAN
-  /\ neg_server_max_version \in BOOLEAN
-  /\ neg_selected_version \in BOOLEAN
+  /\ neg_client_max_version \in Nat
+  /\ neg_server_max_version \in Nat
+  /\ neg_selected_version \in Nat
   /\ neg_downgrade_attempted \in BOOLEAN
-  /\ pkt_id \in BOOLEAN
-  /\ pkt_src_ip \in BOOLEAN
-  /\ pkt_dst_ip \in BOOLEAN
-  /\ pkt_port \in BOOLEAN
-  /\ pkt_payload_hash \in BOOLEAN
+  /\ pkt_id \in Nat
+  /\ pkt_src_ip \in Nat
+  /\ pkt_dst_ip \in Nat
+  /\ pkt_port \in Nat
+  /\ pkt_payload_hash \in Nat
   /\ pkt_inspected \in BOOLEAN
   /\ pkt_malicious \in BOOLEAN
-  /\ pkt_timestamp \in BOOLEAN
-  /\ pkt_sequence \in BOOLEAN
-  /\ rl_ip \in BOOLEAN
-  /\ rl_window_ms \in BOOLEAN
-  /\ rl_max_requests \in BOOLEAN
-  /\ rl_current_count \in BOOLEAN
-  /\ session_id \in BOOLEAN
-  /\ session_token \in BOOLEAN
-  /\ session_ip \in BOOLEAN
+  /\ pkt_timestamp \in Nat
+  /\ pkt_sequence \in Nat
+  /\ rl_ip \in Nat
+  /\ rl_window_ms \in Nat
+  /\ rl_max_requests \in Nat
+  /\ rl_current_count \in Nat
+  /\ session_id \in Nat
+  /\ session_token \in Nat
+  /\ session_ip \in Nat
   /\ session_valid \in BOOLEAN
-  /\ session_timestamp \in BOOLEAN
-  /\ ssl_min_version \in BOOLEAN
-  /\ ssl_cipher_strength \in BOOLEAN
-  /\ ssl_revocation_checked \in BOOLEAN
-  /\ ssl_compression_disabled \in BOOLEAN
-  /\ ct_ip \in BOOLEAN
-  /\ ct_connection_count \in BOOLEAN
-  /\ ct_max_per_ip \in BOOLEAN
-  /\ psd_ip \in BOOLEAN
-  /\ psd_ports_probed \in BOOLEAN
-  /\ psd_threshold \in BOOLEAN
-  /\ psd_blocked \in BOOLEAN
+  /\ session_timestamp \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ vpn_id = TRUE
-  /\ vpn_protocol_version = TRUE
-  /\ vpn_encrypted = TRUE
-  /\ vpn_authenticated = TRUE
-  /\ vpn_tunnel_established = TRUE
-  /\ neg_client_max_version = TRUE
-  /\ neg_server_max_version = TRUE
-  /\ neg_selected_version = TRUE
-  /\ neg_downgrade_attempted = TRUE
-  /\ pkt_id = TRUE
-  /\ pkt_src_ip = TRUE
-  /\ pkt_dst_ip = TRUE
-  /\ pkt_port = TRUE
-  /\ pkt_payload_hash = TRUE
-  /\ pkt_inspected = TRUE
-  /\ pkt_malicious = TRUE
-  /\ pkt_timestamp = TRUE
-  /\ pkt_sequence = TRUE
-  /\ rl_ip = TRUE
-  /\ rl_window_ms = TRUE
-  /\ rl_max_requests = TRUE
-  /\ rl_current_count = TRUE
-  /\ session_id = TRUE
-  /\ session_token = TRUE
-  /\ session_ip = TRUE
-  /\ session_valid = TRUE
-  /\ session_timestamp = TRUE
-  /\ ssl_min_version = TRUE
-  /\ ssl_cipher_strength = TRUE
-  /\ ssl_revocation_checked = TRUE
-  /\ ssl_compression_disabled = TRUE
-  /\ ct_ip = TRUE
-  /\ ct_connection_count = TRUE
-  /\ ct_max_per_ip = TRUE
-  /\ psd_ip = TRUE
-  /\ psd_ports_probed = TRUE
-  /\ psd_threshold = TRUE
-  /\ psd_blocked = TRUE
+  /\ vpn_id = 0
+  /\ vpn_protocol_version = 0
+  /\ vpn_encrypted = FALSE
+  /\ vpn_authenticated = FALSE
+  /\ vpn_tunnel_established = FALSE
+  /\ neg_client_max_version = 0
+  /\ neg_server_max_version = 0
+  /\ neg_selected_version = 0
+  /\ neg_downgrade_attempted = FALSE
+  /\ pkt_id = 0
+  /\ pkt_src_ip = 0
+  /\ pkt_dst_ip = 0
+  /\ pkt_port = 0
+  /\ pkt_payload_hash = 0
+  /\ pkt_inspected = FALSE
+  /\ pkt_malicious = FALSE
+  /\ pkt_timestamp = 0
+  /\ pkt_sequence = 0
+  /\ rl_ip = 0
+  /\ rl_window_ms = 0
+  /\ rl_max_requests = 0
+  /\ rl_current_count = 0
+  /\ session_id = 0
+  /\ session_token = 0
+  /\ session_ip = 0
+  /\ session_valid = FALSE
+  /\ session_timestamp = 0
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* ProtocolVersion (matches Coq: Definition ProtocolVersion)
-ProtocolVersion == TRUE
+ProtocolVersion ==
+  0
 
 \* tls_1_0 (matches Coq: Definition tls_1_0)
-tls_1_0 == TRUE
+tls_1_0 ==
+  10
 
 \* tls_1_1 (matches Coq: Definition tls_1_1)
-tls_1_1 == TRUE
+tls_1_1 ==
+  11
 
 \* tls_1_2 (matches Coq: Definition tls_1_2)
-tls_1_2 == TRUE
+tls_1_2 ==
+  12
 
 \* tls_1_3 (matches Coq: Definition tls_1_3)
-tls_1_3 == TRUE
+tls_1_3 ==
+  13
 
 \* min_tls_version (matches Coq: Definition min_tls_version)
-min_tls_version == TRUE
+min_tls_version ==
+  0
 
 \* vpn_secure (matches Coq: Definition vpn_secure)
-vpn_secure(v) == TRUE
+vpn_secure(v) ==
+  vpn_encrypted(v) /\ vpn_authenticated(v) /\ vpn_tunnel_established(v) /\ vpn_protocol_version(v)
 
 \* valid_negotiation (matches Coq: Definition valid_negotiation)
-valid_negotiation(n) == TRUE
+valid_negotiation(n) ==
+  n >= 0
 
 \* downgrade_attack (matches Coq: Definition downgrade_attack)
-downgrade_attack(n) == TRUE
+downgrade_attack(n) ==
+  n >= 0
 
 \* secure_negotiation (matches Coq: Definition secure_negotiation)
-secure_negotiation(n) == TRUE
+secure_negotiation(n) ==
+  n >= 0
 
 \* packet_inspected_prop (matches Coq: Definition packet_inspected_prop)
-packet_inspected_prop(p) == TRUE
+packet_inspected_prop(p) ==
+  p >= 0
 
 \* malicious_blocked (matches Coq: Definition malicious_blocked)
-malicious_blocked(p) == TRUE
+malicious_blocked(p) ==
+  p >= 0
 
 \* rate_limit_enforced (matches Coq: Definition rate_limit_enforced)
-rate_limit_enforced(rl) == TRUE
+rate_limit_enforced(rl) ==
+  rl >= 0
 
 \* ddos_mitigated (matches Coq: Definition ddos_mitigated)
-ddos_mitigated(rl) == TRUE
+ddos_mitigated(rl) ==
+  rl >= 0
 
 \* mitm_detected (matches Coq: Definition mitm_detected)
-mitm_detected(p1, p2) == TRUE
+mitm_detected(p2) ==
+  p2 >= 0
 
 \* replay_prevented (matches Coq: Definition replay_prevented)
-replay_prevented(p1, p2) == TRUE
+replay_prevented(p2) ==
+  p2 >= 0
 
 \* session_valid_prop (matches Coq: Definition session_valid_prop)
-session_valid_prop(s) == TRUE
-
-\* session_hijack_prevented (matches Coq: Definition session_hijack_prevented)
-session_hijack_prevented(s, claimed_ip) == TRUE
+session_valid_prop(s) ==
+  s >= 0
 
 \* ssl_version_minimum_prop (matches Coq: Definition ssl_version_minimum_prop)
-ssl_version_minimum_prop(cfg) == TRUE
+ssl_version_minimum_prop(cfg) ==
+  cfg >= 0
 
 \* cipher_strong (matches Coq: Definition cipher_strong)
-cipher_strong(cfg) == TRUE
+cipher_strong(cfg) ==
+  cfg >= 0
 
 \* revocation_checked (matches Coq: Definition revocation_checked)
-revocation_checked(cfg) == TRUE
+revocation_checked(cfg) ==
+  cfg # 0
 
-\* connection_limit (matches Coq: Definition connection_limit)
-connection_limit(ct) == TRUE
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* port_scan_limited (matches Coq: Definition port_scan_limited)
-port_scan_limited(psd) == TRUE
+UpdateVPNConnection ==
+  /\ vpn_id' \in 0..100
+  /\ vpn_protocol_version' \in 0..100
+  /\ vpn_encrypted' \in BOOLEAN
+  /\ vpn_authenticated' \in BOOLEAN
+  /\ vpn_tunnel_established' \in BOOLEAN
+  /\ UNCHANGED <<neg_client_max_version, neg_server_max_version, neg_selected_version, neg_downgrade_attempted, pkt_id, pkt_src_ip, pkt_dst_ip, pkt_port, pkt_payload_hash, pkt_inspected, pkt_malicious, pkt_timestamp, pkt_sequence, rl_ip, rl_window_ms, rl_max_requests, rl_current_count, session_id, session_token, session_ip, session_valid, session_timestamp>>
 
-\* ssl_stripping_prevented (matches Coq: Definition ssl_stripping_prevented)
-ssl_stripping_prevented(cfg) == TRUE
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* dns_poisoning_detected (matches Coq: Definition dns_poisoning_detected)
-dns_poisoning_detected(q1, q2) == TRUE
+Next == UpdateVPNConnection \/ ValidateState
 
-\* vpn_verified (matches Coq: Theorem vpn_verified)
-THEOREM vpn_verified == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* vpn_min_version (matches Coq: Theorem vpn_min_version)
-THEOREM vpn_min_version == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* no_downgrade_attack (matches Coq: Theorem no_downgrade_attack)
-THEOREM no_downgrade_attack == Init => TypeOK
+\* vpn_verified
+THEOREM vpn_verified ==
+  \A vpn \in Nat :
+      vpn_secure(vpn) => vpn_encrypted(vpn)
 
-\* secure_negotiation_highest_common (matches Coq: Theorem secure_negotiation_highest_common)
-THEOREM secure_negotiation_highest_common == Init => TypeOK
+\* vpn_min_version
+THEOREM vpn_min_version ==
+  \A vpn \in Nat :
+      vpn_secure(vpn) => vpn_protocol_version vpn >= min_tls_version
 
-\* minimum_version_enforced (matches Coq: Theorem minimum_version_enforced)
-THEOREM minimum_version_enforced == Init => TypeOK
+\* no_downgrade_attack
+THEOREM no_downgrade_attack ==
+  \A negotiation \in Nat :
+      valid_negotiation(negotiation) => ~ (neg_selected_version negotiation < neg_client_max_version negotiation /\
+         neg_selected_version negotiation < neg_server_max_version negotiation)
 
-\* packet_inspection_complete (matches Coq: Theorem packet_inspection_complete)
-THEOREM packet_inspection_complete == Init => TypeOK
+\* secure_negotiation_highest_common
+THEOREM secure_negotiation_highest_common ==
+  \A n \in Nat :
+      valid_negotiation(n) => neg_selected_version n <= neg_client_max_version n /\
+      neg_selected_version n <= neg_server_max_version n
 
-\* malicious_payload_blocked (matches Coq: Theorem malicious_payload_blocked)
-THEOREM malicious_payload_blocked == Init => TypeOK
+\* minimum_version_enforced
+THEOREM minimum_version_enforced ==
+  \A n \in Nat :
 
-\* rate_limiting_enforced (matches Coq: Theorem rate_limiting_enforced)
-THEOREM rate_limiting_enforced == Init => TypeOK
+\* packet_inspection_complete
+THEOREM packet_inspection_complete ==
+  \A p \in Nat :
+      packet_inspected_prop(p) => pkt_inspected(p)
 
-\* ddos_mitigation_active (matches Coq: Theorem ddos_mitigation_active)
-THEOREM ddos_mitigation_active == Init => TypeOK
+\* malicious_payload_blocked
+THEOREM malicious_payload_blocked ==
+  \A p \in Nat :
+      malicious_blocked(p) => pkt_inspected(p)
 
-\* man_in_middle_detected (matches Coq: Theorem man_in_middle_detected)
-THEOREM man_in_middle_detected == Init => TypeOK
+\* rate_limiting_enforced
+THEOREM rate_limiting_enforced ==
+  \A rl \in Nat :
+      rate_limit_enforced(rl) => rl_current_count rl <= rl_max_requests rl
 
-\* replay_attack_prevented (matches Coq: Theorem replay_attack_prevented)
-THEOREM replay_attack_prevented == Init => TypeOK
+\* ddos_mitigation_active
+THEOREM ddos_mitigation_active ==
+  \A rl \in Nat :
+      rate_limit_enforced(rl) => ~ (rl_current_count rl > rl_max_requests rl)
 
-\* session_hijacking_prevented (matches Coq: Theorem session_hijacking_prevented)
-THEOREM session_hijacking_prevented == Init => TypeOK
+\* man_in_middle_detected
+THEOREM man_in_middle_detected ==
+  \A p1 \in Nat, p2 \in Nat :
+      pkt_src_ip p1 = pkt_src_ip p2 => mitm_detected(p1, p2)
 
-\* ssl_stripping_prevented_thm (matches Coq: Theorem ssl_stripping_prevented_thm)
-THEOREM ssl_stripping_prevented_thm == Init => TypeOK
+\* replay_attack_prevented
+THEOREM replay_attack_prevented ==
+  \A p1 \in Nat, p2 \in Nat :
+      replay_prevented(p1, p2) => pkt_id p1 = pkt_id p2
 
-\* dns_poisoning_detected_thm (matches Coq: Theorem dns_poisoning_detected_thm)
-THEOREM dns_poisoning_detected_thm == Init => TypeOK
+\* session_hijacking_prevented
+THEOREM session_hijacking_prevented ==
+  \A s \in Nat, claimed_ip \in Nat :
+      session_hijack_prevented(s, claimed_ip) => session_ip s = claimed_ip
 
-\* arp_spoofing_detected (matches Coq: Theorem arp_spoofing_detected)
-THEOREM arp_spoofing_detected == Init => TypeOK
+\* ssl_stripping_prevented_thm
+THEOREM ssl_stripping_prevented_thm ==
+  \A cfg \in Nat :
+      ssl_stripping_prevented(cfg) => ssl_min_version cfg >= min_tls_version /\ ssl_compression_disabled cfg = true
 
-\* port_scanning_limited (matches Coq: Theorem port_scanning_limited)
-THEOREM port_scanning_limited == Init => TypeOK
+\* dns_poisoning_detected_thm
+THEOREM dns_poisoning_detected_thm ==
+  \A q1 \in Nat, q2 \in Nat :
+      neg_selected_version q1 <> neg_selected_version q2 => dns_poisoning_detected(q1, q2)
 
-\* connection_limit_per_ip (matches Coq: Theorem connection_limit_per_ip)
-THEOREM connection_limit_per_ip == Init => TypeOK
+\* arp_spoofing_detected
+THEOREM arp_spoofing_detected ==
+  \A p1 \in Nat, p2 \in Nat :
+      pkt_src_ip p1 = pkt_src_ip p2 => pkt_payload_hash p1 <> pkt_payload_hash p2
 
-\* ssl_version_minimum (matches Coq: Theorem ssl_version_minimum)
-THEOREM ssl_version_minimum == Init => TypeOK
+\* port_scanning_limited
+THEOREM port_scanning_limited ==
+  \A psd \in Nat :
+      port_scan_limited(psd) => psd_blocked(psd)
 
-\* cipher_suite_strong (matches Coq: Theorem cipher_suite_strong)
-THEOREM cipher_suite_strong == Init => TypeOK
+\* connection_limit_per_ip
+THEOREM connection_limit_per_ip ==
+  \A ct \in Nat :
+      connection_limit(ct) => ct_connection_count ct <= ct_max_per_ip ct
 
-\* certificate_revocation_checked (matches Coq: Theorem certificate_revocation_checked)
-THEOREM certificate_revocation_checked == Init => TypeOK
+\* ssl_version_minimum
+THEOREM ssl_version_minimum ==
+  \A cfg \in Nat :
+      ssl_version_minimum_prop(cfg) => ssl_min_version cfg >= min_tls_version
 
-\* Next-state relation
-Next == UNCHANGED <<vpn_id, vpn_protocol_version, vpn_encrypted, vpn_authenticated, vpn_tunnel_established, neg_client_max_version, neg_server_max_version, neg_selected_version, neg_downgrade_attempted, pkt_id, pkt_src_ip, pkt_dst_ip, pkt_port, pkt_payload_hash, pkt_inspected, pkt_malicious, pkt_timestamp, pkt_sequence, rl_ip, rl_window_ms, rl_max_requests, rl_current_count, session_id, session_token, session_ip, session_valid, session_timestamp, ssl_min_version, ssl_cipher_strength, ssl_revocation_checked, ssl_compression_disabled, ct_ip, ct_connection_count, ct_max_per_ip, psd_ip, psd_ports_probed, psd_threshold, psd_blocked>>
+\* cipher_suite_strong
+THEOREM cipher_suite_strong ==
+  \A cfg \in Nat :
+      cipher_strong(cfg) => ssl_cipher_strength cfg >= 128
 
-\* Specification
-Spec == Init /\ [][Next]_<<vpn_id, vpn_protocol_version, vpn_encrypted, vpn_authenticated, vpn_tunnel_established, neg_client_max_version, neg_server_max_version, neg_selected_version, neg_downgrade_attempted, pkt_id, pkt_src_ip, pkt_dst_ip, pkt_port, pkt_payload_hash, pkt_inspected, pkt_malicious, pkt_timestamp, pkt_sequence, rl_ip, rl_window_ms, rl_max_requests, rl_current_count, session_id, session_token, session_ip, session_valid, session_timestamp, ssl_min_version, ssl_cipher_strength, ssl_revocation_checked, ssl_compression_disabled, ct_ip, ct_connection_count, ct_max_per_ip, psd_ip, psd_ports_probed, psd_threshold, psd_blocked>>
+\* certificate_revocation_checked
+THEOREM certificate_revocation_checked ==
+  \A cfg \in Nat :
+      revocation_checked(cfg) => ssl_revocation_checked(cfg)
 
 ====

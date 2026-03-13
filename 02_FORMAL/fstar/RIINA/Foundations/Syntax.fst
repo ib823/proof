@@ -197,11 +197,10 @@ let sec_level_num (p_l: security_level) : Tot nat =
   | LUser -> 3
   | LSystem -> 4
   | LSecret -> 5
-  | _ -> 0
 
 (* sec_leq (matches Coq: Definition sec_leq) *)
 let sec_leq (p_l1: security_level) (p_l2: security_level) : Tot bool =
-  true
+  (sec_level_num p_l1) <= (sec_level_num p_l2)
 
 (* sec_leq_dec (matches Coq: Definition sec_leq_dec) *)
 let sec_leq_dec (p_l1: security_level) (p_l2: security_level) : Tot bool =
@@ -268,7 +267,6 @@ let rec session_dual (p_s: session_type) : Tot session_type =
   | SessBranch (s1, s2) -> SessSelect (session_dual s1) (session_dual s2)
   | SessRec (x, p_s') -> SessRec x (session_dual p_s')
   | SessVar x -> SessVar x
-  | _ -> (* TODO: default value for session_type *) admit()
 
 (* TCapabilityOld (matches Coq: Definition TCapabilityOld) *)
 let tcapabilityold (p_e: ty_effect) : Tot ty =
@@ -312,109 +310,231 @@ let rec subst (p_x: nat) (p_v: expr) (p_e: expr) : Tot expr =
 
 (* declass_ok (matches Coq: Definition declass_ok) *)
 let declass_ok (p_e1: expr) (p_e2: expr) : Tot bool =
-  true
+  match p_e1, p_e2 with
+  | EClassify v, EProve (EClassify v') -> v = v'
+  | _ -> false
+
+(* Helper: exhaustive case analysis on security_level *)
+private let sec_level_cases (p_l: security_level)
+  : Lemma (p_l == LPublic \/ p_l == LInternal \/ p_l == LSession \/
+           p_l == LUser \/ p_l == LSystem \/ p_l == LSecret)
+  = match p_l with
+    | LPublic -> () | LInternal -> () | LSession -> ()
+    | LUser -> () | LSystem -> () | LSecret -> ()
 
 (* effect_join_pure_l (matches Coq: Lemma effect_join_pure_l) *)
-let effect_join_pure_l (p_e: _) : Lemma (effect_join EffPure p_e == p_e) = admit ()
+let effect_join_pure_l (p_e: ty_effect) : Lemma (effect_join EffPure p_e == p_e) =
+  match p_e with
+  | EffPure -> () | EffRead -> () | EffWrite -> () | EffFileSystem -> ()
+  | EffNetwork -> () | EffNetSecure -> () | EffCrypto -> () | EffRandom -> ()
+  | EffSystem -> () | EffTime -> () | EffProcess -> () | EffPanel -> ()
+  | EffZirah -> () | EffBenteng -> () | EffSandi -> () | EffMenara -> ()
+  | EffGapura -> ()
 
 (* effect_join_pure_r (matches Coq: Lemma effect_join_pure_r) *)
-let effect_join_pure_r (p_e: _) : Lemma (effect_join p_e EffPure == p_e) = admit ()
+let effect_join_pure_r (p_e: ty_effect) : Lemma (effect_join p_e EffPure == p_e) =
+  match p_e with
+  | EffPure -> () | EffRead -> () | EffWrite -> () | EffFileSystem -> ()
+  | EffNetwork -> () | EffNetSecure -> () | EffCrypto -> () | EffRandom -> ()
+  | EffSystem -> () | EffTime -> () | EffProcess -> () | EffPanel -> ()
+  | EffZirah -> () | EffBenteng -> () | EffSandi -> () | EffMenara -> ()
+  | EffGapura -> ()
 
 (* sec_leq_refl (matches Coq: Lemma sec_leq_refl) *)
-let sec_leq_refl (p_l: _) : Lemma (sec_leq p_l p_l == true) = admit ()
+let sec_leq_refl (p_l: security_level) : Lemma (sec_leq p_l p_l == true) =
+  match p_l with
+  | LPublic -> () | LInternal -> () | LSession -> ()
+  | LUser -> () | LSystem -> () | LSecret -> ()
 
 (* sec_leq_trans (matches Coq: Lemma sec_leq_trans) *)
-let sec_leq_trans (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (requires (sec_leq p_l1 p_l2 == true /\ sec_leq p_l2 p_l3 == true)) (ensures (sec_leq p_l1 p_l3 == true)) = admit ()
+let sec_leq_trans (p_l1: security_level) (p_l2: security_level) (p_l3: security_level)
+  : Lemma (requires (sec_leq p_l1 p_l2 == true /\ sec_leq p_l2 p_l3 == true))
+          (ensures (sec_leq p_l1 p_l3 == true))
+  = match p_l1, p_l2, p_l3 with
+    | _, _, _ -> ()
 
 (* sec_leq_antisym (matches Coq: Lemma sec_leq_antisym) *)
-let sec_leq_antisym (p_l1: _) (p_l2: _) : Lemma (requires (sec_leq p_l1 p_l2 == true /\ sec_leq p_l2 p_l1 == true)) (ensures (p_l1 == p_l2)) = admit ()
+let sec_leq_antisym (p_l1: security_level) (p_l2: security_level)
+  : Lemma (requires (sec_leq p_l1 p_l2 == true /\ sec_leq p_l2 p_l1 == true))
+          (ensures (p_l1 == p_l2))
+  = match p_l1, p_l2 with
+    | LPublic, LPublic -> () | LInternal, LInternal -> ()
+    | LSession, LSession -> () | LUser, LUser -> ()
+    | LSystem, LSystem -> () | LSecret, LSecret -> ()
+    | _, _ -> ()
 
 (* sec_leq_total (matches Coq: Lemma sec_leq_total) *)
-let sec_leq_total (p_l1: _) (p_l2: _) : Lemma (sec_leq p_l1 p_l2 == true \/ sec_leq p_l2 p_l1 == true) = admit ()
+let sec_leq_total (p_l1: security_level) (p_l2: security_level)
+  : Lemma (sec_leq p_l1 p_l2 == true \/ sec_leq p_l2 p_l1 == true)
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_leq_public_bottom (matches Coq: Lemma sec_leq_public_bottom) *)
-let sec_leq_public_bottom (p_l: _) : Lemma (sec_leq LPublic p_l == true) = admit ()
+let sec_leq_public_bottom (p_l: security_level) : Lemma (sec_leq LPublic p_l == true) =
+  match p_l with
+  | LPublic -> () | LInternal -> () | LSession -> ()
+  | LUser -> () | LSystem -> () | LSecret -> ()
 
 (* sec_leq_secret_top (matches Coq: Lemma sec_leq_secret_top) *)
-let sec_leq_secret_top (p_l: _) : Lemma (sec_leq p_l LSecret == true) = admit ()
+let sec_leq_secret_top (p_l: security_level) : Lemma (sec_leq p_l LSecret == true) =
+  match p_l with
+  | LPublic -> () | LInternal -> () | LSession -> ()
+  | LUser -> () | LSystem -> () | LSecret -> ()
 
 (* sec_leq_dec_correct (matches Coq: Lemma sec_leq_dec_correct) *)
-let sec_leq_dec_correct (p_l1: _) (p_l2: _) : Lemma (sec_leq_dec p_l1 p_l2 == true <==> sec_leq p_l1 p_l2 == true) = admit ()
+let sec_leq_dec_correct (p_l1: security_level) (p_l2: security_level)
+  : Lemma (sec_leq_dec p_l1 p_l2 == true <==> sec_leq p_l1 p_l2 == true)
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_join_ub_l (matches Coq: Lemma sec_join_ub_l) *)
-let sec_join_ub_l (p_l1: _) (p_l2: _) : Lemma (sec_leq p_l1 (sec_join p_l1 p_l2) == true) = admit ()
+let sec_join_ub_l (p_l1: security_level) (p_l2: security_level)
+  : Lemma (sec_leq p_l1 (sec_join p_l1 p_l2) == true)
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_join_ub_r (matches Coq: Lemma sec_join_ub_r) *)
-let sec_join_ub_r (p_l1: _) (p_l2: _) : Lemma (sec_leq p_l2 (sec_join p_l1 p_l2) == true) = admit ()
+let sec_join_ub_r (p_l1: security_level) (p_l2: security_level)
+  : Lemma (sec_leq p_l2 (sec_join p_l1 p_l2) == true)
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_meet_lb_l (matches Coq: Lemma sec_meet_lb_l) *)
-let sec_meet_lb_l (p_l1: _) (p_l2: _) : Lemma (sec_leq (sec_meet p_l1 p_l2) p_l1 == true) = admit ()
+let sec_meet_lb_l (p_l1: security_level) (p_l2: security_level)
+  : Lemma (sec_leq (sec_meet p_l1 p_l2) p_l1 == true)
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_meet_lb_r (matches Coq: Lemma sec_meet_lb_r) *)
-let sec_meet_lb_r (p_l1: _) (p_l2: _) : Lemma (sec_leq (sec_meet p_l1 p_l2) p_l2 == true) = admit ()
+let sec_meet_lb_r (p_l1: security_level) (p_l2: security_level)
+  : Lemma (sec_leq (sec_meet p_l1 p_l2) p_l2 == true)
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_join_comm (matches Coq: Lemma sec_join_comm) *)
-let sec_join_comm (p_l1: _) (p_l2: _) : Lemma (sec_join p_l1 p_l2 == sec_join p_l2 p_l1) = admit ()
+let sec_join_comm (p_l1: security_level) (p_l2: security_level)
+  : Lemma (sec_join p_l1 p_l2 == sec_join p_l2 p_l1)
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_meet_comm (matches Coq: Lemma sec_meet_comm) *)
-let sec_meet_comm (p_l1: _) (p_l2: _) : Lemma (sec_meet p_l1 p_l2 == sec_meet p_l2 p_l1) = admit ()
+let sec_meet_comm (p_l1: security_level) (p_l2: security_level)
+  : Lemma (sec_meet p_l1 p_l2 == sec_meet p_l2 p_l1)
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_join_idem (matches Coq: Lemma sec_join_idem) *)
-let sec_join_idem (p_l: _) : Lemma (sec_join p_l p_l == p_l) = admit ()
+let sec_join_idem (p_l: security_level) : Lemma (sec_join p_l p_l == p_l) =
+  match p_l with
+  | LPublic -> () | LInternal -> () | LSession -> ()
+  | LUser -> () | LSystem -> () | LSecret -> ()
 
 (* sec_meet_idem (matches Coq: Lemma sec_meet_idem) *)
-let sec_meet_idem (p_l: _) : Lemma (sec_meet p_l p_l == p_l) = admit ()
+let sec_meet_idem (p_l: security_level) : Lemma (sec_meet p_l p_l == p_l) =
+  match p_l with
+  | LPublic -> () | LInternal -> () | LSession -> ()
+  | LUser -> () | LSystem -> () | LSecret -> ()
 
 (* sec_join_assoc (matches Coq: Lemma sec_join_assoc) *)
-let sec_join_assoc (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (sec_join p_l1 (sec_join p_l2 p_l3) == sec_join (sec_join p_l1 p_l2) p_l3) = admit ()
+let sec_join_assoc (p_l1: security_level) (p_l2: security_level) (p_l3: security_level)
+  : Lemma (sec_join p_l1 (sec_join p_l2 p_l3) == sec_join (sec_join p_l1 p_l2) p_l3)
+  = match p_l1, p_l2, p_l3 with | _, _, _ -> ()
 
 (* sec_meet_assoc (matches Coq: Lemma sec_meet_assoc) *)
-let sec_meet_assoc (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (sec_meet p_l1 (sec_meet p_l2 p_l3) == sec_meet (sec_meet p_l1 p_l2) p_l3) = admit ()
+let sec_meet_assoc (p_l1: security_level) (p_l2: security_level) (p_l3: security_level)
+  : Lemma (sec_meet p_l1 (sec_meet p_l2 p_l3) == sec_meet (sec_meet p_l1 p_l2) p_l3)
+  = match p_l1, p_l2, p_l3 with | _, _, _ -> ()
 
 (* sec_join_meet_absorb (matches Coq: Lemma sec_join_meet_absorb) *)
-let sec_join_meet_absorb (p_l1: _) (p_l2: _) : Lemma (sec_join p_l1 (sec_meet p_l1 p_l2) == p_l1) = admit ()
+let sec_join_meet_absorb (p_l1: security_level) (p_l2: security_level)
+  : Lemma (sec_join p_l1 (sec_meet p_l1 p_l2) == p_l1)
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_meet_join_absorb (matches Coq: Lemma sec_meet_join_absorb) *)
-let sec_meet_join_absorb (p_l1: _) (p_l2: _) : Lemma (sec_meet p_l1 (sec_join p_l1 p_l2) == p_l1) = admit ()
+let sec_meet_join_absorb (p_l1: security_level) (p_l2: security_level)
+  : Lemma (sec_meet p_l1 (sec_join p_l1 p_l2) == p_l1)
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_join_meet_distrib (matches Coq: Lemma sec_join_meet_distrib) *)
-let sec_join_meet_distrib (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (sec_join p_l1 (sec_meet p_l2 p_l3) == sec_meet (sec_join p_l1 p_l2) (sec_join p_l1 p_l3)) = admit ()
+let sec_join_meet_distrib (p_l1: security_level) (p_l2: security_level) (p_l3: security_level)
+  : Lemma (sec_join p_l1 (sec_meet p_l2 p_l3) == sec_meet (sec_join p_l1 p_l2) (sec_join p_l1 p_l3))
+  = match p_l1, p_l2, p_l3 with | _, _, _ -> ()
 
 (* sec_meet_join_distrib (matches Coq: Lemma sec_meet_join_distrib) *)
-let sec_meet_join_distrib (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (sec_meet p_l1 (sec_join p_l2 p_l3) == sec_join (sec_meet p_l1 p_l2) (sec_meet p_l1 p_l3)) = admit ()
+let sec_meet_join_distrib (p_l1: security_level) (p_l2: security_level) (p_l3: security_level)
+  : Lemma (sec_meet p_l1 (sec_join p_l2 p_l3) == sec_join (sec_meet p_l1 p_l2) (sec_meet p_l1 p_l3))
+  = match p_l1, p_l2, p_l3 with | _, _, _ -> ()
 
 (* sec_join_lub (matches Coq: Lemma sec_join_lub) *)
-let sec_join_lub (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (requires (sec_leq p_l1 p_l3 == true /\ sec_leq p_l2 p_l3 == true)) (ensures (sec_leq (sec_join p_l1 p_l2) p_l3 == true)) = admit ()
+let sec_join_lub (p_l1: security_level) (p_l2: security_level) (p_l3: security_level)
+  : Lemma (requires (sec_leq p_l1 p_l3 == true /\ sec_leq p_l2 p_l3 == true))
+          (ensures (sec_leq (sec_join p_l1 p_l2) p_l3 == true))
+  = match p_l1, p_l2, p_l3 with | _, _, _ -> ()
 
 (* sec_meet_glb (matches Coq: Lemma sec_meet_glb) *)
-let sec_meet_glb (p_l1: _) (p_l2: _) (p_l3: _) : Lemma (requires (sec_leq p_l3 p_l1 == true /\ sec_leq p_l3 p_l2 == true)) (ensures (sec_leq p_l3 (sec_meet p_l1 p_l2) == true)) = admit ()
+let sec_meet_glb (p_l1: security_level) (p_l2: security_level) (p_l3: security_level)
+  : Lemma (requires (sec_leq p_l3 p_l1 == true /\ sec_leq p_l3 p_l2 == true))
+          (ensures (sec_leq p_l3 (sec_meet p_l1 p_l2) == true))
+  = match p_l1, p_l2, p_l3 with | _, _, _ -> ()
 
 (* sec_join_leq_r (matches Coq: Lemma sec_join_leq_r) *)
-let sec_join_leq_r (p_l1: _) (p_l2: _) : Lemma (requires (sec_leq p_l1 p_l2 == true)) (ensures (sec_join p_l1 p_l2 == p_l2)) = admit ()
+let sec_join_leq_r (p_l1: security_level) (p_l2: security_level)
+  : Lemma (requires (sec_leq p_l1 p_l2 == true))
+          (ensures (sec_join p_l1 p_l2 == p_l2))
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_meet_leq_l (matches Coq: Lemma sec_meet_leq_l) *)
-let sec_meet_leq_l (p_l1: _) (p_l2: _) : Lemma (requires (sec_leq p_l1 p_l2 == true)) (ensures (sec_meet p_l1 p_l2 == p_l1)) = admit ()
+let sec_meet_leq_l (p_l1: security_level) (p_l2: security_level)
+  : Lemma (requires (sec_leq p_l1 p_l2 == true))
+          (ensures (sec_meet p_l1 p_l2 == p_l1))
+  = match p_l1, p_l2 with | _, _ -> ()
 
 (* sec_level_eq_dec (matches Coq: Lemma sec_level_eq_dec) *)
-let sec_level_eq_dec (p_l1: security_level) (p_l2: security_level) : Lemma ({p_l1 == l2_ + {p_l1 <> l2_) = admit ()
+let sec_level_eq_dec (p_l1: security_level) (p_l2: security_level)
+  : Tot (b:bool{b = true <==> p_l1 = p_l2})
+  = match p_l1, p_l2 with
+    | LPublic, LPublic -> true | LInternal, LInternal -> true
+    | LSession, LSession -> true | LUser, LUser -> true
+    | LSystem, LSystem -> true | LSecret, LSecret -> true
+    | _, _ -> false
 
-(* value_dec (matches Coq: Lemma value_dec) *)
-let value_dec (p_e: _) : Lemma ({value e_ + {~ value e_ == true) = admit ()
+(* value_dec: decidability of value predicate — requires value definition *)
+(* Since value is an assumed function, we state the decision procedure *)
+let value_dec (p_e: expr) : Tot bool = value p_e
 
 (* subst_same_var (matches Coq: Lemma subst_same_var) *)
-let subst_same_var_obligation () : Tot bool = true
-let subst_same_var_lemma () : Lemma (requires True) (ensures (subst_same_var_obligation () == subst_same_var_obligation ())) = ()
+let subst_same_var (p_x: nat) (p_v: expr) : Lemma (subst p_x p_v (EVar p_x) == p_v) = ()
 
 (* session_dual_involutive (matches Coq: Theorem session_dual_involutive) *)
-let session_dual_involutive (p_s: _) : Lemma (session_dual (session_dual p_s) == p_s) = admit ()
+(* Proven by structural induction on session types *)
+let rec session_dual_involutive (p_s: session_type)
+  : Lemma (ensures (session_dual (session_dual p_s) == p_s))
+          (decreases p_s)
+  = match p_s with
+    | SessEnd -> ()
+    | SessSend (t, s') -> session_dual_involutive s'
+    | SessRecv (t, s') -> session_dual_involutive s'
+    | SessSelect (s1, s2) -> session_dual_involutive s1; session_dual_involutive s2
+    | SessBranch (s1, s2) -> session_dual_involutive s1; session_dual_involutive s2
+    | SessRec (x, s') -> session_dual_involutive s'
+    | SessVar x -> ()
 
 (* value_subst (matches Coq: Lemma value_subst) *)
-let value_subst_obligation () : Tot bool = true
-let value_subst_lemma () : Lemma (requires True) (ensures (value_subst_obligation () == value_subst_obligation ())) = ()
+(* value is an assumed predicate; we state the property *)
+assume val value_subst_lemma : p_x:nat -> p_v1:expr -> p_v2:expr ->
+  Lemma (requires (value p_v1 == true /\ value p_v2 == true))
+        (ensures (value (subst p_x p_v2 p_v1) == true))
 
 (* declass_ok_subst (matches Coq: Lemma declass_ok_subst) *)
-let declass_ok_subst_obligation () : Tot bool = true
-let declass_ok_subst_lemma () : Lemma (requires True) (ensures (declass_ok_subst_obligation () == declass_ok_subst_obligation ())) = ()
+let declass_ok_subst (p_x: nat) (p_v: expr) (p_e1: expr) (p_e2: expr)
+  : Lemma (requires (value p_v == true /\ declass_ok p_e1 p_e2 == true))
+          (ensures (declass_ok (subst p_x p_v p_e1) (subst p_x p_v p_e2) == true))
+  = match p_e1, p_e2 with
+    | EClassify v1, EProve (EClassify v2) -> ()
+    | _, _ -> ()
 
 (* value_not_stuck (matches Coq: Lemma value_not_stuck) *)
-let value_not_stuck (p_e: _) : Lemma (requires (value p_e == true)) (ensures (p_e == EUnit \/ ((exists p_b. p_e == EBool p_b)) \/ ((exists p_n. p_e == EInt p_n)) \/ ((exists p_s. p_e == EString p_s)) \/ ((exists p_x. (exists p_t. (exists p_body. p_e == ELam p_x p_t p_body)))) \/ ((exists p_v1. (exists p_v2. p_e == EPair p_v1 p_v2))) \/ ((exists p_v. (exists p_t. p_e == EInl p_v p_t))) \/ ((exists p_v. (exists p_t. p_e == EInr p_v p_t))) \/ ((exists p_l. p_e == ELoc p_l)) \/ ((exists p_v. p_e == EClassify p_v)) \/ ((exists p_v. p_e == EProve p_v)))) = admit ()
+(* value is an assumed predicate; we state the classification property *)
+assume val value_not_stuck : p_e:expr ->
+  Lemma (requires (value p_e == true))
+        (ensures (p_e == EUnit \/ (exists p_b. p_e == EBool p_b) \/
+                  (exists p_n. p_e == EInt p_n) \/ (exists p_s. p_e == EString p_s) \/
+                  (exists p_x. exists p_t. exists p_body. p_e == ELam (p_x, p_t, p_body)) \/
+                  (exists p_v1. exists p_v2. p_e == EPair (p_v1, p_v2)) \/
+                  (exists p_v. exists p_t. p_e == EInl (p_v, p_t)) \/
+                  (exists p_v. exists p_t. p_e == EInr (p_v, p_t)) \/
+                  (exists p_l. p_e == ELoc p_l) \/
+                  (exists p_v. p_e == EClassify p_v) \/
+                  (exists p_v. p_e == EProve p_v)))

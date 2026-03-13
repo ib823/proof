@@ -1,44 +1,59 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of MobileOS Notification System invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// State model for Notification System
+pub struct Notification {
+    pub payload_bounded: bool,
+    pub permission_granted: bool,
+    pub grouping_consistent: bool,
+    pub delivery_tracked: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Invariant: all properties must hold with positive assurance
+pub open spec fn notification_system_valid(s: Notification) -> bool {
+    s.payload_bounded && s.permission_granted && s.grouping_consistent && s.delivery_tracked && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration
+pub open spec fn baseline_notification_system() -> Notification {
+    Notification { payload_bounded: true, permission_granted: true, grouping_consistent: true, delivery_tracked: true, assurance_level: 1 }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration
+pub open spec fn hardened_notification_system() -> Notification {
+    Notification { payload_bounded: true, permission_granted: true, grouping_consistent: true, delivery_tracked: true, assurance_level: 3 }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline is valid
+proof fn lemma_baseline_valid()
+    ensures notification_system_valid(baseline_notification_system()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_notification_system();
+    assert(b.payload_bounded && b.permission_granted && b.grouping_consistent && b.delivery_tracked && b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened is valid and dominates baseline
+proof fn lemma_hardened_dominates()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        notification_system_valid(hardened_notification_system()),
+        hardened_notification_system().assurance_level >= baseline_notification_system().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+}
+
+/// Lemma: each property is individually necessary
+proof fn lemma_properties_necessary()
+    ensures
+        !notification_system_valid(Notification { payload_bounded: false, permission_granted: true, grouping_consistent: true, delivery_tracked: true, assurance_level: 1 }),
+        !notification_system_valid(Notification { payload_bounded: true, permission_granted: false, grouping_consistent: true, delivery_tracked: true, assurance_level: 1 }),
+        !notification_system_valid(Notification { payload_bounded: true, permission_granted: true, grouping_consistent: false, delivery_tracked: true, assurance_level: 1 }),
+        !notification_system_valid(Notification { payload_bounded: true, permission_granted: true, grouping_consistent: true, delivery_tracked: false, assurance_level: 1 }),
+{
 }
 
 } // verus!
-
-fn main() {}

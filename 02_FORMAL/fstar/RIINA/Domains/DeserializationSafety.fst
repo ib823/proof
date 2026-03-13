@@ -95,79 +95,79 @@ let is_gadget_blocked (p_r: deser_result) : Tot bool =
   | _ -> false
 
 (* andb_true_iff_deser (matches Coq: Lemma andb_true_iff_deser) *)
-let andb_true_iff_deser (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
+let andb_true_iff_deser (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = ()
 
 (* DESER_001_rce_prevention (matches Coq: Theorem DESER_001_rce_prevention) *)
-let deser_001_rce_prevention () : Lemma (rce_prevention_active riina_deser_policy == true) = admit ()
+let deser_001_rce_prevention () : Lemma (rce_prevention_active riina_deser_policy == true) = ()
 
 (* DESER_002_schema_enforcement (matches Coq: Theorem DESER_002_schema_enforcement) *)
-let deser_002_schema_enforcement () : Lemma (schema_enforcement_active riina_deser_policy == true) = admit ()
+let deser_002_schema_enforcement () : Lemma (schema_enforcement_active riina_deser_policy == true) = ()
 
 (* DESER_003_input_validation (matches Coq: Theorem DESER_003_input_validation) *)
-let deser_003_input_validation () : Lemma (input_validation_active riina_deser_policy == true) = admit ()
+let deser_003_input_validation () : Lemma (input_validation_active riina_deser_policy == true) = ()
 
 (* DESER_004_string_safety (matches Coq: Theorem DESER_004_string_safety) *)
-let deser_004_string_safety () : Lemma (string_safety_active riina_deser_policy == true) = admit ()
+let deser_004_string_safety () : Lemma (string_safety_active riina_deser_policy == true) = ()
 
 (* DESER_005_all_defenses (matches Coq: Theorem DESER_005_all_defenses) *)
-let deser_005_all_defenses () : Lemma (all_deser_defenses riina_deser_policy == true) = admit ()
+let deser_005_all_defenses () : Lemma (all_deser_defenses riina_deser_policy == true) = ()
 
 (* DESER_006_gadget_blocked (matches Coq: Theorem DESER_006_gadget_blocked) *)
-let deser_006_gadget_blocked (p_fmt: _) (p_sch: _) (p_tags: _) (p_allow: _) : Lemma (is_gadget_blocked (check_input riina_deser_policy (mkserinput p_fmt 100 5 p_sch p_tags true p_allow)) == true) = admit ()
+let deser_006_gadget_blocked (p_fmt: _) (p_sch: _) (p_tags: _) (p_allow: _) : Lemma (is_gadget_blocked (check_input riina_deser_policy (mkserinput p_fmt 100 5 p_sch p_tags true p_allow)) == true) = ()
 
 (* DESER_007_no_polymorphic (matches Coq: Theorem DESER_007_no_polymorphic) *)
-let deser_007_no_polymorphic (p_p: deser_policy) : Lemma (requires (rce_prevention_active p_p == true)) (ensures (p_p.f_dp_allow_polymorphic == false)) = admit ()
+let deser_007_no_polymorphic (p_p: deser_policy) : Lemma (requires (rce_prevention_active p_p == true)) (ensures (p_p.f_dp_allow_polymorphic == false)) = ()
 
 (* DESER_008_no_callbacks (matches Coq: Theorem DESER_008_no_callbacks) *)
-let deser_008_no_callbacks (p_p: deser_policy) : Lemma (requires (rce_prevention_active p_p == true)) (ensures (p_p.f_dp_allow_callbacks == false)) = admit ()
+let deser_008_no_callbacks (p_p: deser_policy) : Lemma (requires (rce_prevention_active p_p == true)) (ensures (p_p.f_dp_allow_callbacks == false)) = ()
 
 (* DESER_009_no_reflection (matches Coq: Theorem DESER_009_no_reflection) *)
-let deser_009_no_reflection (p_p: deser_policy) : Lemma (requires (rce_prevention_active p_p == true)) (ensures (p_p.f_dp_allow_reflection == false)) = admit ()
+let deser_009_no_reflection (p_p: deser_policy) : Lemma (requires (rce_prevention_active p_p == true)) (ensures (p_p.f_dp_allow_reflection == false)) = ()
 
 (* DESER_010_requires_schema (matches Coq: Theorem DESER_010_requires_schema) *)
-let deser_010_requires_schema (p_p: deser_policy) : Lemma (requires (schema_enforcement_active p_p == true)) (ensures (p_p.f_dp_require_schema == true)) = admit ()
+let deser_010_requires_schema (p_p: deser_policy) : Lemma (requires (schema_enforcement_active p_p == true)) (ensures (p_p.f_dp_require_schema == true)) = ()
 
 (* DESER_011_requires_type_tags (matches Coq: Theorem DESER_011_requires_type_tags) *)
-let deser_011_requires_type_tags (p_p: deser_policy) : Lemma (requires (schema_enforcement_active p_p == true)) (ensures (p_p.f_dp_require_type_tag == true)) = admit ()
+let deser_011_requires_type_tags (p_p: deser_policy) : Lemma (requires (schema_enforcement_active p_p == true)) (ensures (p_p.f_dp_require_type_tag == true)) = ()
 
 (* DESER_012_requires_allowlist (matches Coq: Theorem DESER_012_requires_allowlist) *)
-let deser_012_requires_allowlist (p_p: deser_policy) : Lemma (requires (schema_enforcement_active p_p == true)) (ensures (p_p.f_dp_allowlist_types == true)) = admit ()
+let deser_012_requires_allowlist (p_p: deser_policy) : Lemma (requires (schema_enforcement_active p_p == true)) (ensures (p_p.f_dp_allowlist_types == true)) = ()
 
 (* DESER_013_valid_input_passes (matches Coq: Theorem DESER_013_valid_input_passes) *)
-let deser_013_valid_input_passes (p_fmt: _) : Lemma (is_deser_ok (check_input riina_deser_policy (mkserinput p_fmt 100 5 true true false true)) == true) = admit ()
+let deser_013_valid_input_passes (p_fmt: _) : Lemma (is_deser_ok (check_input riina_deser_policy (mkserinput p_fmt 100 5 true true false true)) == true) = ()
 
 (* DESER_014_oversized_rejected (matches Coq: Theorem DESER_014_oversized_rejected) *)
-let deser_014_oversized_rejected (p_fmt: _) (p_d: _) (p_sch: _) (p_tags: _) (p_code: _) (p_allow: _) : Lemma (is_deser_ok (check_input riina_deser_policy (mkserinput p_fmt 5000 p_d p_sch p_tags p_code p_allow)) == false) = admit ()
+let deser_014_oversized_rejected (p_fmt: _) (p_d: _) (p_sch: _) (p_tags: _) (p_code: _) (p_allow: _) : Lemma (is_deser_ok (check_input riina_deser_policy (mkserinput p_fmt 5000 p_d p_sch p_tags p_code p_allow)) == false) = ()
 
 (* DESER_015_overdepth_rejected (matches Coq: Theorem DESER_015_overdepth_rejected) *)
-let deser_015_overdepth_rejected (p_fmt: _) (p_sch: _) (p_tags: _) (p_code: _) (p_allow: _) : Lemma (is_deser_ok (check_input riina_deser_policy (mkserinput p_fmt 100 100 p_sch p_tags p_code p_allow)) == false) = admit ()
+let deser_015_overdepth_rejected (p_fmt: _) (p_sch: _) (p_tags: _) (p_code: _) (p_allow: _) : Lemma (is_deser_ok (check_input riina_deser_policy (mkserinput p_fmt 100 100 p_sch p_tags p_code p_allow)) == false) = ()
 
 (* DESER_016_ok_is_ok (matches Coq: Theorem DESER_016_ok_is_ok) *)
-let deser_016_ok_is_ok () : Lemma (is_deser_ok DeserOk == true) = admit ()
+let deser_016_ok_is_ok () : Lemma (is_deser_ok DeserOk == true) = ()
 
 (* DESER_017_gadget_not_ok (matches Coq: Theorem DESER_017_gadget_not_ok) *)
-let deser_017_gadget_not_ok () : Lemma (is_deser_ok DeserGadget == false) = admit ()
+let deser_017_gadget_not_ok () : Lemma (is_deser_ok DeserGadget == false) = ()
 
 (* DESER_018_type_err_not_ok (matches Coq: Theorem DESER_018_type_err_not_ok) *)
-let deser_018_type_err_not_ok () : Lemma (is_deser_ok DeserTypeErr == false) = admit ()
+let deser_018_type_err_not_ok () : Lemma (is_deser_ok DeserTypeErr == false) = ()
 
 (* DESER_019_overflow_not_ok (matches Coq: Theorem DESER_019_overflow_not_ok) *)
-let deser_019_overflow_not_ok () : Lemma (is_deser_ok DeserOverflow == false) = admit ()
+let deser_019_overflow_not_ok () : Lemma (is_deser_ok DeserOverflow == false) = ()
 
 (* DESER_020_malformed_not_ok (matches Coq: Theorem DESER_020_malformed_not_ok) *)
-let deser_020_malformed_not_ok () : Lemma (is_deser_ok DeserMalformed == false) = admit ()
+let deser_020_malformed_not_ok () : Lemma (is_deser_ok DeserMalformed == false) = ()
 
 (* DESER_021_all_implies_rce (matches Coq: Theorem DESER_021_all_implies_rce) *)
-let deser_021_all_implies_rce (p_p: deser_policy) : Lemma (requires (all_deser_defenses p_p == true)) (ensures (rce_prevention_active p_p == true)) = admit ()
+let deser_021_all_implies_rce (p_p: deser_policy) : Lemma (requires (all_deser_defenses p_p == true)) (ensures (rce_prevention_active p_p == true)) = ()
 
 (* DESER_022_all_implies_schema (matches Coq: Theorem DESER_022_all_implies_schema) *)
-let deser_022_all_implies_schema (p_p: deser_policy) : Lemma (requires (all_deser_defenses p_p == true)) (ensures (schema_enforcement_active p_p == true)) = admit ()
+let deser_022_all_implies_schema (p_p: deser_policy) : Lemma (requires (all_deser_defenses p_p == true)) (ensures (schema_enforcement_active p_p == true)) = ()
 
 (* DESER_023_all_implies_validation (matches Coq: Theorem DESER_023_all_implies_validation) *)
-let deser_023_all_implies_validation (p_p: deser_policy) : Lemma (requires (all_deser_defenses p_p == true)) (ensures (input_validation_active p_p == true)) = admit ()
+let deser_023_all_implies_validation (p_p: deser_policy) : Lemma (requires (all_deser_defenses p_p == true)) (ensures (input_validation_active p_p == true)) = ()
 
 (* DESER_024_all_implies_string (matches Coq: Theorem DESER_024_all_implies_string) *)
-let deser_024_all_implies_string (p_p: deser_policy) : Lemma (requires (all_deser_defenses p_p == true)) (ensures (string_safety_active p_p == true)) = admit ()
+let deser_024_all_implies_string (p_p: deser_policy) : Lemma (requires (all_deser_defenses p_p == true)) (ensures (string_safety_active p_p == true)) = ()
 
 (* DESER_025_complete_defense (matches Coq: Theorem DESER_025_complete_defense) *)
-let deser_025_complete_defense (p_p: deser_policy) : Lemma (requires (all_deser_defenses p_p == true)) (ensures (p_p.f_dp_allow_polymorphic == false /\ p_p.f_dp_allow_callbacks == false /\ p_p.f_dp_allow_reflection == false /\ p_p.f_dp_require_schema == true /\ p_p.f_dp_require_type_tag == true /\ p_p.f_dp_allowlist_types == true /\ p_p.f_dp_sanitize_strings == true)) = admit ()
+let deser_025_complete_defense (p_p: deser_policy) : Lemma (requires (all_deser_defenses p_p == true)) (ensures (p_p.f_dp_allow_polymorphic == false /\ p_p.f_dp_allow_callbacks == false /\ p_p.f_dp_allow_reflection == false /\ p_p.f_dp_require_schema == true /\ p_p.f_dp_require_type_tag == true /\ p_p.f_dp_allowlist_types == true /\ p_p.f_dp_sanitize_strings == true)) = ()

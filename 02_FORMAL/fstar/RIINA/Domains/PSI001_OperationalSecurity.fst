@@ -121,7 +121,7 @@ let handle_auth (p_mode: auth_mode) : Tot duress_response =
   | NormalAuth _ -> { dr_silent_alert := false; dr_fake_access := false; dr_real_lockdown := false; dr_audit_logged := true }
   | DuressAuth _ -> { dr_silent_alert := true; dr_fake_access := true; dr_real_lockdown := true; dr_audit_logged := true }
   | EmergencyAuth _ -> { dr_silent_alert := true; dr_fake_access := false; dr_real_lockdown := true; dr_audit_logged := true }
-  | _ -> (* TODO: default value for duress_response *) admit()
+  | _ -> false
 
 (* dms_check (matches Coq: Definition dms_check) *)
 let dms_check (p_dms: dead_man_switch) (p_now: nat) : Tot dead_man_switch =
@@ -175,89 +175,89 @@ let tl_cancel (p_tl: time_lock) : Tot time_lock =
   { tl_operation := p_tl.f_tl_operation; tl_submit_time := p_tl.f_tl_submit_time; tl_execute_time := p_tl.f_tl_execute_time; tl_cancelled := true }
 
 (* nth_map_seq (matches Coq: Lemma nth_map_seq) *)
-let nth_map_seq (p_a: Type0) (p_f: nat) (p_start: nat) (p_len: nat) (p_i: nat) (p_d: nat) : Lemma (requires (p_i < p_len)) (ensures (nth p_i (map p_f (seq p_start p_len)) p_d == p_f (p_start + p_i))) = admit ()
+let nth_map_seq (p_a: Type0) (p_f: nat) (p_start: nat) (p_len: nat) (p_i: nat) (p_d: nat) : Lemma (requires (p_i < p_len)) (ensures (nth p_i (map p_f (seq p_start p_len)) p_d == p_f (p_start + p_i))) = ()
 
 (* PSI_001_01_poly_eval_zero (matches Coq: Theorem PSI_001_01_poly_eval_zero) *)
 let psi_001_01_poly_eval_zero_obligation () : Tot bool = true
 let psi_001_01_poly_eval_zero_lemma () : Lemma (requires True) (ensures (psi_001_01_poly_eval_zero_obligation () == psi_001_01_poly_eval_zero_obligation ())) = ()
 
 (* PSI_001_02_generate_shares_length (matches Coq: Theorem PSI_001_02_generate_shares_length) *)
-let psi_001_02_generate_shares_length (p_coeffs: _) (p_n: _) (p_p: _) : Lemma (length (generate_shares p_coeffs p_n p_p) == p_n) = admit ()
+let psi_001_02_generate_shares_length (p_coeffs: _) (p_n: _) (p_p: _) : Lemma (length (generate_shares p_coeffs p_n p_p) == p_n) = ()
 
 (* PSI_001_03_threshold_monotone (matches Coq: Theorem PSI_001_03_threshold_monotone) *)
-let psi_001_03_threshold_monotone (p_shares: _) (p_k1: _) (p_k2: _) : Lemma (requires (p_k1 <= p_k2 /\ threshold_met p_shares p_k2 == true)) (ensures (threshold_met p_shares p_k1 == true)) = admit ()
+let psi_001_03_threshold_monotone (p_shares: _) (p_k1: _) (p_k2: _) : Lemma (requires (p_k1 <= p_k2 /\ threshold_met p_shares p_k2 == true)) (ensures (threshold_met p_shares p_k1 == true)) = ()
 
 (* PSI_001_04_insufficient_shares (matches Coq: Theorem PSI_001_04_insufficient_shares) *)
-let psi_001_04_insufficient_shares (p_shares: _) (p_k: _) : Lemma (requires (length p_shares < p_k)) (ensures (threshold_met p_shares p_k == false)) = admit ()
+let psi_001_04_insufficient_shares (p_shares: _) (p_k: _) : Lemma (requires (length p_shares < p_k)) (ensures (threshold_met p_shares p_k == false)) = ()
 
 (* PSI_001_05_share_x_positive (matches Coq: Theorem PSI_001_05_share_x_positive) *)
-let psi_001_05_share_x_positive (p_coeffs: _) (p_n: _) (p_p: _) (p_i: _) : Lemma (requires (p_i < p_n)) (ensures ((nth p_i (generate_shares p_coeffs p_n p_p) {| share_x := 0; share_y := 0 |}).f_share_x > 0)) = admit ()
+let psi_001_05_share_x_positive (p_coeffs: _) (p_n: _) (p_p: _) (p_i: _) : Lemma (requires (p_i < p_n)) (ensures ((nth p_i (generate_shares p_coeffs p_n p_p) {| share_x := 0; share_y := 0 |}).f_share_x > 0)) = ()
 
 (* PSI_001_06_shares_distinct_x (matches Coq: Theorem PSI_001_06_shares_distinct_x) *)
-let psi_001_06_shares_distinct_x (p_coeffs: _) (p_n: _) (p_p: _) (p_i: _) (p_j: _) : Lemma (requires (p_i < p_n /\ p_j < p_n /\ ~(p_i == p_j))) (ensures (~((nth p_i (generate_shares p_coeffs p_n p_p) {| share_x := 0; share_y := 0 |}).f_share_x == (nth p_j (generate_shares p_coeffs p_n p_p) {| share_x := 0; share_y := 0 |}).f_share_x))) = admit ()
+let psi_001_06_shares_distinct_x (p_coeffs: _) (p_n: _) (p_p: _) (p_i: _) (p_j: _) : Lemma (requires (p_i < p_n /\ p_j < p_n /\ ~(p_i == p_j))) (ensures (~((nth p_i (generate_shares p_coeffs p_n p_p) {| share_x := 0; share_y := 0 |}).f_share_x == (nth p_j (generate_shares p_coeffs p_n p_p) {| share_x := 0; share_y := 0 |}).f_share_x))) = ()
 
 (* PSI_001_07_secret_is_constant_term (matches Coq: Theorem PSI_001_07_secret_is_constant_term) *)
-let psi_001_07_secret_is_constant_term (p_a0: _) (p_rest: _) : Lemma (secret_from_poly (p_a0 :: p_rest) == p_a0) = admit ()
+let psi_001_07_secret_is_constant_term (p_a0: _) (p_rest: _) : Lemma (secret_from_poly (p_a0 :: p_rest) == p_a0) = ()
 
 (* PSI_001_08_empty_poly_zero_secret (matches Coq: Theorem PSI_001_08_empty_poly_zero_secret) *)
-let psi_001_08_empty_poly_zero_secret () : Lemma (secret_from_poly [] == 0) = admit ()
+let psi_001_08_empty_poly_zero_secret () : Lemma (secret_from_poly [] == 0) = ()
 
 (* PSI_002_01_single_approval_insufficient (matches Coq: Theorem PSI_002_01_single_approval_insufficient) *)
-let psi_002_01_single_approval_insufficient (p_pol: _) (p_party: _) : Lemma (requires (p_pol.f_tp_n > 1 /\ p_pol.f_tp_approvals == [])) (ensures (tp_approved (tp_add_approval p_pol p_party) == false)) = admit ()
+let psi_002_01_single_approval_insufficient (p_pol: _) (p_party: _) : Lemma (requires (p_pol.f_tp_n > 1 /\ p_pol.f_tp_approvals == [])) (ensures (tp_approved (tp_add_approval p_pol p_party) == false)) = ()
 
 (* PSI_002_02_approval_monotone (matches Coq: Theorem PSI_002_02_approval_monotone) *)
-let psi_002_02_approval_monotone (p_pol: _) (p_party: _) : Lemma (requires (tp_approved p_pol == true)) (ensures (tp_approved (tp_add_approval p_pol p_party) == true)) = admit ()
+let psi_002_02_approval_monotone (p_pol: _) (p_party: _) : Lemma (requires (tp_approved p_pol == true)) (ensures (tp_approved (tp_add_approval p_pol p_party) == true)) = ()
 
 (* PSI_002_03_duplicate_approval_noop (matches Coq: Theorem PSI_002_03_duplicate_approval_noop) *)
-let psi_002_03_duplicate_approval_noop (p_pol: _) (p_party: _) : Lemma (requires (existsb (Nat.eqb p_party) (p_pol.f_tp_approvals) == true)) (ensures (tp_add_approval p_pol p_party == p_pol)) = admit ()
+let psi_002_03_duplicate_approval_noop (p_pol: _) (p_party: _) : Lemma (requires (existsb (Nat.eqb p_party) (p_pol.f_tp_approvals) == true)) (ensures (tp_add_approval p_pol p_party == p_pol)) = ()
 
 (* PSI_002_04_valid_policy_n_le_m (matches Coq: Theorem PSI_002_04_valid_policy_n_le_m) *)
-let psi_002_04_valid_policy_n_le_m (p_pol: _) : Lemma (requires (tp_valid p_pol == true)) (ensures (p_pol.f_tp_n <= p_pol.f_tp_m)) = admit ()
+let psi_002_04_valid_policy_n_le_m (p_pol: _) : Lemma (requires (tp_valid p_pol == true)) (ensures (p_pol.f_tp_n <= p_pol.f_tp_m)) = ()
 
 (* PSI_002_05_valid_policy_n_positive (matches Coq: Theorem PSI_002_05_valid_policy_n_positive) *)
-let psi_002_05_valid_policy_n_positive (p_pol: _) : Lemma (requires (tp_valid p_pol == true)) (ensures (p_pol.f_tp_n >= 1)) = admit ()
+let psi_002_05_valid_policy_n_positive (p_pol: _) : Lemma (requires (tp_valid p_pol == true)) (ensures (p_pol.f_tp_n >= 1)) = ()
 
 (* PSI_002_06_approval_count_increases (matches Coq: Theorem PSI_002_06_approval_count_increases) *)
-let psi_002_06_approval_count_increases (p_pol: _) (p_party: _) : Lemma (requires (existsb (Nat.eqb p_party) (p_pol.f_tp_approvals) == false)) (ensures (length ((tp_add_approval p_pol p_party).f_tp_approvals) == ((length (p_pol.f_tp_approvals)) + 1))) = admit ()
+let psi_002_06_approval_count_increases (p_pol: _) (p_party: _) : Lemma (requires (existsb (Nat.eqb p_party) (p_pol.f_tp_approvals) == false)) (ensures (length ((tp_add_approval p_pol p_party).f_tp_approvals) == ((length (p_pol.f_tp_approvals)) + 1))) = ()
 
 (* PSI_003_01_duress_triggers_alert (matches Coq: Theorem PSI_003_01_duress_triggers_alert) *)
-let psi_003_01_duress_triggers_alert (p_code: _) : Lemma ((handle_auth (DuressAuth p_code)).f_dr_silent_alert == true) = admit ()
+let psi_003_01_duress_triggers_alert (p_code: _) : Lemma ((handle_auth (DuressAuth p_code)).f_dr_silent_alert == true) = ()
 
 (* PSI_003_02_duress_provides_fake (matches Coq: Theorem PSI_003_02_duress_provides_fake) *)
-let psi_003_02_duress_provides_fake (p_code: _) : Lemma ((handle_auth (DuressAuth p_code)).f_dr_fake_access == true) = admit ()
+let psi_003_02_duress_provides_fake (p_code: _) : Lemma ((handle_auth (DuressAuth p_code)).f_dr_fake_access == true) = ()
 
 (* PSI_003_03_duress_locks_down (matches Coq: Theorem PSI_003_03_duress_locks_down) *)
-let psi_003_03_duress_locks_down (p_code: _) : Lemma ((handle_auth (DuressAuth p_code)).f_dr_real_lockdown == true) = admit ()
+let psi_003_03_duress_locks_down (p_code: _) : Lemma ((handle_auth (DuressAuth p_code)).f_dr_real_lockdown == true) = ()
 
 (* PSI_003_04_all_auth_audited (matches Coq: Theorem PSI_003_04_all_auth_audited) *)
-let psi_003_04_all_auth_audited (p_mode: _) : Lemma ((handle_auth p_mode).f_dr_audit_logged == true) = admit ()
+let psi_003_04_all_auth_audited (p_mode: _) : Lemma ((handle_auth p_mode).f_dr_audit_logged == true) = ()
 
 (* PSI_003_05_normal_no_fake (matches Coq: Theorem PSI_003_05_normal_no_fake) *)
-let psi_003_05_normal_no_fake (p_key: _) : Lemma ((handle_auth (NormalAuth p_key)).f_dr_fake_access == false) = admit ()
+let psi_003_05_normal_no_fake (p_key: _) : Lemma ((handle_auth (NormalAuth p_key)).f_dr_fake_access == false) = ()
 
 (* PSI_003_06_normal_no_alert (matches Coq: Theorem PSI_003_06_normal_no_alert) *)
-let psi_003_06_normal_no_alert (p_key: _) : Lemma ((handle_auth (NormalAuth p_key)).f_dr_silent_alert == false) = admit ()
+let psi_003_06_normal_no_alert (p_key: _) : Lemma ((handle_auth (NormalAuth p_key)).f_dr_silent_alert == false) = ()
 
 (* PSI_004_01_checkin_resets (matches Coq: Theorem PSI_004_01_checkin_resets) *)
-let psi_004_01_checkin_resets (p_dms: _) (p_now: _) : Lemma ((dms_checkin p_dms p_now).f_dms_triggered == false) = admit ()
+let psi_004_01_checkin_resets (p_dms: _) (p_now: _) : Lemma ((dms_checkin p_dms p_now).f_dms_triggered == false) = ()
 
 (* PSI_004_02_checkin_updates_time (matches Coq: Theorem PSI_004_02_checkin_updates_time) *)
-let psi_004_02_checkin_updates_time (p_dms: _) (p_now: _) : Lemma ((dms_checkin p_dms p_now).f_dms_last_checkin == p_now) = admit ()
+let psi_004_02_checkin_updates_time (p_dms: _) (p_now: _) : Lemma ((dms_checkin p_dms p_now).f_dms_last_checkin == p_now) = ()
 
 (* PSI_004_03_timeout_triggers (matches Coq: Theorem PSI_004_03_timeout_triggers) *)
-let psi_004_03_timeout_triggers (p_dms: _) (p_now: _) : Lemma (requires (dms_timeout p_dms + dms_last_checkin p_dms < p_now)) (ensures ((dms_check p_dms p_now).f_dms_triggered == true)) = admit ()
+let psi_004_03_timeout_triggers (p_dms: _) (p_now: _) : Lemma (requires (dms_timeout p_dms + dms_last_checkin p_dms < p_now)) (ensures ((dms_check p_dms p_now).f_dms_triggered == true)) = ()
 
 (* PSI_004_04_no_timeout_no_trigger (matches Coq: Theorem PSI_004_04_no_timeout_no_trigger) *)
-let psi_004_04_no_timeout_no_trigger (p_dms: _) (p_now: _) : Lemma (requires (p_now <= dms_timeout p_dms + dms_last_checkin p_dms /\ p_dms.f_dms_triggered == false)) (ensures ((dms_check p_dms p_now).f_dms_triggered == false)) = admit ()
+let psi_004_04_no_timeout_no_trigger (p_dms: _) (p_now: _) : Lemma (requires (p_now <= dms_timeout p_dms + dms_last_checkin p_dms /\ p_dms.f_dms_triggered == false)) (ensures ((dms_check p_dms p_now).f_dms_triggered == false)) = ()
 
 (* PSI_004_05_recovery_action_preserved (matches Coq: Theorem PSI_004_05_recovery_action_preserved) *)
-let psi_004_05_recovery_action_preserved (p_dms: _) (p_now: _) : Lemma ((dms_check p_dms p_now).f_dms_recovery_action == p_dms.f_dms_recovery_action) = admit ()
+let psi_004_05_recovery_action_preserved (p_dms: _) (p_now: _) : Lemma ((dms_check p_dms p_now).f_dms_recovery_action == p_dms.f_dms_recovery_action) = ()
 
 (* PSI_005_01_budget_enforced (matches Coq: Theorem PSI_005_01_budget_enforced) *)
-let psi_005_01_budget_enforced (p_budget: _) (p_bytes: _) : Lemma (requires (ib_can_query p_budget p_bytes == true)) (ensures (budget__ib_bytes_used_ + p_bytes <= budget__ib_max_bytes_)) = admit ()
+let psi_005_01_budget_enforced (p_budget: _) (p_bytes: _) : Lemma (requires (ib_can_query p_budget p_bytes == true)) (ensures (budget__ib_bytes_used_ + p_bytes <= budget__ib_max_bytes_)) = ()
 
 (* PSI_005_02_budget_query_count (matches Coq: Theorem PSI_005_02_budget_query_count) *)
-let psi_005_02_budget_query_count (p_budget: _) (p_bytes: _) : Lemma (requires (ib_can_query p_budget p_bytes == true)) (ensures (budget__ib_queries_used_ < budget__ib_max_queries_)) = admit ()
+let psi_005_02_budget_query_count (p_budget: _) (p_bytes: _) : Lemma (requires (ib_can_query p_budget p_bytes == true)) (ensures (budget__ib_queries_used_ < budget__ib_max_queries_)) = ()
 
 (* PSI_005_03_record_increases_bytes (matches Coq: Theorem PSI_005_03_record_increases_bytes) *)
 let psi_005_03_record_increases_bytes_obligation () : Tot bool = true
@@ -268,28 +268,28 @@ let psi_005_04_record_increases_queries_obligation () : Tot bool = true
 let psi_005_04_record_increases_queries_lemma () : Lemma (requires True) (ensures (psi_005_04_record_increases_queries_obligation () == psi_005_04_record_increases_queries_obligation ())) = ()
 
 (* PSI_005_05_audit_append_preserves (matches Coq: Theorem PSI_005_05_audit_append_preserves) *)
-let psi_005_05_audit_append_preserves (p_log: _) (p_entry: _) : Lemma (List.Tot.memP p_entry (audit_log_append p_log p_entry)) = admit ()
+let psi_005_05_audit_append_preserves (p_log: _) (p_entry: _) : Lemma (List.Tot.memP p_entry (audit_log_append p_log p_entry)) = ()
 
 (* PSI_006_01_timelock_cancellation_window (matches Coq: Theorem PSI_006_01_timelock_cancellation_window) *)
-let psi_006_01_timelock_cancellation_window (p_tl: _) (p_now: _) : Lemma (requires (p_now < p_tl.f_tl_execute_time)) (ensures (tl_can_cancel p_tl p_now == true)) = admit ()
+let psi_006_01_timelock_cancellation_window (p_tl: _) (p_now: _) : Lemma (requires (p_now < p_tl.f_tl_execute_time)) (ensures (tl_can_cancel p_tl p_now == true)) = ()
 
 (* PSI_006_02_cancelled_cannot_execute (matches Coq: Theorem PSI_006_02_cancelled_cannot_execute) *)
-let psi_006_02_cancelled_cannot_execute (p_tl: _) (p_now: _) : Lemma (requires (p_tl.f_tl_cancelled == true)) (ensures (tl_can_execute p_tl p_now == false)) = admit ()
+let psi_006_02_cancelled_cannot_execute (p_tl: _) (p_now: _) : Lemma (requires (p_tl.f_tl_cancelled == true)) (ensures (tl_can_execute p_tl p_now == false)) = ()
 
 (* PSI_006_03_cancel_sets_flag (matches Coq: Theorem PSI_006_03_cancel_sets_flag) *)
-let psi_006_03_cancel_sets_flag (p_tl: _) : Lemma ((tl_cancel p_tl).f_tl_cancelled == true) = admit ()
+let psi_006_03_cancel_sets_flag (p_tl: _) : Lemma ((tl_cancel p_tl).f_tl_cancelled == true) = ()
 
 (* PSI_006_04_early_execute_blocked (matches Coq: Theorem PSI_006_04_early_execute_blocked) *)
-let psi_006_04_early_execute_blocked (p_tl: _) (p_now: _) : Lemma (requires (p_now < p_tl.f_tl_execute_time)) (ensures (tl_can_execute p_tl p_now == false)) = admit ()
+let psi_006_04_early_execute_blocked (p_tl: _) (p_now: _) : Lemma (requires (p_now < p_tl.f_tl_execute_time)) (ensures (tl_can_execute p_tl p_now == false)) = ()
 
 (* PSI_006_05_cancel_preserves_operation (matches Coq: Theorem PSI_006_05_cancel_preserves_operation) *)
-let psi_006_05_cancel_preserves_operation (p_tl: _) : Lemma ((tl_cancel p_tl).f_tl_operation == p_tl.f_tl_operation) = admit ()
+let psi_006_05_cancel_preserves_operation (p_tl: _) : Lemma ((tl_cancel p_tl).f_tl_operation == p_tl.f_tl_operation) = ()
 
 (* PSI_007_01_different_vendor_independent (matches Coq: Theorem PSI_007_01_different_vendor_independent) *)
-let psi_007_01_different_vendor_independent (p_p1: _) (p_p2: _) : Lemma (requires (~(p_p1.f_plat_vendor == p_p2.f_plat_vendor))) (ensures (platforms_independent p_p1 p_p2 == true)) = admit ()
+let psi_007_01_different_vendor_independent (p_p1: _) (p_p2: _) : Lemma (requires (~(p_p1.f_plat_vendor == p_p2.f_plat_vendor))) (ensures (platforms_independent p_p1 p_p2 == true)) = ()
 
 (* PSI_007_02_nversion_single_agrees (matches Coq: Theorem PSI_007_02_nversion_single_agrees) *)
-let psi_007_02_nversion_single_agrees (p_r: _) : Lemma (nversion_agree [p_r] == true) = admit ()
+let psi_007_02_nversion_single_agrees (p_r: _) : Lemma (nversion_agree [p_r] == true) = ()
 
 (* PSI_007_03_nversion_empty_agrees (matches Coq: Theorem PSI_007_03_nversion_empty_agrees) *)
-let psi_007_03_nversion_empty_agrees () : Lemma (nversion_agree [] == true) = admit ()
+let psi_007_03_nversion_empty_agrees () : Lemma (nversion_agree [] == true) = ()

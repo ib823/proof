@@ -1,16 +1,23 @@
 ---- MODULE SensorDrivers ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/security_foundation/SensorDrivers.v (22 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/security_foundation/SensorDrivers.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* AppId (matches Coq: Inductive AppId)
 CONSTANTS App
 
+AppIdSet == {App}
+
 \* SensorType (matches Coq: Inductive SensorType)
 CONSTANTS Camera, Microphone, GPS, Accelerometer, Gyroscope
+
+SensorTypeSet == {Camera, Microphone, GPS, Accelerometer, Gyroscope}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* Sensor (matches Coq: Record Sensor)
 VARIABLES sensor_type, sensor_id
@@ -27,11 +34,16 @@ VARIABLES rate_sensor_type, rate_max_reads_per_sec, rate_current_reads
 \* BoundedSensor (matches Coq: Record BoundedSensor)
 VARIABLES bs_sensor, bs_max_rate, bs_current_rate, bs_rate_ok
 
-\* Type invariant
+vars == <<sensor_type, sensor_id, app_id, app_camera_perm, app_microphone_perm, app_location_perm, app_motion_perm, camera_indicator, mic_indicator, any_camera_active, any_mic_active, rate_sensor_type, rate_max_reads_per_sec, rate_current_reads, bs_sensor, bs_max_rate, bs_current_rate, bs_rate_ok>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ sensor_type \in BOOLEAN
-  /\ sensor_id \in BOOLEAN
-  /\ app_id \in BOOLEAN
+  /\ sensor_type \in SensorTypeSet
+  /\ sensor_id \in Nat
+  /\ app_id \in AppIdSet
   /\ app_camera_perm \in BOOLEAN
   /\ app_microphone_perm \in BOOLEAN
   /\ app_location_perm \in BOOLEAN
@@ -40,123 +52,198 @@ TypeOK ==
   /\ mic_indicator \in BOOLEAN
   /\ any_camera_active \in BOOLEAN
   /\ any_mic_active \in BOOLEAN
-  /\ rate_sensor_type \in BOOLEAN
-  /\ rate_max_reads_per_sec \in BOOLEAN
-  /\ rate_current_reads \in BOOLEAN
-  /\ bs_sensor \in BOOLEAN
-  /\ bs_max_rate \in BOOLEAN
-  /\ bs_current_rate \in BOOLEAN
-  /\ bs_rate_ok \in BOOLEAN
+  /\ rate_sensor_type \in SensorTypeSet
+  /\ rate_max_reads_per_sec \in Nat
+  /\ rate_current_reads \in Nat
+  /\ bs_sensor \in Nat
+  /\ bs_max_rate \in Nat
+  /\ bs_current_rate \in Nat
+  /\ bs_rate_ok \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ sensor_type = TRUE
-  /\ sensor_id = TRUE
-  /\ app_id = TRUE
-  /\ app_camera_perm = TRUE
-  /\ app_microphone_perm = TRUE
-  /\ app_location_perm = TRUE
-  /\ app_motion_perm = TRUE
-  /\ camera_indicator = TRUE
-  /\ mic_indicator = TRUE
-  /\ any_camera_active = TRUE
-  /\ any_mic_active = TRUE
-  /\ rate_sensor_type = TRUE
-  /\ rate_max_reads_per_sec = TRUE
-  /\ rate_current_reads = TRUE
-  /\ bs_sensor = TRUE
-  /\ bs_max_rate = TRUE
-  /\ bs_current_rate = TRUE
-  /\ bs_rate_ok = TRUE
+  /\ sensor_type = Camera
+  /\ sensor_id = 0
+  /\ app_id = App
+  /\ app_camera_perm = FALSE
+  /\ app_microphone_perm = FALSE
+  /\ app_location_perm = FALSE
+  /\ app_motion_perm = FALSE
+  /\ camera_indicator = FALSE
+  /\ mic_indicator = FALSE
+  /\ any_camera_active = FALSE
+  /\ any_mic_active = FALSE
+  /\ rate_sensor_type = Camera
+  /\ rate_max_reads_per_sec = 0
+  /\ rate_current_reads = 0
+  /\ bs_sensor = 0
+  /\ bs_max_rate = 0
+  /\ bs_current_rate = 0
+  /\ bs_rate_ok = 0
 
-\* has_sensor_permission (matches Coq: Definition has_sensor_permission)
-has_sensor_permission(app, sensor) == TRUE
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* uses_camera (matches Coq: Definition uses_camera)
-uses_camera(app) == TRUE
+uses_camera(app) ==
+  app >= 0
 
 \* uses_microphone (matches Coq: Definition uses_microphone)
-uses_microphone(app) == TRUE
+uses_microphone(app) ==
+  app >= 0
 
 \* indicator_visible (matches Coq: Definition indicator_visible)
-indicator_visible(st) == TRUE
+indicator_visible(st) ==
+  st >= 0
 
 \* rate_limit_ok (matches Coq: Definition rate_limit_ok)
-rate_limit_ok(rl) == TRUE
+rate_limit_ok(rl) ==
+  rl >= 0
 
 \* rate_limit_exceeded (matches Coq: Definition rate_limit_exceeded)
-rate_limit_exceeded(rl) == TRUE
+rate_limit_exceeded(rl) ==
+  rl >= 0
 
-\* sensor_access_controlled (matches Coq: Theorem sensor_access_controlled)
-THEOREM sensor_access_controlled == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* recording_indicator_mandatory (matches Coq: Theorem recording_indicator_mandatory)
-THEOREM recording_indicator_mandatory == Init => TypeOK
+UpdateSensor ==
+  /\ sensor_type' \in SensorTypeSet
+  /\ sensor_id' \in 0..100
+  /\ UNCHANGED <<app_id, app_camera_perm, app_microphone_perm, app_location_perm, app_motion_perm, camera_indicator, mic_indicator, any_camera_active, any_mic_active, rate_sensor_type, rate_max_reads_per_sec, rate_current_reads, bs_sensor, bs_max_rate, bs_current_rate, bs_rate_ok>>
 
-\* no_permission_no_sensor (matches Coq: Theorem no_permission_no_sensor)
-THEOREM no_permission_no_sensor == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* camera_requires_camera_perm (matches Coq: Theorem camera_requires_camera_perm)
-THEOREM camera_requires_camera_perm == Init => TypeOK
+Next == UpdateSensor \/ ValidateState
 
-\* gps_requires_location_perm (matches Coq: Theorem gps_requires_location_perm)
-THEOREM gps_requires_location_perm == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* rate_limit_blocks_excess (matches Coq: Theorem rate_limit_blocks_excess)
-THEOREM rate_limit_blocks_excess == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* microphone_requires_mic_perm (matches Coq: Theorem microphone_requires_mic_perm)
-THEOREM microphone_requires_mic_perm == Init => TypeOK
+\* sensor_access_controlled
+THEOREM sensor_access_controlled ==
+  \A app \in Nat, sensor \in Nat :
+      reads_sensor(app, sensor) => has_sensor_permission(app, sensor)
 
-\* accelerometer_requires_motion_perm (matches Coq: Theorem accelerometer_requires_motion_perm)
-THEOREM accelerometer_requires_motion_perm == Init => TypeOK
+\* recording_indicator_mandatory
+THEOREM recording_indicator_mandatory ==
+  \A app \in Nat, st \in Nat :
+      uses_camera app /\ any_camera_active st = true) \/
+      (uses_microphone app /\ any_mic_active st = true) => (camera_indicator st = true \/ mic_indicator st = true
 
-\* gyroscope_requires_motion_perm (matches Coq: Theorem gyroscope_requires_motion_perm)
-THEOREM gyroscope_requires_motion_perm == Init => TypeOK
+\* no_permission_no_sensor
+THEOREM no_permission_no_sensor ==
+  \A app \in Nat, sensor \in Nat :
+      ~ has_sensor_permission app sensor => ~ reads_sensor app sensor
 
-\* no_permissions_no_sensors (matches Coq: Theorem no_permissions_no_sensors)
-THEOREM no_permissions_no_sensors == Init => TypeOK
+\* camera_requires_camera_perm
+THEOREM camera_requires_camera_perm ==
+  \A app \in Nat, cam \in Nat :
+      sensor_type cam = Camera => app_camera_perm(app)
 
-\* indicators_independent (matches Coq: Theorem indicators_independent)
-THEOREM indicators_independent == Init => TypeOK
+\* gps_requires_location_perm
+THEOREM gps_requires_location_perm ==
+  \A app \in Nat, gps \in Nat :
+      sensor_type gps = GPS => app_location_perm(app)
 
-\* mic_indicator_when_active (matches Coq: Theorem mic_indicator_when_active)
-THEOREM mic_indicator_when_active == Init => TypeOK
+\* rate_limit_blocks_excess
+THEOREM rate_limit_blocks_excess ==
+  \A rl \in Nat :
+      rate_limit_exceeded(rl) => ~ rate_limit_ok rl
 
-\* cam_indicator_when_active (matches Coq: Theorem cam_indicator_when_active)
-THEOREM cam_indicator_when_active == Init => TypeOK
+\* microphone_requires_mic_perm
+THEOREM microphone_requires_mic_perm ==
+  \A app \in Nat, mic \in Nat :
+      sensor_type mic = Microphone => app_microphone_perm(app)
 
-\* both_sensors_both_indicators (matches Coq: Theorem both_sensors_both_indicators)
-THEOREM both_sensors_both_indicators == Init => TypeOK
+\* accelerometer_requires_motion_perm
+THEOREM accelerometer_requires_motion_perm ==
+  \A app \in Nat, accel \in Nat :
+      sensor_type accel = Accelerometer => app_motion_perm(app)
 
-\* no_active_no_indicator_required (matches Coq: Theorem no_active_no_indicator_required)
-THEOREM no_active_no_indicator_required == Init => TypeOK
+\* gyroscope_requires_motion_perm
+THEOREM gyroscope_requires_motion_perm ==
+  \A app \in Nat, gyro \in Nat :
+      sensor_type gyro = Gyroscope => app_motion_perm(app)
 
-\* sensor_perm_type_specific (matches Coq: Theorem sensor_perm_type_specific)
-THEOREM sensor_perm_type_specific == Init => TypeOK
+\* no_permissions_no_sensors
+THEOREM no_permissions_no_sensors ==
+  \A app \in Nat :
+      ~app_camera_perm(app) => forall sensor, ~ reads_sensor app sensor
 
-\* camera_perm_not_mic (matches Coq: Theorem camera_perm_not_mic)
-THEOREM camera_perm_not_mic == Init => TypeOK
+\* indicators_independent
+THEOREM indicators_independent ==
+  \A st \in Nat :
+      any_camera_active(st) => camera_indicator(st)
 
-\* motion_perm_covers_both (matches Coq: Theorem motion_perm_covers_both)
-THEOREM motion_perm_covers_both == Init => TypeOK
+\* mic_indicator_when_active
+THEOREM mic_indicator_when_active ==
+  \A st \in Nat :
+      any_mic_active(st) => mic_indicator(st)
 
-\* sensor_reading_valid (matches Coq: Theorem sensor_reading_valid)
-THEOREM sensor_reading_valid == Init => TypeOK
+\* cam_indicator_when_active
+THEOREM cam_indicator_when_active ==
+  \A st \in Nat :
+      any_camera_active(st) => camera_indicator(st)
 
-\* bounded_sensor_rate_valid (matches Coq: Theorem bounded_sensor_rate_valid)
-THEOREM bounded_sensor_rate_valid == Init => TypeOK
+\* both_sensors_both_indicators
+THEOREM both_sensors_both_indicators ==
+  \A st \in Nat :
+      any_camera_active(st) => camera_indicator(st)
 
-\* revoke_all_blocks_all_types (matches Coq: Theorem revoke_all_blocks_all_types)
-THEOREM revoke_all_blocks_all_types == Init => TypeOK
+\* no_active_no_indicator_required
+THEOREM no_active_no_indicator_required ==
+  \A st \in Nat :
+      ~any_camera_active(st) => indicator_visible(st)
 
-\* gps_independent_of_camera (matches Coq: Theorem gps_independent_of_camera)
-THEOREM gps_independent_of_camera == Init => TypeOK
+\* sensor_perm_type_specific
+THEOREM sensor_perm_type_specific ==
+  \A app \in Nat, s1 \in Nat, s2 \in Nat :
+      sensor_type s1 <> sensor_type s2 => sensor_type s1 <> sensor_type s2
 
-\* Next-state relation
-Next == UNCHANGED <<sensor_type, sensor_id, app_id, app_camera_perm, app_microphone_perm, app_location_perm, app_motion_perm, camera_indicator, mic_indicator, any_camera_active, any_mic_active, rate_sensor_type, rate_max_reads_per_sec, rate_current_reads, bs_sensor, bs_max_rate, bs_current_rate, bs_rate_ok>>
+\* camera_perm_not_mic
+THEOREM camera_perm_not_mic ==
+  \A app \in Nat, cam \in Nat, mic \in Nat :
+      sensor_type cam = Camera => has_sensor_permission app cam /\ ~ has_sensor_permission app mic
 
-\* Specification
-Spec == Init /\ [][Next]_<<sensor_type, sensor_id, app_id, app_camera_perm, app_microphone_perm, app_location_perm, app_motion_perm, camera_indicator, mic_indicator, any_camera_active, any_mic_active, rate_sensor_type, rate_max_reads_per_sec, rate_current_reads, bs_sensor, bs_max_rate, bs_current_rate, bs_rate_ok>>
+\* motion_perm_covers_both
+THEOREM motion_perm_covers_both ==
+  \A app \in Nat, accel \in Nat, gyro \in Nat :
+      sensor_type accel = Accelerometer => has_sensor_permission app accel /\ has_sensor_permission app gyro
+
+\* sensor_reading_valid
+THEOREM sensor_reading_valid ==
+  \A app \in Nat, sensor \in Nat :
+      reads_sensor(app, sensor) => match sensor_type sensor with
+      | Camera => app_camera_perm app = true
+      | Microphone => app_microphone_perm app = true
+      | GPS => app_location_perm app = true
+      | Accelerometer => app_motion_perm app = true
+      | Gyroscope => app_motion_perm app = true
+      end
+
+\* bounded_sensor_rate_valid
+THEOREM bounded_sensor_rate_valid ==
+  \A bs \in Nat :
+      bs_current_rate bs < = bs_max_rate(bs)
+
+\* revoke_all_blocks_all_types
+THEOREM revoke_all_blocks_all_types ==
+  \A app \in Nat :
+      ~app_camera_perm(app) => ~ has_sensor_permission app s
+
+\* gps_independent_of_camera
+THEOREM gps_independent_of_camera ==
+  \A app \in Nat, gps_sensor \in Nat :
+      sensor_type gps_sensor = GPS => has_sensor_permission(app, gps_sensor)
 
 ====

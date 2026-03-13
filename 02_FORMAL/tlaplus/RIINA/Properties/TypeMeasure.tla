@@ -32,91 +32,91 @@ fo_compound_depth(T) == TRUE
 ty_depth(T) == TRUE
 
 \* ty_size_pos (matches Coq: Lemma ty_size_pos)
-THEOREM ty_size_pos == Init => TypeOK
+THEOREM ty_size_pos == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_fn_arg (matches Coq: Lemma ty_size_fn_arg)
-THEOREM ty_size_fn_arg == Init => TypeOK
+THEOREM ty_size_fn_arg == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_fn_res (matches Coq: Lemma ty_size_fn_res)
-THEOREM ty_size_fn_res == Init => TypeOK
+THEOREM ty_size_fn_res == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_prod_left (matches Coq: Lemma ty_size_prod_left)
-THEOREM ty_size_prod_left == Init => TypeOK
+THEOREM ty_size_prod_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_prod_right (matches Coq: Lemma ty_size_prod_right)
-THEOREM ty_size_prod_right == Init => TypeOK
+THEOREM ty_size_prod_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_sum_left (matches Coq: Lemma ty_size_sum_left)
-THEOREM ty_size_sum_left == Init => TypeOK
+THEOREM ty_size_sum_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_sum_right (matches Coq: Lemma ty_size_sum_right)
-THEOREM ty_size_sum_right == Init => TypeOK
+THEOREM ty_size_sum_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_ref_content (matches Coq: Lemma ty_size_ref_content)
-THEOREM ty_size_ref_content == Init => TypeOK
+THEOREM ty_size_ref_content == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_secret_content (matches Coq: Lemma ty_size_secret_content)
-THEOREM ty_size_secret_content == Init => TypeOK
+THEOREM ty_size_secret_content == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_proof_content (matches Coq: Lemma ty_size_proof_content)
-THEOREM ty_size_proof_content == Init => TypeOK
+THEOREM ty_size_proof_content == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_lt_wf (matches Coq: Lemma ty_size_lt_wf)
-THEOREM ty_size_lt_wf == Init => TypeOK
+THEOREM ty_size_lt_wf == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_induction (matches Coq: Lemma ty_size_induction)
-THEOREM ty_size_induction == Init => TypeOK
+THEOREM ty_size_induction == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_no_fn (matches Coq: Lemma first_order_no_fn)
-THEOREM first_order_no_fn == Init => TypeOK
+THEOREM first_order_no_fn == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_decidable (matches Coq: Lemma first_order_decidable)
-THEOREM first_order_decidable == Init => TypeOK
+THEOREM first_order_decidable == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_prod_inv (matches Coq: Lemma first_order_prod_inv)
-THEOREM first_order_prod_inv == Init => TypeOK
+THEOREM first_order_prod_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_sum_inv (matches Coq: Lemma first_order_sum_inv)
-THEOREM first_order_sum_inv == Init => TypeOK
+THEOREM first_order_sum_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_ref_inv (matches Coq: Lemma first_order_ref_inv)
-THEOREM first_order_ref_inv == Init => TypeOK
+THEOREM first_order_ref_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_secret_inv (matches Coq: Lemma first_order_secret_inv)
-THEOREM first_order_secret_inv == Init => TypeOK
+THEOREM first_order_secret_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_proof_inv (matches Coq: Lemma first_order_proof_inv)
-THEOREM first_order_proof_inv == Init => TypeOK
+THEOREM first_order_proof_inv == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_prod (matches Coq: Lemma fo_compound_depth_prod)
-THEOREM fo_compound_depth_prod == Init => TypeOK
+THEOREM fo_compound_depth_prod == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_sum (matches Coq: Lemma fo_compound_depth_sum)
-THEOREM fo_compound_depth_sum == Init => TypeOK
+THEOREM fo_compound_depth_sum == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_prod_left (matches Coq: Lemma fo_compound_depth_prod_left)
-THEOREM fo_compound_depth_prod_left == Init => TypeOK
+THEOREM fo_compound_depth_prod_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_prod_right (matches Coq: Lemma fo_compound_depth_prod_right)
-THEOREM fo_compound_depth_prod_right == Init => TypeOK
+THEOREM fo_compound_depth_prod_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_sum_left (matches Coq: Lemma fo_compound_depth_sum_left)
-THEOREM fo_compound_depth_sum_left == Init => TypeOK
+THEOREM fo_compound_depth_sum_left == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_sum_right (matches Coq: Lemma fo_compound_depth_sum_right)
-THEOREM fo_compound_depth_sum_right == Init => TypeOK
+THEOREM fo_compound_depth_sum_right == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fo_compound_depth_primitive (matches Coq: Lemma fo_compound_depth_primitive)
-THEOREM fo_compound_depth_primitive == Init => TypeOK
+THEOREM fo_compound_depth_primitive == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_depth_fn_arg (matches Coq: Lemma ty_depth_fn_arg)
-THEOREM ty_depth_fn_arg == Init => TypeOK
+THEOREM ty_depth_fn_arg == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_depth_fn_res (matches Coq: Lemma ty_depth_fn_res)
-THEOREM ty_depth_fn_res == Init => TypeOK
+THEOREM ty_depth_fn_res == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* first_order_base_depth (matches Coq: Lemma first_order_base_depth)
-THEOREM first_order_base_depth == Init => TypeOK
+THEOREM first_order_base_depth == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>

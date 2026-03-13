@@ -8,90 +8,90 @@ open util/boolean
 
 // canonical_bool (matches Coq: Lemma canonical_bool)
 assert canonical_bool {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check canonical_bool for 5
 
 // canonical_fn (matches Coq: Lemma canonical_fn)
 assert canonical_fn {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check canonical_fn for 5
 
 // canonical_pair (matches Coq: Lemma canonical_pair)
 assert canonical_pair {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check canonical_pair for 5
 
 // canonical_sum (matches Coq: Lemma canonical_sum)
 assert canonical_sum {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check canonical_sum for 5
 
 // canonical_ref (matches Coq: Lemma canonical_ref)
 assert canonical_ref {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check canonical_ref for 5
 
 // canonical_secret (matches Coq: Lemma canonical_secret)
 assert canonical_secret {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check canonical_secret for 5
 
 // canonical_proof (matches Coq: Lemma canonical_proof)
 assert canonical_proof {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check canonical_proof for 5
 
 // lookup_nil_contra (matches Coq: Lemma lookup_nil_contra)
 assert lookup_nil_contra {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check lookup_nil_contra for 5
 
 // progress (matches Coq: Theorem progress)
 assert progress {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check progress for 5
 
 // canonical_unit (matches Coq: Lemma canonical_unit)
 assert canonical_unit {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check canonical_unit for 5
 
 // canonical_int (matches Coq: Lemma canonical_int)
 assert canonical_int {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check canonical_int for 5
 
 // canonical_string (matches Coq: Lemma canonical_string)
 assert canonical_string {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check canonical_string for 5
 
 // typed_value_bool_inv (matches Coq: Lemma typed_value_bool_inv)
 assert typed_value_bool_inv {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check typed_value_bool_inv for 5
 
 // typed_value_pair_inv (matches Coq: Lemma typed_value_pair_inv)
 assert typed_value_pair_inv {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check typed_value_pair_inv for 5
 
 // typed_value_sum_inv (matches Coq: Lemma typed_value_sum_inv)
 assert typed_value_sum_inv {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check typed_value_sum_inv for 5

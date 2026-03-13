@@ -1,44 +1,92 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of Spectre Defense domain invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// Core state for Spectre Defense verification
+pub struct SpeculativeExec {
+    pub barrier_inserted: bool,
+    pub bounds_check_before_access: bool,
+    pub prediction_flushed: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Security invariant: all controls must be active with positive assurance
+pub open spec fn spectre_defense_secure(s: SpeculativeExec) -> bool {
+    s.barrier_inserted && s.bounds_check_before_access && s.prediction_flushed && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration: minimum viable security posture
+pub open spec fn baseline_spectre_defense() -> SpeculativeExec {
+    SpeculativeExec {
+        barrier_inserted: true,
+        bounds_check_before_access: true,
+        prediction_flushed: true,
+        assurance_level: 1,
+    }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration: elevated security posture
+pub open spec fn hardened_spectre_defense() -> SpeculativeExec {
+    SpeculativeExec {
+        barrier_inserted: true,
+        bounds_check_before_access: true,
+        prediction_flushed: true,
+        assurance_level: 3,
+    }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline configuration satisfies security invariant
+proof fn lemma_baseline_secure()
+    ensures spectre_defense_secure(baseline_spectre_defense()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_spectre_defense();
+    assert(b.barrier_inserted);
+    assert(b.bounds_check_before_access);
+    assert(b.prediction_flushed);
+    assert(b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened configuration satisfies security invariant
+proof fn lemma_hardened_secure()
+    ensures spectre_defense_secure(hardened_spectre_defense()),
+{
+    let h = hardened_spectre_defense();
+    assert(h.barrier_inserted);
+    assert(h.bounds_check_before_access);
+    assert(h.prediction_flushed);
+    assert(h.assurance_level >= 1);
+}
+
+/// Lemma: hardened configuration is at least as strong as baseline
+proof fn lemma_hardened_not_weaker()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        spectre_defense_secure(hardened_spectre_defense()),
+        hardened_spectre_defense().assurance_level >= baseline_spectre_defense().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+    let baseline = baseline_spectre_defense();
+    let hardened = hardened_spectre_defense();
+    assert(spectre_defense_secure(hardened));
+    assert(hardened.assurance_level >= baseline.assurance_level);
+}
+
+/// Lemma: disabling any control breaks the invariant
+proof fn lemma_control_necessary()
+    ensures
+        !spectre_defense_secure(SpeculativeExec { barrier_inserted: false, bounds_check_before_access: true, prediction_flushed: true, assurance_level: 1 }),
+        !spectre_defense_secure(SpeculativeExec { barrier_inserted: true, bounds_check_before_access: false, prediction_flushed: true, assurance_level: 1 }),
+        !spectre_defense_secure(SpeculativeExec { barrier_inserted: true, bounds_check_before_access: true, prediction_flushed: false, assurance_level: 1 }),
+{
+}
+
+/// Lemma: zero assurance breaks the invariant even with all controls
+proof fn lemma_assurance_necessary()
+    ensures
+        !spectre_defense_secure(SpeculativeExec { barrier_inserted: true, bounds_check_before_access: true, prediction_flushed: true, assurance_level: 0 }),
+{
 }
 
 } // verus!
-
-fn main() {}

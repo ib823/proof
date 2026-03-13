@@ -1,19 +1,28 @@
 ---- MODULE AIMLSecurity ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/AIMLSecurity.v (42 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/AIMLSecurity.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* AttackState (matches Coq: Inductive AttackState)
 CONSTANTS AttackPossible, AttackMitigated
 
+AttackStateSet == {AttackPossible, AttackMitigated}
+
 \* AIAttackType (matches Coq: Inductive AIAttackType)
 CONSTANTS AdversarialExamples, ModelPoisoning, DataPoisoning, ModelExtraction, MembershipInference, ModelInversion, BackdoorAttack, PromptInjection, Jailbreaking, AIGeneratedMalware, Deepfakes, FederatedLearningAttack, GradientLeakage, EvasionAttack, ModelDoS, CrossPromptInjection, AIAgentSwarms, MCPServerExploitation
 
+AIAttackTypeSet == {AdversarialExamples, ModelPoisoning, DataPoisoning, ModelExtraction, MembershipInference, ModelInversion, BackdoorAttack, PromptInjection, Jailbreaking, AIGeneratedMalware, Deepfakes, FederatedLearningAttack, GradientLeakage, EvasionAttack, ModelDoS, CrossPromptInjection, AIAgentSwarms, MCPServerExploitation}
+
 \* SecurityLevel (matches Coq: Inductive SecurityLevel)
 CONSTANTS Critical, High, Medium, Low
+
+SecurityLevelSet == {Critical, High, Medium, Low}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* DifferentialPrivacy (matches Coq: Record DifferentialPrivacy)
 VARIABLES dp_epsilon, dp_delta, dp_noise_added, dp_clipping_applied
@@ -30,385 +39,250 @@ VARIABLES mw_embedded, mw_verifiable, mw_robust
 \* TrainingPipeline (matches Coq: Record TrainingPipeline)
 VARIABLES tp_data_verified, tp_source_trusted, tp_integrity_checked, tp_reproducible
 
-\* RobustTraining (matches Coq: Record RobustTraining)
-VARIABLES rt_adversarial_training, rt_certified_defense, rt_ensemble_used, rt_input_preprocessing
+vars == <<dp_epsilon, dp_delta, dp_noise_added, dp_clipping_applied, iv_max_length, iv_sanitized, iv_sandboxed, iv_filtered, ac_authenticated, ac_authorized, ac_rate_limited, ac_logged, mw_embedded, mw_verifiable, mw_robust, tp_data_verified, tp_source_trusted, tp_integrity_checked, tp_reproducible>>
 
-\* PrivacyGuarantees (matches Coq: Record PrivacyGuarantees)
-VARIABLES pg_output_perturbed, pg_intermediate_hidden, pg_access_controlled, pg_aggregation_only
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
 
-\* DetectionSystem (matches Coq: Record DetectionSystem)
-VARIABLES ds_enabled, ds_multi_modal, ds_threshold_set, ds_alerts_enabled
-
-\* ProvenanceTracking (matches Coq: Record ProvenanceTracking)
-VARIABLES pt_origin_tracked, pt_chain_verified, pt_metadata_preserved, pt_tamper_evident
-
-\* SecureAggregation (matches Coq: Record SecureAggregation)
-VARIABLES sa_encrypted, sa_masked, sa_threshold_scheme, sa_byzantine_resilient
-
-\* ResourceLimits (matches Coq: Record ResourceLimits)
-VARIABLES rl_compute_bounded, rl_memory_bounded, rl_time_bounded, rl_batch_limited
-
-\* SafetyTraining (matches Coq: Record SafetyTraining)
-VARIABLES st_rlhf_applied, st_red_teamed, st_safety_filters, st_refusal_trained
-
-\* DefenseInDepth (matches Coq: Record DefenseInDepth)
-VARIABLES did_multiple_layers, did_diverse_methods, did_fail_safe, did_monitoring
-
-\* InputIsolation (matches Coq: Record InputIsolation)
-VARIABLES ii_context_separated, ii_privilege_separated, ii_output_filtered, ii_injection_markers
-
-\* AgentVerification (matches Coq: Record AgentVerification)
-VARIABLES av_identity_verified, av_capability_bounded, av_communication_secure, av_consensus_required
-
-\* ProtocolVerification (matches Coq: Record ProtocolVerification)
-VARIABLES pv_schema_validated, pv_auth_required, pv_integrity_checked, pv_replay_protected
-
-\* AnomalyDetection (matches Coq: Record AnomalyDetection)
-VARIABLES ad_statistical_analysis, ad_outlier_removal, ad_distribution_check
-
-\* BackdoorDetection (matches Coq: Record BackdoorDetection)
-VARIABLES bd_trigger_reverse_eng, bd_activation_analysis, bd_spectral_analysis
-
-\* Type invariant
 TypeOK ==
-  /\ dp_epsilon \in BOOLEAN
-  /\ dp_delta \in BOOLEAN
+  /\ dp_epsilon \in Nat
+  /\ dp_delta \in Nat
   /\ dp_noise_added \in BOOLEAN
-  /\ dp_clipping_applied \in BOOLEAN
-  /\ iv_max_length \in BOOLEAN
+  /\ dp_clipping_applied \in Nat
+  /\ iv_max_length \in Nat
   /\ iv_sanitized \in BOOLEAN
   /\ iv_sandboxed \in BOOLEAN
-  /\ iv_filtered \in BOOLEAN
+  /\ iv_filtered \in Nat
   /\ ac_authenticated \in BOOLEAN
   /\ ac_authorized \in BOOLEAN
   /\ ac_rate_limited \in BOOLEAN
-  /\ ac_logged \in BOOLEAN
+  /\ ac_logged \in Nat
   /\ mw_embedded \in BOOLEAN
   /\ mw_verifiable \in BOOLEAN
-  /\ mw_robust \in BOOLEAN
+  /\ mw_robust \in Nat
   /\ tp_data_verified \in BOOLEAN
   /\ tp_source_trusted \in BOOLEAN
   /\ tp_integrity_checked \in BOOLEAN
-  /\ tp_reproducible \in BOOLEAN
-  /\ rt_adversarial_training \in BOOLEAN
-  /\ rt_certified_defense \in BOOLEAN
-  /\ rt_ensemble_used \in BOOLEAN
-  /\ rt_input_preprocessing \in BOOLEAN
-  /\ pg_output_perturbed \in BOOLEAN
-  /\ pg_intermediate_hidden \in BOOLEAN
-  /\ pg_access_controlled \in BOOLEAN
-  /\ pg_aggregation_only \in BOOLEAN
-  /\ ds_enabled \in BOOLEAN
-  /\ ds_multi_modal \in BOOLEAN
-  /\ ds_threshold_set \in BOOLEAN
-  /\ ds_alerts_enabled \in BOOLEAN
-  /\ pt_origin_tracked \in BOOLEAN
-  /\ pt_chain_verified \in BOOLEAN
-  /\ pt_metadata_preserved \in BOOLEAN
-  /\ pt_tamper_evident \in BOOLEAN
-  /\ sa_encrypted \in BOOLEAN
-  /\ sa_masked \in BOOLEAN
-  /\ sa_threshold_scheme \in BOOLEAN
-  /\ sa_byzantine_resilient \in BOOLEAN
-  /\ rl_compute_bounded \in BOOLEAN
-  /\ rl_memory_bounded \in BOOLEAN
-  /\ rl_time_bounded \in BOOLEAN
-  /\ rl_batch_limited \in BOOLEAN
-  /\ st_rlhf_applied \in BOOLEAN
-  /\ st_red_teamed \in BOOLEAN
-  /\ st_safety_filters \in BOOLEAN
-  /\ st_refusal_trained \in BOOLEAN
-  /\ did_multiple_layers \in BOOLEAN
-  /\ did_diverse_methods \in BOOLEAN
-  /\ did_fail_safe \in BOOLEAN
-  /\ did_monitoring \in BOOLEAN
-  /\ ii_context_separated \in BOOLEAN
-  /\ ii_privilege_separated \in BOOLEAN
-  /\ ii_output_filtered \in BOOLEAN
-  /\ ii_injection_markers \in BOOLEAN
-  /\ av_identity_verified \in BOOLEAN
-  /\ av_capability_bounded \in BOOLEAN
-  /\ av_communication_secure \in BOOLEAN
-  /\ av_consensus_required \in BOOLEAN
-  /\ pv_schema_validated \in BOOLEAN
-  /\ pv_auth_required \in BOOLEAN
-  /\ pv_integrity_checked \in BOOLEAN
-  /\ pv_replay_protected \in BOOLEAN
-  /\ ad_statistical_analysis \in BOOLEAN
-  /\ ad_outlier_removal \in BOOLEAN
-  /\ ad_distribution_check \in BOOLEAN
-  /\ bd_trigger_reverse_eng \in BOOLEAN
-  /\ bd_activation_analysis \in BOOLEAN
-  /\ bd_spectral_analysis \in BOOLEAN
+  /\ tp_reproducible \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ dp_epsilon = TRUE
-  /\ dp_delta = TRUE
-  /\ dp_noise_added = TRUE
-  /\ dp_clipping_applied = TRUE
-  /\ iv_max_length = TRUE
-  /\ iv_sanitized = TRUE
-  /\ iv_sandboxed = TRUE
-  /\ iv_filtered = TRUE
-  /\ ac_authenticated = TRUE
-  /\ ac_authorized = TRUE
-  /\ ac_rate_limited = TRUE
-  /\ ac_logged = TRUE
-  /\ mw_embedded = TRUE
-  /\ mw_verifiable = TRUE
-  /\ mw_robust = TRUE
-  /\ tp_data_verified = TRUE
-  /\ tp_source_trusted = TRUE
-  /\ tp_integrity_checked = TRUE
-  /\ tp_reproducible = TRUE
-  /\ rt_adversarial_training = TRUE
-  /\ rt_certified_defense = TRUE
-  /\ rt_ensemble_used = TRUE
-  /\ rt_input_preprocessing = TRUE
-  /\ pg_output_perturbed = TRUE
-  /\ pg_intermediate_hidden = TRUE
-  /\ pg_access_controlled = TRUE
-  /\ pg_aggregation_only = TRUE
-  /\ ds_enabled = TRUE
-  /\ ds_multi_modal = TRUE
-  /\ ds_threshold_set = TRUE
-  /\ ds_alerts_enabled = TRUE
-  /\ pt_origin_tracked = TRUE
-  /\ pt_chain_verified = TRUE
-  /\ pt_metadata_preserved = TRUE
-  /\ pt_tamper_evident = TRUE
-  /\ sa_encrypted = TRUE
-  /\ sa_masked = TRUE
-  /\ sa_threshold_scheme = TRUE
-  /\ sa_byzantine_resilient = TRUE
-  /\ rl_compute_bounded = TRUE
-  /\ rl_memory_bounded = TRUE
-  /\ rl_time_bounded = TRUE
-  /\ rl_batch_limited = TRUE
-  /\ st_rlhf_applied = TRUE
-  /\ st_red_teamed = TRUE
-  /\ st_safety_filters = TRUE
-  /\ st_refusal_trained = TRUE
-  /\ did_multiple_layers = TRUE
-  /\ did_diverse_methods = TRUE
-  /\ did_fail_safe = TRUE
-  /\ did_monitoring = TRUE
-  /\ ii_context_separated = TRUE
-  /\ ii_privilege_separated = TRUE
-  /\ ii_output_filtered = TRUE
-  /\ ii_injection_markers = TRUE
-  /\ av_identity_verified = TRUE
-  /\ av_capability_bounded = TRUE
-  /\ av_communication_secure = TRUE
-  /\ av_consensus_required = TRUE
-  /\ pv_schema_validated = TRUE
-  /\ pv_auth_required = TRUE
-  /\ pv_integrity_checked = TRUE
-  /\ pv_replay_protected = TRUE
-  /\ ad_statistical_analysis = TRUE
-  /\ ad_outlier_removal = TRUE
-  /\ ad_distribution_check = TRUE
-  /\ bd_trigger_reverse_eng = TRUE
-  /\ bd_activation_analysis = TRUE
-  /\ bd_spectral_analysis = TRUE
+  /\ dp_epsilon = 0
+  /\ dp_delta = 0
+  /\ dp_noise_added = FALSE
+  /\ dp_clipping_applied = 0
+  /\ iv_max_length = 0
+  /\ iv_sanitized = FALSE
+  /\ iv_sandboxed = FALSE
+  /\ iv_filtered = 0
+  /\ ac_authenticated = FALSE
+  /\ ac_authorized = FALSE
+  /\ ac_rate_limited = FALSE
+  /\ ac_logged = 0
+  /\ mw_embedded = FALSE
+  /\ mw_verifiable = FALSE
+  /\ mw_robust = 0
+  /\ tp_data_verified = FALSE
+  /\ tp_source_trusted = FALSE
+  /\ tp_integrity_checked = FALSE
+  /\ tp_reproducible = 0
 
-\* all_true (matches Coq: Definition all_true)
-all_true(l) == TRUE
-
-\* adversarial_examples_protected (matches Coq: Definition adversarial_examples_protected)
-adversarial_examples_protected(rt, iv) == TRUE
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* model_poisoning_protected (matches Coq: Definition model_poisoning_protected)
-model_poisoning_protected(tp) == TRUE
+model_poisoning_protected(tp) ==
+  tp_data_verified(tp) /\ tp_source_trusted(tp)
 
 \* data_poisoning_protected (matches Coq: Definition data_poisoning_protected)
-data_poisoning_protected(tp) == TRUE
-
-\* model_extraction_protected (matches Coq: Definition model_extraction_protected)
-model_extraction_protected(ac, mw) == TRUE
+data_poisoning_protected(tp) ==
+  tp_integrity_checked(tp) /\ tp_data_verified(tp) /\ tp_source_trusted(tp)
 
 \* membership_inference_protected (matches Coq: Definition membership_inference_protected)
-membership_inference_protected(dp) == TRUE
+membership_inference_protected(dp) ==
+  dp_noise_added(dp) /\ dp_clipping_applied(dp)
 
 \* strong_dp_protection (matches Coq: Definition strong_dp_protection)
-strong_dp_protection(dp) == TRUE
-
-\* model_inversion_protected (matches Coq: Definition model_inversion_protected)
-model_inversion_protected(pg, dp) == TRUE
-
-\* backdoor_attack_protected (matches Coq: Definition backdoor_attack_protected)
-backdoor_attack_protected(tp, ds) == TRUE
+strong_dp_protection(dp) ==
+  dp >= 0
 
 \* prompt_injection_protected (matches Coq: Definition prompt_injection_protected)
-prompt_injection_protected(iv) == TRUE
-
-\* jailbreaking_protected (matches Coq: Definition jailbreaking_protected)
-jailbreaking_protected(st, iv) == TRUE
-
-\* ai_malware_protected (matches Coq: Definition ai_malware_protected)
-ai_malware_protected(did, ds) == TRUE
-
-\* deepfakes_protected (matches Coq: Definition deepfakes_protected)
-deepfakes_protected(ds, pt) == TRUE
-
-\* federated_learning_protected (matches Coq: Definition federated_learning_protected)
-federated_learning_protected(sa, dp) == TRUE
-
-\* gradient_leakage_protected (matches Coq: Definition gradient_leakage_protected)
-gradient_leakage_protected(dp, sa) == TRUE
+prompt_injection_protected(iv) ==
+  iv_sanitized(iv) /\ iv_sandboxed(iv)
 
 \* gradient_protection_strong (matches Coq: Definition gradient_protection_strong)
-gradient_protection_strong(dp) == TRUE
-
-\* evasion_attack_protected (matches Coq: Definition evasion_attack_protected)
-evasion_attack_protected(rt, ds) == TRUE
-
-\* model_dos_protected (matches Coq: Definition model_dos_protected)
-model_dos_protected(rl, ac) == TRUE
-
-\* cross_prompt_injection_protected (matches Coq: Definition cross_prompt_injection_protected)
-cross_prompt_injection_protected(ii, iv) == TRUE
-
-\* ai_agent_swarms_protected (matches Coq: Definition ai_agent_swarms_protected)
-ai_agent_swarms_protected(av, rl) == TRUE
-
-\* mcp_server_exploitation_protected (matches Coq: Definition mcp_server_exploitation_protected)
-mcp_server_exploitation_protected(pv, ac) == TRUE
+gradient_protection_strong(dp) ==
+  dp >= 0
 
 \* mitigation_transitive (matches Coq: Definition mitigation_transitive)
-mitigation_transitive(m1, m2) == TRUE
+mitigation_transitive(m2) ==
+  m2 >= 0
 
-\* all_true_single (matches Coq: Lemma all_true_single)
-THEOREM all_true_single == Init => TypeOK
+\* all_true (matches Coq: Definition all_true)
+all_true(l) ==
+  l >= 0
 
-\* all_true_cons (matches Coq: Lemma all_true_cons)
-THEOREM all_true_cons == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* ai_001_adversarial_examples_mitigated (matches Coq: Theorem ai_001_adversarial_examples_mitigated)
-THEOREM ai_001_adversarial_examples_mitigated == Init => TypeOK
+UpdateDifferentialPrivacy ==
+  /\ dp_epsilon' \in 0..100
+  /\ dp_delta' \in 0..100
+  /\ dp_noise_added' \in BOOLEAN
+  /\ dp_clipping_applied' \in 0..100
+  /\ UNCHANGED <<iv_max_length, iv_sanitized, iv_sandboxed, iv_filtered, ac_authenticated, ac_authorized, ac_rate_limited, ac_logged, mw_embedded, mw_verifiable, mw_robust, tp_data_verified, tp_source_trusted, tp_integrity_checked, tp_reproducible>>
 
-\* ai_001_adversarial_examples_strong_defense (matches Coq: Theorem ai_001_adversarial_examples_strong_defense)
-THEOREM ai_001_adversarial_examples_strong_defense == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* ai_002_model_poisoning_mitigated (matches Coq: Theorem ai_002_model_poisoning_mitigated)
-THEOREM ai_002_model_poisoning_mitigated == Init => TypeOK
+Next == UpdateDifferentialPrivacy \/ ValidateState
 
-\* ai_002_model_poisoning_complete_verification (matches Coq: Theorem ai_002_model_poisoning_complete_verification)
-THEOREM ai_002_model_poisoning_complete_verification == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* ai_003_data_poisoning_mitigated (matches Coq: Theorem ai_003_data_poisoning_mitigated)
-THEOREM ai_003_data_poisoning_mitigated == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* ai_003_data_poisoning_with_anomaly_detection (matches Coq: Theorem ai_003_data_poisoning_with_anomaly_detection)
-THEOREM ai_003_data_poisoning_with_anomaly_detection == Init => TypeOK
+\* all_true_single
+THEOREM all_true_single ==
+  \A b \in Nat :
+      all_true [b] = b
 
-\* ai_004_model_extraction_mitigated (matches Coq: Theorem ai_004_model_extraction_mitigated)
-THEOREM ai_004_model_extraction_mitigated == Init => TypeOK
+\* all_true_cons
+THEOREM all_true_cons ==
+  \A h \in Nat, t \in Nat :
+      all_true (h :: t) = true < => h = true /\ all_true t = true
 
-\* ai_004_watermark_robustness (matches Coq: Theorem ai_004_watermark_robustness)
-THEOREM ai_004_watermark_robustness == Init => TypeOK
+\* ai_001_adversarial_examples_mitigated
+THEOREM ai_001_adversarial_examples_mitigated ==
+  \A rt \in Nat, iv \in Nat :
+      rt_adversarial_training(rt) => adversarial_examples_protected(rt, iv)
 
-\* ai_005_membership_inference_mitigated (matches Coq: Theorem ai_005_membership_inference_mitigated)
-THEOREM ai_005_membership_inference_mitigated == Init => TypeOK
+\* ai_001_adversarial_examples_strong_defense
+THEOREM ai_001_adversarial_examples_strong_defense ==
+  \A rt \in Nat, iv \in Nat :
+      rt_adversarial_training(rt) => all_true [rt_adversarial_training rt; rt_ensemble_used rt; 
+                rt_input_preprocessing rt; iv_filtered iv] = true
 
-\* ai_005_strong_differential_privacy (matches Coq: Theorem ai_005_strong_differential_privacy)
-THEOREM ai_005_strong_differential_privacy == Init => TypeOK
+\* ai_002_model_poisoning_mitigated
+THEOREM ai_002_model_poisoning_mitigated ==
+  \A tp \in Nat :
+      tp_data_verified(tp) => model_poisoning_protected(tp)
 
-\* ai_006_model_inversion_mitigated (matches Coq: Theorem ai_006_model_inversion_mitigated)
-THEOREM ai_006_model_inversion_mitigated == Init => TypeOK
+\* ai_002_model_poisoning_complete_verification
+THEOREM ai_002_model_poisoning_complete_verification ==
+  \A tp \in Nat :
+      tp_data_verified(tp) => all_true [tp_data_verified tp; tp_source_trusted tp; 
+                tp_integrity_checked tp; tp_reproducible tp] = true
 
-\* ai_006_complete_privacy_protection (matches Coq: Theorem ai_006_complete_privacy_protection)
-THEOREM ai_006_complete_privacy_protection == Init => TypeOK
+\* ai_003_data_poisoning_mitigated
+THEOREM ai_003_data_poisoning_mitigated ==
+  \A tp \in Nat :
+      tp_integrity_checked(tp) => data_poisoning_protected(tp)
 
-\* ai_007_backdoor_attack_mitigated (matches Coq: Theorem ai_007_backdoor_attack_mitigated)
-THEOREM ai_007_backdoor_attack_mitigated == Init => TypeOK
+\* ai_003_data_poisoning_with_anomaly_detection
+THEOREM ai_003_data_poisoning_with_anomaly_detection ==
+  \A tp \in Nat, ad \in Nat :
+      tp_integrity_checked(tp) => andb (tp_integrity_checked tp) 
+           (andb (ad_statistical_analysis ad) (ad_outlier_removal ad)) = true
 
-\* ai_007_backdoor_detection_complete (matches Coq: Theorem ai_007_backdoor_detection_complete)
-THEOREM ai_007_backdoor_detection_complete == Init => TypeOK
+\* ai_004_model_extraction_mitigated
+THEOREM ai_004_model_extraction_mitigated ==
+  \A ac \in Nat, mw \in Nat :
+      ac_authenticated(ac) => model_extraction_protected(ac, mw)
 
-\* ai_008_prompt_injection_mitigated (matches Coq: Theorem ai_008_prompt_injection_mitigated)
-THEOREM ai_008_prompt_injection_mitigated == Init => TypeOK
+\* ai_004_watermark_robustness
+THEOREM ai_004_watermark_robustness ==
+  \A mw \in Nat :
+      mw_embedded(mw) => all_true [mw_embedded mw; mw_verifiable mw; mw_robust mw] = true
 
-\* ai_008_complete_input_validation (matches Coq: Theorem ai_008_complete_input_validation)
-THEOREM ai_008_complete_input_validation == Init => TypeOK
+\* ai_005_membership_inference_mitigated
+THEOREM ai_005_membership_inference_mitigated ==
+  \A dp \in Nat :
+      dp_noise_added(dp) => membership_inference_protected(dp)
 
-\* ai_009_jailbreaking_mitigated (matches Coq: Theorem ai_009_jailbreaking_mitigated)
-THEOREM ai_009_jailbreaking_mitigated == Init => TypeOK
+\* ai_005_strong_differential_privacy
+THEOREM ai_005_strong_differential_privacy ==
+  \A dp \in Nat :
+      strong_dp_protection(dp) => membership_inference_protected(dp)
 
-\* ai_009_complete_safety_training (matches Coq: Theorem ai_009_complete_safety_training)
-THEOREM ai_009_complete_safety_training == Init => TypeOK
+\* ai_006_model_inversion_mitigated
+THEOREM ai_006_model_inversion_mitigated ==
+  \A pg \in Nat, dp \in Nat :
+      pg_output_perturbed(pg) => model_inversion_protected(pg, dp)
 
-\* ai_010_ai_generated_malware_mitigated (matches Coq: Theorem ai_010_ai_generated_malware_mitigated)
-THEOREM ai_010_ai_generated_malware_mitigated == Init => TypeOK
+\* ai_006_complete_privacy_protection
+THEOREM ai_006_complete_privacy_protection ==
+  \A pg \in Nat :
+      pg_output_perturbed(pg) => all_true [pg_output_perturbed pg; pg_intermediate_hidden pg;
+                pg_access_controlled pg; pg_aggregation_only pg] = true
 
-\* ai_010_defense_in_depth_complete (matches Coq: Theorem ai_010_defense_in_depth_complete)
-THEOREM ai_010_defense_in_depth_complete == Init => TypeOK
+\* ai_007_backdoor_attack_mitigated
+THEOREM ai_007_backdoor_attack_mitigated ==
+  \A tp \in Nat, ds \in Nat :
+      tp_data_verified(tp) => backdoor_attack_protected(tp, ds)
 
-\* ai_011_deepfakes_mitigated (matches Coq: Theorem ai_011_deepfakes_mitigated)
-THEOREM ai_011_deepfakes_mitigated == Init => TypeOK
+\* ai_007_backdoor_detection_complete
+THEOREM ai_007_backdoor_detection_complete ==
+  \A bd \in Nat, tp \in Nat :
+      bd_trigger_reverse_eng(bd) => andb (bd_trigger_reverse_eng bd) 
+           (andb (bd_activation_analysis bd) (tp_reproducible tp)) = true
 
-\* ai_011_complete_provenance (matches Coq: Theorem ai_011_complete_provenance)
-THEOREM ai_011_complete_provenance == Init => TypeOK
+\* ai_008_prompt_injection_mitigated
+THEOREM ai_008_prompt_injection_mitigated ==
+  \A iv \in Nat :
+      iv_sanitized(iv) => prompt_injection_protected(iv)
 
-\* ai_012_federated_learning_attack_mitigated (matches Coq: Theorem ai_012_federated_learning_attack_mitigated)
-THEOREM ai_012_federated_learning_attack_mitigated == Init => TypeOK
+\* ai_008_complete_input_validation
+THEOREM ai_008_complete_input_validation ==
+  \A iv \in Nat :
+      iv_sanitized(iv) => all_true [iv_sanitized iv; iv_sandboxed iv; iv_filtered iv] = true
 
-\* ai_012_complete_secure_aggregation (matches Coq: Theorem ai_012_complete_secure_aggregation)
-THEOREM ai_012_complete_secure_aggregation == Init => TypeOK
+\* ai_009_jailbreaking_mitigated
+THEOREM ai_009_jailbreaking_mitigated ==
+  \A st \in Nat, iv \in Nat :
+      st_rlhf_applied(st) => jailbreaking_protected(st, iv)
 
-\* ai_013_gradient_leakage_mitigated (matches Coq: Theorem ai_013_gradient_leakage_mitigated)
-THEOREM ai_013_gradient_leakage_mitigated == Init => TypeOK
+\* ai_009_complete_safety_training
+THEOREM ai_009_complete_safety_training ==
+  \A st \in Nat :
+      st_rlhf_applied(st) => all_true [st_rlhf_applied st; st_red_teamed st; 
+                st_safety_filters st; st_refusal_trained st] = true
 
-\* ai_013_gradient_protection_strong (matches Coq: Theorem ai_013_gradient_protection_strong)
-THEOREM ai_013_gradient_protection_strong == Init => TypeOK
+\* ai_010_ai_generated_malware_mitigated
+THEOREM ai_010_ai_generated_malware_mitigated ==
+  \A did \in Nat, ds \in Nat :
+      did_multiple_layers(did) => ai_malware_protected(did, ds)
 
-\* ai_014_evasion_attack_mitigated (matches Coq: Theorem ai_014_evasion_attack_mitigated)
-THEOREM ai_014_evasion_attack_mitigated == Init => TypeOK
+\* ai_010_defense_in_depth_complete
+THEOREM ai_010_defense_in_depth_complete ==
+  \A did \in Nat :
+      did_multiple_layers(did) => all_true [did_multiple_layers did; did_diverse_methods did;
+                did_fail_safe did; did_monitoring did] = true
 
-\* ai_014_certified_robustness (matches Coq: Theorem ai_014_certified_robustness)
-THEOREM ai_014_certified_robustness == Init => TypeOK
+\* ai_011_deepfakes_mitigated
+THEOREM ai_011_deepfakes_mitigated ==
+  \A ds \in Nat, pt \in Nat :
+      ds_enabled(ds) => deepfakes_protected(ds, pt)
 
-\* ai_015_model_dos_mitigated (matches Coq: Theorem ai_015_model_dos_mitigated)
-THEOREM ai_015_model_dos_mitigated == Init => TypeOK
+\* ai_011_complete_provenance
+THEOREM ai_011_complete_provenance ==
+  \A pt \in Nat :
+      pt_origin_tracked(pt) => all_true [pt_origin_tracked pt; pt_chain_verified pt;
+                pt_metadata_preserved pt; pt_tamper_evident pt] = true
 
-\* ai_015_complete_resource_limits (matches Coq: Theorem ai_015_complete_resource_limits)
-THEOREM ai_015_complete_resource_limits == Init => TypeOK
+\* ai_012_federated_learning_attack_mitigated
+THEOREM ai_012_federated_learning_attack_mitigated ==
+  \A sa \in Nat, dp \in Nat :
+      sa_encrypted(sa) => federated_learning_protected(sa, dp)
 
-\* ai_016_cross_prompt_injection_mitigated (matches Coq: Theorem ai_016_cross_prompt_injection_mitigated)
-THEOREM ai_016_cross_prompt_injection_mitigated == Init => TypeOK
-
-\* ai_016_complete_input_isolation (matches Coq: Theorem ai_016_complete_input_isolation)
-THEOREM ai_016_complete_input_isolation == Init => TypeOK
-
-\* ai_017_ai_agent_swarms_mitigated (matches Coq: Theorem ai_017_ai_agent_swarms_mitigated)
-THEOREM ai_017_ai_agent_swarms_mitigated == Init => TypeOK
-
-\* ai_017_complete_agent_verification (matches Coq: Theorem ai_017_complete_agent_verification)
-THEOREM ai_017_complete_agent_verification == Init => TypeOK
-
-\* ai_018_mcp_server_exploitation_mitigated (matches Coq: Theorem ai_018_mcp_server_exploitation_mitigated)
-THEOREM ai_018_mcp_server_exploitation_mitigated == Init => TypeOK
-
-\* ai_018_complete_protocol_verification (matches Coq: Theorem ai_018_complete_protocol_verification)
-THEOREM ai_018_complete_protocol_verification == Init => TypeOK
-
-\* composition_strengthens_security (matches Coq: Theorem composition_strengthens_security)
-THEOREM composition_strengthens_security == Init => TypeOK
-
-\* mitigation_transitivity (matches Coq: Theorem mitigation_transitivity)
-THEOREM mitigation_transitivity == Init => TypeOK
-
-\* defense_layer_accumulation (matches Coq: Theorem defense_layer_accumulation)
-THEOREM defense_layer_accumulation == Init => TypeOK
-
-\* privacy_security_coexistence (matches Coq: Theorem privacy_security_coexistence)
-THEOREM privacy_security_coexistence == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<dp_epsilon, dp_delta, dp_noise_added, dp_clipping_applied, iv_max_length, iv_sanitized, iv_sandboxed, iv_filtered, ac_authenticated, ac_authorized, ac_rate_limited, ac_logged, mw_embedded, mw_verifiable, mw_robust, tp_data_verified, tp_source_trusted, tp_integrity_checked, tp_reproducible, rt_adversarial_training, rt_certified_defense, rt_ensemble_used, rt_input_preprocessing, pg_output_perturbed, pg_intermediate_hidden, pg_access_controlled, pg_aggregation_only, ds_enabled, ds_multi_modal, ds_threshold_set, ds_alerts_enabled, pt_origin_tracked, pt_chain_verified, pt_metadata_preserved, pt_tamper_evident, sa_encrypted, sa_masked, sa_threshold_scheme, sa_byzantine_resilient, rl_compute_bounded, rl_memory_bounded, rl_time_bounded, rl_batch_limited, st_rlhf_applied, st_red_teamed, st_safety_filters, st_refusal_trained, did_multiple_layers, did_diverse_methods, did_fail_safe, did_monitoring, ii_context_separated, ii_privilege_separated, ii_output_filtered, ii_injection_markers, av_identity_verified, av_capability_bounded, av_communication_secure, av_consensus_required, pv_schema_validated, pv_auth_required, pv_integrity_checked, pv_replay_protected, ad_statistical_analysis, ad_outlier_removal, ad_distribution_check, bd_trigger_reverse_eng, bd_activation_analysis, bd_spectral_analysis>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<dp_epsilon, dp_delta, dp_noise_added, dp_clipping_applied, iv_max_length, iv_sanitized, iv_sandboxed, iv_filtered, ac_authenticated, ac_authorized, ac_rate_limited, ac_logged, mw_embedded, mw_verifiable, mw_robust, tp_data_verified, tp_source_trusted, tp_integrity_checked, tp_reproducible, rt_adversarial_training, rt_certified_defense, rt_ensemble_used, rt_input_preprocessing, pg_output_perturbed, pg_intermediate_hidden, pg_access_controlled, pg_aggregation_only, ds_enabled, ds_multi_modal, ds_threshold_set, ds_alerts_enabled, pt_origin_tracked, pt_chain_verified, pt_metadata_preserved, pt_tamper_evident, sa_encrypted, sa_masked, sa_threshold_scheme, sa_byzantine_resilient, rl_compute_bounded, rl_memory_bounded, rl_time_bounded, rl_batch_limited, st_rlhf_applied, st_red_teamed, st_safety_filters, st_refusal_trained, did_multiple_layers, did_diverse_methods, did_fail_safe, did_monitoring, ii_context_separated, ii_privilege_separated, ii_output_filtered, ii_injection_markers, av_identity_verified, av_capability_bounded, av_communication_secure, av_consensus_required, pv_schema_validated, pv_auth_required, pv_integrity_checked, pv_replay_protected, ad_statistical_analysis, ad_outlier_removal, ad_distribution_check, bd_trigger_reverse_eng, bd_activation_analysis, bd_spectral_analysis>>
+\* 17 additional theorems proven in Coq source
 
 ====

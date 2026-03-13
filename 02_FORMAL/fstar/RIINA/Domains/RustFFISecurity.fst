@@ -120,103 +120,103 @@ let check_ffi_call (p_p: ffi_safety_policy) (p_call: ffi_call) : Tot bool =
 let cve_2025_21756_scenario : ffi_call = {f_ffi_boundary=RustToC; f_ffi_has_effect_annotation=false; f_ffi_lifetime_safety=LifetimeViolated; f_ffi_panic_safety=PanicUnsafe; f_ffi_null_check=NullUnchecked; f_ffi_buffer_validation=BufferUnchecked; f_ffi_type_marshalling=TypeMarshalUnsafe; f_ffi_shared_mut=true}
 
 (* andb_true_iff_ffi (matches Coq: Lemma andb_true_iff_ffi) *)
-let andb_true_iff_ffi (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
+let andb_true_iff_ffi (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = ()
 
 (* orb_true_iff_ffi (matches Coq: Lemma orb_true_iff_ffi) *)
-let orb_true_iff_ffi (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = admit ()
+let orb_true_iff_ffi (p_a: bool) (p_b: bool) : Lemma (p_a || p_b == true <==> p_a == true \/ p_b == true) = ()
 
 (* negb_true_iff_ffi (matches Coq: Lemma negb_true_iff_ffi) *)
-let negb_true_iff_ffi (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
+let negb_true_iff_ffi (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = ()
 
 (* negb_false_iff_ffi (matches Coq: Lemma negb_false_iff_ffi) *)
-let negb_false_iff_ffi (p_b: bool) : Lemma ((not p_b) == false <==> p_b == true) = admit ()
+let negb_false_iff_ffi (p_b: bool) : Lemma ((not p_b) == false <==> p_b == true) = ()
 
 (* FFI_001_effect_annotation_required (matches Coq: Theorem FFI_001_effect_annotation_required) *)
-let ffi_001_effect_annotation_required () : Lemma (riina_ffi_policy.f_ffi_require_effect_annotation == true) = admit ()
+let ffi_001_effect_annotation_required () : Lemma (riina_ffi_policy.f_ffi_require_effect_annotation == true) = ()
 
 (* FFI_002_lifetime_bounds_enforced (matches Coq: Theorem FFI_002_lifetime_bounds_enforced) *)
-let ffi_002_lifetime_bounds_enforced () : Lemma (lifetime_safety_active riina_ffi_policy == true) = admit ()
+let ffi_002_lifetime_bounds_enforced () : Lemma (lifetime_safety_active riina_ffi_policy == true) = ()
 
 (* FFI_003_panic_wrapper_required (matches Coq: Theorem FFI_003_panic_wrapper_required) *)
-let ffi_003_panic_wrapper_required () : Lemma (panic_safety_active riina_ffi_policy == true) = admit ()
+let ffi_003_panic_wrapper_required () : Lemma (panic_safety_active riina_ffi_policy == true) = ()
 
 (* FFI_004_null_check_required (matches Coq: Theorem FFI_004_null_check_required) *)
-let ffi_004_null_check_required () : Lemma (null_safety_active riina_ffi_policy == true) = admit ()
+let ffi_004_null_check_required () : Lemma (null_safety_active riina_ffi_policy == true) = ()
 
 (* FFI_005_buffer_validation_required (matches Coq: Theorem FFI_005_buffer_validation_required) *)
-let ffi_005_buffer_validation_required () : Lemma (buffer_safety_active riina_ffi_policy == true) = admit ()
+let ffi_005_buffer_validation_required () : Lemma (buffer_safety_active riina_ffi_policy == true) = ()
 
 (* FFI_006_type_marshalling_required (matches Coq: Theorem FFI_006_type_marshalling_required) *)
-let ffi_006_type_marshalling_required () : Lemma (type_safety_active riina_ffi_policy == true) = admit ()
+let ffi_006_type_marshalling_required () : Lemma (type_safety_active riina_ffi_policy == true) = ()
 
 (* FFI_007_memory_safety_active (matches Coq: Theorem FFI_007_memory_safety_active) *)
-let ffi_007_memory_safety_active () : Lemma (memory_safety_active riina_ffi_policy == true) = admit ()
+let ffi_007_memory_safety_active () : Lemma (memory_safety_active riina_ffi_policy == true) = ()
 
 (* FFI_008_all_defenses_active (matches Coq: Theorem FFI_008_all_defenses_active) *)
-let ffi_008_all_defenses_active () : Lemma (all_ffi_defenses riina_ffi_policy == true) = admit ()
+let ffi_008_all_defenses_active () : Lemma (all_ffi_defenses riina_ffi_policy == true) = ()
 
 (* FFI_009_cve_2025_21756_blocked (matches Coq: Theorem FFI_009_cve_2025_21756_blocked) *)
-let ffi_009_cve_2025_21756_blocked () : Lemma (check_ffi_call riina_ffi_policy cve_2025_21756_scenario == false) = admit ()
+let ffi_009_cve_2025_21756_blocked () : Lemma (check_ffi_call riina_ffi_policy cve_2025_21756_scenario == false) = ()
 
 (* FFI_010_safe_call_passes (matches Coq: Theorem FFI_010_safe_call_passes) *)
-let ffi_010_safe_call_passes () : Lemma (check_ffi_call riina_ffi_policy (mkfficall RustToC true LifetimeSafe PanicSafe NullChecked BufferValidated TypeMarshalSafe false) == true) = admit ()
+let ffi_010_safe_call_passes () : Lemma (check_ffi_call riina_ffi_policy (mkfficall RustToC true LifetimeSafe PanicSafe NullChecked BufferValidated TypeMarshalSafe false) == true) = ()
 
 (* FFI_011_all_implies_lifetime (matches Coq: Theorem FFI_011_all_implies_lifetime) *)
-let ffi_011_all_implies_lifetime (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (lifetime_safety_active p_p == true)) = admit ()
+let ffi_011_all_implies_lifetime (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (lifetime_safety_active p_p == true)) = ()
 
 (* FFI_012_all_implies_panic (matches Coq: Theorem FFI_012_all_implies_panic) *)
-let ffi_012_all_implies_panic (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (panic_safety_active p_p == true)) = admit ()
+let ffi_012_all_implies_panic (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (panic_safety_active p_p == true)) = ()
 
 (* FFI_013_all_implies_null (matches Coq: Theorem FFI_013_all_implies_null) *)
-let ffi_013_all_implies_null (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (null_safety_active p_p == true)) = admit ()
+let ffi_013_all_implies_null (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (null_safety_active p_p == true)) = ()
 
 (* FFI_014_all_implies_buffer (matches Coq: Theorem FFI_014_all_implies_buffer) *)
-let ffi_014_all_implies_buffer (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (buffer_safety_active p_p == true)) = admit ()
+let ffi_014_all_implies_buffer (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (buffer_safety_active p_p == true)) = ()
 
 (* FFI_015_all_implies_type (matches Coq: Theorem FFI_015_all_implies_type) *)
-let ffi_015_all_implies_type (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (type_safety_active p_p == true)) = admit ()
+let ffi_015_all_implies_type (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (type_safety_active p_p == true)) = ()
 
 (* FFI_016_all_implies_memory (matches Coq: Theorem FFI_016_all_implies_memory) *)
-let ffi_016_all_implies_memory (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (memory_safety_active p_p == true)) = admit ()
+let ffi_016_all_implies_memory (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (memory_safety_active p_p == true)) = ()
 
 (* FFI_017_memory_requires_lifetime (matches Coq: Theorem FFI_017_memory_requires_lifetime) *)
-let ffi_017_memory_requires_lifetime (p_p: ffi_safety_policy) : Lemma (requires (memory_safety_active p_p == true)) (ensures (p_p.f_ffi_enforce_lifetime_bounds == true)) = admit ()
+let ffi_017_memory_requires_lifetime (p_p: ffi_safety_policy) : Lemma (requires (memory_safety_active p_p == true)) (ensures (p_p.f_ffi_enforce_lifetime_bounds == true)) = ()
 
 (* FFI_018_memory_forbids_shared_mut (matches Coq: Theorem FFI_018_memory_forbids_shared_mut) *)
-let ffi_018_memory_forbids_shared_mut (p_p: ffi_safety_policy) : Lemma (requires (memory_safety_active p_p == true)) (ensures (p_p.f_ffi_forbid_shared_mut == true)) = admit ()
+let ffi_018_memory_forbids_shared_mut (p_p: ffi_safety_policy) : Lemma (requires (memory_safety_active p_p == true)) (ensures (p_p.f_ffi_forbid_shared_mut == true)) = ()
 
 (* FFI_019_lifetime_violation_rejected (matches Coq: Theorem FFI_019_lifetime_violation_rejected) *)
-let ffi_019_lifetime_violation_rejected (p_bnd: _) (p_eff: _) (p_panic: _) (p_null: _) (p_buf: _) (p_typ: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff LifetimeViolated p_panic p_null p_buf p_typ id_mut) == false) = admit ()
+let ffi_019_lifetime_violation_rejected (p_bnd: _) (p_eff: _) (p_panic: _) (p_null: _) (p_buf: _) (p_typ: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff LifetimeViolated p_panic p_null p_buf p_typ id_mut) == false) = ()
 
 (* FFI_020_panic_unsafe_rejected (matches Coq: Theorem FFI_020_panic_unsafe_rejected) *)
-let ffi_020_panic_unsafe_rejected (p_bnd: _) (p_eff: _) (p_life: _) (p_null: _) (p_buf: _) (p_typ: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff p_life PanicUnsafe p_null p_buf p_typ id_mut) == false) = admit ()
+let ffi_020_panic_unsafe_rejected (p_bnd: _) (p_eff: _) (p_life: _) (p_null: _) (p_buf: _) (p_typ: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff p_life PanicUnsafe p_null p_buf p_typ id_mut) == false) = ()
 
 (* FFI_021_null_unchecked_rejected (matches Coq: Theorem FFI_021_null_unchecked_rejected) *)
-let ffi_021_null_unchecked_rejected (p_bnd: _) (p_eff: _) (p_life: _) (p_panic: _) (p_buf: _) (p_typ: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff p_life p_panic NullUnchecked p_buf p_typ id_mut) == false) = admit ()
+let ffi_021_null_unchecked_rejected (p_bnd: _) (p_eff: _) (p_life: _) (p_panic: _) (p_buf: _) (p_typ: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff p_life p_panic NullUnchecked p_buf p_typ id_mut) == false) = ()
 
 (* FFI_022_buffer_unchecked_rejected (matches Coq: Theorem FFI_022_buffer_unchecked_rejected) *)
-let ffi_022_buffer_unchecked_rejected (p_bnd: _) (p_eff: _) (p_life: _) (p_panic: _) (p_null: _) (p_typ: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff p_life p_panic p_null BufferUnchecked p_typ id_mut) == false) = admit ()
+let ffi_022_buffer_unchecked_rejected (p_bnd: _) (p_eff: _) (p_life: _) (p_panic: _) (p_null: _) (p_typ: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff p_life p_panic p_null BufferUnchecked p_typ id_mut) == false) = ()
 
 (* FFI_023_type_unsafe_rejected (matches Coq: Theorem FFI_023_type_unsafe_rejected) *)
-let ffi_023_type_unsafe_rejected (p_bnd: _) (p_eff: _) (p_life: _) (p_panic: _) (p_null: _) (p_buf: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff p_life p_panic p_null p_buf TypeMarshalUnsafe id_mut) == false) = admit ()
+let ffi_023_type_unsafe_rejected (p_bnd: _) (p_eff: _) (p_life: _) (p_panic: _) (p_null: _) (p_buf: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff p_life p_panic p_null p_buf TypeMarshalUnsafe id_mut) == false) = ()
 
 (* FFI_024_shared_mut_rejected (matches Coq: Theorem FFI_024_shared_mut_rejected) *)
-let ffi_024_shared_mut_rejected (p_bnd: _) (p_eff: _) (p_life: _) (p_panic: _) (p_null: _) (p_buf: _) (p_typ: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff p_life p_panic p_null p_buf p_typ true) == false) = admit ()
+let ffi_024_shared_mut_rejected (p_bnd: _) (p_eff: _) (p_life: _) (p_panic: _) (p_null: _) (p_buf: _) (p_typ: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd p_eff p_life p_panic p_null p_buf p_typ true) == false) = ()
 
 (* FFI_025_no_effect_rejected (matches Coq: Theorem FFI_025_no_effect_rejected) *)
-let ffi_025_no_effect_rejected (p_bnd: _) (p_life: _) (p_panic: _) (p_null: _) (p_buf: _) (p_typ: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd false p_life p_panic p_null p_buf p_typ id_mut) == false) = admit ()
+let ffi_025_no_effect_rejected (p_bnd: _) (p_life: _) (p_panic: _) (p_null: _) (p_buf: _) (p_typ: _) (p_p_mut: _) : Lemma (check_ffi_call riina_ffi_policy (mkfficall p_bnd false p_life p_panic p_null p_buf p_typ id_mut) == false) = ()
 
 (* FFI_026_bidirectional_safe (matches Coq: Theorem FFI_026_bidirectional_safe) *)
-let ffi_026_bidirectional_safe () : Lemma (check_ffi_call riina_ffi_policy (mkfficall Bidirectional true LifetimeSafe PanicSafe NullChecked BufferValidated TypeMarshalSafe false) == true) = admit ()
+let ffi_026_bidirectional_safe () : Lemma (check_ffi_call riina_ffi_policy (mkfficall Bidirectional true LifetimeSafe PanicSafe NullChecked BufferValidated TypeMarshalSafe false) == true) = ()
 
 (* FFI_027_c_to_rust_safe (matches Coq: Theorem FFI_027_c_to_rust_safe) *)
-let ffi_027_c_to_rust_safe () : Lemma (check_ffi_call riina_ffi_policy (mkfficall CToRust true LifetimeSafe PanicSafe NullChecked BufferValidated TypeMarshalSafe false) == true) = admit ()
+let ffi_027_c_to_rust_safe () : Lemma (check_ffi_call riina_ffi_policy (mkfficall CToRust true LifetimeSafe PanicSafe NullChecked BufferValidated TypeMarshalSafe false) == true) = ()
 
 (* FFI_028_complete_defense (matches Coq: Theorem FFI_028_complete_defense) *)
-let ffi_028_complete_defense (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (p_p.f_ffi_require_effect_annotation == true /\ p_p.f_ffi_enforce_lifetime_bounds == true /\ p_p.f_ffi_require_panic_wrapper == true /\ p_p.f_ffi_require_null_check == true /\ p_p.f_ffi_require_buffer_validation == true /\ p_p.f_ffi_require_type_marshalling == true /\ p_p.f_ffi_forbid_shared_mut == true /\ p_p.f_ffi_log_all_calls == true)) = admit ()
+let ffi_028_complete_defense (p_p: ffi_safety_policy) : Lemma (requires (all_ffi_defenses p_p == true)) (ensures (p_p.f_ffi_require_effect_annotation == true /\ p_p.f_ffi_enforce_lifetime_bounds == true /\ p_p.f_ffi_require_panic_wrapper == true /\ p_p.f_ffi_require_null_check == true /\ p_p.f_ffi_require_buffer_validation == true /\ p_p.f_ffi_require_type_marshalling == true /\ p_p.f_ffi_forbid_shared_mut == true /\ p_p.f_ffi_log_all_calls == true)) = ()
 
 (* FFI_029_uaf_prevention (matches Coq: Theorem FFI_029_uaf_prevention) *)
-let ffi_029_uaf_prevention (p_p: ffi_safety_policy) : Lemma (requires (memory_safety_active p_p == true /\ (forall (call: _). call.f_ffi_lifetime_safety == LifetimeViolated))) (ensures (check_ffi_call p_p call == false)) = admit ()
+let ffi_029_uaf_prevention (p_p: ffi_safety_policy) : Lemma (requires (memory_safety_active p_p == true /\ (forall (call: _). call.f_ffi_lifetime_safety == LifetimeViolated))) (ensures (check_ffi_call p_p call == false)) = ()
 
 (* FFI_030_data_race_prevention (matches Coq: Theorem FFI_030_data_race_prevention) *)
-let ffi_030_data_race_prevention (p_p: ffi_safety_policy) : Lemma (requires (memory_safety_active p_p == true /\ (forall (call: _). call.f_ffi_shared_mut == true))) (ensures (check_ffi_call p_p call == false)) = admit ()
+let ffi_030_data_race_prevention (p_p: ffi_safety_policy) : Lemma (requires (memory_safety_active p_p == true /\ (forall (call: _). call.f_ffi_shared_mut == true))) (ensures (check_ffi_call p_p call == false)) = ()

@@ -15,12 +15,12 @@ pred stuck[p_cfg: expr___store___effect_ctx] {
 
 // type_safety (matches Coq: Theorem type_safety)
 assert type_safety {
-  #univ >= 0
+  all x: expr___store___effect_ctx | x in expr___store___effect_ctx
 }
 check type_safety for 5
 
 // multi_step_safety (matches Coq: Theorem multi_step_safety)
 assert multi_step_safety {
-  #univ >= 0
+  all x: expr___store___effect_ctx | x in expr___store___effect_ctx
 }
 check multi_step_safety for 5

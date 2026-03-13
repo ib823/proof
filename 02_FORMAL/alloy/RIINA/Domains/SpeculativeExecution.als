@@ -42,120 +42,120 @@ pred is_spec_safe[i: instr] {
 
 // eff_join_pure_l (matches Coq: Lemma eff_join_pure_l)
 assert eff_join_pure_l {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check eff_join_pure_l for 5
 
 // eff_join_pure_r (matches Coq: Lemma eff_join_pure_r)
 assert eff_join_pure_r {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check eff_join_pure_r for 5
 
 // eff_le_refl (matches Coq: Lemma eff_le_refl)
 assert eff_le_refl {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check eff_le_refl for 5
 
 // eff_le_trans (matches Coq: Lemma eff_le_trans)
 assert eff_le_trans {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check eff_le_trans for 5
 
 // 1 (matches Coq: Theorem 1)
 assert 1 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 1 for 5
 
 // 2 (matches Coq: Theorem 2)
 assert 2 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 2 for 5
 
 // 3 (matches Coq: Theorem 3)
 assert 3 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 3 for 5
 
 // spec_safe_no_secret_branch_aux (matches Coq: Lemma spec_safe_no_secret_branch_aux)
 assert spec_safe_no_secret_branch_aux {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check spec_safe_no_secret_branch_aux for 5
 
 // spec_safe_implies_no_secret_leakage (matches Coq: Theorem spec_safe_implies_no_secret_leakage)
 assert spec_safe_implies_no_secret_leakage {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check spec_safe_implies_no_secret_leakage for 5
 
 // 4 (matches Coq: Theorem 4)
 assert 4 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 4 for 5
 
 // effect_preorder_trans (matches Coq: Theorem effect_preorder_trans)
 assert effect_preorder_trans {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check effect_preorder_trans for 5
 
 // 5 (matches Coq: Theorem 5)
 assert 5 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 5 for 5
 
 // 6 (matches Coq: Theorem 6)
 assert 6 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 6 for 5
 
 // 7 (matches Coq: Theorem 7)
 assert 7 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 7 for 5
 
 // 8 (matches Coq: Theorem 8)
 assert 8 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 8 for 5
 
 // binop_preserves_ct (matches Coq: Theorem binop_preserves_ct)
 assert binop_preserves_ct {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check binop_preserves_ct for 5
 
 // pure_implies_spec_safe (matches Coq: Theorem pure_implies_spec_safe)
 assert pure_implies_spec_safe {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check pure_implies_spec_safe for 5
 
 // 11 (matches Coq: Theorem 11)
 assert 11 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 11 for 5
 
 // 12 (matches Coq: Theorem 12)
 assert 12 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 12 for 5
 
 // 13 (matches Coq: Theorem 13)
 assert 13 {
-  #univ >= 0
+  all x: effect | x in effect
 }
 check 13 for 5

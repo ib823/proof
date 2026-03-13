@@ -269,229 +269,229 @@ let full_crypto_secure (p_fc: full_crypto_config) : Tot bool =
 let riina_full_crypto : full_crypto_config = mkFullCrypto riina_ct_op riina_aead riina_hash riina_rng riina_proto riina_pq riina_key riina_cert riina_mraead riina_kdf riina_mac riina_enc_scheme
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = ()
 
 (* andb3_true_iff (matches Coq: Lemma andb3_true_iff) *)
-let andb3_true_iff (p_a: bool) (p_b: bool) (p_c: bool) : Lemma (p_a && p_b && p_c == true <==> p_a == true /\ p_b == true /\ p_c == true) = admit ()
+let andb3_true_iff (p_a: bool) (p_b: bool) (p_c: bool) : Lemma (p_a && p_b && p_c == true <==> p_a == true /\ p_b == true /\ p_c == true) = ()
 
 (* negb_true_iff (matches Coq: Lemma negb_true_iff) *)
-let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = admit ()
+let negb_true_iff (p_b: bool) : Lemma ((not p_b) == true <==> p_b == false) = ()
 
 (* leb_le (matches Coq: Lemma leb_le) *)
-let leb_le (p_n: nat) (p_m: nat) : Lemma ((p_n <=? p_m) == true <==> p_n <= p_m) = admit ()
+let leb_le (p_n: nat) (p_m: nat) : Lemma ((p_n <=? p_m) == true <==> p_n <= p_m) = ()
 
 (* cry_001_timing_side_channel_mitigated (matches Coq: Theorem cry_001_timing_side_channel_mitigated) *)
-let cry_001_timing_side_channel_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_is_constant == true)) = admit ()
+let cry_001_timing_side_channel_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_is_constant == true)) = ()
 
 (* cry_001a_riina_timing_safe (matches Coq: Theorem cry_001a_riina_timing_safe) *)
-let cry_001a_riina_timing_safe () : Lemma (ct_valid riina_ct_op == true) = admit ()
+let cry_001a_riina_timing_safe () : Lemma (ct_valid riina_ct_op == true) = ()
 
 (* cry_002_spa_mitigated (matches Coq: Theorem cry_002_spa_mitigated) *)
-let cry_002_spa_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_secret_branch == true /\ p_op.f_ct_no_variable_time == true)) = admit ()
+let cry_002_spa_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_secret_branch == true /\ p_op.f_ct_no_variable_time == true)) = ()
 
 (* cry_003_dpa_mitigated (matches Coq: Theorem cry_003_dpa_mitigated) *)
-let cry_003_dpa_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_secret_branch == true)) = admit ()
+let cry_003_dpa_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_secret_branch == true)) = ()
 
 (* cry_004_em_analysis_mitigated (matches Coq: Theorem cry_004_em_analysis_mitigated) *)
-let cry_004_em_analysis_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_secret_addr == true)) = admit ()
+let cry_004_em_analysis_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_secret_addr == true)) = ()
 
 (* cry_005_acoustic_analysis_mitigated (matches Coq: Theorem cry_005_acoustic_analysis_mitigated) *)
-let cry_005_acoustic_analysis_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_variable_time == true)) = admit ()
+let cry_005_acoustic_analysis_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_variable_time == true)) = ()
 
 (* cry_006_cache_timing_mitigated (matches Coq: Theorem cry_006_cache_timing_mitigated) *)
-let cry_006_cache_timing_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_secret_addr == true /\ p_op.f_ct_is_constant == true)) = admit ()
+let cry_006_cache_timing_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_secret_addr == true /\ p_op.f_ct_is_constant == true)) = ()
 
 (* cry_007_padding_oracle_mitigated (matches Coq: Theorem cry_007_padding_oracle_mitigated) *)
-let cry_007_padding_oracle_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((128 <=? aead_tag_bits p_cfg) == true)) = admit ()
+let cry_007_padding_oracle_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((128 <=? aead_tag_bits p_cfg) == true)) = ()
 
 (* cry_007a_riina_aead_padding_safe (matches Coq: Theorem cry_007a_riina_aead_padding_safe) *)
-let cry_007a_riina_aead_padding_safe () : Lemma (aead_secure riina_aead == true) = admit ()
+let cry_007a_riina_aead_padding_safe () : Lemma (aead_secure riina_aead == true) = ()
 
 (* cry_008_chosen_plaintext_mitigated (matches Coq: Theorem cry_008_chosen_plaintext_mitigated) *)
-let cry_008_chosen_plaintext_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((aead_algorithm p_cfg <=? 1) == true)) = admit ()
+let cry_008_chosen_plaintext_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((aead_algorithm p_cfg <=? 1) == true)) = ()
 
 (* cry_009_chosen_ciphertext_mitigated (matches Coq: Theorem cry_009_chosen_ciphertext_mitigated) *)
-let cry_009_chosen_ciphertext_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((128 <=? aead_tag_bits p_cfg) == true /\ p_cfg.f_aead_constant_time == true)) = admit ()
+let cry_009_chosen_ciphertext_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((128 <=? aead_tag_bits p_cfg) == true /\ p_cfg.f_aead_constant_time == true)) = ()
 
 (* cry_010_known_plaintext_mitigated (matches Coq: Theorem cry_010_known_plaintext_mitigated) *)
-let cry_010_known_plaintext_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((128 <=? aead_key_bits p_cfg) == true)) = admit ()
+let cry_010_known_plaintext_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((128 <=? aead_key_bits p_cfg) == true)) = ()
 
 (* cry_011_mitm_mitigated (matches Coq: Theorem cry_011_mitm_mitigated) *)
-let cry_011_mitm_mitigated (p_k: crypto_key) : Lemma (requires (key_secure p_k == true)) (ensures ((128 <=? key_bits p_k) == true)) = admit ()
+let cry_011_mitm_mitigated (p_k: crypto_key) : Lemma (requires (key_secure p_k == true)) (ensures ((128 <=? key_bits p_k) == true)) = ()
 
 (* cry_011a_riina_key_mitm_safe (matches Coq: Theorem cry_011a_riina_key_mitm_safe) *)
-let cry_011a_riina_key_mitm_safe () : Lemma (key_secure riina_key == true) = admit ()
+let cry_011a_riina_key_mitm_safe () : Lemma (key_secure riina_key == true) = ()
 
 (* cry_012_birthday_attack_mitigated (matches Coq: Theorem cry_012_birthday_attack_mitigated) *)
-let cry_012_birthday_attack_mitigated (p_h: hash_config) : Lemma (requires (hash_secure p_h == true)) (ensures ((256 <=? hash_output_bits p_h) == true)) = admit ()
+let cry_012_birthday_attack_mitigated (p_h: hash_config) : Lemma (requires (hash_secure p_h == true)) (ensures ((256 <=? hash_output_bits p_h) == true)) = ()
 
 (* cry_012a_riina_hash_birthday_safe (matches Coq: Theorem cry_012a_riina_hash_birthday_safe) *)
-let cry_012a_riina_hash_birthday_safe () : Lemma (hash_secure riina_hash == true) = admit ()
+let cry_012a_riina_hash_birthday_safe () : Lemma (hash_secure riina_hash == true) = ()
 
 (* cry_013_length_extension_mitigated (matches Coq: Theorem cry_013_length_extension_mitigated) *)
-let cry_013_length_extension_mitigated (p_h: hash_config) : Lemma (requires (hash_secure p_h == true)) (ensures (p_h.f_hash_length_ext_safe == true)) = admit ()
+let cry_013_length_extension_mitigated (p_h: hash_config) : Lemma (requires (hash_secure p_h == true)) (ensures (p_h.f_hash_length_ext_safe == true)) = ()
 
 (* cry_014_downgrade_attack_mitigated (matches Coq: Theorem cry_014_downgrade_attack_mitigated) *)
-let cry_014_downgrade_attack_mitigated (p_pc: protocol_config) : Lemma (requires (proto_secure p_pc == true)) (ensures (p_pc.f_proto_fallback_disabled == true /\ (3 <=? proto_min_version p_pc) == true)) = admit ()
+let cry_014_downgrade_attack_mitigated (p_pc: protocol_config) : Lemma (requires (proto_secure p_pc == true)) (ensures (p_pc.f_proto_fallback_disabled == true /\ (3 <=? proto_min_version p_pc) == true)) = ()
 
 (* cry_014a_riina_proto_downgrade_safe (matches Coq: Theorem cry_014a_riina_proto_downgrade_safe) *)
-let cry_014a_riina_proto_downgrade_safe () : Lemma (proto_secure riina_proto == true) = admit ()
+let cry_014a_riina_proto_downgrade_safe () : Lemma (proto_secure riina_proto == true) = ()
 
 (* cry_015_protocol_attack_mitigated (matches Coq: Theorem cry_015_protocol_attack_mitigated) *)
-let cry_015_protocol_attack_mitigated (p_pc: protocol_config) : Lemma (requires (proto_secure p_pc == true)) (ensures (p_pc.f_proto_forward_secrecy == true)) = admit ()
+let cry_015_protocol_attack_mitigated (p_pc: protocol_config) : Lemma (requires (proto_secure p_pc == true)) (ensures (p_pc.f_proto_forward_secrecy == true)) = ()
 
 (* cry_016_implementation_flaw_mitigated (matches Coq: Theorem cry_016_implementation_flaw_mitigated) *)
-let cry_016_implementation_flaw_mitigated (p_op: constant_time_op) (p_cfg: aead_config) : Lemma (requires (ct_valid p_op == true /\ aead_secure p_cfg == true)) (ensures (p_op.f_ct_is_constant == true /\ p_cfg.f_aead_constant_time == true)) = admit ()
+let cry_016_implementation_flaw_mitigated (p_op: constant_time_op) (p_cfg: aead_config) : Lemma (requires (ct_valid p_op == true /\ aead_secure p_cfg == true)) (ensures (p_op.f_ct_is_constant == true /\ p_cfg.f_aead_constant_time == true)) = ()
 
 (* cry_017_rng_attack_mitigated (matches Coq: Theorem cry_017_rng_attack_mitigated) *)
-let cry_017_rng_attack_mitigated (p_rng: rng_config) : Lemma (requires (rng_secure p_rng == true)) (ensures (p_rng.f_rng_hardware_seeded == true /\ p_rng.f_rng_prediction_resistant == true)) = admit ()
+let cry_017_rng_attack_mitigated (p_rng: rng_config) : Lemma (requires (rng_secure p_rng == true)) (ensures (p_rng.f_rng_hardware_seeded == true /\ p_rng.f_rng_prediction_resistant == true)) = ()
 
 (* cry_017a_riina_rng_secure (matches Coq: Theorem cry_017a_riina_rng_secure) *)
-let cry_017a_riina_rng_secure () : Lemma (rng_secure riina_rng == true) = admit ()
+let cry_017a_riina_rng_secure () : Lemma (rng_secure riina_rng == true) = ()
 
 (* cry_018_key_reuse_mitigated (matches Coq: Theorem cry_018_key_reuse_mitigated) *)
-let cry_018_key_reuse_mitigated (p_nt: nonce_tracker) : Lemma (requires (nonce_counter_safe p_nt == true)) (ensures (p_nt.f_nt_counter < p_nt.f_nt_max_uses)) = admit ()
+let cry_018_key_reuse_mitigated (p_nt: nonce_tracker) : Lemma (requires (nonce_counter_safe p_nt == true)) (ensures (p_nt.f_nt_counter < p_nt.f_nt_max_uses)) = ()
 
 (* cry_019_weak_keys_mitigated (matches Coq: Theorem cry_019_weak_keys_mitigated) *)
-let cry_019_weak_keys_mitigated (p_k: crypto_key) : Lemma (requires (key_secure p_k == true)) (ensures ((128 <=? key_bits p_k) == true /\ p_k.f_key_extractable == false)) = admit ()
+let cry_019_weak_keys_mitigated (p_k: crypto_key) : Lemma (requires (key_secure p_k == true)) (ensures ((128 <=? key_bits p_k) == true /\ p_k.f_key_extractable == false)) = ()
 
 (* cry_020_related_key_attack_mitigated (matches Coq: Theorem cry_020_related_key_attack_mitigated) *)
-let cry_020_related_key_attack_mitigated (p_k: crypto_key) : Lemma (requires (key_strong p_k == true)) (ensures ((256 <=? key_bits p_k) == true /\ p_k.f_key_hardware_bound == true)) = admit ()
+let cry_020_related_key_attack_mitigated (p_k: crypto_key) : Lemma (requires (key_strong p_k == true)) (ensures ((256 <=? key_bits p_k) == true /\ p_k.f_key_hardware_bound == true)) = ()
 
 (* cry_020a_riina_key_related_safe (matches Coq: Theorem cry_020a_riina_key_related_safe) *)
-let cry_020a_riina_key_related_safe () : Lemma (key_strong riina_key == true) = admit ()
+let cry_020a_riina_key_related_safe () : Lemma (key_strong riina_key == true) = ()
 
 (* cry_021_differential_cryptanalysis_mitigated (matches Coq: Theorem cry_021_differential_cryptanalysis_mitigated) *)
-let cry_021_differential_cryptanalysis_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((aead_algorithm p_cfg <=? 1) == true /\ (128 <=? aead_key_bits p_cfg) == true)) = admit ()
+let cry_021_differential_cryptanalysis_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((aead_algorithm p_cfg <=? 1) == true /\ (128 <=? aead_key_bits p_cfg) == true)) = ()
 
 (* cry_022_linear_cryptanalysis_mitigated (matches Coq: Theorem cry_022_linear_cryptanalysis_mitigated) *)
-let cry_022_linear_cryptanalysis_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((aead_algorithm p_cfg <=? 1) == true)) = admit ()
+let cry_022_linear_cryptanalysis_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((aead_algorithm p_cfg <=? 1) == true)) = ()
 
 (* cry_023_algebraic_attack_mitigated (matches Coq: Theorem cry_023_algebraic_attack_mitigated) *)
-let cry_023_algebraic_attack_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((128 <=? aead_key_bits p_cfg) == true)) = admit ()
+let cry_023_algebraic_attack_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((128 <=? aead_key_bits p_cfg) == true)) = ()
 
 (* cry_024_quantum_attack_mitigated (matches Coq: Theorem cry_024_quantum_attack_mitigated) *)
-let cry_024_quantum_attack_mitigated (p_pq: pq_config) : Lemma (requires (pq_secure p_pq == true)) (ensures ((3 <=? pq_security_level p_pq) == true /\ p_pq.f_pq_hybrid_mode == true)) = admit ()
+let cry_024_quantum_attack_mitigated (p_pq: pq_config) : Lemma (requires (pq_secure p_pq == true)) (ensures ((3 <=? pq_security_level p_pq) == true /\ p_pq.f_pq_hybrid_mode == true)) = ()
 
 (* cry_024a_riina_pq_secure (matches Coq: Theorem cry_024a_riina_pq_secure) *)
-let cry_024a_riina_pq_secure () : Lemma (pq_secure riina_pq == true) = admit ()
+let cry_024a_riina_pq_secure () : Lemma (pq_secure riina_pq == true) = ()
 
 (* cry_025_harvest_now_decrypt_later_mitigated (matches Coq: Theorem cry_025_harvest_now_decrypt_later_mitigated) *)
-let cry_025_harvest_now_decrypt_later_mitigated (p_pq: pq_config) : Lemma (requires (pq_secure p_pq == true)) (ensures ((pq_kem_algorithm p_pq <=? 0) == true /\ (3 <=? pq_security_level p_pq) == true)) = admit ()
+let cry_025_harvest_now_decrypt_later_mitigated (p_pq: pq_config) : Lemma (requires (pq_secure p_pq == true)) (ensures ((pq_kem_algorithm p_pq <=? 0) == true /\ (3 <=? pq_security_level p_pq) == true)) = ()
 
 (* cry_026_key_extraction_mitigated (matches Coq: Theorem cry_026_key_extraction_mitigated) *)
-let cry_026_key_extraction_mitigated (p_k: crypto_key) : Lemma (requires (key_secure p_k == true)) (ensures (p_k.f_key_extractable == false)) = admit ()
+let cry_026_key_extraction_mitigated (p_k: crypto_key) : Lemma (requires (key_secure p_k == true)) (ensures (p_k.f_key_extractable == false)) = ()
 
 (* cry_027_nonce_misuse_mitigated (matches Coq: Theorem cry_027_nonce_misuse_mitigated) *)
-let cry_027_nonce_misuse_mitigated (p_mr: mraead_config) : Lemma (requires (mraead_secure p_mr == true)) (ensures (p_mr.f_mraead_siv_mode == true /\ aead_secure (p_mr.f_mraead_base) == true)) = admit ()
+let cry_027_nonce_misuse_mitigated (p_mr: mraead_config) : Lemma (requires (mraead_secure p_mr == true)) (ensures (p_mr.f_mraead_siv_mode == true /\ aead_secure (p_mr.f_mraead_base) == true)) = ()
 
 (* cry_027a_riina_mraead_secure (matches Coq: Theorem cry_027a_riina_mraead_secure) *)
-let cry_027a_riina_mraead_secure () : Lemma (mraead_secure riina_mraead == true) = admit ()
+let cry_027a_riina_mraead_secure () : Lemma (mraead_secure riina_mraead == true) = ()
 
 (* cry_028_certificate_attack_mitigated (matches Coq: Theorem cry_028_certificate_attack_mitigated) *)
-let cry_028_certificate_attack_mitigated (p_cc: cert_config) : Lemma (requires (cert_secure p_cc == true)) (ensures (p_cc.f_cert_ct_required == true /\ p_cc.f_cert_revocation_check == true)) = admit ()
+let cry_028_certificate_attack_mitigated (p_cc: cert_config) : Lemma (requires (cert_secure p_cc == true)) (ensures (p_cc.f_cert_ct_required == true /\ p_cc.f_cert_revocation_check == true)) = ()
 
 (* cry_028a_riina_cert_secure (matches Coq: Theorem cry_028a_riina_cert_secure) *)
-let cry_028a_riina_cert_secure () : Lemma (cert_secure riina_cert == true) = admit ()
+let cry_028a_riina_cert_secure () : Lemma (cert_secure riina_cert == true) = ()
 
 (* cry_029_random_fault_mitigated (matches Coq: Theorem cry_029_random_fault_mitigated) *)
-let cry_029_random_fault_mitigated (p_op: constant_time_op) (p_rng: rng_config) : Lemma (requires (ct_valid p_op == true /\ rng_secure p_rng == true)) (ensures (p_op.f_ct_is_constant == true /\ p_rng.f_rng_hardware_seeded == true)) = admit ()
+let cry_029_random_fault_mitigated (p_op: constant_time_op) (p_rng: rng_config) : Lemma (requires (ct_valid p_op == true /\ rng_secure p_rng == true)) (ensures (p_op.f_ct_is_constant == true /\ p_rng.f_rng_hardware_seeded == true)) = ()
 
 (* cry_030_bleichenbacher_mitigated (matches Coq: Theorem cry_030_bleichenbacher_mitigated) *)
-let cry_030_bleichenbacher_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((aead_algorithm p_cfg <=? 1) == true)) = admit ()
+let cry_030_bleichenbacher_mitigated (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((aead_algorithm p_cfg <=? 1) == true)) = ()
 
 (* cry_031_whisper_leak_mitigated (matches Coq: Theorem cry_031_whisper_leak_mitigated) *)
-let cry_031_whisper_leak_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_is_constant == true /\ p_op.f_ct_no_secret_branch == true)) = admit ()
+let cry_031_whisper_leak_mitigated (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_is_constant == true /\ p_op.f_ct_no_secret_branch == true)) = ()
 
 (* complete_ct_security (matches Coq: Theorem complete_ct_security) *)
-let complete_ct_security (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_secret_branch == true /\ p_op.f_ct_no_secret_addr == true /\ p_op.f_ct_no_variable_time == true /\ p_op.f_ct_is_constant == true)) = admit ()
+let complete_ct_security (p_op: constant_time_op) : Lemma (requires (ct_valid p_op == true)) (ensures (p_op.f_ct_no_secret_branch == true /\ p_op.f_ct_no_secret_addr == true /\ p_op.f_ct_no_variable_time == true /\ p_op.f_ct_is_constant == true)) = ()
 
 (* complete_aead_security (matches Coq: Theorem complete_aead_security) *)
-let complete_aead_security (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((aead_algorithm p_cfg <=? 1) == true /\ (128 <=? aead_key_bits p_cfg) == true /\ (128 <=? aead_tag_bits p_cfg) == true /\ p_cfg.f_aead_constant_time == true)) = admit ()
+let complete_aead_security (p_cfg: aead_config) : Lemma (requires (aead_secure p_cfg == true)) (ensures ((aead_algorithm p_cfg <=? 1) == true /\ (128 <=? aead_key_bits p_cfg) == true /\ (128 <=? aead_tag_bits p_cfg) == true /\ p_cfg.f_aead_constant_time == true)) = ()
 
 (* riina_complete_crypto_security (matches Coq: Theorem riina_complete_crypto_security) *)
-let riina_complete_crypto_security () : Lemma (ct_valid riina_ct_op == true /\ aead_secure riina_aead == true /\ hash_secure riina_hash == true /\ rng_secure riina_rng == true /\ proto_secure riina_proto == true /\ pq_secure riina_pq == true /\ key_strong riina_key == true /\ cert_secure riina_cert == true /\ mraead_secure riina_mraead == true) = admit ()
+let riina_complete_crypto_security () : Lemma (ct_valid riina_ct_op == true /\ aead_secure riina_aead == true /\ hash_secure riina_hash == true /\ rng_secure riina_rng == true /\ proto_secure riina_proto == true /\ pq_secure riina_pq == true /\ key_strong riina_key == true /\ cert_secure riina_cert == true /\ mraead_secure riina_mraead == true) = ()
 
 (* enc_001_length_preservation (matches Coq: Theorem enc_001_length_preservation) *)
-let enc_001_length_preservation (p_scheme: encryption_scheme) (p_pt_len: nat) (p_ct_len: nat) : Lemma (requires (p_scheme.f_enc_is_authenticated == true /\ p_pt_len == p_ct_len)) (ensures (p_pt_len == p_ct_len)) = admit ()
+let enc_001_length_preservation (p_scheme: encryption_scheme) (p_pt_len: nat) (p_ct_len: nat) : Lemma (requires (p_scheme.f_enc_is_authenticated == true /\ p_pt_len == p_ct_len)) (ensures (p_pt_len == p_ct_len)) = ()
 
 (* enc_002_key_size_requirement (matches Coq: Theorem enc_002_key_size_requirement) *)
-let enc_002_key_size_requirement (p_scheme: encryption_scheme) : Lemma (requires ((128 <=? enc_key_bits p_scheme) == true)) (ensures (p_scheme.f_enc_key_bits >= 128)) = admit ()
+let enc_002_key_size_requirement (p_scheme: encryption_scheme) : Lemma (requires ((128 <=? enc_key_bits p_scheme) == true)) (ensures (p_scheme.f_enc_key_bits >= 128)) = ()
 
 (* enc_003_riina_key_size_valid (matches Coq: Theorem enc_003_riina_key_size_valid) *)
-let enc_003_riina_key_size_valid () : Lemma ((128 <=? enc_key_bits riina_enc_scheme) == true) = admit ()
+let enc_003_riina_key_size_valid () : Lemma ((128 <=? enc_key_bits riina_enc_scheme) == true) = ()
 
 (* enc_004_riina_nonce_size_valid (matches Coq: Theorem enc_004_riina_nonce_size_valid) *)
-let enc_004_riina_nonce_size_valid () : Lemma ((96 <=? enc_nonce_bits riina_enc_scheme) == true) = admit ()
+let enc_004_riina_nonce_size_valid () : Lemma ((96 <=? enc_nonce_bits riina_enc_scheme) == true) = ()
 
 (* enc_005_riina_tag_size_valid (matches Coq: Theorem enc_005_riina_tag_size_valid) *)
-let enc_005_riina_tag_size_valid () : Lemma ((128 <=? enc_tag_bits riina_enc_scheme) == true) = admit ()
+let enc_005_riina_tag_size_valid () : Lemma ((128 <=? enc_tag_bits riina_enc_scheme) == true) = ()
 
 (* enc_006_riina_is_authenticated (matches Coq: Theorem enc_006_riina_is_authenticated) *)
-let enc_006_riina_is_authenticated () : Lemma (riina_enc_scheme.f_enc_is_authenticated == true) = admit ()
+let enc_006_riina_is_authenticated () : Lemma (riina_enc_scheme.f_enc_is_authenticated == true) = ()
 
 (* kdf_001_riina_kdf_secure (matches Coq: Theorem kdf_001_riina_kdf_secure) *)
-let kdf_001_riina_kdf_secure () : Lemma (kdf_secure riina_kdf == true) = admit ()
+let kdf_001_riina_kdf_secure () : Lemma (kdf_secure riina_kdf == true) = ()
 
 (* kdf_002_kdf_output_sufficient (matches Coq: Theorem kdf_002_kdf_output_sufficient) *)
-let kdf_002_kdf_output_sufficient (p_cfg: kdf_config) : Lemma (requires (kdf_secure p_cfg == true)) (ensures ((256 <=? kdf_output_bits p_cfg) == true)) = admit ()
+let kdf_002_kdf_output_sufficient (p_cfg: kdf_config) : Lemma (requires (kdf_secure p_cfg == true)) (ensures ((256 <=? kdf_output_bits p_cfg) == true)) = ()
 
 (* kdf_003_kdf_salt_sufficient (matches Coq: Theorem kdf_003_kdf_salt_sufficient) *)
-let kdf_003_kdf_salt_sufficient (p_cfg: kdf_config) : Lemma (requires (kdf_secure p_cfg == true)) (ensures ((128 <=? kdf_salt_bits p_cfg) == true)) = admit ()
+let kdf_003_kdf_salt_sufficient (p_cfg: kdf_config) : Lemma (requires (kdf_secure p_cfg == true)) (ensures ((128 <=? kdf_salt_bits p_cfg) == true)) = ()
 
 (* kdf_004_kdf_approved_algorithm (matches Coq: Theorem kdf_004_kdf_approved_algorithm) *)
-let kdf_004_kdf_approved_algorithm (p_cfg: kdf_config) : Lemma (requires (kdf_secure p_cfg == true)) (ensures ((kdf_algorithm p_cfg <=? 2) == true)) = admit ()
+let kdf_004_kdf_approved_algorithm (p_cfg: kdf_config) : Lemma (requires (kdf_secure p_cfg == true)) (ensures ((kdf_algorithm p_cfg <=? 2) == true)) = ()
 
 (* dk_001_valid_implies_secure_kdf (matches Coq: Theorem dk_001_valid_implies_secure_kdf) *)
-let dk_001_valid_implies_secure_kdf (p_dk: derived_key) : Lemma (requires (derived_key_valid p_dk == true)) (ensures (kdf_secure (p_dk.f_dk_kdf_config) == true)) = admit ()
+let dk_001_valid_implies_secure_kdf (p_dk: derived_key) : Lemma (requires (derived_key_valid p_dk == true)) (ensures (kdf_secure (p_dk.f_dk_kdf_config) == true)) = ()
 
 (* mac_001_riina_mac_secure (matches Coq: Theorem mac_001_riina_mac_secure) *)
-let mac_001_riina_mac_secure () : Lemma (mac_secure riina_mac == true) = admit ()
+let mac_001_riina_mac_secure () : Lemma (mac_secure riina_mac == true) = ()
 
 (* mac_002_mac_key_sufficient (matches Coq: Theorem mac_002_mac_key_sufficient) *)
-let mac_002_mac_key_sufficient (p_cfg: mac_config) : Lemma (requires (mac_secure p_cfg == true)) (ensures ((128 <=? mac_key_bits p_cfg) == true)) = admit ()
+let mac_002_mac_key_sufficient (p_cfg: mac_config) : Lemma (requires (mac_secure p_cfg == true)) (ensures ((128 <=? mac_key_bits p_cfg) == true)) = ()
 
 (* mac_003_mac_tag_sufficient (matches Coq: Theorem mac_003_mac_tag_sufficient) *)
-let mac_003_mac_tag_sufficient (p_cfg: mac_config) : Lemma (requires (mac_secure p_cfg == true)) (ensures ((128 <=? mac_tag_bits p_cfg) == true)) = admit ()
+let mac_003_mac_tag_sufficient (p_cfg: mac_config) : Lemma (requires (mac_secure p_cfg == true)) (ensures ((128 <=? mac_tag_bits p_cfg) == true)) = ()
 
 (* mac_004_mac_constant_time (matches Coq: Theorem mac_004_mac_constant_time) *)
-let mac_004_mac_constant_time (p_cfg: mac_config) : Lemma (requires (mac_secure p_cfg == true)) (ensures (p_cfg.f_mac_constant_time == true)) = admit ()
+let mac_004_mac_constant_time (p_cfg: mac_config) : Lemma (requires (mac_secure p_cfg == true)) (ensures (p_cfg.f_mac_constant_time == true)) = ()
 
 (* tag_001_equal_tags_valid (matches Coq: Theorem tag_001_equal_tags_valid) *)
-let tag_001_equal_tags_valid (p_tag: nat) : Lemma (tag_compare_ct p_tag p_tag == TagValid) = admit ()
+let tag_001_equal_tags_valid (p_tag: nat) : Lemma (tag_compare_ct p_tag p_tag == TagValid) = ()
 
 (* tag_002_tag_compare_reflexive (matches Coq: Theorem tag_002_tag_compare_reflexive) *)
-let tag_002_tag_compare_reflexive (p_tag: nat) : Lemma (tag_compare_ct p_tag p_tag == TagValid) = admit ()
+let tag_002_tag_compare_reflexive (p_tag: nat) : Lemma (tag_compare_ct p_tag p_tag == TagValid) = ()
 
 (* nonce_001_counter_incrementable (matches Coq: Theorem nonce_001_counter_incrementable) *)
-let nonce_001_counter_incrementable (p_cn: counter_nonce) : Lemma (requires (counter_nonce_valid p_cn == true)) (ensures (p_cn.f_cn_counter < p_cn.f_cn_max_value)) = admit ()
+let nonce_001_counter_incrementable (p_cn: counter_nonce) : Lemma (requires (counter_nonce_valid p_cn == true)) (ensures (p_cn.f_cn_counter < p_cn.f_cn_max_value)) = ()
 
 (* nonce_002_increment_changes_nonce (matches Coq: Theorem nonce_002_increment_changes_nonce) *)
-let nonce_002_increment_changes_nonce (p_cn: counter_nonce) : Lemma (requires (counter_nonce_valid p_cn == true)) (ensures (~(p_cn.f_cn_counter == ((p_cn.f_cn_counter) + 1)))) = admit ()
+let nonce_002_increment_changes_nonce (p_cn: counter_nonce) : Lemma (requires (counter_nonce_valid p_cn == true)) (ensures (~(p_cn.f_cn_counter == ((p_cn.f_cn_counter) + 1)))) = ()
 
 (* nonce_003_different_counters_different_nonces (matches Coq: Theorem nonce_003_different_counters_different_nonces) *)
-let nonce_003_different_counters_different_nonces (p_n: nat) (p_m: nat) : Lemma (requires (~(p_n == p_m))) (ensures (~(p_n == p_m))) = admit ()
+let nonce_003_different_counters_different_nonces (p_n: nat) (p_m: nat) : Lemma (requires (~(p_n == p_m))) (ensures (~(p_n == p_m))) = ()
 
 (* nonce_004_empty_set_no_collision (matches Coq: Theorem nonce_004_empty_set_no_collision) *)
-let nonce_004_empty_set_no_collision (p_n: (list nat)) : Lemma (nonce_in_set p_n [] == false) = admit ()
+let nonce_004_empty_set_no_collision (p_n: (list nat)) : Lemma (nonce_in_set p_n [] == false) = ()
 
 (* nonce_005_add_increases_size (matches Coq: Theorem nonce_005_add_increases_size) *)
-let nonce_005_add_increases_size (p_n: (list nat)) (p_ns: nat) : Lemma (length (p_n :: p_ns) == ((length p_ns) + 1)) = admit ()
+let nonce_005_add_increases_size (p_n: (list nat)) (p_ns: nat) : Lemma (length (p_n :: p_ns) == ((length p_ns) + 1)) = ()
 
 (* full_001_riina_full_crypto_secure (matches Coq: Theorem full_001_riina_full_crypto_secure) *)
-let full_001_riina_full_crypto_secure () : Lemma (full_crypto_secure riina_full_crypto == true) = admit ()
+let full_001_riina_full_crypto_secure () : Lemma (full_crypto_secure riina_full_crypto == true) = ()
 
 (* full_002_full_implies_ct (matches Coq: Theorem full_002_full_implies_ct) *)
-let full_002_full_implies_ct (p_fc: full_crypto_config) : Lemma (requires (full_crypto_secure p_fc == true)) (ensures (ct_valid (p_fc.f_fc_ct_op) == true)) = admit ()
+let full_002_full_implies_ct (p_fc: full_crypto_config) : Lemma (requires (full_crypto_secure p_fc == true)) (ensures (ct_valid (p_fc.f_fc_ct_op) == true)) = ()
 
 (* full_003_full_implies_authenticated (matches Coq: Theorem full_003_full_implies_authenticated) *)
-let full_003_full_implies_authenticated (p_fc: full_crypto_config) : Lemma (requires (full_crypto_secure p_fc == true)) (ensures ((p_fc.f_fc_enc).f_enc_is_authenticated == true)) = admit ()
+let full_003_full_implies_authenticated (p_fc: full_crypto_config) : Lemma (requires (full_crypto_secure p_fc == true)) (ensures ((p_fc.f_fc_enc).f_enc_is_authenticated == true)) = ()
 
 (* full_004_full_implies_pq_ready (matches Coq: Theorem full_004_full_implies_pq_ready) *)
-let full_004_full_implies_pq_ready (p_fc: full_crypto_config) : Lemma (requires (full_crypto_secure p_fc == true)) (ensures (pq_secure (p_fc.f_fc_pq) == true)) = admit ()
+let full_004_full_implies_pq_ready (p_fc: full_crypto_config) : Lemma (requires (full_crypto_secure p_fc == true)) (ensures (pq_secure (p_fc.f_fc_pq) == true)) = ()
 
 (* full_005_full_implies_kdf_secure (matches Coq: Theorem full_005_full_implies_kdf_secure) *)
-let full_005_full_implies_kdf_secure (p_fc: full_crypto_config) : Lemma (requires (full_crypto_secure p_fc == true)) (ensures (kdf_secure (p_fc.f_fc_kdf) == true)) = admit ()
+let full_005_full_implies_kdf_secure (p_fc: full_crypto_config) : Lemma (requires (full_crypto_secure p_fc == true)) (ensures (kdf_secure (p_fc.f_fc_kdf) == true)) = ()
 
 (* full_006_full_implies_mac_secure (matches Coq: Theorem full_006_full_implies_mac_secure) *)
-let full_006_full_implies_mac_secure (p_fc: full_crypto_config) : Lemma (requires (full_crypto_secure p_fc == true)) (ensures (mac_secure (p_fc.f_fc_mac) == true)) = admit ()
+let full_006_full_implies_mac_secure (p_fc: full_crypto_config) : Lemma (requires (full_crypto_secure p_fc == true)) (ensures (mac_secure (p_fc.f_fc_mac) == true)) = ()

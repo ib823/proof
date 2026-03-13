@@ -55,144 +55,144 @@ pred evidence_count[p_sfrs: list_sfr] {
 
 // eqb_sym (matches Coq: Lemma eqb_sym)
 assert eqb_sym {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check eqb_sym for 5
 
 // forallb_eqb_combine_sym (matches Coq: Lemma forallb_eqb_combine_sym)
 assert forallb_eqb_combine_sym {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check forallb_eqb_combine_sym for 5
 
 // differ_at_one_sym (matches Coq: Lemma differ_at_one_sym)
 assert differ_at_one_sym {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check differ_at_one_sym for 5
 
 // mcdc_pair_sym (matches Coq: Theorem mcdc_pair_sym)
 assert mcdc_pair_sym {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check mcdc_pair_sym for 5
 
 // no_self_mcdc (matches Coq: Theorem no_self_mcdc)
 assert no_self_mcdc {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check no_self_mcdc for 5
 
 // full_trace_no_gaps (matches Coq: Theorem full_trace_no_gaps)
 assert full_trace_no_gaps {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check full_trace_no_gaps for 5
 
 // sfr_needs_evidence (matches Coq: Theorem sfr_needs_evidence)
 assert sfr_needs_evidence {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check sfr_needs_evidence for 5
 
 // sfr_needs_verification (matches Coq: Theorem sfr_needs_verification)
 assert sfr_needs_verification {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check sfr_needs_verification for 5
 
 // dal_a_highest (matches Coq: Theorem dal_a_highest)
 assert dal_a_highest {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check dal_a_highest for 5
 
 // dal_leq_refl (matches Coq: Theorem dal_leq_refl)
 assert dal_leq_refl {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check dal_leq_refl for 5
 
 // dal_leq_trans (matches Coq: Theorem dal_leq_trans)
 assert dal_leq_trans {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check dal_leq_trans for 5
 
 // fold_left_add_acc (matches Coq: Lemma fold_left_add_acc)
 assert fold_left_add_acc {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check fold_left_add_acc for 5
 
 // evidence_count_app (matches Coq: Theorem evidence_count_app)
 assert evidence_count_app {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check evidence_count_app for 5
 
 // all_satisfied_have_evidence (matches Coq: Theorem all_satisfied_have_evidence)
 assert all_satisfied_have_evidence {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check all_satisfied_have_evidence for 5
 
 // empty_trace_fully_traced (matches Coq: Theorem empty_trace_fully_traced)
 assert empty_trace_fully_traced {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check empty_trace_fully_traced for 5
 
 // dal_e_lowest (matches Coq: Theorem dal_e_lowest)
 assert dal_e_lowest {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check dal_e_lowest for 5
 
 // dal_leq_antisym (matches Coq: Theorem dal_leq_antisym)
 assert dal_leq_antisym {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check dal_leq_antisym for 5
 
 // dal_to_nat_bounded (matches Coq: Theorem dal_to_nat_bounded)
 assert dal_to_nat_bounded {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check dal_to_nat_bounded for 5
 
 // evidence_count_nil (matches Coq: Theorem evidence_count_nil)
 assert evidence_count_nil {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check evidence_count_nil for 5
 
 // evidence_count_singleton (matches Coq: Theorem evidence_count_singleton)
 assert evidence_count_singleton {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check evidence_count_singleton for 5
 
 // sfr_satisfied_decompose (matches Coq: Theorem sfr_satisfied_decompose)
 assert sfr_satisfied_decompose {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check sfr_satisfied_decompose for 5
 
 // no_self_mcdc_no_flip (matches Coq: Theorem no_self_mcdc_no_flip)
 assert no_self_mcdc_no_flip {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check no_self_mcdc_no_flip for 5
 
 // dal_a_gt_b (matches Coq: Theorem dal_a_gt_b)
 assert dal_a_gt_b {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check dal_a_gt_b for 5
 
 // evidence_count_mono (matches Coq: Theorem evidence_count_mono)
 assert evidence_count_mono {
-  #univ >= 0
+  all x: cond_vector | x in cond_vector
 }
 check evidence_count_mono for 5

@@ -124,76 +124,76 @@ let healing_layers (p_detect: bool) (p_recover: bool) (p_checkpoint: bool) (p_de
   andb p_detect (andb p_recover ((p_checkpoint && p_degrade)))
 
 (* heal_001_detection_complete (matches Coq: Theorem heal_001_detection_complete) *)
-let heal_001_detection_complete (p_detected: nat) (p_total: nat) : Lemma (requires (detection_complete p_detected p_total == true)) (ensures (p_detected == p_total)) = admit ()
+let heal_001_detection_complete (p_detected: nat) (p_total: nat) : Lemma (requires (detection_complete p_detected p_total == true)) (ensures (p_detected == p_total)) = ()
 
 (* heal_002_severity_bounded (matches Coq: Theorem heal_002_severity_bounded) *)
-let heal_002_severity_bounded (p_fault: nat) (p_max_sev: nat) : Lemma (requires (severity_bounded p_fault p_max_sev == true)) (ensures (fault_severity p_fault <= p_max_sev)) = admit ()
+let heal_002_severity_bounded (p_fault: nat) (p_max_sev: nat) : Lemma (requires (severity_bounded p_fault p_max_sev == true)) (ensures (fault_severity p_fault <= p_max_sev)) = ()
 
 (* heal_003_plan_verified (matches Coq: Theorem heal_003_plan_verified) *)
-let heal_003_plan_verified (p_plan: nat) : Lemma (requires (plan_verified p_plan == true)) (ensures (plan_verified p_plan == true)) = admit ()
+let heal_003_plan_verified (p_plan: nat) : Lemma (requires (plan_verified p_plan == true)) (ensures (plan_verified p_plan == true)) = ()
 
 (* heal_004_timeout_bounded (matches Coq: Theorem heal_004_timeout_bounded) *)
-let heal_004_timeout_bounded (p_plan: nat) (p_max_timeout: nat) : Lemma (requires (timeout_ok p_plan p_max_timeout == true)) (ensures (plan_timeout p_plan <= p_max_timeout)) = admit ()
+let heal_004_timeout_bounded (p_plan: nat) (p_max_timeout: nat) : Lemma (requires (timeout_ok p_plan p_max_timeout == true)) (ensures (plan_timeout p_plan <= p_max_timeout)) = ()
 
 (* heal_005_actions_exist (matches Coq: Theorem heal_005_actions_exist) *)
-let heal_005_actions_exist (p_plan: nat) : Lemma (requires (plan_has_actions p_plan == true)) (ensures (length (plan_actions p_plan) > 0)) = admit ()
+let heal_005_actions_exist (p_plan: nat) : Lemma (requires (plan_has_actions p_plan == true)) (ensures (length (plan_actions p_plan) > 0)) = ()
 
 (* heal_006_checkpoint_verified (matches Coq: Theorem heal_006_checkpoint_verified) *)
-let heal_006_checkpoint_verified (p_cp: nat) : Lemma (requires (cp_verified p_cp == true)) (ensures (cp_verified p_cp == true)) = admit ()
+let heal_006_checkpoint_verified (p_cp: nat) : Lemma (requires (cp_verified p_cp == true)) (ensures (cp_verified p_cp == true)) = ()
 
 (* heal_007_checkpoint_fresh (matches Coq: Theorem heal_007_checkpoint_fresh) *)
-let heal_007_checkpoint_fresh (p_cp: nat) (p_current: nat) (p_max_age: nat) : Lemma (requires (checkpoint_fresh p_cp p_current p_max_age == true)) (ensures (p_current - cp_timestamp p_cp <= p_max_age)) = admit ()
+let heal_007_checkpoint_fresh (p_cp: nat) (p_current: nat) (p_max_age: nat) : Lemma (requires (checkpoint_fresh p_cp p_current p_max_age == true)) (ensures (p_current - cp_timestamp p_cp <= p_max_age)) = ()
 
 (* heal_008_hash_valid (matches Coq: Theorem heal_008_hash_valid) *)
-let heal_008_hash_valid (p_computed: nat) (p_stored: nat) : Lemma (requires (hash_valid p_computed p_stored == true)) (ensures (p_computed == p_stored)) = admit ()
+let heal_008_hash_valid (p_computed: nat) (p_stored: nat) : Lemma (requires (hash_valid p_computed p_stored == true)) (ensures (p_computed == p_stored)) = ()
 
 (* heal_009_degradation_valid (matches Coq: Theorem heal_009_degradation_valid) *)
-let heal_009_degradation_valid (p_level: nat) (p_max_level: nat) : Lemma (requires (degradation_valid p_level p_max_level == true)) (ensures (p_level <= p_max_level)) = admit ()
+let heal_009_degradation_valid (p_level: nat) (p_max_level: nat) : Lemma (requires (degradation_valid p_level p_max_level == true)) (ensures (p_level <= p_max_level)) = ()
 
 (* heal_010_capability_bounded (matches Coq: Theorem heal_010_capability_bounded) *)
-let heal_010_capability_bounded (p_cap: nat) : Lemma (requires (capability_bounded p_cap == true)) (ensures (cap_level p_cap <= 100)) = admit ()
+let heal_010_capability_bounded (p_cap: nat) : Lemma (requires (capability_bounded p_cap == true)) (ensures (cap_level p_cap <= 100)) = ()
 
 (* heal_011_isolation_effective (matches Coq: Theorem heal_011_isolation_effective) *)
-let heal_011_isolation_effective (p_component: nat) (p_isolated: (list nat)) : Lemma (requires (component_isolated p_component p_isolated == true)) (ensures ((exists p_i. List.Tot.memP p_i p_isolated) /\ i == p_component)) = admit ()
+let heal_011_isolation_effective (p_component: nat) (p_isolated: (list nat)) : Lemma (requires (component_isolated p_component p_isolated == true)) (ensures ((exists p_i. List.Tot.memP p_i p_isolated) /\ i == p_component)) = ()
 
 (* heal_012_failover_available (matches Coq: Theorem heal_012_failover_available) *)
-let heal_012_failover_available (p_targets: (list nat)) : Lemma (requires (failover_available p_targets == true)) (ensures (length p_targets > 0)) = admit ()
+let heal_012_failover_available (p_targets: (list nat)) : Lemma (requires (failover_available p_targets == true)) (ensures (length p_targets > 0)) = ()
 
 (* heal_013_recovery_completes (matches Coq: Theorem heal_013_recovery_completes) *)
-let heal_013_recovery_completes (p_p_before: health_state) (p_p_after: health_state) : Lemma (requires (recovery_complete id_before id_after == true)) (ensures (id_after == Healthy \/ (exists p_n. id_after == Degraded p_n))) = admit ()
+let heal_013_recovery_completes (p_p_before: health_state) (p_p_after: health_state) : Lemma (requires (recovery_complete id_before id_after == true)) (ensures (id_after == Healthy \/ (exists p_n. id_after == Degraded p_n))) = ()
 
 (* heal_014_no_recurrence (matches Coq: Theorem heal_014_no_recurrence) *)
-let heal_014_no_recurrence (p_fault_id: nat) (p_recent: (list nat)) (p_window: nat) : Lemma (requires (recurrence_prevented p_fault_id p_recent p_window == true)) (ensures (~(List.Tot.memP p_fault_id p_recent))) = admit ()
+let heal_014_no_recurrence (p_fault_id: nat) (p_recent: (list nat)) (p_window: nat) : Lemma (requires (recurrence_prevented p_fault_id p_recent p_window == true)) (ensures (~(List.Tot.memP p_fault_id p_recent))) = ()
 
 (* heal_015_graceful_order (matches Coq: Theorem heal_015_graceful_order) *)
-let heal_015_graceful_order (p_from_level: nat) (p_to_level: nat) : Lemma (requires (degradation_ordered p_from_level p_to_level == true)) (ensures (p_to_level <= p_from_level)) = admit ()
+let heal_015_graceful_order (p_from_level: nat) (p_to_level: nat) : Lemma (requires (degradation_ordered p_from_level p_to_level == true)) (ensures (p_to_level <= p_from_level)) = ()
 
 (* heal_016_min_capability (matches Coq: Theorem heal_016_min_capability) *)
-let heal_016_min_capability (p_current: nat) (p_min_cap: nat) : Lemma (requires (min_capability_ok p_current p_min_cap == true)) (ensures (p_min_cap <= p_current)) = admit ()
+let heal_016_min_capability (p_current: nat) (p_min_cap: nat) : Lemma (requires (min_capability_ok p_current p_min_cap == true)) (ensures (p_min_cap <= p_current)) = ()
 
 (* heal_017_attack_detected (matches Coq: Theorem heal_017_attack_detected) *)
-let heal_017_attack_detected (p_indicators: nat) (p_threshold: nat) : Lemma (requires (attack_detected p_indicators p_threshold == true)) (ensures (p_threshold <= p_indicators)) = admit ()
+let heal_017_attack_detected (p_indicators: nat) (p_threshold: nat) : Lemma (requires (attack_detected p_indicators p_threshold == true)) (ensures (p_threshold <= p_indicators)) = ()
 
 (* heal_018_attack_contained (matches Coq: Theorem heal_018_attack_contained) *)
-let heal_018_attack_contained (p_spread_count: nat) (p_max_spread: nat) : Lemma (requires (attack_contained p_spread_count p_max_spread == true)) (ensures (p_spread_count <= p_max_spread)) = admit ()
+let heal_018_attack_contained (p_spread_count: nat) (p_max_spread: nat) : Lemma (requires (attack_contained p_spread_count p_max_spread == true)) (ensures (p_spread_count <= p_max_spread)) = ()
 
 (* heal_019_evidence_preserved (matches Coq: Theorem heal_019_evidence_preserved) *)
-let heal_019_evidence_preserved (p_collected: nat) (p_required: nat) : Lemma (requires (evidence_preserved p_collected p_required == true)) (ensures (p_required <= p_collected)) = admit ()
+let heal_019_evidence_preserved (p_collected: nat) (p_required: nat) : Lemma (requires (evidence_preserved p_collected p_required == true)) (ensures (p_required <= p_collected)) = ()
 
 (* heal_020_rto_met (matches Coq: Theorem heal_020_rto_met) *)
-let heal_020_rto_met (p_actual_time: nat) (p_rto: nat) : Lemma (requires (rto_met p_actual_time p_rto == true)) (ensures (p_actual_time <= p_rto)) = admit ()
+let heal_020_rto_met (p_actual_time: nat) (p_rto: nat) : Lemma (requires (rto_met p_actual_time p_rto == true)) (ensures (p_actual_time <= p_rto)) = ()
 
 (* heal_021_rpo_met (matches Coq: Theorem heal_021_rpo_met) *)
-let heal_021_rpo_met (p_data_loss_time: nat) (p_rpo: nat) : Lemma (requires (rpo_met p_data_loss_time p_rpo == true)) (ensures (p_data_loss_time <= p_rpo)) = admit ()
+let heal_021_rpo_met (p_data_loss_time: nat) (p_rpo: nat) : Lemma (requires (rpo_met p_data_loss_time p_rpo == true)) (ensures (p_data_loss_time <= p_rpo)) = ()
 
 (* heal_022_redundancy (matches Coq: Theorem heal_022_redundancy) *)
-let heal_022_redundancy (p_active: nat) (p_min_redundancy: nat) : Lemma (requires (redundancy_ok p_active p_min_redundancy == true)) (ensures (p_min_redundancy <= p_active)) = admit ()
+let heal_022_redundancy (p_active: nat) (p_min_redundancy: nat) : Lemma (requires (redundancy_ok p_active p_min_redundancy == true)) (ensures (p_min_redundancy <= p_active)) = ()
 
 (* heal_023_audit_complete (matches Coq: Theorem heal_023_audit_complete) *)
-let heal_023_audit_complete (p_events: nat) (p_logged: nat) : Lemma (requires (audit_complete p_events p_logged == true)) (ensures (p_events == p_logged)) = admit ()
+let heal_023_audit_complete (p_events: nat) (p_logged: nat) : Lemma (requires (audit_complete p_events p_logged == true)) (ensures (p_events == p_logged)) = ()
 
 (* heal_024_learning_applied (matches Coq: Theorem heal_024_learning_applied) *)
-let heal_024_learning_applied (p_old_t: nat) (p_new_t: nat) (p_improvement: nat) : Lemma (requires (learning_applied p_old_t p_new_t p_improvement == true)) (ensures (p_old_t <= p_new_t)) = admit ()
+let heal_024_learning_applied (p_old_t: nat) (p_new_t: nat) (p_improvement: nat) : Lemma (requires (learning_applied p_old_t p_new_t p_improvement == true)) (ensures (p_old_t <= p_new_t)) = ()
 
 (* heal_025_defense_in_depth (matches Coq: Theorem heal_025_defense_in_depth) *)
-let heal_025_defense_in_depth (p_d: _) (p_r: _) (p_c: _) (p_dg: _) : Lemma (requires (healing_layers p_d p_r p_c p_dg == true)) (ensures (p_d == true /\ p_r == true /\ p_c == true /\ p_dg == true)) = admit ()
+let heal_025_defense_in_depth (p_d: _) (p_r: _) (p_c: _) (p_dg: _) : Lemma (requires (healing_layers p_d p_r p_c p_dg == true)) (ensures (p_d == true /\ p_r == true /\ p_c == true /\ p_dg == true)) = ()

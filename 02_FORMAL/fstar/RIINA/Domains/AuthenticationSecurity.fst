@@ -153,62 +153,62 @@ let nonce_fresh (p_ns: nonce_store) (p_n: nat) : Tot bool =
   (not (existsb (Nat.eqb p_n)) (p_ns.f_ns_seen))
 
 (* auth_001_credential_stuffing_mitigated (matches Coq: Theorem auth_001_credential_stuffing_mitigated) *)
-let auth_001_credential_stuffing_mitigated (p_rl: rate_limiter) : Lemma (requires (p_rl.f_rl_attempts >= p_rl.f_rl_max_attempts)) (ensures (is_rate_limited p_rl == true)) = admit ()
+let auth_001_credential_stuffing_mitigated (p_rl: rate_limiter) : Lemma (requires (p_rl.f_rl_attempts >= p_rl.f_rl_max_attempts)) (ensures (is_rate_limited p_rl == true)) = ()
 
 (* auth_002_password_spraying_mitigated (matches Coq: Theorem auth_002_password_spraying_mitigated) *)
-let auth_002_password_spraying_mitigated (p_rl: rate_limiter) : Lemma (requires (is_rate_limited p_rl == true)) (ensures (p_rl.f_rl_attempts >= p_rl.f_rl_max_attempts)) = admit ()
+let auth_002_password_spraying_mitigated (p_rl: rate_limiter) : Lemma (requires (is_rate_limited p_rl == true)) (ensures (p_rl.f_rl_attempts >= p_rl.f_rl_max_attempts)) = ()
 
 (* auth_003_brute_force_mitigated (matches Coq: Theorem auth_003_brute_force_mitigated) *)
-let auth_003_brute_force_mitigated (p_rl: rate_limiter) (p_n: nat) : Lemma (requires (p_n >= p_rl.f_rl_max_attempts)) (ensures (is_rate_limited (mkratelimiter p_n (p_rl.f_rl_window_start) (p_rl.f_rl_max_attempts) (p_rl.f_rl_lockout_duration)) == true)) = admit ()
+let auth_003_brute_force_mitigated (p_rl: rate_limiter) (p_n: nat) : Lemma (requires (p_n >= p_rl.f_rl_max_attempts)) (ensures (is_rate_limited (mkratelimiter p_n (p_rl.f_rl_window_start) (p_rl.f_rl_max_attempts) (p_rl.f_rl_lockout_duration)) == true)) = ()
 
 (* auth_004_pass_the_hash_mitigated (matches Coq: Theorem auth_004_pass_the_hash_mitigated) *)
-let auth_004_pass_the_hash_mitigated (p_t: auth_ticket) : Lemma (length (p_t.f_at_signature) > 0) = admit ()
+let auth_004_pass_the_hash_mitigated (p_t: auth_ticket) : Lemma (length (p_t.f_at_signature) > 0) = ()
 
 (* auth_005_pass_the_ticket_mitigated (matches Coq: Theorem auth_005_pass_the_ticket_mitigated) *)
-let auth_005_pass_the_ticket_mitigated (p_t: session_token) (p_now: nat) : Lemma (requires (token_valid p_t p_now == true)) (ensures (p_now < p_t.f_st_expires)) = admit ()
+let auth_005_pass_the_ticket_mitigated (p_t: session_token) (p_now: nat) : Lemma (requires (token_valid p_t p_now == true)) (ensures (p_now < p_t.f_st_expires)) = ()
 
 (* auth_006_kerberoasting_mitigated (matches Coq: Theorem auth_006_kerberoasting_mitigated) *)
-let auth_006_kerberoasting_mitigated (p_sk: service_key) : Lemma (p_sk.f_sk_algorithm >= 2) = admit ()
+let auth_006_kerberoasting_mitigated (p_sk: service_key) : Lemma (p_sk.f_sk_algorithm >= 2) = ()
 
 (* auth_007_golden_ticket_mitigated (matches Coq: Theorem auth_007_golden_ticket_mitigated) *)
-let auth_007_golden_ticket_mitigated (p_k: hsm_protected_key) : Lemma (p_k.f_hsm_extractable == false) = admit ()
+let auth_007_golden_ticket_mitigated (p_k: hsm_protected_key) : Lemma (p_k.f_hsm_extractable == false) = ()
 
 (* auth_008_silver_ticket_mitigated (matches Coq: Theorem auth_008_silver_ticket_mitigated) *)
-let auth_008_silver_ticket_mitigated (p_ma: mutual_auth) : Lemma (p_ma.f_ma_client_verified == true /\ p_ma.f_ma_server_verified == true) = admit ()
+let auth_008_silver_ticket_mitigated (p_ma: mutual_auth) : Lemma (p_ma.f_ma_client_verified == true /\ p_ma.f_ma_server_verified == true) = ()
 
 (* auth_009_credential_theft_mitigated (matches Coq: Theorem auth_009_credential_theft_mitigated) *)
 let auth_009_credential_theft_mitigated_obligation () : Tot bool = true
 let auth_009_credential_theft_mitigated_lemma () : Lemma (requires True) (ensures (auth_009_credential_theft_mitigated_obligation () == auth_009_credential_theft_mitigated_obligation ())) = ()
 
 (* auth_010_session_fixation_mitigated (matches Coq: Theorem auth_010_session_fixation_mitigated) *)
-let auth_010_session_fixation_mitigated (p_old_id: nat) (p_new_id: nat) : Lemma (requires (~(p_old_id == p_new_id))) (ensures (~(p_old_id == p_new_id))) = admit ()
+let auth_010_session_fixation_mitigated (p_old_id: nat) (p_new_id: nat) : Lemma (requires (~(p_old_id == p_new_id))) (ensures (~(p_old_id == p_new_id))) = ()
 
 (* auth_011_auth_bypass_mitigated (matches Coq: Theorem auth_011_auth_bypass_mitigated) *)
-let auth_011_auth_bypass_mitigated (p_ra: route_auth) : Lemma (p_ra.f_ra_auth_required == true /\ p_ra.f_ra_auth_checked == true) = admit ()
+let auth_011_auth_bypass_mitigated (p_ra: route_auth) : Lemma (p_ra.f_ra_auth_required == true /\ p_ra.f_ra_auth_checked == true) = ()
 
 (* auth_012_oauth_attacks_mitigated (matches Coq: Theorem auth_012_oauth_attacks_mitigated) *)
-let auth_012_oauth_attacks_mitigated (p_os: o_auth_state) : Lemma (length (p_os.f_oauth_state_param) >= 32 /\ length (p_os.f_oauth_pkce_verifier) >= 43 /\ p_os.f_oauth_redirect_validated == true) = admit ()
+let auth_012_oauth_attacks_mitigated (p_os: o_auth_state) : Lemma (length (p_os.f_oauth_state_param) >= 32 /\ length (p_os.f_oauth_pkce_verifier) >= 43 /\ p_os.f_oauth_redirect_validated == true) = ()
 
 (* auth_013_jwt_attacks_mitigated (matches Coq: Theorem auth_013_jwt_attacks_mitigated) *)
-let auth_013_jwt_attacks_mitigated (p_jc: jwt_config) : Lemma (p_jc.f_jwt_alg_none_disabled == true /\ p_jc.f_jwt_exp_required == true) = admit ()
+let auth_013_jwt_attacks_mitigated (p_jc: jwt_config) : Lemma (p_jc.f_jwt_alg_none_disabled == true /\ p_jc.f_jwt_exp_required == true) = ()
 
 (* auth_014_saml_attacks_mitigated (matches Coq: Theorem auth_014_saml_attacks_mitigated) *)
-let auth_014_saml_attacks_mitigated (p_sc: saml_config) : Lemma (p_sc.f_saml_signature_required == true /\ p_sc.f_saml_replay_detection == true) = admit ()
+let auth_014_saml_attacks_mitigated (p_sc: saml_config) : Lemma (p_sc.f_saml_signature_required == true /\ p_sc.f_saml_replay_detection == true) = ()
 
 (* auth_015_sso_attacks_mitigated (matches Coq: Theorem auth_015_sso_attacks_mitigated) *)
-let auth_015_sso_attacks_mitigated (p_os: o_auth_state) (p_jc: jwt_config) : Lemma (p_os.f_oauth_redirect_validated == true /\ p_jc.f_jwt_alg_none_disabled == true) = admit ()
+let auth_015_sso_attacks_mitigated (p_os: o_auth_state) (p_jc: jwt_config) : Lemma (p_os.f_oauth_redirect_validated == true /\ p_jc.f_jwt_alg_none_disabled == true) = ()
 
 (* auth_016_mfa_bypass_mitigated (matches Coq: Theorem auth_016_mfa_bypass_mitigated) *)
-let auth_016_mfa_bypass_mitigated (p_s: mfa_state) : Lemma (requires (p_s.f_mfa_required == true /\ mfa_complete p_s == true)) (ensures (p_s.f_mfa_second_factor_verified == true)) = admit ()
+let auth_016_mfa_bypass_mitigated (p_s: mfa_state) : Lemma (requires (p_s.f_mfa_required == true /\ mfa_complete p_s == true)) (ensures (p_s.f_mfa_second_factor_verified == true)) = ()
 
 (* auth_017_biometric_spoof_mitigated (matches Coq: Theorem auth_017_biometric_spoof_mitigated) *)
-let auth_017_biometric_spoof_mitigated (p_ba: biometric_auth) : Lemma (p_ba.f_bio_liveness_check == true /\ p_ba.f_bio_confidence >= p_ba.f_bio_min_confidence) = admit ()
+let auth_017_biometric_spoof_mitigated (p_ba: biometric_auth) : Lemma (p_ba.f_bio_liveness_check == true /\ p_ba.f_bio_confidence >= p_ba.f_bio_min_confidence) = ()
 
 (* auth_018_token_theft_mitigated (matches Coq: Theorem auth_018_token_theft_mitigated) *)
-let auth_018_token_theft_mitigated (p_t: session_token) (p_ip: nat) (p_ua: nat) : Lemma (token_bound p_t p_ip p_ua == true) = admit ()
+let auth_018_token_theft_mitigated (p_t: session_token) (p_ip: nat) (p_ua: nat) : Lemma (token_bound p_t p_ip p_ua == true) = ()
 
 (* auth_019_replay_mitigated (matches Coq: Theorem auth_019_replay_mitigated) *)
-let auth_019_replay_mitigated (p_ns: nonce_store) (p_n: nat) : Lemma (requires (nonce_fresh p_ns p_n == true)) (ensures (~(List.Tot.memP p_n (p_ns.f_ns_seen)))) = admit ()
+let auth_019_replay_mitigated (p_ns: nonce_store) (p_n: nat) : Lemma (requires (nonce_fresh p_ns p_n == true)) (ensures (~(List.Tot.memP p_n (p_ns.f_ns_seen)))) = ()
 
 (* auth_020_phishing_mitigated (matches Coq: Theorem auth_020_phishing_mitigated) *)
-let auth_020_phishing_mitigated (p_wa: web_authn_auth) : Lemma (p_wa.f_wa_origin_bound == true /\ p_wa.f_wa_challenge_verified == true) = admit ()
+let auth_020_phishing_mitigated (p_wa: web_authn_auth) : Lemma (p_wa.f_wa_origin_bound == true /\ p_wa.f_wa_challenge_verified == true) = ()

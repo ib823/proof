@@ -1,16 +1,23 @@
 ---- MODULE BootVerification ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/security_foundation/BootVerification.v (22 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/security_foundation/BootVerification.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* BootStageId (matches Coq: Inductive BootStageId)
 CONSTANTS HardwareRoot, Bootloader, SecondStage, Kernel, InitRamFS
 
+BootStageIdSet == {HardwareRoot, Bootloader, SecondStage, Kernel, InitRamFS}
+
 \* VerificationResult (matches Coq: Inductive VerificationResult)
 CONSTANTS Verified, HashMismatch, SignatureInvalid, VersionRollback
+
+VerificationResultSet == {Verified, HashMismatch, SignatureInvalid, VersionRollback}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* BootImage (matches Coq: Record BootImage)
 VARIABLES image_stage, image_hash, image_signature, image_version
@@ -21,139 +28,191 @@ VARIABLES expected_stage, expected_hash_value, expected_public_key
 \* BootChainState (matches Coq: Record BootChainState)
 VARIABLES verified_stages, current_stage, expected_hashes, minimum_versions, boot_successful
 
-\* Type invariant
+vars == <<image_stage, image_hash, image_signature, image_version, expected_stage, expected_hash_value, expected_public_key, verified_stages, current_stage, expected_hashes, minimum_versions, boot_successful>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ image_stage \in BOOLEAN
-  /\ image_hash \in BOOLEAN
-  /\ image_signature \in BOOLEAN
-  /\ image_version \in BOOLEAN
-  /\ expected_stage \in BOOLEAN
-  /\ expected_hash_value \in BOOLEAN
-  /\ expected_public_key \in BOOLEAN
-  /\ verified_stages \in BOOLEAN
-  /\ current_stage \in BOOLEAN
-  /\ expected_hashes \in BOOLEAN
-  /\ minimum_versions \in BOOLEAN
+  /\ image_stage \in BootStageIdSet
+  /\ image_hash \in Nat
+  /\ image_signature \in Nat
+  /\ image_version \in Nat
+  /\ expected_stage \in BootStageIdSet
+  /\ expected_hash_value \in Nat
+  /\ expected_public_key \in Nat
+  /\ verified_stages \in Seq(Nat)
+  /\ current_stage \in BootStageIdSet
+  /\ expected_hashes \in Seq(Nat)
+  /\ minimum_versions \in Seq(Nat)
   /\ boot_successful \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ image_stage = TRUE
-  /\ image_hash = TRUE
-  /\ image_signature = TRUE
-  /\ image_version = TRUE
-  /\ expected_stage = TRUE
-  /\ expected_hash_value = TRUE
-  /\ expected_public_key = TRUE
-  /\ verified_stages = TRUE
-  /\ current_stage = TRUE
-  /\ expected_hashes = TRUE
-  /\ minimum_versions = TRUE
-  /\ boot_successful = TRUE
+  /\ image_stage = HardwareRoot
+  /\ image_hash = 0
+  /\ image_signature = 0
+  /\ image_version = 0
+  /\ expected_stage = HardwareRoot
+  /\ expected_hash_value = 0
+  /\ expected_public_key = 0
+  /\ verified_stages = <<>>
+  /\ current_stage = HardwareRoot
+  /\ expected_hashes = <<>>
+  /\ minimum_versions = <<>>
+  /\ boot_successful = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* initial_boot_state (matches Coq: Definition initial_boot_state)
-initial_boot_state == TRUE
+initial_boot_state ==
+  0
 
 \* previous_stage (matches Coq: Definition previous_stage)
-previous_stage(stage) == TRUE
-
-\* stage_verified (matches Coq: Definition stage_verified)
-stage_verified(st, stage) == TRUE
-
-\* verify_image (matches Coq: Definition verify_image)
-verify_image(st, img) == TRUE
-
-\* image_tampered (matches Coq: Definition image_tampered)
-image_tampered(st, img) == TRUE
-
-\* boot_stage (matches Coq: Definition boot_stage)
-boot_stage(st, img) == TRUE
+previous_stage(stage) ==
+    CASE stage = HardwareRoot -> HardwareRoot
+      [] stage = Bootloader -> HardwareRoot
+      [] stage = SecondStage -> Bootloader
+      [] stage = Kernel -> SecondStage
+      [] stage = InitRamFS -> Kernel
 
 \* complete_boot (matches Coq: Definition complete_boot)
-complete_boot(st) == TRUE
+complete_boot(st) ==
+  st >= 0
 
-\* stage_boots (matches Coq: Definition stage_boots)
-stage_boots(st, st_, stage) == TRUE
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* verified_by_previous (matches Coq: Definition verified_by_previous)
-verified_by_previous(st, stage) == TRUE
+UpdateBootImage ==
+  /\ image_stage' \in BootStageIdSet
+  /\ image_hash' \in 0..100
+  /\ image_signature' \in 0..100
+  /\ image_version' \in 0..100
+  /\ UNCHANGED <<expected_stage, expected_hash_value, expected_public_key, verified_stages, current_stage, expected_hashes, minimum_versions, boot_successful>>
 
-\* is_tampered (matches Coq: Definition is_tampered)
-is_tampered(st, img) == TRUE
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* can_boot (matches Coq: Definition can_boot)
-can_boot(st, img) == TRUE
+Next == UpdateBootImage \/ ValidateState
 
-\* boot_chain_verified (matches Coq: Theorem boot_chain_verified)
-THEOREM boot_chain_verified == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* boot_tampering_detected (matches Coq: Theorem boot_tampering_detected)
-THEOREM boot_tampering_detected == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* failed_verification_no_boot (matches Coq: Theorem failed_verification_no_boot)
-THEOREM failed_verification_no_boot == Init => TypeOK
+\* boot_chain_verified
+THEOREM boot_chain_verified ==
+  \A st \in Nat, img \in Nat :
+      can_boot(st, img) => let st' := boot_stage st img in
+      stage_verified st' (image_stage img) = true
 
-\* hardware_root_verified (matches Coq: Theorem hardware_root_verified)
-THEOREM hardware_root_verified == Init => TypeOK
+\* boot_tampering_detected
+THEOREM boot_tampering_detected ==
+  \A st \in Nat, img \in Nat :
+      is_tampered(st, img) => ~ can_boot st img
 
-\* boot_requires_verification (matches Coq: Theorem boot_requires_verification)
-THEOREM boot_requires_verification == Init => TypeOK
+\* failed_verification_no_boot
+THEOREM failed_verification_no_boot ==
+  \A st \in Nat, img \in Nat :
+      verify_image st img <> Verified => let st' := boot_stage st img in
+      st' = st
 
-\* verification_preserves_previous (matches Coq: Theorem verification_preserves_previous)
-THEOREM verification_preserves_previous == Init => TypeOK
+\* hardware_root_verified
+THEOREM hardware_root_verified ==
+  stage_verified(initial_boot_state, HardwareRoot) = TRUE
 
-\* each_stage_verifies_next (matches Coq: Theorem each_stage_verifies_next)
-THEOREM each_stage_verifies_next == Init => TypeOK
+\* boot_requires_verification
+THEOREM boot_requires_verification ==
+  \A st \in Nat, img \in Nat :
+      can_boot st img < => verify_image st img = Verified
 
-\* root_of_trust_immutable (matches Coq: Theorem root_of_trust_immutable)
-THEOREM root_of_trust_immutable == Init => TypeOK
+\* verification_preserves_previous
+THEOREM verification_preserves_previous ==
+  \A st \in Nat, img \in Nat, prev_stage \in BootStageIdSet :
+      stage_verified(st, prev_stage) => let st' := boot_stage st img in
+      stage_verified st' prev_stage = true
 
-\* firmware_rollback_prevented (matches Coq: Theorem firmware_rollback_prevented)
-THEOREM firmware_rollback_prevented == Init => TypeOK
+\* each_stage_verifies_next
+THEOREM each_stage_verifies_next ==
+  \A st \in Nat, img \in Nat :
+      boot_stage st img <> st => can_boot(st, img)
 
-\* boot_log_only_grows (matches Coq: Theorem boot_log_only_grows)
-THEOREM boot_log_only_grows == Init => TypeOK
+\* root_of_trust_immutable
+THEOREM root_of_trust_immutable ==
+  In(HardwareRoot, verified_stages(initial_boot_state))
 
-\* hash_mismatch_detected (matches Coq: Theorem hash_mismatch_detected)
-THEOREM hash_mismatch_detected == Init => TypeOK
+\* firmware_rollback_prevented
+THEOREM firmware_rollback_prevented ==
+  \A st \in Nat, img \in Nat, expected \in Nat, min_ver \in Nat :
+      get_expected_hash st (image_stage img) = Some expected => verify_image st img = VersionRollback
 
-\* recovery_mode_requires_hash (matches Coq: Theorem recovery_mode_requires_hash)
-THEOREM recovery_mode_requires_hash == Init => TypeOK
+\* boot_log_only_grows
+THEOREM boot_log_only_grows ==
+  \A st \in Nat, img \in Nat, s \in BootStageIdSet :
+      In(s, verified_stages(st)) => In s (verified_stages (boot_stage st img))
 
-\* boot_stage_deterministic (matches Coq: Theorem boot_stage_deterministic)
-THEOREM boot_stage_deterministic == Init => TypeOK
+\* hash_mismatch_detected
+THEOREM hash_mismatch_detected ==
+  \A st \in Nat, img \in Nat, expected \in Nat :
+      get_expected_hash st (image_stage img) = Some expected => verify_image st img = HashMismatch
 
-\* config_table_validated (matches Coq: Theorem config_table_validated)
-THEOREM config_table_validated == Init => TypeOK
+\* recovery_mode_requires_hash
+THEOREM recovery_mode_requires_hash ==
+  \A st \in Nat, img \in Nat, expected \in Nat :
+      get_expected_hash st (image_stage img) = Some expected => image_hash img = expected
 
-\* kernel_signature_checked (matches Coq: Theorem kernel_signature_checked)
-THEOREM kernel_signature_checked == Init => TypeOK
+\* boot_stage_deterministic
+THEOREM boot_stage_deterministic ==
+  \A st \in Nat, img \in Nat :
+      boot_stage(st, img) = boot_stage(st, img)
 
-\* bootloader_follows_root (matches Coq: Theorem bootloader_follows_root)
-THEOREM bootloader_follows_root == Init => TypeOK
+\* config_table_validated
+THEOREM config_table_validated ==
+  \A st \in Nat, img \in Nat, expected \in Nat, min_ver \in Nat :
+      get_expected_hash st (image_stage img) = Some expected => min_ver <= image_version
 
-\* second_stage_follows_bootloader (matches Coq: Theorem second_stage_follows_bootloader)
-THEOREM second_stage_follows_bootloader == Init => TypeOK
+\* kernel_signature_checked
+THEOREM kernel_signature_checked ==
+  \A st \in Nat, img \in Nat :
+      get_expected_hash st (image_stage img) = Some (image_hash img) => verify_image st img = Verified
 
-\* kernel_follows_second_stage (matches Coq: Theorem kernel_follows_second_stage)
-THEOREM kernel_follows_second_stage == Init => TypeOK
+\* bootloader_follows_root
+THEOREM bootloader_follows_root ==
+  previous_stage(Bootloader) = HardwareRoot
 
-\* initramfs_follows_kernel (matches Coq: Theorem initramfs_follows_kernel)
-THEOREM initramfs_follows_kernel == Init => TypeOK
+\* second_stage_follows_bootloader
+THEOREM second_stage_follows_bootloader ==
+  previous_stage(SecondStage) = Bootloader
 
-\* hardware_root_self_previous (matches Coq: Theorem hardware_root_self_previous)
-THEOREM hardware_root_self_previous == Init => TypeOK
+\* kernel_follows_second_stage
+THEOREM kernel_follows_second_stage ==
+  previous_stage(Kernel) = SecondStage
 
-\* complete_boot_sets_success (matches Coq: Theorem complete_boot_sets_success)
-THEOREM complete_boot_sets_success == Init => TypeOK
+\* initramfs_follows_kernel
+THEOREM initramfs_follows_kernel ==
+  previous_stage(InitRamFS) = Kernel
 
-\* complete_boot_preserves_verified (matches Coq: Theorem complete_boot_preserves_verified)
-THEOREM complete_boot_preserves_verified == Init => TypeOK
+\* hardware_root_self_previous
+THEOREM hardware_root_self_previous ==
+  previous_stage(HardwareRoot) = HardwareRoot
 
-\* Next-state relation
-Next == UNCHANGED <<image_stage, image_hash, image_signature, image_version, expected_stage, expected_hash_value, expected_public_key, verified_stages, current_stage, expected_hashes, minimum_versions, boot_successful>>
+\* complete_boot_sets_success
+THEOREM complete_boot_sets_success ==
+  \A st \in Nat :
+      boot_successful (complete_boot st) = TRUE
 
-\* Specification
-Spec == Init /\ [][Next]_<<image_stage, image_hash, image_signature, image_version, expected_stage, expected_hash_value, expected_public_key, verified_stages, current_stage, expected_hashes, minimum_versions, boot_successful>>
+\* complete_boot_preserves_verified
+THEOREM complete_boot_preserves_verified ==
+  \A st \in Nat :
+      verified_stages (complete_boot st) = verified_stages(st)
 
 ====

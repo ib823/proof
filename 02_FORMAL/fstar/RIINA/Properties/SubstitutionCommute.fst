@@ -30,16 +30,16 @@ let closed_rho_sc (p_rho: nat) : Tot bool =
   true
 
 (* extend_rho_sc_same (matches Coq: Lemma extend_rho_sc_same) *)
-let extend_rho_sc_same (p_rho: _) (p_x: _) (p_v: _) : Lemma (extend_rho_sc p_rho p_x p_v p_x == p_v) = admit ()
+let extend_rho_sc_same (p_rho: _) (p_x: _) (p_v: _) : Lemma (extend_rho_sc p_rho p_x p_v p_x == p_v) = ()
 
 (* extend_rho_sc_diff (matches Coq: Lemma extend_rho_sc_diff) *)
-let extend_rho_sc_diff (p_rho: _) (p_x: _) (p_y: _) (p_v: _) : Lemma (requires (~(p_x == p_y))) (ensures (extend_rho_sc p_rho p_x p_v p_y == p_rho p_y)) = admit ()
+let extend_rho_sc_diff (p_rho: _) (p_x: _) (p_y: _) (p_v: _) : Lemma (requires (~(p_x == p_y))) (ensures (extend_rho_sc p_rho p_x p_v p_y == p_rho p_y)) = ()
 
 (* extend_rho_sc_shadow (matches Coq: Lemma extend_rho_sc_shadow) *)
-let extend_rho_sc_shadow (p_rho: _) (p_x: _) (p_v1: _) (p_v2: _) : Lemma (extend_rho_sc (extend_rho_sc p_rho p_x p_v1) p_x p_v2 == extend_rho_sc p_rho p_x p_v2) = admit ()
+let extend_rho_sc_shadow (p_rho: _) (p_x: _) (p_v1: _) (p_v2: _) : Lemma (extend_rho_sc (extend_rho_sc p_rho p_x p_v1) p_x p_v2 == extend_rho_sc p_rho p_x p_v2) = ()
 
 (* extend_rho_sc_comm (matches Coq: Lemma extend_rho_sc_comm) *)
-let extend_rho_sc_comm (p_rho: _) (p_x: _) (p_y: _) (p_vx: _) (p_vy: _) : Lemma (requires (~(p_x == p_y))) (ensures (extend_rho_sc (extend_rho_sc p_rho p_x p_vx) p_y p_vy == extend_rho_sc (extend_rho_sc p_rho p_y p_vy) p_x p_vx)) = admit ()
+let extend_rho_sc_comm (p_rho: _) (p_x: _) (p_y: _) (p_vx: _) (p_vy: _) : Lemma (requires (~(p_x == p_y))) (ensures (extend_rho_sc (extend_rho_sc p_rho p_x p_vx) p_y p_vy == extend_rho_sc (extend_rho_sc p_rho p_y p_vy) p_x p_vx)) = ()
 
 (* subst_not_free_sc (matches Coq: Lemma subst_not_free_sc) *)
 let subst_not_free_sc_obligation () : Tot bool = true
@@ -50,19 +50,19 @@ let subst_closed_sc_obligation () : Tot bool = true
 let subst_closed_sc_lemma () : Lemma (requires True) (ensures (subst_closed_sc_obligation () == subst_closed_sc_obligation ())) = ()
 
 (* closed_unit_sub (matches Coq: Lemma closed_unit_sub) *)
-let closed_unit_sub () : Lemma (closed_expr_sc EUnit == true) = admit ()
+let closed_unit_sub () : Lemma (closed_expr_sc EUnit == true) = ()
 
 (* closed_bool_sub (matches Coq: Lemma closed_bool_sub) *)
-let closed_bool_sub (p_b: _) : Lemma (closed_expr_sc (EBool p_b) == true) = admit ()
+let closed_bool_sub (p_b: _) : Lemma (closed_expr_sc (EBool p_b) == true) = ()
 
 (* closed_int_sub (matches Coq: Lemma closed_int_sub) *)
-let closed_int_sub (p_n: _) : Lemma (closed_expr_sc (EInt p_n) == true) = admit ()
+let closed_int_sub (p_n: _) : Lemma (closed_expr_sc (EInt p_n) == true) = ()
 
 (* closed_string_sub (matches Coq: Lemma closed_string_sub) *)
-let closed_string_sub (p_s: _) : Lemma (closed_expr_sc (EString p_s) == true) = admit ()
+let closed_string_sub (p_s: _) : Lemma (closed_expr_sc (EString p_s) == true) = ()
 
 (* closed_loc_sub (matches Coq: Lemma closed_loc_sub) *)
-let closed_loc_sub (p_l: _) : Lemma (closed_expr_sc (ELoc p_l) == true) = admit ()
+let closed_loc_sub (p_l: _) : Lemma (closed_expr_sc (ELoc p_l) == true) = ()
 
 (* subst_var_same (matches Coq: Lemma subst_var_same) *)
 let subst_var_same_obligation () : Tot bool = true

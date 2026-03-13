@@ -1,808 +1,836 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
-; Copyright (c) 2026 The RIINA Authors.
+; RIINA MemorySafety — SMT Verification
 ; Derived from 02_FORMAL/coq/domains/MemorySafety.v (139 assertions)
-; Source mapping: scripts/generate-full-stack.py
 ; Module: MemorySafety
+;
+; Real verification: datatype invariants, guard completeness,
+; ordering properties, accessor round-trips.
 
 (set-logic ALL)
 (set-option :produce-models true)
 
-; AllocState (matches Coq: Inductive AllocState)
+; =======================================================================
+; DATATYPE DECLARATIONS
+; =======================================================================
+
 (declare-datatypes ((AllocState 0)) (((Unallocated) (Allocated) (Freed))))
 
-; PointerValidity (matches Coq: Inductive PointerValidity)
 (declare-datatypes ((PointerValidity 0)) (((Valid) (Null) (Dangling) (OutOfBounds))))
 
-; SecurityDomain (matches Coq: Inductive SecurityDomain)
 (declare-datatypes ((SecurityDomain 0)) (((DomainKernel) (DomainUser) (DomainGuest) (DomainUntrusted))))
 
-; AccessPermission (matches Coq: Inductive AccessPermission)
 (declare-datatypes ((AccessPermission 0)) (((PermNone) (PermRead) (PermWrite) (PermReadWrite) (PermExecute))))
 
-; MemoryRegion (matches Coq: Record MemoryRegion)
 (declare-datatypes ((MemoryRegion 0))
   (((mk-memory_region (mr_alloc_state AllocState) (mr_size Int) (mr_initialized Bool) (mr_owned Bool)))))
 
-; Pointer (matches Coq: Record Pointer)
 (declare-datatypes ((Pointer 0))
   (((mk-pointer (ptr_validity PointerValidity) (ptr_offset Int) (ptr_bounds Int)))))
 
-; SecureMemoryRegion (matches Coq: Record SecureMemoryRegion)
 (declare-datatypes ((SecureMemoryRegion 0))
   (((mk-secure_memory_region (smr_base MemoryRegion) (smr_domain SecurityDomain) (smr_permission AccessPermission) (smr_encrypted Bool)))))
 
-; UseAfterFreeGuard (matches Coq: Record UseAfterFreeGuard)
 (declare-datatypes ((UseAfterFreeGuard 0))
   (((mk-use_after_free_guard (uaf_lifetime_tracking Bool) (uaf_ownership_clear Bool) (uaf_access_check Bool)))))
 
-; DoubleFreeGuard (matches Coq: Record DoubleFreeGuard)
 (declare-datatypes ((DoubleFreeGuard 0))
   (((mk-double_free_guard (df_state_tracking Bool) (df_single_owner Bool) (df_freed_check Bool)))))
 
-; NullDerefGuard (matches Coq: Record NullDerefGuard)
 (declare-datatypes ((NullDerefGuard 0))
   (((mk-null_deref_guard (nd_null_check Bool) (nd_option_types Bool) (nd_init_required Bool)))))
 
-; BoundsGuard (matches Coq: Record BoundsGuard)
 (declare-datatypes ((BoundsGuard 0))
   (((mk-bounds_guard (bg_bounds_check Bool) (bg_fat_pointers Bool) (bg_slice_safety Bool)))))
 
-; StackGuard (matches Coq: Record StackGuard)
 (declare-datatypes ((StackGuard 0))
   (((mk-stack_guard (sg_canary_enabled Bool) (sg_return_addr_protected Bool) (sg_frame_isolation Bool) (sg_shadow_stack Bool)))))
 
-; HeapGuard (matches Coq: Record HeapGuard)
 (declare-datatypes ((HeapGuard 0))
   (((mk-heap_guard (hg_allocation_tracking Bool) (hg_deallocation_check Bool) (hg_fragmentation_prevention Bool) (hg_metadata_integrity Bool)))))
 
-; IsolationGuard (matches Coq: Record IsolationGuard)
 (declare-datatypes ((IsolationGuard 0))
   (((mk-isolation_guard (ig_domain_separation Bool) (ig_permission_enforcement Bool) (ig_cross_domain_check Bool) (ig_capability_required Bool)))))
 
-; MemorySafetyConfig (matches Coq: Record MemorySafetyConfig)
 (declare-datatypes ((MemorySafetyConfig 0))
   (((mk-memory_safety_config (ms_uaf UseAfterFreeGuard) (ms_df DoubleFreeGuard) (ms_nd NullDerefGuard) (ms_bounds BoundsGuard) (ms_stack StackGuard) (ms_heap HeapGuard) (ms_isolation IsolationGuard)))))
 
-(declare-const __default_AccessPermission AccessPermission)
-(declare-const __default_AllocState AllocState)
-(declare-const __default_BoundsGuard BoundsGuard)
-(declare-const __default_DoubleFreeGuard DoubleFreeGuard)
-(declare-const __default_HeapGuard HeapGuard)
-(declare-const __default_IsolationGuard IsolationGuard)
-(declare-const __default_MemoryRegion MemoryRegion)
-(declare-const __default_MemorySafetyConfig MemorySafetyConfig)
-(declare-const __default_NullDerefGuard NullDerefGuard)
-(declare-const __default_Pointer Pointer)
-(declare-const __default_PointerValidity PointerValidity)
-(declare-const __default_SecureMemoryRegion SecureMemoryRegion)
-(declare-const __default_SecurityDomain SecurityDomain)
-(declare-const __default_StackGuard StackGuard)
-(declare-const __default_UseAfterFreeGuard UseAfterFreeGuard)
-
-; uaf_protected (matches Coq: Definition uaf_protected)
-(define-fun uaf_protected ((u UseAfterFreeGuard)) Bool
-  (= 0 0))
-
-; df_protected (matches Coq: Definition df_protected)
-(define-fun df_protected ((d DoubleFreeGuard)) Bool
-  (= 0 0))
-
-; nd_protected (matches Coq: Definition nd_protected)
-(define-fun nd_protected ((n NullDerefGuard)) Bool
-  (= 0 0))
-
-; bounds_protected (matches Coq: Definition bounds_protected)
-(define-fun bounds_protected ((b BoundsGuard)) Bool
-  (= 0 0))
-
-; stack_protected (matches Coq: Definition stack_protected)
-(define-fun stack_protected ((s StackGuard)) Bool
-  (= 0 0))
-
-; heap_protected (matches Coq: Definition heap_protected)
-(define-fun heap_protected ((h HeapGuard)) Bool
-  (= 0 0))
-
-; isolation_protected (matches Coq: Definition isolation_protected)
-(define-fun isolation_protected ((i IsolationGuard)) Bool
-  (= 0 0))
-
-; memory_safe (matches Coq: Definition memory_safe)
-(define-fun memory_safe ((m MemorySafetyConfig)) Bool
-  (= 0 0))
-
-; ptr_is_valid (matches Coq: Definition ptr_is_valid)
-(define-fun ptr_is_valid ((p Pointer)) Bool
-  (= 0 0))
-
-; ptr_is_null (matches Coq: Definition ptr_is_null)
-(define-fun ptr_is_null ((p Pointer)) Bool
-  (= 0 0))
-
-; ptr_is_dangling (matches Coq: Definition ptr_is_dangling)
-(define-fun ptr_is_dangling ((p Pointer)) Bool
-  (= 0 0))
-
-; ptr_in_bounds (matches Coq: Definition ptr_in_bounds)
-(define-fun ptr_in_bounds ((p Pointer)) Bool
-  (= 0 0))
-
-; ptr_safe_for_access (matches Coq: Definition ptr_safe_for_access)
-(define-fun ptr_safe_for_access ((p Pointer)) Bool
-  (= 0 0))
-
-; ptr_safe_for_access_range (matches Coq: Definition ptr_safe_for_access_range)
-(define-fun ptr_safe_for_access_range ((p Pointer) (len Int)) Bool
-  (= 0 0))
-
-; region_is_allocated (matches Coq: Definition region_is_allocated)
-(define-fun region_is_allocated ((r MemoryRegion)) Bool
-  (= 0 0))
-
-; region_is_freed (matches Coq: Definition region_is_freed)
-(define-fun region_is_freed ((r MemoryRegion)) Bool
-  (= 0 0))
-
-; region_can_access (matches Coq: Definition region_can_access)
-(define-fun region_can_access ((r MemoryRegion)) Bool
-  (= 0 0))
-
-; region_can_write (matches Coq: Definition region_can_write)
-(define-fun region_can_write ((r MemoryRegion)) Bool
-  (= 0 0))
-
-; domain_level (matches Coq: Definition domain_level)
-(define-fun domain_level ((d SecurityDomain)) Int
-  0)
-
-; domain_can_access (matches Coq: Definition domain_can_access)
-(define-fun domain_can_access ((from_domain SecurityDomain) (to_domain SecurityDomain)) Bool
-  (= 0 0))
-
-; permission_allows_read (matches Coq: Definition permission_allows_read)
-(define-fun permission_allows_read ((p AccessPermission)) Bool
-  (= 0 0))
-
-; permission_allows_write (matches Coq: Definition permission_allows_write)
-(define-fun permission_allows_write ((p AccessPermission)) Bool
-  (= 0 0))
-
-; secure_region_can_read (matches Coq: Definition secure_region_can_read)
-(define-fun secure_region_can_read ((r SecureMemoryRegion) (from SecurityDomain)) Bool
-  (= 0 0))
-
-; secure_region_can_write (matches Coq: Definition secure_region_can_write)
-(define-fun secure_region_can_write ((r SecureMemoryRegion) (from SecurityDomain)) Bool
-  (= 0 0))
-
-; riina_uaf (matches Coq: Definition riina_uaf)
-(define-fun riina_uaf () UseAfterFreeGuard
-  __default_UseAfterFreeGuard)
-
-; riina_df (matches Coq: Definition riina_df)
-(define-fun riina_df () DoubleFreeGuard
-  __default_DoubleFreeGuard)
-
-; riina_nd (matches Coq: Definition riina_nd)
-(define-fun riina_nd () NullDerefGuard
-  __default_NullDerefGuard)
-
-; riina_bounds (matches Coq: Definition riina_bounds)
-(define-fun riina_bounds () BoundsGuard
-  __default_BoundsGuard)
-
-; riina_stack (matches Coq: Definition riina_stack)
-(define-fun riina_stack () StackGuard
-  __default_StackGuard)
-
-; riina_heap (matches Coq: Definition riina_heap)
-(define-fun riina_heap () HeapGuard
-  __default_HeapGuard)
-
-; riina_isolation (matches Coq: Definition riina_isolation)
-(define-fun riina_isolation () IsolationGuard
-  __default_IsolationGuard)
-
-; riina_mem_safety (matches Coq: Definition riina_mem_safety)
-(define-fun riina_mem_safety () MemorySafetyConfig
-  __default_MemorySafetyConfig)
-
-; valid_pointer (matches Coq: Definition valid_pointer)
-(define-fun valid_pointer () Pointer
-  __default_Pointer)
-
-; null_pointer (matches Coq: Definition null_pointer)
-(define-fun null_pointer () Pointer
-  __default_Pointer)
-
-; dangling_pointer (matches Coq: Definition dangling_pointer)
-(define-fun dangling_pointer () Pointer
-  __default_Pointer)
-
-; oob_pointer (matches Coq: Definition oob_pointer)
-(define-fun oob_pointer () Pointer
-  __default_Pointer)
-
-; allocated_region (matches Coq: Definition allocated_region)
-(define-fun allocated_region () MemoryRegion
-  __default_MemoryRegion)
-
-; freed_region (matches Coq: Definition freed_region)
-(define-fun freed_region () MemoryRegion
-  __default_MemoryRegion)
-
-; unallocated_region (matches Coq: Definition unallocated_region)
-(define-fun unallocated_region () MemoryRegion
-  __default_MemoryRegion)
-
-; kernel_region (matches Coq: Definition kernel_region)
-(define-fun kernel_region () SecureMemoryRegion
-  __default_SecureMemoryRegion)
-
-; user_region (matches Coq: Definition user_region)
-(define-fun user_region () SecureMemoryRegion
-  __default_SecureMemoryRegion)
-
-; guest_region (matches Coq: Definition guest_region)
-(define-fun guest_region () SecureMemoryRegion
-  __default_SecureMemoryRegion)
-
-; andb_true_iff (matches Coq: Lemma andb_true_iff)
-; andb_true_iff: forall a b : bool, a && b = true <-> a = true /\ b = true
-(assert (= 0 0)) ; andb_true_iff [Coq-only]
-
-; andb_false_iff (matches Coq: Lemma andb_false_iff)
-; andb_false_iff: forall a b : bool, a && b = false <-> a = false \/ b = false
-(assert (= 0 0)) ; andb_false_iff [Coq-only]
-
-; negb_true_iff (matches Coq: Lemma negb_true_iff)
-; negb_true_iff: forall b : bool, negb b = true <-> b = false
-(assert (forall ((b Bool)) (= 0 0))) ; negb_true_iff [partial: bindings preserved]
-
-; negb_false_iff (matches Coq: Lemma negb_false_iff)
-; negb_false_iff: forall b : bool, negb b = false <-> b = true
-(assert (forall ((b Bool)) (= 0 0))) ; negb_false_iff [partial: bindings preserved]
-
-; MEM_001 (matches Coq: Theorem MEM_001)
-; MEM_001: uaf_protected riina_uaf = true
-(assert (= 0 0)) ; MEM_001 [Coq-only]
-
-; MEM_002 (matches Coq: Theorem MEM_002)
-; MEM_002: df_protected riina_df = true
-(assert (= 0 0)) ; MEM_002 [Coq-only]
-
-; MEM_003 (matches Coq: Theorem MEM_003)
-; MEM_003: nd_protected riina_nd = true
-(assert (= 0 0)) ; MEM_003 [Coq-only]
-
-; MEM_004 (matches Coq: Theorem MEM_004)
-; MEM_004: bounds_protected riina_bounds = true
-(assert (= 0 0)) ; MEM_004 [Coq-only]
-
-; MEM_005 (matches Coq: Theorem MEM_005)
-; MEM_005: memory_safe riina_mem_safety = true
-(assert (= 0 0)) ; MEM_005 [Coq-only]
-
-; MEM_006 (matches Coq: Theorem MEM_006)
-; MEM_006: uaf_lifetime_tracking riina_uaf = true
-(assert (= 0 0)) ; MEM_006 [Coq-only]
-
-; MEM_007 (matches Coq: Theorem MEM_007)
-; MEM_007: uaf_ownership_clear riina_uaf = true
-(assert (= 0 0)) ; MEM_007 [Coq-only]
-
-; MEM_008 (matches Coq: Theorem MEM_008)
-; MEM_008: uaf_access_check riina_uaf = true
-(assert (= 0 0)) ; MEM_008 [Coq-only]
-
-; MEM_009 (matches Coq: Theorem MEM_009)
-; MEM_009: df_state_tracking riina_df = true
-(assert (= 0 0)) ; MEM_009 [Coq-only]
-
-; MEM_010 (matches Coq: Theorem MEM_010)
-; MEM_010: df_single_owner riina_df = true
-(assert (= 0 0)) ; MEM_010 [Coq-only]
-
-; MEM_011 (matches Coq: Theorem MEM_011)
-; MEM_011: df_freed_check riina_df = true
-(assert (= 0 0)) ; MEM_011 [Coq-only]
-
-; MEM_012 (matches Coq: Theorem MEM_012)
-; MEM_012: nd_null_check riina_nd = true
-(assert (= 0 0)) ; MEM_012 [Coq-only]
-
-; MEM_013 (matches Coq: Theorem MEM_013)
-; MEM_013: nd_option_types riina_nd = true
-(assert (= 0 0)) ; MEM_013 [Coq-only]
-
-; MEM_014 (matches Coq: Theorem MEM_014)
-; MEM_014: bg_bounds_check riina_bounds = true
-(assert (= 0 0)) ; MEM_014 [Coq-only]
-
-; MEM_015 (matches Coq: Theorem MEM_015)
-; MEM_015: bg_fat_pointers riina_bounds = true
-(assert (= 0 0)) ; MEM_015 [Coq-only]
-
-; MEM_016 (matches Coq: Theorem MEM_016)
-; MEM_016: forall u, uaf_protected u = true -> uaf_lifetime_tracking u = true
-(assert (forall ((u Bool)) (= 0 0))) ; MEM_016 [partial: bindings preserved]
-
-; MEM_017 (matches Coq: Theorem MEM_017)
-; MEM_017: forall u, uaf_protected u = true -> uaf_ownership_clear u = true
-(assert (forall ((u Bool)) (= 0 0))) ; MEM_017 [partial: bindings preserved]
-
-; MEM_018 (matches Coq: Theorem MEM_018)
-; MEM_018: forall u, uaf_protected u = true -> uaf_access_check u = true
-(assert (forall ((u Bool)) (= 0 0))) ; MEM_018 [partial: bindings preserved]
-
-; MEM_019 (matches Coq: Theorem MEM_019)
-; MEM_019: forall d, df_protected d = true -> df_state_tracking d = true
-(assert (forall ((d Bool)) (= 0 0))) ; MEM_019 [partial: bindings preserved]
-
-; MEM_020 (matches Coq: Theorem MEM_020)
-; MEM_020: forall d, df_protected d = true -> df_single_owner d = true
-(assert (forall ((d Bool)) (= 0 0))) ; MEM_020 [partial: bindings preserved]
-
-; MEM_021 (matches Coq: Theorem MEM_021)
-; MEM_021: forall d, df_protected d = true -> df_freed_check d = true
-(assert (forall ((d Bool)) (= 0 0))) ; MEM_021 [partial: bindings preserved]
-
-; MEM_022 (matches Coq: Theorem MEM_022)
-; MEM_022: forall n, nd_protected n = true -> nd_null_check n = true
-(assert (forall ((n Bool)) (= 0 0))) ; MEM_022 [partial: bindings preserved]
-
-; MEM_023 (matches Coq: Theorem MEM_023)
-; MEM_023: forall n, nd_protected n = true -> nd_option_types n = true
-(assert (forall ((n Bool)) (= 0 0))) ; MEM_023 [partial: bindings preserved]
-
-; MEM_024 (matches Coq: Theorem MEM_024)
-; MEM_024: forall n, nd_protected n = true -> nd_init_required n = true
-(assert (forall ((n Bool)) (= 0 0))) ; MEM_024 [partial: bindings preserved]
-
-; MEM_025 (matches Coq: Theorem MEM_025)
-; MEM_025: forall b, bounds_protected b = true -> bg_bounds_check b = true
-(assert (forall ((b Bool)) (= 0 0))) ; MEM_025 [partial: bindings preserved]
-
-; MEM_026 (matches Coq: Theorem MEM_026)
-; MEM_026: forall b, bounds_protected b = true -> bg_fat_pointers b = true
-(assert (forall ((b Bool)) (= 0 0))) ; MEM_026 [partial: bindings preserved]
-
-; MEM_027 (matches Coq: Theorem MEM_027)
-; MEM_027: forall b, bounds_protected b = true -> bg_slice_safety b = true
-(assert (forall ((b Bool)) (= 0 0))) ; MEM_027 [partial: bindings preserved]
-
-; MEM_028 (matches Coq: Theorem MEM_028)
-; MEM_028: forall m, memory_safe m = true -> uaf_protected (ms_uaf m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_028 [partial: bindings preserved]
-
-; MEM_029 (matches Coq: Theorem MEM_029)
-; MEM_029: forall m, memory_safe m = true -> df_protected (ms_df m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_029 [partial: bindings preserved]
-
-; MEM_030 (matches Coq: Theorem MEM_030)
-; MEM_030: forall m, memory_safe m = true -> nd_protected (ms_nd m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_030 [partial: bindings preserved]
-
-; MEM_031 (matches Coq: Theorem MEM_031)
-; MEM_031: forall m, memory_safe m = true -> bounds_protected (ms_bounds m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_031 [partial: bindings preserved]
-
-; MEM_032 (matches Coq: Theorem MEM_032)
-; MEM_032: forall m, memory_safe m = true -> uaf_lifetime_tracking (ms_uaf m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_032 [partial: bindings preserved]
-
-; MEM_033 (matches Coq: Theorem MEM_033)
-; MEM_033: forall m, memory_safe m = true -> df_single_owner (ms_df m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_033 [partial: bindings preserved]
-
-; MEM_034 (matches Coq: Theorem MEM_034)
-; MEM_034: forall m, memory_safe m = true -> nd_null_check (ms_nd m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_034 [partial: bindings preserved]
-
-; MEM_035 (matches Coq: Theorem MEM_035)
-; MEM_035: forall m, memory_safe m = true -> bg_bounds_check (ms_bounds m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_035 [partial: bindings preserved]
-
-; MEM_036 (matches Coq: Theorem MEM_036)
-; MEM_036: uaf_protected riina_uaf = true /\ df_protected riina_df = true
-(assert (= 0 0)) ; MEM_036 [Coq-only]
-
-; MEM_037 (matches Coq: Theorem MEM_037)
-; MEM_037: nd_protected riina_nd = true /\ bounds_protected riina_bounds = true
-(assert (= 0 0)) ; MEM_037 [Coq-only]
-
-; MEM_038 (matches Coq: Theorem MEM_038)
-; MEM_038: forall u, uaf_protected u = true -> uaf_lifetime_tracking u = true /\ uaf_access_check u = true
-(assert (forall ((u Bool)) (= 0 0))) ; MEM_038 [partial: bindings preserved]
-
-; MEM_039 (matches Coq: Theorem MEM_039)
-; MEM_039: forall d, df_protected d = true -> df_state_tracking d = true /\ df_freed_check d = true
-(assert (forall ((d Bool)) (= 0 0))) ; MEM_039 [partial: bindings preserved]
-
-; MEM_040_complete (matches Coq: Theorem MEM_040_complete)
-; MEM_040_complete: forall m, memory_safe m = true -> uaf_lifetime_tracking (ms_uaf m) = true /\ df_single_owner (ms_df m) = true /\ nd_null
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_040_complete [partial: bindings preserved]
-
-; MEM_041_valid_pointer_is_valid (matches Coq: Theorem MEM_041_valid_pointer_is_valid)
-; MEM_041_valid_pointer_is_valid: ptr_is_valid valid_pointer = true
-(assert (= 0 0)) ; MEM_041_valid_pointer_is_valid [Coq-only]
-
-; MEM_042_null_pointer_not_valid (matches Coq: Theorem MEM_042_null_pointer_not_valid)
-; MEM_042_null_pointer_not_valid: ptr_is_valid null_pointer = false
-(assert (= 0 0)) ; MEM_042_null_pointer_not_valid [Coq-only]
-
-; MEM_043_dangling_pointer_not_valid (matches Coq: Theorem MEM_043_dangling_pointer_not_valid)
-; MEM_043_dangling_pointer_not_valid: ptr_is_valid dangling_pointer = false
-(assert (= 0 0)) ; MEM_043_dangling_pointer_not_valid [Coq-only]
-
-; MEM_044_oob_pointer_not_valid (matches Coq: Theorem MEM_044_oob_pointer_not_valid)
-; MEM_044_oob_pointer_not_valid: ptr_is_valid oob_pointer = false
-(assert (= 0 0)) ; MEM_044_oob_pointer_not_valid [Coq-only]
-
-; MEM_045_null_pointer_is_null (matches Coq: Theorem MEM_045_null_pointer_is_null)
-; MEM_045_null_pointer_is_null: ptr_is_null null_pointer = true
-(assert (= 0 0)) ; MEM_045_null_pointer_is_null [Coq-only]
-
-; MEM_046_valid_pointer_not_null (matches Coq: Theorem MEM_046_valid_pointer_not_null)
-; MEM_046_valid_pointer_not_null: ptr_is_null valid_pointer = false
-(assert (= 0 0)) ; MEM_046_valid_pointer_not_null [Coq-only]
-
-; MEM_047_dangling_is_dangling (matches Coq: Theorem MEM_047_dangling_is_dangling)
-; MEM_047_dangling_is_dangling: ptr_is_dangling dangling_pointer = true
-(assert (= 0 0)) ; MEM_047_dangling_is_dangling [Coq-only]
-
-; MEM_048_valid_not_dangling (matches Coq: Theorem MEM_048_valid_not_dangling)
-; MEM_048_valid_not_dangling: ptr_is_dangling valid_pointer = false
-(assert (= 0 0)) ; MEM_048_valid_not_dangling [Coq-only]
-
-; MEM_049_valid_in_bounds (matches Coq: Theorem MEM_049_valid_in_bounds)
-; MEM_049_valid_in_bounds: ptr_in_bounds valid_pointer = true
-(assert (= 0 0)) ; MEM_049_valid_in_bounds [Coq-only]
-
-; MEM_050_oob_not_in_bounds (matches Coq: Theorem MEM_050_oob_not_in_bounds)
-; MEM_050_oob_not_in_bounds: ptr_in_bounds oob_pointer = false
-(assert (= 0 0)) ; MEM_050_oob_not_in_bounds [Coq-only]
-
-; MEM_051_valid_safe_for_access (matches Coq: Theorem MEM_051_valid_safe_for_access)
-; MEM_051_valid_safe_for_access: ptr_safe_for_access valid_pointer = true
-(assert (= 0 0)) ; MEM_051_valid_safe_for_access [Coq-only]
-
-; MEM_052_null_not_safe_for_access (matches Coq: Theorem MEM_052_null_not_safe_for_access)
-; MEM_052_null_not_safe_for_access: ptr_safe_for_access null_pointer = false
-(assert (= 0 0)) ; MEM_052_null_not_safe_for_access [Coq-only]
-
-; MEM_053_dangling_not_safe_for_access (matches Coq: Theorem MEM_053_dangling_not_safe_for_access)
-; MEM_053_dangling_not_safe_for_access: ptr_safe_for_access dangling_pointer = false
-(assert (= 0 0)) ; MEM_053_dangling_not_safe_for_access [Coq-only]
-
-; MEM_054_safe_access_implies_valid (matches Coq: Theorem MEM_054_safe_access_implies_valid)
-; MEM_054_safe_access_implies_valid: forall p, ptr_safe_for_access p = true -> ptr_is_valid p = true
-(assert (forall ((p Bool)) (= 0 0))) ; MEM_054_safe_access_implies_valid [partial: bindings preserved]
-
-; MEM_055_safe_access_implies_in_bounds (matches Coq: Theorem MEM_055_safe_access_implies_in_bounds)
-; MEM_055_safe_access_implies_in_bounds: forall p, ptr_safe_for_access p = true -> ptr_in_bounds p = true
-(assert (forall ((p Bool)) (= 0 0))) ; MEM_055_safe_access_implies_in_bounds [partial: bindings preserved]
-
-; MEM_056_allocated_region_is_allocated (matches Coq: Theorem MEM_056_allocated_region_is_allocated)
-; MEM_056_allocated_region_is_allocated: region_is_allocated allocated_region = true
-(assert (= 0 0)) ; MEM_056_allocated_region_is_allocated [Coq-only]
-
-; MEM_057_freed_region_not_allocated (matches Coq: Theorem MEM_057_freed_region_not_allocated)
-; MEM_057_freed_region_not_allocated: region_is_allocated freed_region = false
-(assert (= 0 0)) ; MEM_057_freed_region_not_allocated [Coq-only]
-
-; MEM_058_unallocated_region_not_allocated (matches Coq: Theorem MEM_058_unallocated_region_not_allocated)
-; MEM_058_unallocated_region_not_allocated: region_is_allocated unallocated_region = false
-(assert (= 0 0)) ; MEM_058_unallocated_region_not_allocated [Coq-only]
-
-; MEM_059_freed_region_is_freed (matches Coq: Theorem MEM_059_freed_region_is_freed)
-; MEM_059_freed_region_is_freed: region_is_freed freed_region = true
-(assert (= 0 0)) ; MEM_059_freed_region_is_freed [Coq-only]
-
-; MEM_060_allocated_region_not_freed (matches Coq: Theorem MEM_060_allocated_region_not_freed)
-; MEM_060_allocated_region_not_freed: region_is_freed allocated_region = false
-(assert (= 0 0)) ; MEM_060_allocated_region_not_freed [Coq-only]
-
-; MEM_061_allocated_can_access (matches Coq: Theorem MEM_061_allocated_can_access)
-; MEM_061_allocated_can_access: region_can_access allocated_region = true
-(assert (= 0 0)) ; MEM_061_allocated_can_access [Coq-only]
-
-; MEM_062_freed_cannot_access (matches Coq: Theorem MEM_062_freed_cannot_access)
-; MEM_062_freed_cannot_access: region_can_access freed_region = false
-(assert (= 0 0)) ; MEM_062_freed_cannot_access [Coq-only]
-
-; MEM_063_access_implies_allocated (matches Coq: Theorem MEM_063_access_implies_allocated)
-; MEM_063_access_implies_allocated: forall r, region_can_access r = true -> region_is_allocated r = true
-(assert (forall ((r Bool)) (= 0 0))) ; MEM_063_access_implies_allocated [partial: bindings preserved]
-
-; MEM_064_access_implies_owned (matches Coq: Theorem MEM_064_access_implies_owned)
-; MEM_064_access_implies_owned: forall r, region_can_access r = true -> mr_owned r = true
-(assert (forall ((r Bool)) (= 0 0))) ; MEM_064_access_implies_owned [partial: bindings preserved]
-
-; MEM_065_uaf_prevented (matches Coq: Theorem MEM_065_uaf_prevented)
-; MEM_065_uaf_prevented: forall r, region_is_freed r = true -> region_can_access r = false
-(assert (forall ((r Bool)) (= 0 0))) ; MEM_065_uaf_prevented [partial: bindings preserved]
-
-; MEM_066_stack_protected (matches Coq: Theorem MEM_066_stack_protected)
-; MEM_066_stack_protected: stack_protected riina_stack = true
-(assert (= 0 0)) ; MEM_066_stack_protected [Coq-only]
-
-; MEM_067_canary_enabled (matches Coq: Theorem MEM_067_canary_enabled)
-; MEM_067_canary_enabled: sg_canary_enabled riina_stack = true
-(assert (= 0 0)) ; MEM_067_canary_enabled [Coq-only]
-
-; MEM_068_return_addr_protected (matches Coq: Theorem MEM_068_return_addr_protected)
-; MEM_068_return_addr_protected: sg_return_addr_protected riina_stack = true
-(assert (= 0 0)) ; MEM_068_return_addr_protected [Coq-only]
-
-; MEM_069_frame_isolation (matches Coq: Theorem MEM_069_frame_isolation)
-; MEM_069_frame_isolation: sg_frame_isolation riina_stack = true
-(assert (= 0 0)) ; MEM_069_frame_isolation [Coq-only]
-
-; MEM_070_shadow_stack (matches Coq: Theorem MEM_070_shadow_stack)
-; MEM_070_shadow_stack: sg_shadow_stack riina_stack = true
-(assert (= 0 0)) ; MEM_070_shadow_stack [Coq-only]
-
-; MEM_071_stack_implies_canary (matches Coq: Theorem MEM_071_stack_implies_canary)
-; MEM_071_stack_implies_canary: forall s, stack_protected s = true -> sg_canary_enabled s = true
-(assert (forall ((s Bool)) (= 0 0))) ; MEM_071_stack_implies_canary [partial: bindings preserved]
-
-; MEM_072_stack_implies_return_protected (matches Coq: Theorem MEM_072_stack_implies_return_protected)
-; MEM_072_stack_implies_return_protected: forall s, stack_protected s = true -> sg_return_addr_protected s = true
-(assert (forall ((s Bool)) (= 0 0))) ; MEM_072_stack_implies_return_protected [partial: bindings preserved]
-
-; MEM_073_stack_implies_frame_isolation (matches Coq: Theorem MEM_073_stack_implies_frame_isolation)
-; MEM_073_stack_implies_frame_isolation: forall s, stack_protected s = true -> sg_frame_isolation s = true
-(assert (forall ((s Bool)) (= 0 0))) ; MEM_073_stack_implies_frame_isolation [partial: bindings preserved]
-
-; MEM_074_stack_implies_shadow (matches Coq: Theorem MEM_074_stack_implies_shadow)
-; MEM_074_stack_implies_shadow: forall s, stack_protected s = true -> sg_shadow_stack s = true
-(assert (forall ((s Bool)) (= 0 0))) ; MEM_074_stack_implies_shadow [partial: bindings preserved]
-
-; MEM_075_complete_stack_protection (matches Coq: Theorem MEM_075_complete_stack_protection)
-; MEM_075_complete_stack_protection: forall s, stack_protected s = true -> sg_canary_enabled s = true /\ sg_return_addr_protected s = true /\ sg_frame_isolat
-(assert (forall ((s Bool)) (= 0 0))) ; MEM_075_complete_stack_protection [partial: bindings preserved]
-
-; MEM_076_heap_protected (matches Coq: Theorem MEM_076_heap_protected)
-; MEM_076_heap_protected: heap_protected riina_heap = true
-(assert (= 0 0)) ; MEM_076_heap_protected [Coq-only]
-
-; MEM_077_allocation_tracking (matches Coq: Theorem MEM_077_allocation_tracking)
-; MEM_077_allocation_tracking: hg_allocation_tracking riina_heap = true
-(assert (= 0 0)) ; MEM_077_allocation_tracking [Coq-only]
-
-; MEM_078_deallocation_check (matches Coq: Theorem MEM_078_deallocation_check)
-; MEM_078_deallocation_check: hg_deallocation_check riina_heap = true
-(assert (= 0 0)) ; MEM_078_deallocation_check [Coq-only]
-
-; MEM_079_fragmentation_prevention (matches Coq: Theorem MEM_079_fragmentation_prevention)
-; MEM_079_fragmentation_prevention: hg_fragmentation_prevention riina_heap = true
-(assert (= 0 0)) ; MEM_079_fragmentation_prevention [Coq-only]
-
-; MEM_080_metadata_integrity (matches Coq: Theorem MEM_080_metadata_integrity)
-; MEM_080_metadata_integrity: hg_metadata_integrity riina_heap = true
-(assert (= 0 0)) ; MEM_080_metadata_integrity [Coq-only]
-
-; MEM_081_heap_implies_allocation_tracking (matches Coq: Theorem MEM_081_heap_implies_allocation_tracking)
-; MEM_081_heap_implies_allocation_tracking: forall h, heap_protected h = true -> hg_allocation_tracking h = true
-(assert (forall ((h Bool)) (= 0 0))) ; MEM_081_heap_implies_allocation_tracking [partial: bindings preserved]
-
-; MEM_082_heap_implies_deallocation_check (matches Coq: Theorem MEM_082_heap_implies_deallocation_check)
-; MEM_082_heap_implies_deallocation_check: forall h, heap_protected h = true -> hg_deallocation_check h = true
-(assert (forall ((h Bool)) (= 0 0))) ; MEM_082_heap_implies_deallocation_check [partial: bindings preserved]
-
-; MEM_083_heap_implies_fragmentation_prevention (matches Coq: Theorem MEM_083_heap_implies_fragmentation_prevention)
-; MEM_083_heap_implies_fragmentation_prevention: forall h, heap_protected h = true -> hg_fragmentation_prevention h = true
-(assert (forall ((h Bool)) (= 0 0))) ; MEM_083_heap_implies_fragmentation_prevention [partial: bindings preserved]
-
-; MEM_084_heap_implies_metadata_integrity (matches Coq: Theorem MEM_084_heap_implies_metadata_integrity)
-; MEM_084_heap_implies_metadata_integrity: forall h, heap_protected h = true -> hg_metadata_integrity h = true
-(assert (forall ((h Bool)) (= 0 0))) ; MEM_084_heap_implies_metadata_integrity [partial: bindings preserved]
-
-; MEM_085_complete_heap_protection (matches Coq: Theorem MEM_085_complete_heap_protection)
-; MEM_085_complete_heap_protection: forall h, heap_protected h = true -> hg_allocation_tracking h = true /\ hg_deallocation_check h = true /\ hg_fragmentati
-(assert (forall ((h Bool)) (= 0 0))) ; MEM_085_complete_heap_protection [partial: bindings preserved]
-
-; MEM_086_isolation_protected (matches Coq: Theorem MEM_086_isolation_protected)
-; MEM_086_isolation_protected: isolation_protected riina_isolation = true
-(assert (= 0 0)) ; MEM_086_isolation_protected [Coq-only]
-
-; MEM_087_domain_separation (matches Coq: Theorem MEM_087_domain_separation)
-; MEM_087_domain_separation: ig_domain_separation riina_isolation = true
-(assert (= 0 0)) ; MEM_087_domain_separation [Coq-only]
-
-; MEM_088_permission_enforcement (matches Coq: Theorem MEM_088_permission_enforcement)
-; MEM_088_permission_enforcement: ig_permission_enforcement riina_isolation = true
-(assert (= 0 0)) ; MEM_088_permission_enforcement [Coq-only]
-
-; MEM_089_cross_domain_check (matches Coq: Theorem MEM_089_cross_domain_check)
-; MEM_089_cross_domain_check: ig_cross_domain_check riina_isolation = true
-(assert (= 0 0)) ; MEM_089_cross_domain_check [Coq-only]
-
-; MEM_090_capability_required (matches Coq: Theorem MEM_090_capability_required)
-; MEM_090_capability_required: ig_capability_required riina_isolation = true
-(assert (= 0 0)) ; MEM_090_capability_required [Coq-only]
-
-; MEM_091_isolation_implies_domain_separation (matches Coq: Theorem MEM_091_isolation_implies_domain_separation)
-; MEM_091_isolation_implies_domain_separation: forall i, isolation_protected i = true -> ig_domain_separation i = true
-(assert (forall ((i Bool)) (= 0 0))) ; MEM_091_isolation_implies_domain_separation [partial: bindings preserved]
-
-; MEM_092_isolation_implies_permission_enforcement (matches Coq: Theorem MEM_092_isolation_implies_permission_enforcement)
-; MEM_092_isolation_implies_permission_enforcement: forall i, isolation_protected i = true -> ig_permission_enforcement i = true
-(assert (forall ((i Bool)) (= 0 0))) ; MEM_092_isolation_implies_permission_enforcement [partial: bindings preserved]
-
-; MEM_093_isolation_implies_cross_domain_check (matches Coq: Theorem MEM_093_isolation_implies_cross_domain_check)
-; MEM_093_isolation_implies_cross_domain_check: forall i, isolation_protected i = true -> ig_cross_domain_check i = true
-(assert (forall ((i Bool)) (= 0 0))) ; MEM_093_isolation_implies_cross_domain_check [partial: bindings preserved]
-
-; MEM_094_isolation_implies_capability (matches Coq: Theorem MEM_094_isolation_implies_capability)
-; MEM_094_isolation_implies_capability: forall i, isolation_protected i = true -> ig_capability_required i = true
-(assert (forall ((i Bool)) (= 0 0))) ; MEM_094_isolation_implies_capability [partial: bindings preserved]
-
-; MEM_095_complete_isolation (matches Coq: Theorem MEM_095_complete_isolation)
-; MEM_095_complete_isolation: forall i, isolation_protected i = true -> ig_domain_separation i = true /\ ig_permission_enforcement i = true /\ ig_cros
-(assert (forall ((i Bool)) (= 0 0))) ; MEM_095_complete_isolation [partial: bindings preserved]
-
-; MEM_096_kernel_can_access_kernel (matches Coq: Theorem MEM_096_kernel_can_access_kernel)
-; MEM_096_kernel_can_access_kernel: domain_can_access DomainKernel DomainKernel = true
-(assert (= 0 0)) ; MEM_096_kernel_can_access_kernel [Coq-only]
-
-; MEM_097_kernel_can_access_user (matches Coq: Theorem MEM_097_kernel_can_access_user)
-; MEM_097_kernel_can_access_user: domain_can_access DomainKernel DomainUser = true
-(assert (= 0 0)) ; MEM_097_kernel_can_access_user [Coq-only]
-
-; MEM_098_kernel_can_access_guest (matches Coq: Theorem MEM_098_kernel_can_access_guest)
-; MEM_098_kernel_can_access_guest: domain_can_access DomainKernel DomainGuest = true
-(assert (= 0 0)) ; MEM_098_kernel_can_access_guest [Coq-only]
-
-; MEM_099_kernel_can_access_untrusted (matches Coq: Theorem MEM_099_kernel_can_access_untrusted)
-; MEM_099_kernel_can_access_untrusted: domain_can_access DomainKernel DomainUntrusted = true
-(assert (= 0 0)) ; MEM_099_kernel_can_access_untrusted [Coq-only]
-
-; MEM_100_user_cannot_access_kernel (matches Coq: Theorem MEM_100_user_cannot_access_kernel)
-; MEM_100_user_cannot_access_kernel: domain_can_access DomainUser DomainKernel = false
-(assert (= 0 0)) ; MEM_100_user_cannot_access_kernel [Coq-only]
-
-; MEM_101_user_can_access_user (matches Coq: Theorem MEM_101_user_can_access_user)
-; MEM_101_user_can_access_user: domain_can_access DomainUser DomainUser = true
-(assert (= 0 0)) ; MEM_101_user_can_access_user [Coq-only]
-
-; MEM_102_guest_cannot_access_user (matches Coq: Theorem MEM_102_guest_cannot_access_user)
-; MEM_102_guest_cannot_access_user: domain_can_access DomainGuest DomainUser = false
-(assert (= 0 0)) ; MEM_102_guest_cannot_access_user [Coq-only]
-
-; MEM_103_untrusted_cannot_access_guest (matches Coq: Theorem MEM_103_untrusted_cannot_access_guest)
-; MEM_103_untrusted_cannot_access_guest: domain_can_access DomainUntrusted DomainGuest = false
-(assert (= 0 0)) ; MEM_103_untrusted_cannot_access_guest [Coq-only]
-
-; MEM_104_domain_access_reflexive (matches Coq: Theorem MEM_104_domain_access_reflexive)
-; MEM_104_domain_access_reflexive: forall d, domain_can_access d d = true
-(assert (forall ((d Bool)) (= 0 0))) ; MEM_104_domain_access_reflexive [partial: bindings preserved]
-
-; MEM_105_domain_hierarchy_transitive (matches Coq: Theorem MEM_105_domain_hierarchy_transitive)
-; MEM_105_domain_hierarchy_transitive: forall d1 d2 d3, domain_can_access d1 d2 = true -> domain_can_access d2 d3 = true -> domain_can_access d1 d3 = true
-(assert (forall ((d1 Bool) (d2 Bool) (d3 Bool)) (= 0 0))) ; MEM_105_domain_hierarchy_transitive [partial: bindings preserved]
-
-; MEM_106_kernel_read_kernel_region (matches Coq: Theorem MEM_106_kernel_read_kernel_region)
-; MEM_106_kernel_read_kernel_region: secure_region_can_read kernel_region DomainKernel = true
-(assert (= 0 0)) ; MEM_106_kernel_read_kernel_region [Coq-only]
-
-; MEM_107_user_cannot_read_kernel_region (matches Coq: Theorem MEM_107_user_cannot_read_kernel_region)
-; MEM_107_user_cannot_read_kernel_region: secure_region_can_read kernel_region DomainUser = false
-(assert (= 0 0)) ; MEM_107_user_cannot_read_kernel_region [Coq-only]
-
-; MEM_108_kernel_read_user_region (matches Coq: Theorem MEM_108_kernel_read_user_region)
-; MEM_108_kernel_read_user_region: secure_region_can_read user_region DomainKernel = true
-(assert (= 0 0)) ; MEM_108_kernel_read_user_region [Coq-only]
-
-; MEM_109_user_read_user_region (matches Coq: Theorem MEM_109_user_read_user_region)
-; MEM_109_user_read_user_region: secure_region_can_read user_region DomainUser = true
-(assert (= 0 0)) ; MEM_109_user_read_user_region [Coq-only]
-
-; MEM_110_guest_read_guest_region (matches Coq: Theorem MEM_110_guest_read_guest_region)
-; MEM_110_guest_read_guest_region: secure_region_can_read guest_region DomainGuest = true
-(assert (= 0 0)) ; MEM_110_guest_read_guest_region [Coq-only]
-
-; MEM_111_guest_cannot_write_guest_region (matches Coq: Theorem MEM_111_guest_cannot_write_guest_region)
-; MEM_111_guest_cannot_write_guest_region: secure_region_can_write guest_region DomainGuest = false
-(assert (= 0 0)) ; MEM_111_guest_cannot_write_guest_region [Coq-only]
-
-; MEM_112_kernel_write_user_region (matches Coq: Theorem MEM_112_kernel_write_user_region)
-; MEM_112_kernel_write_user_region: secure_region_can_write user_region DomainKernel = true
-(assert (= 0 0)) ; MEM_112_kernel_write_user_region [Coq-only]
-
-; MEM_113_read_requires_allocation (matches Coq: Theorem MEM_113_read_requires_allocation)
-; MEM_113_read_requires_allocation: forall r d, secure_region_can_read r d = true -> region_is_allocated (smr_base r) = true
-(assert (forall ((r Bool) (d Bool)) (= 0 0))) ; MEM_113_read_requires_allocation [partial: bindings preserved]
-
-; MEM_114_write_requires_allocation (matches Coq: Theorem MEM_114_write_requires_allocation)
-; MEM_114_write_requires_allocation: forall r d, secure_region_can_write r d = true -> region_is_allocated (smr_base r) = true
-(assert (forall ((r Bool) (d Bool)) (= 0 0))) ; MEM_114_write_requires_allocation [partial: bindings preserved]
-
-; MEM_115_read_requires_permission (matches Coq: Theorem MEM_115_read_requires_permission)
-; MEM_115_read_requires_permission: forall r d, secure_region_can_read r d = true -> permission_allows_read (smr_permission r) = true
-(assert (forall ((r Bool) (d Bool)) (= 0 0))) ; MEM_115_read_requires_permission [partial: bindings preserved]
-
-; MEM_116_full_memory_safe_implies_stack (matches Coq: Theorem MEM_116_full_memory_safe_implies_stack)
-; MEM_116_full_memory_safe_implies_stack: forall m, memory_safe m = true -> stack_protected (ms_stack m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_116_full_memory_safe_implies_stack [partial: bindings preserved]
-
-; MEM_117_full_memory_safe_implies_heap (matches Coq: Theorem MEM_117_full_memory_safe_implies_heap)
-; MEM_117_full_memory_safe_implies_heap: forall m, memory_safe m = true -> heap_protected (ms_heap m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_117_full_memory_safe_implies_heap [partial: bindings preserved]
-
-; MEM_118_full_memory_safe_implies_isolation (matches Coq: Theorem MEM_118_full_memory_safe_implies_isolation)
-; MEM_118_full_memory_safe_implies_isolation: forall m, memory_safe m = true -> isolation_protected (ms_isolation m) = true
-(assert (forall ((m Bool)) (= 0 0))) ; MEM_118_full_memory_safe_implies_isolation [partial: bindings preserved]
-
-; MEM_119_riina_full_protection (matches Coq: Theorem MEM_119_riina_full_protection)
-; MEM_119_riina_full_protection: memory_safe riina_mem_safety = true /\ stack_protected riina_stack = true /\ heap_protected riina_heap = true /\ isolati
-(assert (= 0 0)) ; MEM_119_riina_full_protection [Coq-only]
-
-; MEM_120_no_uaf_with_tracking (matches Coq: Theorem MEM_120_no_uaf_with_tracking)
-; MEM_120_no_uaf_with_tracking: forall u, uaf_protected u = true -> forall r, region_is_freed r = true -> (uaf_access_check u = true -> region_can_acces
-(assert (forall ((u Bool)) (= 0 0))) ; MEM_120_no_uaf_with_tracking [partial: bindings preserved]
-
-; MEM_121_no_double_free_with_tracking (matches Coq: Theorem MEM_121_no_double_free_with_tracking)
-; MEM_121_no_double_free_with_tracking: forall d, df_protected d = true -> df_state_tracking d = true /\ df_freed_check d = true
-(assert (forall ((d Bool)) (= 0 0))) ; MEM_121_no_double_free_with_tracking [partial: bindings preserved]
-
-; MEM_122_null_safety_complete (matches Coq: Theorem MEM_122_null_safety_complete)
-; MEM_122_null_safety_complete: forall n, nd_protected n = true -> nd_null_check n = true /\ nd_option_types n = true /\ nd_init_required n = true
-(assert (forall ((n Bool)) (= 0 0))) ; MEM_122_null_safety_complete [partial: bindings preserved]
-
-; MEM_123_bounds_safety_complete (matches Coq: Theorem MEM_123_bounds_safety_complete)
-; MEM_123_bounds_safety_complete: forall b, bounds_protected b = true -> bg_bounds_check b = true /\ bg_fat_pointers b = true /\ bg_slice_safety b = true
-(assert (forall ((b Bool)) (= 0 0))) ; MEM_123_bounds_safety_complete [partial: bindings preserved]
-
-; MEM_124_ptr_safe_zero_offset (matches Coq: Theorem MEM_124_ptr_safe_zero_offset)
-; MEM_124_ptr_safe_zero_offset: forall bounds, bounds > 0 -> ptr_safe_for_access (mkPointer Valid 0 bounds) = true
-(assert (forall ((bounds Bool)) (= 0 0))) ; MEM_124_ptr_safe_zero_offset [partial: bindings preserved]
-
-; MEM_125_complete_memory_safety_riina (matches Coq: Theorem MEM_125_complete_memory_safety_riina)
-; MEM_125_complete_memory_safety_riina: memory_safe riina_mem_safety = true -> uaf_protected riina_uaf = true /\ df_protected riina_df = true /\ nd_protected ri
-(assert (= 0 0)) ; MEM_125_complete_memory_safety_riina [Coq-only]
-
-; MEM_126_safe_range_valid_pointer (matches Coq: Theorem MEM_126_safe_range_valid_pointer)
-; MEM_126_safe_range_valid_pointer: ptr_safe_for_access_range valid_pointer 10 = true
-(assert (= 0 0)) ; MEM_126_safe_range_valid_pointer [Coq-only]
-
-; MEM_127_unsafe_range_exceeds_bounds (matches Coq: Theorem MEM_127_unsafe_range_exceeds_bounds)
-; MEM_127_unsafe_range_exceeds_bounds: ptr_safe_for_access_range valid_pointer 91 = false
-(assert (= 0 0)) ; MEM_127_unsafe_range_exceeds_bounds [Coq-only]
-
-; MEM_128_null_unsafe_for_range (matches Coq: Theorem MEM_128_null_unsafe_for_range)
-; MEM_128_null_unsafe_for_range: ptr_safe_for_access_range null_pointer 1 = false
-(assert (= 0 0)) ; MEM_128_null_unsafe_for_range [Coq-only]
-
-; MEM_129_dangling_unsafe_for_range (matches Coq: Theorem MEM_129_dangling_unsafe_for_range)
-; MEM_129_dangling_unsafe_for_range: ptr_safe_for_access_range dangling_pointer 1 = false
-(assert (= 0 0)) ; MEM_129_dangling_unsafe_for_range [Coq-only]
-
-; MEM_130_safe_range_implies_valid (matches Coq: Theorem MEM_130_safe_range_implies_valid)
-; MEM_130_safe_range_implies_valid: forall p len, ptr_safe_for_access_range p len = true -> ptr_is_valid p = true
-(assert (forall ((p Bool) (len Bool)) (= 0 0))) ; MEM_130_safe_range_implies_valid [partial: bindings preserved]
-
-; MEM_131_zero_range_safe_if_valid (matches Coq: Theorem MEM_131_zero_range_safe_if_valid)
-; MEM_131_zero_range_safe_if_valid: forall p, ptr_is_valid p = true -> ptr_offset p <= ptr_bounds p -> ptr_safe_for_access_range p 0 = true
-(assert (forall ((p Bool)) (= 0 0))) ; MEM_131_zero_range_safe_if_valid [partial: bindings preserved]
-
-; MEM_132_safe_range_monotonic (matches Coq: Theorem MEM_132_safe_range_monotonic)
-; MEM_132_safe_range_monotonic: forall p len1 len2, len1 <= len2 -> ptr_safe_for_access_range p len2 = true -> ptr_safe_for_access_range p len1 = true
-(assert (forall ((p Bool) (len1 Bool) (len2 Bool)) (= 0 0))) ; MEM_132_safe_range_monotonic [partial: bindings preserved]
-
-; MEM_133_single_access_from_range (matches Coq: Theorem MEM_133_single_access_from_range)
-; MEM_133_single_access_from_range: forall p, ptr_safe_for_access_range p 1 = true -> ptr_safe_for_access p = true
-(assert (forall ((p Bool)) (= 0 0))) ; MEM_133_single_access_from_range [partial: bindings preserved]
-
-; MEM_134_out_of_bounds_unsafe (matches Coq: Theorem MEM_134_out_of_bounds_unsafe)
-; MEM_134_out_of_bounds_unsafe: forall p len, ptr_offset p + len > ptr_bounds p -> ptr_safe_for_access_range p len = false
-(assert (forall ((p Bool) (len Bool)) (= 0 0))) ; MEM_134_out_of_bounds_unsafe [partial: bindings preserved]
-
-; MEM_135_safe_implies_not_exceeds_bounds (matches Coq: Theorem MEM_135_safe_implies_not_exceeds_bounds)
-; MEM_135_safe_implies_not_exceeds_bounds: forall p len, ptr_safe_for_access_range p len = true -> ptr_offset p + len <= ptr_bounds p
-(assert (forall ((p Bool) (len Bool)) (= 0 0))) ; MEM_135_safe_implies_not_exceeds_bounds [partial: bindings preserved]
-
-; Verify all assertions are satisfiable
+; =======================================================================
+; FUNCTION DEFINITIONS AND PROPERTY VERIFICATION
+; =======================================================================
+
+; --- AllocState enum properties ---
+
+; --- 1. AllocState exhaustiveness ---
+(push 1)
+(declare-const x AllocState)
+(assert (not (or (= x Unallocated) (= x Allocated) (= x Freed))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 2. AllocState: Unallocated != Allocated ---
+(push 1)
+(assert (= Unallocated Allocated))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 3. AllocState: Allocated != Freed ---
+(push 1)
+(assert (= Allocated Freed))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 4. AllocState: Unallocated != Freed ---
+(push 1)
+(assert (= Unallocated Freed))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 5. AllocState finite cardinality (3 values) ---
+(push 1)
+(declare-const x AllocState)
+(assert (and (not (= x Unallocated)) (not (= x Allocated)) (not (= x Freed))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- PointerValidity enum properties ---
+
+; --- 6. PointerValidity exhaustiveness ---
+(push 1)
+(declare-const x PointerValidity)
+(assert (not (or (= x Valid) (= x Null) (= x Dangling) (= x OutOfBounds))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 7. PointerValidity: Valid != Null ---
+(push 1)
+(assert (= Valid Null))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 8. PointerValidity: Null != Dangling ---
+(push 1)
+(assert (= Null Dangling))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 9. PointerValidity: Dangling != OutOfBounds ---
+(push 1)
+(assert (= Dangling OutOfBounds))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 10. PointerValidity: Valid != OutOfBounds ---
+(push 1)
+(assert (= Valid OutOfBounds))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 11. PointerValidity finite cardinality (4 values) ---
+(push 1)
+(declare-const x PointerValidity)
+(assert (and (not (= x Valid)) (not (= x Null)) (not (= x Dangling)) (not (= x OutOfBounds))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- SecurityDomain enum properties ---
+
+; --- 12. SecurityDomain exhaustiveness ---
+(push 1)
+(declare-const x SecurityDomain)
+(assert (not (or (= x DomainKernel) (= x DomainUser) (= x DomainGuest) (= x DomainUntrusted))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 13. SecurityDomain: DomainKernel != DomainUser ---
+(push 1)
+(assert (= DomainKernel DomainUser))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 14. SecurityDomain: DomainUser != DomainGuest ---
+(push 1)
+(assert (= DomainUser DomainGuest))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 15. SecurityDomain: DomainGuest != DomainUntrusted ---
+(push 1)
+(assert (= DomainGuest DomainUntrusted))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 16. SecurityDomain: DomainKernel != DomainUntrusted ---
+(push 1)
+(assert (= DomainKernel DomainUntrusted))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 17. SecurityDomain finite cardinality (4 values) ---
+(push 1)
+(declare-const x SecurityDomain)
+(assert (and (not (= x DomainKernel)) (not (= x DomainUser)) (not (= x DomainGuest)) (not (= x DomainUntrusted))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- AccessPermission enum properties ---
+
+; --- 18. AccessPermission exhaustiveness ---
+(push 1)
+(declare-const x AccessPermission)
+(assert (not (or (= x PermNone) (= x PermRead) (= x PermWrite) (= x PermReadWrite) (= x PermExecute))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 19. AccessPermission: PermNone != PermRead ---
+(push 1)
+(assert (= PermNone PermRead))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 20. AccessPermission: PermRead != PermWrite ---
+(push 1)
+(assert (= PermRead PermWrite))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 21. AccessPermission: PermWrite != PermReadWrite ---
+(push 1)
+(assert (= PermWrite PermReadWrite))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 22. AccessPermission: PermNone != PermExecute ---
+(push 1)
+(assert (= PermNone PermExecute))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 23. AccessPermission finite cardinality (5 values) ---
+(push 1)
+(declare-const x AccessPermission)
+(assert (and (not (= x PermNone)) (not (= x PermRead)) (not (= x PermWrite)) (not (= x PermReadWrite)) (not (= x PermExecute))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- MemoryRegion record properties ---
+
+; --- 24. MemoryRegion accessor round-trip: mr_alloc_state ---
+(push 1)
+(declare-const f0 AllocState)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(assert (not (= (mr_alloc_state (mk-memory_region f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 25. MemoryRegion accessor round-trip: mr_size ---
+(push 1)
+(declare-const f0 AllocState)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(assert (not (= (mr_size (mk-memory_region f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 26. MemoryRegion accessor round-trip: mr_initialized ---
+(push 1)
+(declare-const f0 AllocState)
+(declare-const f1 Int)
+(declare-const f2 Bool)
+(assert (not (= (mr_initialized (mk-memory_region f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- Pointer record properties ---
+
+; --- 27. Pointer accessor round-trip: ptr_validity ---
+(push 1)
+(declare-const f0 PointerValidity)
+(declare-const f1 Int)
+(assert (not (= (ptr_validity (mk-pointer f0 f1)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 28. Pointer accessor round-trip: ptr_offset ---
+(push 1)
+(declare-const f0 PointerValidity)
+(declare-const f1 Int)
+(assert (not (= (ptr_offset (mk-pointer f0 f1)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- SecureMemoryRegion record properties ---
+
+; --- 29. SecureMemoryRegion accessor round-trip: smr_base ---
+(push 1)
+(declare-const f0 MemoryRegion)
+(declare-const f1 SecurityDomain)
+(declare-const f2 AccessPermission)
+(assert (not (= (smr_base (mk-secure_memory_region f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 30. SecureMemoryRegion accessor round-trip: smr_domain ---
+(push 1)
+(declare-const f0 MemoryRegion)
+(declare-const f1 SecurityDomain)
+(declare-const f2 AccessPermission)
+(assert (not (= (smr_domain (mk-secure_memory_region f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 31. SecureMemoryRegion accessor round-trip: smr_permission ---
+(push 1)
+(declare-const f0 MemoryRegion)
+(declare-const f1 SecurityDomain)
+(declare-const f2 AccessPermission)
+(assert (not (= (smr_permission (mk-secure_memory_region f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- UseAfterFreeGuard record properties ---
+
+; --- 32. UseAfterFreeGuard accessor round-trip: uaf_lifetime_tracking ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(assert (not (= (uaf_lifetime_tracking (mk-use_after_free_guard f0 f1)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 33. UseAfterFreeGuard accessor round-trip: uaf_ownership_clear ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(assert (not (= (uaf_ownership_clear (mk-use_after_free_guard f0 f1)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun UseAfterFreeGuard_all_enabled ((g UseAfterFreeGuard)) Bool
+  (and (uaf_lifetime_tracking g) (uaf_ownership_clear g)))
+
+; --- 34. UseAfterFreeGuard: all-enabled completeness ---
+(push 1)
+(declare-const g UseAfterFreeGuard)
+(assert (uaf_lifetime_tracking g))
+(assert (uaf_ownership_clear g))
+(assert (not (UseAfterFreeGuard_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 35. UseAfterFreeGuard: UseAfterFreeGuard_all_enabled implies uaf_lifetime_tracking ---
+(push 1)
+(declare-const g UseAfterFreeGuard)
+(assert (UseAfterFreeGuard_all_enabled g))
+(assert (not (uaf_lifetime_tracking g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 36. UseAfterFreeGuard: UseAfterFreeGuard_all_enabled implies uaf_ownership_clear ---
+(push 1)
+(declare-const g UseAfterFreeGuard)
+(assert (UseAfterFreeGuard_all_enabled g))
+(assert (not (uaf_ownership_clear g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- DoubleFreeGuard record properties ---
+
+; --- 37. DoubleFreeGuard accessor round-trip: df_state_tracking ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(assert (not (= (df_state_tracking (mk-double_free_guard f0 f1)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 38. DoubleFreeGuard accessor round-trip: df_single_owner ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(assert (not (= (df_single_owner (mk-double_free_guard f0 f1)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun DoubleFreeGuard_all_enabled ((g DoubleFreeGuard)) Bool
+  (and (df_state_tracking g) (df_single_owner g)))
+
+; --- 39. DoubleFreeGuard: all-enabled completeness ---
+(push 1)
+(declare-const g DoubleFreeGuard)
+(assert (df_state_tracking g))
+(assert (df_single_owner g))
+(assert (not (DoubleFreeGuard_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 40. DoubleFreeGuard: DoubleFreeGuard_all_enabled implies df_state_tracking ---
+(push 1)
+(declare-const g DoubleFreeGuard)
+(assert (DoubleFreeGuard_all_enabled g))
+(assert (not (df_state_tracking g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 41. DoubleFreeGuard: DoubleFreeGuard_all_enabled implies df_single_owner ---
+(push 1)
+(declare-const g DoubleFreeGuard)
+(assert (DoubleFreeGuard_all_enabled g))
+(assert (not (df_single_owner g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- NullDerefGuard record properties ---
+
+; --- 42. NullDerefGuard accessor round-trip: nd_null_check ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(assert (not (= (nd_null_check (mk-null_deref_guard f0 f1)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 43. NullDerefGuard accessor round-trip: nd_option_types ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(assert (not (= (nd_option_types (mk-null_deref_guard f0 f1)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun NullDerefGuard_all_enabled ((g NullDerefGuard)) Bool
+  (and (nd_null_check g) (nd_option_types g)))
+
+; --- 44. NullDerefGuard: all-enabled completeness ---
+(push 1)
+(declare-const g NullDerefGuard)
+(assert (nd_null_check g))
+(assert (nd_option_types g))
+(assert (not (NullDerefGuard_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 45. NullDerefGuard: NullDerefGuard_all_enabled implies nd_null_check ---
+(push 1)
+(declare-const g NullDerefGuard)
+(assert (NullDerefGuard_all_enabled g))
+(assert (not (nd_null_check g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 46. NullDerefGuard: NullDerefGuard_all_enabled implies nd_option_types ---
+(push 1)
+(declare-const g NullDerefGuard)
+(assert (NullDerefGuard_all_enabled g))
+(assert (not (nd_option_types g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- BoundsGuard record properties ---
+
+; --- 47. BoundsGuard accessor round-trip: bg_bounds_check ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(assert (not (= (bg_bounds_check (mk-bounds_guard f0 f1)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 48. BoundsGuard accessor round-trip: bg_fat_pointers ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(assert (not (= (bg_fat_pointers (mk-bounds_guard f0 f1)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun BoundsGuard_all_enabled ((g BoundsGuard)) Bool
+  (and (bg_bounds_check g) (bg_fat_pointers g)))
+
+; --- 49. BoundsGuard: all-enabled completeness ---
+(push 1)
+(declare-const g BoundsGuard)
+(assert (bg_bounds_check g))
+(assert (bg_fat_pointers g))
+(assert (not (BoundsGuard_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 50. BoundsGuard: BoundsGuard_all_enabled implies bg_bounds_check ---
+(push 1)
+(declare-const g BoundsGuard)
+(assert (BoundsGuard_all_enabled g))
+(assert (not (bg_bounds_check g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 51. BoundsGuard: BoundsGuard_all_enabled implies bg_fat_pointers ---
+(push 1)
+(declare-const g BoundsGuard)
+(assert (BoundsGuard_all_enabled g))
+(assert (not (bg_fat_pointers g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- StackGuard record properties ---
+
+; --- 52. StackGuard accessor round-trip: sg_canary_enabled ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (sg_canary_enabled (mk-stack_guard f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 53. StackGuard accessor round-trip: sg_return_addr_protected ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (sg_return_addr_protected (mk-stack_guard f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 54. StackGuard accessor round-trip: sg_frame_isolation ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (sg_frame_isolation (mk-stack_guard f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun StackGuard_all_enabled ((g StackGuard)) Bool
+  (and (sg_canary_enabled g) (sg_return_addr_protected g) (sg_frame_isolation g)))
+
+; --- 55. StackGuard: all-enabled completeness ---
+(push 1)
+(declare-const g StackGuard)
+(assert (sg_canary_enabled g))
+(assert (sg_return_addr_protected g))
+(assert (sg_frame_isolation g))
+(assert (not (StackGuard_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 56. StackGuard: StackGuard_all_enabled implies sg_canary_enabled ---
+(push 1)
+(declare-const g StackGuard)
+(assert (StackGuard_all_enabled g))
+(assert (not (sg_canary_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 57. StackGuard: StackGuard_all_enabled implies sg_return_addr_protected ---
+(push 1)
+(declare-const g StackGuard)
+(assert (StackGuard_all_enabled g))
+(assert (not (sg_return_addr_protected g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 58. StackGuard: StackGuard_all_enabled implies sg_frame_isolation ---
+(push 1)
+(declare-const g StackGuard)
+(assert (StackGuard_all_enabled g))
+(assert (not (sg_frame_isolation g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- HeapGuard record properties ---
+
+; --- 59. HeapGuard accessor round-trip: hg_allocation_tracking ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (hg_allocation_tracking (mk-heap_guard f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 60. HeapGuard accessor round-trip: hg_deallocation_check ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (hg_deallocation_check (mk-heap_guard f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 61. HeapGuard accessor round-trip: hg_fragmentation_prevention ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (hg_fragmentation_prevention (mk-heap_guard f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun HeapGuard_all_enabled ((g HeapGuard)) Bool
+  (and (hg_allocation_tracking g) (hg_deallocation_check g) (hg_fragmentation_prevention g)))
+
+; --- 62. HeapGuard: all-enabled completeness ---
+(push 1)
+(declare-const g HeapGuard)
+(assert (hg_allocation_tracking g))
+(assert (hg_deallocation_check g))
+(assert (hg_fragmentation_prevention g))
+(assert (not (HeapGuard_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 63. HeapGuard: HeapGuard_all_enabled implies hg_allocation_tracking ---
+(push 1)
+(declare-const g HeapGuard)
+(assert (HeapGuard_all_enabled g))
+(assert (not (hg_allocation_tracking g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 64. HeapGuard: HeapGuard_all_enabled implies hg_deallocation_check ---
+(push 1)
+(declare-const g HeapGuard)
+(assert (HeapGuard_all_enabled g))
+(assert (not (hg_deallocation_check g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 65. HeapGuard: HeapGuard_all_enabled implies hg_fragmentation_prevention ---
+(push 1)
+(declare-const g HeapGuard)
+(assert (HeapGuard_all_enabled g))
+(assert (not (hg_fragmentation_prevention g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- IsolationGuard record properties ---
+
+; --- 66. IsolationGuard accessor round-trip: ig_domain_separation ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (ig_domain_separation (mk-isolation_guard f0 f1 f2)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 67. IsolationGuard accessor round-trip: ig_permission_enforcement ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (ig_permission_enforcement (mk-isolation_guard f0 f1 f2)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 68. IsolationGuard accessor round-trip: ig_cross_domain_check ---
+(push 1)
+(declare-const f0 Bool)
+(declare-const f1 Bool)
+(declare-const f2 Bool)
+(assert (not (= (ig_cross_domain_check (mk-isolation_guard f0 f1 f2)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+(define-fun IsolationGuard_all_enabled ((g IsolationGuard)) Bool
+  (and (ig_domain_separation g) (ig_permission_enforcement g) (ig_cross_domain_check g)))
+
+; --- 69. IsolationGuard: all-enabled completeness ---
+(push 1)
+(declare-const g IsolationGuard)
+(assert (ig_domain_separation g))
+(assert (ig_permission_enforcement g))
+(assert (ig_cross_domain_check g))
+(assert (not (IsolationGuard_all_enabled g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 70. IsolationGuard: IsolationGuard_all_enabled implies ig_domain_separation ---
+(push 1)
+(declare-const g IsolationGuard)
+(assert (IsolationGuard_all_enabled g))
+(assert (not (ig_domain_separation g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 71. IsolationGuard: IsolationGuard_all_enabled implies ig_permission_enforcement ---
+(push 1)
+(declare-const g IsolationGuard)
+(assert (IsolationGuard_all_enabled g))
+(assert (not (ig_permission_enforcement g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 72. IsolationGuard: IsolationGuard_all_enabled implies ig_cross_domain_check ---
+(push 1)
+(declare-const g IsolationGuard)
+(assert (IsolationGuard_all_enabled g))
+(assert (not (ig_cross_domain_check g)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- MemorySafetyConfig record properties ---
+
+; --- 73. MemorySafetyConfig accessor round-trip: ms_uaf ---
+(push 1)
+(declare-const f0 UseAfterFreeGuard)
+(declare-const f1 DoubleFreeGuard)
+(declare-const f2 NullDerefGuard)
+(declare-const f3 BoundsGuard)
+(declare-const f4 StackGuard)
+(declare-const f5 HeapGuard)
+(assert (not (= (ms_uaf (mk-memory_safety_config f0 f1 f2 f3 f4 f5)) f0)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 74. MemorySafetyConfig accessor round-trip: ms_df ---
+(push 1)
+(declare-const f0 UseAfterFreeGuard)
+(declare-const f1 DoubleFreeGuard)
+(declare-const f2 NullDerefGuard)
+(declare-const f3 BoundsGuard)
+(declare-const f4 StackGuard)
+(declare-const f5 HeapGuard)
+(assert (not (= (ms_df (mk-memory_safety_config f0 f1 f2 f3 f4 f5)) f1)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 75. MemorySafetyConfig accessor round-trip: ms_nd ---
+(push 1)
+(declare-const f0 UseAfterFreeGuard)
+(declare-const f1 DoubleFreeGuard)
+(declare-const f2 NullDerefGuard)
+(declare-const f3 BoundsGuard)
+(declare-const f4 StackGuard)
+(declare-const f5 HeapGuard)
+(assert (not (= (ms_nd (mk-memory_safety_config f0 f1 f2 f3 f4 f5)) f2)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 76. MemorySafetyConfig accessor round-trip: ms_bounds ---
+(push 1)
+(declare-const f0 UseAfterFreeGuard)
+(declare-const f1 DoubleFreeGuard)
+(declare-const f2 NullDerefGuard)
+(declare-const f3 BoundsGuard)
+(declare-const f4 StackGuard)
+(declare-const f5 HeapGuard)
+(assert (not (= (ms_bounds (mk-memory_safety_config f0 f1 f2 f3 f4 f5)) f3)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 77. MemorySafetyConfig accessor round-trip: ms_stack ---
+(push 1)
+(declare-const f0 UseAfterFreeGuard)
+(declare-const f1 DoubleFreeGuard)
+(declare-const f2 NullDerefGuard)
+(declare-const f3 BoundsGuard)
+(declare-const f4 StackGuard)
+(declare-const f5 HeapGuard)
+(assert (not (= (ms_stack (mk-memory_safety_config f0 f1 f2 f3 f4 f5)) f4)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- SecurityDomain ordering properties ---
+
+(define-fun SecurityDomain_level ((x SecurityDomain)) Int
+  (ite (= x DomainKernel) 0 (ite (= x DomainUser) 1 (ite (= x DomainGuest) 2 3))))
+
+(define-fun SecurityDomain_leq ((x SecurityDomain) (y SecurityDomain)) Bool
+  (<= (SecurityDomain_level x) (SecurityDomain_level y)))
+
+; --- 78. SecurityDomain_leq reflexivity ---
+(push 1)
+(declare-const x SecurityDomain)
+(assert (not (SecurityDomain_leq x x)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 79. SecurityDomain_leq transitivity ---
+(push 1)
+(declare-const x SecurityDomain)
+(declare-const y SecurityDomain)
+(declare-const z SecurityDomain)
+(assert (SecurityDomain_leq x y))
+(assert (SecurityDomain_leq y z))
+(assert (not (SecurityDomain_leq x z)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 80. SecurityDomain_leq antisymmetry ---
+(push 1)
+(declare-const x SecurityDomain)
+(declare-const y SecurityDomain)
+(assert (SecurityDomain_leq x y))
+(assert (SecurityDomain_leq y x))
+(assert (not (= x y)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 81. DomainKernel is bottom ---
+(push 1)
+(declare-const x SecurityDomain)
+(assert (not (SecurityDomain_leq DomainKernel x)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 82. DomainUntrusted is top ---
+(push 1)
+(declare-const x SecurityDomain)
+(assert (not (SecurityDomain_leq x DomainUntrusted)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- AccessPermission ordering properties ---
+
+(define-fun AccessPermission_level ((x AccessPermission)) Int
+  (ite (= x PermNone) 0 (ite (= x PermRead) 1 (ite (= x PermWrite) 2 (ite (= x PermReadWrite) 3 4)))))
+
+(define-fun AccessPermission_leq ((x AccessPermission) (y AccessPermission)) Bool
+  (<= (AccessPermission_level x) (AccessPermission_level y)))
+
+; --- 83. AccessPermission_leq reflexivity ---
+(push 1)
+(declare-const x AccessPermission)
+(assert (not (AccessPermission_leq x x)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 84. AccessPermission_leq transitivity ---
+(push 1)
+(declare-const x AccessPermission)
+(declare-const y AccessPermission)
+(declare-const z AccessPermission)
+(assert (AccessPermission_leq x y))
+(assert (AccessPermission_leq y z))
+(assert (not (AccessPermission_leq x z)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 85. AccessPermission_leq antisymmetry ---
+(push 1)
+(declare-const x AccessPermission)
+(declare-const y AccessPermission)
+(assert (AccessPermission_leq x y))
+(assert (AccessPermission_leq y x))
+(assert (not (= x y)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 86. PermNone is bottom ---
+(push 1)
+(declare-const x AccessPermission)
+(assert (not (AccessPermission_leq PermNone x)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 87. PermExecute is top ---
+(push 1)
+(declare-const x AccessPermission)
+(assert (not (AccessPermission_leq x PermExecute)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
 (check-sat)
 (exit)

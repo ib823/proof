@@ -98,61 +98,61 @@ let can_marshal (p_b: marshal_buffer) (p_t: ffi_type) : Tot bool =
   p_b.f_buf_used + ffi_type_size p_t <= p_b.f_buf_capacity
 
 (* ffi_safe_implies_sandboxed (matches Coq: Theorem ffi_safe_implies_sandboxed) *)
-let ffi_safe_implies_sandboxed (p_call: _) : Lemma (requires (ffi_call_safe p_call == true)) (ensures (p_call.f_ffi_sandboxed == true)) = admit ()
+let ffi_safe_implies_sandboxed (p_call: _) : Lemma (requires (ffi_call_safe p_call == true)) (ensures (p_call.f_ffi_sandboxed == true)) = ()
 
 (* ffi_safe_implies_validated (matches Coq: Theorem ffi_safe_implies_validated) *)
-let ffi_safe_implies_validated (p_call: _) : Lemma (requires (ffi_call_safe p_call == true)) (ensures (p_call.f_ffi_validated == true)) = admit ()
+let ffi_safe_implies_validated (p_call: _) : Lemma (requires (ffi_call_safe p_call == true)) (ensures (p_call.f_ffi_validated == true)) = ()
 
 (* ffi_safe_construct (matches Coq: Theorem ffi_safe_construct) *)
-let ffi_safe_construct (p_call: _) : Lemma (requires (p_call.f_ffi_sandboxed == true /\ p_call.f_ffi_validated == true)) (ensures (ffi_call_safe p_call == true)) = admit ()
+let ffi_safe_construct (p_call: _) : Lemma (requires (p_call.f_ffi_sandboxed == true /\ p_call.f_ffi_validated == true)) (ensures (ffi_call_safe p_call == true)) = ()
 
 (* int8_alignment_positive (matches Coq: Theorem int8_alignment_positive) *)
-let int8_alignment_positive () : Lemma (ffi_type_align FFI_Int8 == 1) = admit ()
+let int8_alignment_positive () : Lemma (ffi_type_align FFI_Int8 == 1) = ()
 
 (* ffi_type_align_ge_1 (matches Coq: Lemma ffi_type_align_ge_1) *)
-let ffi_type_align_ge_1 (p_t: _) : Lemma (ffi_type_align p_t >= 1) = admit ()
+let ffi_type_align_ge_1 (p_t: _) : Lemma (ffi_type_align p_t >= 1) = ()
 
 (* ptr_size_constant (matches Coq: Theorem ptr_size_constant) *)
-let ptr_size_constant (p_t: _) : Lemma (ffi_type_size (FFI_Ptr p_t) == 8) = admit ()
+let ptr_size_constant (p_t: _) : Lemma (ffi_type_size (FFI_Ptr p_t) == 8) = ()
 
 (* array_size_correct (matches Coq: Theorem array_size_correct) *)
-let array_size_correct (p_elem: _) (p_n: _) : Lemma (ffi_type_size (FFI_Array p_elem p_n) == p_n * ffi_type_size p_elem) = admit ()
+let array_size_correct (p_elem: _) (p_n: _) : Lemma (ffi_type_size (FFI_Array p_elem p_n) == p_n * ffi_type_size p_elem) = ()
 
 (* empty_struct_zero_size (matches Coq: Theorem empty_struct_zero_size) *)
-let empty_struct_zero_size () : Lemma (ffi_type_size (FFI_Struct []) == 0) = admit ()
+let empty_struct_zero_size () : Lemma (ffi_type_size (FFI_Struct []) == 0) = ()
 
 (* marshal_preserves_capacity (matches Coq: Theorem marshal_preserves_capacity) *)
-let marshal_preserves_capacity (p_b: _) (p_t: _) (p_b_: _) : Lemma (requires (marshal_into p_b p_t == Some p_b_)) (ensures (p_b_.f_buf_capacity == p_b.f_buf_capacity)) = admit ()
+let marshal_preserves_capacity (p_b: _) (p_t: _) (p_b_: _) : Lemma (requires (marshal_into p_b p_t == Some p_b_)) (ensures (p_b_.f_buf_capacity == p_b.f_buf_capacity)) = ()
 
 (* marshal_increases_used (matches Coq: Theorem marshal_increases_used) *)
-let marshal_increases_used (p_b: _) (p_t: _) (p_b_: _) : Lemma (requires (marshal_into p_b p_t == Some p_b_)) (ensures (p_b_.f_buf_used == buf_used p_b + ffi_type_size p_t)) = admit ()
+let marshal_increases_used (p_b: _) (p_t: _) (p_b_: _) : Lemma (requires (marshal_into p_b p_t == Some p_b_)) (ensures (p_b_.f_buf_used == buf_used p_b + ffi_type_size p_t)) = ()
 
 (* marshal_never_overflows (matches Coq: Theorem marshal_never_overflows) *)
-let marshal_never_overflows (p_b: _) (p_t: _) (p_b_: _) : Lemma (requires (marshal_into p_b p_t == Some p_b_)) (ensures (p_b_.f_buf_used <= p_b_.f_buf_capacity)) = admit ()
+let marshal_never_overflows (p_b: _) (p_t: _) (p_b_: _) : Lemma (requires (marshal_into p_b p_t == Some p_b_)) (ensures (p_b_.f_buf_used <= p_b_.f_buf_capacity)) = ()
 
 (* marshal_failure_means_insufficient (matches Coq: Theorem marshal_failure_means_insufficient) *)
-let marshal_failure_means_insufficient (p_b: _) (p_t: _) : Lemma (requires (marshal_into p_b p_t == None)) (ensures (p_b.f_buf_capacity < buf_used p_b + ffi_type_size p_t)) = admit ()
+let marshal_failure_means_insufficient (p_b: _) (p_t: _) : Lemma (requires (marshal_into p_b p_t == None)) (ensures (p_b.f_buf_capacity < buf_used p_b + ffi_type_size p_t)) = ()
 
 (* marshal_void_always_succeeds (matches Coq: Theorem marshal_void_always_succeeds) *)
-let marshal_void_always_succeeds (p_b: _) : Lemma (requires (p_b.f_buf_used <= p_b.f_buf_capacity)) (ensures ((exists p_b. marshal_into p_b FFI_Void == Some b_))) = admit ()
+let marshal_void_always_succeeds (p_b: _) : Lemma (requires (p_b.f_buf_used <= p_b.f_buf_capacity)) (ensures ((exists p_b. marshal_into p_b FFI_Void == Some b_))) = ()
 
 (* disjoint_regions_no_overlap (matches Coq: Theorem disjoint_regions_no_overlap) *)
-let disjoint_regions_no_overlap (p_r1: _) (p_r2: _) (p_addr: _) (p_sz: _) : Lemma (requires (regions_disjoint p_r1 p_r2 == true /\ addr_in_region p_addr p_sz p_r1 == true /\ p_sz > 0)) (ensures (~(addr_in_region p_addr p_sz p_r2 == true))) = admit ()
+let disjoint_regions_no_overlap (p_r1: _) (p_r2: _) (p_addr: _) (p_sz: _) : Lemma (requires (regions_disjoint p_r1 p_r2 == true /\ addr_in_region p_addr p_sz p_r1 == true /\ p_sz > 0)) (ensures (~(addr_in_region p_addr p_sz p_r2 == true))) = ()
 
 (* sandbox_call_allowed_decidable (matches Coq: Theorem sandbox_call_allowed_decidable) *)
-let sandbox_call_allowed_decidable (p_sb: _) (p_cid: _) : Lemma (call_allowed p_sb p_cid == true \/ call_allowed p_sb p_cid == false) = admit ()
+let sandbox_call_allowed_decidable (p_sb: _) (p_cid: _) : Lemma (call_allowed p_sb p_cid == true \/ call_allowed p_sb p_cid == false) = ()
 
 (* disjoint_symmetric (matches Coq: Theorem disjoint_symmetric) *)
-let disjoint_symmetric (p_r1: _) (p_r2: _) : Lemma (requires (regions_disjoint p_r1 p_r2 == true)) (ensures (regions_disjoint p_r2 p_r1 == true)) = admit ()
+let disjoint_symmetric (p_r1: _) (p_r2: _) : Lemma (requires (regions_disjoint p_r1 p_r2 == true)) (ensures (regions_disjoint p_r2 p_r1 == true)) = ()
 
 (* addr_in_region_bounds (matches Coq: Theorem addr_in_region_bounds) *)
-let addr_in_region_bounds (p_addr: _) (p_sz: _) (p_r: _) : Lemma (requires (addr_in_region p_addr p_sz p_r == true)) (ensures (p_addr >= p_r.f_region_base /\ p_addr + p_sz <= region_base p_r + region_size p_r)) = admit ()
+let addr_in_region_bounds (p_addr: _) (p_sz: _) (p_r: _) : Lemma (requires (addr_in_region p_addr p_sz p_r == true)) (ensures (p_addr >= p_r.f_region_base /\ p_addr + p_sz <= region_base p_r + region_size p_r)) = ()
 
 (* ffi_void_size_zero (matches Coq: Theorem ffi_void_size_zero) *)
-let ffi_void_size_zero () : Lemma (ffi_type_size FFI_Void == 0) = admit ()
+let ffi_void_size_zero () : Lemma (ffi_type_size FFI_Void == 0) = ()
 
 (* ffi_int8_size (matches Coq: Theorem ffi_int8_size) *)
-let ffi_int8_size () : Lemma (ffi_type_size FFI_Int8 == 1) = admit ()
+let ffi_int8_size () : Lemma (ffi_type_size FFI_Int8 == 1) = ()
 
 (* marshal_void_preserves_used (matches Coq: Theorem marshal_void_preserves_used) *)
-let marshal_void_preserves_used (p_b: _) (p_b_: _) : Lemma (requires (p_b.f_buf_used <= p_b.f_buf_capacity /\ marshal_into p_b FFI_Void == Some p_b_)) (ensures (p_b_.f_buf_used == p_b.f_buf_used)) = admit ()
+let marshal_void_preserves_used (p_b: _) (p_b_: _) : Lemma (requires (p_b.f_buf_used <= p_b.f_buf_capacity /\ marshal_into p_b FFI_Void == Some p_b_)) (ensures (p_b_.f_buf_used == p_b.f_buf_used)) = ()

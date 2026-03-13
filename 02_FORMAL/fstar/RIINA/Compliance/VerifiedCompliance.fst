@@ -335,107 +335,107 @@ let make_compliant_policy (p_reg: regulation) (p_ctrls: (list control)) (p_maps:
   {f_policy_regulation=p_reg; f_policy_controls=p_ctrls; f_policy_mappings=p_maps; f_policy_compliant=true}
 
 (* AJ_001_01_gdpr_data_minimization (matches Coq: Theorem AJ_001_01_gdpr_data_minimization) *)
-let aj_001_01_gdpr_data_minimization (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (data_minimization_holds store == true)) = admit ()
+let aj_001_01_gdpr_data_minimization (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (data_minimization_holds store == true)) = ()
 
 (* AJ_001_02_gdpr_purpose_limitation (matches Coq: Theorem AJ_001_02_gdpr_purpose_limitation) *)
-let aj_001_02_gdpr_purpose_limitation (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (purpose_limitation_holds store == true)) = admit ()
+let aj_001_02_gdpr_purpose_limitation (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (purpose_limitation_holds store == true)) = ()
 
 (* AJ_001_03_gdpr_storage_limitation (matches Coq: Theorem AJ_001_03_gdpr_storage_limitation) *)
-let aj_001_03_gdpr_storage_limitation (p_data: _) (p_purpose: _) (p_now: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (storage_limitation_holds store p_now == true)) = admit ()
+let aj_001_03_gdpr_storage_limitation (p_data: _) (p_purpose: _) (p_now: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (storage_limitation_holds store p_now == true)) = ()
 
 (* AJ_001_04_gdpr_accuracy (matches Coq: Theorem AJ_001_04_gdpr_accuracy) *)
-let aj_001_04_gdpr_accuracy (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (accuracy_holds store == true)) = admit ()
+let aj_001_04_gdpr_accuracy (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (accuracy_holds store == true)) = ()
 
 (* AJ_001_05_gdpr_integrity (matches Coq: Theorem AJ_001_05_gdpr_integrity) *)
-let aj_001_05_gdpr_integrity (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (integrity_holds store == true)) = admit ()
+let aj_001_05_gdpr_integrity (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (integrity_holds store == true)) = ()
 
 (* AJ_001_06_gdpr_access_right (matches Coq: Theorem AJ_001_06_gdpr_access_right) *)
-let aj_001_06_gdpr_access_right (p_data: _) (p_purpose: _) (p_subject: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (access_right_holds store p_subject == true)) = admit ()
+let aj_001_06_gdpr_access_right (p_data: _) (p_purpose: _) (p_subject: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (access_right_holds store p_subject == true)) = ()
 
 (* AJ_001_07_gdpr_erasure_right (matches Coq: Theorem AJ_001_07_gdpr_erasure_right) *)
 let aj_001_07_gdpr_erasure_right_obligation () : Tot bool = true
 let aj_001_07_gdpr_erasure_right_lemma () : Lemma (requires True) (ensures (aj_001_07_gdpr_erasure_right_obligation () == aj_001_07_gdpr_erasure_right_obligation ())) = ()
 
 (* AJ_001_08_gdpr_portability (matches Coq: Theorem AJ_001_08_gdpr_portability) *)
-let aj_001_08_gdpr_portability (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (portability_holds store == true)) = admit ()
+let aj_001_08_gdpr_portability (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (portability_holds store == true)) = ()
 
 (* AJ_001_09_gdpr_consent_valid (matches Coq: Theorem AJ_001_09_gdpr_consent_valid) *)
-let aj_001_09_gdpr_consent_valid (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (consent_valid_holds store == true)) = admit ()
+let aj_001_09_gdpr_consent_valid (p_data: _) (p_purpose: _) : Lemma (requires (((forall (pd: _). List.Tot.memP pd p_data)))) (ensures (consent_valid_holds store == true)) = ()
 
 (* AJ_001_10_hipaa_phi_protected (matches Coq: Theorem AJ_001_10_hipaa_phi_protected) *)
-let aj_001_10_hipaa_phi_protected (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (phi_protected phi == true) = admit ()
+let aj_001_10_hipaa_phi_protected (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (phi_protected phi == true) = ()
 
 (* AJ_001_11_hipaa_access_control (matches Coq: Theorem AJ_001_11_hipaa_access_control) *)
-let aj_001_11_hipaa_access_control (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (hipaa_access_control_holds phi == true) = admit ()
+let aj_001_11_hipaa_access_control (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (hipaa_access_control_holds phi == true) = ()
 
 (* AJ_001_12_hipaa_audit_controls (matches Coq: Theorem AJ_001_12_hipaa_audit_controls) *)
-let aj_001_12_hipaa_audit_controls (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (hipaa_audit_holds phi == true) = admit ()
+let aj_001_12_hipaa_audit_controls (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (hipaa_audit_holds phi == true) = ()
 
 (* AJ_001_13_hipaa_minimum_necessary (matches Coq: Theorem AJ_001_13_hipaa_minimum_necessary) *)
-let aj_001_13_hipaa_minimum_necessary (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (minimum_necessary_holds phi == true) = admit ()
+let aj_001_13_hipaa_minimum_necessary (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (minimum_necessary_holds phi == true) = ()
 
 (* AJ_001_14_hipaa_encryption (matches Coq: Theorem AJ_001_14_hipaa_encryption) *)
-let aj_001_14_hipaa_encryption (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (hipaa_encryption_holds phi == true) = admit ()
+let aj_001_14_hipaa_encryption (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (hipaa_encryption_holds phi == true) = ()
 
 (* AJ_001_15_hipaa_integrity (matches Coq: Theorem AJ_001_15_hipaa_integrity) *)
-let aj_001_15_hipaa_integrity (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (hipaa_integrity_holds phi == true) = admit ()
+let aj_001_15_hipaa_integrity (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (hipaa_integrity_holds phi == true) = ()
 
 (* AJ_001_16_hipaa_availability (matches Coq: Theorem AJ_001_16_hipaa_availability) *)
-let aj_001_16_hipaa_availability (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (hipaa_availability_holds phi == true) = admit ()
+let aj_001_16_hipaa_availability (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (hipaa_availability_holds phi == true) = ()
 
 (* AJ_001_17_hipaa_breach_notification (matches Coq: Theorem AJ_001_17_hipaa_breach_notification) *)
-let aj_001_17_hipaa_breach_notification (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (breach_notification_holds phi == true) = admit ()
+let aj_001_17_hipaa_breach_notification (p_patient_id: _) (p_data: _) (p_created: _) (p_accessed_by: _) : Lemma (breach_notification_holds phi == true) = ()
 
 (* AJ_001_18_pci_network_segmentation (matches Coq: Theorem AJ_001_18_pci_network_segmentation) *)
-let aj_001_18_pci_network_segmentation (p_cde: _) (p_non_cde: _) : Lemma (requires (((forall (n1: _). (forall (n2: _). List.Tot.memP n1 p_cde))))) (ensures (network_segmented_holds net == true)) = admit ()
+let aj_001_18_pci_network_segmentation (p_cde: _) (p_non_cde: _) : Lemma (requires (((forall (n1: _). (forall (n2: _). List.Tot.memP n1 p_cde))))) (ensures (network_segmented_holds net == true)) = ()
 
 (* AJ_001_19_pci_cardholder_protection (matches Coq: Theorem AJ_001_19_pci_cardholder_protection) *)
-let aj_001_19_pci_cardholder_protection (p_pan: _) (p_expiry: _) (p_name: _) : Lemma (chd_protected chd == true) = admit ()
+let aj_001_19_pci_cardholder_protection (p_pan: _) (p_expiry: _) (p_name: _) : Lemma (chd_protected chd == true) = ()
 
 (* AJ_001_20_pci_encryption (matches Coq: Theorem AJ_001_20_pci_encryption) *)
-let aj_001_20_pci_encryption (p_pan: _) (p_expiry: _) (p_name: _) : Lemma (pci_encryption_holds chd == true) = admit ()
+let aj_001_20_pci_encryption (p_pan: _) (p_expiry: _) (p_name: _) : Lemma (pci_encryption_holds chd == true) = ()
 
 (* AJ_001_21_pci_access_restricted (matches Coq: Theorem AJ_001_21_pci_access_restricted) *)
-let aj_001_21_pci_access_restricted (p_pan: _) (p_expiry: _) (p_name: _) (p_user_id: _) : Lemma (access_restricted_holds chd user == true) = admit ()
+let aj_001_21_pci_access_restricted (p_pan: _) (p_expiry: _) (p_name: _) (p_user_id: _) : Lemma (access_restricted_holds chd user == true) = ()
 
 (* AJ_001_22_pci_unique_ids (matches Coq: Theorem AJ_001_22_pci_unique_ids) *)
-let aj_001_22_pci_unique_ids (p_users: _) : Lemma (requires (((forall (u: _). List.Tot.memP u p_users)))) (ensures (unique_ids_holds p_users == true)) = admit ()
+let aj_001_22_pci_unique_ids (p_users: _) : Lemma (requires (((forall (u: _). List.Tot.memP u p_users)))) (ensures (unique_ids_holds p_users == true)) = ()
 
 (* AJ_001_23_pci_physical_security (matches Coq: Theorem AJ_001_23_pci_physical_security) *)
-let aj_001_23_pci_physical_security (p_location: _) : Lemma (physical_security_holds pc == true) = admit ()
+let aj_001_23_pci_physical_security (p_location: _) : Lemma (physical_security_holds pc == true) = ()
 
 (* AJ_001_24_pci_logging (matches Coq: Theorem AJ_001_24_pci_logging) *)
-let aj_001_24_pci_logging (p_events: _) : Lemma (requires (((forall (e: _). List.Tot.memP e p_events)))) (ensures (logging_holds p_events == true)) = admit ()
+let aj_001_24_pci_logging (p_events: _) : Lemma (requires (((forall (e: _). List.Tot.memP e p_events)))) (ensures (logging_holds p_events == true)) = ()
 
 (* AJ_001_25_pci_testing (matches Coq: Theorem AJ_001_25_pci_testing) *)
-let aj_001_25_pci_testing (p_tests: _) : Lemma (requires (((forall (t: _). List.Tot.memP t p_tests)))) (ensures (testing_holds p_tests == true)) = admit ()
+let aj_001_25_pci_testing (p_tests: _) : Lemma (requires (((forall (t: _). List.Tot.memP t p_tests)))) (ensures (testing_holds p_tests == true)) = ()
 
 (* AJ_001_26_control_mapping_complete (matches Coq: Theorem AJ_001_26_control_mapping_complete) *)
-let aj_001_26_control_mapping_complete (p_reg: _) (p_controls: _) (p_mappings: _) : Lemma (requires (((forall (ctrl: _). List.Tot.memP ctrl p_controls) /\ m__mapping_control_ == ctrl))) (ensures (control_mapping_complete_holds policy == true)) = admit ()
+let aj_001_26_control_mapping_complete (p_reg: _) (p_controls: _) (p_mappings: _) : Lemma (requires (((forall (ctrl: _). List.Tot.memP ctrl p_controls) /\ m__mapping_control_ == ctrl))) (ensures (control_mapping_complete_holds policy == true)) = ()
 
 (* AJ_001_27_evidence_chain_valid (matches Coq: Theorem AJ_001_27_evidence_chain_valid) *)
-let aj_001_27_evidence_chain_valid (p_ctrl: _) (p_items: _) (p_ts: _) (p_p_sig: _) : Lemma (evidence_chain_valid ec == true) = admit ()
+let aj_001_27_evidence_chain_valid (p_ctrl: _) (p_items: _) (p_ts: _) (p_p_sig: _) : Lemma (evidence_chain_valid ec == true) = ()
 
 (* AJ_001_28_continuous_monitoring (matches Coq: Theorem AJ_001_28_continuous_monitoring) *)
-let aj_001_28_continuous_monitoring (p_reg: _) (p_controls: _) (p_mappings: _) : Lemma (requires (((forall (ctrl: _). List.Tot.memP ctrl p_controls) /\ ctrl__control_has_alert_ == true))) (ensures (continuous_monitoring_holds policy == true)) = admit ()
+let aj_001_28_continuous_monitoring (p_reg: _) (p_controls: _) (p_mappings: _) : Lemma (requires (((forall (ctrl: _). List.Tot.memP ctrl p_controls) /\ ctrl__control_has_alert_ == true))) (ensures (continuous_monitoring_holds policy == true)) = ()
 
 (* AJ_001_29_proof_as_evidence (matches Coq: Theorem AJ_001_29_proof_as_evidence) *)
-let aj_001_29_proof_as_evidence (p_id: _) (p_desc: _) (p_reg: _) : Lemma (proof_as_evidence_holds ctrl == true) = admit ()
+let aj_001_29_proof_as_evidence (p_id: _) (p_desc: _) (p_reg: _) : Lemma (proof_as_evidence_holds ctrl == true) = ()
 
 (* AJ_001_30_audit_trail_complete (matches Coq: Theorem AJ_001_30_audit_trail_complete) *)
-let aj_001_30_audit_trail_complete (p_reg: _) (p_controls: _) (p_mappings: _) : Lemma (requires (((forall (ctrl: _). List.Tot.memP ctrl p_controls)))) (ensures (audit_trail_complete_holds policy == true)) = admit ()
+let aj_001_30_audit_trail_complete (p_reg: _) (p_controls: _) (p_mappings: _) : Lemma (requires (((forall (ctrl: _). List.Tot.memP ctrl p_controls)))) (ensures (audit_trail_complete_holds policy == true)) = ()
 
 (* AJ_001_31_compliance_composition (matches Coq: Theorem AJ_001_31_compliance_composition) *)
-let aj_001_31_compliance_composition (p_p1: _) (p_p2: _) : Lemma (requires (policy_compliant_prop p_p1 == true /\ policy_compliant_prop p_p2 == true)) (ensures (policy_compliant_prop (compose_policies p_p1 p_p2) == true)) = admit ()
+let aj_001_31_compliance_composition (p_p1: _) (p_p2: _) : Lemma (requires (policy_compliant_prop p_p1 == true /\ policy_compliant_prop p_p2 == true)) (ensures (policy_compliant_prop (compose_policies p_p1 p_p2) == true)) = ()
 
 (* AJ_001_32_regulation_coverage (matches Coq: Theorem AJ_001_32_regulation_coverage) *)
-let aj_001_32_regulation_coverage (p_reg: _) (p_controls: _) (p_mappings: _) (p_reqs: _) : Lemma (requires (((forall (req: _). List.Tot.memP req p_reqs)))) (ensures (regulation_coverage_holds policy p_reqs == true)) = admit ()
+let aj_001_32_regulation_coverage (p_reg: _) (p_controls: _) (p_mappings: _) (p_reqs: _) : Lemma (requires (((forall (req: _). List.Tot.memP req p_reqs)))) (ensures (regulation_coverage_holds policy p_reqs == true)) = ()
 
 (* AJ_001_33_control_effectiveness (matches Coq: Theorem AJ_001_33_control_effectiveness) *)
-let aj_001_33_control_effectiveness (p_id: _) (p_desc: _) (p_reg: _) : Lemma (control_effectiveness_holds ctrl == true) = admit ()
+let aj_001_33_control_effectiveness (p_id: _) (p_desc: _) (p_reg: _) : Lemma (control_effectiveness_holds ctrl == true) = ()
 
 (* AJ_001_34_gap_detection (matches Coq: Theorem AJ_001_34_gap_detection) *)
-let aj_001_34_gap_detection (p_policy: _) (p_detected: _) : Lemma (requires (((forall (ctrl: _). List.Tot.memP ctrl policy__policy_controls_)))) (ensures (gap_detection_holds ga == true)) = admit ()
+let aj_001_34_gap_detection (p_policy: _) (p_detected: _) : Lemma (requires (((forall (ctrl: _). List.Tot.memP ctrl policy__policy_controls_)))) (ensures (gap_detection_holds ga == true)) = ()
 
 (* AJ_001_35_remediation_tracked (matches Coq: Theorem AJ_001_35_remediation_tracked) *)
-let aj_001_35_remediation_tracked (p_rems: _) : Lemma (requires (((forall (r: _). List.Tot.memP r p_rems)))) (ensures (remediation_tracked_holds p_rems == true)) = admit ()
+let aj_001_35_remediation_tracked (p_rems: _) : Lemma (requires (((forall (r: _). List.Tot.memP r p_rems)))) (ensures (remediation_tracked_holds p_rems == true)) = ()

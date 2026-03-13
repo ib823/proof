@@ -1,294 +1,146 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/properties/CanonicalForms.v (31 harnesses)
-// Source mapping: scripts/generate-full-stack.py
-//
-// Kani bounded model checking harnesses for CanonicalForms.
-// Layer 10: Verifies implementation invariants via bounded search.
+// Kani harnesses for CanonicalForms.v
+// Source: 02_FORMAL/coq/properties/CanonicalForms.v
 
 #![allow(unused)]
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+enum Ty { TUnit = 0, TBool = 1, TInt = 2, TString = 3, TFn = 4, TProd = 5, TSum = 6, TRef = 7, TSecret = 8 }
+
+impl Ty {
+    fn from_u8(v: u8) -> Option<Self> {
+        match v {
+            0 => Some(Self::TUnit), 1 => Some(Self::TBool), 2 => Some(Self::TInt),
+            3 => Some(Self::TString), 4 => Some(Self::TFn), 5 => Some(Self::TProd),
+            6 => Some(Self::TSum), 7 => Some(Self::TRef), 8 => Some(Self::TSecret),
+            _ => None,
+        }
+    }
+    fn is_base(self) -> bool { matches!(self, Self::TUnit | Self::TBool | Self::TInt | Self::TString) }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+enum ValueForm { VUnit = 0, VBool = 1, VInt = 2, VString = 3, VLam = 4, VPair = 5, VInl = 6, VInr = 7, VLoc = 8, VClassify = 9 }
+
+impl ValueForm {
+    fn canonical_type(self) -> Ty {
+        match self {
+            Self::VUnit => Ty::TUnit, Self::VBool => Ty::TBool, Self::VInt => Ty::TInt,
+            Self::VString => Ty::TString, Self::VLam => Ty::TFn, Self::VPair => Ty::TProd,
+            Self::VInl | Self::VInr => Ty::TSum, Self::VLoc => Ty::TRef,
+            Self::VClassify => Ty::TSecret,
+        }
+    }
+    fn from_u8(v: u8) -> Option<Self> {
+        match v {
+            0 => Some(Self::VUnit), 1 => Some(Self::VBool), 2 => Some(Self::VInt),
+            3 => Some(Self::VString), 4 => Some(Self::VLam), 5 => Some(Self::VPair),
+            6 => Some(Self::VInl), 7 => Some(Self::VInr), 8 => Some(Self::VLoc),
+            9 => Some(Self::VClassify), _ => None,
+        }
+    }
+    fn is_closed(self) -> bool { true } // all value forms are closed (no free vars)
+}
+
 
 #[cfg(kani)]
 mod verification {
     use super::*;
 
-    // canonical_unit (matches Coq: Lemma canonical_unit)
-    fn canonical_unit_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_canonical_unit() {
-        // Property obligation: canonical_unit
-        assert!(canonical_unit_obligation());
+    fn any_value() -> ValueForm {
+        let v: u8 = kani::any();
+        kani::assume(v <= 9);
+        ValueForm::from_u8(v).unwrap()
     }
 
-    // canonical_bool (matches Coq: Lemma canonical_bool)
-    fn canonical_bool_obligation() -> bool { 1u64 == 1u64 }
-
     #[kani::proof]
-    fn check_canonical_bool() {
-        // Property obligation: canonical_bool
-        assert!(canonical_bool_obligation());
+    fn verify_canonical_unit() {
+        let v = any_value();
+        kani::assume(v.canonical_type() == Ty::TUnit);
+        assert_eq!(v, ValueForm::VUnit);
     }
 
-    // canonical_int (matches Coq: Lemma canonical_int)
-    fn canonical_int_obligation() -> bool { 1u64 == 1u64 }
-
     #[kani::proof]
-    fn check_canonical_int() {
-        // Property obligation: canonical_int
-        assert!(canonical_int_obligation());
+    fn verify_canonical_bool() {
+        let v = any_value();
+        kani::assume(v.canonical_type() == Ty::TBool);
+        assert_eq!(v, ValueForm::VBool);
     }
 
-    // canonical_string (matches Coq: Lemma canonical_string)
-    fn canonical_string_obligation() -> bool { 1u64 == 1u64 }
-
     #[kani::proof]
-    fn check_canonical_string() {
-        // Property obligation: canonical_string
-        assert!(canonical_string_obligation());
+    fn verify_canonical_int() {
+        let v = any_value();
+        kani::assume(v.canonical_type() == Ty::TInt);
+        assert_eq!(v, ValueForm::VInt);
     }
 
-    // canonical_fn (matches Coq: Lemma canonical_fn)
-    fn canonical_fn_obligation() -> bool { 1u64 == 1u64 }
-
     #[kani::proof]
-    fn check_canonical_fn() {
-        // Property obligation: canonical_fn
-        assert!(canonical_fn_obligation());
+    fn verify_canonical_string() {
+        let v = any_value();
+        kani::assume(v.canonical_type() == Ty::TString);
+        assert_eq!(v, ValueForm::VString);
     }
 
-    // canonical_pair (matches Coq: Lemma canonical_pair)
-    fn canonical_pair_obligation() -> bool { 1u64 == 1u64 }
-
     #[kani::proof]
-    fn check_canonical_pair() {
-        // Property obligation: canonical_pair
-        assert!(canonical_pair_obligation());
+    fn verify_canonical_fn() {
+        let v = any_value();
+        kani::assume(v.canonical_type() == Ty::TFn);
+        assert_eq!(v, ValueForm::VLam);
     }
 
-    // canonical_sum (matches Coq: Lemma canonical_sum)
-    fn canonical_sum_obligation() -> bool { 1u64 == 1u64 }
-
     #[kani::proof]
-    fn check_canonical_sum() {
-        // Property obligation: canonical_sum
-        assert!(canonical_sum_obligation());
+    fn verify_canonical_prod() {
+        let v = any_value();
+        kani::assume(v.canonical_type() == Ty::TProd);
+        assert_eq!(v, ValueForm::VPair);
     }
 
-    // canonical_sum_inl (matches Coq: Lemma canonical_sum_inl)
-    fn canonical_sum_inl_obligation() -> bool { 1u64 == 1u64 }
-
     #[kani::proof]
-    fn check_canonical_sum_inl() {
-        // Property obligation: canonical_sum_inl
-        assert!(canonical_sum_inl_obligation());
+    fn verify_canonical_sum() {
+        let v = any_value();
+        kani::assume(v.canonical_type() == Ty::TSum);
+        assert!(v == ValueForm::VInl || v == ValueForm::VInr);
     }
 
-    // canonical_ref (matches Coq: Lemma canonical_ref)
-    fn canonical_ref_obligation() -> bool { 1u64 == 1u64 }
-
     #[kani::proof]
-    fn check_canonical_ref() {
-        // Property obligation: canonical_ref
-        assert!(canonical_ref_obligation());
+    fn verify_canonical_ref() {
+        let v = any_value();
+        kani::assume(v.canonical_type() == Ty::TRef);
+        assert_eq!(v, ValueForm::VLoc);
     }
 
-    // canonical_secret (matches Coq: Lemma canonical_secret)
-    fn canonical_secret_obligation() -> bool { 1u64 == 1u64 }
-
     #[kani::proof]
-    fn check_canonical_secret() {
-        // Property obligation: canonical_secret
-        assert!(canonical_secret_obligation());
+    fn verify_canonical_secret() {
+        let v = any_value();
+        kani::assume(v.canonical_type() == Ty::TSecret);
+        assert_eq!(v, ValueForm::VClassify);
     }
 
-    // canonical_proof (matches Coq: Lemma canonical_proof)
-    fn canonical_proof_obligation() -> bool { 1u64 == 1u64 }
-
     #[kani::proof]
-    fn check_canonical_proof() {
-        // Property obligation: canonical_proof
-        assert!(canonical_proof_obligation());
+    fn verify_canonical_bijection() {
+        let v = any_value();
+        let t = v.canonical_type();
+        // Each value form maps to exactly one type
+        let v2 = any_value();
+        kani::assume(v2.canonical_type() == t);
+        // For base types, the mapping is injective
+        if t.is_base() {
+            assert_eq!(v, v2);
+        }
     }
+}
 
-    // base_value_pure (matches Coq: Lemma base_value_pure)
-    fn base_value_pure_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_base_value_pure() {
-        // Property obligation: base_value_pure
-        assert!(base_value_pure_obligation());
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_all_canonical() {
+        for i in 0..=9u8 {
+            if let Some(v) = ValueForm::from_u8(i) {
+                let _ = v.canonical_type();
+            }
+        }
     }
-
-    // unit_value_pure (matches Coq: Lemma unit_value_pure)
-    fn unit_value_pure_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_unit_value_pure() {
-        // Property obligation: unit_value_pure
-        assert!(unit_value_pure_obligation());
-    }
-
-    // bool_value_pure (matches Coq: Lemma bool_value_pure)
-    fn bool_value_pure_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_bool_value_pure() {
-        // Property obligation: bool_value_pure
-        assert!(bool_value_pure_obligation());
-    }
-
-    // int_value_pure (matches Coq: Lemma int_value_pure)
-    fn int_value_pure_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_int_value_pure() {
-        // Property obligation: int_value_pure
-        assert!(int_value_pure_obligation());
-    }
-
-    // string_value_pure (matches Coq: Lemma string_value_pure)
-    fn string_value_pure_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_string_value_pure() {
-        // Property obligation: string_value_pure
-        assert!(string_value_pure_obligation());
-    }
-
-    // lambda_value_pure (matches Coq: Lemma lambda_value_pure)
-    fn lambda_value_pure_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_lambda_value_pure() {
-        // Property obligation: lambda_value_pure
-        assert!(lambda_value_pure_obligation());
-    }
-
-    // loc_value_pure (matches Coq: Lemma loc_value_pure)
-    fn loc_value_pure_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_loc_value_pure() {
-        // Property obligation: loc_value_pure
-        assert!(loc_value_pure_obligation());
-    }
-
-    // unit_not_bool (matches Coq: Lemma unit_not_bool)
-    fn unit_not_bool_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_unit_not_bool() {
-        // Property obligation: unit_not_bool
-        assert!(unit_not_bool_obligation());
-    }
-
-    // unit_not_int (matches Coq: Lemma unit_not_int)
-    fn unit_not_int_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_unit_not_int() {
-        // Property obligation: unit_not_int
-        assert!(unit_not_int_obligation());
-    }
-
-    // unit_not_fn (matches Coq: Lemma unit_not_fn)
-    fn unit_not_fn_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_unit_not_fn() {
-        // Property obligation: unit_not_fn
-        assert!(unit_not_fn_obligation());
-    }
-
-    // bool_not_unit (matches Coq: Lemma bool_not_unit)
-    fn bool_not_unit_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_bool_not_unit() {
-        // Property obligation: bool_not_unit
-        assert!(bool_not_unit_obligation());
-    }
-
-    // bool_not_int (matches Coq: Lemma bool_not_int)
-    fn bool_not_int_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_bool_not_int() {
-        // Property obligation: bool_not_int
-        assert!(bool_not_int_obligation());
-    }
-
-    // int_not_unit (matches Coq: Lemma int_not_unit)
-    fn int_not_unit_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_int_not_unit() {
-        // Property obligation: int_not_unit
-        assert!(int_not_unit_obligation());
-    }
-
-    // int_not_bool (matches Coq: Lemma int_not_bool)
-    fn int_not_bool_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_int_not_bool() {
-        // Property obligation: int_not_bool
-        assert!(int_not_bool_obligation());
-    }
-
-    // pair_components_typed (matches Coq: Lemma pair_components_typed)
-    fn pair_components_typed_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_pair_components_typed() {
-        // Property obligation: pair_components_typed
-        assert!(pair_components_typed_obligation());
-    }
-
-    // inl_component_typed (matches Coq: Lemma inl_component_typed)
-    fn inl_component_typed_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_inl_component_typed() {
-        // Property obligation: inl_component_typed
-        assert!(inl_component_typed_obligation());
-    }
-
-    // inr_component_typed (matches Coq: Lemma inr_component_typed)
-    fn inr_component_typed_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_inr_component_typed() {
-        // Property obligation: inr_component_typed
-        assert!(inr_component_typed_obligation());
-    }
-
-    // classify_component_typed (matches Coq: Lemma classify_component_typed)
-    fn classify_component_typed_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_classify_component_typed() {
-        // Property obligation: classify_component_typed
-        assert!(classify_component_typed_obligation());
-    }
-
-    // prove_component_typed (matches Coq: Lemma prove_component_typed)
-    fn prove_component_typed_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_prove_component_typed() {
-        // Property obligation: prove_component_typed
-        assert!(prove_component_typed_obligation());
-    }
-
-    // value_shape (matches Coq: Lemma value_shape)
-    fn value_shape_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_value_shape() {
-        // Property obligation: value_shape
-        assert!(value_shape_obligation());
-    }
-
 }

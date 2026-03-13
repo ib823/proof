@@ -1,154 +1,243 @@
 ---- MODULE MalaysiaBNMRMiT ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/MalaysiaBNMRMiT.v (28 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/MalaysiaBNMRMiT.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* FIType (matches Coq: Inductive FIType)
 CONSTANTS Bank, Insurer, TakafulOperator, PaymentSystemOperator, DesignatedPaymentInstrument, ApprovedElectronicMoney
 
+FITypeSet == {Bank, Insurer, TakafulOperator, PaymentSystemOperator, DesignatedPaymentInstrument, ApprovedElectronicMoney}
+
 \* CloudDeployment (matches Coq: Inductive CloudDeployment)
 CONSTANTS OnPremise, PrivateCloud, PublicCloud, HybridCloud
 
-VARIABLES state
+CloudDeploymentSet == {OnPremise, PrivateCloud, PublicCloud, HybridCloud}
 
-\* Type invariant
+VARIABLES state, verified, step_count
+vars == <<state, verified, step_count>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ state \in BOOLEAN
+  /\ state \in Nat
+  /\ verified \in BOOLEAN
+  /\ step_count \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ state = TRUE
+  /\ state = 0
+  /\ verified = FALSE
+  /\ step_count = 0
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* governance_compliant (matches Coq: Definition governance_compliant)
-governance_compliant(fi) == TRUE
+governance_compliant(fi) ==
+  fi_board_oversight(fi)
 
 \* risk_framework_established (matches Coq: Definition risk_framework_established)
-risk_framework_established(fi) == TRUE
+risk_framework_established(fi) ==
+  fi >= 0
 
 \* cyber_controls_adequate (matches Coq: Definition cyber_controls_adequate)
-cyber_controls_adequate(fi) == TRUE
+cyber_controls_adequate(fi) ==
+  fi >= 0
 
 \* ops_resilience_verified (matches Coq: Definition ops_resilience_verified)
-ops_resilience_verified(fi) == TRUE
+ops_resilience_verified(fi) ==
+  fi_ops_resilience_tested(fi)
 
 \* audit_compliant (matches Coq: Definition audit_compliant)
-audit_compliant(fi) == TRUE
+audit_compliant(fi) ==
+  fi_audit_completed(fi)
 
 \* cloud_compliant (matches Coq: Definition cloud_compliant)
-cloud_compliant(fi) == TRUE
+cloud_compliant(fi) ==
+  match(fi) /\ _cloud_model(fi) /\ fi_cloud_risk_assessed(fi)
 
 \* third_party_compliant (matches Coq: Definition third_party_compliant)
-third_party_compliant(fi) == TRUE
+third_party_compliant(fi) ==
+  fi_third_party_assessed(fi)
 
 \* bcp_compliant (matches Coq: Definition bcp_compliant)
-bcp_compliant(fi) == TRUE
+bcp_compliant(fi) ==
+  fi_bcp_tested(fi)
 
 \* rmit_fully_compliant (matches Coq: Definition rmit_fully_compliant)
-rmit_fully_compliant(fi) == TRUE
+rmit_fully_compliant(fi) ==
+  governance_compliant(fi) /\ risk_framework_established(fi) /\ cyber_controls_adequate(fi) /\ ops_resilience_verified(fi) /\ audit_compliant(fi)
+
+\* all_fi_types (matches Coq: Definition all_fi_types)
+all_fi_types ==
+  0
+
+\* all_cloud_deployments (matches Coq: Definition all_cloud_deployments)
+all_cloud_deployments ==
+  0
 
 \* bnm_incident_deadline (matches Coq: Definition bnm_incident_deadline)
-bnm_incident_deadline == TRUE
+bnm_incident_deadline ==
+  6
 
 \* bnm_incident_reported_timely (matches Coq: Definition bnm_incident_reported_timely)
-bnm_incident_reported_timely(inc) == TRUE
+bnm_incident_reported_timely(inc) ==
+  inc >= 0
 
 \* outsourcing_compliant (matches Coq: Definition outsourcing_compliant)
-outsourcing_compliant(oa) == TRUE
+outsourcing_compliant(oa) ==
+  oa_risk_assessed(oa) /\ oa_material(oa) /\ oa_bnm_notified(oa) /\ oa_exit_strategy(oa)
 
-\* tech_refresh_current (matches Coq: Definition tech_refresh_current)
-tech_refresh_current(trs, current_time) == TRUE
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* rmit_domain_1 (matches Coq: Theorem rmit_domain_1)
-THEOREM rmit_domain_1 == Init => TypeOK
+Step ==
+  /\ state' \in Nat
+  /\ verified' \in BOOLEAN
+  /\ step_count' = step_count + 1
 
-\* rmit_domain_2 (matches Coq: Theorem rmit_domain_2)
-THEOREM rmit_domain_2 == Init => TypeOK
+Next == Step
 
-\* rmit_domain_3 (matches Coq: Theorem rmit_domain_3)
-THEOREM rmit_domain_3 == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* rmit_domain_4 (matches Coq: Theorem rmit_domain_4)
-THEOREM rmit_domain_4 == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* rmit_domain_5 (matches Coq: Theorem rmit_domain_5)
-THEOREM rmit_domain_5 == Init => TypeOK
+\* rmit_domain_1
+THEOREM rmit_domain_1 ==
+  \A fi \in Nat :
+      fi_board_oversight(fi) => governance_compliant(fi)
 
-\* rmit_domain_6_onprem (matches Coq: Theorem rmit_domain_6_onprem)
-THEOREM rmit_domain_6_onprem == Init => TypeOK
+\* rmit_domain_2
+THEOREM rmit_domain_2 ==
+  \A fi \in Nat :
+      fi_risk_framework(fi) => risk_framework_established(fi)
 
-\* rmit_domain_6_cloud (matches Coq: Theorem rmit_domain_6_cloud)
-THEOREM rmit_domain_6_cloud == Init => TypeOK
+\* rmit_domain_3
+THEOREM rmit_domain_3 ==
+  \A fi \in Nat :
+      fi_min_cyber_controls fi <= fi_cyber_controls fi => cyber_controls_adequate(fi)
 
-\* rmit_domain_7 (matches Coq: Theorem rmit_domain_7)
-THEOREM rmit_domain_7 == Init => TypeOK
+\* rmit_domain_4
+THEOREM rmit_domain_4 ==
+  \A fi \in Nat :
+      fi_ops_resilience_tested(fi) => ops_resilience_verified(fi)
 
-\* rmit_domain_8 (matches Coq: Theorem rmit_domain_8)
-THEOREM rmit_domain_8 == Init => TypeOK
+\* rmit_domain_5
+THEOREM rmit_domain_5 ==
+  \A fi \in Nat :
+      fi_audit_completed(fi) => audit_compliant(fi)
 
-\* rmit_composition (matches Coq: Theorem rmit_composition)
-THEOREM rmit_composition == Init => TypeOK
+\* rmit_domain_6_onprem
+THEOREM rmit_domain_6_onprem ==
+  \A fi \in Nat :
+      fi_cloud_model fi = OnPremise => cloud_compliant(fi)
 
-\* fi_type_coverage (matches Coq: Theorem fi_type_coverage)
-THEOREM fi_type_coverage == Init => TypeOK
+\* rmit_domain_6_cloud
+THEOREM rmit_domain_6_cloud ==
+  \A fi \in Nat :
+      fi_cloud_model fi <> OnPremise => cloud_compliant(fi)
 
-\* cyber_controls_strengthened (matches Coq: Theorem cyber_controls_strengthened)
-THEOREM cyber_controls_strengthened == Init => TypeOK
+\* rmit_domain_7
+THEOREM rmit_domain_7 ==
+  \A fi \in Nat :
+      fi_third_party_assessed(fi) => third_party_compliant(fi)
 
-\* cloud_deployment_coverage (matches Coq: Theorem cloud_deployment_coverage)
-THEOREM cloud_deployment_coverage == Init => TypeOK
+\* rmit_domain_8
+THEOREM rmit_domain_8 ==
+  \A fi \in Nat :
+      fi_bcp_tested(fi) => bcp_compliant(fi)
 
-\* on_premise_always_compliant (matches Coq: Theorem on_premise_always_compliant)
-THEOREM on_premise_always_compliant == Init => TypeOK
+\* rmit_composition
+THEOREM rmit_composition ==
+  \A fi \in Nat :
+      governance_compliant(fi) => rmit_fully_compliant(fi)
 
-\* rmit_full_implies_governance (matches Coq: Theorem rmit_full_implies_governance)
-THEOREM rmit_full_implies_governance == Init => TypeOK
+\* fi_type_coverage
+THEOREM fi_type_coverage ==
+  \A ft \in FITypeSet :
+      In ft all_fi_types
 
-\* rmit_full_implies_risk (matches Coq: Theorem rmit_full_implies_risk)
-THEOREM rmit_full_implies_risk == Init => TypeOK
+\* cyber_controls_strengthened
+THEOREM cyber_controls_strengthened ==
+  \A fi \in Nat, extra \in Nat :
+      cyber_controls_adequate(fi) => fi_min_cyber_controls fi <= fi_cyber_controls fi + extra
 
-\* rmit_full_implies_cyber (matches Coq: Theorem rmit_full_implies_cyber)
-THEOREM rmit_full_implies_cyber == Init => TypeOK
+\* cloud_deployment_coverage
+THEOREM cloud_deployment_coverage ==
+  \A cd \in CloudDeploymentSet :
+      In cd all_cloud_deployments
 
-\* rmit_full_implies_ops (matches Coq: Theorem rmit_full_implies_ops)
-THEOREM rmit_full_implies_ops == Init => TypeOK
+\* on_premise_always_compliant
+THEOREM on_premise_always_compliant ==
+  \A fi \in Nat :
+      fi_cloud_model fi = OnPremise => cloud_compliant(fi)
 
-\* rmit_full_implies_audit (matches Coq: Theorem rmit_full_implies_audit)
-THEOREM rmit_full_implies_audit == Init => TypeOK
+\* rmit_full_implies_governance
+THEOREM rmit_full_implies_governance ==
+  \A fi \in Nat :
+      rmit_fully_compliant(fi) => governance_compliant(fi)
 
-\* rmit_full_implies_cloud (matches Coq: Theorem rmit_full_implies_cloud)
-THEOREM rmit_full_implies_cloud == Init => TypeOK
+\* rmit_full_implies_risk
+THEOREM rmit_full_implies_risk ==
+  \A fi \in Nat :
+      rmit_fully_compliant(fi) => risk_framework_established(fi)
 
-\* rmit_full_implies_third_party (matches Coq: Theorem rmit_full_implies_third_party)
-THEOREM rmit_full_implies_third_party == Init => TypeOK
+\* rmit_full_implies_cyber
+THEOREM rmit_full_implies_cyber ==
+  \A fi \in Nat :
+      rmit_fully_compliant(fi) => cyber_controls_adequate(fi)
 
-\* rmit_full_implies_bcp (matches Coq: Theorem rmit_full_implies_bcp)
-THEOREM rmit_full_implies_bcp == Init => TypeOK
+\* rmit_full_implies_ops
+THEOREM rmit_full_implies_ops ==
+  \A fi \in Nat :
+      rmit_fully_compliant(fi) => ops_resilience_verified(fi)
 
-\* bnm_incident_reporting (matches Coq: Theorem bnm_incident_reporting)
-THEOREM bnm_incident_reporting == Init => TypeOK
+\* rmit_full_implies_audit
+THEOREM rmit_full_implies_audit ==
+  \A fi \in Nat :
+      rmit_fully_compliant(fi) => audit_compliant(fi)
 
-\* bnm_late_incident_violation (matches Coq: Theorem bnm_late_incident_violation)
-THEOREM bnm_late_incident_violation == Init => TypeOK
+\* rmit_full_implies_cloud
+THEOREM rmit_full_implies_cloud ==
+  \A fi \in Nat :
+      rmit_fully_compliant(fi) => cloud_compliant(fi)
 
-\* outsourcing_risk_managed (matches Coq: Theorem outsourcing_risk_managed)
-THEOREM outsourcing_risk_managed == Init => TypeOK
+\* rmit_full_implies_third_party
+THEOREM rmit_full_implies_third_party ==
+  \A fi \in Nat :
+      rmit_fully_compliant(fi) => third_party_compliant(fi)
 
-\* non_material_no_notification (matches Coq: Theorem non_material_no_notification)
-THEOREM non_material_no_notification == Init => TypeOK
+\* rmit_full_implies_bcp
+THEOREM rmit_full_implies_bcp ==
+  \A fi \in Nat :
+      rmit_fully_compliant(fi) => bcp_compliant(fi)
 
-\* tech_refresh_valid (matches Coq: Theorem tech_refresh_valid)
-THEOREM tech_refresh_valid == Init => TypeOK
+\* bnm_incident_reporting
+THEOREM bnm_incident_reporting ==
+  \A inc \in Nat :
+      bnm_inc_reported inc <= bnm_inc_detected inc + 6 => bnm_incident_reported_timely(inc)
 
-\* tech_refresh_expired (matches Coq: Theorem tech_refresh_expired)
-THEOREM tech_refresh_expired == Init => TypeOK
+\* bnm_late_incident_violation
+THEOREM bnm_late_incident_violation ==
+  \A inc \in Nat :
+      bnm_inc_detected inc + bnm_incident_deadline < bnm_inc_reported inc => ~ bnm_incident_reported_timely inc
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
+\* outsourcing_risk_managed
+THEOREM outsourcing_risk_managed ==
+  \A oa \in Nat :
+      oa_risk_assessed(oa) => outsourcing_compliant(oa)
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
+\* 3 additional theorems proven in Coq source
 
 ====

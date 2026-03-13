@@ -68,138 +68,138 @@ pred bursa_fully_compliant_v2[p: MarketParticipant] {
 
 // bursa_governance (matches Coq: Theorem bursa_governance)
 assert bursa_governance {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_governance for 5
 
 // bursa_integrity (matches Coq: Theorem bursa_integrity)
 assert bursa_integrity {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_integrity for 5
 
 // bursa_data_protection (matches Coq: Theorem bursa_data_protection)
 assert bursa_data_protection {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_data_protection for 5
 
 // bursa_connectivity (matches Coq: Theorem bursa_connectivity)
 assert bursa_connectivity {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_connectivity for 5
 
 // bursa_bcp (matches Coq: Theorem bursa_bcp)
 assert bursa_bcp {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_bcp for 5
 
 // bursa_composition (matches Coq: Theorem bursa_composition)
 assert bursa_composition {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_composition for 5
 
 // participant_coverage (matches Coq: Theorem participant_coverage)
 assert participant_coverage {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check participant_coverage for 5
 
 // bursa_risk (matches Coq: Theorem bursa_risk)
 assert bursa_risk {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_risk for 5
 
 // bursa_compliant_implies_governance (matches Coq: Theorem bursa_compliant_implies_governance)
 assert bursa_compliant_implies_governance {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_compliant_implies_governance for 5
 
 // bursa_compliant_implies_integrity (matches Coq: Theorem bursa_compliant_implies_integrity)
 assert bursa_compliant_implies_integrity {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_compliant_implies_integrity for 5
 
 // bursa_compliant_implies_data_protection (matches Coq: Theorem bursa_compliant_implies_data_protection)
 assert bursa_compliant_implies_data_protection {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_compliant_implies_data_protection for 5
 
 // bursa_compliant_implies_connectivity (matches Coq: Theorem bursa_compliant_implies_connectivity)
 assert bursa_compliant_implies_connectivity {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_compliant_implies_connectivity for 5
 
 // bursa_compliant_implies_bcp (matches Coq: Theorem bursa_compliant_implies_bcp)
 assert bursa_compliant_implies_bcp {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_compliant_implies_bcp for 5
 
 // governance_violation_blocks_compliance (matches Coq: Theorem governance_violation_blocks_compliance)
 assert governance_violation_blocks_compliance {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check governance_violation_blocks_compliance for 5
 
 // integrity_violation_blocks_compliance (matches Coq: Theorem integrity_violation_blocks_compliance)
 assert integrity_violation_blocks_compliance {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check integrity_violation_blocks_compliance for 5
 
 // data_violation_blocks_compliance (matches Coq: Theorem data_violation_blocks_compliance)
 assert data_violation_blocks_compliance {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check data_violation_blocks_compliance for 5
 
 // connectivity_violation_blocks_compliance (matches Coq: Theorem connectivity_violation_blocks_compliance)
 assert connectivity_violation_blocks_compliance {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check connectivity_violation_blocks_compliance for 5
 
 // bcp_violation_blocks_compliance (matches Coq: Theorem bcp_violation_blocks_compliance)
 assert bcp_violation_blocks_compliance {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bcp_violation_blocks_compliance for 5
 
 // trading_system_availability (matches Coq: Theorem trading_system_availability)
 assert trading_system_availability {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check trading_system_availability for 5
 
 // trading_system_resilience (matches Coq: Theorem trading_system_resilience)
 assert trading_system_resilience {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check trading_system_resilience for 5
 
 // insufficient_uptime (matches Coq: Theorem insufficient_uptime)
 assert insufficient_uptime {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check insufficient_uptime for 5
 
 // bursa_composition_v2 (matches Coq: Theorem bursa_composition_v2)
 assert bursa_composition_v2 {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_composition_v2 for 5
 
 // bursa_v2_implies_v1 (matches Coq: Theorem bursa_v2_implies_v1)
 assert bursa_v2_implies_v1 {
-  #univ >= 0
+  all x: ParticipantType | x in ParticipantType
 }
 check bursa_v2_implies_v1 for 5

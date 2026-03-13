@@ -1,84 +1,78 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/termination/TerminationLemmas.v (7 harnesses)
-// Source mapping: scripts/generate-full-stack.py
+// Kani harnesses for TerminationLemmas.v
+// Source: 02_FORMAL/coq/termination/TerminationLemmas.v
 //
-// Kani bounded model checking harnesses for TerminationLemmas.
-// Layer 10: Verifies implementation invariants via bounded search.
+// Auxiliary termination lemmas: measure decrease, subterm ordering.
 
 #![allow(unused)]
 
-// val_rel_0 (matches Coq: Definition val_rel_0)
-pub fn val_rel_0(_sigma: u64, _T: u64, _v1: u64, _v2: u64) -> u64 { 0 }
+/// Well-founded measure for termination.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct Measure(u8);
 
-// store_rel_0 (matches Coq: Definition store_rel_0)
-pub fn store_rel_0(_sigma: u64, _st1: u64, _st2: u64) -> u64 { 0 }
+impl Measure {
+    fn decrease(self) -> Option<Self> {
+        if self.0 > 0 { Some(Self(self.0 - 1)) } else { None }
+    }
+    fn is_zero(self) -> bool { self.0 == 0 }
+}
+
+/// Subterm relation: a is a subterm of b if measure(a) < measure(b).
+fn is_subterm(a: Measure, b: Measure) -> bool { a.0 < b.0 }
 
 #[cfg(kani)]
 mod verification {
     use super::*;
 
-    // exp_rel_step1_fst_typed (matches Coq: Lemma exp_rel_step1_fst_typed)
-    fn exp_rel_step1_fst_typed_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_exp_rel_step1_fst_typed() {
-        // Property obligation: exp_rel_step1_fst_typed
-        assert!(exp_rel_step1_fst_typed_obligation());
+    fn any_measure() -> Measure {
+        let v: u8 = kani::any();
+        kani::assume(v <= 15);
+        Measure(v)
     }
 
-    // exp_rel_step1_snd_typed (matches Coq: Lemma exp_rel_step1_snd_typed)
-    fn exp_rel_step1_snd_typed_obligation() -> bool { 1u64 == 1u64 }
-
+    /// Decrease strictly reduces measure
     #[kani::proof]
-    fn check_exp_rel_step1_snd_typed() {
-        // Property obligation: exp_rel_step1_snd_typed
-        assert!(exp_rel_step1_snd_typed_obligation());
+    fn verify_decrease_strict() {
+        let m = any_measure();
+        kani::assume(!m.is_zero());
+        let m2 = m.decrease().unwrap();
+        assert!(m2.0 < m.0);
     }
 
-    // exp_rel_step1_case_typed (matches Coq: Lemma exp_rel_step1_case_typed)
-    fn exp_rel_step1_case_typed_obligation() -> bool { 1u64 == 1u64 }
-
+    /// Subterm relation is irreflexive
     #[kani::proof]
-    fn check_exp_rel_step1_case_typed() {
-        // Property obligation: exp_rel_step1_case_typed
-        assert!(exp_rel_step1_case_typed_obligation());
+    fn verify_subterm_irrefl() {
+        let m = any_measure();
+        assert!(!is_subterm(m, m));
     }
 
-    // exp_rel_step1_if_typed (matches Coq: Lemma exp_rel_step1_if_typed)
-    fn exp_rel_step1_if_typed_obligation() -> bool { 1u64 == 1u64 }
-
+    /// Subterm relation is transitive
     #[kani::proof]
-    fn check_exp_rel_step1_if_typed() {
-        // Property obligation: exp_rel_step1_if_typed
-        assert!(exp_rel_step1_if_typed_obligation());
+    fn verify_subterm_trans() {
+        let a = any_measure();
+        let b = any_measure();
+        let c = any_measure();
+        kani::assume(is_subterm(a, b));
+        kani::assume(is_subterm(b, c));
+        assert!(is_subterm(a, c));
     }
 
-    // exp_rel_step1_let_typed (matches Coq: Lemma exp_rel_step1_let_typed)
-    fn exp_rel_step1_let_typed_obligation() -> bool { 1u64 == 1u64 }
-
+    /// Zero has no subterms going further down
     #[kani::proof]
-    fn check_exp_rel_step1_let_typed() {
-        // Property obligation: exp_rel_step1_let_typed
-        assert!(exp_rel_step1_let_typed_obligation());
+    fn verify_zero_minimal() {
+        let m = any_measure();
+        if is_subterm(m, Measure(0)) {
+            // This can never happen — nothing is below 0
+            assert!(false);
+        }
     }
 
-    // exp_rel_step1_handle_typed (matches Coq: Lemma exp_rel_step1_handle_typed)
-    fn exp_rel_step1_handle_typed_obligation() -> bool { 1u64 == 1u64 }
-
+    /// Decrease produces a subterm
     #[kani::proof]
-    fn check_exp_rel_step1_handle_typed() {
-        // Property obligation: exp_rel_step1_handle_typed
-        assert!(exp_rel_step1_handle_typed_obligation());
+    fn verify_decrease_subterm() {
+        let m = any_measure();
+        kani::assume(!m.is_zero());
+        let m2 = m.decrease().unwrap();
+        assert!(is_subterm(m2, m));
     }
-
-    // exp_rel_step1_app_typed (matches Coq: Lemma exp_rel_step1_app_typed)
-    fn exp_rel_step1_app_typed_obligation() -> bool { 1u64 == 1u64 }
-
-    #[kani::proof]
-    fn check_exp_rel_step1_app_typed() {
-        // Property obligation: exp_rel_step1_app_typed
-        assert!(exp_rel_step1_app_typed_obligation());
-    }
-
 }

@@ -228,79 +228,79 @@ let public_partition : partition = mkPart Public [0; 1; 2; 3]
 let secret_partition : partition = mkPart Secret [100; 101; 102; 103]
 
 (* secure_execute_deterministic (matches Coq: Lemma secure_execute_deterministic) *)
-let secure_execute_deterministic (p_s1: _) (p_s2: _) : Lemma (requires (low_equiv p_s1 p_s2 == true)) (ensures (secure_execute p_s1 == secure_execute p_s2)) = admit ()
+let secure_execute_deterministic (p_s1: _) (p_s2: _) : Lemma (requires (low_equiv p_s1 p_s2 == true)) (ensures (secure_execute p_s1 == secure_execute p_s2)) = ()
 
 (* SEC_002_01 (matches Coq: Theorem SEC_002_01) *)
-let sec_002_01 (p_s1: state) (p_s2: state) : Lemma (constant_time p_s1 p_s2 t1 t2 == true) = admit ()
+let sec_002_01 (p_s1: state) (p_s2: state) : Lemma (constant_time p_s1 p_s2 t1 t2 == true) = ()
 
 (* SEC_002_02 (matches Coq: Theorem SEC_002_02) *)
-let sec_002_02 (p_s1: state) (p_s2: state) : Lemma (storage_no_leak p_s1 p_s2 st1 st2 == true) = admit ()
+let sec_002_02 (p_s1: state) (p_s2: state) : Lemma (storage_no_leak p_s1 p_s2 st1 st2 == true) = ()
 
 (* SEC_002_03 (matches Coq: Theorem SEC_002_03) *)
-let sec_002_03 (p_s1: state) (p_s2: state) : Lemma (constant_cache p_s1 p_s2 t1 t2 == true) = admit ()
+let sec_002_03 (p_s1: state) (p_s2: state) : Lemma (constant_cache p_s1 p_s2 t1 t2 == true) = ()
 
 (* SEC_002_04 (matches Coq: Theorem SEC_002_04) *)
-let sec_002_04 (p_s1: state) (p_s2: state) : Lemma (constant_branch p_s1 p_s2 b1 b2 == true) = admit ()
+let sec_002_04 (p_s1: state) (p_s2: state) : Lemma (constant_branch p_s1 p_s2 b1 b2 == true) = ()
 
 (* SEC_002_05 (matches Coq: Theorem SEC_002_05) *)
-let sec_002_05 (p_s1: state) (p_s2: state) : Lemma (constant_memory_pattern p_s1 p_s2 t1 t2 == true) = admit ()
+let sec_002_05 (p_s1: state) (p_s2: state) : Lemma (constant_memory_pattern p_s1 p_s2 t1 t2 == true) = ()
 
 (* SEC_002_06 (matches Coq: Theorem SEC_002_06) *)
-let sec_002_06 (p_s1: state) (p_s2: state) : Lemma (constant_power p_s1 p_s2 p1 p2 == true) = admit ()
+let sec_002_06 (p_s1: state) (p_s2: state) : Lemma (constant_power p_s1 p_s2 p1 p2 == true) = ()
 
 (* SEC_002_07 (matches Coq: Theorem SEC_002_07) *)
-let sec_002_07 (p_s1: state) (p_s2: state) : Lemma (constant_em p_s1 p_s2 e1 e2 == true) = admit ()
+let sec_002_07 (p_s1: state) (p_s2: state) : Lemma (constant_em p_s1 p_s2 e1 e2 == true) = ()
 
 (* SEC_002_08 (matches Coq: Theorem SEC_002_08) *)
-let sec_002_08 (p_obs: (list observation)) (p_secret_bits: nat) : Lemma (requires (channel_bandwidth p_obs p_secret_bits <= bandwidth_threshold)) (ensures (channel_bandwidth p_obs p_secret_bits <= 1)) = admit ()
+let sec_002_08 (p_obs: (list observation)) (p_secret_bits: nat) : Lemma (requires (channel_bandwidth p_obs p_secret_bits <= bandwidth_threshold)) (ensures (channel_bandwidth p_obs p_secret_bits <= 1)) = ()
 
 (* SEC_002_09 (matches Coq: Theorem SEC_002_09) *)
-let sec_002_09 (p_s1: state) (p_s2: state) : Lemma (constant_termination p_s1 p_s2 t1 t2 == true) = admit ()
+let sec_002_09 (p_s1: state) (p_s2: state) : Lemma (constant_termination p_s1 p_s2 t1 t2 == true) = ()
 
 (* SEC_002_10 (matches Coq: Theorem SEC_002_10) *)
-let sec_002_10 (p_s1: state) (p_s2: state) : Lemma (constant_exception p_s1 p_s2 t1 t2 == true) = admit ()
+let sec_002_10 (p_s1: state) (p_s2: state) : Lemma (constant_exception p_s1 p_s2 t1 t2 == true) = ()
 
 (* SEC_002_11 (matches Coq: Theorem SEC_002_11) *)
-let sec_002_11 (p_s1: state) (p_s2: state) : Lemma (constant_resources p_s1 p_s2 r1 r2 == true) = admit ()
+let sec_002_11 (p_s1: state) (p_s2: state) : Lemma (constant_resources p_s1 p_s2 r1 r2 == true) = ()
 
 (* SEC_002_12 (matches Coq: Theorem SEC_002_12) *)
-let sec_002_12 (p_s1: state) (p_s2: state) : Lemma (constant_schedule p_s1 p_s2 sc1 sc2 == true) = admit ()
+let sec_002_12 (p_s1: state) (p_s2: state) : Lemma (constant_schedule p_s1 p_s2 sc1 sc2 == true) = ()
 
 (* SEC_002_13 (matches Coq: Theorem SEC_002_13) *)
-let sec_002_13 (p_s1: state) (p_s2: state) : Lemma (constant_network p_s1 p_s2 n1 n2 == true) = admit ()
+let sec_002_13 (p_s1: state) (p_s2: state) : Lemma (constant_network p_s1 p_s2 n1 n2 == true) = ()
 
 (* SEC_002_14 (matches Coq: Theorem SEC_002_14) *)
-let sec_002_14 (p_addr: nat) : Lemma (requires (p_addr < length zeroed_memory)) (ensures (memory_zeroed p_addr zeroed_memory == true)) = admit ()
+let sec_002_14 (p_addr: nat) : Lemma (requires (p_addr < length zeroed_memory)) (ensures (memory_zeroed p_addr zeroed_memory == true)) = ()
 
 (* SEC_002_15 (matches Coq: Theorem SEC_002_15) *)
-let sec_002_15 () : Lemma (partitions_disjoint public_partition secret_partition == true) = admit ()
+let sec_002_15 () : Lemma (partitions_disjoint public_partition secret_partition == true) = ()
 
 (* SEC_002_16 (matches Coq: Theorem SEC_002_16) *)
-let sec_002_16 (p_s1: state) (p_s2: state) : Lemma (constant_output p_s1 p_s2 t1 t2 == true) = admit ()
+let sec_002_16 (p_s1: state) (p_s2: state) : Lemma (constant_output p_s1 p_s2 t1 t2 == true) = ()
 
 (* SEC_002_17 (matches Coq: Theorem SEC_002_17) *)
-let sec_002_17 (p_l: sec_level) : Lemma (level_leq p_l p_l == true) = admit ()
+let sec_002_17 (p_l: sec_level) : Lemma (level_leq p_l p_l == true) = ()
 
 (* SEC_002_18 (matches Coq: Theorem SEC_002_18) *)
-let sec_002_18 (p_l: sec_level) : Lemma (level_eq p_l p_l == true) = admit ()
+let sec_002_18 (p_l: sec_level) : Lemma (level_eq p_l p_l == true) = ()
 
 (* SEC_002_19 (matches Coq: Theorem SEC_002_19) *)
-let sec_002_19 (p_l: sec_level) : Lemma (level_leq Public p_l == true) = admit ()
+let sec_002_19 (p_l: sec_level) : Lemma (level_leq Public p_l == true) = ()
 
 (* SEC_002_20 (matches Coq: Theorem SEC_002_20) *)
-let sec_002_20 () : Lemma (level_leq TopSecret Public == false /\ level_leq TopSecret Secret == false) = admit ()
+let sec_002_20 () : Lemma (level_leq TopSecret Public == false /\ level_leq TopSecret Secret == false) = ()
 
 (* SEC_002_21 (matches Coq: Theorem SEC_002_21) *)
-let sec_002_21 (p_s: state) : Lemma (low_equiv p_s p_s == true) = admit ()
+let sec_002_21 (p_s: state) : Lemma (low_equiv p_s p_s == true) = ()
 
 (* level_leq_refl (matches Coq: Theorem level_leq_refl) *)
-let level_leq_refl (p_l: _) : Lemma (level_leq p_l p_l == true) = admit ()
+let level_leq_refl (p_l: _) : Lemma (level_leq p_l p_l == true) = ()
 
 (* public_lowest (matches Coq: Theorem public_lowest) *)
-let public_lowest (p_l: _) : Lemma (level_leq Public p_l == true) = admit ()
+let public_lowest (p_l: _) : Lemma (level_leq Public p_l == true) = ()
 
 (* topsecret_no_flow_public (matches Coq: Theorem topsecret_no_flow_public) *)
-let topsecret_no_flow_public () : Lemma (level_leq TopSecret Public == false) = admit ()
+let topsecret_no_flow_public () : Lemma (level_leq TopSecret Public == false) = ()
 
 (* secret_no_flow_public (matches Coq: Theorem secret_no_flow_public) *)
-let secret_no_flow_public () : Lemma (level_leq Secret Public == false) = admit ()
+let secret_no_flow_public () : Lemma (level_leq Secret Public == false) = ()

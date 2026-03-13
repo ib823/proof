@@ -82,79 +82,79 @@ let riina_aes : crypto_implementation = {f_ci_operation=Crypto_AES_Encrypt; f_ci
 let riina_sha256 : crypto_implementation = {f_ci_operation=Crypto_SHA256; f_ci_constant_time=true; f_ci_no_table_lookups=true; f_ci_bitsliced=false}
 
 (* andb_true_iff (matches Coq: Lemma andb_true_iff) *)
-let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = admit ()
+let andb_true_iff (p_a: bool) (p_b: bool) : Lemma (p_a && p_b == true <==> p_a == true /\ p_b == true) = ()
 
 (* CT_001_branch_free (matches Coq: Theorem CT_001_branch_free) *)
-let ct_001_branch_free () : Lemma (ct_branch_free riina_ct_config == true) = admit ()
+let ct_001_branch_free () : Lemma (ct_branch_free riina_ct_config == true) = ()
 
 (* CT_002_memory_safe (matches Coq: Theorem CT_002_memory_safe) *)
-let ct_002_memory_safe () : Lemma (ct_memory_safe riina_ct_config == true) = admit ()
+let ct_002_memory_safe () : Lemma (ct_memory_safe riina_ct_config == true) = ()
 
 (* CT_003_operation_safe (matches Coq: Theorem CT_003_operation_safe) *)
-let ct_003_operation_safe () : Lemma (ct_operation_safe riina_ct_config == true) = admit ()
+let ct_003_operation_safe () : Lemma (ct_operation_safe riina_ct_config == true) = ()
 
 (* CT_004_fully_ct (matches Coq: Theorem CT_004_fully_ct) *)
-let ct_004_fully_ct () : Lemma (fully_constant_time riina_ct_config == true) = admit ()
+let ct_004_fully_ct () : Lemma (fully_constant_time riina_ct_config == true) = ()
 
 (* CT_005_no_secret_branches (matches Coq: Theorem CT_005_no_secret_branches) *)
-let ct_005_no_secret_branches (p_c: constant_time_config) : Lemma (requires (ct_branch_free p_c == true)) (ensures (p_c.f_ct_no_secret_branches == true)) = admit ()
+let ct_005_no_secret_branches (p_c: constant_time_config) : Lemma (requires (ct_branch_free p_c == true)) (ensures (p_c.f_ct_no_secret_branches == true)) = ()
 
 (* CT_006_branchless_compare (matches Coq: Theorem CT_006_branchless_compare) *)
-let ct_006_branchless_compare (p_c: constant_time_config) : Lemma (requires (ct_branch_free p_c == true)) (ensures (p_c.f_ct_branchless_compare == true)) = admit ()
+let ct_006_branchless_compare (p_c: constant_time_config) : Lemma (requires (ct_branch_free p_c == true)) (ensures (p_c.f_ct_branchless_compare == true)) = ()
 
 (* CT_007_no_secret_addresses (matches Coq: Theorem CT_007_no_secret_addresses) *)
-let ct_007_no_secret_addresses (p_c: constant_time_config) : Lemma (requires (ct_memory_safe p_c == true)) (ensures (p_c.f_ct_no_secret_addresses == true)) = admit ()
+let ct_007_no_secret_addresses (p_c: constant_time_config) : Lemma (requires (ct_memory_safe p_c == true)) (ensures (p_c.f_ct_no_secret_addresses == true)) = ()
 
 (* CT_008_no_cache_timing (matches Coq: Theorem CT_008_no_cache_timing) *)
-let ct_008_no_cache_timing (p_c: constant_time_config) : Lemma (requires (ct_memory_safe p_c == true)) (ensures (p_c.f_ct_no_cache_timing == true)) = admit ()
+let ct_008_no_cache_timing (p_c: constant_time_config) : Lemma (requires (ct_memory_safe p_c == true)) (ensures (p_c.f_ct_no_cache_timing == true)) = ()
 
 (* CT_009_no_var_time (matches Coq: Theorem CT_009_no_var_time) *)
-let ct_009_no_var_time (p_c: constant_time_config) : Lemma (requires (ct_operation_safe p_c == true)) (ensures (p_c.f_ct_no_variable_time_ops == true)) = admit ()
+let ct_009_no_var_time (p_c: constant_time_config) : Lemma (requires (ct_operation_safe p_c == true)) (ensures (p_c.f_ct_no_variable_time_ops == true)) = ()
 
 (* CT_010_constant_loops (matches Coq: Theorem CT_010_constant_loops) *)
-let ct_010_constant_loops (p_c: constant_time_config) : Lemma (requires (ct_operation_safe p_c == true)) (ensures (p_c.f_ct_constant_loops == true)) = admit ()
+let ct_010_constant_loops (p_c: constant_time_config) : Lemma (requires (ct_operation_safe p_c == true)) (ensures (p_c.f_ct_constant_loops == true)) = ()
 
 (* CT_011_full_implies_branch (matches Coq: Theorem CT_011_full_implies_branch) *)
-let ct_011_full_implies_branch (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (ct_branch_free p_c == true)) = admit ()
+let ct_011_full_implies_branch (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (ct_branch_free p_c == true)) = ()
 
 (* CT_012_full_implies_memory (matches Coq: Theorem CT_012_full_implies_memory) *)
-let ct_012_full_implies_memory (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (ct_memory_safe p_c == true)) = admit ()
+let ct_012_full_implies_memory (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (ct_memory_safe p_c == true)) = ()
 
 (* CT_013_full_implies_op (matches Coq: Theorem CT_013_full_implies_op) *)
-let ct_013_full_implies_op (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (ct_operation_safe p_c == true)) = admit ()
+let ct_013_full_implies_op (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (ct_operation_safe p_c == true)) = ()
 
 (* CT_014_riina_aes_safe (matches Coq: Theorem CT_014_riina_aes_safe) *)
-let ct_014_riina_aes_safe () : Lemma (crypto_safe riina_aes == true) = admit ()
+let ct_014_riina_aes_safe () : Lemma (crypto_safe riina_aes == true) = ()
 
 (* CT_015_riina_sha256_safe (matches Coq: Theorem CT_015_riina_sha256_safe) *)
-let ct_015_riina_sha256_safe () : Lemma (crypto_safe riina_sha256 == true) = admit ()
+let ct_015_riina_sha256_safe () : Lemma (crypto_safe riina_sha256 == true) = ()
 
 (* CT_016_riina_aes_ct (matches Coq: Theorem CT_016_riina_aes_ct) *)
-let ct_016_riina_aes_ct () : Lemma (riina_aes.f_ci_constant_time == true) = admit ()
+let ct_016_riina_aes_ct () : Lemma (riina_aes.f_ci_constant_time == true) = ()
 
 (* CT_017_riina_aes_bitsliced (matches Coq: Theorem CT_017_riina_aes_bitsliced) *)
-let ct_017_riina_aes_bitsliced () : Lemma (riina_aes.f_ci_bitsliced == true) = admit ()
+let ct_017_riina_aes_bitsliced () : Lemma (riina_aes.f_ci_bitsliced == true) = ()
 
 (* CT_018_safe_implies_ct (matches Coq: Theorem CT_018_safe_implies_ct) *)
-let ct_018_safe_implies_ct (p_p_impl: crypto_implementation) : Lemma (requires (crypto_safe id_impl == true)) (ensures (id_impl.f_ci_constant_time == true)) = admit ()
+let ct_018_safe_implies_ct (p_p_impl: crypto_implementation) : Lemma (requires (crypto_safe id_impl == true)) (ensures (id_impl.f_ci_constant_time == true)) = ()
 
 (* CT_019_safe_implies_no_tables (matches Coq: Theorem CT_019_safe_implies_no_tables) *)
-let ct_019_safe_implies_no_tables (p_p_impl: crypto_implementation) : Lemma (requires (crypto_safe id_impl == true)) (ensures (id_impl.f_ci_no_table_lookups == true)) = admit ()
+let ct_019_safe_implies_no_tables (p_p_impl: crypto_implementation) : Lemma (requires (crypto_safe id_impl == true)) (ensures (id_impl.f_ci_no_table_lookups == true)) = ()
 
 (* CT_020_riina_no_branches (matches Coq: Theorem CT_020_riina_no_branches) *)
-let ct_020_riina_no_branches () : Lemma (riina_ct_config.f_ct_no_secret_branches == true) = admit ()
+let ct_020_riina_no_branches () : Lemma (riina_ct_config.f_ct_no_secret_branches == true) = ()
 
 (* CT_021_riina_no_addresses (matches Coq: Theorem CT_021_riina_no_addresses) *)
-let ct_021_riina_no_addresses () : Lemma (riina_ct_config.f_ct_no_secret_addresses == true) = admit ()
+let ct_021_riina_no_addresses () : Lemma (riina_ct_config.f_ct_no_secret_addresses == true) = ()
 
 (* CT_022_full_implies_no_branches (matches Coq: Theorem CT_022_full_implies_no_branches) *)
-let ct_022_full_implies_no_branches (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (p_c.f_ct_no_secret_branches == true)) = admit ()
+let ct_022_full_implies_no_branches (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (p_c.f_ct_no_secret_branches == true)) = ()
 
 (* CT_023_full_implies_no_cache (matches Coq: Theorem CT_023_full_implies_no_cache) *)
-let ct_023_full_implies_no_cache (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (p_c.f_ct_no_cache_timing == true)) = admit ()
+let ct_023_full_implies_no_cache (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (p_c.f_ct_no_cache_timing == true)) = ()
 
 (* CT_024_full_implies_const_loops (matches Coq: Theorem CT_024_full_implies_const_loops) *)
-let ct_024_full_implies_const_loops (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (p_c.f_ct_constant_loops == true)) = admit ()
+let ct_024_full_implies_const_loops (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (p_c.f_ct_constant_loops == true)) = ()
 
 (* CT_025_complete_ct_security (matches Coq: Theorem CT_025_complete_ct_security) *)
-let ct_025_complete_ct_security (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (p_c.f_ct_no_secret_branches == true /\ p_c.f_ct_no_secret_addresses == true /\ p_c.f_ct_no_cache_timing == true /\ p_c.f_ct_no_variable_time_ops == true /\ p_c.f_ct_constant_loops == true)) = admit ()
+let ct_025_complete_ct_security (p_c: constant_time_config) : Lemma (requires (fully_constant_time p_c == true)) (ensures (p_c.f_ct_no_secret_branches == true /\ p_c.f_ct_no_secret_addresses == true /\ p_c.f_ct_no_cache_timing == true /\ p_c.f_ct_no_variable_time_ops == true /\ p_c.f_ct_constant_loops == true)) = ()

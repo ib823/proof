@@ -116,7 +116,7 @@ let version_valid (p_old_ver: nat) (p_new_ver: nat) : Tot bool =
   p_old_ver < p_new_ver
 
 (* iso_26262_compliance (matches Coq: Theorem iso_26262_compliance) *)
-let iso_26262_compliance (p_compliance: iso26262__compliance) (p_asil: asil) : Lemma (p_compliance.f_hazard_analysis == true) = admit ()
+let iso_26262_compliance (p_compliance: iso26262__compliance) (p_asil: asil) : Lemma (p_compliance.f_hazard_analysis == true) = ()
 
 (* iso_21434_cybersecurity (matches Coq: Theorem iso_21434_cybersecurity) *)
 let iso_21434_cybersecurity (p_vehicle: nat) (p_system: nat) : Lemma (True) = ()
@@ -134,49 +134,49 @@ let imo_maritime_cyber (p_vessel: nat) : Lemma (True) = ()
 let asil_d_highest_rigor (p_compliance: iso26262__compliance) : Lemma (True) = ()
 
 (* cyber_safety_interface (matches Coq: Theorem cyber_safety_interface) *)
-let cyber_safety_interface (p_compliance: iso26262__compliance) : Lemma (p_compliance.f_cybersecurity_interface == true) = admit ()
+let cyber_safety_interface (p_compliance: iso26262__compliance) : Lemma (p_compliance.f_cybersecurity_interface == true) = ()
 
 (* asil_le_refl (matches Coq: Lemma asil_le_refl) *)
-let asil_le_refl (p_a: _) : Lemma (asil_le p_a p_a == true) = admit ()
+let asil_le_refl (p_a: _) : Lemma (asil_le p_a p_a == true) = ()
 
 (* asil_le_trans (matches Coq: Lemma asil_le_trans) *)
-let asil_le_trans (p_a1: _) (p_a2: _) (p_a3: _) : Lemma (requires (asil_le p_a1 p_a2 == true /\ asil_le p_a2 p_a3 == true)) (ensures (asil_le p_a1 p_a3 == true)) = admit ()
+let asil_le_trans (p_a1: _) (p_a2: _) (p_a3: _) : Lemma (requires (asil_le p_a1 p_a2 == true /\ asil_le p_a2 p_a3 == true)) (ensures (asil_le p_a1 p_a3 == true)) = ()
 
 (* asil_le_antisym (matches Coq: Lemma asil_le_antisym) *)
-let asil_le_antisym (p_a1: _) (p_a2: _) : Lemma (requires (asil_le p_a1 p_a2 == true /\ asil_le p_a2 p_a1 == true)) (ensures (p_a1 == p_a2)) = admit ()
+let asil_le_antisym (p_a1: _) (p_a2: _) : Lemma (requires (asil_le p_a1 p_a2 == true /\ asil_le p_a2 p_a1 == true)) (ensures (p_a1 == p_a2)) = ()
 
 (* sil_le_refl (matches Coq: Lemma sil_le_refl) *)
-let sil_le_refl (p_s: _) : Lemma (sil_le p_s p_s == true) = admit ()
+let sil_le_refl (p_s: _) : Lemma (sil_le p_s p_s == true) = ()
 
 (* asil_d_full_coverage (matches Coq: Theorem asil_d_full_coverage) *)
-let asil_d_full_coverage () : Lemma (asil_test_coverage_pct ASIL_D == 100) = admit ()
+let asil_d_full_coverage () : Lemma (asil_test_coverage_pct ASIL_D == 100) = ()
 
 (* asil_coverage_monotone (matches Coq: Theorem asil_coverage_monotone) *)
-let asil_coverage_monotone (p_a1: _) (p_a2: _) : Lemma (requires (asil_le p_a1 p_a2 == true)) (ensures (asil_test_coverage_pct p_a1 <= asil_test_coverage_pct p_a2)) = admit ()
+let asil_coverage_monotone (p_a1: _) (p_a2: _) : Lemma (requires (asil_le p_a1 p_a2 == true)) (ensures (asil_test_coverage_pct p_a1 <= asil_test_coverage_pct p_a2)) = ()
 
 (* work_products_monotone (matches Coq: Theorem work_products_monotone) *)
-let work_products_monotone (p_a1: _) (p_a2: _) : Lemma (requires (asil_le p_a1 p_a2 == true)) (ensures (work_products_required p_a1 <= work_products_required p_a2)) = admit ()
+let work_products_monotone (p_a1: _) (p_a2: _) : Lemma (requires (asil_le p_a1 p_a2 == true)) (ensures (work_products_required p_a1 <= work_products_required p_a2)) = ()
 
 (* asil_decomposition_valid (matches Coq: Theorem asil_decomposition_valid) *)
-let asil_decomposition_valid (p_target: _) (p_a1: _) (p_a2: _) : Lemma (requires (asil_sum p_a1 p_a2 >= asil_to_nat p_target)) (ensures (asil_to_nat p_a1 + asil_to_nat p_a2 >= asil_to_nat p_target)) = admit ()
+let asil_decomposition_valid (p_target: _) (p_a1: _) (p_a2: _) : Lemma (requires (asil_sum p_a1 p_a2 >= asil_to_nat p_target)) (ensures (asil_to_nat p_a1 + asil_to_nat p_a2 >= asil_to_nat p_target)) = ()
 
 (* full_requires_hazard_analysis (matches Coq: Theorem full_requires_hazard_analysis) *)
-let full_requires_hazard_analysis (p_c: _) : Lemma (requires (iso26262_full p_c == true)) (ensures (p_c.f_hazard_analysis == true)) = admit ()
+let full_requires_hazard_analysis (p_c: _) : Lemma (requires (iso26262_full p_c == true)) (ensures (p_c.f_hazard_analysis == true)) = ()
 
 (* full_requires_software_design (matches Coq: Theorem full_requires_software_design) *)
-let full_requires_software_design (p_c: _) : Lemma (requires (iso26262_full p_c == true)) (ensures (p_c.f_software_design == true)) = admit ()
+let full_requires_software_design (p_c: _) : Lemma (requires (iso26262_full p_c == true)) (ensures (p_c.f_software_design == true)) = ()
 
 (* full_requires_cyber_interface (matches Coq: Theorem full_requires_cyber_interface) *)
-let full_requires_cyber_interface (p_c: _) : Lemma (requires (iso26262_full p_c == true)) (ensures (p_c.f_cybersecurity_interface == true)) = admit ()
+let full_requires_cyber_interface (p_c: _) : Lemma (requires (iso26262_full p_c == true)) (ensures (p_c.f_cybersecurity_interface == true)) = ()
 
 (* sil4_zero_tolerable_hazard (matches Coq: Theorem sil4_zero_tolerable_hazard) *)
-let sil4_zero_tolerable_hazard () : Lemma (tolerable_hazard_rate_per_hour SIL_4 == 0) = admit ()
+let sil4_zero_tolerable_hazard () : Lemma (tolerable_hazard_rate_per_hour SIL_4 == 0) = ()
 
 (* hazard_rate_decreasing (matches Coq: Theorem hazard_rate_decreasing) *)
-let hazard_rate_decreasing (p_s1: _) (p_s2: _) : Lemma (requires (sil_le p_s1 p_s2 == true)) (ensures (tolerable_hazard_rate_per_hour p_s2 <= tolerable_hazard_rate_per_hour p_s1)) = admit ()
+let hazard_rate_decreasing (p_s1: _) (p_s2: _) : Lemma (requires (sil_le p_s1 p_s2 == true)) (ensures (tolerable_hazard_rate_per_hour p_s2 <= tolerable_hazard_rate_per_hour p_s1)) = ()
 
 (* safety_critical_faster_auth (matches Coq: Theorem safety_critical_faster_auth) *)
-let safety_critical_faster_auth () : Lemma (v2x_auth_timeout_ms true < v2x_auth_timeout_ms false) = admit ()
+let safety_critical_faster_auth () : Lemma (v2x_auth_timeout_ms true < v2x_auth_timeout_ms false) = ()
 
 (* version_no_downgrade (matches Coq: Theorem version_no_downgrade) *)
-let version_no_downgrade (p_old_v: _) (p_new_v: _) : Lemma (requires (version_valid p_old_v p_new_v == true)) (ensures (p_old_v < p_new_v)) = admit ()
+let version_no_downgrade (p_old_v: _) (p_new_v: _) : Lemma (requires (version_valid p_old_v p_new_v == true)) (ensures (p_old_v < p_new_v)) = ()

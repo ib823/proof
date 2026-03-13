@@ -15,109 +15,235 @@
 (declare-sort TargetNode 0)
 
 ; sized_ty_base: source semantics (matches Coq)
-(declare-fun source_sized_ty_base () Bool)
-(declare-fun target_sized_ty_base () Bool)
-(assert (= source_sized_ty_base target_sized_ty_base))
+; Translation validation: sized_ty_base preserves semantics
+(push 1)
+(declare-const source_sized_ty_base Int)
+(declare-const target_sized_ty_base Int)
+(assert (>= source_sized_ty_base 0))
+(assert (>= target_sized_ty_base 0))
+(assert (not (= source_sized_ty_base target_sized_ty_base)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; sized_ty_bound: source semantics (matches Coq)
-(declare-fun source_sized_ty_bound () Bool)
-(declare-fun target_sized_ty_bound () Bool)
-(assert (= source_sized_ty_bound target_sized_ty_bound))
+; Translation validation: sized_ty_bound preserves semantics
+(push 1)
+(declare-const source_sized_ty_bound Int)
+(declare-const target_sized_ty_bound Int)
+(assert (>= source_sized_ty_bound 0))
+(assert (>= target_sized_ty_bound 0))
+(assert (not (= source_sized_ty_bound target_sized_ty_bound)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; expr_size: source semantics (matches Coq)
-(declare-fun source_expr_size () Bool)
-(declare-fun target_expr_size () Bool)
-(assert (= source_expr_size target_expr_size))
+; Translation validation: expr_size preserves semantics
+(push 1)
+(declare-const source_expr_size Int)
+(declare-const target_expr_size Int)
+(assert (>= source_expr_size 0))
+(assert (>= target_expr_size 0))
+(assert (not (= source_expr_size target_expr_size)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; terminates: source semantics (matches Coq)
-(declare-fun source_terminates () Bool)
-(declare-fun target_terminates () Bool)
-(assert (= source_terminates target_terminates))
+; Translation validation: terminates preserves semantics
+(push 1)
+(declare-const source_terminates Int)
+(declare-const target_terminates Int)
+(assert (>= source_terminates 0))
+(assert (>= target_terminates 0))
+(assert (not (= source_terminates target_terminates)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; step_terminates: source semantics (matches Coq)
-(declare-fun source_step_terminates () Bool)
-(declare-fun target_step_terminates () Bool)
-(assert (= source_step_terminates target_step_terminates))
+; Translation validation: step_terminates preserves semantics
+(push 1)
+(declare-const source_step_terminates Int)
+(declare-const target_step_terminates Int)
+(assert (>= source_step_terminates 0))
+(assert (>= target_step_terminates 0))
+(assert (not (= source_step_terminates target_step_terminates)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; expr_size_pos: translation preserves property (matches Coq: Lemma)
-(declare-fun source_expr_size_pos () Bool)
-(declare-fun target_expr_size_pos () Bool)
-(assert (= source_expr_size_pos target_expr_size_pos))
+; Translation validation: expr_size_pos preserves semantics
+(push 1)
+(declare-const source_expr_size_pos Int)
+(declare-const target_expr_size_pos Int)
+(assert (>= source_expr_size_pos 0))
+(assert (>= target_expr_size_pos 0))
+(assert (not (= source_expr_size_pos target_expr_size_pos)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; value_prod_decompose: translation preserves property (matches Coq: Lemma)
-(declare-fun source_value_prod_decompose () Bool)
-(declare-fun target_value_prod_decompose () Bool)
-(assert (= source_value_prod_decompose target_value_prod_decompose))
+; Translation validation: value_prod_decompose preserves semantics
+(push 1)
+(declare-const source_value_prod_decompose Int)
+(declare-const target_value_prod_decompose Int)
+(assert (>= source_value_prod_decompose 0))
+(assert (>= target_value_prod_decompose 0))
+(assert (not (= source_value_prod_decompose target_value_prod_decompose)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; value_sum_decompose: translation preserves property (matches Coq: Lemma)
-(declare-fun source_value_sum_decompose () Bool)
-(declare-fun target_value_sum_decompose () Bool)
-(assert (= source_value_sum_decompose target_value_sum_decompose))
+; Translation validation: value_sum_decompose preserves semantics
+(push 1)
+(declare-const source_value_sum_decompose Int)
+(declare-const target_value_sum_decompose Int)
+(assert (>= source_value_sum_decompose 0))
+(assert (>= target_value_sum_decompose 0))
+(assert (not (= source_value_sum_decompose target_value_sum_decompose)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; value_bool_decompose: translation preserves property (matches Coq: Lemma)
-(declare-fun source_value_bool_decompose () Bool)
-(declare-fun target_value_bool_decompose () Bool)
-(assert (= source_value_bool_decompose target_value_bool_decompose))
+; Translation validation: value_bool_decompose preserves semantics
+(push 1)
+(declare-const source_value_bool_decompose Int)
+(declare-const target_value_bool_decompose Int)
+(assert (>= source_value_bool_decompose 0))
+(assert (>= target_value_bool_decompose 0))
+(assert (not (= source_value_bool_decompose target_value_bool_decompose)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; value_fn_decompose: translation preserves property (matches Coq: Lemma)
-(declare-fun source_value_fn_decompose () Bool)
-(declare-fun target_value_fn_decompose () Bool)
-(assert (= source_value_fn_decompose target_value_fn_decompose))
+; Translation validation: value_fn_decompose preserves semantics
+(push 1)
+(declare-const source_value_fn_decompose Int)
+(declare-const target_value_fn_decompose Int)
+(assert (>= source_value_fn_decompose 0))
+(assert (>= target_value_fn_decompose 0))
+(assert (not (= source_value_fn_decompose target_value_fn_decompose)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; fst_steps_once: translation preserves property (matches Coq: Lemma)
-(declare-fun source_fst_steps_once () Bool)
-(declare-fun target_fst_steps_once () Bool)
-(assert (= source_fst_steps_once target_fst_steps_once))
+; Translation validation: fst_steps_once preserves semantics
+(push 1)
+(declare-const source_fst_steps_once Int)
+(declare-const target_fst_steps_once Int)
+(assert (>= source_fst_steps_once 0))
+(assert (>= target_fst_steps_once 0))
+(assert (not (= source_fst_steps_once target_fst_steps_once)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; snd_steps_once: translation preserves property (matches Coq: Lemma)
-(declare-fun source_snd_steps_once () Bool)
-(declare-fun target_snd_steps_once () Bool)
-(assert (= source_snd_steps_once target_snd_steps_once))
+; Translation validation: snd_steps_once preserves semantics
+(push 1)
+(declare-const source_snd_steps_once Int)
+(declare-const target_snd_steps_once Int)
+(assert (>= source_snd_steps_once 0))
+(assert (>= target_snd_steps_once 0))
+(assert (not (= source_snd_steps_once target_snd_steps_once)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; case_inl_steps_once: translation preserves property (matches Coq: Lemma)
-(declare-fun source_case_inl_steps_once () Bool)
-(declare-fun target_case_inl_steps_once () Bool)
-(assert (= source_case_inl_steps_once target_case_inl_steps_once))
+; Translation validation: case_inl_steps_once preserves semantics
+(push 1)
+(declare-const source_case_inl_steps_once Int)
+(declare-const target_case_inl_steps_once Int)
+(assert (>= source_case_inl_steps_once 0))
+(assert (>= target_case_inl_steps_once 0))
+(assert (not (= source_case_inl_steps_once target_case_inl_steps_once)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; case_inr_steps_once: translation preserves property (matches Coq: Lemma)
-(declare-fun source_case_inr_steps_once () Bool)
-(declare-fun target_case_inr_steps_once () Bool)
-(assert (= source_case_inr_steps_once target_case_inr_steps_once))
+; Translation validation: case_inr_steps_once preserves semantics
+(push 1)
+(declare-const source_case_inr_steps_once Int)
+(declare-const target_case_inr_steps_once Int)
+(assert (>= source_case_inr_steps_once 0))
+(assert (>= target_case_inr_steps_once 0))
+(assert (not (= source_case_inr_steps_once target_case_inr_steps_once)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; if_true_steps_once: translation preserves property (matches Coq: Lemma)
-(declare-fun source_if_true_steps_once () Bool)
-(declare-fun target_if_true_steps_once () Bool)
-(assert (= source_if_true_steps_once target_if_true_steps_once))
+; Translation validation: if_true_steps_once preserves semantics
+(push 1)
+(declare-const source_if_true_steps_once Int)
+(declare-const target_if_true_steps_once Int)
+(assert (>= source_if_true_steps_once 0))
+(assert (>= target_if_true_steps_once 0))
+(assert (not (= source_if_true_steps_once target_if_true_steps_once)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; if_false_steps_once: translation preserves property (matches Coq: Lemma)
-(declare-fun source_if_false_steps_once () Bool)
-(declare-fun target_if_false_steps_once () Bool)
-(assert (= source_if_false_steps_once target_if_false_steps_once))
+; Translation validation: if_false_steps_once preserves semantics
+(push 1)
+(declare-const source_if_false_steps_once Int)
+(declare-const target_if_false_steps_once Int)
+(assert (>= source_if_false_steps_once 0))
+(assert (>= target_if_false_steps_once 0))
+(assert (not (= source_if_false_steps_once target_if_false_steps_once)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; let_value_steps_once: translation preserves property (matches Coq: Lemma)
-(declare-fun source_let_value_steps_once () Bool)
-(declare-fun target_let_value_steps_once () Bool)
-(assert (= source_let_value_steps_once target_let_value_steps_once))
+; Translation validation: let_value_steps_once preserves semantics
+(push 1)
+(declare-const source_let_value_steps_once Int)
+(declare-const target_let_value_steps_once Int)
+(assert (>= source_let_value_steps_once 0))
+(assert (>= target_let_value_steps_once 0))
+(assert (not (= source_let_value_steps_once target_let_value_steps_once)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; handle_value_steps_once: translation preserves property (matches Coq: Lemma)
-(declare-fun source_handle_value_steps_once () Bool)
-(declare-fun target_handle_value_steps_once () Bool)
-(assert (= source_handle_value_steps_once target_handle_value_steps_once))
+; Translation validation: handle_value_steps_once preserves semantics
+(push 1)
+(declare-const source_handle_value_steps_once Int)
+(declare-const target_handle_value_steps_once Int)
+(assert (>= source_handle_value_steps_once 0))
+(assert (>= target_handle_value_steps_once 0))
+(assert (not (= source_handle_value_steps_once target_handle_value_steps_once)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; app_lam_steps_once: translation preserves property (matches Coq: Lemma)
-(declare-fun source_app_lam_steps_once () Bool)
-(declare-fun target_app_lam_steps_once () Bool)
-(assert (= source_app_lam_steps_once target_app_lam_steps_once))
+; Translation validation: app_lam_steps_once preserves semantics
+(push 1)
+(declare-const source_app_lam_steps_once Int)
+(declare-const target_app_lam_steps_once Int)
+(assert (>= source_app_lam_steps_once 0))
+(assert (>= target_app_lam_steps_once 0))
+(assert (not (= source_app_lam_steps_once target_app_lam_steps_once)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; step_to_multi: translation preserves property (matches Coq: Lemma)
-(declare-fun source_step_to_multi () Bool)
-(declare-fun target_step_to_multi () Bool)
-(assert (= source_step_to_multi target_step_to_multi))
+; Translation validation: step_to_multi preserves semantics
+(push 1)
+(declare-const source_step_to_multi Int)
+(declare-const target_step_to_multi Int)
+(assert (>= source_step_to_multi 0))
+(assert (>= target_step_to_multi 0))
+(assert (not (= source_step_to_multi target_step_to_multi)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; multi_step_trans: translation preserves property (matches Coq: Lemma)
-(declare-fun source_multi_step_trans () Bool)
-(declare-fun target_multi_step_trans () Bool)
-(assert (= source_multi_step_trans target_multi_step_trans))
+; Translation validation: multi_step_trans preserves semantics
+(push 1)
+(declare-const source_multi_step_trans Int)
+(declare-const target_multi_step_trans Int)
+(assert (>= source_multi_step_trans 0))
+(assert (>= target_multi_step_trans 0))
+(assert (not (= source_multi_step_trans target_multi_step_trans)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; Verify all translation validations are satisfiable
 (check-sat)

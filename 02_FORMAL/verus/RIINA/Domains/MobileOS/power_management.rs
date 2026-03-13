@@ -1,44 +1,59 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Verus obligations for domain-level invariants.
+// Verus verification of MobileOS Power Management invariants.
 
 #![allow(unused)]
 use vstd::prelude::*;
 
 verus! {
 
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
+/// State model for Power Management
+pub struct PowerState {
+    pub cpu_governor_valid: bool,
+    pub thermal_monitored: bool,
+    pub battery_soc_accurate: bool,
+    pub wake_lock_tracked: bool,
     pub assurance_level: u64,
 }
 
-pub open spec fn domain_profile_secure(p: DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+/// Invariant: all properties must hold with positive assurance
+pub open spec fn power_management_valid(s: PowerState) -> bool {
+    s.cpu_governor_valid && s.thermal_monitored && s.battery_soc_accurate && s.wake_lock_tracked && s.assurance_level >= 1
 }
 
-pub open spec fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+/// Baseline configuration
+pub open spec fn baseline_power_management() -> PowerState {
+    PowerState { cpu_governor_valid: true, thermal_monitored: true, battery_soc_accurate: true, wake_lock_tracked: true, assurance_level: 1 }
 }
 
-pub open spec fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+/// Hardened configuration
+pub open spec fn hardened_power_management() -> PowerState {
+    PowerState { cpu_governor_valid: true, thermal_monitored: true, battery_soc_accurate: true, wake_lock_tracked: true, assurance_level: 3 }
 }
 
-pub proof fn lemma_baseline_domain_profile_secure()
-    ensures domain_profile_secure(baseline_domain_profile())
+/// Lemma: baseline is valid
+proof fn lemma_baseline_valid()
+    ensures power_management_valid(baseline_power_management()),
 {
-    assert(domain_profile_secure(baseline_domain_profile()));
+    let b = baseline_power_management();
+    assert(b.cpu_governor_valid && b.thermal_monitored && b.battery_soc_accurate && b.wake_lock_tracked && b.assurance_level >= 1);
 }
 
-pub proof fn lemma_hardened_domain_profile_not_weaker()
+/// Lemma: hardened is valid and dominates baseline
+proof fn lemma_hardened_dominates()
     ensures
-        domain_profile_secure(hardened_domain_profile()),
-        hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level,
+        power_management_valid(hardened_power_management()),
+        hardened_power_management().assurance_level >= baseline_power_management().assurance_level,
 {
-    assert(domain_profile_secure(hardened_domain_profile()));
-    assert(hardened_domain_profile().assurance_level >= baseline_domain_profile().assurance_level);
+}
+
+/// Lemma: each property is individually necessary
+proof fn lemma_properties_necessary()
+    ensures
+        !power_management_valid(PowerState { cpu_governor_valid: false, thermal_monitored: true, battery_soc_accurate: true, wake_lock_tracked: true, assurance_level: 1 }),
+        !power_management_valid(PowerState { cpu_governor_valid: true, thermal_monitored: false, battery_soc_accurate: true, wake_lock_tracked: true, assurance_level: 1 }),
+        !power_management_valid(PowerState { cpu_governor_valid: true, thermal_monitored: true, battery_soc_accurate: false, wake_lock_tracked: true, assurance_level: 1 }),
+        !power_management_valid(PowerState { cpu_governor_valid: true, thermal_monitored: true, battery_soc_accurate: true, wake_lock_tracked: false, assurance_level: 1 }),
+{
 }
 
 } // verus!
-
-fn main() {}

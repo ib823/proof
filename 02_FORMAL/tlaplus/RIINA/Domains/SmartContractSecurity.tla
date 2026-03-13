@@ -1,16 +1,23 @@
 ---- MODULE SmartContractSecurity ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/SmartContractSecurity.v (36 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/SmartContractSecurity.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* ContractVulnerability (matches Coq: Inductive ContractVulnerability)
 CONSTANTS Reentrancy, IntegerOverflow, IntegerUnderflow, AccessControl, TxOrigin, DelegateCall, SelfDestruct, Frontrunning, FlashLoan, OracleManipulation
 
+ContractVulnerabilitySet == {Reentrancy, IntegerOverflow, IntegerUnderflow, AccessControl, TxOrigin, DelegateCall, SelfDestruct, Frontrunning, FlashLoan, OracleManipulation}
+
 \* CEIPhase (matches Coq: Inductive CEIPhase)
 CONSTANTS Checks, Effects, Interactions
+
+CEIPhaseSet == {Checks, Effects, Interactions}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* ReentrancyGuard (matches Coq: Record ReentrancyGuard)
 VARIABLES rg_mutex_lock, rg_cei_pattern, rg_pull_over_push
@@ -27,10 +34,12 @@ VARIABLES dc_storage_collision_check, dc_initialization_check, dc_selector_clash
 \* FlashLoanDefense (matches Coq: Record FlashLoanDefense)
 VARIABLES fl_oracle_checks, fl_time_weighted_price, fl_multiple_oracles
 
-\* SmartContractSecurity (matches Coq: Record SmartContractSecurity)
-VARIABLES sc_reentrancy, sc_integer, sc_access, sc_delegate, sc_flash
+vars == <<rg_mutex_lock, rg_cei_pattern, rg_pull_over_push, is_overflow_check, is_underflow_check, is_safe_math, ac_owner_only, ac_role_based, ac_no_tx_origin, ac_multi_sig, dc_storage_collision_check, dc_initialization_check, dc_selector_clashing_check, fl_oracle_checks, fl_time_weighted_price, fl_multiple_oracles>>
 
-\* Type invariant
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
   /\ rg_mutex_lock \in BOOLEAN
   /\ rg_cei_pattern \in BOOLEAN
@@ -48,184 +57,222 @@ TypeOK ==
   /\ fl_oracle_checks \in BOOLEAN
   /\ fl_time_weighted_price \in BOOLEAN
   /\ fl_multiple_oracles \in BOOLEAN
-  /\ sc_reentrancy \in BOOLEAN
-  /\ sc_integer \in BOOLEAN
-  /\ sc_access \in BOOLEAN
-  /\ sc_delegate \in BOOLEAN
-  /\ sc_flash \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ rg_mutex_lock = TRUE
-  /\ rg_cei_pattern = TRUE
-  /\ rg_pull_over_push = TRUE
-  /\ is_overflow_check = TRUE
-  /\ is_underflow_check = TRUE
-  /\ is_safe_math = TRUE
-  /\ ac_owner_only = TRUE
-  /\ ac_role_based = TRUE
-  /\ ac_no_tx_origin = TRUE
-  /\ ac_multi_sig = TRUE
-  /\ dc_storage_collision_check = TRUE
-  /\ dc_initialization_check = TRUE
-  /\ dc_selector_clashing_check = TRUE
-  /\ fl_oracle_checks = TRUE
-  /\ fl_time_weighted_price = TRUE
-  /\ fl_multiple_oracles = TRUE
-  /\ sc_reentrancy = TRUE
-  /\ sc_integer = TRUE
-  /\ sc_access = TRUE
-  /\ sc_delegate = TRUE
-  /\ sc_flash = TRUE
+  /\ rg_mutex_lock = FALSE
+  /\ rg_cei_pattern = FALSE
+  /\ rg_pull_over_push = FALSE
+  /\ is_overflow_check = FALSE
+  /\ is_underflow_check = FALSE
+  /\ is_safe_math = FALSE
+  /\ ac_owner_only = FALSE
+  /\ ac_role_based = FALSE
+  /\ ac_no_tx_origin = FALSE
+  /\ ac_multi_sig = FALSE
+  /\ dc_storage_collision_check = FALSE
+  /\ dc_initialization_check = FALSE
+  /\ dc_selector_clashing_check = FALSE
+  /\ fl_oracle_checks = FALSE
+  /\ fl_time_weighted_price = FALSE
+  /\ fl_multiple_oracles = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* reentrancy_protected (matches Coq: Definition reentrancy_protected)
-reentrancy_protected(r) == TRUE
+reentrancy_protected(r) ==
+  rg_mutex_lock /\ rg_cei_pattern /\ rg_pull_over_push
 
 \* integer_safe (matches Coq: Definition integer_safe)
-integer_safe(i) == TRUE
+integer_safe(i) ==
+  is_overflow_check /\ is_underflow_check /\ is_safe_math
 
 \* access_controlled (matches Coq: Definition access_controlled)
-access_controlled(a) == TRUE
+access_controlled(a) ==
+  ac_owner_only /\ ac_role_based /\ ac_no_tx_origin /\ ac_multi_sig
 
 \* delegate_safe (matches Coq: Definition delegate_safe)
-delegate_safe(d) == TRUE
+delegate_safe(d) ==
+  dc_storage_collision_check /\ dc_initialization_check /\ dc_selector_clashing_check
 
 \* flash_defended (matches Coq: Definition flash_defended)
-flash_defended(f) == TRUE
+flash_defended(f) ==
+  fl_oracle_checks /\ fl_time_weighted_price /\ fl_multiple_oracles
 
 \* fully_secure_contract (matches Coq: Definition fully_secure_contract)
-fully_secure_contract(s) == TRUE
+fully_secure_contract(s) ==
+  reentrancy_protected (sc_reentrancy s) /\ integer_safe (sc_integer s) /\ access_controlled (sc_access s) /\ delegate_safe (sc_delegate s) /\ flash_defended (sc_flash s)
 
 \* riina_reentrancy (matches Coq: Definition riina_reentrancy)
-riina_reentrancy == TRUE
+riina_reentrancy ==
+  0
 
 \* riina_integer (matches Coq: Definition riina_integer)
-riina_integer == TRUE
+riina_integer ==
+  0
 
 \* riina_access (matches Coq: Definition riina_access)
-riina_access == TRUE
+riina_access ==
+  0
 
 \* riina_delegate (matches Coq: Definition riina_delegate)
-riina_delegate == TRUE
+riina_delegate ==
+  0
 
 \* riina_flash (matches Coq: Definition riina_flash)
-riina_flash == TRUE
+riina_flash ==
+  0
 
 \* riina_contract_security (matches Coq: Definition riina_contract_security)
-riina_contract_security == TRUE
+riina_contract_security ==
+  0
 
-\* andb_true_iff (matches Coq: Lemma andb_true_iff)
-THEOREM andb_true_iff == Init => TypeOK
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* SC_001_reentrancy_protected (matches Coq: Theorem SC_001_reentrancy_protected)
-THEOREM SC_001_reentrancy_protected == Init => TypeOK
+UpdateReentrancyGuard ==
+  /\ rg_mutex_lock' \in BOOLEAN
+  /\ rg_cei_pattern' \in BOOLEAN
+  /\ rg_pull_over_push' \in BOOLEAN
+  /\ UNCHANGED <<is_overflow_check, is_underflow_check, is_safe_math, ac_owner_only, ac_role_based, ac_no_tx_origin, ac_multi_sig, dc_storage_collision_check, dc_initialization_check, dc_selector_clashing_check, fl_oracle_checks, fl_time_weighted_price, fl_multiple_oracles>>
 
-\* SC_002_mutex_required (matches Coq: Theorem SC_002_mutex_required)
-THEOREM SC_002_mutex_required == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* SC_003_cei_required (matches Coq: Theorem SC_003_cei_required)
-THEOREM SC_003_cei_required == Init => TypeOK
+Next == UpdateReentrancyGuard \/ ValidateState
 
-\* SC_004_pull_over_push (matches Coq: Theorem SC_004_pull_over_push)
-THEOREM SC_004_pull_over_push == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* SC_005_integer_safe (matches Coq: Theorem SC_005_integer_safe)
-THEOREM SC_005_integer_safe == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* SC_006_overflow_check (matches Coq: Theorem SC_006_overflow_check)
-THEOREM SC_006_overflow_check == Init => TypeOK
+\* andb_true_iff
+THEOREM andb_true_iff ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true < => a = true /\ b = true
 
-\* SC_007_underflow_check (matches Coq: Theorem SC_007_underflow_check)
-THEOREM SC_007_underflow_check == Init => TypeOK
+\* SC_001_reentrancy_protected
+THEOREM SC_001_reentrancy_protected ==
+  reentrancy_protected(riina_reentrancy) = TRUE
 
-\* SC_008_safe_math (matches Coq: Theorem SC_008_safe_math)
-THEOREM SC_008_safe_math == Init => TypeOK
+\* SC_002_mutex_required
+THEOREM SC_002_mutex_required ==
+  \A r \in Nat, ReentrancyGuard \in Nat :
+      reentrancy_protected(r) => rg_mutex_lock(r)
 
-\* SC_009_access_controlled (matches Coq: Theorem SC_009_access_controlled)
-THEOREM SC_009_access_controlled == Init => TypeOK
+\* SC_003_cei_required
+THEOREM SC_003_cei_required ==
+  \A r \in Nat, ReentrancyGuard \in Nat :
+      reentrancy_protected(r) => rg_cei_pattern(r)
 
-\* SC_010_owner_only (matches Coq: Theorem SC_010_owner_only)
-THEOREM SC_010_owner_only == Init => TypeOK
+\* SC_004_pull_over_push
+THEOREM SC_004_pull_over_push ==
+  \A r \in Nat, ReentrancyGuard \in Nat :
+      reentrancy_protected(r) => rg_pull_over_push(r)
 
-\* SC_011_no_tx_origin (matches Coq: Theorem SC_011_no_tx_origin)
-THEOREM SC_011_no_tx_origin == Init => TypeOK
+\* SC_005_integer_safe
+THEOREM SC_005_integer_safe ==
+  integer_safe(riina_integer) = TRUE
 
-\* SC_012_multi_sig (matches Coq: Theorem SC_012_multi_sig)
-THEOREM SC_012_multi_sig == Init => TypeOK
+\* SC_006_overflow_check
+THEOREM SC_006_overflow_check ==
+  \A i \in Nat, IntegerSafety \in Nat :
+      integer_safe(i) => is_overflow_check(i)
 
-\* SC_013_delegate_safe (matches Coq: Theorem SC_013_delegate_safe)
-THEOREM SC_013_delegate_safe == Init => TypeOK
+\* SC_007_underflow_check
+THEOREM SC_007_underflow_check ==
+  \A i \in Nat, IntegerSafety \in Nat :
+      integer_safe(i) => is_underflow_check(i)
 
-\* SC_014_storage_collision (matches Coq: Theorem SC_014_storage_collision)
-THEOREM SC_014_storage_collision == Init => TypeOK
+\* SC_008_safe_math
+THEOREM SC_008_safe_math ==
+  \A i \in Nat, IntegerSafety \in Nat :
+      integer_safe(i) => is_safe_math(i)
 
-\* SC_015_init_check (matches Coq: Theorem SC_015_init_check)
-THEOREM SC_015_init_check == Init => TypeOK
+\* SC_009_access_controlled
+THEOREM SC_009_access_controlled ==
+  access_controlled(riina_access) = TRUE
 
-\* SC_016_selector_clash (matches Coq: Theorem SC_016_selector_clash)
-THEOREM SC_016_selector_clash == Init => TypeOK
+\* SC_010_owner_only
+THEOREM SC_010_owner_only ==
+  \A a \in Nat, AccessControlPolicy \in Nat :
+      access_controlled(a) => ac_owner_only(a)
 
-\* SC_017_flash_defended (matches Coq: Theorem SC_017_flash_defended)
-THEOREM SC_017_flash_defended == Init => TypeOK
+\* SC_011_no_tx_origin
+THEOREM SC_011_no_tx_origin ==
+  \A a \in Nat, AccessControlPolicy \in Nat :
+      access_controlled(a) => ac_no_tx_origin(a)
 
-\* SC_018_oracle_checks (matches Coq: Theorem SC_018_oracle_checks)
-THEOREM SC_018_oracle_checks == Init => TypeOK
+\* SC_012_multi_sig
+THEOREM SC_012_multi_sig ==
+  \A a \in Nat, AccessControlPolicy \in Nat :
+      access_controlled(a) => ac_multi_sig(a)
 
-\* SC_019_twap (matches Coq: Theorem SC_019_twap)
-THEOREM SC_019_twap == Init => TypeOK
+\* SC_013_delegate_safe
+THEOREM SC_013_delegate_safe ==
+  delegate_safe(riina_delegate) = TRUE
 
-\* SC_020_multiple_oracles (matches Coq: Theorem SC_020_multiple_oracles)
-THEOREM SC_020_multiple_oracles == Init => TypeOK
+\* SC_014_storage_collision
+THEOREM SC_014_storage_collision ==
+  \A d \in Nat, DelegateCallSafety \in Nat :
+      delegate_safe(d) => dc_storage_collision_check(d)
 
-\* SC_021_riina_fully_secure (matches Coq: Theorem SC_021_riina_fully_secure)
-THEOREM SC_021_riina_fully_secure == Init => TypeOK
+\* SC_015_init_check
+THEOREM SC_015_init_check ==
+  \A d \in Nat, DelegateCallSafety \in Nat :
+      delegate_safe(d) => dc_initialization_check(d)
 
-\* SC_022_full_implies_reentrancy (matches Coq: Theorem SC_022_full_implies_reentrancy)
-THEOREM SC_022_full_implies_reentrancy == Init => TypeOK
+\* SC_016_selector_clash
+THEOREM SC_016_selector_clash ==
+  \A d \in Nat, DelegateCallSafety \in Nat :
+      delegate_safe(d) => dc_selector_clashing_check(d)
 
-\* SC_023_full_implies_integer (matches Coq: Theorem SC_023_full_implies_integer)
-THEOREM SC_023_full_implies_integer == Init => TypeOK
+\* SC_017_flash_defended
+THEOREM SC_017_flash_defended ==
+  flash_defended(riina_flash) = TRUE
 
-\* SC_024_full_implies_access (matches Coq: Theorem SC_024_full_implies_access)
-THEOREM SC_024_full_implies_access == Init => TypeOK
+\* SC_018_oracle_checks
+THEOREM SC_018_oracle_checks ==
+  \A f \in Nat, FlashLoanDefense \in Nat :
+      flash_defended(f) => fl_oracle_checks(f)
 
-\* SC_025_full_implies_delegate (matches Coq: Theorem SC_025_full_implies_delegate)
-THEOREM SC_025_full_implies_delegate == Init => TypeOK
+\* SC_019_twap
+THEOREM SC_019_twap ==
+  \A f \in Nat, FlashLoanDefense \in Nat :
+      flash_defended(f) => fl_time_weighted_price(f)
 
-\* SC_026_full_implies_flash (matches Coq: Theorem SC_026_full_implies_flash)
-THEOREM SC_026_full_implies_flash == Init => TypeOK
+\* SC_020_multiple_oracles
+THEOREM SC_020_multiple_oracles ==
+  \A f \in Nat, FlashLoanDefense \in Nat :
+      flash_defended(f) => fl_multiple_oracles(f)
 
-\* SC_027_riina_no_reentrancy (matches Coq: Theorem SC_027_riina_no_reentrancy)
-THEOREM SC_027_riina_no_reentrancy == Init => TypeOK
+\* SC_021_riina_fully_secure
+THEOREM SC_021_riina_fully_secure ==
+  fully_secure_contract(riina_contract_security) = TRUE
 
-\* SC_028_riina_overflow (matches Coq: Theorem SC_028_riina_overflow)
-THEOREM SC_028_riina_overflow == Init => TypeOK
+\* SC_022_full_implies_reentrancy
+THEOREM SC_022_full_implies_reentrancy ==
+  \A s \in Nat, SmartContractSecurity \in Nat :
+      fully_secure_contract(s) => reentrancy_protected (sc_reentrancy s) = true
 
-\* SC_029_riina_no_txorigin (matches Coq: Theorem SC_029_riina_no_txorigin)
-THEOREM SC_029_riina_no_txorigin == Init => TypeOK
+\* SC_023_full_implies_integer
+THEOREM SC_023_full_implies_integer ==
+  \A s \in Nat, SmartContractSecurity \in Nat :
+      fully_secure_contract(s) => integer_safe (sc_integer s) = true
 
-\* SC_030_full_implies_mutex (matches Coq: Theorem SC_030_full_implies_mutex)
-THEOREM SC_030_full_implies_mutex == Init => TypeOK
+\* SC_024_full_implies_access
+THEOREM SC_024_full_implies_access ==
+  \A s \in Nat, SmartContractSecurity \in Nat :
+      fully_secure_contract(s) => access_controlled (sc_access s) = true
 
-\* SC_031_full_implies_overflow (matches Coq: Theorem SC_031_full_implies_overflow)
-THEOREM SC_031_full_implies_overflow == Init => TypeOK
-
-\* SC_032_full_implies_no_txorigin (matches Coq: Theorem SC_032_full_implies_no_txorigin)
-THEOREM SC_032_full_implies_no_txorigin == Init => TypeOK
-
-\* SC_033_full_implies_oracle (matches Coq: Theorem SC_033_full_implies_oracle)
-THEOREM SC_033_full_implies_oracle == Init => TypeOK
-
-\* SC_034_full_implies_cei (matches Coq: Theorem SC_034_full_implies_cei)
-THEOREM SC_034_full_implies_cei == Init => TypeOK
-
-\* SC_035_complete_security (matches Coq: Theorem SC_035_complete_security)
-THEOREM SC_035_complete_security == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<rg_mutex_lock, rg_cei_pattern, rg_pull_over_push, is_overflow_check, is_underflow_check, is_safe_math, ac_owner_only, ac_role_based, ac_no_tx_origin, ac_multi_sig, dc_storage_collision_check, dc_initialization_check, dc_selector_clashing_check, fl_oracle_checks, fl_time_weighted_price, fl_multiple_oracles, sc_reentrancy, sc_integer, sc_access, sc_delegate, sc_flash>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<rg_mutex_lock, rg_cei_pattern, rg_pull_over_push, is_overflow_check, is_underflow_check, is_safe_math, ac_owner_only, ac_role_based, ac_no_tx_origin, ac_multi_sig, dc_storage_collision_check, dc_initialization_check, dc_selector_clashing_check, fl_oracle_checks, fl_time_weighted_price, fl_multiple_oracles, sc_reentrancy, sc_integer, sc_access, sc_delegate, sc_flash>>
+\* 11 additional theorems proven in Coq source
 
 ====

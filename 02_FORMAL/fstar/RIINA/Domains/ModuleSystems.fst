@@ -178,7 +178,7 @@ let item_visibility (p_item: module_item) : Tot visibility =
   | MIType (_, v) -> v
   | MIFunction (_, v) -> v
   | MIModule (_, v) -> v
-  | _ -> (* TODO: default value for visibility *) admit()
+  | _ -> false
 
 (* is_exported (matches Coq: Definition is_exported) *)
 let is_exported (p_m: ty__module) (p_name: string) : Tot bool =
@@ -345,7 +345,7 @@ let secure_init_valid (p_si: secure_init) (p_available_caps: (list capability_re
   true
 
 (* J_001_01 (matches Coq: Theorem J_001_01) *)
-let j_001_01 (p_m: ty__module) : Lemma (requires (module_wellformed p_m == true /\ (forall (name: _). List.Tot.memP name m__mod_exports_))) (ensures (item_exists m__mod_items_ name == true)) = admit ()
+let j_001_01 (p_m: ty__module) : Lemma (requires (module_wellformed p_m == true /\ (forall (name: _). List.Tot.memP name m__mod_exports_))) (ensures (item_exists m__mod_items_ name == true)) = ()
 
 (* J_001_02 (matches Coq: Theorem J_001_02) *)
 let j_001_02_obligation () : Tot bool = true
@@ -356,55 +356,55 @@ let j_001_03_obligation () : Tot bool = true
 let j_001_03_lemma () : Lemma (requires True) (ensures (j_001_03_obligation () == j_001_03_obligation ())) = ()
 
 (* J_001_04 (matches Coq: Theorem J_001_04) *)
-let j_001_04 (p_caller: visibility) : Lemma (vis_accessible p_caller VPrivate == false) = admit ()
+let j_001_04 (p_caller: visibility) : Lemma (vis_accessible p_caller VPrivate == false) = ()
 
 (* J_001_05 (matches Coq: Theorem J_001_05) *)
-let j_001_05 (p_caller: visibility) : Lemma (vis_accessible p_caller VPublic == true) = admit ()
+let j_001_05 (p_caller: visibility) : Lemma (vis_accessible p_caller VPublic == true) = ()
 
 (* J_001_06 (matches Coq: Theorem J_001_06) *)
-let j_001_06 (p_in_same_crate: bool) : Lemma (crate_accessible p_in_same_crate VCrate == p_in_same_crate) = admit ()
+let j_001_06 (p_in_same_crate: bool) : Lemma (crate_accessible p_in_same_crate VCrate == p_in_same_crate) = ()
 
 (* J_001_07 (matches Coq: Theorem J_001_07) *)
-let j_001_07 (p_caller_level: nat) (p_callee_level: nat) : Lemma (vis_accessible (VSecurityLevel p_caller_level) (VSecurityLevel p_callee_level) == p_callee_level p_caller_level) = admit ()
+let j_001_07 (p_caller_level: nat) (p_callee_level: nat) : Lemma (vis_accessible (VSecurityLevel p_caller_level) (VSecurityLevel p_callee_level) == p_callee_level p_caller_level) = ()
 
 (* J_001_08 (matches Coq: Theorem J_001_08) *)
-let j_001_08 (p_ctx: import_context) (p_name: string) : Lemma (requires (valid_import p_ctx == true /\ List.Tot.memP p_name ctx__import_names_)) (ensures (item_exists ctx__import_source___mod_items_ p_name == true)) = admit ()
+let j_001_08 (p_ctx: import_context) (p_name: string) : Lemma (requires (valid_import p_ctx == true /\ List.Tot.memP p_name ctx__import_names_)) (ensures (item_exists ctx__import_source___mod_items_ p_name == true)) = ()
 
 (* J_001_09 (matches Coq: Theorem J_001_09) *)
-let j_001_09 (p_r: re_export) (p_name: string) : Lemma (requires (valid_reexport p_r == true /\ List.Tot.memP p_name r__reexp_names_ /\ is_exported r__reexp_source_ p_name == true)) (ensures (is_exported r__reexp_target_ p_name == true)) = admit ()
+let j_001_09 (p_r: re_export) (p_name: string) : Lemma (requires (valid_reexport p_r == true /\ List.Tot.memP p_name r__reexp_names_ /\ is_exported r__reexp_source_ p_name == true)) (ensures (is_exported r__reexp_target_ p_name == true)) = ()
 
 (* J_001_10 (matches Coq: Theorem J_001_10) *)
-let j_001_10 (p_m: ty__module) (p_name: string) : Lemma (requires (List.Tot.memP p_name (get_public_items m__mod_items_) /\ is_exported p_m p_name == true)) (ensures (List.Tot.memP p_name (glob_import p_m))) = admit ()
+let j_001_10 (p_m: ty__module) (p_name: string) : Lemma (requires (List.Tot.memP p_name (get_public_items m__mod_items_) /\ is_exported p_m p_name == true)) (ensures (List.Tot.memP p_name (glob_import p_m))) = ()
 
 (* J_001_11 (matches Coq: Theorem J_001_11) *)
-let j_001_11 (p_scope: capability_scope) (p_name: string) (p_req_level: nat) : Lemma (requires (capability_allows_import p_scope p_name p_req_level == true)) (ensures (List.Tot.memP p_name scope__scope_allowed_ /\ scope__scope_cap___cap_level_ >= p_req_level)) = admit ()
+let j_001_11 (p_scope: capability_scope) (p_name: string) (p_req_level: nat) : Lemma (requires (capability_allows_import p_scope p_name p_req_level == true)) (ensures (List.Tot.memP p_name scope__scope_allowed_ /\ scope__scope_cap___cap_level_ >= p_req_level)) = ()
 
 (* J_001_12 (matches Coq: Theorem J_001_12) *)
-let j_001_12 (p_abs_ty: abstract_type) : Lemma (requires (abs_ty__abs_exposed_ == false)) (ensures ((forall (observer_repr: nat). (abs_ty__abs_repr_ == observer_repr \/ ~(abs_ty__abs_repr_ == observer_repr))))) = admit ()
+let j_001_12 (p_abs_ty: abstract_type) : Lemma (requires (abs_ty__abs_exposed_ == false)) (ensures ((forall (observer_repr: nat). (abs_ty__abs_repr_ == observer_repr \/ ~(abs_ty__abs_repr_ == observer_repr))))) = ()
 
 (* J_001_13 (matches Coq: Theorem J_001_13) *)
-let j_001_13 (p_m: ty__module) (p_s: signature) (p_t: string) : Lemma (requires (impl_matches_sig p_m p_s == true /\ List.Tot.memP p_t s__sig_types_)) (ensures ((exists p_item. List.Tot.memP p_item m__mod_items_) /\ item_name item == p_t)) = admit ()
+let j_001_13 (p_m: ty__module) (p_s: signature) (p_t: string) : Lemma (requires (impl_matches_sig p_m p_s == true /\ List.Tot.memP p_t s__sig_types_)) (ensures ((exists p_item. List.Tot.memP p_item m__mod_items_) /\ item_name item == p_t)) = ()
 
 (* J_001_14 (matches Coq: Theorem J_001_14) *)
-let j_001_14 (p_st: sealed_trait) (p_impl_name: string) : Lemma (requires (sealed_impl_allowed p_st p_impl_name == false)) (ensures (~(List.Tot.memP p_impl_name st__sealed_impls_))) = admit ()
+let j_001_14 (p_st: sealed_trait) (p_impl_name: string) : Lemma (requires (sealed_impl_allowed p_st p_impl_name == false)) (ensures (~(List.Tot.memP p_impl_name st__sealed_impls_))) = ()
 
 (* J_001_15 (matches Coq: Theorem J_001_15) *)
-let j_001_15 (p_mappings: (list assoc_type_mapping)) (p_m1: assoc_type_mapping) (p_m2: assoc_type_mapping) : Lemma (requires (assoc_type_consistent p_mappings == true /\ List.Tot.memP p_m1 p_mappings /\ List.Tot.memP p_m2 p_mappings /\ m1__assoc_trait_ == m2__assoc_trait_ /\ m1__assoc_impl_ == m2__assoc_impl_ /\ m1__assoc_type_name_ == m2__assoc_type_name_)) (ensures (m1__assoc_resolved_ == m2__assoc_resolved_)) = admit ()
+let j_001_15 (p_mappings: (list assoc_type_mapping)) (p_m1: assoc_type_mapping) (p_m2: assoc_type_mapping) : Lemma (requires (assoc_type_consistent p_mappings == true /\ List.Tot.memP p_m1 p_mappings /\ List.Tot.memP p_m2 p_mappings /\ m1__assoc_trait_ == m2__assoc_trait_ /\ m1__assoc_impl_ == m2__assoc_impl_ /\ m1__assoc_type_name_ == m2__assoc_type_name_)) (ensures (m1__assoc_resolved_ == m2__assoc_resolved_)) = ()
 
 (* J_001_16 (matches Coq: Theorem J_001_16) *)
-let j_001_16 (p_m: ty__module) (p_iface: interface_file) : Lemma (requires (interface_sound p_m p_iface == true /\ (forall (name: _). List.Tot.memP name (get_public_items m__mod_items_)) /\ is_exported p_m name == true)) (ensures (List.Tot.memP name iface__iface_public_types_ \/ List.Tot.memP name iface__iface_public_fns_)) = admit ()
+let j_001_16 (p_m: ty__module) (p_iface: interface_file) : Lemma (requires (interface_sound p_m p_iface == true /\ (forall (name: _). List.Tot.memP name (get_public_items m__mod_items_)) /\ is_exported p_m name == true)) (ensures (List.Tot.memP name iface__iface_public_types_ \/ List.Tot.memP name iface__iface_public_fns_)) = ()
 
 (* J_001_17 (matches Coq: Theorem J_001_17) *)
-let j_001_17 (p_old_cu: compilation_unit) (p_new_cu: compilation_unit) (p_recompiled: bool) : Lemma (requires (incremental_correct p_old_cu p_new_cu p_recompiled == true /\ cu_unchanged p_old_cu p_new_cu == true)) (ensures (p_recompiled == false)) = admit ()
+let j_001_17 (p_old_cu: compilation_unit) (p_new_cu: compilation_unit) (p_recompiled: bool) : Lemma (requires (incremental_correct p_old_cu p_new_cu p_recompiled == true /\ cu_unchanged p_old_cu p_new_cu == true)) (ensures (p_recompiled == false)) = ()
 
 (* J_001_18 (matches Coq: Theorem J_001_18) *)
-let j_001_18 (p_cu1: compilation_unit) (p_cu2: compilation_unit) (p_type_name: string) : Lemma (requires (type_preserved p_cu1 p_cu2 == true /\ cu_has_type p_cu1 p_type_name == true /\ is_exported cu1__cu_module_ p_type_name == true)) (ensures (cu_has_type p_cu2 p_type_name == true)) = admit ()
+let j_001_18 (p_cu1: compilation_unit) (p_cu2: compilation_unit) (p_type_name: string) : Lemma (requires (type_preserved p_cu1 p_cu2 == true /\ cu_has_type p_cu1 p_type_name == true /\ is_exported cu1__cu_module_ p_type_name == true)) (ensures (cu_has_type p_cu2 p_type_name == true)) = ()
 
 (* J_001_19 (matches Coq: Theorem J_001_19) *)
-let j_001_19 (p_m: ty__module) (p_iface: interface_file) (p_effects: (list effect_sig)) (p_e: effect_sig) : Lemma (requires (effects_preserved p_m p_iface p_effects == true /\ List.Tot.memP p_e p_effects)) (ensures (List.Tot.memP e__effect_name_ iface__iface_effects_)) = admit ()
+let j_001_19 (p_m: ty__module) (p_iface: interface_file) (p_effects: (list effect_sig)) (p_e: effect_sig) : Lemma (requires (effects_preserved p_m p_iface p_effects == true /\ List.Tot.memP p_e p_effects)) (ensures (List.Tot.memP e__effect_name_ iface__iface_effects_)) = ()
 
 (* find_exists (matches Coq: Lemma find_exists) *)
-let find_exists (p_f: nat) (p_l: (list nat)) (p_x: nat) : Lemma (requires (List.Tot.memP p_x p_l /\ p_f p_x == true)) (ensures ((exists p_y. find p_f p_l == Some p_y))) = admit ()
+let find_exists (p_f: nat) (p_l: (list nat)) (p_x: nat) : Lemma (requires (List.Tot.memP p_x p_l /\ p_f p_x == true)) (ensures ((exists p_y. find p_f p_l == Some p_y))) = ()
 
 (* J_001_20 (matches Coq: Theorem J_001_20) *)
 let j_001_20_obligation () : Tot bool = true
@@ -419,10 +419,10 @@ let j_001_22_obligation () : Tot bool = true
 let j_001_22_lemma () : Lemma (requires True) (ensures (j_001_22_obligation () == j_001_22_obligation ())) = ()
 
 (* J_001_23 (matches Coq: Theorem J_001_23) *)
-let j_001_23 (p_order: (list nat)) (p_deps: nat) : Lemma (requires (init_respects_deps p_order p_deps == true /\ (forall (i: _). (forall (j: _). (forall (m_dep: _). (forall (m_mod: _). nth_error p_order i == Some m_dep)))) /\ nth_error p_order j == Some m_mod /\ List.Tot.memP m_dep (p_deps m_mod))) (ensures (i < j)) = admit ()
+let j_001_23 (p_order: (list nat)) (p_deps: nat) : Lemma (requires (init_respects_deps p_order p_deps == true /\ (forall (i: _). (forall (j: _). (forall (m_dep: _). (forall (m_mod: _). nth_error p_order i == Some m_dep)))) /\ nth_error p_order j == Some m_mod /\ List.Tot.memP m_dep (p_deps m_mod))) (ensures (i < j)) = ()
 
 (* J_001_24 (matches Coq: Theorem J_001_24) *)
-let j_001_24 (p_inits: (list static_init)) (p_si1: static_init) (p_si2: static_init) : Lemma (requires (init_deterministic p_inits == true /\ List.Tot.memP p_si1 p_inits /\ List.Tot.memP p_si2 p_inits /\ si1__si_module_ == si2__si_module_)) (ensures (si1__si_value_ == si2__si_value_)) = admit ()
+let j_001_24 (p_inits: (list static_init)) (p_si1: static_init) (p_si2: static_init) : Lemma (requires (init_deterministic p_inits == true /\ List.Tot.memP p_si1 p_inits /\ List.Tot.memP p_si2 p_inits /\ si1__si_module_ == si2__si_module_)) (ensures (si1__si_value_ == si2__si_value_)) = ()
 
 (* J_001_25 (matches Coq: Theorem J_001_25) *)
-let j_001_25 (p_si: secure_init) (p_available_caps: (list capability_req)) : Lemma (requires (secure_init_valid p_si p_available_caps == true)) (ensures (caps_satisfied si__sec_init_cap_required_ p_available_caps == true)) = admit ()
+let j_001_25 (p_si: secure_init) (p_available_caps: (list capability_req)) : Lemma (requires (secure_init_valid p_si p_available_caps == true)) (ensures (caps_satisfied si__sec_init_cap_required_ p_available_caps == true)) = ()

@@ -1,16 +1,23 @@
 ---- MODULE NetworkDriver ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/security_foundation/NetworkDriver.v (21 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/security_foundation/NetworkDriver.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* AppId (matches Coq: Inductive AppId)
 CONSTANTS App
 
+AppIdSet == {App}
+
 \* SocketId (matches Coq: Inductive SocketId)
 CONSTANTS SockId
+
+SocketIdSet == {SockId}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* Application (matches Coq: Record Application)
 VARIABLES app_id, app_network_perm
@@ -27,119 +34,184 @@ VARIABLES fw_src_port, fw_dst_port, fw_allowed
 \* ExtNetworkState (matches Coq: Record ExtNetworkState)
 VARIABLES ext_sockets, ext_firewall_enabled, ext_firewall_rules
 
-\* Type invariant
+vars == <<app_id, app_network_perm, socket_id, socket_owner, socket_port, socket_bound, all_sockets, firewall_enabled, fw_src_port, fw_dst_port, fw_allowed, ext_sockets, ext_firewall_enabled, ext_firewall_rules>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
-  /\ app_id \in BOOLEAN
+  /\ app_id \in AppIdSet
   /\ app_network_perm \in BOOLEAN
-  /\ socket_id \in BOOLEAN
-  /\ socket_owner \in BOOLEAN
-  /\ socket_port \in BOOLEAN
+  /\ socket_id \in SocketIdSet
+  /\ socket_owner \in AppIdSet
+  /\ socket_port \in Nat
   /\ socket_bound \in BOOLEAN
-  /\ all_sockets \in BOOLEAN
+  /\ all_sockets \in Seq(Nat)
   /\ firewall_enabled \in BOOLEAN
-  /\ fw_src_port \in BOOLEAN
-  /\ fw_dst_port \in BOOLEAN
+  /\ fw_src_port \in Nat
+  /\ fw_dst_port \in Nat
   /\ fw_allowed \in BOOLEAN
-  /\ ext_sockets \in BOOLEAN
+  /\ ext_sockets \in Seq(Nat)
   /\ ext_firewall_enabled \in BOOLEAN
-  /\ ext_firewall_rules \in BOOLEAN
+  /\ ext_firewall_rules \in Seq(Nat)
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ app_id = TRUE
-  /\ app_network_perm = TRUE
-  /\ socket_id = TRUE
-  /\ socket_owner = TRUE
-  /\ socket_port = TRUE
-  /\ socket_bound = TRUE
-  /\ all_sockets = TRUE
-  /\ firewall_enabled = TRUE
-  /\ fw_src_port = TRUE
-  /\ fw_dst_port = TRUE
-  /\ fw_allowed = TRUE
-  /\ ext_sockets = TRUE
-  /\ ext_firewall_enabled = TRUE
-  /\ ext_firewall_rules = TRUE
+  /\ app_id = App
+  /\ app_network_perm = FALSE
+  /\ socket_id = SockId
+  /\ socket_owner = App
+  /\ socket_port = 0
+  /\ socket_bound = FALSE
+  /\ all_sockets = <<>>
+  /\ firewall_enabled = FALSE
+  /\ fw_src_port = 0
+  /\ fw_dst_port = 0
+  /\ fw_allowed = FALSE
+  /\ ext_sockets = <<>>
+  /\ ext_firewall_enabled = FALSE
+  /\ ext_firewall_rules = <<>>
 
-\* owns_socket (matches Coq: Definition owns_socket)
-owns_socket(app, sock) == TRUE
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* socket_usable (matches Coq: Definition socket_usable)
-socket_usable(sock) == TRUE
+socket_usable(sock) ==
+  sock >= 0
 
 \* has_network_permission (matches Coq: Definition has_network_permission)
-has_network_permission(app) == TRUE
+has_network_permission(app) ==
+  app_network_perm
 
-\* firewall_permits (matches Coq: Definition firewall_permits)
-firewall_permits(rules, src_port, dst_port) == TRUE
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* network_isolation (matches Coq: Theorem network_isolation)
-THEOREM network_isolation == Init => TypeOK
+UpdateApplication ==
+  /\ app_id' \in AppIdSet
+  /\ app_network_perm' \in BOOLEAN
+  /\ UNCHANGED <<socket_id, socket_owner, socket_port, socket_bound, all_sockets, firewall_enabled, fw_src_port, fw_dst_port, fw_allowed, ext_sockets, ext_firewall_enabled, ext_firewall_rules>>
 
-\* socket_ownership_exclusive (matches Coq: Theorem socket_ownership_exclusive)
-THEOREM socket_ownership_exclusive == Init => TypeOK
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* unbound_socket_not_usable (matches Coq: Theorem unbound_socket_not_usable)
-THEOREM unbound_socket_not_usable == Init => TypeOK
+Next == UpdateApplication \/ ValidateState
 
-\* send_requires_network_permission (matches Coq: Theorem send_requires_network_permission)
-THEOREM send_requires_network_permission == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* receive_requires_network_permission (matches Coq: Theorem receive_requires_network_permission)
-THEOREM receive_requires_network_permission == Init => TypeOK
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* no_perm_blocks_send (matches Coq: Theorem no_perm_blocks_send)
-THEOREM no_perm_blocks_send == Init => TypeOK
+\* network_isolation
+THEOREM network_isolation ==
+  \A app1 \in Nat, app2 \in Nat, socket \in Nat :
+      app_id app1 <> app_id app2 => ~ can_access_socket app2 socket
 
-\* no_perm_blocks_receive (matches Coq: Theorem no_perm_blocks_receive)
-THEOREM no_perm_blocks_receive == Init => TypeOK
+\* socket_ownership_exclusive
+THEOREM socket_ownership_exclusive ==
+  \A app1 \in Nat, app2 \in Nat, sock \in Nat :
+      owns_socket(app1, sock) => app_id app1 = app_id app2
 
-\* unbound_blocks_send (matches Coq: Theorem unbound_blocks_send)
-THEOREM unbound_blocks_send == Init => TypeOK
+\* unbound_socket_not_usable
+THEOREM unbound_socket_not_usable ==
+  \A sock \in Nat :
+      ~socket_bound(sock) => ~ socket_usable sock
 
-\* unbound_blocks_receive (matches Coq: Theorem unbound_blocks_receive)
-THEOREM unbound_blocks_receive == Init => TypeOK
+\* send_requires_network_permission
+THEOREM send_requires_network_permission ==
+  \A app \in Nat, sock \in Nat :
+      sends_data(app, sock) => has_network_permission(app)
 
-\* default_deny_firewall (matches Coq: Theorem default_deny_firewall)
-THEOREM default_deny_firewall == Init => TypeOK
+\* receive_requires_network_permission
+THEOREM receive_requires_network_permission ==
+  \A app \in Nat, sock \in Nat :
+      receives_data(app, sock) => has_network_permission(app)
 
-\* cross_app_socket_impossible (matches Coq: Theorem cross_app_socket_impossible)
-THEOREM cross_app_socket_impossible == Init => TypeOK
+\* no_perm_blocks_send
+THEOREM no_perm_blocks_send ==
+  \A app \in Nat, sock \in Nat :
+      ~app_network_perm(app) => ~ sends_data app sock
 
-\* cross_app_receive_impossible (matches Coq: Theorem cross_app_receive_impossible)
-THEOREM cross_app_receive_impossible == Init => TypeOK
+\* no_perm_blocks_receive
+THEOREM no_perm_blocks_receive ==
+  \A app \in Nat, sock \in Nat :
+      ~app_network_perm(app) => ~ receives_data app sock
 
-\* send_implies_bound (matches Coq: Theorem send_implies_bound)
-THEOREM send_implies_bound == Init => TypeOK
+\* unbound_blocks_send
+THEOREM unbound_blocks_send ==
+  \A app \in Nat, sock \in Nat :
+      ~socket_bound(sock) => ~ sends_data app sock
 
-\* receive_implies_bound (matches Coq: Theorem receive_implies_bound)
-THEOREM receive_implies_bound == Init => TypeOK
+\* unbound_blocks_receive
+THEOREM unbound_blocks_receive ==
+  \A app \in Nat, sock \in Nat :
+      ~socket_bound(sock) => ~ receives_data app sock
 
-\* socket_isolation_by_owner (matches Coq: Theorem socket_isolation_by_owner)
-THEOREM socket_isolation_by_owner == Init => TypeOK
+\* default_deny_firewall
+THEOREM default_deny_firewall ==
+  \A src_port \in Nat, dst_port \in Nat :
+      firewall_permits [] src_port dst_port = FALSE
 
-\* access_control_consistent (matches Coq: Theorem access_control_consistent)
-THEOREM access_control_consistent == Init => TypeOK
+\* cross_app_socket_impossible
+THEOREM cross_app_socket_impossible ==
+  \A app1 \in Nat, app2 \in Nat, sock \in Nat :
+      app_id app1 <> app_id app2 => ~ sends_data app2 sock
 
-\* network_perm_required_both_directions (matches Coq: Theorem network_perm_required_both_directions)
-THEOREM network_perm_required_both_directions == Init => TypeOK
+\* cross_app_receive_impossible
+THEOREM cross_app_receive_impossible ==
+  \A app1 \in Nat, app2 \in Nat, sock \in Nat :
+      app_id app1 <> app_id app2 => ~ receives_data app2 sock
 
-\* full_network_isolation (matches Coq: Theorem full_network_isolation)
-THEOREM full_network_isolation == Init => TypeOK
+\* send_implies_bound
+THEOREM send_implies_bound ==
+  \A app \in Nat, sock \in Nat :
+      sends_data(app, sock) => socket_usable(sock)
 
-\* bound_implies_usable (matches Coq: Theorem bound_implies_usable)
-THEOREM bound_implies_usable == Init => TypeOK
+\* receive_implies_bound
+THEOREM receive_implies_bound ==
+  \A app \in Nat, sock \in Nat :
+      receives_data(app, sock) => socket_usable(sock)
 
-\* firewall_protects (matches Coq: Theorem firewall_protects)
-THEOREM firewall_protects == Init => TypeOK
+\* socket_isolation_by_owner
+THEOREM socket_isolation_by_owner ==
+  \A app1 \in Nat, app2 \in Nat, sock1 \in Nat, sock2 \in Nat :
+      app_id app1 <> app_id app2 => socket_owner sock1 <> socket_owner sock2
 
-\* socket_port_nonneg (matches Coq: Theorem socket_port_nonneg)
-THEOREM socket_port_nonneg == Init => TypeOK
+\* access_control_consistent
+THEOREM access_control_consistent ==
+  \A app \in Nat, sock \in Nat :
+      can_access_socket(app, sock) => owns_socket(app, sock)
 
-\* Next-state relation
-Next == UNCHANGED <<app_id, app_network_perm, socket_id, socket_owner, socket_port, socket_bound, all_sockets, firewall_enabled, fw_src_port, fw_dst_port, fw_allowed, ext_sockets, ext_firewall_enabled, ext_firewall_rules>>
+\* network_perm_required_both_directions
+THEOREM network_perm_required_both_directions ==
+  \A app \in Nat, sock \in Nat :
+      sends_data app sock \/ receives_data app sock => has_network_permission(app)
 
-\* Specification
-Spec == Init /\ [][Next]_<<app_id, app_network_perm, socket_id, socket_owner, socket_port, socket_bound, all_sockets, firewall_enabled, fw_src_port, fw_dst_port, fw_allowed, ext_sockets, ext_firewall_enabled, ext_firewall_rules>>
+\* full_network_isolation
+THEOREM full_network_isolation ==
+  \A app \in Nat :
+      ~app_network_perm(app) => forall sock, ~ sends_data app sock /\ ~ receives_data app sock
+
+\* bound_implies_usable
+THEOREM bound_implies_usable ==
+  \A sock \in Nat :
+      socket_bound(sock) => socket_usable(sock)
+
+\* firewall_protects
+THEOREM firewall_protects ==
+  \A ns \in Nat :
+      firewall_enabled(ns) => firewall_enabled(ns)
+
+\* socket_port_nonneg
+THEOREM socket_port_nonneg ==
+  \A sock \in Nat :
+      socket_port sock > = 0
 
 ====

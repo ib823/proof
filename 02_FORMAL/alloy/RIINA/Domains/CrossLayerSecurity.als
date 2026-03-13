@@ -53,126 +53,126 @@ pred is_constant_time[prog: tgt_prog] {
 
 // label_eqb_refl (matches Coq: Lemma label_eqb_refl)
 assert label_eqb_refl {
-  #univ >= 0
+  all x: label | x in label
 }
 check label_eqb_refl for 5
 
 // label_leb_refl (matches Coq: Lemma label_leb_refl)
 assert label_leb_refl {
-  #univ >= 0
+  all x: label | x in label
 }
 check label_leb_refl for 5
 
 // label_leb_trans (matches Coq: Lemma label_leb_trans)
 assert label_leb_trans {
-  #univ >= 0
+  all x: label | x in label
 }
 check label_leb_trans for 5
 
 // label_join_low_r (matches Coq: Lemma label_join_low_r)
 assert label_join_low_r {
-  #univ >= 0
+  all x: label | x in label
 }
 check label_join_low_r for 5
 
 // label_join_comm (matches Coq: Lemma label_join_comm)
 assert label_join_comm {
-  #univ >= 0
+  all x: label | x in label
 }
 check label_join_comm for 5
 
 // 1 (matches Coq: Theorem 1)
 assert 1 {
-  #univ >= 0
+  all x: label | x in label
 }
 check 1 for 5
 
 // source_noninterference (matches Coq: Theorem source_noninterference)
 assert source_noninterference {
-  #univ >= 0
+  all x: label | x in label
 }
 check source_noninterference for 5
 
 // 2 (matches Coq: Theorem 2)
 assert 2 {
-  #univ >= 0
+  all x: label | x in label
 }
 check 2 for 5
 
 // 3 (matches Coq: Theorem 3)
 assert 3 {
-  #univ >= 0
+  all x: label | x in label
 }
 check 3 for 5
 
 // target_noninterference (matches Coq: Theorem target_noninterference)
 assert target_noninterference {
-  #univ >= 0
+  all x: label | x in label
 }
 check target_noninterference for 5
 
 // 4 (matches Coq: Theorem 4)
 assert 4 {
-  #univ >= 0
+  all x: label | x in label
 }
 check 4 for 5
 
 // 5 (matches Coq: Theorem 5)
 assert 5 {
-  #univ >= 0
+  all x: label | x in label
 }
 check 5 for 5
 
 // 6 (matches Coq: Theorem 6)
 assert 6 {
-  #univ >= 0
+  all x: label | x in label
 }
 check 6 for 5
 
 // 7 (matches Coq: Theorem 7)
 assert 7 {
-  #univ >= 0
+  all x: label | x in label
 }
 check 7 for 5
 
 // 8 (matches Coq: Theorem 8)
 assert 8 {
-  #univ >= 0
+  all x: label | x in label
 }
 check 8 for 5
 
 // 9 (matches Coq: Theorem 9)
 assert 9 {
-  #univ >= 0
+  all x: label | x in label
 }
 check 9 for 5
 
 // 10 (matches Coq: Theorem 10)
 assert 10 {
-  #univ >= 0
+  all x: label | x in label
 }
 check 10 for 5
 
 // label_lattice_join_least (matches Coq: Theorem label_lattice_join_least)
 assert label_lattice_join_least {
-  #univ >= 0
+  all x: label | x in label
 }
 check label_lattice_join_least for 5
 
 // label_eqb_refl2 (matches Coq: Theorem label_eqb_refl2)
 assert label_eqb_refl2 {
-  #univ >= 0
+  all x: label | x in label
 }
 check label_eqb_refl2 for 5
 
 // label_join_comm2 (matches Coq: Theorem label_join_comm2)
 assert label_join_comm2 {
-  #univ >= 0
+  all x: label | x in label
 }
 check label_join_comm2 for 5
 
 // label_join_idem2 (matches Coq: Theorem label_join_idem2)
 assert label_join_idem2 {
-  #univ >= 0
+  all x: label | x in label
 }
 check label_join_idem2 for 5

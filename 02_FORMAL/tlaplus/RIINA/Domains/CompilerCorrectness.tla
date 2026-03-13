@@ -1,22 +1,33 @@
 ---- MODULE CompilerCorrectness ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/CompilerCorrectness.v (78 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/CompilerCorrectness.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* ir_ty (matches Coq: Inductive ir_ty)
 CONSTANTS IR_TUnit, IR_TBool, IR_TInt, IR_TFn, IR_TProd, IR_TSum
 
+ir_tySet == {IR_TUnit, IR_TBool, IR_TInt, IR_TFn, IR_TProd, IR_TSum}
+
 \* ir_expr (matches Coq: Inductive ir_expr)
 CONSTANTS IR_Unit, IR_Bool, IR_Int, IR_Pair, IR_Fst, IR_Snd, IR_Inl, IR_Inr, IR_If
+
+ir_exprSet == {IR_Unit, IR_Bool, IR_Int, IR_Pair, IR_Fst, IR_Snd, IR_Inl, IR_Inr, IR_If}
 
 \* src_ty (matches Coq: Inductive src_ty)
 CONSTANTS Src_TUnit, Src_TBool, Src_TInt, Src_TProd, Src_TSum, Src_TFn
 
+src_tySet == {Src_TUnit, Src_TBool, Src_TInt, Src_TProd, Src_TSum, Src_TFn}
+
 \* src_expr (matches Coq: Inductive src_expr)
 CONSTANTS Src_Unit, Src_Bool, Src_Int, Src_Pair, Src_Fst, Src_Snd, Src_Inl, Src_Inr, Src_If
+
+src_exprSet == {Src_Unit, Src_Bool, Src_Int, Src_Pair, Src_Fst, Src_Snd, Src_Inl, Src_Inr, Src_If}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* ParsingPhase (matches Coq: Record ParsingPhase)
 VARIABLES pp_syntax_correct, pp_ast_well_formed, pp_error_recovery
@@ -33,7 +44,12 @@ VARIABLES cg_instruction_correct, cg_register_allocation, cg_calling_convention,
 \* CompilerConfig (matches Coq: Record CompilerConfig)
 VARIABLES cc_parsing, cc_typecheck, cc_optimization, cc_codegen
 
-\* Type invariant
+vars == <<pp_syntax_correct, pp_ast_well_formed, pp_error_recovery, tc_type_soundness, tc_inference_complete, tc_constraint_solving, op_semantics_preserved, op_termination_preserved, op_memory_safety_preserved, cg_instruction_correct, cg_register_allocation, cg_calling_convention, cg_stack_layout, cc_parsing, cc_typecheck, cc_optimization, cc_codegen>>
+
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
+
 TypeOK ==
   /\ pp_syntax_correct \in BOOLEAN
   /\ pp_ast_well_formed \in BOOLEAN
@@ -48,311 +64,244 @@ TypeOK ==
   /\ cg_register_allocation \in BOOLEAN
   /\ cg_calling_convention \in BOOLEAN
   /\ cg_stack_layout \in BOOLEAN
-  /\ cc_parsing \in BOOLEAN
-  /\ cc_typecheck \in BOOLEAN
-  /\ cc_optimization \in BOOLEAN
-  /\ cc_codegen \in BOOLEAN
+  /\ cc_parsing \in Nat
+  /\ cc_typecheck \in Nat
+  /\ cc_optimization \in Nat
+  /\ cc_codegen \in Nat
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ pp_syntax_correct = TRUE
-  /\ pp_ast_well_formed = TRUE
-  /\ pp_error_recovery = TRUE
-  /\ tc_type_soundness = TRUE
-  /\ tc_inference_complete = TRUE
-  /\ tc_constraint_solving = TRUE
-  /\ op_semantics_preserved = TRUE
-  /\ op_termination_preserved = TRUE
-  /\ op_memory_safety_preserved = TRUE
-  /\ cg_instruction_correct = TRUE
-  /\ cg_register_allocation = TRUE
-  /\ cg_calling_convention = TRUE
-  /\ cg_stack_layout = TRUE
-  /\ cc_parsing = TRUE
-  /\ cc_typecheck = TRUE
-  /\ cc_optimization = TRUE
-  /\ cc_codegen = TRUE
+  /\ pp_syntax_correct = FALSE
+  /\ pp_ast_well_formed = FALSE
+  /\ pp_error_recovery = FALSE
+  /\ tc_type_soundness = FALSE
+  /\ tc_inference_complete = FALSE
+  /\ tc_constraint_solving = FALSE
+  /\ op_semantics_preserved = FALSE
+  /\ op_termination_preserved = FALSE
+  /\ op_memory_safety_preserved = FALSE
+  /\ cg_instruction_correct = FALSE
+  /\ cg_register_allocation = FALSE
+  /\ cg_calling_convention = FALSE
+  /\ cg_stack_layout = FALSE
+  /\ cc_parsing = 0
+  /\ cc_typecheck = 0
+  /\ cc_optimization = 0
+  /\ cc_codegen = 0
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
 
 \* parsing_correct (matches Coq: Definition parsing_correct)
-parsing_correct(p) == TRUE
+parsing_correct(p) ==
+  pp_syntax_correct /\ pp_ast_well_formed /\ pp_error_recovery
 
 \* typecheck_sound (matches Coq: Definition typecheck_sound)
-typecheck_sound(t) == TRUE
+typecheck_sound(t) ==
+  tc_type_soundness /\ tc_inference_complete /\ tc_constraint_solving
 
 \* optimization_safe (matches Coq: Definition optimization_safe)
-optimization_safe(o) == TRUE
+optimization_safe(o) ==
+  op_semantics_preserved /\ op_termination_preserved /\ op_memory_safety_preserved
 
 \* codegen_correct (matches Coq: Definition codegen_correct)
-codegen_correct(c) == TRUE
+codegen_correct(c) ==
+  cg_instruction_correct /\ cg_register_allocation /\ cg_calling_convention /\ cg_stack_layout
 
 \* compiler_verified (matches Coq: Definition compiler_verified)
-compiler_verified(c) == TRUE
+compiler_verified(c) ==
+  parsing_correct (cc_parsing c) /\ typecheck_sound (cc_typecheck c) /\ optimization_safe (cc_optimization c) /\ codegen_correct (cc_codegen c)
 
 \* riina_parsing (matches Coq: Definition riina_parsing)
-riina_parsing == TRUE
+riina_parsing ==
+  0
 
 \* riina_typecheck (matches Coq: Definition riina_typecheck)
-riina_typecheck == TRUE
+riina_typecheck ==
+  0
 
 \* riina_optim (matches Coq: Definition riina_optim)
-riina_optim == TRUE
+riina_optim ==
+  0
 
 \* riina_codegen (matches Coq: Definition riina_codegen)
-riina_codegen == TRUE
+riina_codegen ==
+  0
 
 \* riina_compiler (matches Coq: Definition riina_compiler)
-riina_compiler == TRUE
+riina_compiler ==
+  0
 
 \* ir_equiv (matches Coq: Definition ir_equiv)
-ir_equiv(e1, e2) == TRUE
+ir_equiv(e2) ==
+  e2 >= 0
+
+\* parsing_correctness (matches Coq: Definition parsing_correctness)
+parsing_correctness ==
+  0
 
 \* compile_ty (matches Coq: Definition compile_ty)
-compile_ty(T) == TRUE
+compile_ty(T) ==
+    CASE T = Src_TUnit -> IR_TUnit
+      [] T = Src_TBool -> IR_TBool
+      [] T = Src_TInt -> IR_TInt
+      [] T = Src_TProd T1 T2 -> IR_TProd
+      [] T = Src_TSum T1 T2 -> IR_TSum
+      [] T = Src_TFn T1 T2 -> IR_TFn
 
 \* compile_expr (matches Coq: Definition compile_expr)
-compile_expr(e) == TRUE
-
-\* src_ir_equiv (matches Coq: Definition src_ir_equiv)
-src_ir_equiv(e_src, e_ir) == TRUE
-
-\* andb_true_iff (matches Coq: Lemma andb_true_iff)
-THEOREM andb_true_iff == Init => TypeOK
-
-\* CC_001 (matches Coq: Theorem CC_001)
-THEOREM CC_001 == Init => TypeOK
-
-\* CC_002 (matches Coq: Theorem CC_002)
-THEOREM CC_002 == Init => TypeOK
-
-\* CC_003 (matches Coq: Theorem CC_003)
-THEOREM CC_003 == Init => TypeOK
-
-\* CC_004 (matches Coq: Theorem CC_004)
-THEOREM CC_004 == Init => TypeOK
-
-\* CC_005 (matches Coq: Theorem CC_005)
-THEOREM CC_005 == Init => TypeOK
-
-\* CC_006 (matches Coq: Theorem CC_006)
-THEOREM CC_006 == Init => TypeOK
-
-\* CC_007 (matches Coq: Theorem CC_007)
-THEOREM CC_007 == Init => TypeOK
-
-\* CC_008 (matches Coq: Theorem CC_008)
-THEOREM CC_008 == Init => TypeOK
-
-\* CC_009 (matches Coq: Theorem CC_009)
-THEOREM CC_009 == Init => TypeOK
-
-\* CC_010 (matches Coq: Theorem CC_010)
-THEOREM CC_010 == Init => TypeOK
-
-\* CC_011 (matches Coq: Theorem CC_011)
-THEOREM CC_011 == Init => TypeOK
-
-\* CC_012 (matches Coq: Theorem CC_012)
-THEOREM CC_012 == Init => TypeOK
-
-\* CC_013 (matches Coq: Theorem CC_013)
-THEOREM CC_013 == Init => TypeOK
-
-\* CC_014 (matches Coq: Theorem CC_014)
-THEOREM CC_014 == Init => TypeOK
-
-\* CC_015 (matches Coq: Theorem CC_015)
-THEOREM CC_015 == Init => TypeOK
-
-\* CC_016 (matches Coq: Theorem CC_016)
-THEOREM CC_016 == Init => TypeOK
-
-\* CC_017 (matches Coq: Theorem CC_017)
-THEOREM CC_017 == Init => TypeOK
-
-\* CC_018 (matches Coq: Theorem CC_018)
-THEOREM CC_018 == Init => TypeOK
-
-\* CC_019 (matches Coq: Theorem CC_019)
-THEOREM CC_019 == Init => TypeOK
-
-\* CC_020 (matches Coq: Theorem CC_020)
-THEOREM CC_020 == Init => TypeOK
-
-\* CC_021 (matches Coq: Theorem CC_021)
-THEOREM CC_021 == Init => TypeOK
-
-\* CC_022 (matches Coq: Theorem CC_022)
-THEOREM CC_022 == Init => TypeOK
-
-\* CC_023 (matches Coq: Theorem CC_023)
-THEOREM CC_023 == Init => TypeOK
-
-\* CC_024 (matches Coq: Theorem CC_024)
-THEOREM CC_024 == Init => TypeOK
-
-\* CC_025 (matches Coq: Theorem CC_025)
-THEOREM CC_025 == Init => TypeOK
-
-\* CC_026 (matches Coq: Theorem CC_026)
-THEOREM CC_026 == Init => TypeOK
-
-\* CC_027 (matches Coq: Theorem CC_027)
-THEOREM CC_027 == Init => TypeOK
-
-\* CC_028 (matches Coq: Theorem CC_028)
-THEOREM CC_028 == Init => TypeOK
-
-\* CC_029 (matches Coq: Theorem CC_029)
-THEOREM CC_029 == Init => TypeOK
-
-\* CC_030_complete (matches Coq: Theorem CC_030_complete)
-THEOREM CC_030_complete == Init => TypeOK
-
-\* ir_value_not_step (matches Coq: Lemma ir_value_not_step)
-THEOREM ir_value_not_step == Init => TypeOK
-
-\* ir_preservation (matches Coq: Theorem ir_preservation)
-THEOREM ir_preservation == Init => TypeOK
-
-\* ir_multi_preservation (matches Coq: Theorem ir_multi_preservation)
-THEOREM ir_multi_preservation == Init => TypeOK
-
-\* ir_pair_value_not_step (matches Coq: Lemma ir_pair_value_not_step)
-THEOREM ir_pair_value_not_step == Init => TypeOK
-
-\* ir_bool_not_step (matches Coq: Lemma ir_bool_not_step)
-THEOREM ir_bool_not_step == Init => TypeOK
-
-\* ir_step_deterministic (matches Coq: Theorem ir_step_deterministic)
-THEOREM ir_step_deterministic == Init => TypeOK
-
-\* ir_progress (matches Coq: Theorem ir_progress)
-THEOREM ir_progress == Init => TypeOK
-
-\* ir_equiv_refl (matches Coq: Theorem ir_equiv_refl)
-THEOREM ir_equiv_refl == Init => TypeOK
-
-\* ir_equiv_sym (matches Coq: Theorem ir_equiv_sym)
-THEOREM ir_equiv_sym == Init => TypeOK
-
-\* ir_equiv_trans (matches Coq: Theorem ir_equiv_trans)
-THEOREM ir_equiv_trans == Init => TypeOK
-
-\* ir_multi_trans (matches Coq: Lemma ir_multi_trans)
-THEOREM ir_multi_trans == Init => TypeOK
-
-\* ir_multi_pair_cong1 (matches Coq: Lemma ir_multi_pair_cong1)
-THEOREM ir_multi_pair_cong1 == Init => TypeOK
-
-\* ir_multi_pair_cong2 (matches Coq: Lemma ir_multi_pair_cong2)
-THEOREM ir_multi_pair_cong2 == Init => TypeOK
-
-\* opt_if_true_sound (matches Coq: Theorem opt_if_true_sound)
-THEOREM opt_if_true_sound == Init => TypeOK
-
-\* opt_if_false_sound (matches Coq: Theorem opt_if_false_sound)
-THEOREM opt_if_false_sound == Init => TypeOK
-
-\* opt_fst_pair_sound (matches Coq: Theorem opt_fst_pair_sound)
-THEOREM opt_fst_pair_sound == Init => TypeOK
-
-\* opt_snd_pair_sound (matches Coq: Theorem opt_snd_pair_sound)
-THEOREM opt_snd_pair_sound == Init => TypeOK
-
-\* ir_value_normal (matches Coq: Theorem ir_value_normal)
-THEOREM ir_value_normal == Init => TypeOK
-
-\* ir_value_reduces_self (matches Coq: Theorem ir_value_reduces_self)
-THEOREM ir_value_reduces_self == Init => TypeOK
-
-\* equiv_preserves_typing (matches Coq: Theorem equiv_preserves_typing)
-THEOREM equiv_preserves_typing == Init => TypeOK
-
-\* src_value_not_step (matches Coq: Lemma src_value_not_step)
-THEOREM src_value_not_step == Init => TypeOK
-
-\* src_step_deterministic (matches Coq: Theorem src_step_deterministic)
-THEOREM src_step_deterministic == Init => TypeOK
-
-\* src_preservation (matches Coq: Theorem src_preservation)
-THEOREM src_preservation == Init => TypeOK
-
-\* src_progress (matches Coq: Theorem src_progress)
-THEOREM src_progress == Init => TypeOK
-
-\* compile_preserves_value (matches Coq: Theorem compile_preserves_value)
-THEOREM compile_preserves_value == Init => TypeOK
-
-\* compile_preserves_typing (matches Coq: Theorem compile_preserves_typing)
-THEOREM compile_preserves_typing == Init => TypeOK
-
-\* compile_forward_simulation (matches Coq: Theorem compile_forward_simulation)
-THEOREM compile_forward_simulation == Init => TypeOK
-
-\* compile_forward_multi_simulation (matches Coq: Theorem compile_forward_multi_simulation)
-THEOREM compile_forward_multi_simulation == Init => TypeOK
-
-\* compile_value_inv (matches Coq: Lemma compile_value_inv)
-THEOREM compile_value_inv == Init => TypeOK
-
-\* compile_backward_simulation (matches Coq: Theorem compile_backward_simulation)
-THEOREM compile_backward_simulation == Init => TypeOK
-
-\* compile_establishes_equiv (matches Coq: Theorem compile_establishes_equiv)
-THEOREM compile_establishes_equiv == Init => TypeOK
-
-\* equiv_preserved_forward (matches Coq: Theorem equiv_preserved_forward)
-THEOREM equiv_preserved_forward == Init => TypeOK
-
-\* compile_terminates_equivalently (matches Coq: Theorem compile_terminates_equivalently)
-THEOREM compile_terminates_equivalently == Init => TypeOK
-
-\* compile_type_safety (matches Coq: Theorem compile_type_safety)
-THEOREM compile_type_safety == Init => TypeOK
-
-\* opt_dead_code_if_true (matches Coq: Theorem opt_dead_code_if_true)
-THEOREM opt_dead_code_if_true == Init => TypeOK
-
-\* opt_dead_code_if_false (matches Coq: Theorem opt_dead_code_if_false)
-THEOREM opt_dead_code_if_false == Init => TypeOK
-
-\* opt_fst_pair_typed (matches Coq: Theorem opt_fst_pair_typed)
-THEOREM opt_fst_pair_typed == Init => TypeOK
-
-\* opt_snd_pair_typed (matches Coq: Theorem opt_snd_pair_typed)
-THEOREM opt_snd_pair_typed == Init => TypeOK
-
-\* const_prop_bool (matches Coq: Theorem const_prop_bool)
-THEOREM const_prop_bool == Init => TypeOK
-
-\* const_prop_int (matches Coq: Theorem const_prop_int)
-THEOREM const_prop_int == Init => TypeOK
-
-\* const_prop_unit (matches Coq: Theorem const_prop_unit)
-THEOREM const_prop_unit == Init => TypeOK
-
-\* parsing_correct_prop (matches Coq: Theorem parsing_correct_prop)
-THEOREM parsing_correct_prop == Init => TypeOK
-
-\* optimization_relation_reflexive (matches Coq: Theorem optimization_relation_reflexive)
-THEOREM optimization_relation_reflexive == Init => TypeOK
-
-\* optimization_relation_symmetric (matches Coq: Theorem optimization_relation_symmetric)
-THEOREM optimization_relation_symmetric == Init => TypeOK
-
-\* optimization_relation_transitive (matches Coq: Theorem optimization_relation_transitive)
-THEOREM optimization_relation_transitive == Init => TypeOK
-
-\* full_pipeline_correctness (matches Coq: Theorem full_pipeline_correctness)
-THEOREM full_pipeline_correctness == Init => TypeOK
-
-\* full_pipeline_termination (matches Coq: Theorem full_pipeline_termination)
-THEOREM full_pipeline_termination == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<pp_syntax_correct, pp_ast_well_formed, pp_error_recovery, tc_type_soundness, tc_inference_complete, tc_constraint_solving, op_semantics_preserved, op_termination_preserved, op_memory_safety_preserved, cg_instruction_correct, cg_register_allocation, cg_calling_convention, cg_stack_layout, cc_parsing, cc_typecheck, cc_optimization, cc_codegen>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<pp_syntax_correct, pp_ast_well_formed, pp_error_recovery, tc_type_soundness, tc_inference_complete, tc_constraint_solving, op_semantics_preserved, op_termination_preserved, op_memory_safety_preserved, cg_instruction_correct, cg_register_allocation, cg_calling_convention, cg_stack_layout, cc_parsing, cc_typecheck, cc_optimization, cc_codegen>>
+compile_expr(e) ==
+    CASE e = Src_Unit -> IR_Unit
+      [] e = Src_Bool b -> IR_Bool
+      [] e = Src_Int n -> IR_Int
+      [] e = Src_Pair e1 e2 -> IR_Pair
+      [] e = Src_Fst e -> IR_Fst
+      [] e = Src_Snd e -> IR_Snd
+      [] e = Src_Inl e T -> IR_Inl
+      [] e = Src_Inr e T -> IR_Inr
+      [] e = Src_If e e1 e2 -> IR_If
+
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
+
+UpdateParsingPhase ==
+  /\ pp_syntax_correct' \in BOOLEAN
+  /\ pp_ast_well_formed' \in BOOLEAN
+  /\ pp_error_recovery' \in BOOLEAN
+  /\ UNCHANGED <<tc_type_soundness, tc_inference_complete, tc_constraint_solving, op_semantics_preserved, op_termination_preserved, op_memory_safety_preserved, cg_instruction_correct, cg_register_allocation, cg_calling_convention, cg_stack_layout, cc_parsing, cc_typecheck, cc_optimization, cc_codegen>>
+
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
+
+Next == UpdateParsingPhase \/ ValidateState
+
+Spec == Init /\ [][Next]_vars
+
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
+
+\* andb_true_iff
+THEOREM andb_true_iff ==
+  \A a \in Nat, b \in Nat, bool \in Nat :
+      a && b = true < => a = true /\ b = true
+
+\* CC_001
+THEOREM CC_001 ==
+  parsing_correct(riina_parsing) = TRUE
+
+\* CC_002
+THEOREM CC_002 ==
+  typecheck_sound(riina_typecheck) = TRUE
+
+\* CC_003
+THEOREM CC_003 ==
+  optimization_safe(riina_optim) = TRUE
+
+\* CC_004
+THEOREM CC_004 ==
+  codegen_correct(riina_codegen) = TRUE
+
+\* CC_005
+THEOREM CC_005 ==
+  compiler_verified(riina_compiler) = TRUE
+
+\* CC_006
+THEOREM CC_006 ==
+  pp_syntax_correct(riina_parsing) = TRUE
+
+\* CC_007
+THEOREM CC_007 ==
+  tc_type_soundness(riina_typecheck) = TRUE
+
+\* CC_008
+THEOREM CC_008 ==
+  op_semantics_preserved(riina_optim) = TRUE
+
+\* CC_009
+THEOREM CC_009 ==
+  cg_instruction_correct(riina_codegen) = TRUE
+
+\* CC_010
+THEOREM CC_010 ==
+  cg_calling_convention(riina_codegen) = TRUE
+
+\* CC_011
+THEOREM CC_011 ==
+  \A p \in Nat :
+      parsing_correct(p) => pp_syntax_correct(p)
+
+\* CC_012
+THEOREM CC_012 ==
+  \A p \in Nat :
+      parsing_correct(p) => pp_ast_well_formed(p)
+
+\* CC_013
+THEOREM CC_013 ==
+  \A t \in Nat :
+      typecheck_sound(t) => tc_type_soundness(t)
+
+\* CC_014
+THEOREM CC_014 ==
+  \A t \in Nat :
+      typecheck_sound(t) => tc_inference_complete(t)
+
+\* CC_015
+THEOREM CC_015 ==
+  \A o \in Nat :
+      optimization_safe(o) => op_semantics_preserved(o)
+
+\* CC_016
+THEOREM CC_016 ==
+  \A o \in Nat :
+      optimization_safe(o) => op_memory_safety_preserved(o)
+
+\* CC_017
+THEOREM CC_017 ==
+  \A c \in Nat :
+      codegen_correct(c) => cg_instruction_correct(c)
+
+\* CC_018
+THEOREM CC_018 ==
+  \A c \in Nat :
+      codegen_correct(c) => cg_stack_layout(c)
+
+\* CC_019
+THEOREM CC_019 ==
+  \A c \in Nat :
+      compiler_verified(c) => parsing_correct (cc_parsing c) = true
+
+\* CC_020
+THEOREM CC_020 ==
+  \A c \in Nat :
+      compiler_verified(c) => typecheck_sound (cc_typecheck c) = true
+
+\* CC_021
+THEOREM CC_021 ==
+  \A c \in Nat :
+      compiler_verified(c) => optimization_safe (cc_optimization c) = true
+
+\* CC_022
+THEOREM CC_022 ==
+  \A c \in Nat :
+      compiler_verified(c) => codegen_correct (cc_codegen c) = true
+
+\* CC_023
+THEOREM CC_023 ==
+  \A c \in Nat :
+      compiler_verified(c) => tc_type_soundness (cc_typecheck c) = true
+
+\* CC_024
+THEOREM CC_024 ==
+  \A c \in Nat :
+      compiler_verified(c) => op_semantics_preserved (cc_optimization c) = true
+
+\* 53 additional theorems proven in Coq source
 
 ====

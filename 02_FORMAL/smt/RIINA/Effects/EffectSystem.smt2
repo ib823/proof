@@ -1,124 +1,233 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
-; Copyright (c) 2026 The RIINA Authors.
-; Derived from 02_FORMAL/coq/effects/EffectSystem.v (27 assertions)
-; Source mapping: scripts/generate-full-stack.py
+; RIINA EffectSystem — SMT Verification
+; Derived from 02_FORMAL/coq/effects/EffectSystem.v
 ; Module: EffectSystem
+;
+; Verifies: effect ordering (pure is bottom, join is LUB),
+; effect lattice properties, performs_within monotonicity,
+; effect category classification.
 
-(set-logic ALL)
+(set-logic QF_DT)
 (set-option :produce-models true)
 
-; performs_within (matches Coq: Definition performs_within)
-(define-fun performs_within ((e Int) (eff Int)) Bool
-  (= 0 0))
+; ═══════════════════════════════════════════════════════════════════════════
+; DATATYPE DECLARATIONS
+; ═══════════════════════════════════════════════════════════════════════════
 
-; effect_leq_pure (matches Coq: Lemma effect_leq_pure)
-; effect_leq_pure: forall eff, effect_leq EffectPure eff
-(assert (forall ((eff Bool)) (= 0 0))) ; effect_leq_pure [partial: bindings preserved]
+(declare-datatypes ((Ind_effect 0)) (((EffPure) (EffRead) (EffWrite) (EffFileSystem) (EffNetwork) (EffNetSecure) (EffCrypto) (EffRandom) (EffSystem) (EffTime) (EffProcess) (EffPanel) (EffZirah) (EffBenteng) (EffSandi) (EffMenara) (EffGapura))))
+(declare-datatypes ((effect_category 0)) (((CatPure) (CatIO) (CatNetwork) (CatCrypto) (CatSystem) (CatProduct))))
 
-; performs_within_mono (matches Coq: Lemma performs_within_mono)
-; performs_within_mono: forall e eff1 eff2, effect_leq eff1 eff2 -> performs_within e eff1 -> performs_within e eff2
-(assert (forall ((e Bool) (eff1 Bool) (eff2 Bool)) (= 0 0))) ; performs_within_mono [partial: bindings preserved]
+; ═══════════════════════════════════════════════════════════════════════════
+; FUNCTION DEFINITIONS (matching Coq)
+; ═══════════════════════════════════════════════════════════════════════════
 
-; effect_leq_join_ub_l_trans (matches Coq: Lemma effect_leq_join_ub_l_trans)
-; effect_leq_join_ub_l_trans: forall e1 e2 e3, effect_leq e1 (effect_join e2 (effect_join e1 e3))
-(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (= 0 0))) ; effect_leq_join_ub_l_trans [partial: bindings preserved]
+; effect_level: numeric encoding of effects
+(define-fun effect_level ((e Ind_effect)) Int
+  (ite (= e EffPure) 0
+  (ite (= e EffRead) 1
+  (ite (= e EffWrite) 2
+  (ite (= e EffFileSystem) 3
+  (ite (= e EffNetwork) 4
+  (ite (= e EffNetSecure) 5
+  (ite (= e EffCrypto) 6
+  (ite (= e EffRandom) 7
+  (ite (= e EffSystem) 8
+  (ite (= e EffTime) 9
+  (ite (= e EffProcess) 10
+  (ite (= e EffPanel) 11
+  (ite (= e EffZirah) 12
+  (ite (= e EffBenteng) 13
+  (ite (= e EffSandi) 14
+  (ite (= e EffMenara) 15
+  16)))))))))))))))))
 
-; effect_leq_join_ub_r_trans (matches Coq: Lemma effect_leq_join_ub_r_trans)
-; effect_leq_join_ub_r_trans: forall e1 e2 e3, effect_leq e3 (effect_join e2 (effect_join e1 e3))
-(assert (forall ((e1 Bool) (e2 Bool) (e3 Bool)) (= 0 0))) ; effect_leq_join_ub_r_trans [partial: bindings preserved]
+; effect_leq: effect ordering by level
+(define-fun effect_leq ((e1 Ind_effect) (e2 Ind_effect)) Bool
+  (<= (effect_level e1) (effect_level e2)))
 
-; core_effects_within (matches Coq: Lemma core_effects_within)
-; core_effects_within: forall G S D e T eff, has_type G S D e T eff -> performs_within e eff
-(assert (forall ((G Bool) (S Bool) (D Bool) (e Bool) (T Bool) (eff Bool)) (= 0 0))) ; core_effects_within [partial: bindings preserved]
+; effect_join: least upper bound = max by level
+(define-fun effect_join ((e1 Ind_effect) (e2 Ind_effect)) Ind_effect
+  (ite (< (effect_level e1) (effect_level e2)) e2 e1))
 
-; effect_safety (matches Coq: Theorem effect_safety)
-; effect_safety: forall G S D e T eff, has_type_full G S D e T eff -> performs_within e eff
-(assert (forall ((G Bool) (S Bool) (D Bool) (e Bool) (T Bool) (eff Bool)) (= 0 0))) ; effect_safety [partial: bindings preserved]
+; effect_cat: classify effects into categories
+(define-fun effect_cat ((e Ind_effect)) effect_category
+  (ite (= e EffPure) CatPure
+  (ite (or (= e EffRead) (= e EffWrite) (= e EffFileSystem)) CatIO
+  (ite (or (= e EffNetwork) (= e EffNetSecure)) CatNetwork
+  (ite (or (= e EffCrypto) (= e EffRandom)) CatCrypto
+  (ite (or (= e EffSystem) (= e EffTime) (= e EffProcess)) CatSystem
+  CatProduct))))))
 
-; performs_within_value (matches Coq: Lemma performs_within_value)
-; performs_within_value: forall v eff, value v -> performs_within v eff
-(assert (forall ((v Bool) (eff Bool)) (= 0 0))) ; performs_within_value [partial: bindings preserved]
+; performs_within: expression effect is bounded by eff
+(define-fun performs_within ((e_level Int) (eff Ind_effect)) Bool
+  (<= e_level (effect_level eff)))
 
-; performs_within_value_pure (matches Coq: Lemma performs_within_value_pure)
-; performs_within_value_pure: forall v, value v -> performs_within v EffPure
-(assert (forall ((v Bool)) (= 0 0))) ; performs_within_value_pure [partial: bindings preserved]
+; ═══════════════════════════════════════════════════════════════════════════
+; PROPERTY VERIFICATION
+; ═══════════════════════════════════════════════════════════════════════════
 
-; performs_within_join_l (matches Coq: Lemma performs_within_join_l)
-; performs_within_join_l: forall e eff1 eff2, performs_within e eff1 -> performs_within e (effect_join eff1 eff2)
-(assert (forall ((e Bool) (eff1 Bool) (eff2 Bool)) (= 0 0))) ; performs_within_join_l [partial: bindings preserved]
+; --- 1. effect_leq_pure: EffPure <= any effect ---
+; Coq: Lemma effect_leq_pure
+(push 1)
+(declare-const eff Ind_effect)
+(assert (not (effect_leq EffPure eff)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; performs_within_join_r (matches Coq: Lemma performs_within_join_r)
-; performs_within_join_r: forall e eff1 eff2, performs_within e eff2 -> performs_within e (effect_join eff1 eff2)
-(assert (forall ((e Bool) (eff1 Bool) (eff2 Bool)) (= 0 0))) ; performs_within_join_r [partial: bindings preserved]
+; --- 2. effect_join_pure_l: effect_join EffPure e = e ---
+; Coq: Lemma effect_join_pure_l
+(push 1)
+(declare-const e Ind_effect)
+(assert (not (= (effect_join EffPure e) e)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; performs_within_top (matches Coq: Lemma performs_within_top)
-; performs_within_top: forall e eff, performs_within e eff -> performs_within e EffGapura
-(assert (forall ((e Bool) (eff Bool)) (= 0 0))) ; performs_within_top [partial: bindings preserved]
+; --- 3. effect_join_pure_r: effect_join e EffPure = e ---
+; Coq: Lemma effect_join_pure_r
+(push 1)
+(declare-const e Ind_effect)
+(assert (not (= (effect_join e EffPure) e)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; has_type_embed (matches Coq: Lemma has_type_embed)
-; has_type_embed: forall G S D e T eff, has_type G S D e T eff -> has_type_full G S D e T eff
-(assert (forall ((G Bool) (S Bool) (D Bool) (e Bool) (T Bool) (eff Bool)) (= 0 0))) ; has_type_embed [partial: bindings preserved]
+; --- 4. performs_within monotonicity: leq eff1 eff2 -> within eff1 -> within eff2 ---
+; Coq: Lemma performs_within_mono
+(push 1)
+(declare-const lvl Int)
+(declare-const eff1 Ind_effect)
+(declare-const eff2 Ind_effect)
+(assert (effect_leq eff1 eff2))
+(assert (performs_within lvl eff1))
+(assert (not (performs_within lvl eff2)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; has_type_full_effect_bound (matches Coq: Lemma has_type_full_effect_bound)
-; has_type_full_effect_bound: forall G S D e T eff eff', has_type_full G S D e T eff -> effect_leq eff eff' -> performs_within e eff'
-(assert (forall ((G Bool) (S Bool) (D Bool) (e Bool) (T Bool) (eff Bool) (eff_ Bool)) (= 0 0))) ; has_type_full_effect_bound [partial: bindings preserved]
+; --- 5. effect_leq reflexivity ---
+(push 1)
+(declare-const e Ind_effect)
+(assert (not (effect_leq e e)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; core_typing_sound (matches Coq: Lemma core_typing_sound)
-; core_typing_sound: forall G S D e T eff, has_type G S D e T eff -> forall eff', effect_leq eff eff' -> performs_within e eff'
-(assert (forall ((G Bool) (S Bool) (D Bool) (e Bool) (T Bool) (eff Bool)) (= 0 0))) ; core_typing_sound [partial: bindings preserved]
+; --- 6. effect_leq transitivity ---
+(push 1)
+(declare-const e1 Ind_effect)
+(declare-const e2 Ind_effect)
+(declare-const e3 Ind_effect)
+(assert (effect_leq e1 e2))
+(assert (effect_leq e2 e3))
+(assert (not (effect_leq e1 e3)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; app_effect_covers_fn_and_arg (matches Coq: Lemma app_effect_covers_fn_and_arg)
-; app_effect_covers_fn_and_arg: forall ε_fn ε1 ε2, effect_leq ε_fn (effect_join ε_fn (effect_join ε1 ε2)) /\ effect_leq ε1 (effect_join ε_fn (effect_joi
-(assert (forall ((epsilon_fn Bool) (epsilon1 Bool) (epsilon2 Bool)) (= 0 0))) ; app_effect_covers_fn_and_arg [partial: bindings preserved]
+; --- 7. effect_leq antisymmetry ---
+(push 1)
+(declare-const e1 Ind_effect)
+(declare-const e2 Ind_effect)
+(assert (effect_leq e1 e2))
+(assert (effect_leq e2 e1))
+(assert (not (= e1 e2)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; if_effect_covers_branches (matches Coq: Lemma if_effect_covers_branches)
-; if_effect_covers_branches: forall ε1 ε2 ε3, effect_leq ε1 (effect_join ε1 (effect_join ε2 ε3)) /\ effect_leq ε2 (effect_join ε1 (effect_join ε2 ε3)
-(assert (forall ((epsilon1 Bool) (epsilon2 Bool) (epsilon3 Bool)) (= 0 0))) ; if_effect_covers_branches [partial: bindings preserved]
+; --- 8. effect_join upper bound (left) ---
+; Coq: effect_leq e1 (effect_join e1 e2)
+(push 1)
+(declare-const e1 Ind_effect)
+(declare-const e2 Ind_effect)
+(assert (not (effect_leq e1 (effect_join e1 e2))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; let_effect_covers_both (matches Coq: Lemma let_effect_covers_both)
-; let_effect_covers_both: forall ε1 ε2, effect_leq ε1 (effect_join ε1 ε2) /\ effect_leq ε2 (effect_join ε1 ε2)
-(assert (forall ((epsilon1 Bool) (epsilon2 Bool)) (= 0 0))) ; let_effect_covers_both [partial: bindings preserved]
+; --- 9. effect_join upper bound (right) ---
+; Coq: effect_leq e2 (effect_join e1 e2)
+(push 1)
+(declare-const e1 Ind_effect)
+(declare-const e2 Ind_effect)
+(assert (not (effect_leq e2 (effect_join e1 e2))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; pair_effect_covers_both (matches Coq: Lemma pair_effect_covers_both)
-; pair_effect_covers_both: forall ε1 ε2, effect_leq ε1 (effect_join ε1 ε2) /\ effect_leq ε2 (effect_join ε1 ε2)
-(assert (forall ((epsilon1 Bool) (epsilon2 Bool)) (= 0 0))) ; pair_effect_covers_both [partial: bindings preserved]
+; --- 10. effect_join idempotent ---
+(push 1)
+(declare-const e Ind_effect)
+(assert (not (= (effect_join e e) e)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; has_type_full_weaken_effect (matches Coq: Lemma has_type_full_weaken_effect)
-; has_type_full_weaken_effect: forall G S D e T ε ε', has_type_full G S D e T ε -> effect_leq ε ε' -> performs_within e ε'
-(assert (forall ((G Bool) (S Bool) (D Bool) (e Bool) (T Bool) (epsilon Bool) (epsilon_prime Bool)) (= 0 0))) ; has_type_full_weaken_effect [partial: bindings preserved]
+; --- 11. EffGapura is top effect ---
+; Coq: Lemma performs_within_top
+(push 1)
+(declare-const e Ind_effect)
+(assert (not (effect_leq e EffGapura)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; pure_within_any_effect (matches Coq: Lemma pure_within_any_effect)
-; pure_within_any_effect: forall e, performs_within e EffPure -> forall eff, performs_within e eff
-(assert (forall ((e Bool)) (= 0 0))) ; pure_within_any_effect [partial: bindings preserved]
+; --- 12. effect_cat classification: EffPure -> CatPure ---
+(push 1)
+(assert (not (= (effect_cat EffPure) CatPure)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; assign_effect_covers (matches Coq: Lemma assign_effect_covers)
-; assign_effect_covers: forall ε1 ε2, effect_leq ε1 (effect_join ε1 (effect_join ε2 EffectWrite)) /\ effect_leq ε2 (effect_join ε1 (effect_join 
-(assert (forall ((epsilon1 Bool) (epsilon2 Bool)) (= 0 0))) ; assign_effect_covers [partial: bindings preserved]
+; --- 13. effect_cat classification: EffRead -> CatIO ---
+(push 1)
+(assert (not (= (effect_cat EffRead) CatIO)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; case_effect_covers (matches Coq: Lemma case_effect_covers)
-; case_effect_covers: forall ε ε1 ε2, effect_leq ε (effect_join ε (effect_join ε1 ε2)) /\ effect_leq ε1 (effect_join ε (effect_join ε1 ε2)) /\
-(assert (forall ((epsilon Bool) (epsilon1 Bool) (epsilon2 Bool)) (= 0 0))) ; case_effect_covers [partial: bindings preserved]
+; --- 14. effect_cat classification: EffNetwork -> CatNetwork ---
+(push 1)
+(assert (not (= (effect_cat EffNetwork) CatNetwork)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; handle_effect_covers (matches Coq: Lemma handle_effect_covers)
-; handle_effect_covers: forall ε1 ε2, effect_leq ε1 (effect_join ε1 ε2) /\ effect_leq ε2 (effect_join ε1 ε2)
-(assert (forall ((epsilon1 Bool) (epsilon2 Bool)) (= 0 0))) ; handle_effect_covers [partial: bindings preserved]
+; --- 15. effect_cat classification: EffCrypto -> CatCrypto ---
+(push 1)
+(assert (not (= (effect_cat EffCrypto) CatCrypto)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; declassify_effect_covers (matches Coq: Lemma declassify_effect_covers)
-; declassify_effect_covers: forall ε1 ε2, effect_leq ε1 (effect_join ε1 ε2) /\ effect_leq ε2 (effect_join ε1 ε2)
-(assert (forall ((epsilon1 Bool) (epsilon2 Bool)) (= 0 0))) ; declassify_effect_covers [partial: bindings preserved]
+; --- 16. effect_cat classification: EffSystem -> CatSystem ---
+(push 1)
+(assert (not (= (effect_cat EffSystem) CatSystem)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; performs_within_join_self (matches Coq: Lemma performs_within_join_self)
-; performs_within_join_self: forall e eff, performs_within e eff -> performs_within e (effect_join eff eff)
-(assert (forall ((e Bool) (eff Bool)) (= 0 0))) ; performs_within_join_self [partial: bindings preserved]
+; --- 17. effect_cat classification: EffPanel -> CatProduct ---
+(push 1)
+(assert (not (= (effect_cat EffPanel) CatProduct)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; performs_within_join_pure_l (matches Coq: Lemma performs_within_join_pure_l)
-; performs_within_join_pure_l: forall e eff, performs_within e eff -> performs_within e (effect_join EffPure eff)
-(assert (forall ((e Bool) (eff Bool)) (= 0 0))) ; performs_within_join_pure_l [partial: bindings preserved]
+; --- 18. Values perform within any effect (level 0) ---
+; Coq: Lemma performs_within_value
+(push 1)
+(declare-const eff Ind_effect)
+(assert (not (performs_within 0 eff)))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; performs_within_join_pure_r (matches Coq: Lemma performs_within_join_pure_r)
-; performs_within_join_pure_r: forall e eff, performs_within e eff -> performs_within e (effect_join eff EffPure)
-(assert (forall ((e Bool) (eff Bool)) (= 0 0))) ; performs_within_join_pure_r [partial: bindings preserved]
+; --- 19. performs_within_join_l: within eff1 -> within (join eff1 eff2) ---
+; Coq: Lemma performs_within_join_l
+(push 1)
+(declare-const lvl Int)
+(declare-const eff1 Ind_effect)
+(declare-const eff2 Ind_effect)
+(assert (performs_within lvl eff1))
+(assert (not (performs_within lvl (effect_join eff1 eff2))))
+(check-sat) ; expect UNSAT
+(pop 1)
 
-; Verify all assertions are satisfiable
+; --- 20. performs_within_join_r: within eff2 -> within (join eff1 eff2) ---
+; Coq: Lemma performs_within_join_r
+(push 1)
+(declare-const lvl Int)
+(declare-const eff1 Ind_effect)
+(declare-const eff2 Ind_effect)
+(assert (performs_within lvl eff2))
+(assert (not (performs_within lvl (effect_join eff1 eff2))))
+(check-sat) ; expect UNSAT
+(pop 1)
+
 (check-sat)
 (exit)

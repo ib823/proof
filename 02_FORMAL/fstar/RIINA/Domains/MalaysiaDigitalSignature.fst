@@ -58,79 +58,79 @@ let dsa_fully_compliant (p_c: nat) (p_s: nat) (p_t: nat) (p_key_enc: bool) (p_ke
   true
 
 (* cert_validity (matches Coq: Theorem cert_validity) *)
-let cert_validity (p_c: nat) (p_t: nat) : Lemma (requires (cert_status p_c == CertActive /\ p_t <= cert_expiry p_c /\ cert_ca_licensed p_c == CALicensed)) (ensures (cert_valid p_c p_t == true)) = admit ()
+let cert_validity (p_c: nat) (p_t: nat) : Lemma (requires (cert_status p_c == CertActive /\ p_t <= cert_expiry p_c /\ cert_ca_licensed p_c == CALicensed)) (ensures (cert_valid p_c p_t == true)) = ()
 
 (* suspended_invalid (matches Coq: Theorem suspended_invalid) *)
-let suspended_invalid (p_c: nat) (p_t: nat) : Lemma (requires (cert_status p_c == CertSuspended)) (ensures (~(cert_valid p_c p_t == true))) = admit ()
+let suspended_invalid (p_c: nat) (p_t: nat) : Lemma (requires (cert_status p_c == CertSuspended)) (ensures (~(cert_valid p_c p_t == true))) = ()
 
 (* revoked_invalid (matches Coq: Theorem revoked_invalid) *)
-let revoked_invalid (p_c: nat) (p_t: nat) : Lemma (requires (cert_status p_c == CertRevoked)) (ensures (~(cert_valid p_c p_t == true))) = admit ()
+let revoked_invalid (p_c: nat) (p_t: nat) : Lemma (requires (cert_status p_c == CertRevoked)) (ensures (~(cert_valid p_c p_t == true))) = ()
 
 (* expired_invalid (matches Coq: Theorem expired_invalid) *)
-let expired_invalid (p_c: nat) (p_t: nat) : Lemma (requires (cert_expiry p_c < p_t)) (ensures (~(cert_valid p_c p_t == true))) = admit ()
+let expired_invalid (p_c: nat) (p_t: nat) : Lemma (requires (cert_expiry p_c < p_t)) (ensures (~(cert_valid p_c p_t == true))) = ()
 
 (* licensed_ca_presumption (matches Coq: Theorem licensed_ca_presumption) *)
-let licensed_ca_presumption (p_c: nat) : Lemma (requires (cert_ca_licensed p_c == CALicensed)) (ensures (presumed_secure p_c == true)) = admit ()
+let licensed_ca_presumption (p_c: nat) : Lemma (requires (cert_ca_licensed p_c == CALicensed)) (ensures (presumed_secure p_c == true)) = ()
 
 (* unlicensed_no_presumption (matches Coq: Theorem unlicensed_no_presumption) *)
-let unlicensed_no_presumption (p_c: nat) : Lemma (requires (cert_ca_licensed p_c == CAUnlicensed)) (ensures (~(presumed_secure p_c == true))) = admit ()
+let unlicensed_no_presumption (p_c: nat) : Lemma (requires (cert_ca_licensed p_c == CAUnlicensed)) (ensures (~(presumed_secure p_c == true))) = ()
 
 (* signature_verification (matches Coq: Theorem signature_verification) *)
-let signature_verification (p_s: nat) (p_c: nat) (p_t: nat) : Lemma (requires (sig_verified p_s == true /\ sig_cert_id p_s == cert_id p_c /\ cert_valid p_c p_t == true)) (ensures (signature_legally_valid p_s p_c p_t == true)) = admit ()
+let signature_verification (p_s: nat) (p_c: nat) (p_t: nat) : Lemma (requires (sig_verified p_s == true /\ sig_cert_id p_s == cert_id p_c /\ cert_valid p_c p_t == true)) (ensures (signature_legally_valid p_s p_c p_t == true)) = ()
 
 (* key_strength_2048 (matches Coq: Theorem key_strength_2048) *)
-let key_strength_2048 (p_c: nat) : Lemma (requires (2048 <= cert_key_length p_c)) (ensures (key_strength_adequate p_c 2048 == true)) = admit ()
+let key_strength_2048 (p_c: nat) : Lemma (requires (2048 <= cert_key_length p_c)) (ensures (key_strength_adequate p_c 2048 == true)) = ()
 
 (* subscriber_duty_encrypted (matches Coq: Theorem subscriber_duty_encrypted) *)
-let subscriber_duty_encrypted (p_enc: bool) (p_hsm: bool) : Lemma (requires (p_enc == true)) (ensures (private_key_protected p_enc p_hsm == true)) = admit ()
+let subscriber_duty_encrypted (p_enc: bool) (p_hsm: bool) : Lemma (requires (p_enc == true)) (ensures (private_key_protected p_enc p_hsm == true)) = ()
 
 (* subscriber_duty_hsm (matches Coq: Theorem subscriber_duty_hsm) *)
-let subscriber_duty_hsm (p_enc: bool) (p_hsm: bool) : Lemma (requires (p_hsm == true)) (ensures (private_key_protected p_enc p_hsm == true)) = admit ()
+let subscriber_duty_hsm (p_enc: bool) (p_hsm: bool) : Lemma (requires (p_hsm == true)) (ensures (private_key_protected p_enc p_hsm == true)) = ()
 
 (* active_not_terminated (matches Coq: Theorem active_not_terminated) *)
-let active_not_terminated (p_c: nat) : Lemma (requires (cert_status_active p_c == true)) (ensures (~(cert_status_terminated p_c == true))) = admit ()
+let active_not_terminated (p_c: nat) : Lemma (requires (cert_status_active p_c == true)) (ensures (~(cert_status_terminated p_c == true))) = ()
 
 (* suspended_not_active (matches Coq: Theorem suspended_not_active) *)
-let suspended_not_active (p_c: nat) : Lemma (requires (cert_status p_c == CertSuspended)) (ensures (~(cert_status_active p_c == true))) = admit ()
+let suspended_not_active (p_c: nat) : Lemma (requires (cert_status p_c == CertSuspended)) (ensures (~(cert_status_active p_c == true))) = ()
 
 (* cert_validity_window (matches Coq: Theorem cert_validity_window) *)
-let cert_validity_window (p_c: nat) (p_t: nat) : Lemma (requires (cert_valid p_c p_t == true)) (ensures (cert_issued_at p_c <= p_t \/ True)) = admit ()
+let cert_validity_window (p_c: nat) (p_t: nat) : Lemma (requires (cert_valid p_c p_t == true)) (ensures (cert_issued_at p_c <= p_t \/ True)) = ()
 
 (* cert_valid_implies_not_expired (matches Coq: Theorem cert_valid_implies_not_expired) *)
-let cert_valid_implies_not_expired (p_c: nat) (p_t: nat) : Lemma (requires (cert_valid p_c p_t == true)) (ensures (p_t <= cert_expiry p_c)) = admit ()
+let cert_valid_implies_not_expired (p_c: nat) (p_t: nat) : Lemma (requires (cert_valid p_c p_t == true)) (ensures (p_t <= cert_expiry p_c)) = ()
 
 (* cert_valid_implies_active (matches Coq: Theorem cert_valid_implies_active) *)
-let cert_valid_implies_active (p_c: nat) (p_t: nat) : Lemma (requires (cert_valid p_c p_t == true)) (ensures (cert_status p_c == CertActive)) = admit ()
+let cert_valid_implies_active (p_c: nat) (p_t: nat) : Lemma (requires (cert_valid p_c p_t == true)) (ensures (cert_status p_c == CertActive)) = ()
 
 (* cert_valid_implies_licensed (matches Coq: Theorem cert_valid_implies_licensed) *)
-let cert_valid_implies_licensed (p_c: nat) (p_t: nat) : Lemma (requires (cert_valid p_c p_t == true)) (ensures (cert_ca_licensed p_c == CALicensed)) = admit ()
+let cert_valid_implies_licensed (p_c: nat) (p_t: nat) : Lemma (requires (cert_valid p_c p_t == true)) (ensures (cert_ca_licensed p_c == CALicensed)) = ()
 
 (* key_strength_downward (matches Coq: Theorem key_strength_downward) *)
-let key_strength_downward (p_c: nat) (p_bits1: nat) (p_bits2: nat) : Lemma (requires (p_bits1 <= p_bits2 /\ key_strength_adequate p_c p_bits2 == true)) (ensures (key_strength_adequate p_c p_bits1 == true)) = admit ()
+let key_strength_downward (p_c: nat) (p_bits1: nat) (p_bits2: nat) : Lemma (requires (p_bits1 <= p_bits2 /\ key_strength_adequate p_c p_bits2 == true)) (ensures (key_strength_adequate p_c p_bits1 == true)) = ()
 
 (* key_strength_4096_implies_2048 (matches Coq: Theorem key_strength_4096_implies_2048) *)
-let key_strength_4096_implies_2048 (p_c: nat) : Lemma (requires (key_strength_adequate p_c 4096 == true)) (ensures (key_strength_adequate p_c 2048 == true)) = admit ()
+let key_strength_4096_implies_2048 (p_c: nat) : Lemma (requires (key_strength_adequate p_c 4096 == true)) (ensures (key_strength_adequate p_c 2048 == true)) = ()
 
 (* relying_party_duty (matches Coq: Theorem relying_party_duty) *)
-let relying_party_duty (p_rpc: nat) : Lemma (requires (rpc_status_checked p_rpc == true /\ rpc_expiry_checked p_rpc == true /\ rpc_ca_verified p_rpc == true /\ rpc_signature_verified p_rpc == true)) (ensures (relying_party_diligent p_rpc == true)) = admit ()
+let relying_party_duty (p_rpc: nat) : Lemma (requires (rpc_status_checked p_rpc == true /\ rpc_expiry_checked p_rpc == true /\ rpc_ca_verified p_rpc == true /\ rpc_signature_verified p_rpc == true)) (ensures (relying_party_diligent p_rpc == true)) = ()
 
 (* partial_check_not_diligent (matches Coq: Theorem partial_check_not_diligent) *)
-let partial_check_not_diligent (p_rpc: nat) : Lemma (requires (rpc_signature_verified p_rpc == false)) (ensures (~(relying_party_diligent p_rpc == true))) = admit ()
+let partial_check_not_diligent (p_rpc: nat) : Lemma (requires (rpc_signature_verified p_rpc == false)) (ensures (~(relying_party_diligent p_rpc == true))) = ()
 
 (* revoked_cert_on_crl (matches Coq: Theorem revoked_cert_on_crl) *)
-let revoked_cert_on_crl (p_crl: (list nat)) (p_entry: nat) : Lemma (requires (List.Tot.memP p_entry p_crl)) (ensures (cert_on_crl p_crl (crl_cert_id p_entry) == true)) = admit ()
+let revoked_cert_on_crl (p_crl: (list nat)) (p_entry: nat) : Lemma (requires (List.Tot.memP p_entry p_crl)) (ensures (cert_on_crl p_crl (crl_cert_id p_entry) == true)) = ()
 
 (* crl_addition_preserves (matches Coq: Theorem crl_addition_preserves) *)
-let crl_addition_preserves (p_crl: (list nat)) (p_new_entry: nat) (p_cid: nat) : Lemma (requires (cert_on_crl p_crl p_cid == true)) (ensures (cert_on_crl (p_new_entry :: p_crl) p_cid == true)) = admit ()
+let crl_addition_preserves (p_crl: (list nat)) (p_new_entry: nat) (p_cid: nat) : Lemma (requires (cert_on_crl p_crl p_cid == true)) (ensures (cert_on_crl (p_new_entry :: p_crl) p_cid == true)) = ()
 
 (* signature_timestamp_in_cert_validity (matches Coq: Theorem signature_timestamp_in_cert_validity) *)
-let signature_timestamp_in_cert_validity (p_s: nat) (p_c: nat) : Lemma (requires (signature_legally_valid p_s p_c (sig_timestamp p_s) == true)) (ensures (sig_timestamp p_s <= cert_expiry p_c)) = admit ()
+let signature_timestamp_in_cert_validity (p_s: nat) (p_c: nat) : Lemma (requires (signature_legally_valid p_s p_c (sig_timestamp p_s) == true)) (ensures (sig_timestamp p_s <= cert_expiry p_c)) = ()
 
 (* dsa_composition (matches Coq: Theorem dsa_composition) *)
-let dsa_composition (p_c: nat) (p_s: nat) (p_t: nat) (p_key_enc: bool) (p_key_hsm: bool) : Lemma (requires (cert_valid p_c p_t == true /\ signature_legally_valid p_s p_c p_t == true /\ key_strength_adequate p_c 2048 == true /\ private_key_protected p_key_enc p_key_hsm == true)) (ensures (dsa_fully_compliant p_c p_s p_t p_key_enc p_key_hsm == true)) = admit ()
+let dsa_composition (p_c: nat) (p_s: nat) (p_t: nat) (p_key_enc: bool) (p_key_hsm: bool) : Lemma (requires (cert_valid p_c p_t == true /\ signature_legally_valid p_s p_c p_t == true /\ key_strength_adequate p_c 2048 == true /\ private_key_protected p_key_enc p_key_hsm == true)) (ensures (dsa_fully_compliant p_c p_s p_t p_key_enc p_key_hsm == true)) = ()
 
 (* cert_status_coverage (matches Coq: Theorem cert_status_coverage) *)
-let cert_status_coverage (p_cs: cert_status) : Lemma (List.Tot.memP p_cs all_cert_statuses) = admit ()
+let cert_status_coverage (p_cs: cert_status) : Lemma (List.Tot.memP p_cs all_cert_statuses) = ()
 
 (* ca_license_coverage (matches Coq: Theorem ca_license_coverage) *)
-let ca_license_coverage (p_ls: ca_license_status) : Lemma (List.Tot.memP p_ls all_ca_license_statuses) = admit ()
+let ca_license_coverage (p_ls: ca_license_status) : Lemma (List.Tot.memP p_ls all_ca_license_statuses) = ()

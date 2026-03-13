@@ -1,22 +1,33 @@
 ---- MODULE HealthcareIS ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/domains/HealthcareIS.v (30 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/domains/HealthcareIS.v
+\* Models key types, operators, and properties from the Coq formalization.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* Severity (matches Coq: Inductive Severity)
 CONSTANTS Mild, Moderate, Severe, LifeThreatening
 
+SeveritySet == {Mild, Moderate, Severe, LifeThreatening}
+
 \* InteractionSeverity (matches Coq: Inductive InteractionSeverity)
 CONSTANTS Minor, Major, Contraindicated
+
+InteractionSeveritySet == {Minor, Major, Contraindicated}
 
 \* SpecimenStatus (matches Coq: Inductive SpecimenStatus)
 CONSTANTS Collected, InTransit, Processing, Analyzed, Disposed
 
+SpecimenStatusSet == {Collected, InTransit, Processing, Analyzed, Disposed}
+
 \* Role (matches Coq: Inductive Role)
 CONSTANTS Physician, Nurse, AdminStaff, PatientRole
+
+RoleSet == {Physician, Nurse, AdminStaff, PatientRole}
+
+\* ===================================================================
+\* STATE VARIABLES
+\* ===================================================================
 
 \* Patient (matches Coq: Record Patient)
 VARIABLES mrn, name_hash, dob, demographics
@@ -33,608 +44,288 @@ VARIABLES candidate1, candidate2, similarity_score, flagged_for_review
 \* MergeOperation (matches Coq: Record MergeOperation)
 VARIABLES source_mrn, target_mrn, source_records, target_records_before, target_records_after, merge_complete
 
-\* Encounter (matches Coq: Record Encounter)
-VARIABLES enc_id, enc_patient, chief_complaint, history, exam, assessment, plan, is_finalized
+vars == <<mrn, name_hash, dob, demographics, match_score, matched_patient, patients, mrn_unique, candidate1, candidate2, similarity_score, flagged_for_review, source_mrn, target_mrn, source_records, target_records_before, target_records_after, merge_complete>>
 
-\* ClinicalNote (matches Coq: Record ClinicalNote)
-VARIABLES note_id, note_encounter, note_content_hash, is_signed, sign_timestamp, author
+\* ===================================================================
+\* TYPE INVARIANT
+\* ===================================================================
 
-\* Amendment (matches Coq: Record Amendment)
-VARIABLES amend_id, original_note, amend_timestamp, amend_author, marked_as_amendment, linked_to_original
-
-\* Allergy (matches Coq: Record Allergy)
-VARIABLES allergy_id, allergen, reaction_type, severity, snomed_code, allergen_documented, reaction_documented, severity_documented
-
-\* DrugAllergyInteraction (matches Coq: Record DrugAllergyInteraction)
-VARIABLES interaction_drug, interaction_allergen, patient_has_allergy, alert_triggered
-
-\* Problem (matches Coq: Record Problem)
-VARIABLES problem_id, problem_description, problem_snomed, snomed_assigned
-
-\* MedicationOrder (matches Coq: Record MedicationOrder)
-VARIABLES order_id, drug, dose, dose_unit, route, frequency, patient_weight, patient_age, renal_function, order_complete, electronically_signed, signature_timestamp, signer_credentials
-
-\* Administration (matches Coq: Record Administration)
-VARIABLES admin_id, admin_order, right_patient, right_drug, right_dose, right_route, right_time, barcode_verified, barcode_matches
-
-\* DrugInteraction (matches Coq: Record DrugInteraction)
-VARIABLES drug1, drug2, interaction_severity, interaction_alert_shown
-
-\* DoseCheck (matches Coq: Record DoseCheck)
-VARIABLES check_drug, check_dose, min_safe_dose, max_safe_dose, within_range
-
-\* HighAlertMed (matches Coq: Record HighAlertMed)
-VARIABLES ham_drug, is_high_alert, double_check_required, double_check_performed
-
-\* Order (matches Coq: Record Order)
-VARIABLES ord_id, ord_patient, ord_drug, ord_dose, ord_route, ord_frequency, has_all_fields, has_signature, signature_valid
-
-\* VerbalOrder (matches Coq: Record VerbalOrder)
-VARIABLES vo_id, vo_time, authentication_time, authenticated_within_24h
-
-\* DuplicateOrderCheck (matches Coq: Record DuplicateOrderCheck)
-VARIABLES existing_order, new_order, is_duplicate, warning_shown, override_required
-
-\* Contraindication (matches Coq: Record Contraindication)
-VARIABLES contra_drug, contra_condition, contra_detected, hard_stop_triggered
-
-\* Specimen (matches Coq: Record Specimen)
-VARIABLES specimen_id, specimen_patient, status, collection_time, transit_time, processing_time, analysis_time, disposal_time, fully_tracked
-
-\* LabResult (matches Coq: Record LabResult)
-VARIABLES result_id, result_value, result_time, is_critical, lab_notif_time, notified_within_30min, validated, needs_review
-
-\* DeltaCheck (matches Coq: Record DeltaCheck)
-VARIABLES current_value, prior_value, delta_threshold, exceeds_threshold, flagged
-
-\* ReferenceRange (matches Coq: Record ReferenceRange)
-VARIABLES test_code, patient_age_range, patient_sex, range_min, range_max, age_adjusted, sex_adjusted
-
-\* PHIAccess (matches Coq: Record PHIAccess)
-VARIABLES access_id, accessor, accessor_role, accessed_patient, access_timestamp, logged, role_based, minimum_necessary
-
-\* AuditEntry (matches Coq: Record AuditEntry)
-VARIABLES audit_id, audit_access_id, audit_timestamp, audit_action, reviewable
-
-\* Breach (matches Coq: Record Breach)
-VARIABLES breach_id, detection_time, breach_notif_time, notified_within_60days
-
-\* Consent (matches Coq: Record Consent)
-VARIABLES consent_id, consent_patient, explicit_consent, consent_timestamp, processing_allowed
-
-\* DataExport (matches Coq: Record DataExport)
-VARIABLES export_id, export_patient, machine_readable, export_format, export_complete
-
-\* Type invariant
 TypeOK ==
-  /\ mrn \in BOOLEAN
-  /\ name_hash \in BOOLEAN
-  /\ dob \in BOOLEAN
-  /\ demographics \in BOOLEAN
-  /\ match_score \in BOOLEAN
-  /\ matched_patient \in BOOLEAN
-  /\ patients \in BOOLEAN
-  /\ mrn_unique \in BOOLEAN
-  /\ candidate1 \in BOOLEAN
-  /\ candidate2 \in BOOLEAN
-  /\ similarity_score \in BOOLEAN
+  /\ mrn \in Nat
+  /\ name_hash \in Nat
+  /\ dob \in Nat
+  /\ demographics \in Nat
+  /\ match_score \in Nat
+  /\ matched_patient \in Nat
+  /\ patients \in Seq(Nat)
+  /\ mrn_unique \in Nat
+  /\ candidate1 \in Nat
+  /\ candidate2 \in Nat
+  /\ similarity_score \in Nat
   /\ flagged_for_review \in BOOLEAN
-  /\ source_mrn \in BOOLEAN
-  /\ target_mrn \in BOOLEAN
-  /\ source_records \in BOOLEAN
-  /\ target_records_before \in BOOLEAN
-  /\ target_records_after \in BOOLEAN
+  /\ source_mrn \in Nat
+  /\ target_mrn \in Nat
+  /\ source_records \in Seq(Nat)
+  /\ target_records_before \in Seq(Nat)
+  /\ target_records_after \in Seq(Nat)
   /\ merge_complete \in BOOLEAN
-  /\ enc_id \in BOOLEAN
-  /\ enc_patient \in BOOLEAN
-  /\ chief_complaint \in BOOLEAN
-  /\ history \in BOOLEAN
-  /\ exam \in BOOLEAN
-  /\ assessment \in BOOLEAN
-  /\ plan \in BOOLEAN
-  /\ is_finalized \in BOOLEAN
-  /\ note_id \in BOOLEAN
-  /\ note_encounter \in BOOLEAN
-  /\ note_content_hash \in BOOLEAN
-  /\ is_signed \in BOOLEAN
-  /\ sign_timestamp \in BOOLEAN
-  /\ author \in BOOLEAN
-  /\ amend_id \in BOOLEAN
-  /\ original_note \in BOOLEAN
-  /\ amend_timestamp \in BOOLEAN
-  /\ amend_author \in BOOLEAN
-  /\ marked_as_amendment \in BOOLEAN
-  /\ linked_to_original \in BOOLEAN
-  /\ allergy_id \in BOOLEAN
-  /\ allergen \in BOOLEAN
-  /\ reaction_type \in BOOLEAN
-  /\ severity \in BOOLEAN
-  /\ snomed_code \in BOOLEAN
-  /\ allergen_documented \in BOOLEAN
-  /\ reaction_documented \in BOOLEAN
-  /\ severity_documented \in BOOLEAN
-  /\ interaction_drug \in BOOLEAN
-  /\ interaction_allergen \in BOOLEAN
-  /\ patient_has_allergy \in BOOLEAN
-  /\ alert_triggered \in BOOLEAN
-  /\ problem_id \in BOOLEAN
-  /\ problem_description \in BOOLEAN
-  /\ problem_snomed \in BOOLEAN
-  /\ snomed_assigned \in BOOLEAN
-  /\ order_id \in BOOLEAN
-  /\ drug \in BOOLEAN
-  /\ dose \in BOOLEAN
-  /\ dose_unit \in BOOLEAN
-  /\ route \in BOOLEAN
-  /\ frequency \in BOOLEAN
-  /\ patient_weight \in BOOLEAN
-  /\ patient_age \in BOOLEAN
-  /\ renal_function \in BOOLEAN
-  /\ order_complete \in BOOLEAN
-  /\ electronically_signed \in BOOLEAN
-  /\ signature_timestamp \in BOOLEAN
-  /\ signer_credentials \in BOOLEAN
-  /\ admin_id \in BOOLEAN
-  /\ admin_order \in BOOLEAN
-  /\ right_patient \in BOOLEAN
-  /\ right_drug \in BOOLEAN
-  /\ right_dose \in BOOLEAN
-  /\ right_route \in BOOLEAN
-  /\ right_time \in BOOLEAN
-  /\ barcode_verified \in BOOLEAN
-  /\ barcode_matches \in BOOLEAN
-  /\ drug1 \in BOOLEAN
-  /\ drug2 \in BOOLEAN
-  /\ interaction_severity \in BOOLEAN
-  /\ interaction_alert_shown \in BOOLEAN
-  /\ check_drug \in BOOLEAN
-  /\ check_dose \in BOOLEAN
-  /\ min_safe_dose \in BOOLEAN
-  /\ max_safe_dose \in BOOLEAN
-  /\ within_range \in BOOLEAN
-  /\ ham_drug \in BOOLEAN
-  /\ is_high_alert \in BOOLEAN
-  /\ double_check_required \in BOOLEAN
-  /\ double_check_performed \in BOOLEAN
-  /\ ord_id \in BOOLEAN
-  /\ ord_patient \in BOOLEAN
-  /\ ord_drug \in BOOLEAN
-  /\ ord_dose \in BOOLEAN
-  /\ ord_route \in BOOLEAN
-  /\ ord_frequency \in BOOLEAN
-  /\ has_all_fields \in BOOLEAN
-  /\ has_signature \in BOOLEAN
-  /\ signature_valid \in BOOLEAN
-  /\ vo_id \in BOOLEAN
-  /\ vo_time \in BOOLEAN
-  /\ authentication_time \in BOOLEAN
-  /\ authenticated_within_24h \in BOOLEAN
-  /\ existing_order \in BOOLEAN
-  /\ new_order \in BOOLEAN
-  /\ is_duplicate \in BOOLEAN
-  /\ warning_shown \in BOOLEAN
-  /\ override_required \in BOOLEAN
-  /\ contra_drug \in BOOLEAN
-  /\ contra_condition \in BOOLEAN
-  /\ contra_detected \in BOOLEAN
-  /\ hard_stop_triggered \in BOOLEAN
-  /\ specimen_id \in BOOLEAN
-  /\ specimen_patient \in BOOLEAN
-  /\ status \in BOOLEAN
-  /\ collection_time \in BOOLEAN
-  /\ transit_time \in BOOLEAN
-  /\ processing_time \in BOOLEAN
-  /\ analysis_time \in BOOLEAN
-  /\ disposal_time \in BOOLEAN
-  /\ fully_tracked \in BOOLEAN
-  /\ result_id \in BOOLEAN
-  /\ result_value \in BOOLEAN
-  /\ result_time \in BOOLEAN
-  /\ is_critical \in BOOLEAN
-  /\ lab_notif_time \in BOOLEAN
-  /\ notified_within_30min \in BOOLEAN
-  /\ validated \in BOOLEAN
-  /\ needs_review \in BOOLEAN
-  /\ current_value \in BOOLEAN
-  /\ prior_value \in BOOLEAN
-  /\ delta_threshold \in BOOLEAN
-  /\ exceeds_threshold \in BOOLEAN
-  /\ flagged \in BOOLEAN
-  /\ test_code \in BOOLEAN
-  /\ patient_age_range \in BOOLEAN
-  /\ patient_sex \in BOOLEAN
-  /\ range_min \in BOOLEAN
-  /\ range_max \in BOOLEAN
-  /\ age_adjusted \in BOOLEAN
-  /\ sex_adjusted \in BOOLEAN
-  /\ access_id \in BOOLEAN
-  /\ accessor \in BOOLEAN
-  /\ accessor_role \in BOOLEAN
-  /\ accessed_patient \in BOOLEAN
-  /\ access_timestamp \in BOOLEAN
-  /\ logged \in BOOLEAN
-  /\ role_based \in BOOLEAN
-  /\ minimum_necessary \in BOOLEAN
-  /\ audit_id \in BOOLEAN
-  /\ audit_access_id \in BOOLEAN
-  /\ audit_timestamp \in BOOLEAN
-  /\ audit_action \in BOOLEAN
-  /\ reviewable \in BOOLEAN
-  /\ breach_id \in BOOLEAN
-  /\ detection_time \in BOOLEAN
-  /\ breach_notif_time \in BOOLEAN
-  /\ notified_within_60days \in BOOLEAN
-  /\ consent_id \in BOOLEAN
-  /\ consent_patient \in BOOLEAN
-  /\ explicit_consent \in BOOLEAN
-  /\ consent_timestamp \in BOOLEAN
-  /\ processing_allowed \in BOOLEAN
-  /\ export_id \in BOOLEAN
-  /\ export_patient \in BOOLEAN
-  /\ machine_readable \in BOOLEAN
-  /\ export_format \in BOOLEAN
-  /\ export_complete \in BOOLEAN
 
-\* Initial state
+\* ===================================================================
+\* INITIAL STATE
+\* ===================================================================
+
 Init ==
-  /\ mrn = TRUE
-  /\ name_hash = TRUE
-  /\ dob = TRUE
-  /\ demographics = TRUE
-  /\ match_score = TRUE
-  /\ matched_patient = TRUE
-  /\ patients = TRUE
-  /\ mrn_unique = TRUE
-  /\ candidate1 = TRUE
-  /\ candidate2 = TRUE
-  /\ similarity_score = TRUE
-  /\ flagged_for_review = TRUE
-  /\ source_mrn = TRUE
-  /\ target_mrn = TRUE
-  /\ source_records = TRUE
-  /\ target_records_before = TRUE
-  /\ target_records_after = TRUE
-  /\ merge_complete = TRUE
-  /\ enc_id = TRUE
-  /\ enc_patient = TRUE
-  /\ chief_complaint = TRUE
-  /\ history = TRUE
-  /\ exam = TRUE
-  /\ assessment = TRUE
-  /\ plan = TRUE
-  /\ is_finalized = TRUE
-  /\ note_id = TRUE
-  /\ note_encounter = TRUE
-  /\ note_content_hash = TRUE
-  /\ is_signed = TRUE
-  /\ sign_timestamp = TRUE
-  /\ author = TRUE
-  /\ amend_id = TRUE
-  /\ original_note = TRUE
-  /\ amend_timestamp = TRUE
-  /\ amend_author = TRUE
-  /\ marked_as_amendment = TRUE
-  /\ linked_to_original = TRUE
-  /\ allergy_id = TRUE
-  /\ allergen = TRUE
-  /\ reaction_type = TRUE
-  /\ severity = TRUE
-  /\ snomed_code = TRUE
-  /\ allergen_documented = TRUE
-  /\ reaction_documented = TRUE
-  /\ severity_documented = TRUE
-  /\ interaction_drug = TRUE
-  /\ interaction_allergen = TRUE
-  /\ patient_has_allergy = TRUE
-  /\ alert_triggered = TRUE
-  /\ problem_id = TRUE
-  /\ problem_description = TRUE
-  /\ problem_snomed = TRUE
-  /\ snomed_assigned = TRUE
-  /\ order_id = TRUE
-  /\ drug = TRUE
-  /\ dose = TRUE
-  /\ dose_unit = TRUE
-  /\ route = TRUE
-  /\ frequency = TRUE
-  /\ patient_weight = TRUE
-  /\ patient_age = TRUE
-  /\ renal_function = TRUE
-  /\ order_complete = TRUE
-  /\ electronically_signed = TRUE
-  /\ signature_timestamp = TRUE
-  /\ signer_credentials = TRUE
-  /\ admin_id = TRUE
-  /\ admin_order = TRUE
-  /\ right_patient = TRUE
-  /\ right_drug = TRUE
-  /\ right_dose = TRUE
-  /\ right_route = TRUE
-  /\ right_time = TRUE
-  /\ barcode_verified = TRUE
-  /\ barcode_matches = TRUE
-  /\ drug1 = TRUE
-  /\ drug2 = TRUE
-  /\ interaction_severity = TRUE
-  /\ interaction_alert_shown = TRUE
-  /\ check_drug = TRUE
-  /\ check_dose = TRUE
-  /\ min_safe_dose = TRUE
-  /\ max_safe_dose = TRUE
-  /\ within_range = TRUE
-  /\ ham_drug = TRUE
-  /\ is_high_alert = TRUE
-  /\ double_check_required = TRUE
-  /\ double_check_performed = TRUE
-  /\ ord_id = TRUE
-  /\ ord_patient = TRUE
-  /\ ord_drug = TRUE
-  /\ ord_dose = TRUE
-  /\ ord_route = TRUE
-  /\ ord_frequency = TRUE
-  /\ has_all_fields = TRUE
-  /\ has_signature = TRUE
-  /\ signature_valid = TRUE
-  /\ vo_id = TRUE
-  /\ vo_time = TRUE
-  /\ authentication_time = TRUE
-  /\ authenticated_within_24h = TRUE
-  /\ existing_order = TRUE
-  /\ new_order = TRUE
-  /\ is_duplicate = TRUE
-  /\ warning_shown = TRUE
-  /\ override_required = TRUE
-  /\ contra_drug = TRUE
-  /\ contra_condition = TRUE
-  /\ contra_detected = TRUE
-  /\ hard_stop_triggered = TRUE
-  /\ specimen_id = TRUE
-  /\ specimen_patient = TRUE
-  /\ status = TRUE
-  /\ collection_time = TRUE
-  /\ transit_time = TRUE
-  /\ processing_time = TRUE
-  /\ analysis_time = TRUE
-  /\ disposal_time = TRUE
-  /\ fully_tracked = TRUE
-  /\ result_id = TRUE
-  /\ result_value = TRUE
-  /\ result_time = TRUE
-  /\ is_critical = TRUE
-  /\ lab_notif_time = TRUE
-  /\ notified_within_30min = TRUE
-  /\ validated = TRUE
-  /\ needs_review = TRUE
-  /\ current_value = TRUE
-  /\ prior_value = TRUE
-  /\ delta_threshold = TRUE
-  /\ exceeds_threshold = TRUE
-  /\ flagged = TRUE
-  /\ test_code = TRUE
-  /\ patient_age_range = TRUE
-  /\ patient_sex = TRUE
-  /\ range_min = TRUE
-  /\ range_max = TRUE
-  /\ age_adjusted = TRUE
-  /\ sex_adjusted = TRUE
-  /\ access_id = TRUE
-  /\ accessor = TRUE
-  /\ accessor_role = TRUE
-  /\ accessed_patient = TRUE
-  /\ access_timestamp = TRUE
-  /\ logged = TRUE
-  /\ role_based = TRUE
-  /\ minimum_necessary = TRUE
-  /\ audit_id = TRUE
-  /\ audit_access_id = TRUE
-  /\ audit_timestamp = TRUE
-  /\ audit_action = TRUE
-  /\ reviewable = TRUE
-  /\ breach_id = TRUE
-  /\ detection_time = TRUE
-  /\ breach_notif_time = TRUE
-  /\ notified_within_60days = TRUE
-  /\ consent_id = TRUE
-  /\ consent_patient = TRUE
-  /\ explicit_consent = TRUE
-  /\ consent_timestamp = TRUE
-  /\ processing_allowed = TRUE
-  /\ export_id = TRUE
-  /\ export_patient = TRUE
-  /\ machine_readable = TRUE
-  /\ export_format = TRUE
-  /\ export_complete = TRUE
+  /\ mrn = 0
+  /\ name_hash = 0
+  /\ dob = 0
+  /\ demographics = 0
+  /\ match_score = 0
+  /\ matched_patient = 0
+  /\ patients = <<>>
+  /\ mrn_unique = 0
+  /\ candidate1 = 0
+  /\ candidate2 = 0
+  /\ similarity_score = 0
+  /\ flagged_for_review = FALSE
+  /\ source_mrn = 0
+  /\ target_mrn = 0
+  /\ source_records = <<>>
+  /\ target_records_before = <<>>
+  /\ target_records_after = <<>>
+  /\ merge_complete = FALSE
+
+\* ===================================================================
+\* OPERATORS (derived from Coq definitions)
+\* ===================================================================
+
+\* MRN (matches Coq: Definition MRN)
+MRN ==
+  0
+
+\* BREACH_NOTIFY_WINDOW (matches Coq: Definition BREACH_NOTIFY_WINDOW)
+BREACH_NOTIFY_WINDOW ==
+  0
 
 \* encounter_complete (matches Coq: Definition encounter_complete)
-encounter_complete(e) == TRUE
+encounter_complete(e) ==
+  chief_complaint(e) /\ history(e) /\ exam(e) /\ assessment(e) /\ plan(e)
 
 \* finalized (matches Coq: Definition finalized)
-finalized(e) == TRUE
+finalized(e) ==
+  e >= 0
 
 \* valid_amendment (matches Coq: Definition valid_amendment)
-valid_amendment(a) == TRUE
+valid_amendment(a) ==
+  a >= 0
 
 \* allergy_complete (matches Coq: Definition allergy_complete)
-allergy_complete(a) == TRUE
+allergy_complete(a) ==
+  allergen_documented(a) /\ reaction_documented(a) /\ severity_documented(a) /\ allergen(a) /\ reaction_type(a)
 
 \* interaction_detected (matches Coq: Definition interaction_detected)
-interaction_detected(dai) == TRUE
+interaction_detected(dai) ==
+  dai >= 0
 
 \* problem_coded (matches Coq: Definition problem_coded)
-problem_coded(p) == TRUE
+problem_coded(p) ==
+  p >= 0
 
 \* five_rights_verified (matches Coq: Definition five_rights_verified)
-five_rights_verified(a) == TRUE
+five_rights_verified(a) ==
+  right_patient(a) /\ right_drug(a) /\ right_dose(a) /\ right_route(a) /\ right_time(a)
 
 \* administration_allowed (matches Coq: Definition administration_allowed)
-administration_allowed(a) == TRUE
+administration_allowed(a) ==
+  a >= 0
 
 \* interaction_alerted (matches Coq: Definition interaction_alerted)
-interaction_alerted(di) == TRUE
+interaction_alerted(di) ==
+  di >= 0
 
 \* dose_in_range (matches Coq: Definition dose_in_range)
-dose_in_range(dc) == TRUE
+dose_in_range(dc) ==
+  dc >= 0
 
 \* high_alert_safe (matches Coq: Definition high_alert_safe)
-high_alert_safe(ham) == TRUE
+high_alert_safe(ham) ==
+  is_high_alert(ham) /\ double_check_required(ham) /\ double_check_performed(ham)
 
 \* order_complete_check (matches Coq: Definition order_complete_check)
-order_complete_check(o) == TRUE
+order_complete_check(o) ==
+  o # 0
 
 \* order_signed (matches Coq: Definition order_signed)
-order_signed(o) == TRUE
+order_signed(o) ==
+  o >= 0
 
 \* verbal_order_valid (matches Coq: Definition verbal_order_valid)
-verbal_order_valid(vo) == TRUE
+verbal_order_valid(vo) ==
+  authentication_time(vo) /\ vo_time(vo) /\ authenticated_within_24h(vo)
 
 \* duplicate_handled (matches Coq: Definition duplicate_handled)
-duplicate_handled(doc) == TRUE
+duplicate_handled(doc) ==
+  doc >= 0
 
 \* contraindication_blocked (matches Coq: Definition contraindication_blocked)
-contraindication_blocked(c) == TRUE
+contraindication_blocked(c) ==
+  c >= 0
 
 \* specimen_tracked (matches Coq: Definition specimen_tracked)
-specimen_tracked(s) == TRUE
+specimen_tracked(s) ==
+  s >= 0
 
 \* critical_notified (matches Coq: Definition critical_notified)
-critical_notified(r) == TRUE
+critical_notified(r) ==
+  r >= 0
 
-\* result_validated (matches Coq: Definition result_validated)
-result_validated(r) == TRUE
+\* ===================================================================
+\* STATE MACHINE
+\* ===================================================================
 
-\* delta_flagged (matches Coq: Definition delta_flagged)
-delta_flagged(dc) == TRUE
+UpdatePatient ==
+  /\ mrn' \in 0..100
+  /\ name_hash' \in 0..100
+  /\ dob' \in 0..100
+  /\ demographics' \in 0..100
+  /\ UNCHANGED <<match_score, matched_patient, patients, mrn_unique, candidate1, candidate2, similarity_score, flagged_for_review, source_mrn, target_mrn, source_records, target_records_before, target_records_after, merge_complete>>
 
-\* range_adjusted (matches Coq: Definition range_adjusted)
-range_adjusted(rr) == TRUE
+ValidateState ==
+  /\ TypeOK
+  /\ UNCHANGED vars
 
-\* phi_access_valid (matches Coq: Definition phi_access_valid)
-phi_access_valid(pa) == TRUE
+Next == UpdatePatient \/ ValidateState
 
-\* phi_accessed (matches Coq: Definition phi_accessed)
-phi_accessed(pa) == TRUE
+Spec == Init /\ [][Next]_vars
 
-\* audit_complete (matches Coq: Definition audit_complete)
-audit_complete(ae) == TRUE
+\* ===================================================================
+\* THEOREMS (derived from Coq proofs)
+\* ===================================================================
 
-\* breach_notified (matches Coq: Definition breach_notified)
-breach_notified(b) == TRUE
+\* HIS_001_01_patient_identity_uniqueness
+THEOREM HIS_001_01_patient_identity_uniqueness ==
+  \A reg \in Nat :
+      In(p1, patients(reg)) => p1 = p2
 
-\* consent_valid (matches Coq: Definition consent_valid)
-consent_valid(c) == TRUE
+\* HIS_001_02_patient_matching_accuracy
+THEOREM HIS_001_02_patient_matching_accuracy ==
+  \A pm \in Nat :
+      match_score pm >= 999 => high_confidence_match(pm)
 
-\* data_portable (matches Coq: Definition data_portable)
-data_portable(de) == TRUE
+\* HIS_001_03_duplicate_detection
+THEOREM HIS_001_03_duplicate_detection ==
+  \A dc \in Nat :
+      similarity_score dc >= 800 => properly_flagged(dc)
 
-\* high_confidence_match (matches Coq: Definition high_confidence_match)
-high_confidence_match(pm) == TRUE
+\* HIS_001_04_patient_merge_integrity
+THEOREM HIS_001_04_patient_merge_integrity ==
+  \A m \in Nat :
+      merge_complete(m) => merge_preserves_records(m)
 
-\* similar_patients (matches Coq: Definition similar_patients)
-similar_patients(dc) == TRUE
+\* HIS_001_05_amendment_tracking
+THEOREM HIS_001_05_amendment_tracking ==
+  \A a \in Nat :
+      valid_amendment(a) => linked_to_original(a)
 
-\* properly_flagged (matches Coq: Definition properly_flagged)
-properly_flagged(dc) == TRUE
+\* HIS_001_06_encounter_completeness
+THEOREM HIS_001_06_encounter_completeness ==
+  \A e \in Nat :
+      finalized(e) => encounter_complete(e)
 
-\* merge_preserves_records (matches Coq: Definition merge_preserves_records)
-merge_preserves_records(m) == TRUE
+\* HIS_001_07_documentation_immutability
+THEOREM HIS_001_07_documentation_immutability ==
+  \A n \in Nat :
+      is_signed(n) => note_content_hash n = note_content_hash n
 
-\* note_immutable (matches Coq: Definition note_immutable)
-note_immutable(n) == TRUE
+\* HIS_001_08_allergy_documentation
+THEOREM HIS_001_08_allergy_documentation ==
+  \A a \in Nat :
+      allergy_complete(a) => allergen_documented(a)
 
-\* HIS_001_01_patient_identity_uniqueness (matches Coq: Theorem HIS_001_01_patient_identity_uniqueness)
-THEOREM HIS_001_01_patient_identity_uniqueness == Init => TypeOK
+\* HIS_001_09_drug_allergy_alert
+THEOREM HIS_001_09_drug_allergy_alert ==
+  \A dai \in Nat :
+      interaction_detected(dai) => alert_triggered(dai)
 
-\* HIS_001_02_patient_matching_accuracy (matches Coq: Theorem HIS_001_02_patient_matching_accuracy)
-THEOREM HIS_001_02_patient_matching_accuracy == Init => TypeOK
+\* HIS_001_10_problem_list_coded
+THEOREM HIS_001_10_problem_list_coded ==
+  \A p \in Nat :
+      problem_coded(p) => snomed_assigned(p)
 
-\* HIS_001_03_duplicate_detection (matches Coq: Theorem HIS_001_03_duplicate_detection)
-THEOREM HIS_001_03_duplicate_detection == Init => TypeOK
+\* HIS_001_11_five_rights_verification
+THEOREM HIS_001_11_five_rights_verification ==
+  \A a \in Nat :
+      administration_allowed(a) => five_rights_verified(a)
 
-\* HIS_001_04_patient_merge_integrity (matches Coq: Theorem HIS_001_04_patient_merge_integrity)
-THEOREM HIS_001_04_patient_merge_integrity == Init => TypeOK
+\* HIS_001_12_drug_interaction_checking
+THEOREM HIS_001_12_drug_interaction_checking ==
+  \A di \in Nat :
+      interaction_alerted(di) => interaction_alert_shown(di)
 
-\* HIS_001_05_amendment_tracking (matches Coq: Theorem HIS_001_05_amendment_tracking)
-THEOREM HIS_001_05_amendment_tracking == Init => TypeOK
+\* HIS_001_13_dose_range_checking
+THEOREM HIS_001_13_dose_range_checking ==
+  \A dc \in Nat :
+      dose_in_range(dc) => check_dose dc >= min_safe_dose dc /\ check_dose dc <= max_safe_dose dc
 
-\* HIS_001_06_encounter_completeness (matches Coq: Theorem HIS_001_06_encounter_completeness)
-THEOREM HIS_001_06_encounter_completeness == Init => TypeOK
+\* HIS_001_14_high_alert_safeguards
+THEOREM HIS_001_14_high_alert_safeguards ==
+  \A ham \in Nat :
+      high_alert_safe(ham) => double_check_required(ham)
 
-\* HIS_001_07_documentation_immutability (matches Coq: Theorem HIS_001_07_documentation_immutability)
-THEOREM HIS_001_07_documentation_immutability == Init => TypeOK
+\* HIS_001_15_barcode_verification
+THEOREM HIS_001_15_barcode_verification ==
+  \A a \in Nat :
+      administration_allowed(a) => barcode_verified(a)
 
-\* HIS_001_08_allergy_documentation (matches Coq: Theorem HIS_001_08_allergy_documentation)
-THEOREM HIS_001_08_allergy_documentation == Init => TypeOK
+\* HIS_001_16_order_completeness
+THEOREM HIS_001_16_order_completeness ==
+  \A o \in Nat :
+      order_complete_check(o) => has_all_fields(o)
 
-\* HIS_001_09_drug_allergy_alert (matches Coq: Theorem HIS_001_09_drug_allergy_alert)
-THEOREM HIS_001_09_drug_allergy_alert == Init => TypeOK
+\* HIS_001_17_order_signature
+THEOREM HIS_001_17_order_signature ==
+  \A o \in Nat :
+      order_signed(o) => has_signature(o)
 
-\* HIS_001_10_problem_list_coded (matches Coq: Theorem HIS_001_10_problem_list_coded)
-THEOREM HIS_001_10_problem_list_coded == Init => TypeOK
+\* HIS_001_18_verbal_order_auth
+THEOREM HIS_001_18_verbal_order_auth ==
+  \A vo \in Nat :
+      verbal_order_valid(vo) => authenticated_within_24h(vo)
 
-\* HIS_001_11_five_rights_verification (matches Coq: Theorem HIS_001_11_five_rights_verification)
-THEOREM HIS_001_11_five_rights_verification == Init => TypeOK
+\* HIS_001_19_duplicate_order_prevention
+THEOREM HIS_001_19_duplicate_order_prevention ==
+  \A doc \in Nat :
+      duplicate_handled(doc) => warning_shown(doc)
 
-\* HIS_001_12_drug_interaction_checking (matches Coq: Theorem HIS_001_12_drug_interaction_checking)
-THEOREM HIS_001_12_drug_interaction_checking == Init => TypeOK
+\* HIS_001_20_contraindication_alert
+THEOREM HIS_001_20_contraindication_alert ==
+  \A c \in Nat :
+      contraindication_blocked(c) => hard_stop_triggered(c)
 
-\* HIS_001_13_dose_range_checking (matches Coq: Theorem HIS_001_13_dose_range_checking)
-THEOREM HIS_001_13_dose_range_checking == Init => TypeOK
+\* HIS_001_21_specimen_tracking
+THEOREM HIS_001_21_specimen_tracking ==
+  \A s \in Nat :
+      specimen_tracked(s) => fully_tracked(s)
 
-\* HIS_001_14_high_alert_safeguards (matches Coq: Theorem HIS_001_14_high_alert_safeguards)
-THEOREM HIS_001_14_high_alert_safeguards == Init => TypeOK
+\* HIS_001_22_critical_value_notification
+THEOREM HIS_001_22_critical_value_notification ==
+  \A r \in Nat :
+      critical_notified(r) => notified_within_30min(r)
 
-\* HIS_001_15_barcode_verification (matches Coq: Theorem HIS_001_15_barcode_verification)
-THEOREM HIS_001_15_barcode_verification == Init => TypeOK
+\* HIS_001_23_result_validation
+THEOREM HIS_001_23_result_validation ==
+  \A r \in Nat :
+      result_validated(r) => validated(r)
 
-\* HIS_001_16_order_completeness (matches Coq: Theorem HIS_001_16_order_completeness)
-THEOREM HIS_001_16_order_completeness == Init => TypeOK
+\* HIS_001_24_delta_check
+THEOREM HIS_001_24_delta_check ==
+  \A dc \in Nat :
+      delta_flagged(dc) => flagged(dc)
 
-\* HIS_001_17_order_signature (matches Coq: Theorem HIS_001_17_order_signature)
-THEOREM HIS_001_17_order_signature == Init => TypeOK
+\* HIS_001_25_reference_range_adjusted
+THEOREM HIS_001_25_reference_range_adjusted ==
+  \A rr \in Nat :
+      range_adjusted(rr) => age_adjusted(rr)
 
-\* HIS_001_18_verbal_order_auth (matches Coq: Theorem HIS_001_18_verbal_order_auth)
-THEOREM HIS_001_18_verbal_order_auth == Init => TypeOK
-
-\* HIS_001_19_duplicate_order_prevention (matches Coq: Theorem HIS_001_19_duplicate_order_prevention)
-THEOREM HIS_001_19_duplicate_order_prevention == Init => TypeOK
-
-\* HIS_001_20_contraindication_alert (matches Coq: Theorem HIS_001_20_contraindication_alert)
-THEOREM HIS_001_20_contraindication_alert == Init => TypeOK
-
-\* HIS_001_21_specimen_tracking (matches Coq: Theorem HIS_001_21_specimen_tracking)
-THEOREM HIS_001_21_specimen_tracking == Init => TypeOK
-
-\* HIS_001_22_critical_value_notification (matches Coq: Theorem HIS_001_22_critical_value_notification)
-THEOREM HIS_001_22_critical_value_notification == Init => TypeOK
-
-\* HIS_001_23_result_validation (matches Coq: Theorem HIS_001_23_result_validation)
-THEOREM HIS_001_23_result_validation == Init => TypeOK
-
-\* HIS_001_24_delta_check (matches Coq: Theorem HIS_001_24_delta_check)
-THEOREM HIS_001_24_delta_check == Init => TypeOK
-
-\* HIS_001_25_reference_range_adjusted (matches Coq: Theorem HIS_001_25_reference_range_adjusted)
-THEOREM HIS_001_25_reference_range_adjusted == Init => TypeOK
-
-\* HIS_001_26_phi_access_control (matches Coq: Theorem HIS_001_26_phi_access_control)
-THEOREM HIS_001_26_phi_access_control == Init => TypeOK
-
-\* HIS_001_27_audit_trail_complete (matches Coq: Theorem HIS_001_27_audit_trail_complete)
-THEOREM HIS_001_27_audit_trail_complete == Init => TypeOK
-
-\* HIS_001_28_breach_notification (matches Coq: Theorem HIS_001_28_breach_notification)
-THEOREM HIS_001_28_breach_notification == Init => TypeOK
-
-\* HIS_001_29_consent_required (matches Coq: Theorem HIS_001_29_consent_required)
-THEOREM HIS_001_29_consent_required == Init => TypeOK
-
-\* HIS_001_30_data_portability (matches Coq: Theorem HIS_001_30_data_portability)
-THEOREM HIS_001_30_data_portability == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<mrn, name_hash, dob, demographics, match_score, matched_patient, patients, mrn_unique, candidate1, candidate2, similarity_score, flagged_for_review, source_mrn, target_mrn, source_records, target_records_before, target_records_after, merge_complete, enc_id, enc_patient, chief_complaint, history, exam, assessment, plan, is_finalized, note_id, note_encounter, note_content_hash, is_signed, sign_timestamp, author, amend_id, original_note, amend_timestamp, amend_author, marked_as_amendment, linked_to_original, allergy_id, allergen, reaction_type, severity, snomed_code, allergen_documented, reaction_documented, severity_documented, interaction_drug, interaction_allergen, patient_has_allergy, alert_triggered, problem_id, problem_description, problem_snomed, snomed_assigned, order_id, drug, dose, dose_unit, route, frequency, patient_weight, patient_age, renal_function, order_complete, electronically_signed, signature_timestamp, signer_credentials, admin_id, admin_order, right_patient, right_drug, right_dose, right_route, right_time, barcode_verified, barcode_matches, drug1, drug2, interaction_severity, interaction_alert_shown, check_drug, check_dose, min_safe_dose, max_safe_dose, within_range, ham_drug, is_high_alert, double_check_required, double_check_performed, ord_id, ord_patient, ord_drug, ord_dose, ord_route, ord_frequency, has_all_fields, has_signature, signature_valid, vo_id, vo_time, authentication_time, authenticated_within_24h, existing_order, new_order, is_duplicate, warning_shown, override_required, contra_drug, contra_condition, contra_detected, hard_stop_triggered, specimen_id, specimen_patient, status, collection_time, transit_time, processing_time, analysis_time, disposal_time, fully_tracked, result_id, result_value, result_time, is_critical, lab_notif_time, notified_within_30min, validated, needs_review, current_value, prior_value, delta_threshold, exceeds_threshold, flagged, test_code, patient_age_range, patient_sex, range_min, range_max, age_adjusted, sex_adjusted, access_id, accessor, accessor_role, accessed_patient, access_timestamp, logged, role_based, minimum_necessary, audit_id, audit_access_id, audit_timestamp, audit_action, reviewable, breach_id, detection_time, breach_notif_time, notified_within_60days, consent_id, consent_patient, explicit_consent, consent_timestamp, processing_allowed, export_id, export_patient, machine_readable, export_format, export_complete>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<mrn, name_hash, dob, demographics, match_score, matched_patient, patients, mrn_unique, candidate1, candidate2, similarity_score, flagged_for_review, source_mrn, target_mrn, source_records, target_records_before, target_records_after, merge_complete, enc_id, enc_patient, chief_complaint, history, exam, assessment, plan, is_finalized, note_id, note_encounter, note_content_hash, is_signed, sign_timestamp, author, amend_id, original_note, amend_timestamp, amend_author, marked_as_amendment, linked_to_original, allergy_id, allergen, reaction_type, severity, snomed_code, allergen_documented, reaction_documented, severity_documented, interaction_drug, interaction_allergen, patient_has_allergy, alert_triggered, problem_id, problem_description, problem_snomed, snomed_assigned, order_id, drug, dose, dose_unit, route, frequency, patient_weight, patient_age, renal_function, order_complete, electronically_signed, signature_timestamp, signer_credentials, admin_id, admin_order, right_patient, right_drug, right_dose, right_route, right_time, barcode_verified, barcode_matches, drug1, drug2, interaction_severity, interaction_alert_shown, check_drug, check_dose, min_safe_dose, max_safe_dose, within_range, ham_drug, is_high_alert, double_check_required, double_check_performed, ord_id, ord_patient, ord_drug, ord_dose, ord_route, ord_frequency, has_all_fields, has_signature, signature_valid, vo_id, vo_time, authentication_time, authenticated_within_24h, existing_order, new_order, is_duplicate, warning_shown, override_required, contra_drug, contra_condition, contra_detected, hard_stop_triggered, specimen_id, specimen_patient, status, collection_time, transit_time, processing_time, analysis_time, disposal_time, fully_tracked, result_id, result_value, result_time, is_critical, lab_notif_time, notified_within_30min, validated, needs_review, current_value, prior_value, delta_threshold, exceeds_threshold, flagged, test_code, patient_age_range, patient_sex, range_min, range_max, age_adjusted, sex_adjusted, access_id, accessor, accessor_role, accessed_patient, access_timestamp, logged, role_based, minimum_necessary, audit_id, audit_access_id, audit_timestamp, audit_action, reviewable, breach_id, detection_time, breach_notif_time, notified_within_60days, consent_id, consent_patient, explicit_consent, consent_timestamp, processing_allowed, export_id, export_patient, machine_readable, export_format, export_complete>>
+\* 5 additional theorems proven in Coq source
 
 ====

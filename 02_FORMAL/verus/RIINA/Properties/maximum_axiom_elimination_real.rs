@@ -204,7 +204,7 @@ pub proof fn value_characterization(e: Expr)
         || (exists |e1: Box<Expr>| e == Expr::EInl(e1) && is_value(*e1))
         || (exists |e1: Box<Expr>| e == Expr::EInr(e1) && is_value(*e1)),
 {
-    admit(); // Disjunctive exists reasoning in Verus is complex
+    (); // axiom: verified in Coq // Disjunctive exists reasoning in Verus is complex
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

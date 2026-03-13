@@ -1,82 +1,80 @@
 ---- MODULE LexOrder ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Copyright (c) 2026 The RIINA Authors.
-\* Derived from 02_FORMAL/coq/properties/LexOrder.v (16 invariants)
-\* Source mapping: scripts/generate-full-stack.py
+\* Derived from 02_FORMAL/coq/properties/LexOrder.v
+\* Lexicographic well-founded order for step-indexed proofs.
 
 EXTENDS Naturals, FiniteSets, Sequences
 
-VARIABLES state
+\* lex_lt: (m1, m2) < (n1, n2) iff m1 < n1 or (m1 = n1 and m2 < n2)
+lex_lt(m1, m2, n1, n2) ==
+  m1 < n1 \/ (m1 = n1 /\ m2 < n2)
 
-\* Type invariant
+VARIABLES n1, n2, m1, m2, isLess
+
+vars == <<n1, n2, m1, m2, isLess>>
+
 TypeOK ==
-  /\ state \in BOOLEAN
+  /\ n1 \in Nat /\ n2 \in Nat
+  /\ m1 \in Nat /\ m2 \in Nat
+  /\ isLess \in BOOLEAN
 
-\* Initial state
 Init ==
-  /\ state = TRUE
+  /\ n1 \in 0..5 /\ n2 \in 0..5
+  /\ m1 \in 0..5 /\ m2 \in 0..5
+  /\ isLess = lex_lt(m1, m2, n1, n2)
 
-\* lex_lt (matches Coq: Definition lex_lt)
-lex_lt(p1, p2) == TRUE
+Compare ==
+  /\ n1' \in 0..5 /\ n2' \in 0..5
+  /\ m1' \in 0..5 /\ m2' \in 0..5
+  /\ isLess' = lex_lt(m1', m2', n1', n2')
 
-\* step_ty_lt (matches Coq: Definition step_ty_lt)
-step_ty_lt(p1, p2) == TRUE
+\* Decrease first component
+DecFirst ==
+  /\ n1 > 0
+  /\ m1' = n1 - 1 /\ m2' \in 0..5
+  /\ n1' = n1 /\ n2' = n2
+  /\ isLess' = lex_lt(m1', m2', n1', n2')
 
-\* triple_lt (matches Coq: Definition triple_lt)
-triple_lt(p1, p2) == TRUE
+\* Decrease second component (first stays same)
+DecSecond ==
+  /\ n2 > 0
+  /\ m1' = n1 /\ m2' = n2 - 1
+  /\ n1' = n1 /\ n2' = n2
+  /\ isLess' = lex_lt(m1', m2', n1', n2')
 
-\* lex_lt_wf (matches Coq: Theorem lex_lt_wf)
-THEOREM lex_lt_wf == Init => TypeOK
+Next == Compare \/ DecFirst \/ DecSecond
 
-\* lex_induction (matches Coq: Theorem lex_induction)
-THEOREM lex_induction == Init => TypeOK
+Spec == Init /\ [][Next]_vars
 
-\* lex_lt_left (matches Coq: Lemma lex_lt_left)
-THEOREM lex_lt_left == Init => TypeOK
+\* lex_lt_wf: lexicographic order is well-founded
+THEOREM lex_lt_wf ==
+  ~(\E n1x, n2x \in Nat :
+      \A m1x, m2x \in Nat :
+        lex_lt(m1x, m2x, n1x, n2x) => FALSE)
 
-\* lex_lt_right (matches Coq: Lemma lex_lt_right)
-THEOREM lex_lt_right == Init => TypeOK
+\* lex_lt_irrefl: lexicographic order is irreflexive
+THEOREM lex_lt_irrefl ==
+  \A a, b \in Nat : ~lex_lt(a, b, a, b)
 
-\* step_ty_lt_wf (matches Coq: Theorem step_ty_lt_wf)
-THEOREM step_ty_lt_wf == Init => TypeOK
+\* lex_lt_trans: lexicographic order is transitive
+THEOREM lex_lt_trans ==
+  \A a1, a2, b1, b2, c1, c2 \in Nat :
+    lex_lt(a1, a2, b1, b2) /\ lex_lt(b1, b2, c1, c2)
+    => lex_lt(a1, a2, c1, c2)
 
-\* step_ty_induction (matches Coq: Theorem step_ty_induction)
-THEOREM step_ty_induction == Init => TypeOK
+\* lex_lt_dec_first: decreasing first component gives lex_lt
+THEOREM lex_lt_dec_first ==
+  \A n1x, n2x, m2x \in Nat :
+    n1x > 0 => lex_lt(n1x - 1, m2x, n1x, n2x)
 
-\* step_ty_lt_step (matches Coq: Lemma step_ty_lt_step)
-THEOREM step_ty_lt_step == Init => TypeOK
+\* lex_lt_dec_second: keeping first, decreasing second gives lex_lt
+THEOREM lex_lt_dec_second ==
+  \A n1x, n2x \in Nat :
+    n2x > 0 => lex_lt(n1x, n2x - 1, n1x, n2x)
 
-\* step_ty_lt_ty (matches Coq: Lemma step_ty_lt_ty)
-THEOREM step_ty_lt_ty == Init => TypeOK
-
-\* step_ty_lt_fn_arg (matches Coq: Lemma step_ty_lt_fn_arg)
-THEOREM step_ty_lt_fn_arg == Init => TypeOK
-
-\* step_ty_lt_fn_res (matches Coq: Lemma step_ty_lt_fn_res)
-THEOREM step_ty_lt_fn_res == Init => TypeOK
-
-\* step_ty_lt_prod_left (matches Coq: Lemma step_ty_lt_prod_left)
-THEOREM step_ty_lt_prod_left == Init => TypeOK
-
-\* step_ty_lt_prod_right (matches Coq: Lemma step_ty_lt_prod_right)
-THEOREM step_ty_lt_prod_right == Init => TypeOK
-
-\* step_ty_lt_sum_left (matches Coq: Lemma step_ty_lt_sum_left)
-THEOREM step_ty_lt_sum_left == Init => TypeOK
-
-\* step_ty_lt_sum_right (matches Coq: Lemma step_ty_lt_sum_right)
-THEOREM step_ty_lt_sum_right == Init => TypeOK
-
-\* step_ty_lt_step_any (matches Coq: Lemma step_ty_lt_step_any)
-THEOREM step_ty_lt_step_any == Init => TypeOK
-
-\* triple_lt_wf (matches Coq: Theorem triple_lt_wf)
-THEOREM triple_lt_wf == Init => TypeOK
-
-\* Next-state relation
-Next == UNCHANGED <<state>>
-
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
+\* lex_lt_step_type: (n, ty_size T1) < (n, ty_size (TFn T1 T2))
+THEOREM lex_lt_step_type ==
+  \A n \in Nat : \A s1, s2 \in Nat :
+    s1 < s1 + s2 + 1 => lex_lt(n, s1, n, s1 + s2 + 1)
 
 ====

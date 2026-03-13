@@ -258,76 +258,76 @@ let notification_compliant (p_rn: recipient_notification) : Tot bool =
   true
 
 (* REMIT_001_01_universal_coverage (matches Coq: Theorem REMIT_001_01_universal_coverage) *)
-let remit_001_01_universal_coverage (p_reg: nat) : Lemma (requires (compliant_registry p_reg == true /\ (forall (c: _). List.Tot.memP c un_member_states))) (ensures ((p_reg c).f_sanctioned == true \/ (p_reg c).f_can_send == true \/ (p_reg c).f_can_receive == true)) = admit ()
+let remit_001_01_universal_coverage (p_reg: nat) : Lemma (requires (compliant_registry p_reg == true /\ (forall (c: _). List.Tot.memP c un_member_states))) (ensures ((p_reg c).f_sanctioned == true \/ (p_reg c).f_can_send == true \/ (p_reg c).f_can_receive == true)) = ()
 
 (* REMIT_001_02_currency_support (matches Coq: Theorem REMIT_001_02_currency_support) *)
-let remit_001_02_currency_support (p_reg: nat) : Lemma (requires (compliant_currency_registry p_reg == true /\ (forall (c: _). List.Tot.memP c iso_4217_currencies))) (ensures ((p_reg c).f_is_supported == true)) = admit ()
+let remit_001_02_currency_support (p_reg: nat) : Lemma (requires (compliant_currency_registry p_reg == true /\ (forall (c: _). List.Tot.memP c iso_4217_currencies))) (ensures ((p_reg c).f_is_supported == true)) = ()
 
 (* REMIT_001_03_pricing_transparency (matches Coq: Theorem REMIT_001_03_pricing_transparency) *)
-let remit_001_03_pricing_transparency (p_corr: corridor) : Lemma (requires (p_corr.f_is_enabled == true /\ p_corr.f_fees_disclosed == true)) (ensures (p_corr.f_fees_disclosed == true)) = admit ()
+let remit_001_03_pricing_transparency (p_corr: corridor) : Lemma (requires (p_corr.f_is_enabled == true /\ p_corr.f_fees_disclosed == true)) (ensures (p_corr.f_fees_disclosed == true)) = ()
 
 (* REMIT_001_04_corridor_availability (matches Coq: Theorem REMIT_001_04_corridor_availability) *)
-let remit_001_04_corridor_availability (p_corr: corridor) : Lemma (requires (p_corr.f_is_enabled == true /\ (availability_pct p_corr >= 9999)%nat == true)) (ensures ((availability_pct p_corr >= 9999)%nat == true)) = admit ()
+let remit_001_04_corridor_availability (p_corr: corridor) : Lemma (requires (p_corr.f_is_enabled == true /\ (availability_pct p_corr >= 9999)%nat == true)) (ensures ((availability_pct p_corr >= 9999)%nat == true)) = ()
 
 (* REMIT_001_05_sanctioned_country_blocking (matches Coq: Theorem REMIT_001_05_sanctioned_country_blocking) *)
-let remit_001_05_sanctioned_country_blocking (p_corr: corridor) : Lemma (requires (p_corr.f_is_sanctioned == true /\ p_corr.f_is_enabled == false)) (ensures (p_corr.f_is_enabled == false)) = admit ()
+let remit_001_05_sanctioned_country_blocking (p_corr: corridor) : Lemma (requires (p_corr.f_is_sanctioned == true /\ p_corr.f_is_enabled == false)) (ensures (p_corr.f_is_enabled == false)) = ()
 
 (* REMIT_001_06_rate_freshness (matches Coq: Theorem REMIT_001_06_rate_freshness) *)
-let remit_001_06_rate_freshness (p_q: fx_quote) (p_current_time: nat) : Lemma (requires (fresh_quote p_q p_current_time == true)) (ensures ((rate_staleness p_q p_current_time <= 1)%nat == true)) = admit ()
+let remit_001_06_rate_freshness (p_q: fx_quote) (p_current_time: nat) : Lemma (requires (fresh_quote p_q p_current_time == true)) (ensures ((rate_staleness p_q p_current_time <= 1)%nat == true)) = ()
 
 (* REMIT_001_07_spread_transparency (matches Coq: Theorem REMIT_001_07_spread_transparency) *)
-let remit_001_07_spread_transparency (p_q: fx_quote) : Lemma (requires (valid_quote p_q == true)) (ensures (p_q.f_customer_rate == mid_market_rate p_q + spread p_q)) = admit ()
+let remit_001_07_spread_transparency (p_q: fx_quote) : Lemma (requires (valid_quote p_q == true)) (ensures (p_q.f_customer_rate == mid_market_rate p_q + spread p_q)) = ()
 
 (* REMIT_001_08_rate_lock_guarantee (matches Coq: Theorem REMIT_001_08_rate_lock_guarantee) *)
-let remit_001_08_rate_lock_guarantee (p_q: fx_quote) (p_current_time: nat) : Lemma (requires (valid_quote p_q == true /\ (p_current_time <= quote_timestamp p_q + guarantee_window p_q)%nat == true)) (ensures (rate_lock_valid p_q p_current_time == true)) = admit ()
+let remit_001_08_rate_lock_guarantee (p_q: fx_quote) (p_current_time: nat) : Lemma (requires (valid_quote p_q == true /\ (p_current_time <= quote_timestamp p_q + guarantee_window p_q)%nat == true)) (ensures (rate_lock_valid p_q p_current_time == true)) = ()
 
 (* REMIT_001_09_no_hidden_margin (matches Coq: Theorem REMIT_001_09_no_hidden_margin) *)
-let remit_001_09_no_hidden_margin (p_t: transfer) : Lemma (requires (valid_transfer p_t == true)) (ensures (total_cost p_t == stated_fee p_t + stated_spread p_t)) = admit ()
+let remit_001_09_no_hidden_margin (p_t: transfer) : Lemma (requires (valid_transfer p_t == true)) (ensures (total_cost p_t == stated_fee p_t + stated_spread p_t)) = ()
 
 (* REMIT_001_10_hedge_ratio_maintenance (matches Coq: Theorem REMIT_001_10_hedge_ratio_maintenance) *)
-let remit_001_10_hedge_ratio_maintenance (p_q: fx_quote) : Lemma (requires (valid_quote p_q == true)) (ensures ((hedge_ratio_bps p_q >= 9800)%nat == true /\ (hedge_ratio_bps p_q <= 10200)%nat == true)) = admit ()
+let remit_001_10_hedge_ratio_maintenance (p_q: fx_quote) : Lemma (requires (valid_quote p_q == true)) (ensures ((hedge_ratio_bps p_q >= 9800)%nat == true /\ (hedge_ratio_bps p_q <= 10200)%nat == true)) = ()
 
 (* REMIT_001_11_swift_gpi_tracking (matches Coq: Theorem REMIT_001_11_swift_gpi_tracking) *)
-let remit_001_11_swift_gpi_tracking (p_t: transfer) : Lemma (requires (valid_transfer p_t == true /\ is_swift_rail (p_t.f_rail) == true)) (ensures (p_t.f_tracking_available == true)) = admit ()
+let remit_001_11_swift_gpi_tracking (p_t: transfer) : Lemma (requires (valid_transfer p_t == true /\ is_swift_rail (p_t.f_rail) == true)) (ensures (p_t.f_tracking_available == true)) = ()
 
 (* REMIT_001_12_instant_rail_settlement (matches Coq: Theorem REMIT_001_12_instant_rail_settlement) *)
-let remit_001_12_instant_rail_settlement (p_t: transfer) : Lemma (requires (valid_transfer p_t == true /\ is_instant_rail (p_t.f_rail) == true)) (ensures ((settlement_time_sec p_t <= 60)%nat == true)) = admit ()
+let remit_001_12_instant_rail_settlement (p_t: transfer) : Lemma (requires (valid_transfer p_t == true /\ is_instant_rail (p_t.f_rail) == true)) (ensures ((settlement_time_sec p_t <= 60)%nat == true)) = ()
 
 (* REMIT_001_13_blockchain_atomic_execution (matches Coq: Theorem REMIT_001_13_blockchain_atomic_execution) *)
-let remit_001_13_blockchain_atomic_execution (p_t: transfer) : Lemma (requires (valid_transfer p_t == true /\ is_blockchain_rail (p_t.f_rail) == true)) (ensures (p_t.f_is_atomic == true)) = admit ()
+let remit_001_13_blockchain_atomic_execution (p_t: transfer) : Lemma (requires (valid_transfer p_t == true /\ is_blockchain_rail (p_t.f_rail) == true)) (ensures (p_t.f_is_atomic == true)) = ()
 
 (* REMIT_001_14_mobile_money_instant (matches Coq: Theorem REMIT_001_14_mobile_money_instant) *)
-let remit_001_14_mobile_money_instant (p_t: transfer) : Lemma (requires (valid_transfer p_t == true /\ is_mobile_money_rail (p_t.f_rail) == true)) (ensures ((settlement_time_sec p_t <= 5)%nat == true)) = admit ()
+let remit_001_14_mobile_money_instant (p_t: transfer) : Lemma (requires (valid_transfer p_t == true /\ is_mobile_money_rail (p_t.f_rail) == true)) (ensures ((settlement_time_sec p_t <= 5)%nat == true)) = ()
 
 (* REMIT_001_15_local_rail_integration (matches Coq: Theorem REMIT_001_15_local_rail_integration) *)
-let remit_001_15_local_rail_integration (p_t: transfer) : Lemma (requires (valid_transfer p_t == true /\ is_local_rail (p_t.f_rail) == true)) (ensures (is_local_rail (p_t.f_rail) == true)) = admit ()
+let remit_001_15_local_rail_integration (p_t: transfer) : Lemma (requires (valid_transfer p_t == true /\ is_local_rail (p_t.f_rail) == true)) (ensures (is_local_rail (p_t.f_rail) == true)) = ()
 
 (* REMIT_001_16_realtime_screening (matches Coq: Theorem REMIT_001_16_realtime_screening) *)
-let remit_001_16_realtime_screening (p_b: beneficiary) : Lemma (requires (transfer_allowed p_b == true)) (ensures ((screening_time_ms p_b < 500)%nat == true)) = admit ()
+let remit_001_16_realtime_screening (p_b: beneficiary) : Lemma (requires (transfer_allowed p_b == true)) (ensures ((screening_time_ms p_b < 500)%nat == true)) = ()
 
 (* REMIT_001_17_sanctions_screening_complete (matches Coq: Theorem REMIT_001_17_sanctions_screening_complete) *)
-let remit_001_17_sanctions_screening_complete (p_b: beneficiary) : Lemma (requires (transfer_allowed p_b == true)) (ensures (fully_screened p_b == true)) = admit ()
+let remit_001_17_sanctions_screening_complete (p_b: beneficiary) : Lemma (requires (transfer_allowed p_b == true)) (ensures (fully_screened p_b == true)) = ()
 
 (* REMIT_001_18_travel_rule_compliance (matches Coq: Theorem REMIT_001_18_travel_rule_compliance) *)
-let remit_001_18_travel_rule_compliance (p_trd: travel_rule_data) : Lemma (requires (travel_rule_compliant p_trd == true)) (ensures (p_trd.f_data_transmitted == true)) = admit ()
+let remit_001_18_travel_rule_compliance (p_trd: travel_rule_data) : Lemma (requires (travel_rule_compliant p_trd == true)) (ensures (p_trd.f_data_transmitted == true)) = ()
 
 (* REMIT_001_19_str_filing (matches Coq: Theorem REMIT_001_19_str_filing) *)
-let remit_001_19_str_filing (p_sa: suspicious_activity) : Lemma (requires (str_compliant p_sa == true)) (ensures (p_sa.f_str_filed == true /\ (filing_timestamp p_sa <= filing_deadline p_sa)%nat == true)) = admit ()
+let remit_001_19_str_filing (p_sa: suspicious_activity) : Lemma (requires (str_compliant p_sa == true)) (ensures (p_sa.f_str_filed == true /\ (filing_timestamp p_sa <= filing_deadline p_sa)%nat == true)) = ()
 
 (* REMIT_001_20_kyc_verification (matches Coq: Theorem REMIT_001_20_kyc_verification) *)
-let remit_001_20_kyc_verification (p_trd: travel_rule_data) : Lemma (requires (travel_rule_compliant p_trd == true)) (ensures ((p_trd.f_originator_info).f_kyc_verified == true)) = admit ()
+let remit_001_20_kyc_verification (p_trd: travel_rule_data) : Lemma (requires (travel_rule_compliant p_trd == true)) (ensures ((p_trd.f_originator_info).f_kyc_verified == true)) = ()
 
 (* REMIT_001_21_instant_bank_credit (matches Coq: Theorem REMIT_001_21_instant_bank_credit) *)
-let remit_001_21_instant_bank_credit (p_bc: bank_credit) : Lemma (requires (instant_bank_credit_valid p_bc == true /\ is_instant_rail (p_bc.f_credit_rail) == true)) (ensures ((credit_time_sec p_bc <= 60)%nat == true)) = admit ()
+let remit_001_21_instant_bank_credit (p_bc: bank_credit) : Lemma (requires (instant_bank_credit_valid p_bc == true /\ is_instant_rail (p_bc.f_credit_rail) == true)) (ensures ((credit_time_sec p_bc <= 60)%nat == true)) = ()
 
 (* REMIT_001_22_wallet_instant_credit (matches Coq: Theorem REMIT_001_22_wallet_instant_credit) *)
-let remit_001_22_wallet_instant_credit (p_wc: wallet_credit) : Lemma (requires (wallet_credit_valid p_wc == true)) (ensures (p_wc.f_credit_instant == true)) = admit ()
+let remit_001_22_wallet_instant_credit (p_wc: wallet_credit) : Lemma (requires (wallet_credit_valid p_wc == true)) (ensures (p_wc.f_credit_instant == true)) = ()
 
 (* REMIT_001_23_cash_pickup_security (matches Coq: Theorem REMIT_001_23_cash_pickup_security) *)
-let remit_001_23_cash_pickup_security (p_cp: cash_pickup) : Lemma (requires (valid_cash_pickup p_cp == true)) (ensures (secure_pickup_code p_cp == true)) = admit ()
+let remit_001_23_cash_pickup_security (p_cp: cash_pickup) : Lemma (requires (valid_cash_pickup p_cp == true)) (ensures (secure_pickup_code p_cp == true)) = ()
 
 (* REMIT_001_24_iban_validation (matches Coq: Theorem REMIT_001_24_iban_validation) *)
-let remit_001_24_iban_validation (p_i: iban) : Lemma (requires (iban_validated p_i == true)) (ensures (p_i.f_checksum_valid == true /\ p_i.f_format_valid == true)) = admit ()
+let remit_001_24_iban_validation (p_i: iban) : Lemma (requires (iban_validated p_i == true)) (ensures (p_i.f_checksum_valid == true /\ p_i.f_format_valid == true)) = ()
 
 (* REMIT_001_25_recipient_notification (matches Coq: Theorem REMIT_001_25_recipient_notification) *)
-let remit_001_25_recipient_notification (p_rn: recipient_notification) : Lemma (requires (notification_compliant p_rn == true)) (ensures (p_rn.f_notification_sent == true /\ p_rn.f_channel_used == p_rn.f_channel_preferred)) = admit ()
+let remit_001_25_recipient_notification (p_rn: recipient_notification) : Lemma (requires (notification_compliant p_rn == true)) (ensures (p_rn.f_notification_sent == true /\ p_rn.f_channel_used == p_rn.f_channel_preferred)) = ()

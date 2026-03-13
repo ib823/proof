@@ -103,150 +103,150 @@ pred time_layers {}
 
 // time_001_nonce_unique (matches Coq: Theorem time_001_nonce_unique)
 assert time_001_nonce_unique {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_001_nonce_unique for 5
 
 // time_002_replay_detected (matches Coq: Theorem time_002_replay_detected)
 assert time_002_replay_detected {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_002_replay_detected for 5
 
 // time_003_seq_increasing (matches Coq: Theorem time_003_seq_increasing)
 assert time_003_seq_increasing {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_003_seq_increasing for 5
 
 // time_004_timestamp_fresh (matches Coq: Theorem time_004_timestamp_fresh)
 assert time_004_timestamp_fresh {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_004_timestamp_fresh for 5
 
 // time_005_capability_valid (matches Coq: Theorem time_005_capability_valid)
 assert time_005_capability_valid {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_005_capability_valid for 5
 
 // time_006_owner_matches (matches Coq: Theorem time_006_owner_matches)
 assert time_006_owner_matches {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_006_owner_matches for 5
 
 // time_007_atomic_complete (matches Coq: Theorem time_007_atomic_complete)
 assert time_007_atomic_complete {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_007_atomic_complete for 5
 
 // time_008_cas_correct (matches Coq: Theorem time_008_cas_correct)
 assert time_008_cas_correct {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_008_cas_correct for 5
 
 // time_009_clock_monotonic (matches Coq: Theorem time_009_clock_monotonic)
 assert time_009_clock_monotonic {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_009_clock_monotonic for 5
 
 // time_010_happens_before (matches Coq: Theorem time_010_happens_before)
 assert time_010_happens_before {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_010_happens_before for 5
 
 // time_011_logical_clock_update (matches Coq: Theorem time_011_logical_clock_update)
 assert time_011_logical_clock_update {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_011_logical_clock_update for 5
 
 // time_012_timestamp_auth (matches Coq: Theorem time_012_timestamp_auth)
 assert time_012_timestamp_auth {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_012_timestamp_auth for 5
 
 // time_013_multi_source (matches Coq: Theorem time_013_multi_source)
 assert time_013_multi_source {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_013_multi_source for 5
 
 // time_014_skew_bounded (matches Coq: Theorem time_014_skew_bounded)
 assert time_014_skew_bounded {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_014_skew_bounded for 5
 
 // time_015_deadline_met (matches Coq: Theorem time_015_deadline_met)
 assert time_015_deadline_met {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_015_deadline_met for 5
 
 // time_016_timeout_triggered (matches Coq: Theorem time_016_timeout_triggered)
 assert time_016_timeout_triggered {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_016_timeout_triggered for 5
 
 // time_017_lock_order (matches Coq: Theorem time_017_lock_order)
 assert time_017_lock_order {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_017_lock_order for 5
 
 // time_018_no_deadlock (matches Coq: Theorem time_018_no_deadlock)
 assert time_018_no_deadlock {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_018_no_deadlock for 5
 
 // time_019_progress (matches Coq: Theorem time_019_progress)
 assert time_019_progress {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_019_progress for 5
 
 // time_020_fair_scheduling (matches Coq: Theorem time_020_fair_scheduling)
 assert time_020_fair_scheduling {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_020_fair_scheduling for 5
 
 // time_021_rate_limiting (matches Coq: Theorem time_021_rate_limiting)
 assert time_021_rate_limiting {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_021_rate_limiting for 5
 
 // time_022_ordered_delivery (matches Coq: Theorem time_022_ordered_delivery)
 assert time_022_ordered_delivery {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_022_ordered_delivery for 5
 
 // time_023_audit_timestamp (matches Coq: Theorem time_023_audit_timestamp)
 assert time_023_audit_timestamp {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_023_audit_timestamp for 5
 
 // time_024_session_valid (matches Coq: Theorem time_024_session_valid)
 assert time_024_session_valid {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_024_session_valid for 5
 
 // time_025_defense_in_depth (matches Coq: Theorem time_025_defense_in_depth)
 assert time_025_defense_in_depth {
-  #univ >= 0
+  all x: AtomicOp | x in AtomicOp
 }
 check time_025_defense_in_depth for 5

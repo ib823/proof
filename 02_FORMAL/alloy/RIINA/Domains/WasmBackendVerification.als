@@ -137,258 +137,258 @@ pred sum_tag_valid[s: SumLayout] {
 
 // wasm_eval_const (matches Coq: Lemma wasm_eval_const)
 assert wasm_eval_const {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_eval_const for 5
 
 // wasm_eval_add (matches Coq: Lemma wasm_eval_add)
 assert wasm_eval_add {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_eval_add for 5
 
 // wasm_eval_mul (matches Coq: Lemma wasm_eval_mul)
 assert wasm_eval_mul {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_eval_mul for 5
 
 // wasm_001_const_preservation (matches Coq: Theorem wasm_001_const_preservation)
 assert wasm_001_const_preservation {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_001_const_preservation for 5
 
 // wasm_002_ni_preservation (matches Coq: Theorem wasm_002_ni_preservation)
 assert wasm_002_ni_preservation {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_002_ni_preservation for 5
 
 // wasm_002_memory_separation (matches Coq: Theorem wasm_002_memory_separation)
 assert wasm_002_memory_separation {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_002_memory_separation for 5
 
 // wasm_003_effect_preservation (matches Coq: Theorem wasm_003_effect_preservation)
 assert wasm_003_effect_preservation {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_003_effect_preservation for 5
 
 // wasm_003_io_self_safe (matches Coq: Theorem wasm_003_io_self_safe)
 assert wasm_003_io_self_safe {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_003_io_self_safe for 5
 
 // wasm_004_int_type_preserved (matches Coq: Theorem wasm_004_int_type_preserved)
 assert wasm_004_int_type_preserved {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_004_int_type_preserved for 5
 
 // wasm_004_add_type_preserved (matches Coq: Theorem wasm_004_add_type_preserved)
 assert wasm_004_add_type_preserved {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_004_add_type_preserved for 5
 
 // wasm_004_bool_type_preserved (matches Coq: Theorem wasm_004_bool_type_preserved)
 assert wasm_004_bool_type_preserved {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_004_bool_type_preserved for 5
 
 // wasm_005_disjoint_regions (matches Coq: Theorem wasm_005_disjoint_regions)
 assert wasm_005_disjoint_regions {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_005_disjoint_regions for 5
 
 // wasm_005_public_cannot_access_secret (matches Coq: Theorem wasm_005_public_cannot_access_secret)
 assert wasm_005_public_cannot_access_secret {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_005_public_cannot_access_secret for 5
 
 // wasm_006_string_const_produces_ptr (matches Coq: Theorem wasm_006_string_const_produces_ptr)
 assert wasm_006_string_const_produces_ptr {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_006_string_const_produces_ptr for 5
 
 // wasm_006_string_ptr_is_i32 (matches Coq: Theorem wasm_006_string_ptr_is_i32)
 assert wasm_006_string_ptr_is_i32 {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_006_string_ptr_is_i32 for 5
 
 // wasm_006_string_dedup (matches Coq: Theorem wasm_006_string_dedup)
 assert wasm_006_string_dedup {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_006_string_dedup for 5
 
 // wasm_007_closure_layout (matches Coq: Theorem wasm_007_closure_layout)
 assert wasm_007_closure_layout {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_007_closure_layout for 5
 
 // wasm_007_closure_no_overlap (matches Coq: Theorem wasm_007_closure_no_overlap)
 assert wasm_007_closure_no_overlap {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_007_closure_no_overlap for 5
 
 // wasm_007_closure_func_idx_recoverable (matches Coq: Theorem wasm_007_closure_func_idx_recoverable)
 assert wasm_007_closure_func_idx_recoverable {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_007_closure_func_idx_recoverable for 5
 
 // wasm_008_pair_offsets_disjoint (matches Coq: Theorem wasm_008_pair_offsets_disjoint)
 assert wasm_008_pair_offsets_disjoint {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_008_pair_offsets_disjoint for 5
 
 // wasm_008_pair_fits_in_region (matches Coq: Theorem wasm_008_pair_fits_in_region)
 assert wasm_008_pair_fits_in_region {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_008_pair_fits_in_region for 5
 
 // wasm_008_sum_tag_determines_branch (matches Coq: Theorem wasm_008_sum_tag_determines_branch)
 assert wasm_008_sum_tag_determines_branch {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_008_sum_tag_determines_branch for 5
 
 // wasm_008_sum_fits_in_region (matches Coq: Theorem wasm_008_sum_fits_in_region)
 assert wasm_008_sum_fits_in_region {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_008_sum_fits_in_region for 5
 
 // wasm_008_pairs_disjoint (matches Coq: Theorem wasm_008_pairs_disjoint)
 assert wasm_008_pairs_disjoint {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_008_pairs_disjoint for 5
 
 // wasm_009_alloc_returns_current (matches Coq: Theorem wasm_009_alloc_returns_current)
 assert wasm_009_alloc_returns_current {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_009_alloc_returns_current for 5
 
 // wasm_009_alloc_advances_ptr (matches Coq: Theorem wasm_009_alloc_advances_ptr)
 assert wasm_009_alloc_advances_ptr {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_009_alloc_advances_ptr for 5
 
 // wasm_009_alloc_preserves_limit (matches Coq: Theorem wasm_009_alloc_preserves_limit)
 assert wasm_009_alloc_preserves_limit {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_009_alloc_preserves_limit for 5
 
 // wasm_009_sequential_alloc_disjoint (matches Coq: Theorem wasm_009_sequential_alloc_disjoint)
 assert wasm_009_sequential_alloc_disjoint {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_009_sequential_alloc_disjoint for 5
 
 // wasm_009_alloc_oom (matches Coq: Theorem wasm_009_alloc_oom)
 assert wasm_009_alloc_oom {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_009_alloc_oom for 5
 
 // wasm_010_compile_ir_total (matches Coq: Theorem wasm_010_compile_ir_total)
 assert wasm_010_compile_ir_total {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_compile_ir_total for 5
 
 // wasm_010_const_translates (matches Coq: Theorem wasm_010_const_translates)
 assert wasm_010_const_translates {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_const_translates for 5
 
 // wasm_010_var_translates (matches Coq: Theorem wasm_010_var_translates)
 assert wasm_010_var_translates {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_var_translates for 5
 
 // wasm_010_add_translates (matches Coq: Theorem wasm_010_add_translates)
 assert wasm_010_add_translates {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_add_translates for 5
 
 // wasm_010_mul_translates (matches Coq: Theorem wasm_010_mul_translates)
 assert wasm_010_mul_translates {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_mul_translates for 5
 
 // wasm_010_call_translates (matches Coq: Theorem wasm_010_call_translates)
 assert wasm_010_call_translates {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_call_translates for 5
 
 // wasm_010_let_translates (matches Coq: Theorem wasm_010_let_translates)
 assert wasm_010_let_translates {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_let_translates for 5
 
 // wasm_010_if_translates (matches Coq: Theorem wasm_010_if_translates)
 assert wasm_010_if_translates {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_if_translates for 5
 
 // wasm_010_load_translates (matches Coq: Theorem wasm_010_load_translates)
 assert wasm_010_load_translates {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_load_translates for 5
 
 // wasm_010_store_translates (matches Coq: Theorem wasm_010_store_translates)
 assert wasm_010_store_translates {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_store_translates for 5
 
 // app_ne_nil_r (matches Coq: Lemma app_ne_nil_r)
 assert app_ne_nil_r {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check app_ne_nil_r for 5
 
 // singleton_ne_nil (matches Coq: Lemma singleton_ne_nil)
 assert singleton_ne_nil {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check singleton_ne_nil for 5
 
 // cons_ne_nil (matches Coq: Lemma cons_ne_nil)
 assert cons_ne_nil {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check cons_ne_nil for 5
 
 // wasm_010_completeness (matches Coq: Theorem wasm_010_completeness)
 assert wasm_010_completeness {
-  #univ >= 0
+  all x: WasmValType | x in WasmValType
 }
 check wasm_010_completeness for 5

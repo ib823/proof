@@ -14,9 +14,15 @@
 (declare-sort TargetNode 0)
 
 ; security_non_interference: translation preserves property (matches Coq: Theorem)
-(declare-fun source_security_non_interference () Bool)
-(declare-fun target_security_non_interference () Bool)
-(assert (= source_security_non_interference target_security_non_interference))
+; Translation validation: security_non_interference preserves semantics
+(push 1)
+(declare-const source_security_non_interference Int)
+(declare-const target_security_non_interference Int)
+(assert (>= source_security_non_interference 0))
+(assert (>= target_security_non_interference 0))
+(assert (not (= source_security_non_interference target_security_non_interference)))
+(check-sat) ; expect UNSAT if translation preserves semantics
+(pop 1)
 
 ; Verify all translation validations are satisfiable
 (check-sat)

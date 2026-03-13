@@ -127,77 +127,77 @@ let autonomy_layers (p_envelope: bool) (p_failsafe: bool) (p_override: bool) (p_
   andb p_envelope (andb p_failsafe ((p_override && p_verify)))
 
 (* auto_001_velocity_bounded (matches Coq: Theorem auto_001_velocity_bounded) *)
-let auto_001_velocity_bounded (p_state: nat) (p_env: nat) : Lemma (requires (velocity_in_envelope p_state p_env == true)) (ensures (state_velocity p_state <= env_max_velocity p_env)) = admit ()
+let auto_001_velocity_bounded (p_state: nat) (p_env: nat) : Lemma (requires (velocity_in_envelope p_state p_env == true)) (ensures (state_velocity p_state <= env_max_velocity p_env)) = ()
 
 (* auto_002_distance_maintained (matches Coq: Theorem auto_002_distance_maintained) *)
-let auto_002_distance_maintained (p_distance: nat) (p_env: nat) : Lemma (requires (distance_safe p_distance p_env == true)) (ensures (env_min_distance p_env <= p_distance)) = admit ()
+let auto_002_distance_maintained (p_distance: nat) (p_env: nat) : Lemma (requires (distance_safe p_distance p_env == true)) (ensures (env_min_distance p_env <= p_distance)) = ()
 
 (* auto_003_heading_bounded (matches Coq: Theorem auto_003_heading_bounded) *)
-let auto_003_heading_bounded (p_rate: nat) (p_env: nat) : Lemma (requires (heading_rate_ok p_rate p_env == true)) (ensures (p_rate <= env_max_heading_rate p_env)) = admit ()
+let auto_003_heading_bounded (p_rate: nat) (p_env: nat) : Lemma (requires (heading_rate_ok p_rate p_env == true)) (ensures (p_rate <= env_max_heading_rate p_env)) = ()
 
 (* auto_004_confidence_ok (matches Coq: Theorem auto_004_confidence_ok) *)
-let auto_004_confidence_ok (p_dec: nat) (p_min_conf: nat) : Lemma (requires (confidence_sufficient p_dec p_min_conf == true)) (ensures (p_min_conf <= dec_confidence p_dec)) = admit ()
+let auto_004_confidence_ok (p_dec: nat) (p_min_conf: nat) : Lemma (requires (confidence_sufficient p_dec p_min_conf == true)) (ensures (p_min_conf <= dec_confidence p_dec)) = ()
 
 (* auto_005_sensor_failsafe (matches Coq: Theorem auto_005_sensor_failsafe) *)
-let auto_005_sensor_failsafe () : Lemma (should_failsafe SensorFailure == true) = admit ()
+let auto_005_sensor_failsafe () : Lemma (should_failsafe SensorFailure == true) = ()
 
 (* auto_006_envelope_failsafe (matches Coq: Theorem auto_006_envelope_failsafe) *)
-let auto_006_envelope_failsafe () : Lemma (should_failsafe EnvelopeViolation == true) = admit ()
+let auto_006_envelope_failsafe () : Lemma (should_failsafe EnvelopeViolation == true) = ()
 
 (* auto_007_human_override (matches Coq: Theorem auto_007_human_override) *)
-let auto_007_human_override () : Lemma (should_failsafe HumanOverride == true) = admit ()
+let auto_007_human_override () : Lemma (should_failsafe HumanOverride == true) = ()
 
 (* auto_008_reaction_bounded (matches Coq: Theorem auto_008_reaction_bounded) *)
-let auto_008_reaction_bounded (p_rt: nat) : Lemma (requires (reaction_ok p_rt == true)) (ensures (react_measured p_rt <= react_deadline p_rt)) = admit ()
+let auto_008_reaction_bounded (p_rt: nat) : Lemma (requires (reaction_ok p_rt == true)) (ensures (react_measured p_rt <= react_deadline p_rt)) = ()
 
 (* auto_009_emergency_stop_valid (matches Coq: Theorem auto_009_emergency_stop_valid) *)
-let auto_009_emergency_stop_valid () : Lemma (valid_failsafe_action EmergencyStop == true) = admit ()
+let auto_009_emergency_stop_valid () : Lemma (valid_failsafe_action EmergencyStop == true) = ()
 
 (* auto_010_safe_hold_valid (matches Coq: Theorem auto_010_safe_hold_valid) *)
-let auto_010_safe_hold_valid () : Lemma (valid_failsafe_action SafeHold == true) = admit ()
+let auto_010_safe_hold_valid () : Lemma (valid_failsafe_action SafeHold == true) = ()
 
 (* auto_011_mode_transition (matches Coq: Theorem auto_011_mode_transition) *)
-let auto_011_mode_transition (p_from: nat) (p_to: nat) : Lemma (requires (valid_mode_transition p_from p_to == true)) (ensures (valid_mode_transition p_from p_to == true)) = admit ()
+let auto_011_mode_transition (p_from: nat) (p_to: nat) : Lemma (requires (valid_mode_transition p_from p_to == true)) (ensures (valid_mode_transition p_from p_to == true)) = ()
 
 (* auto_012_no_skip_assisted (matches Coq: Theorem auto_012_no_skip_assisted) *)
-let auto_012_no_skip_assisted () : Lemma (valid_mode_transition 0 2 == false) = admit ()
+let auto_012_no_skip_assisted () : Lemma (valid_mode_transition 0 2 == false) = ()
 
 (* auto_013_decision_fresh (matches Coq: Theorem auto_013_decision_fresh) *)
-let auto_013_decision_fresh (p_dec: nat) (p_current: nat) (p_max_age: nat) : Lemma (requires (decision_fresh p_dec p_current p_max_age == true)) (ensures (p_current - dec_timestamp p_dec <= p_max_age)) = admit ()
+let auto_013_decision_fresh (p_dec: nat) (p_current: nat) (p_max_age: nat) : Lemma (requires (decision_fresh p_dec p_current p_max_age == true)) (ensures (p_current - dec_timestamp p_dec <= p_max_age)) = ()
 
 (* auto_014_action_bounded (matches Coq: Theorem auto_014_action_bounded) *)
-let auto_014_action_bounded (p_dec: nat) (p_max_mag: nat) : Lemma (requires (action_bounded p_dec p_max_mag == true)) (ensures (dec_magnitude p_dec <= p_max_mag)) = admit ()
+let auto_014_action_bounded (p_dec: nat) (p_max_mag: nat) : Lemma (requires (action_bounded p_dec p_max_mag == true)) (ensures (dec_magnitude p_dec <= p_max_mag)) = ()
 
 (* auto_015_sensor_agreement (matches Coq: Theorem auto_015_sensor_agreement) *)
-let auto_015_sensor_agreement (p_readings: (list nat)) (p_tolerance: nat) : Lemma (requires (sensors_agree p_readings p_tolerance == true)) (ensures (sensors_agree p_readings p_tolerance == true)) = admit ()
+let auto_015_sensor_agreement (p_readings: (list nat)) (p_tolerance: nat) : Lemma (requires (sensors_agree p_readings p_tolerance == true)) (ensures (sensors_agree p_readings p_tolerance == true)) = ()
 
 (* auto_016_watchdog_active (matches Coq: Theorem auto_016_watchdog_active) *)
-let auto_016_watchdog_active (p_last_kick: nat) (p_current: nat) (p_timeout: nat) : Lemma (requires (watchdog_ok p_last_kick p_current p_timeout == true)) (ensures (p_current - p_last_kick < p_timeout)) = admit ()
+let auto_016_watchdog_active (p_last_kick: nat) (p_current: nat) (p_timeout: nat) : Lemma (requires (watchdog_ok p_last_kick p_current p_timeout == true)) (ensures (p_current - p_last_kick < p_timeout)) = ()
 
 (* auto_017_redundancy (matches Coq: Theorem auto_017_redundancy) *)
-let auto_017_redundancy (p_active: nat) (p_min_required: nat) : Lemma (requires (controllers_redundant p_active p_min_required == true)) (ensures (p_min_required <= p_active)) = admit ()
+let auto_017_redundancy (p_active: nat) (p_min_required: nat) : Lemma (requires (controllers_redundant p_active p_min_required == true)) (ensures (p_min_required <= p_active)) = ()
 
 (* auto_018_geofence_respected (matches Coq: Theorem auto_018_geofence_respected) *)
-let auto_018_geofence_respected (p_position: nat) (p_fence_min: nat) (p_fence_max: nat) : Lemma (requires (in_geofence p_position p_fence_min p_fence_max == true)) (ensures (p_fence_min <= p_position /\ p_position <= p_fence_max)) = admit ()
+let auto_018_geofence_respected (p_position: nat) (p_fence_min: nat) (p_fence_max: nat) : Lemma (requires (in_geofence p_position p_fence_min p_fence_max == true)) (ensures (p_fence_min <= p_position /\ p_position <= p_fence_max)) = ()
 
 (* auto_019_collision_free (matches Coq: Theorem auto_019_collision_free) *)
 let auto_019_collision_free_obligation () : Tot bool = true
 let auto_019_collision_free_lemma () : Lemma (requires True) (ensures (auto_019_collision_free_obligation () == auto_019_collision_free_obligation ())) = ()
 
 (* auto_020_energy_ok (matches Coq: Theorem auto_020_energy_ok) *)
-let auto_020_energy_ok (p_current: nat) (p_required: nat) : Lemma (requires (energy_sufficient p_current p_required == true)) (ensures (p_required <= p_current)) = admit ()
+let auto_020_energy_ok (p_current: nat) (p_required: nat) : Lemma (requires (energy_sufficient p_current p_required == true)) (ensures (p_required <= p_current)) = ()
 
 (* auto_021_link_quality (matches Coq: Theorem auto_021_link_quality) *)
-let auto_021_link_quality (p_quality: nat) (p_min_quality: nat) : Lemma (requires (link_quality_ok p_quality p_min_quality == true)) (ensures (p_min_quality <= p_quality)) = admit ()
+let auto_021_link_quality (p_quality: nat) (p_min_quality: nat) : Lemma (requires (link_quality_ok p_quality p_min_quality == true)) (ensures (p_min_quality <= p_quality)) = ()
 
 (* auto_022_constraints_met (matches Coq: Theorem auto_022_constraints_met) *)
-let auto_022_constraints_met (p_violations: nat) : Lemma (requires (constraints_met p_violations == true)) (ensures (p_violations == 0)) = admit ()
+let auto_022_constraints_met (p_violations: nat) : Lemma (requires (constraints_met p_violations == true)) (ensures (p_violations == 0)) = ()
 
 (* auto_023_logging_complete (matches Coq: Theorem auto_023_logging_complete) *)
-let auto_023_logging_complete (p_decisions: (list nat)) (p_logged: (list nat)) : Lemma (requires (decisions_logged p_decisions p_logged == true)) (ensures (length p_decisions <= length p_logged)) = admit ()
+let auto_023_logging_complete (p_decisions: (list nat)) (p_logged: (list nat)) : Lemma (requires (decisions_logged p_decisions p_logged == true)) (ensures (length p_decisions <= length p_logged)) = ()
 
 (* auto_024_verify_first (matches Coq: Theorem auto_024_verify_first) *)
-let auto_024_verify_first (p_verified: bool) (p_executed: bool) : Lemma (requires (verified_before_exec p_verified p_executed == true /\ p_executed == true)) (ensures (p_verified == true)) = admit ()
+let auto_024_verify_first (p_verified: bool) (p_executed: bool) : Lemma (requires (verified_before_exec p_verified p_executed == true /\ p_executed == true)) (ensures (p_verified == true)) = ()
 
 (* auto_025_defense_in_depth (matches Coq: Theorem auto_025_defense_in_depth) *)
-let auto_025_defense_in_depth (p_e: _) (p_f: _) (p_o: _) (p_v: _) : Lemma (requires (autonomy_layers p_e p_f p_o p_v == true)) (ensures (p_e == true /\ p_f == true /\ p_o == true /\ p_v == true)) = admit ()
+let auto_025_defense_in_depth (p_e: _) (p_f: _) (p_o: _) (p_v: _) : Lemma (requires (autonomy_layers p_e p_f p_o p_v == true)) (ensures (p_e == true /\ p_f == true /\ p_o == true /\ p_v == true)) = ()

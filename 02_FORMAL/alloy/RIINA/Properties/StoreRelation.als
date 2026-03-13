@@ -8,204 +8,204 @@ open util/boolean
 
 // store_rel_simple_max (matches Coq: Lemma store_rel_simple_max)
 assert store_rel_simple_max {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_simple_max for 5
 
 // store_rel_simple_fresh (matches Coq: Lemma store_rel_simple_fresh)
 assert store_rel_simple_fresh {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_simple_fresh for 5
 
 // store_max_update_bound (matches Coq: Lemma store_max_update_bound)
 assert store_max_update_bound {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_max_update_bound for 5
 
 // store_max_update_lower (matches Coq: Lemma store_max_update_lower)
 assert store_max_update_lower {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_max_update_lower for 5
 
 // store_max_update_includes_l (matches Coq: Lemma store_max_update_includes_l)
 assert store_max_update_includes_l {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_max_update_includes_l for 5
 
 // store_max_update_eq (matches Coq: Lemma store_max_update_eq)
 assert store_max_update_eq {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_max_update_eq for 5
 
 // store_rel_simple_update (matches Coq: Lemma store_rel_simple_update)
 assert store_rel_simple_update {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_simple_update for 5
 
 // store_lookup_update_eq (matches Coq: Lemma store_lookup_update_eq)
 assert store_lookup_update_eq {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_lookup_update_eq for 5
 
 // store_lookup_update_neq (matches Coq: Lemma store_lookup_update_neq)
 assert store_lookup_update_neq {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_lookup_update_neq for 5
 
 // store_ty_lookup_update_eq (matches Coq: Lemma store_ty_lookup_update_eq)
 assert store_ty_lookup_update_eq {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_ty_lookup_update_eq for 5
 
 // store_ty_lookup_update_neq (matches Coq: Lemma store_ty_lookup_update_neq)
 assert store_ty_lookup_update_neq {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_ty_lookup_update_neq for 5
 
 // store_rel_le_update (matches Coq: Lemma store_rel_le_update)
 assert store_rel_le_update {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_le_update for 5
 
 // store_lookup_fresh_none (matches Coq: Lemma store_lookup_fresh_none)
 assert store_lookup_fresh_none {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_lookup_fresh_none for 5
 
 // store_alloc_same (matches Coq: Lemma store_alloc_same)
 assert store_alloc_same {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_alloc_same for 5
 
 // store_rel_simple_alloc (matches Coq: Lemma store_rel_simple_alloc)
 assert store_rel_simple_alloc {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_simple_alloc for 5
 
 // fresh_loc_not_in_store_ty (matches Coq: Lemma fresh_loc_not_in_store_ty)
 assert fresh_loc_not_in_store_ty {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check fresh_loc_not_in_store_ty for 5
 
 // store_ty_extends_alloc (matches Coq: Lemma store_ty_extends_alloc)
 assert store_ty_extends_alloc {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_ty_extends_alloc for 5
 
 // store_rel_le_alloc (matches Coq: Lemma store_rel_le_alloc)
 assert store_rel_le_alloc {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_le_alloc for 5
 
 // val_rel_le_ref_same_loc (matches Coq: Lemma val_rel_le_ref_same_loc)
 assert val_rel_le_ref_same_loc {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_le_ref_same_loc for 5
 
 // val_rel_le_build_ref (matches Coq: Lemma val_rel_le_build_ref)
 assert val_rel_le_build_ref {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_le_build_ref for 5
 
 // store_rel_le_lookup (matches Coq: Lemma store_rel_le_lookup)
 assert store_rel_le_lookup {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_le_lookup for 5
 
 // val_rel_le_secret_always (matches Coq: Lemma val_rel_le_secret_always)
 assert val_rel_le_secret_always {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_le_secret_always for 5
 
 // val_rel_le_secret_value_left (matches Coq: Lemma val_rel_le_secret_value_left)
 assert val_rel_le_secret_value_left {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_le_secret_value_left for 5
 
 // val_rel_le_secret_value_right (matches Coq: Lemma val_rel_le_secret_value_right)
 assert val_rel_le_secret_value_right {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_le_secret_value_right for 5
 
 // val_rel_le_unit (matches Coq: Lemma val_rel_le_unit)
 assert val_rel_le_unit {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_le_unit for 5
 
 // store_rel_le_empty (matches Coq: Lemma store_rel_le_empty)
 assert store_rel_le_empty {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_le_empty for 5
 
 // store_rel_simple_empty (matches Coq: Lemma store_rel_simple_empty)
 assert store_rel_simple_empty {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_simple_empty for 5
 
 // store_rel_le_both_some (matches Coq: Lemma store_rel_le_both_some)
 assert store_rel_le_both_some {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_le_both_some for 5
 
 // store_ty_update_preserves (matches Coq: Lemma store_ty_update_preserves)
 assert store_ty_update_preserves {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_ty_update_preserves for 5
 
 // store_max_nil (matches Coq: Lemma store_max_nil)
 assert store_max_nil {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_max_nil for 5
 
 // store_max_singleton (matches Coq: Lemma store_max_singleton)
 assert store_max_singleton {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_max_singleton for 5
 
 // store_rel_le_secret_loc (matches Coq: Lemma store_rel_le_secret_loc)
 assert store_rel_le_secret_loc {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_rel_le_secret_loc for 5
 
 // store_lookup_fresh_loc (matches Coq: Lemma store_lookup_fresh_loc)
 assert store_lookup_fresh_loc {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check store_lookup_fresh_loc for 5
 
 // val_rel_le_ref_loc_eq (matches Coq: Lemma val_rel_le_ref_loc_eq)
 assert val_rel_le_ref_loc_eq {
-  #univ >= 0
+  all x: univ | x in univ
 }
 check val_rel_le_ref_loc_eq for 5

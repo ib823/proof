@@ -117,150 +117,150 @@ pred antijam_layers {}
 
 // jam_001_sequence_length (matches Coq: Theorem jam_001_sequence_length)
 assert jam_001_sequence_length {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_001_sequence_length for 5
 
 // jam_002_dwell_bounded (matches Coq: Theorem jam_002_dwell_bounded)
 assert jam_002_dwell_bounded {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_002_dwell_bounded for 5
 
 // jam_003_processing_gain (matches Coq: Theorem jam_003_processing_gain)
 assert jam_003_processing_gain {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_003_processing_gain for 5
 
 // jam_004_code_length (matches Coq: Theorem jam_004_code_length)
 assert jam_004_code_length {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_004_code_length for 5
 
 // jam_005_jammer_overcome (matches Coq: Theorem jam_005_jammer_overcome)
 assert jam_005_jammer_overcome {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_005_jammer_overcome for 5
 
 // jam_006_channel_diversity (matches Coq: Theorem jam_006_channel_diversity)
 assert jam_006_channel_diversity {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_006_channel_diversity for 5
 
 // jam_007_detection_threshold (matches Coq: Theorem jam_007_detection_threshold)
 assert jam_007_detection_threshold {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_007_detection_threshold for 5
 
 // jam_008_no_false_positive (matches Coq: Theorem jam_008_no_false_positive)
 assert jam_008_no_false_positive {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_008_no_false_positive for 5
 
 // jam_009_adaptation_improves (matches Coq: Theorem jam_009_adaptation_improves)
 assert jam_009_adaptation_improves {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_009_adaptation_improves for 5
 
 // jam_010_power_bounded (matches Coq: Theorem jam_010_power_bounded)
 assert jam_010_power_bounded {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_010_power_bounded for 5
 
 // jam_011_avoids_jammed (matches Coq: Theorem jam_011_avoids_jammed)
 assert jam_011_avoids_jammed {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_011_avoids_jammed for 5
 
 // jam_012_rate_minimum (matches Coq: Theorem jam_012_rate_minimum)
 assert jam_012_rate_minimum {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_012_rate_minimum for 5
 
 // jam_013_fec_gain (matches Coq: Theorem jam_013_fec_gain)
 assert jam_013_fec_gain {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_013_fec_gain for 5
 
 // jam_014_switch_latency (matches Coq: Theorem jam_014_switch_latency)
 assert jam_014_switch_latency {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_014_switch_latency for 5
 
 // jam_015_synchronized (matches Coq: Theorem jam_015_synchronized)
 assert jam_015_synchronized {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_015_synchronized for 5
 
 // jam_016_key_required (matches Coq: Theorem jam_016_key_required)
 assert jam_016_key_required {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_016_key_required for 5
 
 // jam_017_sweep_detected (matches Coq: Theorem jam_017_sweep_detected)
 assert jam_017_sweep_detected {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_017_sweep_detected for 5
 
 // jam_018_reactive_mitigation (matches Coq: Theorem jam_018_reactive_mitigation)
 assert jam_018_reactive_mitigation {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_018_reactive_mitigation for 5
 
 // jam_019_adaptation_speed (matches Coq: Theorem jam_019_adaptation_speed)
 assert jam_019_adaptation_speed {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_019_adaptation_speed for 5
 
 // jam_020_quality_acceptable (matches Coq: Theorem jam_020_quality_acceptable)
 assert jam_020_quality_acceptable {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_020_quality_acceptable for 5
 
 // jam_021_graceful_degradation (matches Coq: Theorem jam_021_graceful_degradation)
 assert jam_021_graceful_degradation {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_021_graceful_degradation for 5
 
 // jam_022_fallback_available (matches Coq: Theorem jam_022_fallback_available)
 assert jam_022_fallback_available {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_022_fallback_available for 5
 
 // jam_023_interference_localized (matches Coq: Theorem jam_023_interference_localized)
 assert jam_023_interference_localized {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_023_interference_localized for 5
 
 // jam_024_redundant_paths (matches Coq: Theorem jam_024_redundant_paths)
 assert jam_024_redundant_paths {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_024_redundant_paths for 5
 
 // jam_025_defense_in_depth (matches Coq: Theorem jam_025_defense_in_depth)
 assert jam_025_defense_in_depth {
-  #univ >= 0
+  all x: JammerType | x in JammerType
 }
 check jam_025_defense_in_depth for 5

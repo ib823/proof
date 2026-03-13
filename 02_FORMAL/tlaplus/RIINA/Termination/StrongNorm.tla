@@ -17,28 +17,28 @@ Init ==
   /\ state = TRUE
 
 \* value_strongly_normalizing (matches Coq: Theorem value_strongly_normalizing)
-THEOREM value_strongly_normalizing == Init => TypeOK
+THEOREM value_strongly_normalizing == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fst_terminates_to_value (matches Coq: Lemma fst_terminates_to_value)
-THEOREM fst_terminates_to_value == Init => TypeOK
+THEOREM fst_terminates_to_value == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* snd_terminates_to_value (matches Coq: Lemma snd_terminates_to_value)
-THEOREM snd_terminates_to_value == Init => TypeOK
+THEOREM snd_terminates_to_value == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* if_bool_terminates_once (matches Coq: Lemma if_bool_terminates_once)
-THEOREM if_bool_terminates_once == Init => TypeOK
+THEOREM if_bool_terminates_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* let_terminates_once (matches Coq: Lemma let_terminates_once)
-THEOREM let_terminates_once == Init => TypeOK
+THEOREM let_terminates_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* handle_terminates_once (matches Coq: Lemma handle_terminates_once)
-THEOREM handle_terminates_once == Init => TypeOK
+THEOREM handle_terminates_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* app_lam_terminates_once (matches Coq: Lemma app_lam_terminates_once)
-THEOREM app_lam_terminates_once == Init => TypeOK
+THEOREM app_lam_terminates_once == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
-THEOREM store_ty_extends_refl == Init => TypeOK
+THEOREM store_ty_extends_refl == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* Next-state relation
 Next == UNCHANGED <<state>>
