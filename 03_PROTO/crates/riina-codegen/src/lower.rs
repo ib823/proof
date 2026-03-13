@@ -957,18 +957,43 @@ impl Lower {
                 // placeholder as the self-reference.
                 let bind_var = self.lower_expr(binding)?;
 
-                // Find which capture index corresponds to placeholder
-                // and emit FixClosure to patch it to point to itself.
-                // The placeholder was captured by the lambda's free_vars analysis.
-                self.emit(
-                    Instruction::FixClosure {
-                        closure: bind_var,
-                        capture_index: 0, // placeholder is first free var (sorted)
-                    },
-                    Ty::Unit,
-                    SecurityLevel::Public,
-                    Effect::Pure,
-                );
+                // Only emit FixClosure if the binding actually captured the
+                // placeholder (i.e., the function is genuinely recursive).
+                // Check if the last emitted instruction for bind_var was a
+                // Closure that includes placeholder in its captures.
+                let needs_fix = {
+                    let func = self.program.functions.get(
+                        &self.current_func.unwrap_or(FuncId(0))
+                    );
+                    func.and_then(|f| {
+                        let block = f.blocks.iter().find(|b| b.id == self.current_block)?;
+                        // Find the Closure instruction that produced bind_var
+                        block.instrs.iter().find_map(|ai| {
+                            if ai.result == bind_var {
+                                if let Instruction::Closure { captures, .. } = &ai.instr {
+                                    // Find which capture index holds the placeholder
+                                    captures.iter().position(|v| *v == placeholder)
+                                } else {
+                                    None
+                                }
+                            } else {
+                                None
+                            }
+                        })
+                    })
+                };
+
+                if let Some(capture_index) = needs_fix {
+                    self.emit(
+                        Instruction::FixClosure {
+                            closure: bind_var,
+                            capture_index,
+                        },
+                        Ty::Unit,
+                        SecurityLevel::Public,
+                        Effect::Pure,
+                    );
+                }
 
                 // For the body, use bind_var as the resolved name
                 self.env.bind(name.clone(), bind_var, bind_ty, SecurityLevel::Public);

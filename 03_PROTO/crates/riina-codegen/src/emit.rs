@@ -203,6 +203,7 @@ impl CEmitter {
         self.writeln("/*                          INCLUDES                                   */");
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
         self.writeln("");
+        self.writeln("#define _XOPEN_SOURCE 700");
         self.writeln("#include <stdint.h>");
         self.writeln("#include <stdbool.h>");
         self.writeln("#include <stddef.h>");
@@ -688,11 +689,11 @@ impl CEmitter {
         // Binary operations
         self.writeln("static riina_value_t* riina_binop_add(riina_value_t* a, riina_value_t* b) {");
         self.writeln("    if (a->tag == RIINA_TAG_STRING && b->tag == RIINA_TAG_STRING) {");
-        self.writeln("        size_t la = strlen(a->data.str_val);");
-        self.writeln("        size_t lb = strlen(b->data.str_val);");
+        self.writeln("        size_t la = a->data.string_val.len;");
+        self.writeln("        size_t lb = b->data.string_val.len;");
         self.writeln("        char* buf = (char*)malloc(la + lb + 1);");
-        self.writeln("        memcpy(buf, a->data.str_val, la);");
-        self.writeln("        memcpy(buf + la, b->data.str_val, lb);");
+        self.writeln("        memcpy(buf, a->data.string_val.data, la);");
+        self.writeln("        memcpy(buf + la, b->data.string_val.data, lb);");
         self.writeln("        buf[la + lb] = '\\0';");
         self.writeln("        return riina_string(buf);");
         self.writeln("    }");

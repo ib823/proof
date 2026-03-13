@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 930 Rust tests
+**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
 
 All notable changes to RIINA will be documented in this file.
 
@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Active Coq build: 9,172 Qed across 259 files, 0 Admitted, 0 active axioms
 
 ### Added
+- REQ-13: End-to-end .rii → C → executable pipeline verified
+  - Fixed `riinac build` path handling for files outside working directory
+  - Fixed C codegen `str_val` → `string_val.data` in `riina_binop_add` string concatenation
+  - Fixed C codegen missing `_XOPEN_SOURCE` for `strptime`
+  - Fixed IR lowering: `FixClosure` only emitted for genuinely recursive functions (was segfaulting non-recursive top-level functions)
+  - 6 end-to-end integration tests: hello, arithmetic, conditionals, declassification, multi-function, non-trivial full pipeline
+  - Non-trivial test exercises: multiple functions, arithmetic, if/else, Secret<T> classify/declassify with proof, System effect
 - REQ-12: Compiler enforces information flow control (Bell-LaPadula model)
   - T_Assign: no-write-down (`Δ ⊑ sl`) prevents implicit flows through control structure
   - T_Deref: no-read-up (`sl ⊑ Δ`) prevents unauthorized reads

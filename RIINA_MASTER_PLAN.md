@@ -317,7 +317,6 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 - Mobile backends exist (scaffolding — generates code strings, no compiled artifacts)
 
 **What riinac CANNOT do yet:**
-- Compile non-trivial programs end-to-end
 - Enforce capability typing exhaustively across the full language surface
 - Enforce linear resource usage at compile time
 - Produce optimized output
@@ -348,7 +347,7 @@ research source, and detailed description.
 | REQ-10 | Alloy: first real model (not stub) | P2 | DONE | 2 |
 | REQ-11 | Deep NI proofs in active Coq build | P1 | DONE | 1 |
 | REQ-12 | Compiler enforces information flow | P1 | DONE | 3 |
-| REQ-13 | End-to-end: .rii → C → executable (non-trivial) | P0 | TODO | 4 |
+| REQ-13 | End-to-end: .rii → C → executable (non-trivial) | P0 | DONE | 4 |
 | REQ-14 | Working WASM backend (not scaffolding) | P1 | TODO | 4 |
 | REQ-15 | Real artifact signing | P2 | TODO | 5 |
 | REQ-16 | JALINAN session types implementation | P2 | TODO | 6 |

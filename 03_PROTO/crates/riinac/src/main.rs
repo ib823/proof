@@ -671,7 +671,11 @@ fn main() {
                 }
             };
 
-            let stem = filename.strip_suffix(".rii").unwrap_or(&filename);
+            let basename = std::path::Path::new(&filename)
+                .file_name()
+                .map(|f| f.to_string_lossy().to_string())
+                .unwrap_or_else(|| filename.clone());
+            let stem = basename.strip_suffix(".rii").unwrap_or(&basename);
             let output_dir = input_path
                 .as_ref()
                 .and_then(|p| p.parent())
