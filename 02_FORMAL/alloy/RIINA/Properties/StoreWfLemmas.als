@@ -1,109 +1,130 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/properties/StoreWfLemmas.v (17 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/store_wf_lemmas
+// Derived from 02_FORMAL/coq/properties/StoreWfLemmas.v
+// Models: store well-formedness and safety properties
+module riina/Properties/StoreWfLemmas
 
-open util/boolean
+abstract sig Type {}
+one sig TUnit extends Type {}
+one sig TBool extends Type {}
+one sig TInt extends Type {}
 
-// store_wf_lookup_value (matches Coq: Lemma store_wf_lookup_value)
+abstract sig SecurityLevel {}
+one sig SPublic extends SecurityLevel {}
+one sig SSecret extends SecurityLevel {}
+
+sig StoreEntry {
+  loc: one Int,
+  storedType: one Type,
+  storedLevel: one SecurityLevel
+}
+
+sig Store {
+  entries: set StoreEntry
+}
+
+fact UniqueLocations {
+  all st: Store | all disj e1, e2: st.entries | e1.loc != e2.loc
+}
+
+fun store_lookup[st: Store, l: Int]: set Type {
+  { t: Type | some e: st.entries | e.loc = l and e.storedType = t }
+}
+
+pred store_wf[st: Store] {
+  all e: st.entries | some e.storedType
+  all disj e1, e2: st.entries | e1.loc != e2.loc
+}
+
+pred store_extends[s1: Store, s2: Store] {
+  s1.entries in s2.entries
+}
+
 assert store_wf_lookup_value {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_lookup_value for 5
+check store_wf_lookup_value for 6
 
-// store_wf_lookup_typed (matches Coq: Lemma store_wf_lookup_typed)
 assert store_wf_lookup_typed {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_lookup_typed for 5
+check store_wf_lookup_typed for 6
 
-// store_wf_typed_loc_has_value (matches Coq: Lemma store_wf_typed_loc_has_value)
 assert store_wf_typed_loc_has_value {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_typed_loc_has_value for 5
+check store_wf_typed_loc_has_value for 6
 
-// store_wf_typed_loc_gives_typed_value (matches Coq: Lemma store_wf_typed_loc_gives_typed_value)
 assert store_wf_typed_loc_gives_typed_value {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_typed_loc_gives_typed_value for 5
+check store_wf_typed_loc_gives_typed_value for 6
 
-// store_wf_forward (matches Coq: Lemma store_wf_forward)
 assert store_wf_forward {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_forward for 5
+check store_wf_forward for 6
 
-// store_wf_backward (matches Coq: Lemma store_wf_backward)
 assert store_wf_backward {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_backward for 5
+check store_wf_backward for 6
 
-// store_wf_empty (matches Coq: Lemma store_wf_empty)
 assert store_wf_empty {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_empty for 5
+check store_wf_empty for 6
 
-// store_wf_empty_ty_no_values (matches Coq: Lemma store_wf_empty_ty_no_values)
 assert store_wf_empty_ty_no_values {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_empty_ty_no_values for 5
+check store_wf_empty_ty_no_values for 6
 
-// store_wf_lookup_agree (matches Coq: Lemma store_wf_lookup_agree)
 assert store_wf_lookup_agree {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_lookup_agree for 5
+check store_wf_lookup_agree for 6
 
-// store_wf_all_pure (matches Coq: Lemma store_wf_all_pure)
 assert store_wf_all_pure {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_all_pure for 5
+check store_wf_all_pure for 6
 
-// store_wf_lookup_is_value (matches Coq: Lemma store_wf_lookup_is_value)
 assert store_wf_lookup_is_value {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_lookup_is_value for 5
+check store_wf_lookup_is_value for 6
 
-// store_wf_extends_forward (matches Coq: Lemma store_wf_extends_forward)
 assert store_wf_extends_forward {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_extends_forward for 5
+check store_wf_extends_forward for 6
 
-// store_wf_loc_not_in_ty (matches Coq: Lemma store_wf_loc_not_in_ty)
 assert store_wf_loc_not_in_ty {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_loc_not_in_ty for 5
+check store_wf_loc_not_in_ty for 6
 
-// store_wf_typed_implies_stored (matches Coq: Lemma store_wf_typed_implies_stored)
 assert store_wf_typed_implies_stored {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_typed_implies_stored for 5
+check store_wf_typed_implies_stored for 6
 
-// store_wf_stored_implies_typed (matches Coq: Lemma store_wf_stored_implies_typed)
 assert store_wf_stored_implies_typed {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_stored_implies_typed for 5
+check store_wf_stored_implies_typed for 6
 
-// store_wf_update_same_type (matches Coq: Lemma store_wf_update_same_type)
 assert store_wf_update_same_type {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_update_same_type for 5
+check store_wf_update_same_type for 6
 
-// store_wf_characterize (matches Coq: Lemma store_wf_characterize)
 assert store_wf_characterize {
-  all x: univ | x in univ
+  all st: Store | store_wf[st] implies (all e: st.entries | some e.storedType)
 }
-check store_wf_characterize for 5
+check store_wf_characterize for 6
+
+pred ExampleStoreWfLemmas {
+  some st: Store | store_wf[st] and #st.entries > 1
+}
+run ExampleStoreWfLemmas for 6

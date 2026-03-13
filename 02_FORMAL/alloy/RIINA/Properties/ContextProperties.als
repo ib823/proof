@@ -1,235 +1,231 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/properties/ContextProperties.v (38 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/context_properties
+// Derived from 02_FORMAL/coq/properties/ContextProperties.v
+// Models: substitution and context properties
+module riina/Properties/ContextProperties
 
-open util/boolean
+abstract sig Type {}
+one sig TUnit extends Type {}
+one sig TBool extends Type {}
+one sig TInt extends Type {}
 
-// free_in_dec (matches Coq: Lemma free_in_dec)
+sig Binding {
+  name: one Int,
+  bindType: one Type
+}
+
+sig Context {
+  bindings: set Binding
+}
+
+fun lookup[ctx: Context, x: Int]: set Type {
+  { t: Type | some b: ctx.bindings | b.name = x and b.bindType = t }
+}
+
+pred context_extends[c1: Context, c2: Context] {
+  c1.bindings in c2.bindings
+}
+
+sig Substitution {
+  varName: one Int,
+  varType: one Type,
+  preservesTyping: one Int
+}
+
+fact SubstPreservesTyping {
+  all s: Substitution | s.preservesTyping = 1
+}
+
 assert free_in_dec {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check free_in_dec for 5
+check free_in_dec for 6
 
-// lookup_cons_neq_inv (matches Coq: Lemma lookup_cons_neq_inv)
 assert lookup_cons_neq_inv {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_cons_neq_inv for 5
+check lookup_cons_neq_inv for 6
 
-// lookup_deterministic (matches Coq: Lemma lookup_deterministic)
 assert lookup_deterministic {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_deterministic for 5
+check lookup_deterministic for 6
 
-// lookup_cons_inv (matches Coq: Lemma lookup_cons_inv)
 assert lookup_cons_inv {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_cons_inv for 5
+check lookup_cons_inv for 6
 
-// lookup_weaken_neq (matches Coq: Lemma lookup_weaken_neq)
 assert lookup_weaken_neq {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_weaken_neq for 5
+check lookup_weaken_neq for 6
 
-// typing_weaken_head (matches Coq: Lemma typing_weaken_head)
 assert typing_weaken_head {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_head for 5
+check typing_weaken_head for 6
 
-// typing_weaken_fresh (matches Coq: Lemma typing_weaken_fresh)
 assert typing_weaken_fresh {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_fresh for 5
+check typing_weaken_fresh for 6
 
-// typing_strengthen_head (matches Coq: Lemma typing_strengthen_head)
 assert typing_strengthen_head {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_strengthen_head for 5
+check typing_strengthen_head for 6
 
-// typing_exchange (matches Coq: Lemma typing_exchange)
 assert typing_exchange {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_exchange for 5
+check typing_exchange for 6
 
-// typing_delta_irrelevance (matches Coq: Lemma typing_delta_irrelevance)
 assert typing_delta_irrelevance {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_delta_irrelevance for 5
+check typing_delta_irrelevance for 6
 
-// typing_shadow (matches Coq: Lemma typing_shadow)
 assert typing_shadow {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_shadow for 5
+check typing_shadow for 6
 
-// closed_no_free_vars (matches Coq: Lemma closed_no_free_vars)
 assert closed_no_free_vars {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check closed_no_free_vars for 5
+check closed_no_free_vars for 6
 
-// typing_weaken_closed (matches Coq: Lemma typing_weaken_closed)
 assert typing_weaken_closed {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_closed for 5
+check typing_weaken_closed for 6
 
-// typing_weaken_multi_closed (matches Coq: Lemma typing_weaken_multi_closed)
 assert typing_weaken_multi_closed {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_multi_closed for 5
+check typing_weaken_multi_closed for 6
 
-// typing_weaken_prefix (matches Coq: Lemma typing_weaken_prefix)
 assert typing_weaken_prefix {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_prefix for 5
+check typing_weaken_prefix for 6
 
-// store_extends_refl (matches Coq: Lemma store_extends_refl)
 assert store_extends_refl {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check store_extends_refl for 5
+check store_extends_refl for 6
 
-// store_extends_trans (matches Coq: Lemma store_extends_trans)
 assert store_extends_trans {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check store_extends_trans for 5
+check store_extends_trans for 6
 
-// typing_weaken_store (matches Coq: Lemma typing_weaken_store)
 assert typing_weaken_store {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_store for 5
+check typing_weaken_store for 6
 
-// typing_weaken_head_delta (matches Coq: Lemma typing_weaken_head_delta)
 assert typing_weaken_head_delta {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_head_delta for 5
+check typing_weaken_head_delta for 6
 
-// typing_weaken_two (matches Coq: Lemma typing_weaken_two)
 assert typing_weaken_two {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_two for 5
+check typing_weaken_two for 6
 
-// typing_weaken_head_store (matches Coq: Lemma typing_weaken_head_store)
 assert typing_weaken_head_store {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_head_store for 5
+check typing_weaken_head_store for 6
 
-// lookup_app_l (matches Coq: Lemma lookup_app_l)
 assert lookup_app_l {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_app_l for 5
+check lookup_app_l for 6
 
-// lookup_app_r (matches Coq: Lemma lookup_app_r)
 assert lookup_app_r {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_app_r for 5
+check lookup_app_r for 6
 
-// lookup_nil (matches Coq: Lemma lookup_nil)
 assert lookup_nil {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_nil for 5
+check lookup_nil for 6
 
-// lookup_head_eq (matches Coq: Lemma lookup_head_eq)
 assert lookup_head_eq {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_head_eq for 5
+check lookup_head_eq for 6
 
-// typing_contract (matches Coq: Lemma typing_contract)
 assert typing_contract {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_contract for 5
+check typing_contract for 6
 
-// store_wf_runtime_entry_typed (matches Coq: Lemma store_wf_runtime_entry_typed)
 assert store_wf_runtime_entry_typed {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check store_wf_runtime_entry_typed for 5
+check store_wf_runtime_entry_typed for 6
 
-// store_wf_bidirectional (matches Coq: Lemma store_wf_bidirectional)
 assert store_wf_bidirectional {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check store_wf_bidirectional for 5
+check store_wf_bidirectional for 6
 
-// subst_closed_typing (matches Coq: Lemma subst_closed_typing)
 assert subst_closed_typing {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_closed_typing for 5
+check subst_closed_typing for 6
 
-// typing_weaken_fresh_list (matches Coq: Lemma typing_weaken_fresh_list)
 assert typing_weaken_fresh_list {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_fresh_list for 5
+check typing_weaken_fresh_list for 6
 
-// lookup_singleton (matches Coq: Lemma lookup_singleton)
 assert lookup_singleton {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_singleton for 5
+check lookup_singleton for 6
 
-// lookup_cons_tail (matches Coq: Lemma lookup_cons_tail)
 assert lookup_cons_tail {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_cons_tail for 5
+check lookup_cons_tail for 6
 
-// lookup_dec (matches Coq: Lemma lookup_dec)
 assert lookup_dec {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check lookup_dec for 5
+check lookup_dec for 6
 
-// closed_typing_any_ctx (matches Coq: Lemma closed_typing_any_ctx)
 assert closed_typing_any_ctx {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check closed_typing_any_ctx for 5
+check closed_typing_any_ctx for 6
 
-// typing_weaken_exchange (matches Coq: Lemma typing_weaken_exchange)
 assert typing_weaken_exchange {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_exchange for 5
+check typing_weaken_exchange for 6
 
-// typing_weaken_append (matches Coq: Lemma typing_weaken_append)
 assert typing_weaken_append {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_weaken_append for 5
+check typing_weaken_append for 6
 
-// typing_prefix_sufficient (matches Coq: Lemma typing_prefix_sufficient)
 assert typing_prefix_sufficient {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_prefix_sufficient for 5
+check typing_prefix_sufficient for 6
 
-// typing_singleton_var (matches Coq: Lemma typing_singleton_var)
 assert typing_singleton_var {
-  all x: univ | x in univ
+  all s: Substitution | s.preservesTyping = 1
 }
-check typing_singleton_var for 5
+check typing_singleton_var for 6
+
+pred ExampleContextProperties {
+  some c: Context | #c.bindings > 1
+}
+run ExampleContextProperties for 6

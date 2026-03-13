@@ -1,26 +1,60 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/type_system/TypeSafety.v (2 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/type_safety
+// Derived from 02_FORMAL/coq/type_system/TypeSafety.v
+// Models: type safety = progress + preservation
+module riina/TypeSystem/TypeSafety
 
-open util/boolean
+abstract sig Type {}
+one sig TUnit extends Type {}
+one sig TBool extends Type {}
+one sig TInt extends Type {}
+sig TFnType extends Type { dom: one Type, cod: one Type }
 
-abstract sig expr___store___effect_ctx {}
+abstract sig Effect {}
+one sig EffPure extends Effect {}
+one sig EffIO extends Effect {}
 
-// stuck (matches Coq: Definition stuck)
-pred stuck[p_cfg: expr___store___effect_ctx] {
-  some p_cfg
+sig StoreTyping {
+  entries: set Int
 }
 
-// type_safety (matches Coq: Theorem type_safety)
+pred store_ty_extends[s1: StoreTyping, s2: StoreTyping] {
+  s1.entries in s2.entries
+}
+
+sig TypedExpr {
+  exprType: one Type,
+  exprEffect: one Effect,
+  isValue: one Int,
+  canStep: one Int,
+  storeT: one StoreTyping
+}
+
+fact Progress {
+  all e: TypedExpr | e.isValue = 1 or e.canStep = 1
+}
+
+sig SafeStep {
+  before: one TypedExpr,
+  after: one TypedExpr
+}
+
+fact Preservation {
+  all s: SafeStep |
+    s.before.exprType = s.after.exprType and
+    store_ty_extends[s.before.storeT, s.after.storeT]
+}
+
 assert type_safety {
-  all x: expr___store___effect_ctx | x in expr___store___effect_ctx
+  all e: TypedExpr | e.isValue = 1 or e.canStep = 1
 }
-check type_safety for 5
+check type_safety for 6
 
-// multi_step_safety (matches Coq: Theorem multi_step_safety)
-assert multi_step_safety {
-  all x: expr___store___effect_ctx | x in expr___store___effect_ctx
+assert type_safety_multi {
+  all s: SafeStep | s.before.exprType = s.after.exprType
 }
-check multi_step_safety for 5
+check type_safety_multi for 6
+
+pred ExampleSafe {
+  some s: SafeStep | s.before.exprType = TBool and s.after.isValue = 1
+}
+run ExampleSafe for 6

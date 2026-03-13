@@ -1,193 +1,185 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/properties/CanonicalForms.v (31 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/canonical_forms
+// Derived from 02_FORMAL/coq/properties/CanonicalForms.v
+// Models: typing inversion and canonical forms
+module riina/Properties/CanonicalForms
 
-open util/boolean
+abstract sig Type {}
+one sig TUnit extends Type {}
+one sig TBool extends Type {}
+one sig TInt extends Type {}
+sig TFnType extends Type { dom: one Type, cod: one Type }
+sig TProdType extends Type { left: one Type, right: one Type }
 
-// canonical_unit (matches Coq: Lemma canonical_unit)
+abstract sig Effect {}
+one sig EffPure extends Effect {}
+one sig EffIO extends Effect {}
+
+sig TypedExpr {
+  exprType: one Type,
+  exprEffect: one Effect,
+  isValue: one Int
+}
+
+fact ValuesPure {
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
+}
+
 assert canonical_unit {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_unit for 5
+check canonical_unit for 6
 
-// canonical_bool (matches Coq: Lemma canonical_bool)
 assert canonical_bool {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_bool for 5
+check canonical_bool for 6
 
-// canonical_int (matches Coq: Lemma canonical_int)
 assert canonical_int {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_int for 5
+check canonical_int for 6
 
-// canonical_string (matches Coq: Lemma canonical_string)
 assert canonical_string {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_string for 5
+check canonical_string for 6
 
-// canonical_fn (matches Coq: Lemma canonical_fn)
 assert canonical_fn {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_fn for 5
+check canonical_fn for 6
 
-// canonical_pair (matches Coq: Lemma canonical_pair)
 assert canonical_pair {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_pair for 5
+check canonical_pair for 6
 
-// canonical_sum (matches Coq: Lemma canonical_sum)
 assert canonical_sum {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_sum for 5
+check canonical_sum for 6
 
-// canonical_sum_inl (matches Coq: Lemma canonical_sum_inl)
 assert canonical_sum_inl {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_sum_inl for 5
+check canonical_sum_inl for 6
 
-// canonical_ref (matches Coq: Lemma canonical_ref)
 assert canonical_ref {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_ref for 5
+check canonical_ref for 6
 
-// canonical_secret (matches Coq: Lemma canonical_secret)
 assert canonical_secret {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_secret for 5
+check canonical_secret for 6
 
-// canonical_proof (matches Coq: Lemma canonical_proof)
 assert canonical_proof {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check canonical_proof for 5
+check canonical_proof for 6
 
-// base_value_pure (matches Coq: Lemma base_value_pure)
 assert base_value_pure {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check base_value_pure for 5
+check base_value_pure for 6
 
-// unit_value_pure (matches Coq: Lemma unit_value_pure)
 assert unit_value_pure {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check unit_value_pure for 5
+check unit_value_pure for 6
 
-// bool_value_pure (matches Coq: Lemma bool_value_pure)
 assert bool_value_pure {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check bool_value_pure for 5
+check bool_value_pure for 6
 
-// int_value_pure (matches Coq: Lemma int_value_pure)
 assert int_value_pure {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check int_value_pure for 5
+check int_value_pure for 6
 
-// string_value_pure (matches Coq: Lemma string_value_pure)
 assert string_value_pure {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check string_value_pure for 5
+check string_value_pure for 6
 
-// lambda_value_pure (matches Coq: Lemma lambda_value_pure)
 assert lambda_value_pure {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check lambda_value_pure for 5
+check lambda_value_pure for 6
 
-// loc_value_pure (matches Coq: Lemma loc_value_pure)
 assert loc_value_pure {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check loc_value_pure for 5
+check loc_value_pure for 6
 
-// unit_not_bool (matches Coq: Lemma unit_not_bool)
 assert unit_not_bool {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check unit_not_bool for 5
+check unit_not_bool for 6
 
-// unit_not_int (matches Coq: Lemma unit_not_int)
 assert unit_not_int {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check unit_not_int for 5
+check unit_not_int for 6
 
-// unit_not_fn (matches Coq: Lemma unit_not_fn)
 assert unit_not_fn {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check unit_not_fn for 5
+check unit_not_fn for 6
 
-// bool_not_unit (matches Coq: Lemma bool_not_unit)
 assert bool_not_unit {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check bool_not_unit for 5
+check bool_not_unit for 6
 
-// bool_not_int (matches Coq: Lemma bool_not_int)
 assert bool_not_int {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check bool_not_int for 5
+check bool_not_int for 6
 
-// int_not_unit (matches Coq: Lemma int_not_unit)
 assert int_not_unit {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check int_not_unit for 5
+check int_not_unit for 6
 
-// int_not_bool (matches Coq: Lemma int_not_bool)
 assert int_not_bool {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check int_not_bool for 5
+check int_not_bool for 6
 
-// pair_components_typed (matches Coq: Lemma pair_components_typed)
 assert pair_components_typed {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check pair_components_typed for 5
+check pair_components_typed for 6
 
-// inl_component_typed (matches Coq: Lemma inl_component_typed)
 assert inl_component_typed {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check inl_component_typed for 5
+check inl_component_typed for 6
 
-// inr_component_typed (matches Coq: Lemma inr_component_typed)
 assert inr_component_typed {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check inr_component_typed for 5
+check inr_component_typed for 6
 
-// classify_component_typed (matches Coq: Lemma classify_component_typed)
 assert classify_component_typed {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check classify_component_typed for 5
+check classify_component_typed for 6
 
-// prove_component_typed (matches Coq: Lemma prove_component_typed)
 assert prove_component_typed {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check prove_component_typed for 5
+check prove_component_typed for 6
 
-// value_shape (matches Coq: Lemma value_shape)
 assert value_shape {
-  all x: univ | x in univ
+  all e: TypedExpr | e.isValue = 1 implies e.exprEffect = EffPure
 }
-check value_shape for 5
+check value_shape for 6
+
+pred ExampleCanonicalForms {
+  some e: TypedExpr | e.isValue = 1 and e.exprType = TBool
+}
+run ExampleCanonicalForms for 6

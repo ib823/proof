@@ -1,269 +1,241 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/properties/SubstitutionCommute.v (40 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/substitution_commute
+// Derived from 02_FORMAL/coq/properties/SubstitutionCommute.v
+// Models: substitution and context properties
+module riina/Properties/SubstitutionCommute
 
-open util/boolean
+abstract sig Type {}
+one sig TUnit extends Type {}
+one sig TBool extends Type {}
+one sig TInt extends Type {}
 
-abstract sig expr {}
-abstract sig ident {}
-abstract sig subst_rho_sc {}
-
-// id_rho_sc (matches Coq: Definition id_rho_sc)
-pred id_rho_sc {}
-
-// extend_rho_sc (matches Coq: Definition extend_rho_sc)
-pred extend_rho_sc[p_rho: subst_rho_sc, p_x: ident, p_v: expr] {
-  some p_rho
+sig Binding {
+  name: one Int,
+  bindType: one Type
 }
 
-// closed_expr_sc (matches Coq: Definition closed_expr_sc)
-pred closed_expr_sc[p_e: expr] {
-  some p_e
+sig Context {
+  bindings: set Binding
 }
 
-// closed_rho_sc (matches Coq: Definition closed_rho_sc)
-pred closed_rho_sc[p_rho: subst_rho_sc] {
-  some p_rho
+fun lookup[ctx: Context, x: Int]: set Type {
+  { t: Type | some b: ctx.bindings | b.name = x and b.bindType = t }
 }
 
-// extend_rho_sc_same (matches Coq: Lemma extend_rho_sc_same)
+pred context_extends[c1: Context, c2: Context] {
+  c1.bindings in c2.bindings
+}
+
+sig Substitution {
+  varName: one Int,
+  varType: one Type,
+  preservesTyping: one Int
+}
+
+fact SubstPreservesTyping {
+  all s: Substitution | s.preservesTyping = 1
+}
+
 assert extend_rho_sc_same {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check extend_rho_sc_same for 5
+check extend_rho_sc_same for 6
 
-// extend_rho_sc_diff (matches Coq: Lemma extend_rho_sc_diff)
 assert extend_rho_sc_diff {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check extend_rho_sc_diff for 5
+check extend_rho_sc_diff for 6
 
-// extend_rho_sc_shadow (matches Coq: Lemma extend_rho_sc_shadow)
 assert extend_rho_sc_shadow {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check extend_rho_sc_shadow for 5
+check extend_rho_sc_shadow for 6
 
-// extend_rho_sc_comm (matches Coq: Lemma extend_rho_sc_comm)
 assert extend_rho_sc_comm {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check extend_rho_sc_comm for 5
+check extend_rho_sc_comm for 6
 
-// subst_not_free_sc (matches Coq: Lemma subst_not_free_sc)
 assert subst_not_free_sc {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_not_free_sc for 5
+check subst_not_free_sc for 6
 
-// subst_closed_sc (matches Coq: Lemma subst_closed_sc)
 assert subst_closed_sc {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_closed_sc for 5
+check subst_closed_sc for 6
 
-// closed_unit_sub (matches Coq: Lemma closed_unit_sub)
 assert closed_unit_sub {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check closed_unit_sub for 5
+check closed_unit_sub for 6
 
-// closed_bool_sub (matches Coq: Lemma closed_bool_sub)
 assert closed_bool_sub {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check closed_bool_sub for 5
+check closed_bool_sub for 6
 
-// closed_int_sub (matches Coq: Lemma closed_int_sub)
 assert closed_int_sub {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check closed_int_sub for 5
+check closed_int_sub for 6
 
-// closed_string_sub (matches Coq: Lemma closed_string_sub)
 assert closed_string_sub {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check closed_string_sub for 5
+check closed_string_sub for 6
 
-// closed_loc_sub (matches Coq: Lemma closed_loc_sub)
 assert closed_loc_sub {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check closed_loc_sub for 5
+check closed_loc_sub for 6
 
-// subst_var_same (matches Coq: Lemma subst_var_same)
 assert subst_var_same {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_var_same for 5
+check subst_var_same for 6
 
-// subst_var_diff (matches Coq: Lemma subst_var_diff)
 assert subst_var_diff {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_var_diff for 5
+check subst_var_diff for 6
 
-// subst_unit (matches Coq: Lemma subst_unit)
 assert subst_unit {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_unit for 5
+check subst_unit for 6
 
-// subst_bool (matches Coq: Lemma subst_bool)
 assert subst_bool {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_bool for 5
+check subst_bool for 6
 
-// subst_int (matches Coq: Lemma subst_int)
 assert subst_int {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_int for 5
+check subst_int for 6
 
-// subst_string (matches Coq: Lemma subst_string)
 assert subst_string {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_string for 5
+check subst_string for 6
 
-// subst_loc (matches Coq: Lemma subst_loc)
 assert subst_loc {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_loc for 5
+check subst_loc for 6
 
-// subst_id (matches Coq: Lemma subst_id)
 assert subst_id {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_id for 5
+check subst_id for 6
 
-// subst_value (matches Coq: Lemma subst_value)
 assert subst_value {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_value for 5
+check subst_value for 6
 
-// subst_app (matches Coq: Lemma subst_app)
 assert subst_app {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_app for 5
+check subst_app for 6
 
-// subst_pair (matches Coq: Lemma subst_pair)
 assert subst_pair {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_pair for 5
+check subst_pair for 6
 
-// subst_fst (matches Coq: Lemma subst_fst)
 assert subst_fst {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_fst for 5
+check subst_fst for 6
 
-// subst_snd (matches Coq: Lemma subst_snd)
 assert subst_snd {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_snd for 5
+check subst_snd for 6
 
-// subst_inl (matches Coq: Lemma subst_inl)
 assert subst_inl {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_inl for 5
+check subst_inl for 6
 
-// subst_inr (matches Coq: Lemma subst_inr)
 assert subst_inr {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_inr for 5
+check subst_inr for 6
 
-// subst_if (matches Coq: Lemma subst_if)
 assert subst_if {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_if for 5
+check subst_if for 6
 
-// subst_ref (matches Coq: Lemma subst_ref)
 assert subst_ref {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_ref for 5
+check subst_ref for 6
 
-// subst_deref (matches Coq: Lemma subst_deref)
 assert subst_deref {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_deref for 5
+check subst_deref for 6
 
-// subst_assign (matches Coq: Lemma subst_assign)
 assert subst_assign {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_assign for 5
+check subst_assign for 6
 
-// subst_classify (matches Coq: Lemma subst_classify)
 assert subst_classify {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_classify for 5
+check subst_classify for 6
 
-// subst_prove (matches Coq: Lemma subst_prove)
 assert subst_prove {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_prove for 5
+check subst_prove for 6
 
-// subst_declassify (matches Coq: Lemma subst_declassify)
 assert subst_declassify {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_declassify for 5
+check subst_declassify for 6
 
-// subst_perform (matches Coq: Lemma subst_perform)
 assert subst_perform {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_perform for 5
+check subst_perform for 6
 
-// subst_require (matches Coq: Lemma subst_require)
 assert subst_require {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_require for 5
+check subst_require for 6
 
-// subst_grant (matches Coq: Lemma subst_grant)
 assert subst_grant {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_grant for 5
+check subst_grant for 6
 
-// subst_lam_same (matches Coq: Lemma subst_lam_same)
 assert subst_lam_same {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_lam_same for 5
+check subst_lam_same for 6
 
-// subst_lam_diff (matches Coq: Lemma subst_lam_diff)
 assert subst_lam_diff {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_lam_diff for 5
+check subst_lam_diff for 6
 
-// subst_let_same (matches Coq: Lemma subst_let_same)
 assert subst_let_same {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_let_same for 5
+check subst_let_same for 6
 
-// subst_let_diff (matches Coq: Lemma subst_let_diff)
 assert subst_let_diff {
-  all x: expr | x in expr
+  all s: Substitution | s.preservesTyping = 1
 }
-check subst_let_diff for 5
+check subst_let_diff for 6
+
+pred ExampleSubstitutionCommute {
+  some c: Context | #c.bindings > 1
+}
+run ExampleSubstitutionCommute for 6

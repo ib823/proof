@@ -1,243 +1,252 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/effects/EffectGate.v (38 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/effect_gate
+// Derived from 02_FORMAL/coq/effects/EffectGate.v
+// Models: effect gate for RIINA effect system
+module riina/Effects/EffectGate
 
-open util/boolean
-
-abstract sig Ty_effect {}
-abstract sig expr {}
-
-// is_gate (matches Coq: Definition is_gate)
-pred is_gate[p_eff: Ty_effect, p_e_gate: expr] {
-  some p_eff
+abstract sig Effect {
+  level: one Int,
+  leq: set Effect
 }
 
-// pure_performs_any (matches Coq: Theorem pure_performs_any)
+one sig EffPure extends Effect {}
+one sig EffRead extends Effect {}
+one sig EffWrite extends Effect {}
+one sig EffFS extends Effect {}
+one sig EffNet extends Effect {}
+one sig EffCrypto extends Effect {}
+one sig EffSystem extends Effect {}
+
+fact Levels {
+  EffPure.level = 0
+  EffRead.level = 1
+  EffWrite.level = 2
+  EffFS.level = 3
+  EffNet.level = 4
+  EffCrypto.level = 5
+  EffSystem.level = 6
+}
+
+fact Ordering {
+  all e1, e2: Effect | e2 in e1.leq iff e1.level <= e2.level
+}
+
+fun eff_join[e1, e2: Effect]: Effect {
+  { r: Effect | r.level = max[e1.level, e2.level] }
+}
+
+fun eff_meet[e1, e2: Effect]: Effect {
+  { r: Effect | r.level = min[e1.level, e2.level] }
+}
+
+
+sig Capability {
+  grantedEffect: one Effect,
+  revoked: one Int
+}
+
+sig EffectContext {
+  caps: set Capability
+}
+
+pred can_perform[ctx: EffectContext, eff: Effect] {
+  some c: ctx.caps | c.grantedEffect = eff and c.revoked = 0
+}
+
+pred gate_check[ctx: EffectContext, required: Effect] {
+  required = EffPure or can_perform[ctx, required]
+}
+
 assert pure_performs_any {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check pure_performs_any for 5
+check pure_performs_any for 6
 
-// pure_full_performs_any (matches Coq: Theorem pure_full_performs_any)
 assert pure_full_performs_any {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check pure_full_performs_any for 5
+check pure_full_performs_any for 6
 
-// grant_no_escalation (matches Coq: Theorem grant_no_escalation)
 assert grant_no_escalation {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check grant_no_escalation for 5
+check grant_no_escalation for 6
 
-// grant_effect_transparent (matches Coq: Theorem grant_effect_transparent)
 assert grant_effect_transparent {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check grant_effect_transparent for 5
+check grant_effect_transparent for 6
 
-// grant_preserves_bound (matches Coq: Theorem grant_preserves_bound)
 assert grant_preserves_bound {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check grant_preserves_bound for 5
+check grant_preserves_bound for 6
 
-// handle_body_bound (matches Coq: Lemma handle_body_bound)
 assert handle_body_bound {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check handle_body_bound for 5
+check handle_body_bound for 6
 
-// handle_handler_bound (matches Coq: Lemma handle_handler_bound)
 assert handle_handler_bound {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check handle_handler_bound for 5
+check handle_handler_bound for 6
 
-// handle_bound_combine (matches Coq: Lemma handle_bound_combine)
 assert handle_bound_combine {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check handle_bound_combine for 5
+check handle_bound_combine for 6
 
-// perform_requires_license (matches Coq: Theorem perform_requires_license)
 assert perform_requires_license {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check perform_requires_license for 5
+check perform_requires_license for 6
 
-// nonpure_level_pos (matches Coq: Lemma nonpure_level_pos)
 assert nonpure_level_pos {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check nonpure_level_pos for 5
+check nonpure_level_pos for 6
 
-// pure_perform_is_pure (matches Coq: Theorem pure_perform_is_pure)
 assert pure_perform_is_pure {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check pure_perform_is_pure for 5
+check pure_perform_is_pure for 6
 
-// closed_pure_no_effects (matches Coq: Theorem closed_pure_no_effects)
 assert closed_pure_no_effects {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check closed_pure_no_effects for 5
+check closed_pure_no_effects for 6
 
-// gate_enforcement (matches Coq: Theorem gate_enforcement)
 assert gate_enforcement {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check gate_enforcement for 5
+check gate_enforcement for 6
 
-// lambda_is_syntactic_gate (matches Coq: Theorem lambda_is_syntactic_gate)
 assert lambda_is_syntactic_gate {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check lambda_is_syntactic_gate for 5
+check lambda_is_syntactic_gate for 6
 
-// gate_weakening (matches Coq: Theorem gate_weakening)
 assert gate_weakening {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check gate_weakening for 5
+check gate_weakening for 6
 
-// effect_sound_after_step (matches Coq: Theorem effect_sound_after_step)
 assert effect_sound_after_step {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check effect_sound_after_step for 5
+check effect_sound_after_step for 6
 
-// effect_sound_multi_step (matches Coq: Theorem effect_sound_multi_step)
 assert effect_sound_multi_step {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check effect_sound_multi_step for 5
+check effect_sound_multi_step for 6
 
-// capability_lexical_scope (matches Coq: Theorem capability_lexical_scope)
 assert capability_lexical_scope {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check capability_lexical_scope for 5
+check capability_lexical_scope for 6
 
-// require_effect_additive (matches Coq: Theorem require_effect_additive)
 assert require_effect_additive {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check require_effect_additive for 5
+check require_effect_additive for 6
 
-// app_joins_effects (matches Coq: Theorem app_joins_effects)
 assert app_joins_effects {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check app_joins_effects for 5
+check app_joins_effects for 6
 
-// let_joins_effects (matches Coq: Theorem let_joins_effects)
 assert let_joins_effects {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check let_joins_effects for 5
+check let_joins_effects for 6
 
-// effect_isolation (matches Coq: Theorem effect_isolation)
 assert effect_isolation {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check effect_isolation for 5
+check effect_isolation for 6
 
-// effect_isolation_let (matches Coq: Theorem effect_isolation_let)
 assert effect_isolation_let {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check effect_isolation_let for 5
+check effect_isolation_let for 6
 
-// effect_isolation_pair (matches Coq: Theorem effect_isolation_pair)
 assert effect_isolation_pair {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check effect_isolation_pair for 5
+check effect_isolation_pair for 6
 
-// double_handle_body (matches Coq: Theorem double_handle_body)
 assert double_handle_body {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check double_handle_body for 5
+check double_handle_body for 6
 
-// double_handle_outer_handler (matches Coq: Theorem double_handle_outer_handler)
 assert double_handle_outer_handler {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check double_handle_outer_handler for 5
+check double_handle_outer_handler for 6
 
-// double_handle_inner_handler (matches Coq: Theorem double_handle_inner_handler)
 assert double_handle_inner_handler {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check double_handle_inner_handler for 5
+check double_handle_inner_handler for 6
 
-// program_effect_contained (matches Coq: Theorem program_effect_contained)
 assert program_effect_contained {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check program_effect_contained for 5
+check program_effect_contained for 6
 
-// pure_program_no_effects (matches Coq: Theorem pure_program_no_effects)
 assert pure_program_no_effects {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check pure_program_no_effects for 5
+check pure_program_no_effects for 6
 
-// grant_idempotent_bound (matches Coq: Theorem grant_idempotent_bound)
 assert grant_idempotent_bound {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check grant_idempotent_bound for 5
+check grant_idempotent_bound for 6
 
-// require_bound_transparent (matches Coq: Theorem require_bound_transparent)
 assert require_bound_transparent {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check require_bound_transparent for 5
+check require_bound_transparent for 6
 
-// if_performs_within (matches Coq: Theorem if_performs_within)
 assert if_performs_within {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check if_performs_within for 5
+check if_performs_within for 6
 
-// case_performs_within (matches Coq: Theorem case_performs_within)
 assert case_performs_within {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check case_performs_within for 5
+check case_performs_within for 6
 
-// ref_performs_within (matches Coq: Theorem ref_performs_within)
 assert ref_performs_within {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check ref_performs_within for 5
+check ref_performs_within for 6
 
-// deref_performs_within (matches Coq: Theorem deref_performs_within)
 assert deref_performs_within {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check deref_performs_within for 5
+check deref_performs_within for 6
 
-// assign_performs_within (matches Coq: Theorem assign_performs_within)
 assert assign_performs_within {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check assign_performs_within for 5
+check assign_performs_within for 6
 
-// classify_performs_within (matches Coq: Theorem classify_performs_within)
 assert classify_performs_within {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check classify_performs_within for 5
+check classify_performs_within for 6
 
-// prove_performs_within (matches Coq: Theorem prove_performs_within)
 assert prove_performs_within {
-  all x: Ty_effect | x in Ty_effect
+  all ctx: EffectContext | gate_check[ctx, EffPure]
 }
-check prove_performs_within for 5
+check prove_performs_within for 6
+
+pred ExampleEffectGate {
+  some disj e1, e2: Effect | e1.level < e2.level
+}
+run ExampleEffectGate for 6

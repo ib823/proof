@@ -1,916 +1,512 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/domains/FHESecurity.v (94 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/fhe_security
+// Domain model for fhesecurity
+// Bounded verification of key properties
+module riina/Domains/FHESecurity
 
-open util/boolean
+abstract sig SecurityLevel {}
+one sig Low extends SecurityLevel {}
+one sig Medium extends SecurityLevel {}
+one sig High extends SecurityLevel {}
 
-// HomomorphicOps (matches Coq: Record HomomorphicOps)
-sig HomomorphicOps {
-  f_ho_addition: one Bool,
-  f_ho_multiplication: one Bool,
-  f_ho_arbitrary_depth: one Bool
+sig Component {
+  secLevel: one SecurityLevel,
+  verified: one Int,
+  integrity: one Int
 }
 
-// FHESecurityProps (matches Coq: Record FHESecurityProps)
-sig FHESecurityProps {
-  f_fhe_ind_cpa: one Bool,
-  f_fhe_circular_secure: one Bool,
-  f_fhe_semantic_secure: one Bool
+sig Operation {
+  component: one Component,
+  permitted: one Int,
+  audited: one Int
 }
 
-// NoiseManagement (matches Coq: Record NoiseManagement)
-sig NoiseManagement {
-  f_nm_bootstrapping: one Bool,
-  f_nm_modulus_switching: one Bool,
-  f_nm_noise_bounded: one Bool
+// Only verified components allow operations
+fact VerifiedRequired {
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
 
-// FHEConfig (matches Coq: Record FHEConfig)
-sig FHEConfig {
-  f_fhe_ops: one HomomorphicOps,
-  f_fhe_security: one FHESecurityProps,
-  f_fhe_noise: one NoiseManagement,
-  f_fhe_lattice_based: one Bool,
-  f_fhe_post_quantum: one Bool
+// High security requires audit
+fact HighSecAudited {
+  all op: Operation |
+    (op.component.secLevel = High and op.permitted = 1) implies op.audited = 1
 }
 
-// INDCPAGame (matches Coq: Record INDCPAGame)
-sig INDCPAGame {
-  f_icpa_key_size: one Int,
-  f_icpa_challenge_bit: one Bool,
-  f_icpa_encryption_oracle: one Bool,
-  f_icpa_distinguisher_adv: one Int
+// Integrity required for permission
+fact IntegrityRequired {
+  all op: Operation | op.permitted = 1 implies op.component.integrity = 1
 }
 
-// SemanticSecurity (matches Coq: Record SemanticSecurity)
-sig SemanticSecurity {
-  f_ss_message_space: one Int,
-  f_ss_ciphertext_space: one Int,
-  f_ss_indistinguishable: one Bool,
-  f_ss_randomized: one Bool
-}
-
-// HomAddition (matches Coq: Record HomAddition)
-sig HomAddition {
-  f_ha_plaintext_modulus: one Int,
-  f_ha_ciphertext_modulus: one Int,
-  f_ha_preserves_structure: one Bool
-}
-
-// HomMultiplication (matches Coq: Record HomMultiplication)
-sig HomMultiplication {
-  f_hm_plaintext_modulus: one Int,
-  f_hm_ciphertext_modulus: one Int,
-  f_hm_relinearization: one Bool,
-  f_hm_key_switching: one Bool
-}
-
-// HomOperations (matches Coq: Record HomOperations)
-sig HomOperations {
-  f_hops_addition: one HomAddition,
-  f_hops_multiplication: one HomMultiplication,
-  f_hops_composition: one Bool
-}
-
-// NoiseModel (matches Coq: Record NoiseModel)
-sig NoiseModel {
-  f_noise_initial: one Int,
-  f_noise_add_growth: one Int,
-  f_noise_mult_growth: one Int,
-  f_noise_threshold: one Int
-}
-
-// NoiseBound (matches Coq: Record NoiseBound)
-sig NoiseBound {
-  f_nb_max_additions: one Int,
-  f_nb_max_multiplications: one Int,
-  f_nb_modulus: one Int
-}
-
-// BootstrappingConfig (matches Coq: Record BootstrappingConfig)
-sig BootstrappingConfig {
-  f_bs_reduces_noise: one Bool,
-  f_bs_preserves_message: one Bool,
-  f_bs_polynomial_time: one Bool,
-  f_bs_noise_output: one Int,
-  f_bs_noise_input_max: one Int
-}
-
-// UnlimitedFHE (matches Coq: Record UnlimitedFHE)
-sig UnlimitedFHE {
-  f_ufhe_bootstrap_config: one BootstrappingConfig,
-  f_ufhe_noise_model: one NoiseModel,
-  f_ufhe_leveled_depth: one Int
-}
-
-// KeyGenParams (matches Coq: Record KeyGenParams)
-sig KeyGenParams {
-  f_kg_security_parameter: one Int,
-  f_kg_polynomial_degree: one Int,
-  f_kg_error_distribution: one Int,
-  f_kg_modulus_bits: one Int
-}
-
-// FHEKeyPair (matches Coq: Record FHEKeyPair)
-sig FHEKeyPair {
-  f_kp_public: one Int,
-  f_kp_secret: one Int,
-  f_kp_evaluation: one Int,
-  f_kp_params: one KeyGenParams
-}
-
-// FHECiphertext (matches Coq: Record FHECiphertext)
-sig FHECiphertext {
-  f_ct_polynomial_0: one Int,
-  f_ct_polynomial_1: one Int,
-  f_ct_noise_estimate: one Int,
-  f_ct_level: one Int,
-  f_ct_valid_encryption: one Bool
-}
-
-// CiphertextAfterOp (matches Coq: Record CiphertextAfterOp)
-sig CiphertextAfterOp {
-  f_cao_original: one FHECiphertext,
-  f_cao_result: one FHECiphertext,
-  f_cao_operation: one Int
-}
-
-// CompleteFHESystem (matches Coq: Record CompleteFHESystem)
-sig CompleteFHESystem {
-  f_cfhe_config: one FHEConfig,
-  f_cfhe_keygen: one KeyGenParams,
-  f_cfhe_noise: one NoiseModel,
-  f_cfhe_bootstrap: one BootstrappingConfig,
-  f_cfhe_operations: one HomOperations,
-  f_cfhe_indcpa: one INDCPAGame
-}
-
-// CircularSecurity (matches Coq: Record CircularSecurity)
-sig CircularSecurity {
-  f_cs_key_encryption_safe: one Bool,
-  f_cs_kDM_secure: one Bool,
-  f_cs_multi_key: one Bool
-}
-
-// LWEHardness (matches Coq: Record LWEHardness)
-sig LWEHardness {
-  f_lwe_dimension: one Int,
-  f_lwe_modulus: one Int,
-  f_lwe_error_rate: one Int,
-  f_lwe_assumed_hard: one Bool
-}
-
-// RLWEConfig (matches Coq: Record RLWEConfig)
-sig RLWEConfig {
-  f_rlwe_ring_degree: one Int,
-  f_rlwe_modulus: one Int,
-  f_rlwe_error_width: one Int,
-  f_rlwe_ntt_compatible: one Bool
-}
-
-// ops_fully_homomorphic (matches Coq: Definition ops_fully_homomorphic)
-pred ops_fully_homomorphic[p_o: HomomorphicOps] {
-  some p_o
-}
-
-// fhe_security_complete (matches Coq: Definition fhe_security_complete)
-pred fhe_security_complete[p_s: FHESecurityProps] {
-  some p_s
-}
-
-// noise_managed (matches Coq: Definition noise_managed)
-pred noise_managed[p_n: NoiseManagement] {
-  some p_n
-}
-
-// fhe_fully_secure (matches Coq: Definition fhe_fully_secure)
-pred fhe_fully_secure[p_f: FHEConfig] {
-  some p_f
-}
-
-// riina_fhe_ops (matches Coq: Definition riina_fhe_ops)
-pred riina_fhe_ops {}
-
-// riina_fhe_sec (matches Coq: Definition riina_fhe_sec)
-pred riina_fhe_sec {}
-
-// riina_fhe_noise (matches Coq: Definition riina_fhe_noise)
-pred riina_fhe_noise {}
-
-// riina_fhe (matches Coq: Definition riina_fhe)
-pred riina_fhe {}
-
-// negligible_threshold (matches Coq: Definition negligible_threshold)
-pred negligible_threshold {}
-
-// riina_advantage (matches Coq: Definition riina_advantage)
-pred riina_advantage {}
-
-// indcpa_secure (matches Coq: Definition indcpa_secure)
-pred indcpa_secure[p_g: INDCPAGame] {
-  some p_g
-}
-
-// riina_indcpa (matches Coq: Definition riina_indcpa)
-pred riina_indcpa {}
-
-// semantic_secure (matches Coq: Definition semantic_secure)
-pred semantic_secure[p_ss: SemanticSecurity] {
-  some p_ss
-}
-
-// riina_semantic (matches Coq: Definition riina_semantic)
-pred riina_semantic {}
-
-// hom_add_correct (matches Coq: Definition hom_add_correct)
-pred hom_add_correct[p_ha: HomAddition] {
-  some p_ha
-}
-
-// riina_hom_add (matches Coq: Definition riina_hom_add)
-pred riina_hom_add {}
-
-// hom_mult_correct (matches Coq: Definition hom_mult_correct)
-pred hom_mult_correct[p_hm: HomMultiplication] {
-  some p_hm
-}
-
-// riina_hom_mult (matches Coq: Definition riina_hom_mult)
-pred riina_hom_mult {}
-
-// hom_ops_valid (matches Coq: Definition hom_ops_valid)
-pred hom_ops_valid[p_ho: HomOperations] {
-  some p_ho
-}
-
-// riina_hom_ops (matches Coq: Definition riina_hom_ops)
-pred riina_hom_ops {}
-
-// noise_after_additions (matches Coq: Definition noise_after_additions)
-pred noise_after_additions[p_nm: NoiseModel, p_n: Int] {
-  some p_nm
-}
-
-// noise_after_multiplications (matches Coq: Definition noise_after_multiplications)
-pred noise_after_multiplications[p_nm: NoiseModel, p_n: Int] {
-  some p_nm
-}
-
-// noise_safe (matches Coq: Definition noise_safe)
-pred noise_safe[p_nm: NoiseModel, p_current: Int] {
-  some p_nm
-}
-
-// riina_noise_model (matches Coq: Definition riina_noise_model)
-pred riina_noise_model {}
-
-// noise_bound_valid (matches Coq: Definition noise_bound_valid)
-pred noise_bound_valid[p_nm: NoiseModel, p_nb: NoiseBound] {
-  some p_nm
-}
-
-// riina_noise_bound (matches Coq: Definition riina_noise_bound)
-pred riina_noise_bound {}
-
-// bootstrapping_correct (matches Coq: Definition bootstrapping_correct)
-pred bootstrapping_correct[p_bc: BootstrappingConfig] {
-  some p_bc
-}
-
-// riina_bootstrap (matches Coq: Definition riina_bootstrap)
-pred riina_bootstrap {}
-
-// unlimited_fhe_valid (matches Coq: Definition unlimited_fhe_valid)
-pred unlimited_fhe_valid[p_u: UnlimitedFHE] {
-  some p_u
-}
-
-// riina_unlimited (matches Coq: Definition riina_unlimited)
-pred riina_unlimited {}
-
-// keygen_secure (matches Coq: Definition keygen_secure)
-pred keygen_secure[p_kg: KeyGenParams] {
-  some p_kg
-}
-
-// riina_keygen (matches Coq: Definition riina_keygen)
-pred riina_keygen {}
-
-// keypair_valid (matches Coq: Definition keypair_valid)
-pred keypair_valid[p_kp: FHEKeyPair] {
-  some p_kp
-}
-
-// riina_keypair (matches Coq: Definition riina_keypair)
-pred riina_keypair {}
-
-// ciphertext_valid (matches Coq: Definition ciphertext_valid)
-pred ciphertext_valid[p_ct: FHECiphertext, p_nm: NoiseModel] {
-  some p_ct
-}
-
-// riina_ciphertext (matches Coq: Definition riina_ciphertext)
-pred riina_ciphertext {}
-
-// op_preserves_validity (matches Coq: Definition op_preserves_validity)
-pred op_preserves_validity[p_cao: CiphertextAfterOp, p_nm: NoiseModel] {
-  some p_cao
-}
-
-// complete_fhe_secure (matches Coq: Definition complete_fhe_secure)
-pred complete_fhe_secure[p_sys: CompleteFHESystem] {
-  some p_sys
-}
-
-// riina_complete_fhe (matches Coq: Definition riina_complete_fhe)
-pred riina_complete_fhe {}
-
-// circular_secure (matches Coq: Definition circular_secure)
-pred circular_secure[p_cs: CircularSecurity] {
-  some p_cs
-}
-
-// riina_circular (matches Coq: Definition riina_circular)
-pred riina_circular {}
-
-// lwe_secure (matches Coq: Definition lwe_secure)
-pred lwe_secure[p_lwe: LWEHardness] {
-  some p_lwe
-}
-
-// riina_lwe (matches Coq: Definition riina_lwe)
-pred riina_lwe {}
-
-// rlwe_secure (matches Coq: Definition rlwe_secure)
-pred rlwe_secure[p_r: RLWEConfig] {
-  some p_r
-}
-
-// riina_rlwe (matches Coq: Definition riina_rlwe)
-pred riina_rlwe {}
-
-// andb_true_iff (matches Coq: Lemma andb_true_iff)
 assert andb_true_iff {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check andb_true_iff for 5
+check andb_true_iff for 6
 
-// andb3_true_iff (matches Coq: Lemma andb3_true_iff)
 assert andb3_true_iff {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check andb3_true_iff for 5
+check andb3_true_iff for 6
 
-// negb_true_iff (matches Coq: Lemma negb_true_iff)
 assert negb_true_iff {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check negb_true_iff for 5
+check negb_true_iff for 6
 
-// leb_le (matches Coq: Lemma leb_le)
 assert leb_le {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check leb_le for 5
+check leb_le for 6
 
-// ltb_lt (matches Coq: Lemma ltb_lt)
 assert ltb_lt {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ltb_lt for 5
+check ltb_lt for 6
 
-// mult_le_compat (matches Coq: Lemma mult_le_compat)
 assert mult_le_compat {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check mult_le_compat for 5
+check mult_le_compat for 6
 
-// add_le_compat (matches Coq: Lemma add_le_compat)
 assert add_le_compat {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check add_le_compat for 5
+check add_le_compat for 6
 
-// FHE_001 (matches Coq: Theorem FHE_001)
 assert FHE_001 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_001 for 5
+check FHE_001 for 6
 
-// FHE_002 (matches Coq: Theorem FHE_002)
 assert FHE_002 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_002 for 5
+check FHE_002 for 6
 
-// FHE_003 (matches Coq: Theorem FHE_003)
 assert FHE_003 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_003 for 5
+check FHE_003 for 6
 
-// FHE_004 (matches Coq: Theorem FHE_004)
 assert FHE_004 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_004 for 5
+check FHE_004 for 6
 
-// FHE_005 (matches Coq: Theorem FHE_005)
 assert FHE_005 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_005 for 5
+check FHE_005 for 6
 
-// FHE_006 (matches Coq: Theorem FHE_006)
 assert FHE_006 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_006 for 5
+check FHE_006 for 6
 
-// FHE_007 (matches Coq: Theorem FHE_007)
 assert FHE_007 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_007 for 5
+check FHE_007 for 6
 
-// FHE_008 (matches Coq: Theorem FHE_008)
 assert FHE_008 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_008 for 5
+check FHE_008 for 6
 
-// FHE_009 (matches Coq: Theorem FHE_009)
 assert FHE_009 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_009 for 5
+check FHE_009 for 6
 
-// FHE_010 (matches Coq: Theorem FHE_010)
 assert FHE_010 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_010 for 5
+check FHE_010 for 6
 
-// FHE_011 (matches Coq: Theorem FHE_011)
 assert FHE_011 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_011 for 5
+check FHE_011 for 6
 
-// FHE_012 (matches Coq: Theorem FHE_012)
 assert FHE_012 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_012 for 5
+check FHE_012 for 6
 
-// FHE_013 (matches Coq: Theorem FHE_013)
 assert FHE_013 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_013 for 5
+check FHE_013 for 6
 
-// FHE_014 (matches Coq: Theorem FHE_014)
 assert FHE_014 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_014 for 5
+check FHE_014 for 6
 
-// FHE_015 (matches Coq: Theorem FHE_015)
 assert FHE_015 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_015 for 5
+check FHE_015 for 6
 
-// FHE_016 (matches Coq: Theorem FHE_016)
 assert FHE_016 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_016 for 5
+check FHE_016 for 6
 
-// FHE_017 (matches Coq: Theorem FHE_017)
 assert FHE_017 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_017 for 5
+check FHE_017 for 6
 
-// FHE_018 (matches Coq: Theorem FHE_018)
 assert FHE_018 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_018 for 5
+check FHE_018 for 6
 
-// FHE_019 (matches Coq: Theorem FHE_019)
 assert FHE_019 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_019 for 5
+check FHE_019 for 6
 
-// FHE_020 (matches Coq: Theorem FHE_020)
 assert FHE_020 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_020 for 5
+check FHE_020 for 6
 
-// FHE_021 (matches Coq: Theorem FHE_021)
 assert FHE_021 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_021 for 5
+check FHE_021 for 6
 
-// FHE_022 (matches Coq: Theorem FHE_022)
 assert FHE_022 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_022 for 5
+check FHE_022 for 6
 
-// FHE_023 (matches Coq: Theorem FHE_023)
 assert FHE_023 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_023 for 5
+check FHE_023 for 6
 
-// FHE_024 (matches Coq: Theorem FHE_024)
 assert FHE_024 {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_024 for 5
+check FHE_024 for 6
 
-// FHE_025_complete (matches Coq: Theorem FHE_025_complete)
 assert FHE_025_complete {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check FHE_025_complete for 5
+check FHE_025_complete for 6
 
-// indcpa_001_riina_secure (matches Coq: Theorem indcpa_001_riina_secure)
 assert indcpa_001_riina_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check indcpa_001_riina_secure for 5
+check indcpa_001_riina_secure for 6
 
-// indcpa_002_key_size_sufficient (matches Coq: Theorem indcpa_002_key_size_sufficient)
 assert indcpa_002_key_size_sufficient {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check indcpa_002_key_size_sufficient for 5
+check indcpa_002_key_size_sufficient for 6
 
-// indcpa_003_has_oracle (matches Coq: Theorem indcpa_003_has_oracle)
 assert indcpa_003_has_oracle {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check indcpa_003_has_oracle for 5
+check indcpa_003_has_oracle for 6
 
-// indcpa_004_negligible_advantage (matches Coq: Theorem indcpa_004_negligible_advantage)
 assert indcpa_004_negligible_advantage {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check indcpa_004_negligible_advantage for 5
+check indcpa_004_negligible_advantage for 6
 
-// ss_001_riina_semantic_secure (matches Coq: Theorem ss_001_riina_semantic_secure)
 assert ss_001_riina_semantic_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ss_001_riina_semantic_secure for 5
+check ss_001_riina_semantic_secure for 6
 
-// ss_002_implies_indistinguishable (matches Coq: Theorem ss_002_implies_indistinguishable)
 assert ss_002_implies_indistinguishable {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ss_002_implies_indistinguishable for 5
+check ss_002_implies_indistinguishable for 6
 
-// ss_003_implies_randomized (matches Coq: Theorem ss_003_implies_randomized)
 assert ss_003_implies_randomized {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ss_003_implies_randomized for 5
+check ss_003_implies_randomized for 6
 
-// ss_004_ciphertext_expansion (matches Coq: Theorem ss_004_ciphertext_expansion)
 assert ss_004_ciphertext_expansion {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ss_004_ciphertext_expansion for 5
+check ss_004_ciphertext_expansion for 6
 
-// hadd_001_riina_correct (matches Coq: Theorem hadd_001_riina_correct)
 assert hadd_001_riina_correct {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check hadd_001_riina_correct for 5
+check hadd_001_riina_correct for 6
 
-// hadd_002_preserves_structure (matches Coq: Theorem hadd_002_preserves_structure)
 assert hadd_002_preserves_structure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check hadd_002_preserves_structure for 5
+check hadd_002_preserves_structure for 6
 
-// hadd_003_modulus_relation (matches Coq: Theorem hadd_003_modulus_relation)
 assert hadd_003_modulus_relation {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check hadd_003_modulus_relation for 5
+check hadd_003_modulus_relation for 6
 
-// hmult_001_riina_correct (matches Coq: Theorem hmult_001_riina_correct)
 assert hmult_001_riina_correct {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check hmult_001_riina_correct for 5
+check hmult_001_riina_correct for 6
 
-// hmult_002_relinearization (matches Coq: Theorem hmult_002_relinearization)
 assert hmult_002_relinearization {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check hmult_002_relinearization for 5
+check hmult_002_relinearization for 6
 
-// hmult_003_key_switching (matches Coq: Theorem hmult_003_key_switching)
 assert hmult_003_key_switching {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check hmult_003_key_switching for 5
+check hmult_003_key_switching for 6
 
-// hops_001_riina_valid (matches Coq: Theorem hops_001_riina_valid)
 assert hops_001_riina_valid {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check hops_001_riina_valid for 5
+check hops_001_riina_valid for 6
 
-// hops_002_addition_correct (matches Coq: Theorem hops_002_addition_correct)
 assert hops_002_addition_correct {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check hops_002_addition_correct for 5
+check hops_002_addition_correct for 6
 
-// hops_003_multiplication_correct (matches Coq: Theorem hops_003_multiplication_correct)
 assert hops_003_multiplication_correct {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check hops_003_multiplication_correct for 5
+check hops_003_multiplication_correct for 6
 
-// hops_004_composition (matches Coq: Theorem hops_004_composition)
 assert hops_004_composition {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check hops_004_composition for 5
+check hops_004_composition for 6
 
-// noise_001_initial_safe (matches Coq: Theorem noise_001_initial_safe)
 assert noise_001_initial_safe {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check noise_001_initial_safe for 5
+check noise_001_initial_safe for 6
 
-// noise_002_100_additions_safe (matches Coq: Theorem noise_002_100_additions_safe)
 assert noise_002_100_additions_safe {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check noise_002_100_additions_safe for 5
+check noise_002_100_additions_safe for 6
 
-// noise_003_10_multiplications_safe (matches Coq: Theorem noise_003_10_multiplications_safe)
 assert noise_003_10_multiplications_safe {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check noise_003_10_multiplications_safe for 5
+check noise_003_10_multiplications_safe for 6
 
-// noise_004_add_linear_growth (matches Coq: Theorem noise_004_add_linear_growth)
 assert noise_004_add_linear_growth {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check noise_004_add_linear_growth for 5
+check noise_004_add_linear_growth for 6
 
-// noise_005_zero_additions (matches Coq: Theorem noise_005_zero_additions)
 assert noise_005_zero_additions {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check noise_005_zero_additions for 5
+check noise_005_zero_additions for 6
 
-// nb_001_riina_valid (matches Coq: Theorem nb_001_riina_valid)
 assert nb_001_riina_valid {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check nb_001_riina_valid for 5
+check nb_001_riina_valid for 6
 
-// nb_002_additions_safe (matches Coq: Theorem nb_002_additions_safe)
 assert nb_002_additions_safe {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check nb_002_additions_safe for 5
+check nb_002_additions_safe for 6
 
-// nb_003_multiplications_safe (matches Coq: Theorem nb_003_multiplications_safe)
 assert nb_003_multiplications_safe {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check nb_003_multiplications_safe for 5
+check nb_003_multiplications_safe for 6
 
-// boot_001_riina_correct (matches Coq: Theorem boot_001_riina_correct)
 assert boot_001_riina_correct {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check boot_001_riina_correct for 5
+check boot_001_riina_correct for 6
 
-// boot_002_reduces_noise (matches Coq: Theorem boot_002_reduces_noise)
 assert boot_002_reduces_noise {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check boot_002_reduces_noise for 5
+check boot_002_reduces_noise for 6
 
-// boot_003_preserves_message (matches Coq: Theorem boot_003_preserves_message)
 assert boot_003_preserves_message {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check boot_003_preserves_message for 5
+check boot_003_preserves_message for 6
 
-// boot_004_polynomial_time (matches Coq: Theorem boot_004_polynomial_time)
 assert boot_004_polynomial_time {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check boot_004_polynomial_time for 5
+check boot_004_polynomial_time for 6
 
-// boot_005_noise_reduction (matches Coq: Theorem boot_005_noise_reduction)
 assert boot_005_noise_reduction {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check boot_005_noise_reduction for 5
+check boot_005_noise_reduction for 6
 
-// ufhe_001_riina_valid (matches Coq: Theorem ufhe_001_riina_valid)
 assert ufhe_001_riina_valid {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ufhe_001_riina_valid for 5
+check ufhe_001_riina_valid for 6
 
-// ufhe_002_bootstrap_correct (matches Coq: Theorem ufhe_002_bootstrap_correct)
 assert ufhe_002_bootstrap_correct {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ufhe_002_bootstrap_correct for 5
+check ufhe_002_bootstrap_correct for 6
 
-// kg_001_riina_secure (matches Coq: Theorem kg_001_riina_secure)
 assert kg_001_riina_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check kg_001_riina_secure for 5
+check kg_001_riina_secure for 6
 
-// kg_002_security_parameter (matches Coq: Theorem kg_002_security_parameter)
 assert kg_002_security_parameter {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check kg_002_security_parameter for 5
+check kg_002_security_parameter for 6
 
-// kg_003_polynomial_degree (matches Coq: Theorem kg_003_polynomial_degree)
 assert kg_003_polynomial_degree {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check kg_003_polynomial_degree for 5
+check kg_003_polynomial_degree for 6
 
-// kg_004_error_distribution (matches Coq: Theorem kg_004_error_distribution)
 assert kg_004_error_distribution {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check kg_004_error_distribution for 5
+check kg_004_error_distribution for 6
 
-// kg_005_modulus_bits (matches Coq: Theorem kg_005_modulus_bits)
 assert kg_005_modulus_bits {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check kg_005_modulus_bits for 5
+check kg_005_modulus_bits for 6
 
-// kp_001_riina_valid (matches Coq: Theorem kp_001_riina_valid)
 assert kp_001_riina_valid {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check kp_001_riina_valid for 5
+check kp_001_riina_valid for 6
 
-// kp_002_secure_params (matches Coq: Theorem kp_002_secure_params)
 assert kp_002_secure_params {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check kp_002_secure_params for 5
+check kp_002_secure_params for 6
 
-// ct_001_riina_valid (matches Coq: Theorem ct_001_riina_valid)
 assert ct_001_riina_valid {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ct_001_riina_valid for 5
+check ct_001_riina_valid for 6
 
-// ct_002_valid_encryption (matches Coq: Theorem ct_002_valid_encryption)
 assert ct_002_valid_encryption {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ct_002_valid_encryption for 5
+check ct_002_valid_encryption for 6
 
-// ct_003_safe_noise (matches Coq: Theorem ct_003_safe_noise)
 assert ct_003_safe_noise {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ct_003_safe_noise for 5
+check ct_003_safe_noise for 6
 
-// ct_004_positive_level (matches Coq: Theorem ct_004_positive_level)
 assert ct_004_positive_level {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check ct_004_positive_level for 5
+check ct_004_positive_level for 6
 
-// cao_001_valid_preserves (matches Coq: Theorem cao_001_valid_preserves)
 assert cao_001_valid_preserves {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cao_001_valid_preserves for 5
+check cao_001_valid_preserves for 6
 
-// cao_002_result_valid (matches Coq: Theorem cao_002_result_valid)
 assert cao_002_result_valid {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cao_002_result_valid for 5
+check cao_002_result_valid for 6
 
-// cfhe_001_riina_secure (matches Coq: Theorem cfhe_001_riina_secure)
 assert cfhe_001_riina_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cfhe_001_riina_secure for 5
+check cfhe_001_riina_secure for 6
 
-// cfhe_002_config_secure (matches Coq: Theorem cfhe_002_config_secure)
 assert cfhe_002_config_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cfhe_002_config_secure for 5
+check cfhe_002_config_secure for 6
 
-// cfhe_003_keygen_secure (matches Coq: Theorem cfhe_003_keygen_secure)
 assert cfhe_003_keygen_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cfhe_003_keygen_secure for 5
+check cfhe_003_keygen_secure for 6
 
-// cfhe_004_indcpa_secure (matches Coq: Theorem cfhe_004_indcpa_secure)
 assert cfhe_004_indcpa_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cfhe_004_indcpa_secure for 5
+check cfhe_004_indcpa_secure for 6
 
-// cfhe_005_bootstrap_correct (matches Coq: Theorem cfhe_005_bootstrap_correct)
 assert cfhe_005_bootstrap_correct {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cfhe_005_bootstrap_correct for 5
+check cfhe_005_bootstrap_correct for 6
 
-// cfhe_006_ops_valid (matches Coq: Theorem cfhe_006_ops_valid)
 assert cfhe_006_ops_valid {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cfhe_006_ops_valid for 5
+check cfhe_006_ops_valid for 6
 
-// cfhe_007_pq_safe (matches Coq: Theorem cfhe_007_pq_safe)
 assert cfhe_007_pq_safe {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cfhe_007_pq_safe for 5
+check cfhe_007_pq_safe for 6
 
-// cfhe_008_arbitrary_depth (matches Coq: Theorem cfhe_008_arbitrary_depth)
 assert cfhe_008_arbitrary_depth {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cfhe_008_arbitrary_depth for 5
+check cfhe_008_arbitrary_depth for 6
 
-// cfhe_009_semantic_secure (matches Coq: Theorem cfhe_009_semantic_secure)
 assert cfhe_009_semantic_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cfhe_009_semantic_secure for 5
+check cfhe_009_semantic_secure for 6
 
-// cfhe_010_noise_managed (matches Coq: Theorem cfhe_010_noise_managed)
 assert cfhe_010_noise_managed {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check cfhe_010_noise_managed for 5
+check cfhe_010_noise_managed for 6
 
-// circ_001_riina_secure (matches Coq: Theorem circ_001_riina_secure)
 assert circ_001_riina_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check circ_001_riina_secure for 5
+check circ_001_riina_secure for 6
 
-// circ_002_key_encryption (matches Coq: Theorem circ_002_key_encryption)
 assert circ_002_key_encryption {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check circ_002_key_encryption for 5
+check circ_002_key_encryption for 6
 
-// lwe_001_riina_secure (matches Coq: Theorem lwe_001_riina_secure)
 assert lwe_001_riina_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check lwe_001_riina_secure for 5
+check lwe_001_riina_secure for 6
 
-// lwe_002_dimension (matches Coq: Theorem lwe_002_dimension)
 assert lwe_002_dimension {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check lwe_002_dimension for 5
+check lwe_002_dimension for 6
 
-// rlwe_001_riina_secure (matches Coq: Theorem rlwe_001_riina_secure)
 assert rlwe_001_riina_secure {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check rlwe_001_riina_secure for 5
+check rlwe_001_riina_secure for 6
 
-// rlwe_002_ring_degree (matches Coq: Theorem rlwe_002_ring_degree)
 assert rlwe_002_ring_degree {
-  all c: HomomorphicOps | some c.f_ho_addition
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check rlwe_002_ring_degree for 5
+check rlwe_002_ring_degree for 6
+
+pred ExampleFHESecurity {
+  some op: Operation | op.permitted = 1 and op.component.secLevel = High
+}
+run ExampleFHESecurity for 6

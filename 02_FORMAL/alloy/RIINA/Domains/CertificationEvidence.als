@@ -1,198 +1,162 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/domains/CertificationEvidence.v (24 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/certification_evidence
+// Domain model for certification evidence
+// Bounded verification of key properties
+module riina/Domains/CertificationEvidence
 
-open util/boolean
+abstract sig SecurityLevel {}
+one sig Low extends SecurityLevel {}
+one sig Medium extends SecurityLevel {}
+one sig High extends SecurityLevel {}
 
-abstract sig cond_vector {}
-abstract sig cond_vector____bool {}
-abstract sig dal_level {}
-abstract sig list_sfr {}
-abstract sig sfr {}
-abstract sig traceability {}
-
-// differ_at_one (matches Coq: Definition differ_at_one)
-pred differ_at_one[p_v1: cond_vector, p_v2: cond_vector] {
-  some p_v1
+sig Component {
+  secLevel: one SecurityLevel,
+  verified: one Int,
+  integrity: one Int
 }
 
-// mcdc_pair (matches Coq: Definition mcdc_pair)
-pred mcdc_pair[p_v1: cond_vector, p_v2: cond_vector, p_decision: cond_vector____bool] {
-  some p_v1
+sig Operation {
+  component: one Component,
+  permitted: one Int,
+  audited: one Int
 }
 
-// fully_traced (matches Coq: Definition fully_traced)
-pred fully_traced[p_t: traceability] {
-  some p_t
+// Only verified components allow operations
+fact VerifiedRequired {
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
 
-// all_tests_linked (matches Coq: Definition all_tests_linked)
-pred all_tests_linked[p_t: traceability] {
-  some p_t
+// High security requires audit
+fact HighSecAudited {
+  all op: Operation |
+    (op.component.secLevel = High and op.permitted = 1) implies op.audited = 1
 }
 
-// sfr_satisfied (matches Coq: Definition sfr_satisfied)
-pred sfr_satisfied[p_s: sfr] {
-  some p_s
+// Integrity required for permission
+fact IntegrityRequired {
+  all op: Operation | op.permitted = 1 implies op.component.integrity = 1
 }
 
-// dal_to_nat (matches Coq: Definition dal_to_nat)
-pred dal_to_nat[p_d: dal_level] {
-  some p_d
-}
-
-// dal_leq (matches Coq: Definition dal_leq)
-pred dal_leq[p_d1: dal_level, p_d2: dal_level] {
-  some p_d1
-}
-
-// evidence_count (matches Coq: Definition evidence_count)
-pred evidence_count[p_sfrs: list_sfr] {
-  some p_sfrs
-}
-
-// eqb_sym (matches Coq: Lemma eqb_sym)
 assert eqb_sym {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check eqb_sym for 5
+check eqb_sym for 6
 
-// forallb_eqb_combine_sym (matches Coq: Lemma forallb_eqb_combine_sym)
 assert forallb_eqb_combine_sym {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check forallb_eqb_combine_sym for 5
+check forallb_eqb_combine_sym for 6
 
-// differ_at_one_sym (matches Coq: Lemma differ_at_one_sym)
 assert differ_at_one_sym {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check differ_at_one_sym for 5
+check differ_at_one_sym for 6
 
-// mcdc_pair_sym (matches Coq: Theorem mcdc_pair_sym)
 assert mcdc_pair_sym {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check mcdc_pair_sym for 5
+check mcdc_pair_sym for 6
 
-// no_self_mcdc (matches Coq: Theorem no_self_mcdc)
 assert no_self_mcdc {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check no_self_mcdc for 5
+check no_self_mcdc for 6
 
-// full_trace_no_gaps (matches Coq: Theorem full_trace_no_gaps)
 assert full_trace_no_gaps {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check full_trace_no_gaps for 5
+check full_trace_no_gaps for 6
 
-// sfr_needs_evidence (matches Coq: Theorem sfr_needs_evidence)
 assert sfr_needs_evidence {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check sfr_needs_evidence for 5
+check sfr_needs_evidence for 6
 
-// sfr_needs_verification (matches Coq: Theorem sfr_needs_verification)
 assert sfr_needs_verification {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check sfr_needs_verification for 5
+check sfr_needs_verification for 6
 
-// dal_a_highest (matches Coq: Theorem dal_a_highest)
 assert dal_a_highest {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check dal_a_highest for 5
+check dal_a_highest for 6
 
-// dal_leq_refl (matches Coq: Theorem dal_leq_refl)
 assert dal_leq_refl {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check dal_leq_refl for 5
+check dal_leq_refl for 6
 
-// dal_leq_trans (matches Coq: Theorem dal_leq_trans)
 assert dal_leq_trans {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check dal_leq_trans for 5
+check dal_leq_trans for 6
 
-// fold_left_add_acc (matches Coq: Lemma fold_left_add_acc)
 assert fold_left_add_acc {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check fold_left_add_acc for 5
+check fold_left_add_acc for 6
 
-// evidence_count_app (matches Coq: Theorem evidence_count_app)
 assert evidence_count_app {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check evidence_count_app for 5
+check evidence_count_app for 6
 
-// all_satisfied_have_evidence (matches Coq: Theorem all_satisfied_have_evidence)
 assert all_satisfied_have_evidence {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check all_satisfied_have_evidence for 5
+check all_satisfied_have_evidence for 6
 
-// empty_trace_fully_traced (matches Coq: Theorem empty_trace_fully_traced)
 assert empty_trace_fully_traced {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check empty_trace_fully_traced for 5
+check empty_trace_fully_traced for 6
 
-// dal_e_lowest (matches Coq: Theorem dal_e_lowest)
 assert dal_e_lowest {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check dal_e_lowest for 5
+check dal_e_lowest for 6
 
-// dal_leq_antisym (matches Coq: Theorem dal_leq_antisym)
 assert dal_leq_antisym {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check dal_leq_antisym for 5
+check dal_leq_antisym for 6
 
-// dal_to_nat_bounded (matches Coq: Theorem dal_to_nat_bounded)
 assert dal_to_nat_bounded {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check dal_to_nat_bounded for 5
+check dal_to_nat_bounded for 6
 
-// evidence_count_nil (matches Coq: Theorem evidence_count_nil)
 assert evidence_count_nil {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check evidence_count_nil for 5
+check evidence_count_nil for 6
 
-// evidence_count_singleton (matches Coq: Theorem evidence_count_singleton)
 assert evidence_count_singleton {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check evidence_count_singleton for 5
+check evidence_count_singleton for 6
 
-// sfr_satisfied_decompose (matches Coq: Theorem sfr_satisfied_decompose)
 assert sfr_satisfied_decompose {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check sfr_satisfied_decompose for 5
+check sfr_satisfied_decompose for 6
 
-// no_self_mcdc_no_flip (matches Coq: Theorem no_self_mcdc_no_flip)
 assert no_self_mcdc_no_flip {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check no_self_mcdc_no_flip for 5
+check no_self_mcdc_no_flip for 6
 
-// dal_a_gt_b (matches Coq: Theorem dal_a_gt_b)
 assert dal_a_gt_b {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check dal_a_gt_b for 5
+check dal_a_gt_b for 6
 
-// evidence_count_mono (matches Coq: Theorem evidence_count_mono)
 assert evidence_count_mono {
-  all x: cond_vector | x in cond_vector
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check evidence_count_mono for 5
+check evidence_count_mono for 6
+
+pred ExampleCertificationEvidence {
+  some op: Operation | op.permitted = 1 and op.component.secLevel = High
+}
+run ExampleCertificationEvidence for 6

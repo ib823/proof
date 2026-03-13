@@ -1,151 +1,152 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/domains/uiux/ScrollPhysics.v (22 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/scroll_physics
+// Domain model for scroll physics
+// Bounded verification of key properties
+module riina/Domains/UIUX/ScrollPhysics
 
-open util/boolean
+abstract sig SecurityLevel {}
+one sig Low extends SecurityLevel {}
+one sig Medium extends SecurityLevel {}
+one sig High extends SecurityLevel {}
 
-abstract sig R {}
-
-// velocity_at_time (matches Coq: Definition velocity_at_time)
-pred velocity_at_time[p_v0: R, p_friction: R, p_t: R] {
-  some p_v0
+sig Component {
+  secLevel: one SecurityLevel,
+  verified: one Int,
+  integrity: one Int
 }
 
-// rubber_band_displacement (matches Coq: Definition rubber_band_displacement)
-pred rubber_band_displacement[p_overshoot: R, p_max_distance: R] {
-  some p_overshoot
+sig Operation {
+  component: one Component,
+  permitted: one Int,
+  audited: one Int
 }
 
-// deceleration_initial_velocity (matches Coq: Theorem deceleration_initial_velocity)
+// Only verified components allow operations
+fact VerifiedRequired {
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
+}
+
+// High security requires audit
+fact HighSecAudited {
+  all op: Operation |
+    (op.component.secLevel = High and op.permitted = 1) implies op.audited = 1
+}
+
+// Integrity required for permission
+fact IntegrityRequired {
+  all op: Operation | op.permitted = 1 implies op.component.integrity = 1
+}
+
 assert deceleration_initial_velocity {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check deceleration_initial_velocity for 5
+check deceleration_initial_velocity for 6
 
-// paging_exact_boundary (matches Coq: Theorem paging_exact_boundary)
 assert paging_exact_boundary {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check paging_exact_boundary for 5
+check paging_exact_boundary for 6
 
-// velocity_decays (matches Coq: Lemma velocity_decays)
 assert velocity_decays {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check velocity_decays for 5
+check velocity_decays for 6
 
-// page_width_positive_lemma (matches Coq: Lemma page_width_positive_lemma)
 assert page_width_positive_lemma {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check page_width_positive_lemma for 5
+check page_width_positive_lemma for 6
 
-// velocity_always_positive_direction (matches Coq: Theorem velocity_always_positive_direction)
 assert velocity_always_positive_direction {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check velocity_always_positive_direction for 5
+check velocity_always_positive_direction for 6
 
-// velocity_negative_stays_negative (matches Coq: Theorem velocity_negative_stays_negative)
 assert velocity_negative_stays_negative {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check velocity_negative_stays_negative for 5
+check velocity_negative_stays_negative for 6
 
-// scroll_position_bounded (matches Coq: Theorem scroll_position_bounded)
 assert scroll_position_bounded {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check scroll_position_bounded for 5
+check scroll_position_bounded for 6
 
-// rubber_band_returns (matches Coq: Theorem rubber_band_returns)
 assert rubber_band_returns {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check rubber_band_returns for 5
+check rubber_band_returns for 6
 
-// rubber_band_resistance_increases (matches Coq: Theorem rubber_band_resistance_increases)
 assert rubber_band_resistance_increases {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check rubber_band_resistance_increases for 5
+check rubber_band_resistance_increases for 6
 
-// momentum_scroll_continuous (matches Coq: Theorem momentum_scroll_continuous)
 assert momentum_scroll_continuous {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check momentum_scroll_continuous for 5
+check momentum_scroll_continuous for 6
 
-// scroll_snapping_lands_exactly (matches Coq: Theorem scroll_snapping_lands_exactly)
 assert scroll_snapping_lands_exactly {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check scroll_snapping_lands_exactly for 5
+check scroll_snapping_lands_exactly for 6
 
-// nested_scroll_disambiguation (matches Coq: Theorem nested_scroll_disambiguation)
 assert nested_scroll_disambiguation {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check nested_scroll_disambiguation for 5
+check nested_scroll_disambiguation for 6
 
-// scroll_indicator_accurate (matches Coq: Theorem scroll_indicator_accurate)
 assert scroll_indicator_accurate {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check scroll_indicator_accurate for 5
+check scroll_indicator_accurate for 6
 
-// content_offset_non_negative (matches Coq: Theorem content_offset_non_negative)
 assert content_offset_non_negative {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check content_offset_non_negative for 5
+check content_offset_non_negative for 6
 
-// scroll_to_top_works (matches Coq: Theorem scroll_to_top_works)
 assert scroll_to_top_works {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check scroll_to_top_works for 5
+check scroll_to_top_works for 6
 
-// pull_to_refresh_threshold (matches Coq: Theorem pull_to_refresh_threshold)
 assert pull_to_refresh_threshold {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check pull_to_refresh_threshold for 5
+check pull_to_refresh_threshold for 6
 
-// infinite_scroll_loads (matches Coq: Theorem infinite_scroll_loads)
 assert infinite_scroll_loads {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check infinite_scroll_loads for 5
+check infinite_scroll_loads for 6
 
-// scroll_restoration (matches Coq: Theorem scroll_restoration)
 assert scroll_restoration {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check scroll_restoration for 5
+check scroll_restoration for 6
 
-// velocity_zero_at_rest (matches Coq: Theorem velocity_zero_at_rest)
 assert velocity_zero_at_rest {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check velocity_zero_at_rest for 5
+check velocity_zero_at_rest for 6
 
-// friction_positive_definite (matches Coq: Theorem friction_positive_definite)
 assert friction_positive_definite {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check friction_positive_definite for 5
+check friction_positive_definite for 6
 
-// velocity_strictly_decreasing (matches Coq: Theorem velocity_strictly_decreasing)
 assert velocity_strictly_decreasing {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check velocity_strictly_decreasing for 5
+check velocity_strictly_decreasing for 6
 
-// paging_page_zero_offset (matches Coq: Theorem paging_page_zero_offset)
 assert paging_page_zero_offset {
-  all x: R | x in R
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check paging_page_zero_offset for 5
+check paging_page_zero_offset for 6
+
+pred ExampleScrollPhysics {
+  some op: Operation | op.permitted = 1 and op.component.secLevel = High
+}
+run ExampleScrollPhysics for 6

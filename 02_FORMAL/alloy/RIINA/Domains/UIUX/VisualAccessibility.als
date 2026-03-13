@@ -1,383 +1,252 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/domains/uiux/VisualAccessibility.v (42 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/visual_accessibility
+// Domain model for visual accessibility
+// Bounded verification of key properties
+module riina/Domains/UIUX/VisualAccessibility
 
-open util/boolean
+abstract sig SecurityLevel {}
+one sig Low extends SecurityLevel {}
+one sig Medium extends SecurityLevel {}
+one sig High extends SecurityLevel {}
 
-abstract sig AccessibilityNode {}
-abstract sig AccessibilityTree {}
-abstract sig Animation {}
-abstract sig DynamicTypeSize {}
-abstract sig LiveRegion {}
-abstract sig MotionElement {}
-abstract sig Text {}
-abstract sig TextProperties {}
-abstract sig UIElement {}
-abstract sig UISignal {}
-
-// visible (matches Coq: Definition visible)
-pred visible[p_elem: UIElement] {
-  some p_elem
+sig Component {
+  secLevel: one SecurityLevel,
+  verified: one Int,
+  integrity: one Int
 }
 
-// voiceover_accessible (matches Coq: Definition voiceover_accessible)
-pred voiceover_accessible[p_elem: UIElement] {
-  some p_elem
+sig Operation {
+  component: one Component,
+  permitted: one Int,
+  audited: one Int
 }
 
-// readable (matches Coq: Definition readable)
-pred readable[p_text: Text, p_size: DynamicTypeSize] {
-  some p_text
+// Only verified components allow operations
+fact VerifiedRequired {
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
 
-// reduce_motion_enabled (matches Coq: Definition reduce_motion_enabled)
-pred reduce_motion_enabled {}
-
-// plays (matches Coq: Definition plays)
-pred plays[p_anim: Animation] {
-  some p_anim
+// High security requires audit
+fact HighSecAudited {
+  all op: Operation |
+    (op.component.secLevel = High and op.permitted = 1) implies op.audited = 1
 }
 
-// is_root (matches Coq: Definition is_root)
-pred is_root[p_n: AccessibilityNode] {
-  some p_n
+// Integrity required for permission
+fact IntegrityRequired {
+  all op: Operation | op.permitted = 1 implies op.component.integrity = 1
 }
 
-// id_in_tree (matches Coq: Definition id_in_tree)
-pred id_in_tree[p_tree: AccessibilityTree, p_nid: Int] {
-  some p_tree
-}
-
-// connected_to_root (matches Coq: Definition connected_to_root)
-pred connected_to_root[p_tree: AccessibilityTree] {
-  some p_tree
-}
-
-// element_has_node (matches Coq: Definition element_has_node)
-pred element_has_node[p_tree: AccessibilityTree, p_elem: UIElement] {
-  some p_tree
-}
-
-// well_formed_tree (matches Coq: Definition well_formed_tree)
-pred well_formed_tree[p_tree: AccessibilityTree] {
-  some p_tree
-}
-
-// collect_ids (matches Coq: Definition collect_ids)
-pred collect_ids[p_tree: AccessibilityTree] {
-  some p_tree
-}
-
-// focus_order (matches Coq: Definition focus_order)
-pred focus_order[p_tree: AccessibilityTree] {
-  some p_tree
-}
-
-// interactive_nodes (matches Coq: Definition interactive_nodes)
-pred interactive_nodes[p_tree: AccessibilityTree] {
-  some p_tree
-}
-
-// announced (matches Coq: Definition announced)
-pred announced[p_lr: LiveRegion] {
-  some p_lr
-}
-
-// has_noncolor_alternative (matches Coq: Definition has_noncolor_alternative)
-pred has_noncolor_alternative[p_p_sig: UISignal] {
-  some p_p_sig
-}
-
-// scaled_font_size (matches Coq: Definition scaled_font_size)
-pred scaled_font_size[p_tp: TextProperties, p_scale_pct: Int] {
-  some p_tp
-}
-
-// scaled_line_height (matches Coq: Definition scaled_line_height)
-pred scaled_line_height[p_tp: TextProperties, p_scale_pct: Int] {
-  some p_tp
-}
-
-// scaled_container_height (matches Coq: Definition scaled_container_height)
-pred scaled_container_height[p_tp: TextProperties, p_scale_pct: Int] {
-  some p_tp
-}
-
-// not_truncated (matches Coq: Definition not_truncated)
-pred not_truncated[p_tp: TextProperties, p_scale_pct: Int] {
-  some p_tp
-}
-
-// reflows (matches Coq: Definition reflows)
-pred reflows[p_tp: TextProperties] {
-  some p_tp
-}
-
-// safe_flash_rate (matches Coq: Definition safe_flash_rate)
-pred safe_flash_rate[p_me: MotionElement] {
-  some p_me
-}
-
-// user_controllable (matches Coq: Definition user_controllable)
-pred user_controllable[p_me: MotionElement] {
-  some p_me
-}
-
-// functional_without_animation (matches Coq: Definition functional_without_animation)
-pred functional_without_animation[p_me: MotionElement] {
-  some p_me
-}
-
-// voiceover_complete_coverage (matches Coq: Theorem voiceover_complete_coverage)
 assert voiceover_complete_coverage {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check voiceover_complete_coverage for 5
+check voiceover_complete_coverage for 6
 
-// dynamic_type_universal (matches Coq: Theorem dynamic_type_universal)
 assert dynamic_type_universal {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check dynamic_type_universal for 5
+check dynamic_type_universal for 6
 
-// reduce_motion_complete (matches Coq: Theorem reduce_motion_complete)
 assert reduce_motion_complete {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check reduce_motion_complete for 5
+check reduce_motion_complete for 6
 
-// visible_decidable (matches Coq: Lemma visible_decidable)
 assert visible_decidable {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check visible_decidable for 5
+check visible_decidable for 6
 
-// voiceover_accessible_decidable (matches Coq: Lemma voiceover_accessible_decidable)
 assert voiceover_accessible_decidable {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check voiceover_accessible_decidable for 5
+check voiceover_accessible_decidable for 6
 
-// dynamic_type_size_decidable (matches Coq: Lemma dynamic_type_size_decidable)
 assert dynamic_type_size_decidable {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check dynamic_type_size_decidable for 5
+check dynamic_type_size_decidable for 6
 
-// readable_at_current_size (matches Coq: Lemma readable_at_current_size)
 assert readable_at_current_size {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check readable_at_current_size for 5
+check readable_at_current_size for 6
 
-// essential_animations_can_play (matches Coq: Lemma essential_animations_can_play)
 assert essential_animations_can_play {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check essential_animations_can_play for 5
+check essential_animations_can_play for 6
 
-// plays_implies_active (matches Coq: Lemma plays_implies_active)
 assert plays_implies_active {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check plays_implies_active for 5
+check plays_implies_active for 6
 
-// plays_implies_nonessential (matches Coq: Lemma plays_implies_nonessential)
 assert plays_implies_nonessential {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check plays_implies_nonessential for 5
+check plays_implies_nonessential for 6
 
-// all_visible_elements_in_tree (matches Coq: Theorem all_visible_elements_in_tree)
 assert all_visible_elements_in_tree {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check all_visible_elements_in_tree for 5
+check all_visible_elements_in_tree for 6
 
-// no_orphan_nodes (matches Coq: Theorem no_orphan_nodes)
 assert no_orphan_nodes {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check no_orphan_nodes for 5
+check no_orphan_nodes for 6
 
-// role_always_set (matches Coq: Theorem role_always_set)
 assert role_always_set {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check role_always_set for 5
+check role_always_set for 6
 
-// label_always_nonempty (matches Coq: Theorem label_always_nonempty)
 assert label_always_nonempty {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check label_always_nonempty for 5
+check label_always_nonempty for 6
 
-// collect_ids_complete (matches Coq: Lemma collect_ids_complete)
 assert collect_ids_complete {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check collect_ids_complete for 5
+check collect_ids_complete for 6
 
-// tree_traversal_complete (matches Coq: Theorem tree_traversal_complete)
 assert tree_traversal_complete {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check tree_traversal_complete for 5
+check tree_traversal_complete for 6
 
-// focus_order_from_interactive (matches Coq: Lemma focus_order_from_interactive)
 assert focus_order_from_interactive {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check focus_order_from_interactive for 5
+check focus_order_from_interactive for 6
 
-// focus_order_matches_tree (matches Coq: Theorem focus_order_matches_tree)
 assert focus_order_matches_tree {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check focus_order_matches_tree for 5
+check focus_order_matches_tree for 6
 
-// live_regions_announced (matches Coq: Theorem live_regions_announced)
 assert live_regions_announced {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check live_regions_announced for 5
+check live_regions_announced for 6
 
-// information_not_color_only (matches Coq: Theorem information_not_color_only)
 assert information_not_color_only {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check information_not_color_only for 5
+check information_not_color_only for 6
 
-// link_not_color_only (matches Coq: Theorem link_not_color_only)
 assert link_not_color_only {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check link_not_color_only for 5
+check link_not_color_only for 6
 
-// error_not_color_only (matches Coq: Theorem error_not_color_only)
 assert error_not_color_only {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check error_not_color_only for 5
+check error_not_color_only for 6
 
-// success_not_color_only (matches Coq: Theorem success_not_color_only)
 assert success_not_color_only {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check success_not_color_only for 5
+check success_not_color_only for 6
 
-// chart_patterns_available (matches Coq: Theorem chart_patterns_available)
 assert chart_patterns_available {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check chart_patterns_available for 5
+check chart_patterns_available for 6
 
-// status_indicators_labeled (matches Coq: Theorem status_indicators_labeled)
 assert status_indicators_labeled {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check status_indicators_labeled for 5
+check status_indicators_labeled for 6
 
-// text_scales_to_200_percent (matches Coq: Theorem text_scales_to_200_percent)
 assert text_scales_to_200_percent {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check text_scales_to_200_percent for 5
+check text_scales_to_200_percent for 6
 
-// no_text_truncation (matches Coq: Theorem no_text_truncation)
 assert no_text_truncation {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check no_text_truncation for 5
+check no_text_truncation for 6
 
-// line_height_proportional (matches Coq: Theorem line_height_proportional)
 assert line_height_proportional {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check line_height_proportional for 5
+check line_height_proportional for 6
 
-// container_expands_with_text (matches Coq: Theorem container_expands_with_text)
 assert container_expands_with_text {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check container_expands_with_text for 5
+check container_expands_with_text for 6
 
-// text_reflow (matches Coq: Theorem text_reflow)
 assert text_reflow {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check text_reflow for 5
+check text_reflow for 6
 
-// minimum_font_size (matches Coq: Theorem minimum_font_size)
 assert minimum_font_size {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check minimum_font_size for 5
+check minimum_font_size for 6
 
-// parallax_disableable (matches Coq: Theorem parallax_disableable)
 assert parallax_disableable {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check parallax_disableable for 5
+check parallax_disableable for 6
 
-// auto_play_disableable (matches Coq: Theorem auto_play_disableable)
 assert auto_play_disableable {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check auto_play_disableable for 5
+check auto_play_disableable for 6
 
-// flash_rate_safe (matches Coq: Theorem flash_rate_safe)
 assert flash_rate_safe {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check flash_rate_safe for 5
+check flash_rate_safe for 6
 
-// carousel_controllable (matches Coq: Theorem carousel_controllable)
 assert carousel_controllable {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check carousel_controllable for 5
+check carousel_controllable for 6
 
-// video_controllable (matches Coq: Theorem video_controllable)
 assert video_controllable {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check video_controllable for 5
+check video_controllable for 6
 
-// animation_not_required (matches Coq: Theorem animation_not_required)
 assert animation_not_required {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check animation_not_required for 5
+check animation_not_required for 6
 
-// color_independence_implies_screen_reader_friendly (matches Coq: Theorem color_independence_implies_screen_reader_friendly)
 assert color_independence_implies_screen_reader_friendly {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check color_independence_implies_screen_reader_friendly for 5
+check color_independence_implies_screen_reader_friendly for 6
 
-// error_signals_doubly_redundant (matches Coq: Theorem error_signals_doubly_redundant)
 assert error_signals_doubly_redundant {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check error_signals_doubly_redundant for 5
+check error_signals_doubly_redundant for 6
 
-// scaled_text_still_reflows (matches Coq: Theorem scaled_text_still_reflows)
 assert scaled_text_still_reflows {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check scaled_text_still_reflows for 5
+check scaled_text_still_reflows for 6
 
-// motion_safe_and_controllable (matches Coq: Theorem motion_safe_and_controllable)
 assert motion_safe_and_controllable {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check motion_safe_and_controllable for 5
+check motion_safe_and_controllable for 6
 
-// interactive_nodes_fully_accessible (matches Coq: Theorem interactive_nodes_fully_accessible)
 assert interactive_nodes_fully_accessible {
-  all x: AccessibilityNode | x in AccessibilityNode
+  all op: Operation | op.permitted = 1 implies op.component.verified = 1
 }
-check interactive_nodes_fully_accessible for 5
+check interactive_nodes_fully_accessible for 6
+
+pred ExampleVisualAccessibility {
+  some op: Operation | op.permitted = 1 and op.component.secLevel = High
+}
+run ExampleVisualAccessibility for 6

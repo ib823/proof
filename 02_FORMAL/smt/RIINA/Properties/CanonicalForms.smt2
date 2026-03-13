@@ -3,57 +3,104 @@
 ; Derived from 02_FORMAL/coq/properties/CanonicalForms.v (31 assertions)
 ; Module: CanonicalForms
 ;
-; Real verification: datatype invariants, guard completeness,
-; ordering properties, accessor round-trips.
+; Verifies: canonical forms (values have expected shapes for their types),
+; typing inversion properties.
 
-(set-logic ALL)
+(set-logic QF_DT)
 (set-option :produce-models true)
 
-; =======================================================================
-; DATATYPE DECLARATIONS
-; =======================================================================
 
-; =======================================================================
-; FUNCTION DEFINITIONS AND PROPERTY VERIFICATION
-; =======================================================================
+(declare-datatypes ((ty 0)) (((TUnit) (TBool) (TInt) (TString) (TBytes) (TFn) (TProd) (TSum) (TList) (TOption) (TRef) (TSecret) (TLabeled) (TTainted) (TSanitized) (TProof) (TCapability) (TCapabilityFull) (TChan) (TSecureChan) (TConstantTime) (TZeroizing))))
+(declare-datatypes ((expr 0)) (((EUnit) (EBool) (EInt) (EString) (ELoc) (EVar) (ELam) (EApp) (EPair) (EFst) (ESnd) (EInl) (EInr) (ECase) (EIf) (ELet) (EPerform) (EHandle) (ERef) (EDeref) (EAssign) (EClassify) (EDeclassify) (EProve) (ERequire) (EGrant))))
 
-; --- 1. canonical_unit: property holds for all b (structural) ---
+(define-fun is_value ((e expr)) Bool
+  (or (= e EUnit) (= e EBool) (= e EInt) (= e EString)
+      (= e ELoc) (= e ELam) (= e EPair) (= e EInl) (= e EInr)
+      (= e EClassify) (= e EProve)))
+
+
+; canonical_type map
+(define-fun canonical_type ((e expr)) ty
+  (ite (= e EUnit) TUnit
+  (ite (= e EBool) TBool
+  (ite (= e EInt) TInt
+  (ite (= e EString) TString
+  (ite (= e ELoc) TRef
+  (ite (= e ELam) TFn
+  (ite (= e EPair) TProd
+  (ite (= e EInl) TSum
+  (ite (= e EInr) TSum
+  (ite (= e EClassify) TSecret
+  (ite (= e EProve) TProof
+  TUnit))))))))))))
+
+; ═══════════════════════════════════════════════════════════════════════════
+; PROPERTY VERIFICATION
+; ═══════════════════════════════════════════════════════════════════════════
+
+; --- 1. Canonical: TUnit value is EUnit ---
 (push 1)
-(declare-const p Bool)
-(assert p)
-(assert (not p))
+(declare-const v expr)
+(assert (is_value v))
+(assert (= (canonical_type v) TUnit))
+(assert (not (= v EUnit)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
-; --- 2. canonical_bool: property holds for all b (structural) ---
+; --- 2. Canonical: TBool value is EBool ---
 (push 1)
-(declare-const p Bool)
-(assert p)
-(assert (not p))
+(declare-const v expr)
+(assert (is_value v))
+(assert (= (canonical_type v) TBool))
+(assert (not (= v EBool)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
-; --- 3. canonical_int: property holds for all bi (structural) ---
+; --- 3. Canonical: TInt value is EInt ---
 (push 1)
-(declare-const p Bool)
-(assert p)
-(assert (not p))
+(declare-const v expr)
+(assert (is_value v))
+(assert (= (canonical_type v) TInt))
+(assert (not (= v EInt)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
-; --- 4. canonical_string: property holds for all (structural) ---
+; --- 4. Canonical: TFn value is ELam ---
 (push 1)
-(declare-const p Bool)
-(assert p)
-(assert (not p))
+(declare-const v expr)
+(assert (is_value v))
+(assert (= (canonical_type v) TFn))
+(assert (not (= v ELam)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
-; --- 5. canonical_fn: property holds for all bin (structural) ---
+; --- 5. Canonical: TRef value is ELoc ---
 (push 1)
-(declare-const p Bool)
-(assert p)
-(assert (not p))
+(declare-const v expr)
+(assert (is_value v))
+(assert (= (canonical_type v) TRef))
+(assert (not (= v ELoc)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 6. Canonical: TSecret value is EClassify ---
+(push 1)
+(declare-const v expr)
+(assert (is_value v))
+(assert (= (canonical_type v) TSecret))
+(assert (not (= v EClassify)))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 7. EVar is not a value ---
+(push 1)
+(assert (is_value EVar))
+(check-sat) ; expect UNSAT
+(pop 1)
+
+; --- 8. EApp is not a value ---
+(push 1)
+(assert (is_value EApp))
 (check-sat) ; expect UNSAT
 (pop 1)
 

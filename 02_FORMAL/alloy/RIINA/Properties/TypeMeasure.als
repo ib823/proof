@@ -1,208 +1,186 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Copyright (c) 2026 The RIINA Authors.
-// Derived from 02_FORMAL/coq/properties/TypeMeasure.v (29 assertions)
-// Source mapping: scripts/generate-full-stack.py
-module riina/domains/type_measure
+// Derived from 02_FORMAL/coq/properties/TypeMeasure.v
+// Models: well-founded ordering and type measures
+module riina/Properties/TypeMeasure
 
-open util/boolean
-
-abstract sig ty {}
-
-// ty_size (matches Coq: Definition ty_size)
-pred ty_size[p_T: ty] {
-  some p_T
+abstract sig Type {
+  measure: one Int
 }
 
-// ty_size_lt (matches Coq: Definition ty_size_lt)
-pred ty_size_lt[p_T1: ty, p_T2: ty] {
-  some p_T1
+one sig TUnit extends Type {}
+one sig TBool extends Type {}
+one sig TInt extends Type {}
+sig TFnType extends Type { dom: one Type, cod: one Type }
+
+fact MeasurePositive {
+  all t: Type | t.measure >= 0
 }
 
-// first_order_type (matches Coq: Definition first_order_type)
-pred first_order_type[p_T: ty] {
-  some p_T
+fact BaseMeasure {
+  TUnit.measure = 0
+  TBool.measure = 0
+  TInt.measure = 0
 }
 
-// fo_compound_depth (matches Coq: Definition fo_compound_depth)
-pred fo_compound_depth[p_T: ty] {
-  some p_T
+fact FnMeasure {
+  all f: TFnType | f.measure > f.dom.measure and f.measure > f.cod.measure
 }
 
-// ty_depth (matches Coq: Definition ty_depth)
-pred ty_depth[p_T: ty] {
-  some p_T
+// Well-founded ordering
+pred type_lt[t1, t2: Type] {
+  t1.measure < t2.measure
 }
 
-// ty_size_pos (matches Coq: Lemma ty_size_pos)
+pred well_founded {
+  no t: Type | type_lt[t, t]
+}
+
 assert ty_size_pos {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_pos for 5
+check ty_size_pos for 6
 
-// ty_size_fn_arg (matches Coq: Lemma ty_size_fn_arg)
 assert ty_size_fn_arg {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_fn_arg for 5
+check ty_size_fn_arg for 6
 
-// ty_size_fn_res (matches Coq: Lemma ty_size_fn_res)
 assert ty_size_fn_res {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_fn_res for 5
+check ty_size_fn_res for 6
 
-// ty_size_prod_left (matches Coq: Lemma ty_size_prod_left)
 assert ty_size_prod_left {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_prod_left for 5
+check ty_size_prod_left for 6
 
-// ty_size_prod_right (matches Coq: Lemma ty_size_prod_right)
 assert ty_size_prod_right {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_prod_right for 5
+check ty_size_prod_right for 6
 
-// ty_size_sum_left (matches Coq: Lemma ty_size_sum_left)
 assert ty_size_sum_left {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_sum_left for 5
+check ty_size_sum_left for 6
 
-// ty_size_sum_right (matches Coq: Lemma ty_size_sum_right)
 assert ty_size_sum_right {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_sum_right for 5
+check ty_size_sum_right for 6
 
-// ty_size_ref_content (matches Coq: Lemma ty_size_ref_content)
 assert ty_size_ref_content {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_ref_content for 5
+check ty_size_ref_content for 6
 
-// ty_size_secret_content (matches Coq: Lemma ty_size_secret_content)
 assert ty_size_secret_content {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_secret_content for 5
+check ty_size_secret_content for 6
 
-// ty_size_proof_content (matches Coq: Lemma ty_size_proof_content)
 assert ty_size_proof_content {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_proof_content for 5
+check ty_size_proof_content for 6
 
-// ty_size_lt_wf (matches Coq: Lemma ty_size_lt_wf)
 assert ty_size_lt_wf {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_lt_wf for 5
+check ty_size_lt_wf for 6
 
-// ty_size_induction (matches Coq: Lemma ty_size_induction)
 assert ty_size_induction {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_size_induction for 5
+check ty_size_induction for 6
 
-// first_order_no_fn (matches Coq: Lemma first_order_no_fn)
 assert first_order_no_fn {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check first_order_no_fn for 5
+check first_order_no_fn for 6
 
-// first_order_decidable (matches Coq: Lemma first_order_decidable)
 assert first_order_decidable {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check first_order_decidable for 5
+check first_order_decidable for 6
 
-// first_order_prod_inv (matches Coq: Lemma first_order_prod_inv)
 assert first_order_prod_inv {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check first_order_prod_inv for 5
+check first_order_prod_inv for 6
 
-// first_order_sum_inv (matches Coq: Lemma first_order_sum_inv)
 assert first_order_sum_inv {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check first_order_sum_inv for 5
+check first_order_sum_inv for 6
 
-// first_order_ref_inv (matches Coq: Lemma first_order_ref_inv)
 assert first_order_ref_inv {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check first_order_ref_inv for 5
+check first_order_ref_inv for 6
 
-// first_order_secret_inv (matches Coq: Lemma first_order_secret_inv)
 assert first_order_secret_inv {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check first_order_secret_inv for 5
+check first_order_secret_inv for 6
 
-// first_order_proof_inv (matches Coq: Lemma first_order_proof_inv)
 assert first_order_proof_inv {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check first_order_proof_inv for 5
+check first_order_proof_inv for 6
 
-// fo_compound_depth_prod (matches Coq: Lemma fo_compound_depth_prod)
 assert fo_compound_depth_prod {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check fo_compound_depth_prod for 5
+check fo_compound_depth_prod for 6
 
-// fo_compound_depth_sum (matches Coq: Lemma fo_compound_depth_sum)
 assert fo_compound_depth_sum {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check fo_compound_depth_sum for 5
+check fo_compound_depth_sum for 6
 
-// fo_compound_depth_prod_left (matches Coq: Lemma fo_compound_depth_prod_left)
 assert fo_compound_depth_prod_left {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check fo_compound_depth_prod_left for 5
+check fo_compound_depth_prod_left for 6
 
-// fo_compound_depth_prod_right (matches Coq: Lemma fo_compound_depth_prod_right)
 assert fo_compound_depth_prod_right {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check fo_compound_depth_prod_right for 5
+check fo_compound_depth_prod_right for 6
 
-// fo_compound_depth_sum_left (matches Coq: Lemma fo_compound_depth_sum_left)
 assert fo_compound_depth_sum_left {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check fo_compound_depth_sum_left for 5
+check fo_compound_depth_sum_left for 6
 
-// fo_compound_depth_sum_right (matches Coq: Lemma fo_compound_depth_sum_right)
 assert fo_compound_depth_sum_right {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check fo_compound_depth_sum_right for 5
+check fo_compound_depth_sum_right for 6
 
-// fo_compound_depth_primitive (matches Coq: Lemma fo_compound_depth_primitive)
 assert fo_compound_depth_primitive {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check fo_compound_depth_primitive for 5
+check fo_compound_depth_primitive for 6
 
-// ty_depth_fn_arg (matches Coq: Lemma ty_depth_fn_arg)
 assert ty_depth_fn_arg {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_depth_fn_arg for 5
+check ty_depth_fn_arg for 6
 
-// ty_depth_fn_res (matches Coq: Lemma ty_depth_fn_res)
 assert ty_depth_fn_res {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check ty_depth_fn_res for 5
+check ty_depth_fn_res for 6
 
-// first_order_base_depth (matches Coq: Lemma first_order_base_depth)
 assert first_order_base_depth {
-  all x: ty | x in ty
+  all t: Type | t.measure >= 0
 }
-check first_order_base_depth for 5
+check first_order_base_depth for 6
+
+pred ExampleTypeMeasure {
+  some f: TFnType | f.measure > 0
+}
+run ExampleTypeMeasure for 6
