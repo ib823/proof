@@ -1,215 +1,187 @@
-# TERAS-LANG Research Domain V: Formal Termination Guarantees
+# V-01: Formal Termination Guarantees — Taming the Halting Problem
 
-## Document Control
-
-| Property | Value |
-|----------|-------|
-| Document ID | RESEARCH-V-TERMINATION-GUARANTEES |
-| Version | 1.0.0 |
-| Date | 2026-01-15 |
-| Domain | V: Formal Termination Guarantees |
-| Mode | ULTRA KIASU | PARANOID | ZERO TRUST |
-| Status | FOUNDATIONAL DEFINITION |
+**Domain:** V — Formal Termination Guarantees
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Sized types, structural recursion checking, well-founded recursion, productivity for codata
 
 ---
 
-## IMPLEMENTATION STATUS (Audit: 2026-02-06)
+## 1. Problem Statement
 
-| Component | Status | Evidence |
-|-----------|--------|----------|
-| Research Specification | COMPLETE | This document |
-| Coq Formal Proofs | 3+ files, 112 Qed | V001_TerminationGuarantees.v (32 Qed), termination/*.v (80 Qed) |
-| Compiler Implementation | NOT STARTED | Sized types not implemented; strong normalization proofs exist in Coq but are not enforced by the compiler |
+The Halting Problem (Turing, 1936) proves that no general algorithm can decide whether an arbitrary program terminates. This undecidability result means that a type-safe program can still loop forever, causing Denial of Service. RIINA's type safety proofs (Progress, Preservation) guarantee that well-typed programs do not get stuck, but they do not guarantee termination — a program that loops forever satisfies type safety but violates availability.
 
-**This document is a RESEARCH SPECIFICATION for future implementation.** The Coq proofs formalize structural termination and strong normalization, but the compiler does not enforce termination checking or sized types.
+Non-termination is a security threat: resource exhaustion attacks exploit infinite loops and unbounded recursion to deny service. Smart contract platforms (Ethereum) address this with "gas" — a runtime fuel mechanism — but this is a workaround, not a proof. ReDoS (Regular Expression Denial of Service) attacks exploit catastrophic backtracking in regex engines that lack termination guarantees.
 
----
+Domain V restricts RIINA to a decidable subset of programs where termination is guaranteed by construction, while providing explicit escape hatches for genuinely non-terminating programs (servers, REPLs) that are isolated and monitored. The goal: every RIINA function either provably terminates or is explicitly marked as non-terminating and sandboxed.
 
-# V-01: The "Halting Problem" & The TERAS Solution
+## 2. State of the Art
 
-## 1. The Existential Threat
+### 2.1 Sized Types (Andreas Abel)
 
-**Context:**
-The Halting Problem (Turing, 1936) proves that no general algorithm can decide whether an arbitrary program terminates. This is an undecidability result.
+Andreas Abel developed sized types as a mechanism for guaranteeing termination in type-theoretic languages. Size annotations on inductive types track the structural "size" of data, and the type system ensures that recursive calls operate on structurally smaller arguments. Sized types generalize the syntactic guardedness checks used in Coq and Agda, providing a more flexible and compositional termination guarantee. Abel's MiniAgda and subsequent work on Agda's termination checker formalized the theory.
 
-**The Consequence:**
-- A program can infinite-loop, causing **Denial of Service (DoS)**.
-- Resource exhaustion attacks are possible even against "type-safe" code.
-- Smart contracts (Ethereum) famously require "gas" as a workaround because termination cannot be guaranteed.
+Abel, A., "Type-Based Termination of Recursive Definitions", *Mathematical Structures in Computer Science*, 14(1):97-141, 2004.
 
-**The TERAS Reality:**
-Current proofs (Progress, Preservation) guarantee that well-typed programs **don't get stuck**. But they do NOT guarantee that programs **terminate**. A program that loops forever satisfies type safety but violates availability.
+Abel, A., Pientka, B., "Well-Founded Recursion with Copatterns: A Unified Approach to Termination and Productivity", *ICFP*, 2013.
 
-**The Goal:**
-Prove that ALL TERAS programs terminate (or are explicitly marked as non-terminating servers/loops with productivity guarantees).
+### 2.2 Termination Checking in Agda
 
-## 2. The Solution: Structural Termination & Sized Types
+Agda's termination checker combines structural recursion analysis with sized types. It performs a call graph analysis: for each recursive call, it checks that at least one argument decreases structurally (subterm relation) and no argument increases. For mutual recursion, it constructs a call matrix and checks that a lexicographic ordering decreases. This approach handles most practical recursive definitions without requiring explicit termination measures.
 
-We will NOT solve the Halting Problem (impossible). We will RESTRICT the language to a decidable subset that is still practically useful.
+Norell, U., "Towards a Practical Programming Language Based on Dependent Type Theory", PhD Thesis, Chalmers University of Technology, 2007.
 
-### 2.1 The Core Insight
+### 2.3 Coq's Guardedness and Program Fixpoint
 
-Most real programs terminate for simple structural reasons:
-- Recursion on structurally smaller arguments
-- Bounded loops with decreasing counters
-- Finite iteration over finite data structures
+Coq ensures termination of recursive definitions through two mechanisms: structural recursion (the `fix` construct requires a syntactically decreasing argument) and the `Program` framework that supports well-founded recursion via measure functions. The guardedness condition for co-recursive definitions (cofix) ensures productivity — that coinductive definitions produce output in finite time.
 
-We make these reasons **explicit and machine-checkable**.
+Bertot, Y., Castéran, P., "Interactive Theorem Proving and Program Development: Coq'Art", Springer, 2004 (Chapter 13: Recursion and Induction).
 
-### 2.2 The Mechanisms
+### 2.4 Strong Normalization and System F
 
-#### Mechanism 1: Structural Recursion
-All recursive functions must recurse on a **structurally smaller** argument.
+Strong normalization — the property that all reduction sequences terminate — is proven for System F (Girard's polymorphic lambda calculus) and its extensions. Girard's proof uses the method of reducibility candidates (logical relations), which remains the standard technique for proving normalization of type systems. System F_omega and the Calculus of Constructions extend this to higher-order types.
+
+Girard, J.-Y., "Interprétation fonctionnelle et élimination des coupures de l'arithmétique d'ordre supérieur", PhD Thesis, Université Paris VII, 1972.
+
+Girard, J.-Y., Lafont, Y., Taylor, P., "Proofs and Types", Cambridge Tracts in Theoretical Computer Science 7, Cambridge University Press, 1989.
+
+### 2.5 Coinduction and Productivity
+
+Coinduction provides a framework for reasoning about infinite data structures (streams, processes, servers). Productive definitions on coinductive types must produce a constructor in finite time — the dual of the termination requirement for inductive types. Copatterns, introduced by Abel, Pientka, Thibodeau, and Setzer, provide a clean syntax for coinductive definitions that makes productivity checking compositional.
+
+Abel, A., Pientka, B., Thibodeau, D., Setzer, A., "Copatterns: Programming Infinite Structures by Observations", *POPL*, 2013.
+
+### 2.6 Total Functional Programming
+
+Turner proposed "Total Functional Programming" — restricting programs to total functions (functions defined on all inputs) as a programming discipline. Total languages guarantee termination by construction, eliminating an entire class of bugs. Turner argued that most practical programs can be expressed in a total language, with explicit codata for reactive/streaming computations.
+
+Turner, D. A., "Total Functional Programming", *Journal of Universal Computer Science*, 10(7):751-768, 2004.
+
+### 2.7 Fuel-Based Termination (Step Indexing)
+
+Step indexing, or fuel-based approaches, provide termination by bounding computation steps. A function receives a "fuel" parameter that decreases with each recursive call; when fuel reaches zero, computation aborts. This technique is used in Ethereum's gas mechanism, in certifying compilers (CompCert), and in semantic models of recursive types. While pragmatic, fuel-based approaches provide weaker guarantees than type-based termination.
+
+Amin, N., Rompf, T., "Type Soundness Proofs with Definitional Interpreters", *POPL*, 2017.
+
+Appel, A. W., McAllester, D., "An Indexed Model of Recursive Types for Foundational Proof-Carrying Code", *ACM TOPLAS*, 23(5):657-683, 2001.
+
+### 2.8 Well-Founded Recursion
+
+Well-founded recursion generalizes structural recursion: any recursion that decreases with respect to a well-founded relation is guaranteed to terminate. This technique handles functions like the Ackermann function (lexicographic ordering), division (decreasing dividend), and GCD (Euclidean algorithm). Coq's `Function` and `Program Fixpoint` commands support well-founded recursion with explicit measure or relation annotations.
+
+## 3. Properties Verifiable by RIINA
+
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Structural termination | Subterm relation checking | Compiler checks recursive calls on structurally smaller args |
+| Well-founded termination | Measure function verification | Programmer provides measure; compiler verifies decrease |
+| Productivity of codata | Guardedness checking | Coinductive definitions must produce constructor in finite time |
+| Bounded resource usage | Size types → complexity bounds | Type annotations provide upper bounds on computation steps |
+| Non-terminating code isolation | Module-level annotation | `#[tidak_tamat]` functions restricted to monitored modules |
+| Regex termination | Structural analysis of regex AST | Regex engine rejects patterns with unbounded backtracking |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Termination Checker Phase
 
 ```
-// ALLOWED: n decreases structurally
-fn factorial(n: Nat) -> Nat {
-  case n of
-    Zero => 1
-    Succ(m) => n * factorial(m)  // m < n structurally
+Source (.rii) → Parser → Type Checker → Termination Checker → Code Gen
+                                              ↓
+                                     ┌────────┴────────┐
+                                     │ Structural       │
+                                     │ Sized Types      │
+                                     │ Well-Founded     │
+                                     │ Productivity     │
+                                     └─────────────────┘
+```
+
+### 4.2 RIINA Syntax for Termination
+
+```riina
+// Structural recursion — automatically verified
+fungsi faktorial(n: Nat) -> Nat kesan Bersih {
+    padanan n {
+        Sifar => 1,
+        Succ(m) => n * faktorial(m),  // m < n structurally
+    }
 }
 
-// REJECTED: no structural decrease
-fn bad(n: Nat) -> Nat {
-  bad(n)  // ERROR: n does not decrease
-}
-```
-
-#### Mechanism 2: Sized Types
-Types carry size annotations that decrease through computation.
-
-```
-type List<T, size: Nat> =
-  | Nil : List<T, 0>
-  | Cons : T -> List<T, n> -> List<T, n+1>
-
-// The size annotation proves termination
-fn length<T, n>(xs: List<T, n>) -> Nat {
-  case xs of
-    Nil => 0
-    Cons(_, tail) => 1 + length(tail)  // tail has size n-1
-}
-```
-
-#### Mechanism 3: Well-Founded Recursion
-For complex cases, require an explicit **measure function** that decreases.
-
-```
-fn ackermann(m: Nat, n: Nat) -> Nat
-  decreasing (m, n) lexicographically  // Explicit termination measure
+// Well-founded recursion with explicit measure
+fungsi ackermann(m: Nat, n: Nat) -> Nat
+    berkurang (m, n) leksikografi
+    kesan Bersih
 {
-  case (m, n) of
-    (Zero, _) => n + 1
-    (Succ(m'), Zero) => ackermann(m', 1)
-    (Succ(m'), Succ(n')) => ackermann(m', ackermann(m, n'))
+    padanan (m, n) {
+        (Sifar, _) => n + 1,
+        (Succ(m2), Sifar) => ackermann(m2, 1),
+        (Succ(m2), Succ(n2)) => ackermann(m2, ackermann(m, n2)),
+    }
+}
+
+// Productive codata
+codata Strim<T> = Cons : T -> Strim<T>
+
+fungsi nat_dari(n: Nat) -> Strim<Nat> kesan Bersih {
+    Cons(n, nat_dari(n + 1))  // Productive: always yields
 }
 ```
 
-#### Mechanism 4: Productivity for Codata
-For infinite structures (streams, servers), prove **productivity** instead of termination.
-
-```
-// Coinductive: produces output infinitely, but always makes progress
-codata Stream<T> = Cons : T -> Stream<T>
-
-fn nats_from(n: Nat) -> Stream<Nat> {
-  Cons(n, nats_from(n + 1))  // Productive: always yields a value
-}
-```
-
-## 3. The Mathematical Standard
-
-### 3.1 For Terminating Programs
-
-For every function $f$ in program $P$:
-
-$$
-\forall \text{inputs } x, \exists n \in \mathbb{N}, \text{steps}(f(x)) \leq n
-$$
-
-The bound $n$ may depend on input size, but it must exist.
-
-### 3.2 For Productive Codata
-
-For every corecursive function $g$:
-
-$$
-\forall k \in \mathbb{N}, \text{observe}_k(g) \text{ terminates}
-$$
-
-Where $\text{observe}_k$ extracts the first $k$ elements.
-
-## 4. Architecture of Domain V
-
-### 4.1 Termination Checker
-
-A separate phase after type checking:
-1. **Structural Analysis**: Identify recursive calls
-2. **Size Inference**: Compute size annotations on types
-3. **Measure Verification**: Check that measures decrease
-4. **Proof Generation**: Emit termination proof for formal verification
-
-### 4.2 Integration with Type System
-
-Extend `has_type` with termination annotations:
+### 4.3 Coq Formalization
 
 ```coq
-Inductive has_type_terminating :
-  type_env -> store_ty -> security_level ->
-  expr -> ty -> effect -> termination_measure -> Prop
+(* Strong normalization for RIINA's pure subset *)
+Theorem riina_strong_normalization : forall G e T eff,
+  has_type G e T eff ->
+  eff = EffPure ->
+  terminates e.
+
+(* Productivity for codata *)
+Theorem codata_productive : forall G e T,
+  has_cotype G e T ->
+  forall k, observe k e terminates.
 ```
 
-### 4.3 Escape Hatches (Explicit & Audited)
+## 5. Key References
 
-For genuinely non-terminating code (servers, REPLs):
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Abel, A., "Type-Based Termination of Recursive Definitions" (2004) | MSCS | Sized types theory |
+| Abel, A., Pientka, B., "Well-Founded Recursion with Copatterns" (2013) | ICFP | Unified termination and productivity |
+| Abel, A., et al., "Copatterns" (2013) | POPL | Coinductive programming syntax |
+| Norell, U., "Towards a Practical Programming Language Based on Dependent Type Theory" (2007) | PhD, Chalmers | Agda termination checker |
+| Girard, J.-Y., et al., "Proofs and Types" (1989) | Cambridge University Press | Strong normalization for System F |
+| Turner, D. A., "Total Functional Programming" (2004) | JUCS | Total programming manifesto |
+| Bertot, Y., Castéran, P., "Coq'Art" (2004) | Springer | Coq recursion and guardedness |
+| Appel, A. W., McAllester, D., "An Indexed Model of Recursive Types" (2001) | ACM TOPLAS | Step-indexed termination |
+| Amin, N., Rompf, T., "Type Soundness Proofs with Definitional Interpreters" (2017) | POPL | Fuel-based termination |
 
-```
-#[non_terminating]
-fn event_loop() -> ! {
-  // Explicitly marked, audited, sandboxed
-}
-```
+## 6. Formalizability Assessment
 
-Such code:
-- Must be in a separate module
-- Cannot be called from terminating code
-- Runs under Track U (Runtime Guardian) supervision with watchdogs
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Structural recursion checker | 3-4 | High — well-understood algorithm | Phase 1 |
+| Call graph analysis (mutual recursion) | 2-3 | High — standard call matrix technique | Phase 1 |
+| Sized type inference | 4-6 | Medium — complex constraint solving | Phase 2 |
+| Well-founded recursion support | 3-4 | High — user provides measure | Phase 2 |
+| Guardedness checker for codata | 3-4 | Medium — subtle productivity rules | Phase 3 |
+| Strong normalization proof (Coq) | 6-8 | Medium — logical relations technique | Phase 3 |
+| Integration with effect system | 2-3 | High — non-terminating code tagged with effect | Phase 3 |
+| Complexity bound extraction | 4-6 | Low-Medium — research frontier | Phase 4 |
 
-## 5. Implementation Strategy (Infinite Timeline)
+## 7. Scope Limitations
 
-1. **Step 1: Define Sized Type System**
-   - Extend `Syntax.v` with size annotations
-   - Prove size preservation through evaluation
+1. **Expressiveness restriction.** Not all useful algorithms have obvious structural decreases. Functions like Collatz, certain graph algorithms, and general fixpoints cannot be shown terminating without deep mathematical arguments. RIINA must provide well-founded recursion as an escape hatch, requiring programmer-provided measures.
 
-2. **Step 2: Implement Termination Checker**
-   - Call graph analysis
-   - Size constraint solving
-   - Proof certificate generation
+2. **Sized type inference complexity.** Sized type inference involves solving size constraint systems, which can be computationally expensive for large programs. The inference may also produce unhelpful error messages when it fails, making it difficult for programmers to understand why their code was rejected.
 
-3. **Step 3: Verify in Coq**
-   - Prove: "If termination checker accepts, program terminates"
-   - Formalize: Strong normalization for pure subset
-   - Formalize: Productivity for codata
+3. **Codata guardedness is fragile.** Small changes to coinductive definitions can break guardedness checks. Higher-order codata (e.g., functions returning streams) poses particular challenges. The interaction between sized types and codata is still an active research area.
 
-4. **Step 4: Integration**
-   - Termination checking becomes mandatory compilation phase
-   - Programs that don't pass are rejected
+4. **General recursion in FFI.** RIINA programs that call foreign functions (C, Rust libraries) via FFI cannot verify termination of those calls. FFI calls must be treated as potentially non-terminating and wrapped in timeouts or fuel budgets.
 
-## 6. Obsolescence of Threats
+5. **Termination vs. efficiency.** Some efficient algorithms use general recursion that is difficult to express with structural decrease (e.g., union-find with path compression). Forcing these into terminating form may require less efficient implementations.
 
-- **DoS via Infinite Loops:** OBSOLETE. Non-terminating code is rejected or explicitly sandboxed.
-- **Resource Exhaustion:** OBSOLETE. Bounded recursion implies bounded resources.
-- **ReDoS (Regex DoS):** OBSOLETE. Regex engine uses only terminating constructs.
-- **Algorithmic Complexity Attacks:** MITIGATED. Size types expose complexity.
-
-## 7. Dependencies
-
-| Dependency | Direction | Nature |
-|------------|-----------|--------|
-| Track A (Formal) | V depends on A | Extends type system |
-| Track B (Proto) | V feeds B | Termination checker implementation |
-| Track U (Guardian) | V coordinates with U | Non-terminating code monitoring |
+6. **No decidable upper bounds.** While termination can be guaranteed, computing tight upper bounds on execution time requires solving harder problems (complexity analysis) that are generally undecidable. Sized types provide coarse bounds but not precise runtime predictions.
 
 ---
 
-**"That which does not terminate does not exist in TERAS—unless explicitly caged."**
+*"That which does not terminate does not exist in RIINA — unless explicitly caged."*

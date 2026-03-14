@@ -1,381 +1,190 @@
-# TERAS-LANG Research Domain Z: Declassification Policy Language
+# Z-01: Declassification Policy Language — Intentional Leaks, PROVEN Safe
 
-## Document Control
-
-| Property | Value |
-|----------|-------|
-| Document ID | RESEARCH-Z-DECLASSIFICATION-POLICY |
-| Version | 1.0.0 |
-| Date | 2026-01-15 |
-| Domain | Z: Declassification Policy Language |
-| Mode | ULTRA KIASU | PARANOID | ZERO TRUST |
-| Status | FOUNDATIONAL DEFINITION |
+**Domain:** Z — Declassification Policy Language
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Principal-based authorization, guard predicates, quantitative information budgets, robust declassification
 
 ---
 
-## IMPLEMENTATION STATUS (Audit: 2026-02-06)
+## 1. Problem Statement
 
-| Component | Status | Evidence |
-|-----------|--------|----------|
-| Research Specification | COMPLETE | This document |
-| Coq Formal Proofs | 2 files, 44 Qed | Z001_DeclassificationPolicy.v (36 Qed), QuantitativeDeclassification.v (8 Qed) |
-| Compiler Implementation | PARTIAL | declass_ok predicate in riina-typechecker; quantitative budgets NOT implemented |
+Non-interference — the property that secret inputs cannot influence public outputs — is the gold standard for information flow security. However, strict non-interference forbids ALL useful programs that process secrets: password checking must reveal "correct" or "incorrect" (1 bit of information about the password), encryption produces ciphertext derived from plaintext, statistical queries aggregate individual records into public summaries, and error messages may contain sensitive context.
 
-**This document is a RESEARCH SPECIFICATION for future implementation.** The Coq proofs formalize principled declassification with four dimensions (WHO/WHAT/WHEN/HOW MUCH), but the compiler only implements a basic syntactic declass_ok check; quantitative information budgets, principal-based authorization, and guard predicates are not enforced.
+Without controlled declassification, non-interference is too restrictive for practical use. But uncontrolled declassification (arbitrary `declassify` operations) opens the floodgates — an attacker who controls when declassification happens can leak arbitrary secrets bit by bit. RIINA's current `EDeclassify` construct requires a syntactic `declass_ok` proof, but this does not express WHO is authorized, WHAT data can be released, WHEN release is permitted, or HOW MUCH information can leak.
 
----
+Domain Z defines a principled declassification policy language that makes intentional information releases explicit, authorized, auditable, and bounded, while proving that no more information is released than the policy permits.
 
-# Z-01: The "Intentional Leak" Problem & The TERAS Solution
+## 2. State of the Art
 
-## 1. The Existential Threat
+### 2.1 Dimensions of Declassification
 
-**Context:**
-Non-interference says: "Secrets cannot influence public outputs."
-**The Reality:**
-Sometimes we MUST release information:
-- Password checking: Must reveal "correct" or "incorrect"
-- Encryption: Ciphertext is derived from plaintext
-- Statistics: Aggregate data from individual records
-- Logging: Error messages may contain sensitive context
+Sabelfeld and Sands systematized declassification into four dimensions: WHAT information is released, WHO authorizes the release, WHERE in the program the release occurs, and WHEN the release happens. Each dimension has its own formal treatment and enforcement mechanism. This taxonomy provides the foundation for principled declassification, showing that different applications need different combinations of these dimensions.
 
-**The Problem:**
-Without controlled declassification, non-interference is too strong—it forbids ALL useful programs that process secrets.
+Sabelfeld, A., Sands, D., "Dimensions and Principles of Declassification", *Journal of Computer Security*, 17(5):517-548, 2009.
 
-**The Current TERAS Reality:**
-`EDeclassify` in `Syntax.v` requires a proof (`declass_ok`), but this is just a syntactic check. It does not express:
-- WHO is authorized to declassify
-- WHAT data can be declassified
-- WHEN declassification is permitted
-- HOW MUCH can be declassified (budgets)
+### 2.2 Robust Declassification
 
-**The Goal:**
-Define a **Declassification Policy Language** that makes intentional releases:
-- Explicit (visible in code)
-- Authorized (checked against policy)
-- Auditable (logged)
-- Bounded (limited by budgets)
+Myers, Sabelfeld, and Zdancewic introduced robust declassification: the requirement that an attacker cannot influence WHAT gets declassified. Formally, the set of declassified values must be the same regardless of the attacker's actions. This prevents "laundering" attacks where an attacker tricks the system into declassifying more information than intended. Robust declassification has become the standard security condition for practical information flow systems.
 
-## 2. The Solution: Principled Declassification
+Zdancewic, S., Myers, A. C., "Robust Declassification", *CSF*, 2001.
 
-### 2.1 The Four Dimensions of Declassification
+Myers, A. C., Sabelfeld, A., Zdancewic, S., "Enforcing Robust Declassification and Qualified Robustness", *Journal of Computer Security*, 14(2):157-196, 2006.
 
-| Dimension | Question | Mechanism |
-|-----------|----------|-----------|
-| **WHO** | Who can declassify? | Principal-based authorization |
-| **WHAT** | What data? | Data type restrictions |
-| **WHEN** | Under what conditions? | Guard predicates |
-| **HOW MUCH** | Quantitative limit? | Information budgets |
+### 2.3 Jif: Java Information Flow
 
-### 2.2 Policy Language Syntax
+Jif (Java + Information Flow) is a security-typed programming language that extends Java with labels that track information flow. Jif supports declassification with the `declassify` construct, controlled by a decentralized label model where principals own and control the confidentiality of data. Jif has been used to build practical security-critical applications including a voting system (Civitas) and a secure email client.
 
-```
-policy PasswordCheck {
-  principal: Authenticator
-  what: Hash<Password>
-  when: login_attempt_count < MAX_ATTEMPTS
-  budget: 1 bit per attempt (accept/reject)
+Myers, A. C., "JFlow: Practical Mostly-Static Information Flow Control", *POPL*, 1999.
+
+Chong, S., Myers, A. C., "Decentralized Robustness", *CSF*, 2006.
+
+### 2.4 Differential Privacy
+
+Differential privacy, introduced by Dwork et al., provides a mathematical framework for releasing statistical information about a dataset while protecting individual records. A mechanism is ε-differentially private if the presence or absence of any single record changes the output distribution by at most a factor of e^ε. Differential privacy provides a formal budget that bounds cumulative information leakage across multiple queries.
+
+Dwork, C., McSherry, F., Nissim, K., Smith, A., "Calibrating Noise to Sensitivity in Private Data Analysis", *TCC*, 2006.
+
+Dwork, C., Roth, A., "The Algorithmic Foundations of Differential Privacy", *Foundations and Trends in Theoretical Computer Science*, 9(3-4):211-407, 2014.
+
+### 2.5 Quantitative Information Flow
+
+Quantitative information flow (QIF) measures the amount of information leaked by a program in bits, using information-theoretic quantities (Shannon entropy, min-entropy, Rényi entropy). QIF provides more nuanced analysis than non-interference (which is binary: leaks or doesn't leak) by quantifying HOW MUCH is leaked. Smith showed that min-entropy leakage captures the adversary's optimal guessing advantage.
+
+Smith, G., "On the Foundations of Quantitative Information Flow", *FoSSaCS*, 2009.
+
+Alvim, M. S., Chatzikokolakis, K., McIver, A., Morgan, C., Palamidessi, C., Smith, G., "The Science of Quantitative Information Flow", Springer, 2020.
+
+### 2.6 FlowCaml: Information Flow for ML
+
+FlowCaml is an extension of OCaml with an information flow type system based on the decentralized label model. FlowCaml supports polymorphic labels, subtyping, and controlled declassification. It demonstrated that information flow type systems can be integrated into practical functional programming languages with minimal annotation burden.
+
+Simonet, V., "The Flow Caml System: Documentation and User's Manual", INRIA Technical Report, 2003.
+
+### 2.7 Language-Based Information Flow Security
+
+Sabelfeld and Myers' comprehensive survey established the field of language-based information flow security, covering non-interference, declassification, covert channels, and enforcement mechanisms. The survey identified key challenges including implicit flows (via control flow), termination channels, timing channels, and the tension between security and functionality.
+
+Sabelfeld, A., Myers, A. C., "Language-Based Information-Flow Security", *IEEE Journal on Selected Areas in Communications*, 21(1):5-19, 2003.
+
+### 2.8 Gradual Release and Delimited Release
+
+Askarov and Sabelfeld introduced gradual release, which ensures that secrets are released only as explicitly permitted by declassification operations. Delimited release (Sabelfeld and Myers) restricts what information is released by specifying an "escape hatch" expression whose value is the only information allowed to flow to low-security outputs. These properties provide compositional reasoning about declassification.
+
+Askarov, A., Sabelfeld, A., "Gradual Release: Unifying Declassification, Encryption, and Key Release Policies", *IEEE S&P*, 2007.
+
+## 3. Properties Verifiable by RIINA
+
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Robust declassification | Public-equivalence of declassified values | Type system checks guard conditions are low-security |
+| Bounded information leakage | Quantitative information flow budget | Budget annotations track cumulative bits released |
+| Principal authorization | Decentralized label model | `declass_ok` requires authorized principal proof |
+| Guard correctness | Public guard predicate checking | Guards must not depend on secret data |
+| Differential privacy | Noise calibration to sensitivity | Built-in DP mechanisms with proven ε bounds |
+| Audit completeness | Declassification logging | Every `EDeclassify` operation logged with WHO/WHAT/WHEN |
+| Non-circumvention | Type system enforcement | Secret data can only become public via `EDeclassify` |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Policy Language
+
+```riina
+// Declassification policy definition
+polisi semak_kata_laluan {
+    prinsipal: PerkhidmatanPengesahan,
+    apa: bool,  // Only accept/reject
+    bila: percubaan_dalam_tetingkap < 5,
+    bajet: 1 bit,
+    audit: WAJIB,
 }
 
-policy AggregateStats {
-  principal: DataAnalyst
-  what: Aggregate<UserData>
-  when: group_size >= K_ANONYMITY_THRESHOLD
-  budget: epsilon-differential privacy
+// Usage in code
+fungsi semak(kata_laluan: Rahsia<Teks>, hash: Hash) -> Bool
+    kesan Bersih
+    polisi semak_kata_laluan
+{
+    biar hasil = hash_sama(kata_laluan, hash);
+    pulang nyahrahsia(hasil, semak_kata_laluan);
+    // Declassifies 1 bit (accept/reject) under policy
 }
-
-policy ErrorLogging {
-  principal: Logger
-  what: ErrorContext
-  when: is_sanitized(context)
-  budget: unlimited (sanitized data only)
-}
-```
-
-### 2.3 Robust Declassification
-
-**Key Property:** The DECISION to declassify cannot depend on secret data.
-
-**BAD (attacker-controlled):**
-```
-if (secret_bit) {
-  declassify(secret);  // Attacker can probe secret_bit
-}
-```
-
-**GOOD (robust):**
-```
-// Public condition
-if (user_requested_data && is_authorized(user)) {
-  declassify(compute_public_summary(secret));
-}
-```
-
-**Formal Definition:**
-$$
-\text{robust}(e) \iff \forall s_1, s_2. \text{low\_equiv}(s_1, s_2) \implies \text{declassifies}(e, s_1) = \text{declassifies}(e, s_2)
-$$
-
-The set of declassified values is the same regardless of secret inputs.
-
-## 3. The Mathematical Framework
-
-### 3.1 Principals and Authority
-
-```coq
-(* Principals form a lattice *)
-Inductive principal : Type :=
-  | User : user_id -> principal
-  | Role : role_name -> principal
-  | System : principal
-  | Join : principal -> principal -> principal  (* p1 ⊔ p2 *)
-  | Meet : principal -> principal -> principal. (* p1 ⊓ p2 *)
-
-(* Acts-for relation *)
-Definition acts_for (p1 p2 : principal) : Prop := ...
-
-(* Declassification authority *)
-Definition can_declassify (p : principal) (l_from l_to : security_level) : Prop :=
-  acts_for p (owner l_from) /\ level_leq l_to (clearance p).
-```
-
-### 3.2 Declassification Policies
-
-```coq
-Record DeclassPolicy := {
-  (* Who can invoke this policy *)
-  authorized_principal : principal;
-
-  (* What type of data *)
-  source_type : ty;
-  target_type : ty;
-
-  (* Transformation function *)
-  transform : source_type -> target_type;
-
-  (* Guard predicate (must be public) *)
-  guard : public_state -> bool;
-
-  (* Budget (bits of information) *)
-  budget : nat;
-
-  (* Proof that transform is bounded *)
-  transform_bounded : forall x, mutual_information(x, transform(x)) <= budget;
-
-  (* Proof that guard is robust *)
-  guard_robust : forall s1 s2, low_equiv(s1, s2) -> guard(s1) = guard(s2);
-}.
-```
-
-### 3.3 Extended Typing Rule
-
-```coq
-| T_Declassify_Policy : forall G S D e policy proof_term,
-    (* Expression has secret type *)
-    has_type G S D e (TSecret policy.source_type) eps1 ->
-
-    (* Principal is authorized *)
-    can_declassify (current_principal D) Secret Public ->
-
-    (* Policy guard is satisfied *)
-    has_type G S D (policy.guard) TBool EffectPure ->
-    eval (policy.guard) = true ->
-
-    (* Budget not exceeded *)
-    budget_remaining D >= policy.budget ->
-
-    (* Proof of authorization *)
-    valid_auth_proof proof_term policy (current_principal D) ->
-
-    (* Result is declassified *)
-    has_type G S D
-      (EDeclassify_Policy e policy proof_term)
-      policy.target_type
-      eps1
-```
-
-## 4. Architecture of Domain Z
-
-### 4.1 Policy Enforcement Points
-
-```
-┌─────────────────────────────────────────┐
-│         Application Code                 │
-│     declassify(secret, policy)          │
-├─────────────────────────────────────────┤
-│       Policy Checker (Compile-Time)      │
-│  - Authorization verification           │
-│  - Guard robustness check               │
-│  - Budget static analysis               │
-├─────────────────────────────────────────┤
-│       Runtime Monitor (Track U)          │
-│  - Dynamic budget tracking              │
-│  - Audit logging                        │
-│  - Rate limiting                        │
-├─────────────────────────────────────────┤
-│       Audit Log (Immutable)             │
-│  - WHO declassified                     │
-│  - WHAT was declassified                │
-│  - WHEN it happened                     │
-│  - HOW MUCH budget consumed             │
-└─────────────────────────────────────────┘
 ```
 
 ### 4.2 Budget Tracking
 
-```coq
-(* Budget state per principal *)
-Record BudgetState := {
-  principal : principal;
-  policy_budgets : policy_id -> nat;  (* Remaining budget per policy *)
-  total_leaked : nat;                  (* Total bits declassified *)
-  time_window : timestamp;            (* Reset period *)
-}.
-
-(* Budget consumption *)
-Definition consume_budget (bs: BudgetState) (policy: DeclassPolicy) (bits: nat)
-  : option BudgetState :=
-  if bs.policy_budgets(policy.id) >= bits then
-    Some {| bs with
-      policy_budgets := update bs.policy_budgets policy.id (minus bits);
-      total_leaked := bs.total_leaked + bits
-    |}
-  else
-    None.  (* Budget exceeded, declassification denied *)
+```riina
+// Differential privacy policy
+polisi analitik_perubatan {
+    prinsipal: PenganalisisPenyelidikan,
+    apa: Agregat<RekodPesakit>,
+    bila: saiz_kohort >= 100,  // K-anonymity
+    bajet: (1.0, 1e-5)-privasi_berbeza,
+    audit: WAJIB,
+}
 ```
 
-### 4.3 Differential Privacy Integration
-
-For statistical queries, integrate differential privacy:
+### 4.3 Coq Formalization
 
 ```coq
-(* Differential privacy mechanism *)
-Definition dp_declassify (epsilon delta : R) (query : Database -> R) (db : Database)
-  : R :=
-  let sensitivity := compute_sensitivity query in
-  let noise := laplace_noise (sensitivity / epsilon) in
-  query db + noise.
+(* Robust declassification *)
+Theorem robust_declass : forall e s1 s2,
+  low_equiv s1 s2 ->
+  declassified_values e s1 = declassified_values e s2.
 
-(* Privacy budget tracking *)
-Theorem dp_composition : forall epsilon1 epsilon2 delta1 delta2 q1 q2 db,
-  (epsilon1, delta1)-DP(q1, db) ->
-  (epsilon2, delta2)-DP(q2, db) ->
-  (epsilon1 + epsilon2, delta1 + delta2)-DP(compose q1 q2, db).
+(* Budget bounded leakage *)
+Theorem budget_bounded : forall prog policies,
+  well_typed_declass prog policies ->
+  mutual_information (secrets prog) (outputs prog) <=
+    sum_budgets policies.
+
+(* Non-circumvention *)
+Theorem no_circumvention : forall G e T,
+  has_type G e (TSecret T) ->
+  flows_to_public e ->
+  exists policy, uses_declassify_policy e policy.
 ```
 
-## 5. Security Properties
+## 5. Key References
 
-### 5.1 Gradual Release
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Sabelfeld, A., Sands, D., "Dimensions and Principles of Declassification" (2009) | J. Computer Security | Four-dimensional taxonomy |
+| Zdancewic, S., Myers, A. C., "Robust Declassification" (2001) | CSF | Attacker-resilient declassification |
+| Myers, A. C., "JFlow" (1999) | POPL | Jif practical information flow |
+| Dwork, C., et al., "Calibrating Noise to Sensitivity" (2006) | TCC | Differential privacy foundation |
+| Smith, G., "On the Foundations of Quantitative Information Flow" (2009) | FoSSaCS | Min-entropy leakage |
+| Sabelfeld, A., Myers, A. C., "Language-Based Information-Flow Security" (2003) | IEEE JSAC | Comprehensive survey |
+| Askarov, A., Sabelfeld, A., "Gradual Release" (2007) | IEEE S&P | Compositional declassification |
+| Dwork, C., Roth, A., "Algorithmic Foundations of Differential Privacy" (2014) | FnTTCS | DP reference text |
+| Chong, S., Myers, A. C., "Decentralized Robustness" (2006) | CSF | Decentralized robust declassification |
 
-Information is released only as permitted by policies:
+## 6. Formalizability Assessment
 
-$$
-\text{released}(e, s) \subseteq \bigcup_{p \in \text{policies}} \text{allowed}(p, s)
-$$
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Policy language syntax and semantics | 3-4 | High — well-understood theory | Phase 1 |
+| Principal-based authorization | 2-3 | High — decentralized label model | Phase 1 |
+| Robust declassification proof | 3-4 | High — standard formalization | Phase 2 |
+| Guard predicate verification | 2-3 | High — public predicate checking | Phase 2 |
+| Quantitative budget tracking | 4-6 | Medium — information-theoretic reasoning | Phase 3 |
+| Differential privacy integration | 4-6 | Medium — noise calibration proofs | Phase 3 |
+| Runtime budget enforcement (Domain U) | 3-4 | Medium — requires runtime support | Phase 4 |
+| Audit log verification | 2-3 | High — append-only log proofs | Phase 4 |
 
-### 5.2 Bounded Leakage
+## 7. Scope Limitations
 
-Total information leaked is bounded:
+1. **Quantitative information flow is undecidable.** Computing the exact mutual information between inputs and outputs is undecidable in general. RIINA uses conservative upper bounds, which may over-estimate leakage and reject safe programs.
 
-$$
-I(\text{secrets}; \text{outputs}) \leq \sum_{p \in \text{used\_policies}} \text{budget}(p)
-$$
+2. **Differential privacy noise distortion.** Adding noise for differential privacy degrades data utility. For small datasets or high-sensitivity queries, the noise may overwhelm the signal. The privacy budget (ε) represents a fundamental tradeoff between privacy and utility.
 
-### 5.3 Robustness
+3. **Composability challenges.** While differential privacy composes cleanly (budgets add), other declassification policies may not compose as easily. Two individually safe declassification policies could leak more information when combined than either alone.
 
-Attacker cannot influence what gets declassified:
+4. **Implicit flows and timing channels.** Declassification policies control explicit releases but may not account for implicit information flows through control flow, termination behavior, or timing. A complete solution requires integration with Domain S (constant-time) and Domain V (termination).
 
-$$
-\forall s_1, s_2. \text{low\_equiv}(s_1, s_2) \implies \text{public\_output}(P, s_1) = \text{public\_output}(P, s_2)
-$$
+5. **Policy specification burden.** Writing correct declassification policies requires understanding information theory and the specific security requirements. Incorrect policies (e.g., overly generous budgets) produce formally verified but insecure systems.
 
-### 5.4 Non-Circumvention
-
-No declassification without policy:
-
-$$
-\forall e. \text{type}(e) = \text{Secret } T \implies \text{Public}(\text{eval}(e)) \text{ only via } \text{EDeclassify\_Policy}
-$$
-
-## 6. Implementation Strategy (Infinite Timeline)
-
-1. **Step 1: Define Policy Language**
-   - Syntax and semantics in Coq
-   - Parser for policy files
-   - Integration with type system
-
-2. **Step 2: Implement Robustness Checker**
-   - Static analysis for guard conditions
-   - Prove guards don't depend on secrets
-
-3. **Step 3: Budget System**
-   - Compile-time budget analysis
-   - Runtime budget enforcement
-   - Budget reset mechanisms
-
-4. **Step 4: Audit System**
-   - Tamper-proof logging
-   - Query interface for auditors
-   - Compliance reporting
-
-5. **Step 5: Advanced Policies**
-   - Differential privacy integration
-   - Multi-party declassification
-   - Time-based policies
-
-## 7. Obsolescence of Threats
-
-- **Covert Channels:** MITIGATED. Budget limits information flow.
-- **Side Channel via Declassification:** OBSOLETE. Robustness ensures attacker can't probe.
-- **Unauthorized Disclosure:** OBSOLETE. Principal-based authorization enforced.
-- **Audit Evasion:** OBSOLETE. All declassifications logged immutably.
-- **Budget Exhaustion Attacks:** MITIGATED. Rate limiting and alerts.
-- **Policy Circumvention:** OBSOLETE. Type system enforces policy use.
-
-## 8. Dependencies
-
-| Dependency | Direction | Nature |
-|------------|-----------|--------|
-| Track A (Formal) | Z extends A | Security type system |
-| Track A (Non-interference) | Z extends | Declassification semantics |
-| Track U (Guardian) | Z integrates with U | Runtime budget enforcement |
-| Track Y (Stdlib) | Z feeds Y | Crypto declassification policies |
-
-## 9. Example Policies
-
-### 9.1 Password Checking
-```
-policy password_check {
-  principal: AuthenticationService
-  what: bool  // Only accept/reject
-  when: attempts_in_window < 5
-  budget: 1 bit
-  audit: REQUIRED
-}
-```
-
-### 9.2 Medical Data Analytics
-```
-policy medical_aggregate {
-  principal: ResearchAnalyst
-  what: Aggregate<PatientRecord>
-  when: cohort_size >= 100  // K-anonymity
-  budget: (1.0, 1e-5)-differential_privacy
-  audit: REQUIRED
-  approval: IRB_NUMBER_12345
-}
-```
-
-### 9.3 Error Logging
-```
-policy error_log {
-  principal: SystemLogger
-  what: SanitizedError
-  when: is_sanitized(error) && !contains_pii(error)
-  budget: unlimited  // Sanitized data is public
-  audit: OPTIONAL
-}
-```
+6. **No retroactive policy changes.** Once information has been declassified under a policy, it cannot be "re-classified." Policy changes only apply to future declassifications. This makes policy design a critical up-front decision.
 
 ---
 
-**"Declassification is not a loophole. Declassification is a POLICY, and policies are PROVEN."**
+*"Declassification is not a loophole. Declassification is a POLICY, and policies are PROVEN."*
