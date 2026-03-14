@@ -144,6 +144,11 @@ pub enum TokenKind {
     KwClone,
     KwLifetime,   // jangka / lifetime
 
+    // Linearity keywords
+    KwSekali,     // sekali / linear — must use exactly once
+    KwPaling,     // paling / affine — use at most once
+    KwMesti,      // mesti / relevant — must use at least once
+
     // Logic keywords
     KwAnd,        // dan / and
     KwOr,         // atau / or

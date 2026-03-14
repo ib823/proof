@@ -440,6 +440,11 @@ impl<'a> Lexer<'a> {
             "clone" | "klon" => TokenKind::KwClone,
             "lifetime" | "jangka" => TokenKind::KwLifetime,
 
+            // Linearity keywords (English | Bahasa Melayu)
+            "linear" | "sekali" => TokenKind::KwSekali,
+            "affine" | "paling" => TokenKind::KwPaling,
+            "relevant" | "mesti" => TokenKind::KwMesti,
+
             // Logic keywords (English | Bahasa Melayu)
             "and" | "dan" => TokenKind::KwAnd,
             "or" | "atau" => TokenKind::KwOr,

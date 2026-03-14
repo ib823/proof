@@ -54,6 +54,7 @@ fn pci_dss_3_4_declassify_with_prove_ok() {
 fn pci_dss_6_5_card_data_not_secret() {
     let expr = Expr::Let(
         "card_number".into(),
+        None,
         Box::new(Expr::String("4111111111111111".into())),
         Box::new(Expr::Unit),
     );
@@ -65,6 +66,7 @@ fn pci_dss_6_5_card_data_not_secret() {
 fn pci_dss_6_5_card_data_classified_ok() {
     let expr = Expr::Let(
         "card_number".into(),
+        None,
         Box::new(Expr::Classify(Box::new(Expr::String("4111111111111111".into())))),
         Box::new(Expr::Unit),
     );
@@ -104,6 +106,7 @@ fn pci_dss_8_3_auth_with_crypto_ok() {
 fn pdpa_s7_user_input_not_tainted() {
     let expr = Expr::Let(
         "user_input".into(),
+        None,
         Box::new(Expr::String("raw data".into())),
         Box::new(Expr::Unit),
     );

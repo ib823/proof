@@ -210,7 +210,7 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
         Expr::If(cond, then_branch, else_branch) => {
             summarize_branching(cond, then_branch, else_branch, env, env)
         }
-        Expr::Let(name, value, body) => {
+        Expr::Let(name, _, value, body) => {
             let value_summary = summarize_expr(value, env);
             let mut body_env = shadow_callable(env, name);
             if let Some(callable) = value_summary.callable.clone() {

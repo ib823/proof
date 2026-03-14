@@ -325,6 +325,7 @@ mod tests {
         // let x = 1 in x
         let let_expr = Expr::Let(
             "x".into(),
+            None,
             Box::new(Expr::Int(42)),
             Box::new(Expr::Var("x".into())),
         );
@@ -847,6 +848,7 @@ mod tests {
         // let x = 1 in if true then x else 0
         let expr = Expr::Let(
             "x".into(),
+            None,
             Box::new(Expr::Int(1)),
             Box::new(Expr::If(
                 Box::new(Expr::Bool(true)),
@@ -3030,6 +3032,7 @@ mod formalized_tests {
         // let lin x = 42 in x (use once → OK)
         let expr = Expr::Let(
             "x".into(),
+            None,
             Box::new(Expr::Int(42)),
             Box::new(Expr::Var("x".into())),
         );
@@ -3199,6 +3202,7 @@ mod formalized_tests {
         // let x = ch in x
         let expr = Expr::Let(
             "x".into(),
+            None,
             Box::new(Expr::Var("ch".into())),
             Box::new(Expr::Var("x".into())),
         );
@@ -3220,6 +3224,74 @@ mod formalized_tests {
         match type_check_full(&mut ctx, &expr) {
             Err(TypeError::TypeMismatch { .. }) => {}
             other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_let_sekali_used_once_ok() {
+        // biar sekali x = 1; x  → used exactly once, OK
+        let mut ctx = TypingContext::new();
+        let expr = Expr::Let(
+            "x".into(),
+            Some(Linearity::Linear),
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Var("x".into())),
+        );
+        let (ty, _eff) = type_check_full(&mut ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Int);
+    }
+
+    #[test]
+    fn test_let_sekali_unused_rejected() {
+        // biar sekali x = 1; 0  → unused linear var, LIN0001
+        let mut ctx = TypingContext::new();
+        let expr = Expr::Let(
+            "x".into(),
+            Some(Linearity::Linear),
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(0)),
+        );
+        match type_check_full(&mut ctx, &expr) {
+            Err(TypeError::LinearityViolation { var, linearity, usage, .. }) => {
+                assert_eq!(var, "x");
+                assert_eq!(linearity, Linearity::Linear);
+                assert_eq!(usage, Usage::Zero);
+            }
+            other => panic!("Expected LinearityViolation, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_let_paling_unused_ok() {
+        // biar paling x = 1; 0  → affine can be dropped, OK
+        let mut ctx = TypingContext::new();
+        let expr = Expr::Let(
+            "x".into(),
+            Some(Linearity::Affine),
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(0)),
+        );
+        let (ty, _eff) = type_check_full(&mut ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Int);
+    }
+
+    #[test]
+    fn test_let_mesti_unused_rejected() {
+        // biar mesti x = 1; 0  → relevant must be used, LIN0001
+        let mut ctx = TypingContext::new();
+        let expr = Expr::Let(
+            "x".into(),
+            Some(Linearity::Relevant),
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(0)),
+        );
+        match type_check_full(&mut ctx, &expr) {
+            Err(TypeError::LinearityViolation { var, linearity, usage, .. }) => {
+                assert_eq!(var, "x");
+                assert_eq!(linearity, Linearity::Relevant);
+                assert_eq!(usage, Usage::Zero);
+            }
+            other => panic!("Expected LinearityViolation, got {:?}", other),
         }
     }
 

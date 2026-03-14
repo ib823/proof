@@ -175,7 +175,7 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             fv.extend(free_vars(e2));
             fv
         }
-        Expr::Let(name, e1, e2) => {
+        Expr::Let(name, _, e1, e2) => {
             let mut fv = free_vars(e1);
             let mut fv2 = free_vars(e2);
             fv2.remove(name);
@@ -365,7 +365,7 @@ impl Lower {
                 }
             }
             Expr::Assign(_, _) => Ty::Unit,
-            Expr::If(_, t, _) | Expr::Let(_, _, t) | Expr::LetRec(_, _, _, t) | Expr::Case(_, _, t, _, _) => self.infer_type(t),
+            Expr::If(_, t, _) | Expr::Let(_, _, _, t) | Expr::LetRec(_, _, _, t) | Expr::Case(_, _, t, _, _) => self.infer_type(t),
             Expr::App(e1, _) => {
                 if let Ty::Fn(_, ret, _) = self.infer_type(e1) {
                     *ret
@@ -408,7 +408,7 @@ impl Lower {
                     .join(self.infer_effect(t))
                     .join(self.infer_effect(f))
             }
-            Expr::Let(_, e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
+            Expr::Let(_, _, e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
             Expr::App(e1, e2) => {
                 let base = self.infer_effect(e1).join(self.infer_effect(e2));
                 if let Ty::Fn(_, _, eff) = self.infer_type(e1) {
@@ -931,7 +931,7 @@ impl Lower {
                 ))
             }
 
-            Expr::Let(name, binding, body) => {
+            Expr::Let(name, _, binding, body) => {
                 let bind_var = self.lower_expr(binding)?;
                 let bind_ty = self.infer_type(binding);
 
@@ -1323,6 +1323,7 @@ mod tests {
         let mut lower = Lower::new();
         let let_expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(42)),
             Box::new(Expr::Var("x".to_string())),
         );
@@ -1556,9 +1557,11 @@ mod tests {
         let mut lower = Lower::new();
         let nested = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(1)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Int(2)),
                 Box::new(Expr::Var("x".to_string())),
             )),

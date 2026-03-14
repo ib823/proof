@@ -1553,4 +1553,16 @@ mod tests {
         assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwOk);
         assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwErr);
     }
+
+    #[test]
+    fn test_linearity_keywords() {
+        let input = "sekali paling mesti linear affine relevant";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwSekali);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwPaling);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwMesti);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwSekali);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwPaling);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwMesti);
+    }
 }

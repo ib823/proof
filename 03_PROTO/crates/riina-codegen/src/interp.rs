@@ -385,7 +385,7 @@ impl Interpreter {
 
             // E_Let: eval ρ σ e1 σ' v1 -> eval (extend ρ x v1) σ' e2 σ'' v2
             //        -> eval ρ σ (ELet x e1 e2) σ'' v2
-            Expr::Let(name, binding, body) => {
+            Expr::Let(name, _, binding, body) => {
                 let bind_val = self.eval_with_env(env, binding)?;
                 let new_env = env.extend(name.clone(), bind_val);
                 self.eval_with_env(&new_env, body)
@@ -1052,6 +1052,7 @@ mod tests {
         // let x = 42 in x
         let let_expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(42)),
             Box::new(Expr::Var("x".to_string())),
         );
@@ -1064,13 +1065,14 @@ mod tests {
         // let x = 1 in let y = 2 in (x, y)
         let inner_let = Expr::Let(
             "y".to_string(),
+            None,
             Box::new(Expr::Int(2)),
             Box::new(Expr::Pair(
                 Box::new(Expr::Var("x".to_string())),
                 Box::new(Expr::Var("y".to_string())),
             )),
         );
-        let outer_let = Expr::Let("x".to_string(), Box::new(Expr::Int(1)), Box::new(inner_let));
+        let outer_let = Expr::Let("x".to_string(), None, Box::new(Expr::Int(1)), Box::new(inner_let));
         assert_eq!(
             interp.eval(&outer_let),
             Ok(Value::Pair(
@@ -1099,6 +1101,7 @@ mod tests {
         // let r = ref 42 in !r
         let let_expr = Expr::Let(
             "r".to_string(),
+            None,
             Box::new(Expr::Ref(Box::new(Expr::Int(42)), SecurityLevel::Public)),
             Box::new(Expr::Deref(Box::new(Expr::Var("r".to_string())))),
         );
@@ -1111,6 +1114,7 @@ mod tests {
         // let r = ref 1 in (r := 2; !r)
         let inner = Expr::Let(
             "_".to_string(),
+            None,
             Box::new(Expr::Assign(
                 Box::new(Expr::Var("r".to_string())),
                 Box::new(Expr::Int(2)),
@@ -1119,6 +1123,7 @@ mod tests {
         );
         let let_expr = Expr::Let(
             "r".to_string(),
+            None,
             Box::new(Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Public)),
             Box::new(inner),
         );
@@ -1209,9 +1214,11 @@ mod tests {
         // let x = 5 in let y = x in (x, y)
         let expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(5)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Var("x".to_string())),
                 Box::new(Expr::Pair(
                     Box::new(Expr::Var("x".to_string())),
@@ -1311,12 +1318,15 @@ mod tests {
         // let x = 1 in let y = 2 in let z = 3 in x
         let expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(1)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Int(2)),
                 Box::new(Expr::Let(
                     "z".to_string(),
+                    None,
                     Box::new(Expr::Int(3)),
                     Box::new(Expr::Var("x".to_string())),
                 )),
@@ -1331,12 +1341,15 @@ mod tests {
         // let x = 1 in let y = 2 in let z = 3 in z (innermost)
         let expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(1)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Int(2)),
                 Box::new(Expr::Let(
                     "z".to_string(),
+                    None,
                     Box::new(Expr::Int(3)),
                     Box::new(Expr::Var("z".to_string())),
                 )),
@@ -1440,6 +1453,7 @@ mod tests {
         // let a = 10 in (λx. a) 0 = 10
         let expr = Expr::Let(
             "a".to_string(),
+            None,
             Box::new(Expr::Int(10)),
             Box::new(Expr::App(
                 Box::new(Expr::Lam(

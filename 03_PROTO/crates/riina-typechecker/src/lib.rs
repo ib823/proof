@@ -2566,9 +2566,12 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
             Ok((t2, eff1.join(eff2).join(eff3)))
         }
-        Expr::Let(x, e1, e2) => {
+        Expr::Let(x, linearity, e1, e2) => {
             let (t1, eff1) = type_check_full(ctx, e1)?;
-            let new_ctx = ctx.extend_gamma(x.clone(), t1);
+            let new_ctx = match linearity {
+                Some(lin) => ctx.extend_gamma_linear(x.clone(), t1, *lin),
+                None => ctx.extend_gamma(x.clone(), t1),
+            };
             let mut new_ctx_mut = new_ctx;
             let (t2, eff2) = type_check_full(&mut new_ctx_mut, e2)?;
             // A3: Check linearity constraints at scope exit.
@@ -3059,7 +3062,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
 
             Ok((t2, eff1.join(eff2).join(eff3)))
         }
-        Expr::Let(x, e1, e2) => {
+        Expr::Let(x, _, e1, e2) => {
             let (t1, eff1) = type_check(ctx, e1)?;
             let ctx_new = ctx.extend(x.clone(), t1);
             let (t2, eff2) = type_check(&ctx_new, e2)?;

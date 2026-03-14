@@ -72,7 +72,7 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             description: "Card data variables must use Secret<_> type",
             check: |expr| {
                 // Let binding with name containing "card" but type is not Secret
-                if let Expr::Let(name, value, _) = expr {
+                if let Expr::Let(name, _, value, _) = expr {
                     let lower = name.to_lowercase();
                     if (lower.contains("card") || lower.contains("pan") || lower.contains("cvv"))
                         && !matches!(value.as_ref(), Expr::Classify(_))
@@ -130,7 +130,7 @@ fn pdpa_rules() -> Vec<ComplianceRule> {
             check: |expr| {
                 // A Let binding named "*_input" or "*_user*" that is not a Perform
                 // (heuristic: raw string/int from user should be tainted)
-                if let Expr::Let(name, value, _) = expr {
+                if let Expr::Let(name, _, value, _) = expr {
                     let lower = name.to_lowercase();
                     if (lower.contains("user_input") || lower.contains("personal_data"))
                         && !is_tainted_expr(value)
@@ -211,7 +211,7 @@ fn contains_effect(expr: &Expr, target: Effect) -> bool {
         Expr::Perform(eff, _) if *eff == target => true,
         Expr::Lam(_, _, body) => contains_effect(body, target),
         Expr::App(f, a) => contains_effect(f, target) || contains_effect(a, target),
-        Expr::Let(_, v, b) | Expr::LetRec(_, _, v, b) => {
+        Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) => {
             contains_effect(v, target) || contains_effect(b, target)
         }
         Expr::If(c, t, e) => {

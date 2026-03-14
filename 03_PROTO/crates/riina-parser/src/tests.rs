@@ -263,7 +263,7 @@ fn test_parse_pair_nested() {
 fn test_parse_let() {
     let mut p = Parser::new("let x = 1; 2");
     match p.parse_expr().unwrap() {
-        Expr::Let(x, e1, e2) => {
+        Expr::Let(x, _, e1, e2) => {
             assert_eq!(x, "x");
             assert_eq!(*e1, Expr::Int(1));
             assert_eq!(*e2, Expr::Int(2));
@@ -434,7 +434,7 @@ fn test_parse_let_with_var() {
     // Rationale: Variables can be bound
     let mut p = Parser::new("let y = x; y");
     match p.parse_expr().unwrap() {
-        Expr::Let(name, bound, body) => {
+        Expr::Let(name, _, bound, body) => {
             assert_eq!(name, "y");
             assert_eq!(*bound, Expr::Var("x".to_string()));
             assert_eq!(*body, Expr::Var("y".to_string()));
@@ -450,11 +450,11 @@ fn test_parse_let_nested() {
     // Rationale: Let bindings can nest
     let mut p = Parser::new("let x = 1; let y = 2; x");
     match p.parse_expr().unwrap() {
-        Expr::Let(x, e1, body) => {
+        Expr::Let(x, _, e1, body) => {
             assert_eq!(x, "x");
             assert_eq!(*e1, Expr::Int(1));
             match *body {
-                Expr::Let(y, e2, inner) => {
+                Expr::Let(y, _, e2, inner) => {
                     assert_eq!(y, "y");
                     assert_eq!(*e2, Expr::Int(2));
                     assert_eq!(*inner, Expr::Var("x".to_string()));
@@ -473,7 +473,7 @@ fn test_parse_let_with_complex_expr() {
     // Rationale: Any expression can be bound
     let mut p = Parser::new("let pair = (1, 2); pair");
     match p.parse_expr().unwrap() {
-        Expr::Let(name, bound, body) => {
+        Expr::Let(name, _, bound, body) => {
             assert_eq!(name, "pair");
             match *bound {
                 Expr::Pair(e1, e2) => {
@@ -1121,7 +1121,7 @@ fn test_parse_complex_combined_expression() {
     assert!(result.is_ok(), "Complex combined expression must parse");
 
     match result.unwrap() {
-        Expr::Let(name, bound, body) => {
+        Expr::Let(name, _, bound, body) => {
             assert_eq!(name, "f");
             // bound should be Lam
             match *bound {
@@ -1175,7 +1175,7 @@ fn test_parse_biar_keyword() {
     // Rationale: Native language keywords work
     let mut p = Parser::new("biar x = 1; x");
     match p.parse_expr().unwrap() {
-        Expr::Let(name, bound, body) => {
+        Expr::Let(name, _, bound, body) => {
             assert_eq!(name, "x");
             assert_eq!(*bound, Expr::Int(1));
             assert_eq!(*body, Expr::Var("x".to_string()));
@@ -1337,7 +1337,7 @@ fn test_parse_binop_in_let() {
     // let x = 2 + 3; x
     let mut p = Parser::new("let x = 2 + 3; x");
     match p.parse_expr().unwrap() {
-        Expr::Let(name, bound, body) => {
+        Expr::Let(name, _, bound, body) => {
             assert_eq!(name, "x");
             assert_eq!(
                 *bound,
@@ -1358,7 +1358,7 @@ fn test_parse_stmt_sequence_simple() {
     let mut p = Parser::new("42; 10");
     let result = p.parse_expr().unwrap();
     match result {
-        Expr::Let(name, e1, e2) => {
+        Expr::Let(name, _, e1, e2) => {
             assert_eq!(name, "_");
             assert_eq!(*e1, Expr::Int(42));
             assert_eq!(*e2, Expr::Int(10));
@@ -1372,11 +1372,11 @@ fn test_parse_stmt_sequence_multi() {
     let mut p = Parser::new("1; 2; 3");
     let result = p.parse_expr().unwrap();
     match result {
-        Expr::Let(n1, e1, rest) => {
+        Expr::Let(n1, _, e1, rest) => {
             assert_eq!(n1, "_");
             assert_eq!(*e1, Expr::Int(1));
             match *rest {
-                Expr::Let(n2, e2, e3) => {
+                Expr::Let(n2, _, e2, e3) => {
                     assert_eq!(n2, "_");
                     assert_eq!(*e2, Expr::Int(2));
                     assert_eq!(*e3, Expr::Int(3));
@@ -1393,10 +1393,10 @@ fn test_parse_stmt_sequence_with_let() {
     let mut p = Parser::new("biar x = 1; biar y = 2; x");
     let result = p.parse_expr().unwrap();
     match result {
-        Expr::Let(n1, _, rest) => {
+        Expr::Let(n1, _, _, rest) => {
             assert_eq!(n1, "x");
             match *rest {
-                Expr::Let(n2, _, body) => {
+                Expr::Let(n2, _, _, body) => {
                     assert_eq!(n2, "y");
                     assert_eq!(*body, Expr::Var("x".to_string()));
                 }
@@ -1412,10 +1412,10 @@ fn test_parse_stmt_sequence_mixed() {
     let mut p = Parser::new("biar x = 1; 42; x");
     let result = p.parse_expr().unwrap();
     match result {
-        Expr::Let(name, _, rest) => {
+        Expr::Let(name, _, _, rest) => {
             assert_eq!(name, "x");
             match *rest {
-                Expr::Let(n2, e, body) => {
+                Expr::Let(n2, _, e, body) => {
                     assert_eq!(n2, "_");
                     assert_eq!(*e, Expr::Int(42));
                     assert_eq!(*body, Expr::Var("x".to_string()));
@@ -2118,4 +2118,59 @@ fn test_parse_invalid_session_type() {
     let mut p = Parser::new("Chan<InvalidST>");
     let result = p.parse_ty();
     assert!(result.is_err());
+}
+
+#[test]
+fn test_parse_let_sekali() {
+    use riina_types::Linearity;
+    let mut p = Parser::new("biar sekali x = 1; x");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::Let(name, lin, _, _) => {
+            assert_eq!(name, "x");
+            assert_eq!(lin, Some(Linearity::Linear));
+        }
+        other => panic!("Expected Let, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_let_paling() {
+    use riina_types::Linearity;
+    let mut p = Parser::new("biar paling y = 2; y");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::Let(name, lin, _, _) => {
+            assert_eq!(name, "y");
+            assert_eq!(lin, Some(Linearity::Affine));
+        }
+        other => panic!("Expected Let, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_let_mesti() {
+    use riina_types::Linearity;
+    let mut p = Parser::new("biar mesti z = 3; z");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::Let(name, lin, _, _) => {
+            assert_eq!(name, "z");
+            assert_eq!(lin, Some(Linearity::Relevant));
+        }
+        other => panic!("Expected Let, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_let_no_linearity() {
+    let mut p = Parser::new("biar w = 4; w");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::Let(name, lin, _, _) => {
+            assert_eq!(name, "w");
+            assert_eq!(lin, None);
+        }
+        other => panic!("Expected Let, got {:?}", other),
+    }
 }

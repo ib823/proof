@@ -10,8 +10,8 @@
 use riina_lexer::{Lexer, Span, Token, TokenKind};
 use riina_types::Span as AstSpan;
 use riina_types::{
-    BinOp, CapabilityKind, Effect, Expr, ExternDecl, Ident, Program, Sanitizer, SecurityLevel,
-    SessionType, SpannedDecl, TaintSource, TopLevelDecl, Ty,
+    BinOp, CapabilityKind, Effect, Expr, ExternDecl, Ident, Linearity, Program, Sanitizer,
+    SecurityLevel, SessionType, SpannedDecl, TaintSource, TopLevelDecl, Ty,
 };
 use std::fmt;
 use std::iter::Peekable;
@@ -369,12 +369,18 @@ impl<'a> Parser<'a> {
         // Check if this is a let-binding
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwLet)) {
             self.consume(TokenKind::KwLet)?;
+            let linearity = match self.peek().map(|t| &t.kind) {
+                Some(TokenKind::KwSekali) => { self.next(); Some(Linearity::Linear) }
+                Some(TokenKind::KwPaling) => { self.next(); Some(Linearity::Affine) }
+                Some(TokenKind::KwMesti) => { self.next(); Some(Linearity::Relevant) }
+                _ => None,
+            };
             let name = self.parse_ident()?;
             self.consume(TokenKind::Eq)?;
             let e1 = self.parse_control_flow()?;
             self.consume(TokenKind::Semi)?;
             let e2 = self.parse_stmt_sequence()?;
-            return Ok(Expr::Let(name, Box::new(e1), Box::new(e2)));
+            return Ok(Expr::Let(name, linearity, Box::new(e1), Box::new(e2)));
         }
 
         let first = self.parse_control_flow()?;
@@ -383,7 +389,7 @@ impl<'a> Parser<'a> {
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Semi)) {
             self.consume(TokenKind::Semi)?;
             let rest = self.parse_stmt_sequence()?;
-            Ok(Expr::Let("_".to_string(), Box::new(first), Box::new(rest)))
+            Ok(Expr::Let("_".to_string(), None, Box::new(first), Box::new(rest)))
         } else {
             Ok(first)
         }
@@ -478,6 +484,7 @@ impl<'a> Parser<'a> {
             Box::new(cond),
             Box::new(Expr::Let(
                 "_".to_string(),
+                None,
                 Box::new(body),
                 Box::new(Expr::Unit),
             )),
@@ -496,6 +503,7 @@ impl<'a> Parser<'a> {
         // Desugar: ulang { body } → body; () (single iteration for now)
         Ok(Expr::Let(
             "_".to_string(),
+            None,
             Box::new(body),
             Box::new(Expr::Unit),
         ))

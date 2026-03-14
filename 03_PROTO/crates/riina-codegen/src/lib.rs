@@ -347,9 +347,11 @@ mod tests {
         // let x = 10 in let y = 20 in (x, y)
         let expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(10)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Int(20)),
                 Box::new(Expr::Pair(
                     Box::new(Expr::Var("x".to_string())),

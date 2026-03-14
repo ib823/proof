@@ -695,7 +695,7 @@ fn desugar_extern_block(decls: Vec<ExternDecl>, continuation: Expr) -> Expr {
         let lam = decl.params.iter().rev().fold(ffi_call, |acc, (p, ty)| {
             Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
         });
-        result = Expr::Let(decl.name, Box::new(lam), Box::new(result));
+        result = Expr::Let(decl.name, None, Box::new(lam), Box::new(result));
     }
     result
 }
@@ -729,7 +729,7 @@ impl Program {
         let body = match last {
             TopLevelDecl::Expr(e) => *e,
             TopLevelDecl::Binding { name, value } => {
-                Expr::Let(name, value, Box::new(Expr::Unit))
+                Expr::Let(name, None, value, Box::new(Expr::Unit))
             }
             TopLevelDecl::Function { name, params, return_ty, effect, body } => {
                 desugar_function(name, params, return_ty, effect, body, Box::new(Expr::Unit))
@@ -759,10 +759,10 @@ impl Program {
         for decl in decls.into_iter().rev() {
             result = match decl {
                 TopLevelDecl::Expr(e) => {
-                    Expr::Let("_".to_string(), e, Box::new(result))
+                    Expr::Let("_".to_string(), None, e, Box::new(result))
                 }
                 TopLevelDecl::Binding { name, value } => {
-                    Expr::Let(name, value, Box::new(result))
+                    Expr::Let(name, None, value, Box::new(result))
                 }
                 TopLevelDecl::Function { name, params, return_ty, effect, body } => {
                     desugar_function(name, params, return_ty, effect, body, Box::new(result))
@@ -815,8 +815,8 @@ pub enum Expr {
     // Control
     /// if e1 then e2 else e3
     If(Box<Expr>, Box<Expr>, Box<Expr>),
-    /// let x = e1 in e2
-    Let(Ident, Box<Expr>, Box<Expr>),
+    /// let x = e1 in e2 (with optional linearity qualifier)
+    Let(Ident, Option<Linearity>, Box<Expr>, Box<Expr>),
 
     // Effects
     /// perform ε e

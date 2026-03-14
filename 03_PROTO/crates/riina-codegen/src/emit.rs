@@ -3372,6 +3372,7 @@ mod tests {
     fn test_emit_let() {
         let let_expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(42)),
             Box::new(Expr::Var("x".to_string())),
         );
@@ -3408,9 +3409,11 @@ mod tests {
     fn test_emit_complete_program() {
         let expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(10)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Int(20)),
                 Box::new(Expr::Pair(
                     Box::new(Expr::Var("x".to_string())),

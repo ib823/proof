@@ -51,7 +51,7 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
             walk_inner(a, rules, out);
         }
 
-        Expr::Let(_, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
+        Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
             walk_inner(v, rules, out);
             walk_inner(b, rules, out);
         }
