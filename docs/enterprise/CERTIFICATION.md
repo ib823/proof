@@ -1,6 +1,6 @@
 # RIINA Certification Output
 
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 908 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 977 Rust tests
 
 ## What RIINA Certifies
 
@@ -17,7 +17,7 @@ This is not a test report. This is a mathematical proof that your program satisf
 │ Program     : myapp.rii                              │
 │ Compiled    : 2026-01-31T14:30:00Z                   │
 │ Compiler    : riinac 0.2.0                           │
-│ Prover      : Coq 8.20.1                   │
+│ Prover      : Rocq 9.1.1                    │
 │ Certificate : SHA-256 of proof objects                │
 ├──────────────────────────────────────────────────────┤
 │                                                      │
@@ -29,18 +29,18 @@ This is not a test report. This is a mathematical proof that your program satisf
 │                                                      │
 │ ✓ Non-Interference                                   │
 │   Secret data cannot flow to public outputs          │
-│   Coq: properties/NonInterference_v2.v               │
+│   Coq: properties/CumulativeRelation.v                │
 │                                                      │
 │ ✓ Effect Safety                                      │
 │   Functions cannot perform undeclared effects         │
-│   Coq: effects/EffectSafety.v                        │
+│   Coq: properties/EffectSafety.v                     │
 │                                                      │
 │ ✓ Declassification Correctness                       │
 │   Secrets only released through authorized policy     │
 │   Coq: properties/Declassification.v                 │
 │                                                      │
-│ AXIOMS (4, all justified)                            │
-│   See: 02_FORMAL/coq/AXIOM_JUSTIFICATION.md          │
+│ AXIOMS (0 — active build is axiom-free)              │
+│   Verified by: grep -r "^Axiom " *.v | wc -l        │
 │                                                      │
 │ VERIFICATION                                         │
 │   To independently verify:                           │
@@ -76,11 +76,11 @@ grep -r "Admitted\|admit" *.v
 
 # 4. Check axiom count
 grep -r "^Axiom " *.v | wc -l
-# Expected: 4 (all justified)
+# Expected: 0 (axiom-free active build)
 
 # 5. Verify specific theorem
-coqc -Q . RIINA properties/NonInterference_v2.v
-Print Assumptions non_interference.
+coqc -Q . RIINA properties/EffectSafety.v
+Print Assumptions effect_safety_progress.
 ```
 
 If step 2 succeeds with no errors, every theorem in the certificate is valid.

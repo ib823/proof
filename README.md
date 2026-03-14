@@ -220,11 +220,11 @@ This is not a whitepaper. This is working software.
 
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
-| **Coq 8.20.1** (Primary) | 9,172 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
-| **Lean 4** (Secondary) | 3,895 theorem/lemma declarations in the active lane | 136 files build; 0 `sorry`, 0 axioms; `AlgebraicEffects` now uses step-indexed typing, so the active lane is mechanized |
-| **Isabelle/HOL** (Tertiary) | 5 compiled lemmas in `RIINA_CORE` | 1 smoke-built theory; remaining `.thy` files are quarantined stubs |
-| **F\*** (Seed lane) | 3 compiled lemmas in `CryptographicSecurityActive` | 1 smoke-built active module; remaining `.fst` files are quarantined generated/transpiled stubs |
-| **TLA+** (Protocol seed lane) | 5 `THEOREM` declarations in `TelusProcurementProtocol` | 1 TLC-checked procurement spec; remaining `.tla` files are quarantined generated stubs |
+| **Rocq 9.1.1** (Primary) | 9,171 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
+| **Lean 4** (Secondary) | 3,895 theorem/lemma declarations | 136 files; 0 `sorry`, 0 axioms; claim level: compiled (build passes) |
+| **Isabelle/HOL** (Tertiary) | 0 compiled lemmas | 1 smoke session (`RIINA_CORE`); remaining `.thy` files are quarantined stubs |
+| **F\*** (Seed lane) | 0 compiled lemmas | 1 smoke module (`CryptographicSecurityActive`); remaining `.fst` files are quarantined generated stubs |
+| **TLA+** (Protocol seed lane) | 0 compiled theorems | 1 smoke spec (`TelusProcurementProtocol`); remaining `.tla` files are quarantined generated stubs |
 
 **Honest scope:**
 - Core Coq theorems cover foundations, type safety, effects, non-interference, declassification, and termination.
@@ -236,7 +236,7 @@ This is not a whitepaper. This is working software.
 | Metric | Value |
 |--------|-------|
 | Rust crates | 15 |
-| Test count | 904 (all passing) |
+| Test count | 968 (all passing) |
 | External dependencies | **0** |
 | Lines of Rust | 31,043 |
 | Standard library builtins | 88 across 9 modules |
@@ -325,7 +325,7 @@ riina/
 ├── 02_FORMAL/tlaplus/       TLA+ smoke lane (1 TLC-checked spec, 265 .tla total)
 │   └── RIINA/               `RIINA_CORE` currently compiles `Syntax.thy`
 │
-├── 03_PROTO/               Rust compiler (15 crates, 905 tests, 0 deps)
+├── 03_PROTO/               Rust compiler (15 crates, 968 tests, 0 deps)
 │   └── crates/
 │       ├── riinac/         Compiler driver (11 subcommands)
 │       ├── riina-lexer/    Tokenizer
@@ -390,7 +390,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 977 Rust tests
 
 | Area | Status |
 |------|--------|
