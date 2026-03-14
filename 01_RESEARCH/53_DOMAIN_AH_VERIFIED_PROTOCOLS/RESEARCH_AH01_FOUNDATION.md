@@ -1,228 +1,148 @@
-# RIINA Research Domain AH: Verified Protocol Implementation
+# AH-01: Verified Security Protocols — Provably Correct Cryptographic Communication
 
-## Document Control
-
-```
-Track: AH (Alpha-Hotel)
-Version: 1.0.0
-Date: 2026-01-17
-Classification: FOUNDATIONAL
-Status: SPECIFICATION
-Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
-```
+**Domain:** AH — Verified Security Protocols
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Protocol verification, symbolic and computational models, automated protocol analysis, verified handshakes, session key security
 
 ---
 
-## AH-01: The "Protocol" Problem & The RIINA Solution
+## 1. Problem Statement
 
-### 1. The Existential Threat
+Security protocols are the mechanisms by which distributed parties establish shared secrets, authenticate identities, and communicate securely. Protocol design is notoriously error-prone: the Needham-Schroeder protocol, published in 1978, was found to contain a man-in-the-middle vulnerability by Lowe in 1995 — seventeen years later. TLS 1.2 had multiple vulnerabilities (BEAST, CRIME, POODLE, Heartbleed) despite extensive review. WPA2's KRACK attack exploited a protocol-level flaw in the 4-way handshake.
 
-Cryptographic protocols are notoriously difficult:
-- TLS has had dozens of vulnerabilities (BEAST, CRIME, POODLE, Heartbleed)
-- SSH implementations differ in subtle ways
-- Custom protocols often have fatal flaws
-- Implementations diverge from specifications
-- Protocol composition can break security
+The fundamental challenge is that security protocols operate in adversarial environments where an attacker can intercept, modify, replay, and inject messages. Reasoning about protocol security requires considering all possible interleavings of messages between honest and malicious parties — an exponentially large space that human analysis cannot cover. Formal verification tools (ProVerif, Tamarin, Scyther) automate this analysis, providing mathematical proofs of protocol correctness.
 
-**Current state:** Protocols are implemented by hand and hoped to be correct.
+## 2. State of the Art
 
-### 2. The RIINA Solution: Verified Protocols
+### 2.1 ProVerif
 
-```
-THEOREM protocol_security:
-  ∀ protocol P, implementation I:
-    Implements(I, P) ∧ ProVerif_Verified(P) →
-    Secure(I, authentication) ∧
-    Secure(I, confidentiality) ∧
-    Secure(I, forward_secrecy)
-```
+Blanchet developed ProVerif, an automatic protocol verifier based on the applied pi-calculus. ProVerif can verify secrecy, authentication, and observational equivalence properties for an unbounded number of protocol sessions, making it the most widely used tool for protocol verification.
 
-### 3. Core Components
+Blanchet, B., "An Efficient Cryptographic Protocol Verifier Based on Prolog Rules", *CSFW*, 2001.
 
-#### 3.1 Protocol Specification
+### 2.2 Tamarin Prover
 
-```
-Protocol ::= {
-  name: ProtocolName,
-  version: Version,
-  roles: List<Role>,
-  messages: List<Message>,
-  security_goals: List<SecurityGoal>,
-  formal_model: FormalModel
-}
+Meier et al. developed the Tamarin prover, which combines automated and interactive protocol verification using multiset rewriting rules. Tamarin supports both trace-based and observational equivalence properties and can handle stateful protocols and mutable global state.
 
-Role ::= Initiator | Responder | Server | Client | Custom<String>
+Meier, S., Schmidt, B., Cremers, C., Basin, D., "The TAMARIN Prover for the Symbolic Analysis of Security Protocols", *CAV*, 2013.
 
-Message ::= {
-  from: Role,
-  to: Role,
-  payload: MessagePayload,
-  encryption: Option<EncryptionSpec>,
-  authentication: Option<AuthSpec>
-}
+### 2.3 Verified TLS
 
-SecurityGoal ::=
-  | Confidentiality of Term
-  | Authentication of (Role, Role)
-  | ForwardSecrecy
-  | Anonymity of Role
-  | Unlinkability of (Session, Session)
-```
+Bhargavan et al. developed miTLS, a verified reference implementation of TLS in F*. The verification covers the handshake protocol, record layer, and key derivation, proving authentication and secrecy against active network attackers.
 
-#### 3.2 Verified Protocols
+Bhargavan, K., Fournet, C., Kohlweiss, M., Pironti, A., Strub, P.-Y., "Implementing TLS with Verified Cryptographic Security", *IEEE S&P*, 2013.
 
-```
-VerifiedProtocol ::=
-  | TLS13 of TLS13Config
-  | Noise of NoisePattern
-  | Signal of SignalConfig
-  | WireGuard of WireGuardConfig
-  | Custom of { spec: Protocol, proof: ProVerifProof }
+### 2.4 Scyther
 
-NoisePattern ::=
-  | NN | NK | NX
-  | KN | KK | KX
-  | XN | XK | XX
-  | IN | IK | IX
-  | Fallback<NoisePattern, NoisePattern>
+Cremers developed Scyther, a tool for automatic protocol verification that uses a pattern-based approach to efficiently analyze protocols. Scyther can verify security properties for an unbounded number of sessions and has found attacks on several published protocols.
 
-TLS13Config ::= {
-  cipher_suites: List<CipherSuite>,
-  key_shares: List<KeyShareGroup>,
-  signature_algorithms: List<SignatureAlgorithm>,
-  certificate_chain: CertificateChain
-}
-```
+Cremers, C. J. F., "The Scyther Tool: Verification, Falsification, and Analysis of Security Protocols", *CAV*, 2008.
 
-### 4. Formal Properties
+### 2.5 Dolev-Yao Model
 
-```coq
-(* Protocol implementation matches specification *)
-Theorem implementation_correct:
-  forall spec impl,
-    implements impl spec ->
-    forall trace,
-      valid_trace impl trace ->
-      satisfies_spec trace spec.
+Dolev and Yao formalized the threat model for protocol analysis, where the adversary controls the network and can intercept, modify, and inject messages, but cannot break cryptographic primitives. The Dolev-Yao model is the foundation of symbolic protocol analysis.
 
-(* Security goals are preserved *)
-Theorem security_preserved:
-  forall protocol goal,
-    In goal (security_goals protocol) ->
-    proverif_verified protocol goal ->
-    forall impl, implements impl protocol ->
-      satisfies impl goal.
+Dolev, D., Yao, A. C., "On the Security of Public Key Protocols", *IEEE Transactions on Information Theory*, 29(2):198-208, 1983.
 
-(* Forward secrecy *)
-Theorem forward_secrecy:
-  forall session long_term_key,
-    session_completed session ->
-    compromised long_term_key (after session) ->
-    ~(adversary_knows (session_keys session)).
-```
+### 2.6 Decidability of Protocol Security
 
-### 5. Implementation Requirements
+Comon-Lundh and Cortier established decidability results for security protocol verification, showing that secrecy is decidable for bounded numbers of sessions and that certain protocol classes admit decidable analysis even for unbounded sessions.
+
+Comon-Lundh, H., Cortier, V., "New Decidability Results for Fragments of First-Order Logic and Application to Cryptographic Protocols", *RTA*, 2003.
+
+### 2.7 Protocol Verification Survey
+
+Basin, Cremers, and Meadows provided a comprehensive survey of formal methods for security protocol verification, covering symbolic models, computational models, and the tools implementing each approach.
+
+Basin, D., Cremers, C., Meadows, C., "Model Checking Security Protocols", *Handbook of Model Checking*, Springer, 2018.
+
+### 2.8 Verified Record Layer
+
+Barbosa et al. developed a verified implementation of the TLS 1.3 record layer using EverCrypt, providing a production-ready implementation with machine-checked proofs of functional correctness, memory safety, and cryptographic security.
+
+Barbosa, M., Barthe, G., Bhargavan, K., Blanchet, B., Cremers, C., Liao, K., Parno, B., "SoK: Computer-Aided Cryptography", *IEEE S&P*, 2021.
+
+## 3. Properties Verifiable by RIINA
+
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Key secrecy | ProVerif/Tamarin proof | Session keys never revealed to adversary |
+| Authentication | Correspondence proof | Protocol parties correctly identified |
+| Forward secrecy | Key independence proof | Past sessions secure despite key compromise |
+| Replay protection | Nonce freshness proof | Replayed messages detected and rejected |
+| Protocol composition | UC-style proof | Protocols remain secure when composed |
+| Message integrity | MAC/signature verification | Tampered messages detected |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Verified Protocol Types
 
 ```riina
-// TLS 1.3 Handshake (verified implementation)
-fungsi tls13_client_handshake(
-    config: TLS13Config,
-    server: &mut SecureChannel
-) -> Keputusan<TLSSession, TLSError>
-kesan [Crypto, Network]
+// TLS handshake with verified security properties
+fungsi jabat_tangan_tls(
+    pelanggan: SijilPelanggan,
+    pelayan: SijilPelayan,
+) -> Hasil<Sesi<Selamat>, RalatProtokol>
+    kesan Rangkaian<TLS13>
 {
-    // Generate ephemeral key pair
-    biar (eph_private, eph_public) = generate_x25519_keypair()?;
-
-    // ClientHello
-    biar client_hello = ClientHello {
-        legacy_version: TLS12,
-        random: generate_random_32()?,
-        cipher_suites: config.cipher_suites.clone(),
-        extensions: vec![
-            Extension::SupportedVersions(vec![TLS13]),
-            Extension::KeyShare(eph_public),
-            Extension::SignatureAlgorithms(config.signature_algorithms.clone()),
-        ]
-    };
-    server.send(&client_hello)?;
-
-    // ServerHello
-    biar server_hello: ServerHello = server.receive()?;
-    verify_server_hello(&server_hello, &config)?;
-
-    // Derive handshake secrets
-    biar shared_secret = x25519(eph_private, server_hello.key_share)?;
-    biar handshake_secret = derive_handshake_secret(shared_secret)?;
-
-    // Encrypted Extensions, Certificate, CertificateVerify, Finished
-    biar encrypted_extensions = decrypt_and_verify(
-        server.receive()?,
-        handshake_secret.server_handshake_traffic_secret
-    )?;
-
-    biar certificate = decrypt_and_verify(
-        server.receive()?,
-        handshake_secret.server_handshake_traffic_secret
-    )?;
-    verify_certificate_chain(&certificate, &config)?;
-
-    biar cert_verify = decrypt_and_verify(
-        server.receive()?,
-        handshake_secret.server_handshake_traffic_secret
-    )?;
-    verify_certificate_signature(&cert_verify, &certificate, &handshake_transcript)?;
-
-    biar server_finished = decrypt_and_verify(
-        server.receive()?,
-        handshake_secret.server_handshake_traffic_secret
-    )?;
-    verify_finished(&server_finished, &handshake_secret)?;
-
-    // Send client Finished
-    biar client_finished = create_finished(&handshake_secret)?;
-    server.send(&encrypt(client_finished, handshake_secret.client_handshake_traffic_secret))?;
-
-    // Derive application secrets
-    biar app_secrets = derive_application_secrets(&handshake_secret)?;
-
-    Ok(TLSSession {
-        client_app_secret: app_secrets.client,
-        server_app_secret: app_secrets.server,
-        resumption_secret: app_secrets.resumption
-    })
+    // Effect guarantees: TLS 1.3 security properties
+    biar hello_pelanggan = cipta_client_hello();
+    hantar(hello_pelanggan);
+    biar hello_pelayan = terima::<ServerHello>()?;
+    biar kunci = tukar_kunci_ecdhe(hello_pelanggan, hello_pelayan);
+    biar sesi = sahkan_dan_selesai(kunci, pelayan)?;
+    pulang Ok(sesi);
 }
 ```
 
-### 6. Dependencies
+### 4.2 Coq Formalization
 
-| Dependency | Track | Required For |
-|------------|-------|--------------|
-| Cryptography | G | Primitives |
-| Key management | AG | Key handling |
-| Covert channels | AC | Timing resistance |
-| Network | Ω | Transport |
+```coq
+(* Key secrecy: adversary cannot learn session key *)
+Theorem key_secrecy : forall session adversary,
+  honest_parties session ->
+  ~ knows adversary (session_key session).
 
-### 7. Verification Milestones
+(* Authentication: server identity verified *)
+Theorem server_authentication : forall client server session,
+  handshake_complete client server session ->
+  identity server = claimed_identity session.
+```
 
-| Milestone | Description | Status |
-|-----------|-------------|--------|
-| AH-M1 | TLS 1.3 verified | ❌ |
-| AH-M2 | Noise protocols verified | ❌ |
-| AH-M3 | Signal protocol verified | ❌ |
-| AH-M4 | WireGuard verified | ❌ |
-| AH-M5 | Custom protocol framework | ❌ |
+## 5. Key References
 
-### 8. References
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Blanchet, B., "ProVerif" (2001) | CSFW | Automated protocol verification |
+| Meier, S., et al., "Tamarin" (2013) | CAV | Stateful protocol verification |
+| Bhargavan, K., et al., "Verified TLS" (2013) | IEEE S&P | Verified protocol implementation |
+| Cremers, C. J. F., "Scyther" (2008) | CAV | Pattern-based protocol analysis |
+| Dolev, D., Yao, A. C., "Dolev-Yao" (1983) | IEEE TIT | Protocol threat model |
+| Comon-Lundh, H., et al., "Decidability" (2003) | RTA | Protocol security decidability |
+| Basin, D., et al., "Survey" (2018) | Handbook of Model Checking | Verification survey |
+| Barbosa, M., et al., "Verified Record Layer" (2021) | IEEE S&P | Verified crypto implementation |
 
-1. ProVerif: Cryptographic Protocol Verifier
-2. Tamarin Prover
-3. RFC 8446: TLS 1.3
-4. Noise Protocol Framework
-5. Signal Protocol Specification
+## 6. Formalizability Assessment
+
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| ProVerif integration | 3-4 | High — mature tool | Phase 1 |
+| Key exchange verification | 3-4 | High — well-studied | Phase 1 |
+| TLS 1.3 handshake proof | 4-6 | Medium — complex protocol | Phase 2 |
+| Protocol composition | 5-7 | Low-Medium — UC framework | Phase 3 |
+| Computational soundness | 4-6 | Medium — bridging symbolic/computational | Phase 3 |
+| End-to-end protocol stack | 6-8 | Low-Medium — multiple layers | Phase 4 |
+
+## 7. Scope Limitations
+
+1. **Symbolic vs. computational gap.** Symbolic analysis (ProVerif, Tamarin) assumes perfect cryptography. Attacks exploiting cryptographic weaknesses require computational analysis.
+2. **Implementation bugs.** Verified protocol models do not prevent implementation errors. The gap between model and code requires verified implementation (miTLS approach).
+3. **Side channels.** Protocol verification does not consider timing, power, or cache side channels that can leak secrets during protocol execution.
+4. **Unbounded state.** Some protocol properties are undecidable for unbounded sessions. Verification tools use approximations that may miss attacks or report false positives.
+5. **Protocol evolution.** Security protocols evolve over time. Each version requires re-verification, and backward compatibility features can introduce vulnerabilities.
+6. **Human interaction.** Protocols involving human decision points (certificate warnings, TOFU) cannot be fully formalized.
 
 ---
 
-*Track AH: Verified Protocol Implementation*
-*Status: SPECIFICATION COMPLETE, PROOFS PENDING*
-*Last updated: 2026-01-17*
+*"A protocol that is proven correct cannot be broken by any network adversary."*

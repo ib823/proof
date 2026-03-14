@@ -1,419 +1,148 @@
-# RIINA Research Domain ι (Iota): Verified Anonymous Communication
+# ι-01: Verified Anonymous Communication — Provably Unlinkable Messaging
 
-**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
-
-## Document Control
-
-| Property | Value |
-|----------|-------|
-| Document ID | RESEARCH-IOTA-ANONYMOUS-COMM |
-| Version | 1.0.0 |
-| Date | 2026-01-17 |
-| Domain | ι: Verified Anonymous Communication |
-| Mode | ULTRA KIASU | PARANOID | ZERO TRUST |
-| Status | FOUNDATIONAL DEFINITION |
+**Domain:** ι — Verified Anonymous Communication
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Onion routing verification, mix network proofs, anonymous channel types, unlinkability guarantees
 
 ---
 
-# ι-01: The "Anonymity" Problem & The RIINA Solution
+## 1. Problem Statement
 
-## 1. The Existential Threat
+Anonymous communication systems protect the identities of communicating parties from network observers. Even when message content is encrypted, the communication pattern itself — who talks to whom — reveals sensitive information. Metadata analysis has been used to identify whistleblowers, track journalists' sources, and map organizational structures. The fundamental challenge is providing strong anonymity guarantees while maintaining usable performance.
 
-**Context:**
-Current anonymity networks (Tor, I2P, Nym) are:
-- Not formally verified
-- Vulnerable to traffic correlation attacks
-- Cannot provide mathematical guarantees
+Existing anonymous communication systems like Tor provide practical anonymity but lack formal guarantees. Traffic analysis attacks have repeatedly broken Tor's anonymity in practice. Mix networks provide stronger theoretical guarantees but at higher latency cost. RIINA addresses this gap by enabling formally verified anonymous communication protocols where unlinkability properties are proven rather than assumed.
 
-**Academic Attacks on Tor:**
-| Paper | Attack | Success Rate |
-|-------|--------|--------------|
-| Murdoch & Danezis 2005 | Low-cost traffic analysis | High |
-| Chakravarty et al. 2014 | Traffic confirmation | 81.4% |
-| Johnson et al. 2013 | AS-level adversary | 80%+ over 6 months |
-| Sun et al. 2015 | RAPTOR BGP attacks | Variable |
-| Kwon et al. 2015 | Circuit fingerprinting | 88% |
+## 2. State of the Art
 
-**The Reality:**
-- Tor was designed pre-2004 when formal verification was less mature
-- No anonymity network has machine-checked security proofs
-- Users assume protection they don't actually have
+### 2.1 Mix Networks
 
-## 2. The Solution: Verified Mixnet
+Chaum introduced mix networks in 1981, providing the theoretical foundation for anonymous communication. A mix node collects messages from multiple senders, cryptographically transforms them, and outputs them in a random order, breaking the link between input and output messages. Security relies on at least one honest mix in the path.
 
-### 2.1 Core Design
+Chaum, D., "Untraceable Electronic Mail, Return Addresses, and Digital Pseudonyms", *Communications of the ACM*, 24(2):84-90, 1981.
 
-A **mixnet** provides anonymity through:
-1. **Layered encryption** (onion routing)
-2. **Mixing** (reordering messages)
-3. **Delays** (breaking timing correlation)
-4. **Cover traffic** (hiding activity patterns)
+### 2.2 Onion Routing and Tor
 
-RIINA's innovation: **All properties formally proven in Coq**.
+Tor implements onion routing, where messages are encrypted in multiple layers, each peeled by a relay node. Tor provides practical anonymity for millions of users but is vulnerable to traffic correlation attacks by adversaries who observe both entry and exit nodes. The design prioritizes low latency over strong anonymity.
 
-### 2.2 Anonymity Definitions (Formal)
+Dingledine, R., Mathewson, N., Syverson, P., "Tor: The Second-Generation Onion Router", *USENIX Security Symposium*, 2004.
 
-```coq
-(* Anonymity set *)
-Definition anonymity_set (msg : Message) (network : Network) : set Principal :=
-  { p : Principal | could_have_sent p msg network }.
+### 2.3 Loopix Anonymity System
 
-(* Sender anonymity: adversary cannot identify sender *)
-Definition sender_anonymous (msg : Message) (network : Network) : Prop :=
-  forall adversary,
-    size (anonymity_set msg network) >= K_ANONYMITY ->
-    advantage adversary (identify_sender msg) <= 1 / size (anonymity_set msg network).
+Loopix provides a mix-network-based anonymity system with formal differential privacy guarantees. It uses Poisson mix strategies, loop cover traffic, and drop cover traffic to provide sender and receiver anonymity against global passive adversaries. The system achieves practical latency while providing provable anonymity bounds.
 
-(* Receiver anonymity: adversary cannot identify receiver *)
-Definition receiver_anonymous (msg : Message) (network : Network) : Prop :=
-  forall adversary,
-    advantage adversary (identify_receiver msg) <= 1 / network.active_receivers.
+Piotrowska, A. M., Hayes, J., Elahi, T., Meiser, S., Danezis, G., "The Loopix Anonymity System", *USENIX Security Symposium*, 2017.
 
-(* Unlinkability: cannot link input to output *)
-Definition unlinkable (input output : Message) (mix : MixNode) : Prop :=
-  forall adversary,
-    advantage adversary (link input output mix) <= negligible.
+### 2.4 AnoA Framework
 
-(* Relationship anonymity: cannot determine if two parties communicate *)
-Definition relationship_anonymous (a b : Principal) (network : Network) : Prop :=
-  forall adversary,
-    advantage adversary (communicating a b network) <= negligible.
-```
+The AnoA framework provides a formal, game-based framework for analyzing anonymous communication protocols. It defines anonymity notions (sender anonymity, receiver anonymity, unlinkability) as cryptographic games and provides composition theorems for analyzing complex protocols from simpler components.
 
-## 3. Mathematical Framework
+Backes, M., Kate, A., Manoharan, P., Meiser, S., Mohammadi, E., "AnoA: A Framework for Analyzing Anonymous Communication Protocols", *CSF*, 2013.
 
-### 3.1 Mixnet Model
+### 2.5 Sphinx Packet Format
 
-```coq
-(* Mix node *)
-Record MixNode := {
-  node_id : NodeId;
-  public_key : PublicKey;
-  private_key : PrivateKey;
-  delay_dist : Distribution;    (* Delay distribution for mixing *)
-  pool_size : nat;              (* Number of messages to collect before mix *)
-}.
+Sphinx provides a compact, provably secure packet format for mix networks. It supports single-use reply blocks, is resistant to tagging attacks, and provides bitwise unlinkability — an observer cannot correlate input and output packets even by examining individual bits.
 
-(* Mixnet *)
-Definition Mixnet := list MixNode.
+Danezis, G., Goldberg, I., "Sphinx: A Compact and Provably Secure Mix Format", *IEEE S&P*, 2009.
 
-(* Circuit: path through mixnet *)
-Record Circuit := {
-  nodes : list MixNode;
-  session_keys : list SymmetricKey;  (* One per hop *)
-}.
+### 2.6 Riffle
 
-(* Onion encryption layers *)
-Inductive Onion : Type :=
-  | Layer : NodeId -> Nonce -> Ciphertext -> Onion
-  | Core : Payload -> Onion.
-```
+Riffle provides anonymous communication with cryptographic verifiability. It uses verifiable shuffles to ensure that mix servers correctly shuffle messages without dropping, duplicating, or modifying them. The system achieves strong anonymity with accountability.
 
-### 3.2 Onion Encryption
+Kwon, A., Lazar, D., Devadas, S., Ford, B., "Riffle: An Efficient Communication System with Strong Anonymity", *PETS*, 2016.
 
-```coq
-(* Build onion: encrypt message in layers *)
-Fixpoint build_onion (circuit : Circuit) (payload : Payload) : Onion :=
-  match circuit.nodes with
-  | [] => Core payload
-  | node :: rest =>
-      let inner := build_onion {| nodes := rest; ... |} payload in
-      let nonce := fresh_nonce () in
-      let key := derive_key node.public_key circuit.session_keys in
-      let ct := encrypt key nonce (serialize inner) in
-      Layer node.node_id nonce ct
-  end.
+### 2.7 Riposte and PIR-Based Anonymity
 
-(* Peel onion: decrypt one layer *)
-Definition peel_onion (node : MixNode) (onion : Onion) : option Onion :=
-  match onion with
-  | Core _ => None  (* Cannot peel core *)
-  | Layer nid nonce ct =>
-      if nid = node.node_id then
-        let key := derive_key node.private_key ... in
-        let inner := decrypt key nonce ct in
-        Some (deserialize inner)
-      else
-        None
-  end.
+Riposte provides anonymous broadcast using distributed point functions and private information retrieval techniques. It achieves strong anonymity against malicious servers while supporting a large anonymity set. The cryptographic construction prevents traffic analysis attacks.
 
-(* Onion security: each layer reveals only next hop *)
-Theorem onion_security : forall circuit payload i,
-  i < length circuit.nodes ->
-  forall adversary,
-    observes adversary (nth i circuit.nodes) ->
-    learns adversary = {| next_hop : NodeId |}.
-(* Adversary at position i only learns who comes next, not origin or destination *)
-```
+Corrigan-Gibbs, H., Boneh, D., Mazières, D., "Riposte: An Anonymous Messaging System Handling Millions of Users", *IEEE S&P*, 2015.
 
-### 3.3 Mixing Strategy
+### 2.8 Vuvuzela
 
-```coq
-(* Pool-based mixing *)
-Record MixPool := {
-  messages : list (Onion * timestamp);
-  threshold : nat;  (* Mix when pool reaches this size *)
-}.
+Vuvuzela provides point-to-point private messaging with differential privacy guarantees for communication metadata. The system adds noise at each server in a chain, providing formal bounds on the information leaked about who communicates with whom.
 
-(* Mix operation: shuffle and delay *)
-Definition mix (pool : MixPool) : list Onion :=
-  if length pool.messages >= pool.threshold then
-    let shuffled := permute pool.messages in
-    let delayed := add_random_delays shuffled in
-    map fst delayed
-  else
-    [].  (* Wait for more messages *)
+van den Hooff, J., Lazar, D., Zaharia, M., Zeldovich, N., "Vuvuzela: Scalable Private Messaging Resistant to Traffic Analysis", *SOSP*, 2015.
 
-(* Mixing security: output order uncorrelated with input order *)
-Theorem mix_unlinkability : forall pool i j,
-  i < length pool.messages ->
-  j < length (mix pool) ->
-  probability (input_i_maps_to_output_j i j pool) = 1 / length pool.messages.
-```
+## 3. Properties Verifiable by RIINA
 
-### 3.4 Main Security Theorems
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Sender anonymity | Game-based proof | Adversary cannot identify sender among anonymity set |
+| Receiver anonymity | Game-based proof | Adversary cannot identify receiver among anonymity set |
+| Unlinkability | Indistinguishability proof | Input-output pairs computationally indistinguishable |
+| Mix correctness | Permutation proof | Mix output is a permutation of decrypted inputs |
+| Cover traffic indistinguishability | Statistical proof | Real and cover traffic statistically identical |
+| Forward secrecy | Key erasure proof | Compromised keys do not reveal past communications |
 
-```coq
-(* Sender Anonymity Theorem *)
-Theorem sender_anonymity : forall mixnet msg sender,
-  uses_mixnet msg mixnet ->
-  circuit_length msg >= 3 ->
-  forall adversary,
-    (* Even if adversary controls n-1 nodes *)
-    controls adversary (length mixnet.nodes - 1) ->
-    advantage adversary (identify sender msg) <= negligible.
+## 4. RIINA Integration Architecture
 
-(* Receiver Anonymity Theorem *)
-Theorem receiver_anonymity : forall mixnet msg receiver,
-  uses_mixnet msg mixnet ->
-  forall adversary,
-    advantage adversary (identify receiver msg) <= negligible.
-
-(* Unlinkability Theorem *)
-Theorem full_unlinkability : forall mixnet msg_in msg_out,
-  processed_by mixnet msg_in msg_out ->
-  forall adversary,
-    (* Adversary cannot link input to output *)
-    advantage adversary (link msg_in msg_out) <= 1 / mixnet.pool_size.
-
-(* Forward Secrecy Theorem *)
-Theorem forward_secrecy : forall mixnet circuit,
-  uses_ephemeral_keys circuit ->
-  forall adversary time,
-    compromises_long_term adversary time ->
-    protected (messages_before time mixnet).
-```
-
-## 4. RIINA Language Extensions
-
-### 4.1 Mixnet Types
+### 4.1 Anonymous Channel Types
 
 ```riina
-// Mix node representation
-bentuk NodMix {
-    id: IdNod,
-    kunci_awam: KunciAwam,
-    taburan_tunda: Taburan,
-    saiz_kolam: u32,
-}
-
-// Circuit through mixnet
-bentuk Litar {
-    nod: Vec<NodMix>,
-    kunci_sesi: Vec<KunciSimetri>,
-}
-
-// Onion-encrypted message
-senum Bawang {
-    Lapisan {
-        nod: IdNod,
-        nonce: [u8; 24],
-        ct: Vec<u8>
-    },
-    Teras { muatan: Vec<u8> },
-}
-```
-
-### 4.2 Anonymous Messaging API
-
-```riina
-// Create anonymous message
-#[memastikan P(kenal_pasti(penghantar)) <= 1/k untuk k = saiz_kolam]
-fungsi cipta_mesej_anon<T>(
-    kandungan: T,
-    panjang_litar: u8,
-) -> Hasil<MesejAnon<T>, Ralat>
-    kesan KesanRangkaian + KesanRawak
+// Anonymous channel with verified unlinkability
+fungsi hantar_tanpa_nama(
+    mesej: Rahsia<Teks>,
+    penerima: Alamat,
+    laluan: LaluanCampuran,
+) -> Hasil<(), RalatRangkaian>
+    kesan Rangkaian<TanpaNama>
 {
-    // 1. Select random circuit
-    biar nod = pilih_nod_rawak(panjang_litar)?;
-
-    // 2. Generate session keys
-    biar kunci = jana_kunci_sesi(nod)?;
-
-    // 3. Build onion
-    biar litar = Litar { nod, kunci_sesi: kunci };
-    biar bawang = bina_bawang(litar, kandungan);
-
-    Ok(MesejAnon { bawang, litar })
-}
-
-// Send through mixnet
-#[memastikan unlinkability(input, output) <= 1/saiz_kolam]
-fungsi hantar_anon<T>(mesej: MesejAnon<T>) -> Hasil<(), Ralat>
-    kesan KesanRangkaian
-{
-    // Route through each node
-    biar mut bawang_semasa = mesej.bawang;
-
-    untuk nod dalam mesej.litar.nod {
-        // Send to node
-        sambung_ke(nod)?;
-        hantar_bawang(nod, bawang_semasa)?;
-
-        // Node will delay and mix, then forward
-    }
-
-    Ok(())
+    // Effect annotation enforces anonymous routing
+    biar paket = bina_sphinx(mesej, penerima, laluan);
+    biar disulitkan = sulit_berlapis(paket, laluan);
+    hantar_ke_campuran_pertama(disulitkan);
 }
 ```
 
-### 4.3 Full Anonymous Communication
+### 4.2 Coq Formalization
 
-```riina
-// Complete anonymous communication session
-bentuk SesiAnon {
-    litar_keluar: Litar,     // Outgoing circuit
-    litar_masuk: Litar,      // Return circuit (rendezvous)
-    titik_temu: IdNod,       // Rendezvous point
-}
+```coq
+(* Sender anonymity: adversary cannot distinguish senders *)
+Theorem sender_anonymity : forall msg sender1 sender2 observer,
+  In sender1 anonymity_set ->
+  In sender2 anonymity_set ->
+  observe observer (send sender1 msg) =
+  observe observer (send sender2 msg).
 
-impl SesiAnon {
-    // Establish anonymous bidirectional session
-    #[memastikan sender_anonymous & receiver_anonymous & relationship_anonymous]
-    fungsi tubuh(penerima: IdPengguna) -> Hasil<SesiAnon, Ralat>
-        kesan KesanRangkaian + KesanRawak
-    {
-        // 1. Build outgoing circuit (3 hops)
-        biar litar_keluar = bina_litar(3)?;
-
-        // 2. Build incoming circuit (3 hops)
-        biar litar_masuk = bina_litar(3)?;
-
-        // 3. Establish rendezvous point
-        biar titik_temu = pilih_titik_temu()?;
-
-        // 4. Publish rendezvous to hidden service directory
-        terbit_temu(penerima, titik_temu, litar_masuk)?;
-
-        Ok(SesiAnon { litar_keluar, litar_masuk, titik_temu })
-    }
-
-    // Send message anonymously
-    fungsi hantar(&self, mesej: Teks) -> Hasil<(), Ralat> kesan KesanRangkaian {
-        biar bawang = bina_bawang(self.litar_keluar, mesej);
-        hantar_ke_temu(self.titik_temu, bawang)
-    }
-
-    // Receive message anonymously
-    fungsi terima(&self) -> Hasil<Teks, Ralat> kesan KesanRangkaian {
-        biar bawang = terima_dari_temu(self.titik_temu)?;
-        kupas_semua_lapisan(self.litar_masuk.kunci_sesi, bawang)
-    }
-}
+(* Mix correctness: output is permutation of decrypted input *)
+Theorem mix_correctness : forall inputs outputs mix_key,
+  mix_process mix_key inputs = outputs ->
+  Permutation (map (decrypt mix_key) inputs) outputs.
 ```
 
-## 5. Implementation Strategy
+## 5. Key References
 
-### 5.1 Coq Files
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Chaum, D., "Untraceable Electronic Mail" (1981) | Communications of the ACM | Mix network foundation |
+| Dingledine, R., et al., "Tor" (2004) | USENIX Security | Practical onion routing |
+| Piotrowska, A. M., et al., "Loopix" (2017) | USENIX Security | DP-guaranteed mix network |
+| Backes, M., et al., "AnoA" (2013) | CSF | Formal anonymity framework |
+| Danezis, G., Goldberg, I., "Sphinx" (2009) | IEEE S&P | Provably secure packet format |
+| Kwon, A., et al., "Riffle" (2016) | PETS | Verifiable anonymous communication |
+| Corrigan-Gibbs, H., et al., "Riposte" (2015) | IEEE S&P | PIR-based anonymous broadcast |
+| van den Hooff, J., et al., "Vuvuzela" (2015) | SOSP | DP-guaranteed private messaging |
 
-| File | Purpose | Lines (est) |
-|------|---------|-------------|
-| `MixnetModel.v` | Mixnet definitions | 300 |
-| `OnionEncryption.v` | Layered encryption | 400 |
-| `MixingStrategy.v` | Pool-based mixing | 300 |
-| `AnonymityDefs.v` | Formal anonymity definitions | 200 |
-| `SenderAnonymity.v` | Sender anonymity proof | 500 |
-| `ReceiverAnonymity.v` | Receiver anonymity proof | 400 |
-| `Unlinkability.v` | Unlinkability proof | 500 |
-| `ForwardSecrecy.v` | Forward secrecy proof | 300 |
-| `TimingResistance.v` | Timing attack resistance | 400 |
-| `ActiveAttacks.v` | Active attack resistance | 500 |
+## 6. Formalizability Assessment
 
-**Total: ~3,800 lines of Coq**
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Sphinx packet format verification | 3-4 | High — well-defined crypto | Phase 1 |
+| Mix network correctness proof | 4-6 | Medium — permutation reasoning | Phase 2 |
+| Sender anonymity game proof | 4-6 | Medium — game-based crypto | Phase 2 |
+| Cover traffic analysis | 3-4 | Medium — statistical arguments | Phase 3 |
+| Unlinkability composition | 5-7 | Low-Medium — composition challenges | Phase 3 |
+| End-to-end anonymity proof | 6-8 | Low-Medium — global adversary model | Phase 4 |
 
-### 5.2 Proof Dependencies
+## 7. Scope Limitations
 
-```
-OnionEncryption.v ──────────────────────────┐
-        │                                   │
-        ▼                                   │
-MixingStrategy.v ─────────────┐             │
-        │                     │             │
-        ▼                     ▼             ▼
-SenderAnonymity.v    ReceiverAnonymity.v   Unlinkability.v
-        │                     │             │
-        └─────────────────────┴─────────────┘
-                              │
-                              ▼
-                    FullAnonymity.v
-                              │
-                              ▼
-                    ForwardSecrecy.v + TimingResistance.v + ActiveAttacks.v
-```
-
-## 6. Security Properties Summary
-
-| Property | Theorem | Adversary Model |
-|----------|---------|-----------------|
-| Sender Anonymity | `sender_anonymity` | Global passive + n-1 corrupt nodes |
-| Receiver Anonymity | `receiver_anonymity` | Global passive |
-| Unlinkability | `full_unlinkability` | Global passive + timing |
-| Relationship Anonymity | `relationship_anonymous` | Global passive |
-| Forward Secrecy | `forward_secrecy` | Key compromise |
-| Timing Resistance | `timing_resistant` | Timing analysis |
-| Active Attack Resistance | `active_resistant` | Message injection |
-
-## 7. Integration with Other Tracks
-
-| Track | Integration | Purpose |
-|-------|-------------|---------|
-| Track χ | Uses ι for sender anonymity | Metadata hiding |
-| Track η | Feeds ι traffic shaping | Uniform traffic |
-| Track F | Uses verified crypto | Encryption primitives |
-| Track S | Requires constant-time | No side-channel leaks |
-| Track Ω | Extends secure channels | Network foundation |
-
-## 8. Comparison with Existing Systems
-
-| System | Formal Proofs | Timing Resistance | Active Attacks | Forward Secrecy |
-|--------|---------------|-------------------|----------------|-----------------|
-| Tor | None | Limited | Vulnerable | Yes |
-| I2P | None | Limited | Limited | Yes |
-| Nym | Partial | Yes (cover traffic) | Unknown | Yes |
-| **RIINA ι** | **Complete** | **Proven** | **Proven** | **Proven** |
-
-## 9. Threat Obsolescence
-
-When Track ι is complete:
-
-| Attack | Status | Proof |
-|--------|--------|-------|
-| Traffic correlation | OBSOLETE | `timing_resistant` |
-| End-to-end confirmation | OBSOLETE | `full_unlinkability` |
-| Predecessor attack | OBSOLETE | `sender_anonymity` |
-| Disclosure attack | OBSOLETE | `receiver_anonymity` |
-| Intersection attack | OBSOLETE | `relationship_anonymous` |
-| Key compromise (past) | OBSOLETE | `forward_secrecy` |
-| Tagging attack | OBSOLETE | `active_resistant` |
-| Website fingerprinting | OBSOLETE | Integration with η |
+1. **Global adversary.** Against an adversary who observes all network links simultaneously, even mix networks provide limited anonymity. Provable anonymity against global adversaries requires impractical bandwidth overhead.
+2. **Latency vs. anonymity tradeoff.** Strong mixing requires batching messages, adding latency (seconds to minutes). Real-time applications cannot tolerate this delay.
+3. **Intersection attacks.** Long-term observation of mix network inputs and outputs enables statistical correlation. Anonymity degrades over time against persistent adversaries.
+4. **Endpoint security.** Anonymous communication is meaningless if the endpoint is compromised. Malware on the sender's device defeats all network-level anonymity.
+5. **Anonymity set size.** Formal anonymity guarantees depend on the anonymity set size. Small or predictable anonymity sets weaken all guarantees.
+6. **Active attacks.** Formal models typically assume passive adversaries. Active adversaries who inject, delay, or drop messages can perform more powerful attacks (n-1 attacks, tagging attacks).
 
 ---
 
-**"The first formally verified anonymity network in human history."**
-
-*Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE*
-
-*RIINA: Rigorous Immutable Invariant — Normalized Axiom*
-
-*QED Eternum.*
+*"If the network cannot tell who sent a message, the network cannot betray the sender."*

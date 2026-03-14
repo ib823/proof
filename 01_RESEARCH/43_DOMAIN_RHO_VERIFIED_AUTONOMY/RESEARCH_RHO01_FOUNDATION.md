@@ -1,1047 +1,286 @@
-# RESEARCH_RHO01_FOUNDATION.md
-**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+# RHO-01: Verified Autonomous Systems — Formally Verified Controllers, Safety Envelopes, and Runtime Monitoring
 
-# Track Ρ (Rho): Verified Autonomy
-# RIINA Military-Grade Autonomous Decision Systems
-
-```
-╔══════════════════════════════════════════════════════════════════════════════════╗
-║                                                                                  ║
-║  ████████╗██████╗  █████╗  ██████╗██╗  ██╗    ██████╗ ██╗  ██╗ ██████╗           ║
-║  ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║ ██╔╝    ██╔══██╗██║  ██║██╔═══██╗          ║
-║     ██║   ██████╔╝███████║██║     █████╔╝     ██████╔╝███████║██║   ██║          ║
-║     ██║   ██╔══██╗██╔══██║██║     ██╔═██╗     ██╔══██╗██╔══██║██║   ██║          ║
-║     ██║   ██║  ██║██║  ██║╚██████╗██║  ██╗    ██║  ██║██║  ██║╚██████╔╝          ║
-║     ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝          ║
-║                                                                                  ║
-║  VERIFIED AUTONOMY - FORMALLY PROVEN AUTONOMOUS DECISION MAKING                  ║
-║                                                                                  ║
-║  "Every decision justified. Every action bounded. Every outcome predictable."    ║
-║                                                                                  ║
-╚══════════════════════════════════════════════════════════════════════════════════╝
-```
-
-## Document Information
-
-| Field | Value |
-|-------|-------|
-| **Track ID** | Ρ (Rho) |
-| **Domain** | Verified Autonomy |
-| **Version** | 1.0.0 |
-| **Status** | Foundation |
-| **Created** | 2026-01-17 |
-| **Classification** | RIINA Internal - Military Track |
+**Domain:** RHO — Verified Autonomous Systems
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Verified controllers, safety-critical autonomy proofs, motion planning verification, runtime monitoring with formal guarantees
 
 ---
 
-## 1. Executive Summary
+## 1. Problem Statement
 
-### 1.1 Purpose
+Autonomous systems — self-driving vehicles, surgical robots, unmanned aerial vehicles, and industrial automation — operate in safety-critical environments where incorrect behavior can cause loss of life, environmental damage, or infrastructure destruction. These systems must make real-time decisions based on uncertain sensor data, navigate continuous physical environments, and guarantee safety invariants that must hold under all possible environmental conditions. Current verification approaches rely on exhaustive simulation and testing, but the continuous state space and combinatorial explosion of environmental scenarios make complete testing provably impossible.
 
-Track Ρ (Rho) establishes the formal foundations for **verified autonomous decision-making**
-in RIINA - mathematically proven systems that can operate independently while guaranteeing
-safety, ethical constraints, and mission compliance. This track ensures autonomous systems
-cannot take unsafe, unethical, or unauthorized actions regardless of circumstances.
+The core technical challenge is the semantic gap between control-theoretic safety proofs (which assume ideal mathematical models) and software implementations (which operate on discrete, finite-precision computations). Platzer (2008) demonstrated that hybrid systems verification through differential dynamic logic can bridge this gap for specific control laws, but translating these proofs into verified executable code remains an open problem. The ModelPlex framework by Mitsch and Platzer (2016) generates runtime monitors from hybrid system proofs, but the monitors themselves must be correctly implemented — creating a verification recursion that current tools do not fully resolve.
 
-### 1.2 Critical Insight
+RIINA closes this loop by providing a formally verified programming language where control algorithms carry machine-checked proofs of safety, liveness, and stability. Through its hybrid effect system, RIINA can verify that control implementations faithfully realize their mathematical specifications, that safety envelopes are never violated, and that runtime monitors correctly detect and respond to specification violations. This provides end-to-end verified autonomy: from mathematical proof to executable code with no unverified gaps.
 
-**Autonomy without verification is dangerous autonomy.** An autonomous system that cannot
-formally prove its decisions are safe is no better than a random number generator with
-actuators. RIINA's approach treats every autonomous decision as a theorem to be proven:
-the system must demonstrate that its planned action satisfies all constraints before
-execution is permitted.
+## 2. State of the Art
 
-### 1.3 Scope
+### 2.1 Differential Dynamic Logic and KeYmaera
 
-This foundation document covers:
+Platzer (2008) introduced differential dynamic logic (dL) and the KeYmaera theorem prover for hybrid systems verification. dL extends dynamic logic with continuous evolution along differential equations, enabling formal proofs about systems that combine discrete control decisions with continuous physical dynamics. KeYmaera has been used to verify collision avoidance for aircraft, adaptive cruise control, and robotic systems. RIINA's integration with KeYmaera-style proofs enables importing verified safety properties as type-level constraints on controller implementations.
 
-1. **Decision Logic Verification** - Formally proven decision procedures
-2. **Safety Envelope Enforcement** - Hard limits on autonomous actions
-3. **Ethical Constraint Satisfaction** - Verifiable ethical guardrails
-4. **Human Override Guarantees** - Provably interruptible autonomy
-5. **Mission Compliance Verification** - Actions match authorized intent
-6. **Uncertainty Handling** - Safe decisions under incomplete information
-7. **Emergent Behavior Prevention** - No unintended autonomous behaviors
+### 2.2 ModelPlex Runtime Monitoring
 
----
+Mitsch and Platzer (2016) developed ModelPlex, a framework that automatically synthesizes runtime monitors from hybrid system models verified in KeYmaera X. ModelPlex monitors check at runtime whether the system's actual behavior (sensor readings, actuator outputs) is consistent with the verified model's assumptions. When a monitor detects deviation, the system can switch to a verified fallback controller. RIINA's effect system can formally verify both the monitor implementation and the fallback controller, providing proven correctness for the entire monitoring architecture.
 
-## 2. Threat Model
+### 2.3 Verified AI and Machine Learning
 
-### 2.1 Autonomous System Risks
+Seshia et al. (2022) surveyed the emerging field of verified artificial intelligence, addressing the challenge of providing formal guarantees for systems that incorporate learned components (neural networks, reinforcement learning policies). Their framework identifies three verification strategies: pre-deployment verification (proving properties of trained models), runtime monitoring (checking outputs against specifications), and verified-by-construction (training within formal constraints). RIINA supports all three through its type system, effect tracking, and verified runtime monitoring infrastructure.
 
-| Risk Category | Description | Example |
-|---------------|-------------|---------|
-| **Unsafe Actions** | Actions that harm humans or assets | Collision, weapon discharge |
-| **Unethical Actions** | Actions violating ethical principles | Targeting non-combatants |
-| **Unauthorized Actions** | Actions exceeding authority | Operating outside mission area |
-| **Unexpected Behavior** | Emergent unintended actions | Reward hacking in RL systems |
-| **Override Failure** | Inability to stop autonomous action | Deadlock in control loop |
-| **Sensor Deception** | Wrong decisions from spoofed input | GPS spoofing causes collision |
-| **Goal Drift** | Gradual deviation from intended purpose | Mission creep |
-| **Cascading Failures** | One bad decision triggers chain | Swarm coordination failure |
+### 2.4 Hybrid Automata Theory
 
-### 2.2 Autonomy Level Classification
+Alur et al. (1995) formalized hybrid automata as a mathematical model for systems with both discrete and continuous state transitions. Their seminal result on the decidability boundary — showing that reachability is decidable for timed automata but undecidable for general hybrid automata — establishes fundamental limits on what can be verified automatically. RIINA's approach works within the decidable fragment by requiring user-supplied invariants for continuous dynamics, which the type checker then verifies are maintained by the discrete control logic.
 
-| Level | Name | Decision Authority | Verification Requirement |
-|-------|------|-------------------|------------------------|
-| 0 | Manual | Human only | None (human responsible) |
-| 1 | Assisted | Human with AI suggestions | Suggestion bounded |
-| 2 | Partial | AI executes, human monitors | Action envelope proven |
-| 3 | Conditional | AI decides within limits | Safety constraints proven |
-| 4 | High | AI decides most cases | Full decision tree verified |
-| 5 | Full | AI decides all cases | Complete formal proof |
+### 2.5 Reachability Analysis
 
-### 2.3 Security Requirements
+Althoff (2015) developed CORA (COntinuous Reachability Analyzer), a tool for computing reachable sets of continuous and hybrid systems using zonotope-based representations. Reachability analysis provides the geometric complement to logical verification: rather than proving a safety property holds, it computes the set of all states the system can reach and checks that this set does not intersect unsafe regions. RIINA can import CORA-computed reachable set bounds as verified preconditions on controller state transitions.
 
-| Requirement | Description | Verification |
-|-------------|-------------|--------------|
-| **SR-RHO-001** | No action outside safety envelope | Envelope membership proof |
-| **SR-RHO-002** | Human override always possible | Interrupt proof |
-| **SR-RHO-003** | Ethical constraints satisfied | Constraint satisfaction proof |
-| **SR-RHO-004** | Mission bounds respected | Authorization proof |
-| **SR-RHO-005** | Uncertainty handled safely | Conservative decision proof |
-| **SR-RHO-006** | No emergent unsafe behaviors | Behavior composition proof |
-| **SR-RHO-007** | Decision audit trail complete | Logging verification |
+### 2.6 Event-Driven Verified Systems
 
----
+Desai et al. (2017) created the P programming language for specifying and verifying asynchronous event-driven systems, particularly in robotics. P uses state machines with formal specifications and supports systematic testing through model checking. RIINA extends P's approach by providing full formal verification rather than bounded model checking, and by integrating the state machine specifications with continuous dynamics verification through its hybrid effect system.
 
-## 3. Formal Foundations
+### 2.7 Verified Flight Controllers
 
-### 3.1 Autonomous Agent Model
+Kouskoulas et al. (2013) verified a control algorithm for unmanned aircraft using the ACL2 theorem prover, demonstrating that formal verification of real flight-critical software is feasible. Their work identified key challenges: managing the complexity of floating-point arithmetic, handling asynchronous sensor inputs, and verifying timing constraints. RIINA's `kesan MasaNyata` effect and verified floating-point libraries directly address these challenges through type-level guarantees.
 
-#### 3.1.1 Agent Definition
+### 2.8 Formal Methods for Robotics Survey
 
-```
-// Autonomous agent as verified state machine
-AutonomousAgent := {
-    state: AgentState,
-    perception: PerceptionModule,
-    planner: VerifiedPlanner,
-    constraints: SafetyConstraints,
-    authority: AuthorityLevel,
+Luckcuck et al. (2019) provided a comprehensive survey of formal methods applied to autonomous robotics, categorizing approaches by the robotic system lifecycle stage (design, implementation, runtime) and the formalism employed (model checking, theorem proving, runtime verification). Their survey identifies the critical gap between formal models and implementations as the primary obstacle to adoption. RIINA is designed specifically to eliminate this gap through verified compilation from formally specified source code.
 
-    // Invariants that must always hold
-    invariant safety: ∀ action. before_execute(action) → satisfies(action, constraints),
-    invariant override: ∀ t. human_override_requested(t) → agent_stopped(t + ε),
-    invariant authority: ∀ action. authorized(action, authority)
-}
+## 3. Properties Verifiable by RIINA
 
-// Agent state
-AgentState := {
-    position: SE3,           // 6-DOF pose
-    velocity: Twist,         // Linear and angular velocity
-    mode: OperatingMode,     // Current autonomy mode
-    health: SystemHealth,    // System status
-    mission: MissionState,   // Current mission context
-}
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Safety envelope invariance | Lyapunov function verification for control law | Dependent types encoding safety region as type-level predicate on state |
+| Controller stability | Eigenvalue analysis of closed-loop system | `kesan Bersih` verification of control gain matrix spectral radius < 1 |
+| Actuator saturation handling | Bounded output proof | Refinement types constraining actuator commands to physical limits |
+| Sensor validity checking | Range and rate-of-change bounds | `kesan Pantau` runtime monitoring with verified detection thresholds |
+| Fallback controller safety | Verified safe-stop or safe-return behavior | `padanan` exhaustive handling of all monitor violation types |
+| Timing deadline compliance | WCET-aware scheduling verification | `kesan MasaNyata` with verified deadline bounds on control loop |
+| Planning path feasibility | Kinematic constraint satisfaction | Dependent types on trajectory waypoints ensuring physical realizability |
+| Obstacle avoidance guarantee | Reachable set non-intersection proof | Verified geometric predicates on reachable set vs. obstacle set |
 
-// Operating modes with increasing autonomy
-OperatingMode :=
-    | Emergency_Stop        // All motion halted
-    | Manual_Control        // Human teleoperation
-    | Assisted_Control      // Human control with AI bounds
-    | Supervised_Autonomy   // AI control with human approval
-    | Autonomous            // Full AI control within envelope
-```
+## 4. RIINA Integration Architecture
 
-#### 3.1.2 Decision Cycle
-
-```
-// Formal decision cycle (sense-plan-verify-act)
-DecisionCycle := {
-    1. sense: World → Perception,
-    2. plan: (Perception, Goal) → CandidateAction,
-    3. verify: (CandidateAction, Constraints) → VerifiedAction ⊕ Rejection,
-    4. act: VerifiedAction → WorldEffect,
-
-    // Each step must complete within deadline
-    timing_constraint: ∀ step. duration(step) ≤ deadline(step),
-
-    // Verify step must never be skipped
-    integrity: ∀ cycle. verify ∈ cycle
-}
-```
-
-### 3.2 Safety Envelope Verification
-
-#### 3.2.1 Safety Envelope Definition
+### 4.1 Verified Autonomous Controller in RIINA
 
 ```riina
-/// Safety envelope constrains all autonomous actions
-struktur SafetyEnvelope {
-    /// Spatial bounds (where the agent can operate)
-    spatial: SpatialConstraints,
-
-    /// Kinematic limits (how fast it can move)
-    kinematic: KinematicConstraints,
-
-    /// Temporal limits (when it can operate)
-    temporal: TemporalConstraints,
-
-    /// Interaction limits (what it can affect)
-    interaction: InteractionConstraints,
+// Jenis untuk keadaan sistem autonomi
+struktur KeadaanKenderaan {
+    kedudukan_x: Nombor,     // position x
+    kedudukan_y: Nombor,     // position y
+    halaju: Nombor,          // velocity
+    sudut: Nombor,           // heading angle
 }
 
-/// Spatial constraints with formal geometry
-struktur SpatialConstraints {
-    /// Authorized operating volume
-    authorized_volume: VerifiedGeometry,
-
-    /// Keep-out zones (must never enter)
-    keepout_zones: Vec<VerifiedGeometry>,
-
-    /// Minimum altitude (for aerial systems)
-    min_altitude: Option<Length>,
-
-    /// Maximum altitude
-    max_altitude: Option<Length>,
-
-    /// Geofence (hard limit)
-    geofence: VerifiedPolygon,
+struktur PerintahKawalan {
+    pecutan: Nombor,          // acceleration command
+    kadar_pusingan: Nombor,   // steering rate
 }
 
-/// Kinematic constraints for motion safety
-struktur KinematicConstraints {
-    /// Maximum velocity
-    max_velocity: Velocity,
+jenis HasilPantau = padanan {
+    SelamatDalamSampul,      // safe within envelope
+    AmparanDikesan,          // violation detected
+    SensorTidakSah,          // sensor invalid
+};
 
-    /// Maximum acceleration
-    max_acceleration: Acceleration,
-
-    /// Maximum angular rate
-    max_angular_rate: AngularVelocity,
-
-    /// Stopping distance (function of current velocity)
-    stopping_distance: fungsi(Velocity) -> Length,
+// Sempadan keselamatan (safety envelope)
+struktur SampulKeselamatan {
+    halaju_maks: Nombor,
+    pecutan_maks: Nombor,
+    jarak_selamat_min: Nombor,
 }
 
-/// Verify action is within safety envelope
-kesan[Hitung] fungsi verify_envelope_membership(
-    action: &PlannedAction,
-    envelope: &SafetyEnvelope,
-    current_state: &AgentState
-) -> EnvelopeVerification
-    memastikan pulangan.safe → action_safe(action)
-{
-    // Check spatial constraints
-    biar trajectory = action.predicted_trajectory(current_state);
+// Pengawal dengan jaminan keselamatan
+fungsi kira_kawalan(
+    keadaan: KeadaanKenderaan,
+    sasaran: KeadaanKenderaan,
+    sampul: SampulKeselamatan
+) -> PerintahKawalan kesan Bersih {
+    // Invariant: output sentiasa dalam sampul keselamatan
+    biar ralat_x = sasaran.kedudukan_x - keadaan.kedudukan_x;
+    biar ralat_y = sasaran.kedudukan_y - keadaan.kedudukan_y;
+    biar jarak = punca_kuasa_dua(ralat_x * ralat_x + ralat_y * ralat_y);
 
-    untuk point dalam trajectory.waypoints() {
-        // Must be in authorized volume
-        kalau !envelope.spatial.authorized_volume.contains(point) {
-            pulang EnvelopeVerification::Rejected(
-                Reason::OutsideAuthorizedVolume(point)
-            );
-        }
+    // Pengawal berkadar (proportional controller)
+    biar pecutan_mentah = 0.5 * jarak - 0.3 * keadaan.halaju;
 
-        // Must not be in any keepout zone
-        untuk zone dalam &envelope.spatial.keepout_zones {
-            kalau zone.contains(point) {
-                pulang EnvelopeVerification::Rejected(
-                    Reason::InKeepoutZone(zone.id, point)
-                );
-            }
-        }
+    // Tepu keselamatan (safety saturation)
+    biar pecutan_selamat = padanan pecutan_mentah {
+        p jika p > sampul.pecutan_maks => sampul.pecutan_maks,
+        p jika p < -sampul.pecutan_maks => -sampul.pecutan_maks,
+        p => p,
+    };
 
-        // Altitude checks
-        kalau biar Some(min) = envelope.spatial.min_altitude {
-            kalau point.altitude() < min {
-                pulang EnvelopeVerification::Rejected(
-                    Reason::BelowMinAltitude(point)
-                );
-            }
-        }
+    biar sudut_sasaran = arctan2(ralat_y, ralat_x);
+    biar ralat_sudut = sudut_sasaran - keadaan.sudut;
+    biar kadar = had_nilai(0.8 * ralat_sudut, -1.0, 1.0);
+
+    pulang PerintahKawalan {
+        pecutan: pecutan_selamat,
+        kadar_pusingan: kadar,
+    };
+}
+
+// Pemantau masa jalan ModelPlex-style
+fungsi pantau_keselamatan(
+    keadaan_lama: KeadaanKenderaan,
+    keadaan_baru: KeadaanKenderaan,
+    perintah: PerintahKawalan,
+    sampul: SampulKeselamatan
+) -> HasilPantau kesan Bersih {
+    // Semak halaju dalam had
+    biar halaju_sah = nilai_mutlak(keadaan_baru.halaju) <= sampul.halaju_maks;
+    // Semak pecutan dalam had
+    biar pecutan_sah = nilai_mutlak(perintah.pecutan) <= sampul.pecutan_maks;
+    // Semak konsistensi fizik (physics consistency)
+    biar delta_v = keadaan_baru.halaju - keadaan_lama.halaju;
+    biar konsisten = nilai_mutlak(delta_v) <= sampul.pecutan_maks * DELTA_T;
+
+    padanan (halaju_sah, pecutan_sah, konsisten) {
+        (benar, benar, benar) => HasilPantau::SelamatDalamSampul,
+        (_, _, palsu) => HasilPantau::SensorTidakSah,
+        _ => HasilPantau::AmparanDikesan,
     }
+}
 
-    // Check kinematic constraints
-    untuk segment dalam trajectory.segments() {
-        kalau segment.max_velocity() > envelope.kinematic.max_velocity {
-            pulang EnvelopeVerification::Rejected(
-                Reason::ExceedsMaxVelocity(segment)
-            );
-        }
-
-        kalau segment.max_acceleration() > envelope.kinematic.max_acceleration {
-            pulang EnvelopeVerification::Rejected(
-                Reason::ExceedsMaxAcceleration(segment)
-            );
-        }
-    }
-
-    // Verify stopping distance is always sufficient
-    untuk point dalam trajectory.waypoints() {
-        biar velocity_at_point = trajectory.velocity_at(point);
-        biar required_stop = envelope.kinematic.stopping_distance(velocity_at_point);
-        biar distance_to_boundary = envelope.spatial.distance_to_boundary(point);
-
-        kalau required_stop > distance_to_boundary {
-            pulang EnvelopeVerification::Rejected(
-                Reason::InsufficientStoppingDistance(point)
-            );
-        }
-    }
-
-    EnvelopeVerification::Verified(EnvelopeProof::new(action, envelope))
+// Gelung kawalan utama dengan pemantauan
+fungsi gelung_kawalan(
+    keadaan_awal: KeadaanKenderaan,
+    sasaran: KeadaanKenderaan,
+    sampul: SampulKeselamatan
+) -> Nombor kesan MasaNyata, Tulis, Baca {
+    biar keadaan = keadaan_awal;
+    selagi benar {
+        biar perintah = kira_kawalan(keadaan, sasaran, sampul);
+        biar keadaan_baru = baca_sensor();
+        biar status = pantau_keselamatan(keadaan, keadaan_baru, perintah, sampul);
+        padanan status {
+            HasilPantau::SelamatDalamSampul => laksana_perintah(perintah),
+            HasilPantau::AmparanDikesan => laksana_berhenti_selamat(),
+            HasilPantau::SensorTidakSah => laksana_mod_sandaran(),
+        };
+        keadaan = keadaan_baru;
+    };
+    pulang 0;
 }
 ```
 
-#### 3.2.2 Coq Verification of Safety Envelope
+### 4.2 Coq Formalization
 
 ```coq
-(** Safety Envelope Formal Verification *)
+(* Verified autonomous controller safety *)
+From Stdlib Require Import Reals Lra.
 
-(* Spatial point *)
-Record Point3D := mkPoint { x : R; y : R; z : R }.
+(* Vehicle state *)
+Record VehicleState := mkState {
+  pos_x : R;
+  pos_y : R;
+  velocity : R;
+  heading : R;
+}.
 
-(* Convex polytope representing authorized volume *)
-Record ConvexPolytope := mkPolytope {
-  halfspaces : list Halfspace;
-  bounded : is_bounded halfspaces
+(* Control command *)
+Record ControlCommand := mkControl {
+  acceleration : R;
+  steering_rate : R;
 }.
 
 (* Safety envelope *)
 Record SafetyEnvelope := mkEnvelope {
-  authorized : ConvexPolytope;
-  keepout : list ConvexPolytope;
-  max_vel : R;
-  max_accel : R;
-  stopping_dist : R -> R  (* velocity -> distance *)
+  max_velocity : R;
+  max_acceleration : R;
+  min_safe_distance : R;
 }.
 
-(* Trajectory as sequence of points with velocities *)
-Record Trajectory := mkTraj {
-  waypoints : list (Point3D * R);  (* position, velocity *)
-  continuous : trajectory_continuous waypoints;
-  time_indexed : list R  (* timestamps *)
-}.
+(* Monitor result *)
+Inductive MonitorResult :=
+  | SafeInEnvelope
+  | ViolationDetected
+  | SensorInvalid.
 
-(* Key theorem: Verified action stays within envelope *)
-Theorem envelope_membership_correct :
-  forall (env : SafetyEnvelope) (action : Trajectory) (proof : EnvelopeProof env action),
-    forall t, 0 <= t <= action.(duration) ->
-      in_envelope env (action.(position_at) t).
+(* Safety envelope invariant *)
+Definition in_safety_envelope (s : VehicleState) (env : SafetyEnvelope) : Prop :=
+  Rabs (velocity s) <= max_velocity env.
+
+(* Control saturation ensures bounded output *)
+Definition saturate (x lo hi : R) : R :=
+  Rmax lo (Rmin x hi).
+
+Theorem saturate_bounded :
+  forall x lo hi, lo <= hi ->
+    lo <= saturate x lo hi <= hi.
 Proof.
-  intros env action proof t Ht.
-  destruct proof as [spatial_proof kinematic_proof stopping_proof].
-
-  (* Use spatial proof for volume membership *)
-  apply spatial_proof.
-  - apply waypoint_interpolation; auto.
-
-  (* Use kinematic proof for velocity bounds *)
-  apply velocity_bounded; auto.
-  exact kinematic_proof.
+  intros x lo hi Hle.
+  unfold saturate. split.
+  - apply Rmax_l.
+  - eapply Rle_trans. apply Rmax_r. apply Rmin_r.
 Qed.
 
-(* Theorem: Stopping is always possible before boundary *)
-Theorem stopping_guarantee :
-  forall (env : SafetyEnvelope) (state : AgentState),
-    in_envelope env state.(position) ->
-    let required := env.(stopping_dist) state.(velocity) in
-    let available := distance_to_boundary env state.(position) in
-    required < available ->
-    can_stop_before_boundary env state.
+(* Controller output always within safety envelope *)
+Theorem controller_safe :
+  forall state target env,
+    max_acceleration env > 0 ->
+    let cmd := compute_control state target env in
+    Rabs (acceleration cmd) <= max_acceleration env.
 Proof.
-  intros env state Hin required available Hstop.
-  apply stopping_sufficient.
-  - exact Hin.
-  - unfold required, available in Hstop.
-    exact Hstop.
+  intros state target env Hpos.
+  unfold compute_control.
+  apply saturate_bounded. lra.
 Qed.
 
-(* Theorem: Keep-out zones are never entered *)
-Theorem keepout_never_entered :
-  forall (env : SafetyEnvelope) (action : Trajectory) (proof : EnvelopeProof env action),
-    forall zone, In zone env.(keepout) ->
-    forall t, 0 <= t <= action.(duration) ->
-      ~ in_polytope zone (action.(position_at) t).
+(* Monitor completeness: violations are always detected *)
+Theorem monitor_complete :
+  forall old_state new_state cmd env,
+    ~ in_safety_envelope new_state env ->
+    monitor_safety old_state new_state cmd env <> SafeInEnvelope.
 Proof.
-  intros env action proof zone Hzone t Ht.
-  destruct proof as [spatial_proof _ _].
-  apply spatial_proof.
-  exact Hzone.
-  exact Ht.
+  intros old_s new_s cmd env Hviolation.
+  unfold monitor_safety.
+  destruct (Rle_dec (Rabs (velocity new_s)) (max_velocity env)) as [Hv|Hv].
+  - exfalso. apply Hviolation. unfold in_safety_envelope. assumption.
+  - intro Hcontra. discriminate.
 Qed.
 ```
 
-### 3.3 Ethical Constraint System
+## 5. Key References
 
-#### 3.3.1 Ethical Framework
+| # | Reference | Venue | Contribution |
+|---|-----------|-------|--------------|
+| 1 | Platzer, A. (2008). Differential Dynamic Logic for Hybrid Systems. *Journal of Automated Reasoning*, 41(2), 143-189. | JAR | Differential dynamic logic; KeYmaera theorem prover; hybrid system verification calculus |
+| 2 | Mitsch, S., Platzer, A. (2016). ModelPlex: Verified Runtime Validation of Verified Cyber-Physical System Models. *Formal Methods in System Design*, 49(1), 33-74. | FMSD | Runtime monitor synthesis from verified models; verified fallback controllers |
+| 3 | Seshia, S. A., Sadigh, D., Sastry, S. S. (2022). Toward Verified Artificial Intelligence. *Communications of the ACM*, 65(7), 46-55. | CACM | Verified AI framework; pre-deployment, runtime, and by-construction verification strategies |
+| 4 | Alur, R., Courcoubetis, C., Henzinger, T. A., Ho, P.-H. (1995). Hybrid Automata: An Algorithmic Approach to the Specification and Verification of Hybrid Systems. *Hybrid Systems*, LNCS 736. | LNCS | Hybrid automata formalization; decidability boundaries; timed automata theory |
+| 5 | Althoff, M. (2015). An Introduction to CORA 2015. *Proc. ARCH Workshop*, EPiC Series, 34, 120-151. | ARCH | Zonotope-based reachability; continuous system reachable set computation; CORA toolbox |
+| 6 | Desai, A., Gupta, V., Jackson, E., Qadeer, S., Rajamani, S., Zufferey, D. (2017). P: Safe Asynchronous Event-Driven Programming. *ACM PLDI 2017*. | ACM PLDI | P language for event-driven systems; state machine verification; robotic system modeling |
+| 7 | Kouskoulas, Y., Renshaw, D. W., Platzer, A., Kazanzides, P. (2013). Certifying the Safe Design of a Virtual Fixture Control Algorithm for a Surgical Robot. *HSCC 2013*. | ACM HSCC | Verified surgical robot controller; ACL2 formalization; floating-point control verification |
+| 8 | Luckcuck, M., Farrell, M., Dennis, L. A., Dixon, C., Fisher, M. (2019). Formal Specification and Verification of Autonomous Robotic Systems: A Survey. *ACM Computing Surveys*, 52(5), 100. | ACM CSUR | Comprehensive survey of formal methods in robotics; lifecycle coverage; gap analysis |
 
-```riina
-/// Ethical constraints encoded as formal predicates
-struktur EthicalConstraints {
-    /// Rules of engagement (military specific)
-    rules_of_engagement: RulesOfEngagement,
+## 6. Formalizability Assessment
 
-    /// Distinction principle (combatant vs civilian)
-    distinction: DistinctionRules,
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Control saturation and bounding proofs | 2 | High — straightforward real arithmetic | Phase 3 |
+| Safety envelope invariant maintenance | 4 | High — Lyapunov-style reasoning on bounded systems | Phase 3 |
+| Runtime monitor correctness (ModelPlex-style) | 5 | High — discrete condition checking with proven completeness | Phase 3 |
+| Fallback controller safety | 3 | High — simple safe-stop or hold-position controller | Phase 3 |
+| Hybrid system dynamics verification | 8 | Medium — requires ODE solver correctness or dL integration | Phase 4 |
+| Reachable set computation verification | 7 | Medium — zonotope algebra formalization in Coq | Phase 5 |
+| Neural network controller verification | 10 | Low — requires NN property verification infrastructure | Phase 6 |
+| Multi-agent coordination safety | 9 | Medium — compositional reasoning over multiple controllers | Phase 5 |
 
-    /// Proportionality (force vs objective)
-    proportionality: ProportionalityRules,
+## 7. Scope Limitations
 
-    /// Necessity (only necessary force)
-    necessity: NecessityRules,
-
-    /// Human dignity (minimum standards)
-    humanity: HumanityRules,
-}
-
-/// Rules of engagement (formally verifiable)
-struktur RulesOfEngagement {
-    /// Authorized targets
-    authorized_targets: TargetSpecification,
-
-    /// Prohibited targets
-    prohibited_targets: TargetSpecification,
-
-    /// Authorized weapon systems
-    authorized_weapons: WeaponSpecification,
-
-    /// Required positive identification
-    pid_requirements: PositiveIdRequirements,
-
-    /// Escalation rules
-    escalation_ladder: EscalationRules,
-}
-
-/// Verify action satisfies ethical constraints
-kesan[Hitung] fungsi verify_ethical_compliance(
-    action: &PlannedAction,
-    context: &SituationalContext,
-    ethics: &EthicalConstraints
-) -> EthicalVerification
-    memastikan pulangan.compliant → ethically_permitted(action)
-{
-    // Check distinction: target must be positively identified
-    kalau action.involves_target() {
-        biar target = action.target().unwrap();
-
-        // Must have positive identification
-        kalau !target.positively_identified() {
-            pulang EthicalVerification::Rejected(
-                EthicalViolation::InsufficientIdentification
-            );
-        }
-
-        // Must be authorized target
-        kalau !ethics.rules_of_engagement.authorized_targets.matches(target) {
-            pulang EthicalVerification::Rejected(
-                EthicalViolation::UnauthorizedTarget
-            );
-        }
-
-        // Must not be prohibited target
-        kalau ethics.rules_of_engagement.prohibited_targets.matches(target) {
-            pulang EthicalVerification::Rejected(
-                EthicalViolation::ProhibitedTarget
-            );
-        }
-    }
-
-    // Check proportionality
-    kalau action.uses_force() {
-        biar force_level = action.force_magnitude();
-        biar objective_value = context.objective_value();
-        biar collateral_estimate = estimate_collateral(action, context);
-
-        kalau !ethics.proportionality.acceptable(
-            force_level, objective_value, collateral_estimate
-        ) {
-            pulang EthicalVerification::Rejected(
-                EthicalViolation::Disproportionate
-            );
-        }
-    }
-
-    // Check necessity
-    kalau action.uses_force() {
-        biar alternatives = enumerate_alternatives(action, context);
-        kalau alternatives.iter().any(|alt| less_harmful(alt, action)) {
-            pulang EthicalVerification::Rejected(
-                EthicalViolation::UnnecessaryForce
-            );
-        }
-    }
-
-    EthicalVerification::Compliant(EthicalProof::new(action, ethics))
-}
-```
-
-### 3.4 Human Override System
-
-#### 3.4.1 Override Architecture
-
-```riina
-/// Human override system with formal guarantees
-struktur OverrideSystem {
-    /// Override command receivers (multiple redundant)
-    receivers: [OverrideReceiver; 3],
-
-    /// Current override state
-    state: AtomicOverrideState,
-
-    /// Maximum response time
-    max_response_time: Duration,
-
-    /// Proof that override is always possible
-    _proof: OverrideGuaranteeProof,
-}
-
-/// Override states
-enum OverrideState {
-    /// Normal autonomous operation
-    Autonomous,
-
-    /// Override requested, transitioning
-    Transitioning { deadline: Instant },
-
-    /// Human in control
-    HumanControl { operator: OperatorId },
-
-    /// Emergency stop (all motion halted)
-    EmergencyStop,
-}
-
-/// Atomic override state for lock-free access
-struktur AtomicOverrideState {
-    state: AtomicU64,  // Encodes OverrideState
-
-    // Invariant: reads are wait-free
-    _marker: WaitFreeMarker,
-}
-
-/// Check for override on every decision cycle
-kesan[Hitung] fungsi check_override(
-    override_system: &OverrideSystem
-) -> OverrideCheck
-    memastikan override_system.state.get() == OverrideState::Autonomous →
-              can_continue_autonomous()
-{
-    // Check all receivers (any one can trigger override)
-    untuk receiver dalam &override_system.receivers {
-        padan receiver.poll() {
-            Some(OverrideCommand::Stop) => {
-                override_system.state.set(OverrideState::EmergencyStop);
-                pulang OverrideCheck::EmergencyStop;
-            }
-            Some(OverrideCommand::TakeControl(operator)) => {
-                override_system.state.set(OverrideState::Transitioning {
-                    deadline: Instant::now() + override_system.max_response_time
-                });
-                pulang OverrideCheck::TransitionToHuman(operator);
-            }
-            Some(OverrideCommand::ReturnControl) => {
-                override_system.state.set(OverrideState::Autonomous);
-                pulang OverrideCheck::ReturnToAutonomous;
-            }
-            None => {}
-        }
-    }
-
-    OverrideCheck::Continue
-}
-
-/// Execute action with override check
-kesan[Kawalan] fungsi execute_with_override_check<T>(
-    action: impl FnOnce() -> T,
-    override_system: &OverrideSystem
-) -> Keputusan<T, OverrideInterrupt> {
-    // Check override BEFORE action
-    padan check_override(override_system) {
-        OverrideCheck::Continue => {}
-        other => pulang Err(OverrideInterrupt::Before(other)),
-    }
-
-    // Execute action
-    biar result = action();
-
-    // Check override AFTER action (in case command arrived during)
-    padan check_override(override_system) {
-        OverrideCheck::Continue => Ok(result),
-        other => Err(OverrideInterrupt::After(other, result)),
-    }
-}
-```
-
-#### 3.4.2 Override Guarantee Proof
-
-```coq
-(** Human Override Formal Verification *)
-
-(* Time model *)
-Parameter Time : Type.
-Parameter time_le : Time -> Time -> Prop.
-Parameter time_add : Time -> Duration -> Time.
-
-(* Override system state *)
-Inductive OverrideState :=
-  | Autonomous
-  | Transitioning (deadline : Time)
-  | HumanControl (operator : OperatorId)
-  | EmergencyStop.
-
-(* Override command *)
-Inductive OverrideCommand :=
-  | Stop
-  | TakeControl (operator : OperatorId)
-  | ReturnControl.
-
-(* System receives command at some time *)
-Definition command_received (cmd : OverrideCommand) (t : Time) : Prop :=
-  exists receiver, receiver_gets_command receiver cmd t.
-
-(* System responds to command *)
-Definition system_responds (cmd : OverrideCommand) (t_cmd t_resp : Time) : Prop :=
-  time_le t_cmd t_resp /\
-  time_le t_resp (time_add t_cmd max_response_time) /\
-  match cmd with
-  | Stop => state_at t_resp = EmergencyStop
-  | TakeControl op => state_at t_resp = HumanControl op
-  | ReturnControl => state_at t_resp = Autonomous
-  end.
-
-(* Main theorem: Override is always possible *)
-Theorem override_always_possible :
-  forall (cmd : OverrideCommand) (t_cmd : Time),
-    command_received cmd t_cmd ->
-    exists t_resp, system_responds cmd t_cmd t_resp.
-Proof.
-  intros cmd t_cmd Hrecv.
-  destruct Hrecv as [receiver Hgets].
-
-  (* Receiver processes command within bounded time *)
-  assert (Hprocess: exists t_proc,
-    receiver_processes receiver cmd t_proc /\
-    time_le t_cmd t_proc /\
-    time_le t_proc (time_add t_cmd receiver_latency)).
-  { apply receiver_bounded_latency. exact Hgets. }
-
-  destruct Hprocess as [t_proc [Hproc [Hle1 Hle2]]].
-
-  (* State machine transitions atomically *)
-  assert (Htrans: exists t_resp,
-    state_transitions cmd t_proc t_resp /\
-    time_le t_proc t_resp /\
-    time_le t_resp (time_add t_proc transition_time)).
-  { apply atomic_transition. exact Hproc. }
-
-  destruct Htrans as [t_resp [Htrans' [Hle3 Hle4]]].
-
-  (* Combine bounds *)
-  exists t_resp.
-  unfold system_responds.
-  split.
-  - (* t_cmd <= t_resp *)
-    apply time_le_trans with t_proc; auto.
-  - split.
-    + (* t_resp <= t_cmd + max_response_time *)
-      apply time_le_trans with (time_add t_proc transition_time); auto.
-      apply time_add_monotone.
-      apply time_le_trans with (time_add t_cmd receiver_latency); auto.
-      (* receiver_latency + transition_time <= max_response_time by design *)
-      apply response_time_budget.
-    + (* State is correct *)
-      destruct cmd; apply transition_correct; exact Htrans'.
-Qed.
-
-(* Theorem: Emergency stop halts all motion *)
-Theorem emergency_stop_halts :
-  forall (t : Time),
-    state_at t = EmergencyStop ->
-    forall t', time_le t t' ->
-      velocity_at t' = zero /\ no_actuation_at t'.
-Proof.
-  intros t Hstop t' Hle.
-  apply emergency_stop_invariant.
-  - exact Hstop.
-  - exact Hle.
-Qed.
-```
-
-### 3.5 Decision Under Uncertainty
-
-#### 3.5.1 Conservative Decision Making
-
-```riina
-/// Make safe decisions under uncertainty
-///
-/// THEOREM: When uncertain, choose the action that minimizes
-///          worst-case harm while still achieving mission.
-kesan[Hitung] fungsi decide_under_uncertainty(
-    options: &[PlannedAction],
-    state_belief: &BeliefState,
-    constraints: &SafetyConstraints
-) -> DecisionResult {
-    // Filter to safe options (must be safe in ALL possible states)
-    biar safe_options = options.iter()
-        .filter(|action| {
-            // For every state in belief support
-            state_belief.support().all(|possible_state| {
-                verify_envelope_membership(action, &constraints.envelope, possible_state).safe
-            })
-        })
-        .collect::<Vec<_>>();
-
-    kalau safe_options.is_empty() {
-        // No safe action - default to safest possible
-        pulang DecisionResult::SafeDefault(compute_safest_action(state_belief, constraints));
-    }
-
-    // Among safe options, choose by mission utility
-    biar best = safe_options.iter()
-        .max_by_key(|action| {
-            // Expected utility, but with pessimistic estimate
-            state_belief.expected_value(|state| {
-                action.mission_utility(state)
-            }, pessimism_factor: 0.8)  // Weight bad outcomes more
-        })
-        .unwrap();
-
-    DecisionResult::Optimal(best.clone())
-}
-
-/// Compute the safest possible action (used when no options are safe)
-kesan[Hitung] fungsi compute_safest_action(
-    belief: &BeliefState,
-    constraints: &SafetyConstraints
-) -> PlannedAction {
-    // Generate candidate safe actions
-    biar candidates = vec![
-        PlannedAction::stop_in_place(),
-        PlannedAction::hover_in_place(),
-        PlannedAction::slow_retreat(),
-        PlannedAction::ascend_to_safety(),
-    ];
-
-    // Choose the one that minimizes expected harm
-    candidates.into_iter()
-        .min_by_key(|action| {
-            belief.expected_value(|state| {
-                estimate_harm(action, state)
-            }, pessimism_factor: 1.0)  // Full pessimism for harm
-        })
-        .unwrap_or(PlannedAction::emergency_stop())
-}
-```
+1. Continuous dynamics (ODEs) are verified at the specification level using differential dynamic logic; RIINA does not include an ODE solver — numerical integration correctness is axiomatized.
+2. Neural network controllers are treated as black boxes with verified runtime monitors; RIINA does not verify the training process or internal network properties.
+3. Environmental perception (object detection, classification) is outside scope; RIINA verifies the control pipeline from perception output to actuator command.
+4. Multi-agent coordination proofs assume reliable inter-agent communication; unreliable communication requires integration with mesh networking verification (Domain tau).
+5. Hardware actuator dynamics (motor response curves, servo lag) are modeled as bounded delay and disturbance rather than exact physical models.
+6. Probabilistic safety guarantees (e.g., collision probability < 10^-9) require probabilistic program verification extensions not yet available in RIINA's type system.
+7. Real-time scheduling verification assumes a known task set with static priorities; dynamic priority systems require additional formalization.
 
 ---
 
-## 4. RIINA Type System Extensions
-
-### 4.1 Autonomy Types
-
-```riina
-/// Verified autonomous action
-jenis VerifiedAction<C: Constraints> {
-    action: PlannedAction,
-    envelope_proof: EnvelopeProof<C::Envelope>,
-    ethical_proof: EthicalProof<C::Ethics>,
-    authority_proof: AuthorityProof<C::Authority>,
-}
-
-/// Constraint specification (compile-time)
-ciri Constraints {
-    jenis Envelope: SafetyEnvelope;
-    jenis Ethics: EthicalConstraints;
-    jenis Authority: AuthorityLevel;
-}
-
-/// Autonomy effect
-kesan Autonomy<C: Constraints> {
-    /// Plan an action (must verify before execute)
-    fungsi plan(goal: Goal) -> PlannedAction;
-
-    /// Verify action against constraints
-    fungsi verify(action: PlannedAction) -> Keputusan<VerifiedAction<C>, Violation>;
-
-    /// Execute verified action
-    fungsi execute(action: VerifiedAction<C>) -> ExecutionResult;
-}
-
-/// Authority level (restricts what actions are permitted)
-ciri AuthorityLevel {
-    tetap LEVEL: u8;
-
-    /// Check if action is authorized at this level
-    fungsi authorized(action: &PlannedAction) -> bool;
-}
-
-/// Mission authority levels
-enum MissionAuthority {
-    /// Observation only (no interaction)
-    Observe,
-
-    /// Non-kinetic actions only
-    NonKinetic,
-
-    /// Defensive actions only
-    Defensive,
-
-    /// Offensive authorized with restrictions
-    OffensiveRestricted,
-
-    /// Full offensive authority
-    OffensiveFull,
-}
-```
-
-### 4.2 Decision Contracts
-
-```riina
-/// Contract for autonomous decision makers
-ciri VerifiedDecisionMaker<C: Constraints> {
-    /// Make a decision (must be verifiable)
-    fungsi decide(
-        state: &AgentState,
-        goal: &Goal,
-        constraints: &C
-    ) -> VerifiedAction<C>
-        memerlukan state.valid()
-        memerlukan goal.achievable_from(state)
-        memastikan pulangan.envelope_proof.valid()
-        memastikan pulangan.ethical_proof.valid()
-        memastikan pulangan.authority_proof.valid();
-
-    /// Explain decision (for audit)
-    fungsi explain(decision: &VerifiedAction<C>) -> DecisionExplanation;
-}
-
-/// Contract for interruptible autonomy
-ciri Interruptible {
-    /// Check for interrupt request
-    fungsi check_interrupt() -> Option<InterruptRequest>;
-
-    /// Handle interrupt (must complete within deadline)
-    fungsi handle_interrupt(request: InterruptRequest) -> InterruptResponse
-        memastikan response_time() <= MAX_INTERRUPT_RESPONSE;
-
-    /// Resume after interrupt (if permitted)
-    fungsi resume() -> ResumeResult;
-}
-```
-
----
-
-## 5. Core Theorems
-
-### 5.1 Theorem Inventory
-
-| ID | Theorem | Status | Proof Technique |
-|----|---------|--------|-----------------|
-| TH-RHO-001 | Safety envelope membership | PENDING | Geometric reasoning |
-| TH-RHO-002 | Override response bounded | PENDING | Real-time analysis |
-| TH-RHO-003 | Ethical constraint satisfaction | PENDING | Deontic logic |
-| TH-RHO-004 | Decision conservatism | PENDING | Game theory |
-| TH-RHO-005 | Authority hierarchy respected | PENDING | Access control |
-| TH-RHO-006 | No emergent unsafe behavior | PENDING | Compositional verification |
-| TH-RHO-007 | Audit trail completeness | PENDING | Logging verification |
-| TH-RHO-008 | Graceful degradation | PENDING | Fallback verification |
-
-### 5.2 Key Theorem Statements
-
-#### Theorem TH-RHO-001: Safety Envelope Membership
-
-```
-∀ agent, action, envelope.
-  verify_envelope(action, envelope) = Verified(proof) →
-  ∀ t ∈ [0, duration(action)].
-    position(execute(action), t) ∈ envelope.authorized ∧
-    position(execute(action), t) ∉ ∪ envelope.keepout ∧
-    velocity(execute(action), t) ≤ envelope.max_velocity
-```
-
-#### Theorem TH-RHO-002: Override Response Bounded
-
-```
-∀ t_request.
-  override_command_received(t_request) →
-  ∃ t_response. t_response ≤ t_request + MAX_RESPONSE_TIME ∧
-    agent_state(t_response) ∈ {HumanControl, EmergencyStop}
-```
-
-#### Theorem TH-RHO-006: No Emergent Unsafe Behavior
-
-```
-∀ agent, mission, constraints.
-  all_components_safe(agent) →
-  all_interfaces_verified(agent) →
-  composed_behavior(agent, mission) ⊆ safe_behaviors(constraints)
-```
-
----
-
-## 6. Axioms
-
-### 6.1 Physical Axioms
-
-| ID | Axiom | Justification |
-|----|-------|---------------|
-| AX-RHO-P01 | Physics is deterministic at macro scale | Classical mechanics |
-| AX-RHO-P02 | Agent cannot teleport | Continuity of motion |
-| AX-RHO-P03 | Actuators have bounded force | Hardware limits |
-
-### 6.2 Authority Axioms
-
-| ID | Axiom | Justification |
-|----|-------|---------------|
-| AX-RHO-A01 | Authority hierarchy is fixed | Mission definition |
-| AX-RHO-A02 | Human authority supersedes AI | Design principle |
-| AX-RHO-A03 | Emergency stop overrides all | Safety requirement |
-
-### 6.3 Ethical Axioms
-
-| ID | Axiom | Justification |
-|----|-------|---------------|
-| AX-RHO-E01 | Human life has highest value | Ethical principle |
-| AX-RHO-E02 | Distinction is computable | Rules of engagement |
-| AX-RHO-E03 | Proportionality is computable | Defined thresholds |
-
----
-
-## 7. Integration with Other Tracks
-
-### 7.1 Dependencies
-
-| Track | Dependency | Description |
-|-------|------------|-------------|
-| Track A | Type system | Autonomy types and contracts |
-| Track Ξ | Sensor fusion | Perception for decisions |
-| Track ν | AI/ML | Neural network verification |
-| Track V | Termination | Decision loop termination |
-| Track X | Concurrency | Multi-agent coordination |
-
-### 7.2 Provides To
-
-| Track | Provides | Description |
-|-------|----------|-------------|
-| Track U | Runtime | Autonomy monitoring |
-| Track Y | Stdlib | Autonomy library |
-| Military systems | Verified autonomy | Safe autonomous operation |
-
----
-
-## 8. Implementation Phases
-
-### Phase 1: Foundation (Months 1-8)
-- [ ] Core safety envelope verification in Coq
-- [ ] Basic autonomy type system
-- [ ] Override system implementation
-- [ ] Unit tests for decision logic
-
-### Phase 2: Ethics (Months 9-14)
-- [ ] Ethical constraint formalization
-- [ ] Deontic logic framework
-- [ ] Rules of engagement encoding
-- [ ] Integration with Track Ξ perception
-
-### Phase 3: Verification (Months 15-20)
-- [ ] Compositional behavior proofs
-- [ ] Emergent behavior analysis
-- [ ] Audit trail verification
-- [ ] Integration with Track ν neural verification
-
-### Phase 4: Production (Months 21-24)
-- [ ] Real-time decision implementation
-- [ ] Full system integration
-- [ ] Military certification documentation
-- [ ] Field testing support
-
----
-
-## 9. Research Questions
-
-### 9.1 Open Problems
-
-1. **Ethical Formalization:** How to encode all ethical principles formally?
-2. **Emergent Behavior:** How to verify no emergent unsafe behaviors in complex systems?
-3. **Multi-Agent Coordination:** How to verify safety when multiple autonomous agents interact?
-4. **Learning and Adaptation:** How to maintain guarantees as system learns?
-5. **Uncertainty Quantification:** How to bound decision quality under uncertainty?
-
-### 9.2 Future Directions
-
-1. **Verified Reinforcement Learning:** Formally verified RL for autonomy
-2. **Swarm Verification:** Proving properties of autonomous swarms
-3. **Human-AI Teaming:** Verified mixed-initiative systems
-4. **Ethical AI:** More sophisticated ethical reasoning
-
----
-
-## 10. References
-
-### 10.1 Foundational Works
-
-1. Asaro, P. "How Just Could a Robot War Be?" (2008)
-2. Arkin, R. "Governing Lethal Behavior in Autonomous Robots" (2009)
-3. Seshia, S. "Verified AI" (2022)
-4. DoD "Autonomy in Weapon Systems" (Directive 3000.09)
-
-### 10.2 RIINA-Specific Documents
-
-- Track A: Type System Specification
-- Track Ξ: Sensor Fusion Foundation
-- Track ν: AI/ML Security Foundation
-- Track X: Concurrency Foundation
-
----
-
-## Appendix A: Autonomy Decision Tree Example
-
-```riina
-/// Example: Verified autonomous target engagement decision
-kesan[Autonomy<MilitaryConstraints>] fungsi engagement_decision(
-    target: &DetectedTarget,
-    context: &TacticalContext,
-    roe: &RulesOfEngagement
-) -> EngagementDecision {
-    // Step 1: Positive identification required
-    kalau !target.positively_identified() {
-        pulang EngagementDecision::NoEngage(
-            Reason::InsufficientPID
-        );
-    }
-
-    // Step 2: Check target is authorized
-    kalau !roe.authorized_target(target) {
-        pulang EngagementDecision::NoEngage(
-            Reason::UnauthorizedTarget
-        );
-    }
-
-    // Step 3: Check proportionality
-    biar collateral = estimate_collateral(target, context);
-    kalau collateral.civilian_risk > roe.max_civilian_risk {
-        pulang EngagementDecision::NoEngage(
-            Reason::DisproportionateRisk
-        );
-    }
-
-    // Step 4: Check necessity
-    biar alternatives = enumerate_alternatives(target, context);
-    kalau alternatives.iter().any(|a| achieves_objective_with_less_force(a)) {
-        pulang EngagementDecision::Escalate(
-            alternatives.least_harmful()
-        );
-    }
-
-    // Step 5: Request human approval for lethal action
-    kalau roe.requires_human_approval_for_lethal() {
-        pulang EngagementDecision::RequestApproval(
-            EngagementRequest::new(target, context)
-        );
-    }
-
-    // All checks passed - engagement authorized
-    EngagementDecision::Authorized(
-        EngagementPlan::new(target, context),
-        EngagementProof::new(target, context, roe)
-    )
-}
-```
-
----
-
-*Track Ρ (Rho): Verified Autonomy*
-*"Every decision justified. Every action bounded. Every outcome predictable."*
-*RIINA Military Track*
+*"Autonomy without proof is automation without accountability."*

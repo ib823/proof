@@ -1,240 +1,165 @@
-# RIINA Research Domain AG: Verified Key Lifecycle Management
+# AG-01: Verified Key Lifecycle Management — Provably Correct Cryptographic Key Handling
 
-## Document Control
-
-```
-Track: AG (Alpha-Golf)
-Version: 1.0.0
-Date: 2026-01-17
-Classification: FOUNDATIONAL
-Status: SPECIFICATION
-Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
-```
+**Domain:** AG — Verified Key Lifecycle Management
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Key generation, distribution, rotation, revocation, escrow, HSM integration, verified key state machines
 
 ---
 
-## AG-01: The "Key Management" Problem & The RIINA Solution
+## 1. Problem Statement
 
-### 1. The Existential Threat
+Cryptographic keys are the foundation of all security, yet key management is consistently identified as the weakest link. The 2011 DigiNotar breach compromised hundreds of TLS certificates because root key management procedures were inadequate. The 2014 Heartbleed vulnerability exposed private keys from server memory. HSM misconfigurations have resulted in key extraction from hardware security modules that were supposed to be tamper-proof.
 
-Keys are the foundation of all cryptographic security, yet:
-- Keys generated with weak entropy
-- Keys stored in plaintext
-- Keys never rotated
-- Key compromise undetected
-- No secure key destruction
-- Key escrow/recovery weak or absent
+Key lifecycle management encompasses generation (with sufficient entropy), distribution (without exposure), storage (in secure hardware), rotation (without service disruption), revocation (with timely propagation), and destruction (without recovery). Each phase has specific security requirements, and a failure in any phase compromises the entire system. RIINA provides verified key lifecycle management through state machine types that enforce correct key handling at every phase.
 
-**Current state:** Key management is ad-hoc and error-prone.
+## 2. State of the Art
 
-### 2. The RIINA Solution: Verified Key Lifecycle
+### 2.1 Secret Sharing
 
-```
-THEOREM key_lifecycle_secure:
-  ∀ key K:
-    Generated(K, verified_entropy) ∧
-    Stored(K, HSM ∨ encrypted) ∧
-    Used(K, authorized_operations_only) ∧
-    Rotated(K, policy_schedule) ∧
-    Destroyed(K, secure_zeroization)
-```
+Shamir developed (t,n)-threshold secret sharing, where a secret is split into n shares such that any t shares can reconstruct the secret but fewer than t shares reveal no information. Secret sharing is foundational for key escrow, distributed key generation, and multi-party key management.
 
-### 3. Core Components
+Shamir, A., "How to Share a Secret", *Communications of the ACM*, 22(11):612-613, 1979.
 
-#### 3.1 Key Types
+### 2.2 Identity-Based Encryption
 
-```
-KeyType ::=
-  | SymmetricKey of { algorithm: SymAlgo, size: KeySize }
-  | AsymmetricKeyPair of { algorithm: AsymAlgo, public: PublicKey, private: PrivateKey }
-  | DerivedKey of { parent: KeyId, derivation: KDF, context: Bytes }
-  | WrappedKey of { wrapped: Bytes, wrapper: KeyId }
+Boneh and Franklin developed the first practical identity-based encryption scheme, where public keys are derived from identities (email addresses, names) rather than random values. IBE simplifies key distribution by eliminating the need for public key infrastructure.
 
-KeyState ::= Active | Suspended | Compromised | Expired | Destroyed
+Boneh, D., Franklin, M., "Identity-Based Encryption from the Weil Pairing", *CRYPTO*, 2001.
 
-KeyMetadata ::= {
-  id: KeyId,
-  type: KeyType,
-  state: KeyState,
-  created: Timestamp,
-  expires: Option<Timestamp>,
-  rotation_policy: RotationPolicy,
-  usage_policy: UsagePolicy,
-  audit_log: AuditLogRef
-}
-```
+### 2.3 NIST Key Management Guidelines
 
-#### 3.2 Key Storage
+NIST SP 800-57 provides comprehensive guidelines for cryptographic key management, covering key types, algorithms, key lengths, lifecycle phases, and protection requirements. The standard defines the authoritative framework for government and industry key management.
 
-```
-KeyStorage ::=
-  | HSM of { slot: HSMSlot, extractable: Bool }
-  | TPM of { handle: TPMHandle, policy: TPMPolicy }
-  | EncryptedFile of { path: Path, kek: KeyId }
-  | SecureEnclave of { identifier: EnclaveId }
-  | SplitKey of { shares: List<KeyShare>, threshold: Nat }
-```
+Barker, E., "Recommendation for Key Management: Part 1 – General", *NIST Special Publication 800-57 Part 1 Revision 5*, 2020.
 
-#### 3.3 Key Operations
+### 2.4 Threshold ECDSA
 
-```
-KeyOperation ::=
-  | Generate of { type: KeyType, entropy_source: EntropySource }
-  | Import of { key_material: EncryptedKeyMaterial }
-  | Export of { format: KeyFormat, wrapping: Option<KeyId> }
-  | Rotate of { new_key: KeyId, migration: MigrationPolicy }
-  | Revoke of { reason: RevocationReason }
-  | Destroy of { method: DestructionMethod }
-```
+Gennaro and Goldfeder developed efficient threshold ECDSA protocols, enabling distributed signing where no single party holds the complete signing key. This eliminates the single point of compromise for signing keys.
 
-### 4. Formal Properties
+Gennaro, R., Goldfeder, S., "Fast Multiparty Threshold ECDSA with Fast Trustless Setup", *CCS*, 2018.
 
-```coq
-(* Keys are generated with sufficient entropy *)
-Theorem key_entropy:
-  forall k,
-    generated k verified_rng ->
-    entropy k >= min_entropy (key_type k).
+### 2.5 OpenPGP Key Management
 
-(* Private keys never leave secure storage unencrypted *)
-Theorem key_confinement:
-  forall k op,
-    is_private k ->
-    operation k op ->
-    ~(exported_plaintext k).
+Callas et al. defined the OpenPGP standard for key management in messaging, establishing the web of trust model where users certify each other's keys without a central authority. The standard provides practical key lifecycle operations including generation, certification, revocation, and expiry.
 
-(* Destroyed keys are unrecoverable *)
-Theorem key_destruction:
-  forall k,
-    destroyed k ->
-    forall adversary, ~(recoverable adversary k).
+Callas, J., Donnerhacke, L., Finney, H., Shaw, D., Thayer, R., "OpenPGP Message Format", RFC 4880, 2007.
 
-(* Key rotation maintains security *)
-Theorem key_rotation_secure:
-  forall k_old k_new,
-    rotate k_old k_new ->
-    security_level k_new >= security_level k_old.
-```
+### 2.6 Key Management Trust
 
-### 5. Implementation Requirements
+Blaze et al. analyzed trust management in cryptographic key systems, developing the PolicyMaker and KeyNote frameworks for automated trust management. The work formalized how trust decisions should be made based on key credentials and policies.
+
+Blaze, M., Feigenbaum, J., Lacy, J., "Decentralized Trust Management", *IEEE S&P*, 1996.
+
+### 2.7 Key Establishment Protocols
+
+Boyd and Mathuria provided a comprehensive treatment of key establishment protocols, covering both key transport and key agreement protocols, with formal security analysis of each protocol type.
+
+Boyd, C., Mathuria, A., "Protocols for Authentication and Key Establishment", Springer, 2003.
+
+### 2.8 NIST Key Management Part 2
+
+Barker and Roginsky defined specific key management practices for government applications, including key wrapping, key derivation, key confirmation, and key archival procedures with formal security requirements.
+
+Barker, E., Barker, W., Burr, W., Polk, W., Smid, M., "Recommendation for Key Management: Part 2", *NIST SP 800-57 Part 2*, 2019.
+
+## 3. Properties Verifiable by RIINA
+
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Key entropy | Randomness proof | Key generated from verified entropy source |
+| Key isolation | Linear type proof | Key material cannot be duplicated or leaked |
+| Rotation correctness | State machine proof | Old key revoked before new key activated |
+| Revocation propagation | Coverage proof | All relying parties notified of revocation |
+| Secure destruction | Erasure proof | Key material zeroed after destruction |
+| Threshold security | Information-theoretic proof | Fewer than t shares reveal nothing |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Key Lifecycle State Machine
 
 ```riina
-struktur KeyManager {
-    hsm: HSMConnection,
-    policy: KeyPolicy,
-    audit: AuditLog
+// Key lifecycle enforced by type system
+jenis KeadaanKunci = Dijana | Aktif | Digantung | Dibatalkan | Dimusnahkan;
+
+fungsi aktifkan_kunci(
+    kunci: Kunci<Dijana>,
+    kelulusan: Kelulusan<Kuorum>,
+) -> Kunci<Aktif>
+    kesan KitarHayatKunci
+{
+    // Type system enforces: only Generated keys can be activated
+    // Quorum approval required
+    sahkan_kuorum(kelulusan)?;
+    pulang kunci.tukar_keadaan(Aktif);
 }
 
-fungsi generate_key(
-    manager: &KeyManager,
-    key_type: KeyType,
-    policy: UsagePolicy
-) -> Keputusan<KeyId, KeyError>
-kesan [Crypto, HSM]
+fungsi batalkan_kunci(
+    kunci: Kunci<Aktif>,
+    sebab: SebabPembatalan,
+) -> Kunci<Dibatalkan>
+    kesan KitarHayatKunci, Audit
 {
-    // Generate in HSM (key material never exposed)
-    biar key_id = manager.hsm.generate_key(key_type)?;
-
-    // Set usage policy
-    manager.hsm.set_policy(key_id, policy)?;
-
-    // Log generation
-    manager.audit.log(KeyEvent::Generated {
-        key_id,
-        key_type,
-        timestamp: now()
-    })?;
-
-    Ok(key_id)
-}
-
-fungsi rotate_key(
-    manager: &KeyManager,
-    old_key: KeyId,
-    migration: MigrationPolicy
-) -> Keputusan<KeyId, KeyError>
-kesan [Crypto, HSM]
-{
-    // Generate new key with same type
-    biar key_type = manager.hsm.get_key_type(old_key)?;
-    biar new_key = manager.hsm.generate_key(key_type)?;
-
-    // Copy policy
-    biar policy = manager.hsm.get_policy(old_key)?;
-    manager.hsm.set_policy(new_key, policy)?;
-
-    // Execute migration
-    padan migration {
-        MigrationPolicy::ReEncrypt(data_refs) => {
-            untuk data_ref dalam data_refs {
-                re_encrypt(manager, data_ref, old_key, new_key)?;
-            }
-        },
-        MigrationPolicy::DualKey(duration) => {
-            // Both keys active for transition period
-            manager.hsm.set_state(old_key, KeyState::Suspended)?;
-            schedule_destruction(old_key, duration)?;
-        }
-    }
-
-    // Mark old key as rotated
-    manager.audit.log(KeyEvent::Rotated {
-        old_key,
-        new_key,
-        timestamp: now()
-    })?;
-
-    Ok(new_key)
-}
-
-fungsi destroy_key(
-    manager: &KeyManager,
-    key_id: KeyId,
-    reason: DestructionReason
-) -> Keputusan<(), KeyError>
-kesan [Crypto, HSM]
-{
-    // Verify key can be destroyed
-    biar state = manager.hsm.get_state(key_id)?;
-    kalau state == KeyState::Active {
-        pulang Err(KeyError::CannotDestroyActiveKey)
-    }
-
-    // Secure destruction in HSM
-    manager.hsm.zeroize_key(key_id)?;
-
-    // Log destruction
-    manager.audit.log(KeyEvent::Destroyed {
-        key_id,
-        reason,
-        timestamp: now()
-    })?;
-
-    Ok(())
+    terbit_pembatalan(kunci.id, sebab);
+    pulang kunci.tukar_keadaan(Dibatalkan);
 }
 ```
 
-### 6. Dependencies
+### 4.2 Coq Formalization
 
-| Dependency | Track | Required For |
-|------------|-------|--------------|
-| Cryptography | G | Key algorithms |
-| Hardware | Φ | HSM/TPM |
-| Audit | AE | Key event logging |
-| Memory | W | Secure zeroization |
+```coq
+(* Key lifecycle: valid state transitions only *)
+Inductive KeyState := Generated | Active | Suspended | Revoked | Destroyed.
 
-### 7. Verification Milestones
+Inductive valid_transition : KeyState -> KeyState -> Prop :=
+  | gen_to_active : valid_transition Generated Active
+  | active_to_suspended : valid_transition Active Suspended
+  | suspended_to_active : valid_transition Suspended Active
+  | active_to_revoked : valid_transition Active Revoked
+  | suspended_to_revoked : valid_transition Suspended Revoked
+  | revoked_to_destroyed : valid_transition Revoked Destroyed.
 
-| Milestone | Description | Status |
-|-----------|-------------|--------|
-| AG-M1 | Key generation verified | ❌ |
-| AG-M2 | Key storage verified | ❌ |
-| AG-M3 | Key rotation verified | ❌ |
-| AG-M4 | Key destruction verified | ❌ |
-| AG-M5 | Full lifecycle verified | ❌ |
+(* No key resurrection: destroyed keys stay destroyed *)
+Theorem no_resurrection : forall s,
+  ~ valid_transition Destroyed s.
+Proof.
+  intros s H. inversion H.
+Qed.
+```
+
+## 5. Key References
+
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Shamir, A., "Secret Sharing" (1979) | Communications of the ACM | Threshold secret sharing |
+| Boneh, D., Franklin, M., "IBE" (2001) | CRYPTO | Identity-based encryption |
+| Barker, E., "NIST SP 800-57" (2020) | NIST | Key management guidelines |
+| Gennaro, R., et al., "Threshold ECDSA" (2018) | CCS | Distributed signing |
+| Callas, J., et al., "OpenPGP" (2007) | RFC 4880 | Key lifecycle standard |
+| Blaze, M., et al., "Trust Management" (1996) | IEEE S&P | Decentralized key trust |
+| Boyd, C., et al., "Key Establishment" (2003) | Springer | Protocol foundations |
+| Barker, E., et al., "NIST SP 800-57 Part 2" (2019) | NIST | Key management practices |
+
+## 6. Formalizability Assessment
+
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Key state machine types | 2-3 | High — finite states | Phase 1 |
+| Entropy source verification | 3-4 | Medium — randomness testing | Phase 1 |
+| Key wrapping verification | 3-4 | High — standard crypto | Phase 2 |
+| Threshold key management | 4-6 | Medium — multi-party protocols | Phase 2 |
+| HSM integration verification | 4-6 | Medium — hardware interface | Phase 3 |
+| End-to-end key lifecycle proof | 6-8 | Low-Medium — lifecycle complexity | Phase 4 |
+
+## 7. Scope Limitations
+
+1. **Entropy quality.** Key generation requires true randomness. Verifying entropy quality requires hardware trust in random number generators.
+2. **HSM trust.** HSMs are assumed tamper-resistant, but vulnerabilities have been found in HSM firmware and APIs.
+3. **Side channels.** Key material in memory is vulnerable to side-channel attacks. Verified key handling must include constant-time operations.
+4. **Key discovery.** Revocation information must reach all relying parties. Network partitions can delay or prevent revocation propagation.
+5. **Backward compatibility.** Key rotation requires supporting old and new keys during transition periods, complicating the state machine.
+6. **Regulatory requirements.** Different jurisdictions have different key management requirements (key escrow, minimum key lengths), creating compliance complexity.
 
 ---
 
-*Track AG: Verified Key Lifecycle Management*
-*Status: SPECIFICATION COMPLETE, PROOFS PENDING*
-*Last updated: 2026-01-17*
+*"A key that follows its proven lifecycle cannot be mishandled."*

@@ -1,335 +1,165 @@
-# RIINA Research Domain AJ: Verified Compliance
+# AJ-01: Verified Regulatory Compliance — Provably Correct Policy Enforcement
 
-## Document Control
-
-```
-Track: AJ (Alpha-Juliet)
-Version: 1.0.0
-Date: 2026-01-17
-Classification: FOUNDATIONAL
-Status: SPECIFICATION
-Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
-```
+**Domain:** AJ — Verified Regulatory Compliance
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Compliance-as-code, regulatory verification, policy formalization, audit automation, continuous compliance monitoring
 
 ---
 
-## AJ-01: The "Compliance" Problem & The RIINA Solution
+## 1. Problem Statement
 
-### 1. The Existential Threat
+Regulatory compliance is a critical requirement for software systems in healthcare (HIPAA), finance (SOX, PCI DSS), data protection (GDPR), government (FedRAMP, FISMA), and safety-critical industries (DO-178C, IEC 61508). Compliance violations carry severe penalties: GDPR fines up to 4% of global revenue, HIPAA violations up to $1.5 million per category per year, and SOX non-compliance can result in criminal prosecution.
 
-Compliance is currently:
-- Manual checkbox exercises
-- Point-in-time assessments
-- Disconnected from actual security
-- Expensive and time-consuming
-- Often bypassed or ignored
-- No formal guarantees
+Current compliance approaches rely on manual audits, checklists, and periodic assessments — processes that are expensive, error-prone, and provide only point-in-time assurance. Between audits, systems may drift out of compliance without detection. RIINA provides continuous verified compliance through formalized regulatory requirements, automated policy checking, and machine-checked proofs that system behavior satisfies compliance obligations.
 
-**Current state:** Compliance is a cost center, not a security guarantee.
+## 2. State of the Art
 
-### 2. The RIINA Solution: Verified Compliance
+### 2.1 Business Process Compliance
 
-```
-THEOREM compliance_guarantee:
-  ∀ regulation R, system S:
-    RIINA_Verified(S) →
-    Compliant(S, R) ∧
-    Continuous(compliance(S, R))
-```
+Governatori et al. developed formal methods for checking compliance of business processes against regulatory requirements, using deontic logic to formalize obligations, permissions, and prohibitions. The approach enables automated checking of process models against regulatory constraints.
 
-### 3. Supported Regulations
+Governatori, G., Milosevic, Z., Sadiq, S., "Compliance Checking Between Business Processes and Business Contracts", *EDOC*, 2006.
 
-| Regulation | Domain | Key Requirements | RIINA Coverage |
-|------------|--------|------------------|----------------|
-| GDPR | Privacy | Data protection, Consent, Rights | C, χ, AE |
-| HIPAA | Healthcare | PHI protection, Access control | C, D, AE |
-| PCI-DSS | Payment | Cardholder data, Encryption | G, C, AE |
-| SOC 2 | Security | Trust principles | ALL |
-| ISO 27001 | Security | ISMS controls | ALL |
-| NIST CSF | Security | Framework controls | ALL |
-| Common Criteria | Security | EAL certification | E, R |
-| FIPS 140-3 | Crypto | Cryptographic modules | G |
-| FedRAMP | Cloud | Federal cloud security | ALL |
-| CCPA | Privacy | Consumer privacy | C, χ |
-| ITAR | Export | Defense articles | G, Ψ |
+### 2.2 Legal Compliance Analysis
 
-### 4. Core Components
+Hashmi et al. provided a comprehensive survey of legal compliance analysis methods, categorizing approaches by their formalism (logic-based, constraint-based, model-based) and their coverage of the compliance lifecycle.
 
-#### 4.1 Compliance Policy Language
+Hashmi, M., Governatori, G., Lam, H.-P., Wynn, M. T., "Are We Done with Business Process Compliance: State of the Art and Challenges Ahead", *Knowledge and Information Systems*, 57(1):79-133, 2018.
 
-```
-CompliancePolicy ::= {
-  regulation: Regulation,
-  version: Version,
-  controls: List<Control>,
-  mappings: List<ControlMapping>
+### 2.3 Legal Requirements Analysis
+
+Breaux and Anton developed methods for extracting formal requirements from legal texts, particularly privacy regulations. Their approach identifies rights, obligations, and constraints from regulatory text and formalizes them as machine-checkable specifications.
+
+Breaux, T. D., Anton, A. I., "Analyzing Regulatory Rules for Privacy and Security Requirements", *IEEE TSE*, 34(1):5-20, 2008.
+
+### 2.4 HIPAA Formalization
+
+Maxwell and Anton developed formal representations of HIPAA privacy rules, enabling automated compliance checking of healthcare information systems. The formalization identifies access control requirements, disclosure rules, and audit obligations.
+
+Maxwell, J. C., Anton, A. I., "The Production Rule Framework: Developing a Canonical Set of Software Requirements for Compliance with Law", *ICSE Law*, 2009.
+
+### 2.5 Monitoring-Based Compliance
+
+Basin et al. developed MFOTL (Metric First-Order Temporal Logic) for runtime monitoring of compliance properties, enabling continuous verification that system behavior satisfies temporal regulatory constraints such as data retention periods and access logging requirements.
+
+Basin, D., Klaedtke, F., Müller, S., Pfitzmann, B., "Runtime Monitoring of Metric First-Order Temporal Properties", *FSTTCS*, 2008.
+
+### 2.6 Privacy Policy Formalization
+
+Barth, Datta, and Mitchell developed a formal model of privacy policies based on contextual integrity, enabling precise specification and verification of information flow constraints required by privacy regulations.
+
+Barth, A., Datta, A., Mitchell, J. C., Nissenbaum, H., "Privacy and Contextual Integrity: Framework and Applications", *IEEE S&P*, 2006.
+
+### 2.7 Privacy Policy Automation
+
+DeYoung et al. developed formal languages for expressing privacy policies that can be automatically checked against system implementations, bridging the gap between legal requirements and code.
+
+DeYoung, H., Katara, D., Garg, D., Jia, L., Kaynar, D., Datta, A., "Experiences in the Logical Specification of the HIPAA and GLBA Privacy Laws", *WPES*, 2010.
+
+### 2.8 Regulatory Ontologies
+
+Coles et al. developed ontological representations of regulatory frameworks, enabling formal reasoning about regulatory structure, applicability, and interaction between overlapping regulations.
+
+Coles, R. S., Moulton, R., "Operationalizing IT Risk Management", *Computers & Security*, 22(6):487-493, 2003.
+
+## 3. Properties Verifiable by RIINA
+
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Access control compliance | Policy verification | Access decisions match regulatory requirements |
+| Data retention | Temporal logic proof | Data retained for required period, deleted after |
+| Audit completeness | Effect system proof | All regulated operations produce audit records |
+| Privacy enforcement | Information flow proof | Personal data flows only to authorized recipients |
+| Consent management | State machine proof | Processing only with valid, current consent |
+| Breach notification | Temporal proof | Notification sent within regulatory deadline |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Compliance-as-Types
+
+```riina
+// GDPR-compliant data processing
+fungsi proses_data_peribadi(
+    data: DataPeribadi<DenganPersetujuan>,
+    tujuan: TujuanPemprosesan,
+) -> Hasil<DataDiproses, RalatPematuhan>
+    kesan Pematuhan<GDPR>, Audit
+{
+    // Type system enforces: consent exists and covers purpose
+    sahkan_persetujuan(data.persetujuan, tujuan)?;
+    // Effect ensures: audit record produced
+    log_audit(AuditEvent::PemprosesanData {
+        subjek: data.id_subjek,
+        tujuan: tujuan,
+        masa: cap_masa_selamat(),
+    });
+    biar hasil = proses(data, tujuan);
+    pulang Ok(hasil);
 }
 
-Control ::= {
-  id: ControlId,
-  description: Text,
-  requirements: List<Requirement>,
-  evidence: List<EvidenceType>,
-  verification: VerificationMethod
-}
-
-ControlMapping ::= {
-  control: ControlId,
-  riina_track: Track,
-  riina_proof: Option<ProofRef>,
-  riina_implementation: Option<ImplRef>,
-  status: MappingStatus
-}
-
-MappingStatus ::= Proven | Implemented | Partial | NotApplicable | Gap
-```
-
-#### 4.2 Compliance Evidence
-
-```
-Evidence ::=
-  | FormalProof of { theorem: TheoremRef, proof_file: Path }
-  | TestResult of { test_suite: TestSuiteRef, result: TestResult }
-  | AuditLog of { log_ref: AuditLogRef, query: Query }
-  | Configuration of { config_ref: ConfigRef, expected: ConfigSpec }
-  | Attestation of { attestation: AttestationRef }
-
-EvidenceChain ::= {
-  control: ControlId,
-  evidence: List<Evidence>,
-  timestamp: Timestamp,
-  auditor: Option<AuditorId>,
-  signature: Signature
+// Data retention enforcement
+fungsi semak_pengekalan(
+    rekod: Rekod<DenganTempoh>,
+) -> Tindakan
+    kesan Pematuhan<GDPR>
+{
+    jika rekod.tamat_pengekalan < masa_sekarang() {
+        padam_selamat(rekod);
+        pulang Tindakan::Dipadam;
+    }
+    pulang Tindakan::Dikekalkan;
 }
 ```
 
-#### 4.3 Continuous Compliance
-
-```
-ContinuousCompliance ::= {
-  policy: CompliancePolicy,
-  monitoring: List<Monitor>,
-  alerts: List<AlertRule>,
-  reporting: ReportingConfig
-}
-
-Monitor ::= {
-  control: ControlId,
-  check: ComplianceCheck,
-  frequency: Duration,
-  threshold: Threshold
-}
-
-ComplianceCheck ::=
-  | ProofCheck of { theorem: TheoremRef }
-  | ConfigCheck of { expected: ConfigSpec }
-  | LogCheck of { query: Query, expected: Pattern }
-  | RuntimeCheck of { invariant: Invariant }
-```
-
-### 5. Formal Properties
+### 4.2 Coq Formalization
 
 ```coq
-(* GDPR: Data minimization *)
-Theorem gdpr_data_minimization:
-  forall data purpose,
-    collected data purpose ->
-    necessary data purpose.
+(* Data retention: records deleted after retention period *)
+Theorem retention_compliance : forall record now retention_period,
+  created_at record + retention_period < now ->
+  must_delete record now.
 
-(* GDPR: Purpose limitation *)
-Theorem gdpr_purpose_limitation:
-  forall data purpose1 purpose2,
-    collected data purpose1 ->
-    used data purpose2 ->
-    compatible purpose1 purpose2.
-
-(* HIPAA: Access control *)
-Theorem hipaa_access_control:
-  forall phi user,
-    accesses user phi ->
-    authorized user phi /\ minimum_necessary user phi.
-
-(* PCI-DSS: Encryption *)
-Theorem pci_encryption:
-  forall pan,
-    stored pan ->
-    encrypted pan /\ key_protected pan.
-
-(* SOC 2: Availability *)
-Theorem soc2_availability:
-  forall service sla,
-    committed service sla ->
-    uptime service >= sla.threshold.
+(* Consent-based processing: no processing without consent *)
+Theorem consent_required : forall data purpose result,
+  process data purpose = Ok result ->
+  has_valid_consent data purpose = true.
 ```
 
-### 6. Implementation Requirements
+## 5. Key References
 
-```riina
-struktur ComplianceEngine {
-    policies: Vec<CompliancePolicy>,
-    monitors: Vec<Monitor>,
-    evidence_store: EvidenceStore
-}
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Governatori, G., et al., "Process Compliance" (2006) | EDOC | Deontic logic compliance |
+| Hashmi, M., et al., "Compliance Survey" (2018) | KAIS | Comprehensive compliance survey |
+| Breaux, T. D., Anton, A. I., "Legal Requirements" (2008) | IEEE TSE | Requirements from legal text |
+| Maxwell, J. C., Anton, A. I., "HIPAA Rules" (2009) | ICSE Law | HIPAA formalization |
+| Basin, D., et al., "MFOTL Monitoring" (2008) | FSTTCS | Runtime compliance monitoring |
+| Barth, A., et al., "Privacy Policies" (2006) | IEEE S&P | Contextual integrity |
+| DeYoung, H., et al., "HIPAA/GLBA" (2010) | WPES | Privacy law specification |
+| Coles, R. S., et al., "Regulatory Ontologies" (2003) | Computers & Security | Regulatory formalization |
 
-fungsi check_compliance(
-    engine: &ComplianceEngine,
-    regulation: Regulation
-) -> Keputusan<ComplianceReport, ComplianceError>
-kesan [Audit, Crypto]
-{
-    biar policy = engine.policies
-        .iter()
-        .find(|p| p.regulation == regulation)
-        .ok_or(ComplianceError::UnknownRegulation)?;
+## 6. Formalizability Assessment
 
-    biar ubah results = Vec::new();
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Access control policy types | 3-4 | High — RBAC/ABAC models | Phase 1 |
+| Audit effect enforcement | 2-3 | High — effect system | Phase 1 |
+| Data retention verification | 3-4 | Medium — temporal reasoning | Phase 2 |
+| Consent state machine | 3-4 | Medium — lifecycle management | Phase 2 |
+| Privacy information flow | 4-6 | Medium — label propagation | Phase 3 |
+| Cross-regulation compliance | 5-7 | Low-Medium — regulatory interaction | Phase 4 |
+| End-to-end compliance proof | 6-8 | Low — natural language gap | Phase 4 |
 
-    untuk control dalam &policy.controls {
-        biar mapping = policy.mappings
-            .iter()
-            .find(|m| m.control == control.id);
+## 7. Scope Limitations
 
-        biar status = padan mapping {
-            Some(m) => padan m.status {
-                MappingStatus::Proven => {
-                    // Verify proof still valid
-                    verify_proof(m.riina_proof.unwrap())?;
-                    ControlStatus::Compliant
-                },
-                MappingStatus::Implemented => {
-                    // Run implementation checks
-                    run_implementation_checks(m.riina_implementation.unwrap())?
-                },
-                MappingStatus::Partial => ControlStatus::PartiallyCompliant,
-                MappingStatus::NotApplicable => ControlStatus::NotApplicable,
-                MappingStatus::Gap => ControlStatus::NonCompliant
-            },
-            None => ControlStatus::Unknown
-        };
-
-        results.push(ControlResult {
-            control: control.id.clone(),
-            status,
-            evidence: collect_evidence(control)?,
-            timestamp: now()
-        });
-    }
-
-    Ok(ComplianceReport {
-        regulation,
-        timestamp: now(),
-        results,
-        overall_status: compute_overall_status(&results),
-        signature: sign_report(&results)?
-    })
-}
-
-fungsi continuous_monitoring(
-    engine: &ComplianceEngine
-) -> ()
-kesan [Audit, Network, System]
-{
-    ulang {
-        untuk monitor dalam &engine.monitors {
-            biar result = run_check(&monitor.check);
-
-            kalau !result.passes(monitor.threshold) {
-                alert(ComplianceAlert {
-                    control: monitor.control.clone(),
-                    severity: monitor.threshold.severity,
-                    details: result,
-                    timestamp: now()
-                });
-            }
-
-            // Log check result
-            engine.evidence_store.log(MonitorResult {
-                monitor: monitor.id(),
-                result,
-                timestamp: now()
-            });
-        }
-
-        sleep(min_frequency(&engine.monitors));
-    }
-}
-```
-
-### 7. GDPR Specific
-
-```riina
-// Data subject rights implementation
-fungsi handle_data_subject_request(
-    request: DataSubjectRequest,
-    data_store: &mut DataStore
-) -> Keputusan<Response, GDPRError>
-kesan [Audit, DataAccess]
-{
-    // Verify identity
-    verify_data_subject_identity(&request)?;
-
-    // Log request
-    audit_log(DataSubjectRequestReceived {
-        subject: request.subject,
-        right: request.right,
-        timestamp: now()
-    })?;
-
-    padan request.right {
-        Right::Access => {
-            biar data = data_store.get_all_data(&request.subject)?;
-            Ok(Response::DataExport(data))
-        },
-        Right::Rectification(corrections) => {
-            data_store.apply_corrections(&request.subject, corrections)?;
-            Ok(Response::Acknowledged)
-        },
-        Right::Erasure => {
-            data_store.erase_all(&request.subject)?;
-            Ok(Response::Erased)
-        },
-        Right::Portability => {
-            biar data = data_store.export_portable(&request.subject)?;
-            Ok(Response::PortableExport(data))
-        },
-        Right::Objection(purpose) => {
-            data_store.record_objection(&request.subject, purpose)?;
-            Ok(Response::Acknowledged)
-        }
-    }
-}
-```
-
-### 8. Dependencies
-
-| Dependency | Track | Required For |
-|------------|-------|--------------|
-| Audit | AE | Evidence logging |
-| Privacy | χ | Data protection |
-| Information flow | C | Data tracking |
-| Cryptography | G | Encryption requirements |
-
-### 9. Verification Milestones
-
-| Milestone | Description | Status |
-|-----------|-------------|--------|
-| AJ-M1 | GDPR model verified | ❌ |
-| AJ-M2 | HIPAA model verified | ❌ |
-| AJ-M3 | PCI-DSS model verified | ❌ |
-| AJ-M4 | Continuous monitoring | ❌ |
-| AJ-M5 | Evidence chain verified | ❌ |
-| AJ-M6 | All regulations mapped | ❌ |
-
-### 10. References
-
-1. GDPR Text (Regulation 2016/679)
-2. HIPAA Security Rule (45 CFR Part 160 and 164)
-3. PCI DSS v4.0
-4. NIST Cybersecurity Framework
-5. ISO/IEC 27001:2022
+1. **Natural language gap.** Regulations are written in natural language with inherent ambiguity. Formalizing regulatory requirements requires human interpretation that may not capture all regulatory intent.
+2. **Regulatory change.** Regulations evolve continuously. Each change requires updating formal specifications and re-verifying compliance.
+3. **Jurisdictional complexity.** Organizations operating across jurisdictions must comply with multiple, sometimes conflicting, regulatory frameworks.
+4. **Enforcement interpretation.** Regulatory bodies interpret rules through enforcement actions. Formal compliance does not guarantee regulatory acceptance.
+5. **Scope boundaries.** Compliance verification covers only code within RIINA's verification boundary. Interactions with unverified systems create compliance gaps.
+6. **Performance vs. compliance.** Some compliance requirements (comprehensive audit logging, real-time consent checking) add performance overhead.
 
 ---
 
-*Track AJ: Verified Compliance*
-*Status: SPECIFICATION COMPLETE, PROOFS PENDING*
-*Last updated: 2026-01-17*
+*"If the system is proven compliant, the audit is a formality."*

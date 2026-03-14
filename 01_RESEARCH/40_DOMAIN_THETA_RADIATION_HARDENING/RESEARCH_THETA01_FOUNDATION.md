@@ -1,512 +1,268 @@
-# RIINA Research Domain Θ (Theta): Radiation Hardening & EMP Resistance
+# THETA-01: Verified Radiation Hardening — Formal Fault Tolerance for Space and High-Radiation Environments
 
-**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
-
-## Document Control
-
-| Property | Value |
-|----------|-------|
-| Document ID | RESEARCH-THETA-RADIATION-HARDENING |
-| Version | 1.0.0 |
-| Date | 2026-01-17 |
-| Domain | Θ (Theta): Radiation Hardening & EMP Resistance |
-| Mode | ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE |
-| Status | FOUNDATIONAL DEFINITION |
-| Classification | MILITARY GRADE - SPACE/NUCLEAR CRITICAL |
-| Extends | Track Φ (Verified Hardware), Track U (Runtime Guardian) |
+**Domain:** THETA (θ) — Verified Radiation Hardening
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Formal fault models for single-event upsets, verified TMR (Triple Modular Redundancy) implementations, EDAC (Error Detection and Correction) verification, radiation-tolerant state machine design, verified voting logic, fault injection testing frameworks, memory scrubbing verification, verified checkpoint/rollback mechanisms
 
 ---
 
-```
-╔══════════════════════════════════════════════════════════════════════════════════╗
-║                                                                                  ║
-║  TRACK Θ (THETA): RADIATION HARDENING & EMP RESISTANCE                           ║
-║                                                                                  ║
-║  "When the sun flares and the bombs fall, RIINA systems continue."               ║
-║                                                                                  ║
-║  Mission: Formally verify radiation tolerance and EMP resistance such that       ║
-║           systems PROVABLY survive cosmic rays, solar events, and nuclear EMP    ║
-║                                                                                  ║
-║  Targets: Satellites, spacecraft, nuclear facilities, military systems,          ║
-║           critical infrastructure in hostile electromagnetic environments        ║
-║                                                                                  ║
-╚══════════════════════════════════════════════════════════════════════════════════╝
-```
+## 1. Problem Statement
 
----
+Electronics operating in space, high-altitude aviation, particle accelerator facilities, and nuclear environments are subjected to ionizing radiation that can cause transient faults in digital circuits. When a high-energy particle strikes a semiconductor device, it can deposit enough charge to flip a stored bit — a Single-Event Upset (SEU) — or cause transient voltage glitches that propagate through combinational logic — a Single-Event Transient (SET). As semiconductor feature sizes shrink below 14nm, the critical charge required to flip a bit decreases, making terrestrial electronics increasingly susceptible to cosmic ray-induced soft errors. Baumann's survey established that soft error rates in SRAM-based devices at sea level have become a significant reliability concern even for commercial applications, not just space systems.
 
-## TABLE OF CONTENTS
+The traditional approach to radiation hardening combines radiation-hardened fabrication processes (SOI, hardened cells) with architectural redundancy techniques such as Triple Modular Redundancy (TMR) and Error Detection and Correction (EDAC) codes. However, these techniques are typically implemented without formal verification of their fault tolerance properties. A TMR voter with a subtle implementation bug, or an EDAC decoder that fails to correct certain error patterns, can silently fail to provide the intended fault tolerance. Quinn et al. demonstrated that FPGA implementations of TMR can contain systematic vulnerabilities where specific fault locations bypass the redundancy, highlighting the need for formal verification of radiation hardening implementations.
 
-1. [Executive Summary](#1-executive-summary)
-2. [Radiation Environment Threats](#2-radiation-environment-threats)
-3. [EMP and HEMP Threats](#3-emp-and-hemp-threats)
-4. [Formal Verification Approach](#4-formal-verification-approach)
-5. [Core Theorems](#5-core-theorems)
-6. [Axiom Requirements](#6-axiom-requirements)
-7. [Hardening Techniques](#7-hardening-techniques)
-8. [Integration with Other Tracks](#8-integration-with-other-tracks)
-9. [Implementation Roadmap](#9-implementation-roadmap)
+RIINA addresses this challenge by providing a formally verified framework for expressing and verifying radiation hardening properties. Through RIINA's type system, fault models can be expressed as types (a bit flip is a type-level transformation), TMR can be verified to tolerate any single-fault scenario, and EDAC codes can be proven to detect and correct their specified error patterns. The effect system tracks which computations are protected by redundancy and which are vulnerable single points of failure, enabling formal certification of radiation hardening coverage.
 
----
+## 2. State of the Art
 
-## 1. EXECUTIVE SUMMARY
+### 2.1 Single-Event Upset Physics and Error Rates
 
-### 1.1 Why Radiation Hardening is CRITICAL
+Baumann provided a comprehensive survey of the physics of single-event upsets in semiconductor devices, covering the mechanisms by which cosmic rays, solar particles, and alpha particles from packaging materials cause charge deposition sufficient to flip stored bits. The survey established quantitative soft error rate (SER) models relating feature size, critical charge, and particle flux to expected upset rates. For SRAM cells in 65nm technology, Baumann reported SER of approximately 1,000 FIT (Failures in Time per billion hours) per Mbit at sea level, increasing by a factor of 10 at aircraft cruising altitude and by a factor of 100-1000 in low Earth orbit. These rates establish the quantitative requirements for redundancy and error correction that formal verification must address.
 
-**Space Environment**:
-- Low Earth Orbit (LEO): 10⁴ - 10⁵ particles/cm²/s
-- Geostationary Orbit (GEO): Higher radiation, Van Allen belts
-- Deep Space: Galactic cosmic rays, solar particle events
-- Single Event Upsets (SEUs) can flip bits, crash systems, corrupt data
+> Baumann, R.C. "Radiation-Induced Soft Errors in Advanced Semiconductor Technologies." *IEEE Transactions on Device and Materials Reliability*, 5(3):305-316, 2005.
 
-**Terrestrial Threats**:
-- Nuclear EMP (HEMP): 50,000 V/m peak field strength
-- Solar storms (Carrington-class): Can disable power grids globally
-- Cosmic ray showers: Sea-level neutron flux causes soft errors
-- Intentional RF weapons: Directed energy attacks
+### 2.2 Soft Error Vulnerability Analysis
 
-**The Problem**: Commercial electronics WILL fail under these conditions.
+Mukherjee et al. introduced the concept of Architectural Vulnerability Factor (AVF) to quantify the probability that a soft error in a particular hardware structure will cause a visible program output error. The AVF framework distinguishes between architecturally correct execution (ACE) bits — those whose corruption would affect program output — and un-ACE bits (dead values, dynamically dead instructions, NOP padding). By analyzing the fraction of time each hardware structure holds ACE bits, designers can focus radiation hardening efforts on the most vulnerable structures. This vulnerability analysis framework is directly applicable to RIINA's approach of type-level vulnerability tracking.
 
-**The RIINA Solution**: Formally verify that systems maintain correctness despite:
-- Random bit flips (SEUs)
-- Total ionizing dose (TID) degradation
-- EMP-induced transients
-- Latchup events
+> Mukherjee, S.S., Weaver, C., Emer, J., Reinhardt, S.K., and Austin, T. "A Systematic Methodology to Compute the Architectural Vulnerability Factors for a High-Performance Microprocessor." *Proceedings of the 36th Annual IEEE/ACM International Symposium on Microarchitecture (MICRO)*, pp. 29-40, 2003.
 
-### 1.2 Scope
+### 2.3 Triple Modular Redundancy and Voting
 
-| Threat | Verification Target |
-|--------|---------------------|
-| **SEU (Single Event Upset)** | Prove detection and correction |
-| **MBU (Multiple Bit Upset)** | Prove tolerance up to N simultaneous flips |
-| **TID (Total Ionizing Dose)** | Prove graceful degradation model |
-| **SEL (Single Event Latchup)** | Prove latchup immunity or detection |
-| **EMP/HEMP** | Prove survival of specified field strengths |
-| **IEMI (Intentional EMI)** | Prove resistance to directed energy |
+Triple Modular Redundancy (TMR) is the most widely used fault tolerance technique in radiation environments, replicating each computational module three times and using a majority voter to mask single-point failures. While the concept is simple, correct implementation requires careful attention to voter placement, feedback paths, and the voter itself becoming a single point of failure. Lyons and Vanderkulk formalized the reliability analysis of TMR systems, establishing the mathematical foundation for computing system reliability as a function of component reliability and redundancy depth. For stateful circuits, TMR of flip-flops with voter feedback creates complex failure modes that require formal analysis to ensure correct behavior under all single-fault scenarios.
 
-### 1.3 Key Deliverables
+> Lyons, R.E. and Vanderkulk, W. "The Use of Triple-Modular Redundancy to Improve Computer Reliability." *IBM Journal of Research and Development*, 6(2):200-209, 1962.
 
-1. **Radiation Fault Model**: Formal model of radiation-induced faults
-2. **Hardening Proofs**: Proofs that TMR/ECC/EDAC correct faults
-3. **EMP Survival Proofs**: Proofs of transient tolerance
-4. **Degradation Bounds**: Formal bounds on TID effects
-5. **Mission Assurance**: End-to-end reliability proofs
+### 2.4 FPGA TMR and Configuration Scrubbing
 
----
+Quinn et al. conducted extensive research on TMR implementation in SRAM-based FPGAs, where the configuration memory itself is susceptible to SEUs. Unlike ASIC implementations where the circuit structure is fixed in silicon, FPGA circuits are defined by configuration bits stored in SRAM cells, meaning a single SEU can alter the circuit's logic function, routing, or both. Quinn's work demonstrated that naive TMR can be defeated by configuration upsets that affect the voter or the routing between redundant modules, and proposed domain-specific TMR tools that ensure physical separation of redundant modules and formal verification of voter isolation. Configuration scrubbing — periodically rewriting the FPGA configuration from a golden copy — provides an additional defense layer whose interaction with TMR requires careful formal analysis.
 
-## 2. RADIATION ENVIRONMENT THREATS
+> Quinn, H., Graham, P., Krone, J., Caffrey, M., and Rezgui, S. "Radiation-Induced Multi-Bit Upsets in SRAM-Based FPGAs." *IEEE Transactions on Nuclear Science*, 52(6):2455-2461, 2005.
 
-### 2.1 Space Radiation Environment
+### 2.5 Error Detection and Correction Codes
 
-| Source | Particle Type | Energy Range | Effect |
-|--------|---------------|--------------|--------|
-| **Trapped Radiation** | Protons, electrons | keV - 100 MeV | TID, displacement |
-| **Galactic Cosmic Rays** | Heavy ions (Fe, etc.) | 100 MeV - 10 GeV | SEU, latchup |
-| **Solar Particle Events** | Protons | 10 - 100 MeV | SEU, TID |
-| **Secondary Neutrons** | Neutrons | 1 - 100 MeV | SEU in atmosphere |
+Error Detection and Correction (EDAC) codes provide information-theoretic redundancy to detect and correct bit errors in memory and data paths. Hamming codes correct single-bit errors and detect double-bit errors (SEC-DED), while more sophisticated codes like Reed-Solomon and BCH codes can correct multiple-bit errors. For radiation environments, the choice of EDAC code involves trade-offs between protection level, hardware overhead, and latency. Hsiao developed the optimal SEC-DED code used in most modern memory systems, minimizing the number of check bits while maximizing the minimum distance. Formal verification of EDAC implementations must prove that encoding, decoding, error detection, and error correction are all correct for all covered error patterns.
 
-### 2.2 Radiation Effects on Electronics
+> Hsiao, M.Y. "A Class of Optimal Minimum Odd-Weight-Column SEC-DED Codes." *IBM Journal of Research and Development*, 14(4):395-401, 1970.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    RADIATION EFFECTS                            │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  SINGLE EVENT EFFECTS (SEE)                                     │
-│  ├── SEU (Single Event Upset)                                   │
-│  │   └── Bit flip in memory/register                            │
-│  ├── SET (Single Event Transient)                               │
-│  │   └── Glitch in combinational logic                          │
-│  ├── SEFI (Single Event Functional Interrupt)                   │
-│  │   └── Device enters undefined state                          │
-│  ├── SEL (Single Event Latchup)                                 │
-│  │   └── Parasitic thyristor turns on → destruction             │
-│  └── SEB/SEGR (Burnout/Gate Rupture)                            │
-│      └── Permanent device damage                                │
-│                                                                 │
-│  TOTAL IONIZING DOSE (TID)                                      │
-│  ├── Threshold voltage shifts                                   │
-│  ├── Leakage current increase                                   │
-│  ├── Timing degradation                                         │
-│  └── Eventual parametric failure                                │
-│                                                                 │
-│  DISPLACEMENT DAMAGE                                            │
-│  ├── Crystal lattice defects                                    │
-│  ├── Reduced carrier lifetime                                   │
-│  └── Affects bipolar devices, solar cells                       │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+### 2.6 NASA Radiation Design Guidelines
+
+NASA's radiation design guidelines, codified in documents such as NASA-HDBK-4002 and the Jet Propulsion Laboratory's radiation design requirements, establish the engineering framework for designing electronics that operate reliably in space radiation environments. These guidelines specify total ionizing dose (TID) requirements, single-event effects (SEE) mitigation requirements, and testing protocols. The guidelines require designers to demonstrate that their mitigation approaches (TMR, EDAC, watchdog timers, safe modes) provide adequate fault tolerance through a combination of analysis, simulation, and radiation testing. Formal verification can complement these traditional assurance methods by providing mathematical proof that mitigation logic is correct.
+
+> LaBel, K.A. et al. "Compendium of Single-Event Effects, Total Ionizing Dose, and Displacement Damage for Candidate Spacecraft Electronics for NASA." *NASA Electronic Parts and Packaging (NEPP) Program*, 2004.
+
+### 2.7 Formal Fault Modeling
+
+Formal fault models provide the mathematical foundation for reasoning about hardware faults in verification frameworks. The stuck-at fault model (a wire permanently driven to 0 or 1) is the classic manufacturing test model, while the single-event upset model (a stored bit transiently flips) is the appropriate model for radiation effects. Jha and Gupta developed formal methods for computing diagnostic coverage — the fraction of detectable faults — for safety-critical automotive systems under the ISO 26262 standard, using model checking to enumerate fault effects. Their approach is directly applicable to radiation hardening verification, where the goal is to prove that all single-event upsets (and possibly double-event upsets) are either masked by redundancy or detected by error checks.
+
+> Jha, S. and Gupta, S.K. "Testing of Digital Systems." *Cambridge University Press*, 2003.
+
+### 2.8 Radiation Testing Standards and Methodology
+
+The JEDEC standard JESD89A defines test procedures for measuring soft error rates in semiconductor devices, establishing a standardized methodology for accelerated testing using particle beams (protons, heavy ions, neutrons) and radioactive sources. The standard specifies cross-section measurements, fluence requirements, and statistical analysis methods for characterizing device susceptibility. EIA/JEDEC Standard 57 covers procedures for measuring total ionizing dose effects. These standards define the empirical validation that complements formal verification, as formal proofs establish that the mitigation logic is correct while radiation testing establishes that the fault model matches physical reality.
+
+> JEDEC Solid State Technology Association. "Measurement and Reporting of Alpha Particle and Terrestrial Cosmic Ray-Induced Soft Errors in Semiconductor Devices." *JESD89A*, 2006.
+
+## 3. Properties Verifiable by RIINA
+
+| Property | Verification Method | RIINA Mechanism |
+|----------|-------------------|-----------------|
+| TMR voter correctness | Exhaustive case analysis | Dependent types over all 3-input combinations |
+| EDAC encode/decode correctness | Algebraic verification | Verified matrix operations, Galois field arithmetic |
+| Single-fault masking completeness | Fault injection enumeration | Type-level fault model with `kesan Rosak(1)` |
+| Watchdog timer liveness | Temporal logic model checking | Session types with timeout guarantees |
+| Memory scrubbing coverage | Refinement types on address ranges | `Alamat { a \| scrubbed_within(a, period) }` |
+| Checkpoint/rollback atomicity | Linearizability proof | Linear types for checkpoint state ownership |
+| Safe mode transition correctness | State machine verification | Verified FSM with `kesan KeadaanSelamat` |
+| Redundancy coverage analysis | Fault tree formalization | Dependent types encoding fault tree structure |
+| Data path parity consistency | Information flow tracking | Parity-tagged types propagated through pipeline |
+| Voting logic independence | Information flow isolation | Effect system ensuring voter inputs are independent |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Verified Triple Modular Redundancy
+
+```riina
+// Type-safe TMR with verified voting
+jenis HasilTMR<T: Sama> = {
+    saluran_a: T,
+    saluran_b: T,
+    saluran_c: T
+};
+
+// Majority voter with exhaustive correctness proof
+fungsi pengundi_majoriti<T: Sama>(
+    tmr: HasilTMR<T>
+) -> T kesan Bersih {
+    // Verified: for any single-channel corruption,
+    // the voter returns the correct (majority) value
+    jika tmr.saluran_a == tmr.saluran_b {
+        pulang tmr.saluran_a;
+    } lain jika tmr.saluran_a == tmr.saluran_c {
+        pulang tmr.saluran_a;
+    } lain {
+        // b == c (by pigeonhole, if at most one fault)
+        pulang tmr.saluran_b;
+    }
+}
+
+// TMR-protected computation
+fungsi kira_tmr<T: Sama, A>(
+    input: A,
+    pengiraan: fungsi(A) -> T kesan Bersih
+) -> T kesan Bersih {
+    biar tmr = HasilTMR {
+        saluran_a: pengiraan(input),
+        saluran_b: pengiraan(input),
+        saluran_c: pengiraan(input),
+    };
+    pulang pengundi_majoriti(tmr);
+}
 ```
 
-### 2.3 Fault Rates
+### 4.2 Verified EDAC (Hamming SEC-DED)
 
-| Environment | SEU Rate (per bit per day) | Mission Impact |
-|-------------|---------------------------|----------------|
-| Sea Level | 10⁻¹² | Negligible for small systems |
-| Aircraft (40,000 ft) | 10⁻⁹ | Significant for large memories |
-| LEO (ISS) | 10⁻⁷ | Critical - requires hardening |
-| GEO | 10⁻⁶ | Mission-critical hardening |
-| Deep Space | 10⁻⁵ | Maximum hardening required |
-| Solar Storm | 10⁻³ | Emergency - expect failures |
+```riina
+// Hamming code with single-error-correction, double-error-detection
+jenis KataData = DaftarBit<32>;
+jenis KataEDAC = DaftarBit<39>;  // 32 data + 7 check bits
 
----
+fungsi pengekodan_hamming(data: KataData) -> KataEDAC kesan Bersih {
+    // Compute 7 parity check bits covering specified data positions
+    biar p = kira_pariti(data);
+    pulang gabung(data, p);
+}
 
-## 3. EMP AND HEMP THREATS
-
-### 3.1 EMP Sources
-
-| Source | Peak Field | Rise Time | Duration |
-|--------|------------|-----------|----------|
-| **Nuclear HEMP E1** | 50 kV/m | 2.5 ns | 1 μs |
-| **Nuclear HEMP E2** | 100 V/m | 1 μs | 1 s |
-| **Nuclear HEMP E3** | 40 V/km | 1 s | minutes |
-| **Solar CME** | 1-10 V/km | hours | days |
-| **Lightning** | 100 kV/m | 1 μs | 100 μs |
-| **IEMI Weapons** | 1-10 kV/m | ns | μs |
-
-### 3.2 EMP Effects on Electronics
-
-```
-HEMP E1 (Fast Pulse):
-├── Induced currents in conductors
-├── Semiconductor junction damage
-├── Logic upset and data corruption
-└── Potential burnout of unprotected devices
-
-HEMP E2 (Intermediate):
-├── Similar to lightning
-├── Surge protection typically handles
-└── Coupling through power lines
-
-HEMP E3 (Slow Pulse):
-├── Geomagnetically induced currents (GIC)
-├── Transformer saturation
-├── Power grid damage
-└── Not direct electronics threat
+fungsi penyahkodan_hamming(
+    kata: KataEDAC
+) -> Keputusan<KataData, RalatEDAC> kesan Bersih {
+    biar sindrom = kira_sindrom(kata);
+    jika sindrom == 0 {
+        // No error detected
+        pulang Ok(cabut_data(kata));
+    } lain jika pariti_keseluruhan(kata) {
+        // Odd parity: single-bit error, correctable
+        biar posisi = sindrom_ke_posisi(sindrom);
+        biar diperbetulkan = balik_bit(kata, posisi);
+        pulang Ok(cabut_data(diperbetulkan));
+    } lain {
+        // Even parity with non-zero syndrome: double-bit error
+        pulang Ralat(RalatBerganda(sindrom));
+    }
+}
 ```
 
-### 3.3 Survival Requirements
-
-| Level | Field Strength | Required For |
-|-------|---------------|--------------|
-| **Level 1** | 10 V/m | Commercial equipment |
-| **Level 2** | 100 V/m | Industrial equipment |
-| **Level 3** | 1 kV/m | Military equipment |
-| **Level 4** | 10 kV/m | Hardened military |
-| **Level 5** | 50 kV/m | Strategic systems |
-
-**RIINA Target**: Level 5 survival with formal proof.
-
----
-
-## 4. FORMAL VERIFICATION APPROACH
-
-### 4.1 Fault Model Formalization
+### 4.3 Coq Formalization of Fault Tolerance
 
 ```coq
-(** Radiation Fault Model *)
+(* Fault tolerance formalization for TMR *)
+Require Import Coq.Bool.Bool.
+Require Import Coq.Lists.List.
 
-(** Single Event Upset: bit flip at random location *)
-Inductive seu_fault : Type :=
-  | BitFlip : memory_location -> bit_index -> seu_fault.
-
-(** Multiple Bit Upset: correlated flips *)
-Inductive mbu_fault : Type :=
-  | MultiBitFlip : memory_location -> list bit_index -> mbu_fault.
-
-(** Fault occurrence model *)
-Record FaultModel := {
-  seu_rate : location -> R;  (* Faults per bit per second *)
-  mbu_probability : nat -> R; (* P(n simultaneous flips) *)
-  correlation_distance : nat; (* Max bits affected by one particle *)
-  tid_degradation : time -> parameter_shift
+(* A TMR system with three identical channels *)
+Record TMR (A : Type) := mkTMR {
+  channel_a : A;
+  channel_b : A;
+  channel_c : A
 }.
 
-(** State under faults *)
-Definition faulted_state (s : state) (f : fault) : state :=
-  apply_fault f s.
-```
+(* Fault model: at most one channel is corrupted *)
+Inductive SingleFault {A : Type} : TMR A -> TMR A -> Prop :=
+  | FaultNone : forall t, SingleFault t t
+  | FaultA : forall a' b c a_orig,
+      SingleFault (mkTMR A a_orig b c) (mkTMR A a' b c)
+  | FaultB : forall a b' c b_orig,
+      SingleFault (mkTMR A a b_orig c) (mkTMR A a b' c)
+  | FaultC : forall a b c' c_orig,
+      SingleFault (mkTMR A a b c_orig) (mkTMR A a b c').
 
-### 4.2 Hardening Verification
+(* Majority voter for booleans *)
+Definition bool_voter (t : TMR bool) : bool :=
+  let a := channel_a bool t in
+  let b := channel_b bool t in
+  let c := channel_c bool t in
+  orb (andb a b) (orb (andb a c) (andb b c)).
 
-**Triple Modular Redundancy (TMR)**:
-```coq
-(** TMR implementation *)
-Definition tmr_execute (op : operation) (inputs : data) : data :=
-  let r1 := execute_module_1 op inputs in
-  let r2 := execute_module_2 op inputs in
-  let r3 := execute_module_3 op inputs in
-  majority_vote r1 r2 r3.
-
-(** TMR correctness under single fault *)
+(* TMR correctness theorem: voter recovers correct value
+   despite any single fault *)
 Theorem tmr_single_fault_tolerant :
-  forall op inputs fault,
-    single_module_fault fault ->
-    tmr_execute op (apply_fault fault inputs) = execute op inputs.
+  forall (v : bool) (faulty : TMR bool),
+    SingleFault (mkTMR bool v v v) faulty ->
+    bool_voter faulty = v.
+Proof.
+  intros v faulty Hfault.
+  inversion Hfault; subst; unfold bool_voter; simpl;
+  destruct v; simpl; reflexivity.
+Qed.
+
+(* Hamming distance and error detection *)
+Fixpoint hamming_distance (xs ys : list bool) : nat :=
+  match xs, ys with
+  | nil, nil => 0
+  | x :: xs', y :: ys' => 
+      (if Bool.eqb x y then 0 else 1) + hamming_distance xs' ys'
+  | _, _ => 0  (* length mismatch *)
+  end.
+
+(* A code with minimum distance d can detect d-1 errors *)
+Definition detects_errors (encode : list bool -> list bool) 
+                          (d : nat) : Prop :=
+  forall w1 w2,
+    w1 <> w2 ->
+    hamming_distance (encode w1) (encode w2) >= d.
+
+(* SEC-DED requires minimum distance 4 *)
+Definition is_sec_ded (encode : list bool -> list bool) : Prop :=
+  detects_errors encode 4.
 ```
 
-**Error Detection and Correction (EDAC)**:
-```coq
-(** EDAC with SECDED code *)
-Definition encode_secded (data : word) : codeword :=
-  add_parity_bits data.
+## 5. Key References
 
-Definition decode_secded (cw : codeword) : option word :=
-  let syndrome := compute_syndrome cw in
-  if syndrome = 0 then Some (extract_data cw)
-  else if single_bit_error syndrome then
-    Some (correct_single_bit cw syndrome)
-  else None. (* Detected but uncorrectable *)
+| # | Reference | Venue | Year | Contribution |
+|---|-----------|-------|------|-------------|
+| 1 | Baumann, R.C. "Radiation-Induced Soft Errors in Advanced Semiconductor Technologies" | IEEE Trans. Device & Materials Reliability 5(3) | 2005 | Comprehensive SEU physics and SER quantification |
+| 2 | Mukherjee, S.S. et al. "A Systematic Methodology to Compute the Architectural Vulnerability Factors" | MICRO 2003 | 2003 | AVF framework for vulnerability analysis |
+| 3 | Lyons, R.E., Vanderkulk, W. "The Use of Triple-Modular Redundancy to Improve Computer Reliability" | IBM J. Research & Development 6(2) | 1962 | Foundational TMR reliability analysis |
+| 4 | Quinn, H. et al. "Radiation-Induced Multi-Bit Upsets in SRAM-Based FPGAs" | IEEE Trans. Nuclear Science 52(6) | 2005 | FPGA TMR vulnerability analysis |
+| 5 | Hsiao, M.Y. "A Class of Optimal Minimum Odd-Weight-Column SEC-DED Codes" | IBM J. Research & Development 14(4) | 1970 | Optimal SEC-DED code construction |
+| 6 | LaBel, K.A. et al. "Compendium of Single-Event Effects for Candidate Spacecraft Electronics" | NASA NEPP | 2004 | NASA radiation design guidelines and data |
+| 7 | JEDEC. "Measurement and Reporting of Alpha Particle and Terrestrial Cosmic Ray-Induced Soft Errors" | JESD89A | 2006 | Standardized soft error testing methodology |
+| 8 | Jha, S., Gupta, S.K. "Testing of Digital Systems" | Cambridge University Press | 2003 | Formal fault modeling and diagnostic coverage |
+| 9 | Berg, M. et al. "Effectiveness of Internal Versus External SEU Scrubbing Mitigation Strategies in a Xilinx FPGA" | IEEE Trans. Nuclear Science 55(4) | 2008 | Configuration scrubbing analysis for FPGAs |
+| 10 | Kastensmidt, F.L., Carro, L., Reis, R. "Fault-Tolerance Techniques for SRAM-Based FPGAs" | Springer | 2006 | Comprehensive FPGA radiation hardening techniques |
 
-(** SECDED correctness *)
-Theorem secded_corrects_single_bit :
-  forall data bit,
-    decode_secded (flip_bit (encode_secded data) bit) = Some data.
+## 6. Formalizability Assessment
 
-Theorem secded_detects_double_bit :
-  forall data bit1 bit2,
-    bit1 <> bit2 ->
-    decode_secded (flip_bits (encode_secded data) [bit1; bit2]) = None.
-```
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| TMR voter correctness proof | 1 | High | Phase 3 |
+| Hamming SEC-DED verification | 2 | High | Phase 3 |
+| Single-fault masking proof | 2 | High | Phase 3 |
+| BCH/Reed-Solomon verification | 4 | Medium | Phase 4 |
+| Fault injection framework | 3 | Medium | Phase 4 |
+| Memory scrubbing verification | 2 | Medium | Phase 4 |
+| Checkpoint/rollback correctness | 3 | Medium | Phase 4 |
+| Multi-bit upset tolerance | 3 | Low-Medium | Phase 5 |
+| Radiation-aware scheduling | 4 | Low | Phase 5 |
+| Full space-grade system verification | 10 | Low | Phase 6+ |
+| **Total** | **34** | | |
 
-### 4.3 EMP Survival Verification
+## 7. Scope Limitations
 
-```coq
-(** EMP transient model *)
-Record EMPTransient := {
-  peak_voltage : R;
-  rise_time : R;
-  duration : R;
-  waveform : time -> R
-}.
+1. **Fault model fidelity.** Formal fault models (single-bit flip, stuck-at) are idealizations of physical radiation effects. Real radiation events can cause multi-bit upsets, single-event functional interrupts (SEFI), single-event latchup (SEL), and single-event burnout (SEB) that are not captured by simple bit-flip models. RIINA's formal verification is sound with respect to the specified fault model, but the fault model itself is an approximation of physical reality validated by radiation testing, not formal proof.
 
-(** Shielding effectiveness *)
-Definition shielding_attenuation (shield : ShieldSpec) (freq : R) : R :=
-  (* dB attenuation at given frequency *)
-  shield_se_db shield freq.
+2. **Analog and mixed-signal exclusion.** Radiation effects on analog circuits (DACs, ADCs, PLLs, voltage regulators) cannot be modeled in RIINA's digital fault framework. Space systems invariably contain analog components whose radiation behavior requires separate analysis using SPICE-level simulation and radiation testing.
 
-(** Survival condition *)
-Definition emp_survival (system : System) (emp : EMPTransient) : Prop :=
-  forall component in system,
-    let incident := emp.(peak_voltage) in
-    let attenuated := incident / (10 ^ (shielding_attenuation system.shield emp_freq / 20)) in
-    attenuated <= component.damage_threshold.
+3. **Total Ionizing Dose (TID) is not addressed.** RIINA's fault model addresses transient effects (SEU, SET) but not cumulative radiation damage (TID) that degrades transistor parameters over the mission lifetime. TID mitigation requires radiation-hardened fabrication processes and is outside the scope of software or HDL-level formal verification.
 
-(** Survival theorem *)
-Theorem system_survives_hemp :
-  forall system,
-    adequate_shielding system HEMP_E1_50kV ->
-    emp_survival system HEMP_E1_standard.
-```
+4. **Verification does not replace radiation testing.** Regulatory frameworks (NASA, ESA, DoD) require physical radiation testing of flight hardware regardless of formal verification status. RIINA's formal proofs complement but do not substitute for particle beam testing, as the proofs depend on the fault model matching physical reality.
+
+5. **Common-mode failure limitation.** TMR and other redundancy techniques assume that faults are independent across channels. Common-mode failures — a single radiation event affecting all three TMR channels, or a systematic design bug present in all channels — are not mitigated by redundancy and require diversity-based approaches that increase verification complexity significantly.
+
+6. **Real-time constraints interaction.** Space-grade systems must meet hard real-time deadlines (attitude control loops, telemetry windows), and radiation mitigation techniques (scrubbing, voting, error correction) introduce latency. Formally verifying that mitigation overhead does not violate real-time constraints requires a verified timing model that is beyond RIINA's current type-level analysis capabilities.
 
 ---
 
-## 5. CORE THEOREMS
-
-### 5.1 Fault Tolerance Theorems
-
-**Theorem Θ.1 (TMR Correctness)**:
-```
-∀ computation C, fault F.
-  affects_single_module(F) →
-  tmr_result(C, F) = correct_result(C)
-```
-
-**Theorem Θ.2 (SECDED Correctness)**:
-```
-∀ data D, bit B.
-  decode(encode(D) ⊕ single_bit_error(B)) = D
-```
-
-**Theorem Θ.3 (MBU Tolerance with Interleaving)**:
-```
-∀ memory M, mbu_fault F.
-  interleave_distance(M) > correlation_distance →
-  affects_at_most_one_codeword(F, M)
-```
-
-**Theorem Θ.4 (Scrubbing Effectiveness)**:
-```
-∀ memory M, scrub_interval T, seu_rate R.
-  T < 1 / (R × size(M) × critical_threshold) →
-  P(uncorrectable_accumulation) < ε
-```
-
-### 5.2 EMP Survival Theorems
-
-**Theorem Θ.5 (Faraday Cage Effectiveness)**:
-```
-∀ shield S, frequency f.
-  thickness(S) > skin_depth(S.material, f) →
-  attenuation(S, f) > 20 × log₁₀(thickness / skin_depth) dB
-```
-
-**Theorem Θ.6 (Transient Suppression)**:
-```
-∀ transient T, TVS_diode D.
-  D.clamping_voltage < device.damage_threshold ∧
-  D.energy_rating > T.energy →
-  device_survives(T)
-```
-
-**Theorem Θ.7 (System EMP Survival)**:
-```
-∀ system S, HEMP_E1 E.
-  shielding_adequate(S, 50 kV/m) ∧
-  filtering_adequate(S, all_penetrations) ∧
-  grounding_adequate(S) →
-  functional_after(S, E)
-```
-
-### 5.3 Degradation Theorems
-
-**Theorem Θ.8 (TID Graceful Degradation)**:
-```
-∀ device D, dose rate R, time T.
-  accumulated_dose(R, T) < D.tid_threshold →
-  parameters_within_spec(D, T)
-```
-
-**Theorem Θ.9 (Mission Reliability)**:
-```
-∀ mission M, duration D, environment E.
-  hardening_level(M.system) ≥ required_level(E) →
-  P(mission_success) ≥ M.reliability_requirement
-```
-
----
-
-## 6. AXIOM REQUIREMENTS
-
-### 6.1 Physics Axioms
-
-| Axiom | Statement | Justification |
-|-------|-----------|---------------|
-| `axiom_seu_poisson` | SEU arrivals follow Poisson process | Radiation physics |
-| `axiom_mbu_correlation` | MBU affects nearby bits | Particle track physics |
-| `axiom_tid_cumulative` | TID effects accumulate linearly | Radiation damage model |
-| `axiom_latchup_threshold` | Latchup requires LET > threshold | Device physics |
-
-### 6.2 Protection Axioms
-
-| Axiom | Statement | Justification |
-|-------|-----------|---------------|
-| `axiom_tmr_independence` | TMR modules fail independently | Physical separation |
-| `axiom_ecc_hamming` | Hamming codes correct as specified | Coding theory |
-| `axiom_shield_attenuation` | Shielding follows SE formula | EM theory |
-| `axiom_tvs_clamping` | TVS clamps at specified voltage | Device specs |
-
-### 6.3 Axiom Count
-
-| Category | Count |
-|----------|-------|
-| Physics | 4 |
-| Protection | 4 |
-| Environmental | 3 |
-| Reliability | 3 |
-| **TOTAL** | **14** |
-
----
-
-## 7. HARDENING TECHNIQUES
-
-### 7.1 Hardware Techniques
-
-| Technique | Protects Against | Overhead |
-|-----------|-----------------|----------|
-| **TMR** | SEU, SET | 3× area, 3× power |
-| **EDAC (SECDED)** | Single-bit SEU | ~12% memory overhead |
-| **Interleaving** | MBU | Minimal |
-| **Rad-Hard Cells** | All SEE | 2-5× area |
-| **Guard Rings** | Latchup | 10-20% area |
-| **Shielding** | EMP, TID | Weight, cost |
-
-### 7.2 Software Techniques
-
-| Technique | Protects Against | Overhead |
-|-----------|-----------------|----------|
-| **Memory Scrubbing** | Accumulated SEU | CPU time |
-| **Watchdog Timers** | SEFI | Minimal |
-| **Checkpoint/Restart** | Data corruption | Memory, time |
-| **Algorithm TMR** | Computation errors | 3× compute |
-| **Heartbeat Monitoring** | System hangs | Minimal |
-
-### 7.3 System Techniques
-
-| Technique | Protects Against | Implementation |
-|-----------|-----------------|----------------|
-| **Cold Standby** | Total system failure | Backup systems |
-| **Graceful Degradation** | Partial failure | Reduced functionality |
-| **Safe Mode** | Critical failure | Minimum operations |
-| **Autonomous Recovery** | Transient faults | Self-healing (Track Υ) |
-
----
-
-## 8. INTEGRATION WITH OTHER TRACKS
-
-### 8.1 Dependency Graph
-
-```
-Track Φ (Verified Hardware)
-    │
-    └──► Track Θ (Radiation Hardening)
-              │
-              ├──► Track U (Runtime Guardian) - fault detection
-              ├──► Track Υ (Self-Healing) - recovery
-              ├──► Track Ρ (Autonomy) - degraded operation
-              └──► Space/Nuclear applications
-```
-
-### 8.2 Integration Points
-
-| Track | Integration |
-|-------|-------------|
-| **Φ** | Rad-hard version of verified hardware |
-| **U** | Sentinel monitors for SEU/latchup |
-| **Υ** | Recovery from radiation damage |
-| **Ρ** | Autonomous operation during solar events |
-| **Τ** | Mesh tolerates node failures |
-
----
-
-## 9. IMPLEMENTATION ROADMAP
-
-### Phase 1: Fault Modeling (Months 1-12)
-- Formalize radiation fault models in Coq
-- Define SEU/MBU/TID mathematically
-- Create simulation framework
-
-### Phase 2: Protection Proofs (Months 13-24)
-- Prove TMR correctness
-- Prove EDAC correctness
-- Prove scrubbing effectiveness
-
-### Phase 3: EMP Verification (Months 25-36)
-- Model EMP transients
-- Prove shielding effectiveness
-- Verify protection circuits
-
-### Phase 4: System Integration (Months 37-48)
-- End-to-end reliability proofs
-- Mission assurance verification
-- Qualification testing support
-
----
-
-## 10. CONCLUSION
-
-Track Θ ensures RIINA systems survive the harshest environments:
-
-1. **Space radiation**: Proven tolerance to SEU/MBU/TID
-2. **Nuclear EMP**: Verified survival of 50 kV/m HEMP
-3. **Solar storms**: Continued operation during Carrington-class events
-4. **Intentional attack**: Resistance to directed energy weapons
-
-**When the sun flares and the bombs fall, RIINA systems continue.**
-
----
-
-*Document Version: 1.0.0*
-*Created: 2026-01-17*
-*Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE*
-*"When the sun flares and the bombs fall, RIINA systems continue."*
+*"In space, physics is the adversary. And we verify against physics."*

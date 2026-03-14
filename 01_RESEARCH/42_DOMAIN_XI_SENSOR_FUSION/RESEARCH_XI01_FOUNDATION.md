@@ -1,973 +1,257 @@
-# RESEARCH_XI01_FOUNDATION.md
-**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
+# XI-01: Verified Sensor Fusion — Formally Verified Multi-Sensor State Estimation and Fault Detection
 
-# Track Ξ (Xi): Verified Sensor Fusion
-# RIINA Military-Grade Multi-Sensor Integration
-
-```
-╔══════════════════════════════════════════════════════════════════════════════════╗
-║                                                                                  ║
-║  ████████╗██████╗  █████╗  ██████╗██╗  ██╗    ██╗  ██╗██╗                        ║
-║  ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║ ██╔╝    ╚██╗██╔╝██║                        ║
-║     ██║   ██████╔╝███████║██║     █████╔╝      ╚███╔╝ ██║                        ║
-║     ██║   ██╔══██╗██╔══██║██║     ██╔═██╗      ██╔██╗ ██║                        ║
-║     ██║   ██║  ██║██║  ██║╚██████╗██║  ██╗    ██╔╝ ██╗██║                        ║
-║     ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚═╝                        ║
-║                                                                                  ║
-║  VERIFIED SENSOR FUSION - FORMALLY PROVEN MULTI-SENSOR INTEGRATION               ║
-║                                                                                  ║
-║  "Every sensor verified. Every fusion proven. Every decision justified."         ║
-║                                                                                  ║
-╚══════════════════════════════════════════════════════════════════════════════════╝
-```
-
-## Document Information
-
-| Field | Value |
-|-------|-------|
-| **Track ID** | Ξ (Xi) |
-| **Domain** | Verified Sensor Fusion |
-| **Version** | 1.0.0 |
-| **Status** | Foundation |
-| **Created** | 2026-01-17 |
-| **Classification** | RIINA Internal - Military Track |
+**Domain:** XI — Verified Sensor Fusion
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Kalman filter verification, multi-sensor fusion proofs, fault detection and isolation, sensor integrity guarantees
 
 ---
 
-## 1. Executive Summary
+## 1. Problem Statement
 
-### 1.1 Purpose
+Sensor fusion is the computational process of combining data from multiple sensors to produce state estimates that are more accurate, reliable, and complete than any single sensor alone. In safety-critical systems — autonomous vehicles, aircraft navigation, medical monitoring, and industrial process control — sensor fusion algorithms must produce correct results under all operating conditions, including sensor failures, data corruption, and adversarial manipulation. A single error in a Kalman filter implementation, an incorrect noise covariance matrix, or a missed fault detection can lead to catastrophic system failures.
 
-Track Ξ (Xi) establishes the formal foundations for **verified sensor fusion** in RIINA -
-mathematically proven multi-sensor data integration that guarantees correct state estimation,
-anomaly detection, and sensor attack resilience. This track ensures that autonomous systems
-can trust their perception of the physical world.
+Current sensor fusion implementations are validated through extensive testing and simulation, but testing cannot exhaustively cover the continuous state space of real-valued sensor measurements. The Kalman filter alone involves matrix operations (inversion, multiplication, addition) where numerical stability, positive definiteness of covariance matrices, and convergence properties must all hold simultaneously. Durrant-Whyte and Bailey (2006) note that even well-understood algorithms like Extended Kalman Filters can diverge in practice due to linearization errors that testing may not reveal.
 
-### 1.2 Critical Insight
+RIINA provides the formal verification infrastructure to prove that sensor fusion implementations maintain critical mathematical invariants: covariance matrix symmetry and positive definiteness, estimation error boundedness, fault detection completeness, and graceful degradation under sensor loss. By encoding these properties in RIINA's type system and effect framework, developers receive compile-time guarantees that their fusion algorithms satisfy the mathematical specifications on which safety arguments depend.
 
-**Sensor fusion is fundamentally a trust problem.** Every sensor can lie - through malfunction,
-degradation, spoofing, or adversarial manipulation. RIINA's approach treats sensor fusion as
-a verification problem: we formally prove that our fusion algorithms correctly integrate data
-from partially-trusted, noisy, and potentially adversarial sources.
+## 2. State of the Art
 
-### 1.3 Scope
+### 2.1 Kalman Filtering Foundations
 
-This foundation document covers:
+Kalman (1960) introduced the optimal linear state estimator for discrete-time systems, establishing that the Kalman filter minimizes mean-square estimation error for linear Gaussian systems. The filter's correctness depends on precise matrix algebra: the predicted covariance must remain positive semi-definite, the Kalman gain must be correctly computed from the innovation covariance, and the updated state must satisfy the minimum variance property. RIINA's formal verification targets these exact mathematical invariants, proving they hold for all possible input sequences rather than just tested cases.
 
-1. **Sensor Modeling** - Formal models of sensor characteristics and error distributions
-2. **Kalman Filter Verification** - Formally verified state estimation
-3. **Byzantine Sensor Resilience** - Correct fusion despite adversarial sensors
-4. **Temporal Consistency** - Cross-time sensor data verification
-5. **Spatial Consistency** - Cross-sensor geometric verification
-6. **Attack Detection** - Formally proven anomaly detection
-7. **Graceful Degradation** - Verified fallback under sensor loss
+### 2.2 Unscented Kalman Filter
 
----
+Julier and Uhlmann (2004) developed the Unscented Kalman Filter (UKF) to handle nonlinear systems without the linearization errors of Extended Kalman Filters. The UKF uses deterministically chosen sigma points to capture the mean and covariance of the state distribution through nonlinear transformations. Verification of UKF implementations requires proving that sigma point generation preserves the distribution's statistics, that weight calculations satisfy sum-to-one constraints, and that the reconstructed covariance remains positive definite. These are natural targets for RIINA's dependent type system.
 
-## 2. Threat Model
+### 2.3 Multi-Sensor Data Fusion Architecture
 
-### 2.1 Adversary Capabilities
+Hall and Llinas (2001) established the JDL (Joint Directors of Laboratories) data fusion model, providing a standardized architecture for multi-sensor fusion systems with five processing levels: object assessment, situation assessment, impact assessment, process refinement, and cognitive refinement. Their framework identifies the key architectural challenge: each fusion level must maintain consistency with the levels above and below it. RIINA's module system with verified interfaces can enforce these cross-level consistency properties at compile time.
 
-| Threat | Description | Example |
-|--------|-------------|---------|
-| **Sensor Spoofing** | Inject false readings into sensor | GPS spoofing via SDR |
-| **Sensor Blinding** | Prevent sensor from functioning | Laser dazzling of camera |
-| **Sensor Degradation** | Gradually corrupt sensor accuracy | Contaminate optical lens |
-| **Replay Attacks** | Replay old valid sensor data | Record-and-replay radar |
-| **Timing Attacks** | Manipulate sensor timestamps | Delay GPS signals |
-| **Physical Manipulation** | Alter physical environment | Adversarial patches on signs |
-| **Electromagnetic Interference** | Corrupt sensor electronics | High-power microwave |
-| **Supply Chain Compromise** | Pre-install malicious sensors | Trojan in IMU firmware |
+### 2.4 SLAM and Recursive Estimation
 
-### 2.2 Sensor Vulnerability Matrix
+Durrant-Whyte and Bailey (2006) provided the definitive survey of Simultaneous Localization and Mapping (SLAM), identifying the computational and consistency challenges in recursive state estimation over growing state spaces. Their analysis reveals that EKF-SLAM's covariance matrix grows quadratically with the number of landmarks, and maintaining its positive definiteness during long-term operation is a critical correctness requirement. RIINA's verified matrix libraries can guarantee this invariant across arbitrarily long operation.
 
-| Sensor Type | Spoofing | Blinding | Jamming | Cost to Attack |
-|-------------|----------|----------|---------|----------------|
-| GPS/GNSS | HIGH | N/A | HIGH | $100 SDR |
-| RADAR | MEDIUM | LOW | MEDIUM | $10K+ |
-| LiDAR | MEDIUM | HIGH | LOW | $1K laser |
-| Camera | HIGH | HIGH | N/A | $10 laser pointer |
-| IMU | LOW | N/A | MEDIUM | $50K+ |
-| Magnetometer | MEDIUM | N/A | HIGH | $100 magnets |
-| Barometer | LOW | N/A | LOW | $1K+ |
-| Ultrasonic | HIGH | N/A | HIGH | $50 |
+### 2.5 Federated Kalman Filtering
 
-### 2.3 Security Requirements
+Carlson (1990) introduced the federated Kalman filter architecture, where multiple local filters process individual sensor streams and a master filter fuses their outputs. The federated approach enables graceful degradation: if one sensor fails, its local filter can be isolated without corrupting the master estimate. Carlson proved that the federated architecture preserves optimality under certain information-sharing conditions. RIINA can verify that implementations correctly partition and recombine information, maintaining the mathematical conditions for federated optimality.
 
-| Requirement | Description | Verification |
-|-------------|-------------|--------------|
-| **SR-XI-001** | No single sensor failure causes incorrect state | Byzantine tolerance proof |
-| **SR-XI-002** | Spoofed sensor detected within T_detect | Detection theorem |
-| **SR-XI-003** | State estimate bounded error under attack | Error bound proof |
-| **SR-XI-004** | Graceful degradation with sensor loss | Fallback correctness |
-| **SR-XI-005** | Temporal attacks detected | Timestamp verification |
-| **SR-XI-006** | Geometric inconsistency detected | Spatial consistency |
-| **SR-XI-007** | No adversarial patch causes misclassification | Robust perception |
+### 2.6 Particle Filtering
 
----
+Ristic et al. (2004) provided a comprehensive treatment of particle filters (sequential Monte Carlo methods) for nonlinear, non-Gaussian state estimation. Particle filters represent the posterior distribution as a weighted set of samples, requiring careful resampling to avoid particle degeneracy. Verification challenges include proving that the resampling algorithm preserves the distribution's properties, that the effective sample size computation is correct, and that convergence holds as the number of particles increases. RIINA's probabilistic reasoning extensions address these requirements.
 
-## 3. Formal Foundations
+### 2.7 Integrated Navigation Systems
 
-### 3.1 Sensor Model
+Gao et al. (2012) addressed the integration of inertial navigation systems (INS) with GPS, focusing on fault detection and isolation in tightly-coupled architectures. Their work identifies that INS/GPS integration requires continuous monitoring of measurement residuals (innovations) to detect GPS spoofing or INS drift. The innovation consistency check — verifying that residuals are statistically consistent with the filter's predicted covariance — is a formally verifiable property that RIINA can enforce through runtime monitoring with proven bounds.
 
-#### 3.1.1 Individual Sensor
+### 2.8 Byzantine Fault Tolerant Fusion
 
-```
-// Sensor as probabilistic oracle
-Sensor := {
-    type: SensorType,
-    measurement: Time → Reading ⊕ Fault,
-    noise_model: Reading → Distribution,
-    latency: Duration,
-    trust_level: TrustLevel
-}
+Lee et al. (2013) introduced Byzantine fault tolerant sensor fusion, addressing the scenario where sensors may provide arbitrarily incorrect data due to hardware failure or adversarial compromise. Their algorithms guarantee correct state estimation as long as fewer than one-third of sensors are Byzantine-faulty, extending classical BFT results to the continuous-valued sensor fusion domain. RIINA's verified fault tolerance framework can prove that fusion implementations maintain correctness under the specified fault model.
 
-// Measurement with uncertainty
-Reading := {
-    value: Vector<f64>,
-    covariance: Matrix<f64>,
-    timestamp: Timestamp,
-    confidence: f64 ∈ [0, 1]
-}
+## 3. Properties Verifiable by RIINA
 
-// Sensor types
-SensorType :=
-    | GPS { accuracy: f64, update_rate: f64 }
-    | IMU { accel_noise: f64, gyro_noise: f64, bias_stability: f64 }
-    | LiDAR { range: f64, angular_res: f64, points_per_sec: u64 }
-    | Radar { range: f64, velocity_accuracy: f64, angular_res: f64 }
-    | Camera { resolution: (u32, u32), fov: f64, fps: u32 }
-    | Barometer { accuracy: f64, drift_rate: f64 }
-    | Magnetometer { accuracy: f64, interference_sensitivity: f64 }
-```
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Covariance positive definiteness | Matrix algebra invariant proof | Dependent types on matrix values ensuring eigenvalue positivity |
+| Kalman gain correctness | Algebraic derivation verification | `kesan Bersih` pure computation with verified matrix inverse |
+| Innovation consistency | Chi-squared test bound verification | Refinement types encoding statistical test thresholds |
+| Federated filter information partition | Information conservation proof | Linear types ensuring information is neither duplicated nor lost |
+| Sensor fault detection completeness | Exhaustive residual analysis | `padanan` exhaustiveness over all fault classification outcomes |
+| Estimation error boundedness | Lyapunov stability argument | Dependent types encoding error bound as function of noise parameters |
+| Graceful degradation | Subset fusion correctness | Verified fallback chain: N sensors -> N-1 -> ... -> 1 with proven accuracy |
+| Numerical stability | Floating-point error bound analysis | `kesan Numerik` effect tracking accumulated rounding error bounds |
 
-#### 3.1.2 Multi-Sensor System
+## 4. RIINA Integration Architecture
 
-```
-// Collection of sensors with diversity requirements
-SensorSuite<const N: usize> := {
-    sensors: [Sensor; N],
-
-    // Diversity constraints
-    invariant diversity_constraint:
-        ∀ critical_state_component:
-            count(sensors_observing(critical_state_component)) >= 3 ∧
-            sensors_observing(critical_state_component).all_different_modalities()
-}
-
-// System state to be estimated
-SystemState := {
-    position: Vector3<f64>,
-    velocity: Vector3<f64>,
-    orientation: Quaternion<f64>,
-    angular_velocity: Vector3<f64>,
-    // ... domain-specific states
-}
-```
-
-### 3.2 Verified Kalman Filter
-
-#### 3.2.1 State Estimation Core
+### 4.1 Verified Kalman Filter in RIINA
 
 ```riina
-/// Formally verified Extended Kalman Filter
-///
-/// THEOREM: If noise is bounded and system is observable,
-///          state estimate error is bounded.
-kesan[Hitung] fungsi kalman_predict<const N: usize>(
-    state: &EstimatedState<N>,
-    control: &ControlInput,
-    dt: Duration,
-    process_noise: &Matrix<N, N>
-) -> EstimatedState<N>
-    memerlukan state.covariance.is_positive_definite()
-    memerlukan process_noise.is_positive_definite()
-    memastikan pulangan.covariance.is_positive_definite()
-    memastikan pulangan.covariance.trace() >= state.covariance.trace()
-{
-    // State transition
-    biar F = state_transition_matrix(state, control, dt);
-    biar x_pred = F * state.mean + control_effect(control, dt);
+// Jenis matriks dan vektor untuk penapis Kalman
+jenis Matriks = Tatasusunan2D<Nombor>;
+jenis Vektor = Senarai<Nombor>;
 
-    // Covariance propagation
-    biar P_pred = F * state.covariance * F.transpose() + process_noise;
-
-    // Covariance bounds check (prevent numerical instability)
-    biar P_bounded = enforce_covariance_bounds(P_pred);
-
-    EstimatedState {
-        mean: x_pred,
-        covariance: P_bounded,
-        timestamp: state.timestamp + dt,
-    }
+// Keadaan penapis Kalman
+struktur KeadaanKalman {
+    x: Vektor,           // anggaran keadaan (state estimate)
+    P: Matriks,           // kovarians ralat (error covariance)
+    F: Matriks,           // model peralihan (transition model)
+    H: Matriks,           // model pemerhatian (observation model)
+    Q: Matriks,           // kovarians proses (process noise)
+    R: Matriks,           // kovarians ukuran (measurement noise)
 }
 
-/// Kalman update with verified numerical stability
-kesan[Hitung] fungsi kalman_update<const N: usize, const M: usize>(
-    predicted: &EstimatedState<N>,
-    measurement: &Measurement<M>,
-    H: &Matrix<M, N>,  // Observation matrix
-    R: &Matrix<M, M>   // Measurement noise covariance
-) -> EstimatedState<N>
-    memerlukan predicted.covariance.is_positive_definite()
-    memerlukan R.is_positive_definite()
-    memastikan pulangan.covariance.is_positive_definite()
-    memastikan pulangan.covariance.trace() <= predicted.covariance.trace()
-{
-    // Innovation
-    biar y = measurement.value - H * predicted.mean;
+// Status kesalahan sensor
+jenis StatusSensor = padanan {
+    Normal,
+    Rosak,               // faulty
+    Dikompromi,          // compromised (Byzantine)
+    TiadaData,           // no data
+};
 
-    // Innovation covariance
-    biar S = H * predicted.covariance * H.transpose() + R;
+// Langkah ramalan penapis Kalman (prediction step)
+fungsi ramal(kf: KeadaanKalman) -> KeadaanKalman kesan Bersih {
+    // Invariant: P kekal positif tentu (P remains positive definite)
+    biar x_ramal = darab_matriks_vektor(kf.F, kf.x);
+    biar P_ramal = tambah_matriks(
+        darab_matriks(darab_matriks(kf.F, kf.P), pindah_matriks(kf.F)),
+        kf.Q
+    );
+    pulang KeadaanKalman {
+        x: x_ramal,
+        P: P_ramal,
+        F: kf.F, H: kf.H, Q: kf.Q, R: kf.R,
+    };
+}
 
-    // Kalman gain (numerically stable computation)
-    biar K = predicted.covariance * H.transpose() * S.inverse_stable();
+// Langkah kemaskini penapis Kalman (update step)
+fungsi kemaskini(
+    kf: KeadaanKalman,
+    ukuran: Vektor
+) -> KeadaanKalman kesan Bersih {
+    // Inovasi (innovation / measurement residual)
+    biar y = tolak_vektor(ukuran, darab_matriks_vektor(kf.H, kf.x));
+    // Kovarians inovasi
+    biar S = tambah_matriks(
+        darab_matriks(darab_matriks(kf.H, kf.P), pindah_matriks(kf.H)),
+        kf.R
+    );
+    // Gandaan Kalman (Kalman gain)
+    biar K = darab_matriks(
+        darab_matriks(kf.P, pindah_matriks(kf.H)),
+        songsang_matriks(S)
+    );
+    // Kemaskini keadaan
+    biar x_baru = tambah_vektor(kf.x, darab_matriks_vektor(K, y));
+    // Kemaskini kovarians (Joseph form for numerical stability)
+    biar I_KH = tolak_matriks(matriks_identiti(saiz(kf.x)), darab_matriks(K, kf.H));
+    biar P_baru = tambah_matriks(
+        darab_matriks(darab_matriks(I_KH, kf.P), pindah_matriks(I_KH)),
+        darab_matriks(darab_matriks(K, kf.R), pindah_matriks(K))
+    );
+    pulang KeadaanKalman {
+        x: x_baru, P: P_baru,
+        F: kf.F, H: kf.H, Q: kf.Q, R: kf.R,
+    };
+}
 
-    // Updated state
-    biar x_upd = predicted.mean + K * y;
-
-    // Joseph form covariance update (numerically stable)
-    biar I_KH = Matrix::identity() - K * H;
-    biar P_upd = I_KH * predicted.covariance * I_KH.transpose()
-                 + K * R * K.transpose();
-
-    EstimatedState {
-        mean: x_upd,
-        covariance: enforce_positive_definite(P_upd),
-        timestamp: measurement.timestamp,
+// Pengesanan kesalahan sensor melalui ujian inovasi
+fungsi kesan_kesalahan_sensor(
+    inovasi: Vektor,
+    kovarians_inovasi: Matriks,
+    ambang: Nombor
+) -> StatusSensor kesan Bersih {
+    biar statistik = darab_vektor_pindah(
+        inovasi,
+        darab_matriks_vektor(songsang_matriks(kovarians_inovasi), inovasi)
+    );
+    padanan statistik > ambang {
+        benar => StatusSensor::Rosak,
+        palsu => StatusSensor::Normal,
     }
 }
 ```
 
-#### 3.2.2 Coq Verification of Kalman Properties
+### 4.2 Coq Formalization
 
 ```coq
-(** Kalman Filter Formal Verification *)
+(* Verified Kalman filter properties *)
+From Stdlib Require Import Reals List.
+From Stdlib Require Import Lra.
 
-(* State representation *)
-Record EstimatedState (n : nat) := mkState {
-  mean : Vector n;
-  covariance : Matrix n n;
-  cov_pos_def : positive_definite covariance
+(* Matrix and vector types *)
+Parameter Matrix : nat -> nat -> Type.
+Parameter Vector : nat -> Type.
+
+(* Matrix operations *)
+Parameter mat_mul : forall {m n p}, Matrix m n -> Matrix n p -> Matrix m p.
+Parameter mat_add : forall {m n}, Matrix m n -> Matrix m n -> Matrix m n.
+Parameter mat_transpose : forall {m n}, Matrix m n -> Matrix n m.
+Parameter mat_inv : forall {n}, Matrix n n -> Matrix n n.
+Parameter mat_sub : forall {m n}, Matrix m n -> Matrix m n -> Matrix m n.
+Parameter identity : forall n, Matrix n n.
+
+(* Positive definiteness *)
+Parameter pos_definite : forall {n}, Matrix n n -> Prop.
+
+(* Kalman filter state *)
+Record KalmanState (n m : nat) := mkKalman {
+  state_est : Vector n;
+  error_cov : Matrix n n;
+  trans_model : Matrix n n;
+  obs_model : Matrix m n;
+  proc_noise : Matrix n n;
+  meas_noise : Matrix m m;
 }.
 
-(* Key theorem: Kalman filter maintains bounded error *)
-Theorem kalman_error_bounded :
-  forall (n m : nat) (sys : LinearSystem n m)
-         (init : EstimatedState n) (measurements : list (Measurement m)),
-    observable sys ->
-    bounded_process_noise sys ->
-    bounded_measurement_noise sys ->
-    let final := fold_left (kalman_step sys) measurements init in
-    error_bounded final sys.(true_state) sys.(error_bound).
+(* Prediction preserves positive definiteness *)
+Theorem predict_preserves_pd :
+  forall n m (kf : KalmanState n m),
+    pos_definite (error_cov _ _ kf) ->
+    pos_definite (proc_noise _ _ kf) ->
+    pos_definite (mat_add (mat_mul (mat_mul (trans_model _ _ kf) (error_cov _ _ kf))
+                                    (mat_transpose (trans_model _ _ kf)))
+                          (proc_noise _ _ kf)).
 Proof.
-  (* Proof via Lyapunov stability analysis *)
-  intros.
-  apply lyapunov_kalman_stability.
-  - exact H.   (* observability *)
-  - exact H0.  (* bounded process noise *)
-  - exact H1.  (* bounded measurement noise *)
-  - apply covariance_bounded_implies_error_bounded.
-    apply kalman_covariance_bounded; auto.
+  intros n m kf Hpd_P Hpd_Q.
+  (* F * P * F^T is PSD when P is PD, and Q is PD *)
+  (* Their sum is PD *)
+  apply pos_definite_sum.
+  - apply pos_definite_congruence; assumption.
+  - assumption.
 Qed.
 
-(* Theorem: Kalman gain is optimal for Gaussian noise *)
-Theorem kalman_optimal_linear_gaussian :
-  forall (n m : nat) (sys : LinearGaussianSystem n m)
-         (state : EstimatedState n) (z : Measurement m),
-    gaussian_noise sys ->
-    let K := kalman_gain state sys.(H) sys.(R) in
-    let updated := kalman_update state z sys.(H) sys.(R) in
-    forall K',
-      let updated' := linear_update state z sys.(H) K' in
-      trace (updated.(covariance)) <= trace (updated'.(covariance)).
+(* Innovation consistency implies no fault *)
+Theorem innovation_consistency :
+  forall (innovation : Vector _) (S : Matrix _ _) (threshold : R),
+    pos_definite S ->
+    quadratic_form innovation (mat_inv S) <= threshold ->
+    sensor_status_from_innovation innovation S threshold = Normal.
 Proof.
-  (* MMSE optimality proof *)
-  intros.
-  apply minimum_mean_square_error_optimal.
-  exact H.
-Qed.
-
-(* Theorem: Covariance remains positive definite *)
-Theorem kalman_preserves_positive_definite :
-  forall (n m : nat) (P : Matrix n n) (H : Matrix m n) (R Q : Matrix n n),
-    positive_definite P ->
-    positive_definite R ->
-    positive_definite Q ->
-    let P_pred := kalman_predict_cov P Q in
-    let P_upd := kalman_update_cov P_pred H R in
-    positive_definite P_pred /\ positive_definite P_upd.
-Proof.
-  intros.
-  split.
-  - (* Prediction step preserves PD *)
-    apply sum_positive_definite; auto.
-    apply quadratic_form_positive_definite; auto.
-  - (* Update step preserves PD via Joseph form *)
-    apply joseph_form_positive_definite; auto.
+  intros innov S thresh Hpd Hbound.
+  unfold sensor_status_from_innovation.
+  destruct (Rle_dec (quadratic_form innov (mat_inv S)) thresh).
+  - reflexivity.
+  - lra.
 Qed.
 ```
 
-### 3.3 Byzantine Sensor Tolerance
+## 5. Key References
 
-#### 3.3.1 Byzantine Fault Model
+| # | Reference | Venue | Contribution |
+|---|-----------|-------|--------------|
+| 1 | Kalman, R. E. (1960). A New Approach to Linear Filtering and Prediction Problems. *Journal of Basic Engineering*, 82(1), 35-45. | ASME Trans. | Optimal linear state estimator; minimum variance derivation; foundational filter equations |
+| 2 | Julier, S. J., Uhlmann, J. K. (2004). Unscented Filtering and Nonlinear Estimation. *Proceedings of the IEEE*, 92(3), 401-422. | Proc. IEEE | Unscented transform for nonlinear estimation; sigma point selection; UKF algorithm |
+| 3 | Hall, D. L., Llinas, J. (2001). *Handbook of Multisensor Data Fusion*. CRC Press. | Book | JDL fusion model; multi-level fusion architecture; sensor management framework |
+| 4 | Durrant-Whyte, H., Bailey, T. (2006). Simultaneous Localization and Mapping: Part I. *IEEE Robotics & Automation Magazine*, 13(2), 99-110. | IEEE RAM | SLAM problem formulation; EKF-SLAM analysis; consistency and convergence challenges |
+| 5 | Carlson, N. A. (1990). Federated Square Root Filter for Decentralized Parallel Processes. *IEEE Transactions on Aerospace and Electronic Systems*, 26(3), 517-525. | IEEE TAES | Federated filter architecture; information partitioning; graceful degradation under sensor loss |
+| 6 | Ristic, B., Arulampalam, S., Gordon, N. (2004). *Beyond the Kalman Filter: Particle Filters for Tracking Applications*. Artech House. | Book | Sequential Monte Carlo methods; particle degeneracy; resampling algorithms |
+| 7 | Gao, G., Lachapelle, G., (2012). INS/GPS Integration: Global Observability Analysis. *GPS Solutions*, 16(3), 295-313. | GPS Solutions | Tightly-coupled INS/GPS; fault detection via innovation monitoring; integrity verification |
+| 8 | Lee, H., Choi, B.-Y., Park, K. (2013). Byzantine Fault Tolerant Data Aggregation with Optimal Resilience. *IEEE ICDCS 2013*. | IEEE ICDCS | BFT sensor fusion; correctness under f < n/3 faulty sensors; continuous-valued BFT extension |
 
-```
-// Up to f sensors may be Byzantine (arbitrary behavior)
-ByzantineSensorSuite<const N: usize, const F: usize> := {
-    sensors: [Sensor; N],
-    max_byzantine: F,
+## 6. Formalizability Assessment
 
-    // Requires 3f + 1 sensors for tolerance
-    invariant byzantine_tolerance: N >= 3 * F + 1,
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Kalman filter algebraic correctness | 5 | High — well-defined matrix algebra specification | Phase 3 |
+| Covariance positive definiteness invariant | 3 | High — standard linear algebra proof | Phase 3 |
+| Innovation consistency test correctness | 2 | High — statistical threshold comparison | Phase 3 |
+| Federated filter information conservation | 4 | Medium — requires information-theoretic formalization | Phase 4 |
+| UKF sigma point correctness | 6 | Medium — nonlinear transformation verification | Phase 4 |
+| Particle filter convergence | 8 | Low-Medium — requires measure-theoretic probability in Coq | Phase 5 |
+| Byzantine fault tolerant fusion | 7 | Medium — extends existing BFT formalizations | Phase 5 |
+| Numerical stability (Joseph form) | 5 | Medium — floating-point error bound analysis | Phase 4 |
 
-    // At least f+1 honest sensors for any observable state
-    invariant honest_coverage:
-        ∀ state_component:
-            honest_sensors_observing(state_component).count() >= F + 1
-}
-```
+## 7. Scope Limitations
 
-#### 3.3.2 Robust Fusion Algorithm
-
-```riina
-/// Byzantine-tolerant sensor fusion
-///
-/// THEOREM: With N ≥ 3f + 1 sensors and f Byzantine,
-///          the fused estimate is within ε of true state.
-kesan[Hitung] fungsi byzantine_fusion<const N: usize, const F: usize>(
-    readings: &[SensorReading; N],
-    weights: &[f64; N],
-    state_prior: &EstimatedState
-) -> FusedEstimate
-    memerlukan N >= 3 * F + 1
-    memerlukan readings.timestamps_consistent()
-{
-    // Step 1: Compute pairwise consistency scores
-    biar consistency = compute_consistency_matrix(readings);
-
-    // Step 2: Identify suspected Byzantine sensors
-    biar suspected = identify_outliers(consistency, F);
-
-    // Step 3: Compute robust estimate excluding suspected
-    biar robust_estimate = match suspected.len() {
-        0 => weighted_average(readings, weights),
-        _ => {
-            // Use geometric median for robustness
-            biar filtered = readings.iter()
-                .enumerate()
-                .filter(|(i, _)| !suspected.contains(i))
-                .collect::<Vec<_>>();
-
-            geometric_median(&filtered)
-        }
-    };
-
-    // Step 4: Cross-validate with state prior
-    biar innovation = robust_estimate - state_prior.mean;
-    biar mahalanobis = innovation.mahalanobis_distance(&state_prior.covariance);
-
-    kalau mahalanobis > MAHALANOBIS_THRESHOLD {
-        // Significant deviation - increase uncertainty
-        FusedEstimate {
-            value: robust_estimate,
-            confidence: DEGRADED_CONFIDENCE,
-            anomaly_flag: betul,
-        }
-    } lain {
-        FusedEstimate {
-            value: robust_estimate,
-            confidence: compute_confidence(&filtered),
-            anomaly_flag: salah,
-        }
-    }
-}
-
-/// Geometric median - robust to outliers
-/// Breakdown point: 50% (tolerates up to half bad data)
-kesan[Hitung] fungsi geometric_median<const D: usize>(
-    points: &[Vector<D>]
-) -> Vector<D>
-    memerlukan points.len() >= 1
-{
-    // Weiszfeld's algorithm with verified convergence
-    biar ubah estimate = points.mean();
-    biar ubah prev_estimate;
-
-    untuk _ dalam 0..MAX_ITERATIONS {
-        prev_estimate = estimate;
-
-        biar ubah numerator = Vector::zeros();
-        biar ubah denominator = 0.0;
-
-        untuk point dalam points {
-            biar dist = (point - estimate).norm();
-            kalau dist > EPSILON {
-                numerator += point / dist;
-                denominator += 1.0 / dist;
-            }
-        }
-
-        estimate = numerator / denominator;
-
-        kalau (estimate - prev_estimate).norm() < CONVERGENCE_THRESHOLD {
-            pulang estimate;
-        }
-    }
-
-    estimate
-}
-```
-
-#### 3.3.3 Coq Proof of Byzantine Tolerance
-
-```coq
-(** Byzantine Sensor Fusion Verification *)
-
-(* Byzantine fault model *)
-Definition byzantine_set (n f : nat) :=
-  { B : Ensemble (Fin n) | cardinal B <= f }.
-
-(* Honest sensors are not in Byzantine set *)
-Definition honest_sensors (n f : nat) (B : byzantine_set n f) :=
-  fun i => ~ In i (proj1_sig B).
-
-(* Correct reading from honest sensor (within noise bound) *)
-Definition correct_reading (sensor : Sensor) (true_val : R) (reading : R) :=
-  Rabs (reading - true_val) <= sensor.(noise_bound).
-
-(* Main theorem: Byzantine-tolerant fusion is correct *)
-Theorem byzantine_fusion_correct :
-  forall (n f : nat) (sensors : Vector Sensor n)
-         (readings : Vector R n) (true_val : R),
-    n >= 3 * f + 1 ->
-    forall (B : byzantine_set n f),
-      (forall i, honest_sensors n f B i ->
-                 correct_reading (sensors[@i]) true_val (readings[@i])) ->
-      let fused := byzantine_fusion readings f in
-      Rabs (fused - true_val) <= fusion_error_bound sensors f.
-Proof.
-  intros n f sensors readings true_val Hn B Hhonest.
-  unfold byzantine_fusion.
-
-  (* Key insight: with n >= 3f+1, majority of any 2f+1 subset is honest *)
-  assert (Hmajority: forall S : Ensemble (Fin n),
-    cardinal S = 2*f + 1 ->
-    exists T, T ⊆ S /\ cardinal T >= f + 1 /\
-              forall i, In i T -> honest_sensors n f B i).
-  { apply pigeonhole_byzantine; omega. }
-
-  (* Geometric median converges to honest majority *)
-  apply geometric_median_robust.
-  - exact Hn.
-  - exact Hmajority.
-  - exact Hhonest.
-Qed.
-
-(* Theorem: Attack detection is sound (no false negatives) *)
-Theorem attack_detection_sound :
-  forall (n f : nat) (sensors : Vector Sensor n)
-         (readings : Vector R n) (true_val : R),
-    n >= 3 * f + 1 ->
-    forall (B : byzantine_set n f),
-      (exists i, In i (proj1_sig B) /\
-                 anomalous_reading (sensors[@i]) true_val (readings[@i])) ->
-      attack_detected (analyze_consistency readings f) = true.
-Proof.
-  intros.
-  apply consistency_check_detects_anomaly.
-  - exact H.
-  - destruct H0 as [i [HinB Hanom]].
-    exists i. split; auto.
-    apply anomalous_implies_inconsistent; auto.
-Qed.
-```
-
-### 3.4 Temporal Consistency Verification
-
-#### 3.4.1 Time Synchronization Model
-
-```riina
-/// Verified time synchronization for sensor fusion
-struktur TimeSyncState {
-    /// Local clock offset estimates for each sensor
-    clock_offsets: HashMap<SensorId, ClockOffset>,
-
-    /// Maximum allowable clock drift
-    max_drift: Duration,
-
-    /// Reference time source
-    reference: TimeReference,
-}
-
-/// Clock offset with uncertainty
-struktur ClockOffset {
-    offset: Duration,
-    uncertainty: Duration,
-    last_sync: Timestamp,
-    drift_rate: f64,  // ppm
-}
-
-/// Verify temporal consistency of sensor readings
-kesan[Hitung] fungsi verify_temporal_consistency(
-    readings: &[TimestampedReading],
-    sync_state: &TimeSyncState,
-    physics_constraints: &PhysicsConstraints
-) -> TemporalVerification
-    memerlukan readings.len() >= 2
-{
-    // Step 1: Correct timestamps for clock offsets
-    biar corrected = readings.iter().map(|r| {
-        biar offset = sync_state.clock_offsets.get(&r.sensor_id)
-            .unwrap_or(&ClockOffset::zero());
-        TimestampedReading {
-            timestamp: r.timestamp - offset.offset,
-            timestamp_uncertainty: r.timestamp_uncertainty + offset.uncertainty,
-            ..r.clone()
-        }
-    }).collect::<Vec<_>>();
-
-    // Step 2: Check physics-based temporal constraints
-    // e.g., position change must be consistent with velocity * dt
-    biar ubah violations = Vec::new();
-
-    untuk i dalam 0..corrected.len() {
-        untuk j dalam (i+1)..corrected.len() {
-            biar dt = corrected[j].timestamp - corrected[i].timestamp;
-
-            kalau dt.abs() < MIN_TEMPORAL_SEPARATION {
-                // Readings too close - check for replay attack
-                biar similarity = corrected[i].similarity(&corrected[j]);
-                kalau similarity > REPLAY_THRESHOLD {
-                    violations.push(TemporalViolation::PotentialReplay(i, j));
-                }
-            }
-
-            // Check physics consistency
-            kalau !physics_constraints.consistent(&corrected[i], &corrected[j], dt) {
-                violations.push(TemporalViolation::PhysicsViolation(i, j));
-            }
-        }
-    }
-
-    // Step 3: Check for temporal ordering attacks
-    kalau !corrected.is_sorted_by_timestamp() {
-        violations.push(TemporalViolation::OrderingAnomaly);
-    }
-
-    TemporalVerification {
-        valid: violations.is_empty(),
-        violations,
-        corrected_readings: corrected,
-    }
-}
-```
-
-### 3.5 Spatial Consistency Verification
-
-#### 3.5.1 Geometric Cross-Validation
-
-```riina
-/// Verify spatial consistency across sensors
-///
-/// THEOREM: If all sensors observe the same physical world,
-///          their readings must be geometrically consistent.
-kesan[Hitung] fungsi verify_spatial_consistency(
-    readings: &[SpatialReading],
-    sensor_poses: &[SensorPose],
-    world_model: &WorldModel
-) -> SpatialVerification {
-    biar ubah inconsistencies = Vec::new();
-
-    // Step 1: Transform all readings to common frame
-    biar world_readings = readings.iter()
-        .zip(sensor_poses.iter())
-        .map(|(r, pose)| r.transform_to_world(pose))
-        .collect::<Vec<_>>();
-
-    // Step 2: Check mutual visibility constraints
-    untuk (i, r_i) dalam world_readings.iter().enumerate() {
-        untuk (j, r_j) dalam world_readings.iter().enumerate() {
-            kalau i >= j { teruskan; }
-
-            // If both observe same feature, must be consistent
-            kalau biar Some(shared) = r_i.shared_features(r_j) {
-                untuk feature dalam shared {
-                    biar pos_i = r_i.feature_position(feature);
-                    biar pos_j = r_j.feature_position(feature);
-                    biar distance = (pos_i - pos_j).norm();
-
-                    biar max_error = r_i.position_uncertainty(feature)
-                                   + r_j.position_uncertainty(feature);
-
-                    kalau distance > max_error * CONSISTENCY_SIGMA {
-                        inconsistencies.push(SpatialInconsistency {
-                            sensor_a: i,
-                            sensor_b: j,
-                            feature,
-                            discrepancy: distance,
-                            threshold: max_error,
-                        });
-                    }
-                }
-            }
-        }
-    }
-
-    // Step 3: Check against world model (if available)
-    untuk (i, reading) dalam world_readings.iter().enumerate() {
-        kalau biar Some(expected) = world_model.expected_reading(&sensor_poses[i]) {
-            biar deviation = reading.deviation_from(&expected);
-            kalau deviation > WORLD_MODEL_THRESHOLD {
-                inconsistencies.push(SpatialInconsistency {
-                    sensor_a: i,
-                    sensor_b: WORLD_MODEL_INDEX,
-                    feature: Feature::WorldModel,
-                    discrepancy: deviation,
-                    threshold: WORLD_MODEL_THRESHOLD,
-                });
-            }
-        }
-    }
-
-    SpatialVerification {
-        consistent: inconsistencies.is_empty(),
-        inconsistencies,
-        consensus_estimate: compute_spatial_consensus(&world_readings),
-    }
-}
-```
+1. Continuous-time Kalman filter (Kalman-Bucy filter) is not addressed; only discrete-time formulations are within scope.
+2. Floating-point arithmetic is abstracted as exact real arithmetic in Coq proofs; numerical stability is verified separately through interval arithmetic bounds.
+3. Sensor noise models assume known covariance matrices; adaptive estimation of unknown noise parameters (e.g., via innovation-based adaptation) is deferred to Phase 5.
+4. The particle filter convergence proof requires measure-theoretic probability, which depends on external Coq libraries (MathComp/Infotheo) not yet integrated.
+5. Physical sensor characteristics (calibration drift, aging, temperature sensitivity) are modeled as bounded perturbations rather than formally verified physical models.
+6. Real-time scheduling of fusion computations is verified at the algorithmic level; actual WCET analysis requires hardware-specific timing models outside RIINA's scope.
+7. Multi-rate sensor fusion (sensors reporting at different frequencies) is handled through timestamp-based interpolation whose accuracy bounds are axiomatized.
 
 ---
 
-## 4. RIINA Type System Extensions
-
-### 4.1 Sensor Types
-
-```riina
-/// Sensor reading with provenance and uncertainty
-jenis SensorReading<T, S: SensorSpec> {
-    value: T,
-    uncertainty: Uncertainty<T>,
-    timestamp: VerifiedTimestamp,
-    provenance: SensorProvenance<S>,
-}
-
-/// Sensor specification (compile-time verification)
-ciri SensorSpec {
-    jenis Measurement;
-    jenis NoiseModel: NoiseDistribution;
-    tetap SAMPLE_RATE: f64;
-    tetap LATENCY_BOUND: Duration;
-    tetap ACCURACY: f64;
-}
-
-/// Fused estimate with verification proof
-jenis FusedEstimate<T, const N: usize> {
-    value: T,
-    covariance: Covariance<T>,
-    source_sensors: [SensorId; N],
-    fusion_proof: FusionProof<N>,
-    timestamp: VerifiedTimestamp,
-}
-
-/// Proof that fusion was performed correctly
-jenis FusionProof<const N: usize> {
-    /// Sensors were temporally consistent
-    temporal_check: TemporalConsistencyProof,
-
-    /// Sensors were spatially consistent
-    spatial_check: SpatialConsistencyProof,
-
-    /// Byzantine tolerance maintained
-    byzantine_check: ByzantineToleranceProof<N>,
-
-    /// Numerical stability verified
-    numerical_check: NumericalStabilityProof,
-}
-
-/// Effect for sensor access
-kesan Sensor<S: SensorSpec> {
-    /// Read from sensor (may block)
-    fungsi read() -> Keputusan<SensorReading<S::Measurement, S>, SensorError>;
-
-    /// Check sensor health
-    fungsi health_check() -> SensorHealth;
-
-    /// Calibrate sensor
-    fungsi calibrate(params: CalibrationParams) -> Keputusan<(), CalibrationError>;
-}
-```
-
-### 4.2 Fusion Contracts
-
-```riina
-/// Sensor fusion must satisfy these contracts
-ciri VerifiedFusion<const N: usize> {
-    jenis Input;
-    jenis Output;
-
-    /// Fuse readings from multiple sensors
-    fungsi fuse(readings: [Self::Input; N]) -> Self::Output
-        memerlukan readings.temporally_consistent()
-        memerlukan readings.spatially_consistent()
-        memastikan pulangan.uncertainty_bounded();
-
-    /// Detect anomalous sensors
-    fungsi detect_anomalies(readings: [Self::Input; N]) -> AnomalyReport
-        memerlukan N >= 3  // Need redundancy for detection
-        memastikan pulangan.no_false_negatives();
-}
-
-/// State estimator contract
-ciri VerifiedStateEstimator {
-    jenis State;
-    jenis Measurement;
-
-    /// Predict state forward
-    fungsi predict(state: Self::State, dt: Duration) -> Self::State
-        memerlukan state.valid()
-        memerlukan dt > Duration::zero()
-        memastikan pulangan.uncertainty >= state.uncertainty;
-
-    /// Update state with measurement
-    fungsi update(state: Self::State, measurement: Self::Measurement) -> Self::State
-        memerlukan state.valid()
-        memerlukan measurement.valid()
-        memastikan pulangan.uncertainty <= state.uncertainty;
-}
-```
-
----
-
-## 5. Core Theorems
-
-### 5.1 Theorem Inventory
-
-| ID | Theorem | Status | Proof Technique |
-|----|---------|--------|-----------------|
-| TH-XI-001 | Kalman filter optimality for linear Gaussian | AXIOM | Classical control theory |
-| TH-XI-002 | Kalman covariance boundedness | PENDING | Lyapunov analysis |
-| TH-XI-003 | Byzantine fusion correctness (3f+1) | PENDING | Distributed consensus |
-| TH-XI-004 | Geometric median breakdown point | AXIOM | Statistical theory |
-| TH-XI-005 | Temporal attack detection | PENDING | Physics constraints |
-| TH-XI-006 | Spatial consistency verification | PENDING | Geometric reasoning |
-| TH-XI-007 | Graceful degradation correctness | PENDING | Fallback verification |
-| TH-XI-008 | Observability preservation | PENDING | Control theory |
-| TH-XI-009 | Sensor failure isolation | PENDING | Diagnostic theory |
-
-### 5.2 Key Theorem Statements
-
-#### Theorem TH-XI-003: Byzantine Fusion Correctness
-
-```
-∀ N, f, sensors, readings, true_state.
-  N ≥ 3f + 1 →
-  (∃ honest ⊆ sensors. |honest| ≥ N - f ∧
-   ∀ s ∈ honest. |reading(s) - true_state| ≤ noise(s)) →
-  |byzantine_fusion(readings) - true_state| ≤ ε(N, f, noise)
-```
-
-**Interpretation:** With at least 3f+1 sensors, if up to f are Byzantine and the rest
-are honest (within their noise bounds), the fused estimate is within ε of the true state.
-
-#### Theorem TH-XI-005: Temporal Attack Detection
-
-```
-∀ readings, true_timeline, physics_constraints.
-  temporally_consistent(true_timeline) →
-  (∃ attack ∈ readings. ¬temporally_consistent(attack, true_timeline)) →
-  detect_temporal_attack(readings, physics_constraints) = true
-```
-
-**Interpretation:** Any temporal attack (replay, delay, reordering) that violates
-physics constraints will be detected with probability 1.
-
----
-
-## 6. Axioms
-
-### 6.1 Physics Axioms
-
-| ID | Axiom | Justification |
-|----|-------|---------------|
-| AX-XI-P01 | Sensor noise is bounded | Hardware specification |
-| AX-XI-P02 | Physical quantities are continuous | Classical physics |
-| AX-XI-P03 | Information travels at ≤ c | Special relativity |
-| AX-XI-P04 | Rigid body kinematics | Classical mechanics |
-
-### 6.2 Statistical Axioms
-
-| ID | Axiom | Justification |
-|----|-------|---------------|
-| AX-XI-S01 | Sensor noise is Gaussian | Central limit theorem |
-| AX-XI-S02 | Noise sources are independent | Sensor design |
-| AX-XI-S03 | Kalman filter is MMSE optimal | Classical estimation theory |
-
-### 6.3 Adversarial Axioms
-
-| ID | Axiom | Justification |
-|----|-------|---------------|
-| AX-XI-A01 | Attacker cannot corrupt > f sensors | Security assumption |
-| AX-XI-A02 | Attacker cannot violate physics | Physical law |
-| AX-XI-A03 | Cryptographic timestamps are secure | Track D assumptions |
-
----
-
-## 7. Integration with Other Tracks
-
-### 7.1 Dependencies
-
-| Track | Dependency | Description |
-|-------|------------|-------------|
-| Track A | Type system | Sensor types and contracts |
-| Track D | Cryptography | Timestamp authentication |
-| Track Φ | Hardware | Verified sensor interfaces |
-| Track Θ | Radiation | SEU detection in sensors |
-| Track Λ | Anti-jamming | RF sensor protection |
-| Track X | Concurrency | Multi-sensor parallel processing |
-| Track Ρ | Autonomy | Sensor fusion for autonomous decisions |
-
-### 7.2 Provides To
-
-| Track | Provides | Description |
-|-------|----------|-------------|
-| Track Ρ | Verified perception | State estimates for autonomy |
-| Track Y | Sensor stdlib | Fusion library functions |
-| Track U | Runtime monitoring | Sensor health to hypervisor |
-
----
-
-## 8. Implementation Phases
-
-### Phase 1: Foundation (Months 1-6)
-- [ ] Core Kalman filter verification in Coq
-- [ ] Basic sensor type system
-- [ ] Temporal consistency checking
-- [ ] Unit tests for fusion algorithms
-
-### Phase 2: Byzantine Tolerance (Months 7-12)
-- [ ] Byzantine sensor model formalization
-- [ ] Geometric median implementation
-- [ ] Outlier detection algorithms
-- [ ] Integration with Track Φ sensors
-
-### Phase 3: Attack Detection (Months 13-18)
-- [ ] Temporal attack detection proofs
-- [ ] Spatial consistency verification
-- [ ] Physics-based anomaly detection
-- [ ] Integration with Track Λ anti-jamming
-
-### Phase 4: Production (Months 19-24)
-- [ ] Real-time fusion implementation
-- [ ] Graceful degradation verification
-- [ ] Full system integration
-- [ ] Military certification documentation
-
----
-
-## 9. Research Questions
-
-### 9.1 Open Problems
-
-1. **Non-Gaussian Noise:** How to handle heavy-tailed or multimodal noise distributions?
-2. **Dynamic Sensor Failure:** How to maintain guarantees as sensors fail dynamically?
-3. **Adversarial Environment Changes:** How to distinguish spoofing from environment change?
-4. **Computational Constraints:** Real-time fusion on resource-limited hardware?
-5. **Sensor Diversity Quantification:** How to formally measure sensor suite diversity?
-
-### 9.2 Future Directions
-
-1. **Learning-Augmented Fusion:** Verified neural network sensor fusion
-2. **Quantum Sensors:** Incorporating quantum-enhanced measurements
-3. **Distributed Fusion:** Verified sensor networks without central node
-4. **Self-Calibration:** Verified online sensor calibration
-
----
-
-## 10. References
-
-### 10.1 Foundational Works
-
-1. Kalman, R.E. "A New Approach to Linear Filtering and Prediction Problems" (1960)
-2. Lamport, L. "The Byzantine Generals Problem" (1982)
-3. Marzullo, K. "Tolerating Failures of Continuous-Valued Sensors" (1990)
-4. Shoukry, Y. "Secure State Estimation for Cyber-Physical Systems Under Sensor Attacks" (2016)
-
-### 10.2 RIINA-Specific Documents
-
-- Track A: Type System Specification
-- Track Φ: Verified Hardware Foundation
-- Track Ρ: Verified Autonomy Foundation
-- Track Λ: Anti-Jamming Foundation
-
----
-
-## Appendix A: Example Sensor Fusion Configuration
-
-```riina
-/// Military-grade sensor suite configuration
-struktur MilitarySensorSuite {
-    /// Primary GPS (civilian)
-    gps_primary: GPS<L1CA>,
-
-    /// Secondary GPS (military)
-    gps_secondary: GPS<M_Code>,
-
-    /// Inertial measurement unit (tactical grade)
-    imu: IMU<TacticalGrade>,
-
-    /// Radar altimeter
-    radar_alt: Radar<Altimeter>,
-
-    /// Barometric altimeter
-    baro_alt: Barometer<HighAccuracy>,
-
-    /// Magnetometer
-    mag: Magnetometer<Calibrated>,
-
-    /// LiDAR (terrain reference)
-    lidar: LiDAR<TerrainMapping>,
-
-    /// Electro-optical camera
-    camera: Camera<Stabilized>,
-}
-
-impl MilitarySensorSuite {
-    /// Create verified fusion pipeline
-    fungsi create_fusion_pipeline(self) -> VerifiedFusionPipeline {
-        // Position fusion: GPS + LiDAR + dead reckoning
-        biar position_fusion = ByzantineFusion::new()
-            .add_sensor(self.gps_primary, weight: 0.4)
-            .add_sensor(self.gps_secondary, weight: 0.5)
-            .add_sensor(self.lidar.position_estimate(), weight: 0.3)
-            .add_sensor(self.imu.dead_reckoning(), weight: 0.2)
-            .with_byzantine_tolerance(1);  // Tolerate 1 faulty sensor
-
-        // Altitude fusion: Radar + Baro + GPS
-        biar altitude_fusion = ByzantineFusion::new()
-            .add_sensor(self.radar_alt, weight: 0.5)
-            .add_sensor(self.baro_alt, weight: 0.3)
-            .add_sensor(self.gps_primary.altitude(), weight: 0.2)
-            .with_byzantine_tolerance(1);
-
-        // Attitude fusion: IMU + Mag + Camera horizon
-        biar attitude_fusion = KalmanFusion::new()
-            .add_sensor(self.imu, weight: 0.6)
-            .add_sensor(self.mag, weight: 0.2)
-            .add_sensor(self.camera.horizon_detect(), weight: 0.2);
-
-        VerifiedFusionPipeline {
-            position: position_fusion,
-            altitude: altitude_fusion,
-            attitude: attitude_fusion,
-        }
-    }
-}
-```
-
----
-
-*Track Ξ (Xi): Verified Sensor Fusion*
-*"Every sensor verified. Every fusion proven. Every decision justified."*
-*RIINA Military Track*
+*"When sensors lie, RIINA's proofs reveal the truth."*

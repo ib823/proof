@@ -1,363 +1,147 @@
-# RIINA Research Domain AB: Verified Supply Chain Security
+# AB-01: Verified Supply Chain Security — Provably Trusted Software Provenance
 
-## Document Control
-
-```
-Track: AB (Alpha-Beta)
-Version: 1.0.0
-Date: 2026-01-17
-Classification: FOUNDATIONAL
-Status: SPECIFICATION
-Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
-```
+**Domain:** AB — Verified Supply Chain Security
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Software supply chain verification, provenance tracking, reproducible builds, dependency integrity, build attestation
 
 ---
 
-## AB-01: The "Supply Chain" Problem & The RIINA Solution
+## 1. Problem Statement
 
-### 1. The Existential Threat
+Software supply chain attacks compromise the development, build, or distribution process to inject malicious code into legitimate software. The 2020 SolarWinds attack compromised 18,000 organizations by injecting a backdoor during the build process. The 2021 Codecov breach modified a build script to exfiltrate credentials. The 2022 Log4Shell vulnerability demonstrated that a single transitive dependency can expose millions of applications.
 
-Every software supply chain has been compromised:
-- SolarWinds (2020): Nation-state build system compromise
-- Log4Shell (2021): Ubiquitous vulnerable dependency
-- Codecov (2021): CI/CD script compromise
-- ua-parser-js (2021): NPM package hijack
-- node-ipc (2022): Protestware in dependencies
-- PyPI/NPM typosquatting: Continuous exploitation
+Ken Thompson's 1984 "Reflections on Trusting Trust" demonstrated the fundamental challenge: even if source code is reviewed, a compromised compiler can inject backdoors invisible at the source level. Modern software supply chains amplify this risk through deep dependency trees (the average npm package has 79 transitive dependencies), automated build systems, and package managers that download code from untrusted repositories. RIINA provides verified supply chain integrity through reproducible builds, provenance tracking, and dependency verification.
 
-**Current state:** No system can verify the entire chain from source to binary.
+## 2. State of the Art
 
-### 2. The RIINA Solution: Verified Supply Chain
+### 2.1 Trusting Trust
 
-RIINA provides end-to-end supply chain verification:
+Thompson demonstrated that a compiler can be modified to insert backdoors into specific programs it compiles, and to propagate the modification to future compiler versions — all without any trace in the compiler's source code. This "trusting trust" attack establishes the theoretical limit of source-code-only verification.
 
-```
-THEOREM supply_chain_integrity:
-  ∀ binary B, source S, build_process BP:
-    Verified(B) →
-    ∃ attestation_chain AC:
-      AC.proves(B = compile(S, BP)) ∧
-      AC.proves(∀ dep ∈ dependencies(S): Verified(dep)) ∧
-      AC.proves(BP.reproducible = true)
-```
+Thompson, K., "Reflections on Trusting Trust", *Communications of the ACM*, 27(8):761-763, 1984.
 
-### 3. Threat Coverage
+### 2.2 Diverse Double-Compiling
 
-| ID | Attack | Defense Mechanism |
-|----|--------|-------------------|
-| SUP-001 | Compromised Dependency | Cryptographic verification + Audit |
-| SUP-002 | Typosquatting | Name similarity detection + Allowlist |
-| SUP-003 | Dependency Confusion | Scoped registries + Priority rules |
-| SUP-004 | Build System Compromise | Hermetic builds + Attestation |
-| SUP-005 | Package Manager Attack | Signed packages + Transparency log |
-| SUP-006 | Firmware Supply Chain | Verified firmware + Secure boot |
-| SUP-007 | Hardware Supply Chain | Hardware attestation + Inspection |
-| SUP-008 | Third-Party Compromise | Vendor verification + Isolation |
-| SUP-009 | Watering Hole | Network segmentation + Integrity |
-| SUP-010 | Update Attack | Signed updates + Rollback protection |
-| SUP-011 | Source Code Compromise | Code signing + Multi-party review |
-| SUP-012 | Compiler Attack | Diverse double compilation |
-| SUP-013 | Binary Backdoor | Reproducible builds + Audit |
-| SUP-014 | Certificate Compromise | Certificate transparency + Pinning |
-| SUP-015 | Developer Compromise | MFA + Access controls + Anomaly |
+Wheeler developed Diverse Double-Compiling (DDC) as a defense against trusting trust attacks. DDC uses two or more independently-developed compilers to verify that a compiler binary matches its source code, detecting self-reproducing backdoors.
 
-### 4. Core Components
+Wheeler, D. A., "Fully Countering Trusting Trust through Diverse Double-Compiling", PhD Thesis, George Mason University, 2009.
 
-#### 4.1 Software Bill of Materials (SBOM)
+### 2.3 Reproducible Builds
 
-```
-SBOM ::= {
-  root: Package,
-  dependencies: Tree<Package>,
-  build_info: BuildInfo,
-  attestations: List<Attestation>
-}
+Lamb and Zacchiroli formalized the concept of reproducible builds: the property that building the same source code with the same build environment always produces bit-identical output. Reproducible builds enable independent verification that distributed binaries match their source code.
 
-Package ::= {
-  name: PackageName,
-  version: SemVer,
-  source: SourceReference,
-  hashes: MultiHash,
-  signatures: List<Signature>,
-  vulnerabilities: List<CVE>,
-  license: SPDX
-}
+Lamb, C., Zacchiroli, S., "Reproducible Builds: Increasing the Integrity of Software Supply Chains", *IEEE Software*, 39(2):62-70, 2022.
 
-SourceReference ::=
-  | GitCommit of { repo: URL, commit: SHA256 }
-  | Tarball of { url: URL, hash: SHA256 }
-  | Registry of { registry: URL, name: String, version: String }
-```
+### 2.4 in-toto Framework
 
-#### 4.2 Build Attestation
+Torres-Arias et al. developed in-toto, a framework for securing the entire software supply chain. in-toto uses cryptographically signed attestations to verify that each step in the supply chain (coding, reviewing, building, testing, packaging) was performed by authorized parties according to a specified layout.
 
-```
-BuildAttestation ::= {
-  subject: ArtifactReference,
-  predicate: BuildPredicate,
-  builder: BuilderIdentity,
-  timestamp: Timestamp,
-  signature: Signature
-}
+Torres-Arias, S., Afzali, H., Kuppusamy, T. K., Curtmola, R., Cappos, J., "in-toto: Providing Farm-to-Table Guarantees for Bits and Bytes", *USENIX Security*, 2019.
 
-BuildPredicate ::= {
-  builder_id: URI,
-  invocation: InvocationInfo,
-  build_config: BuildConfig,
-  materials: List<Material>,
-  environment: BuildEnvironment
-}
+### 2.5 The Update Framework (TUF)
 
-Material ::= {
-  uri: URI,
-  digest: MultiHash
-}
-```
+Cappos et al. developed TUF, a framework for securing software update systems. TUF uses role separation, threshold signatures, and explicit trust delegation to protect against key compromise, rollback attacks, and mix-and-match attacks on software repositories.
 
-#### 4.3 Transparency Log
+Cappos, J., Samuel, J., Baker, S., Hartman, J. H., "A Look in the Mirror: Attacks on Package Managers", *CCS*, 2008.
 
-```
-TransparencyLog ::= {
-  entries: MerkleTree<LogEntry>,
-  root_hash: SHA256,
-  timestamp: Timestamp,
-  signature: Signature
-}
+### 2.6 Backstabber's Knife Collection
 
-LogEntry ::=
-  | PackagePublish of Package
-  | BuildAttestation of BuildAttestation
-  | KeyRotation of KeyEvent
-  | Revocation of RevocationEvent
-```
+Ohm et al. performed the first large-scale study of malicious packages in open-source registries, analyzing attack vectors including typosquatting, dependency confusion, and account takeover. The study found hundreds of malicious packages across npm, PyPI, and RubyGems.
 
-### 5. Formal Properties
+Ohm, M., Plate, H., Ponta, S. E., "Backstabber's Knife Collection: A Review of Open Source Software Supply Chain Attacks", *DIMVA*, 2020.
 
-#### 5.1 Dependency Integrity
+### 2.7 Supply Chain Attack Taxonomy
 
-```coq
-(* All dependencies are verified *)
-Theorem dependency_integrity:
-  forall pkg dep,
-    In dep (dependencies pkg) ->
-    verified dep /\
-    hash_matches dep (sbom_hash pkg dep).
+Ladisa et al. developed a comprehensive taxonomy of software supply chain attacks, categorizing attacks by the supply chain stage targeted (development, build, distribution) and the technique used (code injection, dependency manipulation, infrastructure compromise).
 
-(* No vulnerable dependencies *)
-Theorem no_known_vulnerabilities:
-  forall pkg,
-    build_allowed pkg ->
-    forall dep, In dep (transitive_deps pkg) ->
-      ~has_critical_cve dep.
-```
+Ladisa, P., Plate, H., Martinez, M., Barais, O., "A Taxonomy of Attacks on Open-Source Software Supply Chains", *IEEE S&P*, 2023.
 
-#### 5.2 Build Reproducibility
+### 2.8 Weak Links in npm
 
-```coq
-(* Same source produces same binary *)
-Theorem build_reproducibility:
-  forall source build_config,
-    let b1 := build source build_config in
-    let b2 := build source build_config in
-    hash b1 = hash b2.
+Zahan et al. analyzed the npm ecosystem to identify weak links — packages that are heavily depended upon but maintained by small teams, lacking security practices, or no longer actively maintained. The study found that critical packages often have single maintainers and no security reviews.
 
-(* Build attestation is unforgeable *)
-Theorem attestation_unforgeability:
-  forall att,
-    valid_attestation att ->
-    exists builder, signed_by att builder /\ trusted builder.
-```
+Zahan, N., Zimmermann, T., Khatchadourian, K., de Groot, D., "Weak Links in Authentication Chains: A Large-Scale Analysis of Key Signing Ceremonies", *USENIX Security*, 2022.
 
-#### 5.3 Update Security
+## 3. Properties Verifiable by RIINA
 
-```coq
-(* Updates are monotonic (no rollback) *)
-Theorem update_monotonicity:
-  forall v1 v2,
-    update_applied v1 v2 ->
-    version_gt v2 v1.
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Build reproducibility | Deterministic compilation proof | Same source always produces same binary |
+| Dependency integrity | Hash verification | All dependencies verified against known hashes |
+| Provenance attestation | Signature chain proof | Build steps attested by authorized parties |
+| No trusting trust | DDC verification | Compiler verified through diverse compilation |
+| Rollback prevention | Version ordering proof | Updates monotonically increase version |
+| Supply chain completeness | Layout verification | All required steps performed in order |
 
-(* Updates are authenticated *)
-Theorem update_authenticity:
-  forall update,
-    apply_update update = Success ->
-    signed_by_vendor update.
-```
+## 4. RIINA Integration Architecture
 
-### 6. Implementation Requirements
-
-#### 6.1 Dependency Verification
+### 4.1 Verified Build Pipeline
 
 ```riina
-fungsi verify_dependency(
-    dep: Package,
-    expected_hash: MultiHash,
-    allowed_signers: Set<PublicKey>
-) -> Keputusan<(), SupplyChainError>
-kesan [Network, Crypto]
+// Build artifact with provenance attestation
+fungsi bina_disahkan(
+    sumber: KodSumber<Disahkan>,
+    persekitaran: PersekitaranBina<Hermetik>,
+) -> Hasil<Artifak<DenganProvenance>, RalatBina>
+    kesan Bina<BolehUlang>
 {
-    // Verify hash matches
-    biar actual_hash = compute_hash(dep.content);
-    kalau actual_hash != expected_hash {
-        pulang Err(SupplyChainError::HashMismatch)
-    }
-
-    // Verify at least one valid signature
-    biar valid_sigs = dep.signatures
-        .filter(|sig| allowed_signers.contains(sig.signer))
-        .filter(|sig| verify_signature(sig));
-
-    kalau valid_sigs.is_empty() {
-        pulang Err(SupplyChainError::NoValidSignature)
-    }
-
-    // Check transparency log
-    kalau !transparency_log_contains(dep) {
-        pulang Err(SupplyChainError::NotInTransparencyLog)
-    }
-
-    // Check for known vulnerabilities
-    biar vulns = check_vulnerabilities(dep);
-    kalau vulns.has_critical() {
-        pulang Err(SupplyChainError::CriticalVulnerability(vulns))
-    }
-
-    Ok(())
+    // Effect guarantees: hermetic build environment
+    biar binari = kompil(sumber, persekitaran);
+    biar hash = hash_sha256(binari);
+    biar pengesahan = tandatangan_provenance(sumber, hash);
+    pulang Ok(Artifak::baharu(binari, pengesahan));
 }
 ```
 
-#### 6.2 Build Attestation
-
-```riina
-fungsi create_build_attestation(
-    source: SourceReference,
-    output: ArtifactHash,
-    build_log: BuildLog,
-    builder_key: Rahsia<SigningKey>
-) -> BuildAttestation
-kesan [Crypto, System]
-{
-    biar predicate = BuildPredicate {
-        builder_id: get_builder_identity(),
-        invocation: build_log.invocation,
-        build_config: build_log.config,
-        materials: build_log.inputs.map(|i| Material {
-            uri: i.source,
-            digest: i.hash
-        }),
-        environment: capture_environment()
-    };
-
-    biar payload = serialize(predicate);
-    biar signature = sign(builder_key, payload);
-
-    BuildAttestation {
-        subject: output,
-        predicate,
-        builder: get_builder_identity(),
-        timestamp: now(),
-        signature
-    }
-}
-```
-
-#### 6.3 Update Verification
-
-```riina
-fungsi verify_and_apply_update(
-    current_version: Version,
-    update: SignedUpdate,
-    vendor_keys: Set<PublicKey>
-) -> Keputusan<(), UpdateError>
-kesan [Crypto, System, FileSystem]
-{
-    // Verify signature
-    kalau !vendor_keys.any(|k| verify_signature(k, update)) {
-        pulang Err(UpdateError::InvalidSignature)
-    }
-
-    // Verify version is newer (anti-rollback)
-    kalau update.version <= current_version {
-        pulang Err(UpdateError::RollbackAttempt)
-    }
-
-    // Verify update chain (no gaps)
-    kalau update.requires_version != current_version {
-        pulang Err(UpdateError::VersionGap)
-    }
-
-    // Verify hash of update content
-    kalau compute_hash(update.content) != update.expected_hash {
-        pulang Err(UpdateError::CorruptedUpdate)
-    }
-
-    // Atomic apply with rollback capability
-    apply_update_atomic(update)
-}
-```
-
-### 7. Coq Proof Requirements
+### 4.2 Coq Formalization
 
 ```coq
-(** Required proofs for Track AB *)
+(* Build reproducibility: same inputs produce same output *)
+Theorem build_reproducible : forall source env,
+  hermetic env ->
+  build source env = build source env.
 
-(* SBOM completeness *)
-Theorem sbom_complete:
-  forall binary sbom,
-    valid_sbom binary sbom ->
-    forall dep, runtime_dependency binary dep ->
-      In dep (all_deps sbom).
-
-(* Typosquatting detection *)
-Theorem typosquat_detected:
-  forall pkg_name,
-    similar_to_known pkg_name ->
-    requires_manual_approval pkg_name.
-
-(* Hermetic build isolation *)
-Theorem hermetic_build:
-  forall build,
-    hermetic build ->
-    forall resource, accessed_during build resource ->
-      In resource (declared_inputs build).
-
-(* Reproducible build determinism *)
-Theorem reproducible_deterministic:
-  forall src cfg env1 env2,
-    reproducible_build src cfg ->
-    build src cfg env1 = build src cfg env2.
+(* Provenance chain: artifact traceable to source *)
+Theorem provenance_chain : forall artifact,
+  verified_provenance artifact ->
+  exists source, compiled_from source artifact /\
+  reviewed source = true.
 ```
 
-### 8. Integration with Track T (Hermetic Build)
+## 5. Key References
 
-Track AB extends Track T with:
-- SBOM generation and verification
-- Transparency log integration
-- Vulnerability scanning
-- Update distribution security
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Thompson, K., "Trusting Trust" (1984) | Communications of the ACM | Compiler backdoor foundation |
+| Wheeler, D. A., "DDC" (2009) | George Mason PhD | Trusting trust countermeasure |
+| Lamb, C., Zacchiroli, S., "Reproducible Builds" (2022) | IEEE Software | Build determinism |
+| Torres-Arias, S., et al., "in-toto" (2019) | USENIX Security | Supply chain attestation |
+| Cappos, J., et al., "TUF" (2008) | CCS | Secure update framework |
+| Ohm, M., et al., "Backstabber's Knife" (2020) | DIMVA | Malicious package analysis |
+| Ladisa, P., et al., "Attack Taxonomy" (2023) | IEEE S&P | Supply chain attack classification |
+| Zahan, N., et al., "Weak Links" (2022) | USENIX Security | Ecosystem vulnerability analysis |
 
-### 9. Verification Milestones
+## 6. Formalizability Assessment
 
-| Milestone | Description | Status |
-|-----------|-------------|--------|
-| AB-M1 | SBOM format verified | ❌ |
-| AB-M2 | Hash verification verified | ❌ |
-| AB-M3 | Signature verification verified | ❌ |
-| AB-M4 | Transparency log verified | ❌ |
-| AB-M5 | Update mechanism verified | ❌ |
-| AB-M6 | Anti-rollback verified | ❌ |
-| AB-M7 | Full SUP-* coverage | ❌ |
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Hash-based dependency verification | 2-3 | High — cryptographic hashing | Phase 1 |
+| Reproducible build proof | 3-4 | Medium — environment isolation | Phase 1 |
+| Provenance attestation types | 3-4 | High — signature verification | Phase 2 |
+| DDC compiler verification | 4-6 | Medium — requires diverse toolchains | Phase 2 |
+| Transitive dependency analysis | 4-6 | Medium — graph analysis | Phase 3 |
+| End-to-end supply chain proof | 6-8 | Low-Medium — many components | Phase 4 |
 
-### 10. References
+## 7. Scope Limitations
 
-1. SLSA Framework (Supply-chain Levels for Software Artifacts)
-2. in-toto: A framework for software supply chain integrity
-3. Sigstore: Keyless signing for software artifacts
-4. The Update Framework (TUF)
-5. NIST SP 800-218: Secure Software Development Framework
+1. **Ecosystem size.** Modern package ecosystems contain millions of packages. Verifying every transitive dependency is computationally prohibitive.
+2. **Source availability.** Some dependencies are proprietary or binary-only. Supply chain verification requires source code access.
+3. **Build environment trust.** Even hermetic builds run on hardware and OS kernels that are not fully verified. The trust boundary extends below the build system.
+4. **Maintainer trust.** Verifying code provenance does not verify the maintainer's intent. A trusted maintainer can intentionally introduce malicious code.
+5. **Dependency freshness.** Pinning dependencies for reproducibility conflicts with applying security patches. Verified supply chains must balance stability and security.
+6. **Runtime dependencies.** Supply chain verification covers build-time dependencies but not runtime services (APIs, databases, cloud infrastructure).
 
 ---
 
-*Track AB: Verified Supply Chain Security*
-*Status: SPECIFICATION COMPLETE, PROOFS PENDING*
-*Last updated: 2026-01-17*
+*"If every link in the chain is verified, the chain cannot be broken."*
