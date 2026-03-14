@@ -145,7 +145,6 @@ structure AllocState where
   allocated : Loc → Option Nat
   heap_start : Loc
   total_heap_size : Nat
-  deriving Repr
 
 def init_alloc (start size : Nat) : AllocState :=
   { free_lists := fun _ => []
@@ -269,10 +268,10 @@ theorem W_001_02_sep_comm : ∀ (a1 a2 : Assertion) (h : Heap),
   · intro l ⟨hd2, hd1⟩; exact hdisj l ⟨hd1, hd2⟩
   · subst hunion; funext l; unfold heap_union
     cases hh1 : h1 l with
-    | none => rfl
+    | none => simp [heap_union, hh1]; cases h2 l <;> rfl
     | some v1 =>
       cases hh2 : h2 l with
-      | none => rfl
+      | none => simp [heap_union, hh1, hh2]
       | some v2 =>
         exfalso; exact hdisj l ⟨⟨v1, hh1⟩, ⟨v2, hh2⟩⟩
 
@@ -393,8 +392,7 @@ theorem W_001_15_free_idempotent : ∀ (st : AllocState) (l : Loc),
   intro st l
   simp [free]
   funext l'
-  simp [BEq.beq]
-  split <;> rfl
+  by_cases h : l' = l <;> simp [BEq.beq, h]
 
 /-- W_001_16: Freed memory is inaccessible -/
 theorem W_001_16_no_use_after_free : ∀ (st : AllocState) (l : Loc),
@@ -492,7 +490,9 @@ theorem W_001_26_type_safe_access : ∀ (tm : TypeMap) (l : Loc) (t : MemType),
 theorem W_001_27_alignment_correct : ∀ (l align : Nat),
     align > 0 → aligned (l * align) align := by
   intro l align halign
-  exact ⟨halign, Nat.mul_mod_right l align⟩
+  constructor
+  · exact halign
+  · rw [Nat.mul_comm]; exact Nat.mul_mod_right align l
 
 /-- W_001_28: Memory is initialized before use -/
 theorem W_001_28_initialization_complete : ∀ (h : Heap) (l : Loc) (v : Val),
@@ -577,8 +577,10 @@ theorem W_001_39_ownership_split : ∀ (om : OwnershipMap) (l1 l2 : Loc) (lifeti
     (shared_borrow (shared_borrow om l1 lifetime) l2 lifetime) l2 = Ownership.SharedBorrow lifetime := by
   intro om l1 l2 lifetime hneq _ _
   constructor
-  · simp [shared_borrow, BEq.beq]
-    intro h; exact absurd h hneq
+  · show (fun l' => if l' == l2 then Ownership.SharedBorrow lifetime
+        else (if l' == l1 then Ownership.SharedBorrow lifetime else om l')) l1
+        = Ownership.SharedBorrow lifetime
+    simp [BEq.beq, Nat.beq_eq, hneq]
   · simp [shared_borrow, BEq.beq]
 
 /-- W_001_40: Ownership can be joined correctly -/

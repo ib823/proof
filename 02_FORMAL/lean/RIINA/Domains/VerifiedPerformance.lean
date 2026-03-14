@@ -185,7 +185,7 @@ theorem PI_001_03_scalar_add_length : ∀ (a b : List Nat),
     (scalar_add a b).length = a.length := by
   intro a
   induction a with
-  | nil => intro b h; simp [scalar_add]; cases b <;> simp_all
+  | nil => intro b h; cases b <;> simp_all [scalar_add]
   | cons x xs ih =>
     intro b h
     cases b with
@@ -238,7 +238,7 @@ theorem PI_001_06_scalar_mul_length : ∀ (a b : List Nat),
     (scalar_mul a b).length = a.length := by
   intro a
   induction a with
-  | nil => intro b h; simp [scalar_mul]; cases b <;> simp_all
+  | nil => intro b h; cases b <;> simp_all [scalar_mul]
   | cons x xs ih =>
     intro b h
     cases b with
@@ -282,9 +282,6 @@ theorem PI_002_05_veb_inorder_nonempty : ∀ (t : VEBTree),
   | VEBLeaf _ => simp [veb_inorder]
   | VEBNode _ l _ =>
     simp [veb_inorder]
-    intro h
-    have := List.append_eq_nil_iff.mp h
-    exact absurd this.2 (by simp)
 
 theorem PI_002_06_veb_height_bound : ∀ (t : VEBTree),
     veb_height t < veb_size t := by
@@ -303,7 +300,6 @@ theorem PI_003_01_msq_empty_dequeue :
 theorem PI_003_02_msq_enqueue_nonempty : ∀ (q : MSQueue) (v : Nat),
     (msq_enqueue q v).msq_items ≠ [] := by
   intro q v; simp [msq_enqueue]
-  cases q.msq_items <;> simp
 
 theorem PI_003_03_msq_fifo : ∀ (v : Nat),
     msq_dequeue (msq_enqueue msq_empty v) =
@@ -323,7 +319,6 @@ theorem PI_003_06_cas_failure : ∀ (loc expected new_val : Nat),
     ∃ v, cas loc expected new_val = CASResult.CASFailure v := by
   intro loc expected new_val h
   simp [cas, BEq.beq, Nat.beq_eq, h]
-  exact ⟨loc, rfl⟩
 
 theorem PI_003_07_linearization_empty :
     lin_ordered [] = true := by
@@ -385,7 +380,7 @@ theorem PI_005_02_puzzle_verify_complete : ∀ (x target : Nat),
 
 theorem PI_005_03_puzzle_zero_target : ∀ (x : Nat),
     puzzle_valid x 0 = false := by
-  intro x; simp [puzzle_valid, hash_nat]; omega
+  intro x; simp [puzzle_valid, hash_nat]
 
 theorem PI_005_04_puzzle_deterministic : ∀ (x t1 t2 : Nat),
     t1 = t2 →

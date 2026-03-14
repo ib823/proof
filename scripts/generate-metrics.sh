@@ -29,7 +29,7 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 DATE_HUMAN=$(date -u +"%B %d, %Y at %H:%M UTC")
 
 escape_json() {
-    printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+    printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' '
 }
 
 load_cached_fast_noncoq_metrics() {
@@ -100,15 +100,15 @@ values = {
     "VERUS_MECHANIZED_READY": claim_mechanized("verus"),
     "KANI_MECHANIZED_READY": claim_mechanized("kani"),
     "TV_MECHANIZED_READY": claim_mechanized("tv"),
-    "LEAN_PENDING_REASON": pending.get("lean", "noncoq_report_missing_or_stale"),
-    "ISABELLE_PENDING_REASON": pending.get("isabelle", "noncoq_report_missing_or_stale"),
-    "FSTAR_PENDING_REASON": pending.get("fstar", "noncoq_report_missing_or_stale"),
-    "TLAPLUS_PENDING_REASON": pending.get("tlaplus", "noncoq_report_missing_or_stale"),
-    "ALLOY_PENDING_REASON": pending.get("alloy", "noncoq_report_missing_or_stale"),
-    "SMT_PENDING_REASON": pending.get("smt", "noncoq_report_missing_or_stale"),
-    "VERUS_PENDING_REASON": pending.get("verus", "noncoq_report_missing_or_stale"),
-    "KANI_PENDING_REASON": pending.get("kani", "noncoq_report_missing_or_stale"),
-    "TV_PENDING_REASON": pending.get("tv", "noncoq_report_missing_or_stale"),
+    "LEAN_PENDING_REASON": pending.get("lean", "noncoq_report_missing_or_stale").replace("\n", " "),
+    "ISABELLE_PENDING_REASON": pending.get("isabelle", "noncoq_report_missing_or_stale").replace("\n", " "),
+    "FSTAR_PENDING_REASON": pending.get("fstar", "noncoq_report_missing_or_stale").replace("\n", " "),
+    "TLAPLUS_PENDING_REASON": pending.get("tlaplus", "noncoq_report_missing_or_stale").replace("\n", " "),
+    "ALLOY_PENDING_REASON": pending.get("alloy", "noncoq_report_missing_or_stale").replace("\n", " "),
+    "SMT_PENDING_REASON": pending.get("smt", "noncoq_report_missing_or_stale").replace("\n", " "),
+    "VERUS_PENDING_REASON": pending.get("verus", "noncoq_report_missing_or_stale").replace("\n", " "),
+    "KANI_PENDING_REASON": pending.get("kani", "noncoq_report_missing_or_stale").replace("\n", " "),
+    "TV_PENDING_REASON": pending.get("tv", "noncoq_report_missing_or_stale").replace("\n", " "),
     "LEAN_SORRY_BACKLOG": int(backlog.get("leanSorry", 0) or 0),
     "LEAN_AXIOMS_BACKLOG": int(backlog.get("leanAxioms", 0) or 0),
     "ISABELLE_SORRY_BACKLOG": int(backlog.get("isabelleSorry", 0) or 0),

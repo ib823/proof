@@ -308,9 +308,9 @@ theorem DOMAIN_001_02 (a b c : Nat) (h : a = b ∨ b = c ∨ a = c) :
   rcases h with hab | hbc | hac
   · subst hab; simp
   · subst hbc
-    by_cases hab : a == c <;> simp_all [BEq.beq]
+    by_cases hab : a == b <;> simp_all [BEq.beq]
   · subst hac
-    by_cases hab : c == b <;> simp_all [BEq.beq]
+    by_cases hab : a == b <;> simp_all [BEq.beq]
 
 /-- DOMAIN_001_03: ECC Detection - clean parity has zero syndrome -/
 theorem DOMAIN_001_03 (data : Word) :
@@ -348,7 +348,7 @@ theorem DOMAIN_001_07 (v : Nat) :
 theorem DOMAIN_001_08 (cfs : CFSignature) (addr : Nat)
     (h : addr ∈ cfs.cfs_expected_next) :
     cf_valid cfs addr = true := by
-  simp [cf_valid, existsb]
+  unfold cf_valid existsb
   exact List.any_eq_true.mpr ⟨addr, h, by simp⟩
 
 /-- DOMAIN_001_09: Stack Canary Validity - matching canary is valid -/

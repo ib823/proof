@@ -228,7 +228,7 @@ theorem update_002_sig_count :
     threshold ≤ update.update_signatures.length := by
   intro update threshold h
   unfold signatures_sufficient at h
-  exact Nat.le_of_ble_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_003_key_trusted (matches Coq) -/
 theorem update_003_key_trusted :
@@ -237,9 +237,9 @@ theorem update_003_key_trusted :
     ∃ k, k ∈ trusted ∧ k = sig.sig_key_id := by
   intro sig trusted h
   unfold key_trusted at h
-  simp [List.any_eq_true] at h
-  obtain ⟨k, hIn, hEq⟩ := h
-  exact ⟨k, hIn, Nat.eq_of_beq_eq_true hEq⟩
+  have hmem := List.any_eq_true.mp h
+  obtain ⟨k, hk_in, hk_eq⟩ := hmem
+  exact ⟨k, hk_in, by exact of_decide_eq_true hk_eq⟩
 
 /-- update_004_rollback_counter (matches Coq) -/
 theorem update_004_rollback_counter :
@@ -248,7 +248,7 @@ theorem update_004_rollback_counter :
     sys.sys_rollback_counter < update.update_rollback_counter := by
   intro update sys h
   unfold rollback_counter_ok at h
-  exact Nat.lt_of_blt_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_005_min_version (matches Coq) -/
 theorem update_005_min_version :
@@ -264,7 +264,7 @@ theorem update_006_hash_valid :
     computed = stored := by
   intro computed stored h
   unfold hash_valid at h
-  exact Nat.eq_of_beq_eq_true h
+  simp [BEq.beq] at h; exact h
 
 /-- update_007_atomic (matches Coq) -/
 theorem update_007_atomic :
@@ -296,7 +296,7 @@ theorem update_009_backup_version :
   intro backup sys h
   unfold backup_version_matches at h
   simp [Bool.and_eq_true] at h
-  exact Nat.eq_of_beq_eq_true h.1
+  exact h.1.1
 
 /-- update_010_recovery_restores (matches Coq) -/
 theorem update_010_recovery_restores :
@@ -311,7 +311,7 @@ theorem update_011_threshold :
     threshold ≤ valid_sigs := by
   intro valid_sigs threshold h
   unfold threshold_met at h
-  exact Nat.le_of_ble_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_012_sig_fresh (matches Coq) -/
 theorem update_012_sig_fresh :
@@ -320,7 +320,7 @@ theorem update_012_sig_fresh :
     current - sig.sig_timestamp ≤ max_age := by
   intro sig current max_age h
   unfold sig_fresh at h
-  exact Nat.le_of_ble_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_013_different_keys (matches Coq) -/
 theorem update_013_different_keys :
@@ -337,7 +337,7 @@ theorem update_014_size_bounded :
     size ≤ max_size := by
   intro size max_size h
   unfold size_bounded at h
-  exact Nat.le_of_ble_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_015_compatible (matches Coq) -/
 theorem update_015_compatible :
@@ -346,7 +346,7 @@ theorem update_015_compatible :
     update_req ≤ sys_has := by
   intro update_req sys_has h
   unfold compatible at h
-  exact Nat.le_of_ble_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_016_changelog (matches Coq) -/
 theorem update_016_changelog :
@@ -355,7 +355,7 @@ theorem update_016_changelog :
     changelog_size > 0 := by
   intro changelog_size h
   unfold changelog_present at h
-  exact Nat.lt_of_blt_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_017_not_expired (matches Coq) -/
 theorem update_017_not_expired :
@@ -364,7 +364,7 @@ theorem update_017_not_expired :
     current < expiry := by
   intro current expiry h
   unfold not_expired at h
-  exact Nat.lt_of_blt_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_018_download_valid (matches Coq) -/
 theorem update_018_download_valid :
@@ -373,7 +373,7 @@ theorem update_018_download_valid :
     received = expected := by
   intro received expected h
   unfold download_valid at h
-  exact Nat.eq_of_beq_eq_true h
+  simp [BEq.beq] at h; exact h
 
 /-- update_019_secure_channel (matches Coq) -/
 theorem update_019_secure_channel :
@@ -382,7 +382,7 @@ theorem update_019_secure_channel :
     min_version ≤ tls_version := by
   intro tls_version min_version h
   unfold channel_secure at h
-  exact Nat.le_of_ble_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_020_rollout_pct (matches Coq) -/
 theorem update_020_rollout_pct :
@@ -391,7 +391,7 @@ theorem update_020_rollout_pct :
     percentage ≤ max_pct := by
   intro percentage max_pct h
   unfold rollout_percentage_ok at h
-  exact Nat.le_of_ble_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_021_reboot (matches Coq) -/
 theorem update_021_reboot :
@@ -420,7 +420,7 @@ theorem update_023_audit :
     event_count ≤ log_count := by
   intro event_count log_count h
   unfold audit_logged at h
-  exact Nat.le_of_ble_eq_true h
+  exact of_decide_eq_true h
 
 /-- update_024_notification (matches Coq) -/
 theorem update_024_notification :

@@ -274,6 +274,7 @@ theorem T_001_15_hermetic_composition : ∀ (b1 b2 : Build),
     hermetic_build b1 → hermetic_build b2 →
     hermetic_build (fun env src => b2 env (b1 env src)) := by
   intro b1 b2 hb1 hb2 env1 env2 src hh1 hh2 hinputs
+  simp only []
   have hb1eq := hb1 env1 env2 src hh1 hh2 hinputs
   rw [hb1eq]
   exact hb2 env1 env2 (b1 env2 src) hh1 hh2 hinputs

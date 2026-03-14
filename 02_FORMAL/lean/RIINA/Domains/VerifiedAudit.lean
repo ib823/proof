@@ -245,8 +245,7 @@ theorem audit_004_inclusion_valid :
     verify_inclusion proof = true →
     proof.incl_path.length > 0 := by
   intro proof h
-  unfold verify_inclusion at h
-  simp [Nat.lt_iff_blt_eq_true] at h ⊢
+  simp [verify_inclusion, decide_eq_true_eq] at h
   exact h
 
 /-- audit_005_consistency_order (matches Coq) -/
@@ -255,8 +254,8 @@ theorem audit_005_consistency_order :
     consistency_size_order proof = true →
     proof.cons_old_size ≤ proof.cons_new_size := by
   intro proof h
-  unfold consistency_size_order at h
-  exact Nat.le_of_ble_eq_true h
+  simp [consistency_size_order, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_006_witnesses_sufficient (matches Coq) -/
 theorem audit_006_witnesses_sufficient :
@@ -264,8 +263,8 @@ theorem audit_006_witnesses_sufficient :
     witnesses_sufficient cp min_witnesses = true →
     min_witnesses ≤ cp.cp_witnesses.length := by
   intro cp min_witnesses h
-  unfold witnesses_sufficient at h
-  exact Nat.le_of_ble_eq_true h
+  simp [witnesses_sufficient, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_007_witness_root (matches Coq) -/
 theorem audit_007_witness_root :
@@ -274,7 +273,8 @@ theorem audit_007_witness_root :
     ws.witness_root = expected := by
   intro ws expected h
   unfold witness_root_matches at h
-  exact Nat.eq_of_beq_eq_true h
+  simp [BEq.beq, Nat.beq_eq] at h
+  exact h
 
 /-- audit_008_timestamp_ordered (matches Coq) -/
 theorem audit_008_timestamp_ordered :
@@ -282,8 +282,8 @@ theorem audit_008_timestamp_ordered :
     timestamp_ordered e1 e2 = true →
     e1.entry_timestamp ≤ e2.entry_timestamp := by
   intro e1 e2 h
-  unfold timestamp_ordered at h
-  exact Nat.le_of_ble_eq_true h
+  simp [timestamp_ordered, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_009_principal_logged (matches Coq) -/
 theorem audit_009_principal_logged :
@@ -291,8 +291,8 @@ theorem audit_009_principal_logged :
     principal_logged entry = true →
     entry.entry_principal > 0 := by
   intro entry h
-  unfold principal_logged at h
-  exact Nat.lt_of_blt_eq_true h
+  simp [principal_logged, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_010_action_logged (matches Coq) -/
 theorem audit_010_action_logged :
@@ -300,8 +300,8 @@ theorem audit_010_action_logged :
     action_logged entry = true →
     entry.entry_action > 0 := by
   intro entry h
-  unfold action_logged at h
-  exact Nat.lt_of_blt_eq_true h
+  simp [action_logged, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_011_resource_logged (matches Coq) -/
 theorem audit_011_resource_logged :
@@ -309,8 +309,8 @@ theorem audit_011_resource_logged :
     resource_logged entry = true →
     entry.entry_resource > 0 := by
   intro entry h
-  unfold resource_logged at h
-  exact Nat.lt_of_blt_eq_true h
+  simp [resource_logged, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_012_hash_binds (matches Coq) -/
 theorem audit_012_hash_binds :
@@ -319,7 +319,8 @@ theorem audit_012_hash_binds :
     computed = stored := by
   intro computed stored h
   unfold hash_matches at h
-  exact Nat.eq_of_beq_eq_true h
+  simp [BEq.beq, Nat.beq_eq] at h
+  exact h
 
 /-- audit_013_log_not_empty (matches Coq) -/
 theorem audit_013_log_not_empty :
@@ -327,8 +328,8 @@ theorem audit_013_log_not_empty :
     log_not_empty log = true →
     log.log_entries.length > 0 := by
   intro log h
-  unfold log_not_empty at h
-  exact Nat.lt_of_blt_eq_true h
+  simp [log_not_empty, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_014_checkpoint_seq (matches Coq) -/
 theorem audit_014_checkpoint_seq :
@@ -336,8 +337,8 @@ theorem audit_014_checkpoint_seq :
     checkpoint_seq_valid cp log = true →
     cp.cp_sequence ≤ log.log_sequence := by
   intro cp log h
-  unfold checkpoint_seq_valid at h
-  exact Nat.le_of_ble_eq_true h
+  simp [checkpoint_seq_valid, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_015_witness_recent (matches Coq) -/
 theorem audit_015_witness_recent :
@@ -345,8 +346,8 @@ theorem audit_015_witness_recent :
     witness_recent ws current max_age = true →
     current - ws.witness_timestamp ≤ max_age := by
   intro ws current max_age h
-  unfold witness_recent at h
-  exact Nat.le_of_ble_eq_true h
+  simp [witness_recent, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_016_witnesses_diverse (matches Coq) -/
 theorem audit_016_witnesses_diverse :
@@ -362,8 +363,8 @@ theorem audit_017_path_bounded :
     path_length_ok path max_depth = true →
     path.length ≤ max_depth := by
   intro path max_depth h
-  unfold path_length_ok at h
-  exact Nat.le_of_ble_eq_true h
+  simp [path_length_ok, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_018_root_unique (matches Coq) -/
 theorem audit_018_root_unique :
@@ -385,7 +386,8 @@ theorem audit_020_signature_valid :
     sig = expected := by
   intro sig expected h
   unfold signature_valid at h
-  exact Nat.eq_of_beq_eq_true h
+  simp [BEq.beq, Nat.beq_eq] at h
+  exact h
 
 /-- audit_021_retention (matches Coq) -/
 theorem audit_021_retention :
@@ -393,8 +395,8 @@ theorem audit_021_retention :
     retention_ok entry_age max_age = true →
     entry_age ≤ max_age := by
   intro entry_age max_age h
-  unfold retention_ok at h
-  exact Nat.le_of_ble_eq_true h
+  simp [retention_ok, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_022_query_complete (matches Coq) -/
 theorem audit_022_query_complete :
@@ -403,7 +405,8 @@ theorem audit_022_query_complete :
     matching = returned := by
   intro matching returned h
   unfold query_complete at h
-  exact Nat.eq_of_beq_eq_true h
+  simp [BEq.beq, Nat.beq_eq] at h
+  exact h
 
 /-- audit_023_storage_redundant (matches Coq) -/
 theorem audit_023_storage_redundant :
@@ -411,8 +414,8 @@ theorem audit_023_storage_redundant :
     storage_redundant copies min_copies = true →
     min_copies ≤ copies := by
   intro copies min_copies h
-  unfold storage_redundant at h
-  exact Nat.le_of_ble_eq_true h
+  simp [storage_redundant, decide_eq_true_eq] at h
+  exact h
 
 /-- audit_024_tamper_detected (matches Coq) -/
 theorem audit_024_tamper_detected :

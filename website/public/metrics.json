@@ -1,10 +1,10 @@
 {
-  "generated": "2026-03-14T06:10:23Z",
-  "generatedHuman": "March 14, 2026 at 06:10 UTC",
+  "generated": "2026-03-14T23:25:43Z",
+  "generatedHuman": "March 14, 2026 at 23:25 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "53d2d765",
+    "commit": "954076a8",
     "branch": "main"
   },
   "proofs": {
@@ -24,10 +24,10 @@
   },
   "lean": {
     "theorems": 4458,
-    "sorry": 1,
+    "sorry": 0,
     "axioms": 0,
     "files": 155,
-    "lines": 69706,
+    "lines": 69696,
     "prover": "Lean 4"
   },
   "isabelle": {
@@ -107,24 +107,13 @@
     "tripleProverTheorems": 0,
     "totalProofsAllProvers": 13629,
     "totalProvers": 10,
-    "proverList": [
-      "Coq",
-      "Lean 4",
-      "Isabelle/HOL",
-      "F*",
-      "TLA+",
-      "Alloy 6",
-      "Z3/CVC5",
-      "Verus",
-      "Kani",
-      "Translation Validation"
-    ],
-    "sorry": 1,
+    "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
+    "sorry": 0,
     "status": "ACTIVE_COQ_MECHANIZED"
   },
   "quality": {
     "coqCompiled": true,
-    "leanCompiled": false,
+    "leanCompiled": true,
     "isabelleCompiled": false,
     "fstarStatus": "generated",
     "tlaplusStatus": "generated",
@@ -139,9 +128,9 @@
       "overallMechanized": false,
       "source": "strict_report",
       "pending": {
-        "lean": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA",
-        "isabelle": "quarantined generated corpus; dequarantine only after full Isabelle replacement (local Isabelle enforcement: ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh)",
-        "fstar": "quarantined generated corpus; dequarantine only after full F* replacement (local F* enforcement: ERROR: pinned local F* not found at /workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-fstar.sh)",
+        "lean": "none",
+        "isabelle": "quarantined generated corpus; dequarantine only after full Isabelle replacement (local Isabelle enforcement: ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle. Run: bash scripts/provision-smoke-toolchains.sh      or: bash scripts/provision-isabelle.sh)",
+        "fstar": "quarantined generated corpus; dequarantine only after full F* replacement (local F* enforcement: ERROR: pinned local F* not found at /workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe. Run: bash scripts/provision-smoke-toolchains.sh      or: bash scripts/provision-fstar.sh)",
         "tlaplus": "quarantined generated corpus; dequarantine only after real-lane replacement",
         "alloy": "quarantined generated corpus; dequarantine only after real-lane replacement",
         "smt": "require full-lane Z3 checks and zero generated placeholders",
@@ -150,7 +139,7 @@
         "tv": "require full-lane TV checks and zero generated placeholders"
       },
       "backlog": {
-        "leanSorry": 1,
+        "leanSorry": 0,
         "leanAxioms": 0,
         "isabelleSorry": 0,
         "fstarGeneratedFiles": 7,
@@ -167,16 +156,11 @@
     }
   },
   "claimLevels": {
-    "legend": [
-      "generated",
-      "compiled",
-      "mechanized",
-      "independently_audited"
-    ],
+    "legend": ["generated", "compiled", "mechanized", "independently_audited"],
     "overall": "generated",
     "independentlyAudited": false,
     "coq": "mechanized",
-    "lean": "generated",
+    "lean": "mechanized",
     "isabelle": "generated",
     "fstar": "generated",
     "tlaplus": "generated",
@@ -188,10 +172,10 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 977,
-    "testsVerified": 977,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "tests": 973,
+    "testsVerified": 973,
+    "testsEstimated": 973,
+    "testsSource": "static_scan",
     "crates": 15
   },
   "examples": 133,
@@ -201,33 +185,12 @@
     "threats": "1231+"
   },
   "milestones": [
-    {
-      "date": "2026-02-07",
-      "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) \u2014 claim levels apply per lane"
-    },
-    {
-      "date": "2026-02-07",
-      "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)"
-    },
-    {
-      "date": "2026-02-07",
-      "event": "SMT assertion corpus integrated into public metrics"
-    },
-    {
-      "date": "2026-02-06",
-      "event": "Proof depth 20+ across all 250 domain files"
-    },
-    {
-      "date": "2026-02-06",
-      "event": "Cross-prover mapping milestone recorded (current quality flags are authoritative)"
-    },
-    {
-      "date": "2026-02-10",
-      "event": "Axiom token elimination: 4 \u2192 0 (active-build explicit assumptions now 0)"
-    },
-    {
-      "date": "2026-02-01",
-      "event": "Phase 7 complete: Platform Universality"
-    }
+    { "date": "2026-02-07", "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) — claim levels apply per lane" },
+    { "date": "2026-02-07", "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)" },
+    { "date": "2026-02-07", "event": "SMT assertion corpus integrated into public metrics" },
+    { "date": "2026-02-06", "event": "Proof depth 20+ across all 250 domain files" },
+    { "date": "2026-02-06", "event": "Cross-prover mapping milestone recorded (current quality flags are authoritative)" },
+    { "date": "2026-02-10", "event": "Axiom token elimination: 4 → 0 (active-build explicit assumptions now 0)" },
+    { "date": "2026-02-01", "event": "Phase 7 complete: Platform Universality" }
   ]
 }

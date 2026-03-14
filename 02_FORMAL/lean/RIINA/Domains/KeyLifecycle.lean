@@ -216,7 +216,7 @@ def backup_encrypted (encryption_key : Nat) : Bool :=
   0 < encryption_key
 
 def custodians_diverse (custodians : List Nat) (min_custodians : Nat) : Bool :=
-  min_custodians ≤ custodians.dedup.length
+  min_custodians ≤ custodians.eraseDups.length
 
 def recovery_tested (last_test current max_interval : Nat) : Bool :=
   (current - last_test) ≤ max_interval
@@ -235,7 +235,7 @@ theorem key_001_entropy_sufficient :
     min_entropy ≤ key.key_entropy_bits := by
   intro key min_entropy h
   unfold entropy_sufficient at h
-  exact Nat.le_of_ble_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_002_active_usable (matches Coq) -/
 theorem key_002_active_usable :
@@ -269,7 +269,7 @@ theorem key_006_not_expired :
     current_time < key.key_expires := by
   intro key current_time h
   unfold key_not_expired at h
-  exact Nat.lt_of_blt_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_007_rotation_new (matches Coq) -/
 theorem key_007_rotation_new :
@@ -278,9 +278,8 @@ theorem key_007_rotation_new :
     rot.rot_old_key ≠ rot.rot_new_key := by
   intro rot h
   unfold rotation_valid at h
-  intro heq
-  subst heq
-  simp [Nat.beq_refl] at h
+  simp [beq_iff_eq] at h
+  exact h
 
 /-- key_008_rotation_timing (matches Coq) -/
 theorem key_008_rotation_timing :
@@ -289,7 +288,7 @@ theorem key_008_rotation_timing :
     key.key_created < rot.rot_timestamp := by
   intro key rot h
   unfold rotation_after_creation at h
-  exact Nat.lt_of_blt_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_009_destruction_verified (matches Coq) -/
 theorem key_009_destruction_verified :
@@ -306,8 +305,8 @@ theorem key_010_escrow_threshold :
     1 ≤ share.escrow_threshold ∧ share.escrow_threshold ≤ share.escrow_total := by
   intro share h
   unfold escrow_threshold_valid at h
-  simp [Bool.and_eq_true] at h
-  exact ⟨Nat.le_of_ble_eq_true h.1, Nat.le_of_ble_eq_true h.2⟩
+  simp [Bool.and_eq_true, decide_eq_true_eq] at h
+  exact h
 
 /-- key_011_escrow_share_index (matches Coq) -/
 theorem key_011_escrow_share_index :
@@ -316,7 +315,7 @@ theorem key_011_escrow_share_index :
     share.escrow_share_index < share.escrow_total := by
   intro share h
   unfold escrow_share_index_valid at h
-  exact Nat.lt_of_blt_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_012_destruction_method (matches Coq) -/
 theorem key_012_destruction_method :
@@ -325,7 +324,7 @@ theorem key_012_destruction_method :
     dest.dest_method ≤ 2 := by
   intro dest h
   unfold destruction_method_valid at h
-  exact Nat.le_of_ble_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_013_symmetric_size (matches Coq) -/
 theorem key_013_symmetric_size :
@@ -334,7 +333,7 @@ theorem key_013_symmetric_size :
     min_bits ≤ bits := by
   intro bits min_bits h
   unfold symmetric_key_size_ok at h
-  exact Nat.le_of_ble_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_014_asymmetric_size (matches Coq) -/
 theorem key_014_asymmetric_size :
@@ -343,7 +342,7 @@ theorem key_014_asymmetric_size :
     min_bits ≤ bits := by
   intro bits min_bits h
   unfold asymmetric_key_size_ok at h
-  exact Nat.le_of_ble_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_015_purpose_bound (matches Coq) -/
 theorem key_015_purpose_bound :
@@ -352,7 +351,7 @@ theorem key_015_purpose_bound :
     key_purpose = allowed_purpose := by
   intro key_purpose allowed_purpose h
   unfold purpose_matches at h
-  exact Nat.eq_of_beq_eq_true h
+  simp [beq_iff_eq] at h; exact h
 
 /-- key_016_lifetime (matches Coq) -/
 theorem key_016_lifetime :
@@ -361,7 +360,7 @@ theorem key_016_lifetime :
     expires - created ≤ max_lifetime := by
   intro created expires max_lifetime h
   unfold lifetime_ok at h
-  exact Nat.le_of_ble_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_017_rotation_due (matches Coq) -/
 theorem key_017_rotation_due :
@@ -370,7 +369,7 @@ theorem key_017_rotation_due :
     max_period < current - last_rotation := by
   intro last_rotation current max_period h
   unfold rotation_due at h
-  exact Nat.lt_of_blt_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_018_derivation_depth (matches Coq) -/
 theorem key_018_derivation_depth :
@@ -379,7 +378,7 @@ theorem key_018_derivation_depth :
     depth ≤ max_depth := by
   intro depth max_depth h
   unfold derivation_depth_ok at h
-  exact Nat.le_of_ble_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_019_access_control (matches Coq) -/
 theorem key_019_access_control :
@@ -388,7 +387,7 @@ theorem key_019_access_control :
     required ≤ requester := by
   intro requester required h
   unfold access_allowed at h
-  exact Nat.le_of_ble_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_020_hsm_storage (matches Coq) -/
 theorem key_020_hsm_storage :
@@ -405,7 +404,7 @@ theorem key_021_audit_complete :
     operations = logged := by
   intro operations logged h
   unfold audit_complete at h
-  exact Nat.eq_of_beq_eq_true h
+  simp [beq_iff_eq] at h; exact h
 
 /-- key_022_backup_encrypted (matches Coq) -/
 theorem key_022_backup_encrypted :
@@ -414,16 +413,16 @@ theorem key_022_backup_encrypted :
     encryption_key > 0 := by
   intro encryption_key h
   unfold backup_encrypted at h
-  exact Nat.lt_of_blt_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_023_custodian_diversity (matches Coq) -/
 theorem key_023_custodian_diversity :
   ∀ (custodians : List Nat) (min_custodians : Nat),
     custodians_diverse custodians min_custodians = true →
-    min_custodians ≤ custodians.dedup.length := by
+    min_custodians ≤ custodians.eraseDups.length := by
   intro custodians min_custodians h
   unfold custodians_diverse at h
-  exact Nat.le_of_ble_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_024_recovery_tested (matches Coq) -/
 theorem key_024_recovery_tested :
@@ -432,7 +431,7 @@ theorem key_024_recovery_tested :
     current - last_test ≤ max_interval := by
   intro last_test current max_interval h
   unfold recovery_tested at h
-  exact Nat.le_of_ble_eq_true h
+  simp [decide_eq_true_eq] at h; exact h
 
 /-- key_025_defense_in_depth (matches Coq) -/
 theorem key_025_defense_in_depth :

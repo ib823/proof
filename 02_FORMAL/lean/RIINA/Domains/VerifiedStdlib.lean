@@ -119,7 +119,7 @@ def vec_empty {A : Type} : Vec A :=
 
 def vec_push {A : Type} (v : Vec A) (x : A) : Vec A :=
   ⟨v.vec_data ++ [x], v.vec_length + 1,
-    by simp [List.length_append]; omega⟩
+    by simp [List.length_append]; exact v.vec_length_ok⟩
 
 def vec_pop {A : Type} (v : Vec A) : Option A :=
   match v.vec_data with
@@ -354,8 +354,8 @@ theorem Y_001_11_vec_get_bounds : ∀ (A : Type) (v : Vec A) (i : Nat),
     i ≥ v.vec_length → vec_get v i = none := by
   intro A v i hge
   simp [vec_get]
-  rw [← v.vec_length_ok] at hge
-  exact List.getElem?_eq_none hge
+  have := v.vec_length_ok
+  omega
 
 /-- Y_001_12: Vec length is accurate -/
 theorem Y_001_12_vec_len_accurate : ∀ (A : Type) (v : Vec A),
@@ -370,7 +370,6 @@ theorem Y_001_13_hashmap_get_put : ∀ (K V : Type) [DecidableEq K]
     hashmap_get (hashmap_put m k v) k = some v := by
   intro K V _ m k v
   simp [hashmap_get, hashmap_put, List.find?]
-  simp [BEq.beq, decide_True]
 
 /-- Y_001_14: Lookup of different key in singleton -/
 theorem Y_001_14_hashmap_different_key : ∀ (K V : Type) [DecidableEq K]
@@ -378,36 +377,43 @@ theorem Y_001_14_hashmap_different_key : ∀ (K V : Type) [DecidableEq K]
     k1 ≠ k2 →
     hashmap_get [(k1, v)] k2 = none := by
   intro K V _ k1 k2 v hneq
-  simp [hashmap_get, List.find?]
-  simp [BEq.beq]
-  intro h; exact absurd h.symm hneq
+  unfold hashmap_get
+  simp [List.find?]
+  have : ¬(k2 = k1) := fun h => hneq (h ▸ rfl)
+  simp [BEq.beq, this]
 
 /-- Y_001_15: Remove deletes key -/
+private theorem find_filter_none {K V : Type} [DecidableEq K]
+    (m : List (K × V)) (k : K) :
+    List.find? (fun p => k == p.1) (m.filter (fun p => k ≠ p.1)) = none := by
+  induction m with
+  | nil => rfl
+  | cons hd tl ih =>
+    simp only [List.filter]
+    by_cases h : k = hd.fst
+    · -- k = hd.fst: element is removed by filter
+      have : ¬(k ≠ hd.fst) := not_not_intro h
+      simp only [decide_eq_true_eq] at this
+      have hcond : decide (k ≠ hd.fst) = false := decide_eq_false (not_not_intro h)
+      rw [hcond]
+      simp only [ite_false, ↓reduceIte]
+      exact ih
+    · -- k ≠ hd.fst: element is kept by filter
+      have hcond : decide (k ≠ hd.fst) = true := decide_eq_true h
+      rw [hcond]
+      simp only [ite_true, ↓reduceIte]
+      simp only [List.find?, BEq.beq]
+      have hbeq : decide (k = hd.fst) = false := decide_eq_false h
+      rw [hbeq]
+      simp only [ite_false, ↓reduceIte]
+      exact ih
+
 theorem Y_001_15_hashmap_remove_correct : ∀ (K V : Type) [DecidableEq K]
     (m : HashMap K V) (k : K),
     hashmap_get (hashmap_remove m k) k = none := by
   intro K V _ m k
-  simp [hashmap_get, hashmap_remove]
-  induction m with
-  | nil => rfl
-  | cons hd tl ih =>
-    simp [List.filter]
-    split
-    case isTrue h =>
-      simp [List.find?]
-      split
-      case isTrue h2 =>
-        simp [BEq.beq] at h2
-        exact absurd h2.symm h
-      case isFalse => exact ih
-    case isFalse h =>
-      push_neg at h
-      simp [List.find?]
-      split
-      case isTrue h2 =>
-        simp [BEq.beq] at h2
-        exact absurd h2 h
-      case isFalse => exact ih
+  unfold hashmap_get hashmap_remove
+  rw [find_filter_none]
 
 /-- Y_001_16: BTree maintains ordering invariant -/
 theorem Y_001_16_btree_ordered : ∀ (A : Type) (_t : BTree A), True := by

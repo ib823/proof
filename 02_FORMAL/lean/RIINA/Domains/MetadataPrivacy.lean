@@ -231,11 +231,9 @@ theorem meta_004_timing_bucketed (t : Nat) (bucket : TimingBucket)
   exists (t / bucket.bucket_interval)
   simp [in_bucket, andb] at hin
   obtain ⟨h1, h2⟩ := hin
-  simp [Nat.ble_eq] at h1
-  simp [Nat.blt_eq] at h2
   constructor
   · exact h1
-  · omega
+  · rw [Nat.add_mul]; simp; exact h2
 
 /-- META-005: Jitter Adds Uncertainty -/
 theorem meta_005_jitter_bounded (base jitter max_jitter : Nat)
@@ -254,7 +252,7 @@ theorem meta_007_set_preserved (set : AnonymitySet) (elem : Nat)
     (h : elem ∈ set) :
     length set >= 1 := by
   match set, h with
-  | _ :: _, _ => simp [length, List.length]; omega
+  | _ :: _, _ => simp [length, List.length]
 
 /-- META-008: Sender Anonymity -/
 theorem meta_008_sender_anonymity (sender_set : AnonymitySet) (k : Nat) (_actual_sender : Nat)

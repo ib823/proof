@@ -240,10 +240,15 @@ def sorted : List Nat → Bool
   | [_] => true
   | x :: y :: rest => (x ≤ y) && sorted (y :: rest)
 
-def bp_ordered {V : Type} : BPlusNode Nat V → Bool
+def bp_ordered {V : Type} (node : BPlusNode Nat V) : Bool :=
+  match node with
   | BPlusNode.BPLeaf kvs => sorted (kvs.map Prod.fst)
   | BPlusNode.BPInternal keys children =>
-    sorted keys && children.all (fun c => @bp_ordered V c)
+    sorted keys && go children
+where
+  go : List (BPlusNode Nat V) → Bool
+    | [] => true
+    | c :: cs => bp_ordered c && go cs
 
 def bp_height {K V : Type} : BPlusNode K V → Nat
   | BPlusNode.BPLeaf _ => 0
@@ -356,7 +361,7 @@ theorem SIGMA_001_04_predicate_typed : ∀ (p : Pred) (schema : Schema),
 
 /-- SIGMA_001_05: Projection is typed -/
 theorem SIGMA_001_05_projection_typed : ∀ (_proj _schema : List Nat),
-    ∀ _i, True := by
+    ∀ (_i : Nat), True := by
   intros; trivial
 
 /-- SIGMA_001_06: Join is typed -/
@@ -399,7 +404,8 @@ theorem SIGMA_001_10_atomicity_commit : ∀ (txn : Transaction) (db db' : Databa
     all_ops_applied txn.txn_ops db db' := by
   intro txn db db' status hexec _ hpend
   simp [exec_txn, hpend] at hexec
-  exact hexec.1.symm
+  simp [all_ops_applied]
+  exact hexec.1
 
 /-- SIGMA_001_11: Atomicity abort -/
 theorem SIGMA_001_11_atomicity_abort : ∀ (txn : Transaction) (db db' : Database) (status : TxnStatus),
@@ -409,9 +415,12 @@ theorem SIGMA_001_11_atomicity_abort : ∀ (txn : Transaction) (db db' : Databas
   intro txn db db' status hexec habort
   simp [exec_txn] at hexec
   cases h : txn.txn_status <;> simp [h] at hexec
-  · rw [hexec.2] at habort; exact absurd habort (by simp)
-  · rw [hexec.2] at habort; exact absurd habort (by simp)
-  · exact hexec.1.symm
+  · -- TxnPending: status = TxnCommitted, contradicts habort
+    have := hexec.2; subst this; simp at habort
+  · -- TxnCommitted: status = TxnCommitted, contradicts habort
+    have := hexec.2; subst this; simp at habort
+  · -- TxnAborted: db = db'
+    exact hexec.1
 
 /-- SIGMA_001_12: Consistency -/
 theorem SIGMA_001_12_consistency : ∀ (txn : Transaction) (db db' : Database) (status : TxnStatus) (invariant : Database → Bool),
@@ -569,10 +578,7 @@ theorem SIGMA_001_35_merkle_tamper_detect : ∀ (tree : MerkleTree) (data : Nat)
     data ∈ tree.merkle_leaves := by
   intro tree data hverify
   simp [verify_merkle] at hverify
-  exact List.any_eq_true_iff_exists.mp hverify |>.elim fun x ⟨hx_mem, hx_eq⟩ => by
-    simp [BEq.beq, Nat.beq_eq] at hx_eq
-    subst hx_eq
-    exact hx_mem
+  exact hverify
 
 /-- SIGMA_001_36: Checksum correct -/
 theorem SIGMA_001_36_checksum_correct : ∀ (data : List Nat),

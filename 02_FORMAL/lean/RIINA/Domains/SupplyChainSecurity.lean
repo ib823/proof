@@ -339,10 +339,7 @@ theorem hash_eq_implies_eq : ∀ (h1 h2 : Hash), hash_eq h1 h2 = true → h1 = h
     | cons y ys =>
       simp [hash_eq] at hEq
       obtain ⟨hxy, htl⟩ := hEq
-      have : x = y := by
-        have := Nat.eq_of_beq_eq_true hxy
-        exact this
-      subst this
+      subst hxy
       have : xs = ys := ih ys htl
       subst this
       rfl

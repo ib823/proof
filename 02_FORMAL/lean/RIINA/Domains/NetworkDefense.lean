@@ -157,7 +157,8 @@ theorem OMEGA_001_02_tb_consume_decreases : ∀ (tb : TokenBucket) (cost : Nat) 
     tb'.tb_tokens = tb.tb_tokens - cost := by
   intro tb cost tb' h
   simp [tb_consume] at h
-  split at h <;> simp_all
+  obtain ⟨_, h2⟩ := h
+  rw [← h2]
 
 theorem OMEGA_001_03_tb_consume_fails_insufficient : ∀ (tb : TokenBucket) (cost : Nat),
     tb.tb_tokens < cost →
@@ -171,25 +172,26 @@ theorem OMEGA_001_04_tb_refill_monotone : ∀ (tb : TokenBucket) (t1 t2 : Nat),
     tb.tb_last_refill ≤ t1 →
     (tb_refill tb t1).tb_tokens ≤ (tb_refill tb t2).tb_tokens := by
   intro tb t1 t2 ht hlast
-  simp [tb_refill]
-  apply Nat.min_le_min_right
-  apply Nat.add_le_add_left
-  apply Nat.mul_le_mul_right
-  omega
+  simp only [tb_refill]
+  have hadd : tb.tb_tokens + (t1 - tb.tb_last_refill) * tb.tb_refill_rate ≤
+              tb.tb_tokens + (t2 - tb.tb_last_refill) * tb.tb_refill_rate :=
+    Nat.add_le_add_left (Nat.mul_le_mul_right _ (Nat.sub_le_sub_right ht _)) _
+  exact Nat.le_min_of_le_of_le
+    (Nat.le_trans (Nat.min_le_left _ _) hadd)
+    (Nat.le_trans (Nat.min_le_right _ _) (Nat.le_refl _))
 
 theorem OMEGA_001_05_tb_consume_preserves_capacity : ∀ (tb : TokenBucket) (cost : Nat) (tb' : TokenBucket),
     tb_consume tb cost = some tb' →
     tb'.tb_capacity = tb.tb_capacity := by
   intro tb cost tb' h
   simp [tb_consume] at h
-  split at h <;> simp_all
+  obtain ⟨_, h2⟩ := h
+  rw [← h2]
 
 theorem OMEGA_001_06_tb_zero_cost_always_succeeds : ∀ (tb : TokenBucket),
     ∃ tb', tb_consume tb 0 = some tb' := by
   intro tb
   simp [tb_consume]
-  exact ⟨{ tb_tokens := tb.tb_tokens, tb_capacity := tb.tb_capacity,
-            tb_refill_rate := tb.tb_refill_rate, tb_last_refill := tb.tb_last_refill }, rfl⟩
 
 theorem OMEGA_001_07_tb_refill_preserves_capacity : ∀ (tb : TokenBucket) (now : Nat),
     (tb_refill tb now).tb_capacity = tb.tb_capacity := by
@@ -211,40 +213,22 @@ theorem OMEGA_002_01_expired_cap_invalid : ∀ (cap : NetCapability) (now : Nat)
 theorem OMEGA_002_02_cap_subset_reflexive : ∀ (cap : NetCapability),
     cap_is_subset cap cap = true := by
   intro cap; simp [cap_is_subset]
-  induction cap.cap_permissions with
-  | nil => simp [List.all_nil]
-  | cons x xs ih =>
-    simp [List.all_cons]
-    constructor
-    · simp [List.any_cons, BEq.beq]
-    · exact List.all_of_all_cons_of_all_tail
-        (fun p => List.any (x :: xs) fun x_1 => x_1 == p) xs
-        (by
-          intro a ha
-          simp [List.any_cons]
-          right
-          exact List.any_of_mem ha (by simp [BEq.beq]))
-        |>.mp ih
 
 theorem OMEGA_002_03_delegation_attenuation : ∀ (parent : NetCapability) (perms : List Nat) (expiry sig : Nat) (child : NetCapability),
     cap_delegate parent perms expiry sig = some child →
     child.cap_expiry ≤ parent.cap_expiry := by
   intro parent perms expiry sig child h
   simp [cap_delegate] at h
-  split at h
-  · simp at h; rw [← h]; simp; exact Nat.min_le_right _ _
-  · simp at h
+  obtain ⟨_, h2⟩ := h
+  rw [← h2]; exact Nat.min_le_right _ _
 
 theorem OMEGA_002_04_delegation_permission_subset : ∀ (parent : NetCapability) (perms : List Nat) (expiry sig : Nat) (child : NetCapability),
     cap_delegate parent perms expiry sig = some child →
     cap_is_subset child parent = true := by
   intro parent perms expiry sig child h
   simp [cap_delegate] at h
-  split at h
-  · simp at h; rw [← h]; simp [cap_is_subset]
-    intro a ha
-    exact List.mem_filter.mp ha |>.2
-  · simp at h
+  obtain ⟨_, h2⟩ := h
+  rw [← h2]; simp [cap_is_subset]
 
 theorem OMEGA_002_05_nondelegatable_blocks : ∀ (parent : NetCapability) (perms : List Nat) (expiry sig : Nat),
     parent.cap_delegatable = false →
@@ -261,9 +245,10 @@ theorem OMEGA_002_07_cap_permits_sound : ∀ (cap : NetCapability) (port : Nat),
     cap_permits cap port = true →
     ∃ p, p ∈ cap.cap_permissions ∧ (p == port) = true := by
   intro cap port h
-  simp [cap_permits] at h
-  exact List.any_eq_true_iff_exists.mp h |>.elim fun x hx =>
-    ⟨x, hx.1, hx.2⟩
+  simp only [cap_permits] at h
+  rw [List.any_eq_true] at h
+  obtain ⟨x, hx1, hx2⟩ := h
+  exact ⟨x, hx1, hx2⟩
 
 -- ============================================================================
 -- SYN Cookie (6 theorems)
@@ -302,7 +287,8 @@ theorem OMEGA_003_06_wrong_mac_rejected : ∀ (secret : Nat) (cookie : SynCookie
     mac ≠ syn_cookie_generate secret cookie →
     syn_cookie_verify secret cookie mac = false := by
   intro secret cookie mac h
-  simp [syn_cookie_verify, BEq.beq, Nat.beq_eq, h]
+  simp [syn_cookie_verify, BEq.beq, Nat.beq_eq]
+  exact Ne.symm h
 
 -- ============================================================================
 -- Connection Limiting (5 theorems)
@@ -341,7 +327,7 @@ theorem OMEGA_005_01_pow_deterministic : ∀ (n c d : Nat),
 
 theorem OMEGA_005_02_pow_zero_difficulty_impossible : ∀ (n c : Nat),
     pow_valid n c 0 = false := by
-  intros; simp [pow_valid, pow_hash]; omega
+  intros; simp [pow_valid, pow_hash]
 
 theorem OMEGA_005_03_pow_verify_complete : ∀ (n c d : Nat),
     pow_verify n c d = true → pow_valid n c d = true := by

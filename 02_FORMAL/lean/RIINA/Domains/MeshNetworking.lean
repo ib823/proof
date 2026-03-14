@@ -256,9 +256,7 @@ theorem mesh_002_honest_path (path : Route) (byzantine : ByzantineSet)
     ∀ n, n ∈ path → n ∉ byzantine := by
   simp [honest_path, forallb, negb, existsb] at h
   intro n hn hcontra
-  have hall := List.all_eq_true.mp h n hn
-  have hany := List.any_eq_true.mpr ⟨n, hcontra, by simp⟩
-  simp_all
+  exact h n hn n hcontra rfl
 
 /-- MESH-003: Route Has No Loops (loop_free implies no duplicates) -/
 theorem mesh_003_loop_free (route : Route)
@@ -306,8 +304,7 @@ theorem mesh_009_neighbor_auth (neighbor : Nat) (trusted : List Nat)
     (h : neighbor_authenticated neighbor trusted = true) :
     ∃ t, t ∈ trusted ∧ t = neighbor := by
   simp [neighbor_authenticated, existsb] at h
-  obtain ⟨t, ht, heq⟩ := List.any_eq_true.mp h
-  exact ⟨t, ht, by simpa using heq⟩
+  exact ⟨neighbor, h, rfl⟩
 
 /-- MESH-010: Hop Count Limit -/
 theorem mesh_010_hop_limit (route : Route) (max_hops : Nat)
@@ -357,8 +354,7 @@ theorem mesh_016_msg_unique (msg_id : Nat) (seen : List Nat)
     msg_id ∉ seen := by
   simp [msg_id_unique, negb, existsb] at h
   intro hin
-  have := List.any_eq_true.mpr ⟨msg_id, hin, by simp⟩
-  simp_all
+  exact h msg_id hin rfl
 
 /-- MESH-017: Link Quality Threshold -/
 theorem mesh_017_link_quality (quality min_quality : Nat)

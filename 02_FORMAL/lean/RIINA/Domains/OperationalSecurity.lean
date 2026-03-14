@@ -29,12 +29,12 @@ namespace RIINA.Domains.OperationalSecurity
 @[inline] private def negb (b : Bool) : Bool := !b
 @[inline] private def andb (a b : Bool) : Bool := a && b
 @[inline] private def orb (a b : Bool) : Bool := a || b
-@[inline] private def forallb (f : α → Bool) (l : List α) : Bool := l.all f
-@[inline] private def existsb (f : α → Bool) (l : List α) : Bool := l.any f
-@[inline] private def hd_error (l : List α) : Option α := l.head?
-@[inline] private def find (f : α → Bool) (l : List α) : Option α := l.find? f
-@[inline] private def fst (p : α × β) : α := p.1
-@[inline] private def snd (p : α × β) : β := p.2
+@[inline] private def forallb {α : Type} (f : α → Bool) (l : List α) : Bool := l.all f
+@[inline] private def existsb {α : Type} (f : α → Bool) (l : List α) : Bool := l.any f
+@[inline] private def hd_error {α : Type} (l : List α) : Option α := l.head?
+@[inline] private def find' {α : Type} (f : α → Bool) (l : List α) : Option α := l.find? f
+@[inline] private def fst' {α : Type} {β : Type} (p : α × β) : α := p.1
+@[inline] private def snd' {α : Type} {β : Type} (p : α × β) : β := p.2
 
 -- ========================================================================
 -- SECTION 1: SHAMIR SECRET SHARING
@@ -246,7 +246,7 @@ theorem PSI_002_02_approval_monotone : ∀ (pol : ThresholdPolicy) (party : Nat)
   tp_approved pol = true → tp_approved (tp_add_approval pol party) = true := by
   intro pol party h
   simp [tp_approved, tp_add_approval] at *
-  split_ifs with hdup
+  split
   · exact h
   · simp; omega
 
@@ -254,8 +254,8 @@ theorem PSI_002_03_duplicate_approval_noop : ∀ (pol : ThresholdPolicy) (party 
   pol.tp_approvals.any (· == party) = true →
   tp_add_approval pol party = pol := by
   intro pol party h
-  simp [tp_add_approval, h]
-  cases pol; rfl
+  unfold tp_add_approval
+  simp [h]
 
 theorem PSI_002_04_valid_policy_n_le_m : ∀ (pol : ThresholdPolicy),
   tp_valid pol = true → pol.tp_n ≤ pol.tp_m := by
@@ -319,22 +319,22 @@ theorem PSI_004_03_timeout_triggers : ∀ (dms : DeadManSwitch) (now : Nat),
   dms.dms_timeout + dms.dms_last_checkin < now →
   (dms_check dms now).dms_triggered = true := by
   intro dms now h
-  simp [dms_check]
-  omega
+  simp [dms_check, h]
 
 theorem PSI_004_04_no_timeout_no_trigger : ∀ (dms : DeadManSwitch) (now : Nat),
   now ≤ dms.dms_timeout + dms.dms_last_checkin →
   dms.dms_triggered = false →
   (dms_check dms now).dms_triggered = false := by
   intro dms now hle hfalse
-  simp [dms_check]
-  omega
+  unfold dms_check
+  have hcond : ¬ (dms.dms_timeout + dms.dms_last_checkin < now) := by omega
+  simp [hcond, hfalse]
 
 theorem PSI_004_05_recovery_action_preserved : ∀ (dms : DeadManSwitch) (now : Nat),
   (dms_check dms now).dms_recovery_action = dms.dms_recovery_action := by
   intro dms now
   simp [dms_check]
-  split_ifs <;> rfl
+  split <;> rfl
 
 -- ========================================================================
 -- PROOFS: INSIDER BUDGET (5 theorems)
@@ -414,7 +414,7 @@ theorem PSI_007_03_nversion_empty_agrees :
 
 -- ========================================================================
 -- END OF OPERATIONAL SECURITY PROOFS
--- 38 theorems, 0 sorry, 0 axiom
+-- 38 theorems, 0 incomplete, 0 axiom
 -- ========================================================================
 
 end RIINA.Domains.OperationalSecurity

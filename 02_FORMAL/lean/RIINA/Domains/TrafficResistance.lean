@@ -274,11 +274,20 @@ theorem traffic_015_no_timing_correlation (t1 t2 bucket : Nat)
 theorem traffic_016_size_quantization (size quantum : Nat)
     (hpos : quantum > 0) :
     size_quantized size quantum >= size := by
-  unfold size_quantized
-  have hneq : quantum ≠ 0 := by omega
-  have hdm := Nat.div_add_mod size quantum
-  have hmod := Nat.mod_lt size hneq
-  omega
+  simp only [size_quantized]
+  have h1 : quantum * (size / quantum) + size % quantum = size := Nat.div_add_mod size quantum
+  have h2 : size % quantum < quantum := Nat.mod_lt size hpos
+  -- Goal: (size / quantum + 1) * quantum >= size
+  -- i.e. size / quantum * quantum + quantum >= size
+  -- From h1: size = quantum * (size / quantum) + size % quantum
+  -- From h2: size % quantum < quantum
+  -- So size = quantum * (size / quantum) + size % quantum < quantum * (size / quantum) + quantum
+  --         = (size / quantum + 1) * quantum
+  have h3 : size ≤ quantum * (size / quantum) + quantum := by omega
+  calc size ≤ quantum * (size / quantum) + quantum := h3
+    _ = quantum * (size / quantum) + quantum * 1 := by simp
+    _ = quantum * (size / quantum + 1) := by rw [Nat.mul_add]
+    _ = (size / quantum + 1) * quantum := Nat.mul_comm _ _
 
 /-- TRAFFIC-017: Flow Correlation Resistance -/
 theorem traffic_017_flow_correlation (f1 _f2 : TrafficFlow) (size : Nat)

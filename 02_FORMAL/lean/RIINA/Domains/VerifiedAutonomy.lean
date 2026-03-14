@@ -363,9 +363,7 @@ theorem auto_019_collision_free (obstacles path_points : List Nat)
     ∀ p, p ∈ path_points → p ∉ obstacles := by
   simp [path_collision_free, forallb, negb, existsb] at h
   intro p hp hcontra
-  have hall := List.all_eq_true.mp h p hp
-  have hany := List.any_eq_true.mpr ⟨p, hcontra, by simp⟩
-  simp_all
+  exact h p hp p hcontra rfl
 
 /-- AUTO-020: Energy Reserve Sufficient -/
 theorem auto_020_energy_ok (current required : Nat)

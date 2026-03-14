@@ -327,8 +327,7 @@ theorem heal_011_isolation_effective (component : Nat) (isolated : List Nat)
     (h : component_isolated component isolated = true) :
     ∃ i, i ∈ isolated ∧ i = component := by
   simp [component_isolated, existsb] at h
-  obtain ⟨i, hi, heq⟩ := List.any_eq_true.mp h
-  exact ⟨i, hi, by simpa using heq⟩
+  exact ⟨component, h, rfl⟩
 
 /-- HEAL-012: Failover Target Available -/
 theorem heal_012_failover_available (targets : List Nat)
@@ -352,10 +351,9 @@ theorem heal_013_recovery_completes (before after : HealthState)
 theorem heal_014_no_recurrence (fault_id : Nat) (recent : List Nat) (window : Nat)
     (h : recurrence_prevented fault_id recent window = true) :
     fault_id ∉ recent := by
-  simp [recurrence_prevented, negb, existsb] at h
+  simp [recurrence_prevented, negb, existsb, List.any_eq_true] at h
   intro hin
-  have := List.any_eq_true.mpr ⟨fault_id, hin, by simp⟩
-  simp_all
+  exact h fault_id hin rfl
 
 /-- HEAL-015: Graceful Degradation Order -/
 theorem heal_015_graceful_order (from_level to_level : Nat)

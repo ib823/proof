@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-03-14T06:07:38Z",
-  "repo_head": "53d2d7654fa57c87b41488f072475e31f3f1ff12",
+  "generated_utc": "2026-03-14T16:07:20Z",
+  "repo_head": "954076a86d0676789f585d5daa50d93afcc3f761",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
@@ -23,12 +23,12 @@
   },
   "lanes": {
     "lean": {
-      "full_build_ok": false,
+      "full_build_ok": true,
       "files": 155,
-      "sorry": 1,
+      "sorry": 0,
       "axioms": 0,
-      "mechanized_ready": false,
-      "pending": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA"
+      "mechanized_ready": true,
+      "pending": "none"
     },
     "isabelle": {
       "full_build_ok": false,

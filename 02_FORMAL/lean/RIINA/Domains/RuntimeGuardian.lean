@@ -299,7 +299,7 @@ theorem U_001_06_cfi_no_arbitrary_jump : ∀ (cfg : CFG) (src tgt : Addr),
   intro cfg src tgt ⟨e, he_in, _, he_tgt⟩
   unfold valid_addresses
   simp [List.mem_flatMap]
-  exact ⟨e, he_in, by simp [edge_target]; rw [he_tgt]; simp⟩
+  exact ⟨e, he_in, by subst he_tgt; cases e <;> simp [edge_target]⟩
 
 /-- U_001_07: Shadow stack matches actual returns -/
 theorem U_001_07_cfi_shadow_stack : ∀ (ss actual : ShadowStack),
@@ -405,14 +405,8 @@ theorem U_001_22_nmr_single_fault_tolerant : ∀ (a b c correct : ExecutionState
   unfold majority_vote
   rcases h with ⟨ha, hb⟩ | ⟨hb, hc⟩ | ⟨ha, hc⟩
   · subst ha; subst hb; simp [BEq.beq]
-  · subst hb; subst hc
-    simp [BEq.beq]
-    split <;> [rfl; rfl]
-  · subst ha; subst hc
-    simp [BEq.beq]
-    split
-    · rfl
-    · split <;> [rfl; simp [BEq.beq]; rfl]
+  · subst hb; subst hc; simp [BEq.beq]
+  · subst ha; subst hc; simp [BEq.beq]
 
 /-- U_001_23: Voting mechanism is correct -/
 theorem U_001_23_nmr_voting_correct : ∀ (a b c : ExecutionState),
@@ -421,13 +415,8 @@ theorem U_001_23_nmr_voting_correct : ∀ (a b c : ExecutionState),
   unfold voting_correct majority_vote
   refine ⟨?_, ?_, ?_⟩
   · intro hab; subst hab; simp [BEq.beq]
-  · intro hbc; subst hbc
-    simp [BEq.beq]; split <;> rfl
-  · intro hac; subst hac
-    simp [BEq.beq]
-    split
-    · rfl
-    · split <;> [rfl; simp [BEq.beq]; rfl]
+  · intro hbc; subst hbc; simp [BEq.beq]
+  · intro hac; subst hac; simp [BEq.beq]
 
 /-- U_001_24: Recovery mechanism is sound -/
 theorem U_001_24_nmr_recovery_sound : ∀ (v1 v2 v3 : Variant) (t : Nat) (correct : ExecutionState),
@@ -445,7 +434,7 @@ theorem U_001_26_panic_keys_zeroized : ∀ (st : SystemState) (event : Nat),
     keys_zeroized (trigger_panic st event) := by
   intro st event k hk
   simp [trigger_panic, keys_zeroized] at hk
-  exact hk.2
+  exact hk.2.symm
 
 /-- U_001_27: Execution halted on panic -/
 theorem U_001_27_panic_execution_halted : ∀ (st : SystemState) (event : Nat),

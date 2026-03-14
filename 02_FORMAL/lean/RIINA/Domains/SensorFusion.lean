@@ -265,8 +265,9 @@ theorem sensor_002_honest_majority (n f : Nat)
 theorem sensor_003_authenticated (reading : Reading) (valid_sigs : List Nat)
     (h : sensor_authenticated reading valid_sigs = true) :
     ∃ sig, sig ∈ valid_sigs ∧ reading.reading_signature = sig := by
-  simp [sensor_authenticated, existsb] at h
-  obtain ⟨sig, hsig, heq⟩ := List.any_eq_true.mp h
+  simp only [sensor_authenticated, existsb] at h
+  rw [List.any_eq_true] at h
+  obtain ⟨sig, hsig, heq⟩ := h
   exact ⟨sig, hsig, by simpa using heq⟩
 
 /-- SENSOR-004: Reading Freshness -/
@@ -294,18 +295,23 @@ theorem sensor_006_cross_validation (cv : CrossValidation)
 theorem sensor_007_anomaly_detected (value expected threshold : Nat)
     (h : threshold * 2 < abs_diff value expected) :
     detect_anomaly value expected threshold = AnomalyResult.Anomalous := by
-  simp [detect_anomaly]
-  rw [Nat.blt_eq]
-  omega
+  unfold detect_anomaly
+  simp only [Nat.blt_eq]
+  split
+  · rfl
+  · omega
 
 /-- SENSOR-008: Normal Reading Accepted -/
 theorem sensor_008_normal_accepted (value expected threshold : Nat)
     (h : abs_diff value expected ≤ threshold) :
     detect_anomaly value expected threshold = AnomalyResult.Normal := by
-  simp [detect_anomaly]
-  constructor
-  · rw [Nat.blt_eq]; omega
-  · rw [Nat.blt_eq]; omega
+  unfold detect_anomaly
+  simp only [Nat.blt_eq]
+  split
+  · omega
+  · split
+    · omega
+    · rfl
 
 /-- SENSOR-009: Fusion Uses Minimum Sources -/
 theorem sensor_009_min_sources (result : FusedResult) (min_sources : Nat)
@@ -358,10 +364,9 @@ theorem sensor_015_quorum (agreeing total required_pct : Nat)
 theorem sensor_016_no_replay (reading : Reading) (seen : List Nat)
     (h : reading_not_replayed reading seen = true) :
     reading.reading_timestamp ∉ seen := by
-  simp [reading_not_replayed, negb, existsb] at h
+  simp [reading_not_replayed, negb, existsb, List.any_eq_true] at h
   intro hin
-  have := List.any_eq_true.mpr ⟨reading.reading_timestamp, hin, by simp⟩
-  simp_all
+  exact absurd rfl (h _ hin)
 
 /-- SENSOR-017: Calibration Valid -/
 theorem sensor_017_calibration_valid (last_cal current max_age : Nat)
@@ -414,10 +419,12 @@ theorem sensor_023_secure_channel (encryption auth : Bool)
 theorem sensor_024_audit_complete (readings logged : List Nat)
     (h : all_readings_logged readings logged = true) :
     ∀ r, r ∈ readings → ∃ l, l ∈ logged ∧ r = l := by
-  simp [all_readings_logged, forallb, existsb] at h
+  simp only [all_readings_logged, forallb, existsb] at h
+  rw [List.all_eq_true] at h
   intro r hr
-  have := (List.all_eq_true.mp h) r hr
-  obtain ⟨l, hl, heq⟩ := List.any_eq_true.mp this
+  have hr' := h r hr
+  rw [List.any_eq_true] at hr'
+  obtain ⟨l, hl, heq⟩ := hr'
   exact ⟨l, hl, by simpa using heq⟩
 
 /-- SENSOR-025: Defense in Depth -/
