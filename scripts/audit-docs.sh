@@ -487,7 +487,7 @@ fi
 
 if [ -f "$REPO_ROOT/CONTRIBUTING.md" ]; then
     check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "6,193|6193" "Stale Qed count (6,193)" || true
-    check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "Rocq 9\\.1" "Stale prover ref (Rocq 9.1)" || true
+    check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "Coq 8\\.20" "Stale prover ref (should be Rocq 9.1.1)" || true
     check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "8,923|8923" "Stale Lean theorem count (8,923)" || true
     check_no_stale "$REPO_ROOT/CONTRIBUTING.md" "9,165|9165" "Stale Isabelle theorem count (9,165)" || true
 fi
@@ -646,7 +646,7 @@ if [ -f "$INDEX_HTML" ]; then
 fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
-# ── Check enterprise docs for Rocq 9.1 ───────────────────────────────
+# ── Check enterprise docs for stale Coq 8.20 ref ─────────────────────
 
 if [ "$QUICK_MODE" != "--quick" ]; then
     echo -e "${CYAN}Checking enterprise docs...${NC}"
@@ -654,7 +654,7 @@ fi
 
 for ent_file in "$REPO_ROOT/docs/enterprise/CERTIFICATION.md" "$REPO_ROOT/docs/enterprise/COMPLIANCE_PACKAGING.md"; do
     if [ -f "$ent_file" ]; then
-        check_no_stale "$ent_file" "Rocq 9\\.1" "Stale prover ref (Rocq 9.1)" || true
+        check_no_stale "$ent_file" "Coq 8\\.20" "Stale prover ref (should be Rocq 9.1.1)" || true
     fi
 done
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi

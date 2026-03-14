@@ -1,6 +1,6 @@
 # RIINA Compliance System — User Guide
 
-**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 936 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 968 Rust tests
 
 ## Overview
 
@@ -17,11 +17,11 @@ Every RIINA program gets these guarantees **without any flags**:
 | Property | What it means | Proof |
 |----------|--------------|-------|
 | Type safety | No runtime type errors | `type_system/TypeSafety.v` |
-| Non-interference | Secret data cannot flow to public outputs | `properties/NonInterference_v2.v` |
-| Effect safety | Functions cannot perform undeclared side effects | `effects/EffectSafety.v` |
+| Non-interference | Secret data cannot flow to public outputs | `properties/CumulativeRelation.v` |
+| Effect safety | Functions cannot perform undeclared side effects | `properties/EffectSafety.v` |
 | Declassification correctness | Secrets only released through authorized policy | `properties/Declassification.v` |
 
-These are proven theorems in Coq (9,172 Qed proofs in active build, 0 admits, 0 active axioms). The compiler IS the security tool. The `--compliance` flag adds **industry-specific** rules on top of these universal guarantees.
+These are proven theorems in Coq (9,171 Qed proofs in active build, 0 admits, 0 active axioms). The compiler IS the security tool. The `--compliance` flag adds **industry-specific** rules on top of these universal guarantees.
 
 ---
 
@@ -171,7 +171,7 @@ cd 02_FORMAL/coq && make
 
 # 5. Check axiom count
 grep -r "^Axiom " 02_FORMAL/coq/**/*.v | wc -l
-# Expected: 4 (all justified — see 02_FORMAL/coq/AXIOM_JUSTIFICATION.md)
+# Expected: 0 (active build is axiom-free)
 
 # 6. Verify source hash matches report
 sha256sum myapp.rii

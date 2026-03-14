@@ -1,13 +1,13 @@
 # Contributing to RIINA
 
-**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 936 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 968 Rust tests
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 
 ## Prerequisites
 
 - **Rust** 1.84.0+ — `rustup install stable`
-- **Coq 8.20.1** — Only needed for formal proof work
+- **Rocq 9.1.1** — Only needed for formal proof work (files use `From Stdlib`)
 - No external dependencies required
 
 ## Getting Started
@@ -22,7 +22,7 @@ bash 00_SETUP/scripts/verify_setup.sh
 # Build the compiler
 cd 03_PROTO && cargo build --release -p riinac && cd ..
 
-# Run all tests (should show 936 passing)
+# Run all tests (should show 968 passing)
 cd 03_PROTO && cargo test --all && cd ..
 
 # Try it out
@@ -33,7 +33,7 @@ cd 03_PROTO && cargo test --all && cd ..
 
 | Directory | What | Language |
 |-----------|------|---------|
-| `02_FORMAL/` | Formal proofs (Coq primary, Lean active lane compiled, additional smoke lanes) | Coq/Lean/Isabelle + 7 more |
+| `02_FORMAL/` | Formal proofs (Coq primary, Lean secondary, additional smoke lanes) | Coq/Lean/Isabelle + 7 more |
 | `03_PROTO/crates/` | Compiler (15 crates) | Rust |
 | `04_SPECS/` | Language specifications | Markdown |
 | `05_TOOLING/` | Crypto primitives, build tools | Rust |
@@ -61,10 +61,10 @@ Use the [Feature Request template](https://github.com/ib823/riina/issues/new?tem
 ### Code Contributions
 
 1. **Fork** the repository
-2. **Create a branch** from `public` — `git checkout -b my-feature public`
+2. **Create a branch** from `main` — `git checkout -b my-feature main`
 3. **Make your changes** — see coding standards below
 4. **Run tests** — `cd 03_PROTO && cargo test --all && cargo clippy -- -D warnings`
-5. **Submit a pull request** against `public`
+5. **Submit a pull request** against `main`
 
 ### Writing Example Programs
 

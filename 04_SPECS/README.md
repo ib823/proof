@@ -1,6 +1,6 @@
 # RIINA Specifications (Track C)
 
-**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 936 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 968 Rust tests
 
 This directory contains formal specifications for RIINA.
 
@@ -12,7 +12,7 @@ This directory contains formal specifications for RIINA.
 │   ├── RIINA_DEFINITIVE_SCOPE.md
 │   ├── RIINA_ARCHITECTURE_CORRECTED.md
 │   └── RIINA_RESEARCH_EXECUTION_MAP.md
-├── industries/         ← Industry-specific requirements (17 files)
+├── industries/         ← Industry-specific requirements (19 files)
 │   ├── 00_COORDINATION.md
 │   ├── 00_SUMMARY.md
 │   └── IND_[A-O]_*.md

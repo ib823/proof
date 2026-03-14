@@ -16,7 +16,7 @@ Security properties are mathematically proven at compile time.
 - Lean 4: 33 compiled theorems (core files), toolchain v4.16.0
 - Isabelle: 275 .thy files (transpiled, uncompiled)
 - Extended provers (F*, TLA+, Alloy, SMT, Verus, Kani, TV): STUBS only
-- Rust prototype: 905 tests, 15 crates
+- Rust prototype: 968 tests, 15 crates
 - Tooling: 240 tests
 - Examples: 130 .rii files
 

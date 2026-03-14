@@ -1,6 +1,6 @@
 # RIINA Materialization Plan v1.0.0
 
-**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 936 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 968 Rust tests
 
 **Document ID:** `RIINA_MATERIALIZATION_PLAN_v1_0_0`
 **Date:** 2026-01-30
@@ -15,7 +15,6 @@ For strict, live A-to-Z execution tracking and completion status, use:
 
 - `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`
 - `04_SPECS/DOCUMENT_AUTHORITY_MATRIX.md`
-- `PROOF_STATUS.md`
 - `website/public/metrics.json`
 
 ---
@@ -1216,7 +1215,7 @@ Interactive read-eval-print loop using the interpreter backend.
 
 ```
 $ riinac repl
-RIINA REPL v0.1.0
+RIINA REPL v0.2.0
 Taip ':bantuan' untuk bantuan. / Type ':help' for help.
 
 >>> 42
@@ -2280,7 +2279,7 @@ Design (implemented):
 ```toml
 [pakej]
 nama = "contoh"
-versi = "0.1.0"
+versi = "0.2.0"
 pengarang = ["Ahmad <ahmad@contoh.my>"]
 
 [kebergantungan]
@@ -2346,7 +2345,7 @@ bash scripts/release.sh 0.2.0
 
 This validates (clean main, tests pass), bumps version, finalizes CHANGELOG, commits + tags, pushes, builds tarball + SHA256SUMS, syncs to public, creates GitHub Release on ib823/riina, and updates website releases array.
 
-**Tagging:** `v0.1.0` format (v-prefixed semver), annotated tags with changelog excerpt.
+**Tagging:** `v0.2.0` format (v-prefixed semver), annotated tags with changelog excerpt.
 
 ### 9.6 Licensing
 
