@@ -88,6 +88,47 @@ impl SecurityLevel {
     }
 }
 
+/// Linearity qualifiers for substructural type system.
+///
+/// Matches Coq `Linearity` in `domains/LinearTypes.v`.
+/// Controls how many times a variable binding may be used.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Linearity {
+    /// Linear: must be used exactly once
+    Linear,
+    /// Affine: may be used at most once (can be dropped)
+    Affine,
+    /// Relevant: must be used at least once (can be duplicated)
+    Relevant,
+    /// Unrestricted: no usage constraints (default)
+    Unrestricted,
+}
+
+/// Usage count for linearity tracking.
+///
+/// Matches Coq `Usage` in `domains/LinearTypes.v`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Usage {
+    /// Not yet used
+    Zero,
+    /// Used exactly once
+    One,
+    /// Used more than once
+    Many,
+}
+
+impl Usage {
+    /// Increment usage: Zero→One, One→Many, Many→Many
+    #[must_use]
+    pub const fn increment(self) -> Self {
+        match self {
+            Usage::Zero => Usage::One,
+            Usage::One => Usage::Many,
+            Usage::Many => Usage::Many,
+        }
+    }
+}
+
 /// Effects
 ///
 /// Effects track observable behaviors of computations.

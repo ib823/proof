@@ -7,7 +7,7 @@
 //!
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
-use riina_types::{BinOp, Effect, Expr, Ident, Location, SecurityLevel, StoreTy, Ty};
+use riina_types::{BinOp, Effect, Expr, Ident, Linearity, Location, SecurityLevel, StoreTy, Ty, Usage};
 use std::collections::{HashMap, HashSet};
 
 pub mod program;
@@ -81,6 +81,14 @@ pub enum TypeError {
     /// ConstantTime values must not branch on them or use them as indices.
     ConstantTimeViolation {
         context: &'static str,
+    },
+    /// Linearity violation: variable used incorrectly given its linearity qualifier.
+    /// Matches Coq LinearTypes.v linearity_check.
+    LinearityViolation {
+        var: Ident,
+        linearity: Linearity,
+        usage: Usage,
+        message: String,
     },
 }
 
@@ -173,6 +181,18 @@ impl std::fmt::Display for TypeError {
                     f,
                     "Constant-time violation: ConstantTime value used in {} (creates timing side-channel)",
                     context
+                )
+            }
+            TypeError::LinearityViolation {
+                var,
+                linearity,
+                usage,
+                message,
+            } => {
+                write!(
+                    f,
+                    "Linearity violation for '{}': {:?} variable has {:?} usage — {}",
+                    var, linearity, usage, message
                 )
             }
         }
@@ -283,6 +303,14 @@ impl TypeError {
                      Use constant-time comparison functions instead of branching on secret data"
                 )
             }
+            TypeError::LinearityViolation { linearity, .. } => {
+                match linearity {
+                    Linearity::Linear => "Linear variables must be used exactly once. Remove duplicate uses or change linearity to Affine/Unrestricted".to_string(),
+                    Linearity::Affine => "Affine variables can be used at most once. Remove duplicate uses or change linearity to Unrestricted".to_string(),
+                    Linearity::Relevant => "Relevant variables must be used at least once. Add a use or change linearity to Unrestricted".to_string(),
+                    Linearity::Unrestricted => "Unrestricted variables have no usage constraints — this error should not occur".to_string(),
+                }
+            }
         })
     }
 
@@ -308,6 +336,7 @@ impl TypeError {
             TypeError::TaintViolation { .. } => "TAINT001",
             TypeError::SanitizerMismatch { .. } => "TAINT002",
             TypeError::ConstantTimeViolation { .. } => "CT0001",
+            TypeError::LinearityViolation { .. } => "LIN0001",
         }
     }
 
@@ -347,6 +376,9 @@ impl TypeError {
             TypeError::ConstantTimeViolation { .. } => {
                 Some("ConstantTimeSecurity.v:56 — ct_safe predicate forbids branching on CT values")
             }
+            TypeError::LinearityViolation { .. } => {
+                Some("LinearTypes.v:172 — linearity_check enforces usage constraints")
+            }
             _ => None,
         }
     }
@@ -354,11 +386,15 @@ impl TypeError {
 
 /// Type environment (Γ in Coq has_type judgment)
 ///
-/// Maps variable names to their types.
-/// Matches Coq `type_env := list (ident * ty)`.
+/// Maps variable names to their types, with optional linearity qualifiers.
+/// Matches Coq `type_env := list (ident * ty)` (basic) and
+/// `LEntry := (nat * LTy * Linearity * Usage)` (linear extension).
 #[derive(Clone)]
 pub struct TypeEnv {
     vars: HashMap<Ident, Ty>,
+    /// Linearity tracking: (linearity qualifier, current usage count).
+    /// Only populated for variables with non-Unrestricted linearity.
+    linearity: HashMap<Ident, (Linearity, Usage)>,
 }
 
 impl Default for TypeEnv {
@@ -371,17 +407,100 @@ impl TypeEnv {
     pub fn new() -> Self {
         Self {
             vars: HashMap::new(),
+            linearity: HashMap::new(),
         }
     }
 
+    /// Extend with an unrestricted (default) binding.
     pub fn extend(&self, name: Ident, ty: Ty) -> Self {
         let mut new_vars = self.vars.clone();
         new_vars.insert(name, ty);
-        Self { vars: new_vars }
+        Self {
+            vars: new_vars,
+            linearity: self.linearity.clone(),
+        }
+    }
+
+    /// Extend with an explicit linearity qualifier.
+    /// Linear/Affine/Relevant bindings start at Usage::Zero.
+    pub fn extend_linear(&self, name: Ident, ty: Ty, lin: Linearity) -> Self {
+        let mut new_vars = self.vars.clone();
+        new_vars.insert(name.clone(), ty);
+        let mut new_lin = self.linearity.clone();
+        if lin != Linearity::Unrestricted {
+            new_lin.insert(name, (lin, Usage::Zero));
+        }
+        Self {
+            vars: new_vars,
+            linearity: new_lin,
+        }
     }
 
     pub fn lookup(&self, name: &Ident) -> Option<&Ty> {
         self.vars.get(name)
+    }
+
+    /// Record a use of a variable. Returns error if the variable has been
+    /// consumed beyond its linearity allows.
+    pub fn record_use(&mut self, name: &Ident) -> Result<(), TypeError> {
+        if let Some((lin, usage)) = self.linearity.get_mut(name) {
+            let new_usage = usage.increment();
+            // Linear: exactly once → reject second use
+            if *lin == Linearity::Linear && new_usage == Usage::Many {
+                return Err(TypeError::LinearityViolation {
+                    var: name.clone(),
+                    linearity: *lin,
+                    usage: new_usage,
+                    message: "linear variable used more than once".to_string(),
+                });
+            }
+            // Affine: at most once → reject second use
+            if *lin == Linearity::Affine && new_usage == Usage::Many {
+                return Err(TypeError::LinearityViolation {
+                    var: name.clone(),
+                    linearity: *lin,
+                    usage: new_usage,
+                    message: "affine variable used more than once".to_string(),
+                });
+            }
+            *usage = new_usage;
+        }
+        Ok(())
+    }
+
+    /// Check linearity constraints at scope exit.
+    /// Call this after type-checking the body where the binding was in scope.
+    pub fn check_linearity_at_exit(&self, name: &Ident) -> Result<(), TypeError> {
+        if let Some((lin, usage)) = self.linearity.get(name) {
+            match lin {
+                Linearity::Linear if *usage != Usage::One => {
+                    return Err(TypeError::LinearityViolation {
+                        var: name.clone(),
+                        linearity: *lin,
+                        usage: *usage,
+                        message: format!(
+                            "linear variable must be used exactly once, but was used {:?}",
+                            usage
+                        ),
+                    });
+                }
+                Linearity::Relevant if *usage == Usage::Zero => {
+                    return Err(TypeError::LinearityViolation {
+                        var: name.clone(),
+                        linearity: *lin,
+                        usage: *usage,
+                        message: "relevant variable must be used at least once".to_string(),
+                    });
+                }
+                _ => {} // Affine: Zero or One is fine; Unrestricted: anything is fine
+            }
+        }
+        Ok(())
+    }
+
+    /// Get linearity info for a variable, if tracked.
+    pub fn get_linearity(&self, name: &Ident) -> Option<(Linearity, Usage)> {
+        self.linearity.get(name).copied()
     }
 }
 
@@ -435,6 +554,17 @@ impl TypingContext {
     pub fn extend_gamma(&self, name: Ident, ty: Ty) -> Self {
         Self {
             gamma: self.gamma.extend(name, ty),
+            sigma: self.sigma.clone(),
+            delta: self.delta,
+            granted: self.granted.clone(),
+        }
+    }
+
+    /// Extend gamma with an explicit linearity qualifier.
+    /// Used for `let lin x = e1 in e2` where x has restricted usage.
+    pub fn extend_gamma_linear(&self, name: Ident, ty: Ty, lin: Linearity) -> Self {
+        Self {
+            gamma: self.gamma.extend_linear(name, ty, lin),
             sigma: self.sigma.clone(),
             delta: self.delta,
             granted: self.granted.clone(),
@@ -2235,6 +2365,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 .lookup_var(x)
                 .cloned()
                 .ok_or_else(|| TypeError::VarNotFound(x.clone()))?;
+            // A3: Record usage for linearity tracking.
+            // Linear/Affine variables error on second use.
+            ctx.gamma.record_use(x)?;
             Ok((ty, Effect::Pure))
         }
 
@@ -2438,6 +2571,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             let new_ctx = ctx.extend_gamma(x.clone(), t1);
             let mut new_ctx_mut = new_ctx;
             let (t2, eff2) = type_check_full(&mut new_ctx_mut, e2)?;
+            // A3: Check linearity constraints at scope exit.
+            // Linear variables must have been used exactly once; Relevant at least once.
+            new_ctx_mut.gamma.check_linearity_at_exit(x)?;
             Ok((t2, eff1.join(eff2)))
         }
         Expr::LetRec(x, ty_ann, e1, e2) => {

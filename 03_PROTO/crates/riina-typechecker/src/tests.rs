@@ -878,7 +878,7 @@ mod formalized_tests {
         register_builtin_types, type_check, type_check_full, types_compatible, Context, TypeError,
         TypingContext,
     };
-    use riina_types::{BinOp, Effect, Expr, Location, SecurityLevel, StoreTy, Ty};
+    use riina_types::{BinOp, Effect, Expr, Linearity, Location, SecurityLevel, StoreTy, Ty, Usage};
 
     // ── Basic value typing with new context ──
 
@@ -3016,5 +3016,151 @@ mod formalized_tests {
         assert_eq!(err.error_code(), "CT0001");
         assert!(err.coq_rule().unwrap().contains("ConstantTimeSecurity"));
         assert!(err.fix_hint().unwrap().contains("ConstantTime"));
+    }
+
+    // ── A3: Linear type infrastructure ──
+
+    #[test]
+    fn test_linear_variable_used_once_ok() {
+        // Linear variable used exactly once in Let body → should succeed.
+        // Corresponds to Coq LinearTypes.v TYPE_002_01.
+        let mut ctx = TypingContext::new();
+        // let lin x = 42 in x (use once → OK)
+        let expr = Expr::Let(
+            "x".into(),
+            Box::new(Expr::Int(42)),
+            Box::new(Expr::Var("x".into())),
+        );
+        // Manually set up linear binding by extending with linearity
+        ctx = ctx.extend_gamma_linear("_dummy".into(), Ty::Unit, Linearity::Unrestricted);
+        // For the test, we build the Let expression but we need to intercept
+        // the binding to mark it as Linear. Since Let uses extend_gamma (Unrestricted),
+        // we test directly via the TypeEnv API and then via a manual context.
+        let mut ctx2 = TypingContext::new();
+        ctx2 = ctx2.extend_gamma_linear("x".into(), Ty::Int, Linearity::Linear);
+        // Use x once
+        let (ty, _eff) = type_check_full(&mut ctx2, &Expr::Var("x".into())).unwrap();
+        assert_eq!(ty, Ty::Int);
+        // Check linearity at exit — should pass (usage = One for Linear)
+        assert!(ctx2.gamma.check_linearity_at_exit(&"x".into()).is_ok());
+    }
+
+    #[test]
+    fn test_linear_variable_used_twice_rejected() {
+        // Linear variable used twice → second use must be rejected.
+        // Corresponds to Coq LinearTypes.v TYPE_002_08 (no contraction).
+        let mut ctx = TypingContext::new();
+        ctx = ctx.extend_gamma_linear("x".into(), Ty::Int, Linearity::Linear);
+        // First use: OK
+        let _ = type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap();
+        // Second use: must error
+        match type_check_full(&mut ctx, &Expr::Var("x".into())) {
+            Err(TypeError::LinearityViolation { var, linearity, usage, .. }) => {
+                assert_eq!(var, "x");
+                assert_eq!(linearity, Linearity::Linear);
+                assert_eq!(usage, Usage::Many);
+            }
+            other => panic!("Expected LinearityViolation, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_linear_variable_unused_rejected() {
+        // Linear variable never used → scope exit check must fail.
+        // Corresponds to Coq LinearTypes.v TYPE_002_09 (no weakening).
+        let ctx = TypingContext::new();
+        let ctx = ctx.extend_gamma_linear("x".into(), Ty::Int, Linearity::Linear);
+        // Don't use x at all
+        match ctx.gamma.check_linearity_at_exit(&"x".into()) {
+            Err(TypeError::LinearityViolation { var, linearity, usage, .. }) => {
+                assert_eq!(var, "x");
+                assert_eq!(linearity, Linearity::Linear);
+                assert_eq!(usage, Usage::Zero);
+            }
+            other => panic!("Expected LinearityViolation, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_affine_variable_used_once_ok() {
+        // Affine variable used once → should succeed.
+        let mut ctx = TypingContext::new();
+        ctx = ctx.extend_gamma_linear("x".into(), Ty::Int, Linearity::Affine);
+        let _ = type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap();
+        // At exit: usage = One, Affine allows Zero or One
+        assert!(ctx.gamma.check_linearity_at_exit(&"x".into()).is_ok());
+    }
+
+    #[test]
+    fn test_affine_variable_unused_ok() {
+        // Affine variable unused → should succeed (can be dropped).
+        // Corresponds to Coq LinearTypes.v TYPE_002_04.
+        let ctx = TypingContext::new();
+        let ctx = ctx.extend_gamma_linear("x".into(), Ty::Int, Linearity::Affine);
+        // Don't use x
+        assert!(ctx.gamma.check_linearity_at_exit(&"x".into()).is_ok());
+    }
+
+    #[test]
+    fn test_affine_variable_used_twice_rejected() {
+        // Affine variable used twice → must be rejected.
+        let mut ctx = TypingContext::new();
+        ctx = ctx.extend_gamma_linear("x".into(), Ty::Int, Linearity::Affine);
+        let _ = type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap();
+        match type_check_full(&mut ctx, &Expr::Var("x".into())) {
+            Err(TypeError::LinearityViolation { linearity, .. }) => {
+                assert_eq!(linearity, Linearity::Affine);
+            }
+            other => panic!("Expected LinearityViolation, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_relevant_variable_must_be_used() {
+        // Relevant variable unused → must fail at scope exit.
+        let ctx = TypingContext::new();
+        let ctx = ctx.extend_gamma_linear("x".into(), Ty::Int, Linearity::Relevant);
+        match ctx.gamma.check_linearity_at_exit(&"x".into()) {
+            Err(TypeError::LinearityViolation { linearity, usage, .. }) => {
+                assert_eq!(linearity, Linearity::Relevant);
+                assert_eq!(usage, Usage::Zero);
+            }
+            other => panic!("Expected LinearityViolation, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_relevant_variable_used_many_ok() {
+        // Relevant variable used multiple times → should succeed (duplication OK).
+        // Corresponds to Coq LinearTypes.v TYPE_002_05.
+        let mut ctx = TypingContext::new();
+        ctx = ctx.extend_gamma_linear("x".into(), Ty::Int, Linearity::Relevant);
+        let _ = type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap();
+        let _ = type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap();
+        assert!(ctx.gamma.check_linearity_at_exit(&"x".into()).is_ok());
+    }
+
+    #[test]
+    fn test_unrestricted_variable_any_usage_ok() {
+        // Unrestricted variable → any usage pattern is fine.
+        // Corresponds to Coq LinearTypes.v TYPE_002_02.
+        let mut ctx = TypingContext::new();
+        ctx = ctx.extend_gamma("x".into(), Ty::Int); // default = Unrestricted
+        let _ = type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap();
+        let _ = type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap();
+        // No linearity tracking for Unrestricted → check is trivially OK
+        assert!(ctx.gamma.check_linearity_at_exit(&"x".into()).is_ok());
+    }
+
+    #[test]
+    fn test_linearity_error_code_and_coq_rule() {
+        let err = TypeError::LinearityViolation {
+            var: "x".into(),
+            linearity: Linearity::Linear,
+            usage: Usage::Many,
+            message: "test".to_string(),
+        };
+        assert_eq!(err.error_code(), "LIN0001");
+        assert!(err.coq_rule().unwrap().contains("LinearTypes.v"));
     }
 }
