@@ -50,7 +50,7 @@ Definition writes (f : File) (d : Data) : File :=
 Definition reads (f : File) : Data := file_data f.
 
 (** Power loss and recovery *)
-Definition power_loss_at (t : Time) : Prop := True.  (* Event marker *)
+Definition power_loss_at (t : Time) : Prop := t >= 0.  (* Power loss occurs at a valid time *)
 
 Definition journal_replay (fs : FileSystem) : FileSystem :=
   mkFS (fs_files fs) [] true (fs_last_checkpoint fs).

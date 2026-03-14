@@ -334,7 +334,8 @@ Proof.
 Qed.
 
 (* ---------- WEB-021: IDOR Mitigated ---------- *)
-Definition authorized (user resource : nat) : Prop := True.  (* Simplified *)
+(* Authorization: user owns the resource (matching IDs) *)
+Definition authorized (user resource : nat) : Prop := user = resource.
 
 Theorem web_021_idor_mitigated :
   forall (user resource : nat),

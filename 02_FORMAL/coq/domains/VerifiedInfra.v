@@ -154,8 +154,9 @@ Definition execute (db : DBState) (txn : Transaction) : DBState * TxnOutcome :=
 Definition commits (db : DBState) (txn : Transaction) : Prop :=
   snd (execute db txn) = TxnCommit.
 
-(* Valid state invariant *)
-Definition valid_state (db : DBState) : Prop := True.
+(* Valid state invariant: the empty key maps to None *)
+Definition valid_state (db : DBState) : Prop :=
+  db EmptyString = None.
 
 (* State after commit *)
 Definition state_after (db : DBState) (txn : Transaction) : DBState :=
@@ -295,9 +296,9 @@ Definition goes_to_dlq (q : QueueState) (m : Message) (outcome : ProcessOutcome)
 Definition queue_has_capacity (q : QueueState) (max : nat) : Prop :=
   List.length (q_messages q) < max.
 
-(* Backpressure applied *)
+(* Backpressure applied: queue length is at or above max capacity *)
 Definition backpressure_applied (q : QueueState) (max : nat) : Prop :=
-  List.length (q_messages q) >= max -> True.
+  List.length (q_messages q) >= max.
 
 (** ═══════════════════════════════════════════════════════════════════════════
     LOGGING DEFINITIONS
@@ -495,8 +496,8 @@ Theorem INF_001_07_db_consistency : forall db txn,
   valid_state (state_after db txn).
 Proof.
   intros db txn Hvalid Hcommits.
-  unfold valid_state.
-  trivial.
+  unfold valid_state, state_after, execute. simpl.
+  exact Hvalid.
 Qed.
 
 (* INF_001_08: ACID Isolation - serializable execution *)
@@ -639,8 +640,7 @@ Theorem INF_001_18_mq_backpressure : forall q max,
 Proof.
   intros q max H.
   unfold backpressure_applied.
-  intro H'.
-  trivial.
+  exact H.
 Qed.
 
 (** ═══════════════════════════════════════════════════════════════════════════

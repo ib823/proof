@@ -191,8 +191,8 @@ if [ -f "$README" ]; then
             # Update comparison table: "Yes (N Coq + N Lean + N Isabelle)"
             gsub(/Yes \([0-9,]+ Coq \+ [0-9]+ Lean \+ [0-9]+ Isabelle\)/, "Yes (" qed " Coq + " lean " Lean + " isa " Isabelle)")
 
-            # Update prover table: "| **Coq 8.20.1** (Primary) | N Qed |"
-            if ($0 ~ /[*][*]Coq 8[.]20[.]1[*][*].*Primary.*Qed/) {
+            # Update prover table: "| **Rocq 9.1.1** (Primary) | N Qed |"
+            if ($0 ~ /[*][*]Rocq 9[.]1[.]1[*][*].*Primary.*Qed/) {
                 gsub(/[0-9,]+ Qed/, qed " Qed")
             }
 
@@ -353,9 +353,9 @@ if [ -f "$CONTRIBUTING" ]; then
     if [ "$DRY_RUN" -eq 0 ]; then
         update_banner "$CONTRIBUTING"
 
-        # Fix "Rocq 9.1 / Coq 8.21" → "Coq 8.20.1"
-        sed -i 's/Rocq 9\.1 \/ Coq 8\.21/Coq 8.20.1/g' "$CONTRIBUTING"
-        sed -i 's/Rocq 9\.1/Coq 8.20.1/g' "$CONTRIBUTING"
+        # Fix stale "Coq 8.20.1" → "Rocq 9.1.1"
+        sed -i 's/Coq 8\.20\.1/Rocq 9.1.1/g' "$CONTRIBUTING"
+        sed -i 's/Coq 8\.20/Rocq 9.1.1/g' "$CONTRIBUTING"
 
         # Fix test count in "should show 679 passing"
         sed -i -E "s/should show [0-9]+ passing/should show ${RUST_TESTS} passing/g" "$CONTRIBUTING"
@@ -393,8 +393,8 @@ if [ -f "$CERT" ]; then
     echo "  Processing CERTIFICATION.md..."
     if [ "$DRY_RUN" -eq 0 ]; then
         update_banner "$CERT"
-        sed -i 's/Rocq 9\.1 (Coq 8\.21)/Coq 8.20.1/g' "$CERT"
-        sed -i 's/Rocq 9\.1/Coq 8.20.1/g' "$CERT"
+        sed -i 's/Coq 8\.20\.1/Rocq 9.1.1/g' "$CERT"
+        sed -i 's/Coq 8\.20/Rocq 9.1.1/g' "$CERT"
         echo "    [UPDATED] CERTIFICATION.md"
     else
         echo "    [DRY] Would update CERTIFICATION.md"
@@ -407,8 +407,8 @@ if [ -f "$COMPLIANCE_PKG" ]; then
     echo "  Processing COMPLIANCE_PACKAGING.md..."
     if [ "$DRY_RUN" -eq 0 ]; then
         update_banner "$COMPLIANCE_PKG"
-        sed -i 's/Rocq 9\.1 (Coq 8\.21)/Coq 8.20.1/g' "$COMPLIANCE_PKG"
-        sed -i 's/Rocq 9\.1/Coq 8.20.1/g' "$COMPLIANCE_PKG"
+        sed -i 's/Coq 8\.20\.1/Rocq 9.1.1/g' "$COMPLIANCE_PKG"
+        sed -i 's/Coq 8\.20/Rocq 9.1.1/g' "$COMPLIANCE_PKG"
         echo "    [UPDATED] COMPLIANCE_PACKAGING.md"
     else
         echo "    [DRY] Would update COMPLIANCE_PACKAGING.md"

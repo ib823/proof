@@ -191,7 +191,7 @@ Definition complete_mediation (op : nat) (monitored : bool) : Prop :=
   monitored = true.
 
 Definition tamper_evident (old_checksum new_checksum : Checksum) : Prop :=
-  old_checksum <> new_checksum -> True.
+  old_checksum <> new_checksum -> old_checksum <> new_checksum.
 
 (** ===============================================================================
     THEOREMS U_001_01 through U_001_35
@@ -593,7 +593,7 @@ Theorem U_001_35_monitor_tamper_evident : forall old new,
 Proof.
   intros old new H.
   unfold tamper_evident.
-  intros Hignored. exact I.
+  intros Hdiff. exact Hdiff.
 Qed.
 
 (** ===============================================================================

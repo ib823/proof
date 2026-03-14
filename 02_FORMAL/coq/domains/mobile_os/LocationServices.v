@@ -41,7 +41,7 @@ Record Geofence : Type := mkGeofence {
 }.
 
 (** GPS availability *)
-Definition gps_available : Prop := True.  (* Assume GPS is available *)
+Definition gps_available : Prop := True.  (* Runtime flag; abstracted as trivially available in formal model *)
 
 (** Location error (simplified as accuracy value) *)
 Definition error (l : Location) : Meters := loc_accuracy l.

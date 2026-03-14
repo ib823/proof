@@ -169,8 +169,9 @@ Definition circular_wait (cfg : Config) : Prop :=
 (* Deadlocked configuration *)
 Definition deadlocked (cfg : Config) : Prop := circular_wait cfg.
 
-(* Session-typed configuration *)
-Definition session_typed (cfg : Config) : Prop := True.
+(* Session-typed configuration: every process is either terminated or a parallel composition *)
+Definition session_typed (cfg : Config) : Prop :=
+  forall p, In p cfg -> p = PEnd \/ exists p1 p2, p = PPar p1 p2.
 
 (** ============================================================================
     SECTION 7: SESSION TYPE DUALITY THEOREMS

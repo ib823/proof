@@ -82,7 +82,7 @@ alloy = data.get("alloy", {})
 values = {
     "NONCOQ_MECH_SOURCE": "cached_metrics",
     "NONCOQ_MECH_OVERALL": bool(noncoq.get("overallMechanized", False)),
-    "LEAN_COMPILED": bool(quality.get("leanCompiled", False)),
+    "LEAN_COMPILED": claim_compiled("lean") or bool(quality.get("leanCompiled", False)),
     "ISABELLE_COMPILED": claim_compiled("isabelle") or bool(quality.get("isabelleCompiled", False)),
     "FSTAR_COMPILED": claim_compiled("fstar") or bool(fstar.get("smokeBuildOk", False)),
     "TLAPLUS_COMPILED": claim_compiled("tlaplus") or bool(tlaplus.get("smokeBuildOk", False)),
@@ -1185,7 +1185,7 @@ cat > "$OUTPUT_FILE" << EOF
     "filesTotal": $COQ_FILES,
     "filesActive": $COQ_ACTIVE_FILES,
     "domains": $RESEARCH_DOMAINS,
-    "prover": "Coq 8.20.1"
+    "prover": "Rocq 9.1.1"
   },
   "lean": {
     "theorems": $LEAN_THEOREMS,

@@ -246,7 +246,7 @@ Definition payment_within_sla (p : Payment) : Prop :=
   status p = Completed -> (processing_time_ms p <= sla_limit_ms p)%nat.
 
 Definition payment_irrevocable (p : Payment) : Prop :=
-  status p = Completed -> True.  (* Completed status is final by design *)
+  status p = Completed -> status p <> Pending.  (* Completed status is final by design *)
 
 (* Idempotency: same key means same payment in executed list *)
 Fixpoint unique_idempotency_keys (payments : list Payment) : Prop :=
@@ -705,8 +705,8 @@ Theorem BANK_001_17_payment_irrevocability :
 Proof.
   intros p Hstatus.
   unfold payment_irrevocable.
-  intros _.
-  exact I.
+  intros Hcompleted.
+  rewrite Hcompleted. discriminate.
 Qed.
 
 (* BANK_001_18: Idempotency *)

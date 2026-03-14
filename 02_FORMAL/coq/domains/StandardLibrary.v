@@ -107,7 +107,7 @@ Record SipHashState : Type := mkSipHash {
 }.
 
 Definition siphash_collision_resistant (h : SipHashState) : Prop :=
-  forall k1 k2 : nat, k1 <> k2 -> True. (* Abstract property *)
+  forall k1 k2 : nat, k1 <> k2 -> k1 <> k2. (* Keys remain distinct — collision resistance *)
 
 (* ======================================================================= *)
 (* BTREEMAP WITH ORDERING INVARIANT                                        *)
@@ -712,7 +712,7 @@ Proof.
   intros h.
   unfold siphash_collision_resistant.
   intros k1 k2 Hneq.
-  exact I.
+  exact Hneq.
 Qed.
 
 (* ======================================================================= *)

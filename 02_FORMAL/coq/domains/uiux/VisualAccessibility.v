@@ -63,7 +63,7 @@ Definition readable (text : Text) (size : DynamicTypeSize) : Prop :=
   text_size text = size.  (* RIINA supports all sizes *)
 
 (* Reduce motion is enabled *)
-Definition reduce_motion_enabled : Prop := True.
+Definition reduce_motion_enabled : Prop := True.  (* User accessibility setting; abstract over via Section if needed *)
 
 (* Animation plays *)
 Definition plays (anim : Animation) : Prop :=

@@ -569,8 +569,14 @@ Proof. apply CAP_014. Qed.
 
 Theorem CAP_055_derive_preserves_validity : forall parent child,
   derive_mem_cap parent child = true ->
-  mem_valid parent = true -> mem_valid child = true -> True.
-Proof. intros. trivial. Qed.
+  perms_subset (mem_perms child) (mem_perms parent) = true.
+Proof.
+  intros parent child H.
+  unfold derive_mem_cap in H.
+  apply andb_true_iff in H. destruct H as [H _].
+  apply andb_true_iff in H. destruct H as [_ H].
+  exact H.
+Qed.
 
 (** ============================================================================
     SECTION 14: REVOCATION THEOREMS (CAP_056 - CAP_065)

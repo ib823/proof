@@ -328,7 +328,7 @@ Definition module_changed (m : Module) (old_hash : nat) : bool :=
 Definition incremental_correct (modules : list Module) (old_hashes : list (string * nat)) : Prop :=
   forall m, In m modules ->
     forall h, In (m.(mod_name), h) old_hashes ->
-      module_changed m h = false -> True.  (* Unchanged modules don't need rebuild *)
+      module_changed m h = false -> m.(mod_hash) = h.  (* Unchanged modules have matching hashes *)
 
 (* Security hardening verification *)
 Definition hardening_applied (config : BuildConfig) (binary : Binary) : Prop :=
@@ -655,7 +655,10 @@ Proof.
   intros modules old_hashes.
   unfold incremental_correct.
   intros m Hm h Hh Hunchanged.
-  trivial.
+  unfold module_changed in Hunchanged.
+  destruct (Nat.eqb (mod_hash m) h) eqn:E.
+  - apply Nat.eqb_eq in E. exact E.
+  - simpl in Hunchanged. discriminate.
 Qed.
 
 (* ======================================================================= *)
