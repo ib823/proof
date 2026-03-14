@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for ROP defense invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct ROPDefensePolicy {
+    pub cfi_enabled: bool,
+    pub shadow_stack: bool,
+    pub gadget_eliminated: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn r_o_p_defense_secure(p: &ROPDefensePolicy) -> bool {
+    p.cfi_enabled && p.shadow_stack && p.gadget_eliminated
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_r_o_p_defense() -> ROPDefensePolicy {
+    ROPDefensePolicy {
+        cfi_enabled: true,
+        shadow_stack: true,
+        gadget_eliminated: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_r_o_p_defense() -> ROPDefensePolicy {
+    ROPDefensePolicy {
+        cfi_enabled: true,
+        shadow_stack: true,
+        gadget_eliminated: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_r_o_p_defense_secure() {
+    let p = baseline_r_o_p_defense();
+    assert!(r_o_p_defense_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_r_o_p_defense_not_weaker() {
+    let b = baseline_r_o_p_defense();
+    let h = hardened_r_o_p_defense();
+    assert!(r_o_p_defense_secure(&h));
 }

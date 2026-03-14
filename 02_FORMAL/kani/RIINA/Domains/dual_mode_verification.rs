@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for dual-mode verification invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct DualModePolicy {
+    pub static_verified: bool,
+    pub dynamic_verified: bool,
+    pub mode_agreement: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn dual_mode_secure(p: &DualModePolicy) -> bool {
+    p.static_verified && p.dynamic_verified && p.mode_agreement
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_dual_mode() -> DualModePolicy {
+    DualModePolicy {
+        static_verified: true,
+        dynamic_verified: true,
+        mode_agreement: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_dual_mode() -> DualModePolicy {
+    DualModePolicy {
+        static_verified: true,
+        dynamic_verified: true,
+        mode_agreement: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_dual_mode_secure() {
+    let p = baseline_dual_mode();
+    assert!(dual_mode_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_dual_mode_not_weaker() {
+    let b = baseline_dual_mode();
+    let h = hardened_dual_mode();
+    assert!(dual_mode_secure(&h));
 }

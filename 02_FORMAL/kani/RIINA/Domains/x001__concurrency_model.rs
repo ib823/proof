@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for concurrency model invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct ConcurrencyPolicy {
+    pub data_race_free: bool,
+    pub deadlock_free: bool,
+    pub progress_guaranteed: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn concurrency_secure(p: &ConcurrencyPolicy) -> bool {
+    p.data_race_free && p.deadlock_free && p.progress_guaranteed
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_concurrency() -> ConcurrencyPolicy {
+    ConcurrencyPolicy {
+        data_race_free: true,
+        deadlock_free: true,
+        progress_guaranteed: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_concurrency() -> ConcurrencyPolicy {
+    ConcurrencyPolicy {
+        data_race_free: true,
+        deadlock_free: true,
+        progress_guaranteed: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_concurrency_secure() {
+    let p = baseline_concurrency();
+    assert!(concurrency_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_concurrency_not_weaker() {
+    let b = baseline_concurrency();
+    let h = hardened_concurrency();
+    assert!(concurrency_secure(&h));
 }

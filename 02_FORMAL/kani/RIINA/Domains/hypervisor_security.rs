@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for hypervisor security invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct HypervisorPolicy {
+    pub vm_isolation: bool,
+    pub memory_tagging: bool,
+    pub interrupt_virtualized: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn hypervisor_secure(p: &HypervisorPolicy) -> bool {
+    p.vm_isolation && p.memory_tagging && p.interrupt_virtualized
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_hypervisor() -> HypervisorPolicy {
+    HypervisorPolicy {
+        vm_isolation: true,
+        memory_tagging: true,
+        interrupt_virtualized: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_hypervisor() -> HypervisorPolicy {
+    HypervisorPolicy {
+        vm_isolation: true,
+        memory_tagging: true,
+        interrupt_virtualized: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_hypervisor_secure() {
+    let p = baseline_hypervisor();
+    assert!(hypervisor_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_hypervisor_not_weaker() {
+    let b = baseline_hypervisor();
+    let h = hardened_hypervisor();
+    assert!(hypervisor_secure(&h));
 }

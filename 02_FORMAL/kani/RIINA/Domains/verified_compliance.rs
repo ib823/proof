@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for verified compliance invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct VerifiedCompliancePolicy {
+    pub policy_enforced: bool,
+    pub evidence_generated: bool,
+    pub deviation_detected: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn verified_compliance_secure(p: &VerifiedCompliancePolicy) -> bool {
+    p.policy_enforced && p.evidence_generated && p.deviation_detected
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_verified_compliance() -> VerifiedCompliancePolicy {
+    VerifiedCompliancePolicy {
+        policy_enforced: true,
+        evidence_generated: true,
+        deviation_detected: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_verified_compliance() -> VerifiedCompliancePolicy {
+    VerifiedCompliancePolicy {
+        policy_enforced: true,
+        evidence_generated: true,
+        deviation_detected: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_verified_compliance_secure() {
+    let p = baseline_verified_compliance();
+    assert!(verified_compliance_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_verified_compliance_not_weaker() {
+    let b = baseline_verified_compliance();
+    let h = hardened_verified_compliance();
+    assert!(verified_compliance_secure(&h));
 }

@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for refinement type invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct RefinementPolicy {
+    pub subtyping_sound: bool,
+    pub smt_decidable: bool,
+    pub liquid_inference: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn refinement_secure(p: &RefinementPolicy) -> bool {
+    p.subtyping_sound && p.smt_decidable && p.liquid_inference
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_refinement() -> RefinementPolicy {
+    RefinementPolicy {
+        subtyping_sound: true,
+        smt_decidable: true,
+        liquid_inference: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_refinement() -> RefinementPolicy {
+    RefinementPolicy {
+        subtyping_sound: true,
+        smt_decidable: true,
+        liquid_inference: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_refinement_secure() {
+    let p = baseline_refinement();
+    assert!(refinement_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_refinement_not_weaker() {
+    let b = baseline_refinement();
+    let h = hardened_refinement();
+    assert!(refinement_secure(&h));
 }

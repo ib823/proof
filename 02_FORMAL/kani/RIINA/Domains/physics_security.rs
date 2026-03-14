@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for physics-based security invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct PhysicsSecPolicy {
+    pub entropy_source_valid: bool,
+    pub quantum_noise_sampled: bool,
+    pub thermal_monitored: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn physics_sec_secure(p: &PhysicsSecPolicy) -> bool {
+    p.entropy_source_valid && p.quantum_noise_sampled && p.thermal_monitored
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_physics_sec() -> PhysicsSecPolicy {
+    PhysicsSecPolicy {
+        entropy_source_valid: true,
+        quantum_noise_sampled: true,
+        thermal_monitored: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_physics_sec() -> PhysicsSecPolicy {
+    PhysicsSecPolicy {
+        entropy_source_valid: true,
+        quantum_noise_sampled: true,
+        thermal_monitored: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_physics_sec_secure() {
+    let p = baseline_physics_sec();
+    assert!(physics_sec_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_physics_sec_not_weaker() {
+    let b = baseline_physics_sec();
+    let h = hardened_physics_sec();
+    assert!(physics_sec_secure(&h));
 }

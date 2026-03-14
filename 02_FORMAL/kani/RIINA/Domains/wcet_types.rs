@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for WCET type invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct WCETTypesPolicy {
+    pub time_annotated: bool,
+    pub deadline_tracked: bool,
+    pub jitter_bounded: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn w_c_e_ts_secure(p: &WCETTypesPolicy) -> bool {
+    p.time_annotated && p.deadline_tracked && p.jitter_bounded
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_w_c_e_ts() -> WCETTypesPolicy {
+    WCETTypesPolicy {
+        time_annotated: true,
+        deadline_tracked: true,
+        jitter_bounded: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_w_c_e_ts() -> WCETTypesPolicy {
+    WCETTypesPolicy {
+        time_annotated: true,
+        deadline_tracked: true,
+        jitter_bounded: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_w_c_e_ts_secure() {
+    let p = baseline_w_c_e_ts();
+    assert!(w_c_e_ts_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_w_c_e_ts_not_weaker() {
+    let b = baseline_w_c_e_ts();
+    let h = hardened_w_c_e_ts();
+    assert!(w_c_e_ts_secure(&h));
 }

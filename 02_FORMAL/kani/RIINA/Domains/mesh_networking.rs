@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for mesh networking invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct MeshNetPolicy {
+    pub routing_authenticated: bool,
+    pub max_hops: u64,
+    pub link_encrypted: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn mesh_net_secure(p: &MeshNetPolicy) -> bool {
+    p.routing_authenticated && p.max_hops >= 1 && p.link_encrypted
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_mesh_net() -> MeshNetPolicy {
+    MeshNetPolicy {
+        routing_authenticated: true,
+        max_hops: 8,
+        link_encrypted: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_mesh_net() -> MeshNetPolicy {
+    MeshNetPolicy {
+        routing_authenticated: true,
+        max_hops: 4,
+        link_encrypted: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_mesh_net_secure() {
+    let p = baseline_mesh_net();
+    assert!(mesh_net_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_mesh_net_not_weaker() {
+    let b = baseline_mesh_net();
+    let h = hardened_mesh_net();
+    assert!(mesh_net_secure(&h));
 }

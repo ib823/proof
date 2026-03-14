@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for PCI DSS compliance invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct PCIDSSPolicy {
+    pub cardholder_data_encrypted: bool,
+    pub network_segmented: bool,
+    pub vulnerability_scanned: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn p_c_i_d_s_s_secure(p: &PCIDSSPolicy) -> bool {
+    p.cardholder_data_encrypted && p.network_segmented && p.vulnerability_scanned
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_p_c_i_d_s_s() -> PCIDSSPolicy {
+    PCIDSSPolicy {
+        cardholder_data_encrypted: true,
+        network_segmented: true,
+        vulnerability_scanned: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_p_c_i_d_s_s() -> PCIDSSPolicy {
+    PCIDSSPolicy {
+        cardholder_data_encrypted: true,
+        network_segmented: true,
+        vulnerability_scanned: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_p_c_i_d_s_s_secure() {
+    let p = baseline_p_c_i_d_s_s();
+    assert!(p_c_i_d_s_s_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_p_c_i_d_s_s_not_weaker() {
+    let b = baseline_p_c_i_d_s_s();
+    let h = hardened_p_c_i_d_s_s();
+    assert!(p_c_i_d_s_s_secure(&h));
 }

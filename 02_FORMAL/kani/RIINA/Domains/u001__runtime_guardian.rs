@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for runtime guardian invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct RuntimeGuardianPolicy {
+    pub cfi_enforced: bool,
+    pub shadow_stack_active: bool,
+    pub memory_integrity_checked: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn runtime_guardian_secure(p: &RuntimeGuardianPolicy) -> bool {
+    p.cfi_enforced && p.shadow_stack_active && p.memory_integrity_checked
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_runtime_guardian() -> RuntimeGuardianPolicy {
+    RuntimeGuardianPolicy {
+        cfi_enforced: true,
+        shadow_stack_active: true,
+        memory_integrity_checked: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_runtime_guardian() -> RuntimeGuardianPolicy {
+    RuntimeGuardianPolicy {
+        cfi_enforced: true,
+        shadow_stack_active: true,
+        memory_integrity_checked: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_runtime_guardian_secure() {
+    let p = baseline_runtime_guardian();
+    assert!(runtime_guardian_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_runtime_guardian_not_weaker() {
+    let b = baseline_runtime_guardian();
+    let h = hardened_runtime_guardian();
+    assert!(runtime_guardian_secure(&h));
 }

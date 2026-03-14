@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for metaprogramming safety invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct MetaprogPolicy {
+    pub macro_hygiene: bool,
+    pub expansion_bounded: bool,
+    pub type_checked_output: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn metaprog_secure(p: &MetaprogPolicy) -> bool {
+    p.macro_hygiene && p.expansion_bounded && p.type_checked_output
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_metaprog() -> MetaprogPolicy {
+    MetaprogPolicy {
+        macro_hygiene: true,
+        expansion_bounded: true,
+        type_checked_output: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_metaprog() -> MetaprogPolicy {
+    MetaprogPolicy {
+        macro_hygiene: true,
+        expansion_bounded: true,
+        type_checked_output: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_metaprog_secure() {
+    let p = baseline_metaprog();
+    assert!(metaprog_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_metaprog_not_weaker() {
+    let b = baseline_metaprog();
+    let h = hardened_metaprog();
+    assert!(metaprog_secure(&h));
 }

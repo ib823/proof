@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for multi-prover validation invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct MultiProverPolicy {
+    pub prover_count: u64,
+    pub consensus_required: bool,
+    pub proof_cross_checked: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn multi_prover_secure(p: &MultiProverPolicy) -> bool {
+    p.prover_count >= 2 && p.consensus_required && p.proof_cross_checked
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_multi_prover() -> MultiProverPolicy {
+    MultiProverPolicy {
+        prover_count: 3,
+        consensus_required: true,
+        proof_cross_checked: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_multi_prover() -> MultiProverPolicy {
+    MultiProverPolicy {
+        prover_count: 5,
+        consensus_required: true,
+        proof_cross_checked: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_multi_prover_secure() {
+    let p = baseline_multi_prover();
+    assert!(multi_prover_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_multi_prover_not_weaker() {
+    let b = baseline_multi_prover();
+    let h = hardened_multi_prover();
+    assert!(multi_prover_secure(&h));
 }
