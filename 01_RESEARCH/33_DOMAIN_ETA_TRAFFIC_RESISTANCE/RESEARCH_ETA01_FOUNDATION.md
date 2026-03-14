@@ -1,357 +1,147 @@
-# RIINA Research Domain η (Eta): Verified Traffic Analysis Resistance
+# η-01: Verified Traffic Analysis Resistance — Making All Traffic Look Identical
 
-## Document Control
-
-| Property | Value |
-|----------|-------|
-| Document ID | RESEARCH-ETA-TRAFFIC-RESISTANCE |
-| Version | 1.0.0 |
-| Date | 2026-01-17 |
-| Domain | η: Verified Traffic Analysis Resistance |
-| Mode | ULTRA KIASU | PARANOID | ZERO TRUST |
-| Status | FOUNDATIONAL DEFINITION |
+**Domain:** η — Verified Traffic Analysis Resistance
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Traffic shaping primitives, constant-bandwidth tunnels, verified padding schemes, fingerprinting resistance
 
 ---
 
-# η-01: The "Traffic Analysis" Problem & The RIINA Solution
+## 1. Problem Statement
 
-## 1. The Existential Threat
+Even with perfect encryption, traffic patterns leak information with alarming accuracy. Website fingerprinting attacks identify which website a user visits from encrypted traffic with 95-98% accuracy (Wang et al., 2014; Sirinam et al., 2018). Video fingerprinting identifies specific videos from bitrate patterns at 99% accuracy (Bhat et al., 2019). Keystroke timing analysis can reconstruct typed text from SSH traffic patterns. Protocol fingerprinting identifies applications from traffic signatures.
 
-**Context:**
-Even with perfect encryption, traffic patterns leak information.
+RIINA's encryption protects content, but the traffic envelope — packet sizes, timing, direction, and volume — reveals the activity. Domain η addresses this by making traffic patterns provably independent of the underlying data, using formal methods to verify that no traffic analysis technique can distinguish between different user activities.
 
-**Academic Evidence:**
-| Paper | Finding | Accuracy |
-|-------|---------|----------|
-| Liberatore & Levine 2006 | Website fingerprinting over SSH | 97% |
-| Panchenko et al. 2011 | Website fingerprinting over Tor | 55% |
-| Wang et al. 2014 | Website fingerprinting (Deep Learning) | 95% |
-| Sirinam et al. 2018 | Deep Fingerprinting | 98% |
-| Bhat et al. 2019 | Video fingerprinting | 99% |
+## 2. State of the Art
 
-**What Traffic Analysis Reveals:**
-- Which websites you visit (website fingerprinting)
-- What you're typing (keystroke timing)
-- What videos you're watching (bitrate patterns)
-- What apps you're using (protocol fingerprinting)
-- Who you're communicating with (traffic correlation)
+### 2.1 Website Fingerprinting Attacks
 
-**The Current RIINA Reality:**
-RIINA acknowledges traffic analysis as a threat but provides no formal solution.
+Website fingerprinting (WF) uses machine learning classifiers on packet size/timing sequences to identify visited websites, even over Tor or VPNs. Sirinam et al.'s Deep Fingerprinting (2018) achieved 98% accuracy using deep learning. Wang and Goldberg's k-fingerprinting (2016) provides theoretical bounds on the information leaked by traffic patterns.
 
-## 2. The Solution: Verified Traffic Shaping
+Sirinam, P., Imani, M., Juarez, M., Wright, M., "Deep Fingerprinting: Undermining Website Fingerprinting Defenses with Deep Learning", *CCS*, 2018.
 
-### 2.1 Core Principle
+Wang, T., Goldberg, I., "On Realistically Attacking Tor with Website Fingerprinting", *PETS*, 2016.
 
-Make all traffic patterns **indistinguishable** regardless of content.
+### 2.2 Traffic Padding and Shaping Defenses
 
-```
-Without Shaping:            With Shaping:
-┌────────────────────┐      ┌────────────────────┐
-│ "Hello" → 5 bytes  │      │ "Hello" → 1024 bytes│
-│ "Goodbye..." → 100 │      │ "Goodbye..." → 1024 │
-│ Variable timing    │      │ Fixed 100ms interval│
-└────────────────────┘      └────────────────────┘
-        ↓                           ↓
-   Fingerprintable            Indistinguishable
-```
+WTF-PAD (Website Traffic Fingerprinting Protection with Asymmetric Defense) uses adaptive padding to obscure traffic patterns with minimal bandwidth overhead. BuFLO (Buffered Fixed-Length Obfuscator) sends traffic at a constant rate with fixed-size packets, providing stronger but more expensive protection. CS-BuFLO improves BuFLO's efficiency with congestion-sensitive rate adaptation.
 
-### 2.2 Traffic Shaping Properties
+Juarez, M., Imani, M., Perry, M., Diaz, C., Wright, M., "Toward an Efficient Website Fingerprinting Defense", *ESORICS*, 2016.
 
-| Property | Definition | Formal Guarantee |
-|----------|------------|------------------|
-| **Size Uniformity** | All packets same size | `size(p) = FIXED_SIZE` |
-| **Timing Regularity** | Fixed inter-packet delay | `delay(p_i, p_{i+1}) = FIXED_DELAY` |
-| **Rate Constancy** | Constant packet rate | `rate = PACKETS_PER_SECOND` |
-| **Volume Hiding** | Cover traffic hides volume | `volume_observable = CONSTANT` |
+Cai, X., Nithyanand, R., Johnson, R., "CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense", *WPES*, 2014.
 
-## 3. Mathematical Framework
+### 2.3 Constant-Bandwidth Tunneling
 
-### 3.1 Traffic Model
+Constant-bandwidth tunneling sends data at a fixed rate regardless of actual traffic, filling gaps with dummy traffic. This provides provable indistinguishability: an observer cannot distinguish between any two traffic patterns. The cost is bandwidth proportional to the maximum rate, even when the actual rate is zero.
 
-```coq
-(* Traffic packet *)
-Record Packet := {
-  payload : bytes;
-  size : nat;
-  timestamp : timestamp;
-  direction : direction;  (* Sent/Received *)
-}.
+### 2.4 Network Traffic Obfuscation
 
-(* Traffic trace *)
-Definition Trace := list Packet.
+Obfsproxy (Tor Project) and Dust (Wiley) transform Tor traffic to resemble allowed protocols (HTTP, Skype), evading protocol-based censorship. Formal analysis of these tools examines their resistance to statistical distinguishing tests.
 
-(* Traffic profile *)
-Record TrafficProfile := {
-  packet_size : nat;           (* Fixed packet size in bytes *)
-  packet_rate : nat;           (* Packets per second *)
-  burst_limit : nat;           (* Maximum burst size *)
-  padding_strategy : PaddingStrategy;
-}.
-```
+### 2.5 Video Streaming Fingerprinting
 
-### 3.2 Traffic Indistinguishability
+DASH (Dynamic Adaptive Streaming over HTTP) produces distinctive bitrate patterns that identify specific videos. Defenses include constant-bitrate streaming, segment padding, and traffic morphing. Schuster et al. demonstrated that even with encryption, video content can be identified from segment sizes.
 
-```coq
-(* Observable traffic features *)
-Record TrafficObservation := {
-  obs_sizes : list nat;
-  obs_timings : list timestamp;
-  obs_directions : list direction;
-  obs_volume : nat;
-}.
+Schuster, R., Shmatikov, V., Tromer, E., "Beauty and the Burst: Remote Identification of Encrypted Video Streams", *USENIX Security*, 2017.
 
-(* Extract observable features from trace *)
-Definition observe (tr : Trace) : TrafficObservation := ...
+### 2.6 Keystroke Timing Attacks
 
-(* Traffic Indistinguishability *)
-Definition traffic_indist (profile : TrafficProfile) (tr1 tr2 : Trace) : Prop :=
-  observe (shape profile tr1) = observe (shape profile tr2).
+Song et al. demonstrated that SSH keystroke timing reveals character inter-arrival times, enabling password recovery and language identification. Defenses include constant-rate typing (impractical for humans) and random delay insertion (bounded effectiveness).
 
-(* Main Theorem: Shaped traffic is indistinguishable *)
-Theorem traffic_indistinguishability : forall profile m1 m2,
-  length m1 <= profile.packet_size ->
-  length m2 <= profile.packet_size ->
-  traffic_indist profile (send m1) (send m2).
-Proof.
-  intros.
-  unfold traffic_indist.
-  (* Both messages get padded to same size *)
-  (* Both get sent at same scheduled time *)
-  (* Observable features are identical *)
-Qed.
-```
+Song, D. X., Wagner, D., Tian, X., "Timing Analysis of Keystrokes and Timing Attacks on SSH", *USENIX Security*, 2001.
 
-### 3.3 Constant-Rate Channel
+### 2.7 Formal Models of Traffic Analysis
 
-```coq
-(* Constant-rate channel transformation *)
-Definition constant_rate_channel (profile : TrafficProfile) (ch : Channel) : Channel :=
-  {| send := fun msg =>
-       let padded := pad_to profile.packet_size msg in
-       let scheduled := schedule_at profile.packet_rate padded in
-       ch.send scheduled;
-     recv := fun () =>
-       let raw := ch.recv () in
-       unpad raw
-  |}.
+Formal models of traffic analysis quantify information leakage using information-theoretic measures (mutual information, min-entropy). Cherubin et al. developed a framework for evaluating website fingerprinting defenses using Bayesian analysis, providing theoretical bounds on defense effectiveness.
 
-(* Constant-rate property *)
-Theorem constant_rate : forall profile ch,
-  forall t1 t2,
-    packet_count (constant_rate_channel profile ch) t1 t2 =
-    profile.packet_rate * (t2 - t1).
+Cherubin, G., "Bayes, Not Naïve: Security Bounds on Website Fingerprinting Defenses", *PETS*, 2017.
 
-(* Cover traffic property *)
-Theorem cover_traffic : forall profile ch,
-  is_idle ch ->
-  packet_rate (constant_rate_channel profile ch) = profile.packet_rate.
-(* Even when idle, we send cover traffic *)
-```
+### 2.8 Differential Privacy for Network Traffic
 
-## 4. RIINA Language Extensions
+Applying differential privacy to network traffic provides formal guarantees: the traffic pattern of any individual user is statistically indistinguishable from that of any other user, up to a privacy parameter ε. This framework enables principled tradeoffs between privacy and bandwidth overhead.
 
-### 4.1 Traffic Profile Types
+## 3. Properties Verifiable by RIINA
+
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Traffic pattern indistinguishability | Constant-bandwidth tunneling | Fixed-rate transmission regardless of content |
+| Packet size uniformity | Padding to fixed size | All packets padded to MTU |
+| Timing independence | Constant interval transmission | Packets sent at fixed intervals |
+| Protocol indistinguishability | Format-transforming encryption | Traffic mimics allowed protocol |
+| Website fingerprinting resistance | Formal ε-indistinguishability | Provable bound on WF accuracy |
+| Keystroke timing resistance | Buffered output | Typed characters batched and sent at fixed intervals |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Traffic Shaping Primitives
 
 ```riina
-// Traffic shaping profile
-bentuk ProfilTrafik {
-    saiz_paket: u64,         // Packet size in bytes
-    kadar: u64,              // Packets per second
-    tampung_pecah: u64,      // Burst buffer
-    strategi_padding: StrategiPadding,
-}
+// Constant-bandwidth tunnel
+biar terowong = Terowong::baharu(
+    kadar: 1_Mbps,        // Fixed bandwidth
+    saiz_paket: 1500,      // Fixed packet size (MTU)
+    selang: 1_ms,          // Fixed interval
+    isi_palsu: rawak,      // Random dummy fill
+);
 
-senum StrategiPadding {
-    PKCS7,
-    RandomPadding,
-    ZeroPadding,
-}
-
-// Predefined profiles
-tetap PROFIL_RENDAH: ProfilTrafik = ProfilTrafik {
-    saiz_paket: 512,
-    kadar: 10,
-    tampung_pecah: 5,
-    strategi_padding: StrategiPadding::PKCS7,
-};
-
-tetap PROFIL_TINGGI: ProfilTrafik = ProfilTrafik {
-    saiz_paket: 1500,  // MTU size
-    kadar: 1000,
-    tampung_pecah: 100,
-    strategi_padding: StrategiPadding::RandomPadding,
-};
-```
-
-### 4.2 Shaped Channel Type
-
-```riina
-// Channel with traffic shaping
-bentuk SaluranBentuk<T> {
-    saluran: Saluran<T>,
-    profil: ProfilTrafik,
-    baris_gilir: Vec<T>,        // Queue for rate limiting
-    hantar_terakhir: CapMasa,   // Last send timestamp
-}
-
-impl<T> SaluranBentuk<T> {
-    // Send with traffic shaping - FORMALLY VERIFIED
-    #[memastikan trafik(hantar(a)) = trafik(hantar(b)) untuk semua a, b]
-    fungsi hantar(&mut self, mesej: T) -> Hasil<(), Ralat>
-        kesan KesanRangkaian
-    {
-        // 1. Pad message to fixed size
-        biar dipad = pad_ke_saiz(self.profil.saiz_paket, mesej);
-
-        // 2. Wait until next scheduled slot
-        biar sekarang = CapMasa::sekarang();
-        biar slot_seterusnya = self.hantar_terakhir + (1000 / self.profil.kadar);
-        kalau sekarang < slot_seterusnya {
-            tunggu_sehingga(slot_seterusnya);
-        }
-
-        // 3. Send padded message
-        self.saluran.hantar(dipad)?;
-        self.hantar_terakhir = CapMasa::sekarang();
-
-        Ok(())
-    }
-
-    // Cover traffic generator - runs in background
-    #[latar_belakang]
-    fungsi penjana_penutup(&mut self) kesan KesanRangkaian {
-        gelung {
-            kalau self.baris_gilir.kosong() {
-                // Send cover traffic (random padding)
-                biar penutup = jana_rawak(self.profil.saiz_paket);
-                self.saluran.hantar(penutup);
-            }
-            tunggu_ms(1000 / self.profil.kadar);
-        }
-    }
+// All application traffic goes through the tunnel
+fungsi hantar_selamat(data: &[Bait]) kesan Rangkaian<TerowongTetap> {
+    terowong.hantar(data);
+    // Actual data is indistinguishable from dummy traffic
 }
 ```
 
-### 4.3 Function Annotations
-
-```riina
-// Traffic-shaped function
-#[trafik(profil = "PROFIL_TINGGI")]
-#[trafik(penutup = betul)]  // Enable cover traffic
-fungsi hantar_selamat(mesej: Teks) kesan KesanRangkaian {
-    // Compiler ensures traffic shaping is applied
-    // All calls have identical traffic pattern
-}
-```
-
-## 5. Implementation Strategy
-
-### 5.1 Coq Files to Create
-
-| File | Purpose | Lines (est) |
-|------|---------|-------------|
-| `TrafficModel.v` | Packet/Trace definitions | 200 |
-| `TrafficProfile.v` | Profile types and validation | 150 |
-| `TrafficShaping.v` | Shaping algorithms | 400 |
-| `TrafficIndist.v` | Indistinguishability proofs | 500 |
-| `ConstantRate.v` | Constant-rate channel proofs | 300 |
-| `CoverTraffic.v` | Cover traffic properties | 200 |
-| `PaddingProofs.v` | Padding correctness | 150 |
-
-**Total: ~1,900 lines of Coq**
-
-### 5.2 Key Theorems
+### 4.2 Coq Formalization
 
 ```coq
-(* Size uniformity *)
-Theorem size_uniform : forall profile msg,
-  length msg <= profile.packet_size ->
-  packet_size (shape profile msg) = profile.packet_size.
+(* Traffic indistinguishability *)
+Theorem traffic_indistinguishable : forall data1 data2 observer,
+  length data1 <= MAX_SIZE ->
+  length data2 <= MAX_SIZE ->
+  observe observer (tunnel data1) = observe observer (tunnel data2).
 
-(* Timing regularity *)
-Theorem timing_regular : forall profile ch p1 p2 i j,
-  i < j ->
-  sent ch p1 i ->
-  sent ch p2 j ->
-  timestamp p2 - timestamp p1 = (j - i) * (1 / profile.packet_rate).
-
-(* Volume hiding *)
-Theorem volume_hiding : forall profile ch duration,
-  total_packets (constant_rate_channel profile ch) duration =
-  profile.packet_rate * duration.
-
-(* Full traffic indistinguishability *)
-Theorem full_indist : forall profile m1 m2 adversary,
-  length m1 <= profile.packet_size ->
-  length m2 <= profile.packet_size ->
-  advantage adversary (distinguish (shape profile m1) (shape profile m2)) <= negligible.
+(* WF resistance bound *)
+Theorem wf_resistance : forall classifier websites,
+  accuracy classifier (defended_traffic websites) <=
+  1 / length websites + epsilon.
 ```
 
-## 6. Constant-Time Guarantees
+## 5. Key References
 
-### 6.1 Shaping Must Be Constant-Time
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Sirinam, P., et al., "Deep Fingerprinting" (2018) | CCS | State-of-the-art WF attack |
+| Wang, T., Goldberg, I., "Attacking Tor with WF" (2016) | PETS | WF attack analysis |
+| Juarez, M., et al., "WTF-PAD" (2016) | ESORICS | Adaptive padding defense |
+| Cai, X., et al., "CS-BuFLO" (2014) | WPES | Congestion-sensitive defense |
+| Schuster, R., et al., "Beauty and the Burst" (2017) | USENIX Security | Video fingerprinting |
+| Song, D. X., et al., "Keystroke Timing on SSH" (2001) | USENIX Security | Keystroke timing attack |
+| Cherubin, G., "Bayes, Not Naïve" (2017) | PETS | Formal WF defense evaluation |
+| Danezis, G., Diaz, C., "A Survey of Anonymous Communication Channels" (2008) | Microsoft Research TR | Anonymity survey |
 
-```coq
-(* Padding is constant-time *)
-Theorem padding_constant_time : forall msg target_size,
-  timing (pad_to target_size msg) = CONSTANT_PAD_TIME.
+## 6. Formalizability Assessment
 
-(* Scheduling is constant-time *)
-Theorem scheduling_constant_time : forall profile msg,
-  timing (schedule profile msg) = CONSTANT_SCHEDULE_TIME.
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Constant-bandwidth tunnel | 3-4 | High — straightforward implementation | Phase 1 |
+| Packet padding primitives | 2-3 | High — pad to MTU | Phase 1 |
+| WF defense evaluation framework | 3-4 | Medium — ML evaluation | Phase 2 |
+| Formal indistinguishability proof | 4-6 | Medium — information-theoretic | Phase 2 |
+| Video streaming protection | 3-4 | Medium — bitrate normalization | Phase 3 |
+| Keystroke timing defense | 2-3 | High — buffered output | Phase 3 |
+| Protocol obfuscation | 3-4 | Medium — format-transforming encryption | Phase 4 |
+| End-to-end traffic privacy proof | 6-8 | Low-Medium — composition challenges | Phase 5 |
 
-(* No timing leaks through shaping *)
-Theorem no_timing_leak : forall profile m1 m2,
-  execution_time (shape profile m1) = execution_time (shape profile m2).
-```
+## 7. Scope Limitations
 
-### 6.2 Integration with Track S
-
-Track η depends on Track S (Hardware Contracts) to ensure shaping operations don't leak through microarchitectural side channels.
-
-## 7. Dependencies
-
-| Dependency | Direction | Nature |
-|------------|-----------|--------|
-| Track A | η requires A | Type-level effect tracking |
-| Track S | η requires S | Constant-time execution |
-| Track χ | η feeds χ | Size uniformity for metadata |
-| Track ι | η feeds ι | Traffic shaping for anonymity |
-| Track Ω | η extends Ω | Network layer foundation |
-
-## 8. Threat Obsolescence
-
-When Track η is complete:
-
-| Attack | Status | Mechanism |
-|--------|--------|-----------|
-| Website fingerprinting | OBSOLETE | Size uniformity |
-| Video fingerprinting | OBSOLETE | Rate constancy |
-| Keystroke timing | OBSOLETE | Timing regularity |
-| Volume analysis | OBSOLETE | Cover traffic |
-| Protocol fingerprinting | OBSOLETE | Uniform packets |
-| Traffic correlation | OBSOLETE | Full indistinguishability |
-
-## 9. Performance Considerations
-
-### 9.1 Overhead
-
-| Profile | Bandwidth Overhead | Latency Overhead |
-|---------|-------------------|------------------|
-| PROFIL_RENDAH | 50% | 100ms max |
-| PROFIL_TINGGI | 200% | 10ms max |
-| PROFIL_PARANOID | 500% | 1ms max |
-
-### 9.2 Tradeoffs
-
-The user chooses their profile based on:
-- **Security requirement**: Higher profiles = better protection
-- **Bandwidth availability**: Higher profiles = more overhead
-- **Latency tolerance**: Higher rates = lower latency
+1. **Bandwidth overhead.** Constant-bandwidth tunneling wastes bandwidth proportional to the ratio of maximum to average communication rate. For bursty traffic (web browsing), overhead can be 10-100x.
+2. **Latency.** Buffering traffic to create constant-rate streams adds latency. Real-time applications (VoIP, gaming) cannot tolerate the delays required for traffic normalization.
+3. **Active attacks.** Traffic analysis defenses assume a passive observer. An active attacker who can inject, delay, or drop packets can perform more powerful attacks (traffic tagging, flow watermarking).
+4. **Endpoint fingerprinting.** Even with perfect traffic shaping, the endpoint behavior (TLS handshake parameters, HTTP headers) can fingerprint the application. Endpoint obfuscation is a separate problem.
+5. **Scalability.** Constant-bandwidth tunneling for millions of users requires enormous aggregate bandwidth. The approach is feasible for high-security applications but not for general internet traffic.
+6. **Defense evaluation difficulty.** Proving that a defense resists ALL possible classifiers (including future ones) requires information-theoretic bounds, which are much harder to establish than defending against specific known attacks.
 
 ---
 
-**"Traffic patterns are the new fingerprints. RIINA makes all fingers look the same."**
-
-*Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE*
+*"If the traffic looks the same regardless of what you're doing, the traffic reveals nothing."*

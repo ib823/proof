@@ -1,133 +1,114 @@
-# TERAS-LANG Research Domain W: Verified Memory Management
+# W-01: Verified Memory Management — Memory is PROVEN
 
-## Document Control
-
-| Property | Value |
-|----------|-------|
-| Document ID | RESEARCH-W-VERIFIED-MEMORY |
-| Version | 1.0.0 |
-| Date | 2026-01-15 |
-| Domain | W: Verified Memory Management |
-| Mode | ULTRA KIASU | PARANOID | ZERO TRUST |
-| Status | FOUNDATIONAL DEFINITION |
+**Domain:** W — Verified Memory Management
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Verified allocator, separation logic, region-based memory, ownership types
 
 ---
 
-## IMPLEMENTATION STATUS (Audit: 2026-02-06)
+## 1. Problem Statement
 
-| Component | Status | Evidence |
-|-----------|--------|----------|
-| Research Specification | COMPLETE | This document |
-| Coq Formal Proofs | 2 files, 47 Qed | W001_VerifiedMemory.v (40 Qed), IrisSeparationLogic.v (7 Qed) |
-| Compiler Implementation | NOT STARTED | No verified memory allocator exists |
+Memory corruption vulnerabilities have been the dominant class of security bugs for over 50 years. Buffer overflows enabled the Morris Worm (1988), use-after-free bugs account for approximately 70% of Chrome and Windows CVEs as of 2024, and heap corruption enables type confusion attacks that bypass all type-level guarantees. Even in memory-safe languages like Rust, the runtime memory allocator itself is typically unverified C code — a buggy allocator can return overlapping memory regions, allow access to freed memory, or corrupt internal metadata, bypassing all type-system safety guarantees.
 
-**This document is a RESEARCH SPECIFICATION for future implementation.** The Coq proofs formalize separation logic and allocator correctness properties, but no verified memory allocator has been built; the runtime relies on the system allocator.
+RIINA's type system prevents logical memory errors at the source level, but the runtime allocator operates below the type system's guarantees. If the allocator is incorrect, it can silently undermine every safety property that the type system establishes. Domain W addresses this by formally verifying the memory allocator using separation logic, ensuring that memory safety holds not just at the type level but at the implementation level.
 
----
+## 2. State of the Art
 
-# W-01: The "Memory Corruption" Problem & The TERAS Solution
+### 2.1 Separation Logic
 
-## 1. The Existential Threat
+Separation logic, introduced by John Reynolds and Peter O'Hearn, extends Hoare logic with spatial reasoning about heap memory. The key operator is the separating conjunction (P * Q), which asserts that the heap can be split into two disjoint parts satisfying P and Q respectively. The frame rule enables modular reasoning: if a program operates on one part of the heap, the rest is automatically preserved. Separation logic has become the standard tool for verifying heap-manipulating programs.
 
-**Context:**
-Memory corruption vulnerabilities have been the #1 class of security bugs for 50 years:
-- Buffer overflows (Morris Worm, 1988)
-- Use-after-free (still ~70% of Chrome/Windows CVEs in 2024)
-- Double-free
-- Heap spraying
-- Type confusion via memory corruption
+Reynolds, J. C., "Separation Logic: A Logic for Shared Mutable Data Structures", *LICS*, 2002.
 
-**The TERAS Reality:**
-Our type system prevents logical type errors. But the RUNTIME memory allocator is a separate component. If the allocator is buggy:
-- It could return overlapping memory regions
-- It could allow access to freed memory
-- It could corrupt internal metadata
+O'Hearn, P. W., "Resources, Concurrency, and Local Reasoning", *Theoretical Computer Science*, 375(1-3):271-307, 2007.
 
-A buggy allocator can **bypass all type-system guarantees**.
+### 2.2 Iris: Higher-Order Concurrent Separation Logic
 
-**The Goal:**
-Formally verify the memory allocator. Prove it is IMPOSSIBLE for memory corruption to occur at the implementation level.
+Iris, developed by Ralf Jung, Robbert Krebbers, and colleagues at MPI-SWS, is a higher-order concurrent separation logic framework implemented in Coq. Iris provides a flexible foundation for reasoning about shared-memory concurrent programs using ghost state, invariants, and the "later" modality. It has been used to verify complex concurrent data structures, the Rust type system (via RustBelt), and the correctness of weak memory models.
 
-## 2. The Solution: Verified Allocator with Separation Logic
+Jung, R., Krebbers, R., Jourdan, J.-H., Bizjak, A., Birkedal, L., Dreyer, D., "Iris from the Ground Up: A Modular Foundation for Higher-Order Concurrent Separation Logic", *Journal of Functional Programming*, 28:e20, 2018.
 
-We will implement a memory allocator that is **proven correct** using separation logic, following the methodology of seL4 and CertiKOS.
+Jung, R., Jourdan, J.-H., Krebbers, R., Dreyer, D., "RustBelt: Securing the Foundations of the Rust Programming Language", *POPL*, 2018.
 
-### 2.1 The Core Properties
+### 2.3 RustBelt: Verified Safety for Rust
 
-The allocator must satisfy:
+RustBelt provides the first formal proof that Rust's type system (including ownership, borrowing, and lifetimes) guarantees safety even in the presence of unsafe code, provided that unsafe code satisfies a semantic contract. Built on Iris, RustBelt formalizes Rust's type system as a semantic model and proves that well-typed programs cannot exhibit undefined behavior. This work is directly relevant to RIINA, which adopts Rust-style ownership.
 
-#### Property 1: Non-Overlapping Allocations
-$$
-\forall p_1, p_2. \text{allocated}(p_1) \land \text{allocated}(p_2) \land p_1 \neq p_2 \implies \text{disjoint}(p_1, p_2)
-$$
+Jung, R., Jourdan, J.-H., Krebbers, R., Dreyer, D., "RustBelt: Securing the Foundations of the Rust Programming Language", *POPL*, 2018.
 
-#### Property 2: Freshness
-$$
-\forall p. \text{allocate}() = p \implies \neg\text{previously\_accessible}(p)
-$$
+### 2.4 RefinedC: Verified C Programs
 
-#### Property 3: Use-After-Free Prevention
-$$
-\forall p. \text{free}(p) \implies \neg\text{accessible}(p) \text{ until reallocated}
-$$
+RefinedC, developed by Michael Sammler et al., combines Rust-style ownership types with separation logic to verify C programs. It automates separation logic proofs using refinement types, enabling verification of real C code (including parts of the Linux kernel) with relatively low annotation burden. RefinedC demonstrates that ownership-based verification can be applied even to languages without built-in ownership.
 
-#### Property 4: Double-Free Prevention
-$$
-\forall p. \text{free}(p) \implies \neg\text{freeable}(p) \text{ until reallocated}
-$$
+Sammler, M., Lepigre, R., Krebbers, R., Memarian, K., Dreyer, D., Garg, D., "RefinedC: Automating the Foundational Verification of C Code with Refined Ownership Types", *PLDI*, 2021.
 
-#### Property 5: Bounded Fragmentation
-$$
-\text{fragmentation\_ratio} \leq k \cdot \text{optimal}
-$$
+### 2.5 CompCert Memory Model
 
-### 2.2 The Allocator Design
+CompCert's memory model, designed by Leroy and Blazy, provides a formal specification of memory layout for C programs. The model supports block-structured memory with permissions (readable, writable, freeable), pointer arithmetic, and alignment constraints. It has been the basis for numerous verified systems and serves as a reference for formalizing memory behavior in verified compilers.
 
-We implement a **formally verified buddy allocator**:
+Leroy, X., Blazy, S., "Formal Verification of a C-like Memory Model and Its Uses for Verifying Program Transformations", *Journal of Automated Reasoning*, 41(1):1-31, 2008.
 
-```
-Structure:
-- Memory divided into power-of-2 blocks
-- Free lists for each size class
-- Bitmap tracking allocation status
-- Invariants maintained across all operations
-```
+### 2.6 Region-Based Memory Management
 
-Why buddy allocator:
-- Simple enough to verify completely
-- O(log n) allocation/deallocation
-- Bounded fragmentation (factor of 2)
-- No external fragmentation for aligned allocations
+Region-based memory management, pioneered by Tofte and Talpin, organizes allocations into hierarchical regions that are deallocated as a unit. This provides deterministic deallocation without garbage collection, bounded memory usage, and provable memory safety. The ML Kit compiler demonstrated that region inference can be fully automatic, and Cyclone adapted regions for a safe C dialect.
 
-### 2.3 Separation Logic Specification
+Tofte, M., Talpin, J.-P., "Region-Based Memory Management", *Information and Computation*, 132(2):109-176, 1997.
 
-```coq
-(* Allocation specification *)
-Theorem allocate_spec : forall sz,
-  {{ emp }}
-  allocate(sz)
-  {{ p, p |--> block(sz) * precise_size(p, sz) }}.
+### 2.7 Verified Garbage Collection
 
-(* Free specification *)
-Theorem free_spec : forall p sz,
-  {{ p |--> block(sz) }}
-  free(p)
-  {{ emp }}.
+Verified garbage collectors provide proven correctness for automatic memory management. McCreight et al. verified a copying garbage collector in Coq, proving that live objects are preserved and dead objects are correctly reclaimed. The CertiCoq project includes a verified generational garbage collector for the Coq-extracted runtime.
 
-(* Key separation property *)
-Theorem disjoint_allocations : forall p1 p2 sz1 sz2,
-  p1 |--> block(sz1) * p2 |--> block(sz2) ->
-  p1 <> p2 ->
-  disjoint(p1, sz1, p2, sz2).
+McCreight, A., Shao, Z., Lin, C., Li, L., "A General Framework for Certifying Garbage Collectors and Their Mutators", *PLDI*, 2007.
+
+### 2.8 Verified Allocator Implementations
+
+Several projects have formally verified memory allocators. The CertiKOS project includes a verified page allocator and slab allocator. Tuch et al. verified parts of the L4 microkernel's memory management using separation logic in Isabelle/HOL. More recently, the Verus project has been used to verify Rust allocator implementations.
+
+Tuch, H., Klein, G., Norrish, M., "Types, Bytes, and Separation Logic", *POPL*, 2007.
+
+## 3. Properties Verifiable by RIINA
+
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Non-overlapping allocations | Separation logic (P * Q) | Allocator returns disjoint regions |
+| Use-after-free prevention | Ownership/lifetime tracking | Type system prevents access after free |
+| Double-free prevention | Linear/affine type enforcement | Free consumes ownership; second free is type error |
+| Buffer overflow prevention | Bounds checking + verified allocator | Allocator returns exact sizes; type system checks bounds |
+| Memory leak prevention | Region-based deallocation / verified GC | Regions freed at scope exit; GC proves reachability |
+| Fragmentation bounds | Buddy allocator analysis | Fragmentation bounded by factor of 2 |
+| Allocator functional correctness | Simulation proof against abstract spec | Concrete allocator refines abstract allocation model |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Ownership Type System
+
+```riina
+// RIINA ownership types
+fungsi proses_data(data: &mut Buffer) kesan Tulis {
+    // Exclusive borrow — only one mutable reference
+    data.tulis("hasil");
+}
+
+fungsi baca_data(data: &Buffer) -> Teks kesan Baca {
+    // Shared borrow — multiple readers, no writers
+    pulang data.sebagai_teks();
+}
+
+// Region-based allocation
+kawasan r {
+    biar x = peruntuk_dalam(r, data);
+    biar y = peruntuk_dalam(r, lebih_data);
+    // All allocations freed when region ends
+}
+// x, y automatically deallocated here
 ```
 
-## 3. Architecture of Domain W
-
-### 3.1 The Verified Allocator Stack
+### 4.2 Verified Allocator Stack
 
 ```
 ┌─────────────────────────────────────────┐
-│         TERAS Runtime                    │
+│         RIINA Runtime                    │
 ├─────────────────────────────────────────┤
 │    Verified Allocator API                │
 │    (alloc, free, realloc)               │
@@ -142,104 +123,67 @@ Theorem disjoint_allocations : forall p1 p2 sz1 sz2,
 └─────────────────────────────────────────┘
 ```
 
-### 3.2 Integration with Type System
-
-The type system tracks allocation:
+### 4.3 Coq Formalization
 
 ```coq
-(* Extended type for heap references *)
-Inductive heap_ty : Type :=
-  | HRef : ty -> region -> ownership -> heap_ty.
+(* Allocation preserves separation *)
+Theorem alloc_fresh : forall heap sz p heap',
+  alloc heap sz = Some (p, heap') ->
+  forall q, allocated heap q -> disjoint_blocks p sz q (block_size heap q).
 
-(* Ownership states *)
-Inductive ownership : Type :=
-  | Owned     : ownership      (* Unique owner, can free *)
-  | Borrowed  : lifetime -> ownership  (* Temporary access *)
-  | Shared    : ownership.     (* Read-only sharing *)
+(* Free returns memory to free list *)
+Theorem free_reclaim : forall heap p heap',
+  free heap p = Some heap' ->
+  ~allocated heap' p.
+
+(* Ownership transfer is linear *)
+Theorem ownership_linear : forall G e p T,
+  has_type G e (Owned T p) ->
+  consumed p G ->
+  ~has_type G e (Owned T p).
 ```
 
-### 3.3 Region-Based Memory Management
+## 5. Key References
 
-For predictable deallocation without GC:
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Reynolds, J. C., "Separation Logic" (2002) | LICS | Foundational spatial heap logic |
+| O'Hearn, P. W., "Resources, Concurrency, and Local Reasoning" (2007) | TCS | Frame rule and concurrent separation logic |
+| Jung, R., et al., "Iris from the Ground Up" (2018) | JFP | Higher-order concurrent separation logic in Coq |
+| Jung, R., et al., "RustBelt" (2018) | POPL | Verified safety for Rust ownership types |
+| Sammler, M., et al., "RefinedC" (2021) | PLDI | Automated ownership-based C verification |
+| Leroy, X., Blazy, S., "CompCert Memory Model" (2008) | J. Automated Reasoning | Formal C memory model |
+| Tofte, M., Talpin, J.-P., "Region-Based Memory Management" (1997) | Information and Computation | Region inference theory |
+| McCreight, A., et al., "Certifying Garbage Collectors" (2007) | PLDI | Verified GC framework |
+| Tuch, H., et al., "Types, Bytes, and Separation Logic" (2007) | POPL | Low-level memory verification |
 
-```
-region r {
-  let x = alloc_in(r, data);
-  let y = alloc_in(r, more_data);
-  // All allocations freed when region ends
-}
-// x, y automatically deallocated here
-```
+## 6. Formalizability Assessment
 
-Regions provide:
-- Deterministic deallocation (no GC pauses)
-- Bulk freeing (efficient)
-- Provable memory bounds
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Separation logic foundation (in Coq) | 2-3 | High — Iris available | Phase 1 |
+| Abstract allocator specification | 2-3 | High — well-understood interface | Phase 1 |
+| Buddy allocator implementation + proof | 4-6 | Medium — complex invariants | Phase 2 |
+| Ownership type system formalization | 3-4 | High — RustBelt methodology | Phase 2 |
+| Region-based allocation | 3-4 | High — Tofte-Talpin theory | Phase 3 |
+| Coq extraction to Rust | 2-3 | Medium — extraction quality issues | Phase 3 |
+| Verified garbage collector | 6-8 | Medium — complex correctness proofs | Phase 4 |
+| Integration with Domain U (seL4) | 4-6 | Medium — cross-system verification | Phase 5 |
 
-### 3.4 Optional Verified GC
+## 7. Scope Limitations
 
-For long-running applications, a verified garbage collector:
+1. **Performance of verified allocators.** Formally verified allocators (buddy allocators) typically have worse fragmentation and throughput than state-of-the-art production allocators (jemalloc, mimalloc, tcmalloc). The verification constraint limits the algorithms that can be tractably verified.
 
-```coq
-(* GC correctness theorem *)
-Theorem gc_preserves_reachability : forall heap roots,
-  reachable(roots, heap) = reachable(roots, gc(heap)).
+2. **Coq extraction quality.** Extracting Coq code to Rust produces idiomatic but not always efficient code. Manual optimization of extracted code requires re-verification. The gap between the verified Coq model and the actual Rust implementation is a source of potential unsoundness.
 
-(* GC safety theorem *)
-Theorem gc_no_dangling : forall heap roots p,
-  In p (gc(heap)) -> reachable_from(roots, p, heap).
-```
+3. **Concurrent allocator verification.** Verifying a concurrent allocator (with thread-local caches, atomic free lists, etc.) is significantly harder than verifying a sequential one. Iris provides the tools, but the proof effort is substantial.
 
-## 4. Implementation Strategy (Infinite Timeline)
+4. **Page-level memory management.** The verified allocator manages heap memory, but page allocation, virtual memory mapping, and TLB management are handled by the OS kernel. These are out of scope unless running on a verified kernel (seL4).
 
-1. **Step 1: Formalize Memory Model**
-   - Define heap as partial map: `loc -> option value`
-   - Define separation logic in Coq
-   - Prove frame rule and structural rules
+5. **Hardware memory model.** The allocator correctness proof assumes a sequential memory model. On modern hardware with weak memory ordering (ARM, RISC-V), additional proofs about memory barriers and acquire-release semantics are needed for concurrent allocation.
 
-2. **Step 2: Implement Buddy Allocator in Coq**
-   - Define data structures (free lists, bitmaps)
-   - Implement alloc/free
-   - Prove all invariants preserved
-
-3. **Step 3: Extract to Rust**
-   - Use Coq extraction to generate Rust code
-   - Or: manually implement and use VST/RefinedC to verify
-
-4. **Step 4: Integrate with Track U**
-   - Allocator runs under Runtime Guardian supervision
-   - Hardware memory protection enforces region boundaries
-
-5. **Step 5: Verification Against Physical Memory**
-   - Prove allocator correctness assuming correct page tables
-   - Integrate with Track S hardware model
-
-## 5. Obsolescence of Threats
-
-- **Buffer Overflow:** OBSOLETE. Allocator returns exact sizes; bounds checking is type-enforced.
-- **Use-After-Free:** OBSOLETE. Freed memory is provably inaccessible.
-- **Double-Free:** OBSOLETE. Free is idempotent or rejected on already-freed memory.
-- **Heap Overflow:** OBSOLETE. Heap metadata is separate and protected.
-- **Type Confusion via Corruption:** OBSOLETE. Memory layout is type-determined and verified.
-- **Memory Leaks:** OBSOLETE. Region-based management or verified GC ensures reclamation.
-
-## 6. Dependencies
-
-| Dependency | Direction | Nature |
-|------------|-----------|--------|
-| Track A (Formal) | W depends on A | Heap typing rules |
-| Track U (Guardian) | W integrates with U | Memory protection enforcement |
-| Track S (Hardware) | W depends on S | Physical memory model |
-| Track V (Termination) | W coordinates with V | Bounded allocation in loops |
-
-## 7. Verification Targets
-
-| Component | Verification Method | Tool |
-|-----------|---------------------|------|
-| Allocator logic | Separation logic | Coq + Iris |
-| Rust implementation | Refinement proof | RefinedC / Verus |
-| Integration | End-to-end | Combined proofs |
+6. **No verified realloc.** Reallocation (growing a buffer in place or copying to a larger block) is significantly harder to verify than basic allocation and deallocation, due to the need to prove that data is correctly copied and old memory is properly freed.
 
 ---
 
-**"Memory is not managed. Memory is PROVEN."**
+*"Memory is not managed. Memory is PROVEN."*

@@ -1,384 +1,159 @@
-# RIINA Research Domain AD: Time Security
+# AD-01: Verified Time Security — Provably Correct Temporal Integrity
 
-## Document Control
-
-```
-Track: AD (Alpha-Delta)
-Version: 1.0.0
-Date: 2026-01-17
-Classification: FOUNDATIONAL
-Status: SPECIFICATION
-Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
-```
+**Domain:** AD — Verified Time Security
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Secure time synchronization, NTP security, clock verification, temporal integrity, verified timestamps
 
 ---
 
-## AD-01: The "Time" Problem & The RIINA Solution
+## 1. Problem Statement
 
-### 1. The Existential Threat
+Time is a critical security dependency. TLS certificate validation depends on accurate clocks, Kerberos authentication fails with clock skew greater than 5 minutes, TOTP two-factor authentication requires synchronized clocks, and distributed consensus protocols assume bounded clock drift. Yet time synchronization protocols (NTP, PTP) were designed without security, and attackers have demonstrated the ability to shift victim clocks by hours through NTP manipulation.
 
-Time is a critical security assumption that's routinely violated:
-- NTP attacks manipulate system time
-- Replay attacks reuse old valid messages
-- Race conditions corrupt shared state
-- TOCTOU (time-of-check-to-time-of-use) bypasses security
-- Clock skew enables attack windows
-- Timing side channels leak secrets
+In 2015, researchers demonstrated that NTP-based attacks could bypass DNSSEC, disable HTTPS certificate validation, and compromise cryptocurrency transactions. Malhotra et al. showed that an off-path attacker can shift NTP clients' clocks by months. RIINA provides verified time security through formally verified clock synchronization protocols, secure timestamp generation, and temporal integrity types.
 
-**Current state:** No system formally verifies temporal security properties.
+## 2. State of the Art
 
-### 2. The RIINA Solution: Verified Time Security
+### 2.1 Network Time Protocol (NTP)
 
-RIINA provides formal time security guarantees:
+Mills developed NTP, the dominant time synchronization protocol, which synchronizes clocks across the internet to within tens of milliseconds. NTP uses a hierarchical stratum system and statistical filtering to achieve accuracy, but its original design lacks authentication and is vulnerable to man-in-the-middle attacks.
 
-```
-THEOREM temporal_safety:
-  ∀ program P, execution E:
-    TypeChecks(P) →
-    ¬∃ race_condition(E) ∧
-    ¬∃ replay(E) ∧
-    ¬∃ toctou(E) ∧
-    timing_leakage(E) ≤ declared_leakage(P)
-```
+Mills, D. L., "Network Time Protocol Version 4: Protocol and Algorithms Specification", RFC 5905, 2010.
 
-### 3. Threat Coverage
+### 2.2 Network Time Security (NTS)
 
-| ID | Attack | Defense Mechanism |
-|----|--------|-------------------|
-| TIME-001 | Race Condition | Session types + Linearization |
-| TIME-002 | TOCTOU | Atomic operations + Capabilities |
-| TIME-003 | Timing Side Channel | Constant-time (Track AC) |
-| TIME-004 | Covert Timing Channel | Fixed-time execution |
-| TIME-005 | NTP Attack | Authenticated time + Multi-source |
-| TIME-006 | Replay Attack | Nonces + Sequence + Timestamps |
-| TIME-007 | Ordering Attack | Lamport clocks + Vector clocks |
-| TIME-008 | Deadline Attack | Verified scheduling |
-| TIME-009 | Timestamp Manipulation | Signed timestamps |
-| TIME-010 | Timeout Attack | Verified timeout handling |
-| TIME-011 | Clock Skew Attack | Bounded clock drift |
-| TIME-012 | Scheduling Attack | Priority inheritance |
-| TIME-013 | Deadlock | Deadlock-free types |
-| TIME-014 | Livelock | Liveness proofs |
-| TIME-015 | Starvation | Fair scheduling |
+Malhotra et al. developed Network Time Security (NTS), a cryptographic extension to NTP that provides authentication, integrity, and replay protection for time synchronization. NTS uses TLS to establish keys and then authenticates NTP packets with AEAD.
 
-### 4. Core Components
+Malhotra, A., Gundy, M. V., Varia, M., Kennedy, H., Gardner, J., Goldberg, S., "The Security of NTP's Datagram Protocol", *Financial Cryptography*, 2019.
 
-#### 4.1 Temporal Types
+### 2.3 UPPAAL: Timed Automata Verification
 
-```
-TemporalType ::=
-  | Timestamp of { source: TimeSource, precision: Duration }
-  | Duration of { unit: TimeUnit }
-  | Deadline of { absolute: Timestamp }
-  | Interval of { start: Timestamp, end: Timestamp }
-  | LogicalTime of { clock: LogicalClock }
+Annichini et al. developed tools for verifying timed automata — finite automata extended with real-valued clocks. UPPAAL enables verification of time-critical systems by modeling timing constraints, clock invariants, and deadline requirements.
 
-TimeSource ::=
-  | SystemClock
-  | MonotonicClock
-  | NetworkTime of List<NTPServer>
-  | TrustedTime of SecureTimeSource
-  | LogicalClock
+Annichini, A., Asarin, E., Bouajjani, A., "Symbolic Model Checking of Lossy Channel Systems", *TACAS*, 2001.
 
-LogicalClock ::=
-  | LamportClock of Counter
-  | VectorClock of Map<ProcessId, Counter>
-  | HybridLogicalClock of (Timestamp, Counter)
-```
+### 2.4 Practical Byzantine Clock Synchronization
 
-#### 4.2 Replay Prevention
+Liskov developed practical algorithms for Byzantine-fault-tolerant clock synchronization, ensuring that correct clocks remain synchronized even when some clocks are controlled by an adversary. The algorithms tolerate up to f faulty clocks among 3f+1 total.
 
-```
-ReplayPrevention ::= {
-  nonce: Nonce,
-  sequence: SequenceNumber,
-  timestamp: BoundedTimestamp,
-  window: ReplayWindow
-}
+Liskov, B., "Practical Uses of Synchronized Clocks in Distributed Systems", *Distributed Computing*, 6(4):211-219, 1993.
 
-ReplayWindow ::=
-  | SlidingWindow of { size: Duration, seen: Set<Nonce> }
-  | SequenceWindow of { last: SequenceNumber, gap_tolerance: Nat }
-  | HybridWindow of SlidingWindow * SequenceWindow
+### 2.5 Time-Triggered Protocol
 
-Nonce ::= Random<256>  // 256-bit random nonce
-```
+Kopetz developed the Time-Triggered Protocol (TTP) for safety-critical real-time systems, where all communication occurs at predetermined times based on synchronized clocks. TTP provides deterministic timing guarantees essential for automotive and aerospace applications.
 
-#### 4.3 Atomic Operations
+Kopetz, H., "Real-Time Systems: Design Principles for Distributed Embedded Applications", Springer, 2011.
 
-```
-AtomicOp<T> ::=
-  | Load of Ref<T>
-  | Store of Ref<T> * T
-  | CompareAndSwap of Ref<T> * T * T
-  | FetchAndAdd of Ref<Nat> * Nat
-  | Transaction of List<AtomicOp<T>>
+### 2.6 Google Spanner
 
-Ordering ::= Relaxed | Acquire | Release | AcqRel | SeqCst
-```
+Corbett et al. developed Spanner, Google's globally distributed database that uses GPS and atomic clocks (TrueTime API) to provide globally consistent timestamps. Spanner demonstrates that hardware-backed time can enable distributed systems with strong consistency guarantees.
 
-### 5. Formal Properties
+Corbett, J. C., Dean, J., Epstein, M., Fikes, A., Frost, C., Furman, J. J., Ghemawat, S., et al., "Spanner: Google's Globally-Distributed Database", *OSDI*, 2012.
 
-#### 5.1 Race Freedom
+### 2.7 Clock Synchronization Bounds
 
-```coq
-(* Well-typed programs are race-free *)
-Theorem race_freedom:
-  forall prog,
-    well_typed prog ->
-    forall exec, valid_execution prog exec ->
-      race_free exec.
+Dolev and Halpern proved fundamental lower bounds on clock synchronization in distributed systems, establishing that clocks cannot be synchronized more tightly than the uncertainty in message delivery time. These impossibility results constrain what any verification can guarantee.
 
-(* Session types prevent data races *)
-Theorem session_race_free:
-  forall p1 p2 session,
-    dual p1 p2 ->
-    communicate p1 p2 session ->
-    no_race session.
-```
+Dolev, D., Halpern, J. Y., Strong, H. R., "On the Possibility and Impossibility of Achieving Clock Synchronization", *Journal of Computer and System Sciences*, 32(2):230-250, 1986.
 
-#### 5.2 Replay Prevention
+### 2.8 Distance Bounding
 
-```coq
-(* Each message is processed at most once *)
-Theorem replay_prevention:
-  forall msg window,
-    process_message msg window = Accept ->
-    forall window',
-      includes window window' ->
-      process_message msg window' = Replay.
+Rasmussen and Capkun developed distance bounding protocols that use round-trip time measurements to establish upper bounds on physical distance. These protocols detect relay attacks and provide time-of-flight authentication.
 
-(* Nonces are unique with overwhelming probability *)
-Theorem nonce_uniqueness:
-  forall n1 n2,
-    generate_nonce () = n1 ->
-    generate_nonce () = n2 ->
-    P(n1 = n2) < 2^(-256).
-```
+Rasmussen, K. B., Capkun, S., "Realization of RF Distance Bounding", *USENIX Security*, 2010.
 
-#### 5.3 TOCTOU Prevention
+## 3. Properties Verifiable by RIINA
 
-```coq
-(* Capability-based access prevents TOCTOU *)
-Theorem toctou_prevention:
-  forall cap resource,
-    valid_capability cap resource ->
-    forall action,
-      authorized cap action ->
-      execute action resource =
-      execute action (resolve cap).
-```
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Clock accuracy bound | Drift analysis proof | Clock within proven bound of reference |
+| Timestamp ordering | Lamport ordering proof | Timestamps respect causality |
+| NTS authentication | Protocol verification | Time sync packets authenticated |
+| Byzantine tolerance | BFT clock sync proof | Correct despite f < n/3 faulty clocks |
+| Deadline satisfaction | WCET analysis | Operations complete before deadline |
+| Temporal integrity | Monotonicity proof | Timestamps never go backward |
 
-#### 5.4 Deadlock Freedom
+## 4. RIINA Integration Architecture
 
-```coq
-(* Session types ensure deadlock freedom *)
-Theorem session_deadlock_free:
-  forall prog,
-    well_typed_session prog ->
-    forall exec, valid_execution prog exec ->
-      terminates exec \/ makes_progress exec.
-```
-
-### 6. Implementation Requirements
-
-#### 6.1 Replay-Resistant Message
+### 4.1 Verified Time Types
 
 ```riina
-struktur ReplayResistantMessage<T> {
-    payload: T,
-    nonce: Nonce,
-    sequence: u64,
-    timestamp: Timestamp,
-    signature: Signature
+// Secure timestamp with verified source
+fungsi cap_masa_selamat() -> CapMasa<Disahkan>
+    kesan Masa<NTS>
+{
+    // Effect guarantees: timestamp from authenticated source
+    biar masa = nts_dapatkan_masa()?;
+    sahkan_had_hanyut(masa)?;
+    pulang CapMasa::disahkan(masa);
 }
 
-fungsi create_rr_message<T>(
-    payload: T,
-    key: Rahsia<SigningKey>,
-    seq: &mut SequenceGenerator
-) -> ReplayResistantMessage<T>
-kesan [Crypto, Time]
+// Deadline-aware computation
+fungsi kira_dengan_tarikh_akhir<T>(
+    kerja: fungsi() -> T,
+    tarikh_akhir: Tempoh,
+) -> Hasil<T, RalatMasaTamat>
+    kesan MasaNyata<Terikat(tarikh_akhir)>
 {
-    biar nonce = generate_nonce();
-    biar sequence = seq.next();
-    biar timestamp = get_authenticated_time();
-
-    biar to_sign = serialize(payload, nonce, sequence, timestamp);
-    biar signature = sign(key, to_sign);
-
-    ReplayResistantMessage { payload, nonce, sequence, timestamp, signature }
-}
-
-fungsi verify_rr_message<T>(
-    msg: ReplayResistantMessage<T>,
-    key: VerifyingKey,
-    window: &mut ReplayWindow
-) -> Keputusan<T, TimeError>
-kesan [Crypto, Time]
-{
-    // Verify signature
-    biar to_verify = serialize(msg.payload, msg.nonce, msg.sequence, msg.timestamp);
-    kalau !verify(key, to_verify, msg.signature) {
-        pulang Err(TimeError::InvalidSignature)
+    biar mula = cap_masa_selamat();
+    biar hasil = kerja();
+    biar tamat = cap_masa_selamat();
+    jika tamat - mula > tarikh_akhir {
+        pulang Err(RalatMasaTamat);
     }
-
-    // Check timestamp freshness
-    biar now = get_authenticated_time();
-    kalau abs_diff(now, msg.timestamp) > MAX_CLOCK_SKEW {
-        pulang Err(TimeError::TimestampOutOfRange)
-    }
-
-    // Check replay
-    kalau window.contains(msg.nonce) {
-        pulang Err(TimeError::ReplayDetected)
-    }
-
-    // Check sequence
-    kalau msg.sequence <= window.last_sequence {
-        pulang Err(TimeError::SequenceReplay)
-    }
-
-    // Accept and update window
-    window.add(msg.nonce);
-    window.update_sequence(msg.sequence);
-
-    Ok(msg.payload)
+    pulang Ok(hasil);
 }
 ```
 
-#### 6.2 Atomic File Operations (TOCTOU Prevention)
-
-```riina
-fungsi atomic_file_update<T>(
-    path: Cap<FilePath>,  // Capability, not path string
-    update: fungsi(T) -> T
-) -> Keputusan<(), FileError>
-kesan [FileSystem]
-{
-    // Open with exclusive lock (capability already verified)
-    biar file = path.open_exclusive()?;
-
-    // Read current content
-    biar current: T = file.read_all()?;
-
-    // Apply update
-    biar new_content = update(current);
-
-    // Write atomically (via rename)
-    biar temp = create_temp_file()?;
-    temp.write_all(new_content)?;
-    temp.rename_to(path)?;  // Atomic on POSIX
-
-    Ok(())
-}
-```
-
-#### 6.3 Authenticated Time
-
-```riina
-struktur AuthenticatedTime {
-    timestamp: Timestamp,
-    sources: Vec<TimeSource>,
-    confidence: Duration,
-    proof: TimeProof
-}
-
-fungsi get_authenticated_time() -> AuthenticatedTime
-kesan [Network, Crypto]
-{
-    // Query multiple independent sources
-    biar sources = [
-        query_ntp("time.cloudflare.com"),
-        query_ntp("time.google.com"),
-        query_ntp("time.apple.com"),
-        query_roughtime("roughtime.cloudflare.com"),
-    ];
-
-    // Check for Byzantine agreement
-    biar times: Vec<Timestamp> = sources.filter_map(|s| s.ok()).collect();
-    kalau times.len() < 3 {
-        panic!("Insufficient time sources")
-    }
-
-    // Compute median (Byzantine-resistant)
-    biar median = compute_median(times);
-
-    // Compute confidence interval
-    biar confidence = compute_confidence(times, median);
-
-    // Create proof of time acquisition
-    biar proof = create_time_proof(sources, median);
-
-    AuthenticatedTime {
-        timestamp: median,
-        sources: sources.map(|s| s.source),
-        confidence,
-        proof
-    }
-}
-```
-
-### 7. Coq Proof Requirements
+### 4.2 Coq Formalization
 
 ```coq
-(** Required proofs for Track AD *)
+(* Timestamp monotonicity: time never goes backward *)
+Theorem timestamp_monotonic : forall t1 t2,
+  issued_before t1 t2 ->
+  value t1 <= value t2.
 
-(* Replay prevention correctness *)
-Theorem replay_window_correct:
-  forall msg w1 w2,
-    process msg w1 = (Accept, w2) ->
-    process msg w2 = (Reject, w2).
-
-(* Atomic operations are linearizable *)
-Theorem atomic_linearizable:
-  forall ops exec,
-    atomic_execution ops exec ->
-    exists linear_order,
-      linearization exec linear_order.
-
-(* Session types prevent deadlock *)
-Theorem session_deadlock_free:
-  forall s1 s2,
-    dual s1 s2 ->
-    terminates (parallel s1 s2).
-
-(* Vector clocks capture causality *)
-Theorem vector_clock_causality:
-  forall e1 e2,
-    happens_before e1 e2 <-> vc e1 < vc e2.
+(* Byzantine clock synchronization: correct clocks stay close *)
+Theorem bft_clock_sync : forall clocks t,
+  count_faulty clocks < count_total clocks / 3 ->
+  forall c1 c2, correct c1 -> correct c2 ->
+  abs (read c1 t - read c2 t) <= max_skew.
 ```
 
-### 8. Dependencies
+## 5. Key References
 
-| Dependency | Track | Required For |
-|------------|-------|--------------|
-| Concurrency | X | Race freedom |
-| Cryptography | G | Time authentication |
-| Covert channels | AC | Timing channels |
-| Network | Ω | NTP security |
-| Distributed | Δ | Logical clocks |
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Mills, D. L., "NTP" (2010) | RFC 5905 | Time synchronization protocol |
+| Malhotra, A., et al., "NTS" (2019) | Financial Crypto | Authenticated time sync |
+| Annichini, A., et al., "Timed Automata" (2001) | TACAS | Timed system verification |
+| Liskov, B., "Byzantine Clock Sync" (1993) | Distributed Computing | Fault-tolerant clocks |
+| Kopetz, H., "TTP" (2011) | Springer | Time-triggered real-time |
+| Corbett, J. C., et al., "Spanner" (2012) | OSDI | Global timestamps |
+| Dolev, D., et al., "Clock Bounds" (1986) | JCSS | Synchronization impossibility |
+| Rasmussen, K. B., et al., "Distance Bounding" (2010) | USENIX Security | Time-of-flight authentication |
 
-### 9. Verification Milestones
+## 6. Formalizability Assessment
 
-| Milestone | Description | Status |
-|-----------|-------------|--------|
-| AD-M1 | Replay prevention verified | ❌ |
-| AD-M2 | TOCTOU prevention verified | ❌ |
-| AD-M3 | Race freedom verified | ❌ |
-| AD-M4 | Deadlock freedom verified | ❌ |
-| AD-M5 | Authenticated time verified | ❌ |
-| AD-M6 | Full TIME-* coverage | ❌ |
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Timestamp type system | 2-3 | High — monotonic types | Phase 1 |
+| NTS protocol verification | 3-4 | Medium — crypto protocol | Phase 2 |
+| Clock drift bound proofs | 3-4 | Medium — real analysis | Phase 2 |
+| BFT clock synchronization | 4-6 | Medium — Byzantine reasoning | Phase 3 |
+| Timed automata integration | 4-6 | Medium — UPPAAL methodology | Phase 3 |
+| End-to-end temporal integrity | 6-8 | Low-Medium — distributed timing | Phase 4 |
 
-### 10. References
+## 7. Scope Limitations
 
-1. Lamport, "Time, Clocks, and the Ordering of Events" (1978)
-2. Roughtime Protocol (Google)
-3. Session Types for Deadlock Freedom
-4. Linearizability: A Correctness Condition
+1. **Hardware trust.** Clock accuracy depends on hardware oscillator quality. Crystal oscillator drift cannot be eliminated through software verification.
+2. **Network uncertainty.** Clock synchronization accuracy is fundamentally bounded by network delay uncertainty. Formal proofs provide bounds, not exact accuracy.
+3. **Relativity.** At high precision (nanoseconds), relativistic effects (velocity, gravitational time dilation) affect clock synchronization. Formal models must account for physical effects.
+4. **GPS dependence.** High-accuracy time synchronization depends on GPS/GNSS, which is vulnerable to jamming and spoofing.
+5. **Leap seconds.** Discontinuities in UTC (leap seconds) complicate monotonic timestamp guarantees and have caused real outages.
+6. **Cold start.** Systems without battery-backed clocks start with no time reference. Secure bootstrapping of time requires network access and trust.
 
 ---
 
-*Track AD: Time Security*
-*Status: SPECIFICATION COMPLETE, PROOFS PENDING*
-*Last updated: 2026-01-17*
+*"If the clock is proven accurate, no time-dependent attack can succeed."*

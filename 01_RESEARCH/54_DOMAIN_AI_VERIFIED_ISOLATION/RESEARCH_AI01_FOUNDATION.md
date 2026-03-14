@@ -1,257 +1,160 @@
-# RIINA Research Domain AI: Verified Isolation
+# AI-01: Verified Process Isolation — Provably Confined Execution
 
-## Document Control
-
-```
-Track: AI (Alpha-India)
-Version: 1.0.0
-Date: 2026-01-17
-Classification: FOUNDATIONAL
-Status: SPECIFICATION
-Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
-```
+**Domain:** AI — Verified Process Isolation
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Sandbox verification, process isolation proofs, capability confinement, compartmentalization, verified memory protection
 
 ---
 
-## AI-01: The "Isolation" Problem & The RIINA Solution
+## 1. Problem Statement
 
-### 1. The Existential Threat
+Process isolation is the fundamental security mechanism in modern operating systems: preventing one process from accessing another's memory, files, or resources. Yet isolation failures remain among the most devastating vulnerability classes. The Spectre attack demonstrated that speculative execution can bypass hardware isolation boundaries. Container escapes allow processes to break out of their sandboxes. Rowhammer attacks flip bits in adjacent memory rows, bypassing isolation at the physical level.
 
-Isolation boundaries are regularly broken:
-- Container escapes (runc, Docker vulnerabilities)
-- VM escapes (Venom, CloudBurst)
-- Sandbox escapes (Chrome, Firefox)
-- Process isolation bypasses (Spectre, Meltdown)
-- Privilege escalation across boundaries
+The challenge is providing mathematically rigorous isolation guarantees: proving that no execution path allows a confined process to access resources outside its sandbox. Traditional isolation mechanisms (page tables, address spaces, capabilities) are implemented in complex kernel code that is difficult to verify. RIINA integrates with verified microkernels (seL4) and capability architectures (CHERI) to provide proven isolation guarantees from the language level down to the hardware.
 
-**Current state:** Isolation is assumed but not proven.
+## 2. State of the Art
 
-### 2. The RIINA Solution: Verified Isolation
+### 2.1 seL4: Verified Microkernel
 
-```
-THEOREM isolation_guarantee:
-  ∀ compartment C1 C2, resource R:
-    Isolated(C1, C2) ∧ Owns(C1, R) →
-    ¬CanAccess(C2, R)
-```
+Klein et al. verified the seL4 microkernel, proving functional correctness, information flow security, and integrity properties. seL4's capability-based access control provides the foundation for verified process isolation.
 
-### 3. Core Components
+Klein, G., Elphinstone, K., Heiser, G., et al., "seL4: Formal Verification of an OS Kernel", *SOSP*, 2009.
 
-#### 3.1 Isolation Levels
+### 2.2 CHERI Capabilities
 
-```
-IsolationLevel ::=
-  | Process of ProcessIsolation
-  | Container of ContainerIsolation
-  | VM of VMIsolation
-  | Enclave of EnclaveIsolation
-  | Hardware of HardwareIsolation
+Watson et al. developed CHERI, extending RISC ISAs with hardware capabilities that provide fine-grained memory protection and compartmentalization. CHERI capabilities are unforgeable, bounds-checked pointers that enforce spatial memory safety in hardware.
 
-ProcessIsolation ::= {
-  address_space: Separated,
-  capabilities: CapabilitySet,
-  seccomp: SeccompFilter,
-  namespaces: NamespaceSet
-}
+Watson, R. N. M., Woodruff, J., Neumann, P. G., et al., "CHERI: A Hybrid Capability-System Architecture for Scalable Software Compartmentalization", *IEEE S&P*, 2015.
 
-ContainerIsolation ::= {
-  process: ProcessIsolation,
-  filesystem: FilesystemIsolation,
-  network: NetworkIsolation,
-  cgroups: ResourceLimits
-}
+### 2.3 Software Fault Isolation
 
-VMIsolation ::= {
-  hypervisor: HypervisorType,
-  memory: MemoryIsolation,
-  device: DeviceIsolation,
-  nested: Option<VMIsolation>
-}
+Morrisett et al. formalized software fault isolation (SFI) using a type-theoretic approach, proving that sandboxed code cannot access memory outside its designated region. The approach provides isolation without hardware support.
 
-EnclaveIsolation ::= {
-  technology: SGX | TrustZone | SEV,
-  attestation: AttestationPolicy,
-  sealing: SealingPolicy
-}
-```
+Morrisett, G., Tan, G., Tassarotti, J., Tristan, J.-B., Gan, E., "RockSalt: Better, Faster, Stronger SFI for the x86", *PLDI*, 2012.
 
-#### 3.2 Isolation Policies
+### 2.4 Original SFI
 
-```
-IsolationPolicy ::= {
-  domains: List<Domain>,
-  allowed_flows: List<(Domain, Domain, Channel)>,
-  denied_flows: List<(Domain, Domain)>,
-  default: Deny
-}
+Wahbe et al. introduced software fault isolation, using inline reference monitors to confine untrusted modules within a single address space. The technique partitions the address space into segments and rewrites code to enforce segment boundaries.
 
-Domain ::= {
-  id: DomainId,
-  level: IsolationLevel,
-  resources: Set<Resource>,
-  capabilities: CapabilitySet
-}
+Wahbe, R., Lucco, S., Anderson, T. E., Graham, S. L., "Efficient Software-Based Fault Isolation", *SOSP*, 1993.
 
-Channel ::=
-  | SharedMemory of SharedMemorySpec
-  | MessageQueue of MessageQueueSpec
-  | Socket of SocketSpec
-  | File of FileSpec
-```
+### 2.5 Native Client
 
-### 4. Formal Properties
+Sehr et al. developed Native Client (NaCl), a production SFI system for running untrusted native code in the Chrome browser. NaCl validates binaries against a restricted instruction set that prevents escape from the sandbox.
 
-```coq
-(* Complete memory isolation *)
-Theorem memory_isolation:
-  forall d1 d2 addr,
-    different_domains d1 d2 ->
-    In addr (address_space d1) ->
-    ~can_access d2 addr.
+Sehr, D., Muth, R., Biffle, C., Khimenko, V., Pasko, E., Schimpf, K., Yee, B., Chen, B., "Adapting Software Fault Isolation to Contemporary CPU Architectures", *USENIX Security*, 2010.
 
-(* No capability leakage *)
-Theorem capability_isolation:
-  forall d1 d2 cap,
-    different_domains d1 d2 ->
-    has_capability d1 cap ->
-    ~(authorized_transfer d1 d2 cap) ->
-    ~has_capability d2 cap.
+### 2.6 Nested Kernel
 
-(* Enclave integrity *)
-Theorem enclave_integrity:
-  forall enclave code data,
-    attested enclave (code, data) ->
-    forall adversary,
-      ~trusted adversary ->
-      ~can_modify adversary (enclave_memory enclave).
+Mao et al. developed the Nested Kernel architecture, which uses virtualization hardware to protect an inner kernel within the main kernel's address space. The nested kernel mediates all page table modifications, providing verified memory isolation.
 
-(* VM escape prevention *)
-Theorem vm_isolation:
-  forall vm1 vm2,
-    different_vms vm1 vm2 ->
-    forall resource,
-      owns vm1 resource ->
-      ~can_access vm2 resource.
-```
+Mao, Y., Chen, H., Zhou, D., Wang, X., Zeldovich, N., Kaashoek, M. F., "Software Fault Isolation with API Integrity and Multi-Principal Modules", *SOSP*, 2011.
 
-### 5. Implementation Requirements
+### 2.7 Light-weight Contexts
+
+Litton et al. developed light-weight contexts (lwC), providing in-process isolation through multiple virtual memory views within a single process. lwC enables efficient compartmentalization without the overhead of full process creation.
+
+Litton, J., Vahldiek-Oberwagner, A., Elnikety, E., Garg, D., Bhattacharjee, B., Druschel, P., "Light-Weight Contexts: An OS Abstraction for Safety and Performance", *OSDI*, 2016.
+
+### 2.8 SOAAP
+
+Gudka et al. developed SOAAP (Security-Oriented Analysis of Application Programs), a tool for analyzing compartmentalization opportunities in applications. SOAAP identifies privilege separation boundaries and evaluates compartmentalization strategies.
+
+Gudka, K., Watson, R. N. M., Anderson, J., Sherwin, D., Moore, S. W., Sherlock, P., "Exploring Compartmentalisation Hypotheses with SOAAP", *ASPLOS*, 2015.
+
+## 3. Properties Verifiable by RIINA
+
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Memory isolation | Capability confinement proof | Process cannot access memory outside its region |
+| Capability monotonicity | Type system proof | Capabilities can only be restricted, never amplified |
+| Sandbox escape prevention | Reachability analysis | No execution path crosses sandbox boundary |
+| IPC mediation | Channel type proof | All cross-boundary communication through verified channels |
+| Resource bounds | Capability-limited allocation | Process cannot exhaust system resources |
+| Information flow | Noninterference proof | No information flows from sandbox to outside |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Verified Sandbox Types
 
 ```riina
-struktur IsolatedCompartment {
-    id: CompartmentId,
-    level: IsolationLevel,
-    policy: IsolationPolicy,
-    resources: ResourceSet
+// Capability-confined sandbox
+fungsi laksana_dalam_kotak_pasir<T>(
+    kod: fungsi() -> T,
+    keupayaan: SetKeupayaan<Terhad>,
+) -> Hasil<T, RalatKotakPasir>
+    kesan KotakPasir<Terkurung>
+{
+    // Effect guarantees: execution confined to capability set
+    biar persekitaran = cipta_persekitaran_terkurung(keupayaan);
+    biar hasil = persekitaran.laksana(kod);
+    pulang Ok(hasil);
 }
 
-fungsi create_compartment(
-    level: IsolationLevel,
-    policy: IsolationPolicy
-) -> Keputusan<IsolatedCompartment, IsolationError>
-kesan [System, Capability]
+// Cross-sandbox communication via typed channel
+fungsi hantar_merentas_sempadan<T: Boleh_Siri>(
+    saluran: Saluran<T, SerahHak>,
+    mesej: T,
+) -> Hasil<(), RalatSaluran>
+    kesan IPC<Dimediasi>
 {
-    // Create based on isolation level
-    padan level {
-        IsolationLevel::Process(config) => {
-            // Create isolated process
-            biar pid = create_isolated_process(config)?;
-            // Apply seccomp filter
-            apply_seccomp(pid, config.seccomp)?;
-            // Setup namespaces
-            setup_namespaces(pid, config.namespaces)?;
-            // Restrict capabilities
-            restrict_capabilities(pid, config.capabilities)?;
-        },
-        IsolationLevel::Container(config) => {
-            // Create container with OCI runtime
-            biar container = create_container(config)?;
-            // Apply resource limits
-            apply_cgroups(container, config.cgroups)?;
-            // Setup filesystem isolation
-            setup_rootfs(container, config.filesystem)?;
-            // Setup network isolation
-            setup_network_namespace(container, config.network)?;
-        },
-        IsolationLevel::VM(config) => {
-            // Create VM via verified hypervisor
-            biar vm = create_vm(config)?;
-            // Setup memory isolation
-            setup_ept(vm, config.memory)?;
-            // Setup device isolation
-            setup_iommu(vm, config.device)?;
-        },
-        IsolationLevel::Enclave(config) => {
-            // Create enclave
-            biar enclave = create_enclave(config.technology)?;
-            // Setup attestation
-            setup_attestation(enclave, config.attestation)?;
-            // Setup sealing
-            setup_sealing(enclave, config.sealing)?;
-        }
-    }
-
-    Ok(IsolatedCompartment {
-        id: generate_compartment_id(),
-        level,
-        policy,
-        resources: ResourceSet::empty()
-    })
-}
-
-fungsi verify_isolation(
-    c1: &IsolatedCompartment,
-    c2: &IsolatedCompartment
-) -> Bool
-kesan [System]
-{
-    // Verify no shared resources (except explicitly allowed)
-    biar shared = c1.resources.intersection(&c2.resources);
-    untuk resource dalam shared {
-        kalau !policy_allows_sharing(&c1.policy, &c2.policy, resource) {
-            pulang salah
-        }
-    }
-
-    // Verify no capability leakage
-    untuk cap dalam c1.capabilities() {
-        kalau c2.has_capability(cap) && !policy_allows_transfer(&c1.policy, c1.id, c2.id, cap) {
-            pulang salah
-        }
-    }
-
-    betul
+    // All cross-boundary communication is mediated
+    sahkan_dasar_ipc(saluran, mesej)?;
+    saluran.hantar(mesej);
+    pulang Ok(());
 }
 ```
 
-### 6. Dependencies
+### 4.2 Coq Formalization
 
-| Dependency | Track | Required For |
-|------------|-------|--------------|
-| Hardware | S | Memory isolation |
-| Runtime guardian | U | Hypervisor |
-| Capabilities | D | Capability system |
-| Memory | W | Address space isolation |
+```coq
+(* Memory isolation: sandboxed process confined to region *)
+Theorem sandbox_confinement : forall process region addr,
+  sandboxed process region ->
+  accesses process addr ->
+  in_region addr region.
 
-### 7. Verification Milestones
+(* Capability monotonicity: derived capabilities cannot exceed parent *)
+Theorem cap_monotonicity : forall cap derived,
+  derives cap derived ->
+  permissions derived ⊆ permissions cap /\
+  bounds derived ⊆ bounds cap.
+```
 
-| Milestone | Description | Status |
-|-----------|-------------|--------|
-| AI-M1 | Process isolation verified | ❌ |
-| AI-M2 | Container isolation verified | ❌ |
-| AI-M3 | VM isolation verified | ❌ |
-| AI-M4 | Enclave isolation verified | ❌ |
-| AI-M5 | Composition theorem | ❌ |
+## 5. Key References
 
-### 8. References
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Klein, G., et al., "seL4" (2009) | SOSP | Verified microkernel |
+| Watson, R. N. M., et al., "CHERI" (2015) | IEEE S&P | Hardware capabilities |
+| Morrisett, G., et al., "RockSalt" (2012) | PLDI | Verified SFI |
+| Wahbe, R., et al., "SFI" (1993) | SOSP | Software fault isolation |
+| Sehr, D., et al., "Native Client" (2010) | USENIX Security | Production SFI |
+| Mao, Y., et al., "Nested Kernel" (2011) | SOSP | In-kernel isolation |
+| Litton, J., et al., "lwC" (2016) | OSDI | Light-weight contexts |
+| Gudka, K., et al., "SOAAP" (2015) | ASPLOS | Compartmentalization analysis |
 
-1. seL4: Formal Verification of an OS Kernel
-2. CertiKOS: Verified OS Kernel
-3. Intel SGX Developer Reference
-4. AMD SEV-SNP Architecture
-5. Kata Containers Architecture
+## 6. Formalizability Assessment
+
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Capability type system | 3-4 | High — seL4/CHERI methodology | Phase 1 |
+| Memory region proofs | 3-4 | High — spatial reasoning | Phase 1 |
+| SFI verification | 4-6 | Medium — binary analysis | Phase 2 |
+| IPC mediation proof | 3-4 | Medium — channel types | Phase 2 |
+| Cross-domain information flow | 4-6 | Medium — noninterference | Phase 3 |
+| End-to-end isolation proof | 6-8 | Low-Medium — hardware-software | Phase 4 |
+
+## 7. Scope Limitations
+
+1. **Hardware trust.** Software isolation ultimately relies on correct hardware (MMU, capabilities). Hardware bugs (Spectre, Meltdown, Rowhammer) can bypass all software isolation.
+2. **Side channels.** Isolated processes may still communicate through timing channels, cache behavior, and shared hardware resources.
+3. **Performance overhead.** Strong isolation adds overhead: context switches, capability checks, IPC marshalling. Some applications cannot tolerate this cost.
+4. **Shared state.** Modern applications share memory, files, and services. Complete isolation conflicts with the need for controlled sharing.
+5. **Covert channels.** Even with proven noninterference, covert channels through shared hardware resources may leak information.
+6. **Dynamic loading.** Dynamically loaded code (plugins, JIT compilation) complicates static isolation verification.
 
 ---
 
-*Track AI: Verified Isolation*
-*Status: SPECIFICATION COMPLETE, PROOFS PENDING*
-*Last updated: 2026-01-17*
+*"What is confined by proof cannot escape by any execution path."*

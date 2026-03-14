@@ -1,885 +1,149 @@
-# RIINA Research Domain λ (Lambda): Verified Mobile Platform
+# λ-01: Verified Mobile Platform Security — Provably Secure Mobile Computing
 
-**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
-
-```
-╔═══════════════════════════════════════════════════════════════════════════════════════════════╗
-║                                                                                               ║
-║    ██████╗ ██╗██╗███╗   ██╗ █████╗     ███╗   ███╗ ██████╗ ██████╗ ██╗██╗     ███████╗       ║
-║    ██╔══██╗██║██║████╗  ██║██╔══██╗    ████╗ ████║██╔═══██╗██╔══██╗██║██║     ██╔════╝       ║
-║    ██████╔╝██║██║██╔██╗ ██║███████║    ██╔████╔██║██║   ██║██████╔╝██║██║     █████╗         ║
-║    ██╔══██╗██║██║██║╚██╗██║██╔══██║    ██║╚██╔╝██║██║   ██║██╔══██╗██║██║     ██╔══╝         ║
-║    ██║  ██║██║██║██║ ╚████║██║  ██║    ██║ ╚═╝ ██║╚██████╔╝██████╔╝██║███████╗███████╗       ║
-║    ╚═╝  ╚═╝╚═╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝    ╚═╝     ╚═╝ ╚═════╝ ╚═════╝ ╚═╝╚══════╝╚══════╝       ║
-║                                                                                               ║
-║    TRACK λ: VERIFIED MOBILE PLATFORM                                                          ║
-║                                                                                               ║
-║    "Make it so simple a child could use it, so secure a nation could trust it."              ║
-║                                                                                               ║
-║    Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE                      ║
-║                                                                                               ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════╝
-```
+**Domain:** λ — Verified Mobile Platform Security
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Mobile OS verification, app sandboxing proofs, permission system verification, secure enclave integration, verified app lifecycle
 
 ---
 
-## Document Control
+## 1. Problem Statement
 
-| Property | Value |
-|----------|-------|
-| Document ID | RESEARCH-LAMBDA-MOBILE-PLATFORM |
-| Version | 1.0.0 |
-| Date | 2026-01-17 |
-| Domain | λ: Verified Mobile Platform |
-| Status | FOUNDATIONAL DEFINITION |
+Mobile platforms process humanity's most sensitive data — location, communications, biometrics, financial transactions — in environments with unique security challenges. Unlike servers in controlled data centers, mobile devices are carried everywhere, physically accessible to adversaries, connected to untrusted networks, and running third-party applications with varying trust levels. The Android permission system, iOS sandbox, and ARM TrustZone provide defense-in-depth, but each layer has been repeatedly compromised.
 
----
+Permission systems are particularly problematic: Android's original install-time permissions were too coarse, runtime permissions improved granularity but introduced complexity, and studies show that users grant permissions without understanding their implications. RIINA provides formally verified mobile security components where isolation guarantees, permission enforcement, and secure enclave interactions are proven correct.
 
-# λ-01: The Mobile Revolution
+## 2. State of the Art
 
-## 1. The Current State of Mobile Development
+### 2.1 seL4: Verified Microkernel
 
-### 1.1 The Fragmentation Problem
+seL4 is the world's first formally verified operating system kernel, proving functional correctness, information flow security, and worst-case execution time bounds. Its capability-based security model provides a foundation for verified mobile platform isolation, though seL4 targets embedded systems rather than smartphone-class platforms.
 
-| Platform | Languages | Frameworks | Build Systems |
-|----------|-----------|------------|---------------|
-| iOS | Swift, Objective-C | SwiftUI, UIKit | Xcode |
-| Android | Kotlin, Java | Jetpack Compose, Views | Gradle |
-| Cross-Platform | Dart, JS, C# | Flutter, React Native, MAUI | Various |
+Klein, G., Elphinstone, K., Heiser, G., Andronick, J., Cock, D., Derrin, P., Elkaduwe, D., Engelhardt, K., Kolanski, R., Norrish, M., Sewell, T., Tuch, H., Winwood, S., "seL4: Formal Verification of an OS Kernel", *SOSP*, 2009.
 
-**The Result:**
-- 2-3 codebases for one app
-- Different security models
-- Inconsistent UX
-- Double the bugs
-- Triple the maintenance
+### 2.2 Android Permission System Analysis
 
-### 1.2 App Store Requirements (2025)
+Felt et al. performed the first systematic analysis of Android's permission system, finding that one-third of applications are over-privileged. The study revealed fundamental design flaws in the permission model, including confusing permission names and lack of least-privilege enforcement.
 
-#### iOS App Store Requirements
+Felt, A. P., Chin, E., Hanna, S., Song, D., Wagner, D., "Android Permissions Demystified", *CCS*, 2011.
 
-| Requirement | Details | RIINA Status |
-|-------------|---------|--------------|
-| Xcode 15+ | Build with latest Xcode | TO BE GENERATED |
-| iOS 18 SDK | Target latest SDK | TO BE GENERATED |
-| Privacy Manifest | Declare API usage reasons | AUTO-GENERATED |
-| APNs Certificate | Push notification cert | INTEGRATED |
-| App Transport Security | HTTPS required | ENFORCED |
-| Privacy Labels | Nutrition labels for data | AUTO-GENERATED |
-| AI Transparency | Disclose AI/ML usage | AUTO-DECLARED |
-| In-App Purchase | StoreKit 2 integration | INTEGRATED |
-| App Review Guidelines | 100+ rules | COMPILE-TIME CHECK |
+### 2.3 TaintDroid: Information Flow Tracking
 
-#### Google Play Store Requirements
+TaintDroid provides dynamic taint tracking for Android, monitoring how sensitive data (location, contacts, IMEI) flows through applications and across process boundaries. It revealed that many popular applications leak sensitive data to advertising networks.
 
-| Requirement | Details | RIINA Status |
-|-------------|---------|--------------|
-| API Level 35+ | Target Android 15 | GENERATED |
-| AAB Format | Android App Bundle | AUTO-BUILD |
-| Billing Library 7.0+ | Google Play billing | INTEGRATED |
-| Play Integrity API | App attestation | INTEGRATED |
-| Data Safety Section | Privacy declarations | AUTO-GENERATED |
-| Permission Rationale | Explain permissions | AUTO-GENERATED |
-| Adaptive Icons | Icon format | GENERATED |
-| 64-bit Support | Required | NATIVE |
+Enck, W., Gilbert, P., Han, S., Tendulkar, V., Chun, B.-G., Cox, L. P., Jung, J., McDaniel, P., Sheth, A. N., "TaintDroid: An Information-Flow Tracking System for Realtime Privacy Monitoring on Smartphones", *ACM TOCS*, 32(2):5, 2014.
 
-### 1.3 OWASP MASVS Requirements
+### 2.4 CertiDroid
 
-| Category | Requirements | RIINA Implementation |
-|----------|--------------|---------------------|
-| MASVS-AUTH | Authentication mechanisms | Verified auth module |
-| MASVS-NETWORK | Secure communication | Tracks χ, η, ι |
-| MASVS-PLATFORM | Platform interaction | Native verified bindings |
-| MASVS-CODE | Code quality | Formal verification |
-| MASVS-RESILIENCE | Tampering resistance | Track T (Hermetic) |
-| MASVS-PRIVACY | Privacy controls | Tracks χ, η, ι |
+CertiDroid provides a formal model of the Android security architecture in Coq, verifying properties of the permission system, inter-component communication, and application sandboxing. The project demonstrates that formal verification of mobile platform security is feasible.
 
----
+Hua, J., "CertiDroid: A Certified Framework for Android Security", PhD Thesis, Yale University, 2017.
 
-## 2. The RIINA Mobile Vision
+### 2.5 ARM TrustZone
 
-### 2.1 ONE Language, EVERY Mobile Platform
+ARM TrustZone provides hardware-level isolation between a secure world and a normal world, enabling trusted execution environments (TEEs) on mobile devices. Formal verification of TrustZone-based systems ensures that the secure world correctly isolates sensitive operations from the potentially compromised normal world.
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────┐
-│                           RIINA MOBILE ARCHITECTURE                                  │
-├────────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                      │
-│   ┌─────────────────────────────────────────────────────────────────────────────┐  │
-│   │                         RIINA SOURCE CODE (.rii)                             │  │
-│   │                                                                              │  │
-│   │   komponen Aplikasi() -> Paparan {                                          │  │
-│   │       // Same code compiles to ALL platforms                                │  │
-│   │   }                                                                          │  │
-│   └─────────────────────────────────────────────────────────────────────────────┘  │
-│                                        │                                            │
-│                    ┌───────────────────┼───────────────────┐                       │
-│                    ▼                   ▼                   ▼                       │
-│   ┌────────────────────┐  ┌────────────────────┐  ┌────────────────────┐         │
-│   │    iOS COMPILER    │  │  ANDROID COMPILER  │  │    WEB COMPILER    │         │
-│   │                    │  │                    │  │                    │         │
-│   │  ┌──────────────┐  │  │  ┌──────────────┐  │  │  ┌──────────────┐  │         │
-│   │  │ SwiftUI Gen  │  │  │  │ Compose Gen  │  │  │  │  WASM Gen    │  │         │
-│   │  └──────────────┘  │  │  └──────────────┘  │  │  └──────────────┘  │         │
-│   │                    │  │                    │  │                    │         │
-│   │  ┌──────────────┐  │  │  ┌──────────────┐  │  │  ┌──────────────┐  │         │
-│   │  │ Xcode Proj   │  │  │  │ Gradle Proj  │  │  │  │ Static Site  │  │         │
-│   │  └──────────────┘  │  │  └──────────────┘  │  │  └──────────────┘  │         │
-│   └────────────────────┘  └────────────────────┘  └────────────────────┘         │
-│             │                       │                       │                     │
-│             ▼                       ▼                       ▼                     │
-│   ┌────────────────────┐  ┌────────────────────┐  ┌────────────────────┐         │
-│   │     iOS .ipa       │  │   Android .aab     │  │   PWA / Static     │         │
-│   │                    │  │                    │  │                    │         │
-│   │  • App Store Ready │  │  • Play Store Ready│  │  • Browser Ready   │         │
-│   │  • Signed          │  │  • Signed          │  │  • WASM Optimized  │         │
-│   │  • Notarized       │  │  • Verified        │  │  • Indexed         │         │
-│   └────────────────────┘  └────────────────────┘  └────────────────────┘         │
-│                                                                                      │
-└────────────────────────────────────────────────────────────────────────────────────┘
-```
+ARM Ltd., "ARM Security Technology: Building a Secure System using TrustZone Technology", ARM Technical Report, 2009.
 
-### 2.2 Compiler Targets
+### 2.6 SLAM and Static Driver Verification
 
-```coq
-(* RIINA Mobile Compilation Targets *)
-Inductive MobileTarget : Type :=
-  | iOS_SwiftUI : IOSVersion -> MobileTarget
-  | iOS_UIKit : IOSVersion -> MobileTarget
-  | Android_Compose : APILevel -> MobileTarget
-  | Android_Views : APILevel -> MobileTarget
-  | Web_WASM : WASMTarget -> MobileTarget
-  | Web_JS : JSTarget -> MobileTarget
-  | Desktop_Native : DesktopOS -> MobileTarget.
+The SLAM project at Microsoft Research pioneered the use of software model checking for verifying device drivers, which are critical components of mobile platform security. The approach uses counterexample-guided abstraction refinement (CEGAR) to verify safety properties.
 
-(* Compilation correctness theorem *)
-Theorem compilation_preserves_semantics : forall program target1 target2,
-  compiles program target1 ->
-  compiles program target2 ->
-  semantically_equivalent (compile program target1) (compile program target2).
-```
+Ball, T., Rajamani, S. K., "The SLAM Project: Debugging System Software via Static Analysis", *POPL*, 2002.
 
----
+### 2.7 Information Flow Control
 
-## 3. Complete Mobile Capability Matrix
+Sabelfeld and Myers provided the foundational survey of language-based information flow security, establishing the theoretical framework for enforcing confidentiality and integrity through type systems. This framework underpins RIINA's approach to mobile data protection.
 
-### 3.1 UI/UX Components
+Sabelfeld, A., Myers, A. C., "Language-Based Information-Flow Security", *IEEE Journal on Selected Areas in Communications*, 21(1):5-19, 2003.
 
-| Component | iOS | Android | Web | RIINA Syntax |
-|-----------|-----|---------|-----|--------------|
-| **Text** | UILabel/Text | TextView/Text | span/p | `<teks>` |
-| **Button** | UIButton/Button | Button | button | `<butang>` |
-| **Image** | UIImageView/Image | ImageView/Image | img | `<gambar>` |
-| **List** | UITableView/List | RecyclerView/LazyColumn | ul/virtual | `<senarai>` |
-| **Grid** | UICollectionView/LazyVGrid | LazyVerticalGrid | grid | `<grid>` |
-| **Input** | UITextField/TextField | EditText/TextField | input | `<input>` |
-| **TextArea** | UITextView | EditText(multiline) | textarea | `<kawasan_teks>` |
-| **Switch** | UISwitch/Toggle | Switch | checkbox | `<suis>` |
-| **Slider** | UISlider/Slider | SeekBar/Slider | range | `<penggelongsor>` |
-| **Picker** | UIPickerView | Spinner | select | `<pemilih>` |
-| **DatePicker** | UIDatePicker | DatePickerDialog | date input | `<pemilih_tarikh>` |
-| **Tab Bar** | UITabBarController | BottomNavigation | nav | `<tab>` |
-| **Navigation** | UINavigationController | NavHost | router | `<navigasi>` |
-| **Modal** | UIViewController(modal) | DialogFragment | dialog | `<modal>` |
-| **Sheet** | UISheetPresentationController | BottomSheetDialog | drawer | `<helaian>` |
-| **Alert** | UIAlertController | AlertDialog | alert | `<amaran>` |
-| **Toast** | Custom/SnackBar | Toast/Snackbar | toast | `<notis>` |
-| **Progress** | UIProgressView | ProgressBar | progress | `<kemajuan>` |
-| **Spinner** | UIActivityIndicator | ProgressBar(indeterminate) | spinner | `<pemutar>` |
-| **Map** | MKMapView | MapView | Leaflet/Google | `<peta>` |
-| **WebView** | WKWebView | WebView | iframe | `<web>` |
-| **Video** | AVPlayerViewController | ExoPlayer | video | `<video>` |
-| **Camera** | AVCaptureSession | CameraX | MediaDevices | `<kamera>` |
+### 2.8 Samsung Knox
 
-### 3.2 Platform APIs
+Samsung Knox implements a defense-in-depth approach to mobile security combining hardware root of trust, secure boot, kernel integrity monitoring, and containerization. The architecture demonstrates practical requirements for enterprise mobile security that must be addressed by any verified mobile platform.
+
+Samsung Electronics, "Samsung Knox Security Solution", Samsung White Paper, 2019.
+
+## 3. Properties Verifiable by RIINA
+
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| App sandbox isolation | Capability confinement proof | Each app confined to its capability set |
+| Permission enforcement | Type-level permission tracking | API access requires permission capability |
+| Data flow control | Information flow types | Sensitive data cannot flow to untrusted sinks |
+| Secure enclave correctness | Refinement proof | TEE operations verified against specification |
+| IPC security | Session types | Inter-process communication follows verified protocol |
+| Lifecycle security | State machine verification | App state transitions preserve security invariants |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Permission-Typed Mobile APIs
 
 ```riina
-// ===== DEVICE APIs =====
-
-// Camera access
-#[kebenaran(kamera)]
-fungsi ambil_gambar() -> Hasil<Gambar, RalatKamera> kesan KesanPeranti {
-    biar kamera = buka_kamera(KameraHadapan)?;
-    biar gambar = kamera.tangkap()?;
-    pulang Ok(gambar);
-}
-
-// Location access
-#[kebenaran(lokasi)]
-fungsi dapat_lokasi() -> Hasil<Lokasi, RalatLokasi> kesan KesanPeranti {
-    biar lokasi = minta_lokasi(KetepatanTinggi)?;
+// Mobile API with typed permissions
+fungsi baca_lokasi() -> Hasil<Lokasi, RalatKebenaran>
+    kesan Mudah_Alih<Kebenaran::Lokasi>
+{
+    // Effect requires Lokasi permission capability
+    biar lokasi = peranti.gps.baca();
     pulang Ok(lokasi);
 }
 
-// Biometric authentication
-#[kebenaran(biometrik)]
-fungsi sahkan_biometrik() -> Hasil<bool, RalatBiometrik> kesan KesanPeranti {
-    biar keputusan = minta_biometrik("Sahkan identiti")?;
-    pulang Ok(keputusan.berjaya);
-}
-
-// Push notifications
-#[kebenaran(notifikasi)]
-fungsi daftar_push() -> Hasil<TokenPush, RalatPush> kesan KesanRangkaian {
-    biar token = daftar_untuk_push()?;
-    pulang Ok(token);
-}
-
-// File system
-#[kebenaran(storan)]
-fungsi simpan_fail(nama: Teks, data: Bait) -> Hasil<(), RalatFail> kesan KesanStoran {
-    biar laluan = direktori_dokumen() / nama;
-    tulis_fail(laluan, data)?;
-    Ok(())
-}
-
-// Contacts access
-#[kebenaran(kenalan)]
-fungsi dapat_kenalan() -> Hasil<Senarai<Kenalan>, RalatKenalan> kesan KesanPeranti {
-    biar kenalan = baca_kenalan()?;
-    pulang Ok(kenalan);
-}
-
-// Calendar access
-#[kebenaran(kalendar)]
-fungsi tambah_acara(acara: Acara) -> Hasil<(), RalatKalendar> kesan KesanPeranti {
-    masukkan_ke_kalendar(acara)?;
-    Ok(())
-}
-
-// Bluetooth
-#[kebenaran(bluetooth)]
-fungsi imbas_peranti() -> Hasil<Senarai<PerantiBT>, RalatBT> kesan KesanPeranti {
-    biar peranti = imbas_bluetooth(tempoh: 10.saat)?;
-    pulang Ok(peranti);
-}
-
-// NFC
-#[kebenaran(nfc)]
-fungsi baca_nfc() -> Hasil<DataNFC, RalatNFC> kesan KesanPeranti {
-    biar data = baca_tag_nfc()?;
-    pulang Ok(data);
-}
-
-// Sensors
-fungsi dapat_pecutan() -> Hasil<Pecutan, RalatSensor> kesan KesanPeranti {
-    biar pecutan = baca_pecutan()?;
-    pulang Ok(pecutan);
-}
-
-// Haptics
-fungsi getar(corak: CorakGetaran) kesan KesanPeranti {
-    laksana_getaran(corak);
-}
-
-// App Lifecycle
-cangkuk bila_aktif() {
-    // App became active
-}
-
-cangkuk bila_latar() {
-    // App went to background
-}
-
-cangkuk bila_tamat() {
-    // App terminating
+// Permission-checked IPC
+fungsi hantar_ipc(sasaran: AppId, mesej: Rahsia<Teks>)
+    kesan KomunikasiAntaraProses<Disahkan>
+{
+    biar disulitkan = sulit(mesej);
+    saluran_ipc.hantar(sasaran, disulitkan);
 }
 ```
 
-### 3.3 Platform Services Integration
-
-```riina
-// ===== iOS SPECIFIC =====
-
-#[sasaran(ios)]
-modul ApplePay {
-    fungsi proses_bayaran(jumlah: Ringgit, item: Senarai<ItemBayaran>)
-        -> Hasil<Resit, RalatBayaran>
-        kesan KesanRangkaian + KesanPeranti
-    {
-        biar permintaan = PermintaanBayaran {
-            pedagang: MERCHANT_ID,
-            jumlah: jumlah,
-            mata_wang: "MYR",
-            item: item,
-        };
-
-        biar keputusan = PKPaymentAuthorizationController.minta(permintaan)?;
-        pulang Ok(keputusan.resit);
-    }
-}
-
-#[sasaran(ios)]
-modul Siri {
-    fungsi daftar_pintasan(pintasan: Pintasan) kesan KesanPeranti {
-        INVoiceShortcutCenter.kongsi.setShortcutSuggestions([pintasan.to_native()]);
-    }
-}
-
-#[sasaran(ios)]
-modul HealthKit {
-    #[kebenaran(kesihatan)]
-    fungsi baca_langkah(tarikh: Tarikh) -> Hasil<i32, RalatKesihatan> kesan KesanPeranti {
-        biar data = HKHealthStore.query_steps(tarikh)?;
-        pulang Ok(data.jumlah);
-    }
-}
-
-#[sasaran(ios)]
-modul iCloud {
-    fungsi segerak_data<T: Segerakkan>(data: T) -> Hasil<(), RalatCloud> kesan KesanRangkaian {
-        NSUbiquitousKeyValueStore.default.set(data.kunci, data.nilai);
-        NSUbiquitousKeyValueStore.default.synchronize();
-        Ok(())
-    }
-}
-
-// ===== ANDROID SPECIFIC =====
-
-#[sasaran(android)]
-modul GooglePay {
-    fungsi proses_bayaran(jumlah: Ringgit, item: Senarai<ItemBayaran>)
-        -> Hasil<Resit, RalatBayaran>
-        kesan KesanRangkaian + KesanPeranti
-    {
-        biar client = PaymentsClient.create(WalletOptions::builder().build());
-        biar permintaan = PaymentDataRequest::fromJson(bina_json_bayaran(jumlah, item));
-        biar keputusan = client.loadPaymentData(permintaan)?;
-        pulang Ok(keputusan.resit);
-    }
-}
-
-#[sasaran(android)]
-modul GoogleFit {
-    #[kebenaran(kesihatan)]
-    fungsi baca_langkah(tarikh: Tarikh) -> Hasil<i32, RalatKesihatan> kesan KesanPeranti {
-        biar response = Fitness.getHistoryClient(ctx, account)
-            .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)?;
-        pulang Ok(response.getDataPoints().sum());
-    }
-}
-
-#[sasaran(android)]
-modul FirebaseMessaging {
-    fungsi dapat_token() -> Hasil<Teks, RalatFCM> kesan KesanRangkaian {
-        biar token = FirebaseMessaging.getInstance().getToken()?;
-        pulang Ok(token);
-    }
-}
-
-#[sasaran(android)]
-modul PlayIntegrity {
-    fungsi sahkan_integriti() -> Hasil<bool, RalatIntegriti> kesan KesanRangkaian {
-        biar nonce = jana_nonce();
-        biar token = IntegrityManager.requestIntegrityToken(nonce)?;
-        biar keputusan = sahkan_dengan_pelayan(token)?;
-        pulang Ok(keputusan.sah);
-    }
-}
-```
-
----
-
-## 4. Security: OWASP MASVS Compliance
-
-### 4.1 Automatic Security Implementation
-
-```riina
-// ===== MASVS-AUTH: Authentication =====
-
-// Biometric + PIN fallback (MASVS-AUTH-1)
-#[pengesahan(biometrik | pin)]
-fungsi data_sensitif() -> RahsiaData {
-    // Only accessible after authentication
-}
-
-// Session timeout (MASVS-AUTH-2)
-#[sesi(tamat_selepas: 5.minit, tidak_aktif: 2.minit)]
-api ProtectedAPI {
-    // All endpoints require valid session
-}
-
-// Secure credential storage (MASVS-AUTH-3)
-biar token: Rahsia<Token> = simpan_selamat("auth_token", token);
-// iOS: Keychain with kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-// Android: EncryptedSharedPreferences with KEYSTORE
-
-// ===== MASVS-NETWORK: Network Security =====
-
-// Certificate pinning (MASVS-NETWORK-1)
-#[pin_sijil(sha256: "AAAA...", domain: "api.example.com")]
-api SecureAPI {
-    // All requests verify certificate
-}
-
-// No cleartext traffic (MASVS-NETWORK-2)
-// ENFORCED BY DEFAULT - compile error if HTTP used without explicit override
-
-// ===== MASVS-PLATFORM: Platform Security =====
-
-// IPC security (MASVS-PLATFORM-1)
-#[dedah_ios(url_scheme: "myapp", sahkan: betul)]
-#[dedah_android(intent_filter: "com.myapp.ACTION", eksport: salah)]
-fungsi kendalikan_pautan_dalam(url: Teks) -> Hasil<(), Ralat> {
-    // Only accepts validated deep links
-}
-
-// WebView security (MASVS-PLATFORM-2)
-komponen SelamatWebView(url: Teks) -> Paparan {
-    pulang
-        <web
-            url={url}
-            javascript={salah}  // Disabled by default
-            akses_fail={salah}
-            akses_kandungan={salah}
-        />;
-}
-
-// ===== MASVS-CODE: Code Quality =====
-
-// Anti-tampering (MASVS-CODE-1)
-#[sasaran(android)]
-fungsi semak_integriti() -> bool {
-    // Verify APK signature at runtime
-    PlayIntegrity::sahkan_integriti().unwrap_or(salah)
-}
-
-// Obfuscation (MASVS-CODE-2)
-// Automatic with -O2 builds
-
-// ===== MASVS-RESILIENCE: Resilience =====
-
-// Jailbreak/root detection (MASVS-RESILIENCE-1)
-fungsi persekitaran_selamat() -> bool {
-    !peranti_jailbreak() && !peranti_root() && !emulator()
-}
-
-// Anti-debugging (MASVS-RESILIENCE-2)
-#[anti_debug]
-fungsi logik_kritikal() {
-    // Crashes if debugger attached in release builds
-}
-
-// ===== MASVS-PRIVACY: Privacy =====
-
-// Minimal permissions (MASVS-PRIVACY-1)
-// Compiler warns if unused permissions declared
-
-// Data minimization (MASVS-PRIVACY-2)
-skema PenggunaTanpaRahsia = Pengguna.tanpa(kata_laluan, no_ic, lokasi);
-// Only expose what's needed
-```
-
-### 4.2 Privacy Manifest Auto-Generation
-
-```riina
-// RIINA automatically generates iOS Privacy Manifest from code analysis
-
-// This code:
-#[kebenaran(lokasi)]
-fungsi dapat_lokasi() -> Lokasi { ... }
-
-// Auto-generates in PrivacyInfo.xcprivacy:
-// {
-//   "NSPrivacyTracking": false,
-//   "NSPrivacyTrackingDomains": [],
-//   "NSPrivacyCollectedDataTypes": [
-//     {
-//       "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePreciseLocation",
-//       "NSPrivacyCollectedDataTypeLinked": false,
-//       "NSPrivacyCollectedDataTypeTracking": false,
-//       "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
-//     }
-//   ],
-//   "NSPrivacyAccessedAPITypes": [
-//     {
-//       "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryLocation",
-//       "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
-//     }
-//   ]
-// }
-```
-
----
-
-## 5. App Store Compliance
-
-### 5.1 iOS App Store Auto-Compliance
-
-```riina
-// riina.toml configuration generates compliant Xcode project
-
-[mudah_alih.ios]
-versi_minimum = "15.0"
-kategori = "Perniagaan"
-bahasa = ["ms", "en", "zh"]
-
-[mudah_alih.ios.kebenaran]
-kamera = "Untuk mengimbas kod QR"
-lokasi_semasa_guna = "Untuk mencari kedai berhampiran"
-notifikasi = "Untuk memaklumkan status pesanan"
-
-[mudah_alih.ios.keupayaan]
-apple_pay = betul
-log_masuk_apple = betul
-push_notifications = betul
-icloud = betul
-
-// Generated Info.plist includes:
-// - NSCameraUsageDescription (from kebenaran.kamera)
-// - NSLocationWhenInUseUsageDescription (from kebenaran.lokasi_semasa_guna)
-// - All required keys for App Store submission
-```
-
-### 5.2 Google Play Auto-Compliance
-
-```riina
-// riina.toml configuration generates compliant Android project
-
-[mudah_alih.android]
-api_sasaran = 35  // Android 15
-api_minimum = 26  // Android 8.0
-
-[mudah_alih.android.keselamatan_data]
-pengumpulan_lokasi = { dikumpul: betul, dikongsi: salah, diperlukan: salah }
-pengumpulan_nama = { dikumpul: betul, dikongsi: salah, diperlukan: betul }
-
-[mudah_alih.android.kebenaran]
-CAMERA = "Untuk mengimbas kod QR"
-ACCESS_FINE_LOCATION = "Untuk mencari kedai berhampiran"
-POST_NOTIFICATIONS = "Untuk memaklumkan status pesanan"
-
-// Generated AndroidManifest.xml includes:
-// - All permissions with maxSdkVersion where appropriate
-// - Feature requirements with required="false" for optional features
-// - Privacy declarations for Play Console Data Safety
-```
-
----
-
-## 6. In-App Purchase Integration
-
-### 6.1 Unified Purchase API
-
-```riina
-// Single API for iOS and Android purchases
-
-skema Produk {
-    id: Teks,
-    jenis: JenisProduk,
-    harga: Wang,
-}
-
-senum JenisProduk {
-    SekaliGuna,        // Consumable
-    Kekal,             // Non-consumable
-    Langganan(Tempoh), // Subscription
-}
-
-// Purchase flow
-fungsi beli(produk_id: Teks) -> Hasil<Pembelian, RalatBeli> kesan KesanBelian {
-    // 1. Verify product exists
-    biar produk = dapat_produk(produk_id)?;
-
-    // 2. Initiate purchase
-    biar transaksi = mulakan_pembelian(produk)?;
-
-    // 3. Verify with server (required by App Store/Play Store)
-    biar resit = sahkan_dengan_pelayan(transaksi.resit)?;
-
-    // 4. Grant entitlement
-    kalau resit.sah {
-        berikan_hak(produk.id);
-        pulang Ok(Pembelian { produk, transaksi, resit });
-    }
-
-    Ralat(RalatBeli::PengesahanGagal)
-}
-
-// Subscription management
-fungsi semak_langganan(produk_id: Teks) -> Hasil<StatusLangganan, Ralat> kesan KesanBelian {
-    biar status = semak_status_langganan(produk_id)?;
-
-    pulang Ok(StatusLangganan {
-        aktif: status.aktif,
-        tarikh_mula: status.tarikh_mula,
-        tarikh_tamat: status.tarikh_tamat,
-        akan_diperbaharui: status.auto_renew,
-    });
-}
-
-// Restore purchases
-fungsi pulih_pembelian() -> Hasil<Senarai<Pembelian>, Ralat> kesan KesanBelian {
-    biar pembelian = pulih_semua_pembelian()?;
-
-    untuk p dalam &pembelian {
-        berikan_hak(p.produk.id);
-    }
-
-    pulang Ok(pembelian);
-}
-```
-
----
-
-## 7. Offline-First Architecture
-
-### 7.1 Verified Offline Sync
+### 4.2 Coq Formalization
 
 ```coq
-(* Offline sync correctness *)
-Theorem offline_sync_correct : forall local_state server_state changes,
-  apply_changes local_state changes = local_state' ->
-  sync local_state' server_state = merged_state ->
-  (* No data loss *)
-  subset local_state'.data merged_state.data /\
-  (* No inconsistencies *)
-  consistent merged_state /\
-  (* Eventually consistent *)
-  eventually_equal local merged_state.
+(* App isolation: processes cannot access each other's memory *)
+Theorem app_isolation : forall app1 app2 addr,
+  app1 <> app2 ->
+  ~ can_access app1 (memory_region app2 addr).
+
+(* Permission enforcement: API calls require permission *)
+Theorem permission_required : forall app api result,
+  call_api app api = Ok result ->
+  has_permission app (required_permission api) = true.
 ```
 
-### 7.2 RIINA Offline Implementation
+## 5. Key References
 
-```riina
-// Mark schema as offline-capable
-#[luar_talian(
-    segerak: StrategiSegerak::TerakhirMenang,
-    buffer: 1000,  // Max pending changes
-    retry: Eksponen(min: 1.saat, max: 5.minit),
-)]
-skema Nota {
-    id: UUID @kunci_utama,
-    tajuk: Teks,
-    kandungan: Teks,
-    dikemas_kini: CapMasa @versi,
-}
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Klein, G., et al., "seL4" (2009) | SOSP | Verified OS kernel foundation |
+| Felt, A. P., et al., "Android Permissions" (2011) | CCS | Permission system analysis |
+| Enck, W., et al., "TaintDroid" (2014) | ACM TOCS | Mobile information flow tracking |
+| Hua, J., "CertiDroid" (2017) | Yale PhD Thesis | Formal Android security model |
+| Ball, T., Rajamani, S. K., "SLAM" (2002) | POPL | Software model checking |
+| Sabelfeld, A., Myers, A. C., "IFC" (2003) | IEEE JSAC | Information flow foundations |
+| ARM Ltd., "TrustZone" (2009) | ARM Technical Report | Hardware security isolation |
+| Samsung, "Knox" (2019) | Samsung White Paper | Enterprise mobile security |
 
-// Automatic offline queueing
-fungsi simpan_nota(nota: Nota) kesan KesanTulisLuarTalian {
-    // If online: save to server immediately
-    // If offline: queue for later sync
-    // Conflict resolution is automatic
+## 6. Formalizability Assessment
 
-    masukkan_atau_kemas_kini Nota {
-        id: nota.id,
-        tajuk: nota.tajuk,
-        kandungan: nota.kandungan,
-        dikemas_kini: sekarang(),
-    }
-}
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Permission type system | 3-4 | High — capability-based | Phase 1 |
+| App sandbox isolation proof | 4-6 | Medium — seL4 methodology | Phase 2 |
+| IPC session types | 3-4 | Medium — protocol verification | Phase 2 |
+| Information flow for mobile data | 4-6 | Medium — dynamic permissions | Phase 3 |
+| TEE integration verification | 4-6 | Medium — hardware interface | Phase 3 |
+| End-to-end mobile security proof | 6-8 | Low-Medium — complex composition | Phase 4 |
 
-// Monitor sync status
-komponen StatusSegerak() -> Paparan {
-    biar status = guna_status_segerak();
+## 7. Scope Limitations
 
-    pulang padan status {
-        Dalam_Talian => <ikon nama="awan_disegerak" />,
-        Luar_Talian(tertunda) => (
-            <baris>
-                <ikon nama="awan_luar_talian" />
-                <teks>{tertunda} belum disegerak</teks>
-            </baris>
-        ),
-        Menyegerak(kemajuan) => <kemajuan nilai={kemajuan} />,
-        Ralat(r) => <ikon nama="awan_ralat" warna="merah" />,
-    };
-}
-```
+1. **Hardware trust.** RIINA cannot verify the hardware itself. TrustZone, Secure Enclave, and baseband processor vulnerabilities are outside the verification boundary.
+2. **Third-party apps.** Verified platform security does not extend to unverified third-party applications. The platform can only enforce isolation boundaries.
+3. **Usability constraints.** Strong security (e.g., per-API-call permissions) conflicts with mobile UX expectations. Users reject excessive permission prompts.
+4. **Baseband isolation.** The cellular modem runs separate firmware with direct hardware access. Baseband vulnerabilities bypass all OS-level security.
+5. **Physical access.** Mobile devices are physically accessible to adversaries. Cold boot attacks, JTAG debugging, and chip-off attacks bypass software security.
+6. **Update ecosystem.** Android's fragmented update ecosystem means security patches reach devices slowly. Verified code must coexist with unpatched components.
 
 ---
 
-## 8. Performance: Native-Level Speed
-
-### 8.1 Compilation Strategy
-
-```
-RIINA Code → IR → Platform-Specific Optimization → Native Code
-
-┌─────────────────────────────────────────────────────────────────┐
-│                    COMPILATION PIPELINE                          │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│   ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐     │
-│   │ RIINA   │───▶│   IR    │───▶│  OPT    │───▶│ NATIVE  │     │
-│   │ Source  │    │ (typed) │    │         │    │ Output  │     │
-│   └─────────┘    └─────────┘    └─────────┘    └─────────┘     │
-│                                                                  │
-│   For iOS:                                                       │
-│   ┌─────────┐    ┌─────────┐    ┌─────────┐                     │
-│   │   IR    │───▶│ SwiftUI │───▶│  .swift │                     │
-│   └─────────┘    │ Codegen │    │  files  │                     │
-│                  └─────────┘    └─────────┘                     │
-│                                                                  │
-│   For Android:                                                   │
-│   ┌─────────┐    ┌─────────┐    ┌─────────┐                     │
-│   │   IR    │───▶│ Compose │───▶│  .kt    │                     │
-│   └─────────┘    │ Codegen │    │  files  │                     │
-│                  └─────────┘    └─────────┘                     │
-│                                                                  │
-│   For Web:                                                       │
-│   ┌─────────┐    ┌─────────┐    ┌─────────┐                     │
-│   │   IR    │───▶│  WASM   │───▶│  .wasm  │                     │
-│   └─────────┘    │ Codegen │    │  files  │                     │
-│                  └─────────┘    └─────────┘                     │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 8.2 Performance Guarantees
-
-| Metric | Target | Verification Method |
-|--------|--------|---------------------|
-| Cold Start | <200ms | Benchmark suite |
-| Frame Rate | 60fps constant | No jank proofs |
-| Memory | 50% less than RN | Allocation analysis |
-| Bundle Size | <5MB base | Tree-shaking proofs |
-| Battery | Minimal wake | Power profiling |
-
----
-
-## 9. Accessibility: Mandatory, Not Optional
-
-### 9.1 Built-in Accessibility
-
-```riina
-// Accessibility is REQUIRED, not optional
-
-komponen Butang(label: Teks, pada_klik: () -> kesan UI) -> Paparan {
-    pulang
-        <butang
-            pada_klik={pada_klik}
-            aria_label={label}  // REQUIRED - compile error if missing
-            peranan="butang"    // REQUIRED
-        >
-            {label}
-        </butang>;
-}
-
-// Semantic structure required
-komponen HalamanUtama() -> Paparan {
-    pulang
-        <halaman
-            tajuk="Utama"           // Required for screen readers
-            bahasa="ms"             // Required for correct pronunciation
-        >
-            <pengepala>             // Semantic header
-                <h1>Selamat Datang</h1>
-            </pengepala>
-
-            <utama>                 // Semantic main content
-                <artikel>
-                    <h2>Berita Terkini</h2>
-                    <p>...</p>
-                </artikel>
-            </utama>
-
-            <kaki>                  // Semantic footer
-                <nav>...</nav>
-            </kaki>
-        </halaman>;
-}
-
-// Dynamic type support (automatic)
-<teks>Hello</teks>  // Automatically scales with system font size
-
-// Color contrast (compile-time check)
-gaya butang: Gaya {
-    warna_latar: Warna::Biru(500),
-    warna_teks: Warna::Putih,  // Contrast ratio checked at compile time
-    // ERROR if contrast < 4.5:1 for normal text
-}
-```
-
----
-
-## 10. Implementation Roadmap
-
-### Phase 1: Core Mobile (12 months)
-- [ ] iOS SwiftUI code generator
-- [ ] Android Jetpack Compose code generator
-- [ ] Platform API bindings (camera, location, etc.)
-- [ ] Basic UI component library
-
-### Phase 2: Platform Integration (6 months)
-- [ ] In-app purchase (StoreKit 2, Play Billing)
-- [ ] Push notifications (APNs, FCM)
-- [ ] Deep linking
-- [ ] App Store submission automation
-
-### Phase 3: Advanced Features (6 months)
-- [ ] Offline-first sync
-- [ ] Background processing
-- [ ] Widget/Watch extensions
-- [ ] AR/VR support
-
-### Phase 4: Optimization (ongoing)
-- [ ] Performance profiling
-- [ ] Bundle optimization
-- [ ] Energy profiling
-- [ ] Accessibility auditing
-
----
-
-## 11. Gap Analysis Summary
-
-### 11.1 What RIINA Currently Has
-
-| Capability | Status |
-|------------|--------|
-| Core language | ✅ In development |
-| Type system | ✅ In development |
-| Security types | ✅ Designed |
-| Effect system | ✅ Designed |
-
-### 11.2 What Track λ Must Add
-
-| Capability | Status | Priority |
-|------------|--------|----------|
-| iOS code generator | ❌ NOT STARTED | P0 |
-| Android code generator | ❌ NOT STARTED | P0 |
-| UI component system | ❌ NOT STARTED | P0 |
-| Platform API bindings | ❌ NOT STARTED | P0 |
-| In-app purchase | ❌ NOT STARTED | P1 |
-| Push notifications | ❌ NOT STARTED | P1 |
-| Offline sync | ❌ NOT STARTED | P1 |
-| App Store automation | ❌ NOT STARTED | P2 |
-
-### 11.3 Threats Made Obsolete
-
-| Threat | Status | Mechanism |
-|--------|--------|-----------|
-| Cross-platform inconsistency | OBSOLETE | Single codebase |
-| Type mismatches at boundaries | OBSOLETE | End-to-end types |
-| Security vulnerabilities | OBSOLETE | Verified by construction |
-| Privacy violations | OBSOLETE | Tracks χ, η, ι |
-| Store rejection | OBSOLETE | Auto-compliance |
-| Accessibility failures | OBSOLETE | Mandatory checks |
-
----
-
-## 12. Coq Formalization
-
-### 12.1 Files to Create
-
-| File | Purpose | Lines (est) |
-|------|---------|-------------|
-| `MobileTarget.v` | Compilation targets | 200 |
-| `UIComponents.v` | UI component semantics | 500 |
-| `PlatformAPIs.v` | Platform API contracts | 400 |
-| `OfflineSync.v` | Sync correctness | 600 |
-| `SecurityMASVS.v` | MASVS compliance proofs | 500 |
-| `AccessibilityProofs.v` | Accessibility requirements | 300 |
-| `StoreCompliance.v` | App store requirements | 400 |
-
-**Total: ~2,900 lines of Coq**
-
----
-
-**"One language. Every platform. Security proven."**
-
-*Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE*
-
-*RIINA: Rigorous Immutable Invariant — Normalized Axiom*
-
-*QED Eternum.*
+*"A mobile device that cannot leak your data cannot betray your privacy."*

@@ -1,607 +1,139 @@
-# RIINA Research Domain Δ (Delta): Verified Distribution
+# Δ-01: Verified Distribution — Consensus PROVEN, Not Tested
 
-**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
-
-## Document Control
-
-| Property | Value |
-|----------|-------|
-| Document ID | RESEARCH-DELTA-VERIFIED-DISTRIBUTION |
-| Version | 1.0.0 |
-| Date | 2026-01-15 |
-| Domain | Δ: Verified Distribution |
-| Mode | ULTRA KIASU | PARANOID | ZERO TRUST |
-| Status | FOUNDATIONAL DEFINITION |
+**Domain:** Δ — Verified Distribution
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Verified consensus protocols, Byzantine fault tolerance, distributed effect types
 
 ---
 
-# Δ-01: The "Distributed Consensus" Problem & The RIINA Solution
+## 1. Problem Statement
 
-## 1. The Existential Threat
+Distributed systems fail in ways that defy intuition. Split-brain scenarios cause two leaders to simultaneously believe they are authoritative, Byzantine faults allow malicious nodes to corrupt consensus, network partitions delay or lose messages indefinitely, and clock skew eliminates any global notion of "now." Real-world failures include MongoDB data loss from replication bugs (2017), Amazon S3 outages from cascading failures (2017), GitHub split-brain during failover (2018), and Cloudflare backbone partition (2020).
 
-**Context:**
-Modern systems are distributed. No single machine can handle global scale.
+The CAP theorem (Brewer, Gilbert-Lynch) proves that no distributed system can simultaneously guarantee consistency, availability, and partition tolerance. RIINA cannot change this fundamental limit but can prove which guarantees hold under which conditions, eliminating ambiguity about system behavior during failures.
 
-**The Reality:**
-Distributed systems fail in ways that defy intuition:
-- **Split brain:** Two leaders both think they're authoritative
-- **Byzantine faults:** Nodes lie, collude, or act maliciously
-- **Network partitions:** Messages delayed or lost indefinitely
-- **Clock skew:** No global notion of "now"
+## 2. State of the Art
 
-**The Graveyard:**
-- MongoDB data loss (2017): Replication bug
-- Amazon S3 outage (2017): Cascading failure
-- GitHub (2018): Split-brain during failover
-- Cloudflare (2020): Backbone partition
+### 2.1 IronFleet: Verified Distributed Systems
 
-**The RIINA Goal:**
-Distributed consensus where:
-- **Safety is PROVEN** — No split brain, ever
-- **Liveness is PROVEN** — System makes progress
-- **Byzantine tolerance is PROVEN** — Handles malicious nodes
-- **Implementation matches spec** — IronFleet methodology
+IronFleet, from Microsoft Research, provides the first methodology for building practical, verified distributed systems. IronFleet verified implementations of a Paxos-based replicated state machine and a sharded key-value store, proving both safety (linearizability) and liveness (eventual progress). The key innovation is a layered refinement approach that separates protocol-level reasoning from implementation-level details.
 
-## 2. The Solution: IronFleet-Style Verified Distribution
+Hawblitzel, C., Howell, J., Kapritsos, M., Lorch, J. R., Parno, B., Roberts, M. L., Setty, S., Zill, B., "IronFleet: Proving Practical Distributed Systems Correct", *SOSP*, 2015.
 
-### 2.1 The IronFleet Methodology
+### 2.2 Verdi: Verified Distributed Systems Framework
 
-From Microsoft Research's IronFleet project:
+Verdi provides a Coq framework for implementing and verifying distributed systems. Its "verified system transformers" add fault tolerance to single-node implementations: a verified Raft implementation transforms a simple state machine into a replicated, fault-tolerant system. Each transformer preserves the original system's properties while adding new guarantees.
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    IRONFLEET VERIFICATION STRATEGY                   │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Layer 3: Distributed Protocol Spec (TLA-style)                     │
-│           │                                                          │
-│           │ State machine refinement                                │
-│           │ Proves: safety, liveness at protocol level              │
-│           ▼                                                          │
-│  Layer 2: Host State Machine                                        │
-│           │                                                          │
-│           │ Floyd-Hoare verification                                │
-│           │ Proves: implementation matches host spec                │
-│           ▼                                                          │
-│  Layer 1: Implementation Code                                       │
-│           │                                                          │
-│           │ Type checking + contracts                               │
-│           ▼                                                          │
-│  Layer 0: Executable Binary                                         │
-│                                                                      │
-│  KEY INSIGHT: Concurrency contained at Layer 3                      │
-│               Implementation verified without concurrency           │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+Wilcox, J. R., et al., "Verdi: A Framework for Implementing and Formally Verifying Distributed Systems", *PLDI*, 2015.
 
-### 2.2 RIINA Distributed Architecture
+### 2.3 Chapar: Verified Causal Consistency
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                 RIINA VERIFIED DISTRIBUTED LAYER                     │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌─────────────────────────────────────────────────────────────┐    │
-│  │                    Consensus Layer                           │    │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │    │
-│  │  │    Raft     │  │   Paxos     │  │      BFT            │  │    │
-│  │  │  (Proven)   │  │  (Proven)   │  │    (Proven)         │  │    │
-│  │  └─────────────┘  └─────────────┘  └─────────────────────┘  │    │
-│  └─────────────────────────────────────────────────────────────┘    │
-│                              │                                       │
-│  ┌───────────────────────────▼───────────────────────────────────┐  │
-│  │                    Replication Layer                           │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐   │  │
-│  │  │  Log-based  │  │   State     │  │    CRDTs            │   │  │
-│  │  │ Replication │  │  Machine    │  │  (Eventually        │   │  │
-│  │  │  (Proven)   │  │  (Proven)   │  │   Consistent)       │   │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────────────┘   │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│                              │                                       │
-│  ┌───────────────────────────▼───────────────────────────────────┐  │
-│  │                    Membership Layer                            │  │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐   │  │
-│  │  │  Failure    │  │   Leader    │  │    View             │   │  │
-│  │  │ Detection   │  │  Election   │  │   Change            │   │  │
-│  │  │  (Proven)   │  │  (Proven)   │  │  (Proven)           │   │  │
-│  │  └─────────────┘  └─────────────┘  └─────────────────────┘   │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+Chapar provides verified implementations of causally consistent distributed key-value stores. The project formalizes causal consistency in Coq and proves that the implementation satisfies the specification under arbitrary network delays and reordering.
 
-## 3. Verified Raft Consensus
+Lesani, M., Bell, C. J., Chlipala, A., "Chapar: Certified Causally Consistent Distributed Key-Value Stores", *POPL*, 2016.
 
-### 3.1 Raft Overview
+### 2.4 Disel: Verified Distributed Separation Logic
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         RAFT CONSENSUS                               │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Normal Operation:                                                   │
-│                                                                      │
-│  Client ──request──► Leader ──AppendEntries──► Followers            │
-│                         │                         │                  │
-│                         │◄────────ACK────────────│                  │
-│                         │                         │                  │
-│                         │── commit ──────────────►│                  │
-│         ◄───response────│                         │                  │
-│                                                                      │
-│  Leader Election:                                                    │
-│                                                                      │
-│  Follower ──timeout──► Candidate ──RequestVote──► All Nodes         │
-│                             │                        │               │
-│                             │◄───────Votes──────────│               │
-│                             │                        │               │
-│                             │── becomes Leader if majority          │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+Disel combines separation logic with distributed systems verification, enabling modular reasoning about distributed protocols. Programs verified in Disel can be composed while preserving their individual guarantees.
 
-### 3.2 Raft Safety Proof in Coq
+Sergey, I., Wilcox, J. R., Tatlock, Z., "Programming and Proving with Distributed Protocols", *POPL*, 2018.
 
-```coq
-(* Raft state *)
-Record RaftState := {
-  current_term : nat;
-  voted_for : option NodeId;
-  log : list LogEntry;
-  commit_index : nat;
-  role : Role;  (* Follower | Candidate | Leader *)
-}.
+### 2.5 TLA+ and Formal Specification
 
-(* Log entry *)
-Record LogEntry := {
-  term : nat;
-  index : nat;
-  command : Command;
-}.
+TLA+ (Temporal Logic of Actions), developed by Leslie Lamport, is the most widely used formal specification language for distributed systems. Amazon Web Services uses TLA+ to specify and model-check its core distributed protocols (DynamoDB, S3, EBS). While TLA+ provides model checking rather than full proof, it catches design-level bugs before implementation.
 
-(* Election Safety: At most one leader per term *)
-Theorem election_safety : forall nodes term,
-  count (fun n => is_leader n /\ n.current_term = term) nodes <= 1.
-Proof.
-  (* A node only votes once per term *)
-  (* A leader needs majority votes *)
-  (* Two majorities must overlap *)
-  (* Overlapping node can only vote for one candidate *)
-Qed.
+Newcombe, C., Rath, T., Zhang, F., Munteanu, B., Brooker, M., Deardeuff, M., "How Amazon Web Services Uses Formal Methods", *Communications of the ACM*, 58(4):66-73, 2015.
 
-(* Leader Append-Only: Leader never overwrites or deletes log entries *)
-Theorem leader_append_only : forall leader log log' entry,
-  leader.role = Leader ->
-  leader.log = log ->
-  step leader = leader' ->
-  leader'.log = log' ->
-  (* log is a prefix of log' OR log' = log *)
-  prefix log log' \/ log' = log.
-Proof.
-  (* Leader only appends, never deletes *)
-Qed.
+### 2.6 Byzantine Fault Tolerance
 
-(* Log Matching: If two logs contain entry with same index and term,
-   logs are identical up to that index *)
-Theorem log_matching : forall n1 n2 idx term,
-  get_entry n1.log idx = Some {| term := term; index := idx |} ->
-  get_entry n2.log idx = Some {| term := term; index := idx |} ->
-  forall i, i <= idx ->
-    get_entry n1.log i = get_entry n2.log i.
-Proof.
-  (* Induction on log replication protocol *)
-  (* AppendEntries RPC checks consistency *)
-Qed.
+Byzantine fault tolerance (BFT) handles the worst case: nodes that behave arbitrarily (including maliciously). Castro and Liskov's PBFT provided the first practical BFT protocol, and subsequent work (HotStuff, Tendermint) improved performance. Formal verification of BFT protocols is particularly important because their correctness arguments are subtle and error-prone.
 
-(* State Machine Safety: If a server has applied entry at index,
-   no other server will apply different entry at that index *)
-Theorem state_machine_safety : forall n1 n2 idx cmd1 cmd2,
-  applied n1 idx cmd1 ->
-  applied n2 idx cmd2 ->
-  cmd1 = cmd2.
-Proof.
-  (* Committed entries must be in majority *)
-  (* Log matching ensures same entry *)
-  (* Therefore same command applied *)
-Qed.
-```
+Castro, M., Liskov, B., "Practical Byzantine Fault Tolerance and Proactive Recovery", *ACM Transactions on Computer Systems*, 20(4):398-461, 2002.
 
-### 3.3 Raft Liveness Proof
+### 2.7 Raft: Understandable Consensus
 
-```coq
-(* Eventually, the system makes progress (with assumptions) *)
+Raft was designed as an understandable alternative to Paxos. Its simplicity makes it more amenable to formal verification. The Verdi project verified a Raft implementation in Coq, and TLA+ specifications of Raft have been extensively model-checked.
 
-(* Assumption: Partial synchrony - eventually messages delivered in time *)
-Axiom partial_synchrony : exists GST : Time,
-  forall t, t > GST ->
-    forall msg, sent msg t -> delivered msg (t + delta).
+Ongaro, D., Ousterhout, J., "In Search of an Understandable Consensus Algorithm", *USENIX ATC*, 2014.
 
-(* Assumption: Majority of nodes are correct *)
-Axiom majority_correct :
-  count correct_nodes nodes > length nodes / 2.
+### 2.8 Distributed Systems Testing: FoundationDB and Jepsen
 
-(* Liveness: Eventually a leader is elected *)
-Theorem leader_election_liveness :
-  partial_synchrony ->
-  majority_correct ->
-  eventually (exists leader, is_leader leader).
-Proof.
-  (* After GST, timeouts are reliable *)
-  (* Some node will timeout first and become candidate *)
-  (* With majority responding, election succeeds *)
-Qed.
+FoundationDB pioneered deterministic simulation testing for distributed systems, running millions of simulated failure scenarios to find bugs. Jepsen (Kyle Kingsbury) provides black-box testing of distributed databases for consistency violations. While not formal verification, these tools complement formal methods by finding implementation-level bugs.
 
-(* Liveness: Client requests eventually committed *)
-Theorem client_liveness : forall request,
-  partial_synchrony ->
-  majority_correct ->
-  submitted request ->
-  eventually (committed request).
-Proof.
-  (* Leader elected (above) *)
-  (* Leader replicates to majority *)
-  (* Entry committed when majority acknowledge *)
-Qed.
-```
+## 3. Properties Verifiable by RIINA
 
-## 4. Byzantine Fault Tolerance (BFT)
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Consensus safety | Refinement proof against spec | Verified Raft/Paxos implementation |
+| Consensus liveness | Temporal logic proof | Eventually progress under fairness |
+| Linearizability | Simulation proof | Distributed operations equivalent to sequential |
+| Byzantine tolerance | BFT protocol proof | Correct despite f < n/3 malicious nodes |
+| Causal consistency | Causal ordering proof | Messages delivered in causal order |
+| Partition handling | CAP analysis | Explicit guarantees under network partition |
 
-### 4.1 The Byzantine Generals Problem
+## 4. RIINA Integration Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    BYZANTINE FAULT TOLERANCE                         │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Problem: Some nodes may be MALICIOUS                               │
-│                                                                      │
-│  ┌─────────┐     "Attack!"     ┌─────────┐                         │
-│  │General A│──────────────────►│General B│                         │
-│  └─────────┘                   └─────────┘                         │
-│       │                             │                               │
-│       │"Attack!"          "Retreat!"│                               │
-│       ▼                             ▼                               │
-│  ┌─────────────────────────────────────┐                           │
-│  │         General C (Byzantine)        │                           │
-│  │    Sends different messages to       │                           │
-│  │    different generals!               │                           │
-│  └─────────────────────────────────────┘                           │
-│                                                                      │
-│  Solution: Need 3f+1 nodes to tolerate f Byzantine faults           │
-│                                                                      │
-│  RIINA: Formal proof that consensus reached despite f < n/3 bad     │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### 4.2 PBFT (Practical Byzantine Fault Tolerance)
-
-```coq
-(* PBFT phases *)
-Inductive PBFTPhase :=
-  | PrePrepare   (* Leader proposes *)
-  | Prepare      (* Nodes acknowledge proposal *)
-  | Commit       (* Nodes commit to proposal *)
-  | Reply.       (* Response to client *)
-
-(* PBFT message *)
-Record PBFTMessage := {
-  phase : PBFTPhase;
-  view : nat;
-  sequence : nat;
-  digest : bytes;
-  signature : Signature;
-}.
-
-(* A node is prepared if it has 2f matching prepares *)
-Definition prepared (node : Node) (v : nat) (n : nat) (d : bytes) : Prop :=
-  count (matching_prepare v n d) node.messages >= 2 * f.
-
-(* A node is committed if it has 2f+1 matching commits *)
-Definition committed (node : Node) (v : nat) (n : nat) (d : bytes) : Prop :=
-  count (matching_commit v n d) node.messages >= 2 * f + 1.
-
-(* Safety: No two correct nodes commit different values *)
-Theorem pbft_safety : forall n1 n2 v seq d1 d2,
-  correct n1 -> correct n2 ->
-  committed n1 v seq d1 ->
-  committed n2 v seq d2 ->
-  d1 = d2.
-Proof.
-  (* Both need 2f+1 commits *)
-  (* At most f are Byzantine *)
-  (* So at least f+1 correct nodes committed to each *)
-  (* Two sets of f+1 correct nodes must overlap *)
-  (* Correct nodes only commit to one value *)
-  (* Therefore d1 = d2 *)
-Qed.
-
-(* Byzantine fault bound *)
-Theorem bft_bound : forall n f,
-  tolerates_byzantine_faults n f <-> n >= 3 * f + 1.
-```
-
-### 4.3 RIINA BFT Implementation
+### 4.1 Distributed Effect Types
 
 ```riina
-// Byzantine Fault Tolerant consensus
-bentuk NodBFT {
-    id: IdNod,
-    pandangan: u64,
-    jujukan: u64,
-    log: Senarai<Entri>,
-    mesej: Senarai<MesejBFT>,
-    f: usize,  // Maximum Byzantine faults tolerated
-}
-
-impl NodBFT {
-    // Primary proposes (pre-prepare)
-    fungsi cadang(&mut self, permintaan: Permintaan)
-        memerlukan self.adalah_pemimpin()
-        kesan KesanRangkaian
-    {
-        biar ringkasan = sha256(&permintaan);
-        biar mesej = MesejBFT::PraSedia {
-            pandangan: self.pandangan,
-            jujukan: self.jujukan,
-            ringkasan,
-            tandatangan: self.tanda(&ringkasan),
-        };
-        self.siar(mesej);
-        self.jujukan += 1;
-    }
-
-    // Node prepares after receiving valid pre-prepare
-    fungsi sedia(&mut self, pra_sedia: MesejBFT::PraSedia)
-        memerlukan self.sah_pra_sedia(&pra_sedia)
-        kesan KesanRangkaian
-    {
-        biar mesej = MesejBFT::Sedia {
-            pandangan: pra_sedia.pandangan,
-            jujukan: pra_sedia.jujukan,
-            ringkasan: pra_sedia.ringkasan,
-            id: self.id,
-            tandatangan: self.tanda(&pra_sedia.ringkasan),
-        };
-        self.siar(mesej);
-    }
-
-    // Check if prepared (2f matching prepares)
-    fungsi disediakan(&self, p: u64, j: u64, r: &Bait) -> bool {
-        biar kiraan = self.mesej.iter()
-            .tapis(|m| padan m {
-                MesejBFT::Sedia { pandangan, jujukan, ringkasan, .. } =>
-                    *pandangan == p && *jujukan == j && ringkasan == r,
-                _ => salah,
-            })
-            .kira();
-        kiraan >= 2 * self.f
-    }
-
-    // Commit after prepared
-    fungsi komit(&mut self, p: u64, j: u64, r: &Bait)
-        memerlukan self.disediakan(p, j, r)
-        kesan KesanRangkaian
-    {
-        biar mesej = MesejBFT::Komit {
-            pandangan: p,
-            jujukan: j,
-            ringkasan: r.klon(),
-            id: self.id,
-            tandatangan: self.tanda(r),
-        };
-        self.siar(mesej);
-    }
+// Effect types for distributed operations
+fungsi tulis_replika(kunci: Teks, nilai: Bait) -> Hasil<(), RalatKonsensus>
+    kesan Teragih<Linearizable>
+{
+    // Effect annotation guarantees linearizable write
+    biar quorum = tunggu_konsensus(replika, tulis_log(kunci, nilai));
+    pulang quorum;
 }
 ```
 
-## 5. Conflict-Free Replicated Data Types (CRDTs)
-
-### 5.1 Strong Eventual Consistency
+### 4.2 Coq Formalization
 
 ```coq
-(* CRDT: Replicas converge when they've seen the same updates *)
-Record CRDT (S : Type) := {
-  initial : S;
-  merge : S -> S -> S;
-  update : S -> Operation -> S;
+(* Raft safety: at most one leader per term *)
+Theorem raft_election_safety : forall config term,
+  well_formed_config config ->
+  count_leaders config term <= 1.
 
-  (* Merge is commutative *)
-  merge_comm : forall s1 s2, merge s1 s2 = merge s2 s1;
-
-  (* Merge is associative *)
-  merge_assoc : forall s1 s2 s3,
-    merge (merge s1 s2) s3 = merge s1 (merge s2 s3);
-
-  (* Merge is idempotent *)
-  merge_idem : forall s, merge s s = s;
-}.
-
-(* Strong Eventual Consistency *)
-Theorem crdt_sec : forall (c : CRDT S) r1 r2,
-  delivered r1 = delivered r2 ->  (* Same set of operations delivered *)
-  state r1 = state r2.             (* Same final state *)
-Proof.
-  (* Apply operations in any order *)
-  (* Merge properties ensure convergence *)
-Qed.
+(* Linearizability *)
+Theorem linearizable : forall ops trace,
+  distributed_exec ops = trace ->
+  exists lin_order, sequential_exec lin_order = trace /\
+  respects_real_time lin_order ops.
 ```
 
-### 5.2 G-Counter (Grow-only Counter)
+## 5. Key References
 
-```riina
-// G-Counter CRDT - only grows
-bentuk GPembilang {
-    kiraan: Peta<IdNod, u64>,  // Each node's count
-}
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Hawblitzel, C., et al., "IronFleet" (2015) | SOSP | End-to-end verified distributed system |
+| Wilcox, J. R., et al., "Verdi" (2015) | PLDI | Coq framework for distributed verification |
+| Lesani, M., et al., "Chapar" (2016) | POPL | Verified causal consistency |
+| Sergey, I., et al., "Disel" (2018) | POPL | Distributed separation logic |
+| Newcombe, C., et al., "AWS Formal Methods" (2015) | Communications of the ACM | TLA+ in industry |
+| Castro, M., Liskov, B., "PBFT" (2002) | ACM TOCS | Practical Byzantine fault tolerance |
+| Ongaro, D., Ousterhout, J., "Raft" (2014) | USENIX ATC | Understandable consensus |
+| Lamport, L., "Paxos Made Simple" (2001) | ACM SIGACT News | Foundational consensus algorithm |
 
-impl CRDT untuk GPembilang {
-    fungsi gabung(&self, lain: &GPembilang) -> GPembilang {
-        biar mut hasil = Peta::baru();
-        untuk (id, nilai) dalam &self.kiraan {
-            biar nilai_lain = lain.kiraan.dapat(id).salin_atau(0);
-            hasil.masuk(*id, maks(*nilai, nilai_lain));
-        }
-        untuk (id, nilai) dalam &lain.kiraan {
-            kalau !hasil.mengandungi_kunci(id) {
-                hasil.masuk(*id, *nilai);
-            }
-        }
-        GPembilang { kiraan: hasil }
-    }
+## 6. Formalizability Assessment
 
-    fungsi tambah(&mut self, nod: IdNod) {
-        *self.kiraan.masuk_atau(nod, 0) += 1;
-    }
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Raft protocol verification (Coq) | 4-6 | High — Verdi exists | Phase 1 |
+| Distributed effect types | 3-4 | Medium — novel type system extension | Phase 2 |
+| Byzantine fault tolerance proof | 6-8 | Medium — subtle protocol arguments | Phase 3 |
+| Causal consistency verification | 3-4 | High — Chapar methodology | Phase 3 |
+| Distributed transaction verification | 6-8 | Low-Medium — 2PC/3PC proofs | Phase 4 |
+| Network model formalization | 3-4 | High — standard asynchronous model | Phase 2 |
 
-    fungsi nilai(&self) -> u64 {
-        self.kiraan.nilai().jumlah()
-    }
-}
+## 7. Scope Limitations
 
-// Proven properties
-#[bukti("gabung_komutatif")]
-#[bukti("gabung_assosiatif")]
-#[bukti("gabung_idempoten")]
-#[bukti("sec_terjamin")]
-```
-
-### 5.3 LWW-Register (Last-Writer-Wins Register)
-
-```riina
-// Last-Writer-Wins Register
-bentuk LWWDaftar<T> {
-    nilai: T,
-    cap_masa: CapMasaLogik,
-    id_nod: IdNod,
-}
-
-impl<T: Klon> CRDT untuk LWWDaftar<T> {
-    fungsi gabung(&self, lain: &LWWDaftar<T>) -> LWWDaftar<T> {
-        // Higher timestamp wins
-        // Tie-break by node ID
-        kalau self.cap_masa > lain.cap_masa {
-            self.klon()
-        } lain kalau lain.cap_masa > self.cap_masa {
-            lain.klon()
-        } lain {
-            // Same timestamp - use node ID as tiebreaker
-            kalau self.id_nod > lain.id_nod {
-                self.klon()
-            } lain {
-                lain.klon()
-            }
-        }
-    }
-
-    fungsi tulis(&mut self, nilai: T, cap_masa: CapMasaLogik) {
-        kalau cap_masa > self.cap_masa {
-            self.nilai = nilai;
-            self.cap_masa = cap_masa;
-        }
-    }
-}
-```
-
-## 6. Verified Sharding
-
-### 6.1 Consistent Hashing
-
-```coq
-(* Consistent hashing ring *)
-Record HashRing := {
-  nodes : list NodeId;
-  virtual_nodes : nat;  (* Virtual nodes per physical node *)
-  hash : Key -> nat;    (* Hash function *)
-}.
-
-(* Find responsible node for a key *)
-Definition responsible (ring : HashRing) (key : Key) : NodeId :=
-  let h := ring.hash key in
-  let positions := map (fun n => (ring.hash n, n)) ring.nodes in
-  let sorted := sort positions in
-  (* Find first node with position >= h (wrapping around) *)
-  first_ge sorted h.
-
-(* Adding a node only affects O(1/n) keys *)
-Theorem add_node_minimal_disruption : forall ring node ring',
-  add_node ring node = ring' ->
-  forall key,
-    responsible ring key <> responsible ring' key ->
-    responsible ring' key = node.
-(* Keys only move TO the new node, not between existing nodes *)
-
-(* Removing a node only affects O(1/n) keys *)
-Theorem remove_node_minimal_disruption : forall ring node ring',
-  remove_node ring node = ring' ->
-  forall key,
-    responsible ring key <> responsible ring' key ->
-    responsible ring key = node.
-(* Only keys from removed node need to move *)
-```
-
-## 7. Implementation Strategy (Infinite Timeline)
-
-### Phase 1: Raft (Months 1-6)
-- [ ] Verified Raft in Coq
-- [ ] Leader election proofs
-- [ ] Log replication proofs
-- [ ] RIINA implementation
-
-### Phase 2: BFT (Months 7-12)
-- [ ] PBFT proofs
-- [ ] View change proofs
-- [ ] Byzantine tolerance bound proof
-
-### Phase 3: CRDTs (Year 2)
-- [ ] Core CRDTs (counters, sets, registers)
-- [ ] Composite CRDTs
-- [ ] Strong eventual consistency proofs
-
-### Phase 4: Sharding (Year 3)
-- [ ] Consistent hashing proofs
-- [ ] Partition tolerance
-- [ ] Cross-shard transactions
-
-### Phase 5: Integration (Year 4+)
-- [ ] Integrate with Track Σ (database)
-- [ ] Full distributed database
-- [ ] Production hardening
-
-## 8. Performance Targets
-
-Based on IronFleet results:
-
-| Component | Target | Comparison |
-|-----------|--------|------------|
-| IronRSL (Raft) | Within 2.4x of Go Paxos | Verified, not just tested |
-| IronKV | Competitive with Redis | With full safety proofs |
-| BFT throughput | 10K+ TPS | With Byzantine tolerance |
-
-## 9. Dependencies
-
-| Dependency | Direction | Nature |
-|------------|-----------|--------|
-| Track A (Formal) | Δ depends on A | Proof foundation |
-| Track Σ (Storage) | Δ integrates Σ | Distributed database |
-| Track X (Concurrency) | Δ depends on X | Session types for messaging |
-| Track Ω (Network) | Δ depends on Ω | Network defense layer |
-| Track Ψ (Operational) | Δ integrates Ψ | Multi-party consensus |
-
-## 10. Obsolescence of Threats
-
-| Threat | Status | Mechanism |
-|--------|--------|-----------|
-| Split brain | **OBSOLETE** | Proven leader uniqueness |
-| Data loss during failover | **OBSOLETE** | Proven durability |
-| Byzantine attacks | **OBSOLETE** | BFT with f < n/3 |
-| Consensus bugs | **OBSOLETE** | Formal proofs |
-| Replica divergence | **OBSOLETE** | CRDT convergence proofs |
+1. **Performance overhead.** Verified consensus implementations are typically 2-5x slower than optimized unverified ones. Leader election and log replication add latency.
+2. **Network model assumptions.** Proofs assume an asynchronous network model with eventual delivery. Real networks may exhibit correlated failures not captured by this model.
+3. **Byzantine fault threshold.** BFT protocols require 3f+1 nodes to tolerate f Byzantine faults, a significant overhead. Most practical systems use crash-fault-tolerant protocols (Raft/Paxos) instead.
+4. **Liveness under asynchrony.** FLP impossibility proves that deterministic consensus is impossible in a purely asynchronous system with even one crash fault. Verified systems use partial synchrony assumptions.
+5. **Dynamic membership.** Verified consensus protocols typically assume static membership. Adding or removing nodes requires additional verification.
 
 ---
 
-**"Distributed systems without proofs are distributed failures."**
-
-*RIINA: Rigorous Immutable Invariant — Normalized Axiom*
-
-*QED Eternum.*
+*"Consensus is not an opinion. Consensus is a PROOF."*

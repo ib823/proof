@@ -1,378 +1,149 @@
-# RIINA Research Domain AA: Verified Identity & Authentication
+# AA-01: Verified Identity Management — Provably Secure Authentication
 
-**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
-
-## Document Control
-
-```
-Track: AA (Alpha-Alpha)
-Version: 1.0.0
-Date: 2026-01-17
-Classification: FOUNDATIONAL
-Status: SPECIFICATION
-Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
-```
+**Domain:** AA — Verified Identity Management
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Identity verification, authentication proofs, credential management, zero-knowledge identity, verified SSO protocols
 
 ---
 
-## AA-01: The "Authentication" Problem & The RIINA Solution
+## 1. Problem Statement
 
-### 1. The Existential Threat
+Identity management is the foundation of all access control. Every security decision ultimately depends on correctly establishing who is making a request. Yet identity systems are repeatedly compromised: the 2013 Target breach exploited stolen HVAC vendor credentials, the 2021 SolarWinds attack used compromised authentication tokens, and credential stuffing attacks exploit password reuse across services.
 
-Every authentication system in history has been broken:
-- Passwords: Phishing, brute force, credential stuffing, rainbow tables
-- Tokens: Theft, replay, session hijacking
-- Biometrics: Spoofing, replay, template theft
-- MFA: SIM swapping, push fatigue, MITM
-- SSO: Golden ticket, token forgery, provider compromise
-- Certificates: CA compromise, key theft, revocation failures
+Modern identity systems involve complex protocol interactions: OAuth 2.0, OpenID Connect, SAML, FIDO2/WebAuthn, and federated SSO. Each protocol has subtle security properties that are difficult to verify manually. Formal verification of identity protocols can prove authentication correctness, prevent token forgery, and ensure that credential management operations maintain security invariants throughout the identity lifecycle.
 
-**Current state:** Authentication is a patchwork of broken systems layered on broken systems.
+## 2. State of the Art
 
-### 2. The RIINA Solution: Verified Authentication
+### 2.1 Anonymous Credentials
 
-RIINA provides mathematically proven authentication guarantees:
+Camenisch and Lysyanskaya developed efficient anonymous credential systems where users can prove possession of credentials without revealing their identity. The construction enables selective disclosure: proving specific attributes (e.g., "over 18") without revealing others (e.g., exact birth date).
 
-```
-THEOREM auth_soundness:
-  ∀ principal P, credential C, challenge CH, response R:
-    Authenticate(P, C, CH, R) = true →
-    Identity(P) = claimed_identity ∧
-    ¬∃ adversary A: Forge(A, C, CH) within time T
-```
+Camenisch, J., Lysyanskaya, A., "An Efficient System for Non-transferable Anonymous Credentials with Optional Anonymity Revocation", *EUROCRYPT*, 2001.
 
-### 3. Threat Coverage
+### 2.2 Blind Signatures
 
-This track addresses MASTER_THREAT_MODEL attacks:
+Chaum introduced blind signatures, enabling a signer to sign a message without seeing its content. Blind signatures are foundational for anonymous digital cash, e-voting, and privacy-preserving authentication protocols.
 
-| ID | Attack | Defense Mechanism |
-|----|--------|-------------------|
-| AUTH-001 | Credential Stuffing | Rate limiting + MFA + Breach detection |
-| AUTH-002 | Password Spraying | Lockout + MFA + Anomaly detection |
-| AUTH-003 | Brute Force | Exponential backoff + MFA |
-| AUTH-004 | Pass-the-Hash | No password hashes stored |
-| AUTH-005 | Pass-the-Ticket | Bound tokens + Short lifetime |
-| AUTH-006 | Kerberoasting | No Kerberos dependency |
-| AUTH-007 | Golden Ticket | HSM-protected keys |
-| AUTH-008 | Silver Ticket | Mutual authentication |
-| AUTH-009 | Credential Theft | Zeroizing memory + HSM |
-| AUTH-010 | Session Fixation | Regenerate on auth |
-| AUTH-011 | Auth Bypass | Verified control flow |
-| AUTH-012 | OAuth Attacks | Verified OAuth implementation |
-| AUTH-013 | JWT Attacks | Verified JWT with key binding |
-| AUTH-014 | SAML Attacks | Verified SAML or no SAML |
-| AUTH-015 | SSO Attacks | Verified federation |
-| AUTH-016 | MFA Bypass | Hardware-bound MFA |
-| AUTH-017 | Biometric Spoof | Liveness + Multi-modal |
-| AUTH-018 | Token Theft | Channel-bound tokens |
-| AUTH-019 | Replay | Nonces + Timestamps + Sequence |
-| AUTH-020 | Phishing | Phishing-resistant (FIDO2/WebAuthn) |
+Chaum, D., "Blind Signatures for Untraceable Payments", *CRYPTO*, 1983.
 
-### 4. Core Components
+### 2.3 Web Single Sign-On Security
 
-#### 4.1 Authentication Types
+Fett, Küsters, and Schmitz performed the first comprehensive formal analysis of web SSO protocols (OAuth 2.0, OpenID Connect), discovering several previously unknown attacks. Their Expressive Model of the Web (EMW) enables rigorous security analysis of browser-based authentication.
 
-```
-AuthType ::=
-  | PasswordAuth of {
-      hash_algorithm: Argon2id,
-      pepper: HSM_bound,
-      breached_check: HaveIBeenPwned_integration
-    }
-  | TokenAuth of {
-      algorithm: HMAC_SHA256 | EdDSA,
-      binding: Channel_bound | Device_bound,
-      lifetime: Seconds,
-      refresh: RefreshPolicy
-    }
-  | CertificateAuth of {
-      algorithm: Ed25519 | ML-DSA-65,
-      chain_validation: Verified,
-      revocation: OCSP_stapling | CRL
-    }
-  | FIDO2Auth of {
-      authenticator: Platform | Roaming,
-      attestation: Required | Optional,
-      user_verification: Required
-    }
-  | BiometricAuth of {
-      modality: Fingerprint | Face | Iris | Voice,
-      liveness: Required,
-      template_protection: Fuzzy_vault | Secure_sketch
-    }
-  | MFAAuth of {
-      factors: List<AuthType>,
-      policy: All | Any_N of nat
-    }
-```
+Fett, D., Küsters, R., Schmitz, G., "A Comprehensive Formal Security Analysis of OAuth 2.0", *CCS*, 2016.
 
-#### 4.2 Session Management
+### 2.4 Universal Composability
 
-```
-Session ::= {
-  id: SessionId,
-  principal: Principal,
-  created: Timestamp,
-  expires: Timestamp,
-  binding: ChannelBinding,
-  properties: SessionProperties
-}
+Canetti's Universal Composability (UC) framework provides the gold standard for cryptographic protocol security. UC-secure protocols maintain their security properties even when composed with arbitrary other protocols, making UC particularly relevant for identity systems that interact with many services.
 
-SessionProperties ::= {
-  ip_binding: Option<IPRange>,
-  device_binding: Option<DeviceFingerprint>,
-  geo_binding: Option<GeoRegion>,
-  risk_score: RiskLevel
-}
-```
+Canetti, R., "Universally Composable Security: A New Paradigm for Cryptographic Protocols", *FOCS*, 2001.
 
-#### 4.3 Token Binding
+### 2.5 Zero-Knowledge Proofs
 
-```
-BoundToken ::= {
-  claims: TokenClaims,
-  binding: TokenBinding,
-  signature: Signature
-}
+Goldwasser, Micali, and Rackoff formalized zero-knowledge proofs, where a prover convinces a verifier of a statement's truth without revealing any information beyond the statement's validity. ZKPs enable password-less authentication and privacy-preserving identity verification.
 
-TokenBinding ::=
-  | ChannelBound of TLS_exporter_key
-  | DeviceBound of TPM_attestation
-  | RequestBound of Request_hash
-```
+Goldwasser, S., Micali, S., Rackoff, C., "The Knowledge Complexity of Interactive Proof Systems", *SIAM Journal on Computing*, 18(1):186-208, 1989.
 
-### 5. Formal Properties
+### 2.6 Short Signatures
 
-#### 5.1 Authentication Correctness
+Boneh and Boyen developed short signature schemes that enable compact credentials and efficient verification. Short signatures are essential for resource-constrained identity systems (smart cards, IoT devices) and privacy-preserving credential presentations.
 
-```coq
-(* Honest principal always authenticates *)
-Theorem auth_completeness:
-  forall P C CH,
-    valid_credential P C ->
-    correct_response P C CH ->
-    Authenticate P C CH = Success.
+Boneh, D., Boyen, X., "Short Signatures Without Random Oracles", *EUROCRYPT*, 2004.
 
-(* No adversary can authenticate as honest principal *)
-Theorem auth_soundness:
-  forall P C CH A,
-    ~has_credential A P ->
-    Authenticate A (forge A C) CH = Failure.
-```
+### 2.7 ProVerif Protocol Verification
 
-#### 5.2 Session Security
+Blanchet's ProVerif automates security protocol verification using the applied pi-calculus, proving properties like authentication, secrecy, and unlinkability. ProVerif has been used to verify identity protocols including OAuth, Kerberos, and FIDO2.
 
-```coq
-(* Sessions cannot be hijacked *)
-Theorem session_binding:
-  forall S channel,
-    session_bound S channel ->
-    forall channel',
-      channel' <> channel ->
-      use_session S channel' = Failure.
+Blanchet, B., "An Efficient Cryptographic Protocol Verifier Based on Prolog Rules", *CSFW*, 2001.
 
-(* Sessions expire correctly *)
-Theorem session_expiry:
-  forall S t,
-    t > session_expires S ->
-    use_session S t = Expired.
-```
+### 2.8 Verified TLS
 
-#### 5.3 Replay Prevention
+Bhargavan et al. developed miTLS, the first verified implementation of TLS, which underpins secure identity transport. The verification covers the handshake protocol, record layer, and key schedule, proving authentication and secrecy properties.
 
-```coq
-(* Each authentication is unique *)
-Theorem replay_prevention:
-  forall auth_msg t1 t2,
-    authenticate auth_msg t1 = Success ->
-    t2 > t1 ->
-    authenticate auth_msg t2 = Replay_detected.
-```
+Bhargavan, K., Fournet, C., Kohlweiss, M., Pironti, A., Strub, P.-Y., "Implementing TLS with Verified Cryptographic Security", *IEEE S&P*, 2013.
 
-### 6. Implementation Requirements
+## 3. Properties Verifiable by RIINA
 
-#### 6.1 Password Handling
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Authentication correctness | Protocol proof | Only legitimate users authenticated |
+| Token unforgeability | Cryptographic proof | Authentication tokens cannot be forged |
+| Credential privacy | ZK proof | Credential use reveals only necessary attributes |
+| SSO security | Composition proof | Federated authentication maintains security |
+| Session integrity | State machine proof | Session state transitions preserve security |
+| Revocation completeness | Coverage proof | Revoked credentials rejected everywhere |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Verified Authentication Types
 
 ```riina
-fungsi hash_password(password: Rahsia<Teks>, pepper: Rahsia<Bytes>) -> Rahsia<Bytes>
-kesan [Crypto, ConstantTime]
+// Zero-knowledge authentication
+fungsi sahkan_identiti(
+    bukti: BuktiZK<Kelayakan>,
+    dasar: DasarPengesahan,
+) -> Hasil<Sesi<Disahkan>, RalatPengesahan>
+    kesan Identiti<TanpaPendedahan>
 {
-    // Argon2id with secure parameters
-    biar params = Argon2Params {
-        memory_cost: 65536,  // 64 MiB
-        time_cost: 3,
-        parallelism: 4,
-        output_len: 32
-    };
-
-    argon2id(password, pepper, params)
-}
-
-fungsi verify_password(
-    password: Rahsia<Teks>,
-    stored_hash: Rahsia<Bytes>,
-    pepper: Rahsia<Bytes>
-) -> Bool
-kesan [Crypto, ConstantTime]
-{
-    biar computed = hash_password(password, pepper);
-    constant_time_compare(computed, stored_hash)
+    // Effect guarantees: no credential data leaked
+    biar sah = sahkan_bukti_zk(bukti, dasar);
+    jika sah {
+        biar sesi = cipta_sesi(bukti.subjek_tanpa_nama());
+        pulang Ok(sesi);
+    } lain {
+        pulang Err(RalatPengesahan::BuktiTidakSah);
+    }
 }
 ```
 
-#### 6.2 Token Generation
-
-```riina
-fungsi create_bound_token(
-    claims: TokenClaims,
-    key: Rahsia<SigningKey>,
-    channel: ChannelBinding
-) -> BoundToken
-kesan [Crypto]
-{
-    biar binding_data = derive_binding(channel);
-    biar payload = serialize(claims, binding_data);
-    biar signature = sign(key, payload);
-
-    BoundToken { claims, binding: channel, signature }
-}
-
-fungsi verify_bound_token(
-    token: BoundToken,
-    key: VerifyingKey,
-    channel: ChannelBinding
-) -> Keputusan<TokenClaims, AuthError>
-kesan [Crypto]
-{
-    // Verify binding matches current channel
-    kalau token.binding != derive_binding(channel) {
-        pulang Err(AuthError::ChannelMismatch)
-    }
-
-    // Verify signature
-    kalau !verify(key, serialize(token.claims, token.binding), token.signature) {
-        pulang Err(AuthError::InvalidSignature)
-    }
-
-    // Verify not expired
-    kalau now() > token.claims.exp {
-        pulang Err(AuthError::Expired)
-    }
-
-    Ok(token.claims)
-}
-```
-
-#### 6.3 FIDO2/WebAuthn
-
-```riina
-fungsi verify_webauthn_assertion(
-    credential: WebAuthnCredential,
-    challenge: Bytes,
-    client_data: ClientData,
-    authenticator_data: AuthenticatorData,
-    signature: Bytes
-) -> Keputusan<Principal, AuthError>
-kesan [Crypto]
-{
-    // Verify challenge matches
-    kalau client_data.challenge != challenge {
-        pulang Err(AuthError::ChallengeMismatch)
-    }
-
-    // Verify origin
-    kalau !allowed_origins.contains(client_data.origin) {
-        pulang Err(AuthError::InvalidOrigin)
-    }
-
-    // Verify authenticator data
-    kalau !authenticator_data.user_present {
-        pulang Err(AuthError::UserNotPresent)
-    }
-
-    // Verify signature
-    biar signed_data = concat(authenticator_data.raw, sha256(client_data.raw));
-    kalau !verify_signature(credential.public_key, signed_data, signature) {
-        pulang Err(AuthError::InvalidSignature)
-    }
-
-    // Verify counter (replay protection)
-    kalau authenticator_data.counter <= credential.last_counter {
-        pulang Err(AuthError::CounterNotIncremented)
-    }
-
-    Ok(credential.principal)
-}
-```
-
-### 7. Coq Proof Requirements
+### 4.2 Coq Formalization
 
 ```coq
-(** Required proofs for Track AA *)
+(* Authentication correctness: only valid credentials succeed *)
+Theorem auth_correctness : forall cred verifier,
+  authenticate verifier cred = true ->
+  valid_credential cred = true.
 
-(* Password security *)
-Axiom password_hash_preimage_resistant:
-  forall h, ~exists p, hash_password p = h in polynomial_time.
-
-(* Token unforgeability *)
-Theorem token_unforgeability:
-  forall key claims,
-    ~has_key adversary key ->
-    forge_token adversary claims key = impossible.
-
-(* FIDO2 security *)
-Theorem fido2_phishing_resistant:
-  forall cred origin,
-    registered_origin cred <> origin ->
-    authenticate_fido2 cred origin = Failure.
-
-(* Session isolation *)
-Theorem session_isolation:
-  forall s1 s2,
-    s1 <> s2 ->
-    session_data s1 ∩ session_data s2 = ∅.
-
-(* MFA composition *)
-Theorem mfa_security_composition:
-  forall f1 f2,
-    secure f1 -> secure f2 ->
-    secure (mfa_combine f1 f2).
+(* Token unforgeability: cannot create valid token without key *)
+Theorem token_unforgeable : forall token key,
+  verify_token key token = true ->
+  exists signer, signed_by signer key token.
 ```
 
-### 8. Dependencies
+## 5. Key References
 
-| Dependency | Track | Required For |
-|------------|-------|--------------|
-| Cryptographic primitives | G | Signatures, Hashing |
-| Secure memory | W | Credential storage |
-| Effect system | B | Crypto effects |
-| Information flow | C | Credential leakage |
-| Key management | AG | Key storage |
-| Time security | AD | Token expiry |
-| Covert channels | AC | Side-channel auth |
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Camenisch, J., Lysyanskaya, A., "Anonymous Credentials" (2001) | EUROCRYPT | Privacy-preserving credentials |
+| Chaum, D., "Blind Signatures" (1983) | CRYPTO | Untraceable authentication |
+| Fett, D., et al., "OAuth 2.0 Analysis" (2016) | CCS | Web SSO formal analysis |
+| Canetti, R., "UC Framework" (2001) | FOCS | Composable security |
+| Goldwasser, S., et al., "ZKP" (1989) | SIAM J. Computing | Zero-knowledge foundation |
+| Boneh, D., Boyen, X., "Short Signatures" (2004) | EUROCRYPT | Compact credentials |
+| Blanchet, B., "ProVerif" (2001) | CSFW | Protocol verification |
+| Bhargavan, K., et al., "Verified TLS" (2013) | IEEE S&P | Verified transport security |
 
-### 9. Verification Milestones
+## 6. Formalizability Assessment
 
-| Milestone | Description | Status |
-|-----------|-------------|--------|
-| AA-M1 | Password hashing verified | ❌ |
-| AA-M2 | Token binding verified | ❌ |
-| AA-M3 | FIDO2 flow verified | ❌ |
-| AA-M4 | Session management verified | ❌ |
-| AA-M5 | MFA composition verified | ❌ |
-| AA-M6 | Replay prevention verified | ❌ |
-| AA-M7 | Full AUTH-* coverage | ❌ |
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Password authentication proof | 2-3 | High — simple protocol | Phase 1 |
+| Token generation/verification | 3-4 | High — HMAC/signature | Phase 1 |
+| OAuth 2.0 flow verification | 4-6 | Medium — multi-party protocol | Phase 2 |
+| ZK credential system | 4-6 | Medium — complex crypto | Phase 2 |
+| Federated SSO composition | 5-7 | Low-Medium — protocol composition | Phase 3 |
+| End-to-end identity proof | 6-8 | Low-Medium — lifecycle complexity | Phase 4 |
 
-### 10. References
+## 7. Scope Limitations
 
-1. FIDO2/WebAuthn Specification (W3C)
-2. OAuth 2.0 Security Best Current Practice (RFC 6819)
-3. JSON Web Token Best Current Practices (RFC 8725)
-4. NIST SP 800-63B: Digital Identity Guidelines
-5. Formal Analysis of FIDO2 (CCS 2020)
+1. **Human factors.** Formal verification cannot prevent users from choosing weak passwords, falling for phishing, or sharing credentials.
+2. **Biometric uncertainty.** Biometric authentication is inherently probabilistic. Formal proofs must accommodate false accept/reject rates.
+3. **Protocol ecosystem.** Real identity systems compose many protocols (TLS, OAuth, SAML, LDAP). Verifying each individually does not guarantee composition security.
+4. **Implementation gap.** Verified protocol models must be faithfully implemented. Implementation bugs can undermine verified properties.
+5. **Recovery mechanisms.** Password reset, account recovery, and backup codes introduce alternative authentication paths that bypass primary verification.
+6. **Revocation latency.** Certificate and credential revocation has inherent propagation delay. During the window, revoked credentials remain valid.
 
 ---
 
-*Track AA: Verified Identity & Authentication*
-*Status: SPECIFICATION COMPLETE, PROOFS PENDING*
-*Last updated: 2026-01-17*
+*"If the proof says you are who you claim, no impersonator can succeed."*

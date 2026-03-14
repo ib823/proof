@@ -1,305 +1,149 @@
-# RIINA Research Domain AC: Covert Channel Elimination
+# AC-01: Verified Covert Channel Elimination — Provably Leak-Free Systems
 
-## Document Control
-
-```
-Track: AC (Alpha-Charlie)
-Version: 1.0.0
-Date: 2026-01-17
-Classification: FOUNDATIONAL
-Status: SPECIFICATION
-Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | INFINITE TIMELINE
-```
+**Domain:** AC — Verified Covert Channel Elimination
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Covert channel analysis, timing channel elimination, storage channel prevention, information flow verification, cache side-channel mitigation
 
 ---
 
-## AC-01: The "Covert Channel" Problem & The RIINA Solution
+## 1. Problem Statement
 
-### 1. The Existential Threat
+Covert channels enable information transfer through mechanisms not intended for communication: timing variations, resource utilization patterns, cache behavior, and shared state side effects. Even systems with proven noninterference can leak information through covert channels if the formal model does not capture all observable state. The seL4 verification team discovered that while their kernel's functional correctness proof held, timing channels through the kernel's scheduler and cache could leak classified information.
 
-Information leaks through unintended channels:
-- Timing variations reveal cryptographic keys
-- Cache access patterns leak memory contents
-- Power consumption exposes operations
-- Storage allocation patterns leak data
-- Network packet timing reveals encrypted content
-- Even "air-gapped" systems leak via acoustic/EM emanations
+Covert channels are the gap between the formal model and physical reality. A system proven secure in a model that abstracts away timing is not secure against a timing-aware adversary. Spectre and Meltdown demonstrated that microarchitectural covert channels can cross all software security boundaries. RIINA addresses covert channels through formal analysis at the language level, providing constant-time execution guarantees and resource partitioning that eliminate covert channels by construction.
 
-**Current state:** No system formally eliminates covert channels.
+## 2. State of the Art
 
-### 2. The RIINA Solution: Verified Channel Elimination
+### 2.1 Covert Channel Foundations
 
-RIINA provides formal bounds on all information flows:
+Lampson identified covert channels in his foundational confinement problem paper, distinguishing storage channels (communication through shared objects) from timing channels (communication through observable timing variations). The taxonomy remains the basis for covert channel analysis.
 
-```
-THEOREM covert_channel_bounded:
-  ∀ program P, secret S, observable O:
-    TypeChecks(P) →
-    MutualInformation(S, O) ≤ declared_leakage(P)
-```
+Lampson, B. W., "A Note on the Confinement Problem", *Communications of the ACM*, 16(10):613-615, 1973.
 
-### 3. Threat Coverage
+### 2.2 Covert Channel Analysis
 
-| ID | Attack | Defense Mechanism |
-|----|--------|-------------------|
-| COV-001 | Storage Channel | Information flow types |
-| COV-002 | Timing Channel | Constant-time execution |
-| COV-003 | Network Covert | Traffic shaping + Padding |
-| COV-004 | Steganography | Content sanitization |
-| COV-005 | Subliminal Channel | Protocol verification |
-| COV-006 | Acoustic Channel | Sound isolation |
-| COV-007 | Thermal Channel | Thermal isolation |
-| COV-008 | Power Channel | Power filtering |
-| COV-009 | Cache Channel | Cache partitioning |
-| COV-010 | Memory Channel | Memory partitioning |
-| COV-011 | File System Channel | FS metadata isolation |
-| COV-012 | Process Channel | Process isolation |
-| COV-013 | Kernel Channel | Verified kernel |
-| COV-014 | Hardware Channel | Hardware isolation |
-| COV-015 | Electromagnetic Channel | EM shielding |
+Wray formalized covert channel analysis using information-theoretic methods, providing bounds on channel bandwidth and identifying systematic approaches to covert channel identification and elimination in secure systems.
 
-### 4. Core Components
+Wray, J. C., "An Analysis of Covert Timing Channels", *IEEE S&P*, 1991.
 
-#### 4.1 Channel Classification
+### 2.3 Covert Channels in seL4
 
-```
-CovertChannel ::=
-  | StorageChannel of {
-      medium: Storage,
-      bandwidth: BitsPerSecond,
-      detectability: DetectionLevel
-    }
-  | TimingChannel of {
-      source: TimingSource,
-      granularity: TimeUnit,
-      bandwidth: BitsPerSecond
-    }
-  | PhysicalChannel of {
-      type: EM | Acoustic | Thermal | Power,
-      bandwidth: BitsPerSecond,
-      range: Distance
-    }
+Cock analyzed covert channels in the verified seL4 microkernel, demonstrating that even formally verified systems contain exploitable covert channels through timing, cache behavior, and shared hardware resources. The work established methodologies for quantifying covert channel bandwidth in verified systems.
 
-Storage ::= Memory | Disk | Cache | Register | Network
-TimingSource ::= Execution | Cache | Memory | Network | System
-```
+Cock, D., Ge, Q., Murray, T., Heiser, G., "The Last Mile: An Empirical Study of Timing Channels on seL4", *CCS*, 2014.
 
-#### 4.2 Constant-Time Enforcement
+### 2.4 Timing Channel Survey
 
-```
-ConstantTimePolicy ::= {
-  operations: Set<Operation>,
-  timing_class: TimingClass,
-  verification: VerificationMethod
-}
+Ge et al. provided a comprehensive survey of timing channels, categorizing attacks by the shared resource exploited (cache, TLB, branch predictor, memory bus) and analyzing the effectiveness of various mitigation techniques.
 
-TimingClass ::=
-  | FixedTime of Duration
-  | InputIndependent
-  | SecretIndependent
-  | BoundedVariation of Duration
+Ge, Q., Yarom, Y., Cock, D., Heiser, G., "A Survey of Microarchitectural Timing Attacks and Countermeasures on Contemporary Hardware", *Journal of Cryptographic Engineering*, 8(1):1-27, 2018.
 
-VerificationMethod ::=
-  | StaticAnalysis
-  | SymbolicExecution
-  | HardwareEnforcement
-  | RuntimeMonitoring
-```
+### 2.5 Hails: Secure Web Framework
 
-#### 4.3 Traffic Shaping
+Stefan et al. developed Hails, a web framework that uses mandatory access control with information flow tracking to eliminate covert channels in web applications. Hails prevents both direct and indirect information flows through a label-based security model.
 
-```
-TrafficShape ::= {
-  packet_size: FixedSize,
-  inter_packet_time: FixedDuration,
-  padding_scheme: PaddingScheme,
-  cover_traffic: CoverTrafficPolicy
-}
+Stefan, D., Palmer, R., Yang, E. Z., Russo, A., Mazières, D., "Hails: Protecting Data Privacy in Untrusted Web Applications", *OSDI*, 2012.
 
-PaddingScheme ::=
-  | PadToFixed of Size
-  | PadToMultiple of Size
-  | PadToMax
-  | RandomPad of Range<Size>
-```
+### 2.6 Type-Based Noninterference
 
-### 5. Formal Properties
+Volpano, Smith, and Irvine proved that a type system can enforce noninterference — the property that high-security inputs do not influence low-security outputs. Their security type system is the foundation for language-based information flow control.
 
-#### 5.1 Storage Channel Elimination
+Volpano, D. M., Smith, G., Irvine, C., "A Sound Type System for Secure Flow Analysis", *Journal of Computer Security*, 4(2-3):167-187, 1996.
 
-```coq
-(* No information flow via storage *)
-Theorem storage_channel_eliminated:
-  forall prog high_input low_output,
-    well_typed prog ->
-    forall s1 s2,
-      low_equivalent s1 s2 ->
-      observe (run prog s1) = observe (run prog s2).
-```
+### 2.7 Gradual Release
 
-#### 5.2 Timing Channel Elimination
+Askarov and Sabelfeld developed gradual release, a declassification policy that controls what information is released and when. The framework enables principled information release while maintaining security for non-released information.
 
-```coq
-(* Execution time independent of secrets *)
-Theorem timing_channel_eliminated:
-  forall prog secret1 secret2 public_input,
-    constant_time prog ->
-    execution_time prog (secret1, public_input) =
-    execution_time prog (secret2, public_input).
+Askarov, A., Sabelfeld, A., "Gradual Release: Unifying Declassification, Encryption and Key Release Policies", *IEEE S&P*, 2007.
 
-(* Constant-time composition *)
-Theorem ct_composition:
-  forall f g,
-    constant_time f -> constant_time g ->
-    constant_time (compose f g).
-```
+### 2.8 Constant-Time Transformation
 
-#### 5.3 Cache Channel Elimination
+Agat developed a type-directed program transformation that eliminates timing side channels by padding branches to have equal execution time. The transformation preserves functional behavior while making execution time independent of secret data.
 
-```coq
-(* Cache access pattern independent of secrets *)
-Theorem cache_channel_eliminated:
-  forall prog secret1 secret2,
-    cache_oblivious prog ->
-    cache_accesses prog secret1 = cache_accesses prog secret2.
-```
+Agat, J., "Transforming Out Timing Leaks", *POPL*, 2000.
 
-### 6. Implementation Requirements
+## 3. Properties Verifiable by RIINA
 
-#### 6.1 Constant-Time Operations
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Timing independence | Constant-time type | Secret-dependent branches padded |
+| Storage channel elimination | Information flow types | No covert storage channels between security levels |
+| Cache side-channel prevention | Partitioned access | Cache lines partitioned by security level |
+| Noninterference | Type system proof | High inputs cannot influence low outputs |
+| Bandwidth bounds | Channel capacity analysis | Residual channel bandwidth bounded |
+| Resource partitioning | Capability-based isolation | Hardware resources isolated between domains |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Constant-Time Types
 
 ```riina
-// All cryptographic operations must be constant-time
-@constant_time
-fungsi ct_compare(a: Rahsia<Bytes>, b: Rahsia<Bytes>) -> Bool
-kesan [ConstantTime]
+// Constant-time comparison (no timing side channel)
+fungsi banding_selamat(
+    a: Rahsia<[Bait]>,
+    b: Rahsia<[Bait]>,
+) -> Bool
+    kesan MasaTetap
 {
-    kalau a.len() != b.len() {
-        pulang salah  // Length comparison is public
+    // Effect guarantees: execution time independent of values
+    biar mut hasil: Bait = 0;
+    untuk i dalam 0..a.panjang() {
+        hasil = hasil | (a[i] ^ b[i]);
     }
-
-    biar ubah result: u8 = 0;
-    untuk i dalam 0..a.len() {
-        result = result | (a[i] ^ b[i]);
-    }
-
-    result == 0
-}
-
-@constant_time
-fungsi ct_select<T>(condition: Bool, a: T, b: T) -> T
-kesan [ConstantTime]
-{
-    // Branchless selection
-    biar mask = ct_mask(condition);
-    (a & mask) | (b & !mask)
+    pulang hasil == 0;
 }
 ```
 
-#### 6.2 Cache-Oblivious Data Access
-
-```riina
-@cache_oblivious
-fungsi oblivious_lookup<T>(
-    table: Array<T>,
-    index: Rahsia<usize>
-) -> T
-kesan [ConstantTime]
-{
-    // Access ALL elements to hide which one we want
-    biar ubah result = table[0];
-    untuk i dalam 0..table.len() {
-        biar is_target = ct_eq(i, index);
-        result = ct_select(is_target, table[i], result);
-    }
-    result
-}
-```
-
-#### 6.3 Traffic Shaping
-
-```riina
-fungsi shaped_send(
-    data: Bytes,
-    connection: SecureChannel,
-    shape: TrafficShape
-) -> ()
-kesan [Network, ConstantTime]
-{
-    // Pad to fixed size
-    biar padded = pad_to_size(data, shape.packet_size);
-
-    // Wait for next time slot
-    wait_until_slot(shape.inter_packet_time);
-
-    // Send (timing now independent of data size)
-    connection.send(padded)
-}
-```
-
-### 7. Coq Proof Requirements
+### 4.2 Coq Formalization
 
 ```coq
-(** Required proofs for Track AC *)
+(* Timing independence: execution time independent of secrets *)
+Theorem constant_time : forall prog secret1 secret2 public,
+  exec_time prog (secret1, public) =
+  exec_time prog (secret2, public).
 
-(* Non-interference with timing *)
-Theorem timing_noninterference:
-  forall prog,
-    typed_constant_time prog ->
-    forall h1 h2 l,
-      timing (run prog (h1, l)) = timing (run prog (h2, l)).
-
-(* Cache obliviousness *)
-Theorem cache_oblivious_correct:
-  forall prog,
-    cache_oblivious_typed prog ->
-    forall s1 s2,
-      cache_trace prog s1 = cache_trace prog s2.
-
-(* Traffic analysis resistance *)
-Theorem traffic_analysis_resistant:
-  forall channel data1 data2,
-    shaped_channel channel ->
-    observable_traffic channel data1 = observable_traffic channel data2.
-
-(* Composition preserves channel elimination *)
-Theorem channel_free_composition:
-  forall p1 p2,
-    channel_free p1 -> channel_free p2 ->
-    channel_free (sequence p1 p2).
+(* Storage channel elimination: no information flow through storage *)
+Theorem no_storage_channel : forall high_input low_observer state1 state2,
+  low_equivalent state1 state2 ->
+  low_equivalent
+    (exec prog (state1, high_input))
+    (exec prog (state2, high_input)).
 ```
 
-### 8. Dependencies
+## 5. Key References
 
-| Dependency | Track | Required For |
-|------------|-------|--------------|
-| Information flow | C | Storage channels |
-| Cryptographic timing | G | Constant-time crypto |
-| Hardware model | S | Cache/memory channels |
-| Network defense | Ω | Network channels |
-| Traffic analysis | η | Traffic shaping |
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Lampson, B. W., "Confinement Problem" (1973) | Communications of the ACM | Covert channel identification |
+| Wray, J. C., "Covert Timing Channels" (1991) | IEEE S&P | Timing channel analysis |
+| Cock, D., et al., "seL4 Timing Channels" (2014) | CCS | Covert channels in verified systems |
+| Ge, Q., et al., "Timing Attacks Survey" (2018) | JCE | Microarchitectural timing attacks |
+| Stefan, D., et al., "Hails" (2012) | OSDI | IFC for web applications |
+| Volpano, D. M., et al., "Noninterference" (1996) | J. Computer Security | Type-based security |
+| Askarov, A., Sabelfeld, A., "Gradual Release" (2007) | IEEE S&P | Declassification policy |
+| Agat, J., "Timing Leaks" (2000) | POPL | Constant-time transformation |
 
-### 9. Verification Milestones
+## 6. Formalizability Assessment
 
-| Milestone | Description | Status |
-|-----------|-------------|--------|
-| AC-M1 | Storage channel elimination | ❌ |
-| AC-M2 | Timing channel elimination | ❌ |
-| AC-M3 | Cache channel elimination | ❌ |
-| AC-M4 | Network covert channel | ❌ |
-| AC-M5 | Composition theorem | ❌ |
-| AC-M6 | Full COV-* coverage | ❌ |
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Constant-time type system | 3-4 | High — Agat methodology | Phase 1 |
+| Storage channel elimination | 3-4 | High — noninterference types | Phase 1 |
+| Cache partitioning verification | 4-6 | Medium — hardware model required | Phase 2 |
+| Timing channel bandwidth analysis | 4-6 | Medium — information-theoretic | Phase 2 |
+| Microarchitectural model | 6-8 | Low-Medium — hardware complexity | Phase 3 |
+| End-to-end covert channel proof | 6-8 | Low — model gap challenges | Phase 4 |
 
-### 10. References
+## 7. Scope Limitations
 
-1. "A Guide to Understanding Covert Channel Analysis" (NCSC-TG-030)
-2. Constant-Time Foundations (CT-Wasm)
-3. Cache-Timing Attacks (Bernstein 2005)
-4. Mitigating Cache-Based Timing Attacks (KASLR, KPTI)
-5. Traffic Analysis Resistance in Tor
+1. **Model gap.** Formal covert channel analysis depends on the system model's fidelity. Real hardware has channels not captured in any model (electromagnetic emanation, power consumption, acoustic signals).
+2. **Microarchitectural complexity.** Modern processors have complex, partially undocumented microarchitectures. Complete covert channel analysis requires complete hardware models.
+3. **Performance cost.** Constant-time execution and cache partitioning reduce performance. Some applications cannot tolerate the overhead.
+4. **Residual bandwidth.** Complete covert channel elimination may be impossible. Practical systems aim to bound residual bandwidth below exploitable thresholds.
+5. **Composition.** Individually analyzed components may create new covert channels when composed. Compositional covert channel analysis is an open research problem.
+6. **Physical channels.** Power analysis, electromagnetic emanation, and acoustic channels operate below the software abstraction layer.
 
 ---
 
-*Track AC: Covert Channel Elimination*
-*Status: SPECIFICATION COMPLETE, PROOFS PENDING*
-*Last updated: 2026-01-17*
+*"If no channel exists for the secret to flow through, the secret cannot leak."*
