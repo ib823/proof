@@ -13,7 +13,7 @@
 #[allow(unused_imports)]
 use crate::{ParseError, ParseErrorKind, Parser};
 #[allow(unused_imports)]
-use riina_types::{BinOp, Effect, Expr, Program, SecurityLevel, TopLevelDecl, Ty};
+use riina_types::{BinOp, Effect, Expr, Program, SecurityLevel, SessionType, TopLevelDecl, Ty};
 
 // =============================================================================
 // LITERAL TESTS
@@ -2025,4 +2025,97 @@ fn test_parse_fn_type_with_effect_alloc() {
         ty,
         Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Alloc)
     );
+}
+
+// ── A4: Session type parsing ──
+
+#[test]
+fn test_parse_chan_end() {
+    let mut p = Parser::new("Chan<End>");
+    let ty = p.parse_ty().unwrap();
+    assert_eq!(ty, Ty::Chan(SessionType::End));
+}
+
+#[test]
+fn test_parse_chan_send_recv() {
+    // Space-separated > to avoid >> being lexed as Shr
+    let mut p = Parser::new("Chan<Send<Int, Recv<Bool, End> > >");
+    let ty = p.parse_ty().unwrap();
+    assert_eq!(
+        ty,
+        Ty::Chan(SessionType::Send(
+            Box::new(Ty::Int),
+            Box::new(SessionType::Recv(
+                Box::new(Ty::Bool),
+                Box::new(SessionType::End)
+            ))
+        ))
+    );
+}
+
+#[test]
+fn test_parse_secure_chan() {
+    let mut p = Parser::new("SecureChan<Send<Int, End>, Secret>");
+    let ty = p.parse_ty().unwrap();
+    assert_eq!(
+        ty,
+        Ty::SecureChan(
+            SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End)),
+            SecurityLevel::Secret
+        )
+    );
+}
+
+#[test]
+fn test_parse_session_select_branch() {
+    let mut p = Parser::new("Chan<Select<Send<Int, End>, Send<Bool, End> > >");
+    let ty = p.parse_ty().unwrap();
+    assert_eq!(
+        ty,
+        Ty::Chan(SessionType::Select(
+            Box::new(SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End))),
+            Box::new(SessionType::Send(Box::new(Ty::Bool), Box::new(SessionType::End)))
+        ))
+    );
+}
+
+#[test]
+fn test_parse_session_recursive() {
+    // Chan<Rec<X, Send<Int, SVar<X> > > >
+    let mut p = Parser::new("Chan<Rec<X, Send<Int, SVar<X> > > >");
+    let ty = p.parse_ty().unwrap();
+    assert_eq!(
+        ty,
+        Ty::Chan(SessionType::Rec(
+            "X".into(),
+            Box::new(SessionType::Send(
+                Box::new(Ty::Int),
+                Box::new(SessionType::Var("X".into()))
+            ))
+        ))
+    );
+}
+
+#[test]
+fn test_parse_chan_malay_syntax() {
+    // Saluran<Hantar<Nombor, Terima<Benar, Tamat> > >
+    let mut p = Parser::new("Saluran<Hantar<Nombor, Terima<Benar, Tamat> > >");
+    let ty = p.parse_ty().unwrap();
+    assert_eq!(
+        ty,
+        Ty::Chan(SessionType::Send(
+            Box::new(Ty::Int),
+            Box::new(SessionType::Recv(
+                Box::new(Ty::Bool),
+                Box::new(SessionType::End)
+            ))
+        ))
+    );
+}
+
+#[test]
+fn test_parse_invalid_session_type() {
+    let mut p = Parser::new("Chan<InvalidST>");
+    let result = p.parse_ty();
+    assert!(result.is_err());
 }

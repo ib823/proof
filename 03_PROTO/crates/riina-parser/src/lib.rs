@@ -11,7 +11,7 @@ use riina_lexer::{Lexer, Span, Token, TokenKind};
 use riina_types::Span as AstSpan;
 use riina_types::{
     BinOp, CapabilityKind, Effect, Expr, ExternDecl, Ident, Program, Sanitizer, SecurityLevel,
-    SpannedDecl, TaintSource, TopLevelDecl, Ty,
+    SessionType, SpannedDecl, TaintSource, TopLevelDecl, Ty,
 };
 use std::fmt;
 use std::iter::Peekable;
@@ -37,6 +37,7 @@ pub enum ParseErrorKind {
     ExpectedExpression,
     InvalidSecurityLevel,
     InvalidEffect,
+    InvalidSessionType,
 }
 
 impl fmt::Display for ParseErrorKind {
@@ -49,6 +50,7 @@ impl fmt::Display for ParseErrorKind {
             ParseErrorKind::ExpectedExpression => write!(f, "Expected expression"),
             ParseErrorKind::InvalidSecurityLevel => write!(f, "Invalid security level"),
             ParseErrorKind::InvalidEffect => write!(f, "Invalid effect"),
+            ParseErrorKind::InvalidSessionType => write!(f, "Invalid session type"),
         }
     }
 }
@@ -65,6 +67,7 @@ impl ParseErrorKind {
             ParseErrorKind::ExpectedExpression => "P0005",
             ParseErrorKind::InvalidSecurityLevel => "P0006",
             ParseErrorKind::InvalidEffect => "P0007",
+            ParseErrorKind::InvalidSessionType => "P0008",
         }
     }
 
@@ -92,6 +95,9 @@ impl ParseErrorKind {
             }
             ParseErrorKind::InvalidEffect => {
                 "Invalid effect. Valid effects: Bersih, Ubah, Baca, Tulis, SistemFail, Rangkaian, Kripto, Rawak, Sistem, Masa, Proses".to_string()
+            }
+            ParseErrorKind::InvalidSessionType => {
+                "Invalid session type. Valid: Send<T, S>, Recv<T, S>, Select<S1, S2>, Branch<S1, S2>, End, Rec<X, S>, Var<X>".to_string()
             }
         })
     }
@@ -1096,6 +1102,22 @@ impl<'a> Parser<'a> {
                         self.consume(TokenKind::Gt)?;
                         Ok(Ty::Capability(kind))
                     }
+                    // Chan<SessionType> / Saluran<SessionType>
+                    "Chan" | "Saluran" => {
+                        self.consume(TokenKind::Lt)?;
+                        let st = self.parse_session_type()?;
+                        self.consume(TokenKind::Gt)?;
+                        Ok(Ty::Chan(st))
+                    }
+                    // SecureChan<SessionType, Level> / SaluranSelamat<SessionType, Level>
+                    "SecureChan" | "SaluranSelamat" => {
+                        self.consume(TokenKind::Lt)?;
+                        let st = self.parse_session_type()?;
+                        self.consume(TokenKind::Comma)?;
+                        let level = self.parse_security_level()?;
+                        self.consume(TokenKind::Gt)?;
+                        Ok(Ty::SecureChan(st, level))
+                    }
                     _ => Err(ParseError {
                         kind: ParseErrorKind::ExpectedType,
                         span: self.current_span,
@@ -1149,6 +1171,73 @@ impl<'a> Parser<'a> {
             "Gapura" => Ok(Effect::Gapura),
             _ => Err(ParseError {
                 kind: ParseErrorKind::InvalidEffect,
+                span: self.current_span,
+            }),
+        }
+    }
+
+    /// Parse a session type: Send<T, S> | Recv<T, S> | Select<S1, S2> |
+    /// Branch<S1, S2> | End | Rec<X, S> | Var<X>
+    /// Matches Coq SessionTypes.v session type constructors.
+    fn parse_session_type(&mut self) -> Result<SessionType, ParseError> {
+        let ident = self.parse_ident()?;
+        match ident.as_str() {
+            // Send<PayloadType, Continuation>
+            "Send" | "Hantar" => {
+                self.consume(TokenKind::Lt)?;
+                let payload = self.parse_ty()?;
+                self.consume(TokenKind::Comma)?;
+                let cont = self.parse_session_type()?;
+                self.consume(TokenKind::Gt)?;
+                Ok(SessionType::Send(Box::new(payload), Box::new(cont)))
+            }
+            // Recv<PayloadType, Continuation>
+            "Recv" | "Terima" => {
+                self.consume(TokenKind::Lt)?;
+                let payload = self.parse_ty()?;
+                self.consume(TokenKind::Comma)?;
+                let cont = self.parse_session_type()?;
+                self.consume(TokenKind::Gt)?;
+                Ok(SessionType::Recv(Box::new(payload), Box::new(cont)))
+            }
+            // Select<S1, S2> — internal choice
+            "Select" | "Pilih" => {
+                self.consume(TokenKind::Lt)?;
+                let s1 = self.parse_session_type()?;
+                self.consume(TokenKind::Comma)?;
+                let s2 = self.parse_session_type()?;
+                self.consume(TokenKind::Gt)?;
+                Ok(SessionType::Select(Box::new(s1), Box::new(s2)))
+            }
+            // Branch<S1, S2> — external choice
+            "Branch" | "Cabang" => {
+                self.consume(TokenKind::Lt)?;
+                let s1 = self.parse_session_type()?;
+                self.consume(TokenKind::Comma)?;
+                let s2 = self.parse_session_type()?;
+                self.consume(TokenKind::Gt)?;
+                Ok(SessionType::Branch(Box::new(s1), Box::new(s2)))
+            }
+            // End — session termination
+            "End" | "Tamat" => Ok(SessionType::End),
+            // Rec<X, S> — recursive session type
+            "Rec" | "Ulang" => {
+                self.consume(TokenKind::Lt)?;
+                let var = self.parse_ident()?;
+                self.consume(TokenKind::Comma)?;
+                let body = self.parse_session_type()?;
+                self.consume(TokenKind::Gt)?;
+                Ok(SessionType::Rec(var, Box::new(body)))
+            }
+            // Var<X> — session type variable (for recursion)
+            "SVar" | "PembolehubahSesi" => {
+                self.consume(TokenKind::Lt)?;
+                let var = self.parse_ident()?;
+                self.consume(TokenKind::Gt)?;
+                Ok(SessionType::Var(var))
+            }
+            _ => Err(ParseError {
+                kind: ParseErrorKind::InvalidSessionType,
                 span: self.current_span,
             }),
         }

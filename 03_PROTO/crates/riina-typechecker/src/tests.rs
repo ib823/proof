@@ -878,7 +878,9 @@ mod formalized_tests {
         register_builtin_types, type_check, type_check_full, types_compatible, Context, TypeError,
         TypingContext,
     };
-    use riina_types::{BinOp, Effect, Expr, Linearity, Location, SecurityLevel, StoreTy, Ty, Usage};
+    use riina_types::{
+        BinOp, Effect, Expr, Linearity, Location, SecurityLevel, SessionType, StoreTy, Ty, Usage,
+    };
 
     // ── Basic value typing with new context ──
 
@@ -3162,5 +3164,78 @@ mod formalized_tests {
         };
         assert_eq!(err.error_code(), "LIN0001");
         assert!(err.coq_rule().unwrap().contains("LinearTypes.v"));
+    }
+
+    // ── A4: Session type support in typechecker ──
+
+    #[test]
+    fn test_chan_typed_variable_lookup() {
+        // Variables with Chan type can be looked up and their type preserved.
+        let mut ctx = TypingContext::new();
+        let st = SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End));
+        ctx = ctx.extend_gamma("ch".into(), Ty::Chan(st.clone()));
+        let (ty, eff) = type_check_full(&mut ctx, &Expr::Var("ch".into())).unwrap();
+        assert_eq!(ty, Ty::Chan(st));
+        assert_eq!(eff, Effect::Pure);
+    }
+
+    #[test]
+    fn test_secure_chan_typed_variable_lookup() {
+        // SecureChan type preserves both session type and security level.
+        let mut ctx = TypingContext::new();
+        let st = SessionType::Recv(Box::new(Ty::Bool), Box::new(SessionType::End));
+        ctx = ctx.extend_gamma("sch".into(), Ty::SecureChan(st.clone(), SecurityLevel::Secret));
+        let (ty, eff) = type_check_full(&mut ctx, &Expr::Var("sch".into())).unwrap();
+        assert_eq!(ty, Ty::SecureChan(st, SecurityLevel::Secret));
+        assert_eq!(eff, Effect::Pure);
+    }
+
+    #[test]
+    fn test_chan_let_binding() {
+        // Chan-typed values flow correctly through Let bindings.
+        let mut ctx = TypingContext::new();
+        let st = SessionType::End;
+        ctx = ctx.extend_gamma("ch".into(), Ty::Chan(st.clone()));
+        // let x = ch in x
+        let expr = Expr::Let(
+            "x".into(),
+            Box::new(Expr::Var("ch".into())),
+            Box::new(Expr::Var("x".into())),
+        );
+        let (ty, _eff) = type_check_full(&mut ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Chan(st));
+    }
+
+    #[test]
+    fn test_chan_type_mismatch_in_if() {
+        // If branches must agree on type — Chan vs Int → error.
+        let mut ctx = TypingContext::new();
+        let st = SessionType::End;
+        ctx = ctx.extend_gamma("ch".into(), Ty::Chan(st));
+        let expr = Expr::If(
+            Box::new(Expr::Bool(true)),
+            Box::new(Expr::Var("ch".into())),
+            Box::new(Expr::Int(42)),
+        );
+        match type_check_full(&mut ctx, &expr) {
+            Err(TypeError::TypeMismatch { .. }) => {}
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_chan_linear_enforcement() {
+        // Channel bindings with Linear qualifier enforce single use.
+        // This combines A3 (linearity) with A4 (session types).
+        let mut ctx = TypingContext::new();
+        let st = SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End));
+        ctx = ctx.extend_gamma_linear("ch".into(), Ty::Chan(st), Linearity::Linear);
+        // First use OK
+        let _ = type_check_full(&mut ctx, &Expr::Var("ch".into())).unwrap();
+        // Second use → LinearityViolation
+        match type_check_full(&mut ctx, &Expr::Var("ch".into())) {
+            Err(TypeError::LinearityViolation { .. }) => {}
+            other => panic!("Expected LinearityViolation, got {:?}", other),
+        }
     }
 }
