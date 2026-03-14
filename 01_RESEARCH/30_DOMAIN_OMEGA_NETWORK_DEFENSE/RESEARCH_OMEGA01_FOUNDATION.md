@@ -1,768 +1,135 @@
-# RIINA Research Domain Ω (Omega): Verified Network Defense
+# Ω-01: Verified Network Defense — Provably Resilient Under Attack
 
-**Audit Update:** 2026-02-04 (Codex audit sync) — Active build: 0 admit., 0 Admitted., 4 axioms, 249 active files, 4,044 Qed (active), 283 total .v. Historical counts in this document remain historical.
-
-## Document Control
-
-| Property | Value |
-|----------|-------|
-| Document ID | RESEARCH-OMEGA-VERIFIED-NETWORK-DEFENSE |
-| Version | 1.0.0 |
-| Date | 2026-01-15 |
-| Domain | Ω: Verified Network Defense |
-| Mode | ULTRA KIASU | PARANOID | ZERO TRUST |
-| Status | FOUNDATIONAL DEFINITION |
+**Domain:** Ω — Verified Network Defense
+**Status:** Research Complete
+**Date:** 2026-03-14
+**RIINA Feature Target:** Rate limiting proofs, capability-based networking, algorithmic DoS prevention, resource bounds
 
 ---
 
-# Ω-01: The "Network Attack" Problem & The RIINA Solution
+## 1. Problem Statement
 
-## 1. The Existential Threat
+DDoS attacks are among the most impactful network-layer threats: the Mirai botnet took down Dyn DNS in 2016, GitHub was hit with a 1.35 Tbps attack in 2018, and Cloudflare reported 71 million requests-per-second attacks in 2023. Traditional thinking holds that DDoS is an infrastructure problem, not a language-level concern. RIINA challenges this: while a programming language cannot stop packets from arriving, it can make the runtime provably resistant to resource exhaustion, require proof-of-work before allocating resources, use capability-based networking to limit attack surface, prove rate limiting correctness, and eliminate algorithmic DoS entirely through verified complexity bounds.
 
-**Context:**
-DDoS (Distributed Denial of Service) attacks are network-layer. They flood systems with traffic, exhausting resources.
+## 2. State of the Art
 
-**The Reality:**
-- 2016: Mirai botnet took down Dyn DNS, breaking half the internet
-- 2018: GitHub hit with 1.35 Tbps attack
-- 2020: AWS mitigated 2.3 Tbps attack
-- 2023: Cloudflare reported 71 million RPS attack
+### 2.1 Algorithmic Complexity Attacks
 
-**The Traditional View:**
-"DDoS is infrastructure, not language. Nothing a programming language can do."
+Crosby and Wallach demonstrated that many hash table implementations are vulnerable to algorithmic complexity attacks: an attacker who can control hash table keys can cause O(n²) behavior by triggering worst-case collision chains. This class of attack affects web servers, DNS resolvers, and language runtimes. Prevention requires hash functions with proven collision resistance or data structures with worst-case guarantees.
 
-**The RIINA View:**
-"We can't stop packets from arriving, but we can:
-1. Make the language runtime resistant to resource exhaustion
-2. Require proof-of-work from clients before allocating resources
-3. Use capability-based networking to limit attack surface
-4. Prove rate limiting correctness
-5. Eliminate algorithmic DoS entirely"
+Crosby, S. A., Wallach, D. S., "Denial of Service via Algorithmic Complexity Attacks", *USENIX Security*, 2003.
 
-## 2. The Solution: Multi-Layer Verified Defense
+### 2.2 SipHash: Provably Collision-Resistant Hashing
 
-### 2.1 Defense Architecture
+SipHash provides a fast, short-input hash function designed specifically for hash table protection against algorithmic complexity attacks. Its security analysis provides formal bounds on collision probability, making it suitable for verified systems. Rust and Python use SipHash as the default hash function for hash tables.
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                 RIINA NETWORK DEFENSE STACK                          │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌─────────────────────────────────────────────────────────────┐    │
-│  │  Layer 5: Application Defense                                │    │
-│  │  ├── Track V: No infinite loops (algorithmic DoS)           │    │
-│  │  ├── Effect system: Resource bounds                         │    │
-│  │  └── Track W: Memory exhaustion prevention                  │    │
-│  └─────────────────────────────────────────────────────────────┘    │
-│                              │                                       │
-│  ┌───────────────────────────▼───────────────────────────────────┐  │
-│  │  Layer 4: Rate Limiting (Verified)                            │  │
-│  │  ├── Token bucket algorithm (PROVEN)                          │  │
-│  │  ├── Per-principal budgets                                    │  │
-│  │  └── Adaptive rate adjustment                                 │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│                              │                                       │
-│  ┌───────────────────────────▼───────────────────────────────────┐  │
-│  │  Layer 3: Cryptographic Puzzles                               │  │
-│  │  ├── Client puzzle protocol (PROVEN)                          │  │
-│  │  ├── Non-parallelizable (modular sqrt)                        │  │
-│  │  └── Difficulty auto-scales with load                         │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│                              │                                       │
-│  ┌───────────────────────────▼───────────────────────────────────┐  │
-│  │  Layer 2: Capability-Based Networking                         │  │
-│  │  ├── seL4-style capabilities for network                      │  │
-│  │  ├── No capability = no access                                │  │
-│  │  └── Unforgeable (cryptographic)                              │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│                              │                                       │
-│  ┌───────────────────────────▼───────────────────────────────────┐  │
-│  │  Layer 1: Verified Protocol Stack                             │  │
-│  │  ├── SYN cookies (PROVEN correct)                             │  │
-│  │  ├── QUIC with puzzles (QFAM)                                 │  │
-│  │  └── seL4 verified kernel                                     │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+Aumasson, J.-P., Bernstein, D. J., "SipHash: A Fast Short-Input PRF", *INDOCRYPT*, 2012.
 
-## 3. Cryptographic Client Puzzles
+### 2.3 Capability-Based Security
 
-### 3.1 The Concept
+Capability-based security, originating with Dennis and Van Horn (1966), provides access control through unforgeable tokens (capabilities) rather than access control lists. CHERI (Capability Hardware Enhanced RISC Instructions) extends hardware with capability-based memory protection. Applied to networking, capabilities can restrict which network endpoints a process can access.
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    CLIENT PUZZLE PROTOCOL                            │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Normal Client:                                                      │
-│  ┌────────┐                              ┌────────┐                 │
-│  │ Client │──────────request────────────►│ Server │                 │
-│  └────────┘                              └────┬───┘                 │
-│       │                                       │                      │
-│       │◄────────puzzle (difficulty=5)────────│                      │
-│       │                                       │                      │
-│       │ [solves puzzle: ~32ms work]           │                      │
-│       │                                       │                      │
-│       │──────────solution + request──────────►│                      │
-│       │                                       │                      │
-│       │◄────────response─────────────────────│                      │
-│                                                                      │
-│  Attacker (1000 bots):                                              │
-│  ┌────────┐                              ┌────────┐                 │
-│  │1000 bots│─────────1000 requests──────►│ Server │                 │
-│  └────────┘                              └────┬───┘                 │
-│       │                                       │                      │
-│       │◄────────1000 puzzles (difficulty=10)─│                      │
-│       │                                       │                      │
-│       │ [Each bot: ~1s work]                  │                      │
-│       │ [Total: 1000 seconds of work]         │                      │
-│       │                                       │                      │
-│       │ Attack rate: 1 req/sec instead of    │                      │
-│       │              1000 req/sec             │                      │
-│                                                                      │
-│  KEY: Server work O(1), Attacker work O(2^difficulty)               │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+Watson, R. N. M., et al., "CHERI: A Hybrid Capability-System Architecture for Scalable Software Compartmentalization", *IEEE S&P*, 2015.
 
-### 3.2 Formal Definition
+### 2.4 Verified Rate Limiting
 
-```coq
-(* Puzzle definition *)
-Record Puzzle := {
-  challenge : bytes;      (* Server-generated random challenge *)
-  difficulty : nat;       (* Number of leading zeros required *)
-  timestamp : nat;        (* Prevents replay *)
-  server_nonce : bytes;   (* Server's contribution *)
-}.
+Rate limiting prevents resource exhaustion by bounding the rate of operations. Formal verification of rate limiters proves that the bound is enforced under all conditions, including concurrent access and clock manipulation. Token bucket and leaky bucket algorithms have been formalized and verified.
 
-(* Solution *)
-Record Solution := {
-  puzzle : Puzzle;
-  client_nonce : bytes;   (* Client finds this *)
-}.
+### 2.5 Resource-Bounded Computation
 
-(* Valid solution: hash has required leading zeros *)
-Definition valid_solution (sol : Solution) : Prop :=
-  let h := sha256 (sol.puzzle.challenge ++ sol.client_nonce) in
-  leading_zeros h >= sol.puzzle.difficulty.
+Resource-bounded type systems ensure that programs consume bounded resources (memory, time, network bandwidth). Hofmann and Jost developed automatic amortized resource analysis (AARA), which infers resource bounds from types. This approach has been implemented in the Resource Aware ML (RaML) system.
 
-(* Work bound: expected work to find solution *)
-Theorem puzzle_work_bound : forall p : Puzzle,
-  expected_work (find_solution p) = O(2^(p.difficulty)).
-Proof.
-  (* Hash is random oracle *)
-  (* Probability of d leading zeros = 2^(-d) *)
-  (* Expected trials = 2^d *)
-Qed.
+Hoffmann, J., Aehlig, K., Hofmann, M., "Multivariate Amortized Resource Analysis", *ACM TOPLAS*, 34(3):14, 2012.
 
-(* Verification is cheap *)
-Theorem puzzle_verify_cheap : forall sol : Solution,
-  work (verify_solution sol) = O(1).
-Proof.
-  (* Just compute one hash and check leading zeros *)
-Qed.
+### 2.6 Verified Firewalls and Network Filters
 
-(* Non-parallelizable variant (modular square root) *)
-Definition modular_sqrt_puzzle (n p : nat) : Puzzle :=
-  {| challenge := encode (n, p);
-     difficulty := log2 p;  (* p is a large prime *)
-     ... |}.
+Verified network filters prove that packet filtering rules correctly implement security policies. Diekmann et al. formalized iptables firewall rules in Isabelle/HOL and verified that complex rulesets correctly enforce intended policies. Nelson et al. developed Margrave for analyzing firewall policies.
 
-Theorem modular_sqrt_sequential : forall puzzle cores,
-  speedup (solve_parallel puzzle cores) <= O(1).
-Proof.
-  (* Modular square root is inherently sequential *)
-  (* Cannot be parallelized across cores *)
-  (* Attacker's GPU/botnet gives no advantage *)
-Qed.
-```
+Diekmann, C., Michaelis, J., Haslbeck, M., Carle, G., "Verified iptables Firewall Analysis", *IFIP Networking*, 2016.
 
-### 3.3 RIINA Puzzle Implementation
+### 2.7 Verified Cryptographic Protocols
+
+Verified implementations of TLS, WireGuard, and other network protocols ensure that the protocol logic is correct and that implementations do not introduce vulnerabilities. The miTLS project provided the first verified implementation of TLS 1.2, and EverCrypt provides verified cryptographic primitives used by network protocols.
+
+Bhargavan, K., et al., "Implementing TLS with Verified Cryptographic Security", *IEEE S&P*, 2013.
+
+### 2.8 Proof-of-Work and Client Puzzles
+
+Client puzzles require requesters to solve a computational problem before the server allocates resources, making DDoS attacks more expensive. Formal analysis of puzzle schemes provides bounds on the attacker's cost relative to the server's cost.
+
+Jakobsson, M., Juels, A., "Proofs of Work and Bread Pudding Protocols", *Communications and Multimedia Security*, 1999.
+
+## 3. Properties Verifiable by RIINA
+
+| Property | Method | RIINA Mechanism |
+|----------|--------|-----------------|
+| Rate limit enforcement | Token bucket verification | Proven bound on request rate under all conditions |
+| Algorithmic DoS prevention | Worst-case complexity proofs | Data structures with proven O(log n) worst case |
+| Resource exhaustion prevention | Resource-bounded types | Type system enforces memory/time/bandwidth bounds |
+| Capability-based access | Linear capability types | Network capabilities are unforgeable tokens |
+| Protocol correctness | Model checking + proof | Network protocol verified against specification |
+| Firewall policy correctness | Policy analysis | Firewall rules proven to match security policy |
+
+## 4. RIINA Integration Architecture
+
+### 4.1 Resource-Bounded Networking
 
 ```riina
-// Cryptographic puzzle system
-bentuk Teka-teki {
-    cabaran: [u8; 32],
-    kesukaran: u8,
-    cap_masa: u64,
-    nonce_pelayan: [u8; 16],
-}
-
-bentuk Penyelesaian {
-    teka_teki: Teka-teki,
-    nonce_klien: [u8; 32],
-}
-
-impl Teka-teki {
-    // Server generates puzzle
-    fungsi jana(kesukaran: u8) -> Teka-teki
-        kesan KesanRawak
-    {
-        Teka-teki {
-            cabaran: jana_rawak_32(),
-            kesukaran,
-            cap_masa: masa_sekarang(),
-            nonce_pelayan: jana_rawak_16(),
-        }
-    }
-
-    // Server verifies solution - O(1) work
-    #[kerumitan("O(1)")]
-    fungsi sahkan(&self, penyelesaian: &Penyelesaian) -> bool {
-        // Check timestamp (prevent replay)
-        kalau masa_sekarang() - self.cap_masa > TAMAT_TEMPOH {
-            pulang salah;
-        }
-
-        // Verify hash has required leading zeros
-        biar hash = sha256(&[
-            &self.cabaran[..],
-            &penyelesaian.nonce_klien[..],
-        ].concat());
-
-        sifar_depan(&hash) >= self.kesukaran
-    }
-}
-
-impl Penyelesaian {
-    // Client solves puzzle - O(2^difficulty) work
-    #[kerumitan("O(2^kesukaran)")]
-    fungsi selesai(teka_teki: &Teka-teki) -> Penyelesaian {
-        biar mut nonce = [0u8; 32];
-
-        gelung {
-            biar hash = sha256(&[
-                &teka_teki.cabaran[..],
-                &nonce[..],
-            ].concat());
-
-            kalau sifar_depan(&hash) >= teka_teki.kesukaran {
-                pulang Penyelesaian {
-                    teka_teki: teka_teki.klon(),
-                    nonce_klien: nonce,
-                };
-            }
-
-            tambah_satu(&mut nonce);
-        }
-    }
-}
-```
-
-### 3.4 Adaptive Difficulty
-
-```riina
-// Server adjusts difficulty based on load
-bentuk PengawalTeka-teki {
-    kesukaran_semasa: Atomik<u8>,
-    permintaan_sejam: Atomik<u64>,
-    sasaran_permintaan: u64,
-}
-
-impl PengawalTeka-teki {
-    // Adjust difficulty every minute
-    fungsi selaras(&self) {
-        biar permintaan = self.permintaan_sejam.muat(Tertib::Relaxed);
-        biar sasaran = self.sasaran_permintaan;
-
-        biar kesukaran_baru = kalau permintaan > sasaran * 2 {
-            // Under attack - increase difficulty
-            maks(self.kesukaran_semasa.muat(Tertib::Relaxed) + 2, KESUKARAN_MAKS)
-        } lain kalau permintaan > sasaran {
-            // High load - slight increase
-            maks(self.kesukaran_semasa.muat(Tertib::Relaxed) + 1, KESUKARAN_MAKS)
-        } lain kalau permintaan < sasaran / 2 {
-            // Low load - decrease difficulty
-            maks(self.kesukaran_semasa.muat(Tertib::Relaxed).saturating_sub(1), KESUKARAN_MIN)
-        } lain {
-            // Normal - maintain
-            self.kesukaran_semasa.muat(Tertib::Relaxed)
-        };
-
-        self.kesukaran_semasa.simpan(kesukaran_baru, Tertib::Relaxed);
-        self.permintaan_sejam.simpan(0, Tertib::Relaxed);
-    }
-}
-```
-
-## 4. Verified Rate Limiting
-
-### 4.1 Token Bucket Algorithm
-
-```coq
-(* Token bucket state *)
-Record TokenBucket := {
-  tokens : nat;           (* Current tokens *)
-  max_tokens : nat;       (* Bucket capacity *)
-  refill_rate : nat;      (* Tokens per second *)
-  last_refill : timestamp;
-}.
-
-(* Refill tokens based on elapsed time *)
-Definition refill (tb : TokenBucket) (now : timestamp) : TokenBucket :=
-  let elapsed := now - tb.last_refill in
-  let new_tokens := min (tb.tokens + elapsed * tb.refill_rate) tb.max_tokens in
-  {| tokens := new_tokens;
-     max_tokens := tb.max_tokens;
-     refill_rate := tb.refill_rate;
-     last_refill := now |}.
-
-(* Try to consume a token *)
-Definition try_consume (tb : TokenBucket) : option TokenBucket :=
-  if tb.tokens > 0 then
-    Some {| tb with tokens := tb.tokens - 1 |}
-  else
-    None.
-
-(* Rate limiting correctness *)
-Theorem rate_limit_bound : forall tb window,
-  requests_allowed tb window <= tb.refill_rate * window + tb.max_tokens.
-Proof.
-  (* At most refill_rate * window tokens added *)
-  (* At most max_tokens burst *)
-  (* Each request consumes one token *)
-Qed.
-
-(* No starvation under normal load *)
-Theorem no_starvation : forall tb request_rate,
-  request_rate <= tb.refill_rate ->
-  eventually_served tb.
-Proof.
-  (* If request rate <= refill rate, bucket never empty for long *)
-Qed.
-```
-
-### 4.2 RIINA Rate Limiter
-
-```riina
-// Verified rate limiter
-bentuk PengehadKadar {
-    baldi: Peta<IdKlien, BaldiToken>,
-    kadar_isi_semula: u64,  // Tokens per second
-    maks_token: u64,
-}
-
-bentuk BaldiToken {
-    token: u64,
-    isi_terakhir: CapMasa,
-}
-
-impl PengehadKadar {
-    // Check and consume - proven to enforce rate limit
-    #[memastikan hasil == betul => permintaan_dibenar <= kadar * masa + tampung]
-    fungsi benar(&mut self, klien: IdKlien) -> bool {
-        biar sekarang = CapMasa::sekarang();
-
-        biar baldi = self.baldi.masuk_atau(klien, BaldiToken {
-            token: self.maks_token,
-            isi_terakhir: sekarang,
-        });
-
-        // Refill based on elapsed time
-        biar berlalu = sekarang.tempoh_sejak(baldi.isi_terakhir);
-        biar isi = berlalu.sebagai_saat() * self.kadar_isi_semula;
-        baldi.token = maks(baldi.token + isi, self.maks_token);
-        baldi.isi_terakhir = sekarang;
-
-        // Try to consume
-        kalau baldi.token > 0 {
-            baldi.token -= 1;
-            betul
-        } lain {
-            salah
-        }
-    }
-}
-```
-
-## 5. Capability-Based Networking
-
-### 5.1 The Concept
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                CAPABILITY-BASED NETWORK ACCESS                       │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Traditional (Ambient Authority):                                    │
-│  ┌────────┐                                                         │
-│  │ Process│──────► Can access ANY network endpoint                  │
-│  └────────┘        (if OS permits)                                  │
-│                                                                      │
-│  Capability-Based:                                                   │
-│  ┌────────┐   ┌──────────────────┐                                  │
-│  │ Process│───│ NetCap(10.0.0.1, │──────► Can ONLY access           │
-│  └────────┘   │   port=443,      │        10.0.0.1:443              │
-│               │   perm=Connect)  │        with Connect permission   │
-│               └──────────────────┘                                  │
-│                                                                      │
-│  Benefits:                                                           │
-│  ├── Least privilege enforced                                       │
-│  ├── Cannot be social engineered ("give me network access")         │
-│  ├── Unforgeable (cryptographic)                                    │
-│  └── Revocable                                                      │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### 5.2 Formal Definition
-
-```coq
-(* Network capability *)
-Record NetCapability := {
-  target : Endpoint;           (* IP:port *)
-  permissions : list NetPerm;  (* Send, Receive, Listen, Connect *)
-  rate_limit : option nat;     (* Optional rate limit *)
-  valid_until : timestamp;     (* Expiration *)
-  signature : bytes;           (* Cryptographic proof *)
-}.
-
-Inductive NetPerm := Send | Receive | Listen | Connect.
-
-(* Capability grants access *)
-Definition grants_access (cap : NetCapability) (action : NetAction) : Prop :=
-  action.target = cap.target /\
-  In action.permission cap.permissions /\
-  now < cap.valid_until /\
-  verify_signature cap.
-
-(* No capability, no access *)
-Theorem no_cap_no_access : forall process action,
-  ~ (exists cap, has_capability process cap /\ grants_access cap action) ->
-  ~ can_perform process action.
-Proof.
-  (* Capability is required for all network actions *)
-  (* No ambient authority *)
-Qed.
-
-(* Capability unforgeable *)
-Axiom capability_unforgeable : forall cap,
-  valid_signature cap ->
-  issued_by_authority cap.
-(* Relies on cryptographic security of signature scheme *)
-
-(* Delegation preserves bounds *)
-Theorem delegation_safe : forall cap cap',
-  delegate cap cap' ->
-  subset cap'.permissions cap.permissions /\
-  cap'.valid_until <= cap.valid_until /\
-  (cap.rate_limit = Some r -> cap'.rate_limit = Some r' -> r' <= r).
-(* Cannot gain permissions through delegation *)
-```
-
-### 5.3 RIINA Capability System
-
-```riina
-// Network capability (seL4-inspired)
-bentuk KeupayaanRangkaian {
-    sasaran: TitikAkhir,
-    kebenaran: Senarai<KebenaranRangkaian>,
-    had_kadar: Pilihan<u64>,
-    sah_sehingga: CapMasa,
-    tandatangan: [u8; 64],  // Ed25519 signature
-}
-
-pilihan KebenaranRangkaian {
-    Hantar,
-    Terima,
-    Dengar,
-    Sambung,
-}
-
-impl KeupayaanRangkaian {
-    // Only authority can create capabilities
-    fungsi cipta(
-        pihak_berkuasa: &KunciPersendirian,
-        sasaran: TitikAkhir,
-        kebenaran: Senarai<KebenaranRangkaian>,
-        tempoh: Tempoh,
-    ) -> KeupayaanRangkaian {
-        biar sah_sehingga = CapMasa::sekarang() + tempoh;
-        biar data = [sasaran.ke_bait(), kebenaran.ke_bait(), sah_sehingga.ke_bait()].concat();
-        biar tandatangan = pihak_berkuasa.tanda(&data);
-
-        KeupayaanRangkaian {
-            sasaran,
-            kebenaran,
-            had_kadar: Tiada,
-            sah_sehingga,
-            tandatangan,
-        }
-    }
-
-    // Verify capability is valid
-    fungsi sah(&self, kunci_awam: &KunciAwam) -> bool {
-        // Check expiration
-        kalau CapMasa::sekarang() > self.sah_sehingga {
-            pulang salah;
-        }
-
-        // Verify signature
-        biar data = [
-            self.sasaran.ke_bait(),
-            self.kebenaran.ke_bait(),
-            self.sah_sehingga.ke_bait()
-        ].concat();
-
-        kunci_awam.sahkan(&self.tandatangan, &data)
-    }
-
-    // Delegate (attenuate) capability
-    fungsi wakilkan(
-        &self,
-        pihak_berkuasa: &KunciPersendirian,
-        kebenaran_baru: Senarai<KebenaranRangkaian>,
-        tempoh_baru: Tempoh,
-    ) -> Pilihan<KeupayaanRangkaian> {
-        // Can only reduce permissions
-        kalau !kebenaran_baru.iter().semua(|k| self.kebenaran.mengandungi(k)) {
-            pulang Tiada;
-        }
-
-        // Can only reduce validity
-        biar sah_baru = maks(
-            CapMasa::sekarang() + tempoh_baru,
-            self.sah_sehingga
-        );
-
-        Sebahagian(KeupayaanRangkaian::cipta(
-            pihak_berkuasa,
-            self.sasaran.klon(),
-            kebenaran_baru,
-            sah_baru - CapMasa::sekarang(),
-        ))
-    }
-}
-
-// Network operations require capability
-fungsi sambung(cap: &KeupayaanRangkaian, sasaran: &TitikAkhir)
-    -> Keputusan<Sambungan, RalatRangkaian>
-    memerlukan cap.sah(&KUNCI_SISTEM)
-    memerlukan cap.sasaran == *sasaran
-    memerlukan cap.kebenaran.mengandungi(KebenaranRangkaian::Sambung)
-    kesan KesanRangkaian
+// Network handler with resource bounds
+@had_sumber(memori: 1_MB, masa: 100_ms, lebar_jalur: 10_KB)
+fungsi kendalikan_permintaan(req: Permintaan) -> Respons
+    kesan Rangkaian
 {
-    // Implementation uses capability to prove authorization
-    sambungan_dalaman(sasaran)
+    // Type system enforces resource bounds
+    // Handler cannot exceed 1MB memory, 100ms time, 10KB response
 }
 ```
 
-## 6. SYN Cookie Defense
-
-### 6.1 SYN Flood Attack
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    SYN FLOOD ATTACK                                  │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Normal TCP Handshake:                                              │
-│  Client ──SYN──────────────────────────────────► Server             │
-│         ◄──────────────────────────────SYN-ACK── (allocates state) │
-│         ──ACK──────────────────────────────────►                    │
-│         [Connection established]                                     │
-│                                                                      │
-│  SYN Flood:                                                          │
-│  Attacker ──SYN (spoofed IP)──────────────────► Server              │
-│           ◄─────────────────────────────SYN-ACK── (allocates state) │
-│           [No ACK - attacker doesn't receive SYN-ACK]               │
-│           [Server state allocated, never freed]                     │
-│                                                                      │
-│  × 1,000,000 spoofed SYNs = Server memory exhausted                 │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### 6.2 SYN Cookie Solution
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    SYN COOKIE DEFENSE                                │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  With SYN Cookies:                                                   │
-│  Client ──SYN────────────────────────────────────► Server           │
-│         ◄────────────────────────────SYN-ACK(cookie)── NO STATE!    │
-│         ──ACK(cookie+1)──────────────────────────►                   │
-│         [Server verifies cookie, THEN allocates state]              │
-│                                                                      │
-│  Cookie = HMAC(secret, src_ip, src_port, dst_ip, dst_port, time)    │
-│                                                                      │
-│  Attacker:                                                           │
-│  - Cannot compute valid cookie (doesn't know secret)                │
-│  - Cannot complete handshake                                        │
-│  - Server allocates ZERO state for attack traffic                   │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### 6.3 Verified SYN Cookie
+### 4.2 Coq Formalization
 
 ```coq
-(* SYN cookie computation *)
-Definition syn_cookie (secret : bytes) (src dst : Endpoint) (t : timestamp) : nat :=
-  truncate 32 (hmac_sha256 secret (encode (src, dst, t))).
+(* Rate limiter correctness *)
+Theorem rate_limit_enforced : forall limiter t window,
+  requests_in_window limiter t window <= max_rate limiter.
 
-(* SYN cookie verification *)
-Definition verify_syn_cookie (secret : bytes) (src dst : Endpoint)
-                             (cookie : nat) (t_now : timestamp) : bool :=
-  (* Check recent time windows *)
-  existsb (fun t => syn_cookie secret src dst t = cookie)
-          [t_now; t_now - 1; t_now - 2].
-
-(* Security: Cannot forge cookie without secret *)
-Theorem syn_cookie_unforgeable : forall src dst t cookie,
-  verify_syn_cookie secret src dst cookie t = true ->
-  (* Either computed with secret, or negligible probability collision *)
-  computed_with_secret secret cookie \/ collision_probability < 2^(-128).
-Proof.
-  (* HMAC security *)
-Qed.
-
-(* Stateless: No memory allocated until handshake complete *)
-Theorem syn_cookie_stateless : forall server syn_packet,
-  is_syn syn_packet ->
-  memory_allocated (handle_syn server syn_packet) = 0.
-Proof.
-  (* SYN handler only computes cookie, no allocation *)
-Qed.
+(* Algorithmic DoS prevention *)
+Theorem hashtable_worst_case : forall ht key,
+  lookup_time ht key <= O(log (size ht)).
 ```
 
-## 7. QUIC Flooding Defense (QFAM)
+## 5. Key References
 
-### 7.1 QUIC Protocol Vulnerability
+| Reference | Venue | Contribution |
+|-----------|-------|--------------|
+| Crosby, S. A., Wallach, D. S., "Algorithmic Complexity Attacks" (2003) | USENIX Security | Hash collision DoS |
+| Aumasson, J.-P., Bernstein, D. J., "SipHash" (2012) | INDOCRYPT | Collision-resistant hashing |
+| Watson, R. N. M., et al., "CHERI" (2015) | IEEE S&P | Capability-based hardware |
+| Hoffmann, J., et al., "Multivariate Amortized Resource Analysis" (2012) | ACM TOPLAS | Automatic resource bounds |
+| Diekmann, C., et al., "Verified iptables" (2016) | IFIP Networking | Verified firewall analysis |
+| Bhargavan, K., et al., "Verified TLS" (2013) | IEEE S&P | Verified protocol implementation |
+| Jakobsson, M., Juels, A., "Proofs of Work" (1999) | CMS | Client puzzle foundations |
+| Zargar, S. T., Joshi, J., Tipper, D., "A Survey of Defense Mechanisms Against DDoS Flooding Attacks" (2013) | IEEE Communications Surveys | DDoS defense survey |
 
-QUIC's Initial packet causes server to allocate crypto state before client is authenticated.
+## 6. Formalizability Assessment
 
-### 7.2 QFAM (QUIC Flooding Attack Mitigation)
+| Component | Effort (person-months) | Feasibility | Phase |
+|-----------|----------------------|-------------|-------|
+| Rate limiter verification | 2-3 | High — simple state machine | Phase 1 |
+| Hash collision resistance proofs | 2-3 | High — SipHash analysis | Phase 1 |
+| Resource-bounded type system | 4-6 | Medium — AARA methodology | Phase 2 |
+| Capability-based networking | 3-4 | Medium — linear type integration | Phase 2 |
+| Verified firewall rules | 3-4 | High — Diekmann methodology | Phase 3 |
+| Protocol verification | 4-6 | Medium — per-protocol effort | Phase 3 |
+| Proof-of-work integration | 2-3 | High — standard crypto | Phase 4 |
 
-```riina
-// QUIC with cryptographic challenge
-bentuk PelindungQUIC {
-    rahsia: [u8; 32],
-    kesukaran: u8,
-}
+## 7. Scope Limitations
 
-impl PelindungQUIC {
-    // Handle Initial packet with puzzle challenge
-    fungsi kendalikan_initial(&self, paket: &PaketInitial)
-        -> Keputusan<TindakanQUIC, RalatQUIC>
-    {
-        padan paket.token {
-            Tiada => {
-                // No token - send Retry with puzzle
-                biar teka_teki = Teka-teki::jana(self.kesukaran);
-                Ok(TindakanQUIC::Retry { teka_teki })
-            }
-            Sebahagian(token) => {
-                // Has token - verify puzzle solution
-                kalau self.sahkan_token(&token, &paket.src) {
-                    // Valid - proceed with handshake
-                    Ok(TindakanQUIC::Teruskan)
-                } lain {
-                    // Invalid token
-                    Err(RalatQUIC::TokenTidakSah)
-                }
-            }
-        }
-    }
-
-    fungsi sahkan_token(&self, token: &[u8], src: &Alamat) -> bool {
-        // Token = puzzle || solution
-        // Verify solution matches puzzle and was solved correctly
-        // And puzzle was issued recently (prevent replay)
-        ...
-    }
-}
-```
-
-## 8. Algorithmic DoS Prevention
-
-### 8.1 The Problem
-
-Even without network flooding, attackers can cause DoS through algorithmic attacks:
-- **ReDoS:** Pathological regex backtracking
-- **Hash collision:** Attackers craft inputs that collide, turning O(1) → O(n)
-- **Compression bombs:** Small input, huge decompressed output
-
-### 8.2 RIINA Prevention
-
-| Attack | RIINA Defense | Mechanism |
-|--------|---------------|-----------|
-| ReDoS | Track V | Regex engine termination proven |
-| Hash collision | Verified hash | SipHash with random key, proven uniform |
-| Compression bomb | Effect system | Decompression has output size bound |
-| Infinite loop | Track V | All programs terminate |
-| Memory exhaustion | Track W | Allocation bounded |
-
-```riina
-// Bounded decompression
-fungsi nyahmampat(data: &[u8], had_output: usize)
-    -> Keputusan<Vektor<u8>, RalatMampat>
-    memerlukan had_output <= MAKS_NYAHMAMPAT
-    memastikan hasil.panjang() <= had_output
-    kesan KesanBaca
-{
-    biar mut output = Vektor::dengan_kapasiti(maks(had_output, 4096));
-    biar mut nyahmampat = Nyahmampat::baru(data);
-
-    gelung {
-        kalau output.panjang() >= had_output {
-            pulang Err(RalatMampat::MelebihiHad);
-        }
-
-        padan nyahmampat.baca_seterusnya()? {
-            Sebahagian(bait) => output.tolak(bait),
-            Tiada => pecah,
-        }
-    }
-
-    Ok(output)
-}
-```
-
-## 9. Defense Matrix
-
-| Attack Type | Layer | Defense | Status |
-|-------------|-------|---------|--------|
-| SYN flood | L1 | Verified SYN cookies | **PROVEN** |
-| QUIC flood | L1 | QFAM puzzles | **PROVEN** |
-| Amplification | L2 | Capability-based (no reflection) | **PROVEN** |
-| Slowloris | L4 | Timeout + rate limit | **PROVEN** |
-| Resource exhaustion | L4, L5 | Token bucket + effect bounds | **PROVEN** |
-| ReDoS | L5 | Track V termination | **PROVEN** |
-| Hash collision | L5 | Verified SipHash | **PROVEN** |
-| Compression bomb | L5 | Bounded decompression | **PROVEN** |
-| Volumetric DDoS | External | CDN/scrubbing required | Not language-level |
-
-## 10. Dependencies
-
-| Dependency | Direction | Nature |
-|------------|-----------|--------|
-| Track A (Formal) | Ω depends on A | Proof foundation |
-| Track F (Crypto) | Ω depends on F | HMAC, signatures |
-| Track V (Termination) | Ω depends on V | No algorithmic DoS |
-| Track W (Memory) | Ω depends on W | No memory exhaustion |
-| Track U (Guardian) | Ω integrates U | seL4 kernel |
-| Track Δ (Distribution) | Δ depends on Ω | Network layer for consensus |
-
-## 11. Obsolescence of Threats
-
-| Threat | Status | Mechanism |
-|--------|--------|-----------|
-| SYN flood | **OBSOLETE** | Verified SYN cookies |
-| Algorithmic DoS | **OBSOLETE** | Track V termination |
-| Reflection/amplification | **OBSOLETE** | Capability-based networking |
-| State exhaustion | **OBSOLETE** | Puzzles + stateless protocols |
-| Hash collision DoS | **OBSOLETE** | Verified keyed hashing |
-| Volumetric DDoS | **MITIGATED** | Puzzles raise cost; infrastructure still needed |
+1. **Volumetric attacks.** No language-level defense can stop a 1 Tbps flood. RIINA addresses application-layer and algorithmic DoS but relies on infrastructure for volumetric mitigation.
+2. **Resource bound accuracy.** Static resource bounds are conservative; actual resource usage may be much less. Overly tight bounds reject useful programs.
+3. **Protocol-level attacks.** Some attacks exploit protocol semantics (SYN floods, DNS amplification) that are below RIINA's abstraction layer.
+4. **Adaptive attackers.** Formal models typically assume a fixed attacker strategy. Adaptive attackers who change tactics based on observed defenses require game-theoretic analysis.
+5. **Performance cost of defenses.** Proof-of-work, rate limiting, and capability checking add latency to every request. This overhead may be unacceptable for latency-sensitive applications.
 
 ---
 
-**"The network is hostile. Every packet is an attack until proven otherwise."**
-
-*RIINA: Rigorous Immutable Invariant — Normalized Axiom*
-
-*QED Eternum.*
+*"An attack that cannot exhaust your resources cannot deny your service."*
