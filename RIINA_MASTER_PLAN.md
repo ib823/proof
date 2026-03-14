@@ -245,12 +245,12 @@ but the compiler does not yet enforce them.
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| `.lean` files in `02_FORMAL/lean/RIINA` | 136 | Strict mechanization gate scope (excludes `_wip`) |
-| Theorem/lemma declarations | 3,895 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| `lake build RIINA` | PASSES | Full Lean lane builds successfully |
-| `sorry` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
+| `.lean` files in `02_FORMAL/lean/RIINA` | 155 | Strict mechanization gate scope (excludes `_wip`) |
+| Theorem/lemma declarations | 4,458 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
+| `lake build RIINA` | FAILS | New domain files from PR #15 have proof errors; fix required |
+| `sorry` count (full lane) | 1 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
 | `axiom` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| Mechanized readiness | READY | Full active lane now has zero `sorry` and zero `axiom` |
+| Mechanized readiness | NOT READY | 1 sorry + build errors in new domain files |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
 **Honest assessment:** The full Lean namespace builds, and the strict active lane is now
