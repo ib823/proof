@@ -1,10 +1,10 @@
 {
-  "generated": "2026-03-13T23:56:56Z",
-  "generatedHuman": "March 13, 2026 at 23:56 UTC",
+  "generated": "2026-03-14T00:52:21Z",
+  "generatedHuman": "March 14, 2026 at 00:52 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "bad36f9e",
+    "commit": "5c305107",
     "branch": "main"
   },
   "proofs": {
@@ -31,13 +31,13 @@
     "prover": "Lean 4"
   },
   "isabelle": {
-    "lemmas": 9165,
+    "lemmas": 0,
     "lemmasRaw": 9165,
     "compiledTheories": 0,
     "compiledLemmas": 0,
     "smokeBuildOk": false,
     "smokeSession": "RIINA_CORE",
-    "quarantined": false,
+    "quarantined": true,
     "sorry": 0,
     "sorryVerified": false,
     "axioms": 0,
@@ -46,66 +46,66 @@
     "prover": "Isabelle/HOL"
   },
   "fstar": {
-    "lemmas": 219,
+    "lemmas": 0,
     "lemmasRaw": 219,
     "compiledLemmas": 0,
     "smokeBuildOk": false,
     "smokeModule": "RIINA.Active.CryptographicSecurityActive",
-    "quarantined": false,
+    "quarantined": true,
     "files": 265,
     "prover": "F*"
   },
   "tlaplus": {
-    "theorems": 5893,
+    "theorems": 0,
     "theoremsRaw": 5893,
     "compiledTheorems": 0,
     "smokeBuildOk": false,
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
-    "quarantined": false,
+    "quarantined": true,
     "files": 267,
     "prover": "TLA+"
   },
   "alloy": {
-    "assertions": 8434,
+    "assertions": 0,
     "assertionsRaw": 8434,
     "compiledAssertions": 0,
     "smokeBuildOk": false,
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
-    "quarantined": false,
+    "quarantined": true,
     "files": 260,
     "prover": "Alloy 6"
   },
   "smt": {
-    "assertions": 11843,
+    "assertions": 0,
     "assertionsRaw": 11843,
-    "quarantined": false,
+    "quarantined": true,
     "files": 267,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
-    "proofs": 2261,
+    "proofs": 0,
     "proofsRaw": 2261,
-    "quarantined": false,
+    "quarantined": true,
     "files": 277,
     "prover": "Verus"
   },
   "kani": {
-    "harnesses": 1515,
+    "harnesses": 0,
     "harnessesRaw": 1515,
-    "quarantined": false,
+    "quarantined": true,
     "files": 261,
     "prover": "Kani"
   },
   "tv": {
-    "validations": 38107,
+    "validations": 0,
     "validationsRaw": 38107,
-    "quarantined": false,
+    "quarantined": true,
     "files": 266,
     "prover": "Translation Validation"
   },
   "multiProver": {
-    "tripleProverTheorems": 2590,
-    "totalProofsAllProvers": 90503,
+    "tripleProverTheorems": 0,
+    "totalProofsAllProvers": 13066,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
