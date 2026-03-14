@@ -958,7 +958,9 @@ mod formalized_tests {
         let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Secret);
         let deref = Expr::Deref(Box::new(r));
         let (ty, _eff) = type_check_full(&mut ctx, &deref).unwrap();
-        assert_eq!(ty, Ty::Int);
+        // Deref of Secret-level ref now returns Labeled(Int, Secret)
+        // to propagate security level through expressions for IFC.
+        assert_eq!(ty, Ty::Labeled(Box::new(Ty::Int), SecurityLevel::Secret));
     }
 
     #[test]
@@ -1120,6 +1122,81 @@ mod formalized_tests {
     }
 
     #[test]
+    fn test_implicit_flow_via_secret_comparison_in_public_context() {
+        // THE CRITICAL IMPLICIT FLOW TEST:
+        // In a PUBLIC context, deref a Secret ref, compare with 0,
+        // branch on the result, and try to write to a public ref.
+        // This MUST be rejected — the branch condition is derived from
+        // secret data, so the branch executes at elevated Δ=Secret,
+        // and writing to a Public ref violates no-write-down.
+        //
+        // Before A1 fix: this would PASS (bug — plain Bool condition
+        // didn't carry the secret label, so branch Δ stayed Public).
+        // After A1 fix: deref returns Labeled(Int, Secret), comparison
+        // returns Labeled(Bool, Secret), If elevates Δ to Secret.
+        let mut ctx = TypingContext::with_level(SecurityLevel::Secret);
+
+        // secret_ref : Ref(Int, Secret)
+        let secret_ref = Expr::Ref(Box::new(Expr::Int(42)), SecurityLevel::Secret);
+        // deref → Labeled(Int, Secret)
+        let deref = Expr::Deref(Box::new(secret_ref));
+        // deref > 0 → Labeled(Bool, Secret)
+        let cond = Expr::BinOp(BinOp::Gt, Box::new(deref), Box::new(Expr::Int(0)));
+        // public_ref : Ref(Int, Public)
+        let public_ref = Expr::Ref(Box::new(Expr::Int(0)), SecurityLevel::Public);
+        // public_ref := 1 (in secret-elevated branch)
+        let assign = Expr::Assign(Box::new(public_ref.clone()), Box::new(Expr::Int(1)));
+        let else_branch = Expr::Assign(
+            Box::new(Expr::Ref(Box::new(Expr::Int(0)), SecurityLevel::Public)),
+            Box::new(Expr::Int(0)),
+        );
+        let if_expr = Expr::If(Box::new(cond), Box::new(assign), Box::new(else_branch));
+
+        match type_check_full(&mut ctx, &if_expr) {
+            Err(TypeError::ImplicitFlowViolation { .. }) => {
+                // Correct: implicit flow through secret-derived branch prevented
+            }
+            other => panic!(
+                "Expected ImplicitFlowViolation for secret-derived branch, got {:?}",
+                other
+            ),
+        }
+    }
+
+    #[test]
+    fn test_public_comparison_allows_public_write() {
+        // Sanity check: comparing public values in a public context and
+        // writing to a public ref inside the branch is ALLOWED.
+        let mut ctx = TypingContext::with_level(SecurityLevel::Public);
+        let public_ref = Expr::Ref(Box::new(Expr::Int(5)), SecurityLevel::Public);
+        let deref = Expr::Deref(Box::new(public_ref));
+        let cond = Expr::BinOp(BinOp::Gt, Box::new(deref), Box::new(Expr::Int(0)));
+        let assign = Expr::Assign(
+            Box::new(Expr::Ref(Box::new(Expr::Int(0)), SecurityLevel::Public)),
+            Box::new(Expr::Int(1)),
+        );
+        let if_expr = Expr::If(
+            Box::new(cond),
+            Box::new(assign),
+            Box::new(Expr::Unit),
+        );
+        // Should succeed — no secret data involved
+        type_check_full(&mut ctx, &if_expr).unwrap();
+    }
+
+    #[test]
+    fn test_binop_propagates_security_label() {
+        // Verify that BinOp on Labeled operands produces a Labeled result
+        let mut ctx = TypingContext::with_level(SecurityLevel::Secret);
+        let secret_ref = Expr::Ref(Box::new(Expr::Int(10)), SecurityLevel::Secret);
+        let deref = Expr::Deref(Box::new(secret_ref));
+        // deref + 5 → Labeled(Int, Secret) + Int → Labeled(Int, Secret)
+        let add = Expr::BinOp(BinOp::Add, Box::new(deref), Box::new(Expr::Int(5)));
+        let (ty, _eff) = type_check_full(&mut ctx, &add).unwrap();
+        assert_eq!(ty, Ty::Labeled(Box::new(Ty::Int), SecurityLevel::Secret));
+    }
+
+    #[test]
     fn test_security_level_lattice() {
         // Test the flow relation: Public ⊑ Internal ⊑ Session ⊑ User ⊑ System ⊑ Secret
         assert!(SecurityLevel::Public.leq(SecurityLevel::Internal));
@@ -1241,8 +1318,9 @@ mod formalized_tests {
         let r = Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Session);
         let deref = Expr::Deref(Box::new(r));
         // Session ⊑ User, so this should succeed
+        // Deref of Session-level ref returns Labeled(Int, Session)
         let (ty, _eff) = type_check_full(&mut ctx, &deref).unwrap();
-        assert_eq!(ty, Ty::Int);
+        assert_eq!(ty, Ty::Labeled(Box::new(Ty::Int), SecurityLevel::Session));
     }
 
     #[test]
@@ -2822,5 +2900,121 @@ mod formalized_tests {
                 other
             ),
         }
+    }
+
+    // ── A2: ConstantTime enforcement ──
+
+    #[test]
+    fn test_if_on_constant_time_bool_rejected() {
+        // Branching on ConstantTime(Bool) must be rejected — it creates
+        // a timing side-channel by revealing the CT value through control flow.
+        let mut ctx = TypingContext::new();
+        ctx = ctx.extend_gamma("ct_flag".into(), Ty::ConstantTime(Box::new(Ty::Bool)));
+        let expr = Expr::If(
+            Box::new(Expr::Var("ct_flag".into())),
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(0)),
+        );
+        match type_check_full(&mut ctx, &expr) {
+            Err(TypeError::ConstantTimeViolation { context }) => {
+                assert_eq!(context, "branch condition");
+            }
+            other => panic!("Expected ConstantTimeViolation, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_constant_time_arithmetic_preserves_tag() {
+        // BinOp on ConstantTime(Int) operands must produce ConstantTime(Int),
+        // preventing the CT discipline from being silently stripped.
+        let mut ctx = TypingContext::new();
+        ctx = ctx.extend_gamma("ct_a".into(), Ty::ConstantTime(Box::new(Ty::Int)));
+        ctx = ctx.extend_gamma("ct_b".into(), Ty::ConstantTime(Box::new(Ty::Int)));
+        let add = Expr::BinOp(
+            BinOp::Add,
+            Box::new(Expr::Var("ct_a".into())),
+            Box::new(Expr::Var("ct_b".into())),
+        );
+        let (ty, _eff) = type_check_full(&mut ctx, &add).unwrap();
+        assert_eq!(ty, Ty::ConstantTime(Box::new(Ty::Int)));
+    }
+
+    #[test]
+    fn test_constant_time_comparison_produces_ct_bool() {
+        // Comparing ConstantTime(Int) values must produce ConstantTime(Bool),
+        // which will then be rejected by If — closing the timing-leak chain.
+        let mut ctx = TypingContext::new();
+        ctx = ctx.extend_gamma("ct_a".into(), Ty::ConstantTime(Box::new(Ty::Int)));
+        ctx = ctx.extend_gamma("ct_b".into(), Ty::ConstantTime(Box::new(Ty::Int)));
+        let cmp = Expr::BinOp(
+            BinOp::Eq,
+            Box::new(Expr::Var("ct_a".into())),
+            Box::new(Expr::Var("ct_b".into())),
+        );
+        let (ty, _eff) = type_check_full(&mut ctx, &cmp).unwrap();
+        assert_eq!(ty, Ty::ConstantTime(Box::new(Ty::Bool)));
+    }
+
+    #[test]
+    fn test_constant_time_mixed_operand_propagates() {
+        // If ONE operand is ConstantTime, the result must also be ConstantTime.
+        // This prevents laundering CT data through arithmetic with non-CT values.
+        let mut ctx = TypingContext::new();
+        ctx = ctx.extend_gamma("ct_a".into(), Ty::ConstantTime(Box::new(Ty::Int)));
+        let add = Expr::BinOp(
+            BinOp::Add,
+            Box::new(Expr::Var("ct_a".into())),
+            Box::new(Expr::Int(2)),
+        );
+        let (ty, _eff) = type_check_full(&mut ctx, &add).unwrap();
+        assert_eq!(ty, Ty::ConstantTime(Box::new(Ty::Int)));
+    }
+
+    #[test]
+    fn test_non_ct_values_unaffected() {
+        // Normal (non-CT) values should work as before — no CT wrapper.
+        let mut ctx = TypingContext::new();
+        let add = Expr::BinOp(
+            BinOp::Add,
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(2)),
+        );
+        let (ty, _eff) = type_check_full(&mut ctx, &add).unwrap();
+        assert_eq!(ty, Ty::Int);
+    }
+
+    #[test]
+    fn test_ct_comparison_then_if_rejected() {
+        // End-to-end: compare CT ints → get CT(Bool) → branch on it → error.
+        // This is the critical side-channel prevention chain.
+        let mut ctx = TypingContext::new();
+        ctx = ctx.extend_gamma("ct_a".into(), Ty::ConstantTime(Box::new(Ty::Int)));
+        ctx = ctx.extend_gamma("ct_b".into(), Ty::ConstantTime(Box::new(Ty::Int)));
+        let cmp = Expr::BinOp(
+            BinOp::Eq,
+            Box::new(Expr::Var("ct_a".into())),
+            Box::new(Expr::Var("ct_b".into())),
+        );
+        let expr = Expr::If(
+            Box::new(cmp),
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(0)),
+        );
+        match type_check_full(&mut ctx, &expr) {
+            Err(TypeError::ConstantTimeViolation { context }) => {
+                assert_eq!(context, "branch condition");
+            }
+            other => panic!("Expected ConstantTimeViolation, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_ct_error_code_and_coq_rule() {
+        let err = TypeError::ConstantTimeViolation {
+            context: "branch condition",
+        };
+        assert_eq!(err.error_code(), "CT0001");
+        assert!(err.coq_rule().unwrap().contains("ConstantTimeSecurity"));
+        assert!(err.fix_hint().unwrap().contains("ConstantTime"));
     }
 }

@@ -75,6 +75,13 @@ pub enum TypeError {
         found: riina_types::Sanitizer,
         context: &'static str,
     },
+    /// Constant-time violation: ConstantTime<T> value used in a context
+    /// that would create a timing side-channel (branch condition, array index).
+    /// This enforces the constant-time discipline: code processing
+    /// ConstantTime values must not branch on them or use them as indices.
+    ConstantTimeViolation {
+        context: &'static str,
+    },
 }
 
 impl std::fmt::Display for TypeError {
@@ -159,6 +166,13 @@ impl std::fmt::Display for TypeError {
                     f,
                     "Sanitizer mismatch in {}: expected {:?}, found {:?}",
                     context, expected, found
+                )
+            }
+            TypeError::ConstantTimeViolation { context } => {
+                write!(
+                    f,
+                    "Constant-time violation: ConstantTime value used in {} (creates timing side-channel)",
+                    context
                 )
             }
         }
@@ -263,6 +277,12 @@ impl TypeError {
             TypeError::SanitizerMismatch { expected, .. } => {
                 format!("Use the correct sanitizer for this context: {:?}", expected)
             }
+            TypeError::ConstantTimeViolation { context } => {
+                format!(
+                    "Do not use ConstantTime values in {context}. \
+                     Use constant-time comparison functions instead of branching on secret data"
+                )
+            }
         })
     }
 
@@ -287,6 +307,7 @@ impl TypeError {
             TypeError::LocationNotFound(_) => "T0010",
             TypeError::TaintViolation { .. } => "TAINT001",
             TypeError::SanitizerMismatch { .. } => "TAINT002",
+            TypeError::ConstantTimeViolation { .. } => "CT0001",
         }
     }
 
@@ -322,6 +343,9 @@ impl TypeError {
             }
             TypeError::SanitizerMismatch { .. } => {
                 Some("XSSPrevention.v:74 — context-specific encoding required")
+            }
+            TypeError::ConstantTimeViolation { .. } => {
+                Some("ConstantTimeSecurity.v:56 — ct_safe predicate forbids branching on CT values")
             }
             _ => None,
         }
@@ -2159,6 +2183,25 @@ fn security_level_of_type(ty: &Ty) -> SecurityLevel {
     }
 }
 
+/// Strip security labels from a type to get the underlying data type.
+/// Used by BinOp and If to work with Labeled values transparently.
+fn strip_label(ty: &Ty) -> (&Ty, SecurityLevel) {
+    match ty {
+        Ty::Labeled(inner, sl) => (inner.as_ref(), *sl),
+        Ty::Secret(inner) => (inner.as_ref(), SecurityLevel::Secret),
+        _ => (ty, SecurityLevel::Public),
+    }
+}
+
+/// Strip a ConstantTime wrapper, returning (inner_type, was_ct).
+/// Used by BinOp to propagate constant-time discipline through arithmetic.
+fn strip_constant_time(ty: &Ty) -> (&Ty, bool) {
+    match ty {
+        Ty::ConstantTime(inner) => (inner.as_ref(), true),
+        _ => (ty, false),
+    }
+}
+
 /// Full typechecker with Coq-matching signature.
 ///
 /// Implements `has_type Γ Σ Δ e T ε` from Typing.v.
@@ -2330,18 +2373,39 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // ════════════════════════════════════════════════════════════════════
         Expr::If(cond, e2, e3) => {
             let (t_cond, eff1) = type_check_full(ctx, cond)?;
-            if t_cond != Ty::Bool {
+
+            // IFC: Accept both Bool and Labeled(Bool, level) as condition.
+            // Strip label to check inner type is Bool, but preserve the
+            // security level for branch elevation.
+            let (inner_cond, cond_label_level) = strip_label(&t_cond);
+
+            // A2: ConstantTime enforcement — reject CT values as branch conditions.
+            // Branching on a ConstantTime value creates a timing side-channel
+            // because the branch taken reveals information about the value.
+            if matches!(inner_cond, Ty::ConstantTime(_)) {
+                return Err(TypeError::ConstantTimeViolation {
+                    context: "branch condition",
+                });
+            }
+
+            if *inner_cond != Ty::Bool {
                 return Err(TypeError::TypeMismatch {
                     expected: Ty::Bool,
-                    found: t_cond,
+                    found: inner_cond.clone(),
                 });
             }
 
             // IFC: Elevate Δ in branches based on condition's security level.
-            // If the condition was derived from high-security data, the
-            // branches must execute at that elevated security level to prevent
-            // implicit flows through control structure.
-            let cond_level = security_level_of_type(&t_cond);
+            // If the condition was derived from high-security data (e.g.,
+            // comparing a secret-labeled value), the branches must execute at
+            // that elevated security level to prevent implicit flows through
+            // control structure.
+            //
+            // Before this fix, cond_level was always Public because t_cond
+            // was always Ty::Bool. Now Deref propagates labels and BinOp
+            // preserves them, so a comparison of secret data produces
+            // Labeled(Bool, Secret), and cond_label_level = Secret.
+            let cond_level = cond_label_level;
             let branch_delta = ctx.delta.join(cond_level);
 
             let mut branch_ctx = TypingContext {
@@ -2444,7 +2508,18 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                             context: "dereference",
                         });
                     }
-                    Ok((*inner, eff.join(Effect::Read)))
+                    // IFC: Propagate security label to the result value.
+                    // Dereferencing a Secret-level reference produces a Labeled value,
+                    // so downstream expressions (BinOp, If) can track the data's origin.
+                    // This is essential for implicit flow prevention: if we compare a
+                    // secret-derived value and branch on the result, the branch delta
+                    // must be elevated.
+                    let result_ty = if sl != SecurityLevel::Public {
+                        Ty::Labeled(inner, sl)
+                    } else {
+                        *inner
+                    };
+                    Ok((result_ty, eff.join(Effect::Read)))
                 }
                 _ => Err(TypeError::ExpectedRef(t)),
             }
@@ -2474,10 +2549,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                             context: "assignment",
                         });
                     }
-                    if *inner != t2 {
+                    // Strip labels from assigned value for type compatibility.
+                    // A Labeled(Int, Secret) value is assignable to Ref(Int, Secret).
+                    let (inner_t2, _) = strip_label(&t2);
+                    if *inner != *inner_t2 {
                         return Err(TypeError::TypeMismatch {
                             expected: *inner,
-                            found: t2,
+                            found: inner_t2.clone(),
                         });
                     }
                     Ok((Ty::Unit, eff1.join(eff2).join(Effect::Write)))
@@ -2594,78 +2672,108 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             let (t1, eff1) = type_check_full(ctx, e1)?;
             let (t2, eff2) = type_check_full(ctx, e2)?;
             let eff = eff1.join(eff2);
+
+            // IFC: Strip security labels for type checking, but track the
+            // maximum security level of operands. The result inherits this level.
+            // This ensures that comparing secret-derived values produces a
+            // Labeled(Bool, Secret) result, which triggers branch elevation in If.
+            let (inner1, sl1) = strip_label(&t1);
+            let (inner2, sl2) = strip_label(&t2);
+            let max_sl = sl1.join(sl2);
+
+            // A2: Strip ConstantTime wrappers for type checking, but propagate
+            // the CT tag through arithmetic/comparison so CT values can't silently
+            // escape the constant-time discipline via BinOp.
+            let (inner1, ct1) = strip_constant_time(inner1);
+            let (inner2, ct2) = strip_constant_time(inner2);
+            let any_ct = ct1 || ct2;
+
+            // Helper: wrap result type with security label and/or CT tag
+            let label_result = |ty: Ty| -> Ty {
+                let ty = if any_ct {
+                    Ty::ConstantTime(Box::new(ty))
+                } else {
+                    ty
+                };
+                if max_sl != SecurityLevel::Public {
+                    Ty::Labeled(Box::new(ty), max_sl)
+                } else {
+                    ty
+                }
+            };
+
             match op {
                 BinOp::Add => {
-                    if t1 == Ty::String && t2 == Ty::String {
-                        Ok((Ty::String, eff))
-                    } else if t1 == Ty::Int && t2 == Ty::Int {
-                        Ok((Ty::Int, eff))
+                    if *inner1 == Ty::String && *inner2 == Ty::String {
+                        Ok((label_result(Ty::String), eff))
+                    } else if *inner1 == Ty::Int && *inner2 == Ty::Int {
+                        Ok((label_result(Ty::Int), eff))
                     } else {
                         Err(TypeError::TypeMismatch {
-                            expected: t1,
-                            found: t2,
+                            expected: inner1.clone(),
+                            found: inner2.clone(),
                         })
                     }
                 }
                 BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
-                    if t1 != Ty::Int {
+                    if *inner1 != Ty::Int {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
-                            found: t1,
+                            found: inner1.clone(),
                         });
                     }
-                    if t2 != Ty::Int {
+                    if *inner2 != Ty::Int {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
-                            found: t2,
+                            found: inner2.clone(),
                         });
                     }
-                    Ok((Ty::Int, eff))
+                    Ok((label_result(Ty::Int), eff))
                 }
                 BinOp::Eq | BinOp::Ne => {
-                    if t1 != t2 {
+                    if inner1 != inner2 {
                         return Err(TypeError::TypeMismatch {
-                            expected: t1,
-                            found: t2,
+                            expected: inner1.clone(),
+                            found: inner2.clone(),
                         });
                     }
-                    if t1 != Ty::Int && t1 != Ty::Bool && t1 != Ty::String {
+                    if *inner1 != Ty::Int && *inner1 != Ty::Bool && *inner1 != Ty::String {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
-                            found: t1,
+                            found: inner1.clone(),
                         });
                     }
-                    Ok((Ty::Bool, eff))
+                    Ok((label_result(Ty::Bool), eff))
                 }
                 BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
-                    if t1 != Ty::Int {
+                    if *inner1 != Ty::Int {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
-                            found: t1,
+                            found: inner1.clone(),
                         });
                     }
-                    if t2 != Ty::Int {
+                    if *inner2 != Ty::Int {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
-                            found: t2,
+                            found: inner2.clone(),
                         });
                     }
-                    Ok((Ty::Bool, eff))
+                    Ok((label_result(Ty::Bool), eff))
                 }
                 BinOp::And | BinOp::Or => {
-                    if t1 != Ty::Bool {
+                    if *inner1 != Ty::Bool {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Bool,
-                            found: t1,
+                            found: inner1.clone(),
                         });
                     }
-                    if t2 != Ty::Bool {
+                    if *inner2 != Ty::Bool {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Bool,
-                            found: t2,
+                            found: inner2.clone(),
                         });
                     }
-                    Ok((Ty::Bool, eff))
+                    Ok((label_result(Ty::Bool), eff))
                 }
             }
         }
