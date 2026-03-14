@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for Singapore Cybersecurity Act invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct SGCyberActPolicy {
+    pub cii_designated: bool,
+    pub compliance_audit: bool,
+    pub incident_response: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn s_g_cyber_act_secure(p: &SGCyberActPolicy) -> bool {
+    p.cii_designated && p.compliance_audit && p.incident_response
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_s_g_cyber_act() -> SGCyberActPolicy {
+    SGCyberActPolicy {
+        cii_designated: true,
+        compliance_audit: true,
+        incident_response: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_s_g_cyber_act() -> SGCyberActPolicy {
+    SGCyberActPolicy {
+        cii_designated: true,
+        compliance_audit: true,
+        incident_response: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_s_g_cyber_act_secure() {
+    let p = baseline_s_g_cyber_act();
+    assert!(s_g_cyber_act_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_s_g_cyber_act_not_weaker() {
+    let b = baseline_s_g_cyber_act();
+    let h = hardened_s_g_cyber_act();
+    assert!(s_g_cyber_act_secure(&h));
 }

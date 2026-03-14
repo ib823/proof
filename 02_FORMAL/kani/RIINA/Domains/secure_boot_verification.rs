@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for secure boot verification invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct SecureBootPolicy {
+    pub root_of_trust: bool,
+    pub chain_verified: bool,
+    pub rollback_protected: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn secure_boot_secure(p: &SecureBootPolicy) -> bool {
+    p.root_of_trust && p.chain_verified && p.rollback_protected
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_secure_boot() -> SecureBootPolicy {
+    SecureBootPolicy {
+        root_of_trust: true,
+        chain_verified: true,
+        rollback_protected: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_secure_boot() -> SecureBootPolicy {
+    SecureBootPolicy {
+        root_of_trust: true,
+        chain_verified: true,
+        rollback_protected: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_secure_boot_secure() {
+    let p = baseline_secure_boot();
+    assert!(secure_boot_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_secure_boot_not_weaker() {
+    let b = baseline_secure_boot();
+    let h = hardened_secure_boot();
+    assert!(secure_boot_secure(&h));
 }

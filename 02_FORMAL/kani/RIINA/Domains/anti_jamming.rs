@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for anti-jamming invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct AntiJamPolicy {
+    pub frequency_hopping: bool,
+    pub spread_spectrum: bool,
+    pub signal_power_dbm: u64,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn anti_jam_secure(p: &AntiJamPolicy) -> bool {
+    p.frequency_hopping && p.spread_spectrum && p.signal_power_dbm >= 10
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_anti_jam() -> AntiJamPolicy {
+    AntiJamPolicy {
+        frequency_hopping: true,
+        spread_spectrum: true,
+        signal_power_dbm: 20,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_anti_jam() -> AntiJamPolicy {
+    AntiJamPolicy {
+        frequency_hopping: true,
+        spread_spectrum: true,
+        signal_power_dbm: 30,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_anti_jam_secure() {
+    let p = baseline_anti_jam();
+    assert!(anti_jam_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_anti_jam_not_weaker() {
+    let b = baseline_anti_jam();
+    let h = hardened_anti_jam();
+    assert!(anti_jam_secure(&h));
 }

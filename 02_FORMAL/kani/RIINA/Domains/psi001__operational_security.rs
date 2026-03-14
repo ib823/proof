@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for operational security invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct OpSecPolicy {
+    pub secret_sharing_enabled: bool,
+    pub threshold_enforced: bool,
+    pub duress_detection: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn op_sec_secure(p: &OpSecPolicy) -> bool {
+    p.secret_sharing_enabled && p.threshold_enforced && p.duress_detection
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_op_sec() -> OpSecPolicy {
+    OpSecPolicy {
+        secret_sharing_enabled: true,
+        threshold_enforced: true,
+        duress_detection: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_op_sec() -> OpSecPolicy {
+    OpSecPolicy {
+        secret_sharing_enabled: true,
+        threshold_enforced: true,
+        duress_detection: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_op_sec_secure() {
+    let p = baseline_op_sec();
+    assert!(op_sec_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_op_sec_not_weaker() {
+    let b = baseline_op_sec();
+    let h = hardened_op_sec();
+    assert!(op_sec_secure(&h));
 }

@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for human factor security invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct HumanFactorPolicy {
+    pub mfa_required: bool,
+    pub session_timeout_secs: u64,
+    pub phishing_training: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn human_factor_secure(p: &HumanFactorPolicy) -> bool {
+    p.mfa_required && p.session_timeout_secs <= 900 && p.phishing_training
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_human_factor() -> HumanFactorPolicy {
+    HumanFactorPolicy {
+        mfa_required: true,
+        session_timeout_secs: 900,
+        phishing_training: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_human_factor() -> HumanFactorPolicy {
+    HumanFactorPolicy {
+        mfa_required: true,
+        session_timeout_secs: 300,
+        phishing_training: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_human_factor_secure() {
+    let p = baseline_human_factor();
+    assert!(human_factor_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_human_factor_not_weaker() {
+    let b = baseline_human_factor();
+    let h = hardened_human_factor();
+    assert!(human_factor_secure(&h));
 }

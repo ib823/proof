@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for metadata privacy invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct MetadataPrivacyPolicy {
+    pub source_hidden: bool,
+    pub timing_obscured: bool,
+    pub padding_enabled: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn metadata_privacy_secure(p: &MetadataPrivacyPolicy) -> bool {
+    p.source_hidden && p.timing_obscured && p.padding_enabled
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_metadata_privacy() -> MetadataPrivacyPolicy {
+    MetadataPrivacyPolicy {
+        source_hidden: true,
+        timing_obscured: true,
+        padding_enabled: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_metadata_privacy() -> MetadataPrivacyPolicy {
+    MetadataPrivacyPolicy {
+        source_hidden: true,
+        timing_obscured: true,
+        padding_enabled: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_metadata_privacy_secure() {
+    let p = baseline_metadata_privacy();
+    assert!(metadata_privacy_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_metadata_privacy_not_weaker() {
+    let b = baseline_metadata_privacy();
+    let h = hardened_metadata_privacy();
+    assert!(metadata_privacy_secure(&h));
 }

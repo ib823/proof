@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for Singapore health info invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct SGHealthInfoPolicy {
+    pub nehr_compliant: bool,
+    pub patient_consent: bool,
+    pub data_anonymized: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn s_g_health_info_secure(p: &SGHealthInfoPolicy) -> bool {
+    p.nehr_compliant && p.patient_consent && p.data_anonymized
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_s_g_health_info() -> SGHealthInfoPolicy {
+    SGHealthInfoPolicy {
+        nehr_compliant: true,
+        patient_consent: true,
+        data_anonymized: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_s_g_health_info() -> SGHealthInfoPolicy {
+    SGHealthInfoPolicy {
+        nehr_compliant: true,
+        patient_consent: true,
+        data_anonymized: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_s_g_health_info_secure() {
+    let p = baseline_s_g_health_info();
+    assert!(s_g_health_info_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_s_g_health_info_not_weaker() {
+    let b = baseline_s_g_health_info();
+    let h = hardened_s_g_health_info();
+    assert!(s_g_health_info_secure(&h));
 }

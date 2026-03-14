@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for verified file system invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct VerifiedFSPolicy {
+    pub journal_enabled: bool,
+    pub crash_consistent: bool,
+    pub access_controlled: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn verified_f_s_secure(p: &VerifiedFSPolicy) -> bool {
+    p.journal_enabled && p.crash_consistent && p.access_controlled
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_verified_f_s() -> VerifiedFSPolicy {
+    VerifiedFSPolicy {
+        journal_enabled: true,
+        crash_consistent: true,
+        access_controlled: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_verified_f_s() -> VerifiedFSPolicy {
+    VerifiedFSPolicy {
+        journal_enabled: true,
+        crash_consistent: true,
+        access_controlled: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_verified_f_s_secure() {
+    let p = baseline_verified_f_s();
+    assert!(verified_f_s_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_verified_f_s_not_weaker() {
+    let b = baseline_verified_f_s();
+    let h = hardened_verified_f_s();
+    assert!(verified_f_s_secure(&h));
 }

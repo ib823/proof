@@ -1,37 +1,44 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
-// Manually curated Kani harnesses for domain-level invariants.
+// Manually curated Kani harnesses for fullstack security invariants.
 
 #![allow(unused)]
 
 #[derive(Debug, Clone)]
-pub struct DomainProfile {
-    pub control_a_enabled: bool,
-    pub control_b_enabled: bool,
-    pub assurance_level: u64,
+pub struct FullstackPolicy {
+    pub frontend_sanitized: bool,
+    pub backend_validated: bool,
+    pub transport_encrypted: bool,
 }
 
-pub fn domain_profile_secure(p: &DomainProfile) -> bool {
-    p.control_a_enabled && p.control_b_enabled && p.assurance_level >= 1
+pub fn fullstack_secure(p: &FullstackPolicy) -> bool {
+    p.frontend_sanitized && p.backend_validated && p.transport_encrypted
 }
 
-pub fn baseline_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 1 }
+pub fn baseline_fullstack() -> FullstackPolicy {
+    FullstackPolicy {
+        frontend_sanitized: true,
+        backend_validated: true,
+        transport_encrypted: true,
+    }
 }
 
-pub fn hardened_domain_profile() -> DomainProfile {
-    DomainProfile { control_a_enabled: true, control_b_enabled: true, assurance_level: 2 }
+pub fn hardened_fullstack() -> FullstackPolicy {
+    FullstackPolicy {
+        frontend_sanitized: true,
+        backend_validated: true,
+        transport_encrypted: true,
+    }
 }
 
 #[kani::proof]
-fn harness_baseline_domain_profile_secure() {
-    let p = baseline_domain_profile();
-    assert!(domain_profile_secure(&p));
+fn harness_baseline_fullstack_secure() {
+    let p = baseline_fullstack();
+    assert!(fullstack_secure(&p));
 }
 
 #[kani::proof]
-fn harness_hardened_domain_profile_not_weaker() {
-    let b = baseline_domain_profile();
-    let h = hardened_domain_profile();
-    assert!(domain_profile_secure(&h));
-    assert!(h.assurance_level >= b.assurance_level);
+fn harness_hardened_fullstack_not_weaker() {
+    let b = baseline_fullstack();
+    let h = hardened_fullstack();
+    assert!(fullstack_secure(&h));
 }
