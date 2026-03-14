@@ -221,7 +221,7 @@ This is not a whitepaper. This is working software.
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
 | **Rocq 9.1.1** (Primary) | 9,171 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
-| **Lean 4** (Secondary) | 3,895 theorem/lemma declarations | 136 files; 0 `sorry`, 0 axioms; claim level: generated (build verification in progress) |
+| **Lean 4** (Secondary) | 3,895 theorem/lemma declarations | 136 files; 0 `sorry`, 0 axioms; claim level: compiled (build passes) |
 | **Isabelle/HOL** (Tertiary) | 0 compiled lemmas | 1 smoke session (`RIINA_CORE`); remaining `.thy` files are quarantined stubs |
 | **F\*** (Seed lane) | 0 compiled lemmas | 1 smoke module (`CryptographicSecurityActive`); remaining `.fst` files are quarantined generated stubs |
 | **TLA+** (Protocol seed lane) | 0 compiled theorems | 1 smoke spec (`TelusProcurementProtocol`); remaining `.tla` files are quarantined generated stubs |
