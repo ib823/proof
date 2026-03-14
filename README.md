@@ -220,7 +220,7 @@ This is not a whitepaper. This is working software.
 
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
-| **Coq 8.20.1** (Primary) | 9,172 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
+| **Coq 8.20.1** (Primary) | 9,171 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
 | **Lean 4** (Secondary) | 3,895 theorem/lemma declarations in the active lane | 136 files build; 0 `sorry`, 0 axioms; `AlgebraicEffects` now uses step-indexed typing, so the active lane is mechanized |
 | **Isabelle/HOL** (Tertiary) | 5 compiled lemmas in `RIINA_CORE` | 1 smoke-built theory; remaining `.thy` files are quarantined stubs |
 | **F\*** (Seed lane) | 3 compiled lemmas in `CryptographicSecurityActive` | 1 smoke-built active module; remaining `.fst` files are quarantined generated/transpiled stubs |
@@ -390,7 +390,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 9,172 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 924 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 936 Rust tests
 
 | Area | Status |
 |------|--------|
