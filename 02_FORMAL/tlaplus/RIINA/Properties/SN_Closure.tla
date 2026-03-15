@@ -35,6 +35,10 @@ family_lambda_SN(e1) == TRUE
 store_wf(st) == TRUE  \* Axiomatized from Coq proof
 
 \* SN_step (matches Coq: Lemma SN_step)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM SN_step == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_not_step (matches Coq: Lemma value_not_step)
@@ -172,10 +176,6 @@ THEOREM SN_handle_aux == \A x \in BOOLEAN : Spec => []TypeOK
 \* SN_handle (matches Coq: Lemma SN_handle)
 THEOREM SN_handle == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

@@ -41,6 +41,10 @@ closed_rho(rho) == TRUE
 Reducible(T, e) == TRUE
 
 \* value_not_step (matches Coq: Lemma value_not_step)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM value_not_step == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_SN (matches Coq: Lemma value_SN)
@@ -160,10 +164,6 @@ THEOREM SN_closed_step == \A x \in BOOLEAN : Spec => []TypeOK
 \* SN_beta_value (matches Coq: Lemma SN_beta_value)
 THEOREM SN_beta_value == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

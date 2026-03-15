@@ -83,7 +83,7 @@ TypeOK ==
   /\ exprType \in TypeSet
   /\ storeConsistent \in BOOLEAN
   /\ secLevel \in SecLevels
-  /\ stepCount \in Nat
+  /\ stepCount \in 0..20
   /\ wellTyped \in BOOLEAN
 
 \* Progress: well-typed expressions are either values or can step.
@@ -128,6 +128,7 @@ Step ==
   /\ exprForm \in ReducibleForms
   /\ wellTyped
   /\ storeConsistent
+  /\ stepCount < 20
   /\ stepCount' = stepCount + 1
   /\ \* Non-deterministically step to either another reducible form or a value
      \/ \* Step to canonical value (matching the type)
@@ -151,10 +152,16 @@ IllTyped ==
   /\ ~wellTyped
   /\ UNCHANGED vars
 
+\* Step limit reached: stutter when bound is exhausted
+StepLimitReached ==
+  /\ stepCount >= 20
+  /\ UNCHANGED vars
+
 Next ==
   \/ Step
   \/ ReachedValue
   \/ IllTyped
+  \/ StepLimitReached
 
 Spec == Init /\ [][Next]_vars
 

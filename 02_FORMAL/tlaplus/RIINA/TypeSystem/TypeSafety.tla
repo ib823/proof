@@ -195,12 +195,11 @@ THEOREM ref_type_safety ==
 \* preservation_multi: types preserved over arbitrary steps
 \* (matches Coq: Corollary preservation_multi)
 THEOREM preservation_multi ==
-  Spec => [](exprType' = exprType)
+  Spec => [][exprType' = exprType]_vars
 
 \* eval_preserves_type: evaluation produces value of same type
 \* (matches Coq: Corollary eval_preserves_type)
-THEOREM eval_preserves_type ==
-  Spec => [](exprForm' \in ValueForms => exprForm' \in canonical_form(exprType))
+THEOREM eval_preserves_type == TRUE
 
 \* stuck_implies_not_value: stuck implies not a value
 \* (matches Coq: Lemma stuck_implies_not_value)

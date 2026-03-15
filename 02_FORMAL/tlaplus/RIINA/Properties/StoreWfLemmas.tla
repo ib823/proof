@@ -17,6 +17,10 @@ Init ==
   /\ state = TRUE
 
 \* store_wf_lookup_value (matches Coq: Lemma store_wf_lookup_value)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM store_wf_lookup_value == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_wf_lookup_typed (matches Coq: Lemma store_wf_lookup_typed)
@@ -67,10 +71,6 @@ THEOREM store_wf_update_same_type == \A x \in BOOLEAN : Spec => []TypeOK
 \* store_wf_characterize (matches Coq: Lemma store_wf_characterize)
 THEOREM store_wf_characterize == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

@@ -126,11 +126,11 @@ THEOREM store_ty_lookup_update_neq ==
 
 \* store_ty_extends_update_fresh: adding a fresh location extends
 THEOREM store_ty_extends_update_fresh ==
-  Spec => [](storeTySize' >= storeTySize)
+  Spec => [][storeTySize' >= storeTySize]_vars
 
 \* store_ty_extends_preserves_typing: extended store preserves typing
 THEOREM store_ty_extends_preserves_typing ==
-  Spec => [](storeWF' = TRUE)
+  Spec => [][storeWF' = TRUE]_vars
 
 \* store_ty_extends_refl: store typing extension is reflexive
 THEOREM store_ty_extends_refl ==
@@ -138,11 +138,11 @@ THEOREM store_ty_extends_refl ==
 
 \* store_wf_update_existing: updating existing loc preserves store_wf
 THEOREM store_wf_update_existing ==
-  Spec => [](storeWF = TRUE => storeWF' = TRUE)
+  Spec => [][storeWF = TRUE => storeWF' = TRUE]_vars
 
 \* store_wf_update_fresh: adding fresh loc preserves store_wf
 THEOREM store_wf_update_fresh ==
-  Spec => [](storeWF = TRUE => storeWF' = TRUE)
+  Spec => [][storeWF = TRUE => storeWF' = TRUE]_vars
 
 \* store_ty_lookup_fresh_none: fresh location not in store typing
 THEOREM store_ty_lookup_fresh_none ==
@@ -176,7 +176,7 @@ THEOREM preservation_helper ==
 \* preservation: main theorem — stepping preserves type
 \* (matches Coq: Theorem preservation)
 THEOREM preservation ==
-  Spec => [](exprType' = exprType)
+  Spec => [][exprType' = exprType]_vars
 
 \* store_ty_extends_trans: store typing extension is transitive
 THEOREM store_ty_extends_trans ==

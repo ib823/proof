@@ -17,6 +17,10 @@ Init ==
   /\ state = TRUE
 
 \* store_extend_after_alloc (matches Coq: Lemma store_extend_after_alloc)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM store_extend_after_alloc == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_lookup_after_update (matches Coq: Lemma store_lookup_after_update)
@@ -97,10 +101,6 @@ THEOREM store_ty_not_in_extends == \A x \in BOOLEAN : Spec => []TypeOK
 \* store_ty_extends_update_both (matches Coq: Lemma store_ty_extends_update_both)
 THEOREM store_ty_extends_update_both == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

@@ -20,6 +20,10 @@ Init ==
 strongly_normalizing(e, st, ctx) == TRUE
 
 \* value_SN (matches Coq: Lemma value_SN)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM value_SN == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* SN_step (matches Coq: Lemma SN_step)
@@ -46,10 +50,6 @@ THEOREM handle_typed_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 \* app_typed_steps_once (matches Coq: Lemma app_typed_steps_once)
 THEOREM app_typed_steps_once == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

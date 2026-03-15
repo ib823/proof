@@ -32,6 +32,10 @@ fo_compound_depth(T) == TRUE
 ty_depth(T) == TRUE
 
 \* ty_size_pos (matches Coq: Lemma ty_size_pos)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM ty_size_pos == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* ty_size_fn_arg (matches Coq: Lemma ty_size_fn_arg)
@@ -118,10 +122,6 @@ THEOREM ty_depth_fn_res == \A x \in BOOLEAN : Spec => []TypeOK
 \* first_order_base_depth (matches Coq: Lemma first_order_base_depth)
 THEOREM first_order_base_depth == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====
