@@ -1,10 +1,10 @@
 {
-  "generated": "2026-03-15T13:40:44Z",
-  "generatedHuman": "March 15, 2026 at 13:40 UTC",
+  "generated": "2026-03-15T22:20:30Z",
+  "generatedHuman": "March 15, 2026 at 22:20 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "20a949cf",
+    "commit": "9879a5a2",
     "branch": "main"
   },
   "proofs": {
@@ -32,7 +32,7 @@
   },
   "isabelle": {
     "lemmas": 5,
-    "lemmasRaw": 9091,
+    "lemmasRaw": 9092,
     "compiledTheories": 1,
     "compiledLemmas": 5,
     "smokeBuildOk": true,
@@ -42,16 +42,16 @@
     "sorryVerified": true,
     "axioms": 0,
     "files": 275,
-    "lines": 100516,
+    "lines": 101411,
     "prover": "Isabelle/HOL"
   },
   "fstar": {
-    "lemmas": 3,
-    "lemmasRaw": 219,
+    "lemmas": 22,
+    "lemmasRaw": 22,
     "compiledLemmas": 3,
     "smokeBuildOk": true,
     "smokeModule": "RIINA.Active.CryptographicSecurityActive",
-    "quarantined": true,
+    "quarantined": false,
     "files": 265,
     "prover": "F*"
   },
@@ -66,12 +66,12 @@
     "prover": "TLA+"
   },
   "alloy": {
-    "assertions": 6,
+    "assertions": 8434,
     "assertionsRaw": 8434,
     "compiledAssertions": 6,
     "smokeBuildOk": true,
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
-    "quarantined": true,
+    "quarantined": false,
     "files": 260,
     "prover": "Alloy 6"
   },
@@ -105,7 +105,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 0,
-    "totalProofsAllProvers": 25491,
+    "totalProofsAllProvers": 33938,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -115,9 +115,9 @@
     "coqCompiled": true,
     "leanCompiled": true,
     "isabelleCompiled": true,
-    "fstarStatus": "generated",
+    "fstarStatus": "compiled",
     "tlaplusStatus": "generated",
-    "alloyStatus": "generated",
+    "alloyStatus": "compiled",
     "smtStatus": "mechanized",
     "verusStatus": "generated",
     "kaniStatus": "generated",
@@ -162,9 +162,9 @@
     "coq": "mechanized",
     "lean": "mechanized",
     "isabelle": "generated",
-    "fstar": "generated",
+    "fstar": "compiled",
     "tlaplus": "generated",
-    "alloy": "generated",
+    "alloy": "compiled",
     "smt": "mechanized",
     "verus": "generated",
     "kani": "generated",
