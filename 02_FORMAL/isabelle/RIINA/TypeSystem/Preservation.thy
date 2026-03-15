@@ -40,7 +40,7 @@ theory Preservation
 begin
 
 (* 1 (matches Coq) *)
-lemma 1: "Free Variables in Context If x is free in e and e is well-typed in Γ, then x is in Γ. Lemma free_in_context : \<forall>x e Γ Σ Δ T ε. free_in x e \<longrightarrow> has_type Γ Σ Δ e T ε \<longrightarrow> \<exists>T'. lookup x Γ = Some T'"
+lemma lemma_1: "Free Variables in Context If x is free in e and e is well-typed in Γ, then x is in Γ. Lemma free_in_context : \<forall>x e Γ Σ Δ T ε. free_in x e \<longrightarrow> has_type Γ Σ Δ e T ε \<longrightarrow> \<exists>T'. lookup x Γ = Some T'"
   by auto
 
 (* store_lookup_update_eq (matches Coq) *)
@@ -84,11 +84,11 @@ lemma store_ty_lookup_fresh_none: "\<forall>Σ st. store_wf Σ st \<longrightarr
   by auto
 
 (* 2 (matches Coq) *)
-lemma 2: "Context Invariance Typing only depends on free variables. If all free variables of e have the same binding in Γ1 and Γ2, then e types the same in both. Lemma context_invariance : \<forall>Γ1 Γ2 Σ Δ e T ε. has_type Γ1 Σ Δ e T ε \<longrightarrow> (\<forall>x. free_in x e \<longrightarrow> lookup x Γ1 = lookup x Γ2) \<longrightarrow> has_type Γ2 Σ Δ e T ε"
+lemma lemma_2: "Context Invariance Typing only depends on free variables. If all free variables of e have the same binding in Γ1 and Γ2, then e types the same in both. Lemma context_invariance : \<forall>Γ1 Γ2 Σ Δ e T ε. has_type Γ1 Σ Δ e T ε \<longrightarrow> (\<forall>x. free_in x e \<longrightarrow> lookup x Γ1 = lookup x Γ2) \<longrightarrow> has_type Γ2 Σ Δ e T ε"
   by auto
 
 (* 3 (matches Coq) *)
-lemma 3: "Closed Terms Weaken A closed term (typed in empty context) can be typed in any context. Lemma closed_typing_weakening : \<forall>Σ Δ v T ε Γ. has_type nil Σ Δ v T ε \<longrightarrow> has_type Γ Σ Δ v T ε"
+lemma lemma_3: "Closed Terms Weaken A closed term (typed in empty context) can be typed in any context. Lemma closed_typing_weakening : \<forall>Σ Δ v T ε Γ. has_type nil Σ Δ v T ε \<longrightarrow> has_type Γ Σ Δ v T ε"
   by auto
 
 (* substitution_preserves_typing (matches Coq) *)

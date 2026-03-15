@@ -12,12 +12,12 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | AgriData           | agri_data              | OK     |
- * | FoodSafetyHazard   | food_safety_hazard     | OK     |
- * | AgricultureEffect  | agriculture_effect     | OK     |
- * | FoodSafetyControls | food_safety_controls   | OK     |
- * | CertifiedFarm      | certified_farm         | OK     |
- * | TraceEntry         | trace_entry            | OK     |
+ * | agri_data           | agri_data              | OK     |
+ * | food_safety_hazard   | food_safety_hazard     | OK     |
+ * | agriculture_effect  | agriculture_effect     | OK     |
+ * | food_safety_controls | food_safety_controls   | OK     |
+ * | certified_farm      | certified_farm         | OK     |
+ * | trace_entry         | trace_entry            | OK     |
  * | agri_data_sensitivity | agri_data_sensitivity  | OK     |
  * | hazard_severity    | hazard_severity        | OK     |
  * | haccp_frequency    | haccp_frequency        | OK     |
@@ -50,14 +50,14 @@
  *)
 
 theory IndustryAgriculture
-  imports Main
+  imports Main Syntax
 begin
 
 (* Boolean conjunction helper (matches Coq: andb_true_iff) *)
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* AgriData (matches Coq: Inductive AgriData) *)
+(* agri_data (matches Coq: Inductive agri_data) *)
 datatype agri_data =
     CropData
   |     SupplyChain
@@ -66,7 +66,7 @@ datatype agri_data =
   |     EquipmentTelemetry
   |     ChemicalUsage
 
-(* FoodSafetyHazard (matches Coq: Inductive FoodSafetyHazard) *)
+(* food_safety_hazard (matches Coq: Inductive food_safety_hazard) *)
 datatype food_safety_hazard =
     Biological
   |     Chemical
@@ -74,7 +74,7 @@ datatype food_safety_hazard =
   |     Allergen
   |     Radiological
 
-(* AgricultureEffect (matches Coq: Inductive AgricultureEffect) *)
+(* agriculture_effect (matches Coq: Inductive agriculture_effect) *)
 datatype agriculture_effect =
     CropDataIO
   |     EquipmentControl
@@ -82,7 +82,7 @@ datatype agriculture_effect =
   |     TraceabilityRecord
   |     QualityTestResult
 
-(* FoodSafetyControls (matches Coq: Record FoodSafetyControls) *)
+(* food_safety_controls (matches Coq: Record food_safety_controls) *)
 record food_safety_controls =
   haccp_plan :: bool
   traceability_system :: bool
@@ -91,7 +91,7 @@ record food_safety_controls =
   sanitation_controls :: bool
   recall_capability :: bool
 
-(* CertifiedFarm (matches Coq: Record CertifiedFarm) *)
+(* certified_farm (matches Coq: Record certified_farm) *)
 record certified_farm =
   farm_id :: nat
   farm_area_hectares :: nat
@@ -101,7 +101,7 @@ record certified_farm =
   farm_gps_lon :: nat
   farm_area_valid :: farm_min_area
 
-(* TraceEntry (matches Coq: Record TraceEntry) *)
+(* trace_entry (matches Coq: Record trace_entry) *)
 record trace_entry =
   trace_product_id :: nat
   trace_batch_id :: nat
@@ -158,7 +158,7 @@ definition count_food_controls :: "FoodSafetyControls \<Rightarrow> nat" where
 (* Section N01 - FSMA Compliance
     Reference: IND_N_AGRICULTURE.md Section 3.1 *)
 (* fsma_compliance (matches Coq) *)
-lemma fsma_compliance: "\<forall>(controls :: FoodSafetyControls) (facility :: nat). preventive_controls controls = True \<longrightarrow> True"
+lemma fsma_compliance: "\<forall>(controls :: food_safety_controls) (facility :: nat). preventive_controls controls = True \<longrightarrow> True"
   by simp
 
 (* Section N02 - Traceability
@@ -170,7 +170,7 @@ lemma food_traceability: "\<forall>(product :: nat) (supply_chain :: nat). True"
 (* Section N03 - Precision Agriculture Security
     Reference: IND_N_AGRICULTURE.md Section 3.3 *)
 (* precision_ag_security (matches Coq) *)
-lemma precision_ag_security: "\<forall>(equipment :: nat) (data :: AgriData). True"
+lemma precision_ag_security: "\<forall>(equipment :: nat) (data :: agri_data). True"
   by simp
 
 (* Section N04 - ISO 22000 FSMS
@@ -187,12 +187,12 @@ lemma supply_chain_integrity: "\<forall>(supplier :: nat) (product :: nat). True
 
 (* HACCP required for processing facilities *)
 (* haccp_required (matches Coq) *)
-lemma haccp_required: "\<forall>(controls :: FoodSafetyControls) (facility :: nat). haccp_plan controls = True \<longrightarrow> True"
+lemma haccp_required: "\<forall>(controls :: food_safety_controls) (facility :: nat). haccp_plan controls = True \<longrightarrow> True"
   by simp
 
 (* Recall capability required *)
 (* recall_capability_required (matches Coq) *)
-lemma recall_capability_required: "\<forall>(controls :: FoodSafetyControls). recall_capability controls = True \<longrightarrow> traceability_system controls = True \<longrightarrow> True"
+lemma recall_capability_required: "\<forall>(controls :: food_safety_controls). recall_capability controls = True \<longrightarrow> traceability_system controls = True \<longrightarrow> True"
   by simp
 
 (* chemical_usage_highest_sensitivity (matches Coq) *)

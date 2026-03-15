@@ -69,4 +69,33 @@ lemma ltb_simp [simp]: "ltb x y = (x < y)"
 lemma andb_true_iff: "(andb a b) = True \<longleftrightarrow> a = True \<and> b = True"
   by (simp add: andb_def)
 
+(* Coq boolean implication *)
+definition implb :: "bool \<Rightarrow> bool \<Rightarrow> bool" where
+  "implb x y \<equiv> (x \<longrightarrow> y)"
+
+lemma implb_simp [simp]: "implb x y = (x \<longrightarrow> y)"
+  by (simp add: implb_def)
+
+(* Coq nth_error — returns nth element as option *)
+fun nth_error :: "'a list \<Rightarrow> nat \<Rightarrow> 'a option" where
+  "nth_error [] _ = None"
+| "nth_error (x # _) 0 = Some x"
+| "nth_error (_ # xs) (Suc n) = nth_error xs n"
+
+(* Coq Forall — list_all equivalent *)
+definition Forall :: "('a \<Rightarrow> bool) \<Rightarrow> 'a list \<Rightarrow> bool" where
+  "Forall P xs \<equiv> list_all P xs"
+
+(* Coq pair_in_list — check if pair is in list *)
+definition pair_in_list :: "('a \<times> 'b) \<Rightarrow> ('a \<times> 'b) list \<Rightarrow> bool" where
+  "pair_in_list p xs \<equiv> p \<in> set xs"
+
+(* Coq all_true — conjunction of bool list *)
+definition all_true :: "bool list \<Rightarrow> bool" where
+  "all_true xs \<equiv> list_all id xs"
+
+(* Coq all_unique_ids — all first elements unique *)
+definition all_unique_ids :: "('a \<times> 'b) list \<Rightarrow> bool" where
+  "all_unique_ids xs \<equiv> distinct (map fst xs)"
+
 end

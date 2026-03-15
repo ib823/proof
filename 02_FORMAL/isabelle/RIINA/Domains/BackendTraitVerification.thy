@@ -12,10 +12,10 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Target             | target                 | OK     |
- * | BackendKind        | backend_kind           | OK     |
- * | OutputFormat       | output_format          | OK     |
- * | SecurityProp       | security_prop          | OK     |
+ * | target             | target                 | OK     |
+ * | backend_kind        | backend_kind           | OK     |
+ * | output_format       | output_format          | OK     |
+ * | security_prop       | security_prop          | OK     |
  * | dispatch           | dispatch               | OK     |
  * | backend_format     | backend_format         | OK     |
  * | preserves          | preserves              | OK     |
@@ -46,7 +46,7 @@ theory BackendTraitVerification
   imports Main
 begin
 
-(* Target (matches Coq: Inductive Target) *)
+(* target (matches Coq: Inductive target) *)
 datatype target =
     TNative
   |     TWasm32
@@ -54,19 +54,19 @@ datatype target =
   |     TAndroidArm64
   |     TIosArm64
 
-(* BackendKind (matches Coq: Inductive BackendKind) *)
+(* backend_kind (matches Coq: Inductive backend_kind) *)
 datatype backend_kind =
     BKC
   |     BKWasm
   |     BKMobile
 
-(* OutputFormat (matches Coq: Inductive OutputFormat) *)
+(* output_format (matches Coq: Inductive output_format) *)
 datatype output_format =
     FmtC
   |     FmtWasm
   |     FmtCWithBridge
 
-(* SecurityProp (matches Coq: Inductive SecurityProp) *)
+(* security_prop (matches Coq: Inductive security_prop) *)
 datatype security_prop =
     NonInterference
   |     EffectSafety
@@ -87,7 +87,7 @@ fun backend_format :: "BackendKind \<Rightarrow> OutputFormat" where
 |   "backend_format BKMobile = FmtCWithBridge"
 
 (* preserves (matches Coq: Definition preserves) *)
-definition preserves :: "BackendKind \<Rightarrow> SecurityProp \<Rightarrow> bool" where
+definition preserves :: "BackendKind \<Rightarrow> security_prop \<Rightarrow> bool" where
   "preserves bk prop \<equiv> True"
 
 (* backend_001_dispatch_total (matches Coq) *)

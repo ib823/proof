@@ -12,16 +12,16 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Instr              | instr                  | OK     |
- * | ArchParams         | arch_params            | OK     |
- * | Function           | function               | OK     |
- * | Module             | module                 | OK     |
- * | Program            | program                | OK     |
- * | StackFrame         | stack_frame            | OK     |
- * | InlineInfo         | inline_info            | OK     |
- * | LoopInfo           | loop_info              | OK     |
- * | GenericInfo        | generic_info           | OK     |
- * | ROMLayout          | rom_layout             | OK     |
+ * | instr              | instr                  | OK     |
+ * | arch_params         | arch_params            | OK     |
+ * | function           | function               | OK     |
+ * | module             | module                 | OK     |
+ * | program            | program                | OK     |
+ * | stack_frame         | stack_frame            | OK     |
+ * | inline_info         | inline_info            | OK     |
+ * | loop_info           | loop_info              | OK     |
+ * | generic_info        | generic_info           | OK     |
+ * | ro_ml_ayout          | rom_layout             | OK     |
  * | arm_cortex_m0      | arm_cortex_m0          | OK     |
  * | arm_cortex_m4      | arm_cortex_m4          | OK     |
  * | riscv32            | riscv32                | OK     |
@@ -66,7 +66,13 @@ theory BinarySizeBounds
   imports Main
 begin
 
-(* Instr (matches Coq: Inductive Instr) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym bss_section = "nat"
+type_synonym basic_block = "nat"
+type_synonym data_section = "nat list"
+type_synonym ro_ml_ayout = "nat"
+type_synonym size = "nat"
+(* instr (matches Coq: Inductive instr) *)
 datatype instr =
     INop
   |     IMov
@@ -80,56 +86,56 @@ datatype instr =
   |     ICall
   |     IRet
 
-(* ArchParams (matches Coq: Record ArchParams) *)
+(* arch_params (matches Coq: Record arch_params) *)
 record arch_params =
-  arch_word_size :: Size
-  arch_max_instr_size :: Size
-  arch_call_overhead :: Size
-  arch_ret_overhead :: Size
-  arch_flash_size :: Size
-  arch_ram_size :: Size
+  arch_word_size :: size
+  arch_max_instr_size :: size
+  arch_call_overhead :: size
+  arch_ret_overhead :: size
+  arch_flash_size :: size
+  arch_ram_size :: size
 
-(* Function (matches Coq: Record Function) *)
+(* function (matches Coq: Record function) *)
 record function =
   func_blocks :: 'a list
   func_locals :: nat
 
-(* Module (matches Coq: Record Module) *)
+(* module (matches Coq: Record module) *)
 record module =
   mod_functions :: 'a list
-  mod_data :: Size
-  mod_bss :: Size
+  mod_data :: size
+  mod_bss :: size
 
-(* Program (matches Coq: Record Program) *)
+(* program (matches Coq: Record program) *)
 record program =
   prog_modules :: 'a list
-  prog_startup :: Size
+  prog_startup :: size
 
-(* StackFrame (matches Coq: Record StackFrame) *)
+(* stack_frame (matches Coq: Record stack_frame) *)
 record stack_frame =
   sf_locals :: nat
   sf_saved_regs :: nat
 
-(* InlineInfo (matches Coq: Record InlineInfo) *)
+(* inline_info (matches Coq: Record inline_info) *)
 record inline_info =
-  inline_original_size :: Size
+  inline_original_size :: size
   inline_call_sites :: nat
 
-(* LoopInfo (matches Coq: Record LoopInfo) *)
+(* loop_info (matches Coq: Record loop_info) *)
 record loop_info =
-  loop_body_size :: Size
+  loop_body_size :: size
   loop_unroll_factor :: nat
 
-(* GenericInfo (matches Coq: Record GenericInfo) *)
+(* generic_info (matches Coq: Record generic_info) *)
 record generic_info =
-  generic_template_size :: Size
+  generic_template_size :: size
   generic_instantiation_count :: nat
 
-(* ROMLayout (matches Coq: Record ROMLayout) *)
+(* ro_ml_ayout (matches Coq: Record ro_ml_ayout) *)
 record rom_layout =
-  rom_text :: Size
-  rom_rodata :: Size
-  rom_init_data :: Size
+  rom_text :: size
+  rom_rodata :: size
+  rom_init_data :: size
 
 (* arm_cortex_m0 (matches Coq: Definition arm_cortex_m0) *)
 definition arm_cortex_m0 :: "ArchParams" where
@@ -144,11 +150,11 @@ definition riscv32 :: "ArchParams" where
   "riscv32 \<equiv> mkArch 4 4 4 4 131072 32768"
 
 (* instr_size (matches Coq: Definition instr_size) *)
-definition instr_size :: "ArchParams \<Rightarrow> Instr \<Rightarrow> Size" where
+definition instr_size :: "ArchParams \<Rightarrow> instr \<Rightarrow> Size" where
   "instr_size arch i \<equiv> arch_max_instr_size arch"
 
 (* bb_size (matches Coq: Definition bb_size) *)
-fun bb_size :: "ArchParams \<Rightarrow> BasicBlock \<Rightarrow> Size" where
+fun bb_size :: "ArchParams \<Rightarrow> basic_block \<Rightarrow> Size" where
   "bb_size _ = undefined"
 
 (* sum_bb_sizes (matches Coq: Definition sum_bb_sizes) *)
@@ -156,7 +162,7 @@ fun sum_bb_sizes :: "ArchParams \<Rightarrow> Size" where
   "sum_bb_sizes _ = undefined"
 
 (* func_size (matches Coq: Definition func_size) *)
-definition func_size :: "ArchParams \<Rightarrow> Function \<Rightarrow> Size" where
+definition func_size :: "ArchParams \<Rightarrow> function \<Rightarrow> Size" where
   "func_size arch f \<equiv> sum_bb_sizes arch (func_blocks f) +
   arch_call_overhead arch + arch_ret_overhead arch"
 
@@ -165,7 +171,7 @@ fun sum_func_sizes :: "ArchParams \<Rightarrow> Size" where
   "sum_func_sizes _ = undefined"
 
 (* mod_size (matches Coq: Definition mod_size) *)
-definition mod_size :: "ArchParams \<Rightarrow> Module \<Rightarrow> Size" where
+definition mod_size :: "ArchParams \<Rightarrow> module \<Rightarrow> Size" where
   "mod_size arch m \<equiv> sum_func_sizes arch (mod_functions m) + mod_data m"
 
 (* sum_mod_sizes (matches Coq: Definition sum_mod_sizes) *)
@@ -173,7 +179,7 @@ fun sum_mod_sizes :: "ArchParams \<Rightarrow> Size" where
   "sum_mod_sizes _ = undefined"
 
 (* prog_size (matches Coq: Definition prog_size) *)
-definition prog_size :: "ArchParams \<Rightarrow> Program \<Rightarrow> Size" where
+definition prog_size :: "ArchParams \<Rightarrow> program \<Rightarrow> Size" where
   "prog_size arch p \<equiv> sum_mod_sizes arch (prog_modules p) + prog_startup p"
 
 (* data_section_size (matches Coq: Definition data_section_size) *)
@@ -185,7 +191,7 @@ fun bss_section_size :: "BSSSection \<Rightarrow> Size" where
   "bss_section_size _ = undefined"
 
 (* stack_frame_size (matches Coq: Definition stack_frame_size) *)
-definition stack_frame_size :: "ArchParams \<Rightarrow> StackFrame \<Rightarrow> Size" where
+definition stack_frame_size :: "ArchParams \<Rightarrow> stack_frame \<Rightarrow> Size" where
   "stack_frame_size arch sf \<equiv> sf_locals sf * arch_word_size arch + sf_saved_regs sf * arch_word_size arch"
 
 (* inline_expanded_size (matches Coq: Definition inline_expanded_size) *)
@@ -205,11 +211,11 @@ definition total_rom_size :: "ROMLayout \<Rightarrow> Size" where
   "total_rom_size layout \<equiv> rom_text layout + rom_rodata layout + rom_init_data layout"
 
 (* PERF_002_01 (matches Coq) *)
-lemma PERF_002_01: "\<forall>(arch :: ArchParams) (i :: Instr). instr_size arch i \<le> arch_max_instr_size arch"
+lemma PERF_002_01: "\<forall>(arch :: arch_params) (i :: instr). instr_size arch i \<le> arch_max_instr_size arch"
   by simp
 
 (* PERF_002_02 (matches Coq) *)
-lemma PERF_002_02: "\<forall>(arch :: ArchParams) (bb :: BasicBlock). bb_size arch bb = length bb * arch_max_instr_size arch"
+lemma PERF_002_02: "\<forall>(arch :: arch_params) (bb :: basic_block). bb_size arch bb = length bb * arch_max_instr_size arch"
   by simp
 
 (* sum_bb_sizes_app (matches Coq) *)
@@ -217,7 +223,7 @@ lemma sum_bb_sizes_app: "\<forall>arch bbs1 bbs2. sum_bb_sizes arch (bbs1 ++ bbs
   by simp
 
 (* PERF_002_03 (matches Coq) *)
-lemma PERF_002_03: "\<forall>(arch :: ArchParams) (f :: Function). func_size arch f = sum_bb_sizes arch (func_blocks f) + arch_call_overhead arch + arch_ret_overhead arch"
+lemma PERF_002_03: "\<forall>(arch :: arch_params) (f :: function). func_size arch f = sum_bb_sizes arch (func_blocks f) + arch_call_overhead arch + arch_ret_overhead arch"
   by simp
 
 (* sum_func_sizes_app (matches Coq) *)
@@ -225,7 +231,7 @@ lemma sum_func_sizes_app: "\<forall>arch funcs1 funcs2. sum_func_sizes arch (fun
   by simp
 
 (* PERF_002_04 (matches Coq) *)
-lemma PERF_002_04: "\<forall>(arch :: ArchParams) (m :: Module). mod_size arch m = sum_func_sizes arch (mod_functions m) + mod_data m"
+lemma PERF_002_04: "\<forall>(arch :: arch_params) (m :: module). mod_size arch m = sum_func_sizes arch (mod_functions m) + mod_data m"
   by simp
 
 (* sum_mod_sizes_app (matches Coq) *)
@@ -233,7 +239,7 @@ lemma sum_mod_sizes_app: "\<forall>arch mods1 mods2. sum_mod_sizes arch (mods1 +
   by simp
 
 (* PERF_002_05 (matches Coq) *)
-lemma PERF_002_05: "\<forall>(arch :: ArchParams) (p :: Program). prog_size arch p = sum_mod_sizes arch (prog_modules p) + prog_startup p"
+lemma PERF_002_05: "\<forall>(arch :: arch_params) (p :: program). prog_size arch p = sum_mod_sizes arch (prog_modules p) + prog_startup p"
   by simp
 
 (* data_section_size_app (matches Coq) *)
@@ -241,7 +247,7 @@ lemma data_section_size_app: "\<forall>ds1 ds2. data_section_size (ds1 ++ ds2) =
   by simp
 
 (* PERF_002_06 (matches Coq) *)
-lemma PERF_002_06: "\<forall>(ds :: DataSection) (var_size :: Size). var_size \<in> set ds \<longrightarrow> var_size \<le> data_section_size ds"
+lemma PERF_002_06: "\<forall>(ds :: data_section) (var_size :: size). var_size \<in> set ds \<longrightarrow> var_size \<le> data_section_size ds"
   by auto
 
 (* bss_section_size_app (matches Coq) *)
@@ -249,39 +255,39 @@ lemma bss_section_size_app: "\<forall>bs1 bs2. bss_section_size (bs1 ++ bs2) = b
   by simp
 
 (* PERF_002_07 (matches Coq) *)
-lemma PERF_002_07: "\<forall>(bs :: BSSSection) (var_size :: Size). var_size \<in> set bs \<longrightarrow> var_size \<le> bss_section_size bs"
+lemma PERF_002_07: "\<forall>(bs :: bss_section) (var_size :: size). var_size \<in> set bs \<longrightarrow> var_size \<le> bss_section_size bs"
   by auto
 
 (* PERF_002_08 (matches Coq) *)
-lemma PERF_002_08: "\<forall>(arch :: ArchParams) (sf :: StackFrame) (max_locals max_saved_regs : nat). sf_locals sf \<le> max_locals \<longrightarrow> sf_saved_regs sf \<le> max_saved_regs \<longrightarrow> stack_frame_size arch sf \<le> max_locals * arch_word_size arch + max_saved_regs * arch_word_size arch"
+lemma PERF_002_08: "\<forall>(arch :: arch_params) (sf :: stack_frame) (max_locals :: nat) (max_saved_regs :: nat). sf_locals sf \<le> max_locals \<longrightarrow> sf_saved_regs sf \<le> max_saved_regs \<longrightarrow> stack_frame_size arch sf \<le> max_locals * arch_word_size arch + max_saved_regs * arch_word_size arch"
   by simp
 
 (* PERF_002_09 (matches Coq) *)
-lemma PERF_002_09: "\<forall>(info :: InlineInfo) (call_overhead :: Size). inline_call_sites info \<ge> 1 \<longrightarrow> inline_expanded_size info = inline_original_size info * inline_call_sites info"
+lemma PERF_002_09: "\<forall>(info :: inline_info) (call_overhead :: size). inline_call_sites info \<ge> 1 \<longrightarrow> inline_expanded_size info = inline_original_size info * inline_call_sites info"
   by simp
 
 (* PERF_002_10 (matches Coq) *)
-lemma PERF_002_10: "\<forall>(info :: LoopInfo). unrolled_loop_size info = loop_body_size info * loop_unroll_factor info"
+lemma PERF_002_10: "\<forall>(info :: loop_info). unrolled_loop_size info = loop_body_size info * loop_unroll_factor info"
   by simp
 
 (* PERF_002_11 (matches Coq) *)
-lemma PERF_002_11: "\<forall>(info :: GenericInfo). monomorphized_size info = generic_template_size info * generic_instantiation_count info"
+lemma PERF_002_11: "\<forall>(info :: generic_info). monomorphized_size info = generic_template_size info * generic_instantiation_count info"
   by simp
 
 (* PERF_002_12 (matches Coq) *)
-lemma PERF_002_12: "\<forall>(arch :: ArchParams) (layout :: ROMLayout). total_rom_size layout \<le> arch_flash_size arch \<longrightarrow> rom_text layout \<le> arch_flash_size arch \<and> rom_rodata layout \<le> arch_flash_size arch \<and> rom_init_data layout \<le> arch_flash_size arch"
+lemma PERF_002_12: "\<forall>(arch :: arch_params) (layout :: ro_ml_ayout). total_rom_size layout \<le> arch_flash_size arch \<longrightarrow> rom_text layout \<le> arch_flash_size arch \<and> rom_rodata layout \<le> arch_flash_size arch \<and> rom_init_data layout \<le> arch_flash_size arch"
   by simp
 
 (* PERF_002_13 (matches Coq) *)
-lemma PERF_002_13: "\<forall>(arch :: ArchParams). bb_size arch [] = 0"
+lemma PERF_002_13: "\<forall>(arch :: arch_params). bb_size arch [] = 0"
   by simp
 
 (* PERF_002_14 (matches Coq) *)
-lemma PERF_002_14: "\<forall>(arch :: ArchParams) (data bss : Size). let m := mkMod [] data bss in mod_size arch m = data"
+lemma PERF_002_14: "\<forall>(arch :: arch_params) (data :: size) (bss :: size). let m := mkMod [] data bss in mod_size arch m = data"
   by simp
 
 (* PERF_002_15 (matches Coq) *)
-lemma PERF_002_15: "\<forall>(t r d : Size). let layout := mkROMLayout t r d in total_rom_size layout = t + r + d"
+lemma PERF_002_15: "\<forall>(t r d : size). let layout := mkROMLayout t r d in total_rom_size layout = t + r + d"
   by simp
 
 end

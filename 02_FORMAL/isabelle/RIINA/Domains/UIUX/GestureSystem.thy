@@ -48,8 +48,25 @@ theory GestureSystem
   imports Main CoqCompat
 begin
 
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym cancellable_gesture = "nat"
+type_synonym directed_swipe = "nat"
+type_synonym edge_swipe_event = "nat"
+type_synonym exclusive_gesture_result = "nat"
+type_synonym gesture = "nat"
+type_synonym gesture_type = "nat"
+type_synonym multi_touch_gesture = "nat"
+type_synonym palm_touch_event = "nat"
+type_synonym pinch_gesture = "nat"
+type_synonym r = "nat"
+type_synonym rotation_gesture = "nat"
+type_synonym single_tap_event = "nat"
+type_synonym swipe_gesture = "nat"
+type_synonym touch_event = "nat"
+type_synonym touch_sequence = "nat"
+type_synonym velocity_tracker = "nat"
 (* recognized (matches Coq: Definition recognized) *)
-definition recognized :: "TouchSequence \<Rightarrow> Gesture \<Rightarrow> bool" where
+definition recognized :: "TouchSequence \<Rightarrow> gesture \<Rightarrow> bool" where
   "recognized ts g \<equiv> recognized_gesture ts = gesture_type g"
 
 (* single_tap_latency (matches Coq: Definition single_tap_latency) *)
@@ -66,11 +83,11 @@ definition response_time :: "SingleTapEvent \<Rightarrow> R" where
 
 (* requires_coordination (matches Coq: Definition requires_coordination) *)
 fun requires_coordination :: "GestureType \<Rightarrow> bool" where
-  "requires_coordination Rotate = true"
-|   "requires_coordination _ = false"
+  "requires_coordination Rotate = True"
+|   "requires_coordination _ = False"
 
 (* classify_touch (matches Coq: Definition classify_touch) *)
-definition classify_touch :: "nat \<Rightarrow> R \<Rightarrow> TouchClassification" where
+definition classify_touch :: "nat \<Rightarrow> r \<Rightarrow> TouchClassification" where
   "classify_touch tc dur \<equiv> if (tc = 1) then
     if Rle_dec dur 200 then ClassifiedGesture SingleTap
     else ClassifiedGesture LongPress
@@ -82,59 +99,59 @@ definition is_sorted :: "bool" where
   "is_sorted \<equiv> True"
 
 (* gesture_disambiguation_unique (matches Coq) *)
-lemma gesture_disambiguation_unique: "\<forall>(input :: TouchSequence). \<exists>(gesture : Gesture). recognized input gesture \<and> \<forall>(g2 :: Gesture). recognized input g2 \<longrightarrow> gesture_type g2 = gesture_type gesture"
+lemma gesture_disambiguation_unique: "\<forall>(input :: touch_sequence). \<exists>(gesture :: gesture). recognized input gesture \<and> \<forall>(g2 :: gesture). recognized input g2 \<longrightarrow> gesture_type g2 = gesture_type gesture"
   by auto
 
 (* tap_latency_no_unnecessary_delay (matches Coq) *)
-lemma tap_latency_no_unnecessary_delay: "\<forall>(tap :: SingleTapEvent). no_double_tap_expected tap \<longrightarrow> response_time tap = expected_response_time tap"
+lemma tap_latency_no_unnecessary_delay: "\<forall>(tap :: single_tap_event). no_double_tap_expected tap \<longrightarrow> response_time tap = expected_response_time tap"
   by auto
 
 (* swipe_velocity_matches_physics (matches Coq) *)
-lemma swipe_velocity_matches_physics: "\<forall>(swipe :: SwipeGesture). scroll_velocity swipe = finger_velocity swipe"
+lemma swipe_velocity_matches_physics: "\<forall>(swipe :: swipe_gesture). scroll_velocity swipe = finger_velocity swipe"
   by auto
 
 (* multi_touch_always_synchronized (matches Coq) *)
-lemma multi_touch_always_synchronized: "\<forall>(mtg :: MultiTouchGesture). all_points_synchronized mtg = True"
+lemma multi_touch_always_synchronized: "\<forall>(mtg :: multi_touch_gesture). all_points_synchronized mtg = True"
   by auto
 
 (* 1 (matches Coq) *)
-lemma 1: "gesture_type_decidable — gesture types have decidable equality Theorem gesture_type_decidable : \<forall>(g1 g2 : GestureType). g1 = g2 \<or> g1 \<noteq> g2"
+lemma lemma_1: "gesture_type_decidable — gesture types have decidable equality Theorem gesture_type_decidable : \<forall>(g1 :: gesture_type) (g2 :: gesture_type). g1 = g2 \<or> g1 \<noteq> g2"
   by auto
 
 (* 2 (matches Coq) *)
-lemma 2: "confidence_above_threshold — recognized gestures have high confidence Theorem confidence_above_threshold : \<forall>(g :: Gesture). gesture_confidence g \<ge> 99"
+lemma lemma_2: "confidence_above_threshold — recognized gestures have high confidence Theorem confidence_above_threshold : \<forall>(g :: gesture). gesture_confidence g \<ge> 99"
   by auto
 
 (* 3 (matches Coq) *)
-lemma 3: "single_tap_fast — no False double-tap delay for single taps Theorem single_tap_fast : \<forall>(tap :: SingleTapEvent). double_tap_expected tap = False \<longrightarrow> actual_response_time tap = expected_response_time tap"
+lemma lemma_3: "single_tap_fast — no False double-tap delay for single taps Theorem single_tap_fast : \<forall>(tap :: single_tap_event). double_tap_expected tap = False \<longrightarrow> actual_response_time tap = expected_response_time tap"
   by auto
 
 (* 4 (matches Coq) *)
-lemma 4: "swipe_direction_deterministic — direction is uniquely determined Theorem swipe_direction_deterministic : \<forall>(ds :: DirectedSwipe). \<exists>(d : SwipeDirection). ds_direction ds = d"
+lemma lemma_4: "swipe_direction_deterministic — direction is uniquely determined Theorem swipe_direction_deterministic : \<forall>(ds :: directed_swipe). \<exists>(d :: SwipeDirection). ds_direction ds = d"
   by simp
 
 (* 5 (matches Coq) *)
-lemma 5: "pinch_center_invariant — center is midpoint of fingers Theorem pinch_center_invariant : \<forall>(pg :: PinchGesture). pinch_center_x pg = (pinch_finger1_x pg + pinch_finger2_x pg) / 2 \<and> pinch_center_y pg = (pinch_finger1_y pg + pinch_finger2_y pg) / 2"
+lemma lemma_5: "pinch_center_invariant — center is midpoint of fingers Theorem pinch_center_invariant : \<forall>(pg :: pinch_gesture). pinch_center_x pg = (pinch_finger1_x pg + pinch_finger2_x pg) / 2 \<and> pinch_center_y pg = (pinch_finger1_y pg + pinch_finger2_y pg) / 2"
   by auto
 
 (* 6 (matches Coq) *)
-lemma 6: "rotation_angle_bounded — rotation within [-pi, pi] Theorem rotation_angle_bounded : \<forall>(rg :: RotationGesture). - PI \<le> rotation_angle rg \<le> PI"
+lemma lemma_6: "rotation_angle_bounded — rotation within [-pi, pi] Theorem rotation_angle_bounded : \<forall>(rg :: rotation_gesture). - PI \<le> rotation_angle rg \<le> PI"
   by auto
 
 (* 7 (matches Coq) *)
-lemma 7: "gesture_recognizer_total — every touch sequence gets classified Theorem gesture_recognizer_total : \<forall>(tc :: nat) (dur :: R). \<exists>(cls : TouchClassification). classify_touch tc dur = cls"
+lemma lemma_7: "gesture_recognizer_total — every touch sequence gets classified Theorem gesture_recognizer_total : \<forall>(tc :: nat) (dur :: r). \<exists>(cls :: TouchClassification). classify_touch tc dur = cls"
   by simp
 
 (* gesture_recognizer_always_classifies (matches Coq) *)
-lemma gesture_recognizer_always_classifies: "\<forall>(tc :: nat) (dur :: R). classify_touch tc dur \<noteq> UnclassifiedTouch"
+lemma gesture_recognizer_always_classifies: "\<forall>(tc :: nat) (dur :: r). classify_touch tc dur \<noteq> UnclassifiedTouch"
   by auto
 
 (* 8 (matches Coq) *)
-lemma 8: "no_ghost_touches — unrecognized sequences don't trigger actions Theorem no_ghost_touches : \<forall>(te :: TouchEvent). te_classified te = False \<longrightarrow> te_action_triggered te = False"
+lemma lemma_8: "no_ghost_touches — unrecognized sequences don't trigger actions Theorem no_ghost_touches : \<forall>(te :: touch_event). te_classified te = False \<longrightarrow> te_action_triggered te = False"
   by auto
 
 (* 9 (matches Coq) *)
-lemma 9: "multi_touch_sorted — touch points processed in order Fixpoint is_sorted (l : list nat) : Prop := match l with | [] => True | [_] => True | x :: ((y :: _) as rest) => (x \<le> y)%nat \<and> is_sorted rest end. Theorem multi_touch_sorted_head : \<forall>(x y : nat) (rest : list nat). is_sorted (x :: y :: rest) \<longrightarrow> (x \<le> y)%nat"
+lemma lemma_9: "multi_touch_sorted — touch points processed in order Fixpoint is_sorted (l : list nat) : Prop := (case l of [] => True | [_] => True | x :: ((y :: _) as rest) => (x \<le> y)%nat \<and> is_sorted rest). Theorem multi_touch_sorted_head : \<forall>(x :: nat) (y :: nat) (rest : list nat). is_sorted (x :: y :: rest) \<longrightarrow> (x \<le> y)%nat"
   by auto
 
 (* multi_touch_sorted_tail (matches Coq) *)
@@ -142,35 +159,35 @@ lemma multi_touch_sorted_tail: "\<forall>(x :: nat) (rest : list nat). is_sorted
   by auto
 
 (* 10 (matches Coq) *)
-lemma 10: "gesture_cancel_safe — cancelled gesture reverts partial state Theorem gesture_cancel_safe : \<forall>(cg :: CancellableGesture). cg_cancelled cg = True \<longrightarrow> cg_current_value cg = cg_original_value cg"
+lemma lemma_10: "gesture_cancel_safe — cancelled gesture reverts partial state Theorem gesture_cancel_safe : \<forall>(cg :: cancellable_gesture). cg_cancelled cg = True \<longrightarrow> cg_current_value cg = cg_original_value cg"
   by auto
 
 (* 11 (matches Coq) *)
-lemma 11: "edge_swipe_distinguishable — swipes from edge are detected Theorem edge_swipe_distinguishable : \<forall>(es :: EdgeSwipeEvent). es_start_x es \<le> es_screen_width es * / 10 \<longrightarrow> es_is_edge es = True"
+lemma lemma_11: "edge_swipe_distinguishable — swipes from edge are detected Theorem edge_swipe_distinguishable : \<forall>(es :: edge_swipe_event). es_start_x es \<le> es_screen_width es * / 10 \<longrightarrow> es_is_edge es = True"
   by auto
 
 (* 12 (matches Coq) *)
-lemma 12: "three_d_touch_pressure_monotonic — deeper press = stronger signal Theorem three_d_touch_pressure_monotonic : \<forall>(p1 p2 : PressureTouch). pt_pressure p1 < pt_pressure p2 \<longrightarrow> pt_signal p1 < pt_signal p2"
+lemma lemma_12: "three_d_touch_pressure_monotonic — deeper press = stronger signal Theorem three_d_touch_pressure_monotonic : \<forall>(p1 :: PressureTouch) (p2 :: PressureTouch). pt_pressure p1 < pt_pressure p2 \<longrightarrow> pt_signal p1 < pt_signal p2"
   by auto
 
 (* 13 (matches Coq) *)
-lemma 13: "palm_rejection_correct — palm touches are ignored Theorem palm_rejection_correct : \<forall>(pte :: PalmTouchEvent). palm_contact_area pte > palm_threshold pte \<longrightarrow> palm_is_rejected pte = True"
+lemma lemma_13: "palm_rejection_correct — palm touches are ignored Theorem palm_rejection_correct : \<forall>(pte :: palm_touch_event). palm_contact_area pte > palm_threshold pte \<longrightarrow> palm_is_rejected pte = True"
   by auto
 
 (* 14 (matches Coq) *)
-lemma 14: "gesture_exclusive — at most one gesture per touch sequence Theorem gesture_exclusive : \<forall>(egr :: ExclusiveGestureResult). (length (egr_recognized egr) \<le> 1)%nat"
+lemma lemma_14: "gesture_exclusive — at most one gesture per touch sequence Theorem gesture_exclusive : \<forall>(egr :: exclusive_gesture_result). (length (egr_recognized egr) \<le> 1)%nat"
   by auto
 
 (* 15 (matches Coq) *)
-lemma 15: "velocity_tracker_accurate — velocity correctly computed Theorem velocity_tracker_accurate : \<forall>(vt :: VelocityTracker). vt_computed_vx vt = vt_dx vt / vt_dt vt \<and> vt_computed_vy vt = vt_dy vt / vt_dt vt"
+lemma lemma_15: "velocity_tracker_accurate — velocity correctly computed Theorem velocity_tracker_accurate : \<forall>(vt :: velocity_tracker). vt_computed_vx vt = vt_dx vt / vt_dt vt \<and> vt_computed_vy vt = vt_dy vt / vt_dt vt"
   by auto
 
 (* velocity_magnitude_non_negative (matches Coq) *)
-lemma velocity_magnitude_non_negative: "\<forall>(vx vy : R). vx * vx + vy * vy \<ge> 0"
+lemma velocity_magnitude_non_negative: "\<forall>(vx :: r) (vy :: r). vx * vx + vy * vy \<ge> 0"
   by auto
 
 (* gesture_confidence_high (matches Coq) *)
-lemma gesture_confidence_high: "\<forall>(g :: Gesture). gesture_confidence g > 0"
+lemma gesture_confidence_high: "\<forall>(g :: gesture). gesture_confidence g > 0"
   by auto
 
 end

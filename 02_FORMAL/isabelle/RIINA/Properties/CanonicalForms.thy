@@ -58,9 +58,12 @@
  *)
 
 theory CanonicalForms
-  imports Main
+  imports Main Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* A closed value of type TUnit must be EUnit. *)
 (* canonical_unit (matches Coq) *)
 lemma canonical_unit: "\<forall>v ε Σ. has_type nil Σ Public v TUnit ε \<longrightarrow> value v \<longrightarrow> v = EUnit"

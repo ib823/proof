@@ -12,27 +12,27 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ZKProperties       | zk_properties          | OK     |
- * | SNARKProperties    | snark_properties       | OK     |
- * | TrustedSetup       | trusted_setup          | OK     |
- * | ZKSNARKConfig      | zksnark_config         | OK     |
- * | KnowledgeExtractor | knowledge_extractor    | OK     |
- * | WitnessRelation    | witness_relation       | OK     |
- * | ZKSimulator        | zk_simulator           | OK     |
- * | DistIndistinguishability | dist_indistinguishability | OK     |
- * | ProverConfig       | prover_config          | OK     |
- * | VerifierConfig     | verifier_config        | OK     |
- * | ProofSize          | proof_size             | OK     |
- * | AsymptoticComplexity | asymptotic_complexity  | OK     |
- * | MPCCeremony        | mpc_ceremony           | OK     |
- * | ToxicWaste         | toxic_waste            | OK     |
- * | Groth16Config      | groth16_config         | OK     |
- * | Groth16Proof       | groth16_proof          | OK     |
- * | PLONKConfig        | plonk_config           | OK     |
- * | PLONKGate          | plonk_gate             | OK     |
- * | FullZKSNARKConfig  | full_zksnark_config    | OK     |
- * | SoundnessError     | soundness_error        | OK     |
- * | ProofSystemType    | proof_system_type      | OK     |
+ * | zk_properties       | zk_properties          | OK     |
+ * | snark_properties    | snark_properties       | OK     |
+ * | trusted_setup       | trusted_setup          | OK     |
+ * | zk_snark_config      | zksnark_config         | OK     |
+ * | knowledge_extractor | knowledge_extractor    | OK     |
+ * | witness_relation    | witness_relation       | OK     |
+ * | zk_simulator        | zk_simulator           | OK     |
+ * | dist_indistinguishability | dist_indistinguishability | OK     |
+ * | prover_config       | prover_config          | OK     |
+ * | verifier_config     | verifier_config        | OK     |
+ * | proof_size          | proof_size             | OK     |
+ * | asymptotic_complexity | asymptotic_complexity  | OK     |
+ * | mpc_ceremony        | mpc_ceremony           | OK     |
+ * | toxic_waste         | toxic_waste            | OK     |
+ * | groth16_config      | groth16_config         | OK     |
+ * | groth16_proof       | groth16_proof          | OK     |
+ * | plonk_config        | plonk_config           | OK     |
+ * | plonk_gate          | plonk_gate             | OK     |
+ * | full_zk_snark_config  | full_zksnark_config    | OK     |
+ * | soundness_error     | soundness_error        | OK     |
+ * | proof_system_type    | proof_system_type      | OK     |
  * | zk_secure          | zk_secure              | OK     |
  * | snark_secure       | snark_secure           | OK     |
  * | setup_secure       | setup_secure           | OK     |
@@ -179,32 +179,35 @@ theory ZKSNARKSecurity
   imports Main CoqCompat
 begin
 
-(* ZKProperties (matches Coq: Record ZKProperties) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym full_zk_snark_config = "nat"
+type_synonym zk_snark_config = "nat"
+(* zk_properties (matches Coq: Record zk_properties) *)
 record zk_properties =
   zk_completeness :: bool
   zk_soundness :: bool
   zk_zero_knowledge :: bool
 
-(* SNARKProperties (matches Coq: Record SNARKProperties) *)
+(* snark_properties (matches Coq: Record snark_properties) *)
 record snark_properties =
   snark_succinctness :: bool
   snark_non_interactive :: bool
   snark_knowledge_sound :: bool
 
-(* TrustedSetup (matches Coq: Record TrustedSetup) *)
+(* trusted_setup (matches Coq: Record trusted_setup) *)
 record trusted_setup =
   ts_mpc_ceremony :: bool
   ts_toxic_waste_destroyed :: bool
   ts_verifiable :: bool
 
-(* ZKSNARKConfig (matches Coq: Record ZKSNARKConfig) *)
+(* zk_snark_config (matches Coq: Record zk_snark_config) *)
 record zksnark_config =
-  zks_zk :: ZKProperties
-  zks_snark :: SNARKProperties
-  zks_setup :: TrustedSetup
+  zks_zk :: zk_properties
+  zks_snark :: snark_properties
+  zks_setup :: trusted_setup
   zks_post_quantum :: bool
 
-(* KnowledgeExtractor (matches Coq: Record KnowledgeExtractor) *)
+(* knowledge_extractor (matches Coq: Record knowledge_extractor) *)
 record knowledge_extractor =
   ke_exists :: bool
   ke_polynomial_time :: bool
@@ -212,14 +215,14 @@ record knowledge_extractor =
   ke_rewinding_allowed :: bool
   ke_auxiliary_input :: bool
 
-(* WitnessRelation (matches Coq: Record WitnessRelation) *)
+(* witness_relation (matches Coq: Record witness_relation) *)
 record witness_relation =
   wr_statement_size :: nat
   wr_witness_size :: nat
   wr_verification_time :: nat
   wr_satisfiable :: bool
 
-(* ZKSimulator (matches Coq: Record ZKSimulator) *)
+(* zk_simulator (matches Coq: Record zk_simulator) *)
 record zk_simulator =
   sim_exists :: bool
   sim_polynomial_time :: bool
@@ -227,14 +230,14 @@ record zk_simulator =
   sim_no_witness_needed :: bool
   sim_programmable_ro :: bool
 
-(* DistIndistinguishability (matches Coq: Record DistIndistinguishability) *)
+(* dist_indistinguishability (matches Coq: Record dist_indistinguishability) *)
 record dist_indistinguishability =
   di_computational :: bool
   di_statistical :: bool
   di_perfect :: bool
   di_advantage_bound :: nat
 
-(* ProverConfig (matches Coq: Record ProverConfig) *)
+(* prover_config (matches Coq: Record prover_config) *)
 record prover_config =
   pv_honest :: bool
   pv_knows_witness :: bool
@@ -242,28 +245,28 @@ record prover_config =
   pv_polynomial_time :: bool
   pv_randomness_fresh :: bool
 
-(* VerifierConfig (matches Coq: Record VerifierConfig) *)
+(* verifier_config (matches Coq: Record verifier_config) *)
 record verifier_config =
   vf_honest :: bool
   vf_follows_protocol :: bool
   vf_polynomial_time :: bool
   vf_accepts_valid :: bool
 
-(* ProofSize (matches Coq: Record ProofSize) *)
+(* proof_size (matches Coq: Record proof_size) *)
 record proof_size =
   ps_proof_bytes :: nat
   ps_verification_ops :: nat
   ps_statement_dependent :: bool
   ps_witness_independent :: bool
 
-(* AsymptoticComplexity (matches Coq: Record AsymptoticComplexity) *)
+(* asymptotic_complexity (matches Coq: Record asymptotic_complexity) *)
 record asymptotic_complexity =
   ac_proof_size :: nat
   ac_verification_time :: nat
   ac_prover_time :: nat
   ac_setup_time :: nat
 
-(* MPCCeremony (matches Coq: Record MPCCeremony) *)
+(* mpc_ceremony (matches Coq: Record mpc_ceremony) *)
 record mpc_ceremony =
   mpc_participants :: nat
   mpc_threshold :: nat
@@ -271,7 +274,7 @@ record mpc_ceremony =
   mpc_contributions_published :: bool
   mpc_random_beacon :: bool
 
-(* ToxicWaste (matches Coq: Record ToxicWaste) *)
+(* toxic_waste (matches Coq: Record toxic_waste) *)
 record toxic_waste =
   tw_generated_securely :: bool
   tw_never_stored :: bool
@@ -279,7 +282,7 @@ record toxic_waste =
   tw_verified_destruction :: bool
   tw_multi_party :: bool
 
-(* Groth16Config (matches Coq: Record Groth16Config) *)
+(* groth16_config (matches Coq: Record groth16_config) *)
 record groth16_config =
   g16_pairing_friendly :: bool
   g16_proof_elements :: nat
@@ -287,7 +290,7 @@ record groth16_config =
   g16_trusted_setup :: bool
   g16_circuit_specific :: bool
 
-(* Groth16Proof (matches Coq: Record Groth16Proof) *)
+(* groth16_proof (matches Coq: Record groth16_proof) *)
 record groth16_proof =
   g16p_element_a :: nat
   g16p_element_b :: nat
@@ -295,7 +298,7 @@ record groth16_proof =
   g16p_valid_curve_points :: bool
   g16p_valid_subgroup :: bool
 
-(* PLONKConfig (matches Coq: Record PLONKConfig) *)
+(* plonk_config (matches Coq: Record plonk_config) *)
 record plonk_config =
   plonk_universal_setup :: bool
   plonk_polynomial_commitment :: bool
@@ -303,30 +306,30 @@ record plonk_config =
   plonk_custom_gates :: bool
   plonk_lookup_tables :: bool
 
-(* PLONKGate (matches Coq: Record PLONKGate) *)
+(* plonk_gate (matches Coq: Record plonk_gate) *)
 record plonk_gate =
   pg_degree :: nat
   pg_fan_in :: nat
   pg_fan_out :: nat
   pg_is_arithmetic :: bool
 
-(* FullZKSNARKConfig (matches Coq: Record FullZKSNARKConfig) *)
+(* full_zk_snark_config (matches Coq: Record full_zk_snark_config) *)
 record full_zksnark_config =
-  fzk_base :: ZKSNARKConfig
-  fzk_extractor :: KnowledgeExtractor
-  fzk_simulator :: ZKSimulator
-  fzk_proof_size :: ProofSize
-  fzk_mpc :: MPCCeremony
-  fzk_tw :: ToxicWaste
+  fzk_base :: zk_snark_config
+  fzk_extractor :: knowledge_extractor
+  fzk_simulator :: zk_simulator
+  fzk_proof_size :: proof_size
+  fzk_mpc :: mpc_ceremony
+  fzk_tw :: toxic_waste
 
-(* SoundnessError (matches Coq: Record SoundnessError) *)
+(* soundness_error (matches Coq: Record soundness_error) *)
 record soundness_error =
   se_statistical :: nat
   se_computational :: nat
   se_knowledge :: nat
   se_security_parameter :: nat
 
-(* ProofSystemType (matches Coq: Record ProofSystemType) *)
+(* proof_system_type (matches Coq: Record proof_system_type) *)
 record proof_system_type =
   pst_is_argument :: bool
   pst_is_proof :: bool
@@ -403,7 +406,7 @@ definition riina_di :: "DistIndistinguishability" where
   True True False 0"
 
 (* completeness_holds (matches Coq: Definition completeness_holds) *)
-definition completeness_holds :: "ProverConfig \<Rightarrow> VerifierConfig \<Rightarrow> bool" where
+definition completeness_holds :: "ProverConfig \<Rightarrow> verifier_config \<Rightarrow> bool" where
   "completeness_holds pv vf \<equiv> pv_honest pv \<and> pv_knows_witness pv \<and> pv_follows_protocol pv \<and>
   vf_honest vf \<and> vf_follows_protocol vf \<and> vf_accepts_valid vf"
 

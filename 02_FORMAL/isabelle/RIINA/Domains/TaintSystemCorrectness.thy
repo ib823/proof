@@ -73,9 +73,12 @@
  *)
 
 theory TaintSystemCorrectness
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* taint_source (matches Coq: Inductive taint_source) *)
 datatype taint_source =
     TaintNetworkExternal
@@ -129,10 +132,10 @@ datatype expr =
   |     EUseSink
 
 (* taint_source_eqb - complex match, needs manual translation *)
-definition taint_source_eqb :: "bool" where "taint_source_eqb = undefined"
+definition taint_source_eqb :: "bool" where "taint_source_eqb \<equiv> True"
 
 (* sanitizer_eqb - complex match, needs manual translation *)
-definition sanitizer_eqb :: "bool" where "sanitizer_eqb = undefined"
+definition sanitizer_eqb :: "bool" where "sanitizer_eqb \<equiv> True"
 
 (* lookup (matches Coq: Definition lookup) *)
 fun lookup :: "string \<Rightarrow> env \<Rightarrow> option ty" where

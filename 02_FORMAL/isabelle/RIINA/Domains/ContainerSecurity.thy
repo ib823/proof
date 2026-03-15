@@ -12,14 +12,14 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SyscallCategory    | syscall_category       | OK     |
- * | NamespaceIsolation | namespace_isolation    | OK     |
- * | CgroupLimits       | cgroup_limits          | OK     |
- * | SeccompConfig      | seccomp_config         | OK     |
- * | Capabilities       | capabilities           | OK     |
- * | ImageIntegrity     | image_integrity        | OK     |
- * | EscapePrevention   | escape_prevention      | OK     |
- * | ContainerConfig    | container_config       | OK     |
+ * | syscall_category    | syscall_category       | OK     |
+ * | namespace_isolation | namespace_isolation    | OK     |
+ * | cgroup_limits       | cgroup_limits          | OK     |
+ * | seccomp_config      | seccomp_config         | OK     |
+ * | capabilities       | capabilities           | OK     |
+ * | image_integrity     | image_integrity        | OK     |
+ * | escape_prevention   | escape_prevention      | OK     |
+ * | container_config    | container_config       | OK     |
  * | ns_fully_isolated  | ns_fully_isolated      | OK     |
  * | ns_minimally_isolated | ns_minimally_isolated  | OK     |
  * | ns_network_safe    | ns_network_safe        | OK     |
@@ -171,7 +171,7 @@ theory ContainerSecurity
   imports Main CoqCompat
 begin
 
-(* SyscallCategory (matches Coq: Inductive SyscallCategory) *)
+(* syscall_category (matches Coq: Inductive syscall_category) *)
 datatype syscall_category =
     SC_Process
   |     SC_FileSystem
@@ -182,7 +182,7 @@ datatype syscall_category =
   |     SC_Module
   |     SC_Namespace
 
-(* NamespaceIsolation (matches Coq: Record NamespaceIsolation) *)
+(* namespace_isolation (matches Coq: Record namespace_isolation) *)
 record namespace_isolation =
   ns_pid_isolated :: bool
   ns_net_isolated :: bool
@@ -193,7 +193,7 @@ record namespace_isolation =
   ns_cgroup_isolated :: bool
   ns_time_isolated :: bool
 
-(* CgroupLimits (matches Coq: Record CgroupLimits) *)
+(* cgroup_limits (matches Coq: Record cgroup_limits) *)
 record cgroup_limits =
   cg_cpu_limited :: bool
   cg_memory_limited :: bool
@@ -201,7 +201,7 @@ record cgroup_limits =
   cg_pids_limited :: bool
   cg_io_limited :: bool
 
-(* SeccompConfig (matches Coq: Record SeccompConfig) *)
+(* seccomp_config (matches Coq: Record seccomp_config) *)
 record seccomp_config =
   sc_syscall_filter :: bool
   sc_default_deny :: bool
@@ -215,7 +215,7 @@ record seccomp_config =
   sc_block_module :: bool
   sc_block_namespace :: bool
 
-(* Capabilities (matches Coq: Record Capabilities) *)
+(* capabilities (matches Coq: Record capabilities) *)
 record capabilities =
   cap_chown :: bool
   cap_dac_override :: bool
@@ -232,7 +232,7 @@ record capabilities =
   cap_mknod :: bool
   cap_audit_write :: bool
 
-(* ImageIntegrity (matches Coq: Record ImageIntegrity) *)
+(* image_integrity (matches Coq: Record image_integrity) *)
 record image_integrity =
   img_signed :: bool
   img_signature_valid :: bool
@@ -243,7 +243,7 @@ record image_integrity =
   img_no_critical_vulns :: bool
   img_base_verified :: bool
 
-(* EscapePrevention (matches Coq: Record EscapePrevention) *)
+(* escape_prevention (matches Coq: Record escape_prevention) *)
 record escape_prevention =
   esc_no_privileged :: bool
   esc_no_host_pid :: bool
@@ -256,14 +256,14 @@ record escape_prevention =
   esc_selinux_enabled :: bool
   esc_drop_all_caps :: bool
 
-(* ContainerConfig (matches Coq: Record ContainerConfig) *)
+(* container_config (matches Coq: Record container_config) *)
 record container_config =
-  cont_ns :: NamespaceIsolation
-  cont_cgroup :: CgroupLimits
-  cont_seccomp :: SeccompConfig
-  cont_caps :: Capabilities
-  cont_image :: ImageIntegrity
-  cont_escape :: EscapePrevention
+  cont_ns :: namespace_isolation
+  cont_cgroup :: cgroup_limits
+  cont_seccomp :: seccomp_config
+  cont_caps :: capabilities
+  cont_image :: image_integrity
+  cont_escape :: escape_prevention
   cont_rootless :: bool
 
 (* ns_fully_isolated (matches Coq: Definition ns_fully_isolated) *)

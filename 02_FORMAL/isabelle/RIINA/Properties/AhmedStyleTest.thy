@@ -47,9 +47,12 @@
  *)
 
 theory AhmedStyleTest
-  imports Main
+  imports Main Semantics
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* sty (matches Coq: Inductive sty) *)
 datatype sty =
     STUnit
@@ -70,7 +73,7 @@ lemma sval_rel_tower_0: "\<forall>T v1 v2. sval_rel_tower 0 T v1 v2 = True"
   by simp
 
 (* sval_rel_tower_S (matches Coq) *)
-lemma sval_rel_tower_S: "\<forall>n T v1 v2. sval_rel_tower (S n) T v1 v2 = (sval_rel_tower n T v1 v2 \<and> match T with | STUnit => v1 = SVUnit \<and> v2 = SVUnit | STBool => \<exists>b. v1 = SVBool b \<and> v2 = SVBool b | STProd T1 T2 => \<exists>a1 b1 a2 b2. v1 = SVPair a1 b1 \<and> v2 = SVPair a2 b2 \<and> sval_rel_tower n T1 a1 a2 \<and> sval_rel_tower n T2 b1 b2 | STFn T1 T2 => \<forall>x y. sval_rel_tower n T1 x y \<longrightarrow> \<exists>r1 r2. sval_rel_tower n T2 r1 r2 end)"
+lemma sval_rel_tower_S: "\<forall>n T v1 v2. sval_rel_tower (Suc n) T v1 v2 = (sval_rel_tower n T v1 v2 \<and> (case T of STUnit => v1 = SVUnit \<and> v2 = SVUnit | STBool => \<exists>b. v1 = SVBool b \<and> v2 = SVBool b | STProd T1 T2 => \<exists>a1 b1 a2 b2. v1 = SVPair a1 b1 \<and> v2 = SVPair a2 b2 \<and> sval_rel_tower n T1 a1 a2 \<and> sval_rel_tower n T2 b1 b2 | STFn T1 T2 => \<forall>x y. sval_rel_tower n T1 x y \<longrightarrow> \<exists>r1 r2. sval_rel_tower n T2 r1 r2))"
   by simp
 
 (* Monotonicity *)
@@ -80,27 +83,27 @@ lemma sval_rel_tower_mono: "\<forall>m n T v1 v2. m \<le> n \<longrightarrow> sv
 
 (* Application: fn at step S n, args at step n => results at step n *)
 (* sval_rel_tower_fn_apply (matches Coq) *)
-lemma sval_rel_tower_fn_apply: "\<forall>n T1 T2 f1 f2 x y. sval_rel_tower (S n) (STFn T1 T2) f1 f2 \<longrightarrow> sval_rel_tower n T1 x y \<longrightarrow> \<exists>r1 r2. sval_rel_tower n T2 r1 r2"
+lemma sval_rel_tower_fn_apply: "\<forall>n T1 T2 f1 f2 x y. sval_rel_tower (Suc n) (STFn T1 T2) f1 f2 \<longrightarrow> sval_rel_tower n T1 x y \<longrightarrow> \<exists>r1 r2. sval_rel_tower n T2 r1 r2"
   by auto
 
 (* THE KEY TEST: Building val_rel for a function from the FT IH *)
 (* ahmed_tower_ft_works (matches Coq) *)
-lemma ahmed_tower_ft_works: "\<forall>n T1 T2. (\<forall>k. k \<le> n \<longrightarrow> \<forall>x y. sval_rel_tower k T1 x y \<longrightarrow> \<exists>r1 r2. sval_rel_tower k T2 r1 r2) \<longrightarrow> \<forall>f1 f2. sval_rel_tower (S n) (STFn T1 T2) f1 f2"
+lemma ahmed_tower_ft_works: "\<forall>n T1 T2. (\<forall>k. k \<le> n \<longrightarrow> \<forall>x y. sval_rel_tower k T1 x y \<longrightarrow> \<exists>r1 r2. sval_rel_tower k T2 r1 r2) \<longrightarrow> \<forall>f1 f2. sval_rel_tower (Suc n) (STFn T1 T2) f1 f2"
   by simp
 
 (* Step-up for base types (now provable since structure is cumulative) *)
 (* sval_rel_tower_step_up_unit (matches Coq) *)
-lemma sval_rel_tower_step_up_unit: "\<forall>n. sval_rel_tower (S n) STUnit SVUnit SVUnit"
+lemma sval_rel_tower_step_up_unit: "\<forall>n. sval_rel_tower (Suc n) STUnit SVUnit SVUnit"
   by simp
 
 (* Step-up for bool *)
 (* sval_rel_tower_step_up_bool (matches Coq) *)
-lemma sval_rel_tower_step_up_bool: "\<forall>n b. sval_rel_tower (S n) STBool (SVBool b) (SVBool b)"
+lemma sval_rel_tower_step_up_bool: "\<forall>n b. sval_rel_tower (Suc n) STBool (SVBool b) (SVBool b)"
   by auto
 
 (* Tower at step n is a prefix of tower at step n+1 *)
 (* sval_rel_tower_prefix (matches Coq) *)
-lemma sval_rel_tower_prefix: "\<forall>n T v1 v2. sval_rel_tower (S n) T v1 v2 \<longrightarrow> sval_rel_tower n T v1 v2"
+lemma sval_rel_tower_prefix: "\<forall>n T v1 v2. sval_rel_tower (Suc n) T v1 v2 \<longrightarrow> sval_rel_tower n T v1 v2"
   by auto
 
 (* Tower at 0 is trivially satisfied for any values *)
@@ -130,7 +133,7 @@ lemma sval_rel_tower_mono_to_0: "\<forall>n T v1 v2. sval_rel_tower n T v1 v2 \<
 
 (* Tower step down by 2 *)
 (* sval_rel_tower_drop_2 (matches Coq) *)
-lemma sval_rel_tower_drop_2: "\<forall>n T v1 v2. sval_rel_tower (S (S n)) T v1 v2 \<longrightarrow> sval_rel_tower n T v1 v2"
+lemma sval_rel_tower_drop_2: "\<forall>n T v1 v2. sval_rel_tower (Suc (Suc n)) T v1 v2 \<longrightarrow> sval_rel_tower n T v1 v2"
   by simp
 
 (* Tower from higher index *)
@@ -140,52 +143,52 @@ lemma sval_rel_tower_from_higher: "\<forall>m n T v1 v2. m \<le> n \<longrightar
 
 (* Tower product decomposition *)
 (* sval_rel_tower_prod_elim (matches Coq) *)
-lemma sval_rel_tower_prod_elim: "\<forall>n T1 T2 v1 v2. sval_rel_tower (S n) (STProd T1 T2) v1 v2 \<longrightarrow> \<exists>a1 b1 a2 b2. v1 = SVPair a1 b1 \<and> v2 = SVPair a2 b2 \<and> sval_rel_tower n T1 a1 a2 \<and> sval_rel_tower n T2 b1 b2"
+lemma sval_rel_tower_prod_elim: "\<forall>n T1 T2 v1 v2. sval_rel_tower (Suc n) (STProd T1 T2) v1 v2 \<longrightarrow> \<exists>a1 b1 a2 b2. v1 = SVPair a1 b1 \<and> v2 = SVPair a2 b2 \<and> sval_rel_tower n T1 a1 a2 \<and> sval_rel_tower n T2 b1 b2"
   by auto
 
 (* Tower function application at step n *)
 (* sval_rel_tower_fn_elim (matches Coq) *)
-lemma sval_rel_tower_fn_elim: "\<forall>n T1 T2 f1 f2. sval_rel_tower (S n) (STFn T1 T2) f1 f2 \<longrightarrow> \<forall>x y. sval_rel_tower n T1 x y \<longrightarrow> \<exists>r1 r2. sval_rel_tower n T2 r1 r2"
+lemma sval_rel_tower_fn_elim: "\<forall>n T1 T2 f1 f2. sval_rel_tower (Suc n) (STFn T1 T2) f1 f2 \<longrightarrow> \<forall>x y. sval_rel_tower n T1 x y \<longrightarrow> \<exists>r1 r2. sval_rel_tower n T2 r1 r2"
   by auto
 
 (* Tower unit inversion *)
 (* sval_rel_tower_unit_inv (matches Coq) *)
-lemma sval_rel_tower_unit_inv: "\<forall>n v1 v2. sval_rel_tower (S n) STUnit v1 v2 \<longrightarrow> v1 = SVUnit \<and> v2 = SVUnit"
+lemma sval_rel_tower_unit_inv: "\<forall>n v1 v2. sval_rel_tower (Suc n) STUnit v1 v2 \<longrightarrow> v1 = SVUnit \<and> v2 = SVUnit"
   by auto
 
 (* Tower bool inversion *)
 (* sval_rel_tower_bool_inv (matches Coq) *)
-lemma sval_rel_tower_bool_inv: "\<forall>n v1 v2. sval_rel_tower (S n) STBool v1 v2 \<longrightarrow> \<exists>b. v1 = SVBool b \<and> v2 = SVBool b"
+lemma sval_rel_tower_bool_inv: "\<forall>n v1 v2. sval_rel_tower (Suc n) STBool v1 v2 \<longrightarrow> \<exists>b. v1 = SVBool b \<and> v2 = SVBool b"
   by auto
 
 (* Tower product left component extraction *)
 (* sval_rel_tower_pair_left (matches Coq) *)
-lemma sval_rel_tower_pair_left: "\<forall>n T1 T2 a1 b1 a2 b2. sval_rel_tower (S n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2) \<longrightarrow> sval_rel_tower n T1 a1 a2"
+lemma sval_rel_tower_pair_left: "\<forall>n T1 T2 a1 b1 a2 b2. sval_rel_tower (Suc n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2) \<longrightarrow> sval_rel_tower n T1 a1 a2"
   by auto
 
 (* Tower product right component extraction *)
 (* sval_rel_tower_pair_right (matches Coq) *)
-lemma sval_rel_tower_pair_right: "\<forall>n T1 T2 a1 b1 a2 b2. sval_rel_tower (S n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2) \<longrightarrow> sval_rel_tower n T2 b1 b2"
+lemma sval_rel_tower_pair_right: "\<forall>n T1 T2 a1 b1 a2 b2. sval_rel_tower (Suc n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2) \<longrightarrow> sval_rel_tower n T2 b1 b2"
   by auto
 
 (* Tower function application with monotonicity *)
 (* sval_rel_tower_fn_mono_app (matches Coq) *)
-lemma sval_rel_tower_fn_mono_app: "\<forall>m n T1 T2 f1 f2 x y. m \<le> n \<longrightarrow> sval_rel_tower (S n) (STFn T1 T2) f1 f2 \<longrightarrow> sval_rel_tower m T1 x y \<longrightarrow> \<exists>r1 r2. sval_rel_tower m T2 r1 r2"
+lemma sval_rel_tower_fn_mono_app: "\<forall>m n T1 T2 f1 f2 x y. m \<le> n \<longrightarrow> sval_rel_tower (Suc n) (STFn T1 T2) f1 f2 \<longrightarrow> sval_rel_tower m T1 x y \<longrightarrow> \<exists>r1 r2. sval_rel_tower m T2 r1 r2"
   by simp
 
 (* Tower unit value extraction — left value *)
 (* sval_rel_tower_unit_val (matches Coq) *)
-lemma sval_rel_tower_unit_val: "\<forall>n v1 v2. sval_rel_tower (S n) STUnit v1 v2 \<longrightarrow> v1 = SVUnit"
+lemma sval_rel_tower_unit_val: "\<forall>n v1 v2. sval_rel_tower (Suc n) STUnit v1 v2 \<longrightarrow> v1 = SVUnit"
   by auto
 
 (* Tower bool equality — both values are equal *)
 (* sval_rel_tower_bool_same (matches Coq) *)
-lemma sval_rel_tower_bool_same: "\<forall>n v1 v2. sval_rel_tower (S n) STBool v1 v2 \<longrightarrow> v1 = v2"
+lemma sval_rel_tower_bool_same: "\<forall>n v1 v2. sval_rel_tower (Suc n) STBool v1 v2 \<longrightarrow> v1 = v2"
   by simp
 
 (* Tower step-up for pairs: build at step S n from step n components *)
 (* sval_rel_tower_step_up_pair (matches Coq) *)
-lemma sval_rel_tower_step_up_pair: "\<forall>n T1 T2 a1 b1 a2 b2. sval_rel_tower n T1 a1 a2 \<longrightarrow> sval_rel_tower n T2 b1 b2 \<longrightarrow> sval_rel_tower (S n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2)"
+lemma sval_rel_tower_step_up_pair: "\<forall>n T1 T2 a1 b1 a2 b2. sval_rel_tower n T1 a1 a2 \<longrightarrow> sval_rel_tower n T2 b1 b2 \<longrightarrow> sval_rel_tower (Suc n) (STProd T1 T2) (SVPair a1 b1) (SVPair a2 b2)"
   by auto
 
 (* Tower for pair of units at any step *)
@@ -205,7 +208,7 @@ lemma sval_rel_tower_bool_true: "\<forall>n. sval_rel_tower n STBool (SVBool Tru
 
 (* Tower step down by 3 *)
 (* sval_rel_tower_drop_3 (matches Coq) *)
-lemma sval_rel_tower_drop_3: "\<forall>n T v1 v2. sval_rel_tower (S (S (S n))) T v1 v2 \<longrightarrow> sval_rel_tower n T v1 v2"
+lemma sval_rel_tower_drop_3: "\<forall>n T v1 v2. sval_rel_tower (Suc (Suc (Suc n))) T v1 v2 \<longrightarrow> sval_rel_tower n T v1 v2"
   by simp
 
 (* Tower product with unit left component *)

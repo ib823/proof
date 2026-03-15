@@ -12,10 +12,10 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ConsumerData       | consumer_data          | OK     |
- * | PrivacyRight       | privacy_right          | OK     |
- * | RetailEffect       | retail_effect          | OK     |
- * | EcommerceControls  | ecommerce_controls     | OK     |
+ * | consumer_data       | consumer_data          | OK     |
+ * | privacy_right       | privacy_right          | OK     |
+ * | retail_effect       | retail_effect          | OK     |
+ * | ecommerce_controls  | ecommerce_controls     | OK     |
  * | consumer_sensitivity | consumer_sensitivity   | OK     |
  * | all_rights_count   | all_rights_count       | OK     |
  * | right_to_nat       | right_to_nat           | OK     |
@@ -54,7 +54,7 @@ theory IndustryRetail
   imports Main CoqCompat
 begin
 
-(* ConsumerData (matches Coq: Inductive ConsumerData) *)
+(* consumer_data (matches Coq: Inductive consumer_data) *)
 datatype consumer_data =
     PII
   |     PaymentData
@@ -63,7 +63,7 @@ datatype consumer_data =
   |     LocationData
   |     BiometricData
 
-(* PrivacyRight (matches Coq: Inductive PrivacyRight) *)
+(* privacy_right (matches Coq: Inductive privacy_right) *)
 datatype privacy_right =
     RightToKnow
   |     RightToDelete
@@ -71,7 +71,7 @@ datatype privacy_right =
   |     RightToPortability
   |     RightToCorrection
 
-(* RetailEffect (matches Coq: Inductive RetailEffect) *)
+(* retail_effect (matches Coq: Inductive retail_effect) *)
 datatype retail_effect =
     CustomerIO
   |     PaymentIO
@@ -79,7 +79,7 @@ datatype retail_effect =
   |     OrderProcess
   |     AnalyticsWrite
 
-(* EcommerceControls (matches Coq: Record EcommerceControls) *)
+(* ecommerce_controls (matches Coq: Record ecommerce_controls) *)
 record ecommerce_controls =
   tls_encryption :: bool
   secure_authentication :: bool
@@ -147,13 +147,13 @@ definition inventory_valid :: "bool" where
 (* Section J01 - PCI-DSS for E-commerce
     Reference: IND_J_RETAIL.md Section 3.1 *)
 (* ecommerce_pci_compliance (matches Coq) *)
-lemma ecommerce_pci_compliance: "\<forall>(controls :: EcommerceControls). pci_compliant_payment controls = True \<longrightarrow> True"
+lemma ecommerce_pci_compliance: "\<forall>(controls :: ecommerce_controls). pci_compliant_payment controls = True \<longrightarrow> True"
   by simp
 
 (* Section J02 - CCPA Consumer Rights
     Reference: IND_J_RETAIL.md Section 3.2 *)
 (* ccpa_compliance (matches Coq) *)
-lemma ccpa_compliance: "\<forall>(consumer :: nat) (right :: PrivacyRight). True"
+lemma ccpa_compliance: "\<forall>(consumer :: nat) (right :: privacy_right). True"
   by simp
 
 (* Section J03 - GDPR Compliance
@@ -165,7 +165,7 @@ lemma gdpr_compliance: "\<forall>(data_subject :: nat) (processing :: nat). True
 (* Section J04 - OWASP Top 10 Prevention
     Reference: IND_J_RETAIL.md Section 3.4 *)
 (* owasp_prevention (matches Coq) *)
-lemma owasp_prevention: "\<forall>(controls :: EcommerceControls). input_validation controls = True \<longrightarrow> sql_injection_prevention controls = True \<longrightarrow> xss_prevention controls = True \<longrightarrow> True"
+lemma owasp_prevention: "\<forall>(controls :: ecommerce_controls). input_validation controls = True \<longrightarrow> sql_injection_prevention controls = True \<longrightarrow> xss_prevention controls = True \<longrightarrow> True"
   by simp
 
 (* Section J05 - SOC 2 Trust Principles
@@ -176,12 +176,12 @@ lemma soc2_compliance: "\<forall>(service :: nat) (criteria :: nat). True"
 
 (* TLS required for all customer data *)
 (* tls_required (matches Coq) *)
-lemma tls_required: "\<forall>(controls :: EcommerceControls) (data :: ConsumerData). tls_encryption controls = True \<longrightarrow> True"
+lemma tls_required: "\<forall>(controls :: ecommerce_controls) (data :: consumer_data). tls_encryption controls = True \<longrightarrow> True"
   by simp
 
 (* CSRF tokens required for state-changing operations *)
 (* csrf_tokens_required (matches Coq) *)
-lemma csrf_tokens_required: "\<forall>(controls :: EcommerceControls). csrf_protection controls = True \<longrightarrow> True"
+lemma csrf_tokens_required: "\<forall>(controls :: ecommerce_controls). csrf_protection controls = True \<longrightarrow> True"
   by simp
 
 (* payment_biometric_highest (matches Coq) *)

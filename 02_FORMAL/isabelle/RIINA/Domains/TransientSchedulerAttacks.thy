@@ -12,12 +12,12 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SchedulerGranularity | scheduler_granularity  | OK     |
- * | SchedPolicy        | sched_policy           | OK     |
+ * | scheduler_granularity | scheduler_granularity  | OK     |
+ * | sched_policy        | sched_policy           | OK     |
  * | TSAVariant         | tsa_variant            | OK     |
- * | ExecContext        | exec_context           | OK     |
- * | TSADefenseConfig   | tsa_defense_config     | OK     |
- * | SchedulerFootprint | scheduler_footprint    | OK     |
+ * | exec_context        | exec_context           | OK     |
+ * | tsa_defense_config   | tsa_defense_config     | OK     |
+ * | scheduler_footprint | scheduler_footprint    | OK     |
  * | sq_defense_active  | sq_defense_active      | OK     |
  * | l1_defense_active  | l1_defense_active      | OK     |
  * | tlb_ipi_defense_active | tlb_ipi_defense_active | OK     |
@@ -58,13 +58,13 @@ theory TransientSchedulerAttacks
   imports Main CoqCompat
 begin
 
-(* SchedulerGranularity (matches Coq: Inductive SchedulerGranularity) *)
+(* scheduler_granularity (matches Coq: Inductive scheduler_granularity) *)
 datatype scheduler_granularity =
     Tick
   |     MicroTick
   |     CyclePrecise
 
-(* SchedPolicy (matches Coq: Inductive SchedPolicy) *)
+(* sched_policy (matches Coq: Inductive sched_policy) *)
 datatype sched_policy =
     CFS
   |     FIFO
@@ -80,7 +80,7 @@ datatype tsa_variant =
   |     TSA_IPI
   |     TSA_Freq
 
-(* ExecContext (matches Coq: Record ExecContext) *)
+(* exec_context (matches Coq: Record exec_context) *)
 record exec_context =
   ec_pid :: nat
   ec_priority :: nat
@@ -88,7 +88,7 @@ record exec_context =
   ec_preemptible :: bool
   ec_cache_partition :: nat
 
-(* TSADefenseConfig (matches Coq: Record TSADefenseConfig) *)
+(* tsa_defense_config (matches Coq: Record tsa_defense_config) *)
 record tsa_defense_config =
   tsa_constant_time_scheduling :: bool
   tsa_cache_partitioning :: bool
@@ -99,7 +99,7 @@ record tsa_defense_config =
   tsa_timer_noise_injection :: bool
   tsa_scheduler_queue_isolation :: bool
 
-(* SchedulerFootprint (matches Coq: Record SchedulerFootprint) *)
+(* scheduler_footprint (matches Coq: Record scheduler_footprint) *)
 record scheduler_footprint =
   sf_time_slice_consumed :: nat
   sf_preemption_count :: nat

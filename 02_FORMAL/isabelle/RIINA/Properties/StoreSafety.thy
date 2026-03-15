@@ -47,9 +47,12 @@
  *)
 
 theory StoreSafety
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* Store extension after fresh allocation: update extends the original.
     (Re-exported from Preservation for discoverability.) *)
 (* store_extend_after_alloc (matches Coq) *)
@@ -130,7 +133,7 @@ lemma store_ty_lookup_dec: "\<forall>l Σ. (\<exists>T sl. store_ty_lookup l Σ 
 
 (* Location equality is decidable (nat decidability). *)
 (* loc_eq_dec (matches Coq) *)
-lemma loc_eq_dec: "\<forall>(l1 l2 : loc). (l1 = l2) \<or> (l1 \<noteq> l2)"
+lemma loc_eq_dec: "\<forall>(l1 :: loc) (l2 :: loc). (l1 = l2) \<or> (l1 \<noteq> l2)"
   by auto
 
 (* Store typing update commutes for distinct locations (lookup equivalence). *)

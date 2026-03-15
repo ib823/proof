@@ -39,9 +39,12 @@
  *)
 
 theory Declassification
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* Secrets are trivially related at any step *)
 (* val_rel_le_secret_trivial (matches Coq) *)
 lemma val_rel_le_secret_trivial: "\<forall>n Σ T v1 v2. value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TSecret T) v1 v2"

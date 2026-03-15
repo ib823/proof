@@ -58,9 +58,12 @@
  *)
 
 theory ContextProperties
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* Decidability of [free_in]: for any variable [x] and expression [e],
     we can decide whether [x] occurs free in [e]. This is essential for
     automation and case analysis in proofs about weakening/strengthening. *)

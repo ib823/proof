@@ -12,26 +12,26 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ReferrerPolicy     | referrer_policy        | OK     |
- * | User               | user                   | OK     |
- * | Application        | application            | OK     |
- * | TrackingEvent      | tracking_event         | OK     |
- * | PrivacyState       | privacy_state          | OK     |
- * | CrossSiteRequest   | cross_site_request     | OK     |
- * | FingerprintAttempt | fingerprint_attempt    | OK     |
- * | CookieRequest      | cookie_request         | OK     |
- * | ResourceLoad       | resource_load          | OK     |
- * | AdvertisingId      | advertising_id         | OK     |
- * | AppTrackingRequest | app_tracking_request   | OK     |
- * | LinkDecoration     | link_decoration        | OK     |
- * | BounceTracking     | bounce_tracking        | OK     |
- * | CNAMERecord        | cname_record           | OK     |
- * | StorageAccess      | storage_access         | OK     |
- * | ReferrerConfig     | referrer_config        | OK     |
- * | NetworkRequest     | network_request        | OK     |
- * | DeviceGraphAttempt | device_graph_attempt   | OK     |
- * | TrackerList        | tracker_list           | OK     |
- * | TrackingReport     | tracking_report        | OK     |
+ * | referrer_policy     | referrer_policy        | OK     |
+ * | user               | user                   | OK     |
+ * | application        | application            | OK     |
+ * | tracking_event      | tracking_event         | OK     |
+ * | privacy_state       | privacy_state          | OK     |
+ * | cross_site_request   | cross_site_request     | OK     |
+ * | fingerprint_attempt | fingerprint_attempt    | OK     |
+ * | cookie_request      | cookie_request         | OK     |
+ * | resource_load       | resource_load          | OK     |
+ * | advertising_id      | advertising_id         | OK     |
+ * | app_tracking_request | app_tracking_request   | OK     |
+ * | link_decoration     | link_decoration        | OK     |
+ * | bounce_tracking     | bounce_tracking        | OK     |
+ * | cname_record        | cname_record           | OK     |
+ * | storage_access      | storage_access         | OK     |
+ * | referrer_config     | referrer_config        | OK     |
+ * | network_request     | network_request        | OK     |
+ * | device_graph_attempt | device_graph_attempt   | OK     |
+ * | tracker_list        | tracker_list           | OK     |
+ * | tracking_report     | tracking_report        | OK     |
  * | consent_scope_invariant | consent_scope_invariant | OK     |
  * | explicit_consent   | explicit_consent       | OK     |
  * | tracks             | tracks                 | OK     |
@@ -90,131 +90,131 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* ReferrerPolicy (matches Coq: Inductive ReferrerPolicy) *)
+(* referrer_policy (matches Coq: Inductive referrer_policy) *)
 datatype referrer_policy =
     NoReferrer
   |     StrictOrigin
   |     SameOrigin
   |     FullURL
 
-(* User (matches Coq: Record User) *)
+(* user (matches Coq: Record user) *)
 record user =
   user_id :: nat
   tracking_consent_given :: bool
   consent_scope :: 'a list
   consent_timestamp :: nat
 
-(* Application (matches Coq: Record Application) *)
+(* application (matches Coq: Record application) *)
 record application =
   app_id :: nat
   tracking_enabled :: bool
   tracking_domains :: 'a list
   app_privacy_policy :: bool
 
-(* TrackingEvent (matches Coq: Record TrackingEvent) *)
+(* tracking_event (matches Coq: Record tracking_event) *)
 record tracking_event =
-  tracking_app :: Application
-  tracked_user :: User
+  tracking_app :: application
+  tracked_user :: user
   tracking_type :: nat
   tracking_data :: 'a list
 
-(* PrivacyState (matches Coq: Record PrivacyState) *)
+(* privacy_state (matches Coq: Record privacy_state) *)
 record privacy_state =
   tracking_transparency_enabled :: bool
   app_tracking_requests :: 'a list
   approved_tracking :: 'a list
   denied_tracking :: 'a list
 
-(* CrossSiteRequest (matches Coq: Record CrossSiteRequest) *)
+(* cross_site_request (matches Coq: Record cross_site_request) *)
 record cross_site_request =
   csr_source_domain :: nat
   csr_target_domain :: nat
   csr_has_tracking_params :: bool
   csr_blocked :: bool
 
-(* FingerprintAttempt (matches Coq: Record FingerprintAttempt) *)
+(* fingerprint_attempt (matches Coq: Record fingerprint_attempt) *)
 record fingerprint_attempt =
   fp_entropy_bits :: nat
   fp_max_allowed_bits :: nat
   fp_prevented :: bool
 
-(* CookieRequest (matches Coq: Record CookieRequest) *)
+(* cookie_request (matches Coq: Record cookie_request) *)
 record cookie_request =
   cookie_domain :: nat
   cookie_page_domain :: nat
   cookie_is_third_party :: bool
   cookie_blocked :: bool
 
-(* ResourceLoad (matches Coq: Record ResourceLoad) *)
+(* resource_load (matches Coq: Record resource_load) *)
 record resource_load =
   res_url_hash :: nat
   res_size_bytes :: nat
   res_is_tracking_pixel :: bool
   res_detected :: bool
 
-(* AdvertisingId (matches Coq: Record AdvertisingId) *)
+(* advertising_id (matches Coq: Record advertising_id) *)
 record advertising_id =
   ad_id_value :: nat
   ad_id_resettable :: bool
   ad_id_reset_count :: nat
 
-(* AppTrackingRequest (matches Coq: Record AppTrackingRequest) *)
+(* app_tracking_request (matches Coq: Record app_tracking_request) *)
 record app_tracking_request =
   atr_app_id :: nat
   atr_user_id :: nat
   atr_permission_asked :: bool
   atr_permission_granted :: bool
 
-(* LinkDecoration (matches Coq: Record LinkDecoration) *)
+(* link_decoration (matches Coq: Record link_decoration) *)
 record link_decoration =
   ld_url_hash :: nat
   ld_tracking_params :: 'a list
   ld_stripped :: bool
 
-(* BounceTracking (matches Coq: Record BounceTracking) *)
+(* bounce_tracking (matches Coq: Record bounce_tracking) *)
 record bounce_tracking =
   bt_intermediate_domain :: nat
   bt_final_domain :: nat
   bt_bounce_detected :: bool
   bt_prevented :: bool
 
-(* CNAMERecord (matches Coq: Record CNAMERecord) *)
+(* cname_record (matches Coq: Record cname_record) *)
 record cname_record =
   cname_alias :: nat
   cname_target :: nat
   cname_is_tracker :: bool
   cname_detected :: bool
 
-(* StorageAccess (matches Coq: Record StorageAccess) *)
+(* storage_access (matches Coq: Record storage_access) *)
 record storage_access =
   sa_origin :: nat
   sa_top_level_origin :: nat
   sa_partitioned :: bool
 
-(* ReferrerConfig (matches Coq: Record ReferrerConfig) *)
+(* referrer_config (matches Coq: Record referrer_config) *)
 record referrer_config =
-  ref_policy :: ReferrerPolicy
+  ref_policy :: referrer_policy
   ref_is_strict :: bool
 
-(* NetworkRequest (matches Coq: Record NetworkRequest) *)
+(* network_request (matches Coq: Record network_request) *)
 record network_request =
   nr_destination :: nat
   nr_ip_masked :: bool
   nr_uses_relay :: bool
 
-(* DeviceGraphAttempt (matches Coq: Record DeviceGraphAttempt) *)
+(* device_graph_attempt (matches Coq: Record device_graph_attempt) *)
 record device_graph_attempt =
   dg_identifiers_collected :: 'a list
   dg_prevented :: bool
   dg_max_identifiers :: nat
 
-(* TrackerList (matches Coq: Record TrackerList) *)
+(* tracker_list (matches Coq: Record tracker_list) *)
 record tracker_list =
   tl_entries :: 'a list
   tl_last_updated :: nat
   tl_max_age_seconds :: nat
 
-(* TrackingReport (matches Coq: Record TrackingReport) *)
+(* tracking_report (matches Coq: Record tracking_report) *)
 record tracking_report =
   tr_blocked_count :: nat
   tr_tracker_domains :: 'a list
@@ -225,12 +225,12 @@ definition consent_scope_invariant :: "User \<Rightarrow> bool" where
   "consent_scope_invariant user \<equiv> (consent_scope user <> []) <-> (tracking_consent_given user = True)"
 
 (* explicit_consent (matches Coq: Definition explicit_consent) *)
-definition explicit_consent :: "User \<Rightarrow> Application \<Rightarrow> bool" where
+definition explicit_consent :: "User \<Rightarrow> application \<Rightarrow> bool" where
   "explicit_consent user app \<equiv> tracking_consent_given user = True \<and>
-  In (app_id app) (consent_scope user)"
+  (app_id app) \<in> set (consent_scope user)"
 
 (* tracks (matches Coq: Definition tracks) *)
-definition tracks :: "Application \<Rightarrow> User \<Rightarrow> bool" where
+definition tracks :: "Application \<Rightarrow> user \<Rightarrow> bool" where
   "tracks app user \<equiv> tracking_enabled app = True \<and>
   explicit_consent user app"
 
@@ -238,19 +238,19 @@ definition tracks :: "Application \<Rightarrow> User \<Rightarrow> bool" where
 definition privacy_state_well_formed :: "PrivacyState \<Rightarrow> bool" where
   "privacy_state_well_formed ps \<equiv> tracking_transparency_enabled ps = True \<and>
   forall aid uid,
-    In (aid, uid) (approved_tracking ps) ->
-    In (aid, uid) (app_tracking_requests ps)"
+    (aid, uid) \<in> set (approved_tracking ps) ->
+    (aid, uid) \<in> set (app_tracking_requests ps)"
 
 (* tracking_requested (matches Coq: Definition tracking_requested) *)
-definition tracking_requested :: "PrivacyState \<Rightarrow> Application \<Rightarrow> User \<Rightarrow> bool" where
-  "tracking_requested ps app user \<equiv> In (app_id app, user_id user) (app_tracking_requests ps)"
+definition tracking_requested :: "PrivacyState \<Rightarrow> application \<Rightarrow> user \<Rightarrow> bool" where
+  "tracking_requested ps app user \<equiv> (app_id app, user_id user) \<in> set (app_tracking_requests ps)"
 
 (* tracking_approved (matches Coq: Definition tracking_approved) *)
-definition tracking_approved :: "PrivacyState \<Rightarrow> Application \<Rightarrow> User \<Rightarrow> bool" where
-  "tracking_approved ps app user \<equiv> In (app_id app, user_id user) (approved_tracking ps)"
+definition tracking_approved :: "PrivacyState \<Rightarrow> application \<Rightarrow> user \<Rightarrow> bool" where
+  "tracking_approved ps app user \<equiv> (app_id app, user_id user) \<in> set (approved_tracking ps)"
 
 (* tracking_allowed (matches Coq: Definition tracking_allowed) *)
-definition tracking_allowed :: "PrivacyState \<Rightarrow> Application \<Rightarrow> User \<Rightarrow> bool" where
+definition tracking_allowed :: "PrivacyState \<Rightarrow> application \<Rightarrow> user \<Rightarrow> bool" where
   "tracking_allowed ps app user \<equiv> tracking_transparency_enabled ps \<and>
   in_pair_list (app_id app) (user_id user) (approved_tracking ps)"
 
@@ -325,103 +325,103 @@ definition tracking_report_available :: "TrackingReport \<Rightarrow> bool" wher
   "tracking_report_available tr \<equiv> tr_report_available tr = True"
 
 (* no_tracking_without_consent (matches Coq) *)
-lemma no_tracking_without_consent: "\<forall>(app :: Application) (user :: User). tracks app user \<longrightarrow> explicit_consent user app"
+lemma no_tracking_without_consent: "\<forall>(app :: application) (user :: user). tracks app user \<longrightarrow> explicit_consent user app"
   by auto
 
 (* tracking_requires_transparency_prompt (matches Coq) *)
-lemma tracking_requires_transparency_prompt: "\<forall>(ps :: PrivacyState) (app :: Application) (user : User). privacy_state_well_formed ps \<longrightarrow> tracking_approved ps app user \<longrightarrow> tracking_requested ps app user"
+lemma tracking_requires_transparency_prompt: "\<forall>(ps :: privacy_state) (app :: application) (user :: user). privacy_state_well_formed ps \<longrightarrow> tracking_approved ps app user \<longrightarrow> tracking_requested ps app user"
   by auto
 
 (* denied_tracking_not_approved (matches Coq) *)
-lemma denied_tracking_not_approved: "\<forall>(ps :: PrivacyState) (app :: Application) (user : User). In (app_id app, user_id user) (denied_tracking ps) \<longrightarrow> ~ In (app_id app, user_id user) (approved_tracking ps) \<longrightarrow> tracking_allowed ps app user = False"
+lemma denied_tracking_not_approved: "\<forall>(ps :: privacy_state) (app :: application) (user :: user). (app_id app, user_id user) \<in> set (denied_tracking ps) \<longrightarrow> ~ (app_id app, user_id user) \<in> set (approved_tracking ps) \<longrightarrow> tracking_allowed ps app user = False"
   by auto
 
 (* consent_revocation_effective (matches Coq) *)
-lemma consent_revocation_effective: "\<forall>(user_before user_after : User) (app :: Application). explicit_consent user_before app \<longrightarrow> tracking_consent_given user_after = False \<longrightarrow> user_id user_before = user_id user_after \<longrightarrow> ~ explicit_consent user_after app"
+lemma consent_revocation_effective: "\<forall>(user_before :: user) (user_after :: user) (app :: application). explicit_consent user_before app \<longrightarrow> tracking_consent_given user_after = False \<longrightarrow> user_id user_before = user_id user_after \<longrightarrow> ~ explicit_consent user_after app"
   by auto
 
 (* no_consent_no_data (matches Coq) *)
-lemma no_consent_no_data: "\<forall>(event :: TrackingEvent). tracking_event_well_formed event \<longrightarrow> tracking_consent_given (tracked_user event) = False \<longrightarrow> tracking_data event = []"
+lemma no_consent_no_data: "\<forall>(event :: tracking_event). tracking_event_well_formed event \<longrightarrow> tracking_consent_given (tracked_user event) = False \<longrightarrow> tracking_data event = []"
   by auto
 
 (* cross_site_tracking_blocked_thm (matches Coq) *)
-lemma cross_site_tracking_blocked_thm: "\<forall>(csr :: CrossSiteRequest). cross_site_tracking_blocked csr \<longrightarrow> csr_source_domain csr \<noteq> csr_target_domain csr \<longrightarrow> csr_has_tracking_params csr = True \<longrightarrow> csr_blocked csr = True"
+lemma cross_site_tracking_blocked_thm: "\<forall>(csr :: cross_site_request). cross_site_tracking_blocked csr \<longrightarrow> csr_source_domain csr \<noteq> csr_target_domain csr \<longrightarrow> csr_has_tracking_params csr = True \<longrightarrow> csr_blocked csr = True"
   by auto
 
 (* fingerprinting_prevented_thm (matches Coq) *)
-lemma fingerprinting_prevented_thm: "\<forall>(fa :: FingerprintAttempt). fingerprinting_prevented fa \<longrightarrow> fp_entropy_bits fa > fp_max_allowed_bits fa \<longrightarrow> fp_prevented fa = True"
+lemma fingerprinting_prevented_thm: "\<forall>(fa :: fingerprint_attempt). fingerprinting_prevented fa \<longrightarrow> fp_entropy_bits fa > fp_max_allowed_bits fa \<longrightarrow> fp_prevented fa = True"
   by auto
 
 (* third_party_cookies_blocked_thm (matches Coq) *)
-lemma third_party_cookies_blocked_thm: "\<forall>(cr :: CookieRequest). third_party_cookies_blocked cr \<longrightarrow> cookie_is_third_party cr = True \<longrightarrow> cookie_blocked cr = True"
+lemma third_party_cookies_blocked_thm: "\<forall>(cr :: cookie_request). third_party_cookies_blocked cr \<longrightarrow> cookie_is_third_party cr = True \<longrightarrow> cookie_blocked cr = True"
   by auto
 
 (* tracking_pixel_detected_thm (matches Coq) *)
-lemma tracking_pixel_detected_thm: "\<forall>(rl :: ResourceLoad). tracking_pixel_detected rl \<longrightarrow> res_is_tracking_pixel rl = True \<longrightarrow> res_detected rl = True"
+lemma tracking_pixel_detected_thm: "\<forall>(rl :: resource_load). tracking_pixel_detected rl \<longrightarrow> res_is_tracking_pixel rl = True \<longrightarrow> res_detected rl = True"
   by auto
 
 (* advertising_id_resettable_thm (matches Coq) *)
-lemma advertising_id_resettable_thm: "\<forall>(aid :: AdvertisingId). advertising_id_resettable aid \<longrightarrow> ad_id_resettable aid = True"
+lemma advertising_id_resettable_thm: "\<forall>(aid :: advertising_id). advertising_id_resettable aid \<longrightarrow> ad_id_resettable aid = True"
   by auto
 
 (* app_tracking_permission_required_thm (matches Coq) *)
-lemma app_tracking_permission_required_thm: "\<forall>(atr :: AppTrackingRequest). app_tracking_permission_required atr \<longrightarrow> atr_permission_granted atr = True \<longrightarrow> atr_permission_asked atr = True"
+lemma app_tracking_permission_required_thm: "\<forall>(atr :: app_tracking_request). app_tracking_permission_required atr \<longrightarrow> atr_permission_granted atr = True \<longrightarrow> atr_permission_asked atr = True"
   by auto
 
 (* link_decoration_stripped_thm (matches Coq) *)
-lemma link_decoration_stripped_thm: "\<forall>(ld :: LinkDecoration). link_decoration_stripped ld \<longrightarrow> ld_tracking_params ld \<noteq> [] \<longrightarrow> ld_stripped ld = True"
+lemma link_decoration_stripped_thm: "\<forall>(ld :: link_decoration). link_decoration_stripped ld \<longrightarrow> ld_tracking_params ld \<noteq> [] \<longrightarrow> ld_stripped ld = True"
   by auto
 
 (* bounce_tracking_prevented_thm (matches Coq) *)
-lemma bounce_tracking_prevented_thm: "\<forall>(bt :: BounceTracking). bounce_tracking_prevented bt \<longrightarrow> bt_bounce_detected bt = True \<longrightarrow> bt_prevented bt = True"
+lemma bounce_tracking_prevented_thm: "\<forall>(bt :: bounce_tracking). bounce_tracking_prevented bt \<longrightarrow> bt_bounce_detected bt = True \<longrightarrow> bt_prevented bt = True"
   by auto
 
 (* cname_cloaking_detected_thm (matches Coq) *)
-lemma cname_cloaking_detected_thm: "\<forall>(cr :: CNAMERecord). cname_cloaking_detected cr \<longrightarrow> cname_is_tracker cr = True \<longrightarrow> cname_detected cr = True"
+lemma cname_cloaking_detected_thm: "\<forall>(cr :: cname_record). cname_cloaking_detected cr \<longrightarrow> cname_is_tracker cr = True \<longrightarrow> cname_detected cr = True"
   by auto
 
 (* storage_access_partitioned_thm (matches Coq) *)
-lemma storage_access_partitioned_thm: "\<forall>(sa :: StorageAccess). storage_access_partitioned sa \<longrightarrow> sa_origin sa \<noteq> sa_top_level_origin sa \<longrightarrow> sa_partitioned sa = True"
+lemma storage_access_partitioned_thm: "\<forall>(sa :: storage_access). storage_access_partitioned sa \<longrightarrow> sa_origin sa \<noteq> sa_top_level_origin sa \<longrightarrow> sa_partitioned sa = True"
   by auto
 
 (* referrer_policy_strict_thm (matches Coq) *)
-lemma referrer_policy_strict_thm: "\<forall>(rc :: ReferrerConfig). referrer_policy_strict rc \<longrightarrow> ref_is_strict rc = True"
+lemma referrer_policy_strict_thm: "\<forall>(rc :: referrer_config). referrer_policy_strict rc \<longrightarrow> ref_is_strict rc = True"
   by auto
 
 (* ip_address_masked_thm (matches Coq) *)
-lemma ip_address_masked_thm: "\<forall>(nr :: NetworkRequest). ip_address_masked nr \<longrightarrow> nr_ip_masked nr = True \<or> nr_uses_relay nr = True"
+lemma ip_address_masked_thm: "\<forall>(nr :: network_request). ip_address_masked nr \<longrightarrow> nr_ip_masked nr = True \<or> nr_uses_relay nr = True"
   by auto
 
 (* device_graph_prevented_thm (matches Coq) *)
-lemma device_graph_prevented_thm: "\<forall>(dg :: DeviceGraphAttempt). device_graph_prevented dg \<longrightarrow> length (dg_identifiers_collected dg) > dg_max_identifiers dg \<longrightarrow> dg_prevented dg = True"
+lemma device_graph_prevented_thm: "\<forall>(dg :: device_graph_attempt). device_graph_prevented dg \<longrightarrow> length (dg_identifiers_collected dg) > dg_max_identifiers dg \<longrightarrow> dg_prevented dg = True"
   by auto
 
 (* tracker_list_updated_thm (matches Coq) *)
-lemma tracker_list_updated_thm: "\<forall>(tl :: TrackerList). tracker_list_updated tl \<longrightarrow> tl_last_updated tl > 0"
+lemma tracker_list_updated_thm: "\<forall>(tl :: tracker_list). tracker_list_updated tl \<longrightarrow> tl_last_updated tl > 0"
   by auto
 
 (* tracking_report_available_thm (matches Coq) *)
-lemma tracking_report_available_thm: "\<forall>(tr :: TrackingReport). tracking_report_available tr \<longrightarrow> tr_report_available tr = True"
+lemma tracking_report_available_thm: "\<forall>(tr :: tracking_report). tracking_report_available tr \<longrightarrow> tr_report_available tr = True"
   by auto
 
 (* referrer_policy_options (matches Coq) *)
-lemma referrer_policy_options: "\<forall>(rc :: ReferrerConfig). referrer_policy_strict rc \<longrightarrow> ref_policy rc = NoReferrer \<or> ref_policy rc = StrictOrigin"
+lemma referrer_policy_options: "\<forall>(rc :: referrer_config). referrer_policy_strict rc \<longrightarrow> ref_policy rc = NoReferrer \<or> ref_policy rc = StrictOrigin"
   by auto
 
 (* tracker_list_non_empty (matches Coq) *)
-lemma tracker_list_non_empty: "\<forall>(tl :: TrackerList). tracker_list_updated tl \<longrightarrow> tl_entries tl \<noteq> []"
+lemma tracker_list_non_empty: "\<forall>(tl :: tracker_list). tracker_list_updated tl \<longrightarrow> tl_entries tl \<noteq> []"
   by auto
 
 (* no_tracking_without_permission_request (matches Coq) *)
-lemma no_tracking_without_permission_request: "\<forall>(atr :: AppTrackingRequest). app_tracking_permission_required atr \<longrightarrow> atr_permission_asked atr = False \<longrightarrow> atr_permission_granted atr = False"
+lemma no_tracking_without_permission_request: "\<forall>(atr :: app_tracking_request). app_tracking_permission_required atr \<longrightarrow> atr_permission_asked atr = False \<longrightarrow> atr_permission_granted atr = False"
   by simp
 
 (* revocation_prevents_future_tracking (matches Coq) *)
-lemma revocation_prevents_future_tracking: "\<forall>(user :: User) (app :: Application). tracking_consent_given user = False \<longrightarrow> ~ tracks app user"
+lemma revocation_prevents_future_tracking: "\<forall>(user :: user) (app :: application). tracking_consent_given user = False \<longrightarrow> ~ tracks app user"
   by auto
 
 (* ip_masked_via_relay (matches Coq) *)
-lemma ip_masked_via_relay: "\<forall>(nr :: NetworkRequest). nr_uses_relay nr = True \<longrightarrow> ip_address_masked nr"
+lemma ip_masked_via_relay: "\<forall>(nr :: network_request). nr_uses_relay nr = True \<longrightarrow> ip_address_masked nr"
   by auto
 
 end

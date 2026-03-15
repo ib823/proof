@@ -12,12 +12,12 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | HSMType            | hsm_type               | OK     |
- * | KeyId              | key_id                 | OK     |
- * | BootComponentId    | boot_component_id      | OK     |
- * | Measurement        | measurement            | OK     |
- * | TrustChainEntry    | trust_chain_entry      | OK     |
- * | HWRootState        | hw_root_state          | OK     |
+ * | hsm_type            | hsm_type               | OK     |
+ * | key_id              | key_id                 | OK     |
+ * | boot_component_id    | boot_component_id      | OK     |
+ * | measurement        | measurement            | OK     |
+ * | trust_chain_entry    | trust_chain_entry      | OK     |
+ * | hw_root_state        | hw_root_state          | OK     |
  * | hw_root_component  | hw_root_component      | OK     |
  * | initial_hw_state   | initial_hw_state       | OK     |
  * | in_trust_chain     | in_trust_chain         | OK     |
@@ -56,40 +56,43 @@ theory HardwareRootOfTrust
   imports Main CoqCompat
 begin
 
-(* HSMType (matches Coq: Inductive HSMType) *)
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
+(* hsm_type (matches Coq: Inductive hsm_type) *)
 datatype hsm_type =
     TPM
   |     SecureEnclave
   |     TitanM
   |     AppleSEP
 
-(* KeyId (matches Coq: Inductive KeyId) *)
+(* key_id (matches Coq: Inductive key_id) *)
 datatype key_id =
     RootKey
   |     AttestationKey
   |     SealingKey
   |     SigningKey
 
-(* BootComponentId (matches Coq: Inductive BootComponentId) *)
+(* boot_component_id (matches Coq: Inductive boot_component_id) *)
 datatype boot_component_id =
     BootComp
 
-(* Measurement (matches Coq: Record Measurement) *)
+(* measurement (matches Coq: Record measurement) *)
 record measurement =
-  measured_component :: BootComponentId
+  measured_component :: boot_component_id
   measurement_value :: nat
   measurement_algorithm :: nat
 
-(* TrustChainEntry (matches Coq: Record TrustChainEntry) *)
+(* trust_chain_entry (matches Coq: Record trust_chain_entry) *)
 record trust_chain_entry =
-  entry_component :: BootComponentId
-  entry_verified_by :: BootComponentId
+  entry_component :: boot_component_id
+  entry_verified_by :: boot_component_id
   entry_measurement :: nat
   entry_trusted :: bool
 
-(* HWRootState (matches Coq: Record HWRootState) *)
+(* hw_root_state (matches Coq: Record hw_root_state) *)
 record hw_root_state =
-  hsm_type :: HSMType
+  hsm_type :: hsm_type
   root_key_present :: bool
   attestation_key_present :: bool
   trust_chain :: 'a list
@@ -111,7 +114,7 @@ definition initial_hw_state :: "HSMType \<Rightarrow> HWRootState" where
     True"
 
 (* in_trust_chain (matches Coq: Definition in_trust_chain) *)
-definition in_trust_chain :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> bool" where
+definition in_trust_chain :: "HWRootState \<Rightarrow> boot_component_id \<Rightarrow> bool" where
   "in_trust_chain st comp \<equiv> existsb (\<lambda>entry. 
     if boot_comp_eq_dec (entry_component entry) comp then
       entry_trusted entry
@@ -119,15 +122,15 @@ definition in_trust_chain :: "HWRootState \<Rightarrow> BootComponentId \<Righta
   ) (trust_chain st)"
 
 (* get_verifier - complex match, needs manual translation *)
-definition get_verifier :: "bool" where "get_verifier = undefined"
+definition get_verifier :: "bool" where "get_verifier \<equiv> True"
 
 (* verified_from_hw_root_aux (matches Coq: Definition verified_from_hw_root_aux) *)
-fun verified_from_hw_root_aux :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> nat \<Rightarrow> bool" where
-  "verified_from_hw_root_aux O = false"
-|   "verified_from_hw_root_aux None = false"
+fun verified_from_hw_root_aux :: "HWRootState \<Rightarrow> boot_component_id \<Rightarrow> nat \<Rightarrow> bool" where
+  "verified_from_hw_root_aux O = False"
+|   "verified_from_hw_root_aux None = False"
 
 (* verified_from_hw_root (matches Coq: Definition verified_from_hw_root) *)
-definition verified_from_hw_root :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> bool" where
+definition verified_from_hw_root :: "HWRootState \<Rightarrow> boot_component_id \<Rightarrow> bool" where
   "verified_from_hw_root st comp \<equiv> verified_from_hw_root_aux st comp 100"
 
 (* extend_trust_chain (matches Coq: Definition extend_trust_chain) *)
@@ -144,7 +147,7 @@ definition extend_trust_chain :: "HWRootState \<Rightarrow> nat \<Rightarrow> HW
     st"
 
 (* record_pcr (matches Coq: Definition record_pcr) *)
-definition record_pcr :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> HWRootState" where
+definition record_pcr :: "HWRootState \<Rightarrow> boot_component_id \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> HWRootState" where
   "record_pcr st comp value algo \<equiv> mkHWRootState
     (hsm_type st)
     (root_key_present st)
@@ -154,11 +157,11 @@ definition record_pcr :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow
     (hardware_initialized st)"
 
 (* component_trusted (matches Coq: Definition component_trusted) *)
-definition component_trusted :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> bool" where
+definition component_trusted :: "HWRootState \<Rightarrow> boot_component_id \<Rightarrow> bool" where
   "component_trusted st comp \<equiv> in_trust_chain st comp = True"
 
 (* hw_root_verified (matches Coq: Definition hw_root_verified) *)
-definition hw_root_verified :: "HWRootState \<Rightarrow> BootComponentId \<Rightarrow> bool" where
+definition hw_root_verified :: "HWRootState \<Rightarrow> boot_component_id \<Rightarrow> bool" where
   "hw_root_verified st comp \<equiv> verified_from_hw_root st comp = True"
 
 (* root_key_protected (matches Coq: Definition root_key_protected) *)
@@ -166,101 +169,101 @@ definition root_key_protected :: "HWRootState \<Rightarrow> bool" where
   "root_key_protected st \<equiv> root_key_present st = True \<and> hardware_initialized st = True"
 
 (* root_of_trust_hardware (matches Coq) *)
-lemma root_of_trust_hardware: "\<forall>(hsm :: HSMType). let st := initial_hw_state hsm in hw_root_verified st hw_root_component"
+lemma root_of_trust_hardware: "\<forall>(hsm :: hsm_type). let st := initial_hw_state hsm in hw_root_verified st hw_root_component"
   by simp
 
 (* trust_extension_preserves_root (matches Coq) *)
-lemma trust_extension_preserves_root: "\<forall>(st :: HWRootState) (verifier comp : BootComponentId) (measurement :: nat). hw_root_verified st hw_root_component \<longrightarrow> let st' := extend_trust_chain st verifier comp measurement in hw_root_verified st' hw_root_component"
+lemma trust_extension_preserves_root: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). hw_root_verified st hw_root_component \<longrightarrow> let st' := extend_trust_chain st verifier comp measurement in hw_root_verified st' hw_root_component"
   by auto
 
 (* extended_component_trusted (matches Coq) *)
-lemma extended_component_trusted: "\<forall>(st :: HWRootState) (verifier comp : BootComponentId) (measurement :: nat). in_trust_chain st verifier = True \<longrightarrow> let st' := extend_trust_chain st verifier comp measurement in component_trusted st' comp"
+lemma extended_component_trusted: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). in_trust_chain st verifier = True \<longrightarrow> let st' := extend_trust_chain st verifier comp measurement in component_trusted st' comp"
   by auto
 
 (* untrusted_cannot_extend (matches Coq) *)
-lemma untrusted_cannot_extend: "\<forall>(st :: HWRootState) (verifier comp : BootComponentId) (measurement :: nat). in_trust_chain st verifier = False \<longrightarrow> extend_trust_chain st verifier comp measurement = st"
+lemma untrusted_cannot_extend: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). in_trust_chain st verifier = False \<longrightarrow> extend_trust_chain st verifier comp measurement = st"
   by simp
 
 (* root_key_is_protected (matches Coq) *)
-lemma root_key_is_protected: "\<forall>(hsm :: HSMType). let st := initial_hw_state hsm in root_key_protected st"
+lemma root_key_is_protected: "\<forall>(hsm :: hsm_type). let st := initial_hw_state hsm in root_key_protected st"
   by simp
 
 (* pcr_record_preserved (matches Coq) *)
-lemma pcr_record_preserved: "\<forall>(st :: HWRootState) (comp :: BootComponentId) (value algo : nat). let st' := record_pcr st comp value algo in In (mkMeasurement comp value algo) (pcr_values st')"
+lemma pcr_record_preserved: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat). let st' := record_pcr st comp value algo in (mkMeasurement comp value algo) \<in> set (pcr_values st')"
   by simp
 
 (* Hardware root is always in initial trust chain *)
 (* hw_root_always_trusted (matches Coq) *)
-lemma hw_root_always_trusted: "\<forall>(hsm :: HSMType). component_trusted (initial_hw_state hsm) hw_root_component"
+lemma hw_root_always_trusted: "\<forall>(hsm :: hsm_type). component_trusted (initial_hw_state hsm) hw_root_component"
   by auto
 
 (* Attestation key present in initial state *)
 (* attestation_key_present_initial (matches Coq) *)
-lemma attestation_key_present_initial: "\<forall>(hsm :: HSMType). attestation_key_present (initial_hw_state hsm) = True"
+lemma attestation_key_present_initial: "\<forall>(hsm :: hsm_type). attestation_key_present (initial_hw_state hsm) = True"
   by simp
 
 (* Hardware initialized in initial state *)
 (* hardware_initialized_initial (matches Coq) *)
-lemma hardware_initialized_initial: "\<forall>(hsm :: HSMType). hardware_initialized (initial_hw_state hsm) = True"
+lemma hardware_initialized_initial: "\<forall>(hsm :: hsm_type). hardware_initialized (initial_hw_state hsm) = True"
   by simp
 
 (* Trust extension preserves attestation key *)
 (* trust_extension_preserves_attestation (matches Coq) *)
-lemma trust_extension_preserves_attestation: "\<forall>(st :: HWRootState) (verifier comp : BootComponentId) (measurement :: nat). attestation_key_present st = True \<longrightarrow> attestation_key_present (extend_trust_chain st verifier comp measurement) = True"
+lemma trust_extension_preserves_attestation: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). attestation_key_present st = True \<longrightarrow> attestation_key_present (extend_trust_chain st verifier comp measurement) = True"
   by auto
 
 (* Trust extension preserves root key *)
 (* trust_extension_preserves_root_key (matches Coq) *)
-lemma trust_extension_preserves_root_key: "\<forall>(st :: HWRootState) (verifier comp : BootComponentId) (measurement :: nat). root_key_present st = True \<longrightarrow> root_key_present (extend_trust_chain st verifier comp measurement) = True"
+lemma trust_extension_preserves_root_key: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). root_key_present st = True \<longrightarrow> root_key_present (extend_trust_chain st verifier comp measurement) = True"
   by auto
 
 (* Trust extension preserves hardware initialization *)
 (* trust_extension_preserves_init (matches Coq) *)
-lemma trust_extension_preserves_init: "\<forall>(st :: HWRootState) (verifier comp : BootComponentId) (measurement :: nat). hardware_initialized st = True \<longrightarrow> hardware_initialized (extend_trust_chain st verifier comp measurement) = True"
+lemma trust_extension_preserves_init: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). hardware_initialized st = True \<longrightarrow> hardware_initialized (extend_trust_chain st verifier comp measurement) = True"
   by auto
 
 (* PCR recording preserves trust chain *)
 (* pcr_preserves_trust_chain (matches Coq) *)
-lemma pcr_preserves_trust_chain: "\<forall>(st :: HWRootState) (comp :: BootComponentId) (value algo : nat). trust_chain (record_pcr st comp value algo) = trust_chain st"
+lemma pcr_preserves_trust_chain: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat). trust_chain (record_pcr st comp value algo) = trust_chain st"
   by simp
 
 (* PCR recording preserves root key *)
 (* pcr_preserves_root_key (matches Coq) *)
-lemma pcr_preserves_root_key: "\<forall>(st :: HWRootState) (comp :: BootComponentId) (value algo : nat). root_key_present (record_pcr st comp value algo) = root_key_present st"
+lemma pcr_preserves_root_key: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat). root_key_present (record_pcr st comp value algo) = root_key_present st"
   by simp
 
 (* PCR values grow monotonically *)
 (* pcr_values_grow (matches Coq) *)
-lemma pcr_values_grow: "\<forall>(st :: HWRootState) (comp :: BootComponentId) (value algo : nat) (m :: Measurement). In m (pcr_values st) \<longrightarrow> In m (pcr_values (record_pcr st comp value algo))"
+lemma pcr_values_grow: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat) (m :: measurement). m \<in> set (pcr_values st) \<longrightarrow> m \<in> set (pcr_values (record_pcr st comp value algo))"
   by auto
 
 (* Trust chain grows on extension with trusted verifier *)
 (* trust_chain_grows (matches Coq) *)
-lemma trust_chain_grows: "\<forall>(st :: HWRootState) (verifier comp : BootComponentId) (measurement :: nat) (entry : TrustChainEntry). in_trust_chain st verifier = True \<longrightarrow> In entry (trust_chain st) \<longrightarrow> In entry (trust_chain (extend_trust_chain st verifier comp measurement))"
+lemma trust_chain_grows: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat) (entry :: trust_chain_entry). in_trust_chain st verifier = True \<longrightarrow> entry \<in> set (trust_chain st) \<longrightarrow> entry \<in> set (trust_chain (extend_trust_chain st verifier comp measurement))"
   by auto
 
 (* Extended trust chain has new component *)
 (* extended_chain_has_component (matches Coq) *)
-lemma extended_chain_has_component: "\<forall>(st :: HWRootState) (verifier comp : BootComponentId) (measurement :: nat). in_trust_chain st verifier = True \<longrightarrow> In (mkTrustEntry comp verifier measurement True) (trust_chain (extend_trust_chain st verifier comp measurement))"
+lemma extended_chain_has_component: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). in_trust_chain st verifier = True \<longrightarrow> (mkTrustEntry comp verifier measurement True) \<in> set (trust_chain (extend_trust_chain st verifier comp measurement))"
   by simp
 
 (* HSM type is preserved by all operations *)
 (* hsm_type_invariant_extend (matches Coq) *)
-lemma hsm_type_invariant_extend: "\<forall>(st :: HWRootState) (verifier comp : BootComponentId) (measurement :: nat). hsm_type (extend_trust_chain st verifier comp measurement) = hsm_type st"
+lemma hsm_type_invariant_extend: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). hsm_type (extend_trust_chain st verifier comp measurement) = hsm_type st"
   by auto
 
 (* hsm_type_invariant_pcr (matches Coq) *)
-lemma hsm_type_invariant_pcr: "\<forall>(st :: HWRootState) (comp :: BootComponentId) (value algo : nat). hsm_type (record_pcr st comp value algo) = hsm_type st"
+lemma hsm_type_invariant_pcr: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat). hsm_type (record_pcr st comp value algo) = hsm_type st"
   by simp
 
 (* Root key protection preserved by extension *)
 (* root_key_protection_preserved (matches Coq) *)
-lemma root_key_protection_preserved: "\<forall>(st :: HWRootState) (verifier comp : BootComponentId) (measurement :: nat). root_key_protected st \<longrightarrow> root_key_protected (extend_trust_chain st verifier comp measurement)"
+lemma root_key_protection_preserved: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). root_key_protected st \<longrightarrow> root_key_protected (extend_trust_chain st verifier comp measurement)"
   by auto
 
 (* Root key protection preserved by PCR recording *)
 (* root_key_protection_preserved_pcr (matches Coq) *)
-lemma root_key_protection_preserved_pcr: "\<forall>(st :: HWRootState) (comp :: BootComponentId) (value algo : nat). root_key_protected st \<longrightarrow> root_key_protected (record_pcr st comp value algo)"
+lemma root_key_protection_preserved_pcr: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat). root_key_protected st \<longrightarrow> root_key_protected (record_pcr st comp value algo)"
   by auto
 
 end

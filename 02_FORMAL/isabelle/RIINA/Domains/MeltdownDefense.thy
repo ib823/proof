@@ -2,7 +2,7 @@
 (* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
- * RIINA MeltdownDefense - Isabelle/HOL Port
+ * RIINA meltdown_defense - Isabelle/HOL Port
  *
  * Auto-generated port of 02_FORMAL/coq/domains/MeltdownDefense.v (30 theorems).
  *
@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | MeltdownVariant    | meltdown_variant       | OK     |
- * | MeltdownDefense    | meltdown_defense       | OK     |
- * | MeltdownDefenseConfig | meltdown_defense_config | OK     |
+ * | meltdown_variant    | meltdown_variant       | OK     |
+ * | meltdown_defense    | meltdown_defense       | OK     |
+ * | meltdown_defense_config | meltdown_defense_config | OK     |
  * | all_meltdown_protected | all_meltdown_protected | OK     |
  * | meltdown_mitigations_enabled | meltdown_mitigations_enabled | OK     |
  * | meltdown_fully_protected | meltdown_fully_protected | OK     |
@@ -51,7 +51,7 @@
  * | MELTDOWN_029_complete_decomposition | MELTDOWN_029_complete_decomposition | OK     |
  *)
 
-theory MeltdownDefense
+theory meltdown_defense
   imports Main
 begin
 
@@ -59,7 +59,7 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* MeltdownVariant (matches Coq: Inductive MeltdownVariant) *)
+(* meltdown_variant (matches Coq: Inductive meltdown_variant) *)
 datatype meltdown_variant =
     Meltdown_US
   |     Meltdown_P
@@ -67,14 +67,14 @@ datatype meltdown_variant =
   |     Meltdown_PK
   |     Meltdown_BR
 
-(* MeltdownDefense (matches Coq: Inductive MeltdownDefense) *)
+(* meltdown_defense (matches Coq: Inductive meltdown_defense) *)
 datatype meltdown_defense =
     KPTI
   |     L1TF_Flush
   |     TSX_Disable
   |     MDS_Clear
 
-(* MeltdownDefenseConfig (matches Coq: Record MeltdownDefenseConfig) *)
+(* meltdown_defense_config (matches Coq: Record meltdown_defense_config) *)
 record meltdown_defense_config =
   mdc_us_protected :: bool
   mdc_p_protected :: bool

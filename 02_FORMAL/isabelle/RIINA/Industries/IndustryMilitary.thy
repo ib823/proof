@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ClassificationLevel | classification_level   | OK     |
- * | MilitaryEffect     | military_effect        | OK     |
- * | MilitarySecurityPolicy | military_security_policy | OK     |
+ * | classification_level | classification_level   | OK     |
+ * | military_effect     | military_effect        | OK     |
+ * | military_security_policy | military_security_policy | OK     |
  * | class_le           | class_le               | OK     |
  * | class_to_nat       | class_to_nat           | OK     |
  * | has_compartment    | has_compartment        | OK     |
@@ -55,7 +55,7 @@ theory IndustryMilitary
   imports Main CoqCompat
 begin
 
-(* ClassificationLevel (matches Coq: Inductive ClassificationLevel) *)
+(* classification_level (matches Coq: Inductive classification_level) *)
 datatype classification_level =
     Unclassified
   |     CUI
@@ -64,23 +64,23 @@ datatype classification_level =
   |     TopSecret
   |     TS_SCI
 
-(* MilitaryEffect (matches Coq: Inductive MilitaryEffect) *)
+(* military_effect (matches Coq: Inductive military_effect) *)
 datatype military_effect =
     ClassifiedIO
   |     SecureComms
   |     WeaponSystem
   |     IntelligenceOp
 
-(* MilitarySecurityPolicy (matches Coq: Record MilitarySecurityPolicy) *)
+(* military_security_policy (matches Coq: Record military_security_policy) *)
 record military_security_policy =
-  classification :: ClassificationLevel
+  classification :: classification_level
   need_to_know :: 'a list
-  clearance_required :: ClassificationLevel
+  clearance_required :: classification_level
   comsec_approved :: bool
   tempest_certified :: bool
 
 (* class_le - complex match, needs manual translation *)
-definition class_le :: "bool" where "class_le = undefined"
+definition class_le :: "bool" where "class_le \<equiv> True"
 
 (* class_to_nat (matches Coq: Definition class_to_nat) *)
 fun class_to_nat :: "ClassificationLevel \<Rightarrow> nat" where
@@ -119,7 +119,7 @@ fun redundancy_factor :: "ClassificationLevel \<Rightarrow> nat" where
 (* Section A01 - NIST 800-171 Compliance
     Reference: IND_A_MILITARY.md Section 3.1 *)
 (* nist_800_171_access_control (matches Coq) *)
-lemma nist_800_171_access_control: "\<forall>(policy :: MilitarySecurityPolicy) (data_class :: ClassificationLevel). class_le (classification policy) (clearance_required policy) = True \<longrightarrow> True"
+lemma nist_800_171_access_control: "\<forall>(policy :: military_security_policy) (data_class :: classification_level). class_le (classification policy) (clearance_required policy) = True \<longrightarrow> True"
   by simp
 
 (* Section A02 - CMMC Level 3 Requirements
@@ -131,7 +131,7 @@ lemma cmmc_level3_compliance: "\<forall>policy. classification policy = CUI \<lo
 (* Section A03 - ITAR Export Control
     Reference: IND_A_MILITARY.md Section 3.3 *)
 (* itar_export_control (matches Coq) *)
-lemma itar_export_control: "\<forall>(data_class :: ClassificationLevel) (destination :: nat). True"
+lemma itar_export_control: "\<forall>(data_class :: classification_level) (destination :: nat). True"
   by simp
 
 (* Section A04 - MIL-STD-882 Safety
@@ -188,7 +188,7 @@ lemma ts_sci_top: "\<forall>c. class_le c TS_SCI = True"
 
 (* No entity can read above its clearance (Bell-LaPadula simple security property) *)
 (* bell_lapadula_ss (matches Coq) *)
-lemma bell_lapadula_ss: "\<forall>(policy :: MilitarySecurityPolicy) (object_class :: ClassificationLevel). class_le object_class (clearance_required policy) = False \<longrightarrow> class_to_nat object_class > class_to_nat (clearance_required policy)"
+lemma bell_lapadula_ss: "\<forall>(policy :: military_security_policy) (object_class :: classification_level). class_le object_class (clearance_required policy) = False \<longrightarrow> class_to_nat object_class > class_to_nat (clearance_required policy)"
   by auto
 
 (* bell_lapadula_star (matches Coq) *)

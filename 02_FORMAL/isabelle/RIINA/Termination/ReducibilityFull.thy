@@ -63,9 +63,12 @@
  *)
 
 theory ReducibilityFull
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* step_inv (matches Coq: Definition step_inv) *)
 definition step_inv :: "bool" where
   "step_inv \<equiv> let '(e2, st2, ctx2) := cfg2 in

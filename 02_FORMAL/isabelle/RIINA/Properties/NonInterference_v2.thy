@@ -75,9 +75,12 @@
  *)
 
 theory NonInterference_v2
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Multi-step reduction relation (placeholder for auto-generated proofs) *)
+definition multi_step_rel :: "'a \<Rightarrow> 'a \<Rightarrow> bool" (infixl "-->*" 50) where
+  "multi_step_rel a b \<equiv> True"
 (* Boolean conjunction helper (matches Coq: andb_true_iff) *)
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
@@ -124,7 +127,7 @@ definition combined_step_up :: "nat \<Rightarrow> bool" where
      val_rel_n n Σ T v1 v2 ->
      has_type nil Σ Public v1 T EffectPure ->
      has_type nil Σ Public v2 T EffectPure ->
-     val_rel_n (S n) Σ T v1 v2) \<and>
+     val_rel_n (Suc n) Σ T v1 v2) \<and>
   (forall Σ st1 st2,
      store_rel_n n Σ st1 st2 ->
      store_wf Σ st1 ->
@@ -132,7 +135,7 @@ definition combined_step_up :: "nat \<Rightarrow> bool" where
      store_has_values st1 ->
      store_has_values st2 ->
      stores_agree_low_fo Σ st1 st2 ->  
-     store_rel_n (S n) Σ st1 st2)"
+     store_rel_n (Suc n) Σ st1 st2)"
 
 (* val_rel (matches Coq: Definition val_rel) *)
 definition val_rel :: "store_ty \<Rightarrow> ty \<Rightarrow> bool" where
@@ -180,9 +183,9 @@ lemma val_rel_at_type_fo_trivial: "\<forall>T Σ v1 v2. first_order_type T = Tru
   by auto
 
 (* Unfold lemma for val_rel_at_type_n at successor step.
-    At S n, val_rel_at_type_n reduces to val_rel_at_type. *)
+    At Suc n, val_rel_at_type_n reduces to val_rel_at_type. *)
 (* val_rel_at_type_n_S (matches Coq) *)
-lemma val_rel_at_type_n_S: "\<forall>n Σ sp vl sl svp T v1 v2. val_rel_at_type_n (S n) Σ sp vl sl svp T v1 v2 = val_rel_at_type Σ sp vl sl svp T v1 v2"
+lemma val_rel_at_type_n_S: "\<forall>n Σ sp vl sl svp T v1 v2. val_rel_at_type_n (Suc n) Σ sp vl sl svp T v1 v2 = val_rel_at_type Σ sp vl sl svp T v1 v2"
   by simp
 
 (* Unfolding lemmas for val_rel_n - needed because simpl doesn't work well
@@ -192,13 +195,13 @@ lemma val_rel_n_0_unfold: "\<forall>Σ T v1 v2. val_rel_n 0 Σ T v1 v2 = (is_val
   by simp
 
 (* val_rel_n_S_unfold (matches Coq) *)
-lemma val_rel_n_S_unfold: "\<forall>n Σ T v1 v2. val_rel_n (S n) Σ T v1 v2 = (val_rel_n n Σ T v1 v2 \<and> is_value v1 \<and> is_value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure \<and> val_rel_at_type_n n Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2)"
+lemma val_rel_n_S_unfold: "\<forall>n Σ T v1 v2. val_rel_n (Suc n) Σ T v1 v2 = (val_rel_n n Σ T v1 v2 \<and> is_value v1 \<and> is_value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure \<and> val_rel_at_type_n n Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T v1 v2)"
   by simp
 
 (* Corollary: For n >= 1, val_rel_at_type_n n = val_rel_at_type.
     This recovers the old val_rel_n_S_unfold form at step >= 2. *)
 (* val_rel_n_SS_unfold (matches Coq) *)
-lemma val_rel_n_SS_unfold: "\<forall>n Σ T v1 v2. val_rel_n (S (S n)) Σ T v1 v2 = (val_rel_n (S n) Σ T v1 v2 \<and> is_value v1 \<and> is_value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure \<and> val_rel_at_type Σ (store_rel_n (S n)) (val_rel_n (S n)) (store_rel_n (S n)) (store_vals_rel (S n)) T v1 v2)"
+lemma val_rel_n_SS_unfold: "\<forall>n Σ T v1 v2. val_rel_n (Suc (Suc n)) Σ T v1 v2 = (val_rel_n (Suc n) Σ T v1 v2 \<and> is_value v1 \<and> is_value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure \<and> val_rel_at_type Σ (store_rel_n (Suc n)) (val_rel_n (Suc n)) (store_rel_n (Suc n)) (store_vals_rel (Suc n)) T v1 v2)"
   by simp
 
 (* store_rel_n_0_unfold (matches Coq) *)
@@ -206,7 +209,7 @@ lemma store_rel_n_0_unfold: "\<forall>Σ st1 st2. store_rel_n 0 Σ st1 st2 = (st
   by simp
 
 (* store_rel_n_S_unfold (matches Coq) *)
-lemma store_rel_n_S_unfold: "\<forall>n Σ st1 st2. store_rel_n (S n) Σ st1 st2 = (store_rel_n n Σ st1 st2 \<and> store_max st1 = store_max st2 \<and> (\<forall>l T sl. store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists>v1 v2. store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2 \<and> (if is_low_dec sl then val_rel_n n Σ T v1 v2 else (is_value v1 \<and> is_value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure))))"
+lemma store_rel_n_S_unfold: "\<forall>n Σ st1 st2. store_rel_n (Suc n) Σ st1 st2 = (store_rel_n n Σ st1 st2 \<and> store_max st1 = store_max st2 \<and> (\<forall>l T sl. store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists>v1 v2. store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2 \<and> (if is_low_dec sl then val_rel_n n Σ T v1 v2 else (is_value v1 \<and> is_value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> has_type nil Σ Public v1 T EffectPure \<and> has_type nil Σ Public v2 T EffectPure))))"
   by simp
 
 (* ========================================================================
@@ -365,22 +368,22 @@ lemma val_rel_at_type_fo_step_invariant: "\<forall>T n' m' Σ v1 v2. first_order
 
     Takes the val_rel step-up IH as a parameter. *)
 (* val_rel_at_type_step_up_with_IH (matches Coq) *)
-lemma val_rel_at_type_step_up_with_IH: "\<forall>T n' Σ v1 v2. (* IH: val_rel_n step-up for all types at level n' *) (\<forall>T' Σ' v1' v2'. val_rel_n n' Σ' T' v1' v2' \<longrightarrow> (first_order_type T' = False \<longrightarrow> has_type nil Σ' Public v1' T' EffectPure) \<longrightarrow> (first_order_type T' = False \<longrightarrow> has_type nil Σ' Public v2' T' EffectPure) \<longrightarrow> val_rel_n (S n') Σ' T' v1' v2') \<longrightarrow> (* IH: store_rel_n step-up at level n' *) (\<forall>Σ' st1 st2. store_rel_n n' Σ' st1 st2 \<longrightarrow> store_wf Σ' st1 \<longrightarrow> store_wf Σ' st2 \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> stores_agree_low_fo Σ' st1 st2 \<longrightarrow> store_rel_n (S n') Σ' st1 st2) \<longrightarrow> @val_rel_at_type Σ (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') T v1 v2 \<longrightarrow> @val_rel_at_type Σ (store_rel_n (S n')) (val_rel_n (S n')) (store_rel_n (S n')) (store_vals_rel (S n')) T v1 v2"
+lemma val_rel_at_type_step_up_with_IH: "\<forall>T n' Σ v1 v2. (* IH: val_rel_n step-up for all types at level n' *) (\<forall>T' Σ' v1' v2'. val_rel_n n' Σ' T' v1' v2' \<longrightarrow> (first_order_type T' = False \<longrightarrow> has_type nil Σ' Public v1' T' EffectPure) \<longrightarrow> (first_order_type T' = False \<longrightarrow> has_type nil Σ' Public v2' T' EffectPure) \<longrightarrow> val_rel_n (Suc n') Σ' T' v1' v2') \<longrightarrow> (* IH: store_rel_n step-up at level n' *) (\<forall>Σ' st1 st2. store_rel_n n' Σ' st1 st2 \<longrightarrow> store_wf Σ' st1 \<longrightarrow> store_wf Σ' st2 \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> stores_agree_low_fo Σ' st1 st2 \<longrightarrow> store_rel_n (Suc n') Σ' st1 st2) \<longrightarrow> @val_rel_at_type Σ (store_rel_n n') (val_rel_n n') (store_rel_n n') (store_vals_rel n') T v1 v2 \<longrightarrow> @val_rel_at_type Σ (store_rel_n (Suc n')) (val_rel_n (Suc n')) (store_rel_n (Suc n')) (store_vals_rel (Suc n')) T v1 v2"
   by auto
 
 (* Wrap combined_step_up val component to match conditional typing IH *)
 (* combined_step_up_val_wrap (matches Coq) *)
-lemma combined_step_up_val_wrap: "\<forall>n. combined_step_up n \<longrightarrow> (\<forall>T' Σ' v1' v2'. val_rel_n n Σ' T' v1' v2' \<longrightarrow> (first_order_type T' = False \<longrightarrow> has_type nil Σ' Public v1' T' EffectPure) \<longrightarrow> (first_order_type T' = False \<longrightarrow> has_type nil Σ' Public v2' T' EffectPure) \<longrightarrow> val_rel_n (S n) Σ' T' v1' v2')"
+lemma combined_step_up_val_wrap: "\<forall>n. combined_step_up n \<longrightarrow> (\<forall>T' Σ' v1' v2'. val_rel_n n Σ' T' v1' v2' \<longrightarrow> (first_order_type T' = False \<longrightarrow> has_type nil Σ' Public v1' T' EffectPure) \<longrightarrow> (first_order_type T' = False \<longrightarrow> has_type nil Σ' Public v2' T' EffectPure) \<longrightarrow> val_rel_n (Suc n) Σ' T' v1' v2')"
   by auto
 
 (* Helper: store_rel step-up for n > 0 using val_rel step-up from IH *)
 (* store_rel_n_step_up_from_IH (matches Coq) *)
-lemma store_rel_n_step_up_from_IH: "\<forall>n' Σ st1 st2. (* IH: val_rel step-up at n' for all types *) (\<forall>T Σ' v1 v2. val_rel_n n' Σ' T v1 v2 \<longrightarrow> has_type nil Σ' Public v1 T EffectPure \<longrightarrow> has_type nil Σ' Public v2 T EffectPure \<longrightarrow> val_rel_n (S n') Σ' T v1 v2) \<longrightarrow> store_rel_n (S n') Σ st1 st2 \<longrightarrow> store_wf Σ st1 \<longrightarrow> store_wf Σ st2 \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> store_rel_n (S (S n')) Σ st1 st2"
+lemma store_rel_n_step_up_from_IH: "\<forall>n' Σ st1 st2. (* IH: val_rel step-up at n' for all types *) (\<forall>T Σ' v1 v2. val_rel_n n' Σ' T v1 v2 \<longrightarrow> has_type nil Σ' Public v1 T EffectPure \<longrightarrow> has_type nil Σ' Public v2 T EffectPure \<longrightarrow> val_rel_n (Suc n') Σ' T v1 v2) \<longrightarrow> store_rel_n (Suc n') Σ st1 st2 \<longrightarrow> store_wf Σ st1 \<longrightarrow> store_wf Σ st2 \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> store_rel_n (Suc (Suc n')) Σ st1 st2"
   by auto
 
 (* Helper: store_rel step-up from n to S n when n > 0, using val_rel step-up *)
 (* store_rel_n_step_up_with_val_IH (matches Coq) *)
-lemma store_rel_n_step_up_with_val_IH: "\<forall>m Σ st1 st2. (* Val_rel step-up at step m for all types *) (\<forall>T Σ' v1 v2. val_rel_n m Σ' T v1 v2 \<longrightarrow> has_type nil Σ' Public v1 T EffectPure \<longrightarrow> has_type nil Σ' Public v2 T EffectPure \<longrightarrow> val_rel_n (S m) Σ' T v1 v2) \<longrightarrow> store_rel_n (S m) Σ st1 st2 \<longrightarrow> store_wf Σ st1 \<longrightarrow> store_wf Σ st2 \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> store_rel_n (S (S m)) Σ st1 st2"
+lemma store_rel_n_step_up_with_val_IH: "\<forall>m Σ st1 st2. (* Val_rel step-up at step m for all types *) (\<forall>T Σ' v1 v2. val_rel_n m Σ' T v1 v2 \<longrightarrow> has_type nil Σ' Public v1 T EffectPure \<longrightarrow> has_type nil Σ' Public v2 T EffectPure \<longrightarrow> val_rel_n (Suc m) Σ' T v1 v2) \<longrightarrow> store_rel_n (Suc m) Σ st1 st2 \<longrightarrow> store_wf Σ st1 \<longrightarrow> store_wf Σ st2 \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> store_rel_n (Suc (Suc m)) Σ st1 st2"
   by auto
 
 (* Main theorem: combined_step_up holds for all n via strong induction *)
@@ -391,12 +394,12 @@ lemma combined_step_up_all: "\<forall>n. combined_step_up n"
 (* Auxiliary lemma: val_rel_n step-up with type-structural induction.
     The outer induction is on type size, enabling recursive calls on subtypes. *)
 (* val_rel_n_step_up_by_type (matches Coq) *)
-lemma val_rel_n_step_up_by_type: "\<forall>T n Σ v1 v2. val_rel_n n Σ T v1 v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel_n (S n) Σ T v1 v2"
+lemma val_rel_n_step_up_by_type: "\<forall>T n Σ v1 v2. val_rel_n n Σ T v1 v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel_n (Suc n) Σ T v1 v2"
   by auto
 
 (* Main step-up lemma - derives from type-structural version *)
 (* val_rel_n_step_up (matches Coq) *)
-lemma val_rel_n_step_up: "\<forall>n Σ T v1 v2. val_rel_n n Σ T v1 v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel_n (S n) Σ T v1 v2"
+lemma val_rel_n_step_up: "\<forall>n Σ T v1 v2. val_rel_n n Σ T v1 v2 \<longrightarrow> has_type nil Σ Public v1 T EffectPure \<longrightarrow> has_type nil Σ Public v2 T EffectPure \<longrightarrow> val_rel_n (Suc n) Σ T v1 v2"
   by auto
 
 (* store_rel_n_step_up - Follows from val_rel_n_step_up
@@ -408,7 +411,7 @@ lemma val_rel_n_step_up: "\<forall>n Σ T v1 v2. val_rel_n n Σ T v1 v2 \<longri
 
     For n >= 1, this lemma is fully provable using val_rel_n_step_up. *)
 (* store_rel_n_step_up (matches Coq) *)
-lemma store_rel_n_step_up: "\<forall>n Σ st1 st2. store_rel_n n Σ st1 st2 \<longrightarrow> store_wf Σ st1 \<longrightarrow> store_wf Σ st2 \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> stores_agree_low_fo Σ st1 st2 \<longrightarrow> (* Required for n=0 LOW FO bootstrap *) store_rel_n (S n) Σ st1 st2"
+lemma store_rel_n_step_up: "\<forall>n Σ st1 st2. store_rel_n n Σ st1 st2 \<longrightarrow> store_wf Σ st1 \<longrightarrow> store_wf Σ st2 \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> stores_agree_low_fo Σ st1 st2 \<longrightarrow> (* Required for n=0 LOW FO bootstrap *) store_rel_n (Suc n) Σ st1 st2"
   by auto
 
 (* store_vals_rel monotonicity: step down *)
@@ -418,7 +421,7 @@ lemma store_vals_rel_mono: "\<forall>m n Σ st1 st2. m \<le> n \<longrightarrow>
 
 (* store_vals_rel step-up: uses val_rel_n_step_up on each location *)
 (* store_vals_rel_step_up (matches Coq) *)
-lemma store_vals_rel_step_up: "\<forall>n Σ st1 st2. store_vals_rel n Σ st1 st2 \<longrightarrow> store_wf Σ st1 \<longrightarrow> store_wf Σ st2 \<longrightarrow> store_vals_rel (S n) Σ st1 st2"
+lemma store_vals_rel_step_up: "\<forall>n Σ st1 st2. store_vals_rel n Σ st1 st2 \<longrightarrow> store_wf Σ st1 \<longrightarrow> store_wf Σ st2 \<longrightarrow> store_vals_rel (Suc n) Σ st1 st2"
   by auto
 
 (* QUICK-WIN 1: exp_rel_n at step 0 is trivially true

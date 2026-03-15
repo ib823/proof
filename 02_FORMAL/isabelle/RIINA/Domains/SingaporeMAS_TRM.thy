@@ -12,8 +12,8 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | MASLicenseType     | mas_license_type       | OK     |
- * | PatchCriticality   | patch_criticality      | OK     |
+ * | mas_license_type     | mas_license_type       | OK     |
+ * | patch_criticality   | patch_criticality      | OK     |
  * | patch_deadline     | patch_deadline         | OK     |
  * | cyber_hygiene_mfa  | cyber_hygiene_mfa      | OK     |
  * | cyber_hygiene_patching | cyber_hygiene_patching | OK     |
@@ -55,7 +55,9 @@ theory SingaporeMAS_TRM
   imports Main
 begin
 
-(* MASLicenseType (matches Coq: Inductive MASLicenseType) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym mas_regulated_entity = "nat"
+(* mas_license_type (matches Coq: Inductive mas_license_type) *)
 datatype mas_license_type =
     FullBank
   |     WholesaleBank
@@ -65,7 +67,7 @@ datatype mas_license_type =
   |     PaymentInstitution
   |     MajorPaymentInstitution
 
-(* PatchCriticality (matches Coq: Inductive PatchCriticality) *)
+(* patch_criticality (matches Coq: Inductive patch_criticality) *)
 datatype patch_criticality =
     PatchCritical
   |     PatchHigh
@@ -151,27 +153,27 @@ definition count_mas_controls :: "MASRegulatedEntity \<Rightarrow> nat" where
   (if mas_bcp_tested e then 1 else 0)"
 
 (* mas_cyber_hygiene (matches Coq) *)
-lemma mas_cyber_hygiene: "\<forall>(e :: MASRegulatedEntity). mas_mfa_enabled e = True \<longrightarrow> mas_patching_current e = True \<longrightarrow> mas_network_secured e = True \<longrightarrow> mas_antimalware e = True \<longrightarrow> mas_privileged_access_managed e = True \<longrightarrow> cyber_hygiene_compliant e"
+lemma mas_cyber_hygiene: "\<forall>(e :: mas_regulated_entity). mas_mfa_enabled e = True \<longrightarrow> mas_patching_current e = True \<longrightarrow> mas_network_secured e = True \<longrightarrow> mas_antimalware e = True \<longrightarrow> mas_privileged_access_managed e = True \<longrightarrow> cyber_hygiene_compliant e"
   by simp
 
 (* critical_patch_14_days (matches Coq) *)
-lemma critical_patch_14_days: "\<forall>(d a : nat). a \<le> d + 14 \<longrightarrow> patch_applied_in_time PatchCritical d a"
+lemma critical_patch_14_days: "\<forall>(d :: nat) (a :: nat). a \<le> d + 14 \<longrightarrow> patch_applied_in_time PatchCritical d a"
   by auto
 
 (* critical_strictest (matches Coq) *)
-lemma critical_strictest: "\<forall>(d a : nat). patch_applied_in_time PatchCritical d a \<longrightarrow> patch_applied_in_time PatchHigh d a"
+lemma critical_strictest: "\<forall>(d :: nat) (a :: nat). patch_applied_in_time PatchCritical d a \<longrightarrow> patch_applied_in_time PatchHigh d a"
   by simp
 
 (* trm_governance_proof (matches Coq) *)
-lemma trm_governance_proof: "\<forall>(e :: MASRegulatedEntity). mas_board_oversight e = True \<longrightarrow> mas_risk_assessment_done e = True \<longrightarrow> trm_governance e"
+lemma trm_governance_proof: "\<forall>(e :: mas_regulated_entity). mas_board_oversight e = True \<longrightarrow> mas_risk_assessment_done e = True \<longrightarrow> trm_governance e"
   by auto
 
 (* mas_composition (matches Coq) *)
-lemma mas_composition: "\<forall>(e :: MASRegulatedEntity). cyber_hygiene_compliant e \<longrightarrow> trm_governance e \<longrightarrow> trm_security_testing e \<longrightarrow> trm_resilience e \<longrightarrow> mas_fully_compliant e"
+lemma mas_composition: "\<forall>(e :: mas_regulated_entity). cyber_hygiene_compliant e \<longrightarrow> trm_governance e \<longrightarrow> trm_security_testing e \<longrightarrow> trm_resilience e \<longrightarrow> mas_fully_compliant e"
   by simp
 
 (* mas_license_coverage (matches Coq) *)
-lemma mas_license_coverage: "\<forall>(l :: MASLicenseType). l \<in> set all_mas_license_types"
+lemma mas_license_coverage: "\<forall>(l :: mas_license_type). l \<in> set all_mas_license_types"
   by auto
 
 (* Cyber hygiene field decomposition *)

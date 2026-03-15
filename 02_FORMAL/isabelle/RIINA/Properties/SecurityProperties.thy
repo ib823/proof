@@ -16,7 +16,7 @@
  *)
 
 theory SecurityProperties
-  imports Main
+  imports Main Syntax Typing
 begin
 
 (* security_non_interference (matches Coq) *)

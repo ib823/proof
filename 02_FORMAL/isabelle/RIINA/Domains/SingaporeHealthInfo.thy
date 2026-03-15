@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SGHealthcareProvider | sg_healthcare_provider | OK     |
- * | HealthInfoCategory | health_info_category   | OK     |
- * | UseType            | use_type               | OK     |
+ * | sg_healthcare_provider | sg_healthcare_provider | OK     |
+ * | health_info_category | health_info_category   | OK     |
+ * | use_type            | use_type               | OK     |
  * | hib_cybersecurity  | hib_cybersecurity      | OK     |
  * | nehr_sharing_compliant | nehr_sharing_compliant | OK     |
  * | hib_audit_compliant | hib_audit_compliant    | OK     |
@@ -65,7 +65,12 @@ theory SingaporeHealthInfo
   imports Main
 begin
 
-(* SGHealthcareProvider (matches Coq: Inductive SGHealthcareProvider) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym health_data_correction = "nat list"
+type_synonym health_data_exchange = "nat list"
+type_synonym patient_access_request = "nat"
+type_synonym sg_health_record = "nat"
+(* sg_healthcare_provider (matches Coq: Inductive sg_healthcare_provider) *)
 datatype sg_healthcare_provider =
     PublicHospital
   |     PrivateHospital
@@ -74,7 +79,7 @@ datatype sg_healthcare_provider =
   |     Polyclinic
   |     Pharmacy_SG
 
-(* HealthInfoCategory (matches Coq: Inductive HealthInfoCategory) *)
+(* health_info_category (matches Coq: Inductive health_info_category) *)
 datatype health_info_category =
     GeneralHealth
   |     MentalHealthSG
@@ -82,7 +87,7 @@ datatype health_info_category =
   |     GeneticInfo
   |     SubstanceAbuse
 
-(* UseType (matches Coq: Inductive UseType) *)
+(* use_type (matches Coq: Inductive use_type) *)
 datatype use_type =
     Treatment
   |     Research
@@ -171,19 +176,19 @@ definition public_hospital_nehr_mandatory :: "SGHealthRecord \<Rightarrow> bool"
   sgh_nehr_shared r = True"
 
 (* hib_req_1 (matches Coq) *)
-lemma hib_req_1: "\<forall>(r :: SGHealthRecord). sgh_encrypted r = True \<longrightarrow> sgh_access_controlled r = True \<longrightarrow> sgh_cybersecurity_adequate r = True \<longrightarrow> hib_cybersecurity r"
+lemma hib_req_1: "\<forall>(r :: sg_health_record). sgh_encrypted r = True \<longrightarrow> sgh_access_controlled r = True \<longrightarrow> sgh_cybersecurity_adequate r = True \<longrightarrow> hib_cybersecurity r"
   by auto
 
 (* hib_req_2 (matches Coq) *)
-lemma hib_req_2: "\<forall>(r :: SGHealthRecord). sgh_nehr_shared r = True \<longrightarrow> sgh_encrypted r = True \<longrightarrow> nehr_sharing_compliant r"
+lemma hib_req_2: "\<forall>(r :: sg_health_record). sgh_nehr_shared r = True \<longrightarrow> sgh_encrypted r = True \<longrightarrow> nehr_sharing_compliant r"
   by simp
 
 (* hib_req_3 (matches Coq) *)
-lemma hib_req_3: "\<forall>(r :: SGHealthRecord). sgh_audit_logged r = True \<longrightarrow> hib_audit_compliant r"
+lemma hib_req_3: "\<forall>(r :: sg_health_record). sgh_audit_logged r = True \<longrightarrow> hib_audit_compliant r"
   by simp
 
 (* hib_req_4 (matches Coq) *)
-lemma hib_req_4: "\<forall>(r :: SGHealthRecord). hib_cybersecurity r \<longrightarrow> hib_audit_compliant r \<longrightarrow> sensitive_health_protected r"
+lemma hib_req_4: "\<forall>(r :: sg_health_record). hib_cybersecurity r \<longrightarrow> hib_audit_compliant r \<longrightarrow> sensitive_health_protected r"
   by auto
 
 (* hib_prohibited_insurance (matches Coq) *)
@@ -199,31 +204,31 @@ lemma hib_treatment_allowed: "use_permitted Treatment"
   by auto
 
 (* hib_composition (matches Coq) *)
-lemma hib_composition: "\<forall>(r :: SGHealthRecord). hib_cybersecurity r \<longrightarrow> hib_audit_compliant r \<longrightarrow> nehr_sharing_compliant r \<longrightarrow> hib_fully_compliant r"
+lemma hib_composition: "\<forall>(r :: sg_health_record). hib_cybersecurity r \<longrightarrow> hib_audit_compliant r \<longrightarrow> nehr_sharing_compliant r \<longrightarrow> hib_fully_compliant r"
   by simp
 
 (* sg_provider_coverage (matches Coq) *)
-lemma sg_provider_coverage: "\<forall>(p :: SGHealthcareProvider). p \<in> set all_sg_providers"
+lemma sg_provider_coverage: "\<forall>(p :: sg_healthcare_provider). p \<in> set all_sg_providers"
   by auto
 
 (* health_category_coverage (matches Coq) *)
-lemma health_category_coverage: "\<forall>(c :: HealthInfoCategory). c \<in> set all_health_categories"
+lemma health_category_coverage: "\<forall>(c :: health_info_category). c \<in> set all_health_categories"
   by auto
 
 (* patient_access_right (matches Coq) *)
-lemma patient_access_right: "\<forall>(req :: PatientAccessRequest). par_responded_at req \<le> par_requested_at req + hib_access_deadline \<longrightarrow> par_data_provided req = True \<longrightarrow> patient_access_fulfilled req"
+lemma patient_access_right: "\<forall>(req :: patient_access_request). par_responded_at req \<le> par_requested_at req + hib_access_deadline \<longrightarrow> par_data_provided req = True \<longrightarrow> patient_access_fulfilled req"
   by auto
 
 (* patient_access_late_violation (matches Coq) *)
-lemma patient_access_late_violation: "\<forall>(req :: PatientAccessRequest). par_requested_at req + hib_access_deadline < par_responded_at req \<longrightarrow> ~ (par_responded_at req \<le> par_requested_at req + hib_access_deadline)"
+lemma patient_access_late_violation: "\<forall>(req :: patient_access_request). par_requested_at req + hib_access_deadline < par_responded_at req \<longrightarrow> ~ (par_responded_at req \<le> par_requested_at req + hib_access_deadline)"
   by auto
 
 (* data_correction_logged (matches Coq) *)
-lemma data_correction_logged: "\<forall>(c :: HealthDataCorrection). hdc_audit_logged c = True \<longrightarrow> hdc_old_value_hash c \<noteq> hdc_new_value_hash c \<longrightarrow> correction_properly_logged c"
+lemma data_correction_logged: "\<forall>(c :: health_data_correction). hdc_audit_logged c = True \<longrightarrow> hdc_old_value_hash c \<noteq> hdc_new_value_hash c \<longrightarrow> correction_properly_logged c"
   by auto
 
 (* cross_institutional_exchange (matches Coq) *)
-lemma cross_institutional_exchange: "\<forall>(ex :: HealthDataExchange). hde_patient_consent ex = True \<longrightarrow> hde_encrypted ex = True \<longrightarrow> hde_purpose_treatment ex = True \<longrightarrow> hde_audit_logged_exchange ex = True \<longrightarrow> exchange_authorized ex"
+lemma cross_institutional_exchange: "\<forall>(ex :: health_data_exchange). hde_patient_consent ex = True \<longrightarrow> hde_encrypted ex = True \<longrightarrow> hde_purpose_treatment ex = True \<longrightarrow> hde_audit_logged_exchange ex = True \<longrightarrow> exchange_authorized ex"
   by auto
 
 (* general_health_not_sensitive (matches Coq) *)
@@ -243,15 +248,15 @@ lemma genetic_info_is_sensitive: "sg_health_sensitive GeneticInfo"
   by simp
 
 (* nehr_requires_encryption (matches Coq) *)
-lemma nehr_requires_encryption: "\<forall>(r :: SGHealthRecord). nehr_sharing_compliant r \<longrightarrow> sgh_encrypted r = True"
+lemma nehr_requires_encryption: "\<forall>(r :: sg_health_record). nehr_sharing_compliant r \<longrightarrow> sgh_encrypted r = True"
   by auto
 
 (* nehr_requires_sharing (matches Coq) *)
-lemma nehr_requires_sharing: "\<forall>(r :: SGHealthRecord). nehr_sharing_compliant r \<longrightarrow> sgh_nehr_shared r = True"
+lemma nehr_requires_sharing: "\<forall>(r :: sg_health_record). nehr_sharing_compliant r \<longrightarrow> sgh_nehr_shared r = True"
   by auto
 
 (* use_type_coverage (matches Coq) *)
-lemma use_type_coverage: "\<forall>(u :: UseType). u \<in> set all_use_types"
+lemma use_type_coverage: "\<forall>(u :: use_type). u \<in> set all_use_types"
   by auto
 
 (* research_allowed (matches Coq) *)
@@ -263,23 +268,23 @@ lemma public_health_allowed: "use_permitted PublicHealth"
   by auto
 
 (* hib_full_implies_cybersecurity (matches Coq) *)
-lemma hib_full_implies_cybersecurity: "\<forall>(r :: SGHealthRecord). hib_fully_compliant r \<longrightarrow> hib_cybersecurity r"
+lemma hib_full_implies_cybersecurity: "\<forall>(r :: sg_health_record). hib_fully_compliant r \<longrightarrow> hib_cybersecurity r"
   by auto
 
 (* hib_full_implies_audit (matches Coq) *)
-lemma hib_full_implies_audit: "\<forall>(r :: SGHealthRecord). hib_fully_compliant r \<longrightarrow> hib_audit_compliant r"
+lemma hib_full_implies_audit: "\<forall>(r :: sg_health_record). hib_fully_compliant r \<longrightarrow> hib_audit_compliant r"
   by auto
 
 (* hib_full_implies_nehr (matches Coq) *)
-lemma hib_full_implies_nehr: "\<forall>(r :: SGHealthRecord). hib_fully_compliant r \<longrightarrow> nehr_sharing_compliant r"
+lemma hib_full_implies_nehr: "\<forall>(r :: sg_health_record). hib_fully_compliant r \<longrightarrow> nehr_sharing_compliant r"
   by auto
 
 (* cybersecurity_eliminates_penalty (matches Coq) *)
-lemma cybersecurity_eliminates_penalty: "\<forall>(r :: SGHealthRecord). hib_cybersecurity r \<longrightarrow> ~ hib_penalty_exposure r"
+lemma cybersecurity_eliminates_penalty: "\<forall>(r :: sg_health_record). hib_cybersecurity r \<longrightarrow> ~ hib_penalty_exposure r"
   by auto
 
 (* public_hospital_must_share (matches Coq) *)
-lemma public_hospital_must_share: "\<forall>(r :: SGHealthRecord). sgh_provider_type r = PublicHospital \<longrightarrow> sgh_nehr_shared r = True \<longrightarrow> public_hospital_nehr_mandatory r"
+lemma public_hospital_must_share: "\<forall>(r :: sg_health_record). sgh_provider_type r = PublicHospital \<longrightarrow> sgh_nehr_shared r = True \<longrightarrow> public_hospital_nehr_mandatory r"
   by auto
 
 end

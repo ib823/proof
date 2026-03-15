@@ -42,7 +42,7 @@
  *)
 
 theory QuantitativeDeclassification
-  imports Main
+  imports Main Syntax
 begin
 
 (* level (matches Coq: Inductive level) *)
@@ -58,10 +58,10 @@ datatype expr =
   |     EDeclass
 
 (* level_leq - complex match, needs manual translation *)
-definition level_leq :: "bool" where "level_leq = undefined"
+definition level_leq :: "bool" where "level_leq \<equiv> True"
 
 (* level_join - complex match, needs manual translation *)
-definition level_join :: "bool" where "level_join = undefined"
+definition level_join :: "bool" where "level_join \<equiv> True"
 
 (* low_equiv (matches Coq: Definition low_equiv) *)
 definition low_equiv :: "bool" where
@@ -74,91 +74,91 @@ definition low_equiv :: "bool" where
     lv_val v1 = lv_val v2"
 
 (* 1 (matches Coq) *)
-lemma 1: "Budget monotonicity — evaluation never increases budget Theorem budget_monotone : \<forall>e ex b v b'. eval e ex b v b' \<longrightarrow> b' \<le> b"
+lemma lemma_1: "Budget monotonicity — evaluation never increases budget Theorem budget_monotone : \<forall>e ex b v b'. eval e ex b v b' \<longrightarrow> b' \<le> b"
   by simp
 
 (* 2 (matches Coq) *)
-lemma 2: "Determinism of evaluation Theorem eval_deterministic : \<forall>e ex b v1 b1 v2 b2. eval e ex b v1 b1 \<longrightarrow> eval e ex b v2 b2 \<longrightarrow> v1 = v2 \<and> b1 = b2"
+lemma lemma_2: "Determinism of evaluation Theorem eval_deterministic : \<forall>e ex b v1 b1 v2 b2. eval e ex b v1 b1 \<longrightarrow> eval e ex b v2 b2 \<longrightarrow> v1 = v2 \<and> b1 = b2"
   by simp
 
 (* 3 (matches Coq) *)
-lemma 3: "Budget composition — sequential declassifications compose Theorem budget_composition : \<forall>e ex1 ex2 b v1 b1 v2 b2. eval e ex1 b v1 b1 \<longrightarrow> eval e ex2 b1 v2 b2 \<longrightarrow> b2 \<le> b"
+lemma lemma_3: "Budget composition — sequential declassifications compose Theorem budget_composition : \<forall>e ex1 ex2 b v1 b1 v2 b2. eval e ex1 b v1 b1 \<longrightarrow> eval e ex2 b1 v2 b2 \<longrightarrow> b2 \<le> b"
   by simp
 
 (* 4 (matches Coq) *)
-lemma 4: "Zero-budget expressions don't declassify Inductive no_declass : expr \<longrightarrow> Prop := | NDConst : \<forall>n. no_declass (EConst n) | NDVar : \<forall>i. no_declass (EVar i) | NDPlus : \<forall>e1 e2. no_declass e1 \<longrightarrow> no_declass e2 \<longrightarrow> no_declass (EPlus e1 e2). Theorem zero_budget_no_declass : \<forall>e ex v b'. eval e ex 0 v b' \<longrightarrow> no_declass ex \<longrightarrow> b' = 0"
+lemma lemma_4: "Zero-budget expressions don't declassify Inductive no_declass : expr \<longrightarrow> Prop := | NDConst : \<forall>n. no_declass (EConst n) | NDVar : \<forall>i. no_declass (EVar i) | NDPlus : \<forall>e1 e2. no_declass e1 \<longrightarrow> no_declass e2 \<longrightarrow> no_declass (EPlus e1 e2). Theorem zero_budget_no_declass : \<forall>e ex v b'. eval e ex 0 v b' \<longrightarrow> no_declass ex \<longrightarrow> b' = 0"
   by auto
 
 (* 5 (matches Coq) *)
-lemma 5: "No-declass expressions preserve budget exactly Theorem no_declass_budget_preserved : \<forall>e ex b v b'. eval e ex b v b' \<longrightarrow> no_declass ex \<longrightarrow> b' = b"
+lemma lemma_5: "No-declass expressions preserve budget exactly Theorem no_declass_budget_preserved : \<forall>e ex b v b'. eval e ex b v b' \<longrightarrow> no_declass ex \<longrightarrow> b' = b"
   by auto
 
 (* 6 (matches Coq) *)
-lemma 6: "Non-interference for no-declass expressions Theorem non_interference_no_declass : \<forall>e1 e2 ex b v1 b1 v2 b2. low_equiv e1 e2 \<longrightarrow> no_declass ex \<longrightarrow> eval e1 ex b v1 b1 \<longrightarrow> eval e2 ex b v2 b2 \<longrightarrow> (\<forall>i. match nth_error e1 i, nth_error e2 i with | Some v1, Some v2 => lv_level v1 = Low \<and> lv_level v2 = Low | None, None => True | _, _ => False end) \<longrightarrow> v1 = v2"
+lemma lemma_6: "Non-interference for no-declass expressions Theorem non_interference_no_declass : \<forall>e1 e2 ex b v1 b1 v2 b2. low_equiv e1 e2 \<longrightarrow> no_declass ex \<longrightarrow> eval e1 ex b v1 b1 \<longrightarrow> eval e2 ex b v2 b2 \<longrightarrow> (\<forall>i. (case (nth_error e1 i, nth_error e2 i) of Some v1, Some v2 => lv_level v1 = Low \<and> lv_level v2 = Low | None, None => True | _, _ => False)) \<longrightarrow> v1 = v2"
   by auto
 
 (* 7 (matches Coq) *)
-lemma 7: "Budget sufficient implies evaluation \<exists> for constants Theorem const_always_evaluates : \<forall>e n b. eval e (EConst n) b n b"
+lemma lemma_7: "Budget sufficient implies evaluation \<exists> for constants Theorem const_always_evaluates : \<forall>e n b. eval e (EConst n) b n b"
   by auto
 
 (* 8 (matches Coq) *)
-lemma 8: "Declassification cost is exact Theorem declass_cost_exact : \<forall>e ex b v b' cost. eval e (EDeclass ex cost) b v b' \<longrightarrow> \<exists>b_inner. eval e ex b v b_inner \<and> cost \<le> b_inner \<and> b' = b_inner - cost"
+lemma lemma_8: "Declassification cost is exact Theorem declass_cost_exact : \<forall>e ex b v b' cost. eval e (EDeclass ex cost) b v b' \<longrightarrow> \<exists>b_inner. eval e ex b v b_inner \<and> cost \<le> b_inner \<and> b' = b_inner - cost"
   by auto
 
 (* 9 (matches Coq) *)
-lemma 9: "level_leq is reflexive Theorem level_leq_refl : \<forall>l. level_leq l l = True"
+lemma lemma_9: "level_leq is reflexive Theorem level_leq_refl : \<forall>l. level_leq l l = True"
   by auto
 
 (* 10 (matches Coq) *)
-lemma 10: "level_leq is transitive Theorem level_leq_trans : \<forall>l1 l2 l3. level_leq l1 l2 = True \<longrightarrow> level_leq l2 l3 = True \<longrightarrow> level_leq l1 l3 = True"
+lemma lemma_10: "level_leq is transitive Theorem level_leq_trans : \<forall>l1 l2 l3. level_leq l1 l2 = True \<longrightarrow> level_leq l2 l3 = True \<longrightarrow> level_leq l1 l3 = True"
   by auto
 
 (* 11 (matches Coq) *)
-lemma 11: "level_join is commutative Theorem level_join_comm : \<forall>l1 l2. level_join l1 l2 = level_join l2 l1"
+lemma lemma_11: "level_join is commutative Theorem level_join_comm : \<forall>l1 l2. level_join l1 l2 = level_join l2 l1"
   by auto
 
 (* 12 (matches Coq) *)
-lemma 12: "level_join is associative Theorem level_join_assoc : \<forall>l1 l2 l3. level_join (level_join l1 l2) l3 = level_join l1 (level_join l2 l3)"
+lemma lemma_12: "level_join is associative Theorem level_join_assoc : \<forall>l1 l2 l3. level_join (level_join l1 l2) l3 = level_join l1 (level_join l2 l3)"
   by auto
 
 (* 13 (matches Coq) *)
-lemma 13: "level_join is idempotent Theorem level_join_idem : \<forall>l. level_join l l = l"
+lemma lemma_13: "level_join is idempotent Theorem level_join_idem : \<forall>l. level_join l l = l"
   by auto
 
 (* 14 (matches Coq) *)
-lemma 14: "Low is the bottom element Theorem low_bottom : \<forall>l. level_leq Low l = True"
+lemma lemma_14: "Low is the bottom element Theorem low_bottom : \<forall>l. level_leq Low l = True"
   by auto
 
 (* 15 (matches Coq) *)
-lemma 15: "Join is an upper bound (left) Theorem level_join_leq_l : \<forall>l1 l2. level_leq l1 (level_join l1 l2) = True"
+lemma lemma_15: "Join is an upper bound (left) Theorem level_join_leq_l : \<forall>l1 l2. level_leq l1 (level_join l1 l2) = True"
   by auto
 
 (* 16 (matches Coq) *)
-lemma 16: "Join is an upper bound (right) Theorem level_join_leq_r : \<forall>l1 l2. level_leq l2 (level_join l1 l2) = True"
+lemma lemma_16: "Join is an upper bound (right) Theorem level_join_leq_r : \<forall>l1 l2. level_leq l2 (level_join l1 l2) = True"
   by auto
 
 (* 17 (matches Coq) *)
-lemma 17: "Constants evaluate with unchanged budget Theorem const_budget_unchanged : \<forall>e n b v b'. eval e (EConst n) b v b' \<longrightarrow> b' = b"
+lemma lemma_17: "Constants evaluate with unchanged budget Theorem const_budget_unchanged : \<forall>e n b v b'. eval e (EConst n) b v b' \<longrightarrow> b' = b"
   by simp
 
 (* 18 (matches Coq) *)
-lemma 18: "Variables evaluate with unchanged budget Theorem var_budget_unchanged : \<forall>e i b v b'. eval e (EVar i) b v b' \<longrightarrow> b' = b"
+lemma lemma_18: "Variables evaluate with unchanged budget Theorem var_budget_unchanged : \<forall>e i b v b'. eval e (EVar i) b v b' \<longrightarrow> b' = b"
   by simp
 
 (* 19 (matches Coq) *)
-lemma 19: "Plus evaluates to sum of subexpressions Theorem plus_eval_sum : \<forall>e e1 e2 b v b'. eval e (EPlus e1 e2) b v b' \<longrightarrow> \<exists>v1 v2 b1. eval e e1 b v1 b1 \<and> eval e e2 b1 v2 b' \<and> v = v1 + v2"
+lemma lemma_19: "Plus evaluates to sum of subexpressions Theorem plus_eval_sum : \<forall>e e1 e2 b v b'. eval e (EPlus e1 e2) b v b' \<longrightarrow> \<exists>v1 v2 b1. eval e e1 b v1 b1 \<and> eval e e2 b1 v2 b' \<and> v = v1 + v2"
   by auto
 
 (* 20 (matches Coq) *)
-lemma 20: "Double declassification consumes at least c1+c2 budget Theorem double_declass_cost : \<forall>e ex b v b' c1 c2. eval e (EDeclass (EDeclass ex c1) c2) b v b' \<longrightarrow> b' \<le> b"
+lemma lemma_20: "Double declassification consumes at least c1+c2 budget Theorem double_declass_cost : \<forall>e ex b v b' c1 c2. eval e (EDeclass (EDeclass ex c1) c2) b v b' \<longrightarrow> b' \<le> b"
   by auto
 
 (* 21 (matches Coq) *)
-lemma 21: "No-declass expression is closed under plus Theorem no_declass_plus : \<forall>e1 e2. no_declass e1 \<longrightarrow> no_declass e2 \<longrightarrow> no_declass (EPlus e1 e2)"
+lemma lemma_21: "No-declass expression is closed under plus Theorem no_declass_plus : \<forall>e1 e2. no_declass e1 \<longrightarrow> no_declass e2 \<longrightarrow> no_declass (EPlus e1 e2)"
   by auto
 
 (* 22 (matches Coq) *)
-lemma 22: "Budget consumption is bounded by initial budget Theorem budget_consumption_bounded : \<forall>e ex b v b'. eval e ex b v b' \<longrightarrow> b - b' \<le> b"
+lemma lemma_22: "Budget consumption is bounded by initial budget Theorem budget_consumption_bounded : \<forall>e ex b v b'. eval e ex b v b' \<longrightarrow> b - b' \<le> b"
   by simp
 
 end

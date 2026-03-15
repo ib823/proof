@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | TimingOperation    | timing_operation       | OK     |
+ * | timing_operation    | timing_operation       | OK     |
  * | CTOperation        | ct_operation           | OK     |
- * | CryptoOperation    | crypto_operation       | OK     |
- * | ConstantTimeConfig | constant_time_config   | OK     |
- * | CryptoImplementation | crypto_implementation  | OK     |
+ * | crypto_operation    | crypto_operation       | OK     |
+ * | constant_time_config | constant_time_config   | OK     |
+ * | crypto_implementation | crypto_implementation  | OK     |
  * | ct_branch_free     | ct_branch_free         | OK     |
  * | ct_memory_safe     | ct_memory_safe         | OK     |
  * | ct_operation_safe  | ct_operation_safe      | OK     |
@@ -61,7 +61,7 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* TimingOperation (matches Coq: Inductive TimingOperation) *)
+(* timing_operation (matches Coq: Inductive timing_operation) *)
 datatype timing_operation =
     Op_Branch
   |     Op_MemAccess
@@ -77,7 +77,7 @@ datatype ct_operation =
   |     CT_CTMul
   |     CT_ScatterGather
 
-(* CryptoOperation (matches Coq: Inductive CryptoOperation) *)
+(* crypto_operation (matches Coq: Inductive crypto_operation) *)
 datatype crypto_operation =
     Crypto_AES_Encrypt
   |     Crypto_AES_Decrypt
@@ -89,7 +89,7 @@ datatype crypto_operation =
   |     Crypto_RSA_Decrypt
   |     Crypto_KeyCompare
 
-(* ConstantTimeConfig (matches Coq: Record ConstantTimeConfig) *)
+(* constant_time_config (matches Coq: Record constant_time_config) *)
 record constant_time_config =
   ct_no_secret_branches :: bool
   ct_no_secret_addresses :: bool
@@ -99,9 +99,9 @@ record constant_time_config =
   ct_masked_memory :: bool
   ct_constant_loops :: bool
 
-(* CryptoImplementation (matches Coq: Record CryptoImplementation) *)
+(* crypto_implementation (matches Coq: Record crypto_implementation) *)
 record crypto_implementation =
-  ci_operation :: CryptoOperation
+  ci_operation :: crypto_operation
   ci_constant_time :: bool
   ci_no_table_lookups :: bool
   ci_bitsliced :: bool

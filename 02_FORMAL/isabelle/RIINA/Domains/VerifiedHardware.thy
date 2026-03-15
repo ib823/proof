@@ -12,16 +12,16 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SecurityLevel      | security_level         | OK     |
- * | Instruction        | instruction            | OK     |
- * | PipelineStage      | pipeline_stage         | OK     |
- * | Leakage            | leakage                | OK     |
- * | ArchState          | arch_state             | OK     |
- * | PipelineEntry      | pipeline_entry         | OK     |
- * | RTLState           | rtl_state              | OK     |
- * | ECCWord            | ecc_word               | OK     |
- * | Checkpoint         | checkpoint             | OK     |
- * | TamperState        | tamper_state           | OK     |
+ * | hw_security_level      | hw_security_level         | OK     |
+ * | instruction        | instruction            | OK     |
+ * | pipeline_stage      | pipeline_stage         | OK     |
+ * | leakage            | leakage                | OK     |
+ * | arch_state          | arch_state             | OK     |
+ * | pipeline_entry      | pipeline_entry         | OK     |
+ * | r_tls_tate           | rtl_state              | OK     |
+ * | ecc_word            | ecc_word               | OK     |
+ * | checkpoint         | checkpoint             | OK     |
+ * | tamper_state        | tamper_state           | OK     |
  * | initial_arch_state | initial_arch_state     | OK     |
  * | initial_rtl_state  | initial_rtl_state      | OK     |
  * | rtl_to_arch        | rtl_to_arch            | OK     |
@@ -47,11 +47,11 @@
  * | exec_zeroize       | exec_zeroize           | OK     |
  * | create_checkpoint  | create_checkpoint      | OK     |
  * | restore_checkpoint | restore_checkpoint     | OK     |
- * | VoltageRange       | VoltageRange           | OK     |
+ * | voltage_range       | voltage_range           | OK     |
  * | normal_voltage_range | normal_voltage_range   | OK     |
  * | voltage_in_range   | voltage_in_range       | OK     |
  * | voltage_glitch_detected | voltage_glitch_detected | OK     |
- * | FrequencyRange     | FrequencyRange         | OK     |
+ * | frequency_range     | frequency_range         | OK     |
  * | normal_frequency_range | normal_frequency_range | OK     |
  * | frequency_in_range | frequency_in_range     | OK     |
  * | frequency_manipulation_detected | frequency_manipulation_detected | OK     |
@@ -106,15 +106,21 @@
  *)
 
 theory VerifiedHardware
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
-datatype security_level =
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym frequency_range = "nat"
+type_synonym r_tls_tate = "nat"
+type_synonym reg_id = "nat"
+type_synonym voltage_range = "nat"
+type_synonym word = "nat"
+(* hw_security_level (matches Coq: Inductive hw_security_level) *)
+datatype hw_security_level =
     Public
   |     Secret
 
-(* Instruction (matches Coq: Inductive Instruction) *)
+(* instruction (matches Coq: Inductive instruction) *)
 datatype instruction =
     IAdd
   |     ISub
@@ -133,7 +139,7 @@ datatype instruction =
   |     IZEROIZE
   |     INop
 
-(* PipelineStage (matches Coq: Inductive PipelineStage) *)
+(* pipeline_stage (matches Coq: Inductive pipeline_stage) *)
 datatype pipeline_stage =
     Fetch
   |     Decode
@@ -141,53 +147,53 @@ datatype pipeline_stage =
   |     MemoryStage
   |     Writeback
 
-(* Leakage (matches Coq: Inductive Leakage) *)
+(* leakage (matches Coq: Inductive leakage) *)
 datatype leakage =
     LTiming
   |     LPower
   |     LCacheAccess
   |     LBranchOutcome
 
-(* ArchState (matches Coq: Record ArchState) *)
+(* arch_state (matches Coq: Record arch_state) *)
 record arch_state =
-  regs :: RegId
+  regs :: reg_id
   mem :: nat
   pc :: nat
-  security_labels :: RegId
+  security_labels :: reg_id
   isolation_mode :: bool
 
-(* PipelineEntry (matches Coq: Record PipelineEntry) *)
+(* pipeline_entry (matches Coq: Record pipeline_entry) *)
 record pipeline_entry =
-  pe_stage :: PipelineStage
-  pe_instr :: Instruction
+  pe_stage :: pipeline_stage
+  pe_instr :: instruction
   pe_valid :: bool
 
-(* RTLState (matches Coq: Record RTLState) *)
+(* r_tls_tate (matches Coq: Record r_tls_tate) *)
 record rtl_state =
-  rtl_regs :: RegId
+  rtl_regs :: reg_id
   rtl_mem :: nat
   rtl_pc :: nat
   rtl_pipeline :: 'a list
   rtl_cycle :: nat
-  rtl_security_labels :: RegId
+  rtl_security_labels :: reg_id
   rtl_isolation_mode :: bool
   rtl_speculating :: bool
   rtl_scub_active :: bool
   rtl_fencesc_active :: bool
 
-(* ECCWord (matches Coq: Record ECCWord) *)
+(* ecc_word (matches Coq: Record ecc_word) *)
 record ecc_word =
-  ecc_data :: Word
+  ecc_data :: word
   ecc_syndrome :: nat
   ecc_parity :: bool
 
-(* Checkpoint (matches Coq: Record Checkpoint) *)
+(* checkpoint (matches Coq: Record checkpoint) *)
 record checkpoint =
-  chk_regs :: RegId
+  chk_regs :: reg_id
   chk_pc :: nat
   chk_valid :: bool
 
-(* TamperState (matches Coq: Record TamperState) *)
+(* tamper_state (matches Coq: Record tamper_state) *)
 record tamper_state =
   tamper_seal_intact :: bool
   tamper_mesh_intact :: bool
@@ -224,7 +230,7 @@ definition rtl_to_arch :: "RTLState \<Rightarrow> ArchState" where
      isolation_mode := rtl_isolation_mode s |}"
 
 (* rtl_execute_instr (matches Coq: Definition rtl_execute_instr) *)
-fun rtl_execute_instr :: "Instruction \<Rightarrow> RTLState \<Rightarrow> RTLState" where
+fun rtl_execute_instr :: "Instruction \<Rightarrow> r_tls_tate \<Rightarrow> RTLState" where
   "rtl_execute_instr _ = undefined"
 
 (* rtl_exec (matches Coq: Definition rtl_exec) *)
@@ -253,12 +259,12 @@ definition rtl_public_equiv :: "bool" where
 
 (* timing_independent_prop (matches Coq: Definition timing_independent_prop) *)
 definition timing_independent_prop :: "Instruction \<Rightarrow> bool" where
-  "timing_independent_prop instr \<equiv> forall s1 s2 : RTLState,
+  "timing_independent_prop instr \<equiv> forall s1 s2 : r_tls_tate,
     rtl_public_equiv s1 s2 ->
     cycles instr = cycles instr"
 
 (* instr_leakage (matches Coq: Definition instr_leakage) *)
-definition instr_leakage :: "Instruction \<Rightarrow> RTLState \<Rightarrow> LeakageTrace" where
+definition instr_leakage :: "Instruction \<Rightarrow> r_tls_tate \<Rightarrow> LeakageTrace" where
   "instr_leakage instr s \<equiv> [LTiming (cycles instr)]"
 
 (* program_leakage (matches Coq: Definition program_leakage) *)
@@ -320,13 +326,13 @@ definition ecc_correct_single :: "ECCWord \<Rightarrow> Word" where
 
 (* ecc_is_double_error (matches Coq: Definition ecc_is_double_error) *)
 definition ecc_is_double_error :: "ECCWord \<Rightarrow> bool" where
-  "ecc_is_double_error w \<equiv> (\<not> Nat.eqb (ecc_syndrome w) 0 \<and> \<not> ecc_parity w)"
+  "ecc_is_double_error w \<equiv> (\<not> (=) (ecc_syndrome w) 0 \<and> \<not> ecc_parity w)"
 
 (* exec_zeroize (matches Coq: Definition exec_zeroize) *)
 definition exec_zeroize :: "RTLState \<Rightarrow> RTLState" where
   "exec_zeroize s \<equiv> {| rtl_regs := \<lambda>_. 0;
      rtl_mem := rtl_mem s;
-     rtl_pc := S (rtl_pc s);
+     rtl_pc := Suc (rtl_pc s);
      rtl_pipeline := [];
      rtl_cycle := rtl_cycle s + 32;
      rtl_security_labels := \<lambda>_. Public;
@@ -342,7 +348,7 @@ definition create_checkpoint :: "RTLState \<Rightarrow> Checkpoint" where
      chk_valid := True |}"
 
 (* restore_checkpoint (matches Coq: Definition restore_checkpoint) *)
-definition restore_checkpoint :: "RTLState \<Rightarrow> Checkpoint \<Rightarrow> RTLState" where
+definition restore_checkpoint :: "RTLState \<Rightarrow> checkpoint \<Rightarrow> RTLState" where
   "restore_checkpoint s chk \<equiv> if chk_valid chk then
     {| rtl_regs := chk_regs chk;
        rtl_mem := rtl_mem s;
@@ -356,8 +362,8 @@ definition restore_checkpoint :: "RTLState \<Rightarrow> Checkpoint \<Rightarrow
        rtl_fencesc_active := False |}
   else s"
 
-(* VoltageRange (matches Coq: Definition VoltageRange) *)
-definition VoltageRange :: "'a" where
+(* voltage_range (matches Coq: Definition voltage_range) *)
+definition voltage_range :: "'a" where
   "VoltageRange \<equiv> nat * nat"
 
 (* normal_voltage_range (matches Coq: Definition normal_voltage_range) *)
@@ -365,15 +371,15 @@ definition normal_voltage_range :: "VoltageRange" where
   "normal_voltage_range \<equiv> (900, 1100)"
 
 (* voltage_in_range (matches Coq: Definition voltage_in_range) *)
-definition voltage_in_range :: "nat \<Rightarrow> VoltageRange \<Rightarrow> bool" where
+definition voltage_in_range :: "nat \<Rightarrow> voltage_range \<Rightarrow> bool" where
   "voltage_in_range v range \<equiv> (fst range \<le> v \<and> v \<le> snd range)"
 
 (* voltage_glitch_detected (matches Coq: Definition voltage_glitch_detected) *)
 definition voltage_glitch_detected :: "nat \<Rightarrow> bool" where
   "voltage_glitch_detected v \<equiv> (\<not> voltage_in_range v normal_voltage_range)"
 
-(* FrequencyRange (matches Coq: Definition FrequencyRange) *)
-definition FrequencyRange :: "'a" where
+(* frequency_range (matches Coq: Definition frequency_range) *)
+definition frequency_range :: "'a" where
   "FrequencyRange \<equiv> nat * nat"
 
 (* normal_frequency_range (matches Coq: Definition normal_frequency_range) *)
@@ -381,7 +387,7 @@ definition normal_frequency_range :: "FrequencyRange" where
   "normal_frequency_range \<equiv> (800, 1200)"
 
 (* frequency_in_range (matches Coq: Definition frequency_in_range) *)
-definition frequency_in_range :: "nat \<Rightarrow> FrequencyRange \<Rightarrow> bool" where
+definition frequency_in_range :: "nat \<Rightarrow> frequency_range \<Rightarrow> bool" where
   "frequency_in_range f range \<equiv> (fst range \<le> f \<and> f \<le> snd range)"
 
 (* frequency_manipulation_detected (matches Coq: Definition frequency_manipulation_detected) *)
@@ -402,7 +408,7 @@ lemma update_neq: "\<forall>{A : Type} (f : nat \<longrightarrow> A) k1 k2 v. k1
   by simp
 
 (* isa_rtl_add_equiv (matches Coq) *)
-lemma isa_rtl_add_equiv: "\<forall>rd rs1 rs2 s. rtl_to_arch (rtl_execute_instr (IAdd rd rs1 rs2) s) = {| regs := update (rtl_regs s) rd (rtl_regs s rs1 + rtl_regs s rs2); mem := rtl_mem s; pc := S (rtl_pc s); security_labels := rtl_security_labels s; isolation_mode := rtl_isolation_mode s |}"
+lemma isa_rtl_add_equiv: "\<forall>rd rs1 rs2 s. rtl_to_arch (rtl_execute_instr (IAdd rd rs1 rs2) s) = {| regs := update (rtl_regs s) rd (rtl_regs s rs1 + rtl_regs s rs2); mem := rtl_mem s; pc := Suc (rtl_pc s); security_labels := rtl_security_labels s; isolation_mode := rtl_isolation_mode s |}"
   by simp
 
 (* PHI_001_01_rtl_isa_equivalence (matches Coq) *)
@@ -426,7 +432,7 @@ lemma PHI_001_05_alu_correct: "\<forall>rd rs1 rs2 s. rtl_regs (rtl_execute_inst
   by simp
 
 (* PHI_001_06_branch_correct (matches Coq) *)
-lemma PHI_001_06_branch_correct: "\<forall>rs1 rs2 target s. (rtl_regs s rs1 = rtl_regs s rs2 \<longrightarrow> rtl_pc (rtl_execute_instr (IBranch rs1 rs2 target) s) = target) \<and> (rtl_regs s rs1 \<noteq> rtl_regs s rs2 \<longrightarrow> rtl_pc (rtl_execute_instr (IBranch rs1 rs2 target) s) = S (rtl_pc s))"
+lemma PHI_001_06_branch_correct: "\<forall>rs1 rs2 target s. (rtl_regs s rs1 = rtl_regs s rs2 \<longrightarrow> rtl_pc (rtl_execute_instr (IBranch rs1 rs2 target) s) = target) \<and> (rtl_regs s rs1 \<noteq> rtl_regs s rs2 \<longrightarrow> rtl_pc (rtl_execute_instr (IBranch rs1 rs2 target) s) = Suc (rtl_pc s))"
   by auto
 
 (* PHI_001_07_interrupt_correct (matches Coq) *)
@@ -434,7 +440,7 @@ lemma PHI_001_07_interrupt_correct: "\<forall>s. rtl_speculating s = False \<lon
   by auto
 
 (* PHI_001_08_instruction_fetch_correct (matches Coq) *)
-lemma PHI_001_08_instruction_fetch_correct: "\<forall>instr s. instr \<noteq> IZEROIZE \<longrightarrow> rtl_pc (rtl_execute_instr instr s) = S (rtl_pc s) \<or> \<exists>target. rtl_pc (rtl_execute_instr instr s) = target"
+lemma PHI_001_08_instruction_fetch_correct: "\<forall>instr s. instr \<noteq> IZEROIZE \<longrightarrow> rtl_pc (rtl_execute_instr instr s) = Suc (rtl_pc s) \<or> \<exists>target. rtl_pc (rtl_execute_instr instr s) = target"
   by auto
 
 (* PHI_001_09_timing_independent (matches Coq) *)
@@ -442,7 +448,7 @@ lemma PHI_001_09_timing_independent: "\<forall>instr s1 s2. rtl_public_equiv s1 
   by simp
 
 (* PHI_001_10_no_data_dependent_timing (matches Coq) *)
-lemma PHI_001_10_no_data_dependent_timing: "\<forall>instr. match instr with | IAdd _ _ _ => cycles instr = 1 | ISub _ _ _ => cycles instr = 1 | IAnd _ _ _ => cycles instr = 1 | IOr _ _ _ => cycles instr = 1 | IXor _ _ _ => cycles instr = 1 | IMul _ _ _ => cycles instr = 3 | IDiv _ _ _ => cycles instr = 32 | _ => True end"
+lemma PHI_001_10_no_data_dependent_timing: "\<forall>instr. (case instr of IAdd _ _ _ => cycles instr = 1 | ISub _ _ _ => cycles instr = 1 | IAnd _ _ _ => cycles instr = 1 | IOr _ _ _ => cycles instr = 1 | IXor _ _ _ => cycles instr = 1 | IMul _ _ _ => cycles instr = 3 | IDiv _ _ _ => cycles instr = 32 | _ => True)"
   by auto
 
 (* PHI_001_11_cache_constant_time (matches Coq) *)

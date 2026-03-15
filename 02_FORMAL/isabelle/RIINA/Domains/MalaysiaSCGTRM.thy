@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | CMEntityType       | cm_entity_type         | OK     |
+ * | cm_entity_type       | cm_entity_type         | OK     |
  * | gtrm_board_accountable | gtrm_board_accountable | OK     |
  * | gtrm_risk_framework | gtrm_risk_framework    | OK     |
  * | gtrm_pentest_current | gtrm_pentest_current   | OK     |
@@ -56,7 +56,12 @@ theory MalaysiaSCGTRM
   imports Main
 begin
 
-(* CMEntityType (matches Coq: Inductive CMEntityType) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym ai_model_risk = "nat"
+type_synonym cm_cloud_risk = "nat"
+type_synonym cm_entity = "nat"
+type_synonym sc_incident = "nat"
+(* cm_entity_type (matches Coq: Inductive cm_entity_type) *)
 datatype cm_entity_type =
     BrokerDealer
   |     FundManager
@@ -134,99 +139,99 @@ definition cmc_cloud_risk_assessed :: "CMCloudRisk \<Rightarrow> bool" where
   cmc_exit_strategy cr = True"
 
 (* gtrm_req_1 (matches Coq) *)
-lemma gtrm_req_1: "\<forall>(e :: CMEntity). cm_board_accountability e = True \<longrightarrow> gtrm_board_accountable e"
+lemma gtrm_req_1: "\<forall>(e :: cm_entity). cm_board_accountability e = True \<longrightarrow> gtrm_board_accountable e"
   by auto
 
 (* gtrm_req_2 (matches Coq) *)
-lemma gtrm_req_2: "\<forall>(e :: CMEntity). cm_risk_framework e = True \<longrightarrow> gtrm_risk_framework e"
+lemma gtrm_req_2: "\<forall>(e :: cm_entity). cm_risk_framework e = True \<longrightarrow> gtrm_risk_framework e"
   by auto
 
 (* gtrm_req_3 (matches Coq) *)
-lemma gtrm_req_3: "\<forall>(e :: CMEntity) (t :: nat). cm_pentest_done e = True \<longrightarrow> t \<le> cm_last_pentest e + cm_pentest_interval e \<longrightarrow> gtrm_pentest_current e t"
+lemma gtrm_req_3: "\<forall>(e :: cm_entity) (t :: nat). cm_pentest_done e = True \<longrightarrow> t \<le> cm_last_pentest e + cm_pentest_interval e \<longrightarrow> gtrm_pentest_current e t"
   by auto
 
 (* gtrm_req_4 (matches Coq) *)
-lemma gtrm_req_4: "\<forall>(e :: CMEntity). cm_ai_risk_assessed e = True \<longrightarrow> gtrm_ai_assessed e"
+lemma gtrm_req_4: "\<forall>(e :: cm_entity). cm_ai_risk_assessed e = True \<longrightarrow> gtrm_ai_assessed e"
   by auto
 
 (* gtrm_req_5 (matches Coq) *)
-lemma gtrm_req_5: "\<forall>(e :: CMEntity). cm_third_party_assessed e = True \<longrightarrow> cm_cloud_risk_assessed e = True \<longrightarrow> gtrm_vendor_compliant e"
+lemma gtrm_req_5: "\<forall>(e :: cm_entity). cm_third_party_assessed e = True \<longrightarrow> cm_cloud_risk_assessed e = True \<longrightarrow> gtrm_vendor_compliant e"
   by simp
 
 (* gtrm_req_6 (matches Coq) *)
-lemma gtrm_req_6: "\<forall>(e :: CMEntity). cm_incident_response_plan e = True \<longrightarrow> gtrm_incident_ready e"
+lemma gtrm_req_6: "\<forall>(e :: cm_entity). cm_incident_response_plan e = True \<longrightarrow> gtrm_incident_ready e"
   by auto
 
 (* gtrm_req_7 (matches Coq) *)
-lemma gtrm_req_7: "\<forall>(e :: CMEntity). cm_data_protection e = True \<longrightarrow> gtrm_data_protected e"
+lemma gtrm_req_7: "\<forall>(e :: cm_entity). cm_data_protection e = True \<longrightarrow> gtrm_data_protected e"
   by auto
 
 (* gtrm_composition (matches Coq) *)
-lemma gtrm_composition: "\<forall>(e :: CMEntity) (t :: nat). gtrm_board_accountable e \<longrightarrow> gtrm_risk_framework e \<longrightarrow> gtrm_pentest_current e t \<longrightarrow> gtrm_ai_assessed e \<longrightarrow> gtrm_vendor_compliant e \<longrightarrow> gtrm_incident_ready e \<longrightarrow> gtrm_data_protected e \<longrightarrow> gtrm_fully_compliant e t"
+lemma gtrm_composition: "\<forall>(e :: cm_entity) (t :: nat). gtrm_board_accountable e \<longrightarrow> gtrm_risk_framework e \<longrightarrow> gtrm_pentest_current e t \<longrightarrow> gtrm_ai_assessed e \<longrightarrow> gtrm_vendor_compliant e \<longrightarrow> gtrm_incident_ready e \<longrightarrow> gtrm_data_protected e \<longrightarrow> gtrm_fully_compliant e t"
   by simp
 
 (* cm_entity_coverage (matches Coq) *)
-lemma cm_entity_coverage: "\<forall>(t :: CMEntityType). t \<in> set all_cm_entity_types"
+lemma cm_entity_coverage: "\<forall>(t :: cm_entity_type). t \<in> set all_cm_entity_types"
   by auto
 
 (* pentest_expired (matches Coq) *)
-lemma pentest_expired: "\<forall>(e :: CMEntity) (t :: nat). cm_last_pentest e + cm_pentest_interval e < t \<longrightarrow> ~ gtrm_pentest_current e t"
+lemma pentest_expired: "\<forall>(e :: cm_entity) (t :: nat). cm_last_pentest e + cm_pentest_interval e < t \<longrightarrow> ~ gtrm_pentest_current e t"
   by simp
 
 (* pentest_recently_done (matches Coq) *)
-lemma pentest_recently_done: "\<forall>(e :: CMEntity). cm_pentest_done e = True \<longrightarrow> gtrm_pentest_current e (cm_last_pentest e)"
+lemma pentest_recently_done: "\<forall>(e :: cm_entity). cm_pentest_done e = True \<longrightarrow> gtrm_pentest_current e (cm_last_pentest e)"
   by simp
 
 (* gtrm_full_implies_board (matches Coq) *)
-lemma gtrm_full_implies_board: "\<forall>(e :: CMEntity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_board_accountable e"
+lemma gtrm_full_implies_board: "\<forall>(e :: cm_entity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_board_accountable e"
   by auto
 
 (* gtrm_full_implies_risk (matches Coq) *)
-lemma gtrm_full_implies_risk: "\<forall>(e :: CMEntity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_risk_framework e"
+lemma gtrm_full_implies_risk: "\<forall>(e :: cm_entity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_risk_framework e"
   by auto
 
 (* gtrm_full_implies_pentest (matches Coq) *)
-lemma gtrm_full_implies_pentest: "\<forall>(e :: CMEntity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_pentest_current e t"
+lemma gtrm_full_implies_pentest: "\<forall>(e :: cm_entity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_pentest_current e t"
   by auto
 
 (* gtrm_full_implies_ai (matches Coq) *)
-lemma gtrm_full_implies_ai: "\<forall>(e :: CMEntity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_ai_assessed e"
+lemma gtrm_full_implies_ai: "\<forall>(e :: cm_entity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_ai_assessed e"
   by auto
 
 (* gtrm_full_implies_vendor (matches Coq) *)
-lemma gtrm_full_implies_vendor: "\<forall>(e :: CMEntity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_vendor_compliant e"
+lemma gtrm_full_implies_vendor: "\<forall>(e :: cm_entity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_vendor_compliant e"
   by auto
 
 (* gtrm_full_implies_incident (matches Coq) *)
-lemma gtrm_full_implies_incident: "\<forall>(e :: CMEntity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_incident_ready e"
+lemma gtrm_full_implies_incident: "\<forall>(e :: cm_entity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_incident_ready e"
   by auto
 
 (* gtrm_full_implies_data (matches Coq) *)
-lemma gtrm_full_implies_data: "\<forall>(e :: CMEntity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_data_protected e"
+lemma gtrm_full_implies_data: "\<forall>(e :: cm_entity) (t :: nat). gtrm_fully_compliant e t \<longrightarrow> gtrm_data_protected e"
   by auto
 
 (* sc_incident_reporting (matches Coq) *)
-lemma sc_incident_reporting: "\<forall>(inc :: SCIncident). sci_reported_at inc \<le> sci_detected_at inc + 24 \<longrightarrow> sc_incident_timely inc"
+lemma sc_incident_reporting: "\<forall>(inc :: sc_incident). sci_reported_at inc \<le> sci_detected_at inc + 24 \<longrightarrow> sc_incident_timely inc"
   by auto
 
 (* sc_incident_late (matches Coq) *)
-lemma sc_incident_late: "\<forall>(inc :: SCIncident). sci_detected_at inc + sc_incident_deadline < sci_reported_at inc \<longrightarrow> ~ sc_incident_timely inc"
+lemma sc_incident_late: "\<forall>(inc :: sc_incident). sci_detected_at inc + sc_incident_deadline < sci_reported_at inc \<longrightarrow> ~ sc_incident_timely inc"
   by simp
 
 (* ai_model_risk_complete (matches Coq) *)
-lemma ai_model_risk_complete: "\<forall>(ar :: AIModelRisk). ai_bias_assessed ar = True \<longrightarrow> ai_explainability_documented ar = True \<longrightarrow> ai_data_quality_verified ar = True \<longrightarrow> ai_model_validated ar = True \<longrightarrow> ai_monitoring_active ar = True \<longrightarrow> ai_risk_managed ar"
+lemma ai_model_risk_complete: "\<forall>(ar :: ai_model_risk). ai_bias_assessed ar = True \<longrightarrow> ai_explainability_documented ar = True \<longrightarrow> ai_data_quality_verified ar = True \<longrightarrow> ai_model_validated ar = True \<longrightarrow> ai_monitoring_active ar = True \<longrightarrow> ai_risk_managed ar"
   by auto
 
 (* ai_not_validated_not_managed (matches Coq) *)
-lemma ai_not_validated_not_managed: "\<forall>(ar :: AIModelRisk). ai_model_validated ar = False \<longrightarrow> ~ ai_risk_managed ar"
+lemma ai_not_validated_not_managed: "\<forall>(ar :: ai_model_risk). ai_model_validated ar = False \<longrightarrow> ~ ai_risk_managed ar"
   by auto
 
 (* cm_cloud_fully_assessed (matches Coq) *)
-lemma cm_cloud_fully_assessed: "\<forall>(cr :: CMCloudRisk). cmc_data_residency_compliant cr = True \<longrightarrow> cmc_encryption_at_rest cr = True \<longrightarrow> cmc_encryption_in_transit cr = True \<longrightarrow> cmc_access_controls cr = True \<longrightarrow> cmc_exit_strategy cr = True \<longrightarrow> cmc_cloud_risk_assessed cr"
+lemma cm_cloud_fully_assessed: "\<forall>(cr :: cm_cloud_risk). cmc_data_residency_compliant cr = True \<longrightarrow> cmc_encryption_at_rest cr = True \<longrightarrow> cmc_encryption_in_transit cr = True \<longrightarrow> cmc_access_controls cr = True \<longrightarrow> cmc_exit_strategy cr = True \<longrightarrow> cmc_cloud_risk_assessed cr"
   by auto
 
 (* cm_cloud_missing_exit_strategy (matches Coq) *)
-lemma cm_cloud_missing_exit_strategy: "\<forall>(cr :: CMCloudRisk). cmc_exit_strategy cr = False \<longrightarrow> ~ cmc_cloud_risk_assessed cr"
+lemma cm_cloud_missing_exit_strategy: "\<forall>(cr :: cm_cloud_risk). cmc_exit_strategy cr = False \<longrightarrow> ~ cmc_cloud_risk_assessed cr"
   by auto
 
 end

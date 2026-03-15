@@ -12,21 +12,21 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | BFTConfig          | bft_config             | OK     |
- * | IdentityVerification | identity_verification  | OK     |
- * | PeerConfig         | peer_config            | OK     |
- * | RoutingProtocol    | routing_protocol       | OK     |
- * | ConsensusProtocol  | consensus_protocol     | OK     |
- * | SmartContract      | smart_contract         | OK     |
- * | ReentrancyGuard    | reentrancy_guard       | OK     |
- * | FairOrdering       | fair_ordering          | OK     |
- * | MEVProtection      | mev_protection         | OK     |
- * | FlashLoanGuard     | flash_loan_guard       | OK     |
- * | LogicalClock       | logical_clock          | OK     |
- * | PartitionConfig    | partition_config       | OK     |
- * | ConsistencyProtocol | consistency_protocol   | OK     |
- * | LeaderConfig       | leader_config          | OK     |
- * | QuorumConfig       | quorum_config          | OK     |
+ * | bft_config          | bft_config             | OK     |
+ * | identity_verification | identity_verification  | OK     |
+ * | peer_config         | peer_config            | OK     |
+ * | routing_protocol    | routing_protocol       | OK     |
+ * | consensus_protocol  | consensus_protocol     | OK     |
+ * | smart_contract      | smart_contract         | OK     |
+ * | reentrancy_guard    | reentrancy_guard       | OK     |
+ * | fair_ordering       | fair_ordering          | OK     |
+ * | mev_protection      | mev_protection         | OK     |
+ * | flash_loan_guard     | flash_loan_guard       | OK     |
+ * | logical_clock       | logical_clock          | OK     |
+ * | partition_config    | partition_config       | OK     |
+ * | consistency_protocol | consistency_protocol   | OK     |
+ * | leader_config       | leader_config          | OK     |
+ * | quorum_config       | quorum_config          | OK     |
  * | bft_valid          | bft_valid              | OK     |
  * | sybil_protected    | sybil_protected        | OK     |
  * | eclipse_protected  | eclipse_protected      | OK     |
@@ -95,92 +95,92 @@ theory DistributedSecurity
   imports Main CoqCompat
 begin
 
-(* BFTConfig (matches Coq: Record BFTConfig) *)
+(* bft_config (matches Coq: Record bft_config) *)
 record bft_config =
   bft_total_nodes :: nat
   bft_faulty_tolerance :: nat
   bft_is_safe :: bool
 
-(* IdentityVerification (matches Coq: Record IdentityVerification) *)
+(* identity_verification (matches Coq: Record identity_verification) *)
 record identity_verification =
   iv_proof_of_work_enabled :: bool
   iv_identity_bound :: bool
   iv_cost_per_identity :: nat
 
-(* PeerConfig (matches Coq: Record PeerConfig) *)
+(* peer_config (matches Coq: Record peer_config) *)
 record peer_config =
   pc_total_peers :: nat
   pc_distinct_subnets :: nat
   pc_min_outbound :: nat
   pc_diverse :: bool
 
-(* RoutingProtocol (matches Coq: Record RoutingProtocol) *)
+(* routing_protocol (matches Coq: Record routing_protocol) *)
 record routing_protocol =
   rp_authenticated :: bool
   rp_path_verified :: bool
   rp_origin_validated :: bool
 
-(* ConsensusProtocol (matches Coq: Record ConsensusProtocol) *)
+(* consensus_protocol (matches Coq: Record consensus_protocol) *)
 record consensus_protocol =
   cp_safety_proven :: bool
   cp_liveness_proven :: bool
   cp_finality_guaranteed :: bool
 
-(* SmartContract (matches Coq: Record SmartContract) *)
+(* smart_contract (matches Coq: Record smart_contract) *)
 record smart_contract =
   sc_formally_verified :: bool
   sc_invariants_proven :: bool
   sc_no_overflow :: bool
 
-(* ReentrancyGuard (matches Coq: Record ReentrancyGuard) *)
+(* reentrancy_guard (matches Coq: Record reentrancy_guard) *)
 record reentrancy_guard =
   rg_locked :: bool
   rg_checks_before_effects :: bool
   rg_interactions_last :: bool
 
-(* FairOrdering (matches Coq: Record FairOrdering) *)
+(* fair_ordering (matches Coq: Record fair_ordering) *)
 record fair_ordering =
   fo_commit_phase :: bool
   fo_reveal_phase :: bool
   fo_ordering_deterministic :: bool
 
-(* MEVProtection (matches Coq: Record MEVProtection) *)
+(* mev_protection (matches Coq: Record mev_protection) *)
 record mev_protection =
   mev_private_mempool :: bool
   mev_fair_sequencing :: bool
   mev_encrypted_transactions :: bool
 
-(* FlashLoanGuard (matches Coq: Record FlashLoanGuard) *)
+(* flash_loan_guard (matches Coq: Record flash_loan_guard) *)
 record flash_loan_guard =
   fl_same_block_check :: bool
   fl_balance_snapshot :: bool
   fl_price_oracle_twap :: bool
 
-(* LogicalClock (matches Coq: Record LogicalClock) *)
+(* logical_clock (matches Coq: Record logical_clock) *)
 record logical_clock =
   lc_lamport_enabled :: bool
   lc_vector_clock :: bool
   lc_causality_preserved :: bool
 
-(* PartitionConfig (matches Coq: Record PartitionConfig) *)
+(* partition_config (matches Coq: Record partition_config) *)
 record partition_config =
   pt_cap_aware :: bool
   pt_partition_detection :: bool
   pt_graceful_degradation :: bool
 
-(* ConsistencyProtocol (matches Coq: Record ConsistencyProtocol) *)
+(* consistency_protocol (matches Coq: Record consistency_protocol) *)
 record consistency_protocol =
   csp_linearizable :: bool
   csp_state_machine_replication :: bool
   csp_conflict_resolution :: bool
 
-(* LeaderConfig (matches Coq: Record LeaderConfig) *)
+(* leader_config (matches Coq: Record leader_config) *)
 record leader_config =
   ldr_rotation_enabled :: bool
   ldr_bft_election :: bool
   ldr_term_bounded :: bool
 
-(* QuorumConfig (matches Coq: Record QuorumConfig) *)
+(* quorum_config (matches Coq: Record quorum_config) *)
 record quorum_config =
   qc_quorum_size :: nat
   qc_total_nodes :: nat
@@ -267,27 +267,27 @@ lemma orb_true_intro_r: "\<forall>a b : bool. b = True \<longrightarrow> a || b 
   by simp
 
 (* dist_001_byzantine_failure_tolerated (matches Coq) *)
-lemma dist_001_byzantine_failure_tolerated: "\<forall>(cfg :: BFTConfig). bft_valid cfg = True \<longrightarrow> 3 * bft_faulty_tolerance cfg < bft_total_nodes cfg"
+lemma dist_001_byzantine_failure_tolerated: "\<forall>(cfg :: bft_config). bft_valid cfg = True \<longrightarrow> 3 * bft_faulty_tolerance cfg < bft_total_nodes cfg"
   by auto
 
 (* dist_001_bft_safety_with_honest_majority (matches Coq) *)
-lemma dist_001_bft_safety_with_honest_majority: "\<forall>(n f : nat). 3 * f < n \<longrightarrow> n > 2 * f"
+lemma dist_001_bft_safety_with_honest_majority: "\<forall>(n :: nat) (f :: nat). 3 * f < n \<longrightarrow> n > 2 * f"
   by simp
 
 (* dist_001_bft_quorum_overlap (matches Coq) *)
-lemma dist_001_bft_quorum_overlap: "\<forall>(n f : nat). 3 * f < n \<longrightarrow> 2 * (n - f) > n"
+lemma dist_001_bft_quorum_overlap: "\<forall>(n :: nat) (f :: nat). 3 * f < n \<longrightarrow> 2 * (n - f) > n"
   by simp
 
 (* dist_002_sybil_attack_mitigated (matches Coq) *)
-lemma dist_002_sybil_attack_mitigated: "\<forall>(iv :: IdentityVerification). iv_proof_of_work_enabled iv = True \<longrightarrow> iv_identity_bound iv = True \<longrightarrow> iv_cost_per_identity iv > 0 \<longrightarrow> sybil_protected iv = True"
+lemma dist_002_sybil_attack_mitigated: "\<forall>(iv :: identity_verification). iv_proof_of_work_enabled iv = True \<longrightarrow> iv_identity_bound iv = True \<longrightarrow> iv_cost_per_identity iv > 0 \<longrightarrow> sybil_protected iv = True"
   by simp
 
 (* dist_002_sybil_cost_scales_linearly (matches Coq) *)
-lemma dist_002_sybil_cost_scales_linearly: "\<forall>(cost_per_id num_sybils : nat). cost_per_id > 0 \<longrightarrow> num_sybils > 0 \<longrightarrow> cost_per_id * num_sybils \<ge> num_sybils"
+lemma dist_002_sybil_cost_scales_linearly: "\<forall>(cost_per_id :: nat) (num_sybils :: nat). cost_per_id > 0 \<longrightarrow> num_sybils > 0 \<longrightarrow> cost_per_id * num_sybils \<ge> num_sybils"
   by auto
 
 (* dist_003_eclipse_attack_mitigated (matches Coq) *)
-lemma dist_003_eclipse_attack_mitigated: "\<forall>(pc :: PeerConfig). pc_distinct_subnets pc > 1 \<longrightarrow> pc_min_outbound pc \<le> pc_total_peers pc \<longrightarrow> eclipse_protected pc = True"
+lemma dist_003_eclipse_attack_mitigated: "\<forall>(pc :: peer_config). pc_distinct_subnets pc > 1 \<longrightarrow> pc_min_outbound pc \<le> pc_total_peers pc \<longrightarrow> eclipse_protected pc = True"
   by auto
 
 (* dist_003_peer_diversity_requirement (matches Coq) *)
@@ -295,15 +295,15 @@ lemma dist_003_peer_diversity_requirement: "\<forall>(subnets controlled total_s
   by simp
 
 (* dist_004_routing_attack_mitigated (matches Coq) *)
-lemma dist_004_routing_attack_mitigated: "\<forall>(rp :: RoutingProtocol). rp_authenticated rp = True \<longrightarrow> rp_path_verified rp = True \<longrightarrow> rp_origin_validated rp = True \<longrightarrow> routing_secure rp = True"
+lemma dist_004_routing_attack_mitigated: "\<forall>(rp :: routing_protocol). rp_authenticated rp = True \<longrightarrow> rp_path_verified rp = True \<longrightarrow> rp_origin_validated rp = True \<longrightarrow> routing_secure rp = True"
   by simp
 
 (* dist_004_authenticated_routing_preserves_integrity (matches Coq) *)
-lemma dist_004_authenticated_routing_preserves_integrity: "\<forall>(authenticated path_valid : bool). authenticated = True \<longrightarrow> path_valid = True \<longrightarrow> authenticated && path_valid = True"
+lemma dist_004_authenticated_routing_preserves_integrity: "\<forall>(authenticated :: bool) (path_valid :: bool). authenticated = True \<longrightarrow> path_valid = True \<longrightarrow> authenticated && path_valid = True"
   by simp
 
 (* dist_005_consensus_attack_mitigated (matches Coq) *)
-lemma dist_005_consensus_attack_mitigated: "\<forall>(cp :: ConsensusProtocol). cp_safety_proven cp = True \<longrightarrow> cp_liveness_proven cp = True \<longrightarrow> consensus_verified cp = True"
+lemma dist_005_consensus_attack_mitigated: "\<forall>(cp :: consensus_protocol). cp_safety_proven cp = True \<longrightarrow> cp_liveness_proven cp = True \<longrightarrow> consensus_verified cp = True"
   by simp
 
 (* dist_005_safety_implies_agreement_or_unsafe (matches Coq) *)
@@ -311,19 +311,19 @@ lemma dist_005_safety_implies_agreement_or_unsafe: "\<forall>(safety_proven :: b
   by auto
 
 (* dist_005_safety_agreement_model (matches Coq) *)
-lemma dist_005_safety_agreement_model: "\<forall>(value_a value_b : nat) (safety :: bool). safety = True \<longrightarrow> value_a = value_b \<longrightarrow> value_a = value_b"
+lemma dist_005_safety_agreement_model: "\<forall>(value_a :: nat) (value_b :: nat) (safety :: bool). safety = True \<longrightarrow> value_a = value_b \<longrightarrow> value_a = value_b"
   by auto
 
 (* dist_006_smart_contract_bug_mitigated (matches Coq) *)
-lemma dist_006_smart_contract_bug_mitigated: "\<forall>(sc :: SmartContract). sc_formally_verified sc = True \<longrightarrow> sc_invariants_proven sc = True \<longrightarrow> sc_no_overflow sc = True \<longrightarrow> contract_secure sc = True"
+lemma dist_006_smart_contract_bug_mitigated: "\<forall>(sc :: smart_contract). sc_formally_verified sc = True \<longrightarrow> sc_invariants_proven sc = True \<longrightarrow> sc_no_overflow sc = True \<longrightarrow> contract_secure sc = True"
   by simp
 
 (* dist_006_verified_contract_preserves_invariants (matches Coq) *)
-lemma dist_006_verified_contract_preserves_invariants: "\<forall>(verified invariants_hold : bool). verified = True \<longrightarrow> invariants_hold = True \<longrightarrow> verified && invariants_hold = True"
+lemma dist_006_verified_contract_preserves_invariants: "\<forall>(verified :: bool) (invariants_hold :: bool). verified = True \<longrightarrow> invariants_hold = True \<longrightarrow> verified && invariants_hold = True"
   by simp
 
 (* dist_007_reentrancy_mitigated (matches Coq) *)
-lemma dist_007_reentrancy_mitigated: "\<forall>(rg :: ReentrancyGuard). rg_checks_before_effects rg = True \<longrightarrow> rg_interactions_last rg = True \<longrightarrow> reentrancy_protected rg = True"
+lemma dist_007_reentrancy_mitigated: "\<forall>(rg :: reentrancy_guard). rg_checks_before_effects rg = True \<longrightarrow> rg_interactions_last rg = True \<longrightarrow> reentrancy_protected rg = True"
   by simp
 
 (* dist_007_checks_effects_interactions_pattern (matches Coq) *)
@@ -335,43 +335,43 @@ lemma dist_007_locked_guard_prevents_reentry: "\<forall>(is_locked :: bool). is_
   by simp
 
 (* dist_008_frontrunning_mitigated (matches Coq) *)
-lemma dist_008_frontrunning_mitigated: "\<forall>(fo :: FairOrdering). fo_commit_phase fo = True \<longrightarrow> fo_reveal_phase fo = True \<longrightarrow> fo_ordering_deterministic fo = True \<longrightarrow> frontrun_protected fo = True"
+lemma dist_008_frontrunning_mitigated: "\<forall>(fo :: fair_ordering). fo_commit_phase fo = True \<longrightarrow> fo_reveal_phase fo = True \<longrightarrow> fo_ordering_deterministic fo = True \<longrightarrow> frontrun_protected fo = True"
   by simp
 
 (* dist_008_commit_reveal_hides_intent (matches Coq) *)
-lemma dist_008_commit_reveal_hides_intent: "\<forall>(committed revealed : bool). committed = True \<longrightarrow> revealed = False \<longrightarrow> committed && (\<not> revealed) = True"
+lemma dist_008_commit_reveal_hides_intent: "\<forall>(committed :: bool) (revealed :: bool). committed = True \<longrightarrow> revealed = False \<longrightarrow> committed && (\<not> revealed) = True"
   by simp
 
 (* dist_009_mev_extraction_mitigated_private (matches Coq) *)
-lemma dist_009_mev_extraction_mitigated_private: "\<forall>(mp :: MEVProtection). mev_private_mempool mp = True \<longrightarrow> mev_protected mp = True"
+lemma dist_009_mev_extraction_mitigated_private: "\<forall>(mp :: mev_protection). mev_private_mempool mp = True \<longrightarrow> mev_protected mp = True"
   by simp
 
 (* dist_009_mev_extraction_mitigated_fair (matches Coq) *)
-lemma dist_009_mev_extraction_mitigated_fair: "\<forall>(mp :: MEVProtection). mev_fair_sequencing mp = True \<longrightarrow> mev_encrypted_transactions mp = True \<longrightarrow> mev_protected mp = True"
+lemma dist_009_mev_extraction_mitigated_fair: "\<forall>(mp :: mev_protection). mev_fair_sequencing mp = True \<longrightarrow> mev_encrypted_transactions mp = True \<longrightarrow> mev_protected mp = True"
   by simp
 
 (* dist_010_flashloan_attack_mitigated (matches Coq) *)
-lemma dist_010_flashloan_attack_mitigated: "\<forall>(fl :: FlashLoanGuard). fl_same_block_check fl = True \<longrightarrow> fl_balance_snapshot fl = True \<longrightarrow> flashloan_protected fl = True"
+lemma dist_010_flashloan_attack_mitigated: "\<forall>(fl :: flash_loan_guard). fl_same_block_check fl = True \<longrightarrow> fl_balance_snapshot fl = True \<longrightarrow> flashloan_protected fl = True"
   by simp
 
 (* dist_010_twap_oracle_resists_manipulation (matches Coq) *)
-lemma dist_010_twap_oracle_resists_manipulation: "\<forall>(twap_enabled spot_check : bool). twap_enabled = True \<longrightarrow> twap_enabled || spot_check = True"
+lemma dist_010_twap_oracle_resists_manipulation: "\<forall>(twap_enabled :: bool) (spot_check :: bool). twap_enabled = True \<longrightarrow> twap_enabled || spot_check = True"
   by simp
 
 (* dist_011_clock_skew_mitigated_lamport (matches Coq) *)
-lemma dist_011_clock_skew_mitigated_lamport: "\<forall>(lc :: LogicalClock). lc_lamport_enabled lc = True \<longrightarrow> lc_causality_preserved lc = True \<longrightarrow> clock_skew_protected lc = True"
+lemma dist_011_clock_skew_mitigated_lamport: "\<forall>(lc :: logical_clock). lc_lamport_enabled lc = True \<longrightarrow> lc_causality_preserved lc = True \<longrightarrow> clock_skew_protected lc = True"
   by simp
 
 (* dist_011_clock_skew_mitigated_vector (matches Coq) *)
-lemma dist_011_clock_skew_mitigated_vector: "\<forall>(lc :: LogicalClock). lc_vector_clock lc = True \<longrightarrow> lc_causality_preserved lc = True \<longrightarrow> clock_skew_protected lc = True"
+lemma dist_011_clock_skew_mitigated_vector: "\<forall>(lc :: logical_clock). lc_vector_clock lc = True \<longrightarrow> lc_causality_preserved lc = True \<longrightarrow> clock_skew_protected lc = True"
   by simp
 
 (* dist_011_lamport_clock_monotonic (matches Coq) *)
-lemma dist_011_lamport_clock_monotonic: "\<forall>(t1 t2 : nat). t1 < t2 \<longrightarrow> t1 + 1 \<le> t2"
+lemma dist_011_lamport_clock_monotonic: "\<forall>(t1 :: nat) (t2 :: nat). t1 < t2 \<longrightarrow> t1 + 1 \<le> t2"
   by simp
 
 (* dist_012_splitbrain_mitigated (matches Coq) *)
-lemma dist_012_splitbrain_mitigated: "\<forall>(pt :: PartitionConfig). pt_cap_aware pt = True \<longrightarrow> pt_partition_detection pt = True \<longrightarrow> splitbrain_protected pt = True"
+lemma dist_012_splitbrain_mitigated: "\<forall>(pt :: partition_config). pt_cap_aware pt = True \<longrightarrow> pt_partition_detection pt = True \<longrightarrow> splitbrain_protected pt = True"
   by simp
 
 (* dist_012_cap_theorem_tradeoff (matches Coq) *)
@@ -383,31 +383,31 @@ lemma dist_012_cap_partition_choice: "\<forall>(partitioned :: bool). partitione
   by auto
 
 (* dist_013_state_inconsistency_mitigated (matches Coq) *)
-lemma dist_013_state_inconsistency_mitigated: "\<forall>(csp :: ConsistencyProtocol). csp_linearizable csp = True \<longrightarrow> csp_state_machine_replication csp = True \<longrightarrow> consistency_verified csp = True"
+lemma dist_013_state_inconsistency_mitigated: "\<forall>(csp :: consistency_protocol). csp_linearizable csp = True \<longrightarrow> csp_state_machine_replication csp = True \<longrightarrow> consistency_verified csp = True"
   by simp
 
 (* dist_013_linearizability_implies_sequential (matches Coq) *)
-lemma dist_013_linearizability_implies_sequential: "\<forall>(linearizable :: bool) (op1 op2 : nat). linearizable = True \<longrightarrow> op1 \<le> op2 \<or> op2 \<le> op1"
+lemma dist_013_linearizability_implies_sequential: "\<forall>(linearizable :: bool) (op1 :: nat) (op2 :: nat). linearizable = True \<longrightarrow> op1 \<le> op2 \<or> op2 \<le> op1"
   by simp
 
 (* dist_014_leader_corruption_mitigated (matches Coq) *)
-lemma dist_014_leader_corruption_mitigated: "\<forall>(ldr :: LeaderConfig). ldr_rotation_enabled ldr = True \<longrightarrow> ldr_bft_election ldr = True \<longrightarrow> leader_corruption_protected ldr = True"
+lemma dist_014_leader_corruption_mitigated: "\<forall>(ldr :: leader_config). ldr_rotation_enabled ldr = True \<longrightarrow> ldr_bft_election ldr = True \<longrightarrow> leader_corruption_protected ldr = True"
   by simp
 
 (* dist_014_rotation_limits_corruption_window (matches Coq) *)
-lemma dist_014_rotation_limits_corruption_window: "\<forall>(term_length corrupt_duration : nat). term_length > 0 \<longrightarrow> corrupt_duration \<le> term_length \<longrightarrow> corrupt_duration < term_length + 1"
+lemma dist_014_rotation_limits_corruption_window: "\<forall>(term_length :: nat) (corrupt_duration :: nat). term_length > 0 \<longrightarrow> corrupt_duration \<le> term_length \<longrightarrow> corrupt_duration < term_length + 1"
   by simp
 
 (* dist_014_bft_election_requires_quorum (matches Coq) *)
-lemma dist_014_bft_election_requires_quorum: "\<forall>(votes_received quorum_size : nat). votes_received \<ge> quorum_size \<longrightarrow> quorum_size > 0 \<longrightarrow> votes_received > 0"
+lemma dist_014_bft_election_requires_quorum: "\<forall>(votes_received :: nat) (quorum_size :: nat). votes_received \<ge> quorum_size \<longrightarrow> quorum_size > 0 \<longrightarrow> votes_received > 0"
   by simp
 
 (* dist_015_quorum_attack_mitigated (matches Coq) *)
-lemma dist_015_quorum_attack_mitigated: "\<forall>(qc :: QuorumConfig). qc_total_nodes qc < 2 * qc_quorum_size qc \<longrightarrow> qc_quorum_size qc > 0 \<longrightarrow> quorum_valid qc = True"
+lemma dist_015_quorum_attack_mitigated: "\<forall>(qc :: quorum_config). qc_total_nodes qc < 2 * qc_quorum_size qc \<longrightarrow> qc_quorum_size qc > 0 \<longrightarrow> quorum_valid qc = True"
   by auto
 
 (* dist_015_quorum_intersection_guaranteed (matches Coq) *)
-lemma dist_015_quorum_intersection_guaranteed: "\<forall>(n q : nat). n < 2 * q \<longrightarrow> q > 0 \<longrightarrow> 2 * q - n \<ge> 1"
+lemma dist_015_quorum_intersection_guaranteed: "\<forall>(n :: nat) (q :: nat). n < 2 * q \<longrightarrow> q > 0 \<longrightarrow> 2 * q - n \<ge> 1"
   by simp
 
 (* dist_015_any_two_quorums_intersect (matches Coq) *)
@@ -423,15 +423,15 @@ lemma dist_015_majority_always_intersects: "\<forall>(n q1 q2 : nat). 2 * q1 > n
   by simp
 
 (* distributed_security_bft_sybil_combined (matches Coq) *)
-lemma distributed_security_bft_sybil_combined: "\<forall>(cfg :: BFTConfig) (iv :: IdentityVerification). bft_valid cfg = True \<longrightarrow> sybil_protected iv = True \<longrightarrow> bft_valid cfg && sybil_protected iv = True"
+lemma distributed_security_bft_sybil_combined: "\<forall>(cfg :: bft_config) (iv :: identity_verification). bft_valid cfg = True \<longrightarrow> sybil_protected iv = True \<longrightarrow> bft_valid cfg && sybil_protected iv = True"
   by simp
 
 (* distributed_security_consensus_consistency_combined (matches Coq) *)
-lemma distributed_security_consensus_consistency_combined: "\<forall>(cp :: ConsensusProtocol) (csp :: ConsistencyProtocol). consensus_verified cp = True \<longrightarrow> consistency_verified csp = True \<longrightarrow> consensus_verified cp && consistency_verified csp = True"
+lemma distributed_security_consensus_consistency_combined: "\<forall>(cp :: consensus_protocol) (csp :: consistency_protocol). consensus_verified cp = True \<longrightarrow> consistency_verified csp = True \<longrightarrow> consensus_verified cp && consistency_verified csp = True"
   by simp
 
 (* distributed_security_full_stack (matches Coq) *)
-lemma distributed_security_full_stack: "\<forall>(cfg :: BFTConfig) (rg :: ReentrancyGuard) (qc : QuorumConfig). bft_valid cfg = True \<longrightarrow> reentrancy_protected rg = True \<longrightarrow> quorum_valid qc = True \<longrightarrow> bft_valid cfg && reentrancy_protected rg && quorum_valid qc = True"
+lemma distributed_security_full_stack: "\<forall>(cfg :: bft_config) (rg :: reentrancy_guard) (qc :: quorum_config). bft_valid cfg = True \<longrightarrow> reentrancy_protected rg = True \<longrightarrow> quorum_valid qc = True \<longrightarrow> bft_valid cfg && reentrancy_protected rg && quorum_valid qc = True"
   by simp
 
 end

@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | FFIType            | ffi_type               | OK     |
- * | FFICallDescriptor  | ffi_call_descriptor    | OK     |
- * | MemRegion          | mem_region             | OK     |
- * | Sandbox            | sandbox                | OK     |
- * | MarshalBuffer      | marshal_buffer         | OK     |
+ * | ffi_type            | ffi_type               | OK     |
+ * | ffi_call_descriptor  | ffi_call_descriptor    | OK     |
+ * | mem_region          | mem_region             | OK     |
+ * | sandbox            | sandbox                | OK     |
+ * | marshal_buffer      | marshal_buffer         | OK     |
  * | ffi_type_size      | ffi_type_size          | OK     |
  * | ffi_type_align     | ffi_type_align         | OK     |
  * | ffi_call_safe      | ffi_call_safe          | OK     |
@@ -52,7 +52,7 @@ theory FFIAttackResearch
   imports Main CoqCompat
 begin
 
-(* FFIType (matches Coq: Inductive FFIType) *)
+(* ffi_type (matches Coq: Inductive ffi_type) *)
 datatype ffi_type =
     FFI_Int8
   |     FFI_Int16
@@ -63,28 +63,28 @@ datatype ffi_type =
   |     FFI_Struct
   |     FFI_Void
 
-(* FFICallDescriptor (matches Coq: Record FFICallDescriptor) *)
+(* ffi_call_descriptor (matches Coq: Record ffi_call_descriptor) *)
 record ffi_call_descriptor =
   ffi_name :: nat
   ffi_params :: 'a list
-  ffi_return :: FFIType
+  ffi_return :: ffi_type
   ffi_sandboxed :: bool
   ffi_validated :: bool
 
-(* MemRegion (matches Coq: Record MemRegion) *)
+(* mem_region (matches Coq: Record mem_region) *)
 record mem_region =
   region_base :: nat
   region_size :: nat
   region_owner :: nat
 
-(* Sandbox (matches Coq: Record Sandbox) *)
+(* sandbox (matches Coq: Record sandbox) *)
 record sandbox =
   sandbox_id :: nat
-  sandbox_region :: MemRegion
+  sandbox_region :: mem_region
   sandbox_active :: bool
   allowed_calls :: 'a list
 
-(* MarshalBuffer (matches Coq: Record MarshalBuffer) *)
+(* marshal_buffer (matches Coq: Record marshal_buffer) *)
 record marshal_buffer =
   buf_capacity :: nat
   buf_used :: nat
@@ -127,11 +127,11 @@ definition buf_remaining :: "MarshalBuffer \<Rightarrow> nat" where
   "buf_remaining b \<equiv> buf_capacity b - buf_used b"
 
 (* can_marshal (matches Coq: Definition can_marshal) *)
-definition can_marshal :: "MarshalBuffer \<Rightarrow> FFIType \<Rightarrow> bool" where
+definition can_marshal :: "MarshalBuffer \<Rightarrow> ffi_type \<Rightarrow> bool" where
   "can_marshal b t \<equiv> buf_used b + ffi_type_size t <=? buf_capacity b"
 
 (* marshal_into (matches Coq: Definition marshal_into) *)
-definition marshal_into :: "MarshalBuffer \<Rightarrow> FFIType \<Rightarrow> option MarshalBuffer" where
+definition marshal_into :: "MarshalBuffer \<Rightarrow> ffi_type \<Rightarrow> option MarshalBuffer" where
   "marshal_into b t \<equiv> if can_marshal b t then
     Some (mkMarshalBuffer (buf_capacity b) (buf_used b + ffi_type_size t))
   else

@@ -44,7 +44,7 @@ theorem type_safety:
   shows "\<not> stuck (e, st, ctx)"
 proof -
   from progress[unfolded progress_stmt_def, rule_format, OF assms]
-  have "is_value e \<or> (\<exists>e' st' ctx'. (e. st, ctx) \<longrightarrow> (e', st', ctx'))" .
+  have "is_value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<longrightarrow> (e', st', ctx'))" .
   then show ?thesis
     unfolding stuck_def by auto
 qed

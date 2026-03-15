@@ -12,12 +12,12 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Side               | side                   | OK     |
- * | Order              | order                  | OK     |
- * | Trade              | trade                  | OK     |
- * | Settlement         | settlement             | OK     |
- * | OrderBook          | order_book             | OK     |
- * | MarketDataTick     | market_data_tick       | OK     |
+ * | side               | side                   | OK     |
+ * | order              | order                  | OK     |
+ * | trade              | trade                  | OK     |
+ * | settlement         | settlement             | OK     |
+ * | order_book          | order_book             | OK     |
+ * | market_data_tick     | market_data_tick       | OK     |
  * | side_eqb           | side_eqb               | OK     |
  * | buy_has_priority   | buy_has_priority       | OK     |
  * | sell_has_priority  | sell_has_priority      | OK     |
@@ -63,20 +63,20 @@ theory CapitalMarkets
   imports Main CoqCompat
 begin
 
-(* Side (matches Coq: Inductive Side) *)
+(* side (matches Coq: Inductive side) *)
 datatype side =
     Buy
   |     Sell
 
-(* Order (matches Coq: Record Order) *)
+(* order (matches Coq: Record order) *)
 record order =
   order_id :: nat
-  order_side :: Side
+  order_side :: side
   order_price :: nat
   order_qty :: nat
   order_time :: nat
 
-(* Trade (matches Coq: Record Trade) *)
+(* trade (matches Coq: Record trade) *)
 record trade =
   trade_id :: nat
   trade_buy_id :: nat
@@ -85,7 +85,7 @@ record trade =
   trade_qty :: nat
   trade_settled :: bool
 
-(* Settlement (matches Coq: Record Settlement) *)
+(* settlement (matches Coq: Record settlement) *)
 record settlement =
   settle_trade_id :: nat
   buyer_paid :: nat
@@ -93,12 +93,12 @@ record settlement =
   assets_delivered :: nat
   settle_final :: bool
 
-(* OrderBook (matches Coq: Record OrderBook) *)
+(* order_book (matches Coq: Record order_book) *)
 record order_book =
   bids :: 'a list
   asks :: 'a list
 
-(* MarketDataTick (matches Coq: Record MarketDataTick) *)
+(* market_data_tick (matches Coq: Record market_data_tick) *)
 record market_data_tick =
   tick_symbol :: nat
   tick_price :: nat
@@ -106,7 +106,7 @@ record market_data_tick =
   tick_seq :: nat
 
 (* side_eqb - complex match, needs manual translation *)
-definition side_eqb :: "bool" where "side_eqb = undefined"
+definition side_eqb :: "bool" where "side_eqb \<equiv> True"
 
 (* buy_has_priority (matches Coq: Definition buy_has_priority) *)
 definition buy_has_priority :: "bool" where

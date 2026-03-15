@@ -71,7 +71,7 @@
  *)
 
 theory TypeMeasure
-  imports Main
+  imports Main Syntax
 begin
 
 (* Boolean conjunction helper (matches Coq: andb_true_iff) *)
@@ -92,11 +92,11 @@ definition ty_size_lt :: "bool" where
 
 (* first_order_type (matches Coq: Definition first_order_type) *)
 fun first_order_type :: "ty \<Rightarrow> bool" where
-  "first_order_type TUnit = true"
-|   "first_order_type TBool = true"
-|   "first_order_type TInt = true"
-|   "first_order_type TString = true"
-|   "first_order_type TBytes = true"
+  "first_order_type TUnit = True"
+|   "first_order_type TBool = True"
+|   "first_order_type TInt = True"
+|   "first_order_type TString = True"
+|   "first_order_type TBytes = True"
 
 (* fo_compound_depth (matches Coq: Definition fo_compound_depth) *)
 fun fo_compound_depth :: "ty \<Rightarrow> nat" where
@@ -233,7 +233,7 @@ lemma fo_compound_depth_sum_right: "\<forall>T1 T2. fo_compound_depth T2 < fo_co
 
 (* Primitive and simple types have depth 0 *)
 (* fo_compound_depth_primitive (matches Coq) *)
-lemma fo_compound_depth_primitive: "\<forall>T. match T with | TProd _ _ | TSum _ _ => False | _ => True end \<longrightarrow> fo_compound_depth T = 0"
+lemma fo_compound_depth_primitive: "\<forall>T. (case T of TProd _ _ | TSum _ _ => False | _ => True) \<longrightarrow> fo_compound_depth T = 0"
   by auto
 
 (* Depth subtype lemmas *)

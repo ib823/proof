@@ -12,10 +12,10 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | LegalData          | legal_data             | OK     |
- * | PrivilegeType      | privilege_type         | OK     |
- * | LegalEffect        | legal_effect           | OK     |
- * | LegalSecurityControls | legal_security_controls | OK     |
+ * | legal_data          | legal_data             | OK     |
+ * | privilege_type      | privilege_type         | OK     |
+ * | legal_effect        | legal_effect           | OK     |
+ * | legal_security_controls | legal_security_controls | OK     |
  * | legal_sensitivity  | legal_sensitivity      | OK     |
  * | privilege_strength | privilege_strength     | OK     |
  * | privilege_effective | privilege_effective    | OK     |
@@ -59,7 +59,7 @@ theory IndustryLegal
   imports Main CoqCompat
 begin
 
-(* LegalData (matches Coq: Inductive LegalData) *)
+(* legal_data (matches Coq: Inductive legal_data) *)
 datatype legal_data =
     AttorneyClientPrivilege
   |     WorkProduct
@@ -68,13 +68,13 @@ datatype legal_data =
   |     DiscoveryMaterial
   |     TrustAccount
 
-(* PrivilegeType (matches Coq: Inductive PrivilegeType) *)
+(* privilege_type (matches Coq: Inductive privilege_type) *)
 datatype privilege_type =
     Absolute
   |     Qualified
   |     Waived
 
-(* LegalEffect (matches Coq: Inductive LegalEffect) *)
+(* legal_effect (matches Coq: Inductive legal_effect) *)
 datatype legal_effect =
     PrivilegedAccess
   |     MatterOperation
@@ -82,7 +82,7 @@ datatype legal_effect =
   |     TrustAccountIO
   |     CourtFiling
 
-(* LegalSecurityControls (matches Coq: Record LegalSecurityControls) *)
+(* legal_security_controls (matches Coq: Record legal_security_controls) *)
 record legal_security_controls =
   privilege_protection :: bool
   conflict_screening :: bool
@@ -108,8 +108,8 @@ fun privilege_strength :: "PrivilegeType \<Rightarrow> nat" where
 
 (* privilege_effective (matches Coq: Definition privilege_effective) *)
 fun privilege_effective :: "PrivilegeType \<Rightarrow> bool" where
-  "privilege_effective Qualified = true"
-|   "privilege_effective Waived = false"
+  "privilege_effective Qualified = True"
+|   "privilege_effective Waived = False"
 
 (* all_legal_controls (matches Coq: Definition all_legal_controls) *)
 definition all_legal_controls :: "LegalSecurityControls \<Rightarrow> bool" where
@@ -137,7 +137,7 @@ fun legal_retention_years :: "LegalData \<Rightarrow> nat" where
 
 (* no_conflict (matches Coq: Definition no_conflict) *)
 definition no_conflict :: "bool" where
-  "no_conflict \<equiv> (\<not> (Nat.eqb) party1 party2)"
+  "no_conflict \<equiv> (\<not> (=) party1 party2)"
 
 (* trust_balanced (matches Coq: Definition trust_balanced) *)
 definition trust_balanced :: "bool" where
@@ -150,7 +150,7 @@ definition litigation_hold_active :: "bool" where
 (* Section O01 - Attorney-Client Privilege
     Reference: IND_O_LEGAL.md Section 3.1 *)
 (* privilege_protection_axiom (matches Coq) *)
-lemma privilege_protection_axiom: "\<forall>(communication :: LegalData). True"
+lemma privilege_protection_axiom: "\<forall>(communication :: legal_data). True"
   by simp
 
 (* Section O02 - ABA Model Rules Compliance
@@ -174,17 +174,17 @@ lemma ediscovery_compliance: "\<forall>(matter :: nat) (documents :: nat). True"
 (* Section O05 - Records Retention
     Reference: IND_O_LEGAL.md Section 3.5 *)
 (* records_retention (matches Coq) *)
-lemma records_retention: "\<forall>(record :: LegalData) (retention_period :: nat). True"
+lemma records_retention: "\<forall>(record :: legal_data) (retention_period :: nat). True"
   by simp
 
 (* Privileged communications require encryption *)
 (* privilege_requires_encryption (matches Coq) *)
-lemma privilege_requires_encryption: "\<forall>(controls :: LegalSecurityControls) (comm :: LegalData). privilege_protection controls = True \<longrightarrow> True"
+lemma privilege_requires_encryption: "\<forall>(controls :: legal_security_controls) (comm :: legal_data). privilege_protection controls = True \<longrightarrow> True"
   by simp
 
 (* Ethical walls prevent conflicts *)
 (* ethical_walls_effective (matches Coq) *)
-lemma ethical_walls_effective: "\<forall>(controls :: LegalSecurityControls) (matter1 :: nat) (matter2 : nat). ethical_walls controls = True \<longrightarrow> True"
+lemma ethical_walls_effective: "\<forall>(controls :: legal_security_controls) (matter1 :: nat) (matter2 :: nat). ethical_walls controls = True \<longrightarrow> True"
   by simp
 
 (* privilege_max_sensitivity (matches Coq) *)

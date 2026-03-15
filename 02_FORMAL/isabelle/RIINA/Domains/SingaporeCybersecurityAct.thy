@@ -12,8 +12,8 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | CIISector          | cii_sector             | OK     |
- * | EntityClassification | entity_classification  | OK     |
+ * | cii_sector          | cii_sector             | OK     |
+ * | entity_classification | entity_classification  | OK     |
  * | cii_risk_current   | cii_risk_current       | OK     |
  * | cii_audit_current  | cii_audit_current      | OK     |
  * | sg_incident_reported_in_time | sg_incident_reported_in_time | OK     |
@@ -61,7 +61,11 @@ theory SingaporeCybersecurityAct
   imports Main
 begin
 
-(* CIISector (matches Coq: Inductive CIISector) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym audit_schedule = "nat"
+type_synonym cii_owner_entity = "nat"
+type_synonym sg_cyber_incident = "nat"
+(* cii_sector (matches Coq: Inductive cii_sector) *)
 datatype cii_sector =
     SGEnergy
   |     SGWater
@@ -75,7 +79,7 @@ datatype cii_sector =
   |     SGSecurityEmergency
   |     SGGovernment
 
-(* EntityClassification (matches Coq: Inductive EntityClassification) *)
+(* entity_classification (matches Coq: Inductive entity_classification) *)
 datatype entity_classification =
     CIIOwner
   |     ESCI
@@ -156,59 +160,59 @@ definition penalty_exposure_exists :: "CIIOwnerEntity \<Rightarrow> nat \<Righta
   "penalty_exposure_exists e t \<equiv> ~ sg_cybersecurity_act_compliant e t"
 
 (* cii_obligation_1 (matches Coq) *)
-lemma cii_obligation_1: "\<forall>(e :: CIIOwnerEntity). cii_risk_assessed e = True \<longrightarrow> cii_risk_current e"
+lemma cii_obligation_1: "\<forall>(e :: cii_owner_entity). cii_risk_assessed e = True \<longrightarrow> cii_risk_current e"
   by auto
 
 (* cii_obligation_2 (matches Coq) *)
-lemma cii_obligation_2: "\<forall>(e :: CIIOwnerEntity) (t :: nat). cii_audit_completed e = True \<longrightarrow> t \<le> cii_last_audit e + 365 \<longrightarrow> cii_audit_current e t"
+lemma cii_obligation_2: "\<forall>(e :: cii_owner_entity) (t :: nat). cii_audit_completed e = True \<longrightarrow> t \<le> cii_last_audit e + 365 \<longrightarrow> cii_audit_current e t"
   by auto
 
 (* cii_obligation_3 (matches Coq) *)
-lemma cii_obligation_3: "\<forall>(i :: SGCyberIncident). sg_incident_reported_at i \<le> sg_incident_detected_at i + 2 \<longrightarrow> sg_incident_reported_in_time i"
+lemma cii_obligation_3: "\<forall>(i :: sg_cyber_incident). sg_incident_reported_at i \<le> sg_incident_detected_at i + 2 \<longrightarrow> sg_incident_reported_in_time i"
   by auto
 
 (* sg_stricter_than_my (matches Coq) *)
-lemma sg_stricter_than_my: "\<forall>(detected_at reported_at : nat). reported_at \<le> detected_at + 2 \<longrightarrow> reported_at \<le> detected_at + 6"
+lemma sg_stricter_than_my: "\<forall>(detected_at :: nat) (reported_at :: nat). reported_at \<le> detected_at + 2 \<longrightarrow> reported_at \<le> detected_at + 6"
   by auto
 
 (* cii_obligation_4 (matches Coq) *)
-lemma cii_obligation_4: "\<forall>(e :: CIIOwnerEntity). cii_min_controls e \<le> cii_security_controls e \<longrightarrow> cii_controls_adequate e"
+lemma cii_obligation_4: "\<forall>(e :: cii_owner_entity). cii_min_controls e \<le> cii_security_controls e \<longrightarrow> cii_controls_adequate e"
   by auto
 
 (* esci_compliance (matches Coq) *)
-lemma esci_compliance: "\<forall>(e :: CIIOwnerEntity). cii_classification e = ESCI \<longrightarrow> cii_risk_assessed e = True \<longrightarrow> cii_incident_response_plan e = True \<longrightarrow> esci_obligations_met e"
+lemma esci_compliance: "\<forall>(e :: cii_owner_entity). cii_classification e = ESCI \<longrightarrow> cii_risk_assessed e = True \<longrightarrow> cii_incident_response_plan e = True \<longrightarrow> esci_obligations_met e"
   by auto
 
 (* cssp_obligation (matches Coq) *)
-lemma cssp_obligation: "\<forall>(e :: CIIOwnerEntity). cii_cssp_licensed e = True \<longrightarrow> cssp_licensed_sg e"
+lemma cssp_obligation: "\<forall>(e :: cii_owner_entity). cii_cssp_licensed e = True \<longrightarrow> cssp_licensed_sg e"
   by auto
 
 (* sg_cybersecurity_composition (matches Coq) *)
-lemma sg_cybersecurity_composition: "\<forall>(e :: CIIOwnerEntity) (t :: nat). cii_risk_current e \<longrightarrow> cii_audit_current e t \<longrightarrow> cii_controls_adequate e \<longrightarrow> cii_incident_response_plan e = True \<longrightarrow> sg_cybersecurity_act_compliant e t"
+lemma sg_cybersecurity_composition: "\<forall>(e :: cii_owner_entity) (t :: nat). cii_risk_current e \<longrightarrow> cii_audit_current e t \<longrightarrow> cii_controls_adequate e \<longrightarrow> cii_incident_response_plan e = True \<longrightarrow> sg_cybersecurity_act_compliant e t"
   by simp
 
 (* cii_sector_coverage (matches Coq) *)
-lemma cii_sector_coverage: "\<forall>(s :: CIISector). s \<in> set all_cii_sectors"
+lemma cii_sector_coverage: "\<forall>(s :: cii_sector). s \<in> set all_cii_sectors"
   by auto
 
 (* entity_classification_coverage (matches Coq) *)
-lemma entity_classification_coverage: "\<forall>(c :: EntityClassification). c \<in> set all_entity_classifications"
+lemma entity_classification_coverage: "\<forall>(c :: entity_classification). c \<in> set all_entity_classifications"
   by auto
 
 (* stcc_compliance (matches Coq) *)
-lemma stcc_compliance: "\<forall>(e :: CIIOwnerEntity). cii_classification e = STCC \<longrightarrow> cii_risk_assessed e = True \<longrightarrow> cii_security_controls e \<ge> cii_min_controls e \<longrightarrow> stcc_obligations_met e"
+lemma stcc_compliance: "\<forall>(e :: cii_owner_entity). cii_classification e = STCC \<longrightarrow> cii_risk_assessed e = True \<longrightarrow> cii_security_controls e \<ge> cii_min_controls e \<longrightarrow> stcc_obligations_met e"
   by auto
 
 (* cii_owner_strictest (matches Coq) *)
-lemma cii_owner_strictest: "\<forall>(e :: CIIOwnerEntity) (t :: nat). cii_owner_obligations e t \<longrightarrow> cii_risk_current e"
+lemma cii_owner_strictest: "\<forall>(e :: cii_owner_entity) (t :: nat). cii_owner_obligations e t \<longrightarrow> cii_risk_current e"
   by auto
 
 (* cii_owner_implies_esci_risk (matches Coq) *)
-lemma cii_owner_implies_esci_risk: "\<forall>(e :: CIIOwnerEntity) (t :: nat). cii_owner_obligations e t \<longrightarrow> cii_risk_assessed e = True \<and> cii_incident_response_plan e = True"
+lemma cii_owner_implies_esci_risk: "\<forall>(e :: cii_owner_entity) (t :: nat). cii_owner_obligations e t \<longrightarrow> cii_risk_assessed e = True \<and> cii_incident_response_plan e = True"
   by auto
 
 (* significant_incident_must_notify (matches Coq) *)
-lemma significant_incident_must_notify: "\<forall>(i :: SGCyberIncident). sg_incident_significant i = True \<longrightarrow> incident_needs_notification i"
+lemma significant_incident_must_notify: "\<forall>(i :: sg_cyber_incident). sg_incident_significant i = True \<longrightarrow> incident_needs_notification i"
   by auto
 
 (* two_hour_deadline_tight (matches Coq) *)
@@ -216,47 +220,47 @@ lemma two_hour_deadline_tight: "\<forall>(detected :: nat). detected + 2 < detec
   by simp
 
 (* sg_2h_stricter_than_my_6h (matches Coq) *)
-lemma sg_2h_stricter_than_my_6h: "\<forall>(i :: SGCyberIncident). sg_incident_reported_in_time i \<longrightarrow> sg_incident_reported_at i \<le> sg_incident_detected_at i + 6"
+lemma sg_2h_stricter_than_my_6h: "\<forall>(i :: sg_cyber_incident). sg_incident_reported_in_time i \<longrightarrow> sg_incident_reported_at i \<le> sg_incident_detected_at i + 6"
   by simp
 
 (* sg_2h_stricter_than_72h (matches Coq) *)
-lemma sg_2h_stricter_than_72h: "\<forall>(i :: SGCyberIncident). sg_incident_reported_in_time i \<longrightarrow> sg_incident_reported_at i \<le> sg_incident_detected_at i + 72"
+lemma sg_2h_stricter_than_72h: "\<forall>(i :: sg_cyber_incident). sg_incident_reported_in_time i \<longrightarrow> sg_incident_reported_at i \<le> sg_incident_detected_at i + 72"
   by simp
 
 (* audit_schedule_valid (matches Coq) *)
-lemma audit_schedule_valid: "\<forall>(sched :: AuditSchedule). as_next_audit sched = as_last_audit sched + as_audit_interval sched \<longrightarrow> audit_schedule_consistent sched"
+lemma audit_schedule_valid: "\<forall>(sched :: audit_schedule). as_next_audit sched = as_last_audit sched + as_audit_interval sched \<longrightarrow> audit_schedule_consistent sched"
   by auto
 
 (* more_controls_still_adequate (matches Coq) *)
-lemma more_controls_still_adequate: "\<forall>(e :: CIIOwnerEntity) (extra :: nat). cii_controls_adequate e \<longrightarrow> cii_min_controls e \<le> cii_security_controls e + extra"
+lemma more_controls_still_adequate: "\<forall>(e :: cii_owner_entity) (extra :: nat). cii_controls_adequate e \<longrightarrow> cii_min_controls e \<le> cii_security_controls e + extra"
   by auto
 
 (* sg_cyber_full_implies_risk (matches Coq) *)
-lemma sg_cyber_full_implies_risk: "\<forall>(e :: CIIOwnerEntity) (t :: nat). sg_cybersecurity_act_compliant e t \<longrightarrow> cii_risk_current e"
+lemma sg_cyber_full_implies_risk: "\<forall>(e :: cii_owner_entity) (t :: nat). sg_cybersecurity_act_compliant e t \<longrightarrow> cii_risk_current e"
   by auto
 
 (* sg_cyber_full_implies_audit (matches Coq) *)
-lemma sg_cyber_full_implies_audit: "\<forall>(e :: CIIOwnerEntity) (t :: nat). sg_cybersecurity_act_compliant e t \<longrightarrow> cii_audit_current e t"
+lemma sg_cyber_full_implies_audit: "\<forall>(e :: cii_owner_entity) (t :: nat). sg_cybersecurity_act_compliant e t \<longrightarrow> cii_audit_current e t"
   by auto
 
 (* sg_cyber_full_implies_controls (matches Coq) *)
-lemma sg_cyber_full_implies_controls: "\<forall>(e :: CIIOwnerEntity) (t :: nat). sg_cybersecurity_act_compliant e t \<longrightarrow> cii_controls_adequate e"
+lemma sg_cyber_full_implies_controls: "\<forall>(e :: cii_owner_entity) (t :: nat). sg_cybersecurity_act_compliant e t \<longrightarrow> cii_controls_adequate e"
   by auto
 
 (* sg_cyber_full_implies_irp (matches Coq) *)
-lemma sg_cyber_full_implies_irp: "\<forall>(e :: CIIOwnerEntity) (t :: nat). sg_cybersecurity_act_compliant e t \<longrightarrow> cii_incident_response_plan e = True"
+lemma sg_cyber_full_implies_irp: "\<forall>(e :: cii_owner_entity) (t :: nat). sg_cybersecurity_act_compliant e t \<longrightarrow> cii_incident_response_plan e = True"
   by auto
 
 (* cssp_expired_non_compliant (matches Coq) *)
-lemma cssp_expired_non_compliant: "\<forall>(e :: CIIOwnerEntity). cii_cssp_licensed e = False \<longrightarrow> ~ cssp_licensed_sg e"
+lemma cssp_expired_non_compliant: "\<forall>(e :: cii_owner_entity). cii_cssp_licensed e = False \<longrightarrow> ~ cssp_licensed_sg e"
   by auto
 
 (* regular_entity_no_cii_obligation (matches Coq) *)
-lemma regular_entity_no_cii_obligation: "\<forall>(e :: CIIOwnerEntity). cii_classification e = RegularEntity \<longrightarrow> regular_entity_exempt e"
+lemma regular_entity_no_cii_obligation: "\<forall>(e :: cii_owner_entity). cii_classification e = RegularEntity \<longrightarrow> regular_entity_exempt e"
   by auto
 
 (* compliance_eliminates_penalty (matches Coq) *)
-lemma compliance_eliminates_penalty: "\<forall>(e :: CIIOwnerEntity) (t :: nat). sg_cybersecurity_act_compliant e t \<longrightarrow> ~ penalty_exposure_\<exists> e t"
+lemma compliance_eliminates_penalty: "\<forall>(e :: cii_owner_entity) (t :: nat). sg_cybersecurity_act_compliant e t \<longrightarrow> ~ penalty_exposure_\<exists> e t"
   by auto
 
 end

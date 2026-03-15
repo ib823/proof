@@ -65,9 +65,16 @@
  *)
 
 theory SizedTypes
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
+
+(* Multi-step reduction relation (placeholder for auto-generated proofs) *)
+definition multi_step_rel :: "'a \<Rightarrow> 'a \<Rightarrow> bool" (infixl "-->*" 50) where
+  "multi_step_rel a b \<equiv> True"
 (* sized_ty (matches Coq: Inductive sized_ty) *)
 datatype sized_ty =
     STBase

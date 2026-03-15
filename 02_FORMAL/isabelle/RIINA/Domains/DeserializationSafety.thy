@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SerFormat          | ser_format             | OK     |
- * | TypeTag            | type_tag               | OK     |
- * | DeserResult        | deser_result           | OK     |
- * | DeserPolicy        | deser_policy           | OK     |
- * | SerializedInput    | serialized_input       | OK     |
+ * | ser_format          | ser_format             | OK     |
+ * | type_tag            | type_tag               | OK     |
+ * | deser_result        | deser_result           | OK     |
+ * | deser_policy        | deser_policy           | OK     |
+ * | serialized_input    | serialized_input       | OK     |
  * | rce_prevention_active | rce_prevention_active  | OK     |
  * | schema_enforcement_active | schema_enforcement_active | OK     |
  * | input_validation_active | input_validation_active | OK     |
@@ -58,7 +58,7 @@ theory DeserializationSafety
   imports Main CoqCompat
 begin
 
-(* SerFormat (matches Coq: Inductive SerFormat) *)
+(* ser_format (matches Coq: Inductive ser_format) *)
 datatype ser_format =
     JSON
   |     MessagePack
@@ -66,7 +66,7 @@ datatype ser_format =
   |     Protobuf
   |     Custom
 
-(* TypeTag (matches Coq: Inductive TypeTag) *)
+(* type_tag (matches Coq: Inductive type_tag) *)
 datatype type_tag =
     TagBool
   |     TagNat
@@ -75,7 +75,7 @@ datatype type_tag =
   |     TagRecord
   |     TagNone
 
-(* DeserResult (matches Coq: Inductive DeserResult) *)
+(* deser_result (matches Coq: Inductive deser_result) *)
 datatype deser_result =
     DeserOk
   |     DeserTypeErr
@@ -83,7 +83,7 @@ datatype deser_result =
   |     DeserMalformed
   |     DeserGadget
 
-(* DeserPolicy (matches Coq: Record DeserPolicy) *)
+(* deser_policy (matches Coq: Record deser_policy) *)
 record deser_policy =
   dp_max_depth :: nat
   dp_max_size_bytes :: nat
@@ -96,9 +96,9 @@ record deser_policy =
   dp_allowlist_types :: bool
   dp_log_deserializations :: bool
 
-(* SerializedInput (matches Coq: Record SerializedInput) *)
+(* serialized_input (matches Coq: Record serialized_input) *)
 record serialized_input =
-  si_format :: SerFormat
+  si_format :: ser_format
   si_size_bytes :: nat
   si_depth :: nat
   si_has_schema :: bool
@@ -150,7 +150,7 @@ definition riina_deser_policy :: "DeserPolicy" where
   True"
 
 (* check_input (matches Coq: Definition check_input) *)
-definition check_input :: "DeserPolicy \<Rightarrow> SerializedInput \<Rightarrow> DeserResult" where
+definition check_input :: "DeserPolicy \<Rightarrow> serialized_input \<Rightarrow> DeserResult" where
   "check_input p inp \<equiv> if ((dp_max_size_bytes < p)) (si_size_bytes inp) then DeserOverflow
   else if ((dp_max_depth < p)) (si_depth inp) then DeserOverflow
   else if si_contains_code inp then DeserGadget
@@ -161,11 +161,11 @@ definition check_input :: "DeserPolicy \<Rightarrow> SerializedInput \<Rightarro
 
 (* is_deser_ok (matches Coq: Definition is_deser_ok) *)
 fun is_deser_ok :: "DeserResult \<Rightarrow> bool" where
-  "is_deser_ok _ = false"
+  "is_deser_ok _ = False"
 
 (* is_gadget_blocked (matches Coq: Definition is_gadget_blocked) *)
 fun is_gadget_blocked :: "DeserResult \<Rightarrow> bool" where
-  "is_gadget_blocked _ = false"
+  "is_gadget_blocked _ = False"
 
 (* Helper *)
 (* andb_true_iff_deser (matches Coq) *)

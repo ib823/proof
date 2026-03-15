@@ -39,9 +39,12 @@
  *)
 
 theory WCETTypes
-  imports Main
+  imports Main Syntax
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* expr (matches Coq: Inductive expr) *)
 datatype expr =
     EConst
@@ -55,91 +58,91 @@ fun wcet_bound :: "expr \<Rightarrow> cost" where
   "wcet_bound _ = undefined"
 
 (* 1 (matches Coq) *)
-lemma 1: "WCET bound is always positive Theorem wcet_positive : \<forall>ex. 1 \<le> wcet_bound ex"
+lemma lemma_1: "WCET bound is always positive Theorem wcet_positive : \<forall>ex. 1 \<le> wcet_bound ex"
   by simp
 
 (* 2 (matches Coq) *)
-lemma 2: "Actual cost is always positive Theorem cost_positive : \<forall>e ex v c. eval e ex v c \<longrightarrow> 1 \<le> c"
+lemma lemma_2: "Actual cost is always positive Theorem cost_positive : \<forall>e ex v c. eval e ex v c \<longrightarrow> 1 \<le> c"
   by simp
 
 (* 3 (matches Coq) *)
-lemma 3: "WCET Soundness — actual cost never exceeds bound Theorem wcet_sound : \<forall>e ex v c. eval e ex v c \<longrightarrow> c \<le> wcet_bound ex"
+lemma lemma_3: "WCET Soundness — actual cost never exceeds bound Theorem wcet_sound : \<forall>e ex v c. eval e ex v c \<longrightarrow> c \<le> wcet_bound ex"
   by simp
 
 (* 4 (matches Coq) *)
-lemma 4: "Sequential composition WCET Theorem wcet_seq_composition : \<forall>e e1 e2 v1 v2 c1 c2. eval e e1 v1 c1 \<longrightarrow> eval e e2 v2 c2 \<longrightarrow> eval e (ESeq e1 e2) v2 (c1 + c2)"
+lemma lemma_4: "Sequential composition WCET Theorem wcet_seq_composition : \<forall>e e1 e2 v1 v2 c1 c2. eval e e1 v1 c1 \<longrightarrow> eval e e2 v2 c2 \<longrightarrow> eval e (ESeq e1 e2) v2 (c1 + c2)"
   by auto
 
 (* 5 (matches Coq) *)
-lemma 5: "WCET bound of sequence is sum of bounds Theorem wcet_seq_additive : \<forall>e1 e2. wcet_bound (ESeq e1 e2) = wcet_bound e1 + wcet_bound e2"
+lemma lemma_5: "WCET bound of sequence is sum of bounds Theorem wcet_seq_additive : \<forall>e1 e2. wcet_bound (ESeq e1 e2) = wcet_bound e1 + wcet_bound e2"
   by simp
 
 (* 6 (matches Coq) *)
-lemma 6: "WCET bound of if is max of branches plus condition Theorem wcet_if_max : \<forall>ec et ef. wcet_bound (EIf ec et ef) = wcet_bound ec + Nat.max (wcet_bound et) (wcet_bound ef) + 1"
+lemma lemma_6: "WCET bound of if is max of branches plus condition Theorem wcet_if_max : \<forall>ec et ef. wcet_bound (EIf ec et ef) = wcet_bound ec + Nat.max (wcet_bound et) (wcet_bound ef) + 1"
   by simp
 
 (* 7 (matches Coq) *)
-lemma 7: "Determinism of cost for deterministic evaluation Theorem eval_deterministic : \<forall>e ex v1 c1 v2 c2. eval e ex v1 c1 \<longrightarrow> eval e ex v2 c2 \<longrightarrow> v1 = v2 \<and> c1 = c2"
+lemma lemma_7: "Determinism of cost for deterministic evaluation Theorem eval_deterministic : \<forall>e ex v1 c1 v2 c2. eval e ex v1 c1 \<longrightarrow> eval e ex v2 c2 \<longrightarrow> v1 = v2 \<and> c1 = c2"
   by simp
 
 (* 8 (matches Coq) *)
-lemma 8: "Nested if WCET bound Theorem wcet_nested_if_bound : \<forall>ec1 ec2 et1 et2 ef1 ef2. wcet_bound (EIf ec1 (EIf ec2 et1 ef1) (EIf ec2 et2 ef2)) \<le> wcet_bound ec1 + wcet_bound ec2 + Nat.max (Nat.max (wcet_bound et1) (wcet_bound ef1)) (Nat.max (wcet_bound et2) (wcet_bound ef2)) + 2"
+lemma lemma_8: "Nested if WCET bound Theorem wcet_nested_if_bound : \<forall>ec1 ec2 et1 et2 ef1 ef2. wcet_bound (EIf ec1 (EIf ec2 et1 ef1) (EIf ec2 et2 ef2)) \<le> wcet_bound ec1 + wcet_bound ec2 + Nat.max (Nat.max (wcet_bound et1) (wcet_bound ef1)) (Nat.max (wcet_bound et2) (wcet_bound ef2)) + 2"
   by simp
 
 (* 9 (matches Coq) *)
-lemma 9: "WCET bound of Plus is additive plus one Theorem wcet_plus_bound : \<forall>e1 e2. wcet_bound (EPlus e1 e2) = wcet_bound e1 + wcet_bound e2 + 1"
+lemma lemma_9: "WCET bound of Plus is additive plus one Theorem wcet_plus_bound : \<forall>e1 e2. wcet_bound (EPlus e1 e2) = wcet_bound e1 + wcet_bound e2 + 1"
   by simp
 
 (* 10 (matches Coq) *)
-lemma 10: "Cost of constant is exactly 1 Theorem cost_const : \<forall>e n v c. eval e (EConst n) v c \<longrightarrow> c = 1"
+lemma lemma_10: "Cost of constant is exactly 1 Theorem cost_const : \<forall>e n v c. eval e (EConst n) v c \<longrightarrow> c = 1"
   by simp
 
 (* 11 (matches Coq) *)
-lemma 11: "Cost of variable is exactly 1 Theorem cost_var : \<forall>e i v c. eval e (EVar i) v c \<longrightarrow> c = 1"
+lemma lemma_11: "Cost of variable is exactly 1 Theorem cost_var : \<forall>e i v c. eval e (EVar i) v c \<longrightarrow> c = 1"
   by simp
 
 (* 12 (matches Coq) *)
-lemma 12: "Constant evaluates to its value Theorem const_eval_value : \<forall>e n v c. eval e (EConst n) v c \<longrightarrow> v = n"
+lemma lemma_12: "Constant evaluates to its value Theorem const_eval_value : \<forall>e n v c. eval e (EConst n) v c \<longrightarrow> v = n"
   by simp
 
 (* 13 (matches Coq) *)
-lemma 13: "WCET bound is monotonic under Plus (left) Theorem wcet_plus_mono_l : \<forall>e1 e2. wcet_bound e1 \<le> wcet_bound (EPlus e1 e2)"
+lemma lemma_13: "WCET bound is monotonic under Plus (left) Theorem wcet_plus_mono_l : \<forall>e1 e2. wcet_bound e1 \<le> wcet_bound (EPlus e1 e2)"
   by simp
 
 (* 14 (matches Coq) *)
-lemma 14: "WCET bound is monotonic under Plus (right) Theorem wcet_plus_mono_r : \<forall>e1 e2. wcet_bound e2 \<le> wcet_bound (EPlus e1 e2)"
+lemma lemma_14: "WCET bound is monotonic under Plus (right) Theorem wcet_plus_mono_r : \<forall>e1 e2. wcet_bound e2 \<le> wcet_bound (EPlus e1 e2)"
   by simp
 
 (* 15 (matches Coq) *)
-lemma 15: "Seq cost is exactly sum of subexpression costs Theorem seq_cost_sum : \<forall>e e1 e2 v1 v2 c1 c2. eval e e1 v1 c1 \<longrightarrow> eval e e2 v2 c2 \<longrightarrow> \<exists>c. eval e (ESeq e1 e2) v2 c \<and> c = c1 + c2"
+lemma lemma_15: "Seq cost is exactly sum of subexpression costs Theorem seq_cost_sum : \<forall>e e1 e2 v1 v2 c1 c2. eval e e1 v1 c1 \<longrightarrow> eval e e2 v2 c2 \<longrightarrow> \<exists>c. eval e (ESeq e1 e2) v2 c \<and> c = c1 + c2"
   by simp
 
 (* 16 (matches Coq) *)
-lemma 16: "Cost of Plus is at least 3 Theorem cost_plus_at_least_3 : \<forall>e e1 e2 v c. eval e (EPlus e1 e2) v c \<longrightarrow> c \<ge> 3"
+lemma lemma_16: "Cost of Plus is at least 3 Theorem cost_plus_at_least_3 : \<forall>e e1 e2 v c. eval e (EPlus e1 e2) v c \<longrightarrow> c \<ge> 3"
   by simp
 
 (* 17 (matches Coq) *)
-lemma 17: "WCET of nested sequences Theorem wcet_nested_seq : \<forall>e1 e2 e3. wcet_bound (ESeq (ESeq e1 e2) e3) = wcet_bound e1 + wcet_bound e2 + wcet_bound e3"
+lemma lemma_17: "WCET of nested sequences Theorem wcet_nested_seq : \<forall>e1 e2 e3. wcet_bound (ESeq (ESeq e1 e2) e3) = wcet_bound e1 + wcet_bound e2 + wcet_bound e3"
   by simp
 
 (* 18 (matches Coq) *)
-lemma 18: "WCET bound is at least 2 for Plus Theorem wcet_plus_at_least_3 : \<forall>e1 e2. wcet_bound (EPlus e1 e2) \<ge> 3"
+lemma lemma_18: "WCET bound is at least 2 for Plus Theorem wcet_plus_at_least_3 : \<forall>e1 e2. wcet_bound (EPlus e1 e2) \<ge> 3"
   by simp
 
 (* 19 (matches Coq) *)
-lemma 19: "Evaluation cost never zero Theorem cost_nonzero : \<forall>e ex v c. eval e ex v c \<longrightarrow> c > 0"
+lemma lemma_19: "Evaluation cost never zero Theorem cost_nonzero : \<forall>e ex v c. eval e ex v c \<longrightarrow> c > 0"
   by simp
 
 (* 20 (matches Coq) *)
-lemma 20: "WCET bound of if is at least condition bound plus 1 Theorem wcet_if_ge_cond : \<forall>ec et ef. wcet_bound (EIf ec et ef) \<ge> wcet_bound ec + 1"
+lemma lemma_20: "WCET bound of if is at least condition bound plus 1 Theorem wcet_if_ge_cond : \<forall>ec et ef. wcet_bound (EIf ec et ef) \<ge> wcet_bound ec + 1"
   by simp
 
 (* 21 (matches Coq) *)
-lemma 21: "Seq WCET is at least the WCET of its second part Theorem wcet_seq_ge_right : \<forall>e1 e2. wcet_bound (ESeq e1 e2) \<ge> wcet_bound e2"
+lemma lemma_21: "Seq WCET is at least the WCET of its second part Theorem wcet_seq_ge_right : \<forall>e1 e2. wcet_bound (ESeq e1 e2) \<ge> wcet_bound e2"
   by simp
 
 (* 22 (matches Coq) *)
-lemma 22: "Seq WCET is at least the WCET of its first part Theorem wcet_seq_ge_left : \<forall>e1 e2. wcet_bound (ESeq e1 e2) \<ge> wcet_bound e1"
+lemma lemma_22: "Seq WCET is at least the WCET of its first part Theorem wcet_seq_ge_left : \<forall>e1 e2. wcet_bound (ESeq e1 e2) \<ge> wcet_bound e1"
   by simp
 
 end

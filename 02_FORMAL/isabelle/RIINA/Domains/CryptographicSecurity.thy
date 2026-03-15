@@ -12,23 +12,23 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | TagVerifyResult    | tag_verify_result      | OK     |
- * | ConstantTimeOp     | constant_time_op       | OK     |
- * | CryptoKey          | crypto_key             | OK     |
- * | NonceTracker       | nonce_tracker          | OK     |
- * | AEADConfig         | aead_config            | OK     |
- * | HashConfig         | hash_config            | OK     |
- * | RNGConfig          | rng_config             | OK     |
- * | ProtocolConfig     | protocol_config        | OK     |
- * | PQConfig           | pq_config              | OK     |
- * | MRAEADConfig       | mraead_config          | OK     |
- * | CertConfig         | cert_config            | OK     |
- * | EncryptionScheme   | encryption_scheme      | OK     |
- * | KDFConfig          | kdf_config             | OK     |
- * | DerivedKey         | derived_key            | OK     |
- * | MACConfig          | mac_config             | OK     |
- * | CounterNonce       | counter_nonce          | OK     |
- * | FullCryptoConfig   | full_crypto_config     | OK     |
+ * | tag_verify_result    | tag_verify_result      | OK     |
+ * | constant_time_op     | constant_time_op       | OK     |
+ * | crypto_key          | crypto_key             | OK     |
+ * | nonce_tracker       | nonce_tracker          | OK     |
+ * | aead_config         | aead_config            | OK     |
+ * | hash_config         | hash_config            | OK     |
+ * | rng_config          | rng_config             | OK     |
+ * | protocol_config     | protocol_config        | OK     |
+ * | pq_config           | pq_config              | OK     |
+ * | mr_aead_config       | mraead_config          | OK     |
+ * | cert_config         | cert_config            | OK     |
+ * | encryption_scheme   | encryption_scheme      | OK     |
+ * | kdf_config          | kdf_config             | OK     |
+ * | derived_key         | derived_key            | OK     |
+ * | mac_config          | mac_config             | OK     |
+ * | counter_nonce       | counter_nonce          | OK     |
+ * | full_crypto_config   | full_crypto_config     | OK     |
  * | ct_valid           | ct_valid               | OK     |
  * | riina_ct_op        | riina_ct_op            | OK     |
  * | key_secure         | key_secure             | OK     |
@@ -141,16 +141,24 @@
  *)
 
 theory CryptographicSecurity
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics
 begin
 
-(* TagVerifyResult (matches Coq: Inductive TagVerifyResult) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym mr_aead_config = "nat"
+type_synonym nonce_set = "nat list"
+type_synonym tag = "nat"
+(* Abstract type synonym for Nonce *)
+type_synonym nonce = "nat"
+(* Abstract type synonym for Key *)
+type_synonym key = "nat"
+(* tag_verify_result (matches Coq: Inductive tag_verify_result) *)
 datatype tag_verify_result =
     TagValid
   |     TagInvalid
   |     TagError
 
-(* ConstantTimeOp (matches Coq: Record ConstantTimeOp) *)
+(* constant_time_op (matches Coq: Record constant_time_op) *)
 record constant_time_op =
   ct_operation :: nat
   ct_no_secret_branch :: bool
@@ -158,7 +166,7 @@ record constant_time_op =
   ct_no_variable_time :: bool
   ct_is_constant :: bool
 
-(* CryptoKey (matches Coq: Record CryptoKey) *)
+(* crypto_key (matches Coq: Record crypto_key) *)
 record crypto_key =
   key_bits :: nat
   key_algorithm :: nat
@@ -166,13 +174,13 @@ record crypto_key =
   key_extractable :: bool
   key_hardware_bound :: bool
 
-(* NonceTracker (matches Coq: Record NonceTracker) *)
+(* nonce_tracker (matches Coq: Record nonce_tracker) *)
 record nonce_tracker =
   nt_used :: 'a list
   nt_counter :: nat
   nt_max_uses :: nat
 
-(* AEADConfig (matches Coq: Record AEADConfig) *)
+(* aead_config (matches Coq: Record aead_config) *)
 record aead_config =
   aead_algorithm :: nat
   aead_key_bits :: nat
@@ -180,47 +188,47 @@ record aead_config =
   aead_tag_bits :: nat
   aead_constant_time :: bool
 
-(* HashConfig (matches Coq: Record HashConfig) *)
+(* hash_config (matches Coq: Record hash_config) *)
 record hash_config =
   hash_algorithm :: nat
   hash_output_bits :: nat
   hash_length_ext_safe :: bool
 
-(* RNGConfig (matches Coq: Record RNGConfig) *)
+(* rng_config (matches Coq: Record rng_config) *)
 record rng_config =
   rng_hardware_seeded :: bool
   rng_reseeded_regularly :: bool
   rng_prediction_resistant :: bool
   rng_output_bits :: nat
 
-(* ProtocolConfig (matches Coq: Record ProtocolConfig) *)
+(* protocol_config (matches Coq: Record protocol_config) *)
 record protocol_config =
   proto_min_version :: nat
   proto_allowed_ciphers :: 'a list
   proto_fallback_disabled :: bool
   proto_forward_secrecy :: bool
 
-(* PQConfig (matches Coq: Record PQConfig) *)
+(* pq_config (matches Coq: Record pq_config) *)
 record pq_config =
   pq_kem_algorithm :: nat
   pq_sig_algorithm :: nat
   pq_security_level :: nat
   pq_hybrid_mode :: bool
 
-(* MRAEADConfig (matches Coq: Record MRAEADConfig) *)
+(* mr_aead_config (matches Coq: Record mr_aead_config) *)
 record mraead_config =
   mraead_siv_mode :: bool
   mraead_deterministic :: bool
-  mraead_base :: AEADConfig
+  mraead_base :: aead_config
 
-(* CertConfig (matches Coq: Record CertConfig) *)
+(* cert_config (matches Coq: Record cert_config) *)
 record cert_config =
   cert_ct_required :: bool
   cert_pinning :: bool
   cert_revocation_check :: bool
   cert_ocsp_stapling :: bool
 
-(* EncryptionScheme (matches Coq: Record EncryptionScheme) *)
+(* encryption_scheme (matches Coq: Record encryption_scheme) *)
 record encryption_scheme =
   enc_key_bits :: nat
   enc_nonce_bits :: nat
@@ -228,7 +236,7 @@ record encryption_scheme =
   enc_block_size :: nat
   enc_is_authenticated :: bool
 
-(* KDFConfig (matches Coq: Record KDFConfig) *)
+(* kdf_config (matches Coq: Record kdf_config) *)
 record kdf_config =
   kdf_algorithm :: nat
   kdf_output_bits :: nat
@@ -236,41 +244,41 @@ record kdf_config =
   kdf_iterations :: nat
   kdf_memory_cost :: nat
 
-(* DerivedKey (matches Coq: Record DerivedKey) *)
+(* derived_key (matches Coq: Record derived_key) *)
 record derived_key =
-  dk_parent_key :: Key
-  dk_derived_key :: Key
+  dk_parent_key :: key
+  dk_derived_key :: key
   dk_context :: 'a list
   dk_purpose :: nat
-  dk_kdf_config :: KDFConfig
+  dk_kdf_config :: kdf_config
 
-(* MACConfig (matches Coq: Record MACConfig) *)
+(* mac_config (matches Coq: Record mac_config) *)
 record mac_config =
   mac_algorithm :: nat
   mac_key_bits :: nat
   mac_tag_bits :: nat
   mac_constant_time :: bool
 
-(* CounterNonce (matches Coq: Record CounterNonce) *)
+(* counter_nonce (matches Coq: Record counter_nonce) *)
 record counter_nonce =
   cn_prefix :: 'a list
   cn_counter :: nat
   cn_max_value :: nat
 
-(* FullCryptoConfig (matches Coq: Record FullCryptoConfig) *)
+(* full_crypto_config (matches Coq: Record full_crypto_config) *)
 record full_crypto_config =
-  fc_ct_op :: ConstantTimeOp
-  fc_aead :: AEADConfig
-  fc_hash :: HashConfig
-  fc_rng :: RNGConfig
-  fc_proto :: ProtocolConfig
-  fc_pq :: PQConfig
-  fc_key :: CryptoKey
-  fc_cert :: CertConfig
-  fc_mraead :: MRAEADConfig
-  fc_kdf :: KDFConfig
-  fc_mac :: MACConfig
-  fc_enc :: EncryptionScheme
+  fc_ct_op :: constant_time_op
+  fc_aead :: aead_config
+  fc_hash :: hash_config
+  fc_rng :: rng_config
+  fc_proto :: protocol_config
+  fc_pq :: pq_config
+  fc_key :: crypto_key
+  fc_cert :: cert_config
+  fc_mraead :: mr_aead_config
+  fc_kdf :: kdf_config
+  fc_mac :: mac_config
+  fc_enc :: encryption_scheme
 
 (* ct_valid (matches Coq: Definition ct_valid) *)
 definition ct_valid :: "ConstantTimeOp \<Rightarrow> bool" where
@@ -384,7 +392,7 @@ definition riina_cert :: "CertConfig" where
 
 (* encrypt_decrypt_inverse_property (matches Coq: Definition encrypt_decrypt_inverse_property) *)
 definition encrypt_decrypt_inverse_property :: "EncryptionScheme \<Rightarrow> bool" where
-  "encrypt_decrypt_inverse_property scheme \<equiv> forall (k : Key) (n :: Nonce) (pt : Plaintext),
+  "encrypt_decrypt_inverse_property scheme \<equiv> forall (k : Key) (n :: nonce) (pt : Plaintext),
     length k = enc_key_bits scheme / 8 ->
     length n = enc_nonce_bits scheme / 8 ->
     let (ct, tag) := encrypt k n pt in
@@ -491,7 +499,7 @@ lemma leb_le: "\<forall>n m : nat. (n <=? m) = True <-> n \<le> m"
 
 (* ---------- CRY-001: Timing Side Channel Mitigated ---------- *)
 (* cry_001_timing_side_channel_mitigated (matches Coq) *)
-lemma cry_001_timing_side_channel_mitigated: "\<forall>(op :: ConstantTimeOp). ct_valid op = True \<longrightarrow> ct_is_constant op = True"
+lemma cry_001_timing_side_channel_mitigated: "\<forall>(op :: constant_time_op). ct_valid op = True \<longrightarrow> ct_is_constant op = True"
   by auto
 
 (* CRY-001a: RIINA config satisfies timing requirements *)
@@ -501,32 +509,32 @@ lemma cry_001a_riina_timing_safe: "ct_valid riina_ct_op = True"
 
 (* ---------- CRY-002: Power Analysis (SPA) Mitigated ---------- *)
 (* cry_002_spa_mitigated (matches Coq) *)
-lemma cry_002_spa_mitigated: "\<forall>(op :: ConstantTimeOp). ct_valid op = True \<longrightarrow> ct_no_secret_branch op = True \<and> ct_no_variable_time op = True"
+lemma cry_002_spa_mitigated: "\<forall>(op :: constant_time_op). ct_valid op = True \<longrightarrow> ct_no_secret_branch op = True \<and> ct_no_variable_time op = True"
   by auto
 
 (* ---------- CRY-003: Power Analysis (DPA) Mitigated ---------- *)
 (* cry_003_dpa_mitigated (matches Coq) *)
-lemma cry_003_dpa_mitigated: "\<forall>(op :: ConstantTimeOp). ct_valid op = True \<longrightarrow> ct_no_secret_branch op = True"
+lemma cry_003_dpa_mitigated: "\<forall>(op :: constant_time_op). ct_valid op = True \<longrightarrow> ct_no_secret_branch op = True"
   by auto
 
 (* ---------- CRY-004: EM Analysis Mitigated ---------- *)
 (* cry_004_em_analysis_mitigated (matches Coq) *)
-lemma cry_004_em_analysis_mitigated: "\<forall>(op :: ConstantTimeOp). ct_valid op = True \<longrightarrow> ct_no_secret_addr op = True"
+lemma cry_004_em_analysis_mitigated: "\<forall>(op :: constant_time_op). ct_valid op = True \<longrightarrow> ct_no_secret_addr op = True"
   by auto
 
 (* ---------- CRY-005: Acoustic Analysis Mitigated ---------- *)
 (* cry_005_acoustic_analysis_mitigated (matches Coq) *)
-lemma cry_005_acoustic_analysis_mitigated: "\<forall>(op :: ConstantTimeOp). ct_valid op = True \<longrightarrow> ct_no_variable_time op = True"
+lemma cry_005_acoustic_analysis_mitigated: "\<forall>(op :: constant_time_op). ct_valid op = True \<longrightarrow> ct_no_variable_time op = True"
   by auto
 
 (* ---------- CRY-006: Cache Timing Mitigated ---------- *)
 (* cry_006_cache_timing_mitigated (matches Coq) *)
-lemma cry_006_cache_timing_mitigated: "\<forall>(op :: ConstantTimeOp). ct_valid op = True \<longrightarrow> ct_no_secret_addr op = True \<and> ct_is_constant op = True"
+lemma cry_006_cache_timing_mitigated: "\<forall>(op :: constant_time_op). ct_valid op = True \<longrightarrow> ct_no_secret_addr op = True \<and> ct_is_constant op = True"
   by auto
 
 (* ---------- CRY-007: Padding Oracle Mitigated ---------- *)
 (* cry_007_padding_oracle_mitigated (matches Coq) *)
-lemma cry_007_padding_oracle_mitigated: "\<forall>(cfg :: AEADConfig). aead_secure cfg = True \<longrightarrow> (128 <=? aead_tag_bits cfg) = True"
+lemma cry_007_padding_oracle_mitigated: "\<forall>(cfg :: aead_config). aead_secure cfg = True \<longrightarrow> (128 <=? aead_tag_bits cfg) = True"
   by auto
 
 (* CRY-007a: RIINA AEAD satisfies padding requirements *)
@@ -536,22 +544,22 @@ lemma cry_007a_riina_aead_padding_safe: "aead_secure riina_aead = True"
 
 (* ---------- CRY-008: Chosen Plaintext Mitigated ---------- *)
 (* cry_008_chosen_plaintext_mitigated (matches Coq) *)
-lemma cry_008_chosen_plaintext_mitigated: "\<forall>(cfg :: AEADConfig). aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True"
+lemma cry_008_chosen_plaintext_mitigated: "\<forall>(cfg :: aead_config). aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True"
   by auto
 
 (* ---------- CRY-009: Chosen Ciphertext Mitigated ---------- *)
 (* cry_009_chosen_ciphertext_mitigated (matches Coq) *)
-lemma cry_009_chosen_ciphertext_mitigated: "\<forall>(cfg :: AEADConfig). aead_secure cfg = True \<longrightarrow> (128 <=? aead_tag_bits cfg) = True \<and> aead_constant_time cfg = True"
+lemma cry_009_chosen_ciphertext_mitigated: "\<forall>(cfg :: aead_config). aead_secure cfg = True \<longrightarrow> (128 <=? aead_tag_bits cfg) = True \<and> aead_constant_time cfg = True"
   by auto
 
 (* ---------- CRY-010: Known Plaintext Mitigated ---------- *)
 (* cry_010_known_plaintext_mitigated (matches Coq) *)
-lemma cry_010_known_plaintext_mitigated: "\<forall>(cfg :: AEADConfig). aead_secure cfg = True \<longrightarrow> (128 <=? aead_key_bits cfg) = True"
+lemma cry_010_known_plaintext_mitigated: "\<forall>(cfg :: aead_config). aead_secure cfg = True \<longrightarrow> (128 <=? aead_key_bits cfg) = True"
   by auto
 
 (* ---------- CRY-011: Meet-in-the-Middle Mitigated ---------- *)
 (* cry_011_mitm_mitigated (matches Coq) *)
-lemma cry_011_mitm_mitigated: "\<forall>(k :: CryptoKey). key_secure k = True \<longrightarrow> (128 <=? key_bits k) = True"
+lemma cry_011_mitm_mitigated: "\<forall>(k :: crypto_key). key_secure k = True \<longrightarrow> (128 <=? key_bits k) = True"
   by auto
 
 (* CRY-011a: RIINA key meets MITM requirements *)
@@ -561,7 +569,7 @@ lemma cry_011a_riina_key_mitm_safe: "key_secure riina_key = True"
 
 (* ---------- CRY-012: Birthday Attack Mitigated ---------- *)
 (* cry_012_birthday_attack_mitigated (matches Coq) *)
-lemma cry_012_birthday_attack_mitigated: "\<forall>(h :: HashConfig). hash_secure h = True \<longrightarrow> (256 <=? hash_output_bits h) = True"
+lemma cry_012_birthday_attack_mitigated: "\<forall>(h :: hash_config). hash_secure h = True \<longrightarrow> (256 <=? hash_output_bits h) = True"
   by auto
 
 (* CRY-012a: RIINA hash meets birthday attack requirements *)
@@ -571,12 +579,12 @@ lemma cry_012a_riina_hash_birthday_safe: "hash_secure riina_hash = True"
 
 (* ---------- CRY-013: Length Extension Mitigated ---------- *)
 (* cry_013_length_extension_mitigated (matches Coq) *)
-lemma cry_013_length_extension_mitigated: "\<forall>(h :: HashConfig). hash_secure h = True \<longrightarrow> hash_length_ext_safe h = True"
+lemma cry_013_length_extension_mitigated: "\<forall>(h :: hash_config). hash_secure h = True \<longrightarrow> hash_length_ext_safe h = True"
   by auto
 
 (* ---------- CRY-014: Downgrade Attack Mitigated ---------- *)
 (* cry_014_downgrade_attack_mitigated (matches Coq) *)
-lemma cry_014_downgrade_attack_mitigated: "\<forall>(pc :: ProtocolConfig). proto_secure pc = True \<longrightarrow> proto_fallback_disabled pc = True \<and> (3 <=? proto_min_version pc) = True"
+lemma cry_014_downgrade_attack_mitigated: "\<forall>(pc :: protocol_config). proto_secure pc = True \<longrightarrow> proto_fallback_disabled pc = True \<and> (3 <=? proto_min_version pc) = True"
   by auto
 
 (* CRY-014a: RIINA protocol meets downgrade requirements *)
@@ -586,17 +594,17 @@ lemma cry_014a_riina_proto_downgrade_safe: "proto_secure riina_proto = True"
 
 (* ---------- CRY-015: Protocol Attack Mitigated ---------- *)
 (* cry_015_protocol_attack_mitigated (matches Coq) *)
-lemma cry_015_protocol_attack_mitigated: "\<forall>(pc :: ProtocolConfig). proto_secure pc = True \<longrightarrow> proto_forward_secrecy pc = True"
+lemma cry_015_protocol_attack_mitigated: "\<forall>(pc :: protocol_config). proto_secure pc = True \<longrightarrow> proto_forward_secrecy pc = True"
   by auto
 
 (* ---------- CRY-016: Implementation Flaw Mitigated ---------- *)
 (* cry_016_implementation_flaw_mitigated (matches Coq) *)
-lemma cry_016_implementation_flaw_mitigated: "\<forall>(op :: ConstantTimeOp) (cfg :: AEADConfig). ct_valid op = True \<longrightarrow> aead_secure cfg = True \<longrightarrow> ct_is_constant op = True \<and> aead_constant_time cfg = True"
+lemma cry_016_implementation_flaw_mitigated: "\<forall>(op :: constant_time_op) (cfg :: aead_config). ct_valid op = True \<longrightarrow> aead_secure cfg = True \<longrightarrow> ct_is_constant op = True \<and> aead_constant_time cfg = True"
   by auto
 
 (* ---------- CRY-017: RNG Attack Mitigated ---------- *)
 (* cry_017_rng_attack_mitigated (matches Coq) *)
-lemma cry_017_rng_attack_mitigated: "\<forall>(rng :: RNGConfig). rng_secure rng = True \<longrightarrow> rng_hardware_seeded rng = True \<and> rng_prediction_resistant rng = True"
+lemma cry_017_rng_attack_mitigated: "\<forall>(rng :: rng_config). rng_secure rng = True \<longrightarrow> rng_hardware_seeded rng = True \<and> rng_prediction_resistant rng = True"
   by auto
 
 (* CRY-017a: RIINA RNG meets security requirements *)
@@ -606,17 +614,17 @@ lemma cry_017a_riina_rng_secure: "rng_secure riina_rng = True"
 
 (* ---------- CRY-018: Key Reuse Mitigated ---------- *)
 (* cry_018_key_reuse_mitigated (matches Coq) *)
-lemma cry_018_key_reuse_mitigated: "\<forall>(nt :: NonceTracker). nonce_counter_safe nt = True \<longrightarrow> nt_counter nt < nt_max_uses nt"
+lemma cry_018_key_reuse_mitigated: "\<forall>(nt :: nonce_tracker). nonce_counter_safe nt = True \<longrightarrow> nt_counter nt < nt_max_uses nt"
   by auto
 
 (* ---------- CRY-019: Weak Keys Mitigated ---------- *)
 (* cry_019_weak_keys_mitigated (matches Coq) *)
-lemma cry_019_weak_keys_mitigated: "\<forall>(k :: CryptoKey). key_secure k = True \<longrightarrow> (128 <=? key_bits k) = True \<and> key_extractable k = False"
+lemma cry_019_weak_keys_mitigated: "\<forall>(k :: crypto_key). key_secure k = True \<longrightarrow> (128 <=? key_bits k) = True \<and> key_extractable k = False"
   by auto
 
 (* ---------- CRY-020: Related-Key Attack Mitigated ---------- *)
 (* cry_020_related_key_attack_mitigated (matches Coq) *)
-lemma cry_020_related_key_attack_mitigated: "\<forall>(k :: CryptoKey). key_strong k = True \<longrightarrow> (256 <=? key_bits k) = True \<and> key_hardware_bound k = True"
+lemma cry_020_related_key_attack_mitigated: "\<forall>(k :: crypto_key). key_strong k = True \<longrightarrow> (256 <=? key_bits k) = True \<and> key_hardware_bound k = True"
   by auto
 
 (* CRY-020a: RIINA key meets related-key requirements *)
@@ -626,22 +634,22 @@ lemma cry_020a_riina_key_related_safe: "key_strong riina_key = True"
 
 (* ---------- CRY-021: Differential Cryptanalysis Mitigated ---------- *)
 (* cry_021_differential_cryptanalysis_mitigated (matches Coq) *)
-lemma cry_021_differential_cryptanalysis_mitigated: "\<forall>(cfg :: AEADConfig). aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True \<and> (128 <=? aead_key_bits cfg) = True"
+lemma cry_021_differential_cryptanalysis_mitigated: "\<forall>(cfg :: aead_config). aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True \<and> (128 <=? aead_key_bits cfg) = True"
   by auto
 
 (* ---------- CRY-022: Linear Cryptanalysis Mitigated ---------- *)
 (* cry_022_linear_cryptanalysis_mitigated (matches Coq) *)
-lemma cry_022_linear_cryptanalysis_mitigated: "\<forall>(cfg :: AEADConfig). aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True"
+lemma cry_022_linear_cryptanalysis_mitigated: "\<forall>(cfg :: aead_config). aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True"
   by auto
 
 (* ---------- CRY-023: Algebraic Attack Mitigated ---------- *)
 (* cry_023_algebraic_attack_mitigated (matches Coq) *)
-lemma cry_023_algebraic_attack_mitigated: "\<forall>(cfg :: AEADConfig). aead_secure cfg = True \<longrightarrow> (128 <=? aead_key_bits cfg) = True"
+lemma cry_023_algebraic_attack_mitigated: "\<forall>(cfg :: aead_config). aead_secure cfg = True \<longrightarrow> (128 <=? aead_key_bits cfg) = True"
   by auto
 
 (* ---------- CRY-024: Quantum Attack Mitigated ---------- *)
 (* cry_024_quantum_attack_mitigated (matches Coq) *)
-lemma cry_024_quantum_attack_mitigated: "\<forall>(pq :: PQConfig). pq_secure pq = True \<longrightarrow> (3 <=? pq_security_level pq) = True \<and> pq_hybrid_mode pq = True"
+lemma cry_024_quantum_attack_mitigated: "\<forall>(pq :: pq_config). pq_secure pq = True \<longrightarrow> (3 <=? pq_security_level pq) = True \<and> pq_hybrid_mode pq = True"
   by auto
 
 (* CRY-024a: RIINA PQ configuration is secure *)
@@ -651,17 +659,17 @@ lemma cry_024a_riina_pq_secure: "pq_secure riina_pq = True"
 
 (* ---------- CRY-025: Harvest Now Decrypt Later Mitigated ---------- *)
 (* cry_025_harvest_now_decrypt_later_mitigated (matches Coq) *)
-lemma cry_025_harvest_now_decrypt_later_mitigated: "\<forall>(pq :: PQConfig). pq_secure pq = True \<longrightarrow> (pq_kem_algorithm pq <=? 0) = True \<and> (3 <=? pq_security_level pq) = True"
+lemma cry_025_harvest_now_decrypt_later_mitigated: "\<forall>(pq :: pq_config). pq_secure pq = True \<longrightarrow> (pq_kem_algorithm pq <=? 0) = True \<and> (3 <=? pq_security_level pq) = True"
   by auto
 
 (* ---------- CRY-026: Key Extraction Mitigated ---------- *)
 (* cry_026_key_extraction_mitigated (matches Coq) *)
-lemma cry_026_key_extraction_mitigated: "\<forall>(k :: CryptoKey). key_secure k = True \<longrightarrow> key_extractable k = False"
+lemma cry_026_key_extraction_mitigated: "\<forall>(k :: crypto_key). key_secure k = True \<longrightarrow> key_extractable k = False"
   by auto
 
 (* ---------- CRY-027: IV/Nonce Misuse Mitigated ---------- *)
 (* cry_027_nonce_misuse_mitigated (matches Coq) *)
-lemma cry_027_nonce_misuse_mitigated: "\<forall>(mr :: MRAEADConfig). mraead_secure mr = True \<longrightarrow> mraead_siv_mode mr = True \<and> aead_secure (mraead_base mr) = True"
+lemma cry_027_nonce_misuse_mitigated: "\<forall>(mr :: mr_aead_config). mraead_secure mr = True \<longrightarrow> mraead_siv_mode mr = True \<and> aead_secure (mraead_base mr) = True"
   by auto
 
 (* CRY-027a: RIINA MR-AEAD is secure *)
@@ -671,7 +679,7 @@ lemma cry_027a_riina_mraead_secure: "mraead_secure riina_mraead = True"
 
 (* ---------- CRY-028: Certificate Attack Mitigated ---------- *)
 (* cry_028_certificate_attack_mitigated (matches Coq) *)
-lemma cry_028_certificate_attack_mitigated: "\<forall>(cc :: CertConfig). cert_secure cc = True \<longrightarrow> cert_ct_required cc = True \<and> cert_revocation_check cc = True"
+lemma cry_028_certificate_attack_mitigated: "\<forall>(cc :: cert_config). cert_secure cc = True \<longrightarrow> cert_ct_required cc = True \<and> cert_revocation_check cc = True"
   by auto
 
 (* CRY-028a: RIINA certificate config is secure *)
@@ -681,27 +689,27 @@ lemma cry_028a_riina_cert_secure: "cert_secure riina_cert = True"
 
 (* ---------- CRY-029: Random Fault Mitigated ---------- *)
 (* cry_029_random_fault_mitigated (matches Coq) *)
-lemma cry_029_random_fault_mitigated: "\<forall>(op :: ConstantTimeOp) (rng :: RNGConfig). ct_valid op = True \<longrightarrow> rng_secure rng = True \<longrightarrow> ct_is_constant op = True \<and> rng_hardware_seeded rng = True"
+lemma cry_029_random_fault_mitigated: "\<forall>(op :: constant_time_op) (rng :: rng_config). ct_valid op = True \<longrightarrow> rng_secure rng = True \<longrightarrow> ct_is_constant op = True \<and> rng_hardware_seeded rng = True"
   by auto
 
 (* ---------- CRY-030: Bleichenbacher Attack Mitigated ---------- *)
 (* cry_030_bleichenbacher_mitigated (matches Coq) *)
-lemma cry_030_bleichenbacher_mitigated: "\<forall>(cfg :: AEADConfig). aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True"
+lemma cry_030_bleichenbacher_mitigated: "\<forall>(cfg :: aead_config). aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True"
   by auto
 
 (* ---------- CRY-031: Whisper Leak (LLM Timing) Mitigated ---------- *)
 (* cry_031_whisper_leak_mitigated (matches Coq) *)
-lemma cry_031_whisper_leak_mitigated: "\<forall>(op :: ConstantTimeOp). ct_valid op = True \<longrightarrow> ct_is_constant op = True \<and> ct_no_secret_branch op = True"
+lemma cry_031_whisper_leak_mitigated: "\<forall>(op :: constant_time_op). ct_valid op = True \<longrightarrow> ct_is_constant op = True \<and> ct_no_secret_branch op = True"
   by auto
 
 (* Complete constant-time security *)
 (* complete_ct_security (matches Coq) *)
-lemma complete_ct_security: "\<forall>(op :: ConstantTimeOp). ct_valid op = True \<longrightarrow> ct_no_secret_branch op = True \<and> ct_no_secret_addr op = True \<and> ct_no_variable_time op = True \<and> ct_is_constant op = True"
+lemma complete_ct_security: "\<forall>(op :: constant_time_op). ct_valid op = True \<longrightarrow> ct_no_secret_branch op = True \<and> ct_no_secret_addr op = True \<and> ct_no_variable_time op = True \<and> ct_is_constant op = True"
   by auto
 
 (* Complete AEAD security *)
 (* complete_aead_security (matches Coq) *)
-lemma complete_aead_security: "\<forall>(cfg :: AEADConfig). aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True \<and> (128 <=? aead_key_bits cfg) = True \<and> (128 <=? aead_tag_bits cfg) = True \<and> aead_constant_time cfg = True"
+lemma complete_aead_security: "\<forall>(cfg :: aead_config). aead_secure cfg = True \<longrightarrow> (aead_algorithm cfg <=? 1) = True \<and> (128 <=? aead_key_bits cfg) = True \<and> (128 <=? aead_tag_bits cfg) = True \<and> aead_constant_time cfg = True"
   by auto
 
 (* RIINA complete cryptographic security *)
@@ -711,12 +719,12 @@ lemma riina_complete_crypto_security: "ct_valid riina_ct_op = True \<and> aead_s
 
 (* ENC-001: Authenticated encryption preserves plaintext length *)
 (* enc_001_length_preservation (matches Coq) *)
-lemma enc_001_length_preservation: "\<forall>(scheme :: EncryptionScheme) (pt_len ct_len : nat). enc_is_authenticated scheme = True \<longrightarrow> pt_len = ct_len \<longrightarrow> pt_len = ct_len"
+lemma enc_001_length_preservation: "\<forall>(scheme :: encryption_scheme) (pt_len :: nat) (ct_len :: nat). enc_is_authenticated scheme = True \<longrightarrow> pt_len = ct_len \<longrightarrow> pt_len = ct_len"
   by auto
 
 (* ENC-002: Encryption requires valid key size *)
 (* enc_002_key_size_requirement (matches Coq) *)
-lemma enc_002_key_size_requirement: "\<forall>(scheme :: EncryptionScheme). (128 <=? enc_key_bits scheme) = True \<longrightarrow> enc_key_bits scheme \<ge> 128"
+lemma enc_002_key_size_requirement: "\<forall>(scheme :: encryption_scheme). (128 <=? enc_key_bits scheme) = True \<longrightarrow> enc_key_bits scheme \<ge> 128"
   by auto
 
 (* ENC-003: RIINA scheme has valid key size *)
@@ -746,22 +754,22 @@ lemma kdf_001_riina_kdf_secure: "kdf_secure riina_kdf = True"
 
 (* KDF-002: Secure KDF has sufficient output *)
 (* kdf_002_kdf_output_sufficient (matches Coq) *)
-lemma kdf_002_kdf_output_sufficient: "\<forall>(cfg :: KDFConfig). kdf_secure cfg = True \<longrightarrow> (256 <=? kdf_output_bits cfg) = True"
+lemma kdf_002_kdf_output_sufficient: "\<forall>(cfg :: kdf_config). kdf_secure cfg = True \<longrightarrow> (256 <=? kdf_output_bits cfg) = True"
   by auto
 
 (* KDF-003: Secure KDF has sufficient salt *)
 (* kdf_003_kdf_salt_sufficient (matches Coq) *)
-lemma kdf_003_kdf_salt_sufficient: "\<forall>(cfg :: KDFConfig). kdf_secure cfg = True \<longrightarrow> (128 <=? kdf_salt_bits cfg) = True"
+lemma kdf_003_kdf_salt_sufficient: "\<forall>(cfg :: kdf_config). kdf_secure cfg = True \<longrightarrow> (128 <=? kdf_salt_bits cfg) = True"
   by auto
 
 (* KDF-004: Secure KDF uses approved algorithm *)
 (* kdf_004_kdf_approved_algorithm (matches Coq) *)
-lemma kdf_004_kdf_approved_algorithm: "\<forall>(cfg :: KDFConfig). kdf_secure cfg = True \<longrightarrow> (kdf_algorithm cfg <=? 2) = True"
+lemma kdf_004_kdf_approved_algorithm: "\<forall>(cfg :: kdf_config). kdf_secure cfg = True \<longrightarrow> (kdf_algorithm cfg <=? 2) = True"
   by auto
 
 (* DK-001: Valid derived key came from secure KDF *)
 (* dk_001_valid_implies_secure_kdf (matches Coq) *)
-lemma dk_001_valid_implies_secure_kdf: "\<forall>(dk :: DerivedKey). derived_key_valid dk = True \<longrightarrow> kdf_secure (dk_kdf_config dk) = True"
+lemma dk_001_valid_implies_secure_kdf: "\<forall>(dk :: derived_key). derived_key_valid dk = True \<longrightarrow> kdf_secure (dk_kdf_config dk) = True"
   by auto
 
 (* MAC-001: RIINA MAC is secure *)
@@ -771,42 +779,42 @@ lemma mac_001_riina_mac_secure: "mac_secure riina_mac = True"
 
 (* MAC-002: Secure MAC has sufficient key size *)
 (* mac_002_mac_key_sufficient (matches Coq) *)
-lemma mac_002_mac_key_sufficient: "\<forall>(cfg :: MACConfig). mac_secure cfg = True \<longrightarrow> (128 <=? mac_key_bits cfg) = True"
+lemma mac_002_mac_key_sufficient: "\<forall>(cfg :: mac_config). mac_secure cfg = True \<longrightarrow> (128 <=? mac_key_bits cfg) = True"
   by auto
 
 (* MAC-003: Secure MAC has sufficient tag size *)
 (* mac_003_mac_tag_sufficient (matches Coq) *)
-lemma mac_003_mac_tag_sufficient: "\<forall>(cfg :: MACConfig). mac_secure cfg = True \<longrightarrow> (128 <=? mac_tag_bits cfg) = True"
+lemma mac_003_mac_tag_sufficient: "\<forall>(cfg :: mac_config). mac_secure cfg = True \<longrightarrow> (128 <=? mac_tag_bits cfg) = True"
   by auto
 
 (* MAC-004: Secure MAC is constant-time *)
 (* mac_004_mac_constant_time (matches Coq) *)
-lemma mac_004_mac_constant_time: "\<forall>(cfg :: MACConfig). mac_secure cfg = True \<longrightarrow> mac_constant_time cfg = True"
+lemma mac_004_mac_constant_time: "\<forall>(cfg :: mac_config). mac_secure cfg = True \<longrightarrow> mac_constant_time cfg = True"
   by auto
 
 (* TAG-001: Equal tags verify as valid *)
 (* tag_001_equal_tags_valid (matches Coq) *)
-lemma tag_001_equal_tags_valid: "\<forall>(tag :: Tag). tag_compare_ct tag tag = TagValid"
+lemma tag_001_equal_tags_valid: "\<forall>(tag :: tag). tag_compare_ct tag tag = TagValid"
   by auto
 
-(* TAG-002: Tag comparison is reflexive *)
+(* TAG-002: tag comparison is reflexive *)
 (* tag_002_tag_compare_reflexive (matches Coq) *)
-lemma tag_002_tag_compare_reflexive: "\<forall>(tag :: Tag). tag_compare_ct tag tag = TagValid"
+lemma tag_002_tag_compare_reflexive: "\<forall>(tag :: tag). tag_compare_ct tag tag = TagValid"
   by auto
 
 (* NONCE-001: Valid counter implies room for increment *)
 (* nonce_001_counter_incrementable (matches Coq) *)
-lemma nonce_001_counter_incrementable: "\<forall>(cn :: CounterNonce). counter_nonce_valid cn = True \<longrightarrow> cn_counter cn < cn_max_value cn"
+lemma nonce_001_counter_incrementable: "\<forall>(cn :: counter_nonce). counter_nonce_valid cn = True \<longrightarrow> cn_counter cn < cn_max_value cn"
   by auto
 
 (* NONCE-002: Incrementing counter changes nonce *)
 (* nonce_002_increment_changes_nonce (matches Coq) *)
-lemma nonce_002_increment_changes_nonce: "\<forall>(cn :: CounterNonce). counter_nonce_valid cn = True \<longrightarrow> cn_counter cn \<noteq> S (cn_counter cn)"
+lemma nonce_002_increment_changes_nonce: "\<forall>(cn :: counter_nonce). counter_nonce_valid cn = True \<longrightarrow> cn_counter cn \<noteq> Suc (cn_counter cn)"
   by auto
 
 (* NONCE-003: Different counters produce different nonces *)
 (* nonce_003_different_counters_different_nonces (matches Coq) *)
-lemma nonce_003_different_counters_different_nonces: "\<forall>(n m : nat). n \<noteq> m \<longrightarrow> n \<noteq> m"
+lemma nonce_003_different_counters_different_nonces: "\<forall>(n :: nat) (m :: nat). n \<noteq> m \<longrightarrow> n \<noteq> m"
   by auto
 
 (* Empty set contains no nonces *)
@@ -816,7 +824,7 @@ lemma nonce_004_empty_set_no_collision: "\<forall>(n : list nat). nonce_in_set n
 
 (* NONCE-005: Adding to set increases size *)
 (* nonce_005_add_increases_size (matches Coq) *)
-lemma nonce_005_add_increases_size: "\<forall>(n : list nat) (ns :: NonceSet). length (n :: ns) = S (length ns)"
+lemma nonce_005_add_increases_size: "\<forall>(n : list nat) (ns :: nonce_set). length (n :: ns) = Suc (length ns)"
   by simp
 
 (* FULL-001: RIINA full crypto config is secure *)
@@ -826,27 +834,27 @@ lemma full_001_riina_full_crypto_secure: "full_crypto_secure riina_full_crypto =
 
 (* FULL-002: Secure full config implies constant-time *)
 (* full_002_full_implies_ct (matches Coq) *)
-lemma full_002_full_implies_ct: "\<forall>(fc :: FullCryptoConfig). full_crypto_secure fc = True \<longrightarrow> ct_valid (fc_ct_op fc) = True"
+lemma full_002_full_implies_ct: "\<forall>(fc :: full_crypto_config). full_crypto_secure fc = True \<longrightarrow> ct_valid (fc_ct_op fc) = True"
   by auto
 
 (* FULL-003: Secure full config implies authenticated encryption *)
 (* full_003_full_implies_authenticated (matches Coq) *)
-lemma full_003_full_implies_authenticated: "\<forall>(fc :: FullCryptoConfig). full_crypto_secure fc = True \<longrightarrow> enc_is_authenticated (fc_enc fc) = True"
+lemma full_003_full_implies_authenticated: "\<forall>(fc :: full_crypto_config). full_crypto_secure fc = True \<longrightarrow> enc_is_authenticated (fc_enc fc) = True"
   by auto
 
 (* FULL-004: Secure full config implies post-quantum ready *)
 (* full_004_full_implies_pq_ready (matches Coq) *)
-lemma full_004_full_implies_pq_ready: "\<forall>(fc :: FullCryptoConfig). full_crypto_secure fc = True \<longrightarrow> pq_secure (fc_pq fc) = True"
+lemma full_004_full_implies_pq_ready: "\<forall>(fc :: full_crypto_config). full_crypto_secure fc = True \<longrightarrow> pq_secure (fc_pq fc) = True"
   by auto
 
 (* FULL-005: Secure full config implies secure key derivation *)
 (* full_005_full_implies_kdf_secure (matches Coq) *)
-lemma full_005_full_implies_kdf_secure: "\<forall>(fc :: FullCryptoConfig). full_crypto_secure fc = True \<longrightarrow> kdf_secure (fc_kdf fc) = True"
+lemma full_005_full_implies_kdf_secure: "\<forall>(fc :: full_crypto_config). full_crypto_secure fc = True \<longrightarrow> kdf_secure (fc_kdf fc) = True"
   by auto
 
 (* FULL-006: Secure full config implies secure MAC *)
 (* full_006_full_implies_mac_secure (matches Coq) *)
-lemma full_006_full_implies_mac_secure: "\<forall>(fc :: FullCryptoConfig). full_crypto_secure fc = True \<longrightarrow> mac_secure (fc_mac fc) = True"
+lemma full_006_full_implies_mac_secure: "\<forall>(fc :: full_crypto_config). full_crypto_secure fc = True \<longrightarrow> mac_secure (fc_mac fc) = True"
   by auto
 
 end

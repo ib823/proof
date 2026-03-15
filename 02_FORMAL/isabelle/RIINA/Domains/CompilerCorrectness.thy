@@ -16,11 +16,11 @@
  * | ir_expr            | ir_expr                | OK     |
  * | src_ty             | src_ty                 | OK     |
  * | src_expr           | src_expr               | OK     |
- * | ParsingPhase       | parsing_phase          | OK     |
- * | TypeCheckPhase     | type_check_phase       | OK     |
- * | OptimizationPhase  | optimization_phase     | OK     |
- * | CodeGenPhase       | code_gen_phase         | OK     |
- * | CompilerConfig     | compiler_config        | OK     |
+ * | parsing_phase       | parsing_phase          | OK     |
+ * | type_check_phase     | type_check_phase       | OK     |
+ * | optimization_phase  | optimization_phase     | OK     |
+ * | code_gen_phase       | code_gen_phase         | OK     |
+ * | compiler_config     | compiler_config        | OK     |
  * | parsing_correct    | parsing_correct        | OK     |
  * | typecheck_sound    | typecheck_sound        | OK     |
  * | optimization_safe  | optimization_safe      | OK     |
@@ -116,9 +116,12 @@
  *)
 
 theory CompilerCorrectness
-  imports Main
+  imports Main Semantics
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* Boolean conjunction helper (matches Coq: andb_true_iff) *)
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
@@ -165,37 +168,37 @@ datatype src_expr =
   |     Src_Inr
   |     Src_If
 
-(* ParsingPhase (matches Coq: Record ParsingPhase) *)
+(* parsing_phase (matches Coq: Record parsing_phase) *)
 record parsing_phase =
   pp_syntax_correct :: bool
   pp_ast_well_formed :: bool
   pp_error_recovery :: bool
 
-(* TypeCheckPhase (matches Coq: Record TypeCheckPhase) *)
+(* type_check_phase (matches Coq: Record type_check_phase) *)
 record type_check_phase =
   tc_type_soundness :: bool
   tc_inference_complete :: bool
   tc_constraint_solving :: bool
 
-(* OptimizationPhase (matches Coq: Record OptimizationPhase) *)
+(* optimization_phase (matches Coq: Record optimization_phase) *)
 record optimization_phase =
   op_semantics_preserved :: bool
   op_termination_preserved :: bool
   op_memory_safety_preserved :: bool
 
-(* CodeGenPhase (matches Coq: Record CodeGenPhase) *)
+(* code_gen_phase (matches Coq: Record code_gen_phase) *)
 record code_gen_phase =
   cg_instruction_correct :: bool
   cg_register_allocation :: bool
   cg_calling_convention :: bool
   cg_stack_layout :: bool
 
-(* CompilerConfig (matches Coq: Record CompilerConfig) *)
+(* compiler_config (matches Coq: Record compiler_config) *)
 record compiler_config =
-  cc_parsing :: ParsingPhase
-  cc_typecheck :: TypeCheckPhase
-  cc_optimization :: OptimizationPhase
-  cc_codegen :: CodeGenPhase
+  cc_parsing :: parsing_phase
+  cc_typecheck :: type_check_phase
+  cc_optimization :: optimization_phase
+  cc_codegen :: code_gen_phase
 
 (* parsing_correct (matches Coq: Definition parsing_correct) *)
 definition parsing_correct :: "ParsingPhase \<Rightarrow> bool" where

@@ -59,6 +59,12 @@ theory AnonymousComm
   imports Main CoqCompat
 begin
 
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym adversary = "nat"
+type_synonym anonymity_set = "nat list"
+type_synonym circuit = "nat"
+type_synonym observation = "nat"
+type_synonym onion_message = "nat"
 (* unlinkable (matches Coq: Definition unlinkable) *)
 definition unlinkable :: "Observation \<Rightarrow> bool" where
   "unlinkable obs \<equiv> True"
@@ -124,55 +130,55 @@ definition anon_layers :: "bool" where
   "anon_layers \<equiv> (encryption \<and> routing \<and> timing \<and> cover)"
 
 (* anon_001_sender_anonymity (matches Coq) *)
-lemma anon_001_sender_anonymity: "\<forall>(sender_set :: AnonymitySet) (k :: nat). k_anonymous sender_set k \<longrightarrow> length sender_set \<ge> k"
+lemma anon_001_sender_anonymity: "\<forall>(sender_set :: anonymity_set) (k :: nat). k_anonymous sender_set k \<longrightarrow> length sender_set \<ge> k"
   by auto
 
 (* anon_002_receiver_anonymity (matches Coq) *)
-lemma anon_002_receiver_anonymity: "\<forall>(receiver_set :: AnonymitySet) (k :: nat). k_anonymous receiver_set k \<longrightarrow> length receiver_set \<ge> k"
+lemma anon_002_receiver_anonymity: "\<forall>(receiver_set :: anonymity_set) (k :: nat). k_anonymous receiver_set k \<longrightarrow> length receiver_set \<ge> k"
   by auto
 
 (* anon_003_layers_match_path (matches Coq) *)
-lemma anon_003_layers_match_path: "\<forall>(msg :: OnionMessage) (circuit :: Circuit). length (onion_layers msg) = length (circuit_path circuit) \<longrightarrow> length (onion_layers msg) = length (circuit_path circuit)"
+lemma anon_003_layers_match_path: "\<forall>(msg :: onion_message) (circuit :: circuit). length (onion_layers msg) = length (circuit_path circuit) \<longrightarrow> length (onion_layers msg) = length (circuit_path circuit)"
   by auto
 
 (* anon_004_min_path_length (matches Coq) *)
-lemma anon_004_min_path_length: "\<forall>(circuit :: Circuit). length (circuit_path circuit) \<ge> 3 \<longrightarrow> length (circuit_path circuit) \<ge> 3"
+lemma anon_004_min_path_length: "\<forall>(circuit :: circuit). length (circuit_path circuit) \<ge> 3 \<longrightarrow> length (circuit_path circuit) \<ge> 3"
   by auto
 
 (* anon_005_entry_guard (matches Coq) *)
-lemma anon_005_entry_guard: "\<forall>(circuits : list Circuit) (guard :: nat). entry_guard_fixed circuits guard \<longrightarrow> Forall (\<lambda>c. hd_error (circuit_path c) = Some guard) circuits"
+lemma anon_005_entry_guard: "\<forall>(circuits : list circuit) (guard :: nat). entry_guard_fixed circuits guard \<longrightarrow> Forall (\<lambda>c. hd_error (circuit_path c) = Some guard) circuits"
   by auto
 
 (* anon_006_exit_diversity (matches Coq) *)
-lemma anon_006_exit_diversity: "\<forall>(circuits : list Circuit). exit_diverse circuits \<longrightarrow> length (nodup Nat.eq_dec (map (\<lambda>c. last (circuit_path c) 0) circuits)) > 1"
+lemma anon_006_exit_diversity: "\<forall>(circuits : list circuit). exit_diverse circuits \<longrightarrow> length (nodup Nat.eq_dec (map (\<lambda>c. last (circuit_path c) 0) circuits)) > 1"
   by auto
 
 (* anon_007_layer_order (matches Coq) *)
-lemma anon_007_layer_order: "\<forall>(msg :: OnionMessage) (n :: nat). n < length (onion_layers msg) \<longrightarrow> n < length (onion_layers msg)"
+lemma anon_007_layer_order: "\<forall>(msg :: onion_message) (n :: nat). n < length (onion_layers msg) \<longrightarrow> n < length (onion_layers msg)"
   by auto
 
 (* anon_008_unique_keys (matches Coq) *)
-lemma anon_008_unique_keys: "\<forall>(circuit :: Circuit). keys_unique circuit \<longrightarrow> NoDup (circuit_keys circuit)"
+lemma anon_008_unique_keys: "\<forall>(circuit :: circuit). keys_unique circuit \<longrightarrow> NoDup (circuit_keys circuit)"
   by auto
 
 (* anon_009_nonce_unique (matches Coq) *)
-lemma anon_009_nonce_unique: "\<forall>(messages : list OnionMessage). nonces_unique messages \<longrightarrow> NoDup (map onion_nonce messages)"
+lemma anon_009_nonce_unique: "\<forall>(messages : list onion_message). nonces_unique messages \<longrightarrow> NoDup (map onion_nonce messages)"
   by auto
 
 (* anon_010_unlinkability (matches Coq) *)
-lemma anon_010_unlinkability: "\<forall>(sender receiver : nat) (obs :: Observation). unlinkable sender receiver obs \<longrightarrow> unlinkable sender receiver obs"
+lemma anon_010_unlinkability: "\<forall>(sender :: nat) (receiver :: nat) (obs :: observation). unlinkable sender receiver obs \<longrightarrow> unlinkable sender receiver obs"
   by auto
 
 (* anon_011_no_sender_in_obs (matches Coq) *)
-lemma anon_011_no_sender_in_obs: "\<forall>(obs :: Observation) (sender :: nat). obs_entry_node obs \<noteq> sender \<longrightarrow> obs_entry_node obs \<noteq> sender"
+lemma anon_011_no_sender_in_obs: "\<forall>(obs :: observation) (sender :: nat). obs_entry_node obs \<noteq> sender \<longrightarrow> obs_entry_node obs \<noteq> sender"
   by auto
 
 (* anon_012_no_receiver_in_obs (matches Coq) *)
-lemma anon_012_no_receiver_in_obs: "\<forall>(obs :: Observation) (receiver :: nat). obs_exit_node obs \<noteq> receiver \<longrightarrow> obs_exit_node obs \<noteq> receiver"
+lemma anon_012_no_receiver_in_obs: "\<forall>(obs :: observation) (receiver :: nat). obs_exit_node obs \<noteq> receiver \<longrightarrow> obs_exit_node obs \<noteq> receiver"
   by auto
 
 (* anon_013_compromise_bounded (matches Coq) *)
-lemma anon_013_compromise_bounded: "\<forall>(adv :: Adversary) (max_compromise :: nat). length (adv_compromised_nodes adv) < max_compromise \<longrightarrow> length (adv_compromised_nodes adv) < max_compromise"
+lemma anon_013_compromise_bounded: "\<forall>(adv :: adversary) (max_compromise :: nat). length (adv_compromised_nodes adv) < max_compromise \<longrightarrow> length (adv_compromised_nodes adv) < max_compromise"
   by auto
 
 (* anon_014_path_safe (matches Coq) *)
@@ -180,7 +186,7 @@ lemma anon_014_path_safe: "\<forall>(path compromised : list nat). path_avoids p
   by auto
 
 (* anon_015_pseudonym_rotation (matches Coq) *)
-lemma anon_015_pseudonym_rotation: "\<forall>(old_pseudo new_pseudo : nat). pseudonyms_rotated old_pseudo new_pseudo \<longrightarrow> old_pseudo \<noteq> new_pseudo"
+lemma anon_015_pseudonym_rotation: "\<forall>(old_pseudo :: nat) (new_pseudo :: nat). pseudonyms_rotated old_pseudo new_pseudo \<longrightarrow> old_pseudo \<noteq> new_pseudo"
   by auto
 
 (* anon_016_circuit_lifetime (matches Coq) *)
@@ -196,11 +202,11 @@ lemma anon_018_uniform_size: "\<forall>(sizes : list nat) (target :: nat). sizes
   by auto
 
 (* anon_019_forward_secrecy (matches Coq) *)
-lemma anon_019_forward_secrecy: "\<forall>(session_key long_term_key : nat). forward_secret session_key long_term_key \<longrightarrow> session_key \<noteq> long_term_key"
+lemma anon_019_forward_secrecy: "\<forall>(session_key :: nat) (long_term_key :: nat). forward_secret session_key long_term_key \<longrightarrow> session_key \<noteq> long_term_key"
   by auto
 
 (* anon_020_intersection_resistance (matches Coq) *)
-lemma anon_020_intersection_resistance: "\<forall>(observations required : nat). intersection_resistant observations required \<longrightarrow> required > observations"
+lemma anon_020_intersection_resistance: "\<forall>(observations :: nat) (required :: nat). intersection_resistant observations required \<longrightarrow> required > observations"
   by auto
 
 (* anon_021_rendezvous_hidden (matches Coq) *)
@@ -208,7 +214,7 @@ lemma anon_021_rendezvous_hidden: "\<forall>(rp_id :: nat) (observer_known : lis
   by auto
 
 (* anon_022_bidirectional (matches Coq) *)
-lemma anon_022_bidirectional: "\<forall>(sender receiver : nat) (sender_set receiver_set : AnonymitySet). k_anonymous sender_set 2 \<longrightarrow> k_anonymous receiver_set 2 \<longrightarrow> length sender_set \<ge> 2 \<and> length receiver_set \<ge> 2"
+lemma anon_022_bidirectional: "\<forall>(sender :: nat) (receiver :: nat) (sender_set :: anonymity_set) (receiver_set :: anonymity_set). k_anonymous sender_set 2 \<longrightarrow> k_anonymous receiver_set 2 \<longrightarrow> length sender_set \<ge> 2 \<and> length receiver_set \<ge> 2"
   by auto
 
 (* anon_023_no_spof (matches Coq) *)

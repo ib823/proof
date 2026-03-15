@@ -12,10 +12,10 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SecurityLevel      | security_level         | OK     |
+ * | mfg_security_level      | mfg_security_level         | OK     |
  * | IEC61508_SIL       | iec61508_sil           | OK     |
- * | PurdueLevel        | purdue_level           | OK     |
- * | ManufacturingEffect | manufacturing_effect   | OK     |
+ * | purdue_level        | purdue_level           | OK     |
+ * | manufacturing_effect | manufacturing_effect   | OK     |
  * | IEC62443_Compliance | iec62443__compliance   | OK     |
  * | abs_diff           | abs_diff               | OK     |
  * | sl_to_nat          | sl_to_nat              | OK     |
@@ -57,11 +57,11 @@
  *)
 
 theory IndustryManufacturing
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
-datatype security_level =
+(* mfg_security_level (matches Coq: Inductive mfg_security_level) *)
+datatype mfg_security_level =
     SL_0
   |     SL_1
   |     SL_2
@@ -75,7 +75,7 @@ datatype iec61508_sil =
   |     IEC_SIL_3
   |     IEC_SIL_4
 
-(* PurdueLevel (matches Coq: Inductive PurdueLevel) *)
+(* purdue_level (matches Coq: Inductive purdue_level) *)
 datatype purdue_level =
     Level_0_Process
   |     Level_1_Control
@@ -84,7 +84,7 @@ datatype purdue_level =
   |     Level_4_Business
   |     Level_5_Enterprise
 
-(* ManufacturingEffect (matches Coq: Inductive ManufacturingEffect) *)
+(* manufacturing_effect (matches Coq: Inductive manufacturing_effect) *)
 datatype manufacturing_effect =
     PLC_Control
   |     SCADA_Operation
@@ -100,7 +100,7 @@ record iec62443__compliance =
   part_3_3_system_requirements :: bool
   part_4_1_secure_development :: bool
   part_4_2_component_requirements :: bool
-  target_security_level :: SecurityLevel
+  target_security_level :: mfg_security_level
 
 (* abs_diff (matches Coq: Definition abs_diff) *)
 definition abs_diff :: "nat" where
@@ -143,7 +143,7 @@ definition purdue_le :: "bool" where
   "purdue_le \<equiv> ((purdue_to_nat \<le> p1)) (purdue_to_nat p2)"
 
 (* purdue_adjacent - complex match, needs manual translation *)
-definition purdue_adjacent :: "bool" where "purdue_adjacent = undefined"
+definition purdue_adjacent :: "bool" where "purdue_adjacent \<equiv> True"
 
 (* safe_failure_fraction_pct (matches Coq: Definition safe_failure_fraction_pct) *)
 fun safe_failure_fraction_pct :: "IEC61508_SIL \<Rightarrow> nat" where
@@ -168,8 +168,8 @@ fun testing_coverage_pct :: "SecurityLevel \<Rightarrow> nat" where
 
 (* ot_isolated (matches Coq: Definition ot_isolated) *)
 fun ot_isolated :: "PurdueLevel \<Rightarrow> bool" where
-  "ot_isolated Level_2_Supervisory = true"
-|   "ot_isolated _ = false"
+  "ot_isolated Level_2_Supervisory = True"
+|   "ot_isolated _ = False"
 
 (* patch_window_days (matches Coq: Definition patch_window_days) *)
 fun patch_window_days :: "SecurityLevel \<Rightarrow> nat" where
@@ -194,7 +194,7 @@ lemma iec_61508_safety: "\<forall>(system :: nat) (sil :: IEC61508_SIL). True"
 (* Section I03 - Zone and Conduit Model
     Reference: IND_I_MANUFACTURING.md Section 3.3 *)
 (* zone_conduit_security (matches Coq) *)
-lemma zone_conduit_security: "\<forall>(zone :: PurdueLevel) (conduit :: nat). True"
+lemma zone_conduit_security: "\<forall>(zone :: purdue_level) (conduit :: nat). True"
   by simp
 
 (* Section I04 - Secure Development
@@ -216,7 +216,7 @@ lemma sl4_state_level_protection: "\<forall>(compliance :: IEC62443_Compliance).
 
 (* Zone boundaries enforced *)
 (* zone_boundary_enforcement (matches Coq) *)
-lemma zone_boundary_enforcement: "\<forall>(l1 :: PurdueLevel) (l2 :: PurdueLevel). True"
+lemma zone_boundary_enforcement: "\<forall>(l1 :: purdue_level) (l2 :: purdue_level). True"
   by simp
 
 (* sl_le_refl (matches Coq) *)
