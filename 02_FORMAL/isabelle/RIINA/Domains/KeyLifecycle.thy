@@ -176,18 +176,18 @@ definition recovery_tested :: "bool" where
 
 (* key_layers (matches Coq: Definition key_layers) *)
 definition key_layers :: "bool" where
-  "key_layers \<equiv> (entropy \<and> (andb) state ((rotation \<and> (andb) destroy escrow)))"
+  "key_layers \<equiv> (entropy \<and> state \<and> rotation \<and> destroy \<and> escrow)"
 
 (* key_001_entropy_sufficient (matches Coq) *)
-lemma key_001_entropy_sufficient: "\<forall> (key : KeyMetadata) (min_entropy : nat), entropy_sufficient key min_entropy = True \<longrightarrow> min_entropy \<le> key_entropy_bits key"
+lemma key_001_entropy_sufficient: "\<forall>(key :: KeyMetadata) (min_entropy :: nat). entropy_sufficient key min_entropy = True \<longrightarrow> min_entropy \<le> key_entropy_bits key"
   by auto
 
 (* key_002_active_usable (matches Coq) *)
-lemma key_002_active_usable: "\<forall> (key : KeyMetadata), key_state key = Active \<longrightarrow> is_usable_state (key_state key) = True"
+lemma key_002_active_usable: "\<forall>(key :: KeyMetadata). key_state key = Active \<longrightarrow> is_usable_state (key_state key) = True"
   by simp
 
 (* key_003_valid_transition (matches Coq) *)
-lemma key_003_valid_transition: "\<forall> (from to : KeyState), valid_transition from to = True \<longrightarrow> valid_transition from to = True"
+lemma key_003_valid_transition: "\<forall>(from to : KeyState). valid_transition from to = True \<longrightarrow> valid_transition from to = True"
   by auto
 
 (* key_004_destroyed_unusable (matches Coq) *)
@@ -199,83 +199,83 @@ lemma key_005_compromised_unusable: "is_usable_state Compromised = False"
   by simp
 
 (* key_006_not_expired (matches Coq) *)
-lemma key_006_not_expired: "\<forall> (key : KeyMetadata) (current_time : nat), key_not_expired key current_time = True \<longrightarrow> current_time < key_expires key"
+lemma key_006_not_expired: "\<forall>(key :: KeyMetadata) (current_time :: nat). key_not_expired key current_time = True \<longrightarrow> current_time < key_expires key"
   by auto
 
 (* key_007_rotation_new (matches Coq) *)
-lemma key_007_rotation_new: "\<forall> (rot : RotationRecord), rotation_valid rot = True \<longrightarrow> rot_old_key rot \<noteq> rot_new_key rot"
+lemma key_007_rotation_new: "\<forall>(rot :: RotationRecord). rotation_valid rot = True \<longrightarrow> rot_old_key rot \<noteq> rot_new_key rot"
   by auto
 
 (* key_008_rotation_timing (matches Coq) *)
-lemma key_008_rotation_timing: "\<forall> (key : KeyMetadata) (rot : RotationRecord), rotation_after_creation key rot = True \<longrightarrow> key_created key < rot_timestamp rot"
+lemma key_008_rotation_timing: "\<forall>(key :: KeyMetadata) (rot :: RotationRecord). rotation_after_creation key rot = True \<longrightarrow> key_created key < rot_timestamp rot"
   by auto
 
 (* key_009_destruction_verified (matches Coq) *)
-lemma key_009_destruction_verified: "\<forall> (dest : DestructionRecord), destruction_verified dest = True \<longrightarrow> dest_verified dest = True"
+lemma key_009_destruction_verified: "\<forall>(dest :: DestructionRecord). destruction_verified dest = True \<longrightarrow> dest_verified dest = True"
   by auto
 
 (* key_010_escrow_threshold (matches Coq) *)
-lemma key_010_escrow_threshold: "\<forall> (share : EscrowShare), escrow_threshold_valid share = True \<longrightarrow> 1 \<le> escrow_threshold share \<and> escrow_threshold share \<le> escrow_total share"
+lemma key_010_escrow_threshold: "\<forall>(share :: EscrowShare). escrow_threshold_valid share = True \<longrightarrow> 1 \<le> escrow_threshold share \<and> escrow_threshold share \<le> escrow_total share"
   by auto
 
 (* key_011_escrow_share_index (matches Coq) *)
-lemma key_011_escrow_share_index: "\<forall> (share : EscrowShare), escrow_share_index_valid share = True \<longrightarrow> escrow_share_index share < escrow_total share"
+lemma key_011_escrow_share_index: "\<forall>(share :: EscrowShare). escrow_share_index_valid share = True \<longrightarrow> escrow_share_index share < escrow_total share"
   by auto
 
 (* key_012_destruction_method (matches Coq) *)
-lemma key_012_destruction_method: "\<forall> (dest : DestructionRecord), destruction_method_valid dest = True \<longrightarrow> dest_method dest \<le> 2"
+lemma key_012_destruction_method: "\<forall>(dest :: DestructionRecord). destruction_method_valid dest = True \<longrightarrow> dest_method dest \<le> 2"
   by auto
 
 (* key_013_symmetric_size (matches Coq) *)
-lemma key_013_symmetric_size: "\<forall> (bits min_bits : nat), symmetric_key_size_ok bits min_bits = True \<longrightarrow> min_bits \<le> bits"
+lemma key_013_symmetric_size: "\<forall>(bits min_bits : nat). symmetric_key_size_ok bits min_bits = True \<longrightarrow> min_bits \<le> bits"
   by auto
 
 (* key_014_asymmetric_size (matches Coq) *)
-lemma key_014_asymmetric_size: "\<forall> (bits min_bits : nat), asymmetric_key_size_ok bits min_bits = True \<longrightarrow> min_bits \<le> bits"
+lemma key_014_asymmetric_size: "\<forall>(bits min_bits : nat). asymmetric_key_size_ok bits min_bits = True \<longrightarrow> min_bits \<le> bits"
   by auto
 
 (* key_015_purpose_bound (matches Coq) *)
-lemma key_015_purpose_bound: "\<forall> (key_purpose allowed_purpose : nat), purpose_matches key_purpose allowed_purpose = True \<longrightarrow> key_purpose = allowed_purpose"
+lemma key_015_purpose_bound: "\<forall>(key_purpose allowed_purpose : nat). purpose_matches key_purpose allowed_purpose = True \<longrightarrow> key_purpose = allowed_purpose"
   by auto
 
 (* key_016_lifetime (matches Coq) *)
-lemma key_016_lifetime: "\<forall> (created expires max_lifetime : nat), lifetime_ok created expires max_lifetime = True \<longrightarrow> expires - created \<le> max_lifetime"
+lemma key_016_lifetime: "\<forall>(created expires max_lifetime : nat). lifetime_ok created expires max_lifetime = True \<longrightarrow> expires - created \<le> max_lifetime"
   by auto
 
 (* key_017_rotation_due (matches Coq) *)
-lemma key_017_rotation_due: "\<forall> (last_rotation current max_period : nat), rotation_due last_rotation current max_period = True \<longrightarrow> max_period < current - last_rotation"
+lemma key_017_rotation_due: "\<forall>(last_rotation current max_period : nat). rotation_due last_rotation current max_period = True \<longrightarrow> max_period < current - last_rotation"
   by auto
 
 (* key_018_derivation_depth (matches Coq) *)
-lemma key_018_derivation_depth: "\<forall> (depth max_depth : nat), derivation_depth_ok depth max_depth = True \<longrightarrow> depth \<le> max_depth"
+lemma key_018_derivation_depth: "\<forall>(depth max_depth : nat). derivation_depth_ok depth max_depth = True \<longrightarrow> depth \<le> max_depth"
   by auto
 
 (* key_019_access_control (matches Coq) *)
-lemma key_019_access_control: "\<forall> (requester required : nat), access_allowed requester required = True \<longrightarrow> required \<le> requester"
+lemma key_019_access_control: "\<forall>(requester required : nat). access_allowed requester required = True \<longrightarrow> required \<le> requester"
   by auto
 
 (* key_020_hsm_storage (matches Coq) *)
-lemma key_020_hsm_storage: "\<forall> (hsm_flag : bool), hsm_stored hsm_flag = True \<longrightarrow> hsm_flag = True"
+lemma key_020_hsm_storage: "\<forall>(hsm_flag :: bool). hsm_stored hsm_flag = True \<longrightarrow> hsm_flag = True"
   by auto
 
 (* key_021_audit_complete (matches Coq) *)
-lemma key_021_audit_complete: "\<forall> (operations logged : nat), audit_complete operations logged = True \<longrightarrow> operations = logged"
+lemma key_021_audit_complete: "\<forall>(operations logged : nat). audit_complete operations logged = True \<longrightarrow> operations = logged"
   by auto
 
 (* key_022_backup_encrypted (matches Coq) *)
-lemma key_022_backup_encrypted: "\<forall> (encryption_key : nat), backup_encrypted encryption_key = True \<longrightarrow> encryption_key > 0"
+lemma key_022_backup_encrypted: "\<forall>(encryption_key :: nat). backup_encrypted encryption_key = True \<longrightarrow> encryption_key > 0"
   by auto
 
 (* key_023_custodian_diversity (matches Coq) *)
-lemma key_023_custodian_diversity: "\<forall> (custodians : list nat) (min_custodians : nat), custodians_diverse custodians min_custodians = True \<longrightarrow> min_custodians \<le> length (nodup Nat.eq_dec custodians)"
+lemma key_023_custodian_diversity: "\<forall>(custodians : list nat) (min_custodians :: nat). custodians_diverse custodians min_custodians = True \<longrightarrow> min_custodians \<le> length (nodup Nat.eq_dec custodians)"
   by auto
 
 (* key_024_recovery_tested (matches Coq) *)
-lemma key_024_recovery_tested: "\<forall> (last_test current max_interval : nat), recovery_tested last_test current max_interval = True \<longrightarrow> current - last_test \<le> max_interval"
+lemma key_024_recovery_tested: "\<forall>(last_test current max_interval : nat). recovery_tested last_test current max_interval = True \<longrightarrow> current - last_test \<le> max_interval"
   by auto
 
 (* key_025_defense_in_depth (matches Coq) *)
-lemma key_025_defense_in_depth: "\<forall> e s r d es, key_layers e s r d es = True \<longrightarrow> e = True \<and> s = True \<and> r = True \<and> d = True \<and> es = True"
+lemma key_025_defense_in_depth: "\<forall>e s r d es. key_layers e s r d es = True \<longrightarrow> e = True \<and> s = True \<and> r = True \<and> d = True \<and> es = True"
   by auto
 
 end

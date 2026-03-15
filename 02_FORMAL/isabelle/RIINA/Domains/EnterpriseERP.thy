@@ -78,22 +78,22 @@ datatype doc_state =
 definition sod_satisfied :: "ConflictingRoles \<Rightarrow> bool" where
   "sod_satisfied conflicts \<equiv> forall r1 r2 u,
     In (r1, r2) conflicts ->
-    ~ (exists a1 a2, In a1 assignments /\ In a2 assignments /\
-       user_id (assign_user a1) = u /\ user_id (assign_user a2) = u /\
-       role_id (assign_role a1) = r1 /\ role_id (assign_role a2) = r2)"
+    ~ (exists a1 a2, a1 \<in> set assignments \<and> a2 \<in> set assignments \<and>
+       user_id (assign_user a1) = u \<and> user_id (assign_user a2) = u \<and>
+       role_id (assign_role a1) = r1 \<and> role_id (assign_role a2) = r2)"
 
 (* assignment_active - complex match, needs manual translation *)
 definition assignment_active :: "bool" where "assignment_active = undefined"
 
 (* check_sod (matches Coq: Definition check_sod) *)
 definition check_sod :: "ConflictingRoles \<Rightarrow> bool" where
-  "check_sod conflicts \<equiv> (\<not> (existsb) (fun conflict =>
+  "check_sod conflicts \<equiv> (\<not> (existsb) (\<lambda>conflict.
     ((existsb \<and> (fun) r => (r = (fst) conflict)) user_roles)
-         (existsb (fun r => (r = (snd) conflict)) user_roles)) conflicts)"
+         (existsb (\<lambda>r. (r = (snd) conflict)) user_roles)) conflicts)"
 
 (* txn_authorized (matches Coq: Definition txn_authorized) *)
 definition txn_authorized :: "Transaction \<Rightarrow> nat \<Rightarrow> bool" where
-  "txn_authorized txn approver_role \<equiv> forallb (fun rule =>
+  "txn_authorized txn approver_role \<equiv> forallb (\<lambda>rule.
     ((\<not> (Nat.eqb) (approval_txn_type rule \<or> txn_type txn)))
         ((((txn_amount < txn) \<or> approval_threshold rule))
              ((txn_approved txn \<and> (approver_role = (approval_role) rule))))) rules"
@@ -104,14 +104,14 @@ definition not_self_approved :: "Transaction \<Rightarrow> User \<Rightarrow> bo
 
 (* action_audited (matches Coq: Definition action_audited) *)
 definition action_audited :: "bool" where
-  "action_audited \<equiv> existsb (fun a =>
-    (((\<and> = (audit_user)) a) user)
-         ((((\<and> = (audit_action)) a) action)
-               (((audit_resource = a)) resource))) audits"
+  "action_audited \<equiv> existsb (\<lambda>a.
+    (audit_user a = user)
+         ((audit_action a = action)
+               ((audit_resource a = resource)))) audits"
 
 (* same_tenant (matches Coq: Definition same_tenant) *)
 definition same_tenant :: "bool" where
-  "same_tenant \<equiv> ((user_tenant = u1)) (user_tenant u2)"
+  "same_tenant \<equiv> (user_tenant u1 = user_tenant u2)"
 
 (* role_level_sufficient (matches Coq: Definition role_level_sufficient) *)
 definition role_level_sufficient :: "bool" where
@@ -158,7 +158,7 @@ definition data_valid :: "bool \<Rightarrow> bool" where
 
 (* ref_exists (matches Coq: Definition ref_exists) *)
 definition ref_exists :: "nat \<Rightarrow> bool" where
-  "ref_exists ref_id \<equiv> existsb (fun r => (r = ref_id)) valid_refs"
+  "ref_exists ref_id \<equiv> existsb (\<lambda>r. (r = ref_id)) valid_refs"
 
 (* soft_deleted (matches Coq: Definition soft_deleted) *)
 definition soft_deleted :: "bool \<Rightarrow> bool \<Rightarrow> bool" where
@@ -170,58 +170,58 @@ definition data_encrypted :: "nat \<Rightarrow> bool" where
 
 (* erp_layers (matches Coq: Definition erp_layers) *)
 definition erp_layers :: "bool" where
-  "erp_layers \<equiv> (rbac \<and> (andb) sod ((audit \<and> (andb) tenant encryption)))"
+  "erp_layers \<equiv> (rbac \<and> sod \<and> audit \<and> tenant \<and> encryption)"
 
 (* erp_001_rbac_enforced (matches Coq) *)
-lemma erp_001_rbac_enforced: "\<forall> (user : User) (perm : Permission) (assignments : list RoleAssignment) (role_perms : list (nat * nat)), user_has_permission user perm assignments role_perms = True \<longrightarrow> \<exists> a, In a assignments \<and> user_id (assign_user a) = user_id user"
+lemma erp_001_rbac_enforced: "\<forall>(user :: User) (perm :: Permission) (assignments : list RoleAssignment) (role_perms : list (nat * nat)). user_has_permission user perm assignments role_perms = True \<longrightarrow> \<exists>a. a \<in> set assignments \<and> user_id (assign_user a) = user_id user"
   by auto
 
 (* erp_002_assignment_active (matches Coq) *)
-lemma erp_002_assignment_active: "\<forall> (a : RoleAssignment) (current_time : nat), assignment_active a current_time = True \<longrightarrow> assign_start a \<le> current_time"
+lemma erp_002_assignment_active: "\<forall>(a :: RoleAssignment) (current_time :: nat). assignment_active a current_time = True \<longrightarrow> assign_start a \<le> current_time"
   by auto
 
 (* erp_003_sod_enforced (matches Coq) *)
-lemma erp_003_sod_enforced: "\<forall> (user_roles : list nat) (conflicts : ConflictingRoles), check_sod user_roles conflicts = True \<longrightarrow> \<forall> r1 r2, In (r1, r2) conflicts \<longrightarrow> ~ (In r1 user_roles \<and> In r2 user_roles) \<or> (In r1 user_roles \<and> In r2 user_roles)"
+lemma erp_003_sod_enforced: "\<forall>(user_roles : list nat) (conflicts :: ConflictingRoles). check_sod user_roles conflicts = True \<longrightarrow> \<forall>r1 r2. In (r1, r2) conflicts \<longrightarrow> ~ (r1 \<in> set user_roles \<and> r2 \<in> set user_roles) \<or> (r1 \<in> set user_roles \<and> r2 \<in> set user_roles)"
   by auto
 
 (* erp_004_txn_authorized (matches Coq) *)
-lemma erp_004_txn_authorized: "\<forall> (txn : Transaction) (rules : list ApprovalRule) (approver_role : nat), txn_authorized txn rules approver_role = True \<longrightarrow> Forall (fun rule => txn_type txn \<noteq> approval_txn_type rule \<or> txn_amount txn < approval_threshold rule \<or> (txn_approved txn = True \<and> approver_role = approval_role rule)) rules"
+lemma erp_004_txn_authorized: "\<forall>(txn :: Transaction) (rules : list ApprovalRule) (approver_role :: nat). txn_authorized txn rules approver_role = True \<longrightarrow> Forall (\<lambda>rule. txn_type txn \<noteq> approval_txn_type rule \<or> txn_amount txn < approval_threshold rule \<or> (txn_approved txn = True \<and> approver_role = approval_role rule)) rules"
   by auto
 
 (* erp_005_no_self_approval (matches Coq) *)
-lemma erp_005_no_self_approval: "\<forall> (txn : Transaction) (approver : User), not_self_approved txn approver = True \<longrightarrow> user_id (txn_user txn) \<noteq> user_id approver"
+lemma erp_005_no_self_approval: "\<forall>(txn :: Transaction) (approver :: User). not_self_approved txn approver = True \<longrightarrow> user_id (txn_user txn) \<noteq> user_id approver"
   by auto
 
 (* erp_006_audit_created (matches Coq) *)
-lemma erp_006_audit_created: "\<forall> (audits : list AuditEntry) (user action resource : nat), action_audited audits user action resource = True \<longrightarrow> \<exists> a, In a audits \<and> audit_user a = user"
+lemma erp_006_audit_created: "\<forall>(audits : list AuditEntry) (user action resource : nat). action_audited audits user action resource = True \<longrightarrow> \<exists>a. a \<in> set audits \<and> audit_user a = user"
   by auto
 
 (* erp_007_audit_immutable (matches Coq) *)
-lemma erp_007_audit_immutable: "\<forall> (a : AuditEntry), audit_id a = audit_id a"
+lemma erp_007_audit_immutable: "\<forall>(a :: AuditEntry). audit_id a = audit_id a"
   by simp
 
 (* erp_008_tenant_isolation (matches Coq) *)
-lemma erp_008_tenant_isolation: "\<forall> (u1 u2 : User), same_tenant u1 u2 = False \<longrightarrow> user_tenant u1 \<noteq> user_tenant u2"
+lemma erp_008_tenant_isolation: "\<forall>(u1 u2 : User). same_tenant u1 u2 = False \<longrightarrow> user_tenant u1 \<noteq> user_tenant u2"
   by auto
 
 (* erp_009_role_hierarchy (matches Coq) *)
-lemma erp_009_role_hierarchy: "\<forall> (required actual : nat), role_level_sufficient required actual = True \<longrightarrow> required \<le> actual"
+lemma erp_009_role_hierarchy: "\<forall>(required actual : nat). role_level_sufficient required actual = True \<longrightarrow> required \<le> actual"
   by auto
 
 (* erp_010_multi_approval (matches Coq) *)
-lemma erp_010_multi_approval: "\<forall> (required obtained : nat), approvals_sufficient required obtained = True \<longrightarrow> required \<le> obtained"
+lemma erp_010_multi_approval: "\<forall>(required obtained : nat). approvals_sufficient required obtained = True \<longrightarrow> required \<le> obtained"
   by auto
 
 (* erp_011_budget_enforced (matches Coq) *)
-lemma erp_011_budget_enforced: "\<forall> (spent limit : nat), within_budget spent limit = True \<longrightarrow> spent \<le> limit"
+lemma erp_011_budget_enforced: "\<forall>(spent limit : nat). within_budget spent limit = True \<longrightarrow> spent \<le> limit"
   by auto
 
 (* erp_012_period_closed (matches Coq) *)
-lemma erp_012_period_closed: "\<forall> (period_end current : nat), period_closed period_end current = True \<longrightarrow> period_end < current"
+lemma erp_012_period_closed: "\<forall>(period_end current : nat). period_closed period_end current = True \<longrightarrow> period_end < current"
   by auto
 
 (* erp_013_valid_workflow (matches Coq) *)
-lemma erp_013_valid_workflow: "\<forall> (from to : DocState), valid_doc_transition from to = True \<longrightarrow> valid_doc_transition from to = True"
+lemma erp_013_valid_workflow: "\<forall>(from to : DocState). valid_doc_transition from to = True \<longrightarrow> valid_doc_transition from to = True"
   by auto
 
 (* erp_014_no_post_without_approval (matches Coq) *)
@@ -229,47 +229,47 @@ lemma erp_014_no_post_without_approval: "valid_doc_transition Draft Posted = Fal
   by simp
 
 (* erp_015_maker_checker (matches Coq) *)
-lemma erp_015_maker_checker: "\<forall> (maker checker : User), maker_checker maker checker = True \<longrightarrow> user_id maker \<noteq> user_id checker"
+lemma erp_015_maker_checker: "\<forall>(maker checker : User). maker_checker maker checker = True \<longrightarrow> user_id maker \<noteq> user_id checker"
   by auto
 
 (* erp_016_delegation_logged (matches Coq) *)
-lemma erp_016_delegation_logged: "\<forall> (audits : list AuditEntry) (delegator delegate : nat), action_audited audits delegator 99 delegate = True \<longrightarrow> \<exists> a, In a audits"
+lemma erp_016_delegation_logged: "\<forall>(audits : list AuditEntry) (delegator delegate : nat). action_audited audits delegator 99 delegate = True \<longrightarrow> \<exists>a. a \<in> set audits"
   by auto
 
 (* erp_017_time_limited (matches Coq) *)
-lemma erp_017_time_limited: "\<forall> (grant_end current : nat), access_time_limited grant_end current = True \<longrightarrow> current < grant_end"
+lemma erp_017_time_limited: "\<forall>(grant_end current : nat). access_time_limited grant_end current = True \<longrightarrow> current < grant_end"
   by auto
 
 (* erp_018_field_security (matches Coq) *)
-lemma erp_018_field_security: "\<forall> (field_sensitivity user_clearance : nat), field_accessible field_sensitivity user_clearance = True \<longrightarrow> field_sensitivity \<le> user_clearance"
+lemma erp_018_field_security: "\<forall>(field_sensitivity user_clearance : nat). field_accessible field_sensitivity user_clearance = True \<longrightarrow> field_sensitivity \<le> user_clearance"
   by auto
 
 (* erp_019_lock_exclusive (matches Coq) *)
-lemma erp_019_lock_exclusive: "\<forall> (lock_holder requester : nat), lock_exclusive lock_holder requester = True \<longrightarrow> lock_holder = requester"
+lemma erp_019_lock_exclusive: "\<forall>(lock_holder requester : nat). lock_exclusive lock_holder requester = True \<longrightarrow> lock_holder = requester"
   by auto
 
 (* erp_020_concurrent_controlled (matches Coq) *)
-lemma erp_020_concurrent_controlled: "\<forall> (active max : nat), concurrent_safe active max = True \<longrightarrow> active \<le> max"
+lemma erp_020_concurrent_controlled: "\<forall>(active max : nat). concurrent_safe active max = True \<longrightarrow> active \<le> max"
   by auto
 
 (* erp_021_data_validated (matches Coq) *)
-lemma erp_021_data_validated: "\<forall> (passed : bool), data_valid passed = True \<longrightarrow> passed = True"
+lemma erp_021_data_validated: "\<forall>(passed :: bool). data_valid passed = True \<longrightarrow> passed = True"
   by auto
 
 (* erp_022_ref_integrity (matches Coq) *)
-lemma erp_022_ref_integrity: "\<forall> (ref_id : nat) (valid_refs : list nat), ref_\<exists> ref_id valid_refs = True \<longrightarrow> \<exists> r, In r valid_refs \<and> r = ref_id"
+lemma erp_022_ref_integrity: "\<forall>(ref_id :: nat) (valid_refs : list nat). ref_\<exists>ref_id valid_refs = True \<longrightarrow> \<exists> r. r \<in> set valid_refs \<and> r = ref_id"
   by auto
 
 (* erp_023_soft_delete (matches Coq) *)
-lemma erp_023_soft_delete: "\<forall> (deleted data_present : bool), soft_deleted deleted data_present \<longrightarrow> deleted = True \<longrightarrow> data_present = True"
+lemma erp_023_soft_delete: "\<forall>(deleted data_present : bool). soft_deleted deleted data_present \<longrightarrow> deleted = True \<longrightarrow> data_present = True"
   by auto
 
 (* erp_024_encrypted_at_rest (matches Coq) *)
-lemma erp_024_encrypted_at_rest: "\<forall> (key_id : nat), data_encrypted key_id = True \<longrightarrow> 0 < key_id"
+lemma erp_024_encrypted_at_rest: "\<forall>(key_id :: nat). data_encrypted key_id = True \<longrightarrow> 0 < key_id"
   by auto
 
 (* erp_025_defense_in_depth (matches Coq) *)
-lemma erp_025_defense_in_depth: "\<forall> r s a t e, erp_layers r s a t e = True \<longrightarrow> r = True \<and> s = True \<and> a = True \<and> t = True \<and> e = True"
+lemma erp_025_defense_in_depth: "\<forall>r s a t e. erp_layers r s a t e = True \<longrightarrow> r = True \<and> s = True \<and> a = True \<and> t = True \<and> e = True"
   by auto
 
 end

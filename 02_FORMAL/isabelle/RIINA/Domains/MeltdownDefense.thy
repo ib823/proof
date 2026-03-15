@@ -106,8 +106,8 @@ definition riina_meltdown_config :: "MeltdownDefenseConfig" where
   True True True True True True True"
 
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* MELTDOWN_001: All Variants Protected *)
 (* MELTDOWN_001_all_variants (matches Coq) *)
@@ -126,32 +126,32 @@ lemma MELTDOWN_003_fully_protected: "meltdown_fully_protected riina_meltdown_con
 
 (* MELTDOWN_004: US Protection Required *)
 (* MELTDOWN_004_us_required (matches Coq) *)
-lemma MELTDOWN_004_us_required: "\<forall> c : MeltdownDefenseConfig, all_meltdown_protected c = True \<longrightarrow> mdc_us_protected c = True"
+lemma MELTDOWN_004_us_required: "\<forall>c : MeltdownDefenseConfig. all_meltdown_protected c = True \<longrightarrow> mdc_us_protected c = True"
   by auto
 
 (* MELTDOWN_005: Foreshadow Protection Required *)
 (* MELTDOWN_005_p_required (matches Coq) *)
-lemma MELTDOWN_005_p_required: "\<forall> c : MeltdownDefenseConfig, all_meltdown_protected c = True \<longrightarrow> mdc_p_protected c = True"
+lemma MELTDOWN_005_p_required: "\<forall>c : MeltdownDefenseConfig. all_meltdown_protected c = True \<longrightarrow> mdc_p_protected c = True"
   by auto
 
 (* MELTDOWN_006: KPTI Required *)
 (* MELTDOWN_006_kpti_required (matches Coq) *)
-lemma MELTDOWN_006_kpti_required: "\<forall> c : MeltdownDefenseConfig, meltdown_mitigations_enabled c = True \<longrightarrow> mdc_kpti_enabled c = True"
+lemma MELTDOWN_006_kpti_required: "\<forall>c : MeltdownDefenseConfig. meltdown_mitigations_enabled c = True \<longrightarrow> mdc_kpti_enabled c = True"
   by auto
 
 (* MELTDOWN_007: L1TF Mitigation Required *)
 (* MELTDOWN_007_l1tf_required (matches Coq) *)
-lemma MELTDOWN_007_l1tf_required: "\<forall> c : MeltdownDefenseConfig, meltdown_mitigations_enabled c = True \<longrightarrow> mdc_l1tf_mitigated c = True"
+lemma MELTDOWN_007_l1tf_required: "\<forall>c : MeltdownDefenseConfig. meltdown_mitigations_enabled c = True \<longrightarrow> mdc_l1tf_mitigated c = True"
   by auto
 
 (* MELTDOWN_008: Full Implies Variants *)
 (* MELTDOWN_008_full_implies_variants (matches Coq) *)
-lemma MELTDOWN_008_full_implies_variants: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> all_meltdown_protected c = True"
+lemma MELTDOWN_008_full_implies_variants: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> all_meltdown_protected c = True"
   by auto
 
 (* MELTDOWN_009: Full Implies Mitigations *)
 (* MELTDOWN_009_full_implies_mitigations (matches Coq) *)
-lemma MELTDOWN_009_full_implies_mitigations: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> meltdown_mitigations_enabled c = True"
+lemma MELTDOWN_009_full_implies_mitigations: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> meltdown_mitigations_enabled c = True"
   by auto
 
 (* MELTDOWN_010: RIINA KPTI Enabled *)
@@ -166,12 +166,12 @@ lemma MELTDOWN_011_riina_l1tf: "mdc_l1tf_mitigated riina_meltdown_config = True"
 
 (* MELTDOWN_012: Full Implies KPTI *)
 (* MELTDOWN_012_full_implies_kpti (matches Coq) *)
-lemma MELTDOWN_012_full_implies_kpti: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> mdc_kpti_enabled c = True"
+lemma MELTDOWN_012_full_implies_kpti: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> mdc_kpti_enabled c = True"
   by auto
 
 (* MELTDOWN_013: Full Implies US Protected *)
 (* MELTDOWN_013_full_implies_us (matches Coq) *)
-lemma MELTDOWN_013_full_implies_us: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> mdc_us_protected c = True"
+lemma MELTDOWN_013_full_implies_us: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> mdc_us_protected c = True"
   by auto
 
 (* MELTDOWN_014: RIINA US Protected *)
@@ -181,47 +181,47 @@ lemma MELTDOWN_014_riina_us: "mdc_us_protected riina_meltdown_config = True"
 
 (* MELTDOWN_015: Complete Meltdown Defense *)
 (* MELTDOWN_015_complete_defense (matches Coq) *)
-lemma MELTDOWN_015_complete_defense: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> mdc_us_protected c = True \<and> mdc_kpti_enabled c = True \<and> mdc_l1tf_mitigated c = True"
+lemma MELTDOWN_015_complete_defense: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> mdc_us_protected c = True \<and> mdc_kpti_enabled c = True \<and> mdc_l1tf_mitigated c = True"
   by auto
 
 (* MELTDOWN_016: RW Protection Required *)
 (* MELTDOWN_016_rw_required (matches Coq) *)
-lemma MELTDOWN_016_rw_required: "\<forall> c : MeltdownDefenseConfig, all_meltdown_protected c = True \<longrightarrow> mdc_rw_protected c = True"
+lemma MELTDOWN_016_rw_required: "\<forall>c : MeltdownDefenseConfig. all_meltdown_protected c = True \<longrightarrow> mdc_rw_protected c = True"
   by auto
 
 (* MELTDOWN_017: PK Protection Required *)
 (* MELTDOWN_017_pk_required (matches Coq) *)
-lemma MELTDOWN_017_pk_required: "\<forall> c : MeltdownDefenseConfig, all_meltdown_protected c = True \<longrightarrow> mdc_pk_protected c = True"
+lemma MELTDOWN_017_pk_required: "\<forall>c : MeltdownDefenseConfig. all_meltdown_protected c = True \<longrightarrow> mdc_pk_protected c = True"
   by auto
 
 (* MELTDOWN_018: BR Protection Required *)
 (* MELTDOWN_018_br_required (matches Coq) *)
-lemma MELTDOWN_018_br_required: "\<forall> c : MeltdownDefenseConfig, all_meltdown_protected c = True \<longrightarrow> mdc_br_protected c = True"
+lemma MELTDOWN_018_br_required: "\<forall>c : MeltdownDefenseConfig. all_meltdown_protected c = True \<longrightarrow> mdc_br_protected c = True"
   by auto
 
 (* MELTDOWN_019: Full Implies L1TF Mitigated *)
 (* MELTDOWN_019_full_implies_l1tf (matches Coq) *)
-lemma MELTDOWN_019_full_implies_l1tf: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> mdc_l1tf_mitigated c = True"
+lemma MELTDOWN_019_full_implies_l1tf: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> mdc_l1tf_mitigated c = True"
   by auto
 
 (* MELTDOWN_020: Full Implies Foreshadow Protected *)
 (* MELTDOWN_020_full_implies_p (matches Coq) *)
-lemma MELTDOWN_020_full_implies_p: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> mdc_p_protected c = True"
+lemma MELTDOWN_020_full_implies_p: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> mdc_p_protected c = True"
   by auto
 
 (* MELTDOWN_021: Full Implies RW Protected *)
 (* MELTDOWN_021_full_implies_rw (matches Coq) *)
-lemma MELTDOWN_021_full_implies_rw: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> mdc_rw_protected c = True"
+lemma MELTDOWN_021_full_implies_rw: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> mdc_rw_protected c = True"
   by auto
 
 (* MELTDOWN_022: Full Implies PK Protected *)
 (* MELTDOWN_022_full_implies_pk (matches Coq) *)
-lemma MELTDOWN_022_full_implies_pk: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> mdc_pk_protected c = True"
+lemma MELTDOWN_022_full_implies_pk: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> mdc_pk_protected c = True"
   by auto
 
 (* MELTDOWN_023: Full Implies BR Protected *)
 (* MELTDOWN_023_full_implies_br (matches Coq) *)
-lemma MELTDOWN_023_full_implies_br: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> mdc_br_protected c = True"
+lemma MELTDOWN_023_full_implies_br: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> mdc_br_protected c = True"
   by auto
 
 (* MELTDOWN_024: RIINA P Protected *)
@@ -246,12 +246,12 @@ lemma MELTDOWN_027_riina_br: "mdc_br_protected riina_meltdown_config = True"
 
 (* MELTDOWN_028: Variant and Mitigation Composition *)
 (* MELTDOWN_028_variant_mitigation_composition (matches Coq) *)
-lemma MELTDOWN_028_variant_mitigation_composition: "\<forall> c : MeltdownDefenseConfig, all_meltdown_protected c = True \<longrightarrow> meltdown_mitigations_enabled c = True \<longrightarrow> meltdown_fully_protected c = True"
+lemma MELTDOWN_028_variant_mitigation_composition: "\<forall>c : MeltdownDefenseConfig. all_meltdown_protected c = True \<longrightarrow> meltdown_mitigations_enabled c = True \<longrightarrow> meltdown_fully_protected c = True"
   by simp
 
 (* MELTDOWN_029: Complete Decomposition *)
 (* MELTDOWN_029_complete_decomposition (matches Coq) *)
-lemma MELTDOWN_029_complete_decomposition: "\<forall> c : MeltdownDefenseConfig, meltdown_fully_protected c = True \<longrightarrow> mdc_us_protected c = True \<and> mdc_p_protected c = True \<and> mdc_rw_protected c = True \<and> mdc_pk_protected c = True \<and> mdc_br_protected c = True \<and> mdc_kpti_enabled c = True \<and> mdc_l1tf_mitigated c = True"
+lemma MELTDOWN_029_complete_decomposition: "\<forall>c : MeltdownDefenseConfig. meltdown_fully_protected c = True \<longrightarrow> mdc_us_protected c = True \<and> mdc_p_protected c = True \<and> mdc_rw_protected c = True \<and> mdc_pk_protected c = True \<and> mdc_br_protected c = True \<and> mdc_kpti_enabled c = True \<and> mdc_l1tf_mitigated c = True"
   by auto
 
 end

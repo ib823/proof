@@ -221,12 +221,12 @@ definition valid_country_support :: "CountrySupport \<Rightarrow> bool" where
 
 (* compliant_registry (matches Coq: Definition compliant_registry) *)
 definition compliant_registry :: "CountryRegistry \<Rightarrow> bool" where
-  "compliant_registry reg \<equiv> forall c, In c un_member_states ->
+  "compliant_registry reg \<equiv> forall c, c \<in> set un_member_states ->
     sanctioned (reg c) = True \/ can_send (reg c) = True \/ can_receive (reg c) = True"
 
 (* compliant_currency_registry (matches Coq: Definition compliant_currency_registry) *)
 definition compliant_currency_registry :: "CurrencyRegistry \<Rightarrow> bool" where
-  "compliant_currency_registry reg \<equiv> forall c, In c iso_4217_currencies -> is_supported (reg c) = True"
+  "compliant_currency_registry reg \<equiv> forall c, c \<in> set iso_4217_currencies -> is_supported (reg c) = True"
 
 (* rate_staleness (matches Coq: Definition rate_staleness) *)
 definition rate_staleness :: "FXQuote \<Rightarrow> nat \<Rightarrow> nat" where
@@ -234,9 +234,9 @@ definition rate_staleness :: "FXQuote \<Rightarrow> nat \<Rightarrow> nat" where
 
 (* valid_quote (matches Coq: Definition valid_quote) *)
 definition valid_quote :: "FXQuote \<Rightarrow> bool" where
-  "valid_quote q \<equiv> customer_rate q = mid_market_rate q + spread q /\
-  (guarantee_window q > 0)%nat /\
-  (hedge_ratio_bps q >= 9800)%nat /\ (hedge_ratio_bps q <= 10200)%nat"
+  "valid_quote q \<equiv> customer_rate q = mid_market_rate q + spread q \<and>
+  (guarantee_window q > 0)%nat \<and>
+  (hedge_ratio_bps q >= 9800)%nat \<and> (hedge_ratio_bps q <= 10200)%nat"
 
 (* fresh_quote (matches Coq: Definition fresh_quote) *)
 definition fresh_quote :: "FXQuote \<Rightarrow> nat \<Rightarrow> bool" where
@@ -281,10 +281,10 @@ fun is_local_rail :: "PaymentRail \<Rightarrow> bool" where
 
 (* valid_transfer (matches Coq: Definition valid_transfer) *)
 definition valid_transfer :: "Transfer \<Rightarrow> bool" where
-  "valid_transfer t \<equiv> screening_passed t = True /\
-  (is_swift_rail (rail t) = True -> tracking_available t = True) /\
-  (is_instant_rail (rail t) = True -> (settlement_time_sec t <= 60)%nat) /\
-  (is_blockchain_rail (rail t) = True -> is_atomic t = True) /\
+  "valid_transfer t \<equiv> screening_passed t = True \<and>
+  (is_swift_rail (rail t) = True -> tracking_available t = True) \<and>
+  (is_instant_rail (rail t) = True -> (settlement_time_sec t <= 60)%nat) \<and>
+  (is_blockchain_rail (rail t) = True -> is_atomic t = True) \<and>
   (is_mobile_money_rail (rail t) = True -> (settlement_time_sec t <= 5)%nat)"
 
 (* total_cost (matches Coq: Definition total_cost) *)
@@ -293,21 +293,21 @@ definition total_cost :: "Transfer \<Rightarrow> Z" where
 
 (* fully_screened (matches Coq: Definition fully_screened) *)
 definition fully_screened :: "Beneficiary \<Rightarrow> bool" where
-  "fully_screened b \<equiv> ofac_screened b = True /\ un_screened b = True /\
-  eu_screened b = True /\ local_screened b = True"
+  "fully_screened b \<equiv> ofac_screened b = True \<and> un_screened b = True \<and>
+  eu_screened b = True \<and> local_screened b = True"
 
 (* transfer_allowed (matches Coq: Definition transfer_allowed) *)
 definition transfer_allowed :: "Beneficiary \<Rightarrow> bool" where
-  "transfer_allowed b \<equiv> fully_screened b /\ (screening_time_ms b < 500)%nat"
+  "transfer_allowed b \<equiv> fully_screened b \<and> (screening_time_ms b < 500)%nat"
 
 (* travel_rule_compliant (matches Coq: Definition travel_rule_compliant) *)
 definition travel_rule_compliant :: "TravelRuleData \<Rightarrow> bool" where
-  "travel_rule_compliant trd \<equiv> data_transmitted trd = True /\
+  "travel_rule_compliant trd \<equiv> data_transmitted trd = True \<and>
   kyc_verified (originator_info trd) = True"
 
 (* str_compliant (matches Coq: Definition str_compliant) *)
 definition str_compliant :: "SuspiciousActivity \<Rightarrow> bool" where
-  "str_compliant sa \<equiv> str_filed sa = True /\ (filing_timestamp sa <= filing_deadline sa)%nat"
+  "str_compliant sa \<equiv> str_filed sa = True \<and> (filing_timestamp sa <= filing_deadline sa)%nat"
 
 (* instant_bank_credit_valid (matches Coq: Definition instant_bank_credit_valid) *)
 definition instant_bank_credit_valid :: "BankCredit \<Rightarrow> bool" where
@@ -315,11 +315,11 @@ definition instant_bank_credit_valid :: "BankCredit \<Rightarrow> bool" where
 
 (* wallet_credit_valid (matches Coq: Definition wallet_credit_valid) *)
 definition wallet_credit_valid :: "WalletCredit \<Rightarrow> bool" where
-  "wallet_credit_valid wc \<equiv> credit_instant wc = True /\ (credit_latency_ms wc <= 1000)%nat"
+  "wallet_credit_valid wc \<equiv> credit_instant wc = True \<and> (credit_latency_ms wc <= 1000)%nat"
 
 (* secure_pickup_code (matches Coq: Definition secure_pickup_code) *)
 definition secure_pickup_code :: "CashPickup \<Rightarrow> bool" where
-  "secure_pickup_code cp \<equiv> code_length cp = 16%nat /\ (expiry_days cp <= 30)%nat /\ code_random cp = True"
+  "secure_pickup_code cp \<equiv> code_length cp = 16%nat \<and> (expiry_days cp <= 30)%nat \<and> code_random cp = True"
 
 (* valid_cash_pickup (matches Coq: Definition valid_cash_pickup) *)
 definition valid_cash_pickup :: "CashPickup \<Rightarrow> bool" where
@@ -327,110 +327,110 @@ definition valid_cash_pickup :: "CashPickup \<Rightarrow> bool" where
 
 (* iban_validated (matches Coq: Definition iban_validated) *)
 definition iban_validated :: "IBAN \<Rightarrow> bool" where
-  "iban_validated i \<equiv> checksum_valid i = True /\ format_valid i = True"
+  "iban_validated i \<equiv> checksum_valid i = True \<and> format_valid i = True"
 
 (* notification_compliant (matches Coq: Definition notification_compliant) *)
 definition notification_compliant :: "RecipientNotification \<Rightarrow> bool" where
-  "notification_compliant rn \<equiv> notification_sent rn = True /\ channel_used rn = channel_preferred rn"
+  "notification_compliant rn \<equiv> notification_sent rn = True \<and> channel_used rn = channel_preferred rn"
 
 (* REMIT_001_01_universal_coverage (matches Coq) *)
-lemma REMIT_001_01_universal_coverage: "\<forall> (reg : CountryRegistry), compliant_registry reg \<longrightarrow> \<forall> c, In c un_member_states \<longrightarrow> sanctioned (reg c) = True \<or> can_send (reg c) = True \<or> can_receive (reg c) = True"
+lemma REMIT_001_01_universal_coverage: "\<forall>(reg :: CountryRegistry). compliant_registry reg \<longrightarrow> \<forall>c. c \<in> set un_member_states \<longrightarrow> sanctioned (reg c) = True \<or> can_send (reg c) = True \<or> can_receive (reg c) = True"
   by simp
 
 (* REMIT_001_02_currency_support (matches Coq) *)
-lemma REMIT_001_02_currency_support: "\<forall> (reg : CurrencyRegistry), compliant_currency_registry reg \<longrightarrow> \<forall> c, In c iso_4217_currencies \<longrightarrow> is_supported (reg c) = True"
+lemma REMIT_001_02_currency_support: "\<forall>(reg :: CurrencyRegistry). compliant_currency_registry reg \<longrightarrow> \<forall>c. c \<in> set iso_4217_currencies \<longrightarrow> is_supported (reg c) = True"
   by simp
 
 (* REMIT_001_03_pricing_transparency (matches Coq) *)
-lemma REMIT_001_03_pricing_transparency: "\<forall> (corr : Corridor), is_enabled corr = True \<longrightarrow> fees_disclosed corr = True \<longrightarrow> fees_disclosed corr = True"
+lemma REMIT_001_03_pricing_transparency: "\<forall>(corr :: Corridor). is_enabled corr = True \<longrightarrow> fees_disclosed corr = True \<longrightarrow> fees_disclosed corr = True"
   by auto
 
 (* REMIT_001_04_corridor_availability (matches Coq) *)
-lemma REMIT_001_04_corridor_availability: "\<forall> (corr : Corridor), is_enabled corr = True \<longrightarrow> (availability_pct corr \<ge> 9999)%nat \<longrightarrow> (availability_pct corr \<ge> 9999)%nat"
+lemma REMIT_001_04_corridor_availability: "\<forall>(corr :: Corridor). is_enabled corr = True \<longrightarrow> (availability_pct corr \<ge> 9999)%nat \<longrightarrow> (availability_pct corr \<ge> 9999)%nat"
   by auto
 
 (* REMIT_001_05_sanctioned_country_blocking (matches Coq) *)
-lemma REMIT_001_05_sanctioned_country_blocking: "\<forall> (corr : Corridor), is_sanctioned corr = True \<longrightarrow> is_enabled corr = False \<longrightarrow> is_enabled corr = False"
+lemma REMIT_001_05_sanctioned_country_blocking: "\<forall>(corr :: Corridor). is_sanctioned corr = True \<longrightarrow> is_enabled corr = False \<longrightarrow> is_enabled corr = False"
   by auto
 
 (* REMIT_001_06_rate_freshness (matches Coq) *)
-lemma REMIT_001_06_rate_freshness: "\<forall> (q : FXQuote) (current_time : nat), fresh_quote q current_time \<longrightarrow> (rate_staleness q current_time \<le> 1)%nat"
+lemma REMIT_001_06_rate_freshness: "\<forall>(q :: FXQuote) (current_time :: nat). fresh_quote q current_time \<longrightarrow> (rate_staleness q current_time \<le> 1)%nat"
   by auto
 
 (* REMIT_001_07_spread_transparency (matches Coq) *)
-lemma REMIT_001_07_spread_transparency: "\<forall> (q : FXQuote), valid_quote q \<longrightarrow> customer_rate q = mid_market_rate q + spread q"
+lemma REMIT_001_07_spread_transparency: "\<forall>(q :: FXQuote). valid_quote q \<longrightarrow> customer_rate q = mid_market_rate q + spread q"
   by auto
 
 (* REMIT_001_08_rate_lock_guarantee (matches Coq) *)
-lemma REMIT_001_08_rate_lock_guarantee: "\<forall> (q : FXQuote) (current_time : nat), valid_quote q \<longrightarrow> (current_time \<le> quote_timestamp q + guarantee_window q)%nat \<longrightarrow> rate_lock_valid q current_time"
+lemma REMIT_001_08_rate_lock_guarantee: "\<forall>(q :: FXQuote) (current_time :: nat). valid_quote q \<longrightarrow> (current_time \<le> quote_timestamp q + guarantee_window q)%nat \<longrightarrow> rate_lock_valid q current_time"
   by auto
 
 (* REMIT_001_09_no_hidden_margin (matches Coq) *)
-lemma REMIT_001_09_no_hidden_margin: "\<forall> (t : Transfer), valid_transfer t \<longrightarrow> total_cost t = stated_fee t + stated_spread t"
+lemma REMIT_001_09_no_hidden_margin: "\<forall>(t :: Transfer). valid_transfer t \<longrightarrow> total_cost t = stated_fee t + stated_spread t"
   by simp
 
 (* REMIT_001_10_hedge_ratio_maintenance (matches Coq) *)
-lemma REMIT_001_10_hedge_ratio_maintenance: "\<forall> (q : FXQuote), valid_quote q \<longrightarrow> (hedge_ratio_bps q \<ge> 9800)%nat \<and> (hedge_ratio_bps q \<le> 10200)%nat"
+lemma REMIT_001_10_hedge_ratio_maintenance: "\<forall>(q :: FXQuote). valid_quote q \<longrightarrow> (hedge_ratio_bps q \<ge> 9800)%nat \<and> (hedge_ratio_bps q \<le> 10200)%nat"
   by auto
 
 (* REMIT_001_11_swift_gpi_tracking (matches Coq) *)
-lemma REMIT_001_11_swift_gpi_tracking: "\<forall> (t : Transfer), valid_transfer t \<longrightarrow> is_swift_rail (rail t) = True \<longrightarrow> tracking_available t = True"
+lemma REMIT_001_11_swift_gpi_tracking: "\<forall>(t :: Transfer). valid_transfer t \<longrightarrow> is_swift_rail (rail t) = True \<longrightarrow> tracking_available t = True"
   by auto
 
 (* REMIT_001_12_instant_rail_settlement (matches Coq) *)
-lemma REMIT_001_12_instant_rail_settlement: "\<forall> (t : Transfer), valid_transfer t \<longrightarrow> is_instant_rail (rail t) = True \<longrightarrow> (settlement_time_sec t \<le> 60)%nat"
+lemma REMIT_001_12_instant_rail_settlement: "\<forall>(t :: Transfer). valid_transfer t \<longrightarrow> is_instant_rail (rail t) = True \<longrightarrow> (settlement_time_sec t \<le> 60)%nat"
   by auto
 
 (* REMIT_001_13_blockchain_atomic_execution (matches Coq) *)
-lemma REMIT_001_13_blockchain_atomic_execution: "\<forall> (t : Transfer), valid_transfer t \<longrightarrow> is_blockchain_rail (rail t) = True \<longrightarrow> is_atomic t = True"
+lemma REMIT_001_13_blockchain_atomic_execution: "\<forall>(t :: Transfer). valid_transfer t \<longrightarrow> is_blockchain_rail (rail t) = True \<longrightarrow> is_atomic t = True"
   by auto
 
 (* REMIT_001_14_mobile_money_instant (matches Coq) *)
-lemma REMIT_001_14_mobile_money_instant: "\<forall> (t : Transfer), valid_transfer t \<longrightarrow> is_mobile_money_rail (rail t) = True \<longrightarrow> (settlement_time_sec t \<le> 5)%nat"
+lemma REMIT_001_14_mobile_money_instant: "\<forall>(t :: Transfer). valid_transfer t \<longrightarrow> is_mobile_money_rail (rail t) = True \<longrightarrow> (settlement_time_sec t \<le> 5)%nat"
   by auto
 
 (* REMIT_001_15_local_rail_integration (matches Coq) *)
-lemma REMIT_001_15_local_rail_integration: "\<forall> (t : Transfer), valid_transfer t \<longrightarrow> is_local_rail (rail t) = True \<longrightarrow> is_local_rail (rail t) = True"
+lemma REMIT_001_15_local_rail_integration: "\<forall>(t :: Transfer). valid_transfer t \<longrightarrow> is_local_rail (rail t) = True \<longrightarrow> is_local_rail (rail t) = True"
   by auto
 
 (* REMIT_001_16_realtime_screening (matches Coq) *)
-lemma REMIT_001_16_realtime_screening: "\<forall> (b : Beneficiary), transfer_allowed b \<longrightarrow> (screening_time_ms b < 500)%nat"
+lemma REMIT_001_16_realtime_screening: "\<forall>(b :: Beneficiary). transfer_allowed b \<longrightarrow> (screening_time_ms b < 500)%nat"
   by auto
 
 (* REMIT_001_17_sanctions_screening_complete (matches Coq) *)
-lemma REMIT_001_17_sanctions_screening_complete: "\<forall> (b : Beneficiary), transfer_allowed b \<longrightarrow> fully_screened b"
+lemma REMIT_001_17_sanctions_screening_complete: "\<forall>(b :: Beneficiary). transfer_allowed b \<longrightarrow> fully_screened b"
   by auto
 
 (* REMIT_001_18_travel_rule_compliance (matches Coq) *)
-lemma REMIT_001_18_travel_rule_compliance: "\<forall> (trd : TravelRuleData), travel_rule_compliant trd \<longrightarrow> data_transmitted trd = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma REMIT_001_18_travel_rule_compliance: "\<forall>(trd :: TravelRuleData). travel_rule_compliant trd \<longrightarrow> data_transmitted trd = True"
+  by auto
 
 (* REMIT_001_19_str_filing (matches Coq) *)
-lemma REMIT_001_19_str_filing: "\<forall> (sa : SuspiciousActivity), str_compliant sa \<longrightarrow> str_filed sa = True \<and> (filing_timestamp sa \<le> filing_deadline sa)%nat"
+lemma REMIT_001_19_str_filing: "\<forall>(sa :: SuspiciousActivity). str_compliant sa \<longrightarrow> str_filed sa = True \<and> (filing_timestamp sa \<le> filing_deadline sa)%nat"
   by simp
 
 (* REMIT_001_20_kyc_verification (matches Coq) *)
-lemma REMIT_001_20_kyc_verification: "\<forall> (trd : TravelRuleData), travel_rule_compliant trd \<longrightarrow> kyc_verified (originator_info trd) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma REMIT_001_20_kyc_verification: "\<forall>(trd :: TravelRuleData). travel_rule_compliant trd \<longrightarrow> kyc_verified (originator_info trd) = True"
+  by auto
 
 (* REMIT_001_21_instant_bank_credit (matches Coq) *)
-lemma REMIT_001_21_instant_bank_credit: "\<forall> (bc : BankCredit), instant_bank_credit_valid bc \<longrightarrow> is_instant_rail (credit_rail bc) = True \<longrightarrow> (credit_time_sec bc \<le> 60)%nat"
+lemma REMIT_001_21_instant_bank_credit: "\<forall>(bc :: BankCredit). instant_bank_credit_valid bc \<longrightarrow> is_instant_rail (credit_rail bc) = True \<longrightarrow> (credit_time_sec bc \<le> 60)%nat"
   by auto
 
 (* REMIT_001_22_wallet_instant_credit (matches Coq) *)
-lemma REMIT_001_22_wallet_instant_credit: "\<forall> (wc : WalletCredit), wallet_credit_valid wc \<longrightarrow> credit_instant wc = True"
+lemma REMIT_001_22_wallet_instant_credit: "\<forall>(wc :: WalletCredit). wallet_credit_valid wc \<longrightarrow> credit_instant wc = True"
   by auto
 
 (* REMIT_001_23_cash_pickup_security (matches Coq) *)
-lemma REMIT_001_23_cash_pickup_security: "\<forall> (cp : CashPickup), valid_cash_pickup cp \<longrightarrow> secure_pickup_code cp"
+lemma REMIT_001_23_cash_pickup_security: "\<forall>(cp :: CashPickup). valid_cash_pickup cp \<longrightarrow> secure_pickup_code cp"
   by auto
 
 (* REMIT_001_24_iban_validation (matches Coq) *)
-lemma REMIT_001_24_iban_validation: "\<forall> (i : IBAN), iban_validated i \<longrightarrow> checksum_valid i = True \<and> format_valid i = True"
+lemma REMIT_001_24_iban_validation: "\<forall>(i :: IBAN). iban_validated i \<longrightarrow> checksum_valid i = True \<and> format_valid i = True"
   by auto
 
 (* REMIT_001_25_recipient_notification (matches Coq) *)
-lemma REMIT_001_25_recipient_notification: "\<forall> (rn : RecipientNotification), notification_compliant rn \<longrightarrow> notification_sent rn = True \<and> channel_used rn = channel_preferred rn"
+lemma REMIT_001_25_recipient_notification: "\<forall>(rn :: RecipientNotification). notification_compliant rn \<longrightarrow> notification_sent rn = True \<and> channel_used rn = channel_preferred rn"
   by simp
 
 end

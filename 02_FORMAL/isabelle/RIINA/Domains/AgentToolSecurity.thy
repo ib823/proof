@@ -172,23 +172,23 @@ lemma AGENT_005_unvalidated_denied: "is_permitted (check_invocation riina_agent_
 
 (* AGENT_006: Cap level reflexivity *)
 (* AGENT_006_cap_level_refl (matches Coq) *)
-lemma AGENT_006_cap_level_refl: "\<forall> l : CapLevel, cap_level_leq l l = True"
+lemma AGENT_006_cap_level_refl: "\<forall>l : CapLevel. cap_level_leq l l = True"
   by simp
 
 (* AGENT_007: ReadOnly is minimum capability *)
 (* AGENT_007_readonly_min (matches Coq) *)
-lemma AGENT_007_readonly_min: "\<forall> l : CapLevel, cap_level_leq ReadOnly l = True"
+lemma AGENT_007_readonly_min: "\<forall>l : CapLevel. cap_level_leq ReadOnly l = True"
   by simp
 
 (* AGENT_008: System is maximum capability *)
 (* AGENT_008_system_max (matches Coq) *)
-lemma AGENT_008_system_max: "\<forall> l : CapLevel, cap_level_leq l System = True"
+lemma AGENT_008_system_max: "\<forall>l : CapLevel. cap_level_leq l System = True"
   by simp
 
 (* Helper for andb *)
 (* andb_true_iff_agent (matches Coq) *)
-lemma andb_true_iff_agent: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff_agent: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* AGENT_009: Network capability exceeds ReadWrite *)
 (* AGENT_009_network_exceeds_rw (matches Coq) *)
@@ -227,22 +227,22 @@ lemma AGENT_015_denied_validation: "is_permitted DeniedValidation = False"
 
 (* AGENT_016: Sandbox enforcement — RIINA unsandboxed ReadOnly tool denied *)
 (* AGENT_016_sandbox_enforcement (matches Coq) *)
-lemma AGENT_016_sandbox_enforcement: "\<forall> n : nat, is_permitted (check_invocation riina_agent_boundary (mkToolCap n ReadOnly False True True True)) = False"
+lemma AGENT_016_sandbox_enforcement: "\<forall>n : nat. is_permitted (check_invocation riina_agent_boundary (mkToolCap n ReadOnly False True True True)) = False"
   by simp
 
 (* AGENT_017: RIINA denies all System-level tools *)
 (* AGENT_017_riina_denies_system (matches Coq) *)
-lemma AGENT_017_riina_denies_system: "\<forall> tool : ToolCapability, tc_level tool = System \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False"
+lemma AGENT_017_riina_denies_system: "\<forall>tool : ToolCapability. tc_level tool = System \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False"
   by simp
 
 (* AGENT_018: RIINA denies all Execute-level tools *)
 (* AGENT_018_riina_denies_execute (matches Coq) *)
-lemma AGENT_018_riina_denies_execute: "\<forall> tool : ToolCapability, tc_level tool = Execute \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False"
+lemma AGENT_018_riina_denies_execute: "\<forall>tool : ToolCapability. tc_level tool = Execute \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False"
   by simp
 
 (* AGENT_019: RIINA denies all Network-level tools *)
 (* AGENT_019_riina_denies_network (matches Coq) *)
-lemma AGENT_019_riina_denies_network: "\<forall> tool : ToolCapability, tc_level tool = Network \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False"
+lemma AGENT_019_riina_denies_network: "\<forall>tool : ToolCapability. tc_level tool = Network \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False"
   by simp
 
 (* AGENT_020: ReadOnly leq ReadWrite *)
@@ -252,7 +252,7 @@ lemma AGENT_020_readonly_leq_rw: "cap_level_leq ReadOnly ReadWrite = True"
 
 (* AGENT_021: Boundary with no restrictions permits any sandboxed+validated RO tool *)
 (* AGENT_021_permissive_boundary (matches Coq) *)
-lemma AGENT_021_permissive_boundary: "\<forall> tool : ToolCapability, tc_level tool = ReadOnly \<longrightarrow> tc_sandboxed tool = True \<longrightarrow> tc_input_validated tool = True \<longrightarrow> tc_output_sanitized tool = True \<longrightarrow> tc_rate_limited tool = True \<longrightarrow> is_permitted (check_invocation (mkAgentBoundary System True True True True True True True) tool) = True"
+lemma AGENT_021_permissive_boundary: "\<forall>tool : ToolCapability. tc_level tool = ReadOnly \<longrightarrow> tc_sandboxed tool = True \<longrightarrow> tc_input_validated tool = True \<longrightarrow> tc_output_sanitized tool = True \<longrightarrow> tc_rate_limited tool = True \<longrightarrow> is_permitted (check_invocation (mkAgentBoundary System True True True True True True True) tool) = True"
   by simp
 
 (* AGENT_022: Cap level transitivity for ReadOnly -> ReadWrite -> Execute *)
@@ -272,7 +272,7 @@ lemma AGENT_024_denied_ratelimit: "is_permitted DeniedRateLimit = False"
 
 (* AGENT_025: Complete tool security — RIINA boundary blocks all dangerous operations *)
 (* AGENT_025_complete_agent_security (matches Coq) *)
-lemma AGENT_025_complete_agent_security: "(\<forall> tool, tc_level tool = System \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False) \<and> (\<forall> tool, tc_level tool = Execute \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False) \<and> (\<forall> tool, tc_level tool = Network \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False)"
+lemma AGENT_025_complete_agent_security: "(\<forall>tool. tc_level tool = System \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False) \<and> (\<forall>tool. tc_level tool = Execute \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False) \<and> (\<forall>tool. tc_level tool = Network \<longrightarrow> is_permitted (check_invocation riina_agent_boundary tool) = False)"
   by auto
 
 end

@@ -101,7 +101,7 @@ definition incident_reported_promptly :: "CyberIncident \<Rightarrow> bool" wher
 
 (* incident_report_complete (matches Coq: Definition incident_report_complete) *)
 definition incident_report_complete :: "CyberIncident \<Rightarrow> bool" where
-  "incident_report_complete i \<equiv> incident_reported_promptly i /\
+  "incident_report_complete i \<equiv> incident_reported_promptly i \<and>
   risk_level_nat (incident_severity i) >= 0"
 
 (* controls_sufficient (matches Coq: Definition controls_sufficient) *)
@@ -110,13 +110,13 @@ definition controls_sufficient :: "NCIIEntity \<Rightarrow> bool" where
 
 (* cssp_valid (matches Coq: Definition cssp_valid) *)
 definition cssp_valid :: "CSSPLicense \<Rightarrow> nat \<Rightarrow> bool" where
-  "cssp_valid l current_time \<equiv> cssp_licensed l = True /\ current_time <= cssp_license_expiry l"
+  "cssp_valid l current_time \<equiv> cssp_licensed l = True \<and> current_time <= cssp_license_expiry l"
 
 (* act854_compliant (matches Coq: Definition act854_compliant) *)
 definition act854_compliant :: "NCIIEntity \<Rightarrow> CSSPLicense \<Rightarrow> nat \<Rightarrow> bool" where
-  "act854_compliant e l t \<equiv> risk_assessment_current e /\
-  audit_current e t /\
-  controls_sufficient e /\
+  "act854_compliant e l t \<equiv> risk_assessment_current e \<and>
+  audit_current e t \<and>
+  controls_sufficient e \<and>
   cssp_valid l t"
 
 (* all_ncii_sectors (matches Coq: Definition all_ncii_sectors) *)
@@ -141,103 +141,103 @@ definition sector_critical :: "NCIISector \<Rightarrow> bool" where
   s = Energy \/ s = Water \/ s = Government"
 
 (* obligation_1_risk_assessment (matches Coq) *)
-lemma obligation_1_risk_assessment: "\<forall> (e : NCIIEntity), ncii_risk_assessed e = True \<longrightarrow> risk_assessment_current e"
+lemma obligation_1_risk_assessment: "\<forall>(e :: NCIIEntity). ncii_risk_assessed e = True \<longrightarrow> risk_assessment_current e"
   by auto
 
 (* obligation_2_audit (matches Coq) *)
-lemma obligation_2_audit: "\<forall> (e : NCIIEntity) (t : nat), t \<le> ncii_last_audit e + ncii_audit_interval e \<longrightarrow> audit_current e t"
+lemma obligation_2_audit: "\<forall>(e :: NCIIEntity) (t :: nat). t \<le> ncii_last_audit e + ncii_audit_interval e \<longrightarrow> audit_current e t"
   by auto
 
 (* audit_expiry (matches Coq) *)
-lemma audit_expiry: "\<forall> (e : NCIIEntity) (t : nat), ~ audit_current e t \<longrightarrow> ncii_last_audit e + ncii_audit_interval e < t"
+lemma audit_expiry: "\<forall>(e :: NCIIEntity) (t :: nat). ~ audit_current e t \<longrightarrow> ncii_last_audit e + ncii_audit_interval e < t"
   by auto
 
 (* obligation_3_reporting (matches Coq) *)
-lemma obligation_3_reporting: "\<forall> (i : CyberIncident), incident_reported_at i \<le> incident_detected_at i + 6 \<longrightarrow> incident_reported_promptly i"
+lemma obligation_3_reporting: "\<forall>(i :: CyberIncident). incident_reported_at i \<le> incident_detected_at i + 6 \<longrightarrow> incident_reported_promptly i"
   by auto
 
 (* severity_ordering (matches Coq) *)
-lemma severity_ordering: "\<forall> (s1 s2 : RiskLevel), risk_level_nat Critical \<ge> risk_level_nat s1"
+lemma severity_ordering: "\<forall>(s1 s2 : RiskLevel). risk_level_nat Critical \<ge> risk_level_nat s1"
   by auto
 
 (* obligation_4_controls (matches Coq) *)
-lemma obligation_4_controls: "\<forall> (e : NCIIEntity), ncii_min_controls e \<le> ncii_security_controls e \<longrightarrow> controls_sufficient e"
+lemma obligation_4_controls: "\<forall>(e :: NCIIEntity). ncii_min_controls e \<le> ncii_security_controls e \<longrightarrow> controls_sufficient e"
   by auto
 
 (* obligation_5_cssp (matches Coq) *)
-lemma obligation_5_cssp: "\<forall> (l : CSSPLicense) (t : nat), cssp_licensed l = True \<longrightarrow> t \<le> cssp_license_expiry l \<longrightarrow> cssp_valid l t"
+lemma obligation_5_cssp: "\<forall>(l :: CSSPLicense) (t :: nat). cssp_licensed l = True \<longrightarrow> t \<le> cssp_license_expiry l \<longrightarrow> cssp_valid l t"
   by auto
 
 (* act854_composition (matches Coq) *)
-lemma act854_composition: "\<forall> (e : NCIIEntity) (l : CSSPLicense) (t : nat), risk_assessment_current e \<longrightarrow> audit_current e t \<longrightarrow> controls_sufficient e \<longrightarrow> cssp_valid l t \<longrightarrow> act854_compliant e l t"
-  by (cases rule: ‹_›.cases; simp)
+lemma act854_composition: "\<forall>(e :: NCIIEntity) (l :: CSSPLicense) (t : nat). risk_assessment_current e \<longrightarrow> audit_current e t \<longrightarrow> controls_sufficient e \<longrightarrow> cssp_valid l t \<longrightarrow> act854_compliant e l t"
+  by auto
 
 (* ncii_sector_coverage (matches Coq) *)
-lemma ncii_sector_coverage: "\<forall> (s : NCIISector), In s all_ncii_sectors"
+lemma ncii_sector_coverage: "\<forall>(s :: NCIISector). s \<in> set all_ncii_sectors"
   by auto
 
 (* critical_is_highest_risk (matches Coq) *)
-lemma critical_is_highest_risk: "\<forall> (r : RiskLevel), risk_level_nat r \<le> risk_level_nat Critical"
-  by (cases rule: ‹_›.cases; simp)
+lemma critical_is_highest_risk: "\<forall>(r :: RiskLevel). risk_level_nat r \<le> risk_level_nat Critical"
+  by auto
 
 (* low_is_lowest_risk (matches Coq) *)
-lemma low_is_lowest_risk: "\<forall> (r : RiskLevel), risk_level_nat Low \<le> risk_level_nat r"
-  by (cases rule: ‹_›.cases; simp)
+lemma low_is_lowest_risk: "\<forall>(r :: RiskLevel). risk_level_nat Low \<le> risk_level_nat r"
+  by auto
 
 (* risk_level_bounded (matches Coq) *)
-lemma risk_level_bounded: "\<forall> (r : RiskLevel), risk_level_nat r \<le> 3"
-  by (cases rule: ‹_›.cases; simp)
+lemma risk_level_bounded: "\<forall>(r :: RiskLevel). risk_level_nat r \<le> 3"
+  by auto
 
 (* risk_level_coverage (matches Coq) *)
-lemma risk_level_coverage: "\<forall> (r : RiskLevel), In r all_risk_levels"
+lemma risk_level_coverage: "\<forall>(r :: RiskLevel). r \<in> set all_risk_levels"
   by auto
 
 (* audit_current_expiry_exclusive (matches Coq) *)
-lemma audit_current_expiry_exclusive: "\<forall> (e : NCIIEntity) (t : nat), audit_current e t \<or> ~ audit_current e t"
-  by (cases rule: ‹_›.cases; simp)
+lemma audit_current_expiry_exclusive: "\<forall>(e :: NCIIEntity) (t :: nat). audit_current e t \<or> ~ audit_current e t"
+  by auto
 
 (* more_controls_still_sufficient (matches Coq) *)
-lemma more_controls_still_sufficient: "\<forall> (e : NCIIEntity) (extra : nat), controls_sufficient e \<longrightarrow> ncii_min_controls e \<le> ncii_security_controls e + extra"
+lemma more_controls_still_sufficient: "\<forall>(e :: NCIIEntity) (extra :: nat). controls_sufficient e \<longrightarrow> ncii_min_controls e \<le> ncii_security_controls e + extra"
   by auto
 
 (* act854_implies_risk_assessed (matches Coq) *)
-lemma act854_implies_risk_assessed: "\<forall> (e : NCIIEntity) (l : CSSPLicense) (t : nat), act854_compliant e l t \<longrightarrow> risk_assessment_current e"
+lemma act854_implies_risk_assessed: "\<forall>(e :: NCIIEntity) (l :: CSSPLicense) (t : nat). act854_compliant e l t \<longrightarrow> risk_assessment_current e"
   by auto
 
 (* act854_implies_audit_current (matches Coq) *)
-lemma act854_implies_audit_current: "\<forall> (e : NCIIEntity) (l : CSSPLicense) (t : nat), act854_compliant e l t \<longrightarrow> audit_current e t"
+lemma act854_implies_audit_current: "\<forall>(e :: NCIIEntity) (l :: CSSPLicense) (t : nat). act854_compliant e l t \<longrightarrow> audit_current e t"
   by auto
 
 (* act854_implies_controls (matches Coq) *)
-lemma act854_implies_controls: "\<forall> (e : NCIIEntity) (l : CSSPLicense) (t : nat), act854_compliant e l t \<longrightarrow> controls_sufficient e"
+lemma act854_implies_controls: "\<forall>(e :: NCIIEntity) (l :: CSSPLicense) (t : nat). act854_compliant e l t \<longrightarrow> controls_sufficient e"
   by auto
 
 (* act854_implies_cssp_valid (matches Coq) *)
-lemma act854_implies_cssp_valid: "\<forall> (e : NCIIEntity) (l : CSSPLicense) (t : nat), act854_compliant e l t \<longrightarrow> cssp_valid l t"
+lemma act854_implies_cssp_valid: "\<forall>(e :: NCIIEntity) (l :: CSSPLicense) (t : nat). act854_compliant e l t \<longrightarrow> cssp_valid l t"
   by auto
 
 (* cssp_expired (matches Coq) *)
-lemma cssp_expired: "\<forall> (l : CSSPLicense) (t : nat), cssp_license_expiry l < t \<longrightarrow> ~ cssp_valid l t"
+lemma cssp_expired: "\<forall>(l :: CSSPLicense) (t :: nat). cssp_license_expiry l < t \<longrightarrow> ~ cssp_valid l t"
   by simp
 
 (* cssp_unlicensed_invalid (matches Coq) *)
-lemma cssp_unlicensed_invalid: "\<forall> (l : CSSPLicense) (t : nat), cssp_licensed l = False \<longrightarrow> ~ cssp_valid l t"
+lemma cssp_unlicensed_invalid: "\<forall>(l :: CSSPLicense) (t :: nat). cssp_licensed l = False \<longrightarrow> ~ cssp_valid l t"
   by auto
 
 (* ceo_liable_when_negligent (matches Coq) *)
-lemma ceo_liable_when_negligent: "\<forall> (cl : CEOLiability), ceo_compliant cl = False \<longrightarrow> ceo_due_diligence cl = False \<longrightarrow> ceo_personally_liable cl = True \<longrightarrow> ceo_liability_applies cl"
+lemma ceo_liable_when_negligent: "\<forall>(cl :: CEOLiability). ceo_compliant cl = False \<longrightarrow> ceo_due_diligence cl = False \<longrightarrow> ceo_personally_liable cl = True \<longrightarrow> ceo_liability_applies cl"
   by simp
 
 (* ceo_due_diligence_defense (matches Coq) *)
-lemma ceo_due_diligence_defense: "\<forall> (cl : CEOLiability), ceo_due_diligence cl = True \<longrightarrow> ~ (ceo_due_diligence cl = False)"
+lemma ceo_due_diligence_defense: "\<forall>(cl :: CEOLiability). ceo_due_diligence cl = True \<longrightarrow> ~ (ceo_due_diligence cl = False)"
   by auto
 
 (* incident_6h_stricter_than_24h (matches Coq) *)
-lemma incident_6h_stricter_than_24h: "\<forall> (i : CyberIncident), incident_reported_promptly i \<longrightarrow> incident_reported_at i \<le> incident_detected_at i + 24"
+lemma incident_6h_stricter_than_24h: "\<forall>(i :: CyberIncident). incident_reported_promptly i \<longrightarrow> incident_reported_at i \<le> incident_detected_at i + 24"
   by simp
 
 (* immediate_report_always_timely (matches Coq) *)
-lemma immediate_report_always_timely: "\<forall> (i : CyberIncident), incident_reported_at i = incident_detected_at i \<longrightarrow> incident_reported_promptly i"
+lemma immediate_report_always_timely: "\<forall>(i :: CyberIncident). incident_reported_at i = incident_detected_at i \<longrightarrow> incident_reported_promptly i"
   by simp
 
 (* banking_is_critical (matches Coq) *)

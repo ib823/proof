@@ -159,57 +159,57 @@ definition version_valid :: "bool" where
 (* Section H01 - ISO 26262 Compliance
     Reference: IND_H_TRANSPORTATION.md Section 3.1 *)
 (* iso_26262_compliance (matches Coq) *)
-lemma iso_26262_compliance: "\<forall> (compliance : ISO26262_Compliance) (asil : ASIL), hazard_analysis compliance = True \<longrightarrow> True"
+lemma iso_26262_compliance: "\<forall>(compliance :: ISO26262_Compliance) (asil :: ASIL). hazard_analysis compliance = True \<longrightarrow> True"
   by simp
 
 (* Section H02 - ISO/SAE 21434 Cybersecurity
     Reference: IND_H_TRANSPORTATION.md Section 3.2 *)
 (* iso_21434_cybersecurity (matches Coq) *)
-lemma iso_21434_cybersecurity: "\<forall> (vehicle : nat) (system : nat), True"
+lemma iso_21434_cybersecurity: "\<forall>(vehicle :: nat) (system :: nat). True"
   by simp
 
 (* Section H03 - UNECE R155
     Reference: IND_H_TRANSPORTATION.md Section 3.3 *)
 (* unece_r155_compliance (matches Coq) *)
-lemma unece_r155_compliance: "\<forall> (vehicle_type : nat), True"
+lemma unece_r155_compliance: "\<forall>(vehicle_type :: nat). True"
   by simp
 
 (* Section H04 - EN 50128 Railway Software
     Reference: IND_H_TRANSPORTATION.md Section 3.4 *)
 (* en_50128_compliance (matches Coq) *)
-lemma en_50128_compliance: "\<forall> (railway_software : nat) (sil : SIL), True"
+lemma en_50128_compliance: "\<forall>(railway_software :: nat) (sil :: SIL). True"
   by simp
 
 (* Section H05 - Maritime Cyber
     Reference: IND_H_TRANSPORTATION.md Section 3.5 *)
 (* imo_maritime_cyber (matches Coq) *)
-lemma imo_maritime_cyber: "\<forall> (vessel : nat), True"
+lemma imo_maritime_cyber: "\<forall>(vessel :: nat). True"
   by simp
 
 (* ASIL D requires highest rigor *)
 (* asil_d_highest_rigor (matches Coq) *)
-lemma asil_d_highest_rigor: "\<forall> (compliance : ISO26262_Compliance), True"
+lemma asil_d_highest_rigor: "\<forall>(compliance :: ISO26262_Compliance). True"
   by simp
 
 (* Cybersecurity and safety interface required *)
 (* cyber_safety_interface (matches Coq) *)
-lemma cyber_safety_interface: "\<forall> (compliance : ISO26262_Compliance), cybersecurity_interface compliance = True \<longrightarrow> True"
+lemma cyber_safety_interface: "\<forall>(compliance :: ISO26262_Compliance). cybersecurity_interface compliance = True \<longrightarrow> True"
   by simp
 
 (* asil_le_refl (matches Coq) *)
-lemma asil_le_refl: "\<forall> a, asil_le a a = True"
+lemma asil_le_refl: "\<forall>a. asil_le a a = True"
   by simp
 
 (* asil_le_trans (matches Coq) *)
-lemma asil_le_trans: "\<forall> a1 a2 a3, asil_le a1 a2 = True \<longrightarrow> asil_le a2 a3 = True \<longrightarrow> asil_le a1 a3 = True"
+lemma asil_le_trans: "\<forall>a1 a2 a3. asil_le a1 a2 = True \<longrightarrow> asil_le a2 a3 = True \<longrightarrow> asil_le a1 a3 = True"
   by simp
 
 (* asil_le_antisym (matches Coq) *)
-lemma asil_le_antisym: "\<forall> a1 a2, asil_le a1 a2 = True \<longrightarrow> asil_le a2 a1 = True \<longrightarrow> a1 = a2"
-  by (cases rule: ‹_›.cases; simp)
+lemma asil_le_antisym: "\<forall>a1 a2. asil_le a1 a2 = True \<longrightarrow> asil_le a2 a1 = True \<longrightarrow> a1 = a2"
+  by auto
 
 (* sil_le_refl (matches Coq) *)
-lemma sil_le_refl: "\<forall> s, sil_le s s = True"
+lemma sil_le_refl: "\<forall>s. sil_le s s = True"
   by simp
 
 (* asil_d_full_coverage (matches Coq) *)
@@ -217,27 +217,27 @@ lemma asil_d_full_coverage: "asil_test_coverage_pct ASIL_D = 100"
   by simp
 
 (* asil_coverage_monotone (matches Coq) *)
-lemma asil_coverage_monotone: "\<forall> a1 a2, asil_le a1 a2 = True \<longrightarrow> asil_test_coverage_pct a1 \<le> asil_test_coverage_pct a2"
-  by (cases rule: ‹_›.cases; simp)
+lemma asil_coverage_monotone: "\<forall>a1 a2. asil_le a1 a2 = True \<longrightarrow> asil_test_coverage_pct a1 \<le> asil_test_coverage_pct a2"
+  by auto
 
 (* work_products_monotone (matches Coq) *)
-lemma work_products_monotone: "\<forall> a1 a2, asil_le a1 a2 = True \<longrightarrow> work_products_required a1 \<le> work_products_required a2"
-  by (cases rule: ‹_›.cases; simp)
+lemma work_products_monotone: "\<forall>a1 a2. asil_le a1 a2 = True \<longrightarrow> work_products_required a1 \<le> work_products_required a2"
+  by auto
 
 (* asil_decomposition_valid (matches Coq) *)
-lemma asil_decomposition_valid: "\<forall> target a1 a2, asil_sum a1 a2 \<ge> asil_to_nat target \<longrightarrow> asil_to_nat a1 + asil_to_nat a2 \<ge> asil_to_nat target"
+lemma asil_decomposition_valid: "\<forall>target a1 a2. asil_sum a1 a2 \<ge> asil_to_nat target \<longrightarrow> asil_to_nat a1 + asil_to_nat a2 \<ge> asil_to_nat target"
   by auto
 
 (* full_requires_hazard_analysis (matches Coq) *)
-lemma full_requires_hazard_analysis: "\<forall> c, iso26262_full c = True \<longrightarrow> hazard_analysis c = True"
+lemma full_requires_hazard_analysis: "\<forall>c. iso26262_full c = True \<longrightarrow> hazard_analysis c = True"
   by auto
 
 (* full_requires_software_design (matches Coq) *)
-lemma full_requires_software_design: "\<forall> c, iso26262_full c = True \<longrightarrow> software_design c = True"
+lemma full_requires_software_design: "\<forall>c. iso26262_full c = True \<longrightarrow> software_design c = True"
   by auto
 
 (* full_requires_cyber_interface (matches Coq) *)
-lemma full_requires_cyber_interface: "\<forall> c, iso26262_full c = True \<longrightarrow> cybersecurity_interface c = True"
+lemma full_requires_cyber_interface: "\<forall>c. iso26262_full c = True \<longrightarrow> cybersecurity_interface c = True"
   by auto
 
 (* sil4_zero_tolerable_hazard (matches Coq) *)
@@ -245,15 +245,15 @@ lemma sil4_zero_tolerable_hazard: "tolerable_hazard_rate_per_hour SIL_4 = 0"
   by simp
 
 (* hazard_rate_decreasing (matches Coq) *)
-lemma hazard_rate_decreasing: "\<forall> s1 s2, sil_le s1 s2 = True \<longrightarrow> tolerable_hazard_rate_per_hour s2 \<le> tolerable_hazard_rate_per_hour s1"
-  by (cases rule: ‹_›.cases; simp)
+lemma hazard_rate_decreasing: "\<forall>s1 s2. sil_le s1 s2 = True \<longrightarrow> tolerable_hazard_rate_per_hour s2 \<le> tolerable_hazard_rate_per_hour s1"
+  by auto
 
 (* safety_critical_faster_auth (matches Coq) *)
 lemma safety_critical_faster_auth: "v2x_auth_timeout_ms True < v2x_auth_timeout_ms False"
   by simp
 
 (* version_no_downgrade (matches Coq) *)
-lemma version_no_downgrade: "\<forall> old_v new_v, version_valid old_v new_v = True \<longrightarrow> old_v < new_v"
+lemma version_no_downgrade: "\<forall>old_v new_v. version_valid old_v new_v = True \<longrightarrow> old_v < new_v"
   by auto
 
 end

@@ -254,8 +254,8 @@ definition coverage_required :: "bool" where "coverage_required = undefined"
 
 (* trace_complete (matches Coq: Definition trace_complete) *)
 definition trace_complete :: "TraceLink \<Rightarrow> bool" where
-  "trace_complete t \<equiv> (((\<not> \<and>) (Nat.eqb) (length (trace_code t)) 0))
-       ((\<not> (Nat.eqb) (length (trace_tests t)) 0))"
+  "trace_complete t \<equiv> (length (trace_code t) > 0 \<and>
+       length (trace_tests t) > 0)"
 
 (* all_traces_complete (matches Coq: Definition all_traces_complete) *)
 definition all_traces_complete :: "bool" where
@@ -263,26 +263,26 @@ definition all_traces_complete :: "bool" where
 
 (* statement_coverage_100 (matches Coq: Definition statement_coverage_100) *)
 definition statement_coverage_100 :: "CoverageData \<Rightarrow> bool" where
-  "statement_coverage_100 c \<equiv> (((\<and> < 0)) (cov_total_statements c))
-       (((cov_covered_statements = c)) (cov_total_statements c))"
+  "statement_coverage_100 c \<equiv> (cov_total_statements c > 0 \<and>
+       cov_covered_statements c = cov_total_statements c)"
 
 (* decision_coverage_100 (matches Coq: Definition decision_coverage_100) *)
 definition decision_coverage_100 :: "CoverageData \<Rightarrow> bool" where
-  "decision_coverage_100 c \<equiv> (((\<and> < 0)) (cov_total_decisions c))
-       (((cov_covered_decisions = c)) (cov_total_decisions c))"
+  "decision_coverage_100 c \<equiv> (cov_total_decisions c > 0 \<and>
+       cov_covered_decisions c = cov_total_decisions c)"
 
 (* mcdc_coverage_100 (matches Coq: Definition mcdc_coverage_100) *)
 definition mcdc_coverage_100 :: "CoverageData \<Rightarrow> bool" where
-  "mcdc_coverage_100 c \<equiv> (((\<and> < 0)) (cov_total_conditions c))
-       (((cov_mcdc_conditions = c)) (cov_total_conditions c))"
+  "mcdc_coverage_100 c \<equiv> (cov_total_conditions c > 0 \<and>
+       cov_mcdc_conditions c = cov_total_conditions c)"
 
 (* dal_a_coverage_met (matches Coq: Definition dal_a_coverage_met) *)
 definition dal_a_coverage_met :: "CoverageData \<Rightarrow> bool" where
-  "dal_a_coverage_met c \<equiv> (statement_coverage_100 c \<and> ((decision_coverage_100 \<and> c)) (mcdc_coverage_100 c))"
+  "dal_a_coverage_met c \<equiv> (statement_coverage_100 c \<and> decision_coverage_100 c \<and> mcdc_coverage_100 c)"
 
 (* is_subset (matches Coq: Definition is_subset) *)
 definition is_subset :: "bool" where
-  "is_subset \<equiv> forallb (fun x => existsb ((x) = l2)) l1"
+  "is_subset \<equiv> forallb (\<lambda>x. existsb ((x) = l2)) l1"
 
 (* no_dead_code (matches Coq: Definition no_dead_code) *)
 definition no_dead_code :: "CodeAnalysis \<Rightarrow> bool" where
@@ -298,7 +298,7 @@ definition stack_safe :: "StackAnalysis \<Rightarrow> bool" where
 
 (* all_functions_stack_safe (matches Coq: Definition all_functions_stack_safe) *)
 definition all_functions_stack_safe :: "StackAnalysis \<Rightarrow> bool" where
-  "all_functions_stack_safe s \<equiv> forallb (fun fu => ((snd \<le> fu)) (stack_allocated s)) (stack_per_function s)"
+  "all_functions_stack_safe s \<equiv> forallb (\<lambda>fu. ((snd \<le> fu)) (stack_allocated s)) (stack_per_function s)"
 
 (* timing_safe (matches Coq: Definition timing_safe) *)
 definition timing_safe :: "TimingAnalysis \<Rightarrow> bool" where
@@ -315,13 +315,13 @@ definition partitions_isolated :: "bool" where
 
 (* all_partitions_isolated (matches Coq: Definition all_partitions_isolated) *)
 definition all_partitions_isolated :: "bool" where
-  "all_partitions_isolated \<equiv> forallb (fun p1 => forallb (fun p2 => 
+  "all_partitions_isolated \<equiv> forallb (\<lambda>p1. forallb (\<lambda>p2. 
     (((part_id = p1) \<or> part_id p2)) (partitions_isolated p1 p2)
   ) parts) parts"
 
 (* input_fully_validated (matches Coq: Definition input_fully_validated) *)
 definition input_fully_validated :: "InputValidation \<Rightarrow> bool" where
-  "input_fully_validated iv \<equiv> (iv_range_checked iv \<and> ((iv_type_checked \<and> iv)) (iv_null_checked iv))"
+  "input_fully_validated iv \<equiv> (iv_range_checked iv \<and> iv_type_checked iv \<and> iv_null_checked iv)"
 
 (* all_inputs_validated (matches Coq: Definition all_inputs_validated) *)
 definition all_inputs_validated :: "bool" where
@@ -333,12 +333,12 @@ definition all_exceptions_handled :: "ExceptionHandling \<Rightarrow> bool" wher
 
 (* all_data_coupling_documented (matches Coq: Definition all_data_coupling_documented) *)
 definition all_data_coupling_documented :: "DataCoupling \<Rightarrow> bool" where
-  "all_data_coupling_documented dc \<equiv> forallb (fun p => pair_in_list p (dc_documented_dependencies dc)) 
+  "all_data_coupling_documented dc \<equiv> forallb (\<lambda>p. pair_in_list p (dc_documented_dependencies dc)) 
           (dc_data_dependencies dc)"
 
 (* all_control_coupling_documented (matches Coq: Definition all_control_coupling_documented) *)
 definition all_control_coupling_documented :: "ControlCoupling \<Rightarrow> bool" where
-  "all_control_coupling_documented cc \<equiv> forallb (fun p => pair_in_list p (cc_documented_dependencies cc)) 
+  "all_control_coupling_documented cc \<equiv> forallb (\<lambda>p. pair_in_list p (cc_documented_dependencies cc)) 
           (cc_control_dependencies cc)"
 
 (* safety_property_proven (matches Coq: Definition safety_property_proven) *)
@@ -360,7 +360,7 @@ definition robustness_verified :: "RobustnessTest \<Rightarrow> bool" where
 
 (* execution_deterministic (matches Coq: Definition execution_deterministic) *)
 definition execution_deterministic :: "DeterminismAnalysis \<Rightarrow> bool" where
-  "execution_deterministic da \<equiv> (da_no_uninitialized_vars da \<and> ((da_no_race_conditions \<and> da)) (da_no_undefined_behavior da))"
+  "execution_deterministic da \<equiv> (da_no_uninitialized_vars da \<and> da_no_race_conditions da \<and> da_no_undefined_behavior da)"
 
 (* task_meets_deadline (matches Coq: Definition task_meets_deadline) *)
 definition task_meets_deadline :: "RealTimeTask \<Rightarrow> bool" where
@@ -372,100 +372,99 @@ definition all_tasks_meet_deadlines :: "bool" where
 
 (* resource_usage_bounded (matches Coq: Definition resource_usage_bounded) *)
 definition resource_usage_bounded :: "ResourceUsage \<Rightarrow> bool" where
-  "resource_usage_bounded ru \<equiv> (((ru_cpu_usage \<le> ru) \<and> ru_cpu_limit ru))
-       ((((ru_memory_usage \<le> ru) \<and> ru_memory_limit ru))
-             (((ru_io_usage \<le> ru)) (ru_io_limit ru)))"
+  "resource_usage_bounded ru \<equiv> (ru_cpu_usage ru \<le> ru_cpu_limit ru \<and>
+       ru_memory_usage ru \<le> ru_memory_limit ru \<and>
+       ru_io_usage ru \<le> ru_io_limit ru)"
 
 (* configuration_compliant (matches Coq: Definition configuration_compliant) *)
 definition configuration_compliant :: "ConfigurationManagement \<Rightarrow> bool" where
-  "configuration_compliant cm \<equiv> (cm_version_controlled cm \<and> ((cm_baseline_identified \<and> cm))
-             ((cm_changes_tracked cm \<and> cm_audit_trail cm)))"
+  "configuration_compliant cm \<equiv> (cm_version_controlled cm \<and> cm_baseline_identified cm \<and> (cm_changes_tracked cm \<and> cm_audit_trail cm))"
 
 (* full_dal_a_compliance - complex match, needs manual translation *)
 definition full_dal_a_compliance :: "bool" where "full_dal_a_compliance = undefined"
 
 (* COMPLY_003_01 (matches Coq) *)
-lemma COMPLY_003_01: "\<forall> (c : DO178CCompliance), all_traces_complete (comp_traces c) = True \<longrightarrow> \<forall> t, In t (comp_traces c) \<longrightarrow> trace_code t \<noteq> [] \<and> trace_tests t \<noteq> []"
-  by (cases rule: ‹_›.cases; simp)
+lemma COMPLY_003_01: "\<forall>(c :: DO178CCompliance). all_traces_complete (comp_traces c) = True \<longrightarrow> \<forall>t. In t (comp_traces c) \<longrightarrow> trace_code t \<noteq> [] \<and> trace_tests t \<noteq> []"
+  by auto
 
 (* COMPLY_003_02 (matches Coq) *)
-lemma COMPLY_003_02: "\<forall> (c : DO178CCompliance), comp_dal c = DAL_A \<longrightarrow> statement_coverage_100 (comp_coverage c) = True \<longrightarrow> cov_covered_statements (comp_coverage c) = cov_total_statements (comp_coverage c)"
+lemma COMPLY_003_02: "\<forall>(c :: DO178CCompliance). comp_dal c = DAL_A \<longrightarrow> statement_coverage_100 (comp_coverage c) = True \<longrightarrow> cov_covered_statements (comp_coverage c) = cov_total_statements (comp_coverage c)"
   by auto
 
 (* COMPLY_003_03 (matches Coq) *)
-lemma COMPLY_003_03: "\<forall> (c : DO178CCompliance), comp_dal c = DAL_A \<longrightarrow> decision_coverage_100 (comp_coverage c) = True \<longrightarrow> cov_covered_decisions (comp_coverage c) = cov_total_decisions (comp_coverage c)"
+lemma COMPLY_003_03: "\<forall>(c :: DO178CCompliance). comp_dal c = DAL_A \<longrightarrow> decision_coverage_100 (comp_coverage c) = True \<longrightarrow> cov_covered_decisions (comp_coverage c) = cov_total_decisions (comp_coverage c)"
   by auto
 
 (* COMPLY_003_04 (matches Coq) *)
-lemma COMPLY_003_04: "\<forall> (c : DO178CCompliance), comp_dal c = DAL_A \<longrightarrow> mcdc_coverage_100 (comp_coverage c) = True \<longrightarrow> cov_mcdc_conditions (comp_coverage c) = cov_total_conditions (comp_coverage c)"
+lemma COMPLY_003_04: "\<forall>(c :: DO178CCompliance). comp_dal c = DAL_A \<longrightarrow> mcdc_coverage_100 (comp_coverage c) = True \<longrightarrow> cov_mcdc_conditions (comp_coverage c) = cov_total_conditions (comp_coverage c)"
   by auto
 
 (* COMPLY_003_05 (matches Coq) *)
-lemma COMPLY_003_05: "\<forall> (c : DO178CCompliance), no_dead_code (comp_code_analysis c) = True \<longrightarrow> \<forall> code_id, In code_id (ca_all_code (comp_code_analysis c)) \<longrightarrow> In code_id (ca_reachable_code (comp_code_analysis c)) \<or> In code_id (ca_deactivated_code (comp_code_analysis c))"
+lemma COMPLY_003_05: "\<forall>(c :: DO178CCompliance). no_dead_code (comp_code_analysis c) = True \<longrightarrow> \<forall>code_id. In code_id (ca_all_code (comp_code_analysis c)) \<longrightarrow> In code_id (ca_reachable_code (comp_code_analysis c)) \<or> In code_id (ca_deactivated_code (comp_code_analysis c))"
   by auto
 
 (* COMPLY_003_06 (matches Coq) *)
-lemma COMPLY_003_06: "\<forall> (c : DO178CCompliance), all_deactivated_documented (comp_code_analysis c) = True \<longrightarrow> \<forall> code_id, In code_id (ca_deactivated_code (comp_code_analysis c)) \<longrightarrow> In code_id (ca_deactivated_documented (comp_code_analysis c))"
+lemma COMPLY_003_06: "\<forall>(c :: DO178CCompliance). all_deactivated_documented (comp_code_analysis c) = True \<longrightarrow> \<forall>code_id. In code_id (ca_deactivated_code (comp_code_analysis c)) \<longrightarrow> In code_id (ca_deactivated_documented (comp_code_analysis c))"
   by auto
 
 (* COMPLY_003_07 (matches Coq) *)
-lemma COMPLY_003_07: "\<forall> (c : DO178CCompliance), stack_safe (comp_stack c) = True \<longrightarrow> stack_max_usage (comp_stack c) \<le> stack_allocated (comp_stack c)"
+lemma COMPLY_003_07: "\<forall>(c :: DO178CCompliance). stack_safe (comp_stack c) = True \<longrightarrow> stack_max_usage (comp_stack c) \<le> stack_allocated (comp_stack c)"
   by auto
 
 (* COMPLY_003_08 (matches Coq) *)
-lemma COMPLY_003_08: "\<forall> (c : DO178CCompliance), timing_deterministic (comp_timing c) = True \<longrightarrow> timing_bounded_loops (comp_timing c) = True \<and> timing_wcet (comp_timing c) + timing_jitter (comp_timing c) \<le> timing_deadline (comp_timing c)"
+lemma COMPLY_003_08: "\<forall>(c :: DO178CCompliance). timing_deterministic (comp_timing c) = True \<longrightarrow> timing_bounded_loops (comp_timing c) = True \<and> timing_wcet (comp_timing c) + timing_jitter (comp_timing c) \<le> timing_deadline (comp_timing c)"
   by auto
 
 (* COMPLY_003_09 (matches Coq) *)
-lemma COMPLY_003_09: "\<forall> (c : DO178CCompliance), all_partitions_isolated (comp_partitions c) = True \<longrightarrow> \<forall> p1 p2, In p1 (comp_partitions c) \<longrightarrow> In p2 (comp_partitions c) \<longrightarrow> part_id p1 \<noteq> part_id p2 \<longrightarrow> partitions_isolated p1 p2 = True"
+lemma COMPLY_003_09: "\<forall>(c :: DO178CCompliance). all_partitions_isolated (comp_partitions c) = True \<longrightarrow> \<forall>p1 p2. In p1 (comp_partitions c) \<longrightarrow> In p2 (comp_partitions c) \<longrightarrow> part_id p1 \<noteq> part_id p2 \<longrightarrow> partitions_isolated p1 p2 = True"
   by auto
 
 (* COMPLY_003_10 (matches Coq) *)
-lemma COMPLY_003_10: "\<forall> (c : DO178CCompliance), all_inputs_validated (comp_inputs c) = True \<longrightarrow> \<forall> iv, In iv (comp_inputs c) \<longrightarrow> iv_range_checked iv = True \<and> iv_type_checked iv = True \<and> iv_null_checked iv = True"
+lemma COMPLY_003_10: "\<forall>(c :: DO178CCompliance). all_inputs_validated (comp_inputs c) = True \<longrightarrow> \<forall>iv. In iv (comp_inputs c) \<longrightarrow> iv_range_checked iv = True \<and> iv_type_checked iv = True \<and> iv_null_checked iv = True"
   by auto
 
 (* COMPLY_003_11 (matches Coq) *)
-lemma COMPLY_003_11: "\<forall> (c : DO178CCompliance), all_exceptions_handled (comp_exceptions c) = True \<longrightarrow> \<forall> exc_type, In exc_type (eh_exception_types (comp_exceptions c)) \<longrightarrow> In exc_type (eh_handled_types (comp_exceptions c))"
+lemma COMPLY_003_11: "\<forall>(c :: DO178CCompliance). all_exceptions_handled (comp_exceptions c) = True \<longrightarrow> \<forall>exc_type. In exc_type (eh_exception_types (comp_exceptions c)) \<longrightarrow> In exc_type (eh_handled_types (comp_exceptions c))"
   by auto
 
 (* COMPLY_003_12 (matches Coq) *)
-lemma COMPLY_003_12: "\<forall> (c : DO178CCompliance), all_data_coupling_documented (comp_data_coupling c) = True \<longrightarrow> \<forall> dep, In dep (dc_data_dependencies (comp_data_coupling c)) \<longrightarrow> pair_in_list dep (dc_documented_dependencies (comp_data_coupling c)) = True"
+lemma COMPLY_003_12: "\<forall>(c :: DO178CCompliance). all_data_coupling_documented (comp_data_coupling c) = True \<longrightarrow> \<forall>dep. In dep (dc_data_dependencies (comp_data_coupling c)) \<longrightarrow> pair_in_list dep (dc_documented_dependencies (comp_data_coupling c)) = True"
   by auto
 
 (* COMPLY_003_13 (matches Coq) *)
-lemma COMPLY_003_13: "\<forall> (c : DO178CCompliance), all_control_coupling_documented (comp_control_coupling c) = True \<longrightarrow> \<forall> dep, In dep (cc_control_dependencies (comp_control_coupling c)) \<longrightarrow> pair_in_list dep (cc_documented_dependencies (comp_control_coupling c)) = True"
+lemma COMPLY_003_13: "\<forall>(c :: DO178CCompliance). all_control_coupling_documented (comp_control_coupling c) = True \<longrightarrow> \<forall>dep. In dep (cc_control_dependencies (comp_control_coupling c)) \<longrightarrow> pair_in_list dep (cc_documented_dependencies (comp_control_coupling c)) = True"
   by auto
 
 (* COMPLY_003_14 (matches Coq) *)
-lemma COMPLY_003_14: "\<forall> (c : DO178CCompliance), all_safety_properties_proven (comp_safety_props c) = True \<longrightarrow> \<forall> sp, In sp (comp_safety_props c) \<longrightarrow> sp_formally_specified sp = True \<and> sp_formally_verified sp = True"
+lemma COMPLY_003_14: "\<forall>(c :: DO178CCompliance). all_safety_properties_proven (comp_safety_props c) = True \<longrightarrow> \<forall>sp. In sp (comp_safety_props c) \<longrightarrow> sp_formally_specified sp = True \<and> sp_formally_verified sp = True"
   by auto
 
 (* COMPLY_003_15 (matches Coq) *)
-lemma COMPLY_003_15: "\<forall> (c : DO178CCompliance), no_unintended_functions (comp_func_analysis c) = True \<longrightarrow> \<forall> func_id, In func_id (fa_implemented_functions (comp_func_analysis c)) \<longrightarrow> In func_id (fa_specified_functions (comp_func_analysis c))"
+lemma COMPLY_003_15: "\<forall>(c :: DO178CCompliance). no_unintended_functions (comp_func_analysis c) = True \<longrightarrow> \<forall>func_id. In func_id (fa_implemented_functions (comp_func_analysis c)) \<longrightarrow> In func_id (fa_specified_functions (comp_func_analysis c))"
   by auto
 
 (* COMPLY_003_16 (matches Coq) *)
-lemma COMPLY_003_16: "\<forall> (c : DO178CCompliance), robustness_verified (comp_robustness c) = True \<longrightarrow> rt_all_gracefully_handled (comp_robustness c) = True \<and> \<forall> inv_type, In inv_type (rt_invalid_input_types (comp_robustness c)) \<longrightarrow> In inv_type (rt_tested_invalid_inputs (comp_robustness c))"
+lemma COMPLY_003_16: "\<forall>(c :: DO178CCompliance). robustness_verified (comp_robustness c) = True \<longrightarrow> rt_all_gracefully_handled (comp_robustness c) = True \<and> \<forall>inv_type. In inv_type (rt_invalid_input_types (comp_robustness c)) \<longrightarrow> In inv_type (rt_tested_invalid_inputs (comp_robustness c))"
   by auto
 
 (* COMPLY_003_17 (matches Coq) *)
-lemma COMPLY_003_17: "\<forall> (c : DO178CCompliance), execution_deterministic (comp_determinism c) = True \<longrightarrow> da_no_uninitialized_vars (comp_determinism c) = True \<and> da_no_race_conditions (comp_determinism c) = True \<and> da_no_undefined_behavior (comp_determinism c) = True"
+lemma COMPLY_003_17: "\<forall>(c :: DO178CCompliance). execution_deterministic (comp_determinism c) = True \<longrightarrow> da_no_uninitialized_vars (comp_determinism c) = True \<and> da_no_race_conditions (comp_determinism c) = True \<and> da_no_undefined_behavior (comp_determinism c) = True"
   by auto
 
 (* COMPLY_003_18 (matches Coq) *)
-lemma COMPLY_003_18: "\<forall> (c : DO178CCompliance), all_tasks_meet_deadlines (comp_rt_tasks c) = True \<longrightarrow> \<forall> task, In task (comp_rt_tasks c) \<longrightarrow> rtt_wcet task \<le> rtt_deadline task"
+lemma COMPLY_003_18: "\<forall>(c :: DO178CCompliance). all_tasks_meet_deadlines (comp_rt_tasks c) = True \<longrightarrow> \<forall>task. In task (comp_rt_tasks c) \<longrightarrow> rtt_wcet task \<le> rtt_deadline task"
   by auto
 
 (* COMPLY_003_19 (matches Coq) *)
-lemma COMPLY_003_19: "\<forall> (c : DO178CCompliance), resource_usage_bounded (comp_resources c) = True \<longrightarrow> ru_cpu_usage (comp_resources c) \<le> ru_cpu_limit (comp_resources c) \<and> ru_memory_usage (comp_resources c) \<le> ru_memory_limit (comp_resources c) \<and> ru_io_usage (comp_resources c) \<le> ru_io_limit (comp_resources c)"
+lemma COMPLY_003_19: "\<forall>(c :: DO178CCompliance). resource_usage_bounded (comp_resources c) = True \<longrightarrow> ru_cpu_usage (comp_resources c) \<le> ru_cpu_limit (comp_resources c) \<and> ru_memory_usage (comp_resources c) \<le> ru_memory_limit (comp_resources c) \<and> ru_io_usage (comp_resources c) \<le> ru_io_limit (comp_resources c)"
   by auto
 
 (* COMPLY_003_20 (matches Coq) *)
-lemma COMPLY_003_20: "\<forall> (c : DO178CCompliance), configuration_compliant (comp_config c) = True \<longrightarrow> cm_version_controlled (comp_config c) = True \<and> cm_baseline_identified (comp_config c) = True \<and> cm_changes_tracked (comp_config c) = True \<and> cm_audit_trail (comp_config c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma COMPLY_003_20: "\<forall>(c :: DO178CCompliance). configuration_compliant (comp_config c) = True \<longrightarrow> cm_version_controlled (comp_config c) = True \<and> cm_baseline_identified (comp_config c) = True \<and> cm_changes_tracked (comp_config c) = True \<and> cm_audit_trail (comp_config c) = True"
+  by auto
 
 (* DAL_A_Full_Compliance (matches Coq) *)
-lemma DAL_A_Full_Compliance: "\<forall> (c : DO178CCompliance), full_dal_a_compliance c = True \<longrightarrow> comp_dal c = DAL_A"
-  by (cases rule: ‹_›.cases; simp)
+lemma DAL_A_Full_Compliance: "\<forall>(c :: DO178CCompliance). full_dal_a_compliance c = True \<longrightarrow> comp_dal c = DAL_A"
+  by auto
 
 end

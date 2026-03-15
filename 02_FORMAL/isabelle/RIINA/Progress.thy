@@ -138,7 +138,7 @@ proof (intro allI impI)
   fix e T \<epsilon> st ctx \<Sigma>
   assume Hty: "has_type [] \<Sigma> Public e T \<epsilon>"
      and Hwf: "store_wf \<Sigma> st"
-  show "is_value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<longrightarrow> (e', st', ctx'))"
+  show "is_value e \<or> (\<exists>e' st' ctx'. (e. st, ctx) \<longrightarrow> (e', st', ctx'))"
     using Hty Hwf
   proof (induction "[] :: type_env" \<Sigma> Public e T \<epsilon> arbitrary: st ctx rule: has_type.induct)
     case (T_Unit \<Sigma> \<Delta>)

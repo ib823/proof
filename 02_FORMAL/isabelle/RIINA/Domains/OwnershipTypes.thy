@@ -120,7 +120,7 @@ definition lifetime_outlives :: "bool" where
 
 (* find_var (matches Coq: Definition find_var) *)
 fun find_var :: "nat \<Rightarrow> option OwnedVar" where
-
+  "find_var _ = None"
 
 (* is_usable - complex match, needs manual translation *)
 definition is_usable :: "bool" where "is_usable = undefined"
@@ -133,11 +133,11 @@ definition can_shared_borrow :: "bool" where "can_shared_borrow = undefined"
 
 (* count_borrows (matches Coq: Definition count_borrows) *)
 definition count_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> nat" where
-  "count_borrows ctx id \<equiv> length (filter (fun b => ((br_source = b)) id) (oc_borrows ctx))"
+  "count_borrows ctx id \<equiv> length (filter (\<lambda>b. br_source b = id) (oc_borrows ctx))"
 
 (* count_mut_borrows (matches Coq: Definition count_mut_borrows) *)
 definition count_mut_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> nat" where
-  "count_mut_borrows ctx id \<equiv> length (filter (fun b => (((\<and> = (br_source)) b) id) (br_mutable b))
+  "count_mut_borrows ctx id \<equiv> length (filter (\<lambda>b. br_source b = id \<and> br_mutable b)
                  (oc_borrows ctx))"
 
 (* move_var - complex match, needs manual translation *)
@@ -161,7 +161,7 @@ definition is_dropped :: "bool" where "is_dropped = undefined"
 
 (* update_var_state (matches Coq: Definition update_var_state) *)
 fun update_var_state :: "nat \<Rightarrow> OwnState \<Rightarrow> list OwnedVar" where
-
+  "update_var_state _ = undefined"
 
 (* create_shared_borrow (matches Coq: Definition create_shared_borrow) *)
 definition create_shared_borrow :: "OwnCtx \<Rightarrow> Lifetime \<Rightarrow> option OwnCtx" where
@@ -206,97 +206,97 @@ definition no_active_borrows :: "OwnCtx \<Rightarrow> nat \<Rightarrow> bool" wh
 
 (* memory_safe (matches Coq: Definition memory_safe) *)
 definition memory_safe :: "OwnCtx \<Rightarrow> bool" where
-  "memory_safe ctx \<equiv> (forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = True) /\
+  "memory_safe ctx \<equiv> (forall b, In b (oc_borrows ctx) -> borrow_lifetime_valid ctx b = True) \<and>
   
   (forall v, In v (oc_vars ctx) -> ov_state v = Moved -> 
-             count_borrows ctx (ov_id v) = 0) /\
+             count_borrows ctx (ov_id v) = 0) \<and>
   
   (forall v, In v (oc_vars ctx) -> ov_state v = Dropped -> 
-             count_borrows ctx (ov_id v) = 0) /\
+             count_borrows ctx (ov_id v) = 0) \<and>
   
-  (forall id, count_mut_borrows ctx id <= 1) /\
+  (forall id, count_mut_borrows ctx id <= 1) \<and>
   
   (forall id, count_mut_borrows ctx id = 1 -> 
               count_borrows ctx id = count_mut_borrows ctx id)"
 
 (* existsb_false_forall (matches Coq) *)
-lemma existsb_false_forall: "\<forall> {A} (f : A \<longrightarrow> bool) (l : list A), \<exists>b f l = False \<longrightarrow> \<forall> x, In x l \<longrightarrow> f x = False"
+lemma existsb_false_forall: "\<forall>{A} (f : A \<longrightarrow> bool) (l : list A). \<exists>b f l = False \<longrightarrow> \<forall>x. x \<in> set l \<longrightarrow> f x = False"
   by auto
 
 (* find_var_map_moved (matches Coq) *)
-lemma find_var_map_moved: "\<forall> vars from_id v, find_var vars from_id = Some v \<longrightarrow> find_var (map (fun var => if ((ov_id = var)) from_id then mkOV from_id Moved (ov_lifetime var) (ov_is_copy var) else var) vars) from_id = Some (mkOV from_id Moved (ov_lifetime v) (ov_is_copy v))"
-  by (cases rule: ‹_›.cases; simp)
+lemma find_var_map_moved: "\<forall>vars from_id v. find_var vars from_id = Some v \<longrightarrow> find_var (map (\<lambda>var. if (ov_id var = from_id) then mkOV from_id Moved (ov_lifetime var) (ov_is_copy var) else var) vars) from_id = Some (mkOV from_id Moved (ov_lifetime v) (ov_is_copy v))"
+  by auto
 
 (* MEM_001_01 (matches Coq) *)
-lemma MEM_001_01: "\<forall> (ctx : OwnCtx) (from_id to_id : nat) (ctx' : OwnCtx) (v : OwnedVar), find_var (oc_vars ctx) from_id = Some v \<longrightarrow> ov_is_copy v = False \<longrightarrow> ov_state v = Owned \<longrightarrow> to_id \<noteq> from_id \<longrightarrow> move_var ctx from_id to_id = Some ctx' \<longrightarrow> \<forall> v', find_var (oc_vars ctx') from_id = Some v' \<longrightarrow> ov_state v' = Moved"
+lemma MEM_001_01: "\<forall>(ctx :: OwnCtx) (from_id to_id : nat) (ctx' : OwnCtx) (v :: OwnedVar). find_var (oc_vars ctx) from_id = Some v \<longrightarrow> ov_is_copy v = False \<longrightarrow> ov_state v = Owned \<longrightarrow> to_id \<noteq> from_id \<longrightarrow> move_var ctx from_id to_id = Some ctx' \<longrightarrow> \<forall>v'. find_var (oc_vars ctx') from_id = Some v' \<longrightarrow> ov_state v' = Moved"
   by auto
 
 (* MEM_001_02 (matches Coq) *)
-lemma MEM_001_02: "\<forall> (ctx : OwnCtx) (from_id to_id : nat) (ctx' : OwnCtx) (v : OwnedVar), find_var (oc_vars ctx) from_id = Some v \<longrightarrow> ov_is_copy v = False \<longrightarrow> ov_state v = Owned \<longrightarrow> move_var ctx from_id to_id = Some ctx' \<longrightarrow> \<exists> v_new, find_var (oc_vars ctx') to_id = Some v_new \<and> ov_state v_new = Owned"
+lemma MEM_001_02: "\<forall>(ctx :: OwnCtx) (from_id to_id : nat) (ctx' : OwnCtx) (v :: OwnedVar). find_var (oc_vars ctx) from_id = Some v \<longrightarrow> ov_is_copy v = False \<longrightarrow> ov_state v = Owned \<longrightarrow> move_var ctx from_id to_id = Some ctx' \<longrightarrow> \<exists>v_new. find_var (oc_vars ctx') to_id = Some v_new \<and> ov_state v_new = Owned"
   by simp
 
 (* MEM_001_03 (matches Coq) *)
-lemma MEM_001_03: "\<forall> (ctx : OwnCtx) (id : nat) (v : OwnedVar), find_var (oc_vars ctx) id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> count_mut_borrows ctx id = 0 \<longrightarrow> can_shared_borrow ctx id = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma MEM_001_03: "\<forall>(ctx :: OwnCtx) (id :: nat) (v : OwnedVar). find_var (oc_vars ctx) id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> count_mut_borrows ctx id = 0 \<longrightarrow> can_shared_borrow ctx id = True"
+  by auto
 
 (* filter_all_false_empty (matches Coq) *)
-lemma filter_all_false_empty: "\<forall> {A} (f : A \<longrightarrow> bool) (l : list A), (\<forall> x, In x l \<longrightarrow> f x = False) \<longrightarrow> filter f l = []"
+lemma filter_all_false_empty: "\<forall>{A} (f : A \<longrightarrow> bool) (l : list A). (\<forall>x. x \<in> set l \<longrightarrow> f x = False) \<longrightarrow> filter f l = []"
   by auto
 
 (* MEM_001_04 (matches Coq) *)
-lemma MEM_001_04: "\<forall> (ctx : OwnCtx) (id : nat) (v : OwnedVar), find_var (oc_vars ctx) id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> can_mut_borrow ctx id = True \<longrightarrow> count_borrows ctx id = 0"
-  by (cases rule: ‹_›.cases; simp)
+lemma MEM_001_04: "\<forall>(ctx :: OwnCtx) (id :: nat) (v : OwnedVar). find_var (oc_vars ctx) id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> can_mut_borrow ctx id = True \<longrightarrow> count_borrows ctx id = 0"
+  by auto
 
 (* MEM_001_05 (matches Coq) *)
-lemma MEM_001_05: "\<forall> (ctx : OwnCtx) (b : Borrow) (v : OwnedVar), In b (oc_borrows ctx) \<longrightarrow> find_var (oc_vars ctx) (br_source b) = Some v \<longrightarrow> borrow_lifetime_valid ctx b = True \<longrightarrow> lifetime_outlives (ov_lifetime v) (br_lifetime b) = True"
+lemma MEM_001_05: "\<forall>(ctx :: OwnCtx) (b :: Borrow) (v : OwnedVar). In b (oc_borrows ctx) \<longrightarrow> find_var (oc_vars ctx) (br_source b) = Some v \<longrightarrow> borrow_lifetime_valid ctx b = True \<longrightarrow> lifetime_outlives (ov_lifetime v) (br_lifetime b) = True"
   by auto
 
 (* MEM_001_06 (matches Coq) *)
-lemma MEM_001_06: "\<forall> (v : OwnedVar), ov_state v = Moved \<longrightarrow> is_usable v = False"
+lemma MEM_001_06: "\<forall>(v :: OwnedVar). ov_state v = Moved \<longrightarrow> is_usable v = False"
   by simp
 
 (* MEM_001_07 (matches Coq) *)
-lemma MEM_001_07: "\<forall> (ctx : OwnCtx) (id : nat) (v : OwnedVar) (b : Borrow), find_var (oc_vars ctx) id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> In b (oc_borrows ctx) \<longrightarrow> br_source b = id \<longrightarrow> br_mutable b = False \<longrightarrow> can_mut_borrow ctx id = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma MEM_001_07: "\<forall>(ctx :: OwnCtx) (id :: nat) (v : OwnedVar) (b :: Borrow). find_var (oc_vars ctx) id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> In b (oc_borrows ctx) \<longrightarrow> br_source b = id \<longrightarrow> br_mutable b = False \<longrightarrow> can_mut_borrow ctx id = False"
+  by auto
 
 (* MEM_001_08 (matches Coq) *)
-lemma MEM_001_08: "\<forall> (ctx : OwnCtx) (id : nat) (v : OwnedVar) (b : Borrow), find_var (oc_vars ctx) id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> In b (oc_borrows ctx) \<longrightarrow> br_source b = id \<longrightarrow> br_mutable b = True \<longrightarrow> can_shared_borrow ctx id = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma MEM_001_08: "\<forall>(ctx :: OwnCtx) (id :: nat) (v : OwnedVar) (b :: Borrow). find_var (oc_vars ctx) id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> In b (oc_borrows ctx) \<longrightarrow> br_source b = id \<longrightarrow> br_mutable b = True \<longrightarrow> can_shared_borrow ctx id = False"
+  by auto
 
 (* MEM_001_09 (matches Coq) *)
-lemma MEM_001_09: "\<forall> (orig_lt reborrow_lt : Lifetime), lifetime_outlives orig_lt reborrow_lt = True \<longrightarrow> (reborrow_lt \<le> orig_lt) = True"
+lemma MEM_001_09: "\<forall>(orig_lt reborrow_lt : Lifetime). lifetime_outlives orig_lt reborrow_lt = True \<longrightarrow> (reborrow_lt \<le> orig_lt) = True"
   by auto
 
 (* find_var_map_dropped (matches Coq) *)
-lemma find_var_map_dropped: "\<forall> vars id v, find_var vars id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> find_var (map (fun var => if ((ov_id = var)) id then mkOV id Dropped (ov_lifetime var) (ov_is_copy var) else var) vars) id = Some (mkOV id Dropped (ov_lifetime v) (ov_is_copy v))"
-  by (cases rule: ‹_›.cases; simp)
+lemma find_var_map_dropped: "\<forall>vars id v. find_var vars id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> find_var (map (\<lambda>var. if (ov_id var = id) then mkOV id Dropped (ov_lifetime var) (ov_is_copy var) else var) vars) id = Some (mkOV id Dropped (ov_lifetime v) (ov_is_copy v))"
+  by auto
 
 (* MEM_001_10 (matches Coq) *)
-lemma MEM_001_10: "\<forall> (ctx ctx' : OwnCtx) (id : nat) (v : OwnedVar), find_var (oc_vars ctx) id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> drop_var ctx id = Some ctx' \<longrightarrow> drop_var ctx' id = None"
+lemma MEM_001_10: "\<forall>(ctx ctx' : OwnCtx) (id :: nat) (v : OwnedVar). find_var (oc_vars ctx) id = Some v \<longrightarrow> ov_state v = Owned \<longrightarrow> drop_var ctx id = Some ctx' \<longrightarrow> drop_var ctx' id = None"
   by simp
 
 (* MEM_001_11 (matches Coq) *)
-lemma MEM_001_11: "\<forall> (ctx : OwnCtx) (b : Borrow) (v : OwnedVar), well_formed_ctx ctx \<longrightarrow> In b (oc_borrows ctx) \<longrightarrow> find_var (oc_vars ctx) (br_source b) = Some v \<longrightarrow> ov_state v \<noteq> Dropped \<and> ov_state v \<noteq> Moved \<longrightarrow> lifetime_outlives (ov_lifetime v) (br_lifetime b) = True"
+lemma MEM_001_11: "\<forall>(ctx :: OwnCtx) (b :: Borrow) (v : OwnedVar). well_formed_ctx ctx \<longrightarrow> In b (oc_borrows ctx) \<longrightarrow> find_var (oc_vars ctx) (br_source b) = Some v \<longrightarrow> ov_state v \<noteq> Dropped \<and> ov_state v \<noteq> Moved \<longrightarrow> lifetime_outlives (ov_lifetime v) (br_lifetime b) = True"
   by auto
 
 (* MEM_001_12 (matches Coq) *)
-lemma MEM_001_12: "\<forall> (rc : RefCell), rc_state rc = RCMutBorrow \<longrightarrow> refcell_try_borrow rc = None \<and> refcell_try_borrow_mut rc = None"
+lemma MEM_001_12: "\<forall>(rc :: RefCell). rc_state rc = RCMutBorrow \<longrightarrow> refcell_try_borrow rc = None \<and> refcell_try_borrow_mut rc = None"
   by simp
 
 (* MEM_001_13 (matches Coq) *)
-lemma MEM_001_13: "\<forall> (ctx : OwnCtx) (from_id to_id : nat) (v : OwnedVar), find_var (oc_vars ctx) from_id = Some v \<longrightarrow> ov_is_copy v = True \<longrightarrow> move_var ctx from_id to_id = Some ctx"
+lemma MEM_001_13: "\<forall>(ctx :: OwnCtx) (from_id to_id : nat) (v :: OwnedVar). find_var (oc_vars ctx) from_id = Some v \<longrightarrow> ov_is_copy v = True \<longrightarrow> move_var ctx from_id to_id = Some ctx"
   by simp
 
 (* MEM_001_14 (matches Coq) *)
-lemma MEM_001_14: "\<forall> (id : nat), let b := box_new id in box_allocated b = True \<and> box_dropped b = False \<and> (\<exists> b', box_drop b = Some b' \<and> box_dropped b' = True)"
+lemma MEM_001_14: "\<forall>(id :: nat). let b := box_new id in box_allocated b = True \<and> box_dropped b = False \<and> (\<exists>b'. box_drop b = Some b' \<and> box_dropped b' = True)"
   by simp
 
 (* MEM_001_15 (matches Coq) *)
-lemma MEM_001_15: "\<forall> (ctx : OwnCtx), memory_safe ctx \<longrightarrow> well_formed_ctx ctx \<and> (\<forall> v, In v (oc_vars ctx) \<longrightarrow> ov_state v = Moved \<longrightarrow> is_usable v = False) \<and> (\<forall> v, In v (oc_vars ctx) \<longrightarrow> ov_state v = Dropped \<longrightarrow> is_usable v = False)"
+lemma MEM_001_15: "\<forall>(ctx :: OwnCtx). memory_safe ctx \<longrightarrow> well_formed_ctx ctx \<and> (\<forall>v. In v (oc_vars ctx) \<longrightarrow> ov_state v = Moved \<longrightarrow> is_usable v = False) \<and> (\<forall>v. In v (oc_vars ctx) \<longrightarrow> ov_state v = Dropped \<longrightarrow> is_usable v = False)"
   by auto
 
 (* lifetime_outlives_refl (matches Coq) *)
-lemma lifetime_outlives_refl: "\<forall> l, lifetime_outlives l l = True"
+lemma lifetime_outlives_refl: "\<forall>l. lifetime_outlives l l = True"
   by auto
 
 end

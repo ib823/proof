@@ -147,41 +147,41 @@ definition inventory_valid :: "bool" where
 (* Section J01 - PCI-DSS for E-commerce
     Reference: IND_J_RETAIL.md Section 3.1 *)
 (* ecommerce_pci_compliance (matches Coq) *)
-lemma ecommerce_pci_compliance: "\<forall> (controls : EcommerceControls), pci_compliant_payment controls = True \<longrightarrow> True"
+lemma ecommerce_pci_compliance: "\<forall>(controls :: EcommerceControls). pci_compliant_payment controls = True \<longrightarrow> True"
   by simp
 
 (* Section J02 - CCPA Consumer Rights
     Reference: IND_J_RETAIL.md Section 3.2 *)
 (* ccpa_compliance (matches Coq) *)
-lemma ccpa_compliance: "\<forall> (consumer : nat) (right : PrivacyRight), True"
+lemma ccpa_compliance: "\<forall>(consumer :: nat) (right :: PrivacyRight). True"
   by simp
 
 (* Section J03 - GDPR Compliance
     Reference: IND_J_RETAIL.md Section 3.3 *)
 (* gdpr_compliance (matches Coq) *)
-lemma gdpr_compliance: "\<forall> (data_subject : nat) (processing : nat), True"
+lemma gdpr_compliance: "\<forall>(data_subject :: nat) (processing :: nat). True"
   by simp
 
 (* Section J04 - OWASP Top 10 Prevention
     Reference: IND_J_RETAIL.md Section 3.4 *)
 (* owasp_prevention (matches Coq) *)
-lemma owasp_prevention: "\<forall> (controls : EcommerceControls), input_validation controls = True \<longrightarrow> sql_injection_prevention controls = True \<longrightarrow> xss_prevention controls = True \<longrightarrow> True"
+lemma owasp_prevention: "\<forall>(controls :: EcommerceControls). input_validation controls = True \<longrightarrow> sql_injection_prevention controls = True \<longrightarrow> xss_prevention controls = True \<longrightarrow> True"
   by simp
 
 (* Section J05 - SOC 2 Trust Principles
     Reference: IND_J_RETAIL.md Section 3.5 *)
 (* soc2_compliance (matches Coq) *)
-lemma soc2_compliance: "\<forall> (service : nat) (criteria : nat), True"
+lemma soc2_compliance: "\<forall>(service :: nat) (criteria :: nat). True"
   by simp
 
 (* TLS required for all customer data *)
 (* tls_required (matches Coq) *)
-lemma tls_required: "\<forall> (controls : EcommerceControls) (data : ConsumerData), tls_encryption controls = True \<longrightarrow> True"
+lemma tls_required: "\<forall>(controls :: EcommerceControls) (data :: ConsumerData). tls_encryption controls = True \<longrightarrow> True"
   by simp
 
 (* CSRF tokens required for state-changing operations *)
 (* csrf_tokens_required (matches Coq) *)
-lemma csrf_tokens_required: "\<forall> (controls : EcommerceControls), csrf_protection controls = True \<longrightarrow> True"
+lemma csrf_tokens_required: "\<forall>(controls :: EcommerceControls). csrf_protection controls = True \<longrightarrow> True"
   by simp
 
 (* payment_biometric_highest (matches Coq) *)
@@ -189,63 +189,63 @@ lemma payment_biometric_highest: "consumer_sensitivity PaymentData = consumer_se
   by simp
 
 (* payment_max_sensitivity (matches Coq) *)
-lemma payment_max_sensitivity: "\<forall> d, consumer_sensitivity d \<le> consumer_sensitivity PaymentData"
-  by (cases rule: ‹_›.cases; simp)
+lemma payment_max_sensitivity: "\<forall>d. consumer_sensitivity d \<le> consumer_sensitivity PaymentData"
+  by auto
 
 (* consumer_sensitivity_positive (matches Coq) *)
-lemma consumer_sensitivity_positive: "\<forall> d, consumer_sensitivity d \<ge> 2"
-  by (cases rule: ‹_›.cases; simp)
+lemma consumer_sensitivity_positive: "\<forall>d. consumer_sensitivity d \<ge> 2"
+  by auto
 
 (* right_to_nat_positive (matches Coq) *)
-lemma right_to_nat_positive: "\<forall> r, right_to_nat r \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma right_to_nat_positive: "\<forall>r. right_to_nat r \<ge> 1"
+  by auto
 
 (* right_to_nat_bounded (matches Coq) *)
-lemma right_to_nat_bounded: "\<forall> r, right_to_nat r \<le> all_rights_count"
-  by (cases rule: ‹_›.cases; simp)
+lemma right_to_nat_bounded: "\<forall>r. right_to_nat r \<le> all_rights_count"
+  by auto
 
 (* all_ecom_requires_tls (matches Coq) *)
-lemma all_ecom_requires_tls: "\<forall> c, all_ecommerce_controls c = True \<longrightarrow> tls_encryption c = True"
+lemma all_ecom_requires_tls: "\<forall>c. all_ecommerce_controls c = True \<longrightarrow> tls_encryption c = True"
   by auto
 
 (* all_ecom_requires_pci (matches Coq) *)
-lemma all_ecom_requires_pci: "\<forall> c, all_ecommerce_controls c = True \<longrightarrow> pci_compliant_payment c = True"
+lemma all_ecom_requires_pci: "\<forall>c. all_ecommerce_controls c = True \<longrightarrow> pci_compliant_payment c = True"
   by auto
 
 (* all_ecom_requires_sqli (matches Coq) *)
-lemma all_ecom_requires_sqli: "\<forall> c, all_ecommerce_controls c = True \<longrightarrow> sql_injection_prevention c = True"
+lemma all_ecom_requires_sqli: "\<forall>c. all_ecommerce_controls c = True \<longrightarrow> sql_injection_prevention c = True"
   by auto
 
 (* all_ecom_requires_xss (matches Coq) *)
-lemma all_ecom_requires_xss: "\<forall> c, all_ecommerce_controls c = True \<longrightarrow> xss_prevention c = True"
+lemma all_ecom_requires_xss: "\<forall>c. all_ecommerce_controls c = True \<longrightarrow> xss_prevention c = True"
   by auto
 
 (* count_ecommerce_bounded (matches Coq) *)
-lemma count_ecommerce_bounded: "\<forall> c, count_ecommerce_controls c \<le> 8"
-  by (cases rule: ‹_›.cases; simp)
+lemma count_ecommerce_bounded: "\<forall>c. count_ecommerce_controls c \<le> 8"
+  by auto
 
 (* all_controls_count_eight (matches Coq) *)
-lemma all_controls_count_eight: "\<forall> c, all_ecommerce_controls c = True \<longrightarrow> count_ecommerce_controls c = 8"
-  by (cases rule: ‹_›.cases; simp)
+lemma all_controls_count_eight: "\<forall>c. all_ecommerce_controls c = True \<longrightarrow> count_ecommerce_controls c = 8"
+  by auto
 
 (* expired_data_must_delete (matches Coq) *)
-lemma expired_data_must_delete: "\<forall> ct coll ret, retention_expired ct coll ret = True \<longrightarrow> ct > coll + ret"
+lemma expired_data_must_delete: "\<forall>ct coll ret. retention_expired ct coll ret = True \<longrightarrow> ct > coll + ret"
   by auto
 
 (* expired_session_invalid (matches Coq) *)
-lemma expired_session_invalid: "\<forall> la ct to, session_expired la ct to = True \<longrightarrow> ct > la + to"
+lemma expired_session_invalid: "\<forall>la ct to. session_expired la ct to = True \<longrightarrow> ct > la + to"
   by auto
 
 (* order_amount_positive (matches Coq) *)
-lemma order_amount_positive: "\<forall> a ma, order_amount_valid a ma = True \<longrightarrow> a \<ge> 1"
+lemma order_amount_positive: "\<forall>a ma. order_amount_valid a ma = True \<longrightarrow> a \<ge> 1"
   by auto
 
 (* order_amount_bounded (matches Coq) *)
-lemma order_amount_bounded: "\<forall> a ma, order_amount_valid a ma = True \<longrightarrow> a \<le> ma"
+lemma order_amount_bounded: "\<forall>a ma. order_amount_valid a ma = True \<longrightarrow> a \<le> ma"
   by auto
 
 (* inventory_bounded (matches Coq) *)
-lemma inventory_bounded: "\<forall> c mc, inventory_valid c mc = True \<longrightarrow> c \<le> mc"
+lemma inventory_bounded: "\<forall>c mc. inventory_valid c mc = True \<longrightarrow> c \<le> mc"
   by auto
 
 end

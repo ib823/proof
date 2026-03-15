@@ -75,23 +75,23 @@ begin
     This is because EffPure has level 0 (the minimum), and effect_join
     takes the maximum. *)
 (* effect_join_pure_inv (matches Coq) *)
-lemma effect_join_pure_inv: "\<forall> ε1 ε2, effect_join ε1 ε2 = EffPure \<longrightarrow> ε1 = EffPure \<and> ε2 = EffPure"
-  by (cases rule: ‹_›.cases; simp)
+lemma effect_join_pure_inv: "\<forall>ε1 ε2. effect_join ε1 ε2 = EffPure \<longrightarrow> ε1 = EffPure \<and> ε2 = EffPure"
+  by auto
 
 (* Join with EffWrite is never pure. *)
 (* effect_join_write_not_pure (matches Coq) *)
-lemma effect_join_write_not_pure: "\<forall> ε, effect_join ε EffWrite \<noteq> EffPure"
+lemma effect_join_write_not_pure: "\<forall>ε. effect_join ε EffWrite \<noteq> EffPure"
   by auto
 
 (* Join with EffRead is never pure. *)
 (* effect_join_read_not_pure (matches Coq) *)
-lemma effect_join_read_not_pure: "\<forall> ε, effect_join ε EffRead \<noteq> EffPure"
+lemma effect_join_read_not_pure: "\<forall>ε. effect_join ε EffRead \<noteq> EffPure"
   by auto
 
 (* The value predicate is decidable. This is useful for case analysis
     in many proof contexts. *)
 (* value_dec (matches Coq) *)
-lemma value_dec: "\<forall> e, {value e} + {~ value e}"
+lemma value_dec: "\<forall>e. (value e) \<or> (~ value e)"
   by auto
 
 (* The main theorem: if a closed expression is typed with EffPure,
@@ -104,19 +104,19 @@ lemma value_dec: "\<forall> e, {value e} + {~ value e}"
     [ST_AssignLoc], both of which require [EffWrite] in the typing
     derivation, contradicting EffPure. *)
 (* pure_step_preserves_store (matches Coq) *)
-lemma pure_step_preserves_store: "\<forall> e e' T st st' ctx ctx' Σ, has_type nil Σ Public e T EffPure \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> st' = st"
+lemma pure_step_preserves_store: "\<forall>e e' T st st' ctx ctx' Σ. has_type nil Σ Public e T EffPure \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> st' = st"
   by simp
 
 (* Pure steps also preserve the effect context. *)
 (* pure_step_preserves_ctx (matches Coq) *)
-lemma pure_step_preserves_ctx: "\<forall> e e' T st st' ctx ctx' Σ, has_type nil Σ Public e T EffPure \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> ctx' = ctx"
+lemma pure_step_preserves_ctx: "\<forall>e e' T st st' ctx ctx' Σ. has_type nil Σ Public e T EffPure \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> ctx' = ctx"
   by simp
 
 (* Effect-preserving subject reduction for EffPure.
     If a pure-typed expression steps, the result is also pure-typed.
     Proof by induction on the step relation. *)
 (* preservation_pure (matches Coq) *)
-lemma preservation_pure: "\<forall> e e' T st st' ctx ctx' Σ, has_type nil Σ Public e T EffPure \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> \<exists> Σ', store_ty_extends Σ Σ' \<and> store_wf Σ' st' \<and> has_type nil Σ' Public e' T EffPure"
+lemma preservation_pure: "\<forall>e e' T st st' ctx ctx' Σ. has_type nil Σ Public e T EffPure \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> \<exists>Σ'. store_ty_extends Σ Σ' \<and> store_wf Σ' st' \<and> has_type nil Σ' Public e' T EffPure"
   by auto
 
 (* Multi-step pure store invariance.
@@ -124,48 +124,48 @@ lemma preservation_pure: "\<forall> e e' T st st' ctx ctx' Σ, has_type nil Σ P
     each step preserves the store, and [preservation_pure] to propagate
     EffPure typing through the sequence. *)
 (* pure_multi_step_preserves_store (matches Coq) *)
-lemma pure_multi_step_preserves_store: "\<forall> e e' T st st' ctx ctx' Σ, has_type nil Σ Public e T EffPure \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) -->* (e', st', ctx') \<longrightarrow> st' = st"
+lemma pure_multi_step_preserves_store: "\<forall>e e' T st st' ctx ctx' Σ. has_type nil Σ Public e T EffPure \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) -->* (e', st', ctx') \<longrightarrow> st' = st"
   by auto
 
 (* Values cannot multi-step to a different configuration. *)
 (* multi_step_value_inv (matches Coq) *)
-lemma multi_step_value_inv: "\<forall> v st ctx e' st' ctx', value v \<longrightarrow> (v, st, ctx) -->* (e', st', ctx') \<longrightarrow> v = e' \<and> st = st' \<and> ctx = ctx'"
+lemma multi_step_value_inv: "\<forall>v st ctx e' st' ctx'. value v \<longrightarrow> (v, st, ctx) -->* (e', st', ctx') \<longrightarrow> v = e' \<and> st = st' \<and> ctx = ctx'"
   by auto
 
 (* Atomic values (non-compound) have EffPure effect. *)
 (* atomic_value_pure (matches Coq) *)
-lemma atomic_value_pure: "\<forall> Γ Σ Δ v T ε, has_type Γ Σ Δ v T ε \<longrightarrow> (v = EUnit \<or> (\<exists> b, v = EBool b) \<or> (\<exists> n, v = EInt n) \<or> (\<exists> s, v = EString s) \<or> (\<exists> l, v = ELoc l) \<or> (\<exists> x T' body, v = ELam x T' body)) \<longrightarrow> ε = EffPure"
+lemma atomic_value_pure: "\<forall>Γ Σ Δ v T ε. has_type Γ Σ Δ v T ε \<longrightarrow> (v = EUnit \<or> (\<exists>b. v = EBool b) \<or> (\<exists>n. v = EInt n) \<or> (\<exists>s. v = EString s) \<or> (\<exists>l. v = ELoc l) \<or> (\<exists>x T' body. v = ELam x T' body)) \<longrightarrow> ε = EffPure"
   by simp
 
 (* The EffPure effect is the only effect with level 0. *)
 (* effect_level_zero_is_pure (matches Coq) *)
-lemma effect_level_zero_is_pure: "\<forall> ε, effect_level ε = 0 \<longrightarrow> ε = EffPure"
-  by (cases rule: ‹_›.cases; simp)
+lemma effect_level_zero_is_pure: "\<forall>ε. effect_level ε = 0 \<longrightarrow> ε = EffPure"
+  by auto
 
 (* Effect join with any non-pure effect is non-pure. *)
 (* effect_join_nonpure (matches Coq) *)
-lemma effect_join_nonpure: "\<forall> ε1 ε2, ε2 \<noteq> EffPure \<longrightarrow> effect_join ε1 ε2 \<noteq> EffPure"
+lemma effect_join_nonpure: "\<forall>ε1 ε2. ε2 \<noteq> EffPure \<longrightarrow> effect_join ε1 ε2 \<noteq> EffPure"
   by auto
 
 (* Effect join is monotone in both arguments:
     if ε1 ≤ ε1' and ε2 ≤ ε2', then join(ε1, ε2) ≤ join(ε1', ε2'). *)
 (* effect_join_monotone (matches Coq) *)
-lemma effect_join_monotone: "\<forall> ε1 ε1' ε2 ε2', effect_leq ε1 ε1' \<longrightarrow> effect_leq ε2 ε2' \<longrightarrow> effect_leq (effect_join ε1 ε2) (effect_join ε1' ε2')"
+lemma effect_join_monotone: "\<forall>ε1 ε1' ε2 ε2'. effect_leq ε1 ε1' \<longrightarrow> effect_leq ε2 ε2' \<longrightarrow> effect_leq (effect_join ε1 ε2) (effect_join ε1' ε2')"
   by simp
 
 (* Effect join is monotone in the left argument. *)
 (* effect_join_mono_l (matches Coq) *)
-lemma effect_join_mono_l: "\<forall> ε1 ε1' ε2, effect_leq ε1 ε1' \<longrightarrow> effect_leq (effect_join ε1 ε2) (effect_join ε1' ε2)"
+lemma effect_join_mono_l: "\<forall>ε1 ε1' ε2. effect_leq ε1 ε1' \<longrightarrow> effect_leq (effect_join ε1 ε2) (effect_join ε1' ε2)"
   by auto
 
 (* Effect join is monotone in the right argument. *)
 (* effect_join_mono_r (matches Coq) *)
-lemma effect_join_mono_r: "\<forall> ε1 ε2 ε2', effect_leq ε2 ε2' \<longrightarrow> effect_leq (effect_join ε1 ε2) (effect_join ε1 ε2')"
+lemma effect_join_mono_r: "\<forall>ε1 ε2 ε2'. effect_leq ε2 ε2' \<longrightarrow> effect_leq (effect_join ε1 ε2) (effect_join ε1 ε2')"
   by auto
 
 (* EffPure is the bottom element. *)
 (* effect_leq_pure (matches Coq) *)
-lemma effect_leq_pure: "\<forall> ε, effect_leq EffPure ε"
+lemma effect_leq_pure: "\<forall>ε. effect_leq EffPure ε"
   by simp
 
 (* EffRead is below EffWrite. *)
@@ -200,22 +200,22 @@ lemma read_neq_write: "EffRead \<noteq> EffWrite"
 
 (* EffPure is the left identity for join. *)
 (* effect_join_pure_l (matches Coq) *)
-lemma effect_join_pure_l: "\<forall> ε, effect_join EffPure ε = ε"
-  by (cases rule: ‹_›.cases; simp)
+lemma effect_join_pure_l: "\<forall>ε. effect_join EffPure ε = ε"
+  by auto
 
 (* Effect join is idempotent. *)
 (* effect_join_idem (matches Coq) *)
-lemma effect_join_idem: "\<forall> ε, effect_join ε ε = ε"
+lemma effect_join_idem: "\<forall>ε. effect_join ε ε = ε"
   by simp
 
 (* Every base-type value (unit, bool, int, string, loc, lam) is typed with EffPure. *)
 (* base_value_always_pure (matches Coq) *)
-lemma base_value_always_pure: "\<forall> Γ Σ Δ v T ε, has_type Γ Σ Δ v T ε \<longrightarrow> (v = EUnit \<or> (\<exists> b, v = EBool b) \<or> (\<exists> n, v = EInt n) \<or> (\<exists> s, v = EString s) \<or> (\<exists> l, v = ELoc l) \<or> (\<exists> x T' body, v = ELam x T' body)) \<longrightarrow> ε = EffPure"
+lemma base_value_always_pure: "\<forall>Γ Σ Δ v T ε. has_type Γ Σ Δ v T ε \<longrightarrow> (v = EUnit \<or> (\<exists>b. v = EBool b) \<or> (\<exists>n. v = EInt n) \<or> (\<exists>s. v = EString s) \<or> (\<exists>l. v = ELoc l) \<or> (\<exists>x T' body. v = ELam x T' body)) \<longrightarrow> ε = EffPure"
   by simp
 
 (* Multi-step evaluation of pure expressions preserves context. *)
 (* pure_multi_step_preserves_ctx (matches Coq) *)
-lemma pure_multi_step_preserves_ctx: "\<forall> e e' T st st' ctx ctx' Σ, has_type nil Σ Public e T EffPure \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) -->* (e', st', ctx') \<longrightarrow> ctx' = ctx"
+lemma pure_multi_step_preserves_ctx: "\<forall>e e' T st st' ctx ctx' Σ. has_type nil Σ Public e T EffPure \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) -->* (e', st', ctx') \<longrightarrow> ctx' = ctx"
   by simp
 
 (* All non-pure base effects are distinct from EffPure. *)
@@ -273,13 +273,13 @@ lemma effect_level_write: "effect_level EffWrite = 2"
 
 (* Pure is minimal effect *)
 (* effect_level_pure_min (matches Coq) *)
-lemma effect_level_pure_min: "\<forall> ε, effect_level EffPure \<le> effect_level ε"
+lemma effect_level_pure_min: "\<forall>ε. effect_level EffPure \<le> effect_level ε"
   by simp
 
 (* If e evaluates to v preserving store, and e' evaluates to v' preserving store,
     the combined result also preserves the store *)
 (* pure_multi_step_compose (matches Coq) *)
-lemma pure_multi_step_compose: "\<forall> e1 v1 e2 v2 st ctx ctx1 ctx2, multi_step (e1, st, ctx) (v1, st, ctx1) \<longrightarrow> multi_step (e2, st, ctx) (v2, st, ctx2) \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> st = st"
+lemma pure_multi_step_compose: "\<forall>e1 v1 e2 v2 st ctx ctx1 ctx2. multi_step (e1, st, ctx) (v1, st, ctx1) \<longrightarrow> multi_step (e2, st, ctx) (v2, st, ctx2) \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> st = st"
   by simp
 
 (* pure_leq_filesystem (matches Coq) *)
@@ -312,26 +312,26 @@ lemma read_lt_write: "effect_level EffRead < effect_level EffWrite"
 
 (* An effect is at most the join with any other effect *)
 (* effect_leq_join_l (matches Coq) *)
-lemma effect_leq_join_l: "\<forall> ε1 ε2, effect_leq ε1 (effect_join ε1 ε2)"
+lemma effect_leq_join_l: "\<forall>ε1 ε2. effect_leq ε1 (effect_join ε1 ε2)"
   by simp
 
 (* effect_leq_join_r (matches Coq) *)
-lemma effect_leq_join_r: "\<forall> ε1 ε2, effect_leq ε2 (effect_join ε1 ε2)"
+lemma effect_leq_join_r: "\<forall>ε1 ε2. effect_leq ε2 (effect_join ε1 ε2)"
   by simp
 
 (* Join with EffNetwork is never pure *)
 (* effect_join_network_not_pure (matches Coq) *)
-lemma effect_join_network_not_pure: "\<forall> ε, effect_join ε EffNetwork \<noteq> EffPure"
+lemma effect_join_network_not_pure: "\<forall>ε. effect_join ε EffNetwork \<noteq> EffPure"
   by auto
 
 (* Positive level implies not pure *)
 (* effect_level_positive_not_pure (matches Coq) *)
-lemma effect_level_positive_not_pure: "\<forall> ε, effect_level ε > 0 \<longrightarrow> ε \<noteq> EffPure"
+lemma effect_level_positive_not_pure: "\<forall>ε. effect_level ε > 0 \<longrightarrow> ε \<noteq> EffPure"
   by simp
 
 (* EffPure is the right identity for join *)
 (* effect_join_pure_r (matches Coq) *)
-lemma effect_join_pure_r: "\<forall> ε, effect_join ε EffPure = ε"
-  by (cases rule: ‹_›.cases; simp)
+lemma effect_join_pure_r: "\<forall>ε. effect_join ε EffPure = ε"
+  by auto
 
 end

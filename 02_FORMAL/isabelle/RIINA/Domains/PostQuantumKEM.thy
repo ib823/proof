@@ -185,27 +185,27 @@ definition riina_kem_security :: "KEMSecurity" where
     SECTION 4: COMPLIANCE PREDICATES
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* PQ_KEM_001: Level Reflexivity *)
 (* PQ_KEM_001_level_reflexive (matches Coq) *)
-lemma PQ_KEM_001_level_reflexive: "\<forall> l : SecurityLevel, level_leq l l = True"
+lemma PQ_KEM_001_level_reflexive: "\<forall>l : SecurityLevel. level_leq l l = True"
   by simp
 
 (* PQ_KEM_002: Level Transitivity *)
 (* PQ_KEM_002_level_transitive (matches Coq) *)
-lemma PQ_KEM_002_level_transitive: "\<forall> l1 l2 l3 : SecurityLevel, level_leq l1 l2 = True \<longrightarrow> level_leq l2 l3 = True \<longrightarrow> level_leq l1 l3 = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma PQ_KEM_002_level_transitive: "\<forall>l1 l2 l3 : SecurityLevel. level_leq l1 l2 = True \<longrightarrow> level_leq l2 l3 = True \<longrightarrow> level_leq l1 l3 = True"
+  by auto
 
 (* PQ_KEM_003: Level 1 is minimum *)
 (* PQ_KEM_003_level1_minimum (matches Coq) *)
-lemma PQ_KEM_003_level1_minimum: "\<forall> l : SecurityLevel, level_leq Level1 l = True"
+lemma PQ_KEM_003_level1_minimum: "\<forall>l : SecurityLevel. level_leq Level1 l = True"
   by simp
 
 (* PQ_KEM_004: Level 5 is maximum *)
 (* PQ_KEM_004_level5_maximum (matches Coq) *)
-lemma PQ_KEM_004_level5_maximum: "\<forall> l : SecurityLevel, level_leq l Level5 = True"
+lemma PQ_KEM_004_level5_maximum: "\<forall>l : SecurityLevel. level_leq l Level5 = True"
   by simp
 
 (* PQ_KEM_005: ML-KEM-512 is Level 1 *)
@@ -235,18 +235,18 @@ lemma PQ_KEM_009_indcca_valid: "indcca_compliant mk_compliant_indcca = True"
 
 (* PQ_KEM_010: Ciphertext Indistinguishability *)
 (* PQ_KEM_010_ciphertext_indist (matches Coq) *)
-lemma PQ_KEM_010_ciphertext_indist: "\<forall> s : INDCCASecure, indcca_compliant s = True \<longrightarrow> indcca_ciphertext_indistinguishable s = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma PQ_KEM_010_ciphertext_indist: "\<forall>s : INDCCASecure. indcca_compliant s = True \<longrightarrow> indcca_ciphertext_indistinguishable s = True"
+  by auto
 
 (* PQ_KEM_011: Key Indistinguishability *)
 (* PQ_KEM_011_key_indist (matches Coq) *)
-lemma PQ_KEM_011_key_indist: "\<forall> s : INDCCASecure, indcca_compliant s = True \<longrightarrow> indcca_key_indistinguishable s = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma PQ_KEM_011_key_indist: "\<forall>s : INDCCASecure. indcca_compliant s = True \<longrightarrow> indcca_key_indistinguishable s = True"
+  by auto
 
 (* PQ_KEM_012: Decapsulation Consistency *)
 (* PQ_KEM_012_decaps_consistent (matches Coq) *)
-lemma PQ_KEM_012_decaps_consistent: "\<forall> s : INDCCASecure, indcca_compliant s = True \<longrightarrow> indcca_decaps_consistent s = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma PQ_KEM_012_decaps_consistent: "\<forall>s : INDCCASecure. indcca_compliant s = True \<longrightarrow> indcca_decaps_consistent s = True"
+  by auto
 
 (* PQ_KEM_013: Compliant QR Valid *)
 (* PQ_KEM_013_qr_valid (matches Coq) *)
@@ -255,17 +255,17 @@ lemma PQ_KEM_013_qr_valid: "quantum_resistant mk_compliant_qr = True"
 
 (* PQ_KEM_014: Lattice-Based Construction *)
 (* PQ_KEM_014_lattice_based (matches Coq) *)
-lemma PQ_KEM_014_lattice_based: "\<forall> q : QuantumResistant, quantum_resistant q = True \<longrightarrow> qr_lattice_based q = True"
+lemma PQ_KEM_014_lattice_based: "\<forall>q : QuantumResistant. quantum_resistant q = True \<longrightarrow> qr_lattice_based q = True"
   by auto
 
 (* PQ_KEM_015: Module-LWE Hardness *)
 (* PQ_KEM_015_module_lwe (matches Coq) *)
-lemma PQ_KEM_015_module_lwe: "\<forall> q : QuantumResistant, quantum_resistant q = True \<longrightarrow> qr_module_lwe q = True"
+lemma PQ_KEM_015_module_lwe: "\<forall>q : QuantumResistant. quantum_resistant q = True \<longrightarrow> qr_module_lwe q = True"
   by auto
 
 (* PQ_KEM_016: No Known Quantum Attack *)
 (* PQ_KEM_016_no_quantum_attack (matches Coq) *)
-lemma PQ_KEM_016_no_quantum_attack: "\<forall> q : QuantumResistant, quantum_resistant q = True \<longrightarrow> qr_no_known_quantum_attack q = True"
+lemma PQ_KEM_016_no_quantum_attack: "\<forall>q : QuantumResistant. quantum_resistant q = True \<longrightarrow> qr_no_known_quantum_attack q = True"
   by auto
 
 (* PQ_KEM_017: RIINA KEM Correct *)
@@ -290,27 +290,27 @@ lemma PQ_KEM_020_riina_mlkem1024: "kem_params riina_kem_1024 = ML_KEM_1024"
 
 (* PQ_KEM_021: Security Implies IND-CCA *)
 (* PQ_KEM_021_security_implies_indcca (matches Coq) *)
-lemma PQ_KEM_021_security_implies_indcca: "\<forall> s : KEMSecurity, kem_secure s = True \<longrightarrow> indcca_compliant (kem_sec_indcca s) = True"
+lemma PQ_KEM_021_security_implies_indcca: "\<forall>s : KEMSecurity. kem_secure s = True \<longrightarrow> indcca_compliant (kem_sec_indcca s) = True"
   by auto
 
 (* PQ_KEM_022: Security Implies Quantum Resistance *)
 (* PQ_KEM_022_security_implies_qr (matches Coq) *)
-lemma PQ_KEM_022_security_implies_qr: "\<forall> s : KEMSecurity, kem_secure s = True \<longrightarrow> quantum_resistant (kem_sec_quantum s) = True"
+lemma PQ_KEM_022_security_implies_qr: "\<forall>s : KEMSecurity. kem_secure s = True \<longrightarrow> quantum_resistant (kem_sec_quantum s) = True"
   by auto
 
 (* PQ_KEM_023: Correctness Requires Valid KeyPair *)
 (* PQ_KEM_023_correct_keypair (matches Coq) *)
-lemma PQ_KEM_023_correct_keypair: "\<forall> k : KEMInstance, kem_correct k = True \<longrightarrow> kp_valid (kem_keypair k) = True"
+lemma PQ_KEM_023_correct_keypair: "\<forall>k : KEMInstance. kem_correct k = True \<longrightarrow> kp_valid (kem_keypair k) = True"
   by auto
 
 (* PQ_KEM_024: Correctness Requires Shared Secret Match *)
 (* PQ_KEM_024_shared_secret_match (matches Coq) *)
-lemma PQ_KEM_024_shared_secret_match: "\<forall> k : KEMInstance, kem_correct k = True \<longrightarrow> ((enc_shared_secret = (kem_encaps_result) k)) (kem_decaps_result k) = True"
+lemma PQ_KEM_024_shared_secret_match: "\<forall>k : KEMInstance. kem_correct k = True \<longrightarrow> ((enc_shared_secret = (kem_encaps_result) k)) (kem_decaps_result k) = True"
   by auto
 
 (* PQ_KEM_025: Complete PQ-KEM Security Theorem *)
 (* PQ_KEM_025_complete_security (matches Coq) *)
-lemma PQ_KEM_025_complete_security: "\<forall> s : KEMSecurity, kem_secure s = True \<longrightarrow> indcca_ciphertext_indistinguishable (kem_sec_indcca s) = True \<and> indcca_key_indistinguishable (kem_sec_indcca s) = True \<and> qr_lattice_based (kem_sec_quantum s) = True \<and> qr_no_known_quantum_attack (kem_sec_quantum s) = True"
+lemma PQ_KEM_025_complete_security: "\<forall>s : KEMSecurity. kem_secure s = True \<longrightarrow> indcca_ciphertext_indistinguishable (kem_sec_indcca s) = True \<and> indcca_key_indistinguishable (kem_sec_indcca s) = True \<and> qr_lattice_based (kem_sec_quantum s) = True \<and> qr_no_known_quantum_attack (kem_sec_quantum s) = True"
   by simp
 
 end

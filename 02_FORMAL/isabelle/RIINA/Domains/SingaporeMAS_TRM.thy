@@ -101,10 +101,10 @@ definition cyber_hygiene_pam :: "MASRegulatedEntity \<Rightarrow> bool" where
 
 (* cyber_hygiene_compliant (matches Coq: Definition cyber_hygiene_compliant) *)
 definition cyber_hygiene_compliant :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "cyber_hygiene_compliant e \<equiv> cyber_hygiene_mfa e /\
-  cyber_hygiene_patching e /\
-  cyber_hygiene_network e /\
-  cyber_hygiene_antimalware e /\
+  "cyber_hygiene_compliant e \<equiv> cyber_hygiene_mfa e \<and>
+  cyber_hygiene_patching e \<and>
+  cyber_hygiene_network e \<and>
+  cyber_hygiene_antimalware e \<and>
   cyber_hygiene_pam e"
 
 (* patch_applied_in_time (matches Coq: Definition patch_applied_in_time) *)
@@ -113,7 +113,7 @@ definition patch_applied_in_time :: "PatchCriticality \<Rightarrow> bool" where
 
 (* trm_governance (matches Coq: Definition trm_governance) *)
 definition trm_governance :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "trm_governance e \<equiv> mas_board_oversight e = True /\
+  "trm_governance e \<equiv> mas_board_oversight e = True \<and>
   mas_risk_assessment_done e = True"
 
 (* trm_security_testing (matches Coq: Definition trm_security_testing) *)
@@ -122,14 +122,14 @@ definition trm_security_testing :: "MASRegulatedEntity \<Rightarrow> bool" where
 
 (* trm_resilience (matches Coq: Definition trm_resilience) *)
 definition trm_resilience :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "trm_resilience e \<equiv> mas_incident_response_plan e = True /\
+  "trm_resilience e \<equiv> mas_incident_response_plan e = True \<and>
   mas_bcp_tested e = True"
 
 (* mas_fully_compliant (matches Coq: Definition mas_fully_compliant) *)
 definition mas_fully_compliant :: "MASRegulatedEntity \<Rightarrow> bool" where
-  "mas_fully_compliant e \<equiv> cyber_hygiene_compliant e /\
-  trm_governance e /\
-  trm_security_testing e /\
+  "mas_fully_compliant e \<equiv> cyber_hygiene_compliant e \<and>
+  trm_governance e \<and>
+  trm_security_testing e \<and>
   trm_resilience e"
 
 (* all_mas_license_types (matches Coq: Definition all_mas_license_types) *)
@@ -151,88 +151,88 @@ definition count_mas_controls :: "MASRegulatedEntity \<Rightarrow> nat" where
   (if mas_bcp_tested e then 1 else 0)"
 
 (* mas_cyber_hygiene (matches Coq) *)
-lemma mas_cyber_hygiene: "\<forall> (e : MASRegulatedEntity), mas_mfa_enabled e = True \<longrightarrow> mas_patching_current e = True \<longrightarrow> mas_network_secured e = True \<longrightarrow> mas_antimalware e = True \<longrightarrow> mas_privileged_access_managed e = True \<longrightarrow> cyber_hygiene_compliant e"
+lemma mas_cyber_hygiene: "\<forall>(e :: MASRegulatedEntity). mas_mfa_enabled e = True \<longrightarrow> mas_patching_current e = True \<longrightarrow> mas_network_secured e = True \<longrightarrow> mas_antimalware e = True \<longrightarrow> mas_privileged_access_managed e = True \<longrightarrow> cyber_hygiene_compliant e"
   by simp
 
 (* critical_patch_14_days (matches Coq) *)
-lemma critical_patch_14_days: "\<forall> (d a : nat), a \<le> d + 14 \<longrightarrow> patch_applied_in_time PatchCritical d a"
+lemma critical_patch_14_days: "\<forall>(d a : nat). a \<le> d + 14 \<longrightarrow> patch_applied_in_time PatchCritical d a"
   by auto
 
 (* critical_strictest (matches Coq) *)
-lemma critical_strictest: "\<forall> (d a : nat), patch_applied_in_time PatchCritical d a \<longrightarrow> patch_applied_in_time PatchHigh d a"
+lemma critical_strictest: "\<forall>(d a : nat). patch_applied_in_time PatchCritical d a \<longrightarrow> patch_applied_in_time PatchHigh d a"
   by simp
 
 (* trm_governance_proof (matches Coq) *)
-lemma trm_governance_proof: "\<forall> (e : MASRegulatedEntity), mas_board_oversight e = True \<longrightarrow> mas_risk_assessment_done e = True \<longrightarrow> trm_governance e"
+lemma trm_governance_proof: "\<forall>(e :: MASRegulatedEntity). mas_board_oversight e = True \<longrightarrow> mas_risk_assessment_done e = True \<longrightarrow> trm_governance e"
   by auto
 
 (* mas_composition (matches Coq) *)
-lemma mas_composition: "\<forall> (e : MASRegulatedEntity), cyber_hygiene_compliant e \<longrightarrow> trm_governance e \<longrightarrow> trm_security_testing e \<longrightarrow> trm_resilience e \<longrightarrow> mas_fully_compliant e"
+lemma mas_composition: "\<forall>(e :: MASRegulatedEntity). cyber_hygiene_compliant e \<longrightarrow> trm_governance e \<longrightarrow> trm_security_testing e \<longrightarrow> trm_resilience e \<longrightarrow> mas_fully_compliant e"
   by simp
 
 (* mas_license_coverage (matches Coq) *)
-lemma mas_license_coverage: "\<forall> (l : MASLicenseType), In l all_mas_license_types"
+lemma mas_license_coverage: "\<forall>(l :: MASLicenseType). l \<in> set all_mas_license_types"
   by auto
 
 (* Cyber hygiene field decomposition *)
 (* ch_requires_mfa (matches Coq) *)
-lemma ch_requires_mfa: "\<forall> e, cyber_hygiene_compliant e \<longrightarrow> mas_mfa_enabled e = True"
+lemma ch_requires_mfa: "\<forall>e. cyber_hygiene_compliant e \<longrightarrow> mas_mfa_enabled e = True"
   by auto
 
 (* ch_requires_patching (matches Coq) *)
-lemma ch_requires_patching: "\<forall> e, cyber_hygiene_compliant e \<longrightarrow> mas_patching_current e = True"
+lemma ch_requires_patching: "\<forall>e. cyber_hygiene_compliant e \<longrightarrow> mas_patching_current e = True"
   by auto
 
 (* ch_requires_network (matches Coq) *)
-lemma ch_requires_network: "\<forall> e, cyber_hygiene_compliant e \<longrightarrow> mas_network_secured e = True"
+lemma ch_requires_network: "\<forall>e. cyber_hygiene_compliant e \<longrightarrow> mas_network_secured e = True"
   by auto
 
 (* ch_requires_antimalware (matches Coq) *)
-lemma ch_requires_antimalware: "\<forall> e, cyber_hygiene_compliant e \<longrightarrow> mas_antimalware e = True"
+lemma ch_requires_antimalware: "\<forall>e. cyber_hygiene_compliant e \<longrightarrow> mas_antimalware e = True"
   by auto
 
 (* ch_requires_pam (matches Coq) *)
-lemma ch_requires_pam: "\<forall> e, cyber_hygiene_compliant e \<longrightarrow> mas_privileged_access_managed e = True"
+lemma ch_requires_pam: "\<forall>e. cyber_hygiene_compliant e \<longrightarrow> mas_privileged_access_managed e = True"
   by auto
 
 (* Patch deadline ordering *)
 (* patch_critical_strictest (matches Coq) *)
-lemma patch_critical_strictest: "\<forall> p, patch_deadline PatchCritical \<le> patch_deadline p"
-  by (cases rule: ‹_›.cases; simp)
+lemma patch_critical_strictest: "\<forall>p. patch_deadline PatchCritical \<le> patch_deadline p"
+  by auto
 
 (* patch_low_most_lenient (matches Coq) *)
-lemma patch_low_most_lenient: "\<forall> p, patch_deadline p \<le> patch_deadline PatchLow"
-  by (cases rule: ‹_›.cases; simp)
+lemma patch_low_most_lenient: "\<forall>p. patch_deadline p \<le> patch_deadline PatchLow"
+  by auto
 
 (* patch_deadline_positive (matches Coq) *)
-lemma patch_deadline_positive: "\<forall> p, patch_deadline p \<ge> 14"
-  by (cases rule: ‹_›.cases; simp)
+lemma patch_deadline_positive: "\<forall>p. patch_deadline p \<ge> 14"
+  by auto
 
 (* Patch subsumption: if applied in time for critical, then in time for any *)
 (* patch_critical_subsumes_all (matches Coq) *)
-lemma patch_critical_subsumes_all: "\<forall> d a p, patch_applied_in_time PatchCritical d a \<longrightarrow> patch_applied_in_time p d a"
-  by (cases rule: ‹_›.cases; simp)
+lemma patch_critical_subsumes_all: "\<forall>d a p. patch_applied_in_time PatchCritical d a \<longrightarrow> patch_applied_in_time p d a"
+  by auto
 
 (* Full compliance decomposition *)
 (* mas_full_requires_hygiene (matches Coq) *)
-lemma mas_full_requires_hygiene: "\<forall> e, mas_fully_compliant e \<longrightarrow> cyber_hygiene_compliant e"
+lemma mas_full_requires_hygiene: "\<forall>e. mas_fully_compliant e \<longrightarrow> cyber_hygiene_compliant e"
   by auto
 
 (* mas_full_requires_governance (matches Coq) *)
-lemma mas_full_requires_governance: "\<forall> e, mas_fully_compliant e \<longrightarrow> trm_governance e"
+lemma mas_full_requires_governance: "\<forall>e. mas_fully_compliant e \<longrightarrow> trm_governance e"
   by auto
 
 (* mas_full_requires_testing (matches Coq) *)
-lemma mas_full_requires_testing: "\<forall> e, mas_fully_compliant e \<longrightarrow> trm_security_testing e"
+lemma mas_full_requires_testing: "\<forall>e. mas_fully_compliant e \<longrightarrow> trm_security_testing e"
   by auto
 
 (* mas_full_requires_resilience (matches Coq) *)
-lemma mas_full_requires_resilience: "\<forall> e, mas_fully_compliant e \<longrightarrow> trm_resilience e"
+lemma mas_full_requires_resilience: "\<forall>e. mas_fully_compliant e \<longrightarrow> trm_resilience e"
   by auto
 
 (* count_mas_bounded (matches Coq) *)
-lemma count_mas_bounded: "\<forall> e, count_mas_controls e \<le> 10"
-  by (cases rule: ‹_›.cases; simp)
+lemma count_mas_bounded: "\<forall>e. count_mas_controls e \<le> 10"
+  by auto
 
 (* License type count *)
 (* mas_seven_licenses (matches Coq) *)

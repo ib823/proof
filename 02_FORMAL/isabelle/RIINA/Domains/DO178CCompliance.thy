@@ -296,27 +296,27 @@ definition riina_do178c :: "DO178CCompliance" where
     SECTION 6: HELPER LEMMAS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* DO178_001: DAL Reflexivity *)
 (* DO178_001_dal_reflexive (matches Coq) *)
-lemma DO178_001_dal_reflexive: "\<forall> d : DAL, dal_leq d d = True"
+lemma DO178_001_dal_reflexive: "\<forall>d : DAL. dal_leq d d = True"
   by simp
 
 (* DO178_002: DAL Transitivity *)
 (* DO178_002_dal_transitive (matches Coq) *)
-lemma DO178_002_dal_transitive: "\<forall> d1 d2 d3 : DAL, dal_leq d1 d2 = True \<longrightarrow> dal_leq d2 d3 = True \<longrightarrow> dal_leq d1 d3 = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_002_dal_transitive: "\<forall>d1 d2 d3 : DAL. dal_leq d1 d2 = True \<longrightarrow> dal_leq d2 d3 = True \<longrightarrow> dal_leq d1 d3 = True"
+  by auto
 
 (* DO178_003: Level E is least stringent *)
 (* DO178_003_dal_e_bottom (matches Coq) *)
-lemma DO178_003_dal_e_bottom: "\<forall> d : DAL, dal_leq DAL_E d = True"
+lemma DO178_003_dal_e_bottom: "\<forall>d : DAL. dal_leq DAL_E d = True"
   by simp
 
 (* DO178_004: Level A is most stringent *)
 (* DO178_004_dal_a_top (matches Coq) *)
-lemma DO178_004_dal_a_top: "\<forall> d : DAL, dal_leq d DAL_A = True"
+lemma DO178_004_dal_a_top: "\<forall>d : DAL. dal_leq d DAL_A = True"
   by simp
 
 (* DO178_005: Compliant Planning Valid *)
@@ -326,13 +326,13 @@ lemma DO178_005_planning_valid: "planning_compliant mk_compliant_planning = True
 
 (* DO178_006: Planning Standards Required *)
 (* DO178_006_planning_standards (matches Coq) *)
-lemma DO178_006_planning_standards: "\<forall> p : PlanningObjectives, planning_compliant p = True \<longrightarrow> plan_standards_defined p = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_006_planning_standards: "\<forall>p : PlanningObjectives. planning_compliant p = True \<longrightarrow> plan_standards_defined p = True"
+  by auto
 
 (* DO178_007: Lifecycle Definition Required *)
 (* DO178_007_lifecycle_required (matches Coq) *)
-lemma DO178_007_lifecycle_required: "\<forall> p : PlanningObjectives, planning_compliant p = True \<longrightarrow> plan_lifecycle_defined p = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_007_lifecycle_required: "\<forall>p : PlanningObjectives. planning_compliant p = True \<longrightarrow> plan_lifecycle_defined p = True"
+  by auto
 
 (* DO178_008: Compliant Development Valid *)
 (* DO178_008_development_valid (matches Coq) *)
@@ -341,23 +341,23 @@ lemma DO178_008_development_valid: "development_compliant mk_compliant_developme
 
 (* DO178_009: Requirements Completeness Required *)
 (* DO178_009_requirements_complete (matches Coq) *)
-lemma DO178_009_requirements_complete: "\<forall> d : DevelopmentProcess, development_compliant d = True \<longrightarrow> dev_requirements_complete d = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_009_requirements_complete: "\<forall>d : DevelopmentProcess. development_compliant d = True \<longrightarrow> dev_requirements_complete d = True"
+  by auto
 
 (* DO178_010: Requirements Traceability Required *)
 (* DO178_010_requirements_traceable (matches Coq) *)
-lemma DO178_010_requirements_traceable: "\<forall> d : DevelopmentProcess, development_compliant d = True \<longrightarrow> dev_requirements_traceable d = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_010_requirements_traceable: "\<forall>d : DevelopmentProcess. development_compliant d = True \<longrightarrow> dev_requirements_traceable d = True"
+  by auto
 
 (* DO178_011: Code Completeness Required *)
 (* DO178_011_code_complete (matches Coq) *)
-lemma DO178_011_code_complete: "\<forall> d : DevelopmentProcess, development_compliant d = True \<longrightarrow> dev_code_complete d = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_011_code_complete: "\<forall>d : DevelopmentProcess. development_compliant d = True \<longrightarrow> dev_code_complete d = True"
+  by auto
 
 (* DO178_012: Code Traceability Required *)
 (* DO178_012_code_traceable (matches Coq) *)
-lemma DO178_012_code_traceable: "\<forall> d : DevelopmentProcess, development_compliant d = True \<longrightarrow> dev_code_traceable d = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_012_code_traceable: "\<forall>d : DevelopmentProcess. development_compliant d = True \<longrightarrow> dev_code_traceable d = True"
+  by auto
 
 (* DO178_013: Compliant Verification Valid *)
 (* DO178_013_verification_valid (matches Coq) *)
@@ -366,23 +366,23 @@ lemma DO178_013_verification_valid: "verification_compliant mk_compliant_verific
 
 (* DO178_014: MC/DC Coverage Required for Level A *)
 (* DO178_014_mcdc_required (matches Coq) *)
-lemma DO178_014_mcdc_required: "\<forall> v : VerificationProcess, verification_compliant v = True \<longrightarrow> verif_mc_dc_coverage v = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_014_mcdc_required: "\<forall>v : VerificationProcess. verification_compliant v = True \<longrightarrow> verif_mc_dc_coverage v = True"
+  by auto
 
 (* DO178_015: Structural Coverage Required *)
 (* DO178_015_structural_coverage (matches Coq) *)
-lemma DO178_015_structural_coverage: "\<forall> v : VerificationProcess, verification_compliant v = True \<longrightarrow> verif_structural_coverage v = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_015_structural_coverage: "\<forall>v : VerificationProcess. verification_compliant v = True \<longrightarrow> verif_structural_coverage v = True"
+  by auto
 
 (* DO178_016: Requirements Review Required *)
 (* DO178_016_requirements_review (matches Coq) *)
-lemma DO178_016_requirements_review: "\<forall> v : VerificationProcess, verification_compliant v = True \<longrightarrow> verif_requirements_reviewed v = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_016_requirements_review: "\<forall>v : VerificationProcess. verification_compliant v = True \<longrightarrow> verif_requirements_reviewed v = True"
+  by auto
 
 (* DO178_017: Code Review Required *)
 (* DO178_017_code_review (matches Coq) *)
-lemma DO178_017_code_review: "\<forall> v : VerificationProcess, verification_compliant v = True \<longrightarrow> verif_code_reviewed v = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_017_code_review: "\<forall>v : VerificationProcess. verification_compliant v = True \<longrightarrow> verif_code_reviewed v = True"
+  by auto
 
 (* DO178_018: Compliant CM Valid *)
 (* DO178_018_cm_valid (matches Coq) *)
@@ -391,13 +391,13 @@ lemma DO178_018_cm_valid: "cm_compliant mk_compliant_cm = True"
 
 (* DO178_019: Change Control Required *)
 (* DO178_019_change_control (matches Coq) *)
-lemma DO178_019_change_control: "\<forall> c : ConfigurationManagement, cm_compliant c = True \<longrightarrow> cm_change_control c = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_019_change_control: "\<forall>c : ConfigurationManagement. cm_compliant c = True \<longrightarrow> cm_change_control c = True"
+  by auto
 
 (* DO178_020: Traceability Required *)
 (* DO178_020_traceability (matches Coq) *)
-lemma DO178_020_traceability: "\<forall> c : ConfigurationManagement, cm_compliant c = True \<longrightarrow> cm_traceability c = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_020_traceability: "\<forall>c : ConfigurationManagement. cm_compliant c = True \<longrightarrow> cm_traceability c = True"
+  by auto
 
 (* DO178_021: Compliant QA Valid *)
 (* DO178_021_qa_valid (matches Coq) *)
@@ -406,13 +406,13 @@ lemma DO178_021_qa_valid: "qa_compliant mk_compliant_qa = True"
 
 (* DO178_022: QA Independence Required for Level A *)
 (* DO178_022_qa_independence (matches Coq) *)
-lemma DO178_022_qa_independence: "\<forall> q : QualityAssurance, qa_compliant q = True \<longrightarrow> qa_independence q = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_022_qa_independence: "\<forall>q : QualityAssurance. qa_compliant q = True \<longrightarrow> qa_independence q = True"
+  by auto
 
 (* DO178_023: Audits Required *)
 (* DO178_023_audits (matches Coq) *)
-lemma DO178_023_audits: "\<forall> q : QualityAssurance, qa_compliant q = True \<longrightarrow> qa_audits_performed q = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_023_audits: "\<forall>q : QualityAssurance. qa_compliant q = True \<longrightarrow> qa_audits_performed q = True"
+  by auto
 
 (* DO178_024: Compliant FM Valid *)
 (* DO178_024_fm_valid (matches Coq) *)
@@ -421,13 +421,13 @@ lemma DO178_024_fm_valid: "fm_compliant mk_compliant_fm = True"
 
 (* DO178_025: FM Soundness Required *)
 (* DO178_025_fm_soundness (matches Coq) *)
-lemma DO178_025_fm_soundness: "\<forall> f : FormalMethods, fm_compliant f = True \<longrightarrow> fm_soundness_justified f = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_025_fm_soundness: "\<forall>f : FormalMethods. fm_compliant f = True \<longrightarrow> fm_soundness_justified f = True"
+  by auto
 
 (* DO178_026: FM Specification Required *)
 (* DO178_026_fm_specification (matches Coq) *)
-lemma DO178_026_fm_specification: "\<forall> f : FormalMethods, fm_compliant f = True \<longrightarrow> fm_specification_formal f = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_026_fm_specification: "\<forall>f : FormalMethods. fm_compliant f = True \<longrightarrow> fm_specification_formal f = True"
+  by auto
 
 (* DO178_027: RIINA Uses Theorem Proving *)
 (* DO178_027_riina_theorem_proving (matches Coq) *)
@@ -441,33 +441,33 @@ lemma DO178_028_riina_level_a: "do178c_level_a_compliant riina_do178c = True"
 
 (* DO178_029: Level A Requires All Objectives *)
 (* DO178_029_level_a_all_objectives (matches Coq) *)
-lemma DO178_029_level_a_all_objectives: "\<forall> c : DO178CCompliance, do178c_level_a_compliant c = True \<longrightarrow> do178c_dal c = DAL_A"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_029_level_a_all_objectives: "\<forall>c : DO178CCompliance. do178c_level_a_compliant c = True \<longrightarrow> do178c_dal c = DAL_A"
+  by auto
 
 (* DO178_030: Level A Requires Planning *)
 (* DO178_030_level_a_planning (matches Coq) *)
-lemma DO178_030_level_a_planning: "\<forall> c : DO178CCompliance, do178c_level_a_compliant c = True \<longrightarrow> planning_compliant (do178c_planning c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_030_level_a_planning: "\<forall>c : DO178CCompliance. do178c_level_a_compliant c = True \<longrightarrow> planning_compliant (do178c_planning c) = True"
+  by auto
 
 (* DO178_031: Level A Requires Development *)
 (* DO178_031_level_a_development (matches Coq) *)
-lemma DO178_031_level_a_development: "\<forall> c : DO178CCompliance, do178c_level_a_compliant c = True \<longrightarrow> development_compliant (do178c_development c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_031_level_a_development: "\<forall>c : DO178CCompliance. do178c_level_a_compliant c = True \<longrightarrow> development_compliant (do178c_development c) = True"
+  by auto
 
 (* DO178_032: Level A Requires Verification *)
 (* DO178_032_level_a_verification (matches Coq) *)
-lemma DO178_032_level_a_verification: "\<forall> c : DO178CCompliance, do178c_level_a_compliant c = True \<longrightarrow> verification_compliant (do178c_verification c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_032_level_a_verification: "\<forall>c : DO178CCompliance. do178c_level_a_compliant c = True \<longrightarrow> verification_compliant (do178c_verification c) = True"
+  by auto
 
 (* DO178_033: Level A Requires CM *)
 (* DO178_033_level_a_cm (matches Coq) *)
-lemma DO178_033_level_a_cm: "\<forall> c : DO178CCompliance, do178c_level_a_compliant c = True \<longrightarrow> cm_compliant (do178c_cm c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_033_level_a_cm: "\<forall>c : DO178CCompliance. do178c_level_a_compliant c = True \<longrightarrow> cm_compliant (do178c_cm c) = True"
+  by auto
 
 (* DO178_034: Level A Requires QA *)
 (* DO178_034_level_a_qa (matches Coq) *)
-lemma DO178_034_level_a_qa: "\<forall> c : DO178CCompliance, do178c_level_a_compliant c = True \<longrightarrow> qa_compliant (do178c_qa c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DO178_034_level_a_qa: "\<forall>c : DO178CCompliance. do178c_level_a_compliant c = True \<longrightarrow> qa_compliant (do178c_qa c) = True"
+  by auto
 
 (* DO178_035: RIINA Is DAL A *)
 (* DO178_035_riina_dal_a (matches Coq) *)
@@ -496,7 +496,7 @@ lemma DO178_039_riina_development: "development_compliant (do178c_development ri
 
 (* DO178_040: Complete DO-178C Level A Certification *)
 (* DO178_040_complete_certification (matches Coq) *)
-lemma DO178_040_complete_certification: "\<forall> c : DO178CCompliance, do178c_level_a_compliant c = True \<longrightarrow> planning_compliant (do178c_planning c) = True \<and> development_compliant (do178c_development c) = True \<and> verification_compliant (do178c_verification c) = True \<and> cm_compliant (do178c_cm c) = True \<and> qa_compliant (do178c_qa c) = True"
+lemma DO178_040_complete_certification: "\<forall>c : DO178CCompliance. do178c_level_a_compliant c = True \<longrightarrow> planning_compliant (do178c_planning c) = True \<and> development_compliant (do178c_development c) = True \<and> verification_compliant (do178c_verification c) = True \<and> cm_compliant (do178c_cm c) = True \<and> qa_compliant (do178c_qa c) = True"
   by auto
 
 end

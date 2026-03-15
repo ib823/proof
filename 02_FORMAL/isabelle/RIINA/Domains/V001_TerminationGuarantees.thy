@@ -100,7 +100,7 @@ datatype non_terminating =
 
 (* expr_size (matches Coq: Definition expr_size) *)
 fun expr_size :: "expr \<Rightarrow> nat" where
-
+  "expr_size _ = 0"
 
 (* structurally_smaller (matches Coq: Definition structurally_smaller) *)
 definition structurally_smaller :: "bool" where
@@ -114,7 +114,7 @@ definition structural_recursion :: "expr \<Rightarrow> bool" where
 
 (* get_size (matches Coq: Definition get_size) *)
 fun get_size :: "sized_ty \<Rightarrow> option Size" where
-
+  "get_size _ = None"
 
 (* size_subtype (matches Coq: Definition size_subtype) *)
 definition size_subtype :: "bool" where
@@ -174,131 +174,131 @@ fun explicitly_marked :: "expr \<Rightarrow> bool" where
   "explicitly_marked _ = False"
 
 (* V_001_01_structural_decrease (matches Coq) *)
-lemma V_001_01_structural_decrease: "\<forall> e e_rec arg, structural_recursion e \<longrightarrow> recursive_call e e_rec arg \<longrightarrow> structurally_smaller arg e"
+lemma V_001_01_structural_decrease: "\<forall>e e_rec arg. structural_recursion e \<longrightarrow> recursive_call e e_rec arg \<longrightarrow> structurally_smaller arg e"
   by auto
 
 (* V_001_02_structural_termination (matches Coq) *)
-lemma V_001_02_structural_termination: "\<forall> e, structural_recursion e \<longrightarrow> terminates e"
+lemma V_001_02_structural_termination: "\<forall>e. structural_recursion e \<longrightarrow> terminates e"
   by auto
 
 (* V_001_03_nat_structural (matches Coq) *)
-lemma V_001_03_nat_structural: "\<forall> (f : nat \<longrightarrow> nat) n, \<exists> v, (fix go m := match m with 0 => 0 | S m' => f (go m') end) n = v"
-  by (cases rule: ‹_›.cases; simp)
+lemma V_001_03_nat_structural: "\<forall>(f : nat \<longrightarrow> nat) n. \<exists>v. (fix go m := match m with 0 => 0 | S m' => f (go m') end) n = v"
+  by auto
 
 (* V_001_04_list_structural (matches Coq) *)
-lemma V_001_04_list_structural: "\<forall> A (f : A \<longrightarrow> nat \<longrightarrow> nat) (l : list A), \<exists> v, fold_left (fun acc x => f x acc) l 0 = v"
-  by (cases rule: ‹_›.cases; simp)
+lemma V_001_04_list_structural: "\<forall>A (f : A \<longrightarrow> nat \<longrightarrow> nat) (l : list A). \<exists>v. fold_left (fun acc x => f x acc) l 0 = v"
+  by auto
 
 (* V_001_05_tree_structural (matches Coq) *)
-lemma V_001_05_tree_structural: "\<forall> A (t : tree A), \<exists> v, tree_size t = v"
-  by (cases rule: ‹_›.cases; simp)
+lemma V_001_05_tree_structural: "\<forall>A (t : tree A). \<exists>v. tree_size t = v"
+  by auto
 
 (* V_001_06_mutual_structural (matches Coq) *)
-lemma V_001_06_mutual_structural: "\<forall> et ot, \<exists> ve vo, even_size et = ve \<and> odd_size ot = vo"
+lemma V_001_06_mutual_structural: "\<forall>et ot. \<exists>ve vo. even_size et = ve \<and> odd_size ot = vo"
   by simp
 
 (* V_001_07_nested_structural (matches Coq) *)
-lemma V_001_07_nested_structural: "\<forall> n, \<exists> v, (fix outer m := match m with | 0 => 0 | S m' => (fix inner k := match k with 0 => 0 | S k' => 1 + inner k' end) m' + outer m' end) n = v"
+lemma V_001_07_nested_structural: "\<forall>n. \<exists>v. (fix outer m := match m with | 0 => 0 | S m' => (fix inner k := match k with 0 => 0 | S k' => 1 + inner k' end) m' + outer m' end) n = v"
   by simp
 
 (* V_001_08_structural_checker_sound (matches Coq) *)
-lemma V_001_08_structural_checker_sound: "\<forall> e, check_termination e = True \<longrightarrow> structural_recursion e \<longrightarrow> terminates e"
+lemma V_001_08_structural_checker_sound: "\<forall>e. check_termination e = True \<longrightarrow> structural_recursion e \<longrightarrow> terminates e"
   by auto
 
 (* V_001_09_sized_type_wellformed (matches Coq) *)
-lemma V_001_09_sized_type_wellformed: "\<forall> st, sized_wellformed st"
+lemma V_001_09_sized_type_wellformed: "\<forall>st. sized_wellformed st"
   by auto
 
 (* V_001_10_size_decreases (matches Coq) *)
-lemma V_001_10_size_decreases: "\<forall> st1 st2 s1 s2, get_size st1 = Some s1 \<longrightarrow> get_size st2 = Some s2 \<longrightarrow> s1 < s2 \<longrightarrow> size_less st1 st2"
+lemma V_001_10_size_decreases: "\<forall>st1 st2 s1 s2. get_size st1 = Some s1 \<longrightarrow> get_size st2 = Some s2 \<longrightarrow> s1 < s2 \<longrightarrow> size_less st1 st2"
   by auto
 
 (* V_001_11_sized_list_terminates (matches Coq) *)
-lemma V_001_11_sized_list_terminates: "\<forall> A B (f : A \<longrightarrow> B \<longrightarrow> B) (l : list A) (acc : B), \<exists> v, sized_list_fold f l acc = v"
+lemma V_001_11_sized_list_terminates: "\<forall>A B (f : A \<longrightarrow> B \<longrightarrow> B) (l : list A) (acc :: B). \<exists>v. sized_list_fold f l acc = v"
   by simp
 
 (* V_001_12_sized_tree_terminates (matches Coq) *)
-lemma V_001_12_sized_tree_terminates: "\<forall> A B (f : A \<longrightarrow> B \<longrightarrow> B \<longrightarrow> B) (leaf : B) (t : tree A), \<exists> v, sized_tree_fold f leaf t = v"
-  by (cases rule: ‹_›.cases; simp)
+lemma V_001_12_sized_tree_terminates: "\<forall>A B (f : A \<longrightarrow> B \<longrightarrow> B \<longrightarrow> B) (leaf :: B) (t : tree A). \<exists>v. sized_tree_fold f leaf t = v"
+  by auto
 
 (* V_001_13_size_inference_correct (matches Coq) *)
-lemma V_001_13_size_inference_correct: "\<forall> e, infer_size e = expr_size e"
+lemma V_001_13_size_inference_correct: "\<forall>e. infer_size e = expr_size e"
   by simp
 
 (* V_001_14_size_subtyping (matches Coq) *)
-lemma V_001_14_size_subtyping: "\<forall> s1 s2 s3, size_subtype s1 s2 \<longrightarrow> size_subtype s2 s3 \<longrightarrow> size_subtype s1 s3"
+lemma V_001_14_size_subtyping: "\<forall>s1 s2 s3. size_subtype s1 s2 \<longrightarrow> size_subtype s2 s3 \<longrightarrow> size_subtype s1 s3"
   by simp
 
 (* V_001_15_sized_preservation (matches Coq) *)
-lemma V_001_15_sized_preservation: "\<forall> e1 e2 st, has_sized_type e1 st \<longrightarrow> step e1 e2 \<longrightarrow> \<exists> st', has_sized_type e2 st'"
+lemma V_001_15_sized_preservation: "\<forall>e1 e2 st. has_sized_type e1 st \<longrightarrow> step e1 e2 \<longrightarrow> \<exists>st'. has_sized_type e2 st'"
   by auto
 
 (* V_001_16_sized_composition (matches Coq) *)
-lemma V_001_16_sized_composition: "\<forall> s1 s2, size_subtype s1 s2 \<longrightarrow> size_subtype 0 s1 \<longrightarrow> size_subtype 0 s2"
+lemma V_001_16_sized_composition: "\<forall>s1 s2. size_subtype s1 s2 \<longrightarrow> size_subtype 0 s1 \<longrightarrow> size_subtype 0 s2"
   by simp
 
 (* V_001_17_measure_wellformed (matches Coq) *)
-lemma V_001_17_measure_wellformed: "\<forall> A (m : Measure A), wf_measure m"
+lemma V_001_17_measure_wellformed: "\<forall>A (m : Measure A). wf_measure m"
   by auto
 
 (* V_001_18_measure_decreases (matches Coq) *)
-lemma V_001_18_measure_decreases: "\<forall> A (m : Measure A) e, decreases_on m e"
+lemma V_001_18_measure_decreases: "\<forall>A (m : Measure A) e. decreases_on m e"
   by auto
 
 (* V_001_19_lexicographic_wellformed (matches Coq) *)
-lemma V_001_19_lexicographic_wellformed: "\<forall> A B (ma : Measure A) (mb : Measure B), well_founded (lex_order ma mb)"
+lemma V_001_19_lexicographic_wellformed: "\<forall>A B (ma : Measure A) (mb : Measure B). well_founded (lex_order ma mb)"
   by auto
 
 (* V_001_20_ackermann_terminates (matches Coq) *)
-lemma V_001_20_ackermann_terminates: "\<forall> m n, \<exists> v, ackermann m n = v"
+lemma V_001_20_ackermann_terminates: "\<forall>m n. \<exists>v. ackermann m n = v"
   by simp
 
 (* V_001_21_complex_measure_sound (matches Coq) *)
-lemma V_001_21_complex_measure_sound: "\<forall> A B (ma : Measure A) (mb : Measure B), wf_measure (complex_measure ma mb)"
+lemma V_001_21_complex_measure_sound: "\<forall>A B (ma : Measure A) (mb : Measure B). wf_measure (complex_measure ma mb)"
   by auto
 
 (* V_001_22_measure_inference (matches Coq) *)
-lemma V_001_22_measure_inference: "\<forall> e, infer_measure e \<ge> 1"
+lemma V_001_22_measure_inference: "\<forall>e. infer_measure e \<ge> 1"
   by simp
 
 (* V_001_23_measure_composition (matches Coq) *)
-lemma V_001_23_measure_composition: "\<forall> A (m1 m2 : Measure A) x, m1 x + m2 x \<ge> m1 x"
+lemma V_001_23_measure_composition: "\<forall>A (m1 m2 : Measure A) x. m1 x + m2 x \<ge> m1 x"
   by simp
 
 (* V_001_24_wellfounded_checker_sound (matches Coq) *)
-lemma V_001_24_wellfounded_checker_sound: "\<forall> A e (m : Measure A), check_termination e = True \<longrightarrow> wf_measure m \<longrightarrow> decreases_on m e \<longrightarrow> terminates e"
+lemma V_001_24_wellfounded_checker_sound: "\<forall>A e (m : Measure A). check_termination e = True \<longrightarrow> wf_measure m \<longrightarrow> decreases_on m e \<longrightarrow> terminates e"
   by auto
 
 (* V_001_25_codata_productive (matches Coq) *)
-lemma V_001_25_codata_productive: "\<forall> A (s : Stream A), productive s"
+lemma V_001_25_codata_productive: "\<forall>A (s : Stream A). productive s"
   by simp
 
 (* V_001_26_stream_productive (matches Coq) *)
-lemma V_001_26_stream_productive: "\<forall> A (s : Stream A), \<forall> n, List.length (observe n s) = n"
-  by (cases rule: ‹_›.cases; simp)
+lemma V_001_26_stream_productive: "\<forall>A (s : Stream A). \<forall>n. List.length (observe n s) = n"
+  by auto
 
 (* V_001_27_productivity_observe (matches Coq) *)
-lemma V_001_27_productivity_observe: "\<forall> A (s : Stream A) k, \<exists> l, observe k s = l \<and> List.length l = k"
+lemma V_001_27_productivity_observe: "\<forall>A (s : Stream A) k. \<exists>l. observe k s = l \<and> List.length l = k"
   by auto
 
 (* V_001_28_guarded_recursion (matches Coq) *)
-lemma V_001_28_guarded_recursion: "\<forall> A (g : Guarded (Stream A)), match g with Later s => productive s end"
+lemma V_001_28_guarded_recursion: "\<forall>A (g : Guarded (Stream A)). match g with Later s => productive s end"
   by auto
 
 (* V_001_29_codata_unfold (matches Coq) *)
-lemma V_001_29_codata_unfold: "\<forall> A S (f : S \<longrightarrow> A * S) (seed : S), productive (stream_unfold f seed)"
+lemma V_001_29_codata_unfold: "\<forall>A S (f : S \<longrightarrow> A * S) (seed :: S). productive (stream_unfold f seed)"
   by auto
 
 (* V_001_30_productive_composition (matches Coq) *)
-lemma V_001_30_productive_composition: "\<forall> A (s1 s2 : Stream A), productive s1 \<longrightarrow> productive s2 \<longrightarrow> productive s1 \<and> productive s2"
+lemma V_001_30_productive_composition: "\<forall>A (s1 s2 : Stream A). productive s1 \<longrightarrow> productive s2 \<longrightarrow> productive s1 \<and> productive s2"
   by auto
 
 (* V_001_31_non_terminating_marked (matches Coq) *)
-lemma V_001_31_non_terminating_marked: "\<forall> e, ~ terminates e \<longrightarrow> explicitly_marked e \<or> is_value e \<or> \<exists> e', step e e'"
+lemma V_001_31_non_terminating_marked: "\<forall>e. ~ terminates e \<longrightarrow> explicitly_marked e \<or> is_value e \<or> \<exists>e'. step e e'"
   by auto
 
 (* V_001_32_strong_normalization (matches Coq) *)
-lemma V_001_32_strong_normalization: "\<forall> e, pure e \<longrightarrow> well_typed e \<longrightarrow> is_value e \<or> \<exists> e', step e e'"
+lemma V_001_32_strong_normalization: "\<forall>e. pure e \<longrightarrow> well_typed e \<longrightarrow> is_value e \<or> \<exists>e'. step e e'"
   by auto
 
 end

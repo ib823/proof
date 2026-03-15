@@ -229,7 +229,7 @@ definition private_voice_system :: "bool" where
 
 (* voice_data_processed_locally (matches Coq: Definition voice_data_processed_locally) *)
 definition voice_data_processed_locally :: "VoiceProcessing \<Rightarrow> bool" where
-  "voice_data_processed_locally vp \<equiv> vp_processed_locally vp = True /\ vp_data_sent_to_server vp = False"
+  "voice_data_processed_locally vp \<equiv> vp_processed_locally vp = True \<and> vp_data_sent_to_server vp = False"
 
 (* wake_word_on_device (matches Coq: Definition wake_word_on_device) *)
 definition wake_word_on_device :: "WakeWordDetector \<Rightarrow> bool" where
@@ -237,7 +237,7 @@ definition wake_word_on_device :: "WakeWordDetector \<Rightarrow> bool" where
 
 (* not_always_listening (matches Coq: Definition not_always_listening) *)
 definition not_always_listening :: "WakeWordDetector \<Rightarrow> bool" where
-  "not_always_listening ww \<equiv> ww_always_listening ww = False /\ ww_buffer_size_ms ww <= ww_max_buffer_ms ww"
+  "not_always_listening ww \<equiv> ww_always_listening ww = False \<and> ww_buffer_size_ms ww <= ww_max_buffer_ms ww"
 
 (* audio_deleted_after_processing (matches Coq: Definition audio_deleted_after_processing) *)
 definition audio_deleted_after_processing :: "AudioLifecycle \<Rightarrow> bool" where
@@ -245,147 +245,147 @@ definition audio_deleted_after_processing :: "AudioLifecycle \<Rightarrow> bool"
 
 (* voice_command_intent_validated (matches Coq: Definition voice_command_intent_validated) *)
 definition voice_command_intent_validated :: "VoiceCommand \<Rightarrow> bool" where
-  "voice_command_intent_validated vc \<equiv> vc_intent_validated vc = True /\ vc_intent vc <> UnknownIntent"
+  "voice_command_intent_validated vc \<equiv> vc_intent_validated vc = True \<and> vc_intent vc <> UnknownIntent"
 
 (* speech_recognition_language_supported (matches Coq: Definition speech_recognition_language_supported) *)
 definition speech_recognition_language_supported :: "SpeechRecognition \<Rightarrow> bool" where
-  "speech_recognition_language_supported sr \<equiv> sr_language_supported sr = True /\ In (sr_language sr) (sr_supported_languages sr)"
+  "speech_recognition_language_supported sr \<equiv> sr_language_supported sr = True \<and> In (sr_language sr) (sr_supported_languages sr)"
 
 (* voice_feedback_appropriate (matches Coq: Definition voice_feedback_appropriate) *)
 definition voice_feedback_appropriate :: "VoiceFeedback \<Rightarrow> bool" where
-  "voice_feedback_appropriate vf \<equiv> vf_appropriate vf = True /\ vf_volume_level vf <= vf_max_volume vf"
+  "voice_feedback_appropriate vf \<equiv> vf_appropriate vf = True \<and> vf_volume_level vf <= vf_max_volume vf"
 
 (* voice_permission_explicit (matches Coq: Definition voice_permission_explicit) *)
 definition voice_permission_explicit :: "VoicePermission \<Rightarrow> bool" where
-  "voice_permission_explicit vp \<equiv> vperm_explicit vp = True /\
-  vperm_microphone_granted vp = True /\
+  "voice_permission_explicit vp \<equiv> vperm_explicit vp = True \<and>
+  vperm_microphone_granted vp = True \<and>
   vperm_speech_granted vp = True"
 
 (* conversation_context_bounded (matches Coq: Definition conversation_context_bounded) *)
 definition conversation_context_bounded :: "ConversationContext \<Rightarrow> bool" where
-  "conversation_context_bounded cc \<equiv> cc_context_bounded cc = True /\
+  "conversation_context_bounded cc \<equiv> cc_context_bounded cc = True \<and>
   length (cc_turns cc) <= cc_max_turns cc"
 
 (* voice_authentication_secure (matches Coq: Definition voice_authentication_secure) *)
 definition voice_authentication_secure :: "VoiceAuth \<Rightarrow> bool" where
-  "voice_authentication_secure va \<equiv> va_voiceprint_match va = True /\ va_confidence va >= va_min_confidence va"
+  "voice_authentication_secure va \<equiv> va_voiceprint_match va = True \<and> va_confidence va >= va_min_confidence va"
 
 (* noise_cancellation_bounded (matches Coq: Definition noise_cancellation_bounded) *)
 definition noise_cancellation_bounded :: "NoiseCancellation \<Rightarrow> bool" where
-  "noise_cancellation_bounded nc \<equiv> nc_improvement_bounded nc = True /\ nc_output_snr nc >= nc_input_snr nc"
+  "noise_cancellation_bounded nc \<equiv> nc_improvement_bounded nc = True \<and> nc_output_snr nc >= nc_input_snr nc"
 
 (* voice_synthesis_quality_bounded (matches Coq: Definition voice_synthesis_quality_bounded) *)
 definition voice_synthesis_quality_bounded :: "VoiceSynthesis \<Rightarrow> bool" where
-  "voice_synthesis_quality_bounded vs \<equiv> vs_synthesis_complete vs = True /\ vs_quality_score vs >= vs_min_quality vs"
+  "voice_synthesis_quality_bounded vs \<equiv> vs_synthesis_complete vs = True \<and> vs_quality_score vs >= vs_min_quality vs"
 
 (* voice_command_undo_available (matches Coq: Definition voice_command_undo_available) *)
 definition voice_command_undo_available :: "VoiceUndo \<Rightarrow> bool" where
-  "voice_command_undo_available vu \<equiv> vu_undoable vu = True /\ vu_undo_window_seconds vu > 0"
+  "voice_command_undo_available vu \<equiv> vu_undoable vu = True \<and> vu_undo_window_seconds vu > 0"
 
 (* accessibility_voice_control_complete (matches Coq: Definition accessibility_voice_control_complete) *)
 definition accessibility_voice_control_complete :: "AccessibilityVoiceControl \<Rightarrow> bool" where
-  "accessibility_voice_control_complete avc \<equiv> avc_enabled avc = True /\
-  avc_all_elements_reachable avc = True /\
+  "accessibility_voice_control_complete avc \<equiv> avc_enabled avc = True \<and>
+  avc_all_elements_reachable avc = True \<and>
   avc_labels_complete avc = True"
 
 (* dictation_privacy_mode (matches Coq: Definition dictation_privacy_mode) *)
 definition dictation_privacy_mode :: "DictationMode \<Rightarrow> bool" where
-  "dictation_privacy_mode dm \<equiv> dm_privacy_mode dm = True /\ dm_server_processing dm = False"
+  "dictation_privacy_mode dm \<equiv> dm_privacy_mode dm = True \<and> dm_server_processing dm = False"
 
 (* voice_recognition_accurate (matches Coq) *)
-lemma voice_recognition_accurate: "\<forall> (result : RecognitionResult), accurate_voice_system result \<longrightarrow> recog_confidence result \<ge> 90"
+lemma voice_recognition_accurate: "\<forall>(result :: RecognitionResult). accurate_voice_system result \<longrightarrow> recog_confidence result \<ge> 90"
   by auto
 
 (* voice_data_stays_local (matches Coq) *)
-lemma voice_data_stays_local: "\<forall> (input : VoiceInput), private_voice_system \<longrightarrow> voice_processed_locally input = True \<longrightarrow> recog_processed_on_device (recognize input) = True"
+lemma voice_data_stays_local: "\<forall>(input :: VoiceInput). private_voice_system \<longrightarrow> voice_processed_locally input = True \<longrightarrow> recog_processed_on_device (recognize input) = True"
   by auto
 
 (* local_processing_preserves_privacy (matches Coq) *)
-lemma local_processing_preserves_privacy: "\<forall> (input : VoiceInput), voice_processed_locally input = True \<longrightarrow> voice_data_private input"
+lemma local_processing_preserves_privacy: "\<forall>(input :: VoiceInput). voice_processed_locally input = True \<longrightarrow> voice_data_private input"
   by auto
 
 (* recognition_reflects_locality (matches Coq) *)
-lemma recognition_reflects_locality: "\<forall> (input : VoiceInput), recog_processed_on_device (recognize input) = voice_processed_locally input"
+lemma recognition_reflects_locality: "\<forall>(input :: VoiceInput). recog_processed_on_device (recognize input) = voice_processed_locally input"
   by simp
 
 (* voice_data_processed_locally_thm (matches Coq) *)
-lemma voice_data_processed_locally_thm: "\<forall> (vp : VoiceProcessing), voice_data_processed_locally vp \<longrightarrow> vp_processed_locally vp = True"
+lemma voice_data_processed_locally_thm: "\<forall>(vp :: VoiceProcessing). voice_data_processed_locally vp \<longrightarrow> vp_processed_locally vp = True"
   by auto
 
 (* wake_word_detection_on_device (matches Coq) *)
-lemma wake_word_detection_on_device: "\<forall> (ww : WakeWordDetector), wake_word_on_device ww \<longrightarrow> ww_model_on_device ww = True"
+lemma wake_word_detection_on_device: "\<forall>(ww :: WakeWordDetector). wake_word_on_device ww \<longrightarrow> ww_model_on_device ww = True"
   by auto
 
 (* no_always_listening (matches Coq) *)
-lemma no_always_listening: "\<forall> (ww : WakeWordDetector), not_always_listening ww \<longrightarrow> ww_always_listening ww = False"
+lemma no_always_listening: "\<forall>(ww :: WakeWordDetector). not_always_listening ww \<longrightarrow> ww_always_listening ww = False"
   by auto
 
 (* audio_deleted_after_processing_thm (matches Coq) *)
-lemma audio_deleted_after_processing_thm: "\<forall> (al : AudioLifecycle), audio_deleted_after_processing al \<longrightarrow> al_processing_complete al = True \<longrightarrow> al_audio_deleted al = True"
+lemma audio_deleted_after_processing_thm: "\<forall>(al :: AudioLifecycle). audio_deleted_after_processing al \<longrightarrow> al_processing_complete al = True \<longrightarrow> al_audio_deleted al = True"
   by auto
 
 (* voice_command_intent_validated_thm (matches Coq) *)
-lemma voice_command_intent_validated_thm: "\<forall> (vc : VoiceCommand), voice_command_intent_validated vc \<longrightarrow> vc_intent_validated vc = True"
+lemma voice_command_intent_validated_thm: "\<forall>(vc :: VoiceCommand). voice_command_intent_validated vc \<longrightarrow> vc_intent_validated vc = True"
   by auto
 
 (* speech_recognition_language_supported_thm (matches Coq) *)
-lemma speech_recognition_language_supported_thm: "\<forall> (sr : SpeechRecognition), speech_recognition_language_supported sr \<longrightarrow> sr_language_supported sr = True"
+lemma speech_recognition_language_supported_thm: "\<forall>(sr :: SpeechRecognition). speech_recognition_language_supported sr \<longrightarrow> sr_language_supported sr = True"
   by auto
 
 (* voice_feedback_appropriate_thm (matches Coq) *)
-lemma voice_feedback_appropriate_thm: "\<forall> (vf : VoiceFeedback), voice_feedback_appropriate vf \<longrightarrow> vf_appropriate vf = True"
+lemma voice_feedback_appropriate_thm: "\<forall>(vf :: VoiceFeedback). voice_feedback_appropriate vf \<longrightarrow> vf_appropriate vf = True"
   by auto
 
 (* voice_permission_explicit_thm (matches Coq) *)
-lemma voice_permission_explicit_thm: "\<forall> (vp : VoicePermission), voice_permission_explicit vp \<longrightarrow> vperm_explicit vp = True"
+lemma voice_permission_explicit_thm: "\<forall>(vp :: VoicePermission). voice_permission_explicit vp \<longrightarrow> vperm_explicit vp = True"
   by auto
 
 (* conversation_context_bounded_thm (matches Coq) *)
-lemma conversation_context_bounded_thm: "\<forall> (cc : ConversationContext), conversation_context_bounded cc \<longrightarrow> length (cc_turns cc) \<le> cc_max_turns cc"
+lemma conversation_context_bounded_thm: "\<forall>(cc :: ConversationContext). conversation_context_bounded cc \<longrightarrow> length (cc_turns cc) \<le> cc_max_turns cc"
   by auto
 
 (* voice_authentication_secure_thm (matches Coq) *)
-lemma voice_authentication_secure_thm: "\<forall> (va : VoiceAuth), voice_authentication_secure va \<longrightarrow> va_voiceprint_match va = True"
+lemma voice_authentication_secure_thm: "\<forall>(va :: VoiceAuth). voice_authentication_secure va \<longrightarrow> va_voiceprint_match va = True"
   by auto
 
 (* noise_cancellation_bounded_thm (matches Coq) *)
-lemma noise_cancellation_bounded_thm: "\<forall> (nc : NoiseCancellation), noise_cancellation_bounded nc \<longrightarrow> nc_output_snr nc \<ge> nc_input_snr nc"
+lemma noise_cancellation_bounded_thm: "\<forall>(nc :: NoiseCancellation). noise_cancellation_bounded nc \<longrightarrow> nc_output_snr nc \<ge> nc_input_snr nc"
   by auto
 
 (* voice_synthesis_quality_bounded_thm (matches Coq) *)
-lemma voice_synthesis_quality_bounded_thm: "\<forall> (vs : VoiceSynthesis), voice_synthesis_quality_bounded vs \<longrightarrow> vs_quality_score vs \<ge> vs_min_quality vs"
+lemma voice_synthesis_quality_bounded_thm: "\<forall>(vs :: VoiceSynthesis). voice_synthesis_quality_bounded vs \<longrightarrow> vs_quality_score vs \<ge> vs_min_quality vs"
   by auto
 
 (* voice_command_undo_available_thm (matches Coq) *)
-lemma voice_command_undo_available_thm: "\<forall> (vu : VoiceUndo), voice_command_undo_available vu \<longrightarrow> vu_undoable vu = True"
+lemma voice_command_undo_available_thm: "\<forall>(vu :: VoiceUndo). voice_command_undo_available vu \<longrightarrow> vu_undoable vu = True"
   by auto
 
 (* accessibility_voice_control_complete_thm (matches Coq) *)
-lemma accessibility_voice_control_complete_thm: "\<forall> (avc : AccessibilityVoiceControl), accessibility_voice_control_complete avc \<longrightarrow> avc_all_elements_reachable avc = True"
+lemma accessibility_voice_control_complete_thm: "\<forall>(avc :: AccessibilityVoiceControl). accessibility_voice_control_complete avc \<longrightarrow> avc_all_elements_reachable avc = True"
   by auto
 
 (* dictation_privacy_mode_thm (matches Coq) *)
-lemma dictation_privacy_mode_thm: "\<forall> (dm : DictationMode), dictation_privacy_mode dm \<longrightarrow> dm_server_processing dm = False"
+lemma dictation_privacy_mode_thm: "\<forall>(dm :: DictationMode). dictation_privacy_mode dm \<longrightarrow> dm_server_processing dm = False"
   by auto
 
 (* voice_data_not_sent_to_server (matches Coq) *)
-lemma voice_data_not_sent_to_server: "\<forall> (vp : VoiceProcessing), voice_data_processed_locally vp \<longrightarrow> vp_data_sent_to_server vp = False"
+lemma voice_data_not_sent_to_server: "\<forall>(vp :: VoiceProcessing). voice_data_processed_locally vp \<longrightarrow> vp_data_sent_to_server vp = False"
   by auto
 
 (* voice_permission_requires_microphone (matches Coq) *)
-lemma voice_permission_requires_microphone: "\<forall> (vp : VoicePermission), voice_permission_explicit vp \<longrightarrow> vperm_microphone_granted vp = True"
+lemma voice_permission_requires_microphone: "\<forall>(vp :: VoicePermission). voice_permission_explicit vp \<longrightarrow> vperm_microphone_granted vp = True"
   by auto
 
 (* voice_command_known_intent (matches Coq) *)
-lemma voice_command_known_intent: "\<forall> (vc : VoiceCommand), voice_command_intent_validated vc \<longrightarrow> vc_intent vc \<noteq> UnknownIntent"
+lemma voice_command_known_intent: "\<forall>(vc :: VoiceCommand). voice_command_intent_validated vc \<longrightarrow> vc_intent vc \<noteq> UnknownIntent"
   by auto
 
 (* voice_undo_window_positive (matches Coq) *)
-lemma voice_undo_window_positive: "\<forall> (vu : VoiceUndo), voice_command_undo_available vu \<longrightarrow> vu_undo_window_seconds vu > 0"
+lemma voice_undo_window_positive: "\<forall>(vu :: VoiceUndo). voice_command_undo_available vu \<longrightarrow> vu_undo_window_seconds vu > 0"
   by auto
 
 (* accessibility_labels_complete (matches Coq) *)
-lemma accessibility_labels_complete: "\<forall> (avc : AccessibilityVoiceControl), accessibility_voice_control_complete avc \<longrightarrow> avc_labels_complete avc = True"
+lemma accessibility_labels_complete: "\<forall>(avc :: AccessibilityVoiceControl). accessibility_voice_control_complete avc \<longrightarrow> avc_labels_complete avc = True"
   by auto
 
 end

@@ -286,7 +286,7 @@ definition pred_decidable :: "Pred \<Rightarrow> bool" where
 
 (* empty_heap (matches Coq: Definition empty_heap) *)
 definition empty_heap :: "Heap" where
-  "empty_heap \<equiv> fun _ => None"
+  "empty_heap \<equiv> \<lambda>_. None"
 
 (* disjoint (matches Coq: Definition disjoint) *)
 definition disjoint :: "bool" where
@@ -306,12 +306,12 @@ definition contract_sat :: "Contract \<Rightarrow> bool" where
 
 (* contract_stronger (matches Coq: Definition contract_stronger) *)
 definition contract_stronger :: "bool" where
-  "contract_stronger \<equiv> pred_implies (precondition c2) (precondition c1) /\
+  "contract_stronger \<equiv> pred_implies (precondition c2) (precondition c1) \<and>
   pred_implies (postcondition c1) (postcondition c2)"
 
 (* eval_vc (matches Coq: Definition eval_vc) *)
 fun eval_vc :: "VC \<Rightarrow> bool" where
-
+  "eval_vc _ = True"
 
 (* vc_valid (matches Coq: Definition vc_valid) *)
 definition vc_valid :: "VC \<Rightarrow> bool" where
@@ -344,11 +344,11 @@ definition liquid_measure :: "LiquidState \<Rightarrow> nat" where
 
 (* prop_sat (matches Coq: Definition prop_sat) *)
 fun prop_sat :: "State \<Rightarrow> Property \<Rightarrow> bool" where
-
+  "prop_sat _ = True"
 
 (* abstract_space (matches Coq: Definition abstract_space) *)
 definition abstract_space :: "Abstraction \<Rightarrow> Ensemble State" where
-  "abstract_space abs \<equiv> fun s => exists s', In State concrete s' /\ abs s' = s"
+  "abstract_space abs \<equiv> \<lambda>s. exists s', State \<in> set concrete s' \<and> abs s' = s"
 
 (* interp_prop (matches Coq: Definition interp_prop) *)
 fun interp_prop :: "SimpleProp \<Rightarrow> bool" where
@@ -396,7 +396,7 @@ fun wp :: "Cmd \<Rightarrow> Pred \<Rightarrow> Pred" where
 
 (* refinement_wf (matches Coq: Definition refinement_wf) *)
 fun refinement_wf :: "RefinementTy \<Rightarrow> bool" where
-
+  "refinement_wf _ = True"
 
 (* refinement_subtype - complex match, needs manual translation *)
 definition refinement_subtype :: "bool" where "refinement_subtype = undefined"
@@ -407,7 +407,7 @@ definition liquid_terminates :: "LiquidState \<Rightarrow> nat \<Rightarrow> boo
 
 (* ty_subst (matches Coq: Definition ty_subst) *)
 fun ty_subst :: "TyExpr \<Rightarrow> nat \<Rightarrow> TyExpr \<Rightarrow> TyExpr" where
-
+  "ty_subst _ = undefined"
 
 (* precondition_verified (matches Coq: Definition precondition_verified) *)
 definition precondition_verified :: "Contract \<Rightarrow> bool" where
@@ -436,11 +436,11 @@ fun bmc_check :: "Transition \<Rightarrow> Property \<Rightarrow> State \<Righta
 
 (* prop_to_pred (matches Coq: Definition prop_to_pred) *)
 fun prop_to_pred :: "Property \<Rightarrow> Pred" where
-
+  "prop_to_pred _ = undefined"
 
 (* valid_counterexample (matches Coq: Definition valid_counterexample) *)
 fun valid_counterexample :: "Transition \<Rightarrow> Property \<Rightarrow> bool" where
-
+  "valid_counterexample _ = True"
 
 (* abstraction_sound (matches Coq: Definition abstraction_sound) *)
 definition abstraction_sound :: "Abstraction \<Rightarrow> Transition \<Rightarrow> Transition \<Rightarrow> bool" where
@@ -463,143 +463,143 @@ lemma pred_decidable_PTrue: "pred_decidable PTrue"
   by simp
 
 (* pred_decidable_eval (matches Coq) *)
-lemma pred_decidable_eval: "\<forall> p env, eval_pred p env = True \<or> eval_pred p env = False"
+lemma pred_decidable_eval: "\<forall>p env. eval_pred p env = True \<or> eval_pred p env = False"
   by simp
 
 (* E_001_01 (matches Coq) *)
-lemma E_001_01: "\<forall> bt p, pred_decidable p \<longrightarrow> refinement_wf (RRefine bt p)"
+lemma E_001_01: "\<forall>bt p. pred_decidable p \<longrightarrow> refinement_wf (RRefine bt p)"
   by auto
 
 (* E_001_02 (matches Coq) *)
-lemma E_001_02: "\<forall> bt p q, pred_implies p q \<longrightarrow> refinement_subtype (RRefine bt p) (RRefine bt q)"
+lemma E_001_02: "\<forall>bt p q. pred_implies p q \<longrightarrow> refinement_subtype (RRefine bt p) (RRefine bt q)"
   by auto
 
 (* smt_translation_correct (matches Coq) *)
-lemma smt_translation_correct: "\<forall> p env, eval_pred p env = eval_smt (pred_to_smt p) env"
+lemma smt_translation_correct: "\<forall>p env. eval_pred p env = eval_smt (pred_to_smt p) env"
   by simp
 
 (* E_001_03 (matches Coq) *)
-lemma E_001_03: "\<forall> p env, eval_pred p env = True <-> eval_smt (pred_to_smt p) env = True"
+lemma E_001_03: "\<forall>p env. eval_pred p env = True <-> eval_smt (pred_to_smt p) env = True"
   by auto
 
 (* E_001_04 (matches Coq) *)
-lemma E_001_04: "\<forall> s bound, liquid_iteration s < bound \<longrightarrow> liquid_terminates (liquid_step s) bound"
+lemma E_001_04: "\<forall>s bound. liquid_iteration s < bound \<longrightarrow> liquid_terminates (liquid_step s) bound"
   by simp
 
 (* E_001_05 (matches Coq) *)
-lemma E_001_05: "\<forall> ctx t1 t2, ty_wf ctx t1 \<longrightarrow> ty_wf (t1 :: ctx) t2 \<longrightarrow> ty_wf ctx (TEPi t1 t2)"
+lemma E_001_05: "\<forall>ctx t1 t2. ty_wf ctx t1 \<longrightarrow> ty_wf (t1 :: ctx) t2 \<longrightarrow> ty_wf ctx (TEPi t1 t2)"
   by auto
 
 (* E_001_06 (matches Coq) *)
-lemma E_001_06: "\<forall> ctx t1 t2, ty_wf ctx t1 \<longrightarrow> ty_wf (t1 :: ctx) t2 \<longrightarrow> ty_wf ctx (TESigma t1 t2)"
+lemma E_001_06: "\<forall>ctx t1 t2. ty_wf ctx t1 \<longrightarrow> ty_wf (t1 :: ctx) t2 \<longrightarrow> ty_wf ctx (TESigma t1 t2)"
   by auto
 
 (* E_001_07 (matches Coq) *)
-lemma E_001_07: "\<forall> ctx fam, (\<forall> n, ty_wf ctx (fam n)) \<longrightarrow> ty_family_wf ctx fam"
+lemma E_001_07: "\<forall>ctx fam. (\<forall>n. ty_wf ctx (fam n)) \<longrightarrow> ty_family_wf ctx fam"
   by auto
 
 (* ty_subst_preserves_base (matches Coq) *)
-lemma ty_subst_preserves_base: "\<forall> b n s, ty_subst (TEBase b) n s = TEBase b"
+lemma ty_subst_preserves_base: "\<forall>b n s. ty_subst (TEBase b) n s = TEBase b"
   by simp
 
 (* E_001_08 (matches Coq) *)
-lemma E_001_08: "\<forall> ctx t1 t2 n, ty_wf ctx t1 \<longrightarrow> ty_wf ctx t2 \<longrightarrow> ty_wf ctx (TEBase TyNat) \<longrightarrow> ty_subst (TEBase TyNat) n t2 = TEBase TyNat"
+lemma E_001_08: "\<forall>ctx t1 t2 n. ty_wf ctx t1 \<longrightarrow> ty_wf ctx t2 \<longrightarrow> ty_wf ctx (TEBase TyNat) \<longrightarrow> ty_subst (TEBase TyNat) n t2 = TEBase TyNat"
   by auto
 
 (* E_001_09 (matches Coq) *)
-lemma E_001_09: "\<forall> c env, precondition_verified c env \<longrightarrow> eval_pred (precondition c) env = True"
+lemma E_001_09: "\<forall>c env. precondition_verified c env \<longrightarrow> eval_pred (precondition c) env = True"
   by auto
 
 (* E_001_10 (matches Coq) *)
-lemma E_001_10: "\<forall> c pre_env post_env, postcondition_verified c pre_env post_env \<longrightarrow> contract_sat c pre_env post_env"
+lemma E_001_10: "\<forall>c pre_env post_env. postcondition_verified c pre_env post_env \<longrightarrow> contract_sat c pre_env post_env"
   by auto
 
 (* E_001_11 (matches Coq) *)
-lemma E_001_11: "\<forall> inv c pre_env post_env, eval_pred inv pre_env = True \<longrightarrow> pred_implies (PAnd inv (precondition c)) (postcondition c) \<longrightarrow> pred_implies (postcondition c) inv \<longrightarrow> (eval_pred (precondition c) pre_env = True \<longrightarrow> eval_pred (postcondition c) post_env = True) \<longrightarrow> (eval_pred (precondition c) pre_env = False \<longrightarrow> pre_env = post_env) \<longrightarrow> invariant_preserved inv pre_env post_env"
+lemma E_001_11: "\<forall>inv c pre_env post_env. eval_pred inv pre_env = True \<longrightarrow> pred_implies (PAnd inv (precondition c)) (postcondition c) \<longrightarrow> pred_implies (postcondition c) inv \<longrightarrow> (eval_pred (precondition c) pre_env = True \<longrightarrow> eval_pred (postcondition c) post_env = True) \<longrightarrow> (eval_pred (precondition c) pre_env = False \<longrightarrow> pre_env = post_env) \<longrightarrow> invariant_preserved inv pre_env post_env"
   by auto
 
 (* E_001_12 (matches Coq) *)
-lemma E_001_12: "\<forall> c_base c_derived, contract_stronger c_derived c_base \<longrightarrow> \<forall> pre_env post_env, contract_sat c_derived pre_env post_env \<longrightarrow> contract_sat c_base pre_env post_env"
+lemma E_001_12: "\<forall>c_base c_derived. contract_stronger c_derived c_base \<longrightarrow> \<forall>pre_env post_env. contract_sat c_derived pre_env post_env \<longrightarrow> contract_sat c_base pre_env post_env"
   by auto
 
 (* E_001_13 (matches Coq) *)
-lemma E_001_13: "\<forall> h1 h2 p1 p2, disjoint h1 h2 \<longrightarrow> heap_sat h1 p1 \<longrightarrow> heap_sat h2 p2 \<longrightarrow> heap_sat (heap_union h1 h2) (HPSep p1 p2)"
+lemma E_001_13: "\<forall>h1 h2 p1 p2. disjoint h1 h2 \<longrightarrow> heap_sat h1 p1 \<longrightarrow> heap_sat h2 p2 \<longrightarrow> heap_sat (heap_union h1 h2) (HPSep p1 p2)"
   by auto
 
 (* E_001_14 (matches Coq) *)
-lemma E_001_14: "\<forall> h hp hq, heap_sat h (HPWand hp hq) \<longrightarrow> \<forall> h', disjoint h h' \<longrightarrow> heap_sat h' hp \<longrightarrow> heap_sat (heap_union h h') hq"
+lemma E_001_14: "\<forall>h hp hq. heap_sat h (HPWand hp hq) \<longrightarrow> \<forall>h'. disjoint h h' \<longrightarrow> heap_sat h' hp \<longrightarrow> heap_sat (heap_union h h') hq"
   by auto
 
 (* E_001_15 (matches Coq) *)
-lemma E_001_15: "\<forall> p q r c, hoare_triple p c q \<longrightarrow> hoare_triple (HPSep p r) c (HPSep q r)"
+lemma E_001_15: "\<forall>p q r c. hoare_triple p c q \<longrightarrow> hoare_triple (HPSep p r) c (HPSep q r)"
   by auto
 
 (* E_001_16 (matches Coq) *)
-lemma E_001_16: "\<forall> l v, heap_sat (fun x => if (x = l) then Some v else None) (HPPointsTo l v)"
-  by (cases rule: ‹_›.cases; simp)
+lemma E_001_16: "\<forall>l v. heap_sat (\<lambda>x. if (x = l) then Some v else None) (HPPointsTo l v)"
+  by auto
 
 (* E_001_17 (matches Coq) *)
-lemma E_001_17: "\<forall> trans p s k, bmc_check trans (PropAtom p) s k = True \<longrightarrow> eval_pred p s = True"
+lemma E_001_17: "\<forall>trans p s k. bmc_check trans (PropAtom p) s k = True \<longrightarrow> eval_pred p s = True"
   by auto
 
 (* E_001_18 (matches Coq) *)
-lemma E_001_18: "\<forall> p s, prop_sat s (PropAtom p) <-> eval_pred p s = True"
+lemma E_001_18: "\<forall>p s. prop_sat s (PropAtom p) <-> eval_pred p s = True"
   by auto
 
 (* E_001_19 (matches Coq) *)
-lemma E_001_19: "\<forall> trans prop trace s, valid_counterexample trans prop (s :: trace) \<longrightarrow> \<exists> s', (s' = s \<or> List.In s' trace) \<and> ~ prop_sat s' prop"
+lemma E_001_19: "\<forall>trans prop trace s. valid_counterexample trans prop (s :: trace) \<longrightarrow> \<exists>s'. (s' = s \<or> List.In s' trace) \<and> ~ prop_sat s' prop"
   by auto
 
 (* E_001_20 (matches Coq) *)
-lemma E_001_20: "\<forall> abs trans abs_trans prop, abstraction_sound abs trans abs_trans \<longrightarrow> (\<forall> s, prop_sat (abs s) prop \<longrightarrow> prop_sat s prop) \<longrightarrow> \<forall> s, prop_sat (abs s) prop \<longrightarrow> prop_sat s prop"
+lemma E_001_20: "\<forall>abs trans abs_trans prop. abstraction_sound abs trans abs_trans \<longrightarrow> (\<forall>s. prop_sat (abs s) prop \<longrightarrow> prop_sat s prop) \<longrightarrow> \<forall>s. prop_sat (abs s) prop \<longrightarrow> prop_sat s prop"
   by auto
 
 (* E_001_21 (matches Coq) *)
-lemma E_001_21: "\<forall> ctx t p assignment, proof_typed ctx t p \<longrightarrow> ctx_valid ctx assignment \<longrightarrow> interp_prop p assignment"
+lemma E_001_21: "\<forall>ctx t p assignment. proof_typed ctx t p \<longrightarrow> ctx_valid ctx assignment \<longrightarrow> interp_prop p assignment"
   by auto
 
 (* E_001_22 (matches Coq) *)
-lemma E_001_22: "\<forall> ctx t p assignment, proof_typed ctx t p \<longrightarrow> ctx_valid ctx assignment \<longrightarrow> interp_prop p assignment"
+lemma E_001_22: "\<forall>ctx t p assignment. proof_typed ctx t p \<longrightarrow> ctx_valid ctx assignment \<longrightarrow> interp_prop p assignment"
   by auto
 
 (* bool_proof_irrelevant (matches Coq) *)
-lemma bool_proof_irrelevant: "\<forall> (b : bool) (p1 p2 : b = True), p1 = p2"
+lemma bool_proof_irrelevant: "\<forall>(b :: bool) (p1 p2 : b = True). p1 = p2"
   by simp
 
 (* E_001_23 (matches Coq) *)
-lemma E_001_23: "\<forall> p env (pf1 pf2 : eval_pred p env = True), pf1 = pf2"
+lemma E_001_23: "\<forall>p env (pf1 pf2 : eval_pred p env = True). pf1 = pf2"
   by auto
 
 (* E_001_24 (matches Coq) *)
-lemma E_001_24: "\<forall> ctx t1 t2 p1 p2, proof_typed ctx t1 p1 \<longrightarrow> proof_typed ctx t2 p2 \<longrightarrow> proof_typed ctx (PTAndI t1 t2) (SPAnd p1 p2)"
+lemma E_001_24: "\<forall>ctx t1 t2 p1 p2. proof_typed ctx t1 p1 \<longrightarrow> proof_typed ctx t2 p2 \<longrightarrow> proof_typed ctx (PTAndI t1 t2) (SPAnd p1 p2)"
   by auto
 
 (* E_001_25 (matches Coq) *)
-lemma E_001_25: "\<forall> ctx e t, src_typed ctx e t \<longrightarrow> tgt_typed ctx (compile e) t"
+lemma E_001_25: "\<forall>ctx e t. src_typed ctx e t \<longrightarrow> tgt_typed ctx (compile e) t"
   by auto
 
 (* E_001_26 (matches Coq) *)
-lemma E_001_26: "\<forall> e, src_effect e = tgt_effect (compile e)"
+lemma E_001_26: "\<forall>e. src_effect e = tgt_effect (compile e)"
   by simp
 
 (* E_001_27 (matches Coq) *)
-lemma E_001_27: "\<forall> e, src_sec_label e = tgt_sec_label (compile e)"
+lemma E_001_27: "\<forall>e. src_sec_label e = tgt_sec_label (compile e)"
   by simp
 
 (* E_001_28 (matches Coq) *)
-lemma E_001_28: "\<forall> v, obs_equiv v (compile_val v)"
+lemma E_001_28: "\<forall>v. obs_equiv v (compile_val v)"
   by simp
 
 (* wp_skip_sound (matches Coq) *)
-lemma wp_skip_sound: "\<forall> post env, eval_pred (wp CmdSkip post) env = True \<longrightarrow> eval_pred post env = True"
+lemma wp_skip_sound: "\<forall>post env. eval_pred (wp CmdSkip post) env = True \<longrightarrow> eval_pred post env = True"
   by auto
 
 (* E_001_29 (matches Coq) *)
-lemma E_001_29: "\<forall> post env, eval_pred (wp CmdSkip post) env = True \<longrightarrow> \<forall> env2, cmd_eval CmdSkip env env2 \<longrightarrow> eval_pred post env2 = True"
+lemma E_001_29: "\<forall>post env. eval_pred (wp CmdSkip post) env = True \<longrightarrow> \<forall>env2. cmd_eval CmdSkip env env2 \<longrightarrow> eval_pred post env2 = True"
   by auto
 
 (* E_001_30 (matches Coq) *)
-lemma E_001_30: "\<forall> c, vc_valid (vc_from_contract c) <-> \<forall> env, eval_pred (precondition c) env = True \<longrightarrow> eval_pred (postcondition c) env = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma E_001_30: "\<forall>c. vc_valid (vc_from_contract c) <-> \<forall>env. eval_pred (precondition c) env = True \<longrightarrow> eval_pred (postcondition c) env = True"
+  by auto
 
 end

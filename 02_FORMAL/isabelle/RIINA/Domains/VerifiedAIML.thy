@@ -130,7 +130,7 @@ definition input_valid :: "Z \<Rightarrow> InputBounds \<Rightarrow> bool" where
 
 (* model_integrity (matches Coq: Definition model_integrity) *)
 definition model_integrity :: "Model \<Rightarrow> nat \<Rightarrow> bool" where
-  "model_integrity m expected_hash \<equiv> ((model_hash = m)) expected_hash"
+  "model_integrity m expected_hash \<equiv> (model_hash m = expected_hash)"
 
 (* confidence_calibrated (matches Coq: Definition confidence_calibrated) *)
 definition confidence_calibrated :: "Z \<Rightarrow> Z \<Rightarrow> Z \<Rightarrow> bool" where
@@ -178,103 +178,103 @@ definition lipschitz_output :: "Z \<Rightarrow> Z \<Rightarrow> Z" where
   "lipschitz_output input weight \<equiv> input * weight"
 
 (* DOMAIN_002_01_output_bounded (matches Coq) *)
-lemma DOMAIN_002_01_output_bounded: "\<forall> (output min max : Z), output_bounded output min max = True \<longrightarrow> min \<le> output \<and> output \<le> max"
+lemma DOMAIN_002_01_output_bounded: "\<forall>(output min max : Z). output_bounded output min max = True \<longrightarrow> min \<le> output \<and> output \<le> max"
   by auto
 
 (* DOMAIN_002_02_lipschitz_continuity (matches Coq) *)
-lemma DOMAIN_002_02_lipschitz_continuity: "\<forall> (x1 x2 weight : Z), weight \<ge> 0 \<longrightarrow> Z.abs (lipschitz_output x1 weight - lipschitz_output x2 weight) \<le> weight * Z.abs (x1 - x2)"
+lemma DOMAIN_002_02_lipschitz_continuity: "\<forall>(x1 x2 weight : Z). weight \<ge> 0 \<longrightarrow> Z.abs (lipschitz_output x1 weight - lipschitz_output x2 weight) \<le> weight * Z.abs (x1 - x2)"
   by simp
 
 (* DOMAIN_002_03_adversarial_robustness (matches Coq) *)
-lemma DOMAIN_002_03_adversarial_robustness: "\<forall> (x1 x2 threshold epsilon : Z), within_epsilon x1 x2 epsilon = True \<longrightarrow> x1 \<ge> threshold + epsilon + 1 \<longrightarrow> x2 \<ge> threshold + 1 \<longrightarrow> classify x1 threshold = classify x2 threshold"
-  by (cases rule: ‹_›.cases; simp)
+lemma DOMAIN_002_03_adversarial_robustness: "\<forall>(x1 x2 threshold epsilon : Z). within_epsilon x1 x2 epsilon = True \<longrightarrow> x1 \<ge> threshold + epsilon + 1 \<longrightarrow> x2 \<ge> threshold + 1 \<longrightarrow> classify x1 threshold = classify x2 threshold"
+  by auto
 
 (* DOMAIN_002_04_softmax_normalization (matches Coq) *)
-lemma DOMAIN_002_04_softmax_normalization: "\<forall> (outputs : list Z) (scale : Z), softmax_valid outputs scale = True \<longrightarrow> fold_left Z.add outputs 0 = scale"
+lemma DOMAIN_002_04_softmax_normalization: "\<forall>(outputs : list Z) (scale :: Z). softmax_valid outputs scale = True \<longrightarrow> fold_left Z.add outputs 0 = scale"
   by auto
 
 (* DOMAIN_002_05_relu_monotonicity (matches Coq) *)
-lemma DOMAIN_002_05_relu_monotonicity: "\<forall> (x y : Z), x \<le> y \<longrightarrow> relu x \<le> relu y"
+lemma DOMAIN_002_05_relu_monotonicity: "\<forall>(x y : Z). x \<le> y \<longrightarrow> relu x \<le> relu y"
   by auto
 
 (* DOMAIN_002_06_matrix_associativity (matches Coq) *)
-lemma DOMAIN_002_06_matrix_associativity: "\<forall> (a b c : Z), (a * b) * c = a * (b * c)"
+lemma DOMAIN_002_06_matrix_associativity: "\<forall>(a b c : Z). (a * b) * c = a * (b * c)"
   by auto
 
 (* DOMAIN_002_07_gradient_descent_convergence (matches Coq) *)
-lemma DOMAIN_002_07_gradient_descent_convergence: "\<forall> (loss learning_rate gradient : Z), learning_rate > 0 \<longrightarrow> gradient > 0 \<longrightarrow> gradient_step loss learning_rate gradient < loss"
+lemma DOMAIN_002_07_gradient_descent_convergence: "\<forall>(loss learning_rate gradient : Z). learning_rate > 0 \<longrightarrow> gradient > 0 \<longrightarrow> gradient_step loss learning_rate gradient < loss"
   by simp
 
 (* DOMAIN_002_08_inference_determinism (matches Coq) *)
-lemma DOMAIN_002_08_inference_determinism: "\<forall> (model : Model) (input : Z), inference model input = inference model input"
+lemma DOMAIN_002_08_inference_determinism: "\<forall>(model :: Model) (input :: Z). inference model input = inference model input"
   by simp
 
 (* DOMAIN_002_09_numerical_stability (matches Coq) *)
-lemma DOMAIN_002_09_numerical_stability: "\<forall> (x bound : Z), numerically_stable x bound = True \<longrightarrow> Z.abs x \<le> bound"
+lemma DOMAIN_002_09_numerical_stability: "\<forall>(x bound : Z). numerically_stable x bound = True \<longrightarrow> Z.abs x \<le> bound"
   by auto
 
 (* DOMAIN_002_10_model_integrity (matches Coq) *)
-lemma DOMAIN_002_10_model_integrity: "\<forall> (m : Model) (expected_hash : nat), model_integrity m expected_hash = True \<longrightarrow> model_hash m = expected_hash"
+lemma DOMAIN_002_10_model_integrity: "\<forall>(m :: Model) (expected_hash :: nat). model_integrity m expected_hash = True \<longrightarrow> model_hash m = expected_hash"
   by auto
 
 (* DOMAIN_002_11_input_validation (matches Coq) *)
-lemma DOMAIN_002_11_input_validation: "\<forall> (x : Z) (bounds : InputBounds), input_valid x bounds = True \<longrightarrow> ib_min bounds \<le> x \<and> x \<le> ib_max bounds"
+lemma DOMAIN_002_11_input_validation: "\<forall>(x :: Z) (bounds :: InputBounds). input_valid x bounds = True \<longrightarrow> ib_min bounds \<le> x \<and> x \<le> ib_max bounds"
   by auto
 
 (* DOMAIN_002_12_confidence_calibration (matches Coq) *)
-lemma DOMAIN_002_12_confidence_calibration: "\<forall> (confidence accuracy tolerance : Z), confidence_calibrated confidence accuracy tolerance = True \<longrightarrow> Z.abs (confidence - accuracy) \<le> tolerance"
+lemma DOMAIN_002_12_confidence_calibration: "\<forall>(confidence accuracy tolerance : Z). confidence_calibrated confidence accuracy tolerance = True \<longrightarrow> Z.abs (confidence - accuracy) \<le> tolerance"
   by auto
 
 (* DOMAIN_002_13_fairness_constraint (matches Coq) *)
-lemma DOMAIN_002_13_fairness_constraint: "\<forall> (group_a_rate group_b_rate threshold : Z), demographic_parity group_a_rate group_b_rate threshold = True \<longrightarrow> Z.abs (group_a_rate - group_b_rate) \<le> threshold"
+lemma DOMAIN_002_13_fairness_constraint: "\<forall>(group_a_rate group_b_rate threshold : Z). demographic_parity group_a_rate group_b_rate threshold = True \<longrightarrow> Z.abs (group_a_rate - group_b_rate) \<le> threshold"
   by auto
 
 (* DOMAIN_002_14_explanation_faithfulness (matches Coq) *)
-lemma DOMAIN_002_14_explanation_faithfulness: "\<forall> (importance actual_contribution tolerance : Z), explanation_faithful importance actual_contribution tolerance = True \<longrightarrow> Z.abs (importance - actual_contribution) \<le> tolerance"
+lemma DOMAIN_002_14_explanation_faithfulness: "\<forall>(importance actual_contribution tolerance : Z). explanation_faithful importance actual_contribution tolerance = True \<longrightarrow> Z.abs (importance - actual_contribution) \<le> tolerance"
   by auto
 
 (* DOMAIN_002_15_safe_action_space (matches Coq) *)
-lemma DOMAIN_002_15_safe_action_space: "\<forall> (action prev_action : Z) (space : ActionSpace), action_safe action prev_action space = True \<longrightarrow> action_min space \<le> action \<and> action \<le> action_max space \<and> Z.abs (action - prev_action) \<le> action_rate_limit space"
+lemma DOMAIN_002_15_safe_action_space: "\<forall>(action prev_action : Z) (space :: ActionSpace). action_safe action prev_action space = True \<longrightarrow> action_min space \<le> action \<and> action \<le> action_max space \<and> Z.abs (action - prev_action) \<le> action_rate_limit space"
   by auto
 
 (* relu_non_negative (matches Coq) *)
-lemma relu_non_negative: "\<forall> x, 0 \<le> relu x"
+lemma relu_non_negative: "\<forall>x. 0 \<le> relu x"
   by simp
 
 (* relu_idempotent (matches Coq) *)
-lemma relu_idempotent: "\<forall> x, relu (relu x) = relu x"
-  by (cases rule: ‹_›.cases; simp)
+lemma relu_idempotent: "\<forall>x. relu (relu x) = relu x"
+  by auto
 
 (* relu_preserves_positive (matches Coq) *)
-lemma relu_preserves_positive: "\<forall> x, x \<ge> 0 \<longrightarrow> relu x = x"
+lemma relu_preserves_positive: "\<forall>x. x \<ge> 0 \<longrightarrow> relu x = x"
   by simp
 
 (* relu_kills_negative (matches Coq) *)
-lemma relu_kills_negative: "\<forall> x, x \<le> 0 \<longrightarrow> relu x = 0"
+lemma relu_kills_negative: "\<forall>x. x \<le> 0 \<longrightarrow> relu x = 0"
   by simp
 
 (* classify_binary (matches Coq) *)
-lemma classify_binary: "\<forall> x threshold, classify x threshold = 0 \<or> classify x threshold = 1"
+lemma classify_binary: "\<forall>x threshold. classify x threshold = 0 \<or> classify x threshold = 1"
   by simp
 
 (* classify_above_threshold (matches Coq) *)
-lemma classify_above_threshold: "\<forall> x threshold, threshold \<le> x \<longrightarrow> classify x threshold = 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma classify_above_threshold: "\<forall>x threshold. threshold \<le> x \<longrightarrow> classify x threshold = 1"
+  by auto
 
 (* classify_below_threshold (matches Coq) *)
-lemma classify_below_threshold: "\<forall> x threshold, x < threshold \<longrightarrow> classify x threshold = 0"
-  by (cases rule: ‹_›.cases; simp)
+lemma classify_below_threshold: "\<forall>x threshold. x < threshold \<longrightarrow> classify x threshold = 0"
+  by auto
 
 (* inference_deterministic (matches Coq) *)
-lemma inference_deterministic: "\<forall> m x y, x = y \<longrightarrow> inference m x = inference m y"
+lemma inference_deterministic: "\<forall>m x y. x = y \<longrightarrow> inference m x = inference m y"
   by simp
 
 (* gradient_step_decreases (matches Coq) *)
-lemma gradient_step_decreases: "\<forall> loss lr grad, lr > 0 \<longrightarrow> grad > 0 \<longrightarrow> gradient_step loss lr grad < loss"
+lemma gradient_step_decreases: "\<forall>loss lr grad. lr > 0 \<longrightarrow> grad > 0 \<longrightarrow> gradient_step loss lr grad < loss"
   by simp
 
 (* within_epsilon_symmetric (matches Coq) *)
-lemma within_epsilon_symmetric: "\<forall> x1 x2 epsilon, within_epsilon x1 x2 epsilon = True \<longrightarrow> within_epsilon x2 x1 epsilon = True"
+lemma within_epsilon_symmetric: "\<forall>x1 x2 epsilon. within_epsilon x1 x2 epsilon = True \<longrightarrow> within_epsilon x2 x1 epsilon = True"
   by simp
 
 end

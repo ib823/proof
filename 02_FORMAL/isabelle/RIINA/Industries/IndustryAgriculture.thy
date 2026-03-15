@@ -158,105 +158,105 @@ definition count_food_controls :: "FoodSafetyControls \<Rightarrow> nat" where
 (* Section N01 - FSMA Compliance
     Reference: IND_N_AGRICULTURE.md Section 3.1 *)
 (* fsma_compliance (matches Coq) *)
-lemma fsma_compliance: "\<forall> (controls : FoodSafetyControls) (facility : nat), preventive_controls controls = True \<longrightarrow> True"
+lemma fsma_compliance: "\<forall>(controls :: FoodSafetyControls) (facility :: nat). preventive_controls controls = True \<longrightarrow> True"
   by simp
 
 (* Section N02 - Traceability
     Reference: IND_N_AGRICULTURE.md Section 3.2 *)
 (* food_traceability (matches Coq) *)
-lemma food_traceability: "\<forall> (product : nat) (supply_chain : nat), True"
+lemma food_traceability: "\<forall>(product :: nat) (supply_chain :: nat). True"
   by simp
 
 (* Section N03 - Precision Agriculture Security
     Reference: IND_N_AGRICULTURE.md Section 3.3 *)
 (* precision_ag_security (matches Coq) *)
-lemma precision_ag_security: "\<forall> (equipment : nat) (data : AgriData), True"
+lemma precision_ag_security: "\<forall>(equipment :: nat) (data :: AgriData). True"
   by simp
 
 (* Section N04 - ISO 22000 FSMS
     Reference: IND_N_AGRICULTURE.md Section 3.4 *)
 (* iso_22000_compliance (matches Coq) *)
-lemma iso_22000_compliance: "\<forall> (organization : nat), True"
+lemma iso_22000_compliance: "\<forall>(organization :: nat). True"
   by simp
 
 (* Section N05 - Supply Chain Integrity
     Reference: IND_N_AGRICULTURE.md Section 3.5 *)
 (* supply_chain_integrity (matches Coq) *)
-lemma supply_chain_integrity: "\<forall> (supplier : nat) (product : nat), True"
+lemma supply_chain_integrity: "\<forall>(supplier :: nat) (product :: nat). True"
   by simp
 
 (* HACCP required for processing facilities *)
 (* haccp_required (matches Coq) *)
-lemma haccp_required: "\<forall> (controls : FoodSafetyControls) (facility : nat), haccp_plan controls = True \<longrightarrow> True"
+lemma haccp_required: "\<forall>(controls :: FoodSafetyControls) (facility :: nat). haccp_plan controls = True \<longrightarrow> True"
   by simp
 
 (* Recall capability required *)
 (* recall_capability_required (matches Coq) *)
-lemma recall_capability_required: "\<forall> (controls : FoodSafetyControls), recall_capability controls = True \<longrightarrow> traceability_system controls = True \<longrightarrow> True"
+lemma recall_capability_required: "\<forall>(controls :: FoodSafetyControls). recall_capability controls = True \<longrightarrow> traceability_system controls = True \<longrightarrow> True"
   by simp
 
 (* chemical_usage_highest_sensitivity (matches Coq) *)
-lemma chemical_usage_highest_sensitivity: "\<forall> d, agri_data_sensitivity d \<le> agri_data_sensitivity ChemicalUsage"
-  by (cases rule: ‹_›.cases; simp)
+lemma chemical_usage_highest_sensitivity: "\<forall>d. agri_data_sensitivity d \<le> agri_data_sensitivity ChemicalUsage"
+  by auto
 
 (* agri_data_sensitivity_positive (matches Coq) *)
-lemma agri_data_sensitivity_positive: "\<forall> d, agri_data_sensitivity d \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma agri_data_sensitivity_positive: "\<forall>d. agri_data_sensitivity d \<ge> 1"
+  by auto
 
 (* hazard_severity_bounded (matches Coq) *)
-lemma hazard_severity_bounded: "\<forall> h, hazard_severity h \<ge> 3 \<and> hazard_severity h \<le> 5"
-  by (cases rule: ‹_›.cases; simp)
+lemma hazard_severity_bounded: "\<forall>h. hazard_severity h \<ge> 3 \<and> hazard_severity h \<le> 5"
+  by auto
 
 (* biological_radiological_equal (matches Coq) *)
 lemma biological_radiological_equal: "hazard_severity Biological = hazard_severity Radiological"
   by simp
 
 (* higher_severity_more_frequent (matches Coq) *)
-lemma higher_severity_more_frequent: "\<forall> h, hazard_severity h \<ge> 5 \<longrightarrow> haccp_frequency h \<le> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma higher_severity_more_frequent: "\<forall>h. hazard_severity h \<ge> 5 \<longrightarrow> haccp_frequency h \<le> 1"
+  by auto
 
 (* haccp_frequency_positive (matches Coq) *)
-lemma haccp_frequency_positive: "\<forall> h, haccp_frequency h \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma haccp_frequency_positive: "\<forall>h. haccp_frequency h \<ge> 1"
+  by auto
 
 (* all_controls_implies_haccp (matches Coq) *)
-lemma all_controls_implies_haccp: "\<forall> c, all_food_safety_controls c = True \<longrightarrow> haccp_plan c = True"
+lemma all_controls_implies_haccp: "\<forall>c. all_food_safety_controls c = True \<longrightarrow> haccp_plan c = True"
   by auto
 
 (* all_controls_implies_recall (matches Coq) *)
-lemma all_controls_implies_recall: "\<forall> c, all_food_safety_controls c = True \<longrightarrow> recall_capability c = True"
+lemma all_controls_implies_recall: "\<forall>c. all_food_safety_controls c = True \<longrightarrow> recall_capability c = True"
   by auto
 
 (* all_controls_implies_traceability (matches Coq) *)
-lemma all_controls_implies_traceability: "\<forall> c, all_food_safety_controls c = True \<longrightarrow> traceability_system c = True"
+lemma all_controls_implies_traceability: "\<forall>c. all_food_safety_controls c = True \<longrightarrow> traceability_system c = True"
   by auto
 
 (* farm_area_meets_minimum (matches Coq) *)
-lemma farm_area_meets_minimum: "\<forall> f : CertifiedFarm, farm_min_area f \<le> farm_area_hectares f"
+lemma farm_area_meets_minimum: "\<forall>f : CertifiedFarm. farm_min_area f \<le> farm_area_hectares f"
   by auto
 
 (* traceability_dates_valid (matches Coq) *)
-lemma traceability_dates_valid: "\<forall> t : TraceEntry, trace_timestamp t \<le> trace_expiry t"
+lemma traceability_dates_valid: "\<forall>t : TraceEntry. trace_timestamp t \<le> trace_expiry t"
   by auto
 
 (* agri_effect_eq_refl (matches Coq) *)
-lemma agri_effect_eq_refl: "\<forall> e, agri_effect_eq_dec e e = left eq_refl \<longrightarrow> e = e"
+lemma agri_effect_eq_refl: "\<forall>e. agri_effect_eq_dec e e = left eq_refl \<longrightarrow> e = e"
   by simp
 
 (* risk_score_positive (matches Coq) *)
-lemma risk_score_positive: "\<forall> h, risk_score h \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma risk_score_positive: "\<forall>h. risk_score h \<ge> 1"
+  by auto
 
 (* risk_score_bounded (matches Coq) *)
-lemma risk_score_bounded: "\<forall> h, risk_score h \<le> 25"
-  by (cases rule: ‹_›.cases; simp)
+lemma risk_score_bounded: "\<forall>h. risk_score h \<le> 25"
+  by auto
 
 (* count_controls_bounded (matches Coq) *)
-lemma count_controls_bounded: "\<forall> c, count_food_controls c \<le> 6"
-  by (cases rule: ‹_›.cases; simp)
+lemma count_controls_bounded: "\<forall>c. count_food_controls c \<le> 6"
+  by auto
 
 (* all_controls_count_six (matches Coq) *)
-lemma all_controls_count_six: "\<forall> c, all_food_safety_controls c = True \<longrightarrow> count_food_controls c = 6"
-  by (cases rule: ‹_›.cases; simp)
+lemma all_controls_count_six: "\<forall>c. all_food_safety_controls c = True \<longrightarrow> count_food_controls c = 6"
+  by auto
 
 end

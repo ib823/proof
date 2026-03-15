@@ -434,19 +434,19 @@ definition riina_container :: "ContainerConfig" where
     SECTION 1: CORE BOOLEAN LEMMAS
     ============================================================================ *)
 (* andb_true_intro (matches Coq) *)
-lemma andb_true_intro: "\<forall> a b : bool, a = True \<longrightarrow> b = True \<longrightarrow> a && b = True"
+lemma andb_true_intro: "\<forall>a b : bool. a = True \<longrightarrow> b = True \<longrightarrow> a && b = True"
   by simp
 
 (* andb_true_elim1 (matches Coq) *)
-lemma andb_true_elim1: "\<forall> a b : bool, a && b = True \<longrightarrow> a = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_elim1: "\<forall>a b : bool. a && b = True \<longrightarrow> a = True"
+  by auto
 
 (* andb_true_elim2 (matches Coq) *)
-lemma andb_true_elim2: "\<forall> a b : bool, a && b = True \<longrightarrow> b = True"
+lemma andb_true_elim2: "\<forall>a b : bool. a && b = True \<longrightarrow> b = True"
   by auto
 
 (* andb7_true (matches Coq) *)
-lemma andb7_true: "\<forall> a b c d e f g : bool, a && b && c && d && e && f && g = True \<longrightarrow> a = True \<and> b = True \<and> c = True \<and> d = True \<and> e = True \<and> f = True \<and> g = True"
+lemma andb7_true: "\<forall>a b c d e f g : bool. a && b && c && d && e && f && g = True \<longrightarrow> a = True \<and> b = True \<and> c = True \<and> d = True \<and> e = True \<and> f = True \<and> g = True"
   by auto
 
 (* ============================================================================
@@ -501,15 +501,15 @@ lemma NS_012_process_safe: "ns_process_safe riina_ns = True"
   by simp
 
 (* NS_013_full_implies_pid (matches Coq) *)
-lemma NS_013_full_implies_pid: "\<forall> n, ns_fully_isolated n = True \<longrightarrow> ns_pid_isolated n = True"
+lemma NS_013_full_implies_pid: "\<forall>n. ns_fully_isolated n = True \<longrightarrow> ns_pid_isolated n = True"
   by auto
 
 (* NS_014_full_implies_net (matches Coq) *)
-lemma NS_014_full_implies_net: "\<forall> n, ns_fully_isolated n = True \<longrightarrow> ns_net_isolated n = True"
+lemma NS_014_full_implies_net: "\<forall>n. ns_fully_isolated n = True \<longrightarrow> ns_net_isolated n = True"
   by auto
 
 (* NS_015_full_implies_user (matches Coq) *)
-lemma NS_015_full_implies_user: "\<forall> n, ns_fully_isolated n = True \<longrightarrow> ns_user_isolated n = True"
+lemma NS_015_full_implies_user: "\<forall>n. ns_fully_isolated n = True \<longrightarrow> ns_user_isolated n = True"
   by auto
 
 (* ============================================================================
@@ -536,19 +536,19 @@ lemma CG_005_fully_limited: "cgroup_fully_limited riina_cgroup = True"
   by simp
 
 (* CG_006_full_implies_cpu (matches Coq) *)
-lemma CG_006_full_implies_cpu: "\<forall> c, cgroup_fully_limited c = True \<longrightarrow> cgroup_cpu_safe c = True"
+lemma CG_006_full_implies_cpu: "\<forall>c. cgroup_fully_limited c = True \<longrightarrow> cgroup_cpu_safe c = True"
   by auto
 
 (* CG_007_full_implies_memory (matches Coq) *)
-lemma CG_007_full_implies_memory: "\<forall> c, cgroup_fully_limited c = True \<longrightarrow> cgroup_memory_safe c = True"
+lemma CG_007_full_implies_memory: "\<forall>c. cgroup_fully_limited c = True \<longrightarrow> cgroup_memory_safe c = True"
   by auto
 
 (* CG_008_full_implies_pids (matches Coq) *)
-lemma CG_008_full_implies_pids: "\<forall> c, cgroup_fully_limited c = True \<longrightarrow> cgroup_pids_safe c = True"
+lemma CG_008_full_implies_pids: "\<forall>c. cgroup_fully_limited c = True \<longrightarrow> cgroup_pids_safe c = True"
   by auto
 
 (* CG_009_full_implies_io (matches Coq) *)
-lemma CG_009_full_implies_io: "\<forall> c, cgroup_fully_limited c = True \<longrightarrow> cgroup_io_safe c = True"
+lemma CG_009_full_implies_io: "\<forall>c. cgroup_fully_limited c = True \<longrightarrow> cgroup_io_safe c = True"
   by auto
 
 (* CG_010_swap_disabled (matches Coq) *)
@@ -603,11 +603,11 @@ lemma SC_011_block_namespace: "sc_block_namespace riina_seccomp = True"
   by simp
 
 (* SC_012_hardened_implies_filter (matches Coq) *)
-lemma SC_012_hardened_implies_filter: "\<forall> s, seccomp_fully_hardened s = True \<longrightarrow> sc_syscall_filter s = True"
+lemma SC_012_hardened_implies_filter: "\<forall>s. seccomp_fully_hardened s = True \<longrightarrow> sc_syscall_filter s = True"
   by auto
 
 (* SC_013_hardened_implies_block_priv (matches Coq) *)
-lemma SC_013_hardened_implies_block_priv: "\<forall> s, seccomp_fully_hardened s = True \<longrightarrow> sc_block_privileged s = True"
+lemma SC_013_hardened_implies_block_priv: "\<forall>s. seccomp_fully_hardened s = True \<longrightarrow> sc_block_privileged s = True"
   by auto
 
 (* ============================================================================
@@ -717,11 +717,11 @@ lemma IMG_012_base_verified: "img_base_verified riina_image = True"
   by simp
 
 (* IMG_013_full_implies_signed (matches Coq) *)
-lemma IMG_013_full_implies_signed: "\<forall> i, image_fully_verified i = True \<longrightarrow> img_signed i = True"
+lemma IMG_013_full_implies_signed: "\<forall>i. image_fully_verified i = True \<longrightarrow> img_signed i = True"
   by auto
 
 (* IMG_014_full_implies_no_vulns (matches Coq) *)
-lemma IMG_014_full_implies_no_vulns: "\<forall> i, image_fully_verified i = True \<longrightarrow> img_no_critical_vulns i = True"
+lemma IMG_014_full_implies_no_vulns: "\<forall>i. image_fully_verified i = True \<longrightarrow> img_no_critical_vulns i = True"
   by auto
 
 (* ============================================================================
@@ -776,11 +776,11 @@ lemma ESC_012_drop_all_caps: "esc_drop_all_caps riina_escape = True"
   by simp
 
 (* ESC_013_full_implies_no_priv (matches Coq) *)
-lemma ESC_013_full_implies_no_priv: "\<forall> e, escape_fully_protected e = True \<longrightarrow> esc_no_privileged e = True"
+lemma ESC_013_full_implies_no_priv: "\<forall>e. escape_fully_protected e = True \<longrightarrow> esc_no_privileged e = True"
   by auto
 
 (* ESC_014_full_implies_seccomp (matches Coq) *)
-lemma ESC_014_full_implies_seccomp: "\<forall> e, escape_fully_protected e = True \<longrightarrow> esc_seccomp_enabled e = True"
+lemma ESC_014_full_implies_seccomp: "\<forall>e. escape_fully_protected e = True \<longrightarrow> esc_seccomp_enabled e = True"
   by auto
 
 (* ============================================================================
@@ -819,38 +819,38 @@ lemma CONT_008_rootless: "cont_rootless riina_container = True"
   by simp
 
 (* CONT_009_secure_implies_isolated (matches Coq) *)
-lemma CONT_009_secure_implies_isolated: "\<forall> c, container_fully_secure c = True \<longrightarrow> container_isolated c = True"
+lemma CONT_009_secure_implies_isolated: "\<forall>c. container_fully_secure c = True \<longrightarrow> container_isolated c = True"
   by auto
 
 (* CONT_010_secure_implies_resource (matches Coq) *)
-lemma CONT_010_secure_implies_resource: "\<forall> c, container_fully_secure c = True \<longrightarrow> container_resource_safe c = True"
+lemma CONT_010_secure_implies_resource: "\<forall>c. container_fully_secure c = True \<longrightarrow> container_resource_safe c = True"
   by auto
 
 (* CONT_011_secure_implies_syscall (matches Coq) *)
-lemma CONT_011_secure_implies_syscall: "\<forall> c, container_fully_secure c = True \<longrightarrow> container_syscall_safe c = True"
+lemma CONT_011_secure_implies_syscall: "\<forall>c. container_fully_secure c = True \<longrightarrow> container_syscall_safe c = True"
   by auto
 
 (* CONT_012_secure_implies_capability (matches Coq) *)
-lemma CONT_012_secure_implies_capability: "\<forall> c, container_fully_secure c = True \<longrightarrow> container_capability_safe c = True"
+lemma CONT_012_secure_implies_capability: "\<forall>c. container_fully_secure c = True \<longrightarrow> container_capability_safe c = True"
   by auto
 
 (* CONT_013_secure_implies_image (matches Coq) *)
-lemma CONT_013_secure_implies_image: "\<forall> c, container_fully_secure c = True \<longrightarrow> container_image_safe c = True"
+lemma CONT_013_secure_implies_image: "\<forall>c. container_fully_secure c = True \<longrightarrow> container_image_safe c = True"
   by auto
 
 (* CONT_014_secure_implies_escape (matches Coq) *)
-lemma CONT_014_secure_implies_escape: "\<forall> c, container_fully_secure c = True \<longrightarrow> container_escape_safe c = True"
+lemma CONT_014_secure_implies_escape: "\<forall>c. container_fully_secure c = True \<longrightarrow> container_escape_safe c = True"
   by auto
 
 (* CONT_015_secure_implies_rootless (matches Coq) *)
-lemma CONT_015_secure_implies_rootless: "\<forall> c, container_fully_secure c = True \<longrightarrow> cont_rootless c = True"
+lemma CONT_015_secure_implies_rootless: "\<forall>c. container_fully_secure c = True \<longrightarrow> cont_rootless c = True"
   by auto
 
 (* ============================================================================
     SECTION 17: CROSS-DOMAIN SECURITY COMPOSITION THEOREMS
     ============================================================================ *)
 (* CROSS_001_all_protections (matches Coq) *)
-lemma CROSS_001_all_protections: "\<forall> c, container_fully_secure c = True \<longrightarrow> container_isolated c = True \<and> container_resource_safe c = True \<and> container_syscall_safe c = True \<and> container_capability_safe c = True \<and> container_image_safe c = True \<and> container_escape_safe c = True \<and> cont_rootless c = True"
+lemma CROSS_001_all_protections: "\<forall>c. container_fully_secure c = True \<longrightarrow> container_isolated c = True \<and> container_resource_safe c = True \<and> container_syscall_safe c = True \<and> container_capability_safe c = True \<and> container_image_safe c = True \<and> container_escape_safe c = True \<and> cont_rootless c = True"
   by auto
 
 (* ============================================================================

@@ -148,66 +148,66 @@ definition screener_count_valid :: "bool" where
 (* Section K01 - MovieLabs ECP
     Reference: IND_K_MEDIA.md Section 3.1 *)
 (* movielabs_ecp_compliance (matches Coq) *)
-lemma movielabs_ecp_compliance: "\<forall> (compliance : ECP_Compliance) (content : ContentType), content_encryption compliance = True \<longrightarrow> forensic_watermarking compliance = True \<longrightarrow> True"
+lemma movielabs_ecp_compliance: "\<forall>(compliance :: ECP_Compliance) (content :: ContentType). content_encryption compliance = True \<longrightarrow> forensic_watermarking compliance = True \<longrightarrow> True"
   by simp
 
 (* Section K02 - DCI Security
     Reference: IND_K_MEDIA.md Section 3.2 *)
 (* dci_security (matches Coq) *)
-lemma dci_security: "\<forall> (cinema_content : ContentType), True"
+lemma dci_security: "\<forall>(cinema_content :: ContentType). True"
   by simp
 
 (* Section K03 - TPN Assessment
     Reference: IND_K_MEDIA.md Section 3.3 *)
 (* tpn_compliance (matches Coq) *)
-lemma tpn_compliance: "\<forall> (vendor : nat), True"
+lemma tpn_compliance: "\<forall>(vendor :: nat). True"
   by simp
 
 (* Section K04 - Forensic Watermarking
     Reference: IND_K_MEDIA.md Section 3.4 *)
 (* forensic_watermark (matches Coq) *)
-lemma forensic_watermark: "\<forall> (content : ContentType) (viewer : nat), True"
+lemma forensic_watermark: "\<forall>(content :: ContentType) (viewer :: nat). True"
   by simp
 
 (* Section K05 - CDSA Compliance
     Reference: IND_K_MEDIA.md Section 3.5 *)
 (* cdsa_compliance (matches Coq) *)
-lemma cdsa_compliance: "\<forall> (content_delivery : nat), True"
+lemma cdsa_compliance: "\<forall>(content_delivery :: nat). True"
   by simp
 
 (* Pre-release content requires highest protection *)
 (* prerelease_maximum_protection (matches Coq) *)
-lemma prerelease_maximum_protection: "\<forall> (content : ContentType) (protection : ContentProtection), content = PreRelease \<longrightarrow> True"
+lemma prerelease_maximum_protection: "\<forall>(content :: ContentType) (protection :: ContentProtection). content = PreRelease \<longrightarrow> True"
   by simp
 
 (* Forensic watermarks are non-removable *)
 (* watermark_persistence (matches Coq) *)
-lemma watermark_persistence: "\<forall> (content : ContentType) (watermark : nat), True"
+lemma watermark_persistence: "\<forall>(content :: ContentType) (watermark :: nat). True"
   by simp
 
 (* prerelease_highest_sensitivity (matches Coq) *)
-lemma prerelease_highest_sensitivity: "\<forall> c, content_sensitivity c \<le> content_sensitivity PreRelease"
-  by (cases rule: ‹_›.cases; simp)
+lemma prerelease_highest_sensitivity: "\<forall>c. content_sensitivity c \<le> content_sensitivity PreRelease"
+  by auto
 
 (* postrelease_lowest_sensitivity (matches Coq) *)
-lemma postrelease_lowest_sensitivity: "\<forall> c, content_sensitivity PostRelease \<le> content_sensitivity c"
-  by (cases rule: ‹_›.cases; simp)
+lemma postrelease_lowest_sensitivity: "\<forall>c. content_sensitivity PostRelease \<le> content_sensitivity c"
+  by auto
 
 (* content_sensitivity_positive (matches Coq) *)
-lemma content_sensitivity_positive: "\<forall> c, content_sensitivity c \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma content_sensitivity_positive: "\<forall>c. content_sensitivity c \<ge> 1"
+  by auto
 
 (* hardware_strongest (matches Coq) *)
-lemma hardware_strongest: "\<forall> p, protection_strength p \<le> protection_strength HardwareProtected"
-  by (cases rule: ‹_›.cases; simp)
+lemma hardware_strongest: "\<forall>p. protection_strength p \<le> protection_strength HardwareProtected"
+  by auto
 
 (* unencrypted_weakest (matches Coq) *)
-lemma unencrypted_weakest: "\<forall> p, protection_strength Unencrypted \<le> protection_strength p"
-  by (cases rule: ‹_›.cases; simp)
+lemma unencrypted_weakest: "\<forall>p. protection_strength Unencrypted \<le> protection_strength p"
+  by auto
 
 (* hw_protects_any_content (matches Coq) *)
-lemma hw_protects_any_content: "\<forall> ct, protection_adequate ct HardwareProtected = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma hw_protects_any_content: "\<forall>ct. protection_adequate ct HardwareProtected = True"
+  by auto
 
 (* unencrypted_inadequate_for_prerelease (matches Coq) *)
 lemma unencrypted_inadequate_for_prerelease: "protection_adequate PreRelease Unencrypted = False"
@@ -218,35 +218,35 @@ lemma postrelease_accepts_basic_drm: "protection_adequate PostRelease BasicDRM =
   by simp
 
 (* ecp_all_requires_encryption (matches Coq) *)
-lemma ecp_all_requires_encryption: "\<forall> c, ecp_all_controls c = True \<longrightarrow> content_encryption c = True"
+lemma ecp_all_requires_encryption: "\<forall>c. ecp_all_controls c = True \<longrightarrow> content_encryption c = True"
   by auto
 
 (* ecp_all_requires_watermarking (matches Coq) *)
-lemma ecp_all_requires_watermarking: "\<forall> c, ecp_all_controls c = True \<longrightarrow> forensic_watermarking c = True"
+lemma ecp_all_requires_watermarking: "\<forall>c. ecp_all_controls c = True \<longrightarrow> forensic_watermarking c = True"
   by auto
 
 (* ecp_all_requires_no_copies (matches Coq) *)
-lemma ecp_all_requires_no_copies: "\<forall> c, ecp_all_controls c = True \<longrightarrow> no_unauthorized_copies c = True"
+lemma ecp_all_requires_no_copies: "\<forall>c. ecp_all_controls c = True \<longrightarrow> no_unauthorized_copies c = True"
   by auto
 
 (* count_ecp_bounded (matches Coq) *)
-lemma count_ecp_bounded: "\<forall> c, count_ecp_controls c \<le> 6"
-  by (cases rule: ‹_›.cases; simp)
+lemma count_ecp_bounded: "\<forall>c. count_ecp_controls c \<le> 6"
+  by auto
 
 (* all_ecp_count_six (matches Coq) *)
-lemma all_ecp_count_six: "\<forall> c, ecp_all_controls c = True \<longrightarrow> count_ecp_controls c = 6"
-  by (cases rule: ‹_›.cases; simp)
+lemma all_ecp_count_six: "\<forall>c. ecp_all_controls c = True \<longrightarrow> count_ecp_controls c = 6"
+  by auto
 
 (* dci_key_sufficient (matches Coq) *)
-lemma dci_key_sufficient: "\<forall> bits, (dci_min_key_bits \<le> bits) = True \<longrightarrow> bits \<ge> 128"
+lemma dci_key_sufficient: "\<forall>bits. (dci_min_key_bits \<le> bits) = True \<longrightarrow> bits \<ge> 128"
   by auto
 
 (* viewing_bounded (matches Coq) *)
-lemma viewing_bounded: "\<forall> v max_h, viewing_within_window v max_h = True \<longrightarrow> viewing_duration v \<le> max_h"
+lemma viewing_bounded: "\<forall>v max_h. viewing_within_window v max_h = True \<longrightarrow> viewing_duration v \<le> max_h"
   by auto
 
 (* screener_bounded (matches Coq) *)
-lemma screener_bounded: "\<forall> c mc, screener_count_valid c mc = True \<longrightarrow> c \<le> mc"
+lemma screener_bounded: "\<forall>c mc. screener_count_valid c mc = True \<longrightarrow> c \<le> mc"
   by auto
 
 end

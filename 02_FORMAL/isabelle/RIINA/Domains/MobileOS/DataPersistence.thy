@@ -183,11 +183,11 @@ definition all_fields_present :: "Record \<Rightarrow> bool" where
 
 (* migrate_record (matches Coq: Definition migrate_record) *)
 definition migrate_record :: "Record \<Rightarrow> Record" where
-  "migrate_record r \<equiv> filter (fun p => existsb (((fst = p))) (schema_fields new_s)) r"
+  "migrate_record r \<equiv> filter (\<lambda>p. existsb (((fst = p))) (schema_fields new_s)) r"
 
 (* migrates (matches Coq: Definition migrates) *)
 definition migrates :: "Database \<Rightarrow> bool" where
-  "migrates db \<equiv> db_schema db = old_s /\
+  "migrates db \<equiv> db_schema db = old_s \<and>
   schema_version new_s > schema_version old_s"
 
 (* no_data_loss (matches Coq: Definition no_data_loss) *)
@@ -203,7 +203,7 @@ definition migration_preserves_data :: "Record \<Rightarrow> bool" where
 
 (* sync_correct (matches Coq: Definition sync_correct) *)
 definition sync_correct :: "SyncState \<Rightarrow> bool" where
-  "sync_correct s \<equiv> local_version s = remote_version s /\
+  "sync_correct s \<equiv> local_version s = remote_version s \<and>
   conflicts s = []"
 
 (* data_encrypted_at_rest_prop (matches Coq: Definition data_encrypted_at_rest_prop) *)
@@ -229,17 +229,17 @@ definition corruption_detected_prop :: "EncryptedStore \<Rightarrow> nat \<Right
 
 (* data_integrity_verified_prop (matches Coq: Definition data_integrity_verified_prop) *)
 definition data_integrity_verified_prop :: "EncryptedStore \<Rightarrow> bool" where
-  "data_integrity_verified_prop s \<equiv> store_checksum s = fold_left plus (map (fun r => length r) (store_records s)) 0"
+  "data_integrity_verified_prop s \<equiv> store_checksum s = fold_left plus (map (\<lambda>r. length r) (store_records s)) 0"
 
 (* transaction_acid (matches Coq: Definition transaction_acid) *)
 definition transaction_acid :: "Transaction \<Rightarrow> bool" where
-  "transaction_acid txn \<equiv> (txn_committed txn = True -> txn_rolled_back txn = False) /\
+  "transaction_acid txn \<equiv> (txn_committed txn = True -> txn_rolled_back txn = False) \<and>
   (txn_rolled_back txn = True -> txn_committed txn = False)"
 
 (* concurrent_access_safe_prop (matches Coq: Definition concurrent_access_safe_prop) *)
 definition concurrent_access_safe_prop :: "bool" where
   "concurrent_access_safe_prop \<equiv> txn_id txn1 <> txn_id txn2 ->
-  ~ (txn_committed txn1 = True /\ txn_rolled_back txn1 = True)"
+  ~ (txn_committed txn1 = True \<and> txn_rolled_back txn1 = True)"
 
 (* data_deletion_complete_prop (matches Coq: Definition data_deletion_complete_prop) *)
 definition data_deletion_complete_prop :: "EncryptedStore \<Rightarrow> bool" where
@@ -270,86 +270,86 @@ definition storage_quota_respected :: "StorageQuota \<Rightarrow> bool" where
 
 (* data_export_sanitized (matches Coq: Definition data_export_sanitized) *)
 definition data_export_sanitized :: "DataExport \<Rightarrow> bool" where
-  "data_export_sanitized de \<equiv> export_sanitized de = True /\ export_encrypted de = True"
+  "data_export_sanitized de \<equiv> export_sanitized de = True \<and> export_encrypted de = True"
 
 (* migration_lossless (matches Coq) *)
-lemma migration_lossless: "\<forall> (data : Database) (schema1 schema2 : Schema), migrates data schema1 schema2 \<longrightarrow> (\<forall> fn, In fn (schema_fields schema1) \<longrightarrow> In fn (schema_fields schema2)) \<longrightarrow> no_data_loss data \<longrightarrow> no_data_loss data"
+lemma migration_lossless: "\<forall>(data :: Database) (schema1 schema2 : Schema). migrates data schema1 schema2 \<longrightarrow> (\<forall>fn. In fn (schema_fields schema1) \<longrightarrow> In fn (schema_fields schema2)) \<longrightarrow> no_data_loss data \<longrightarrow> no_data_loss data"
   by auto
 
 (* migration_preserves_existing_fields (matches Coq) *)
-lemma migration_preserves_existing_fields: "\<forall> (old_s new_s : Schema) (r : Record) (fn : FieldName) (fv : FieldValue), In (fn, fv) r \<longrightarrow> In fn (schema_fields new_s) \<longrightarrow> \<exists>b ((fn) = (schema_fields) new_s) = True \<longrightarrow> In (fn, fv) (migrate_record old_s new_s r)"
+lemma migration_preserves_existing_fields: "\<forall>(old_s new_s : Schema) (r :: Record) (fn : FieldName) (fv :: FieldValue). In (fn, fv) r \<longrightarrow> In fn (schema_fields new_s) \<longrightarrow> \<exists>b ((fn) = (schema_fields) new_s) = True \<longrightarrow> In (fn. fv) (migrate_record old_s new_s r)"
   by auto
 
 (* migration_increases_version (matches Coq) *)
-lemma migration_increases_version: "\<forall> (db : Database) (old_s new_s : Schema), migrates db old_s new_s \<longrightarrow> schema_version new_s > schema_version old_s"
+lemma migration_increases_version: "\<forall>(db :: Database) (old_s new_s : Schema). migrates db old_s new_s \<longrightarrow> schema_version new_s > schema_version old_s"
   by auto
 
 (* sync_after_resolution (matches Coq) *)
-lemma sync_after_resolution: "\<forall> (s : SyncState), local_version s = remote_version s \<longrightarrow> conflicts s = [] \<longrightarrow> sync_correct s"
+lemma sync_after_resolution: "\<forall>(s :: SyncState). local_version s = remote_version s \<longrightarrow> conflicts s = [] \<longrightarrow> sync_correct s"
   by auto
 
 (* empty_db_no_loss (matches Coq) *)
-lemma empty_db_no_loss: "\<forall> (db : Database), db_records db = [] \<longrightarrow> no_data_loss db"
+lemma empty_db_no_loss: "\<forall>(db :: Database). db_records db = [] \<longrightarrow> no_data_loss db"
   by auto
 
 (* data_encrypted_at_rest (matches Coq) *)
-lemma data_encrypted_at_rest: "\<forall> (s : EncryptedStore), data_encrypted_at_rest_prop s \<longrightarrow> store_encrypted s = True"
+lemma data_encrypted_at_rest: "\<forall>(s :: EncryptedStore). data_encrypted_at_rest_prop s \<longrightarrow> store_encrypted s = True"
   by auto
 
 (* backup_encrypted_thm (matches Coq) *)
-lemma backup_encrypted_thm: "\<forall> (b : Backup), backup_encrypted_prop b \<longrightarrow> backup_encrypted b = True"
+lemma backup_encrypted_thm: "\<forall>(b :: Backup). backup_encrypted_prop b \<longrightarrow> backup_encrypted b = True"
   by auto
 
 (* migration_atomic (matches Coq) *)
-lemma migration_atomic: "\<forall> (m : Migration), migration_atomic_prop m \<longrightarrow> mig_atomic m = True \<longrightarrow> length (mig_records_before m) = length (mig_records_after m)"
+lemma migration_atomic: "\<forall>(m :: Migration). migration_atomic_prop m \<longrightarrow> mig_atomic m = True \<longrightarrow> length (mig_records_before m) = length (mig_records_after m)"
   by auto
 
 (* schema_version_tracked (matches Coq) *)
-lemma schema_version_tracked: "\<forall> (m : Migration), schema_version_tracked_prop m \<longrightarrow> mig_to_version m > mig_from_version m"
+lemma schema_version_tracked: "\<forall>(m :: Migration). schema_version_tracked_prop m \<longrightarrow> mig_to_version m > mig_from_version m"
   by auto
 
 (* corruption_detected (matches Coq) *)
-lemma corruption_detected: "\<forall> (s : EncryptedStore) (expected : nat), store_checksum s \<noteq> expected \<longrightarrow> corruption_detected_prop s expected"
+lemma corruption_detected: "\<forall>(s :: EncryptedStore) (expected :: nat). store_checksum s \<noteq> expected \<longrightarrow> corruption_detected_prop s expected"
   by auto
 
 (* data_integrity_verified (matches Coq) *)
-lemma data_integrity_verified: "\<forall> (s : EncryptedStore), data_integrity_verified_prop s \<longrightarrow> store_checksum s = fold_left plus (map (fun r => length r) (store_records s)) 0"
+lemma data_integrity_verified: "\<forall>(s :: EncryptedStore). data_integrity_verified_prop s \<longrightarrow> store_checksum s = fold_left plus (map (\<lambda>r. length r) (store_records s)) 0"
   by auto
 
 (* transaction_acid_compliant (matches Coq) *)
-lemma transaction_acid_compliant: "\<forall> (txn : Transaction), transaction_acid txn \<longrightarrow> txn_committed txn = True \<longrightarrow> txn_rolled_back txn = False"
+lemma transaction_acid_compliant: "\<forall>(txn :: Transaction). transaction_acid txn \<longrightarrow> txn_committed txn = True \<longrightarrow> txn_rolled_back txn = False"
   by auto
 
 (* concurrent_access_safe (matches Coq) *)
-lemma concurrent_access_safe: "\<forall> (txn1 txn2 : Transaction), concurrent_access_safe_prop txn1 txn2 \<longrightarrow> txn_id txn1 \<noteq> txn_id txn2 \<longrightarrow> ~ (txn_committed txn1 = True \<and> txn_rolled_back txn1 = True)"
+lemma concurrent_access_safe: "\<forall>(txn1 txn2 : Transaction). concurrent_access_safe_prop txn1 txn2 \<longrightarrow> txn_id txn1 \<noteq> txn_id txn2 \<longrightarrow> ~ (txn_committed txn1 = True \<and> txn_rolled_back txn1 = True)"
   by auto
 
 (* data_deletion_complete (matches Coq) *)
-lemma data_deletion_complete: "\<forall> (s : EncryptedStore), data_deletion_complete_prop s \<longrightarrow> store_records s = [] \<longrightarrow> store_checksum s = 0"
+lemma data_deletion_complete: "\<forall>(s :: EncryptedStore). data_deletion_complete_prop s \<longrightarrow> store_records s = [] \<longrightarrow> store_checksum s = 0"
   by auto
 
 (* index_consistent (matches Coq) *)
-lemma index_consistent: "\<forall> (idx : IndexEntry) (records : list Record), index_consistent_prop idx records \<longrightarrow> idx_valid idx = True \<longrightarrow> idx_record_id idx < length records"
+lemma index_consistent: "\<forall>(idx :: IndexEntry) (records : list Record). index_consistent_prop idx records \<longrightarrow> idx_valid idx = True \<longrightarrow> idx_record_id idx < length records"
   by auto
 
 (* cache_invalidation_correct_thm (matches Coq) *)
-lemma cache_invalidation_correct_thm: "\<forall> (c : CacheEntry) (current_time : nat), cache_invalidation_correct c current_time \<longrightarrow> cache_valid c = True \<longrightarrow> cache_timestamp c \<le> current_time"
+lemma cache_invalidation_correct_thm: "\<forall>(c :: CacheEntry) (current_time :: nat). cache_invalidation_correct c current_time \<longrightarrow> cache_valid c = True \<longrightarrow> cache_timestamp c \<le> current_time"
   by auto
 
 (* serialization_safe (matches Coq) *)
-lemma serialization_safe: "\<forall> (sd : SerializedData), serialization_safe_prop sd \<longrightarrow> ser_validated sd = True \<longrightarrow> ser_checksum sd > 0"
+lemma serialization_safe: "\<forall>(sd :: SerializedData). serialization_safe_prop sd \<longrightarrow> ser_validated sd = True \<longrightarrow> ser_checksum sd > 0"
   by auto
 
 (* deserialization_validated (matches Coq) *)
-lemma deserialization_validated: "\<forall> (sd : SerializedData), deserialization_validated_prop sd \<longrightarrow> ser_validated sd = True"
+lemma deserialization_validated: "\<forall>(sd :: SerializedData). deserialization_validated_prop sd \<longrightarrow> ser_validated sd = True"
   by auto
 
 (* storage_quota_respected_thm (matches Coq) *)
-lemma storage_quota_respected_thm: "\<forall> (sq : StorageQuota), storage_quota_respected sq \<longrightarrow> sq_used_bytes sq \<le> sq_limit_bytes sq"
+lemma storage_quota_respected_thm: "\<forall>(sq :: StorageQuota). storage_quota_respected sq \<longrightarrow> sq_used_bytes sq \<le> sq_limit_bytes sq"
   by auto
 
 (* data_export_sanitized_thm (matches Coq) *)
-lemma data_export_sanitized_thm: "\<forall> (de : DataExport), data_export_sanitized de \<longrightarrow> export_sanitized de = True \<and> export_encrypted de = True"
+lemma data_export_sanitized_thm: "\<forall>(de :: DataExport). data_export_sanitized de \<longrightarrow> export_sanitized de = True \<and> export_encrypted de = True"
   by auto
 
 end

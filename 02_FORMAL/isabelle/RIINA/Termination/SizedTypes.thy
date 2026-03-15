@@ -75,11 +75,11 @@ datatype sized_ty =
 
 (* sized_ty_base (matches Coq: Definition sized_ty_base) *)
 fun sized_ty_base :: "sized_ty \<Rightarrow> ty" where
-
+  "sized_ty_base _ = undefined"
 
 (* sized_ty_bound (matches Coq: Definition sized_ty_bound) *)
 fun sized_ty_bound :: "sized_ty \<Rightarrow> nat" where
-
+  "sized_ty_bound _ = 0"
 
 (* expr_size (matches Coq: Definition expr_size) *)
 fun expr_size :: "expr \<Rightarrow> nat" where
@@ -87,7 +87,7 @@ fun expr_size :: "expr \<Rightarrow> nat" where
 
 (* terminates (matches Coq: Definition terminates) *)
 definition terminates :: "expr \<Rightarrow> store \<Rightarrow> effect_ctx \<Rightarrow> bool" where
-  "terminates e st ctx \<equiv> exists v st' ctx', (e, st, ctx) -->* (v, st', ctx') /\ value v"
+  "terminates e st ctx \<equiv> exists v st' ctx', (e, st, ctx) -->* (v, st', ctx') \<and> value v"
 
 (* step_terminates (matches Coq: Definition step_terminates) *)
 definition step_terminates :: "expr \<Rightarrow> store \<Rightarrow> effect_ctx \<Rightarrow> bool" where
@@ -95,198 +95,198 @@ definition step_terminates :: "expr \<Rightarrow> store \<Rightarrow> effect_ctx
 
 (* Expression size is positive *)
 (* expr_size_pos (matches Coq) *)
-lemma expr_size_pos: "\<forall> e, expr_size e > 0"
+lemma expr_size_pos: "\<forall>e. expr_size e > 0"
   by simp
 
 (* If v is a value of product type, it decomposes as a pair *)
 (* value_prod_decompose (matches Coq) *)
-lemma value_prod_decompose: "\<forall> v T1 T2 ε Σ, has_type nil Σ Public v (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists> v1 v2, v = EPair v1 v2 \<and> value v1 \<and> value v2"
+lemma value_prod_decompose: "\<forall>v T1 T2 ε Σ. has_type nil Σ Public v (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists>v1 v2. v = EPair v1 v2 \<and> value v1 \<and> value v2"
   by simp
 
 (* If v is a value of sum type, it decomposes as Inl or Inr *)
 (* value_sum_decompose (matches Coq) *)
-lemma value_sum_decompose: "\<forall> v T1 T2 ε Σ, has_type nil Σ Public v (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> (\<exists> v', v = EInl v' T2 \<and> value v') \<or> (\<exists> v', v = EInr v' T1 \<and> value v')"
+lemma value_sum_decompose: "\<forall>v T1 T2 ε Σ. has_type nil Σ Public v (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> (\<exists>v'. v = EInl v' T2 \<and> value v') \<or> (\<exists>v'. v = EInr v' T1 \<and> value v')"
   by simp
 
 (* If v is a value of bool type, it decomposes as true or false *)
 (* value_bool_decompose (matches Coq) *)
-lemma value_bool_decompose: "\<forall> v ε Σ, has_type nil Σ Public v TBool ε \<longrightarrow> value v \<longrightarrow> \<exists> b, v = EBool b"
+lemma value_bool_decompose: "\<forall>v ε Σ. has_type nil Σ Public v TBool ε \<longrightarrow> value v \<longrightarrow> \<exists>b. v = EBool b"
   by simp
 
 (* If v is a value of function type, it decomposes as a lambda *)
 (* value_fn_decompose (matches Coq) *)
-lemma value_fn_decompose: "\<forall> v T1 T2 ε ε' Σ, has_type nil Σ Public v (TFn T1 T2 ε) ε' \<longrightarrow> value v \<longrightarrow> \<exists> x body, v = ELam x T1 body"
+lemma value_fn_decompose: "\<forall>v T1 T2 ε ε' Σ. has_type nil Σ Public v (TFn T1 T2 ε) ε' \<longrightarrow> value v \<longrightarrow> \<exists>x body. v = ELam x T1 body"
   by simp
 
 (* Fst of a pair steps in one step *)
 (* fst_steps_once (matches Coq) *)
-lemma fst_steps_once: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> (EFst (EPair v1 v2), st, ctx) --> (v1, st, ctx)"
+lemma fst_steps_once: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> (EFst (EPair v1 v2), st, ctx) --> (v1, st, ctx)"
   by auto
 
 (* Snd of a pair steps in one step *)
 (* snd_steps_once (matches Coq) *)
-lemma snd_steps_once: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> (ESnd (EPair v1 v2), st, ctx) --> (v2, st, ctx)"
+lemma snd_steps_once: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> (ESnd (EPair v1 v2), st, ctx) --> (v2, st, ctx)"
   by auto
 
 (* Case on Inl steps in one step *)
 (* case_inl_steps_once (matches Coq) *)
-lemma case_inl_steps_once: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> ([x1 := v] e1, st, ctx)"
+lemma case_inl_steps_once: "\<forall>v T x1 e1 x2 e2 st ctx. value v \<longrightarrow> (ECase (EInl v T) x1 e1 x2 e2, st, ctx) --> (subst x1 v e1, st, ctx)"
   by auto
 
 (* Case on Inr steps in one step *)
 (* case_inr_steps_once (matches Coq) *)
-lemma case_inr_steps_once: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> ([x2 := v] e2, st, ctx)"
+lemma case_inr_steps_once: "\<forall>v T x1 e1 x2 e2 st ctx. value v \<longrightarrow> (ECase (EInr v T) x1 e1 x2 e2, st, ctx) --> (subst x2 v e2, st, ctx)"
   by auto
 
 (* If true steps in one step *)
 (* if_true_steps_once (matches Coq) *)
-lemma if_true_steps_once: "\<forall> e2 e3 st ctx, (EIf (EBool True) e2 e3, st, ctx) --> (e2, st, ctx)"
+lemma if_true_steps_once: "\<forall>e2 e3 st ctx. (EIf (EBool True) e2 e3, st, ctx) --> (e2, st, ctx)"
   by auto
 
 (* If false steps in one step *)
 (* if_false_steps_once (matches Coq) *)
-lemma if_false_steps_once: "\<forall> e2 e3 st ctx, (EIf (EBool False) e2 e3, st, ctx) --> (e3, st, ctx)"
+lemma if_false_steps_once: "\<forall>e2 e3 st ctx. (EIf (EBool False) e2 e3, st, ctx) --> (e3, st, ctx)"
   by auto
 
 (* Let with value steps in one step *)
 (* let_value_steps_once (matches Coq) *)
-lemma let_value_steps_once: "\<forall> x v e2 st ctx, value v \<longrightarrow> (ELet x v e2, st, ctx) --> ([x := v] e2, st, ctx)"
+lemma let_value_steps_once: "\<forall>x v e2 st ctx. value v \<longrightarrow> (ELet x v e2, st, ctx) --> (subst x v e2, st, ctx)"
   by auto
 
 (* Handle with value steps in one step *)
 (* handle_value_steps_once (matches Coq) *)
-lemma handle_value_steps_once: "\<forall> v x h st ctx, value v \<longrightarrow> (EHandle v x h, st, ctx) --> ([x := v] h, st, ctx)"
+lemma handle_value_steps_once: "\<forall>v x h st ctx. value v \<longrightarrow> (EHandle v x h, st, ctx) --> (subst x v h, st, ctx)"
   by auto
 
 (* App with lambda and value steps in one step *)
 (* app_lam_steps_once (matches Coq) *)
-lemma app_lam_steps_once: "\<forall> x T body v st ctx, value v \<longrightarrow> (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx)"
+lemma app_lam_steps_once: "\<forall>x T body v st ctx. value v \<longrightarrow> (EApp (ELam x T body) v, st, ctx) --> (subst x v body, st, ctx)"
   by auto
 
 (* step_to_multi (matches Coq) *)
-lemma step_to_multi: "\<forall> e st ctx e' st' ctx', (e, st, ctx) --> (e', st', ctx') \<longrightarrow> (e, st, ctx) -->* (e', st', ctx')"
+lemma step_to_multi: "\<forall>e st ctx e' st' ctx'. (e, st, ctx) --> (e', st', ctx') \<longrightarrow> (e, st, ctx) -->* (e', st', ctx')"
   by auto
 
 (* Multi-step is transitive *)
 (* multi_step_trans (matches Coq) *)
-lemma multi_step_trans: "\<forall> e1 st1 ctx1 e2 st2 ctx2 e3 st3 ctx3, (e1, st1, ctx1) -->* (e2, st2, ctx2) \<longrightarrow> (e2, st2, ctx2) -->* (e3, st3, ctx3) \<longrightarrow> (e1, st1, ctx1) -->* (e3, st3, ctx3)"
+lemma multi_step_trans: "\<forall>e1 st1 ctx1 e2 st2 ctx2 e3 st3 ctx3. (e1, st1, ctx1) -->* (e2, st2, ctx2) \<longrightarrow> (e2, st2, ctx2) -->* (e3, st3, ctx3) \<longrightarrow> (e1, st1, ctx1) -->* (e3, st3, ctx3)"
   by auto
 
 (* Expression size for compound expressions *)
 (* expr_size_app (matches Coq) *)
-lemma expr_size_app: "\<forall> e1 e2, expr_size (EApp e1 e2) = 1 + expr_size e1 + expr_size e2"
+lemma expr_size_app: "\<forall>e1 e2. expr_size (EApp e1 e2) = 1 + expr_size e1 + expr_size e2"
   by simp
 
 (* expr_size_pair (matches Coq) *)
-lemma expr_size_pair: "\<forall> e1 e2, expr_size (EPair e1 e2) = 1 + expr_size e1 + expr_size e2"
+lemma expr_size_pair: "\<forall>e1 e2. expr_size (EPair e1 e2) = 1 + expr_size e1 + expr_size e2"
   by simp
 
 (* expr_size_fst (matches Coq) *)
-lemma expr_size_fst: "\<forall> e, expr_size (EFst e) = 1 + expr_size e"
+lemma expr_size_fst: "\<forall>e. expr_size (EFst e) = 1 + expr_size e"
   by simp
 
 (* expr_size_snd (matches Coq) *)
-lemma expr_size_snd: "\<forall> e, expr_size (ESnd e) = 1 + expr_size e"
+lemma expr_size_snd: "\<forall>e. expr_size (ESnd e) = 1 + expr_size e"
   by simp
 
 (* expr_size_if (matches Coq) *)
-lemma expr_size_if: "\<forall> e1 e2 e3, expr_size (EIf e1 e2 e3) = 1 + expr_size e1 + expr_size e2 + expr_size e3"
+lemma expr_size_if: "\<forall>e1 e2 e3. expr_size (EIf e1 e2 e3) = 1 + expr_size e1 + expr_size e2 + expr_size e3"
   by simp
 
 (* expr_size_let (matches Coq) *)
-lemma expr_size_let: "\<forall> x e1 e2, expr_size (ELet x e1 e2) = 1 + expr_size e1 + expr_size e2"
+lemma expr_size_let: "\<forall>x e1 e2. expr_size (ELet x e1 e2) = 1 + expr_size e1 + expr_size e2"
   by simp
 
 (* expr_size_lam (matches Coq) *)
-lemma expr_size_lam: "\<forall> x T body, expr_size (ELam x T body) = 1 + expr_size body"
+lemma expr_size_lam: "\<forall>x T body. expr_size (ELam x T body) = 1 + expr_size body"
   by simp
 
 (* expr_size_inl (matches Coq) *)
-lemma expr_size_inl: "\<forall> e T, expr_size (EInl e T) = 1 + expr_size e"
+lemma expr_size_inl: "\<forall>e T. expr_size (EInl e T) = 1 + expr_size e"
   by simp
 
 (* expr_size_inr (matches Coq) *)
-lemma expr_size_inr: "\<forall> e T, expr_size (EInr e T) = 1 + expr_size e"
+lemma expr_size_inr: "\<forall>e T. expr_size (EInr e T) = 1 + expr_size e"
   by simp
 
 (* Expression size is at least 1 *)
 (* expr_size_ge_1 (matches Coq) *)
-lemma expr_size_ge_1: "\<forall> e, 1 \<le> expr_size e"
+lemma expr_size_ge_1: "\<forall>e. 1 \<le> expr_size e"
   by simp
 
 (* Subexpression size is strictly less than parent *)
 (* expr_size_fst_sub (matches Coq) *)
-lemma expr_size_fst_sub: "\<forall> e, expr_size e < expr_size (EFst e)"
+lemma expr_size_fst_sub: "\<forall>e. expr_size e < expr_size (EFst e)"
   by simp
 
 (* expr_size_snd_sub (matches Coq) *)
-lemma expr_size_snd_sub: "\<forall> e, expr_size e < expr_size (ESnd e)"
+lemma expr_size_snd_sub: "\<forall>e. expr_size e < expr_size (ESnd e)"
   by simp
 
 (* expr_size_app_l (matches Coq) *)
-lemma expr_size_app_l: "\<forall> e1 e2, expr_size e1 < expr_size (EApp e1 e2)"
+lemma expr_size_app_l: "\<forall>e1 e2. expr_size e1 < expr_size (EApp e1 e2)"
   by simp
 
 (* expr_size_app_r (matches Coq) *)
-lemma expr_size_app_r: "\<forall> e1 e2, expr_size e2 < expr_size (EApp e1 e2)"
+lemma expr_size_app_r: "\<forall>e1 e2. expr_size e2 < expr_size (EApp e1 e2)"
   by simp
 
 (* Values terminate trivially *)
 (* value_terminates (matches Coq) *)
-lemma value_terminates: "\<forall> v st ctx, value v \<longrightarrow> terminates v st ctx"
+lemma value_terminates: "\<forall>v st ctx. value v \<longrightarrow> terminates v st ctx"
   by auto
 
 (* Values can step (trivially — they provide themselves) *)
 (* value_step_terminates_trivially (matches Coq) *)
-lemma value_step_terminates_trivially: "\<forall> v st ctx, value v \<longrightarrow> terminates v st ctx"
+lemma value_step_terminates_trivially: "\<forall>v st ctx. value v \<longrightarrow> terminates v st ctx"
   by auto
 
 (* expr_size_case (matches Coq) *)
-lemma expr_size_case: "\<forall> e x1 e1 x2 e2, expr_size (ECase e x1 e1 x2 e2) = 1 + expr_size e + expr_size e1 + expr_size e2"
+lemma expr_size_case: "\<forall>e x1 e1 x2 e2. expr_size (ECase e x1 e1 x2 e2) = 1 + expr_size e + expr_size e1 + expr_size e2"
   by simp
 
 (* expr_size_ref (matches Coq) *)
-lemma expr_size_ref: "\<forall> e sl, expr_size (ERef e sl) = 1 + expr_size e"
+lemma expr_size_ref: "\<forall>e sl. expr_size (ERef e sl) = 1 + expr_size e"
   by simp
 
 (* expr_size_deref (matches Coq) *)
-lemma expr_size_deref: "\<forall> e, expr_size (EDeref e) = 1 + expr_size e"
+lemma expr_size_deref: "\<forall>e. expr_size (EDeref e) = 1 + expr_size e"
   by simp
 
 (* expr_size_assign (matches Coq) *)
-lemma expr_size_assign: "\<forall> e1 e2, expr_size (EAssign e1 e2) = 1 + expr_size e1 + expr_size e2"
+lemma expr_size_assign: "\<forall>e1 e2. expr_size (EAssign e1 e2) = 1 + expr_size e1 + expr_size e2"
   by simp
 
 (* expr_size_classify (matches Coq) *)
-lemma expr_size_classify: "\<forall> e, expr_size (EClassify e) = 1 + expr_size e"
+lemma expr_size_classify: "\<forall>e. expr_size (EClassify e) = 1 + expr_size e"
   by simp
 
 (* expr_size_pair_l (matches Coq) *)
-lemma expr_size_pair_l: "\<forall> e1 e2, expr_size e1 < expr_size (EPair e1 e2)"
+lemma expr_size_pair_l: "\<forall>e1 e2. expr_size e1 < expr_size (EPair e1 e2)"
   by simp
 
 (* expr_size_pair_r (matches Coq) *)
-lemma expr_size_pair_r: "\<forall> e1 e2, expr_size e2 < expr_size (EPair e1 e2)"
+lemma expr_size_pair_r: "\<forall>e1 e2. expr_size e2 < expr_size (EPair e1 e2)"
   by simp
 
 (* expr_size_case_guard (matches Coq) *)
-lemma expr_size_case_guard: "\<forall> e x1 e1 x2 e2, expr_size e < expr_size (ECase e x1 e1 x2 e2)"
+lemma expr_size_case_guard: "\<forall>e x1 e1 x2 e2. expr_size e < expr_size (ECase e x1 e1 x2 e2)"
   by simp
 
 (* expr_size_if_guard (matches Coq) *)
-lemma expr_size_if_guard: "\<forall> e1 e2 e3, expr_size e1 < expr_size (EIf e1 e2 e3)"
+lemma expr_size_if_guard: "\<forall>e1 e2 e3. expr_size e1 < expr_size (EIf e1 e2 e3)"
   by simp
 
 (* expr_size_let_body (matches Coq) *)
-lemma expr_size_let_body: "\<forall> x e1 e2, expr_size e2 < expr_size (ELet x e1 e2)"
+lemma expr_size_let_body: "\<forall>x e1 e2. expr_size e2 < expr_size (ELet x e1 e2)"
   by simp
 
 (* sized_ty_base_STBase (matches Coq) *)
-lemma sized_ty_base_STBase: "\<forall> T, sized_ty_base (STBase T) = T"
+lemma sized_ty_base_STBase: "\<forall>T. sized_ty_base (STBase T) = T"
   by simp
 
 (* sized_ty_bound_STSized (matches Coq) *)
-lemma sized_ty_bound_STSized: "\<forall> n T, sized_ty_bound (STSized n T) = n"
+lemma sized_ty_bound_STSized: "\<forall>n T. sized_ty_bound (STSized n T) = n"
   by simp
 
 end

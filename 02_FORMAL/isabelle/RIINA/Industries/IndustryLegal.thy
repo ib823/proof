@@ -150,58 +150,58 @@ definition litigation_hold_active :: "bool" where
 (* Section O01 - Attorney-Client Privilege
     Reference: IND_O_LEGAL.md Section 3.1 *)
 (* privilege_protection_axiom (matches Coq) *)
-lemma privilege_protection_axiom: "\<forall> (communication : LegalData), True"
+lemma privilege_protection_axiom: "\<forall>(communication :: LegalData). True"
   by simp
 
 (* Section O02 - ABA Model Rules Compliance
     Reference: IND_O_LEGAL.md Section 3.2 *)
 (* aba_model_rules (matches Coq) *)
-lemma aba_model_rules: "\<forall> (firm : nat) (practice : nat), True"
+lemma aba_model_rules: "\<forall>(firm :: nat) (practice :: nat). True"
   by simp
 
 (* Section O03 - Conflict of Interest Screening
     Reference: IND_O_LEGAL.md Section 3.3 *)
 (* conflict_screening_axiom (matches Coq) *)
-lemma conflict_screening_axiom: "\<forall> (matter : nat) (client : nat), True"
+lemma conflict_screening_axiom: "\<forall>(matter :: nat) (client :: nat). True"
   by simp
 
 (* Section O04 - E-Discovery Compliance
     Reference: IND_O_LEGAL.md Section 3.4 *)
 (* ediscovery_compliance (matches Coq) *)
-lemma ediscovery_compliance: "\<forall> (matter : nat) (documents : nat), True"
+lemma ediscovery_compliance: "\<forall>(matter :: nat) (documents :: nat). True"
   by simp
 
 (* Section O05 - Records Retention
     Reference: IND_O_LEGAL.md Section 3.5 *)
 (* records_retention (matches Coq) *)
-lemma records_retention: "\<forall> (record : LegalData) (retention_period : nat), True"
+lemma records_retention: "\<forall>(record :: LegalData) (retention_period :: nat). True"
   by simp
 
 (* Privileged communications require encryption *)
 (* privilege_requires_encryption (matches Coq) *)
-lemma privilege_requires_encryption: "\<forall> (controls : LegalSecurityControls) (comm : LegalData), privilege_protection controls = True \<longrightarrow> True"
+lemma privilege_requires_encryption: "\<forall>(controls :: LegalSecurityControls) (comm :: LegalData). privilege_protection controls = True \<longrightarrow> True"
   by simp
 
 (* Ethical walls prevent conflicts *)
 (* ethical_walls_effective (matches Coq) *)
-lemma ethical_walls_effective: "\<forall> (controls : LegalSecurityControls) (matter1 : nat) (matter2 : nat), ethical_walls controls = True \<longrightarrow> True"
+lemma ethical_walls_effective: "\<forall>(controls :: LegalSecurityControls) (matter1 :: nat) (matter2 : nat). ethical_walls controls = True \<longrightarrow> True"
   by simp
 
 (* privilege_max_sensitivity (matches Coq) *)
-lemma privilege_max_sensitivity: "\<forall> d, legal_sensitivity d \<le> legal_sensitivity AttorneyClientPrivilege"
-  by (cases rule: ‹_›.cases; simp)
+lemma privilege_max_sensitivity: "\<forall>d. legal_sensitivity d \<le> legal_sensitivity AttorneyClientPrivilege"
+  by auto
 
 (* trust_equals_privilege_sensitivity (matches Coq) *)
 lemma trust_equals_privilege_sensitivity: "legal_sensitivity TrustAccount = legal_sensitivity AttorneyClientPrivilege"
   by simp
 
 (* legal_sensitivity_positive (matches Coq) *)
-lemma legal_sensitivity_positive: "\<forall> d, legal_sensitivity d \<ge> 2"
-  by (cases rule: ‹_›.cases; simp)
+lemma legal_sensitivity_positive: "\<forall>d. legal_sensitivity d \<ge> 2"
+  by auto
 
 (* absolute_strongest (matches Coq) *)
-lemma absolute_strongest: "\<forall> p, privilege_strength p \<le> privilege_strength Absolute"
-  by (cases rule: ‹_›.cases; simp)
+lemma absolute_strongest: "\<forall>p. privilege_strength p \<le> privilege_strength Absolute"
+  by auto
 
 (* waived_no_protection (matches Coq) *)
 lemma waived_no_protection: "privilege_strength Waived = 0"
@@ -220,55 +220,55 @@ lemma qualified_effective: "privilege_effective Qualified = True"
   by simp
 
 (* all_legal_requires_privilege (matches Coq) *)
-lemma all_legal_requires_privilege: "\<forall> c, all_legal_controls c = True \<longrightarrow> privilege_protection c = True"
+lemma all_legal_requires_privilege: "\<forall>c. all_legal_controls c = True \<longrightarrow> privilege_protection c = True"
   by auto
 
 (* all_legal_requires_conflict_screening (matches Coq) *)
-lemma all_legal_requires_conflict_screening: "\<forall> c, all_legal_controls c = True \<longrightarrow> conflict_screening c = True"
+lemma all_legal_requires_conflict_screening: "\<forall>c. all_legal_controls c = True \<longrightarrow> conflict_screening c = True"
   by auto
 
 (* all_legal_requires_ethical_walls (matches Coq) *)
-lemma all_legal_requires_ethical_walls: "\<forall> c, all_legal_controls c = True \<longrightarrow> ethical_walls c = True"
+lemma all_legal_requires_ethical_walls: "\<forall>c. all_legal_controls c = True \<longrightarrow> ethical_walls c = True"
   by auto
 
 (* all_legal_requires_retention (matches Coq) *)
-lemma all_legal_requires_retention: "\<forall> c, all_legal_controls c = True \<longrightarrow> retention_compliance c = True"
+lemma all_legal_requires_retention: "\<forall>c. all_legal_controls c = True \<longrightarrow> retention_compliance c = True"
   by auto
 
 (* count_legal_bounded (matches Coq) *)
-lemma count_legal_bounded: "\<forall> c, count_legal_controls c \<le> 6"
-  by (cases rule: ‹_›.cases; simp)
+lemma count_legal_bounded: "\<forall>c. count_legal_controls c \<le> 6"
+  by auto
 
 (* all_controls_count_six (matches Coq) *)
-lemma all_controls_count_six: "\<forall> c, all_legal_controls c = True \<longrightarrow> count_legal_controls c = 6"
-  by (cases rule: ‹_›.cases; simp)
+lemma all_controls_count_six: "\<forall>c. all_legal_controls c = True \<longrightarrow> count_legal_controls c = 6"
+  by auto
 
 (* retention_minimum_3 (matches Coq) *)
-lemma retention_minimum_3: "\<forall> d, legal_retention_years d \<ge> 3"
-  by (cases rule: ‹_›.cases; simp)
+lemma retention_minimum_3: "\<forall>d. legal_retention_years d \<ge> 3"
+  by auto
 
 (* privilege_longest_retention (matches Coq) *)
-lemma privilege_longest_retention: "\<forall> d, legal_retention_years d \<le> legal_retention_years AttorneyClientPrivilege"
-  by (cases rule: ‹_›.cases; simp)
+lemma privilege_longest_retention: "\<forall>d. legal_retention_years d \<le> legal_retention_years AttorneyClientPrivilege"
+  by auto
 
 (* trust_equals_privilege_retention (matches Coq) *)
 lemma trust_equals_privilege_retention: "legal_retention_years TrustAccount = legal_retention_years AttorneyClientPrivilege"
   by simp
 
 (* same_party_conflict (matches Coq) *)
-lemma same_party_conflict: "\<forall> p, no_conflict p p = False"
+lemma same_party_conflict: "\<forall>p. no_conflict p p = False"
   by simp
 
 (* different_parties_no_conflict (matches Coq) *)
-lemma different_parties_no_conflict: "\<forall> p1 p2, p1 \<noteq> p2 \<longrightarrow> no_conflict p1 p2 = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma different_parties_no_conflict: "\<forall>p1 p2. p1 \<noteq> p2 \<longrightarrow> no_conflict p1 p2 = True"
+  by auto
 
 (* trust_balance_correct (matches Coq) *)
-lemma trust_balance_correct: "\<forall> b ct, trust_balanced b ct = True \<longrightarrow> b = ct"
+lemma trust_balance_correct: "\<forall>b ct. trust_balanced b ct = True \<longrightarrow> b = ct"
   by auto
 
 (* hold_bounds (matches Coq) *)
-lemma hold_bounds: "\<forall> hs ct he, litigation_hold_active hs ct he = True \<longrightarrow> hs \<le> ct \<and> ct \<le> he"
+lemma hold_bounds: "\<forall>hs ct he. litigation_hold_active hs ct he = True \<longrightarrow> hs \<le> ct \<and> ct \<le> he"
   by auto
 
 end

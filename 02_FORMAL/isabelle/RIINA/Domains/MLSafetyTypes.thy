@@ -50,7 +50,7 @@ begin
 (* shape_eq (matches Coq: Definition shape_eq) *)
 definition shape_eq :: "bool" where
   "shape_eq \<equiv> (length s1 =? length s2) \<and>
-  forallb (fun p => fst p =? snd p) (combine s1 s2)"
+  forallb (\<lambda>p. fst p =? snd p) (combine s1 s2)"
 
 (* matmul_compat - complex match, needs manual translation *)
 definition matmul_compat :: "bool" where "matmul_compat = undefined"
@@ -61,76 +61,76 @@ definition dp_compose :: "dp_config" where
 
 (* lipschitz_bound (matches Coq: Definition lipschitz_bound) *)
 definition lipschitz_bound :: "nat \<Rightarrow> bool" where
-  "lipschitz_bound k \<equiv> forall x y, (f x - f y) <= k * (x - y) /\ (f y - f x) <= k * (y - x)"
+  "lipschitz_bound k \<equiv> forall x y, (f x - f y) <= k * (x - y) \<and> (f y - f x) <= k * (y - x)"
 
 (* compose_fn (matches Coq: Definition compose_fn) *)
 definition compose_fn :: "nat -> nat" where
-  "compose_fn \<equiv> fun x => f (g x)"
+  "compose_fn \<equiv> \<lambda>x. f (g x)"
 
 (* Helper: forallb over combine s s is always true *)
 (* forallb_combine_refl (matches Coq) *)
-lemma forallb_combine_refl: "\<forall> s, \<forall>b (fun p => fst p =? snd p) (combine s s) = True"
+lemma forallb_combine_refl: "\<forall>s. \<forall>b (\<lambda>p. fst p =? snd p) (combine s s) = True"
   by auto
 
 (* Helper: forallb over combine is symmetric *)
 (* forallb_combine_sym (matches Coq) *)
-lemma forallb_combine_sym: "\<forall> s1 s2, \<forall>b (fun p => fst p =? snd p) (combine s1 s2) = \<forall>b (fun p => fst p =? snd p) (combine s2 s1)"
+lemma forallb_combine_sym: "\<forall>s1 s2. \<forall>b (\<lambda>p. fst p =? snd p) (combine s1 s2) = \<forall>b (\<lambda>p. fst p =? snd p) (combine s2 s1)"
   by auto
 
 (* 1 (matches Coq) *)
-lemma 1: "shape_eq is reflexive Theorem shape_eq_refl : \<forall> s, shape_eq s s = True"
+lemma 1: "shape_eq is reflexive Theorem shape_eq_refl : \<forall>s. shape_eq s s = True"
   by auto
 
 (* 2 (matches Coq) *)
-lemma 2: "shape_eq is symmetric Theorem shape_eq_sym : \<forall> s1 s2, shape_eq s1 s2 = shape_eq s2 s1"
+lemma 2: "shape_eq is symmetric Theorem shape_eq_sym : \<forall>s1 s2. shape_eq s1 s2 = shape_eq s2 s1"
   by simp
 
 (* 3 (matches Coq) *)
-lemma 3: "matmul produces correct output shape Theorem matmul_shape_correct : \<forall> r1 c1 c2 s, matmul_compat [r1; c1] [c1; c2] = Some s \<longrightarrow> s = [r1; c2]"
+lemma 3: "matmul produces correct output shape Theorem matmul_shape_correct : \<forall>r1 c1 c2 s. matmul_compat [r1; c1] [c1; c2] = Some s \<longrightarrow> s = [r1; c2]"
   by simp
 
 (* 4 (matches Coq) *)
-lemma 4: "matmul fails on incompatible inner dims Theorem matmul_incompat : \<forall> r1 c1 r2 c2, c1 \<noteq> r2 \<longrightarrow> matmul_compat [r1; c1] [r2; c2] = None"
-  by (cases rule: ‹_›.cases; simp)
+lemma 4: "matmul fails on incompatible inner dims Theorem matmul_incompat : \<forall>r1 c1 r2 c2. c1 \<noteq> r2 \<longrightarrow> matmul_compat [r1; c1] [r2; c2] = None"
+  by auto
 
 (* 5 (matches Coq) *)
-lemma 5: "DP sequential composition — epsilon adds Theorem dp_composition_additive : \<forall> d1 d2, dp_epsilon (dp_compose d1 d2) = dp_epsilon d1 + dp_epsilon d2"
-  by (cases rule: ‹_›.cases; simp)
+lemma 5: "DP sequential composition — epsilon adds Theorem dp_composition_additive : \<forall>d1 d2. dp_epsilon (dp_compose d1 d2) = dp_epsilon d1 + dp_epsilon d2"
+  by auto
 
 (* 6 (matches Coq) *)
-lemma 6: "DP composition is associative Theorem dp_compose_assoc : \<forall> d1 d2 d3, dp_compose (dp_compose d1 d2) d3 = dp_compose d1 (dp_compose d2 d3)"
-  by (cases rule: ‹_›.cases; simp)
+lemma 6: "DP composition is associative Theorem dp_compose_assoc : \<forall>d1 d2 d3. dp_compose (dp_compose d1 d2) d3 = dp_compose d1 (dp_compose d2 d3)"
+  by auto
 
 (* 7 (matches Coq) *)
-lemma 7: "Composition of Lipschitz functions Theorem lipschitz_compose : \<forall> k1 k2 f g, lipschitz_bound k1 f \<longrightarrow> lipschitz_bound k2 g \<longrightarrow> lipschitz_bound (k1 * k2) (compose_fn f g)"
-  by (cases rule: ‹_›.cases; simp)
+lemma 7: "Composition of Lipschitz functions Theorem lipschitz_compose : \<forall>k1 k2 f g. lipschitz_bound k1 f \<longrightarrow> lipschitz_bound k2 g \<longrightarrow> lipschitz_bound (k1 * k2) (compose_fn f g)"
+  by auto
 
 (* 8 (matches Coq) *)
-lemma 8: "Identity is 1-Lipschitz Theorem lipschitz_id : lipschitz_bound 1 (fun x => x)"
+lemma 8: "Identity is 1-Lipschitz Theorem lipschitz_id : lipschitz_bound 1 (\<lambda>x. x)"
   by simp
 
 (* 9 (matches Coq) *)
-lemma 9: "Constant function is 0-Lipschitz Theorem lipschitz_const : \<forall> c, lipschitz_bound 0 (fun _ => c)"
+lemma 9: "Constant function is 0-Lipschitz Theorem lipschitz_const : \<forall>c. lipschitz_bound 0 (\<lambda>_. c)"
   by simp
 
 (* 10 (matches Coq) *)
-lemma 10: "DP composition preserves query count Theorem dp_queries_additive : \<forall> d1 d2, dp_queries (dp_compose d1 d2) = dp_queries d1 + dp_queries d2"
-  by (cases rule: ‹_›.cases; simp)
+lemma 10: "DP composition preserves query count Theorem dp_queries_additive : \<forall>d1 d2. dp_queries (dp_compose d1 d2) = dp_queries d1 + dp_queries d2"
+  by auto
 
 (* 11 (matches Coq) *)
-lemma 11: "DP composition with zero-epsilon is identity for epsilon Theorem dp_compose_zero_l : \<forall> d, dp_epsilon (dp_compose (mkDP 0 0) d) = dp_epsilon d"
-  by (cases rule: ‹_›.cases; simp)
+lemma 11: "DP composition with zero-epsilon is identity for epsilon Theorem dp_compose_zero_l : \<forall>d. dp_epsilon (dp_compose (mkDP 0 0) d) = dp_epsilon d"
+  by auto
 
 (* 12 (matches Coq) *)
-lemma 12: "DP composition with zero-epsilon is identity for epsilon (right) Theorem dp_compose_zero_r : \<forall> d, dp_epsilon (dp_compose d (mkDP 0 0)) = dp_epsilon d"
-  by (cases rule: ‹_›.cases; simp)
+lemma 12: "DP composition with zero-epsilon is identity for epsilon (right) Theorem dp_compose_zero_r : \<forall>d. dp_epsilon (dp_compose d (mkDP 0 0)) = dp_epsilon d"
+  by auto
 
 (* 13 (matches Coq) *)
-lemma 13: "DP compose is commutative Theorem dp_compose_comm : \<forall> d1 d2, dp_compose d1 d2 = dp_compose d2 d1"
-  by (cases rule: ‹_›.cases; simp)
+lemma 13: "DP compose is commutative Theorem dp_compose_comm : \<forall>d1 d2. dp_compose d1 d2 = dp_compose d2 d1"
+  by auto
 
 (* 14 (matches Coq) *)
-lemma 14: "shape_eq True means same length Theorem shape_eq_implies_same_length : \<forall> s1 s2, shape_eq s1 s2 = True \<longrightarrow> length s1 = length s2"
+lemma 14: "shape_eq True means same length Theorem shape_eq_implies_same_length : \<forall>s1 s2. shape_eq s1 s2 = True \<longrightarrow> length s1 = length s2"
   by auto
 
 (* 15 (matches Coq) *)
@@ -138,31 +138,31 @@ lemma 15: "Empty shapes are equal Theorem shape_eq_nil : shape_eq [] [] = True"
   by simp
 
 (* 16 (matches Coq) *)
-lemma 16: "Singleton shapes equal iff values equal Theorem shape_eq_singleton : \<forall> a b, shape_eq [a] [b] = True \<longrightarrow> a = b"
+lemma 16: "Singleton shapes equal iff values equal Theorem shape_eq_singleton : \<forall>a b. shape_eq [a] [b] = True \<longrightarrow> a = b"
   by auto
 
 (* 17 (matches Coq) *)
-lemma 17: "matmul of square matrices produces square Theorem matmul_square : \<forall> n s, matmul_compat [n; n] [n; n] = Some s \<longrightarrow> s = [n; n]"
+lemma 17: "matmul of square matrices produces square Theorem matmul_square : \<forall>n s. matmul_compat [n; n] [n; n] = Some s \<longrightarrow> s = [n; n]"
   by simp
 
 (* 18 (matches Coq) *)
-lemma 18: "matmul with 1-row right gives column vector Theorem matmul_col_vector : \<forall> r c s, matmul_compat [r; c] [c; 1] = Some s \<longrightarrow> s = [r; 1]"
+lemma 18: "matmul with 1-row right gives column vector Theorem matmul_col_vector : \<forall>r c s. matmul_compat [r; c] [c; 1] = Some s \<longrightarrow> s = [r; 1]"
   by simp
 
 (* 19 (matches Coq) *)
-lemma 19: "DP epsilon is always non-negative for compose Theorem dp_epsilon_nonneg : \<forall> d1 d2, dp_epsilon (dp_compose d1 d2) \<ge> dp_epsilon d1"
-  by (cases rule: ‹_›.cases; simp)
+lemma 19: "DP epsilon is always non-negative for compose Theorem dp_epsilon_nonneg : \<forall>d1 d2. dp_epsilon (dp_compose d1 d2) \<ge> dp_epsilon d1"
+  by auto
 
 (* 20 (matches Coq) *)
-lemma 20: "Lipschitz bound monotonicity Theorem lipschitz_mono : \<forall> k1 k2 f, lipschitz_bound k1 f \<longrightarrow> k1 \<le> k2 \<longrightarrow> lipschitz_bound k2 f"
+lemma 20: "Lipschitz bound monotonicity Theorem lipschitz_mono : \<forall>k1 k2 f. lipschitz_bound k1 f \<longrightarrow> k1 \<le> k2 \<longrightarrow> lipschitz_bound k2 f"
   by auto
 
 (* 21 (matches Coq) *)
-lemma 21: "compose_fn associativity Theorem compose_fn_assoc : \<forall> f g h x, compose_fn f (compose_fn g h) x = compose_fn (compose_fn f g) h x"
+lemma 21: "compose_fn associativity Theorem compose_fn_assoc : \<forall>f g h x. compose_fn f (compose_fn g h) x = compose_fn (compose_fn f g) h x"
   by simp
 
 (* 22 (matches Coq) *)
-lemma 22: "compose_fn with id is identity (left) Theorem compose_fn_id_l : \<forall> f x, compose_fn (fun y => y) f x = f x"
+lemma 22: "compose_fn with id is identity (left) Theorem compose_fn_id_l : \<forall>f x. compose_fn (\<lambda>y. y) f x = f x"
   by simp
 
 end

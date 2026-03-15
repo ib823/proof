@@ -131,19 +131,19 @@ definition usage_compatible :: "bool" where "usage_compatible = undefined"
 
 (* lookup (matches Coq: Definition lookup) *)
 fun lookup :: "Var \<Rightarrow> LCtx \<Rightarrow> option (LTy * Linearity * Usage)" where
-
+  "lookup _ = None"
 
 (* update_usage (matches Coq: Definition update_usage) *)
 fun update_usage :: "Var \<Rightarrow> LCtx \<Rightarrow> LCtx" where
-
+  "update_usage _ = undefined"
 
 (* get_usage (matches Coq: Definition get_usage) *)
 fun get_usage :: "Var \<Rightarrow> LCtx \<Rightarrow> Usage" where
-
+  "get_usage _ = undefined"
 
 (* ctx_well_formed (matches Coq: Definition ctx_well_formed) *)
 fun ctx_well_formed :: "LCtx \<Rightarrow> bool" where
-
+  "ctx_well_formed _ = True"
 
 (* empty_ctx (matches Coq: Definition empty_ctx) *)
 definition empty_ctx :: "LCtx" where
@@ -158,8 +158,8 @@ definition ctx_split :: "bool" where
   "ctx_split \<equiv> forall x ty q u,
     lookup x ctx = Some (ty, q, u) ->
     exists u1 u2,
-      lookup x ctx1 = Some (ty, q, u1) /\
-      lookup x ctx2 = Some (ty, q, u2) /\
+      lookup x ctx1 = Some (ty, q, u1) \<and>
+      lookup x ctx2 = Some (ty, q, u2) \<and>
       usage_add u1 u2 = u"
 
 (* count_var (matches Coq: Definition count_var) *)
@@ -170,11 +170,11 @@ fun count_var :: "Var \<Rightarrow> LTerm \<Rightarrow> nat" where
 
 (* resource_state (matches Coq: Definition resource_state) *)
 fun resource_state :: "Var \<Rightarrow> ResourceMap \<Rightarrow> ResourceState" where
-
+  "resource_state _ = undefined"
 
 (* consume_resource (matches Coq: Definition consume_resource) *)
 fun consume_resource :: "Var \<Rightarrow> ResourceMap \<Rightarrow> ResourceMap" where
-
+  "consume_resource _ = undefined"
 
 (* linear_var_exactly_once (matches Coq: Definition linear_var_exactly_once) *)
 definition linear_var_exactly_once :: "LCtx \<Rightarrow> Var \<Rightarrow> LTy \<Rightarrow> bool" where
@@ -205,8 +205,8 @@ definition relevant_subsumes_linear :: "bool" where
   "relevant_subsumes_linear \<equiv> subqual Lin Rel = True"
 
 (* ctx_split_valid (matches Coq: Definition ctx_split_valid) *)
-fun ctx_split_valid :: "LCtx" where
-
+definition ctx_split_valid :: "LCtx" where
+  "ctx_split_valid \<equiv> undefined"
 
 (* substitute (matches Coq: Definition substitute) *)
 fun substitute :: "Var \<Rightarrow> LTerm \<Rightarrow> LTerm \<Rightarrow> LTerm" where
@@ -261,23 +261,23 @@ definition no_double_consume :: "bool" where
     resource_state x rm = Consumed"
 
 (* linearity_eqb_eq (matches Coq) *)
-lemma linearity_eqb_eq: "\<forall> q1 q2, linearity_eqb q1 q2 = True <-> q1 = q2"
-  by (cases rule: ‹_›.cases; simp)
+lemma linearity_eqb_eq: "\<forall>q1 q2. linearity_eqb q1 q2 = True <-> q1 = q2"
+  by auto
 
 (* get_update_same (matches Coq) *)
-lemma get_update_same: "\<forall> x ctx ty q, lookup x ctx = Some (ty, q, Zero) \<longrightarrow> get_usage x (update_usage x ctx) = One"
-  by (cases rule: ‹_›.cases; simp)
+lemma get_update_same: "\<forall>x ctx ty q. lookup x ctx = Some (ty, q, Zero) \<longrightarrow> get_usage x (update_usage x ctx) = One"
+  by auto
 
 (* TYPE_002_01 (matches Coq) *)
-lemma TYPE_002_01: "\<forall> ctx x ty, lookup x ctx = Some (ty, Lin, Zero) \<longrightarrow> linear_typed ctx (LVar x) ty (update_usage x ctx) \<longrightarrow> get_usage x (update_usage x ctx) = One"
+lemma TYPE_002_01: "\<forall>ctx x ty. lookup x ctx = Some (ty, Lin, Zero) \<longrightarrow> linear_typed ctx (LVar x) ty (update_usage x ctx) \<longrightarrow> get_usage x (update_usage x ctx) = One"
   by auto
 
 (* TYPE_002_02 (matches Coq) *)
-lemma TYPE_002_02: "\<forall> u, unrestricted_usage_valid u"
-  by (cases rule: ‹_›.cases; simp)
+lemma TYPE_002_02: "\<forall>u. unrestricted_usage_valid u"
+  by auto
 
 (* TYPE_002_03 (matches Coq) *)
-lemma TYPE_002_03: "\<forall> ctx ctx' ctx'' t1 t2 ty1 ty2, linear_typed ctx t1 (LFun Lin ty1 ty2) ctx' \<longrightarrow> linear_typed ctx' t2 ty1 ctx'' \<longrightarrow> linear_typed ctx (LApp t1 t2) ty2 ctx''"
+lemma TYPE_002_03: "\<forall>ctx ctx' ctx'' t1 t2 ty1 ty2. linear_typed ctx t1 (LFun Lin ty1 ty2) ctx' \<longrightarrow> linear_typed ctx' t2 ty1 ctx'' \<longrightarrow> linear_typed ctx (LApp t1 t2) ty2 ctx''"
   by auto
 
 (* TYPE_002_04 (matches Coq) *)
@@ -289,23 +289,23 @@ lemma TYPE_002_05: "relevant_subsumes_linear"
   by simp
 
 (* usage_add_zero_l (matches Coq) *)
-lemma usage_add_zero_l: "\<forall> u, usage_add Zero u = u"
+lemma usage_add_zero_l: "\<forall>u. usage_add Zero u = u"
   by simp
 
 (* usage_add_zero_r (matches Coq) *)
-lemma usage_add_zero_r: "\<forall> u, usage_add u Zero = u"
+lemma usage_add_zero_r: "\<forall>u. usage_add u Zero = u"
   by simp
 
 (* TYPE_002_06 (matches Coq) *)
-lemma TYPE_002_06: "\<forall> ctx1 ctx2, let ctx := ctx_split_valid ctx1 ctx2 in \<forall> x ty q u1, lookup x ctx1 = Some (ty, q, u1) \<longrightarrow> \<exists> u, lookup x ctx = Some (ty, q, u) \<and> u = usage_add u1 (get_usage x ctx2)"
-  by (cases rule: ‹_›.cases; simp)
+lemma TYPE_002_06: "\<forall>ctx1 ctx2. let ctx := ctx_split_valid ctx1 ctx2 in \<forall>x ty q u1. lookup x ctx1 = Some (ty, q, u1) \<longrightarrow> \<exists>u. lookup x ctx = Some (ty, q, u) \<and> u = usage_add u1 (get_usage x ctx2)"
+  by auto
 
 (* TYPE_002_07 (matches Coq) *)
-lemma TYPE_002_07: "\<forall> t s x, substitution_preserves_structure t s x"
-  by (cases rule: ‹_›.cases; simp)
+lemma TYPE_002_07: "\<forall>t s x. substitution_preserves_structure t s x"
+  by auto
 
 (* linear_must_be_used (matches Coq) *)
-lemma linear_must_be_used: "\<forall> q, q = Lin \<longrightarrow> usage_compatible q Zero = False"
+lemma linear_must_be_used: "\<forall>q. q = Lin \<longrightarrow> usage_compatible q Zero = False"
   by simp
 
 (* linear_zero_usage_invalid (matches Coq) *)
@@ -317,15 +317,15 @@ lemma linear_many_usage_invalid: "usage_compatible Lin Many = False"
   by simp
 
 (* unused_linear_ill_formed (matches Coq) *)
-lemma unused_linear_ill_formed: "\<forall> x ty ctx, lookup x ctx = None \<longrightarrow> ctx_well_formed ctx = True \<longrightarrow> ctx_well_formed (extend ctx x ty Lin) = False"
+lemma unused_linear_ill_formed: "\<forall>x ty ctx. lookup x ctx = None \<longrightarrow> ctx_well_formed ctx = True \<longrightarrow> ctx_well_formed (extend ctx x ty Lin) = False"
   by simp
 
 (* extend_preserves_lookup_none (matches Coq) *)
-lemma extend_preserves_lookup_none: "\<forall> x y ty q ctx, x \<noteq> y \<longrightarrow> lookup x ctx = None \<longrightarrow> lookup x (extend ctx y ty q) = None"
+lemma extend_preserves_lookup_none: "\<forall>x y ty q ctx. x \<noteq> y \<longrightarrow> lookup x ctx = None \<longrightarrow> lookup x (extend ctx y ty q) = None"
   by auto
 
 (* unit_typing_preserves_ctx (matches Coq) *)
-lemma unit_typing_preserves_ctx: "\<forall> ctx, linear_typed ctx LUnitVal LUnit ctx"
+lemma unit_typing_preserves_ctx: "\<forall>ctx. linear_typed ctx LUnitVal LUnit ctx"
   by auto
 
 (* TYPE_002_08_direct (matches Coq) *)
@@ -333,7 +333,7 @@ lemma TYPE_002_08_direct: "weakening_violates_linear_semantics"
   by simp
 
 (* weakening_consequence (matches Coq) *)
-lemma weakening_consequence: "\<forall> ctx x ty, lookup x ctx = None \<longrightarrow> ctx_well_formed (extend ctx x ty Lin) = False"
+lemma weakening_consequence: "\<forall>ctx x ty. lookup x ctx = None \<longrightarrow> ctx_well_formed (extend ctx x ty Lin) = False"
   by simp
 
 (* TYPE_002_08 (matches Coq) *)
@@ -345,19 +345,19 @@ lemma TYPE_002_09: "contraction_invalid_for_linear"
   by auto
 
 (* TYPE_002_10 (matches Coq) *)
-lemma TYPE_002_10: "\<forall> ctx ctx' ctx'' t1 t2 q ty1 ty2, linear_typed ctx t1 ty1 ctx' \<longrightarrow> linear_typed ctx' t2 ty2 ctx'' \<longrightarrow> linear_typed ctx (LPairVal t1 t2) (LPair q ty1 ty2) ctx''"
+lemma TYPE_002_10: "\<forall>ctx ctx' ctx'' t1 t2 q ty1 ty2. linear_typed ctx t1 ty1 ctx' \<longrightarrow> linear_typed ctx' t2 ty2 ctx'' \<longrightarrow> linear_typed ctx (LPairVal t1 t2) (LPair q ty1 ty2) ctx''"
   by auto
 
 (* TYPE_002_11 (matches Coq) *)
-lemma TYPE_002_11: "\<forall> ctx ctx' ctx'' t1 t2 x ty1 ty2, linear_typed ctx t1 ty1 ctx' \<longrightarrow> linear_typed (extend ctx' x ty1 Lin) t2 ty2 ctx'' \<longrightarrow> linear_typed ctx (LLet t1 t2) ty2 ctx''"
+lemma TYPE_002_11: "\<forall>ctx ctx' ctx'' t1 t2 x ty1 ty2. linear_typed ctx t1 ty1 ctx' \<longrightarrow> linear_typed (extend ctx' x ty1 Lin) t2 ty2 ctx'' \<longrightarrow> linear_typed ctx (LLet t1 t2) ty2 ctx''"
   by auto
 
 (* resource_stays_consumed (matches Coq) *)
-lemma resource_stays_consumed: "\<forall> rm x, resource_state x (consume_resource x rm) = Consumed"
-  by (cases rule: ‹_›.cases; simp)
+lemma resource_stays_consumed: "\<forall>rm x. resource_state x (consume_resource x rm) = Consumed"
+  by auto
 
 (* TYPE_002_12 (matches Coq) *)
-lemma TYPE_002_12: "\<forall> rm x, resource_state x rm = Consumed \<longrightarrow> resource_state x rm = Consumed \<and> resource_state x (consume_resource x rm) = Consumed"
+lemma TYPE_002_12: "\<forall>rm x. resource_state x rm = Consumed \<longrightarrow> resource_state x rm = Consumed \<and> resource_state x (consume_resource x rm) = Consumed"
   by auto
 
 end

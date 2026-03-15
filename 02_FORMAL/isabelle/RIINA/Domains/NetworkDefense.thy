@@ -279,7 +279,7 @@ fun fair_share :: "nat \<Rightarrow> nat \<Rightarrow> nat" where
 (* allocation_fair (matches Coq: Definition allocation_fair) *)
 definition allocation_fair :: "nat \<Rightarrow> bool" where
   "allocation_fair total \<equiv> forall cb1 cb2,
-    In cb1 buckets -> In cb2 buckets ->
+    cb1 \<in> set buckets -> cb2 \<in> set buckets ->
     bucket_refill_rate (cb_bucket cb1) = bucket_refill_rate (cb_bucket cb2)"
 
 (* no_starvation_prop (matches Coq: Definition no_starvation_prop) *)
@@ -305,7 +305,7 @@ definition compose_limits :: "TokenBucket" where
 
 (* endpoint_eq (matches Coq: Definition endpoint_eq) *)
 definition endpoint_eq :: "bool" where
-  "endpoint_eq \<equiv> ((ep_ip = e1)) (ep_ip e2) \<and> ((ep_port = e1)) (ep_port e2)"
+  "endpoint_eq \<equiv> (ep_ip e1 = ep_ip e2) \<and> (ep_port e1 = ep_port e2)"
 
 (* netperm_eq - complex match, needs manual translation *)
 definition netperm_eq :: "bool" where "netperm_eq = undefined"
@@ -321,11 +321,11 @@ definition cap_valid :: "NetCapability \<Rightarrow> nat \<Rightarrow> bool" whe
 (* grants_access (matches Coq: Definition grants_access) *)
 definition grants_access :: "NetCapability \<Rightarrow> Endpoint \<Rightarrow> NetPerm \<Rightarrow> bool" where
   "grants_access cap target perm \<equiv> endpoint_eq (cap_target cap) target \<and>
-  existsb (fun p => netperm_eq p perm) (cap_permissions cap)"
+  existsb (\<lambda>p. netperm_eq p perm) (cap_permissions cap)"
 
 (* attenuate_cap (matches Coq: Definition attenuate_cap) *)
 definition attenuate_cap :: "NetCapability \<Rightarrow> nat \<Rightarrow> option NetCapability" where
-  "attenuate_cap cap new_expiry \<equiv> if forallb (fun p => existsb (fun q => netperm_eq p q) (cap_permissions cap)) new_perms \<and>
+  "attenuate_cap cap new_expiry \<equiv> if forallb (\<lambda>p. existsb (\<lambda>q. netperm_eq p q) (cap_permissions cap)) new_perms \<and>
      (new_expiry \<le> (cap_valid_until) cap) then
     Some {|
       cap_target := cap_target cap;
@@ -338,15 +338,15 @@ definition attenuate_cap :: "NetCapability \<Rightarrow> nat \<Rightarrow> optio
 
 (* cap_revoked (matches Coq: Definition cap_revoked) *)
 definition cap_revoked :: "NetCapability \<Rightarrow> RevocationList \<Rightarrow> bool" where
-  "cap_revoked cap revoked \<equiv> existsb (fun sig => if list_eq_dec Nat.eq_dec sig (cap_signature cap) then True else False) revoked"
+  "cap_revoked cap revoked \<equiv> existsb (\<lambda>sig. if list_eq_dec Nat.eq_dec sig (cap_signature cap) then True else False) revoked"
 
 (* action_to_perm (matches Coq: Definition action_to_perm) *)
 fun action_to_perm :: "NetworkAction \<Rightarrow> NetPerm" where
-
+  "action_to_perm _ = undefined"
 
 (* action_target (matches Coq: Definition action_target) *)
 fun action_target :: "NetworkAction \<Rightarrow> Endpoint" where
-
+  "action_target _ = undefined"
 
 (* amplification_factor (matches Coq: Definition amplification_factor) *)
 fun amplification_factor :: "nat" where
@@ -404,7 +404,7 @@ definition siphash :: "nat" where
 
 (* regex_size (matches Coq: Definition regex_size) *)
 fun regex_size :: "SimpleRegex \<Rightarrow> nat" where
-
+  "regex_size _ = 0"
 
 (* regex_match_bounded (matches Coq: Definition regex_match_bounded) *)
 fun regex_match_bounded :: "SimpleRegex \<Rightarrow> nat \<Rightarrow> BoundedResult bool" where
@@ -426,58 +426,58 @@ definition adaptive_difficulty :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rig
 
 (* is_reflection_safe (matches Coq: Definition is_reflection_safe) *)
 definition is_reflection_safe :: "NetCapability \<Rightarrow> bool" where
-  "is_reflection_safe cap \<equiv> (\<not> (existsb) (fun p => netperm_eq p NPSend) (cap_permissions cap)) \<or>
-  existsb (fun p => netperm_eq p NPReceive) (cap_permissions cap)"
+  "is_reflection_safe cap \<equiv> (\<not> (existsb) (\<lambda>p. netperm_eq p NPSend) (cap_permissions cap)) \<or>
+  existsb (\<lambda>p. netperm_eq p NPReceive) (cap_permissions cap)"
 
 (* ===============================================================================
     HELPER LEMMAS
     =============================================================================== *)
 (* list_eq_dec_refl (matches Coq) *)
-lemma list_eq_dec_refl: "\<forall> (l : list nat), (if list_eq_dec Nat.eq_dec l l then True else False) = True"
+lemma list_eq_dec_refl: "\<forall>(l : list nat). (if list_eq_dec Nat.eq_dec l l then True else False) = True"
   by simp
 
 (* Nat_eqb_refl (matches Coq) *)
-lemma Nat_eqb_refl: "\<forall> n, (n = n) = True"
+lemma Nat_eqb_refl: "\<forall>n. (n = n) = True"
   by simp
 
 (* min_le_l (matches Coq) *)
-lemma min_le_l: "\<forall> n m, Nat.min n m \<le> n"
+lemma min_le_l: "\<forall>n m. Nat.min n m \<le> n"
   by auto
 
 (* min_le_r (matches Coq) *)
-lemma min_le_r: "\<forall> n m, Nat.min n m \<le> m"
+lemma min_le_r: "\<forall>n m. Nat.min n m \<le> m"
   by auto
 
 (* forallb_impl (matches Coq) *)
-lemma forallb_impl: "\<forall> {A : Type} (f g : A \<longrightarrow> bool) (l : list A), (\<forall> x, f x = True \<longrightarrow> g x = True) \<longrightarrow> \<forall>b f l = True \<longrightarrow> \<forall>b g l = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma forallb_impl: "\<forall>{A : Type} (f g : A \<longrightarrow> bool) (l : list A). (\<forall>x. f x = True \<longrightarrow> g x = True) \<longrightarrow> \<forall>b f l = True \<longrightarrow> \<forall>b g l = True"
+  by auto
 
 (* existsb_exists (matches Coq) *)
-lemma existsb_exists: "\<forall> {A : Type} (f : A \<longrightarrow> bool) (l : list A), \<exists>b f l = True <-> \<exists> x, In x l \<and> f x = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma existsb_exists: "\<forall>{A : Type} (f : A \<longrightarrow> bool) (l : list A). \<exists>b f l = True <-> \<exists> x. x \<in> set l \<and> f x = True"
+  by auto
 
 (* OMEGA_001_01_puzzle_work_bound (matches Coq) *)
-lemma OMEGA_001_01_puzzle_work_bound: "\<forall> p, expected_work p = Nat.pow 2 (puzzle_difficulty p)"
+lemma OMEGA_001_01_puzzle_work_bound: "\<forall>p. expected_work p = Nat.pow 2 (puzzle_difficulty p)"
   by simp
 
 (* OMEGA_001_02_puzzle_verify_cheap (matches Coq) *)
-lemma OMEGA_001_02_puzzle_verify_cheap: "\<forall> sol, verification_cost sol = 1"
+lemma OMEGA_001_02_puzzle_verify_cheap: "\<forall>sol. verification_cost sol = 1"
   by simp
 
 (* OMEGA_001_03_puzzle_unforgeable (matches Coq) *)
-lemma OMEGA_001_03_puzzle_unforgeable: "\<forall> sol, valid_solution sol = True \<longrightarrow> leading_zeros (sha256 (puzzle_challenge (sol_puzzle sol) ++ sol_client_nonce sol)) \<ge> puzzle_difficulty (sol_puzzle sol)"
+lemma OMEGA_001_03_puzzle_unforgeable: "\<forall>sol. valid_solution sol = True \<longrightarrow> leading_zeros (sha256 (puzzle_challenge (sol_puzzle sol) ++ sol_client_nonce sol)) \<ge> puzzle_difficulty (sol_puzzle sol)"
   by auto
 
 (* OMEGA_001_04_puzzle_fresh (matches Coq) *)
-lemma OMEGA_001_04_puzzle_fresh: "\<forall> p current_time max_age, puzzle_expired p current_time max_age = True \<longrightarrow> current_time - puzzle_timestamp p > max_age"
+lemma OMEGA_001_04_puzzle_fresh: "\<forall>p current_time max_age. puzzle_expired p current_time max_age = True \<longrightarrow> current_time - puzzle_timestamp p > max_age"
   by auto
 
 (* OMEGA_001_05_puzzle_difficulty_adaptive (matches Coq) *)
-lemma OMEGA_001_05_puzzle_difficulty_adaptive: "\<forall> base load capacity, capacity > 0 \<longrightarrow> load > capacity / 2 \<longrightarrow> adaptive_difficulty base load capacity > base"
-  by (cases rule: ‹_›.cases; simp)
+lemma OMEGA_001_05_puzzle_difficulty_adaptive: "\<forall>base load capacity. capacity > 0 \<longrightarrow> load > capacity / 2 \<longrightarrow> adaptive_difficulty base load capacity > base"
+  by auto
 
 (* OMEGA_001_06_puzzle_non_parallelizable (matches Coq) *)
-lemma OMEGA_001_06_puzzle_non_parallelizable: "\<forall> p n_workers, n_workers > 1 \<longrightarrow> expected_work p > 0 \<longrightarrow> expected_work p / n_workers < expected_work p"
+lemma OMEGA_001_06_puzzle_non_parallelizable: "\<forall>p n_workers. n_workers > 1 \<longrightarrow> expected_work p > 0 \<longrightarrow> expected_work p / n_workers < expected_work p"
   by auto
 
 (* OMEGA_001_07_puzzle_stateless (matches Coq) *)
@@ -485,75 +485,75 @@ lemma OMEGA_001_07_puzzle_stateless: "server_state_pre_verify = 0"
   by simp
 
 (* pow2_ge_1 (matches Coq) *)
-lemma pow2_ge_1: "\<forall> n, Nat.pow 2 n \<ge> 1"
+lemma pow2_ge_1: "\<forall>n. Nat.pow 2 n \<ge> 1"
   by simp
 
 (* pow2_ge_2 (matches Coq) *)
-lemma pow2_ge_2: "\<forall> n, n > 0 \<longrightarrow> Nat.pow 2 n \<ge> 2"
-  by (cases rule: ‹_›.cases; simp)
+lemma pow2_ge_2: "\<forall>n. n > 0 \<longrightarrow> Nat.pow 2 n \<ge> 2"
+  by auto
 
 (* OMEGA_001_08_puzzle_asymmetric (matches Coq) *)
-lemma OMEGA_001_08_puzzle_asymmetric: "\<forall> p sol, puzzle_difficulty p > 0 \<longrightarrow> server_work sol < client_work p"
+lemma OMEGA_001_08_puzzle_asymmetric: "\<forall>p sol. puzzle_difficulty p > 0 \<longrightarrow> server_work sol < client_work p"
   by simp
 
 (* OMEGA_001_09_token_bucket_correct (matches Coq) *)
-lemma OMEGA_001_09_token_bucket_correct: "\<forall> tb now, bucket_valid tb \<longrightarrow> bucket_valid (refill tb now)"
+lemma OMEGA_001_09_token_bucket_correct: "\<forall>tb now. bucket_valid tb \<longrightarrow> bucket_valid (refill tb now)"
   by auto
 
 (* OMEGA_001_10_rate_limit_bound (matches Coq) *)
-lemma OMEGA_001_10_rate_limit_bound: "\<forall> tb window, bucket_valid tb \<longrightarrow> requests_allowed tb window \<le> bucket_refill_rate tb * window + bucket_max tb"
+lemma OMEGA_001_10_rate_limit_bound: "\<forall>tb window. bucket_valid tb \<longrightarrow> requests_allowed tb window \<le> bucket_refill_rate tb * window + bucket_max tb"
   by auto
 
 (* OMEGA_001_11_rate_limit_fair (matches Coq) *)
-lemma OMEGA_001_11_rate_limit_fair: "\<forall> buckets total, allocation_fair buckets total \<longrightarrow> \<forall> cb1 cb2, In cb1 buckets \<longrightarrow> In cb2 buckets \<longrightarrow> bucket_refill_rate (cb_bucket cb1) = bucket_refill_rate (cb_bucket cb2)"
+lemma OMEGA_001_11_rate_limit_fair: "\<forall>buckets total. allocation_fair buckets total \<longrightarrow> \<forall>cb1 cb2. cb1 \<in> set buckets \<longrightarrow> cb2 \<in> set buckets \<longrightarrow> bucket_refill_rate (cb_bucket cb1) = bucket_refill_rate (cb_bucket cb2)"
   by auto
 
 (* OMEGA_001_12_no_starvation (matches Coq) *)
-lemma OMEGA_001_12_no_starvation: "\<forall> tb, bucket_refill_rate tb > 0 \<longrightarrow> bucket_max tb > 0 \<longrightarrow> \<forall> now, now \<ge> bucket_last_refill tb + 1 \<longrightarrow> bucket_tokens (refill tb now) > 0"
+lemma OMEGA_001_12_no_starvation: "\<forall>tb. bucket_refill_rate tb > 0 \<longrightarrow> bucket_max tb > 0 \<longrightarrow> \<forall>now. now \<ge> bucket_last_refill tb + 1 \<longrightarrow> bucket_tokens (refill tb now) > 0"
   by auto
 
 (* OMEGA_001_13_burst_bounded (matches Coq) *)
-lemma OMEGA_001_13_burst_bounded: "\<forall> tb, bucket_valid tb \<longrightarrow> bucket_tokens tb \<le> bucket_max tb"
+lemma OMEGA_001_13_burst_bounded: "\<forall>tb. bucket_valid tb \<longrightarrow> bucket_tokens tb \<le> bucket_max tb"
   by auto
 
 (* OMEGA_001_14_rate_adaptive (matches Coq) *)
-lemma OMEGA_001_14_rate_adaptive: "\<forall> current_load max_capacity base_rate, max_capacity > 0 \<longrightarrow> current_load > max_capacity / 2 \<longrightarrow> adaptive_rate current_load max_capacity base_rate \<le> base_rate"
-  by (cases rule: ‹_›.cases; simp)
+lemma OMEGA_001_14_rate_adaptive: "\<forall>current_load max_capacity base_rate. max_capacity > 0 \<longrightarrow> current_load > max_capacity / 2 \<longrightarrow> adaptive_rate current_load max_capacity base_rate \<le> base_rate"
+  by auto
 
 (* OMEGA_001_15_rate_composition (matches Coq) *)
-lemma OMEGA_001_15_rate_composition: "\<forall> tb1 tb2, bucket_valid tb1 \<longrightarrow> bucket_valid tb2 \<longrightarrow> bucket_valid (compose_limits tb1 tb2)"
+lemma OMEGA_001_15_rate_composition: "\<forall>tb1 tb2. bucket_valid tb1 \<longrightarrow> bucket_valid tb2 \<longrightarrow> bucket_valid (compose_limits tb1 tb2)"
   by auto
 
 (* OMEGA_001_16_cap_unforgeable (matches Coq) *)
-lemma OMEGA_001_16_cap_unforgeable: "\<forall> cap now pubkey, cap_valid cap now pubkey = True \<longrightarrow> verify_signature pubkey cap = True"
+lemma OMEGA_001_16_cap_unforgeable: "\<forall>cap now pubkey. cap_valid cap now pubkey = True \<longrightarrow> verify_signature pubkey cap = True"
   by auto
 
 (* OMEGA_001_17_cap_required (matches Coq) *)
-lemma OMEGA_001_17_cap_required: "\<forall> (action : NetworkAction) (cap : NetCapability) now pubkey, grants_access cap (action_target action) (action_to_perm action) = True \<longrightarrow> cap_valid cap now pubkey = True \<longrightarrow> endpoint_eq (cap_target cap) (action_target action) = True"
+lemma OMEGA_001_17_cap_required: "\<forall>(action :: NetworkAction) (cap :: NetCapability) now pubkey. grants_access cap (action_target action) (action_to_perm action) = True \<longrightarrow> cap_valid cap now pubkey = True \<longrightarrow> endpoint_eq (cap_target cap) (action_target action) = True"
   by auto
 
 (* OMEGA_001_18_cap_attenuate (matches Coq) *)
-lemma OMEGA_001_18_cap_attenuate: "\<forall> cap new_perms new_expiry cap', attenuate_cap cap new_perms new_expiry = Some cap' \<longrightarrow> (\<forall> p, In p (cap_permissions cap') \<longrightarrow> In p (cap_permissions cap)) \<and> cap_valid_until cap' \<le> cap_valid_until cap"
+lemma OMEGA_001_18_cap_attenuate: "\<forall>cap new_perms new_expiry cap'. attenuate_cap cap new_perms new_expiry = Some cap' \<longrightarrow> (\<forall>p. In p (cap_permissions cap') \<longrightarrow> In p (cap_permissions cap)) \<and> cap_valid_until cap' \<le> cap_valid_until cap"
   by auto
 
 (* OMEGA_001_19_cap_revocable (matches Coq) *)
-lemma OMEGA_001_19_cap_revocable: "\<forall> cap revoked, In (cap_signature cap) revoked \<longrightarrow> cap_revoked cap revoked = True"
+lemma OMEGA_001_19_cap_revocable: "\<forall>cap revoked. In (cap_signature cap) revoked \<longrightarrow> cap_revoked cap revoked = True"
   by auto
 
 (* OMEGA_001_20_cap_bound_target (matches Coq) *)
-lemma OMEGA_001_20_cap_bound_target: "\<forall> cap target perm, grants_access cap target perm = True \<longrightarrow> endpoint_eq (cap_target cap) target = True"
+lemma OMEGA_001_20_cap_bound_target: "\<forall>cap target perm. grants_access cap target perm = True \<longrightarrow> endpoint_eq (cap_target cap) target = True"
   by auto
 
 (* OMEGA_001_21_cap_delegation_safe (matches Coq) *)
-lemma OMEGA_001_21_cap_delegation_safe: "\<forall> cap new_perms new_expiry cap', attenuate_cap cap new_perms new_expiry = Some cap' \<longrightarrow> cap_target cap' = cap_target cap"
-  by (cases rule: ‹_›.cases; simp)
+lemma OMEGA_001_21_cap_delegation_safe: "\<forall>cap new_perms new_expiry cap'. attenuate_cap cap new_perms new_expiry = Some cap' \<longrightarrow> cap_target cap' = cap_target cap"
+  by auto
 
 (* OMEGA_001_22_cap_no_amplification (matches Coq) *)
-lemma OMEGA_001_22_cap_no_amplification: "\<forall> request_size response_size, request_size > 0 \<longrightarrow> amplification_factor request_size response_size \<le> response_size"
-  by (cases rule: ‹_›.cases; simp)
+lemma OMEGA_001_22_cap_no_amplification: "\<forall>request_size response_size. request_size > 0 \<longrightarrow> amplification_factor request_size response_size \<le> response_size"
+  by auto
 
 (* OMEGA_001_23_cap_no_reflection (matches Coq) *)
-lemma OMEGA_001_23_cap_no_reflection: "\<forall> cap, \<exists>b (fun p => netperm_eq p NPSend) (cap_permissions cap) = True \<longrightarrow> \<exists>b (fun p => netperm_eq p NPReceive) (cap_permissions cap) = True \<longrightarrow> is_reflection_safe cap = True"
+lemma OMEGA_001_23_cap_no_reflection: "\<forall>cap. \<exists>b (\<lambda>p. netperm_eq p NPSend) (cap_permissions cap) = True \<longrightarrow> \<exists>b (\<lambda>p. netperm_eq p NPReceive) (cap_permissions cap) = True \<longrightarrow> is_reflection_safe cap = True"
   by simp
 
 (* OMEGA_001_24_syn_cookie_stateless (matches Coq) *)
@@ -561,47 +561,47 @@ lemma OMEGA_001_24_syn_cookie_stateless: "syn_cookie_state_required = 0"
   by simp
 
 (* OMEGA_001_25_syn_cookie_unforgeable (matches Coq) *)
-lemma OMEGA_001_25_syn_cookie_unforgeable: "\<forall> secret conn time, syn_cookie secret conn time = hash_to_nat (sha256 (encode_connection conn ++ encode_nat time ++ secret))"
+lemma OMEGA_001_25_syn_cookie_unforgeable: "\<forall>secret conn time. syn_cookie secret conn time = hash_to_nat (sha256 (encode_connection conn ++ encode_nat time ++ secret))"
   by simp
 
 (* OMEGA_001_26_syn_cookie_verify (matches Coq) *)
-lemma OMEGA_001_26_syn_cookie_verify: "\<forall> secret conn time, verify_syn_cookie secret conn (syn_cookie secret conn time) time = True"
+lemma OMEGA_001_26_syn_cookie_verify: "\<forall>secret conn time. verify_syn_cookie secret conn (syn_cookie secret conn time) time = True"
   by simp
 
 (* OMEGA_001_27_syn_cookie_replay_prevent (matches Coq) *)
-lemma OMEGA_001_27_syn_cookie_replay_prevent: "\<forall> secret conn time_old time_now, time_now > time_old + 2 \<longrightarrow> verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now = True \<longrightarrow> syn_cookie secret conn time_old = syn_cookie secret conn time_now \<or> syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 1) \<or> syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 2)"
+lemma OMEGA_001_27_syn_cookie_replay_prevent: "\<forall>secret conn time_old time_now. time_now > time_old + 2 \<longrightarrow> verify_syn_cookie secret conn (syn_cookie secret conn time_old) time_now = True \<longrightarrow> syn_cookie secret conn time_old = syn_cookie secret conn time_now \<or> syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 1) \<or> syn_cookie secret conn time_old = syn_cookie secret conn (time_now - 2)"
   by auto
 
 (* OMEGA_001_28_syn_flood_mitigated (matches Coq) *)
-lemma OMEGA_001_28_syn_flood_mitigated: "\<forall> num_pending, syn_cookie_memory_usage num_pending = 0"
+lemma OMEGA_001_28_syn_flood_mitigated: "\<forall>num_pending. syn_cookie_memory_usage num_pending = 0"
   by simp
 
 (* OMEGA_001_29_legitimate_connections (matches Coq) *)
-lemma OMEGA_001_29_legitimate_connections: "\<forall> secret conn time, verify_syn_cookie secret conn (syn_cookie secret conn time) time = True"
+lemma OMEGA_001_29_legitimate_connections: "\<forall>secret conn time. verify_syn_cookie secret conn (syn_cookie secret conn time) time = True"
   by auto
 
 (* OMEGA_001_30_hash_collision_resistant (matches Coq) *)
-lemma OMEGA_001_30_hash_collision_resistant: "\<forall> ht key1 key2 v1 v2, siphash_lookup ht key1 = Some v1 \<longrightarrow> siphash_lookup ht key2 = Some v2 \<longrightarrow> key1 \<noteq> key2 \<longrightarrow> \<exists> bound, max_bucket_size ht \<le> bound"
+lemma OMEGA_001_30_hash_collision_resistant: "\<forall>ht key1 key2 v1 v2. siphash_lookup ht key1 = Some v1 \<longrightarrow> siphash_lookup ht key2 = Some v2 \<longrightarrow> key1 \<noteq> key2 \<longrightarrow> \<exists>bound. max_bucket_size ht \<le> bound"
   by auto
 
 (* OMEGA_001_31_regex_terminates (matches Coq) *)
-lemma OMEGA_001_31_regex_terminates: "\<forall> r input fuel, fuel \<ge> regex_size r * (length input + 1) \<longrightarrow> \<exists> result, regex_match_bounded r input fuel = BROk result"
-  by (cases rule: ‹_›.cases; simp)
+lemma OMEGA_001_31_regex_terminates: "\<forall>r input fuel. fuel \<ge> regex_size r * (length input + 1) \<longrightarrow> \<exists>result. regex_match_bounded r input fuel = BROk result"
+  by auto
 
 (* OMEGA_001_32_decompression_bounded (matches Coq) *)
-lemma OMEGA_001_32_decompression_bounded: "\<forall> data limit result, bounded_decompress data limit = BROk result \<longrightarrow> length result \<le> limit"
+lemma OMEGA_001_32_decompression_bounded: "\<forall>data limit result. bounded_decompress data limit = BROk result \<longrightarrow> length result \<le> limit"
   by auto
 
 (* OMEGA_001_33_json_parse_bounded (matches Coq) *)
-lemma OMEGA_001_33_json_parse_bounded: "\<forall> data depth_limit size_limit result, bounded_json_parse data depth_limit size_limit = BROk result \<longrightarrow> result \<le> size_limit"
+lemma OMEGA_001_33_json_parse_bounded: "\<forall>data depth_limit size_limit result. bounded_json_parse data depth_limit size_limit = BROk result \<longrightarrow> result \<le> size_limit"
   by auto
 
 (* OMEGA_001_34_xml_parse_bounded (matches Coq) *)
-lemma OMEGA_001_34_xml_parse_bounded: "\<forall> data depth_limit size_limit result, bounded_xml_parse data depth_limit size_limit = BROk result \<longrightarrow> result \<le> size_limit"
+lemma OMEGA_001_34_xml_parse_bounded: "\<forall>data depth_limit size_limit result. bounded_xml_parse data depth_limit size_limit = BROk result \<longrightarrow> result \<le> size_limit"
   by auto
 
 (* OMEGA_001_35_no_algorithmic_dos (matches Coq) *)
-lemma OMEGA_001_35_no_algorithmic_dos: "\<forall> {A : Type} (input : list nat) (limit : nat) (op : list nat \<longrightarrow> A) result, bounded_operation input limit op = BROk result \<longrightarrow> length input \<le> limit"
+lemma OMEGA_001_35_no_algorithmic_dos: "\<forall>{A : Type} (input : list nat) (limit :: nat) (op : list nat \<longrightarrow> A) result. bounded_operation input limit op = BROk result \<longrightarrow> length input \<le> limit"
   by auto
 
 end

@@ -149,49 +149,49 @@ fun access_log_retention_days :: "CIP_Impact \<Rightarrow> nat" where
 (* Section E01 - NERC CIP Compliance
     Reference: IND_E_ENERGY.md Section 3.1 *)
 (* nerc_cip_compliance (matches Coq) *)
-lemma nerc_cip_compliance: "\<forall> (controls : NERC_CIP_Controls) (asset : nat), cip_002_identification controls = True \<longrightarrow> True"
+lemma nerc_cip_compliance: "\<forall>(controls :: NERC_CIP_Controls) (asset :: nat). cip_002_identification controls = True \<longrightarrow> True"
   by simp
 
 (* Section E02 - IEC 62351 Security
     Reference: IND_E_ENERGY.md Section 3.2 *)
 (* iec_62351_security (matches Coq) *)
-lemma iec_62351_security: "\<forall> (communication : nat), True"
+lemma iec_62351_security: "\<forall>(communication :: nat). True"
   by simp
 
 (* Section E03 - Nuclear Cyber Security
     Reference: IND_E_ENERGY.md Section 3.3 *)
 (* nrc_cyber_security (matches Coq) *)
-lemma nrc_cyber_security: "\<forall> (nuclear_system : nat), True"
+lemma nrc_cyber_security: "\<forall>(nuclear_system :: nat). True"
   by simp
 
 (* Section E04 - OT Security
     Reference: IND_E_ENERGY.md Section 3.4 *)
 (* ot_security (matches Coq) *)
-lemma ot_security: "\<forall> (scada_system : nat), True"
+lemma ot_security: "\<forall>(scada_system :: nat). True"
   by simp
 
 (* Section E05 - Substation Security
     Reference: IND_E_ENERGY.md Section 3.5 *)
 (* substation_security (matches Coq) *)
-lemma substation_security: "\<forall> (ied : nat), True"
+lemma substation_security: "\<forall>(ied :: nat). True"
   by simp
 
 (* High impact requires all CIP controls *)
 (* high_impact_all_controls (matches Coq) *)
-lemma high_impact_all_controls: "\<forall> (controls : NERC_CIP_Controls) (asset : nat) (impact : CIP_Impact), impact = High_Impact \<longrightarrow> True"
+lemma high_impact_all_controls: "\<forall>(controls :: NERC_CIP_Controls) (asset :: nat) (impact : CIP_Impact). impact = High_Impact \<longrightarrow> True"
   by simp
 
 (* Electronic Security Perimeter required for routable protocols *)
 (* esp_required (matches Coq) *)
-lemma esp_required: "\<forall> (controls : NERC_CIP_Controls) (asset : nat), cip_005_electronic_perimeter controls = True \<longrightarrow> True"
+lemma esp_required: "\<forall>(controls :: NERC_CIP_Controls) (asset :: nat). cip_005_electronic_perimeter controls = True \<longrightarrow> True"
   by simp
 
 (* cip_le_refl (matches Coq) *)
-lemma cip_le_refl: "\<forall> c, cip_le c c = True"
+lemma cip_le_refl: "\<forall>c. cip_le c c = True"
   by simp
 
 (* cip_le_trans (matches Coq) *)
-lemma cip_le_trans: "\<forall> c1 c2 c3, cip_le c1 c2 = True \<longrightarrow> cip_le c2 c3 = True \<longrightarrow> cip_le c1 c3 = True"
+lemma cip_le_trans: "\<forall>c1 c2 c3. cip_le c1 c2 = True \<longrightarrow> cip_le c2 c3 = True \<longrightarrow> cip_le c1 c3 = True"
   by simp
 
 (* high_impact_all_11 (matches Coq) *)
@@ -199,19 +199,19 @@ lemma high_impact_all_11: "cip_mandatory_requirements High_Impact = 11"
   by simp
 
 (* cip_requirements_monotone (matches Coq) *)
-lemma cip_requirements_monotone: "\<forall> c1 c2, cip_le c1 c2 = True \<longrightarrow> cip_mandatory_requirements c1 \<le> cip_mandatory_requirements c2"
-  by (cases rule: ‹_›.cases; simp)
+lemma cip_requirements_monotone: "\<forall>c1 c2. cip_le c1 c2 = True \<longrightarrow> cip_mandatory_requirements c1 \<le> cip_mandatory_requirements c2"
+  by auto
 
 (* full_cip_requires_identification (matches Coq) *)
-lemma full_cip_requires_identification: "\<forall> c, nerc_cip_all_controls c = True \<longrightarrow> cip_002_identification c = True"
+lemma full_cip_requires_identification: "\<forall>c. nerc_cip_all_controls c = True \<longrightarrow> cip_002_identification c = True"
   by auto
 
 (* full_cip_requires_perimeter (matches Coq) *)
-lemma full_cip_requires_perimeter: "\<forall> c, nerc_cip_all_controls c = True \<longrightarrow> cip_005_electronic_perimeter c = True"
+lemma full_cip_requires_perimeter: "\<forall>c. nerc_cip_all_controls c = True \<longrightarrow> cip_005_electronic_perimeter c = True"
   by auto
 
 (* full_cip_requires_supply_chain (matches Coq) *)
-lemma full_cip_requires_supply_chain: "\<forall> c, nerc_cip_all_controls c = True \<longrightarrow> cip_013_supply_chain c = True"
+lemma full_cip_requires_supply_chain: "\<forall>c. nerc_cip_all_controls c = True \<longrightarrow> cip_013_supply_chain c = True"
   by auto
 
 (* control_center_critical (matches Coq) *)
@@ -223,28 +223,28 @@ lemma scada_critical: "bes_criticality SCADA_System = 5"
   by simp
 
 (* bes_criticality_positive (matches Coq) *)
-lemma bes_criticality_positive: "\<forall> a, bes_criticality a \<ge> 3"
-  by (cases rule: ‹_›.cases; simp)
+lemma bes_criticality_positive: "\<forall>a. bes_criticality a \<ge> 3"
+  by auto
 
 (* high_impact_fastest_response (matches Coq) *)
 lemma high_impact_fastest_response: "incident_response_hours High_Impact = 1"
   by simp
 
 (* response_time_decreasing (matches Coq) *)
-lemma response_time_decreasing: "\<forall> c1 c2, cip_le c1 c2 = True \<longrightarrow> incident_response_hours c2 \<le> incident_response_hours c1"
-  by (cases rule: ‹_›.cases; simp)
+lemma response_time_decreasing: "\<forall>c1 c2. cip_le c1 c2 = True \<longrightarrow> incident_response_hours c2 \<le> incident_response_hours c1"
+  by auto
 
 (* rto_bounded (matches Coq) *)
-lemma rto_bounded: "\<forall> impact, rto_hours impact \<le> 72"
-  by (cases rule: ‹_›.cases; simp)
+lemma rto_bounded: "\<forall>impact. rto_hours impact \<le> 72"
+  by auto
 
 (* high_impact_short_rto (matches Coq) *)
 lemma high_impact_short_rto: "rto_hours High_Impact \<le> rto_hours Medium_Impact"
   by simp
 
 (* assessment_more_frequent_high (matches Coq) *)
-lemma assessment_more_frequent_high: "\<forall> c1 c2, cip_le c1 c2 = True \<longrightarrow> assessment_frequency_days c2 \<le> assessment_frequency_days c1"
-  by (cases rule: ‹_›.cases; simp)
+lemma assessment_more_frequent_high: "\<forall>c1 c2. cip_le c1 c2 = True \<longrightarrow> assessment_frequency_days c2 \<le> assessment_frequency_days c1"
+  by auto
 
 (* high_medium_same_retention (matches Coq) *)
 lemma high_medium_same_retention: "access_log_retention_days High_Impact = access_log_retention_days Medium_Impact"

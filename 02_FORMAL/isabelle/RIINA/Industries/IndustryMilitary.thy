@@ -119,135 +119,135 @@ fun redundancy_factor :: "ClassificationLevel \<Rightarrow> nat" where
 (* Section A01 - NIST 800-171 Compliance
     Reference: IND_A_MILITARY.md Section 3.1 *)
 (* nist_800_171_access_control (matches Coq) *)
-lemma nist_800_171_access_control: "\<forall> (policy : MilitarySecurityPolicy) (data_class : ClassificationLevel), class_le (classification policy) (clearance_required policy) = True \<longrightarrow> True"
+lemma nist_800_171_access_control: "\<forall>(policy :: MilitarySecurityPolicy) (data_class :: ClassificationLevel). class_le (classification policy) (clearance_required policy) = True \<longrightarrow> True"
   by simp
 
 (* Section A02 - CMMC Level 3 Requirements
     Reference: IND_A_MILITARY.md Section 3.2 *)
 (* cmmc_level3_compliance (matches Coq) *)
-lemma cmmc_level3_compliance: "\<forall> policy, classification policy = CUI \<longrightarrow> True"
+lemma cmmc_level3_compliance: "\<forall>policy. classification policy = CUI \<longrightarrow> True"
   by simp
 
 (* Section A03 - ITAR Export Control
     Reference: IND_A_MILITARY.md Section 3.3 *)
 (* itar_export_control (matches Coq) *)
-lemma itar_export_control: "\<forall> (data_class : ClassificationLevel) (destination : nat), True"
+lemma itar_export_control: "\<forall>(data_class :: ClassificationLevel) (destination :: nat). True"
   by simp
 
 (* Section A04 - MIL-STD-882 Safety
     Reference: IND_A_MILITARY.md Section 3.4 *)
 (* mil_std_882_safety (matches Coq) *)
-lemma mil_std_882_safety: "\<forall> (system : nat) (hazard_level : nat), True"
+lemma mil_std_882_safety: "\<forall>(system :: nat) (hazard_level :: nat). True"
   by simp
 
 (* Section A05 - RMF Authorization
     Reference: IND_A_MILITARY.md Section 3.5 *)
 (* rmf_authorization (matches Coq) *)
-lemma rmf_authorization: "\<forall> (system : nat) (risk_level : nat), True"
+lemma rmf_authorization: "\<forall>(system :: nat) (risk_level :: nat). True"
   by simp
 
 (* Classification lattice reflexivity *)
 (* class_le_refl (matches Coq) *)
-lemma class_le_refl: "\<forall> c, class_le c c = True"
+lemma class_le_refl: "\<forall>c. class_le c c = True"
   by simp
 
 (* Classification lattice transitivity *)
 (* class_le_trans (matches Coq) *)
-lemma class_le_trans: "\<forall> c1 c2 c3, class_le c1 c2 = True \<longrightarrow> class_le c2 c3 = True \<longrightarrow> class_le c1 c3 = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma class_le_trans: "\<forall>c1 c2 c3. class_le c1 c2 = True \<longrightarrow> class_le c2 c3 = True \<longrightarrow> class_le c1 c3 = True"
+  by auto
 
 (* No read up - Bell-LaPadula simple security *)
 (* no_read_up (matches Coq) *)
-lemma no_read_up: "\<forall> subject_clearance object_classification, class_le object_classification subject_clearance = True \<longrightarrow> True"
+lemma no_read_up: "\<forall>subject_clearance object_classification. class_le object_classification subject_clearance = True \<longrightarrow> True"
   by simp
 
 (* class_le agrees with nat ordering *)
 (* class_le_iff_nat (matches Coq) *)
-lemma class_le_iff_nat: "\<forall> c1 c2, class_le c1 c2 = True <-> class_to_nat c1 \<le> class_to_nat c2"
-  by (cases rule: ‹_›.cases; simp)
+lemma class_le_iff_nat: "\<forall>c1 c2. class_le c1 c2 = True <-> class_to_nat c1 \<le> class_to_nat c2"
+  by auto
 
 (* Classification ordering is antisymmetric *)
 (* class_le_antisym (matches Coq) *)
-lemma class_le_antisym: "\<forall> c1 c2, class_le c1 c2 = True \<longrightarrow> class_le c2 c1 = True \<longrightarrow> c1 = c2"
-  by (cases rule: ‹_›.cases; simp)
+lemma class_le_antisym: "\<forall>c1 c2. class_le c1 c2 = True \<longrightarrow> class_le c2 c1 = True \<longrightarrow> c1 = c2"
+  by auto
 
 (* Classification is a total order *)
 (* class_le_total (matches Coq) *)
-lemma class_le_total: "\<forall> c1 c2, class_le c1 c2 = True \<or> class_le c2 c1 = True"
+lemma class_le_total: "\<forall>c1 c2. class_le c1 c2 = True \<or> class_le c2 c1 = True"
   by auto
 
 (* Unclassified is the bottom of the lattice *)
 (* unclassified_bottom (matches Coq) *)
-lemma unclassified_bottom: "\<forall> c, class_le Unclassified c = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma unclassified_bottom: "\<forall>c. class_le Unclassified c = True"
+  by auto
 
 (* TS_SCI is the top of the lattice *)
 (* ts_sci_top (matches Coq) *)
-lemma ts_sci_top: "\<forall> c, class_le c TS_SCI = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ts_sci_top: "\<forall>c. class_le c TS_SCI = True"
+  by auto
 
 (* No entity can read above its clearance (Bell-LaPadula simple security property) *)
 (* bell_lapadula_ss (matches Coq) *)
-lemma bell_lapadula_ss: "\<forall> (policy : MilitarySecurityPolicy) (object_class : ClassificationLevel), class_le object_class (clearance_required policy) = False \<longrightarrow> class_to_nat object_class > class_to_nat (clearance_required policy)"
-  by (cases rule: ‹_›.cases; simp)
+lemma bell_lapadula_ss: "\<forall>(policy :: MilitarySecurityPolicy) (object_class :: ClassificationLevel). class_le object_class (clearance_required policy) = False \<longrightarrow> class_to_nat object_class > class_to_nat (clearance_required policy)"
+  by auto
 
 (* bell_lapadula_star (matches Coq) *)
-lemma bell_lapadula_star: "\<forall> subject_class object_class, class_le subject_class object_class = True \<longrightarrow> class_to_nat subject_class \<le> class_to_nat object_class"
+lemma bell_lapadula_star: "\<forall>subject_class object_class. class_le subject_class object_class = True \<longrightarrow> class_to_nat subject_class \<le> class_to_nat object_class"
   by auto
 
 (* has_compartment_In (matches Coq) *)
-lemma has_compartment_In: "\<forall> c comps, has_compartment comps c = True \<longrightarrow> \<exists> x, In x comps \<and> (c = x) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma has_compartment_In: "\<forall>c comps. has_compartment comps c = True \<longrightarrow> \<exists>x. x \<in> set comps \<and> (c = x) = True"
+  by auto
 
 (* Empty need_to_know means no compartment restriction *)
 (* empty_need_to_know_unrestricted (matches Coq) *)
-lemma empty_need_to_know_unrestricted: "\<forall> c, has_compartment nil c = False"
+lemma empty_need_to_know_unrestricted: "\<forall>c. has_compartment nil c = False"
   by simp
 
 (* COMSEC: approved communication requires comsec flag *)
 (* comsec_required_for_classified_comms (matches Coq) *)
-lemma comsec_required_for_classified_comms: "\<forall> policy, class_le Confidential (classification policy) = True \<longrightarrow> comsec_approved policy = True \<longrightarrow> class_to_nat (classification policy) \<ge> 2"
+lemma comsec_required_for_classified_comms: "\<forall>policy. class_le Confidential (classification policy) = True \<longrightarrow> comsec_approved policy = True \<longrightarrow> class_to_nat (classification policy) \<ge> 2"
   by auto
 
 (* TEMPEST: emanations security required for Secret and above *)
 (* tempest_required_for_secret (matches Coq) *)
-lemma tempest_required_for_secret: "\<forall> policy, class_le Secret (classification policy) = True \<longrightarrow> tempest_certified policy = True \<longrightarrow> class_to_nat (classification policy) \<ge> 3"
+lemma tempest_required_for_secret: "\<forall>policy. class_le Secret (classification policy) = True \<longrightarrow> tempest_certified policy = True \<longrightarrow> class_to_nat (classification policy) \<ge> 3"
   by auto
 
 (* Cross-domain transfer: cannot move data to lower classification *)
 (* cross_domain_no_downgrade (matches Coq) *)
-lemma cross_domain_no_downgrade: "\<forall> src_class dst_class, class_le src_class dst_class = False \<longrightarrow> class_to_nat src_class > class_to_nat dst_class"
-  by (cases rule: ‹_›.cases; simp)
+lemma cross_domain_no_downgrade: "\<forall>src_class dst_class. class_le src_class dst_class = False \<longrightarrow> class_to_nat src_class > class_to_nat dst_class"
+  by auto
 
 (* class_max is commutative up to ordering *)
 (* class_max_ge_left (matches Coq) *)
-lemma class_max_ge_left: "\<forall> c1 c2, class_le c1 (class_max c1 c2) = True"
+lemma class_max_ge_left: "\<forall>c1 c2. class_le c1 (class_max c1 c2) = True"
   by auto
 
 (* class_max_ge_right (matches Coq) *)
-lemma class_max_ge_right: "\<forall> c1 c2, class_le c2 (class_max c1 c2) = True"
+lemma class_max_ge_right: "\<forall>c1 c2. class_le c2 (class_max c1 c2) = True"
   by auto
 
 (* Aggregation raises classification: combined data takes the max level *)
 (* aggregation_raises_classification (matches Coq) *)
-lemma aggregation_raises_classification: "\<forall> c1 c2, class_to_nat (class_max c1 c2) \<ge> class_to_nat c1 \<and> class_to_nat (class_max c1 c2) \<ge> class_to_nat c2"
+lemma aggregation_raises_classification: "\<forall>c1 c2. class_to_nat (class_max c1 c2) \<ge> class_to_nat c1 \<and> class_to_nat (class_max c1 c2) \<ge> class_to_nat c2"
   by auto
 
 (* key_level_monotone (matches Coq) *)
-lemma key_level_monotone: "\<forall> c1 c2, class_le c1 c2 = True \<longrightarrow> key_level c1 \<le> key_level c2"
+lemma key_level_monotone: "\<forall>c1 c2. class_le c1 c2 = True \<longrightarrow> key_level c1 \<le> key_level c2"
   by simp
 
 (* Personnel clearance verification: clearance must dominate data classification *)
 (* personnel_clearance_dominates (matches Coq) *)
-lemma personnel_clearance_dominates: "\<forall> policy, class_le (classification policy) (clearance_required policy) = True \<longrightarrow> class_to_nat (classification policy) \<le> class_to_nat (clearance_required policy)"
+lemma personnel_clearance_dominates: "\<forall>policy. class_le (classification policy) (clearance_required policy) = True \<longrightarrow> class_to_nat (classification policy) \<le> class_to_nat (clearance_required policy)"
   by auto
 
 (* weapon_auth_requires_ts (matches Coq) *)
-lemma weapon_auth_requires_ts: "\<forall> c, weapon_system_authorized c = True \<longrightarrow> class_to_nat c \<ge> 4"
+lemma weapon_auth_requires_ts: "\<forall>c. weapon_system_authorized c = True \<longrightarrow> class_to_nat c \<ge> 4"
   by auto
 
 (* redundancy_monotone (matches Coq) *)
-lemma redundancy_monotone: "\<forall> c1 c2, class_le c1 c2 = True \<longrightarrow> redundancy_factor c1 \<le> redundancy_factor c2"
-  by (cases rule: ‹_›.cases; simp)
+lemma redundancy_monotone: "\<forall>c1 c2. class_le c1 c2 = True \<longrightarrow> redundancy_factor c1 \<le> redundancy_factor c2"
+  by auto
 
 end

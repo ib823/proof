@@ -172,10 +172,10 @@ fun val_rel_n :: "nat \<Rightarrow> store_ty \<Rightarrow> ty \<Rightarrow> expr
 definition exp_rel_n :: "nat \<Rightarrow> store_ty \<Rightarrow> ty \<Rightarrow> expr \<Rightarrow> expr \<Rightarrow> bool" where
   "exp_rel_n n \<Sigma> T e1 e2 \<equiv>
      \<forall>st1 st2 ctx1 ctx2 v1 st1' ctx1'.
-       multi_step (e1, st1, ctx1) (v1, st1', ctx1') \<longrightarrow>
+       multi_step (e1. st1, ctx1) (v1, st1', ctx1') \<longrightarrow>
        is_value v1 \<longrightarrow>
        (\<exists>v2 st2' ctx2'.
-         multi_step (e2, st2, ctx2) (v2, st2', ctx2') \<and>
+         multi_step (e2. st2, ctx2) (v2, st2', ctx2') \<and>
          val_rel_n n \<Sigma> T v1 v2)"
 
 (* Step-indexed store relation
@@ -183,7 +183,7 @@ definition exp_rel_n :: "nat \<Rightarrow> store_ty \<Rightarrow> ty \<Rightarro
 definition store_rel_n :: "nat \<Rightarrow> store_ty \<Rightarrow> store \<Rightarrow> store \<Rightarrow> bool" where
   "store_rel_n n \<Sigma> st1 st2 \<equiv>
      \<forall>l T sl.
-       store_ty_lookup l \<Sigma> = Some (T, sl) \<longrightarrow>
+       store_ty_lookup l \<Sigma> = Some (T. sl) \<longrightarrow>
        is_low sl \<longrightarrow>
        (case (store_lookup l st1, store_lookup l st2) of
           (Some v1, Some v2) \<Rightarrow> val_rel_n n \<Sigma> T v1 v2
@@ -228,7 +228,7 @@ type_synonym subst = "ident \<Rightarrow> expr option"
 definition env_rel :: "store_ty \<Rightarrow> type_env \<Rightarrow> subst \<Rightarrow> subst \<Rightarrow> bool" where
   "env_rel \<Sigma> \<Gamma> \<rho>1 \<rho>2 \<equiv>
      \<forall>x T. env_lookup x \<Gamma> = Some T \<longrightarrow>
-       (case (\<rho>1 x, \<rho>2 x) of
+       (case (\<rho>1 x. \<rho>2 x) of
           (Some v1, Some v2) \<Rightarrow> val_rel \<Sigma> T v1 v2
         | _ \<Rightarrow> False)"
 
@@ -352,7 +352,7 @@ proof (intro allI impI)
   have "r1 = v1" and "st1' = st1" and "ctx1' = ctx1" by auto
   (* v2 is also a is_value, multi-steps to itself via MS_Refl *)
   have hv2: "is_value v2" using val_rel_value[OF assms] by simp
-  show "\<exists>r2 st2' ctx2'. (v2, st2, ctx2) \<longrightarrow>* (r2, st2', ctx2') \<and> val_rel_n n \<Sigma> T r1 r2"
+  show "\<exists>r2 st2' ctx2'. (v2. st2, ctx2) \<longrightarrow>* (r2, st2', ctx2') \<and> val_rel_n n \<Sigma> T r1 r2"
   proof (intro exI conjI)
     show "(v2, st2, ctx2) \<longrightarrow>* (v2, st2, ctx2)" by (rule MS_Refl)
     show "val_rel_n n \<Sigma> T r1 v2" using assms \<open>r1 = v1\<close> unfolding val_rel_def by simp

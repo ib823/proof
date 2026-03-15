@@ -63,82 +63,82 @@ definition strongly_normalizing :: "expr \<Rightarrow> store \<Rightarrow> effec
 
 (* Values are strongly normalizing (no reduction possible) *)
 (* value_SN (matches Coq) *)
-lemma value_SN: "\<forall> v st ctx, value v \<longrightarrow> SN st ctx v"
+lemma value_SN: "\<forall>v st ctx. value v \<longrightarrow> SN st ctx v"
   by auto
 
 (* SN is closed under single-step reduction *)
 (* SN_step (matches Coq) *)
-lemma SN_step: "\<forall> e e' st st' ctx ctx', SN st ctx e \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> SN st' ctx' e'"
+lemma SN_step: "\<forall>e e' st st' ctx ctx'. SN st ctx e \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> SN st' ctx' e'"
   by auto
 
 (* Fst on typed product value steps to a value in one step *)
 (* fst_typed_steps_to_value (matches Coq) *)
-lemma fst_typed_steps_to_value: "\<forall> v T1 T2 ε Σ st ctx, has_type nil Σ Public v (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists> v1 st' ctx', (EFst v, st, ctx) --> (v1, st', ctx') \<and> value v1 \<and> st' = st \<and> ctx' = ctx"
+lemma fst_typed_steps_to_value: "\<forall>v T1 T2 ε Σ st ctx. has_type nil Σ Public v (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists>v1 st' ctx'. (EFst v, st, ctx) --> (v1, st', ctx') \<and> value v1 \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* Snd on typed product value steps to a value in one step *)
 (* snd_typed_steps_to_value (matches Coq) *)
-lemma snd_typed_steps_to_value: "\<forall> v T1 T2 ε Σ st ctx, has_type nil Σ Public v (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists> v2 st' ctx', (ESnd v, st, ctx) --> (v2, st', ctx') \<and> value v2 \<and> st' = st \<and> ctx' = ctx"
+lemma snd_typed_steps_to_value: "\<forall>v T1 T2 ε Σ st ctx. has_type nil Σ Public v (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists>v2 st' ctx'. (ESnd v, st, ctx) --> (v2, st', ctx') \<and> value v2 \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* Case on typed sum value steps in one step *)
 (* case_typed_steps_once (matches Coq) *)
-lemma case_typed_steps_once: "\<forall> v T1 T2 ε Σ x1 e1 x2 e2 st ctx, has_type nil Σ Public v (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists> e' st' ctx', (ECase v x1 e1 x2 e2, st, ctx) --> (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
+lemma case_typed_steps_once: "\<forall>v T1 T2 ε Σ x1 e1 x2 e2 st ctx. has_type nil Σ Public v (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists>e' st' ctx'. (ECase v x1 e1 x2 e2, st, ctx) --> (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* If on typed bool value steps in one step *)
 (* if_typed_steps_once (matches Coq) *)
-lemma if_typed_steps_once: "\<forall> v ε Σ e2 e3 st ctx, has_type nil Σ Public v TBool ε \<longrightarrow> value v \<longrightarrow> \<exists> e' st' ctx', (EIf v e2 e3, st, ctx) --> (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
+lemma if_typed_steps_once: "\<forall>v ε Σ e2 e3 st ctx. has_type nil Σ Public v TBool ε \<longrightarrow> value v \<longrightarrow> \<exists>e' st' ctx'. (EIf v e2 e3, st, ctx) --> (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* Let with value steps in one step *)
 (* let_typed_steps_once (matches Coq) *)
-lemma let_typed_steps_once: "\<forall> v x e2 st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (ELet x v e2, st, ctx) --> (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
+lemma let_typed_steps_once: "\<forall>v x e2 st ctx. value v \<longrightarrow> \<exists>e' st' ctx'. (ELet x v e2, st, ctx) --> (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* Handle with value steps in one step *)
 (* handle_typed_steps_once (matches Coq) *)
-lemma handle_typed_steps_once: "\<forall> v x h st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (EHandle v x h, st, ctx) --> (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
+lemma handle_typed_steps_once: "\<forall>v x h st ctx. value v \<longrightarrow> \<exists>e' st' ctx'. (EHandle v x h, st, ctx) --> (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* App with typed function value steps in one step *)
 (* app_typed_steps_once (matches Coq) *)
-lemma app_typed_steps_once: "\<forall> f T1 T2 ε ε' Σ a st ctx, has_type nil Σ Public f (TFn T1 T2 ε) ε' \<longrightarrow> value f \<longrightarrow> value a \<longrightarrow> \<exists> e' st' ctx', (EApp f a, st, ctx) --> (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
+lemma app_typed_steps_once: "\<forall>f T1 T2 ε ε' Σ a st ctx. has_type nil Σ Public f (TFn T1 T2 ε) ε' \<longrightarrow> value f \<longrightarrow> value a \<longrightarrow> \<exists>e' st' ctx'. (EApp f a, st, ctx) --> (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* SN values are irreducible *)
 (* SN_value_irreducible (matches Coq) *)
-lemma SN_value_irreducible: "\<forall> v st ctx, value v \<longrightarrow> SN st ctx v \<longrightarrow> \<forall> e' st' ctx', ~ ((v, st, ctx) --> (e', st', ctx'))"
+lemma SN_value_irreducible: "\<forall>v st ctx. value v \<longrightarrow> SN st ctx v \<longrightarrow> \<forall>e' st' ctx'. ~ ((v, st, ctx) --> (e', st', ctx'))"
   by auto
 
 (* Case on inl steps to the left branch *)
 (* case_inl_typed_steps (matches Coq) *)
-lemma case_inl_typed_steps: "\<forall> v T2 x1 e1 x2 e2 st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (ECase (EInl v T2) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') \<and> e' = [x1 := v] e1 \<and> st' = st \<and> ctx' = ctx"
+lemma case_inl_typed_steps: "\<forall>v T2 x1 e1 x2 e2 st ctx. value v \<longrightarrow> \<exists>e' st' ctx'. (ECase (EInl v T2) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') \<and> e' = subst x1 v e1 \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* Case on inr steps to the right branch *)
 (* case_inr_typed_steps (matches Coq) *)
-lemma case_inr_typed_steps: "\<forall> v T1 x1 e1 x2 e2 st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (ECase (EInr v T1) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') \<and> e' = [x2 := v] e2 \<and> st' = st \<and> ctx' = ctx"
+lemma case_inr_typed_steps: "\<forall>v T1 x1 e1 x2 e2 st ctx. value v \<longrightarrow> \<exists>e' st' ctx'. (ECase (EInr v T1) x1 e1 x2 e2, st, ctx) --> (e', st', ctx') \<and> e' = subst x2 v e2 \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* Pair of values is a value *)
 (* pair_values_value (matches Coq) *)
-lemma pair_values_value: "\<forall> v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> value (EPair v1 v2)"
+lemma pair_values_value: "\<forall>v1 v2. value v1 \<longrightarrow> value v2 \<longrightarrow> value (EPair v1 v2)"
   by auto
 
 (* Inl of value is a value *)
 (* inl_value_value (matches Coq) *)
-lemma inl_value_value: "\<forall> v T, value v \<longrightarrow> value (EInl v T)"
+lemma inl_value_value: "\<forall>v T. value v \<longrightarrow> value (EInl v T)"
   by auto
 
 (* Inr of value is a value *)
 (* inr_value_value (matches Coq) *)
-lemma inr_value_value: "\<forall> v T, value v \<longrightarrow> value (EInr v T)"
+lemma inr_value_value: "\<forall>v T. value v \<longrightarrow> value (EInr v T)"
   by auto
 
 (* Lambda is always a value *)
 (* lam_value (matches Coq) *)
-lemma lam_value: "\<forall> x T body, value (ELam x T body)"
+lemma lam_value: "\<forall>x T body. value (ELam x T body)"
   by auto
 
 (* Unit is a value *)
@@ -148,107 +148,107 @@ lemma unit_value: "value EUnit"
 
 (* Bool is a value *)
 (* bool_value (matches Coq) *)
-lemma bool_value: "\<forall> b, value (EBool b)"
+lemma bool_value: "\<forall>b. value (EBool b)"
   by auto
 
 (* Int is a value *)
 (* int_value (matches Coq) *)
-lemma int_value: "\<forall> n, value (EInt n)"
+lemma int_value: "\<forall>n. value (EInt n)"
   by auto
 
 (* String is a value *)
 (* string_value (matches Coq) *)
-lemma string_value: "\<forall> s, value (EString s)"
+lemma string_value: "\<forall>s. value (EString s)"
   by auto
 
 (* Location is a value *)
 (* loc_value (matches Coq) *)
-lemma loc_value: "\<forall> l, value (ELoc l)"
+lemma loc_value: "\<forall>l. value (ELoc l)"
   by auto
 
 (* SN is closed under multiple steps *)
 (* SN_multi_step_closed (matches Coq) *)
-lemma SN_multi_step_closed: "\<forall> cfg cfg', cfg -->* cfg' \<longrightarrow> \<forall> e st ctx e' st' ctx', cfg = (e, st, ctx) \<longrightarrow> cfg' = (e', st', ctx') \<longrightarrow> SN st ctx e \<longrightarrow> SN st' ctx' e'"
+lemma SN_multi_step_closed: "\<forall>cfg cfg'. cfg -->* cfg' \<longrightarrow> \<forall>e st ctx e' st' ctx'. cfg = (e, st, ctx) \<longrightarrow> cfg' = (e', st', ctx') \<longrightarrow> SN st ctx e \<longrightarrow> SN st' ctx' e'"
   by auto
 
 (* Classify of value is a value *)
 (* classify_value_value (matches Coq) *)
-lemma classify_value_value: "\<forall> v, value v \<longrightarrow> value (EClassify v)"
+lemma classify_value_value: "\<forall>v. value v \<longrightarrow> value (EClassify v)"
   by auto
 
 (* Classify of value is SN *)
 (* classify_value_SN (matches Coq) *)
-lemma classify_value_SN: "\<forall> v st ctx, value v \<longrightarrow> SN st ctx (EClassify v)"
+lemma classify_value_SN: "\<forall>v st ctx. value v \<longrightarrow> SN st ctx (EClassify v)"
   by auto
 
 (* Pair of SN values is SN *)
 (* pair_SN (matches Coq) *)
-lemma pair_SN: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> SN st ctx (EPair v1 v2)"
+lemma pair_SN: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> SN st ctx (EPair v1 v2)"
   by auto
 
 (* Inl of SN value is SN *)
 (* inl_SN (matches Coq) *)
-lemma inl_SN: "\<forall> v T st ctx, value v \<longrightarrow> SN st ctx (EInl v T)"
+lemma inl_SN: "\<forall>v T st ctx. value v \<longrightarrow> SN st ctx (EInl v T)"
   by auto
 
 (* Inr of SN value is SN *)
 (* inr_SN (matches Coq) *)
-lemma inr_SN: "\<forall> v T st ctx, value v \<longrightarrow> SN st ctx (EInr v T)"
+lemma inr_SN: "\<forall>v T st ctx. value v \<longrightarrow> SN st ctx (EInr v T)"
   by auto
 
 (* Lambda is always SN *)
 (* lam_SN (matches Coq) *)
-lemma lam_SN: "\<forall> x T body st ctx, SN st ctx (ELam x T body)"
+lemma lam_SN: "\<forall>x T body st ctx. SN st ctx (ELam x T body)"
   by auto
 
 (* Unit is always SN *)
 (* unit_SN (matches Coq) *)
-lemma unit_SN: "\<forall> st ctx, SN st ctx EUnit"
+lemma unit_SN: "\<forall>st ctx. SN st ctx EUnit"
   by auto
 
 (* Bool is always SN *)
 (* bool_SN (matches Coq) *)
-lemma bool_SN: "\<forall> b st ctx, SN st ctx (EBool b)"
+lemma bool_SN: "\<forall>b st ctx. SN st ctx (EBool b)"
   by auto
 
 (* Int is always SN *)
 (* int_SN (matches Coq) *)
-lemma int_SN: "\<forall> n st ctx, SN st ctx (EInt n)"
+lemma int_SN: "\<forall>n st ctx. SN st ctx (EInt n)"
   by auto
 
 (* String is always SN *)
 (* string_SN (matches Coq) *)
-lemma string_SN: "\<forall> s st ctx, SN st ctx (EString s)"
+lemma string_SN: "\<forall>s st ctx. SN st ctx (EString s)"
   by auto
 
 (* Loc is always SN *)
 (* loc_SN (matches Coq) *)
-lemma loc_SN: "\<forall> l st ctx, SN st ctx (ELoc l)"
+lemma loc_SN: "\<forall>l st ctx. SN st ctx (ELoc l)"
   by auto
 
 (* Prove of value is a value *)
 (* prove_value_value (matches Coq) *)
-lemma prove_value_value: "\<forall> v, value v \<longrightarrow> value (EProve v)"
+lemma prove_value_value: "\<forall>v. value v \<longrightarrow> value (EProve v)"
   by auto
 
 (* Prove of value is SN *)
 (* prove_SN (matches Coq) *)
-lemma prove_SN: "\<forall> v st ctx, value v \<longrightarrow> SN st ctx (EProve v)"
+lemma prove_SN: "\<forall>v st ctx. value v \<longrightarrow> SN st ctx (EProve v)"
   by auto
 
 (* Fst of pair value steps to a value *)
 (* fst_pair_step_value (matches Coq) *)
-lemma fst_pair_step_value: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists> v, (EFst (EPair v1 v2), st, ctx) --> (v, st, ctx) \<and> value v"
+lemma fst_pair_step_value: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists>v. (EFst (EPair v1 v2), st, ctx) --> (v, st, ctx) \<and> value v"
   by auto
 
 (* Snd of pair value steps to a value *)
 (* snd_pair_step_value (matches Coq) *)
-lemma snd_pair_step_value: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists> v, (ESnd (EPair v1 v2), st, ctx) --> (v, st, ctx) \<and> value v"
+lemma snd_pair_step_value: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists>v. (ESnd (EPair v1 v2), st, ctx) --> (v, st, ctx) \<and> value v"
   by auto
 
 (* App with lambda and value steps *)
 (* app_lam_steps (matches Coq) *)
-lemma app_lam_steps: "\<forall> x T body v st ctx, value v \<longrightarrow> (EApp (ELam x T body) v, st, ctx) --> ([x := v] body, st, ctx)"
+lemma app_lam_steps: "\<forall>x T body v st ctx. value v \<longrightarrow> (EApp (ELam x T body) v, st, ctx) --> (subst x v body, st, ctx)"
   by auto
 
 end

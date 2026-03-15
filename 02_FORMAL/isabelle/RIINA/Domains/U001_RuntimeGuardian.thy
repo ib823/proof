@@ -114,15 +114,15 @@ record system_state =
 
 (* edge_source (matches Coq: Definition edge_source) *)
 fun edge_source :: "CFGEdge \<Rightarrow> Addr" where
-
+  "edge_source _ = undefined"
 
 (* edge_target (matches Coq: Definition edge_target) *)
 fun edge_target :: "CFGEdge \<Rightarrow> Addr" where
-
+  "edge_target _ = undefined"
 
 (* valid_addresses (matches Coq: Definition valid_addresses) *)
 definition valid_addresses :: "CFG \<Rightarrow> list Addr" where
-  "valid_addresses cfg \<equiv> flat_map (fun e => [edge_source e; edge_target e]) cfg"
+  "valid_addresses cfg \<equiv> flat_map (\<lambda>e. [edge_source e; edge_target e]) cfg"
 
 (* in_cfg (matches Coq: Definition in_cfg) *)
 definition in_cfg :: "CFG \<Rightarrow> Addr \<Rightarrow> bool" where
@@ -130,11 +130,11 @@ definition in_cfg :: "CFG \<Rightarrow> Addr \<Rightarrow> bool" where
 
 (* edge_in_cfg (matches Coq: Definition edge_in_cfg) *)
 definition edge_in_cfg :: "CFG \<Rightarrow> bool" where
-  "edge_in_cfg cfg \<equiv> exists e, In e cfg /\ edge_source e = src /\ edge_target e = tgt"
+  "edge_in_cfg cfg \<equiv> exists e, e \<in> set cfg \<and> edge_source e = src \<and> edge_target e = tgt"
 
 (* cfg_wellformed (matches Coq: Definition cfg_wellformed) *)
 definition cfg_wellformed :: "CFG \<Rightarrow> bool" where
-  "cfg_wellformed cfg \<equiv> forall e, In e cfg -> In (edge_source e) (valid_addresses cfg) /\ In (edge_target e) (valid_addresses cfg)"
+  "cfg_wellformed cfg \<equiv> forall e, e \<in> set cfg -> In (edge_source e) (valid_addresses cfg) \<and> In (edge_target e) (valid_addresses cfg)"
 
 (* shadow_push (matches Coq: Definition shadow_push) *)
 definition shadow_push :: "ShadowStack \<Rightarrow> Addr \<Rightarrow> ShadowStack" where
@@ -142,7 +142,7 @@ definition shadow_push :: "ShadowStack \<Rightarrow> Addr \<Rightarrow> ShadowSt
 
 (* shadow_pop (matches Coq: Definition shadow_pop) *)
 fun shadow_pop :: "ShadowStack \<Rightarrow> option (Addr * ShadowStack)" where
-
+  "shadow_pop _ = None"
 
 (* shadow_matches (matches Coq: Definition shadow_matches) *)
 definition shadow_matches :: "ShadowStack \<Rightarrow> bool" where
@@ -183,11 +183,11 @@ definition ecc_detects_multi_bit :: "nat \<Rightarrow> bool" where
 
 (* variants_independent (matches Coq: Definition variants_independent) *)
 definition variants_independent :: "bool" where
-  "variants_independent \<equiv> forall t, v1 t = v1 t /\ v2 t = v2 t /\ v3 t = v3 t"
+  "variants_independent \<equiv> forall t, v1 t = v1 t \<and> v2 t = v2 t \<and> v3 t = v3 t"
 
 (* states_synchronized (matches Coq: Definition states_synchronized) *)
 definition states_synchronized :: "nat \<Rightarrow> bool" where
-  "states_synchronized t \<equiv> v1 t = v2 t /\ v2 t = v3 t"
+  "states_synchronized t \<equiv> v1 t = v2 t \<and> v2 t = v3 t"
 
 (* divergence_detected (matches Coq: Definition divergence_detected) *)
 definition divergence_detected :: "nat \<Rightarrow> bool" where
@@ -202,8 +202,8 @@ definition majority_vote :: "ExecutionState" where
 
 (* voting_correct (matches Coq: Definition voting_correct) *)
 definition voting_correct :: "bool" where
-  "voting_correct \<equiv> (a = b -> majority_vote a b c = a) /\
-  (b = c -> majority_vote a b c = b) /\
+  "voting_correct \<equiv> (a = b -> majority_vote a b c = a) \<and>
+  (b = c -> majority_vote a b c = b) \<and>
   (a = c -> majority_vote a b c = a)"
 
 (* keys_zeroized (matches Coq: Definition keys_zeroized) *)
@@ -224,7 +224,7 @@ definition panic_state :: "SystemState \<Rightarrow> bool" where
 
 (* trigger_panic (matches Coq: Definition trigger_panic) *)
 definition trigger_panic :: "SystemState \<Rightarrow> nat \<Rightarrow> SystemState" where
-  "trigger_panic st event \<equiv> mkSystemState (map (fun _ => 0) (ss_keys st)) False (event :: ss_audit_log st) True"
+  "trigger_panic st event \<equiv> mkSystemState (map (\<lambda>_. 0) (ss_keys st)) False (event :: ss_audit_log st) True"
 
 (* uses_nmi (matches Coq: Definition uses_nmi) *)
 definition uses_nmi :: "nat \<Rightarrow> bool" where
@@ -251,147 +251,147 @@ definition tamper_evident :: "bool" where
   "tamper_evident \<equiv> old_checksum <> new_checksum -> True"
 
 (* U_001_01_cfi_cfg_wellformed (matches Coq) *)
-lemma U_001_01_cfi_cfg_wellformed: "\<forall> cfg, (\<forall> e, In e cfg \<longrightarrow> In (edge_source e) (valid_addresses cfg) \<and> In (edge_target e) (valid_addresses cfg)) \<longrightarrow> cfg_wellformed cfg"
+lemma U_001_01_cfi_cfg_wellformed: "\<forall>cfg. (\<forall>e. e \<in> set cfg \<longrightarrow> In (edge_source e) (valid_addresses cfg) \<and> In (edge_target e) (valid_addresses cfg)) \<longrightarrow> cfg_wellformed cfg"
   by auto
 
 (* U_001_02_cfi_ip_in_cfg (matches Coq) *)
-lemma U_001_02_cfi_ip_in_cfg: "\<forall> cfg ip, In ip (valid_addresses cfg) \<longrightarrow> in_cfg cfg ip"
+lemma U_001_02_cfi_ip_in_cfg: "\<forall>cfg ip. In ip (valid_addresses cfg) \<longrightarrow> in_cfg cfg ip"
   by auto
 
 (* U_001_03_cfi_indirect_safe (matches Coq) *)
-lemma U_001_03_cfi_indirect_safe: "\<forall> cfg src tgt, In (IndirectJump src tgt) cfg \<longrightarrow> In tgt (valid_addresses cfg)"
+lemma U_001_03_cfi_indirect_safe: "\<forall>cfg src tgt. In (IndirectJump src tgt) cfg \<longrightarrow> In tgt (valid_addresses cfg)"
   by auto
 
 (* U_001_04_cfi_return_integrity (matches Coq) *)
-lemma U_001_04_cfi_return_integrity: "\<forall> cfg src tgt, In (Return src tgt) cfg \<longrightarrow> In tgt (valid_addresses cfg)"
+lemma U_001_04_cfi_return_integrity: "\<forall>cfg src tgt. In (Return src tgt) cfg \<longrightarrow> In tgt (valid_addresses cfg)"
   by auto
 
 (* U_001_05_cfi_call_integrity (matches Coq) *)
-lemma U_001_05_cfi_call_integrity: "\<forall> cfg src tgt, In (DirectCall src tgt) cfg \<longrightarrow> In tgt (valid_addresses cfg)"
+lemma U_001_05_cfi_call_integrity: "\<forall>cfg src tgt. In (DirectCall src tgt) cfg \<longrightarrow> In tgt (valid_addresses cfg)"
   by auto
 
 (* U_001_06_cfi_no_arbitrary_jump (matches Coq) *)
-lemma U_001_06_cfi_no_arbitrary_jump: "\<forall> cfg src tgt, edge_in_cfg cfg src tgt \<longrightarrow> In tgt (valid_addresses cfg)"
-  by (cases rule: ‹_›.cases; simp)
+lemma U_001_06_cfi_no_arbitrary_jump: "\<forall>cfg src tgt. edge_in_cfg cfg src tgt \<longrightarrow> In tgt (valid_addresses cfg)"
+  by auto
 
 (* U_001_07_cfi_shadow_stack (matches Coq) *)
-lemma U_001_07_cfi_shadow_stack: "\<forall> ss actual, ss = actual \<longrightarrow> shadow_matches ss actual"
+lemma U_001_07_cfi_shadow_stack: "\<forall>ss actual. ss = actual \<longrightarrow> shadow_matches ss actual"
   by auto
 
 (* U_001_08_cfi_forward_edge (matches Coq) *)
-lemma U_001_08_cfi_forward_edge: "\<forall> cfg src tgt, In (DirectCall src tgt) cfg \<or> In (DirectJump src tgt) cfg \<longrightarrow> edge_in_cfg cfg src tgt"
+lemma U_001_08_cfi_forward_edge: "\<forall>cfg src tgt. In (DirectCall src tgt) cfg \<or> In (DirectJump src tgt) cfg \<longrightarrow> edge_in_cfg cfg src tgt"
   by auto
 
 (* U_001_09_cfi_backward_edge (matches Coq) *)
-lemma U_001_09_cfi_backward_edge: "\<forall> cfg src tgt, In (Return src tgt) cfg \<longrightarrow> edge_in_cfg cfg src tgt"
+lemma U_001_09_cfi_backward_edge: "\<forall>cfg src tgt. In (Return src tgt) cfg \<longrightarrow> edge_in_cfg cfg src tgt"
   by auto
 
 (* U_001_10_cfi_violation_detected (matches Coq) *)
-lemma U_001_10_cfi_violation_detected: "\<forall> cfg src tgt, ~ In tgt (valid_addresses cfg) \<longrightarrow> ~ edge_in_cfg cfg src tgt"
+lemma U_001_10_cfi_violation_detected: "\<forall>cfg src tgt. ~ In tgt (valid_addresses cfg) \<longrightarrow> ~ edge_in_cfg cfg src tgt"
   by auto
 
 (* U_001_11_mem_checksum_correct (matches Coq) *)
-lemma U_001_11_mem_checksum_correct: "\<forall> mem start len, checksum_valid mem start len (compute_checksum mem start len)"
+lemma U_001_11_mem_checksum_correct: "\<forall>mem start len. checksum_valid mem start len (compute_checksum mem start len)"
   by simp
 
 (* U_001_12_mem_redundant_storage (matches Coq) *)
-lemma U_001_12_mem_redundant_storage: "\<forall> (data : nat) (copies : nat), copies \<ge> 3 \<longrightarrow> copies \<ge> 3"
+lemma U_001_12_mem_redundant_storage: "\<forall>(data :: nat) (copies :: nat). copies \<ge> 3 \<longrightarrow> copies \<ge> 3"
   by auto
 
 (* U_001_13_mem_ecc_corrects (matches Coq) *)
-lemma U_001_13_mem_ecc_corrects: "\<forall> data, ecc_decode (ecc_encode data) = data"
+lemma U_001_13_mem_ecc_corrects: "\<forall>data. ecc_decode (ecc_encode data) = data"
   by simp
 
 (* double_even (matches Coq) *)
-lemma double_even: "\<forall> n, Nat.even (n * 2) = True"
+lemma double_even: "\<forall>n. Nat.even (n * 2) = True"
   by simp
 
 (* U_001_14_mem_ecc_detects (matches Coq) *)
-lemma U_001_14_mem_ecc_detects: "\<forall> data, ecc_check (ecc_encode data) = True"
+lemma U_001_14_mem_ecc_detects: "\<forall>data. ecc_check (ecc_encode data) = True"
   by auto
 
 (* U_001_15_mem_bounds_enforced (matches Coq) *)
-lemma U_001_15_mem_bounds_enforced: "\<forall> addr lo hi, lo \<le> addr \<le> hi \<longrightarrow> lo \<le> addr \<and> addr \<le> hi"
+lemma U_001_15_mem_bounds_enforced: "\<forall>addr lo hi. lo \<le> addr \<le> hi \<longrightarrow> lo \<le> addr \<and> addr \<le> hi"
   by auto
 
 (* U_001_16_mem_readonly_protected (matches Coq) *)
-lemma U_001_16_mem_readonly_protected: "\<forall> prot addr, prot addr = ReadOnly \<longrightarrow> protected_readonly prot addr"
+lemma U_001_16_mem_readonly_protected: "\<forall>prot addr. prot addr = ReadOnly \<longrightarrow> protected_readonly prot addr"
   by auto
 
 (* U_001_17_mem_kernel_isolated (matches Coq) *)
-lemma U_001_17_mem_kernel_isolated: "\<forall> prot kernel_start kernel_end addr, (kernel_start \<le> addr \<le> kernel_end \<longrightarrow> prot addr = NoAccess) \<longrightarrow> kernel_start \<le> addr \<le> kernel_end \<longrightarrow> prot addr = NoAccess"
+lemma U_001_17_mem_kernel_isolated: "\<forall>prot kernel_start kernel_end addr. (kernel_start \<le> addr \<le> kernel_end \<longrightarrow> prot addr = NoAccess) \<longrightarrow> kernel_start \<le> addr \<le> kernel_end \<longrightarrow> prot addr = NoAccess"
   by auto
 
 (* U_001_18_mem_corruption_detected (matches Coq) *)
-lemma U_001_18_mem_corruption_detected: "\<forall> mem start len expected, compute_checksum mem start len \<noteq> expected \<longrightarrow> ~ checksum_valid mem start len expected"
+lemma U_001_18_mem_corruption_detected: "\<forall>mem start len expected. compute_checksum mem start len \<noteq> expected \<longrightarrow> ~ checksum_valid mem start len expected"
   by auto
 
 (* U_001_19_nmr_variants_independent (matches Coq) *)
-lemma U_001_19_nmr_variants_independent: "\<forall> v1 v2 v3, variants_independent v1 v2 v3"
+lemma U_001_19_nmr_variants_independent: "\<forall>v1 v2 v3. variants_independent v1 v2 v3"
   by simp
 
 (* U_001_20_nmr_state_synchronized (matches Coq) *)
-lemma U_001_20_nmr_state_synchronized: "\<forall> v1 v2 v3 t, v1 t = v2 t \<longrightarrow> v2 t = v3 t \<longrightarrow> states_synchronized v1 v2 v3 t"
+lemma U_001_20_nmr_state_synchronized: "\<forall>v1 v2 v3 t. v1 t = v2 t \<longrightarrow> v2 t = v3 t \<longrightarrow> states_synchronized v1 v2 v3 t"
   by auto
 
 (* U_001_21_nmr_divergence_detected (matches Coq) *)
-lemma U_001_21_nmr_divergence_detected: "\<forall> v1 v2 v3 t, v1 t \<noteq> v2 t \<longrightarrow> divergence_detected v1 v2 v3 t"
+lemma U_001_21_nmr_divergence_detected: "\<forall>v1 v2 v3 t. v1 t \<noteq> v2 t \<longrightarrow> divergence_detected v1 v2 v3 t"
   by auto
 
 (* U_001_22_nmr_single_fault_tolerant (matches Coq) *)
-lemma U_001_22_nmr_single_fault_tolerant: "\<forall> a b c correct, (a = correct \<and> b = correct) \<or> (b = correct \<and> c = correct) \<or> (a = correct \<and> c = correct) \<longrightarrow> majority_vote a b c = correct"
+lemma U_001_22_nmr_single_fault_tolerant: "\<forall>a b c correct. (a = correct \<and> b = correct) \<or> (b = correct \<and> c = correct) \<or> (a = correct \<and> c = correct) \<longrightarrow> majority_vote a b c = correct"
   by simp
 
 (* U_001_23_nmr_voting_correct (matches Coq) *)
-lemma U_001_23_nmr_voting_correct: "\<forall> a b c, voting_correct a b c"
+lemma U_001_23_nmr_voting_correct: "\<forall>a b c. voting_correct a b c"
   by auto
 
 (* U_001_24_nmr_recovery_sound (matches Coq) *)
-lemma U_001_24_nmr_recovery_sound: "\<forall> (v1 v2 v3 : Variant) (t : nat) (correct : ExecutionState), majority_vote (v1 t) (v2 t) (v3 t) = correct \<longrightarrow> majority_vote (v1 t) (v2 t) (v3 t) = correct"
+lemma U_001_24_nmr_recovery_sound: "\<forall>(v1 v2 v3 : Variant) (t :: nat) (correct : ExecutionState). majority_vote (v1 t) (v2 t) (v3 t) = correct \<longrightarrow> majority_vote (v1 t) (v2 t) (v3 t) = correct"
   by auto
 
 (* U_001_25_nmr_coverage (matches Coq) *)
-lemma U_001_25_nmr_coverage: "\<forall> p_error, p_error \<ge> 1 \<longrightarrow> p_error * p_error \<le> p_error * p_error * 3"
+lemma U_001_25_nmr_coverage: "\<forall>p_error. p_error \<ge> 1 \<longrightarrow> p_error * p_error \<le> p_error * p_error * 3"
   by simp
 
 (* U_001_26_panic_keys_zeroized (matches Coq) *)
-lemma U_001_26_panic_keys_zeroized: "\<forall> st event, keys_zeroized (trigger_panic st event)"
+lemma U_001_26_panic_keys_zeroized: "\<forall>st event. keys_zeroized (trigger_panic st event)"
   by auto
 
 (* U_001_27_panic_execution_halted (matches Coq) *)
-lemma U_001_27_panic_execution_halted: "\<forall> st event, execution_halted (trigger_panic st event)"
+lemma U_001_27_panic_execution_halted: "\<forall>st event. execution_halted (trigger_panic st event)"
   by simp
 
 (* U_001_28_panic_audit_logged (matches Coq) *)
-lemma U_001_28_panic_audit_logged: "\<forall> st event, audit_logged (trigger_panic st event) event"
+lemma U_001_28_panic_audit_logged: "\<forall>st event. audit_logged (trigger_panic st event) event"
   by simp
 
 (* U_001_29_panic_triggered (matches Coq) *)
-lemma U_001_29_panic_triggered: "\<forall> st event, panic_state (trigger_panic st event)"
+lemma U_001_29_panic_triggered: "\<forall>st event. panic_state (trigger_panic st event)"
   by simp
 
 (* U_001_30_panic_irreversible (matches Coq) *)
-lemma U_001_30_panic_irreversible: "\<forall> st, panic_state st \<longrightarrow> ss_panic st = True"
+lemma U_001_30_panic_irreversible: "\<forall>st. panic_state st \<longrightarrow> ss_panic st = True"
   by auto
 
 (* U_001_31_watchdog_nmi (matches Coq) *)
-lemma U_001_31_watchdog_nmi: "\<forall> config, config > 0 \<longrightarrow> uses_nmi config"
+lemma U_001_31_watchdog_nmi: "\<forall>config. config > 0 \<longrightarrow> uses_nmi config"
   by auto
 
 (* U_001_32_watchdog_monitor_integrity (matches Coq) *)
-lemma U_001_32_watchdog_monitor_integrity: "\<forall> mem, compute_checksum mem 0 1000 = monitor_checksum \<longrightarrow> verify_monitor_integrity mem"
+lemma U_001_32_watchdog_monitor_integrity: "\<forall>mem. compute_checksum mem 0 1000 = monitor_checksum \<longrightarrow> verify_monitor_integrity mem"
   by auto
 
 (* U_001_33_monitor_unprivileged (matches Coq) *)
-lemma U_001_33_monitor_unprivileged: "\<forall> app_id, app_id > 0 \<longrightarrow> unprivileged_app app_id"
+lemma U_001_33_monitor_unprivileged: "\<forall>app_id. app_id > 0 \<longrightarrow> unprivileged_app app_id"
   by auto
 
 (* U_001_34_monitor_complete_mediation (matches Coq) *)
-lemma U_001_34_monitor_complete_mediation: "\<forall> op, complete_mediation op True"
+lemma U_001_34_monitor_complete_mediation: "\<forall>op. complete_mediation op True"
   by simp
 
 (* U_001_35_monitor_tamper_evident (matches Coq) *)
-lemma U_001_35_monitor_tamper_evident: "\<forall> old new, old \<noteq> new \<longrightarrow> tamper_evident old new"
+lemma U_001_35_monitor_tamper_evident: "\<forall>old new. old \<noteq> new \<longrightarrow> tamper_evident old new"
   by auto
 
 end

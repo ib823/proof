@@ -142,7 +142,7 @@ definition apply_seu :: "bool" where "apply_seu = undefined"
 
 (* majority_vote (matches Coq: Definition majority_vote) *)
 definition majority_vote :: "bool" where
-  "majority_vote \<equiv> (((a \<or> \<and>) b)) ((((b \<or> \<and>) c)) ((a \<and> c)))"
+  "majority_vote \<equiv> ((a \<and> b) \<or> (b \<and> c) \<or> (a \<and> c))"
 
 (* majority_vote_nat (matches Coq: Definition majority_vote_nat) *)
 definition majority_vote_nat :: "option nat" where
@@ -169,42 +169,41 @@ definition hamming_distance :: "bool" where "hamming_distance = undefined"
 
 (* ecc_syndrome (matches Coq: Definition ecc_syndrome) *)
 definition ecc_syndrome :: "ECCWord \<Rightarrow> nat" where
-  "ecc_syndrome e \<equiv> fold_left (fun (acc : nat) (b : bool) => acc + (if b then 1 else 0)) (ecc_parity e) 0"
+  "ecc_syndrome e \<equiv> fold_left (\<lambda>acc b. acc + (if b then 1 else 0)) (ecc_parity e) 0"
 
 (* watchdog_expired (matches Coq: Definition watchdog_expired) *)
 definition watchdog_expired :: "Watchdog \<Rightarrow> nat \<Rightarrow> bool" where
-  "watchdog_expired wd current_time \<equiv> ((wd_last_kick < wd) + wd_timeout wd) current_time"
+  "watchdog_expired wd current_time \<equiv> (wd_last_kick wd + wd_timeout wd < current_time)"
 
 (* cf_valid (matches Coq: Definition cf_valid) *)
 definition cf_valid :: "CFSignature \<Rightarrow> nat \<Rightarrow> bool" where
-  "cf_valid cfs actual_next \<equiv> existsb ((actual_next) = (cfs_expected_next) cfs)"
+  "cf_valid cfs actual_next \<equiv> existsb (\<lambda>n. actual_next = n) (cfs_expected_next cfs)"
 
 (* canary_valid (matches Coq: Definition canary_valid) *)
 definition canary_valid :: "StackFrame \<Rightarrow> bool" where
-  "canary_valid sf \<equiv> ((sf_canary = sf)) (sf_expected_canary sf)"
+  "canary_valid sf \<equiv> (sf_canary sf = sf_expected_canary sf)"
 
 (* mode_eqb - complex match, needs manual translation *)
 definition mode_eqb :: "bool" where "mode_eqb = undefined"
 
 (* count_agreements (matches Coq: Definition count_agreements) *)
 definition count_agreements :: "nat \<Rightarrow> nat" where
-  "count_agreements value \<equiv> length (filter ((value) = results))"
+  "count_agreements value \<equiv> length (filter (\<lambda>r. r = value) results)"
 
 (* nvr_consensus - complex match, needs manual translation *)
 definition nvr_consensus :: "bool" where "nvr_consensus = undefined"
 
 (* prob_lt (matches Coq: Definition prob_lt) *)
 definition prob_lt :: "bool" where
-  "prob_lt \<equiv> ((prob_num < p1) * prob_denom p2) (prob_num p2 * prob_denom p1)"
+  "prob_lt \<equiv> (prob_num p1 * prob_denom p2 < prob_num p2 * prob_denom p1)"
 
 (* recovery_within_bound (matches Coq: Definition recovery_within_bound) *)
 definition recovery_within_bound :: "RecoveryMetrics \<Rightarrow> bool" where
-  "recovery_within_bound rm \<equiv> ((rm_mttr \<le> rm)) (rm_requirement rm)"
+  "recovery_within_bound rm \<equiv> (rm_mttr rm \<le> rm_requirement rm)"
 
 (* cd_consistent (matches Coq: Definition cd_consistent) *)
 definition cd_consistent :: "CriticalData \<Rightarrow> bool" where
-  "cd_consistent cd \<equiv> (((cd_primary = cd) \<and> cd_backup1 cd))
-       (((cd_backup1 = cd)) (cd_backup2 cd))"
+  "cd_consistent cd \<equiv> (cd_primary cd = cd_backup1 cd \<and> cd_backup1 cd = cd_backup2 cd)"
 
 (* cd_recover - complex match, needs manual translation *)
 definition cd_recover :: "bool" where "cd_recover = undefined"
@@ -226,83 +225,83 @@ definition seu_response :: "bool \<Rightarrow> SystemMode \<Rightarrow> SystemMo
   "seu_response seu_detected current_mode \<equiv> if seu_detected then SafeMode else current_mode"
 
 (* DOMAIN_001_01 (matches Coq) *)
-lemma DOMAIN_001_01: "\<forall> (v : nat), let t := mkTMR v v v in tmr_read t = Some v"
+lemma DOMAIN_001_01: "\<forall>(v :: nat). let t := mkTMR v v v in tmr_read t = Some v"
   by simp
 
 (* DOMAIN_001_02 (matches Coq) *)
-lemma DOMAIN_001_02: "\<forall> (a b c : nat), a = b \<or> b = c \<or> a = c \<longrightarrow> \<exists> v, majority_vote_nat a b c = Some v \<and> (v = a \<or> v = b \<or> v = c)"
+lemma DOMAIN_001_02: "\<forall>(a b c : nat). a = b \<or> b = c \<or> a = c \<longrightarrow> \<exists>v. majority_vote_nat a b c = Some v \<and> (v = a \<or> v = b \<or> v = c)"
   by auto
 
 (* DOMAIN_001_03 (matches Coq) *)
-lemma DOMAIN_001_03: "\<forall> (data : Word), let ecc_clean := mkECC data [False; False; False] in ecc_syndrome ecc_clean = 0"
+lemma DOMAIN_001_03: "\<forall>(data :: Word). let ecc_clean := mkECC data [False; False; False] in ecc_syndrome ecc_clean = 0"
   by simp
 
 (* DOMAIN_001_04 (matches Coq) *)
-lemma DOMAIN_001_04: "\<forall> (w : Word), hamming_distance w w = 0"
+lemma DOMAIN_001_04: "\<forall>(w :: Word). hamming_distance w w = 0"
   by simp
 
 (* DOMAIN_001_05 (matches Coq) *)
-lemma DOMAIN_001_05: "\<forall> (wd : Watchdog) (current_time : nat), current_time > wd_last_kick wd + wd_timeout wd \<longrightarrow> watchdog_expired wd current_time = True"
+lemma DOMAIN_001_05: "\<forall>(wd :: Watchdog) (current_time :: nat). current_time > wd_last_kick wd + wd_timeout wd \<longrightarrow> watchdog_expired wd current_time = True"
   by simp
 
 (* DOMAIN_001_06 (matches Coq) *)
-lemma DOMAIN_001_06: "\<forall> (state timestamp : nat), let cp := mkCP state timestamp True in restore_checkpoint cp = Some state"
+lemma DOMAIN_001_06: "\<forall>(state timestamp : nat). let cp := mkCP state timestamp True in restore_checkpoint cp = Some state"
   by simp
 
 (* DOMAIN_001_07 (matches Coq) *)
-lemma DOMAIN_001_07: "\<forall> (v : nat), let t := store_critical v in tmr_copy1 t = v \<and> tmr_copy2 t = v \<and> tmr_copy3 t = v"
+lemma DOMAIN_001_07: "\<forall>(v :: nat). let t := store_critical v in tmr_copy1 t = v \<and> tmr_copy2 t = v \<and> tmr_copy3 t = v"
   by auto
 
 (* DOMAIN_001_08 (matches Coq) *)
-lemma DOMAIN_001_08: "\<forall> (cfs : CFSignature) (addr : nat), In addr (cfs_expected_next cfs) \<longrightarrow> cf_valid cfs addr = True"
+lemma DOMAIN_001_08: "\<forall>(cfs :: CFSignature) (addr :: nat). In addr (cfs_expected_next cfs) \<longrightarrow> cf_valid cfs addr = True"
   by auto
 
 (* DOMAIN_001_09 (matches Coq) *)
-lemma DOMAIN_001_09: "\<forall> (canary data : nat), let sf := mkSF canary data canary in canary_valid sf = True"
+lemma DOMAIN_001_09: "\<forall>(canary data : nat). let sf := mkSF canary data canary in canary_valid sf = True"
   by auto
 
 (* DOMAIN_001_09_corrupted (matches Coq) *)
-lemma DOMAIN_001_09_corrupted: "\<forall> (canary data expected : nat), canary \<noteq> expected \<longrightarrow> let sf := mkSF canary data expected in canary_valid sf = False"
+lemma DOMAIN_001_09_corrupted: "\<forall>(canary data expected : nat). canary \<noteq> expected \<longrightarrow> let sf := mkSF canary data expected in canary_valid sf = False"
   by auto
 
 (* DOMAIN_001_10 (matches Coq) *)
-lemma DOMAIN_001_10: "\<forall> (addr found corrected : nat), corrected \<le> found \<longrightarrow> let ss := mkScrub addr found corrected in scrub_effective ss = True"
+lemma DOMAIN_001_10: "\<forall>(addr found corrected : nat). corrected \<le> found \<longrightarrow> let ss := mkScrub addr found corrected in scrub_effective ss = True"
   by auto
 
 (* DOMAIN_001_11 (matches Coq) *)
-lemma DOMAIN_001_11: "\<forall> (current_mode : SystemMode), seu_response True current_mode = SafeMode"
+lemma DOMAIN_001_11: "\<forall>(current_mode :: SystemMode). seu_response True current_mode = SafeMode"
   by simp
 
 (* DOMAIN_001_12 (matches Coq) *)
-lemma DOMAIN_001_12: "\<forall> (v : nat) (threshold : nat), threshold \<le> 3 \<longrightarrow> let nvr := mkNVR [v; v; v] threshold in nvr_consensus nvr = Some v"
-  by (cases rule: ‹_›.cases; simp)
+lemma DOMAIN_001_12: "\<forall>(v :: nat) (threshold :: nat). threshold \<le> 3 \<longrightarrow> let nvr := mkNVR [v; v; v] threshold in nvr_consensus nvr = Some v"
+  by auto
 
 (* DOMAIN_001_13 (matches Coq) *)
-lemma DOMAIN_001_13: "\<forall> (p_actual p_threshold : Probability), prob_num p_actual * prob_denom p_threshold < prob_num p_threshold * prob_denom p_actual \<longrightarrow> prob_lt p_actual p_threshold = True"
+lemma DOMAIN_001_13: "\<forall>(p_actual p_threshold : Probability). prob_num p_actual * prob_denom p_threshold < prob_num p_threshold * prob_denom p_actual \<longrightarrow> prob_lt p_actual p_threshold = True"
   by auto
 
 (* DOMAIN_001_14 (matches Coq) *)
-lemma DOMAIN_001_14: "\<forall> (mttr requirement : nat), mttr \<le> requirement \<longrightarrow> let rm := mkRM mttr requirement in recovery_within_bound rm = True"
+lemma DOMAIN_001_14: "\<forall>(mttr requirement : nat). mttr \<le> requirement \<longrightarrow> let rm := mkRM mttr requirement in recovery_within_bound rm = True"
   by auto
 
 (* DOMAIN_001_15 (matches Coq) *)
-lemma DOMAIN_001_15: "\<forall> (v : nat), let cd := mkCD v v v 0 in cd_recover cd = v"
+lemma DOMAIN_001_15: "\<forall>(v :: nat). let cd := mkCD v v v 0 in cd_recover cd = v"
   by simp
 
 (* DOMAIN_001_15_single_corruption (matches Coq) *)
-lemma DOMAIN_001_15_single_corruption: "\<forall> (v corrupted : nat), let cd := mkCD corrupted v v 0 in cd_recover cd = v"
-  by (cases rule: ‹_›.cases; simp)
+lemma DOMAIN_001_15_single_corruption: "\<forall>(v corrupted : nat). let cd := mkCD corrupted v v 0 in cd_recover cd = v"
+  by auto
 
 (* DOMAIN_001_16 (matches Coq) *)
-lemma DOMAIN_001_16: "\<forall> (b : bool), majority_vote b b b = b"
-  by (cases rule: ‹_›.cases; simp)
+lemma DOMAIN_001_16: "\<forall>(b :: bool). majority_vote b b b = b"
+  by auto
 
 (* DOMAIN_001_17 (matches Coq) *)
-lemma DOMAIN_001_17: "\<forall> (v : nat) (chk : nat), cd_consistent (mkCD v v v chk) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma DOMAIN_001_17: "\<forall>(v :: nat) (chk :: nat). cd_consistent (mkCD v v v chk) = True"
+  by auto
 
 (* DOMAIN_001_18 (matches Coq) *)
-lemma DOMAIN_001_18: "\<forall> (b : Bit), flip_bit (flip_bit b) = b"
+lemma DOMAIN_001_18: "\<forall>(b :: Bit). flip_bit (flip_bit b) = b"
   by simp
 
 end

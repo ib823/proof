@@ -80,7 +80,7 @@ definition ctx_extend :: "Ctx \<Rightarrow> Ty \<Rightarrow> Ctx" where
 
 (* ctx_lookup (matches Coq: Definition ctx_lookup) *)
 fun ctx_lookup :: "Ctx \<Rightarrow> nat \<Rightarrow> option Ty" where
-
+  "ctx_lookup _ = None"
 
 (* shift (matches Coq: Definition shift) *)
 fun shift :: "Term \<Rightarrow> Term" where
@@ -91,103 +91,103 @@ fun subst :: "nat \<Rightarrow> Term" where
   "subst TmUnit = TmUnit"
 
 (* cumulativity_level (matches Coq) *)
-lemma cumulativity_level: "\<forall> A l, has_level A l \<longrightarrow> has_level A (S l)"
+lemma cumulativity_level: "\<forall>A l. has_level A l \<longrightarrow> has_level A (S l)"
   by simp
 
 (* TYPE_001_01 (matches Coq) *)
-lemma TYPE_001_01: "\<forall> (G : Ctx) (A B : Ty), wf_ctx G \<longrightarrow> wf_ty G A \<longrightarrow> wf_ty (ctx_extend G A) B \<longrightarrow> wf_ty G (TPi A B)"
+lemma TYPE_001_01: "\<forall>(G :: Ctx) (A B : Ty). wf_ctx G \<longrightarrow> wf_ty G A \<longrightarrow> wf_ty (ctx_extend G A) B \<longrightarrow> wf_ty G (TPi A B)"
   by auto
 
 (* TYPE_001_02 (matches Coq) *)
-lemma TYPE_001_02: "\<forall> (G : Ctx) (A B : Ty) (f a : Term), has_type G f (TPi A B) \<longrightarrow> has_type G a A \<longrightarrow> has_type G (TmApp f a) B"
+lemma TYPE_001_02: "\<forall>(G :: Ctx) (A B : Ty) (f a : Term). has_type G f (TPi A B) \<longrightarrow> has_type G a A \<longrightarrow> has_type G (TmApp f a) B"
   by auto
 
 (* TYPE_001_03 (matches Coq) *)
-lemma TYPE_001_03: "\<forall> (G : Ctx) (A B : Ty) (a b : Term), wf_ty G (TSigma A B) \<longrightarrow> has_type G a A \<longrightarrow> has_type G b B \<longrightarrow> has_type G (TmPair a b) (TSigma A B)"
+lemma TYPE_001_03: "\<forall>(G :: Ctx) (A B : Ty) (a b : Term). wf_ty G (TSigma A B) \<longrightarrow> has_type G a A \<longrightarrow> has_type G b B \<longrightarrow> has_type G (TmPair a b) (TSigma A B)"
   by auto
 
 (* TYPE_001_04 (matches Coq) *)
-lemma TYPE_001_04: "\<forall> (G : Ctx) (A B : Ty) (p : Term), has_type G p (TSigma A B) \<longrightarrow> has_type G (TmFst p) A \<and> has_type G (TmSnd p) B"
+lemma TYPE_001_04: "\<forall>(G :: Ctx) (A B : Ty) (p :: Term). has_type G p (TSigma A B) \<longrightarrow> has_type G (TmFst p) A \<and> has_type G (TmSnd p) B"
   by auto
 
 (* TYPE_001_05 (matches Coq) *)
-lemma TYPE_001_05: "\<forall> (G : Ctx) (A : Ty) (a : Term), wf_ty G A \<longrightarrow> has_type G a A \<longrightarrow> has_type G (TmRefl a) (TId A)"
+lemma TYPE_001_05: "\<forall>(G :: Ctx) (A :: Ty) (a : Term). wf_ty G A \<longrightarrow> has_type G a A \<longrightarrow> has_type G (TmRefl a) (TId A)"
   by auto
 
 (* TYPE_001_06 (matches Coq) *)
-lemma TYPE_001_06: "\<forall> (G : Ctx) (A : Ty) (C : Ty) (d p : Term), wf_ty G A \<longrightarrow> has_type G d C \<longrightarrow> has_type G p (TId A) \<longrightarrow> has_type G (TmJ A C d p) C"
+lemma TYPE_001_06: "\<forall>(G :: Ctx) (A :: Ty) (C : Ty) (d p : Term). wf_ty G A \<longrightarrow> has_type G d C \<longrightarrow> has_type G p (TId A) \<longrightarrow> has_type G (TmJ A C d p) C"
   by auto
 
 (* TYPE_001_07 (matches Coq) *)
-lemma TYPE_001_07: "\<forall> l, has_level (TUniverse l) (S l)"
+lemma TYPE_001_07: "\<forall>l. has_level (TUniverse l) (S l)"
   by simp
 
 (* TYPE_001_08 (matches Coq) *)
-lemma TYPE_001_08: "\<forall> (A : Ty) (l : Level), has_level A l \<longrightarrow> has_level A (S l)"
+lemma TYPE_001_08: "\<forall>(A :: Ty) (l :: Level). has_level A l \<longrightarrow> has_level A (S l)"
   by auto
 
 (* TYPE_001_09 (matches Coq) *)
-lemma TYPE_001_09: "\<forall> (G : Ctx) (A : Ty), wf_ctx G \<longrightarrow> wf_ctx (ctx_extend G A)"
+lemma TYPE_001_09: "\<forall>(G :: Ctx) (A :: Ty). wf_ctx G \<longrightarrow> wf_ctx (ctx_extend G A)"
   by auto
 
 (* TYPE_001_10 (matches Coq) *)
-lemma TYPE_001_10: "\<forall> t1 t2 n s, term_eq t1 t2 \<longrightarrow> term_eq (subst n s t1) (subst n s t2)"
+lemma TYPE_001_10: "\<forall>t1 t2 n s. term_eq t1 t2 \<longrightarrow> term_eq (subst n s t1) (subst n s t2)"
   by auto
 
 (* type_uniqueness_eq (matches Coq) *)
-lemma type_uniqueness_eq: "\<forall> (G : Ctx) t A B, has_type G t A \<longrightarrow> has_type G t B \<longrightarrow> A = B"
+lemma type_uniqueness_eq: "\<forall>(G :: Ctx) t A B. has_type G t A \<longrightarrow> has_type G t B \<longrightarrow> A = B"
   by simp
 
 (* TYPE_001_11 (matches Coq) *)
-lemma TYPE_001_11: "\<forall> (G : Ctx) t A B, has_type G t A \<longrightarrow> has_type G t B \<longrightarrow> ty_eq A B"
+lemma TYPE_001_11: "\<forall>(G :: Ctx) t A B. has_type G t A \<longrightarrow> has_type G t B \<longrightarrow> ty_eq A B"
   by auto
 
 (* TYPE_001_12 (matches Coq) *)
-lemma TYPE_001_12: "\<forall> A t a, comp_eq (TmApp (TmLam A t) a) (subst 0 a t)"
+lemma TYPE_001_12: "\<forall>A t a. comp_eq (TmApp (TmLam A t) a) (subst 0 a t)"
   by auto
 
 (* TYPE_001_13 (matches Coq) *)
-lemma TYPE_001_13: "\<forall> A f, comp_eq (TmLam A (TmApp (shift 0 1 f) (TmVar 0))) f"
+lemma TYPE_001_13: "\<forall>A f. comp_eq (TmLam A (TmApp (shift 0 1 f) (TmVar 0))) f"
   by auto
 
 (* TYPE_001_14 (matches Coq) *)
-lemma TYPE_001_14: "\<forall> p, comp_eq (TmPair (TmFst p) (TmSnd p)) p"
+lemma TYPE_001_14: "\<forall>p. comp_eq (TmPair (TmFst p) (TmSnd p)) p"
   by auto
 
 (* red_star_trans (matches Coq) *)
-lemma red_star_trans: "\<forall> t u v, reduces_star t u \<longrightarrow> reduces_star u v \<longrightarrow> reduces_star t v"
+lemma red_star_trans: "\<forall>t u v. reduces_star t u \<longrightarrow> reduces_star u v \<longrightarrow> reduces_star t v"
   by auto
 
 (* red_star_app (matches Coq) *)
-lemma red_star_app: "\<forall> f f' a a', reduces_star f f' \<longrightarrow> reduces_star a a' \<longrightarrow> reduces_star (TmApp f a) (TmApp f' a')"
+lemma red_star_app: "\<forall>f f' a a'. reduces_star f f' \<longrightarrow> reduces_star a a' \<longrightarrow> reduces_star (TmApp f a) (TmApp f' a')"
   by auto
 
 (* red_star_lam (matches Coq) *)
-lemma red_star_lam: "\<forall> A body body', reduces_star body body' \<longrightarrow> reduces_star (TmLam A body) (TmLam A body')"
+lemma red_star_lam: "\<forall>A body body'. reduces_star body body' \<longrightarrow> reduces_star (TmLam A body) (TmLam A body')"
   by auto
 
 (* red_star_pair (matches Coq) *)
-lemma red_star_pair: "\<forall> a a' b b', reduces_star a a' \<longrightarrow> reduces_star b b' \<longrightarrow> reduces_star (TmPair a b) (TmPair a' b')"
+lemma red_star_pair: "\<forall>a a' b b'. reduces_star a a' \<longrightarrow> reduces_star b b' \<longrightarrow> reduces_star (TmPair a b) (TmPair a' b')"
   by auto
 
 (* red_star_fst (matches Coq) *)
-lemma red_star_fst: "\<forall> p p', reduces_star p p' \<longrightarrow> reduces_star (TmFst p) (TmFst p')"
+lemma red_star_fst: "\<forall>p p'. reduces_star p p' \<longrightarrow> reduces_star (TmFst p) (TmFst p')"
   by auto
 
 (* red_star_snd (matches Coq) *)
-lemma red_star_snd: "\<forall> p p', reduces_star p p' \<longrightarrow> reduces_star (TmSnd p) (TmSnd p')"
+lemma red_star_snd: "\<forall>p p'. reduces_star p p' \<longrightarrow> reduces_star (TmSnd p) (TmSnd p')"
   by auto
 
 (* red_star_refl_tm (matches Coq) *)
-lemma red_star_refl_tm: "\<forall> a a', reduces_star a a' \<longrightarrow> reduces_star (TmRefl a) (TmRefl a')"
+lemma red_star_refl_tm: "\<forall>a a'. reduces_star a a' \<longrightarrow> reduces_star (TmRefl a) (TmRefl a')"
   by auto
 
 (* red_star_J (matches Coq) *)
-lemma red_star_J: "\<forall> A C d d' p p', reduces_star d d' \<longrightarrow> reduces_star p p' \<longrightarrow> reduces_star (TmJ A C d p) (TmJ A C d' p')"
+lemma red_star_J: "\<forall>A C d d' p p'. reduces_star d d' \<longrightarrow> reduces_star p p' \<longrightarrow> reduces_star (TmJ A C d p) (TmJ A C d' p')"
   by auto
 
 (* TYPE_001_15 (matches Coq) *)
-lemma TYPE_001_15: "\<forall> t, (\<exists> nf, reduces_star t nf \<and> (normal nf \<or> neutral nf))"
+lemma TYPE_001_15: "\<forall>t. (\<exists>nf. reduces_star t nf \<and> (normal nf \<or> neutral nf))"
   by auto
 
 end

@@ -76,11 +76,11 @@ datatype atomic_op =
 
 (* nonce_unique (matches Coq: Definition nonce_unique) *)
 definition nonce_unique :: "nat \<Rightarrow> bool" where
-  "nonce_unique nonce \<equiv> (\<not> (existsb) (fun n => (n = nonce)) seen)"
+  "nonce_unique nonce \<equiv> (\<not> (existsb) (\<lambda>n. (n = nonce)) seen)"
 
 (* is_replay (matches Coq: Definition is_replay) *)
 definition is_replay :: "ProtectedMessage \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
-  "is_replay msg window \<equiv> existsb (fun n => (n = (nonce_value) (msg_nonce msg))) (window_seen window)"
+  "is_replay msg window \<equiv> existsb (\<lambda>n. (n = (nonce_value) (msg_nonce msg))) (window_seen window)"
 
 (* seq_increasing (matches Coq: Definition seq_increasing) *)
 definition seq_increasing :: "ProtectedMessage \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
@@ -96,7 +96,7 @@ definition capability_valid :: "Capability \<Rightarrow> nat \<Rightarrow> bool"
 
 (* owner_matches (matches Coq: Definition owner_matches) *)
 definition owner_matches :: "Capability \<Rightarrow> nat \<Rightarrow> bool" where
-  "owner_matches cap requester \<equiv> ((cap_owner = cap)) requester"
+  "owner_matches cap requester \<equiv> (cap_owner cap = requester)"
 
 (* atomic_complete (matches Coq: Definition atomic_complete) *)
 definition atomic_complete :: "bool" where
@@ -168,106 +168,106 @@ definition session_valid :: "bool" where
 
 (* time_layers (matches Coq: Definition time_layers) *)
 definition time_layers :: "bool" where
-  "time_layers \<equiv> (replay \<and> (andb) toctou ((atomic \<and> timestamp)))"
+  "time_layers \<equiv> (replay \<and> toctou \<and> atomic \<and> timestamp)"
 
 (* time_001_nonce_unique (matches Coq) *)
-lemma time_001_nonce_unique: "\<forall> (nonce : nat) (seen : list nat), nonce_unique nonce seen = True \<longrightarrow> ~ In nonce seen"
+lemma time_001_nonce_unique: "\<forall>(nonce :: nat) (seen : list nat). nonce_unique nonce seen = True \<longrightarrow> ~ nonce \<in> set seen"
   by auto
 
 (* time_002_replay_detected (matches Coq) *)
-lemma time_002_replay_detected: "\<forall> (msg : ProtectedMessage) (window : ReplayWindow), is_replay msg window = True \<longrightarrow> In (nonce_value (msg_nonce msg)) (window_seen window)"
+lemma time_002_replay_detected: "\<forall>(msg :: ProtectedMessage) (window :: ReplayWindow). is_replay msg window = True \<longrightarrow> In (nonce_value (msg_nonce msg)) (window_seen window)"
   by auto
 
 (* time_003_seq_increasing (matches Coq) *)
-lemma time_003_seq_increasing: "\<forall> (msg : ProtectedMessage) (window : ReplayWindow), seq_increasing msg window = True \<longrightarrow> window_last_seq window < msg_sequence msg"
+lemma time_003_seq_increasing: "\<forall>(msg :: ProtectedMessage) (window :: ReplayWindow). seq_increasing msg window = True \<longrightarrow> window_last_seq window < msg_sequence msg"
   by auto
 
 (* time_004_timestamp_fresh (matches Coq) *)
-lemma time_004_timestamp_fresh: "\<forall> (ts : AuthTimestamp) (current max_age : nat), timestamp_fresh ts current max_age = True \<longrightarrow> current - ts_value ts \<le> max_age"
+lemma time_004_timestamp_fresh: "\<forall>(ts :: AuthTimestamp) (current max_age : nat). timestamp_fresh ts current max_age = True \<longrightarrow> current - ts_value ts \<le> max_age"
   by auto
 
 (* time_005_capability_valid (matches Coq) *)
-lemma time_005_capability_valid: "\<forall> (cap : Capability) (current_time : nat), capability_valid cap current_time = True \<longrightarrow> current_time < cap_valid_until cap"
+lemma time_005_capability_valid: "\<forall>(cap :: Capability) (current_time :: nat). capability_valid cap current_time = True \<longrightarrow> current_time < cap_valid_until cap"
   by auto
 
 (* time_006_owner_matches (matches Coq) *)
-lemma time_006_owner_matches: "\<forall> (cap : Capability) (requester : nat), owner_matches cap requester = True \<longrightarrow> cap_owner cap = requester"
+lemma time_006_owner_matches: "\<forall>(cap :: Capability) (requester :: nat). owner_matches cap requester = True \<longrightarrow> cap_owner cap = requester"
   by auto
 
 (* time_007_atomic_complete (matches Coq) *)
-lemma time_007_atomic_complete: "\<forall> (started finished : bool), atomic_complete started finished = True \<longrightarrow> started = True \<longrightarrow> finished = True"
+lemma time_007_atomic_complete: "\<forall>(started finished : bool). atomic_complete started finished = True \<longrightarrow> started = True \<longrightarrow> finished = True"
   by auto
 
 (* time_008_cas_correct (matches Coq) *)
-lemma time_008_cas_correct: "\<forall> (current expected new_val : nat), cas_succeeds current expected new_val = True \<longrightarrow> current = expected"
+lemma time_008_cas_correct: "\<forall>(current expected new_val : nat). cas_succeeds current expected new_val = True \<longrightarrow> current = expected"
   by auto
 
 (* time_009_clock_monotonic (matches Coq) *)
-lemma time_009_clock_monotonic: "\<forall> (old_time new_time : nat), clock_monotonic old_time new_time = True \<longrightarrow> old_time \<le> new_time"
+lemma time_009_clock_monotonic: "\<forall>(old_time new_time : nat). clock_monotonic old_time new_time = True \<longrightarrow> old_time \<le> new_time"
   by auto
 
 (* time_010_happens_before (matches Coq) *)
-lemma time_010_happens_before: "\<forall> (e1_time e2_time : nat), happens_before e1_time e2_time = True \<longrightarrow> e1_time < e2_time"
+lemma time_010_happens_before: "\<forall>(e1_time e2_time : nat). happens_before e1_time e2_time = True \<longrightarrow> e1_time < e2_time"
   by auto
 
 (* time_011_logical_clock_update (matches Coq) *)
-lemma time_011_logical_clock_update: "\<forall> (old_counter received : nat), old_counter < logical_clock_update old_counter received \<and> received < logical_clock_update old_counter received"
+lemma time_011_logical_clock_update: "\<forall>(old_counter received : nat). old_counter < logical_clock_update old_counter received \<and> received < logical_clock_update old_counter received"
   by auto
 
 (* time_012_timestamp_auth (matches Coq) *)
-lemma time_012_timestamp_auth: "\<forall> (expected actual : nat), signature_valid expected actual = True \<longrightarrow> expected = actual"
+lemma time_012_timestamp_auth: "\<forall>(expected actual : nat). signature_valid expected actual = True \<longrightarrow> expected = actual"
   by auto
 
 (* time_013_multi_source (matches Coq) *)
-lemma time_013_multi_source: "\<forall> (count min_sources : nat), sources_sufficient count min_sources = True \<longrightarrow> min_sources \<le> count"
+lemma time_013_multi_source: "\<forall>(count min_sources : nat). sources_sufficient count min_sources = True \<longrightarrow> min_sources \<le> count"
   by auto
 
 (* time_014_skew_bounded (matches Coq) *)
-lemma time_014_skew_bounded: "\<forall> (skew max_skew : nat), skew_bounded skew max_skew = True \<longrightarrow> skew \<le> max_skew"
+lemma time_014_skew_bounded: "\<forall>(skew max_skew : nat). skew_bounded skew max_skew = True \<longrightarrow> skew \<le> max_skew"
   by auto
 
 (* time_015_deadline_met (matches Coq) *)
-lemma time_015_deadline_met: "\<forall> (current deadline : nat), deadline_met current deadline = True \<longrightarrow> current \<le> deadline"
+lemma time_015_deadline_met: "\<forall>(current deadline : nat). deadline_met current deadline = True \<longrightarrow> current \<le> deadline"
   by auto
 
 (* time_016_timeout_triggered (matches Coq) *)
-lemma time_016_timeout_triggered: "\<forall> (elapsed timeout : nat), timeout_triggered elapsed timeout = True \<longrightarrow> timeout < elapsed"
+lemma time_016_timeout_triggered: "\<forall>(elapsed timeout : nat). timeout_triggered elapsed timeout = True \<longrightarrow> timeout < elapsed"
   by auto
 
 (* time_017_lock_order (matches Coq) *)
-lemma time_017_lock_order: "\<forall> (lock1 lock2 : nat), lock_order_valid lock1 lock2 = True \<longrightarrow> lock1 < lock2"
+lemma time_017_lock_order: "\<forall>(lock1 lock2 : nat). lock_order_valid lock1 lock2 = True \<longrightarrow> lock1 < lock2"
   by auto
 
 (* time_018_no_deadlock (matches Coq) *)
-lemma time_018_no_deadlock: "\<forall> (deps : list (nat * nat)), no_cycle deps \<longrightarrow> no_cycle deps"
+lemma time_018_no_deadlock: "\<forall>(deps : list (nat * nat)). no_cycle deps \<longrightarrow> no_cycle deps"
   by auto
 
 (* time_019_progress (matches Coq) *)
-lemma time_019_progress: "\<forall> (before after : nat), progress_made before after = True \<longrightarrow> before < after"
+lemma time_019_progress: "\<forall>(before after : nat). progress_made before after = True \<longrightarrow> before < after"
   by auto
 
 (* time_020_fair_scheduling (matches Coq) *)
-lemma time_020_fair_scheduling: "\<forall> (wait_time max_wait : nat), wait_bounded wait_time max_wait = True \<longrightarrow> wait_time \<le> max_wait"
+lemma time_020_fair_scheduling: "\<forall>(wait_time max_wait : nat). wait_bounded wait_time max_wait = True \<longrightarrow> wait_time \<le> max_wait"
   by auto
 
 (* time_021_rate_limiting (matches Coq) *)
-lemma time_021_rate_limiting: "\<forall> (requests max_rate period : nat), rate_ok requests max_rate period = True \<longrightarrow> requests \<le> max_rate"
+lemma time_021_rate_limiting: "\<forall>(requests max_rate period : nat). rate_ok requests max_rate period = True \<longrightarrow> requests \<le> max_rate"
   by auto
 
 (* time_022_ordered_delivery (matches Coq) *)
-lemma time_022_ordered_delivery: "\<forall> (seq1 seq2 : nat), order_preserved seq1 seq2 = True \<longrightarrow> seq1 \<le> seq2"
+lemma time_022_ordered_delivery: "\<forall>(seq1 seq2 : nat). order_preserved seq1 seq2 = True \<longrightarrow> seq1 \<le> seq2"
   by auto
 
 (* time_023_audit_timestamp (matches Coq) *)
-lemma time_023_audit_timestamp: "\<forall> (audit_time event_time : nat), audit_timestamp_ok audit_time event_time = True \<longrightarrow> event_time \<le> audit_time"
+lemma time_023_audit_timestamp: "\<forall>(audit_time event_time : nat). audit_timestamp_ok audit_time event_time = True \<longrightarrow> event_time \<le> audit_time"
   by auto
 
 (* time_024_session_valid (matches Coq) *)
-lemma time_024_session_valid: "\<forall> (created current max_age : nat), session_valid created current max_age = True \<longrightarrow> current - created \<le> max_age"
+lemma time_024_session_valid: "\<forall>(created current max_age : nat). session_valid created current max_age = True \<longrightarrow> current - created \<le> max_age"
   by auto
 
 (* time_025_defense_in_depth (matches Coq) *)
-lemma time_025_defense_in_depth: "\<forall> r t a ts, time_layers r t a ts = True \<longrightarrow> r = True \<and> t = True \<and> a = True \<and> ts = True"
+lemma time_025_defense_in_depth: "\<forall>r t a ts. time_layers r t a ts = True \<longrightarrow> r = True \<and> t = True \<and> a = True \<and> ts = True"
   by auto
 
 end

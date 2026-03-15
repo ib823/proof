@@ -159,19 +159,19 @@ definition min_tls_version :: "ProtocolVersion" where
 
 (* vpn_secure (matches Coq: Definition vpn_secure) *)
 definition vpn_secure :: "VPNConnection \<Rightarrow> bool" where
-  "vpn_secure v \<equiv> vpn_encrypted v = True /\
-  vpn_authenticated v = True /\
-  vpn_tunnel_established v = True /\
+  "vpn_secure v \<equiv> vpn_encrypted v = True \<and>
+  vpn_authenticated v = True \<and>
+  vpn_tunnel_established v = True \<and>
   vpn_protocol_version v >= min_tls_version"
 
 (* valid_negotiation (matches Coq: Definition valid_negotiation) *)
 definition valid_negotiation :: "ConnectionNegotiation \<Rightarrow> bool" where
-  "valid_negotiation n \<equiv> neg_selected_version n = min (neg_client_max_version n) (neg_server_max_version n) /\
+  "valid_negotiation n \<equiv> neg_selected_version n = min (neg_client_max_version n) (neg_server_max_version n) \<and>
   neg_selected_version n >= min_tls_version"
 
 (* downgrade_attack (matches Coq: Definition downgrade_attack) *)
 definition downgrade_attack :: "ConnectionNegotiation \<Rightarrow> bool" where
-  "downgrade_attack n \<equiv> neg_selected_version n < neg_client_max_version n /\
+  "downgrade_attack n \<equiv> neg_selected_version n < neg_client_max_version n \<and>
   neg_selected_version n < neg_server_max_version n"
 
 (* secure_negotiation (matches Coq: Definition secure_negotiation) *)
@@ -208,7 +208,7 @@ definition replay_prevented :: "bool" where
 
 (* session_valid_prop (matches Coq: Definition session_valid_prop) *)
 definition session_valid_prop :: "Session \<Rightarrow> bool" where
-  "session_valid_prop s \<equiv> session_valid s = True /\ session_token s > 0"
+  "session_valid_prop s \<equiv> session_valid s = True \<and> session_token s > 0"
 
 (* session_hijack_prevented (matches Coq: Definition session_hijack_prevented) *)
 definition session_hijack_prevented :: "Session \<Rightarrow> nat \<Rightarrow> bool" where
@@ -237,7 +237,7 @@ definition port_scan_limited :: "PortScanDetector \<Rightarrow> bool" where
 
 (* ssl_stripping_prevented (matches Coq: Definition ssl_stripping_prevented) *)
 definition ssl_stripping_prevented :: "SSLConfig \<Rightarrow> bool" where
-  "ssl_stripping_prevented cfg \<equiv> ssl_min_version cfg >= min_tls_version /\ ssl_compression_disabled cfg = True"
+  "ssl_stripping_prevented cfg \<equiv> ssl_min_version cfg >= min_tls_version \<and> ssl_compression_disabled cfg = True"
 
 (* dns_poisoning_detected (matches Coq: Definition dns_poisoning_detected) *)
 definition dns_poisoning_detected :: "bool" where
@@ -245,83 +245,83 @@ definition dns_poisoning_detected :: "bool" where
   True"
 
 (* vpn_verified (matches Coq) *)
-lemma vpn_verified: "\<forall> (vpn : VPNConnection), vpn_secure vpn \<longrightarrow> vpn_encrypted vpn = True \<and> vpn_authenticated vpn = True"
+lemma vpn_verified: "\<forall>(vpn :: VPNConnection). vpn_secure vpn \<longrightarrow> vpn_encrypted vpn = True \<and> vpn_authenticated vpn = True"
   by auto
 
 (* vpn_min_version (matches Coq) *)
-lemma vpn_min_version: "\<forall> (vpn : VPNConnection), vpn_secure vpn \<longrightarrow> vpn_protocol_version vpn \<ge> min_tls_version"
+lemma vpn_min_version: "\<forall>(vpn :: VPNConnection). vpn_secure vpn \<longrightarrow> vpn_protocol_version vpn \<ge> min_tls_version"
   by auto
 
 (* no_downgrade_attack (matches Coq) *)
-lemma no_downgrade_attack: "\<forall> (negotiation : ConnectionNegotiation), valid_negotiation negotiation \<longrightarrow> neg_selected_version negotiation = min (neg_client_max_version negotiation) (neg_server_max_version negotiation) \<longrightarrow> ~ (neg_selected_version negotiation < neg_client_max_version negotiation \<and> neg_selected_version negotiation < neg_server_max_version negotiation)"
+lemma no_downgrade_attack: "\<forall>(negotiation :: ConnectionNegotiation). valid_negotiation negotiation \<longrightarrow> neg_selected_version negotiation = min (neg_client_max_version negotiation) (neg_server_max_version negotiation) \<longrightarrow> ~ (neg_selected_version negotiation < neg_client_max_version negotiation \<and> neg_selected_version negotiation < neg_server_max_version negotiation)"
   by auto
 
 (* secure_negotiation_highest_common (matches Coq) *)
-lemma secure_negotiation_highest_common: "\<forall> (n : ConnectionNegotiation), valid_negotiation n \<longrightarrow> neg_selected_version n \<le> neg_client_max_version n \<and> neg_selected_version n \<le> neg_server_max_version n"
+lemma secure_negotiation_highest_common: "\<forall>(n :: ConnectionNegotiation). valid_negotiation n \<longrightarrow> neg_selected_version n \<le> neg_client_max_version n \<and> neg_selected_version n \<le> neg_server_max_version n"
   by auto
 
 (* minimum_version_enforced (matches Coq) *)
-lemma minimum_version_enforced: "\<forall> (n : ConnectionNegotiation), valid_negotiation n \<longrightarrow> neg_selected_version n \<ge> 12. "
+lemma minimum_version_enforced: "\<forall>(n :: ConnectionNegotiation). valid_negotiation n \<longrightarrow> neg_selected_version n \<ge> 12. "
   by auto
 
 (* packet_inspection_complete (matches Coq) *)
-lemma packet_inspection_complete: "\<forall> (p : Packet), packet_inspected_prop p \<longrightarrow> pkt_inspected p = True"
+lemma packet_inspection_complete: "\<forall>(p :: Packet). packet_inspected_prop p \<longrightarrow> pkt_inspected p = True"
   by auto
 
 (* malicious_payload_blocked (matches Coq) *)
-lemma malicious_payload_blocked: "\<forall> (p : Packet), malicious_blocked p \<longrightarrow> pkt_malicious p = True \<longrightarrow> pkt_inspected p = True"
+lemma malicious_payload_blocked: "\<forall>(p :: Packet). malicious_blocked p \<longrightarrow> pkt_malicious p = True \<longrightarrow> pkt_inspected p = True"
   by auto
 
 (* rate_limiting_enforced (matches Coq) *)
-lemma rate_limiting_enforced: "\<forall> (rl : RateLimiter), rate_limit_enforced rl \<longrightarrow> rl_current_count rl \<le> rl_max_requests rl"
+lemma rate_limiting_enforced: "\<forall>(rl :: RateLimiter). rate_limit_enforced rl \<longrightarrow> rl_current_count rl \<le> rl_max_requests rl"
   by auto
 
 (* ddos_mitigation_active (matches Coq) *)
-lemma ddos_mitigation_active: "\<forall> (rl : RateLimiter), rate_limit_enforced rl \<longrightarrow> ~ (rl_current_count rl > rl_max_requests rl)"
+lemma ddos_mitigation_active: "\<forall>(rl :: RateLimiter). rate_limit_enforced rl \<longrightarrow> ~ (rl_current_count rl > rl_max_requests rl)"
   by simp
 
 (* man_in_middle_detected (matches Coq) *)
-lemma man_in_middle_detected: "\<forall> (p1 p2 : Packet), pkt_src_ip p1 = pkt_src_ip p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2 \<longrightarrow> mitm_detected p1 p2"
+lemma man_in_middle_detected: "\<forall>(p1 p2 : Packet). pkt_src_ip p1 = pkt_src_ip p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2 \<longrightarrow> mitm_detected p1 p2"
   by auto
 
 (* replay_attack_prevented (matches Coq) *)
-lemma replay_attack_prevented: "\<forall> (p1 p2 : Packet), replay_prevented p1 p2 \<longrightarrow> pkt_sequence p1 = pkt_sequence p2 \<longrightarrow> pkt_timestamp p1 = pkt_timestamp p2 \<longrightarrow> pkt_id p1 = pkt_id p2"
+lemma replay_attack_prevented: "\<forall>(p1 p2 : Packet). replay_prevented p1 p2 \<longrightarrow> pkt_sequence p1 = pkt_sequence p2 \<longrightarrow> pkt_timestamp p1 = pkt_timestamp p2 \<longrightarrow> pkt_id p1 = pkt_id p2"
   by auto
 
 (* session_hijacking_prevented (matches Coq) *)
-lemma session_hijacking_prevented: "\<forall> (s : Session) (claimed_ip : nat), session_hijack_prevented s claimed_ip \<longrightarrow> session_valid s = True \<longrightarrow> session_ip s = claimed_ip"
+lemma session_hijacking_prevented: "\<forall>(s :: Session) (claimed_ip :: nat). session_hijack_prevented s claimed_ip \<longrightarrow> session_valid s = True \<longrightarrow> session_ip s = claimed_ip"
   by auto
 
 (* ssl_stripping_prevented_thm (matches Coq) *)
-lemma ssl_stripping_prevented_thm: "\<forall> (cfg : SSLConfig), ssl_stripping_prevented cfg \<longrightarrow> ssl_min_version cfg \<ge> min_tls_version \<and> ssl_compression_disabled cfg = True"
+lemma ssl_stripping_prevented_thm: "\<forall>(cfg :: SSLConfig). ssl_stripping_prevented cfg \<longrightarrow> ssl_min_version cfg \<ge> min_tls_version \<and> ssl_compression_disabled cfg = True"
   by auto
 
 (* dns_poisoning_detected_thm (matches Coq) *)
-lemma dns_poisoning_detected_thm: "\<forall> (q1 q2 : ConnectionNegotiation), neg_selected_version q1 \<noteq> neg_selected_version q2 \<longrightarrow> dns_poisoning_detected q1 q2"
+lemma dns_poisoning_detected_thm: "\<forall>(q1 q2 : ConnectionNegotiation). neg_selected_version q1 \<noteq> neg_selected_version q2 \<longrightarrow> dns_poisoning_detected q1 q2"
   by auto
 
 (* arp_spoofing_detected (matches Coq) *)
-lemma arp_spoofing_detected: "\<forall> (p1 p2 : Packet), pkt_src_ip p1 = pkt_src_ip p2 \<longrightarrow> pkt_id p1 \<noteq> pkt_id p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2"
+lemma arp_spoofing_detected: "\<forall>(p1 p2 : Packet). pkt_src_ip p1 = pkt_src_ip p2 \<longrightarrow> pkt_id p1 \<noteq> pkt_id p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2"
   by auto
 
 (* port_scanning_limited (matches Coq) *)
-lemma port_scanning_limited: "\<forall> (psd : PortScanDetector), port_scan_limited psd \<longrightarrow> psd_ports_probed psd > psd_threshold psd \<longrightarrow> psd_blocked psd = True"
+lemma port_scanning_limited: "\<forall>(psd :: PortScanDetector). port_scan_limited psd \<longrightarrow> psd_ports_probed psd > psd_threshold psd \<longrightarrow> psd_blocked psd = True"
   by auto
 
 (* connection_limit_per_ip (matches Coq) *)
-lemma connection_limit_per_ip: "\<forall> (ct : ConnectionTracker), connection_limit ct \<longrightarrow> ct_connection_count ct \<le> ct_max_per_ip ct"
+lemma connection_limit_per_ip: "\<forall>(ct :: ConnectionTracker). connection_limit ct \<longrightarrow> ct_connection_count ct \<le> ct_max_per_ip ct"
   by auto
 
 (* ssl_version_minimum (matches Coq) *)
-lemma ssl_version_minimum: "\<forall> (cfg : SSLConfig), ssl_version_minimum_prop cfg \<longrightarrow> ssl_min_version cfg \<ge> min_tls_version"
+lemma ssl_version_minimum: "\<forall>(cfg :: SSLConfig). ssl_version_minimum_prop cfg \<longrightarrow> ssl_min_version cfg \<ge> min_tls_version"
   by auto
 
 (* cipher_suite_strong (matches Coq) *)
-lemma cipher_suite_strong: "\<forall> (cfg : SSLConfig), cipher_strong cfg \<longrightarrow> ssl_cipher_strength cfg \<ge> 128"
+lemma cipher_suite_strong: "\<forall>(cfg :: SSLConfig). cipher_strong cfg \<longrightarrow> ssl_cipher_strength cfg \<ge> 128"
   by auto
 
 (* certificate_revocation_checked (matches Coq) *)
-lemma certificate_revocation_checked: "\<forall> (cfg : SSLConfig), revocation_checked cfg \<longrightarrow> ssl_revocation_checked cfg = True"
+lemma certificate_revocation_checked: "\<forall>(cfg :: SSLConfig). revocation_checked cfg \<longrightarrow> ssl_revocation_checked cfg = True"
   by auto
 
 end

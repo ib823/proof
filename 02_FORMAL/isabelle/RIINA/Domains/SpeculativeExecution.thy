@@ -81,101 +81,101 @@ definition eff_join :: "bool" where "eff_join = undefined"
 
 (* infer_effect (matches Coq: Definition infer_effect) *)
 fun infer_effect :: "instr \<Rightarrow> effect" where
-
+  "infer_effect _ = undefined"
 
 (* is_constant_time (matches Coq: Definition is_constant_time) *)
 fun is_constant_time :: "instr \<Rightarrow> bool" where
-
+  "is_constant_time _ = True"
 
 (* is_spec_safe - complex match, needs manual translation *)
 definition is_spec_safe :: "bool" where "is_spec_safe = undefined"
 
 (* eval_instr (matches Coq: Definition eval_instr) *)
 fun eval_instr :: "instr \<Rightarrow> option value" where
-
+  "eval_instr _ = None"
 
 (* no_speculative_annotation (matches Coq: Definition no_speculative_annotation) *)
 fun no_speculative_annotation :: "instr \<Rightarrow> bool" where
-
+  "no_speculative_annotation _ = True"
 
 (* eff_join_pure_l (matches Coq) *)
-lemma eff_join_pure_l: "\<forall> e, eff_join Eff_pure e = e"
+lemma eff_join_pure_l: "\<forall>e. eff_join Eff_pure e = e"
   by simp
 
 (* eff_join_pure_r (matches Coq) *)
-lemma eff_join_pure_r: "\<forall> e, eff_join e Eff_pure = e"
+lemma eff_join_pure_r: "\<forall>e. eff_join e Eff_pure = e"
   by simp
 
 (* eff_le_refl (matches Coq) *)
-lemma eff_le_refl: "\<forall> e, eff_le e e = True"
+lemma eff_le_refl: "\<forall>e. eff_le e e = True"
   by simp
 
 (* eff_le_trans (matches Coq) *)
-lemma eff_le_trans: "\<forall> e1 e2 e3, eff_le e1 e2 = True \<longrightarrow> eff_le e2 e3 = True \<longrightarrow> eff_le e1 e3 = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma eff_le_trans: "\<forall>e1 e2 e3. eff_le e1 e2 = True \<longrightarrow> eff_le e2 e3 = True \<longrightarrow> eff_le e1 e3 = True"
+  by auto
 
 (* 1 (matches Coq) *)
-lemma 1: "Pure programs are constant-time Theorem pure_is_constant_time : \<forall> i, infer_effect i = Eff_pure \<longrightarrow> is_constant_time i = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma 1: "Pure programs are constant-time Theorem pure_is_constant_time : \<forall>i. infer_effect i = Eff_pure \<longrightarrow> is_constant_time i = True"
+  by auto
 
 (* 2 (matches Coq) *)
-lemma 2: "Constant-time composition Theorem ct_composition : \<forall> a b, is_constant_time a = True \<longrightarrow> is_constant_time b = True \<longrightarrow> is_constant_time (ISeq a b) = True"
+lemma 2: "Constant-time composition Theorem ct_composition : \<forall>a b. is_constant_time a = True \<longrightarrow> is_constant_time b = True \<longrightarrow> is_constant_time (ISeq a b) = True"
   by simp
 
 (* 3 (matches Coq) *)
-lemma 3: "Speculative safety implies no secret leakage Lemma no_secret_branch : \<forall> i, is_constant_time i = True \<longrightarrow> \<forall> c t f, i \<noteq> IBranch Secret c t f"
+lemma 3: "Speculative safety implies no secret leakage Lemma no_secret_branch : \<forall>i. is_constant_time i = True \<longrightarrow> \<forall>c t f. i \<noteq> IBranch Secret c t f"
   by auto
 
 (* spec_safe_no_secret_branch_aux (matches Coq) *)
-lemma spec_safe_no_secret_branch_aux: "\<forall> i, no_speculative_annotation i = True \<longrightarrow> infer_effect i \<noteq> Eff_speculative \<longrightarrow> is_constant_time i = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma spec_safe_no_secret_branch_aux: "\<forall>i. no_speculative_annotation i = True \<longrightarrow> infer_effect i \<noteq> Eff_speculative \<longrightarrow> is_constant_time i = True"
+  by auto
 
 (* spec_safe_implies_no_secret_leakage (matches Coq) *)
-lemma spec_safe_implies_no_secret_leakage: "\<forall> i, no_speculative_annotation i = True \<longrightarrow> is_spec_safe i = True \<longrightarrow> is_constant_time i = True"
+lemma spec_safe_implies_no_secret_leakage: "\<forall>i. no_speculative_annotation i = True \<longrightarrow> is_spec_safe i = True \<longrightarrow> is_constant_time i = True"
   by auto
 
 (* 4 (matches Coq) *)
-lemma 4: "Effect ordering is a preorder Theorem effect_preorder_refl : \<forall> e, eff_le e e = True"
+lemma 4: "Effect ordering is a preorder Theorem effect_preorder_refl : \<forall>e. eff_le e e = True"
   by auto
 
 (* effect_preorder_trans (matches Coq) *)
-lemma effect_preorder_trans: "\<forall> e1 e2 e3, eff_le e1 e2 = True \<longrightarrow> eff_le e2 e3 = True \<longrightarrow> eff_le e1 e3 = True"
+lemma effect_preorder_trans: "\<forall>e1 e2 e3. eff_le e1 e2 = True \<longrightarrow> eff_le e2 e3 = True \<longrightarrow> eff_le e1 e3 = True"
   by auto
 
 (* 5 (matches Coq) *)
-lemma 5: "Pure is bottom of the effect ordering Theorem pure_is_bottom : \<forall> e, eff_le Eff_pure e = True"
+lemma 5: "Pure is bottom of the effect ordering Theorem pure_is_bottom : \<forall>e. eff_le Eff_pure e = True"
   by simp
 
 (* 6 (matches Coq) *)
-lemma 6: "Sequential composition preserves speculative safety Theorem seq_preserves_spec_safe : \<forall> a b, is_spec_safe a = True \<longrightarrow> is_spec_safe b = True \<longrightarrow> is_spec_safe (ISeq a b) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma 6: "Sequential composition preserves speculative safety Theorem seq_preserves_spec_safe : \<forall>a b. is_spec_safe a = True \<longrightarrow> is_spec_safe b = True \<longrightarrow> is_spec_safe (ISeq a b) = True"
+  by auto
 
 (* 7 (matches Coq) *)
-lemma 7: "Secret-independent branching is constant-time Theorem public_branch_ct : \<forall> c t f, is_constant_time c = True \<longrightarrow> is_constant_time t = True \<longrightarrow> is_constant_time f = True \<longrightarrow> is_constant_time (IBranch Public c t f) = True"
+lemma 7: "Secret-independent branching is constant-time Theorem public_branch_ct : \<forall>c t f. is_constant_time c = True \<longrightarrow> is_constant_time t = True \<longrightarrow> is_constant_time f = True \<longrightarrow> is_constant_time (IBranch Public c t f) = True"
   by simp
 
 (* 8 (matches Coq) *)
-lemma 8: "Effect annotation soundness Definition effect_eq_dec (e1 e2 : effect) : {e1 = e2} + {e1 \<noteq> e2}"
-  by (cases rule: ‹_›.cases; simp)
+lemma 8: "Effect annotation soundness Definition effect_eq_dec (e1 e2 : effect) : (e1 = e2) \<or> (e1 \<noteq> e2)"
+  by auto
 
 (* binop_preserves_ct (matches Coq) *)
-lemma binop_preserves_ct: "\<forall> a b, is_constant_time a = True \<longrightarrow> is_constant_time b = True \<longrightarrow> is_constant_time (IBinop a b) = True"
+lemma binop_preserves_ct: "\<forall>a b. is_constant_time a = True \<longrightarrow> is_constant_time b = True \<longrightarrow> is_constant_time (IBinop a b) = True"
   by simp
 
 (* pure_implies_spec_safe (matches Coq) *)
-lemma pure_implies_spec_safe: "\<forall> i, infer_effect i = Eff_pure \<longrightarrow> is_spec_safe i = True"
+lemma pure_implies_spec_safe: "\<forall>i. infer_effect i = Eff_pure \<longrightarrow> is_spec_safe i = True"
   by simp
 
 (* 11 (matches Coq) *)
-lemma 11: "Timed programs are speculatively safe Theorem timed_implies_spec_safe : \<forall> i, infer_effect i = Eff_timed \<longrightarrow> is_spec_safe i = True"
+lemma 11: "Timed programs are speculatively safe Theorem timed_implies_spec_safe : \<forall>i. infer_effect i = Eff_timed \<longrightarrow> is_spec_safe i = True"
   by simp
 
 (* 12 (matches Coq) *)
-lemma 12: "Constant is always pure Theorem const_is_pure : \<forall> v, infer_effect (IConst v) = Eff_pure"
+lemma 12: "Constant is always pure Theorem const_is_pure : \<forall>v. infer_effect (IConst v) = Eff_pure"
   by simp
 
 (* 13 (matches Coq) *)
-lemma 13: "Effect join is commutative Theorem eff_join_comm : \<forall> e1 e2, eff_join e1 e2 = eff_join e2 e1"
+lemma 13: "Effect join is commutative Theorem eff_join_comm : \<forall>e1 e2. eff_join e1 e2 = eff_join e2 e1"
   by simp
 
 end

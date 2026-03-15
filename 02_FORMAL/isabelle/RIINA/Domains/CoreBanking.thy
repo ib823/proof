@@ -330,13 +330,13 @@ record shariah_transaction =
 
 (* kyc_complete (matches Coq: Definition kyc_complete) *)
 definition kyc_complete :: "Customer \<Rightarrow> bool" where
-  "kyc_complete c \<equiv> kyc_verified c = True /\ address_verified c = True /\
-  risk_assessed c = True /\ pep_screened c = True /\
+  "kyc_complete c \<equiv> kyc_verified c = True \<and> address_verified c = True \<and>
+  risk_assessed c = True \<and> pep_screened c = True \<and>
   sanctions_screened c = True"
 
 (* unique_customer_ids (matches Coq: Definition unique_customer_ids) *)
-fun unique_customer_ids :: "bool" where
-
+definition unique_customer_ids :: "bool" where
+  "unique_customer_ids \<equiv> True"
 
 (* total_ownership (matches Coq: Definition total_ownership) *)
 definition total_ownership :: "Z" where
@@ -348,7 +348,7 @@ definition complete_ownership :: "bool" where
 
 (* all_parties_screened (matches Coq: Definition all_parties_screened) *)
 definition all_parties_screened :: "bool" where
-  "all_parties_screened \<equiv> forall p, In p parties -> party_screened p = True"
+  "all_parties_screened \<equiv> forall p, p \<in> set parties -> party_screened p = True"
 
 (* well_formed_savings (matches Coq: Definition well_formed_savings) *)
 definition well_formed_savings :: "Account \<Rightarrow> bool" where
@@ -372,11 +372,11 @@ definition credits :: "Z" where
 
 (* valid_entry (matches Coq: Definition valid_entry) *)
 definition valid_entry :: "JournalEntry \<Rightarrow> bool" where
-  "valid_entry e \<equiv> debit_amount e = credit_amount e /\ debit_amount e > 0"
+  "valid_entry e \<equiv> debit_amount e = credit_amount e \<and> debit_amount e > 0"
 
 (* valid_entries (matches Coq: Definition valid_entries) *)
 definition valid_entries :: "bool" where
-  "valid_entries \<equiv> forall e, In e entries -> valid_entry e"
+  "valid_entries \<equiv> forall e, e \<in> set entries -> valid_entry e"
 
 (* interest_formula (matches Coq: Definition interest_formula) *)
 definition interest_formula :: "InterestCalculation \<Rightarrow> Z" where
@@ -384,7 +384,7 @@ definition interest_formula :: "InterestCalculation \<Rightarrow> Z" where
 
 (* precise_interest (matches Coq: Definition precise_interest) *)
 definition precise_interest :: "InterestCalculation \<Rightarrow> bool" where
-  "precise_interest ic \<equiv> ic_year_days ic > 0 /\
+  "precise_interest ic \<equiv> ic_year_days ic > 0 \<and>
   ic_calculated_interest ic = interest_formula ic"
 
 (* early_withdrawal (matches Coq: Definition early_withdrawal) *)
@@ -418,7 +418,7 @@ definition sum_installment_interest :: "Z" where
 
 (* amortization_correct (matches Coq: Definition amortization_correct) *)
 definition amortization_correct :: "AmortizationSchedule \<Rightarrow> bool" where
-  "amortization_correct sched \<equiv> sum_installment_principals (amort_installments sched) = amort_principal sched /\
+  "amortization_correct sched \<equiv> sum_installment_principals (amort_installments sched) = amort_principal sched \<and>
   sum_installment_interest (amort_installments sched) = amort_total_interest sched"
 
 (* covenant_monitoring_correct (matches Coq: Definition covenant_monitoring_correct) *)
@@ -438,8 +438,8 @@ definition payment_irrevocable :: "Payment \<Rightarrow> bool" where
   "payment_irrevocable p \<equiv> status p = Completed -> True"
 
 (* unique_idempotency_keys (matches Coq: Definition unique_idempotency_keys) *)
-fun unique_idempotency_keys :: "bool" where
-
+definition unique_idempotency_keys :: "bool" where
+  "unique_idempotency_keys \<equiv> True"
 
 (* nostro_balanced (matches Coq: Definition nostro_balanced) *)
 definition nostro_balanced :: "NostroAccount \<Rightarrow> bool" where
@@ -447,7 +447,7 @@ definition nostro_balanced :: "NostroAccount \<Rightarrow> bool" where
 
 (* swift_validation_enforced (matches Coq: Definition swift_validation_enforced) *)
 definition swift_validation_enforced :: "SwiftMessage \<Rightarrow> bool" where
-  "swift_validation_enforced msg \<equiv> (sender_bic msg > 0)%nat /\ (receiver_bic msg > 0)%nat -> is_schema_valid msg = True"
+  "swift_validation_enforced msg \<equiv> (sender_bic msg > 0)%nat \<and> (receiver_bic msg > 0)%nat -> is_schema_valid msg = True"
 
 (* spot_t_plus_2 (matches Coq: Definition spot_t_plus_2) *)
 definition spot_t_plus_2 :: "FxSpotTrade \<Rightarrow> bool" where
@@ -455,7 +455,7 @@ definition spot_t_plus_2 :: "FxSpotTrade \<Rightarrow> bool" where
 
 (* spot_settlement_correct (matches Coq: Definition spot_settlement_correct) *)
 definition spot_settlement_correct :: "FxSpotTrade \<Rightarrow> bool" where
-  "spot_settlement_correct trade \<equiv> spot_t_plus_2 trade /\ fx_settled trade = True"
+  "spot_settlement_correct trade \<equiv> spot_t_plus_2 trade \<and> fx_settled trade = True"
 
 (* repo_haircut_applied (matches Coq: Definition repo_haircut_applied) *)
 definition repo_haircut_applied :: "RepoTransaction \<Rightarrow> bool" where
@@ -511,7 +511,7 @@ definition partner_loss_share :: "MusharakahPartner \<Rightarrow> Musharakah \<R
 (* profit_by_ratio_loss_by_capital (matches Coq: Definition profit_by_ratio_loss_by_capital) *)
 definition profit_by_ratio_loss_by_capital :: "MusharakahPartner \<Rightarrow> Musharakah \<Rightarrow> bool" where
   "profit_by_ratio_loss_by_capital p m \<equiv> total_capital m > 0 ->
-  actual_profit_share = partner_profit_share p m /\
+  actual_profit_share = partner_profit_share p m \<and>
   actual_loss_share = partner_loss_share p m"
 
 (* sukuk_backed_by_assets (matches Coq: Definition sukuk_backed_by_assets) *)
@@ -523,127 +523,127 @@ definition no_riba :: "ShariahTransaction \<Rightarrow> bool" where
   "no_riba st \<equiv> shariah_compliant st = True -> txn_type st <> InterestBased"
 
 (* BANK_001_01_customer_identity_uniqueness (matches Coq) *)
-lemma BANK_001_01_customer_identity_uniqueness: "\<forall> (customers : list Customer) (c1 c2 : Customer), unique_customer_ids customers \<longrightarrow> In c1 customers \<longrightarrow> In c2 customers \<longrightarrow> customer_id c1 = customer_id c2 \<longrightarrow> c1 = c2"
-  by (cases rule: ‹_›.cases; simp)
+lemma BANK_001_01_customer_identity_uniqueness: "\<forall>(customers : list Customer) (c1 c2 : Customer). unique_customer_ids customers \<longrightarrow> c1 \<in> set customers \<longrightarrow> c2 \<in> set customers \<longrightarrow> customer_id c1 = customer_id c2 \<longrightarrow> c1 = c2"
+  by auto
 
 (* BANK_001_02_kyc_completeness (matches Coq) *)
-lemma BANK_001_02_kyc_completeness: "\<forall> (c : Customer), is_onboarded c = True \<longrightarrow> kyc_verified c = True \<longrightarrow> address_verified c = True \<longrightarrow> risk_assessed c = True \<longrightarrow> pep_screened c = True \<longrightarrow> sanctions_screened c = True \<longrightarrow> kyc_complete c"
+lemma BANK_001_02_kyc_completeness: "\<forall>(c :: Customer). is_onboarded c = True \<longrightarrow> kyc_verified c = True \<longrightarrow> address_verified c = True \<longrightarrow> risk_assessed c = True \<longrightarrow> pep_screened c = True \<longrightarrow> sanctions_screened c = True \<longrightarrow> kyc_complete c"
   by auto
 
 (* BANK_001_03_beneficial_ownership_complete (matches Coq) *)
-lemma BANK_001_03_beneficial_ownership_complete: "\<forall> (owners : list BeneficialOwner), complete_ownership owners \<longrightarrow> total_ownership owners = 100"
+lemma BANK_001_03_beneficial_ownership_complete: "\<forall>(owners : list BeneficialOwner). complete_ownership owners \<longrightarrow> total_ownership owners = 100"
   by auto
 
 (* BANK_001_04_sanctions_check_mandatory (matches Coq) *)
-lemma BANK_001_04_sanctions_check_mandatory: "\<forall> (parties : list TransactionParty), all_parties_screened parties \<longrightarrow> \<forall> p, In p parties \<longrightarrow> party_screened p = True"
+lemma BANK_001_04_sanctions_check_mandatory: "\<forall>(parties : list TransactionParty). all_parties_screened parties \<longrightarrow> \<forall>p. p \<in> set parties \<longrightarrow> party_screened p = True"
   by auto
 
 (* BANK_001_05_pep_enhanced_monitoring (matches Coq) *)
-lemma BANK_001_05_pep_enhanced_monitoring: "\<forall> (c : Customer), is_pep c = True \<longrightarrow> enhanced_due_diligence c = True \<longrightarrow> is_pep c = True \<and> enhanced_due_diligence c = True"
+lemma BANK_001_05_pep_enhanced_monitoring: "\<forall>(c :: Customer). is_pep c = True \<longrightarrow> enhanced_due_diligence c = True \<longrightarrow> is_pep c = True \<and> enhanced_due_diligence c = True"
   by auto
 
 (* BANK_001_06_balance_non_negative (matches Coq) *)
-lemma BANK_001_06_balance_non_negative: "\<forall> (a : Account), well_formed_savings a \<longrightarrow> account_type a = Savings \<longrightarrow> balance a \<ge> 0"
+lemma BANK_001_06_balance_non_negative: "\<forall>(a :: Account). well_formed_savings a \<longrightarrow> account_type a = Savings \<longrightarrow> balance a \<ge> 0"
   by auto
 
 (* BANK_001_07_interest_calculation_precise (matches Coq) *)
-lemma BANK_001_07_interest_calculation_precise: "\<forall> (ic : InterestCalculation), precise_interest ic \<longrightarrow> ic_calculated_interest ic = interest_formula ic"
+lemma BANK_001_07_interest_calculation_precise: "\<forall>(ic :: InterestCalculation). precise_interest ic \<longrightarrow> ic_calculated_interest ic = interest_formula ic"
   by auto
 
 (* fold_left_add_acc_general (matches Coq) *)
-lemma fold_left_add_acc_general: "\<forall> (A : Type) (f : A \<longrightarrow> Z) (l : list A) (acc : Z), fold_left (fun a x => a + f x) l acc = acc + fold_left (fun a x => a + f x) l 0"
+lemma fold_left_add_acc_general: "\<forall>(A :: Type) (f : A \<longrightarrow> Z) (l : list A) (acc :: Z). fold_left (fun a x => a + f x) l acc = acc + fold_left (fun a x => a + f x) l 0"
   by simp
 
 (* BANK_001_08_double_entry_invariant (matches Coq) *)
-lemma BANK_001_08_double_entry_invariant: "\<forall> (entries : list JournalEntry), valid_entries entries \<longrightarrow> debits entries = credits entries"
-  by (cases rule: ‹_›.cases; simp)
+lemma BANK_001_08_double_entry_invariant: "\<forall>(entries : list JournalEntry). valid_entries entries \<longrightarrow> debits entries = credits entries"
+  by auto
 
 (* BANK_001_09_term_deposit_lock (matches Coq) *)
-lemma BANK_001_09_term_deposit_lock: "\<forall> (td : TermDepositContract), penalty_enforced td \<longrightarrow> early_withdrawal td \<longrightarrow> td_penalty_applied td = True"
+lemma BANK_001_09_term_deposit_lock: "\<forall>(td :: TermDepositContract). penalty_enforced td \<longrightarrow> early_withdrawal td \<longrightarrow> td_penalty_applied td = True"
   by auto
 
 (* BANK_001_10_dormancy_detection (matches Coq) *)
-lemma BANK_001_10_dormancy_detection: "\<forall> (a : Account), dormancy_consistent a \<longrightarrow> should_be_dormant a \<longrightarrow> is_dormant a = True"
+lemma BANK_001_10_dormancy_detection: "\<forall>(a :: Account). dormancy_consistent a \<longrightarrow> should_be_dormant a \<longrightarrow> is_dormant a = True"
   by auto
 
 (* BANK_001_11_loan_within_eligibility (matches Coq) *)
-lemma BANK_001_11_loan_within_eligibility: "\<forall> (l : Loan), within_eligibility l \<longrightarrow> approved_amount l \<le> eligibility_limit l"
+lemma BANK_001_11_loan_within_eligibility: "\<forall>(l :: Loan). within_eligibility l \<longrightarrow> approved_amount l \<le> eligibility_limit l"
   by auto
 
 (* BANK_001_12_collateral_coverage (matches Coq) *)
-lemma BANK_001_12_collateral_coverage: "\<forall> (l : Loan), sufficient_collateral l \<longrightarrow> is_secured l = True \<longrightarrow> collateral_value l * 10000 \<ge> principal l * required_coverage l"
+lemma BANK_001_12_collateral_coverage: "\<forall>(l :: Loan). sufficient_collateral l \<longrightarrow> is_secured l = True \<longrightarrow> collateral_value l * 10000 \<ge> principal l * required_coverage l"
   by auto
 
 (* BANK_001_13_amortization_correctness (matches Coq) *)
-lemma BANK_001_13_amortization_correctness: "\<forall> (sched : AmortizationSchedule), amortization_correct sched \<longrightarrow> sum_installment_principals (amort_installments sched) = amort_principal sched"
+lemma BANK_001_13_amortization_correctness: "\<forall>(sched :: AmortizationSchedule). amortization_correct sched \<longrightarrow> sum_installment_principals (amort_installments sched) = amort_principal sched"
   by auto
 
 (* BANK_001_14_covenant_monitoring (matches Coq) *)
-lemma BANK_001_14_covenant_monitoring: "\<forall> (cov : Covenant), covenant_monitoring_correct cov \<longrightarrow> covenant_breached cov = True \<longrightarrow> event_of_default cov = True"
+lemma BANK_001_14_covenant_monitoring: "\<forall>(cov :: Covenant). covenant_monitoring_correct cov \<longrightarrow> covenant_breached cov = True \<longrightarrow> event_of_default cov = True"
   by auto
 
 (* BANK_001_15_facility_limit_enforcement (matches Coq) *)
-lemma BANK_001_15_facility_limit_enforcement: "\<forall> (cf : CreditFacility), within_facility_limit cf \<longrightarrow> total_drawdown cf + current_drawdown_request cf \<le> facility_limit cf"
+lemma BANK_001_15_facility_limit_enforcement: "\<forall>(cf :: CreditFacility). within_facility_limit cf \<longrightarrow> total_drawdown cf + current_drawdown_request cf \<le> facility_limit cf"
   by auto
 
 (* BANK_001_16_instant_payment_completion (matches Coq) *)
-lemma BANK_001_16_instant_payment_completion: "\<forall> (p : Payment), payment_within_sla p \<longrightarrow> status p = Completed \<longrightarrow> (processing_time_ms p \<le> sla_limit_ms p)%nat"
+lemma BANK_001_16_instant_payment_completion: "\<forall>(p :: Payment). payment_within_sla p \<longrightarrow> status p = Completed \<longrightarrow> (processing_time_ms p \<le> sla_limit_ms p)%nat"
   by auto
 
 (* BANK_001_17_payment_irrevocability (matches Coq) *)
-lemma BANK_001_17_payment_irrevocability: "\<forall> (p : Payment), status p = Completed \<longrightarrow> payment_irrevocable p"
+lemma BANK_001_17_payment_irrevocability: "\<forall>(p :: Payment). status p = Completed \<longrightarrow> payment_irrevocable p"
   by auto
 
 (* BANK_001_18_idempotency (matches Coq) *)
-lemma BANK_001_18_idempotency: "\<forall> (p1 p2 : Payment) (executed : list Payment), unique_idempotency_keys executed \<longrightarrow> In p1 executed \<longrightarrow> In p2 executed \<longrightarrow> idempotency_key p1 = idempotency_key p2 \<longrightarrow> p1 = p2"
-  by (cases rule: ‹_›.cases; simp)
+lemma BANK_001_18_idempotency: "\<forall>(p1 p2 : Payment) (executed : list Payment). unique_idempotency_keys executed \<longrightarrow> p1 \<in> set executed \<longrightarrow> p2 \<in> set executed \<longrightarrow> idempotency_key p1 = idempotency_key p2 \<longrightarrow> p1 = p2"
+  by auto
 
 (* BANK_001_19_nostro_reconciliation (matches Coq) *)
-lemma BANK_001_19_nostro_reconciliation: "\<forall> (n : NostroAccount), nostro_balanced n \<longrightarrow> is_reconciled n = True \<longrightarrow> internal_balance n = external_balance n"
+lemma BANK_001_19_nostro_reconciliation: "\<forall>(n :: NostroAccount). nostro_balanced n \<longrightarrow> is_reconciled n = True \<longrightarrow> internal_balance n = external_balance n"
   by auto
 
 (* BANK_001_20_swift_message_validation (matches Coq) *)
-lemma BANK_001_20_swift_message_validation: "\<forall> (msg : SwiftMessage), swift_validation_enforced msg \<longrightarrow> (sender_bic msg > 0)%nat \<longrightarrow> (receiver_bic msg > 0)%nat \<longrightarrow> is_schema_valid msg = True"
+lemma BANK_001_20_swift_message_validation: "\<forall>(msg :: SwiftMessage). swift_validation_enforced msg \<longrightarrow> (sender_bic msg > 0)%nat \<longrightarrow> (receiver_bic msg > 0)%nat \<longrightarrow> is_schema_valid msg = True"
   by auto
 
 (* BANK_001_21_fx_spot_settlement (matches Coq) *)
-lemma BANK_001_21_fx_spot_settlement: "\<forall> (trade : FxSpotTrade), spot_settlement_correct trade \<longrightarrow> settlement_date trade = (trade_date trade + 2)%nat \<and> fx_settled trade = True"
+lemma BANK_001_21_fx_spot_settlement: "\<forall>(trade :: FxSpotTrade). spot_settlement_correct trade \<longrightarrow> settlement_date trade = (trade_date trade + 2)%nat \<and> fx_settled trade = True"
   by auto
 
 (* BANK_001_22_repo_collateral_haircut (matches Coq) *)
-lemma BANK_001_22_repo_collateral_haircut: "\<forall> (repo : RepoTransaction), repo_haircut_applied repo \<longrightarrow> repo_cash_amount repo = collateral_market_value repo * (10000 - haircut_bps repo) / 10000"
+lemma BANK_001_22_repo_collateral_haircut: "\<forall>(repo :: RepoTransaction). repo_haircut_applied repo \<longrightarrow> repo_cash_amount repo = collateral_market_value repo * (10000 - haircut_bps repo) / 10000"
   by auto
 
 (* BANK_001_23_bond_accrued_interest (matches Coq) *)
-lemma BANK_001_23_bond_accrued_interest: "\<forall> (bp : BondPosition), accrued_interest_correct bp \<longrightarrow> coupon_period_days bp > 0 \<longrightarrow> calculated_accrued bp = bond_accrued_formula bp"
+lemma BANK_001_23_bond_accrued_interest: "\<forall>(bp :: BondPosition). accrued_interest_correct bp \<longrightarrow> coupon_period_days bp > 0 \<longrightarrow> calculated_accrued bp = bond_accrued_formula bp"
   by auto
 
 (* BANK_001_24_derivative_valuation (matches Coq) *)
-lemma BANK_001_24_derivative_valuation: "\<forall> (irs : InterestRateSwap), irs_valuation_correct irs \<longrightarrow> calculated_npv irs = fixed_leg_pv irs - float_leg_pv irs"
+lemma BANK_001_24_derivative_valuation: "\<forall>(irs :: InterestRateSwap). irs_valuation_correct irs \<longrightarrow> calculated_npv irs = fixed_leg_pv irs - float_leg_pv irs"
   by auto
 
 (* BANK_001_25_collateral_call_trigger (matches Coq) *)
-lemma BANK_001_25_collateral_call_trigger: "\<forall> (cp : CollateralPosition), collateral_call_correct cp \<longrightarrow> mtm_beyond_threshold cp \<longrightarrow> margin_call_triggered cp = True"
+lemma BANK_001_25_collateral_call_trigger: "\<forall>(cp :: CollateralPosition). collateral_call_correct cp \<longrightarrow> mtm_beyond_threshold cp \<longrightarrow> margin_call_triggered cp = True"
   by auto
 
 (* BANK_001_26_murabaha_cost_plus (matches Coq) *)
-lemma BANK_001_26_murabaha_cost_plus: "\<forall> (m : Murabaha), profit_disclosed m = True \<longrightarrow> murabaha_selling_price m = murabaha_cost m + murabaha_profit m"
+lemma BANK_001_26_murabaha_cost_plus: "\<forall>(m :: Murabaha). profit_disclosed m = True \<longrightarrow> murabaha_selling_price m = murabaha_cost m + murabaha_profit m"
   by simp
 
 (* BANK_001_27_ijarah_ownership (matches Coq) *)
-lemma BANK_001_27_ijarah_ownership: "\<forall> (ij : Ijarah), bank_retains_ownership ij \<longrightarrow> during_tenure ij \<longrightarrow> bank_owns_asset ij = True"
+lemma BANK_001_27_ijarah_ownership: "\<forall>(ij :: Ijarah). bank_retains_ownership ij \<longrightarrow> during_tenure ij \<longrightarrow> bank_owns_asset ij = True"
   by auto
 
 (* BANK_001_28_musharakah_profit_loss (matches Coq) *)
-lemma BANK_001_28_musharakah_profit_loss: "\<forall> (p : MusharakahPartner) (m : Musharakah) (actual_profit_share actual_loss_share : Z), profit_by_ratio_loss_by_capital p m actual_profit_share actual_loss_share \<longrightarrow> total_capital m > 0 \<longrightarrow> actual_profit_share = partner_profit_share p m \<and> actual_loss_share = partner_loss_share p m"
+lemma BANK_001_28_musharakah_profit_loss: "\<forall>(p :: MusharakahPartner) (m :: Musharakah) (actual_profit_share actual_loss_share : Z). profit_by_ratio_loss_by_capital p m actual_profit_share actual_loss_share \<longrightarrow> total_capital m > 0 \<longrightarrow> actual_profit_share = partner_profit_share p m \<and> actual_loss_share = partner_loss_share p m"
   by auto
 
 (* BANK_001_29_sukuk_asset_backing (matches Coq) *)
-lemma BANK_001_29_sukuk_asset_backing: "\<forall> (s : Sukuk), sukuk_backed_by_assets s \<longrightarrow> is_asset_backed s = True \<longrightarrow> underlying_asset_value s \<ge> sukuk_value s"
+lemma BANK_001_29_sukuk_asset_backing: "\<forall>(s :: Sukuk). sukuk_backed_by_assets s \<longrightarrow> is_asset_backed s = True \<longrightarrow> underlying_asset_value s \<ge> sukuk_value s"
   by auto
 
 (* BANK_001_30_shariah_no_riba (matches Coq) *)
-lemma BANK_001_30_shariah_no_riba: "\<forall> (st : ShariahTransaction), no_riba st \<longrightarrow> shariah_compliant st = True \<longrightarrow> txn_type st \<noteq> InterestBased"
+lemma BANK_001_30_shariah_no_riba: "\<forall>(st :: ShariahTransaction). no_riba st \<longrightarrow> shariah_compliant st = True \<longrightarrow> txn_type st \<noteq> InterestBased"
   by simp
 
 end

@@ -137,7 +137,7 @@ definition nist_minimum_controls :: "NIST_800_53_Controls \<Rightarrow> bool" wh
 
 (* fedramp_matches_fisma (matches Coq: Definition fedramp_matches_fisma) *)
 definition fedramp_matches_fisma :: "FedRAMP_Level \<Rightarrow> FISMA_Impact \<Rightarrow> bool" where
-  "fedramp_matches_fisma fed fisma \<equiv> ((fedramp_to_nat = fed)) (fisma_to_nat fisma)"
+  "fedramp_matches_fisma fed fisma \<equiv> (fedramp_to_nat fed = fisma_to_nat fisma)"
 
 (* cjis_min_key_bits (matches Coq: Definition cjis_min_key_bits) *)
 definition cjis_min_key_bits :: "nat" where
@@ -175,69 +175,69 @@ fun poam_deadline_days :: "FISMA_Impact \<Rightarrow> nat" where
 (* Section G01 - FISMA Compliance
     Reference: IND_G_GOVERNMENT.md Section 3.1 *)
 (* fisma_compliance (matches Coq) *)
-lemma fisma_compliance: "\<forall> (system : nat) (impact : FISMA_Impact), True"
+lemma fisma_compliance: "\<forall>(system :: nat) (impact :: FISMA_Impact). True"
   by simp
 
 (* Section G02 - FedRAMP Authorization
     Reference: IND_G_GOVERNMENT.md Section 3.2 *)
 (* fedramp_authorization (matches Coq) *)
-lemma fedramp_authorization: "\<forall> (cloud_service : nat) (level : FedRAMP_Level), True"
+lemma fedramp_authorization: "\<forall>(cloud_service :: nat) (level :: FedRAMP_Level). True"
   by simp
 
 (* Section G03 - NIST 800-53 Controls
     Reference: IND_G_GOVERNMENT.md Section 3.3 *)
 (* nist_800_53_compliance (matches Coq) *)
-lemma nist_800_53_compliance: "\<forall> (controls : NIST_800_53_Controls) (impact : FISMA_Impact), True"
+lemma nist_800_53_compliance: "\<forall>(controls :: NIST_800_53_Controls) (impact :: FISMA_Impact). True"
   by simp
 
 (* Section G04 - CJIS Security
     Reference: IND_G_GOVERNMENT.md Section 3.4 *)
 (* cjis_compliance (matches Coq) *)
-lemma cjis_compliance: "\<forall> (cji_data : nat) (access : nat), True"
+lemma cjis_compliance: "\<forall>(cji_data :: nat) (access :: nat). True"
   by simp
 
 (* Section G05 - FIPS 140-3 Crypto
     Reference: IND_G_GOVERNMENT.md Section 3.5 *)
 (* fips_140_3_compliance (matches Coq) *)
-lemma fips_140_3_compliance: "\<forall> (crypto_module : nat) (level : nat), True"
+lemma fips_140_3_compliance: "\<forall>(crypto_module :: nat) (level :: nat). True"
   by simp
 
 (* High impact requires all 20 control families *)
 (* high_impact_all_families (matches Coq) *)
-lemma high_impact_all_families: "\<forall> (controls : NIST_800_53_Controls) (impact : FISMA_Impact), impact = FISMA_High \<longrightarrow> True"
+lemma high_impact_all_families: "\<forall>(controls :: NIST_800_53_Controls) (impact :: FISMA_Impact). impact = FISMA_High \<longrightarrow> True"
   by simp
 
 (* FIPS cryptography required for federal systems *)
 (* fips_crypto_required (matches Coq) *)
-lemma fips_crypto_required: "\<forall> (system : nat), True"
+lemma fips_crypto_required: "\<forall>(system :: nat). True"
   by simp
 
 (* fisma_le_refl (matches Coq) *)
-lemma fisma_le_refl: "\<forall> f, fisma_le f f = True"
+lemma fisma_le_refl: "\<forall>f. fisma_le f f = True"
   by simp
 
 (* fisma_le_trans (matches Coq) *)
-lemma fisma_le_trans: "\<forall> f1 f2 f3, fisma_le f1 f2 = True \<longrightarrow> fisma_le f2 f3 = True \<longrightarrow> fisma_le f1 f3 = True"
+lemma fisma_le_trans: "\<forall>f1 f2 f3. fisma_le f1 f2 = True \<longrightarrow> fisma_le f2 f3 = True \<longrightarrow> fisma_le f1 f3 = True"
   by simp
 
 (* high_most_controls (matches Coq) *)
-lemma high_most_controls: "\<forall> f, controls_for_baseline f \<le> controls_for_baseline FISMA_High"
-  by (cases rule: ‹_›.cases; simp)
+lemma high_most_controls: "\<forall>f. controls_for_baseline f \<le> controls_for_baseline FISMA_High"
+  by auto
 
 (* controls_monotone (matches Coq) *)
-lemma controls_monotone: "\<forall> f1 f2, fisma_le f1 f2 = True \<longrightarrow> controls_for_baseline f1 \<le> controls_for_baseline f2"
-  by (cases rule: ‹_›.cases; simp)
+lemma controls_monotone: "\<forall>f1 f2. fisma_le f1 f2 = True \<longrightarrow> controls_for_baseline f1 \<le> controls_for_baseline f2"
+  by auto
 
 (* minimum_requires_access_control (matches Coq) *)
-lemma minimum_requires_access_control: "\<forall> c, nist_minimum_controls c = True \<longrightarrow> ac_access_control c = True"
+lemma minimum_requires_access_control: "\<forall>c. nist_minimum_controls c = True \<longrightarrow> ac_access_control c = True"
   by auto
 
 (* minimum_requires_audit (matches Coq) *)
-lemma minimum_requires_audit: "\<forall> c, nist_minimum_controls c = True \<longrightarrow> au_audit c = True"
+lemma minimum_requires_audit: "\<forall>c. nist_minimum_controls c = True \<longrightarrow> au_audit c = True"
   by auto
 
 (* minimum_requires_integrity (matches Coq) *)
-lemma minimum_requires_integrity: "\<forall> c, nist_minimum_controls c = True \<longrightarrow> si_system_integrity c = True"
+lemma minimum_requires_integrity: "\<forall>c. nist_minimum_controls c = True \<longrightarrow> si_system_integrity c = True"
   by auto
 
 (* alignment_low (matches Coq) *)
@@ -253,11 +253,11 @@ lemma alignment_high: "fedramp_matches_fisma FedRAMP_High FISMA_High = True"
   by simp
 
 (* cjis_key_sufficient (matches Coq) *)
-lemma cjis_key_sufficient: "\<forall> bits, (cjis_min_key_bits \<le> bits) = True \<longrightarrow> bits \<ge> 128"
+lemma cjis_key_sufficient: "\<forall>bits. (cjis_min_key_bits \<le> bits) = True \<longrightarrow> bits \<ge> 128"
   by auto
 
 (* fips_le_refl (matches Coq) *)
-lemma fips_le_refl: "\<forall> f, fips_le f f = True"
+lemma fips_le_refl: "\<forall>f. fips_le f f = True"
   by simp
 
 (* high_requires_fips3 (matches Coq) *)
@@ -265,15 +265,15 @@ lemma high_requires_fips3: "required_fips_level FISMA_High = FIPS_Level_3"
   by simp
 
 (* fips_requirement_monotone (matches Coq) *)
-lemma fips_requirement_monotone: "\<forall> f1 f2, fisma_le f1 f2 = True \<longrightarrow> fips_to_nat (required_fips_level f1) \<le> fips_to_nat (required_fips_level f2)"
-  by (cases rule: ‹_›.cases; simp)
+lemma fips_requirement_monotone: "\<forall>f1 f2. fisma_le f1 f2 = True \<longrightarrow> fips_to_nat (required_fips_level f1) \<le> fips_to_nat (required_fips_level f2)"
+  by auto
 
 (* scan_frequency_decreasing (matches Coq) *)
-lemma scan_frequency_decreasing: "\<forall> f1 f2, fisma_le f1 f2 = True \<longrightarrow> scan_frequency_days f2 \<le> scan_frequency_days f1"
-  by (cases rule: ‹_›.cases; simp)
+lemma scan_frequency_decreasing: "\<forall>f1 f2. fisma_le f1 f2 = True \<longrightarrow> scan_frequency_days f2 \<le> scan_frequency_days f1"
+  by auto
 
 (* poam_bounded (matches Coq) *)
-lemma poam_bounded: "\<forall> f, poam_deadline_days f \<le> 180"
-  by (cases rule: ‹_›.cases; simp)
+lemma poam_bounded: "\<forall>f. poam_deadline_days f \<le> 180"
+  by auto
 
 end

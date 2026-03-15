@@ -103,8 +103,8 @@ definition riina_csrf_request :: "CSRFRequest" where
   "riina_csrf_request \<equiv> mkCSRFRequest True True True True True"
 
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* CSRF_001 (matches Coq) *)
 lemma CSRF_001: "csrf_protected riina_csrf = True"
@@ -127,23 +127,23 @@ lemma CSRF_005: "csrf_double_submit riina_csrf = True"
   by simp
 
 (* CSRF_006 (matches Coq) *)
-lemma CSRF_006: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_token_validation c = True"
+lemma CSRF_006: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_token_validation c = True"
   by auto
 
 (* CSRF_007 (matches Coq) *)
-lemma CSRF_007: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_same_site_cookies c = True"
+lemma CSRF_007: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_same_site_cookies c = True"
   by auto
 
 (* CSRF_008 (matches Coq) *)
-lemma CSRF_008: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_origin_check c = True"
+lemma CSRF_008: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_origin_check c = True"
   by auto
 
 (* CSRF_009 (matches Coq) *)
-lemma CSRF_009: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_referer_check c = True"
+lemma CSRF_009: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_referer_check c = True"
   by auto
 
 (* CSRF_010 (matches Coq) *)
-lemma CSRF_010: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_double_submit c = True"
+lemma CSRF_010: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_double_submit c = True"
   by auto
 
 (* CSRF_011 (matches Coq) *)
@@ -159,19 +159,19 @@ lemma CSRF_013: "csrf_protected riina_csrf = True \<and> csrf_double_submit riin
   by auto
 
 (* CSRF_014 (matches Coq) *)
-lemma CSRF_014: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_token_validation c = True \<and> csrf_same_site_cookies c = True"
+lemma CSRF_014: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_token_validation c = True \<and> csrf_same_site_cookies c = True"
   by auto
 
 (* CSRF_015 (matches Coq) *)
-lemma CSRF_015: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_origin_check c = True \<and> csrf_referer_check c = True"
+lemma CSRF_015: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_origin_check c = True \<and> csrf_referer_check c = True"
   by auto
 
 (* CSRF_016 (matches Coq) *)
-lemma CSRF_016: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_token_validation c = True \<and> csrf_origin_check c = True"
+lemma CSRF_016: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_token_validation c = True \<and> csrf_origin_check c = True"
   by auto
 
 (* CSRF_017 (matches Coq) *)
-lemma CSRF_017: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_same_site_cookies c = True \<and> csrf_double_submit c = True"
+lemma CSRF_017: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_same_site_cookies c = True \<and> csrf_double_submit c = True"
   by auto
 
 (* CSRF_018 (matches Coq) *)
@@ -179,11 +179,11 @@ lemma CSRF_018: "csrf_token_validation riina_csrf = True \<and> csrf_origin_chec
   by auto
 
 (* CSRF_019 (matches Coq) *)
-lemma CSRF_019: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_token_validation c = True \<and> csrf_same_site_cookies c = True \<and> csrf_origin_check c = True"
+lemma CSRF_019: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_token_validation c = True \<and> csrf_same_site_cookies c = True \<and> csrf_origin_check c = True"
   by auto
 
 (* CSRF_020_complete (matches Coq) *)
-lemma CSRF_020_complete: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_token_validation c = True \<and> csrf_same_site_cookies c = True \<and> csrf_origin_check c = True \<and> csrf_double_submit c = True"
+lemma CSRF_020_complete: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_token_validation c = True \<and> csrf_same_site_cookies c = True \<and> csrf_origin_check c = True \<and> csrf_double_submit c = True"
   by auto
 
 (* CSRF_021: RIINA CSRF request is safe *)
@@ -198,42 +198,42 @@ lemma CSRF_022_riina_request_fully_validated: "csrf_request_fully_validated riin
 
 (* CSRF_023: Safe request has token *)
 (* CSRF_023_safe_has_token (matches Coq) *)
-lemma CSRF_023_safe_has_token: "\<forall> r, csrf_request_safe r = True \<longrightarrow> req_has_token r = True"
+lemma CSRF_023_safe_has_token: "\<forall>r. csrf_request_safe r = True \<longrightarrow> req_has_token r = True"
   by auto
 
 (* CSRF_024: Safe request has matching token *)
 (* CSRF_024_safe_token_matches (matches Coq) *)
-lemma CSRF_024_safe_token_matches: "\<forall> r, csrf_request_safe r = True \<longrightarrow> req_token_matches r = True"
+lemma CSRF_024_safe_token_matches: "\<forall>r. csrf_request_safe r = True \<longrightarrow> req_token_matches r = True"
   by auto
 
 (* CSRF_025: Safe request is same origin *)
 (* CSRF_025_safe_same_origin (matches Coq) *)
-lemma CSRF_025_safe_same_origin: "\<forall> r, csrf_request_safe r = True \<longrightarrow> req_same_origin r = True"
+lemma CSRF_025_safe_same_origin: "\<forall>r. csrf_request_safe r = True \<longrightarrow> req_same_origin r = True"
   by auto
 
 (* CSRF_026: Fully validated implies safe *)
 (* CSRF_026_fully_validated_implies_safe (matches Coq) *)
-lemma CSRF_026_fully_validated_implies_safe: "\<forall> r, csrf_request_fully_validated r = True \<longrightarrow> csrf_request_safe r = True"
+lemma CSRF_026_fully_validated_implies_safe: "\<forall>r. csrf_request_fully_validated r = True \<longrightarrow> csrf_request_safe r = True"
   by auto
 
 (* CSRF_027: Fully validated implies valid referer *)
 (* CSRF_027_fully_validated_referer (matches Coq) *)
-lemma CSRF_027_fully_validated_referer: "\<forall> r, csrf_request_fully_validated r = True \<longrightarrow> req_valid_referer r = True"
+lemma CSRF_027_fully_validated_referer: "\<forall>r. csrf_request_fully_validated r = True \<longrightarrow> req_valid_referer r = True"
   by auto
 
 (* CSRF_028: Fully validated implies cookie present *)
 (* CSRF_028_fully_validated_cookie (matches Coq) *)
-lemma CSRF_028_fully_validated_cookie: "\<forall> r, csrf_request_fully_validated r = True \<longrightarrow> req_cookie_present r = True"
+lemma CSRF_028_fully_validated_cookie: "\<forall>r. csrf_request_fully_validated r = True \<longrightarrow> req_cookie_present r = True"
   by auto
 
 (* CSRF_029: Full validation implies token and origin *)
 (* CSRF_029_full_implies_token_and_origin (matches Coq) *)
-lemma CSRF_029_full_implies_token_and_origin: "\<forall> r, csrf_request_fully_validated r = True \<longrightarrow> req_has_token r = True \<and> req_same_origin r = True"
+lemma CSRF_029_full_implies_token_and_origin: "\<forall>r. csrf_request_fully_validated r = True \<longrightarrow> req_has_token r = True \<and> req_same_origin r = True"
   by auto
 
 (* CSRF_030: Config protection implies all request checks available *)
 (* CSRF_030_config_enables_request_checks (matches Coq) *)
-lemma CSRF_030_config_enables_request_checks: "\<forall> c, csrf_protected c = True \<longrightarrow> csrf_token_validation c = True \<and> csrf_referer_check c = True \<and> csrf_double_submit c = True"
+lemma CSRF_030_config_enables_request_checks: "\<forall>c. csrf_protected c = True \<longrightarrow> csrf_token_validation c = True \<and> csrf_referer_check c = True \<and> csrf_double_submit c = True"
   by auto
 
 (* CSRF_031: Referer check is part of csrf_protected *)
@@ -243,7 +243,7 @@ lemma CSRF_031_referer_in_protection: "csrf_referer_check riina_csrf = True"
 
 (* CSRF_032: Complete request validation *)
 (* CSRF_032_complete_request_validation (matches Coq) *)
-lemma CSRF_032_complete_request_validation: "\<forall> r, csrf_request_fully_validated r = True \<longrightarrow> req_has_token r = True \<and> req_token_matches r = True \<and> req_same_origin r = True \<and> req_valid_referer r = True \<and> req_cookie_present r = True"
+lemma CSRF_032_complete_request_validation: "\<forall>r. csrf_request_fully_validated r = True \<longrightarrow> req_has_token r = True \<and> req_token_matches r = True \<and> req_same_origin r = True \<and> req_valid_referer r = True \<and> req_cookie_present r = True"
   by auto
 
 (* CSRF_033: Config with all false is not protected *)
@@ -258,7 +258,7 @@ lemma CSRF_034_missing_token_breaks: "csrf_protected (mkCSRF False True True Tru
 
 (* CSRF_035: Protection reconstruction from components *)
 (* CSRF_035_protection_reconstruction (matches Coq) *)
-lemma CSRF_035_protection_reconstruction: "\<forall> c, csrf_token_validation c = True \<longrightarrow> csrf_same_site_cookies c = True \<longrightarrow> csrf_origin_check c = True \<longrightarrow> csrf_referer_check c = True \<longrightarrow> csrf_double_submit c = True \<longrightarrow> csrf_protected c = True"
+lemma CSRF_035_protection_reconstruction: "\<forall>c. csrf_token_validation c = True \<longrightarrow> csrf_same_site_cookies c = True \<longrightarrow> csrf_origin_check c = True \<longrightarrow> csrf_referer_check c = True \<longrightarrow> csrf_double_submit c = True \<longrightarrow> csrf_protected c = True"
   by simp
 
 end

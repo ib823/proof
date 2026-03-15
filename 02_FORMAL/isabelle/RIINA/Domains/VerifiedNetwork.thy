@@ -290,10 +290,10 @@ fun is_strong_cipher :: "CipherSuite \<Rightarrow> bool" where
 
 (* tls_connected (matches Coq: Definition tls_connected) *)
 definition tls_connected :: "TLSConnection \<Rightarrow> bool" where
-  "tls_connected conn \<equiv> tls_verified conn = True /\ 
-  tls_version conn = TLS_1_3 /\
-  transcript_bound (tls_transcript conn) = True /\
-  tls_forward_secret conn = True /\
+  "tls_connected conn \<equiv> tls_verified conn = True \<and> 
+  tls_version conn = TLS_1_3 \<and>
+  transcript_bound (tls_transcript conn) = True \<and>
+  tls_forward_secret conn = True \<and>
   cert_chain_verified (tls_server_cert conn) = True"
 
 (* valid_cert_chain (matches Coq: Definition valid_cert_chain) *)
@@ -302,12 +302,12 @@ definition valid_cert_chain :: "Certificate \<Rightarrow> bool" where
 
 (* key_derivation_correct (matches Coq: Definition key_derivation_correct) *)
 definition key_derivation_correct :: "TLSConnection \<Rightarrow> bool" where
-  "key_derivation_correct conn \<equiv> List.length (tls_session_key conn) > 0 /\
+  "key_derivation_correct conn \<equiv> List.length (tls_session_key conn) > 0 \<and>
   List.length (ke_shared (tls_ke_result conn)) > 0"
 
 (* channel_binding_holds (matches Coq: Definition channel_binding_holds) *)
 definition channel_binding_holds :: "TLSConnection \<Rightarrow> bool" where
-  "channel_binding_holds conn \<equiv> tls_channel_bound conn = True /\
+  "channel_binding_holds conn \<equiv> tls_channel_bound conn = True \<and>
   transcript_bound (tls_transcript conn) = True"
 
 (* valid_transition - complex match, needs manual translation *)
@@ -326,7 +326,7 @@ definition flow_control_correct :: "TCPConnection \<Rightarrow> bool" where
 
 (* frag_reassembly_safe (matches Coq: Definition frag_reassembly_safe) *)
 definition frag_reassembly_safe :: "FragmentBuffer \<Rightarrow> bool" where
-  "frag_reassembly_safe buf \<equiv> frag_no_overlap_verified buf = True /\
+  "frag_reassembly_safe buf \<equiv> frag_no_overlap_verified buf = True \<and>
   frag_total_size buf <= 65535"
 
 (* no_overlapping_frags (matches Coq: Definition no_overlapping_frags) *)
@@ -346,12 +346,12 @@ definition dnssec_validated :: "bool" where "dnssec_validated = undefined"
 
 (* authentic (matches Coq: Definition authentic) *)
 definition authentic :: "DNSRecord \<Rightarrow> DNSQuery \<Rightarrow> bool" where
-  "authentic response query \<equiv> query_name query = dns_name response /\
+  "authentic response query \<equiv> query_name query = dns_name response \<and>
   dns_sig_verified response = True"
 
 (* cache_safe (matches Coq: Definition cache_safe) *)
 definition cache_safe :: "DNSCacheEntry \<Rightarrow> bool" where
-  "cache_safe entry \<equiv> cache_validated entry = True /\
+  "cache_safe entry \<equiv> cache_validated entry = True \<and>
   dns_sig_verified (cache_record entry) = True"
 
 (* rebinding_prevented (matches Coq: Definition rebinding_prevented) *)
@@ -367,107 +367,107 @@ definition amplification_bounded :: "DNSAmplificationState \<Rightarrow> bool" w
 
 (* doh_confidential (matches Coq: Definition doh_confidential) *)
 definition doh_confidential :: "DoHConnection \<Rightarrow> bool" where
-  "doh_confidential conn \<equiv> doh_encrypted conn = True /\
+  "doh_confidential conn \<equiv> doh_encrypted conn = True \<and>
   tls_verified (doh_tls_conn conn) = True"
 
 (* NET_001_01_tls_handshake_auth (matches Coq) *)
-lemma NET_001_01_tls_handshake_auth: "\<forall> conn, tls_connected conn \<longrightarrow> valid_cert_chain (tls_server_cert conn)"
+lemma NET_001_01_tls_handshake_auth: "\<forall>conn. tls_connected conn \<longrightarrow> valid_cert_chain (tls_server_cert conn)"
   by auto
 
 (* NET_001_02_tls_forward_secrecy (matches Coq) *)
-lemma NET_001_02_tls_forward_secrecy: "\<forall> conn, tls_connected conn \<longrightarrow> tls_forward_secret conn = True"
+lemma NET_001_02_tls_forward_secrecy: "\<forall>conn. tls_connected conn \<longrightarrow> tls_forward_secret conn = True"
   by auto
 
 (* NET_001_03_tls_no_downgrade (matches Coq) *)
-lemma NET_001_03_tls_no_downgrade: "\<forall> conn, tls_connected conn \<longrightarrow> tls_version conn = TLS_1_3"
+lemma NET_001_03_tls_no_downgrade: "\<forall>conn. tls_connected conn \<longrightarrow> tls_version conn = TLS_1_3"
   by auto
 
 (* NET_001_04_tls_key_derivation (matches Coq) *)
-lemma NET_001_04_tls_key_derivation: "\<forall> conn, tls_connected conn \<longrightarrow> List.length (tls_session_key conn) > 0 \<longrightarrow> List.length (ke_shared (tls_ke_result conn)) > 0 \<longrightarrow> key_derivation_correct conn"
+lemma NET_001_04_tls_key_derivation: "\<forall>conn. tls_connected conn \<longrightarrow> List.length (tls_session_key conn) > 0 \<longrightarrow> List.length (ke_shared (tls_ke_result conn)) > 0 \<longrightarrow> key_derivation_correct conn"
   by auto
 
 (* NET_001_05_tls_transcript_binding (matches Coq) *)
-lemma NET_001_05_tls_transcript_binding: "\<forall> conn, tls_connected conn \<longrightarrow> transcript_bound (tls_transcript conn) = True"
+lemma NET_001_05_tls_transcript_binding: "\<forall>conn. tls_connected conn \<longrightarrow> transcript_bound (tls_transcript conn) = True"
   by auto
 
 (* NET_001_06_tls_0rtt_replay_safe (matches Coq) *)
-lemma NET_001_06_tls_0rtt_replay_safe: "\<forall> data, zrtt_anti_replay_checked data = True \<longrightarrow> zrtt_nonce data \<noteq> [] \<longrightarrow> True. "
+lemma NET_001_06_tls_0rtt_replay_safe: "\<forall>data. zrtt_anti_replay_checked data = True \<longrightarrow> zrtt_nonce data \<noteq> [] \<longrightarrow> True. "
   by auto
 
 (* NET_001_07_tls_certificate_chain_valid (matches Coq) *)
-lemma NET_001_07_tls_certificate_chain_valid: "\<forall> conn cert, tls_connected conn \<longrightarrow> In cert (tls_cert_chain conn) \<longrightarrow> cert_chain_verified (tls_server_cert conn) = True \<longrightarrow> valid_cert_chain (tls_server_cert conn)"
+lemma NET_001_07_tls_certificate_chain_valid: "\<forall>conn cert. tls_connected conn \<longrightarrow> In cert (tls_cert_chain conn) \<longrightarrow> cert_chain_verified (tls_server_cert conn) = True \<longrightarrow> valid_cert_chain (tls_server_cert conn)"
   by auto
 
 (* NET_001_08_tls_cipher_strength (matches Coq) *)
-lemma NET_001_08_tls_cipher_strength: "\<forall> conn, tls_connected conn \<longrightarrow> is_strong_cipher (tls_cipher conn) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma NET_001_08_tls_cipher_strength: "\<forall>conn. tls_connected conn \<longrightarrow> is_strong_cipher (tls_cipher conn) = True"
+  by auto
 
 (* NET_001_09_tls_no_truncation (matches Coq) *)
-lemma NET_001_09_tls_no_truncation: "\<forall> conn, tls_connected conn \<longrightarrow> transcript_bound (tls_transcript conn) = True \<longrightarrow> List.length (transcript_messages (tls_transcript conn)) \<ge> 0"
+lemma NET_001_09_tls_no_truncation: "\<forall>conn. tls_connected conn \<longrightarrow> transcript_bound (tls_transcript conn) = True \<longrightarrow> List.length (transcript_messages (tls_transcript conn)) \<ge> 0"
   by auto
 
 (* NET_001_10_tls_channel_binding (matches Coq) *)
-lemma NET_001_10_tls_channel_binding: "\<forall> conn, tls_connected conn \<longrightarrow> tls_channel_bound conn = True \<longrightarrow> channel_binding_holds conn"
+lemma NET_001_10_tls_channel_binding: "\<forall>conn. tls_connected conn \<longrightarrow> tls_channel_bound conn = True \<longrightarrow> channel_binding_holds conn"
   by auto
 
 (* NET_001_11_tcp_state_machine_correct (matches Coq) *)
-lemma NET_001_11_tcp_state_machine_correct: "\<forall> conn event new_state, tcp_transition conn event new_state \<longrightarrow> valid_transition (tcp_state conn) event new_state"
+lemma NET_001_11_tcp_state_machine_correct: "\<forall>conn event new_state. tcp_transition conn event new_state \<longrightarrow> valid_transition (tcp_state conn) event new_state"
   by auto
 
 (* NET_001_12_tcp_seq_unpredictable (matches Coq) *)
-lemma NET_001_12_tcp_seq_unpredictable: "\<forall> conn, tcp_seq_random_source conn > 0 \<longrightarrow> seq_unpredictable conn"
+lemma NET_001_12_tcp_seq_unpredictable: "\<forall>conn. tcp_seq_random_source conn > 0 \<longrightarrow> seq_unpredictable conn"
   by auto
 
 (* NET_001_13_tcp_no_injection (matches Coq) *)
-lemma NET_001_13_tcp_no_injection: "\<forall> conn pkt, tcp_integrity_mac conn \<noteq> None \<longrightarrow> pkt_mac pkt \<noteq> None \<longrightarrow> injection_detectable conn pkt"
+lemma NET_001_13_tcp_no_injection: "\<forall>conn pkt. tcp_integrity_mac conn \<noteq> None \<longrightarrow> pkt_mac pkt \<noteq> None \<longrightarrow> injection_detectable conn pkt"
   by auto
 
 (* NET_001_14_tcp_flow_control_correct (matches Coq) *)
-lemma NET_001_14_tcp_flow_control_correct: "\<forall> conn, tcp_window conn > 0 \<longrightarrow> flow_control_correct conn"
+lemma NET_001_14_tcp_flow_control_correct: "\<forall>conn. tcp_window conn > 0 \<longrightarrow> flow_control_correct conn"
   by auto
 
 (* NET_001_15_ip_frag_reassembly_safe (matches Coq) *)
-lemma NET_001_15_ip_frag_reassembly_safe: "\<forall> buf, frag_no_overlap_verified buf = True \<longrightarrow> frag_total_size buf \<le> 65535 \<longrightarrow> frag_reassembly_safe buf"
+lemma NET_001_15_ip_frag_reassembly_safe: "\<forall>buf. frag_no_overlap_verified buf = True \<longrightarrow> frag_total_size buf \<le> 65535 \<longrightarrow> frag_reassembly_safe buf"
   by auto
 
 (* NET_001_16_ip_no_overlapping_fragments (matches Coq) *)
-lemma NET_001_16_ip_no_overlapping_fragments: "\<forall> buf, frag_no_overlap_verified buf = True \<longrightarrow> no_overlapping_frags buf"
+lemma NET_001_16_ip_no_overlapping_fragments: "\<forall>buf. frag_no_overlap_verified buf = True \<longrightarrow> no_overlapping_frags buf"
   by auto
 
 (* NET_001_17_icmp_rate_limited (matches Coq) *)
-lemma NET_001_17_icmp_rate_limited: "\<forall> state, icmp_count state \<le> icmp_max_rate state \<longrightarrow> icmp_rate_bounded state"
+lemma NET_001_17_icmp_rate_limited: "\<forall>state. icmp_count state \<le> icmp_max_rate state \<longrightarrow> icmp_rate_bounded state"
   by auto
 
 (* NET_001_18_ip_routing_correct (matches Coq) *)
-lemma NET_001_18_ip_routing_correct: "\<forall> entry dest, route_valid entry = True \<longrightarrow> routing_correct entry dest"
+lemma NET_001_18_ip_routing_correct: "\<forall>entry dest. route_valid entry = True \<longrightarrow> routing_correct entry dest"
   by auto
 
 (* NET_001_19_dnssec_chain_valid (matches Coq) *)
-lemma NET_001_19_dnssec_chain_valid: "\<forall> query response, dnssec_validated response \<longrightarrow> query_name query = dns_name response \<longrightarrow> authentic response query"
+lemma NET_001_19_dnssec_chain_valid: "\<forall>query response. dnssec_validated response \<longrightarrow> query_name query = dns_name response \<longrightarrow> authentic response query"
   by auto
 
 (* NET_001_20_dns_cache_safe (matches Coq) *)
-lemma NET_001_20_dns_cache_safe: "\<forall> entry, cache_validated entry = True \<longrightarrow> dns_sig_verified (cache_record entry) = True \<longrightarrow> cache_safe entry"
+lemma NET_001_20_dns_cache_safe: "\<forall>entry. cache_validated entry = True \<longrightarrow> dns_sig_verified (cache_record entry) = True \<longrightarrow> cache_safe entry"
   by auto
 
 (* NET_001_21_dns_no_rebinding (matches Coq) *)
-lemma NET_001_21_dns_no_rebinding: "\<forall> check, (rebind_is_private check = True \<longrightarrow> rebind_blocked check = True) \<longrightarrow> rebinding_prevented check"
+lemma NET_001_21_dns_no_rebinding: "\<forall>check. (rebind_is_private check = True \<longrightarrow> rebind_blocked check = True) \<longrightarrow> rebinding_prevented check"
   by auto
 
 (* NET_001_22_dns_query_integrity (matches Coq) *)
-lemma NET_001_22_dns_query_integrity: "\<forall> q, query_mac q \<noteq> None \<longrightarrow> query_has_integrity q"
+lemma NET_001_22_dns_query_integrity: "\<forall>q. query_mac q \<noteq> None \<longrightarrow> query_has_integrity q"
   by auto
 
 (* NET_001_23_dns_response_authentic (matches Coq) *)
-lemma NET_001_23_dns_response_authentic: "\<forall> query response, query_name query = dns_name response \<longrightarrow> dns_sig_verified response = True \<longrightarrow> authentic response query"
+lemma NET_001_23_dns_response_authentic: "\<forall>query response. query_name query = dns_name response \<longrightarrow> dns_sig_verified response = True \<longrightarrow> authentic response query"
   by auto
 
 (* NET_001_24_dns_no_amplification (matches Coq) *)
-lemma NET_001_24_dns_no_amplification: "\<forall> state, amp_response_size state \<le> amp_query_size state * amp_ratio_max state \<longrightarrow> amplification_bounded state"
+lemma NET_001_24_dns_no_amplification: "\<forall>state. amp_response_size state \<le> amp_query_size state * amp_ratio_max state \<longrightarrow> amplification_bounded state"
   by auto
 
 (* NET_001_25_doh_confidential (matches Coq) *)
-lemma NET_001_25_doh_confidential: "\<forall> conn, doh_encrypted conn = True \<longrightarrow> tls_verified (doh_tls_conn conn) = True \<longrightarrow> doh_confidential conn"
+lemma NET_001_25_doh_confidential: "\<forall>conn. doh_encrypted conn = True \<longrightarrow> tls_verified (doh_tls_conn conn) = True \<longrightarrow> doh_confidential conn"
   by auto
 
 end

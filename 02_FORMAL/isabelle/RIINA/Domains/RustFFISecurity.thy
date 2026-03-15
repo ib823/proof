@@ -200,20 +200,20 @@ definition cve_2025_21756_scenario :: "FFICall" where
 
 (* Helper lemmas *)
 (* andb_true_iff_ffi (matches Coq) *)
-lemma andb_true_iff_ffi: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff_ffi: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* orb_true_iff_ffi (matches Coq) *)
-lemma orb_true_iff_ffi: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma orb_true_iff_ffi: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = True"
+  by auto
 
 (* negb_true_iff_ffi (matches Coq) *)
-lemma negb_true_iff_ffi: "\<forall> b : bool, (\<not> b) = True <-> b = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_true_iff_ffi: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+  by auto
 
 (* negb_false_iff_ffi (matches Coq) *)
-lemma negb_false_iff_ffi: "\<forall> b : bool, (\<not> b) = False <-> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_false_iff_ffi: "\<forall>b : bool. (\<not> b) = False <-> b = True"
+  by auto
 
 (* FFI_001: RIINA requires effect annotation for all FFI calls *)
 (* FFI_001_effect_annotation_required (matches Coq) *)
@@ -267,77 +267,77 @@ lemma FFI_010_safe_call_passes: "check_ffi_call riina_ffi_policy (mkFFICall Rust
 
 (* FFI_011: All defenses implies lifetime safety *)
 (* FFI_011_all_implies_lifetime (matches Coq) *)
-lemma FFI_011_all_implies_lifetime: "\<forall> p : FFISafetyPolicy, all_ffi_defenses p = True \<longrightarrow> lifetime_safety_active p = True"
+lemma FFI_011_all_implies_lifetime: "\<forall>p : FFISafetyPolicy. all_ffi_defenses p = True \<longrightarrow> lifetime_safety_active p = True"
   by auto
 
 (* FFI_012: All defenses implies panic safety *)
 (* FFI_012_all_implies_panic (matches Coq) *)
-lemma FFI_012_all_implies_panic: "\<forall> p : FFISafetyPolicy, all_ffi_defenses p = True \<longrightarrow> panic_safety_active p = True"
+lemma FFI_012_all_implies_panic: "\<forall>p : FFISafetyPolicy. all_ffi_defenses p = True \<longrightarrow> panic_safety_active p = True"
   by auto
 
 (* FFI_013: All defenses implies null safety *)
 (* FFI_013_all_implies_null (matches Coq) *)
-lemma FFI_013_all_implies_null: "\<forall> p : FFISafetyPolicy, all_ffi_defenses p = True \<longrightarrow> null_safety_active p = True"
+lemma FFI_013_all_implies_null: "\<forall>p : FFISafetyPolicy. all_ffi_defenses p = True \<longrightarrow> null_safety_active p = True"
   by auto
 
 (* FFI_014: All defenses implies buffer safety *)
 (* FFI_014_all_implies_buffer (matches Coq) *)
-lemma FFI_014_all_implies_buffer: "\<forall> p : FFISafetyPolicy, all_ffi_defenses p = True \<longrightarrow> buffer_safety_active p = True"
+lemma FFI_014_all_implies_buffer: "\<forall>p : FFISafetyPolicy. all_ffi_defenses p = True \<longrightarrow> buffer_safety_active p = True"
   by auto
 
 (* FFI_015: All defenses implies type safety *)
 (* FFI_015_all_implies_type (matches Coq) *)
-lemma FFI_015_all_implies_type: "\<forall> p : FFISafetyPolicy, all_ffi_defenses p = True \<longrightarrow> type_safety_active p = True"
+lemma FFI_015_all_implies_type: "\<forall>p : FFISafetyPolicy. all_ffi_defenses p = True \<longrightarrow> type_safety_active p = True"
   by auto
 
 (* FFI_016: All defenses implies memory safety *)
 (* FFI_016_all_implies_memory (matches Coq) *)
-lemma FFI_016_all_implies_memory: "\<forall> p : FFISafetyPolicy, all_ffi_defenses p = True \<longrightarrow> memory_safety_active p = True"
+lemma FFI_016_all_implies_memory: "\<forall>p : FFISafetyPolicy. all_ffi_defenses p = True \<longrightarrow> memory_safety_active p = True"
   by auto
 
 (* FFI_017: Memory safety requires lifetime enforcement *)
 (* FFI_017_memory_requires_lifetime (matches Coq) *)
-lemma FFI_017_memory_requires_lifetime: "\<forall> p : FFISafetyPolicy, memory_safety_active p = True \<longrightarrow> ffi_enforce_lifetime_bounds p = True"
+lemma FFI_017_memory_requires_lifetime: "\<forall>p : FFISafetyPolicy. memory_safety_active p = True \<longrightarrow> ffi_enforce_lifetime_bounds p = True"
   by auto
 
 (* FFI_018: Memory safety forbids shared mutable state *)
 (* FFI_018_memory_forbids_shared_mut (matches Coq) *)
-lemma FFI_018_memory_forbids_shared_mut: "\<forall> p : FFISafetyPolicy, memory_safety_active p = True \<longrightarrow> ffi_forbid_shared_mut p = True"
+lemma FFI_018_memory_forbids_shared_mut: "\<forall>p : FFISafetyPolicy. memory_safety_active p = True \<longrightarrow> ffi_forbid_shared_mut p = True"
   by auto
 
 (* FFI_019: Lifetime violation rejected under RIINA policy *)
 (* FFI_019_lifetime_violation_rejected (matches Coq) *)
-lemma FFI_019_lifetime_violation_rejected: "\<forall> bnd eff panic null buf typ mut, check_ffi_call riina_ffi_policy (mkFFICall bnd eff LifetimeViolated panic null buf typ mut) = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma FFI_019_lifetime_violation_rejected: "\<forall>bnd eff panic null buf typ mut. check_ffi_call riina_ffi_policy (mkFFICall bnd eff LifetimeViolated panic null buf typ mut) = False"
+  by auto
 
 (* FFI_020: Panic unsafe rejected under RIINA policy *)
 (* FFI_020_panic_unsafe_rejected (matches Coq) *)
-lemma FFI_020_panic_unsafe_rejected: "\<forall> bnd eff life null buf typ mut, check_ffi_call riina_ffi_policy (mkFFICall bnd eff life PanicUnsafe null buf typ mut) = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma FFI_020_panic_unsafe_rejected: "\<forall>bnd eff life null buf typ mut. check_ffi_call riina_ffi_policy (mkFFICall bnd eff life PanicUnsafe null buf typ mut) = False"
+  by auto
 
 (* FFI_021: Null unchecked rejected under RIINA policy *)
 (* FFI_021_null_unchecked_rejected (matches Coq) *)
-lemma FFI_021_null_unchecked_rejected: "\<forall> bnd eff life panic buf typ mut, check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic NullUnchecked buf typ mut) = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma FFI_021_null_unchecked_rejected: "\<forall>bnd eff life panic buf typ mut. check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic NullUnchecked buf typ mut) = False"
+  by auto
 
 (* FFI_022: Buffer unchecked rejected under RIINA policy *)
 (* FFI_022_buffer_unchecked_rejected (matches Coq) *)
-lemma FFI_022_buffer_unchecked_rejected: "\<forall> bnd eff life panic null typ mut, check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic null BufferUnchecked typ mut) = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma FFI_022_buffer_unchecked_rejected: "\<forall>bnd eff life panic null typ mut. check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic null BufferUnchecked typ mut) = False"
+  by auto
 
 (* FFI_023: Type marshal unsafe rejected under RIINA policy *)
 (* FFI_023_type_unsafe_rejected (matches Coq) *)
-lemma FFI_023_type_unsafe_rejected: "\<forall> bnd eff life panic null buf mut, check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic null buf TypeMarshalUnsafe mut) = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma FFI_023_type_unsafe_rejected: "\<forall>bnd eff life panic null buf mut. check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic null buf TypeMarshalUnsafe mut) = False"
+  by auto
 
 (* FFI_024: Shared mutable state rejected under RIINA policy *)
 (* FFI_024_shared_mut_rejected (matches Coq) *)
-lemma FFI_024_shared_mut_rejected: "\<forall> bnd eff life panic null buf typ, check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic null buf typ True) = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma FFI_024_shared_mut_rejected: "\<forall>bnd eff life panic null buf typ. check_ffi_call riina_ffi_policy (mkFFICall bnd eff life panic null buf typ True) = False"
+  by auto
 
 (* FFI_025: Missing effect annotation rejected *)
 (* FFI_025_no_effect_rejected (matches Coq) *)
-lemma FFI_025_no_effect_rejected: "\<forall> bnd life panic null buf typ mut, check_ffi_call riina_ffi_policy (mkFFICall bnd False life panic null buf typ mut) = False"
+lemma FFI_025_no_effect_rejected: "\<forall>bnd life panic null buf typ mut. check_ffi_call riina_ffi_policy (mkFFICall bnd False life panic null buf typ mut) = False"
   by simp
 
 (* FFI_026: Bidirectional FFI respects same safety rules *)
@@ -352,17 +352,17 @@ lemma FFI_027_c_to_rust_safe: "check_ffi_call riina_ffi_policy (mkFFICall CToRus
 
 (* FFI_028: Complete FFI defense composition *)
 (* FFI_028_complete_defense (matches Coq) *)
-lemma FFI_028_complete_defense: "\<forall> p : FFISafetyPolicy, all_ffi_defenses p = True \<longrightarrow> ffi_require_effect_annotation p = True \<and> ffi_enforce_lifetime_bounds p = True \<and> ffi_require_panic_wrapper p = True \<and> ffi_require_null_check p = True \<and> ffi_require_buffer_validation p = True \<and> ffi_require_type_marshalling p = True \<and> ffi_forbid_shared_mut p = True \<and> ffi_log_all_calls p = True"
+lemma FFI_028_complete_defense: "\<forall>p : FFISafetyPolicy. all_ffi_defenses p = True \<longrightarrow> ffi_require_effect_annotation p = True \<and> ffi_enforce_lifetime_bounds p = True \<and> ffi_require_panic_wrapper p = True \<and> ffi_require_null_check p = True \<and> ffi_require_buffer_validation p = True \<and> ffi_require_type_marshalling p = True \<and> ffi_forbid_shared_mut p = True \<and> ffi_log_all_calls p = True"
   by auto
 
 (* FFI_029: UAF prevention via lifetime enforcement *)
 (* FFI_029_uaf_prevention (matches Coq) *)
-lemma FFI_029_uaf_prevention: "\<forall> p : FFISafetyPolicy, memory_safety_active p = True \<longrightarrow> \<forall> call : FFICall, ffi_lifetime_safety call = LifetimeViolated \<longrightarrow> check_ffi_call p call = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma FFI_029_uaf_prevention: "\<forall>p : FFISafetyPolicy. memory_safety_active p = True \<longrightarrow> \<forall>call : FFICall. ffi_lifetime_safety call = LifetimeViolated \<longrightarrow> check_ffi_call p call = False"
+  by auto
 
 (* FFI_030: Data race prevention via forbidding shared mutable state *)
 (* FFI_030_data_race_prevention (matches Coq) *)
-lemma FFI_030_data_race_prevention: "\<forall> p : FFISafetyPolicy, memory_safety_active p = True \<longrightarrow> \<forall> call : FFICall, ffi_shared_mut call = True \<longrightarrow> check_ffi_call p call = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma FFI_030_data_race_prevention: "\<forall>p : FFISafetyPolicy. memory_safety_active p = True \<longrightarrow> \<forall>call : FFICall. ffi_shared_mut call = True \<longrightarrow> check_ffi_call p call = False"
+  by auto
 
 end

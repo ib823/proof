@@ -72,8 +72,8 @@ datatype ca_license_status =
 
 (* cert_valid (matches Coq: Definition cert_valid) *)
 definition cert_valid :: "Certificate \<Rightarrow> nat \<Rightarrow> bool" where
-  "cert_valid c current_time \<equiv> cert_status c = CertActive /\
-  current_time <= cert_expiry c /\
+  "cert_valid c current_time \<equiv> cert_status c = CertActive \<and>
+  current_time <= cert_expiry c \<and>
   cert_ca_licensed c = CALicensed"
 
 (* presumed_secure (matches Coq: Definition presumed_secure) *)
@@ -82,8 +82,8 @@ definition presumed_secure :: "Certificate \<Rightarrow> bool" where
 
 (* signature_legally_valid (matches Coq: Definition signature_legally_valid) *)
 definition signature_legally_valid :: "DigitalSignature \<Rightarrow> Certificate \<Rightarrow> nat \<Rightarrow> bool" where
-  "signature_legally_valid s c t \<equiv> sig_verified s = True /\
-  sig_cert_id s = cert_id c /\
+  "signature_legally_valid s c t \<equiv> sig_verified s = True \<and>
+  sig_cert_id s = cert_id c \<and>
   cert_valid c t"
 
 (* key_strength_adequate (matches Coq: Definition key_strength_adequate) *)
@@ -104,20 +104,20 @@ definition cert_status_terminated :: "Certificate \<Rightarrow> bool" where
 
 (* relying_party_diligent (matches Coq: Definition relying_party_diligent) *)
 definition relying_party_diligent :: "RelyingPartyCheck \<Rightarrow> bool" where
-  "relying_party_diligent rpc \<equiv> rpc_status_checked rpc = True /\
-  rpc_expiry_checked rpc = True /\
-  rpc_ca_verified rpc = True /\
+  "relying_party_diligent rpc \<equiv> rpc_status_checked rpc = True \<and>
+  rpc_expiry_checked rpc = True \<and>
+  rpc_ca_verified rpc = True \<and>
   rpc_signature_verified rpc = True"
 
 (* cert_on_crl (matches Coq: Definition cert_on_crl) *)
 definition cert_on_crl :: "nat \<Rightarrow> bool" where
-  "cert_on_crl cert_id \<equiv> exists entry, In entry crl /\ crl_cert_id entry = cert_id"
+  "cert_on_crl cert_id \<equiv> exists entry, entry \<in> set crl \<and> crl_cert_id entry = cert_id"
 
 (* dsa_fully_compliant (matches Coq: Definition dsa_fully_compliant) *)
 definition dsa_fully_compliant :: "Certificate \<Rightarrow> DigitalSignature \<Rightarrow> nat \<Rightarrow> bool \<Rightarrow> bool \<Rightarrow> bool" where
-  "dsa_fully_compliant c s t key_enc key_hsm \<equiv> cert_valid c t /\
-  signature_legally_valid s c t /\
-  key_strength_adequate c 2048 /\
+  "dsa_fully_compliant c s t key_enc key_hsm \<equiv> cert_valid c t \<and>
+  signature_legally_valid s c t \<and>
+  key_strength_adequate c 2048 \<and>
   private_key_protected key_enc key_hsm"
 
 (* all_cert_statuses (matches Coq: Definition all_cert_statuses) *)
@@ -129,107 +129,107 @@ definition all_ca_license_statuses :: "list CALicenseStatus" where
   "all_ca_license_statuses \<equiv> [CALicensed; CAUnlicensed]"
 
 (* cert_validity (matches Coq) *)
-lemma cert_validity: "\<forall> (c : Certificate) (t : nat), cert_status c = CertActive \<longrightarrow> t \<le> cert_expiry c \<longrightarrow> cert_ca_licensed c = CALicensed \<longrightarrow> cert_valid c t"
+lemma cert_validity: "\<forall>(c :: Certificate) (t :: nat). cert_status c = CertActive \<longrightarrow> t \<le> cert_expiry c \<longrightarrow> cert_ca_licensed c = CALicensed \<longrightarrow> cert_valid c t"
   by auto
 
 (* suspended_invalid (matches Coq) *)
-lemma suspended_invalid: "\<forall> (c : Certificate) (t : nat), cert_status c = CertSuspended \<longrightarrow> ~ cert_valid c t"
+lemma suspended_invalid: "\<forall>(c :: Certificate) (t :: nat). cert_status c = CertSuspended \<longrightarrow> ~ cert_valid c t"
   by auto
 
 (* revoked_invalid (matches Coq) *)
-lemma revoked_invalid: "\<forall> (c : Certificate) (t : nat), cert_status c = CertRevoked \<longrightarrow> ~ cert_valid c t"
+lemma revoked_invalid: "\<forall>(c :: Certificate) (t :: nat). cert_status c = CertRevoked \<longrightarrow> ~ cert_valid c t"
   by auto
 
 (* expired_invalid (matches Coq) *)
-lemma expired_invalid: "\<forall> (c : Certificate) (t : nat), cert_expiry c < t \<longrightarrow> ~ cert_valid c t"
+lemma expired_invalid: "\<forall>(c :: Certificate) (t :: nat). cert_expiry c < t \<longrightarrow> ~ cert_valid c t"
   by auto
 
 (* licensed_ca_presumption (matches Coq) *)
-lemma licensed_ca_presumption: "\<forall> (c : Certificate), cert_ca_licensed c = CALicensed \<longrightarrow> presumed_secure c"
+lemma licensed_ca_presumption: "\<forall>(c :: Certificate). cert_ca_licensed c = CALicensed \<longrightarrow> presumed_secure c"
   by auto
 
 (* unlicensed_no_presumption (matches Coq) *)
-lemma unlicensed_no_presumption: "\<forall> (c : Certificate), cert_ca_licensed c = CAUnlicensed \<longrightarrow> ~ presumed_secure c"
+lemma unlicensed_no_presumption: "\<forall>(c :: Certificate). cert_ca_licensed c = CAUnlicensed \<longrightarrow> ~ presumed_secure c"
   by auto
 
 (* signature_verification (matches Coq) *)
-lemma signature_verification: "\<forall> (s : DigitalSignature) (c : Certificate) (t : nat), sig_verified s = True \<longrightarrow> sig_cert_id s = cert_id c \<longrightarrow> cert_valid c t \<longrightarrow> signature_legally_valid s c t"
+lemma signature_verification: "\<forall>(s :: DigitalSignature) (c :: Certificate) (t : nat). sig_verified s = True \<longrightarrow> sig_cert_id s = cert_id c \<longrightarrow> cert_valid c t \<longrightarrow> signature_legally_valid s c t"
   by auto
 
 (* key_strength_2048 (matches Coq) *)
-lemma key_strength_2048: "\<forall> (c : Certificate), 2048 \<le> cert_key_length c \<longrightarrow> key_strength_adequate c 2048"
+lemma key_strength_2048: "\<forall>(c :: Certificate). 2048 \<le> cert_key_length c \<longrightarrow> key_strength_adequate c 2048"
   by auto
 
 (* subscriber_duty_encrypted (matches Coq) *)
-lemma subscriber_duty_encrypted: "\<forall> (enc hsm : bool), enc = True \<longrightarrow> private_key_protected enc hsm"
+lemma subscriber_duty_encrypted: "\<forall>(enc hsm : bool). enc = True \<longrightarrow> private_key_protected enc hsm"
   by auto
 
 (* subscriber_duty_hsm (matches Coq) *)
-lemma subscriber_duty_hsm: "\<forall> (enc hsm : bool), hsm = True \<longrightarrow> private_key_protected enc hsm"
+lemma subscriber_duty_hsm: "\<forall>(enc hsm : bool). hsm = True \<longrightarrow> private_key_protected enc hsm"
   by auto
 
 (* active_not_terminated (matches Coq) *)
-lemma active_not_terminated: "\<forall> (c : Certificate), cert_status_active c \<longrightarrow> ~ cert_status_terminated c"
+lemma active_not_terminated: "\<forall>(c :: Certificate). cert_status_active c \<longrightarrow> ~ cert_status_terminated c"
   by auto
 
 (* suspended_not_active (matches Coq) *)
-lemma suspended_not_active: "\<forall> (c : Certificate), cert_status c = CertSuspended \<longrightarrow> ~ cert_status_active c"
+lemma suspended_not_active: "\<forall>(c :: Certificate). cert_status c = CertSuspended \<longrightarrow> ~ cert_status_active c"
   by auto
 
 (* cert_validity_window (matches Coq) *)
-lemma cert_validity_window: "\<forall> (c : Certificate) (t : nat), cert_valid c t \<longrightarrow> cert_issued_at c \<le> t \<or> True"
+lemma cert_validity_window: "\<forall>(c :: Certificate) (t :: nat). cert_valid c t \<longrightarrow> cert_issued_at c \<le> t \<or> True"
   by auto
 
 (* cert_valid_implies_not_expired (matches Coq) *)
-lemma cert_valid_implies_not_expired: "\<forall> (c : Certificate) (t : nat), cert_valid c t \<longrightarrow> t \<le> cert_expiry c"
+lemma cert_valid_implies_not_expired: "\<forall>(c :: Certificate) (t :: nat). cert_valid c t \<longrightarrow> t \<le> cert_expiry c"
   by auto
 
 (* cert_valid_implies_active (matches Coq) *)
-lemma cert_valid_implies_active: "\<forall> (c : Certificate) (t : nat), cert_valid c t \<longrightarrow> cert_status c = CertActive"
+lemma cert_valid_implies_active: "\<forall>(c :: Certificate) (t :: nat). cert_valid c t \<longrightarrow> cert_status c = CertActive"
   by auto
 
 (* cert_valid_implies_licensed (matches Coq) *)
-lemma cert_valid_implies_licensed: "\<forall> (c : Certificate) (t : nat), cert_valid c t \<longrightarrow> cert_ca_licensed c = CALicensed"
+lemma cert_valid_implies_licensed: "\<forall>(c :: Certificate) (t :: nat). cert_valid c t \<longrightarrow> cert_ca_licensed c = CALicensed"
   by auto
 
 (* key_strength_downward (matches Coq) *)
-lemma key_strength_downward: "\<forall> (c : Certificate) (bits1 bits2 : nat), bits1 \<le> bits2 \<longrightarrow> key_strength_adequate c bits2 \<longrightarrow> key_strength_adequate c bits1"
+lemma key_strength_downward: "\<forall>(c :: Certificate) (bits1 bits2 : nat). bits1 \<le> bits2 \<longrightarrow> key_strength_adequate c bits2 \<longrightarrow> key_strength_adequate c bits1"
   by auto
 
 (* key_strength_4096_implies_2048 (matches Coq) *)
-lemma key_strength_4096_implies_2048: "\<forall> (c : Certificate), key_strength_adequate c 4096 \<longrightarrow> key_strength_adequate c 2048"
+lemma key_strength_4096_implies_2048: "\<forall>(c :: Certificate). key_strength_adequate c 4096 \<longrightarrow> key_strength_adequate c 2048"
   by simp
 
 (* relying_party_duty (matches Coq) *)
-lemma relying_party_duty: "\<forall> (rpc : RelyingPartyCheck), rpc_status_checked rpc = True \<longrightarrow> rpc_expiry_checked rpc = True \<longrightarrow> rpc_ca_verified rpc = True \<longrightarrow> rpc_signature_verified rpc = True \<longrightarrow> relying_party_diligent rpc"
+lemma relying_party_duty: "\<forall>(rpc :: RelyingPartyCheck). rpc_status_checked rpc = True \<longrightarrow> rpc_expiry_checked rpc = True \<longrightarrow> rpc_ca_verified rpc = True \<longrightarrow> rpc_signature_verified rpc = True \<longrightarrow> relying_party_diligent rpc"
   by auto
 
 (* partial_check_not_diligent (matches Coq) *)
-lemma partial_check_not_diligent: "\<forall> (rpc : RelyingPartyCheck), rpc_signature_verified rpc = False \<longrightarrow> ~ relying_party_diligent rpc"
+lemma partial_check_not_diligent: "\<forall>(rpc :: RelyingPartyCheck). rpc_signature_verified rpc = False \<longrightarrow> ~ relying_party_diligent rpc"
   by auto
 
 (* revoked_cert_on_crl (matches Coq) *)
-lemma revoked_cert_on_crl: "\<forall> (crl : list CRLEntry) (entry : CRLEntry), In entry crl \<longrightarrow> cert_on_crl crl (crl_cert_id entry)"
+lemma revoked_cert_on_crl: "\<forall>(crl : list CRLEntry) (entry :: CRLEntry). entry \<in> set crl \<longrightarrow> cert_on_crl crl (crl_cert_id entry)"
   by auto
 
 (* crl_addition_preserves (matches Coq) *)
-lemma crl_addition_preserves: "\<forall> (crl : list CRLEntry) (new_entry : CRLEntry) (cid : nat), cert_on_crl crl cid \<longrightarrow> cert_on_crl (new_entry :: crl) cid"
+lemma crl_addition_preserves: "\<forall>(crl : list CRLEntry) (new_entry :: CRLEntry) (cid : nat). cert_on_crl crl cid \<longrightarrow> cert_on_crl (new_entry :: crl) cid"
   by auto
 
 (* signature_timestamp_in_cert_validity (matches Coq) *)
-lemma signature_timestamp_in_cert_validity: "\<forall> (s : DigitalSignature) (c : Certificate), signature_legally_valid s c (sig_timestamp s) \<longrightarrow> sig_timestamp s \<le> cert_expiry c"
+lemma signature_timestamp_in_cert_validity: "\<forall>(s :: DigitalSignature) (c :: Certificate). signature_legally_valid s c (sig_timestamp s) \<longrightarrow> sig_timestamp s \<le> cert_expiry c"
   by auto
 
 (* dsa_composition (matches Coq) *)
-lemma dsa_composition: "\<forall> (c : Certificate) (s : DigitalSignature) (t : nat) (key_enc key_hsm : bool), cert_valid c t \<longrightarrow> signature_legally_valid s c t \<longrightarrow> key_strength_adequate c 2048 \<longrightarrow> private_key_protected key_enc key_hsm \<longrightarrow> dsa_fully_compliant c s t key_enc key_hsm"
+lemma dsa_composition: "\<forall>(c :: Certificate) (s :: DigitalSignature) (t : nat) (key_enc key_hsm : bool). cert_valid c t \<longrightarrow> signature_legally_valid s c t \<longrightarrow> key_strength_adequate c 2048 \<longrightarrow> private_key_protected key_enc key_hsm \<longrightarrow> dsa_fully_compliant c s t key_enc key_hsm"
   by simp
 
 (* cert_status_coverage (matches Coq) *)
-lemma cert_status_coverage: "\<forall> (cs : CertStatus), In cs all_cert_statuses"
+lemma cert_status_coverage: "\<forall>(cs :: CertStatus). cs \<in> set all_cert_statuses"
   by auto
 
 (* ca_license_coverage (matches Coq) *)
-lemma ca_license_coverage: "\<forall> (ls : CALicenseStatus), In ls all_ca_license_statuses"
+lemma ca_license_coverage: "\<forall>(ls :: CALicenseStatus). ls \<in> set all_ca_license_statuses"
   by auto
 
 end

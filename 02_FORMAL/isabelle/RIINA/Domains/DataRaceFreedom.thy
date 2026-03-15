@@ -116,14 +116,14 @@ definition no_mixed_access :: "AccessState \<Rightarrow> bool" where
 (* well_formed_ownership (matches Coq: Definition well_formed_ownership) *)
 definition well_formed_ownership :: "OwnershipMap \<Rightarrow> bool" where
   "well_formed_ownership om \<equiv> forall l t ts,
-    om l = Some (SharedBorrowed ts) -> In t ts -> length ts > 0"
+    om l = Some (SharedBorrowed ts) -> t \<in> set ts -> length ts > 0"
 
 (* data_race (matches Coq: Definition data_race) *)
 definition data_race :: "AccessState \<Rightarrow> Loc \<Rightarrow> bool" where
   "data_race as_ l \<equiv> exists t1 t2,
-    t1 <> t2 /\
-    (as_ t1 l = Some Exclusive \/ as_ t1 l = Some Shared) /\
-    (as_ t2 l = Some Exclusive \/ as_ t2 l = Some Shared) /\
+    t1 <> t2 \<and>
+    (as_ t1 l = Some Exclusive \/ as_ t1 l = Some Shared) \<and>
+    (as_ t2 l = Some Exclusive \/ as_ t2 l = Some Shared) \<and>
     (as_ t1 l = Some Exclusive \/ as_ t2 l = Some Exclusive)"
 
 (* race_free (matches Coq: Definition race_free) *)
@@ -158,76 +158,76 @@ definition rwlock_write_acquire :: "bool" where "rwlock_write_acquire = undefine
 
 (* rwlock_well_formed (matches Coq: Definition rwlock_well_formed) *)
 definition rwlock_well_formed :: "RWLockState \<Rightarrow> bool" where
-  "rwlock_well_formed rw \<equiv> (rwlock_readers rw > 0 -> rwlock_writer rw = None) /\
+  "rwlock_well_formed rw \<equiv> (rwlock_readers rw > 0 -> rwlock_writer rw = None) \<and>
   (rwlock_writer rw <> None -> rwlock_readers rw = 0)"
 
 (* mut_borrow_exclusive (matches Coq: Definition mut_borrow_exclusive) *)
 definition mut_borrow_exclusive :: "OwnershipMap \<Rightarrow> Loc \<Rightarrow> ThreadId \<Rightarrow> bool" where
   "mut_borrow_exclusive om l t \<equiv> om l = Some (MutBorrowed t) ->
-  forall t', t' <> t -> ~ valid_borrow om l Exclusive t' /\ ~ valid_borrow om l Shared t'"
+  forall t', t' <> t -> ~ valid_borrow om l Exclusive t' \<and> ~ valid_borrow om l Shared t'"
 
 (* DR_001_exclusive_is_exclusive (matches Coq) *)
-lemma DR_001_exclusive_is_exclusive: "\<forall> as_ t1 t2 l, well_formed_access as_ \<longrightarrow> as_ t1 l = Some Exclusive \<longrightarrow> t1 \<noteq> t2 \<longrightarrow> as_ t2 l = None"
+lemma DR_001_exclusive_is_exclusive: "\<forall>as_ t1 t2 l. well_formed_access as_ \<longrightarrow> as_ t1 l = Some Exclusive \<longrightarrow> t1 \<noteq> t2 \<longrightarrow> as_ t2 l = None"
   by auto
 
 (* DR_002_shared_compatible (matches Coq) *)
-lemma DR_002_shared_compatible: "\<forall> as_ t1 t2 l, shared_compatible as_ \<longrightarrow> as_ t1 l = Some Shared \<longrightarrow> as_ t2 l = Some Shared \<or> as_ t2 l = None"
+lemma DR_002_shared_compatible: "\<forall>as_ t1 t2 l. shared_compatible as_ \<longrightarrow> as_ t1 l = Some Shared \<longrightarrow> as_ t2 l = Some Shared \<or> as_ t2 l = None"
   by auto
 
 (* DR_003_well_formed_prevents_race (matches Coq) *)
-lemma DR_003_well_formed_prevents_race: "\<forall> as_ l, well_formed_access as_ \<longrightarrow> ~ data_race as_ l"
-  by (cases rule: ‹_›.cases; simp)
+lemma DR_003_well_formed_prevents_race: "\<forall>as_ l. well_formed_access as_ \<longrightarrow> ~ data_race as_ l"
+  by auto
 
 (* DR_004_well_formed_race_free (matches Coq) *)
-lemma DR_004_well_formed_race_free: "\<forall> as_, well_formed_access as_ \<longrightarrow> race_free as_"
+lemma DR_004_well_formed_race_free: "\<forall>as_. well_formed_access as_ \<longrightarrow> race_free as_"
   by auto
 
 (* DR_005_mutex_acquire_unlocked (matches Coq) *)
-lemma DR_005_mutex_acquire_unlocked: "\<forall> t, mutex_acquire init_mutex t = Some (mkMutex True (Some t))"
+lemma DR_005_mutex_acquire_unlocked: "\<forall>t. mutex_acquire init_mutex t = Some (mkMutex True (Some t))"
   by simp
 
 (* DR_006_mutex_acquire_locked (matches Coq) *)
-lemma DR_006_mutex_acquire_locked: "\<forall> m t1 t2 m', mutex_acquire m t1 = Some m' \<longrightarrow> mutex_acquire m' t2 = None"
-  by (cases rule: ‹_›.cases; simp)
+lemma DR_006_mutex_acquire_locked: "\<forall>m t1 t2 m'. mutex_acquire m t1 = Some m' \<longrightarrow> mutex_acquire m' t2 = None"
+  by auto
 
 (* DR_007_mutex_release_owner (matches Coq) *)
-lemma DR_007_mutex_release_owner: "\<forall> t, mutex_release (mkMutex True (Some t)) t = Some init_mutex"
+lemma DR_007_mutex_release_owner: "\<forall>t. mutex_release (mkMutex True (Some t)) t = Some init_mutex"
   by simp
 
 (* DR_008_mutex_release_non_owner (matches Coq) *)
-lemma DR_008_mutex_release_non_owner: "\<forall> t1 t2, t1 \<noteq> t2 \<longrightarrow> mutex_release (mkMutex True (Some t1)) t2 = None"
-  by (cases rule: ‹_›.cases; simp)
+lemma DR_008_mutex_release_non_owner: "\<forall>t1 t2. t1 \<noteq> t2 \<longrightarrow> mutex_release (mkMutex True (Some t1)) t2 = None"
+  by auto
 
 (* DR_009_rwlock_read_no_writer (matches Coq) *)
-lemma DR_009_rwlock_read_no_writer: "\<forall> rw, rwlock_writer rw = None \<longrightarrow> \<exists> rw', rwlock_read_acquire rw = Some rw'"
+lemma DR_009_rwlock_read_no_writer: "\<forall>rw. rwlock_writer rw = None \<longrightarrow> \<exists>rw'. rwlock_read_acquire rw = Some rw'"
   by simp
 
 (* DR_010_rwlock_read_increments (matches Coq) *)
-lemma DR_010_rwlock_read_increments: "\<forall> rw rw', rwlock_read_acquire rw = Some rw' \<longrightarrow> rwlock_readers rw' = S (rwlock_readers rw)"
-  by (cases rule: ‹_›.cases; simp)
+lemma DR_010_rwlock_read_increments: "\<forall>rw rw'. rwlock_read_acquire rw = Some rw' \<longrightarrow> rwlock_readers rw' = S (rwlock_readers rw)"
+  by auto
 
 (* DR_011_rwlock_read_blocked_by_writer (matches Coq) *)
-lemma DR_011_rwlock_read_blocked_by_writer: "\<forall> rw t, rwlock_writer rw = Some t \<longrightarrow> rwlock_read_acquire rw = None"
+lemma DR_011_rwlock_read_blocked_by_writer: "\<forall>rw t. rwlock_writer rw = Some t \<longrightarrow> rwlock_read_acquire rw = None"
   by simp
 
 (* DR_012_rwlock_write_no_readers (matches Coq) *)
-lemma DR_012_rwlock_write_no_readers: "\<forall> rw t rw', rwlock_write_acquire rw t = Some rw' \<longrightarrow> rwlock_readers rw = 0"
+lemma DR_012_rwlock_write_no_readers: "\<forall>rw t rw'. rwlock_write_acquire rw t = Some rw' \<longrightarrow> rwlock_readers rw = 0"
   by auto
 
 (* DR_013_rwlock_write_blocked_by_readers (matches Coq) *)
-lemma DR_013_rwlock_write_blocked_by_readers: "\<forall> rw t, rwlock_readers rw > 0 \<longrightarrow> rwlock_write_acquire rw t = None"
-  by (cases rule: ‹_›.cases; simp)
+lemma DR_013_rwlock_write_blocked_by_readers: "\<forall>rw t. rwlock_readers rw > 0 \<longrightarrow> rwlock_write_acquire rw t = None"
+  by auto
 
 (* DR_014_mut_borrow_owned (matches Coq) *)
-lemma DR_014_mut_borrow_owned: "\<forall> om l t, om l = Some (Owned t) \<longrightarrow> valid_borrow om l Exclusive t"
+lemma DR_014_mut_borrow_owned: "\<forall>om l t. om l = Some (Owned t) \<longrightarrow> valid_borrow om l Exclusive t"
   by auto
 
 (* DR_015_shared_borrow_owned (matches Coq) *)
-lemma DR_015_shared_borrow_owned: "\<forall> om l t, om l = Some (Owned t) \<longrightarrow> valid_borrow om l Shared t"
+lemma DR_015_shared_borrow_owned: "\<forall>om l t. om l = Some (Owned t) \<longrightarrow> valid_borrow om l Shared t"
   by auto
 
 (* DR_016_shared_borrow_extends (matches Coq) *)
-lemma DR_016_shared_borrow_extends: "\<forall> om l ts t, om l = Some (SharedBorrowed ts) \<longrightarrow> valid_borrow om l Shared t"
+lemma DR_016_shared_borrow_extends: "\<forall>om l ts t. om l = Some (SharedBorrowed ts) \<longrightarrow> valid_borrow om l Shared t"
   by auto
 
 (* DR_017_empty_well_formed (matches Coq) *)
@@ -239,15 +239,15 @@ lemma DR_018_empty_race_free: "race_free (fun _ _ => None)"
   by auto
 
 (* DR_019_single_exclusive_well_formed (matches Coq) *)
-lemma DR_019_single_exclusive_well_formed: "\<forall> t0 l0, well_formed_access (fun t l => if ((t = t0)) && ((l = l0)) then Some Exclusive else None)"
+lemma DR_019_single_exclusive_well_formed: "\<forall>t0 l0. well_formed_access (fun t l => if ((t = t0)) && (l l0 = then) Some Exclusive else None)"
   by auto
 
 (* DR_020_single_exclusive_race_free (matches Coq) *)
-lemma DR_020_single_exclusive_race_free: "\<forall> t0 l0, race_free (fun t l => if ((t = t0)) && ((l = l0)) then Some Exclusive else None)"
+lemma DR_020_single_exclusive_race_free: "\<forall>t0 l0. race_free (fun t l => if ((t = t0)) && (l l0 = then) Some Exclusive else None)"
   by auto
 
 (* DR_021_mutex_mutual_exclusion (matches Coq) *)
-lemma DR_021_mutex_mutual_exclusion: "\<forall> m t1 t2 m1, mutex_acquire m t1 = Some m1 \<longrightarrow> mutex_acquire m1 t2 = None"
+lemma DR_021_mutex_mutual_exclusion: "\<forall>m t1 t2 m1. mutex_acquire m t1 = Some m1 \<longrightarrow> mutex_acquire m1 t2 = None"
   by auto
 
 (* DR_022_init_mutex_well_formed (matches Coq) *)
@@ -255,55 +255,55 @@ lemma DR_022_init_mutex_well_formed: "mutex_well_formed init_mutex"
   by auto
 
 (* DR_023_acquired_mutex_well_formed (matches Coq) *)
-lemma DR_023_acquired_mutex_well_formed: "\<forall> m t m', mutex_well_formed m \<longrightarrow> mutex_acquire m t = Some m' \<longrightarrow> mutex_well_formed m'"
-  by (cases rule: ‹_›.cases; simp)
+lemma DR_023_acquired_mutex_well_formed: "\<forall>m t m'. mutex_well_formed m \<longrightarrow> mutex_acquire m t = Some m' \<longrightarrow> mutex_well_formed m'"
+  by auto
 
 (* DR_024_rwlock_init_well_formed (matches Coq) *)
 lemma DR_024_rwlock_init_well_formed: "rwlock_well_formed init_rwlock"
   by simp
 
 (* DR_025_shared_no_race (matches Coq) *)
-lemma DR_025_shared_no_race: "\<forall> as_ l, (\<forall> t, as_ t l = Some Shared \<or> as_ t l = None) \<longrightarrow> ~ data_race as_ l"
+lemma DR_025_shared_no_race: "\<forall>as_ l. (\<forall>t. as_ t l = Some Shared \<or> as_ t l = None) \<longrightarrow> ~ data_race as_ l"
   by auto
 
 (* DR_026_access_mode_dec (matches Coq) *)
-lemma DR_026_access_mode_dec: "\<forall> m1 m2 : AccessMode, {m1 = m2} + {m1 \<noteq> m2}"
+lemma DR_026_access_mode_dec: "\<forall>m1 m2 : AccessMode. (m1 = m2) \<or> (m1 \<noteq> m2)"
   by simp
 
 (* DR_027_remove_preserves_wf (matches Coq) *)
-lemma DR_027_remove_preserves_wf: "\<forall> as_ t l, well_formed_access as_ \<longrightarrow> well_formed_access (fun t' l' => if ((t' = t)) && ((l' = l)) then None else as_ t' l')"
+lemma DR_027_remove_preserves_wf: "\<forall>as_ t l. well_formed_access as_ \<longrightarrow> well_formed_access (fun t' l' => if ((t' = t)) && ((l' = l)) then None else as_ t' l')"
   by simp
 
 (* DR_028_race_free_location (matches Coq) *)
-lemma DR_028_race_free_location: "\<forall> as_ l1 l2, ~ data_race as_ l1 \<longrightarrow> l1 \<noteq> l2 \<longrightarrow> True. "
+lemma DR_028_race_free_location: "\<forall>as_ l1 l2. ~ data_race as_ l1 \<longrightarrow> l1 \<noteq> l2 \<longrightarrow> True. "
   by auto
 
 (* DR_029_ownership_state_cases (matches Coq) *)
-lemma DR_029_ownership_state_cases: "\<forall> os : OwnershipState, (\<exists> t, os = Owned t) \<or> (\<exists> t, os = MutBorrowed t) \<or> (\<exists> ts, os = SharedBorrowed ts) \<or> os = Moved"
+lemma DR_029_ownership_state_cases: "\<forall>os : OwnershipState. (\<exists>t. os = Owned t) \<or> (\<exists>t. os = MutBorrowed t) \<or> (\<exists>ts. os = SharedBorrowed ts) \<or> os = Moved"
   by simp
 
 (* DR_030_valid_borrow_respects_ownership (matches Coq) *)
-lemma DR_030_valid_borrow_respects_ownership: "\<forall> om l m t, valid_borrow om l m t \<longrightarrow> om l \<noteq> None"
+lemma DR_030_valid_borrow_respects_ownership: "\<forall>om l m t. valid_borrow om l m t \<longrightarrow> om l \<noteq> None"
   by auto
 
 (* DR_031_mutex_locked_dec (matches Coq) *)
-lemma DR_031_mutex_locked_dec: "\<forall> m, mutex_locked m = True \<or> mutex_locked m = False"
+lemma DR_031_mutex_locked_dec: "\<forall>m. mutex_locked m = True \<or> mutex_locked m = False"
   by simp
 
 (* DR_032_rwlock_readers_nonneg (matches Coq) *)
-lemma DR_032_rwlock_readers_nonneg: "\<forall> rw, rwlock_readers rw \<ge> 0"
+lemma DR_032_rwlock_readers_nonneg: "\<forall>rw. rwlock_readers rw \<ge> 0"
   by simp
 
 (* DR_033_mutex_acquire_release_cycle (matches Coq) *)
-lemma DR_033_mutex_acquire_release_cycle: "\<forall> t, \<exists> m', mutex_acquire init_mutex t = Some m' \<and> mutex_release m' t = Some init_mutex"
+lemma DR_033_mutex_acquire_release_cycle: "\<forall>t. \<exists>m'. mutex_acquire init_mutex t = Some m' \<and> mutex_release m' t = Some init_mutex"
   by auto
 
 (* DR_034_access_mode_cases (matches Coq) *)
-lemma DR_034_access_mode_cases: "\<forall> m : AccessMode, m = Exclusive \<or> m = Shared \<or> m = NoAccess"
+lemma DR_034_access_mode_cases: "\<forall>m : AccessMode. m = Exclusive \<or> m = Shared \<or> m = NoAccess"
   by simp
 
 (* DR_035_no_concurrent_exclusive (matches Coq) *)
-lemma DR_035_no_concurrent_exclusive: "\<forall> as_ t1 t2 l, well_formed_access as_ \<longrightarrow> t1 \<noteq> t2 \<longrightarrow> as_ t1 l = Some Exclusive \<longrightarrow> as_ t2 l \<noteq> Some Exclusive"
+lemma DR_035_no_concurrent_exclusive: "\<forall>as_ t1 t2 l. well_formed_access as_ \<longrightarrow> t1 \<noteq> t2 \<longrightarrow> as_ t1 l = Some Exclusive \<longrightarrow> as_ t2 l \<noteq> Some Exclusive"
   by auto
 
 end

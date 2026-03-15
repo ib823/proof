@@ -260,8 +260,8 @@ record backdoor_detection =
   bd_spectral_analysis :: bool
 
 (* all_true (matches Coq: Definition all_true) *)
-fun all_true :: "bool" where
-
+definition all_true :: "bool" where
+  "all_true \<equiv> True"
 
 (* adversarial_examples_protected (matches Coq: Definition adversarial_examples_protected) *)
 definition adversarial_examples_protected :: "RobustTraining \<Rightarrow> InputValidation \<Rightarrow> bool" where
@@ -273,11 +273,11 @@ definition model_poisoning_protected :: "TrainingPipeline \<Rightarrow> bool" wh
 
 (* data_poisoning_protected (matches Coq: Definition data_poisoning_protected) *)
 definition data_poisoning_protected :: "TrainingPipeline \<Rightarrow> bool" where
-  "data_poisoning_protected tp \<equiv> (tp_integrity_checked tp \<and> ((tp_data_verified \<and> tp)) (tp_source_trusted tp))"
+  "data_poisoning_protected tp \<equiv> (tp_integrity_checked tp \<and> tp_data_verified tp \<and> tp_source_trusted tp)"
 
 (* model_extraction_protected (matches Coq: Definition model_extraction_protected) *)
 definition model_extraction_protected :: "AccessControl \<Rightarrow> ModelWatermark \<Rightarrow> bool" where
-  "model_extraction_protected ac mw \<equiv> (((ac_rate_limited \<and> ac) \<and> ac_authenticated ac)) (mw_embedded mw)"
+  "model_extraction_protected ac mw \<equiv> ac_rate_limited ac \<and> ac_authenticated ac \<and> mw_embedded mw"
 
 (* membership_inference_protected (matches Coq: Definition membership_inference_protected) *)
 definition membership_inference_protected :: "DifferentialPrivacy \<Rightarrow> bool" where
@@ -285,18 +285,18 @@ definition membership_inference_protected :: "DifferentialPrivacy \<Rightarrow> 
 
 (* strong_dp_protection (matches Coq: Definition strong_dp_protection) *)
 definition strong_dp_protection :: "DifferentialPrivacy \<Rightarrow> bool" where
-  "strong_dp_protection dp \<equiv> dp_noise_added dp = True /\
-  dp_clipping_applied dp = True /\
-  dp_epsilon dp <= 1 /\
+  "strong_dp_protection dp \<equiv> dp_noise_added dp = True \<and>
+  dp_clipping_applied dp = True \<and>
+  dp_epsilon dp <= 1 \<and>
   dp_delta dp <= 1"
 
 (* model_inversion_protected (matches Coq: Definition model_inversion_protected) *)
 definition model_inversion_protected :: "PrivacyGuarantees \<Rightarrow> DifferentialPrivacy \<Rightarrow> bool" where
-  "model_inversion_protected pg dp \<equiv> (pg_output_perturbed pg \<and> ((pg_intermediate_hidden \<and> pg)) (dp_noise_added dp))"
+  "model_inversion_protected pg dp \<equiv> (pg_output_perturbed pg \<and> pg_intermediate_hidden pg \<and> dp_noise_added dp)"
 
 (* backdoor_attack_protected (matches Coq: Definition backdoor_attack_protected) *)
 definition backdoor_attack_protected :: "TrainingPipeline \<Rightarrow> DetectionSystem \<Rightarrow> bool" where
-  "backdoor_attack_protected tp ds \<equiv> (((tp_data_verified \<and> tp) \<and> tp_reproducible tp)) (ds_enabled ds)"
+  "backdoor_attack_protected tp ds \<equiv> tp_data_verified tp \<and> tp_reproducible tp \<and> ds_enabled ds"
 
 (* prompt_injection_protected (matches Coq: Definition prompt_injection_protected) *)
 definition prompt_injection_protected :: "InputValidation \<Rightarrow> bool" where
@@ -304,52 +304,49 @@ definition prompt_injection_protected :: "InputValidation \<Rightarrow> bool" wh
 
 (* jailbreaking_protected (matches Coq: Definition jailbreaking_protected) *)
 definition jailbreaking_protected :: "SafetyTraining \<Rightarrow> InputValidation \<Rightarrow> bool" where
-  "jailbreaking_protected st iv \<equiv> (((st_rlhf_applied \<and> st) \<and> st_safety_filters st)) (iv_filtered iv)"
+  "jailbreaking_protected st iv \<equiv> st_rlhf_applied st \<and> st_safety_filters st \<and> iv_filtered iv"
 
 (* ai_malware_protected (matches Coq: Definition ai_malware_protected) *)
 definition ai_malware_protected :: "DefenseInDepth \<Rightarrow> DetectionSystem \<Rightarrow> bool" where
-  "ai_malware_protected did ds \<equiv> (((did_multiple_layers \<and> did) \<and> did_diverse_methods did)) (ds_enabled ds)"
+  "ai_malware_protected did ds \<equiv> did_multiple_layers did \<and> did_diverse_methods did \<and> ds_enabled ds"
 
 (* deepfakes_protected (matches Coq: Definition deepfakes_protected) *)
 definition deepfakes_protected :: "DetectionSystem \<Rightarrow> ProvenanceTracking \<Rightarrow> bool" where
-  "deepfakes_protected ds pt \<equiv> (((ds_enabled \<and> ds) \<and> ds_multi_modal ds)) 
-       ((pt_origin_tracked pt \<and> pt_tamper_evident pt))"
+  "deepfakes_protected ds pt \<equiv> ds_enabled ds \<and> ds_multi_modal ds \<and> (pt_origin_tracked pt \<and> pt_tamper_evident pt)"
 
 (* federated_learning_protected (matches Coq: Definition federated_learning_protected) *)
 definition federated_learning_protected :: "SecureAggregation \<Rightarrow> DifferentialPrivacy \<Rightarrow> bool" where
-  "federated_learning_protected sa dp \<equiv> (((sa_encrypted \<and> sa) \<and> sa_byzantine_resilient sa)) (dp_noise_added dp)"
+  "federated_learning_protected sa dp \<equiv> sa_encrypted sa \<and> sa_byzantine_resilient sa \<and> dp_noise_added dp"
 
 (* gradient_leakage_protected (matches Coq: Definition gradient_leakage_protected) *)
 definition gradient_leakage_protected :: "DifferentialPrivacy \<Rightarrow> SecureAggregation \<Rightarrow> bool" where
-  "gradient_leakage_protected dp sa \<equiv> (((dp_noise_added \<and> dp) \<and> dp_clipping_applied dp)) (sa_encrypted sa)"
+  "gradient_leakage_protected dp sa \<equiv> dp_noise_added dp \<and> dp_clipping_applied dp \<and> sa_encrypted sa"
 
 (* gradient_protection_strong (matches Coq: Definition gradient_protection_strong) *)
 definition gradient_protection_strong :: "DifferentialPrivacy \<Rightarrow> bool" where
-  "gradient_protection_strong dp \<equiv> dp_noise_added dp = True /\
-  dp_clipping_applied dp = True /\
+  "gradient_protection_strong dp \<equiv> dp_noise_added dp = True \<and>
+  dp_clipping_applied dp = True \<and>
   dp_epsilon dp <= 1"
 
 (* evasion_attack_protected (matches Coq: Definition evasion_attack_protected) *)
 definition evasion_attack_protected :: "RobustTraining \<Rightarrow> DetectionSystem \<Rightarrow> bool" where
-  "evasion_attack_protected rt ds \<equiv> (((rt_adversarial_training \<and> rt) \<and> rt_certified_defense rt)) (ds_enabled ds)"
+  "evasion_attack_protected rt ds \<equiv> rt_adversarial_training rt \<and> rt_certified_defense rt \<and> ds_enabled ds"
 
 (* model_dos_protected (matches Coq: Definition model_dos_protected) *)
 definition model_dos_protected :: "ResourceLimits \<Rightarrow> AccessControl \<Rightarrow> bool" where
-  "model_dos_protected rl ac \<equiv> (((rl_compute_bounded \<and> rl) \<and> rl_time_bounded rl)) (ac_rate_limited ac)"
+  "model_dos_protected rl ac \<equiv> rl_compute_bounded rl \<and> rl_time_bounded rl \<and> ac_rate_limited ac"
 
 (* cross_prompt_injection_protected (matches Coq: Definition cross_prompt_injection_protected) *)
 definition cross_prompt_injection_protected :: "InputIsolation \<Rightarrow> InputValidation \<Rightarrow> bool" where
-  "cross_prompt_injection_protected ii iv \<equiv> (((ii_context_separated \<and> ii) \<and> ii_privilege_separated ii)) (iv_sanitized iv)"
+  "cross_prompt_injection_protected ii iv \<equiv> ii_context_separated ii \<and> ii_privilege_separated ii \<and> iv_sanitized iv"
 
 (* ai_agent_swarms_protected (matches Coq: Definition ai_agent_swarms_protected) *)
 definition ai_agent_swarms_protected :: "AgentVerification \<Rightarrow> ResourceLimits \<Rightarrow> bool" where
-  "ai_agent_swarms_protected av rl \<equiv> (((av_identity_verified \<and> av) \<and> av_capability_bounded av)) 
-       ((rl_compute_bounded rl \<and> rl_time_bounded rl))"
+  "ai_agent_swarms_protected av rl \<equiv> av_identity_verified av \<and> av_capability_bounded av \<and> (rl_compute_bounded rl \<and> rl_time_bounded rl)"
 
 (* mcp_server_exploitation_protected (matches Coq: Definition mcp_server_exploitation_protected) *)
 definition mcp_server_exploitation_protected :: "ProtocolVerification \<Rightarrow> AccessControl \<Rightarrow> bool" where
-  "mcp_server_exploitation_protected pv ac \<equiv> (((pv_schema_validated \<and> pv) \<and> pv_auth_required pv)) 
-       ((pv_integrity_checked pv \<and> ac_authenticated ac))"
+  "mcp_server_exploitation_protected pv ac \<equiv> pv_schema_validated pv \<and> pv_auth_required pv \<and> (pv_integrity_checked pv \<and> ac_authenticated ac)"
 
 (* mitigation_transitive (matches Coq: Definition mitigation_transitive) *)
 definition mitigation_transitive :: "bool" where
@@ -357,189 +354,189 @@ definition mitigation_transitive :: "bool" where
 
 (* Lemma: all_true with single element *)
 (* all_true_single (matches Coq) *)
-lemma all_true_single: "\<forall> b, all_true [b] = b"
+lemma all_true_single: "\<forall>b. all_true [b] = b"
   by simp
 
 (* Lemma: all_true conjunction *)
 (* all_true_cons (matches Coq) *)
-lemma all_true_cons: "\<forall> h t, all_true (h :: t) = True <-> h = True \<and> all_true t = True"
+lemma all_true_cons: "\<forall>h t. all_true (h :: t) = True <-> h = True \<and> all_true t = True"
   by auto
 
 (* ai_001_adversarial_examples_mitigated (matches Coq) *)
-lemma ai_001_adversarial_examples_mitigated: "\<forall> (rt : RobustTraining) (iv : InputValidation), rt_adversarial_training rt = True \<longrightarrow> rt_certified_defense rt = True \<longrightarrow> iv_filtered iv = True \<longrightarrow> iv_sanitized iv = True \<longrightarrow> adversarial_examples_protected rt iv = True"
+lemma ai_001_adversarial_examples_mitigated: "\<forall>(rt :: RobustTraining) (iv :: InputValidation). rt_adversarial_training rt = True \<longrightarrow> rt_certified_defense rt = True \<longrightarrow> iv_filtered iv = True \<longrightarrow> iv_sanitized iv = True \<longrightarrow> adversarial_examples_protected rt iv = True"
   by simp
 
 (* Strong version with ensemble and preprocessing *)
 (* ai_001_adversarial_examples_strong_defense (matches Coq) *)
-lemma ai_001_adversarial_examples_strong_defense: "\<forall> (rt : RobustTraining) (iv : InputValidation), rt_adversarial_training rt = True \<longrightarrow> rt_ensemble_used rt = True \<longrightarrow> rt_input_preprocessing rt = True \<longrightarrow> iv_filtered iv = True \<longrightarrow> all_true [rt_adversarial_training rt; rt_ensemble_used rt; rt_input_preprocessing rt; iv_filtered iv] = True"
+lemma ai_001_adversarial_examples_strong_defense: "\<forall>(rt :: RobustTraining) (iv :: InputValidation). rt_adversarial_training rt = True \<longrightarrow> rt_ensemble_used rt = True \<longrightarrow> rt_input_preprocessing rt = True \<longrightarrow> iv_filtered iv = True \<longrightarrow> all_true [rt_adversarial_training rt; rt_ensemble_used rt; rt_input_preprocessing rt; iv_filtered iv] = True"
   by simp
 
 (* ai_002_model_poisoning_mitigated (matches Coq) *)
-lemma ai_002_model_poisoning_mitigated: "\<forall> (tp : TrainingPipeline), tp_data_verified tp = True \<longrightarrow> tp_source_trusted tp = True \<longrightarrow> tp_integrity_checked tp = True \<longrightarrow> model_poisoning_protected tp = True"
+lemma ai_002_model_poisoning_mitigated: "\<forall>(tp :: TrainingPipeline). tp_data_verified tp = True \<longrightarrow> tp_source_trusted tp = True \<longrightarrow> tp_integrity_checked tp = True \<longrightarrow> model_poisoning_protected tp = True"
   by simp
 
 (* Complete pipeline verification *)
 (* ai_002_model_poisoning_complete_verification (matches Coq) *)
-lemma ai_002_model_poisoning_complete_verification: "\<forall> (tp : TrainingPipeline), tp_data_verified tp = True \<longrightarrow> tp_source_trusted tp = True \<longrightarrow> tp_integrity_checked tp = True \<longrightarrow> tp_reproducible tp = True \<longrightarrow> all_true [tp_data_verified tp; tp_source_trusted tp; tp_integrity_checked tp; tp_reproducible tp] = True"
+lemma ai_002_model_poisoning_complete_verification: "\<forall>(tp :: TrainingPipeline). tp_data_verified tp = True \<longrightarrow> tp_source_trusted tp = True \<longrightarrow> tp_integrity_checked tp = True \<longrightarrow> tp_reproducible tp = True \<longrightarrow> all_true [tp_data_verified tp; tp_source_trusted tp; tp_integrity_checked tp; tp_reproducible tp] = True"
   by simp
 
 (* ai_003_data_poisoning_mitigated (matches Coq) *)
-lemma ai_003_data_poisoning_mitigated: "\<forall> (tp : TrainingPipeline), tp_integrity_checked tp = True \<longrightarrow> tp_data_verified tp = True \<longrightarrow> tp_source_trusted tp = True \<longrightarrow> data_poisoning_protected tp = True"
+lemma ai_003_data_poisoning_mitigated: "\<forall>(tp :: TrainingPipeline). tp_integrity_checked tp = True \<longrightarrow> tp_data_verified tp = True \<longrightarrow> tp_source_trusted tp = True \<longrightarrow> data_poisoning_protected tp = True"
   by simp
 
 (* ai_003_data_poisoning_with_anomaly_detection (matches Coq) *)
-lemma ai_003_data_poisoning_with_anomaly_detection: "\<forall> (tp : TrainingPipeline) (ad : AnomalyDetection), tp_integrity_checked tp = True \<longrightarrow> ad_statistical_analysis ad = True \<longrightarrow> ad_outlier_removal ad = True \<longrightarrow> ((tp_integrity_checked \<and> tp)) (((ad_statistical_analysis \<and> ad)) (ad_outlier_removal ad)) = True"
+lemma ai_003_data_poisoning_with_anomaly_detection: "\<forall>(tp :: TrainingPipeline) (ad :: AnomalyDetection). tp_integrity_checked tp = True \<longrightarrow> ad_statistical_analysis ad = True \<longrightarrow> ad_outlier_removal ad = True \<longrightarrow> tp_integrity_checked tp \<and> ad_statistical_analysis ad \<and> ad_outlier_removal ad = True"
   by simp
 
 (* ai_004_model_extraction_mitigated (matches Coq) *)
-lemma ai_004_model_extraction_mitigated: "\<forall> (ac : AccessControl) (mw : ModelWatermark), ac_authenticated ac = True \<longrightarrow> ac_authorized ac = True \<longrightarrow> ac_rate_limited ac = True \<longrightarrow> ac_logged ac = True \<longrightarrow> mw_embedded mw = True \<longrightarrow> mw_verifiable mw = True \<longrightarrow> model_extraction_protected ac mw = True"
+lemma ai_004_model_extraction_mitigated: "\<forall>(ac :: AccessControl) (mw :: ModelWatermark). ac_authenticated ac = True \<longrightarrow> ac_authorized ac = True \<longrightarrow> ac_rate_limited ac = True \<longrightarrow> ac_logged ac = True \<longrightarrow> mw_embedded mw = True \<longrightarrow> mw_verifiable mw = True \<longrightarrow> model_extraction_protected ac mw = True"
   by simp
 
 (* Watermark robustness theorem *)
 (* ai_004_watermark_robustness (matches Coq) *)
-lemma ai_004_watermark_robustness: "\<forall> (mw : ModelWatermark), mw_embedded mw = True \<longrightarrow> mw_verifiable mw = True \<longrightarrow> mw_robust mw = True \<longrightarrow> all_true [mw_embedded mw; mw_verifiable mw; mw_robust mw] = True"
+lemma ai_004_watermark_robustness: "\<forall>(mw :: ModelWatermark). mw_embedded mw = True \<longrightarrow> mw_verifiable mw = True \<longrightarrow> mw_robust mw = True \<longrightarrow> all_true [mw_embedded mw; mw_verifiable mw; mw_robust mw] = True"
   by simp
 
 (* ai_005_membership_inference_mitigated (matches Coq) *)
-lemma ai_005_membership_inference_mitigated: "\<forall> (dp : DifferentialPrivacy), dp_noise_added dp = True \<longrightarrow> dp_clipping_applied dp = True \<longrightarrow> dp_epsilon dp \<le> 1 \<longrightarrow> membership_inference_protected dp = True"
+lemma ai_005_membership_inference_mitigated: "\<forall>(dp :: DifferentialPrivacy). dp_noise_added dp = True \<longrightarrow> dp_clipping_applied dp = True \<longrightarrow> dp_epsilon dp \<le> 1 \<longrightarrow> membership_inference_protected dp = True"
   by simp
 
 (* ai_005_strong_differential_privacy (matches Coq) *)
-lemma ai_005_strong_differential_privacy: "\<forall> (dp : DifferentialPrivacy), strong_dp_protection dp \<longrightarrow> membership_inference_protected dp = True"
+lemma ai_005_strong_differential_privacy: "\<forall>(dp :: DifferentialPrivacy). strong_dp_protection dp \<longrightarrow> membership_inference_protected dp = True"
   by simp
 
 (* ai_006_model_inversion_mitigated (matches Coq) *)
-lemma ai_006_model_inversion_mitigated: "\<forall> (pg : PrivacyGuarantees) (dp : DifferentialPrivacy), pg_output_perturbed pg = True \<longrightarrow> pg_intermediate_hidden pg = True \<longrightarrow> pg_access_controlled pg = True \<longrightarrow> dp_noise_added dp = True \<longrightarrow> model_inversion_protected pg dp = True"
+lemma ai_006_model_inversion_mitigated: "\<forall>(pg :: PrivacyGuarantees) (dp :: DifferentialPrivacy). pg_output_perturbed pg = True \<longrightarrow> pg_intermediate_hidden pg = True \<longrightarrow> pg_access_controlled pg = True \<longrightarrow> dp_noise_added dp = True \<longrightarrow> model_inversion_protected pg dp = True"
   by simp
 
 (* Complete privacy protection *)
 (* ai_006_complete_privacy_protection (matches Coq) *)
-lemma ai_006_complete_privacy_protection: "\<forall> (pg : PrivacyGuarantees), pg_output_perturbed pg = True \<longrightarrow> pg_intermediate_hidden pg = True \<longrightarrow> pg_access_controlled pg = True \<longrightarrow> pg_aggregation_only pg = True \<longrightarrow> all_true [pg_output_perturbed pg; pg_intermediate_hidden pg; pg_access_controlled pg; pg_aggregation_only pg] = True"
+lemma ai_006_complete_privacy_protection: "\<forall>(pg :: PrivacyGuarantees). pg_output_perturbed pg = True \<longrightarrow> pg_intermediate_hidden pg = True \<longrightarrow> pg_access_controlled pg = True \<longrightarrow> pg_aggregation_only pg = True \<longrightarrow> all_true [pg_output_perturbed pg; pg_intermediate_hidden pg; pg_access_controlled pg; pg_aggregation_only pg] = True"
   by simp
 
 (* ai_007_backdoor_attack_mitigated (matches Coq) *)
-lemma ai_007_backdoor_attack_mitigated: "\<forall> (tp : TrainingPipeline) (ds : DetectionSystem), tp_data_verified tp = True \<longrightarrow> tp_source_trusted tp = True \<longrightarrow> tp_reproducible tp = True \<longrightarrow> ds_enabled ds = True \<longrightarrow> ds_multi_modal ds = True \<longrightarrow> backdoor_attack_protected tp ds = True"
+lemma ai_007_backdoor_attack_mitigated: "\<forall>(tp :: TrainingPipeline) (ds :: DetectionSystem). tp_data_verified tp = True \<longrightarrow> tp_source_trusted tp = True \<longrightarrow> tp_reproducible tp = True \<longrightarrow> ds_enabled ds = True \<longrightarrow> ds_multi_modal ds = True \<longrightarrow> backdoor_attack_protected tp ds = True"
   by simp
 
 (* ai_007_backdoor_detection_complete (matches Coq) *)
-lemma ai_007_backdoor_detection_complete: "\<forall> (bd : BackdoorDetection) (tp : TrainingPipeline), bd_trigger_reverse_eng bd = True \<longrightarrow> bd_activation_analysis bd = True \<longrightarrow> tp_reproducible tp = True \<longrightarrow> ((bd_trigger_reverse_eng \<and> bd)) (((bd_activation_analysis \<and> bd)) (tp_reproducible tp)) = True"
+lemma ai_007_backdoor_detection_complete: "\<forall>(bd :: BackdoorDetection) (tp :: TrainingPipeline). bd_trigger_reverse_eng bd = True \<longrightarrow> bd_activation_analysis bd = True \<longrightarrow> tp_reproducible tp = True \<longrightarrow> bd_trigger_reverse_eng bd \<and> bd_activation_analysis bd \<and> tp_reproducible tp = True"
   by simp
 
 (* ai_008_prompt_injection_mitigated (matches Coq) *)
-lemma ai_008_prompt_injection_mitigated: "\<forall> (iv : InputValidation), iv_sanitized iv = True \<longrightarrow> iv_sandboxed iv = True \<longrightarrow> iv_filtered iv = True \<longrightarrow> iv_max_length iv > 0 \<longrightarrow> prompt_injection_protected iv = True"
+lemma ai_008_prompt_injection_mitigated: "\<forall>(iv :: InputValidation). iv_sanitized iv = True \<longrightarrow> iv_sandboxed iv = True \<longrightarrow> iv_filtered iv = True \<longrightarrow> iv_max_length iv > 0 \<longrightarrow> prompt_injection_protected iv = True"
   by simp
 
 (* Complete input validation *)
 (* ai_008_complete_input_validation (matches Coq) *)
-lemma ai_008_complete_input_validation: "\<forall> (iv : InputValidation), iv_sanitized iv = True \<longrightarrow> iv_sandboxed iv = True \<longrightarrow> iv_filtered iv = True \<longrightarrow> all_true [iv_sanitized iv; iv_sandboxed iv; iv_filtered iv] = True"
+lemma ai_008_complete_input_validation: "\<forall>(iv :: InputValidation). iv_sanitized iv = True \<longrightarrow> iv_sandboxed iv = True \<longrightarrow> iv_filtered iv = True \<longrightarrow> all_true [iv_sanitized iv; iv_sandboxed iv; iv_filtered iv] = True"
   by simp
 
 (* ai_009_jailbreaking_mitigated (matches Coq) *)
-lemma ai_009_jailbreaking_mitigated: "\<forall> (st : SafetyTraining) (iv : InputValidation), st_rlhf_applied st = True \<longrightarrow> st_red_teamed st = True \<longrightarrow> st_safety_filters st = True \<longrightarrow> st_refusal_trained st = True \<longrightarrow> iv_filtered iv = True \<longrightarrow> jailbreaking_protected st iv = True"
+lemma ai_009_jailbreaking_mitigated: "\<forall>(st :: SafetyTraining) (iv :: InputValidation). st_rlhf_applied st = True \<longrightarrow> st_red_teamed st = True \<longrightarrow> st_safety_filters st = True \<longrightarrow> st_refusal_trained st = True \<longrightarrow> iv_filtered iv = True \<longrightarrow> jailbreaking_protected st iv = True"
   by simp
 
 (* Complete safety training verification *)
 (* ai_009_complete_safety_training (matches Coq) *)
-lemma ai_009_complete_safety_training: "\<forall> (st : SafetyTraining), st_rlhf_applied st = True \<longrightarrow> st_red_teamed st = True \<longrightarrow> st_safety_filters st = True \<longrightarrow> st_refusal_trained st = True \<longrightarrow> all_true [st_rlhf_applied st; st_red_teamed st; st_safety_filters st; st_refusal_trained st] = True"
+lemma ai_009_complete_safety_training: "\<forall>(st :: SafetyTraining). st_rlhf_applied st = True \<longrightarrow> st_red_teamed st = True \<longrightarrow> st_safety_filters st = True \<longrightarrow> st_refusal_trained st = True \<longrightarrow> all_true [st_rlhf_applied st; st_red_teamed st; st_safety_filters st; st_refusal_trained st] = True"
   by simp
 
 (* ai_010_ai_generated_malware_mitigated (matches Coq) *)
-lemma ai_010_ai_generated_malware_mitigated: "\<forall> (did : DefenseInDepth) (ds : DetectionSystem), did_multiple_layers did = True \<longrightarrow> did_diverse_methods did = True \<longrightarrow> did_fail_safe did = True \<longrightarrow> did_monitoring did = True \<longrightarrow> ds_enabled ds = True \<longrightarrow> ds_alerts_enabled ds = True \<longrightarrow> ai_malware_protected did ds = True"
+lemma ai_010_ai_generated_malware_mitigated: "\<forall>(did :: DefenseInDepth) (ds :: DetectionSystem). did_multiple_layers did = True \<longrightarrow> did_diverse_methods did = True \<longrightarrow> did_fail_safe did = True \<longrightarrow> did_monitoring did = True \<longrightarrow> ds_enabled ds = True \<longrightarrow> ds_alerts_enabled ds = True \<longrightarrow> ai_malware_protected did ds = True"
   by simp
 
 (* Defense in depth completeness *)
 (* ai_010_defense_in_depth_complete (matches Coq) *)
-lemma ai_010_defense_in_depth_complete: "\<forall> (did : DefenseInDepth), did_multiple_layers did = True \<longrightarrow> did_diverse_methods did = True \<longrightarrow> did_fail_safe did = True \<longrightarrow> did_monitoring did = True \<longrightarrow> all_true [did_multiple_layers did; did_diverse_methods did; did_fail_safe did; did_monitoring did] = True"
+lemma ai_010_defense_in_depth_complete: "\<forall>(did :: DefenseInDepth). did_multiple_layers did = True \<longrightarrow> did_diverse_methods did = True \<longrightarrow> did_fail_safe did = True \<longrightarrow> did_monitoring did = True \<longrightarrow> all_true [did_multiple_layers did; did_diverse_methods did; did_fail_safe did; did_monitoring did] = True"
   by simp
 
 (* ai_011_deepfakes_mitigated (matches Coq) *)
-lemma ai_011_deepfakes_mitigated: "\<forall> (ds : DetectionSystem) (pt : ProvenanceTracking), ds_enabled ds = True \<longrightarrow> ds_multi_modal ds = True \<longrightarrow> ds_threshold_set ds = True \<longrightarrow> pt_origin_tracked pt = True \<longrightarrow> pt_chain_verified pt = True \<longrightarrow> pt_tamper_evident pt = True \<longrightarrow> deepfakes_protected ds pt = True"
+lemma ai_011_deepfakes_mitigated: "\<forall>(ds :: DetectionSystem) (pt :: ProvenanceTracking). ds_enabled ds = True \<longrightarrow> ds_multi_modal ds = True \<longrightarrow> ds_threshold_set ds = True \<longrightarrow> pt_origin_tracked pt = True \<longrightarrow> pt_chain_verified pt = True \<longrightarrow> pt_tamper_evident pt = True \<longrightarrow> deepfakes_protected ds pt = True"
   by simp
 
 (* Complete provenance chain *)
 (* ai_011_complete_provenance (matches Coq) *)
-lemma ai_011_complete_provenance: "\<forall> (pt : ProvenanceTracking), pt_origin_tracked pt = True \<longrightarrow> pt_chain_verified pt = True \<longrightarrow> pt_metadata_preserved pt = True \<longrightarrow> pt_tamper_evident pt = True \<longrightarrow> all_true [pt_origin_tracked pt; pt_chain_verified pt; pt_metadata_preserved pt; pt_tamper_evident pt] = True"
+lemma ai_011_complete_provenance: "\<forall>(pt :: ProvenanceTracking). pt_origin_tracked pt = True \<longrightarrow> pt_chain_verified pt = True \<longrightarrow> pt_metadata_preserved pt = True \<longrightarrow> pt_tamper_evident pt = True \<longrightarrow> all_true [pt_origin_tracked pt; pt_chain_verified pt; pt_metadata_preserved pt; pt_tamper_evident pt] = True"
   by simp
 
 (* ai_012_federated_learning_attack_mitigated (matches Coq) *)
-lemma ai_012_federated_learning_attack_mitigated: "\<forall> (sa : SecureAggregation) (dp : DifferentialPrivacy), sa_encrypted sa = True \<longrightarrow> sa_masked sa = True \<longrightarrow> sa_threshold_scheme sa = True \<longrightarrow> sa_byzantine_resilient sa = True \<longrightarrow> dp_noise_added dp = True \<longrightarrow> federated_learning_protected sa dp = True"
+lemma ai_012_federated_learning_attack_mitigated: "\<forall>(sa :: SecureAggregation) (dp :: DifferentialPrivacy). sa_encrypted sa = True \<longrightarrow> sa_masked sa = True \<longrightarrow> sa_threshold_scheme sa = True \<longrightarrow> sa_byzantine_resilient sa = True \<longrightarrow> dp_noise_added dp = True \<longrightarrow> federated_learning_protected sa dp = True"
   by simp
 
 (* Complete secure aggregation *)
 (* ai_012_complete_secure_aggregation (matches Coq) *)
-lemma ai_012_complete_secure_aggregation: "\<forall> (sa : SecureAggregation), sa_encrypted sa = True \<longrightarrow> sa_masked sa = True \<longrightarrow> sa_threshold_scheme sa = True \<longrightarrow> sa_byzantine_resilient sa = True \<longrightarrow> all_true [sa_encrypted sa; sa_masked sa; sa_threshold_scheme sa; sa_byzantine_resilient sa] = True"
+lemma ai_012_complete_secure_aggregation: "\<forall>(sa :: SecureAggregation). sa_encrypted sa = True \<longrightarrow> sa_masked sa = True \<longrightarrow> sa_threshold_scheme sa = True \<longrightarrow> sa_byzantine_resilient sa = True \<longrightarrow> all_true [sa_encrypted sa; sa_masked sa; sa_threshold_scheme sa; sa_byzantine_resilient sa] = True"
   by simp
 
 (* ai_013_gradient_leakage_mitigated (matches Coq) *)
-lemma ai_013_gradient_leakage_mitigated: "\<forall> (dp : DifferentialPrivacy) (sa : SecureAggregation), dp_noise_added dp = True \<longrightarrow> dp_clipping_applied dp = True \<longrightarrow> dp_epsilon dp \<le> 1 \<longrightarrow> sa_encrypted sa = True \<longrightarrow> sa_masked sa = True \<longrightarrow> gradient_leakage_protected dp sa = True"
+lemma ai_013_gradient_leakage_mitigated: "\<forall>(dp :: DifferentialPrivacy) (sa :: SecureAggregation). dp_noise_added dp = True \<longrightarrow> dp_clipping_applied dp = True \<longrightarrow> dp_epsilon dp \<le> 1 \<longrightarrow> sa_encrypted sa = True \<longrightarrow> sa_masked sa = True \<longrightarrow> gradient_leakage_protected dp sa = True"
   by simp
 
 (* ai_013_gradient_protection_strong (matches Coq) *)
-lemma ai_013_gradient_protection_strong: "\<forall> (dp : DifferentialPrivacy), gradient_protection_strong dp \<longrightarrow> ((dp_noise_added \<and> dp)) (dp_clipping_applied dp) = True"
+lemma ai_013_gradient_protection_strong: "\<forall>(dp :: DifferentialPrivacy). gradient_protection_strong dp \<longrightarrow> dp_noise_added dp \<and> dp_clipping_applied dp = True"
   by simp
 
 (* ai_014_evasion_attack_mitigated (matches Coq) *)
-lemma ai_014_evasion_attack_mitigated: "\<forall> (rt : RobustTraining) (ds : DetectionSystem), rt_adversarial_training rt = True \<longrightarrow> rt_certified_defense rt = True \<longrightarrow> rt_ensemble_used rt = True \<longrightarrow> ds_enabled ds = True \<longrightarrow> ds_threshold_set ds = True \<longrightarrow> evasion_attack_protected rt ds = True"
+lemma ai_014_evasion_attack_mitigated: "\<forall>(rt :: RobustTraining) (ds :: DetectionSystem). rt_adversarial_training rt = True \<longrightarrow> rt_certified_defense rt = True \<longrightarrow> rt_ensemble_used rt = True \<longrightarrow> ds_enabled ds = True \<longrightarrow> ds_threshold_set ds = True \<longrightarrow> evasion_attack_protected rt ds = True"
   by simp
 
 (* Certified robustness theorem *)
 (* ai_014_certified_robustness (matches Coq) *)
-lemma ai_014_certified_robustness: "\<forall> (rt : RobustTraining), rt_adversarial_training rt = True \<longrightarrow> rt_certified_defense rt = True \<longrightarrow> rt_ensemble_used rt = True \<longrightarrow> rt_input_preprocessing rt = True \<longrightarrow> all_true [rt_adversarial_training rt; rt_certified_defense rt; rt_ensemble_used rt; rt_input_preprocessing rt] = True"
+lemma ai_014_certified_robustness: "\<forall>(rt :: RobustTraining). rt_adversarial_training rt = True \<longrightarrow> rt_certified_defense rt = True \<longrightarrow> rt_ensemble_used rt = True \<longrightarrow> rt_input_preprocessing rt = True \<longrightarrow> all_true [rt_adversarial_training rt; rt_certified_defense rt; rt_ensemble_used rt; rt_input_preprocessing rt] = True"
   by simp
 
 (* ai_015_model_dos_mitigated (matches Coq) *)
-lemma ai_015_model_dos_mitigated: "\<forall> (rl : ResourceLimits) (ac : AccessControl), rl_compute_bounded rl = True \<longrightarrow> rl_memory_bounded rl = True \<longrightarrow> rl_time_bounded rl = True \<longrightarrow> rl_batch_limited rl = True \<longrightarrow> ac_rate_limited ac = True \<longrightarrow> model_dos_protected rl ac = True"
+lemma ai_015_model_dos_mitigated: "\<forall>(rl :: ResourceLimits) (ac :: AccessControl). rl_compute_bounded rl = True \<longrightarrow> rl_memory_bounded rl = True \<longrightarrow> rl_time_bounded rl = True \<longrightarrow> rl_batch_limited rl = True \<longrightarrow> ac_rate_limited ac = True \<longrightarrow> model_dos_protected rl ac = True"
   by simp
 
 (* Complete resource limiting *)
 (* ai_015_complete_resource_limits (matches Coq) *)
-lemma ai_015_complete_resource_limits: "\<forall> (rl : ResourceLimits), rl_compute_bounded rl = True \<longrightarrow> rl_memory_bounded rl = True \<longrightarrow> rl_time_bounded rl = True \<longrightarrow> rl_batch_limited rl = True \<longrightarrow> all_true [rl_compute_bounded rl; rl_memory_bounded rl; rl_time_bounded rl; rl_batch_limited rl] = True"
+lemma ai_015_complete_resource_limits: "\<forall>(rl :: ResourceLimits). rl_compute_bounded rl = True \<longrightarrow> rl_memory_bounded rl = True \<longrightarrow> rl_time_bounded rl = True \<longrightarrow> rl_batch_limited rl = True \<longrightarrow> all_true [rl_compute_bounded rl; rl_memory_bounded rl; rl_time_bounded rl; rl_batch_limited rl] = True"
   by simp
 
 (* ai_016_cross_prompt_injection_mitigated (matches Coq) *)
-lemma ai_016_cross_prompt_injection_mitigated: "\<forall> (ii : InputIsolation) (iv : InputValidation), ii_context_separated ii = True \<longrightarrow> ii_privilege_separated ii = True \<longrightarrow> ii_output_filtered ii = True \<longrightarrow> ii_injection_markers ii = True \<longrightarrow> iv_sanitized iv = True \<longrightarrow> cross_prompt_injection_protected ii iv = True"
+lemma ai_016_cross_prompt_injection_mitigated: "\<forall>(ii :: InputIsolation) (iv :: InputValidation). ii_context_separated ii = True \<longrightarrow> ii_privilege_separated ii = True \<longrightarrow> ii_output_filtered ii = True \<longrightarrow> ii_injection_markers ii = True \<longrightarrow> iv_sanitized iv = True \<longrightarrow> cross_prompt_injection_protected ii iv = True"
   by simp
 
 (* Complete input isolation *)
 (* ai_016_complete_input_isolation (matches Coq) *)
-lemma ai_016_complete_input_isolation: "\<forall> (ii : InputIsolation), ii_context_separated ii = True \<longrightarrow> ii_privilege_separated ii = True \<longrightarrow> ii_output_filtered ii = True \<longrightarrow> ii_injection_markers ii = True \<longrightarrow> all_true [ii_context_separated ii; ii_privilege_separated ii; ii_output_filtered ii; ii_injection_markers ii] = True"
+lemma ai_016_complete_input_isolation: "\<forall>(ii :: InputIsolation). ii_context_separated ii = True \<longrightarrow> ii_privilege_separated ii = True \<longrightarrow> ii_output_filtered ii = True \<longrightarrow> ii_injection_markers ii = True \<longrightarrow> all_true [ii_context_separated ii; ii_privilege_separated ii; ii_output_filtered ii; ii_injection_markers ii] = True"
   by simp
 
 (* ai_017_ai_agent_swarms_mitigated (matches Coq) *)
-lemma ai_017_ai_agent_swarms_mitigated: "\<forall> (av : AgentVerification) (rl : ResourceLimits), av_identity_verified av = True \<longrightarrow> av_capability_bounded av = True \<longrightarrow> av_communication_secure av = True \<longrightarrow> av_consensus_required av = True \<longrightarrow> rl_compute_bounded rl = True \<longrightarrow> rl_time_bounded rl = True \<longrightarrow> ai_agent_swarms_protected av rl = True"
+lemma ai_017_ai_agent_swarms_mitigated: "\<forall>(av :: AgentVerification) (rl :: ResourceLimits). av_identity_verified av = True \<longrightarrow> av_capability_bounded av = True \<longrightarrow> av_communication_secure av = True \<longrightarrow> av_consensus_required av = True \<longrightarrow> rl_compute_bounded rl = True \<longrightarrow> rl_time_bounded rl = True \<longrightarrow> ai_agent_swarms_protected av rl = True"
   by simp
 
 (* Complete agent verification *)
 (* ai_017_complete_agent_verification (matches Coq) *)
-lemma ai_017_complete_agent_verification: "\<forall> (av : AgentVerification), av_identity_verified av = True \<longrightarrow> av_capability_bounded av = True \<longrightarrow> av_communication_secure av = True \<longrightarrow> av_consensus_required av = True \<longrightarrow> all_true [av_identity_verified av; av_capability_bounded av; av_communication_secure av; av_consensus_required av] = True"
+lemma ai_017_complete_agent_verification: "\<forall>(av :: AgentVerification). av_identity_verified av = True \<longrightarrow> av_capability_bounded av = True \<longrightarrow> av_communication_secure av = True \<longrightarrow> av_consensus_required av = True \<longrightarrow> all_true [av_identity_verified av; av_capability_bounded av; av_communication_secure av; av_consensus_required av] = True"
   by simp
 
 (* ai_018_mcp_server_exploitation_mitigated (matches Coq) *)
-lemma ai_018_mcp_server_exploitation_mitigated: "\<forall> (pv : ProtocolVerification) (ac : AccessControl), pv_schema_validated pv = True \<longrightarrow> pv_auth_required pv = True \<longrightarrow> pv_integrity_checked pv = True \<longrightarrow> pv_replay_protected pv = True \<longrightarrow> ac_authenticated ac = True \<longrightarrow> ac_authorized ac = True \<longrightarrow> mcp_server_exploitation_protected pv ac = True"
+lemma ai_018_mcp_server_exploitation_mitigated: "\<forall>(pv :: ProtocolVerification) (ac :: AccessControl). pv_schema_validated pv = True \<longrightarrow> pv_auth_required pv = True \<longrightarrow> pv_integrity_checked pv = True \<longrightarrow> pv_replay_protected pv = True \<longrightarrow> ac_authenticated ac = True \<longrightarrow> ac_authorized ac = True \<longrightarrow> mcp_server_exploitation_protected pv ac = True"
   by simp
 
 (* Complete protocol verification *)
 (* ai_018_complete_protocol_verification (matches Coq) *)
-lemma ai_018_complete_protocol_verification: "\<forall> (pv : ProtocolVerification), pv_schema_validated pv = True \<longrightarrow> pv_auth_required pv = True \<longrightarrow> pv_integrity_checked pv = True \<longrightarrow> pv_replay_protected pv = True \<longrightarrow> all_true [pv_schema_validated pv; pv_auth_required pv; pv_integrity_checked pv; pv_replay_protected pv] = True"
+lemma ai_018_complete_protocol_verification: "\<forall>(pv :: ProtocolVerification). pv_schema_validated pv = True \<longrightarrow> pv_auth_required pv = True \<longrightarrow> pv_integrity_checked pv = True \<longrightarrow> pv_replay_protected pv = True \<longrightarrow> all_true [pv_schema_validated pv; pv_auth_required pv; pv_integrity_checked pv; pv_replay_protected pv] = True"
   by simp
 
 (* Composition: Multiple protections strengthen overall security *)
 (* composition_strengthens_security (matches Coq) *)
-lemma composition_strengthens_security: "\<forall> (b1 b2 b3 : bool), b1 = True \<longrightarrow> b2 = True \<longrightarrow> b3 = True \<longrightarrow> (b1 \<and> (andb) b2 b3) = True"
+lemma composition_strengthens_security: "\<forall>(b1 b2 b3 :: bool). b1 = True \<longrightarrow> b2 = True \<longrightarrow> b3 = True \<longrightarrow> (b1 \<and> b2 \<and> b3) = True"
   by simp
 
 (* mitigation_transitivity (matches Coq) *)
-lemma mitigation_transitivity: "\<forall> (base enhanced : bool), base = True \<longrightarrow> implb base enhanced = True \<longrightarrow> enhanced = True"
+lemma mitigation_transitivity: "\<forall>(base enhanced : bool). base = True \<longrightarrow> implb base enhanced = True \<longrightarrow> enhanced = True"
   by auto
 
 (* Defense layers accumulate protection *)
 (* defense_layer_accumulation (matches Coq) *)
-lemma defense_layer_accumulation: "\<forall> (layer1 layer2 layer3 layer4 : bool), layer1 = True \<longrightarrow> layer2 = True \<longrightarrow> layer3 = True \<longrightarrow> layer4 = True \<longrightarrow> all_true [layer1; layer2; layer3; layer4] = True"
+lemma defense_layer_accumulation: "\<forall>(layer1 layer2 layer3 layer4 : bool). layer1 = True \<longrightarrow> layer2 = True \<longrightarrow> layer3 = True \<longrightarrow> layer4 = True \<longrightarrow> all_true [layer1; layer2; layer3; layer4] = True"
   by simp
 
 (* Privacy-Security tradeoff: Both can be achieved simultaneously *)
 (* privacy_security_coexistence (matches Coq) *)
-lemma privacy_security_coexistence: "\<forall> (dp : DifferentialPrivacy) (ac : AccessControl), dp_noise_added dp = True \<longrightarrow> dp_clipping_applied dp = True \<longrightarrow> ac_authenticated ac = True \<longrightarrow> ac_rate_limited ac = True \<longrightarrow> ((andb \<and> (dp_noise_added) dp) (dp_clipping_applied dp)) (((ac_authenticated \<and> ac)) (ac_rate_limited ac)) = True"
+lemma privacy_security_coexistence: "\<forall>(dp :: DifferentialPrivacy) (ac :: AccessControl). dp_noise_added dp = True \<longrightarrow> dp_clipping_applied dp = True \<longrightarrow> ac_authenticated ac = True \<longrightarrow> ac_rate_limited ac = True \<longrightarrow> dp_noise_added dp \<and> dp_clipping_applied dp (ac_authenticated ac \<and> ac_rate_limited ac) = True"
   by simp
 
 end

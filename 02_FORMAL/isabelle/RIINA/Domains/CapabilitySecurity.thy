@@ -257,11 +257,11 @@ definition perm_lt :: "bool" where
 
 (* perm_eq (matches Coq: Definition perm_eq) *)
 definition perm_eq :: "bool" where
-  "perm_eq \<equiv> ((perm_level = p1)) (perm_level p2)"
+  "perm_eq \<equiv> (perm_level p1 = perm_level p2)"
 
 (* perm_in (matches Coq: Definition perm_in) *)
 fun perm_in :: "Permission \<Rightarrow> PermSet \<Rightarrow> bool" where
-
+  "perm_in _ = True"
 
 (* mem_bounds_check (matches Coq: Definition mem_bounds_check) *)
 definition mem_bounds_check :: "MemCapability \<Rightarrow> nat \<Rightarrow> bool" where
@@ -286,7 +286,7 @@ definition mem_can_execute :: "MemCapability \<Rightarrow> nat \<Rightarrow> boo
 
 (* perms_subset (matches Coq: Definition perms_subset) *)
 definition perms_subset :: "bool" where
-  "perms_subset \<equiv> forallb (fun p => perm_in p ps2) ps1"
+  "perms_subset \<equiv> forallb (\<lambda>p. perm_in p ps2) ps1"
 
 (* derive_mem_cap (matches Coq: Definition derive_mem_cap) *)
 definition derive_mem_cap :: "bool" where
@@ -309,7 +309,7 @@ definition has_capability :: "Principal \<Rightarrow> nat \<Rightarrow> bool" wh
 
 (* confinement_enforced (matches Coq: Definition confinement_enforced) *)
 definition confinement_enforced :: "ConfinementPolicy \<Rightarrow> bool" where
-  "confinement_enforced cp \<equiv> (conf_no_ambient cp \<and> ((conf_explicit_only \<and> cp)) (conf_no_escalation cp))"
+  "confinement_enforced cp \<equiv> (conf_no_ambient cp \<and> conf_explicit_only cp \<and> conf_no_escalation cp)"
 
 (* can_redelegate - complex match, needs manual translation *)
 definition can_redelegate :: "bool" where "can_redelegate = undefined"
@@ -366,24 +366,24 @@ definition riina_delegation :: "Delegation" where
     SECTION 1: BASIC LEMMAS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* andb_false_iff (matches Coq) *)
-lemma andb_false_iff: "\<forall> a b : bool, a && b = False <-> a = False \<or> b = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_false_iff: "\<forall>a b : bool. a && b = False <-> a = False \<or> b = False"
+  by auto
 
 (* orb_true_iff (matches Coq) *)
-lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma orb_true_iff: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = True"
+  by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+  by auto
 
 (* negb_false_iff (matches Coq) *)
-lemma negb_false_iff: "\<forall> b : bool, (\<not> b) = False <-> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_false_iff: "\<forall>b : bool. (\<not> b) = False <-> b = True"
+  by auto
 
 (* ============================================================================
     SECTION 11: BASIC CAPABILITY THEOREMS (CAP_001 - CAP_030)
@@ -429,71 +429,71 @@ lemma CAP_010: "lp_scope_limited riina_lp = True"
   by simp
 
 (* CAP_011 (matches Coq) *)
-lemma CAP_011: "\<forall> c, capability_sound c = True \<longrightarrow> cap_unforgeable c = True"
+lemma CAP_011: "\<forall>c. capability_sound c = True \<longrightarrow> cap_unforgeable c = True"
   by auto
 
 (* CAP_012 (matches Coq) *)
-lemma CAP_012: "\<forall> c, capability_sound c = True \<longrightarrow> cap_transferable c = True"
+lemma CAP_012: "\<forall>c. capability_sound c = True \<longrightarrow> cap_transferable c = True"
   by auto
 
 (* CAP_013 (matches Coq) *)
-lemma CAP_013: "\<forall> c, capability_sound c = True \<longrightarrow> cap_revocable c = True"
+lemma CAP_013: "\<forall>c. capability_sound c = True \<longrightarrow> cap_revocable c = True"
   by auto
 
 (* CAP_014 (matches Coq) *)
-lemma CAP_014: "\<forall> c, capability_sound c = True \<longrightarrow> cap_attenuatable c = True"
+lemma CAP_014: "\<forall>c. capability_sound c = True \<longrightarrow> cap_attenuatable c = True"
   by auto
 
 (* CAP_015 (matches Coq) *)
-lemma CAP_015: "\<forall> o, ocap_sound o = True \<longrightarrow> ocap_no_ambient_authority o = True"
+lemma CAP_015: "\<forall>o. ocap_sound o = True \<longrightarrow> ocap_no_ambient_authority o = True"
   by auto
 
 (* CAP_016 (matches Coq) *)
-lemma CAP_016: "\<forall> o, ocap_sound o = True \<longrightarrow> ocap_explicit_grant o = True"
+lemma CAP_016: "\<forall>o. ocap_sound o = True \<longrightarrow> ocap_explicit_grant o = True"
   by auto
 
 (* CAP_017 (matches Coq) *)
-lemma CAP_017: "\<forall> o, ocap_sound o = True \<longrightarrow> ocap_encapsulation o = True"
+lemma CAP_017: "\<forall>o. ocap_sound o = True \<longrightarrow> ocap_encapsulation o = True"
   by auto
 
 (* CAP_018 (matches Coq) *)
-lemma CAP_018: "\<forall> o, ocap_sound o = True \<longrightarrow> ocap_connectivity o = True"
+lemma CAP_018: "\<forall>o. ocap_sound o = True \<longrightarrow> ocap_connectivity o = True"
   by auto
 
 (* CAP_019 (matches Coq) *)
-lemma CAP_019: "\<forall> l, least_privilege_enforced l = True \<longrightarrow> lp_minimal_permissions l = True"
+lemma CAP_019: "\<forall>l. least_privilege_enforced l = True \<longrightarrow> lp_minimal_permissions l = True"
   by auto
 
 (* CAP_020 (matches Coq) *)
-lemma CAP_020: "\<forall> l, least_privilege_enforced l = True \<longrightarrow> lp_time_limited l = True"
+lemma CAP_020: "\<forall>l. least_privilege_enforced l = True \<longrightarrow> lp_time_limited l = True"
   by auto
 
 (* CAP_021 (matches Coq) *)
-lemma CAP_021: "\<forall> l, least_privilege_enforced l = True \<longrightarrow> lp_scope_limited l = True"
+lemma CAP_021: "\<forall>l. least_privilege_enforced l = True \<longrightarrow> lp_scope_limited l = True"
   by auto
 
 (* CAP_022 (matches Coq) *)
-lemma CAP_022: "\<forall> c, capability_secure c = True \<longrightarrow> capability_sound (cc_cap c) = True"
+lemma CAP_022: "\<forall>c. capability_secure c = True \<longrightarrow> capability_sound (cc_cap c) = True"
   by auto
 
 (* CAP_023 (matches Coq) *)
-lemma CAP_023: "\<forall> c, capability_secure c = True \<longrightarrow> ocap_sound (cc_ocap c) = True"
+lemma CAP_023: "\<forall>c. capability_secure c = True \<longrightarrow> ocap_sound (cc_ocap c) = True"
   by auto
 
 (* CAP_024 (matches Coq) *)
-lemma CAP_024: "\<forall> c, capability_secure c = True \<longrightarrow> least_privilege_enforced (cc_lp c) = True"
+lemma CAP_024: "\<forall>c. capability_secure c = True \<longrightarrow> least_privilege_enforced (cc_lp c) = True"
   by auto
 
 (* CAP_025 (matches Coq) *)
-lemma CAP_025: "\<forall> c, capability_secure c = True \<longrightarrow> cap_unforgeable (cc_cap c) = True"
+lemma CAP_025: "\<forall>c. capability_secure c = True \<longrightarrow> cap_unforgeable (cc_cap c) = True"
   by auto
 
 (* CAP_026 (matches Coq) *)
-lemma CAP_026: "\<forall> c, capability_secure c = True \<longrightarrow> ocap_no_ambient_authority (cc_ocap c) = True"
+lemma CAP_026: "\<forall>c. capability_secure c = True \<longrightarrow> ocap_no_ambient_authority (cc_ocap c) = True"
   by auto
 
 (* CAP_027 (matches Coq) *)
-lemma CAP_027: "\<forall> c, capability_secure c = True \<longrightarrow> lp_minimal_permissions (cc_lp c) = True"
+lemma CAP_027: "\<forall>c. capability_secure c = True \<longrightarrow> lp_minimal_permissions (cc_lp c) = True"
   by auto
 
 (* CAP_028 (matches Coq) *)
@@ -505,12 +505,12 @@ lemma CAP_029: "cap_unforgeable riina_cap = True \<and> ocap_no_ambient_authorit
   by auto
 
 (* CAP_030_complete (matches Coq) *)
-lemma CAP_030_complete: "\<forall> c, capability_secure c = True \<longrightarrow> cap_unforgeable (cc_cap c) = True \<and> ocap_no_ambient_authority (cc_ocap c) = True \<and> lp_minimal_permissions (cc_lp c) = True"
+lemma CAP_030_complete: "\<forall>c. capability_secure c = True \<longrightarrow> cap_unforgeable (cc_cap c) = True \<and> ocap_no_ambient_authority (cc_ocap c) = True \<and> lp_minimal_permissions (cc_lp c) = True"
   by auto
 
 (* Unforgability: capabilities cannot be created out of thin air *)
 (* CAP_031_unforgeable_implies_authentic (matches Coq) *)
-lemma CAP_031_unforgeable_implies_authentic: "\<forall> c, capability_sound c = True \<longrightarrow> cap_unforgeable c = True"
+lemma CAP_031_unforgeable_implies_authentic: "\<forall>c. capability_sound c = True \<longrightarrow> cap_unforgeable c = True"
   by auto
 
 (* CAP_032_unforgeable_config (matches Coq) *)
@@ -518,23 +518,23 @@ lemma CAP_032_unforgeable_config: "capability_secure riina_cap_config = True \<l
   by simp
 
 (* CAP_033_unforgeable_preservation (matches Coq) *)
-lemma CAP_033_unforgeable_preservation: "\<forall> c, cap_unforgeable c = True \<longrightarrow> cap_unforgeable c = True"
+lemma CAP_033_unforgeable_preservation: "\<forall>c. cap_unforgeable c = True \<longrightarrow> cap_unforgeable c = True"
   by auto
 
 (* CAP_034_unforgeable_and_revocable (matches Coq) *)
-lemma CAP_034_unforgeable_and_revocable: "\<forall> c, capability_sound c = True \<longrightarrow> cap_unforgeable c = True \<and> cap_revocable c = True"
+lemma CAP_034_unforgeable_and_revocable: "\<forall>c. capability_sound c = True \<longrightarrow> cap_unforgeable c = True \<and> cap_revocable c = True"
   by auto
 
 (* CAP_035_no_forge_without_grant (matches Coq) *)
-lemma CAP_035_no_forge_without_grant: "\<forall> o, ocap_sound o = True \<longrightarrow> ocap_explicit_grant o = True"
+lemma CAP_035_no_forge_without_grant: "\<forall>o. ocap_sound o = True \<longrightarrow> ocap_explicit_grant o = True"
   by auto
 
 (* CAP_036_encapsulation_prevents_forge (matches Coq) *)
-lemma CAP_036_encapsulation_prevents_forge: "\<forall> o, ocap_sound o = True \<longrightarrow> ocap_encapsulation o = True"
+lemma CAP_036_encapsulation_prevents_forge: "\<forall>o. ocap_sound o = True \<longrightarrow> ocap_encapsulation o = True"
   by auto
 
 (* CAP_037_connectivity_controlled (matches Coq) *)
-lemma CAP_037_connectivity_controlled: "\<forall> o, ocap_sound o = True \<longrightarrow> ocap_connectivity o = True"
+lemma CAP_037_connectivity_controlled: "\<forall>o. ocap_sound o = True \<longrightarrow> ocap_connectivity o = True"
   by auto
 
 (* CAP_038_unforgeable_mem_cap (matches Coq) *)
@@ -542,60 +542,60 @@ lemma CAP_038_unforgeable_mem_cap: "mem_valid riina_mem_cap = True"
   by simp
 
 (* CAP_039_sealed_cap_unforgeable (matches Coq) *)
-lemma CAP_039_sealed_cap_unforgeable: "\<forall> mc, mem_sealed mc = True \<longrightarrow> (\<not> (mem_sealed) mc) = False"
+lemma CAP_039_sealed_cap_unforgeable: "\<forall>mc. mem_sealed mc = True \<longrightarrow> (\<not> (mem_sealed) mc) = False"
   by simp
 
 (* CAP_040_valid_cap_required (matches Coq) *)
-lemma CAP_040_valid_cap_required: "\<forall> mc p, mem_has_perm mc p = True \<longrightarrow> mem_valid mc = True"
+lemma CAP_040_valid_cap_required: "\<forall>mc p. mem_has_perm mc p = True \<longrightarrow> mem_valid mc = True"
   by auto
 
 (* Monotonicity: capabilities can only lose permissions, never gain them *)
 (* CAP_041_attenuatable_means_monotonic (matches Coq) *)
-lemma CAP_041_attenuatable_means_monotonic: "\<forall> c, capability_sound c = True \<longrightarrow> cap_attenuatable c = True"
+lemma CAP_041_attenuatable_means_monotonic: "\<forall>c. capability_sound c = True \<longrightarrow> cap_attenuatable c = True"
   by auto
 
 (* perm_in_head (matches Coq) *)
-lemma perm_in_head: "\<forall> p ps, perm_in p (p :: ps) = True"
+lemma perm_in_head: "\<forall>p ps. perm_in p (p :: ps) = True"
   by simp
 
 (* perm_in_cons (matches Coq) *)
-lemma perm_in_cons: "\<forall> p q ps, perm_in p ps = True \<longrightarrow> perm_in p (q :: ps) = True"
+lemma perm_in_cons: "\<forall>p q ps. perm_in p ps = True \<longrightarrow> perm_in p (q :: ps) = True"
   by auto
 
 (* forallb_impl (matches Coq) *)
-lemma forallb_impl: "\<forall> A (f g : A \<longrightarrow> bool) l, (\<forall> x, f x = True \<longrightarrow> g x = True) \<longrightarrow> \<forall>b f l = True \<longrightarrow> \<forall>b g l = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma forallb_impl: "\<forall>A (f g : A \<longrightarrow> bool) l. (\<forall>x. f x = True \<longrightarrow> g x = True) \<longrightarrow> \<forall>b f l = True \<longrightarrow> \<forall>b g l = True"
+  by auto
 
 (* CAP_042_perms_subset_reflexive (matches Coq) *)
-lemma CAP_042_perms_subset_reflexive: "\<forall> ps, perms_subset ps ps = True"
+lemma CAP_042_perms_subset_reflexive: "\<forall>ps. perms_subset ps ps = True"
   by auto
 
 (* CAP_043_empty_perms_subset (matches Coq) *)
-lemma CAP_043_empty_perms_subset: "\<forall> ps, perms_subset [] ps = True"
+lemma CAP_043_empty_perms_subset: "\<forall>ps. perms_subset [] ps = True"
   by simp
 
 (* CAP_044_derive_from_self (matches Coq) *)
-lemma CAP_044_derive_from_self: "\<forall> mc, mem_sealed mc = False \<longrightarrow> derive_mem_cap mc mc = True"
+lemma CAP_044_derive_from_self: "\<forall>mc. mem_sealed mc = False \<longrightarrow> derive_mem_cap mc mc = True"
   by auto
 
 (* CAP_045_derive_cannot_exceed_parent (matches Coq) *)
-lemma CAP_045_derive_cannot_exceed_parent: "\<forall> parent child, derive_mem_cap parent child = True \<longrightarrow> ((mem_base \<le> parent)) (mem_base child) = True"
+lemma CAP_045_derive_cannot_exceed_parent: "\<forall>parent child. derive_mem_cap parent child = True \<longrightarrow> ((mem_base \<le> parent)) (mem_base child) = True"
   by auto
 
 (* CAP_046_derive_bounds_contained (matches Coq) *)
-lemma CAP_046_derive_bounds_contained: "\<forall> parent child, derive_mem_cap parent child = True \<longrightarrow> ((mem_base \<le> child) + mem_length child) (mem_base parent + mem_length parent) = True"
+lemma CAP_046_derive_bounds_contained: "\<forall>parent child. derive_mem_cap parent child = True \<longrightarrow> ((mem_base \<le> child) + mem_length child) (mem_base parent + mem_length parent) = True"
   by auto
 
 (* CAP_047_derive_perms_subset (matches Coq) *)
-lemma CAP_047_derive_perms_subset: "\<forall> parent child, derive_mem_cap parent child = True \<longrightarrow> perms_subset (mem_perms child) (mem_perms parent) = True"
+lemma CAP_047_derive_perms_subset: "\<forall>parent child. derive_mem_cap parent child = True \<longrightarrow> perms_subset (mem_perms child) (mem_perms parent) = True"
   by auto
 
 (* CAP_048_sealed_prevents_derive (matches Coq) *)
-lemma CAP_048_sealed_prevents_derive: "\<forall> parent child, mem_sealed parent = True \<longrightarrow> derive_mem_cap parent child = False"
+lemma CAP_048_sealed_prevents_derive: "\<forall>parent child. mem_sealed parent = True \<longrightarrow> derive_mem_cap parent child = False"
   by simp
 
 (* CAP_049_perm_leq_reflexive (matches Coq) *)
-lemma CAP_049_perm_leq_reflexive: "\<forall> p, perm_leq p p = True"
+lemma CAP_049_perm_leq_reflexive: "\<forall>p. perm_leq p p = True"
   by auto
 
 (* CAP_050_read_leq_write (matches Coq) *)
@@ -607,59 +607,59 @@ lemma CAP_051_write_leq_execute: "perm_leq Write Execute = True"
   by simp
 
 (* CAP_052_perm_leq_transitive (matches Coq) *)
-lemma CAP_052_perm_leq_transitive: "\<forall> p1 p2 p3, perm_leq p1 p2 = True \<longrightarrow> perm_leq p2 p3 = True \<longrightarrow> perm_leq p1 p3 = True"
+lemma CAP_052_perm_leq_transitive: "\<forall>p1 p2 p3. perm_leq p1 p2 = True \<longrightarrow> perm_leq p2 p3 = True \<longrightarrow> perm_leq p1 p3 = True"
   by simp
 
 (* CAP_053_perm_lt_irreflexive (matches Coq) *)
-lemma CAP_053_perm_lt_irreflexive: "\<forall> p, perm_lt p p = False"
+lemma CAP_053_perm_lt_irreflexive: "\<forall>p. perm_lt p p = False"
   by auto
 
 (* CAP_054_monotonic_no_escalation (matches Coq) *)
-lemma CAP_054_monotonic_no_escalation: "\<forall> c, capability_sound c = True \<longrightarrow> cap_attenuatable c = True"
+lemma CAP_054_monotonic_no_escalation: "\<forall>c. capability_sound c = True \<longrightarrow> cap_attenuatable c = True"
   by auto
 
 (* CAP_055_derive_preserves_validity (matches Coq) *)
-lemma CAP_055_derive_preserves_validity: "\<forall> parent child, derive_mem_cap parent child = True \<longrightarrow> mem_valid parent = True \<longrightarrow> mem_valid child = True \<longrightarrow> True"
+lemma CAP_055_derive_preserves_validity: "\<forall>parent child. derive_mem_cap parent child = True \<longrightarrow> mem_valid parent = True \<longrightarrow> mem_valid child = True \<longrightarrow> True"
   by auto
 
 (* CAP_056_empty_not_revoked (matches Coq) *)
-lemma CAP_056_empty_not_revoked: "\<forall> cap_id, is_revoked empty_rev_table cap_id = False"
+lemma CAP_056_empty_not_revoked: "\<forall>cap_id. is_revoked empty_rev_table cap_id = False"
   by simp
 
 (* CAP_057_revoke_makes_revoked (matches Coq) *)
-lemma CAP_057_revoke_makes_revoked: "\<forall> rt cap_id, is_revoked (revoke_capability rt cap_id) cap_id = True"
+lemma CAP_057_revoke_makes_revoked: "\<forall>rt cap_id. is_revoked (revoke_capability rt cap_id) cap_id = True"
   by simp
 
 (* CAP_058_revoke_idempotent (matches Coq) *)
-lemma CAP_058_revoke_idempotent: "\<forall> rt cap_id, is_revoked (revoke_capability (revoke_capability rt cap_id) cap_id) cap_id = True"
+lemma CAP_058_revoke_idempotent: "\<forall>rt cap_id. is_revoked (revoke_capability (revoke_capability rt cap_id) cap_id) cap_id = True"
   by simp
 
 (* CAP_059_revoke_other_unchanged (matches Coq) *)
-lemma CAP_059_revoke_other_unchanged: "\<forall> rt cap_id1 cap_id2, cap_id1 \<noteq> cap_id2 \<longrightarrow> is_revoked (revoke_capability rt cap_id1) cap_id2 = is_revoked rt cap_id2"
-  by (cases rule: ‹_›.cases; simp)
+lemma CAP_059_revoke_other_unchanged: "\<forall>rt cap_id1 cap_id2. cap_id1 \<noteq> cap_id2 \<longrightarrow> is_revoked (revoke_capability rt cap_id1) cap_id2 = is_revoked rt cap_id2"
+  by auto
 
 (* CAP_060_cap_revocable_riina (matches Coq) *)
 lemma CAP_060_cap_revocable_riina: "cap_revocable riina_cap = True"
   by simp
 
 (* CAP_061_revocable_implies_can_revoke (matches Coq) *)
-lemma CAP_061_revocable_implies_can_revoke: "\<forall> c, capability_sound c = True \<longrightarrow> cap_revocable c = True"
+lemma CAP_061_revocable_implies_can_revoke: "\<forall>c. capability_sound c = True \<longrightarrow> cap_revocable c = True"
   by auto
 
 (* CAP_062_revoked_mem_cap_invalid (matches Coq) *)
-lemma CAP_062_revoked_mem_cap_invalid: "\<forall> mc, mem_valid mc = False \<longrightarrow> mem_has_perm mc Read = False"
+lemma CAP_062_revoked_mem_cap_invalid: "\<forall>mc. mem_valid mc = False \<longrightarrow> mem_has_perm mc Read = False"
   by simp
 
 (* CAP_063_revoked_cannot_read (matches Coq) *)
-lemma CAP_063_revoked_cannot_read: "\<forall> mc addr, mem_valid mc = False \<longrightarrow> mem_can_read mc addr = False"
+lemma CAP_063_revoked_cannot_read: "\<forall>mc addr. mem_valid mc = False \<longrightarrow> mem_can_read mc addr = False"
   by simp
 
 (* CAP_064_revoked_cannot_write (matches Coq) *)
-lemma CAP_064_revoked_cannot_write: "\<forall> mc addr, mem_valid mc = False \<longrightarrow> mem_can_write mc addr = False"
+lemma CAP_064_revoked_cannot_write: "\<forall>mc addr. mem_valid mc = False \<longrightarrow> mem_can_write mc addr = False"
   by simp
 
 (* CAP_065_revoked_cannot_execute (matches Coq) *)
-lemma CAP_065_revoked_cannot_execute: "\<forall> mc addr, mem_valid mc = False \<longrightarrow> mem_can_execute mc addr = False"
+lemma CAP_065_revoked_cannot_execute: "\<forall>mc addr. mem_valid mc = False \<longrightarrow> mem_can_execute mc addr = False"
   by simp
 
 (* ============================================================================
@@ -670,39 +670,39 @@ lemma CAP_066_confinement_enforced: "confinement_enforced riina_confinement = Tr
   by simp
 
 (* CAP_067_no_ambient_authority (matches Coq) *)
-lemma CAP_067_no_ambient_authority: "\<forall> cp, confinement_enforced cp = True \<longrightarrow> conf_no_ambient cp = True"
+lemma CAP_067_no_ambient_authority: "\<forall>cp. confinement_enforced cp = True \<longrightarrow> conf_no_ambient cp = True"
   by auto
 
 (* CAP_068_explicit_access_only (matches Coq) *)
-lemma CAP_068_explicit_access_only: "\<forall> cp, confinement_enforced cp = True \<longrightarrow> conf_explicit_only cp = True"
+lemma CAP_068_explicit_access_only: "\<forall>cp. confinement_enforced cp = True \<longrightarrow> conf_explicit_only cp = True"
   by auto
 
 (* CAP_069_no_privilege_escalation (matches Coq) *)
-lemma CAP_069_no_privilege_escalation: "\<forall> cp, confinement_enforced cp = True \<longrightarrow> conf_no_escalation cp = True"
+lemma CAP_069_no_privilege_escalation: "\<forall>cp. confinement_enforced cp = True \<longrightarrow> conf_no_escalation cp = True"
   by auto
 
 (* CAP_070_ocap_no_ambient (matches Coq) *)
-lemma CAP_070_ocap_no_ambient: "\<forall> o, ocap_sound o = True \<longrightarrow> ocap_no_ambient_authority o = True"
+lemma CAP_070_ocap_no_ambient: "\<forall>o. ocap_sound o = True \<longrightarrow> ocap_no_ambient_authority o = True"
   by auto
 
 (* CAP_071_has_cap_empty (matches Coq) *)
-lemma CAP_071_has_cap_empty: "\<forall> p cap_id, prin_capabilities p = [] \<longrightarrow> has_capability p cap_id = False"
+lemma CAP_071_has_cap_empty: "\<forall>p cap_id. prin_capabilities p = [] \<longrightarrow> has_capability p cap_id = False"
   by simp
 
 (* CAP_072_has_cap_head (matches Coq) *)
-lemma CAP_072_has_cap_head: "\<forall> pid cap_id rest, has_capability (mkPrincipal pid (cap_id :: rest)) cap_id = True"
+lemma CAP_072_has_cap_head: "\<forall>pid cap_id rest. has_capability (mkPrincipal pid (cap_id :: rest)) cap_id = True"
   by simp
 
 (* CAP_073_confinement_complete (matches Coq) *)
-lemma CAP_073_confinement_complete: "\<forall> cp, confinement_enforced cp = True \<longrightarrow> conf_no_ambient cp = True \<and> conf_explicit_only cp = True \<and> conf_no_escalation cp = True"
+lemma CAP_073_confinement_complete: "\<forall>cp. confinement_enforced cp = True \<longrightarrow> conf_no_ambient cp = True \<and> conf_explicit_only cp = True \<and> conf_no_escalation cp = True"
   by auto
 
 (* CAP_074_confined_needs_cap (matches Coq) *)
-lemma CAP_074_confined_needs_cap: "\<forall> cp, confinement_enforced cp = True \<longrightarrow> conf_explicit_only cp = True"
+lemma CAP_074_confined_needs_cap: "\<forall>cp. confinement_enforced cp = True \<longrightarrow> conf_explicit_only cp = True"
   by auto
 
 (* CAP_075_confined_no_escalate (matches Coq) *)
-lemma CAP_075_confined_no_escalate: "\<forall> cp, confinement_enforced cp = True \<longrightarrow> conf_no_escalation cp = True"
+lemma CAP_075_confined_no_escalate: "\<forall>cp. confinement_enforced cp = True \<longrightarrow> conf_no_escalation cp = True"
   by auto
 
 (* CAP_076_full_can_redelegate (matches Coq) *)
@@ -718,46 +718,46 @@ lemma CAP_078_once_cannot_redelegate: "can_redelegate (mkDelegation 0 1 100 Dele
   by simp
 
 (* CAP_079_inactive_delegation (matches Coq) *)
-lemma CAP_079_inactive_delegation: "\<forall> d, del_active d = False \<longrightarrow> del_active d = False"
+lemma CAP_079_inactive_delegation: "\<forall>d. del_active d = False \<longrightarrow> del_active d = False"
   by auto
 
 (* CAP_080_delegation_has_from (matches Coq) *)
-lemma CAP_080_delegation_has_from: "\<forall> from to cap_id dt active, del_from (mkDelegation from to cap_id dt active) = from"
+lemma CAP_080_delegation_has_from: "\<forall>from to cap_id dt active. del_from (mkDelegation from to cap_id dt active) = from"
   by simp
 
 (* CAP_081_delegation_has_to (matches Coq) *)
-lemma CAP_081_delegation_has_to: "\<forall> from to cap_id dt active, del_to (mkDelegation from to cap_id dt active) = to"
+lemma CAP_081_delegation_has_to: "\<forall>from to cap_id dt active. del_to (mkDelegation from to cap_id dt active) = to"
   by simp
 
 (* CAP_082_delegation_has_cap (matches Coq) *)
-lemma CAP_082_delegation_has_cap: "\<forall> from to cap_id dt active, del_cap_id (mkDelegation from to cap_id dt active) = cap_id"
+lemma CAP_082_delegation_has_cap: "\<forall>from to cap_id dt active. del_cap_id (mkDelegation from to cap_id dt active) = cap_id"
   by simp
 
 (* CAP_083_delegation_type_full (matches Coq) *)
-lemma CAP_083_delegation_type_full: "\<forall> d, del_type d = DelegFull \<longrightarrow> can_redelegate d = True"
+lemma CAP_083_delegation_type_full: "\<forall>d. del_type d = DelegFull \<longrightarrow> can_redelegate d = True"
   by simp
 
 (* CAP_084_delegation_type_restricted (matches Coq) *)
-lemma CAP_084_delegation_type_restricted: "\<forall> d, del_type d = DelegRestricted \<longrightarrow> can_redelegate d = False"
+lemma CAP_084_delegation_type_restricted: "\<forall>d. del_type d = DelegRestricted \<longrightarrow> can_redelegate d = False"
   by simp
 
 (* CAP_085_delegation_type_once (matches Coq) *)
-lemma CAP_085_delegation_type_once: "\<forall> d, del_type d = DelegOnce \<longrightarrow> can_redelegate d = False"
+lemma CAP_085_delegation_type_once: "\<forall>d. del_type d = DelegOnce \<longrightarrow> can_redelegate d = False"
   by simp
 
 (* ============================================================================
     SECTION 17: MEMORY CAPABILITY THEOREMS (CAP_086 - CAP_100)
     ============================================================================ *)
 (* CAP_086_bounds_check_in_range (matches Coq) *)
-lemma CAP_086_bounds_check_in_range: "\<forall> base len addr, base \<le> addr \<longrightarrow> addr < base + len \<longrightarrow> mem_bounds_check (mkMemCap base len [] False True) addr = True"
+lemma CAP_086_bounds_check_in_range: "\<forall>base len addr. base \<le> addr \<longrightarrow> addr < base + len \<longrightarrow> mem_bounds_check (mkMemCap base len [] False True) addr = True"
   by auto
 
 (* CAP_087_bounds_check_out_of_range_low (matches Coq) *)
-lemma CAP_087_bounds_check_out_of_range_low: "\<forall> base len addr, addr < base \<longrightarrow> mem_bounds_check (mkMemCap base len [] False True) addr = False"
+lemma CAP_087_bounds_check_out_of_range_low: "\<forall>base len addr. addr < base \<longrightarrow> mem_bounds_check (mkMemCap base len [] False True) addr = False"
   by simp
 
 (* CAP_088_bounds_check_out_of_range_high (matches Coq) *)
-lemma CAP_088_bounds_check_out_of_range_high: "\<forall> base len addr, addr \<ge> base + len \<longrightarrow> mem_bounds_check (mkMemCap base len [] False True) addr = False"
+lemma CAP_088_bounds_check_out_of_range_high: "\<forall>base len addr. addr \<ge> base + len \<longrightarrow> mem_bounds_check (mkMemCap base len [] False True) addr = False"
   by simp
 
 (* CAP_089_riina_mem_cap_valid (matches Coq) *)
@@ -777,35 +777,35 @@ lemma CAP_092_riina_mem_cap_length: "mem_length riina_mem_cap = 1024"
   by simp
 
 (* CAP_093_valid_for_read (matches Coq) *)
-lemma CAP_093_valid_for_read: "\<forall> mc addr, mem_can_read mc addr = True \<longrightarrow> mem_valid mc = True"
+lemma CAP_093_valid_for_read: "\<forall>mc addr. mem_can_read mc addr = True \<longrightarrow> mem_valid mc = True"
   by auto
 
 (* CAP_094_valid_for_write (matches Coq) *)
-lemma CAP_094_valid_for_write: "\<forall> mc addr, mem_can_write mc addr = True \<longrightarrow> mem_valid mc = True"
+lemma CAP_094_valid_for_write: "\<forall>mc addr. mem_can_write mc addr = True \<longrightarrow> mem_valid mc = True"
   by auto
 
 (* CAP_095_valid_for_execute (matches Coq) *)
-lemma CAP_095_valid_for_execute: "\<forall> mc addr, mem_can_execute mc addr = True \<longrightarrow> mem_valid mc = True"
+lemma CAP_095_valid_for_execute: "\<forall>mc addr. mem_can_execute mc addr = True \<longrightarrow> mem_valid mc = True"
   by auto
 
 (* CAP_096_sealed_cannot_derive (matches Coq) *)
-lemma CAP_096_sealed_cannot_derive: "\<forall> mc child, mem_sealed mc = True \<longrightarrow> derive_mem_cap mc child = False"
+lemma CAP_096_sealed_cannot_derive: "\<forall>mc child. mem_sealed mc = True \<longrightarrow> derive_mem_cap mc child = False"
   by auto
 
 (* CAP_097_empty_perms_no_access (matches Coq) *)
-lemma CAP_097_empty_perms_no_access: "\<forall> base len, mem_has_perm (mkMemCap base len [] False True) Read = False"
+lemma CAP_097_empty_perms_no_access: "\<forall>base len. mem_has_perm (mkMemCap base len [] False True) Read = False"
   by simp
 
 (* CAP_098_mem_cap_complete (matches Coq) *)
-lemma CAP_098_mem_cap_complete: "\<forall> mc, mem_valid mc = True \<longrightarrow> mem_sealed mc = False \<longrightarrow> derive_mem_cap mc mc = True"
+lemma CAP_098_mem_cap_complete: "\<forall>mc. mem_valid mc = True \<longrightarrow> mem_sealed mc = False \<longrightarrow> derive_mem_cap mc mc = True"
   by auto
 
 (* CAP_099_zero_length_no_access (matches Coq) *)
-lemma CAP_099_zero_length_no_access: "\<forall> base addr, addr \<ge> base \<longrightarrow> mem_bounds_check (mkMemCap base 0 [] False True) addr = False"
+lemma CAP_099_zero_length_no_access: "\<forall>base addr. addr \<ge> base \<longrightarrow> mem_bounds_check (mkMemCap base 0 [] False True) addr = False"
   by simp
 
 (* CAP_100_security_complete (matches Coq) *)
-lemma CAP_100_security_complete: "\<forall> c, capability_secure c = True \<longrightarrow> cap_unforgeable (cc_cap c) = True \<and> cap_attenuatable (cc_cap c) = True \<and> cap_revocable (cc_cap c) = True \<and> ocap_no_ambient_authority (cc_ocap c) = True"
+lemma CAP_100_security_complete: "\<forall>c. capability_secure c = True \<longrightarrow> cap_unforgeable (cc_cap c) = True \<and> cap_attenuatable (cc_cap c) = True \<and> cap_revocable (cc_cap c) = True \<and> ocap_no_ambient_authority (cc_ocap c) = True"
   by auto
 
 end

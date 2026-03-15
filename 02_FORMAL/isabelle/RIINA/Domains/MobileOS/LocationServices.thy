@@ -150,7 +150,7 @@ definition accurate_geofence_system :: "Geofence \<Rightarrow> Position \<Righta
 
 (* valid_coordinate (matches Coq: Definition valid_coordinate) *)
 definition valid_coordinate :: "Coordinate \<Rightarrow> bool" where
-  "valid_coordinate c \<equiv> fst c <= 180 /\ snd c <= 360"
+  "valid_coordinate c \<equiv> fst c <= 180 \<and> snd c <= 360"
 
 (* cache_expired (matches Coq: Definition cache_expired) *)
 definition cache_expired :: "LocationConfig \<Rightarrow> bool" where
@@ -158,98 +158,98 @@ definition cache_expired :: "LocationConfig \<Rightarrow> bool" where
 
 (* well_formed_location_config (matches Coq: Definition well_formed_location_config) *)
 definition well_formed_location_config :: "LocationConfig \<Rightarrow> bool" where
-  "well_formed_location_config config \<equiv> (loc_permission config = PermWhenInUse -> loc_background_enabled config = False) /\
-  (loc_permission config = PermNone -> loc_background_enabled config = False) /\
-  loc_cache_ttl config > 0 /\
-  loc_update_interval config > 0 /\
+  "well_formed_location_config config \<equiv> (loc_permission config = PermWhenInUse -> loc_background_enabled config = False) \<and>
+  (loc_permission config = PermNone -> loc_background_enabled config = False) \<and>
+  loc_cache_ttl config > 0 \<and>
+  loc_update_interval config > 0 \<and>
   loc_significant_change_meters config > 0"
 
 (* location_accuracy_bounded (matches Coq) *)
-lemma location_accuracy_bounded: "\<forall> (location : Location), accurate_location_service location \<longrightarrow> loc_source location = 0 \<longrightarrow> error location \<le> 5"
+lemma location_accuracy_bounded: "\<forall>(location :: Location). accurate_location_service location \<longrightarrow> loc_source location = 0 \<longrightarrow> error location \<le> 5"
   by auto
 
 (* geofence_accurate (matches Coq) *)
-lemma geofence_accurate: "\<forall> (fence : Geofence) (position : Position), accurate_geofence_system fence position \<longrightarrow> (inside fence position <-> triggered fence)"
+lemma geofence_accurate: "\<forall>(fence :: Geofence) (position :: Position). accurate_geofence_system fence position \<longrightarrow> (inside fence position <-> triggered fence)"
   by auto
 
 (* inside_within_radius (matches Coq) *)
-lemma inside_within_radius: "\<forall> (fence : Geofence) (pos : Position), inside fence pos \<longrightarrow> distance (fence_center fence) (pos_coordinate pos) \<le> fence_radius fence"
+lemma inside_within_radius: "\<forall>(fence :: Geofence) (pos :: Position). inside fence pos \<longrightarrow> distance (fence_center fence) (pos_coordinate pos) \<le> fence_radius fence"
   by auto
 
 (* distance_symmetric (matches Coq) *)
-lemma distance_symmetric: "\<forall> (c1 c2 : Coordinate), distance c1 c2 = distance c2 c1"
+lemma distance_symmetric: "\<forall>(c1 c2 : Coordinate). distance c1 c2 = distance c2 c1"
   by simp
 
 (* distance_self_zero (matches Coq) *)
-lemma distance_self_zero: "\<forall> (c : Coordinate), distance c c = 0"
+lemma distance_self_zero: "\<forall>(c :: Coordinate). distance c c = 0"
   by simp
 
 (* at_center_always_inside (matches Coq) *)
-lemma at_center_always_inside: "\<forall> (fence : Geofence), fence_radius fence \<ge> 0 \<longrightarrow> inside fence (mkPosition (fence_center fence) 0)"
+lemma at_center_always_inside: "\<forall>(fence :: Geofence). fence_radius fence \<ge> 0 \<longrightarrow> inside fence (mkPosition (fence_center fence) 0)"
   by auto
 
 (* location_permission_explicit (matches Coq) *)
-lemma location_permission_explicit: "\<forall> (config : LocationConfig), loc_permission config = PermNone \<longrightarrow> loc_background_enabled config = False \<longrightarrow> loc_permission config \<noteq> PermAlways"
+lemma location_permission_explicit: "\<forall>(config :: LocationConfig). loc_permission config = PermNone \<longrightarrow> loc_background_enabled config = False \<longrightarrow> loc_permission config \<noteq> PermAlways"
   by auto
 
 (* location_precision_adjustable (matches Coq) *)
-lemma location_precision_adjustable: "\<forall> (config : LocationConfig), loc_precision_full config = True \<or> loc_precision_full config = False"
+lemma location_precision_adjustable: "\<forall>(config :: LocationConfig). loc_precision_full config = True \<or> loc_precision_full config = False"
   by simp
 
 (* background_location_limited (matches Coq) *)
-lemma background_location_limited: "\<forall> (config : LocationConfig), loc_permission config = PermWhenInUse \<longrightarrow> loc_background_enabled config = True \<longrightarrow> False"
+lemma background_location_limited: "\<forall>(config :: LocationConfig). loc_permission config = PermWhenInUse \<longrightarrow> loc_background_enabled config = True \<longrightarrow> False"
   by auto
 
 (* geofence_battery_efficient (matches Coq) *)
-lemma geofence_battery_efficient: "\<forall> (fence : Geofence), fence_radius fence \<ge> 100 \<longrightarrow> fence_radius fence \<ge> 100"
+lemma geofence_battery_efficient: "\<forall>(fence :: Geofence). fence_radius fence \<ge> 100 \<longrightarrow> fence_radius fence \<ge> 100"
   by auto
 
 (* location_data_encrypted (matches Coq) *)
-lemma location_data_encrypted: "\<forall> (l : Location), loc_accuracy l \<le> 5 \<longrightarrow> loc_source l = 0 \<longrightarrow> loc_source l = 0"
+lemma location_data_encrypted: "\<forall>(l :: Location). loc_accuracy l \<le> 5 \<longrightarrow> loc_source l = 0 \<longrightarrow> loc_source l = 0"
   by auto
 
 (* no_location_tracking_without_consent (matches Coq) *)
-lemma no_location_tracking_without_consent: "\<forall> (config : LocationConfig), loc_permission config = PermNone \<longrightarrow> well_formed_location_config config \<longrightarrow> loc_background_enabled config = False"
+lemma no_location_tracking_without_consent: "\<forall>(config :: LocationConfig). loc_permission config = PermNone \<longrightarrow> well_formed_location_config config \<longrightarrow> loc_background_enabled config = False"
   by auto
 
 (* location_cache_expiry (matches Coq) *)
-lemma location_cache_expiry: "\<forall> (config : LocationConfig) (current entry : nat), loc_cache_ttl config < current - entry \<longrightarrow> cache_expired config current entry = True"
+lemma location_cache_expiry: "\<forall>(config :: LocationConfig) (current entry : nat). loc_cache_ttl config < current - entry \<longrightarrow> cache_expired config current entry = True"
   by auto
 
 (* altitude_accuracy_bounded (matches Coq) *)
-lemma altitude_accuracy_bounded: "\<forall> (el : ExtendedLocation), ext_altitude_accuracy el \<le> 100 \<longrightarrow> ext_altitude_accuracy el \<le> 100"
+lemma altitude_accuracy_bounded: "\<forall>(el :: ExtendedLocation). ext_altitude_accuracy el \<le> 100 \<longrightarrow> ext_altitude_accuracy el \<le> 100"
   by auto
 
 (* heading_accuracy_bounded (matches Coq) *)
-lemma heading_accuracy_bounded: "\<forall> (el : ExtendedLocation), ext_heading_accuracy el \<le> 180 \<longrightarrow> ext_heading el \<le> 359 \<longrightarrow> ext_heading_accuracy el \<le> 180"
+lemma heading_accuracy_bounded: "\<forall>(el :: ExtendedLocation). ext_heading_accuracy el \<le> 180 \<longrightarrow> ext_heading el \<le> 359 \<longrightarrow> ext_heading_accuracy el \<le> 180"
   by auto
 
 (* speed_non_negative (matches Coq) *)
-lemma speed_non_negative: "\<forall> (el : ExtendedLocation), ext_speed el \<ge> 0"
+lemma speed_non_negative: "\<forall>(el :: ExtendedLocation). ext_speed el \<ge> 0"
   by simp
 
 (* coordinate_range_valid (matches Coq) *)
-lemma coordinate_range_valid: "\<forall> (c : Coordinate), valid_coordinate c \<longrightarrow> fst c \<le> 180 \<and> snd c \<le> 360"
+lemma coordinate_range_valid: "\<forall>(c :: Coordinate). valid_coordinate c \<longrightarrow> fst c \<le> 180 \<and> snd c \<le> 360"
   by auto
 
 (* location_update_frequency_bounded (matches Coq) *)
-lemma location_update_frequency_bounded: "\<forall> (config : LocationConfig), well_formed_location_config config \<longrightarrow> loc_update_interval config > 0"
+lemma location_update_frequency_bounded: "\<forall>(config :: LocationConfig). well_formed_location_config config \<longrightarrow> loc_update_interval config > 0"
   by auto
 
 (* significant_change_threshold (matches Coq) *)
-lemma significant_change_threshold: "\<forall> (config : LocationConfig), well_formed_location_config config \<longrightarrow> loc_significant_change_meters config > 0"
+lemma significant_change_threshold: "\<forall>(config :: LocationConfig). well_formed_location_config config \<longrightarrow> loc_significant_change_meters config > 0"
   by auto
 
 (* location_history_deletable (matches Coq) *)
-lemma location_history_deletable: "\<forall> (h : LocationHistory), history_deletable h = True \<longrightarrow> history_deletable h = True"
+lemma location_history_deletable: "\<forall>(h :: LocationHistory). history_deletable h = True \<longrightarrow> history_deletable h = True"
   by auto
 
 (* mock_location_detectable (matches Coq) *)
-lemma mock_location_detectable: "\<forall> (config : LocationConfig), loc_mock_detection config = True \<longrightarrow> loc_mock_detection config = True"
+lemma mock_location_detectable: "\<forall>(config :: LocationConfig). loc_mock_detection config = True \<longrightarrow> loc_mock_detection config = True"
   by auto
 
 (* distance_triangle_inequality (matches Coq) *)
-lemma distance_triangle_inequality: "\<forall> (a b c : Coordinate), distance a c \<le> distance a b + distance b c"
-  by (cases rule: ‹_›.cases; simp)
+lemma distance_triangle_inequality: "\<forall>(a b c : Coordinate). distance a c \<le> distance a b + distance b c"
+  by auto
 
 end

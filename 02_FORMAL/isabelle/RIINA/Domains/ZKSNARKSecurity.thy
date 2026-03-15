@@ -542,32 +542,32 @@ definition riina_pst :: "ProofSystemType" where
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* andb3_true_iff (matches Coq) *)
-lemma andb3_true_iff: "\<forall> a b c : bool, a && b && c = True <-> a = True \<and> b = True \<and> c = True"
+lemma andb3_true_iff: "\<forall>a b c : bool. a && b && c = True <-> a = True \<and> b = True \<and> c = True"
   by auto
 
 (* andb4_true_iff (matches Coq) *)
-lemma andb4_true_iff: "\<forall> a b c d : bool, a && b && c && d = True <-> a = True \<and> b = True \<and> c = True \<and> d = True"
+lemma andb4_true_iff: "\<forall>a b c d : bool. a && b && c && d = True <-> a = True \<and> b = True \<and> c = True \<and> d = True"
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+  by auto
 
 (* leb_le (matches Coq) *)
-lemma leb_le: "\<forall> n m : nat, (n <=? m) = True <-> n \<le> m"
+lemma leb_le: "\<forall>n m : nat. (n <=? m) = True <-> n \<le> m"
   by auto
 
 (* ltb_lt (matches Coq) *)
-lemma ltb_lt: "\<forall> n m : nat, (n <? m) = True <-> n < m"
+lemma ltb_lt: "\<forall>n m : nat. (n <? m) = True <-> n < m"
   by auto
 
 (* orb_true_iff (matches Coq) *)
-lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma orb_true_iff: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = True"
+  by auto
 
 (* ============================================================================
     SECTION C: BASIC ZK-SNARK THEOREMS (ZK_001 - ZK_025)
@@ -625,51 +625,51 @@ lemma ZK_013: "ts_verifiable riina_setup = True"
   by simp
 
 (* ZK_014 (matches Coq) *)
-lemma ZK_014: "\<forall> z, zk_secure z = True \<longrightarrow> zk_completeness z = True"
+lemma ZK_014: "\<forall>z. zk_secure z = True \<longrightarrow> zk_completeness z = True"
   by auto
 
 (* ZK_015 (matches Coq) *)
-lemma ZK_015: "\<forall> z, zk_secure z = True \<longrightarrow> zk_soundness z = True"
+lemma ZK_015: "\<forall>z. zk_secure z = True \<longrightarrow> zk_soundness z = True"
   by auto
 
 (* ZK_016 (matches Coq) *)
-lemma ZK_016: "\<forall> z, zk_secure z = True \<longrightarrow> zk_zero_knowledge z = True"
+lemma ZK_016: "\<forall>z. zk_secure z = True \<longrightarrow> zk_zero_knowledge z = True"
   by auto
 
 (* ZK_017 (matches Coq) *)
-lemma ZK_017: "\<forall> s, snark_secure s = True \<longrightarrow> snark_knowledge_sound s = True"
+lemma ZK_017: "\<forall>s. snark_secure s = True \<longrightarrow> snark_knowledge_sound s = True"
   by auto
 
 (* ZK_018 (matches Coq) *)
-lemma ZK_018: "\<forall> t, setup_secure t = True \<longrightarrow> ts_toxic_waste_destroyed t = True"
+lemma ZK_018: "\<forall>t. setup_secure t = True \<longrightarrow> ts_toxic_waste_destroyed t = True"
   by auto
 
 (* ZK_019 (matches Coq) *)
-lemma ZK_019: "\<forall> c, zksnark_secure c = True \<longrightarrow> zk_secure (zks_zk c) = True"
+lemma ZK_019: "\<forall>c. zksnark_secure c = True \<longrightarrow> zk_secure (zks_zk c) = True"
   by auto
 
 (* ZK_020 (matches Coq) *)
-lemma ZK_020: "\<forall> c, zksnark_secure c = True \<longrightarrow> snark_secure (zks_snark c) = True"
+lemma ZK_020: "\<forall>c. zksnark_secure c = True \<longrightarrow> snark_secure (zks_snark c) = True"
   by auto
 
 (* ZK_021 (matches Coq) *)
-lemma ZK_021: "\<forall> c, zksnark_secure c = True \<longrightarrow> setup_secure (zks_setup c) = True"
+lemma ZK_021: "\<forall>c. zksnark_secure c = True \<longrightarrow> setup_secure (zks_setup c) = True"
   by auto
 
 (* ZK_022 (matches Coq) *)
-lemma ZK_022: "\<forall> c, zksnark_secure c = True \<longrightarrow> zk_soundness (zks_zk c) = True"
+lemma ZK_022: "\<forall>c. zksnark_secure c = True \<longrightarrow> zk_soundness (zks_zk c) = True"
   by auto
 
 (* ZK_023 (matches Coq) *)
-lemma ZK_023: "\<forall> c, zksnark_secure c = True \<longrightarrow> zk_zero_knowledge (zks_zk c) = True"
+lemma ZK_023: "\<forall>c. zksnark_secure c = True \<longrightarrow> zk_zero_knowledge (zks_zk c) = True"
   by auto
 
 (* ZK_024 (matches Coq) *)
-lemma ZK_024: "\<forall> c, zksnark_secure c = True \<longrightarrow> snark_knowledge_sound (zks_snark c) = True"
+lemma ZK_024: "\<forall>c. zksnark_secure c = True \<longrightarrow> snark_knowledge_sound (zks_snark c) = True"
   by auto
 
 (* ZK_025_complete (matches Coq) *)
-lemma ZK_025_complete: "\<forall> c, zksnark_secure c = True \<longrightarrow> zk_soundness (zks_zk c) = True \<and> zk_zero_knowledge (zks_zk c) = True \<and> snark_knowledge_sound (zks_snark c) = True \<and> ts_toxic_waste_destroyed (zks_setup c) = True"
+lemma ZK_025_complete: "\<forall>c. zksnark_secure c = True \<longrightarrow> zk_soundness (zks_zk c) = True \<and> zk_zero_knowledge (zks_zk c) = True \<and> snark_knowledge_sound (zks_snark c) = True \<and> ts_toxic_waste_destroyed (zks_setup c) = True"
   by auto
 
 (* KE-001: RIINA knowledge extractor is secure *)
@@ -679,17 +679,17 @@ lemma ke_001_riina_ke_secure: "ke_secure riina_ke = True"
 
 (* KE-002: Secure extractor exists *)
 (* ke_002_extractor_exists (matches Coq) *)
-lemma ke_002_extractor_exists: "\<forall> ke, ke_secure ke = True \<longrightarrow> ke_\<exists> ke = True"
+lemma ke_002_extractor_exists: "\<forall>ke. ke_secure ke = True \<longrightarrow> ke_\<exists> ke = True"
   by auto
 
 (* KE-003: Secure extractor is polynomial time *)
 (* ke_003_extractor_polynomial (matches Coq) *)
-lemma ke_003_extractor_polynomial: "\<forall> ke, ke_secure ke = True \<longrightarrow> ke_polynomial_time ke = True"
+lemma ke_003_extractor_polynomial: "\<forall>ke. ke_secure ke = True \<longrightarrow> ke_polynomial_time ke = True"
   by auto
 
 (* KE-004: Secure extractor has high success probability *)
 (* ke_004_extractor_probability (matches Coq) *)
-lemma ke_004_extractor_probability: "\<forall> ke, ke_secure ke = True \<longrightarrow> ke_extraction_prob ke \<ge> 90"
+lemma ke_004_extractor_probability: "\<forall>ke. ke_secure ke = True \<longrightarrow> ke_extraction_prob ke \<ge> 90"
   by auto
 
 (* KE-005: RIINA witness relation is valid *)
@@ -699,17 +699,17 @@ lemma ke_005_riina_wr_valid: "wr_valid riina_wr = True"
 
 (* KE-006: Valid relation is satisfiable *)
 (* ke_006_valid_satisfiable (matches Coq) *)
-lemma ke_006_valid_satisfiable: "\<forall> wr, wr_valid wr = True \<longrightarrow> wr_satisfiable wr = True"
+lemma ke_006_valid_satisfiable: "\<forall>wr. wr_valid wr = True \<longrightarrow> wr_satisfiable wr = True"
   by auto
 
 (* KE-007: Valid relation has positive statement size *)
 (* ke_007_positive_statement (matches Coq) *)
-lemma ke_007_positive_statement: "\<forall> wr, wr_valid wr = True \<longrightarrow> wr_statement_size wr > 0"
+lemma ke_007_positive_statement: "\<forall>wr. wr_valid wr = True \<longrightarrow> wr_statement_size wr > 0"
   by auto
 
 (* KE-008: Valid relation has positive witness size *)
 (* ke_008_positive_witness (matches Coq) *)
-lemma ke_008_positive_witness: "\<forall> wr, wr_valid wr = True \<longrightarrow> wr_witness_size wr > 0"
+lemma ke_008_positive_witness: "\<forall>wr. wr_valid wr = True \<longrightarrow> wr_witness_size wr > 0"
   by auto
 
 (* SIM-001: RIINA simulator is secure *)
@@ -719,22 +719,22 @@ lemma sim_001_riina_sim_secure: "sim_secure riina_sim = True"
 
 (* SIM-002: Secure simulator exists *)
 (* sim_002_simulator_exists (matches Coq) *)
-lemma sim_002_simulator_exists: "\<forall> sim, sim_secure sim = True \<longrightarrow> sim_\<exists> sim = True"
+lemma sim_002_simulator_exists: "\<forall>sim. sim_secure sim = True \<longrightarrow> sim_\<exists> sim = True"
   by auto
 
 (* SIM-003: Secure simulator is polynomial time *)
 (* sim_003_simulator_poly (matches Coq) *)
-lemma sim_003_simulator_poly: "\<forall> sim, sim_secure sim = True \<longrightarrow> sim_polynomial_time sim = True"
+lemma sim_003_simulator_poly: "\<forall>sim. sim_secure sim = True \<longrightarrow> sim_polynomial_time sim = True"
   by auto
 
 (* SIM-004: Secure simulator produces indistinguishable output *)
 (* sim_004_simulator_indist (matches Coq) *)
-lemma sim_004_simulator_indist: "\<forall> sim, sim_secure sim = True \<longrightarrow> sim_indistinguishable sim = True"
+lemma sim_004_simulator_indist: "\<forall>sim. sim_secure sim = True \<longrightarrow> sim_indistinguishable sim = True"
   by auto
 
 (* SIM-005: Secure simulator needs no witness *)
 (* sim_005_simulator_no_witness (matches Coq) *)
-lemma sim_005_simulator_no_witness: "\<forall> sim, sim_secure sim = True \<longrightarrow> sim_no_witness_needed sim = True"
+lemma sim_005_simulator_no_witness: "\<forall>sim. sim_secure sim = True \<longrightarrow> sim_no_witness_needed sim = True"
   by auto
 
 (* SIM-006: RIINA distribution is strongly indistinguishable *)
@@ -744,12 +744,12 @@ lemma sim_006_riina_di_strong: "di_strong riina_di = True"
 
 (* SIM-007: Strong indistinguishability implies computational *)
 (* sim_007_strong_implies_computational (matches Coq) *)
-lemma sim_007_strong_implies_computational: "\<forall> di, di_strong di = True \<longrightarrow> di_computational di = True"
+lemma sim_007_strong_implies_computational: "\<forall>di. di_strong di = True \<longrightarrow> di_computational di = True"
   by auto
 
 (* SIM-008: Strong indistinguishability has bounded advantage *)
 (* sim_008_strong_bounded_advantage (matches Coq) *)
-lemma sim_008_strong_bounded_advantage: "\<forall> di, di_strong di = True \<longrightarrow> di_advantage_bound di \<le> 1"
+lemma sim_008_strong_bounded_advantage: "\<forall>di. di_strong di = True \<longrightarrow> di_advantage_bound di \<le> 1"
   by auto
 
 (* COMP-001: RIINA completeness holds *)
@@ -759,22 +759,22 @@ lemma comp_001_riina_completeness: "completeness_holds riina_prover riina_verifi
 
 (* COMP-002: Completeness requires honest prover *)
 (* comp_002_requires_honest_prover (matches Coq) *)
-lemma comp_002_requires_honest_prover: "\<forall> pv vf, completeness_holds pv vf = True \<longrightarrow> pv_honest pv = True"
+lemma comp_002_requires_honest_prover: "\<forall>pv vf. completeness_holds pv vf = True \<longrightarrow> pv_honest pv = True"
   by auto
 
 (* COMP-003: Completeness requires witness knowledge *)
 (* comp_003_requires_witness (matches Coq) *)
-lemma comp_003_requires_witness: "\<forall> pv vf, completeness_holds pv vf = True \<longrightarrow> pv_knows_witness pv = True"
+lemma comp_003_requires_witness: "\<forall>pv vf. completeness_holds pv vf = True \<longrightarrow> pv_knows_witness pv = True"
   by auto
 
 (* COMP-004: Completeness requires protocol compliance *)
 (* comp_004_requires_protocol (matches Coq) *)
-lemma comp_004_requires_protocol: "\<forall> pv vf, completeness_holds pv vf = True \<longrightarrow> pv_follows_protocol pv = True"
+lemma comp_004_requires_protocol: "\<forall>pv vf. completeness_holds pv vf = True \<longrightarrow> pv_follows_protocol pv = True"
   by auto
 
 (* COMP-005: Completeness requires accepting verifier *)
 (* comp_005_verifier_accepts (matches Coq) *)
-lemma comp_005_verifier_accepts: "\<forall> pv vf, completeness_holds pv vf = True \<longrightarrow> vf_accepts_valid vf = True"
+lemma comp_005_verifier_accepts: "\<forall>pv vf. completeness_holds pv vf = True \<longrightarrow> vf_accepts_valid vf = True"
   by auto
 
 (* COMP-006: RIINA prover is honest *)
@@ -799,27 +799,27 @@ lemma succ_002_riina_polylog: "ac_polylog riina_ac = True"
 
 (* SUCC-003: Succinct proof has bounded size *)
 (* succ_003_bounded_size (matches Coq) *)
-lemma succ_003_bounded_size: "\<forall> ps, ps_succinct ps = True \<longrightarrow> ps_proof_bytes ps \<le> 512"
+lemma succ_003_bounded_size: "\<forall>ps. ps_succinct ps = True \<longrightarrow> ps_proof_bytes ps \<le> 512"
   by auto
 
 (* SUCC-004: Succinct proof has bounded verification *)
 (* succ_004_bounded_verification (matches Coq) *)
-lemma succ_004_bounded_verification: "\<forall> ps, ps_succinct ps = True \<longrightarrow> ps_verification_ops ps \<le> 1000"
+lemma succ_004_bounded_verification: "\<forall>ps. ps_succinct ps = True \<longrightarrow> ps_verification_ops ps \<le> 1000"
   by auto
 
 (* SUCC-005: Succinct proof is witness-independent *)
 (* succ_005_witness_independent (matches Coq) *)
-lemma succ_005_witness_independent: "\<forall> ps, ps_succinct ps = True \<longrightarrow> ps_witness_independent ps = True"
+lemma succ_005_witness_independent: "\<forall>ps. ps_succinct ps = True \<longrightarrow> ps_witness_independent ps = True"
   by auto
 
 (* SUCC-006: Polylog implies constant or log proof size *)
 (* succ_006_polylog_proof_size (matches Coq) *)
-lemma succ_006_polylog_proof_size: "\<forall> ac, ac_polylog ac = True \<longrightarrow> ac_proof_size ac \<le> 1"
+lemma succ_006_polylog_proof_size: "\<forall>ac. ac_polylog ac = True \<longrightarrow> ac_proof_size ac \<le> 1"
   by auto
 
 (* SUCC-007: Polylog implies constant or log verification *)
 (* succ_007_polylog_verification (matches Coq) *)
-lemma succ_007_polylog_verification: "\<forall> ac, ac_polylog ac = True \<longrightarrow> ac_verification_time ac \<le> 1"
+lemma succ_007_polylog_verification: "\<forall>ac. ac_polylog ac = True \<longrightarrow> ac_verification_time ac \<le> 1"
   by auto
 
 (* MPC-001: RIINA MPC is secure *)
@@ -834,27 +834,27 @@ lemma mpc_002_riina_tw_secure: "tw_secure riina_tw = True"
 
 (* MPC-003: Secure MPC has multiple participants *)
 (* mpc_003_multiple_participants (matches Coq) *)
-lemma mpc_003_multiple_participants: "\<forall> mpc, mpc_secure mpc = True \<longrightarrow> mpc_participants mpc \<ge> 2"
+lemma mpc_003_multiple_participants: "\<forall>mpc. mpc_secure mpc = True \<longrightarrow> mpc_participants mpc \<ge> 2"
   by auto
 
 (* MPC-004: Secure MPC has valid threshold *)
 (* mpc_004_valid_threshold (matches Coq) *)
-lemma mpc_004_valid_threshold: "\<forall> mpc, mpc_secure mpc = True \<longrightarrow> mpc_threshold mpc \<ge> 1"
+lemma mpc_004_valid_threshold: "\<forall>mpc. mpc_secure mpc = True \<longrightarrow> mpc_threshold mpc \<ge> 1"
   by auto
 
 (* MPC-005: Secure MPC is verifiable *)
 (* mpc_005_verifiable (matches Coq) *)
-lemma mpc_005_verifiable: "\<forall> mpc, mpc_secure mpc = True \<longrightarrow> mpc_verifiable mpc = True"
+lemma mpc_005_verifiable: "\<forall>mpc. mpc_secure mpc = True \<longrightarrow> mpc_verifiable mpc = True"
   by auto
 
 (* MPC-006: Secure toxic waste is destroyed *)
 (* mpc_006_tw_destroyed (matches Coq) *)
-lemma mpc_006_tw_destroyed: "\<forall> tw, tw_secure tw = True \<longrightarrow> tw_destroyed_immediately tw = True"
+lemma mpc_006_tw_destroyed: "\<forall>tw. tw_secure tw = True \<longrightarrow> tw_destroyed_immediately tw = True"
   by auto
 
 (* MPC-007: Secure toxic waste is multi-party *)
 (* mpc_007_tw_multi_party (matches Coq) *)
-lemma mpc_007_tw_multi_party: "\<forall> tw, tw_secure tw = True \<longrightarrow> tw_multi_party tw = True"
+lemma mpc_007_tw_multi_party: "\<forall>tw. tw_secure tw = True \<longrightarrow> tw_multi_party tw = True"
   by auto
 
 (* G16-001: RIINA Groth16 is secure *)
@@ -869,27 +869,27 @@ lemma g16_002_riina_proof_valid: "g16p_valid riina_g16_proof = True"
 
 (* G16-003: Secure Groth16 uses pairing-friendly curve *)
 (* g16_003_pairing_friendly (matches Coq) *)
-lemma g16_003_pairing_friendly: "\<forall> g, g16_secure g = True \<longrightarrow> g16_pairing_friendly g = True"
+lemma g16_003_pairing_friendly: "\<forall>g. g16_secure g = True \<longrightarrow> g16_pairing_friendly g = True"
   by auto
 
 (* G16-004: Secure Groth16 has 3 proof elements *)
 (* g16_004_three_elements (matches Coq) *)
-lemma g16_004_three_elements: "\<forall> g, g16_secure g = True \<longrightarrow> g16_proof_elements g = 3"
+lemma g16_004_three_elements: "\<forall>g. g16_secure g = True \<longrightarrow> g16_proof_elements g = 3"
   by auto
 
 (* G16-005: Secure Groth16 has bounded pairings *)
 (* g16_005_bounded_pairings (matches Coq) *)
-lemma g16_005_bounded_pairings: "\<forall> g, g16_secure g = True \<longrightarrow> g16_verification_pairings g \<le> 4"
+lemma g16_005_bounded_pairings: "\<forall>g. g16_secure g = True \<longrightarrow> g16_verification_pairings g \<le> 4"
   by auto
 
 (* G16-006: Valid proof has curve points *)
 (* g16_006_valid_curve_points (matches Coq) *)
-lemma g16_006_valid_curve_points: "\<forall> p, g16p_valid p = True \<longrightarrow> g16p_valid_curve_points p = True"
+lemma g16_006_valid_curve_points: "\<forall>p. g16p_valid p = True \<longrightarrow> g16p_valid_curve_points p = True"
   by auto
 
 (* G16-007: Valid proof in correct subgroup *)
 (* g16_007_valid_subgroup (matches Coq) *)
-lemma g16_007_valid_subgroup: "\<forall> p, g16p_valid p = True \<longrightarrow> g16p_valid_subgroup p = True"
+lemma g16_007_valid_subgroup: "\<forall>p. g16p_valid p = True \<longrightarrow> g16p_valid_subgroup p = True"
   by auto
 
 (* PLONK-001: RIINA PLONK is secure *)
@@ -904,27 +904,27 @@ lemma plonk_002_riina_gate_valid: "pg_valid riina_plonk_gate = True"
 
 (* PLONK-003: Secure PLONK has universal setup *)
 (* plonk_003_universal_setup (matches Coq) *)
-lemma plonk_003_universal_setup: "\<forall> p, plonk_secure p = True \<longrightarrow> plonk_universal_setup p = True"
+lemma plonk_003_universal_setup: "\<forall>p. plonk_secure p = True \<longrightarrow> plonk_universal_setup p = True"
   by auto
 
 (* PLONK-004: Secure PLONK uses polynomial commitments *)
 (* plonk_004_polynomial_commitment (matches Coq) *)
-lemma plonk_004_polynomial_commitment: "\<forall> p, plonk_secure p = True \<longrightarrow> plonk_polynomial_commitment p = True"
+lemma plonk_004_polynomial_commitment: "\<forall>p. plonk_secure p = True \<longrightarrow> plonk_polynomial_commitment p = True"
   by auto
 
 (* PLONK-005: Secure PLONK has arithmetic gates *)
 (* plonk_005_arithmetic_gates (matches Coq) *)
-lemma plonk_005_arithmetic_gates: "\<forall> p, plonk_secure p = True \<longrightarrow> plonk_arithmetic_gates p = True"
+lemma plonk_005_arithmetic_gates: "\<forall>p. plonk_secure p = True \<longrightarrow> plonk_arithmetic_gates p = True"
   by auto
 
 (* PLONK-006: Valid gate has bounded degree *)
 (* plonk_006_bounded_degree (matches Coq) *)
-lemma plonk_006_bounded_degree: "\<forall> g, pg_valid g = True \<longrightarrow> pg_degree g \<le> 4"
+lemma plonk_006_bounded_degree: "\<forall>g. pg_valid g = True \<longrightarrow> pg_degree g \<le> 4"
   by auto
 
 (* PLONK-007: Valid gate has sufficient fan-in *)
 (* plonk_007_sufficient_fan_in (matches Coq) *)
-lemma plonk_007_sufficient_fan_in: "\<forall> g, pg_valid g = True \<longrightarrow> pg_fan_in g \<ge> 2"
+lemma plonk_007_sufficient_fan_in: "\<forall>g. pg_valid g = True \<longrightarrow> pg_fan_in g \<ge> 2"
   by auto
 
 (* FULL-001: RIINA full ZK-SNARK is secure *)
@@ -934,32 +934,32 @@ lemma full_001_riina_full_zk_secure: "full_zk_secure riina_full_zk = True"
 
 (* FULL-002: Full security implies base security *)
 (* full_002_implies_base (matches Coq) *)
-lemma full_002_implies_base: "\<forall> f, full_zk_secure f = True \<longrightarrow> zksnark_secure (fzk_base f) = True"
+lemma full_002_implies_base: "\<forall>f. full_zk_secure f = True \<longrightarrow> zksnark_secure (fzk_base f) = True"
   by auto
 
 (* FULL-003: Full security implies knowledge soundness *)
 (* full_003_implies_ke (matches Coq) *)
-lemma full_003_implies_ke: "\<forall> f, full_zk_secure f = True \<longrightarrow> ke_secure (fzk_extractor f) = True"
+lemma full_003_implies_ke: "\<forall>f. full_zk_secure f = True \<longrightarrow> ke_secure (fzk_extractor f) = True"
   by auto
 
 (* FULL-004: Full security implies zero-knowledge *)
 (* full_004_implies_sim (matches Coq) *)
-lemma full_004_implies_sim: "\<forall> f, full_zk_secure f = True \<longrightarrow> sim_secure (fzk_simulator f) = True"
+lemma full_004_implies_sim: "\<forall>f. full_zk_secure f = True \<longrightarrow> sim_secure (fzk_simulator f) = True"
   by auto
 
 (* FULL-005: Full security implies succinctness *)
 (* full_005_implies_succinct (matches Coq) *)
-lemma full_005_implies_succinct: "\<forall> f, full_zk_secure f = True \<longrightarrow> ps_succinct (fzk_proof_size f) = True"
+lemma full_005_implies_succinct: "\<forall>f. full_zk_secure f = True \<longrightarrow> ps_succinct (fzk_proof_size f) = True"
   by auto
 
 (* FULL-006: Full security implies MPC security *)
 (* full_006_implies_mpc (matches Coq) *)
-lemma full_006_implies_mpc: "\<forall> f, full_zk_secure f = True \<longrightarrow> mpc_secure (fzk_mpc f) = True"
+lemma full_006_implies_mpc: "\<forall>f. full_zk_secure f = True \<longrightarrow> mpc_secure (fzk_mpc f) = True"
   by auto
 
 (* FULL-007: Full security implies toxic waste security *)
 (* full_007_implies_tw (matches Coq) *)
-lemma full_007_implies_tw: "\<forall> f, full_zk_secure f = True \<longrightarrow> tw_secure (fzk_tw f) = True"
+lemma full_007_implies_tw: "\<forall>f. full_zk_secure f = True \<longrightarrow> tw_secure (fzk_tw f) = True"
   by auto
 
 (* FULL-008: RIINA achieves all ZK-SNARK security properties *)
@@ -974,12 +974,12 @@ lemma se_001_riina_se_secure: "se_secure riina_se = True"
 
 (* SE-002: Secure soundness has sufficient security parameter *)
 (* se_002_security_parameter (matches Coq) *)
-lemma se_002_security_parameter: "\<forall> se, se_secure se = True \<longrightarrow> se_security_parameter se \<ge> 128"
+lemma se_002_security_parameter: "\<forall>se. se_secure se = True \<longrightarrow> se_security_parameter se \<ge> 128"
   by auto
 
 (* SE-003: Statistical error bounded by security parameter *)
 (* se_003_statistical_bounded (matches Coq) *)
-lemma se_003_statistical_bounded: "\<forall> se, se_secure se = True \<longrightarrow> se_statistical se \<ge> se_security_parameter se"
+lemma se_003_statistical_bounded: "\<forall>se. se_secure se = True \<longrightarrow> se_statistical se \<ge> se_security_parameter se"
   by auto
 
 (* PST-001: RIINA is a SNARK *)
@@ -989,17 +989,17 @@ lemma pst_001_riina_is_snark: "pst_is_snark riina_pst = True"
 
 (* PST-002: SNARK is an argument *)
 (* pst_002_snark_is_argument (matches Coq) *)
-lemma pst_002_snark_is_argument: "\<forall> pst, pst_is_snark pst = True \<longrightarrow> pst_is_argument pst = True"
+lemma pst_002_snark_is_argument: "\<forall>pst. pst_is_snark pst = True \<longrightarrow> pst_is_argument pst = True"
   by auto
 
 (* PST-003: SNARK has knowledge property *)
 (* pst_003_snark_knowledge (matches Coq) *)
-lemma pst_003_snark_knowledge: "\<forall> pst, pst_is_snark pst = True \<longrightarrow> pst_knowledge_property pst = True"
+lemma pst_003_snark_knowledge: "\<forall>pst. pst_is_snark pst = True \<longrightarrow> pst_knowledge_property pst = True"
   by auto
 
 (* PST-004: SNARK is succinct *)
 (* pst_004_snark_succinct (matches Coq) *)
-lemma pst_004_snark_succinct: "\<forall> pst, pst_is_snark pst = True \<longrightarrow> pst_succinctness pst = True"
+lemma pst_004_snark_succinct: "\<forall>pst. pst_is_snark pst = True \<longrightarrow> pst_succinctness pst = True"
   by auto
 
 end

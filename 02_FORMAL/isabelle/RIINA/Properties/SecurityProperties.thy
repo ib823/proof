@@ -20,7 +20,7 @@ theory SecurityProperties
 begin
 
 (* security_non_interference (matches Coq) *)
-lemma security_non_interference: "\<forall> x T_in T_out v1 v2 e, val_rel nil T_in v1 v2 \<longrightarrow> has_type ((x, T_in) :: nil) nil Public e T_out EffectPure \<longrightarrow> exp_rel nil T_out ([x := v1] e) ([x := v2] e)"
+lemma security_non_interference: "\<forall>x T_in T_out v1 v2 e. val_rel nil T_in v1 v2 \<longrightarrow> has_type ((x, T_in) :: nil) nil Public e T_out EffectPure \<longrightarrow> exp_rel nil T_out (subst x v1 e) (subst x v2 e)"
   by auto
 
 end

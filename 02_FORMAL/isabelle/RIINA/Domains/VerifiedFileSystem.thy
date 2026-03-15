@@ -312,7 +312,7 @@ definition is_owner :: "AccessContext \<Rightarrow> Inode \<Rightarrow> bool" wh
 (* in_group (matches Coq: Definition in_group) *)
 definition in_group :: "AccessContext \<Rightarrow> Inode \<Rightarrow> bool" where
   "in_group ctx ino \<equiv> ((ctx_gid = ctx)) (owner_gid (inode_owner ino)) \<or>
-  existsb (fun g => (g = (owner_gid) (inode_owner ino))) (ctx_groups ctx)"
+  existsb (\<lambda>g. (g = (owner_gid) (inode_owner ino))) (ctx_groups ctx)"
 
 (* get_permission (matches Coq: Definition get_permission) *)
 definition get_permission :: "AccessContext \<Rightarrow> Inode \<Rightarrow> Permission" where
@@ -346,12 +346,12 @@ definition dir_no_self_cycle :: "Directory \<Rightarrow> bool" where
 
 (* dir_has_parent_link (matches Coq: Definition dir_has_parent_link) *)
 definition dir_has_parent_link :: "Directory \<Rightarrow> bool" where
-  "dir_has_parent_link d \<equiv> existsb (fun e => ((de_name = e)) 0 \<and> ((de_inode = e)) (dir_parent d))
+  "dir_has_parent_link d \<equiv> existsb (\<lambda>e. (de_name e = 0) \<and> (de_inode e = dir_parent d))
           (dir_entries d)"
 
 (* dir_has_dot_entry (matches Coq: Definition dir_has_dot_entry) *)
 definition dir_has_dot_entry :: "Directory \<Rightarrow> bool" where
-  "dir_has_dot_entry d \<equiv> existsb (fun e => ((de_name = e)) 1 \<and> ((de_inode = e)) (dir_inode d))
+  "dir_has_dot_entry d \<equiv> existsb (\<lambda>e. (de_name e = 1) \<and> (de_inode e = dir_inode d))
           (dir_entries d)"
 
 (* dir_integrity (matches Coq: Definition dir_integrity) *)
@@ -422,19 +422,19 @@ definition riina_vfs :: "VerifiedFS" where
     SECTION 1: BASIC BOOLEAN INFRASTRUCTURE
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* orb_true_iff (matches Coq) *)
-lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = True"
+lemma orb_true_iff: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = True"
   by auto
 
 (* negb_false_iff (matches Coq) *)
-lemma negb_false_iff: "\<forall> b : bool, (\<not> b) = False <-> b = True"
+lemma negb_false_iff: "\<forall>b : bool. (\<not> b) = False <-> b = True"
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
+lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
   by auto
 
 (* ============================================================================
@@ -493,371 +493,371 @@ lemma VFS_013: "vfs_verified_implementation riina_vfs = True"
   by simp
 
 (* VFS_014 (matches Coq) *)
-lemma VFS_014: "\<forall> i, fs_integrity_sound i = True \<longrightarrow> fsi_crash_consistent i = True"
+lemma VFS_014: "\<forall>i. fs_integrity_sound i = True \<longrightarrow> fsi_crash_consistent i = True"
   by auto
 
 (* VFS_015 (matches Coq) *)
-lemma VFS_015: "\<forall> i, fs_integrity_sound i = True \<longrightarrow> fsi_atomic_writes i = True"
+lemma VFS_015: "\<forall>i. fs_integrity_sound i = True \<longrightarrow> fsi_atomic_writes i = True"
   by auto
 
 (* VFS_016 (matches Coq) *)
-lemma VFS_016: "\<forall> i, fs_integrity_sound i = True \<longrightarrow> fsi_journaling i = True"
+lemma VFS_016: "\<forall>i. fs_integrity_sound i = True \<longrightarrow> fsi_journaling i = True"
   by auto
 
 (* VFS_017 (matches Coq) *)
-lemma VFS_017: "\<forall> i, fs_integrity_sound i = True \<longrightarrow> fsi_checksum_verified i = True"
+lemma VFS_017: "\<forall>i. fs_integrity_sound i = True \<longrightarrow> fsi_checksum_verified i = True"
   by auto
 
 (* VFS_018 (matches Coq) *)
-lemma VFS_018: "\<forall> s, fs_security_sound s = True \<longrightarrow> fss_access_control s = True"
+lemma VFS_018: "\<forall>s. fs_security_sound s = True \<longrightarrow> fss_access_control s = True"
   by auto
 
 (* VFS_019 (matches Coq) *)
-lemma VFS_019: "\<forall> s, fs_security_sound s = True \<longrightarrow> fss_encryption_at_rest s = True"
+lemma VFS_019: "\<forall>s. fs_security_sound s = True \<longrightarrow> fss_encryption_at_rest s = True"
   by auto
 
 (* VFS_020 (matches Coq) *)
-lemma VFS_020: "\<forall> s, fs_security_sound s = True \<longrightarrow> fss_secure_delete s = True"
+lemma VFS_020: "\<forall>s. fs_security_sound s = True \<longrightarrow> fss_secure_delete s = True"
   by auto
 
 (* VFS_021 (matches Coq) *)
-lemma VFS_021: "\<forall> s, fs_security_sound s = True \<longrightarrow> fss_quota_enforcement s = True"
+lemma VFS_021: "\<forall>s. fs_security_sound s = True \<longrightarrow> fss_quota_enforcement s = True"
   by auto
 
 (* VFS_022 (matches Coq) *)
-lemma VFS_022: "\<forall> f, fs_fully_verified f = True \<longrightarrow> fs_integrity_sound (vfs_integrity f) = True"
+lemma VFS_022: "\<forall>f. fs_fully_verified f = True \<longrightarrow> fs_integrity_sound (vfs_integrity f) = True"
   by auto
 
 (* VFS_023 (matches Coq) *)
-lemma VFS_023: "\<forall> f, fs_fully_verified f = True \<longrightarrow> fs_security_sound (vfs_security f) = True"
+lemma VFS_023: "\<forall>f. fs_fully_verified f = True \<longrightarrow> fs_security_sound (vfs_security f) = True"
   by auto
 
 (* VFS_024 (matches Coq) *)
-lemma VFS_024: "\<forall> f, fs_fully_verified f = True \<longrightarrow> vfs_posix_compliant f = True"
+lemma VFS_024: "\<forall>f. fs_fully_verified f = True \<longrightarrow> vfs_posix_compliant f = True"
   by auto
 
 (* VFS_025 (matches Coq) *)
-lemma VFS_025: "\<forall> f, fs_fully_verified f = True \<longrightarrow> vfs_verified_implementation f = True"
+lemma VFS_025: "\<forall>f. fs_fully_verified f = True \<longrightarrow> vfs_verified_implementation f = True"
   by auto
 
 (* VFS_026 (matches Coq) *)
-lemma VFS_026: "\<forall> f, fs_fully_verified f = True \<longrightarrow> fsi_crash_consistent (vfs_integrity f) = True"
+lemma VFS_026: "\<forall>f. fs_fully_verified f = True \<longrightarrow> fsi_crash_consistent (vfs_integrity f) = True"
   by auto
 
 (* VFS_027 (matches Coq) *)
-lemma VFS_027: "\<forall> f, fs_fully_verified f = True \<longrightarrow> fss_access_control (vfs_security f) = True"
+lemma VFS_027: "\<forall>f. fs_fully_verified f = True \<longrightarrow> fss_access_control (vfs_security f) = True"
   by auto
 
 (* VFS_028 (matches Coq) *)
-lemma VFS_028: "\<forall> f, fs_fully_verified f = True \<longrightarrow> fss_encryption_at_rest (vfs_security f) = True"
+lemma VFS_028: "\<forall>f. fs_fully_verified f = True \<longrightarrow> fss_encryption_at_rest (vfs_security f) = True"
   by auto
 
 (* VFS_029 (matches Coq) *)
-lemma VFS_029: "\<forall> i, fs_integrity_sound i = True \<longrightarrow> fsi_crash_consistent i = True \<and> fsi_atomic_writes i = True \<and> fsi_journaling i = True"
+lemma VFS_029: "\<forall>i. fs_integrity_sound i = True \<longrightarrow> fsi_crash_consistent i = True \<and> fsi_atomic_writes i = True \<and> fsi_journaling i = True"
   by auto
 
 (* VFS_030_complete (matches Coq) *)
-lemma VFS_030_complete: "\<forall> f, fs_fully_verified f = True \<longrightarrow> fsi_crash_consistent (vfs_integrity f) = True \<and> fss_access_control (vfs_security f) = True \<and> vfs_posix_compliant f = True \<and> vfs_verified_implementation f = True"
+lemma VFS_030_complete: "\<forall>f. fs_fully_verified f = True \<longrightarrow> fsi_crash_consistent (vfs_integrity f) = True \<and> fss_access_control (vfs_security f) = True \<and> vfs_posix_compliant f = True \<and> vfs_verified_implementation f = True"
   by auto
 
 (* VFS_031_root_can_read (matches Coq) *)
-lemma VFS_031_root_can_read: "\<forall> ctx ino, ctx_is_root ctx = True \<longrightarrow> can_read ctx ino = True"
+lemma VFS_031_root_can_read: "\<forall>ctx ino. ctx_is_root ctx = True \<longrightarrow> can_read ctx ino = True"
   by simp
 
 (* VFS_032_root_can_write (matches Coq) *)
-lemma VFS_032_root_can_write: "\<forall> ctx ino, ctx_is_root ctx = True \<longrightarrow> can_write ctx ino = True"
+lemma VFS_032_root_can_write: "\<forall>ctx ino. ctx_is_root ctx = True \<longrightarrow> can_write ctx ino = True"
   by simp
 
 (* VFS_033_root_can_execute (matches Coq) *)
-lemma VFS_033_root_can_execute: "\<forall> ctx ino, ctx_is_root ctx = True \<longrightarrow> can_execute ctx ino = True"
+lemma VFS_033_root_can_execute: "\<forall>ctx ino. ctx_is_root ctx = True \<longrightarrow> can_execute ctx ino = True"
   by simp
 
 (* VFS_034_owner_read (matches Coq) *)
-lemma VFS_034_owner_read: "\<forall> ctx ino, is_owner ctx ino = True \<longrightarrow> perm_read (inode_perm_owner ino) = True \<longrightarrow> can_read ctx ino = True"
+lemma VFS_034_owner_read: "\<forall>ctx ino. is_owner ctx ino = True \<longrightarrow> perm_read (inode_perm_owner ino) = True \<longrightarrow> can_read ctx ino = True"
   by auto
 
 (* VFS_035_owner_write (matches Coq) *)
-lemma VFS_035_owner_write: "\<forall> ctx ino, is_owner ctx ino = True \<longrightarrow> perm_write (inode_perm_owner ino) = True \<longrightarrow> can_write ctx ino = True"
+lemma VFS_035_owner_write: "\<forall>ctx ino. is_owner ctx ino = True \<longrightarrow> perm_write (inode_perm_owner ino) = True \<longrightarrow> can_write ctx ino = True"
   by auto
 
 (* VFS_036_owner_execute (matches Coq) *)
-lemma VFS_036_owner_execute: "\<forall> ctx ino, is_owner ctx ino = True \<longrightarrow> perm_execute (inode_perm_owner ino) = True \<longrightarrow> can_execute ctx ino = True"
+lemma VFS_036_owner_execute: "\<forall>ctx ino. is_owner ctx ino = True \<longrightarrow> perm_execute (inode_perm_owner ino) = True \<longrightarrow> can_execute ctx ino = True"
   by auto
 
 (* VFS_037_other_permissions (matches Coq) *)
-lemma VFS_037_other_permissions: "\<forall> ctx ino, ctx_is_root ctx = False \<longrightarrow> is_owner ctx ino = False \<longrightarrow> in_group ctx ino = False \<longrightarrow> get_permission ctx ino = inode_perm_other ino"
+lemma VFS_037_other_permissions: "\<forall>ctx ino. ctx_is_root ctx = False \<longrightarrow> is_owner ctx ino = False \<longrightarrow> in_group ctx ino = False \<longrightarrow> get_permission ctx ino = inode_perm_other ino"
   by simp
 
 (* VFS_038_group_permissions (matches Coq) *)
-lemma VFS_038_group_permissions: "\<forall> ctx ino, is_owner ctx ino = False \<longrightarrow> in_group ctx ino = True \<longrightarrow> get_permission ctx ino = inode_perm_group ino"
+lemma VFS_038_group_permissions: "\<forall>ctx ino. is_owner ctx ino = False \<longrightarrow> in_group ctx ino = True \<longrightarrow> get_permission ctx ino = inode_perm_group ino"
   by simp
 
 (* VFS_039_no_read_without_perm (matches Coq) *)
-lemma VFS_039_no_read_without_perm: "\<forall> ctx ino, ctx_is_root ctx = False \<longrightarrow> is_owner ctx ino = False \<longrightarrow> in_group ctx ino = False \<longrightarrow> perm_read (inode_perm_other ino) = False \<longrightarrow> can_read ctx ino = False"
+lemma VFS_039_no_read_without_perm: "\<forall>ctx ino. ctx_is_root ctx = False \<longrightarrow> is_owner ctx ino = False \<longrightarrow> in_group ctx ino = False \<longrightarrow> perm_read (inode_perm_other ino) = False \<longrightarrow> can_read ctx ino = False"
   by auto
 
 (* VFS_040_no_write_without_perm (matches Coq) *)
-lemma VFS_040_no_write_without_perm: "\<forall> ctx ino, ctx_is_root ctx = False \<longrightarrow> is_owner ctx ino = False \<longrightarrow> in_group ctx ino = False \<longrightarrow> perm_write (inode_perm_other ino) = False \<longrightarrow> can_write ctx ino = False"
+lemma VFS_040_no_write_without_perm: "\<forall>ctx ino. ctx_is_root ctx = False \<longrightarrow> is_owner ctx ino = False \<longrightarrow> in_group ctx ino = False \<longrightarrow> perm_write (inode_perm_other ino) = False \<longrightarrow> can_write ctx ino = False"
   by auto
 
 (* VFS_041_no_execute_without_perm (matches Coq) *)
-lemma VFS_041_no_execute_without_perm: "\<forall> ctx ino, ctx_is_root ctx = False \<longrightarrow> is_owner ctx ino = False \<longrightarrow> in_group ctx ino = False \<longrightarrow> perm_execute (inode_perm_other ino) = False \<longrightarrow> can_execute ctx ino = False"
+lemma VFS_041_no_execute_without_perm: "\<forall>ctx ino. ctx_is_root ctx = False \<longrightarrow> is_owner ctx ino = False \<longrightarrow> in_group ctx ino = False \<longrightarrow> perm_execute (inode_perm_other ino) = False \<longrightarrow> can_execute ctx ino = False"
   by auto
 
 (* VFS_042_access_deterministic (matches Coq) *)
-lemma VFS_042_access_deterministic: "\<forall> ctx ino, can_read ctx ino = True \<or> can_read ctx ino = False"
+lemma VFS_042_access_deterministic: "\<forall>ctx ino. can_read ctx ino = True \<or> can_read ctx ino = False"
   by simp
 
 (* VFS_043_owner_full_access (matches Coq) *)
-lemma VFS_043_owner_full_access: "\<forall> ctx ino, is_owner ctx ino = True \<longrightarrow> perm_read (inode_perm_owner ino) = True \<longrightarrow> perm_write (inode_perm_owner ino) = True \<longrightarrow> perm_execute (inode_perm_owner ino) = True \<longrightarrow> can_read ctx ino = True \<and> can_write ctx ino = True \<and> can_execute ctx ino = True"
+lemma VFS_043_owner_full_access: "\<forall>ctx ino. is_owner ctx ino = True \<longrightarrow> perm_read (inode_perm_owner ino) = True \<longrightarrow> perm_write (inode_perm_owner ino) = True \<longrightarrow> perm_execute (inode_perm_owner ino) = True \<longrightarrow> can_read ctx ino = True \<and> can_write ctx ino = True \<and> can_execute ctx ino = True"
   by auto
 
 (* VFS_044_root_full_access (matches Coq) *)
-lemma VFS_044_root_full_access: "\<forall> ctx ino, ctx_is_root ctx = True \<longrightarrow> can_read ctx ino = True \<and> can_write ctx ino = True \<and> can_execute ctx ino = True"
+lemma VFS_044_root_full_access: "\<forall>ctx ino. ctx_is_root ctx = True \<longrightarrow> can_read ctx ino = True \<and> can_write ctx ino = True \<and> can_execute ctx ino = True"
   by auto
 
 (* VFS_045_permission_consistency (matches Coq) *)
-lemma VFS_045_permission_consistency: "\<forall> ctx ino, is_owner ctx ino = True \<longrightarrow> get_permission ctx ino = inode_perm_owner ino"
+lemma VFS_045_permission_consistency: "\<forall>ctx ino. is_owner ctx ino = True \<longrightarrow> get_permission ctx ino = inode_perm_owner ino"
   by simp
 
 (* VFS_046_committed_is_complete (matches Coq) *)
-lemma VFS_046_committed_is_complete: "\<forall> txn, txn_state txn = TxnCommitted \<longrightarrow> txn_complete txn = True"
+lemma VFS_046_committed_is_complete: "\<forall>txn. txn_state txn = TxnCommitted \<longrightarrow> txn_complete txn = True"
   by simp
 
 (* VFS_047_checkpointed_is_complete (matches Coq) *)
-lemma VFS_047_checkpointed_is_complete: "\<forall> txn, txn_state txn = TxnCheckpointed \<longrightarrow> txn_complete txn = True"
+lemma VFS_047_checkpointed_is_complete: "\<forall>txn. txn_state txn = TxnCheckpointed \<longrightarrow> txn_complete txn = True"
   by simp
 
 (* VFS_048_pending_not_complete (matches Coq) *)
-lemma VFS_048_pending_not_complete: "\<forall> txn, txn_state txn = TxnPending \<longrightarrow> txn_complete txn = False"
+lemma VFS_048_pending_not_complete: "\<forall>txn. txn_state txn = TxnPending \<longrightarrow> txn_complete txn = False"
   by simp
 
 (* VFS_049_aborted_not_complete (matches Coq) *)
-lemma VFS_049_aborted_not_complete: "\<forall> txn, txn_state txn = TxnAborted \<longrightarrow> txn_complete txn = False"
+lemma VFS_049_aborted_not_complete: "\<forall>txn. txn_state txn = TxnAborted \<longrightarrow> txn_complete txn = False"
   by simp
 
 (* VFS_050_empty_journal_consistent (matches Coq) *)
-lemma VFS_050_empty_journal_consistent: "\<forall> head tail, (tail \<le> head) = True \<longrightarrow> journal_consistent (mkJournal [] head tail) = True"
+lemma VFS_050_empty_journal_consistent: "\<forall>head tail. (tail \<le> head) = True \<longrightarrow> journal_consistent (mkJournal [] head tail) = True"
   by simp
 
 (* VFS_051_single_committed_consistent (matches Coq) *)
-lemma VFS_051_single_committed_consistent: "\<forall> txn_id ops head tail, (tail \<le> head) = True \<longrightarrow> let txn := mkTransaction txn_id ops TxnCommitted in let j := mkJournal [txn] head tail in journal_consistent j = True"
+lemma VFS_051_single_committed_consistent: "\<forall>txn_id ops head tail. (tail \<le> head) = True \<longrightarrow> let txn := mkTransaction txn_id ops TxnCommitted in let j := mkJournal [txn] head tail in journal_consistent j = True"
   by simp
 
 (* VFS_052_txn_complete_decidable (matches Coq) *)
-lemma VFS_052_txn_complete_decidable: "\<forall> txn, txn_complete txn = True \<or> txn_complete txn = False"
+lemma VFS_052_txn_complete_decidable: "\<forall>txn. txn_complete txn = True \<or> txn_complete txn = False"
   by simp
 
 (* VFS_053_journal_head_ge_tail (matches Coq) *)
-lemma VFS_053_journal_head_ge_tail: "\<forall> j, journal_consistent j = True \<longrightarrow> ((journal_tail \<le> j)) (journal_head j) = True"
+lemma VFS_053_journal_head_ge_tail: "\<forall>j. journal_consistent j = True \<longrightarrow> ((journal_tail \<le> j)) (journal_head j) = True"
   by auto
 
 (* VFS_054_all_txns_complete (matches Coq) *)
-lemma VFS_054_all_txns_complete: "\<forall> j, journal_consistent j = True \<longrightarrow> \<forall>b txn_complete (journal_transactions j) = True"
+lemma VFS_054_all_txns_complete: "\<forall>j. journal_consistent j = True \<longrightarrow> \<forall>b txn_complete (journal_transactions j) = True"
   by auto
 
 (* VFS_055_complete_txn_valid_state (matches Coq) *)
-lemma VFS_055_complete_txn_valid_state: "\<forall> txn, txn_complete txn = True \<longrightarrow> txn_state txn = TxnCommitted \<or> txn_state txn = TxnCheckpointed"
+lemma VFS_055_complete_txn_valid_state: "\<forall>txn. txn_complete txn = True \<longrightarrow> txn_state txn = TxnCommitted \<or> txn_state txn = TxnCheckpointed"
   by simp
 
 (* VFS_056_no_self_cycle (matches Coq) *)
-lemma VFS_056_no_self_cycle: "\<forall> inode parent entries, inode \<noteq> parent \<longrightarrow> dir_no_self_cycle (mkDirectory inode parent entries) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma VFS_056_no_self_cycle: "\<forall>inode parent entries. inode \<noteq> parent \<longrightarrow> dir_no_self_cycle (mkDirectory inode parent entries) = True"
+  by auto
 
 (* VFS_057_self_cycle_detected (matches Coq) *)
-lemma VFS_057_self_cycle_detected: "\<forall> inode entries, dir_no_self_cycle (mkDirectory inode inode entries) = False"
+lemma VFS_057_self_cycle_detected: "\<forall>inode entries. dir_no_self_cycle (mkDirectory inode inode entries) = False"
   by simp
 
 (* VFS_058_integrity_requires_no_cycle (matches Coq) *)
-lemma VFS_058_integrity_requires_no_cycle: "\<forall> d, dir_integrity d = True \<longrightarrow> dir_no_self_cycle d = True"
+lemma VFS_058_integrity_requires_no_cycle: "\<forall>d. dir_integrity d = True \<longrightarrow> dir_no_self_cycle d = True"
   by auto
 
 (* VFS_059_integrity_requires_parent (matches Coq) *)
-lemma VFS_059_integrity_requires_parent: "\<forall> d, dir_integrity d = True \<longrightarrow> dir_has_parent_link d = True"
+lemma VFS_059_integrity_requires_parent: "\<forall>d. dir_integrity d = True \<longrightarrow> dir_has_parent_link d = True"
   by auto
 
 (* VFS_060_integrity_requires_dot (matches Coq) *)
-lemma VFS_060_integrity_requires_dot: "\<forall> d, dir_integrity d = True \<longrightarrow> dir_has_dot_entry d = True"
+lemma VFS_060_integrity_requires_dot: "\<forall>d. dir_integrity d = True \<longrightarrow> dir_has_dot_entry d = True"
   by auto
 
 (* VFS_061_empty_dir_no_parent_link (matches Coq) *)
-lemma VFS_061_empty_dir_no_parent_link: "\<forall> inode parent, dir_has_parent_link (mkDirectory inode parent []) = False"
+lemma VFS_061_empty_dir_no_parent_link: "\<forall>inode parent. dir_has_parent_link (mkDirectory inode parent []) = False"
   by simp
 
 (* VFS_062_empty_dir_no_dot (matches Coq) *)
-lemma VFS_062_empty_dir_no_dot: "\<forall> inode parent, dir_has_dot_entry (mkDirectory inode parent []) = False"
+lemma VFS_062_empty_dir_no_dot: "\<forall>inode parent. dir_has_dot_entry (mkDirectory inode parent []) = False"
   by simp
 
 (* VFS_063_empty_dir_no_integrity (matches Coq) *)
-lemma VFS_063_empty_dir_no_integrity: "\<forall> inode parent, inode \<noteq> parent \<longrightarrow> dir_integrity (mkDirectory inode parent []) = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma VFS_063_empty_dir_no_integrity: "\<forall>inode parent. inode \<noteq> parent \<longrightarrow> dir_integrity (mkDirectory inode parent []) = False"
+  by auto
 
 (* VFS_064_wellformed_dir_complete (matches Coq) *)
-lemma VFS_064_wellformed_dir_complete: "\<forall> d, dir_integrity d = True \<longrightarrow> dir_no_self_cycle d = True \<and> dir_has_parent_link d = True \<and> dir_has_dot_entry d = True"
+lemma VFS_064_wellformed_dir_complete: "\<forall>d. dir_integrity d = True \<longrightarrow> dir_no_self_cycle d = True \<and> dir_has_parent_link d = True \<and> dir_has_dot_entry d = True"
   by auto
 
 (* VFS_065_dir_integrity_decidable (matches Coq) *)
-lemma VFS_065_dir_integrity_decidable: "\<forall> d, dir_integrity d = True \<or> dir_integrity d = False"
+lemma VFS_065_dir_integrity_decidable: "\<forall>d. dir_integrity d = True \<or> dir_integrity d = False"
   by simp
 
 (* VFS_066_zero_usage_ok (matches Coq) *)
-lemma VFS_066_zero_usage_ok: "\<forall> uid limit_b limit_i, quota_enforced (mkQuota uid limit_b limit_i 0 0) = True"
+lemma VFS_066_zero_usage_ok: "\<forall>uid limit_b limit_i. quota_enforced (mkQuota uid limit_b limit_i 0 0) = True"
   by simp
 
 (* VFS_067_at_limit_ok (matches Coq) *)
-lemma VFS_067_at_limit_ok: "\<forall> uid limit_b limit_i, quota_enforced (mkQuota uid limit_b limit_i limit_b limit_i) = True"
+lemma VFS_067_at_limit_ok: "\<forall>uid limit_b limit_i. quota_enforced (mkQuota uid limit_b limit_i limit_b limit_i) = True"
   by simp
 
 (* VFS_068_enforced_bytes_ok (matches Coq) *)
-lemma VFS_068_enforced_bytes_ok: "\<forall> q, quota_enforced q = True \<longrightarrow> quota_bytes_ok q = True"
+lemma VFS_068_enforced_bytes_ok: "\<forall>q. quota_enforced q = True \<longrightarrow> quota_bytes_ok q = True"
   by auto
 
 (* VFS_069_enforced_inodes_ok (matches Coq) *)
-lemma VFS_069_enforced_inodes_ok: "\<forall> q, quota_enforced q = True \<longrightarrow> quota_inodes_ok q = True"
+lemma VFS_069_enforced_inodes_ok: "\<forall>q. quota_enforced q = True \<longrightarrow> quota_inodes_ok q = True"
   by auto
 
 (* VFS_070_can_alloc_zero_bytes (matches Coq) *)
-lemma VFS_070_can_alloc_zero_bytes: "\<forall> q, quota_enforced q = True \<longrightarrow> can_allocate_bytes q 0 = True"
+lemma VFS_070_can_alloc_zero_bytes: "\<forall>q. quota_enforced q = True \<longrightarrow> can_allocate_bytes q 0 = True"
   by auto
 
 (* VFS_071_cannot_exceed_quota (matches Coq) *)
-lemma VFS_071_cannot_exceed_quota: "\<forall> uid limit used, used < limit \<longrightarrow> can_allocate_bytes (mkQuota uid limit 0 used 0) (limit - used) = True"
+lemma VFS_071_cannot_exceed_quota: "\<forall>uid limit used. used < limit \<longrightarrow> can_allocate_bytes (mkQuota uid limit 0 used 0) (limit - used) = True"
   by simp
 
 (* VFS_072_bytes_ok_semantics (matches Coq) *)
-lemma VFS_072_bytes_ok_semantics: "\<forall> q, quota_bytes_ok q = True \<longrightarrow> quota_used_bytes q \<le> quota_limit_bytes q"
+lemma VFS_072_bytes_ok_semantics: "\<forall>q. quota_bytes_ok q = True \<longrightarrow> quota_used_bytes q \<le> quota_limit_bytes q"
   by auto
 
 (* VFS_073_inodes_ok_semantics (matches Coq) *)
-lemma VFS_073_inodes_ok_semantics: "\<forall> q, quota_inodes_ok q = True \<longrightarrow> quota_used_inodes q \<le> quota_limit_inodes q"
+lemma VFS_073_inodes_ok_semantics: "\<forall>q. quota_inodes_ok q = True \<longrightarrow> quota_used_inodes q \<le> quota_limit_inodes q"
   by auto
 
 (* VFS_074_can_alloc_inode_under_limit (matches Coq) *)
-lemma VFS_074_can_alloc_inode_under_limit: "\<forall> uid lb li ub ui, ui < li \<longrightarrow> can_allocate_inode (mkQuota uid lb li ub ui) = True"
+lemma VFS_074_can_alloc_inode_under_limit: "\<forall>uid lb li ub ui. ui < li \<longrightarrow> can_allocate_inode (mkQuota uid lb li ub ui) = True"
   by auto
 
 (* VFS_075_cannot_alloc_inode_at_limit (matches Coq) *)
-lemma VFS_075_cannot_alloc_inode_at_limit: "\<forall> uid lb li ub, can_allocate_inode (mkQuota uid lb li ub li) = False"
+lemma VFS_075_cannot_alloc_inode_at_limit: "\<forall>uid lb li ub. can_allocate_inode (mkQuota uid lb li ub li) = False"
   by auto
 
 (* VFS_076_online_no_recovery (matches Coq) *)
-lemma VFS_076_online_no_recovery: "\<forall> j cp, recovery_complete (mkCrashState j FSOnline cp False) = True"
+lemma VFS_076_online_no_recovery: "\<forall>j cp. recovery_complete (mkCrashState j FSOnline cp False) = True"
   by simp
 
 (* VFS_077_clean_no_recovery (matches Coq) *)
-lemma VFS_077_clean_no_recovery: "\<forall> j cp, recovery_complete (mkCrashState j FSClean cp False) = True"
+lemma VFS_077_clean_no_recovery: "\<forall>j cp. recovery_complete (mkCrashState j FSClean cp False) = True"
   by simp
 
 (* VFS_078_mounting_not_complete (matches Coq) *)
-lemma VFS_078_mounting_not_complete: "\<forall> j cp rec, recovery_complete (mkCrashState j FSMounting cp rec) = False"
+lemma VFS_078_mounting_not_complete: "\<forall>j cp rec. recovery_complete (mkCrashState j FSMounting cp rec) = False"
   by simp
 
 (* VFS_079_recovering_not_complete (matches Coq) *)
-lemma VFS_079_recovering_not_complete: "\<forall> j cp rec, recovery_complete (mkCrashState j FSRecovering cp rec) = False"
+lemma VFS_079_recovering_not_complete: "\<forall>j cp rec. recovery_complete (mkCrashState j FSRecovering cp rec) = False"
   by simp
 
 (* VFS_080_error_not_complete (matches Coq) *)
-lemma VFS_080_error_not_complete: "\<forall> j cp rec, recovery_complete (mkCrashState j FSError cp rec) = False"
+lemma VFS_080_error_not_complete: "\<forall>j cp rec. recovery_complete (mkCrashState j FSError cp rec) = False"
   by simp
 
 (* VFS_081_recovery_needed_blocks (matches Coq) *)
-lemma VFS_081_recovery_needed_blocks: "\<forall> j cp, recovery_complete (mkCrashState j FSOnline cp True) = False"
+lemma VFS_081_recovery_needed_blocks: "\<forall>j cp. recovery_complete (mkCrashState j FSOnline cp True) = False"
   by simp
 
 (* VFS_082_crash_safe_journal (matches Coq) *)
-lemma VFS_082_crash_safe_journal: "\<forall> cs, crash_safe cs = True \<longrightarrow> journal_consistent (cs_journal cs) = True"
+lemma VFS_082_crash_safe_journal: "\<forall>cs. crash_safe cs = True \<longrightarrow> journal_consistent (cs_journal cs) = True"
   by auto
 
 (* VFS_083_empty_journal_safe (matches Coq) *)
-lemma VFS_083_empty_journal_safe: "\<forall> st cp rec, crash_safe (mkCrashState (mkJournal [] 0 0) st cp rec) = True"
+lemma VFS_083_empty_journal_safe: "\<forall>st cp rec. crash_safe (mkCrashState (mkJournal [] 0 0) st cp rec) = True"
   by simp
 
 (* VFS_084_recovery_complete_valid_state (matches Coq) *)
-lemma VFS_084_recovery_complete_valid_state: "\<forall> cs, recovery_complete cs = True \<longrightarrow> cs_fs_state cs = FSOnline \<or> cs_fs_state cs = FSClean"
+lemma VFS_084_recovery_complete_valid_state: "\<forall>cs. recovery_complete cs = True \<longrightarrow> cs_fs_state cs = FSOnline \<or> cs_fs_state cs = FSClean"
   by simp
 
 (* VFS_085_recovery_complete_no_recovery (matches Coq) *)
-lemma VFS_085_recovery_complete_no_recovery: "\<forall> cs, recovery_complete cs = True \<longrightarrow> cs_recovery_needed cs = False"
+lemma VFS_085_recovery_complete_no_recovery: "\<forall>cs. recovery_complete cs = True \<longrightarrow> cs_recovery_needed cs = False"
   by auto
 
 (* VFS_086_success_is_atomic (matches Coq) *)
-lemma VFS_086_success_is_atomic: "\<forall> op jentry, op_is_atomic (mkAtomicOp op OpSuccess jentry) = True"
+lemma VFS_086_success_is_atomic: "\<forall>op jentry. op_is_atomic (mkAtomicOp op OpSuccess jentry) = True"
   by simp
 
 (* VFS_087_failure_is_atomic (matches Coq) *)
-lemma VFS_087_failure_is_atomic: "\<forall> op jentry, op_is_atomic (mkAtomicOp op OpFailure jentry) = True"
+lemma VFS_087_failure_is_atomic: "\<forall>op jentry. op_is_atomic (mkAtomicOp op OpFailure jentry) = True"
   by simp
 
 (* VFS_088_partial_not_atomic (matches Coq) *)
-lemma VFS_088_partial_not_atomic: "\<forall> op jentry, op_is_atomic (mkAtomicOp op OpPartial jentry) = False"
+lemma VFS_088_partial_not_atomic: "\<forall>op jentry. op_is_atomic (mkAtomicOp op OpPartial jentry) = False"
   by simp
 
 (* VFS_089_atomic_definite_result (matches Coq) *)
-lemma VFS_089_atomic_definite_result: "\<forall> aop, op_is_atomic aop = True \<longrightarrow> aop_result aop = OpSuccess \<or> aop_result aop = OpFailure"
+lemma VFS_089_atomic_definite_result: "\<forall>aop. op_is_atomic aop = True \<longrightarrow> aop_result aop = OpSuccess \<or> aop_result aop = OpFailure"
   by simp
 
 (* VFS_090_journaled_has_entry (matches Coq) *)
-lemma VFS_090_journaled_has_entry: "\<forall> aop, op_is_journaled aop = True \<longrightarrow> \<exists> je, aop_journal_entry aop = Some je"
+lemma VFS_090_journaled_has_entry: "\<forall>aop. op_is_journaled aop = True \<longrightarrow> \<exists>je. aop_journal_entry aop = Some je"
   by simp
 
 (* VFS_091_non_journaled_no_entry (matches Coq) *)
-lemma VFS_091_non_journaled_no_entry: "\<forall> aop, op_is_journaled aop = False \<longrightarrow> aop_journal_entry aop = None"
+lemma VFS_091_non_journaled_no_entry: "\<forall>aop. op_is_journaled aop = False \<longrightarrow> aop_journal_entry aop = None"
   by simp
 
 (* VFS_092_create_journaled (matches Coq) *)
-lemma VFS_092_create_journaled: "\<forall> parent new_ino, let jop := JOpCreate new_ino in let aop := mkAtomicOp (OpCreate parent new_ino) OpSuccess (Some jop) in op_is_atomic aop = True \<and> op_is_journaled aop = True"
+lemma VFS_092_create_journaled: "\<forall>parent new_ino. let jop := JOpCreate new_ino in let aop := mkAtomicOp (OpCreate parent new_ino) OpSuccess (Some jop) in op_is_atomic aop = True \<and> op_is_journaled aop = True"
   by simp
 
 (* VFS_093_delete_journaled (matches Coq) *)
-lemma VFS_093_delete_journaled: "\<forall> parent del_ino, let jop := JOpDelete del_ino in let aop := mkAtomicOp (OpDelete parent del_ino) OpSuccess (Some jop) in op_is_atomic aop = True \<and> op_is_journaled aop = True"
+lemma VFS_093_delete_journaled: "\<forall>parent del_ino. let jop := JOpDelete del_ino in let aop := mkAtomicOp (OpDelete parent del_ino) OpSuccess (Some jop) in op_is_atomic aop = True \<and> op_is_journaled aop = True"
   by simp
 
 (* VFS_094_rename_journaled (matches Coq) *)
-lemma VFS_094_rename_journaled: "\<forall> sp si dp di, let jop := JOpRename si dp in let aop := mkAtomicOp (OpRename sp si dp di) OpSuccess (Some jop) in op_is_atomic aop = True \<and> op_is_journaled aop = True"
+lemma VFS_094_rename_journaled: "\<forall>sp si dp di. let jop := JOpRename si dp in let aop := mkAtomicOp (OpRename sp si dp di) OpSuccess (Some jop) in op_is_atomic aop = True \<and> op_is_journaled aop = True"
   by simp
 
 (* VFS_095_atomicity_decidable (matches Coq) *)
-lemma VFS_095_atomicity_decidable: "\<forall> aop, op_is_atomic aop = True \<or> op_is_atomic aop = False"
+lemma VFS_095_atomicity_decidable: "\<forall>aop. op_is_atomic aop = True \<or> op_is_atomic aop = False"
   by simp
 
 (* VFS_096_full_security (matches Coq) *)
-lemma VFS_096_full_security: "\<forall> f, fs_fully_verified f = True \<longrightarrow> fss_access_control (vfs_security f) = True \<and> fss_encryption_at_rest (vfs_security f) = True \<and> fss_secure_delete (vfs_security f) = True \<and> fss_quota_enforcement (vfs_security f) = True"
+lemma VFS_096_full_security: "\<forall>f. fs_fully_verified f = True \<longrightarrow> fss_access_control (vfs_security f) = True \<and> fss_encryption_at_rest (vfs_security f) = True \<and> fss_secure_delete (vfs_security f) = True \<and> fss_quota_enforcement (vfs_security f) = True"
   by auto
 
 (* VFS_097_full_integrity (matches Coq) *)
-lemma VFS_097_full_integrity: "\<forall> f, fs_fully_verified f = True \<longrightarrow> fsi_crash_consistent (vfs_integrity f) = True \<and> fsi_atomic_writes (vfs_integrity f) = True \<and> fsi_journaling (vfs_integrity f) = True \<and> fsi_checksum_verified (vfs_integrity f) = True"
+lemma VFS_097_full_integrity: "\<forall>f. fs_fully_verified f = True \<longrightarrow> fsi_crash_consistent (vfs_integrity f) = True \<and> fsi_atomic_writes (vfs_integrity f) = True \<and> fsi_journaling (vfs_integrity f) = True \<and> fsi_checksum_verified (vfs_integrity f) = True"
   by auto
 
 (* VFS_098_safe_recovery_sound (matches Coq) *)
-lemma VFS_098_safe_recovery_sound: "\<forall> cs, crash_safe cs = True \<longrightarrow> recovery_complete cs = True \<longrightarrow> journal_consistent (cs_journal cs) = True \<and> cs_recovery_needed cs = False"
+lemma VFS_098_safe_recovery_sound: "\<forall>cs. crash_safe cs = True \<longrightarrow> recovery_complete cs = True \<longrightarrow> journal_consistent (cs_journal cs) = True \<and> cs_recovery_needed cs = False"
   by auto
 
 (* VFS_099_quota_access_combined (matches Coq) *)
-lemma VFS_099_quota_access_combined: "\<forall> ctx ino q, ctx_is_root ctx = True \<longrightarrow> quota_enforced q = True \<longrightarrow> can_read ctx ino = True \<and> can_write ctx ino = True \<and> quota_bytes_ok q = True \<and> quota_inodes_ok q = True"
+lemma VFS_099_quota_access_combined: "\<forall>ctx ino q. ctx_is_root ctx = True \<longrightarrow> quota_enforced q = True \<longrightarrow> can_read ctx ino = True \<and> can_write ctx ino = True \<and> quota_bytes_ok q = True \<and> quota_inodes_ok q = True"
   by auto
 
 (* VFS_100_atomic_journaled_durable (matches Coq) *)
-lemma VFS_100_atomic_journaled_durable: "\<forall> aop, op_is_atomic aop = True \<longrightarrow> op_is_journaled aop = True \<longrightarrow> aop_result aop = OpSuccess \<or> aop_result aop = OpFailure"
+lemma VFS_100_atomic_journaled_durable: "\<forall>aop. op_is_atomic aop = True \<longrightarrow> op_is_journaled aop = True \<longrightarrow> aop_result aop = OpSuccess \<or> aop_result aop = OpFailure"
   by auto
 
 (* VFS_101_dir_with_quota (matches Coq) *)
-lemma VFS_101_dir_with_quota: "\<forall> d q, dir_integrity d = True \<longrightarrow> quota_enforced q = True \<longrightarrow> dir_no_self_cycle d = True \<and> quota_bytes_ok q = True"
+lemma VFS_101_dir_with_quota: "\<forall>d q. dir_integrity d = True \<longrightarrow> quota_enforced q = True \<longrightarrow> dir_no_self_cycle d = True \<and> quota_bytes_ok q = True"
   by auto
 
 (* VFS_102_verification_chain (matches Coq) *)
-lemma VFS_102_verification_chain: "\<forall> f, fs_fully_verified f = True \<longrightarrow> fs_integrity_sound (vfs_integrity f) = True \<and> fs_security_sound (vfs_security f) = True \<and> vfs_posix_compliant f = True \<and> vfs_verified_implementation f = True"
+lemma VFS_102_verification_chain: "\<forall>f. fs_fully_verified f = True \<longrightarrow> fs_integrity_sound (vfs_integrity f) = True \<and> fs_security_sound (vfs_security f) = True \<and> vfs_posix_compliant f = True \<and> vfs_verified_implementation f = True"
   by auto
 
 (* VFS_103_journal_consistency_preservation (matches Coq) *)
-lemma VFS_103_journal_consistency_preservation: "\<forall> txns h t, (t \<le> h) = True \<longrightarrow> \<forall>b txn_complete txns = True \<longrightarrow> journal_consistent (mkJournal txns h t) = True"
+lemma VFS_103_journal_consistency_preservation: "\<forall>txns h t. (t \<le> h) = True \<longrightarrow> \<forall>b txn_complete txns = True \<longrightarrow> journal_consistent (mkJournal txns h t) = True"
   by simp
 
 (* VFS_104_access_dir_combined (matches Coq) *)
-lemma VFS_104_access_dir_combined: "\<forall> ctx ino d, can_read ctx ino = True \<longrightarrow> dir_integrity d = True \<longrightarrow> can_read ctx ino = True \<and> dir_no_self_cycle d = True"
+lemma VFS_104_access_dir_combined: "\<forall>ctx ino d. can_read ctx ino = True \<longrightarrow> dir_integrity d = True \<longrightarrow> can_read ctx ino = True \<and> dir_no_self_cycle d = True"
   by auto
 
 (* VFS_105_system_soundness (matches Coq) *)
-lemma VFS_105_system_soundness: "\<forall> f cs, fs_fully_verified f = True \<longrightarrow> crash_safe cs = True \<longrightarrow> recovery_complete cs = True \<longrightarrow> fs_integrity_sound (vfs_integrity f) = True \<and> fs_security_sound (vfs_security f) = True \<and> journal_consistent (cs_journal cs) = True \<and> cs_recovery_needed cs = False"
+lemma VFS_105_system_soundness: "\<forall>f cs. fs_fully_verified f = True \<longrightarrow> crash_safe cs = True \<longrightarrow> recovery_complete cs = True \<longrightarrow> fs_integrity_sound (vfs_integrity f) = True \<and> fs_security_sound (vfs_security f) = True \<and> journal_consistent (cs_journal cs) = True \<and> cs_recovery_needed cs = False"
   by auto
 
 end

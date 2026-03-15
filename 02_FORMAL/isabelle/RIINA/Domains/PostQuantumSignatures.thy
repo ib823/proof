@@ -217,8 +217,8 @@ definition riina_sig_security :: "SignatureSecurity" where
     SECTION 4: COMPLIANCE PREDICATES
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* PQ_SIG_001: ML-DSA is Lattice-Based *)
 (* PQ_SIG_001_mldsa_lattice (matches Coq) *)
@@ -242,12 +242,12 @@ lemma PQ_SIG_004_slhdsa256_level5: "scheme_security_level SLH_DSA_256s = Level5"
 
 (* PQ_SIG_005: Level Reflexivity *)
 (* PQ_SIG_005_level_reflexive (matches Coq) *)
-lemma PQ_SIG_005_level_reflexive: "\<forall> l : SecurityLevel, level_leq l l = True"
+lemma PQ_SIG_005_level_reflexive: "\<forall>l : SecurityLevel. level_leq l l = True"
   by simp
 
 (* PQ_SIG_006: Level 5 is Maximum *)
 (* PQ_SIG_006_level5_max (matches Coq) *)
-lemma PQ_SIG_006_level5_max: "\<forall> l : SecurityLevel, level_leq l Level5 = True"
+lemma PQ_SIG_006_level5_max: "\<forall>l : SecurityLevel. level_leq l Level5 = True"
   by simp
 
 (* PQ_SIG_007: Compliant EUF-CMA Valid *)
@@ -257,18 +257,18 @@ lemma PQ_SIG_007_eufcma_valid: "eufcma_compliant mk_compliant_eufcma = True"
 
 (* PQ_SIG_008: Unforgeability Required *)
 (* PQ_SIG_008_unforgeable (matches Coq) *)
-lemma PQ_SIG_008_unforgeable: "\<forall> e : EUFCMASecure, eufcma_compliant e = True \<longrightarrow> eufcma_unforgeable e = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma PQ_SIG_008_unforgeable: "\<forall>e : EUFCMASecure. eufcma_compliant e = True \<longrightarrow> eufcma_unforgeable e = True"
+  by auto
 
 (* PQ_SIG_009: Strong Unforgeability Required *)
 (* PQ_SIG_009_strong_unforgeable (matches Coq) *)
-lemma PQ_SIG_009_strong_unforgeable: "\<forall> e : EUFCMASecure, eufcma_compliant e = True \<longrightarrow> eufcma_strong_unforgeability e = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma PQ_SIG_009_strong_unforgeable: "\<forall>e : EUFCMASecure. eufcma_compliant e = True \<longrightarrow> eufcma_strong_unforgeability e = True"
+  by auto
 
 (* PQ_SIG_010: Adaptive Security Required *)
 (* PQ_SIG_010_adaptive (matches Coq) *)
-lemma PQ_SIG_010_adaptive: "\<forall> e : EUFCMASecure, eufcma_compliant e = True \<longrightarrow> eufcma_adaptive_security e = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma PQ_SIG_010_adaptive: "\<forall>e : EUFCMASecure. eufcma_compliant e = True \<longrightarrow> eufcma_adaptive_security e = True"
+  by auto
 
 (* PQ_SIG_011: Compliant QR Valid *)
 (* PQ_SIG_011_qr_valid (matches Coq) *)
@@ -277,17 +277,17 @@ lemma PQ_SIG_011_qr_valid: "sig_quantum_resistant mk_compliant_sig_qr = True"
 
 (* PQ_SIG_012: Post-Quantum Security *)
 (* PQ_SIG_012_post_quantum (matches Coq) *)
-lemma PQ_SIG_012_post_quantum: "\<forall> q : SigQuantumResistant, sig_quantum_resistant q = True \<longrightarrow> sqr_post_quantum q = True"
+lemma PQ_SIG_012_post_quantum: "\<forall>q : SigQuantumResistant. sig_quantum_resistant q = True \<longrightarrow> sqr_post_quantum q = True"
   by auto
 
 (* PQ_SIG_013: No Shor Attack *)
 (* PQ_SIG_013_no_shor (matches Coq) *)
-lemma PQ_SIG_013_no_shor: "\<forall> q : SigQuantumResistant, sig_quantum_resistant q = True \<longrightarrow> sqr_no_shor_attack q = True"
+lemma PQ_SIG_013_no_shor: "\<forall>q : SigQuantumResistant. sig_quantum_resistant q = True \<longrightarrow> sqr_no_shor_attack q = True"
   by auto
 
 (* PQ_SIG_014: Conservative Parameters *)
 (* PQ_SIG_014_conservative (matches Coq) *)
-lemma PQ_SIG_014_conservative: "\<forall> q : SigQuantumResistant, sig_quantum_resistant q = True \<longrightarrow> sqr_conservative_params q = True"
+lemma PQ_SIG_014_conservative: "\<forall>q : SigQuantumResistant. sig_quantum_resistant q = True \<longrightarrow> sqr_conservative_params q = True"
   by auto
 
 (* PQ_SIG_015: RIINA Sig Security Valid *)
@@ -322,27 +322,27 @@ lemma PQ_SIG_020_riina_scheme_slhdsa: "sig_scheme riina_sig_slh_dsa_256s = SLH_D
 
 (* PQ_SIG_021: Security Implies EUF-CMA *)
 (* PQ_SIG_021_security_implies_eufcma (matches Coq) *)
-lemma PQ_SIG_021_security_implies_eufcma: "\<forall> s : SignatureSecurity, sig_secure s = True \<longrightarrow> eufcma_compliant (sig_sec_eufcma s) = True"
+lemma PQ_SIG_021_security_implies_eufcma: "\<forall>s : SignatureSecurity. sig_secure s = True \<longrightarrow> eufcma_compliant (sig_sec_eufcma s) = True"
   by auto
 
 (* PQ_SIG_022: Security Implies QR *)
 (* PQ_SIG_022_security_implies_qr (matches Coq) *)
-lemma PQ_SIG_022_security_implies_qr: "\<forall> s : SignatureSecurity, sig_secure s = True \<longrightarrow> sig_quantum_resistant (sig_sec_quantum s) = True"
+lemma PQ_SIG_022_security_implies_qr: "\<forall>s : SignatureSecurity. sig_secure s = True \<longrightarrow> sig_quantum_resistant (sig_sec_quantum s) = True"
   by auto
 
 (* PQ_SIG_023: Correctness Requires Valid Key *)
 (* PQ_SIG_023_correct_key (matches Coq) *)
-lemma PQ_SIG_023_correct_key: "\<forall> si : SignatureInstance, sig_correct si = True \<longrightarrow> skp_valid (sig_keypair si) = True"
+lemma PQ_SIG_023_correct_key: "\<forall>si : SignatureInstance. sig_correct si = True \<longrightarrow> skp_valid (sig_keypair si) = True"
   by auto
 
 (* PQ_SIG_024: Correctness Requires Verification *)
 (* PQ_SIG_024_correct_verify (matches Coq) *)
-lemma PQ_SIG_024_correct_verify: "\<forall> si : SignatureInstance, sig_correct si = True \<longrightarrow> sig_verification si = True"
+lemma PQ_SIG_024_correct_verify: "\<forall>si : SignatureInstance. sig_correct si = True \<longrightarrow> sig_verification si = True"
   by auto
 
 (* PQ_SIG_025: Complete PQ-Signature Security *)
 (* PQ_SIG_025_complete_security (matches Coq) *)
-lemma PQ_SIG_025_complete_security: "\<forall> s : SignatureSecurity, sig_secure s = True \<longrightarrow> eufcma_unforgeable (sig_sec_eufcma s) = True \<and> eufcma_strong_unforgeability (sig_sec_eufcma s) = True \<and> sqr_post_quantum (sig_sec_quantum s) = True \<and> sqr_no_shor_attack (sig_sec_quantum s) = True"
+lemma PQ_SIG_025_complete_security: "\<forall>s : SignatureSecurity. sig_secure s = True \<longrightarrow> eufcma_unforgeable (sig_sec_eufcma s) = True \<and> eufcma_strong_unforgeability (sig_sec_eufcma s) = True \<and> sqr_post_quantum (sig_sec_quantum s) = True \<and> sqr_no_shor_attack (sig_sec_quantum s) = True"
   by simp
 
 end

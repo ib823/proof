@@ -174,7 +174,7 @@ definition level_eq :: "bool" where "level_eq = undefined"
 
 (* low_equiv (matches Coq: Definition low_equiv) *)
 definition low_equiv :: "bool" where
-  "low_equiv \<equiv> ((state_public = s1)) (state_public s2)"
+  "low_equiv \<equiv> (state_public s1 = state_public s2)"
 
 (* constant_time (matches Coq: Definition constant_time) *)
 definition constant_time :: "bool" where
@@ -217,7 +217,7 @@ definition memory_zeroed :: "bool" where "memory_zeroed = undefined"
 
 (* partitions_disjoint (matches Coq: Definition partitions_disjoint) *)
 definition partitions_disjoint :: "bool" where
-  "partitions_disjoint \<equiv> forallb (fun a => (\<not> (existsb) ((a) = (part_addresses) p2))) (part_addresses p1)"
+  "partitions_disjoint \<equiv> forallb (\<lambda>a. (\<not> (existsb) ((a) = (part_addresses) p2))) (part_addresses p1)"
 
 (* secure_execute (matches Coq: Definition secure_execute) *)
 definition secure_execute :: "State \<Rightarrow> Trace" where
@@ -305,83 +305,83 @@ definition secret_partition :: "Partition" where
   "secret_partition \<equiv> mkPart Secret [100; 101; 102; 103]"
 
 (* secure_execute_deterministic (matches Coq) *)
-lemma secure_execute_deterministic: "\<forall> s1 s2, low_equiv s1 s2 = True \<longrightarrow> secure_execute s1 = secure_execute s2"
+lemma secure_execute_deterministic: "\<forall>s1 s2. low_equiv s1 s2 = True \<longrightarrow> secure_execute s1 = secure_execute s2"
   by simp
 
 (* SEC_002_01 (matches Coq) *)
-lemma SEC_002_01: "\<forall> s1 s2 : State, let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_time s1 s2 t1 t2"
+lemma SEC_002_01: "\<forall>s1 s2 : State. let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_time s1 s2 t1 t2"
   by simp
 
 (* SEC_002_02 (matches Coq) *)
-lemma SEC_002_02: "\<forall> s1 s2 : State, let st1 := secure_storage s1 in let st2 := secure_storage s2 in storage_no_leak s1 s2 st1 st2"
+lemma SEC_002_02: "\<forall>s1 s2 : State. let st1 := secure_storage s1 in let st2 := secure_storage s2 in storage_no_leak s1 s2 st1 st2"
   by simp
 
 (* SEC_002_03 (matches Coq) *)
-lemma SEC_002_03: "\<forall> s1 s2 : State, let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_cache s1 s2 t1 t2"
+lemma SEC_002_03: "\<forall>s1 s2 : State. let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_cache s1 s2 t1 t2"
   by simp
 
 (* SEC_002_04 (matches Coq) *)
-lemma SEC_002_04: "\<forall> s1 s2 : State, let b1 := secure_branch s1 in let b2 := secure_branch s2 in constant_branch s1 s2 b1 b2"
+lemma SEC_002_04: "\<forall>s1 s2 : State. let b1 := secure_branch s1 in let b2 := secure_branch s2 in constant_branch s1 s2 b1 b2"
   by simp
 
 (* SEC_002_05 (matches Coq) *)
-lemma SEC_002_05: "\<forall> s1 s2 : State, let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_memory_pattern s1 s2 t1 t2"
+lemma SEC_002_05: "\<forall>s1 s2 : State. let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_memory_pattern s1 s2 t1 t2"
   by simp
 
 (* SEC_002_06 (matches Coq) *)
-lemma SEC_002_06: "\<forall> s1 s2 : State, let p1 := secure_power s1 in let p2 := secure_power s2 in constant_power s1 s2 p1 p2"
+lemma SEC_002_06: "\<forall>s1 s2 : State. let p1 := secure_power s1 in let p2 := secure_power s2 in constant_power s1 s2 p1 p2"
   by simp
 
 (* SEC_002_07 (matches Coq) *)
-lemma SEC_002_07: "\<forall> s1 s2 : State, let e1 := secure_em s1 in let e2 := secure_em s2 in constant_em s1 s2 e1 e2"
+lemma SEC_002_07: "\<forall>s1 s2 : State. let e1 := secure_em s1 in let e2 := secure_em s2 in constant_em s1 s2 e1 e2"
   by simp
 
 (* SEC_002_08 (matches Coq) *)
-lemma SEC_002_08: "\<forall> (obs : list Observation) (secret_bits : nat), channel_bandwidth obs secret_bits \<le> bandwidth_threshold \<longrightarrow> channel_bandwidth obs secret_bits \<le> 1"
+lemma SEC_002_08: "\<forall>(obs : list Observation) (secret_bits :: nat). channel_bandwidth obs secret_bits \<le> bandwidth_threshold \<longrightarrow> channel_bandwidth obs secret_bits \<le> 1"
   by auto
 
 (* SEC_002_09 (matches Coq) *)
-lemma SEC_002_09: "\<forall> s1 s2 : State, let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_termination s1 s2 t1 t2"
+lemma SEC_002_09: "\<forall>s1 s2 : State. let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_termination s1 s2 t1 t2"
   by simp
 
 (* SEC_002_10 (matches Coq) *)
-lemma SEC_002_10: "\<forall> s1 s2 : State, let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_exception s1 s2 t1 t2"
+lemma SEC_002_10: "\<forall>s1 s2 : State. let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_exception s1 s2 t1 t2"
   by simp
 
 (* SEC_002_11 (matches Coq) *)
-lemma SEC_002_11: "\<forall> s1 s2 : State, let r1 := prog_resources riina_program s1 in let r2 := prog_resources riina_program s2 in constant_resources s1 s2 r1 r2"
+lemma SEC_002_11: "\<forall>s1 s2 : State. let r1 := prog_resources riina_program s1 in let r2 := prog_resources riina_program s2 in constant_resources s1 s2 r1 r2"
   by simp
 
 (* SEC_002_12 (matches Coq) *)
-lemma SEC_002_12: "\<forall> s1 s2 : State, let sc1 := secure_schedule s1 in let sc2 := secure_schedule s2 in constant_schedule s1 s2 sc1 sc2"
+lemma SEC_002_12: "\<forall>s1 s2 : State. let sc1 := secure_schedule s1 in let sc2 := secure_schedule s2 in constant_schedule s1 s2 sc1 sc2"
   by simp
 
 (* SEC_002_13 (matches Coq) *)
-lemma SEC_002_13: "\<forall> s1 s2 : State, let n1 := secure_network s1 in let n2 := secure_network s2 in constant_network s1 s2 n1 n2"
+lemma SEC_002_13: "\<forall>s1 s2 : State. let n1 := secure_network s1 in let n2 := secure_network s2 in constant_network s1 s2 n1 n2"
   by simp
 
 (* SEC_002_14 (matches Coq) *)
-lemma SEC_002_14: "\<forall> addr : nat, addr < length zeroed_memory \<longrightarrow> memory_zeroed addr zeroed_memory = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma SEC_002_14: "\<forall>addr : nat. addr < length zeroed_memory \<longrightarrow> memory_zeroed addr zeroed_memory = True"
+  by auto
 
 (* SEC_002_15 (matches Coq) *)
 lemma SEC_002_15: "partitions_disjoint public_partition secret_partition = True"
   by simp
 
 (* SEC_002_16 (matches Coq) *)
-lemma SEC_002_16: "\<forall> s1 s2 : State, let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_output s1 s2 t1 t2"
+lemma SEC_002_16: "\<forall>s1 s2 : State. let t1 := prog_execute riina_program s1 in let t2 := prog_execute riina_program s2 in constant_output s1 s2 t1 t2"
   by simp
 
 (* SEC_002_17 (matches Coq) *)
-lemma SEC_002_17: "\<forall> l : SecLevel, level_leq l l = True"
+lemma SEC_002_17: "\<forall>l : SecLevel. level_leq l l = True"
   by simp
 
 (* SEC_002_18 (matches Coq) *)
-lemma SEC_002_18: "\<forall> l : SecLevel, level_eq l l = True"
+lemma SEC_002_18: "\<forall>l : SecLevel. level_eq l l = True"
   by simp
 
 (* SEC_002_19 (matches Coq) *)
-lemma SEC_002_19: "\<forall> l : SecLevel, level_leq Public l = True"
+lemma SEC_002_19: "\<forall>l : SecLevel. level_leq Public l = True"
   by simp
 
 (* SEC_002_20 (matches Coq) *)
@@ -389,15 +389,15 @@ lemma SEC_002_20: "level_leq TopSecret Public = False \<and> level_leq TopSecret
   by auto
 
 (* SEC_002_21 (matches Coq) *)
-lemma SEC_002_21: "\<forall> s : State, low_equiv s s = True"
+lemma SEC_002_21: "\<forall>s : State. low_equiv s s = True"
   by auto
 
 (* level_leq_refl (matches Coq) *)
-lemma level_leq_refl: "\<forall> l, level_leq l l = True"
+lemma level_leq_refl: "\<forall>l. level_leq l l = True"
   by simp
 
 (* public_lowest (matches Coq) *)
-lemma public_lowest: "\<forall> l, level_leq Public l = True"
+lemma public_lowest: "\<forall>l. level_leq Public l = True"
   by simp
 
 (* topsecret_no_flow_public (matches Coq) *)

@@ -193,12 +193,12 @@ definition breach_detection_limit :: "nat" where
 
 (* breach_detected_timely (matches Coq: Definition breach_detected_timely) *)
 definition breach_detected_timely :: "BreachEvent \<Rightarrow> bool" where
-  "breach_detected_timely b \<equiv> ((breach_detected_time \<le> b) - breach_occurred_time b) breach_detection_limit"
+  "breach_detected_timely b \<equiv> (breach_detected_time b - breach_occurred_time b \<le> breach_detection_limit)"
 
 (* audit_exists_for (matches Coq: Definition audit_exists_for) *)
 definition audit_exists_for :: "bool" where
-  "audit_exists_for \<equiv> existsb (fun e => (((\<and> = (audit_user_id)) e) user_id) 
-                         (((audit_phi_id = e)) phi_id)) log"
+  "audit_exists_for \<equiv> existsb (\<lambda>e. audit_user_id e = user_id \<and>
+                         audit_phi_id e = phi_id) log"
 
 (* access_with_audit (matches Coq: Definition access_with_audit) *)
 definition access_with_audit :: "nat \<Rightarrow> bool \<Rightarrow> list AuditEntry" where
@@ -234,68 +234,68 @@ definition emergency_access :: "list AuditEntry" where
 
 (* transmission_secure (matches Coq: Definition transmission_secure) *)
 definition transmission_secure :: "Transmission \<Rightarrow> bool" where
-  "transmission_secure t \<equiv> ((is_hipaa_transport \<and> (trans_security) t))
-       (((is_hipaa_encrypted \<and> (phi_encryption) (trans_phi t)))
-             (trans_verified t))"
+  "transmission_secure t \<equiv> (is_hipaa_transport (trans_security t) \<and>
+       is_hipaa_encrypted (phi_encryption (trans_phi t)) \<and>
+       trans_verified t)"
 
 (* COMPLY_001_01 (matches Coq) *)
-lemma COMPLY_001_01: "\<forall> (phi : PHIRecord), is_hipaa_encrypted (phi_encryption phi) = True \<longrightarrow> phi_encryption phi = EncryptedAES256"
+lemma COMPLY_001_01: "\<forall>(phi :: PHIRecord). is_hipaa_encrypted (phi_encryption phi) = True \<longrightarrow> phi_encryption phi = EncryptedAES256"
   by simp
 
 (* COMPLY_001_02 (matches Coq) *)
-lemma COMPLY_001_02: "\<forall> (ts : TransportSecurity), is_hipaa_transport ts = True \<longrightarrow> ts = TLS13"
+lemma COMPLY_001_02: "\<forall>(ts :: TransportSecurity). is_hipaa_transport ts = True \<longrightarrow> ts = TLS13"
   by simp
 
 (* COMPLY_001_03 (matches Coq) *)
-lemma COMPLY_001_03: "\<forall> (role : Role) (cat : PHICategory), can_access role cat = False \<longrightarrow> ~ (can_access role cat = True)"
+lemma COMPLY_001_03: "\<forall>(role :: Role) (cat :: PHICategory). can_access role cat = False \<longrightarrow> ~ (can_access role cat = True)"
   by auto
 
 (* COMPLY_001_04 (matches Coq) *)
-lemma COMPLY_001_04: "\<forall> (log : list AuditEntry) (user_id phi_id timestamp action : nat) (success : bool), let new_log := access_with_audit log user_id phi_id timestamp action success in audit_\<exists>_for new_log user_id phi_id = True"
+lemma COMPLY_001_04: "\<forall>(log : list AuditEntry) (user_id phi_id timestamp action : nat) (success :: bool). let new_log := access_with_audit log user_id phi_id timestamp action success in audit_\<exists>_for new_log user_id phi_id = True"
   by simp
 
 (* COMPLY_001_05 (matches Coq) *)
-lemma COMPLY_001_05: "\<forall> (role : Role) (requested : list PHICategory) (cat : PHICategory), In cat (minimum_necessary_access role requested) \<longrightarrow> can_access role cat = True"
+lemma COMPLY_001_05: "\<forall>(role :: Role) (requested : list PHICategory) (cat :: PHICategory). In cat (minimum_necessary_access role requested) \<longrightarrow> can_access role cat = True"
   by auto
 
 (* COMPLY_001_06 (matches Coq) *)
-lemma COMPLY_001_06: "\<forall> (phi : PHIRecord), can_disclose phi = True <-> phi_consent_documented phi = True"
+lemma COMPLY_001_06: "\<forall>(phi :: PHIRecord). can_disclose phi = True <-> phi_consent_documented phi = True"
   by auto
 
 (* COMPLY_001_07 (matches Coq) *)
-lemma COMPLY_001_07: "\<forall> (b : BreachEvent), breach_detected_timely b = True \<longrightarrow> breach_detected_time b - breach_occurred_time b \<le> breach_detection_limit"
+lemma COMPLY_001_07: "\<forall>(b :: BreachEvent). breach_detected_timely b = True \<longrightarrow> breach_detected_time b - breach_occurred_time b \<le> breach_detection_limit"
   by auto
 
 (* COMPLY_001_08 (matches Coq) *)
-lemma COMPLY_001_08: "\<forall> (role : Role) (cat : PHICategory), authorized_modification role cat = True \<longrightarrow> can_access role cat = True \<and> (role = Physician \<or> role = Emergency)"
-  by (cases rule: ‹_›.cases; simp)
+lemma COMPLY_001_08: "\<forall>(role :: Role) (cat :: PHICategory). authorized_modification role cat = True \<longrightarrow> can_access role cat = True \<and> (role = Physician \<or> role = Emergency)"
+  by auto
 
 (* COMPLY_001_09 (matches Coq) *)
-lemma COMPLY_001_09: "\<forall> (d : DisposalRecord), is_secure_disposal d = True \<longrightarrow> (disposal_method d = 1) \<or> (disposal_method d = 2) \<or> (disposal_method d = 0 \<and> disposal_passes d \<ge> 3)"
+lemma COMPLY_001_09: "\<forall>(d :: DisposalRecord). is_secure_disposal d = True \<longrightarrow> (disposal_method d = 1) \<or> (disposal_method d = 2) \<or> (disposal_method d = 0 \<and> disposal_passes d \<ge> 3)"
   by auto
 
 (* COMPLY_001_10 (matches Coq) *)
-lemma COMPLY_001_10: "\<forall> (auth : AuthState), is_mfa auth = True \<longrightarrow> length (auth_factors auth) \<ge> 2"
+lemma COMPLY_001_10: "\<forall>(auth :: AuthState). is_mfa auth = True \<longrightarrow> length (auth_factors auth) \<ge> 2"
   by auto
 
 (* COMPLY_001_11 (matches Coq) *)
-lemma COMPLY_001_11: "\<forall> (current_time last_activity : nat), current_time - last_activity > session_timeout \<longrightarrow> session_expired current_time last_activity = True"
+lemma COMPLY_001_11: "\<forall>(current_time last_activity : nat). current_time - last_activity > session_timeout \<longrightarrow> session_expired current_time last_activity = True"
   by auto
 
 (* COMPLY_001_12 (matches Coq) *)
-lemma COMPLY_001_12: "\<forall> (s : Session) (current_time : nat), session_is_active s = True \<longrightarrow> current_time - session_last_activity s > session_timeout \<longrightarrow> session_is_active (check_and_terminate current_time s) = False"
+lemma COMPLY_001_12: "\<forall>(s :: Session) (current_time :: nat). session_is_active s = True \<longrightarrow> current_time - session_last_activity s > session_timeout \<longrightarrow> session_is_active (check_and_terminate current_time s) = False"
   by auto
 
 (* COMPLY_001_13 (matches Coq) *)
-lemma COMPLY_001_13: "\<forall> (users : list (nat * Role)) (uid : nat) (r1 r2 : Role), all_unique_ids users = True \<longrightarrow> In (uid, r1) users \<longrightarrow> In (uid, r2) users \<longrightarrow> r1 = r2"
-  by (cases rule: ‹_›.cases; simp)
+lemma COMPLY_001_13: "\<forall>(users : list (nat * Role)) (uid :: nat) (r1 r2 : Role). all_unique_ids users = True \<longrightarrow> In (uid, r1) users \<longrightarrow> In (uid, r2) users \<longrightarrow> r1 = r2"
+  by auto
 
 (* COMPLY_001_14 (matches Coq) *)
-lemma COMPLY_001_14: "\<forall> (log : list AuditEntry) (user_id phi_id timestamp : nat) (cat : PHICategory), let new_log := emergency_access log user_id phi_id timestamp in audit_\<exists>_for new_log user_id phi_id = True \<and> can_access Emergency cat = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma COMPLY_001_14: "\<forall>(log : list AuditEntry) (user_id phi_id timestamp : nat) (cat :: PHICategory). let new_log := emergency_access log user_id phi_id timestamp in audit_\<exists>_for new_log user_id phi_id = True \<and> can_access Emergency cat = True"
+  by auto
 
 (* COMPLY_001_15 (matches Coq) *)
-lemma COMPLY_001_15: "\<forall> (t : Transmission), transmission_secure t = True \<longrightarrow> trans_security t = TLS13 \<and> phi_encryption (trans_phi t) = EncryptedAES256 \<and> trans_verified t = True"
+lemma COMPLY_001_15: "\<forall>(t :: Transmission). transmission_secure t = True \<longrightarrow> trans_security t = TLS13 \<and> phi_encryption (trans_phi t) = EncryptedAES256 \<and> trans_verified t = True"
   by auto
 
 end

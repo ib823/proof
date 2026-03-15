@@ -82,10 +82,10 @@ definition bcp_ready :: "MarketParticipant \<Rightarrow> bool" where
 
 (* bursa_fully_compliant (matches Coq: Definition bursa_fully_compliant) *)
 definition bursa_fully_compliant :: "MarketParticipant \<Rightarrow> bool" where
-  "bursa_fully_compliant p \<equiv> it_governance_established p /\
-  system_integrity p /\
-  data_protected p /\
-  connectivity_secured p /\
+  "bursa_fully_compliant p \<equiv> it_governance_established p \<and>
+  system_integrity p \<and>
+  data_protected p \<and>
+  connectivity_secured p \<and>
   bcp_ready p"
 
 (* all_participant_types (matches Coq: Definition all_participant_types) *)
@@ -102,102 +102,102 @@ definition ts_availability_adequate :: "TradingSystem \<Rightarrow> bool" where
 
 (* ts_resilient (matches Coq: Definition ts_resilient) *)
 definition ts_resilient :: "TradingSystem \<Rightarrow> bool" where
-  "ts_resilient ts \<equiv> ts_redundant ts = True /\ ts_failover_tested ts = True"
+  "ts_resilient ts \<equiv> ts_redundant ts = True \<and> ts_failover_tested ts = True"
 
 (* bursa_fully_compliant_v2 (matches Coq: Definition bursa_fully_compliant_v2) *)
 definition bursa_fully_compliant_v2 :: "MarketParticipant \<Rightarrow> bool" where
-  "bursa_fully_compliant_v2 p \<equiv> bursa_fully_compliant p /\ risk_managed p"
+  "bursa_fully_compliant_v2 p \<equiv> bursa_fully_compliant p \<and> risk_managed p"
 
 (* bursa_governance (matches Coq) *)
-lemma bursa_governance: "\<forall> (p : MarketParticipant), mp_it_governance p = True \<longrightarrow> it_governance_established p"
+lemma bursa_governance: "\<forall>(p :: MarketParticipant). mp_it_governance p = True \<longrightarrow> it_governance_established p"
   by auto
 
 (* bursa_integrity (matches Coq) *)
-lemma bursa_integrity: "\<forall> (p : MarketParticipant), mp_system_integrity p = True \<longrightarrow> system_integrity p"
+lemma bursa_integrity: "\<forall>(p :: MarketParticipant). mp_system_integrity p = True \<longrightarrow> system_integrity p"
   by auto
 
 (* bursa_data_protection (matches Coq) *)
-lemma bursa_data_protection: "\<forall> (p : MarketParticipant), mp_data_protected p = True \<longrightarrow> data_protected p"
+lemma bursa_data_protection: "\<forall>(p :: MarketParticipant). mp_data_protected p = True \<longrightarrow> data_protected p"
   by auto
 
 (* bursa_connectivity (matches Coq) *)
-lemma bursa_connectivity: "\<forall> (p : MarketParticipant), mp_connectivity_secured p = True \<longrightarrow> connectivity_secured p"
+lemma bursa_connectivity: "\<forall>(p :: MarketParticipant). mp_connectivity_secured p = True \<longrightarrow> connectivity_secured p"
   by auto
 
 (* bursa_bcp (matches Coq) *)
-lemma bursa_bcp: "\<forall> (p : MarketParticipant), mp_bcp_tested p = True \<longrightarrow> bcp_ready p"
+lemma bursa_bcp: "\<forall>(p :: MarketParticipant). mp_bcp_tested p = True \<longrightarrow> bcp_ready p"
   by auto
 
 (* bursa_composition (matches Coq) *)
-lemma bursa_composition: "\<forall> (p : MarketParticipant), it_governance_established p \<longrightarrow> system_integrity p \<longrightarrow> data_protected p \<longrightarrow> connectivity_secured p \<longrightarrow> bcp_ready p \<longrightarrow> bursa_fully_compliant p"
+lemma bursa_composition: "\<forall>(p :: MarketParticipant). it_governance_established p \<longrightarrow> system_integrity p \<longrightarrow> data_protected p \<longrightarrow> connectivity_secured p \<longrightarrow> bcp_ready p \<longrightarrow> bursa_fully_compliant p"
   by simp
 
 (* participant_coverage (matches Coq) *)
-lemma participant_coverage: "\<forall> (t : ParticipantType), In t all_participant_types"
+lemma participant_coverage: "\<forall>(t :: ParticipantType). t \<in> set all_participant_types"
   by auto
 
 (* bursa_risk (matches Coq) *)
-lemma bursa_risk: "\<forall> (p : MarketParticipant), mp_risk_managed p = True \<longrightarrow> risk_managed p"
+lemma bursa_risk: "\<forall>(p :: MarketParticipant). mp_risk_managed p = True \<longrightarrow> risk_managed p"
   by auto
 
 (* bursa_compliant_implies_governance (matches Coq) *)
-lemma bursa_compliant_implies_governance: "\<forall> (p : MarketParticipant), bursa_fully_compliant p \<longrightarrow> it_governance_established p"
+lemma bursa_compliant_implies_governance: "\<forall>(p :: MarketParticipant). bursa_fully_compliant p \<longrightarrow> it_governance_established p"
   by auto
 
 (* bursa_compliant_implies_integrity (matches Coq) *)
-lemma bursa_compliant_implies_integrity: "\<forall> (p : MarketParticipant), bursa_fully_compliant p \<longrightarrow> system_integrity p"
+lemma bursa_compliant_implies_integrity: "\<forall>(p :: MarketParticipant). bursa_fully_compliant p \<longrightarrow> system_integrity p"
   by auto
 
 (* bursa_compliant_implies_data_protection (matches Coq) *)
-lemma bursa_compliant_implies_data_protection: "\<forall> (p : MarketParticipant), bursa_fully_compliant p \<longrightarrow> data_protected p"
+lemma bursa_compliant_implies_data_protection: "\<forall>(p :: MarketParticipant). bursa_fully_compliant p \<longrightarrow> data_protected p"
   by auto
 
 (* bursa_compliant_implies_connectivity (matches Coq) *)
-lemma bursa_compliant_implies_connectivity: "\<forall> (p : MarketParticipant), bursa_fully_compliant p \<longrightarrow> connectivity_secured p"
+lemma bursa_compliant_implies_connectivity: "\<forall>(p :: MarketParticipant). bursa_fully_compliant p \<longrightarrow> connectivity_secured p"
   by auto
 
 (* bursa_compliant_implies_bcp (matches Coq) *)
-lemma bursa_compliant_implies_bcp: "\<forall> (p : MarketParticipant), bursa_fully_compliant p \<longrightarrow> bcp_ready p"
+lemma bursa_compliant_implies_bcp: "\<forall>(p :: MarketParticipant). bursa_fully_compliant p \<longrightarrow> bcp_ready p"
   by auto
 
 (* governance_violation_blocks_compliance (matches Coq) *)
-lemma governance_violation_blocks_compliance: "\<forall> (p : MarketParticipant), mp_it_governance p = False \<longrightarrow> ~ it_governance_established p"
+lemma governance_violation_blocks_compliance: "\<forall>(p :: MarketParticipant). mp_it_governance p = False \<longrightarrow> ~ it_governance_established p"
   by auto
 
 (* integrity_violation_blocks_compliance (matches Coq) *)
-lemma integrity_violation_blocks_compliance: "\<forall> (p : MarketParticipant), mp_system_integrity p = False \<longrightarrow> ~ system_integrity p"
+lemma integrity_violation_blocks_compliance: "\<forall>(p :: MarketParticipant). mp_system_integrity p = False \<longrightarrow> ~ system_integrity p"
   by auto
 
 (* data_violation_blocks_compliance (matches Coq) *)
-lemma data_violation_blocks_compliance: "\<forall> (p : MarketParticipant), mp_data_protected p = False \<longrightarrow> ~ data_protected p"
+lemma data_violation_blocks_compliance: "\<forall>(p :: MarketParticipant). mp_data_protected p = False \<longrightarrow> ~ data_protected p"
   by auto
 
 (* connectivity_violation_blocks_compliance (matches Coq) *)
-lemma connectivity_violation_blocks_compliance: "\<forall> (p : MarketParticipant), mp_connectivity_secured p = False \<longrightarrow> ~ connectivity_secured p"
+lemma connectivity_violation_blocks_compliance: "\<forall>(p :: MarketParticipant). mp_connectivity_secured p = False \<longrightarrow> ~ connectivity_secured p"
   by auto
 
 (* bcp_violation_blocks_compliance (matches Coq) *)
-lemma bcp_violation_blocks_compliance: "\<forall> (p : MarketParticipant), mp_bcp_tested p = False \<longrightarrow> ~ bcp_ready p"
+lemma bcp_violation_blocks_compliance: "\<forall>(p :: MarketParticipant). mp_bcp_tested p = False \<longrightarrow> ~ bcp_ready p"
   by auto
 
 (* trading_system_availability (matches Coq) *)
-lemma trading_system_availability: "\<forall> (ts : TradingSystem), ts_min_uptime ts \<le> ts_uptime_pct ts \<longrightarrow> ts_availability_adequate ts"
+lemma trading_system_availability: "\<forall>(ts :: TradingSystem). ts_min_uptime ts \<le> ts_uptime_pct ts \<longrightarrow> ts_availability_adequate ts"
   by auto
 
 (* trading_system_resilience (matches Coq) *)
-lemma trading_system_resilience: "\<forall> (ts : TradingSystem), ts_redundant ts = True \<longrightarrow> ts_failover_tested ts = True \<longrightarrow> ts_resilient ts"
+lemma trading_system_resilience: "\<forall>(ts :: TradingSystem). ts_redundant ts = True \<longrightarrow> ts_failover_tested ts = True \<longrightarrow> ts_resilient ts"
   by auto
 
 (* insufficient_uptime (matches Coq) *)
-lemma insufficient_uptime: "\<forall> (ts : TradingSystem), ts_uptime_pct ts < ts_min_uptime ts \<longrightarrow> ~ ts_availability_adequate ts"
+lemma insufficient_uptime: "\<forall>(ts :: TradingSystem). ts_uptime_pct ts < ts_min_uptime ts \<longrightarrow> ~ ts_availability_adequate ts"
   by simp
 
 (* bursa_composition_v2 (matches Coq) *)
-lemma bursa_composition_v2: "\<forall> (p : MarketParticipant), bursa_fully_compliant p \<longrightarrow> risk_managed p \<longrightarrow> bursa_fully_compliant_v2 p"
+lemma bursa_composition_v2: "\<forall>(p :: MarketParticipant). bursa_fully_compliant p \<longrightarrow> risk_managed p \<longrightarrow> bursa_fully_compliant_v2 p"
   by simp
 
 (* bursa_v2_implies_v1 (matches Coq) *)
-lemma bursa_v2_implies_v1: "\<forall> (p : MarketParticipant), bursa_fully_compliant_v2 p \<longrightarrow> bursa_fully_compliant p"
+lemma bursa_v2_implies_v1: "\<forall>(p :: MarketParticipant). bursa_fully_compliant_v2 p \<longrightarrow> bursa_fully_compliant p"
   by auto
 
 end

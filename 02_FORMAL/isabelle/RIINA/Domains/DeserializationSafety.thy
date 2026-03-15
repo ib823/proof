@@ -169,8 +169,8 @@ fun is_gadget_blocked :: "DeserResult \<Rightarrow> bool" where
 
 (* Helper *)
 (* andb_true_iff_deser (matches Coq) *)
-lemma andb_true_iff_deser: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff_deser: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* DESER_001: RIINA RCE prevention active *)
 (* DESER_001_rce_prevention (matches Coq) *)
@@ -199,52 +199,52 @@ lemma DESER_005_all_defenses: "all_deser_defenses riina_deser_policy = True"
 
 (* DESER_006: Code-containing input is blocked (concrete example) *)
 (* DESER_006_gadget_blocked (matches Coq) *)
-lemma DESER_006_gadget_blocked: "\<forall> fmt sch tags allow, is_gadget_blocked (check_input riina_deser_policy (mkSerInput fmt 100 5 sch tags True allow)) = True"
+lemma DESER_006_gadget_blocked: "\<forall>fmt sch tags allow. is_gadget_blocked (check_input riina_deser_policy (mkSerInput fmt 100 5 sch tags True allow)) = True"
   by simp
 
 (* DESER_007: RCE prevention means no polymorphic deser *)
 (* DESER_007_no_polymorphic (matches Coq) *)
-lemma DESER_007_no_polymorphic: "\<forall> p : DeserPolicy, rce_prevention_active p = True \<longrightarrow> dp_allow_polymorphic p = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma DESER_007_no_polymorphic: "\<forall>p : DeserPolicy. rce_prevention_active p = True \<longrightarrow> dp_allow_polymorphic p = False"
+  by auto
 
 (* DESER_008: RCE prevention means no callbacks *)
 (* DESER_008_no_callbacks (matches Coq) *)
-lemma DESER_008_no_callbacks: "\<forall> p : DeserPolicy, rce_prevention_active p = True \<longrightarrow> dp_allow_callbacks p = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma DESER_008_no_callbacks: "\<forall>p : DeserPolicy. rce_prevention_active p = True \<longrightarrow> dp_allow_callbacks p = False"
+  by auto
 
 (* DESER_009: RCE prevention means no reflection *)
 (* DESER_009_no_reflection (matches Coq) *)
-lemma DESER_009_no_reflection: "\<forall> p : DeserPolicy, rce_prevention_active p = True \<longrightarrow> dp_allow_reflection p = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma DESER_009_no_reflection: "\<forall>p : DeserPolicy. rce_prevention_active p = True \<longrightarrow> dp_allow_reflection p = False"
+  by auto
 
 (* DESER_010: Schema enforcement requires schema *)
 (* DESER_010_requires_schema (matches Coq) *)
-lemma DESER_010_requires_schema: "\<forall> p : DeserPolicy, schema_enforcement_active p = True \<longrightarrow> dp_require_schema p = True"
+lemma DESER_010_requires_schema: "\<forall>p : DeserPolicy. schema_enforcement_active p = True \<longrightarrow> dp_require_schema p = True"
   by auto
 
 (* DESER_011: Schema enforcement requires type tags *)
 (* DESER_011_requires_type_tags (matches Coq) *)
-lemma DESER_011_requires_type_tags: "\<forall> p : DeserPolicy, schema_enforcement_active p = True \<longrightarrow> dp_require_type_tag p = True"
+lemma DESER_011_requires_type_tags: "\<forall>p : DeserPolicy. schema_enforcement_active p = True \<longrightarrow> dp_require_type_tag p = True"
   by auto
 
 (* DESER_012: Schema enforcement requires allowlisting *)
 (* DESER_012_requires_allowlist (matches Coq) *)
-lemma DESER_012_requires_allowlist: "\<forall> p : DeserPolicy, schema_enforcement_active p = True \<longrightarrow> dp_allowlist_types p = True"
+lemma DESER_012_requires_allowlist: "\<forall>p : DeserPolicy. schema_enforcement_active p = True \<longrightarrow> dp_allowlist_types p = True"
   by auto
 
 (* DESER_013: Valid safe input passes *)
 (* DESER_013_valid_input_passes (matches Coq) *)
-lemma DESER_013_valid_input_passes: "\<forall> fmt, is_deser_ok (check_input riina_deser_policy (mkSerInput fmt 100 5 True True False True)) = True"
+lemma DESER_013_valid_input_passes: "\<forall>fmt. is_deser_ok (check_input riina_deser_policy (mkSerInput fmt 100 5 True True False True)) = True"
   by simp
 
 (* DESER_014: Oversized input rejected *)
 (* DESER_014_oversized_rejected (matches Coq) *)
-lemma DESER_014_oversized_rejected: "\<forall> fmt d sch tags code allow, is_deser_ok (check_input riina_deser_policy (mkSerInput fmt 5000 d sch tags code allow)) = False"
+lemma DESER_014_oversized_rejected: "\<forall>fmt d sch tags code allow. is_deser_ok (check_input riina_deser_policy (mkSerInput fmt 5000 d sch tags code allow)) = False"
   by simp
 
 (* DESER_015: Over-depth input rejected (concrete) *)
 (* DESER_015_overdepth_rejected (matches Coq) *)
-lemma DESER_015_overdepth_rejected: "\<forall> fmt sch tags code allow, is_deser_ok (check_input riina_deser_policy (mkSerInput fmt 100 100 sch tags code allow)) = False"
+lemma DESER_015_overdepth_rejected: "\<forall>fmt sch tags code allow. is_deser_ok (check_input riina_deser_policy (mkSerInput fmt 100 100 sch tags code allow)) = False"
   by simp
 
 (* DESER_016: DeserOk is ok *)
@@ -274,28 +274,28 @@ lemma DESER_020_malformed_not_ok: "is_deser_ok DeserMalformed = False"
 
 (* DESER_021: All defenses imply RCE prevention *)
 (* DESER_021_all_implies_rce (matches Coq) *)
-lemma DESER_021_all_implies_rce: "\<forall> p : DeserPolicy, all_deser_defenses p = True \<longrightarrow> rce_prevention_active p = True"
+lemma DESER_021_all_implies_rce: "\<forall>p : DeserPolicy. all_deser_defenses p = True \<longrightarrow> rce_prevention_active p = True"
   by auto
 
 (* DESER_022: All defenses imply schema enforcement *)
 (* DESER_022_all_implies_schema (matches Coq) *)
-lemma DESER_022_all_implies_schema: "\<forall> p : DeserPolicy, all_deser_defenses p = True \<longrightarrow> schema_enforcement_active p = True"
+lemma DESER_022_all_implies_schema: "\<forall>p : DeserPolicy. all_deser_defenses p = True \<longrightarrow> schema_enforcement_active p = True"
   by auto
 
 (* DESER_023: All defenses imply input validation *)
 (* DESER_023_all_implies_validation (matches Coq) *)
-lemma DESER_023_all_implies_validation: "\<forall> p : DeserPolicy, all_deser_defenses p = True \<longrightarrow> input_validation_active p = True"
+lemma DESER_023_all_implies_validation: "\<forall>p : DeserPolicy. all_deser_defenses p = True \<longrightarrow> input_validation_active p = True"
   by auto
 
 (* DESER_024: All defenses imply string safety *)
 (* DESER_024_all_implies_string (matches Coq) *)
-lemma DESER_024_all_implies_string: "\<forall> p : DeserPolicy, all_deser_defenses p = True \<longrightarrow> string_safety_active p = True"
+lemma DESER_024_all_implies_string: "\<forall>p : DeserPolicy. all_deser_defenses p = True \<longrightarrow> string_safety_active p = True"
   by auto
 
 (* DESER_025: Complete deser defense — no polymorphic, no callbacks, no reflection,
     schema required, type tags required, allowlisted types only *)
 (* DESER_025_complete_defense (matches Coq) *)
-lemma DESER_025_complete_defense: "\<forall> p : DeserPolicy, all_deser_defenses p = True \<longrightarrow> dp_allow_polymorphic p = False \<and> dp_allow_callbacks p = False \<and> dp_allow_reflection p = False \<and> dp_require_schema p = True \<and> dp_require_type_tag p = True \<and> dp_allowlist_types p = True \<and> dp_sanitize_strings p = True"
+lemma DESER_025_complete_defense: "\<forall>p : DeserPolicy. all_deser_defenses p = True \<longrightarrow> dp_allow_polymorphic p = False \<and> dp_allow_callbacks p = False \<and> dp_allow_reflection p = False \<and> dp_require_schema p = True \<and> dp_require_type_tag p = True \<and> dp_allowlist_types p = True \<and> dp_sanitize_strings p = True"
   by auto
 
 end

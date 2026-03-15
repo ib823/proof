@@ -223,27 +223,27 @@ definition riina_iso26262 :: "ISO26262Compliance" where
     SECTION 3: COMPLIANCE PREDICATES
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* ISO_001: ASIL Reflexivity *)
 (* ISO_001_asil_reflexive (matches Coq) *)
-lemma ISO_001_asil_reflexive: "\<forall> a : ASIL, asil_leq a a = True"
+lemma ISO_001_asil_reflexive: "\<forall>a : ASIL. asil_leq a a = True"
   by simp
 
 (* ISO_002: ASIL Transitivity *)
 (* ISO_002_asil_transitive (matches Coq) *)
-lemma ISO_002_asil_transitive: "\<forall> a1 a2 a3 : ASIL, asil_leq a1 a2 = True \<longrightarrow> asil_leq a2 a3 = True \<longrightarrow> asil_leq a1 a3 = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_002_asil_transitive: "\<forall>a1 a2 a3 : ASIL. asil_leq a1 a2 = True \<longrightarrow> asil_leq a2 a3 = True \<longrightarrow> asil_leq a1 a3 = True"
+  by auto
 
 (* ISO_003: QM is least stringent *)
 (* ISO_003_qm_bottom (matches Coq) *)
-lemma ISO_003_qm_bottom: "\<forall> a : ASIL, asil_leq QM a = True"
+lemma ISO_003_qm_bottom: "\<forall>a : ASIL. asil_leq QM a = True"
   by simp
 
 (* ISO_004: ASIL D is most stringent *)
 (* ISO_004_asil_d_top (matches Coq) *)
-lemma ISO_004_asil_d_top: "\<forall> a : ASIL, asil_leq a ASIL_D = True"
+lemma ISO_004_asil_d_top: "\<forall>a : ASIL. asil_leq a ASIL_D = True"
   by simp
 
 (* ISO_005: Compliant HARA Valid *)
@@ -253,18 +253,18 @@ lemma ISO_005_hara_valid: "hara_compliant mk_compliant_hara = True"
 
 (* ISO_006: Hazards Must Be Identified *)
 (* ISO_006_hazards_identified (matches Coq) *)
-lemma ISO_006_hazards_identified: "\<forall> h : HARA, hara_compliant h = True \<longrightarrow> hara_hazards_identified h = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_006_hazards_identified: "\<forall>h : HARA. hara_compliant h = True \<longrightarrow> hara_hazards_identified h = True"
+  by auto
 
 (* ISO_007: Safety Goals Must Be Defined *)
 (* ISO_007_safety_goals (matches Coq) *)
-lemma ISO_007_safety_goals: "\<forall> h : HARA, hara_compliant h = True \<longrightarrow> hara_safety_goals_defined h = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_007_safety_goals: "\<forall>h : HARA. hara_compliant h = True \<longrightarrow> hara_safety_goals_defined h = True"
+  by auto
 
 (* ISO_008: ASIL Must Be Determined *)
 (* ISO_008_asil_determined (matches Coq) *)
-lemma ISO_008_asil_determined: "\<forall> h : HARA, hara_compliant h = True \<longrightarrow> hara_asil_determined h = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_008_asil_determined: "\<forall>h : HARA. hara_compliant h = True \<longrightarrow> hara_asil_determined h = True"
+  by auto
 
 (* ISO_009: Compliant SW Development Valid *)
 (* ISO_009_sw_dev_valid (matches Coq) *)
@@ -273,18 +273,18 @@ lemma ISO_009_sw_dev_valid: "sw_dev_compliant mk_compliant_sw_dev = True"
 
 (* ISO_010: Safety Requirements Required *)
 (* ISO_010_safety_requirements (matches Coq) *)
-lemma ISO_010_safety_requirements: "\<forall> d : SoftwareDevelopment, sw_dev_compliant d = True \<longrightarrow> sw_safety_requirements d = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_010_safety_requirements: "\<forall>d : SoftwareDevelopment. sw_dev_compliant d = True \<longrightarrow> sw_safety_requirements d = True"
+  by auto
 
 (* ISO_011: Unit Verification Required *)
 (* ISO_011_unit_verification (matches Coq) *)
-lemma ISO_011_unit_verification: "\<forall> d : SoftwareDevelopment, sw_dev_compliant d = True \<longrightarrow> sw_unit_verification d = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_011_unit_verification: "\<forall>d : SoftwareDevelopment. sw_dev_compliant d = True \<longrightarrow> sw_unit_verification d = True"
+  by auto
 
 (* ISO_012: Safety Validation Required *)
 (* ISO_012_safety_validation (matches Coq) *)
-lemma ISO_012_safety_validation: "\<forall> d : SoftwareDevelopment, sw_dev_compliant d = True \<longrightarrow> sw_safety_validation d = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_012_safety_validation: "\<forall>d : SoftwareDevelopment. sw_dev_compliant d = True \<longrightarrow> sw_safety_validation d = True"
+  by auto
 
 (* ISO_013: Compliant Verification Methods Valid *)
 (* ISO_013_verif_methods_valid (matches Coq) *)
@@ -293,18 +293,18 @@ lemma ISO_013_verif_methods_valid: "verif_methods_compliant mk_compliant_verif_m
 
 (* ISO_014: Formal Verification Required for ASIL D *)
 (* ISO_014_formal_verification (matches Coq) *)
-lemma ISO_014_formal_verification: "\<forall> v : VerificationMethods, verif_methods_compliant v = True \<longrightarrow> vm_formal_verification v = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_014_formal_verification: "\<forall>v : VerificationMethods. verif_methods_compliant v = True \<longrightarrow> vm_formal_verification v = True"
+  by auto
 
 (* ISO_015: Static Analysis Required *)
 (* ISO_015_static_analysis (matches Coq) *)
-lemma ISO_015_static_analysis: "\<forall> v : VerificationMethods, verif_methods_compliant v = True \<longrightarrow> vm_static_analysis v = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_015_static_analysis: "\<forall>v : VerificationMethods. verif_methods_compliant v = True \<longrightarrow> vm_static_analysis v = True"
+  by auto
 
 (* ISO_016: Data Flow Analysis Required *)
 (* ISO_016_data_flow (matches Coq) *)
-lemma ISO_016_data_flow: "\<forall> v : VerificationMethods, verif_methods_compliant v = True \<longrightarrow> vm_data_flow_analysis v = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_016_data_flow: "\<forall>v : VerificationMethods. verif_methods_compliant v = True \<longrightarrow> vm_data_flow_analysis v = True"
+  by auto
 
 (* ISO_017: Compliant Testing Valid *)
 (* ISO_017_testing_valid (matches Coq) *)
@@ -313,18 +313,18 @@ lemma ISO_017_testing_valid: "testing_compliant mk_compliant_testing = True"
 
 (* ISO_018: MC/DC Coverage Required for ASIL D *)
 (* ISO_018_mcdc_coverage (matches Coq) *)
-lemma ISO_018_mcdc_coverage: "\<forall> t : TestingRequirements, testing_compliant t = True \<longrightarrow> test_mc_dc_coverage t = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_018_mcdc_coverage: "\<forall>t : TestingRequirements. testing_compliant t = True \<longrightarrow> test_mc_dc_coverage t = True"
+  by auto
 
 (* ISO_019: Fault Injection Required *)
 (* ISO_019_fault_injection (matches Coq) *)
-lemma ISO_019_fault_injection: "\<forall> t : TestingRequirements, testing_compliant t = True \<longrightarrow> test_fault_injection t = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_019_fault_injection: "\<forall>t : TestingRequirements. testing_compliant t = True \<longrightarrow> test_fault_injection t = True"
+  by auto
 
 (* ISO_020: Requirements-Based Testing Required *)
 (* ISO_020_requirements_based (matches Coq) *)
-lemma ISO_020_requirements_based: "\<forall> t : TestingRequirements, testing_compliant t = True \<longrightarrow> test_requirements_based t = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_020_requirements_based: "\<forall>t : TestingRequirements. testing_compliant t = True \<longrightarrow> test_requirements_based t = True"
+  by auto
 
 (* ISO_021: RIINA ASIL D Compliant *)
 (* ISO_021_riina_asil_d (matches Coq) *)
@@ -333,28 +333,28 @@ lemma ISO_021_riina_asil_d: "asil_d_compliant riina_iso26262 = True"
 
 (* ISO_022: ASIL D Requires Correct Level *)
 (* ISO_022_asil_d_level (matches Coq) *)
-lemma ISO_022_asil_d_level: "\<forall> c : ISO26262Compliance, asil_d_compliant c = True \<longrightarrow> iso_asil c = ASIL_D"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_022_asil_d_level: "\<forall>c : ISO26262Compliance. asil_d_compliant c = True \<longrightarrow> iso_asil c = ASIL_D"
+  by auto
 
 (* ISO_023: ASIL D Requires HARA *)
 (* ISO_023_asil_d_hara (matches Coq) *)
-lemma ISO_023_asil_d_hara: "\<forall> c : ISO26262Compliance, asil_d_compliant c = True \<longrightarrow> hara_compliant (iso_hara c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_023_asil_d_hara: "\<forall>c : ISO26262Compliance. asil_d_compliant c = True \<longrightarrow> hara_compliant (iso_hara c) = True"
+  by auto
 
 (* ISO_024: ASIL D Requires SW Development *)
 (* ISO_024_asil_d_sw_dev (matches Coq) *)
-lemma ISO_024_asil_d_sw_dev: "\<forall> c : ISO26262Compliance, asil_d_compliant c = True \<longrightarrow> sw_dev_compliant (iso_sw_dev c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_024_asil_d_sw_dev: "\<forall>c : ISO26262Compliance. asil_d_compliant c = True \<longrightarrow> sw_dev_compliant (iso_sw_dev c) = True"
+  by auto
 
 (* ISO_025: ASIL D Requires Verification *)
 (* ISO_025_asil_d_verification (matches Coq) *)
-lemma ISO_025_asil_d_verification: "\<forall> c : ISO26262Compliance, asil_d_compliant c = True \<longrightarrow> verif_methods_compliant (iso_verif_methods c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_025_asil_d_verification: "\<forall>c : ISO26262Compliance. asil_d_compliant c = True \<longrightarrow> verif_methods_compliant (iso_verif_methods c) = True"
+  by auto
 
 (* ISO_026: ASIL D Requires Testing *)
 (* ISO_026_asil_d_testing (matches Coq) *)
-lemma ISO_026_asil_d_testing: "\<forall> c : ISO26262Compliance, asil_d_compliant c = True \<longrightarrow> testing_compliant (iso_testing c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_026_asil_d_testing: "\<forall>c : ISO26262Compliance. asil_d_compliant c = True \<longrightarrow> testing_compliant (iso_testing c) = True"
+  by auto
 
 (* ISO_027: RIINA Is ASIL D *)
 (* ISO_027_riina_is_asil_d (matches Coq) *)
@@ -378,27 +378,27 @@ lemma ISO_030_riina_safety_goals: "hara_safety_goals_defined (iso_hara riina_iso
 
 (* ISO_031: ASIL D Implies All Lower Levels *)
 (* ISO_031_asil_d_implies_all (matches Coq) *)
-lemma ISO_031_asil_d_implies_all: "\<forall> a : ASIL, asil_leq a ASIL_D = True"
+lemma ISO_031_asil_d_implies_all: "\<forall>a : ASIL. asil_leq a ASIL_D = True"
   by simp
 
 (* ISO_032: ASIL D Formal Methods Implies Lower Level Compliance *)
 (* ISO_032_formal_methods_cascade (matches Coq) *)
-lemma ISO_032_formal_methods_cascade: "\<forall> v : VerificationMethods, verif_methods_compliant v = True \<longrightarrow> vm_formal_verification v = True \<longrightarrow> vm_static_analysis v = True"
+lemma ISO_032_formal_methods_cascade: "\<forall>v : VerificationMethods. verif_methods_compliant v = True \<longrightarrow> vm_formal_verification v = True \<longrightarrow> vm_static_analysis v = True"
   by simp
 
 (* ISO_033: Complete ASIL D Implies Formal Verification *)
 (* ISO_033_asil_d_implies_formal (matches Coq) *)
-lemma ISO_033_asil_d_implies_formal: "\<forall> c : ISO26262Compliance, asil_d_compliant c = True \<longrightarrow> vm_formal_verification (iso_verif_methods c) = True"
+lemma ISO_033_asil_d_implies_formal: "\<forall>c : ISO26262Compliance. asil_d_compliant c = True \<longrightarrow> vm_formal_verification (iso_verif_methods c) = True"
   by auto
 
 (* ISO_034: Complete ASIL D Implies MC/DC *)
 (* ISO_034_asil_d_implies_mcdc (matches Coq) *)
-lemma ISO_034_asil_d_implies_mcdc: "\<forall> c : ISO26262Compliance, asil_d_compliant c = True \<longrightarrow> test_mc_dc_coverage (iso_testing c) = True"
+lemma ISO_034_asil_d_implies_mcdc: "\<forall>c : ISO26262Compliance. asil_d_compliant c = True \<longrightarrow> test_mc_dc_coverage (iso_testing c) = True"
   by auto
 
 (* ISO_035: Complete ISO 26262 ASIL-D Certification *)
 (* ISO_035_complete_certification (matches Coq) *)
-lemma ISO_035_complete_certification: "\<forall> c : ISO26262Compliance, asil_d_compliant c = True \<longrightarrow> hara_compliant (iso_hara c) = True \<and> safety_concept_compliant (iso_safety_concept c) = True \<and> sw_dev_compliant (iso_sw_dev c) = True \<and> verif_methods_compliant (iso_verif_methods c) = True \<and> testing_compliant (iso_testing c) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ISO_035_complete_certification: "\<forall>c : ISO26262Compliance. asil_d_compliant c = True \<longrightarrow> hara_compliant (iso_hara c) = True \<and> safety_concept_compliant (iso_safety_concept c) = True \<and> sw_dev_compliant (iso_sw_dev c) = True \<and> verif_methods_compliant (iso_verif_methods c) = True \<and> testing_compliant (iso_testing c) = True"
+  by auto
 
 end

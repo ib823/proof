@@ -492,20 +492,20 @@ definition riina_aead :: "AEADProperties" where
     SECTION 1: BASIC LEMMAS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* orb_true_iff (matches Coq) *)
-lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma orb_true_iff: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = True"
+  by auto
 
 (* negb_false_iff (matches Coq) *)
-lemma negb_false_iff: "\<forall> b : bool, (\<not> b) = False <-> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_false_iff: "\<forall>b : bool. (\<not> b) = False <-> b = True"
+  by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+  by auto
 
 (* ============================================================================
     SECTION 13: THEOREMS - BASIC SECURITY PROPERTIES (QSTLS_001-012)
@@ -562,23 +562,23 @@ lemma QSTLS_012: "qstls_version_13 riina_qstls = True"
     SECTION 14: THEOREMS - HYBRID KEX EXTRACTION (QSTLS_013-018)
     ============================================================================ *)
 (* QSTLS_013 (matches Coq) *)
-lemma QSTLS_013: "\<forall> h, hybrid_kex_secure h = True \<longrightarrow> hkex_post_quantum h = True"
+lemma QSTLS_013: "\<forall>h. hybrid_kex_secure h = True \<longrightarrow> hkex_post_quantum h = True"
   by auto
 
 (* QSTLS_014 (matches Coq) *)
-lemma QSTLS_014: "\<forall> h, hybrid_kex_secure h = True \<longrightarrow> hkex_combined h = True"
+lemma QSTLS_014: "\<forall>h. hybrid_kex_secure h = True \<longrightarrow> hkex_combined h = True"
   by auto
 
 (* QSTLS_015 (matches Coq) *)
-lemma QSTLS_015: "\<forall> h, hybrid_kex_secure h = True \<longrightarrow> hkex_classical h = True"
+lemma QSTLS_015: "\<forall>h. hybrid_kex_secure h = True \<longrightarrow> hkex_classical h = True"
   by auto
 
 (* QSTLS_016 (matches Coq) *)
-lemma QSTLS_016: "\<forall> c, hybrid_config_valid c = True \<longrightarrow> hybrid_combiner c = True"
+lemma QSTLS_016: "\<forall>c. hybrid_config_valid c = True \<longrightarrow> hybrid_combiner c = True"
   by auto
 
 (* QSTLS_017 (matches Coq) *)
-lemma QSTLS_017: "\<forall> c, hybrid_config_valid c = True \<longrightarrow> hybrid_label c = True"
+lemma QSTLS_017: "\<forall>c. hybrid_config_valid c = True \<longrightarrow> hybrid_label c = True"
   by auto
 
 (* QSTLS_018 (matches Coq) *)
@@ -589,15 +589,15 @@ lemma QSTLS_018: "hybrid_config_valid riina_hybrid_config = True"
     SECTION 15: THEOREMS - PQ AUTHENTICATION (QSTLS_019-024)
     ============================================================================ *)
 (* QSTLS_019 (matches Coq) *)
-lemma QSTLS_019: "\<forall> p, pq_auth_secure p = True \<longrightarrow> pqa_pq_sig p = True"
+lemma QSTLS_019: "\<forall>p. pq_auth_secure p = True \<longrightarrow> pqa_pq_sig p = True"
   by auto
 
 (* QSTLS_020 (matches Coq) *)
-lemma QSTLS_020: "\<forall> p, pq_auth_secure p = True \<longrightarrow> pqa_classical_sig p = True"
+lemma QSTLS_020: "\<forall>p. pq_auth_secure p = True \<longrightarrow> pqa_classical_sig p = True"
   by auto
 
 (* QSTLS_021 (matches Coq) *)
-lemma QSTLS_021: "\<forall> p, pq_auth_secure p = True \<longrightarrow> pqa_certificate_chain p = True"
+lemma QSTLS_021: "\<forall>p. pq_auth_secure p = True \<longrightarrow> pqa_certificate_chain p = True"
   by auto
 
 (* QSTLS_022 (matches Coq) *)
@@ -616,54 +616,54 @@ lemma QSTLS_024: "sig_security_level ML_DSA_87 = Level5"
     SECTION 16: THEOREMS - HANDSHAKE PROPERTIES (QSTLS_025-030)
     ============================================================================ *)
 (* QSTLS_025 (matches Coq) *)
-lemma QSTLS_025: "\<forall> t, handshake_secure t = True \<longrightarrow> ths_forward_secrecy t = True"
+lemma QSTLS_025: "\<forall>t. handshake_secure t = True \<longrightarrow> ths_forward_secrecy t = True"
   by auto
 
 (* QSTLS_026 (matches Coq) *)
-lemma QSTLS_026: "\<forall> t, handshake_secure t = True \<longrightarrow> ths_downgrade_protection t = True"
+lemma QSTLS_026: "\<forall>t. handshake_secure t = True \<longrightarrow> ths_downgrade_protection t = True"
   by auto
 
 (* QSTLS_027 (matches Coq) *)
-lemma QSTLS_027: "\<forall> t, handshake_secure t = True \<longrightarrow> ths_replay_protection t = True"
+lemma QSTLS_027: "\<forall>t. handshake_secure t = True \<longrightarrow> ths_replay_protection t = True"
   by auto
 
 (* QSTLS_028 (matches Coq) *)
-lemma QSTLS_028: "\<forall> t, handshake_secure t = True \<longrightarrow> ths_key_confirmation t = True"
+lemma QSTLS_028: "\<forall>t. handshake_secure t = True \<longrightarrow> ths_key_confirmation t = True"
   by auto
 
 (* QSTLS_029 (matches Coq) *)
-lemma QSTLS_029: "\<forall> r, record_secure r = True \<longrightarrow> rec_aead r = True"
+lemma QSTLS_029: "\<forall>r. record_secure r = True \<longrightarrow> rec_aead r = True"
   by auto
 
 (* QSTLS_030 (matches Coq) *)
-lemma QSTLS_030: "\<forall> r, record_secure r = True \<longrightarrow> rec_sequence_numbers r = True"
+lemma QSTLS_030: "\<forall>r. record_secure r = True \<longrightarrow> rec_sequence_numbers r = True"
   by auto
 
 (* ============================================================================
     SECTION 17: THEOREMS - FULL CONFIG EXTRACTION (QSTLS_031-036)
     ============================================================================ *)
 (* QSTLS_031 (matches Coq) *)
-lemma QSTLS_031: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> hybrid_kex_secure (qstls_kex q) = True"
+lemma QSTLS_031: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> hybrid_kex_secure (qstls_kex q) = True"
   by auto
 
 (* QSTLS_032 (matches Coq) *)
-lemma QSTLS_032: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> pq_auth_secure (qstls_auth q) = True"
+lemma QSTLS_032: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> pq_auth_secure (qstls_auth q) = True"
   by auto
 
 (* QSTLS_033 (matches Coq) *)
-lemma QSTLS_033: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> handshake_secure (qstls_handshake q) = True"
+lemma QSTLS_033: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> handshake_secure (qstls_handshake q) = True"
   by auto
 
 (* QSTLS_034 (matches Coq) *)
-lemma QSTLS_034: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> record_secure (qstls_record q) = True"
+lemma QSTLS_034: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> record_secure (qstls_record q) = True"
   by auto
 
 (* QSTLS_035 (matches Coq) *)
-lemma QSTLS_035: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> qstls_version_13 q = True"
+lemma QSTLS_035: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> qstls_version_13 q = True"
   by auto
 
 (* QSTLS_036 (matches Coq) *)
-lemma QSTLS_036: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> hkex_post_quantum (qstls_kex q) = True"
+lemma QSTLS_036: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> hkex_post_quantum (qstls_kex q) = True"
   by auto
 
 (* ============================================================================
@@ -674,23 +674,23 @@ lemma QSTLS_037: "forward_secrecy_complete riina_fs_config = True"
   by simp
 
 (* QSTLS_038 (matches Coq) *)
-lemma QSTLS_038: "\<forall> f, forward_secrecy_complete f = True \<longrightarrow> fs_ephemeral_keys f = True"
+lemma QSTLS_038: "\<forall>f. forward_secrecy_complete f = True \<longrightarrow> fs_ephemeral_keys f = True"
   by auto
 
 (* QSTLS_039 (matches Coq) *)
-lemma QSTLS_039: "\<forall> f, forward_secrecy_complete f = True \<longrightarrow> fs_key_deletion f = True"
+lemma QSTLS_039: "\<forall>f. forward_secrecy_complete f = True \<longrightarrow> fs_key_deletion f = True"
   by auto
 
 (* QSTLS_040 (matches Coq) *)
-lemma QSTLS_040: "\<forall> f, forward_secrecy_complete f = True \<longrightarrow> fs_no_static_dh f = True"
+lemma QSTLS_040: "\<forall>f. forward_secrecy_complete f = True \<longrightarrow> fs_no_static_dh f = True"
   by auto
 
 (* QSTLS_041 (matches Coq) *)
-lemma QSTLS_041: "\<forall> f, forward_secrecy_complete f = True \<longrightarrow> fs_pfs_per_session f = True"
+lemma QSTLS_041: "\<forall>f. forward_secrecy_complete f = True \<longrightarrow> fs_pfs_per_session f = True"
   by auto
 
 (* QSTLS_042 (matches Coq) *)
-lemma QSTLS_042: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> ths_forward_secrecy (qstls_handshake q) = True"
+lemma QSTLS_042: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> ths_forward_secrecy (qstls_handshake q) = True"
   by auto
 
 (* ============================================================================
@@ -701,19 +701,19 @@ lemma QSTLS_043: "algorithm_agility_valid riina_agility = True"
   by simp
 
 (* QSTLS_044 (matches Coq) *)
-lemma QSTLS_044: "\<forall> a, algorithm_agility_valid a = True \<longrightarrow> agility_negotiation a = True"
+lemma QSTLS_044: "\<forall>a. algorithm_agility_valid a = True \<longrightarrow> agility_negotiation a = True"
   by auto
 
 (* QSTLS_045 (matches Coq) *)
-lemma QSTLS_045: "\<forall> a, algorithm_agility_valid a = True \<longrightarrow> agility_fallback a = True"
+lemma QSTLS_045: "\<forall>a. algorithm_agility_valid a = True \<longrightarrow> agility_fallback a = True"
   by auto
 
 (* QSTLS_046 (matches Coq) *)
-lemma QSTLS_046: "\<forall> a, algorithm_agility_valid a = True \<longrightarrow> agility_versioning a = True"
+lemma QSTLS_046: "\<forall>a. algorithm_agility_valid a = True \<longrightarrow> agility_versioning a = True"
   by auto
 
 (* QSTLS_047 (matches Coq) *)
-lemma QSTLS_047: "\<forall> a, algorithm_agility_valid a = True \<longrightarrow> agility_extension a = True"
+lemma QSTLS_047: "\<forall>a. algorithm_agility_valid a = True \<longrightarrow> agility_extension a = True"
   by auto
 
 (* QSTLS_048 (matches Coq) *)
@@ -728,19 +728,19 @@ lemma QSTLS_049: "kem_fully_secure riina_kem_security = True"
   by simp
 
 (* QSTLS_050 (matches Coq) *)
-lemma QSTLS_050: "\<forall> k, kem_fully_secure k = True \<longrightarrow> kem_sec_indcca2 k = True"
+lemma QSTLS_050: "\<forall>k. kem_fully_secure k = True \<longrightarrow> kem_sec_indcca2 k = True"
   by auto
 
 (* QSTLS_051 (matches Coq) *)
-lemma QSTLS_051: "\<forall> k, kem_fully_secure k = True \<longrightarrow> kem_sec_module_lwe k = True"
+lemma QSTLS_051: "\<forall>k. kem_fully_secure k = True \<longrightarrow> kem_sec_module_lwe k = True"
   by auto
 
 (* QSTLS_052 (matches Coq) *)
-lemma QSTLS_052: "\<forall> k, kem_fully_secure k = True \<longrightarrow> kem_sec_nist_approved k = True"
+lemma QSTLS_052: "\<forall>k. kem_fully_secure k = True \<longrightarrow> kem_sec_nist_approved k = True"
   by auto
 
 (* QSTLS_053 (matches Coq) *)
-lemma QSTLS_053: "\<forall> k, kem_fully_secure k = True \<longrightarrow> kem_sec_constant_time k = True"
+lemma QSTLS_053: "\<forall>k. kem_fully_secure k = True \<longrightarrow> kem_sec_constant_time k = True"
   by auto
 
 (* QSTLS_054 (matches Coq) *)
@@ -755,15 +755,15 @@ lemma QSTLS_055: "sig_fully_secure riina_sig_security = True"
   by simp
 
 (* QSTLS_056 (matches Coq) *)
-lemma QSTLS_056: "\<forall> s, sig_fully_secure s = True \<longrightarrow> sig_euf_cma s = True"
+lemma QSTLS_056: "\<forall>s. sig_fully_secure s = True \<longrightarrow> sig_euf_cma s = True"
   by auto
 
 (* QSTLS_057 (matches Coq) *)
-lemma QSTLS_057: "\<forall> s, sig_fully_secure s = True \<longrightarrow> sig_strong_euf s = True"
+lemma QSTLS_057: "\<forall>s. sig_fully_secure s = True \<longrightarrow> sig_strong_euf s = True"
   by auto
 
 (* QSTLS_058 (matches Coq) *)
-lemma QSTLS_058: "\<forall> s, sig_fully_secure s = True \<longrightarrow> sig_nist_approved s = True"
+lemma QSTLS_058: "\<forall>s. sig_fully_secure s = True \<longrightarrow> sig_nist_approved s = True"
   by auto
 
 (* QSTLS_059 (matches Coq) *)
@@ -786,11 +786,11 @@ lemma QSTLS_062: "aead_secure riina_aead = True"
   by simp
 
 (* QSTLS_063_complete (matches Coq) *)
-lemma QSTLS_063_complete: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> hkex_post_quantum (qstls_kex q) = True \<and> pqa_pq_sig (qstls_auth q) = True \<and> ths_forward_secrecy (qstls_handshake q) = True \<and> rec_aead (qstls_record q) = True \<and> qstls_version_13 q = True"
+lemma QSTLS_063_complete: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> hkex_post_quantum (qstls_kex q) = True \<and> pqa_pq_sig (qstls_auth q) = True \<and> ths_forward_secrecy (qstls_handshake q) = True \<and> rec_aead (qstls_record q) = True \<and> qstls_version_13 q = True"
   by auto
 
 (* QSTLS_064_hybrid_security (matches Coq) *)
-lemma QSTLS_064_hybrid_security: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> hkex_classical (qstls_kex q) = True \<and> hkex_post_quantum (qstls_kex q) = True \<and> hkex_combined (qstls_kex q) = True"
+lemma QSTLS_064_hybrid_security: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> hkex_classical (qstls_kex q) = True \<and> hkex_post_quantum (qstls_kex q) = True \<and> hkex_combined (qstls_kex q) = True"
   by auto
 
 (* QSTLS_065_full_chain (matches Coq) *)

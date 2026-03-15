@@ -76,7 +76,7 @@ datatype anomaly_result =
 
 (* honest_sensors (matches Coq: Definition honest_sensors) *)
 definition honest_sensors :: "list nat" where
-  "honest_sensors \<equiv> filter (fun s => (\<not> (existsb) (fun b => (s = b)) byzantine)) all_sensors"
+  "honest_sensors \<equiv> filter (\<lambda>s. (\<not> (existsb) (\<lambda>b. (s = b)) byzantine)) all_sensors"
 
 (* byzantine_tolerant (matches Coq: Definition byzantine_tolerant) *)
 definition byzantine_tolerant :: "bool" where
@@ -84,7 +84,7 @@ definition byzantine_tolerant :: "bool" where
 
 (* sensor_authenticated (matches Coq: Definition sensor_authenticated) *)
 definition sensor_authenticated :: "Reading \<Rightarrow> bool" where
-  "sensor_authenticated reading \<equiv> existsb (fun sig => ((reading_signature = reading)) sig) valid_sigs"
+  "sensor_authenticated reading \<equiv> existsb (\<lambda>sig. (reading_signature reading = sig)) valid_sigs"
 
 (* reading_fresh (matches Coq: Definition reading_fresh) *)
 definition reading_fresh :: "Reading \<Rightarrow> bool" where
@@ -119,7 +119,7 @@ definition confidence_bounded :: "FusedResult \<Rightarrow> nat \<Rightarrow> bo
 
 (* temporally_consistent (matches Coq: Definition temporally_consistent) *)
 definition temporally_consistent :: "bool" where
-  "temporally_consistent \<equiv> forall r1 r2, In r1 readings -> In r2 readings ->
+  "temporally_consistent \<equiv> forall r1 r2, r1 \<in> set readings -> r2 \<in> set readings ->
     reading_timestamp r1 <= reading_timestamp r2 \/
     reading_timestamp r2 <= reading_timestamp r1"
 
@@ -140,11 +140,11 @@ definition quorum_reached :: "bool" where
 
 (* reading_not_replayed (matches Coq: Definition reading_not_replayed) *)
 definition reading_not_replayed :: "Reading \<Rightarrow> bool" where
-  "reading_not_replayed reading \<equiv> (\<not> (existsb) (fun t => (t = (reading_timestamp) reading)) seen_timestamps)"
+  "reading_not_replayed reading \<equiv> (\<not> (existsb) (\<lambda>t. (t = (reading_timestamp) reading)) seen_timestamps)"
 
 (* calibration_current (matches Coq: Definition calibration_current) *)
 definition calibration_current :: "bool" where
-  "calibration_current \<equiv> ((current \<le> -) last_cal) max_age"
+  "calibration_current \<equiv> (current - last_cal \<le> max_age)"
 
 (* in_valid_range (matches Coq: Definition in_valid_range) *)
 definition in_valid_range :: "bool" where
@@ -152,7 +152,7 @@ definition in_valid_range :: "bool" where
 
 (* rate_of_change_ok (matches Coq: Definition rate_of_change_ok) *)
 definition rate_of_change_ok :: "bool" where
-  "rate_of_change_ok \<equiv> ((abs_diff \<le> prev) current) max_delta"
+  "rate_of_change_ok \<equiv> (abs_diff prev current \<le> max_delta)"
 
 (* redundancy_sufficient (matches Coq: Definition redundancy_sufficient) *)
 definition redundancy_sufficient :: "bool" where
@@ -168,110 +168,110 @@ definition channel_secure :: "bool" where
 
 (* all_readings_logged (matches Coq: Definition all_readings_logged) *)
 definition all_readings_logged :: "bool" where
-  "all_readings_logged \<equiv> forallb (fun r => existsb (fun l => (r = l)) logged) readings"
+  "all_readings_logged \<equiv> forallb (\<lambda>r. existsb (\<lambda>l. (r = l)) logged) readings"
 
 (* sensor_layers (matches Coq: Definition sensor_layers) *)
 definition sensor_layers :: "bool" where
-  "sensor_layers \<equiv> (auth \<and> (andb) fresh ((bft \<and> anomaly)))"
+  "sensor_layers \<equiv> (auth \<and> fresh \<and> bft \<and> anomaly)"
 
 (* sensor_001_byzantine_threshold (matches Coq) *)
-lemma sensor_001_byzantine_threshold: "\<forall> (n f : nat), byzantine_tolerant n f = True \<longrightarrow> 3 * f + 1 \<le> n"
+lemma sensor_001_byzantine_threshold: "\<forall>(n f : nat). byzantine_tolerant n f = True \<longrightarrow> 3 * f + 1 \<le> n"
   by auto
 
 (* sensor_002_honest_majority (matches Coq) *)
-lemma sensor_002_honest_majority: "\<forall> (n f : nat), n \<ge> 3 * f + 1 \<longrightarrow> n - f \<ge> 2 * f + 1"
+lemma sensor_002_honest_majority: "\<forall>(n f : nat). n \<ge> 3 * f + 1 \<longrightarrow> n - f \<ge> 2 * f + 1"
   by simp
 
 (* sensor_003_authenticated (matches Coq) *)
-lemma sensor_003_authenticated: "\<forall> (reading : Reading) (valid_sigs : list nat), sensor_authenticated reading valid_sigs = True \<longrightarrow> \<exists> sig, In sig valid_sigs \<and> reading_signature reading = sig"
+lemma sensor_003_authenticated: "\<forall>(reading :: Reading) (valid_sigs : list nat). sensor_authenticated reading valid_sigs = True \<longrightarrow> \<exists>sig. sig \<in> set valid_sigs \<and> reading_signature reading = sig"
   by auto
 
 (* sensor_004_freshness (matches Coq) *)
-lemma sensor_004_freshness: "\<forall> (reading : Reading) (current_time max_age : nat), reading_fresh reading current_time max_age = True \<longrightarrow> current_time - reading_timestamp reading \<le> max_age"
+lemma sensor_004_freshness: "\<forall>(reading :: Reading) (current_time max_age : nat). reading_fresh reading current_time max_age = True \<longrightarrow> current_time - reading_timestamp reading \<le> max_age"
   by auto
 
 (* sensor_005_trust_threshold (matches Coq) *)
-lemma sensor_005_trust_threshold: "\<forall> (sensor : Sensor) (min_trust : nat), trust_sufficient sensor min_trust = True \<longrightarrow> min_trust \<le> sensor_trust sensor"
+lemma sensor_005_trust_threshold: "\<forall>(sensor :: Sensor) (min_trust :: nat). trust_sufficient sensor min_trust = True \<longrightarrow> min_trust \<le> sensor_trust sensor"
   by auto
 
 (* sensor_006_cross_validation (matches Coq) *)
-lemma sensor_006_cross_validation: "\<forall> (cv : CrossValidation), cross_valid cv = True \<longrightarrow> cv_difference cv \<le> cv_threshold cv"
+lemma sensor_006_cross_validation: "\<forall>(cv :: CrossValidation). cross_valid cv = True \<longrightarrow> cv_difference cv \<le> cv_threshold cv"
   by auto
 
 (* sensor_007_anomaly_detected (matches Coq) *)
-lemma sensor_007_anomaly_detected: "\<forall> (value expected threshold : nat), threshold * 2 < abs_diff value expected \<longrightarrow> detect_anomaly value expected threshold = Anomalous"
+lemma sensor_007_anomaly_detected: "\<forall>(value expected threshold : nat). threshold * 2 < abs_diff value expected \<longrightarrow> detect_anomaly value expected threshold = Anomalous"
   by simp
 
 (* sensor_008_normal_accepted (matches Coq) *)
-lemma sensor_008_normal_accepted: "\<forall> (value expected threshold : nat), abs_diff value expected \<le> threshold \<longrightarrow> detect_anomaly value expected threshold = Normal"
-  by (cases rule: ‹_›.cases; simp)
+lemma sensor_008_normal_accepted: "\<forall>(value expected threshold : nat). abs_diff value expected \<le> threshold \<longrightarrow> detect_anomaly value expected threshold = Normal"
+  by auto
 
 (* sensor_009_min_sources (matches Coq) *)
-lemma sensor_009_min_sources: "\<forall> (result : FusedResult) (min_sources : nat), fusion_sources_ok result min_sources = True \<longrightarrow> min_sources \<le> length (fused_sources result)"
+lemma sensor_009_min_sources: "\<forall>(result :: FusedResult) (min_sources :: nat). fusion_sources_ok result min_sources = True \<longrightarrow> min_sources \<le> length (fused_sources result)"
   by auto
 
 (* sensor_010_confidence_bounded (matches Coq) *)
-lemma sensor_010_confidence_bounded: "\<forall> (result : FusedResult) (max_conf : nat), confidence_bounded result max_conf = True \<longrightarrow> fused_confidence result \<le> max_conf"
+lemma sensor_010_confidence_bounded: "\<forall>(result :: FusedResult) (max_conf :: nat). confidence_bounded result max_conf = True \<longrightarrow> fused_confidence result \<le> max_conf"
   by auto
 
 (* sensor_011_temporal_consistent (matches Coq) *)
-lemma sensor_011_temporal_consistent: "\<forall> (readings : list Reading), temporally_consistent readings \<longrightarrow> temporally_consistent readings"
+lemma sensor_011_temporal_consistent: "\<forall>(readings : list Reading). temporally_consistent readings \<longrightarrow> temporally_consistent readings"
   by auto
 
 (* sensor_012_diversity (matches Coq) *)
-lemma sensor_012_diversity: "\<forall> (readings : list Reading) (sensors : list Sensor) (min_types : nat), sensor_types_diverse readings sensors \<ge> min_types \<longrightarrow> sensor_types_diverse readings sensors \<ge> min_types"
+lemma sensor_012_diversity: "\<forall>(readings : list Reading) (sensors : list Sensor) (min_types :: nat). sensor_types_diverse readings sensors \<ge> min_types \<longrightarrow> sensor_types_diverse readings sensors \<ge> min_types"
   by auto
 
 (* sensor_013_weight_bounded (matches Coq) *)
-lemma sensor_013_weight_bounded: "\<forall> (weight max_weight : nat), weight_valid weight max_weight = True \<longrightarrow> weight \<le> max_weight"
+lemma sensor_013_weight_bounded: "\<forall>(weight max_weight : nat). weight_valid weight max_weight = True \<longrightarrow> weight \<le> max_weight"
   by auto
 
 (* sensor_014_outlier_rejected (matches Coq) *)
-lemma sensor_014_outlier_rejected: "\<forall> (value median threshold : nat), is_outlier value median threshold = True \<longrightarrow> threshold < abs_diff value median"
+lemma sensor_014_outlier_rejected: "\<forall>(value median threshold : nat). is_outlier value median threshold = True \<longrightarrow> threshold < abs_diff value median"
   by auto
 
 (* sensor_015_quorum (matches Coq) *)
-lemma sensor_015_quorum: "\<forall> (agreeing total required_pct : nat), quorum_reached agreeing total required_pct = True \<longrightarrow> total * required_pct / 100 \<le> agreeing"
+lemma sensor_015_quorum: "\<forall>(agreeing total required_pct : nat). quorum_reached agreeing total required_pct = True \<longrightarrow> total * required_pct / 100 \<le> agreeing"
   by auto
 
 (* sensor_016_no_replay (matches Coq) *)
-lemma sensor_016_no_replay: "\<forall> (reading : Reading) (seen : list nat), reading_not_replayed reading seen = True \<longrightarrow> ~ In (reading_timestamp reading) seen"
+lemma sensor_016_no_replay: "\<forall>(reading :: Reading) (seen : list nat). reading_not_replayed reading seen = True \<longrightarrow> ~ In (reading_timestamp reading) seen"
   by auto
 
 (* sensor_017_calibration_valid (matches Coq) *)
-lemma sensor_017_calibration_valid: "\<forall> (last_cal current max_age : nat), calibration_current last_cal current max_age = True \<longrightarrow> current - last_cal \<le> max_age"
+lemma sensor_017_calibration_valid: "\<forall>(last_cal current max_age : nat). calibration_current last_cal current max_age = True \<longrightarrow> current - last_cal \<le> max_age"
   by auto
 
 (* sensor_018_range_valid (matches Coq) *)
-lemma sensor_018_range_valid: "\<forall> (value min_val max_val : nat), in_valid_range value min_val max_val = True \<longrightarrow> min_val \<le> value \<and> value \<le> max_val"
+lemma sensor_018_range_valid: "\<forall>(value min_val max_val : nat). in_valid_range value min_val max_val = True \<longrightarrow> min_val \<le> value \<and> value \<le> max_val"
   by auto
 
 (* sensor_019_rate_bounded (matches Coq) *)
-lemma sensor_019_rate_bounded: "\<forall> (prev current max_delta : nat), rate_of_change_ok prev current max_delta = True \<longrightarrow> abs_diff prev current \<le> max_delta"
+lemma sensor_019_rate_bounded: "\<forall>(prev current max_delta : nat). rate_of_change_ok prev current max_delta = True \<longrightarrow> abs_diff prev current \<le> max_delta"
   by auto
 
 (* sensor_020_redundancy (matches Coq) *)
-lemma sensor_020_redundancy: "\<forall> (active min_redundancy : nat), redundancy_sufficient active min_redundancy = True \<longrightarrow> min_redundancy \<le> active"
+lemma sensor_020_redundancy: "\<forall>(active min_redundancy : nat). redundancy_sufficient active min_redundancy = True \<longrightarrow> min_redundancy \<le> active"
   by auto
 
 (* sensor_021_health_ok (matches Coq) *)
-lemma sensor_021_health_ok: "\<forall> (error_rate max_error : nat), sensor_healthy error_rate max_error = True \<longrightarrow> error_rate \<le> max_error"
+lemma sensor_021_health_ok: "\<forall>(error_rate max_error : nat). sensor_healthy error_rate max_error = True \<longrightarrow> error_rate \<le> max_error"
   by auto
 
 (* sensor_022_deterministic (matches Coq) *)
-lemma sensor_022_deterministic: "\<forall> (readings : list Reading) (f : list Reading \<longrightarrow> nat), f readings = f readings"
+lemma sensor_022_deterministic: "\<forall>(readings : list Reading) (f : list Reading \<longrightarrow> nat). f readings = f readings"
   by simp
 
 (* sensor_023_secure_channel (matches Coq) *)
-lemma sensor_023_secure_channel: "\<forall> (encryption auth : bool), channel_secure encryption auth = True \<longrightarrow> encryption = True \<and> auth = True"
+lemma sensor_023_secure_channel: "\<forall>(encryption auth : bool). channel_secure encryption auth = True \<longrightarrow> encryption = True \<and> auth = True"
   by auto
 
 (* sensor_024_audit_complete (matches Coq) *)
-lemma sensor_024_audit_complete: "\<forall> (readings logged : list nat), all_readings_logged readings logged = True \<longrightarrow> Forall (fun r => \<exists> l, In l logged \<and> r = l) readings"
+lemma sensor_024_audit_complete: "\<forall>(readings logged : list nat). all_readings_logged readings logged = True \<longrightarrow> Forall (\<lambda>r. \<exists>l. l \<in> set logged \<and> r = l) readings"
   by auto
 
 (* sensor_025_defense_in_depth (matches Coq) *)
-lemma sensor_025_defense_in_depth: "\<forall> a f b an, sensor_layers a f b an = True \<longrightarrow> a = True \<and> f = True \<and> b = True \<and> an = True"
+lemma sensor_025_defense_in_depth: "\<forall>a f b an. sensor_layers a f b an = True \<longrightarrow> a = True \<and> f = True \<and> b = True \<and> an = True"
   by auto
 
 end

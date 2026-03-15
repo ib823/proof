@@ -134,11 +134,11 @@ fun ty_size :: "ty \<Rightarrow> nat" where
 
 (* first_order_type (matches Coq: Definition first_order_type) *)
 fun first_order_type :: "ty \<Rightarrow> bool" where
-
+  "first_order_type _ = True"
 
 (* fo_compound_depth (matches Coq: Definition fo_compound_depth) *)
 fun fo_compound_depth :: "ty \<Rightarrow> nat" where
-
+  "fo_compound_depth _ = 0"
 
 (* is_value_b (matches Coq: Definition is_value_b) *)
 fun is_value_b :: "expr \<Rightarrow> bool" where
@@ -146,11 +146,11 @@ fun is_value_b :: "expr \<Rightarrow> bool" where
 
 (* store_empty (matches Coq: Definition store_empty) *)
 definition store_empty :: "store" where
-  "store_empty \<equiv> fun _ => None"
+  "store_empty \<equiv> \<lambda>_. None"
 
 (* store_ty_empty (matches Coq: Definition store_ty_empty) *)
 definition store_ty_empty :: "store_typing" where
-  "store_ty_empty \<equiv> fun _ => None"
+  "store_ty_empty \<equiv> \<lambda>_. None"
 
 (* store_lookup (matches Coq: Definition store_lookup) *)
 definition store_lookup :: "nat \<Rightarrow> store \<Rightarrow> option expr" where
@@ -198,249 +198,249 @@ definition exp_rel_n :: "nat \<Rightarrow> store_typing \<Rightarrow> ty \<Right
 definition label_join :: "bool" where "label_join = undefined"
 
 (* label_leq_refl (matches Coq) *)
-lemma label_leq_refl: "\<forall> l, label_leq l l = True"
+lemma label_leq_refl: "\<forall>l. label_leq l l = True"
   by simp
 
 (* label_leq_trans (matches Coq) *)
-lemma label_leq_trans: "\<forall> l1 l2 l3, label_leq l1 l2 = True \<longrightarrow> label_leq l2 l3 = True \<longrightarrow> label_leq l1 l3 = True"
+lemma label_leq_trans: "\<forall>l1 l2 l3. label_leq l1 l2 = True \<longrightarrow> label_leq l2 l3 = True \<longrightarrow> label_leq l1 l3 = True"
   by auto
 
 (* label_leq_antisym (matches Coq) *)
-lemma label_leq_antisym: "\<forall> l1 l2, label_leq l1 l2 = True \<longrightarrow> label_leq l2 l1 = True \<longrightarrow> l1 = l2"
+lemma label_leq_antisym: "\<forall>l1 l2. label_leq l1 l2 = True \<longrightarrow> label_leq l2 l1 = True \<longrightarrow> l1 = l2"
   by auto
 
 (* ty_size_pos (matches Coq) *)
-lemma ty_size_pos: "\<forall> T, ty_size T > 0"
+lemma ty_size_pos: "\<forall>T. ty_size T > 0"
   by simp
 
 (* ty_size_prod_left (matches Coq) *)
-lemma ty_size_prod_left: "\<forall> T1 T2, ty_size T1 < ty_size (TProd T1 T2)"
+lemma ty_size_prod_left: "\<forall>T1 T2. ty_size T1 < ty_size (TProd T1 T2)"
   by simp
 
 (* ty_size_prod_right (matches Coq) *)
-lemma ty_size_prod_right: "\<forall> T1 T2, ty_size T2 < ty_size (TProd T1 T2)"
+lemma ty_size_prod_right: "\<forall>T1 T2. ty_size T2 < ty_size (TProd T1 T2)"
   by simp
 
 (* ty_size_sum_left (matches Coq) *)
-lemma ty_size_sum_left: "\<forall> T1 T2, ty_size T1 < ty_size (TSum T1 T2)"
+lemma ty_size_sum_left: "\<forall>T1 T2. ty_size T1 < ty_size (TSum T1 T2)"
   by simp
 
 (* ty_size_sum_right (matches Coq) *)
-lemma ty_size_sum_right: "\<forall> T1 T2, ty_size T2 < ty_size (TSum T1 T2)"
+lemma ty_size_sum_right: "\<forall>T1 T2. ty_size T2 < ty_size (TSum T1 T2)"
   by simp
 
 (* Store update lemmas *)
 (* store_update_lookup_eq (matches Coq) *)
-lemma store_update_lookup_eq: "\<forall> σ l v, store_lookup l (store_update σ l v) = Some v"
+lemma store_update_lookup_eq: "\<forall>σ l v. store_lookup l (store_update σ l v) = Some v"
   by simp
 
 (* store_update_lookup_neq (matches Coq) *)
-lemma store_update_lookup_neq: "\<forall> σ l l' v, l \<noteq> l' \<longrightarrow> store_lookup l' (store_update σ l v) = store_lookup l' σ"
+lemma store_update_lookup_neq: "\<forall>σ l l' v. l \<noteq> l' \<longrightarrow> store_lookup l' (store_update σ l v) = store_lookup l' σ"
   by simp
 
 (* store_ty_update_lookup_eq (matches Coq) *)
-lemma store_ty_update_lookup_eq: "\<forall> Σ l T lab, store_ty_lookup l (store_ty_update Σ l T lab) = Some (T, lab)"
+lemma store_ty_update_lookup_eq: "\<forall>Σ l T lab. store_ty_lookup l (store_ty_update Σ l T lab) = Some (T, lab)"
   by simp
 
 (* store_ty_update_lookup_neq (matches Coq) *)
-lemma store_ty_update_lookup_neq: "\<forall> Σ l l' T lab, l \<noteq> l' \<longrightarrow> store_ty_lookup l' (store_ty_update Σ l T lab) = store_ty_lookup l' Σ"
+lemma store_ty_update_lookup_neq: "\<forall>Σ l l' T lab. l \<noteq> l' \<longrightarrow> store_ty_lookup l' (store_ty_update Σ l T lab) = store_ty_lookup l' Σ"
   by simp
 
 (* store_ty_extends_refl (matches Coq) *)
-lemma store_ty_extends_refl: "\<forall> Σ, store_ty_extends Σ Σ"
+lemma store_ty_extends_refl: "\<forall>Σ. store_ty_extends Σ Σ"
   by auto
 
 (* store_ty_extends_trans (matches Coq) *)
-lemma store_ty_extends_trans: "\<forall> Σ1 Σ2 Σ3, store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ3 \<longrightarrow> store_ty_extends Σ1 Σ3"
+lemma store_ty_extends_trans: "\<forall>Σ1 Σ2 Σ3. store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ3 \<longrightarrow> store_ty_extends Σ1 Σ3"
   by auto
 
 (* L1: Step 0 is trivial *)
 (* val_rel_n_zero (matches Coq) *)
-lemma val_rel_n_zero: "\<forall> Σ T v1 v2, val_rel_n 0 Σ T v1 v2"
+lemma val_rel_n_zero: "\<forall>Σ T v1 v2. val_rel_n 0 Σ T v1 v2"
   by auto
 
 (* L2: Unit values *)
 (* val_rel_n_unit (matches Coq) *)
-lemma val_rel_n_unit: "\<forall> n Σ, n > 0 \<longrightarrow> val_rel_n n Σ TUnit EUnit EUnit"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_unit: "\<forall>n Σ. n > 0 \<longrightarrow> val_rel_n n Σ TUnit EUnit EUnit"
+  by auto
 
 (* L3: Bool values *)
 (* val_rel_n_bool (matches Coq) *)
-lemma val_rel_n_bool: "\<forall> n Σ b, n > 0 \<longrightarrow> val_rel_n n Σ TBool (EBool b) (EBool b)"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_bool: "\<forall>n Σ b. n > 0 \<longrightarrow> val_rel_n n Σ TBool (EBool b) (EBool b)"
+  by auto
 
 (* L4: Nat values *)
 (* val_rel_n_nat (matches Coq) *)
-lemma val_rel_n_nat: "\<forall> n Σ m, n > 0 \<longrightarrow> val_rel_n n Σ TNat (ENat m) (ENat m)"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_nat: "\<forall>n Σ m. n > 0 \<longrightarrow> val_rel_n n Σ TNat (ENat m) (ENat m)"
+  by auto
 
 (* L5: Reference values *)
 (* val_rel_n_ref (matches Coq) *)
-lemma val_rel_n_ref: "\<forall> n Σ l T lab, n > 0 \<longrightarrow> store_ty_lookup l Σ = Some (T, lab) \<longrightarrow> val_rel_n n Σ (TRef T lab) (ELoc l) (ELoc l)"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_ref: "\<forall>n Σ l T lab. n > 0 \<longrightarrow> store_ty_lookup l Σ = Some (T, lab) \<longrightarrow> val_rel_n n Σ (TRef T lab) (ELoc l) (ELoc l)"
+  by auto
 
 (* L6: Related references point to same location *)
 (* val_rel_n_ref_same_loc (matches Coq) *)
-lemma val_rel_n_ref_same_loc: "\<forall> n Σ T lab v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ (TRef T lab) v1 v2 \<longrightarrow> \<exists> l, v1 = ELoc l \<and> v2 = ELoc l \<and> store_ty_lookup l Σ = Some (T, lab)"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_ref_same_loc: "\<forall>n Σ T lab v1 v2. n > 0 \<longrightarrow> val_rel_n n Σ (TRef T lab) v1 v2 \<longrightarrow> \<exists>l. v1 = ELoc l \<and> v2 = ELoc l \<and> store_ty_lookup l Σ = Some (T, lab)"
+  by auto
 
 (* L7: Cumulative structure *)
 (* val_rel_n_cumulative (matches Coq) *)
-lemma val_rel_n_cumulative: "\<forall> n Σ T v1 v2, val_rel_n (S n) Σ T v1 v2 \<longrightarrow> val_rel_n n Σ T v1 v2"
+lemma val_rel_n_cumulative: "\<forall>n Σ T v1 v2. val_rel_n (S n) Σ T v1 v2 \<longrightarrow> val_rel_n n Σ T v1 v2"
   by auto
 
 (* L8: Step monotonicity (MAIN LEMMA) *)
 (* val_rel_n_step_down (matches Coq) *)
-lemma val_rel_n_step_down: "\<forall> n m Σ T v1 v2, m \<le> n \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> val_rel_n m Σ T v1 v2"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_step_down: "\<forall>n m Σ T v1 v2. m \<le> n \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> val_rel_n m Σ T v1 v2"
+  by auto
 
 (* L9: Values are values (left) *)
 (* val_rel_n_value_left (matches Coq) *)
-lemma val_rel_n_value_left: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> is_value v1"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_value_left: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> is_value v1"
+  by auto
 
 (* L10: Values are values (right) *)
 (* val_rel_n_value_right (matches Coq) *)
-lemma val_rel_n_value_right: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> is_value v2"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_value_right: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> is_value v2"
+  by auto
 
 (* L11: Product construction *)
 (* val_rel_n_prod (matches Coq) *)
-lemma val_rel_n_prod: "\<forall> n Σ T1 T2 v1a v1b v2a v2b, n > 0 \<longrightarrow> val_rel_n n Σ T1 v1a v2a \<longrightarrow> val_rel_n n Σ T2 v1b v2b \<longrightarrow> is_value v1a \<longrightarrow> is_value v1b \<longrightarrow> is_value v2a \<longrightarrow> is_value v2b \<longrightarrow> val_rel_n n Σ (TProd T1 T2) (EPair v1a v1b) (EPair v2a v2b)"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_prod: "\<forall>n Σ T1 T2 v1a v1b v2a v2b. n > 0 \<longrightarrow> val_rel_n n Σ T1 v1a v2a \<longrightarrow> val_rel_n n Σ T2 v1b v2b \<longrightarrow> is_value v1a \<longrightarrow> is_value v1b \<longrightarrow> is_value v2a \<longrightarrow> is_value v2b \<longrightarrow> val_rel_n n Σ (TProd T1 T2) (EPair v1a v1b) (EPair v2a v2b)"
+  by auto
 
 (* L12: Sum injection left *)
 (* val_rel_n_inl (matches Coq) *)
-lemma val_rel_n_inl: "\<forall> n Σ T1 T2 v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ T1 v1 v2 \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> val_rel_n n Σ (TSum T1 T2) (EInl v1) (EInl v2)"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_inl: "\<forall>n Σ T1 T2 v1 v2. n > 0 \<longrightarrow> val_rel_n n Σ T1 v1 v2 \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> val_rel_n n Σ (TSum T1 T2) (EInl v1) (EInl v2)"
+  by auto
 
 (* L13: Sum injection right *)
 (* val_rel_n_inr (matches Coq) *)
-lemma val_rel_n_inr: "\<forall> n Σ T1 T2 v1 v2, n > 0 \<longrightarrow> val_rel_n n Σ T2 v1 v2 \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> val_rel_n n Σ (TSum T1 T2) (EInr v1) (EInr v2)"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_inr: "\<forall>n Σ T1 T2 v1 v2. n > 0 \<longrightarrow> val_rel_n n Σ T2 v1 v2 \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> val_rel_n n Σ (TSum T1 T2) (EInr v1) (EInr v2)"
+  by auto
 
 (* L14: Lambda construction *)
 (* val_rel_n_lam (matches Coq) *)
-lemma val_rel_n_lam: "\<forall> n Σ T1 T2 e1 e2, n > 0 \<longrightarrow> val_rel_n n Σ (TArrow T1 T2) (ELam T1 e1) (ELam T1 e2)"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_lam: "\<forall>n Σ T1 T2 e1 e2. n > 0 \<longrightarrow> val_rel_n n Σ (TArrow T1 T2) (ELam T1 e1) (ELam T1 e2)"
+  by auto
 
 (* L15: First-order step independence *)
 (* val_rel_n_fo_step_independent (matches Coq) *)
-lemma val_rel_n_fo_step_independent: "\<forall> T m n Σ v1 v2, first_order_type T = True \<longrightarrow> m > fo_compound_depth T \<longrightarrow> n > 0 \<longrightarrow> val_rel_n m Σ T v1 v2 \<longrightarrow> val_rel_n n Σ T v1 v2"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_n_fo_step_independent: "\<forall>T m n Σ v1 v2. first_order_type T = True \<longrightarrow> m > fo_compound_depth T \<longrightarrow> n > 0 \<longrightarrow> val_rel_n m Σ T v1 v2 \<longrightarrow> val_rel_n n Σ T v1 v2"
+  by auto
 
 (* L16: Store relation step 0 *)
 (* store_rel_n_zero (matches Coq) *)
-lemma store_rel_n_zero: "\<forall> Σ s1 s2, store_rel_n 0 Σ s1 s2"
+lemma store_rel_n_zero: "\<forall>Σ s1 s2. store_rel_n 0 Σ s1 s2"
   by auto
 
 (* L17: Store relation monotonicity *)
 (* store_rel_n_step_down (matches Coq) *)
-lemma store_rel_n_step_down: "\<forall> n m Σ σ1 σ2, m \<le> n \<longrightarrow> store_rel_n n Σ σ1 σ2 \<longrightarrow> store_rel_n m Σ σ1 σ2"
+lemma store_rel_n_step_down: "\<forall>n m Σ σ1 σ2. m \<le> n \<longrightarrow> store_rel_n n Σ σ1 σ2 \<longrightarrow> store_rel_n m Σ σ1 σ2"
   by auto
 
 (* L18: Empty store is related *)
 (* store_rel_n_empty (matches Coq) *)
-lemma store_rel_n_empty: "\<forall> n, store_rel_n n store_ty_empty store_empty store_empty"
+lemma store_rel_n_empty: "\<forall>n. store_rel_n n store_ty_empty store_empty store_empty"
   by auto
 
 (* L19: Store update preserves relation *)
 (* store_update_preserves_rel (matches Coq) *)
-lemma store_update_preserves_rel: "\<forall> n Σ σ1 σ2 l T lab v1 v2, store_rel_n n Σ σ1 σ2 \<longrightarrow> store_ty_lookup l Σ = Some (T, lab) \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> store_rel_n n Σ (store_update σ1 l v1) (store_update σ2 l v2)"
+lemma store_update_preserves_rel: "\<forall>n Σ σ1 σ2 l T lab v1 v2. store_rel_n n Σ σ1 σ2 \<longrightarrow> store_ty_lookup l Σ = Some (T, lab) \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> store_rel_n n Σ (store_update σ1 l v1) (store_update σ2 l v2)"
   by auto
 
 (* L20: Store typing extension is a preorder *)
 (* store_ty_extends_antisym (matches Coq) *)
-lemma store_ty_extends_antisym: "\<forall> Σ1 Σ2, store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ1 \<longrightarrow> \<forall> l, store_ty_lookup l Σ1 = store_ty_lookup l Σ2"
+lemma store_ty_extends_antisym: "\<forall>Σ1 Σ2. store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ1 \<longrightarrow> \<forall>l. store_ty_lookup l Σ1 = store_ty_lookup l Σ2"
   by simp
 
 (* L21: Store typing update extends *)
 (* store_ty_update_extends (matches Coq) *)
-lemma store_ty_update_extends: "\<forall> Σ l T lab, store_ty_lookup l Σ = None \<longrightarrow> store_ty_extends Σ (store_ty_update Σ l T lab)"
+lemma store_ty_update_extends: "\<forall>Σ l T lab. store_ty_lookup l Σ = None \<longrightarrow> store_ty_extends Σ (store_ty_update Σ l T lab)"
   by auto
 
 (* L22: Store lookup deterministic *)
 (* store_lookup_deterministic (matches Coq) *)
-lemma store_lookup_deterministic: "\<forall> s l v1 v2, store_lookup l s = Some v1 \<longrightarrow> store_lookup l s = Some v2 \<longrightarrow> v1 = v2"
+lemma store_lookup_deterministic: "\<forall>s l v1 v2. store_lookup l s = Some v1 \<longrightarrow> store_lookup l s = Some v2 \<longrightarrow> v1 = v2"
   by simp
 
 (* L23: Store typing lookup deterministic *)
 (* store_ty_lookup_deterministic (matches Coq) *)
-lemma store_ty_lookup_deterministic: "\<forall> Σ l T1 sl1 T2 sl2, store_ty_lookup l Σ = Some (T1, sl1) \<longrightarrow> store_ty_lookup l Σ = Some (T2, sl2) \<longrightarrow> T1 = T2 \<and> sl1 = sl2"
+lemma store_ty_lookup_deterministic: "\<forall>Σ l T1 sl1 T2 sl2. store_ty_lookup l Σ = Some (T1, sl1) \<longrightarrow> store_ty_lookup l Σ = Some (T2, sl2) \<longrightarrow> T1 = T2 \<and> sl1 = sl2"
   by auto
 
 (* L24: Store update idempotent *)
 (* store_update_idem (matches Coq) *)
-lemma store_update_idem: "\<forall> s l v, store_update (store_update s l v) l v = store_update s l v"
+lemma store_update_idem: "\<forall>s l v. store_update (store_update s l v) l v = store_update s l v"
   by simp
 
 (* L25: Store update commutes for different locations *)
 (* store_update_comm (matches Coq) *)
-lemma store_update_comm: "\<forall> s l1 l2 v1 v2, l1 \<noteq> l2 \<longrightarrow> store_update (store_update s l1 v1) l2 v2 = store_update (store_update s l2 v2) l1 v1"
+lemma store_update_comm: "\<forall>s l1 l2 v1 v2. l1 \<noteq> l2 \<longrightarrow> store_update (store_update s l1 v1) l2 v2 = store_update (store_update s l2 v2) l1 v1"
   by auto
 
 (* L26: Expression relation step 0 *)
 (* exp_rel_n_zero (matches Coq) *)
-lemma exp_rel_n_zero: "\<forall> Σ T e1 e2, exp_rel_n 0 Σ T e1 e2"
+lemma exp_rel_n_zero: "\<forall>Σ T e1 e2. exp_rel_n 0 Σ T e1 e2"
   by auto
 
 (* L27: Expression relation for unit *)
 (* exp_rel_n_unit_expr (matches Coq) *)
-lemma exp_rel_n_unit_expr: "\<forall> n Σ, n > 0 \<longrightarrow> exp_rel_n n Σ TUnit EUnit EUnit"
+lemma exp_rel_n_unit_expr: "\<forall>n Σ. n > 0 \<longrightarrow> exp_rel_n n Σ TUnit EUnit EUnit"
   by auto
 
 (* L28: Expression relation monotonicity *)
 (* exp_rel_n_step_down (matches Coq) *)
-lemma exp_rel_n_step_down: "\<forall> n m Σ T e1 e2, m \<le> n \<longrightarrow> exp_rel_n n Σ T e1 e2 \<longrightarrow> exp_rel_n m Σ T e1 e2"
+lemma exp_rel_n_step_down: "\<forall>n m Σ T e1 e2. m \<le> n \<longrightarrow> exp_rel_n n Σ T e1 e2 \<longrightarrow> exp_rel_n m Σ T e1 e2"
   by auto
 
 (* L29: Value implies expression relation *)
 (* val_rel_implies_exp_rel (matches Coq) *)
-lemma val_rel_implies_exp_rel: "\<forall> n Σ T v1 v2, is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> exp_rel_n n Σ T v1 v2"
+lemma val_rel_implies_exp_rel: "\<forall>n Σ T v1 v2. is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> exp_rel_n n Σ T v1 v2"
   by auto
 
 (* L30: Expression relation for bool *)
 (* exp_rel_n_bool_expr (matches Coq) *)
-lemma exp_rel_n_bool_expr: "\<forall> n Σ b, n > 0 \<longrightarrow> exp_rel_n n Σ TBool (EBool b) (EBool b)"
+lemma exp_rel_n_bool_expr: "\<forall>n Σ b. n > 0 \<longrightarrow> exp_rel_n n Σ TBool (EBool b) (EBool b)"
   by auto
 
 (* label_join_comm (matches Coq) *)
-lemma label_join_comm: "\<forall> l1 l2, label_join l1 l2 = label_join l2 l1"
+lemma label_join_comm: "\<forall>l1 l2. label_join l1 l2 = label_join l2 l1"
   by simp
 
 (* label_join_assoc (matches Coq) *)
-lemma label_join_assoc: "\<forall> l1 l2 l3, label_join (label_join l1 l2) l3 = label_join l1 (label_join l2 l3)"
+lemma label_join_assoc: "\<forall>l1 l2 l3. label_join (label_join l1 l2) l3 = label_join l1 (label_join l2 l3)"
   by simp
 
 (* label_join_idem (matches Coq) *)
-lemma label_join_idem: "\<forall> l, label_join l l = l"
+lemma label_join_idem: "\<forall>l. label_join l l = l"
   by simp
 
 (* L32: Type equality decidability *)
 (* ty_eq_dec (matches Coq) *)
-lemma ty_eq_dec: "\<forall> (T1 T2 : ty), {T1 = T2} + {T1 \<noteq> T2}"
+lemma ty_eq_dec: "\<forall>(T1 T2 : ty). (T1 = T2) \<or> (T1 \<noteq> T2)"
   by simp
 
 (* L34: First-order types closed under subtyping *)
 (* first_order_prod_components (matches Coq) *)
-lemma first_order_prod_components: "\<forall> T1 T2, first_order_type (TProd T1 T2) = True \<longrightarrow> first_order_type T1 = True \<and> first_order_type T2 = True"
+lemma first_order_prod_components: "\<forall>T1 T2. first_order_type (TProd T1 T2) = True \<longrightarrow> first_order_type T1 = True \<and> first_order_type T2 = True"
   by auto
 
 (* first_order_sum_components (matches Coq) *)
-lemma first_order_sum_components: "\<forall> T1 T2, first_order_type (TSum T1 T2) = True \<longrightarrow> first_order_type T1 = True \<and> first_order_type T2 = True"
+lemma first_order_sum_components: "\<forall>T1 T2. first_order_type (TSum T1 T2) = True \<longrightarrow> first_order_type T1 = True \<and> first_order_type T2 = True"
   by auto
 
 (* L35: Depth properties *)
 (* fo_depth_prod (matches Coq) *)
-lemma fo_depth_prod: "\<forall> T1 T2, fo_compound_depth (TProd T1 T2) = 1 + max (fo_compound_depth T1) (fo_compound_depth T2)"
+lemma fo_depth_prod: "\<forall>T1 T2. fo_compound_depth (TProd T1 T2) = 1 + max (fo_compound_depth T1) (fo_compound_depth T2)"
   by simp
 
 (* fo_depth_sum (matches Coq) *)
-lemma fo_depth_sum: "\<forall> T1 T2, fo_compound_depth (TSum T1 T2) = 1 + max (fo_compound_depth T1) (fo_compound_depth T2)"
+lemma fo_depth_sum: "\<forall>T1 T2. fo_compound_depth (TSum T1 T2) = 1 + max (fo_compound_depth T1) (fo_compound_depth T2)"
   by simp
 
 (* fo_depth_primitive (matches Coq) *)
-lemma fo_depth_primitive: "\<forall> T, match T with TUnit | TBool | TNat | TRef _ _ => True | _ => False end \<longrightarrow> fo_compound_depth T = 0"
+lemma fo_depth_primitive: "\<forall>T. match T with TUnit | TBool | TNat | TRef _ _ => True | _ => False end \<longrightarrow> fo_compound_depth T = 0"
   by auto
 
 end

@@ -143,8 +143,8 @@ definition safe_temp :: "Temperature" where
 
 (* thermally_safe (matches Coq: Definition thermally_safe) *)
 definition thermally_safe :: "ThermalState \<Rightarrow> bool" where
-  "thermally_safe ts \<equiv> cpu_temp ts <= critical_temp /\
-  gpu_temp ts <= critical_temp /\
+  "thermally_safe ts \<equiv> cpu_temp ts <= critical_temp \<and>
+  gpu_temp ts <= critical_temp \<and>
   battery_temp ts <= critical_temp"
 
 (* should_throttle (matches Coq: Definition should_throttle) *)
@@ -180,33 +180,33 @@ definition background_power_limit :: "nat" where
 
 (* well_formed_battery (matches Coq: Definition well_formed_battery) *)
 definition well_formed_battery :: "BatteryInfo \<Rightarrow> bool" where
-  "well_formed_battery b \<equiv> bat_level b <= 100 /\
-  bat_health b <= 100 /\
-  bat_temperature b <= battery_safe_temp /\
+  "well_formed_battery b \<equiv> bat_level b <= 100 \<and>
+  bat_health b <= 100 \<and>
+  bat_temperature b <= battery_safe_temp \<and>
   bat_charge_rate b <= charge_rate_max"
 
 (* well_formed_cpu (matches Coq: Definition well_formed_cpu) *)
 definition well_formed_cpu :: "CpuState \<Rightarrow> bool" where
-  "well_formed_cpu c \<equiv> cpu_min_frequency_mhz c <= cpu_frequency_mhz c /\
-  cpu_frequency_mhz c <= cpu_max_frequency_mhz c /\
+  "well_formed_cpu c \<equiv> cpu_min_frequency_mhz c <= cpu_frequency_mhz c \<and>
+  cpu_frequency_mhz c <= cpu_max_frequency_mhz c \<and>
   cpu_min_frequency_mhz c > 0"
 
 (* well_formed_wake_lock (matches Coq: Definition well_formed_wake_lock) *)
 definition well_formed_wake_lock :: "WakeLock \<Rightarrow> bool" where
-  "well_formed_wake_lock w \<equiv> wake_lock_timeout w > 0 /\
+  "well_formed_wake_lock w \<equiv> wake_lock_timeout w > 0 \<and>
   (wake_lock_active w = True -> wake_lock_elapsed w <= wake_lock_timeout w)"
 
 (* well_formed_app_power (matches Coq: Definition well_formed_app_power) *)
 definition well_formed_app_power :: "AppPowerBudget \<Rightarrow> bool" where
-  "well_formed_app_power a \<equiv> app_power_actual_mw a <= app_power_budget_mw a /\
+  "well_formed_app_power a \<equiv> app_power_actual_mw a <= app_power_budget_mw a \<and>
   (app_is_background a = True -> app_power_budget_mw a <= background_power_limit)"
 
 (* thermal_bounds_enforced (matches Coq) *)
-lemma thermal_bounds_enforced: "\<forall> (ts : ThermalState), thermally_safe ts \<longrightarrow> cpu_temp ts \<le> critical_temp"
+lemma thermal_bounds_enforced: "\<forall>(ts :: ThermalState). thermally_safe ts \<longrightarrow> cpu_temp ts \<le> critical_temp"
   by auto
 
 (* throttling_activation_correct (matches Coq) *)
-lemma throttling_activation_correct: "\<forall> (ts : ThermalState), cpu_temp ts \<ge> throttle_temp \<longrightarrow> throttling_active (apply_throttling ts) = True"
+lemma throttling_activation_correct: "\<forall>(ts :: ThermalState). cpu_temp ts \<ge> throttle_temp \<longrightarrow> throttling_active (apply_throttling ts) = True"
   by auto
 
 (* power_transition_fullpower_balanced (matches Coq) *)
@@ -214,75 +214,75 @@ lemma power_transition_fullpower_balanced: "valid_power_transition FullPower Bal
   by simp
 
 (* any_state_can_suspend (matches Coq) *)
-lemma any_state_can_suspend: "\<forall> (s : PowerState), valid_power_transition s Suspended = True"
+lemma any_state_can_suspend: "\<forall>(s :: PowerState). valid_power_transition s Suspended = True"
   by simp
 
 (* suspended_can_resume (matches Coq) *)
-lemma suspended_can_resume: "\<forall> (s : PowerState), valid_power_transition Suspended s = True"
+lemma suspended_can_resume: "\<forall>(s :: PowerState). valid_power_transition Suspended s = True"
   by simp
 
 (* low_power_optimizes_budget (matches Coq) *)
-lemma low_power_optimizes_budget: "\<forall> (pm : PowerManager), current_state pm = LowPower \<longrightarrow> power_budget pm \<le> 50 \<longrightarrow> battery_optimized pm"
+lemma low_power_optimizes_budget: "\<forall>(pm :: PowerManager). current_state pm = LowPower \<longrightarrow> power_budget pm \<le> 50 \<longrightarrow> battery_optimized pm"
   by auto
 
 (* battery_level_accurate (matches Coq) *)
-lemma battery_level_accurate: "\<forall> (b : BatteryInfo), well_formed_battery b \<longrightarrow> bat_level b \<le> 100"
+lemma battery_level_accurate: "\<forall>(b :: BatteryInfo). well_formed_battery b \<longrightarrow> bat_level b \<le> 100"
   by auto
 
 (* low_power_mode_reduces_usage (matches Coq) *)
-lemma low_power_mode_reduces_usage: "\<forall> (pm : PowerManager), current_state pm = LowPower \<longrightarrow> battery_optimized pm \<longrightarrow> power_budget pm \<le> 50"
+lemma low_power_mode_reduces_usage: "\<forall>(pm :: PowerManager). current_state pm = LowPower \<longrightarrow> battery_optimized pm \<longrightarrow> power_budget pm \<le> 50"
   by auto
 
 (* thermal_throttling_safe (matches Coq) *)
-lemma thermal_throttling_safe: "\<forall> (ts : ThermalState), thermally_safe ts \<longrightarrow> cpu_temp ts \<le> critical_temp \<and> gpu_temp ts \<le> critical_temp \<and> battery_temp ts \<le> critical_temp"
+lemma thermal_throttling_safe: "\<forall>(ts :: ThermalState). thermally_safe ts \<longrightarrow> cpu_temp ts \<le> critical_temp \<and> gpu_temp ts \<le> critical_temp \<and> battery_temp ts \<le> critical_temp"
   by auto
 
 (* charging_state_reported (matches Coq) *)
-lemma charging_state_reported: "\<forall> (b : BatteryInfo), bat_is_charging b = True \<or> bat_is_charging b = False"
+lemma charging_state_reported: "\<forall>(b :: BatteryInfo). bat_is_charging b = True \<or> bat_is_charging b = False"
   by simp
 
 (* battery_health_tracked (matches Coq) *)
-lemma battery_health_tracked: "\<forall> (b : BatteryInfo), well_formed_battery b \<longrightarrow> bat_health b \<le> 100"
+lemma battery_health_tracked: "\<forall>(b :: BatteryInfo). well_formed_battery b \<longrightarrow> bat_health b \<le> 100"
   by auto
 
 (* wake_lock_timeout_enforced (matches Coq) *)
-lemma wake_lock_timeout_enforced: "\<forall> (w : WakeLock), well_formed_wake_lock w \<longrightarrow> wake_lock_active w = True \<longrightarrow> wake_lock_elapsed w \<le> wake_lock_timeout w"
+lemma wake_lock_timeout_enforced: "\<forall>(w :: WakeLock). well_formed_wake_lock w \<longrightarrow> wake_lock_active w = True \<longrightarrow> wake_lock_elapsed w \<le> wake_lock_timeout w"
   by auto
 
 (* background_power_limited (matches Coq) *)
-lemma background_power_limited: "\<forall> (a : AppPowerBudget), well_formed_app_power a \<longrightarrow> app_is_background a = True \<longrightarrow> app_power_budget_mw a \<le> 500"
+lemma background_power_limited: "\<forall>(a :: AppPowerBudget). well_formed_app_power a \<longrightarrow> app_is_background a = True \<longrightarrow> app_power_budget_mw a \<le> 500"
   by auto
 
 (* cpu_frequency_bounded (matches Coq) *)
-lemma cpu_frequency_bounded: "\<forall> (c : CpuState), well_formed_cpu c \<longrightarrow> cpu_frequency_mhz c \<le> cpu_max_frequency_mhz c"
+lemma cpu_frequency_bounded: "\<forall>(c :: CpuState). well_formed_cpu c \<longrightarrow> cpu_frequency_mhz c \<le> cpu_max_frequency_mhz c"
   by auto
 
 (* screen_brightness_adaptive (matches Coq) *)
-lemma screen_brightness_adaptive: "\<forall> (d : DisplayState), display_adaptive d = True \<longrightarrow> display_brightness d \<le> 100 \<longrightarrow> display_brightness d \<le> 100"
+lemma screen_brightness_adaptive: "\<forall>(d :: DisplayState). display_adaptive d = True \<longrightarrow> display_brightness d \<le> 100 \<longrightarrow> display_brightness d \<le> 100"
   by auto
 
 (* idle_power_minimized (matches Coq) *)
-lemma idle_power_minimized: "\<forall> (pm : PowerManager), current_state pm = Suspended \<longrightarrow> battery_optimized pm"
+lemma idle_power_minimized: "\<forall>(pm :: PowerManager). current_state pm = Suspended \<longrightarrow> battery_optimized pm"
   by auto
 
 (* power_event_notified (matches Coq) *)
-lemma power_event_notified: "\<forall> (from to : PowerState), valid_power_transition from to = True \<longrightarrow> valid_power_transition from to = True"
+lemma power_event_notified: "\<forall>(from to : PowerState). valid_power_transition from to = True \<longrightarrow> valid_power_transition from to = True"
   by auto
 
 (* battery_temperature_safe (matches Coq) *)
-lemma battery_temperature_safe: "\<forall> (b : BatteryInfo), well_formed_battery b \<longrightarrow> bat_temperature b \<le> 4500"
+lemma battery_temperature_safe: "\<forall>(b :: BatteryInfo). well_formed_battery b \<longrightarrow> bat_temperature b \<le> 4500"
   by auto
 
 (* charge_rate_safe (matches Coq) *)
-lemma charge_rate_safe: "\<forall> (b : BatteryInfo), well_formed_battery b \<longrightarrow> bat_charge_rate b \<le> 25000"
+lemma charge_rate_safe: "\<forall>(b :: BatteryInfo). well_formed_battery b \<longrightarrow> bat_charge_rate b \<le> 25000"
   by auto
 
 (* discharge_rate_bounded (matches Coq) *)
-lemma discharge_rate_bounded: "\<forall> (b : BatteryInfo), bat_discharge_rate b \<le> charge_rate_max \<longrightarrow> bat_discharge_rate b \<le> 25000"
+lemma discharge_rate_bounded: "\<forall>(b :: BatteryInfo). bat_discharge_rate b \<le> charge_rate_max \<longrightarrow> bat_discharge_rate b \<le> 25000"
   by auto
 
 (* power_budget_per_app (matches Coq) *)
-lemma power_budget_per_app: "\<forall> (a : AppPowerBudget), well_formed_app_power a \<longrightarrow> app_power_actual_mw a \<le> app_power_budget_mw a"
+lemma power_budget_per_app: "\<forall>(a :: AppPowerBudget). well_formed_app_power a \<longrightarrow> app_power_actual_mw a \<le> app_power_budget_mw a"
   by auto
 
 end

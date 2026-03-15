@@ -49,47 +49,47 @@ theory ReferenceOps
 begin
 
 (* step_preserves_ctx_snd (matches Coq) *)
-lemma step_preserves_ctx_snd: "\<forall> cfg1 cfg2, cfg1 --> cfg2 \<longrightarrow> snd cfg1 = snd cfg2"
+lemma step_preserves_ctx_snd: "\<forall>cfg1 cfg2. cfg1 --> cfg2 \<longrightarrow> snd cfg1 = snd cfg2"
   by auto
 
 (* step_preserves_ctx (matches Coq) *)
-lemma step_preserves_ctx: "\<forall> e st ctx e' st' ctx', (e, st, ctx) --> (e', st', ctx') \<longrightarrow> ctx' = ctx"
+lemma step_preserves_ctx: "\<forall>e st ctx e' st' ctx'. (e, st, ctx) --> (e', st', ctx') \<longrightarrow> ctx' = ctx"
   by auto
 
 (* multi_step_preserves_ctx (matches Coq) *)
-lemma multi_step_preserves_ctx: "\<forall> e st ctx e' st' ctx', multi_step (e, st, ctx) (e', st', ctx') \<longrightarrow> ctx' = ctx"
+lemma multi_step_preserves_ctx: "\<forall>e st ctx e' st' ctx'. multi_step (e, st, ctx) (e', st', ctx') \<longrightarrow> ctx' = ctx"
   by auto
 
 (* value_multi_step_refl (matches Coq) *)
-lemma value_multi_step_refl: "\<forall> v st ctx cfg, value v \<longrightarrow> multi_step (v, st, ctx) cfg \<longrightarrow> cfg = (v, st, ctx)"
+lemma value_multi_step_refl: "\<forall>v st ctx cfg. value v \<longrightarrow> multi_step (v, st, ctx) cfg \<longrightarrow> cfg = (v, st, ctx)"
   by auto
 
 (* Evaluation of ERef proceeds by first evaluating the argument *)
 (* multi_step_ref_inversion (matches Coq) *)
-lemma multi_step_ref_inversion: "\<forall> e sl st v st' ctx, multi_step (ERef e sl, st, ctx) (v, st', ctx) \<longrightarrow> value v \<longrightarrow> \<exists> v_inner st_mid l, multi_step (e, st, ctx) (v_inner, st_mid, ctx) \<and> value v_inner \<and> v = ELoc l \<and> st' = store_update l v_inner st_mid \<and> l = fresh_loc st_mid"
+lemma multi_step_ref_inversion: "\<forall>e sl st v st' ctx. multi_step (ERef e sl, st, ctx) (v, st', ctx) \<longrightarrow> value v \<longrightarrow> \<exists>v_inner st_mid l. multi_step (e, st, ctx) (v_inner, st_mid, ctx) \<and> value v_inner \<and> v = ELoc l \<and> st' = store_update l v_inner st_mid \<and> l = fresh_loc st_mid"
   by auto
 
 (* Evaluation of EDeref proceeds by first evaluating to a location.
     Requires store_has_values: all store entries are values.
     This holds for all reachable stores (preserved by step). *)
 (* multi_step_deref_inversion (matches Coq) *)
-lemma multi_step_deref_inversion: "\<forall> e st v st' ctx, multi_step (EDeref e, st, ctx) (v, st', ctx) \<longrightarrow> value v \<longrightarrow> store_has_values st \<longrightarrow> \<exists> l st_mid, multi_step (e, st, ctx) (ELoc l, st_mid, ctx) \<and> st' = st_mid \<and> store_lookup l st_mid = Some v"
+lemma multi_step_deref_inversion: "\<forall>e st v st' ctx. multi_step (EDeref e, st, ctx) (v, st', ctx) \<longrightarrow> value v \<longrightarrow> store_has_values st \<longrightarrow> \<exists>l st_mid. multi_step (e, st, ctx) (ELoc l, st_mid, ctx) \<and> st' = st_mid \<and> store_lookup l st_mid = Some v"
   by auto
 
 (* Evaluation of EAssign proceeds by evaluating both subexpressions.
     Requires store_has_values for the ST_AssignLoc case (location must exist). *)
 (* multi_step_assign_inversion (matches Coq) *)
-lemma multi_step_assign_inversion: "\<forall> e1 e2 st v st' ctx, multi_step (EAssign e1 e2, st, ctx) (v, st', ctx) \<longrightarrow> value v \<longrightarrow> store_has_values st \<longrightarrow> \<exists> l v_val st_mid1 st_mid2, multi_step (e1, st, ctx) (ELoc l, st_mid1, ctx) \<and> multi_step (e2, st_mid1, ctx) (v_val, st_mid2, ctx) \<and> value v_val \<and> v = EUnit \<and> st' = store_update l v_val st_mid2"
+lemma multi_step_assign_inversion: "\<forall>e1 e2 st v st' ctx. multi_step (EAssign e1 e2, st, ctx) (v, st', ctx) \<longrightarrow> value v \<longrightarrow> store_has_values st \<longrightarrow> \<exists>l v_val st_mid1 st_mid2. multi_step (e1, st, ctx) (ELoc l, st_mid1, ctx) \<and> multi_step (e2, st_mid1, ctx) (v_val, st_mid2, ctx) \<and> value v_val \<and> v = EUnit \<and> st' = store_update l v_val st_mid2"
   by auto
 
 (* Helper: Related stores allocate to same location *)
 (* ref_same_location (matches Coq) *)
-lemma ref_same_location: "\<forall> Σ st1 st2, store_rel_simple Σ st1 st2 \<longrightarrow> fresh_loc st1 = fresh_loc st2"
+lemma ref_same_location: "\<forall>Σ st1 st2. store_rel_simple Σ st1 st2 \<longrightarrow> fresh_loc st1 = fresh_loc st2"
   by auto
 
 (* Reference creation produces same location in related stores *)
 (* logical_relation_ref_proven (matches Coq) *)
-lemma logical_relation_ref_proven: "\<forall> n Σ T sl v1 v2 st1 st2 ctx, n > 0 \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> store_wf Σ st1 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> store_rel_simple Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> let l := fresh_loc st1 in let Σ' := store_ty_update l T sl Σ in let st1' := store_update l v1 st1 in let st2' := store_update l v2 st2 in multi_step (ERef v1 sl, st1, ctx) (ELoc l, st1', ctx) \<and> multi_step (ERef v2 sl, st2, ctx) (ELoc l, st2', ctx) \<and> val_rel_le n Σ' (TRef T sl) (ELoc l) (ELoc l) \<and> store_rel_simple Σ' st1' st2' \<and> store_ty_extends Σ Σ'"
+lemma logical_relation_ref_proven: "\<forall>n Σ T sl v1 v2 st1 st2 ctx. n > 0 \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> store_wf Σ st1 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> store_rel_simple Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> let l := fresh_loc st1 in let Σ' := store_ty_update l T sl Σ in let st1' := store_update l v1 st1 in let st2' := store_update l v2 st2 in multi_step (ERef v1 sl, st1, ctx) (ELoc l, st1', ctx) \<and> multi_step (ERef v2 sl, st2, ctx) (ELoc l, st2', ctx) \<and> val_rel_le n Σ' (TRef T sl) (ELoc l) (ELoc l) \<and> store_rel_simple Σ' st1' st2' \<and> store_ty_extends Σ Σ'"
   by auto
 
 (* Note: We return Σ_mid (from subexpression evaluation) as the output store typing.
@@ -97,12 +97,12 @@ lemma logical_relation_ref_proven: "\<forall> n Σ T sl v1 v2 st1 st2 ctx, n > 0
     is invisible to store_rel_simple (which only tracks store_max equality).
     val_rel_le_build_ref works for any Σ regardless of location membership. *)
 (* exp_rel_le_ref (matches Coq) *)
-lemma exp_rel_le_ref: "\<forall> n Σ T sl e1 e2 st1 st2 ctx, exp_rel_le n Σ T e1 e2 st1 st2 ctx \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> exp_rel_le n Σ (TRef T sl) (ERef e1 sl) (ERef e2 sl) st1 st2 ctx"
+lemma exp_rel_le_ref: "\<forall>n Σ T sl e1 e2 st1 st2 ctx. exp_rel_le n Σ T e1 e2 st1 st2 ctx \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> exp_rel_le n Σ (TRef T sl) (ERef e1 sl) (ERef e2 sl) st1 st2 ctx"
   by auto
 
 (* Dereference retrieves related values from related stores *)
 (* logical_relation_deref_proven (matches Coq) *)
-lemma logical_relation_deref_proven: "\<forall> n Σ T sl l st1 st2 ctx, store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists> v1 v2, store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2 \<and> multi_step (EDeref (ELoc l), st1, ctx) (v1, st1, ctx) \<and> multi_step (EDeref (ELoc l), st2, ctx) (v2, st2, ctx) \<and> val_rel_le n Σ T v1 v2"
+lemma logical_relation_deref_proven: "\<forall>n Σ T sl l st1 st2 ctx. store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists>v1 v2. store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2 \<and> multi_step (EDeref (ELoc l), st1, ctx) (v1, st1, ctx) \<and> multi_step (EDeref (ELoc l), st2, ctx) (v2, st2, ctx) \<and> val_rel_le n Σ T v1 v2"
   by auto
 
 (* The standard exp_rel_le only returns store_rel_simple (store_max equality),
@@ -111,12 +111,12 @@ lemma logical_relation_deref_proven: "\<forall> n Σ T sl l st1 st2 ctx, store_r
     intermediate stores AND ensures the resulting location is typed.
     The fundamental theorem provides both via exp_rel_n + preservation. *)
 (* exp_rel_le_deref (matches Coq) *)
-lemma exp_rel_le_deref: "\<forall> n Σ T sl e1 e2 st1 st2 ctx, (\<forall> k v1 v2 st1' st2', k \<le> n \<longrightarrow> multi_step (e1, st1, ctx) (v1, st1', ctx) \<longrightarrow> multi_step (e2, st2, ctx) (v2, st2', ctx) \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists> Σ' l, store_ty_extends Σ Σ' \<and> v1 = ELoc l \<and> v2 = ELoc l \<and> store_ty_lookup l Σ' = Some (T, sl) \<and> store_rel_le k Σ' st1' st2') \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> exp_rel_le n Σ T (EDeref e1) (EDeref e2) st1 st2 ctx"
+lemma exp_rel_le_deref: "\<forall>n Σ T sl e1 e2 st1 st2 ctx. (\<forall>k v1 v2 st1' st2'. k \<le> n \<longrightarrow> multi_step (e1, st1, ctx) (v1, st1', ctx) \<longrightarrow> multi_step (e2, st2, ctx) (v2, st2', ctx) \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists>Σ' l. store_ty_extends Σ Σ' \<and> v1 = ELoc l \<and> v2 = ELoc l \<and> store_ty_lookup l Σ' = Some (T, sl) \<and> store_rel_le k Σ' st1' st2') \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> exp_rel_le n Σ T (EDeref e1) (EDeref e2) st1 st2 ctx"
   by auto
 
 (* Assignment preserves store relation and produces related units *)
 (* logical_relation_assign_proven (matches Coq) *)
-lemma logical_relation_assign_proven: "\<forall> n Σ T sl l v1 v2 st1 st2 ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> let st1' := store_update l v1 st1 in let st2' := store_update l v2 st2 in multi_step (EAssign (ELoc l) v1, st1, ctx) (EUnit, st1', ctx) \<and> multi_step (EAssign (ELoc l) v2, st2, ctx) (EUnit, st2', ctx) \<and> val_rel_le n Σ TUnit EUnit EUnit \<and> store_rel_le n Σ st1' st2'"
+lemma logical_relation_assign_proven: "\<forall>n Σ T sl l v1 v2 st1 st2 ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> let st1' := store_update l v1 st1 in let st2' := store_update l v2 st2 in multi_step (EAssign (ELoc l) v1, st1, ctx) (EUnit, st1', ctx) \<and> multi_step (EAssign (ELoc l) v2, st2, ctx) (EUnit, st2', ctx) \<and> val_rel_le n Σ TUnit EUnit EUnit \<and> store_rel_le n Σ st1' st2'"
   by auto
 
 (* Like deref, assign requires store_rel_le for intermediate stores.
@@ -124,7 +124,7 @@ lemma logical_relation_assign_proven: "\<forall> n Σ T sl l v1 v2 st1 st2 ctx, 
     (2) the RHS evaluates to related values with store_rel_le.
     Additionally, we need sequential evaluation: RHS starts from the stores after LHS. *)
 (* exp_rel_le_assign (matches Coq) *)
-lemma exp_rel_le_assign: "\<forall> n Σ T sl e1 e2 e1' e2' st1 st2 ctx, (\<forall> k v1 v2 st1' st2', k \<le> n \<longrightarrow> multi_step (e1, st1, ctx) (v1, st1', ctx) \<longrightarrow> multi_step (e2, st2, ctx) (v2, st2', ctx) \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists> Σ' l, store_ty_extends Σ Σ' \<and> v1 = ELoc l \<and> v2 = ELoc l \<and> store_ty_lookup l Σ' = Some (T, sl) \<and> store_rel_le k Σ' st1' st2') \<longrightarrow> (\<forall> k Σ_start st1_start st2_start v1 v2 st1' st2', k \<le> n \<longrightarrow> store_ty_extends Σ Σ_start \<longrightarrow> store_rel_le k Σ_start st1_start st2_start \<longrightarrow> multi_step (e1', st1_start, ctx) (v1, st1', ctx) \<longrightarrow> multi_step (e2', st2_start, ctx) (v2, st2', ctx) \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists> Σ', store_ty_extends Σ_start Σ' \<and> val_rel_le k Σ' T v1 v2 \<and> store_rel_le k Σ' st1' st2') \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> exp_rel_le n Σ TUnit (EAssign e1 e1') (EAssign e2 e2') st1 st2 ctx"
+lemma exp_rel_le_assign: "\<forall>n Σ T sl e1 e2 e1' e2' st1 st2 ctx. (\<forall>k v1 v2 st1' st2'. k \<le> n \<longrightarrow> multi_step (e1, st1, ctx) (v1, st1', ctx) \<longrightarrow> multi_step (e2, st2, ctx) (v2, st2', ctx) \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists>Σ' l. store_ty_extends Σ Σ' \<and> v1 = ELoc l \<and> v2 = ELoc l \<and> store_ty_lookup l Σ' = Some (T, sl) \<and> store_rel_le k Σ' st1' st2') \<longrightarrow> (\<forall>k Σ_start st1_start st2_start v1 v2 st1' st2'. k \<le> n \<longrightarrow> store_ty_extends Σ Σ_start \<longrightarrow> store_rel_le k Σ_start st1_start st2_start \<longrightarrow> multi_step (e1', st1_start, ctx) (v1, st1', ctx) \<longrightarrow> multi_step (e2', st2_start, ctx) (v2, st2', ctx) \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists>Σ'. store_ty_extends Σ_start Σ' \<and> val_rel_le k Σ' T v1 v2 \<and> store_rel_le k Σ' st1' st2') \<longrightarrow> store_has_values st1 \<longrightarrow> store_has_values st2 \<longrightarrow> exp_rel_le n Σ TUnit (EAssign e1 e1') (EAssign e2 e2') st1 st2 ctx"
   by auto
 
 (* Summary: All admits eliminated *)
@@ -134,74 +134,74 @@ lemma reference_ops_zero_admits: "True"
 
 (* Multi-step context is preserved for ref *)
 (* ref_preserves_ctx (matches Coq) *)
-lemma ref_preserves_ctx: "\<forall> e sl st v st' ctx ctx', multi_step (ERef e sl, st, ctx) (v, st', ctx') \<longrightarrow> value v \<longrightarrow> ctx' = ctx"
+lemma ref_preserves_ctx: "\<forall>e sl st v st' ctx ctx'. multi_step (ERef e sl, st, ctx) (v, st', ctx') \<longrightarrow> value v \<longrightarrow> ctx' = ctx"
   by auto
 
 (* Multi-step context is preserved for deref *)
 (* deref_preserves_ctx (matches Coq) *)
-lemma deref_preserves_ctx: "\<forall> e st v st' ctx ctx', multi_step (EDeref e, st, ctx) (v, st', ctx') \<longrightarrow> value v \<longrightarrow> ctx' = ctx"
+lemma deref_preserves_ctx: "\<forall>e st v st' ctx ctx'. multi_step (EDeref e, st, ctx) (v, st', ctx') \<longrightarrow> value v \<longrightarrow> ctx' = ctx"
   by auto
 
 (* Multi-step context is preserved for assign *)
 (* assign_preserves_ctx (matches Coq) *)
-lemma assign_preserves_ctx: "\<forall> e1 e2 st v st' ctx ctx', multi_step (EAssign e1 e2, st, ctx) (v, st', ctx') \<longrightarrow> value v \<longrightarrow> ctx' = ctx"
+lemma assign_preserves_ctx: "\<forall>e1 e2 st v st' ctx ctx'. multi_step (EAssign e1 e2, st, ctx) (v, st', ctx') \<longrightarrow> value v \<longrightarrow> ctx' = ctx"
   by auto
 
 (* Store relation simple is symmetric in structure *)
 (* store_rel_simple_refl (matches Coq) *)
-lemma store_rel_simple_refl: "\<forall> Σ st, store_rel_simple Σ st st"
+lemma store_rel_simple_refl: "\<forall>Σ st. store_rel_simple Σ st st"
   by simp
 
 (* Reference creation on related values produces same-length stores *)
 (* ref_same_store_max (matches Coq) *)
-lemma ref_same_store_max: "\<forall> st1 st2 v1 v2 l, store_max st1 = store_max st2 \<longrightarrow> store_max (store_update l v1 st1) = store_max (store_update l v2 st2)"
+lemma ref_same_store_max: "\<forall>st1 st2 v1 v2 l. store_max st1 = store_max st2 \<longrightarrow> store_max (store_update l v1 st1) = store_max (store_update l v2 st2)"
   by auto
 
 (* ELoc is always a value *)
 (* loc_is_value (matches Coq) *)
-lemma loc_is_value: "\<forall> l, value (ELoc l)"
+lemma loc_is_value: "\<forall>l. value (ELoc l)"
   by auto
 
 (* Deref of location steps to looked-up value *)
 (* deref_of_loc_steps (matches Coq) *)
-lemma deref_of_loc_steps: "\<forall> l v st ctx, store_lookup l st = Some v \<longrightarrow> (EDeref (ELoc l), st, ctx) --> (v, st, ctx)"
+lemma deref_of_loc_steps: "\<forall>l v st ctx. store_lookup l st = Some v \<longrightarrow> (EDeref (ELoc l), st, ctx) --> (v, st, ctx)"
   by auto
 
 (* Assignment at location with value takes a single step *)
 (* assign_loc_value_steps (matches Coq) *)
-lemma assign_loc_value_steps: "\<forall> l v v_old st ctx, value v \<longrightarrow> store_lookup l st = Some v_old \<longrightarrow> (EAssign (ELoc l) v, st, ctx) --> (EUnit, store_update l v st, ctx)"
+lemma assign_loc_value_steps: "\<forall>l v v_old st ctx. value v \<longrightarrow> store_lookup l st = Some v_old \<longrightarrow> (EAssign (ELoc l) v, st, ctx) --> (EUnit, store_update l v st, ctx)"
   by auto
 
 (* Ref with value takes a single step producing a location *)
 (* ref_value_steps (matches Coq) *)
-lemma ref_value_steps: "\<forall> v sl st ctx, value v \<longrightarrow> (ERef v sl, st, ctx) --> (ELoc (fresh_loc st), store_update (fresh_loc st) v st, ctx)"
+lemma ref_value_steps: "\<forall>v sl st ctx. value v \<longrightarrow> (ERef v sl, st, ctx) --> (ELoc (fresh_loc st), store_update (fresh_loc st) v st, ctx)"
   by auto
 
 (* Deref of location doesn't change store *)
 (* deref_step_preserves_store (matches Coq) *)
-lemma deref_step_preserves_store: "\<forall> l v st ctx, store_lookup l st = Some v \<longrightarrow> \<exists> st', (EDeref (ELoc l), st, ctx) --> (v, st', ctx) \<and> st' = st"
+lemma deref_step_preserves_store: "\<forall>l v st ctx. store_lookup l st = Some v \<longrightarrow> \<exists>st'. (EDeref (ELoc l), st, ctx) --> (v, st', ctx) \<and> st' = st"
   by auto
 
 (* value_not_ref_expr (matches Coq) *)
-lemma value_not_ref_expr: "\<forall> e sl, ~ value (ERef e sl)"
+lemma value_not_ref_expr: "\<forall>e sl. ~ value (ERef e sl)"
   by auto
 
 (* value_not_deref_expr (matches Coq) *)
-lemma value_not_deref_expr: "\<forall> e, ~ value (EDeref e)"
+lemma value_not_deref_expr: "\<forall>e. ~ value (EDeref e)"
   by auto
 
 (* value_not_assign_expr (matches Coq) *)
-lemma value_not_assign_expr: "\<forall> e1 e2, ~ value (EAssign e1 e2)"
+lemma value_not_assign_expr: "\<forall>e1 e2. ~ value (EAssign e1 e2)"
   by auto
 
 (* Reference creation on a value produces a location *)
 (* ref_result_is_loc (matches Coq) *)
-lemma ref_result_is_loc: "\<forall> v sl st v' st' ctx, value v \<longrightarrow> (ERef v sl, st, ctx) --> (v', st', ctx) \<longrightarrow> \<exists> l, v' = ELoc l"
+lemma ref_result_is_loc: "\<forall>v sl st v' st' ctx. value v \<longrightarrow> (ERef v sl, st, ctx) --> (v', st', ctx) \<longrightarrow> \<exists>l. v' = ELoc l"
   by simp
 
 (* Subexpression stepping lifts to ERef context *)
 (* ref_arg_steps (matches Coq) *)
-lemma ref_arg_steps: "\<forall> e sl e' st st' ctx, (e, st, ctx) --> (e', st', ctx) \<longrightarrow> (ERef e sl, st, ctx) --> (ERef e' sl, st', ctx)"
+lemma ref_arg_steps: "\<forall>e sl e' st st' ctx. (e, st, ctx) --> (e', st', ctx) \<longrightarrow> (ERef e sl, st, ctx) --> (ERef e' sl, st', ctx)"
   by auto
 
 end

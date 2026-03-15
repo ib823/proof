@@ -46,126 +46,126 @@ theory Progress
 begin
 
 (* canonical_bool (matches Coq) *)
-lemma canonical_bool: "\<forall> v ε Σ, has_type nil Σ Public v TBool ε \<longrightarrow> value v \<longrightarrow> \<exists> b, v = EBool b"
+lemma canonical_bool: "\<forall>v ε Σ. has_type nil Σ Public v TBool ε \<longrightarrow> value v \<longrightarrow> \<exists>b. v = EBool b"
   by simp
 
 (* canonical_fn (matches Coq) *)
-lemma canonical_fn: "\<forall> v T1 T2 ε ε' Σ, has_type nil Σ Public v (TFn T1 T2 ε) ε' \<longrightarrow> value v \<longrightarrow> \<exists> x body, v = ELam x T1 body"
+lemma canonical_fn: "\<forall>v T1 T2 ε ε' Σ. has_type nil Σ Public v (TFn T1 T2 ε) ε' \<longrightarrow> value v \<longrightarrow> \<exists>x body. v = ELam x T1 body"
   by simp
 
 (* canonical_pair (matches Coq) *)
-lemma canonical_pair: "\<forall> v T1 T2 ε Σ, has_type nil Σ Public v (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists> v1 v2, v = EPair v1 v2 \<and> value v1 \<and> value v2"
+lemma canonical_pair: "\<forall>v T1 T2 ε Σ. has_type nil Σ Public v (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists>v1 v2. v = EPair v1 v2 \<and> value v1 \<and> value v2"
   by auto
 
 (* canonical_sum (matches Coq) *)
-lemma canonical_sum: "\<forall> v T1 T2 ε Σ, has_type nil Σ Public v (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> (\<exists> v', v = EInl v' T2 \<and> value v') \<or> (\<exists> v', v = EInr v' T1 \<and> value v')"
+lemma canonical_sum: "\<forall>v T1 T2 ε Σ. has_type nil Σ Public v (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> (\<exists>v'. v = EInl v' T2 \<and> value v') \<or> (\<exists>v'. v = EInr v' T1 \<and> value v')"
   by auto
 
 (* canonical_ref (matches Coq) *)
-lemma canonical_ref: "\<forall> v T l ε Σ, has_type nil Σ Public v (TRef T l) ε \<longrightarrow> value v \<longrightarrow> \<exists> l', v = ELoc l'"
+lemma canonical_ref: "\<forall>v T l ε Σ. has_type nil Σ Public v (TRef T l) ε \<longrightarrow> value v \<longrightarrow> \<exists>l'. v = ELoc l'"
   by simp
 
 (* canonical_secret (matches Coq) *)
-lemma canonical_secret: "\<forall> v T ε Σ, has_type nil Σ Public v (TSecret T) ε \<longrightarrow> value v \<longrightarrow> \<exists> v', v = EClassify v' \<and> value v'"
+lemma canonical_secret: "\<forall>v T ε Σ. has_type nil Σ Public v (TSecret T) ε \<longrightarrow> value v \<longrightarrow> \<exists>v'. v = EClassify v' \<and> value v'"
   by auto
 
 (* canonical_proof (matches Coq) *)
-lemma canonical_proof: "\<forall> v T ε Σ, has_type nil Σ Public v (TProof T) ε \<longrightarrow> value v \<longrightarrow> \<exists> v', v = EProve v' \<and> value v'"
+lemma canonical_proof: "\<forall>v T ε Σ. has_type nil Σ Public v (TProof T) ε \<longrightarrow> value v \<longrightarrow> \<exists>v'. v = EProve v' \<and> value v'"
   by auto
 
 (* lookup_nil_contra (matches Coq) *)
-lemma lookup_nil_contra: "\<forall> x T, lookup x nil = Some T \<longrightarrow> False"
+lemma lookup_nil_contra: "\<forall>x T. lookup x nil = Some T \<longrightarrow> False"
   by auto
 
 (* progress (matches Coq) *)
 lemma progress: "progress_stmt"
-  by (cases rule: ‹_›.cases; simp)
+  by auto
 
 (* canonical_unit (matches Coq) *)
-lemma canonical_unit: "\<forall> v ε Σ, has_type nil Σ Public v TUnit ε \<longrightarrow> value v \<longrightarrow> v = EUnit"
+lemma canonical_unit: "\<forall>v ε Σ. has_type nil Σ Public v TUnit ε \<longrightarrow> value v \<longrightarrow> v = EUnit"
   by simp
 
 (* canonical_int (matches Coq) *)
-lemma canonical_int: "\<forall> v ε Σ, has_type nil Σ Public v TInt ε \<longrightarrow> value v \<longrightarrow> \<exists> i, v = EInt i"
+lemma canonical_int: "\<forall>v ε Σ. has_type nil Σ Public v TInt ε \<longrightarrow> value v \<longrightarrow> \<exists>i. v = EInt i"
   by simp
 
 (* canonical_string (matches Coq) *)
-lemma canonical_string: "\<forall> v ε Σ, has_type nil Σ Public v TString ε \<longrightarrow> value v \<longrightarrow> \<exists> s, v = EString s"
+lemma canonical_string: "\<forall>v ε Σ. has_type nil Σ Public v TString ε \<longrightarrow> value v \<longrightarrow> \<exists>s. v = EString s"
   by simp
 
 (* If a value has type TBool, it's a boolean constant *)
 (* typed_value_bool_inv (matches Coq) *)
-lemma typed_value_bool_inv: "\<forall> v ε Σ, has_type nil Σ Public v TBool ε \<longrightarrow> value v \<longrightarrow> v = EBool True \<or> v = EBool False"
+lemma typed_value_bool_inv: "\<forall>v ε Σ. has_type nil Σ Public v TBool ε \<longrightarrow> value v \<longrightarrow> v = EBool True \<or> v = EBool False"
   by auto
 
 (* A value of pair type is an EPair *)
 (* typed_value_pair_inv (matches Coq) *)
-lemma typed_value_pair_inv: "\<forall> v T1 T2 ε Σ, has_type nil Σ Public v (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists> v1 v2, v = EPair v1 v2"
+lemma typed_value_pair_inv: "\<forall>v T1 T2 ε Σ. has_type nil Σ Public v (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists>v1 v2. v = EPair v1 v2"
   by auto
 
 (* A value of sum type is either EInl or EInr *)
 (* typed_value_sum_inv (matches Coq) *)
-lemma typed_value_sum_inv: "\<forall> v T1 T2 ε Σ, has_type nil Σ Public v (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> (\<exists> v', v = EInl v' T2) \<or> (\<exists> v', v = EInr v' T1)"
+lemma typed_value_sum_inv: "\<forall>v T1 T2 ε Σ. has_type nil Σ Public v (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> (\<exists>v'. v = EInl v' T2) \<or> (\<exists>v'. v = EInr v' T1)"
   by auto
 
 (* A value of function type is a lambda *)
 (* typed_value_fn_inv (matches Coq) *)
-lemma typed_value_fn_inv: "\<forall> v T1 T2 ε ε' Σ, has_type nil Σ Public v (TFn T1 T2 ε) ε' \<longrightarrow> value v \<longrightarrow> \<exists> x body, v = ELam x T1 body"
+lemma typed_value_fn_inv: "\<forall>v T1 T2 ε ε' Σ. has_type nil Σ Public v (TFn T1 T2 ε) ε' \<longrightarrow> value v \<longrightarrow> \<exists>x body. v = ELam x T1 body"
   by auto
 
 (* A value of reference type is a location *)
 (* typed_value_ref_inv (matches Coq) *)
-lemma typed_value_ref_inv: "\<forall> v T sl ε Σ, has_type nil Σ Public v (TRef T sl) ε \<longrightarrow> value v \<longrightarrow> \<exists> l, v = ELoc l"
+lemma typed_value_ref_inv: "\<forall>v T sl ε Σ. has_type nil Σ Public v (TRef T sl) ε \<longrightarrow> value v \<longrightarrow> \<exists>l. v = ELoc l"
   by auto
 
 (* A value of secret type is a classified expression *)
 (* typed_value_secret_inv (matches Coq) *)
-lemma typed_value_secret_inv: "\<forall> v T ε Σ, has_type nil Σ Public v (TSecret T) ε \<longrightarrow> value v \<longrightarrow> \<exists> v', v = EClassify v' \<and> value v'"
+lemma typed_value_secret_inv: "\<forall>v T ε Σ. has_type nil Σ Public v (TSecret T) ε \<longrightarrow> value v \<longrightarrow> \<exists>v'. v = EClassify v' \<and> value v'"
   by auto
 
 (* A value of proof type is a proved expression *)
 (* typed_value_proof_inv (matches Coq) *)
-lemma typed_value_proof_inv: "\<forall> v T ε Σ, has_type nil Σ Public v (TProof T) ε \<longrightarrow> value v \<longrightarrow> \<exists> v', v = EProve v' \<and> value v'"
+lemma typed_value_proof_inv: "\<forall>v T ε Σ. has_type nil Σ Public v (TProof T) ε \<longrightarrow> value v \<longrightarrow> \<exists>v'. v = EProve v' \<and> value v'"
   by auto
 
 (* A value of unit type is EUnit *)
 (* typed_value_unit_inv (matches Coq) *)
-lemma typed_value_unit_inv: "\<forall> v ε Σ, has_type nil Σ Public v TUnit ε \<longrightarrow> value v \<longrightarrow> v = EUnit"
+lemma typed_value_unit_inv: "\<forall>v ε Σ. has_type nil Σ Public v TUnit ε \<longrightarrow> value v \<longrightarrow> v = EUnit"
   by auto
 
 (* A value of int type is an EInt *)
 (* typed_value_int_inv (matches Coq) *)
-lemma typed_value_int_inv: "\<forall> v ε Σ, has_type nil Σ Public v TInt ε \<longrightarrow> value v \<longrightarrow> \<exists> n, v = EInt n"
+lemma typed_value_int_inv: "\<forall>v ε Σ. has_type nil Σ Public v TInt ε \<longrightarrow> value v \<longrightarrow> \<exists>n. v = EInt n"
   by auto
 
 (* A value of string type is an EString *)
 (* typed_value_string_inv (matches Coq) *)
-lemma typed_value_string_inv: "\<forall> v ε Σ, has_type nil Σ Public v TString ε \<longrightarrow> value v \<longrightarrow> \<exists> s, v = EString s"
+lemma typed_value_string_inv: "\<forall>v ε Σ. has_type nil Σ Public v TString ε \<longrightarrow> value v \<longrightarrow> \<exists>s. v = EString s"
   by auto
 
 (* A typed pair value has typed components *)
 (* typed_value_pair_components_typed (matches Coq) *)
-lemma typed_value_pair_components_typed: "\<forall> v1 v2 T1 T2 ε Σ, has_type nil Σ Public (EPair v1 v2) (TProd T1 T2) ε \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists> ε1 ε2, has_type nil Σ Public v1 T1 ε1 \<and> has_type nil Σ Public v2 T2 ε2"
+lemma typed_value_pair_components_typed: "\<forall>v1 v2 T1 T2 ε Σ. has_type nil Σ Public (EPair v1 v2) (TProd T1 T2) ε \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists>ε1 ε2. has_type nil Σ Public v1 T1 ε1 \<and> has_type nil Σ Public v2 T2 ε2"
   by auto
 
 (* A typed classified value has a typed inner value *)
 (* typed_value_secret_inner_typed (matches Coq) *)
-lemma typed_value_secret_inner_typed: "\<forall> v T ε Σ, has_type nil Σ Public (EClassify v) (TSecret T) ε \<longrightarrow> value v \<longrightarrow> \<exists> ε', has_type nil Σ Public v T ε'"
+lemma typed_value_secret_inner_typed: "\<forall>v T ε Σ. has_type nil Σ Public (EClassify v) (TSecret T) ε \<longrightarrow> value v \<longrightarrow> \<exists>ε'. has_type nil Σ Public v T ε'"
   by auto
 
 (* A typed Inl value has a typed inner value *)
 (* typed_value_inl_inner_typed (matches Coq) *)
-lemma typed_value_inl_inner_typed: "\<forall> v T1 T2 ε Σ, has_type nil Σ Public (EInl v T2) (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists> ε', has_type nil Σ Public v T1 ε'"
+lemma typed_value_inl_inner_typed: "\<forall>v T1 T2 ε Σ. has_type nil Σ Public (EInl v T2) (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists>ε'. has_type nil Σ Public v T1 ε'"
   by auto
 
 (* A typed Inr value has a typed inner value *)
 (* typed_value_inr_inner_typed (matches Coq) *)
-lemma typed_value_inr_inner_typed: "\<forall> v T1 T2 ε Σ, has_type nil Σ Public (EInr v T1) (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists> ε', has_type nil Σ Public v T2 ε'"
+lemma typed_value_inr_inner_typed: "\<forall>v T1 T2 ε Σ. has_type nil Σ Public (EInr v T1) (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> \<exists>ε'. has_type nil Σ Public v T2 ε'"
   by auto
 
 (* A typed Prove value has a typed inner value *)
 (* typed_value_prove_inner_typed (matches Coq) *)
-lemma typed_value_prove_inner_typed: "\<forall> v T ε Σ, has_type nil Σ Public (EProve v) (TProof T) ε \<longrightarrow> value v \<longrightarrow> \<exists> ε', has_type nil Σ Public v T ε'"
+lemma typed_value_prove_inner_typed: "\<forall>v T ε Σ. has_type nil Σ Public (EProve v) (TProof T) ε \<longrightarrow> value v \<longrightarrow> \<exists>ε'. has_type nil Σ Public v T ε'"
   by auto
 
 end

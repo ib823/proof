@@ -64,87 +64,87 @@ begin
 
 (* Related stores have the same max location *)
 (* store_rel_simple_max (matches Coq) *)
-lemma store_rel_simple_max: "\<forall> Σ st1 st2, store_rel_simple Σ st1 st2 \<longrightarrow> store_max st1 = store_max st2"
+lemma store_rel_simple_max: "\<forall>Σ st1 st2. store_rel_simple Σ st1 st2 \<longrightarrow> store_max st1 = store_max st2"
   by auto
 
 (* Related stores allocate at the same location *)
 (* store_rel_simple_fresh (matches Coq) *)
-lemma store_rel_simple_fresh: "\<forall> Σ st1 st2, store_rel_simple Σ st1 st2 \<longrightarrow> fresh_loc st1 = fresh_loc st2"
+lemma store_rel_simple_fresh: "\<forall>Σ st1 st2. store_rel_simple Σ st1 st2 \<longrightarrow> fresh_loc st1 = fresh_loc st2"
   by simp
 
 (* Helper: store_max after update is bounded by max of l and original max *)
 (* store_max_update_bound (matches Coq) *)
-lemma store_max_update_bound: "\<forall> l v st, store_max (store_update l v st) \<le> Nat.max l (store_max st)"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_max_update_bound: "\<forall>l v st. store_max (store_update l v st) \<le> Nat.max l (store_max st)"
+  by auto
 
 (* Helper: store_max after update is at least the original max *)
 (* store_max_update_lower (matches Coq) *)
-lemma store_max_update_lower: "\<forall> l v st, store_max st \<le> store_max (store_update l v st)"
+lemma store_max_update_lower: "\<forall>l v st. store_max st \<le> store_max (store_update l v st)"
   by auto
 
 (* Helper: l is at most store_max after updating at l *)
 (* store_max_update_includes_l (matches Coq) *)
-lemma store_max_update_includes_l: "\<forall> l v st, l \<le> store_max (store_update l v st)"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_max_update_includes_l: "\<forall>l v st. l \<le> store_max (store_update l v st)"
+  by auto
 
 (* Helper: store_max after update at same location gives same result *)
 (* store_max_update_eq (matches Coq) *)
-lemma store_max_update_eq: "\<forall> l v1 v2 st1 st2, store_max st1 = store_max st2 \<longrightarrow> store_max (store_update l v1 st1) = store_max (store_update l v2 st2)"
+lemma store_max_update_eq: "\<forall>l v1 v2 st1 st2. store_max st1 = store_max st2 \<longrightarrow> store_max (store_update l v1 st1) = store_max (store_update l v2 st2)"
   by auto
 
 (* Updating same location in related stores preserves simple relation *)
 (* store_rel_simple_update (matches Coq) *)
-lemma store_rel_simple_update: "\<forall> Σ st1 st2 l v1 v2, store_rel_simple Σ st1 st2 \<longrightarrow> store_rel_simple Σ (store_update l v1 st1) (store_update l v2 st2)"
+lemma store_rel_simple_update: "\<forall>Σ st1 st2 l v1 v2. store_rel_simple Σ st1 st2 \<longrightarrow> store_rel_simple Σ (store_update l v1 st1) (store_update l v2 st2)"
   by auto
 
 (* Looking up updated location returns the new value *)
 (* store_lookup_update_eq (matches Coq) *)
-lemma store_lookup_update_eq: "\<forall> l v st, store_lookup l (store_update l v st) = Some v"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_lookup_update_eq: "\<forall>l v st. store_lookup l (store_update l v st) = Some v"
+  by auto
 
 (* Looking up different location after update is unchanged *)
 (* store_lookup_update_neq (matches Coq) *)
-lemma store_lookup_update_neq: "\<forall> l l' v st, l \<noteq> l' \<longrightarrow> store_lookup l' (store_update l v st) = store_lookup l' st"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_lookup_update_neq: "\<forall>l l' v st. l \<noteq> l' \<longrightarrow> store_lookup l' (store_update l v st) = store_lookup l' st"
+  by auto
 
 (* Looking up at updated location returns the new type *)
 (* store_ty_lookup_update_eq (matches Coq) *)
-lemma store_ty_lookup_update_eq: "\<forall> l T sl Σ, store_ty_lookup l (store_ty_update l T sl Σ) = Some (T, sl)"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_ty_lookup_update_eq: "\<forall>l T sl Σ. store_ty_lookup l (store_ty_update l T sl Σ) = Some (T, sl)"
+  by auto
 
 (* Looking up different location after update is unchanged *)
 (* store_ty_lookup_update_neq (matches Coq) *)
-lemma store_ty_lookup_update_neq: "\<forall> l l' T sl Σ, l \<noteq> l' \<longrightarrow> store_ty_lookup l' (store_ty_update l T sl Σ) = store_ty_lookup l' Σ"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_ty_lookup_update_neq: "\<forall>l l' T sl Σ. l \<noteq> l' \<longrightarrow> store_ty_lookup l' (store_ty_update l T sl Σ) = store_ty_lookup l' Σ"
+  by auto
 
 (* Update preserves store relation when values are related *)
 (* store_rel_le_update (matches Coq) *)
-lemma store_rel_le_update: "\<forall> n Σ st1 st2 l T sl v1 v2, store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> store_rel_le n Σ (store_update l v1 st1) (store_update l v2 st2)"
+lemma store_rel_le_update: "\<forall>n Σ st1 st2 l T sl v1 v2. store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> store_rel_le n Σ (store_update l v1 st1) (store_update l v2 st2)"
   by auto
 
 (* Fresh location lookup returns None *)
 (* store_lookup_fresh_none (matches Coq) *)
-lemma store_lookup_fresh_none: "\<forall> st, store_lookup (fresh_loc st) st = None"
+lemma store_lookup_fresh_none: "\<forall>st. store_lookup (fresh_loc st) st = None"
   by auto
 
 (* Allocating in related stores produces same location *)
 (* store_alloc_same (matches Coq) *)
-lemma store_alloc_same: "\<forall> Σ st1 st2, store_rel_simple Σ st1 st2 \<longrightarrow> fresh_loc st1 = fresh_loc st2"
+lemma store_alloc_same: "\<forall>Σ st1 st2. store_rel_simple Σ st1 st2 \<longrightarrow> fresh_loc st1 = fresh_loc st2"
   by auto
 
 (* After allocation, stores remain related *)
 (* store_rel_simple_alloc (matches Coq) *)
-lemma store_rel_simple_alloc: "\<forall> Σ st1 st2 v1 v2, store_rel_simple Σ st1 st2 \<longrightarrow> store_rel_simple Σ (store_update (fresh_loc st1) v1 st1) (store_update (fresh_loc st2) v2 st2)"
+lemma store_rel_simple_alloc: "\<forall>Σ st1 st2 v1 v2. store_rel_simple Σ st1 st2 \<longrightarrow> store_rel_simple Σ (store_update (fresh_loc st1) v1 st1) (store_update (fresh_loc st2) v2 st2)"
   by auto
 
 (* Fresh location is not in store typing for well-formed stores *)
 (* fresh_loc_not_in_store_ty (matches Coq) *)
-lemma fresh_loc_not_in_store_ty: "\<forall> Σ st, store_wf Σ st \<longrightarrow> store_ty_lookup (fresh_loc st) Σ = None"
+lemma fresh_loc_not_in_store_ty: "\<forall>Σ st. store_wf Σ st \<longrightarrow> store_ty_lookup (fresh_loc st) Σ = None"
   by auto
 
 (* Adding new location to store typing gives extension *)
 (* store_ty_extends_alloc (matches Coq) *)
-lemma store_ty_extends_alloc: "\<forall> Σ l T sl, store_ty_lookup l Σ = None \<longrightarrow> store_ty_extends Σ (store_ty_update l T sl Σ)"
+lemma store_ty_extends_alloc: "\<forall>Σ l T sl. store_ty_lookup l Σ = None \<longrightarrow> store_ty_extends Σ (store_ty_update l T sl Σ)"
   by auto
 
 (* Full store relation after allocation
@@ -159,61 +159,61 @@ lemma store_ty_extends_alloc: "\<forall> Σ l T sl, store_ty_lookup l Σ = None 
     This lemma is admitted because it requires detailed reasoning about
     store_update and store_ty_update interactions. The proof strategy is sound. *)
 (* store_rel_le_alloc (matches Coq) *)
-lemma store_rel_le_alloc: "\<forall> n Σ st1 st2 T sl v1 v2, store_rel_le n Σ st1 st2 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> store_ty_lookup (fresh_loc st1) Σ = None \<longrightarrow> fresh_loc st1 = fresh_loc st2 \<longrightarrow> let Σ' := store_ty_update (fresh_loc st1) T sl Σ in let st1' := store_update (fresh_loc st1) v1 st1 in let st2' := store_update (fresh_loc st2) v2 st2 in store_rel_le n Σ' st1' st2'"
+lemma store_rel_le_alloc: "\<forall>n Σ st1 st2 T sl v1 v2. store_rel_le n Σ st1 st2 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> store_ty_lookup (fresh_loc st1) Σ = None \<longrightarrow> fresh_loc st1 = fresh_loc st2 \<longrightarrow> let Σ' := store_ty_update (fresh_loc st1) T sl Σ in let st1' := store_update (fresh_loc st1) v1 st1 in let st2' := store_update (fresh_loc st2) v2 st2 in store_rel_le n Σ' st1' st2'"
   by auto
 
 (* Related reference values point to same location *)
 (* val_rel_le_ref_same_loc (matches Coq) *)
-lemma val_rel_le_ref_same_loc: "\<forall> n Σ T sl v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ (TRef T sl) v1 v2 \<longrightarrow> \<exists> l, v1 = ELoc l \<and> v2 = ELoc l"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_le_ref_same_loc: "\<forall>n Σ T sl v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ (TRef T sl) v1 v2 \<longrightarrow> \<exists>l. v1 = ELoc l \<and> v2 = ELoc l"
+  by auto
 
 (* Build ref relation at any step *)
 (* val_rel_le_build_ref (matches Coq) *)
-lemma val_rel_le_build_ref: "\<forall> m Σ T sl l, val_rel_le m Σ (TRef T sl) (ELoc l) (ELoc l)"
+lemma val_rel_le_build_ref: "\<forall>m Σ T sl l. val_rel_le m Σ (TRef T sl) (ELoc l) (ELoc l)"
   by auto
 
 (* Looking up same location in related stores gives related values *)
 (* store_rel_le_lookup (matches Coq) *)
-lemma store_rel_le_lookup: "\<forall> n Σ st1 st2 l T sl, store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists> v1 v2, store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2 \<and> val_rel_le n Σ T v1 v2"
+lemma store_rel_le_lookup: "\<forall>n Σ st1 st2 l T sl. store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists>v1 v2. store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2 \<and> val_rel_le n Σ T v1 v2"
   by auto
 
 (* Secrets are always related *)
 (* val_rel_le_secret_always (matches Coq) *)
-lemma val_rel_le_secret_always: "\<forall> n Σ T v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TSecret T) v1 v2"
+lemma val_rel_le_secret_always: "\<forall>n Σ T v1 v2. value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TSecret T) v1 v2"
   by auto
 
 (* Extracting value/closed from secret relation *)
 (* val_rel_le_secret_value_left (matches Coq) *)
-lemma val_rel_le_secret_value_left: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ (TSecret T) v1 v2 \<longrightarrow> value v1"
+lemma val_rel_le_secret_value_left: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ (TSecret T) v1 v2 \<longrightarrow> value v1"
   by auto
 
 (* val_rel_le_secret_value_right (matches Coq) *)
-lemma val_rel_le_secret_value_right: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ (TSecret T) v1 v2 \<longrightarrow> value v2"
+lemma val_rel_le_secret_value_right: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ (TSecret T) v1 v2 \<longrightarrow> value v2"
   by auto
 
 (* Build unit relation *)
 (* val_rel_le_unit (matches Coq) *)
-lemma val_rel_le_unit: "\<forall> n Σ, val_rel_le n Σ TUnit EUnit EUnit"
+lemma val_rel_le_unit: "\<forall>n Σ. val_rel_le n Σ TUnit EUnit EUnit"
   by auto
 
 (* Empty stores with empty store typing are trivially related *)
 (* store_rel_le_empty (matches Coq) *)
-lemma store_rel_le_empty: "\<forall> n, store_rel_le n nil nil nil"
+lemma store_rel_le_empty: "\<forall>n. store_rel_le n nil nil nil"
   by simp
 
 (* Empty stores have simple relation *)
 (* store_rel_simple_empty (matches Coq) *)
-lemma store_rel_simple_empty: "\<forall> Σ, store_rel_simple Σ nil nil"
+lemma store_rel_simple_empty: "\<forall>Σ. store_rel_simple Σ nil nil"
   by simp
 
 (* If store_rel_le holds, both stores have values at every typed location *)
 (* store_rel_le_both_some (matches Coq) *)
-lemma store_rel_le_both_some: "\<forall> n Σ st1 st2 l T sl, store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists> v1 v2, store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2"
+lemma store_rel_le_both_some: "\<forall>n Σ st1 st2 l T sl. store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists>v1 v2. store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2"
   by auto
 
 (* store_ty_update preserves existing entries at different locations *)
 (* store_ty_update_preserves (matches Coq) *)
-lemma store_ty_update_preserves: "\<forall> l1 l2 T1 sl1 T2 sl2 Σ, l1 \<noteq> l2 \<longrightarrow> store_ty_lookup l2 Σ = Some (T2, sl2) \<longrightarrow> store_ty_lookup l2 (store_ty_update l1 T1 sl1 Σ) = Some (T2, sl2)"
+lemma store_ty_update_preserves: "\<forall>l1 l2 T1 sl1 T2 sl2 Σ. l1 \<noteq> l2 \<longrightarrow> store_ty_lookup l2 Σ = Some (T2, sl2) \<longrightarrow> store_ty_lookup l2 (store_ty_update l1 T1 sl1 Σ) = Some (T2, sl2)"
   by auto
 
 (* store_max of nil is 0 *)
@@ -223,67 +223,67 @@ lemma store_max_nil: "store_max nil = 0"
 
 (* store_max of singleton *)
 (* store_max_singleton (matches Coq) *)
-lemma store_max_singleton: "\<forall> l v, store_max ((l, v) :: nil) = Nat.max l 0"
+lemma store_max_singleton: "\<forall>l v. store_max ((l, v) :: nil) = Nat.max l 0"
   by simp
 
 (* Secret values at a typed location are always related *)
 (* store_rel_le_secret_loc (matches Coq) *)
-lemma store_rel_le_secret_loc: "\<forall> n Σ st1 st2 l T, store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (TSecret T, Public) \<longrightarrow> \<exists> v1 v2, store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2 \<and> val_rel_le n Σ (TSecret T) v1 v2"
+lemma store_rel_le_secret_loc: "\<forall>n Σ st1 st2 l T. store_rel_le n Σ st1 st2 \<longrightarrow> store_ty_lookup l Σ = Some (TSecret T, Public) \<longrightarrow> \<exists>v1 v2. store_lookup l st1 = Some v1 \<and> store_lookup l st2 = Some v2 \<and> val_rel_le n Σ (TSecret T) v1 v2"
   by auto
 
 (* Fresh location has no store entry *)
 (* store_lookup_fresh_loc (matches Coq) *)
-lemma store_lookup_fresh_loc: "\<forall> st, store_lookup (fresh_loc st) st = None"
+lemma store_lookup_fresh_loc: "\<forall>st. store_lookup (fresh_loc st) st = None"
   by auto
 
 (* Two ELoc values that are val_rel_le at TRef must be the same location *)
 (* val_rel_le_ref_loc_eq (matches Coq) *)
-lemma val_rel_le_ref_loc_eq: "\<forall> n Σ T sl l1 l2, n > 0 \<longrightarrow> val_rel_le n Σ (TRef T sl) (ELoc l1) (ELoc l2) \<longrightarrow> l1 = l2"
+lemma val_rel_le_ref_loc_eq: "\<forall>n Σ T sl l1 l2. n > 0 \<longrightarrow> val_rel_le n Σ (TRef T sl) (ELoc l1) (ELoc l2) \<longrightarrow> l1 = l2"
   by simp
 
 (* Simple store relation is reflexive *)
 (* store_rel_simple_refl (matches Coq) *)
-lemma store_rel_simple_refl: "\<forall> Σ st, store_rel_simple Σ st st"
+lemma store_rel_simple_refl: "\<forall>Σ st. store_rel_simple Σ st st"
   by simp
 
 (* Store relation is monotone in step index *)
 (* store_rel_le_step_mono (matches Coq) *)
-lemma store_rel_le_step_mono: "\<forall> n m Σ st1 st2, m \<le> n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le m Σ st1 st2"
+lemma store_rel_le_step_mono: "\<forall>n m Σ st1 st2. m \<le> n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le m Σ st1 st2"
   by auto
 
 (* Labeled values are always related (like secrets) *)
 (* val_rel_le_labeled_always (matches Coq) *)
-lemma val_rel_le_labeled_always: "\<forall> n Σ T sl v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TLabeled T sl) v1 v2"
+lemma val_rel_le_labeled_always: "\<forall>n Σ T sl v1 v2. value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TLabeled T sl) v1 v2"
   by auto
 
 (* Tainted values are always related *)
 (* val_rel_le_tainted_always (matches Coq) *)
-lemma val_rel_le_tainted_always: "\<forall> n Σ T src v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TTainted T src) v1 v2"
+lemma val_rel_le_tainted_always: "\<forall>n Σ T src v1 v2. value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TTainted T src) v1 v2"
   by auto
 
 (* Sanitized values are always related *)
 (* val_rel_le_sanitized_always (matches Coq) *)
-lemma val_rel_le_sanitized_always: "\<forall> n Σ T san v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TSanitized T san) v1 v2"
+lemma val_rel_le_sanitized_always: "\<forall>n Σ T san v1 v2. value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TSanitized T san) v1 v2"
   by auto
 
 (* store_rel_simple_sym (matches Coq) *)
-lemma store_rel_simple_sym: "\<forall> Σ st1 st2, store_rel_simple Σ st1 st2 \<longrightarrow> store_rel_simple Σ st2 st1"
+lemma store_rel_simple_sym: "\<forall>Σ st1 st2. store_rel_simple Σ st1 st2 \<longrightarrow> store_rel_simple Σ st2 st1"
   by auto
 
 (* store_rel_simple_trans (matches Coq) *)
-lemma store_rel_simple_trans: "\<forall> Σ st1 st2 st3, store_rel_simple Σ st1 st2 \<longrightarrow> store_rel_simple Σ st2 st3 \<longrightarrow> store_rel_simple Σ st1 st3"
+lemma store_rel_simple_trans: "\<forall>Σ st1 st2 st3. store_rel_simple Σ st1 st2 \<longrightarrow> store_rel_simple Σ st2 st3 \<longrightarrow> store_rel_simple Σ st1 st3"
   by auto
 
 (* store_rel_le_max_eq (matches Coq) *)
-lemma store_rel_le_max_eq: "\<forall> n Σ st1 st2, store_rel_le n Σ st1 st2 \<longrightarrow> store_max st1 = store_max st2"
+lemma store_rel_le_max_eq: "\<forall>n Σ st1 st2. store_rel_le n Σ st1 st2 \<longrightarrow> store_max st1 = store_max st2"
   by auto
 
 (* store_rel_le_from_succ (matches Coq) *)
-lemma store_rel_le_from_succ: "\<forall> n Σ st1 st2, store_rel_le (S n) Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2"
+lemma store_rel_le_from_succ: "\<forall>n Σ st1 st2. store_rel_le (S n) Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2"
   by auto
 
 (* val_rel_le_ref_refl (matches Coq) *)
-lemma val_rel_le_ref_refl: "\<forall> n Σ T sl l, val_rel_le n Σ (TRef T sl) (ELoc l) (ELoc l)"
+lemma val_rel_le_ref_refl: "\<forall>n Σ T sl l. val_rel_le n Σ (TRef T sl) (ELoc l) (ELoc l)"
   by auto
 
 end
