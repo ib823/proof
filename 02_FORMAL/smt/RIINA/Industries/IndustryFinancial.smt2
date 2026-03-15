@@ -161,7 +161,8 @@
 (declare-const f8 Bool)
 (declare-const f9 Bool)
 (declare-const f10 Bool)
-(assert (not (= (firewall_config (mk-p_c_i__d_s_s__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f0)))
+(declare-const f11 Bool)
+(assert (not (= (firewall_config (mk-pci_dss__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -178,7 +179,8 @@
 (declare-const f8 Bool)
 (declare-const f9 Bool)
 (declare-const f10 Bool)
-(assert (not (= (no_default_passwords (mk-p_c_i__d_s_s__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f1)))
+(declare-const f11 Bool)
+(assert (not (= (no_default_passwords (mk-pci_dss__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -195,7 +197,8 @@
 (declare-const f8 Bool)
 (declare-const f9 Bool)
 (declare-const f10 Bool)
-(assert (not (= (protect_stored_data (mk-p_c_i__d_s_s__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f2)))
+(declare-const f11 Bool)
+(assert (not (= (protect_stored_data (mk-pci_dss__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -212,7 +215,8 @@
 (declare-const f8 Bool)
 (declare-const f9 Bool)
 (declare-const f10 Bool)
-(assert (not (= (encrypt_transmission (mk-p_c_i__d_s_s__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f3)))
+(declare-const f11 Bool)
+(assert (not (= (encrypt_transmission (mk-pci_dss__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -229,7 +233,8 @@
 (declare-const f8 Bool)
 (declare-const f9 Bool)
 (declare-const f10 Bool)
-(assert (not (= (antivirus (mk-p_c_i__d_s_s__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f4)))
+(declare-const f11 Bool)
+(assert (not (= (antivirus (mk-pci_dss__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -286,7 +291,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (identity_verified (mk-k_y_c__record f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (identity_verified (mk-kyc__record f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -296,7 +302,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (address_verified (mk-k_y_c__record f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (address_verified (mk-kyc__record f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -306,7 +313,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (dob_verified (mk-k_y_c__record f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (dob_verified (mk-kyc__record f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -316,7 +324,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sanctions_checked (mk-k_y_c__record f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (sanctions_checked (mk-kyc__record f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -365,7 +374,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (wire_amount (mk-wire_transfer f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (wire_amount (mk-wire_transfer f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -374,7 +384,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (wire_auth1 (mk-wire_transfer f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (wire_auth1 (mk-wire_transfer f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -383,7 +394,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (wire_auth2 (mk-wire_transfer f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (wire_auth2 (mk-wire_transfer f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

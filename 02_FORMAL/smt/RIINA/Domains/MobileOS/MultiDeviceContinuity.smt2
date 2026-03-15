@@ -513,7 +513,9 @@
 ; --- 47. SharedKeychain accessor round-trip: sk_item_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (sk_item_id (mk-shared_keychain f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (sk_item_id (mk-shared_keychain f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -122,7 +122,9 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (package_id (mk-app_package f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (package_id (mk-app_package f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -131,7 +133,9 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (package_version (mk-app_package f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (package_version (mk-app_package f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -140,7 +144,9 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (code_signature (mk-app_package f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (code_signature (mk-app_package f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -497,7 +503,10 @@
 ; --- 43. EntitlementSet accessor round-trip: ent_app_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (ent_app_id (mk-entitlement_set f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (ent_app_id (mk-entitlement_set f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -651,7 +660,9 @@
 ; --- 59. AppVersionHistory accessor round-trip: vh_app_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (vh_app_id (mk-app_version_history f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (vh_app_id (mk-app_version_history f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -734,14 +745,20 @@
 ; --- 68. PrivacyManifest accessor round-trip: pm_app_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (pm_app_id (mk-privacy_manifest f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (pm_app_id (mk-privacy_manifest f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 69. DataDeclaration accessor round-trip: dd_app_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (dd_app_id (mk-data_declaration f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (dd_app_id (mk-data_declaration f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -21,7 +21,7 @@
 ;         02_FORMAL/coq/effects/EffectAlgebra.v
 ;         02_FORMAL/coq/effects/EffectSystem.v
 
-(set-logic QF_LIA)
+(set-logic ALL)
 (set-option :produce-models true)
 
 ; ═══════════════════════════════════════════════════════════════════════════

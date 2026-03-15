@@ -20,7 +20,7 @@
 ;   sec_join_meet_absorb, sec_meet_join_absorb,
 ;   sec_join_meet_distrib, sec_meet_join_distrib
 
-(set-logic QF_LIA)
+(set-logic ALL)
 (set-option :produce-models true)
 
 ; ═══════════════════════════════════════════════════════════════════════════

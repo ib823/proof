@@ -47,7 +47,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (stark_transparent (mk-s_t_a_r_k_properties f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (stark_transparent (mk-stark_properties f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -55,7 +56,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (stark_scalable (mk-s_t_a_r_k_properties f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (stark_scalable (mk-stark_properties f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -93,7 +95,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (air_algebraic (mk-a_i_r_properties f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (air_algebraic (mk-air_properties f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -101,7 +104,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (air_low_degree (mk-a_i_r_properties f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (air_low_degree (mk-air_properties f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -142,7 +146,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (fri_soundness (mk-f_r_i_properties f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Int)
+(assert (not (= (fri_soundness (mk-fri_properties f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -153,7 +158,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (fri_query_bound (mk-f_r_i_properties f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Int)
+(assert (not (= (fri_query_bound (mk-fri_properties f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -164,7 +170,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (fri_commitment_binding (mk-f_r_i_properties f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Int)
+(assert (not (= (fri_commitment_binding (mk-fri_properties f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -175,7 +182,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (fri_interactive_to_non (mk-f_r_i_properties f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Int)
+(assert (not (= (fri_interactive_to_non (mk-fri_properties f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -186,7 +194,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (fri_round_complexity (mk-f_r_i_properties f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Int)
+(assert (not (= (fri_round_complexity (mk-fri_properties f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -197,7 +206,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (prover_witness (mk-prover_state f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (prover_witness (mk-prover_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -206,7 +216,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (prover_randomness (mk-prover_state f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (prover_randomness (mk-prover_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -215,7 +226,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (prover_committed (mk-prover_state f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (prover_committed (mk-prover_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -232,26 +244,28 @@
 
 ; --- 20. VerifierState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-verifier_state f0 f1)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (verifier_challenges (mk-verifier_state f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 21. VerifierState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-verifier_state f0 f1)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (verifier_queries (mk-verifier_state f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 22. VerifierState: integer field consistency ---
 (push 1)
 (declare-const r VerifierState)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (verifier_challenges r)) 0))
+(assert (>= (seq.len (verifier_challenges r)) 0))
+(assert (not (>= (+ (seq.len (verifier_challenges r)) (seq.len (verifier_challenges r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -259,17 +273,19 @@
 
 ; --- 23. SimulatorState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
-(assert (not (= (Seq (mk-simulator_state f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (sim_transcript (mk-simulator_state f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 24. SimulatorState accessor round-trip: sim_rewinding ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
-(assert (not (= (sim_rewinding (mk-simulator_state f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (sim_rewinding (mk-simulator_state f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -281,7 +297,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 STARKProperties)
-(assert (not (= (starks_completeness (mk-s_t_a_r_k_security f0 f1 f2 f3)) f0)))
+(declare-const f4 AIRProperties)
+(assert (not (= (starks_completeness (mk-stark_security f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -291,7 +308,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 STARKProperties)
-(assert (not (= (starks_soundness (mk-s_t_a_r_k_security f0 f1 f2 f3)) f1)))
+(declare-const f4 AIRProperties)
+(assert (not (= (starks_soundness (mk-stark_security f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -301,7 +319,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 STARKProperties)
-(assert (not (= (starks_zero_knowledge (mk-s_t_a_r_k_security f0 f1 f2 f3)) f2)))
+(declare-const f4 AIRProperties)
+(assert (not (= (starks_zero_knowledge (mk-stark_security f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -311,7 +330,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 STARKProperties)
-(assert (not (= (starks_stark (mk-s_t_a_r_k_security f0 f1 f2 f3)) f3)))
+(declare-const f4 AIRProperties)
+(assert (not (= (starks_stark (mk-stark_security f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -323,7 +343,8 @@
 (declare-const f1 FRIProperties)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ext_base (mk-extended_s_t_a_r_k_security f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (ext_base (mk-extended_stark_security f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -333,7 +354,8 @@
 (declare-const f1 FRIProperties)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ext_fri (mk-extended_s_t_a_r_k_security f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (ext_fri (mk-extended_stark_security f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -343,7 +365,8 @@
 (declare-const f1 FRIProperties)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ext_simulation_secure (mk-extended_s_t_a_r_k_security f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (ext_simulation_secure (mk-extended_stark_security f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -353,7 +376,8 @@
 (declare-const f1 FRIProperties)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ext_extraction_secure (mk-extended_s_t_a_r_k_security f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (ext_extraction_secure (mk-extended_stark_security f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

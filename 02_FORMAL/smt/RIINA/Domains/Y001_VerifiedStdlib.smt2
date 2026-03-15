@@ -105,8 +105,9 @@
 
 ; --- 12. Utf8String accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-utf8_string f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (utf8_bytes (mk-utf8_string f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -114,37 +115,40 @@
 
 ; --- 13. BoundedRead accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (Seq (mk-bounded_read f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (read_data (mk-bounded_read f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 14. BoundedRead accessor round-trip: read_requested ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (read_requested (mk-bounded_read f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (read_requested (mk-bounded_read f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 15. BoundedRead accessor round-trip: read_actual ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (read_actual (mk-bounded_read f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (read_actual (mk-bounded_read f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 16. BoundedRead: integer field consistency ---
 (push 1)
 (declare-const r BoundedRead)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (read_data r)) 0))
 (assert (>= (read_requested r) 0))
-(assert (not (>= (+ (Seq r) (read_requested r)) 0)))
+(assert (not (>= (+ (seq.len (read_data r)) (read_requested r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

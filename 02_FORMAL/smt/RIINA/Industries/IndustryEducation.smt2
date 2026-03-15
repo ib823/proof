@@ -152,7 +152,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (legitimate_educational_interest (mk-f_e_r_p_a__compliance f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (legitimate_educational_interest (mk-ferpa__compliance f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -163,7 +164,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (parental_consent (mk-f_e_r_p_a__compliance f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (parental_consent (mk-ferpa__compliance f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -174,7 +176,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (annual_notification (mk-f_e_r_p_a__compliance f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (annual_notification (mk-ferpa__compliance f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -185,7 +188,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (access_to_records (mk-f_e_r_p_a__compliance f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (access_to_records (mk-ferpa__compliance f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -196,7 +200,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (amendment_process (mk-f_e_r_p_a__compliance f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (amendment_process (mk-ferpa__compliance f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -249,7 +254,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (student_id (mk-student_record f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Int)
+(assert (not (= (student_id (mk-student_record f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -261,7 +267,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (student_age_years (mk-student_record f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Int)
+(assert (not (= (student_age_years (mk-student_record f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -273,7 +280,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (student_min_age (mk-student_record f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Int)
+(assert (not (= (student_min_age (mk-student_record f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -285,7 +293,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (student_grade_level (mk-student_record f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Int)
+(assert (not (= (student_grade_level (mk-student_record f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -297,7 +306,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (student_max_grade (mk-student_record f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Int)
+(assert (not (= (student_max_grade (mk-student_record f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

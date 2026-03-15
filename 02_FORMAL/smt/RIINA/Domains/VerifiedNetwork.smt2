@@ -593,7 +593,9 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pkt_seq (mk-tcp_packet f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (pkt_seq (mk-tcp_packet f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -602,7 +604,9 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pkt_ack (mk-tcp_packet f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (pkt_ack (mk-tcp_packet f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -611,7 +615,9 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pkt_flags (mk-tcp_packet f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (pkt_flags (mk-tcp_packet f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -631,7 +637,9 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (ip_src (mk-ip_packet f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 (Seq Int))
+(declare-const f6 Int)
+(assert (not (= (ip_src (mk-ip_packet f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -642,7 +650,9 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (ip_dst (mk-ip_packet f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 (Seq Int))
+(declare-const f6 Int)
+(assert (not (= (ip_dst (mk-ip_packet f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -653,7 +663,9 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (ip_frag_id (mk-ip_packet f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 (Seq Int))
+(declare-const f6 Int)
+(assert (not (= (ip_frag_id (mk-ip_packet f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -664,7 +676,9 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (ip_frag_offset (mk-ip_packet f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 (Seq Int))
+(declare-const f6 Int)
+(assert (not (= (ip_frag_offset (mk-ip_packet f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -675,7 +689,9 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (ip_frag_more (mk-ip_packet f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 (Seq Int))
+(declare-const f6 Int)
+(assert (not (= (ip_frag_more (mk-ip_packet f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -691,7 +707,10 @@
 ; --- 69. FragmentBuffer accessor round-trip: frag_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (frag_id (mk-fragment_buffer f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(assert (not (= (frag_id (mk-fragment_buffer f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -99,26 +99,28 @@
 
 ; --- 6. CSP accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-c_s_p f0 f1)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (csp_script_src (mk-csp f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 7. CSP accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-c_s_p f0 f1)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (csp_frame_ancestors (mk-csp f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 8. CSP: integer field consistency ---
 (push 1)
 (declare-const r CSP)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (csp_script_src r)) 0))
+(assert (>= (seq.len (csp_script_src r)) 0))
+(assert (not (>= (+ (seq.len (csp_script_src r)) (seq.len (csp_script_src r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -127,16 +129,18 @@
 ; --- 9. Origin accessor round-trip: origin_scheme ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (origin_scheme (mk-origin f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (origin_scheme (mk-origin f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 10. Origin accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-origin f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (origin_host (mk-origin f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -144,8 +148,8 @@
 (push 1)
 (declare-const r Origin)
 (assert (>= (origin_scheme r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (origin_scheme r) (Seq r)) 0)))
+(assert (>= (seq.len (origin_host r)) 0))
+(assert (not (>= (+ (origin_scheme r) (seq.len (origin_host r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -153,50 +157,54 @@
 
 ; --- 12. SecureCookie accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (Seq (mk-secure_cookie f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (cookie_name (mk-secure_cookie f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 13. SecureCookie accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (Seq (mk-secure_cookie f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (cookie_value (mk-secure_cookie f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 14. SecureCookie accessor round-trip: cookie_httponly ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cookie_httponly (mk-secure_cookie f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (cookie_httponly (mk-secure_cookie f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 15. SecureCookie accessor round-trip: cookie_secure ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cookie_secure (mk-secure_cookie f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (cookie_secure (mk-secure_cookie f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 16. SecureCookie: integer field consistency ---
 (push 1)
 (declare-const r SecureCookie)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (cookie_name r)) 0))
+(assert (>= (seq.len (cookie_name r)) 0))
+(assert (not (>= (+ (seq.len (cookie_name r)) (seq.len (cookie_name r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -204,8 +212,9 @@
 
 ; --- 17. CSRFToken accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-c_s_r_f_token f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (csrf_value (mk-csrf_token f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -216,7 +225,8 @@
 (declare-const f0 Origin)
 (declare-const f1 Origin)
 (declare-const f2 Int)
-(assert (not (= (req_origin (mk-h_t_t_p_request f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (req_origin (mk-http_request f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -225,7 +235,8 @@
 (declare-const f0 Origin)
 (declare-const f1 Origin)
 (declare-const f2 Int)
-(assert (not (= (req_target_origin (mk-h_t_t_p_request f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (req_target_origin (mk-http_request f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -234,7 +245,8 @@
 (declare-const f0 Origin)
 (declare-const f1 Origin)
 (declare-const f2 Int)
-(assert (not (= (req_csrf_token (mk-h_t_t_p_request f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (req_csrf_token (mk-http_request f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -243,27 +255,30 @@
 ; --- 21. ValidatedURL accessor round-trip: url_scheme ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (url_scheme (mk-validated_u_r_l f0 f1 f2)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (url_scheme (mk-validated_url f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 22. ValidatedURL accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-validated_u_r_l f0 f1 f2)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (url_host (mk-validated_url f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 23. ValidatedURL accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-validated_u_r_l f0 f1 f2)) f2)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (url_path (mk-validated_url f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -271,8 +286,8 @@
 (push 1)
 (declare-const r ValidatedURL)
 (assert (>= (url_scheme r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (url_scheme r) (Seq r)) 0)))
+(assert (>= (seq.len (url_host r)) 0))
+(assert (not (>= (+ (url_scheme r) (seq.len (url_host r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -283,7 +298,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (session_id (mk-bound_session f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (session_id (mk-bound_session f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -292,7 +308,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (session_user (mk-bound_session f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (session_user (mk-bound_session f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -301,7 +318,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (session_ip_hash (mk-bound_session f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (session_ip_hash (mk-bound_session f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -318,8 +336,9 @@
 
 ; --- 29. TrustedHTML accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-trusted_h_t_m_l f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Bool)
+(assert (not (= (th_content (mk-trusted_html f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -327,8 +346,9 @@
 
 ; --- 30. CacheConfig accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-cache_config f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Bool)
+(assert (not (= (cache_vary_headers (mk-cache_config f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -336,26 +356,28 @@
 
 ; --- 31. SignedData accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-signed_data f0 f1)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (sd_payload (mk-signed_data f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 32. SignedData accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-signed_data f0 f1)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (sd_signature (mk-signed_data f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 33. SignedData: integer field consistency ---
 (push 1)
 (declare-const r SignedData)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (sd_payload r)) 0))
+(assert (>= (seq.len (sd_payload r)) 0))
+(assert (not (>= (+ (seq.len (sd_payload r)) (seq.len (sd_payload r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -363,26 +385,28 @@
 
 ; --- 34. RouteConfig accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-route_config f0 f1)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (route_path (mk-route_config f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 35. RouteConfig accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-route_config f0 f1)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (route_methods (mk-route_config f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 36. RouteConfig: integer field consistency ---
 (push 1)
 (declare-const r RouteConfig)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (route_path r)) 0))
+(assert (>= (seq.len (route_path r)) 0))
+(assert (not (>= (+ (seq.len (route_path r)) (seq.len (route_path r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -392,7 +416,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (gql_max_depth (mk-graph_q_l_config f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (gql_max_depth (mk-graph_ql_config f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -400,7 +425,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (gql_max_complexity (mk-graph_q_l_config f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (gql_max_complexity (mk-graph_ql_config f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

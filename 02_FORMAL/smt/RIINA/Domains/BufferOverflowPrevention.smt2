@@ -28,7 +28,8 @@
 ; --- 1. Buffer accessor round-trip: buf_size ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (buf_size (mk-buffer f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (buf_size (mk-buffer f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -40,7 +41,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (op_bounds_check_write (mk-overflow_prevention f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (op_bounds_check_write (mk-overflow_prevention f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -50,7 +52,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (op_bounds_check_read (mk-overflow_prevention f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (op_bounds_check_read (mk-overflow_prevention f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -60,7 +63,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (op_null_terminator_check (mk-overflow_prevention f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (op_null_terminator_check (mk-overflow_prevention f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -70,7 +74,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (op_integer_overflow_check (mk-overflow_prevention f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (op_integer_overflow_check (mk-overflow_prevention f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

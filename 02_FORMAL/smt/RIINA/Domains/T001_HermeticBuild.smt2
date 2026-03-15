@@ -36,7 +36,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (stage_id (mk-stage f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (stage_id (mk-stage f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -45,7 +46,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (stage_source (mk-stage f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (stage_source (mk-stage f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -54,7 +56,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (stage_binary (mk-stage f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (stage_binary (mk-stage f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -72,49 +75,53 @@
 ; --- 5. BuildEnv accessor round-trip: env_network ---
 (push 1)
 (declare-const f0 Bool)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (env_network (mk-build_env f0 f1 f2 f3)) f0)))
+(declare-const f4 (Seq Int))
+(assert (not (= (env_network (mk-build_env f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 6. BuildEnv accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Bool)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (Seq (mk-build_env f0 f1 f2 f3)) f1)))
+(declare-const f4 (Seq Int))
+(assert (not (= (env_filesystem (mk-build_env f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 7. BuildEnv accessor round-trip: env_clock ---
 (push 1)
 (declare-const f0 Bool)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (env_clock (mk-build_env f0 f1 f2 f3)) f2)))
+(declare-const f4 (Seq Int))
+(assert (not (= (env_clock (mk-build_env f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 8. BuildEnv accessor round-trip: env_random_seed ---
 (push 1)
 (declare-const f0 Bool)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (env_random_seed (mk-build_env f0 f1 f2 f3)) f3)))
+(declare-const f4 (Seq Int))
+(assert (not (= (env_random_seed (mk-build_env f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 9. BuildEnv: integer field consistency ---
 (push 1)
 (declare-const r BuildEnv)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (env_filesystem r)) 0))
 (assert (>= (env_clock r) 0))
-(assert (not (>= (+ (Seq r) (env_clock r)) 0)))
+(assert (not (>= (+ (seq.len (env_filesystem r)) (env_clock r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -124,7 +131,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (compiler_binary (mk-compiler f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (compiler_binary (mk-compiler f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -132,7 +140,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (compiler_source (mk-compiler f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (compiler_source (mk-compiler f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -152,7 +161,8 @@
 (declare-const f0 Compiler)
 (declare-const f1 Compiler)
 (declare-const f2 Compiler)
-(assert (not (= (compiler_a (mk-d_d_c_result f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (compiler_a (mk-ddc_result f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -161,7 +171,8 @@
 (declare-const f0 Compiler)
 (declare-const f1 Compiler)
 (declare-const f2 Compiler)
-(assert (not (= (compiler_b (mk-d_d_c_result f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (compiler_b (mk-ddc_result f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -170,7 +181,8 @@
 (declare-const f0 Compiler)
 (declare-const f1 Compiler)
 (declare-const f2 Compiler)
-(assert (not (= (compiler_aprime (mk-d_d_c_result f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (compiler_aprime (mk-ddc_result f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

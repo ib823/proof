@@ -156,7 +156,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (bb_id (mk-basic_block f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (bb_id (mk-basic_block f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -165,7 +166,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (bb_start (mk-basic_block f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (bb_start (mk-basic_block f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -174,7 +176,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (bb_end (mk-basic_block f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (bb_end (mk-basic_block f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -193,7 +196,8 @@
 (push 1)
 (declare-const f0 BasicBlock)
 (declare-const f1 BasicBlock)
-(assert (not (= (edge_src (mk-c_f_g_edge f0 f1)) f0)))
+(declare-const f2 EdgeType)
+(assert (not (= (edge_src (mk-cfg_edge f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -201,7 +205,8 @@
 (push 1)
 (declare-const f0 BasicBlock)
 (declare-const f1 BasicBlock)
-(assert (not (= (edge_dst (mk-c_f_g_edge f0 f1)) f1)))
+(declare-const f2 EdgeType)
+(assert (not (= (edge_dst (mk-cfg_edge f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -210,7 +215,8 @@
 ; --- 21. ShadowEntry accessor round-trip: se_return_addr ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (se_return_addr (mk-shadow_entry f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (se_return_addr (mk-shadow_entry f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -218,8 +224,9 @@
 
 ; --- 22. FuncType accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-func_type f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (ft_arg_types (mk-func_type f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -228,7 +235,8 @@
 ; --- 23. TypedFuncPtr accessor round-trip: tfp_addr ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (tfp_addr (mk-typed_func_ptr f0)) f0)))
+(declare-const f1 FuncType)
+(assert (not (= (tfp_addr (mk-typed_func_ptr f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -237,7 +245,8 @@
 ; --- 24. VTable accessor round-trip: vt_type_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (vt_type_id (mk-v_table f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (vt_type_id (mk-v_table f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -246,7 +255,8 @@
 ; --- 25. TypedObject accessor round-trip: to_vtable ---
 (push 1)
 (declare-const f0 VTable)
-(assert (not (= (to_vtable (mk-typed_object f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (to_vtable (mk-typed_object f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -255,7 +265,8 @@
 ; --- 26. ExceptionHandler accessor round-trip: eh_type ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (eh_type (mk-exception_handler f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (eh_type (mk-exception_handler f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -265,7 +276,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Int)
-(assert (not (= (jb_valid (mk-jmp_buf f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (jb_valid (mk-jmp_buf f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -273,7 +285,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Int)
-(assert (not (= (jb_target (mk-jmp_buf f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (jb_target (mk-jmp_buf f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -283,7 +296,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (tc_id (mk-thread_context f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (tc_id (mk-thread_context f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -291,7 +305,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (tc_owner (mk-thread_context f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (tc_owner (mk-thread_context f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

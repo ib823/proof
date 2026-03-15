@@ -185,7 +185,8 @@
 (push 1)
 (declare-const f0 PasswordHash)
 (declare-const f1 Int)
-(assert (not (= (cs_hash (mk-credential_store f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (cs_hash (mk-credential_store f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -193,28 +194,37 @@
 (push 1)
 (declare-const f0 PasswordHash)
 (declare-const f1 Int)
-(assert (not (= (cs_mfa_secret (mk-credential_store f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (cs_mfa_secret (mk-credential_store f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 15. AuthAttempt accessor round-trip: aa_user ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (aa_user (mk-auth_attempt f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Int)
+(declare-const f4 Int)
+(assert (not (= (aa_user (mk-auth_attempt f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 16. AuthTicket accessor round-trip: at_user ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (at_user (mk-auth_ticket f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (at_user (mk-auth_ticket f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 17. ServiceKey accessor round-trip: sk_algorithm ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (sk_algorithm (mk-service_key f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (sk_algorithm (mk-service_key f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

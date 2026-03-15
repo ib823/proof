@@ -86,7 +86,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (hara_hazards_identified (mk-h_a_r_a f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (hara_hazards_identified (mk-hara f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -97,7 +98,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (hara_severity_classified (mk-h_a_r_a f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (hara_severity_classified (mk-hara f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -108,7 +110,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (hara_exposure_assessed (mk-h_a_r_a f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (hara_exposure_assessed (mk-hara f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -119,7 +122,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (hara_controllability_assessed (mk-h_a_r_a f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (hara_controllability_assessed (mk-hara f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -130,7 +134,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (hara_asil_determined (mk-h_a_r_a f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (hara_asil_determined (mk-hara f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -180,7 +185,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (fsc_safety_requirements (mk-safety_concept f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (fsc_safety_requirements (mk-safety_concept f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -189,7 +195,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (fsc_allocation_to_elements (mk-safety_concept f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (fsc_allocation_to_elements (mk-safety_concept f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -198,7 +205,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (fsc_fault_tolerant_mechanisms (mk-safety_concept f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (fsc_fault_tolerant_mechanisms (mk-safety_concept f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -249,7 +257,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (sw_safety_requirements (mk-software_development f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (sw_safety_requirements (mk-software_development f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -261,7 +270,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (sw_architecture_design (mk-software_development f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (sw_architecture_design (mk-software_development f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -273,7 +283,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (sw_unit_design (mk-software_development f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (sw_unit_design (mk-software_development f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -285,7 +296,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (sw_unit_implementation (mk-software_development f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (sw_unit_implementation (mk-software_development f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -297,7 +309,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (sw_unit_verification (mk-software_development f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (sw_unit_verification (mk-software_development f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -351,7 +364,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (vm_requirements_inspection (mk-verification_methods f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (vm_requirements_inspection (mk-verification_methods f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -363,7 +377,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (vm_walkthrough (mk-verification_methods f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (vm_walkthrough (mk-verification_methods f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -375,7 +390,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (vm_formal_verification (mk-verification_methods f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (vm_formal_verification (mk-verification_methods f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -387,7 +403,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (vm_control_flow_analysis (mk-verification_methods f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (vm_control_flow_analysis (mk-verification_methods f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -399,7 +416,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (vm_data_flow_analysis (mk-verification_methods f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (vm_data_flow_analysis (mk-verification_methods f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -451,7 +469,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (test_requirements_based (mk-testing_requirements f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (test_requirements_based (mk-testing_requirements f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -461,7 +480,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (test_fault_injection (mk-testing_requirements f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (test_fault_injection (mk-testing_requirements f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -471,7 +491,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (test_back_to_back (mk-testing_requirements f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (test_back_to_back (mk-testing_requirements f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -481,7 +502,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (test_structural_coverage (mk-testing_requirements f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (test_structural_coverage (mk-testing_requirements f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -532,7 +554,8 @@
 (declare-const f2 SafetyConcept)
 (declare-const f3 SoftwareDevelopment)
 (declare-const f4 VerificationMethods)
-(assert (not (= (iso_asil (mk-i_s_o26262_compliance f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 TestingRequirements)
+(assert (not (= (iso_asil (mk-iso26262_compliance f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -543,7 +566,8 @@
 (declare-const f2 SafetyConcept)
 (declare-const f3 SoftwareDevelopment)
 (declare-const f4 VerificationMethods)
-(assert (not (= (iso_hara (mk-i_s_o26262_compliance f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 TestingRequirements)
+(assert (not (= (iso_hara (mk-iso26262_compliance f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -554,7 +578,8 @@
 (declare-const f2 SafetyConcept)
 (declare-const f3 SoftwareDevelopment)
 (declare-const f4 VerificationMethods)
-(assert (not (= (iso_safety_concept (mk-i_s_o26262_compliance f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 TestingRequirements)
+(assert (not (= (iso_safety_concept (mk-iso26262_compliance f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -565,7 +590,8 @@
 (declare-const f2 SafetyConcept)
 (declare-const f3 SoftwareDevelopment)
 (declare-const f4 VerificationMethods)
-(assert (not (= (iso_sw_dev (mk-i_s_o26262_compliance f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 TestingRequirements)
+(assert (not (= (iso_sw_dev (mk-iso26262_compliance f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -576,7 +602,8 @@
 (declare-const f2 SafetyConcept)
 (declare-const f3 SoftwareDevelopment)
 (declare-const f4 VerificationMethods)
-(assert (not (= (iso_verif_methods (mk-i_s_o26262_compliance f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 TestingRequirements)
+(assert (not (= (iso_verif_methods (mk-iso26262_compliance f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -197,7 +197,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (regs (mk-arch_state f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (regs (mk-arch_state f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -205,7 +206,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (mem (mk-arch_state f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (mem (mk-arch_state f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -226,7 +228,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 SpecState)
-(assert (not (= (arch (mk-microarch_state f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (arch (mk-microarch_state f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -236,7 +239,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 SpecState)
-(assert (not (= (cache (mk-microarch_state f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (cache (mk-microarch_state f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -246,7 +250,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 SpecState)
-(assert (not (= (branch_predictor (mk-microarch_state f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (branch_predictor (mk-microarch_state f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -256,7 +261,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 SpecState)
-(assert (not (= (spec_state (mk-microarch_state f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (spec_state (mk-microarch_state f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

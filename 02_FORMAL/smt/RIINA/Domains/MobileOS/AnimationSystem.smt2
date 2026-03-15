@@ -130,7 +130,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (spring_stiffness (mk-spring_params f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (spring_stiffness (mk-spring_params f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -140,7 +141,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (spring_damping (mk-spring_params f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (spring_damping (mk-spring_params f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -150,7 +152,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (spring_mass (mk-spring_params f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (spring_mass (mk-spring_params f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -160,7 +163,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (spring_initial_pos (mk-spring_params f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (spring_initial_pos (mk-spring_params f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -178,36 +182,39 @@
 ; --- 18. SpringAnimation accessor round-trip: spring_params ---
 (push 1)
 (declare-const f0 SpringParams)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (spring_params (mk-spring_animation f0 f1 f2)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (spring_params (mk-spring_animation f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 19. SpringAnimation accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 SpringParams)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-spring_animation f0 f1 f2)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (spring_positions (mk-spring_animation f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 20. SpringAnimation accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 SpringParams)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-spring_animation f0 f1 f2)) f2)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (spring_velocities (mk-spring_animation f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 21. SpringAnimation: integer field consistency ---
 (push 1)
 (declare-const r SpringAnimation)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (spring_positions r)) 0))
+(assert (>= (seq.len (spring_positions r)) 0))
+(assert (not (>= (+ (seq.len (spring_positions r)) (seq.len (spring_positions r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -223,7 +230,8 @@
 (declare-const f5 Int)
 (declare-const f6 Int)
 (declare-const f7 Bool)
-(assert (not (= (anim_type (mk-animation_control f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
+(declare-const f8 Bool)
+(assert (not (= (anim_type (mk-animation_control f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -237,7 +245,8 @@
 (declare-const f5 Int)
 (declare-const f6 Int)
 (declare-const f7 Bool)
-(assert (not (= (anim_speed (mk-animation_control f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
+(declare-const f8 Bool)
+(assert (not (= (anim_speed (mk-animation_control f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -251,7 +260,8 @@
 (declare-const f5 Int)
 (declare-const f6 Int)
 (declare-const f7 Bool)
-(assert (not (= (anim_reversed (mk-animation_control f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
+(declare-const f8 Bool)
+(assert (not (= (anim_reversed (mk-animation_control f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -265,7 +275,8 @@
 (declare-const f5 Int)
 (declare-const f6 Int)
 (declare-const f7 Bool)
-(assert (not (= (anim_autoreverses (mk-animation_control f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
+(declare-const f8 Bool)
+(assert (not (= (anim_autoreverses (mk-animation_control f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -279,7 +290,8 @@
 (declare-const f5 Int)
 (declare-const f6 Int)
 (declare-const f7 Bool)
-(assert (not (= (anim_repeat_count (mk-animation_control f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
+(declare-const f8 Bool)
+(assert (not (= (anim_repeat_count (mk-animation_control f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -296,17 +308,19 @@
 
 ; --- 28. AnimationGroup accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
-(assert (not (= (Seq (mk-animation_group f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (ag_animations (mk-animation_group f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 29. AnimationGroup accessor round-trip: ag_synchronized ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
-(assert (not (= (ag_synchronized (mk-animation_group f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (ag_synchronized (mk-animation_group f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -318,7 +332,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (la_property (mk-layer_animation f0 f1 f2 f3)) f0)))
+(declare-const f4 TimingFunction)
+(assert (not (= (la_property (mk-layer_animation f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -328,7 +343,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (la_gpu_accelerated (mk-layer_animation f0 f1 f2 f3)) f1)))
+(declare-const f4 TimingFunction)
+(assert (not (= (la_gpu_accelerated (mk-layer_animation f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -338,7 +354,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (la_from_value (mk-layer_animation f0 f1 f2 f3)) f2)))
+(declare-const f4 TimingFunction)
+(assert (not (= (la_from_value (mk-layer_animation f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -348,7 +365,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (la_to_value (mk-layer_animation f0 f1 f2 f3)) f3)))
+(declare-const f4 TimingFunction)
+(assert (not (= (la_to_value (mk-layer_animation f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -367,7 +385,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (kf_time (mk-keyframe f0 f1)) f0)))
+(declare-const f2 TimingFunction)
+(assert (not (= (kf_time (mk-keyframe f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -375,7 +394,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (kf_value (mk-keyframe f0 f1)) f1)))
+(declare-const f2 TimingFunction)
+(assert (not (= (kf_value (mk-keyframe f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -393,7 +413,8 @@
 ; --- 38. Frame accessor round-trip: frame_render_time ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (frame_render_time (mk-frame f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (frame_render_time (mk-frame f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

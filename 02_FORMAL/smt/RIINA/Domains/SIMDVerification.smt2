@@ -49,16 +49,18 @@
 ; --- 4. Loop accessor round-trip: loop_iterations ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (loop_iterations (mk-loop f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (loop_iterations (mk-loop f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 5. Loop accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-loop f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (loop_body_reads (mk-loop f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -66,8 +68,8 @@
 (push 1)
 (declare-const r Loop)
 (assert (>= (loop_iterations r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (loop_iterations r) (Seq r)) 0)))
+(assert (>= (seq.len (loop_body_reads r)) 0))
+(assert (not (>= (+ (loop_iterations r) (seq.len (loop_body_reads r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

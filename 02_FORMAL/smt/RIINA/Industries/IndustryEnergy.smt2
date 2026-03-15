@@ -154,7 +154,8 @@
 (declare-const f7 Bool)
 (declare-const f8 Bool)
 (declare-const f9 Bool)
-(assert (not (= (cip_002_identification (mk-n_e_r_c__c_i_p__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f0)))
+(declare-const f10 Bool)
+(assert (not (= (cip_002_identification (mk-nerc_cip__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -170,7 +171,8 @@
 (declare-const f7 Bool)
 (declare-const f8 Bool)
 (declare-const f9 Bool)
-(assert (not (= (cip_003_management (mk-n_e_r_c__c_i_p__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f1)))
+(declare-const f10 Bool)
+(assert (not (= (cip_003_management (mk-nerc_cip__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -186,7 +188,8 @@
 (declare-const f7 Bool)
 (declare-const f8 Bool)
 (declare-const f9 Bool)
-(assert (not (= (cip_004_personnel (mk-n_e_r_c__c_i_p__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f2)))
+(declare-const f10 Bool)
+(assert (not (= (cip_004_personnel (mk-nerc_cip__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -202,7 +205,8 @@
 (declare-const f7 Bool)
 (declare-const f8 Bool)
 (declare-const f9 Bool)
-(assert (not (= (cip_005_electronic_perimeter (mk-n_e_r_c__c_i_p__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f3)))
+(declare-const f10 Bool)
+(assert (not (= (cip_005_electronic_perimeter (mk-nerc_cip__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -218,7 +222,8 @@
 (declare-const f7 Bool)
 (declare-const f8 Bool)
 (declare-const f9 Bool)
-(assert (not (= (cip_006_physical (mk-n_e_r_c__c_i_p__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f4)))
+(declare-const f10 Bool)
+(assert (not (= (cip_006_physical (mk-nerc_cip__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -86,7 +86,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (zk_completeness (mk-z_k_properties f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (zk_completeness (mk-zk_properties f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -94,7 +95,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (zk_soundness (mk-z_k_properties f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (zk_soundness (mk-zk_properties f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -132,7 +134,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (snark_succinctness (mk-s_n_a_r_k_properties f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (snark_succinctness (mk-snark_properties f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -140,7 +143,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (snark_non_interactive (mk-s_n_a_r_k_properties f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (snark_non_interactive (mk-snark_properties f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -178,7 +182,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (ts_mpc_ceremony (mk-trusted_setup f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (ts_mpc_ceremony (mk-trusted_setup f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -186,7 +191,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (ts_toxic_waste_destroyed (mk-trusted_setup f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (ts_toxic_waste_destroyed (mk-trusted_setup f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -225,7 +231,8 @@
 (declare-const f0 ZKProperties)
 (declare-const f1 SNARKProperties)
 (declare-const f2 TrustedSetup)
-(assert (not (= (zks_zk (mk-z_k_s_n_a_r_k_config f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (zks_zk (mk-zksnark_config f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -234,7 +241,8 @@
 (declare-const f0 ZKProperties)
 (declare-const f1 SNARKProperties)
 (declare-const f2 TrustedSetup)
-(assert (not (= (zks_snark (mk-z_k_s_n_a_r_k_config f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (zks_snark (mk-zksnark_config f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -243,7 +251,8 @@
 (declare-const f0 ZKProperties)
 (declare-const f1 SNARKProperties)
 (declare-const f2 TrustedSetup)
-(assert (not (= (zks_setup (mk-z_k_s_n_a_r_k_config f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (zks_setup (mk-zksnark_config f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -255,7 +264,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (ke_exists (mk-knowledge_extractor f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (ke_exists (mk-knowledge_extractor f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -265,7 +275,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (ke_polynomial_time (mk-knowledge_extractor f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (ke_polynomial_time (mk-knowledge_extractor f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -275,7 +286,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (ke_extraction_prob (mk-knowledge_extractor f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (ke_extraction_prob (mk-knowledge_extractor f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -285,7 +297,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (ke_rewinding_allowed (mk-knowledge_extractor f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (ke_rewinding_allowed (mk-knowledge_extractor f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -296,7 +309,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (wr_statement_size (mk-witness_relation f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (wr_statement_size (mk-witness_relation f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -305,7 +319,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (wr_witness_size (mk-witness_relation f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (wr_witness_size (mk-witness_relation f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -314,7 +329,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (wr_verification_time (mk-witness_relation f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (wr_verification_time (mk-witness_relation f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -335,7 +351,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sim_exists (mk-z_k_simulator f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (sim_exists (mk-zk_simulator f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -345,7 +362,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sim_polynomial_time (mk-z_k_simulator f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (sim_polynomial_time (mk-zk_simulator f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -355,7 +373,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sim_indistinguishable (mk-z_k_simulator f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (sim_indistinguishable (mk-zk_simulator f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -365,7 +384,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sim_no_witness_needed (mk-z_k_simulator f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (sim_no_witness_needed (mk-zk_simulator f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -414,7 +434,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (di_computational (mk-dist_indistinguishability f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (di_computational (mk-dist_indistinguishability f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -423,7 +444,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (di_statistical (mk-dist_indistinguishability f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (di_statistical (mk-dist_indistinguishability f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -432,7 +454,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (di_perfect (mk-dist_indistinguishability f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (di_perfect (mk-dist_indistinguishability f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -481,7 +504,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (pv_honest (mk-prover_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (pv_honest (mk-prover_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -491,7 +515,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (pv_knows_witness (mk-prover_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (pv_knows_witness (mk-prover_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -501,7 +526,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (pv_follows_protocol (mk-prover_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (pv_follows_protocol (mk-prover_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -511,7 +537,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (pv_polynomial_time (mk-prover_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (pv_polynomial_time (mk-prover_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -560,7 +587,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (vf_honest (mk-verifier_config f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (vf_honest (mk-verifier_config f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -569,7 +597,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (vf_follows_protocol (mk-verifier_config f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (vf_follows_protocol (mk-verifier_config f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -578,7 +607,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (vf_polynomial_time (mk-verifier_config f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (vf_polynomial_time (mk-verifier_config f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -626,7 +656,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (ps_proof_bytes (mk-proof_size f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ps_proof_bytes (mk-proof_size f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -635,7 +666,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (ps_verification_ops (mk-proof_size f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ps_verification_ops (mk-proof_size f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -644,7 +676,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (ps_statement_dependent (mk-proof_size f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ps_statement_dependent (mk-proof_size f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -664,7 +697,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (ac_proof_size (mk-asymptotic_complexity f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (ac_proof_size (mk-asymptotic_complexity f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -673,7 +707,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (ac_verification_time (mk-asymptotic_complexity f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (ac_verification_time (mk-asymptotic_complexity f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -682,7 +717,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (ac_prover_time (mk-asymptotic_complexity f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (ac_prover_time (mk-asymptotic_complexity f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -703,7 +739,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (mpc_participants (mk-m_p_c_ceremony f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (mpc_participants (mk-mpc_ceremony f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -713,7 +750,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (mpc_threshold (mk-m_p_c_ceremony f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (mpc_threshold (mk-mpc_ceremony f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -723,7 +761,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (mpc_verifiable (mk-m_p_c_ceremony f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (mpc_verifiable (mk-mpc_ceremony f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -733,7 +772,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (mpc_contributions_published (mk-m_p_c_ceremony f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (mpc_contributions_published (mk-mpc_ceremony f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -754,7 +794,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tw_generated_securely (mk-toxic_waste f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (tw_generated_securely (mk-toxic_waste f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -764,7 +805,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tw_never_stored (mk-toxic_waste f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (tw_never_stored (mk-toxic_waste f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -774,7 +816,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tw_destroyed_immediately (mk-toxic_waste f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (tw_destroyed_immediately (mk-toxic_waste f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -784,7 +827,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tw_verified_destruction (mk-toxic_waste f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (tw_verified_destruction (mk-toxic_waste f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -834,7 +878,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (g16_pairing_friendly (mk-groth16_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (g16_pairing_friendly (mk-groth16_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -844,7 +889,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (g16_proof_elements (mk-groth16_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (g16_proof_elements (mk-groth16_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -854,7 +900,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (g16_verification_pairings (mk-groth16_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (g16_verification_pairings (mk-groth16_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -864,7 +911,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (g16_trusted_setup (mk-groth16_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (g16_trusted_setup (mk-groth16_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -885,7 +933,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (g16p_element_a (mk-groth16_proof f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (g16p_element_a (mk-groth16_proof f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -895,7 +944,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (g16p_element_b (mk-groth16_proof f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (g16p_element_b (mk-groth16_proof f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -905,7 +955,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (g16p_element_c (mk-groth16_proof f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (g16p_element_c (mk-groth16_proof f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -915,7 +966,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (g16p_valid_curve_points (mk-groth16_proof f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (g16p_valid_curve_points (mk-groth16_proof f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -936,7 +988,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (plonk_universal_setup (mk-p_l_o_n_k_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (plonk_universal_setup (mk-plonk_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -946,7 +999,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (plonk_polynomial_commitment (mk-p_l_o_n_k_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (plonk_polynomial_commitment (mk-plonk_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -956,7 +1010,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (plonk_arithmetic_gates (mk-p_l_o_n_k_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (plonk_arithmetic_gates (mk-plonk_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -966,7 +1021,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (plonk_custom_gates (mk-p_l_o_n_k_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (plonk_custom_gates (mk-plonk_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1015,7 +1071,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pg_degree (mk-p_l_o_n_k_gate f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (pg_degree (mk-plonk_gate f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1024,7 +1081,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pg_fan_in (mk-p_l_o_n_k_gate f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (pg_fan_in (mk-plonk_gate f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1033,7 +1091,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pg_fan_out (mk-p_l_o_n_k_gate f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (pg_fan_out (mk-plonk_gate f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1055,7 +1114,8 @@
 (declare-const f2 ZKSimulator)
 (declare-const f3 ProofSize)
 (declare-const f4 MPCCeremony)
-(assert (not (= (fzk_base (mk-full_z_k_s_n_a_r_k_config f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 ToxicWaste)
+(assert (not (= (fzk_base (mk-full_zksnark_config f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1066,7 +1126,8 @@
 (declare-const f2 ZKSimulator)
 (declare-const f3 ProofSize)
 (declare-const f4 MPCCeremony)
-(assert (not (= (fzk_extractor (mk-full_z_k_s_n_a_r_k_config f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 ToxicWaste)
+(assert (not (= (fzk_extractor (mk-full_zksnark_config f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1077,7 +1138,8 @@
 (declare-const f2 ZKSimulator)
 (declare-const f3 ProofSize)
 (declare-const f4 MPCCeremony)
-(assert (not (= (fzk_simulator (mk-full_z_k_s_n_a_r_k_config f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 ToxicWaste)
+(assert (not (= (fzk_simulator (mk-full_zksnark_config f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1088,7 +1150,8 @@
 (declare-const f2 ZKSimulator)
 (declare-const f3 ProofSize)
 (declare-const f4 MPCCeremony)
-(assert (not (= (fzk_proof_size (mk-full_z_k_s_n_a_r_k_config f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 ToxicWaste)
+(assert (not (= (fzk_proof_size (mk-full_zksnark_config f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1099,7 +1162,8 @@
 (declare-const f2 ZKSimulator)
 (declare-const f3 ProofSize)
 (declare-const f4 MPCCeremony)
-(assert (not (= (fzk_mpc (mk-full_z_k_s_n_a_r_k_config f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 ToxicWaste)
+(assert (not (= (fzk_mpc (mk-full_zksnark_config f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1110,7 +1174,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (se_statistical (mk-soundness_error f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (se_statistical (mk-soundness_error f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1119,7 +1184,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (se_computational (mk-soundness_error f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (se_computational (mk-soundness_error f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1128,7 +1194,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (se_knowledge (mk-soundness_error f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (se_knowledge (mk-soundness_error f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1148,7 +1215,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (pst_is_argument (mk-proof_system_type f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (pst_is_argument (mk-proof_system_type f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1157,7 +1225,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (pst_is_proof (mk-proof_system_type f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (pst_is_proof (mk-proof_system_type f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1166,7 +1235,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (pst_knowledge_property (mk-proof_system_type f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (pst_knowledge_property (mk-proof_system_type f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

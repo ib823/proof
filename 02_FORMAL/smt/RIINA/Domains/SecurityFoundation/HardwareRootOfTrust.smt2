@@ -189,7 +189,10 @@
 (declare-const f0 HSMType)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (hsm_type (mk-hw_root_state f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (hsm_type (mk-hw_root_state f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -198,7 +201,10 @@
 (declare-const f0 HSMType)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (root_key_present (mk-hw_root_state f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (root_key_present (mk-hw_root_state f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -207,7 +213,10 @@
 (declare-const f0 HSMType)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (attestation_key_present (mk-hw_root_state f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (attestation_key_present (mk-hw_root_state f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

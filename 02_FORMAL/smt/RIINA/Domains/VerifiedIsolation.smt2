@@ -199,7 +199,10 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (cap_id (mk-capability f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(declare-const f4 Bool)
+(assert (not (= (cap_id (mk-capability f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -207,7 +210,10 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (cap_owner (mk-capability f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(declare-const f4 Bool)
+(assert (not (= (cap_owner (mk-capability f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -224,7 +230,10 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 DomainType)
-(assert (not (= (domain_id (mk-domain f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (domain_id (mk-domain f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -232,7 +241,10 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 DomainType)
-(assert (not (= (domain_type (mk-domain f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (domain_type (mk-domain f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -493,7 +505,8 @@
 (declare-const f1 Int)
 (declare-const f2 VMCSState)
 (declare-const f3 Int)
-(assert (not (= (vm_id (mk-vm_state f0 f1 f2 f3)) f0)))
+(declare-const f4 (Seq Int))
+(assert (not (= (vm_id (mk-vm_state f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -503,7 +516,8 @@
 (declare-const f1 Int)
 (declare-const f2 VMCSState)
 (declare-const f3 Int)
-(assert (not (= (vm_ept (mk-vm_state f0 f1 f2 f3)) f1)))
+(declare-const f4 (Seq Int))
+(assert (not (= (vm_ept (mk-vm_state f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -513,7 +527,8 @@
 (declare-const f1 Int)
 (declare-const f2 VMCSState)
 (declare-const f3 Int)
-(assert (not (= (vm_vmcs (mk-vm_state f0 f1 f2 f3)) f2)))
+(declare-const f4 (Seq Int))
+(assert (not (= (vm_vmcs (mk-vm_state f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -523,7 +538,8 @@
 (declare-const f1 Int)
 (declare-const f2 VMCSState)
 (declare-const f3 Int)
-(assert (not (= (vm_vcpus (mk-vm_state f0 f1 f2 f3)) f3)))
+(declare-const f4 (Seq Int))
+(assert (not (= (vm_vcpus (mk-vm_state f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -540,7 +556,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (report_mrenclave (mk-attestation_report f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (report_mrenclave (mk-attestation_report f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -548,7 +566,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (report_mrsigner (mk-attestation_report f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (report_mrsigner (mk-attestation_report f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -602,7 +622,11 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (enclave_id (mk-enclave_state f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Bool)
+(declare-const f5 Int)
+(declare-const f6 SealingKey)
+(assert (not (= (enclave_id (mk-enclave_state f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -611,7 +635,11 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (enclave_mrenclave (mk-enclave_state f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Bool)
+(declare-const f5 Int)
+(declare-const f6 SealingKey)
+(assert (not (= (enclave_mrenclave (mk-enclave_state f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -620,7 +648,11 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (enclave_mrsigner (mk-enclave_state f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Bool)
+(declare-const f5 Int)
+(declare-const f6 SealingKey)
+(assert (not (= (enclave_mrsigner (mk-enclave_state f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

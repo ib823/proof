@@ -142,7 +142,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sql_parameterized_only (mk-s_q_l_security_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (sql_parameterized_only (mk-sql_security_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -152,7 +153,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sql_no_string_concat (mk-s_q_l_security_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (sql_no_string_concat (mk-sql_security_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -162,7 +164,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sql_input_sanitized (mk-s_q_l_security_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (sql_input_sanitized (mk-sql_security_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -172,7 +175,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sql_whitelist_validation (mk-s_q_l_security_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (sql_whitelist_validation (mk-sql_security_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

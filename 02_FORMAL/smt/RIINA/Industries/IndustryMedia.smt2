@@ -158,7 +158,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (content_encryption (mk-e_c_p__compliance f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (content_encryption (mk-ecp__compliance f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -169,7 +170,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (access_control (mk-e_c_p__compliance f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (access_control (mk-ecp__compliance f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -180,7 +182,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (forensic_watermarking (mk-e_c_p__compliance f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (forensic_watermarking (mk-ecp__compliance f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -191,7 +194,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (audit_logging (mk-e_c_p__compliance f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (audit_logging (mk-ecp__compliance f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -202,7 +206,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (secure_viewing (mk-e_c_p__compliance f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (secure_viewing (mk-ecp__compliance f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -252,7 +257,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 ContentType)
-(assert (not (= (view_start (mk-viewing_session f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (view_start (mk-viewing_session f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -261,7 +267,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 ContentType)
-(assert (not (= (view_end (mk-viewing_session f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (view_end (mk-viewing_session f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -270,7 +277,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 ContentType)
-(assert (not (= (view_content (mk-viewing_session f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (view_content (mk-viewing_session f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

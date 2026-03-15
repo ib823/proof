@@ -31,7 +31,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (csrf_token_validation (mk-c_s_r_f_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (csrf_token_validation (mk-csrf_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -41,7 +42,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (csrf_same_site_cookies (mk-c_s_r_f_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (csrf_same_site_cookies (mk-csrf_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -51,7 +53,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (csrf_origin_check (mk-c_s_r_f_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (csrf_origin_check (mk-csrf_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -61,7 +64,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (csrf_referer_check (mk-c_s_r_f_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (csrf_referer_check (mk-csrf_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -111,7 +115,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (req_has_token (mk-c_s_r_f_request f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (req_has_token (mk-csrf_request f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -121,7 +126,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (req_token_matches (mk-c_s_r_f_request f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (req_token_matches (mk-csrf_request f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -131,7 +137,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (req_same_origin (mk-c_s_r_f_request f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (req_same_origin (mk-csrf_request f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -141,7 +148,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (req_valid_referer (mk-c_s_r_f_request f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (req_valid_referer (mk-csrf_request f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

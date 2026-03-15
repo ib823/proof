@@ -18,7 +18,7 @@
 ;         02_FORMAL/coq/type_system/Preservation.v
 ;         02_FORMAL/coq/foundations/Syntax.v (type encodings)
 
-(set-logic QF_LIA)
+(set-logic ALL)
 (set-option :produce-models true)
 
 ; ═══════════════════════════════════════════════════════════════════════════

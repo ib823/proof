@@ -56,14 +56,18 @@
 ; --- 1. Schema accessor round-trip: schema_version ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (schema_version (mk-schema f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (schema_version (mk-schema f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 2. Database accessor round-trip: db_schema ---
 (push 1)
 (declare-const f0 Schema)
-(assert (not (= (db_schema (mk-database f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (db_schema (mk-database f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -71,7 +75,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (local_version (mk-sync_state f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (local_version (mk-sync_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -79,7 +85,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (remote_version (mk-sync_state f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (remote_version (mk-sync_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -97,7 +105,9 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (store_id (mk-encrypted_store f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (store_id (mk-encrypted_store f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -106,7 +116,9 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (store_encrypted (mk-encrypted_store f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (store_encrypted (mk-encrypted_store f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -115,7 +127,9 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (store_key_id (mk-encrypted_store f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (store_key_id (mk-encrypted_store f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -133,7 +147,9 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (backup_id (mk-backup f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (backup_id (mk-backup f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -142,7 +158,9 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (backup_encrypted (mk-backup f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (backup_encrypted (mk-backup f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -151,7 +169,9 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (backup_timestamp (mk-backup f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (backup_timestamp (mk-backup f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -169,7 +189,10 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (mig_id (mk-migration f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (mig_id (mk-migration f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -178,7 +201,10 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (mig_from_version (mk-migration f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (mig_from_version (mk-migration f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -187,7 +213,10 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (mig_to_version (mk-migration f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (mig_to_version (mk-migration f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -203,7 +232,10 @@
 ; --- 18. Transaction accessor round-trip: txn_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (txn_id (mk-transaction f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (txn_id (mk-transaction f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -295,14 +327,20 @@
 ; --- 28. SerializedData accessor round-trip: ser_format ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (ser_format (mk-serialized_data f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(assert (not (= (ser_format (mk-serialized_data f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 29. DataExport accessor round-trip: export_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (export_id (mk-data_export f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (export_id (mk-data_export f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

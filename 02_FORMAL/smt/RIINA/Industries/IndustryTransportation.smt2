@@ -157,7 +157,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (hazard_analysis (mk-i_s_o26262__compliance f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (hazard_analysis (mk-iso26262__compliance f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -170,7 +171,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (system_design (mk-i_s_o26262__compliance f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (system_design (mk-iso26262__compliance f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -183,7 +185,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (hardware_design (mk-i_s_o26262__compliance f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (hardware_design (mk-iso26262__compliance f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -196,7 +199,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (software_design (mk-i_s_o26262__compliance f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (software_design (mk-iso26262__compliance f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -209,7 +213,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (production (mk-i_s_o26262__compliance f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (production (mk-iso26262__compliance f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -117,7 +117,8 @@
 (declare-const f0 BootStageId)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (image_stage (mk-boot_image f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (image_stage (mk-boot_image f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -126,7 +127,8 @@
 (declare-const f0 BootStageId)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (image_hash (mk-boot_image f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (image_hash (mk-boot_image f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -135,7 +137,8 @@
 (declare-const f0 BootStageId)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (image_signature (mk-boot_image f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (image_signature (mk-boot_image f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -154,7 +157,8 @@
 (push 1)
 (declare-const f0 BootStageId)
 (declare-const f1 Int)
-(assert (not (= (expected_stage (mk-expected_hash f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (expected_stage (mk-expected_hash f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -162,7 +166,8 @@
 (push 1)
 (declare-const f0 BootStageId)
 (declare-const f1 Int)
-(assert (not (= (expected_hash_value (mk-expected_hash f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (expected_hash_value (mk-expected_hash f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -170,50 +175,54 @@
 
 ; --- 19. BootChainState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 BootStageId)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (Seq (mk-boot_chain_state f0 f1 f2 f3)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 Bool)
+(assert (not (= (verified_stages (mk-boot_chain_state f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 20. BootChainState accessor round-trip: current_stage ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 BootStageId)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (current_stage (mk-boot_chain_state f0 f1 f2 f3)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 Bool)
+(assert (not (= (current_stage (mk-boot_chain_state f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 21. BootChainState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 BootStageId)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (Seq (mk-boot_chain_state f0 f1 f2 f3)) f2)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 Bool)
+(assert (not (= (expected_hashes (mk-boot_chain_state f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 22. BootChainState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 BootStageId)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (Seq (mk-boot_chain_state f0 f1 f2 f3)) f3)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 Bool)
+(assert (not (= (minimum_versions (mk-boot_chain_state f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 23. BootChainState: integer field consistency ---
 (push 1)
 (declare-const r BootChainState)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (verified_stages r)) 0))
+(assert (>= (seq.len (verified_stages r)) 0))
+(assert (not (>= (+ (seq.len (verified_stages r)) (seq.len (verified_stages r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

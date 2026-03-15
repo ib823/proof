@@ -87,7 +87,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cpu_temp (mk-thermal_state f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (cpu_temp (mk-thermal_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -96,7 +97,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (gpu_temp (mk-thermal_state f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (gpu_temp (mk-thermal_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -105,7 +107,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (battery_temp (mk-thermal_state f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (battery_temp (mk-thermal_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -125,7 +128,8 @@
 (declare-const f0 PowerState)
 (declare-const f1 Int)
 (declare-const f2 ThermalState)
-(assert (not (= (current_state (mk-power_manager f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (current_state (mk-power_manager f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -134,7 +138,8 @@
 (declare-const f0 PowerState)
 (declare-const f1 Int)
 (declare-const f2 ThermalState)
-(assert (not (= (battery_level (mk-power_manager f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (battery_level (mk-power_manager f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -143,7 +148,8 @@
 (declare-const f0 PowerState)
 (declare-const f1 Int)
 (declare-const f2 ThermalState)
-(assert (not (= (thermal (mk-power_manager f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (thermal (mk-power_manager f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -156,7 +162,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (bat_level (mk-battery_info f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Int)
+(assert (not (= (bat_level (mk-battery_info f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -167,7 +174,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (bat_health (mk-battery_info f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Int)
+(assert (not (= (bat_health (mk-battery_info f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -178,7 +186,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (bat_temperature (mk-battery_info f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Int)
+(assert (not (= (bat_temperature (mk-battery_info f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -189,7 +198,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (bat_is_charging (mk-battery_info f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Int)
+(assert (not (= (bat_is_charging (mk-battery_info f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -200,7 +210,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (bat_charge_rate (mk-battery_info f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Int)
+(assert (not (= (bat_charge_rate (mk-battery_info f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -220,7 +231,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (app_power_id (mk-app_power_budget f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (app_power_id (mk-app_power_budget f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -229,7 +241,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (app_power_budget_mw (mk-app_power_budget f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (app_power_budget_mw (mk-app_power_budget f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -238,7 +251,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (app_power_actual_mw (mk-app_power_budget f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (app_power_actual_mw (mk-app_power_budget f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -258,7 +272,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (wake_lock_id (mk-wake_lock f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (wake_lock_id (mk-wake_lock f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -267,7 +282,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (wake_lock_timeout (mk-wake_lock f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (wake_lock_timeout (mk-wake_lock f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -276,7 +292,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (wake_lock_elapsed (mk-wake_lock f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (wake_lock_elapsed (mk-wake_lock f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -295,7 +312,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Bool)
-(assert (not (= (display_brightness (mk-display_state f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (display_brightness (mk-display_state f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -303,7 +321,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Bool)
-(assert (not (= (display_adaptive (mk-display_state f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (display_adaptive (mk-display_state f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -313,7 +332,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (cpu_frequency_mhz (mk-cpu_state f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (cpu_frequency_mhz (mk-cpu_state f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -321,7 +341,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (cpu_max_frequency_mhz (mk-cpu_state f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (cpu_max_frequency_mhz (mk-cpu_state f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

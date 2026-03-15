@@ -123,7 +123,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (plan_standards_defined (mk-planning_objectives f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (plan_standards_defined (mk-planning_objectives f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -132,7 +133,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (plan_lifecycle_defined (mk-planning_objectives f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (plan_lifecycle_defined (mk-planning_objectives f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -141,7 +143,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (plan_dev_environment_defined (mk-planning_objectives f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (plan_dev_environment_defined (mk-planning_objectives f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -201,7 +204,8 @@
 (declare-const f12 Bool)
 (declare-const f13 Bool)
 (declare-const f14 Bool)
-(assert (not (= (dev_requirements_complete (mk-development_process f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14)) f0)))
+(declare-const f15 Bool)
+(assert (not (= (dev_requirements_complete (mk-development_process f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -222,7 +226,8 @@
 (declare-const f12 Bool)
 (declare-const f13 Bool)
 (declare-const f14 Bool)
-(assert (not (= (dev_requirements_accurate (mk-development_process f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14)) f1)))
+(declare-const f15 Bool)
+(assert (not (= (dev_requirements_accurate (mk-development_process f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -243,7 +248,8 @@
 (declare-const f12 Bool)
 (declare-const f13 Bool)
 (declare-const f14 Bool)
-(assert (not (= (dev_requirements_verifiable (mk-development_process f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14)) f2)))
+(declare-const f15 Bool)
+(assert (not (= (dev_requirements_verifiable (mk-development_process f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -264,7 +270,8 @@
 (declare-const f12 Bool)
 (declare-const f13 Bool)
 (declare-const f14 Bool)
-(assert (not (= (dev_requirements_conformant (mk-development_process f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14)) f3)))
+(declare-const f15 Bool)
+(assert (not (= (dev_requirements_conformant (mk-development_process f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -285,7 +292,8 @@
 (declare-const f12 Bool)
 (declare-const f13 Bool)
 (declare-const f14 Bool)
-(assert (not (= (dev_requirements_traceable (mk-development_process f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14)) f4)))
+(declare-const f15 Bool)
+(assert (not (= (dev_requirements_traceable (mk-development_process f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -349,7 +357,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (verif_requirements_reviewed (mk-verification_process f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (verif_requirements_reviewed (mk-verification_process f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -362,7 +371,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (verif_design_reviewed (mk-verification_process f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (verif_design_reviewed (mk-verification_process f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -375,7 +385,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (verif_code_reviewed (mk-verification_process f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (verif_code_reviewed (mk-verification_process f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -388,7 +399,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (verif_integration_tested (mk-verification_process f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (verif_integration_tested (mk-verification_process f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -401,7 +413,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (verif_hw_sw_integration_tested (mk-verification_process f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (verif_hw_sw_integration_tested (mk-verification_process f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -458,7 +471,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (cm_identification (mk-configuration_management f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
+(declare-const f8 Bool)
+(assert (not (= (cm_identification (mk-configuration_management f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -472,7 +486,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (cm_baselines (mk-configuration_management f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
+(declare-const f8 Bool)
+(assert (not (= (cm_baselines (mk-configuration_management f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -486,7 +501,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (cm_traceability (mk-configuration_management f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
+(declare-const f8 Bool)
+(assert (not (= (cm_traceability (mk-configuration_management f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -500,7 +516,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (cm_problem_reporting (mk-configuration_management f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
+(declare-const f8 Bool)
+(assert (not (= (cm_problem_reporting (mk-configuration_management f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -514,7 +531,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (cm_change_control (mk-configuration_management f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
+(declare-const f8 Bool)
+(assert (not (= (cm_change_control (mk-configuration_management f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -567,7 +585,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (qa_compliance_assured (mk-quality_assurance f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (qa_compliance_assured (mk-quality_assurance f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -576,7 +595,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (qa_audits_performed (mk-quality_assurance f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (qa_audits_performed (mk-quality_assurance f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -585,7 +605,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (qa_records_maintained (mk-quality_assurance f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (qa_records_maintained (mk-quality_assurance f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -636,7 +657,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (fm_category (mk-formal_methods f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (fm_category (mk-formal_methods f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -648,7 +670,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (fm_specification_formal (mk-formal_methods f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (fm_specification_formal (mk-formal_methods f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -660,7 +683,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (fm_design_formal (mk-formal_methods f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (fm_design_formal (mk-formal_methods f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -672,7 +696,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (fm_code_formal (mk-formal_methods f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (fm_code_formal (mk-formal_methods f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -684,7 +709,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (fm_verification_formal (mk-formal_methods f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (fm_verification_formal (mk-formal_methods f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -698,7 +724,8 @@
 (declare-const f3 VerificationProcess)
 (declare-const f4 ConfigurationManagement)
 (declare-const f5 QualityAssurance)
-(assert (not (= (do178c_dal (mk-d_o178_c_compliance f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Int)
+(assert (not (= (do178c_dal (mk-do178_c_compliance f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -710,7 +737,8 @@
 (declare-const f3 VerificationProcess)
 (declare-const f4 ConfigurationManagement)
 (declare-const f5 QualityAssurance)
-(assert (not (= (do178c_planning (mk-d_o178_c_compliance f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Int)
+(assert (not (= (do178c_planning (mk-do178_c_compliance f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -722,7 +750,8 @@
 (declare-const f3 VerificationProcess)
 (declare-const f4 ConfigurationManagement)
 (declare-const f5 QualityAssurance)
-(assert (not (= (do178c_development (mk-d_o178_c_compliance f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Int)
+(assert (not (= (do178c_development (mk-do178_c_compliance f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -734,7 +763,8 @@
 (declare-const f3 VerificationProcess)
 (declare-const f4 ConfigurationManagement)
 (declare-const f5 QualityAssurance)
-(assert (not (= (do178c_verification (mk-d_o178_c_compliance f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Int)
+(assert (not (= (do178c_verification (mk-do178_c_compliance f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -746,7 +776,8 @@
 (declare-const f3 VerificationProcess)
 (declare-const f4 ConfigurationManagement)
 (declare-const f5 QualityAssurance)
-(assert (not (= (do178c_cm (mk-d_o178_c_compliance f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Int)
+(assert (not (= (do178c_cm (mk-do178_c_compliance f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

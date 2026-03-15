@@ -118,7 +118,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (access_control (mk-h_i_p_a_a__policy f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (access_control (mk-hipaa__policy f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -128,7 +129,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (audit_controls (mk-h_i_p_a_a__policy f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (audit_controls (mk-hipaa__policy f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -138,7 +140,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (integrity_controls (mk-h_i_p_a_a__policy f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (integrity_controls (mk-hipaa__policy f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -148,7 +151,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (transmission_security (mk-h_i_p_a_a__policy f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (transmission_security (mk-hipaa__policy f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -198,7 +202,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (bg_accessor (mk-break_glass_event f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (bg_accessor (mk-break_glass_event f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -208,7 +213,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (bg_patient (mk-break_glass_event f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (bg_patient (mk-break_glass_event f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -218,7 +224,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (bg_timestamp (mk-break_glass_event f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (bg_timestamp (mk-break_glass_event f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -228,7 +235,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (bg_reason (mk-break_glass_event f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (bg_reason (mk-break_glass_event f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -249,7 +257,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (consent_patient (mk-consent_record f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (consent_patient (mk-consent_record f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -259,7 +268,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (consent_purpose (mk-consent_record f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (consent_purpose (mk-consent_record f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -269,7 +279,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (consent_granted (mk-consent_record f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (consent_granted (mk-consent_record f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -279,7 +290,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (consent_timestamp (mk-consent_record f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (consent_timestamp (mk-consent_record f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

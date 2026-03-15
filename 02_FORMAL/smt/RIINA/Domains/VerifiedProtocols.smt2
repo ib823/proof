@@ -238,7 +238,8 @@
 ; --- 26. KeyPair accessor round-trip: kp_private ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (kp_private (mk-key_pair f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (kp_private (mk-key_pair f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -246,70 +247,75 @@
 
 ; --- 27. TLS13State accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (Seq (mk-t_l_s13_state f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Int)
+(assert (not (= (tls_handshake_secret (mk-tls13_state f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 28. TLS13State accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (Seq (mk-t_l_s13_state f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Int)
+(assert (not (= (tls_client_traffic_secret (mk-tls13_state f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 29. TLS13State accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (Seq (mk-t_l_s13_state f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Int)
+(assert (not (= (tls_server_traffic_secret (mk-tls13_state f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 30. TLS13State accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (Seq (mk-t_l_s13_state f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Int)
+(assert (not (= (tls_transcript (mk-tls13_state f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 31. TLS13State accessor round-trip: tls_stage ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (tls_stage (mk-t_l_s13_state f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Int)
+(assert (not (= (tls_stage (mk-tls13_state f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 32. TLS13State: integer field consistency ---
 (push 1)
 (declare-const r TLS13State)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (tls_handshake_secret r)) 0))
+(assert (>= (seq.len (tls_handshake_secret r)) 0))
+(assert (not (>= (+ (seq.len (tls_handshake_secret r)) (seq.len (tls_handshake_secret r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -319,10 +325,11 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (session_client_key (mk-t_l_s13_session f0 f1 f2 f3 f4)) f0)))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (session_client_key (mk-tls13_session f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -330,10 +337,11 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (session_server_key (mk-t_l_s13_session f0 f1 f2 f3 f4)) f1)))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (session_server_key (mk-tls13_session f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -341,10 +349,11 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (Seq (mk-t_l_s13_session f0 f1 f2 f3 f4)) f2)))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (session_resumption_secret (mk-tls13_session f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -352,10 +361,11 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (session_established_time (mk-t_l_s13_session f0 f1 f2 f3 f4)) f3)))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (session_established_time (mk-tls13_session f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -363,10 +373,11 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (Seq (mk-t_l_s13_session f0 f1 f2 f3 f4)) f4)))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (session_peer_cert (mk-tls13_session f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -383,37 +394,40 @@
 
 ; --- 39. NoiseSymmetricState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(assert (not (= (Seq (mk-noise_symmetric_state f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (noise_ck (mk-noise_symmetric_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 40. NoiseSymmetricState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(assert (not (= (Seq (mk-noise_symmetric_state f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (noise_h (mk-noise_symmetric_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 41. NoiseSymmetricState accessor round-trip: noise_k ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(assert (not (= (noise_k (mk-noise_symmetric_state f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (noise_k (mk-noise_symmetric_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 42. NoiseSymmetricState: integer field consistency ---
 (push 1)
 (declare-const r NoiseSymmetricState)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (noise_ck r)) 0))
+(assert (>= (seq.len (noise_ck r)) 0))
+(assert (not (>= (+ (seq.len (noise_ck r)) (seq.len (noise_ck r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -422,7 +436,8 @@
 ; --- 43. NoiseCipherState accessor round-trip: cipher_k ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (cipher_k (mk-noise_cipher_state f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (cipher_k (mk-noise_cipher_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -438,7 +453,8 @@
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Int)
-(assert (not (= (hs_pattern (mk-noise_handshake_state f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
+(declare-const f8 Bool)
+(assert (not (= (hs_pattern (mk-noise_handshake_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -452,7 +468,8 @@
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Int)
-(assert (not (= (hs_symmetric (mk-noise_handshake_state f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
+(declare-const f8 Bool)
+(assert (not (= (hs_symmetric (mk-noise_handshake_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -466,7 +483,8 @@
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Int)
-(assert (not (= (hs_s (mk-noise_handshake_state f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
+(declare-const f8 Bool)
+(assert (not (= (hs_s (mk-noise_handshake_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -480,7 +498,8 @@
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Int)
-(assert (not (= (hs_e (mk-noise_handshake_state f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
+(declare-const f8 Bool)
+(assert (not (= (hs_e (mk-noise_handshake_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -494,7 +513,8 @@
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Int)
-(assert (not (= (hs_rs (mk-noise_handshake_state f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
+(declare-const f8 Bool)
+(assert (not (= (hs_rs (mk-noise_handshake_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -513,7 +533,8 @@
 (push 1)
 (declare-const f0 NoiseCipherState)
 (declare-const f1 NoiseCipherState)
-(assert (not (= (ns_send_cipher (mk-noise_session f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (ns_send_cipher (mk-noise_session f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -521,7 +542,8 @@
 (push 1)
 (declare-const f0 NoiseCipherState)
 (declare-const f1 NoiseCipherState)
-(assert (not (= (ns_recv_cipher (mk-noise_session f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (ns_recv_cipher (mk-noise_session f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -531,13 +553,14 @@
 (push 1)
 (declare-const f0 KeyPair)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
 (declare-const f5 Int)
 (declare-const f6 Int)
-(declare-const f7 Int)
-(assert (not (= (signal_dh_pair (mk-signal_state f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
+(declare-const f7 (Seq Int))
+(declare-const f8 Int)
+(assert (not (= (signal_dh_pair (mk-signal_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -545,13 +568,14 @@
 (push 1)
 (declare-const f0 KeyPair)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
 (declare-const f5 Int)
 (declare-const f6 Int)
-(declare-const f7 Int)
-(assert (not (= (signal_dh_remote (mk-signal_state f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
+(declare-const f7 (Seq Int))
+(declare-const f8 Int)
+(assert (not (= (signal_dh_remote (mk-signal_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -559,13 +583,14 @@
 (push 1)
 (declare-const f0 KeyPair)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
 (declare-const f5 Int)
 (declare-const f6 Int)
-(declare-const f7 Int)
-(assert (not (= (Seq (mk-signal_state f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
+(declare-const f7 (Seq Int))
+(declare-const f8 Int)
+(assert (not (= (signal_root_key (mk-signal_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -573,13 +598,14 @@
 (push 1)
 (declare-const f0 KeyPair)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
 (declare-const f5 Int)
 (declare-const f6 Int)
-(declare-const f7 Int)
-(assert (not (= (Seq (mk-signal_state f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
+(declare-const f7 (Seq Int))
+(declare-const f8 Int)
+(assert (not (= (signal_send_chain (mk-signal_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -587,13 +613,14 @@
 (push 1)
 (declare-const f0 KeyPair)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
 (declare-const f5 Int)
 (declare-const f6 Int)
-(declare-const f7 Int)
-(assert (not (= (Seq (mk-signal_state f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
+(declare-const f7 (Seq Int))
+(declare-const f8 Int)
+(assert (not (= (signal_recv_chain (mk-signal_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -601,8 +628,8 @@
 (push 1)
 (declare-const r SignalState)
 (assert (>= (signal_dh_remote r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (signal_dh_remote r) (Seq r)) 0)))
+(assert (>= (seq.len (signal_root_key r)) 0))
+(assert (not (>= (+ (signal_dh_remote r) (seq.len (signal_root_key r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -612,8 +639,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (x3dh_identity_key (mk-x3_d_h_prekey_bundle f0 f1 f2)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (x3dh_identity_key (mk-x3_dh_prekey_bundle f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -621,8 +649,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (x3dh_signed_prekey (mk-x3_d_h_prekey_bundle f0 f1 f2)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (x3dh_signed_prekey (mk-x3_dh_prekey_bundle f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -630,8 +659,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-x3_d_h_prekey_bundle f0 f1 f2)) f2)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (x3dh_prekey_signature (mk-x3_dh_prekey_bundle f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -649,7 +679,8 @@
 ; --- 62. X3DHResult accessor round-trip: x3dh_shared_secret ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (x3dh_shared_secret (mk-x3_d_h_result f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (x3dh_shared_secret (mk-x3_dh_result f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -657,37 +688,40 @@
 
 ; --- 63. ProtocolSpec accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-protocol_spec f0 f1 f2)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (spec_name (mk-protocol_spec f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 64. ProtocolSpec accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-protocol_spec f0 f1 f2)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (spec_messages (mk-protocol_spec f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 65. ProtocolSpec accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-protocol_spec f0 f1 f2)) f2)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (spec_security_goals (mk-protocol_spec f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 66. ProtocolSpec: integer field consistency ---
 (push 1)
 (declare-const r ProtocolSpec)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (spec_name r)) 0))
+(assert (>= (seq.len (spec_name r)) 0))
+(assert (not (>= (+ (seq.len (spec_name r)) (seq.len (spec_name r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -695,26 +729,28 @@
 
 ; --- 67. ProtocolImpl accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (Seq (mk-protocol_impl f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (impl_name (mk-protocol_impl f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 68. ProtocolImpl accessor round-trip: impl_state_machine ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (impl_state_machine (mk-protocol_impl f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (impl_state_machine (mk-protocol_impl f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 69. ProtocolImpl: integer field consistency ---
 (push 1)
 (declare-const r ProtocolImpl)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (impl_name r)) 0))
 (assert (>= (impl_state_machine r) 0))
-(assert (not (>= (+ (Seq r) (impl_state_machine r)) 0)))
+(assert (not (>= (+ (seq.len (impl_name r)) (impl_state_machine r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

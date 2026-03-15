@@ -273,7 +273,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (mrn (mk-patient f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (mrn (mk-patient f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -282,7 +283,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (name_hash (mk-patient f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (name_hash (mk-patient f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -291,7 +293,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (dob (mk-patient f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (dob (mk-patient f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -309,7 +312,8 @@
 ; --- 28. PatientMatch accessor round-trip: match_score ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (match_score (mk-patient_match f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (match_score (mk-patient_match f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -317,8 +321,9 @@
 
 ; --- 29. PatientRegistry accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-patient_registry f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (patients (mk-patient_registry f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -329,7 +334,8 @@
 (declare-const f0 Patient)
 (declare-const f1 Patient)
 (declare-const f2 Int)
-(assert (not (= (candidate1 (mk-duplicate_candidate f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (candidate1 (mk-duplicate_candidate f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -338,7 +344,8 @@
 (declare-const f0 Patient)
 (declare-const f1 Patient)
 (declare-const f2 Int)
-(assert (not (= (candidate2 (mk-duplicate_candidate f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (candidate2 (mk-duplicate_candidate f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -347,7 +354,8 @@
 (declare-const f0 Patient)
 (declare-const f1 Patient)
 (declare-const f2 Int)
-(assert (not (= (similarity_score (mk-duplicate_candidate f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (similarity_score (mk-duplicate_candidate f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -357,10 +365,11 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (source_mrn (mk-merge_operation f0 f1 f2 f3 f4)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (source_mrn (mk-merge_operation f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -368,10 +377,11 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (target_mrn (mk-merge_operation f0 f1 f2 f3 f4)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (target_mrn (mk-merge_operation f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -379,10 +389,11 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (Seq (mk-merge_operation f0 f1 f2 f3 f4)) f2)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (source_records (mk-merge_operation f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -390,10 +401,11 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (Seq (mk-merge_operation f0 f1 f2 f3 f4)) f3)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (target_records_before (mk-merge_operation f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -401,10 +413,11 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (Seq (mk-merge_operation f0 f1 f2 f3 f4)) f4)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Bool)
+(assert (not (= (target_records_after (mk-merge_operation f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -428,7 +441,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (enc_id (mk-encounter f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (enc_id (mk-encounter f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -441,7 +455,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (enc_patient (mk-encounter f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (enc_patient (mk-encounter f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -454,7 +469,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (chief_complaint (mk-encounter f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (chief_complaint (mk-encounter f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -467,7 +483,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (history (mk-encounter f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (history (mk-encounter f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -480,7 +497,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (exam (mk-encounter f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (exam (mk-encounter f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -502,7 +520,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (note_id (mk-clinical_note f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Int)
+(assert (not (= (note_id (mk-clinical_note f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -513,7 +532,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (note_encounter (mk-clinical_note f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Int)
+(assert (not (= (note_encounter (mk-clinical_note f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -524,7 +544,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (note_content_hash (mk-clinical_note f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Int)
+(assert (not (= (note_content_hash (mk-clinical_note f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -535,7 +556,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (is_signed (mk-clinical_note f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Int)
+(assert (not (= (is_signed (mk-clinical_note f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -546,7 +568,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (sign_timestamp (mk-clinical_note f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Int)
+(assert (not (= (sign_timestamp (mk-clinical_note f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -568,7 +591,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (amend_id (mk-amendment f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (amend_id (mk-amendment f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -579,7 +603,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (original_note (mk-amendment f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (original_note (mk-amendment f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -590,7 +615,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (amend_timestamp (mk-amendment f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (amend_timestamp (mk-amendment f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -601,7 +627,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (amend_author (mk-amendment f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (amend_author (mk-amendment f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -612,7 +639,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (marked_as_amendment (mk-amendment f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (marked_as_amendment (mk-amendment f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -636,7 +664,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (allergy_id (mk-allergy f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (allergy_id (mk-allergy f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -649,7 +678,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (allergen (mk-allergy f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (allergen (mk-allergy f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -662,7 +692,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (reaction_type (mk-allergy f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (reaction_type (mk-allergy f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -675,7 +706,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (severity (mk-allergy f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (severity (mk-allergy f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -688,7 +720,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (snomed_code (mk-allergy f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (snomed_code (mk-allergy f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -708,7 +741,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (interaction_drug (mk-drug_allergy_interaction f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (interaction_drug (mk-drug_allergy_interaction f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -717,7 +751,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (interaction_allergen (mk-drug_allergy_interaction f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (interaction_allergen (mk-drug_allergy_interaction f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -726,7 +761,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (patient_has_allergy (mk-drug_allergy_interaction f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (patient_has_allergy (mk-drug_allergy_interaction f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -746,7 +782,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (problem_id (mk-problem f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (problem_id (mk-problem f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -755,7 +792,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (problem_description (mk-problem f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (problem_description (mk-problem f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -764,7 +802,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (problem_snomed (mk-problem f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (problem_snomed (mk-problem f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -793,7 +832,8 @@
 (declare-const f9 Bool)
 (declare-const f10 Bool)
 (declare-const f11 Int)
-(assert (not (= (order_id (mk-medication_order f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f0)))
+(declare-const f12 Int)
+(assert (not (= (order_id (mk-medication_order f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -811,7 +851,8 @@
 (declare-const f9 Bool)
 (declare-const f10 Bool)
 (declare-const f11 Int)
-(assert (not (= (drug (mk-medication_order f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f1)))
+(declare-const f12 Int)
+(assert (not (= (drug (mk-medication_order f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -829,7 +870,8 @@
 (declare-const f9 Bool)
 (declare-const f10 Bool)
 (declare-const f11 Int)
-(assert (not (= (dose (mk-medication_order f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f2)))
+(declare-const f12 Int)
+(assert (not (= (dose (mk-medication_order f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -847,7 +889,8 @@
 (declare-const f9 Bool)
 (declare-const f10 Bool)
 (declare-const f11 Int)
-(assert (not (= (dose_unit (mk-medication_order f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f3)))
+(declare-const f12 Int)
+(assert (not (= (dose_unit (mk-medication_order f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -865,7 +908,8 @@
 (declare-const f9 Bool)
 (declare-const f10 Bool)
 (declare-const f11 Int)
-(assert (not (= (route (mk-medication_order f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f4)))
+(declare-const f12 Int)
+(assert (not (= (route (mk-medication_order f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -890,7 +934,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (admin_id (mk-administration f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
+(declare-const f8 Bool)
+(assert (not (= (admin_id (mk-administration f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -904,7 +949,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (admin_order (mk-administration f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
+(declare-const f8 Bool)
+(assert (not (= (admin_order (mk-administration f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -918,7 +964,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (right_patient (mk-administration f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
+(declare-const f8 Bool)
+(assert (not (= (right_patient (mk-administration f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -932,7 +979,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (right_drug (mk-administration f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
+(declare-const f8 Bool)
+(assert (not (= (right_drug (mk-administration f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -946,7 +994,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (right_dose (mk-administration f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
+(declare-const f8 Bool)
+(assert (not (= (right_dose (mk-administration f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -966,7 +1015,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 InteractionSeverity)
-(assert (not (= (drug1 (mk-drug_interaction f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (drug1 (mk-drug_interaction f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -975,7 +1025,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 InteractionSeverity)
-(assert (not (= (drug2 (mk-drug_interaction f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (drug2 (mk-drug_interaction f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -984,7 +1035,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 InteractionSeverity)
-(assert (not (= (interaction_severity (mk-drug_interaction f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (interaction_severity (mk-drug_interaction f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1005,7 +1057,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (check_drug (mk-dose_check f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (check_drug (mk-dose_check f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1015,7 +1068,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (check_dose (mk-dose_check f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (check_dose (mk-dose_check f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1025,7 +1079,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (min_safe_dose (mk-dose_check f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (min_safe_dose (mk-dose_check f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1035,7 +1090,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (max_safe_dose (mk-dose_check f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (max_safe_dose (mk-dose_check f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1055,7 +1111,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ham_drug (mk-high_alert_med f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ham_drug (mk-high_alert_med f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1064,7 +1121,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (is_high_alert (mk-high_alert_med f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (is_high_alert (mk-high_alert_med f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1073,7 +1131,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (double_check_required (mk-high_alert_med f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (double_check_required (mk-high_alert_med f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1089,7 +1148,8 @@
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (ord_id (mk-order f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
+(declare-const f8 Bool)
+(assert (not (= (ord_id (mk-order f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1103,7 +1163,8 @@
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (ord_patient (mk-order f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
+(declare-const f8 Bool)
+(assert (not (= (ord_patient (mk-order f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1117,7 +1178,8 @@
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (ord_drug (mk-order f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
+(declare-const f8 Bool)
+(assert (not (= (ord_drug (mk-order f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1131,7 +1193,8 @@
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (ord_dose (mk-order f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
+(declare-const f8 Bool)
+(assert (not (= (ord_dose (mk-order f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1145,7 +1208,8 @@
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (ord_route (mk-order f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
+(declare-const f8 Bool)
+(assert (not (= (ord_route (mk-order f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1165,7 +1229,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (vo_id (mk-verbal_order f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (vo_id (mk-verbal_order f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1174,7 +1239,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (vo_time (mk-verbal_order f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (vo_time (mk-verbal_order f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1183,7 +1249,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (authentication_time (mk-verbal_order f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (authentication_time (mk-verbal_order f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1204,7 +1271,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (existing_order (mk-duplicate_order_check f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (existing_order (mk-duplicate_order_check f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1214,7 +1282,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (new_order (mk-duplicate_order_check f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (new_order (mk-duplicate_order_check f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1224,7 +1293,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (is_duplicate (mk-duplicate_order_check f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (is_duplicate (mk-duplicate_order_check f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1234,7 +1304,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (warning_shown (mk-duplicate_order_check f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (warning_shown (mk-duplicate_order_check f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1254,7 +1325,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (contra_drug (mk-contraindication f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (contra_drug (mk-contraindication f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1263,7 +1335,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (contra_condition (mk-contraindication f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (contra_condition (mk-contraindication f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1272,7 +1345,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (contra_detected (mk-contraindication f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (contra_detected (mk-contraindication f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1297,7 +1371,8 @@
 (declare-const f5 Int)
 (declare-const f6 Int)
 (declare-const f7 Int)
-(assert (not (= (specimen_id (mk-specimen f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
+(declare-const f8 Bool)
+(assert (not (= (specimen_id (mk-specimen f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1311,7 +1386,8 @@
 (declare-const f5 Int)
 (declare-const f6 Int)
 (declare-const f7 Int)
-(assert (not (= (specimen_patient (mk-specimen f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
+(declare-const f8 Bool)
+(assert (not (= (specimen_patient (mk-specimen f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1325,7 +1401,8 @@
 (declare-const f5 Int)
 (declare-const f6 Int)
 (declare-const f7 Int)
-(assert (not (= (status (mk-specimen f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
+(declare-const f8 Bool)
+(assert (not (= (status (mk-specimen f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1339,7 +1416,8 @@
 (declare-const f5 Int)
 (declare-const f6 Int)
 (declare-const f7 Int)
-(assert (not (= (collection_time (mk-specimen f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
+(declare-const f8 Bool)
+(assert (not (= (collection_time (mk-specimen f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1353,7 +1431,8 @@
 (declare-const f5 Int)
 (declare-const f6 Int)
 (declare-const f7 Int)
-(assert (not (= (transit_time (mk-specimen f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
+(declare-const f8 Bool)
+(assert (not (= (transit_time (mk-specimen f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1377,7 +1456,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (result_id (mk-lab_result f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (result_id (mk-lab_result f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1390,7 +1470,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (result_value (mk-lab_result f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (result_value (mk-lab_result f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1403,7 +1484,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (result_time (mk-lab_result f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (result_time (mk-lab_result f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1416,7 +1498,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (is_critical (mk-lab_result f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (is_critical (mk-lab_result f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1429,7 +1512,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (lab_notif_time (mk-lab_result f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (lab_notif_time (mk-lab_result f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1450,7 +1534,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (current_value (mk-delta_check f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (current_value (mk-delta_check f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1460,7 +1545,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (prior_value (mk-delta_check f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (prior_value (mk-delta_check f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1470,7 +1556,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (delta_threshold (mk-delta_check f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (delta_threshold (mk-delta_check f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1480,7 +1567,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (exceeds_threshold (mk-delta_check f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (exceeds_threshold (mk-delta_check f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1503,7 +1591,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Bool)
-(assert (not (= (test_code (mk-reference_range f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (test_code (mk-reference_range f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1515,7 +1604,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Bool)
-(assert (not (= (patient_age_range (mk-reference_range f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (patient_age_range (mk-reference_range f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1527,7 +1617,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Bool)
-(assert (not (= (patient_sex (mk-reference_range f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (patient_sex (mk-reference_range f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1539,7 +1630,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Bool)
-(assert (not (= (range_min (mk-reference_range f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (range_min (mk-reference_range f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1551,7 +1643,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Bool)
-(assert (not (= (range_max (mk-reference_range f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (range_max (mk-reference_range f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1575,7 +1668,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (access_id (mk-p_h_i_access f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (access_id (mk-phi_access f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1588,7 +1682,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (accessor (mk-p_h_i_access f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (accessor (mk-phi_access f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1601,7 +1696,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (accessor_role (mk-p_h_i_access f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (accessor_role (mk-phi_access f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1614,7 +1710,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (accessed_patient (mk-p_h_i_access f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (accessed_patient (mk-phi_access f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1627,7 +1724,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (access_timestamp (mk-p_h_i_access f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (access_timestamp (mk-phi_access f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1648,7 +1746,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (audit_id (mk-audit_entry f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (audit_id (mk-audit_entry f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1658,7 +1757,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (audit_access_id (mk-audit_entry f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (audit_access_id (mk-audit_entry f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1668,7 +1768,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (audit_timestamp (mk-audit_entry f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (audit_timestamp (mk-audit_entry f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1678,7 +1779,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (audit_action (mk-audit_entry f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (audit_action (mk-audit_entry f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1698,7 +1800,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (breach_id (mk-breach f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (breach_id (mk-breach f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1707,7 +1810,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (detection_time (mk-breach f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (detection_time (mk-breach f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1716,7 +1820,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (breach_notif_time (mk-breach f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (breach_notif_time (mk-breach f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1737,7 +1842,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (consent_id (mk-consent f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (consent_id (mk-consent f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1747,7 +1853,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (consent_patient (mk-consent f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (consent_patient (mk-consent f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1757,7 +1864,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (explicit_consent (mk-consent f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (explicit_consent (mk-consent f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1767,7 +1875,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (consent_timestamp (mk-consent f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (consent_timestamp (mk-consent f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1788,7 +1897,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (export_id (mk-data_export f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (export_id (mk-data_export f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1798,7 +1908,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (export_patient (mk-data_export f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (export_patient (mk-data_export f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1808,7 +1919,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (machine_readable (mk-data_export f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (machine_readable (mk-data_export f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1818,7 +1930,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (export_format (mk-data_export f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (export_format (mk-data_export f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

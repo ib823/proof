@@ -68,7 +68,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (bft_total_nodes (mk-b_f_t_config f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (bft_total_nodes (mk-bft_config f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -76,7 +77,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (bft_faulty_tolerance (mk-b_f_t_config f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (bft_faulty_tolerance (mk-bft_config f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -95,7 +97,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (iv_proof_of_work_enabled (mk-identity_verification f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (iv_proof_of_work_enabled (mk-identity_verification f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -103,7 +106,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (iv_identity_bound (mk-identity_verification f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (iv_identity_bound (mk-identity_verification f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -142,7 +146,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pc_total_peers (mk-peer_config f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (pc_total_peers (mk-peer_config f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -151,7 +156,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pc_distinct_subnets (mk-peer_config f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (pc_distinct_subnets (mk-peer_config f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -160,7 +166,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pc_min_outbound (mk-peer_config f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (pc_min_outbound (mk-peer_config f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -179,7 +186,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (rp_authenticated (mk-routing_protocol f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (rp_authenticated (mk-routing_protocol f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -187,7 +195,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (rp_path_verified (mk-routing_protocol f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (rp_path_verified (mk-routing_protocol f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -225,7 +234,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (cp_safety_proven (mk-consensus_protocol f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (cp_safety_proven (mk-consensus_protocol f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -233,7 +243,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (cp_liveness_proven (mk-consensus_protocol f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (cp_liveness_proven (mk-consensus_protocol f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -271,7 +282,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (sc_formally_verified (mk-smart_contract f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (sc_formally_verified (mk-smart_contract f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -279,7 +291,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (sc_invariants_proven (mk-smart_contract f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (sc_invariants_proven (mk-smart_contract f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -317,7 +330,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (rg_locked (mk-reentrancy_guard f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (rg_locked (mk-reentrancy_guard f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -325,7 +339,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (rg_checks_before_effects (mk-reentrancy_guard f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (rg_checks_before_effects (mk-reentrancy_guard f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -363,7 +378,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (fo_commit_phase (mk-fair_ordering f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (fo_commit_phase (mk-fair_ordering f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -371,7 +387,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (fo_reveal_phase (mk-fair_ordering f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (fo_reveal_phase (mk-fair_ordering f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -409,7 +426,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (mev_private_mempool (mk-m_e_v_protection f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (mev_private_mempool (mk-mev_protection f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -417,7 +435,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (mev_fair_sequencing (mk-m_e_v_protection f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (mev_fair_sequencing (mk-mev_protection f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -455,7 +474,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (fl_same_block_check (mk-flash_loan_guard f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (fl_same_block_check (mk-flash_loan_guard f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -463,7 +483,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (fl_balance_snapshot (mk-flash_loan_guard f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (fl_balance_snapshot (mk-flash_loan_guard f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -501,7 +522,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (lc_lamport_enabled (mk-logical_clock f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (lc_lamport_enabled (mk-logical_clock f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -509,7 +531,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (lc_vector_clock (mk-logical_clock f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (lc_vector_clock (mk-logical_clock f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -547,7 +570,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (pt_cap_aware (mk-partition_config f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (pt_cap_aware (mk-partition_config f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -555,7 +579,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (pt_partition_detection (mk-partition_config f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (pt_partition_detection (mk-partition_config f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -593,7 +618,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (csp_linearizable (mk-consistency_protocol f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (csp_linearizable (mk-consistency_protocol f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -601,7 +627,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (csp_state_machine_replication (mk-consistency_protocol f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (csp_state_machine_replication (mk-consistency_protocol f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -639,7 +666,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (ldr_rotation_enabled (mk-leader_config f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (ldr_rotation_enabled (mk-leader_config f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -647,7 +675,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (ldr_bft_election (mk-leader_config f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (ldr_bft_election (mk-leader_config f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -685,7 +714,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (qc_quorum_size (mk-quorum_config f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (qc_quorum_size (mk-quorum_config f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -693,7 +723,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (qc_total_nodes (mk-quorum_config f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (qc_total_nodes (mk-quorum_config f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

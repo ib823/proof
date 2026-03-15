@@ -134,8 +134,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (state_public (mk-state f0 f1 f2)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (state_public (mk-state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -143,8 +144,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (state_secret (mk-state f0 f1 f2)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (state_secret (mk-state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -152,8 +154,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-state f0 f1 f2)) f2)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (state_memory (mk-state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -171,55 +174,60 @@
 ; --- 16. Trace accessor round-trip: trace_time ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (trace_time (mk-trace f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Int)
+(assert (not (= (trace_time (mk-trace f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 17. Trace accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (Seq (mk-trace f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Int)
+(assert (not (= (trace_mem_accesses (mk-trace f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 18. Trace accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (Seq (mk-trace f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Int)
+(assert (not (= (trace_cache_pattern (mk-trace f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 19. Trace accessor round-trip: trace_output ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (trace_output (mk-trace f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Int)
+(assert (not (= (trace_output (mk-trace f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 20. Trace accessor round-trip: trace_terminated ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (trace_terminated (mk-trace f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Int)
+(assert (not (= (trace_terminated (mk-trace f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -227,8 +235,8 @@
 (push 1)
 (declare-const r Trace)
 (assert (>= (trace_time r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (trace_time r) (Seq r)) 0)))
+(assert (>= (seq.len (trace_mem_accesses r)) 0))
+(assert (not (>= (+ (trace_time r) (seq.len (trace_mem_accesses r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -239,7 +247,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (res_cpu_cycles (mk-resource_usage f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (res_cpu_cycles (mk-resource_usage f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -248,7 +257,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (res_memory_alloc (mk-resource_usage f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (res_memory_alloc (mk-resource_usage f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -257,7 +267,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (res_cache_misses (mk-resource_usage f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (res_cache_misses (mk-resource_usage f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -275,7 +286,8 @@
 ; --- 26. Partition accessor round-trip: part_level ---
 (push 1)
 (declare-const f0 SecLevel)
-(assert (not (= (part_level (mk-partition f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (part_level (mk-partition f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -285,7 +297,8 @@
 (push 1)
 (declare-const f0 State)
 (declare-const f1 State)
-(assert (not (= (prog_execute (mk-secure_program f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (prog_execute (mk-secure_program f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -293,7 +306,8 @@
 (push 1)
 (declare-const f0 State)
 (declare-const f1 State)
-(assert (not (= (prog_resources (mk-secure_program f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (prog_resources (mk-secure_program f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -301,8 +315,9 @@
 
 ; --- 29. NetworkTrace accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-network_trace f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(assert (not (= (net_packet_times (mk-network_trace f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -311,7 +326,8 @@
 ; --- 30. ScheduleTrace accessor round-trip: sched_quantum ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (sched_quantum (mk-schedule_trace f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (sched_quantum (mk-schedule_trace f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -319,8 +335,9 @@
 
 ; --- 31. BranchTrace accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-branch_trace f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(assert (not (= (branch_taken (mk-branch_trace f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -328,8 +345,9 @@
 
 ; --- 32. StorageState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-storage_state f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 SecLevel)
+(assert (not (= (storage_contents (mk-storage_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

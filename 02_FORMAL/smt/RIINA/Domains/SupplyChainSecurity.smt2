@@ -72,7 +72,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sa_content_hash (mk-signed_artifact f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (sa_content_hash (mk-signed_artifact f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -81,7 +82,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sa_signature (mk-signed_artifact f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (sa_signature (mk-signed_artifact f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -90,7 +92,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sa_signer_key (mk-signed_artifact f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (sa_signer_key (mk-signed_artifact f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -110,7 +113,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (vp_name (mk-verified_package f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (vp_name (mk-verified_package f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -119,7 +123,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (vp_canonical_name (mk-verified_package f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (vp_canonical_name (mk-verified_package f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -128,7 +133,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (vp_in_allowlist (mk-verified_package f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (vp_in_allowlist (mk-verified_package f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -148,7 +154,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (sp_namespace (mk-scoped_package f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (sp_namespace (mk-scoped_package f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -157,7 +164,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (sp_name (mk-scoped_package f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (sp_name (mk-scoped_package f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -166,7 +174,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (sp_internal_registry (mk-scoped_package f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (sp_internal_registry (mk-scoped_package f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -187,7 +196,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (rb_source_hash (mk-reproducible_build f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (rb_source_hash (mk-reproducible_build f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -197,7 +207,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (rb_output_hash (mk-reproducible_build f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (rb_output_hash (mk-reproducible_build f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -207,7 +218,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (rb_builder1_hash (mk-reproducible_build f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (rb_builder1_hash (mk-reproducible_build f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -217,7 +229,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (rb_builder2_hash (mk-reproducible_build f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (rb_builder2_hash (mk-reproducible_build f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -238,7 +251,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tuf_root_signed (mk-t_u_f_package f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (tuf_root_signed (mk-tuf_package f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -248,7 +262,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tuf_targets_signed (mk-t_u_f_package f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (tuf_targets_signed (mk-tuf_package f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -258,7 +273,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tuf_snapshot_signed (mk-t_u_f_package f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (tuf_snapshot_signed (mk-tuf_package f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -268,7 +284,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tuf_timestamp_signed (mk-t_u_f_package f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (tuf_timestamp_signed (mk-tuf_package f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -318,7 +335,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (fw_signature (mk-verified_firmware f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (fw_signature (mk-verified_firmware f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -328,7 +346,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (fw_vendor_key (mk-verified_firmware f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (fw_vendor_key (mk-verified_firmware f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -338,7 +357,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (fw_hash (mk-verified_firmware f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (fw_hash (mk-verified_firmware f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -348,7 +368,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (fw_signature_valid (mk-verified_firmware f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (fw_signature_valid (mk-verified_firmware f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -367,8 +388,9 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(declare-const f2 Int)
-(assert (not (= (hw_tpm_present (mk-hardware_attestation f0 f1 f2)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (hw_tpm_present (mk-hardware_attestation f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -376,8 +398,9 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(declare-const f2 Int)
-(assert (not (= (hw_secure_boot (mk-hardware_attestation f0 f1 f2)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (hw_secure_boot (mk-hardware_attestation f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -385,8 +408,9 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-hardware_attestation f0 f1 f2)) f2)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (hw_attestation_chain (mk-hardware_attestation f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -397,7 +421,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (vendor_id (mk-vendor_verification f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (vendor_id (mk-vendor_verification f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -406,7 +431,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (vendor_cert_valid (mk-vendor_verification f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (vendor_cert_valid (mk-vendor_verification f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -415,7 +441,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (vendor_audit_passed (mk-vendor_verification f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (vendor_audit_passed (mk-vendor_verification f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -425,8 +452,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (ns_source_segment (mk-network_segmentation f0 f1 f2)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (ns_source_segment (mk-network_segmentation f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -434,8 +462,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (ns_dest_segment (mk-network_segmentation f0 f1 f2)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (ns_dest_segment (mk-network_segmentation f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -443,8 +472,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-network_segmentation f0 f1 f2)) f2)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (ns_firewall_rules (mk-network_segmentation f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -464,7 +494,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (upd_signature_valid (mk-signed_update f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (upd_signature_valid (mk-signed_update f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -473,7 +504,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (upd_current_version (mk-signed_update f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (upd_current_version (mk-signed_update f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -482,7 +514,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (upd_new_version (mk-signed_update f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (upd_new_version (mk-signed_update f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -502,7 +535,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (code_signature_valid (mk-signed_code f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (code_signature_valid (mk-signed_code f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -511,7 +545,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (code_review_approved (mk-signed_code f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (code_review_approved (mk-signed_code f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -520,7 +555,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (code_reviewer_count (mk-signed_code f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (code_reviewer_count (mk-signed_code f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -533,7 +569,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (ddc_compiler1_hash (mk-d_d_c_build f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (ddc_compiler1_hash (mk-ddc_build f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -544,7 +581,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (ddc_compiler2_hash (mk-d_d_c_build f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (ddc_compiler2_hash (mk-ddc_build f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -555,7 +593,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (ddc_compilers_different (mk-d_d_c_build f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (ddc_compilers_different (mk-ddc_build f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -566,7 +605,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (ddc_output1_hash (mk-d_d_c_build f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (ddc_output1_hash (mk-ddc_build f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -577,7 +617,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (ddc_output2_hash (mk-d_d_c_build f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (ddc_output2_hash (mk-ddc_build f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -597,7 +638,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (bin_source_hash (mk-binary_verification f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (bin_source_hash (mk-binary_verification f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -606,7 +648,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (bin_claimed_hash (mk-binary_verification f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (bin_claimed_hash (mk-binary_verification f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -615,7 +658,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (bin_reproduced_hash (mk-binary_verification f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (bin_reproduced_hash (mk-binary_verification f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -635,7 +679,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ct_cert_id (mk-certificate_transparency f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ct_cert_id (mk-certificate_transparency f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -644,7 +689,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ct_in_log (mk-certificate_transparency f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ct_in_log (mk-certificate_transparency f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -653,7 +699,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ct_sct_valid (mk-certificate_transparency f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ct_sct_valid (mk-certificate_transparency f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -664,7 +711,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ac_user_id (mk-access_control f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ac_user_id (mk-access_control f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -673,7 +721,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ac_mfa_enabled (mk-access_control f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ac_mfa_enabled (mk-access_control f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -682,7 +731,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ac_role_verified (mk-access_control f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ac_role_verified (mk-access_control f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -694,7 +744,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (di_dependency_id (mk-dependency_isolation f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (di_dependency_id (mk-dependency_isolation f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -704,7 +755,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (di_isolation_level (mk-dependency_isolation f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (di_isolation_level (mk-dependency_isolation f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -714,7 +766,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (di_sandboxed (mk-dependency_isolation f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (di_sandboxed (mk-dependency_isolation f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -724,7 +777,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (di_network_restricted (mk-dependency_isolation f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (di_network_restricted (mk-dependency_isolation f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

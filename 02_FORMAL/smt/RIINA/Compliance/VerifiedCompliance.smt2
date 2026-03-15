@@ -146,7 +146,16 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 String)
-(assert (not (= (pd_subject (mk-personal_data f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 String)
+(declare-const f4 Bool)
+(declare-const f5 Int)
+(declare-const f6 Int)
+(declare-const f7 Bool)
+(declare-const f8 Bool)
+(declare-const f9 Bool)
+(declare-const f10 Bool)
+(assert (not (= (pd_subject (mk-personal_data f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -154,14 +163,32 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 String)
-(assert (not (= (pd_category (mk-personal_data f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 String)
+(declare-const f4 Bool)
+(declare-const f5 Int)
+(declare-const f6 Int)
+(declare-const f7 Bool)
+(declare-const f8 Bool)
+(declare-const f9 Bool)
+(declare-const f10 Bool)
+(assert (not (= (pd_category (mk-personal_data f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 15. PHI accessor round-trip: phi_patient_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (phi_patient_id (mk-phi f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 (Seq Int))
+(declare-const f4 Bool)
+(declare-const f5 Bool)
+(declare-const f6 Bool)
+(declare-const f7 Bool)
+(declare-const f8 Bool)
+(declare-const f9 Bool)
+(assert (not (= (phi_patient_id (mk-phi f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -412,21 +439,30 @@
 ; --- 41. CompliancePolicy accessor round-trip: policy_regulation ---
 (push 1)
 (declare-const f0 Regulation)
-(assert (not (= (policy_regulation (mk-compliance_policy f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (policy_regulation (mk-compliance_policy f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 42. EvidenceChain accessor round-trip: evidence_control ---
 (push 1)
 (declare-const f0 Control)
-(assert (not (= (evidence_control (mk-evidence_chain f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 (Seq Int))
+(declare-const f4 Bool)
+(assert (not (= (evidence_control (mk-evidence_chain f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 43. GapAnalysis accessor round-trip: gap_policy ---
 (push 1)
 (declare-const f0 CompliancePolicy)
-(assert (not (= (gap_policy (mk-gap_analysis f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (gap_policy (mk-gap_analysis f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

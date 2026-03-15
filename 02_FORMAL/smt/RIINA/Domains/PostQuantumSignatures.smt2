@@ -146,7 +146,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (skp_public (mk-signing_key_pair f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (skp_public (mk-signing_key_pair f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -154,7 +155,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (skp_secret (mk-signing_key_pair f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (skp_secret (mk-signing_key_pair f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -172,7 +174,8 @@
 ; --- 18. SignatureResult accessor round-trip: sig_value ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (sig_value (mk-signature_result f0)) f0)))
+(declare-const f1 Bool)
+(assert (not (= (sig_value (mk-signature_result f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -184,7 +187,8 @@
 (declare-const f1 SigningKeyPair)
 (declare-const f2 Int)
 (declare-const f3 SignatureResult)
-(assert (not (= (sig_scheme (mk-signature_instance f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (sig_scheme (mk-signature_instance f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -194,7 +198,8 @@
 (declare-const f1 SigningKeyPair)
 (declare-const f2 Int)
 (declare-const f3 SignatureResult)
-(assert (not (= (sig_keypair (mk-signature_instance f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (sig_keypair (mk-signature_instance f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -204,7 +209,8 @@
 (declare-const f1 SigningKeyPair)
 (declare-const f2 Int)
 (declare-const f3 SignatureResult)
-(assert (not (= (sig_message (mk-signature_instance f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (sig_message (mk-signature_instance f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -214,7 +220,8 @@
 (declare-const f1 SigningKeyPair)
 (declare-const f2 Int)
 (declare-const f3 SignatureResult)
-(assert (not (= (sig_signature (mk-signature_instance f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (sig_signature (mk-signature_instance f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -224,7 +231,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (eufcma_unforgeable (mk-e_u_f_c_m_a_secure f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (eufcma_unforgeable (mk-eufcma_secure f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -232,7 +240,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (eufcma_strong_unforgeability (mk-e_u_f_c_m_a_secure f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (eufcma_strong_unforgeability (mk-eufcma_secure f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -270,7 +279,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (sqr_post_quantum (mk-sig_quantum_resistant f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (sqr_post_quantum (mk-sig_quantum_resistant f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -278,7 +288,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (sqr_no_shor_attack (mk-sig_quantum_resistant f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (sqr_no_shor_attack (mk-sig_quantum_resistant f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -316,7 +327,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (hb_stateless (mk-hash_based_properties f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (hb_stateless (mk-hash_based_properties f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -324,7 +336,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (hb_hash_function_secure (mk-hash_based_properties f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (hb_hash_function_secure (mk-hash_based_properties f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -362,7 +375,8 @@
 (push 1)
 (declare-const f0 EUFCMASecure)
 (declare-const f1 SigQuantumResistant)
-(assert (not (= (sig_sec_eufcma (mk-signature_security f0 f1)) f0)))
+(declare-const f2 SecurityLevel)
+(assert (not (= (sig_sec_eufcma (mk-signature_security f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -370,7 +384,8 @@
 (push 1)
 (declare-const f0 EUFCMASecure)
 (declare-const f1 SigQuantumResistant)
-(assert (not (= (sig_sec_quantum (mk-signature_security f0 f1)) f1)))
+(declare-const f2 SecurityLevel)
+(assert (not (= (sig_sec_quantum (mk-signature_security f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

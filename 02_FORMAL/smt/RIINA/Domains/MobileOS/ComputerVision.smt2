@@ -334,14 +334,19 @@
 ; --- 30. BarcodeResult accessor round-trip: barcode_format ---
 (push 1)
 (declare-const f0 BarcodeFormat)
-(assert (not (= (barcode_format (mk-barcode_result f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (barcode_format (mk-barcode_result f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 31. PhotoAnalysis accessor round-trip: photo_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (photo_id (mk-photo_analysis f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(declare-const f3 Bool)
+(assert (not (= (photo_id (mk-photo_analysis f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

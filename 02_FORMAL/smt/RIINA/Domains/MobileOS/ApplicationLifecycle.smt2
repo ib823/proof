@@ -88,7 +88,8 @@
 (declare-const f1 AppState)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (app_id (mk-application f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (app_id (mk-application f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -98,7 +99,8 @@
 (declare-const f1 AppState)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (app_state (mk-application f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (app_state (mk-application f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -108,7 +110,8 @@
 (declare-const f1 AppState)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (app_data (mk-application f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (app_data (mk-application f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -118,7 +121,8 @@
 (declare-const f1 AppState)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (app_saved_state (mk-application f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (app_saved_state (mk-application f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -139,7 +143,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (url_scheme (mk-u_r_l_scheme f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (url_scheme (mk-url_scheme f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -149,7 +154,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (url_host (mk-u_r_l_scheme f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (url_host (mk-url_scheme f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -159,7 +165,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (url_path (mk-u_r_l_scheme f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (url_path (mk-url_scheme f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -169,7 +176,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (url_validated (mk-u_r_l_scheme f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (url_validated (mk-url_scheme f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -189,7 +197,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (ext_id (mk-app_extension f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(assert (not (= (ext_id (mk-app_extension f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -198,7 +207,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (ext_parent_app_id (mk-app_extension f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(assert (not (= (ext_parent_app_id (mk-app_extension f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -207,7 +217,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (ext_sandboxed (mk-app_extension f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(assert (not (= (ext_sandboxed (mk-app_extension f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -227,7 +238,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (widget_id (mk-widget f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (widget_id (mk-widget f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -236,7 +248,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (widget_app_id (mk-widget f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (widget_app_id (mk-widget f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -245,7 +258,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (widget_last_update (mk-widget f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (widget_last_update (mk-widget f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -262,26 +276,28 @@
 
 ; --- 25. AppGroup accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-app_group f0 f1)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (group_app_ids (mk-app_group f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 26. AppGroup accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-app_group f0 f1)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (group_shared_data (mk-app_group f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 27. AppGroup: integer field consistency ---
 (push 1)
 (declare-const r AppGroup)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (group_app_ids r)) 0))
+(assert (>= (seq.len (group_app_ids r)) 0))
+(assert (not (>= (+ (seq.len (group_app_ids r)) (seq.len (group_app_ids r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -291,7 +307,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 AppState)
-(assert (not (= (scene_app_id (mk-app_scene f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (scene_app_id (mk-app_scene f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -299,7 +316,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 AppState)
-(assert (not (= (scene_state (mk-app_scene f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (scene_state (mk-app_scene f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -310,8 +328,9 @@
 (declare-const f0 Application)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (ext_app (mk-ext_app f0 f1 f2 f3)) f0)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (ext_app (mk-ext_app f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -320,8 +339,9 @@
 (declare-const f0 Application)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (ext_bg_time_used (mk-ext_app f0 f1 f2 f3)) f1)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (ext_bg_time_used (mk-ext_app f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -330,8 +350,9 @@
 (declare-const f0 Application)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (ext_memory_level (mk-ext_app f0 f1 f2 f3)) f2)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (ext_memory_level (mk-ext_app f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -340,8 +361,9 @@
 (declare-const f0 Application)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (Seq (mk-ext_app f0 f1 f2 f3)) f3)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (ext_scenes (mk-ext_app f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

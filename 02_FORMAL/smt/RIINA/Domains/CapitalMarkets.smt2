@@ -64,7 +64,8 @@
 (declare-const f1 Side)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (order_id (mk-order f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (order_id (mk-order f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -74,7 +75,8 @@
 (declare-const f1 Side)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (order_side (mk-order f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (order_side (mk-order f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -84,7 +86,8 @@
 (declare-const f1 Side)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (order_price (mk-order f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (order_price (mk-order f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -94,7 +97,8 @@
 (declare-const f1 Side)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (order_qty (mk-order f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (order_qty (mk-order f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -116,7 +120,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (trade_id (mk-trade f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (trade_id (mk-trade f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -127,7 +132,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (trade_buy_id (mk-trade f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (trade_buy_id (mk-trade f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -138,7 +144,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (trade_sell_id (mk-trade f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (trade_sell_id (mk-trade f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -149,7 +156,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (trade_price (mk-trade f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (trade_price (mk-trade f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -160,7 +168,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (trade_qty (mk-trade f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (trade_qty (mk-trade f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -181,7 +190,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (settle_trade_id (mk-settlement f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (settle_trade_id (mk-settlement f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -191,7 +201,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (buyer_paid (mk-settlement f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (buyer_paid (mk-settlement f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -201,7 +212,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (seller_received (mk-settlement f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (seller_received (mk-settlement f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -211,7 +223,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (assets_delivered (mk-settlement f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (assets_delivered (mk-settlement f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -228,8 +241,9 @@
 
 ; --- 20. OrderBook accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-order_book f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(assert (not (= (bids (mk-order_book f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -240,7 +254,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tick_symbol (mk-market_data_tick f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (tick_symbol (mk-market_data_tick f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -249,7 +264,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tick_price (mk-market_data_tick f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (tick_price (mk-market_data_tick f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -258,7 +274,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tick_volume (mk-market_data_tick f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (tick_volume (mk-market_data_tick f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

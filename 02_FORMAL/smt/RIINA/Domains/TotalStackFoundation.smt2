@@ -155,7 +155,8 @@
 (push 1)
 (declare-const f0 Layer)
 (declare-const f1 Bool)
-(assert (not (= (lv_layer (mk-layer_verification f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (lv_layer (mk-layer_verification f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -163,7 +164,8 @@
 (push 1)
 (declare-const f0 Layer)
 (declare-const f1 Bool)
-(assert (not (= (lv_verified (mk-layer_verification f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (lv_verified (mk-layer_verification f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -171,8 +173,9 @@
 
 ; --- 21. StackState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-stack_state f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(assert (not (= (ss_layers (mk-stack_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

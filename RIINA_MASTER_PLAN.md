@@ -266,7 +266,7 @@ strict-positivity restriction while preserving the active-lane theorem surface.
 | .thy files | 275 | Repo-wide total from `find 02_FORMAL/isabelle/ -name "*.thy"` |
 | Compiled theories | 1 | `RIINA_CORE` currently compiles `Syntax.thy` |
 | Compilation | PASSES (`RIINA_CORE`) | `isabelle build -d 02_FORMAL/isabelle/RIINA/Core -b RIINA_CORE` |
-| Lemma count (grep) | ~9,165 | Repo-wide grep only; most files remain uncompiled stubs |
+| Lemma count (grep) | ~9,091 | Repo-wide grep only; most files remain uncompiled stubs |
 
 **Honest assessment:** `Syntax.thy` now compiles in Isabelle/HOL via the `RIINA_CORE`
 smoke session. The remaining 274 `.thy` files are still unverified transpiled stubs.
@@ -1051,7 +1051,7 @@ constructor names PascalCase, `induction` doesn't work on mutual inductives.
 |--------|-------|
 | Files | 275 (repo total) |
 | Compiled | 1 (`Syntax` in `RIINA_CORE`) |
-| Lemma count (grep) | ~9,165 (repo-wide; mostly still uncompiled) |
+| Lemma count (grep) | ~9,091 (repo-wide; mostly still uncompiled) |
 
 **Closure criteria:**
 1. First successful `isabelle build` on at least one file

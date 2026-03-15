@@ -86,7 +86,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (ho_addition (mk-homomorphic_ops f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (ho_addition (mk-homomorphic_ops f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -94,7 +95,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (ho_multiplication (mk-homomorphic_ops f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (ho_multiplication (mk-homomorphic_ops f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -132,7 +134,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (fhe_ind_cpa (mk-f_h_e_security_props f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (fhe_ind_cpa (mk-fhe_security_props f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -140,7 +143,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (fhe_circular_secure (mk-f_h_e_security_props f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (fhe_circular_secure (mk-fhe_security_props f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -178,7 +182,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (nm_bootstrapping (mk-noise_management f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (nm_bootstrapping (mk-noise_management f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -186,7 +191,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (nm_modulus_switching (mk-noise_management f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (nm_modulus_switching (mk-noise_management f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -226,7 +232,8 @@
 (declare-const f1 FHESecurityProps)
 (declare-const f2 NoiseManagement)
 (declare-const f3 Bool)
-(assert (not (= (fhe_ops (mk-f_h_e_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (fhe_ops (mk-fhe_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -236,7 +243,8 @@
 (declare-const f1 FHESecurityProps)
 (declare-const f2 NoiseManagement)
 (declare-const f3 Bool)
-(assert (not (= (fhe_security (mk-f_h_e_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (fhe_security (mk-fhe_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -246,7 +254,8 @@
 (declare-const f1 FHESecurityProps)
 (declare-const f2 NoiseManagement)
 (declare-const f3 Bool)
-(assert (not (= (fhe_noise (mk-f_h_e_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (fhe_noise (mk-fhe_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -256,7 +265,8 @@
 (declare-const f1 FHESecurityProps)
 (declare-const f2 NoiseManagement)
 (declare-const f3 Bool)
-(assert (not (= (fhe_lattice_based (mk-f_h_e_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (fhe_lattice_based (mk-fhe_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -267,7 +277,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (icpa_key_size (mk-i_n_d_c_p_a_game f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (icpa_key_size (mk-indcpa_game f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -276,7 +287,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (icpa_challenge_bit (mk-i_n_d_c_p_a_game f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (icpa_challenge_bit (mk-indcpa_game f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -285,7 +297,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (icpa_encryption_oracle (mk-i_n_d_c_p_a_game f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (icpa_encryption_oracle (mk-indcpa_game f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -296,7 +309,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (ss_message_space (mk-semantic_security f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ss_message_space (mk-semantic_security f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -305,7 +319,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (ss_ciphertext_space (mk-semantic_security f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ss_ciphertext_space (mk-semantic_security f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -314,7 +329,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (ss_indistinguishable (mk-semantic_security f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ss_indistinguishable (mk-semantic_security f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -333,7 +349,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (ha_plaintext_modulus (mk-hom_addition f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (ha_plaintext_modulus (mk-hom_addition f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -341,7 +358,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (ha_ciphertext_modulus (mk-hom_addition f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (ha_ciphertext_modulus (mk-hom_addition f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -361,7 +379,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (hm_plaintext_modulus (mk-hom_multiplication f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (hm_plaintext_modulus (mk-hom_multiplication f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -370,7 +389,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (hm_ciphertext_modulus (mk-hom_multiplication f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (hm_ciphertext_modulus (mk-hom_multiplication f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -379,7 +399,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (hm_relinearization (mk-hom_multiplication f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (hm_relinearization (mk-hom_multiplication f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -398,7 +419,8 @@
 (push 1)
 (declare-const f0 HomAddition)
 (declare-const f1 HomMultiplication)
-(assert (not (= (hops_addition (mk-hom_operations f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (hops_addition (mk-hom_operations f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -406,7 +428,8 @@
 (push 1)
 (declare-const f0 HomAddition)
 (declare-const f1 HomMultiplication)
-(assert (not (= (hops_multiplication (mk-hom_operations f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (hops_multiplication (mk-hom_operations f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -417,7 +440,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (noise_initial (mk-noise_model f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (noise_initial (mk-noise_model f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -426,7 +450,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (noise_add_growth (mk-noise_model f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (noise_add_growth (mk-noise_model f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -435,7 +460,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (noise_mult_growth (mk-noise_model f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (noise_mult_growth (mk-noise_model f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -454,7 +480,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (nb_max_additions (mk-noise_bound f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (nb_max_additions (mk-noise_bound f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -462,7 +489,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (nb_max_multiplications (mk-noise_bound f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (nb_max_multiplications (mk-noise_bound f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -483,7 +511,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (bs_reduces_noise (mk-bootstrapping_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (bs_reduces_noise (mk-bootstrapping_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -493,7 +522,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (bs_preserves_message (mk-bootstrapping_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (bs_preserves_message (mk-bootstrapping_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -503,7 +533,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (bs_polynomial_time (mk-bootstrapping_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (bs_polynomial_time (mk-bootstrapping_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -513,7 +544,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (bs_noise_output (mk-bootstrapping_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (bs_noise_output (mk-bootstrapping_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -523,7 +555,8 @@
 (push 1)
 (declare-const f0 BootstrappingConfig)
 (declare-const f1 NoiseModel)
-(assert (not (= (ufhe_bootstrap_config (mk-unlimited_f_h_e f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (ufhe_bootstrap_config (mk-unlimited_fhe f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -531,7 +564,8 @@
 (push 1)
 (declare-const f0 BootstrappingConfig)
 (declare-const f1 NoiseModel)
-(assert (not (= (ufhe_noise_model (mk-unlimited_f_h_e f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (ufhe_noise_model (mk-unlimited_fhe f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -542,7 +576,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (kg_security_parameter (mk-key_gen_params f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (kg_security_parameter (mk-key_gen_params f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -551,7 +586,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (kg_polynomial_degree (mk-key_gen_params f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (kg_polynomial_degree (mk-key_gen_params f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -560,7 +596,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (kg_error_distribution (mk-key_gen_params f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (kg_error_distribution (mk-key_gen_params f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -580,7 +617,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (kp_public (mk-f_h_e_key_pair f0 f1 f2)) f0)))
+(declare-const f3 KeyGenParams)
+(assert (not (= (kp_public (mk-fhe_key_pair f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -589,7 +627,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (kp_secret (mk-f_h_e_key_pair f0 f1 f2)) f1)))
+(declare-const f3 KeyGenParams)
+(assert (not (= (kp_secret (mk-fhe_key_pair f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -598,7 +637,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (kp_evaluation (mk-f_h_e_key_pair f0 f1 f2)) f2)))
+(declare-const f3 KeyGenParams)
+(assert (not (= (kp_evaluation (mk-fhe_key_pair f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -619,7 +659,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ct_polynomial_0 (mk-f_h_e_ciphertext f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (ct_polynomial_0 (mk-fhe_ciphertext f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -629,7 +670,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ct_polynomial_1 (mk-f_h_e_ciphertext f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (ct_polynomial_1 (mk-fhe_ciphertext f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -639,7 +681,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ct_noise_estimate (mk-f_h_e_ciphertext f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (ct_noise_estimate (mk-fhe_ciphertext f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -649,7 +692,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ct_level (mk-f_h_e_ciphertext f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (ct_level (mk-fhe_ciphertext f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -668,7 +712,8 @@
 (push 1)
 (declare-const f0 FHECiphertext)
 (declare-const f1 FHECiphertext)
-(assert (not (= (cao_original (mk-ciphertext_after_op f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (cao_original (mk-ciphertext_after_op f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -676,7 +721,8 @@
 (push 1)
 (declare-const f0 FHECiphertext)
 (declare-const f1 FHECiphertext)
-(assert (not (= (cao_result (mk-ciphertext_after_op f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (cao_result (mk-ciphertext_after_op f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -689,7 +735,8 @@
 (declare-const f2 NoiseModel)
 (declare-const f3 BootstrappingConfig)
 (declare-const f4 HomOperations)
-(assert (not (= (cfhe_config (mk-complete_f_h_e_system f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 INDCPAGame)
+(assert (not (= (cfhe_config (mk-complete_fhe_system f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -700,7 +747,8 @@
 (declare-const f2 NoiseModel)
 (declare-const f3 BootstrappingConfig)
 (declare-const f4 HomOperations)
-(assert (not (= (cfhe_keygen (mk-complete_f_h_e_system f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 INDCPAGame)
+(assert (not (= (cfhe_keygen (mk-complete_fhe_system f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -711,7 +759,8 @@
 (declare-const f2 NoiseModel)
 (declare-const f3 BootstrappingConfig)
 (declare-const f4 HomOperations)
-(assert (not (= (cfhe_noise (mk-complete_f_h_e_system f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 INDCPAGame)
+(assert (not (= (cfhe_noise (mk-complete_fhe_system f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -722,7 +771,8 @@
 (declare-const f2 NoiseModel)
 (declare-const f3 BootstrappingConfig)
 (declare-const f4 HomOperations)
-(assert (not (= (cfhe_bootstrap (mk-complete_f_h_e_system f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 INDCPAGame)
+(assert (not (= (cfhe_bootstrap (mk-complete_fhe_system f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -733,7 +783,8 @@
 (declare-const f2 NoiseModel)
 (declare-const f3 BootstrappingConfig)
 (declare-const f4 HomOperations)
-(assert (not (= (cfhe_operations (mk-complete_f_h_e_system f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 INDCPAGame)
+(assert (not (= (cfhe_operations (mk-complete_fhe_system f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -743,7 +794,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (cs_key_encryption_safe (mk-circular_security f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (cs_key_encryption_safe (mk-circular_security f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -751,7 +803,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (cs_kDM_secure (mk-circular_security f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (cs_kDM_secure (mk-circular_security f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -790,7 +843,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (lwe_dimension (mk-l_w_e_hardness f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (lwe_dimension (mk-lwe_hardness f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -799,7 +853,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (lwe_modulus (mk-l_w_e_hardness f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (lwe_modulus (mk-lwe_hardness f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -808,7 +863,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (lwe_error_rate (mk-l_w_e_hardness f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (lwe_error_rate (mk-lwe_hardness f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -828,7 +884,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rlwe_ring_degree (mk-r_l_w_e_config f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (rlwe_ring_degree (mk-rlwe_config f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -837,7 +894,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rlwe_modulus (mk-r_l_w_e_config f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (rlwe_modulus (mk-rlwe_config f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -846,7 +904,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rlwe_error_width (mk-r_l_w_e_config f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (rlwe_error_width (mk-rlwe_config f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

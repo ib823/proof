@@ -163,7 +163,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (hw_cache_hit (mk-h_w_params f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (hw_cache_hit (mk-hw_params f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -173,7 +174,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (hw_cache_miss (mk-h_w_params f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (hw_cache_miss (mk-hw_params f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -183,7 +185,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (hw_call_overhead (mk-h_w_params f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (hw_call_overhead (mk-hw_params f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -193,7 +196,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (hw_branch_penalty (mk-h_w_params f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (hw_branch_penalty (mk-hw_params f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -212,7 +216,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (task_wcet (mk-task f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (task_wcet (mk-task f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -220,7 +225,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (task_period (mk-task f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (task_period (mk-task f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -239,7 +245,8 @@
 (push 1)
 (declare-const f0 CacheState)
 (declare-const f1 BranchState)
-(assert (not (= (exec_cache (mk-exec_context f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (exec_cache (mk-exec_context f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -247,7 +254,8 @@
 (push 1)
 (declare-const f0 CacheState)
 (declare-const f1 BranchState)
-(assert (not (= (exec_branch (mk-exec_context f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (exec_branch (mk-exec_context f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -256,7 +264,8 @@
 ; --- 28. DMAConfig accessor round-trip: dma_bandwidth ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (dma_bandwidth (mk-d_m_a_config f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (dma_bandwidth (mk-dma_config f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

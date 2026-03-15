@@ -157,7 +157,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (tls_encryption (mk-ecommerce_controls f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (tls_encryption (mk-ecommerce_controls f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -170,7 +171,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (secure_authentication (mk-ecommerce_controls f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (secure_authentication (mk-ecommerce_controls f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -183,7 +185,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (input_validation (mk-ecommerce_controls f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (input_validation (mk-ecommerce_controls f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -196,7 +199,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (csrf_protection (mk-ecommerce_controls f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (csrf_protection (mk-ecommerce_controls f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -209,7 +213,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (sql_injection_prevention (mk-ecommerce_controls f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (sql_injection_prevention (mk-ecommerce_controls f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

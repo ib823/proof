@@ -114,7 +114,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (software_plans (mk-d_o178_c__compliance f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 DAL)
+(assert (not (= (software_plans (mk-do178_c__compliance f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -126,7 +127,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (software_development (mk-d_o178_c__compliance f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 DAL)
+(assert (not (= (software_development (mk-do178_c__compliance f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -138,7 +140,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (verification (mk-d_o178_c__compliance f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 DAL)
+(assert (not (= (verification (mk-do178_c__compliance f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -150,7 +153,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (configuration_management (mk-d_o178_c__compliance f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 DAL)
+(assert (not (= (configuration_management (mk-do178_c__compliance f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -162,7 +166,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (quality_assurance (mk-d_o178_c__compliance f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 DAL)
+(assert (not (= (quality_assurance (mk-do178_c__compliance f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

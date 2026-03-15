@@ -103,7 +103,11 @@
 ; --- 13. MilitarySecurityPolicy accessor round-trip: classification ---
 (push 1)
 (declare-const f0 ClassificationLevel)
-(assert (not (= (classification (mk-military_security_policy f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 ClassificationLevel)
+(declare-const f3 Bool)
+(declare-const f4 Bool)
+(assert (not (= (classification (mk-military_security_policy f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

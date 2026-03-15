@@ -191,7 +191,9 @@
 ; --- 22. Gate accessor round-trip: gate_type ---
 (push 1)
 (declare-const f0 GateType)
-(assert (not (= (gate_type (mk-gate f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (gate_type (mk-gate f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

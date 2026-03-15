@@ -177,7 +177,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (frame_id (mk-frame f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (frame_id (mk-frame f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -186,7 +187,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (frame_render_time (mk-frame f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (frame_render_time (mk-frame f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -195,7 +197,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (frame_complexity (mk-frame f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (frame_complexity (mk-frame f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -213,27 +216,30 @@
 ; --- 23. Animation accessor round-trip: anim_id ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(assert (not (= (anim_id (mk-animation f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (anim_id (mk-animation f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 24. Animation accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(assert (not (= (Seq (mk-animation f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (anim_frames (mk-animation f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 25. Animation accessor round-trip: anim_duration ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(assert (not (= (anim_duration (mk-animation f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (anim_duration (mk-animation f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -241,8 +247,8 @@
 (push 1)
 (declare-const r Animation)
 (assert (>= (anim_id r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (anim_id r) (Seq r)) 0)))
+(assert (>= (seq.len (anim_frames r)) 0))
+(assert (not (>= (+ (anim_id r) (seq.len (anim_frames r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -253,7 +259,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (shader_id (mk-shader f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (shader_id (mk-shader f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -262,7 +269,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (shader_compiled (mk-shader f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (shader_compiled (mk-shader f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -271,7 +279,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (shader_validated (mk-shader f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (shader_validated (mk-shader f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -283,7 +292,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (tex_id (mk-texture f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (tex_id (mk-texture f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -293,7 +303,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (tex_width (mk-texture f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (tex_width (mk-texture f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -303,7 +314,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (tex_height (mk-texture f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (tex_height (mk-texture f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -313,7 +325,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (tex_memory_bytes (mk-texture f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (tex_memory_bytes (mk-texture f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -333,7 +346,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (gpu_used_bytes (mk-g_p_u_memory f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (gpu_used_bytes (mk-gpu_memory f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -342,7 +356,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (gpu_max_bytes (mk-g_p_u_memory f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (gpu_max_bytes (mk-gpu_memory f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -351,7 +366,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (gpu_texture_bytes (mk-g_p_u_memory f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (gpu_texture_bytes (mk-gpu_memory f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -371,7 +387,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (batch_id (mk-draw_batch f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (batch_id (mk-draw_batch f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -380,7 +397,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (batch_draw_calls (mk-draw_batch f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (batch_draw_calls (mk-draw_batch f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -389,7 +407,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (batch_merged_calls (mk-draw_batch f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (batch_merged_calls (mk-draw_batch f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -410,7 +429,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (fb_width (mk-frame_buffer f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (fb_width (mk-frame_buffer f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -420,7 +440,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (fb_height (mk-frame_buffer f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (fb_height (mk-frame_buffer f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -430,7 +451,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (fb_front (mk-frame_buffer f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (fb_front (mk-frame_buffer f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -440,7 +462,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (fb_back (mk-frame_buffer f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (fb_back (mk-frame_buffer f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -460,7 +483,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rt_id (mk-render_thread f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (rt_id (mk-render_thread f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -469,7 +493,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rt_priority (mk-render_thread f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (rt_priority (mk-render_thread f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -478,7 +503,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rt_frame_time_us (mk-render_thread f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (rt_frame_time_us (mk-render_thread f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -497,7 +523,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (zbuf_bits (mk-z_buffer f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (zbuf_bits (mk-z_buffer f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -505,7 +532,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (zbuf_near (mk-z_buffer f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (zbuf_near (mk-z_buffer f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

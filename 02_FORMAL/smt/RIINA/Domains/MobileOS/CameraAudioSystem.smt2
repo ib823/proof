@@ -163,14 +163,20 @@
 ; --- 14. VideoRecording accessor round-trip: video_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (video_id (mk-video_recording f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (video_id (mk-video_recording f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 15. AudioSample accessor round-trip: audio_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (audio_id (mk-audio_sample f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (audio_id (mk-audio_sample f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

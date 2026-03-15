@@ -167,7 +167,9 @@
 ; --- 19. Capability accessor round-trip: cap_object ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (cap_object (mk-capability f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (cap_object (mk-capability f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -328,7 +330,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Capability)
-(assert (not (= (ep_id (mk-endpoint f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (ep_id (mk-endpoint f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -336,14 +339,17 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Capability)
-(assert (not (= (ep_cap (mk-endpoint f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (ep_cap (mk-endpoint f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 38. IPCState accessor round-trip: ipc_mem ---
 (push 1)
 (declare-const f0 MemoryState)
-(assert (not (= (ipc_mem (mk-ipc_state f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (ipc_mem (mk-ipc_state f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

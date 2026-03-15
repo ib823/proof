@@ -113,7 +113,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (kp_public (mk-key_pair f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (kp_public (mk-key_pair f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -121,7 +122,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (kp_secret (mk-key_pair f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (kp_secret (mk-key_pair f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -140,7 +142,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (enc_ciphertext (mk-encaps_result f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (enc_ciphertext (mk-encaps_result f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -148,7 +151,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (enc_shared_secret (mk-encaps_result f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (enc_shared_secret (mk-encaps_result f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -169,7 +173,8 @@
 (declare-const f1 KeyPair)
 (declare-const f2 EncapsResult)
 (declare-const f3 Int)
-(assert (not (= (kem_params (mk-k_e_m_instance f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (kem_params (mk-kem_instance f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -179,7 +184,8 @@
 (declare-const f1 KeyPair)
 (declare-const f2 EncapsResult)
 (declare-const f3 Int)
-(assert (not (= (kem_keypair (mk-k_e_m_instance f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (kem_keypair (mk-kem_instance f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -189,7 +195,8 @@
 (declare-const f1 KeyPair)
 (declare-const f2 EncapsResult)
 (declare-const f3 Int)
-(assert (not (= (kem_encaps_result (mk-k_e_m_instance f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (kem_encaps_result (mk-kem_instance f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -199,7 +206,8 @@
 (declare-const f1 KeyPair)
 (declare-const f2 EncapsResult)
 (declare-const f3 Int)
-(assert (not (= (kem_decaps_result (mk-k_e_m_instance f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (kem_decaps_result (mk-kem_instance f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -209,7 +217,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (indcca_ciphertext_indistinguishable (mk-i_n_d_c_c_a_secure f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (indcca_ciphertext_indistinguishable (mk-indcca_secure f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -217,7 +226,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (indcca_key_indistinguishable (mk-i_n_d_c_c_a_secure f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (indcca_key_indistinguishable (mk-indcca_secure f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -256,7 +266,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (qr_lattice_based (mk-quantum_resistant f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (qr_lattice_based (mk-quantum_resistant f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -265,7 +276,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (qr_lwe_hardness (mk-quantum_resistant f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (qr_lwe_hardness (mk-quantum_resistant f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -274,7 +286,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (qr_module_lwe (mk-quantum_resistant f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (qr_module_lwe (mk-quantum_resistant f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -321,7 +334,8 @@
 (push 1)
 (declare-const f0 INDCCASecure)
 (declare-const f1 QuantumResistant)
-(assert (not (= (kem_sec_indcca (mk-k_e_m_security f0 f1)) f0)))
+(declare-const f2 SecurityLevel)
+(assert (not (= (kem_sec_indcca (mk-kem_security f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -329,7 +343,8 @@
 (push 1)
 (declare-const f0 INDCCASecure)
 (declare-const f1 QuantumResistant)
-(assert (not (= (kem_sec_quantum (mk-k_e_m_security f0 f1)) f1)))
+(declare-const f2 SecurityLevel)
+(assert (not (= (kem_sec_quantum (mk-kem_security f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -133,7 +133,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cfi_shadow_stack (mk-c_f_i_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (cfi_shadow_stack (mk-cfi_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -143,7 +144,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cfi_indirect_branch_tracking (mk-c_f_i_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (cfi_indirect_branch_tracking (mk-cfi_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -153,7 +155,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cfi_return_address_protection (mk-c_f_i_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (cfi_return_address_protection (mk-cfi_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -163,7 +166,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cfi_forward_edge_cfi (mk-c_f_i_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (cfi_forward_edge_cfi (mk-cfi_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -211,7 +215,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (cr_gadget_elimination (mk-code_reuse f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (cr_gadget_elimination (mk-code_reuse f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -219,7 +224,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (cr_instruction_alignment (mk-code_reuse f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (cr_instruction_alignment (mk-code_reuse f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -258,7 +264,8 @@
 (declare-const f0 CFIConfig)
 (declare-const f1 CodeReuse)
 (declare-const f2 Bool)
-(assert (not (= (rop_cfi (mk-r_o_p_defense_config f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (rop_cfi (mk-rop_defense_config f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -267,7 +274,8 @@
 (declare-const f0 CFIConfig)
 (declare-const f1 CodeReuse)
 (declare-const f2 Bool)
-(assert (not (= (rop_code_reuse (mk-r_o_p_defense_config f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (rop_code_reuse (mk-rop_defense_config f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -276,7 +284,8 @@
 (declare-const f0 CFIConfig)
 (declare-const f1 CodeReuse)
 (declare-const f2 Bool)
-(assert (not (= (rop_aslr_compatible (mk-r_o_p_defense_config f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (rop_aslr_compatible (mk-rop_defense_config f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -287,7 +296,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (se_return_addr (mk-shadow_entry f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (se_return_addr (mk-shadow_entry f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -296,7 +306,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (se_caller_func (mk-shadow_entry f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (se_caller_func (mk-shadow_entry f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -305,7 +316,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (se_frame_ptr (mk-shadow_entry f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (se_frame_ptr (mk-shadow_entry f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -324,7 +336,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (btb_source (mk-b_t_b_entry f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (btb_source (mk-btb_entry f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -332,7 +345,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (btb_target (mk-b_t_b_entry f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (btb_target (mk-btb_entry f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -353,7 +367,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (gadget_type (mk-gadget f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (gadget_type (mk-gadget f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -363,7 +378,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (gadget_addr (mk-gadget f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (gadget_addr (mk-gadget f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -373,7 +389,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (gadget_length (mk-gadget f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (gadget_length (mk-gadget f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -383,7 +400,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (gadget_ends_in_ret (mk-gadget f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (gadget_ends_in_ret (mk-gadget f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -403,7 +421,8 @@
 (declare-const f0 CodePtrType)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (cp_type (mk-code_pointer f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (cp_type (mk-code_pointer f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -412,7 +431,8 @@
 (declare-const f0 CodePtrType)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (cp_addr (mk-code_pointer f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (cp_addr (mk-code_pointer f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -421,7 +441,8 @@
 (declare-const f0 CodePtrType)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (cp_authenticated (mk-code_pointer f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (cp_authenticated (mk-code_pointer f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -432,7 +453,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (cpi_ptr_authentication (mk-c_p_i_config f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (cpi_ptr_authentication (mk-cpi_config f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -441,7 +463,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (cpi_bounds_checking (mk-c_p_i_config f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (cpi_bounds_checking (mk-cpi_config f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -450,7 +473,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (cpi_type_checking (mk-c_p_i_config f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (cpi_type_checking (mk-cpi_config f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

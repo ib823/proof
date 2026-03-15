@@ -195,7 +195,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (free_lists (mk-alloc_state f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (free_lists (mk-alloc_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -204,7 +205,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (allocated (mk-alloc_state f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (allocated (mk-alloc_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -213,7 +215,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (heap_start (mk-alloc_state f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (heap_start (mk-alloc_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -231,16 +234,18 @@
 ; --- 28. Region accessor round-trip: region_id ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (region_id (mk-region f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (region_id (mk-region f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 29. Region accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-region f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (region_locs (mk-region f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -248,8 +253,8 @@
 (push 1)
 (declare-const r Region)
 (assert (>= (region_id r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (region_id r) (Seq r)) 0)))
+(assert (>= (seq.len (region_locs r)) 0))
+(assert (not (>= (+ (region_id r) (seq.len (region_locs r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -257,8 +262,9 @@
 
 ; --- 31. RegionState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-region_state f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (regions (mk-region_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

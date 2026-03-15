@@ -258,8 +258,9 @@
 
 ; --- 32. TaintedValue accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-tainted_value f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 TaintLevel)
+(assert (not (= (tv_data (mk-tainted_value f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -268,7 +269,8 @@
 ; --- 33. XMLParserConfig accessor round-trip: xc_expand_entities ---
 (push 1)
 (declare-const f0 Bool)
-(assert (not (= (xc_expand_entities (mk-x_m_l_parser_config f0)) f0)))
+(declare-const f1 Bool)
+(assert (not (= (xc_expand_entities (mk-xml_parser_config f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -276,17 +278,19 @@
 
 ; --- 34. HTTPHeader accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 TaintedValue)
-(assert (not (= (Seq (mk-h_t_t_p_header f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (hdr_name (mk-http_header f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 35. HTTPHeader accessor round-trip: hdr_value ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 TaintedValue)
-(assert (not (= (hdr_value (mk-h_t_t_p_header f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (hdr_value (mk-http_header f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -294,8 +298,9 @@
 
 ; --- 36. PDFDocument accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-p_d_f_document f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Bool)
+(assert (not (= (pdf_pages (mk-pdf_document f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -304,16 +309,18 @@
 ; --- 37. LengthPrefixedString accessor round-trip: lpstr_len ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (lpstr_len (mk-length_prefixed_string f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (lpstr_len (mk-length_prefixed_string f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 38. LengthPrefixedString accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-length_prefixed_string f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (lpstr_bytes (mk-length_prefixed_string f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -321,8 +328,8 @@
 (push 1)
 (declare-const r LengthPrefixedString)
 (assert (>= (lpstr_len r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (lpstr_len r) (Seq r)) 0)))
+(assert (>= (seq.len (lpstr_bytes r)) 0))
+(assert (not (>= (+ (lpstr_len r) (seq.len (lpstr_bytes r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

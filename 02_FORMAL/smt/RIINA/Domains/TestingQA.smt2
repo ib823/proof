@@ -323,7 +323,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 Int)
-(assert (not (= (tc_name (mk-test_case f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (tc_name (mk-test_case f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -331,7 +332,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 Int)
-(assert (not (= (tc_input (mk-test_case f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (tc_input (mk-test_case f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -340,7 +342,8 @@
 ; --- 40. GenState accessor round-trip: gs_seed ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (gs_seed (mk-gen_state f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (gs_seed (mk-gen_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -350,7 +353,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 MutationOp)
-(assert (not (= (mut_location (mk-mutant f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (mut_location (mk-mutant f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -358,7 +362,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 MutationOp)
-(assert (not (= (mut_operator (mk-mutant f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (mut_operator (mk-mutant f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -366,8 +371,9 @@
 
 ; --- 43. SecurityCoverage accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-security_coverage f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(assert (not (= (sc_properties (mk-security_coverage f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -378,7 +384,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tm_input1 (mk-timing_measurement f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (tm_input1 (mk-timing_measurement f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -387,7 +394,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tm_input2 (mk-timing_measurement f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (tm_input2 (mk-timing_measurement f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -396,7 +404,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tm_time1 (mk-timing_measurement f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (tm_time1 (mk-timing_measurement f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -414,7 +423,8 @@
 ; --- 48. TestState accessor round-trip: ts_counter ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (ts_counter (mk-test_state f0)) f0)))
+(declare-const f1 Bool)
+(assert (not (= (ts_counter (mk-test_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -423,7 +433,8 @@
 ; --- 49. Fixture accessor round-trip: fix_setup ---
 (push 1)
 (declare-const f0 TestState)
-(assert (not (= (fix_setup (mk-fixture f0)) f0)))
+(declare-const f1 TestState)
+(assert (not (= (fix_setup (mk-fixture f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -434,7 +445,8 @@
 (declare-const f0 String)
 (declare-const f1 SimpleType)
 (declare-const f2 SimpleType)
-(assert (not (= (comp_name (mk-component f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (comp_name (mk-component f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -443,7 +455,8 @@
 (declare-const f0 String)
 (declare-const f1 SimpleType)
 (declare-const f2 SimpleType)
-(assert (not (= (comp_input_type (mk-component f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (comp_input_type (mk-component f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -452,7 +465,8 @@
 (declare-const f0 String)
 (declare-const f1 SimpleType)
 (declare-const f2 SimpleType)
-(assert (not (= (comp_output_type (mk-component f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (comp_output_type (mk-component f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -462,7 +476,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (api_precondition (mk-a_p_i_contract f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (api_precondition (mk-api_contract f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -470,7 +485,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (api_postcondition (mk-a_p_i_contract f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (api_postcondition (mk-api_contract f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -489,7 +505,8 @@
 (push 1)
 (declare-const f0 SecurityProperty)
 (declare-const f1 SecurityProperty)
-(assert (not (= (sf_source (mk-security_flow f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (sf_source (mk-security_flow f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -497,7 +514,8 @@
 (push 1)
 (declare-const f0 SecurityProperty)
 (declare-const f1 SecurityProperty)
-(assert (not (= (sf_sink (mk-security_flow f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (sf_sink (mk-security_flow f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -506,7 +524,8 @@
 ; --- 58. KATTest accessor round-trip: kat_input ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (kat_input (mk-k_a_t_test f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (kat_input (mk-kat_test f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -516,7 +535,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (bfp_max_attempts (mk-brute_force_protection f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (bfp_max_attempts (mk-brute_force_protection f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -524,7 +544,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (bfp_current_attempts (mk-brute_force_protection f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (bfp_current_attempts (mk-brute_force_protection f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -6,7 +6,7 @@
 ; Verifies: security lattice, effect ordering, session duality,
 ; substitution properties, datatype invariants.
 
-(set-logic QF_DT)
+(set-logic ALL)
 (set-option :produce-models true)
 
 ; ═══════════════════════════════════════════════════════════════════════════

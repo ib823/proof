@@ -115,7 +115,10 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 EncryptionKey)
-(assert (not (= (msg_id (mk-encrypted_message f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(declare-const f4 Bool)
+(assert (not (= (msg_id (mk-encrypted_message f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -123,7 +126,10 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 EncryptionKey)
-(assert (not (= (encryption_key_used (mk-encrypted_message f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(declare-const f4 Bool)
+(assert (not (= (encryption_key_used (mk-encrypted_message f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -131,7 +137,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 EncryptionKey)
-(assert (not (= (dec_msg_id (mk-decrypted_message f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (dec_msg_id (mk-decrypted_message f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -139,7 +147,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 EncryptionKey)
-(assert (not (= (decryption_key (mk-decrypted_message f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (decryption_key (mk-decrypted_message f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -255,7 +265,13 @@
 ; --- 21. EncryptionOperation accessor round-trip: enc_op_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (enc_op_id (mk-encryption_operation f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 EncryptionKey)
+(declare-const f4 Int)
+(declare-const f5 Int)
+(declare-const f6 Bool)
+(assert (not (= (enc_op_id (mk-encryption_operation f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -351,7 +367,9 @@
 ; --- 31. IVTracker accessor round-trip: iv_current ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (iv_current (mk-iv_tracker f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (iv_current (mk-iv_tracker f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

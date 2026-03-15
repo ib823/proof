@@ -120,7 +120,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (vmi_memory_isolated (mk-v_m_isolation f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (vmi_memory_isolated (mk-vm_isolation f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -129,7 +130,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (vmi_cpu_isolated (mk-v_m_isolation f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (vmi_cpu_isolated (mk-vm_isolation f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -138,7 +140,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (vmi_io_isolated (mk-v_m_isolation f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (vmi_io_isolated (mk-vm_isolation f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -189,7 +192,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Int)
-(assert (not (= (ept_present (mk-e_p_t_entry f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (ept_present (mk-ept_entry f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -201,7 +205,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Int)
-(assert (not (= (ept_read (mk-e_p_t_entry f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (ept_read (mk-ept_entry f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -213,7 +218,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Int)
-(assert (not (= (ept_write (mk-e_p_t_entry f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (ept_write (mk-ept_entry f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -225,7 +231,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Int)
-(assert (not (= (ept_execute (mk-e_p_t_entry f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (ept_execute (mk-ept_entry f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -237,7 +244,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Int)
-(assert (not (= (ept_user_mode (mk-e_p_t_entry f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (ept_user_mode (mk-ept_entry f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -256,7 +264,8 @@
 (declare-const f8 Bool)
 (declare-const f9 Bool)
 (declare-const f10 Int)
-(assert (not (= (vmcs_guest_rip (mk-v_m_c_s_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f0)))
+(declare-const f11 Int)
+(assert (not (= (vmcs_guest_rip (mk-vmcs_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -273,7 +282,8 @@
 (declare-const f8 Bool)
 (declare-const f9 Bool)
 (declare-const f10 Int)
-(assert (not (= (vmcs_guest_rsp (mk-v_m_c_s_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f1)))
+(declare-const f11 Int)
+(assert (not (= (vmcs_guest_rsp (mk-vmcs_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -290,7 +300,8 @@
 (declare-const f8 Bool)
 (declare-const f9 Bool)
 (declare-const f10 Int)
-(assert (not (= (vmcs_guest_cr0 (mk-v_m_c_s_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f2)))
+(declare-const f11 Int)
+(assert (not (= (vmcs_guest_cr0 (mk-vmcs_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -307,7 +318,8 @@
 (declare-const f8 Bool)
 (declare-const f9 Bool)
 (declare-const f10 Int)
-(assert (not (= (vmcs_guest_cr3 (mk-v_m_c_s_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f3)))
+(declare-const f11 Int)
+(assert (not (= (vmcs_guest_cr3 (mk-vmcs_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -324,7 +336,8 @@
 (declare-const f8 Bool)
 (declare-const f9 Bool)
 (declare-const f10 Int)
-(assert (not (= (vmcs_guest_cr4 (mk-v_m_c_s_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f4)))
+(declare-const f11 Int)
+(assert (not (= (vmcs_guest_cr4 (mk-vmcs_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -345,7 +358,8 @@
 (declare-const f1 Int)
 (declare-const f2 PrivilegeLevel)
 (declare-const f3 Bool)
-(assert (not (= (int_vector (mk-interrupt_descriptor f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (int_vector (mk-interrupt_descriptor f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -355,7 +369,8 @@
 (declare-const f1 Int)
 (declare-const f2 PrivilegeLevel)
 (declare-const f3 Bool)
-(assert (not (= (int_handler_addr (mk-interrupt_descriptor f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (int_handler_addr (mk-interrupt_descriptor f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -365,7 +380,8 @@
 (declare-const f1 Int)
 (declare-const f2 PrivilegeLevel)
 (declare-const f3 Bool)
-(assert (not (= (int_privilege_level (mk-interrupt_descriptor f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (int_privilege_level (mk-interrupt_descriptor f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -375,7 +391,8 @@
 (declare-const f1 Int)
 (declare-const f2 PrivilegeLevel)
 (declare-const f3 Bool)
-(assert (not (= (int_is_trap (mk-interrupt_descriptor f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (int_is_trap (mk-interrupt_descriptor f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -399,7 +416,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (vm_id (mk-v_m_state f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (vm_id (mk-vm_state f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -412,7 +430,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (vm_isolation (mk-v_m_state f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (vm_isolation (mk-vm_state f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -425,7 +444,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (vm_vmcs (mk-v_m_state f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (vm_vmcs (mk-vm_state f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -438,7 +458,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (vm_world (mk-v_m_state f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (vm_world (mk-vm_state f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -451,7 +472,8 @@
 (declare-const f4 Int)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (vm_ept (mk-v_m_state f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (vm_ept (mk-vm_state f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -475,7 +497,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (scm_flush_l1d (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (scm_flush_l1d (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -488,7 +511,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (scm_ibrs_enabled (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (scm_ibrs_enabled (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -501,7 +525,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (scm_ibpb_enabled (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (scm_ibpb_enabled (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -514,7 +539,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (scm_stibp_enabled (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (scm_stibp_enabled (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -527,7 +553,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (scm_ssbd_enabled (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (scm_ssbd_enabled (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -581,7 +608,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (mv_ept_enabled (mk-mem_virt_config f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (mv_ept_enabled (mk-mem_virt_config f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -592,7 +620,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (mv_vpid_enabled (mk-mem_virt_config f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (mv_vpid_enabled (mk-mem_virt_config f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -603,7 +632,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (mv_shadow_paging (mk-mem_virt_config f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (mv_shadow_paging (mk-mem_virt_config f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -614,7 +644,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (mv_memory_type_range (mk-mem_virt_config f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (mv_memory_type_range (mk-mem_virt_config f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -625,7 +656,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (mv_page_modification_log (mk-mem_virt_config f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (mv_page_modification_log (mk-mem_virt_config f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -677,7 +709,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (iv_apic_virtualization (mk-interrupt_virt_config f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (iv_apic_virtualization (mk-interrupt_virt_config f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -688,7 +721,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (iv_posted_interrupts (mk-interrupt_virt_config f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (iv_posted_interrupts (mk-interrupt_virt_config f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -699,7 +733,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (iv_interrupt_exit (mk-interrupt_virt_config f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (iv_interrupt_exit (mk-interrupt_virt_config f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -710,7 +745,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (iv_nmi_exiting (mk-interrupt_virt_config f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (iv_nmi_exiting (mk-interrupt_virt_config f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -721,7 +757,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (iv_virtual_nmi (mk-interrupt_virt_config f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (iv_virtual_nmi (mk-interrupt_virt_config f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -772,7 +809,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ws_smc_filtering (mk-world_switch_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (ws_smc_filtering (mk-world_switch_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -782,7 +820,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ws_ns_bit_control (mk-world_switch_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (ws_ns_bit_control (mk-world_switch_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -792,7 +831,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ws_secure_monitor (mk-world_switch_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (ws_secure_monitor (mk-world_switch_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -802,7 +842,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ws_tzasc_enabled (mk-world_switch_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (ws_tzasc_enabled (mk-world_switch_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -857,7 +898,8 @@
 (declare-const f6 SideChannelMitigation)
 (declare-const f7 MemVirtConfig)
 (declare-const f8 InterruptVirtConfig)
-(assert (not (= (hv_isolation (mk-hypervisor_config f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
+(declare-const f9 WorldSwitchConfig)
+(assert (not (= (hv_isolation (mk-hypervisor_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -872,7 +914,8 @@
 (declare-const f6 SideChannelMitigation)
 (declare-const f7 MemVirtConfig)
 (declare-const f8 InterruptVirtConfig)
-(assert (not (= (hv_secure_boot (mk-hypervisor_config f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
+(declare-const f9 WorldSwitchConfig)
+(assert (not (= (hv_secure_boot (mk-hypervisor_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -887,7 +930,8 @@
 (declare-const f6 SideChannelMitigation)
 (declare-const f7 MemVirtConfig)
 (declare-const f8 InterruptVirtConfig)
-(assert (not (= (hv_attestation (mk-hypervisor_config f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
+(declare-const f9 WorldSwitchConfig)
+(assert (not (= (hv_attestation (mk-hypervisor_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -902,7 +946,8 @@
 (declare-const f6 SideChannelMitigation)
 (declare-const f7 MemVirtConfig)
 (declare-const f8 InterruptVirtConfig)
-(assert (not (= (hv_memory_encryption (mk-hypervisor_config f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
+(declare-const f9 WorldSwitchConfig)
+(assert (not (= (hv_memory_encryption (mk-hypervisor_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -917,7 +962,8 @@
 (declare-const f6 SideChannelMitigation)
 (declare-const f7 MemVirtConfig)
 (declare-const f8 InterruptVirtConfig)
-(assert (not (= (hv_nested_paging (mk-hypervisor_config f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
+(declare-const f9 WorldSwitchConfig)
+(assert (not (= (hv_nested_paging (mk-hypervisor_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

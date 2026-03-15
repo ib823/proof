@@ -155,7 +155,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (network_segmentation (mk-smart_building_controls f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (network_segmentation (mk-smart_building_controls f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -166,7 +167,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (device_authentication (mk-smart_building_controls f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (device_authentication (mk-smart_building_controls f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -177,7 +179,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (encrypted_communication (mk-smart_building_controls f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (encrypted_communication (mk-smart_building_controls f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -188,7 +191,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (firmware_verification (mk-smart_building_controls f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (firmware_verification (mk-smart_building_controls f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -199,7 +203,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (physical_access_logging (mk-smart_building_controls f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (physical_access_logging (mk-smart_building_controls f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

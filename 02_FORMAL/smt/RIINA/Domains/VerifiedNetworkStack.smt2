@@ -180,7 +180,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ns_packet_validation (mk-network_security f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ns_packet_validation (mk-network_security f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -189,7 +190,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ns_protocol_compliance (mk-network_security f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ns_protocol_compliance (mk-network_security f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -198,7 +200,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ns_firewall_enforced (mk-network_security f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ns_firewall_enforced (mk-network_security f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -246,7 +249,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (nr_congestion_control (mk-network_reliability f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (nr_congestion_control (mk-network_reliability f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -255,7 +259,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (nr_flow_control (mk-network_reliability f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (nr_flow_control (mk-network_reliability f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -264,7 +269,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (nr_error_detection (mk-network_reliability f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (nr_error_detection (mk-network_reliability f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -312,7 +318,8 @@
 (declare-const f0 NetworkSecurity)
 (declare-const f1 NetworkReliability)
 (declare-const f2 Bool)
-(assert (not (= (vns_security (mk-verified_net_stack f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (vns_security (mk-verified_net_stack f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -321,7 +328,8 @@
 (declare-const f0 NetworkSecurity)
 (declare-const f1 NetworkReliability)
 (declare-const f2 Bool)
-(assert (not (= (vns_reliability (mk-verified_net_stack f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (vns_reliability (mk-verified_net_stack f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -330,7 +338,8 @@
 (declare-const f0 NetworkSecurity)
 (declare-const f1 NetworkReliability)
 (declare-const f2 Bool)
-(assert (not (= (vns_rfc_compliant (mk-verified_net_stack f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (vns_rfc_compliant (mk-verified_net_stack f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -343,7 +352,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (flag_syn (mk-t_c_p_flags f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (flag_syn (mk-tcp_flags f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -354,7 +364,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (flag_ack (mk-t_c_p_flags f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (flag_ack (mk-tcp_flags f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -365,7 +376,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (flag_fin (mk-t_c_p_flags f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (flag_fin (mk-tcp_flags f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -376,7 +388,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (flag_rst (mk-t_c_p_flags f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (flag_rst (mk-tcp_flags f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -387,7 +400,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (flag_psh (mk-t_c_p_flags f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (flag_psh (mk-tcp_flags f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -438,7 +452,8 @@
 (declare-const f1 Int)
 (declare-const f2 TCPFlags)
 (declare-const f3 Int)
-(assert (not (= (seg_seq_num (mk-t_c_p_segment f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (seg_seq_num (mk-tcp_segment f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -448,7 +463,8 @@
 (declare-const f1 Int)
 (declare-const f2 TCPFlags)
 (declare-const f3 Int)
-(assert (not (= (seg_ack_num (mk-t_c_p_segment f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (seg_ack_num (mk-tcp_segment f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -458,7 +474,8 @@
 (declare-const f1 Int)
 (declare-const f2 TCPFlags)
 (declare-const f3 Int)
-(assert (not (= (seg_flags (mk-t_c_p_segment f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (seg_flags (mk-tcp_segment f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -468,7 +485,8 @@
 (declare-const f1 Int)
 (declare-const f2 TCPFlags)
 (declare-const f3 Int)
-(assert (not (= (seg_window (mk-t_c_p_segment f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (seg_window (mk-tcp_segment f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -485,26 +503,28 @@
 
 ; --- 50. Buffer accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (Seq (mk-buffer f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (buf_data (mk-buffer f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 51. Buffer accessor round-trip: buf_capacity ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (buf_capacity (mk-buffer f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (buf_capacity (mk-buffer f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 52. Buffer: integer field consistency ---
 (push 1)
 (declare-const r Buffer)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (buf_data r)) 0))
 (assert (>= (buf_capacity r) 0))
-(assert (not (>= (+ (Seq r) (buf_capacity r)) 0)))
+(assert (not (>= (+ (seq.len (buf_data r)) (buf_capacity r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -515,7 +535,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cwnd (mk-congestion_state f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (cwnd (mk-congestion_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -524,7 +545,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (ssthresh (mk-congestion_state f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (ssthresh (mk-congestion_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -533,7 +555,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rtt_est (mk-congestion_state f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (rtt_est (mk-congestion_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -554,7 +577,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (opt_reuse_addr (mk-socket_options f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (opt_reuse_addr (mk-socket_options f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -564,7 +588,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (opt_keep_alive (mk-socket_options f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (opt_keep_alive (mk-socket_options f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -574,7 +599,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (opt_no_delay (mk-socket_options f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (opt_no_delay (mk-socket_options f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -584,7 +610,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (opt_recv_timeout (mk-socket_options f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (opt_recv_timeout (mk-socket_options f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -596,7 +623,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 TCPState)
-(assert (not (= (sock_state (mk-socket f0 f1 f2 f3)) f0)))
+(declare-const f4 SocketOptions)
+(assert (not (= (sock_state (mk-socket f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -606,7 +634,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 TCPState)
-(assert (not (= (sock_local_port (mk-socket f0 f1 f2 f3)) f1)))
+(declare-const f4 SocketOptions)
+(assert (not (= (sock_local_port (mk-socket f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -616,7 +645,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 TCPState)
-(assert (not (= (sock_remote_port (mk-socket f0 f1 f2 f3)) f2)))
+(declare-const f4 SocketOptions)
+(assert (not (= (sock_remote_port (mk-socket f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -626,7 +656,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 TCPState)
-(assert (not (= (sock_tcp_state (mk-socket f0 f1 f2 f3)) f3)))
+(declare-const f4 SocketOptions)
+(assert (not (= (sock_tcp_state (mk-socket f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -645,7 +676,8 @@
 (push 1)
 (declare-const f0 HandshakeStep)
 (declare-const f1 Int)
-(assert (not (= (hs_step (mk-handshake_state f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (hs_step (mk-handshake_state f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -653,7 +685,8 @@
 (push 1)
 (declare-const f0 HandshakeStep)
 (declare-const f1 Int)
-(assert (not (= (hs_client_isn (mk-handshake_state f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (hs_client_isn (mk-handshake_state f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

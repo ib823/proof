@@ -153,7 +153,9 @@
 ; --- 11. BasebandProcessor accessor round-trip: bb_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (bb_id (mk-baseband_processor f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (bb_id (mk-baseband_processor f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

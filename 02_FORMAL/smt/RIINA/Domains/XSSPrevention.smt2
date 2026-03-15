@@ -135,7 +135,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (oe_html_escape (mk-output_encoding f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (oe_html_escape (mk-output_encoding f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -144,7 +145,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (oe_js_escape (mk-output_encoding f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (oe_js_escape (mk-output_encoding f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -153,7 +155,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (oe_url_encode (mk-output_encoding f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (oe_url_encode (mk-output_encoding f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -204,7 +207,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (csp_script_src (mk-content_security_policy f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (csp_script_src (mk-content_security_policy f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -216,7 +220,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (csp_style_src (mk-content_security_policy f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (csp_style_src (mk-content_security_policy f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -228,7 +233,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (csp_default_src (mk-content_security_policy f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (csp_default_src (mk-content_security_policy f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -240,7 +246,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (csp_nonce_support (mk-content_security_policy f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (csp_nonce_support (mk-content_security_policy f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -252,7 +259,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (csp_strict_dynamic (mk-content_security_policy f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (csp_strict_dynamic (mk-content_security_policy f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -304,7 +312,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (dom_remove_scripts (mk-d_o_m_sanitizer f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (dom_remove_scripts (mk-dom_sanitizer f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -314,7 +323,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (dom_remove_event_handlers (mk-d_o_m_sanitizer f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (dom_remove_event_handlers (mk-dom_sanitizer f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -324,7 +334,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (dom_sanitize_urls (mk-d_o_m_sanitizer f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (dom_sanitize_urls (mk-dom_sanitizer f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -334,7 +345,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (dom_allowlist_tags (mk-d_o_m_sanitizer f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (dom_allowlist_tags (mk-dom_sanitizer f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -383,7 +395,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (iv_max_length (mk-input_validator f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (iv_max_length (mk-input_validator f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -392,7 +405,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (iv_encoding_validation (mk-input_validator f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (iv_encoding_validation (mk-input_validator f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -401,7 +415,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (iv_strip_null_bytes (mk-input_validator f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (iv_strip_null_bytes (mk-input_validator f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -409,17 +424,19 @@
 
 ; --- 40. TaintedString accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 TaintLevel)
-(assert (not (= (Seq (mk-tainted_string f0 f1)) f0)))
+(declare-const f2 XSSContext)
+(assert (not (= (ts_data (mk-tainted_string f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 41. TaintedString accessor round-trip: ts_taint ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 TaintLevel)
-(assert (not (= (ts_taint (mk-tainted_string f0 f1)) f1)))
+(declare-const f2 XSSContext)
+(assert (not (= (ts_taint (mk-tainted_string f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -431,7 +448,8 @@
 (declare-const f1 ContentSecurityPolicy)
 (declare-const f2 DOMSanitizer)
 (declare-const f3 InputValidator)
-(assert (not (= (xss_output (mk-x_s_s_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (xss_output (mk-xss_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -441,7 +459,8 @@
 (declare-const f1 ContentSecurityPolicy)
 (declare-const f2 DOMSanitizer)
 (declare-const f3 InputValidator)
-(assert (not (= (xss_csp (mk-x_s_s_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (xss_csp (mk-xss_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -451,7 +470,8 @@
 (declare-const f1 ContentSecurityPolicy)
 (declare-const f2 DOMSanitizer)
 (declare-const f3 InputValidator)
-(assert (not (= (xss_dom (mk-x_s_s_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (xss_dom (mk-xss_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -461,7 +481,8 @@
 (declare-const f1 ContentSecurityPolicy)
 (declare-const f2 DOMSanitizer)
 (declare-const f3 InputValidator)
-(assert (not (= (xss_input (mk-x_s_s_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (xss_input (mk-xss_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -471,7 +492,8 @@
 (push 1)
 (declare-const f0 TaintLevel)
 (declare-const f1 Bool)
-(assert (not (= (rx_input_taint (mk-reflected_x_s_s_scenario f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (rx_input_taint (mk-reflected_xss_scenario f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -479,7 +501,8 @@
 (push 1)
 (declare-const f0 TaintLevel)
 (declare-const f1 Bool)
-(assert (not (= (rx_sanitization_applied (mk-reflected_x_s_s_scenario f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (rx_sanitization_applied (mk-reflected_xss_scenario f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -490,7 +513,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sx_input_validated (mk-stored_x_s_s_scenario f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (sx_input_validated (mk-stored_xss_scenario f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -499,7 +523,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sx_storage_sanitized (mk-stored_x_s_s_scenario f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (sx_storage_sanitized (mk-stored_xss_scenario f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -508,7 +533,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sx_retrieval_encoded (mk-stored_x_s_s_scenario f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (sx_retrieval_encoded (mk-stored_xss_scenario f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -556,7 +582,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (dx_source_sanitized (mk-d_o_m_based_x_s_s_scenario f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (dx_source_sanitized (mk-dom_based_xss_scenario f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -565,7 +592,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (dx_sink_safe (mk-d_o_m_based_x_s_s_scenario f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (dx_sink_safe (mk-dom_based_xss_scenario f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -574,7 +602,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (dx_trusted_types (mk-d_o_m_based_x_s_s_scenario f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (dx_trusted_types (mk-dom_based_xss_scenario f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

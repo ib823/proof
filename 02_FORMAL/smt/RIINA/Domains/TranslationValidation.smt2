@@ -366,7 +366,10 @@
 ; --- 49. TgtFunc accessor round-trip: tf_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (tf_id (mk-tgt_func f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Int)
+(assert (not (= (tf_id (mk-tgt_func f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -445,7 +448,10 @@
 ; --- 58. StackFrame accessor round-trip: sf_return_addr ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (sf_return_addr (mk-stack_frame f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (sf_return_addr (mk-stack_frame f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

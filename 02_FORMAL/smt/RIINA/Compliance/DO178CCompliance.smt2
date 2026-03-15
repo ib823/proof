@@ -200,7 +200,9 @@
 ; --- 18. TraceLink accessor round-trip: trace_req ---
 (push 1)
 (declare-const f0 Requirement)
-(assert (not (= (trace_req (mk-trace_link f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (trace_req (mk-trace_link f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -277,7 +279,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (stack_allocated (mk-stack_analysis f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (stack_allocated (mk-stack_analysis f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -285,7 +288,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (stack_max_usage (mk-stack_analysis f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (stack_max_usage (mk-stack_analysis f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -726,7 +730,24 @@
 ; --- 71. DO178CCompliance accessor round-trip: comp_dal ---
 (push 1)
 (declare-const f0 DAL)
-(assert (not (= (comp_dal (mk-do178_c_compliance f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 CoverageData)
+(declare-const f3 CodeAnalysis)
+(declare-const f4 StackAnalysis)
+(declare-const f5 TimingAnalysis)
+(declare-const f6 (Seq Int))
+(declare-const f7 (Seq Int))
+(declare-const f8 ExceptionHandling)
+(declare-const f9 DataCoupling)
+(declare-const f10 ControlCoupling)
+(declare-const f11 (Seq Int))
+(declare-const f12 FunctionAnalysis)
+(declare-const f13 RobustnessTest)
+(declare-const f14 DeterminismAnalysis)
+(declare-const f15 (Seq Int))
+(declare-const f16 ResourceUsage)
+(declare-const f17 ConfigurationManagement)
+(assert (not (= (comp_dal (mk-do178_c_compliance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -472,7 +472,8 @@
 (declare-const f25 Bool)
 (declare-const f26 ConfigManagement)
 (declare-const f27 ReviewProcess)
-(assert (not (= (auth_mechanism (mk-security_policy_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27)) f0)))
+(declare-const f28 Bool)
+(assert (not (= (auth_mechanism (mk-security_policy_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -506,7 +507,8 @@
 (declare-const f25 Bool)
 (declare-const f26 ConfigManagement)
 (declare-const f27 ReviewProcess)
-(assert (not (= (mfa_enabled (mk-security_policy_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27)) f1)))
+(declare-const f28 Bool)
+(assert (not (= (mfa_enabled (mk-security_policy_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -540,7 +542,8 @@
 (declare-const f25 Bool)
 (declare-const f26 ConfigManagement)
 (declare-const f27 ReviewProcess)
-(assert (not (= (webauthn_enforced (mk-security_policy_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27)) f2)))
+(declare-const f28 Bool)
+(assert (not (= (webauthn_enforced (mk-security_policy_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -574,7 +577,8 @@
 (declare-const f25 Bool)
 (declare-const f26 ConfigManagement)
 (declare-const f27 ReviewProcess)
-(assert (not (= (training_status (mk-security_policy_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27)) f3)))
+(declare-const f28 Bool)
+(assert (not (= (training_status (mk-security_policy_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -608,7 +612,8 @@
 (declare-const f25 Bool)
 (declare-const f26 ConfigManagement)
 (declare-const f27 ReviewProcess)
-(assert (not (= (phishing_training_complete (mk-security_policy_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27)) f4)))
+(declare-const f28 Bool)
+(assert (not (= (phishing_training_complete (mk-security_policy_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

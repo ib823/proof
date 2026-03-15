@@ -449,7 +449,10 @@
 ; --- 57. MacroDef accessor round-trip: macro_name ---
 (push 1)
 (declare-const f0 String)
-(assert (not (= (macro_name (mk-macro_def f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (macro_name (mk-macro_def f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -484,7 +487,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (hyg_current_scope (mk-hygienic_context f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (hyg_current_scope (mk-hygienic_context f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -492,7 +496,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (hyg_macro_scope (mk-hygienic_context f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (hyg_macro_scope (mk-hygienic_context f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -508,7 +513,8 @@
 ; --- 64. TraitBound accessor round-trip: tb_trait_name ---
 (push 1)
 (declare-const f0 String)
-(assert (not (= (tb_trait_name (mk-trait_bound f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (tb_trait_name (mk-trait_bound f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -516,7 +522,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 String)
-(assert (not (= (impl_trait (mk-impl_block f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (impl_trait (mk-impl_block f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -524,14 +531,17 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 String)
-(assert (not (= (impl_for_type (mk-impl_block f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (impl_for_type (mk-impl_block f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 67. DSLDef accessor round-trip: dsl_name ---
 (push 1)
 (declare-const f0 String)
-(assert (not (= (dsl_name (mk-dsl_def f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (dsl_name (mk-dsl_def f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

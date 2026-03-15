@@ -199,7 +199,8 @@
 (declare-const f16 Bool)
 (declare-const f17 Bool)
 (declare-const f18 Bool)
-(assert (not (= (ac_access_control (mk-n_i_s_t_800_53__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18)) f0)))
+(declare-const f19 Bool)
+(assert (not (= (ac_access_control (mk-nist_800_53__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -224,7 +225,8 @@
 (declare-const f16 Bool)
 (declare-const f17 Bool)
 (declare-const f18 Bool)
-(assert (not (= (at_awareness_training (mk-n_i_s_t_800_53__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18)) f1)))
+(declare-const f19 Bool)
+(assert (not (= (at_awareness_training (mk-nist_800_53__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -249,7 +251,8 @@
 (declare-const f16 Bool)
 (declare-const f17 Bool)
 (declare-const f18 Bool)
-(assert (not (= (au_audit (mk-n_i_s_t_800_53__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18)) f2)))
+(declare-const f19 Bool)
+(assert (not (= (au_audit (mk-nist_800_53__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -274,7 +277,8 @@
 (declare-const f16 Bool)
 (declare-const f17 Bool)
 (declare-const f18 Bool)
-(assert (not (= (ca_assessment (mk-n_i_s_t_800_53__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18)) f3)))
+(declare-const f19 Bool)
+(assert (not (= (ca_assessment (mk-nist_800_53__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -299,7 +303,8 @@
 (declare-const f16 Bool)
 (declare-const f17 Bool)
 (declare-const f18 Bool)
-(assert (not (= (cm_config_management (mk-n_i_s_t_800_53__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18)) f4)))
+(declare-const f19 Bool)
+(assert (not (= (cm_config_management (mk-nist_800_53__controls f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

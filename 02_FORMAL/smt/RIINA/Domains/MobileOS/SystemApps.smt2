@@ -144,7 +144,10 @@
 ; --- 12. AppState accessor round-trip: state_app_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (state_app_id (mk-app_state f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(declare-const f3 Int)
+(assert (not (= (state_app_id (mk-app_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

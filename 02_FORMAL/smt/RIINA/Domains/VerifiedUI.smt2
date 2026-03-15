@@ -385,7 +385,8 @@
 ; --- 42. Point accessor round-trip: px ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (px (mk-point f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (px (mk-point f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -396,7 +397,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rect_x (mk-rect f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (rect_x (mk-rect f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -405,7 +407,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rect_y (mk-rect f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (rect_y (mk-rect f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -414,7 +417,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rect_width (mk-rect f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (rect_width (mk-rect f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -436,7 +440,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (elem_id (mk-u_i_element f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (elem_id (mk-ui_element f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -447,7 +452,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (elem_bounds (mk-u_i_element f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (elem_bounds (mk-ui_element f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -458,7 +464,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (elem_z_index (mk-u_i_element f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (elem_z_index (mk-ui_element f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -469,7 +476,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (elem_opacity (mk-u_i_element f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (elem_opacity (mk-ui_element f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -480,7 +488,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (elem_interactive (mk-u_i_element f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (elem_interactive (mk-ui_element f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -497,8 +506,9 @@
 
 ; --- 53. UIState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-u_i_state f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (ui_elements (mk-ui_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -508,7 +518,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 String)
-(assert (not (= (origin_scheme (mk-origin f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (origin_scheme (mk-origin f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -516,7 +527,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 String)
-(assert (not (= (origin_host (mk-origin f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (origin_host (mk-origin f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -527,7 +539,8 @@
 (declare-const f0 Int)
 (declare-const f1 Origin)
 (declare-const f2 Origin)
-(assert (not (= (tab_id (mk-tab_state f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (tab_id (mk-tab_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -536,7 +549,8 @@
 (declare-const f0 Int)
 (declare-const f1 Origin)
 (declare-const f2 Origin)
-(assert (not (= (tab_loaded_origin (mk-tab_state f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (tab_loaded_origin (mk-tab_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -545,7 +559,8 @@
 (declare-const f0 Int)
 (declare-const f1 Origin)
 (declare-const f2 Origin)
-(assert (not (= (tab_content_origin (mk-tab_state f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (tab_content_origin (mk-tab_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -556,7 +571,8 @@
 (declare-const f0 Int)
 (declare-const f1 Origin)
 (declare-const f2 Int)
-(assert (not (= (frame_id (mk-frame_state f0 f1 f2)) f0)))
+(declare-const f3 FramePolicy)
+(assert (not (= (frame_id (mk-frame_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -565,7 +581,8 @@
 (declare-const f0 Int)
 (declare-const f1 Origin)
 (declare-const f2 Int)
-(assert (not (= (frame_origin (mk-frame_state f0 f1 f2)) f1)))
+(declare-const f3 FramePolicy)
+(assert (not (= (frame_origin (mk-frame_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -574,7 +591,8 @@
 (declare-const f0 Int)
 (declare-const f1 Origin)
 (declare-const f2 Int)
-(assert (not (= (frame_parent_origin (mk-frame_state f0 f1 f2)) f2)))
+(declare-const f3 FramePolicy)
+(assert (not (= (frame_parent_origin (mk-frame_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -595,10 +613,11 @@
 (declare-const f1 Origin)
 (declare-const f2 CertStatus)
 (declare-const f3 Bool)
-(declare-const f4 Int)
-(declare-const f5 Int)
+(declare-const f4 (Seq Int))
+(declare-const f5 (Seq Int))
 (declare-const f6 Int)
-(assert (not (= (browser_displayed_url (mk-verified_browser_state f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Int)
+(assert (not (= (browser_displayed_url (mk-verified_browser_state f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -608,10 +627,11 @@
 (declare-const f1 Origin)
 (declare-const f2 CertStatus)
 (declare-const f3 Bool)
-(declare-const f4 Int)
-(declare-const f5 Int)
+(declare-const f4 (Seq Int))
+(declare-const f5 (Seq Int))
 (declare-const f6 Int)
-(assert (not (= (browser_actual_origin (mk-verified_browser_state f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Int)
+(assert (not (= (browser_actual_origin (mk-verified_browser_state f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -621,10 +641,11 @@
 (declare-const f1 Origin)
 (declare-const f2 CertStatus)
 (declare-const f3 Bool)
-(declare-const f4 Int)
-(declare-const f5 Int)
+(declare-const f4 (Seq Int))
+(declare-const f5 (Seq Int))
 (declare-const f6 Int)
-(assert (not (= (browser_cert_status (mk-verified_browser_state f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Int)
+(assert (not (= (browser_cert_status (mk-verified_browser_state f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -634,10 +655,11 @@
 (declare-const f1 Origin)
 (declare-const f2 CertStatus)
 (declare-const f3 Bool)
-(declare-const f4 Int)
-(declare-const f5 Int)
+(declare-const f4 (Seq Int))
+(declare-const f5 (Seq Int))
 (declare-const f6 Int)
-(assert (not (= (browser_tls_verified (mk-verified_browser_state f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Int)
+(assert (not (= (browser_tls_verified (mk-verified_browser_state f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -647,19 +669,20 @@
 (declare-const f1 Origin)
 (declare-const f2 CertStatus)
 (declare-const f3 Bool)
-(declare-const f4 Int)
-(declare-const f5 Int)
+(declare-const f4 (Seq Int))
+(declare-const f5 (Seq Int))
 (declare-const f6 Int)
-(assert (not (= (Seq (mk-verified_browser_state f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Int)
+(assert (not (= (browser_tabs (mk-verified_browser_state f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 68. VerifiedBrowserState: integer field consistency ---
 (push 1)
 (declare-const r VerifiedBrowserState)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (browser_tabs r)) 0))
+(assert (>= (seq.len (browser_tabs r)) 0))
+(assert (not (>= (+ (seq.len (browser_tabs r)) (seq.len (browser_tabs r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -670,7 +693,8 @@
 (declare-const f0 String)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (consent_action (mk-consent_record f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (consent_action (mk-consent_record f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -679,7 +703,8 @@
 (declare-const f0 String)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (consent_granted (mk-consent_record f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (consent_granted (mk-consent_record f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -688,7 +713,8 @@
 (declare-const f0 String)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (consent_timestamp (mk-consent_record f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (consent_timestamp (mk-consent_record f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -699,7 +725,8 @@
 (declare-const f0 String)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (opt_label (mk-dialog_option f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (opt_label (mk-dialog_option f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -708,7 +735,8 @@
 (declare-const f0 String)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (opt_is_cancel (mk-dialog_option f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (opt_is_cancel (mk-dialog_option f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -717,7 +745,8 @@
 (declare-const f0 String)
 (declare-const f1 Bool)
 (declare-const f2 Int)
-(assert (not (= (opt_visual_weight (mk-dialog_option f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (opt_visual_weight (mk-dialog_option f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -725,26 +754,28 @@
 
 ; --- 75. VerifiedDialog accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (Seq (mk-verified_dialog f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (dialog_options (mk-verified_dialog f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 76. VerifiedDialog accessor round-trip: dialog_balanced ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (dialog_balanced (mk-verified_dialog f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (dialog_balanced (mk-verified_dialog f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 77. VerifiedDialog: integer field consistency ---
 (push 1)
 (declare-const r VerifiedDialog)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (dialog_options r)) 0))
 (assert (>= (dialog_balanced r) 0))
-(assert (not (>= (+ (Seq r) (dialog_balanced r)) 0)))
+(assert (not (>= (+ (seq.len (dialog_options r)) (dialog_balanced r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -754,7 +785,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (displayed_total (mk-price_display f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (displayed_total (mk-price_display f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -762,7 +794,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (actual_total (mk-price_display f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (actual_total (mk-price_display f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -779,8 +812,9 @@
 
 ; --- 81. ConsentState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-consent_state f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (consent_records (mk-consent_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -789,7 +823,8 @@
 ; --- 82. SensitiveAction accessor round-trip: action_name ---
 (push 1)
 (declare-const f0 String)
-(assert (not (= (action_name (mk-sensitive_action f0)) f0)))
+(declare-const f1 Sensitivity)
+(assert (not (= (action_name (mk-sensitive_action f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -799,8 +834,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (layout_viewport_width (mk-layout_input f0 f1 f2)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (layout_viewport_width (mk-layout_input f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -808,8 +844,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (layout_viewport_height (mk-layout_input f0 f1 f2)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (layout_viewport_height (mk-layout_input f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -817,8 +854,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-layout_input f0 f1 f2)) f2)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (layout_elements (mk-layout_input f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -835,37 +873,40 @@
 
 ; --- 87. InputField accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (Seq (mk-input_field f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (field_data (mk-input_field f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 88. InputField accessor round-trip: input_max_length ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (input_max_length (mk-input_field f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (input_max_length (mk-input_field f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 89. InputField accessor round-trip: input_allowed ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (input_allowed (mk-input_field f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (input_allowed (mk-input_field f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 90. InputField: integer field consistency ---
 (push 1)
 (declare-const r InputField)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (field_data r)) 0))
 (assert (>= (input_max_length r) 0))
-(assert (not (>= (+ (Seq r) (input_max_length r)) 0)))
+(assert (not (>= (+ (seq.len (field_data r)) (input_max_length r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -874,27 +915,30 @@
 ; --- 91. FocusState accessor round-trip: focused_element ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Bool)
-(assert (not (= (focused_element (mk-focus_state f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(assert (not (= (focused_element (mk-focus_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 92. FocusState accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Bool)
-(assert (not (= (Seq (mk-focus_state f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(assert (not (= (tab_order (mk-focus_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 93. FocusState accessor round-trip: focus_modal_active ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Bool)
-(assert (not (= (focus_modal_active (mk-focus_state f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(assert (not (= (focus_modal_active (mk-focus_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -902,8 +946,8 @@
 (push 1)
 (declare-const r FocusState)
 (assert (>= (focused_element r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (focused_element r) (Seq r)) 0)))
+(assert (>= (seq.len (tab_order r)) 0))
+(assert (not (>= (+ (focused_element r) (seq.len (tab_order r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -913,9 +957,10 @@
 (push 1)
 (declare-const f0 FocusState)
 (declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
-(assert (not (= (vf_state (mk-verified_focus_state f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (vf_state (mk-verified_focus_state f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -923,9 +968,10 @@
 (push 1)
 (declare-const f0 FocusState)
 (declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
-(assert (not (= (vf_valid (mk-verified_focus_state f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (vf_valid (mk-verified_focus_state f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -933,9 +979,10 @@
 (push 1)
 (declare-const f0 FocusState)
 (declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
-(assert (not (= (Seq (mk-verified_focus_state f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (vf_visible_elements (mk-verified_focus_state f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -943,9 +990,10 @@
 (push 1)
 (declare-const f0 FocusState)
 (declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
-(assert (not (= (vf_tab_in_visible (mk-verified_focus_state f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (vf_tab_in_visible (mk-verified_focus_state f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -953,8 +1001,8 @@
 (push 1)
 (declare-const r VerifiedFocusState)
 (assert (>= (vf_valid r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (vf_valid r) (Seq r)) 0)))
+(assert (>= (seq.len (vf_visible_elements r)) 0))
+(assert (not (>= (+ (vf_valid r) (seq.len (vf_visible_elements r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -965,7 +1013,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (vp_min_x (mk-viewport_bounds f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (vp_min_x (mk-viewport_bounds f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -974,7 +1023,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (vp_min_y (mk-viewport_bounds f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (vp_min_y (mk-viewport_bounds f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -983,7 +1033,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (vp_max_x (mk-viewport_bounds f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (vp_max_x (mk-viewport_bounds f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1001,7 +1052,8 @@
 ; --- 104. Viewport accessor round-trip: vp_width ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (vp_width (mk-viewport f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (vp_width (mk-viewport f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1013,7 +1065,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (le_id (mk-layout_element f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (le_id (mk-layout_element f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1023,7 +1076,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (le_width (mk-layout_element f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (le_width (mk-layout_element f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1033,7 +1087,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (le_height (mk-layout_element f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (le_height (mk-layout_element f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1043,7 +1098,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (le_font_size (mk-layout_element f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (le_font_size (mk-layout_element f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1061,49 +1117,53 @@
 ; --- 110. ResponsiveLayout accessor round-trip: rl_viewport ---
 (push 1)
 (declare-const f0 Viewport)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (rl_viewport (mk-responsive_layout f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (rl_viewport (mk-responsive_layout f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 111. ResponsiveLayout accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Viewport)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (Seq (mk-responsive_layout f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (rl_elements (mk-responsive_layout f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 112. ResponsiveLayout accessor round-trip: rl_all_fit ---
 (push 1)
 (declare-const f0 Viewport)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (rl_all_fit (mk-responsive_layout f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (rl_all_fit (mk-responsive_layout f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 113. ResponsiveLayout accessor round-trip: rl_touch_targets ---
 (push 1)
 (declare-const f0 Viewport)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (rl_touch_targets (mk-responsive_layout f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (rl_touch_targets (mk-responsive_layout f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 114. ResponsiveLayout: integer field consistency ---
 (push 1)
 (declare-const r ResponsiveLayout)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (rl_elements r)) 0))
 (assert (>= (rl_all_fit r) 0))
-(assert (not (>= (+ (Seq r) (rl_all_fit r)) 0)))
+(assert (not (>= (+ (seq.len (rl_elements r)) (rl_all_fit r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1117,7 +1177,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 DisplayStyle)
-(assert (not (= (err_message (mk-error_display f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 RecoveryAction)
+(assert (not (= (err_message (mk-error_display f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1129,7 +1190,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 DisplayStyle)
-(assert (not (= (err_actual_error (mk-error_display f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 RecoveryAction)
+(assert (not (= (err_actual_error (mk-error_display f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1141,7 +1203,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 DisplayStyle)
-(assert (not (= (err_severity (mk-error_display f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 RecoveryAction)
+(assert (not (= (err_severity (mk-error_display f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1153,7 +1216,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 DisplayStyle)
-(assert (not (= (err_visible (mk-error_display f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 RecoveryAction)
+(assert (not (= (err_visible (mk-error_display f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1165,7 +1229,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 DisplayStyle)
-(assert (not (= (err_auto_dismiss (mk-error_display f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 RecoveryAction)
+(assert (not (= (err_auto_dismiss (mk-error_display f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1177,7 +1242,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ve_display (mk-verified_error_display f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (ve_display (mk-verified_error_display f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1187,7 +1253,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ve_always_visible (mk-verified_error_display f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (ve_always_visible (mk-verified_error_display f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1197,7 +1264,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ve_critical_persistent (mk-verified_error_display f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (ve_critical_persistent (mk-verified_error_display f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1207,7 +1275,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ve_style_matches (mk-verified_error_display f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (ve_style_matches (mk-verified_error_display f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

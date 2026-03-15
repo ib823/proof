@@ -6,7 +6,7 @@
 ; Verifies: type uniqueness, canonical forms, context lookup,
 ; store typing well-formedness, weakening/exchange properties.
 
-(set-logic QF_DT)
+(set-logic ALL)
 (set-option :produce-models true)
 
 ; ═══════════════════════════════════════════════════════════════════════════

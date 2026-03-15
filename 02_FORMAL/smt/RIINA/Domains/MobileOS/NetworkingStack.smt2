@@ -157,7 +157,10 @@
 ; --- 11. Packet accessor round-trip: packet_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (packet_id (mk-packet f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 EncryptionState)
+(declare-const f3 Bool)
+(assert (not (= (packet_id (mk-packet f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

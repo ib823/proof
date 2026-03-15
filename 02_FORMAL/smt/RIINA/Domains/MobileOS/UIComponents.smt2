@@ -205,7 +205,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (element_id (mk-u_i_element f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (element_id (mk-ui_element f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -215,7 +216,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (element_visible (mk-u_i_element f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (element_visible (mk-ui_element f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -225,7 +227,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (element_enabled (mk-u_i_element f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (element_enabled (mk-ui_element f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -235,7 +238,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (element_accessibility_label (mk-u_i_element f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (element_accessibility_label (mk-ui_element f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -254,7 +258,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 ScreenState)
-(assert (not (= (screen_id (mk-screen f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (screen_id (mk-screen f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -262,7 +267,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 ScreenState)
-(assert (not (= (screen_state (mk-screen f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (screen_state (mk-screen f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -272,7 +278,8 @@
 (push 1)
 (declare-const f0 ScreenState)
 (declare-const f1 ScreenState)
-(assert (not (= (trans_from (mk-transition f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (trans_from (mk-transition f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -280,7 +287,8 @@
 (push 1)
 (declare-const f0 ScreenState)
 (declare-const f1 ScreenState)
-(assert (not (= (trans_to (mk-transition f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (trans_to (mk-transition f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -291,7 +299,8 @@
 (declare-const f0 Int)
 (declare-const f1 ButtonState)
 (declare-const f2 Bool)
-(assert (not (= (btn_id (mk-button f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (btn_id (mk-button f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -300,7 +309,8 @@
 (declare-const f0 Int)
 (declare-const f1 ButtonState)
 (declare-const f2 Bool)
-(assert (not (= (btn_state (mk-button f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (btn_state (mk-button f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -309,7 +319,8 @@
 (declare-const f0 Int)
 (declare-const f1 ButtonState)
 (declare-const f2 Bool)
-(assert (not (= (btn_enabled (mk-button f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (btn_enabled (mk-button f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -318,27 +329,30 @@
 ; --- 31. TextField accessor round-trip: tf_id ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(assert (not (= (tf_id (mk-text_field f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (tf_id (mk-text_field f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 32. TextField accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(assert (not (= (Seq (mk-text_field f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (tf_input (mk-text_field f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 33. TextField accessor round-trip: tf_max_length ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(assert (not (= (tf_max_length (mk-text_field f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (tf_max_length (mk-text_field f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -346,8 +360,8 @@
 (push 1)
 (declare-const r TextField)
 (assert (>= (tf_id r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (tf_id r) (Seq r)) 0)))
+(assert (>= (seq.len (tf_input r)) 0))
+(assert (not (>= (+ (tf_id r) (seq.len (tf_input r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -358,7 +372,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (lv_total_items (mk-list_view f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (lv_total_items (mk-list_view f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -367,7 +382,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (lv_visible_items (mk-list_view f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (lv_visible_items (mk-list_view f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -376,7 +392,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (lv_recycled_views (mk-list_view f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (lv_recycled_views (mk-list_view f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -395,7 +412,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (sv_content_offset (mk-scroll_view f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (sv_content_offset (mk-scroll_view f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -403,7 +421,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (sv_content_size (mk-scroll_view f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (sv_content_size (mk-scroll_view f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -423,7 +442,8 @@
 (declare-const f0 Int)
 (declare-const f1 ImageLoadState)
 (declare-const f2 Bool)
-(assert (not (= (iv_id (mk-image_view f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (iv_id (mk-image_view f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -432,7 +452,8 @@
 (declare-const f0 Int)
 (declare-const f1 ImageLoadState)
 (declare-const f2 Bool)
-(assert (not (= (iv_load_state (mk-image_view f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (iv_load_state (mk-image_view f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -441,7 +462,8 @@
 (declare-const f0 Int)
 (declare-const f1 ImageLoadState)
 (declare-const f2 Bool)
-(assert (not (= (iv_placeholder_shown (mk-image_view f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (iv_placeholder_shown (mk-image_view f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -452,7 +474,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sw_id (mk-switch_toggle f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (sw_id (mk-switch_toggle f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -461,7 +484,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sw_on (mk-switch_toggle f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (sw_on (mk-switch_toggle f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -470,7 +494,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sw_transitioning (mk-switch_toggle f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (sw_transitioning (mk-switch_toggle f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -480,7 +505,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (sl_value (mk-slider f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (sl_value (mk-slider f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -488,7 +514,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (sl_min_value (mk-slider f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (sl_min_value (mk-slider f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -508,7 +535,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pb_current (mk-progress_bar f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (pb_current (mk-progress_bar f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -517,7 +545,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pb_previous (mk-progress_bar f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (pb_previous (mk-progress_bar f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -526,7 +555,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pb_max (mk-progress_bar f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (pb_max (mk-progress_bar f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -543,26 +573,28 @@
 
 ; --- 55. TabBar accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (Seq (mk-tab_bar f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (tb_tabs (mk-tab_bar f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 56. TabBar accessor round-trip: tb_selected_index ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (tb_selected_index (mk-tab_bar f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (tb_selected_index (mk-tab_bar f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 57. TabBar: integer field consistency ---
 (push 1)
 (declare-const r TabBar)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (tb_tabs r)) 0))
 (assert (>= (tb_selected_index r) 0))
-(assert (not (>= (+ (Seq r) (tb_selected_index r)) 0)))
+(assert (not (>= (+ (seq.len (tb_tabs r)) (tb_selected_index r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -570,8 +602,9 @@
 
 ; --- 58. NavigationStack accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-navigation_stack f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Bool)
+(assert (not (= (ns_stack (mk-navigation_stack f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -582,7 +615,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ad_id (mk-alert_dialog f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ad_id (mk-alert_dialog f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -591,7 +625,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ad_modal (mk-alert_dialog f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ad_modal (mk-alert_dialog f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -600,7 +635,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ad_blocking_input (mk-alert_dialog f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ad_blocking_input (mk-alert_dialog f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -609,27 +645,30 @@
 ; --- 62. ActionSheet accessor round-trip: as_id ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Bool)
-(assert (not (= (as_id (mk-action_sheet f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (as_id (mk-action_sheet f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 63. ActionSheet accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Bool)
-(assert (not (= (Seq (mk-action_sheet f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (as_actions (mk-action_sheet f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 64. ActionSheet accessor round-trip: as_dismissible ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Bool)
-(assert (not (= (as_dismissible (mk-action_sheet f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (as_dismissible (mk-action_sheet f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -637,8 +676,8 @@
 (push 1)
 (declare-const r ActionSheet)
 (assert (>= (as_id r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (as_id r) (Seq r)) 0)))
+(assert (>= (seq.len (as_actions r)) 0))
+(assert (not (>= (+ (as_id r) (seq.len (as_actions r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -649,7 +688,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (dp_selected (mk-date_picker f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (dp_selected (mk-date_picker f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -658,7 +698,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (dp_min_date (mk-date_picker f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (dp_min_date (mk-date_picker f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -667,7 +708,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (dp_max_date (mk-date_picker f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (dp_max_date (mk-date_picker f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -687,7 +729,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cp_red (mk-color_picker f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (cp_red (mk-color_picker f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -696,7 +739,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cp_green (mk-color_picker f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (cp_green (mk-color_picker f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -705,7 +749,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cp_blue (mk-color_picker f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (cp_blue (mk-color_picker f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -722,37 +767,40 @@
 
 ; --- 74. SearchBar accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (Seq (mk-search_bar f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (sb_query (mk-search_bar f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 75. SearchBar accessor round-trip: sb_last_search_ms ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sb_last_search_ms (mk-search_bar f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (sb_last_search_ms (mk-search_bar f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 76. SearchBar accessor round-trip: sb_debounce_ms ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sb_debounce_ms (mk-search_bar f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (sb_debounce_ms (mk-search_bar f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 77. SearchBar: integer field consistency ---
 (push 1)
 (declare-const r SearchBar)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (sb_query r)) 0))
 (assert (>= (sb_last_search_ms r) 0))
-(assert (not (>= (+ (Seq r) (sb_last_search_ms r)) 0)))
+(assert (not (>= (+ (seq.len (sb_query r)) (sb_last_search_ms r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

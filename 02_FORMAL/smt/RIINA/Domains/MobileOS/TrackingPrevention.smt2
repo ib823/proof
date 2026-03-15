@@ -118,7 +118,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Bool)
-(assert (not (= (user_id (mk-user f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (user_id (mk-user f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -126,7 +128,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Bool)
-(assert (not (= (tracking_consent_given (mk-user f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Int)
+(assert (not (= (tracking_consent_given (mk-user f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -134,7 +138,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Bool)
-(assert (not (= (app_id (mk-application f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (app_id (mk-application f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -142,7 +148,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Bool)
-(assert (not (= (tracking_enabled (mk-application f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (tracking_enabled (mk-application f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -151,7 +159,8 @@
 (declare-const f0 Application)
 (declare-const f1 User)
 (declare-const f2 Int)
-(assert (not (= (tracking_app (mk-tracking_event f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(assert (not (= (tracking_app (mk-tracking_event f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -160,7 +169,8 @@
 (declare-const f0 Application)
 (declare-const f1 User)
 (declare-const f2 Int)
-(assert (not (= (tracked_user (mk-tracking_event f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(assert (not (= (tracked_user (mk-tracking_event f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -169,14 +179,18 @@
 (declare-const f0 Application)
 (declare-const f1 User)
 (declare-const f2 Int)
-(assert (not (= (tracking_type (mk-tracking_event f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(assert (not (= (tracking_type (mk-tracking_event f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 14. PrivacyState accessor round-trip: tracking_transparency_enabled ---
 (push 1)
 (declare-const f0 Bool)
-(assert (not (= (tracking_transparency_enabled (mk-privacy_state f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (tracking_transparency_enabled (mk-privacy_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -451,7 +465,9 @@
 ; --- 43. LinkDecoration accessor round-trip: ld_url_hash ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (ld_url_hash (mk-link_decoration f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (ld_url_hash (mk-link_decoration f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -635,7 +651,9 @@
 ; --- 63. TrackingReport accessor round-trip: tr_blocked_count ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (tr_blocked_count (mk-tracking_report f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (tr_blocked_count (mk-tracking_report f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

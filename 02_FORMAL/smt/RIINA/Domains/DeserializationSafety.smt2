@@ -162,7 +162,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (dp_max_depth (mk-deser_policy f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
+(declare-const f9 Bool)
+(assert (not (= (dp_max_depth (mk-deser_policy f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -177,7 +178,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (dp_max_size_bytes (mk-deser_policy f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
+(declare-const f9 Bool)
+(assert (not (= (dp_max_size_bytes (mk-deser_policy f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -192,7 +194,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (dp_allow_polymorphic (mk-deser_policy f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
+(declare-const f9 Bool)
+(assert (not (= (dp_allow_polymorphic (mk-deser_policy f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -207,7 +210,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (dp_allow_callbacks (mk-deser_policy f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
+(declare-const f9 Bool)
+(assert (not (= (dp_allow_callbacks (mk-deser_policy f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -222,7 +226,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (dp_allow_reflection (mk-deser_policy f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
+(declare-const f9 Bool)
+(assert (not (= (dp_allow_reflection (mk-deser_policy f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -245,7 +250,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (si_format (mk-serialized_input f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (si_format (mk-serialized_input f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -257,7 +263,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (si_size_bytes (mk-serialized_input f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (si_size_bytes (mk-serialized_input f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -269,7 +276,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (si_depth (mk-serialized_input f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (si_depth (mk-serialized_input f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -281,7 +289,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (si_has_schema (mk-serialized_input f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (si_has_schema (mk-serialized_input f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -293,7 +302,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (si_has_type_tags (mk-serialized_input f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (si_has_type_tags (mk-serialized_input f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

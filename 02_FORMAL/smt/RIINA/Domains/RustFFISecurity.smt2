@@ -232,7 +232,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ffi_require_effect_annotation (mk-f_f_i_safety_policy f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (ffi_require_effect_annotation (mk-ffi_safety_policy f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -245,7 +246,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ffi_enforce_lifetime_bounds (mk-f_f_i_safety_policy f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (ffi_enforce_lifetime_bounds (mk-ffi_safety_policy f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -258,7 +260,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ffi_require_panic_wrapper (mk-f_f_i_safety_policy f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (ffi_require_panic_wrapper (mk-ffi_safety_policy f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -271,7 +274,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ffi_require_null_check (mk-f_f_i_safety_policy f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (ffi_require_null_check (mk-ffi_safety_policy f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -284,7 +288,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ffi_require_buffer_validation (mk-f_f_i_safety_policy f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (ffi_require_buffer_validation (mk-ffi_safety_policy f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -340,7 +345,8 @@
 (declare-const f4 NullCheck)
 (declare-const f5 BufferValidation)
 (declare-const f6 TypeMarshalling)
-(assert (not (= (ffi_boundary (mk-f_f_i_call f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (ffi_boundary (mk-ffi_call f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -353,7 +359,8 @@
 (declare-const f4 NullCheck)
 (declare-const f5 BufferValidation)
 (declare-const f6 TypeMarshalling)
-(assert (not (= (ffi_has_effect_annotation (mk-f_f_i_call f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (ffi_has_effect_annotation (mk-ffi_call f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -366,7 +373,8 @@
 (declare-const f4 NullCheck)
 (declare-const f5 BufferValidation)
 (declare-const f6 TypeMarshalling)
-(assert (not (= (ffi_lifetime_safety (mk-f_f_i_call f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (ffi_lifetime_safety (mk-ffi_call f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -379,7 +387,8 @@
 (declare-const f4 NullCheck)
 (declare-const f5 BufferValidation)
 (declare-const f6 TypeMarshalling)
-(assert (not (= (ffi_panic_safety (mk-f_f_i_call f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (ffi_panic_safety (mk-ffi_call f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -392,7 +401,8 @@
 (declare-const f4 NullCheck)
 (declare-const f5 BufferValidation)
 (declare-const f6 TypeMarshalling)
-(assert (not (= (ffi_null_check (mk-f_f_i_call f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (ffi_null_check (mk-ffi_call f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

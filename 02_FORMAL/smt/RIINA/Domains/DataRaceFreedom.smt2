@@ -106,7 +106,8 @@
 ; --- 12. MutexState accessor round-trip: mutex_locked ---
 (push 1)
 (declare-const f0 Bool)
-(assert (not (= (mutex_locked (mk-mutex_state f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (mutex_locked (mk-mutex_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -115,7 +116,8 @@
 ; --- 13. RWLockState accessor round-trip: rwlock_readers ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (rwlock_readers (mk-r_w_lock_state f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (rwlock_readers (mk-rw_lock_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

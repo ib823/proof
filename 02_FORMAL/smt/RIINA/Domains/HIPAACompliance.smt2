@@ -237,26 +237,28 @@
 
 ; --- 28. AuthState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (Seq (mk-auth_state f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (auth_factors (mk-auth_state f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 29. AuthState accessor round-trip: auth_user_id ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (auth_user_id (mk-auth_state f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (auth_user_id (mk-auth_state f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 30. AuthState: integer field consistency ---
 (push 1)
 (declare-const r AuthState)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (auth_factors r)) 0))
 (assert (>= (auth_user_id r) 0))
-(assert (not (>= (+ (Seq r) (auth_user_id r)) 0)))
+(assert (not (>= (+ (seq.len (auth_factors r)) (auth_user_id r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -268,7 +270,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 EncryptionState)
-(assert (not (= (phi_category (mk-p_h_i_record f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (phi_category (mk-phi_record f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -278,7 +281,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 EncryptionState)
-(assert (not (= (phi_patient_id (mk-p_h_i_record f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (phi_patient_id (mk-phi_record f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -288,7 +292,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 EncryptionState)
-(assert (not (= (phi_data (mk-p_h_i_record f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (phi_data (mk-phi_record f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -298,7 +303,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 EncryptionState)
-(assert (not (= (phi_encryption (mk-p_h_i_record f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (phi_encryption (mk-phi_record f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -319,7 +325,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (audit_timestamp (mk-audit_entry f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (audit_timestamp (mk-audit_entry f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -329,7 +336,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (audit_user_id (mk-audit_entry f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (audit_user_id (mk-audit_entry f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -339,7 +347,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (audit_action (mk-audit_entry f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (audit_action (mk-audit_entry f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -349,7 +358,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (audit_phi_id (mk-audit_entry f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (audit_phi_id (mk-audit_entry f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -369,7 +379,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (disposal_phi_id (mk-disposal_record f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (disposal_phi_id (mk-disposal_record f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -378,7 +389,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (disposal_method (mk-disposal_record f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (disposal_method (mk-disposal_record f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -387,7 +399,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (disposal_passes (mk-disposal_record f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (disposal_passes (mk-disposal_record f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -407,7 +420,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (breach_detected_time (mk-breach_event f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(assert (not (= (breach_detected_time (mk-breach_event f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -416,7 +430,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (breach_occurred_time (mk-breach_event f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(assert (not (= (breach_occurred_time (mk-breach_event f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -425,7 +440,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (breach_user_id (mk-breach_event f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(assert (not (= (breach_user_id (mk-breach_event f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -445,7 +461,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (session_user_id (mk-session f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (session_user_id (mk-session f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -454,7 +471,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (session_start_time (mk-session f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (session_start_time (mk-session f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -463,7 +481,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (session_last_activity (mk-session f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (session_last_activity (mk-session f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -480,65 +499,70 @@
 
 ; --- 53. SystemState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (Seq (mk-system_state f0 f1 f2 f3 f4)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Int)
+(assert (not (= (state_phi_records (mk-system_state f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 54. SystemState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (Seq (mk-system_state f0 f1 f2 f3 f4)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Int)
+(assert (not (= (state_audit_log (mk-system_state f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 55. SystemState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (Seq (mk-system_state f0 f1 f2 f3 f4)) f2)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Int)
+(assert (not (= (state_active_sessions (mk-system_state f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 56. SystemState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (Seq (mk-system_state f0 f1 f2 f3 f4)) f3)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Int)
+(assert (not (= (state_user_roles (mk-system_state f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 57. SystemState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(assert (not (= (Seq (mk-system_state f0 f1 f2 f3 f4)) f4)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 Int)
+(assert (not (= (state_disposals (mk-system_state f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 58. SystemState: integer field consistency ---
 (push 1)
 (declare-const r SystemState)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (state_phi_records r)) 0))
+(assert (>= (seq.len (state_phi_records r)) 0))
+(assert (not (>= (+ (seq.len (state_phi_records r)) (seq.len (state_phi_records r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -549,7 +573,8 @@
 (declare-const f0 PHIRecord)
 (declare-const f1 TransportSecurity)
 (declare-const f2 Int)
-(assert (not (= (trans_phi (mk-transmission f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (trans_phi (mk-transmission f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -558,7 +583,8 @@
 (declare-const f0 PHIRecord)
 (declare-const f1 TransportSecurity)
 (declare-const f2 Int)
-(assert (not (= (trans_security (mk-transmission f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (trans_security (mk-transmission f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -567,7 +593,8 @@
 (declare-const f0 PHIRecord)
 (declare-const f1 TransportSecurity)
 (declare-const f2 Int)
-(assert (not (= (trans_integrity_hash (mk-transmission f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (trans_integrity_hash (mk-transmission f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

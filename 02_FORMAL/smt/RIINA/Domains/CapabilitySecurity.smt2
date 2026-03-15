@@ -129,7 +129,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (cap_unforgeable (mk-capability f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (cap_unforgeable (mk-capability f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -138,7 +139,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (cap_transferable (mk-capability f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (cap_transferable (mk-capability f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -147,7 +149,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (cap_revocable (mk-capability f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (cap_revocable (mk-capability f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -195,7 +198,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ocap_no_ambient_authority (mk-object_capability f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ocap_no_ambient_authority (mk-object_capability f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -204,7 +208,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ocap_explicit_grant (mk-object_capability f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ocap_explicit_grant (mk-object_capability f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -213,7 +218,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ocap_encapsulation (mk-object_capability f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ocap_encapsulation (mk-object_capability f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -260,7 +266,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (lp_minimal_permissions (mk-least_privilege f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (lp_minimal_permissions (mk-least_privilege f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -268,7 +275,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (lp_time_limited (mk-least_privilege f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (lp_time_limited (mk-least_privilege f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -306,7 +314,8 @@
 (push 1)
 (declare-const f0 Capability)
 (declare-const f1 ObjectCapability)
-(assert (not (= (cc_cap (mk-capability_config f0 f1)) f0)))
+(declare-const f2 LeastPrivilege)
+(assert (not (= (cc_cap (mk-capability_config f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -314,7 +323,8 @@
 (push 1)
 (declare-const f0 Capability)
 (declare-const f1 ObjectCapability)
-(assert (not (= (cc_ocap (mk-capability_config f0 f1)) f1)))
+(declare-const f2 LeastPrivilege)
+(assert (not (= (cc_ocap (mk-capability_config f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -326,7 +336,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (mem_base (mk-mem_capability f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (mem_base (mk-mem_capability f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -336,7 +347,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (mem_length (mk-mem_capability f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (mem_length (mk-mem_capability f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -346,7 +358,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (mem_perms (mk-mem_capability f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (mem_perms (mk-mem_capability f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -356,7 +369,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (mem_sealed (mk-mem_capability f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (mem_sealed (mk-mem_capability f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -374,7 +388,8 @@
 ; --- 38. Principal accessor round-trip: prin_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (prin_id (mk-principal f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (prin_id (mk-principal f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -384,7 +399,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (conf_no_ambient (mk-confinement_policy f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (conf_no_ambient (mk-confinement_policy f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -392,7 +408,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (conf_explicit_only (mk-confinement_policy f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (conf_explicit_only (mk-confinement_policy f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -432,7 +449,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 DelegationType)
-(assert (not (= (del_from (mk-delegation f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (del_from (mk-delegation f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -442,7 +460,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 DelegationType)
-(assert (not (= (del_to (mk-delegation f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (del_to (mk-delegation f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -452,7 +471,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 DelegationType)
-(assert (not (= (del_cap_id (mk-delegation f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (del_cap_id (mk-delegation f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -462,7 +482,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 DelegationType)
-(assert (not (= (del_type (mk-delegation f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (del_type (mk-delegation f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

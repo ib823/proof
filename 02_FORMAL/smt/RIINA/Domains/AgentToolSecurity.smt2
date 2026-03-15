@@ -119,7 +119,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (tc_name (mk-tool_capability f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (tc_name (mk-tool_capability f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -130,7 +131,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (tc_level (mk-tool_capability f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (tc_level (mk-tool_capability f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -141,7 +143,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (tc_sandboxed (mk-tool_capability f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (tc_sandboxed (mk-tool_capability f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -152,7 +155,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (tc_input_validated (mk-tool_capability f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (tc_input_validated (mk-tool_capability f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -163,7 +167,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (tc_output_sanitized (mk-tool_capability f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (tc_output_sanitized (mk-tool_capability f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -178,7 +183,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ab_max_level (mk-agent_boundary f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (ab_max_level (mk-agent_boundary f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -191,7 +197,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ab_allow_network (mk-agent_boundary f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (ab_allow_network (mk-agent_boundary f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -204,7 +211,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ab_allow_execute (mk-agent_boundary f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (ab_allow_execute (mk-agent_boundary f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -217,7 +225,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ab_allow_system (mk-agent_boundary f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (ab_allow_system (mk-agent_boundary f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -230,7 +239,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ab_require_sandbox (mk-agent_boundary f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (ab_require_sandbox (mk-agent_boundary f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -241,7 +251,8 @@
 (declare-const f0 ToolCapability)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tr_tool (mk-tool_request f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (tr_tool (mk-tool_request f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -250,7 +261,8 @@
 (declare-const f0 ToolCapability)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tr_input_hash (mk-tool_request f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (tr_input_hash (mk-tool_request f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -259,7 +271,8 @@
 (declare-const f0 ToolCapability)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tr_caller_id (mk-tool_request f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (tr_caller_id (mk-tool_request f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

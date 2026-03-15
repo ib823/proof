@@ -119,7 +119,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (rg_mutex_lock (mk-reentrancy_guard f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (rg_mutex_lock (mk-reentrancy_guard f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -127,7 +128,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (rg_cei_pattern (mk-reentrancy_guard f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (rg_cei_pattern (mk-reentrancy_guard f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -165,7 +167,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (is_overflow_check (mk-integer_safety f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (is_overflow_check (mk-integer_safety f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -173,7 +176,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (is_underflow_check (mk-integer_safety f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (is_underflow_check (mk-integer_safety f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -212,7 +216,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ac_owner_only (mk-access_control_policy f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ac_owner_only (mk-access_control_policy f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -221,7 +226,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ac_role_based (mk-access_control_policy f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ac_role_based (mk-access_control_policy f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -230,7 +236,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ac_no_tx_origin (mk-access_control_policy f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ac_no_tx_origin (mk-access_control_policy f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -277,7 +284,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (dc_storage_collision_check (mk-delegate_call_safety f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (dc_storage_collision_check (mk-delegate_call_safety f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -285,7 +293,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (dc_initialization_check (mk-delegate_call_safety f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (dc_initialization_check (mk-delegate_call_safety f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -323,7 +332,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (fl_oracle_checks (mk-flash_loan_defense f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (fl_oracle_checks (mk-flash_loan_defense f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -331,7 +341,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (fl_time_weighted_price (mk-flash_loan_defense f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (fl_time_weighted_price (mk-flash_loan_defense f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -371,7 +382,8 @@
 (declare-const f1 IntegerSafety)
 (declare-const f2 AccessControlPolicy)
 (declare-const f3 DelegateCallSafety)
-(assert (not (= (sc_reentrancy (mk-smart_contract_security f0 f1 f2 f3)) f0)))
+(declare-const f4 FlashLoanDefense)
+(assert (not (= (sc_reentrancy (mk-smart_contract_security f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -381,7 +393,8 @@
 (declare-const f1 IntegerSafety)
 (declare-const f2 AccessControlPolicy)
 (declare-const f3 DelegateCallSafety)
-(assert (not (= (sc_integer (mk-smart_contract_security f0 f1 f2 f3)) f1)))
+(declare-const f4 FlashLoanDefense)
+(assert (not (= (sc_integer (mk-smart_contract_security f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -391,7 +404,8 @@
 (declare-const f1 IntegerSafety)
 (declare-const f2 AccessControlPolicy)
 (declare-const f3 DelegateCallSafety)
-(assert (not (= (sc_access (mk-smart_contract_security f0 f1 f2 f3)) f2)))
+(declare-const f4 FlashLoanDefense)
+(assert (not (= (sc_access (mk-smart_contract_security f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -401,7 +415,8 @@
 (declare-const f1 IntegerSafety)
 (declare-const f2 AccessControlPolicy)
 (declare-const f3 DelegateCallSafety)
-(assert (not (= (sc_delegate (mk-smart_contract_security f0 f1 f2 f3)) f3)))
+(declare-const f4 FlashLoanDefense)
+(assert (not (= (sc_delegate (mk-smart_contract_security f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

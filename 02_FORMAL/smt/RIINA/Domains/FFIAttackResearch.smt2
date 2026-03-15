@@ -76,40 +76,44 @@
 ; --- 7. FFICallDescriptor accessor round-trip: ffi_name ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 FFIType)
 (declare-const f3 Bool)
-(assert (not (= (ffi_name (mk-f_f_i_call_descriptor f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (ffi_name (mk-ffi_call_descriptor f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 8. FFICallDescriptor accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 FFIType)
 (declare-const f3 Bool)
-(assert (not (= (Seq (mk-f_f_i_call_descriptor f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (ffi_params (mk-ffi_call_descriptor f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 9. FFICallDescriptor accessor round-trip: ffi_return ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 FFIType)
 (declare-const f3 Bool)
-(assert (not (= (ffi_return (mk-f_f_i_call_descriptor f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (ffi_return (mk-ffi_call_descriptor f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 10. FFICallDescriptor accessor round-trip: ffi_sandboxed ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 FFIType)
 (declare-const f3 Bool)
-(assert (not (= (ffi_sandboxed (mk-f_f_i_call_descriptor f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (ffi_sandboxed (mk-ffi_call_descriptor f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -117,8 +121,8 @@
 (push 1)
 (declare-const r FFICallDescriptor)
 (assert (>= (ffi_name r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (ffi_name r) (Seq r)) 0)))
+(assert (>= (seq.len (ffi_params r)) 0))
+(assert (not (>= (+ (ffi_name r) (seq.len (ffi_params r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -128,7 +132,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (region_base (mk-mem_region f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (region_base (mk-mem_region f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -136,7 +141,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (region_size (mk-mem_region f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (region_size (mk-mem_region f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -156,7 +162,8 @@
 (declare-const f0 Int)
 (declare-const f1 MemRegion)
 (declare-const f2 Bool)
-(assert (not (= (sandbox_id (mk-sandbox f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(assert (not (= (sandbox_id (mk-sandbox f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -165,7 +172,8 @@
 (declare-const f0 Int)
 (declare-const f1 MemRegion)
 (declare-const f2 Bool)
-(assert (not (= (sandbox_region (mk-sandbox f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(assert (not (= (sandbox_region (mk-sandbox f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -174,7 +182,8 @@
 (declare-const f0 Int)
 (declare-const f1 MemRegion)
 (declare-const f2 Bool)
-(assert (not (= (sandbox_active (mk-sandbox f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(assert (not (= (sandbox_active (mk-sandbox f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -183,7 +192,8 @@
 ; --- 18. MarshalBuffer accessor round-trip: buf_capacity ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (buf_capacity (mk-marshal_buffer f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (buf_capacity (mk-marshal_buffer f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

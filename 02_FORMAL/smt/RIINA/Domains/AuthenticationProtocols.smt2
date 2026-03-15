@@ -108,7 +108,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (pwd_bcrypt_argon (mk-password_security f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (pwd_bcrypt_argon (mk-password_security f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -117,7 +118,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (pwd_salt_unique (mk-password_security f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (pwd_salt_unique (mk-password_security f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -126,7 +128,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (pwd_min_entropy (mk-password_security f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (pwd_min_entropy (mk-password_security f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -174,7 +177,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pbkdf2_iterations (mk-p_b_k_d_f2_config f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (pbkdf2_iterations (mk-pbkdf2_config f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -183,7 +187,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pbkdf2_salt_bits (mk-p_b_k_d_f2_config f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (pbkdf2_salt_bits (mk-pbkdf2_config f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -192,7 +197,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pbkdf2_output_bits (mk-p_b_k_d_f2_config f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (pbkdf2_output_bits (mk-pbkdf2_config f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -214,7 +220,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (argon2_time_cost (mk-argon2_config f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Int)
+(assert (not (= (argon2_time_cost (mk-argon2_config f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -225,7 +232,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (argon2_memory_cost (mk-argon2_config f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Int)
+(assert (not (= (argon2_memory_cost (mk-argon2_config f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -236,7 +244,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (argon2_parallelism (mk-argon2_config f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Int)
+(assert (not (= (argon2_parallelism (mk-argon2_config f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -247,7 +256,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (argon2_salt_bits (mk-argon2_config f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Int)
+(assert (not (= (argon2_salt_bits (mk-argon2_config f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -258,7 +268,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (argon2_output_bits (mk-argon2_config f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Int)
+(assert (not (= (argon2_output_bits (mk-argon2_config f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -277,7 +288,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (bcrypt_cost_factor (mk-bcrypt_config f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (bcrypt_cost_factor (mk-bcrypt_config f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -285,7 +297,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (bcrypt_salt_bits (mk-bcrypt_config f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (bcrypt_salt_bits (mk-bcrypt_config f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -305,7 +318,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (mfa_totp_support (mk-m_f_a_security f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (mfa_totp_support (mk-mfa_security f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -314,7 +328,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (mfa_webauthn (mk-m_f_a_security f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (mfa_webauthn (mk-mfa_security f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -323,7 +338,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (mfa_backup_codes (mk-m_f_a_security f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (mfa_backup_codes (mk-mfa_security f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -372,7 +388,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (totp_secret_bits (mk-t_o_t_p_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (totp_secret_bits (mk-totp_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -382,7 +399,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (totp_digits (mk-t_o_t_p_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (totp_digits (mk-totp_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -392,7 +410,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (totp_period (mk-t_o_t_p_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (totp_period (mk-totp_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -402,7 +421,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (totp_hash_alg (mk-t_o_t_p_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (totp_hash_alg (mk-totp_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -423,7 +443,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (webauthn_attestation (mk-web_authn_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (webauthn_attestation (mk-web_authn_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -433,7 +454,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (webauthn_user_verification (mk-web_authn_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (webauthn_user_verification (mk-web_authn_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -443,7 +465,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (webauthn_resident_key (mk-web_authn_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (webauthn_resident_key (mk-web_authn_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -453,7 +476,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Int)
-(assert (not (= (webauthn_challenge_bits (mk-web_authn_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (webauthn_challenge_bits (mk-web_authn_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -473,7 +497,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sess_secure_token (mk-session_security f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (sess_secure_token (mk-session_security f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -482,7 +507,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sess_rotation (mk-session_security f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (sess_rotation (mk-session_security f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -491,7 +517,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sess_timeout (mk-session_security f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (sess_timeout (mk-session_security f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -542,7 +569,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (token_entropy_bits (mk-session_token_config f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Int)
+(assert (not (= (token_entropy_bits (mk-session_token_config f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -554,7 +582,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (token_expiry_seconds (mk-session_token_config f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Int)
+(assert (not (= (token_expiry_seconds (mk-session_token_config f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -566,7 +595,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (token_rotation (mk-session_token_config f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Int)
+(assert (not (= (token_rotation (mk-session_token_config f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -578,7 +608,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (token_binding (mk-session_token_config f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Int)
+(assert (not (= (token_binding (mk-session_token_config f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -590,7 +621,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (token_secure_flag (mk-session_token_config f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Int)
+(assert (not (= (token_secure_flag (mk-session_token_config f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -613,7 +645,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (oauth2_pkce (mk-o_auth2_config f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (oauth2_pkce (mk-o_auth2_config f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -625,7 +658,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (oauth2_state_param (mk-o_auth2_config f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (oauth2_state_param (mk-o_auth2_config f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -637,7 +671,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (oauth2_nonce_param (mk-o_auth2_config f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (oauth2_nonce_param (mk-o_auth2_config f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -649,7 +684,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (oauth2_token_binding (mk-o_auth2_config f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (oauth2_token_binding (mk-o_auth2_config f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -661,7 +697,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (oauth2_code_bits (mk-o_auth2_config f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (oauth2_code_bits (mk-o_auth2_config f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -682,7 +719,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (oidc_base (mk-o_i_d_c_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (oidc_base (mk-oidc_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -692,7 +730,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (oidc_id_token_alg (mk-o_i_d_c_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (oidc_id_token_alg (mk-oidc_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -702,7 +741,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (oidc_id_token_expiry (mk-o_i_d_c_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (oidc_id_token_expiry (mk-oidc_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -712,7 +752,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (oidc_userinfo_signed (mk-o_i_d_c_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (oidc_userinfo_signed (mk-oidc_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -733,7 +774,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (challenge_bits (mk-challenge_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (challenge_bits (mk-challenge_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -743,7 +785,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (challenge_expiry_ms (mk-challenge_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (challenge_expiry_ms (mk-challenge_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -753,7 +796,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (challenge_single_use (mk-challenge_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (challenge_single_use (mk-challenge_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -763,7 +807,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (challenge_bound (mk-challenge_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (challenge_bound (mk-challenge_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -783,7 +828,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (nonce_size_bits (mk-nonce_tracker f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (nonce_size_bits (mk-nonce_tracker f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -792,7 +838,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (nonce_window_size (mk-nonce_tracker f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (nonce_window_size (mk-nonce_tracker f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -801,7 +848,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (nonce_timestamp_bound (mk-nonce_tracker f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (nonce_timestamp_bound (mk-nonce_tracker f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -820,7 +868,8 @@
 (push 1)
 (declare-const f0 PasswordSecurity)
 (declare-const f1 MFASecurity)
-(assert (not (= (auth_pwd (mk-auth_config f0 f1)) f0)))
+(declare-const f2 SessionSecurity)
+(assert (not (= (auth_pwd (mk-auth_config f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -828,7 +877,8 @@
 (push 1)
 (declare-const f0 PasswordSecurity)
 (declare-const f1 MFASecurity)
-(assert (not (= (auth_mfa (mk-auth_config f0 f1)) f1)))
+(declare-const f2 SessionSecurity)
+(assert (not (= (auth_mfa (mk-auth_config f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

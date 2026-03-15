@@ -206,7 +206,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (pp_syntax_correct (mk-parsing_phase f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (pp_syntax_correct (mk-parsing_phase f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -214,7 +215,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (pp_ast_well_formed (mk-parsing_phase f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (pp_ast_well_formed (mk-parsing_phase f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -252,7 +254,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (tc_type_soundness (mk-type_check_phase f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (tc_type_soundness (mk-type_check_phase f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -260,7 +263,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (tc_inference_complete (mk-type_check_phase f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (tc_inference_complete (mk-type_check_phase f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -298,7 +302,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (op_semantics_preserved (mk-optimization_phase f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (op_semantics_preserved (mk-optimization_phase f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -306,7 +311,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (op_termination_preserved (mk-optimization_phase f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (op_termination_preserved (mk-optimization_phase f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -345,7 +351,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (cg_instruction_correct (mk-code_gen_phase f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (cg_instruction_correct (mk-code_gen_phase f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -354,7 +361,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (cg_register_allocation (mk-code_gen_phase f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (cg_register_allocation (mk-code_gen_phase f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -363,7 +371,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (cg_calling_convention (mk-code_gen_phase f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (cg_calling_convention (mk-code_gen_phase f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -411,7 +420,8 @@
 (declare-const f0 ParsingPhase)
 (declare-const f1 TypeCheckPhase)
 (declare-const f2 OptimizationPhase)
-(assert (not (= (cc_parsing (mk-compiler_config f0 f1 f2)) f0)))
+(declare-const f3 CodeGenPhase)
+(assert (not (= (cc_parsing (mk-compiler_config f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -420,7 +430,8 @@
 (declare-const f0 ParsingPhase)
 (declare-const f1 TypeCheckPhase)
 (declare-const f2 OptimizationPhase)
-(assert (not (= (cc_typecheck (mk-compiler_config f0 f1 f2)) f1)))
+(declare-const f3 CodeGenPhase)
+(assert (not (= (cc_typecheck (mk-compiler_config f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -429,7 +440,8 @@
 (declare-const f0 ParsingPhase)
 (declare-const f1 TypeCheckPhase)
 (declare-const f2 OptimizationPhase)
-(assert (not (= (cc_optimization (mk-compiler_config f0 f1 f2)) f2)))
+(declare-const f3 CodeGenPhase)
+(assert (not (= (cc_optimization (mk-compiler_config f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

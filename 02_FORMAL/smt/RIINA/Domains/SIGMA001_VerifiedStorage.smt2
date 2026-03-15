@@ -375,7 +375,8 @@
 (declare-const f0 Int)
 (declare-const f1 ColType)
 (declare-const f2 Bool)
-(assert (not (= (col_name (mk-column f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (col_name (mk-column f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -384,7 +385,8 @@
 (declare-const f0 Int)
 (declare-const f1 ColType)
 (declare-const f2 Bool)
-(assert (not (= (col_type (mk-column f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (col_type (mk-column f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -393,7 +395,8 @@
 (declare-const f0 Int)
 (declare-const f1 ColType)
 (declare-const f2 Bool)
-(assert (not (= (col_nullable (mk-column f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (col_nullable (mk-column f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -403,7 +406,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (table_name (mk-table f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (table_name (mk-table f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -411,7 +415,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (table_schema (mk-table f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (table_schema (mk-table f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -428,8 +433,9 @@
 
 ; --- 53. Database accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-database f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(assert (not (= (db_tables (mk-database f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -438,16 +444,18 @@
 ; --- 54. Transaction accessor round-trip: txn_id ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (txn_id (mk-transaction f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 TxnStatus)
+(assert (not (= (txn_id (mk-transaction f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 55. Transaction accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-transaction f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 TxnStatus)
+(assert (not (= (txn_ops (mk-transaction f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -455,8 +463,8 @@
 (push 1)
 (declare-const r Transaction)
 (assert (>= (txn_id r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (txn_id r) (Seq r)) 0)))
+(assert (>= (seq.len (txn_ops r)) 0))
+(assert (not (>= (+ (txn_id r) (seq.len (txn_ops r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -466,7 +474,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 TxnOp)
-(assert (not (= (wal_txn_id (mk-w_a_l_entry f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (wal_txn_id (mk-wal_entry f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -474,7 +483,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 TxnOp)
-(assert (not (= (wal_op (mk-w_a_l_entry f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (wal_op (mk-wal_entry f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -483,7 +493,8 @@
 ; --- 59. Checkpoint accessor round-trip: cp_lsn ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (cp_lsn (mk-checkpoint f0)) f0)))
+(declare-const f1 Database)
+(assert (not (= (cp_lsn (mk-checkpoint f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -491,26 +502,28 @@
 
 ; --- 60. EncryptedData accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (Seq (mk-encrypted_data f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (enc_data (mk-encrypted_data f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 61. EncryptedData accessor round-trip: enc_key_id ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (enc_key_id (mk-encrypted_data f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (enc_key_id (mk-encrypted_data f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 62. EncryptedData: integer field consistency ---
 (push 1)
 (declare-const r EncryptedData)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (enc_data r)) 0))
 (assert (>= (enc_key_id r) 0))
-(assert (not (>= (+ (Seq r) (enc_key_id r)) 0)))
+(assert (not (>= (+ (seq.len (enc_data r)) (enc_key_id r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -519,7 +532,8 @@
 ; --- 63. MerkleTree accessor round-trip: merkle_root ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (merkle_root (mk-merkle_tree f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (merkle_root (mk-merkle_tree f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -530,7 +544,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (audit_timestamp (mk-audit_entry f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (audit_timestamp (mk-audit_entry f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -539,7 +554,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (audit_action (mk-audit_entry f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (audit_action (mk-audit_entry f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -548,7 +564,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (audit_data_hash (mk-audit_entry f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (audit_data_hash (mk-audit_entry f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

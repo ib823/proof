@@ -318,7 +318,9 @@
 ; --- 29. SpeechRecognition accessor round-trip: sr_language ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (sr_language (mk-speech_recognition f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (sr_language (mk-speech_recognition f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

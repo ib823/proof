@@ -161,7 +161,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (haccp_plan (mk-food_safety_controls f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (haccp_plan (mk-food_safety_controls f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -172,7 +173,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (traceability_system (mk-food_safety_controls f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (traceability_system (mk-food_safety_controls f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -183,7 +185,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (supplier_verification (mk-food_safety_controls f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (supplier_verification (mk-food_safety_controls f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -194,7 +197,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (preventive_controls (mk-food_safety_controls f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (preventive_controls (mk-food_safety_controls f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -205,7 +209,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (sanitation_controls (mk-food_safety_controls f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (sanitation_controls (mk-food_safety_controls f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -258,7 +263,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (farm_id (mk-certified_farm f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Int)
+(assert (not (= (farm_id (mk-certified_farm f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -270,7 +276,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (farm_area_hectares (mk-certified_farm f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Int)
+(assert (not (= (farm_area_hectares (mk-certified_farm f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -282,7 +289,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (farm_min_area (mk-certified_farm f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Int)
+(assert (not (= (farm_min_area (mk-certified_farm f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -294,7 +302,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (farm_organic_certified (mk-certified_farm f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Int)
+(assert (not (= (farm_organic_certified (mk-certified_farm f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -306,7 +315,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (farm_gps_lat (mk-certified_farm f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Int)
+(assert (not (= (farm_gps_lat (mk-certified_farm f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -329,7 +339,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (trace_product_id (mk-trace_entry f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Int)
+(assert (not (= (trace_product_id (mk-trace_entry f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -341,7 +352,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (trace_batch_id (mk-trace_entry f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Int)
+(assert (not (= (trace_batch_id (mk-trace_entry f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -353,7 +365,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (trace_origin_farm (mk-trace_entry f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Int)
+(assert (not (= (trace_origin_farm (mk-trace_entry f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -365,7 +378,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (trace_processing_plant (mk-trace_entry f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Int)
+(assert (not (= (trace_processing_plant (mk-trace_entry f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -377,7 +391,8 @@
 (declare-const f3 Int)
 (declare-const f4 Int)
 (declare-const f5 Int)
-(assert (not (= (trace_timestamp (mk-trace_entry f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Int)
+(assert (not (= (trace_timestamp (mk-trace_entry f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

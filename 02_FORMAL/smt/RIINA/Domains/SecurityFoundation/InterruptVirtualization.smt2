@@ -64,7 +64,8 @@
 ; --- 5. VirtualMachine accessor round-trip: vm_id ---
 (push 1)
 (declare-const f0 VMId)
-(assert (not (= (vm_id (mk-virtual_machine f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (vm_id (mk-virtual_machine f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

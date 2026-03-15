@@ -149,7 +149,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 SessionType)
-(assert (not (= (chan_id (mk-channel f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (chan_id (mk-channel f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -157,7 +158,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 SessionType)
-(assert (not (= (chan_type (mk-channel f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (chan_type (mk-channel f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -166,7 +168,8 @@
 ; --- 20. ChannelPair accessor round-trip: endpoint_a ---
 (push 1)
 (declare-const f0 Channel)
-(assert (not (= (endpoint_a (mk-channel_pair f0)) f0)))
+(declare-const f1 Channel)
+(assert (not (= (endpoint_a (mk-channel_pair f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

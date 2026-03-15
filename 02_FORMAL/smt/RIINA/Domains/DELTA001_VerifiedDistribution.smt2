@@ -119,7 +119,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (entry_term (mk-log_entry f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (entry_term (mk-log_entry f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -127,7 +128,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (entry_index (mk-log_entry f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (entry_index (mk-log_entry f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -147,9 +149,10 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Role)
-(declare-const f3 Int)
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
-(assert (not (= (node_id (mk-raft_node f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Int)
+(assert (not (= (node_id (mk-raft_node f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -158,9 +161,10 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Role)
-(declare-const f3 Int)
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
-(assert (not (= (node_term (mk-raft_node f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Int)
+(assert (not (= (node_term (mk-raft_node f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -169,9 +173,10 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Role)
-(declare-const f3 Int)
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
-(assert (not (= (node_role (mk-raft_node f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Int)
+(assert (not (= (node_role (mk-raft_node f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -180,9 +185,10 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Role)
-(declare-const f3 Int)
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
-(assert (not (= (Seq (mk-raft_node f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Int)
+(assert (not (= (node_log (mk-raft_node f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -191,9 +197,10 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Role)
-(declare-const f3 Int)
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
-(assert (not (= (node_voted_for (mk-raft_node f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Int)
+(assert (not (= (node_voted_for (mk-raft_node f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -210,8 +217,9 @@
 
 ; --- 21. RaftCluster accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-raft_cluster f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (cluster_nodes (mk-raft_cluster f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -223,7 +231,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (bft_phase (mk-b_f_t_message f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (bft_phase (mk-bft_message f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -233,7 +242,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (bft_view (mk-b_f_t_message f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (bft_view (mk-bft_message f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -243,7 +253,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (bft_seq (mk-b_f_t_message f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (bft_seq (mk-bft_message f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -253,7 +264,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (bft_digest (mk-b_f_t_message f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (bft_digest (mk-bft_message f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -272,8 +284,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (bft_n (mk-b_f_t_state f0 f1 f2)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (bft_n (mk-bft_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -281,8 +294,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (bft_f (mk-b_f_t_state f0 f1 f2)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (bft_f (mk-bft_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -290,8 +304,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-b_f_t_state f0 f1 f2)) f2)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (bft_correct (mk-bft_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -308,8 +323,9 @@
 
 ; --- 31. HashRing accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-hash_ring f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (ring_nodes (mk-hash_ring f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

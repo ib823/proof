@@ -297,7 +297,8 @@
 (declare-const f0 CHDType)
 (declare-const f1 Int)
 (declare-const f2 EncState)
-(assert (not (= (chd_type (mk-c_h_d_record f0 f1 f2)) f0)))
+(declare-const f3 PANDisplay)
+(assert (not (= (chd_type (mk-chd_record f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -306,7 +307,8 @@
 (declare-const f0 CHDType)
 (declare-const f1 Int)
 (declare-const f2 EncState)
-(assert (not (= (chd_value (mk-c_h_d_record f0 f1 f2)) f1)))
+(declare-const f3 PANDisplay)
+(assert (not (= (chd_value (mk-chd_record f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -315,7 +317,8 @@
 (declare-const f0 CHDType)
 (declare-const f1 Int)
 (declare-const f2 EncState)
-(assert (not (= (chd_encryption (mk-c_h_d_record f0 f1 f2)) f2)))
+(declare-const f3 PANDisplay)
+(assert (not (= (chd_encryption (mk-chd_record f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -326,7 +329,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (key_id (mk-key_state f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (key_id (mk-key_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -335,7 +339,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (key_creation_time (mk-key_state f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (key_creation_time (mk-key_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -344,7 +349,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (key_rotation_period (mk-key_state f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (key_rotation_period (mk-key_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -366,7 +372,8 @@
 (declare-const f2 Int)
 (declare-const f3 CHDType)
 (declare-const f4 Bool)
-(assert (not (= (pci_timestamp (mk-p_c_i_audit f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Int)
+(assert (not (= (pci_timestamp (mk-pci_audit f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -377,7 +384,8 @@
 (declare-const f2 Int)
 (declare-const f3 CHDType)
 (declare-const f4 Bool)
-(assert (not (= (pci_user (mk-p_c_i_audit f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Int)
+(assert (not (= (pci_user (mk-pci_audit f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -388,7 +396,8 @@
 (declare-const f2 Int)
 (declare-const f3 CHDType)
 (declare-const f4 Bool)
-(assert (not (= (pci_action (mk-p_c_i_audit f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Int)
+(assert (not (= (pci_action (mk-pci_audit f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -399,7 +408,8 @@
 (declare-const f2 Int)
 (declare-const f3 CHDType)
 (declare-const f4 Bool)
-(assert (not (= (pci_chd_accessed (mk-p_c_i_audit f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Int)
+(assert (not (= (pci_chd_accessed (mk-pci_audit f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -410,7 +420,8 @@
 (declare-const f2 Int)
 (declare-const f3 CHDType)
 (declare-const f4 Bool)
-(assert (not (= (pci_success (mk-p_c_i_audit f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Int)
+(assert (not (= (pci_success (mk-pci_audit f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -427,17 +438,19 @@
 
 ; --- 49. TokenVault accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 KeyState)
-(assert (not (= (Seq (mk-token_vault f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (vault_tokens (mk-token_vault f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 50. TokenVault accessor round-trip: vault_key ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 KeyState)
-(assert (not (= (vault_key (mk-token_vault f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (vault_key (mk-token_vault f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -445,37 +458,40 @@
 
 ; --- 51. PCISystem accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-p_c_i_system f0 f1 f2)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 TokenVault)
+(assert (not (= (pci_chd_records (mk-pci_system f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 52. PCISystem accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-p_c_i_system f0 f1 f2)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 TokenVault)
+(assert (not (= (pci_audit_log (mk-pci_system f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 53. PCISystem accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-p_c_i_system f0 f1 f2)) f2)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 TokenVault)
+(assert (not (= (pci_keys (mk-pci_system f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 54. PCISystem: integer field consistency ---
 (push 1)
 (declare-const r PCISystem)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (pci_chd_records r)) 0))
+(assert (>= (seq.len (pci_chd_records r)) 0))
+(assert (not (>= (+ (seq.len (pci_chd_records r)) (seq.len (pci_chd_records r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -486,7 +502,8 @@
 (declare-const f0 Int)
 (declare-const f1 AccessLevel)
 (declare-const f2 Bool)
-(assert (not (= (user_id (mk-user f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (user_id (mk-user f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -495,7 +512,8 @@
 (declare-const f0 Int)
 (declare-const f1 AccessLevel)
 (declare-const f2 Bool)
-(assert (not (= (user_access_level (mk-user f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (user_access_level (mk-user f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -504,7 +522,8 @@
 (declare-const f0 Int)
 (declare-const f1 AccessLevel)
 (declare-const f2 Bool)
-(assert (not (= (user_mfa_enabled (mk-user f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (user_mfa_enabled (mk-user f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -514,7 +533,8 @@
 (push 1)
 (declare-const f0 TLSVersion)
 (declare-const f1 Bool)
-(assert (not (= (trans_tls_version (mk-transmission f0 f1)) f0)))
+(declare-const f2 CHDType)
+(assert (not (= (trans_tls_version (mk-transmission f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -522,7 +542,8 @@
 (push 1)
 (declare-const f0 TLSVersion)
 (declare-const f1 Bool)
-(assert (not (= (trans_encrypted (mk-transmission f0 f1)) f1)))
+(declare-const f2 CHDType)
+(assert (not (= (trans_encrypted (mk-transmission f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -531,7 +552,8 @@
 ; --- 60. RetentionPolicy accessor round-trip: retention_max_days ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (retention_max_days (mk-retention_policy f0)) f0)))
+(declare-const f1 Bool)
+(assert (not (= (retention_max_days (mk-retention_policy f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -542,7 +564,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (zone_id (mk-network_zone f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (zone_id (mk-network_zone f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -551,7 +574,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (zone_is_cde (mk-network_zone f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (zone_is_cde (mk-network_zone f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -560,7 +584,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (zone_isolated (mk-network_zone f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (zone_isolated (mk-network_zone f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

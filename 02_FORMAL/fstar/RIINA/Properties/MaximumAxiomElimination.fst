@@ -87,8 +87,8 @@ let rec is_value_b (p_e: expr) : Tot bool =
   | _ -> false
 
 (* Store types — abstract since store_lookup/store_ty_lookup are external *)
-assume type store : Type0
-assume type store_ty : Type0
+type store = list (nat * nat)
+type store_ty = list (nat * nat)
 
 (* store_empty (matches Coq: Definition store_empty) *)
 let store_empty : store = []

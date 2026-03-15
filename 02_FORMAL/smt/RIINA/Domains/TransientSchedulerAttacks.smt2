@@ -154,7 +154,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (ec_pid (mk-exec_context f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (ec_pid (mk-exec_context f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -164,7 +165,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (ec_priority (mk-exec_context f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (ec_priority (mk-exec_context f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -174,7 +176,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (ec_time_slice_us (mk-exec_context f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (ec_time_slice_us (mk-exec_context f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -184,7 +187,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (ec_preemptible (mk-exec_context f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (ec_preemptible (mk-exec_context f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -208,7 +212,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (tsa_constant_time_scheduling (mk-t_s_a_defense_config f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (tsa_constant_time_scheduling (mk-tsa_defense_config f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -221,7 +226,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (tsa_cache_partitioning (mk-t_s_a_defense_config f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (tsa_cache_partitioning (mk-tsa_defense_config f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -234,7 +240,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (tsa_preemption_hardening (mk-t_s_a_defense_config f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (tsa_preemption_hardening (mk-tsa_defense_config f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -247,7 +254,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (tsa_tlb_isolation (mk-t_s_a_defense_config f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (tsa_tlb_isolation (mk-tsa_defense_config f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -260,7 +268,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (tsa_ipi_constant_time (mk-t_s_a_defense_config f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (tsa_ipi_constant_time (mk-tsa_defense_config f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -312,7 +321,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sf_time_slice_consumed (mk-scheduler_footprint f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (sf_time_slice_consumed (mk-scheduler_footprint f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -321,7 +331,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sf_preemption_count (mk-scheduler_footprint f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (sf_preemption_count (mk-scheduler_footprint f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -330,7 +341,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sf_cache_sets_touched (mk-scheduler_footprint f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (sf_cache_sets_touched (mk-scheduler_footprint f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

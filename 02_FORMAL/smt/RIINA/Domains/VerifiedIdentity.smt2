@@ -169,7 +169,8 @@
 ; --- 16. Principal accessor round-trip: principal_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (principal_id (mk-principal f0)) f0)))
+(declare-const f1 String)
+(assert (not (= (principal_id (mk-principal f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -180,7 +181,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (memory_cost (mk-argon2_params f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (memory_cost (mk-argon2_params f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -189,7 +191,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (time_cost (mk-argon2_params f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (time_cost (mk-argon2_params f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -198,7 +201,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (parallelism (mk-argon2_params f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (parallelism (mk-argon2_params f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -215,26 +219,28 @@
 
 ; --- 21. Pepper accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (Seq (mk-pepper f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (pepper_value (mk-pepper f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 22. Pepper accessor round-trip: pepper_hsm_id ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (pepper_hsm_id (mk-pepper f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (pepper_hsm_id (mk-pepper f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 23. Pepper: integer field consistency ---
 (push 1)
 (declare-const r Pepper)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (pepper_value r)) 0))
 (assert (>= (pepper_hsm_id r) 0))
-(assert (not (>= (+ (Seq r) (pepper_hsm_id r)) 0)))
+(assert (not (>= (+ (seq.len (pepper_value r)) (pepper_hsm_id r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -245,7 +251,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (claim_sub (mk-token_claims f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (claim_sub (mk-token_claims f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -254,7 +261,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (claim_iat (mk-token_claims f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (claim_iat (mk-token_claims f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -263,7 +271,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (claim_exp (mk-token_claims f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (claim_exp (mk-token_claims f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -282,7 +291,8 @@
 (push 1)
 (declare-const f0 TokenClaims)
 (declare-const f1 ChannelBinding)
-(assert (not (= (token_claims (mk-bound_token f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (token_claims (mk-bound_token f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -290,7 +300,8 @@
 (push 1)
 (declare-const f0 TokenClaims)
 (declare-const f1 ChannelBinding)
-(assert (not (= (token_binding (mk-bound_token f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (token_binding (mk-bound_token f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -302,7 +313,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (session_id (mk-session f0 f1 f2 f3)) f0)))
+(declare-const f4 ChannelBinding)
+(assert (not (= (session_id (mk-session f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -312,7 +324,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (session_principal (mk-session f0 f1 f2 f3)) f1)))
+(declare-const f4 ChannelBinding)
+(assert (not (= (session_principal (mk-session f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -322,7 +335,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (session_created (mk-session f0 f1 f2 f3)) f2)))
+(declare-const f4 ChannelBinding)
+(assert (not (= (session_created (mk-session f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -332,7 +346,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (session_expires (mk-session f0 f1 f2 f3)) f3)))
+(declare-const f4 ChannelBinding)
+(assert (not (= (session_expires (mk-session f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -349,50 +364,54 @@
 
 ; --- 35. FIDO2Credential accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 String)
-(assert (not (= (Seq (mk-f_i_d_o2_credential f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (fido2_id (mk-fido2_credential f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 36. FIDO2Credential accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 String)
-(assert (not (= (Seq (mk-f_i_d_o2_credential f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (fido2_public_key (mk-fido2_credential f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 37. FIDO2Credential accessor round-trip: fido2_counter ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 String)
-(assert (not (= (fido2_counter (mk-f_i_d_o2_credential f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (fido2_counter (mk-fido2_credential f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 38. FIDO2Credential accessor round-trip: fido2_origin ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
 (declare-const f3 String)
-(assert (not (= (fido2_origin (mk-f_i_d_o2_credential f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (fido2_origin (mk-fido2_credential f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 39. FIDO2Credential: integer field consistency ---
 (push 1)
 (declare-const r FIDO2Credential)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (fido2_id r)) 0))
+(assert (>= (seq.len (fido2_id r)) 0))
+(assert (not (>= (+ (seq.len (fido2_id r)) (seq.len (fido2_id r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -400,65 +419,70 @@
 
 ; --- 40. FIDO2Assertion accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
 (declare-const f4 String)
-(assert (not (= (Seq (mk-f_i_d_o2_assertion f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (assertion_auth_data (mk-fido2_assertion f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 41. FIDO2Assertion accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
 (declare-const f4 String)
-(assert (not (= (Seq (mk-f_i_d_o2_assertion f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (assertion_client_data (mk-fido2_assertion f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 42. FIDO2Assertion accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
 (declare-const f4 String)
-(assert (not (= (Seq (mk-f_i_d_o2_assertion f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (assertion_signature (mk-fido2_assertion f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 43. FIDO2Assertion accessor round-trip: assertion_counter ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
 (declare-const f4 String)
-(assert (not (= (assertion_counter (mk-f_i_d_o2_assertion f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (assertion_counter (mk-fido2_assertion f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 44. FIDO2Assertion accessor round-trip: assertion_origin ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
 (declare-const f3 Int)
 (declare-const f4 String)
-(assert (not (= (assertion_origin (mk-f_i_d_o2_assertion f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (assertion_origin (mk-fido2_assertion f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 45. FIDO2Assertion: integer field consistency ---
 (push 1)
 (declare-const r FIDO2Assertion)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (assertion_auth_data r)) 0))
+(assert (>= (seq.len (assertion_auth_data r)) 0))
+(assert (not (>= (+ (seq.len (assertion_auth_data r)) (seq.len (assertion_auth_data r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -469,7 +493,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (log_principal (mk-auth_log f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(assert (not (= (log_principal (mk-auth_log f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -478,7 +503,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (log_timestamp (mk-auth_log f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(assert (not (= (log_timestamp (mk-auth_log f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -487,7 +513,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (log_success (mk-auth_log f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(assert (not (= (log_success (mk-auth_log f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -507,7 +534,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rate_attempts (mk-rate_limit_state f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (rate_attempts (mk-rate_limit_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -516,7 +544,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rate_window_start (mk-rate_limit_state f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (rate_window_start (mk-rate_limit_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -525,7 +554,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (rate_max_attempts (mk-rate_limit_state f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (rate_max_attempts (mk-rate_limit_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -542,8 +572,9 @@
 
 ; --- 54. Adversary accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-adversary f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(assert (not (= (adv_known_keys (mk-adversary f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -551,8 +582,9 @@
 
 ; --- 55. MFAConfig accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-m_f_a_config f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (mfa_factors (mk-mfa_config f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

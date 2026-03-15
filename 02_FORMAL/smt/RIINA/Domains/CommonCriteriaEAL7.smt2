@@ -224,7 +224,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (spm_subjects (mk-security_policy_model f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Int)
+(assert (not (= (spm_subjects (mk-security_policy_model f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -235,7 +236,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (spm_objects (mk-security_policy_model f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Int)
+(assert (not (= (spm_objects (mk-security_policy_model f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -246,7 +248,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (spm_operations (mk-security_policy_model f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Int)
+(assert (not (= (spm_operations (mk-security_policy_model f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -257,7 +260,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (spm_security_attributes (mk-security_policy_model f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Int)
+(assert (not (= (spm_security_attributes (mk-security_policy_model f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -268,7 +272,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (spm_access_control (mk-security_policy_model f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Int)
+(assert (not (= (spm_access_control (mk-security_policy_model f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -287,9 +292,10 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 SecurityPolicyModel)
-(assert (not (= (toe_boundary_defined (mk-t_o_e_configuration f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (toe_boundary_defined (mk-toe_configuration f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -297,9 +303,10 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 SecurityPolicyModel)
-(assert (not (= (toe_interfaces_specified (mk-t_o_e_configuration f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (toe_interfaces_specified (mk-toe_configuration f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -307,9 +314,10 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 SecurityPolicyModel)
-(assert (not (= (Seq (mk-t_o_e_configuration f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (toe_security_functions (mk-toe_configuration f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -317,9 +325,10 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(declare-const f2 Int)
+(declare-const f2 (Seq Int))
 (declare-const f3 SecurityPolicyModel)
-(assert (not (= (toe_security_policy (mk-t_o_e_configuration f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (toe_security_policy (mk-toe_configuration f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -340,7 +349,8 @@
 (declare-const f10 Bool)
 (declare-const f11 Bool)
 (declare-const f12 Bool)
-(assert (not (= (adv_arc_complete (mk-development_assurance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f0)))
+(declare-const f13 Bool)
+(assert (not (= (adv_arc_complete (mk-development_assurance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -359,7 +369,8 @@
 (declare-const f10 Bool)
 (declare-const f11 Bool)
 (declare-const f12 Bool)
-(assert (not (= (adv_arc_modular (mk-development_assurance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f1)))
+(declare-const f13 Bool)
+(assert (not (= (adv_arc_modular (mk-development_assurance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -378,7 +389,8 @@
 (declare-const f10 Bool)
 (declare-const f11 Bool)
 (declare-const f12 Bool)
-(assert (not (= (adv_arc_non_bypassable (mk-development_assurance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f2)))
+(declare-const f13 Bool)
+(assert (not (= (adv_arc_non_bypassable (mk-development_assurance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -397,7 +409,8 @@
 (declare-const f10 Bool)
 (declare-const f11 Bool)
 (declare-const f12 Bool)
-(assert (not (= (adv_arc_tamper_proof (mk-development_assurance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f3)))
+(declare-const f13 Bool)
+(assert (not (= (adv_arc_tamper_proof (mk-development_assurance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -416,7 +429,8 @@
 (declare-const f10 Bool)
 (declare-const f11 Bool)
 (declare-const f12 Bool)
-(assert (not (= (adv_arc_domain_sep (mk-development_assurance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f4)))
+(declare-const f13 Bool)
+(assert (not (= (adv_arc_domain_sep (mk-development_assurance f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -472,7 +486,8 @@
 ; --- 44. GuidanceAssurance accessor round-trip: agd_ope_complete ---
 (push 1)
 (declare-const f0 Bool)
-(assert (not (= (agd_ope_complete (mk-guidance_assurance f0)) f0)))
+(declare-const f1 Bool)
+(assert (not (= (agd_ope_complete (mk-guidance_assurance f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -487,7 +502,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (alc_cmc_automated (mk-lifecycle_assurance f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (alc_cmc_automated (mk-lifecycle_assurance f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -500,7 +516,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (alc_cmc_coverage (mk-lifecycle_assurance f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (alc_cmc_coverage (mk-lifecycle_assurance f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -513,7 +530,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (alc_cms_tracking (mk-lifecycle_assurance f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (alc_cms_tracking (mk-lifecycle_assurance f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -526,7 +544,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (alc_del_secure (mk-lifecycle_assurance f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (alc_del_secure (mk-lifecycle_assurance f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -539,7 +558,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (alc_dvs_sufficient (mk-lifecycle_assurance f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (alc_dvs_sufficient (mk-lifecycle_assurance f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -594,7 +614,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (ase_ccl_conformant (mk-security_target_assurance f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (ase_ccl_conformant (mk-security_target_assurance f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -606,7 +627,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (ase_ecd_complete (mk-security_target_assurance f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (ase_ecd_complete (mk-security_target_assurance f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -618,7 +640,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (ase_int_complete (mk-security_target_assurance f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (ase_int_complete (mk-security_target_assurance f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -630,7 +653,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (ase_obj_complete (mk-security_target_assurance f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (ase_obj_complete (mk-security_target_assurance f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -642,7 +666,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (ase_req_complete (mk-security_target_assurance f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (ase_req_complete (mk-security_target_assurance f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -693,7 +718,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ate_cov_complete (mk-test_assurance f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ate_cov_complete (mk-test_assurance f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -702,7 +728,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ate_dpt_sufficient (mk-test_assurance f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ate_dpt_sufficient (mk-test_assurance f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -711,7 +738,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ate_fun_complete (mk-test_assurance f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ate_fun_complete (mk-test_assurance f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -760,7 +788,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ava_van_basic (mk-vulnerability_assurance f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (ava_van_basic (mk-vulnerability_assurance f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -770,7 +799,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ava_van_focused (mk-vulnerability_assurance f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (ava_van_focused (mk-vulnerability_assurance f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -780,7 +810,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ava_van_methodical (mk-vulnerability_assurance f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (ava_van_methodical (mk-vulnerability_assurance f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -790,7 +821,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ava_van_advanced (mk-vulnerability_assurance f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (ava_van_advanced (mk-vulnerability_assurance f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -841,7 +873,8 @@
 (declare-const f2 LifecycleAssurance)
 (declare-const f3 SecurityTargetAssurance)
 (declare-const f4 TestAssurance)
-(assert (not (= (eal7_adv (mk-e_a_l7_package f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 VulnerabilityAssurance)
+(assert (not (= (eal7_adv (mk-eal7_package f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -852,7 +885,8 @@
 (declare-const f2 LifecycleAssurance)
 (declare-const f3 SecurityTargetAssurance)
 (declare-const f4 TestAssurance)
-(assert (not (= (eal7_agd (mk-e_a_l7_package f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 VulnerabilityAssurance)
+(assert (not (= (eal7_agd (mk-eal7_package f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -863,7 +897,8 @@
 (declare-const f2 LifecycleAssurance)
 (declare-const f3 SecurityTargetAssurance)
 (declare-const f4 TestAssurance)
-(assert (not (= (eal7_alc (mk-e_a_l7_package f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 VulnerabilityAssurance)
+(assert (not (= (eal7_alc (mk-eal7_package f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -874,7 +909,8 @@
 (declare-const f2 LifecycleAssurance)
 (declare-const f3 SecurityTargetAssurance)
 (declare-const f4 TestAssurance)
-(assert (not (= (eal7_ase (mk-e_a_l7_package f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 VulnerabilityAssurance)
+(assert (not (= (eal7_ase (mk-eal7_package f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -885,7 +921,8 @@
 (declare-const f2 LifecycleAssurance)
 (declare-const f3 SecurityTargetAssurance)
 (declare-const f4 TestAssurance)
-(assert (not (= (eal7_ate (mk-e_a_l7_package f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 VulnerabilityAssurance)
+(assert (not (= (eal7_ate (mk-eal7_package f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -895,7 +932,8 @@
 (push 1)
 (declare-const f0 SecurityLabel)
 (declare-const f1 SecurityLabel)
-(assert (not (= (ctx_clearance (mk-security_context f0 f1)) f0)))
+(declare-const f2 SecurityLabel)
+(assert (not (= (ctx_clearance (mk-security_context f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -903,7 +941,8 @@
 (push 1)
 (declare-const f0 SecurityLabel)
 (declare-const f1 SecurityLabel)
-(assert (not (= (ctx_current_label (mk-security_context f0 f1)) f1)))
+(declare-const f2 SecurityLabel)
+(assert (not (= (ctx_current_label (mk-security_context f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

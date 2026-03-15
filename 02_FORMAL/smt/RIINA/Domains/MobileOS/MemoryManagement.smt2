@@ -200,7 +200,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (total_memory (mk-system_memory f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(assert (not (= (total_memory (mk-system_memory f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -209,7 +210,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (used_memory (mk-system_memory f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(assert (not (= (used_memory (mk-system_memory f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -218,7 +220,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (reserved_memory (mk-system_memory f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(assert (not (= (reserved_memory (mk-system_memory f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -82,7 +82,8 @@
 ; --- 6. Share accessor round-trip: share_x ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (share_x (mk-share f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (share_x (mk-share f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -92,7 +93,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (tp_n (mk-threshold_policy f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (tp_n (mk-threshold_policy f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -100,7 +102,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (tp_m (mk-threshold_policy f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (tp_m (mk-threshold_policy f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -120,7 +123,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (dr_silent_alert (mk-duress_response f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (dr_silent_alert (mk-duress_response f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -129,7 +133,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (dr_fake_access (mk-duress_response f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (dr_fake_access (mk-duress_response f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -138,7 +143,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (dr_real_lockdown (mk-duress_response f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (dr_real_lockdown (mk-duress_response f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -186,7 +192,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (dms_last_checkin (mk-dead_man_switch f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (dms_last_checkin (mk-dead_man_switch f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -195,7 +202,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (dms_timeout (mk-dead_man_switch f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (dms_timeout (mk-dead_man_switch f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -204,7 +212,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (dms_triggered (mk-dead_man_switch f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (dms_triggered (mk-dead_man_switch f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -225,7 +234,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ib_max_bytes (mk-insider_budget f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (ib_max_bytes (mk-insider_budget f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -235,7 +245,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ib_max_queries (mk-insider_budget f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (ib_max_queries (mk-insider_budget f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -245,7 +256,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ib_bytes_used (mk-insider_budget f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (ib_bytes_used (mk-insider_budget f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -255,7 +267,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ib_queries_used (mk-insider_budget f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (ib_queries_used (mk-insider_budget f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -276,7 +289,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ae_timestamp (mk-audit_entry f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (ae_timestamp (mk-audit_entry f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -286,7 +300,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ae_actor (mk-audit_entry f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (ae_actor (mk-audit_entry f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -296,7 +311,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ae_action (mk-audit_entry f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (ae_action (mk-audit_entry f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -306,7 +322,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (ae_data_hash (mk-audit_entry f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (ae_data_hash (mk-audit_entry f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -325,7 +342,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (plat_vendor (mk-platform f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (plat_vendor (mk-platform f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -333,7 +351,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (plat_arch (mk-platform f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (plat_arch (mk-platform f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -353,7 +372,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tl_operation (mk-time_lock f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (tl_operation (mk-time_lock f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -362,7 +382,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tl_submit_time (mk-time_lock f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (tl_submit_time (mk-time_lock f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -371,7 +392,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (tl_execute_time (mk-time_lock f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (tl_execute_time (mk-time_lock f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -190,16 +190,18 @@
 ; --- 17. Rec_Module accessor round-trip: mod_path ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (mod_path (mk-rec__module f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (mod_path (mk-module f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 18. Rec_Module accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-rec__module f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (mod_items (mk-module f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -207,8 +209,8 @@
 (push 1)
 (declare-const r Rec_Module)
 (assert (>= (mod_path r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (mod_path r) (Seq r)) 0)))
+(assert (>= (seq.len (mod_items r)) 0))
+(assert (not (>= (+ (mod_path r) (seq.len (mod_items r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -217,7 +219,8 @@
 ; --- 20. Rec_Crate accessor round-trip: crate_name ---
 (push 1)
 (declare-const f0 String)
-(assert (not (= (crate_name (mk-rec__crate f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (crate_name (mk-crate f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -225,8 +228,9 @@
 
 ; --- 21. Signature accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-signature f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(assert (not (= (sig_types (mk-signature f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -236,7 +240,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (major (mk-version f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (major (mk-version f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -244,7 +249,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (minor (mk-version f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (minor (mk-version f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -263,7 +269,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 Version)
-(assert (not (= (dep_name (mk-dependency f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (dep_name (mk-dependency f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -271,7 +278,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 Version)
-(assert (not (= (dep_version (mk-dependency f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (dep_version (mk-dependency f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -280,7 +288,8 @@
 ; --- 27. ImportContext accessor round-trip: import_source ---
 (push 1)
 (declare-const f0 Rec_Module)
-(assert (not (= (import_source (mk-import_context f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (import_source (mk-import_context f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -290,7 +299,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 Int)
-(assert (not (= (abs_name (mk-abstract_type f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (abs_name (mk-abstract_type f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -298,7 +308,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 Int)
-(assert (not (= (abs_repr (mk-abstract_type f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (abs_repr (mk-abstract_type f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -307,7 +318,8 @@
 ; --- 30. SealedTrait accessor round-trip: sealed_name ---
 (push 1)
 (declare-const f0 String)
-(assert (not (= (sealed_name (mk-sealed_trait f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (sealed_name (mk-sealed_trait f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -316,27 +328,30 @@
 ; --- 31. InterfaceFile accessor round-trip: iface_module ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (iface_module (mk-interface_file f0 f1 f2)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (iface_module (mk-interface_file f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 32. InterfaceFile accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-interface_file f0 f1 f2)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (iface_public_types (mk-interface_file f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 33. InterfaceFile accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-interface_file f0 f1 f2)) f2)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (iface_public_fns (mk-interface_file f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -344,8 +359,8 @@
 (push 1)
 (declare-const r InterfaceFile)
 (assert (>= (iface_module r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (iface_module r) (Seq r)) 0)))
+(assert (>= (seq.len (iface_public_types r)) 0))
+(assert (not (>= (+ (iface_module r) (seq.len (iface_public_types r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -355,7 +370,8 @@
 (push 1)
 (declare-const f0 Rec_Module)
 (declare-const f1 Int)
-(assert (not (= (cu_module (mk-compilation_unit f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (cu_module (mk-compilation_unit f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -363,7 +379,8 @@
 (push 1)
 (declare-const f0 Rec_Module)
 (declare-const f1 Int)
-(assert (not (= (cu_hash (mk-compilation_unit f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (cu_hash (mk-compilation_unit f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -373,7 +390,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 Version)
-(assert (not (= (pkg_name (mk-package f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (pkg_name (mk-package f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -381,7 +399,8 @@
 (push 1)
 (declare-const f0 String)
 (declare-const f1 Version)
-(assert (not (= (pkg_version (mk-package f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (pkg_version (mk-package f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -390,7 +409,8 @@
 ; --- 39. CapabilityReq accessor round-trip: cap_name ---
 (push 1)
 (declare-const f0 String)
-(assert (not (= (cap_name (mk-capability_req f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (cap_name (mk-capability_req f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -400,7 +420,8 @@
 (push 1)
 (declare-const f0 Rec_Module)
 (declare-const f1 Rec_Module)
-(assert (not (= (reexp_source (mk-re_export f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (reexp_source (mk-re_export f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -408,7 +429,8 @@
 (push 1)
 (declare-const f0 Rec_Module)
 (declare-const f1 Rec_Module)
-(assert (not (= (reexp_target (mk-re_export f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (reexp_target (mk-re_export f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -417,7 +439,8 @@
 ; --- 42. CapabilityScope accessor round-trip: scope_cap ---
 (push 1)
 (declare-const f0 CapabilityReq)
-(assert (not (= (scope_cap (mk-capability_scope f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (scope_cap (mk-capability_scope f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -428,7 +451,8 @@
 (declare-const f0 String)
 (declare-const f1 String)
 (declare-const f2 String)
-(assert (not (= (assoc_trait (mk-assoc_type_mapping f0 f1 f2)) f0)))
+(declare-const f3 String)
+(assert (not (= (assoc_trait (mk-assoc_type_mapping f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -437,7 +461,8 @@
 (declare-const f0 String)
 (declare-const f1 String)
 (declare-const f2 String)
-(assert (not (= (assoc_impl (mk-assoc_type_mapping f0 f1 f2)) f1)))
+(declare-const f3 String)
+(assert (not (= (assoc_impl (mk-assoc_type_mapping f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -446,7 +471,8 @@
 (declare-const f0 String)
 (declare-const f1 String)
 (declare-const f2 String)
-(assert (not (= (assoc_type_name (mk-assoc_type_mapping f0 f1 f2)) f2)))
+(declare-const f3 String)
+(assert (not (= (assoc_type_name (mk-assoc_type_mapping f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -455,7 +481,8 @@
 ; --- 46. EffectSig accessor round-trip: effect_name ---
 (push 1)
 (declare-const f0 String)
-(assert (not (= (effect_name (mk-effect_sig f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (effect_name (mk-effect_sig f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -464,7 +491,8 @@
 ; --- 47. StaticInit accessor round-trip: si_module ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (si_module (mk-static_init f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (si_module (mk-static_init f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -473,16 +501,18 @@
 ; --- 48. SecureInit accessor round-trip: sec_init_module ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (sec_init_module (mk-secure_init f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (sec_init_module (mk-secure_init f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 49. SecureInit accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-secure_init f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (sec_init_cap_required (mk-secure_init f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -490,8 +520,8 @@
 (push 1)
 (declare-const r SecureInit)
 (assert (>= (sec_init_module r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (sec_init_module r) (Seq r)) 0)))
+(assert (>= (seq.len (sec_init_cap_required r)) 0))
+(assert (not (>= (+ (sec_init_module r) (seq.len (sec_init_cap_required r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

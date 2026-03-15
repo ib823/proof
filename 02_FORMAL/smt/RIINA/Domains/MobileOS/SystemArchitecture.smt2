@@ -290,7 +290,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (process_id (mk-process f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (process_id (mk-process f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -298,7 +299,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (process_memory_region (mk-process f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (process_memory_region (mk-process f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -502,7 +504,10 @@
 ; --- 49. SchedulerState accessor round-trip: sched_running_pid ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (sched_running_pid (mk-scheduler_state f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(assert (not (= (sched_running_pid (mk-scheduler_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

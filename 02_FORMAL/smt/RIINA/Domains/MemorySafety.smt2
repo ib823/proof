@@ -219,7 +219,8 @@
 (declare-const f0 AllocState)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (mr_alloc_state (mk-memory_region f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (mr_alloc_state (mk-memory_region f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -228,7 +229,8 @@
 (declare-const f0 AllocState)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (mr_size (mk-memory_region f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (mr_size (mk-memory_region f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -237,7 +239,8 @@
 (declare-const f0 AllocState)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (mr_initialized (mk-memory_region f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (mr_initialized (mk-memory_region f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -247,7 +250,8 @@
 (push 1)
 (declare-const f0 PointerValidity)
 (declare-const f1 Int)
-(assert (not (= (ptr_validity (mk-pointer f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (ptr_validity (mk-pointer f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -255,7 +259,8 @@
 (push 1)
 (declare-const f0 PointerValidity)
 (declare-const f1 Int)
-(assert (not (= (ptr_offset (mk-pointer f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (ptr_offset (mk-pointer f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -266,7 +271,8 @@
 (declare-const f0 MemoryRegion)
 (declare-const f1 SecurityDomain)
 (declare-const f2 AccessPermission)
-(assert (not (= (smr_base (mk-secure_memory_region f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (smr_base (mk-secure_memory_region f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -275,7 +281,8 @@
 (declare-const f0 MemoryRegion)
 (declare-const f1 SecurityDomain)
 (declare-const f2 AccessPermission)
-(assert (not (= (smr_domain (mk-secure_memory_region f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (smr_domain (mk-secure_memory_region f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -284,7 +291,8 @@
 (declare-const f0 MemoryRegion)
 (declare-const f1 SecurityDomain)
 (declare-const f2 AccessPermission)
-(assert (not (= (smr_permission (mk-secure_memory_region f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (smr_permission (mk-secure_memory_region f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -294,7 +302,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (uaf_lifetime_tracking (mk-use_after_free_guard f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (uaf_lifetime_tracking (mk-use_after_free_guard f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -302,7 +311,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (uaf_ownership_clear (mk-use_after_free_guard f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (uaf_ownership_clear (mk-use_after_free_guard f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -340,7 +350,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (df_state_tracking (mk-double_free_guard f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (df_state_tracking (mk-double_free_guard f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -348,7 +359,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (df_single_owner (mk-double_free_guard f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (df_single_owner (mk-double_free_guard f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -386,7 +398,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (nd_null_check (mk-null_deref_guard f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (nd_null_check (mk-null_deref_guard f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -394,7 +407,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (nd_option_types (mk-null_deref_guard f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (nd_option_types (mk-null_deref_guard f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -432,7 +446,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (bg_bounds_check (mk-bounds_guard f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (bg_bounds_check (mk-bounds_guard f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -440,7 +455,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (bg_fat_pointers (mk-bounds_guard f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (bg_fat_pointers (mk-bounds_guard f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -479,7 +495,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sg_canary_enabled (mk-stack_guard f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (sg_canary_enabled (mk-stack_guard f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -488,7 +505,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sg_return_addr_protected (mk-stack_guard f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (sg_return_addr_protected (mk-stack_guard f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -497,7 +515,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sg_frame_isolation (mk-stack_guard f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (sg_frame_isolation (mk-stack_guard f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -545,7 +564,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (hg_allocation_tracking (mk-heap_guard f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (hg_allocation_tracking (mk-heap_guard f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -554,7 +574,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (hg_deallocation_check (mk-heap_guard f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (hg_deallocation_check (mk-heap_guard f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -563,7 +584,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (hg_fragmentation_prevention (mk-heap_guard f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (hg_fragmentation_prevention (mk-heap_guard f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -611,7 +633,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ig_domain_separation (mk-isolation_guard f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ig_domain_separation (mk-isolation_guard f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -620,7 +643,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ig_permission_enforcement (mk-isolation_guard f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ig_permission_enforcement (mk-isolation_guard f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -629,7 +653,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ig_cross_domain_check (mk-isolation_guard f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ig_cross_domain_check (mk-isolation_guard f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -680,7 +705,8 @@
 (declare-const f3 BoundsGuard)
 (declare-const f4 StackGuard)
 (declare-const f5 HeapGuard)
-(assert (not (= (ms_uaf (mk-memory_safety_config f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 IsolationGuard)
+(assert (not (= (ms_uaf (mk-memory_safety_config f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -692,7 +718,8 @@
 (declare-const f3 BoundsGuard)
 (declare-const f4 StackGuard)
 (declare-const f5 HeapGuard)
-(assert (not (= (ms_df (mk-memory_safety_config f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 IsolationGuard)
+(assert (not (= (ms_df (mk-memory_safety_config f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -704,7 +731,8 @@
 (declare-const f3 BoundsGuard)
 (declare-const f4 StackGuard)
 (declare-const f5 HeapGuard)
-(assert (not (= (ms_nd (mk-memory_safety_config f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 IsolationGuard)
+(assert (not (= (ms_nd (mk-memory_safety_config f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -716,7 +744,8 @@
 (declare-const f3 BoundsGuard)
 (declare-const f4 StackGuard)
 (declare-const f5 HeapGuard)
-(assert (not (= (ms_bounds (mk-memory_safety_config f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 IsolationGuard)
+(assert (not (= (ms_bounds (mk-memory_safety_config f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -728,7 +757,8 @@
 (declare-const f3 BoundsGuard)
 (declare-const f4 StackGuard)
 (declare-const f5 HeapGuard)
-(assert (not (= (ms_stack (mk-memory_safety_config f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 IsolationGuard)
+(assert (not (= (ms_stack (mk-memory_safety_config f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

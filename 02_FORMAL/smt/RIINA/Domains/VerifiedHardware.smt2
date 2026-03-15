@@ -193,7 +193,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (regs (mk-arch_state f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (regs (mk-arch_state f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -203,7 +204,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (mem (mk-arch_state f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (mem (mk-arch_state f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -213,7 +215,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (pc (mk-arch_state f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (pc (mk-arch_state f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -223,7 +226,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (security_labels (mk-arch_state f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (security_labels (mk-arch_state f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -242,7 +246,8 @@
 (push 1)
 (declare-const f0 PipelineStage)
 (declare-const f1 Instruction)
-(assert (not (= (pe_stage (mk-pipeline_entry f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (pe_stage (mk-pipeline_entry f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -250,7 +255,8 @@
 (push 1)
 (declare-const f0 PipelineStage)
 (declare-const f1 Instruction)
-(assert (not (= (pe_instr (mk-pipeline_entry f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (pe_instr (mk-pipeline_entry f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -261,13 +267,14 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(declare-const f3 Int)
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (rtl_regs (mk-r_t_l_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
+(declare-const f9 Bool)
+(assert (not (= (rtl_regs (mk-rtl_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -276,13 +283,14 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(declare-const f3 Int)
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (rtl_mem (mk-r_t_l_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
+(declare-const f9 Bool)
+(assert (not (= (rtl_mem (mk-rtl_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -291,13 +299,14 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(declare-const f3 Int)
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (rtl_pc (mk-r_t_l_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
+(declare-const f9 Bool)
+(assert (not (= (rtl_pc (mk-rtl_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -306,13 +315,14 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(declare-const f3 Int)
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (Seq (mk-r_t_l_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
+(declare-const f9 Bool)
+(assert (not (= (rtl_pipeline (mk-rtl_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -321,13 +331,14 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(declare-const f3 Int)
+(declare-const f3 (Seq Int))
 (declare-const f4 Int)
 (declare-const f5 Int)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (rtl_cycle (mk-r_t_l_state f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
+(declare-const f9 Bool)
+(assert (not (= (rtl_cycle (mk-rtl_state f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -346,7 +357,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (ecc_data (mk-e_c_c_word f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (ecc_data (mk-ecc_word f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -354,7 +366,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (ecc_syndrome (mk-e_c_c_word f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (ecc_syndrome (mk-ecc_word f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -373,7 +386,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (chk_regs (mk-checkpoint f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (chk_regs (mk-checkpoint f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -381,7 +395,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (chk_pc (mk-checkpoint f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (chk_pc (mk-checkpoint f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -401,7 +416,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (tamper_seal_intact (mk-tamper_state f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (tamper_seal_intact (mk-tamper_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -410,7 +426,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (tamper_mesh_intact (mk-tamper_state f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (tamper_mesh_intact (mk-tamper_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -419,7 +436,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (tamper_voltage_ok (mk-tamper_state f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (tamper_voltage_ok (mk-tamper_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

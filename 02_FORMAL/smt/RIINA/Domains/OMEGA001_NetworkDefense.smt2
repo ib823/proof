@@ -121,7 +121,11 @@
 ; --- 12. NetCapability accessor round-trip: cap_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (cap_id (mk-net_capability f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(declare-const f4 Int)
+(assert (not (= (cap_id (mk-net_capability f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

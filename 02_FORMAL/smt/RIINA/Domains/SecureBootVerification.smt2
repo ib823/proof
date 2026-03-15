@@ -116,7 +116,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (hash_algorithm (mk-hash_value f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (hash_algorithm (mk-hash_value f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -124,7 +125,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (hash_length (mk-hash_value f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (hash_length (mk-hash_value f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -144,7 +146,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (sig_algorithm (mk-signature f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (sig_algorithm (mk-signature f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -153,7 +156,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (sig_key_id (mk-signature f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (sig_key_id (mk-signature f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -162,7 +166,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (sig_valid (mk-signature f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (sig_valid (mk-signature f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -183,7 +188,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (pk_id (mk-public_key f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (pk_id (mk-public_key f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -193,7 +199,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (pk_algorithm (mk-public_key f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (pk_algorithm (mk-public_key f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -203,7 +210,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (pk_revoked (mk-public_key f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (pk_revoked (mk-public_key f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -213,7 +221,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (pk_expired (mk-public_key f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (pk_expired (mk-public_key f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -233,7 +242,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (rom_hash_verified (mk-boot_r_o_m f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (rom_hash_verified (mk-boot_rom f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -242,7 +252,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (rom_fused (mk-boot_r_o_m f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (rom_fused (mk-boot_rom f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -251,7 +262,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (rom_contains_root_key (mk-boot_r_o_m f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (rom_contains_root_key (mk-boot_rom f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -300,7 +312,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 HashValue)
-(assert (not (= (bl_signature (mk-bootloader f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (bl_signature (mk-bootloader f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -310,7 +323,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 HashValue)
-(assert (not (= (bl_version (mk-bootloader f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (bl_version (mk-bootloader f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -320,7 +334,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 HashValue)
-(assert (not (= (bl_min_version (mk-bootloader f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (bl_min_version (mk-bootloader f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -330,7 +345,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 HashValue)
-(assert (not (= (bl_hash (mk-bootloader f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (bl_hash (mk-bootloader f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -352,7 +368,8 @@
 (declare-const f2 Int)
 (declare-const f3 HashValue)
 (declare-const f4 Bool)
-(assert (not (= (kern_signature (mk-kernel f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (kern_signature (mk-kernel f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -363,7 +380,8 @@
 (declare-const f2 Int)
 (declare-const f3 HashValue)
 (declare-const f4 Bool)
-(assert (not (= (kern_version (mk-kernel f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (kern_version (mk-kernel f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -374,7 +392,8 @@
 (declare-const f2 Int)
 (declare-const f3 HashValue)
 (declare-const f4 Bool)
-(assert (not (= (kern_min_version (mk-kernel f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (kern_min_version (mk-kernel f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -385,7 +404,8 @@
 (declare-const f2 Int)
 (declare-const f3 HashValue)
 (declare-const f4 Bool)
-(assert (not (= (kern_hash (mk-kernel f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (kern_hash (mk-kernel f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -396,7 +416,8 @@
 (declare-const f2 Int)
 (declare-const f3 HashValue)
 (declare-const f4 Bool)
-(assert (not (= (kern_verified (mk-kernel f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (kern_verified (mk-kernel f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -415,7 +436,8 @@
 (push 1)
 (declare-const f0 Signature)
 (declare-const f1 HashValue)
-(assert (not (= (initrd_signature (mk-initramfs f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (initrd_signature (mk-initramfs f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -423,7 +445,8 @@
 (push 1)
 (declare-const f0 Signature)
 (declare-const f1 HashValue)
-(assert (not (= (initrd_hash (mk-initramfs f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (initrd_hash (mk-initramfs f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -434,7 +457,8 @@
 (declare-const f0 Signature)
 (declare-const f1 HashValue)
 (declare-const f2 Bool)
-(assert (not (= (app_signature (mk-app_module f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (app_signature (mk-app_module f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -443,7 +467,8 @@
 (declare-const f0 Signature)
 (declare-const f1 HashValue)
 (declare-const f2 Bool)
-(assert (not (= (app_hash (mk-app_module f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (app_hash (mk-app_module f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -452,7 +477,8 @@
 (declare-const f0 Signature)
 (declare-const f1 HashValue)
 (declare-const f2 Bool)
-(assert (not (= (app_verified (mk-app_module f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (app_verified (mk-app_module f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -463,7 +489,8 @@
 (declare-const f0 BootROM)
 (declare-const f1 Bootloader)
 (declare-const f2 Kernel)
-(assert (not (= (bc_rom (mk-boot_chain f0 f1 f2)) f0)))
+(declare-const f3 Initramfs)
+(assert (not (= (bc_rom (mk-boot_chain f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -472,7 +499,8 @@
 (declare-const f0 BootROM)
 (declare-const f1 Bootloader)
 (declare-const f2 Kernel)
-(assert (not (= (bc_bootloader (mk-boot_chain f0 f1 f2)) f1)))
+(declare-const f3 Initramfs)
+(assert (not (= (bc_bootloader (mk-boot_chain f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -481,7 +509,8 @@
 (declare-const f0 BootROM)
 (declare-const f1 Bootloader)
 (declare-const f2 Kernel)
-(assert (not (= (bc_kernel (mk-boot_chain f0 f1 f2)) f2)))
+(declare-const f3 Initramfs)
+(assert (not (= (bc_kernel (mk-boot_chain f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -492,7 +521,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (pcr_index (mk-p_c_r_value f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (pcr_index (mk-pcr_value f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -501,7 +531,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (pcr_value (mk-p_c_r_value f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (pcr_value (mk-pcr_value f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -510,7 +541,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (pcr_extended (mk-p_c_r_value f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (pcr_extended (mk-pcr_value f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -530,8 +562,9 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(declare-const f3 Int)
-(assert (not (= (tpm_enabled (mk-t_p_m_state f0 f1 f2 f3)) f0)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (tpm_enabled (mk-tpm_state f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -540,8 +573,9 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(declare-const f3 Int)
-(assert (not (= (tpm_activated (mk-t_p_m_state f0 f1 f2 f3)) f1)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (tpm_activated (mk-tpm_state f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -550,8 +584,9 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(declare-const f3 Int)
-(assert (not (= (tpm_owned (mk-t_p_m_state f0 f1 f2 f3)) f2)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (tpm_owned (mk-tpm_state f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -560,8 +595,9 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(declare-const f3 Int)
-(assert (not (= (Seq (mk-t_p_m_state f0 f1 f2 f3)) f3)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (tpm_pcrs (mk-tpm_state f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -572,7 +608,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 HashValue)
-(assert (not (= (meas_pcr_index (mk-measurement_event f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (meas_pcr_index (mk-measurement_event f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -581,7 +618,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 HashValue)
-(assert (not (= (meas_event_type (mk-measurement_event f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (meas_event_type (mk-measurement_event f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -590,7 +628,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 HashValue)
-(assert (not (= (meas_hash (mk-measurement_event f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (meas_hash (mk-measurement_event f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -610,7 +649,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Signature)
-(assert (not (= (quote_pcr_mask (mk-attestation_quote f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (quote_pcr_mask (mk-attestation_quote f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -619,7 +659,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Signature)
-(assert (not (= (quote_nonce (mk-attestation_quote f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (quote_nonce (mk-attestation_quote f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -628,7 +669,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Signature)
-(assert (not (= (quote_signature (mk-attestation_quote f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (quote_signature (mk-attestation_quote f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -649,7 +691,8 @@
 (declare-const f1 KeyUsage)
 (declare-const f2 PublicKey)
 (declare-const f3 Int)
-(assert (not (= (hk_id (mk-hierarchy_key f0 f1 f2 f3)) f0)))
+(declare-const f4 (Seq Int))
+(assert (not (= (hk_id (mk-hierarchy_key f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -659,7 +702,8 @@
 (declare-const f1 KeyUsage)
 (declare-const f2 PublicKey)
 (declare-const f3 Int)
-(assert (not (= (hk_usage (mk-hierarchy_key f0 f1 f2 f3)) f1)))
+(declare-const f4 (Seq Int))
+(assert (not (= (hk_usage (mk-hierarchy_key f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -669,7 +713,8 @@
 (declare-const f1 KeyUsage)
 (declare-const f2 PublicKey)
 (declare-const f3 Int)
-(assert (not (= (hk_public (mk-hierarchy_key f0 f1 f2 f3)) f2)))
+(declare-const f4 (Seq Int))
+(assert (not (= (hk_public (mk-hierarchy_key f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -679,7 +724,8 @@
 (declare-const f1 KeyUsage)
 (declare-const f2 PublicKey)
 (declare-const f3 Int)
-(assert (not (= (hk_parent_id (mk-hierarchy_key f0 f1 f2 f3)) f3)))
+(declare-const f4 (Seq Int))
+(assert (not (= (hk_parent_id (mk-hierarchy_key f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -696,26 +742,28 @@
 
 ; --- 66. KeyDatabase accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-key_database f0 f1)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (db_trusted_keys (mk-key_database f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 67. KeyDatabase accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-key_database f0 f1)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (db_forbidden_hashes (mk-key_database f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 68. KeyDatabase: integer field consistency ---
 (push 1)
 (declare-const r KeyDatabase)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (db_trusted_keys r)) 0))
+(assert (>= (seq.len (db_trusted_keys r)) 0))
+(assert (not (>= (+ (seq.len (db_trusted_keys r)) (seq.len (db_trusted_keys r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -727,7 +775,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sbp_enabled (mk-secure_boot_policy f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (sbp_enabled (mk-secure_boot_policy f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -737,7 +786,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sbp_enforcing (mk-secure_boot_policy f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (sbp_enforcing (mk-secure_boot_policy f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -747,7 +797,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sbp_allow_unsigned (mk-secure_boot_policy f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (sbp_allow_unsigned (mk-secure_boot_policy f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -757,7 +808,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (sbp_require_tpm (mk-secure_boot_policy f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (sbp_require_tpm (mk-secure_boot_policy f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -806,7 +858,8 @@
 (declare-const f0 BootChain)
 (declare-const f1 TPMState)
 (declare-const f2 KeyDatabase)
-(assert (not (= (sb_chain (mk-secure_boot_config f0 f1 f2)) f0)))
+(declare-const f3 SecureBootPolicy)
+(assert (not (= (sb_chain (mk-secure_boot_config f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -815,7 +868,8 @@
 (declare-const f0 BootChain)
 (declare-const f1 TPMState)
 (declare-const f2 KeyDatabase)
-(assert (not (= (sb_tpm (mk-secure_boot_config f0 f1 f2)) f1)))
+(declare-const f3 SecureBootPolicy)
+(assert (not (= (sb_tpm (mk-secure_boot_config f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -824,7 +878,8 @@
 (declare-const f0 BootChain)
 (declare-const f1 TPMState)
 (declare-const f2 KeyDatabase)
-(assert (not (= (sb_key_db (mk-secure_boot_config f0 f1 f2)) f2)))
+(declare-const f3 SecureBootPolicy)
+(assert (not (= (sb_key_db (mk-secure_boot_config f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

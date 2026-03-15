@@ -108,14 +108,17 @@
 ; --- 11. Memory accessor round-trip: mem_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (mem_id (mk-memory f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (mem_id (mk-memory f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 12. Data accessor round-trip: data_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (data_id (mk-data f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (data_id (mk-data f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

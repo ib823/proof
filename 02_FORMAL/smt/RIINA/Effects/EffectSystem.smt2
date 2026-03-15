@@ -7,7 +7,7 @@
 ; effect lattice properties, performs_within monotonicity,
 ; effect category classification.
 
-(set-logic QF_DT)
+(set-logic ALL)
 (set-option :produce-models true)
 
 ; ═══════════════════════════════════════════════════════════════════════════

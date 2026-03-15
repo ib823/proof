@@ -671,7 +671,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (amort_principal (mk-amortization_schedule f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (amort_principal (mk-amortization_schedule f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -679,7 +680,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (amort_total_interest (mk-amortization_schedule f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (amort_total_interest (mk-amortization_schedule f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

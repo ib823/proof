@@ -736,7 +736,8 @@
 ; --- 101. Contract accessor round-trip: precondition ---
 (push 1)
 (declare-const f0 Ind_Pred)
-(assert (not (= (precondition (mk-contract f0)) f0)))
+(declare-const f1 Ind_Pred)
+(assert (not (= (precondition (mk-contract f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -744,26 +745,28 @@
 
 ; --- 102. LiquidState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-liquid_state f0 f1)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (liquid_constraints (mk-liquid_state f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 103. LiquidState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-liquid_state f0 f1)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (liquid_templates (mk-liquid_state f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 104. LiquidState: integer field consistency ---
 (push 1)
 (declare-const r LiquidState)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (liquid_constraints r)) 0))
+(assert (>= (seq.len (liquid_constraints r)) 0))
+(assert (not (>= (+ (seq.len (liquid_constraints r)) (seq.len (liquid_constraints r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

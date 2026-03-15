@@ -117,26 +117,28 @@
 
 ; --- 13. MSQueue accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (Seq (mk-m_s_queue f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (msq_items (mk-ms_queue f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 14. MSQueue accessor round-trip: msq_head ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (msq_head (mk-m_s_queue f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (msq_head (mk-ms_queue f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 15. MSQueue: integer field consistency ---
 (push 1)
 (declare-const r MSQueue)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (msq_items r)) 0))
 (assert (>= (msq_head r) 0))
-(assert (not (>= (+ (Seq r) (msq_head r)) 0)))
+(assert (not (>= (+ (seq.len (msq_items r)) (msq_head r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -146,7 +148,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (lp_op (mk-lin_point f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (lp_op (mk-lin_point f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -154,7 +157,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (lp_time (mk-lin_point f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (lp_time (mk-lin_point f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

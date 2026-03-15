@@ -162,7 +162,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (ddr5_software_encryption (mk-d_d_r5_defense_config f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
+(declare-const f9 Bool)
+(assert (not (= (ddr5_software_encryption (mk-ddr5_defense_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -177,7 +178,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (ddr5_integrity_tree (mk-d_d_r5_defense_config f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
+(declare-const f9 Bool)
+(assert (not (= (ddr5_integrity_tree (mk-ddr5_defense_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -192,7 +194,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (ddr5_mac_signing (mk-d_d_r5_defense_config f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
+(declare-const f9 Bool)
+(assert (not (= (ddr5_mac_signing (mk-ddr5_defense_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -207,7 +210,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (ddr5_rowhammer_mitigation (mk-d_d_r5_defense_config f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
+(declare-const f9 Bool)
+(assert (not (= (ddr5_rowhammer_mitigation (mk-ddr5_defense_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -222,7 +226,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (ddr5_cold_boot_defense (mk-d_d_r5_defense_config f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
+(declare-const f9 Bool)
+(assert (not (= (ddr5_cold_boot_defense (mk-ddr5_defense_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -278,7 +283,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (mr_base_addr (mk-memory_region f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (mr_base_addr (mk-memory_region f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -289,7 +295,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (mr_size (mk-memory_region f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (mr_size (mk-memory_region f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -300,7 +307,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (mr_encrypted (mk-memory_region f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (mr_encrypted (mk-memory_region f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -311,7 +319,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (mr_mac_protected (mk-memory_region f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (mr_mac_protected (mk-memory_region f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -322,7 +331,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (mr_in_integrity_tree (mk-memory_region f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (mr_in_integrity_tree (mk-memory_region f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

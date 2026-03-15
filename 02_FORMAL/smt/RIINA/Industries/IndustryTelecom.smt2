@@ -161,7 +161,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (primary_authentication (mk-security_5_g f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (primary_authentication (mk-security_5_g f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -172,7 +173,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (nas_security (mk-security_5_g f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (nas_security (mk-security_5_g f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -183,7 +185,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (as_security (mk-security_5_g f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (as_security (mk-security_5_g f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -194,7 +197,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (user_plane_integrity (mk-security_5_g f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (user_plane_integrity (mk-security_5_g f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -205,7 +209,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (service_based_security (mk-security_5_g f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (service_based_security (mk-security_5_g f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -256,7 +261,8 @@
 (declare-const f1 TelecomDomain)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (slice_id (mk-network_slice f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (slice_id (mk-network_slice f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -266,7 +272,8 @@
 (declare-const f1 TelecomDomain)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (slice_domain (mk-network_slice f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (slice_domain (mk-network_slice f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -276,7 +283,8 @@
 (declare-const f1 TelecomDomain)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (slice_encrypted (mk-network_slice f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (slice_encrypted (mk-network_slice f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -286,7 +294,8 @@
 (declare-const f1 TelecomDomain)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (slice_isolated (mk-network_slice f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (slice_isolated (mk-network_slice f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -297,7 +306,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (li_target (mk-lawful_intercept f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (li_target (mk-lawful_intercept f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -306,7 +316,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (li_warrant_id (mk-lawful_intercept f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (li_warrant_id (mk-lawful_intercept f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -315,7 +326,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (li_authorized (mk-lawful_intercept f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (li_authorized (mk-lawful_intercept f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

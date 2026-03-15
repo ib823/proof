@@ -159,7 +159,9 @@
 ; --- 16. Actor accessor round-trip: actor_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (actor_id (mk-actor f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (actor_id (mk-actor f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -385,14 +387,19 @@
 ; --- 40. Channel accessor round-trip: chan_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (chan_id (mk-channel f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(assert (not (= (chan_id (mk-channel f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 41. ExtActor accessor round-trip: ea_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (ea_id (mk-ext_actor f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (ea_id (mk-ext_actor f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

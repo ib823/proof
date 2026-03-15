@@ -91,7 +91,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ns_pid_isolated (mk-namespace_isolation f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (ns_pid_isolated (mk-namespace_isolation f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -104,7 +105,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ns_net_isolated (mk-namespace_isolation f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (ns_net_isolated (mk-namespace_isolation f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -117,7 +119,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ns_mount_isolated (mk-namespace_isolation f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (ns_mount_isolated (mk-namespace_isolation f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -130,7 +133,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ns_user_isolated (mk-namespace_isolation f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (ns_user_isolated (mk-namespace_isolation f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -143,7 +147,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (ns_uts_isolated (mk-namespace_isolation f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (ns_uts_isolated (mk-namespace_isolation f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -196,7 +201,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cg_cpu_limited (mk-cgroup_limits f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (cg_cpu_limited (mk-cgroup_limits f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -206,7 +212,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cg_memory_limited (mk-cgroup_limits f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (cg_memory_limited (mk-cgroup_limits f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -216,7 +223,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cg_swap_disabled (mk-cgroup_limits f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (cg_swap_disabled (mk-cgroup_limits f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -226,7 +234,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cg_pids_limited (mk-cgroup_limits f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (cg_pids_limited (mk-cgroup_limits f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -282,7 +291,8 @@
 (declare-const f7 Bool)
 (declare-const f8 Bool)
 (declare-const f9 Bool)
-(assert (not (= (sc_syscall_filter (mk-seccomp_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f0)))
+(declare-const f10 Bool)
+(assert (not (= (sc_syscall_filter (mk-seccomp_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -298,7 +308,8 @@
 (declare-const f7 Bool)
 (declare-const f8 Bool)
 (declare-const f9 Bool)
-(assert (not (= (sc_default_deny (mk-seccomp_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f1)))
+(declare-const f10 Bool)
+(assert (not (= (sc_default_deny (mk-seccomp_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -314,7 +325,8 @@
 (declare-const f7 Bool)
 (declare-const f8 Bool)
 (declare-const f9 Bool)
-(assert (not (= (sc_audit_logging (mk-seccomp_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f2)))
+(declare-const f10 Bool)
+(assert (not (= (sc_audit_logging (mk-seccomp_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -330,7 +342,8 @@
 (declare-const f7 Bool)
 (declare-const f8 Bool)
 (declare-const f9 Bool)
-(assert (not (= (sc_allow_process (mk-seccomp_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f3)))
+(declare-const f10 Bool)
+(assert (not (= (sc_allow_process (mk-seccomp_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -346,7 +359,8 @@
 (declare-const f7 Bool)
 (declare-const f8 Bool)
 (declare-const f9 Bool)
-(assert (not (= (sc_allow_fs (mk-seccomp_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f4)))
+(declare-const f10 Bool)
+(assert (not (= (sc_allow_fs (mk-seccomp_config f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -411,7 +425,8 @@
 (declare-const f10 Bool)
 (declare-const f11 Bool)
 (declare-const f12 Bool)
-(assert (not (= (cap_chown (mk-capabilities f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f0)))
+(declare-const f13 Bool)
+(assert (not (= (cap_chown (mk-capabilities f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -430,7 +445,8 @@
 (declare-const f10 Bool)
 (declare-const f11 Bool)
 (declare-const f12 Bool)
-(assert (not (= (cap_dac_override (mk-capabilities f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f1)))
+(declare-const f13 Bool)
+(assert (not (= (cap_dac_override (mk-capabilities f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -449,7 +465,8 @@
 (declare-const f10 Bool)
 (declare-const f11 Bool)
 (declare-const f12 Bool)
-(assert (not (= (cap_fowner (mk-capabilities f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f2)))
+(declare-const f13 Bool)
+(assert (not (= (cap_fowner (mk-capabilities f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -468,7 +485,8 @@
 (declare-const f10 Bool)
 (declare-const f11 Bool)
 (declare-const f12 Bool)
-(assert (not (= (cap_kill (mk-capabilities f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f3)))
+(declare-const f13 Bool)
+(assert (not (= (cap_kill (mk-capabilities f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -487,7 +505,8 @@
 (declare-const f10 Bool)
 (declare-const f11 Bool)
 (declare-const f12 Bool)
-(assert (not (= (cap_setuid (mk-capabilities f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)) f4)))
+(declare-const f13 Bool)
+(assert (not (= (cap_setuid (mk-capabilities f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -549,7 +568,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (img_signed (mk-image_integrity f0 f1 f2 f3 f4 f5 f6)) f0)))
+(declare-const f7 Bool)
+(assert (not (= (img_signed (mk-image_integrity f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -562,7 +582,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (img_signature_valid (mk-image_integrity f0 f1 f2 f3 f4 f5 f6)) f1)))
+(declare-const f7 Bool)
+(assert (not (= (img_signature_valid (mk-image_integrity f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -575,7 +596,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (img_hash_verified (mk-image_integrity f0 f1 f2 f3 f4 f5 f6)) f2)))
+(declare-const f7 Bool)
+(assert (not (= (img_hash_verified (mk-image_integrity f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -588,7 +610,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (img_trusted_registry (mk-image_integrity f0 f1 f2 f3 f4 f5 f6)) f3)))
+(declare-const f7 Bool)
+(assert (not (= (img_trusted_registry (mk-image_integrity f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -601,7 +624,8 @@
 (declare-const f4 Bool)
 (declare-const f5 Bool)
 (declare-const f6 Bool)
-(assert (not (= (img_sbom_present (mk-image_integrity f0 f1 f2 f3 f4 f5 f6)) f4)))
+(declare-const f7 Bool)
+(assert (not (= (img_sbom_present (mk-image_integrity f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -659,7 +683,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (esc_no_privileged (mk-escape_prevention f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
+(declare-const f9 Bool)
+(assert (not (= (esc_no_privileged (mk-escape_prevention f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -674,7 +699,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (esc_no_host_pid (mk-escape_prevention f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
+(declare-const f9 Bool)
+(assert (not (= (esc_no_host_pid (mk-escape_prevention f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -689,7 +715,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (esc_no_host_net (mk-escape_prevention f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
+(declare-const f9 Bool)
+(assert (not (= (esc_no_host_net (mk-escape_prevention f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -704,7 +731,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (esc_no_host_ipc (mk-escape_prevention f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
+(declare-const f9 Bool)
+(assert (not (= (esc_no_host_ipc (mk-escape_prevention f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -719,7 +747,8 @@
 (declare-const f6 Bool)
 (declare-const f7 Bool)
 (declare-const f8 Bool)
-(assert (not (= (esc_readonly_rootfs (mk-escape_prevention f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
+(declare-const f9 Bool)
+(assert (not (= (esc_readonly_rootfs (mk-escape_prevention f0 f1 f2 f3 f4 f5 f6 f7 f8 f9)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -776,7 +805,8 @@
 (declare-const f3 Capabilities)
 (declare-const f4 ImageIntegrity)
 (declare-const f5 EscapePrevention)
-(assert (not (= (cont_ns (mk-container_config f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (cont_ns (mk-container_config f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -788,7 +818,8 @@
 (declare-const f3 Capabilities)
 (declare-const f4 ImageIntegrity)
 (declare-const f5 EscapePrevention)
-(assert (not (= (cont_cgroup (mk-container_config f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (cont_cgroup (mk-container_config f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -800,7 +831,8 @@
 (declare-const f3 Capabilities)
 (declare-const f4 ImageIntegrity)
 (declare-const f5 EscapePrevention)
-(assert (not (= (cont_seccomp (mk-container_config f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (cont_seccomp (mk-container_config f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -812,7 +844,8 @@
 (declare-const f3 Capabilities)
 (declare-const f4 ImageIntegrity)
 (declare-const f5 EscapePrevention)
-(assert (not (= (cont_caps (mk-container_config f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (cont_caps (mk-container_config f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -824,7 +857,8 @@
 (declare-const f3 Capabilities)
 (declare-const f4 ImageIntegrity)
 (declare-const f5 EscapePrevention)
-(assert (not (= (cont_image (mk-container_config f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (cont_image (mk-container_config f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

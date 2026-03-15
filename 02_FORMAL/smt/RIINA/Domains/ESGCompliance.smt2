@@ -191,7 +191,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (source_id (mk-emission_source f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
+(declare-const f8 Int)
+(assert (not (= (source_id (mk-emission_source f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -205,7 +206,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (source_type (mk-emission_source f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
+(declare-const f8 Int)
+(assert (not (= (source_type (mk-emission_source f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -219,7 +221,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (quantity (mk-emission_source f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
+(declare-const f8 Int)
+(assert (not (= (quantity (mk-emission_source f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -233,7 +236,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (emission_factor (mk-emission_source f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
+(declare-const f8 Int)
+(assert (not (= (emission_factor (mk-emission_source f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -247,7 +251,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (is_tracked (mk-emission_source f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
+(declare-const f8 Int)
+(assert (not (= (is_tracked (mk-emission_source f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -268,7 +273,8 @@
 (declare-const f1 WaterSource)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (withdrawal_id (mk-water_withdrawal f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (withdrawal_id (mk-water_withdrawal f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -278,7 +284,8 @@
 (declare-const f1 WaterSource)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (water_source (mk-water_withdrawal f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (water_source (mk-water_withdrawal f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -288,7 +295,8 @@
 (declare-const f1 WaterSource)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (volume (mk-water_withdrawal f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (volume (mk-water_withdrawal f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -298,7 +306,8 @@
 (declare-const f1 WaterSource)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (quality (mk-water_withdrawal f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (quality (mk-water_withdrawal f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -319,7 +328,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (waste_id (mk-waste_record f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (waste_id (mk-waste_record f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -329,7 +339,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (waste_generated (mk-waste_record f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (waste_generated (mk-waste_record f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -339,7 +350,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (waste_diverted (mk-waste_record f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (waste_diverted (mk-waste_record f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -349,7 +361,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (waste_landfilled (mk-waste_record f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (waste_landfilled (mk-waste_record f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -369,7 +382,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (bio_id (mk-biodiversity_assessment f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (bio_id (mk-biodiversity_assessment f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -378,7 +392,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (dependencies_mapped (mk-biodiversity_assessment f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (dependencies_mapped (mk-biodiversity_assessment f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -387,7 +402,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (impacts_assessed (mk-biodiversity_assessment f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (impacts_assessed (mk-biodiversity_assessment f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -398,7 +414,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (circular_id (mk-circular_economy_metric f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (circular_id (mk-circular_economy_metric f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -407,7 +424,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (recycled_input (mk-circular_economy_metric f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (recycled_input (mk-circular_economy_metric f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -416,7 +434,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (total_input (mk-circular_economy_metric f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (total_input (mk-circular_economy_metric f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -436,7 +455,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (pollution_id (mk-pollution_record f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (pollution_id (mk-pollution_record f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -445,7 +465,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (emission_level (mk-pollution_record f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (emission_level (mk-pollution_record f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -454,7 +475,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (regulatory_limit (mk-pollution_record f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (regulatory_limit (mk-pollution_record f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -474,7 +496,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (rec_id (mk-renewable_energy_certificate f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (rec_id (mk-renewable_energy_certificate f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -483,7 +506,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (energy_amount (mk-renewable_energy_certificate f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (energy_amount (mk-renewable_energy_certificate f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -492,7 +516,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (certificate_valid (mk-renewable_energy_certificate f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (certificate_valid (mk-renewable_energy_certificate f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -517,7 +542,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (employee_id (mk-employee f0 f1 f2 f3 f4 f5 f6 f7)) f0)))
+(declare-const f8 Int)
+(assert (not (= (employee_id (mk-employee f0 f1 f2 f3 f4 f5 f6 f7 f8)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -531,7 +557,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (compensation (mk-employee f0 f1 f2 f3 f4 f5 f6 f7)) f1)))
+(declare-const f8 Int)
+(assert (not (= (compensation (mk-employee f0 f1 f2 f3 f4 f5 f6 f7 f8)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -545,7 +572,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (living_wage_threshold (mk-employee f0 f1 f2 f3 f4 f5 f6 f7)) f2)))
+(declare-const f8 Int)
+(assert (not (= (living_wage_threshold (mk-employee f0 f1 f2 f3 f4 f5 f6 f7 f8)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -559,7 +587,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (age (mk-employee f0 f1 f2 f3 f4 f5 f6 f7)) f3)))
+(declare-const f8 Int)
+(assert (not (= (age (mk-employee f0 f1 f2 f3 f4 f5 f6 f7 f8)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -573,7 +602,8 @@
 (declare-const f5 Bool)
 (declare-const f6 Bool)
 (declare-const f7 Bool)
-(assert (not (= (voluntary_employment (mk-employee f0 f1 f2 f3 f4 f5 f6 f7)) f4)))
+(declare-const f8 Int)
+(assert (not (= (voluntary_employment (mk-employee f0 f1 f2 f3 f4 f5 f6 f7 f8)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -594,7 +624,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (incident_id (mk-safety_incident f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (incident_id (mk-safety_incident f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -604,7 +635,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (recorded (mk-safety_incident f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (recorded (mk-safety_incident f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -614,7 +646,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (investigated (mk-safety_incident f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (investigated (mk-safety_incident f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -624,7 +657,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (corrective_action (mk-safety_incident f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (corrective_action (mk-safety_incident f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -635,7 +669,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (decision_id (mk-employment_decision f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (decision_id (mk-employment_decision f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -644,7 +679,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (merit_based (mk-employment_decision f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (merit_based (mk-employment_decision f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -653,7 +689,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (documented_criteria (mk-employment_decision f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (documented_criteria (mk-employment_decision f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -665,7 +702,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (paygap_id (mk-pay_gap_record f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (paygap_id (mk-pay_gap_record f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -675,7 +713,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (male_median (mk-pay_gap_record f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (male_median (mk-pay_gap_record f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -685,7 +724,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (female_median (mk-pay_gap_record f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (female_median (mk-pay_gap_record f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -695,7 +735,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Bool)
-(assert (not (= (gap_calculated (mk-pay_gap_record f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (gap_calculated (mk-pay_gap_record f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -716,7 +757,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (hrdd_id (mk-h_r_d_d_process f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (hrdd_id (mk-hrdd_process f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -726,7 +768,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (policy_adopted (mk-h_r_d_d_process f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (policy_adopted (mk-hrdd_process f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -736,7 +779,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (risk_assessment_done (mk-h_r_d_d_process f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (risk_assessment_done (mk-hrdd_process f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -746,7 +790,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (mitigation_implemented (mk-h_r_d_d_process f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (mitigation_implemented (mk-hrdd_process f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -758,7 +803,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (supplier_id (mk-supplier f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (supplier_id (mk-supplier f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -768,7 +814,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (risk_assessed (mk-supplier f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (risk_assessed (mk-supplier f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -778,7 +825,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (assessment_date (mk-supplier f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (assessment_date (mk-supplier f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -788,7 +836,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (current_year (mk-supplier f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (current_year (mk-supplier f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -808,7 +857,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (community_id (mk-indigenous_community f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (community_id (mk-indigenous_community f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -817,7 +867,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (fpic_obtained (mk-indigenous_community f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (fpic_obtained (mk-indigenous_community f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -826,7 +877,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (consent_documented (mk-indigenous_community f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (consent_documented (mk-indigenous_community f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -837,7 +889,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (grievance_id (mk-grievance_mechanism f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (grievance_id (mk-grievance_mechanism f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -846,7 +899,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (anonymous_reporting (mk-grievance_mechanism f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (anonymous_reporting (mk-grievance_mechanism f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -855,7 +909,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (accessible (mk-grievance_mechanism f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (accessible (mk-grievance_mechanism f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -866,7 +921,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (engagement_id (mk-stakeholder_engagement f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (engagement_id (mk-stakeholder_engagement f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -875,7 +931,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (communities_identified (mk-stakeholder_engagement f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (communities_identified (mk-stakeholder_engagement f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -884,7 +941,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (consultation_done (mk-stakeholder_engagement f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (consultation_done (mk-stakeholder_engagement f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -893,7 +951,8 @@
 ; --- 80. Director accessor round-trip: director_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (director_id (mk-director f0)) f0)))
+(declare-const f1 Bool)
+(assert (not (= (director_id (mk-director f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -902,16 +961,18 @@
 ; --- 81. Board accessor round-trip: board_id ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (board_id (mk-board f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (board_id (mk-board f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 82. Board accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-board f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (directors (mk-board f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -919,8 +980,8 @@
 (push 1)
 (declare-const r Board)
 (assert (>= (board_id r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (board_id r) (Seq r)) 0)))
+(assert (>= (seq.len (directors r)) 0))
+(assert (not (>= (+ (board_id r) (seq.len (directors r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -931,7 +992,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (exec_id (mk-executive_comp f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (exec_id (mk-executive_comp f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -940,7 +1002,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (total_comp (mk-executive_comp f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (total_comp (mk-executive_comp f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -949,7 +1012,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (esg_linked_portion (mk-executive_comp f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (esg_linked_portion (mk-executive_comp f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -970,7 +1034,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (ac_id (mk-anti_corruption_policy f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (ac_id (mk-anti_corruption_policy f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -980,7 +1045,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (fcpa_compliant (mk-anti_corruption_policy f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (fcpa_compliant (mk-anti_corruption_policy f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -990,7 +1056,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (uk_bribery_compliant (mk-anti_corruption_policy f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (uk_bribery_compliant (mk-anti_corruption_policy f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1000,7 +1067,8 @@
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (training_provided (mk-anti_corruption_policy f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (training_provided (mk-anti_corruption_policy f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1011,7 +1079,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (wb_id (mk-whistleblower_policy f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (wb_id (mk-whistleblower_policy f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1020,7 +1089,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (no_retaliation_policy (mk-whistleblower_policy f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (no_retaliation_policy (mk-whistleblower_policy f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1029,7 +1099,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (protection_enforced (mk-whistleblower_policy f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (protection_enforced (mk-whistleblower_policy f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1040,7 +1111,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (coi_id (mk-conflict_of_interest f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (coi_id (mk-conflict_of_interest f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1049,7 +1121,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (policy_exists (mk-conflict_of_interest f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (policy_exists (mk-conflict_of_interest f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1058,7 +1131,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (disclosure_required (mk-conflict_of_interest f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (disclosure_required (mk-conflict_of_interest f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1069,7 +1143,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (rpt_id (mk-related_party_transaction f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (rpt_id (mk-related_party_transaction f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1078,7 +1153,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (disclosed (mk-related_party_transaction f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (disclosed (mk-related_party_transaction f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1087,7 +1163,8 @@
 (declare-const f0 Int)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (board_approved (mk-related_party_transaction f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (board_approved (mk-related_party_transaction f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1100,7 +1177,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (disc_id (mk-disclosure f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (disc_id (mk-disclosure f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1111,7 +1189,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (gri_compliant (mk-disclosure f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (gri_compliant (mk-disclosure f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1122,7 +1201,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (tcfd_aligned (mk-disclosure f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (tcfd_aligned (mk-disclosure f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1133,7 +1213,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (sasb_aligned (mk-disclosure f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (sasb_aligned (mk-disclosure f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1144,7 +1225,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (methodology_documented (mk-disclosure f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (methodology_documented (mk-disclosure f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1157,7 +1239,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (sbt_id (mk-science_based_target f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (sbt_id (mk-science_based_target f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1168,7 +1251,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (target_year (mk-science_based_target f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (target_year (mk-science_based_target f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1179,7 +1263,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (base_year (mk-science_based_target f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (base_year (mk-science_based_target f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1190,7 +1275,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (reduction_percent (mk-science_based_target f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (reduction_percent (mk-science_based_target f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1201,7 +1287,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Bool)
-(assert (not (= (validated (mk-science_based_target f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (validated (mk-science_based_target f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1218,28 +1305,28 @@
 
 ; --- 112. ESGCompliantSystem accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(declare-const f5 Int)
-(declare-const f6 Int)
-(declare-const f7 Int)
-(declare-const f8 Int)
-(declare-const f9 Int)
-(declare-const f10 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 (Seq Int))
+(declare-const f6 (Seq Int))
+(declare-const f7 (Seq Int))
+(declare-const f8 (Seq Int))
+(declare-const f9 (Seq Int))
+(declare-const f10 (Seq Int))
 (declare-const f11 HRDDProcess)
-(declare-const f12 Int)
-(declare-const f13 Int)
+(declare-const f12 (Seq Int))
+(declare-const f13 (Seq Int))
 (declare-const f14 GrievanceMechanism)
-(declare-const f15 Int)
+(declare-const f15 (Seq Int))
 (declare-const f16 Board)
-(declare-const f17 Int)
+(declare-const f17 (Seq Int))
 (declare-const f18 AntiCorruptionPolicy)
 (declare-const f19 WhistleblowerPolicy)
 (declare-const f20 ConflictOfInterest)
-(declare-const f21 Int)
+(declare-const f21 (Seq Int))
 (declare-const f22 Disclosure)
 (declare-const f23 ScienceBasedTarget)
 (declare-const f24 Int)
@@ -1275,34 +1362,35 @@
 (declare-const f54 Int)
 (declare-const f55 Int)
 (declare-const f56 Int)
-(assert (not (= (Seq (mk-e_s_g_compliant_system f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56)) f0)))
+(declare-const f57 Int)
+(assert (not (= (sys_emissions (mk-esg_compliant_system f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56 f57)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 113. ESGCompliantSystem accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(declare-const f5 Int)
-(declare-const f6 Int)
-(declare-const f7 Int)
-(declare-const f8 Int)
-(declare-const f9 Int)
-(declare-const f10 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 (Seq Int))
+(declare-const f6 (Seq Int))
+(declare-const f7 (Seq Int))
+(declare-const f8 (Seq Int))
+(declare-const f9 (Seq Int))
+(declare-const f10 (Seq Int))
 (declare-const f11 HRDDProcess)
-(declare-const f12 Int)
-(declare-const f13 Int)
+(declare-const f12 (Seq Int))
+(declare-const f13 (Seq Int))
 (declare-const f14 GrievanceMechanism)
-(declare-const f15 Int)
+(declare-const f15 (Seq Int))
 (declare-const f16 Board)
-(declare-const f17 Int)
+(declare-const f17 (Seq Int))
 (declare-const f18 AntiCorruptionPolicy)
 (declare-const f19 WhistleblowerPolicy)
 (declare-const f20 ConflictOfInterest)
-(declare-const f21 Int)
+(declare-const f21 (Seq Int))
 (declare-const f22 Disclosure)
 (declare-const f23 ScienceBasedTarget)
 (declare-const f24 Int)
@@ -1338,34 +1426,35 @@
 (declare-const f54 Int)
 (declare-const f55 Int)
 (declare-const f56 Int)
-(assert (not (= (Seq (mk-e_s_g_compliant_system f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56)) f1)))
+(declare-const f57 Int)
+(assert (not (= (sys_water (mk-esg_compliant_system f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56 f57)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 114. ESGCompliantSystem accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(declare-const f5 Int)
-(declare-const f6 Int)
-(declare-const f7 Int)
-(declare-const f8 Int)
-(declare-const f9 Int)
-(declare-const f10 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 (Seq Int))
+(declare-const f6 (Seq Int))
+(declare-const f7 (Seq Int))
+(declare-const f8 (Seq Int))
+(declare-const f9 (Seq Int))
+(declare-const f10 (Seq Int))
 (declare-const f11 HRDDProcess)
-(declare-const f12 Int)
-(declare-const f13 Int)
+(declare-const f12 (Seq Int))
+(declare-const f13 (Seq Int))
 (declare-const f14 GrievanceMechanism)
-(declare-const f15 Int)
+(declare-const f15 (Seq Int))
 (declare-const f16 Board)
-(declare-const f17 Int)
+(declare-const f17 (Seq Int))
 (declare-const f18 AntiCorruptionPolicy)
 (declare-const f19 WhistleblowerPolicy)
 (declare-const f20 ConflictOfInterest)
-(declare-const f21 Int)
+(declare-const f21 (Seq Int))
 (declare-const f22 Disclosure)
 (declare-const f23 ScienceBasedTarget)
 (declare-const f24 Int)
@@ -1401,34 +1490,35 @@
 (declare-const f54 Int)
 (declare-const f55 Int)
 (declare-const f56 Int)
-(assert (not (= (Seq (mk-e_s_g_compliant_system f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56)) f2)))
+(declare-const f57 Int)
+(assert (not (= (sys_waste (mk-esg_compliant_system f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56 f57)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 115. ESGCompliantSystem accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(declare-const f5 Int)
-(declare-const f6 Int)
-(declare-const f7 Int)
-(declare-const f8 Int)
-(declare-const f9 Int)
-(declare-const f10 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 (Seq Int))
+(declare-const f6 (Seq Int))
+(declare-const f7 (Seq Int))
+(declare-const f8 (Seq Int))
+(declare-const f9 (Seq Int))
+(declare-const f10 (Seq Int))
 (declare-const f11 HRDDProcess)
-(declare-const f12 Int)
-(declare-const f13 Int)
+(declare-const f12 (Seq Int))
+(declare-const f13 (Seq Int))
 (declare-const f14 GrievanceMechanism)
-(declare-const f15 Int)
+(declare-const f15 (Seq Int))
 (declare-const f16 Board)
-(declare-const f17 Int)
+(declare-const f17 (Seq Int))
 (declare-const f18 AntiCorruptionPolicy)
 (declare-const f19 WhistleblowerPolicy)
 (declare-const f20 ConflictOfInterest)
-(declare-const f21 Int)
+(declare-const f21 (Seq Int))
 (declare-const f22 Disclosure)
 (declare-const f23 ScienceBasedTarget)
 (declare-const f24 Int)
@@ -1464,34 +1554,35 @@
 (declare-const f54 Int)
 (declare-const f55 Int)
 (declare-const f56 Int)
-(assert (not (= (Seq (mk-e_s_g_compliant_system f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56)) f3)))
+(declare-const f57 Int)
+(assert (not (= (sys_biodiversity (mk-esg_compliant_system f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56 f57)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 116. ESGCompliantSystem accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(declare-const f2 Int)
-(declare-const f3 Int)
-(declare-const f4 Int)
-(declare-const f5 Int)
-(declare-const f6 Int)
-(declare-const f7 Int)
-(declare-const f8 Int)
-(declare-const f9 Int)
-(declare-const f10 Int)
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(declare-const f4 (Seq Int))
+(declare-const f5 (Seq Int))
+(declare-const f6 (Seq Int))
+(declare-const f7 (Seq Int))
+(declare-const f8 (Seq Int))
+(declare-const f9 (Seq Int))
+(declare-const f10 (Seq Int))
 (declare-const f11 HRDDProcess)
-(declare-const f12 Int)
-(declare-const f13 Int)
+(declare-const f12 (Seq Int))
+(declare-const f13 (Seq Int))
 (declare-const f14 GrievanceMechanism)
-(declare-const f15 Int)
+(declare-const f15 (Seq Int))
 (declare-const f16 Board)
-(declare-const f17 Int)
+(declare-const f17 (Seq Int))
 (declare-const f18 AntiCorruptionPolicy)
 (declare-const f19 WhistleblowerPolicy)
 (declare-const f20 ConflictOfInterest)
-(declare-const f21 Int)
+(declare-const f21 (Seq Int))
 (declare-const f22 Disclosure)
 (declare-const f23 ScienceBasedTarget)
 (declare-const f24 Int)
@@ -1527,16 +1618,17 @@
 (declare-const f54 Int)
 (declare-const f55 Int)
 (declare-const f56 Int)
-(assert (not (= (Seq (mk-e_s_g_compliant_system f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56)) f4)))
+(declare-const f57 Int)
+(assert (not (= (sys_circular (mk-esg_compliant_system f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12 f13 f14 f15 f16 f17 f18 f19 f20 f21 f22 f23 f24 f25 f26 f27 f28 f29 f30 f31 f32 f33 f34 f35 f36 f37 f38 f39 f40 f41 f42 f43 f44 f45 f46 f47 f48 f49 f50 f51 f52 f53 f54 f55 f56 f57)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 117. ESGCompliantSystem: integer field consistency ---
 (push 1)
 (declare-const r ESGCompliantSystem)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (sys_emissions r)) 0))
+(assert (>= (seq.len (sys_emissions r)) 0))
+(assert (not (>= (+ (seq.len (sys_emissions r)) (seq.len (sys_emissions r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

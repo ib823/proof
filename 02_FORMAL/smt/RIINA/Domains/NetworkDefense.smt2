@@ -174,37 +174,40 @@
 
 ; --- 19. Puzzle accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (Seq (mk-puzzle f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(assert (not (= (puzzle_challenge (mk-puzzle f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 20. Puzzle accessor round-trip: puzzle_difficulty ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (puzzle_difficulty (mk-puzzle f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(assert (not (= (puzzle_difficulty (mk-puzzle f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 21. Puzzle accessor round-trip: puzzle_timestamp ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (puzzle_timestamp (mk-puzzle f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(assert (not (= (puzzle_timestamp (mk-puzzle f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 22. Puzzle: integer field consistency ---
 (push 1)
 (declare-const r Puzzle)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (puzzle_challenge r)) 0))
 (assert (>= (puzzle_difficulty r) 0))
-(assert (not (>= (+ (Seq r) (puzzle_difficulty r)) 0)))
+(assert (not (>= (+ (seq.len (puzzle_challenge r)) (puzzle_difficulty r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -213,7 +216,8 @@
 ; --- 23. Solution accessor round-trip: sol_puzzle ---
 (push 1)
 (declare-const f0 Puzzle)
-(assert (not (= (sol_puzzle (mk-solution f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (sol_puzzle (mk-solution f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -224,7 +228,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (bucket_tokens (mk-token_bucket f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (bucket_tokens (mk-token_bucket f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -233,7 +238,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (bucket_max (mk-token_bucket f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (bucket_max (mk-token_bucket f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -242,7 +248,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (bucket_refill_rate (mk-token_bucket f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (bucket_refill_rate (mk-token_bucket f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -260,7 +267,8 @@
 ; --- 28. ClientBucket accessor round-trip: cb_client ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (cb_client (mk-client_bucket f0)) f0)))
+(declare-const f1 TokenBucket)
+(assert (not (= (cb_client (mk-client_bucket f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -269,7 +277,8 @@
 ; --- 29. Endpoint accessor round-trip: ep_ip ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (ep_ip (mk-endpoint f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (ep_ip (mk-endpoint f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -278,49 +287,53 @@
 ; --- 30. NetCapability accessor round-trip: cap_target ---
 (push 1)
 (declare-const f0 Endpoint)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (cap_target (mk-net_capability f0 f1 f2 f3)) f0)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (cap_target (mk-net_capability f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 31. NetCapability accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Endpoint)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (Seq (mk-net_capability f0 f1 f2 f3)) f1)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (cap_permissions (mk-net_capability f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 32. NetCapability accessor round-trip: cap_valid_until ---
 (push 1)
 (declare-const f0 Endpoint)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (cap_valid_until (mk-net_capability f0 f1 f2 f3)) f2)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (cap_valid_until (mk-net_capability f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 33. NetCapability accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Endpoint)
-(declare-const f1 Int)
+(declare-const f1 (Seq Int))
 (declare-const f2 Int)
-(declare-const f3 Int)
-(assert (not (= (Seq (mk-net_capability f0 f1 f2 f3)) f3)))
+(declare-const f3 (Seq Int))
+(declare-const f4 Int)
+(assert (not (= (cap_signature (mk-net_capability f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 34. NetCapability: integer field consistency ---
 (push 1)
 (declare-const r NetCapability)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (cap_permissions r)) 0))
 (assert (>= (cap_valid_until r) 0))
-(assert (not (>= (+ (Seq r) (cap_valid_until r)) 0)))
+(assert (not (>= (+ (seq.len (cap_permissions r)) (cap_valid_until r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -331,7 +344,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (conn_src_ip (mk-connection f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (conn_src_ip (mk-connection f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -340,7 +354,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (conn_src_port (mk-connection f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (conn_src_port (mk-connection f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -349,7 +364,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (conn_dst_ip (mk-connection f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (conn_dst_ip (mk-connection f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -368,7 +384,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (sfs_pending_connections (mk-syn_flood_state f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (sfs_pending_connections (mk-syn_flood_state f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -376,7 +393,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (sfs_completed_connections (mk-syn_flood_state f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (sfs_completed_connections (mk-syn_flood_state f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -393,26 +411,28 @@
 
 ; --- 42. SipHashTable accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-sip_hash_table f0 f1)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (sht_key (mk-sip_hash_table f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 43. SipHashTable accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-sip_hash_table f0 f1)) f1)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(assert (not (= (sht_buckets (mk-sip_hash_table f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 44. SipHashTable: integer field consistency ---
 (push 1)
 (declare-const r SipHashTable)
-(assert (>= (Seq r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (Seq r) (Seq r)) 0)))
+(assert (>= (seq.len (sht_key r)) 0))
+(assert (>= (seq.len (sht_key r)) 0))
+(assert (not (>= (+ (seq.len (sht_key r)) (seq.len (sht_key r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

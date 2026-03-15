@@ -6,7 +6,7 @@
 ; Verifies: store operations (lookup, update, fresh), step determinism,
 ; value stability, multi-step transitivity, store value preservation.
 
-(set-logic QF_LIA)
+(set-logic ALL)
 (set-option :produce-models true)
 
 ; ═══════════════════════════════════════════════════════════════════════════

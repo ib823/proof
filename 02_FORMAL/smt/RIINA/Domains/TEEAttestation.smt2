@@ -222,7 +222,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (enc_memory_encrypted (mk-enclave_properties f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (enc_memory_encrypted (mk-enclave_properties f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -231,7 +232,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (enc_code_integrity (mk-enclave_properties f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (enc_code_integrity (mk-enclave_properties f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -240,7 +242,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (enc_data_sealing (mk-enclave_properties f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (enc_data_sealing (mk-enclave_properties f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -288,7 +291,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (ei_measurement (mk-enclave_identity f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (ei_measurement (mk-enclave_identity f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -297,7 +301,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (ei_signer (mk-enclave_identity f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (ei_signer (mk-enclave_identity f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -306,7 +311,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (ei_product_id (mk-enclave_identity f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (ei_product_id (mk-enclave_identity f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -326,7 +332,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (att_measurement (mk-attestation_properties f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (att_measurement (mk-attestation_properties f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -335,7 +342,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (att_signature (mk-attestation_properties f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (att_signature (mk-attestation_properties f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -344,7 +352,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (att_freshness (mk-attestation_properties f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (att_freshness (mk-attestation_properties f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -394,7 +403,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (aq_enclave_identity (mk-attestation_quote f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (aq_enclave_identity (mk-attestation_quote f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -405,7 +415,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (aq_report_data (mk-attestation_quote f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (aq_report_data (mk-attestation_quote f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -416,7 +427,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (aq_nonce (mk-attestation_quote f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (aq_nonce (mk-attestation_quote f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -427,7 +439,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (aq_timestamp (mk-attestation_quote f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (aq_timestamp (mk-attestation_quote f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -438,7 +451,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (aq_platform_info (mk-attestation_quote f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (aq_platform_info (mk-attestation_quote f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -460,7 +474,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (vc_expected_measurement (mk-verification_context f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Int)
+(assert (not (= (vc_expected_measurement (mk-verification_context f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -471,7 +486,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (vc_expected_signer (mk-verification_context f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Int)
+(assert (not (= (vc_expected_signer (mk-verification_context f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -482,7 +498,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (vc_min_security_version (mk-verification_context f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Int)
+(assert (not (= (vc_min_security_version (mk-verification_context f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -493,7 +510,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (vc_expected_nonce (mk-verification_context f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Int)
+(assert (not (= (vc_expected_nonce (mk-verification_context f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -504,7 +522,8 @@
 (declare-const f2 Int)
 (declare-const f3 Int)
 (declare-const f4 Int)
-(assert (not (= (vc_max_timestamp_age (mk-verification_context f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Int)
+(assert (not (= (vc_max_timestamp_age (mk-verification_context f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -525,7 +544,8 @@
 (declare-const f1 AttestationProperties)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tee_enclave (mk-t_e_e_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (tee_enclave (mk-tee_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -535,7 +555,8 @@
 (declare-const f1 AttestationProperties)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tee_attestation (mk-t_e_e_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (tee_attestation (mk-tee_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -545,7 +566,8 @@
 (declare-const f1 AttestationProperties)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tee_remote_attestation (mk-t_e_e_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (tee_remote_attestation (mk-tee_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -555,7 +577,8 @@
 (declare-const f1 AttestationProperties)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (tee_local_attestation (mk-t_e_e_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (tee_local_attestation (mk-tee_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -566,7 +589,8 @@
 (declare-const f0 SealingPolicy)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sd_policy (mk-sealed_data f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (sd_policy (mk-sealed_data f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -575,7 +599,8 @@
 (declare-const f0 SealingPolicy)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sd_ciphertext (mk-sealed_data f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (sd_ciphertext (mk-sealed_data f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -584,7 +609,8 @@
 (declare-const f0 SealingPolicy)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (sd_auth_tag (mk-sealed_data f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (sd_auth_tag (mk-sealed_data f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -604,7 +630,8 @@
 (declare-const f0 SealingPolicy)
 (declare-const f1 EnclaveIdentity)
 (declare-const f2 Int)
-(assert (not (= (kdp_policy (mk-key_derivation_params f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (kdp_policy (mk-key_derivation_params f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -613,7 +640,8 @@
 (declare-const f0 SealingPolicy)
 (declare-const f1 EnclaveIdentity)
 (declare-const f2 Int)
-(assert (not (= (kdp_enclave_id (mk-key_derivation_params f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (kdp_enclave_id (mk-key_derivation_params f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -622,7 +650,8 @@
 (declare-const f0 SealingPolicy)
 (declare-const f1 EnclaveIdentity)
 (declare-const f2 Int)
-(assert (not (= (kdp_key_name (mk-key_derivation_params f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (kdp_key_name (mk-key_derivation_params f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -632,7 +661,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (mp_read (mk-memory_permissions f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (mp_read (mk-memory_permissions f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -640,7 +670,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (mp_write (mk-memory_permissions f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (mp_write (mk-memory_permissions f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -680,7 +711,8 @@
 (declare-const f1 Int)
 (declare-const f2 MemoryRegionType)
 (declare-const f3 MemoryPermissions)
-(assert (not (= (mr_base (mk-memory_region f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (mr_base (mk-memory_region f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -690,7 +722,8 @@
 (declare-const f1 Int)
 (declare-const f2 MemoryRegionType)
 (declare-const f3 MemoryPermissions)
-(assert (not (= (mr_size (mk-memory_region f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (mr_size (mk-memory_region f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -700,7 +733,8 @@
 (declare-const f1 Int)
 (declare-const f2 MemoryRegionType)
 (declare-const f3 MemoryPermissions)
-(assert (not (= (mr_type (mk-memory_region f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (mr_type (mk-memory_region f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -710,7 +744,8 @@
 (declare-const f1 Int)
 (declare-const f2 MemoryRegionType)
 (declare-const f3 MemoryPermissions)
-(assert (not (= (mr_permissions (mk-memory_region f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (mr_permissions (mk-memory_region f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -731,7 +766,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (pi_cpu_svn (mk-platform_identity f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (pi_cpu_svn (mk-platform_identity f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -741,7 +777,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (pi_pce_svn (mk-platform_identity f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (pi_pce_svn (mk-platform_identity f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -751,7 +788,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (pi_qe_id (mk-platform_identity f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (pi_qe_id (mk-platform_identity f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -761,7 +799,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (pi_platform_id (mk-platform_identity f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (pi_platform_id (mk-platform_identity f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -781,7 +820,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (tc_root_key_valid (mk-trust_chain f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (tc_root_key_valid (mk-trust_chain f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -790,7 +830,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (tc_pck_cert_valid (mk-trust_chain f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (tc_pck_cert_valid (mk-trust_chain f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -799,7 +840,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (tc_tcb_signing_valid (mk-trust_chain f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (tc_tcb_signing_valid (mk-trust_chain f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

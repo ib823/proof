@@ -58,7 +58,8 @@
 ; --- 1. IFCLabel accessor round-trip: label_level ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (label_level (mk-i_f_c_label f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (label_level (mk-ifc_label f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -68,7 +69,8 @@
 (push 1)
 (declare-const f0 IFCLabel)
 (declare-const f1 IFCLabel)
-(assert (not (= (sc_source (mk-storage_channel f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (sc_source (mk-storage_channel f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -76,7 +78,8 @@
 (push 1)
 (declare-const f0 IFCLabel)
 (declare-const f1 IFCLabel)
-(assert (not (= (sc_destination (mk-storage_channel f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (sc_destination (mk-storage_channel f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -85,7 +88,8 @@
 ; --- 4. TimingChannel accessor round-trip: tc_operation ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (tc_operation (mk-timing_channel f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (tc_operation (mk-timing_channel f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -95,7 +99,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (nt_payload_size (mk-network_traffic f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (nt_payload_size (mk-network_traffic f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -103,7 +108,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (nt_padding_size (mk-network_traffic f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (nt_padding_size (mk-network_traffic f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -120,8 +126,9 @@
 
 ; --- 8. ContentFilter accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-content_filter f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (cf_allowed_patterns (mk-content_filter f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -131,7 +138,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (pm_header (mk-protocol_message f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (pm_header (mk-protocol_message f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -139,7 +147,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (pm_payload (mk-protocol_message f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (pm_payload (mk-protocol_message f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -157,16 +166,18 @@
 ; --- 12. IsolationDomain accessor round-trip: id_domain_id ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (id_domain_id (mk-isolation_domain f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 IFCLabel)
+(assert (not (= (id_domain_id (mk-isolation_domain f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 13. IsolationDomain accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-isolation_domain f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 IFCLabel)
+(assert (not (= (id_resources (mk-isolation_domain f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -174,8 +185,8 @@
 (push 1)
 (declare-const r IsolationDomain)
 (assert (>= (id_domain_id r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (id_domain_id r) (Seq r)) 0)))
+(assert (>= (seq.len (id_resources r)) 0))
+(assert (not (>= (+ (id_domain_id r) (seq.len (id_resources r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -186,7 +197,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (part_id (mk-partition f0 f1 f2)) f0)))
+(declare-const f3 IFCLabel)
+(assert (not (= (part_id (mk-partition f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -195,7 +207,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (part_start (mk-partition f0 f1 f2)) f1)))
+(declare-const f3 IFCLabel)
+(assert (not (= (part_start (mk-partition f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -204,7 +217,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (part_size (mk-partition f0 f1 f2)) f2)))
+(declare-const f3 IFCLabel)
+(assert (not (= (part_size (mk-partition f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -224,7 +238,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cont_id (mk-container f0 f1 f2)) f0)))
+(declare-const f3 IFCLabel)
+(assert (not (= (cont_id (mk-container f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -233,7 +248,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cont_namespace (mk-container f0 f1 f2)) f1)))
+(declare-const f3 IFCLabel)
+(assert (not (= (cont_namespace (mk-container f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -242,7 +258,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cont_cgroup (mk-container f0 f1 f2)) f2)))
+(declare-const f3 IFCLabel)
+(assert (not (= (cont_cgroup (mk-container f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -259,17 +276,19 @@
 
 ; --- 23. VerifiedKernel accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
-(assert (not (= (Seq (mk-verified_kernel f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (vk_syscalls (mk-verified_kernel f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 24. VerifiedKernel accessor round-trip: vk_verified ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
-(assert (not (= (vk_verified (mk-verified_kernel f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (vk_verified (mk-verified_kernel f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -279,7 +298,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (hi_iommu_enabled (mk-hardware_isolation f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (hi_iommu_enabled (mk-hardware_isolation f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -287,7 +307,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (hi_memory_encryption (mk-hardware_isolation f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (hi_memory_encryption (mk-hardware_isolation f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -325,7 +346,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (ems_attenuation_db (mk-e_m_shielding f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (ems_attenuation_db (mk-em_shielding f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -333,7 +355,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (ems_frequency_range (mk-e_m_shielding f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (ems_frequency_range (mk-em_shielding f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

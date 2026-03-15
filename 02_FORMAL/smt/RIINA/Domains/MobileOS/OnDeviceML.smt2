@@ -102,14 +102,19 @@
 ; --- 7. MLModel accessor round-trip: model_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (model_id (mk-ml_model f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Int)
+(declare-const f3 Bool)
+(assert (not (= (model_id (mk-ml_model f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 8. UserData accessor round-trip: data_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (data_id (mk-user_data f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 Bool)
+(assert (not (= (data_id (mk-user_data f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -418,7 +423,9 @@
 ; --- 41. BatchRequest accessor round-trip: batch_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (batch_id (mk-batch_request f0)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (batch_id (mk-batch_request f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

@@ -198,7 +198,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (part_2_1_policies (mk-i_e_c62443__compliance f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 SecurityLevel)
+(assert (not (= (part_2_1_policies (mk-iec62443__compliance f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -210,7 +211,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (part_2_4_service_providers (mk-i_e_c62443__compliance f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 SecurityLevel)
+(assert (not (= (part_2_4_service_providers (mk-iec62443__compliance f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -222,7 +224,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (part_3_2_zones_conduits (mk-i_e_c62443__compliance f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 SecurityLevel)
+(assert (not (= (part_3_2_zones_conduits (mk-iec62443__compliance f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -234,7 +237,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (part_3_3_system_requirements (mk-i_e_c62443__compliance f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 SecurityLevel)
+(assert (not (= (part_3_3_system_requirements (mk-iec62443__compliance f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -246,7 +250,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (part_4_1_secure_development (mk-i_e_c62443__compliance f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 SecurityLevel)
+(assert (not (= (part_4_1_secure_development (mk-iec62443__compliance f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

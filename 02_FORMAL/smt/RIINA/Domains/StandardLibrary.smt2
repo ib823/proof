@@ -222,8 +222,9 @@
 
 ; --- 19. RiinaString accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-riina_string f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Bool)
+(assert (not (= (str_bytes (mk-riina_string f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -231,17 +232,19 @@
 
 ; --- 20. SecureString accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
-(assert (not (= (Seq (mk-secure_string f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (sstr_data (mk-secure_string f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 21. SecureString accessor round-trip: sstr_zeroized ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
-(assert (not (= (sstr_zeroized (mk-secure_string f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (sstr_zeroized (mk-secure_string f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -251,7 +254,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (read_count (mk-read_result f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (read_count (mk-read_result f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -259,7 +263,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (read_buffer_size (mk-read_result f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (read_buffer_size (mk-read_result f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -278,7 +283,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (write_count (mk-write_result f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (write_count (mk-write_result f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -286,7 +292,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (write_buffer_size (mk-write_result f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (write_buffer_size (mk-write_result f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -304,7 +311,8 @@
 ; --- 28. FileHandle accessor round-trip: fh_id ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (fh_id (mk-file_handle f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (fh_id (mk-file_handle f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -314,7 +322,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (ae_operation (mk-audit_entry f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (ae_operation (mk-audit_entry f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -322,7 +331,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (ae_file_id (mk-audit_entry f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (ae_file_id (mk-audit_entry f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -340,7 +350,8 @@
 ; --- 32. AuditedFile accessor round-trip: af_handle ---
 (push 1)
 (declare-const f0 FileHandle)
-(assert (not (= (af_handle (mk-audited_file f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (af_handle (mk-audited_file f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -349,16 +360,18 @@
 ; --- 33. TcpStream accessor round-trip: tcp_id ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (tcp_id (mk-tcp_stream f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (tcp_id (mk-tcp_stream f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 34. TcpStream accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-tcp_stream f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 (Seq Int))
+(assert (not (= (tcp_caps (mk-tcp_stream f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -366,8 +379,8 @@
 (push 1)
 (declare-const r TcpStream)
 (assert (>= (tcp_id r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (tcp_id r) (Seq r)) 0)))
+(assert (>= (seq.len (tcp_caps r)) 0))
+(assert (not (>= (+ (tcp_id r) (seq.len (tcp_caps r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -376,7 +389,8 @@
 ; --- 36. TlsConnection accessor round-trip: tls_negotiated_version ---
 (push 1)
 (declare-const f0 TlsVersion)
-(assert (not (= (tls_negotiated_version (mk-tls_connection f0)) f0)))
+(declare-const f1 TlsConfig)
+(assert (not (= (tls_negotiated_version (mk-tls_connection f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -385,7 +399,8 @@
 ; --- 37. ConnectionAudit accessor round-trip: ca_stream ---
 (push 1)
 (declare-const f0 TcpStream)
-(assert (not (= (ca_stream (mk-connection_audit f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (ca_stream (mk-connection_audit f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -394,7 +409,8 @@
 ; --- 38. Duration accessor round-trip: dur_secs ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (dur_secs (mk-duration f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (dur_secs (mk-duration f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -404,7 +420,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (st_time (mk-secure_timestamp f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (st_time (mk-secure_timestamp f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -412,7 +429,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (st_signature (mk-secure_timestamp f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (st_signature (mk-secure_timestamp f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -430,7 +448,8 @@
 ; --- 42. MutexState accessor round-trip: mutex_locked ---
 (push 1)
 (declare-const f0 Bool)
-(assert (not (= (mutex_locked (mk-mutex_state f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (mutex_locked (mk-mutex_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -439,7 +458,8 @@
 ; --- 43. RwLockState accessor round-trip: rwlock_readers ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (rwlock_readers (mk-rw_lock_state f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (rwlock_readers (mk-rw_lock_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -448,7 +468,8 @@
 ; --- 44. AtomicNat accessor round-trip: atomic_value ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (atomic_value (mk-atomic_nat f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (atomic_value (mk-atomic_nat f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -456,8 +477,9 @@
 
 ; --- 45. CondvarState accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-condvar_state f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Bool)
+(assert (not (= (cv_waiters (mk-condvar_state f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -465,8 +487,9 @@
 
 ; --- 46. ResourceOrder accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-resource_order f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 (Seq Int))
+(assert (not (= (ro_resources (mk-resource_order f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -474,8 +497,9 @@
 
 ; --- 47. AesKey accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-aes_key f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Bool)
+(assert (not (= (aes_key_data (mk-aes_key f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -483,8 +507,9 @@
 
 ; --- 48. Signature accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-signature f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Int)
+(assert (not (= (sig_data (mk-signature f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -492,8 +517,9 @@
 
 ; --- 49. CryptoKey accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
-(assert (not (= (Seq (mk-crypto_key f0)) f0)))
+(declare-const f0 (Seq Int))
+(declare-const f1 Bool)
+(assert (not (= (ck_data (mk-crypto_key f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -502,7 +528,8 @@
 ; --- 50. Label accessor round-trip: lab_level ---
 (push 1)
 (declare-const f0 SecurityLevel)
-(assert (not (= (lab_level (mk-label f0)) f0)))
+(declare-const f1 (Seq Int))
+(assert (not (= (lab_level (mk-label f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

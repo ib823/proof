@@ -270,7 +270,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (fsi_crash_consistent (mk-f_s_integrity f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (fsi_crash_consistent (mk-fs_integrity f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -279,7 +280,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (fsi_atomic_writes (mk-f_s_integrity f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (fsi_atomic_writes (mk-fs_integrity f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -288,7 +290,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (fsi_journaling (mk-f_s_integrity f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (fsi_journaling (mk-fs_integrity f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -336,7 +339,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (fss_access_control (mk-f_s_security f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (fss_access_control (mk-fs_security f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -345,7 +349,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (fss_encryption_at_rest (mk-f_s_security f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (fss_encryption_at_rest (mk-fs_security f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -354,7 +359,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (fss_secure_delete (mk-f_s_security f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (fss_secure_delete (mk-fs_security f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -402,7 +408,8 @@
 (declare-const f0 FSIntegrity)
 (declare-const f1 FSSecurity)
 (declare-const f2 Bool)
-(assert (not (= (vfs_integrity (mk-verified_f_s f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (vfs_integrity (mk-verified_fs f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -411,7 +418,8 @@
 (declare-const f0 FSIntegrity)
 (declare-const f1 FSSecurity)
 (declare-const f2 Bool)
-(assert (not (= (vfs_security (mk-verified_f_s f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (vfs_security (mk-verified_fs f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -420,7 +428,8 @@
 (declare-const f0 FSIntegrity)
 (declare-const f1 FSSecurity)
 (declare-const f2 Bool)
-(assert (not (= (vfs_posix_compliant (mk-verified_f_s f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (vfs_posix_compliant (mk-verified_fs f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -430,7 +439,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (perm_read (mk-permission f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (perm_read (mk-permission f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -438,7 +448,8 @@
 (push 1)
 (declare-const f0 Bool)
 (declare-const f1 Bool)
-(assert (not (= (perm_write (mk-permission f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (perm_write (mk-permission f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -475,7 +486,8 @@
 ; --- 52. Ownership accessor round-trip: owner_uid ---
 (push 1)
 (declare-const f0 Int)
-(assert (not (= (owner_uid (mk-ownership f0)) f0)))
+(declare-const f1 Int)
+(assert (not (= (owner_uid (mk-ownership f0 f1)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -485,8 +497,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (ctx_uid (mk-access_context f0 f1 f2)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (ctx_uid (mk-access_context f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -494,8 +507,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (ctx_gid (mk-access_context f0 f1 f2)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (ctx_gid (mk-access_context f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -503,8 +517,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-access_context f0 f1 f2)) f2)))
+(declare-const f2 (Seq Int))
+(declare-const f3 Bool)
+(assert (not (= (ctx_groups (mk-access_context f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -527,7 +542,8 @@
 (declare-const f3 Permission)
 (declare-const f4 Permission)
 (declare-const f5 Bool)
-(assert (not (= (inode_id (mk-inode f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Int)
+(assert (not (= (inode_id (mk-inode f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -539,7 +555,8 @@
 (declare-const f3 Permission)
 (declare-const f4 Permission)
 (declare-const f5 Bool)
-(assert (not (= (inode_owner (mk-inode f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Int)
+(assert (not (= (inode_owner (mk-inode f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -551,7 +568,8 @@
 (declare-const f3 Permission)
 (declare-const f4 Permission)
 (declare-const f5 Bool)
-(assert (not (= (inode_perm_owner (mk-inode f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Int)
+(assert (not (= (inode_perm_owner (mk-inode f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -563,7 +581,8 @@
 (declare-const f3 Permission)
 (declare-const f4 Permission)
 (declare-const f5 Bool)
-(assert (not (= (inode_perm_group (mk-inode f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Int)
+(assert (not (= (inode_perm_group (mk-inode f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -575,7 +594,8 @@
 (declare-const f3 Permission)
 (declare-const f4 Permission)
 (declare-const f5 Bool)
-(assert (not (= (inode_perm_other (mk-inode f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Int)
+(assert (not (= (inode_perm_other (mk-inode f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -584,16 +604,18 @@
 ; --- 62. Transaction accessor round-trip: txn_id ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (txn_id (mk-transaction f0 f1)) f0)))
+(declare-const f1 (Seq Int))
+(declare-const f2 TxnState)
+(assert (not (= (txn_id (mk-transaction f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 63. Transaction accessor round-trip: Seq ---
 (push 1)
 (declare-const f0 Int)
-(declare-const f1 Int)
-(assert (not (= (Seq (mk-transaction f0 f1)) f1)))
+(declare-const f1 (Seq Int))
+(declare-const f2 TxnState)
+(assert (not (= (txn_ops (mk-transaction f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -601,8 +623,8 @@
 (push 1)
 (declare-const r Transaction)
 (assert (>= (txn_id r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (txn_id r) (Seq r)) 0)))
+(assert (>= (seq.len (txn_ops r)) 0))
+(assert (not (>= (+ (txn_id r) (seq.len (txn_ops r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -610,26 +632,28 @@
 
 ; --- 65. Journal accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (Seq (mk-journal f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (journal_transactions (mk-journal f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 66. Journal accessor round-trip: journal_head ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Int)
-(assert (not (= (journal_head (mk-journal f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (journal_head (mk-journal f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 67. Journal: integer field consistency ---
 (push 1)
 (declare-const r Journal)
-(assert (>= (Seq r) 0))
+(assert (>= (seq.len (journal_transactions r)) 0))
 (assert (>= (journal_head r) 0))
-(assert (not (>= (+ (Seq r) (journal_head r)) 0)))
+(assert (not (>= (+ (seq.len (journal_transactions r)) (journal_head r)) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -639,7 +663,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (de_name (mk-dir_entry f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (de_name (mk-dir_entry f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -647,7 +672,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (de_inode (mk-dir_entry f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (de_inode (mk-dir_entry f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -666,7 +692,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (dir_inode (mk-directory f0 f1)) f0)))
+(declare-const f2 (Seq Int))
+(assert (not (= (dir_inode (mk-directory f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -674,7 +701,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (dir_parent (mk-directory f0 f1)) f1)))
+(declare-const f2 (Seq Int))
+(assert (not (= (dir_parent (mk-directory f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -695,7 +723,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (quota_uid (mk-quota f0 f1 f2 f3)) f0)))
+(declare-const f4 Int)
+(assert (not (= (quota_uid (mk-quota f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -705,7 +734,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (quota_limit_bytes (mk-quota f0 f1 f2 f3)) f1)))
+(declare-const f4 Int)
+(assert (not (= (quota_limit_bytes (mk-quota f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -715,7 +745,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (quota_limit_inodes (mk-quota f0 f1 f2 f3)) f2)))
+(declare-const f4 Int)
+(assert (not (= (quota_limit_inodes (mk-quota f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -725,7 +756,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (quota_used_bytes (mk-quota f0 f1 f2 f3)) f3)))
+(declare-const f4 Int)
+(assert (not (= (quota_used_bytes (mk-quota f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -745,7 +777,8 @@
 (declare-const f0 Journal)
 (declare-const f1 FSState)
 (declare-const f2 Int)
-(assert (not (= (cs_journal (mk-crash_state f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (cs_journal (mk-crash_state f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -754,7 +787,8 @@
 (declare-const f0 Journal)
 (declare-const f1 FSState)
 (declare-const f2 Int)
-(assert (not (= (cs_fs_state (mk-crash_state f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (cs_fs_state (mk-crash_state f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -763,7 +797,8 @@
 (declare-const f0 Journal)
 (declare-const f1 FSState)
 (declare-const f2 Int)
-(assert (not (= (cs_last_checkpoint (mk-crash_state f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (cs_last_checkpoint (mk-crash_state f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -773,7 +808,8 @@
 (push 1)
 (declare-const f0 FileOp)
 (declare-const f1 OpResult)
-(assert (not (= (aop_operation (mk-atomic_op f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (aop_operation (mk-atomic_op f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -781,7 +817,8 @@
 (push 1)
 (declare-const f0 FileOp)
 (declare-const f1 OpResult)
-(assert (not (= (aop_result (mk-atomic_op f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (aop_result (mk-atomic_op f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

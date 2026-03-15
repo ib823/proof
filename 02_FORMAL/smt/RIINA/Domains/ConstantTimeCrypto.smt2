@@ -159,7 +159,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (ct_no_secret_branches (mk-constant_time_config f0 f1 f2 f3 f4 f5)) f0)))
+(declare-const f6 Bool)
+(assert (not (= (ct_no_secret_branches (mk-constant_time_config f0 f1 f2 f3 f4 f5 f6)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -171,7 +172,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (ct_no_secret_addresses (mk-constant_time_config f0 f1 f2 f3 f4 f5)) f1)))
+(declare-const f6 Bool)
+(assert (not (= (ct_no_secret_addresses (mk-constant_time_config f0 f1 f2 f3 f4 f5 f6)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -183,7 +185,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (ct_no_variable_time_ops (mk-constant_time_config f0 f1 f2 f3 f4 f5)) f2)))
+(declare-const f6 Bool)
+(assert (not (= (ct_no_variable_time_ops (mk-constant_time_config f0 f1 f2 f3 f4 f5 f6)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -195,7 +198,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (ct_no_cache_timing (mk-constant_time_config f0 f1 f2 f3 f4 f5)) f3)))
+(declare-const f6 Bool)
+(assert (not (= (ct_no_cache_timing (mk-constant_time_config f0 f1 f2 f3 f4 f5 f6)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -207,7 +211,8 @@
 (declare-const f3 Bool)
 (declare-const f4 Bool)
 (declare-const f5 Bool)
-(assert (not (= (ct_branchless_compare (mk-constant_time_config f0 f1 f2 f3 f4 f5)) f4)))
+(declare-const f6 Bool)
+(assert (not (= (ct_branchless_compare (mk-constant_time_config f0 f1 f2 f3 f4 f5 f6)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -258,7 +263,8 @@
 (declare-const f0 CryptoOperation)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ci_operation (mk-crypto_implementation f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (ci_operation (mk-crypto_implementation f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -267,7 +273,8 @@
 (declare-const f0 CryptoOperation)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ci_constant_time (mk-crypto_implementation f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (ci_constant_time (mk-crypto_implementation f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -276,7 +283,8 @@
 (declare-const f0 CryptoOperation)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (ci_no_table_lookups (mk-crypto_implementation f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (ci_no_table_lookups (mk-crypto_implementation f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 

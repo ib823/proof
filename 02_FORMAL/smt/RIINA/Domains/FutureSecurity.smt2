@@ -365,7 +365,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (pqc_kem (mk-p_q_crypto_config f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Int)
+(assert (not (= (pqc_kem (mk-pq_crypto_config f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -376,7 +377,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (pqc_signature (mk-p_q_crypto_config f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Int)
+(assert (not (= (pqc_signature (mk-pq_crypto_config f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -387,7 +389,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (pqc_symmetric_bits (mk-p_q_crypto_config f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Int)
+(assert (not (= (pqc_symmetric_bits (mk-pq_crypto_config f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -398,7 +401,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (pqc_hybrid_mode (mk-p_q_crypto_config f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Int)
+(assert (not (= (pqc_hybrid_mode (mk-pq_crypto_config f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -409,7 +413,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Int)
-(assert (not (= (pqc_classical_kem (mk-p_q_crypto_config f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Int)
+(assert (not (= (pqc_classical_kem (mk-pq_crypto_config f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -429,7 +434,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cc_rsa_bits (mk-classical_crypto f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (cc_rsa_bits (mk-classical_crypto f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -438,7 +444,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cc_dh_bits (mk-classical_crypto f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (cc_dh_bits (mk-classical_crypto f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -447,7 +454,8 @@
 (declare-const f0 Int)
 (declare-const f1 Int)
 (declare-const f2 Int)
-(assert (not (= (cc_ecc_bits (mk-classical_crypto f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (cc_ecc_bits (mk-classical_crypto f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -467,7 +475,8 @@
 (declare-const f0 SecurityLayerType)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sl_type (mk-security_layer f0 f1 f2)) f0)))
+(declare-const f3 Int)
+(assert (not (= (sl_type (mk-security_layer f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -476,7 +485,8 @@
 (declare-const f0 SecurityLayerType)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sl_verified (mk-security_layer f0 f1 f2)) f1)))
+(declare-const f3 Int)
+(assert (not (= (sl_verified (mk-security_layer f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -485,7 +495,8 @@
 (declare-const f0 SecurityLayerType)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (sl_independent (mk-security_layer f0 f1 f2)) f2)))
+(declare-const f3 Int)
+(assert (not (= (sl_independent (mk-security_layer f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -493,17 +504,19 @@
 
 ; --- 55. DefenseInDepth accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
-(assert (not (= (Seq (mk-defense_in_depth f0 f1)) f0)))
+(declare-const f2 Bool)
+(assert (not (= (did_layers (mk-defense_in_depth f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 56. DefenseInDepth accessor round-trip: did_composition_verified ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
-(assert (not (= (did_composition_verified (mk-defense_in_depth f0 f1)) f1)))
+(declare-const f2 Bool)
+(assert (not (= (did_composition_verified (mk-defense_in_depth f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -511,56 +524,61 @@
 
 ; --- 57. SpeculationMitigation accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (Seq (mk-speculation_mitigation f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (sm_barriers (mk-speculation_mitigation f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 58. SpeculationMitigation accessor round-trip: sm_retpoline ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (sm_retpoline (mk-speculation_mitigation f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (sm_retpoline (mk-speculation_mitigation f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 59. SpeculationMitigation accessor round-trip: sm_ibrs ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (sm_ibrs (mk-speculation_mitigation f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (sm_ibrs (mk-speculation_mitigation f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 60. SpeculationMitigation accessor round-trip: sm_stibp ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (sm_stibp (mk-speculation_mitigation f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (sm_stibp (mk-speculation_mitigation f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 61. SpeculationMitigation accessor round-trip: sm_ssbd ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (sm_ssbd (mk-speculation_mitigation f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (sm_ssbd (mk-speculation_mitigation f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -573,7 +591,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (scm_constant_time (mk-side_channel_mitigation f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (scm_constant_time (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -584,7 +603,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (scm_cache_partitioning (mk-side_channel_mitigation f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (scm_cache_partitioning (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -595,7 +615,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (scm_no_secret_dependent_branches (mk-side_channel_mitigation f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (scm_no_secret_dependent_branches (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -606,7 +627,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (scm_no_secret_dependent_memory (mk-side_channel_mitigation f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (scm_no_secret_dependent_memory (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -617,7 +639,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (scm_noise_injection (mk-side_channel_mitigation f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (scm_noise_injection (mk-side_channel_mitigation f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -666,7 +689,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (lb_bits_per_operation (mk-leakage_bound f0 f1)) f0)))
+(declare-const f2 Int)
+(assert (not (= (lb_bits_per_operation (mk-leakage_bound f0 f1 f2)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -674,7 +698,8 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Int)
-(assert (not (= (lb_total_bits (mk-leakage_bound f0 f1)) f1)))
+(declare-const f2 Int)
+(assert (not (= (lb_total_bits (mk-leakage_bound f0 f1 f2)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -693,8 +718,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Bool)
-(declare-const f2 Int)
-(assert (not (= (sc_id (mk-security_component f0 f1 f2)) f0)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (sc_id (mk-security_component f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -702,8 +728,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Bool)
-(declare-const f2 Int)
-(assert (not (= (sc_verified (mk-security_component f0 f1 f2)) f1)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (sc_verified (mk-security_component f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -711,8 +738,9 @@
 (push 1)
 (declare-const f0 Int)
 (declare-const f1 Bool)
-(declare-const f2 Int)
-(assert (not (= (Seq (mk-security_component f0 f1 f2)) f2)))
+(declare-const f2 (Seq Int))
+(declare-const f3 (Seq Int))
+(assert (not (= (sc_assumptions (mk-security_component f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -720,8 +748,8 @@
 (push 1)
 (declare-const r SecurityComponent)
 (assert (>= (sc_id r) 0))
-(assert (>= (Seq r) 0))
-(assert (not (>= (+ (sc_id r) (Seq r)) 0)))
+(assert (>= (seq.len (sc_assumptions r)) 0))
+(assert (not (>= (+ (sc_id r) (seq.len (sc_assumptions r))) 0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -729,41 +757,45 @@
 
 ; --- 78. ComposedSecurity accessor round-trip: Seq ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (Seq (mk-composed_security f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (cs_components (mk-composed_security f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 79. ComposedSecurity accessor round-trip: cs_composition_proof ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cs_composition_proof (mk-composed_security f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (cs_composition_proof (mk-composed_security f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 80. ComposedSecurity accessor round-trip: cs_no_assumption_cycles ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cs_no_assumption_cycles (mk-composed_security f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (cs_no_assumption_cycles (mk-composed_security f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
 ; --- 81. ComposedSecurity accessor round-trip: cs_all_assumptions_met ---
 (push 1)
-(declare-const f0 Int)
+(declare-const f0 (Seq Int))
 (declare-const f1 Bool)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (cs_all_assumptions_met (mk-composed_security f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (cs_all_assumptions_met (mk-composed_security f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -775,7 +807,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (krp_max_age_seconds (mk-key_rotation_policy f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (krp_max_age_seconds (mk-key_rotation_policy f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -785,7 +818,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (krp_max_operations (mk-key_rotation_policy f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (krp_max_operations (mk-key_rotation_policy f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -795,7 +829,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (krp_forward_secrecy (mk-key_rotation_policy f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (krp_forward_secrecy (mk-key_rotation_policy f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -805,7 +840,8 @@
 (declare-const f1 Int)
 (declare-const f2 Bool)
 (declare-const f3 Bool)
-(assert (not (= (krp_compromise_recovery (mk-key_rotation_policy f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (krp_compromise_recovery (mk-key_rotation_policy f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -827,7 +863,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (cv_runtime_checks (mk-continuous_verification f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (cv_runtime_checks (mk-continuous_verification f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -838,7 +875,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (cv_periodic_attestation (mk-continuous_verification f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (cv_periodic_attestation (mk-continuous_verification f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -849,7 +887,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (cv_attestation_interval_ms (mk-continuous_verification f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (cv_attestation_interval_ms (mk-continuous_verification f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -860,7 +899,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (cv_anomaly_detection (mk-continuous_verification f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (cv_anomaly_detection (mk-continuous_verification f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -871,7 +911,8 @@
 (declare-const f2 Int)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (cv_automatic_response (mk-continuous_verification f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (cv_automatic_response (mk-continuous_verification f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -884,7 +925,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (apt_key_rotation (mk-a_p_t_resistance f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (apt_key_rotation (mk-apt_resistance f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -895,7 +937,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (apt_continuous_verify (mk-a_p_t_resistance f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (apt_continuous_verify (mk-apt_resistance f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -906,7 +949,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (apt_compartmentalization (mk-a_p_t_resistance f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (apt_compartmentalization (mk-apt_resistance f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -917,7 +961,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (apt_least_privilege (mk-a_p_t_resistance f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (apt_least_privilege (mk-apt_resistance f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -928,7 +973,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (apt_audit_logging (mk-a_p_t_resistance f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (apt_audit_logging (mk-apt_resistance f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -940,7 +986,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (tls_version (mk-t_l_s_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (tls_version (mk-tls_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -950,7 +997,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (tls_pq_kem (mk-t_l_s_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (tls_pq_kem (mk-tls_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -960,7 +1008,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (tls_pq_sig (mk-t_l_s_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (tls_pq_sig (mk-tls_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -970,7 +1019,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (tls_classical_kex (mk-t_l_s_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (tls_classical_kex (mk-tls_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -991,7 +1041,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (qkd_enabled (mk-q_k_d_config f0 f1 f2 f3)) f0)))
+(declare-const f4 Bool)
+(assert (not (= (qkd_enabled (mk-qkd_config f0 f1 f2 f3 f4)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1001,7 +1052,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (qkd_protocol (mk-q_k_d_config f0 f1 f2 f3)) f1)))
+(declare-const f4 Bool)
+(assert (not (= (qkd_protocol (mk-qkd_config f0 f1 f2 f3 f4)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1011,7 +1063,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (qkd_detector_efficiency (mk-q_k_d_config f0 f1 f2 f3)) f2)))
+(declare-const f4 Bool)
+(assert (not (= (qkd_detector_efficiency (mk-qkd_config f0 f1 f2 f3 f4)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1021,7 +1074,8 @@
 (declare-const f1 Int)
 (declare-const f2 Int)
 (declare-const f3 Int)
-(assert (not (= (qkd_error_threshold (mk-q_k_d_config f0 f1 f2 f3)) f3)))
+(declare-const f4 Bool)
+(assert (not (= (qkd_error_threshold (mk-qkd_config f0 f1 f2 f3 f4)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1041,7 +1095,8 @@
 (declare-const f0 TLSConfig)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (qsn_tls (mk-quantum_safe_network f0 f1 f2)) f0)))
+(declare-const f3 Bool)
+(assert (not (= (qsn_tls (mk-quantum_safe_network f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1050,7 +1105,8 @@
 (declare-const f0 TLSConfig)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (qsn_qkd (mk-quantum_safe_network f0 f1 f2)) f1)))
+(declare-const f3 Bool)
+(assert (not (= (qsn_qkd (mk-quantum_safe_network f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1059,7 +1115,8 @@
 (declare-const f0 TLSConfig)
 (declare-const f1 Int)
 (declare-const f2 Bool)
-(assert (not (= (qsn_pq_required (mk-quantum_safe_network f0 f1 f2)) f2)))
+(declare-const f3 Bool)
+(assert (not (= (qsn_pq_required (mk-quantum_safe_network f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1072,7 +1129,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (fvc_level (mk-formal_verification_config f0 f1 f2 f3 f4)) f0)))
+(declare-const f5 Bool)
+(assert (not (= (fvc_level (mk-formal_verification_config f0 f1 f2 f3 f4 f5)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1083,7 +1141,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (fvc_proof_assistant (mk-formal_verification_config f0 f1 f2 f3 f4)) f1)))
+(declare-const f5 Bool)
+(assert (not (= (fvc_proof_assistant (mk-formal_verification_config f0 f1 f2 f3 f4 f5)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1094,7 +1153,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (fvc_spec_complete (mk-formal_verification_config f0 f1 f2 f3 f4)) f2)))
+(declare-const f5 Bool)
+(assert (not (= (fvc_spec_complete (mk-formal_verification_config f0 f1 f2 f3 f4 f5)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1105,7 +1165,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (fvc_assumptions_explicit (mk-formal_verification_config f0 f1 f2 f3 f4)) f3)))
+(declare-const f5 Bool)
+(assert (not (= (fvc_assumptions_explicit (mk-formal_verification_config f0 f1 f2 f3 f4 f5)) f3)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1116,7 +1177,8 @@
 (declare-const f2 Bool)
 (declare-const f3 Bool)
 (declare-const f4 Bool)
-(assert (not (= (fvc_trusted_base_minimal (mk-formal_verification_config f0 f1 f2 f3 f4)) f4)))
+(declare-const f5 Bool)
+(assert (not (= (fvc_trusted_base_minimal (mk-formal_verification_config f0 f1 f2 f3 f4 f5)) f4)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1127,7 +1189,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (mp_statement (mk-mathematical_proof f0 f1 f2)) f0)))
+(declare-const f3 (Seq Int))
+(assert (not (= (mp_statement (mk-mathematical_proof f0 f1 f2 f3)) f0)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1136,7 +1199,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (mp_proof_exists (mk-mathematical_proof f0 f1 f2)) f1)))
+(declare-const f3 (Seq Int))
+(assert (not (= (mp_proof_exists (mk-mathematical_proof f0 f1 f2 f3)) f1)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
@@ -1145,7 +1209,8 @@
 (declare-const f0 Bool)
 (declare-const f1 Bool)
 (declare-const f2 Bool)
-(assert (not (= (mp_machine_checked (mk-mathematical_proof f0 f1 f2)) f2)))
+(declare-const f3 (Seq Int))
+(assert (not (= (mp_machine_checked (mk-mathematical_proof f0 f1 f2 f3)) f2)))
 (check-sat) ; expect UNSAT
 (pop 1)
 
