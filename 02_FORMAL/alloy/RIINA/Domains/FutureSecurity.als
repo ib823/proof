@@ -222,8 +222,8 @@ pred kem_security_level[kem: PQ_KEM] {
 }
 
 // sig_security_level (matches Coq: Definition sig_security_level)
-pred sig_security_level[sig: PQ_Signature] {
-  some sig
+pred sig_security_level[s: PQ_Signature] {
+  some s
 }
 
 // symmetric_quantum_safe (matches Coq: Definition symmetric_quantum_safe)

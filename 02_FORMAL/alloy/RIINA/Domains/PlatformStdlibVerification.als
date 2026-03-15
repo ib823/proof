@@ -19,12 +19,7 @@ one sig CapTimer extends Platform {}
 one sig CapDOM extends Platform {} // Web only
 one sig CapSensor extends Platform {} // Mobile only
 one sig CapCamera extends Platform {} // Mobile only
-one sig CapPushNotif extends Platform {} // Mobile only *)
-
-(* Platform capability mapping — mirrors platform.rs *)
-Definition platform_has_cap (p : Platform) (c : Capability) : bool :=
-  match p, c with
-  (* Native: filesystem, network, console, timer
+one sig CapPushNotif extends Platform {} // Mobile only
 
 // PlatEffect (matches Coq: Inductive PlatEffect)
 abstract sig PlatEffect {}

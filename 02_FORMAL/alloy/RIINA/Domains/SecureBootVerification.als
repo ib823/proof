@@ -173,8 +173,8 @@ pred key_valid_for_verification[pk: PublicKey] {
 }
 
 // signature_valid_with_key (matches Coq: Definition signature_valid_with_key)
-pred signature_valid_with_key[sig: Signature, pk: PublicKey] {
-  some sig
+pred signature_valid_with_key[s: Signature, pk: PublicKey] {
+  some s
 }
 
 // bootloader_verified (matches Coq: Definition bootloader_verified)
@@ -261,7 +261,7 @@ pred key_forbidden[key_id: Int] {
 }
 
 // db_allows_signature (matches Coq: Definition db_allows_signature)
-pred db_allows_signature[db: KeyDatabase, sig: Signature] {
+pred db_allows_signature[db: KeyDatabase, s: Signature] {
   some db
 }
 

@@ -310,8 +310,8 @@ pred cache_safe[entry: DNSCacheEntry] {
 }
 
 // rebinding_prevented (matches Coq: Definition rebinding_prevented)
-pred rebinding_prevented[check: DNSRebindingCheck] {
-  some check
+pred rebinding_prevented[chk: DNSRebindingCheck] {
+  some chk
 }
 
 // query_has_integrity (matches Coq: Definition query_has_integrity)

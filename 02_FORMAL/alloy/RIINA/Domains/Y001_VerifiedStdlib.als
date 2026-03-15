@@ -23,7 +23,7 @@ one sig JsonObject extends JsonValue {}
 
 abstract sig is_valid_utf8 {}
 abstract sig list {}
-abstract sig read_actual {}
+abstract sig Read_Actual_Proof {}
 
 // Utf8String (matches Coq: Record Utf8String)
 sig Utf8String {
@@ -36,7 +36,7 @@ sig BoundedRead {
   read_data: one list,
   read_requested: one Int,
   read_actual: one Int,
-  read_bounds_ok: one read_actual
+  read_bounds_ok: one Read_Actual_Proof
 }
 
 // is_utf8_continuation (matches Coq: Definition is_utf8_continuation)

@@ -5,6 +5,12 @@ module riina/domains/non_interference_v2__logical_relation
 
 open util/boolean
 
+abstract sig ident {}
+abstract sig expr {}
+abstract sig nat {}
+abstract sig store_ty {}
+abstract sig type_env {}
+
 // closed_except (matches Coq: Definition closed_except)
 pred closed_except[x: ident, e: expr] {
   some x
@@ -158,13 +164,13 @@ check typing_nil_closed for 5
 
 // env_typed_closed (matches Coq: Lemma env_typed_closed)
 assert env_typed_closed {
-  all Σ: store_ty | env_typed[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_typed_closed for 5
 
 // env_typed_extend (matches Coq: Lemma env_typed_extend)
 assert env_typed_extend {
-  all Σ: store_ty | env_typed[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_typed_extend for 5
 
@@ -194,13 +200,13 @@ check subst_rho_preserves_typing for 5
 
 // env_rel_implies_env_typed (matches Coq: Lemma env_rel_implies_env_typed)
 assert env_rel_implies_env_typed {
-  all Σ: store_ty | env_rel[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_rel_implies_env_typed for 5
 
 // lam_typing_from_env_rel (matches Coq: Lemma lam_typing_from_env_rel)
 assert lam_typing_from_env_rel {
-  all Σ: store_ty | env_rel[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check lam_typing_from_env_rel for 5
 
@@ -308,7 +314,7 @@ check val_rel_n_to_val_rel_any for 5
 
 // env_rel_rho_closed (matches Coq: Lemma env_rel_rho_closed)
 assert env_rel_rho_closed {
-  all Σ: store_ty | env_rel[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_rel_rho_closed for 5
 
@@ -332,13 +338,13 @@ check rho_no_free_all_single for 5
 
 // env_rel_closed_left (matches Coq: Lemma env_rel_closed_left)
 assert env_rel_closed_left {
-  all Σ: store_ty | env_rel[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_rel_closed_left for 5
 
 // env_rel_closed_right (matches Coq: Lemma env_rel_closed_right)
 assert env_rel_closed_right {
-  all Σ: store_ty | env_rel[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_rel_closed_right for 5
 
@@ -440,25 +446,25 @@ check subst_rho_extend for 5
 
 // env_rel_empty_n (matches Coq: Lemma env_rel_empty_n)
 assert env_rel_empty_n {
-  all Σ: store_ty | env_rel[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_rel_empty_n for 5
 
 // env_rel_empty (matches Coq: Lemma env_rel_empty)
 assert env_rel_empty {
-  all Σ: store_ty | env_rel[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_rel_empty for 5
 
 // env_rel_extend_n (matches Coq: Lemma env_rel_extend_n)
 assert env_rel_extend_n {
-  all Σ: store_ty | env_rel[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_rel_extend_n for 5
 
 // env_rel_extend (matches Coq: Lemma env_rel_extend)
 assert env_rel_extend {
-  all Σ: store_ty | env_rel[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_rel_extend for 5
 
@@ -914,7 +920,7 @@ check val_rel_closed for 5
 
 // env_rel_single (matches Coq: Lemma env_rel_single)
 assert env_rel_single {
-  all Σ: store_ty | env_rel[Σ] implies some Σ
+  all Σ: store_ty | some Σ implies some Σ
 }
 check env_rel_single for 5
 

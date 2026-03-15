@@ -263,7 +263,7 @@ pred acknowledged[q: QueueState, m: Message, c: Consumer] {
 }
 
 // eventually (matches Coq: Definition eventually)
-pred eventually[P: Prop] {
+pred eventually_holds[P: Prop] {
   some P
 }
 

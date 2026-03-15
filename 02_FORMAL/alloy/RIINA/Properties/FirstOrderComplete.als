@@ -74,43 +74,43 @@ check ty_eqb_refl for 5
 
 // ty_eqb_eq (matches Coq: Lemma ty_eqb_eq)
 assert ty_eqb_eq {
-  all p_T1: ty | ty_eqb[p_T1] implies some p_T1
+  all p_T1, p_T2: ty | ty_eqb[p_T1, p_T2] implies some p_T1
 }
 check ty_eqb_eq for 5
 
 // ty_eqb_unit_bool_false (matches Coq: Lemma ty_eqb_unit_bool_false)
 assert ty_eqb_unit_bool_false {
-  all p_T1: ty | ty_eqb[p_T1] implies some p_T1
+  all p_T1, p_T2: ty | ty_eqb[p_T1, p_T2] implies some p_T1
 }
 check ty_eqb_unit_bool_false for 5
 
 // ty_eqb_unit_int_false (matches Coq: Lemma ty_eqb_unit_int_false)
 assert ty_eqb_unit_int_false {
-  all p_T1: ty | ty_eqb[p_T1] implies some p_T1
+  all p_T1, p_T2: ty | ty_eqb[p_T1, p_T2] implies some p_T1
 }
 check ty_eqb_unit_int_false for 5
 
 // ty_eqb_bool_int_false (matches Coq: Lemma ty_eqb_bool_int_false)
 assert ty_eqb_bool_int_false {
-  all p_T1: ty | ty_eqb[p_T1] implies some p_T1
+  all p_T1, p_T2: ty | ty_eqb[p_T1, p_T2] implies some p_T1
 }
 check ty_eqb_bool_int_false for 5
 
 // ty_eqb_bool_string_false (matches Coq: Lemma ty_eqb_bool_string_false)
 assert ty_eqb_bool_string_false {
-  all p_T1: ty | ty_eqb[p_T1] implies some p_T1
+  all p_T1, p_T2: ty | ty_eqb[p_T1, p_T2] implies some p_T1
 }
 check ty_eqb_bool_string_false for 5
 
 // ty_eqb_int_string_false (matches Coq: Lemma ty_eqb_int_string_false)
 assert ty_eqb_int_string_false {
-  all p_T1: ty | ty_eqb[p_T1] implies some p_T1
+  all p_T1, p_T2: ty | ty_eqb[p_T1, p_T2] implies some p_T1
 }
 check ty_eqb_int_string_false for 5
 
 // ty_eqb_unit_string_false (matches Coq: Lemma ty_eqb_unit_string_false)
 assert ty_eqb_unit_string_false {
-  all p_T1: ty | ty_eqb[p_T1] implies some p_T1
+  all p_T1, p_T2: ty | ty_eqb[p_T1, p_T2] implies some p_T1
 }
 check ty_eqb_unit_string_false for 5
 

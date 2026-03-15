@@ -92,8 +92,8 @@ one sig RV_Inr extends RiinaValue {}
 
 abstract sig Type {}
 abstract sig list {}
-abstract sig spm_objects {}
-abstract sig spm_subjects {}
+abstract sig SPM_Objects_Proof {}
+abstract sig SPM_Subjects_Proof {}
 
 // SecurityPolicyModel (matches Coq: Record SecurityPolicyModel)
 sig SecurityPolicyModel {
@@ -101,8 +101,8 @@ sig SecurityPolicyModel {
   spm_objects: one Type,
   spm_operations: one Type,
   spm_security_attributes: one Type,
-  spm_access_control: one spm_subjects,
-  spm_information_flow: one spm_objects
+  spm_access_control: one SPM_Subjects_Proof,
+  spm_information_flow: one SPM_Objects_Proof
 }
 
 // TOEConfiguration (matches Coq: Record TOEConfiguration)

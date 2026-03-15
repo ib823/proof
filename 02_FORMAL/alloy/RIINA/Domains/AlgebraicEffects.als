@@ -93,8 +93,8 @@ pred opSignature[op: EffectOp] {
 }
 
 // sig_wellformed (matches Coq: Definition sig_wellformed)
-pred sig_wellformed[sig: EffectSig] {
-  some sig
+pred sig_wellformed[s: EffectSig] {
+  some s
 }
 
 // row_minus (matches Coq: Definition row_minus)

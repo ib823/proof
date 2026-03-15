@@ -5,6 +5,12 @@ module riina/domains/non_interference_v2
 
 open util/boolean
 
+abstract sig security_level {}
+abstract sig expr {}
+abstract sig ty {}
+abstract sig store_ty {}
+abstract sig nat {}
+
 // is_low (matches Coq: Definition is_low)
 pred is_low[l: security_level] {
   some l

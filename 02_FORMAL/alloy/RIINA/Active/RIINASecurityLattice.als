@@ -6,6 +6,8 @@
 
 module riina/active/security_lattice
 
+open util/integer
+
 // ═══════════════════════════════════════════════════════════════════════
 // SECURITY LEVEL LATTICE
 // 6-level total order: Public ⊑ Internal ⊑ Session ⊑ User ⊑ System ⊑ Secret
@@ -49,12 +51,12 @@ fact OrderingDefinition {
 
 // sec_join (least upper bound): the level with max(l1.level, l2.level)
 fun sec_join[l1, l2: SecurityLevel]: SecurityLevel {
-  { result: SecurityLevel | result.level = max[l1.level, l2.level] }
+  { result: SecurityLevel | result.level = max[l1.level + l2.level] }
 }
 
 // sec_meet (greatest lower bound): the level with min(l1.level, l2.level)
 fun sec_meet[l1, l2: SecurityLevel]: SecurityLevel {
-  { result: SecurityLevel | result.level = min[l1.level, l2.level] }
+  { result: SecurityLevel | result.level = min[l1.level + l2.level] }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
