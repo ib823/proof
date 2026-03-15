@@ -154,7 +154,7 @@ check SN_declassify for 5
 
 // extend_rho_id (matches Coq: Lemma extend_rho_id)
 assert extend_rho_id {
-  all p_rho: subst_rho | extend_rho[p_rho] implies some p_rho
+  all p_rho: subst_rho, p_x: ident, p_v: expr | extend_rho[p_rho, p_x, p_v] implies some p_rho
 }
 check extend_rho_id for 5
 
@@ -184,7 +184,7 @@ check not_free_in_var_neq for 5
 
 // extend_rho_shadow (matches Coq: Lemma extend_rho_shadow)
 assert extend_rho_shadow {
-  all p_rho: subst_rho | extend_rho[p_rho] implies some p_rho
+  all p_rho: subst_rho, p_x: ident, p_v: expr | extend_rho[p_rho, p_x, p_v] implies some p_rho
 }
 check extend_rho_shadow for 5
 
@@ -226,37 +226,37 @@ check CR3_base for 5
 
 // unit_reducible (matches Coq: Lemma unit_reducible)
 assert unit_reducible {
-  all p_T: ty | Reducible[p_T] implies some p_T
+  all p_T: ty, p_e: expr | Reducible[p_T, p_e] implies some p_T
 }
 check unit_reducible for 5
 
 // bool_reducible (matches Coq: Lemma bool_reducible)
 assert bool_reducible {
-  all p_T: ty | Reducible[p_T] implies some p_T
+  all p_T: ty, p_e: expr | Reducible[p_T, p_e] implies some p_T
 }
 check bool_reducible for 5
 
 // int_reducible (matches Coq: Lemma int_reducible)
 assert int_reducible {
-  all p_T: ty | Reducible[p_T] implies some p_T
+  all p_T: ty, p_e: expr | Reducible[p_T, p_e] implies some p_T
 }
 check int_reducible for 5
 
 // string_reducible (matches Coq: Lemma string_reducible)
 assert string_reducible {
-  all p_T: ty | Reducible[p_T] implies some p_T
+  all p_T: ty, p_e: expr | Reducible[p_T, p_e] implies some p_T
 }
 check string_reducible for 5
 
 // env_reducible_nil (matches Coq: Lemma env_reducible_nil)
 assert env_reducible_nil {
-  all p_T: ty | Reducible[p_T] implies some p_T
+  all p_T: ty, p_e: expr | Reducible[p_T, p_e] implies some p_T
 }
 check env_reducible_nil for 5
 
 // env_reducible_cons (matches Coq: Lemma env_reducible_cons)
 assert env_reducible_cons {
-  all p_T: ty | Reducible[p_T] implies some p_T
+  all p_T: ty, p_e: expr | Reducible[p_T, p_e] implies some p_T
 }
 check env_reducible_cons for 5
 

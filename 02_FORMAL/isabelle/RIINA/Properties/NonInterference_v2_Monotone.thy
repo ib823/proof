@@ -20,7 +20,7 @@
  *)
 
 theory NonInterference_v2_Monotone
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
 (* Transitivity of store typing extension *)

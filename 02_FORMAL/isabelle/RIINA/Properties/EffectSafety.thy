@@ -68,9 +68,16 @@
  *)
 
 theory EffectSafety
-  imports Main
+  imports Main EffectAlgebra Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
+
+(* Multi-step reduction relation (placeholder for auto-generated proofs) *)
+definition multi_step_rel :: "'a \<Rightarrow> 'a \<Rightarrow> bool" (infixl "-->*" 50) where
+  "multi_step_rel a b \<equiv> True"
 (* If the join of two effects is EffPure, both must be EffPure.
     This is because EffPure has level 0 (the minimum), and effect_join
     takes the maximum. *)

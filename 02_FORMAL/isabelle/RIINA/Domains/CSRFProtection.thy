@@ -12,8 +12,8 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | CSRFConfig         | csrf_config            | OK     |
- * | CSRFRequest        | csrf_request           | OK     |
+ * | csrf_config         | csrf_config            | OK     |
+ * | csrf_request        | csrf_request           | OK     |
  * | csrf_protected     | csrf_protected         | OK     |
  * | riina_csrf         | riina_csrf             | OK     |
  * | csrf_request_safe  | csrf_request_safe      | OK     |
@@ -65,7 +65,7 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* CSRFConfig (matches Coq: Record CSRFConfig) *)
+(* csrf_config (matches Coq: Record csrf_config) *)
 record csrf_config =
   csrf_token_validation :: bool
   csrf_same_site_cookies :: bool
@@ -73,7 +73,7 @@ record csrf_config =
   csrf_referer_check :: bool
   csrf_double_submit :: bool
 
-(* CSRFRequest (matches Coq: Record CSRFRequest) *)
+(* csrf_request (matches Coq: Record csrf_request) *)
 record csrf_request =
   req_has_token :: bool
   req_token_matches :: bool

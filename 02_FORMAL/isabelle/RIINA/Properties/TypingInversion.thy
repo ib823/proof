@@ -67,9 +67,12 @@
  *)
 
 theory TypingInversion
-  imports Main
+  imports Main Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* Application inversion *)
 (* inversion_app (matches Coq) *)
 lemma inversion_app: "\<forall>Γ Σ Δ e1 e2 T ε. has_type Γ Σ Δ (EApp e1 e2) T ε \<longrightarrow> \<exists>T1 ε_fn ε1 ε2. has_type Γ Σ Δ e1 (TFn T1 T ε_fn) ε1 \<and> has_type Γ Σ Δ e2 T1 ε2 \<and> ε = effect_join ε_fn (effect_join ε1 ε2)"

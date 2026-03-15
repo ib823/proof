@@ -12,21 +12,21 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Schema             | schema                 | OK     |
- * | Database           | database               | OK     |
- * | SyncState          | sync_state             | OK     |
- * | EncryptedStore     | encrypted_store        | OK     |
- * | Backup             | backup                 | OK     |
- * | Migration          | migration              | OK     |
- * | Transaction        | transaction            | OK     |
- * | CacheEntry         | cache_entry            | OK     |
- * | StorageQuota       | storage_quota          | OK     |
- * | SerializedData     | serialized_data        | OK     |
- * | DataExport         | data_export            | OK     |
- * | IndexEntry         | index_entry            | OK     |
+ * | schema             | schema                 | OK     |
+ * | database           | database               | OK     |
+ * | sync_state          | sync_state             | OK     |
+ * | encrypted_store     | encrypted_store        | OK     |
+ * | backup             | backup                 | OK     |
+ * | migration          | migration              | OK     |
+ * | transaction        | transaction            | OK     |
+ * | cache_entry         | cache_entry            | OK     |
+ * | storage_quota       | storage_quota          | OK     |
+ * | serialized_data     | serialized_data        | OK     |
+ * | data_export         | data_export            | OK     |
+ * | index_entry         | index_entry            | OK     |
  * | FieldName          | FieldName              | OK     |
- * | FieldValue         | FieldValue             | OK     |
- * | Record             | Record                 | OK     |
+ * | field_value         | field_value             | OK     |
+ * | record             | record                 | OK     |
  * | record_field_count | record_field_count     | OK     |
  * | all_fields_present | all_fields_present     | OK     |
  * | migrate_record     | migrate_record         | OK     |
@@ -75,26 +75,29 @@ theory DataPersistence
   imports Main CoqCompat
 begin
 
-(* Schema (matches Coq: Record Schema) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym field_value = "nat"
+type_synonym record = "nat"
+(* schema (matches Coq: record schema) *)
 record schema =
   schema_version :: nat
   schema_fields :: 'a list
   schema_required :: 'a list
 
-(* Database (matches Coq: Record Database) *)
+(* database (matches Coq: record database) *)
 record database =
-  db_schema :: Schema
+  db_schema :: schema
   db_records :: 'a list
   db_checksum :: nat
 
-(* SyncState (matches Coq: Record SyncState) *)
+(* sync_state (matches Coq: record sync_state) *)
 record sync_state =
   local_version :: nat
   remote_version :: nat
   pending_changes :: 'a list
   conflicts :: 'a list
 
-(* EncryptedStore (matches Coq: Record EncryptedStore) *)
+(* encrypted_store (matches Coq: record encrypted_store) *)
 record encrypted_store =
   store_id :: nat
   store_encrypted :: bool
@@ -102,7 +105,7 @@ record encrypted_store =
   store_records :: 'a list
   store_checksum :: nat
 
-(* Backup (matches Coq: Record Backup) *)
+(* backup (matches Coq: record backup) *)
 record backup =
   backup_id :: nat
   backup_encrypted :: bool
@@ -110,7 +113,7 @@ record backup =
   backup_records :: 'a list
   backup_checksum :: nat
 
-(* Migration (matches Coq: Record Migration) *)
+(* migration (matches Coq: record migration) *)
 record migration =
   mig_id :: nat
   mig_from_version :: nat
@@ -119,41 +122,41 @@ record migration =
   mig_records_after :: 'a list
   mig_atomic :: bool
 
-(* Transaction (matches Coq: Record Transaction) *)
+(* transaction (matches Coq: record transaction) *)
 record transaction =
   txn_id :: nat
   txn_operations :: 'a list
   txn_committed :: bool
   txn_rolled_back :: bool
 
-(* CacheEntry (matches Coq: Record CacheEntry) *)
+(* cache_entry (matches Coq: record cache_entry) *)
 record cache_entry =
   cache_key :: nat
   cache_value :: nat
   cache_valid :: bool
   cache_timestamp :: nat
 
-(* StorageQuota (matches Coq: Record StorageQuota) *)
+(* storage_quota (matches Coq: record storage_quota) *)
 record storage_quota =
   sq_user_id :: nat
   sq_limit_bytes :: nat
   sq_used_bytes :: nat
 
-(* SerializedData (matches Coq: Record SerializedData) *)
+(* serialized_data (matches Coq: record serialized_data) *)
 record serialized_data =
   ser_format :: nat
   ser_data :: 'a list
   ser_checksum :: nat
   ser_validated :: bool
 
-(* DataExport (matches Coq: Record DataExport) *)
+(* data_export (matches Coq: record data_export) *)
 record data_export =
   export_id :: nat
   export_records :: 'a list
   export_sanitized :: bool
   export_encrypted :: bool
 
-(* IndexEntry (matches Coq: Record IndexEntry) *)
+(* index_entry (matches Coq: record index_entry) *)
 record index_entry =
   idx_key :: nat
   idx_record_id :: nat
@@ -163,13 +166,13 @@ record index_entry =
 definition FieldName :: "'a" where
   "FieldName \<equiv> nat"
 
-(* FieldValue (matches Coq: Definition FieldValue) *)
-definition FieldValue :: "'a" where
+(* field_value (matches Coq: Definition field_value) *)
+definition field_value :: "'a" where
   "FieldValue \<equiv> nat"
 
-(* Record (matches Coq: Definition Record) *)
-definition Record :: "'a" where
-  "Record \<equiv> list (FieldName * FieldValue)"
+(* record (matches Coq: Definition record) *)
+definition record :: "'a" where
+  "Record \<equiv> list (FieldName * field_value)"
 
 (* record_field_count (matches Coq: Definition record_field_count) *)
 definition record_field_count :: "Record \<Rightarrow> nat" where
@@ -177,8 +180,8 @@ definition record_field_count :: "Record \<Rightarrow> nat" where
 
 (* all_fields_present (matches Coq: Definition all_fields_present) *)
 definition all_fields_present :: "Record \<Rightarrow> bool" where
-  "all_fields_present r \<equiv> forall fn, In fn (schema_fields old_schema) ->
-    In fn (schema_fields new_schema) \/
+  "all_fields_present r \<equiv> forall fn, fn \<in> set (schema_fields old_schema) ->
+    fn \<in> set (schema_fields new_schema) \/
     exists fv, In (fn, fv) r"
 
 (* migrate_record (matches Coq: Definition migrate_record) *)
@@ -192,14 +195,14 @@ definition migrates :: "Database \<Rightarrow> bool" where
 
 (* no_data_loss (matches Coq: Definition no_data_loss) *)
 definition no_data_loss :: "Database \<Rightarrow> bool" where
-  "no_data_loss db \<equiv> forall r, In r (db_records db) ->
+  "no_data_loss db \<equiv> forall r, r \<in> set (db_records db) ->
     record_field_count r > 0"
 
 (* migration_preserves_data (matches Coq: Definition migration_preserves_data) *)
 definition migration_preserves_data :: "Record \<Rightarrow> bool" where
   "migration_preserves_data r \<equiv> forall fn fv, In (fn, fv) r ->
-    In fn (schema_fields new_s) ->
-    In (fn, fv) (migrate_record old_s new_s r)"
+    fn \<in> set (schema_fields new_s) ->
+    (fn, fv) \<in> set (migrate_record old_s new_s r)"
 
 (* sync_correct (matches Coq: Definition sync_correct) *)
 definition sync_correct :: "SyncState \<Rightarrow> bool" where
@@ -273,83 +276,83 @@ definition data_export_sanitized :: "DataExport \<Rightarrow> bool" where
   "data_export_sanitized de \<equiv> export_sanitized de = True \<and> export_encrypted de = True"
 
 (* migration_lossless (matches Coq) *)
-lemma migration_lossless: "\<forall>(data :: Database) (schema1 schema2 : Schema). migrates data schema1 schema2 \<longrightarrow> (\<forall>fn. In fn (schema_fields schema1) \<longrightarrow> In fn (schema_fields schema2)) \<longrightarrow> no_data_loss data \<longrightarrow> no_data_loss data"
+lemma migration_lossless: "\<forall>(data :: database) (schema1 :: schema) (schema2 :: schema). migrates data schema1 schema2 \<longrightarrow> (\<forall>fn. fn \<in> set (schema_fields schema1) \<longrightarrow> fn \<in> set (schema_fields schema2)) \<longrightarrow> no_data_loss data \<longrightarrow> no_data_loss data"
   by auto
 
 (* migration_preserves_existing_fields (matches Coq) *)
-lemma migration_preserves_existing_fields: "\<forall>(old_s new_s : Schema) (r :: Record) (fn : FieldName) (fv :: FieldValue). In (fn, fv) r \<longrightarrow> In fn (schema_fields new_s) \<longrightarrow> \<exists>b ((fn) = (schema_fields) new_s) = True \<longrightarrow> In (fn. fv) (migrate_record old_s new_s r)"
+lemma migration_preserves_existing_fields: "\<forall>(old_s :: schema) (new_s :: schema) (r :: record) (fn :: FieldName) (fv :: field_value). In (fn, fv) r \<longrightarrow> fn \<in> set (schema_fields new_s) \<longrightarrow> \<exists>b ((fn) = (schema_fields) new_s) = True \<longrightarrow> (fn. fv) \<in> set (migrate_record old_s new_s r)"
   by auto
 
 (* migration_increases_version (matches Coq) *)
-lemma migration_increases_version: "\<forall>(db :: Database) (old_s new_s : Schema). migrates db old_s new_s \<longrightarrow> schema_version new_s > schema_version old_s"
+lemma migration_increases_version: "\<forall>(db :: database) (old_s :: schema) (new_s :: schema). migrates db old_s new_s \<longrightarrow> schema_version new_s > schema_version old_s"
   by auto
 
 (* sync_after_resolution (matches Coq) *)
-lemma sync_after_resolution: "\<forall>(s :: SyncState). local_version s = remote_version s \<longrightarrow> conflicts s = [] \<longrightarrow> sync_correct s"
+lemma sync_after_resolution: "\<forall>(s :: sync_state). local_version s = remote_version s \<longrightarrow> conflicts s = [] \<longrightarrow> sync_correct s"
   by auto
 
 (* empty_db_no_loss (matches Coq) *)
-lemma empty_db_no_loss: "\<forall>(db :: Database). db_records db = [] \<longrightarrow> no_data_loss db"
+lemma empty_db_no_loss: "\<forall>(db :: database). db_records db = [] \<longrightarrow> no_data_loss db"
   by auto
 
 (* data_encrypted_at_rest (matches Coq) *)
-lemma data_encrypted_at_rest: "\<forall>(s :: EncryptedStore). data_encrypted_at_rest_prop s \<longrightarrow> store_encrypted s = True"
+lemma data_encrypted_at_rest: "\<forall>(s :: encrypted_store). data_encrypted_at_rest_prop s \<longrightarrow> store_encrypted s = True"
   by auto
 
 (* backup_encrypted_thm (matches Coq) *)
-lemma backup_encrypted_thm: "\<forall>(b :: Backup). backup_encrypted_prop b \<longrightarrow> backup_encrypted b = True"
+lemma backup_encrypted_thm: "\<forall>(b :: backup). backup_encrypted_prop b \<longrightarrow> backup_encrypted b = True"
   by auto
 
 (* migration_atomic (matches Coq) *)
-lemma migration_atomic: "\<forall>(m :: Migration). migration_atomic_prop m \<longrightarrow> mig_atomic m = True \<longrightarrow> length (mig_records_before m) = length (mig_records_after m)"
+lemma migration_atomic: "\<forall>(m :: migration). migration_atomic_prop m \<longrightarrow> mig_atomic m = True \<longrightarrow> length (mig_records_before m) = length (mig_records_after m)"
   by auto
 
 (* schema_version_tracked (matches Coq) *)
-lemma schema_version_tracked: "\<forall>(m :: Migration). schema_version_tracked_prop m \<longrightarrow> mig_to_version m > mig_from_version m"
+lemma schema_version_tracked: "\<forall>(m :: migration). schema_version_tracked_prop m \<longrightarrow> mig_to_version m > mig_from_version m"
   by auto
 
 (* corruption_detected (matches Coq) *)
-lemma corruption_detected: "\<forall>(s :: EncryptedStore) (expected :: nat). store_checksum s \<noteq> expected \<longrightarrow> corruption_detected_prop s expected"
+lemma corruption_detected: "\<forall>(s :: encrypted_store) (expected :: nat). store_checksum s \<noteq> expected \<longrightarrow> corruption_detected_prop s expected"
   by auto
 
 (* data_integrity_verified (matches Coq) *)
-lemma data_integrity_verified: "\<forall>(s :: EncryptedStore). data_integrity_verified_prop s \<longrightarrow> store_checksum s = fold_left plus (map (\<lambda>r. length r) (store_records s)) 0"
+lemma data_integrity_verified: "\<forall>(s :: encrypted_store). data_integrity_verified_prop s \<longrightarrow> store_checksum s = fold_left plus (map (\<lambda>r. length r) (store_records s)) 0"
   by auto
 
 (* transaction_acid_compliant (matches Coq) *)
-lemma transaction_acid_compliant: "\<forall>(txn :: Transaction). transaction_acid txn \<longrightarrow> txn_committed txn = True \<longrightarrow> txn_rolled_back txn = False"
+lemma transaction_acid_compliant: "\<forall>(txn :: transaction). transaction_acid txn \<longrightarrow> txn_committed txn = True \<longrightarrow> txn_rolled_back txn = False"
   by auto
 
 (* concurrent_access_safe (matches Coq) *)
-lemma concurrent_access_safe: "\<forall>(txn1 txn2 : Transaction). concurrent_access_safe_prop txn1 txn2 \<longrightarrow> txn_id txn1 \<noteq> txn_id txn2 \<longrightarrow> ~ (txn_committed txn1 = True \<and> txn_rolled_back txn1 = True)"
+lemma concurrent_access_safe: "\<forall>(txn1 :: transaction) (txn2 :: transaction). concurrent_access_safe_prop txn1 txn2 \<longrightarrow> txn_id txn1 \<noteq> txn_id txn2 \<longrightarrow> ~ (txn_committed txn1 = True \<and> txn_rolled_back txn1 = True)"
   by auto
 
 (* data_deletion_complete (matches Coq) *)
-lemma data_deletion_complete: "\<forall>(s :: EncryptedStore). data_deletion_complete_prop s \<longrightarrow> store_records s = [] \<longrightarrow> store_checksum s = 0"
+lemma data_deletion_complete: "\<forall>(s :: encrypted_store). data_deletion_complete_prop s \<longrightarrow> store_records s = [] \<longrightarrow> store_checksum s = 0"
   by auto
 
 (* index_consistent (matches Coq) *)
-lemma index_consistent: "\<forall>(idx :: IndexEntry) (records : list Record). index_consistent_prop idx records \<longrightarrow> idx_valid idx = True \<longrightarrow> idx_record_id idx < length records"
+lemma index_consistent: "\<forall>(idx :: index_entry) (records : list record). index_consistent_prop idx records \<longrightarrow> idx_valid idx = True \<longrightarrow> idx_record_id idx < length records"
   by auto
 
 (* cache_invalidation_correct_thm (matches Coq) *)
-lemma cache_invalidation_correct_thm: "\<forall>(c :: CacheEntry) (current_time :: nat). cache_invalidation_correct c current_time \<longrightarrow> cache_valid c = True \<longrightarrow> cache_timestamp c \<le> current_time"
+lemma cache_invalidation_correct_thm: "\<forall>(c :: cache_entry) (current_time :: nat). cache_invalidation_correct c current_time \<longrightarrow> cache_valid c = True \<longrightarrow> cache_timestamp c \<le> current_time"
   by auto
 
 (* serialization_safe (matches Coq) *)
-lemma serialization_safe: "\<forall>(sd :: SerializedData). serialization_safe_prop sd \<longrightarrow> ser_validated sd = True \<longrightarrow> ser_checksum sd > 0"
+lemma serialization_safe: "\<forall>(sd :: serialized_data). serialization_safe_prop sd \<longrightarrow> ser_validated sd = True \<longrightarrow> ser_checksum sd > 0"
   by auto
 
 (* deserialization_validated (matches Coq) *)
-lemma deserialization_validated: "\<forall>(sd :: SerializedData). deserialization_validated_prop sd \<longrightarrow> ser_validated sd = True"
+lemma deserialization_validated: "\<forall>(sd :: serialized_data). deserialization_validated_prop sd \<longrightarrow> ser_validated sd = True"
   by auto
 
 (* storage_quota_respected_thm (matches Coq) *)
-lemma storage_quota_respected_thm: "\<forall>(sq :: StorageQuota). storage_quota_respected sq \<longrightarrow> sq_used_bytes sq \<le> sq_limit_bytes sq"
+lemma storage_quota_respected_thm: "\<forall>(sq :: storage_quota). storage_quota_respected sq \<longrightarrow> sq_used_bytes sq \<le> sq_limit_bytes sq"
   by auto
 
 (* data_export_sanitized_thm (matches Coq) *)
-lemma data_export_sanitized_thm: "\<forall>(de :: DataExport). data_export_sanitized de \<longrightarrow> export_sanitized de = True \<and> export_encrypted de = True"
+lemma data_export_sanitized_thm: "\<forall>(de :: data_export). data_export_sanitized de \<longrightarrow> export_sanitized de = True \<and> export_encrypted de = True"
   by auto
 
 end

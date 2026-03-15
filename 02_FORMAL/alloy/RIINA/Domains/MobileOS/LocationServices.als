@@ -35,7 +35,7 @@ sig Geofence {
   fence_id: one Int,
   fence_center: one Coordinate,
   fence_radius: one Meters,
-  fence_triggered: one Bool
+  fence_fence_triggered: one Bool
 }
 
 // LocationConfig (matches Coq: Record LocationConfig)
@@ -67,10 +67,10 @@ sig ExtendedLocation {
 }
 
 // Meters (matches Coq: Definition Meters)
-pred Meters {}
+pred is_meters {}
 
 // Coordinate (matches Coq: Definition Coordinate)
-pred Coordinate {}
+pred is_coordinate {}
 
 // gps_available (matches Coq: Definition gps_available)
 pred gps_available {}
@@ -88,8 +88,8 @@ pred inside[fence: Geofence, pos: Position] {
   some fence
 }
 
-// triggered (matches Coq: Definition triggered)
-pred triggered[fence: Geofence] {
+// fence_triggered (matches Coq: Definition fence_triggered)
+pred fence_triggered[fence: Geofence] {
   some fence
 }
 

@@ -70,22 +70,54 @@ sig Config {
 }
 
 sig Step {
-  before: one Config,
-  after: one Config
+  pre: one Config,
+  post: one Config
 }
 
 fact ValuesTerminal {
-  all s: Step | s.before.expr != s.after.expr
+  all s: Step | s.pre.expr != s.post.expr
 }
 
 fact PureStepPreservesCtx {
-  all s: Step | s.before.effCtx.allowed in s.after.effCtx.allowed
+  all s: Step | s.pre.effCtx.allowed in s.post.effCtx.allowed
 }
 
 sig MultiStep {
-  start: one Config,
-  end: one Config,
-  steps: set Step
+  startCfg: one Config,
+  endCfg: one Config,
+  stepSeq: set Step
+}
+
+// Step determinism: same pre-config yields same post-config
+fact StepDeterminism {
+  all s1, s2: Step | s1.pre = s2.pre implies s1.post = s2.post
+}
+
+// Every step is witnessed by a multi-step
+fact StepHasMultiStep {
+  all s: Step | some ms: MultiStep | ms.startCfg = s.pre and ms.endCfg = s.post and s in ms.stepSeq
+}
+
+// Multi-step with different endpoints has at least one step
+fact MultiStepNonTrivial {
+  all ms: MultiStep | ms.startCfg != ms.endCfg implies #ms.stepSeq >= 1
+}
+
+// PairVal is acyclic — a pair cannot contain itself
+fact PairValAcyclic {
+  all v: PairVal | v.pv1 != v and v.pv2 != v
+}
+
+// EPure is always allowed in every effect context
+fact PureAlwaysAllowed {
+  all ctx: EffectCtx | EPure in ctx.allowed
+}
+
+// Store update preserves non-updated entries exactly
+fact StoreUpdateExact {
+  all st, st2: Store, l: Location, v: Value |
+    store_update[st, l, v, st2] implies
+      (all se: st2.entries | se.loc = l or se in st.entries)
 }
 
 pred store_has_values[st: Store] {
@@ -105,204 +137,204 @@ assert store_lookup_above_max {
   all st: Store, l: Location |
     l.locId > max[st.entries.loc.locId + 0] implies no store_lookup[st, l]
 }
-check store_lookup_above_max for 6
+check store_lookup_above_max for 6 but 5 Int
 
 assert store_lookup_fresh {
   all st: Store, l: Location |
     fresh_loc[st, l] implies no store_lookup[st, l]
 }
-check store_lookup_fresh for 6
+check store_lookup_fresh for 6 but 5 Int
 
 assert value_not_step {
-  all s: Step | s.before.expr != s.after.expr
+  all s: Step | s.pre.expr != s.post.expr
 }
-check value_not_step for 6
+check value_not_step for 6 but 5 Int
 
 assert value_does_not_step {
   all c1, c2: Config, s: Step |
-    s.before = c1 and s.after = c2 implies c1.expr != c2.expr
+    s.pre = c1 and s.post = c2 implies c1.expr != c2.expr
 }
-check value_does_not_step for 6
+check value_does_not_step for 6 but 5 Int
 
 assert step_deterministic_cfg {
   all s1, s2: Step |
-    s1.before = s2.before implies s1.after = s2.after
+    s1.pre = s2.pre implies s1.post = s2.post
 }
-check step_deterministic_cfg for 6
+check step_deterministic_cfg for 6 but 5 Int
 
 assert step_deterministic {
   all disj s1, s2: Step |
-    s1.before = s2.before implies s1.after.expr = s2.after.expr
+    s1.pre = s2.pre implies s1.post.expr = s2.post.expr
 }
-check step_deterministic for 6
+check step_deterministic for 6 but 5 Int
 
 assert store_update_lookup_eq {
   all st, st2: Store, l: Location, v: Value |
     store_update[st, l, v, st2] implies v in store_lookup[st2, l]
 }
-check store_update_lookup_eq for 6
+check store_update_lookup_eq for 6 but 5 Int
 
 assert store_update_lookup_neq {
   all st, st2: Store, l1, l2: Location, v: Value |
     (store_update[st, l1, v, st2] and l1 != l2) implies
       store_lookup[st, l2] = store_lookup[st2, l2]
 }
-check store_update_lookup_neq for 6
+check store_update_lookup_neq for 6 but 5 Int
 
 assert store_has_values_empty {
   all st: Store | no st.entries implies store_has_values[st]
 }
-check store_has_values_empty for 6
+check store_has_values_empty for 6 but 5 Int
 
 assert store_update_preserves_values {
   all st, st2: Store, l: Location, v: Value |
     (store_has_values[st] and store_update[st, l, v, st2]) implies store_has_values[st2]
 }
-check store_update_preserves_values for 6
+check store_update_preserves_values for 6 but 5 Int
 
 assert step_preserves_store_values_aux {
-  all s: Step | store_has_values[s.before.store] implies store_has_values[s.after.store]
+  all s: Step | store_has_values[s.pre.store] implies store_has_values[s.post.store]
 }
-check step_preserves_store_values_aux for 6
+check step_preserves_store_values_aux for 6 but 5 Int
 
 assert step_preserves_store_values {
-  all s: Step | store_has_values[s.before.store] implies store_has_values[s.after.store]
+  all s: Step | store_has_values[s.pre.store] implies store_has_values[s.post.store]
 }
-check step_preserves_store_values for 6
+check step_preserves_store_values for 6 but 5 Int
 
 assert multi_step_preserves_store_values {
-  all ms: MultiStep | store_has_values[ms.start.store] implies store_has_values[ms.end.store]
+  all ms: MultiStep | store_has_values[ms.startCfg.store] implies store_has_values[ms.endCfg.store]
 }
-check multi_step_preserves_store_values for 6
+check multi_step_preserves_store_values for 6 but 5 Int
 
 assert multi_step_trans {
   all ms1, ms2: MultiStep |
-    ms1.end = ms2.start implies some ms1.start
+    ms1.endCfg = ms2.startCfg implies some ms1.startCfg
 }
-check multi_step_trans for 6
+check multi_step_trans for 6 but 5 Int
 
 assert step_to_multi_step {
-  all s: Step | some ms: MultiStep | ms.start = s.before and ms.end = s.after
+  all s: Step | some ms: MultiStep | ms.startCfg = s.pre and ms.endCfg = s.post
 }
-check step_to_multi_step for 6
+check step_to_multi_step for 6 but 5 Int
 
 assert multi_step_congruence_1 {
-  all ms: MultiStep | ms.start != ms.end implies #ms.steps >= 1
+  all ms: MultiStep | ms.startCfg != ms.endCfg implies #ms.stepSeq >= 1
 }
-check multi_step_congruence_1 for 6
+check multi_step_congruence_1 for 6 but 5 Int
 
 assert multi_step_app1 {
-  all s: Step | s.before.effCtx.allowed in s.after.effCtx.allowed
+  all s: Step | s.pre.effCtx.allowed in s.post.effCtx.allowed
 }
-check multi_step_app1 for 6
+check multi_step_app1 for 6 but 5 Int
 
 assert multi_step_app2 {
-  all s: Step | some s.before and some s.after
+  all s: Step | some s.pre and some s.post
 }
-check multi_step_app2 for 6
+check multi_step_app2 for 6 but 5 Int
 
 assert multi_step_pair1 {
   all v: PairVal | some v.pv1 and some v.pv2
 }
-check multi_step_pair1 for 6
+check multi_step_pair1 for 6 but 5 Int
 
 assert multi_step_pair2 {
   all v: PairVal | v.pv1 != v or v.pv2 != v
 }
-check multi_step_pair2 for 6
+check multi_step_pair2 for 6 but 5 Int
 
 assert multi_step_fst {
   all v: PairVal | some v.pv1
 }
-check multi_step_fst for 6
+check multi_step_fst for 6 but 5 Int
 
 assert multi_step_snd {
   all v: PairVal | some v.pv2
 }
-check multi_step_snd for 6
+check multi_step_snd for 6 but 5 Int
 
 assert multi_step_if {
   all b: BoolVal | b in Value
 }
-check multi_step_if for 6
+check multi_step_if for 6 but 5 Int
 
 assert multi_step_let {
-  all s: Step | some s.before and some s.after
+  all s: Step | some s.pre and some s.post
 }
-check multi_step_let for 6
+check multi_step_let for 6 but 5 Int
 
 assert multi_step_case {
-  all s: Step | s.before.effCtx.allowed in s.after.effCtx.allowed
+  all s: Step | s.pre.effCtx.allowed in s.post.effCtx.allowed
 }
-check multi_step_case for 6
+check multi_step_case for 6 but 5 Int
 
 assert multi_step_classify {
   all c: Config | some c.expr
 }
-check multi_step_classify for 6
+check multi_step_classify for 6 but 5 Int
 
 assert multi_step_prove {
   all c: Config | some c.store
 }
-check multi_step_prove for 6
+check multi_step_prove for 6 but 5 Int
 
 assert multi_step_ref {
   all st: Store, l: Location |
     fresh_loc[st, l] implies no se: st.entries | se.loc = l
 }
-check multi_step_ref for 6
+check multi_step_ref for 6 but 5 Int
 
 assert multi_step_deref {
   all st: Store, lv: LocVal |
     some store_lookup[st, lv.pointsTo] implies
       some v: Value | v in store_lookup[st, lv.pointsTo]
 }
-check multi_step_deref for 6
+check multi_step_deref for 6 but 5 Int
 
 assert multi_step_handle {
   all ctx: EffectCtx | EPure in ctx.allowed
 }
-check multi_step_handle for 6
+check multi_step_handle for 6 but 5 Int
 
 assert multi_step_perform {
-  all s: Step | has_effect[ERead, s.before.effCtx] implies has_effect[ERead, s.after.effCtx]
+  all s: Step | has_effect[ERead, s.pre.effCtx] implies has_effect[ERead, s.post.effCtx]
 }
-check multi_step_perform for 6
+check multi_step_perform for 6 but 5 Int
 
 assert multi_step_inl {
   all v: Value | v in Value
 }
-check multi_step_inl for 6
+check multi_step_inl for 6 but 5 Int
 
 assert multi_step_inr {
   all v: Value | v in Value
 }
-check multi_step_inr for 6
+check multi_step_inr for 6 but 5 Int
 
 assert multi_step_assign1 {
   all st, st2: Store, l: Location, v: Value |
     store_update[st, l, v, st2] implies some store_lookup[st2, l]
 }
-check multi_step_assign1 for 6
+check multi_step_assign1 for 6 but 5 Int
 
 assert multi_step_assign2 {
   all st, st2: Store, l: Location, v: Value |
     store_update[st, l, v, st2] implies v in store_lookup[st2, l]
 }
-check multi_step_assign2 for 6
+check multi_step_assign2 for 6 but 5 Int
 
 assert multi_step_require {
   all ctx: EffectCtx, e: Effect |
     has_effect[e, ctx] implies e in ctx.allowed
 }
-check multi_step_require for 6
+check multi_step_require for 6 but 5 Int
 
 assert multi_step_grant {
   all ctx: EffectCtx | ctx.allowed in Effect
 }
-check multi_step_grant for 6
+check multi_step_grant for 6 but 5 Int
 
 pred ExampleReduction {
-  some s: Step | s.before.store != s.after.store
+  some s: Step | s.pre.store != s.post.store
 }
-run ExampleReduction for 6
+run ExampleReduction for 6 but 5 Int

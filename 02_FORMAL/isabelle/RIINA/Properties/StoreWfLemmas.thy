@@ -46,9 +46,12 @@
  *)
 
 theory StoreWfLemmas
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* Store well-formedness implies stored expressions are values *)
 (* store_wf_lookup_value (matches Coq) *)
 lemma store_wf_lookup_value: "\<forall>Σ st l v. store_wf Σ st \<longrightarrow> store_lookup l st = Some v \<longrightarrow> value v"

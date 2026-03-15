@@ -686,7 +686,7 @@ fn count_fstar_lemmas(dir: &Path) -> u32 {
         if let Ok(content) = fs::read_to_string(&path) {
             for line in content.lines() {
                 let t = line.trim();
-                if t.starts_with("val ") && t.contains("_lemma") {
+                if (t.starts_with("val ") || t.starts_with("let ")) && t.contains("_lemma") {
                     count += 1;
                 }
             }

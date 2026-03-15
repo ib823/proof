@@ -8,6 +8,8 @@
 
 module riina/active/effect_system
 
+open util/integer
+
 // ═══════════════════════════════════════════════════════════════════════
 // EFFECT CATEGORIES
 // Matching Coq effect_category inductive
@@ -97,7 +99,7 @@ fact OrderingDefinition {
 
 // effect_join: max by level
 fun effect_join[e1, e2: Effect]: Effect {
-  { result: Effect | result.level = max[e1.level, e2.level] }
+  { result: Effect | result.level = max[e1.level + e2.level] }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -196,15 +198,15 @@ pred ExampleEffectBounding {
 // VERIFICATION COMMANDS
 // ═══════════════════════════════════════════════════════════════════════
 
-run ExampleEffectBounding for exactly 11 Effect, exactly 2 Expression
+run ExampleEffectBounding for exactly 11 Effect, exactly 2 Expression, 5 Int
 
-check EffectReflexivity for 11 but exactly 0 Expression
-check EffectTransitivity for 11 but exactly 0 Expression
-check EffectAntisymmetry for 11 but exactly 0 Expression
-check PureIsBottom for 11 but exactly 0 Expression
-check JoinUpperBoundLeft for 11 but exactly 0 Expression
-check JoinCommutative for 11 but exactly 0 Expression
-check JoinIdempotent for 11 but exactly 0 Expression
-check PureIsJoinIdentity for 11 but exactly 0 Expression
-check PerformsWithinMonotone for 11 but exactly 3 Expression
-check CategoryContiguity for 11 but exactly 0 Expression
+check EffectReflexivity for 11 but exactly 0 Expression, 5 Int
+check EffectTransitivity for 11 but exactly 0 Expression, 5 Int
+check EffectAntisymmetry for 11 but exactly 0 Expression, 5 Int
+check PureIsBottom for 11 but exactly 0 Expression, 5 Int
+check JoinUpperBoundLeft for 11 but exactly 0 Expression, 5 Int
+check JoinCommutative for 11 but exactly 0 Expression, 5 Int
+check JoinIdempotent for 11 but exactly 0 Expression, 5 Int
+check PureIsJoinIdentity for 11 but exactly 0 Expression, 5 Int
+check PerformsWithinMonotone for 11 but exactly 3 Expression, 5 Int
+check CategoryContiguity for 11 but exactly 0 Expression, 5 Int

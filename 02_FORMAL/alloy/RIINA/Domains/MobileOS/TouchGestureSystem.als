@@ -42,13 +42,13 @@ sig MultiTouchState {
 }
 
 // Microseconds (matches Coq: Definition Microseconds)
-pred Microseconds {}
+pred is_microseconds {}
 
 // Coordinate (matches Coq: Definition Coordinate)
-pred Coordinate {}
+pred is_coordinate {}
 
 // TouchSequence (matches Coq: Definition TouchSequence)
-pred TouchSequence {}
+pred is_touch_sequence {}
 
 // physical_touch (matches Coq: Definition physical_touch)
 pred physical_touch[t: TouchEvent] {
@@ -74,13 +74,13 @@ pred touch_system_correct[t: TouchEvent] {
 }
 
 // intended_gesture (matches Coq: Definition intended_gesture)
-pred intended_gesture[seq: TouchSequence, g: GestureType] {
-  some seq
+pred intended_gesture[tseq: TouchSequence, g: GestureType] {
+  some tseq
 }
 
 // recognized_gesture (matches Coq: Definition recognized_gesture)
-pred recognized_gesture[seq: TouchSequence] {
-  some seq
+pred recognized_gesture[tseq: TouchSequence] {
+  some tseq
 }
 
 // touch_area (matches Coq: Definition touch_area)
@@ -126,8 +126,8 @@ pred gesture_priority[g: GestureType] {
 }
 
 // touch_cancelled (matches Coq: Definition touch_cancelled)
-pred touch_cancelled[seq: TouchSequence] {
-  some seq
+pred touch_cancelled[tseq: TouchSequence] {
+  some tseq
 }
 
 // multi_touch_count (matches Coq: Definition multi_touch_count)

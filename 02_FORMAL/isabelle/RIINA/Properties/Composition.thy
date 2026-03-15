@@ -21,7 +21,7 @@
  *)
 
 theory Composition
-  imports Main
+  imports Main Syntax Typing
 begin
 
 (* val_rel_pair (matches Coq) *)

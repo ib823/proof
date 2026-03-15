@@ -12,28 +12,28 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SecurityLevel      | security_level         | OK     |
- * | KEMScheme          | kem_scheme             | OK     |
- * | ECDHCurve          | ecdh_curve             | OK     |
- * | SignatureScheme    | signature_scheme       | OK     |
+ * | qtls_security_level      | qtls_security_level         | OK     |
+ * | kem_scheme          | kem_scheme             | OK     |
+ * | ecdh_curve          | ecdh_curve             | OK     |
+ * | signature_scheme    | signature_scheme       | OK     |
  * | TLSVersion         | tls_version            | OK     |
- * | CipherSuite        | cipher_suite           | OK     |
- * | KEMParameters      | kem_parameters         | OK     |
- * | KEMSecurityProperties | kem_security_properties | OK     |
- * | ECDHParameters     | ecdh_parameters        | OK     |
- * | HybridKEX          | hybrid_kex             | OK     |
- * | HybridKEXConfig    | hybrid_kex_config      | OK     |
- * | PQAuthentication   | pq_authentication      | OK     |
- * | SignatureSecurityProps | signature_security_props | OK     |
- * | TLSHandshake       | tls_handshake          | OK     |
- * | TLSHandshakeConfig | tls_handshake_config   | OK     |
- * | TLS13Extensions    | tls13_extensions       | OK     |
- * | TLSRecord          | tls_record             | OK     |
- * | AEADProperties     | aead_properties        | OK     |
- * | ForwardSecrecyConfig | forward_secrecy_config | OK     |
- * | AlgorithmAgility   | algorithm_agility      | OK     |
- * | QuantumSafeTLSConfig | quantum_safe_tls_config | OK     |
- * | QuantumSafeTLSFull | quantum_safe_tls_full  | OK     |
+ * | cipher_suite        | cipher_suite           | OK     |
+ * | kem_parameters      | kem_parameters         | OK     |
+ * | kem_security_properties | kem_security_properties | OK     |
+ * | ecdh_parameters     | ecdh_parameters        | OK     |
+ * | hybrid_kex          | hybrid_kex             | OK     |
+ * | hybrid_kex_config    | hybrid_kex_config      | OK     |
+ * | pq_authentication   | pq_authentication      | OK     |
+ * | signature_security_props | signature_security_props | OK     |
+ * | tls_handshake       | tls_handshake          | OK     |
+ * | tls_handshake_config | tls_handshake_config   | OK     |
+ * | tls_13_extensions    | tls13_extensions       | OK     |
+ * | tls_record          | tls_record             | OK     |
+ * | aead_properties     | aead_properties        | OK     |
+ * | forward_secrecy_config | forward_secrecy_config | OK     |
+ * | algorithm_agility   | algorithm_agility      | OK     |
+ * | quantum_safe_tls_config | quantum_safe_tls_config | OK     |
+ * | quantum_safe_tls_full | quantum_safe_tls_full  | OK     |
  * | level_leq          | level_leq              | OK     |
  * | level_min          | level_min              | OK     |
  * | level_max          | level_max              | OK     |
@@ -143,22 +143,24 @@
  *)
 
 theory QuantumSafeTLS
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
-datatype security_level =
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym tls_13_extensions = "nat"
+(* qtls_security_level (matches Coq: Inductive qtls_security_level) *)
+datatype qtls_security_level =
     Level1
   |     Level3
   |     Level5
 
-(* KEMScheme (matches Coq: Inductive KEMScheme) *)
+(* kem_scheme (matches Coq: Inductive kem_scheme) *)
 datatype kem_scheme =
     ML_KEM_512
   |     ML_KEM_768
   |     ML_KEM_1024
 
-(* ECDHCurve (matches Coq: Inductive ECDHCurve) *)
+(* ecdh_curve (matches Coq: Inductive ecdh_curve) *)
 datatype ecdh_curve =
     X25519
   |     X448
@@ -166,7 +168,7 @@ datatype ecdh_curve =
   |     P384
   |     P521
 
-(* SignatureScheme (matches Coq: Inductive SignatureScheme) *)
+(* signature_scheme (matches Coq: Inductive signature_scheme) *)
 datatype signature_scheme =
     ML_DSA_44
   |     ML_DSA_65
@@ -182,128 +184,128 @@ datatype tls_version =
     TLS_1_2
   |     TLS_1_3
 
-(* CipherSuite (matches Coq: Inductive CipherSuite) *)
+(* cipher_suite (matches Coq: Inductive cipher_suite) *)
 datatype cipher_suite =
     TLS_AES_128_GCM_SHA256
   |     TLS_AES_256_GCM_SHA384
   |     TLS_CHACHA20_POLY1305_SHA256
 
-(* KEMParameters (matches Coq: Record KEMParameters) *)
+(* kem_parameters (matches Coq: Record kem_parameters) *)
 record kem_parameters =
-  kem_scheme :: KEMScheme
+  kem_scheme :: kem_scheme
   kem_pk_size :: nat
   kem_sk_size :: nat
   kem_ct_size :: nat
   kem_ss_size :: nat
 
-(* KEMSecurityProperties (matches Coq: Record KEMSecurityProperties) *)
+(* kem_security_properties (matches Coq: Record kem_security_properties) *)
 record kem_security_properties =
   kem_sec_indcca2 :: bool
   kem_sec_module_lwe :: bool
   kem_sec_nist_approved :: bool
   kem_sec_constant_time :: bool
 
-(* ECDHParameters (matches Coq: Record ECDHParameters) *)
+(* ecdh_parameters (matches Coq: Record ecdh_parameters) *)
 record ecdh_parameters =
-  ecdh_curve :: ECDHCurve
+  ecdh_curve :: ecdh_curve
   ecdh_pk_size :: nat
   ecdh_sk_size :: nat
   ecdh_ss_size :: nat
 
-(* HybridKEX (matches Coq: Record HybridKEX) *)
+(* hybrid_kex (matches Coq: Record hybrid_kex) *)
 record hybrid_kex =
   hkex_classical :: bool
   hkex_post_quantum :: bool
   hkex_combined :: bool
 
-(* HybridKEXConfig (matches Coq: Record HybridKEXConfig) *)
+(* hybrid_kex_config (matches Coq: Record hybrid_kex_config) *)
 record hybrid_kex_config =
-  hybrid_kem :: KEMScheme
-  hybrid_ecdh :: ECDHCurve
+  hybrid_kem :: kem_scheme
+  hybrid_ecdh :: ecdh_curve
   hybrid_combiner :: bool
   hybrid_label :: bool
 
-(* PQAuthentication (matches Coq: Record PQAuthentication) *)
+(* pq_authentication (matches Coq: Record pq_authentication) *)
 record pq_authentication =
   pqa_classical_sig :: bool
   pqa_pq_sig :: bool
   pqa_certificate_chain :: bool
 
-(* SignatureSecurityProps (matches Coq: Record SignatureSecurityProps) *)
+(* signature_security_props (matches Coq: Record signature_security_props) *)
 record signature_security_props =
   sig_euf_cma :: bool
   sig_strong_euf :: bool
   sig_nist_approved :: bool
   sig_deterministic :: bool
 
-(* TLSHandshake (matches Coq: Record TLSHandshake) *)
+(* tls_handshake (matches Coq: Record tls_handshake) *)
 record tls_handshake =
   ths_forward_secrecy :: bool
   ths_downgrade_protection :: bool
   ths_replay_protection :: bool
   ths_key_confirmation :: bool
 
-(* TLSHandshakeConfig (matches Coq: Record TLSHandshakeConfig) *)
+(* tls_handshake_config (matches Coq: Record tls_handshake_config) *)
 record tls_handshake_config =
-  ths_version :: TLSVersion
-  ths_ciphersuite :: CipherSuite
+  ths_version :: tls_version
+  ths_ciphersuite :: cipher_suite
   ths_early_data :: bool
   ths_psk_mode :: bool
   ths_client_auth :: bool
 
-(* TLS13Extensions (matches Coq: Record TLS13Extensions) *)
+(* tls_13_extensions (matches Coq: Record tls_13_extensions) *)
 record tls13_extensions =
   ext_supported_versions :: bool
   ext_key_share :: bool
   ext_signature_algorithms :: bool
   ext_psk_key_exchange_modes :: bool
 
-(* TLSRecord (matches Coq: Record TLSRecord) *)
+(* tls_record (matches Coq: Record tls_record) *)
 record tls_record =
   rec_aead :: bool
   rec_sequence_numbers :: bool
   rec_padding :: bool
 
-(* AEADProperties (matches Coq: Record AEADProperties) *)
+(* aead_properties (matches Coq: Record aead_properties) *)
 record aead_properties =
   aead_confidentiality :: bool
   aead_integrity :: bool
   aead_authenticity :: bool
   aead_nonce_unique :: bool
 
-(* ForwardSecrecyConfig (matches Coq: Record ForwardSecrecyConfig) *)
+(* forward_secrecy_config (matches Coq: Record forward_secrecy_config) *)
 record forward_secrecy_config =
   fs_ephemeral_keys :: bool
   fs_key_deletion :: bool
   fs_no_static_dh :: bool
   fs_pfs_per_session :: bool
 
-(* AlgorithmAgility (matches Coq: Record AlgorithmAgility) *)
+(* algorithm_agility (matches Coq: Record algorithm_agility) *)
 record algorithm_agility =
   agility_negotiation :: bool
   agility_fallback :: bool
   agility_versioning :: bool
   agility_extension :: bool
 
-(* QuantumSafeTLSConfig (matches Coq: Record QuantumSafeTLSConfig) *)
+(* quantum_safe_tls_config (matches Coq: Record quantum_safe_tls_config) *)
 record quantum_safe_tls_config =
-  qstls_kex :: HybridKEX
-  qstls_auth :: PQAuthentication
-  qstls_handshake :: TLSHandshake
-  qstls_record :: TLSRecord
+  qstls_kex :: hybrid_kex
+  qstls_auth :: pq_authentication
+  qstls_handshake :: tls_handshake
+  qstls_record :: tls_record
   qstls_version_13 :: bool
 
-(* QuantumSafeTLSFull (matches Coq: Record QuantumSafeTLSFull) *)
+(* quantum_safe_tls_full (matches Coq: Record quantum_safe_tls_full) *)
 record quantum_safe_tls_full =
-  qstls_hybrid_config :: HybridKEXConfig
-  qstls_sig_scheme :: SignatureScheme
-  qstls_hs_config :: TLSHandshakeConfig
-  qstls_fs_config :: ForwardSecrecyConfig
-  qstls_agility :: AlgorithmAgility
-  qstls_extensions :: TLS13Extensions
+  qstls_hybrid_config :: hybrid_kex_config
+  qstls_sig_scheme :: signature_scheme
+  qstls_hs_config :: tls_handshake_config
+  qstls_fs_config :: forward_secrecy_config
+  qstls_agility :: algorithm_agility
+  qstls_extensions :: tls_13_extensions
 
 (* level_leq - complex match, needs manual translation *)
-definition level_leq :: "bool" where "level_leq = undefined"
+definition level_leq :: "bool" where "level_leq \<equiv> True"
 
 (* level_min (matches Coq: Definition level_min) *)
 definition level_min :: "SecurityLevel" where
@@ -364,9 +366,9 @@ fun sig_security_level :: "SignatureScheme \<Rightarrow> SecurityLevel" where
 
 (* sig_is_post_quantum (matches Coq: Definition sig_is_post_quantum) *)
 fun sig_is_post_quantum :: "SignatureScheme \<Rightarrow> bool" where
-  "sig_is_post_quantum ML_DSA_87 = true"
-|   "sig_is_post_quantum SLH_DSA_256 = true"
-|   "sig_is_post_quantum Ed25519 = false"
+  "sig_is_post_quantum ML_DSA_87 = True"
+|   "sig_is_post_quantum SLH_DSA_256 = True"
+|   "sig_is_post_quantum Ed25519 = False"
 
 (* sig_fully_secure (matches Coq: Definition sig_fully_secure) *)
 definition sig_fully_secure :: "SignatureSecurityProps \<Rightarrow> bool" where

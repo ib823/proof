@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | MCMCLicense        | mcmc_license           | OK     |
+ * | mcmc_license        | mcmc_license           | OK     |
  * | no_unauthorized_interception | no_unauthorized_interception | OK     |
  * | fraud_controls_active | fraud_controls_active  | OK     |
  * | mcmc_fully_compliant | mcmc_fully_compliant   | OK     |
@@ -46,7 +46,9 @@ theory MalaysiaMCMC
   imports Main CoqCompat
 begin
 
-(* MCMCLicense (matches Coq: Inductive MCMCLicense) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym mcmc_compliance = "nat"
+(* mcmc_license (matches Coq: Inductive mcmc_license) *)
 datatype mcmc_license =
     NFP
   |     NSP
@@ -94,11 +96,11 @@ definition license_eqb :: "bool" where
   "license_eqb \<equiv> (license_level a = license_level b)"
 
 (* s234_encrypted_compliant (matches Coq) *)
-lemma s234_encrypted_compliant: "\<forall>(enc auth : bool). enc = True \<longrightarrow> no_unauthorized_interception enc auth"
+lemma s234_encrypted_compliant: "\<forall>(enc :: bool) (auth :: bool). enc = True \<longrightarrow> no_unauthorized_interception enc auth"
   by auto
 
 (* s234_authorized_compliant (matches Coq) *)
-lemma s234_authorized_compliant: "\<forall>(enc auth : bool). auth = True \<longrightarrow> no_unauthorized_interception enc auth"
+lemma s234_authorized_compliant: "\<forall>(enc :: bool) (auth :: bool). auth = True \<longrightarrow> no_unauthorized_interception enc auth"
   by auto
 
 (* s236_fraud_prevention (matches Coq) *)
@@ -106,11 +108,11 @@ lemma s236_fraud_prevention: "\<forall>(id_v tx_s audit : bool). id_v = True \<l
   by auto
 
 (* mcmc_composition (matches Coq) *)
-lemma mcmc_composition: "\<forall>(c :: MCMCCompliance). mcmc_licensed c = True \<longrightarrow> mcmc_technical_standards_met c = True \<longrightarrow> mcmc_consumer_code_adopted c = True \<longrightarrow> mcmc_interception_protected c = True \<longrightarrow> mcmc_fraud_controls c = True \<longrightarrow> mcmc_fully_compliant c"
+lemma mcmc_composition: "\<forall>(c :: mcmc_compliance). mcmc_licensed c = True \<longrightarrow> mcmc_technical_standards_met c = True \<longrightarrow> mcmc_consumer_code_adopted c = True \<longrightarrow> mcmc_interception_protected c = True \<longrightarrow> mcmc_fraud_controls c = True \<longrightarrow> mcmc_fully_compliant c"
   by simp
 
 (* mcmc_license_coverage (matches Coq) *)
-lemma mcmc_license_coverage: "\<forall>(l :: MCMCLicense). l \<in> set all_mcmc_licenses"
+lemma mcmc_license_coverage: "\<forall>(l :: mcmc_license). l \<in> set all_mcmc_licenses"
   by auto
 
 (* nfp_highest_level (matches Coq) *)

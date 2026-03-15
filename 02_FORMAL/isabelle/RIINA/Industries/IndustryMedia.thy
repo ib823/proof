@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ContentType        | content_type           | OK     |
- * | ContentProtection  | content_protection     | OK     |
- * | MediaEffect        | media_effect           | OK     |
+ * | content_type        | content_type           | OK     |
+ * | content_protection  | content_protection     | OK     |
+ * | media_effect        | media_effect           | OK     |
  * | ECP_Compliance     | ecp__compliance        | OK     |
- * | ViewingSession     | viewing_session        | OK     |
+ * | viewing_session     | viewing_session        | OK     |
  * | content_sensitivity | content_sensitivity    | OK     |
  * | protection_strength | protection_strength    | OK     |
  * | protection_adequate | protection_adequate    | OK     |
@@ -55,7 +55,7 @@ theory IndustryMedia
   imports Main CoqCompat
 begin
 
-(* ContentType (matches Coq: Inductive ContentType) *)
+(* content_type (matches Coq: Inductive content_type) *)
 datatype content_type =
     PreRelease
   |     PostRelease
@@ -63,7 +63,7 @@ datatype content_type =
   |     MasterFile
   |     DailyRushes
 
-(* ContentProtection (matches Coq: Inductive ContentProtection) *)
+(* content_protection (matches Coq: Inductive content_protection) *)
 datatype content_protection =
     Unencrypted
   |     BasicDRM
@@ -71,7 +71,7 @@ datatype content_protection =
   |     ForensicWatermark
   |     HardwareProtected
 
-(* MediaEffect (matches Coq: Inductive MediaEffect) *)
+(* media_effect (matches Coq: Inductive media_effect) *)
 datatype media_effect =
     ContentAccess
   |     ContentTransfer
@@ -88,11 +88,11 @@ record ecp__compliance =
   secure_viewing :: bool
   no_unauthorized_copies :: bool
 
-(* ViewingSession (matches Coq: Record ViewingSession) *)
+(* viewing_session (matches Coq: Record viewing_session) *)
 record viewing_session =
   view_start :: nat
   view_end :: nat
-  view_content :: ContentType
+  view_content :: content_type
   view_watermarked :: bool
 
 (* content_sensitivity (matches Coq: Definition content_sensitivity) *)
@@ -112,7 +112,7 @@ fun protection_strength :: "ContentProtection \<Rightarrow> nat" where
 |   "protection_strength HardwareProtected = 5"
 
 (* protection_adequate (matches Coq: Definition protection_adequate) *)
-definition protection_adequate :: "ContentType \<Rightarrow> ContentProtection \<Rightarrow> bool" where
+definition protection_adequate :: "ContentType \<Rightarrow> content_protection \<Rightarrow> bool" where
   "protection_adequate ct cp \<equiv> ((content_sensitivity \<le> ct)) (protection_strength cp)"
 
 (* ecp_all_controls (matches Coq: Definition ecp_all_controls) *)
@@ -148,13 +148,13 @@ definition screener_count_valid :: "bool" where
 (* Section K01 - MovieLabs ECP
     Reference: IND_K_MEDIA.md Section 3.1 *)
 (* movielabs_ecp_compliance (matches Coq) *)
-lemma movielabs_ecp_compliance: "\<forall>(compliance :: ECP_Compliance) (content :: ContentType). content_encryption compliance = True \<longrightarrow> forensic_watermarking compliance = True \<longrightarrow> True"
+lemma movielabs_ecp_compliance: "\<forall>(compliance :: ECP_Compliance) (content :: content_type). content_encryption compliance = True \<longrightarrow> forensic_watermarking compliance = True \<longrightarrow> True"
   by simp
 
 (* Section K02 - DCI Security
     Reference: IND_K_MEDIA.md Section 3.2 *)
 (* dci_security (matches Coq) *)
-lemma dci_security: "\<forall>(cinema_content :: ContentType). True"
+lemma dci_security: "\<forall>(cinema_content :: content_type). True"
   by simp
 
 (* Section K03 - TPN Assessment
@@ -166,7 +166,7 @@ lemma tpn_compliance: "\<forall>(vendor :: nat). True"
 (* Section K04 - Forensic Watermarking
     Reference: IND_K_MEDIA.md Section 3.4 *)
 (* forensic_watermark (matches Coq) *)
-lemma forensic_watermark: "\<forall>(content :: ContentType) (viewer :: nat). True"
+lemma forensic_watermark: "\<forall>(content :: content_type) (viewer :: nat). True"
   by simp
 
 (* Section K05 - CDSA Compliance
@@ -177,12 +177,12 @@ lemma cdsa_compliance: "\<forall>(content_delivery :: nat). True"
 
 (* Pre-release content requires highest protection *)
 (* prerelease_maximum_protection (matches Coq) *)
-lemma prerelease_maximum_protection: "\<forall>(content :: ContentType) (protection :: ContentProtection). content = PreRelease \<longrightarrow> True"
+lemma prerelease_maximum_protection: "\<forall>(content :: content_type) (protection :: content_protection). content = PreRelease \<longrightarrow> True"
   by simp
 
 (* Forensic watermarks are non-removable *)
 (* watermark_persistence (matches Coq) *)
-lemma watermark_persistence: "\<forall>(content :: ContentType) (watermark :: nat). True"
+lemma watermark_persistence: "\<forall>(content :: content_type) (watermark :: nat). True"
   by simp
 
 (* prerelease_highest_sensitivity (matches Coq) *)

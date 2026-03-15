@@ -56,7 +56,7 @@
  *)
 
 theory EffectMonotonicity
-  imports Main
+  imports Main EffectAlgebra Syntax Typing
 begin
 
 (* If application has pure effect, function body and arguments are pure. *)

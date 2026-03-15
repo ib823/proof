@@ -14,7 +14,7 @@
  * |--------------------|------------------------|--------|
  * | CIP_Impact         | cip__impact            | OK     |
  * | BES_Asset          | bes__asset             | OK     |
- * | EnergyEffect       | energy_effect          | OK     |
+ * | energy_effect       | energy_effect          | OK     |
  * | NERC_CIP_Controls  | nerc_cip__controls     | OK     |
  * | cip_impact_to_nat  | cip_impact_to_nat      | OK     |
  * | cip_le             | cip_le                 | OK     |
@@ -68,7 +68,7 @@ datatype bes__asset =
   |     TransmissionLine
   |     SCADA_System
 
-(* EnergyEffect (matches Coq: Inductive EnergyEffect) *)
+(* energy_effect (matches Coq: Inductive energy_effect) *)
 datatype energy_effect =
     GridControl
   |     SCADA_Operation
@@ -178,7 +178,7 @@ lemma substation_security: "\<forall>(ied :: nat). True"
 
 (* High impact requires all CIP controls *)
 (* high_impact_all_controls (matches Coq) *)
-lemma high_impact_all_controls: "\<forall>(controls :: NERC_CIP_Controls) (asset :: nat) (impact : CIP_Impact). impact = High_Impact \<longrightarrow> True"
+lemma high_impact_all_controls: "\<forall>(controls :: NERC_CIP_Controls) (asset :: nat) (impact :: CIP_Impact). impact = High_Impact \<longrightarrow> True"
   by simp
 
 (* Electronic Security Perimeter required for routable protocols *)

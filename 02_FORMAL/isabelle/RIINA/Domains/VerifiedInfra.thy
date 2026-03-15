@@ -12,28 +12,28 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | TxnOp              | txn_op                 | OK     |
- * | TxnOutcome         | txn_outcome            | OK     |
- * | SafeQuery          | safe_query             | OK     |
- * | TypedPayload       | typed_payload          | OK     |
- * | ProcessOutcome     | process_outcome        | OK     |
- * | Backend            | backend                | OK     |
- * | HTTPRequest        | http_request           | OK     |
- * | LBState            | lb_state               | OK     |
- * | HealthCheckResult  | health_check_result    | OK     |
- * | Transaction        | transaction            | OK     |
- * | DurableTransaction | durable_transaction    | OK     |
- * | EncryptedStorage   | encrypted_storage      | OK     |
- * | Capability         | capability             | OK     |
- * | AuditEntry         | audit_entry            | OK     |
- * | Message            | message                | OK     |
- * | QueueState         | queue_state            | OK     |
- * | ExactlyOnceQueue   | exactly_once_queue     | OK     |
- * | LogEntry           | log_entry              | OK     |
- * | AppendOnlyLog      | append_only_log        | OK     |
- * | Secret             | secret                 | OK     |
- * | SecretsStore       | secrets_store          | OK     |
- * | RotationState      | rotation_state         | OK     |
+ * | txn_op              | txn_op                 | OK     |
+ * | txn_outcome         | txn_outcome            | OK     |
+ * | safe_query          | safe_query             | OK     |
+ * | typed_payload       | typed_payload          | OK     |
+ * | process_outcome     | process_outcome        | OK     |
+ * | backend            | backend                | OK     |
+ * | http_request        | http_request           | OK     |
+ * | lb_state            | lb_state               | OK     |
+ * | health_check_result  | health_check_result    | OK     |
+ * | transaction        | transaction            | OK     |
+ * | durable_transaction | durable_transaction    | OK     |
+ * | encrypted_storage   | encrypted_storage      | OK     |
+ * | capability         | capability             | OK     |
+ * | audit_entry         | audit_entry            | OK     |
+ * | message            | message                | OK     |
+ * | queue_state         | queue_state            | OK     |
+ * | exactly_once_queue   | exactly_once_queue     | OK     |
+ * | log_entry           | log_entry              | OK     |
+ * | append_only_log      | append_only_log        | OK     |
+ * | secret             | secret                 | OK     |
+ * | secrets_store       | secrets_store          | OK     |
+ * | rotation_state      | rotation_state         | OK     |
  * | healthy            | healthy                | OK     |
  * | has_capacity       | has_capacity           | OK     |
  * | valid_target       | valid_target           | OK     |
@@ -102,43 +102,51 @@
  *)
 
 theory VerifiedInfra
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* TxnOp (matches Coq: Inductive TxnOp) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym a = "nat"
+type_synonym audit_log = "nat"
+type_synonym db_state = "nat"
+type_synonym log = "nat"
+type_synonym service = "nat"
+(* Abstract type synonym for Key *)
+type_synonym key = "nat"
+(* txn_op (matches Coq: Inductive txn_op) *)
 datatype txn_op =
     TxnRead
   |     TxnWrite
 
-(* TxnOutcome (matches Coq: Inductive TxnOutcome) *)
+(* txn_outcome (matches Coq: Inductive txn_outcome) *)
 datatype txn_outcome =
     TxnCommit
   |     TxnAbort
 
-(* SafeQuery (matches Coq: Inductive SafeQuery) *)
+(* safe_query (matches Coq: Inductive safe_query) *)
 datatype safe_query =
     SQParam
   |     SQConst
 
-(* TypedPayload (matches Coq: Inductive TypedPayload) *)
+(* typed_payload (matches Coq: Inductive typed_payload) *)
 datatype typed_payload =
     TPInt
   |     TPStr
   |     TPList
 
-(* ProcessOutcome (matches Coq: Inductive ProcessOutcome) *)
+(* process_outcome (matches Coq: Inductive process_outcome) *)
 datatype process_outcome =
     POSuccess
   |     POFailure
 
-(* Backend (matches Coq: Record Backend) *)
+(* backend (matches Coq: Record backend) *)
 record backend =
   backend_id :: nat
   backend_healthy :: bool
   backend_capacity :: nat
   backend_current_load :: nat
 
-(* HTTPRequest (matches Coq: Record HTTPRequest) *)
+(* http_request (matches Coq: Record http_request) *)
 record http_request =
   req_method :: string
   req_path :: string
@@ -146,55 +154,55 @@ record http_request =
   req_body :: 'a list
   req_session_id :: option
 
-(* LBState (matches Coq: Record LBState) *)
+(* lb_state (matches Coq: Record lb_state) *)
 record lb_state =
   lb_backends :: 'a list
   lb_session_map :: nat
 
-(* HealthCheckResult (matches Coq: Record HealthCheckResult) *)
+(* health_check_result (matches Coq: Record health_check_result) *)
 record health_check_result =
   hc_backend_id :: nat
   hc_is_healthy :: bool
   hc_timestamp :: nat
 
-(* Transaction (matches Coq: Record Transaction) *)
+(* transaction (matches Coq: Record transaction) *)
 record transaction =
   txn_id :: nat
   txn_ops :: 'a list
 
-(* DurableTransaction (matches Coq: Record DurableTransaction) *)
+(* durable_transaction (matches Coq: Record durable_transaction) *)
 record durable_transaction =
   dtxn_id :: nat
   dtxn_committed :: bool
   dtxn_persisted :: bool
 
-(* EncryptedStorage (matches Coq: Record EncryptedStorage) *)
+(* encrypted_storage (matches Coq: Record encrypted_storage) *)
 record encrypted_storage =
   enc_algorithm :: string
   enc_key_id :: nat
   enc_data :: 'a list
 
-(* Capability (matches Coq: Record Capability) *)
+(* capability (matches Coq: Record capability) *)
 record capability =
   cap_subject :: nat
-  cap_object :: Key
+  cap_object :: key
   cap_permission :: nat
 
-(* AuditEntry (matches Coq: Record AuditEntry) *)
+(* audit_entry (matches Coq: Record audit_entry) *)
 record audit_entry =
   audit_timestamp :: nat
   audit_subject :: nat
   audit_action :: nat
-  audit_object :: Key
+  audit_object :: key
   audit_outcome :: bool
 
-(* Message (matches Coq: Record Message) *)
+(* message (matches Coq: Record message) *)
 record message =
   msg_id :: nat
   msg_payload :: 'a list
   msg_type :: string
 
-(* QueueState (matches Coq: Record QueueState) *)
+(* queue_state (matches Coq: Record queue_state) *)
 record queue_state =
   q_messages :: 'a list
   q_delivered :: 'a list
@@ -202,13 +210,13 @@ record queue_state =
   q_dlq :: 'a list
   q_sequence :: nat
 
-(* ExactlyOnceQueue (matches Coq: Record ExactlyOnceQueue) *)
+(* exactly_once_queue (matches Coq: Record exactly_once_queue) *)
 record exactly_once_queue =
   eoq_pending :: 'a list
   eoq_delivered_ids :: 'a list
   eoq_dlq :: 'a list
 
-(* LogEntry (matches Coq: Record LogEntry) *)
+(* log_entry (matches Coq: Record log_entry) *)
 record log_entry =
   log_timestamp :: nat
   log_level :: nat
@@ -217,12 +225,12 @@ record log_entry =
   log_hash :: nat
   log_prev_hash :: nat
 
-(* AppendOnlyLog (matches Coq: Record AppendOnlyLog) *)
+(* append_only_log (matches Coq: Record append_only_log) *)
 record append_only_log =
-  aol_entries :: Log
+  aol_entries :: log
   aol_write_count :: nat
 
-(* Secret (matches Coq: Record Secret) *)
+(* secret (matches Coq: Record secret) *)
 record secret =
   secret_id :: nat
   secret_value :: 'a list
@@ -230,13 +238,13 @@ record secret =
   secret_ttl :: nat
   secret_owner :: nat
 
-(* SecretsStore (matches Coq: Record SecretsStore) *)
+(* secrets_store (matches Coq: Record secrets_store) *)
 record secrets_store =
   secrets :: 'a list
-  access_policy :: Service
+  access_policy :: service
   access_log :: 'a list
 
-(* RotationState (matches Coq: Record RotationState) *)
+(* rotation_state (matches Coq: Record rotation_state) *)
 record rotation_state =
   rot_old_key :: 'a list
   rot_new_key :: 'a list
@@ -256,14 +264,14 @@ definition valid_target :: "Backend \<Rightarrow> bool" where
   "valid_target b \<equiv> healthy b \<and> has_capacity b"
 
 (* routes_to (matches Coq: Definition routes_to) *)
-definition routes_to :: "LBState \<Rightarrow> HTTPRequest \<Rightarrow> Backend \<Rightarrow> bool" where
-  "routes_to lb req b \<equiv> In b (lb_backends lb) \<and> valid_target b \<and>
+definition routes_to :: "LBState \<Rightarrow> http_request \<Rightarrow> backend \<Rightarrow> bool" where
+  "routes_to lb req b \<equiv> b \<in> set (lb_backends lb) \<and> valid_target b \<and>
   req_method req <> EmptyString \<and> req_path req <> EmptyString"
 
 (* session_affinity_maintained (matches Coq: Definition session_affinity_maintained) *)
-definition session_affinity_maintained :: "LBState \<Rightarrow> nat \<Rightarrow> Backend \<Rightarrow> bool" where
+definition session_affinity_maintained :: "LBState \<Rightarrow> nat \<Rightarrow> backend \<Rightarrow> bool" where
   "session_affinity_maintained lb s b \<equiv> lb_session_map lb s = Some (backend_id b) ->
-  In b (lb_backends lb) ->
+  b \<in> set (lb_backends lb) ->
   healthy b ->
   routes_to lb (mkRequest "GET" "/" [] [] (Some s)) b"
 
@@ -272,12 +280,12 @@ definition well_formed_request :: "HTTPRequest \<Rightarrow> bool" where
   "well_formed_request req \<equiv> req_method req <> EmptyString \<and> req_path req <> EmptyString"
 
 (* routes_request (matches Coq: Definition routes_request) *)
-definition routes_request :: "LBState \<Rightarrow> HTTPRequest \<Rightarrow> bool" where
+definition routes_request :: "LBState \<Rightarrow> http_request \<Rightarrow> bool" where
   "routes_request lb req \<equiv> well_formed_request req ->
   exists b, routes_to lb req b"
 
 (* health_check_correct_for (matches Coq: Definition health_check_correct_for) *)
-definition health_check_correct_for :: "Backend \<Rightarrow> HealthCheckResult \<Rightarrow> bool" where
+definition health_check_correct_for :: "Backend \<Rightarrow> health_check_result \<Rightarrow> bool" where
   "health_check_correct_for b hc \<equiv> hc_backend_id hc = backend_id b ->
   (hc_is_healthy hc = True <-> healthy b)"
 
@@ -297,11 +305,11 @@ definition fair_distribution :: "nat \<Rightarrow> bool" where
     (load_ratio b2 <= load_ratio b1 + threshold)"
 
 (* execute (matches Coq: Definition execute) *)
-definition execute :: "DBState \<Rightarrow> Transaction \<Rightarrow> DBState * TxnOutcome" where
+definition execute :: "DBState \<Rightarrow> transaction \<Rightarrow> db_state * TxnOutcome" where
   "execute db txn \<equiv> (db, TxnCommit)"
 
 (* commits (matches Coq: Definition commits) *)
-definition commits :: "DBState \<Rightarrow> Transaction \<Rightarrow> bool" where
+definition commits :: "DBState \<Rightarrow> transaction \<Rightarrow> bool" where
   "commits db txn \<equiv> snd (execute db txn) = TxnCommit"
 
 (* valid_state (matches Coq: Definition valid_state) *)
@@ -309,7 +317,7 @@ definition valid_state :: "DBState \<Rightarrow> bool" where
   "valid_state db \<equiv> True"
 
 (* state_after (matches Coq: Definition state_after) *)
-definition state_after :: "DBState \<Rightarrow> Transaction \<Rightarrow> DBState" where
+definition state_after :: "DBState \<Rightarrow> transaction \<Rightarrow> DBState" where
   "state_after db txn \<equiv> fst (execute db txn)"
 
 (* survives (matches Coq: Definition survives) *)
@@ -317,7 +325,7 @@ definition survives :: "DurableTransaction \<Rightarrow> bool" where
   "survives dtxn \<equiv> dtxn_committed dtxn = True -> dtxn_persisted dtxn = True"
 
 (* safe_query_exec (matches Coq: Definition safe_query_exec) *)
-fun safe_query_exec :: "SafeQuery \<Rightarrow> DBState \<Rightarrow> option Value" where
+fun safe_query_exec :: "SafeQuery \<Rightarrow> db_state \<Rightarrow> option Value" where
   "safe_query_exec _ = None"
 
 (* access_audited (matches Coq: Definition access_audited) *)
@@ -325,23 +333,23 @@ definition access_audited :: "AuditLog \<Rightarrow> nat \<Rightarrow> Key \<Rig
   "access_audited log subj obj \<equiv> exists e, e \<in> set log \<and> audit_subject e = subj \<and> audit_object e = obj"
 
 (* sent (matches Coq: Definition sent) *)
-definition sent :: "QueueState \<Rightarrow> Message \<Rightarrow> bool" where
-  "sent q m \<equiv> In m (q_messages q) \/ exists c, In (m, c) (q_delivered q)"
+definition sent :: "QueueState \<Rightarrow> message \<Rightarrow> bool" where
+  "sent q m \<equiv> m \<in> set (q_messages q) \/ exists c, (m, c) \<in> set (q_delivered q)"
 
 (* delivered (matches Coq: Definition delivered) *)
-definition delivered :: "QueueState \<Rightarrow> Message \<Rightarrow> Consumer \<Rightarrow> bool" where
-  "delivered q m c \<equiv> In (m, c) (q_delivered q)"
+definition delivered :: "QueueState \<Rightarrow> message \<Rightarrow> Consumer \<Rightarrow> bool" where
+  "delivered q m c \<equiv> (m, c) \<in> set (q_delivered q)"
 
 (* acknowledged (matches Coq: Definition acknowledged) *)
-definition acknowledged :: "QueueState \<Rightarrow> Message \<Rightarrow> Consumer \<Rightarrow> bool" where
-  "acknowledged q m c \<equiv> In (msg_id m, c) (q_acked q)"
+definition acknowledged :: "QueueState \<Rightarrow> message \<Rightarrow> Consumer \<Rightarrow> bool" where
+  "acknowledged q m c \<equiv> (msg_id m, c) \<in> set (q_acked q)"
 
 (* eventually (matches Coq: Definition eventually) *)
 definition eventually :: "bool \<Rightarrow> bool" where
   "eventually P \<equiv> P"
 
 (* delivered_count (matches Coq: Definition delivered_count) *)
-definition delivered_count :: "QueueState \<Rightarrow> Message \<Rightarrow> Consumer \<Rightarrow> nat" where
+definition delivered_count :: "QueueState \<Rightarrow> message \<Rightarrow> Consumer \<Rightarrow> nat" where
   "delivered_count q m c \<equiv> List.length (List.filter (\<lambda>p. (((\<and> = (msg_id)) (fst p)) (msg_id m))
                                 ((snd p = c)))
                  (q_delivered q))"
@@ -349,8 +357,8 @@ definition delivered_count :: "QueueState \<Rightarrow> Message \<Rightarrow> Co
 (* preserves_order (matches Coq: Definition preserves_order) *)
 definition preserves_order :: "QueueState \<Rightarrow> bool" where
   "preserves_order q \<equiv> forall m1 m2 c,
-    In (m1, c) (q_delivered q) ->
-    In (m2, c) (q_delivered q) ->
+    (m1, c) \<in> set (q_delivered q) ->
+    (m2, c) \<in> set (q_delivered q) ->
     msg_id m1 < msg_id m2 ->
     True"
 
@@ -359,7 +367,7 @@ definition safe_deserialize :: "string \<Rightarrow> option TypedPayload" where
   "safe_deserialize expected \<equiv> Some (TPInt 0)"
 
 (* goes_to_dlq (matches Coq: Definition goes_to_dlq) *)
-fun goes_to_dlq :: "QueueState \<Rightarrow> Message \<Rightarrow> ProcessOutcome \<Rightarrow> bool" where
+fun goes_to_dlq :: "QueueState \<Rightarrow> message \<Rightarrow> process_outcome \<Rightarrow> bool" where
   "goes_to_dlq POSuccess = True"
 
 (* queue_has_capacity (matches Coq: Definition queue_has_capacity) *)
@@ -371,7 +379,7 @@ definition backpressure_applied :: "QueueState \<Rightarrow> nat \<Rightarrow> b
   "backpressure_applied q max \<equiv> List.length (q_messages q) >= max -> True"
 
 (* in_log (matches Coq: Definition in_log) *)
-definition in_log :: "Log \<Rightarrow> LogEntry \<Rightarrow> nat \<Rightarrow> bool" where
+definition in_log :: "Log \<Rightarrow> log_entry \<Rightarrow> nat \<Rightarrow> bool" where
   "in_log l e t \<equiv> e \<in> set l \<and> log_timestamp e <= t"
 
 (* hash_chain_link_valid (matches Coq: Definition hash_chain_link_valid) *)
@@ -383,8 +391,8 @@ fun hash_chain_valid :: "Log \<Rightarrow> bool" where
   "hash_chain_valid _ = True"
 
 (* aol_append (matches Coq: Definition aol_append) *)
-definition aol_append :: "AppendOnlyLog \<Rightarrow> LogEntry \<Rightarrow> AppendOnlyLog" where
-  "aol_append l e \<equiv> mkAOLog (e :: aol_entries l) (S (aol_write_count l))"
+definition aol_append :: "AppendOnlyLog \<Rightarrow> log_entry \<Rightarrow> AppendOnlyLog" where
+  "aol_append l e \<equiv> mkAOLog (e :: aol_entries l) (Suc (aol_write_count l))"
 
 (* safe_log_entry (matches Coq: Definition safe_log_entry) *)
 definition safe_log_entry :: "nat \<Rightarrow> string \<Rightarrow> nat \<Rightarrow> LogEntry" where
@@ -395,11 +403,11 @@ definition tamper_detected :: "Log \<Rightarrow> bool" where
   "tamper_detected l \<equiv> ~ hash_chain_valid l"
 
 (* has_access (matches Coq: Definition has_access) *)
-definition has_access :: "SecretsStore \<Rightarrow> Service \<Rightarrow> Secret \<Rightarrow> bool" where
+definition has_access :: "SecretsStore \<Rightarrow> service \<Rightarrow> secret \<Rightarrow> bool" where
   "has_access ss svc sec \<equiv> access_policy ss svc (secret_id sec) = True"
 
 (* can_read (matches Coq: Definition can_read) *)
-definition can_read :: "SecretsStore \<Rightarrow> Service \<Rightarrow> Secret \<Rightarrow> bool" where
+definition can_read :: "SecretsStore \<Rightarrow> service \<Rightarrow> secret \<Rightarrow> bool" where
   "can_read ss svc sec \<equiv> has_access ss svc sec"
 
 (* secrets_isolated (matches Coq: Definition secrets_isolated) *)
@@ -418,15 +426,15 @@ definition secret_expired :: "Secret \<Rightarrow> nat \<Rightarrow> bool" where
   "secret_expired sec current_time \<equiv> current_time > secret_created sec + secret_ttl sec"
 
 (* secret_access_audited (matches Coq: Definition secret_access_audited) *)
-definition secret_access_audited :: "SecretsStore \<Rightarrow> Service \<Rightarrow> Secret \<Rightarrow> nat \<Rightarrow> bool" where
-  "secret_access_audited ss svc sec ts \<equiv> In (svc, secret_id sec, ts) (access_log ss)"
+definition secret_access_audited :: "SecretsStore \<Rightarrow> service \<Rightarrow> secret \<Rightarrow> nat \<Rightarrow> bool" where
+  "secret_access_audited ss svc sec ts \<equiv> (svc, secret_id sec, ts) \<in> set (access_log ss)"
 
 (* INF_001_01_lb_routes_correctly (matches Coq) *)
 lemma INF_001_01_lb_routes_correctly: "\<forall>lb req b. routes_to lb req b \<longrightarrow> healthy b \<and> has_capacity b"
   by auto
 
 (* INF_001_02_lb_session_affinity (matches Coq) *)
-lemma INF_001_02_lb_session_affinity: "\<forall>lb s b. lb_session_map lb s = Some (backend_id b) \<longrightarrow> In b (lb_backends lb) \<longrightarrow> healthy b \<longrightarrow> has_capacity b \<longrightarrow> routes_to lb (mkRequest "GET"%string "/"%string [] [] (Some s)) b"
+lemma INF_001_02_lb_session_affinity: "\<forall>lb s b. lb_session_map lb s = Some (backend_id b) \<longrightarrow> b \<in> set (lb_backends lb) \<longrightarrow> healthy b \<longrightarrow> has_capacity b \<longrightarrow> routes_to lb (mkRequest "GET"%string "/"%string [] [] (Some s)) b"
   by auto
 
 (* INF_001_03_lb_no_request_smuggling (matches Coq) *)
@@ -474,7 +482,7 @@ lemma INF_001_13_db_audit_complete: "\<forall>log subj obj entry. entry \<in> se
   by auto
 
 (* filter_In_length_pos (matches Coq) *)
-lemma filter_In_length_pos: "\<forall>{A : Type} (f : A \<longrightarrow> bool) (l : list A) (x :: A). x \<in> set l \<longrightarrow> f x = True \<longrightarrow> List.length (List.filter f l) \<ge> 1"
+lemma filter_In_length_pos: "\<forall>{A : Type} (f : a \<longrightarrow> bool) (l : list a) (x :: a). x \<in> set l \<longrightarrow> f x = True \<longrightarrow> List.length (List.filter f l) \<ge> 1"
   by auto
 
 (* INF_001_14_mq_exactly_once (matches Coq) *)
@@ -490,7 +498,7 @@ lemma INF_001_16_mq_no_deser_attack: "\<forall>payload expected. \<exists>result
   by simp
 
 (* INF_001_17_mq_dlq_complete (matches Coq) *)
-lemma INF_001_17_mq_dlq_complete: "\<forall>q m err. goes_to_dlq q m (POFailure err) \<longrightarrow> In m (q_dlq q)"
+lemma INF_001_17_mq_dlq_complete: "\<forall>q m err. goes_to_dlq q m (POFailure err) \<longrightarrow> m \<in> set (q_dlq q)"
   by auto
 
 (* INF_001_18_mq_backpressure (matches Coq) *)
@@ -522,7 +530,7 @@ lemma INF_001_24_secret_expiry: "\<forall>sec current_time. current_time > secre
   by auto
 
 (* INF_001_25_secret_audited (matches Coq) *)
-lemma INF_001_25_secret_audited: "\<forall>ss svc sec ts. In (svc, secret_id sec, ts) (access_log ss) \<longrightarrow> secret_access_audited ss svc sec ts"
+lemma INF_001_25_secret_audited: "\<forall>ss svc sec ts. (svc, secret_id sec, ts) \<in> set (access_log ss) \<longrightarrow> secret_access_audited ss svc sec ts"
   by auto
 
 end

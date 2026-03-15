@@ -30,19 +30,19 @@ pred closed_rho_sc[p_rho: subst_rho_sc] {
 
 // extend_rho_sc_same (matches Coq: Lemma extend_rho_sc_same)
 assert extend_rho_sc_same {
-  all p_rho: subst_rho_sc | extend_rho_sc[p_rho] implies some p_rho
+  all p_rho: subst_rho_sc, p_x: ident, p_v: expr | extend_rho_sc[p_rho, p_x, p_v] implies some p_rho
 }
 check extend_rho_sc_same for 5
 
 // extend_rho_sc_diff (matches Coq: Lemma extend_rho_sc_diff)
 assert extend_rho_sc_diff {
-  all p_rho: subst_rho_sc | extend_rho_sc[p_rho] implies some p_rho
+  all p_rho: subst_rho_sc, p_x: ident, p_v: expr | extend_rho_sc[p_rho, p_x, p_v] implies some p_rho
 }
 check extend_rho_sc_diff for 5
 
 // extend_rho_sc_shadow (matches Coq: Lemma extend_rho_sc_shadow)
 assert extend_rho_sc_shadow {
-  all p_rho: subst_rho_sc | extend_rho_sc[p_rho] implies some p_rho
+  all p_rho: subst_rho_sc, p_x: ident, p_v: expr | extend_rho_sc[p_rho, p_x, p_v] implies some p_rho
 }
 check extend_rho_sc_shadow for 5
 

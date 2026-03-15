@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | StudentData        | student_data           | OK     |
- * | StudentAge         | student_age            | OK     |
- * | EducationEffect    | education_effect       | OK     |
+ * | student_data        | student_data           | OK     |
+ * | student_age         | student_age            | OK     |
+ * | education_effect    | education_effect       | OK     |
  * | FERPA_Compliance   | ferpa__compliance      | OK     |
- * | StudentRecord      | student_record         | OK     |
+ * | student_record      | student_record         | OK     |
  * | student_data_sensitivity | student_data_sensitivity | OK     |
  * | coppa_applies      | coppa_applies          | OK     |
  * | all_ferpa_controls | all_ferpa_controls     | OK     |
@@ -54,7 +54,7 @@ theory IndustryEducation
   imports Main CoqCompat
 begin
 
-(* StudentData (matches Coq: Inductive StudentData) *)
+(* student_data (matches Coq: Inductive student_data) *)
 datatype student_data =
     EducationRecord
   |     DirectoryInfo
@@ -63,13 +63,13 @@ datatype student_data =
   |     SpecialEducation
   |     HealthRecords
 
-(* StudentAge (matches Coq: Inductive StudentAge) *)
+(* student_age (matches Coq: Inductive student_age) *)
 datatype student_age =
     Under13
   |     Teen
   |     Adult
 
-(* EducationEffect (matches Coq: Inductive EducationEffect) *)
+(* education_effect (matches Coq: Inductive education_effect) *)
 datatype education_effect =
     StudentRecordAccess
   |     GradeEntry
@@ -86,7 +86,7 @@ record ferpa__compliance =
   amendment_process :: bool
   disclosure_tracking :: bool
 
-(* StudentRecord (matches Coq: Record StudentRecord) *)
+(* student_record (matches Coq: Record student_record) *)
 record student_record =
   student_id :: nat
   student_age_years :: nat
@@ -107,9 +107,9 @@ fun student_data_sensitivity :: "StudentData \<Rightarrow> nat" where
 
 (* coppa_applies (matches Coq: Definition coppa_applies) *)
 fun coppa_applies :: "StudentAge \<Rightarrow> bool" where
-  "coppa_applies Under13 = true"
-|   "coppa_applies Teen = false"
-|   "coppa_applies Adult = false"
+  "coppa_applies Under13 = True"
+|   "coppa_applies Teen = False"
+|   "coppa_applies Adult = False"
 
 (* all_ferpa_controls (matches Coq: Definition all_ferpa_controls) *)
 definition all_ferpa_controls :: "FERPA_Compliance \<Rightarrow> bool" where
@@ -144,13 +144,13 @@ definition classify_student_age :: "nat \<Rightarrow> StudentAge" where
 (* Section L01 - FERPA Compliance
     Reference: IND_L_EDUCATION.md Section 3.1 *)
 (* ferpa_compliance (matches Coq) *)
-lemma ferpa_compliance: "\<forall>(compliance :: FERPA_Compliance) (record :: StudentData). legitimate_educational_interest compliance = True \<longrightarrow> True"
+lemma ferpa_compliance: "\<forall>(compliance :: FERPA_Compliance) (record :: student_data). legitimate_educational_interest compliance = True \<longrightarrow> True"
   by simp
 
 (* Section L02 - COPPA for Under-13
     Reference: IND_L_EDUCATION.md Section 3.2 *)
 (* coppa_compliance (matches Coq) *)
-lemma coppa_compliance: "\<forall>(child :: StudentAge) (data :: StudentData). child = Under13 \<longrightarrow> True"
+lemma coppa_compliance: "\<forall>(child :: student_age) (data :: student_data). child = Under13 \<longrightarrow> True"
   by simp
 
 (* Section L03 - CIPA Filtering
@@ -162,23 +162,23 @@ lemma cipa_compliance: "\<forall>(school_network :: nat). True"
 (* Section L04 - State Privacy Laws
     Reference: IND_L_EDUCATION.md Section 3.4 *)
 (* state_privacy_compliance (matches Coq) *)
-lemma state_privacy_compliance: "\<forall>(state :: nat) (student_data :: StudentData). True"
+lemma state_privacy_compliance: "\<forall>(state :: nat) (student_data :: student_data). True"
   by simp
 
 (* Section L05 - Vendor Data Practices
     Reference: IND_L_EDUCATION.md Section 3.5 *)
 (* vendor_data_practices (matches Coq) *)
-lemma vendor_data_practices: "\<forall>(vendor :: nat) (student_data :: StudentData). True"
+lemma vendor_data_practices: "\<forall>(vendor :: nat) (student_data :: student_data). True"
   by simp
 
 (* Education records require consent for disclosure *)
 (* education_record_consent (matches Coq) *)
-lemma education_record_consent: "\<forall>(record :: StudentData) (disclosure :: nat). record = EducationRecord \<longrightarrow> True"
+lemma education_record_consent: "\<forall>(record :: student_data) (disclosure :: nat). record = EducationRecord \<longrightarrow> True"
   by simp
 
 (* Under-13 requires verifiable parental consent *)
 (* under13_parental_consent (matches Coq) *)
-lemma under13_parental_consent: "\<forall>(age :: StudentAge) (data_collection :: nat). age = Under13 \<longrightarrow> True"
+lemma under13_parental_consent: "\<forall>(age :: student_age) (data_collection :: nat). age = Under13 \<longrightarrow> True"
   by simp
 
 (* special_ed_highest (matches Coq) *)

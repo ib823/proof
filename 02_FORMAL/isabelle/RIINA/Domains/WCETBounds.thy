@@ -12,14 +12,14 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Stmt               | stmt                   | OK     |
- * | CacheState         | cache_state            | OK     |
- * | BranchState        | branch_state           | OK     |
- * | AbstractCacheState | abstract_cache_state   | OK     |
- * | HWParams           | hw_params              | OK     |
- * | Task               | task                   | OK     |
- * | ExecContext        | exec_context           | OK     |
- * | DMAConfig          | dma_config             | OK     |
+ * | stmt               | stmt                   | OK     |
+ * | cache_state         | cache_state            | OK     |
+ * | branch_state        | branch_state           | OK     |
+ * | abstract_cache_state | abstract_cache_state   | OK     |
+ * | hw_params           | hw_params              | OK     |
+ * | task               | task                   | OK     |
+ * | exec_context        | exec_context           | OK     |
+ * | d_mac_onfig          | dma_config             | OK     |
  * | hw_wellformed      | hw_wellformed          | OK     |
  * | default_hw         | default_hw             | OK     |
  * | wcet               | wcet                   | OK     |
@@ -84,7 +84,10 @@ theory WCETBounds
   imports Main
 begin
 
-(* Stmt (matches Coq: Inductive Stmt) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym d_mac_onfig = "nat"
+type_synonym time = "nat"
+(* stmt (matches Coq: Inductive stmt) *)
 datatype stmt =
     SUnit
   |     SAssign
@@ -95,46 +98,46 @@ datatype stmt =
   |     SFor
   |     SCall
 
-(* CacheState (matches Coq: Inductive CacheState) *)
+(* cache_state (matches Coq: Inductive cache_state) *)
 datatype cache_state =
     CacheHit
   |     CacheMiss
 
-(* BranchState (matches Coq: Inductive BranchState) *)
+(* branch_state (matches Coq: Inductive branch_state) *)
 datatype branch_state =
     BranchCorrect
   |     BranchMispredict
 
-(* AbstractCacheState (matches Coq: Inductive AbstractCacheState) *)
+(* abstract_cache_state (matches Coq: Inductive abstract_cache_state) *)
 datatype abstract_cache_state =
     ACSMustHit
   |     ACSMayMiss
   |     ACSMustMiss
 
-(* HWParams (matches Coq: Record HWParams) *)
+(* hw_params (matches Coq: Record hw_params) *)
 record hw_params =
-  hw_cache_hit :: Time
-  hw_cache_miss :: Time
-  hw_call_overhead :: Time
-  hw_branch_penalty :: Time
+  hw_cache_hit :: time
+  hw_cache_miss :: time
+  hw_call_overhead :: time
+  hw_branch_penalty :: time
   hw_pipeline_depth :: nat
 
-(* Task (matches Coq: Record Task) *)
+(* task (matches Coq: Record task) *)
 record task =
-  task_wcet :: Time
-  task_period :: Time
-  task_deadline :: Time
+  task_wcet :: time
+  task_period :: time
+  task_deadline :: time
 
-(* ExecContext (matches Coq: Record ExecContext) *)
+(* exec_context (matches Coq: Record exec_context) *)
 record exec_context =
-  exec_cache :: CacheState
-  exec_branch :: BranchState
+  exec_cache :: cache_state
+  exec_branch :: branch_state
   exec_iterations :: nat
 
-(* DMAConfig (matches Coq: Record DMAConfig) *)
+(* d_mac_onfig (matches Coq: Record d_mac_onfig) *)
 record dma_config =
   dma_bandwidth :: nat
-  dma_setup :: Time
+  dma_setup :: time
 
 (* hw_wellformed (matches Coq: Definition hw_wellformed) *)
 definition hw_wellformed :: "HWParams \<Rightarrow> bool" where
@@ -145,7 +148,7 @@ definition default_hw :: "HWParams" where
   "default_hw \<equiv> mkHW 1 100 5 10 5"
 
 (* wcet (matches Coq: Definition wcet) *)
-fun wcet :: "HWParams \<Rightarrow> Stmt \<Rightarrow> Time" where
+fun wcet :: "HWParams \<Rightarrow> stmt \<Rightarrow> Time" where
   "wcet SUnit = 1"
 
 (* utilization (matches Coq: Definition utilization) *)
@@ -153,12 +156,12 @@ definition utilization :: "Task \<Rightarrow> nat" where
   "utilization t \<equiv> (task_wcet t * 100) / task_period t"
 
 (* cache_latency (matches Coq: Definition cache_latency) *)
-fun cache_latency :: "HWParams \<Rightarrow> CacheState \<Rightarrow> Time" where
+fun cache_latency :: "HWParams \<Rightarrow> cache_state \<Rightarrow> Time" where
   "cache_latency CacheHit = hw_cache_hit"
 |   "cache_latency CacheMiss = hw_cache_miss"
 
 (* branch_cost (matches Coq: Definition branch_cost) *)
-fun branch_cost :: "HWParams \<Rightarrow> BranchState \<Rightarrow> Time" where
+fun branch_cost :: "HWParams \<Rightarrow> branch_state \<Rightarrow> Time" where
   "branch_cost BranchCorrect = 0"
 |   "branch_cost BranchMispredict = hw_branch_penalty"
 
@@ -167,7 +170,7 @@ definition worst_context :: "nat \<Rightarrow> ExecContext" where
   "worst_context max_iter \<equiv> mkExec CacheMiss BranchMispredict (\<lambda>_. max_iter)"
 
 (* actual_time (matches Coq: Definition actual_time) *)
-fun actual_time :: "HWParams \<Rightarrow> ExecContext \<Rightarrow> Stmt \<Rightarrow> Time" where
+fun actual_time :: "HWParams \<Rightarrow> exec_context \<Rightarrow> stmt \<Rightarrow> Time" where
   "actual_time SUnit = 1"
 
 (* recursive_calls (matches Coq: Definition recursive_calls) *)
@@ -187,7 +190,7 @@ definition dma_wcet :: "DMAConfig \<Rightarrow> nat \<Rightarrow> Time" where
   "dma_wcet cfg transfer_size \<equiv> dma_setup cfg + (transfer_size / max 1 (dma_bandwidth cfg)) + 1"
 
 (* abstract_cache_wcet (matches Coq: Definition abstract_cache_wcet) *)
-fun abstract_cache_wcet :: "HWParams \<Rightarrow> AbstractCacheState \<Rightarrow> Time" where
+fun abstract_cache_wcet :: "HWParams \<Rightarrow> abstract_cache_state \<Rightarrow> Time" where
   "abstract_cache_wcet ACSMustHit = hw_cache_hit"
 |   "abstract_cache_wcet ACSMayMiss = hw_cache_miss"
 |   "abstract_cache_wcet ACSMustMiss = hw_cache_miss"

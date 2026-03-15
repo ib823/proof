@@ -12,28 +12,28 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | BarcodeFormat      | barcode_format         | OK     |
- * | BoundingBox        | bounding_box           | OK     |
- * | Detection          | detection              | OK     |
- * | ObjectDetectionResult | object_detection_result | OK     |
- * | FaceDetection      | face_detection         | OK     |
- * | OCRResult          | ocr_result             | OK     |
- * | ObjectDetection    | object_detection       | OK     |
- * | ClassificationResult | classification_result  | OK     |
- * | BarcodeResult      | barcode_result         | OK     |
- * | PhotoAnalysis      | photo_analysis         | OK     |
- * | DepthEstimate      | depth_estimate         | OK     |
- * | PoseEstimate       | pose_estimate          | OK     |
- * | SceneClassification | scene_classification   | OK     |
- * | TextRecognition    | text_recognition       | OK     |
- * | VisionRequest      | vision_request         | OK     |
- * | ImagePair          | image_pair             | OK     |
- * | PipelineStage      | pipeline_stage         | OK     |
- * | FrameAnalysis      | frame_analysis         | OK     |
+ * | barcode_format      | barcode_format         | OK     |
+ * | bounding_box        | bounding_box           | OK     |
+ * | detection          | detection              | OK     |
+ * | object_detection_result | object_detection_result | OK     |
+ * | face_detection      | face_detection         | OK     |
+ * | ocr_result          | ocr_result             | OK     |
+ * | object_detection    | object_detection       | OK     |
+ * | classification_result | classification_result  | OK     |
+ * | barcode_result      | barcode_result         | OK     |
+ * | photo_analysis      | photo_analysis         | OK     |
+ * | depth_estimate      | depth_estimate         | OK     |
+ * | pose_estimate       | pose_estimate          | OK     |
+ * | scene_classification | scene_classification   | OK     |
+ * | text_recognition    | text_recognition       | OK     |
+ * | vision_request      | vision_request         | OK     |
+ * | image_pair          | image_pair             | OK     |
+ * | pipeline_stage      | pipeline_stage         | OK     |
+ * | frame_analysis      | frame_analysis         | OK     |
  * | Pixel              | Pixel                  | OK     |
- * | Image              | Image                  | OK     |
- * | ClassLabel         | ClassLabel             | OK     |
- * | Confidence         | Confidence             | OK     |
+ * | image              | image                  | OK     |
+ * | class_label         | class_label             | OK     |
+ * | confidence         | confidence             | OK     |
  * | valid_detection    | valid_detection        | OK     |
  * | accurate_detection | accurate_detection     | OK     |
  * | detection_bounded  | detection_bounded      | OK     |
@@ -83,7 +83,11 @@ theory ComputerVision
   imports Main
 begin
 
-(* BarcodeFormat (matches Coq: Inductive BarcodeFormat) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym class_label = "nat"
+type_synonym confidence = "nat"
+type_synonym image = "nat list"
+(* barcode_format (matches Coq: Inductive barcode_format) *)
 datatype barcode_format =
     QRCode
   |     EAN13
@@ -91,111 +95,111 @@ datatype barcode_format =
   |     DataMatrix
   |     UnknownFormat
 
-(* BoundingBox (matches Coq: Record BoundingBox) *)
+(* bounding_box (matches Coq: Record bounding_box) *)
 record bounding_box =
   bbox_x :: nat
   bbox_y :: nat
   bbox_w :: nat
   bbox_h :: nat
 
-(* Detection (matches Coq: Record Detection) *)
+(* detection (matches Coq: Record detection) *)
 record detection =
-  det_box :: BoundingBox
-  det_class :: ClassLabel
-  det_confidence :: Confidence
+  det_box :: bounding_box
+  det_class :: class_label
+  det_confidence :: confidence
   det_valid :: bool
 
-(* ObjectDetectionResult (matches Coq: Record ObjectDetectionResult) *)
+(* object_detection_result (matches Coq: Record object_detection_result) *)
 record object_detection_result =
   od_detections :: 'a list
   od_processed_on_device :: bool
   od_latency_ms :: nat
 
-(* FaceDetection (matches Coq: Record FaceDetection) *)
+(* face_detection (matches Coq: Record face_detection) *)
 record face_detection =
-  face_box :: BoundingBox
+  face_box :: bounding_box
   face_confidence :: nat
   face_data_on_device :: bool
   face_anonymized :: bool
 
-(* OCRResult (matches Coq: Record OCRResult) *)
+(* ocr_result (matches Coq: Record ocr_result) *)
 record ocr_result =
   ocr_text :: 'a list
   ocr_confidence :: nat
   ocr_language :: nat
   ocr_accuracy_bound :: nat
 
-(* ObjectDetection (matches Coq: Record ObjectDetection) *)
+(* object_detection (matches Coq: Record object_detection) *)
 record object_detection =
-  obj_class :: ClassLabel
-  obj_confidence :: Confidence
-  obj_bbox :: BoundingBox
+  obj_class :: class_label
+  obj_confidence :: confidence
+  obj_bbox :: bounding_box
   obj_confidence_reported :: bool
 
-(* ClassificationResult (matches Coq: Record ClassificationResult) *)
+(* classification_result (matches Coq: Record classification_result) *)
 record classification_result =
-  class_label :: ClassLabel
+  class_label :: class_label
   class_score :: nat
   class_deterministic :: bool
 
-(* BarcodeResult (matches Coq: Record BarcodeResult) *)
+(* barcode_result (matches Coq: Record barcode_result) *)
 record barcode_result =
-  barcode_format :: BarcodeFormat
+  barcode_format :: barcode_format
   barcode_data :: 'a list
   barcode_valid :: bool
 
-(* PhotoAnalysis (matches Coq: Record PhotoAnalysis) *)
+(* photo_analysis (matches Coq: Record photo_analysis) *)
 record photo_analysis =
   photo_id :: nat
   analysis_result :: 'a list
   permission_granted :: bool
   processed_on_device :: bool
 
-(* DepthEstimate (matches Coq: Record DepthEstimate) *)
+(* depth_estimate (matches Coq: Record depth_estimate) *)
 record depth_estimate =
   depth_value :: nat
   depth_min :: nat
   depth_max :: nat
   depth_confidence :: nat
 
-(* PoseEstimate (matches Coq: Record PoseEstimate) *)
+(* pose_estimate (matches Coq: Record pose_estimate) *)
 record pose_estimate =
   pose_joints :: 'a list
   pose_stable :: bool
   pose_frame_count :: nat
 
-(* SceneClassification (matches Coq: Record SceneClassification) *)
+(* scene_classification (matches Coq: Record scene_classification) *)
 record scene_classification =
   scene_label :: nat
   scene_confidence :: nat
   scene_consistent :: bool
 
-(* TextRecognition (matches Coq: Record TextRecognition) *)
+(* text_recognition (matches Coq: Record text_recognition) *)
 record text_recognition =
   text_content :: 'a list
   text_language :: nat
   text_supported_languages :: 'a list
   text_language_supported :: bool
 
-(* VisionRequest (matches Coq: Record VisionRequest) *)
+(* vision_request (matches Coq: Record vision_request) *)
 record vision_request =
   vr_id :: nat
   vr_cancelled :: bool
   vr_completed :: bool
 
-(* ImagePair (matches Coq: Record ImagePair) *)
+(* image_pair (matches Coq: Record image_pair) *)
 record image_pair =
-  img_a :: Image
-  img_b :: Image
+  img_a :: image
+  img_b :: image
   similarity_score :: nat
 
-(* PipelineStage (matches Coq: Record PipelineStage) *)
+(* pipeline_stage (matches Coq: Record pipeline_stage) *)
 record pipeline_stage =
   stage_id :: nat
   stage_order :: nat
   stage_complete :: bool
 
-(* FrameAnalysis (matches Coq: Record FrameAnalysis) *)
+(* frame_analysis (matches Coq: Record frame_analysis) *)
 record frame_analysis =
   frame_id :: nat
   frame_timestamp_ms :: nat
@@ -205,16 +209,16 @@ record frame_analysis =
 definition Pixel :: "'a" where
   "Pixel \<equiv> nat"
 
-(* Image (matches Coq: Definition Image) *)
-definition Image :: "'a" where
+(* image (matches Coq: Definition image) *)
+definition image :: "'a" where
   "Image \<equiv> list (list Pixel)"
 
-(* ClassLabel (matches Coq: Definition ClassLabel) *)
-definition ClassLabel :: "'a" where
+(* class_label (matches Coq: Definition class_label) *)
+definition class_label :: "'a" where
   "ClassLabel \<equiv> nat"
 
-(* Confidence (matches Coq: Definition Confidence) *)
-definition Confidence :: "'a" where
+(* confidence (matches Coq: Definition confidence) *)
+definition confidence :: "'a" where
   "Confidence \<equiv> nat"
 
 (* valid_detection (matches Coq: Definition valid_detection) *)
@@ -222,7 +226,7 @@ definition valid_detection :: "Detection \<Rightarrow> bool" where
   "valid_detection d \<equiv> det_valid d = True \<and> det_confidence d >= 50"
 
 (* accurate_detection (matches Coq: Definition accurate_detection) *)
-definition accurate_detection :: "Detection \<Rightarrow> BoundingBox \<Rightarrow> bool" where
+definition accurate_detection :: "Detection \<Rightarrow> bounding_box \<Rightarrow> bool" where
   "accurate_detection d ground_truth \<equiv> let box := det_box d in
   
   (max (bbox_x box) (bbox_x ground_truth) - min (bbox_x box) (bbox_x ground_truth)) <= 
@@ -277,7 +281,7 @@ definition scene_is_consistent :: "SceneClassification \<Rightarrow> bool" where
 
 (* language_is_supported (matches Coq: Definition language_is_supported) *)
 definition language_is_supported :: "TextRecognition \<Rightarrow> bool" where
-  "language_is_supported tr \<equiv> text_language_supported tr = True \<and> In (text_language tr) (text_supported_languages tr)"
+  "language_is_supported tr \<equiv> text_language_supported tr = True \<and> (text_language tr) \<in> set (text_supported_languages tr)"
 
 (* request_cancellable (matches Coq: Definition request_cancellable) *)
 definition request_cancellable :: "VisionRequest \<Rightarrow> bool" where
@@ -298,103 +302,103 @@ definition frame_rate_limited :: "bool" where
   "frame_rate_limited \<equiv> frame_timestamp_ms f2 >= frame_timestamp_ms f1 + min_interval_ms f1"
 
 (* object_detection_bounded (matches Coq) *)
-lemma object_detection_bounded: "\<forall>(result :: ObjectDetectionResult). detection_bounded result \<longrightarrow> length (od_detections result) \<le> 100"
+lemma object_detection_bounded: "\<forall>(result :: object_detection_result). detection_bounded result \<longrightarrow> length (od_detections result) \<le> 100"
   by auto
 
 (* detection_latency_bounded (matches Coq) *)
-lemma detection_latency_bounded: "\<forall>(result :: ObjectDetectionResult). detection_bounded result \<longrightarrow> od_latency_ms result \<le> 100"
+lemma detection_latency_bounded: "\<forall>(result :: object_detection_result). detection_bounded result \<longrightarrow> od_latency_ms result \<le> 100"
   by auto
 
 (* valid_detection_min_confidence (matches Coq) *)
-lemma valid_detection_min_confidence: "\<forall>(d :: Detection). valid_detection d \<longrightarrow> det_confidence d \<ge> 50"
+lemma valid_detection_min_confidence: "\<forall>(d :: detection). valid_detection d \<longrightarrow> det_confidence d \<ge> 50"
   by auto
 
 (* cv_stays_on_device (matches Coq) *)
-lemma cv_stays_on_device: "\<forall>(result :: ObjectDetectionResult). cv_private result \<longrightarrow> od_processed_on_device result = True"
+lemma cv_stays_on_device: "\<forall>(result :: object_detection_result). cv_private result \<longrightarrow> od_processed_on_device result = True"
   by auto
 
 (* empty_result_bounded (matches Coq) *)
-lemma empty_result_bounded: "\<forall>(r :: ObjectDetectionResult). od_detections r = [] \<longrightarrow> od_latency_ms r \<le> 100 \<longrightarrow> detection_bounded r"
+lemma empty_result_bounded: "\<forall>(r :: object_detection_result). od_detections r = [] \<longrightarrow> od_latency_ms r \<le> 100 \<longrightarrow> detection_bounded r"
   by auto
 
 (* face_detection_privacy_preserving (matches Coq) *)
-lemma face_detection_privacy_preserving: "\<forall>(fd :: FaceDetection). face_privacy_preserving fd \<longrightarrow> face_data_on_device fd = True"
+lemma face_detection_privacy_preserving: "\<forall>(fd :: face_detection). face_privacy_preserving fd \<longrightarrow> face_data_on_device fd = True"
   by auto
 
 (* ocr_accuracy_bounded (matches Coq) *)
-lemma ocr_accuracy_bounded: "\<forall>(r :: OCRResult). ocr_accuracy_within_bound r \<longrightarrow> ocr_confidence r \<ge> ocr_accuracy_bound r"
+lemma ocr_accuracy_bounded: "\<forall>(r :: ocr_result). ocr_accuracy_within_bound r \<longrightarrow> ocr_confidence r \<ge> ocr_accuracy_bound r"
   by auto
 
 (* object_detection_confidence_reported (matches Coq) *)
-lemma object_detection_confidence_reported: "\<forall>(od :: ObjectDetection). confidence_properly_reported od \<longrightarrow> obj_confidence_reported od = True"
+lemma object_detection_confidence_reported: "\<forall>(od :: object_detection). confidence_properly_reported od \<longrightarrow> obj_confidence_reported od = True"
   by auto
 
 (* image_classification_deterministic (matches Coq) *)
-lemma image_classification_deterministic: "\<forall>(cr :: ClassificationResult). classification_deterministic cr \<longrightarrow> class_deterministic cr = True"
+lemma image_classification_deterministic: "\<forall>(cr :: classification_result). classification_deterministic cr \<longrightarrow> class_deterministic cr = True"
   by auto
 
 (* barcode_format_validated (matches Coq) *)
-lemma barcode_format_validated: "\<forall>(br :: BarcodeResult). barcode_format_known br \<longrightarrow> barcode_valid br = True"
+lemma barcode_format_validated: "\<forall>(br :: barcode_result). barcode_format_known br \<longrightarrow> barcode_valid br = True"
   by auto
 
 (* face_data_on_device_preserved (matches Coq) *)
-lemma face_data_on_device_preserved: "\<forall>(fd :: FaceDetection). face_privacy_preserving fd \<longrightarrow> face_anonymized fd = True"
+lemma face_data_on_device_preserved: "\<forall>(fd :: face_detection). face_privacy_preserving fd \<longrightarrow> face_anonymized fd = True"
   by auto
 
 (* photo_analysis_permission_required (matches Coq) *)
-lemma photo_analysis_permission_required: "\<forall>(pa :: PhotoAnalysis). photo_analysis_permitted pa \<longrightarrow> permission_granted pa = True"
+lemma photo_analysis_permission_required: "\<forall>(pa :: photo_analysis). photo_analysis_permitted pa \<longrightarrow> permission_granted pa = True"
   by auto
 
 (* depth_estimation_bounded (matches Coq) *)
-lemma depth_estimation_bounded: "\<forall>(de :: DepthEstimate). depth_within_bounds de \<longrightarrow> depth_min de \<le> depth_value de \<and> depth_value de \<le> depth_max de"
+lemma depth_estimation_bounded: "\<forall>(de :: depth_estimate). depth_within_bounds de \<longrightarrow> depth_min de \<le> depth_value de \<and> depth_value de \<le> depth_max de"
   by auto
 
 (* pose_estimation_stable (matches Coq) *)
-lemma pose_estimation_stable: "\<forall>(pe :: PoseEstimate). pose_is_stable pe \<longrightarrow> pose_stable pe = True"
+lemma pose_estimation_stable: "\<forall>(pe :: pose_estimate). pose_is_stable pe \<longrightarrow> pose_stable pe = True"
   by auto
 
 (* scene_classification_consistent (matches Coq) *)
-lemma scene_classification_consistent: "\<forall>(sc :: SceneClassification). scene_is_consistent sc \<longrightarrow> scene_consistent sc = True \<and> scene_confidence sc \<ge> 50"
+lemma scene_classification_consistent: "\<forall>(sc :: scene_classification). scene_is_consistent sc \<longrightarrow> scene_consistent sc = True \<and> scene_confidence sc \<ge> 50"
   by auto
 
 (* text_recognition_language_supported (matches Coq) *)
-lemma text_recognition_language_supported: "\<forall>(tr :: TextRecognition). language_is_supported tr \<longrightarrow> text_language_supported tr = True"
+lemma text_recognition_language_supported: "\<forall>(tr :: text_recognition). language_is_supported tr \<longrightarrow> text_language_supported tr = True"
   by auto
 
 (* vision_request_cancellable (matches Coq) *)
-lemma vision_request_cancellable: "\<forall>(vr :: VisionRequest). request_cancellable vr \<longrightarrow> vr_completed vr = False \<longrightarrow> vr_cancelled vr = True \<or> vr_cancelled vr = False"
+lemma vision_request_cancellable: "\<forall>(vr :: vision_request). request_cancellable vr \<longrightarrow> vr_completed vr = False \<longrightarrow> vr_cancelled vr = True \<or> vr_cancelled vr = False"
   by auto
 
 (* image_similarity_symmetric (matches Coq) *)
-lemma image_similarity_symmetric: "\<forall>(p1 p2 : ImagePair). similarity_symmetric_pair p1 p2 \<longrightarrow> img_a p1 = img_b p2 \<longrightarrow> img_b p1 = img_a p2 \<longrightarrow> similarity_score p1 = similarity_score p2"
+lemma image_similarity_symmetric: "\<forall>(p1 :: image_pair) (p2 :: image_pair). similarity_symmetric_pair p1 p2 \<longrightarrow> img_a p1 = img_b p2 \<longrightarrow> img_b p1 = img_a p2 \<longrightarrow> similarity_score p1 = similarity_score p2"
   by auto
 
 (* vision_pipeline_ordered (matches Coq) *)
-lemma vision_pipeline_ordered: "\<forall>(s1 s2 : PipelineStage). pipeline_stages_ordered [s1; s2] \<longrightarrow> stage_order s1 \<le> stage_order s2"
+lemma vision_pipeline_ordered: "\<forall>(s1 :: pipeline_stage) (s2 :: pipeline_stage). pipeline_stages_ordered [s1; s2] \<longrightarrow> stage_order s1 \<le> stage_order s2"
   by auto
 
 (* frame_analysis_rate_limited (matches Coq) *)
-lemma frame_analysis_rate_limited: "\<forall>(f1 f2 : FrameAnalysis). frame_rate_limited f1 f2 \<longrightarrow> frame_timestamp_ms f2 \<ge> frame_timestamp_ms f1 + min_interval_ms f1"
+lemma frame_analysis_rate_limited: "\<forall>(f1 :: frame_analysis) (f2 :: frame_analysis). frame_rate_limited f1 f2 \<longrightarrow> frame_timestamp_ms f2 \<ge> frame_timestamp_ms f1 + min_interval_ms f1"
   by auto
 
 (* object_detection_confidence_bounded (matches Coq) *)
-lemma object_detection_confidence_bounded: "\<forall>(od :: ObjectDetection). confidence_properly_reported od \<longrightarrow> obj_confidence od \<le> 100"
+lemma object_detection_confidence_bounded: "\<forall>(od :: object_detection). confidence_properly_reported od \<longrightarrow> obj_confidence od \<le> 100"
   by auto
 
 (* depth_estimation_lower_bound (matches Coq) *)
-lemma depth_estimation_lower_bound: "\<forall>(de :: DepthEstimate). depth_within_bounds de \<longrightarrow> depth_min de \<le> depth_value de"
+lemma depth_estimation_lower_bound: "\<forall>(de :: depth_estimate). depth_within_bounds de \<longrightarrow> depth_min de \<le> depth_value de"
   by auto
 
 (* pose_estimation_min_frames (matches Coq) *)
-lemma pose_estimation_min_frames: "\<forall>(pe :: PoseEstimate). pose_is_stable pe \<longrightarrow> pose_frame_count pe \<ge> 3"
+lemma pose_estimation_min_frames: "\<forall>(pe :: pose_estimate). pose_is_stable pe \<longrightarrow> pose_frame_count pe \<ge> 3"
   by auto
 
 (* language_in_supported_list (matches Coq) *)
-lemma language_in_supported_list: "\<forall>(tr :: TextRecognition). language_is_supported tr \<longrightarrow> In (text_language tr) (text_supported_languages tr)"
+lemma language_in_supported_list: "\<forall>(tr :: text_recognition). language_is_supported tr \<longrightarrow> (text_language tr) \<in> set (text_supported_languages tr)"
   by auto
 
 (* empty_detections_always_bounded (matches Coq) *)
-lemma empty_detections_always_bounded: "\<forall>(r :: ObjectDetectionResult). od_detections r = [] \<longrightarrow> length (od_detections r) \<le> 100"
+lemma empty_detections_always_bounded: "\<forall>(r :: object_detection_result). od_detections r = [] \<longrightarrow> length (od_detections r) \<le> 100"
   by simp
 
 end

@@ -44,7 +44,7 @@
 
 use crate::backend::{AuxFile, Backend, BackendOutput, Target};
 use crate::ir::{
-    BasicBlock, BinOp, Constant, Function, FuncId,
+    BasicBlock, BinOp, BlockId, Constant, Function, FuncId,
     Instruction, Program, Terminator, UnaryOp, VarId,
 };
 use crate::wasm_encode::{
@@ -116,29 +116,29 @@ impl WasmBackend {
         }
         let heap_start = if heap_start == 0 { HEAP_START_ALIGN } else { heap_start };
 
-        // === Import section: env.riina_cetak, env.riina_panic ===
-        // Type for cetak: (i32, i32) -> ()  [ptr, len]
-        let cetak_type_idx = module.types.len() as u32;
+        // === Import section: WASI fd_write for I/O ===
+        // fd_write(fd: i32, iovs: i32, iovs_len: i32, nwritten: i32) -> i32
+        let fd_write_type_idx = module.types.len() as u32;
         module.types.push(FuncType {
-            params: vec![ValType::I32, ValType::I32],
-            results: vec![],
+            params: vec![ValType::I32, ValType::I32, ValType::I32, ValType::I32],
+            results: vec![ValType::I32],
         });
-        // Type for panic: (i32, i32) -> ()
-        let panic_type_idx = module.types.len() as u32;
+        // proc_exit(code: i32) -> ()
+        let proc_exit_type_idx = module.types.len() as u32;
         module.types.push(FuncType {
-            params: vec![ValType::I32, ValType::I32],
+            params: vec![ValType::I32],
             results: vec![],
         });
 
         module.imports.push(Import {
-            module: "env".to_string(),
-            name: "riina_cetak".to_string(),
-            kind: ImportKind::Func(cetak_type_idx),
+            module: "wasi_snapshot_preview1".to_string(),
+            name: "fd_write".to_string(),
+            kind: ImportKind::Func(fd_write_type_idx),
         });
         module.imports.push(Import {
-            module: "env".to_string(),
-            name: "riina_panic".to_string(),
-            kind: ImportKind::Func(panic_type_idx),
+            module: "wasi_snapshot_preview1".to_string(),
+            name: "proc_exit".to_string(),
+            kind: ImportKind::Func(proc_exit_type_idx),
         });
 
         // === Memory ===
@@ -216,13 +216,47 @@ impl WasmBackend {
             let body = self.emit_function(func, &func_index_map, &string_table, alloc_func_index)?;
             module.codes.push(body);
 
-            if fid == FuncId::MAIN {
-                module.exports.push(Export {
-                    name: "_start".to_string(),
-                    kind: ExportKind::Func,
-                    index: func_index_map[&fid],
-                });
-            }
+        }
+
+        // === _start trampoline ===
+        // WASI expects _start with signature () -> ().
+        // Main has signature (i32) -> i32. The trampoline calls main(0) and drops the result.
+        if let Some(&main_idx) = func_index_map.get(&FuncId::MAIN) {
+            let start_type_idx = module.types.len() as u32;
+            module.types.push(FuncType {
+                params: vec![],
+                results: vec![],
+            });
+            module.functions.push(start_type_idx);
+
+            let mut trampoline_code = Vec::new();
+            // Push arg 0 for main
+            trampoline_code.push(Op::I32Const as u8);
+            wasm_encode::encode_sleb128(0, &mut trampoline_code);
+            // Call main
+            trampoline_code.push(Op::Call as u8);
+            wasm_encode::encode_uleb128(main_idx as u64, &mut trampoline_code);
+            // Drop the result (main returns i32, _start returns void)
+            trampoline_code.push(Op::Drop as u8);
+
+            module.codes.push(FuncBody {
+                locals: vec![],
+                code: trampoline_code,
+            });
+
+            let start_func_index = NUM_IMPORTS + 1 + func_ids.len() as u32; // after alloc + user funcs
+            module.exports.push(Export {
+                name: "_start".to_string(),
+                kind: ExportKind::Func,
+                index: start_func_index,
+            });
+
+            // Also export main directly for JS callers
+            module.exports.push(Export {
+                name: "main".to_string(),
+                kind: ExportKind::Func,
+                index: main_idx,
+            });
         }
 
         // Data segments
@@ -283,6 +317,11 @@ impl WasmBackend {
     }
 
     /// Emit WASM instructions for a function.
+    ///
+    /// This method analyzes the block structure to detect if/else patterns
+    /// (CondBranch → then_block/else_block → merge via Phi) and emits
+    /// proper WASM structured control flow (if/else/end) instead of
+    /// invalid bare br_if instructions.
     fn emit_function(
         &self,
         func: &Function,
@@ -323,8 +362,108 @@ impl WasmBackend {
             alloc_func_index,
         };
 
-        for block in &func.blocks {
-            self.emit_block(block, &ctx, &mut code)?;
+        // Build a block index for quick lookup by BlockId.
+        // Note: if multiple blocks share a BlockId, only the last one is kept.
+        let block_map: HashMap<BlockId, usize> = func.blocks.iter().enumerate()
+            .map(|(i, b)| (b.id, i))
+            .collect();
+
+        // Track which block indices (positions in func.blocks) have been
+        // inlined as part of structured if/else emission, so we skip them
+        // in the main loop.
+        let mut inlined: std::collections::HashSet<usize> = std::collections::HashSet::new();
+
+        for (block_idx, block) in func.blocks.iter().enumerate() {
+            if inlined.contains(&block_idx) {
+                continue;
+            }
+
+            // Emit the block's instructions (not the terminator)
+            self.emit_block_instrs(block, &ctx, &mut code)?;
+
+            match &block.terminator {
+                Some(Terminator::CondBranch { cond, then_block, else_block }) => {
+                    // Structured if/else emission:
+                    // Stack: push condition, then if (result i32) ... else ... end
+                    if let Some(local) = ctx.var_map.get(cond) {
+                        code.push(Op::LocalGet as u8);
+                        wasm_encode::encode_uleb128(*local as u64, &mut code);
+                    }
+
+                    // if (result i32)
+                    code.push(Op::If as u8);
+                    code.push(ValType::I32 as u8); // block type: result i32
+
+                    // Emit then block inline
+                    if let Some(&then_idx) = block_map.get(then_block) {
+                        let then_blk = &func.blocks[then_idx];
+                        inlined.insert(then_idx);
+                        self.emit_block_instrs(then_blk, &ctx, &mut code)?;
+                        // Push the then result onto the stack.
+                        self.emit_phi_value_for_branch(then_blk, &func.blocks, &block_map, &ctx, &mut code)?;
+                    } else {
+                        // Fallback: push 0
+                        code.push(Op::I32Const as u8);
+                        wasm_encode::encode_sleb128(0, &mut code);
+                    }
+
+                    // else
+                    code.push(Op::Else as u8);
+
+                    // Emit else block inline
+                    if let Some(&else_idx) = block_map.get(else_block) {
+                        let else_blk = &func.blocks[else_idx];
+                        inlined.insert(else_idx);
+                        self.emit_block_instrs(else_blk, &ctx, &mut code)?;
+                        self.emit_phi_value_for_branch(else_blk, &func.blocks, &block_map, &ctx, &mut code)?;
+                    } else {
+                        code.push(Op::I32Const as u8);
+                        wasm_encode::encode_sleb128(0, &mut code);
+                    }
+
+                    // end
+                    code.push(Op::End as u8);
+
+                    // The if/else/end block leaves the result on the stack.
+                    // Find the merge block and its phi node, then local.set the phi result.
+                    let merge_block_id = self.find_merge_block(&func.blocks, &block_map);
+                    if let Some((merge_idx, merge_blk_ref)) = merge_block_id {
+                        // Store the if/else result into the phi variable
+                        for instr in &merge_blk_ref.instrs {
+                            if let Instruction::Phi(_) = &instr.instr {
+                                if let Some(local) = ctx.var_map.get(&instr.result) {
+                                    code.push(Op::LocalSet as u8);
+                                    wasm_encode::encode_uleb128(*local as u64, &mut code);
+                                }
+                                break;
+                            }
+                        }
+                        // Emit merge block if not already processed
+                        if !inlined.contains(&merge_idx) {
+                            inlined.insert(merge_idx);
+                            self.emit_block_instrs(merge_blk_ref, &ctx, &mut code)?;
+                            self.emit_block_terminator(merge_blk_ref, &ctx, &mut code)?;
+                        }
+                    }
+                }
+                Some(Terminator::Return(var)) => {
+                    if let Some(local) = ctx.var_map.get(var) {
+                        code.push(Op::LocalGet as u8);
+                        wasm_encode::encode_uleb128(*local as u64, &mut code);
+                    }
+                    code.push(Op::Return as u8);
+                }
+                Some(Terminator::Branch(_target)) => {
+                    // Unconditional branch: in structured emission, the target
+                    // block will be emitted next in sequence (or was already
+                    // inlined). Nothing to emit for the branch itself.
+                }
+                Some(Terminator::Handle { .. }) => {}
+                Some(Terminator::Unreachable) => {
+                    code.push(Op::Unreachable as u8);
+                }
+                None => {}
+            }
         }
 
         if code.is_empty() || !matches!(code.last(), Some(&b) if b == Op::Return as u8) {
@@ -335,8 +474,8 @@ impl WasmBackend {
         Ok(FuncBody { locals, code })
     }
 
-    /// Emit WASM instructions for a basic block.
-    fn emit_block(
+    /// Emit only the instructions of a block (no terminator).
+    fn emit_block_instrs(
         &self,
         block: &BasicBlock,
         ctx: &EmitCtx<'_>,
@@ -345,7 +484,16 @@ impl WasmBackend {
         for instr in &block.instrs {
             self.emit_instruction(&instr.instr, Some(instr.result), ctx, code)?;
         }
+        Ok(())
+    }
 
+    /// Emit the terminator of a block (for merge blocks after if/else).
+    fn emit_block_terminator(
+        &self,
+        block: &BasicBlock,
+        ctx: &EmitCtx<'_>,
+        code: &mut Vec<u8>,
+    ) -> Result<()> {
         match &block.terminator {
             Some(Terminator::Return(var)) => {
                 if let Some(local) = ctx.var_map.get(var) {
@@ -354,24 +502,90 @@ impl WasmBackend {
                 }
                 code.push(Op::Return as u8);
             }
-            Some(Terminator::Branch(_target)) => {}
-            Some(Terminator::CondBranch { cond, .. }) => {
-                if let Some(local) = ctx.var_map.get(cond) {
-                    code.push(Op::LocalGet as u8);
-                    wasm_encode::encode_uleb128(*local as u64, code);
-                }
-                code.push(Op::BrIf as u8);
-                wasm_encode::encode_uleb128(0, code);
-            }
-            Some(Terminator::Handle { .. }) => {}
             Some(Terminator::Unreachable) => {
                 code.push(Op::Unreachable as u8);
             }
-            None => {}
+            Some(Terminator::Branch(_)) | Some(Terminator::Handle { .. }) | None => {}
+            Some(Terminator::CondBranch { .. }) => {
+                // Nested conditionals would need recursive handling;
+                // for now this is not expected in a merge block.
+            }
+        }
+        Ok(())
+    }
+
+    /// Find the merge block for a CondBranch (block with a Phi node).
+    /// Returns the block index and a reference to the block.
+    fn find_merge_block<'a>(
+        &self,
+        blocks: &'a [BasicBlock],
+        _block_map: &HashMap<BlockId, usize>,
+    ) -> Option<(usize, &'a BasicBlock)> {
+        for (idx, blk) in blocks.iter().enumerate() {
+            for instr in &blk.instrs {
+                if let Instruction::Phi(_) = &instr.instr {
+                    return Some((idx, blk));
+                }
+            }
+        }
+        None
+    }
+
+    /// For a then/else block that branches to a merge block with a Phi,
+    /// push the value that this block contributes to the Phi onto the stack.
+    fn emit_phi_value_for_branch(
+        &self,
+        branch_block: &BasicBlock,
+        blocks: &[BasicBlock],
+        block_map: &HashMap<BlockId, usize>,
+        ctx: &EmitCtx<'_>,
+        code: &mut Vec<u8>,
+    ) -> Result<()> {
+        // Find the merge block (target of this block's Branch terminator)
+        let target_id = match &branch_block.terminator {
+            Some(Terminator::Branch(target)) => Some(*target),
+            _ => None,
+        };
+
+        if let Some(target_id) = target_id {
+            if let Some(&merge_idx) = block_map.get(&target_id) {
+                let merge_blk = &blocks[merge_idx];
+                // Find the phi node and extract this block's contribution
+                for instr in &merge_blk.instrs {
+                    if let Instruction::Phi(entries) = &instr.instr {
+                        for (bb_id, var) in entries {
+                            if *bb_id == branch_block.id {
+                                // Push this variable onto the stack
+                                if let Some(local) = ctx.var_map.get(var) {
+                                    code.push(Op::LocalGet as u8);
+                                    wasm_encode::encode_uleb128(*local as u64, code);
+                                }
+                                return Ok(());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // If we couldn't find a phi contribution, look at the last instruction
+        // in this block and push its result (common fallback)
+        if let Some(last_instr) = branch_block.instrs.last() {
+            if let Some(local) = ctx.var_map.get(&last_instr.result) {
+                code.push(Op::LocalGet as u8);
+                wasm_encode::encode_uleb128(*local as u64, code);
+            }
+        } else {
+            // Empty block — push 0
+            code.push(Op::I32Const as u8);
+            wasm_encode::encode_sleb128(0, code);
         }
 
         Ok(())
     }
+
+    // emit_block is no longer used — block emission is now handled by
+    // emit_function (structured if/else) + emit_block_instrs + emit_block_terminator.
 
     /// Helper: emit `call $riina_alloc` with size on stack.
     fn emit_alloc_call(alloc_func_index: u32, size: u32, code: &mut Vec<u8>) {
@@ -707,26 +921,59 @@ impl WasmBackend {
                 }
             }
             Instruction::Phi(_) => {
-                code.push(Op::Nop as u8);
+                // Phi nodes are handled by structured if/else emission in emit_function.
+                // Nothing to emit here — the if/else/end block leaves the result on the stack,
+                // and emit_function emits the local.set for the phi result.
             }
             Instruction::BuiltinCall { name, arg } => {
-                // Route builtins: cetakln → call import riina_cetak
+                // Route builtins: cetakln/cetak → WASI fd_write(stdout)
                 if name == "cetakln" || name == "cetak" {
                     // arg is a string pointer (len-prefixed in data section)
-                    // Push ptr+4 (data), then load len from ptr
+                    // Layout in data section: [len:u32][bytes...]
+                    // fd_write needs an iovec {ptr, len} at a known memory location.
+                    // We use heap scratch space: write iovec at heap_ptr, nwritten at heap_ptr+8.
+
+                    // Store data ptr (arg+4) at scratch[0]
+                    code.push(Op::GlobalGet as u8);
+                    wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
                     Self::emit_local_get(arg, ctx.var_map, code);
                     code.push(Op::I32Const as u8);
                     wasm_encode::encode_sleb128(4, code);
                     code.push(Op::I32Add as u8); // ptr + 4 = data start
+                    code.push(Op::I32Store as u8);
+                    code.push(0x02); code.push(0x00); // store at scratch[0]
 
+                    // Store len at scratch[4]
+                    code.push(Op::GlobalGet as u8);
+                    wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
+                    code.push(Op::I32Const as u8);
+                    wasm_encode::encode_sleb128(4, code);
+                    code.push(Op::I32Add as u8); // scratch + 4
                     Self::emit_local_get(arg, ctx.var_map, code);
                     code.push(Op::I32Load as u8);
-                    code.push(0x02); code.push(0x00); // load len from ptr
+                    code.push(0x02); code.push(0x00); // load len from arg
+                    code.push(Op::I32Store as u8);
+                    code.push(0x02); code.push(0x00); // store at scratch[4]
+
+                    // Call fd_write(1, scratch, 1, scratch+8)
+                    code.push(Op::I32Const as u8);
+                    wasm_encode::encode_sleb128(1, code); // fd = stdout
+                    code.push(Op::GlobalGet as u8);
+                    wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code); // iovs = scratch
+                    code.push(Op::I32Const as u8);
+                    wasm_encode::encode_sleb128(1, code); // iovs_len = 1
+                    code.push(Op::GlobalGet as u8);
+                    wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
+                    code.push(Op::I32Const as u8);
+                    wasm_encode::encode_sleb128(8, code);
+                    code.push(Op::I32Add as u8); // nwritten = scratch + 8
 
                     code.push(Op::Call as u8);
-                    wasm_encode::encode_uleb128(0, code); // import index 0 = riina_cetak
+                    wasm_encode::encode_uleb128(0, code); // import index 0 = fd_write
 
-                    // cetak returns void; push unit
+                    code.push(Op::Drop as u8); // drop fd_write return value
+
+                    // push unit (0) as result
                     code.push(Op::I32Const as u8);
                     wasm_encode::encode_sleb128(0, code);
                 } else {
@@ -740,7 +987,9 @@ impl WasmBackend {
                 Self::emit_local_get(payload, ctx.var_map, code);
             }
             Instruction::RequireCap(_) | Instruction::GrantCap(_) => {
-                code.push(Op::Nop as u8);
+                // Capability instructions are compile-time checks; emit unit at runtime
+                code.push(Op::I32Const as u8);
+                wasm_encode::encode_sleb128(0, code);
             }
             Instruction::FFICall { name, args } => {
                 // FFI calls are routed to WASM imports.
@@ -754,13 +1003,17 @@ impl WasmBackend {
             }
         }
 
-        // Store result if there is one
-        if let Some(result_var) = result {
-            // Skip for Pair/Inl/Inr/Closure/Alloc — they handle their own storage
-            // via LocalTee + final push pattern
-            if let Some(local) = ctx.var_map.get(&result_var) {
-                code.push(Op::LocalSet as u8);
-                wasm_encode::encode_uleb128(*local as u64, code);
+        // Store result if there is one.
+        // Skip for Phi — it doesn't push anything onto the stack;
+        // the phi result is stored by the structured if/else emission
+        // in emit_function.
+        let skip_store = matches!(instr, Instruction::Phi(_));
+        if !skip_store {
+            if let Some(result_var) = result {
+                if let Some(local) = ctx.var_map.get(&result_var) {
+                    code.push(Op::LocalSet as u8);
+                    wasm_encode::encode_uleb128(*local as u64, code);
+                }
             }
         }
 
@@ -776,16 +1029,25 @@ let instance;
 let outputBuffer = [];
 
 const RIINA_WASM_IMPORTS = {
-  env: {
-    riina_cetak: (ptr, len) => {
-      const bytes = new Uint8Array(instance.exports.memory.buffer, ptr, len);
-      const msg = new TextDecoder().decode(bytes);
-      outputBuffer.push(msg);
-      console.log(msg);
+  wasi_snapshot_preview1: {
+    fd_write: (fd, iovs, iovs_len, nwritten) => {
+      const mem = new Uint32Array(instance.exports.memory.buffer);
+      let written = 0;
+      for (let i = 0; i < iovs_len; i++) {
+        const ptr = mem[(iovs + i * 8) / 4];
+        const len = mem[(iovs + i * 8 + 4) / 4];
+        const bytes = new Uint8Array(instance.exports.memory.buffer, ptr, len);
+        const msg = new TextDecoder().decode(bytes);
+        outputBuffer.push(msg);
+        if (fd === 1) console.log(msg);
+        else console.error(msg);
+        written += len;
+      }
+      mem[nwritten / 4] = written;
+      return 0;
     },
-    riina_panic: (ptr, len) => {
-      const bytes = new Uint8Array(instance.exports.memory.buffer, ptr, len);
-      throw new Error('RIINA panic: ' + new TextDecoder().decode(bytes));
+    proc_exit: (code) => {
+      throw new Error('RIINA exit: ' + code);
     },
   },
 };
@@ -907,7 +1169,7 @@ mod tests {
         assert_eq!(output.auxiliary[0].name, "riina_loader.js");
         let js = String::from_utf8(output.auxiliary[0].content.clone()).unwrap();
         assert!(js.contains("WebAssembly.instantiate"));
-        assert!(js.contains("riina_cetak"));
+        assert!(js.contains("fd_write"));
         assert!(js.contains("getOutput"));
     }
 
@@ -1088,9 +1350,9 @@ mod tests {
 
         let backend = WasmBackend::new(Target::Wasm32);
         let output = backend.emit(&program).unwrap();
-        // Should have "riina_cetak" in the import section
-        assert!(output.primary.windows(11).any(|w| w == b"riina_cetak"),
-            "WASM binary should import riina_cetak");
+        // Should have "fd_write" in the import section (WASI)
+        assert!(output.primary.windows(8).any(|w| w == b"fd_write"),
+            "WASM binary should import fd_write");
     }
 
     #[test]
@@ -1138,9 +1400,9 @@ mod tests {
 
         let backend = WasmBackend::new(Target::Wasm32);
         let output = backend.emit(&program).unwrap();
-        // Import section should have "env"
-        assert!(output.primary.windows(3).any(|w| w == b"env"),
-            "WASM binary should contain 'env' import module");
+        // Import section should have "wasi_snapshot_preview1"
+        assert!(output.primary.windows(8).any(|w| w == b"fd_write"),
+            "WASM binary should contain WASI import");
     }
 
     #[test]
@@ -1216,5 +1478,149 @@ mod tests {
         let backend = WasmBackend::new(Target::Wasm32);
         let output = backend.emit(&program).unwrap();
         assert!(output.primary.len() > 8);
+    }
+
+    // === If/else structured control flow tests ===
+
+    /// Build a program with if/else control flow:
+    ///   bb0: cond = (x == 0); cond_branch cond bb1 bb2
+    ///   bb1: result = 42; branch bb3
+    ///   bb2: result = 99; branch bb3
+    ///   bb3: phi = phi[(bb1,v_then),(bb2,v_else)]; return phi
+    fn make_if_else_program() -> Program {
+        let mut program = ir::Program::new();
+        let mut main_func = ir::Function::new(
+            FuncId::MAIN,
+            "main".to_string(),
+            "x".to_string(),
+            riina_types::Ty::Int,
+            riina_types::Ty::Int,
+            riina_types::Effect::Pure,
+        );
+        // Clear default entry block
+        main_func.blocks.clear();
+
+        let bb0 = BlockId::new(0);
+        let bb1 = BlockId::new(1);
+        let bb2 = BlockId::new(2);
+        let bb3 = BlockId::new(3);
+
+        let v_zero = VarId::new(10);
+        let v_cond = VarId::new(11);
+        let v_then = VarId::new(12);
+        let v_else = VarId::new(13);
+        let v_phi  = VarId::new(14);
+
+        // bb0 (entry): compute condition
+        let mut entry_block = BasicBlock::new(bb0);
+        entry_block.instrs = vec![
+            ann(Instruction::Const(Constant::Int(0)), v_zero),
+            ann(Instruction::BinOp(BinOp::Eq, VarId::new(0), v_zero), v_cond),
+        ];
+        entry_block.terminator = Some(Terminator::CondBranch {
+            cond: v_cond,
+            then_block: bb1,
+            else_block: bb2,
+        });
+
+        // bb1 (then): return 42
+        let mut then_block = BasicBlock::new(bb1);
+        then_block.instrs = vec![
+            ann(Instruction::Const(Constant::Int(42)), v_then),
+        ];
+        then_block.terminator = Some(Terminator::Branch(bb3));
+
+        // bb2 (else): return 99
+        let mut else_block = BasicBlock::new(bb2);
+        else_block.instrs = vec![
+            ann(Instruction::Const(Constant::Int(99)), v_else),
+        ];
+        else_block.terminator = Some(Terminator::Branch(bb3));
+
+        // bb3 (merge): phi + return
+        let mut merge_block = BasicBlock::new(bb3);
+        merge_block.instrs = vec![
+            ann(Instruction::Phi(vec![
+                (bb1, v_then),
+                (bb2, v_else),
+            ]), v_phi),
+        ];
+        merge_block.terminator = Some(Terminator::Return(v_phi));
+
+        main_func.blocks = vec![entry_block, then_block, else_block, merge_block];
+        main_func.entry = bb0;
+        program.functions.insert(FuncId::MAIN, main_func);
+        program
+    }
+
+    #[test]
+    fn test_wasm_if_else_structured_control_flow() {
+        let program = make_if_else_program();
+        let backend = WasmBackend::new(Target::Wasm32);
+        let output = backend.emit(&program).unwrap();
+        let binary = &output.primary;
+
+        // Verify WASM magic
+        assert_eq!(&binary[0..4], b"\x00asm");
+
+        // Should contain Op::If (0x04)
+        assert!(binary.contains(&(Op::If as u8)),
+            "WASM binary should contain If opcode for structured if/else");
+
+        // Should contain Op::Else (0x05)
+        assert!(binary.contains(&(Op::Else as u8)),
+            "WASM binary should contain Else opcode");
+
+        // Should contain Op::End (0x0B) — at least for the if/else/end
+        let end_count = binary.iter().filter(|&&b| b == Op::End as u8).count();
+        assert!(end_count >= 2,
+            "WASM binary should contain at least 2 End opcodes (if/else block + function end), got {}",
+            end_count);
+
+        // Should NOT contain bare BrIf (0x0D) — we use structured if/else now
+        // Note: BrIf might still appear in other contexts, but for this simple
+        // program it should not be present
+        assert!(!binary.contains(&(Op::BrIf as u8)),
+            "WASM binary should NOT contain BrIf — should use structured if/else");
+    }
+
+    #[test]
+    fn test_wasm_if_else_has_phi_result() {
+        let program = make_if_else_program();
+        let backend = WasmBackend::new(Target::Wasm32);
+        let output = backend.emit(&program).unwrap();
+        let binary = &output.primary;
+
+        // Should contain LocalSet (0x21) for storing the phi result
+        assert!(binary.contains(&(Op::LocalSet as u8)),
+            "WASM binary should contain LocalSet for phi result storage");
+
+        // Should contain Return (0x0F) for the merge block
+        assert!(binary.contains(&(Op::Return as u8)),
+            "WASM binary should contain Return opcode");
+    }
+
+    #[test]
+    fn test_wasm_start_trampoline() {
+        let v0 = VarId::new(0);
+        let program = make_program(vec![
+            ann(Instruction::Const(Constant::Int(42)), v0),
+        ], v0);
+
+        let backend = WasmBackend::new(Target::Wasm32);
+        let output = backend.emit(&program).unwrap();
+        let binary = &output.primary;
+
+        // Should export _start
+        assert!(binary.windows(6).any(|w| w == b"_start"),
+            "WASM binary should export _start");
+
+        // Should also export main
+        assert!(binary.windows(4).any(|w| w == b"main"),
+            "WASM binary should export main");
+
+        // Should contain Op::Drop (0x1A) for the trampoline dropping main's result
+        assert!(binary.contains(&(Op::Drop as u8)),
+            "WASM binary should contain Drop opcode in _start trampoline");
     }
 }

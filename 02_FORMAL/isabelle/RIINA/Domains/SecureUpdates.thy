@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | UpdateResult       | update_result          | OK     |
+ * | update_result       | update_result          | OK     |
  * | version_gt         | version_gt             | OK     |
  * | version_gte        | version_gte            | OK     |
  * | signatures_sufficient | signatures_sufficient  | OK     |
@@ -68,7 +68,12 @@ theory SecureUpdates
   imports Main CoqCompat
 begin
 
-(* UpdateResult (matches Coq: Inductive UpdateResult) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym backup = "nat"
+type_synonym system_state = "nat"
+type_synonym update_package = "nat"
+type_synonym update_signature = "nat"
+(* update_result (matches Coq: Inductive update_result) *)
 datatype update_result =
     UpdateSuccess
   |     UpdateFailed
@@ -98,7 +103,7 @@ definition key_trusted :: "UpdateSignature \<Rightarrow> bool" where
   "key_trusted sig \<equiv> existsb (\<lambda>k. (k = (sig_key_id) sig)) trusted"
 
 (* rollback_counter_ok (matches Coq: Definition rollback_counter_ok) *)
-definition rollback_counter_ok :: "UpdatePackage \<Rightarrow> SystemState \<Rightarrow> bool" where
+definition rollback_counter_ok :: "UpdatePackage \<Rightarrow> system_state \<Rightarrow> bool" where
   "rollback_counter_ok update sys \<equiv> (sys_rollback_counter sys < update_rollback_counter update)"
 
 (* hash_valid (matches Coq: Definition hash_valid) *)
@@ -107,14 +112,14 @@ definition hash_valid :: "bool" where
 
 (* atomic_complete (matches Coq: Definition atomic_complete) *)
 definition atomic_complete :: "bool" where
-  "atomic_complete \<equiv> implb started finished"
+  "atomic_complete \<equiv> (started \<longrightarrow> finished)"
 
 (* backup_exists (matches Coq: Definition backup_exists) *)
 fun backup_exists :: "bool" where
-  "backup_exists None = false"
+  "backup_exists None = False"
 
 (* backup_version_matches (matches Coq: Definition backup_version_matches) *)
-definition backup_version_matches :: "Backup \<Rightarrow> SystemState \<Rightarrow> bool" where
+definition backup_version_matches :: "Backup \<Rightarrow> system_state \<Rightarrow> bool" where
   "backup_version_matches backup sys \<equiv> (ver_major (backup_version backup) = ver_major (sys_version sys) \<and>
        ver_minor (backup_version backup) = ver_minor (sys_version sys) \<and>
        ver_patch (backup_version backup) = ver_patch (sys_version sys))"
@@ -161,7 +166,7 @@ definition rollout_percentage_ok :: "bool" where
 
 (* reboot_handled (matches Coq: Definition reboot_handled) *)
 definition reboot_handled :: "bool" where
-  "reboot_handled \<equiv> implb required handled"
+  "reboot_handled \<equiv> (required \<longrightarrow> handled)"
 
 (* post_verify_ok (matches Coq: Definition post_verify_ok) *)
 definition post_verify_ok :: "bool \<Rightarrow> bool" where
@@ -173,70 +178,70 @@ definition audit_logged :: "bool" where
 
 (* notification_sent (matches Coq: Definition notification_sent) *)
 definition notification_sent :: "bool" where
-  "notification_sent \<equiv> implb should_notify did_notify"
+  "notification_sent \<equiv> (should_notify \<longrightarrow> did_notify)"
 
 (* update_layers (matches Coq: Definition update_layers) *)
 definition update_layers :: "bool" where
   "update_layers \<equiv> (sig \<and> version \<and> rollback \<and> atomic \<and> backup)"
 
 (* update_001_version_newer (matches Coq) *)
-lemma update_001_version_newer: "\<forall>(update :: UpdatePackage) (sys :: SystemState). version_gt (update_version update) (sys_version sys) = True \<longrightarrow> version_gt (update_version update) (sys_version sys) = True"
+lemma update_001_version_newer: "\<forall>(update :: update_package) (sys :: system_state). version_gt (update_version update) (sys_version sys) = True \<longrightarrow> version_gt (update_version update) (sys_version sys) = True"
   by auto
 
 (* update_002_sig_count (matches Coq) *)
-lemma update_002_sig_count: "\<forall>(update :: UpdatePackage) (threshold :: nat). signatures_sufficient update threshold = True \<longrightarrow> threshold \<le> length (update_signatures update)"
+lemma update_002_sig_count: "\<forall>(update :: update_package) (threshold :: nat). signatures_sufficient update threshold = True \<longrightarrow> threshold \<le> length (update_signatures update)"
   by auto
 
 (* update_003_key_trusted (matches Coq) *)
-lemma update_003_key_trusted: "\<forall>(sig :: UpdateSignature) (trusted : list nat). key_trusted sig trusted = True \<longrightarrow> \<exists>k. k \<in> set trusted \<and> k = sig_key_id sig"
+lemma update_003_key_trusted: "\<forall>(sig :: update_signature) (trusted : list nat). key_trusted sig trusted = True \<longrightarrow> \<exists>k. k \<in> set trusted \<and> k = sig_key_id sig"
   by auto
 
 (* update_004_rollback_counter (matches Coq) *)
-lemma update_004_rollback_counter: "\<forall>(update :: UpdatePackage) (sys :: SystemState). rollback_counter_ok update sys = True \<longrightarrow> sys_rollback_counter sys < update_rollback_counter update"
+lemma update_004_rollback_counter: "\<forall>(update :: update_package) (sys :: system_state). rollback_counter_ok update sys = True \<longrightarrow> sys_rollback_counter sys < update_rollback_counter update"
   by auto
 
 (* update_005_min_version (matches Coq) *)
-lemma update_005_min_version: "\<forall>(update :: UpdatePackage) (sys :: SystemState). version_gte (sys_version sys) (update_min_version update) = True \<longrightarrow> version_gte (sys_version sys) (update_min_version update) = True"
+lemma update_005_min_version: "\<forall>(update :: update_package) (sys :: system_state). version_gte (sys_version sys) (update_min_version update) = True \<longrightarrow> version_gte (sys_version sys) (update_min_version update) = True"
   by auto
 
 (* update_006_hash_valid (matches Coq) *)
-lemma update_006_hash_valid: "\<forall>(computed stored : nat). hash_valid computed stored = True \<longrightarrow> computed = stored"
+lemma update_006_hash_valid: "\<forall>(computed :: nat) (stored :: nat). hash_valid computed stored = True \<longrightarrow> computed = stored"
   by auto
 
 (* update_007_atomic (matches Coq) *)
-lemma update_007_atomic: "\<forall>(started finished : bool). atomic_complete started finished = True \<longrightarrow> started = True \<longrightarrow> finished = True"
+lemma update_007_atomic: "\<forall>(started :: bool) (finished :: bool). atomic_complete started finished = True \<longrightarrow> started = True \<longrightarrow> finished = True"
   by auto
 
 (* update_008_backup_exists (matches Coq) *)
-lemma update_008_backup_exists: "\<forall>(backup : option Backup). backup_\<exists>backup = True \<longrightarrow> \<exists> b. backup = Some b"
+lemma update_008_backup_exists: "\<forall>(backup : option backup). backup_\<exists>backup = True \<longrightarrow> \<exists> b. backup = Some b"
   by simp
 
 (* update_009_backup_version (matches Coq) *)
-lemma update_009_backup_version: "\<forall>(backup :: Backup) (sys :: SystemState). backup_version_matches backup sys = True \<longrightarrow> ver_major (backup_version backup) = ver_major (sys_version sys)"
+lemma update_009_backup_version: "\<forall>(backup :: backup) (sys :: system_state). backup_version_matches backup sys = True \<longrightarrow> ver_major (backup_version backup) = ver_major (sys_version sys)"
   by auto
 
 (* update_010_recovery_restores (matches Coq) *)
-lemma update_010_recovery_restores: "\<forall>(backup :: Backup). backup_version backup = backup_version backup"
+lemma update_010_recovery_restores: "\<forall>(backup :: backup). backup_version backup = backup_version backup"
   by simp
 
 (* update_011_threshold (matches Coq) *)
-lemma update_011_threshold: "\<forall>(valid_sigs threshold : nat). threshold_met valid_sigs threshold = True \<longrightarrow> threshold \<le> valid_sigs"
+lemma update_011_threshold: "\<forall>(valid_sigs :: nat) (threshold :: nat). threshold_met valid_sigs threshold = True \<longrightarrow> threshold \<le> valid_sigs"
   by auto
 
 (* update_012_sig_fresh (matches Coq) *)
-lemma update_012_sig_fresh: "\<forall>(sig :: UpdateSignature) (current max_age : nat). sig_fresh sig current max_age = True \<longrightarrow> current - sig_timestamp sig \<le> max_age"
+lemma update_012_sig_fresh: "\<forall>(sig :: update_signature) (current :: nat) (max_age :: nat). sig_fresh sig current max_age = True \<longrightarrow> current - sig_timestamp sig \<le> max_age"
   by auto
 
 (* update_013_different_keys (matches Coq) *)
-lemma update_013_different_keys: "\<forall>(sigs : list UpdateSignature). keys_different sigs \<longrightarrow> NoDup (map sig_key_id sigs)"
+lemma update_013_different_keys: "\<forall>(sigs : list update_signature). keys_different sigs \<longrightarrow> NoDup (map sig_key_id sigs)"
   by auto
 
 (* update_014_size_bounded (matches Coq) *)
-lemma update_014_size_bounded: "\<forall>(size max_size : nat). size_bounded size max_size = True \<longrightarrow> size \<le> max_size"
+lemma update_014_size_bounded: "\<forall>(size :: nat) (max_size :: nat). size_bounded size max_size = True \<longrightarrow> size \<le> max_size"
   by auto
 
 (* update_015_compatible (matches Coq) *)
-lemma update_015_compatible: "\<forall>(update_req sys_has : nat). compatible update_req sys_has = True \<longrightarrow> update_req \<le> sys_has"
+lemma update_015_compatible: "\<forall>(update_req :: nat) (sys_has :: nat). compatible update_req sys_has = True \<longrightarrow> update_req \<le> sys_has"
   by auto
 
 (* update_016_changelog (matches Coq) *)
@@ -244,23 +249,23 @@ lemma update_016_changelog: "\<forall>(changelog_size :: nat). changelog_present
   by auto
 
 (* update_017_not_expired (matches Coq) *)
-lemma update_017_not_expired: "\<forall>(current expiry : nat). not_expired current expiry = True \<longrightarrow> current < expiry"
+lemma update_017_not_expired: "\<forall>(current :: nat) (expiry :: nat). not_expired current expiry = True \<longrightarrow> current < expiry"
   by auto
 
 (* update_018_download_valid (matches Coq) *)
-lemma update_018_download_valid: "\<forall>(received expected : nat). download_valid received expected = True \<longrightarrow> received = expected"
+lemma update_018_download_valid: "\<forall>(received :: nat) (expected :: nat). download_valid received expected = True \<longrightarrow> received = expected"
   by auto
 
 (* update_019_secure_channel (matches Coq) *)
-lemma update_019_secure_channel: "\<forall>(tls_version min_version : nat). channel_secure tls_version min_version = True \<longrightarrow> min_version \<le> tls_version"
+lemma update_019_secure_channel: "\<forall>(tls_version :: nat) (min_version :: nat). channel_secure tls_version min_version = True \<longrightarrow> min_version \<le> tls_version"
   by auto
 
 (* update_020_rollout_pct (matches Coq) *)
-lemma update_020_rollout_pct: "\<forall>(percentage max_pct : nat). rollout_percentage_ok percentage max_pct = True \<longrightarrow> percentage \<le> max_pct"
+lemma update_020_rollout_pct: "\<forall>(percentage :: nat) (max_pct :: nat). rollout_percentage_ok percentage max_pct = True \<longrightarrow> percentage \<le> max_pct"
   by auto
 
 (* update_021_reboot (matches Coq) *)
-lemma update_021_reboot: "\<forall>(required handled : bool). reboot_handled required handled = True \<longrightarrow> required = True \<longrightarrow> handled = True"
+lemma update_021_reboot: "\<forall>(required :: bool) (handled :: bool). reboot_handled required handled = True \<longrightarrow> required = True \<longrightarrow> handled = True"
   by auto
 
 (* update_022_post_verify (matches Coq) *)
@@ -268,11 +273,11 @@ lemma update_022_post_verify: "\<forall>(passed :: bool). post_verify_ok passed 
   by auto
 
 (* update_023_audit (matches Coq) *)
-lemma update_023_audit: "\<forall>(event_count log_count : nat). audit_logged event_count log_count = True \<longrightarrow> event_count \<le> log_count"
+lemma update_023_audit: "\<forall>(event_count :: nat) (log_count :: nat). audit_logged event_count log_count = True \<longrightarrow> event_count \<le> log_count"
   by auto
 
 (* update_024_notification (matches Coq) *)
-lemma update_024_notification: "\<forall>(should_notify did_notify : bool). notification_sent should_notify did_notify = True \<longrightarrow> should_notify = True \<longrightarrow> did_notify = True"
+lemma update_024_notification: "\<forall>(should_notify :: bool) (did_notify :: bool). notification_sent should_notify did_notify = True \<longrightarrow> should_notify = True \<longrightarrow> did_notify = True"
   by auto
 
 (* update_025_defense_in_depth (matches Coq) *)

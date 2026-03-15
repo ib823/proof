@@ -82,10 +82,10 @@ assert label_join_comm {
 check label_join_comm for 5
 
 // 1 (matches Coq: Theorem 1)
-assert 1 {
+assert t1 {
   all x: label | x in label
 }
-check 1 for 5
+check t1 for 5
 
 // source_noninterference (matches Coq: Theorem source_noninterference)
 assert source_noninterference {
@@ -94,16 +94,16 @@ assert source_noninterference {
 check source_noninterference for 5
 
 // 2 (matches Coq: Theorem 2)
-assert 2 {
+assert t2 {
   all x: label | x in label
 }
-check 2 for 5
+check t2 for 5
 
 // 3 (matches Coq: Theorem 3)
-assert 3 {
+assert t3 {
   all x: label | x in label
 }
-check 3 for 5
+check t3 for 5
 
 // target_noninterference (matches Coq: Theorem target_noninterference)
 assert target_noninterference {
@@ -112,46 +112,46 @@ assert target_noninterference {
 check target_noninterference for 5
 
 // 4 (matches Coq: Theorem 4)
-assert 4 {
+assert t4 {
   all x: label | x in label
 }
-check 4 for 5
+check t4 for 5
 
 // 5 (matches Coq: Theorem 5)
-assert 5 {
+assert t5 {
   all x: label | x in label
 }
-check 5 for 5
+check t5 for 5
 
 // 6 (matches Coq: Theorem 6)
-assert 6 {
+assert t6 {
   all x: label | x in label
 }
-check 6 for 5
+check t6 for 5
 
 // 7 (matches Coq: Theorem 7)
-assert 7 {
+assert t7 {
   all x: label | x in label
 }
-check 7 for 5
+check t7 for 5
 
 // 8 (matches Coq: Theorem 8)
-assert 8 {
+assert t8 {
   all x: label | x in label
 }
-check 8 for 5
+check t8 for 5
 
 // 9 (matches Coq: Theorem 9)
-assert 9 {
+assert t9 {
   all x: label | x in label
 }
-check 9 for 5
+check t9 for 5
 
 // 10 (matches Coq: Theorem 10)
-assert 10 {
+assert t10 {
   all x: label | x in label
 }
-check 10 for 5
+check t10 for 5
 
 // label_lattice_join_least (matches Coq: Theorem label_lattice_join_least)
 assert label_lattice_join_least {

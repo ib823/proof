@@ -12,14 +12,14 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | STARKProperties    | stark_properties       | OK     |
- * | AIRProperties      | air_properties         | OK     |
- * | FRIProperties      | fri_properties         | OK     |
- * | ProverState        | prover_state           | OK     |
- * | VerifierState      | verifier_state         | OK     |
- * | SimulatorState     | simulator_state        | OK     |
- * | STARKSecurity      | stark_security         | OK     |
- * | ExtendedSTARKSecurity | extended_stark_security | OK     |
+ * | stark_properties    | stark_properties       | OK     |
+ * | ai_r_properties      | air_properties         | OK     |
+ * | fri_properties      | fri_properties         | OK     |
+ * | prover_state        | prover_state           | OK     |
+ * | verifier_state      | verifier_state         | OK     |
+ * | simulator_state     | simulator_state        | OK     |
+ * | stark_security      | stark_security         | OK     |
+ * | extended_stark_security | extended_stark_security | OK     |
  * | stark_props_secure | stark_props_secure     | OK     |
  * | air_secure         | air_secure             | OK     |
  * | fri_secure         | fri_secure             | OK     |
@@ -164,19 +164,21 @@ theory ZKSTARKSecurity
   imports Main CoqCompat
 begin
 
-(* STARKProperties (matches Coq: Record STARKProperties) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym ai_r_properties = "nat"
+(* stark_properties (matches Coq: Record stark_properties) *)
 record stark_properties =
   stark_transparent :: bool
   stark_scalable :: bool
   stark_post_quantum :: bool
 
-(* AIRProperties (matches Coq: Record AIRProperties) *)
+(* ai_r_properties (matches Coq: Record ai_r_properties) *)
 record air_properties =
   air_algebraic :: bool
   air_low_degree :: bool
   air_fri_verified :: bool
 
-(* FRIProperties (matches Coq: Record FRIProperties) *)
+(* fri_properties (matches Coq: Record fri_properties) *)
 record fri_properties =
   fri_soundness :: bool
   fri_query_bound :: bool
@@ -185,37 +187,37 @@ record fri_properties =
   fri_round_complexity :: nat
   fri_proximity_param :: nat
 
-(* ProverState (matches Coq: Record ProverState) *)
+(* prover_state (matches Coq: Record prover_state) *)
 record prover_state =
   prover_witness :: nat
   prover_randomness :: nat
   prover_committed :: bool
   prover_fri_complete :: bool
 
-(* VerifierState (matches Coq: Record VerifierState) *)
+(* verifier_state (matches Coq: Record verifier_state) *)
 record verifier_state =
   verifier_challenges :: 'a list
   verifier_queries :: 'a list
   verifier_accepting :: bool
 
-(* SimulatorState (matches Coq: Record SimulatorState) *)
+(* simulator_state (matches Coq: Record simulator_state) *)
 record simulator_state =
   sim_transcript :: 'a list
   sim_rewinding :: bool
   sim_indistinguishable :: bool
 
-(* STARKSecurity (matches Coq: Record STARKSecurity) *)
+(* stark_security (matches Coq: Record stark_security) *)
 record stark_security =
   starks_completeness :: bool
   starks_soundness :: bool
   starks_zero_knowledge :: bool
-  starks_stark :: STARKProperties
-  starks_air :: AIRProperties
+  starks_stark :: stark_properties
+  starks_air :: ai_r_properties
 
-(* ExtendedSTARKSecurity (matches Coq: Record ExtendedSTARKSecurity) *)
+(* extended_stark_security (matches Coq: Record extended_stark_security) *)
 record extended_stark_security =
-  ext_base :: STARKSecurity
-  ext_fri :: FRIProperties
+  ext_base :: stark_security
+  ext_fri :: fri_properties
   ext_simulation_secure :: bool
   ext_extraction_secure :: bool
   ext_quantum_resistant :: bool
@@ -288,7 +290,7 @@ definition valid_simulator :: "SimulatorState" where
   "valid_simulator \<equiv> mkSimulatorState [1;2;3;4;5] True True"
 
 (* computational_soundness (matches Coq: Definition computational_soundness) *)
-definition computational_soundness :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> bool" where
+definition computational_soundness :: "STARKSecurity \<Rightarrow> fri_properties \<Rightarrow> bool" where
   "computational_soundness s f \<equiv> starks_soundness s \<and> fri_soundness f \<and> fri_commitment_binding f"
 
 (* amplified_soundness (matches Coq: Definition amplified_soundness) *)
@@ -296,56 +298,56 @@ definition amplified_soundness :: "bool \<Rightarrow> nat \<Rightarrow> bool" wh
   "amplified_soundness base_sound rounds \<equiv> base_sound \<and> (0 < rounds)"
 
 (* simulation_based_zk (matches Coq: Definition simulation_based_zk) *)
-definition simulation_based_zk :: "STARKSecurity \<Rightarrow> SimulatorState \<Rightarrow> bool" where
+definition simulation_based_zk :: "STARKSecurity \<Rightarrow> simulator_state \<Rightarrow> bool" where
   "simulation_based_zk s sim \<equiv> starks_zero_knowledge s \<and> sim_indistinguishable sim"
 
 (* perfect_zk (matches Coq: Definition perfect_zk) *)
-definition perfect_zk :: "STARKSecurity \<Rightarrow> SimulatorState \<Rightarrow> bool" where
+definition perfect_zk :: "STARKSecurity \<Rightarrow> simulator_state \<Rightarrow> bool" where
   "perfect_zk s sim \<equiv> starks_zero_knowledge s \<and> sim_indistinguishable sim \<and> sim_rewinding sim"
 
 (* zk_with_soundness (matches Coq: Definition zk_with_soundness) *)
-definition zk_with_soundness :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> SimulatorState \<Rightarrow> bool" where
+definition zk_with_soundness :: "STARKSecurity \<Rightarrow> fri_properties \<Rightarrow> simulator_state \<Rightarrow> bool" where
   "zk_with_soundness s f sim \<equiv> computational_soundness s f \<and> simulation_based_zk s sim"
 
 (* interaction_complete (matches Coq: Definition interaction_complete) *)
-definition interaction_complete :: "ProverState \<Rightarrow> VerifierState \<Rightarrow> STARKSecurity \<Rightarrow> bool" where
+definition interaction_complete :: "ProverState \<Rightarrow> verifier_state \<Rightarrow> stark_security \<Rightarrow> bool" where
   "interaction_complete p v s \<equiv> prover_honest p \<and> starks_completeness s \<and> verifier_accepting v"
 
 (* fri_complete (matches Coq: Definition fri_complete) *)
-definition fri_complete :: "ProverState \<Rightarrow> FRIProperties \<Rightarrow> bool" where
+definition fri_complete :: "ProverState \<Rightarrow> fri_properties \<Rightarrow> bool" where
   "fri_complete p f \<equiv> prover_fri_complete p \<and> fri_soundness f"
 
 (* post_quantum_secure (matches Coq: Definition post_quantum_secure) *)
-definition post_quantum_secure :: "STARKProperties \<Rightarrow> ExtendedSTARKSecurity \<Rightarrow> bool" where
+definition post_quantum_secure :: "STARKProperties \<Rightarrow> extended_stark_security \<Rightarrow> bool" where
   "post_quantum_secure s e \<equiv> stark_post_quantum s \<and> ext_quantum_resistant e"
 
 (* hash_based_security (matches Coq: Definition hash_based_security) *)
-definition hash_based_security :: "STARKProperties \<Rightarrow> FRIProperties \<Rightarrow> bool" where
+definition hash_based_security :: "STARKProperties \<Rightarrow> fri_properties \<Rightarrow> bool" where
   "hash_based_security s f \<equiv> stark_post_quantum s \<and> fri_commitment_binding f"
 
 (* fully_transparent (matches Coq: Definition fully_transparent) *)
-definition fully_transparent :: "STARKProperties \<Rightarrow> FRIProperties \<Rightarrow> bool" where
+definition fully_transparent :: "STARKProperties \<Rightarrow> fri_properties \<Rightarrow> bool" where
   "fully_transparent s f \<equiv> stark_transparent s \<and> fri_interactive_to_non f"
 
 (* publicly_verifiable (matches Coq: Definition publicly_verifiable) *)
-definition publicly_verifiable :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> bool" where
+definition publicly_verifiable :: "STARKSecurity \<Rightarrow> fri_properties \<Rightarrow> bool" where
   "publicly_verifiable s f \<equiv> stark_transparent (starks_stark s) \<and> fri_interactive_to_non f \<and>
   starks_soundness s"
 
 (* extraction_secure (matches Coq: Definition extraction_secure) *)
-definition extraction_secure :: "ExtendedSTARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> bool" where
+definition extraction_secure :: "ExtendedSTARKSecurity \<Rightarrow> fri_properties \<Rightarrow> bool" where
   "extraction_secure e f \<equiv> ext_extraction_secure e \<and> fri_soundness f \<and> fri_query_bound f"
 
 (* air_stark_connection (matches Coq: Definition air_stark_connection) *)
-definition air_stark_connection :: "AIRProperties \<Rightarrow> STARKSecurity \<Rightarrow> bool" where
+definition air_stark_connection :: "AIRProperties \<Rightarrow> stark_security \<Rightarrow> bool" where
   "air_stark_connection a s \<equiv> air_secure a \<and> air_fri_verified a"
 
 (* modular_stark (matches Coq: Definition modular_stark) *)
-definition modular_stark :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> SimulatorState \<Rightarrow> bool" where
+definition modular_stark :: "STARKSecurity \<Rightarrow> fri_properties \<Rightarrow> simulator_state \<Rightarrow> bool" where
   "modular_stark s f sim \<equiv> stark_fully_secure s \<and> fri_secure f \<and> simulation_valid sim"
 
 (* full_stark_security (matches Coq: Definition full_stark_security) *)
-definition full_stark_security :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> SimulatorState \<Rightarrow> ExtendedSTARKSecurity \<Rightarrow> bool" where
+definition full_stark_security :: "STARKSecurity \<Rightarrow> fri_properties \<Rightarrow> simulator_state \<Rightarrow> extended_stark_security \<Rightarrow> bool" where
   "full_stark_security s f sim e \<equiv> modular_stark s f sim \<and> extended_secure e"
 
 (* ============================================================================

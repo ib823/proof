@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | DTerm              | d_term                 | OK     |
+ * | d_term              | d_term                 | OK     |
  * | ctx_lookup         | ctx_lookup             | OK     |
  * | TYPE_005_01        | TYPE_005_01            | OK     |
  * | TYPE_005_02        | TYPE_005_02            | OK     |
@@ -50,10 +50,15 @@
  *)
 
 theory DependentTypes
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics
 begin
 
-(* DTerm (matches Coq: Inductive DTerm) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym a = "nat"
+type_synonym d_ctx = "nat"
+type_synonym prop = "nat"
+type_synonym type = "nat"
+(* d_term (matches Coq: Inductive d_term) *)
 datatype d_term =
     DVar
   |     DLam
@@ -73,79 +78,79 @@ fun ctx_lookup :: "DCtx \<Rightarrow> nat \<Rightarrow> option (DTy 0)" where
   "ctx_lookup _ = None"
 
 (* TYPE_005_01 (matches Coq) *)
-lemma TYPE_005_01: "\<forall>(ctx :: DCtx) (A : DTy 0) (B : nat \<longrightarrow> DTy 0). WfTy ctx A \<longrightarrow> (\<forall>n. WfTy (A :: ctx) (B n)) \<longrightarrow> WfTy ctx (DPi 0 A B)"
+lemma TYPE_005_01: "\<forall>(ctx :: d_ctx) (a : DTy 0) (B : nat \<longrightarrow> DTy 0). WfTy ctx a \<longrightarrow> (\<forall>n. WfTy (a :: ctx) (B n)) \<longrightarrow> WfTy ctx (DPi 0 a B)"
   by auto
 
 (* TYPE_005_02 (matches Coq) *)
-lemma TYPE_005_02: "\<forall>(ctx :: DCtx) (A : DTy 0) (B : nat \<longrightarrow> DTy 0) (b :: DTerm). WfTy ctx A \<longrightarrow> (\<forall>n. HasType (A :: ctx) b (B n)) \<longrightarrow> HasType ctx (DLam A b) (DPi 0 A B)"
+lemma TYPE_005_02: "\<forall>(ctx :: d_ctx) (a : DTy 0) (B : nat \<longrightarrow> DTy 0) (b :: d_term). WfTy ctx a \<longrightarrow> (\<forall>n. HasType (a :: ctx) b (B n)) \<longrightarrow> HasType ctx (DLam a b) (DPi 0 a B)"
   by auto
 
 (* TYPE_005_03 (matches Coq) *)
-lemma TYPE_005_03: "\<forall>(ctx :: DCtx) (f a : DTerm) (A : DTy 0) (B : nat \<longrightarrow> DTy 0) (v :: nat). HasType ctx f (DPi 0 A B) \<longrightarrow> HasType ctx a A \<longrightarrow> HasType ctx (DApp f a) (B v)"
+lemma TYPE_005_03: "\<forall>(ctx :: d_ctx) (f :: d_term) (a :: d_term) (a : DTy 0) (B : nat \<longrightarrow> DTy 0) (v :: nat). HasType ctx f (DPi 0 a B) \<longrightarrow> HasType ctx a a \<longrightarrow> HasType ctx (DApp f a) (B v)"
   by auto
 
 (* TYPE_005_04 (matches Coq) *)
-lemma TYPE_005_04: "\<forall>(ctx :: DCtx) (A : DTy 0) (B : nat \<longrightarrow> DTy 0). WfTy ctx A \<longrightarrow> (\<forall>n. WfTy (A :: ctx) (B n)) \<longrightarrow> WfTy ctx (DSigma 0 A B)"
+lemma TYPE_005_04: "\<forall>(ctx :: d_ctx) (a : DTy 0) (B : nat \<longrightarrow> DTy 0). WfTy ctx a \<longrightarrow> (\<forall>n. WfTy (a :: ctx) (B n)) \<longrightarrow> WfTy ctx (DSigma 0 a B)"
   by auto
 
 (* TYPE_005_05 (matches Coq) *)
-lemma TYPE_005_05: "\<forall>(ctx :: DCtx) (a b : DTerm) (A : DTy 0) (B : nat \<longrightarrow> DTy 0) (v :: nat). HasType ctx a A \<longrightarrow> HasType ctx b (B v) \<longrightarrow> WfTy ctx (DSigma 0 A B) \<longrightarrow> HasType ctx (DPair a b) (DSigma 0 A B)"
+lemma TYPE_005_05: "\<forall>(ctx :: d_ctx) (a :: d_term) (b :: d_term) (a : DTy 0) (B : nat \<longrightarrow> DTy 0) (v :: nat). HasType ctx a a \<longrightarrow> HasType ctx b (B v) \<longrightarrow> WfTy ctx (DSigma 0 a B) \<longrightarrow> HasType ctx (DPair a b) (DSigma 0 a B)"
   by auto
 
 (* TYPE_005_06 (matches Coq) *)
-lemma TYPE_005_06: "\<forall>(ctx :: DCtx) (p :: DTerm) (A : DTy 0) (B : nat \<longrightarrow> DTy 0). HasType ctx p (DSigma 0 A B) \<longrightarrow> HasType ctx (DFst p) A \<and> \<forall>v. HasType ctx (DSnd p) (B v)"
+lemma TYPE_005_06: "\<forall>(ctx :: d_ctx) (p :: d_term) (a : DTy 0) (B : nat \<longrightarrow> DTy 0). HasType ctx p (DSigma 0 a B) \<longrightarrow> HasType ctx (DFst p) a \<and> \<forall>v. HasType ctx (DSnd p) (B v)"
   by auto
 
 (* TYPE_005_07 (matches Coq) *)
-lemma TYPE_005_07: "\<forall>(ctx :: DCtx) (A : DTy 0) (n :: nat). WfTy ctx A \<longrightarrow> WfTy ctx (DVec 0 A n)"
+lemma TYPE_005_07: "\<forall>(ctx :: d_ctx) (a : DTy 0) (n :: nat). WfTy ctx a \<longrightarrow> WfTy ctx (DVec 0 a n)"
   by auto
 
 (* TYPE_005_08 (matches Coq) *)
-lemma TYPE_005_08: "\<forall>(ctx :: DCtx) (h t : DTerm) (A : DTy 0) (n :: nat). HasType ctx h A \<longrightarrow> HasType ctx t (DVec 0 A n) \<longrightarrow> HasType ctx (DCons h t) (DVec 0 A (S n))"
+lemma TYPE_005_08: "\<forall>(ctx :: d_ctx) (h :: d_term) (t :: d_term) (a : DTy 0) (n :: nat). HasType ctx h a \<longrightarrow> HasType ctx t (DVec 0 a n) \<longrightarrow> HasType ctx (DCons h t) (DVec 0 a (Suc n))"
   by auto
 
 (* vec_cons_length_semantic (matches Coq) *)
-lemma vec_cons_length_semantic: "\<forall>(A :: Type) (n :: nat) (h : A) (t : Vec A n). Vector.cons A h n t = Vector.cons A h n t \<and> \<exists>(v : Vec A (S n)). v = Vector.cons A h n t"
+lemma vec_cons_length_semantic: "\<forall>(a :: type) (n :: nat) (h :: a) (t : Vec a n). Vector.cons a h n t = Vector.cons a h n t \<and> \<exists>(v : Vec a (Suc n)). v = Vector.cons a h n t"
   by simp
 
 (* TYPE_005_09 (matches Coq) *)
-lemma TYPE_005_09: "\<forall>(ctx :: DCtx) (v :: DTerm) (A : DTy 0) (n :: nat). HasType ctx v (DVec 0 A (S n)) \<longrightarrow> HasType ctx (DHead v) A"
+lemma TYPE_005_09: "\<forall>(ctx :: d_ctx) (v :: d_term) (a : DTy 0) (n :: nat). HasType ctx v (DVec 0 a (Suc n)) \<longrightarrow> HasType ctx (DHead v) A"
   by auto
 
 (* vec_head_nonempty_semantic (matches Coq) *)
-lemma vec_head_nonempty_semantic: "\<forall>(A :: Type) (n :: nat) (v : Vec A (S n)). \<exists>(h : A). Vector.hd v = h"
+lemma vec_head_nonempty_semantic: "\<forall>(a :: type) (n :: nat) (v : Vec a (Suc n)). \<exists>(h :: a). Vector.hd v = h"
   by simp
 
 (* TYPE_005_10 (matches Coq) *)
-lemma TYPE_005_10: "\<forall>(P :: nat_motive) (base : P 0) (step : \<forall> n. P n \<longrightarrow> P (S n)) (m :: nat), \<exists>(result : P m). result = nat_rect_dep P base step m"
+lemma TYPE_005_10: "\<forall>(P :: nat_motive) (base : P 0) (step : \<forall> n. P n \<longrightarrow> P (Suc n)) (m :: nat), \<exists>(result : P m). result = nat_rect_dep P base step m"
   by simp
 
 (* vec_dep_pattern_match (matches Coq) *)
-lemma vec_dep_pattern_match: "\<forall>(A :: Type) (P : \<forall> n. Vec A n \<longrightarrow> Type) (base : P 0 (Vector.nil A)) (step : \<forall>h n t. P n t \<longrightarrow> P (S n) (Vector.cons A h n t)) (n :: nat) (v : Vec A n), \<exists>(result : P n v). result = Vector.t_rect A P base (fun h n t IH => step h n t IH) n v"
+lemma vec_dep_pattern_match: "\<forall>(a :: type) (P : \<forall> n. Vec a n \<longrightarrow> type) (base : P 0 (Vector.nil a)) (step : \<forall>h n t. P n t \<longrightarrow> P (Suc n) (Vector.cons a h n t)) (n :: nat) (v : Vec a n), \<exists>(result : P n v). result = Vector.t_rect a P base (fun h n t IH => step h n t IH) n v"
   by simp
 
 (* TYPE_005_11 (matches Coq) *)
-lemma TYPE_005_11: "\<forall>(A :: Type) (P : A \<longrightarrow> Type) (x y : A) (eq : x = y) (px : P x). \<exists>(py : P y). py = transport P eq px"
+lemma TYPE_005_11: "\<forall>(a :: type) (P : a \<longrightarrow> type) (x :: a) (y :: a) (eq : x = y) (px : P x). \<exists>(py : P y). py = transport P eq px"
   by simp
 
 (* transport_refl (matches Coq) *)
-lemma transport_refl: "\<forall>(A :: Type) (P : A \<longrightarrow> Type) (x :: A) (px : P x). transport P eq_refl px = px"
+lemma transport_refl: "\<forall>(a :: type) (P : a \<longrightarrow> type) (x :: a) (px : P x). transport P eq_refl px = px"
   by simp
 
 (* transport_trans (matches Coq) *)
-lemma transport_trans: "\<forall>(A :: Type) (P : A \<longrightarrow> Type) (x y z : A) (eq1 : x = y) (eq2 : y = z) (px : P x). transport P eq2 (transport P eq1 px) = transport P (eq_trans eq1 eq2) px"
+lemma transport_trans: "\<forall>(a :: type) (P : a \<longrightarrow> type) (x y z : a) (eq1 : x = y) (eq2 : y = z) (px : P x). transport P eq2 (transport P eq1 px) = transport P (eq_trans eq1 eq2) px"
   by simp
 
 (* TYPE_005_12 (matches Coq) *)
-lemma TYPE_005_12: "\<forall>(A B : Type) (f : A \<longrightarrow> B) (x y : A). x = y \<longrightarrow> f x = f y"
+lemma TYPE_005_12: "\<forall>(a :: type) (B :: type) (f : a \<longrightarrow> B) (x :: a) (y :: a). x = y \<longrightarrow> f x = f y"
   by simp
 
 (* dep_congruence (matches Coq) *)
-lemma dep_congruence: "\<forall>(A :: Type) (B : A \<longrightarrow> Type) (f : \<forall> a. B a) (x y : A) (eq : x = y), transport B eq (f x) = f y"
+lemma dep_congruence: "\<forall>(a :: type) (B : a \<longrightarrow> type) (f : \<forall> a. B a) (x :: a) (y :: a) (eq : x = y), transport B eq (f x) = f y"
   by simp
 
 (* congruence2 (matches Coq) *)
-lemma congruence2: "\<forall>(A B C : Type) (f : A \<longrightarrow> B \<longrightarrow> C) (x1 x2 : A) (y1 y2 : B). x1 = x2 \<longrightarrow> y1 = y2 \<longrightarrow> f x1 y1 = f x2 y2"
+lemma congruence2: "\<forall>(a B C : type) (f : a \<longrightarrow> B \<longrightarrow> C) (x1 :: a) (x2 :: a) (y1 :: B) (y2 :: B). x1 = x2 \<longrightarrow> y1 = y2 \<longrightarrow> f x1 y1 = f x2 y2"
   by simp
 
 (* lt_wf_aux (matches Coq) *)
@@ -157,51 +162,51 @@ lemma lt_well_founded: "well_founded lt"
   by auto
 
 (* TYPE_005_13 (matches Coq) *)
-lemma TYPE_005_13: "\<forall>(A :: Type) (R : A \<longrightarrow> A \<longrightarrow> Prop) (P : A \<longrightarrow> Type). well_founded R \<longrightarrow> (\<forall>x. (\<forall>y. R y x \<longrightarrow> P y) \<longrightarrow> P x) \<longrightarrow> \<forall>x. P x"
+lemma TYPE_005_13: "\<forall>(a :: type) (R : a \<longrightarrow> a \<longrightarrow> prop) (P : a \<longrightarrow> type). well_founded R \<longrightarrow> (\<forall>x. (\<forall>y. R y x \<longrightarrow> P y) \<longrightarrow> P x) \<longrightarrow> \<forall>x. P x"
   by auto
 
 (* nat_dep_ind (matches Coq) *)
-lemma nat_dep_ind: "\<forall>(P : nat \<longrightarrow> Type). P 0 \<longrightarrow> (\<forall>n. P n \<longrightarrow> P (S n)) \<longrightarrow> \<forall>n. P n"
+lemma nat_dep_ind: "\<forall>(P : nat \<longrightarrow> type). P 0 \<longrightarrow> (\<forall>n. P n \<longrightarrow> P (Suc n)) \<longrightarrow> \<forall>n. P n"
   by auto
 
 (* strong_ind (matches Coq) *)
-lemma strong_ind: "\<forall>(P : nat \<longrightarrow> Prop). (\<forall>n. (\<forall>m. m < n \<longrightarrow> P m) \<longrightarrow> P n) \<longrightarrow> \<forall>n. P n"
+lemma strong_ind: "\<forall>(P : nat \<longrightarrow> prop). (\<forall>n. (\<forall>m. m < n \<longrightarrow> P m) \<longrightarrow> P n) \<longrightarrow> \<forall>n. P n"
   by auto
 
 (* TYPE_005_14 (matches Coq) *)
-lemma TYPE_005_14: "\<forall>(A :: Type). (\<forall>x y : A. (x = y) \<or> (x \<noteq> y)) \<longrightarrow> \<forall>(x y : A). Dec (x = y)"
+lemma TYPE_005_14: "\<forall>(a :: type). (\<forall>x y : A. (x = y) \<or> (x \<noteq> y)) \<longrightarrow> \<forall>(x :: a) (y :: a). Dec (x = y)"
   by auto
 
 (* dec_eq_nat (matches Coq) *)
-lemma dec_eq_nat: "\<forall>(x y : nat). Dec (x = y)"
+lemma dec_eq_nat: "\<forall>(x :: nat) (y :: nat). Dec (x = y)"
   by auto
 
 (* dec_eq_bool (matches Coq) *)
-lemma dec_eq_bool: "\<forall>(x y : bool). Dec (x = y)"
+lemma dec_eq_bool: "\<forall>(x :: bool) (y :: bool). Dec (x = y)"
   by simp
 
 (* dec_eq_prod (matches Coq) *)
-lemma dec_eq_prod: "\<forall>(A B : Type). (\<forall>x y : A. Dec (x = y)) \<longrightarrow> (\<forall>x y : B. Dec (x = y)) \<longrightarrow> \<forall>(p1 p2 : A * B). Dec (p1 = p2)"
+lemma dec_eq_prod: "\<forall>(a :: type) (B :: type). (\<forall>x y : A. Dec (x = y)) \<longrightarrow> (\<forall>x y : B. Dec (x = y)) \<longrightarrow> \<forall>(p1 p2 : a * B). Dec (p1 = p2)"
   by auto
 
 (* dec_eq_option (matches Coq) *)
-lemma dec_eq_option: "\<forall>(A :: Type). (\<forall>x y : A. Dec (x = y)) \<longrightarrow> \<forall>(o1 o2 : option A). Dec (o1 = o2)"
+lemma dec_eq_option: "\<forall>(a :: type). (\<forall>x y : A. Dec (x = y)) \<longrightarrow> \<forall>(o1 o2 : option a). Dec (o1 = o2)"
   by auto
 
 (* dec_eq_list (matches Coq) *)
-lemma dec_eq_list: "\<forall>(A :: Type). (\<forall>x y : A. Dec (x = y)) \<longrightarrow> \<forall>(l1 l2 : list A). Dec (l1 = l2)"
+lemma dec_eq_list: "\<forall>(a :: type). (\<forall>x y : A. Dec (x = y)) \<longrightarrow> \<forall>(l1 l2 : list a). Dec (l1 = l2)"
   by auto
 
 (* dec_to_bool (matches Coq) *)
-lemma dec_to_bool: "\<forall>(P :: Prop). Dec P \<longrightarrow> (P) \<or> (~P)"
+lemma dec_to_bool: "\<forall>(P :: prop). Dec P \<longrightarrow> (P) \<or> (~P)"
   by auto
 
 (* nat_eq_reflect (matches Coq) *)
-lemma nat_eq_reflect: "\<forall>(x y : nat). (x = y) = True <-> x = y"
+lemma nat_eq_reflect: "\<forall>(x :: nat) (y :: nat). (x = y) = True <-> x = y"
   by auto
 
 (* uip_dec (matches Coq) *)
-lemma uip_dec: "\<forall>(A :: Type). (\<forall>x y : A. Dec (x = y)) \<longrightarrow> \<forall>(x :: A) (p : x = x). p = eq_refl"
+lemma uip_dec: "\<forall>(a :: type). (\<forall>x y : A. Dec (x = y)) \<longrightarrow> \<forall>(x :: a) (p : x = x). p = eq_refl"
   by auto
 
 end

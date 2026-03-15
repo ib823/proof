@@ -39,13 +39,13 @@ check lex_induction for 5
 
 // lex_lt_left (matches Coq: Lemma lex_lt_left)
 assert lex_lt_left {
-  all p_p1: nat___nat | lex_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___nat | lex_lt[p_p1, p_p2] implies some p_p1
 }
 check lex_lt_left for 5
 
 // lex_lt_right (matches Coq: Lemma lex_lt_right)
 assert lex_lt_right {
-  all p_p1: nat___nat | lex_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___nat | lex_lt[p_p1, p_p2] implies some p_p1
 }
 check lex_lt_right for 5
 
@@ -63,55 +63,55 @@ check step_ty_induction for 5
 
 // step_ty_lt_step (matches Coq: Lemma step_ty_lt_step)
 assert step_ty_lt_step {
-  all p_p1: nat___ty | step_ty_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___ty | step_ty_lt[p_p1, p_p2] implies some p_p1
 }
 check step_ty_lt_step for 5
 
 // step_ty_lt_ty (matches Coq: Lemma step_ty_lt_ty)
 assert step_ty_lt_ty {
-  all p_p1: nat___ty | step_ty_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___ty | step_ty_lt[p_p1, p_p2] implies some p_p1
 }
 check step_ty_lt_ty for 5
 
 // step_ty_lt_fn_arg (matches Coq: Lemma step_ty_lt_fn_arg)
 assert step_ty_lt_fn_arg {
-  all p_p1: nat___ty | step_ty_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___ty | step_ty_lt[p_p1, p_p2] implies some p_p1
 }
 check step_ty_lt_fn_arg for 5
 
 // step_ty_lt_fn_res (matches Coq: Lemma step_ty_lt_fn_res)
 assert step_ty_lt_fn_res {
-  all p_p1: nat___ty | step_ty_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___ty | step_ty_lt[p_p1, p_p2] implies some p_p1
 }
 check step_ty_lt_fn_res for 5
 
 // step_ty_lt_prod_left (matches Coq: Lemma step_ty_lt_prod_left)
 assert step_ty_lt_prod_left {
-  all p_p1: nat___ty | step_ty_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___ty | step_ty_lt[p_p1, p_p2] implies some p_p1
 }
 check step_ty_lt_prod_left for 5
 
 // step_ty_lt_prod_right (matches Coq: Lemma step_ty_lt_prod_right)
 assert step_ty_lt_prod_right {
-  all p_p1: nat___ty | step_ty_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___ty | step_ty_lt[p_p1, p_p2] implies some p_p1
 }
 check step_ty_lt_prod_right for 5
 
 // step_ty_lt_sum_left (matches Coq: Lemma step_ty_lt_sum_left)
 assert step_ty_lt_sum_left {
-  all p_p1: nat___ty | step_ty_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___ty | step_ty_lt[p_p1, p_p2] implies some p_p1
 }
 check step_ty_lt_sum_left for 5
 
 // step_ty_lt_sum_right (matches Coq: Lemma step_ty_lt_sum_right)
 assert step_ty_lt_sum_right {
-  all p_p1: nat___ty | step_ty_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___ty | step_ty_lt[p_p1, p_p2] implies some p_p1
 }
 check step_ty_lt_sum_right for 5
 
 // step_ty_lt_step_any (matches Coq: Lemma step_ty_lt_step_any)
 assert step_ty_lt_step_any {
-  all p_p1: nat___ty | step_ty_lt[p_p1] implies some p_p1
+  all p_p1, p_p2: nat___ty | step_ty_lt[p_p1, p_p2] implies some p_p1
 }
 check step_ty_lt_step_any for 5
 

@@ -55,9 +55,12 @@
  *)
 
 theory ClosedValueLemmas
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* closed_expr_cv (matches Coq: Definition closed_expr_cv) *)
 definition closed_expr_cv :: "expr \<Rightarrow> bool" where
   "closed_expr_cv e \<equiv> forall x, ~ free_in x e"
@@ -148,7 +151,7 @@ lemma closed_snd_cv: "\<forall>e. closed_expr_cv (ESnd e) <-> closed_expr_cv e"
 
 (* Values of simple base types are always closed *)
 (* value_closed_simple (matches Coq) *)
-lemma value_closed_simple: "\<forall>v Σ Δ T ε. value v \<longrightarrow> has_type nil Σ Δ v T ε \<longrightarrow> match v with | EUnit | EBool _ | EInt _ | EString _ | ELoc _ => True | _ => True end \<longrightarrow> closed_expr_cv v"
+lemma value_closed_simple: "\<forall>v Σ Δ T ε. value v \<longrightarrow> has_type nil Σ Δ v T ε \<longrightarrow> (case v of EUnit | EBool _ | EInt _ | EString _ | ELoc _ => True | _ => True) \<longrightarrow> closed_expr_cv v"
   by auto
 
 (* Closed expressions under weakening *)

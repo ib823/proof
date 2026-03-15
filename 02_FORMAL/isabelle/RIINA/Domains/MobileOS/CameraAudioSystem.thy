@@ -12,20 +12,20 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | RecordingState     | recording_state        | OK     |
- * | Scene              | scene                  | OK     |
- * | RawPhoto           | raw_photo              | OK     |
- * | VideoRecording     | video_recording        | OK     |
- * | AudioSample        | audio_sample           | OK     |
- * | CameraPermission   | camera_permission      | OK     |
- * | AccessIndicator    | access_indicator       | OK     |
- * | AudioConfig        | audio_config           | OK     |
- * | VideoConfig        | video_config           | OK     |
- * | RecordingSession   | recording_session      | OK     |
- * | PhotoCapture       | photo_capture          | OK     |
- * | Microseconds       | Microseconds           | OK     |
- * | PixelData          | PixelData              | OK     |
- * | SensorData         | SensorData             | OK     |
+ * | recording_state     | recording_state        | OK     |
+ * | scene              | scene                  | OK     |
+ * | raw_photo           | raw_photo              | OK     |
+ * | video_recording     | video_recording        | OK     |
+ * | audio_sample        | audio_sample           | OK     |
+ * | camera_permission   | camera_permission      | OK     |
+ * | access_indicator    | access_indicator       | OK     |
+ * | audio_config        | audio_config           | OK     |
+ * | video_config        | video_config           | OK     |
+ * | recording_session   | recording_session      | OK     |
+ * | photo_capture       | photo_capture          | OK     |
+ * | microseconds       | microseconds           | OK     |
+ * | pixel_data          | pixel_data              | OK     |
+ * | sensor_data         | sensor_data             | OK     |
  * | sensor_data        | sensor_data            | OK     |
  * | pixel_data         | pixel_data             | OK     |
  * | captures           | captures               | OK     |
@@ -65,90 +65,94 @@ theory CameraAudioSystem
   imports Main
 begin
 
-(* RecordingState (matches Coq: Inductive RecordingState) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym microseconds = "nat"
+type_synonym pixel_data = "nat list"
+type_synonym sensor_data = "nat list"
+(* recording_state (matches Coq: Inductive recording_state) *)
 datatype recording_state =
     NotRecording
   |     Recording
   |     Paused
 
-(* Scene (matches Coq: Record Scene) *)
+(* scene (matches Coq: Record scene) *)
 record scene =
   scene_id :: nat
-  scene_data :: SensorData
+  scene_data :: sensor_data
   scene_timestamp :: nat
 
-(* RawPhoto (matches Coq: Record RawPhoto) *)
+(* raw_photo (matches Coq: Record raw_photo) *)
 record raw_photo =
   photo_id :: nat
-  photo_pixels :: PixelData
+  photo_pixels :: pixel_data
   photo_metadata :: nat
   photo_timestamp :: nat
 
-(* VideoRecording (matches Coq: Record VideoRecording) *)
+(* video_recording (matches Coq: Record video_recording) *)
 record video_recording =
   video_id :: nat
   video_frames :: 'a list
   video_duration_ms :: nat
   video_fps :: nat
 
-(* AudioSample (matches Coq: Record AudioSample) *)
+(* audio_sample (matches Coq: Record audio_sample) *)
 record audio_sample =
   audio_id :: nat
   audio_data :: 'a list
-  audio_input_time :: Microseconds
-  audio_output_time :: Microseconds
+  audio_input_time :: microseconds
+  audio_output_time :: microseconds
 
-(* CameraPermission (matches Coq: Record CameraPermission) *)
+(* camera_permission (matches Coq: Record camera_permission) *)
 record camera_permission =
   camera_granted :: bool
   mic_granted :: bool
   per_session_only :: bool
 
-(* AccessIndicator (matches Coq: Record AccessIndicator) *)
+(* access_indicator (matches Coq: Record access_indicator) *)
 record access_indicator =
   indicator_visible :: bool
   indicator_persistent :: bool
   indicator_type :: nat
 
-(* AudioConfig (matches Coq: Record AudioConfig) *)
+(* audio_config (matches Coq: Record audio_config) *)
 record audio_config =
   sample_rate :: nat
   bit_depth :: nat
   channels :: nat
   audio_level :: nat
 
-(* VideoConfig (matches Coq: Record VideoConfig) *)
+(* video_config (matches Coq: Record video_config) *)
 record video_config =
   video_width :: nat
   video_height :: nat
   video_frame_rate :: nat
   stabilization_offset :: nat
 
-(* RecordingSession (matches Coq: Record RecordingSession) *)
+(* recording_session (matches Coq: Record recording_session) *)
 record recording_session =
-  rec_state :: RecordingState
-  rec_indicator :: AccessIndicator
+  rec_state :: recording_state
+  rec_indicator :: access_indicator
   rec_background :: bool
-  rec_permission :: CameraPermission
+  rec_permission :: camera_permission
 
-(* PhotoCapture (matches Coq: Record PhotoCapture) *)
+(* photo_capture (matches Coq: Record photo_capture) *)
 record photo_capture =
-  capture_photo :: RawPhoto
+  capture_photo :: raw_photo
   capture_has_metadata :: bool
   capture_metadata_stripped :: bool
   capture_resolution_w :: nat
   capture_resolution_h :: nat
 
-(* Microseconds (matches Coq: Definition Microseconds) *)
-definition Microseconds :: "'a" where
+(* microseconds (matches Coq: Definition microseconds) *)
+definition microseconds :: "'a" where
   "Microseconds \<equiv> nat"
 
-(* PixelData (matches Coq: Definition PixelData) *)
-definition PixelData :: "'a" where
+(* pixel_data (matches Coq: Definition pixel_data) *)
+definition pixel_data :: "'a" where
   "PixelData \<equiv> list nat"
 
-(* SensorData (matches Coq: Definition SensorData) *)
-definition SensorData :: "'a" where
+(* sensor_data (matches Coq: Definition sensor_data) *)
+definition sensor_data :: "'a" where
   "SensorData \<equiv> list nat"
 
 (* sensor_data (matches Coq: Definition sensor_data) *)
@@ -160,7 +164,7 @@ definition pixel_data :: "RawPhoto \<Rightarrow> PixelData" where
   "pixel_data p \<equiv> photo_pixels p"
 
 (* captures (matches Coq: Definition captures) *)
-definition captures :: "Scene \<Rightarrow> RawPhoto \<Rightarrow> bool" where
+definition captures :: "Scene \<Rightarrow> raw_photo \<Rightarrow> bool" where
   "captures s p \<equiv> scene_data s = photo_pixels p"
 
 (* frames_captured (matches Coq: Definition frames_captured) *)
@@ -185,7 +189,7 @@ definition low_latency_audio :: "AudioSample \<Rightarrow> bool" where
 
 (* lossless_capture_system (matches Coq: Definition lossless_capture_system) *)
 definition lossless_capture_system :: "bool" where
-  "lossless_capture_system \<equiv> forall (s : Scene) (p :: RawPhoto),
+  "lossless_capture_system \<equiv> forall (s : scene) (p :: raw_photo),
     captures s p ->
     sensor_data s = pixel_data p"
 
@@ -212,87 +216,87 @@ definition well_formed_video_config :: "VideoConfig \<Rightarrow> bool" where
   stabilization_offset vc <= 50"
 
 (* raw_capture_lossless (matches Coq) *)
-lemma raw_capture_lossless: "\<forall>(scene :: Scene) (capture :: RawPhoto). captures scene capture \<longrightarrow> sensor_data scene = pixel_data capture"
+lemma raw_capture_lossless: "\<forall>(scene :: scene) (capture :: raw_photo). captures scene capture \<longrightarrow> sensor_data scene = pixel_data capture"
   by auto
 
 (* video_no_frame_drop (matches Coq) *)
-lemma video_no_frame_drop: "\<forall>(recording :: VideoRecording). well_formed_video recording \<longrightarrow> frames_captured recording = expected_frames recording"
+lemma video_no_frame_drop: "\<forall>(recording :: video_recording). well_formed_video recording \<longrightarrow> frames_captured recording = expected_frames recording"
   by auto
 
 (* audio_latency_bounded (matches Coq) *)
-lemma audio_latency_bounded: "\<forall>(sample :: AudioSample). low_latency_audio sample \<longrightarrow> input_to_output_latency sample \<le> 5000"
+lemma audio_latency_bounded: "\<forall>(sample :: audio_sample). low_latency_audio sample \<longrightarrow> input_to_output_latency sample \<le> 5000"
   by auto
 
 (* capture_preserves_identity (matches Coq) *)
-lemma capture_preserves_identity: "\<forall>(s1 s2 : Scene) (p :: RawPhoto). captures s1 p \<longrightarrow> captures s2 p \<longrightarrow> sensor_data s1 = sensor_data s2"
+lemma capture_preserves_identity: "\<forall>(s1 :: scene) (s2 :: scene) (p :: raw_photo). captures s1 p \<longrightarrow> captures s2 p \<longrightarrow> sensor_data s1 = sensor_data s2"
   by simp
 
 (* empty_video_zero_frames (matches Coq) *)
-lemma empty_video_zero_frames: "\<forall>(v :: VideoRecording). video_frames v = [] \<longrightarrow> frames_captured v = 0"
+lemma empty_video_zero_frames: "\<forall>(v :: video_recording). video_frames v = [] \<longrightarrow> frames_captured v = 0"
   by simp
 
 (* audio_latency_nonnegative (matches Coq) *)
-lemma audio_latency_nonnegative: "\<forall>(sample :: AudioSample). audio_output_time sample \<ge> audio_input_time sample \<longrightarrow> input_to_output_latency sample \<ge> 0"
+lemma audio_latency_nonnegative: "\<forall>(sample :: audio_sample). audio_output_time sample \<ge> audio_input_time sample \<longrightarrow> input_to_output_latency sample \<ge> 0"
   by auto
 
 (* camera_access_indicator_visible (matches Coq) *)
-lemma camera_access_indicator_visible: "\<forall>(rs :: RecordingSession). well_formed_recording rs \<longrightarrow> rec_state rs = Recording \<longrightarrow> indicator_visible (rec_indicator rs) = True"
+lemma camera_access_indicator_visible: "\<forall>(rs :: recording_session). well_formed_recording rs \<longrightarrow> rec_state rs = Recording \<longrightarrow> indicator_visible (rec_indicator rs) = True"
   by auto
 
 (* microphone_access_indicator_visible (matches Coq) *)
-lemma microphone_access_indicator_visible: "\<forall>(rs :: RecordingSession). well_formed_recording rs \<longrightarrow> rec_state rs = Recording \<longrightarrow> indicator_type (rec_indicator rs) = 1 \<or> indicator_type (rec_indicator rs) = 2 \<longrightarrow> indicator_visible (rec_indicator rs) = True"
+lemma microphone_access_indicator_visible: "\<forall>(rs :: recording_session). well_formed_recording rs \<longrightarrow> rec_state rs = Recording \<longrightarrow> indicator_type (rec_indicator rs) = 1 \<or> indicator_type (rec_indicator rs) = 2 \<longrightarrow> indicator_visible (rec_indicator rs) = True"
   by auto
 
 (* recording_indicator_persistent (matches Coq) *)
-lemma recording_indicator_persistent: "\<forall>(rs :: RecordingSession). well_formed_recording rs \<longrightarrow> rec_state rs = Recording \<longrightarrow> indicator_persistent (rec_indicator rs) = True"
+lemma recording_indicator_persistent: "\<forall>(rs :: recording_session). well_formed_recording rs \<longrightarrow> rec_state rs = Recording \<longrightarrow> indicator_persistent (rec_indicator rs) = True"
   by auto
 
 (* no_silent_recording (matches Coq) *)
-lemma no_silent_recording: "\<forall>(rs :: RecordingSession). well_formed_recording rs \<longrightarrow> indicator_visible (rec_indicator rs) = False \<longrightarrow> rec_state rs \<noteq> Recording"
+lemma no_silent_recording: "\<forall>(rs :: recording_session). well_formed_recording rs \<longrightarrow> indicator_visible (rec_indicator rs) = False \<longrightarrow> rec_state rs \<noteq> Recording"
   by auto
 
 (* camera_preview_matches_capture (matches Coq) *)
-lemma camera_preview_matches_capture: "\<forall>(s :: Scene) (p :: RawPhoto). captures s p \<longrightarrow> scene_data s = photo_pixels p"
+lemma camera_preview_matches_capture: "\<forall>(s :: scene) (p :: raw_photo). captures s p \<longrightarrow> scene_data s = photo_pixels p"
   by auto
 
 (* audio_sample_rate_valid (matches Coq) *)
-lemma audio_sample_rate_valid: "\<forall>(ac :: AudioConfig). well_formed_audio ac \<longrightarrow> sample_rate ac \<ge> 8000 \<and> sample_rate ac \<le> 192000"
+lemma audio_sample_rate_valid: "\<forall>(ac :: audio_config). well_formed_audio ac \<longrightarrow> sample_rate ac \<ge> 8000 \<and> sample_rate ac \<le> 192000"
   by auto
 
 (* video_frame_rate_bounded (matches Coq) *)
-lemma video_frame_rate_bounded: "\<forall>(vc :: VideoConfig). well_formed_video_config vc \<longrightarrow> video_frame_rate vc \<ge> 1 \<and> video_frame_rate vc \<le> 240"
+lemma video_frame_rate_bounded: "\<forall>(vc :: video_config). well_formed_video_config vc \<longrightarrow> video_frame_rate vc \<ge> 1 \<and> video_frame_rate vc \<le> 240"
   by auto
 
 (* photo_metadata_strippable (matches Coq) *)
-lemma photo_metadata_strippable: "\<forall>(pc :: PhotoCapture). capture_has_metadata pc = True \<longrightarrow> capture_metadata_stripped pc = True \<longrightarrow> capture_metadata_stripped pc = True"
+lemma photo_metadata_strippable: "\<forall>(pc :: photo_capture). capture_has_metadata pc = True \<longrightarrow> capture_metadata_stripped pc = True \<longrightarrow> capture_metadata_stripped pc = True"
   by auto
 
 (* audio_level_bounded (matches Coq) *)
-lemma audio_level_bounded: "\<forall>(ac :: AudioConfig). well_formed_audio ac \<longrightarrow> audio_level ac \<le> 100"
+lemma audio_level_bounded: "\<forall>(ac :: audio_config). well_formed_audio ac \<longrightarrow> audio_level ac \<le> 100"
   by auto
 
 (* camera_permission_per_session (matches Coq) *)
-lemma camera_permission_per_session: "\<forall>(rs :: RecordingSession). per_session_only (rec_permission rs) = True \<longrightarrow> rec_state rs = NotRecording \<longrightarrow> camera_granted (rec_permission rs) = True \<longrightarrow> per_session_only (rec_permission rs) = True"
+lemma camera_permission_per_session: "\<forall>(rs :: recording_session). per_session_only (rec_permission rs) = True \<longrightarrow> rec_state rs = NotRecording \<longrightarrow> camera_granted (rec_permission rs) = True \<longrightarrow> per_session_only (rec_permission rs) = True"
   by auto
 
 (* background_camera_blocked (matches Coq) *)
-lemma background_camera_blocked: "\<forall>(rs :: RecordingSession). well_formed_recording rs \<longrightarrow> rec_background rs = True \<longrightarrow> rec_state rs = NotRecording"
+lemma background_camera_blocked: "\<forall>(rs :: recording_session). well_formed_recording rs \<longrightarrow> rec_background rs = True \<longrightarrow> rec_state rs = NotRecording"
   by auto
 
 (* camera_interrupt_handled (matches Coq) *)
-lemma camera_interrupt_handled: "\<forall>(rs :: RecordingSession). well_formed_recording rs \<longrightarrow> camera_granted (rec_permission rs) = False \<longrightarrow> rec_state rs = NotRecording"
+lemma camera_interrupt_handled: "\<forall>(rs :: recording_session). well_formed_recording rs \<longrightarrow> camera_granted (rec_permission rs) = False \<longrightarrow> rec_state rs = NotRecording"
   by auto
 
 (* audio_route_change_handled (matches Coq) *)
-lemma audio_route_change_handled: "\<forall>(ac1 ac2 : AudioConfig). well_formed_audio ac1 \<longrightarrow> well_formed_audio ac2 \<longrightarrow> sample_rate ac1 \<ge> 8000 \<and> sample_rate ac2 \<ge> 8000"
+lemma audio_route_change_handled: "\<forall>(ac1 :: audio_config) (ac2 :: audio_config). well_formed_audio ac1 \<longrightarrow> well_formed_audio ac2 \<longrightarrow> sample_rate ac1 \<ge> 8000 \<and> sample_rate ac2 \<ge> 8000"
   by auto
 
 (* video_stabilization_bounded (matches Coq) *)
-lemma video_stabilization_bounded: "\<forall>(vc :: VideoConfig). well_formed_video_config vc \<longrightarrow> stabilization_offset vc \<le> 50"
+lemma video_stabilization_bounded: "\<forall>(vc :: video_config). well_formed_video_config vc \<longrightarrow> stabilization_offset vc \<le> 50"
   by auto
 
 (* capture_resolution_bounded (matches Coq) *)
-lemma capture_resolution_bounded: "\<forall>(vc :: VideoConfig). well_formed_video_config vc \<longrightarrow> video_width vc \<ge> 1 \<and> video_height vc \<ge> 1"
+lemma capture_resolution_bounded: "\<forall>(vc :: video_config). well_formed_video_config vc \<longrightarrow> video_width vc \<ge> 1 \<and> video_height vc \<ge> 1"
   by auto
 
 end

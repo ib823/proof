@@ -54,7 +54,7 @@
  *)
 
 theory LexOrder
-  imports Main
+  imports Main Semantics Syntax
 begin
 
 (* lex_lt (matches Coq: Definition lex_lt) *)
@@ -106,7 +106,7 @@ lemma step_ty_induction: "\<forall>(P : nat \<longrightarrow> ty \<longrightarro
 
 (* Decreasing step index (the primary decrease for TFn) *)
 (* step_ty_lt_step (matches Coq) *)
-lemma step_ty_lt_step: "\<forall>n T T'. step_ty_lt (n, T') (S n, T)"
+lemma step_ty_lt_step: "\<forall>n T T'. step_ty_lt (n, T') (Suc n, T)"
   by simp
 
 (* Decreasing type size at same step (for recursive types) *)

@@ -1,10 +1,10 @@
 {
-  "generated": "2026-03-15T08:55:37Z",
-  "generatedHuman": "March 15, 2026 at 08:55 UTC",
+  "generated": "2026-03-15T22:20:30Z",
+  "generatedHuman": "March 15, 2026 at 22:20 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "2711c74e",
+    "commit": "9879a5a2",
     "branch": "main"
   },
   "proofs": {
@@ -32,7 +32,7 @@
   },
   "isabelle": {
     "lemmas": 5,
-    "lemmasRaw": 9091,
+    "lemmasRaw": 9092,
     "compiledTheories": 1,
     "compiledLemmas": 5,
     "smokeBuildOk": true,
@@ -42,16 +42,16 @@
     "sorryVerified": true,
     "axioms": 0,
     "files": 275,
-    "lines": 100516,
+    "lines": 101411,
     "prover": "Isabelle/HOL"
   },
   "fstar": {
-    "lemmas": 3,
-    "lemmasRaw": 219,
+    "lemmas": 22,
+    "lemmasRaw": 22,
     "compiledLemmas": 3,
     "smokeBuildOk": true,
     "smokeModule": "RIINA.Active.CryptographicSecurityActive",
-    "quarantined": true,
+    "quarantined": false,
     "files": 265,
     "prover": "F*"
   },
@@ -66,12 +66,12 @@
     "prover": "TLA+"
   },
   "alloy": {
-    "assertions": 6,
+    "assertions": 8434,
     "assertionsRaw": 8434,
     "compiledAssertions": 6,
     "smokeBuildOk": true,
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
-    "quarantined": true,
+    "quarantined": false,
     "files": 260,
     "prover": "Alloy 6"
   },
@@ -105,20 +105,9 @@
   },
   "multiProver": {
     "tripleProverTheorems": 0,
-    "totalProofsAllProvers": 25491,
+    "totalProofsAllProvers": 33938,
     "totalProvers": 10,
-    "proverList": [
-      "Coq",
-      "Lean 4",
-      "Isabelle/HOL",
-      "F*",
-      "TLA+",
-      "Alloy 6",
-      "Z3/CVC5",
-      "Verus",
-      "Kani",
-      "Translation Validation"
-    ],
+    "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
     "status": "ACTIVE_COQ_MECHANIZED"
   },
@@ -126,18 +115,18 @@
     "coqCompiled": true,
     "leanCompiled": true,
     "isabelleCompiled": true,
-    "fstarStatus": "generated",
+    "fstarStatus": "compiled",
     "tlaplusStatus": "generated",
-    "alloyStatus": "generated",
+    "alloyStatus": "compiled",
     "smtStatus": "mechanized",
     "verusStatus": "generated",
     "kaniStatus": "generated",
     "tvStatus": "generated",
     "runtimeProofStatus": "generated",
     "nonCoqMechanization": {
-      "reportFresh": true,
+      "reportFresh": false,
       "overallMechanized": false,
-      "source": "strict_report",
+      "source": "cached_metrics",
       "pending": {
         "lean": "none",
         "isabelle": "partial RIINA_CORE smoke build verified; full RIINA+RIINA_Domains build still pending",
@@ -167,20 +156,15 @@
     }
   },
   "claimLevels": {
-    "legend": [
-      "generated",
-      "compiled",
-      "mechanized",
-      "independently_audited"
-    ],
+    "legend": ["generated", "compiled", "mechanized", "independently_audited"],
     "overall": "generated",
     "independentlyAudited": false,
     "coq": "mechanized",
     "lean": "mechanized",
     "isabelle": "generated",
-    "fstar": "generated",
+    "fstar": "compiled",
     "tlaplus": "generated",
-    "alloy": "generated",
+    "alloy": "compiled",
     "smt": "mechanized",
     "verus": "generated",
     "kani": "generated",
@@ -190,8 +174,8 @@
   "rust": {
     "tests": 977,
     "testsVerified": 977,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "testsEstimated": 976,
+    "testsSource": "cached_verified",
     "crates": 15
   },
   "examples": 133,
@@ -201,33 +185,12 @@
     "threats": "1231+"
   },
   "milestones": [
-    {
-      "date": "2026-02-07",
-      "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) \u2014 claim levels apply per lane"
-    },
-    {
-      "date": "2026-02-07",
-      "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)"
-    },
-    {
-      "date": "2026-02-07",
-      "event": "SMT assertion corpus integrated into public metrics"
-    },
-    {
-      "date": "2026-02-06",
-      "event": "Proof depth 20+ across all 250 domain files"
-    },
-    {
-      "date": "2026-02-06",
-      "event": "Cross-prover mapping milestone recorded (current quality flags are authoritative)"
-    },
-    {
-      "date": "2026-02-10",
-      "event": "Axiom token elimination: 4 \u2192 0 (active-build explicit assumptions now 0)"
-    },
-    {
-      "date": "2026-02-01",
-      "event": "Phase 7 complete: Platform Universality"
-    }
+    { "date": "2026-02-07", "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) — claim levels apply per lane" },
+    { "date": "2026-02-07", "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)" },
+    { "date": "2026-02-07", "event": "SMT assertion corpus integrated into public metrics" },
+    { "date": "2026-02-06", "event": "Proof depth 20+ across all 250 domain files" },
+    { "date": "2026-02-06", "event": "Cross-prover mapping milestone recorded (current quality flags are authoritative)" },
+    { "date": "2026-02-10", "event": "Axiom token elimination: 4 → 0 (active-build explicit assumptions now 0)" },
+    { "date": "2026-02-01", "event": "Phase 7 complete: Platform Universality" }
   ]
 }

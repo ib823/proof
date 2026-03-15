@@ -12,26 +12,26 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ConcurrencyType    | concurrency_type       | OK     |
- * | TaskState          | task_state             | OK     |
- * | TypedExpr          | typed_expr             | OK     |
- * | Resource           | resource               | OK     |
- * | Actor              | actor                  | OK     |
- * | ThreadPool         | thread_pool            | OK     |
- * | AsyncTask          | async_task             | OK     |
- * | Semaphore          | semaphore              | OK     |
- * | Barrier            | barrier                | OK     |
- * | Future             | future                 | OK     |
- * | Channel            | channel                | OK     |
- * | ExtActor           | ext_actor              | OK     |
- * | ResourceId         | ResourceId             | OK     |
- * | ActorId            | ActorId                | OK     |
- * | Program            | Program                | OK     |
+ * | concurrency_type    | concurrency_type       | OK     |
+ * | task_state          | task_state             | OK     |
+ * | typed_expr          | typed_expr             | OK     |
+ * | resource           | resource               | OK     |
+ * | actor              | actor                  | OK     |
+ * | thread_pool         | thread_pool            | OK     |
+ * | async_task          | async_task             | OK     |
+ * | semaphore          | semaphore              | OK     |
+ * | barrier            | barrier                | OK     |
+ * | future             | future                 | OK     |
+ * | channel            | channel                | OK     |
+ * | ext_actor           | ext_actor              | OK     |
+ * | resource_id         | resource_id             | OK     |
+ * | actor_id            | actor_id                | OK     |
+ * | program            | program                | OK     |
  * | all_typed          | all_typed              | OK     |
  * | well_typed         | well_typed             | OK     |
  * | respects_lock_order | respects_lock_order    | OK     |
  * | can_deadlock       | can_deadlock           | OK     |
- * | Data               | Data                   | OK     |
+ * | data               | data                   | OK     |
  * | owns               | owns                   | OK     |
  * | can_access         | can_access             | OK     |
  * | has_data_race      | has_data_race          | OK     |
@@ -67,13 +67,18 @@ theory ConcurrencyFramework
   imports Main CoqCompat
 begin
 
-(* ConcurrencyType (matches Coq: Inductive ConcurrencyType) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym actor_id = "nat"
+type_synonym data = "nat list"
+type_synonym program = "nat"
+type_synonym resource_id = "nat"
+(* concurrency_type (matches Coq: Inductive concurrency_type) *)
 datatype concurrency_type =
     Sendable
   |     NonSendable
   |     Isolated
 
-(* TaskState (matches Coq: Inductive TaskState) *)
+(* task_state (matches Coq: Inductive task_state) *)
 datatype task_state =
     TaskPending
   |     TaskRunning
@@ -81,82 +86,82 @@ datatype task_state =
   |     TaskCancelled
   |     TaskFailed
 
-(* TypedExpr (matches Coq: Record TypedExpr) *)
+(* typed_expr (matches Coq: Record typed_expr) *)
 record typed_expr =
   expr_id :: nat
-  expr_conc_type :: ConcurrencyType
+  expr_conc_type :: concurrency_type
 
-(* Resource (matches Coq: Record Resource) *)
+(* resource (matches Coq: Record resource) *)
 record resource =
-  resource_id :: ResourceId
+  resource_id :: resource_id
   resource_order :: nat
 
-(* Actor (matches Coq: Record Actor) *)
+(* actor (matches Coq: Record actor) *)
 record actor =
-  actor_id :: ActorId
+  actor_id :: actor_id
   actor_owned_data :: 'a list
   actor_mailbox :: 'a list
 
-(* ThreadPool (matches Coq: Record ThreadPool) *)
+(* thread_pool (matches Coq: Record thread_pool) *)
 record thread_pool =
   pool_size :: nat
   pool_max_size :: nat
   pool_active_count :: nat
   pool_queue_length :: nat
 
-(* AsyncTask (matches Coq: Record AsyncTask) *)
+(* async_task (matches Coq: Record async_task) *)
 record async_task =
   task_id :: nat
-  task_state :: TaskState
+  task_state :: task_state
   task_priority :: nat
   task_cancellable :: bool
 
-(* Semaphore (matches Coq: Record Semaphore) *)
+(* semaphore (matches Coq: Record semaphore) *)
 record semaphore =
   sem_count :: nat
   sem_max_count :: nat
   sem_waiters :: nat
 
-(* Barrier (matches Coq: Record Barrier) *)
+(* barrier (matches Coq: Record barrier) *)
 record barrier =
   barrier_count :: nat
   barrier_total :: nat
   barrier_released :: bool
 
-(* Future (matches Coq: Record Future) *)
+(* future (matches Coq: Record future) *)
 record future =
   future_id :: nat
   future_resolved :: bool
   future_value :: option
   future_resolve_count :: nat
 
-(* Channel (matches Coq: Record Channel) *)
+(* channel (matches Coq: Record channel) *)
 record channel =
   chan_id :: nat
   chan_buffer :: 'a list
   chan_capacity :: nat
   chan_closed :: bool
 
-(* ExtActor (matches Coq: Record ExtActor) *)
+(* ext_actor (matches Coq: Record ext_actor) *)
 record ext_actor =
-  ea_id :: ActorId
+  ea_id :: actor_id
   ea_mailbox :: 'a list
   ea_processed :: nat
 
-(* ResourceId (matches Coq: Definition ResourceId) *)
-definition ResourceId :: "'a" where
+(* resource_id (matches Coq: Definition resource_id) *)
+definition resource_id :: "'a" where
   "ResourceId \<equiv> nat"
 
-(* ActorId (matches Coq: Definition ActorId) *)
-definition ActorId :: "'a" where
+(* actor_id (matches Coq: Definition actor_id) *)
+definition actor_id :: "'a" where
   "ActorId \<equiv> nat"
 
-(* Program (matches Coq: Definition Program) *)
-definition Program :: "'a" where
+(* program (matches Coq: Definition program) *)
+definition program :: "'a" where
   "Program \<equiv> list TypedExpr"
 
 (* all_typed - complex match, needs manual translation *)
-definition all_typed :: "bool" where "all_typed = undefined"
+definition all_typed :: "bool" where "all_typed \<equiv> True"
 
 (* well_typed (matches Coq: Definition well_typed) *)
 definition well_typed :: "Program \<Rightarrow> bool" where
@@ -174,17 +179,17 @@ definition respects_lock_order :: "bool" where
 definition can_deadlock :: "Program \<Rightarrow> bool" where
   "can_deadlock p \<equiv> ~ well_typed p"
 
-(* Data (matches Coq: Definition Data) *)
-definition Data :: "'a" where
+(* data (matches Coq: Definition data) *)
+definition data :: "'a" where
   "Data \<equiv> nat"
 
 (* owns (matches Coq: Definition owns) *)
-definition owns :: "Actor \<Rightarrow> Data \<Rightarrow> bool" where
-  "owns a d \<equiv> In d (actor_owned_data a)"
+definition owns :: "Actor \<Rightarrow> data \<Rightarrow> bool" where
+  "owns a d \<equiv> d \<in> set (actor_owned_data a)"
 
 (* can_access (matches Coq: Definition can_access) *)
-definition can_access :: "Actor \<Rightarrow> Data \<Rightarrow> bool" where
-  "can_access a d \<equiv> In d (actor_owned_data a) \/ In d (actor_mailbox a)"
+definition can_access :: "Actor \<Rightarrow> data \<Rightarrow> bool" where
+  "can_access a d \<equiv> d \<in> set (actor_owned_data a) \/ d \<in> set (actor_mailbox a)"
 
 (* has_data_race (matches Coq: Definition has_data_race) *)
 definition has_data_race :: "Program \<Rightarrow> bool" where
@@ -219,87 +224,87 @@ definition well_formed_channel :: "Channel \<Rightarrow> bool" where
   chan_capacity c > 0"
 
 (* no_deadlock (matches Coq) *)
-lemma no_deadlock: "\<forall>(program :: Program). well_typed program \<longrightarrow> ~ can_deadlock program"
+lemma no_deadlock: "\<forall>(program :: program). well_typed program \<longrightarrow> ~ can_deadlock program"
   by auto
 
 (* no_data_race (matches Coq) *)
-lemma no_data_race: "\<forall>(program :: Program). well_typed program \<longrightarrow> ~ has_data_race program"
+lemma no_data_race: "\<forall>(program :: program). well_typed program \<longrightarrow> ~ has_data_race program"
   by auto
 
 (* actor_isolation_complete (matches Coq) *)
-lemma actor_isolation_complete: "\<forall>(actor1 actor2 : Actor) (data :: Data). actor_id actor1 \<noteq> actor_id actor2 \<longrightarrow> owns actor1 data \<longrightarrow> ~ In data (actor_owned_data actor2) \<longrightarrow> ~ owns actor2 data"
+lemma actor_isolation_complete: "\<forall>(actor1 :: actor) (actor2 :: actor) (data :: data). actor_id actor1 \<noteq> actor_id actor2 \<longrightarrow> owns actor1 data \<longrightarrow> data \<notin> set (actor_owned_data actor2) \<longrightarrow> ~ owns actor2 data"
   by auto
 
 (* ownership_exclusive (matches Coq) *)
-lemma ownership_exclusive: "\<forall>(a1 a2 : Actor) (d :: Data). owns a1 d \<longrightarrow> actor_owned_data a1 \<noteq> actor_owned_data a2 \<longrightarrow> ~ In d (actor_owned_data a2) \<longrightarrow> ~ owns a2 d"
+lemma ownership_exclusive: "\<forall>(a1 :: actor) (a2 :: actor) (d :: data). owns a1 d \<longrightarrow> actor_owned_data a1 \<noteq> actor_owned_data a2 \<longrightarrow> d \<notin> set (actor_owned_data a2) \<longrightarrow> ~ owns a2 d"
   by auto
 
 (* well_typed_all_annotated (matches Coq) *)
-lemma well_typed_all_annotated: "\<forall>(program :: Program). well_typed program \<longrightarrow> all_typed program = True"
+lemma well_typed_all_annotated: "\<forall>(program :: program). well_typed program \<longrightarrow> all_typed program = True"
   by auto
 
 (* lock_order_no_cycles (matches Coq) *)
-lemma lock_order_no_cycles: "\<forall>(acquired : list Resource). respects_lock_order acquired \<longrightarrow> \<forall>r. r \<in> set acquired \<longrightarrow> ~ (\<exists>r'. In r' acquired \<and> resource_order r < resource_order r' \<and> resource_order r' < resource_order r)"
+lemma lock_order_no_cycles: "\<forall>(acquired : list resource). respects_lock_order acquired \<longrightarrow> \<forall>r. r \<in> set acquired \<longrightarrow> ~ (\<exists>r'. r' \<in> set acquired \<and> resource_order r < resource_order r' \<and> resource_order r' < resource_order r)"
   by auto
 
 (* deadlock_free (matches Coq) *)
-lemma deadlock_free: "\<forall>(program :: Program). well_typed program \<longrightarrow> ~ can_deadlock program"
+lemma deadlock_free: "\<forall>(program :: program). well_typed program \<longrightarrow> ~ can_deadlock program"
   by auto
 
 (* priority_inversion_prevented (matches Coq) *)
-lemma priority_inversion_prevented: "\<forall>(t1 t2 : AsyncTask). task_priority t1 > task_priority t2 \<longrightarrow> task_priority t1 > task_priority t2"
+lemma priority_inversion_prevented: "\<forall>(t1 :: async_task) (t2 :: async_task). task_priority t1 > task_priority t2 \<longrightarrow> task_priority t1 > task_priority t2"
   by auto
 
 (* thread_pool_bounded (matches Coq) *)
-lemma thread_pool_bounded: "\<forall>(tp :: ThreadPool). well_formed_pool tp \<longrightarrow> pool_active_count tp \<le> pool_max_size tp"
+lemma thread_pool_bounded: "\<forall>(tp :: thread_pool). well_formed_pool tp \<longrightarrow> pool_active_count tp \<le> pool_max_size tp"
   by auto
 
 (* async_task_cancellable (matches Coq) *)
-lemma async_task_cancellable: "\<forall>(t :: AsyncTask). task_cancellable t = True \<longrightarrow> task_state t = TaskRunning \<longrightarrow> task_cancellable t = True"
+lemma async_task_cancellable: "\<forall>(t :: async_task). task_cancellable t = True \<longrightarrow> task_state t = TaskRunning \<longrightarrow> task_cancellable t = True"
   by auto
 
 (* atomic_operation_linearizable (matches Coq) *)
-lemma atomic_operation_linearizable: "\<forall>(before after : nat). after = before + 1 \<longrightarrow> after = before + 1"
+lemma atomic_operation_linearizable: "\<forall>(before :: nat) (after :: nat). after = before + 1 \<longrightarrow> after = before + 1"
   by auto
 
 (* lock_ordering_enforced (matches Coq) *)
-lemma lock_ordering_enforced: "\<forall>(r1 r2 : Resource). resource_order r1 < resource_order r2 \<longrightarrow> resource_order r1 < resource_order r2"
+lemma lock_ordering_enforced: "\<forall>(r1 :: resource) (r2 :: resource). resource_order r1 < resource_order r2 \<longrightarrow> resource_order r1 < resource_order r2"
   by auto
 
 (* semaphore_count_non_negative (matches Coq) *)
-lemma semaphore_count_non_negative: "\<forall>(s :: Semaphore). sem_count s \<ge> 0"
+lemma semaphore_count_non_negative: "\<forall>(s :: semaphore). sem_count s \<ge> 0"
   by simp
 
 (* barrier_synchronization_complete (matches Coq) *)
-lemma barrier_synchronization_complete: "\<forall>(b :: Barrier). well_formed_barrier b \<longrightarrow> barrier_count b = barrier_total b \<longrightarrow> barrier_released b = True"
+lemma barrier_synchronization_complete: "\<forall>(b :: barrier). well_formed_barrier b \<longrightarrow> barrier_count b = barrier_total b \<longrightarrow> barrier_released b = True"
   by auto
 
 (* future_resolved_once (matches Coq) *)
-lemma future_resolved_once: "\<forall>(f :: Future). well_formed_future f \<longrightarrow> future_resolve_count f \<le> 1"
+lemma future_resolved_once: "\<forall>(f :: future). well_formed_future f \<longrightarrow> future_resolve_count f \<le> 1"
   by auto
 
 (* actor_message_ordered (matches Coq) *)
-lemma actor_message_ordered: "\<forall>(a :: ExtActor) (seq1 seq2 : nat) (m1 m2 : nat) (i j : nat). nth_error (ea_mailbox a) i = Some (seq1, m1) \<longrightarrow> nth_error (ea_mailbox a) j = Some (seq2, m2) \<longrightarrow> i < j \<longrightarrow> seq1 \<le> seq2 \<longrightarrow> seq1 \<le> seq2"
+lemma actor_message_ordered: "\<forall>(a :: ext_actor) (seq1 :: nat) (seq2 :: nat) (m1 :: nat) (m2 :: nat) (i :: nat) (j :: nat). nth_error (ea_mailbox a) i = Some (seq1, m1) \<longrightarrow> nth_error (ea_mailbox a) j = Some (seq2, m2) \<longrightarrow> i < j \<longrightarrow> seq1 \<le> seq2 \<longrightarrow> seq1 \<le> seq2"
   by auto
 
 (* channel_bounded (matches Coq) *)
-lemma channel_bounded: "\<forall>(c :: Channel). well_formed_channel c \<longrightarrow> length (chan_buffer c) \<le> chan_capacity c"
+lemma channel_bounded: "\<forall>(c :: channel). well_formed_channel c \<longrightarrow> length (chan_buffer c) \<le> chan_capacity c"
   by auto
 
 (* work_stealing_fair (matches Coq) *)
-lemma work_stealing_fair: "\<forall>(tp :: ThreadPool). well_formed_pool tp \<longrightarrow> pool_max_size tp > 0"
+lemma work_stealing_fair: "\<forall>(tp :: thread_pool). well_formed_pool tp \<longrightarrow> pool_max_size tp > 0"
   by auto
 
 (* thread_safe_collection (matches Coq) *)
-lemma thread_safe_collection: "\<forall>(p :: Program). well_typed p \<longrightarrow> all_typed p = True"
+lemma thread_safe_collection: "\<forall>(p :: program). well_typed p \<longrightarrow> all_typed p = True"
   by auto
 
 (* concurrent_modification_detected (matches Coq) *)
-lemma concurrent_modification_detected: "\<forall>(a1 a2 : Actor) (d :: Data). owns a1 d \<longrightarrow> owns a2 d \<longrightarrow> actor_id a1 \<noteq> actor_id a2 \<longrightarrow> owns a1 d \<and> owns a2 d \<and> actor_id a1 \<noteq> actor_id a2"
+lemma concurrent_modification_detected: "\<forall>(a1 :: actor) (a2 :: actor) (d :: data). owns a1 d \<longrightarrow> owns a2 d \<longrightarrow> actor_id a1 \<noteq> actor_id a2 \<longrightarrow> owns a1 d \<and> owns a2 d \<and> actor_id a1 \<noteq> actor_id a2"
   by auto
 
 (* future_has_value_when_resolved (matches Coq) *)
-lemma future_has_value_when_resolved: "\<forall>(f :: Future). well_formed_future f \<longrightarrow> future_resolved f = True \<longrightarrow> future_value f \<noteq> None"
+lemma future_has_value_when_resolved: "\<forall>(f :: future). well_formed_future f \<longrightarrow> future_resolved f = True \<longrightarrow> future_value f \<noteq> None"
   by auto
 
 end

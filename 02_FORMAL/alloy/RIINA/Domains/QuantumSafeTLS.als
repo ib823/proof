@@ -22,8 +22,6 @@ one sig X25519 extends ECDHCurve {} // Curve25519 - ~128-bit security
 one sig X448 extends ECDHCurve {} // Curve448 - ~224-bit security
 one sig P256 extends ECDHCurve {} // NIST P-256
 one sig P384 extends ECDHCurve {} // NIST P-384
-one sig X25519 extends ECDHCurve {}
-one sig X448 extends ECDHCurve {}
 
 // SignatureScheme (matches Coq: Inductive SignatureScheme)
 abstract sig SignatureScheme {}
@@ -34,11 +32,6 @@ one sig SLH_DSA_128 extends SignatureScheme {} // Hash-based, Level 1
 one sig SLH_DSA_192 extends SignatureScheme {} // Hash-based, Level 3
 one sig SLH_DSA_256 extends SignatureScheme {} // Hash-based, Level 5
 one sig ECDSA_P256 extends SignatureScheme {} // Classical fallback
-one sig ML_DSA_44 extends SignatureScheme {}
-one sig SLH_DSA_128 extends SignatureScheme {}
-one sig ECDSA_P256 extends SignatureScheme {}
-one sig ML_DSA_65 extends SignatureScheme {}
-one sig ML_DSA_87 extends SignatureScheme {}
 
 // TLSVersion (matches Coq: Inductive TLSVersion)
 abstract sig TLSVersion {}

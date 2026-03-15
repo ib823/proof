@@ -30,8 +30,8 @@ pred signatures_sufficient[update: UpdatePackage, threshold: Int] {
 }
 
 // key_trusted (matches Coq: Definition key_trusted)
-pred key_trusted[sig: UpdateSignature] {
-  some sig
+pred key_trusted[s: UpdateSignature] {
+  some s
 }
 
 // rollback_counter_ok (matches Coq: Definition rollback_counter_ok)
@@ -57,8 +57,8 @@ pred backup_version_matches[backup: Backup, sys: SystemState] {
 pred threshold_met {}
 
 // sig_fresh (matches Coq: Definition sig_fresh)
-pred sig_fresh[sig: UpdateSignature] {
-  some sig
+pred sig_fresh[s: UpdateSignature] {
+  some s
 }
 
 // keys_different (matches Coq: Definition keys_different)

@@ -45,9 +45,12 @@
  *)
 
 theory ReferenceOps
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* step_preserves_ctx_snd (matches Coq) *)
 lemma step_preserves_ctx_snd: "\<forall>cfg1 cfg2. cfg1 --> cfg2 \<longrightarrow> snd cfg1 = snd cfg2"
   by auto

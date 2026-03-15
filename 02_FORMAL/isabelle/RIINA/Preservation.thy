@@ -57,7 +57,7 @@ definition preservation_stmt :: bool where
      \<forall>e e' T \<epsilon> st st' ctx ctx' \<Sigma>.
        has_type [] \<Sigma> LPublic e T \<epsilon> \<longrightarrow>
        store_wf \<Sigma> st \<longrightarrow>
-       step (e. st, ctx) (e', st', ctx') \<longrightarrow>
+       step (e, st, ctx) (e', st', ctx') \<longrightarrow>
        (\<exists>\<Sigma>' \<epsilon>'.
          store_ty_extends \<Sigma> \<Sigma>' \<and>
          store_wf \<Sigma>' st' \<and>

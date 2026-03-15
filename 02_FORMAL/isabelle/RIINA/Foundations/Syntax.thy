@@ -466,7 +466,7 @@ inductive wf_ty :: "ty \<Rightarrow> bool"
 | WF_TCapability: "wf_ty (TCapability k)"
 | WF_TCapabilityFull: "wf_ty (TCapabilityFull cap)"
 | WF_TChan:   "wf_session S \<Longrightarrow> wf_ty (TChan S)"
-| WF_TSecureChan: "wf_session S \<Longrightarrow> wf_ty (TSecureChan S l)"
+| WF_TSecureChan: "wf_session S \<Longrightarrow> wf_ty (TSecureChan Suc l)"
 | WF_TConstantTime: "wf_ty T \<Longrightarrow> wf_ty (TConstantTime T)"
 | WF_TZeroizing: "wf_ty T \<Longrightarrow> wf_ty (TZeroizing T)"
   (* Session types *)

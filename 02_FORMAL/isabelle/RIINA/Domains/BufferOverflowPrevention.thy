@@ -12,8 +12,8 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Buffer             | buffer                 | OK     |
- * | OverflowPrevention | overflow_prevention    | OK     |
+ * | buffer             | buffer                 | OK     |
+ * | overflow_prevention | overflow_prevention    | OK     |
  * | buffer_valid       | buffer_valid           | OK     |
  * | buffer_can_write   | buffer_can_write       | OK     |
  * | buffer_can_read    | buffer_can_read        | OK     |
@@ -48,12 +48,12 @@ theory BufferOverflowPrevention
   imports Main CoqCompat
 begin
 
-(* Buffer (matches Coq: Record Buffer) *)
+(* buffer (matches Coq: Record buffer) *)
 record buffer =
   buf_size :: nat
   buf_used :: nat
 
-(* OverflowPrevention (matches Coq: Record OverflowPrevention) *)
+(* overflow_prevention (matches Coq: Record overflow_prevention) *)
 record overflow_prevention =
   op_bounds_check_write :: bool
   op_bounds_check_read :: bool
@@ -94,7 +94,7 @@ definition test_buffer :: "Buffer" where
 lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
   by auto
 
-(* BOF_001: Test Buffer Valid *)
+(* BOF_001: Test buffer Valid *)
 (* BOF_001_test_buffer_valid (matches Coq) *)
 lemma BOF_001_test_buffer_valid: "buffer_valid test_buffer = True"
   by simp
@@ -144,7 +144,7 @@ lemma BOF_009_integer_overflow: "\<forall>p : OverflowPrevention. overflow_prote
 lemma BOF_010_stack_canaries: "\<forall>p : OverflowPrevention. overflow_protected p = True \<longrightarrow> op_stack_canaries p = True"
   by auto
 
-(* BOF_011: Valid Buffer Implies Used <= Size *)
+(* BOF_011: Valid buffer Implies Used <= Size *)
 (* BOF_011_valid_implies_bounds (matches Coq) *)
 lemma BOF_011_valid_implies_bounds: "\<forall>b : Buffer. buffer_valid b = True \<longrightarrow> ((buf_used \<le> b)) (buf_size b) = True"
   by auto
@@ -164,12 +164,12 @@ lemma BOF_013_riina_canaries: "op_stack_canaries riina_overflow_config = True"
 lemma BOF_014_zero_write_safe: "\<forall>b : Buffer. buffer_valid b = True \<longrightarrow> buffer_can_write b 0 = True"
   by auto
 
-(* BOF_015: Complete Buffer Overflow Prevention *)
+(* BOF_015: Complete buffer Overflow Prevention *)
 (* BOF_015_complete_prevention (matches Coq) *)
 lemma BOF_015_complete_prevention: "\<forall>p : OverflowPrevention. overflow_protected p = True \<longrightarrow> op_bounds_check_write p = True \<and> op_bounds_check_read p = True \<and> op_integer_overflow_check p = True \<and> op_stack_canaries p = True"
   by auto
 
-(* BOF_016: Write Cannot Exceed Buffer Size *)
+(* BOF_016: Write Cannot Exceed buffer Size *)
 (* BOF_016_write_bounded (matches Coq) *)
 lemma BOF_016_write_bounded: "\<forall>b n : nat. buffer_can_write (mkBuffer b 0) n = True \<longrightarrow> n \<le> b"
   by simp
@@ -184,7 +184,7 @@ lemma BOF_017_read_start_within: "\<forall>b offset len. buffer_can_read b offse
 lemma BOF_018_zero_read_safe: "\<forall>b : Buffer. buffer_can_read b 0 0 = True"
   by auto
 
-(* BOF_019: Full Buffer Cannot Write More *)
+(* BOF_019: Full buffer Cannot Write More *)
 (* BOF_019_full_buffer_no_write (matches Coq) *)
 lemma BOF_019_full_buffer_no_write: "\<forall>sz : nat. buffer_can_write (mkBuffer sz sz) 1 = False"
   by simp
@@ -194,7 +194,7 @@ lemma BOF_019_full_buffer_no_write: "\<forall>sz : nat. buffer_can_write (mkBuff
 lemma BOF_020_null_terminator_check: "\<forall>p : OverflowPrevention. overflow_protected p = True \<longrightarrow> op_null_terminator_check p = True"
   by auto
 
-(* BOF_021: Valid Buffer After Write *)
+(* BOF_021: Valid buffer After Write *)
 (* BOF_021_valid_after_write (matches Coq) *)
 lemma BOF_021_valid_after_write: "\<forall>b n : nat. buffer_can_write (mkBuffer (b + n) b) n = True"
   by simp

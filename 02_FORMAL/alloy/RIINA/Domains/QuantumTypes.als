@@ -80,52 +80,52 @@ assert count_remove_helper {
 check count_remove_helper for 5
 
 // 1 (matches Coq: Theorem 1)
-assert 1 {
+assert t1 {
   all x: gate | x in gate
 }
-check 1 for 5
+check t1 for 5
 
 // 2 (matches Coq: Theorem 2)
-assert 2 {
+assert t2 {
   all x: gate | x in gate
 }
-check 2 for 5
+check t2 for 5
 
 // 3 (matches Coq: Theorem 3)
-assert 3 {
+assert t3 {
   all x: gate | x in gate
 }
-check 3 for 5
+check t3 for 5
 
 // 4 (matches Coq: Theorem 4)
-assert 4 {
+assert t4 {
   all x: gate | x in gate
 }
-check 4 for 5
+check t4 for 5
 
 // 5 (matches Coq: Theorem 5)
-assert 5 {
+assert t5 {
   all x: gate | x in gate
 }
-check 5 for 5
+check t5 for 5
 
 // 6 (matches Coq: Theorem 6)
-assert 6 {
+assert t6 {
   all x: gate | x in gate
 }
-check 6 for 5
+check t6 for 5
 
 // 7 (matches Coq: Theorem 7)
-assert 7 {
+assert t7 {
   all x: gate | x in gate
 }
-check 7 for 5
+check t7 for 5
 
 // 8 (matches Coq: Theorem 8)
-assert 8 {
+assert t8 {
   all x: gate | x in gate
 }
-check 8 for 5
+check t8 for 5
 
 // measure_decreases_resources (matches Coq: Theorem measure_decreases_resources)
 assert measure_decreases_resources {
@@ -146,73 +146,73 @@ assert create_gate_measure_consumed {
 check create_gate_measure_consumed for 5
 
 // 12 (matches Coq: Theorem 12)
-assert 12 {
+assert t12 {
   all x: gate | x in gate
 }
-check 12 for 5
+check t12 for 5
 
 // 13 (matches Coq: Theorem 13)
-assert 13 {
+assert t13 {
   all x: gate | x in gate
 }
-check 13 for 5
+check t13 for 5
 
 // 14 (matches Coq: Theorem 14)
-assert 14 {
+assert t14 {
   all x: gate | x in gate
 }
-check 14 for 5
+check t14 for 5
 
 // 15 (matches Coq: Theorem 15)
-assert 15 {
+assert t15 {
   all x: gate | x in gate
 }
-check 15 for 5
+check t15 for 5
 
 // 16 (matches Coq: Theorem 16)
-assert 16 {
+assert t16 {
   all x: gate | x in gate
 }
-check 16 for 5
+check t16 for 5
 
 // 17 (matches Coq: Theorem 17)
-assert 17 {
+assert t17 {
   all x: gate | x in gate
 }
-check 17 for 5
+check t17 for 5
 
 // 18 (matches Coq: Theorem 18)
-assert 18 {
+assert t18 {
   all x: gate | x in gate
 }
-check 18 for 5
+check t18 for 5
 
 // 19 (matches Coq: Theorem 19)
-assert 19 {
+assert t19 {
   all x: gate | x in gate
 }
-check 19 for 5
+check t19 for 5
 
 // 20 (matches Coq: Theorem 20)
-assert 20 {
+assert t20 {
   all x: gate | x in gate
 }
-check 20 for 5
+check t20 for 5
 
 // 21 (matches Coq: Theorem 21)
-assert 21 {
+assert t21 {
   all x: gate | x in gate
 }
-check 21 for 5
+check t21 for 5
 
 // 22 (matches Coq: Theorem 22)
-assert 22 {
+assert t22 {
   all x: gate | x in gate
 }
-check 22 for 5
+check t22 for 5
 
 // 23 (matches Coq: Theorem 23)
-assert 23 {
+assert t23 {
   all x: gate | x in gate
 }
-check 23 for 5
+check t23 for 5

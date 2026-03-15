@@ -12,19 +12,19 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | GateType           | gate_type              | OK     |
- * | TrojanStatus       | trojan_status          | OK     |
- * | XRayMatch          | x_ray_match            | OK     |
- * | AuthResult         | auth_result            | OK     |
- * | FabStatus          | fab_status             | OK     |
- * | ProbeAttempt       | probe_attempt          | OK     |
- * | Gate               | gate                   | OK     |
- * | RTLModule          | rtl_module             | OK     |
- * | Netlist            | netlist                | OK     |
- * | TimingPath         | timing_path            | OK     |
- * | Chip               | chip                   | OK     |
- * | GoldenSample       | golden_sample          | OK     |
- * | DeviceState        | device_state           | OK     |
+ * | gate_type           | gate_type              | OK     |
+ * | trojan_status       | trojan_status          | OK     |
+ * | x_ray_match          | x_ray_match            | OK     |
+ * | auth_result         | auth_result            | OK     |
+ * | fab_status          | fab_status             | OK     |
+ * | probe_attempt       | probe_attempt          | OK     |
+ * | gate               | gate                   | OK     |
+ * | rtl_module          | rtl_module             | OK     |
+ * | netlist            | netlist                | OK     |
+ * | timing_path         | timing_path            | OK     |
+ * | chip               | chip                   | OK     |
+ * | golden_sample       | golden_sample          | OK     |
+ * | device_state        | device_state           | OK     |
  * | semantic_equivalent | semantic_equivalent    | OK     |
  * | timing_met         | timing_met             | OK     |
  * | no_hardware_trojans | no_hardware_trojans    | OK     |
@@ -67,10 +67,18 @@
  *)
 
 theory PhysicalSecurity
-  imports Main
+  imports Main Semantics
 begin
 
-(* GateType (matches Coq: Inductive GateType) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym challenge = "nat"
+type_synonym chip_id = "nat"
+type_synonym operation = "nat"
+type_synonym signal = "nat"
+type_synonym temperature = "nat"
+type_synonym voltage = "nat"
+type_synonym x_ray_image = "nat list"
+(* gate_type (matches Coq: Inductive gate_type) *)
 datatype gate_type =
     AND
   |     OR
@@ -81,80 +89,80 @@ datatype gate_type =
   |     BUF
   |     MUX
 
-(* TrojanStatus (matches Coq: Inductive TrojanStatus) *)
+(* trojan_status (matches Coq: Inductive trojan_status) *)
 datatype trojan_status =
     TrojanFree
   |     TrojanDetected
 
-(* XRayMatch (matches Coq: Inductive XRayMatch) *)
+(* x_ray_match (matches Coq: Inductive x_ray_match) *)
 datatype x_ray_match =
     Match
   |     Mismatch
 
-(* AuthResult (matches Coq: Inductive AuthResult) *)
+(* auth_result (matches Coq: Inductive auth_result) *)
 datatype auth_result =
     Authentic
   |     Counterfeit
 
-(* FabStatus (matches Coq: Inductive FabStatus) *)
+(* fab_status (matches Coq: Inductive fab_status) *)
 datatype fab_status =
     FabClean
   |     FabTampered
 
-(* ProbeAttempt (matches Coq: Inductive ProbeAttempt) *)
+(* probe_attempt (matches Coq: Inductive probe_attempt) *)
 datatype probe_attempt =
     NoProbe
   |     ProbeDetected
 
-(* Gate (matches Coq: Record Gate) *)
+(* gate (matches Coq: Record gate) *)
 record gate =
-  gate_type :: GateType
+  gate_type :: gate_type
   gate_inputs :: 'a list
-  gate_output :: Signal
+  gate_output :: signal
 
-(* RTLModule (matches Coq: Record RTLModule) *)
+(* rtl_module (matches Coq: Record rtl_module) *)
 record rtl_module =
   rtl_inputs :: 'a list
   rtl_outputs :: 'a list
   rtl_behavior :: 'a list
 
-(* Netlist (matches Coq: Record Netlist) *)
+(* netlist (matches Coq: Record netlist) *)
 record netlist =
   nl_gates :: 'a list
   nl_inputs :: 'a list
   nl_outputs :: 'a list
   nl_behavior :: 'a list
 
-(* TimingPath (matches Coq: Record TimingPath) *)
+(* timing_path (matches Coq: Record timing_path) *)
 record timing_path =
   path_gates :: 'a list
   path_delay :: nat
 
-(* Chip (matches Coq: Record Chip) *)
+(* chip (matches Coq: Record chip) *)
 record chip =
-  chip_id :: ChipId
-  chip_xray :: XRayImage
-  chip_puf :: Challenge
+  chip_id :: chip_id
+  chip_xray :: x_ray_image
+  chip_puf :: challenge
 
-(* GoldenSample (matches Coq: Record GoldenSample) *)
+(* golden_sample (matches Coq: Record golden_sample) *)
 record golden_sample =
-  golden_xray :: XRayImage
-  golden_puf :: Challenge
+  golden_xray :: x_ray_image
+  golden_puf :: challenge
 
-(* DeviceState (matches Coq: Record DeviceState) *)
+(* device_state (matches Coq: Record device_state) *)
 record device_state =
-  dev_voltage :: Voltage
-  dev_temperature :: Temperature
+  dev_voltage :: voltage
+  dev_temperature :: temperature
   dev_mesh_intact :: bool
   dev_keys_valid :: bool
   dev_operational :: bool
 
 (* semantic_equivalent (matches Coq: Definition semantic_equivalent) *)
-definition semantic_equivalent :: "RTLModule \<Rightarrow> Netlist \<Rightarrow> bool" where
+definition semantic_equivalent :: "RTLModule \<Rightarrow> netlist \<Rightarrow> bool" where
   "semantic_equivalent rtl nl \<equiv> forall inputs, rtl_behavior rtl inputs = nl_behavior nl inputs.
 
 
-Parameter synthesize : RTLModule -> Netlist.
+Parameter synthesize : rtl_module -> Netlist.
 
 
 Parameter synthesis_preserves_semantics : forall rtl,
@@ -162,10 +170,10 @@ Parameter synthesis_preserves_semantics : forall rtl,
 
 (* timing_met (matches Coq: Definition timing_met) *)
 definition timing_met :: "Netlist \<Rightarrow> ClockPeriod \<Rightarrow> bool" where
-  "timing_met nl clk \<equiv> forall path, In path (extract_paths nl) -> path_delay path <= clk.
+  "timing_met nl clk \<equiv> forall path, path \<in> set (extract_paths nl) -> path_delay path <= clk.
 
 
-Parameter timing_analysis : Netlist -> ClockPeriod -> bool.
+Parameter timing_analysis : netlist -> ClockPeriod -> bool.
 Parameter timing_analysis_correct : forall nl clk,
   timing_analysis nl clk = True -> timing_met nl clk"
 
@@ -177,7 +185,7 @@ definition no_hardware_trojans :: "RTLModule \<Rightarrow> bool" where
 definition constant_time_hw :: "Operation \<Rightarrow> bool" where
   "constant_time_hw op \<equiv> forall inputs1 inputs2, operation_cycles op inputs1 = operation_cycles op inputs2.
 
-Parameter crypto_operation : Operation -> bool.
+Parameter crypto_operation : operation -> bool.
 Parameter crypto_constant_time : forall op,
   crypto_operation op = True -> constant_time_hw op"
 
@@ -186,7 +194,7 @@ definition deterministic_design :: "RTLModule \<Rightarrow> bool" where
   "deterministic_design rtl \<equiv> forall inputs, rtl_behavior rtl inputs = rtl_behavior rtl inputs"
 
 (* structurally_equivalent (matches Coq: Definition structurally_equivalent) *)
-definition structurally_equivalent :: "Chip \<Rightarrow> GoldenSample \<Rightarrow> bool" where
+definition structurally_equivalent :: "Chip \<Rightarrow> golden_sample \<Rightarrow> bool" where
   "structurally_equivalent c g \<equiv> x_ray_compare c g = Match.
 
 
@@ -194,7 +202,7 @@ Parameter x_ray_soundness : forall c g,
   x_ray_compare c g = Match -> chip_xray c = golden_xray g.
 
 
-Parameter puf_entropy : Chip -> nat.
+Parameter puf_entropy : chip -> nat.
 
 
 Parameter puf_physically_unique : forall c1 c2 challenge,
@@ -207,7 +215,7 @@ Parameter different_chips_different_entropy : forall c1 c2,
   chip_id c1 <> chip_id c2 -> puf_entropy c1 <> puf_entropy c2"
 
 (* is_genuine (matches Coq: Definition is_genuine) *)
-definition is_genuine :: "Chip \<Rightarrow> GoldenSample \<Rightarrow> bool" where
+definition is_genuine :: "Chip \<Rightarrow> golden_sample \<Rightarrow> bool" where
   "is_genuine c g \<equiv> structurally_equivalent c g \<and>
   forall challenge, chip_puf c challenge = golden_puf g challenge.
 
@@ -252,7 +260,7 @@ definition keys_zeroized :: "DeviceState \<Rightarrow> bool" where
 definition voltage_glitch :: "DeviceState \<Rightarrow> bool" where
   "voltage_glitch d \<equiv> dev_voltage d < V_MIN \/ dev_voltage d > V_MAX.
 
-Parameter voltage_monitor : DeviceState -> bool.
+Parameter voltage_monitor : device_state -> bool.
 Parameter voltage_monitor_correct : forall d,
   voltage_glitch d -> voltage_monitor d = True"
 
@@ -260,7 +268,7 @@ Parameter voltage_monitor_correct : forall d,
 definition temp_violation :: "DeviceState \<Rightarrow> bool" where
   "temp_violation d \<equiv> dev_temperature d < T_MIN \/ dev_temperature d > T_MAX.
 
-Parameter temp_monitor : DeviceState -> bool.
+Parameter temp_monitor : device_state -> bool.
 Parameter temp_monitor_triggers_shutdown : forall d,
   temp_violation d -> temp_monitor d = True"
 

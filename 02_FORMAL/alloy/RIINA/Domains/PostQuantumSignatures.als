@@ -20,10 +20,6 @@ one sig ML_DSA_87 extends SignatureScheme {} // Dilithium5 - Level 5
 one sig SLH_DSA_128s extends SignatureScheme {} // SPHINCS+-128s - Level 1
 one sig SLH_DSA_192s extends SignatureScheme {} // SPHINCS+-192s - Level 3
 one sig Lattice_Based extends SignatureScheme {} // ML-DSA / Dilithium
-one sig ML_DSA_44 extends SignatureScheme {}
-one sig ML_DSA_65 extends SignatureScheme {}
-one sig SLH_DSA_128s extends SignatureScheme {}
-one sig SLH_DSA_192s extends SignatureScheme {}
 
 abstract sig Message {}
 abstract sig PublicKey {}

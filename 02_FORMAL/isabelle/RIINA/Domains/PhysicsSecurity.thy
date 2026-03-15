@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SensorKind         | sensor_kind            | OK     |
- * | PhysState          | phys_state             | OK     |
- * | SensorReading      | sensor_reading         | OK     |
- * | MeasurementSpec    | measurement_spec       | OK     |
- * | TimingConstraint   | timing_constraint      | OK     |
+ * | sensor_kind         | sensor_kind            | OK     |
+ * | phys_state          | phys_state             | OK     |
+ * | sensor_reading      | sensor_reading         | OK     |
+ * | measurement_spec    | measurement_spec       | OK     |
+ * | timing_constraint   | timing_constraint      | OK     |
  * | reading_in_bounds  | reading_in_bounds      | OK     |
  * | reading_valid      | reading_valid          | OK     |
  * | spec_feasible      | spec_feasible          | OK     |
@@ -59,14 +59,14 @@ theory PhysicsSecurity
   imports Main CoqCompat
 begin
 
-(* SensorKind (matches Coq: Inductive SensorKind) *)
+(* sensor_kind (matches Coq: Inductive sensor_kind) *)
 datatype sensor_kind =
     Temperature
   |     Pressure
   |     Accelerometer
   |     Gyroscope
 
-(* PhysState (matches Coq: Inductive PhysState) *)
+(* phys_state (matches Coq: Inductive phys_state) *)
 datatype phys_state =
     Idle
   |     Sensing
@@ -74,22 +74,22 @@ datatype phys_state =
   |     Actuating
   |     Error
 
-(* SensorReading (matches Coq: Record SensorReading) *)
+(* sensor_reading (matches Coq: Record sensor_reading) *)
 record sensor_reading =
-  sensor_kind :: SensorKind
+  sensor_kind :: sensor_kind
   reading_value :: nat
   reading_min :: nat
   reading_max :: nat
   timestamp :: nat
   sensor_id :: nat
 
-(* MeasurementSpec (matches Coq: Record MeasurementSpec) *)
+(* measurement_spec (matches Coq: Record measurement_spec) *)
 record measurement_spec =
   meas_tolerance :: nat
   meas_samples :: nat
   meas_min_samples :: nat
 
-(* TimingConstraint (matches Coq: Record TimingConstraint) *)
+(* timing_constraint (matches Coq: Record timing_constraint) *)
 record timing_constraint =
   deadline :: nat
   wcet :: nat
@@ -134,8 +134,8 @@ fun phys_transition :: "PhysState \<Rightarrow> bool \<Rightarrow> PhysState" wh
 
 (* is_operational (matches Coq: Definition is_operational) *)
 fun is_operational :: "PhysState \<Rightarrow> bool" where
-  "is_operational Error = false"
-|   "is_operational _ = true"
+  "is_operational Error = False"
+|   "is_operational _ = True"
 
 (* phys_run (matches Coq: Definition phys_run) *)
 fun phys_run :: "PhysState \<Rightarrow> PhysState" where
