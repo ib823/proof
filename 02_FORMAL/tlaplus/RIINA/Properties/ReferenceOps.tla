@@ -17,6 +17,10 @@ Init ==
   /\ state = TRUE
 
 \* step_preserves_ctx_snd (matches Coq: Lemma step_preserves_ctx_snd)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM step_preserves_ctx_snd == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* step_preserves_ctx (matches Coq: Lemma step_preserves_ctx)
@@ -61,10 +65,6 @@ THEOREM exp_rel_le_assign == \A x \in BOOLEAN : Spec => []TypeOK
 \* reference_ops_zero_admits (matches Coq: Theorem reference_ops_zero_admits)
 THEOREM reference_ops_zero_admits == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

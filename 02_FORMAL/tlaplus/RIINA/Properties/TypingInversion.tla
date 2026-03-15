@@ -17,6 +17,10 @@ Init ==
   /\ state = TRUE
 
 \* inversion_app (matches Coq: Lemma inversion_app)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM inversion_app == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* inversion_lam (matches Coq: Lemma inversion_lam)
@@ -172,10 +176,6 @@ THEOREM effect_unique == \A x \in BOOLEAN : Spec => []TypeOK
 \* type_unique (matches Coq: Lemma type_unique)
 THEOREM type_unique == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

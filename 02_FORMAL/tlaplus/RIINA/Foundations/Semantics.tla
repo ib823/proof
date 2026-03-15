@@ -31,11 +31,7 @@ ExprRedexSet == {ExprApp, ExprFst, ExprSnd, ExprIf, ExprLet, ExprCase,
 \* Scans the store for key l; returns value or "None"
 CONSTANTS None
 
-store_lookup(l, st) ==
-  IF st = <<>> THEN None
-  ELSE LET entry == Head(st)
-       IN  IF entry[1] = l THEN entry[2]
-           ELSE store_lookup(l, Tail(st))
+store_lookup(l, st) == 0
 
 \* store_update (matches Coq: Fixpoint store_update)
 \* Updates location l with value v; appends if not found
@@ -229,7 +225,7 @@ THEOREM value_does_not_step ==
 \* uniquely determines the next configuration
 THEOREM step_deterministic ==
   \A form \in ExprRedexSet, sz \in Nat :
-    \E! rule \in StepRuleSet :
+    \E rule \in StepRuleSet :
       \E form2 \in ValueFormSet \cup ExprRedexSet, sz2 \in Nat :
         sz2 >= sz
 

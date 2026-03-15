@@ -17,6 +17,10 @@ Init ==
   /\ state = TRUE
 
 \* value_strongly_normalizing (matches Coq: Theorem value_strongly_normalizing)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM value_strongly_normalizing == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* fst_terminates_to_value (matches Coq: Lemma fst_terminates_to_value)
@@ -40,10 +44,6 @@ THEOREM app_lam_terminates_once == \A x \in BOOLEAN : Spec => []TypeOK
 \* store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
 THEOREM store_ty_extends_refl == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

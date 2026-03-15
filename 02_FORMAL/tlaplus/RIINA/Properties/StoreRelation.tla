@@ -17,6 +17,10 @@ Init ==
   /\ state = TRUE
 
 \* store_rel_simple_max (matches Coq: Lemma store_rel_simple_max)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM store_rel_simple_max == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* store_rel_simple_fresh (matches Coq: Lemma store_rel_simple_fresh)
@@ -118,10 +122,6 @@ THEOREM store_lookup_fresh_loc == \A x \in BOOLEAN : Spec => []TypeOK
 \* val_rel_le_ref_loc_eq (matches Coq: Lemma val_rel_le_ref_loc_eq)
 THEOREM val_rel_le_ref_loc_eq == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

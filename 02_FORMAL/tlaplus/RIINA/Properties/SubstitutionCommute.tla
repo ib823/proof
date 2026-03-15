@@ -29,6 +29,10 @@ closed_expr_sc(e) == TRUE
 closed_rho_sc(rho) == TRUE
 
 \* extend_rho_sc_same (matches Coq: Lemma extend_rho_sc_same)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM extend_rho_sc_same == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* extend_rho_sc_diff (matches Coq: Lemma extend_rho_sc_diff)
@@ -148,10 +152,6 @@ THEOREM subst_let_same == \A x \in BOOLEAN : Spec => []TypeOK
 \* subst_let_diff (matches Coq: Lemma subst_let_diff)
 THEOREM subst_let_diff == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

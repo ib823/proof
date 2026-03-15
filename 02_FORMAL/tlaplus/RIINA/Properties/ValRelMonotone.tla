@@ -17,6 +17,10 @@ Init ==
   /\ state = TRUE
 
 \* val_rel_le_monotone (matches Coq: Theorem val_rel_le_monotone)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM val_rel_le_monotone == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* val_rel_le_pred (matches Coq: Lemma val_rel_le_pred)
@@ -58,10 +62,6 @@ THEOREM val_rel_le_mono_witness == \A x \in BOOLEAN : Spec => []TypeOK
 \* val_rel_le_half (matches Coq: Lemma val_rel_le_half)
 THEOREM val_rel_le_half == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====

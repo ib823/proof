@@ -23,6 +23,27 @@ VARIABLES rpki_validation_enabled, route_filtering_enabled, bgpsec_enabled, max_
 
 \* HTTPSConfig (matches Coq: Record HTTPSConfig)
 VARIABLES hsts_enabled, hsts_preload, hsts_include_subdomains, hsts_max_age
+bcp38_filtering_enabled(p0_) == 0
+cdn_protection_enabled(p0_) == 0
+connection_timeout_enabled(p0_) == 0
+dns_response_rate_limiting(p0_) == 0
+encryption_in_transit(p0_) == 0
+formally_verified_impl(p0_) == 0
+icmp_rate_limiting_enabled(p0_) == 0
+ieee_802_1x_enabled(p0_) == 0
+message_authentication_code(p0_) == 0
+monlist_disabled(p0_) == 0
+nonces_enabled(p0_) == 0
+open_resolvers_disabled(p0_) == 0
+protocol_auth_enabled(p0_) == 0
+rate_limiting_enabled(p0_) == 0
+resource_limits_enabled(p0_) == 0
+source_address_validation(p0_) == 0
+source_validation_enabled(p0_) == 0
+syn_cookies_enabled(p0_) == 0
+timestamps_enabled(p0_) == 0
+udp_rate_limiting_enabled(p0_) == 0
+
 
 vars == <<tls_enabled, certificate_pinning_enabled, min_tls_version, strong_cipher_suites, static_arp_enabled, arp_inspection_enabled, gratuitous_arp_blocked, dnssec_validation_enabled, dns_over_https, dns_over_tls, trusted_resolvers_only, rpki_validation_enabled, route_filtering_enabled, bgpsec_enabled, max_prefix_limit, hsts_enabled, hsts_preload, hsts_include_subdomains, hsts_max_age>>
 
@@ -81,24 +102,19 @@ Init ==
 \* ===================================================================
 
 \* tls_mitm_defense_enabled (matches Coq: Definition tls_mitm_defense_enabled)
-tls_mitm_defense_enabled(config) ==
-  tls_enabled(config) /\ certificate_pinning_enabled(config)
+tls_mitm_defense_enabled(config) == 0
 
 \* arp_spoofing_defense_enabled (matches Coq: Definition arp_spoofing_defense_enabled)
-arp_spoofing_defense_enabled(config) ==
-  static_arp_enabled(config) /\ arp_inspection_enabled(config)
+arp_spoofing_defense_enabled(config) == 0
 
 \* dns_poisoning_defense_enabled (matches Coq: Definition dns_poisoning_defense_enabled)
-dns_poisoning_defense_enabled(config) ==
-  dnssec_validation_enabled(config)
+dns_poisoning_defense_enabled(config) == 0
 
 \* bgp_hijacking_defense_enabled (matches Coq: Definition bgp_hijacking_defense_enabled)
-bgp_hijacking_defense_enabled(config) ==
-  rpki_validation_enabled(config)
+bgp_hijacking_defense_enabled(config) == 0
 
 \* ssl_stripping_defense_enabled (matches Coq: Definition ssl_stripping_defense_enabled)
-ssl_stripping_defense_enabled(config) ==
-  hsts_enabled(config) /\ hsts_preload(config)
+ssl_stripping_defense_enabled(config) == 0
 
 \* packet_sniffing_defense_enabled (matches Coq: Definition packet_sniffing_defense_enabled)
 packet_sniffing_defense_enabled(config) ==

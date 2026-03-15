@@ -35,6 +35,10 @@ terminates(e, st, ctx) == TRUE
 step_terminates(e, st, ctx) == TRUE
 
 \* expr_size_pos (matches Coq: Lemma expr_size_pos)
+\* Next-state relation
+Next == UNCHANGED <<state>>
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 THEOREM expr_size_pos == \A x \in BOOLEAN : Spec => []TypeOK
 
 \* value_prod_decompose (matches Coq: Lemma value_prod_decompose)
@@ -82,10 +86,6 @@ THEOREM step_to_multi == \A x \in BOOLEAN : Spec => []TypeOK
 \* multi_step_trans (matches Coq: Lemma multi_step_trans)
 THEOREM multi_step_trans == \A x \in BOOLEAN : Spec => []TypeOK
 
-\* Next-state relation
-Next == UNCHANGED <<state>>
 
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
 
 ====
