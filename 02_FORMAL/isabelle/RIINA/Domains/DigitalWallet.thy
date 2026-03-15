@@ -387,7 +387,7 @@ definition has_two_factors :: "AuthContext \<Rightarrow> bool" where
 
 (* wallets_unique (matches Coq: Definition wallets_unique) *)
 definition wallets_unique :: "bool" where
-  "wallets_unique \<equiv> forall w1 w2, In w1 wallets -> In w2 wallets -> 
+  "wallets_unique \<equiv> forall w1 w2, w1 \<in> set wallets -> w2 \<in> set wallets -> 
     wallet_id w1 = wallet_id w2 -> w1 = w2"
 
 (* valid_wallet (matches Coq: Definition valid_wallet) *)
@@ -404,7 +404,7 @@ definition should_be_dormant :: "Wallet \<Rightarrow> nat \<Rightarrow> bool" wh
 
 (* can_withdraw (matches Coq: Definition can_withdraw) *)
 definition can_withdraw :: "Wallet \<Rightarrow> Z \<Rightarrow> bool" where
-  "can_withdraw w amount \<equiv> amount <= balance w /\ amount > 0"
+  "can_withdraw w amount \<equiv> amount <= balance w \<and> amount > 0"
 
 (* virtual_accounts_within_parent (matches Coq: Definition virtual_accounts_within_parent) *)
 definition virtual_accounts_within_parent :: "Z \<Rightarrow> bool" where
@@ -445,7 +445,7 @@ definition cardless_atm_otp_validity_minutes :: "nat" where
 
 (* cardless_otp_valid (matches Coq: Definition cardless_otp_valid) *)
 definition cardless_otp_valid :: "CardlessATM \<Rightarrow> nat \<Rightarrow> bool" where
-  "cardless_otp_valid catm current_time \<equiv> otp_validity_minutes (catm_otp catm) = cardless_atm_otp_validity_minutes /\
+  "cardless_otp_valid catm current_time \<equiv> otp_validity_minutes (catm_otp catm) = cardless_atm_otp_validity_minutes \<and>
   otp_valid (catm_otp catm) current_time = True"
 
 (* agent_withdrawal_approved_with_cash (matches Coq: Definition agent_withdrawal_approved_with_cash) *)
@@ -466,106 +466,106 @@ definition fraud_score_blocks_transaction :: "FraudScore \<Rightarrow> bool" whe
 
 (* device_biometric_bound (matches Coq: Definition device_biometric_bound) *)
 definition device_biometric_bound :: "Device \<Rightarrow> WalletId \<Rightarrow> nat \<Rightarrow> bool" where
-  "device_biometric_bound d wallet bio_hash \<equiv> device_wallet d = wallet /\ biometric_hash d = bio_hash"
+  "device_biometric_bound d wallet bio_hash \<equiv> device_wallet d = wallet \<and> biometric_hash d = bio_hash"
 
 (* WALLET_001_01_account_uniqueness (matches Coq) *)
-lemma WALLET_001_01_account_uniqueness: "\<forall> wallets w1 w2, wallets_unique wallets \<longrightarrow> In w1 wallets \<longrightarrow> In w2 wallets \<longrightarrow> wallet_id w1 = wallet_id w2 \<longrightarrow> w1 = w2"
+lemma WALLET_001_01_account_uniqueness: "\<forall>wallets w1 w2. wallets_unique wallets \<longrightarrow> w1 \<in> set wallets \<longrightarrow> w2 \<in> set wallets \<longrightarrow> wallet_id w1 = wallet_id w2 \<longrightarrow> w1 = w2"
   by auto
 
 (* WALLET_001_02_balance_integrity (matches Coq) *)
-lemma WALLET_001_02_balance_integrity: "\<forall> w txns, valid_wallet w txns \<longrightarrow> balance w = sum_credits txns - sum_debits txns"
+lemma WALLET_001_02_balance_integrity: "\<forall>w txns. valid_wallet w txns \<longrightarrow> balance w = sum_credits txns - sum_debits txns"
   by auto
 
 (* WALLET_001_03_tier_limit_enforcement (matches Coq) *)
-lemma WALLET_001_03_tier_limit_enforcement: "\<forall> w amount, amount \<le> tier_limit (tier w) \<longrightarrow> amount \<le> tier_limit (tier w)"
+lemma WALLET_001_03_tier_limit_enforcement: "\<forall>w amount. amount \<le> tier_limit (tier w) \<longrightarrow> amount \<le> tier_limit (tier w)"
   by auto
 
 (* WALLET_001_04_virtual_account_segregation (matches Coq) *)
-lemma WALLET_001_04_virtual_account_segregation: "\<forall> vas parent_balance, virtual_accounts_within_parent vas parent_balance \<longrightarrow> virtual_accounts_total vas \<le> parent_balance"
+lemma WALLET_001_04_virtual_account_segregation: "\<forall>vas parent_balance. virtual_accounts_within_parent vas parent_balance \<longrightarrow> virtual_accounts_total vas \<le> parent_balance"
   by auto
 
 (* WALLET_001_05_dormancy_detection (matches Coq) *)
-lemma WALLET_001_05_dormancy_detection: "\<forall> w current_day, should_be_dormant w current_day = True \<longrightarrow> (dormancy_threshold \<le> current_day - last_activity w)%nat"
+lemma WALLET_001_05_dormancy_detection: "\<forall>w current_day. should_be_dormant w current_day = True \<longrightarrow> (dormancy_threshold \<le> current_day - last_activity w)%nat"
   by auto
 
 (* WALLET_001_06_p2p_instant_settlement (matches Coq) *)
-lemma WALLET_001_06_p2p_instant_settlement: "\<forall> p, p2p_instant p \<longrightarrow> (p2p_settlement_time p \<le> 1)%nat"
+lemma WALLET_001_06_p2p_instant_settlement: "\<forall>p. p2p_instant p \<longrightarrow> (p2p_settlement_time p \<le> 1)%nat"
   by auto
 
 (* WALLET_001_07_qr_payment_instant (matches Coq) *)
-lemma WALLET_001_07_qr_payment_instant: "\<forall> qrp, qr_payment_fast qrp \<longrightarrow> (qr_payment_time qrp \<le> 3)%nat"
+lemma WALLET_001_07_qr_payment_instant: "\<forall>qrp. qr_payment_fast qrp \<longrightarrow> (qr_payment_time qrp \<le> 3)%nat"
   by auto
 
 (* WALLET_001_08_dynamic_qr_single_use (matches Coq) *)
-lemma WALLET_001_08_dynamic_qr_single_use: "\<forall> qr, qr_type qr = DynamicQR \<longrightarrow> qr_used qr = True \<longrightarrow> invalidated qr"
+lemma WALLET_001_08_dynamic_qr_single_use: "\<forall>qr. qr_type qr = DynamicQR \<longrightarrow> qr_used qr = True \<longrightarrow> invalidated qr"
   by auto
 
 (* WALLET_001_09_merchant_settlement (matches Coq) *)
-lemma WALLET_001_09_merchant_settlement: "\<forall> mp, valid_merchant_settlement mp \<longrightarrow> mp_net_amount mp = mp_gross_amount mp - (mp_gross_amount mp * mp_mdr_rate mp / 100)"
+lemma WALLET_001_09_merchant_settlement: "\<forall>mp. valid_merchant_settlement mp \<longrightarrow> mp_net_amount mp = mp_gross_amount mp - (mp_gross_amount mp * mp_mdr_rate mp / 100)"
   by auto
 
 (* WALLET_001_10_refund_instant (matches Coq) *)
-lemma WALLET_001_10_refund_instant: "\<forall> r, refund_is_instant r \<longrightarrow> ref_instant r = True"
+lemma WALLET_001_10_refund_instant: "\<forall>r. refund_is_instant r \<longrightarrow> ref_instant r = True"
   by auto
 
 (* WALLET_001_11_bank_transfer_reconciliation (matches Coq) *)
-lemma WALLET_001_11_bank_transfer_reconciliation: "\<forall> bt, bt_reconciled bt = True \<longrightarrow> bt_wallet_credit bt = bt_bank_debit bt \<longrightarrow> bt_wallet_credit bt = bt_bank_debit bt"
+lemma WALLET_001_11_bank_transfer_reconciliation: "\<forall>bt. bt_reconciled bt = True \<longrightarrow> bt_wallet_credit bt = bt_bank_debit bt \<longrightarrow> bt_wallet_credit bt = bt_bank_debit bt"
   by auto
 
 (* WALLET_001_12_card_chargeback_handling (matches Coq) *)
-lemma WALLET_001_12_card_chargeback_handling: "\<forall> cb, chargeback_processed cb \<longrightarrow> cb_processed cb = True \<longrightarrow> cb_wallet_debit cb = cb_original_credit cb"
+lemma WALLET_001_12_card_chargeback_handling: "\<forall>cb. chargeback_processed cb \<longrightarrow> cb_processed cb = True \<longrightarrow> cb_wallet_debit cb = cb_original_credit cb"
   by auto
 
 (* WALLET_001_13_agent_float_sufficiency (matches Coq) *)
-lemma WALLET_001_13_agent_float_sufficiency: "\<forall> af, agent_float_sufficient af = True \<longrightarrow> af_pending_deposits af \<le> af_float_balance af"
+lemma WALLET_001_13_agent_float_sufficiency: "\<forall>af. agent_float_sufficient af = True \<longrightarrow> af_pending_deposits af \<le> af_float_balance af"
   by auto
 
 (* WALLET_001_14_crypto_rate_lock (matches Coq) *)
-lemma WALLET_001_14_crypto_rate_lock: "\<forall> ctu, crypto_rate_is_locked ctu \<longrightarrow> ctu_rate_locked ctu = True \<longrightarrow> ctu_fiat_credit ctu = ctu_crypto_amount ctu * ctu_rate_at_confirmation ctu"
+lemma WALLET_001_14_crypto_rate_lock: "\<forall>ctu. crypto_rate_is_locked ctu \<longrightarrow> ctu_rate_locked ctu = True \<longrightarrow> ctu_fiat_credit ctu = ctu_crypto_amount ctu * ctu_rate_at_confirmation ctu"
   by auto
 
 (* WALLET_001_15_stablecoin_instant_credit (matches Coq) *)
-lemma WALLET_001_15_stablecoin_instant_credit: "\<forall> stu, stablecoin_instant stu \<longrightarrow> stu_confirmed stu = True \<longrightarrow> stu_credited stu = True"
+lemma WALLET_001_15_stablecoin_instant_credit: "\<forall>stu. stablecoin_instant stu \<longrightarrow> stu_confirmed stu = True \<longrightarrow> stu_credited stu = True"
   by auto
 
 (* WALLET_001_16_withdrawal_limit_enforcement (matches Coq) *)
-lemma WALLET_001_16_withdrawal_limit_enforcement: "\<forall> wr, withdrawal_within_limit wr = True \<longrightarrow> wr_daily_total wr + wr_amount wr \<le> tier_daily_withdrawal_limit (wr_tier wr)"
+lemma WALLET_001_16_withdrawal_limit_enforcement: "\<forall>wr. withdrawal_within_limit wr = True \<longrightarrow> wr_daily_total wr + wr_amount wr \<le> tier_daily_withdrawal_limit (wr_tier wr)"
   by auto
 
 (* WALLET_001_17_bank_withdrawal_ownership (matches Coq) *)
-lemma WALLET_001_17_bank_withdrawal_ownership: "\<forall> bw, bank_ownership_verified_before_approval bw \<longrightarrow> bw_approved bw = True \<longrightarrow> bw_ownership_verified bw = True"
+lemma WALLET_001_17_bank_withdrawal_ownership: "\<forall>bw. bank_ownership_verified_before_approval bw \<longrightarrow> bw_approved bw = True \<longrightarrow> bw_ownership_verified bw = True"
   by auto
 
 (* WALLET_001_18_cardless_atm_otp_validity (matches Coq) *)
-lemma WALLET_001_18_cardless_atm_otp_validity: "\<forall> catm current_time, cardless_otp_valid catm current_time \<longrightarrow> otp_validity_minutes (catm_otp catm) = 15%nat"
+lemma WALLET_001_18_cardless_atm_otp_validity: "\<forall>catm current_time. cardless_otp_valid catm current_time \<longrightarrow> otp_validity_minutes (catm_otp catm) = 15%nat"
   by auto
 
 (* WALLET_001_19_agent_cash_availability (matches Coq) *)
-lemma WALLET_001_19_agent_cash_availability: "\<forall> aw, agent_withdrawal_approved_with_cash aw \<longrightarrow> aw_approved aw = True \<longrightarrow> agent_has_cash aw = True"
+lemma WALLET_001_19_agent_cash_availability: "\<forall>aw. agent_withdrawal_approved_with_cash aw \<longrightarrow> aw_approved aw = True \<longrightarrow> agent_has_cash aw = True"
   by auto
 
 (* WALLET_001_20_withdrawal_balance_check (matches Coq) *)
-lemma WALLET_001_20_withdrawal_balance_check: "\<forall> w amount, can_withdraw w amount \<longrightarrow> amount \<le> balance w"
+lemma WALLET_001_20_withdrawal_balance_check: "\<forall>w amount. can_withdraw w amount \<longrightarrow> amount \<le> balance w"
   by auto
 
 (* WALLET_001_21_multi_factor_required (matches Coq) *)
-lemma WALLET_001_21_multi_factor_required: "\<forall> ac, sensitive_op_requires_2fa ac \<longrightarrow> ac_sensitive_op ac = True \<longrightarrow> has_two_factors ac = True"
+lemma WALLET_001_21_multi_factor_required: "\<forall>ac. sensitive_op_requires_2fa ac \<longrightarrow> ac_sensitive_op ac = True \<longrightarrow> has_two_factors ac = True"
   by auto
 
 (* WALLET_001_22_session_expiry (matches Coq) *)
-lemma WALLET_001_22_session_expiry: "\<forall> s current_time, session_expired s current_time = True \<longrightarrow> ~ session_valid s current_time"
+lemma WALLET_001_22_session_expiry: "\<forall>s current_time. session_expired s current_time = True \<longrightarrow> ~ session_valid s current_time"
   by simp
 
 (* WALLET_001_23_velocity_check (matches Coq) *)
-lemma WALLET_001_23_velocity_check: "\<forall> vc, velocity_exceeded vc = True \<longrightarrow> (vc_threshold vc < vc_txn_count vc)%nat"
+lemma WALLET_001_23_velocity_check: "\<forall>vc. velocity_exceeded vc = True \<longrightarrow> (vc_threshold vc < vc_txn_count vc)%nat"
   by auto
 
 (* WALLET_001_24_fraud_score_blocking (matches Coq) *)
-lemma WALLET_001_24_fraud_score_blocking: "\<forall> fs, fraud_score_high fs = True \<longrightarrow> (fs_threshold fs \<le> fs_score fs)%nat"
+lemma WALLET_001_24_fraud_score_blocking: "\<forall>fs. fraud_score_high fs = True \<longrightarrow> (fs_threshold fs \<le> fs_score fs)%nat"
   by auto
 
 (* WALLET_001_25_device_binding (matches Coq) *)
-lemma WALLET_001_25_device_binding: "\<forall> d wallet bio_hash, device_biometric_bound d wallet bio_hash \<longrightarrow> device_wallet d = wallet \<and> biometric_hash d = bio_hash"
+lemma WALLET_001_25_device_binding: "\<forall>d wallet bio_hash. device_biometric_bound d wallet bio_hash \<longrightarrow> device_wallet d = wallet \<and> biometric_hash d = bio_hash"
   by auto
 
 end

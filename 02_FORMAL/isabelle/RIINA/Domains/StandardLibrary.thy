@@ -317,7 +317,7 @@ definition string_slice :: "RiinaString \<Rightarrow> Option RiinaString" where
 
 (* secure_string_drop (matches Coq: Definition secure_string_drop) *)
 definition secure_string_drop :: "SecureString \<Rightarrow> SecureString" where
-  "secure_string_drop ss \<equiv> mkSecureString (map (fun _ => 0) (sstr_data ss)) True (sstr_redacted ss)"
+  "secure_string_drop ss \<equiv> mkSecureString (map (\<lambda>_. 0) (sstr_data ss)) True (sstr_redacted ss)"
 
 (* secure_string_debug (matches Coq: Definition secure_string_debug) *)
 definition secure_string_debug :: "SecureString \<Rightarrow> list nat" where
@@ -390,7 +390,7 @@ definition instant_elapsed :: "nat" where
 
 (* verify_timestamp (matches Coq: Definition verify_timestamp) *)
 definition verify_timestamp :: "SecureTimestamp \<Rightarrow> nat \<Rightarrow> bool" where
-  "verify_timestamp ts expected_sig \<equiv> (st_signed ts \<and> ((st_signature = ts)) expected_sig)"
+  "verify_timestamp ts expected_sig \<equiv> (st_signed ts \<and> (st_signature ts = expected_sig))"
 
 (* mono_increment (matches Coq: Definition mono_increment) *)
 definition mono_increment :: "MonotonicCounter \<Rightarrow> MonotonicCounter" where
@@ -425,7 +425,7 @@ definition atomic_store :: "AtomicNat \<Rightarrow> nat \<Rightarrow> AtomicNat"
 
 (* atomic_cas (matches Coq: Definition atomic_cas) *)
 definition atomic_cas :: "AtomicNat \<Rightarrow> bool * AtomicNat" where
-  "atomic_cas a \<equiv> if ((atomic_value = a)) expected
+  "atomic_cas a \<equiv> if (atomic_value a = expected)
   then (True, mkAtomicNat new_val (S (atomic_seq a)))
   else (False, mkAtomicNat (atomic_value a) (S (atomic_seq a)))"
 
@@ -441,7 +441,7 @@ definition acquire_ordered :: "bool" where "acquire_ordered = undefined"
 
 (* aes_key_drop (matches Coq: Definition aes_key_drop) *)
 definition aes_key_drop :: "AesKey \<Rightarrow> AesKey" where
-  "aes_key_drop k \<equiv> mkAesKey (map (fun _ => 0) (aes_key_data k)) True"
+  "aes_key_drop k \<equiv> mkAesKey (map (\<lambda>_. 0) (aes_key_data k)) True"
 
 (* hash_function (matches Coq: Definition hash_function) *)
 definition hash_function :: "nat" where
@@ -449,24 +449,24 @@ definition hash_function :: "nat" where
 
 (* sign_data (matches Coq: Definition sign_data) *)
 definition sign_data :: "nat \<Rightarrow> Signature" where
-  "sign_data private_key \<equiv> mkSignature (map (fun x => x + private_key) data) (private_key + 1)"
+  "sign_data private_key \<equiv> mkSignature (map (\<lambda>x. x + private_key) data) (private_key + 1)"
 
 (* verify_signature (matches Coq: Definition verify_signature) *)
 definition verify_signature :: "Signature \<Rightarrow> nat \<Rightarrow> bool" where
-  "verify_signature sig public_key \<equiv> (((\<and> = (sig_public_key)) sig) public_key)
+  "verify_signature sig public_key \<equiv> (sig_public_key sig = public_key)
        (((length = (sig_data) sig)) (length data))"
 
 (* crypto_key_drop (matches Coq: Definition crypto_key_drop) *)
 definition crypto_key_drop :: "CryptoKey \<Rightarrow> CryptoKey" where
-  "crypto_key_drop k \<equiv> mkCryptoKey (map (fun _ => 0) (ck_data k)) True"
+  "crypto_key_drop k \<equiv> mkCryptoKey (map (\<lambda>_. 0) (ck_data k)) True"
 
 (* cap_set_union (matches Coq: Definition cap_set_union) *)
 definition cap_set_union :: "CapabilitySet" where
-  "cap_set_union \<equiv> s1 ++ filter (fun c => (\<not> (existsb) (cap_eq c) s1)) s2"
+  "cap_set_union \<equiv> s1 ++ filter (\<lambda>c. (\<not> (existsb) (cap_eq c) s1)) s2"
 
 (* cap_set_inter (matches Coq: Definition cap_set_inter) *)
 definition cap_set_inter :: "CapabilitySet" where
-  "cap_set_inter \<equiv> filter (fun c => existsb (cap_eq c) s2) s1"
+  "cap_set_inter \<equiv> filter (\<lambda>c. existsb (cap_eq c) s2) s1"
 
 (* cap_set_contains (matches Coq: Definition cap_set_contains) *)
 definition cap_set_contains :: "CapabilitySet \<Rightarrow> Capability \<Rightarrow> bool" where
@@ -477,7 +477,7 @@ definition level_leq :: "bool" where "level_leq = undefined"
 
 (* compartments_subset (matches Coq: Definition compartments_subset) *)
 definition compartments_subset :: "bool" where
-  "compartments_subset \<equiv> forallb (fun x => existsb ((x) = c2)) c1"
+  "compartments_subset \<equiv> forallb (\<lambda>x. existsb ((x) = c2)) c1"
 
 (* flows_to (matches Coq: Definition flows_to) *)
 definition flows_to :: "bool" where
@@ -494,11 +494,11 @@ definition level_min :: "SecurityLevel" where
 
 (* list_union (matches Coq: Definition list_union) *)
 definition list_union :: "list nat" where
-  "list_union \<equiv> l1 ++ filter (fun x => (\<not> (existsb) ((x) = l1))) l2"
+  "list_union \<equiv> l1 ++ filter (\<lambda>x. (\<not> (existsb) ((x) = l1))) l2"
 
 (* list_inter (matches Coq: Definition list_inter) *)
 definition list_inter :: "list nat" where
-  "list_inter \<equiv> filter (fun x => existsb ((x) = l2)) l1"
+  "list_inter \<equiv> filter (\<lambda>x. existsb ((x) = l2)) l1"
 
 (* label_join (matches Coq: Definition label_join) *)
 definition label_join :: "Label" where
@@ -511,183 +511,183 @@ definition label_meet :: "Label" where
           (list_inter (lab_compartments l1) (lab_compartments l2))"
 
 (* P_001_01 (matches Coq) *)
-lemma P_001_01: "\<forall> (A B C : Type) (x : A) (f : A \<longrightarrow> Option B) (g : B \<longrightarrow> Option C) (m : Option A), option_bind (option_return x) f = f x \<and> option_bind m option_return = m \<and> option_bind (option_bind m f) g = option_bind m (fun y => option_bind (f y) g)"
+lemma P_001_01: "\<forall>(A B C : Type) (x :: A) (f : A \<longrightarrow> Option B) (g : B \<longrightarrow> Option C) (m : Option A). option_bind (option_return x) f = f x \<and> option_bind m option_return = m \<and> option_bind (option_bind m f) g = option_bind m (\<lambda>y. option_bind (f y) g)"
   by simp
 
 (* P_001_02 (matches Coq) *)
-lemma P_001_02: "\<forall> (T U V E : Type) (x : T) (f : T \<longrightarrow> Result U E) (g : U \<longrightarrow> Result V E) (m : Result T E), result_bind (result_return x) f = f x \<and> result_bind m result_return = m \<and> result_bind (result_bind m f) g = result_bind m (fun y => result_bind (f y) g)"
+lemma P_001_02: "\<forall>(T U V E : Type) (x :: T) (f : T \<longrightarrow> Result U E) (g : U \<longrightarrow> Result V E) (m : Result T E). result_bind (result_return x) f = f x \<and> result_bind m result_return = m \<and> result_bind (result_bind m f) g = result_bind m (\<lambda>y. result_bind (f y) g)"
   by simp
 
 (* P_001_03 (matches Coq) *)
-lemma P_001_03: "\<forall> (A B E : Type) (e : E), (\<forall> (h : A \<longrightarrow> Option B), option_bind (@None A) h = @None B) \<and> (\<forall> (h : A \<longrightarrow> Result B E), result_bind (@Err A E e) h = @Err B E e)"
+lemma P_001_03: "\<forall>(A B E : Type) (e :: E). (\<forall>(h : A \<longrightarrow> Option B). option_bind (@None A) h = @None B) \<and> (\<forall>(h : A \<longrightarrow> Result B E). result_bind (@Err A E e) h = @Err B E e)"
   by simp
 
 (* rev_app_single (matches Coq) *)
-lemma rev_app_single: "\<forall> {A : Type} (l : list A) (x : A), rev (l ++ [x]) = x :: rev l"
+lemma rev_app_single: "\<forall>{A : Type} (l : list A) (x :: A). rev (l ++ [x]) = x :: rev l"
   by simp
 
 (* P_001_04 (matches Coq) *)
-lemma P_001_04: "\<forall> (A : Type) (v : Vec A) (x : A), vlen v > 0 \<longrightarrow> \<exists> v', vec_pop (vec_push v x) = Some (x, v') \<and> vdata v' = vdata v \<and> vlen v' = vlen v"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_04: "\<forall>(A :: Type) (v : Vec A) (x :: A). vlen v > 0 \<longrightarrow> \<exists>v'. vec_pop (vec_push v x) = Some (x, v') \<and> vdata v' = vdata v \<and> vlen v' = vlen v"
+  by auto
 
 (* P_001_05 (matches Coq) *)
-lemma P_001_05: "\<forall> (A : Type) (v : Vec A) (i : nat), vec_in_bounds v i = True <-> i < vlen v"
+lemma P_001_05: "\<forall>(A :: Type) (v : Vec A) (i :: nat). vec_in_bounds v i = True <-> i < vlen v"
   by simp
 
 (* P_001_06 (matches Coq) *)
-lemma P_001_06: "\<forall> (K V : Type) (eq : K \<longrightarrow> K \<longrightarrow> bool) (m : HashMap K V) (k : K) (v : V), (\<forall> k', eq k k' = True <-> k = k') \<longrightarrow> hashmap_get eq (hashmap_insert eq m k v) k = Some v"
+lemma P_001_06: "\<forall>(K V : Type) (eq : K \<longrightarrow> K \<longrightarrow> bool) (m : HashMap K V) (k :: K) (v : V). (\<forall>k'. eq k k' = True <-> k = k') \<longrightarrow> hashmap_get eq (hashmap_insert eq m k v) k = Some v"
   by simp
 
 (* P_001_07 (matches Coq) *)
-lemma P_001_07: "\<forall> (h : SipHashState), siphash_collision_resistant h"
+lemma P_001_07: "\<forall>(h :: SipHashState). siphash_collision_resistant h"
   by auto
 
 (* P_001_08 (matches Coq) *)
-lemma P_001_08: "\<forall> (K V : Type) (lt : K \<longrightarrow> K \<longrightarrow> bool) (t : BTree K V) (k : K) (v : V), (\<forall> a b, lt a b = True \<or> a = b \<or> lt b a = True) \<longrightarrow> btree_ordered lt t \<longrightarrow> btree_ordered lt (btree_insert lt t k v)"
+lemma P_001_08: "\<forall>(K V : Type) (lt : K \<longrightarrow> K \<longrightarrow> bool) (t : BTree K V) (k :: K) (v : V). (\<forall>a b. lt a b = True \<or> a = b \<or> lt b a = True) \<longrightarrow> btree_ordered lt t \<longrightarrow> btree_ordered lt (btree_insert lt t k v)"
   by auto
 
 (* P_001_09 (matches Coq) *)
-lemma P_001_09: "\<forall> (A : Type) (zero : A) (sv : SecureVec A), let dropped := secure_vec_drop zero sv in svec_zeroized dropped = True \<and> \<forall> x, In x (svec_data dropped) \<longrightarrow> x = zero"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_09: "\<forall>(A :: Type) (zero :: A) (sv : SecureVec A). let dropped := secure_vec_drop zero sv in svec_zeroized dropped = True \<and> \<forall>x. In x (svec_data dropped) \<longrightarrow> x = zero"
+  by auto
 
 (* P_001_10 (matches Coq) *)
-lemma P_001_10: "\<forall> (bytes : list nat), all_valid_utf8 bytes = True \<longrightarrow> str_is_utf8 (string_from_bytes bytes) = True"
+lemma P_001_10: "\<forall>(bytes : list nat). all_valid_utf8 bytes = True \<longrightarrow> str_is_utf8 (string_from_bytes bytes) = True"
   by auto
 
 (* P_001_11 (matches Coq) *)
-lemma P_001_11: "\<forall> (s : RiinaString) (start len : nat) (s' : RiinaString), string_slice s start len = Some s' \<longrightarrow> start \<le> length (str_bytes s) \<and> start + len \<le> length (str_bytes s)"
+lemma P_001_11: "\<forall>(s :: RiinaString) (start len : nat) (s' : RiinaString). string_slice s start len = Some s' \<longrightarrow> start \<le> length (str_bytes s) \<and> start + len \<le> length (str_bytes s)"
   by auto
 
 (* P_001_12 (matches Coq) *)
-lemma P_001_12: "\<forall> (ss : SecureString), let dropped := secure_string_drop ss in sstr_zeroized dropped = True \<and> \<forall> x, In x (sstr_data dropped) \<longrightarrow> x = 0"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_12: "\<forall>(ss :: SecureString). let dropped := secure_string_drop ss in sstr_zeroized dropped = True \<and> \<forall>x. In x (sstr_data dropped) \<longrightarrow> x = 0"
+  by auto
 
 (* P_001_13 (matches Coq) *)
-lemma P_001_13: "\<forall> (ss : SecureString), sstr_redacted ss = True \<longrightarrow> secure_string_debug ss = [42; 42; 42]"
+lemma P_001_13: "\<forall>(ss :: SecureString). sstr_redacted ss = True \<longrightarrow> secure_string_debug ss = [42; 42; 42]"
   by simp
 
 (* P_001_14 (matches Coq) *)
-lemma P_001_14: "\<forall> (rr : ReadResult), read_count rr \<le> read_buffer_size rr"
+lemma P_001_14: "\<forall>(rr :: ReadResult). read_count rr \<le> read_buffer_size rr"
   by auto
 
 (* P_001_15 (matches Coq) *)
-lemma P_001_15: "\<forall> (wr : WriteResult), write_count wr \<le> write_buffer_size wr"
+lemma P_001_15: "\<forall>(wr :: WriteResult). write_count wr \<le> write_buffer_size wr"
   by auto
 
 (* P_001_16 (matches Coq) *)
-lemma P_001_16: "\<forall> (fh : FileHandle) (buf_size : nat), has_capability (fh_caps fh) CapFileRead = False \<longrightarrow> file_read fh buf_size = None"
+lemma P_001_16: "\<forall>(fh :: FileHandle) (buf_size :: nat). has_capability (fh_caps fh) CapFileRead = False \<longrightarrow> file_read fh buf_size = None"
   by simp
 
 (* P_001_17 (matches Coq) *)
-lemma P_001_17: "\<forall> (af : AuditedFile) (buf_size : nat) (rr : ReadResult) (af' : AuditedFile), audited_read af buf_size = Some (rr, af') \<longrightarrow> length (af_log af') = S (length (af_log af))"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_17: "\<forall>(af :: AuditedFile) (buf_size :: nat) (rr : ReadResult) (af' : AuditedFile). audited_read af buf_size = Some (rr, af') \<longrightarrow> length (af_log af') = S (length (af_log af))"
+  by auto
 
 (* P_001_18 (matches Coq) *)
-lemma P_001_18: "\<forall> (s : TcpStream) (data : list nat) (s' : TcpStream), has_capability (tcp_caps s) CapNetConnect = True \<longrightarrow> tcp_write s data = Some s' \<longrightarrow> tcp_buffer s' = tcp_buffer s ++ data"
+lemma P_001_18: "\<forall>(s :: TcpStream) (data : list nat) (s' : TcpStream). has_capability (tcp_caps s) CapNetConnect = True \<longrightarrow> tcp_write s data = Some s' \<longrightarrow> tcp_buffer s' = tcp_buffer s ++ data"
   by simp
 
 (* P_001_19 (matches Coq) *)
-lemma P_001_19: "\<forall> (s : TcpStream) (n : nat), has_capability (tcp_caps s) CapNetConnect = False \<longrightarrow> tcp_read s n = None"
+lemma P_001_19: "\<forall>(s :: TcpStream) (n :: nat). has_capability (tcp_caps s) CapNetConnect = False \<longrightarrow> tcp_read s n = None"
   by simp
 
 (* P_001_20 (matches Coq) *)
-lemma P_001_20: "\<forall> (cfg : TlsConfig) (offered : TlsVersion) (conn : TlsConnection), tls_handshake cfg offered = Some conn \<longrightarrow> tls_version_geq (tls_negotiated_version conn) (tls_min_version cfg) = True"
+lemma P_001_20: "\<forall>(cfg :: TlsConfig) (offered :: TlsVersion) (conn : TlsConnection). tls_handshake cfg offered = Some conn \<longrightarrow> tls_version_geq (tls_negotiated_version conn) (tls_min_version cfg) = True"
   by auto
 
 (* P_001_21 (matches Coq) *)
-lemma P_001_21: "\<forall> (ca : ConnectionAudit) (entry : AuditEntry), let ca' := mkConnAudit (ca_stream ca) (entry :: ca_log ca) in length (ca_log ca') = S (length (ca_log ca))"
+lemma P_001_21: "\<forall>(ca :: ConnectionAudit) (entry :: AuditEntry). let ca' := mkConnAudit (ca_stream ca) (entry :: ca_log ca) in length (ca_log ca') = S (length (ca_log ca))"
   by simp
 
 (* P_001_22 (matches Coq) *)
-lemma P_001_22: "\<forall> (d1 d2 : Duration), dur_nanos (duration_add d1 d2) < NANOS_PER_SEC"
+lemma P_001_22: "\<forall>(d1 d2 : Duration). dur_nanos (duration_add d1 d2) < NANOS_PER_SEC"
   by simp
 
 (* P_001_23 (matches Coq) *)
-lemma P_001_23: "\<forall> (i1 i2 : Instant), inst_ticks i1 \<le> inst_ticks i2 \<longrightarrow> instant_elapsed i1 i2 \<ge> 0"
+lemma P_001_23: "\<forall>(i1 i2 : Instant). inst_ticks i1 \<le> inst_ticks i2 \<longrightarrow> instant_elapsed i1 i2 \<ge> 0"
   by simp
 
 (* P_001_24 (matches Coq) *)
-lemma P_001_24: "\<forall> (ts : SecureTimestamp) (expected_sig : nat), verify_timestamp ts expected_sig = True \<longrightarrow> st_signed ts = True \<and> st_signature ts = expected_sig"
+lemma P_001_24: "\<forall>(ts :: SecureTimestamp) (expected_sig :: nat). verify_timestamp ts expected_sig = True \<longrightarrow> st_signed ts = True \<and> st_signature ts = expected_sig"
   by auto
 
 (* P_001_25 (matches Coq) *)
-lemma P_001_25: "\<forall> (c : MonotonicCounter), mc_value (mono_increment c) > mc_value c"
+lemma P_001_25: "\<forall>(c :: MonotonicCounter). mc_value (mono_increment c) > mc_value c"
   by simp
 
 (* P_001_26 (matches Coq) *)
-lemma P_001_26: "\<forall> (m : MutexState) (t1 t2 : nat) (m' : MutexState), mutex_acquire m t1 = Some m' \<longrightarrow> mutex_acquire m' t2 = None"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_26: "\<forall>(m :: MutexState) (t1 t2 : nat) (m' : MutexState). mutex_acquire m t1 = Some m' \<longrightarrow> mutex_acquire m' t2 = None"
+  by auto
 
 (* P_001_27 (matches Coq) *)
-lemma P_001_27: "\<forall> (rw : RwLockState) (t1 t2 : nat) (rw' : RwLockState), rwlock_write_acquire rw t1 = Some rw' \<longrightarrow> rwlock_read_acquire rw' t2 = None"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_27: "\<forall>(rw :: RwLockState) (t1 t2 : nat) (rw' : RwLockState). rwlock_write_acquire rw t1 = Some rw' \<longrightarrow> rwlock_read_acquire rw' t2 = None"
+  by auto
 
 (* P_001_28 (matches Coq) *)
-lemma P_001_28: "\<forall> (a : AtomicNat) (v : nat), let a' := atomic_store a v in atomic_seq a' > atomic_seq a \<and> atomic_value a' = v"
+lemma P_001_28: "\<forall>(a :: AtomicNat) (v :: nat). let a' := atomic_store a v in atomic_seq a' > atomic_seq a \<and> atomic_value a' = v"
   by simp
 
 (* P_001_29 (matches Coq) *)
-lemma P_001_29: "\<forall> (cv : CondvarState) (t : nat), cv_waiters cv = [t] \<longrightarrow> let (cv', signaled) := condvar_signal cv in signaled = Some t \<and> cv_waiters cv' = []"
+lemma P_001_29: "\<forall>(cv :: CondvarState) (t :: nat). cv_waiters cv = [t] \<longrightarrow> let (cv', signaled) := condvar_signal cv in signaled = Some t \<and> cv_waiters cv' = []"
   by simp
 
 (* P_001_30 (matches Coq) *)
-lemma P_001_30: "\<forall> (ro : ResourceOrder) (r1 r2 : nat), ro_acquired ro = [] \<longrightarrow> r1 < r2 \<longrightarrow> \<exists> ro', acquire_ordered ro r1 = Some ro' \<and> \<exists> ro'', acquire_ordered ro' r2 = Some ro''"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_30: "\<forall>(ro :: ResourceOrder) (r1 r2 : nat). ro_acquired ro = [] \<longrightarrow> r1 < r2 \<longrightarrow> \<exists>ro'. acquire_ordered ro r1 = Some ro' \<and> \<exists>ro''. acquire_ordered ro' r2 = Some ro''"
+  by auto
 
 (* P_001_31 (matches Coq) *)
-lemma P_001_31: "\<forall> (k : AesKey), let dropped := aes_key_drop k in aes_key_zeroized dropped = True \<and> \<forall> x, In x (aes_key_data dropped) \<longrightarrow> x = 0"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_31: "\<forall>(k :: AesKey). let dropped := aes_key_drop k in aes_key_zeroized dropped = True \<and> \<forall>x. In x (aes_key_data dropped) \<longrightarrow> x = 0"
+  by auto
 
 (* P_001_32 (matches Coq) *)
-lemma P_001_32: "\<forall> (data : list nat), hash_function data = hash_function data"
+lemma P_001_32: "\<forall>(data : list nat). hash_function data = hash_function data"
   by simp
 
 (* P_001_33 (matches Coq) *)
-lemma P_001_33: "\<forall> (data : list nat) (private_key : nat), let sig := sign_data data private_key in let public_key := private_key + 1 in verify_signature sig data public_key = True"
+lemma P_001_33: "\<forall>(data : list nat) (private_key :: nat). let sig := sign_data data private_key in let public_key := private_key + 1 in verify_signature sig data public_key = True"
   by simp
 
 (* P_001_34 (matches Coq) *)
-lemma P_001_34: "\<forall> (k : CryptoKey), let dropped := crypto_key_drop k in ck_zeroized dropped = True \<and> \<forall> x, In x (ck_data dropped) \<longrightarrow> x = 0"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_34: "\<forall>(k :: CryptoKey). let dropped := crypto_key_drop k in ck_zeroized dropped = True \<and> \<forall>x. In x (ck_data dropped) \<longrightarrow> x = 0"
+  by auto
 
 (* P_001_35 (matches Coq) *)
-lemma P_001_35: "\<forall> (s1 s2 : CapabilitySet) (c : Capability), cap_set_contains s1 c = True \<or> cap_set_contains s2 c = True \<longrightarrow> cap_set_contains (cap_set_union s1 s2) c = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_35: "\<forall>(s1 s2 : CapabilitySet) (c :: Capability). cap_set_contains s1 c = True \<or> cap_set_contains s2 c = True \<longrightarrow> cap_set_contains (cap_set_union s1 s2) c = True"
+  by auto
 
 (* P_001_36 (matches Coq) *)
-lemma P_001_36: "\<forall> (s1 s2 : CapabilitySet) (c : Capability), cap_set_contains (cap_set_inter s1 s2) c = True \<longrightarrow> cap_set_contains s1 c = True \<and> cap_set_contains s2 c = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_36: "\<forall>(s1 s2 : CapabilitySet) (c :: Capability). cap_set_contains (cap_set_inter s1 s2) c = True \<longrightarrow> cap_set_contains s1 c = True \<and> cap_set_contains s2 c = True"
+  by auto
 
 (* P_001_37 (matches Coq) *)
-lemma P_001_37: "\<forall> (s : CapabilitySet) (c : Capability), cap_set_contains s c = False \<longrightarrow> \<forall> c', In c' s \<longrightarrow> cap_eq c c' = False"
+lemma P_001_37: "\<forall>(s :: CapabilitySet) (c :: Capability). cap_set_contains s c = False \<longrightarrow> \<forall>c'. In c' s \<longrightarrow> cap_eq c c' = False"
   by auto
 
 (* level_leq_refl (matches Coq) *)
-lemma level_leq_refl: "\<forall> l, level_leq l l = True"
+lemma level_leq_refl: "\<forall>l. level_leq l l = True"
   by simp
 
 (* compartments_subset_refl (matches Coq) *)
-lemma compartments_subset_refl: "\<forall> c, compartments_subset c c = True"
+lemma compartments_subset_refl: "\<forall>c. compartments_subset c c = True"
   by auto
 
 (* P_001_38 (matches Coq) *)
-lemma P_001_38: "\<forall> (l1 l2 : Label), flows_to l1 (label_join l1 l2) = True \<and> flows_to l2 (label_join l1 l2) = True \<and> flows_to l1 l1 = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma P_001_38: "\<forall>(l1 l2 : Label). flows_to l1 (label_join l1 l2) = True \<and> flows_to l2 (label_join l1 l2) = True \<and> flows_to l1 l1 = True"
+  by auto
 
 (* level_leq_trans (matches Coq) *)
-lemma level_leq_trans: "\<forall> l1 l2 l3, level_leq l1 l2 = True \<longrightarrow> level_leq l2 l3 = True \<longrightarrow> level_leq l1 l3 = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma level_leq_trans: "\<forall>l1 l2 l3. level_leq l1 l2 = True \<longrightarrow> level_leq l2 l3 = True \<longrightarrow> level_leq l1 l3 = True"
+  by auto
 
 (* compartments_subset_trans (matches Coq) *)
-lemma compartments_subset_trans: "\<forall> c1 c2 c3, compartments_subset c1 c2 = True \<longrightarrow> compartments_subset c2 c3 = True \<longrightarrow> compartments_subset c1 c3 = True"
+lemma compartments_subset_trans: "\<forall>c1 c2 c3. compartments_subset c1 c2 = True \<longrightarrow> compartments_subset c2 c3 = True \<longrightarrow> compartments_subset c1 c3 = True"
   by auto
 
 (* P_001_39 (matches Coq) *)
-lemma P_001_39: "\<forall> (l1 l2 l3 : Label), flows_to l1 l2 = True \<longrightarrow> flows_to l2 l3 = True \<longrightarrow> flows_to l1 l3 = True"
+lemma P_001_39: "\<forall>(l1 l2 l3 : Label). flows_to l1 l2 = True \<longrightarrow> flows_to l2 l3 = True \<longrightarrow> flows_to l1 l3 = True"
   by auto
 
 (* P_001_40 (matches Coq) *)
-lemma P_001_40: "\<forall> (A : Type) (lv : Labeled A) (clearance : Label) (v : A), unlabel lv clearance = Some v \<longrightarrow> flows_to (labeled_label lv) clearance = True \<and> v = labeled_value lv"
+lemma P_001_40: "\<forall>(A :: Type) (lv : Labeled A) (clearance :: Label) (v : A). unlabel lv clearance = Some v \<longrightarrow> flows_to (labeled_label lv) clearance = True \<and> v = labeled_value lv"
   by auto
 
 end

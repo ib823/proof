@@ -72,112 +72,112 @@ begin
 
 (* Application inversion *)
 (* inversion_app (matches Coq) *)
-lemma inversion_app: "\<forall> Γ Σ Δ e1 e2 T ε, has_type Γ Σ Δ (EApp e1 e2) T ε \<longrightarrow> \<exists> T1 ε_fn ε1 ε2, has_type Γ Σ Δ e1 (TFn T1 T ε_fn) ε1 \<and> has_type Γ Σ Δ e2 T1 ε2 \<and> ε = effect_join ε_fn (effect_join ε1 ε2)"
+lemma inversion_app: "\<forall>Γ Σ Δ e1 e2 T ε. has_type Γ Σ Δ (EApp e1 e2) T ε \<longrightarrow> \<exists>T1 ε_fn ε1 ε2. has_type Γ Σ Δ e1 (TFn T1 T ε_fn) ε1 \<and> has_type Γ Σ Δ e2 T1 ε2 \<and> ε = effect_join ε_fn (effect_join ε1 ε2)"
   by auto
 
 (* Lambda inversion *)
 (* inversion_lam (matches Coq) *)
-lemma inversion_lam: "\<forall> Γ Σ Δ x T1 e T ε, has_type Γ Σ Δ (ELam x T1 e) T ε \<longrightarrow> \<exists> T2 ε_body, has_type ((x, T1) :: Γ) Σ Δ e T2 ε_body \<and> T = TFn T1 T2 ε_body \<and> ε = EffectPure"
+lemma inversion_lam: "\<forall>Γ Σ Δ x T1 e T ε. has_type Γ Σ Δ (ELam x T1 e) T ε \<longrightarrow> \<exists>T2 ε_body. has_type ((x, T1) :: Γ) Σ Δ e T2 ε_body \<and> T = TFn T1 T2 ε_body \<and> ε = EffectPure"
   by auto
 
 (* Pair inversion *)
 (* inversion_pair (matches Coq) *)
-lemma inversion_pair: "\<forall> Γ Σ Δ e1 e2 T ε, has_type Γ Σ Δ (EPair e1 e2) T ε \<longrightarrow> \<exists> T1 T2 ε1 ε2, has_type Γ Σ Δ e1 T1 ε1 \<and> has_type Γ Σ Δ e2 T2 ε2 \<and> T = TProd T1 T2 \<and> ε = effect_join ε1 ε2"
+lemma inversion_pair: "\<forall>Γ Σ Δ e1 e2 T ε. has_type Γ Σ Δ (EPair e1 e2) T ε \<longrightarrow> \<exists>T1 T2 ε1 ε2. has_type Γ Σ Δ e1 T1 ε1 \<and> has_type Γ Σ Δ e2 T2 ε2 \<and> T = TProd T1 T2 \<and> ε = effect_join ε1 ε2"
   by auto
 
 (* Fst inversion *)
 (* inversion_fst (matches Coq) *)
-lemma inversion_fst: "\<forall> Γ Σ Δ e T ε, has_type Γ Σ Δ (EFst e) T ε \<longrightarrow> \<exists> T2, has_type Γ Σ Δ e (TProd T T2) ε"
+lemma inversion_fst: "\<forall>Γ Σ Δ e T ε. has_type Γ Σ Δ (EFst e) T ε \<longrightarrow> \<exists>T2. has_type Γ Σ Δ e (TProd T T2) ε"
   by auto
 
 (* Snd inversion *)
 (* inversion_snd (matches Coq) *)
-lemma inversion_snd: "\<forall> Γ Σ Δ e T ε, has_type Γ Σ Δ (ESnd e) T ε \<longrightarrow> \<exists> T1, has_type Γ Σ Δ e (TProd T1 T) ε"
+lemma inversion_snd: "\<forall>Γ Σ Δ e T ε. has_type Γ Σ Δ (ESnd e) T ε \<longrightarrow> \<exists>T1. has_type Γ Σ Δ e (TProd T1 T) ε"
   by auto
 
 (* Inl inversion *)
 (* inversion_inl (matches Coq) *)
-lemma inversion_inl: "\<forall> Γ Σ Δ e T_sum T ε, has_type Γ Σ Δ (EInl e T_sum) T ε \<longrightarrow> \<exists> T1 T2, has_type Γ Σ Δ e T1 ε \<and> T = TSum T1 T2"
+lemma inversion_inl: "\<forall>Γ Σ Δ e T_sum T ε. has_type Γ Σ Δ (EInl e T_sum) T ε \<longrightarrow> \<exists>T1 T2. has_type Γ Σ Δ e T1 ε \<and> T = TSum T1 T2"
   by auto
 
 (* Inr inversion *)
 (* inversion_inr (matches Coq) *)
-lemma inversion_inr: "\<forall> Γ Σ Δ e T_sum T ε, has_type Γ Σ Δ (EInr e T_sum) T ε \<longrightarrow> \<exists> T1 T2, has_type Γ Σ Δ e T2 ε \<and> T = TSum T1 T2"
+lemma inversion_inr: "\<forall>Γ Σ Δ e T_sum T ε. has_type Γ Σ Δ (EInr e T_sum) T ε \<longrightarrow> \<exists>T1 T2. has_type Γ Σ Δ e T2 ε \<and> T = TSum T1 T2"
   by auto
 
 (* Case inversion *)
 (* inversion_case (matches Coq) *)
-lemma inversion_case: "\<forall> Γ Σ Δ e x1 e1 x2 e2 T ε, has_type Γ Σ Δ (ECase e x1 e1 x2 e2) T ε \<longrightarrow> \<exists> T1 T2 ε0 ε1 ε2, has_type Γ Σ Δ e (TSum T1 T2) ε0 \<and> has_type ((x1, T1) :: Γ) Σ Δ e1 T ε1 \<and> has_type ((x2, T2) :: Γ) Σ Δ e2 T ε2 \<and> ε = effect_join ε0 (effect_join ε1 ε2)"
+lemma inversion_case: "\<forall>Γ Σ Δ e x1 e1 x2 e2 T ε. has_type Γ Σ Δ (ECase e x1 e1 x2 e2) T ε \<longrightarrow> \<exists>T1 T2 ε0 ε1 ε2. has_type Γ Σ Δ e (TSum T1 T2) ε0 \<and> has_type ((x1, T1) :: Γ) Σ Δ e1 T ε1 \<and> has_type ((x2, T2) :: Γ) Σ Δ e2 T ε2 \<and> ε = effect_join ε0 (effect_join ε1 ε2)"
   by auto
 
 (* If inversion *)
 (* inversion_if (matches Coq) *)
-lemma inversion_if: "\<forall> Γ Σ Δ e1 e2 e3 T ε, has_type Γ Σ Δ (EIf e1 e2 e3) T ε \<longrightarrow> \<exists> ε1 ε2 ε3, has_type Γ Σ Δ e1 TBool ε1 \<and> has_type Γ Σ Δ e2 T ε2 \<and> has_type Γ Σ Δ e3 T ε3 \<and> ε = effect_join ε1 (effect_join ε2 ε3)"
+lemma inversion_if: "\<forall>Γ Σ Δ e1 e2 e3 T ε. has_type Γ Σ Δ (EIf e1 e2 e3) T ε \<longrightarrow> \<exists>ε1 ε2 ε3. has_type Γ Σ Δ e1 TBool ε1 \<and> has_type Γ Σ Δ e2 T ε2 \<and> has_type Γ Σ Δ e3 T ε3 \<and> ε = effect_join ε1 (effect_join ε2 ε3)"
   by auto
 
 (* Let inversion *)
 (* inversion_let (matches Coq) *)
-lemma inversion_let: "\<forall> Γ Σ Δ x e1 e2 T ε, has_type Γ Σ Δ (ELet x e1 e2) T ε \<longrightarrow> \<exists> T1 ε1 ε2, has_type Γ Σ Δ e1 T1 ε1 \<and> has_type ((x, T1) :: Γ) Σ Δ e2 T ε2 \<and> ε = effect_join ε1 ε2"
+lemma inversion_let: "\<forall>Γ Σ Δ x e1 e2 T ε. has_type Γ Σ Δ (ELet x e1 e2) T ε \<longrightarrow> \<exists>T1 ε1 ε2. has_type Γ Σ Δ e1 T1 ε1 \<and> has_type ((x, T1) :: Γ) Σ Δ e2 T ε2 \<and> ε = effect_join ε1 ε2"
   by auto
 
 (* Ref inversion *)
 (* inversion_ref (matches Coq) *)
-lemma inversion_ref: "\<forall> Γ Σ Δ e l T ε, has_type Γ Σ Δ (ERef e l) T ε \<longrightarrow> \<exists> T' ε', has_type Γ Σ Δ e T' ε' \<and> T = TRef T' l \<and> ε = effect_join ε' EffectWrite"
+lemma inversion_ref: "\<forall>Γ Σ Δ e l T ε. has_type Γ Σ Δ (ERef e l) T ε \<longrightarrow> \<exists>T' ε'. has_type Γ Σ Δ e T' ε' \<and> T = TRef T' l \<and> ε = effect_join ε' EffectWrite"
   by auto
 
 (* Deref inversion *)
 (* inversion_deref (matches Coq) *)
-lemma inversion_deref: "\<forall> Γ Σ Δ e T ε, has_type Γ Σ Δ (EDeref e) T ε \<longrightarrow> \<exists> l ε', has_type Γ Σ Δ e (TRef T l) ε' \<and> ε = effect_join ε' EffectRead"
+lemma inversion_deref: "\<forall>Γ Σ Δ e T ε. has_type Γ Σ Δ (EDeref e) T ε \<longrightarrow> \<exists>l ε'. has_type Γ Σ Δ e (TRef T l) ε' \<and> ε = effect_join ε' EffectRead"
   by auto
 
 (* Assign inversion *)
 (* inversion_assign (matches Coq) *)
-lemma inversion_assign: "\<forall> Γ Σ Δ e1 e2 T ε, has_type Γ Σ Δ (EAssign e1 e2) T ε \<longrightarrow> \<exists> T' l ε1 ε2, has_type Γ Σ Δ e1 (TRef T' l) ε1 \<and> has_type Γ Σ Δ e2 T' ε2 \<and> T = TUnit \<and> ε = effect_join ε1 (effect_join ε2 EffectWrite)"
+lemma inversion_assign: "\<forall>Γ Σ Δ e1 e2 T ε. has_type Γ Σ Δ (EAssign e1 e2) T ε \<longrightarrow> \<exists>T' l ε1 ε2. has_type Γ Σ Δ e1 (TRef T' l) ε1 \<and> has_type Γ Σ Δ e2 T' ε2 \<and> T = TUnit \<and> ε = effect_join ε1 (effect_join ε2 EffectWrite)"
   by auto
 
 (* Perform inversion *)
 (* inversion_perform (matches Coq) *)
-lemma inversion_perform: "\<forall> Γ Σ Δ eff e T ε, has_type Γ Σ Δ (EPerform eff e) T ε \<longrightarrow> \<exists> ε', has_type Γ Σ Δ e T ε' \<and> ε = effect_join ε' eff"
+lemma inversion_perform: "\<forall>Γ Σ Δ eff e T ε. has_type Γ Σ Δ (EPerform eff e) T ε \<longrightarrow> \<exists>ε'. has_type Γ Σ Δ e T ε' \<and> ε = effect_join ε' eff"
   by auto
 
 (* Handle inversion *)
 (* inversion_handle (matches Coq) *)
-lemma inversion_handle: "\<forall> Γ Σ Δ e x h T ε, has_type Γ Σ Δ (EHandle e x h) T ε \<longrightarrow> \<exists> T1 ε1 ε2, has_type Γ Σ Δ e T1 ε1 \<and> has_type ((x, T1) :: Γ) Σ Δ h T ε2 \<and> ε = effect_join ε1 ε2"
+lemma inversion_handle: "\<forall>Γ Σ Δ e x h T ε. has_type Γ Σ Δ (EHandle e x h) T ε \<longrightarrow> \<exists>T1 ε1 ε2. has_type Γ Σ Δ e T1 ε1 \<and> has_type ((x, T1) :: Γ) Σ Δ h T ε2 \<and> ε = effect_join ε1 ε2"
   by auto
 
 (* Classify inversion *)
 (* inversion_classify (matches Coq) *)
-lemma inversion_classify: "\<forall> Γ Σ Δ e T ε, has_type Γ Σ Δ (EClassify e) T ε \<longrightarrow> \<exists> T', has_type Γ Σ Δ e T' ε \<and> T = TSecret T'"
+lemma inversion_classify: "\<forall>Γ Σ Δ e T ε. has_type Γ Σ Δ (EClassify e) T ε \<longrightarrow> \<exists>T'. has_type Γ Σ Δ e T' ε \<and> T = TSecret T'"
   by auto
 
 (* Declassify inversion *)
 (* inversion_declassify (matches Coq) *)
-lemma inversion_declassify: "\<forall> Γ Σ Δ e1 e2 T ε, has_type Γ Σ Δ (EDeclassify e1 e2) T ε \<longrightarrow> \<exists> ε1 ε2, has_type Γ Σ Δ e1 (TSecret T) ε1 \<and> has_type Γ Σ Δ e2 (TProof (TSecret T)) ε2 \<and> declass_ok e1 e2 \<and> ε = effect_join ε1 ε2"
+lemma inversion_declassify: "\<forall>Γ Σ Δ e1 e2 T ε. has_type Γ Σ Δ (EDeclassify e1 e2) T ε \<longrightarrow> \<exists>ε1 ε2. has_type Γ Σ Δ e1 (TSecret T) ε1 \<and> has_type Γ Σ Δ e2 (TProof (TSecret T)) ε2 \<and> declass_ok e1 e2 \<and> ε = effect_join ε1 ε2"
   by auto
 
 (* Prove inversion *)
 (* inversion_prove (matches Coq) *)
-lemma inversion_prove: "\<forall> Γ Σ Δ e T ε, has_type Γ Σ Δ (EProve e) T ε \<longrightarrow> \<exists> T', has_type Γ Σ Δ e T' ε \<and> T = TProof T'"
+lemma inversion_prove: "\<forall>Γ Σ Δ e T ε. has_type Γ Σ Δ (EProve e) T ε \<longrightarrow> \<exists>T'. has_type Γ Σ Δ e T' ε \<and> T = TProof T'"
   by auto
 
 (* Require inversion *)
 (* inversion_require (matches Coq) *)
-lemma inversion_require: "\<forall> Γ Σ Δ eff e T ε, has_type Γ Σ Δ (ERequire eff e) T ε \<longrightarrow> \<exists> ε', has_type Γ Σ Δ e T ε' \<and> ε = effect_join ε' eff"
+lemma inversion_require: "\<forall>Γ Σ Δ eff e T ε. has_type Γ Σ Δ (ERequire eff e) T ε \<longrightarrow> \<exists>ε'. has_type Γ Σ Δ e T ε' \<and> ε = effect_join ε' eff"
   by auto
 
 (* Grant inversion *)
 (* inversion_grant (matches Coq) *)
-lemma inversion_grant: "\<forall> Γ Σ Δ eff e T ε, has_type Γ Σ Δ (EGrant eff e) T ε \<longrightarrow> has_type Γ Σ Δ e T ε"
+lemma inversion_grant: "\<forall>Γ Σ Δ eff e T ε. has_type Γ Σ Δ (EGrant eff e) T ε \<longrightarrow> has_type Γ Σ Δ e T ε"
   by auto
 
 (* Variable inversion *)
 (* inversion_var (matches Coq) *)
-lemma inversion_var: "\<forall> Γ Σ Δ x T ε, has_type Γ Σ Δ (EVar x) T ε \<longrightarrow> lookup x Γ = Some T \<and> ε = EffectPure"
+lemma inversion_var: "\<forall>Γ Σ Δ x T ε. has_type Γ Σ Δ (EVar x) T ε \<longrightarrow> lookup x Γ = Some T \<and> ε = EffectPure"
   by auto
 
 (* Location inversion *)
 (* inversion_loc (matches Coq) *)
-lemma inversion_loc: "\<forall> Γ Σ Δ l T ε, has_type Γ Σ Δ (ELoc l) T ε \<longrightarrow> \<exists> T' sl, store_ty_lookup l Σ = Some (T', sl) \<and> T = TRef T' sl \<and> ε = EffectPure"
+lemma inversion_loc: "\<forall>Γ Σ Δ l T ε. has_type Γ Σ Δ (ELoc l) T ε \<longrightarrow> \<exists>T' sl. store_ty_lookup l Σ = Some (T', sl) \<and> T = TRef T' sl \<and> ε = EffectPure"
   by auto
 
 (* Values are typed with pure effects.
@@ -185,135 +185,135 @@ lemma inversion_loc: "\<forall> Γ Σ Δ l T ε, has_type Γ Σ Δ (ELoc l) T ε
     induction on the value derivation since their effects are
     composed from subexpression effects via effect_join. *)
 (* value_typed_pure (matches Coq) *)
-lemma value_typed_pure: "\<forall> Γ Σ Δ v T ε, value v \<longrightarrow> has_type Γ Σ Δ v T ε \<longrightarrow> ε = EffectPure"
+lemma value_typed_pure: "\<forall>Γ Σ Δ v T ε. value v \<longrightarrow> has_type Γ Σ Δ v T ε \<longrightarrow> ε = EffectPure"
   by simp
 
 (* Corollary: value typing with arbitrary effect implies pure typing *)
 (* value_pure_typing (matches Coq) *)
-lemma value_pure_typing: "\<forall> Γ Σ Δ v T ε, value v \<longrightarrow> has_type Γ Σ Δ v T ε \<longrightarrow> has_type Γ Σ Δ v T EffectPure"
+lemma value_pure_typing: "\<forall>Γ Σ Δ v T ε. value v \<longrightarrow> has_type Γ Σ Δ v T ε \<longrightarrow> has_type Γ Σ Δ v T EffectPure"
   by auto
 
 (* Lookup is preserved by appending to the front if name differs *)
 (* lookup_cons_neq (matches Coq) *)
-lemma lookup_cons_neq: "\<forall> x y T Γ, x \<noteq> y \<longrightarrow> lookup x ((y, T) :: Γ) = lookup x Γ"
-  by (cases rule: ‹_›.cases; simp)
+lemma lookup_cons_neq: "\<forall>x y T Γ. x \<noteq> y \<longrightarrow> lookup x ((y, T) :: Γ) = lookup x Γ"
+  by auto
 
 (* Lookup is preserved by appending to the front if name matches *)
 (* lookup_cons_eq (matches Coq) *)
-lemma lookup_cons_eq: "\<forall> x T Γ, lookup x ((x, T) :: Γ) = Some T"
-  by (cases rule: ‹_›.cases; simp)
+lemma lookup_cons_eq: "\<forall>x T Γ. lookup x ((x, T) :: Γ) = Some T"
+  by auto
 
 (* Extending the context preserves existing lookups *)
 (* lookup_weaken (matches Coq) *)
-lemma lookup_weaken: "\<forall> x T Γ y T', lookup x Γ = Some T \<longrightarrow> x \<noteq> y \<longrightarrow> lookup x ((y, T') :: Γ) = Some T"
+lemma lookup_weaken: "\<forall>x T Γ y T'. lookup x Γ = Some T \<longrightarrow> x \<noteq> y \<longrightarrow> lookup x ((y, T') :: Γ) = Some T"
   by auto
 
 (* If e1 : T1 → T2 and e2 : T1, application is well-typed *)
 (* app_well_typed (matches Coq) *)
-lemma app_well_typed: "\<forall> Γ Σ Δ e1 e2 T1 T2 ε_fn ε1 ε2, has_type Γ Σ Δ e1 (TFn T1 T2 ε_fn) ε1 \<longrightarrow> has_type Γ Σ Δ e2 T1 ε2 \<longrightarrow> has_type Γ Σ Δ (EApp e1 e2) T2 (effect_join ε_fn (effect_join ε1 ε2))"
+lemma app_well_typed: "\<forall>Γ Σ Δ e1 e2 T1 T2 ε_fn ε1 ε2. has_type Γ Σ Δ e1 (TFn T1 T2 ε_fn) ε1 \<longrightarrow> has_type Γ Σ Δ e2 T1 ε2 \<longrightarrow> has_type Γ Σ Δ (EApp e1 e2) T2 (effect_join ε_fn (effect_join ε1 ε2))"
   by auto
 
 (* Sequential composition via let *)
 (* let_well_typed (matches Coq) *)
-lemma let_well_typed: "\<forall> Γ Σ Δ x e1 e2 T1 T2 ε1 ε2, has_type Γ Σ Δ e1 T1 ε1 \<longrightarrow> has_type ((x, T1) :: Γ) Σ Δ e2 T2 ε2 \<longrightarrow> has_type Γ Σ Δ (ELet x e1 e2) T2 (effect_join ε1 ε2)"
+lemma let_well_typed: "\<forall>Γ Σ Δ x e1 e2 T1 T2 ε1 ε2. has_type Γ Σ Δ e1 T1 ε1 \<longrightarrow> has_type ((x, T1) :: Γ) Σ Δ e2 T2 ε2 \<longrightarrow> has_type Γ Σ Δ (ELet x e1 e2) T2 (effect_join ε1 ε2)"
   by auto
 
 (* If both branches have the same type, if is well-typed *)
 (* if_well_typed (matches Coq) *)
-lemma if_well_typed: "\<forall> Γ Σ Δ e1 e2 e3 T ε1 ε2 ε3, has_type Γ Σ Δ e1 TBool ε1 \<longrightarrow> has_type Γ Σ Δ e2 T ε2 \<longrightarrow> has_type Γ Σ Δ e3 T ε3 \<longrightarrow> has_type Γ Σ Δ (EIf e1 e2 e3) T (effect_join ε1 (effect_join ε2 ε3))"
+lemma if_well_typed: "\<forall>Γ Σ Δ e1 e2 e3 T ε1 ε2 ε3. has_type Γ Σ Δ e1 TBool ε1 \<longrightarrow> has_type Γ Σ Δ e2 T ε2 \<longrightarrow> has_type Γ Σ Δ e3 T ε3 \<longrightarrow> has_type Γ Σ Δ (EIf e1 e2 e3) T (effect_join ε1 (effect_join ε2 ε3))"
   by auto
 
 (* Pair construction *)
 (* pair_well_typed (matches Coq) *)
-lemma pair_well_typed: "\<forall> Γ Σ Δ e1 e2 T1 T2 ε1 ε2, has_type Γ Σ Δ e1 T1 ε1 \<longrightarrow> has_type Γ Σ Δ e2 T2 ε2 \<longrightarrow> has_type Γ Σ Δ (EPair e1 e2) (TProd T1 T2) (effect_join ε1 ε2)"
+lemma pair_well_typed: "\<forall>Γ Σ Δ e1 e2 T1 T2 ε1 ε2. has_type Γ Σ Δ e1 T1 ε1 \<longrightarrow> has_type Γ Σ Δ e2 T2 ε2 \<longrightarrow> has_type Γ Σ Δ (EPair e1 e2) (TProd T1 T2) (effect_join ε1 ε2)"
   by auto
 
 (* Projection composition: if e : T1 × T2 then fst e : T1 *)
 (* fst_well_typed (matches Coq) *)
-lemma fst_well_typed: "\<forall> Γ Σ Δ e T1 T2 ε, has_type Γ Σ Δ e (TProd T1 T2) ε \<longrightarrow> has_type Γ Σ Δ (EFst e) T1 ε"
+lemma fst_well_typed: "\<forall>Γ Σ Δ e T1 T2 ε. has_type Γ Σ Δ e (TProd T1 T2) ε \<longrightarrow> has_type Γ Σ Δ (EFst e) T1 ε"
   by auto
 
 (* snd_well_typed (matches Coq) *)
-lemma snd_well_typed: "\<forall> Γ Σ Δ e T1 T2 ε, has_type Γ Σ Δ e (TProd T1 T2) ε \<longrightarrow> has_type Γ Σ Δ (ESnd e) T2 ε"
+lemma snd_well_typed: "\<forall>Γ Σ Δ e T1 T2 ε. has_type Γ Σ Δ e (TProd T1 T2) ε \<longrightarrow> has_type Γ Σ Δ (ESnd e) T2 ε"
   by auto
 
 (* fn_not_prod (matches Coq) *)
-lemma fn_not_prod: "\<forall> T1 T2 ε T3 T4, TFn T1 T2 ε \<noteq> TProd T3 T4"
+lemma fn_not_prod: "\<forall>T1 T2 ε T3 T4. TFn T1 T2 ε \<noteq> TProd T3 T4"
   by auto
 
 (* fn_not_sum (matches Coq) *)
-lemma fn_not_sum: "\<forall> T1 T2 ε T3 T4, TFn T1 T2 ε \<noteq> TSum T3 T4"
+lemma fn_not_sum: "\<forall>T1 T2 ε T3 T4. TFn T1 T2 ε \<noteq> TSum T3 T4"
   by auto
 
 (* fn_not_ref (matches Coq) *)
-lemma fn_not_ref: "\<forall> T1 T2 ε T3 sl, TFn T1 T2 ε \<noteq> TRef T3 sl"
+lemma fn_not_ref: "\<forall>T1 T2 ε T3 sl. TFn T1 T2 ε \<noteq> TRef T3 sl"
   by auto
 
 (* fn_not_bool (matches Coq) *)
-lemma fn_not_bool: "\<forall> T1 T2 ε, TFn T1 T2 ε \<noteq> TBool"
+lemma fn_not_bool: "\<forall>T1 T2 ε. TFn T1 T2 ε \<noteq> TBool"
   by auto
 
 (* fn_not_int (matches Coq) *)
-lemma fn_not_int: "\<forall> T1 T2 ε, TFn T1 T2 ε \<noteq> TInt"
+lemma fn_not_int: "\<forall>T1 T2 ε. TFn T1 T2 ε \<noteq> TInt"
   by auto
 
 (* fn_not_unit (matches Coq) *)
-lemma fn_not_unit: "\<forall> T1 T2 ε, TFn T1 T2 ε \<noteq> TUnit"
+lemma fn_not_unit: "\<forall>T1 T2 ε. TFn T1 T2 ε \<noteq> TUnit"
   by auto
 
 (* prod_not_sum (matches Coq) *)
-lemma prod_not_sum: "\<forall> T1 T2 T3 T4, TProd T1 T2 \<noteq> TSum T3 T4"
+lemma prod_not_sum: "\<forall>T1 T2 T3 T4. TProd T1 T2 \<noteq> TSum T3 T4"
   by auto
 
 (* secret_not_fn (matches Coq) *)
-lemma secret_not_fn: "\<forall> T T1 T2 ε, TSecret T \<noteq> TFn T1 T2 ε"
+lemma secret_not_fn: "\<forall>T T1 T2 ε. TSecret T \<noteq> TFn T1 T2 ε"
   by auto
 
 (* secret_not_prod (matches Coq) *)
-lemma secret_not_prod: "\<forall> T T1 T2, TSecret T \<noteq> TProd T1 T2"
+lemma secret_not_prod: "\<forall>T T1 T2. TSecret T \<noteq> TProd T1 T2"
   by auto
 
 (* secret_not_bool (matches Coq) *)
-lemma secret_not_bool: "\<forall> T, TSecret T \<noteq> TBool"
+lemma secret_not_bool: "\<forall>T. TSecret T \<noteq> TBool"
   by auto
 
 (* proof_not_fn (matches Coq) *)
-lemma proof_not_fn: "\<forall> T T1 T2 ε, TProof T \<noteq> TFn T1 T2 ε"
+lemma proof_not_fn: "\<forall>T T1 T2 ε. TProof T \<noteq> TFn T1 T2 ε"
   by auto
 
 (* Type constructor injection: equal compound types have equal components *)
 (* fn_type_injective (matches Coq) *)
-lemma fn_type_injective: "\<forall> T1 T2 ε T1' T2' ε', TFn T1 T2 ε = TFn T1' T2' ε' \<longrightarrow> T1 = T1' \<and> T2 = T2' \<and> ε = ε'"
+lemma fn_type_injective: "\<forall>T1 T2 ε T1' T2' ε'. TFn T1 T2 ε = TFn T1' T2' ε' \<longrightarrow> T1 = T1' \<and> T2 = T2' \<and> ε = ε'"
   by auto
 
 (* prod_type_injective (matches Coq) *)
-lemma prod_type_injective: "\<forall> T1 T2 T1' T2', TProd T1 T2 = TProd T1' T2' \<longrightarrow> T1 = T1' \<and> T2 = T2'"
+lemma prod_type_injective: "\<forall>T1 T2 T1' T2'. TProd T1 T2 = TProd T1' T2' \<longrightarrow> T1 = T1' \<and> T2 = T2'"
   by auto
 
 (* sum_type_injective (matches Coq) *)
-lemma sum_type_injective: "\<forall> T1 T2 T1' T2', TSum T1 T2 = TSum T1' T2' \<longrightarrow> T1 = T1' \<and> T2 = T2'"
+lemma sum_type_injective: "\<forall>T1 T2 T1' T2'. TSum T1 T2 = TSum T1' T2' \<longrightarrow> T1 = T1' \<and> T2 = T2'"
   by auto
 
 (* ref_type_injective (matches Coq) *)
-lemma ref_type_injective: "\<forall> T sl T' sl', TRef T sl = TRef T' sl' \<longrightarrow> T = T' \<and> sl = sl'"
+lemma ref_type_injective: "\<forall>T sl T' sl'. TRef T sl = TRef T' sl' \<longrightarrow> T = T' \<and> sl = sl'"
   by auto
 
 (* secret_type_injective (matches Coq) *)
-lemma secret_type_injective: "\<forall> T T', TSecret T = TSecret T' \<longrightarrow> T = T'"
+lemma secret_type_injective: "\<forall>T T'. TSecret T = TSecret T' \<longrightarrow> T = T'"
   by auto
 
 (* proof_type_injective (matches Coq) *)
-lemma proof_type_injective: "\<forall> T T', TProof T = TProof T' \<longrightarrow> T = T'"
+lemma proof_type_injective: "\<forall>T T'. TProof T = TProof T' \<longrightarrow> T = T'"
   by auto
 
 (* Effect is uniquely determined by the expression and context *)
 (* effect_unique (matches Coq) *)
-lemma effect_unique: "\<forall> Γ Σ Δ e T1 ε1 T2 ε2, has_type Γ Σ Δ e T1 ε1 \<longrightarrow> has_type Γ Σ Δ e T2 ε2 \<longrightarrow> ε1 = ε2"
+lemma effect_unique: "\<forall>Γ Σ Δ e T1 ε1 T2 ε2. has_type Γ Σ Δ e T1 ε1 \<longrightarrow> has_type Γ Σ Δ e T2 ε2 \<longrightarrow> ε1 = ε2"
   by auto
 
 (* Type is uniquely determined *)
 (* type_unique (matches Coq) *)
-lemma type_unique: "\<forall> Γ Σ Δ e T1 ε1 T2 ε2, has_type Γ Σ Δ e T1 ε1 \<longrightarrow> has_type Γ Σ Δ e T2 ε2 \<longrightarrow> T1 = T2"
+lemma type_unique: "\<forall>Γ Σ Δ e T1 ε1 T2 ε2. has_type Γ Σ Δ e T1 ε1 \<longrightarrow> has_type Γ Σ Δ e T2 ε2 \<longrightarrow> T1 = T2"
   by auto
 
 end

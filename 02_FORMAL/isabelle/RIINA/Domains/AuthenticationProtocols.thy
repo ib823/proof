@@ -429,23 +429,23 @@ definition riina_auth :: "AuthConfig" where
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* andb3_true_iff (matches Coq) *)
-lemma andb3_true_iff: "\<forall> a b c : bool, a && b && c = True <-> a = True \<and> b = True \<and> c = True"
+lemma andb3_true_iff: "\<forall>a b c : bool. a && b && c = True <-> a = True \<and> b = True \<and> c = True"
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+  by auto
 
 (* leb_le (matches Coq) *)
-lemma leb_le: "\<forall> n m : nat, (n <=? m) = True <-> n \<le> m"
+lemma leb_le: "\<forall>n m : nat. (n <=? m) = True <-> n \<le> m"
   by auto
 
 (* ltb_lt (matches Coq) *)
-lemma ltb_lt: "\<forall> n m : nat, (n <? m) = True <-> n < m"
+lemma ltb_lt: "\<forall>n m : nat. (n <? m) = True <-> n < m"
   by auto
 
 (* ============================================================================
@@ -480,47 +480,47 @@ lemma AUTH_007: "sess_secure_token riina_session = True"
   by simp
 
 (* AUTH_008 (matches Coq) *)
-lemma AUTH_008: "\<forall> p, password_secure p = True \<longrightarrow> pwd_bcrypt_argon p = True"
+lemma AUTH_008: "\<forall>p. password_secure p = True \<longrightarrow> pwd_bcrypt_argon p = True"
   by auto
 
 (* AUTH_009 (matches Coq) *)
-lemma AUTH_009: "\<forall> p, password_secure p = True \<longrightarrow> pwd_salt_unique p = True"
+lemma AUTH_009: "\<forall>p. password_secure p = True \<longrightarrow> pwd_salt_unique p = True"
   by auto
 
 (* AUTH_010 (matches Coq) *)
-lemma AUTH_010: "\<forall> m, mfa_secure m = True \<longrightarrow> mfa_webauthn m = True"
+lemma AUTH_010: "\<forall>m. mfa_secure m = True \<longrightarrow> mfa_webauthn m = True"
   by auto
 
 (* AUTH_011 (matches Coq) *)
-lemma AUTH_011: "\<forall> s, session_secure s = True \<longrightarrow> sess_secure_token s = True"
+lemma AUTH_011: "\<forall>s. session_secure s = True \<longrightarrow> sess_secure_token s = True"
   by auto
 
 (* AUTH_012 (matches Coq) *)
-lemma AUTH_012: "\<forall> s, session_secure s = True \<longrightarrow> sess_rotation s = True"
+lemma AUTH_012: "\<forall>s. session_secure s = True \<longrightarrow> sess_rotation s = True"
   by auto
 
 (* AUTH_013 (matches Coq) *)
-lemma AUTH_013: "\<forall> a, auth_complete a = True \<longrightarrow> password_secure (auth_pwd a) = True"
+lemma AUTH_013: "\<forall>a. auth_complete a = True \<longrightarrow> password_secure (auth_pwd a) = True"
   by auto
 
 (* AUTH_014 (matches Coq) *)
-lemma AUTH_014: "\<forall> a, auth_complete a = True \<longrightarrow> mfa_secure (auth_mfa a) = True"
+lemma AUTH_014: "\<forall>a. auth_complete a = True \<longrightarrow> mfa_secure (auth_mfa a) = True"
   by auto
 
 (* AUTH_015 (matches Coq) *)
-lemma AUTH_015: "\<forall> a, auth_complete a = True \<longrightarrow> session_secure (auth_session a) = True"
+lemma AUTH_015: "\<forall>a. auth_complete a = True \<longrightarrow> session_secure (auth_session a) = True"
   by auto
 
 (* AUTH_016 (matches Coq) *)
-lemma AUTH_016: "\<forall> a, auth_complete a = True \<longrightarrow> pwd_bcrypt_argon (auth_pwd a) = True"
+lemma AUTH_016: "\<forall>a. auth_complete a = True \<longrightarrow> pwd_bcrypt_argon (auth_pwd a) = True"
   by auto
 
 (* AUTH_017 (matches Coq) *)
-lemma AUTH_017: "\<forall> a, auth_complete a = True \<longrightarrow> mfa_webauthn (auth_mfa a) = True"
+lemma AUTH_017: "\<forall>a. auth_complete a = True \<longrightarrow> mfa_webauthn (auth_mfa a) = True"
   by auto
 
 (* AUTH_018 (matches Coq) *)
-lemma AUTH_018: "\<forall> a, auth_complete a = True \<longrightarrow> sess_secure_token (auth_session a) = True"
+lemma AUTH_018: "\<forall>a. auth_complete a = True \<longrightarrow> sess_secure_token (auth_session a) = True"
   by auto
 
 (* AUTH_019 (matches Coq) *)
@@ -536,19 +536,19 @@ lemma AUTH_021: "sess_secure_token riina_session = True \<and> sess_rotation rii
   by auto
 
 (* AUTH_022 (matches Coq) *)
-lemma AUTH_022: "\<forall> p, password_secure p = True \<longrightarrow> pwd_bcrypt_argon p = True \<and> pwd_salt_unique p = True"
+lemma AUTH_022: "\<forall>p. password_secure p = True \<longrightarrow> pwd_bcrypt_argon p = True \<and> pwd_salt_unique p = True"
   by auto
 
 (* AUTH_023 (matches Coq) *)
-lemma AUTH_023: "\<forall> s, session_secure s = True \<longrightarrow> sess_secure_token s = True \<and> sess_rotation s = True"
+lemma AUTH_023: "\<forall>s. session_secure s = True \<longrightarrow> sess_secure_token s = True \<and> sess_rotation s = True"
   by auto
 
 (* AUTH_024 (matches Coq) *)
-lemma AUTH_024: "\<forall> a, auth_complete a = True \<longrightarrow> password_secure (auth_pwd a) = True \<and> mfa_secure (auth_mfa a) = True"
+lemma AUTH_024: "\<forall>a. auth_complete a = True \<longrightarrow> password_secure (auth_pwd a) = True \<and> mfa_secure (auth_mfa a) = True"
   by auto
 
 (* AUTH_025_complete (matches Coq) *)
-lemma AUTH_025_complete: "\<forall> a, auth_complete a = True \<longrightarrow> pwd_bcrypt_argon (auth_pwd a) = True \<and> mfa_webauthn (auth_mfa a) = True \<and> sess_secure_token (auth_session a) = True"
+lemma AUTH_025_complete: "\<forall>a. auth_complete a = True \<longrightarrow> pwd_bcrypt_argon (auth_pwd a) = True \<and> mfa_webauthn (auth_mfa a) = True \<and> sess_secure_token (auth_session a) = True"
   by auto
 
 (* PBKDF2_001: RIINA PBKDF2 is secure *)
@@ -558,27 +558,27 @@ lemma PBKDF2_001_riina_secure: "pbkdf2_secure riina_pbkdf2 = True"
 
 (* PBKDF2_002: Secure PBKDF2 has sufficient iterations *)
 (* PBKDF2_002_sufficient_iterations (matches Coq) *)
-lemma PBKDF2_002_sufficient_iterations: "\<forall> cfg, pbkdf2_secure cfg = True \<longrightarrow> (600000 <=? pbkdf2_iterations cfg) = True"
+lemma PBKDF2_002_sufficient_iterations: "\<forall>cfg. pbkdf2_secure cfg = True \<longrightarrow> (600000 <=? pbkdf2_iterations cfg) = True"
   by auto
 
 (* PBKDF2_003: Secure PBKDF2 has sufficient salt *)
 (* PBKDF2_003_sufficient_salt (matches Coq) *)
-lemma PBKDF2_003_sufficient_salt: "\<forall> cfg, pbkdf2_secure cfg = True \<longrightarrow> (128 <=? pbkdf2_salt_bits cfg) = True"
+lemma PBKDF2_003_sufficient_salt: "\<forall>cfg. pbkdf2_secure cfg = True \<longrightarrow> (128 <=? pbkdf2_salt_bits cfg) = True"
   by auto
 
 (* PBKDF2_004: Secure PBKDF2 has sufficient output *)
 (* PBKDF2_004_sufficient_output (matches Coq) *)
-lemma PBKDF2_004_sufficient_output: "\<forall> cfg, pbkdf2_secure cfg = True \<longrightarrow> (256 <=? pbkdf2_output_bits cfg) = True"
+lemma PBKDF2_004_sufficient_output: "\<forall>cfg. pbkdf2_secure cfg = True \<longrightarrow> (256 <=? pbkdf2_output_bits cfg) = True"
   by auto
 
 (* PBKDF2_005: Secure PBKDF2 uses approved algorithm *)
 (* PBKDF2_005_approved_algorithm (matches Coq) *)
-lemma PBKDF2_005_approved_algorithm: "\<forall> cfg, pbkdf2_secure cfg = True \<longrightarrow> (pbkdf2_hash_alg cfg <=? 1) = True"
+lemma PBKDF2_005_approved_algorithm: "\<forall>cfg. pbkdf2_secure cfg = True \<longrightarrow> (pbkdf2_hash_alg cfg <=? 1) = True"
   by auto
 
 (* PBKDF2_006: Iterations provide work factor security *)
 (* PBKDF2_006_work_factor (matches Coq) *)
-lemma PBKDF2_006_work_factor: "\<forall> cfg, pbkdf2_secure cfg = True \<longrightarrow> pbkdf2_iterations cfg \<ge> 600000"
+lemma PBKDF2_006_work_factor: "\<forall>cfg. pbkdf2_secure cfg = True \<longrightarrow> pbkdf2_iterations cfg \<ge> 600000"
   by auto
 
 (* ARGON2_001: RIINA Argon2 is secure *)
@@ -588,27 +588,27 @@ lemma ARGON2_001_riina_secure: "argon2_secure riina_argon2 = True"
 
 (* ARGON2_002: Secure Argon2 has sufficient time cost *)
 (* ARGON2_002_sufficient_time (matches Coq) *)
-lemma ARGON2_002_sufficient_time: "\<forall> cfg, argon2_secure cfg = True \<longrightarrow> (3 <=? argon2_time_cost cfg) = True"
+lemma ARGON2_002_sufficient_time: "\<forall>cfg. argon2_secure cfg = True \<longrightarrow> (3 <=? argon2_time_cost cfg) = True"
   by auto
 
 (* ARGON2_003: Secure Argon2 has sufficient memory cost *)
 (* ARGON2_003_sufficient_memory (matches Coq) *)
-lemma ARGON2_003_sufficient_memory: "\<forall> cfg, argon2_secure cfg = True \<longrightarrow> (65536 <=? argon2_memory_cost cfg) = True"
+lemma ARGON2_003_sufficient_memory: "\<forall>cfg. argon2_secure cfg = True \<longrightarrow> (65536 <=? argon2_memory_cost cfg) = True"
   by auto
 
 (* ARGON2_004: Secure Argon2 uses Argon2id variant *)
 (* ARGON2_004_argon2id_variant (matches Coq) *)
-lemma ARGON2_004_argon2id_variant: "\<forall> cfg, argon2_secure cfg = True \<longrightarrow> (argon2_variant cfg =? 2) = True"
+lemma ARGON2_004_argon2id_variant: "\<forall>cfg. argon2_secure cfg = True \<longrightarrow> (argon2_variant cfg =? 2) = True"
   by auto
 
 (* ARGON2_005: Memory hardness prevents GPU attacks *)
 (* ARGON2_005_memory_hardness (matches Coq) *)
-lemma ARGON2_005_memory_hardness: "\<forall> cfg, argon2_secure cfg = True \<longrightarrow> argon2_memory_cost cfg \<ge> 65536"
+lemma ARGON2_005_memory_hardness: "\<forall>cfg. argon2_secure cfg = True \<longrightarrow> argon2_memory_cost cfg \<ge> 65536"
   by auto
 
 (* ARGON2_006: Secure Argon2 has parallelism *)
 (* ARGON2_006_parallelism (matches Coq) *)
-lemma ARGON2_006_parallelism: "\<forall> cfg, argon2_secure cfg = True \<longrightarrow> argon2_parallelism cfg \<ge> 1"
+lemma ARGON2_006_parallelism: "\<forall>cfg. argon2_secure cfg = True \<longrightarrow> argon2_parallelism cfg \<ge> 1"
   by auto
 
 (* BCRYPT_001: RIINA bcrypt is secure *)
@@ -618,22 +618,22 @@ lemma BCRYPT_001_riina_secure: "bcrypt_secure riina_bcrypt = True"
 
 (* BCRYPT_002: Secure bcrypt has sufficient cost factor *)
 (* BCRYPT_002_sufficient_cost (matches Coq) *)
-lemma BCRYPT_002_sufficient_cost: "\<forall> cfg, bcrypt_secure cfg = True \<longrightarrow> (12 <=? bcrypt_cost_factor cfg) = True"
+lemma BCRYPT_002_sufficient_cost: "\<forall>cfg. bcrypt_secure cfg = True \<longrightarrow> (12 <=? bcrypt_cost_factor cfg) = True"
   by auto
 
 (* BCRYPT_003: bcrypt uses fixed salt size *)
 (* BCRYPT_003_fixed_salt (matches Coq) *)
-lemma BCRYPT_003_fixed_salt: "\<forall> cfg, bcrypt_secure cfg = True \<longrightarrow> (bcrypt_salt_bits cfg =? 128) = True"
+lemma BCRYPT_003_fixed_salt: "\<forall>cfg. bcrypt_secure cfg = True \<longrightarrow> (bcrypt_salt_bits cfg =? 128) = True"
   by auto
 
 (* BCRYPT_004: bcrypt uses fixed output size *)
 (* BCRYPT_004_fixed_output (matches Coq) *)
-lemma BCRYPT_004_fixed_output: "\<forall> cfg, bcrypt_secure cfg = True \<longrightarrow> (bcrypt_output_bits cfg =? 184) = True"
+lemma BCRYPT_004_fixed_output: "\<forall>cfg. bcrypt_secure cfg = True \<longrightarrow> (bcrypt_output_bits cfg =? 184) = True"
   by auto
 
 (* BCRYPT_005: Cost factor provides exponential work *)
 (* BCRYPT_005_exponential_work (matches Coq) *)
-lemma BCRYPT_005_exponential_work: "\<forall> cfg, bcrypt_secure cfg = True \<longrightarrow> bcrypt_cost_factor cfg \<ge> 12"
+lemma BCRYPT_005_exponential_work: "\<forall>cfg. bcrypt_secure cfg = True \<longrightarrow> bcrypt_cost_factor cfg \<ge> 12"
   by auto
 
 (* TOTP_001: RIINA TOTP is secure *)
@@ -643,27 +643,27 @@ lemma TOTP_001_riina_secure: "totp_secure riina_totp = True"
 
 (* TOTP_002: Secure TOTP has sufficient secret entropy *)
 (* TOTP_002_sufficient_secret (matches Coq) *)
-lemma TOTP_002_sufficient_secret: "\<forall> cfg, totp_secure cfg = True \<longrightarrow> (160 <=? totp_secret_bits cfg) = True"
+lemma TOTP_002_sufficient_secret: "\<forall>cfg. totp_secure cfg = True \<longrightarrow> (160 <=? totp_secret_bits cfg) = True"
   by auto
 
 (* TOTP_003: Secure TOTP has sufficient digits *)
 (* TOTP_003_sufficient_digits (matches Coq) *)
-lemma TOTP_003_sufficient_digits: "\<forall> cfg, totp_secure cfg = True \<longrightarrow> (6 <=? totp_digits cfg) = True"
+lemma TOTP_003_sufficient_digits: "\<forall>cfg. totp_secure cfg = True \<longrightarrow> (6 <=? totp_digits cfg) = True"
   by auto
 
 (* TOTP_004: Secure TOTP uses 30-second period *)
 (* TOTP_004_standard_period (matches Coq) *)
-lemma TOTP_004_standard_period: "\<forall> cfg, totp_secure cfg = True \<longrightarrow> (totp_period cfg =? 30) = True"
+lemma TOTP_004_standard_period: "\<forall>cfg. totp_secure cfg = True \<longrightarrow> (totp_period cfg =? 30) = True"
   by auto
 
 (* TOTP_005: Secure TOTP limits clock drift *)
 (* TOTP_005_limited_drift (matches Coq) *)
-lemma TOTP_005_limited_drift: "\<forall> cfg, totp_secure cfg = True \<longrightarrow> (totp_drift_window cfg <=? 1) = True"
+lemma TOTP_005_limited_drift: "\<forall>cfg. totp_secure cfg = True \<longrightarrow> (totp_drift_window cfg <=? 1) = True"
   by auto
 
 (* TOTP_006: TOTP entropy prevents brute force *)
 (* TOTP_006_brute_force_resistant (matches Coq) *)
-lemma TOTP_006_brute_force_resistant: "\<forall> cfg, totp_secure cfg = True \<longrightarrow> totp_secret_bits cfg \<ge> 160"
+lemma TOTP_006_brute_force_resistant: "\<forall>cfg. totp_secure cfg = True \<longrightarrow> totp_secret_bits cfg \<ge> 160"
   by auto
 
 (* WEBAUTHN_001: RIINA WebAuthn is secure *)
@@ -673,22 +673,22 @@ lemma WEBAUTHN_001_riina_secure: "webauthn_secure riina_webauthn = True"
 
 (* WEBAUTHN_002: Secure WebAuthn requires user verification *)
 (* WEBAUTHN_002_user_verification (matches Coq) *)
-lemma WEBAUTHN_002_user_verification: "\<forall> cfg, webauthn_secure cfg = True \<longrightarrow> (webauthn_user_verification cfg =? 2) = True"
+lemma WEBAUTHN_002_user_verification: "\<forall>cfg. webauthn_secure cfg = True \<longrightarrow> (webauthn_user_verification cfg =? 2) = True"
   by auto
 
 (* WEBAUTHN_003: Secure WebAuthn has sufficient challenge entropy *)
 (* WEBAUTHN_003_challenge_entropy (matches Coq) *)
-lemma WEBAUTHN_003_challenge_entropy: "\<forall> cfg, webauthn_secure cfg = True \<longrightarrow> (128 <=? webauthn_challenge_bits cfg) = True"
+lemma WEBAUTHN_003_challenge_entropy: "\<forall>cfg. webauthn_secure cfg = True \<longrightarrow> (128 <=? webauthn_challenge_bits cfg) = True"
   by auto
 
 (* WEBAUTHN_004: Secure WebAuthn has appropriate timeout *)
 (* WEBAUTHN_004_timeout_range (matches Coq) *)
-lemma WEBAUTHN_004_timeout_range: "\<forall> cfg, webauthn_secure cfg = True \<longrightarrow> (60000 <=? webauthn_timeout_ms cfg) = True \<and> (webauthn_timeout_ms cfg <=? 300000) = True"
+lemma WEBAUTHN_004_timeout_range: "\<forall>cfg. webauthn_secure cfg = True \<longrightarrow> (60000 <=? webauthn_timeout_ms cfg) = True \<and> (webauthn_timeout_ms cfg <=? 300000) = True"
   by auto
 
 (* WEBAUTHN_005: User verification prevents impersonation *)
 (* WEBAUTHN_005_impersonation_prevention (matches Coq) *)
-lemma WEBAUTHN_005_impersonation_prevention: "\<forall> cfg, webauthn_secure cfg = True \<longrightarrow> webauthn_user_verification cfg = 2"
+lemma WEBAUTHN_005_impersonation_prevention: "\<forall>cfg. webauthn_secure cfg = True \<longrightarrow> webauthn_user_verification cfg = 2"
   by auto
 
 (* SESSION_001: RIINA session token is secure *)
@@ -698,37 +698,37 @@ lemma SESSION_001_riina_secure: "session_token_secure riina_session_token = True
 
 (* SESSION_002: Secure session has sufficient entropy *)
 (* SESSION_002_sufficient_entropy (matches Coq) *)
-lemma SESSION_002_sufficient_entropy: "\<forall> cfg, session_token_secure cfg = True \<longrightarrow> (256 <=? token_entropy_bits cfg) = True"
+lemma SESSION_002_sufficient_entropy: "\<forall>cfg. session_token_secure cfg = True \<longrightarrow> (256 <=? token_entropy_bits cfg) = True"
   by auto
 
 (* SESSION_003: Secure session has rotation *)
 (* SESSION_003_rotation_enabled (matches Coq) *)
-lemma SESSION_003_rotation_enabled: "\<forall> cfg, session_token_secure cfg = True \<longrightarrow> token_rotation cfg = True"
+lemma SESSION_003_rotation_enabled: "\<forall>cfg. session_token_secure cfg = True \<longrightarrow> token_rotation cfg = True"
   by auto
 
 (* SESSION_004: Secure session has binding *)
 (* SESSION_004_binding_enabled (matches Coq) *)
-lemma SESSION_004_binding_enabled: "\<forall> cfg, session_token_secure cfg = True \<longrightarrow> token_binding cfg = True"
+lemma SESSION_004_binding_enabled: "\<forall>cfg. session_token_secure cfg = True \<longrightarrow> token_binding cfg = True"
   by auto
 
 (* SESSION_005: Secure session has Secure flag *)
 (* SESSION_005_secure_flag (matches Coq) *)
-lemma SESSION_005_secure_flag: "\<forall> cfg, session_token_secure cfg = True \<longrightarrow> token_secure_flag cfg = True"
+lemma SESSION_005_secure_flag: "\<forall>cfg. session_token_secure cfg = True \<longrightarrow> token_secure_flag cfg = True"
   by auto
 
 (* SESSION_006: Secure session has HttpOnly flag *)
 (* SESSION_006_httponly_flag (matches Coq) *)
-lemma SESSION_006_httponly_flag: "\<forall> cfg, session_token_secure cfg = True \<longrightarrow> token_httponly_flag cfg = True"
+lemma SESSION_006_httponly_flag: "\<forall>cfg. session_token_secure cfg = True \<longrightarrow> token_httponly_flag cfg = True"
   by auto
 
 (* SESSION_007: Secure session has SameSite protection *)
 (* SESSION_007_samesite_protection (matches Coq) *)
-lemma SESSION_007_samesite_protection: "\<forall> cfg, session_token_secure cfg = True \<longrightarrow> (1 <=? token_samesite cfg) = True"
+lemma SESSION_007_samesite_protection: "\<forall>cfg. session_token_secure cfg = True \<longrightarrow> (1 <=? token_samesite cfg) = True"
   by auto
 
 (* SESSION_008: Session entropy prevents guessing *)
 (* SESSION_008_guessing_resistant (matches Coq) *)
-lemma SESSION_008_guessing_resistant: "\<forall> cfg, session_token_secure cfg = True \<longrightarrow> token_entropy_bits cfg \<ge> 256"
+lemma SESSION_008_guessing_resistant: "\<forall>cfg. session_token_secure cfg = True \<longrightarrow> token_entropy_bits cfg \<ge> 256"
   by auto
 
 (* OAUTH2_001: RIINA OAuth 2.0 is secure *)
@@ -738,32 +738,32 @@ lemma OAUTH2_001_riina_secure: "oauth2_secure riina_oauth2 = True"
 
 (* OAUTH2_002: Secure OAuth 2.0 requires PKCE *)
 (* OAUTH2_002_pkce_required (matches Coq) *)
-lemma OAUTH2_002_pkce_required: "\<forall> cfg, oauth2_secure cfg = True \<longrightarrow> oauth2_pkce cfg = True"
+lemma OAUTH2_002_pkce_required: "\<forall>cfg. oauth2_secure cfg = True \<longrightarrow> oauth2_pkce cfg = True"
   by auto
 
 (* OAUTH2_003: Secure OAuth 2.0 requires state parameter *)
 (* OAUTH2_003_state_required (matches Coq) *)
-lemma OAUTH2_003_state_required: "\<forall> cfg, oauth2_secure cfg = True \<longrightarrow> oauth2_state_param cfg = True"
+lemma OAUTH2_003_state_required: "\<forall>cfg. oauth2_secure cfg = True \<longrightarrow> oauth2_state_param cfg = True"
   by auto
 
 (* OAUTH2_004: Secure OAuth 2.0 has sufficient code entropy *)
 (* OAUTH2_004_code_entropy (matches Coq) *)
-lemma OAUTH2_004_code_entropy: "\<forall> cfg, oauth2_secure cfg = True \<longrightarrow> (128 <=? oauth2_code_bits cfg) = True"
+lemma OAUTH2_004_code_entropy: "\<forall>cfg. oauth2_secure cfg = True \<longrightarrow> (128 <=? oauth2_code_bits cfg) = True"
   by auto
 
 (* OAUTH2_005: Secure OAuth 2.0 has short code expiry *)
 (* OAUTH2_005_short_code_expiry (matches Coq) *)
-lemma OAUTH2_005_short_code_expiry: "\<forall> cfg, oauth2_secure cfg = True \<longrightarrow> (oauth2_code_expiry cfg <=? 60) = True"
+lemma OAUTH2_005_short_code_expiry: "\<forall>cfg. oauth2_secure cfg = True \<longrightarrow> (oauth2_code_expiry cfg <=? 60) = True"
   by auto
 
 (* OAUTH2_006: Secure OAuth 2.0 rotates refresh tokens *)
 (* OAUTH2_006_refresh_rotation (matches Coq) *)
-lemma OAUTH2_006_refresh_rotation: "\<forall> cfg, oauth2_secure cfg = True \<longrightarrow> oauth2_refresh_rotation cfg = True"
+lemma OAUTH2_006_refresh_rotation: "\<forall>cfg. oauth2_secure cfg = True \<longrightarrow> oauth2_refresh_rotation cfg = True"
   by auto
 
 (* OAUTH2_007: PKCE prevents authorization code interception *)
 (* OAUTH2_007_code_interception_prevention (matches Coq) *)
-lemma OAUTH2_007_code_interception_prevention: "\<forall> cfg, oauth2_secure cfg = True \<longrightarrow> oauth2_pkce cfg = True \<and> (128 <=? oauth2_code_bits cfg) = True"
+lemma OAUTH2_007_code_interception_prevention: "\<forall>cfg. oauth2_secure cfg = True \<longrightarrow> oauth2_pkce cfg = True \<and> (128 <=? oauth2_code_bits cfg) = True"
   by auto
 
 (* OIDC_001: RIINA OIDC is secure *)
@@ -773,27 +773,27 @@ lemma OIDC_001_riina_secure: "oidc_secure riina_oidc = True"
 
 (* OIDC_002: Secure OIDC has secure OAuth 2.0 base *)
 (* OIDC_002_secure_base (matches Coq) *)
-lemma OIDC_002_secure_base: "\<forall> cfg, oidc_secure cfg = True \<longrightarrow> oauth2_secure (oidc_base cfg) = True"
+lemma OIDC_002_secure_base: "\<forall>cfg. oidc_secure cfg = True \<longrightarrow> oauth2_secure (oidc_base cfg) = True"
   by auto
 
 (* OIDC_003: Secure OIDC uses strong signing algorithm *)
 (* OIDC_003_strong_signing (matches Coq) *)
-lemma OIDC_003_strong_signing: "\<forall> cfg, oidc_secure cfg = True \<longrightarrow> (1 <=? oidc_id_token_alg cfg) = True"
+lemma OIDC_003_strong_signing: "\<forall>cfg. oidc_secure cfg = True \<longrightarrow> (1 <=? oidc_id_token_alg cfg) = True"
   by auto
 
 (* OIDC_004: Secure OIDC has short ID token expiry *)
 (* OIDC_004_short_id_expiry (matches Coq) *)
-lemma OIDC_004_short_id_expiry: "\<forall> cfg, oidc_secure cfg = True \<longrightarrow> (oidc_id_token_expiry cfg <=? 3600) = True"
+lemma OIDC_004_short_id_expiry: "\<forall>cfg. oidc_secure cfg = True \<longrightarrow> (oidc_id_token_expiry cfg <=? 3600) = True"
   by auto
 
 (* OIDC_005: Secure OIDC verifies claims *)
 (* OIDC_005_claims_verified (matches Coq) *)
-lemma OIDC_005_claims_verified: "\<forall> cfg, oidc_secure cfg = True \<longrightarrow> oidc_claims_verified cfg = True"
+lemma OIDC_005_claims_verified: "\<forall>cfg. oidc_secure cfg = True \<longrightarrow> oidc_claims_verified cfg = True"
   by auto
 
 (* OIDC_006: OIDC inherits OAuth 2.0 PKCE protection *)
 (* OIDC_006_inherits_pkce (matches Coq) *)
-lemma OIDC_006_inherits_pkce: "\<forall> cfg, oidc_secure cfg = True \<longrightarrow> oauth2_pkce (oidc_base cfg) = True"
+lemma OIDC_006_inherits_pkce: "\<forall>cfg. oidc_secure cfg = True \<longrightarrow> oauth2_pkce (oidc_base cfg) = True"
   by auto
 
 (* CHALLENGE_001: RIINA challenge config is secure *)
@@ -803,32 +803,32 @@ lemma CHALLENGE_001_riina_secure: "challenge_secure riina_challenge = True"
 
 (* CHALLENGE_002: Secure challenge has sufficient entropy *)
 (* CHALLENGE_002_sufficient_entropy (matches Coq) *)
-lemma CHALLENGE_002_sufficient_entropy: "\<forall> cfg, challenge_secure cfg = True \<longrightarrow> (128 <=? challenge_bits cfg) = True"
+lemma CHALLENGE_002_sufficient_entropy: "\<forall>cfg. challenge_secure cfg = True \<longrightarrow> (128 <=? challenge_bits cfg) = True"
   by auto
 
 (* CHALLENGE_003: Secure challenge has short expiry *)
 (* CHALLENGE_003_short_expiry (matches Coq) *)
-lemma CHALLENGE_003_short_expiry: "\<forall> cfg, challenge_secure cfg = True \<longrightarrow> (challenge_expiry_ms cfg <=? 300000) = True"
+lemma CHALLENGE_003_short_expiry: "\<forall>cfg. challenge_secure cfg = True \<longrightarrow> (challenge_expiry_ms cfg <=? 300000) = True"
   by auto
 
 (* CHALLENGE_004: Secure challenge is single-use *)
 (* CHALLENGE_004_single_use (matches Coq) *)
-lemma CHALLENGE_004_single_use: "\<forall> cfg, challenge_secure cfg = True \<longrightarrow> challenge_single_use cfg = True"
+lemma CHALLENGE_004_single_use: "\<forall>cfg. challenge_secure cfg = True \<longrightarrow> challenge_single_use cfg = True"
   by auto
 
 (* CHALLENGE_005: Secure challenge is session-bound *)
 (* CHALLENGE_005_session_bound (matches Coq) *)
-lemma CHALLENGE_005_session_bound: "\<forall> cfg, challenge_secure cfg = True \<longrightarrow> challenge_bound cfg = True"
+lemma CHALLENGE_005_session_bound: "\<forall>cfg. challenge_secure cfg = True \<longrightarrow> challenge_bound cfg = True"
   by auto
 
 (* CHALLENGE_006: Challenge entropy prevents guessing *)
 (* CHALLENGE_006_guessing_resistant (matches Coq) *)
-lemma CHALLENGE_006_guessing_resistant: "\<forall> cfg, challenge_secure cfg = True \<longrightarrow> challenge_bits cfg \<ge> 128"
+lemma CHALLENGE_006_guessing_resistant: "\<forall>cfg. challenge_secure cfg = True \<longrightarrow> challenge_bits cfg \<ge> 128"
   by auto
 
 (* CHALLENGE_007: Single-use and binding prevent replay *)
 (* CHALLENGE_007_replay_prevention (matches Coq) *)
-lemma CHALLENGE_007_replay_prevention: "\<forall> cfg, challenge_secure cfg = True \<longrightarrow> challenge_single_use cfg = True \<and> challenge_bound cfg = True"
+lemma CHALLENGE_007_replay_prevention: "\<forall>cfg. challenge_secure cfg = True \<longrightarrow> challenge_single_use cfg = True \<and> challenge_bound cfg = True"
   by auto
 
 (* REPLAY_001: RIINA nonce tracker is secure *)
@@ -838,27 +838,27 @@ lemma REPLAY_001_riina_secure: "replay_prevention_secure riina_nonce_tracker = T
 
 (* REPLAY_002: Secure tracker has sufficient nonce size *)
 (* REPLAY_002_sufficient_nonce (matches Coq) *)
-lemma REPLAY_002_sufficient_nonce: "\<forall> cfg, replay_prevention_secure cfg = True \<longrightarrow> (128 <=? nonce_size_bits cfg) = True"
+lemma REPLAY_002_sufficient_nonce: "\<forall>cfg. replay_prevention_secure cfg = True \<longrightarrow> (128 <=? nonce_size_bits cfg) = True"
   by auto
 
 (* REPLAY_003: Secure tracker has sufficient window size *)
 (* REPLAY_003_sufficient_window (matches Coq) *)
-lemma REPLAY_003_sufficient_window: "\<forall> cfg, replay_prevention_secure cfg = True \<longrightarrow> (1000 <=? nonce_window_size cfg) = True"
+lemma REPLAY_003_sufficient_window: "\<forall>cfg. replay_prevention_secure cfg = True \<longrightarrow> (1000 <=? nonce_window_size cfg) = True"
   by auto
 
 (* REPLAY_004: Secure tracker has bounded timestamp *)
 (* REPLAY_004_bounded_timestamp (matches Coq) *)
-lemma REPLAY_004_bounded_timestamp: "\<forall> cfg, replay_prevention_secure cfg = True \<longrightarrow> (nonce_timestamp_bound cfg <=? 300) = True"
+lemma REPLAY_004_bounded_timestamp: "\<forall>cfg. replay_prevention_secure cfg = True \<longrightarrow> (nonce_timestamp_bound cfg <=? 300) = True"
   by auto
 
 (* REPLAY_005: Large window prevents replay *)
 (* REPLAY_005_window_prevents_replay (matches Coq) *)
-lemma REPLAY_005_window_prevents_replay: "\<forall> cfg, replay_prevention_secure cfg = True \<longrightarrow> nonce_window_size cfg \<ge> 1000"
+lemma REPLAY_005_window_prevents_replay: "\<forall>cfg. replay_prevention_secure cfg = True \<longrightarrow> nonce_window_size cfg \<ge> 1000"
   by auto
 
 (* REPLAY_006: Timestamp bound limits attack window *)
 (* REPLAY_006_limited_attack_window (matches Coq) *)
-lemma REPLAY_006_limited_attack_window: "\<forall> cfg, replay_prevention_secure cfg = True \<longrightarrow> nonce_timestamp_bound cfg \<le> 300"
+lemma REPLAY_006_limited_attack_window: "\<forall>cfg. replay_prevention_secure cfg = True \<longrightarrow> nonce_timestamp_bound cfg \<le> 300"
   by auto
 
 (* COMPOSITE_001: Complete password hashing security *)
@@ -888,7 +888,7 @@ lemma COMPOSITE_005_riina_auth_complete: "auth_complete riina_auth = True \<and>
 
 (* COMPOSITE_006: Secure auth implies all subcomponent properties *)
 (* COMPOSITE_006_auth_implies_all (matches Coq) *)
-lemma COMPOSITE_006_auth_implies_all: "\<forall> a, auth_complete a = True \<longrightarrow> pwd_bcrypt_argon (auth_pwd a) = True \<and> pwd_salt_unique (auth_pwd a) = True \<and> mfa_totp_support (auth_mfa a) = True \<and> mfa_webauthn (auth_mfa a) = True \<and> sess_secure_token (auth_session a) = True \<and> sess_rotation (auth_session a) = True"
+lemma COMPOSITE_006_auth_implies_all: "\<forall>a. auth_complete a = True \<longrightarrow> pwd_bcrypt_argon (auth_pwd a) = True \<and> pwd_salt_unique (auth_pwd a) = True \<and> mfa_totp_support (auth_mfa a) = True \<and> mfa_webauthn (auth_mfa a) = True \<and> sess_secure_token (auth_session a) = True \<and> sess_rotation (auth_session a) = True"
   by auto
 
 (* TOKEN_001: Valid tokens are not expired *)

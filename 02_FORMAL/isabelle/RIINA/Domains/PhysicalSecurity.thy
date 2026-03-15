@@ -208,7 +208,7 @@ Parameter different_chips_different_entropy : forall c1 c2,
 
 (* is_genuine (matches Coq: Definition is_genuine) *)
 definition is_genuine :: "Chip \<Rightarrow> GoldenSample \<Rightarrow> bool" where
-  "is_genuine c g \<equiv> structurally_equivalent c g /\
+  "is_genuine c g \<equiv> structurally_equivalent c g \<and>
   forall challenge, chip_puf c challenge = golden_puf g challenge.
 
 Parameter authentication_sound : forall c g,
@@ -232,11 +232,11 @@ definition T_MAX :: "Temperature" where
 
 (* voltage_ok (matches Coq: Definition voltage_ok) *)
 definition voltage_ok :: "DeviceState \<Rightarrow> bool" where
-  "voltage_ok d \<equiv> V_MIN <= dev_voltage d /\ dev_voltage d <= V_MAX"
+  "voltage_ok d \<equiv> V_MIN <= dev_voltage d \<and> dev_voltage d <= V_MAX"
 
 (* temp_ok (matches Coq: Definition temp_ok) *)
 definition temp_ok :: "DeviceState \<Rightarrow> bool" where
-  "temp_ok d \<equiv> T_MIN <= dev_temperature d /\ dev_temperature d <= T_MAX"
+  "temp_ok d \<equiv> T_MIN <= dev_temperature d \<and> dev_temperature d <= T_MAX"
 
 (* tamper_detected (matches Coq: Definition tamper_detected) *)
 definition tamper_detected :: "DeviceState \<Rightarrow> bool" where
@@ -273,87 +273,87 @@ Parameter crypto_power_independent : forall op,
   crypto_operation op = True -> power_independent op"
 
 (* PHY_001_01_rtl_gate_equivalent (matches Coq) *)
-lemma PHY_001_01_rtl_gate_equivalent: "\<forall> rtl nl, synthesize rtl = nl \<longrightarrow> semantic_equivalent rtl nl"
+lemma PHY_001_01_rtl_gate_equivalent: "\<forall>rtl nl. synthesize rtl = nl \<longrightarrow> semantic_equivalent rtl nl"
   by auto
 
 (* PHY_001_02_timing_closed (matches Coq) *)
-lemma PHY_001_02_timing_closed: "\<forall> nl clk, timing_analysis nl clk = True \<longrightarrow> timing_met nl clk"
+lemma PHY_001_02_timing_closed: "\<forall>nl clk. timing_analysis nl clk = True \<longrightarrow> timing_met nl clk"
   by auto
 
 (* PHY_001_03_no_trojans (matches Coq) *)
-lemma PHY_001_03_no_trojans: "\<forall> rtl, trojan_scan rtl = TrojanFree \<longrightarrow> no_hardware_trojans rtl"
+lemma PHY_001_03_no_trojans: "\<forall>rtl. trojan_scan rtl = TrojanFree \<longrightarrow> no_hardware_trojans rtl"
   by auto
 
 (* PHY_001_04_hw_constant_time (matches Coq) *)
-lemma PHY_001_04_hw_constant_time: "\<forall> op, crypto_operation op = True \<longrightarrow> constant_time_hw op"
+lemma PHY_001_04_hw_constant_time: "\<forall>op. crypto_operation op = True \<longrightarrow> constant_time_hw op"
   by auto
 
 (* PHY_001_05_design_deterministic (matches Coq) *)
-lemma PHY_001_05_design_deterministic: "\<forall> rtl, deterministic_design rtl"
+lemma PHY_001_05_design_deterministic: "\<forall>rtl. deterministic_design rtl"
   by simp
 
 (* PHY_001_06_golden_equivalent (matches Coq) *)
-lemma PHY_001_06_golden_equivalent: "\<forall> c g, x_ray_compare c g = Match \<longrightarrow> chip_xray c = golden_xray g"
+lemma PHY_001_06_golden_equivalent: "\<forall>c g. x_ray_compare c g = Match \<longrightarrow> chip_xray c = golden_xray g"
   by auto
 
 (* PHY_001_07_puf_unique (matches Coq) *)
-lemma PHY_001_07_puf_unique: "\<forall> c1 c2 challenge, chip_id c1 \<noteq> chip_id c2 \<longrightarrow> chip_puf c1 challenge \<noteq> chip_puf c2 challenge"
+lemma PHY_001_07_puf_unique: "\<forall>c1 c2 challenge. chip_id c1 \<noteq> chip_id c2 \<longrightarrow> chip_puf c1 challenge \<noteq> chip_puf c2 challenge"
   by auto
 
 (* PHY_001_08_puf_stable (matches Coq) *)
-lemma PHY_001_08_puf_stable: "\<forall> c t1 t2 challenge, chip_puf_at_time c t1 challenge = chip_puf_at_time c t2 challenge"
+lemma PHY_001_08_puf_stable: "\<forall>c t1 t2 challenge. chip_puf_at_time c t1 challenge = chip_puf_at_time c t2 challenge"
   by auto
 
 (* PHY_001_09_counterfeit_detected (matches Coq) *)
-lemma PHY_001_09_counterfeit_detected: "\<forall> c g, ~ is_genuine c g \<longrightarrow> authenticate_chip c g = Counterfeit"
+lemma PHY_001_09_counterfeit_detected: "\<forall>c g. ~ is_genuine c g \<longrightarrow> authenticate_chip c g = Counterfeit"
   by auto
 
 (* PHY_001_10_no_fab_tampering (matches Coq) *)
-lemma PHY_001_10_no_fab_tampering: "\<forall> c g, fab_integrity_check c g = FabClean \<longrightarrow> chip_xray c = golden_xray g"
+lemma PHY_001_10_no_fab_tampering: "\<forall>c g. fab_integrity_check c g = FabClean \<longrightarrow> chip_xray c = golden_xray g"
   by auto
 
 (* PHY_001_11_mesh_integrity (matches Coq) *)
-lemma PHY_001_11_mesh_integrity: "\<forall> d, dev_mesh_intact d = False \<longrightarrow> detect_probe d = ProbeDetected"
+lemma PHY_001_11_mesh_integrity: "\<forall>d. dev_mesh_intact d = False \<longrightarrow> detect_probe d = ProbeDetected"
   by auto
 
 (* PHY_001_12_tamper_response (matches Coq) *)
-lemma PHY_001_12_tamper_response: "\<forall> d d', tamper_detected d \<longrightarrow> step d d' \<longrightarrow> keys_zeroized d'"
+lemma PHY_001_12_tamper_response: "\<forall>d d'. tamper_detected d \<longrightarrow> step d d' \<longrightarrow> keys_zeroized d'"
   by simp
 
 (* PHY_001_13_voltage_glitch_detected (matches Coq) *)
-lemma PHY_001_13_voltage_glitch_detected: "\<forall> d, voltage_glitch d \<longrightarrow> voltage_monitor d = True"
+lemma PHY_001_13_voltage_glitch_detected: "\<forall>d. voltage_glitch d \<longrightarrow> voltage_monitor d = True"
   by auto
 
 (* PHY_001_14_temperature_bounds (matches Coq) *)
-lemma PHY_001_14_temperature_bounds: "\<forall> d, temp_violation d \<longrightarrow> temp_monitor d = True"
+lemma PHY_001_14_temperature_bounds: "\<forall>d. temp_violation d \<longrightarrow> temp_monitor d = True"
   by auto
 
 (* PHY_001_15_power_independent (matches Coq) *)
-lemma PHY_001_15_power_independent: "\<forall> op, crypto_operation op = True \<longrightarrow> power_independent op"
+lemma PHY_001_15_power_independent: "\<forall>op. crypto_operation op = True \<longrightarrow> power_independent op"
   by auto
 
 (* PHY_001_16_tamper_disables_operation (matches Coq) *)
-lemma PHY_001_16_tamper_disables_operation: "\<forall> d d', tamper_detected d \<longrightarrow> step d d' \<longrightarrow> dev_operational d' = False"
+lemma PHY_001_16_tamper_disables_operation: "\<forall>d d'. tamper_detected d \<longrightarrow> step d d' \<longrightarrow> dev_operational d' = False"
   by simp
 
 (* PHY_001_17_normal_preserves_state (matches Coq) *)
-lemma PHY_001_17_normal_preserves_state: "\<forall> d d', ~ tamper_detected d \<longrightarrow> step d d' \<longrightarrow> d' = d"
+lemma PHY_001_17_normal_preserves_state: "\<forall>d d'. ~ tamper_detected d \<longrightarrow> step d d' \<longrightarrow> d' = d"
   by simp
 
 (* PHY_001_18_mesh_broken_tamper (matches Coq) *)
-lemma PHY_001_18_mesh_broken_tamper: "\<forall> d, dev_mesh_intact d = False \<longrightarrow> tamper_detected d"
+lemma PHY_001_18_mesh_broken_tamper: "\<forall>d. dev_mesh_intact d = False \<longrightarrow> tamper_detected d"
   by auto
 
 (* PHY_001_19_voltage_oor_tamper (matches Coq) *)
-lemma PHY_001_19_voltage_oor_tamper: "\<forall> d, ~ voltage_ok d \<longrightarrow> tamper_detected d"
+lemma PHY_001_19_voltage_oor_tamper: "\<forall>d. ~ voltage_ok d \<longrightarrow> tamper_detected d"
   by auto
 
 (* PHY_001_20_temp_oor_tamper (matches Coq) *)
-lemma PHY_001_20_temp_oor_tamper: "\<forall> d, ~ temp_ok d \<longrightarrow> tamper_detected d"
+lemma PHY_001_20_temp_oor_tamper: "\<forall>d. ~ temp_ok d \<longrightarrow> tamper_detected d"
   by auto
 
 (* PHY_001_21_synthesis_all_inputs (matches Coq) *)
-lemma PHY_001_21_synthesis_all_inputs: "\<forall> rtl inputs, rtl_behavior rtl inputs = nl_behavior (synthesize rtl) inputs"
+lemma PHY_001_21_synthesis_all_inputs: "\<forall>rtl inputs. rtl_behavior rtl inputs = nl_behavior (synthesize rtl) inputs"
   by auto
 
 end

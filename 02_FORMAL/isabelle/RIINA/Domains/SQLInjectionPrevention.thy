@@ -106,8 +106,8 @@ definition riina_sql_config :: "SQLSecurityConfig" where
   True True True True True"
 
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* SQLI_001: Untainted is Safe *)
 (* SQLI_001_untainted_safe (matches Coq) *)
@@ -146,27 +146,27 @@ lemma SQLI_007_riina_protected: "sql_injection_protected riina_sql_config = True
 
 (* SQLI_008: Parameterized Only Required *)
 (* SQLI_008_parameterized_required (matches Coq) *)
-lemma SQLI_008_parameterized_required: "\<forall> c : SQLSecurityConfig, sql_injection_protected c = True \<longrightarrow> sql_parameterized_only c = True"
+lemma SQLI_008_parameterized_required: "\<forall>c : SQLSecurityConfig. sql_injection_protected c = True \<longrightarrow> sql_parameterized_only c = True"
   by auto
 
 (* SQLI_009: No String Concat Required *)
 (* SQLI_009_no_concat_required (matches Coq) *)
-lemma SQLI_009_no_concat_required: "\<forall> c : SQLSecurityConfig, sql_injection_protected c = True \<longrightarrow> sql_no_string_concat c = True"
+lemma SQLI_009_no_concat_required: "\<forall>c : SQLSecurityConfig. sql_injection_protected c = True \<longrightarrow> sql_no_string_concat c = True"
   by auto
 
 (* SQLI_010: Input Sanitization Required *)
 (* SQLI_010_sanitization_required (matches Coq) *)
-lemma SQLI_010_sanitization_required: "\<forall> c : SQLSecurityConfig, sql_injection_protected c = True \<longrightarrow> sql_input_sanitized c = True"
+lemma SQLI_010_sanitization_required: "\<forall>c : SQLSecurityConfig. sql_injection_protected c = True \<longrightarrow> sql_input_sanitized c = True"
   by auto
 
 (* SQLI_011: Whitelist Validation Required *)
 (* SQLI_011_whitelist_required (matches Coq) *)
-lemma SQLI_011_whitelist_required: "\<forall> c : SQLSecurityConfig, sql_injection_protected c = True \<longrightarrow> sql_whitelist_validation c = True"
+lemma SQLI_011_whitelist_required: "\<forall>c : SQLSecurityConfig. sql_injection_protected c = True \<longrightarrow> sql_whitelist_validation c = True"
   by auto
 
 (* SQLI_012: Escape Special Chars Required *)
 (* SQLI_012_escape_required (matches Coq) *)
-lemma SQLI_012_escape_required: "\<forall> c : SQLSecurityConfig, sql_injection_protected c = True \<longrightarrow> sql_escape_special_chars c = True"
+lemma SQLI_012_escape_required: "\<forall>c : SQLSecurityConfig. sql_injection_protected c = True \<longrightarrow> sql_escape_special_chars c = True"
   by auto
 
 (* SQLI_013: RIINA Parameterized Only *)
@@ -176,12 +176,12 @@ lemma SQLI_013_riina_parameterized: "sql_parameterized_only riina_sql_config = T
 
 (* SQLI_014: Safe Taint After Sanitization *)
 (* SQLI_014_sanitization_makes_safe (matches Coq) *)
-lemma SQLI_014_sanitization_makes_safe: "\<forall> t : TaintLevel, t = Sanitized \<or> t = Untainted \<longrightarrow> taint_safe t = True"
+lemma SQLI_014_sanitization_makes_safe: "\<forall>t : TaintLevel. t = Sanitized \<or> t = Untainted \<longrightarrow> taint_safe t = True"
   by simp
 
 (* SQLI_015: Complete SQL Injection Prevention *)
 (* SQLI_015_complete_prevention (matches Coq) *)
-lemma SQLI_015_complete_prevention: "\<forall> c : SQLSecurityConfig, sql_injection_protected c = True \<longrightarrow> sql_parameterized_only c = True \<and> sql_no_string_concat c = True \<and> sql_input_sanitized c = True \<and> sql_escape_special_chars c = True"
+lemma SQLI_015_complete_prevention: "\<forall>c : SQLSecurityConfig. sql_injection_protected c = True \<longrightarrow> sql_parameterized_only c = True \<and> sql_no_string_concat c = True \<and> sql_input_sanitized c = True \<and> sql_escape_special_chars c = True"
   by auto
 
 (* untainted_safe (matches Coq) *)

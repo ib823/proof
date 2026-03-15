@@ -171,7 +171,7 @@ definition positions_smooth :: "bool" where
   "positions_smooth \<equiv> forall i p1 p2,
     nth_error positions i = Some p1 ->
     nth_error positions (S i) = Some p2 ->
-    (p1 <= p2 + 10 /\ p2 <= p1 + 10)"
+    (p1 <= p2 + 10 \<and> p2 <= p1 + 10)"
 
 (* second_derivative_continuous (matches Coq: Definition second_derivative_continuous) *)
 definition second_derivative_continuous :: "bool" where
@@ -179,10 +179,10 @@ definition second_derivative_continuous :: "bool" where
 
 (* well_formed_spring (matches Coq: Definition well_formed_spring) *)
 definition well_formed_spring :: "SpringAnimation \<Rightarrow> bool" where
-  "well_formed_spring sa \<equiv> spring_stiffness (spring_params sa) > 0 /\
-  spring_mass (spring_params sa) > 0 /\
-  length (spring_positions sa) = spring_duration sa + 1 /\
-  length (spring_velocities sa) = spring_duration sa + 1 /\
+  "well_formed_spring sa \<equiv> spring_stiffness (spring_params sa) > 0 \<and>
+  spring_mass (spring_params sa) > 0 \<and>
+  length (spring_positions sa) = spring_duration sa + 1 \<and>
+  length (spring_velocities sa) = spring_duration sa + 1 \<and>
   positions_smooth (spring_positions sa)"
 
 (* reaches_target - complex match, needs manual translation *)
@@ -202,16 +202,16 @@ definition meets_frame_budget :: "Frame \<Rightarrow> bool" where
 
 (* well_formed_anim_control (matches Coq: Definition well_formed_anim_control) *)
 definition well_formed_anim_control :: "AnimationControl \<Rightarrow> bool" where
-  "well_formed_anim_control ac \<equiv> anim_speed ac > 0 /\
-  anim_speed ac <= 1000 /\
-  (anim_autoreverses ac = True -> anim_repeat_count ac > 0) /\
-  anim_current_repeat ac <= anim_repeat_count ac /\
+  "well_formed_anim_control ac \<equiv> anim_speed ac > 0 \<and>
+  anim_speed ac <= 1000 \<and>
+  (anim_autoreverses ac = True -> anim_repeat_count ac > 0) \<and>
+  anim_current_repeat ac <= anim_repeat_count ac \<and>
   anim_fill_mode ac <= 3"
 
 (* well_formed_anim_group (matches Coq: Definition well_formed_anim_group) *)
 definition well_formed_anim_group :: "AnimationGroup \<Rightarrow> bool" where
-  "well_formed_anim_group ag \<equiv> ag_synchronized ag = True /\
-  ag_duration ag > 0 /\
+  "well_formed_anim_group ag \<equiv> ag_synchronized ag = True \<and>
+  ag_duration ag > 0 \<and>
   length (ag_animations ag) > 0"
 
 (* well_formed_layer_anim (matches Coq: Definition well_formed_layer_anim) *)
@@ -220,98 +220,98 @@ definition well_formed_layer_anim :: "LayerAnimation \<Rightarrow> bool" where
 
 (* keyframe_in_range (matches Coq: Definition keyframe_in_range) *)
 definition keyframe_in_range :: "Keyframe \<Rightarrow> bool" where
-  "keyframe_in_range kf \<equiv> (from <= to -> from <= kf_value kf /\ kf_value kf <= to) /\
-  (to <= from -> to <= kf_value kf /\ kf_value kf <= from)"
+  "keyframe_in_range kf \<equiv> (from <= to -> from <= kf_value kf \<and> kf_value kf <= to) \<and>
+  (to <= from -> to <= kf_value kf \<and> kf_value kf <= from)"
 
 (* spring_converges - complex match, needs manual translation *)
 definition spring_converges :: "bool" where "spring_converges = undefined"
 
 (* nth_error_In_bounds (matches Coq) *)
-lemma nth_error_In_bounds: "\<forall> A (l : list A) n, n < length l \<longrightarrow> \<exists> x, nth_error l n = Some x"
-  by (cases rule: ‹_›.cases; simp)
+lemma nth_error_In_bounds: "\<forall>A (l : list A) n. n < length l \<longrightarrow> \<exists>x. nth_error l n = Some x"
+  by auto
 
 (* spring_physics_accurate (matches Coq) *)
-lemma spring_physics_accurate: "\<forall> (spring : SpringAnimation) (t : Time), well_formed_spring spring \<longrightarrow> t < length (spring_positions spring) \<longrightarrow> \<exists> p, position_at spring t = Some p"
+lemma spring_physics_accurate: "\<forall>(spring :: SpringAnimation) (t :: Time). well_formed_spring spring \<longrightarrow> t < length (spring_positions spring) \<longrightarrow> \<exists>p. position_at spring t = Some p"
   by auto
 
 (* animation_mathematically_smooth (matches Coq) *)
-lemma animation_mathematically_smooth: "\<forall> (animation : SpringAnimation), well_formed_spring animation \<longrightarrow> second_derivative_continuous (spring_positions animation)"
+lemma animation_mathematically_smooth: "\<forall>(animation :: SpringAnimation). well_formed_spring animation \<longrightarrow> second_derivative_continuous (spring_positions animation)"
   by auto
 
 (* spring_has_valid_duration (matches Coq) *)
-lemma spring_has_valid_duration: "\<forall> (spring : SpringAnimation), well_formed_spring spring \<longrightarrow> length (spring_positions spring) > 0"
+lemma spring_has_valid_duration: "\<forall>(spring :: SpringAnimation). well_formed_spring spring \<longrightarrow> length (spring_positions spring) > 0"
   by auto
 
 (* position_velocity_match (matches Coq) *)
-lemma position_velocity_match: "\<forall> (spring : SpringAnimation), well_formed_spring spring \<longrightarrow> length (spring_positions spring) = length (spring_velocities spring)"
+lemma position_velocity_match: "\<forall>(spring :: SpringAnimation). well_formed_spring spring \<longrightarrow> length (spring_positions spring) = length (spring_velocities spring)"
   by simp
 
 (* nth_error_Some_length (matches Coq) *)
-lemma nth_error_Some_length: "\<forall> {A : Type} (l : list A) (n : nat), n < length l \<longrightarrow> \<exists> a, nth_error l n = Some a"
-  by (cases rule: ‹_›.cases; simp)
+lemma nth_error_Some_length: "\<forall>{A : Type} (l : list A) (n :: nat). n < length l \<longrightarrow> \<exists>a. nth_error l n = Some a"
+  by auto
 
 (* animation_frame_budget_met (matches Coq) *)
-lemma animation_frame_budget_met: "\<forall> (f : Frame), meets_frame_budget f \<longrightarrow> frame_render_time f \<le> frame_budget_120hz"
+lemma animation_frame_budget_met: "\<forall>(f :: Frame). meets_frame_budget f \<longrightarrow> frame_render_time f \<le> frame_budget_120hz"
   by auto
 
 (* implicit_animation_smooth (matches Coq) *)
-lemma implicit_animation_smooth: "\<forall> (sa : SpringAnimation), well_formed_spring sa \<longrightarrow> positions_smooth (spring_positions sa)"
+lemma implicit_animation_smooth: "\<forall>(sa :: SpringAnimation). well_formed_spring sa \<longrightarrow> positions_smooth (spring_positions sa)"
   by auto
 
 (* explicit_animation_controllable (matches Coq) *)
-lemma explicit_animation_controllable: "\<forall> (ac : AnimationControl), well_formed_anim_control ac \<longrightarrow> anim_type ac = ExplicitAnim \<longrightarrow> anim_speed ac > 0 \<and> anim_speed ac \<le> 1000"
+lemma explicit_animation_controllable: "\<forall>(ac :: AnimationControl). well_formed_anim_control ac \<longrightarrow> anim_type ac = ExplicitAnim \<longrightarrow> anim_speed ac > 0 \<and> anim_speed ac \<le> 1000"
   by auto
 
 (* animation_group_synchronized (matches Coq) *)
-lemma animation_group_synchronized: "\<forall> (ag : AnimationGroup), well_formed_anim_group ag \<longrightarrow> ag_synchronized ag = True"
+lemma animation_group_synchronized: "\<forall>(ag :: AnimationGroup). well_formed_anim_group ag \<longrightarrow> ag_synchronized ag = True"
   by auto
 
 (* layer_animation_gpu_accelerated (matches Coq) *)
-lemma layer_animation_gpu_accelerated: "\<forall> (la : LayerAnimation), well_formed_layer_anim la \<longrightarrow> la_gpu_accelerated la = True"
+lemma layer_animation_gpu_accelerated: "\<forall>(la :: LayerAnimation). well_formed_layer_anim la \<longrightarrow> la_gpu_accelerated la = True"
   by auto
 
 (* animation_timing_precise (matches Coq) *)
-lemma animation_timing_precise: "\<forall> (ag : AnimationGroup), well_formed_anim_group ag \<longrightarrow> ag_duration ag > 0"
+lemma animation_timing_precise: "\<forall>(ag :: AnimationGroup). well_formed_anim_group ag \<longrightarrow> ag_duration ag > 0"
   by auto
 
 (* keyframe_values_interpolated (matches Coq) *)
-lemma keyframe_values_interpolated: "\<forall> (kf : Keyframe) (from to : nat), from \<le> to \<longrightarrow> keyframe_in_range kf from to \<longrightarrow> from \<le> kf_value kf \<and> kf_value kf \<le> to"
+lemma keyframe_values_interpolated: "\<forall>(kf :: Keyframe) (from to : nat). from \<le> to \<longrightarrow> keyframe_in_range kf from to \<longrightarrow> from \<le> kf_value kf \<and> kf_value kf \<le> to"
   by auto
 
 (* spring_animation_converges (matches Coq) *)
-lemma spring_animation_converges: "\<forall> (sa : SpringAnimation), well_formed_spring sa \<longrightarrow> spring_converges sa \<longrightarrow> spring_converges sa"
+lemma spring_animation_converges: "\<forall>(sa :: SpringAnimation). well_formed_spring sa \<longrightarrow> spring_converges sa \<longrightarrow> spring_converges sa"
   by auto
 
 (* transition_animation_reversible (matches Coq) *)
-lemma transition_animation_reversible: "\<forall> (ac : AnimationControl), anim_reversed ac = True \<longrightarrow> anim_reversed ac = True"
+lemma transition_animation_reversible: "\<forall>(ac :: AnimationControl). anim_reversed ac = True \<longrightarrow> anim_reversed ac = True"
   by auto
 
 (* animation_delegate_notified (matches Coq) *)
-lemma animation_delegate_notified: "\<forall> (ac : AnimationControl), anim_delegate_notified ac = True \<longrightarrow> anim_delegate_notified ac = True"
+lemma animation_delegate_notified: "\<forall>(ac :: AnimationControl). anim_delegate_notified ac = True \<longrightarrow> anim_delegate_notified ac = True"
   by auto
 
 (* animation_removed_cleanly (matches Coq) *)
-lemma animation_removed_cleanly: "\<forall> (ac : AnimationControl), anim_removed_cleanly ac = True \<longrightarrow> anim_removed_cleanly ac = True"
+lemma animation_removed_cleanly: "\<forall>(ac :: AnimationControl). anim_removed_cleanly ac = True \<longrightarrow> anim_removed_cleanly ac = True"
   by auto
 
 (* animation_speed_adjustable (matches Coq) *)
-lemma animation_speed_adjustable: "\<forall> (ac : AnimationControl), well_formed_anim_control ac \<longrightarrow> anim_speed ac > 0 \<and> anim_speed ac \<le> 1000"
+lemma animation_speed_adjustable: "\<forall>(ac :: AnimationControl). well_formed_anim_control ac \<longrightarrow> anim_speed ac > 0 \<and> anim_speed ac \<le> 1000"
   by auto
 
 (* animation_fill_mode_correct (matches Coq) *)
-lemma animation_fill_mode_correct: "\<forall> (ac : AnimationControl), well_formed_anim_control ac \<longrightarrow> anim_fill_mode ac \<le> 3"
+lemma animation_fill_mode_correct: "\<forall>(ac :: AnimationControl). well_formed_anim_control ac \<longrightarrow> anim_fill_mode ac \<le> 3"
   by auto
 
 (* animation_autoreverses_symmetric (matches Coq) *)
-lemma animation_autoreverses_symmetric: "\<forall> (ac : AnimationControl), well_formed_anim_control ac \<longrightarrow> anim_autoreverses ac = True \<longrightarrow> anim_repeat_count ac > 0"
+lemma animation_autoreverses_symmetric: "\<forall>(ac :: AnimationControl). well_formed_anim_control ac \<longrightarrow> anim_autoreverses ac = True \<longrightarrow> anim_repeat_count ac > 0"
   by auto
 
 (* animation_repeat_count_honored (matches Coq) *)
-lemma animation_repeat_count_honored: "\<forall> (ac : AnimationControl), well_formed_anim_control ac \<longrightarrow> anim_current_repeat ac \<le> anim_repeat_count ac"
+lemma animation_repeat_count_honored: "\<forall>(ac :: AnimationControl). well_formed_anim_control ac \<longrightarrow> anim_current_repeat ac \<le> anim_repeat_count ac"
   by auto
 
 (* animation_group_non_empty (matches Coq) *)
-lemma animation_group_non_empty: "\<forall> (ag : AnimationGroup), well_formed_anim_group ag \<longrightarrow> length (ag_animations ag) > 0"
+lemma animation_group_non_empty: "\<forall>(ag :: AnimationGroup). well_formed_anim_group ag \<longrightarrow> length (ag_animations ag) > 0"
   by auto
 
 end

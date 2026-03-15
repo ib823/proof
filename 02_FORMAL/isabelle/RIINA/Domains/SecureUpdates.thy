@@ -77,29 +77,29 @@ datatype update_result =
 
 (* version_gt (matches Coq: Definition version_gt) *)
 definition version_gt :: "bool" where
-  "version_gt \<equiv> (((ver_major < v2) \<or> ver_major v1))
-      ((((ver_major = v1) \<and> ver_major v2))
-            ((((ver_minor < v2) \<or> ver_minor v1))
-                 ((((ver_minor = v1) \<and> ver_minor v2))
-                       (((ver_patch < v2)) (ver_patch v1)))))"
+  "version_gt \<equiv> (ver_major v1 > ver_major v2 \<or>
+      (ver_major v1 = ver_major v2 \<and>
+            (ver_minor v1 > ver_minor v2 \<or>
+                 (ver_minor v1 = ver_minor v2 \<and>
+                       ver_patch v1 > ver_patch v2))))"
 
 (* version_gte (matches Coq: Definition version_gte) *)
 definition version_gte :: "bool" where
-  "version_gte \<equiv> (version_gt v1 v2 \<or> (((ver_major = v1) \<and> ver_major v2))
-            ((((ver_minor = v1) \<and> ver_minor v2))
-                  (((ver_patch = v1)) (ver_patch v2))))"
+  "version_gte \<equiv> (version_gt v1 v2 \<or> (ver_major v1 = ver_major v2 \<and>
+            ver_minor v1 = ver_minor v2 \<and>
+            ver_patch v1 = ver_patch v2))"
 
 (* signatures_sufficient (matches Coq: Definition signatures_sufficient) *)
 definition signatures_sufficient :: "UpdatePackage \<Rightarrow> nat \<Rightarrow> bool" where
-  "signatures_sufficient update threshold \<equiv> (threshold \<le> (length) (update_signatures update))"
+  "signatures_sufficient update threshold \<equiv> (threshold \<le> length (update_signatures update))"
 
 (* key_trusted (matches Coq: Definition key_trusted) *)
 definition key_trusted :: "UpdateSignature \<Rightarrow> bool" where
-  "key_trusted sig \<equiv> existsb (fun k => (k = (sig_key_id) sig)) trusted"
+  "key_trusted sig \<equiv> existsb (\<lambda>k. (k = (sig_key_id) sig)) trusted"
 
 (* rollback_counter_ok (matches Coq: Definition rollback_counter_ok) *)
 definition rollback_counter_ok :: "UpdatePackage \<Rightarrow> SystemState \<Rightarrow> bool" where
-  "rollback_counter_ok update sys \<equiv> ((sys_rollback_counter < sys)) (update_rollback_counter update)"
+  "rollback_counter_ok update sys \<equiv> (sys_rollback_counter sys < update_rollback_counter update)"
 
 (* hash_valid (matches Coq: Definition hash_valid) *)
 definition hash_valid :: "bool" where
@@ -115,9 +115,9 @@ fun backup_exists :: "bool" where
 
 (* backup_version_matches (matches Coq: Definition backup_version_matches) *)
 definition backup_version_matches :: "Backup \<Rightarrow> SystemState \<Rightarrow> bool" where
-  "backup_version_matches backup sys \<equiv> (((\<and> = (ver_major)) (backup_version backup)) (ver_major (sys_version sys)))
-       ((((\<and> = (ver_minor)) (backup_version backup)) (ver_minor (sys_version sys)))
-             (((ver_patch = (backup_version) backup)) (ver_patch (sys_version sys))))"
+  "backup_version_matches backup sys \<equiv> (ver_major (backup_version backup) = ver_major (sys_version sys) \<and>
+       ver_minor (backup_version backup) = ver_minor (sys_version sys) \<and>
+       ver_patch (backup_version backup) = ver_patch (sys_version sys))"
 
 (* threshold_met (matches Coq: Definition threshold_met) *)
 definition threshold_met :: "bool" where
@@ -125,7 +125,7 @@ definition threshold_met :: "bool" where
 
 (* sig_fresh (matches Coq: Definition sig_fresh) *)
 definition sig_fresh :: "UpdateSignature \<Rightarrow> bool" where
-  "sig_fresh sig \<equiv> ((current \<le> -) sig_timestamp sig) max_age"
+  "sig_fresh sig \<equiv> (current - sig_timestamp sig \<le> max_age)"
 
 (* keys_different (matches Coq: Definition keys_different) *)
 definition keys_different :: "bool" where
@@ -177,106 +177,106 @@ definition notification_sent :: "bool" where
 
 (* update_layers (matches Coq: Definition update_layers) *)
 definition update_layers :: "bool" where
-  "update_layers \<equiv> (sig \<and> (andb) version ((rollback \<and> (andb) atomic backup)))"
+  "update_layers \<equiv> (sig \<and> version \<and> rollback \<and> atomic \<and> backup)"
 
 (* update_001_version_newer (matches Coq) *)
-lemma update_001_version_newer: "\<forall> (update : UpdatePackage) (sys : SystemState), version_gt (update_version update) (sys_version sys) = True \<longrightarrow> version_gt (update_version update) (sys_version sys) = True"
+lemma update_001_version_newer: "\<forall>(update :: UpdatePackage) (sys :: SystemState). version_gt (update_version update) (sys_version sys) = True \<longrightarrow> version_gt (update_version update) (sys_version sys) = True"
   by auto
 
 (* update_002_sig_count (matches Coq) *)
-lemma update_002_sig_count: "\<forall> (update : UpdatePackage) (threshold : nat), signatures_sufficient update threshold = True \<longrightarrow> threshold \<le> length (update_signatures update)"
+lemma update_002_sig_count: "\<forall>(update :: UpdatePackage) (threshold :: nat). signatures_sufficient update threshold = True \<longrightarrow> threshold \<le> length (update_signatures update)"
   by auto
 
 (* update_003_key_trusted (matches Coq) *)
-lemma update_003_key_trusted: "\<forall> (sig : UpdateSignature) (trusted : list nat), key_trusted sig trusted = True \<longrightarrow> \<exists> k, In k trusted \<and> k = sig_key_id sig"
+lemma update_003_key_trusted: "\<forall>(sig :: UpdateSignature) (trusted : list nat). key_trusted sig trusted = True \<longrightarrow> \<exists>k. k \<in> set trusted \<and> k = sig_key_id sig"
   by auto
 
 (* update_004_rollback_counter (matches Coq) *)
-lemma update_004_rollback_counter: "\<forall> (update : UpdatePackage) (sys : SystemState), rollback_counter_ok update sys = True \<longrightarrow> sys_rollback_counter sys < update_rollback_counter update"
+lemma update_004_rollback_counter: "\<forall>(update :: UpdatePackage) (sys :: SystemState). rollback_counter_ok update sys = True \<longrightarrow> sys_rollback_counter sys < update_rollback_counter update"
   by auto
 
 (* update_005_min_version (matches Coq) *)
-lemma update_005_min_version: "\<forall> (update : UpdatePackage) (sys : SystemState), version_gte (sys_version sys) (update_min_version update) = True \<longrightarrow> version_gte (sys_version sys) (update_min_version update) = True"
+lemma update_005_min_version: "\<forall>(update :: UpdatePackage) (sys :: SystemState). version_gte (sys_version sys) (update_min_version update) = True \<longrightarrow> version_gte (sys_version sys) (update_min_version update) = True"
   by auto
 
 (* update_006_hash_valid (matches Coq) *)
-lemma update_006_hash_valid: "\<forall> (computed stored : nat), hash_valid computed stored = True \<longrightarrow> computed = stored"
+lemma update_006_hash_valid: "\<forall>(computed stored : nat). hash_valid computed stored = True \<longrightarrow> computed = stored"
   by auto
 
 (* update_007_atomic (matches Coq) *)
-lemma update_007_atomic: "\<forall> (started finished : bool), atomic_complete started finished = True \<longrightarrow> started = True \<longrightarrow> finished = True"
+lemma update_007_atomic: "\<forall>(started finished : bool). atomic_complete started finished = True \<longrightarrow> started = True \<longrightarrow> finished = True"
   by auto
 
 (* update_008_backup_exists (matches Coq) *)
-lemma update_008_backup_exists: "\<forall> (backup : option Backup), backup_\<exists> backup = True \<longrightarrow> \<exists> b, backup = Some b"
+lemma update_008_backup_exists: "\<forall>(backup : option Backup). backup_\<exists>backup = True \<longrightarrow> \<exists> b. backup = Some b"
   by simp
 
 (* update_009_backup_version (matches Coq) *)
-lemma update_009_backup_version: "\<forall> (backup : Backup) (sys : SystemState), backup_version_matches backup sys = True \<longrightarrow> ver_major (backup_version backup) = ver_major (sys_version sys)"
+lemma update_009_backup_version: "\<forall>(backup :: Backup) (sys :: SystemState). backup_version_matches backup sys = True \<longrightarrow> ver_major (backup_version backup) = ver_major (sys_version sys)"
   by auto
 
 (* update_010_recovery_restores (matches Coq) *)
-lemma update_010_recovery_restores: "\<forall> (backup : Backup), backup_version backup = backup_version backup"
+lemma update_010_recovery_restores: "\<forall>(backup :: Backup). backup_version backup = backup_version backup"
   by simp
 
 (* update_011_threshold (matches Coq) *)
-lemma update_011_threshold: "\<forall> (valid_sigs threshold : nat), threshold_met valid_sigs threshold = True \<longrightarrow> threshold \<le> valid_sigs"
+lemma update_011_threshold: "\<forall>(valid_sigs threshold : nat). threshold_met valid_sigs threshold = True \<longrightarrow> threshold \<le> valid_sigs"
   by auto
 
 (* update_012_sig_fresh (matches Coq) *)
-lemma update_012_sig_fresh: "\<forall> (sig : UpdateSignature) (current max_age : nat), sig_fresh sig current max_age = True \<longrightarrow> current - sig_timestamp sig \<le> max_age"
+lemma update_012_sig_fresh: "\<forall>(sig :: UpdateSignature) (current max_age : nat). sig_fresh sig current max_age = True \<longrightarrow> current - sig_timestamp sig \<le> max_age"
   by auto
 
 (* update_013_different_keys (matches Coq) *)
-lemma update_013_different_keys: "\<forall> (sigs : list UpdateSignature), keys_different sigs \<longrightarrow> NoDup (map sig_key_id sigs)"
+lemma update_013_different_keys: "\<forall>(sigs : list UpdateSignature). keys_different sigs \<longrightarrow> NoDup (map sig_key_id sigs)"
   by auto
 
 (* update_014_size_bounded (matches Coq) *)
-lemma update_014_size_bounded: "\<forall> (size max_size : nat), size_bounded size max_size = True \<longrightarrow> size \<le> max_size"
+lemma update_014_size_bounded: "\<forall>(size max_size : nat). size_bounded size max_size = True \<longrightarrow> size \<le> max_size"
   by auto
 
 (* update_015_compatible (matches Coq) *)
-lemma update_015_compatible: "\<forall> (update_req sys_has : nat), compatible update_req sys_has = True \<longrightarrow> update_req \<le> sys_has"
+lemma update_015_compatible: "\<forall>(update_req sys_has : nat). compatible update_req sys_has = True \<longrightarrow> update_req \<le> sys_has"
   by auto
 
 (* update_016_changelog (matches Coq) *)
-lemma update_016_changelog: "\<forall> (changelog_size : nat), changelog_present changelog_size = True \<longrightarrow> changelog_size > 0"
+lemma update_016_changelog: "\<forall>(changelog_size :: nat). changelog_present changelog_size = True \<longrightarrow> changelog_size > 0"
   by auto
 
 (* update_017_not_expired (matches Coq) *)
-lemma update_017_not_expired: "\<forall> (current expiry : nat), not_expired current expiry = True \<longrightarrow> current < expiry"
+lemma update_017_not_expired: "\<forall>(current expiry : nat). not_expired current expiry = True \<longrightarrow> current < expiry"
   by auto
 
 (* update_018_download_valid (matches Coq) *)
-lemma update_018_download_valid: "\<forall> (received expected : nat), download_valid received expected = True \<longrightarrow> received = expected"
+lemma update_018_download_valid: "\<forall>(received expected : nat). download_valid received expected = True \<longrightarrow> received = expected"
   by auto
 
 (* update_019_secure_channel (matches Coq) *)
-lemma update_019_secure_channel: "\<forall> (tls_version min_version : nat), channel_secure tls_version min_version = True \<longrightarrow> min_version \<le> tls_version"
+lemma update_019_secure_channel: "\<forall>(tls_version min_version : nat). channel_secure tls_version min_version = True \<longrightarrow> min_version \<le> tls_version"
   by auto
 
 (* update_020_rollout_pct (matches Coq) *)
-lemma update_020_rollout_pct: "\<forall> (percentage max_pct : nat), rollout_percentage_ok percentage max_pct = True \<longrightarrow> percentage \<le> max_pct"
+lemma update_020_rollout_pct: "\<forall>(percentage max_pct : nat). rollout_percentage_ok percentage max_pct = True \<longrightarrow> percentage \<le> max_pct"
   by auto
 
 (* update_021_reboot (matches Coq) *)
-lemma update_021_reboot: "\<forall> (required handled : bool), reboot_handled required handled = True \<longrightarrow> required = True \<longrightarrow> handled = True"
+lemma update_021_reboot: "\<forall>(required handled : bool). reboot_handled required handled = True \<longrightarrow> required = True \<longrightarrow> handled = True"
   by auto
 
 (* update_022_post_verify (matches Coq) *)
-lemma update_022_post_verify: "\<forall> (passed : bool), post_verify_ok passed = True \<longrightarrow> passed = True"
+lemma update_022_post_verify: "\<forall>(passed :: bool). post_verify_ok passed = True \<longrightarrow> passed = True"
   by auto
 
 (* update_023_audit (matches Coq) *)
-lemma update_023_audit: "\<forall> (event_count log_count : nat), audit_logged event_count log_count = True \<longrightarrow> event_count \<le> log_count"
+lemma update_023_audit: "\<forall>(event_count log_count : nat). audit_logged event_count log_count = True \<longrightarrow> event_count \<le> log_count"
   by auto
 
 (* update_024_notification (matches Coq) *)
-lemma update_024_notification: "\<forall> (should_notify did_notify : bool), notification_sent should_notify did_notify = True \<longrightarrow> should_notify = True \<longrightarrow> did_notify = True"
+lemma update_024_notification: "\<forall>(should_notify did_notify : bool). notification_sent should_notify did_notify = True \<longrightarrow> should_notify = True \<longrightarrow> did_notify = True"
   by auto
 
 (* update_025_defense_in_depth (matches Coq) *)
-lemma update_025_defense_in_depth: "\<forall> s v r a b, update_layers s v r a b = True \<longrightarrow> s = True \<and> v = True \<and> r = True \<and> a = True \<and> b = True"
+lemma update_025_defense_in_depth: "\<forall>s v r a b. update_layers s v r a b = True \<longrightarrow> s = True \<and> v = True \<and> r = True \<and> a = True \<and> b = True"
   by auto
 
 end

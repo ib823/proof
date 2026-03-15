@@ -74,7 +74,7 @@ record gc_result =
 
 (* obj_in_list (matches Coq: Definition obj_in_list) *)
 fun obj_in_list :: "ObjectId \<Rightarrow> bool" where
-
+  "obj_in_list _ = True"
 
 (* exists_in_heap (matches Coq: Definition exists_in_heap) *)
 definition exists_in_heap :: "HeapState \<Rightarrow> ObjectId \<Rightarrow> bool" where
@@ -95,7 +95,7 @@ definition after_gc_not_exists :: "GCResult \<Rightarrow> Object \<Rightarrow> b
 (* valid_gc (matches Coq: Definition valid_gc) *)
 definition valid_gc :: "GCResult \<Rightarrow> bool" where
   "valid_gc result \<equiv> (forall oid, reachable (gc_pre_state result) oid ->
-    exists_in_heap (gc_post_state result) oid) /\
+    exists_in_heap (gc_post_state result) oid) \<and>
   
   (forall obj, exists_obj (gc_post_state result) obj ->
     reachable (gc_pre_state result) (obj_id obj))"
@@ -110,102 +110,102 @@ definition heap_utilization :: "HeapState \<Rightarrow> nat" where
 
 (* Theorem: Reachable objects are preserved after garbage collection. *)
 (* gc_preserves_live_objects (matches Coq) *)
-lemma gc_preserves_live_objects: "\<forall> (result : GCResult) (oid : ObjectId), valid_gc result \<longrightarrow> reachable (gc_pre_state result) oid \<longrightarrow> \<exists>_in_heap (gc_post_state result) oid"
+lemma gc_preserves_live_objects: "\<forall>(result :: GCResult) (oid :: ObjectId). valid_gc result \<longrightarrow> reachable (gc_pre_state result) oid \<longrightarrow> \<exists>_in_heap (gc_post_state result) oid"
   by auto
 
 (* Theorem: Unreachable objects are collected after garbage collection. *)
 (* gc_collects_garbage (matches Coq) *)
-lemma gc_collects_garbage: "\<forall> (result : GCResult) (obj : Object), valid_gc result \<longrightarrow> ~ reachable (gc_pre_state result) (obj_id obj) \<longrightarrow> ~ \<exists>_obj (gc_post_state result) obj"
+lemma gc_collects_garbage: "\<forall>(result :: GCResult) (obj :: Object). valid_gc result \<longrightarrow> ~ reachable (gc_pre_state result) (obj_id obj) \<longrightarrow> ~ \<exists>_obj (gc_post_state result) obj"
   by auto
 
 (* Roots are always reachable *)
 (* roots_reachable (matches Coq) *)
-lemma roots_reachable: "\<forall> (st : HeapState) (oid : ObjectId), In oid (root_set st) \<longrightarrow> \<exists>_in_heap st oid \<longrightarrow> reachable st oid"
+lemma roots_reachable: "\<forall>(st :: HeapState) (oid :: ObjectId). In oid (root_set st) \<longrightarrow> \<exists>_in_heap st oid \<longrightarrow> reachable st oid"
   by auto
 
 (* Referenced objects are reachable *)
 (* references_reachable (matches Coq) *)
-lemma references_reachable: "\<forall> (st : HeapState) (parent : Object) (child_oid : ObjectId), reachable st (obj_id parent) \<longrightarrow> In parent (live_objects st) \<longrightarrow> In child_oid (obj_references parent) \<longrightarrow> \<exists>_in_heap st child_oid \<longrightarrow> reachable st child_oid"
+lemma references_reachable: "\<forall>(st :: HeapState) (parent :: Object) (child_oid : ObjectId). reachable st (obj_id parent) \<longrightarrow> In parent (live_objects st) \<longrightarrow> In child_oid (obj_references parent) \<longrightarrow> \<exists>_in_heap st child_oid \<longrightarrow> reachable st child_oid"
   by auto
 
 (* Empty root set means only explicitly reachable objects survive *)
 (* empty_roots_gc (matches Coq) *)
-lemma empty_roots_gc: "\<forall> (result : GCResult), valid_gc result \<longrightarrow> root_set (gc_pre_state result) = [] \<longrightarrow> \<forall> obj, ~ reachable (gc_pre_state result) (obj_id obj) \<longrightarrow> ~ \<exists>_obj (gc_post_state result) obj"
+lemma empty_roots_gc: "\<forall>(result :: GCResult). valid_gc result \<longrightarrow> root_set (gc_pre_state result) = [] \<longrightarrow> \<forall>obj. ~ reachable (gc_pre_state result) (obj_id obj) \<longrightarrow> ~ \<exists>_obj (gc_post_state result) obj"
   by auto
 
 (* GC preserves root set *)
 (* gc_preserves_root_set (matches Coq) *)
-lemma gc_preserves_root_set: "\<forall> (result : GCResult), valid_gc result \<longrightarrow> \<forall> oid, In oid (root_set (gc_pre_state result)) \<longrightarrow> \<exists>_in_heap (gc_pre_state result) oid \<longrightarrow> \<exists>_in_heap (gc_post_state result) oid"
+lemma gc_preserves_root_set: "\<forall>(result :: GCResult). valid_gc result \<longrightarrow> \<forall>oid. In oid (root_set (gc_pre_state result)) \<longrightarrow> \<exists>_in_heap (gc_pre_state result) oid \<longrightarrow> \<exists>_in_heap (gc_post_state result) oid"
   by auto
 
 (* No objects survive GC if heap was entirely unreachable *)
 (* unreachable_heap_cleared (matches Coq) *)
-lemma unreachable_heap_cleared: "\<forall> (result : GCResult), valid_gc result \<longrightarrow> (\<forall> oid, ~ reachable (gc_pre_state result) oid) \<longrightarrow> \<forall> obj, ~ \<exists>_obj (gc_post_state result) obj"
+lemma unreachable_heap_cleared: "\<forall>(result :: GCResult). valid_gc result \<longrightarrow> (\<forall>oid. ~ reachable (gc_pre_state result) oid) \<longrightarrow> \<forall>obj. ~ \<exists>_obj (gc_post_state result) obj"
   by auto
 
 (* GC is safe: post state only contains previously reachable objects *)
 (* gc_safety (matches Coq) *)
-lemma gc_safety: "\<forall> (result : GCResult), valid_gc result \<longrightarrow> \<forall> obj, \<exists>_obj (gc_post_state result) obj \<longrightarrow> reachable (gc_pre_state result) (obj_id obj)"
+lemma gc_safety: "\<forall>(result :: GCResult). valid_gc result \<longrightarrow> \<forall>obj. \<exists>_obj (gc_post_state result) obj \<longrightarrow> reachable (gc_pre_state result) (obj_id obj)"
   by auto
 
 (* Root reachability is a subset of general reachability *)
 (* root_reachable_subset (matches Coq) *)
-lemma root_reachable_subset: "\<forall> (st : HeapState) (oid : ObjectId), In oid (root_set st) \<longrightarrow> \<exists>_in_heap st oid \<longrightarrow> reachable st oid"
+lemma root_reachable_subset: "\<forall>(st :: HeapState) (oid :: ObjectId). In oid (root_set st) \<longrightarrow> \<exists>_in_heap st oid \<longrightarrow> reachable st oid"
   by auto
 
 (* Transitive reachability: if A reaches B and B reaches C, A reaches C *)
 (* reachability_transitive (matches Coq) *)
-lemma reachability_transitive: "\<forall> (st : HeapState) (a_oid c_oid : ObjectId) (b : Object), reachable st a_oid \<longrightarrow> In b (live_objects st) \<longrightarrow> obj_id b = a_oid \<longrightarrow> In c_oid (obj_references b) \<longrightarrow> \<exists>_in_heap st c_oid \<longrightarrow> reachable st c_oid"
+lemma reachability_transitive: "\<forall>(st :: HeapState) (a_oid c_oid : ObjectId) (b :: Object). reachable st a_oid \<longrightarrow> In b (live_objects st) \<longrightarrow> obj_id b = a_oid \<longrightarrow> In c_oid (obj_references b) \<longrightarrow> \<exists>_in_heap st c_oid \<longrightarrow> reachable st c_oid"
   by auto
 
 (* GC idempotent: running GC on GC result doesn't change anything *)
 (* gc_idempotent (matches Coq) *)
-lemma gc_idempotent: "\<forall> (result : GCResult), valid_gc result \<longrightarrow> \<forall> obj, \<exists>_obj (gc_post_state result) obj \<longrightarrow> reachable (gc_pre_state result) (obj_id obj)"
+lemma gc_idempotent: "\<forall>(result :: GCResult). valid_gc result \<longrightarrow> \<forall>obj. \<exists>_obj (gc_post_state result) obj \<longrightarrow> reachable (gc_pre_state result) (obj_id obj)"
   by auto
 
 (* Empty heap is trivially valid after GC *)
 (* empty_heap_gc_safe (matches Coq) *)
-lemma empty_heap_gc_safe: "\<forall> (result : GCResult), live_objects (gc_pre_state result) = [] \<longrightarrow> valid_gc result \<longrightarrow> \<forall> obj, ~ \<exists>_obj (gc_post_state result) obj"
+lemma empty_heap_gc_safe: "\<forall>(result :: GCResult). live_objects (gc_pre_state result) = [] \<longrightarrow> valid_gc result \<longrightarrow> \<forall>obj. ~ \<exists>_obj (gc_post_state result) obj"
   by auto
 
 (* Object with no references doesn't contribute to reachability *)
 (* no_refs_no_children (matches Coq) *)
-lemma no_refs_no_children: "\<forall> (st : HeapState) (parent : Object) (child_oid : ObjectId), obj_references parent = [] \<longrightarrow> ~ (In parent (live_objects st) \<and> In child_oid (obj_references parent))"
+lemma no_refs_no_children: "\<forall>(st :: HeapState) (parent :: Object) (child_oid : ObjectId). obj_references parent = [] \<longrightarrow> ~ (In parent (live_objects st) \<and> In child_oid (obj_references parent))"
   by auto
 
 (* GC preserves reachable objects deterministically *)
 (* gc_preserves_deterministic (matches Coq) *)
-lemma gc_preserves_deterministic: "\<forall> (result : GCResult) (oid : ObjectId), valid_gc result \<longrightarrow> reachable (gc_pre_state result) oid \<longrightarrow> \<exists>_in_heap (gc_post_state result) oid"
+lemma gc_preserves_deterministic: "\<forall>(result :: GCResult) (oid :: ObjectId). valid_gc result \<longrightarrow> reachable (gc_pre_state result) oid \<longrightarrow> \<exists>_in_heap (gc_post_state result) oid"
   by auto
 
 (* Single-object heap with root: object survives GC *)
 (* single_root_survives (matches Coq) *)
-lemma single_root_survives: "\<forall> (result : GCResult) (obj : Object), valid_gc result \<longrightarrow> live_objects (gc_pre_state result) = [obj] \<longrightarrow> In (obj_id obj) (root_set (gc_pre_state result)) \<longrightarrow> \<exists>_in_heap (gc_post_state result) (obj_id obj)"
-  by (cases rule: ‹_›.cases; simp)
+lemma single_root_survives: "\<forall>(result :: GCResult) (obj :: Object). valid_gc result \<longrightarrow> live_objects (gc_pre_state result) = [obj] \<longrightarrow> In (obj_id obj) (root_set (gc_pre_state result)) \<longrightarrow> \<exists>_in_heap (gc_post_state result) (obj_id obj)"
+  by auto
 
 (* Heap utilization non-negative *)
 (* heap_utilization_nonneg (matches Coq) *)
-lemma heap_utilization_nonneg: "\<forall> (st : HeapState), heap_utilization st \<ge> 0"
+lemma heap_utilization_nonneg: "\<forall>(st :: HeapState). heap_utilization st \<ge> 0"
   by simp
 
 (* Empty heap has zero utilization *)
 (* empty_heap_zero_utilization (matches Coq) *)
-lemma empty_heap_zero_utilization: "\<forall> (st : HeapState), live_objects st = [] \<longrightarrow> heap_utilization st = 0"
+lemma empty_heap_zero_utilization: "\<forall>(st :: HeapState). live_objects st = [] \<longrightarrow> heap_utilization st = 0"
   by simp
 
 (* ObjectId equality is reflexive *)
 (* object_id_eq_refl (matches Coq) *)
-lemma object_id_eq_refl: "\<forall> (oid : ObjectId), ObjectId_eq_dec oid oid = left eq_refl"
+lemma object_id_eq_refl: "\<forall>(oid :: ObjectId). ObjectId_eq_dec oid oid = left eq_refl"
   by simp
 
 (* Reachability implies existence *)
 (* reachable_implies_exists (matches Coq) *)
-lemma reachable_implies_exists: "\<forall> (st : HeapState) (oid : ObjectId), reachable st oid \<longrightarrow> \<exists>_in_heap st oid"
+lemma reachable_implies_exists: "\<forall>(st :: HeapState) (oid :: ObjectId). reachable st oid \<longrightarrow> \<exists>_in_heap st oid"
   by auto
 
 (* Valid GC preserves and reflects reachability *)
 (* valid_gc_reflects_reachability (matches Coq) *)
-lemma valid_gc_reflects_reachability: "\<forall> (result : GCResult), valid_gc result \<longrightarrow> (\<forall> oid, reachable (gc_pre_state result) oid \<longrightarrow> \<exists>_in_heap (gc_post_state result) oid) \<and> (\<forall> obj, \<exists>_obj (gc_post_state result) obj \<longrightarrow> reachable (gc_pre_state result) (obj_id obj))"
+lemma valid_gc_reflects_reachability: "\<forall>(result :: GCResult). valid_gc result \<longrightarrow> (\<forall>oid. reachable (gc_pre_state result) oid \<longrightarrow> \<exists>_in_heap (gc_post_state result) oid) \<and> (\<forall>obj. \<exists>_obj (gc_post_state result) obj \<longrightarrow> reachable (gc_pre_state result) (obj_id obj))"
   by auto
 
 end

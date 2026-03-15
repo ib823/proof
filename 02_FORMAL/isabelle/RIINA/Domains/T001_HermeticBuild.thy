@@ -121,7 +121,7 @@ definition is_auditable :: "Hex0 \<Rightarrow> bool" where
 
 (* valid_hex0 (matches Coq: Definition valid_hex0) *)
 definition valid_hex0 :: "Hex0 \<Rightarrow> bool" where
-  "valid_hex0 h \<equiv> List.length h <= hex0_size /\ List.length h > 0"
+  "valid_hex0 h \<equiv> List.length h <= hex0_size \<and> List.length h > 0"
 
 (* hex0_semantics (matches Coq: Definition hex0_semantics) *)
 definition hex0_semantics :: "Binary" where
@@ -129,8 +129,8 @@ definition hex0_semantics :: "Binary" where
 
 (* is_hermetic (matches Coq: Definition is_hermetic) *)
 definition is_hermetic :: "BuildEnv \<Rightarrow> bool" where
-  "is_hermetic env \<equiv> env_network env = False /\
-  env_clock env = 0 /\
+  "is_hermetic env \<equiv> env_network env = False \<and>
+  env_clock env = 0 \<and>
   List.length (env_filesystem env) > 0"
 
 (* hermetic_build (matches Coq: Definition hermetic_build) *)
@@ -162,7 +162,7 @@ definition functionally_equivalent :: "bool" where
 
 (* valid_ddc (matches Coq: Definition valid_ddc) *)
 definition valid_ddc :: "DDCResult \<Rightarrow> bool" where
-  "valid_ddc ddc \<equiv> functionally_equivalent (compiler_a ddc) (compiler_aprime ddc) /\
+  "valid_ddc ddc \<equiv> functionally_equivalent (compiler_a ddc) (compiler_aprime ddc) \<and>
   equivalent ddc = True"
 
 (* has_trojan (matches Coq: Definition has_trojan) *)
@@ -175,7 +175,7 @@ definition stage_valid :: "Stage \<Rightarrow> bool" where
 
 (* chain_valid (matches Coq: Definition chain_valid) *)
 definition chain_valid :: "BootstrapChain \<Rightarrow> bool" where
-  "chain_valid chain \<equiv> forall s, In s chain -> stage_valid s"
+  "chain_valid chain \<equiv> forall s, s \<in> set chain -> stage_valid s"
 
 (* stage_deterministic (matches Coq: Definition stage_deterministic) *)
 definition stage_deterministic :: "Stage \<Rightarrow> bool" where
@@ -186,115 +186,115 @@ definition stage_terminates :: "Stage \<Rightarrow> bool" where
   "stage_terminates s \<equiv> forall input, exists output, compile (stage_binary s) input = output"
 
 (* T_001_01_hex0_auditable (matches Coq) *)
-lemma T_001_01_hex0_auditable: "\<forall> h : Hex0, valid_hex0 h \<longrightarrow> is_auditable h"
+lemma T_001_01_hex0_auditable: "\<forall>h : Hex0. valid_hex0 h \<longrightarrow> is_auditable h"
   by auto
 
 (* T_001_02_hex0_correct (matches Coq) *)
-lemma T_001_02_hex0_correct: "\<forall> input : list nat, hex0_semantics input = input"
+lemma T_001_02_hex0_correct: "\<forall>input : list nat. hex0_semantics input = input"
   by simp
 
 (* T_001_03_stage_preserves_semantics (matches Coq) *)
-lemma T_001_03_stage_preserves_semantics: "\<forall> compiler src out, out = source_semantics src \<longrightarrow> preserves_semantics compiler src out"
+lemma T_001_03_stage_preserves_semantics: "\<forall>compiler src out. out = source_semantics src \<longrightarrow> preserves_semantics compiler src out"
   by auto
 
 (* T_001_04_bootstrap_chain_valid (matches Coq) *)
-lemma T_001_04_bootstrap_chain_valid: "\<forall> chain, (\<forall> s, In s chain \<longrightarrow> stage_hash s = sha256 (stage_binary s)) \<longrightarrow> chain_valid chain"
+lemma T_001_04_bootstrap_chain_valid: "\<forall>chain. (\<forall>s. s \<in> set chain \<longrightarrow> stage_hash s = sha256 (stage_binary s)) \<longrightarrow> chain_valid chain"
   by auto
 
 (* T_001_05_stage_deterministic (matches Coq) *)
-lemma T_001_05_stage_deterministic: "\<forall> s input, compile (stage_binary s) input = compile (stage_binary s) input"
+lemma T_001_05_stage_deterministic: "\<forall>s input. compile (stage_binary s) input = compile (stage_binary s) input"
   by simp
 
 (* T_001_06_stage_terminates (matches Coq) *)
-lemma T_001_06_stage_terminates: "\<forall> s, stage_terminates s"
+lemma T_001_06_stage_terminates: "\<forall>s. stage_terminates s"
   by simp
 
 (* T_001_07_self_hosting_valid (matches Coq) *)
-lemma T_001_07_self_hosting_valid: "\<forall> c, compile (compiler_binary c) (compiler_source c) = compile (compiler_binary c) (compiler_source c)"
+lemma T_001_07_self_hosting_valid: "\<forall>c. compile (compiler_binary c) (compiler_source c) = compile (compiler_binary c) (compiler_source c)"
   by simp
 
 (* T_001_08_bootstrap_idempotent (matches Coq) *)
-lemma T_001_08_bootstrap_idempotent: "\<forall> b env src, hermetic_build b \<longrightarrow> is_hermetic env \<longrightarrow> b env src = b env src"
+lemma T_001_08_bootstrap_idempotent: "\<forall>b env src. hermetic_build b \<longrightarrow> is_hermetic env \<longrightarrow> b env src = b env src"
   by simp
 
 (* T_001_09_no_network_access (matches Coq) *)
-lemma T_001_09_no_network_access: "\<forall> env, is_hermetic env \<longrightarrow> env_network env = False"
+lemma T_001_09_no_network_access: "\<forall>env. is_hermetic env \<longrightarrow> env_network env = False"
   by auto
 
 (* T_001_10_filesystem_readonly (matches Coq) *)
-lemma T_001_10_filesystem_readonly: "\<forall> env, is_hermetic env \<longrightarrow> List.length (env_filesystem env) > 0"
+lemma T_001_10_filesystem_readonly: "\<forall>env. is_hermetic env \<longrightarrow> List.length (env_filesystem env) > 0"
   by auto
 
 (* T_001_11_clock_fixed (matches Coq) *)
-lemma T_001_11_clock_fixed: "\<forall> env, is_hermetic env \<longrightarrow> env_clock env = 0"
+lemma T_001_11_clock_fixed: "\<forall>env. is_hermetic env \<longrightarrow> env_clock env = 0"
   by auto
 
 (* T_001_12_randomness_deterministic (matches Coq) *)
-lemma T_001_12_randomness_deterministic: "\<forall> env1 env2, env_random_seed env1 = env_random_seed env2 \<longrightarrow> env_random_seed env1 = env_random_seed env2"
+lemma T_001_12_randomness_deterministic: "\<forall>env1 env2. env_random_seed env1 = env_random_seed env2 \<longrightarrow> env_random_seed env1 = env_random_seed env2"
   by auto
 
 (* T_001_13_environment_clean (matches Coq) *)
-lemma T_001_13_environment_clean: "\<forall> env, is_hermetic env \<longrightarrow> env_network env = False \<and> env_clock env = 0"
+lemma T_001_13_environment_clean: "\<forall>env. is_hermetic env \<longrightarrow> env_network env = False \<and> env_clock env = 0"
   by auto
 
 (* T_001_14_inputs_whitelisted (matches Coq) *)
-lemma T_001_14_inputs_whitelisted: "\<forall> env h, In h (env_inputs env) \<longrightarrow> In h (env_inputs env)"
+lemma T_001_14_inputs_whitelisted: "\<forall>env h. In h (env_inputs env) \<longrightarrow> In h (env_inputs env)"
   by auto
 
 (* T_001_15_hermetic_composition (matches Coq) *)
-lemma T_001_15_hermetic_composition: "\<forall> b1 b2, hermetic_build b1 \<longrightarrow> hermetic_build b2 \<longrightarrow> hermetic_build (fun env src => b2 env (b1 env src))"
+lemma T_001_15_hermetic_composition: "\<forall>b1 b2. hermetic_build b1 \<longrightarrow> hermetic_build b2 \<longrightarrow> hermetic_build (fun env src => b2 env (b1 env src))"
   by auto
 
 (* T_001_16_bit_reproducible (matches Coq) *)
-lemma T_001_16_bit_reproducible: "\<forall> b env1 env2 src, hermetic_build b \<longrightarrow> is_hermetic env1 \<longrightarrow> is_hermetic env2 \<longrightarrow> env_inputs env1 = env_inputs env2 \<longrightarrow> b env1 src = b env2 src"
+lemma T_001_16_bit_reproducible: "\<forall>b env1 env2 src. hermetic_build b \<longrightarrow> is_hermetic env1 \<longrightarrow> is_hermetic env2 \<longrightarrow> env_inputs env1 = env_inputs env2 \<longrightarrow> b env1 src = b env2 src"
   by auto
 
 (* T_001_17_hash_deterministic (matches Coq) *)
-lemma T_001_17_hash_deterministic: "\<forall> b env src, hermetic_build b \<longrightarrow> is_hermetic env \<longrightarrow> sha256 (b env src) = sha256 (b env src)"
+lemma T_001_17_hash_deterministic: "\<forall>b env src. hermetic_build b \<longrightarrow> is_hermetic env \<longrightarrow> sha256 (b env src) = sha256 (b env src)"
   by simp
 
 (* T_001_18_diverse_double_compile (matches Coq) *)
-lemma T_001_18_diverse_double_compile: "\<forall> ddc, valid_ddc ddc \<longrightarrow> functionally_equivalent (compiler_a ddc) (compiler_aprime ddc)"
+lemma T_001_18_diverse_double_compile: "\<forall>ddc. valid_ddc ddc \<longrightarrow> functionally_equivalent (compiler_a ddc) (compiler_aprime ddc)"
   by auto
 
 (* T_001_19_cross_compile_equivalent (matches Coq) *)
-lemma T_001_19_cross_compile_equivalent: "\<forall> c1 c2 src, functionally_equivalent c1 c2 \<longrightarrow> compile (compiler_binary c1) src = compile (compiler_binary c2) src"
+lemma T_001_19_cross_compile_equivalent: "\<forall>c1 c2 src. functionally_equivalent c1 c2 \<longrightarrow> compile (compiler_binary c1) src = compile (compiler_binary c2) src"
   by auto
 
 (* T_001_20_source_hash_verified (matches Coq) *)
-lemma T_001_20_source_hash_verified: "\<forall> s, stage_valid s \<longrightarrow> stage_hash s = sha256 (stage_binary s)"
+lemma T_001_20_source_hash_verified: "\<forall>s. stage_valid s \<longrightarrow> stage_hash s = sha256 (stage_binary s)"
   by auto
 
 (* T_001_21_reproducibility_composition (matches Coq) *)
-lemma T_001_21_reproducibility_composition: "\<forall> b1 b2, hermetic_build b1 \<longrightarrow> hermetic_build b2 \<longrightarrow> \<forall> env1 env2 src, is_hermetic env1 \<longrightarrow> is_hermetic env2 \<longrightarrow> env_inputs env1 = env_inputs env2 \<longrightarrow> b2 env1 (b1 env1 src) = b2 env2 (b1 env2 src)"
+lemma T_001_21_reproducibility_composition: "\<forall>b1 b2. hermetic_build b1 \<longrightarrow> hermetic_build b2 \<longrightarrow> \<forall>env1 env2 src. is_hermetic env1 \<longrightarrow> is_hermetic env2 \<longrightarrow> env_inputs env1 = env_inputs env2 \<longrightarrow> b2 env1 (b1 env1 src) = b2 env2 (b1 env2 src)"
   by auto
 
 (* T_001_22_ddc_setup (matches Coq) *)
-lemma T_001_22_ddc_setup: "\<forall> ddc, compiler_chain (compiler_a ddc) \<noteq> compiler_chain (compiler_b ddc) \<or> compiler_chain (compiler_a ddc) = compiler_chain (compiler_b ddc)"
+lemma T_001_22_ddc_setup: "\<forall>ddc. compiler_chain (compiler_a ddc) \<noteq> compiler_chain (compiler_b ddc) \<or> compiler_chain (compiler_a ddc) = compiler_chain (compiler_b ddc)"
   by auto
 
 (* T_001_23_ddc_stage_a (matches Coq) *)
-lemma T_001_23_ddc_stage_a: "\<forall> ddc, \<exists> chain, compiler_chain (compiler_a ddc) = chain"
+lemma T_001_23_ddc_stage_a: "\<forall>ddc. \<exists>chain. compiler_chain (compiler_a ddc) = chain"
   by simp
 
 (* T_001_24_ddc_stage_b (matches Coq) *)
-lemma T_001_24_ddc_stage_b: "\<forall> ddc, \<exists> chain, compiler_chain (compiler_b ddc) = chain"
+lemma T_001_24_ddc_stage_b: "\<forall>ddc. \<exists>chain. compiler_chain (compiler_b ddc) = chain"
   by simp
 
 (* T_001_25_ddc_stage_aprime (matches Coq) *)
-lemma T_001_25_ddc_stage_aprime: "\<forall> ddc, valid_ddc ddc \<longrightarrow> compile (compiler_binary (compiler_a ddc)) (compiler_source (compiler_b ddc)) = compile (compiler_binary (compiler_a ddc)) (compiler_source (compiler_b ddc))"
+lemma T_001_25_ddc_stage_aprime: "\<forall>ddc. valid_ddc ddc \<longrightarrow> compile (compiler_binary (compiler_a ddc)) (compiler_source (compiler_b ddc)) = compile (compiler_binary (compiler_a ddc)) (compiler_source (compiler_b ddc))"
   by simp
 
 (* T_001_26_ddc_equivalence (matches Coq) *)
-lemma T_001_26_ddc_equivalence: "\<forall> ddc, valid_ddc ddc \<longrightarrow> functionally_equivalent (compiler_a ddc) (compiler_aprime ddc)"
+lemma T_001_26_ddc_equivalence: "\<forall>ddc. valid_ddc ddc \<longrightarrow> functionally_equivalent (compiler_a ddc) (compiler_aprime ddc)"
   by auto
 
 (* T_001_27_ddc_trojan_detected (matches Coq) *)
-lemma T_001_27_ddc_trojan_detected: "\<forall> ddc, valid_ddc ddc \<longrightarrow> has_trojan (compiler_a ddc) \<longrightarrow> ~ functionally_equivalent (compiler_a ddc) (compiler_aprime ddc) \<or> functionally_equivalent (compiler_a ddc) (compiler_aprime ddc)"
+lemma T_001_27_ddc_trojan_detected: "\<forall>ddc. valid_ddc ddc \<longrightarrow> has_trojan (compiler_a ddc) \<longrightarrow> ~ functionally_equivalent (compiler_a ddc) (compiler_aprime ddc) \<or> functionally_equivalent (compiler_a ddc) (compiler_aprime ddc)"
   by auto
 
 (* T_001_28_ddc_confidence (matches Coq) *)
-lemma T_001_28_ddc_confidence: "\<forall> ddc, valid_ddc ddc \<longrightarrow> equivalent ddc = True"
+lemma T_001_28_ddc_confidence: "\<forall>ddc. valid_ddc ddc \<longrightarrow> equivalent ddc = True"
   by auto
 
 end

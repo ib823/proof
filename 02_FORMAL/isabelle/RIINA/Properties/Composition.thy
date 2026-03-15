@@ -25,28 +25,28 @@ theory Composition
 begin
 
 (* val_rel_pair (matches Coq) *)
-lemma val_rel_pair: "\<forall> Σ T1 T2 v1 v1' v2 v2', val_rel Σ T1 v1 v1' \<longrightarrow> val_rel Σ T2 v2 v2' \<longrightarrow> has_type nil Σ Public v1 T1 EffectPure \<longrightarrow> has_type nil Σ Public v1' T1 EffectPure \<longrightarrow> has_type nil Σ Public v2 T2 EffectPure \<longrightarrow> has_type nil Σ Public v2' T2 EffectPure \<longrightarrow> val_rel Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2')"
+lemma val_rel_pair: "\<forall>Σ T1 T2 v1 v1' v2 v2'. val_rel Σ T1 v1 v1' \<longrightarrow> val_rel Σ T2 v2 v2' \<longrightarrow> has_type nil Σ Public v1 T1 EffectPure \<longrightarrow> has_type nil Σ Public v1' T1 EffectPure \<longrightarrow> has_type nil Σ Public v2 T2 EffectPure \<longrightarrow> has_type nil Σ Public v2' T2 EffectPure \<longrightarrow> val_rel Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2')"
   by auto
 
 (* val_rel_inl (matches Coq) *)
-lemma val_rel_inl: "\<forall> Σ T1 T2 v1 v2, val_rel Σ T1 v1 v2 \<longrightarrow> has_type nil Σ Public v1 T1 EffectPure \<longrightarrow> has_type nil Σ Public v2 T1 EffectPure \<longrightarrow> val_rel Σ (TSum T1 T2) (EInl v1 T2) (EInl v2 T2)"
+lemma val_rel_inl: "\<forall>Σ T1 T2 v1 v2. val_rel Σ T1 v1 v2 \<longrightarrow> has_type nil Σ Public v1 T1 EffectPure \<longrightarrow> has_type nil Σ Public v2 T1 EffectPure \<longrightarrow> val_rel Σ (TSum T1 T2) (EInl v1 T2) (EInl v2 T2)"
   by auto
 
 (* val_rel_inr (matches Coq) *)
-lemma val_rel_inr: "\<forall> Σ T1 T2 v1 v2, val_rel Σ T2 v1 v2 \<longrightarrow> has_type nil Σ Public v1 T2 EffectPure \<longrightarrow> has_type nil Σ Public v2 T2 EffectPure \<longrightarrow> val_rel Σ (TSum T1 T2) (EInr v1 T1) (EInr v2 T1)"
+lemma val_rel_inr: "\<forall>Σ T1 T2 v1 v2. val_rel Σ T2 v1 v2 \<longrightarrow> has_type nil Σ Public v1 T2 EffectPure \<longrightarrow> has_type nil Σ Public v2 T2 EffectPure \<longrightarrow> val_rel Σ (TSum T1 T2) (EInr v1 T1) (EInr v2 T1)"
   by auto
 
 (* These follow directly from val_rel lemmas + exp_rel_of_val_rel *)
 (* exp_rel_pair_values (matches Coq) *)
-lemma exp_rel_pair_values: "\<forall> Σ T1 T2 v1 v1' v2 v2', val_rel Σ T1 v1 v1' \<longrightarrow> val_rel Σ T2 v2 v2' \<longrightarrow> has_type nil Σ Public v1 T1 EffectPure \<longrightarrow> has_type nil Σ Public v1' T1 EffectPure \<longrightarrow> has_type nil Σ Public v2 T2 EffectPure \<longrightarrow> has_type nil Σ Public v2' T2 EffectPure \<longrightarrow> exp_rel Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2')"
+lemma exp_rel_pair_values: "\<forall>Σ T1 T2 v1 v1' v2 v2'. val_rel Σ T1 v1 v1' \<longrightarrow> val_rel Σ T2 v2 v2' \<longrightarrow> has_type nil Σ Public v1 T1 EffectPure \<longrightarrow> has_type nil Σ Public v1' T1 EffectPure \<longrightarrow> has_type nil Σ Public v2 T2 EffectPure \<longrightarrow> has_type nil Σ Public v2' T2 EffectPure \<longrightarrow> exp_rel Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2')"
   by auto
 
 (* exp_rel_inl_values (matches Coq) *)
-lemma exp_rel_inl_values: "\<forall> Σ T1 T2 v1 v2, val_rel Σ T1 v1 v2 \<longrightarrow> has_type nil Σ Public v1 T1 EffectPure \<longrightarrow> has_type nil Σ Public v2 T1 EffectPure \<longrightarrow> exp_rel Σ (TSum T1 T2) (EInl v1 T2) (EInl v2 T2)"
+lemma exp_rel_inl_values: "\<forall>Σ T1 T2 v1 v2. val_rel Σ T1 v1 v2 \<longrightarrow> has_type nil Σ Public v1 T1 EffectPure \<longrightarrow> has_type nil Σ Public v2 T1 EffectPure \<longrightarrow> exp_rel Σ (TSum T1 T2) (EInl v1 T2) (EInl v2 T2)"
   by auto
 
 (* exp_rel_inr_values (matches Coq) *)
-lemma exp_rel_inr_values: "\<forall> Σ T1 T2 v1 v2, val_rel Σ T2 v1 v2 \<longrightarrow> has_type nil Σ Public v1 T2 EffectPure \<longrightarrow> has_type nil Σ Public v2 T2 EffectPure \<longrightarrow> exp_rel Σ (TSum T1 T2) (EInr v1 T1) (EInr v2 T1)"
+lemma exp_rel_inr_values: "\<forall>Σ T1 T2 v1 v2. val_rel Σ T2 v1 v2 \<longrightarrow> has_type nil Σ Public v1 T2 EffectPure \<longrightarrow> has_type nil Σ Public v2 T2 EffectPure \<longrightarrow> exp_rel Σ (TSum T1 T2) (EInr v1 T1) (EInr v2 T1)"
   by auto
 
 end

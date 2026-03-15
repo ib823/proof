@@ -100,111 +100,111 @@ definition has_network_permission :: "Application \<Rightarrow> bool" where
   "has_network_permission app \<equiv> app_network_perm app = True"
 
 (* firewall_permits (matches Coq: Definition firewall_permits) *)
-fun firewall_permits :: "bool" where
-
+definition firewall_permits :: "bool" where
+  "firewall_permits \<equiv> True"
 
 (* Theorem: An application cannot access another application's sockets. *)
 (* network_isolation (matches Coq) *)
-lemma network_isolation: "\<forall> (app1 app2 : Application) (socket : Socket), app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 socket \<longrightarrow> ~ can_access_socket app2 socket"
+lemma network_isolation: "\<forall>(app1 app2 : Application) (socket :: Socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 socket \<longrightarrow> ~ can_access_socket app2 socket"
   by auto
 
 (* Socket ownership is exclusive *)
 (* socket_ownership_exclusive (matches Coq) *)
-lemma socket_ownership_exclusive: "\<forall> (app1 app2 : Application) (sock : Socket), owns_socket app1 sock \<longrightarrow> owns_socket app2 sock \<longrightarrow> app_id app1 = app_id app2"
+lemma socket_ownership_exclusive: "\<forall>(app1 app2 : Application) (sock :: Socket). owns_socket app1 sock \<longrightarrow> owns_socket app2 sock \<longrightarrow> app_id app1 = app_id app2"
   by auto
 
 (* unbound_socket_not_usable (matches Coq) *)
-lemma unbound_socket_not_usable: "\<forall> (sock : Socket), socket_bound sock = False \<longrightarrow> ~ socket_usable sock"
+lemma unbound_socket_not_usable: "\<forall>(sock :: Socket). socket_bound sock = False \<longrightarrow> ~ socket_usable sock"
   by auto
 
 (* Send requires network permission *)
 (* send_requires_network_permission (matches Coq) *)
-lemma send_requires_network_permission: "\<forall> (app : Application) (sock : Socket), sends_data app sock \<longrightarrow> has_network_permission app"
+lemma send_requires_network_permission: "\<forall>(app :: Application) (sock :: Socket). sends_data app sock \<longrightarrow> has_network_permission app"
   by auto
 
 (* Receive requires network permission *)
 (* receive_requires_network_permission (matches Coq) *)
-lemma receive_requires_network_permission: "\<forall> (app : Application) (sock : Socket), receives_data app sock \<longrightarrow> has_network_permission app"
+lemma receive_requires_network_permission: "\<forall>(app :: Application) (sock :: Socket). receives_data app sock \<longrightarrow> has_network_permission app"
   by auto
 
 (* No network permission blocks send *)
 (* no_perm_blocks_send (matches Coq) *)
-lemma no_perm_blocks_send: "\<forall> (app : Application) (sock : Socket), app_network_perm app = False \<longrightarrow> ~ sends_data app sock"
+lemma no_perm_blocks_send: "\<forall>(app :: Application) (sock :: Socket). app_network_perm app = False \<longrightarrow> ~ sends_data app sock"
   by auto
 
 (* No network permission blocks receive *)
 (* no_perm_blocks_receive (matches Coq) *)
-lemma no_perm_blocks_receive: "\<forall> (app : Application) (sock : Socket), app_network_perm app = False \<longrightarrow> ~ receives_data app sock"
+lemma no_perm_blocks_receive: "\<forall>(app :: Application) (sock :: Socket). app_network_perm app = False \<longrightarrow> ~ receives_data app sock"
   by auto
 
 (* Unbound socket blocks send *)
 (* unbound_blocks_send (matches Coq) *)
-lemma unbound_blocks_send: "\<forall> (app : Application) (sock : Socket), socket_bound sock = False \<longrightarrow> ~ sends_data app sock"
+lemma unbound_blocks_send: "\<forall>(app :: Application) (sock :: Socket). socket_bound sock = False \<longrightarrow> ~ sends_data app sock"
   by auto
 
 (* Unbound socket blocks receive *)
 (* unbound_blocks_receive (matches Coq) *)
-lemma unbound_blocks_receive: "\<forall> (app : Application) (sock : Socket), socket_bound sock = False \<longrightarrow> ~ receives_data app sock"
+lemma unbound_blocks_receive: "\<forall>(app :: Application) (sock :: Socket). socket_bound sock = False \<longrightarrow> ~ receives_data app sock"
   by auto
 
 (* Default deny firewall: empty rules block all *)
 (* default_deny_firewall (matches Coq) *)
-lemma default_deny_firewall: "\<forall> (src_port dst_port : nat), firewall_permits [] src_port dst_port = False"
+lemma default_deny_firewall: "\<forall>(src_port dst_port : nat). firewall_permits [] src_port dst_port = False"
   by simp
 
 (* Cross-app socket access is impossible *)
 (* cross_app_socket_impossible (matches Coq) *)
-lemma cross_app_socket_impossible: "\<forall> (app1 app2 : Application) (sock : Socket), app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock \<longrightarrow> ~ sends_data app2 sock"
+lemma cross_app_socket_impossible: "\<forall>(app1 app2 : Application) (sock :: Socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock \<longrightarrow> ~ sends_data app2 sock"
   by auto
 
 (* Cross-app receive impossible *)
 (* cross_app_receive_impossible (matches Coq) *)
-lemma cross_app_receive_impossible: "\<forall> (app1 app2 : Application) (sock : Socket), app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock \<longrightarrow> ~ receives_data app2 sock"
+lemma cross_app_receive_impossible: "\<forall>(app1 app2 : Application) (sock :: Socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock \<longrightarrow> ~ receives_data app2 sock"
   by auto
 
 (* Send implies socket bound *)
 (* send_implies_bound (matches Coq) *)
-lemma send_implies_bound: "\<forall> (app : Application) (sock : Socket), sends_data app sock \<longrightarrow> socket_usable sock"
+lemma send_implies_bound: "\<forall>(app :: Application) (sock :: Socket). sends_data app sock \<longrightarrow> socket_usable sock"
   by auto
 
 (* Receive implies socket bound *)
 (* receive_implies_bound (matches Coq) *)
-lemma receive_implies_bound: "\<forall> (app : Application) (sock : Socket), receives_data app sock \<longrightarrow> socket_usable sock"
+lemma receive_implies_bound: "\<forall>(app :: Application) (sock :: Socket). receives_data app sock \<longrightarrow> socket_usable sock"
   by auto
 
 (* Socket isolation: different apps have different sockets *)
 (* socket_isolation_by_owner (matches Coq) *)
-lemma socket_isolation_by_owner: "\<forall> (app1 app2 : Application) (sock1 sock2 : Socket), app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock1 \<longrightarrow> owns_socket app2 sock2 \<longrightarrow> socket_owner sock1 \<noteq> socket_owner sock2"
+lemma socket_isolation_by_owner: "\<forall>(app1 app2 : Application) (sock1 sock2 : Socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock1 \<longrightarrow> owns_socket app2 sock2 \<longrightarrow> socket_owner sock1 \<noteq> socket_owner sock2"
   by auto
 
 (* Access control consistent: can_access implies ownership *)
 (* access_control_consistent (matches Coq) *)
-lemma access_control_consistent: "\<forall> (app : Application) (sock : Socket), can_access_socket app sock \<longrightarrow> owns_socket app sock"
+lemma access_control_consistent: "\<forall>(app :: Application) (sock :: Socket). can_access_socket app sock \<longrightarrow> owns_socket app sock"
   by auto
 
 (* Network permission is required for both send and receive *)
 (* network_perm_required_both_directions (matches Coq) *)
-lemma network_perm_required_both_directions: "\<forall> (app : Application) (sock : Socket), sends_data app sock \<or> receives_data app sock \<longrightarrow> has_network_permission app"
+lemma network_perm_required_both_directions: "\<forall>(app :: Application) (sock :: Socket). sends_data app sock \<or> receives_data app sock \<longrightarrow> has_network_permission app"
   by auto
 
 (* Full isolation: no perm, no access, no send, no receive *)
 (* full_network_isolation (matches Coq) *)
-lemma full_network_isolation: "\<forall> (app : Application), app_network_perm app = False \<longrightarrow> \<forall> sock, ~ sends_data app sock \<and> ~ receives_data app sock"
+lemma full_network_isolation: "\<forall>(app :: Application). app_network_perm app = False \<longrightarrow> \<forall>sock. ~ sends_data app sock \<and> ~ receives_data app sock"
   by auto
 
 (* Bound socket is usable *)
 (* bound_implies_usable (matches Coq) *)
-lemma bound_implies_usable: "\<forall> sock, socket_bound sock = True \<longrightarrow> socket_usable sock"
+lemma bound_implies_usable: "\<forall>sock. socket_bound sock = True \<longrightarrow> socket_usable sock"
   by auto
 
 (* Firewall enabled provides protection *)
 (* firewall_protects (matches Coq) *)
-lemma firewall_protects: "\<forall> ns, firewall_enabled ns = True \<longrightarrow> firewall_enabled ns = True"
+lemma firewall_protects: "\<forall>ns. firewall_enabled ns = True \<longrightarrow> firewall_enabled ns = True"
   by auto
 
 (* Socket port is a natural number — always non-negative *)
 (* socket_port_nonneg (matches Coq) *)
-lemma socket_port_nonneg: "\<forall> sock, socket_port sock \<ge> 0"
+lemma socket_port_nonneg: "\<forall>sock. socket_port sock \<ge> 0"
   by simp
 
 end

@@ -136,7 +136,7 @@ definition terminated :: "Application \<Rightarrow> bool" where
 
 (* relaunched (matches Coq: Definition relaunched) *)
 definition relaunched :: "Application \<Rightarrow> bool" where
-  "relaunched app \<equiv> app_state app = Foreground /\ 
+  "relaunched app \<equiv> app_state app = Foreground \<and> 
   app_saved_state app <> None"
 
 (* state (matches Coq: Definition state) *)
@@ -180,8 +180,8 @@ definition LowMemoryLevel :: "'a" where
 
 (* well_formed_ext_app (matches Coq: Definition well_formed_ext_app) *)
 definition well_formed_ext_app :: "ExtApp \<Rightarrow> bool" where
-  "well_formed_ext_app ea \<equiv> (app_state (ext_app ea) = Background -> ext_bg_time_used ea <= bg_time_limit) /\
-  ext_memory_level ea <= 2 /\
+  "well_formed_ext_app ea \<equiv> (app_state (ext_app ea) = Background -> ext_bg_time_used ea <= bg_time_limit) \<and>
+  ext_memory_level ea <= 2 \<and>
   (ext_activation_count ea > 0 -> app_state (ext_app ea) <> NotRunning)"
 
 (* transition_preserves_id (matches Coq: Definition transition_preserves_id) *)
@@ -189,15 +189,15 @@ definition transition_preserves_id :: "bool" where
   "transition_preserves_id \<equiv> app_id app_before = app_id app_after"
 
 (* app_state_consistent (matches Coq) *)
-lemma app_state_consistent: "\<forall> (app : Application) (s : AppState), in_state app s \<longrightarrow> state_invariants_hold app s \<longrightarrow> in_state app s \<and> state_invariants_hold app s"
+lemma app_state_consistent: "\<forall>(app :: Application) (s :: AppState). in_state app s \<longrightarrow> state_invariants_hold app s \<longrightarrow> in_state app s \<and> state_invariants_hold app s"
   by auto
 
 (* state_restoration_complete (matches Coq) *)
-lemma state_restoration_complete: "\<forall> (app : Application), app_supports_restoration app = True \<longrightarrow> app_saved_state app \<noteq> None \<longrightarrow> state (restore_state app) = previous_state app"
-  by (cases rule: ‹_›.cases; simp)
+lemma state_restoration_complete: "\<forall>(app :: Application). app_supports_restoration app = True \<longrightarrow> app_saved_state app \<noteq> None \<longrightarrow> state (restore_state app) = previous_state app"
+  by auto
 
 (* save_restore_preserves_state (matches Coq) *)
-lemma save_restore_preserves_state: "\<forall> (app : Application), state (restore_state (save_state app)) = state app"
+lemma save_restore_preserves_state: "\<forall>(app :: Application). state (restore_state (save_state app)) = state app"
   by simp
 
 (* not_running_can_launch (matches Coq) *)
@@ -213,67 +213,67 @@ lemma background_can_foreground: "valid_lifecycle_transition Background Foregrou
   by simp
 
 (* save_captures_current_state (matches Coq) *)
-lemma save_captures_current_state: "\<forall> (app : Application), app_saved_state (save_state app) = Some (app_data app)"
+lemma save_captures_current_state: "\<forall>(app :: Application). app_saved_state (save_state app) = Some (app_data app)"
   by simp
 
 (* app_state_transition_valid (matches Coq) *)
-lemma app_state_transition_valid: "\<forall> (from to : AppState), valid_lifecycle_transition from to = True \<longrightarrow> valid_lifecycle_transition from to = True"
+lemma app_state_transition_valid: "\<forall>(from to : AppState). valid_lifecycle_transition from to = True \<longrightarrow> valid_lifecycle_transition from to = True"
   by auto
 
 (* background_to_foreground_clean (matches Coq) *)
-lemma background_to_foreground_clean: "\<forall> (app : Application), app_state app = Background \<longrightarrow> app_saved_state app \<noteq> None \<longrightarrow> valid_lifecycle_transition Background Foreground = True"
+lemma background_to_foreground_clean: "\<forall>(app :: Application). app_state app = Background \<longrightarrow> app_saved_state app \<noteq> None \<longrightarrow> valid_lifecycle_transition Background Foreground = True"
   by simp
 
 (* state_saved_on_background (matches Coq) *)
-lemma state_saved_on_background: "\<forall> (app : Application), app_state app = Foreground \<longrightarrow> app_saved_state (save_state app) = Some (app_data app)"
+lemma state_saved_on_background: "\<forall>(app :: Application). app_state app = Foreground \<longrightarrow> app_saved_state (save_state app) = Some (app_data app)"
   by simp
 
 (* state_restored_on_foreground (matches Coq) *)
-lemma state_restored_on_foreground: "\<forall> (app : Application) (d : AppData), app_saved_state app = Some d \<longrightarrow> app_state (restore_state app) = Foreground"
+lemma state_restored_on_foreground: "\<forall>(app :: Application) (d :: AppData). app_saved_state app = Some d \<longrightarrow> app_state (restore_state app) = Foreground"
   by simp
 
 (* app_termination_notified (matches Coq) *)
-lemma app_termination_notified: "\<forall> (from : AppState), valid_lifecycle_transition from Terminated = True \<longrightarrow> from = Foreground \<or> from = Background \<or> from = Suspended"
-  by (cases rule: ‹_›.cases; simp)
+lemma app_termination_notified: "\<forall>(from :: AppState). valid_lifecycle_transition from Terminated = True \<longrightarrow> from = Foreground \<or> from = Background \<or> from = Suspended"
+  by auto
 
 (* low_memory_warning_delivered (matches Coq) *)
-lemma low_memory_warning_delivered: "\<forall> (ea : ExtApp), well_formed_ext_app ea \<longrightarrow> ext_memory_level ea \<le> 2"
+lemma low_memory_warning_delivered: "\<forall>(ea :: ExtApp). well_formed_ext_app ea \<longrightarrow> ext_memory_level ea \<le> 2"
   by auto
 
 (* background_execution_time_limited (matches Coq) *)
-lemma background_execution_time_limited: "\<forall> (ea : ExtApp), well_formed_ext_app ea \<longrightarrow> app_state (ext_app ea) = Background \<longrightarrow> ext_bg_time_used ea \<le> 30000"
+lemma background_execution_time_limited: "\<forall>(ea :: ExtApp). well_formed_ext_app ea \<longrightarrow> app_state (ext_app ea) = Background \<longrightarrow> ext_bg_time_used ea \<le> 30000"
   by auto
 
 (* url_scheme_validated (matches Coq) *)
-lemma url_scheme_validated: "\<forall> (u : URLScheme), url_validated u = True \<longrightarrow> url_validated u = True"
+lemma url_scheme_validated: "\<forall>(u :: URLScheme). url_validated u = True \<longrightarrow> url_validated u = True"
   by auto
 
 (* deep_link_sanitized (matches Coq) *)
-lemma deep_link_sanitized: "\<forall> (u : URLScheme), url_sanitized u = True \<longrightarrow> url_validated u = True \<longrightarrow> url_sanitized u = True \<and> url_validated u = True"
+lemma deep_link_sanitized: "\<forall>(u :: URLScheme). url_sanitized u = True \<longrightarrow> url_validated u = True \<longrightarrow> url_sanitized u = True \<and> url_validated u = True"
   by auto
 
 (* app_extension_sandboxed (matches Coq) *)
-lemma app_extension_sandboxed: "\<forall> (ext : AppExtension), ext_sandboxed ext = True \<longrightarrow> ext_sandboxed ext = True"
+lemma app_extension_sandboxed: "\<forall>(ext :: AppExtension). ext_sandboxed ext = True \<longrightarrow> ext_sandboxed ext = True"
   by auto
 
 (* widget_update_throttled (matches Coq) *)
-lemma widget_update_throttled: "\<forall> (w : Widget) (current_time : nat), current_time - widget_last_update w < widget_update_interval w \<longrightarrow> current_time - widget_last_update w < widget_update_interval w"
+lemma widget_update_throttled: "\<forall>(w :: Widget) (current_time :: nat). current_time - widget_last_update w < widget_update_interval w \<longrightarrow> current_time - widget_last_update w < widget_update_interval w"
   by auto
 
 (* share_extension_data_typed (matches Coq) *)
-lemma share_extension_data_typed: "\<forall> (ext : AppExtension), length (ext_data_types ext) > 0 \<longrightarrow> ext_data_types ext \<noteq> []"
-  by (cases rule: ‹_›.cases; simp)
+lemma share_extension_data_typed: "\<forall>(ext :: AppExtension). length (ext_data_types ext) > 0 \<longrightarrow> ext_data_types ext \<noteq> []"
+  by auto
 
 (* app_group_access_controlled (matches Coq) *)
-lemma app_group_access_controlled: "\<forall> (g : AppGroup), group_access_controlled g = True \<longrightarrow> group_access_controlled g = True"
+lemma app_group_access_controlled: "\<forall>(g :: AppGroup). group_access_controlled g = True \<longrightarrow> group_access_controlled g = True"
   by auto
 
 (* scene_lifecycle_managed (matches Coq) *)
-lemma scene_lifecycle_managed: "\<forall> (s : AppScene), scene_active s = True \<longrightarrow> scene_state s = Foreground \<longrightarrow> scene_active s = True \<and> scene_state s = Foreground"
+lemma scene_lifecycle_managed: "\<forall>(s :: AppScene). scene_active s = True \<longrightarrow> scene_state s = Foreground \<longrightarrow> scene_active s = True \<and> scene_state s = Foreground"
   by auto
 
 (* app_activation_idempotent (matches Coq) *)
-lemma app_activation_idempotent: "\<forall> (app : Application), app_state app = Foreground \<longrightarrow> app_state app = Foreground \<longrightarrow> app_state app = Foreground"
+lemma app_activation_idempotent: "\<forall>(app :: Application). app_state app = Foreground \<longrightarrow> app_state app = Foreground \<longrightarrow> app_state app = Foreground"
   by auto
 
 end

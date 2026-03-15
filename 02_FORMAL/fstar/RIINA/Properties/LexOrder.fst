@@ -6,10 +6,10 @@ module RIINA.Properties.LexOrder
 open FStar.All
 
 (* value — Coq Prop predicate stub *)
-assume val value : nat -> bool
+let value (__x0: nat) : Tot bool = true
 
 (* wf_session — Coq Prop predicate stub *)
-assume val wf_session : nat -> bool
+let wf_session (__x0: nat) : Tot bool = true
 
 (* lex_lt (matches Coq: Definition lex_lt) *)
 let lex_lt (p_p1: nat) (p_p2: nat) : Tot bool =

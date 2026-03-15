@@ -184,9 +184,9 @@ definition notification_permission_granted :: "bool \<Rightarrow> bool" where
 
 (* well_formed_notification (matches Coq: Definition well_formed_notification) *)
 definition well_formed_notification :: "ExtNotification \<Rightarrow> bool" where
-  "well_formed_notification en \<equiv> ext_content_sanitized en = True /\
-  ext_sound_volume en <= 100 /\
-  (ext_is_silent en = True -> ext_sound_volume en = 0) /\
+  "well_formed_notification en \<equiv> ext_content_sanitized en = True \<and>
+  ext_sound_volume en <= 100 \<and>
+  (ext_is_silent en = True -> ext_sound_volume en = 0) \<and>
   (ext_delivery_confirmed en = True ->
     notif_state (ext_notif en) = Delivered \/ notif_state (ext_notif en) = Read)"
 
@@ -197,95 +197,95 @@ definition well_formed_group :: "NotificationGroup \<Rightarrow> bool" where
 
 (* well_formed_history (matches Coq: Definition well_formed_history) *)
 definition well_formed_history :: "NotifHistory \<Rightarrow> bool" where
-  "well_formed_history h \<equiv> length (history_notifications h) <= history_max_size h /\
+  "well_formed_history h \<equiv> length (history_notifications h) <= history_max_size h \<and>
   history_max_size h > 0"
 
 (* notification_delivery_guaranteed (matches Coq) *)
-lemma notification_delivery_guaranteed: "\<forall> (notification : Notification), notification_system_correct notification \<longrightarrow> sent notification \<longrightarrow> eventually_delivered_or_expired notification"
+lemma notification_delivery_guaranteed: "\<forall>(notification :: Notification). notification_system_correct notification \<longrightarrow> sent notification \<longrightarrow> eventually_delivered_or_expired notification"
   by auto
 
 (* delivered_implies_sent (matches Coq) *)
-lemma delivered_implies_sent: "\<forall> (n : Notification), delivered n \<longrightarrow> sent n"
+lemma delivered_implies_sent: "\<forall>(n :: Notification). delivered n \<longrightarrow> sent n"
   by auto
 
 (* critical_passes_priority_filter (matches Coq) *)
-lemma critical_passes_priority_filter: "\<forall> (n : Notification), notif_priority n = Critical \<longrightarrow> passes_focus_filter n PriorityOnly = True"
+lemma critical_passes_priority_filter: "\<forall>(n :: Notification). notif_priority n = Critical \<longrightarrow> passes_focus_filter n PriorityOnly = True"
   by simp
 
 (* critical_passes_critical_filter (matches Coq) *)
-lemma critical_passes_critical_filter: "\<forall> (n : Notification), notif_priority n = Critical \<longrightarrow> passes_focus_filter n CriticalOnly = True"
+lemma critical_passes_critical_filter: "\<forall>(n :: Notification). notif_priority n = Critical \<longrightarrow> passes_focus_filter n CriticalOnly = True"
   by simp
 
 (* dnd_blocks_all (matches Coq) *)
-lemma dnd_blocks_all: "\<forall> (n : Notification), passes_focus_filter n DoNotDisturb = False"
+lemma dnd_blocks_all: "\<forall>(n :: Notification). passes_focus_filter n DoNotDisturb = False"
   by simp
 
 (* all_mode_passes_all (matches Coq) *)
-lemma all_mode_passes_all: "\<forall> (n : Notification), passes_focus_filter n AllNotifications = True"
+lemma all_mode_passes_all: "\<forall>(n :: Notification). passes_focus_filter n AllNotifications = True"
   by simp
 
 (* notification_permission_explicit (matches Coq) *)
-lemma notification_permission_explicit: "\<forall> (granted : bool), granted = False \<longrightarrow> ~ notification_permission_granted granted"
+lemma notification_permission_explicit: "\<forall>(granted :: bool). granted = False \<longrightarrow> ~ notification_permission_granted granted"
   by auto
 
 (* notification_content_sanitized (matches Coq) *)
-lemma notification_content_sanitized: "\<forall> (en : ExtNotification), well_formed_notification en \<longrightarrow> ext_content_sanitized en = True"
+lemma notification_content_sanitized: "\<forall>(en :: ExtNotification). well_formed_notification en \<longrightarrow> ext_content_sanitized en = True"
   by auto
 
 (* no_notification_spam (matches Coq) *)
-lemma no_notification_spam: "\<forall> (count : nat), count \<le> spam_threshold \<longrightarrow> is_spam count = False"
+lemma no_notification_spam: "\<forall>(count :: nat). count \<le> spam_threshold \<longrightarrow> is_spam count = False"
   by auto
 
 (* notification_priority_respected (matches Coq) *)
-lemma notification_priority_respected: "\<forall> (n : Notification) (mode : FocusMode), notif_priority n = Low \<longrightarrow> mode = CriticalOnly \<longrightarrow> passes_focus_filter n mode = False"
+lemma notification_priority_respected: "\<forall>(n :: Notification) (mode :: FocusMode). notif_priority n = Low \<longrightarrow> mode = CriticalOnly \<longrightarrow> passes_focus_filter n mode = False"
   by simp
 
 (* do_not_disturb_enforced (matches Coq) *)
-lemma do_not_disturb_enforced: "\<forall> (n : Notification), passes_focus_filter n DoNotDisturb = False"
+lemma do_not_disturb_enforced: "\<forall>(n :: Notification). passes_focus_filter n DoNotDisturb = False"
   by simp
 
 (* notification_grouping_correct (matches Coq) *)
-lemma notification_grouping_correct: "\<forall> (g : NotificationGroup), well_formed_group g \<longrightarrow> length (group_notifications g) \<ge> 2 \<longrightarrow> group_summary g \<noteq> None"
+lemma notification_grouping_correct: "\<forall>(g :: NotificationGroup). well_formed_group g \<longrightarrow> length (group_notifications g) \<ge> 2 \<longrightarrow> group_summary g \<noteq> None"
   by auto
 
 (* notification_action_validated (matches Coq) *)
-lemma notification_action_validated: "\<forall> (a : NotificationAction), action_validated a = True \<longrightarrow> action_validated a = True"
+lemma notification_action_validated: "\<forall>(a :: NotificationAction). action_validated a = True \<longrightarrow> action_validated a = True"
   by auto
 
 (* notification_sound_bounded (matches Coq) *)
-lemma notification_sound_bounded: "\<forall> (en : ExtNotification), well_formed_notification en \<longrightarrow> ext_sound_volume en \<le> 100"
+lemma notification_sound_bounded: "\<forall>(en :: ExtNotification). well_formed_notification en \<longrightarrow> ext_sound_volume en \<le> 100"
   by auto
 
 (* notification_badge_accurate (matches Coq) *)
-lemma notification_badge_accurate: "\<forall> (en : ExtNotification) (expected_count : nat), ext_badge_count en = expected_count \<longrightarrow> ext_badge_count en = expected_count"
+lemma notification_badge_accurate: "\<forall>(en :: ExtNotification) (expected_count :: nat). ext_badge_count en = expected_count \<longrightarrow> ext_badge_count en = expected_count"
   by auto
 
 (* notification_expiry_enforced (matches Coq) *)
-lemma notification_expiry_enforced: "\<forall> (en : ExtNotification) (current_time : nat), current_time > ext_expiry_time en \<longrightarrow> ext_expiry_time en < current_time"
+lemma notification_expiry_enforced: "\<forall>(en :: ExtNotification) (current_time :: nat). current_time > ext_expiry_time en \<longrightarrow> ext_expiry_time en < current_time"
   by simp
 
 (* notification_channel_configurable (matches Coq) *)
-lemma notification_channel_configurable: "\<forall> (ch : NotificationChannel), channel_enabled ch = True \<or> channel_enabled ch = False"
+lemma notification_channel_configurable: "\<forall>(ch :: NotificationChannel). channel_enabled ch = True \<or> channel_enabled ch = False"
   by simp
 
 (* silent_notification_limited (matches Coq) *)
-lemma silent_notification_limited: "\<forall> (en : ExtNotification), well_formed_notification en \<longrightarrow> ext_is_silent en = True \<longrightarrow> ext_sound_volume en = 0"
+lemma silent_notification_limited: "\<forall>(en :: ExtNotification). well_formed_notification en \<longrightarrow> ext_is_silent en = True \<longrightarrow> ext_sound_volume en = 0"
   by auto
 
 (* notification_delivery_confirmed (matches Coq) *)
-lemma notification_delivery_confirmed: "\<forall> (en : ExtNotification), well_formed_notification en \<longrightarrow> ext_delivery_confirmed en = True \<longrightarrow> notif_state (ext_notif en) = Delivered \<or> notif_state (ext_notif en) = Read"
+lemma notification_delivery_confirmed: "\<forall>(en :: ExtNotification). well_formed_notification en \<longrightarrow> ext_delivery_confirmed en = True \<longrightarrow> notif_state (ext_notif en) = Delivered \<or> notif_state (ext_notif en) = Read"
   by auto
 
 (* notification_history_available (matches Coq) *)
-lemma notification_history_available: "\<forall> (h : NotifHistory), well_formed_history h \<longrightarrow> history_max_size h > 0"
+lemma notification_history_available: "\<forall>(h :: NotifHistory). well_formed_history h \<longrightarrow> history_max_size h > 0"
   by auto
 
 (* notification_dismiss_tracked (matches Coq) *)
-lemma notification_dismiss_tracked: "\<forall> (h : NotifHistory), history_dismiss_tracked h = True \<longrightarrow> history_dismiss_tracked h = True"
+lemma notification_dismiss_tracked: "\<forall>(h :: NotifHistory). history_dismiss_tracked h = True \<longrightarrow> history_dismiss_tracked h = True"
   by auto
 
 (* high_priority_passes_filter (matches Coq) *)
-lemma high_priority_passes_filter: "\<forall> (n : Notification), notif_priority n = High \<longrightarrow> passes_focus_filter n PriorityOnly = True"
+lemma high_priority_passes_filter: "\<forall>(n :: Notification). notif_priority n = High \<longrightarrow> passes_focus_filter n PriorityOnly = True"
   by simp
 
 end

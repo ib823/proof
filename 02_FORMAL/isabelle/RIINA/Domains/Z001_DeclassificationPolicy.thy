@@ -171,8 +171,8 @@ definition level_meet :: "bool" where "level_meet = undefined"
 
 (* valid_policy (matches Coq: Definition valid_policy) *)
 definition valid_policy :: "DeclassPolicy \<Rightarrow> bool" where
-  "valid_policy p \<equiv> level_leq (target_level p) (source_level p) = True /\
-  budget p > 0 /\
+  "valid_policy p \<equiv> level_leq (target_level p) (source_level p) = True \<and>
+  budget p > 0 \<and>
   policy_active p = True"
 
 (* wellformed_budget (matches Coq: Definition wellformed_budget) *)
@@ -186,7 +186,7 @@ definition consume_budget :: "BudgetState \<Rightarrow> nat \<Rightarrow> nat \<
   else if budget_total_limit bs <? total_leaked bs + bits then None
   else Some {|
     budget_principal := budget_principal bs;
-    budget_per_policy := fun id =>
+    budget_per_policy := \<lambda>id.
       if (id = pid) then remaining - bits
       else budget_per_policy bs id;
     total_leaked := total_leaked bs + bits;
@@ -199,7 +199,7 @@ definition reset_budget :: "BudgetState \<Rightarrow> nat \<Rightarrow> nat \<Ri
   "reset_budget bs pid new_budget authorizer \<equiv> if principal_eqb authorizer PSystem then
     Some {|
       budget_principal := budget_principal bs;
-      budget_per_policy := fun id =>
+      budget_per_policy := \<lambda>id.
         if (id = pid) then new_budget
         else budget_per_policy bs id;
       total_leaked := total_leaked bs;
@@ -218,28 +218,28 @@ definition robust :: "Expr \<Rightarrow> bool" where
 
 (* valid_declass (matches Coq: Definition valid_declass) *)
 definition valid_declass :: "DeclassExpr \<Rightarrow> bool" where
-  "valid_declass de \<equiv> robust (declass_guard de) public /\ valid_policy (declass_policy de)"
+  "valid_declass de \<equiv> robust (declass_guard de) public \<and> valid_policy (declass_policy de)"
 
 (* can_declassify (matches Coq: Definition can_declassify) *)
 definition can_declassify :: "DeclassExpr \<Rightarrow> Principal \<Rightarrow> bool" where
-  "can_declassify de p \<equiv> acts_for p (authorized_principal (declass_policy de)) /\
+  "can_declassify de p \<equiv> acts_for p (authorized_principal (declass_policy de)) \<and>
   valid_policy (declass_policy de)"
 
 (* logged_declass (matches Coq: Definition logged_declass) *)
 definition logged_declass :: "DeclassExpr \<Rightarrow> bool" where
-  "logged_declass de \<equiv> exists entry, log' = entry :: log /\
+  "logged_declass de \<equiv> exists entry, log' = entry :: log \<and>
   audit_policy_id entry = policy_id (declass_policy de)"
 
 (* neighbors (matches Coq: Definition neighbors) *)
 definition neighbors :: "bool" where
   "neighbors \<equiv> (exists x, db2 = x :: db1) \/
   (exists x, db1 = x :: db2) \/
-  (length db1 = length db2 /\ db1 <> db2)"
+  (length db1 = length db2 \<and> db1 <> db2)"
 
 (* sensitivity_bounded (matches Coq: Definition sensitivity_bounded) *)
 definition sensitivity_bounded :: "Query \<Rightarrow> nat \<Rightarrow> bool" where
   "sensitivity_bounded q delta \<equiv> forall db1 db2, neighbors db1 db2 ->
-    (q db1 <= q db2 + delta) /\ (q db2 <= q db1 + delta)"
+    (q db1 <= q db2 + delta) \<and> (q db2 <= q db1 + delta)"
 
 (* compose_budget (matches Coq: Definition compose_budget) *)
 definition compose_budget :: "PrivacyBudget \<Rightarrow> option PrivacyBudget" where
@@ -277,7 +277,7 @@ definition revoke_policy :: "DeclassPolicy \<Rightarrow> DeclassPolicy" where
 
 (* dp_well_defined (matches Coq: Definition dp_well_defined) *)
 definition dp_well_defined :: "bool" where
-  "dp_well_defined \<equiv> epsilon > 0 /\ delta >= 0"
+  "dp_well_defined \<equiv> epsilon > 0 \<and> delta >= 0"
 
 (* laplace_mechanism (matches Coq: Definition laplace_mechanism) *)
 definition laplace_mechanism :: "Query \<Rightarrow> Database \<Rightarrow> nat \<Rightarrow> nat" where
@@ -288,159 +288,159 @@ definition gaussian_mechanism :: "Query \<Rightarrow> Database \<Rightarrow> nat
   "gaussian_mechanism q db seed \<equiv> q db + (seed mod (2 * sensitivity * 1000 / (epsilon + 1) + 1))"
 
 (* principal_eqb_refl (matches Coq) *)
-lemma principal_eqb_refl: "\<forall> p, principal_eqb p p = True"
+lemma principal_eqb_refl: "\<forall>p. principal_eqb p p = True"
   by simp
 
 (* ===============================================================================
     PROOFS: PRINCIPAL AND AUTHORITY (7 theorems)
     =============================================================================== *)
 (* Z_001_01_principal_lattice (matches Coq) *)
-lemma Z_001_01_principal_lattice: "\<forall> p1 p2, \<exists> join_p meet_p, join_p = PJoin p1 p2 \<and> meet_p = PMeet p1 p2"
+lemma Z_001_01_principal_lattice: "\<forall>p1 p2. \<exists>join_p meet_p. join_p = PJoin p1 p2 \<and> meet_p = PMeet p1 p2"
   by simp
 
 (* Z_001_02_acts_for_transitive (matches Coq) *)
-lemma Z_001_02_acts_for_transitive: "\<forall> p1 p2 p3, acts_for p1 p2 \<longrightarrow> acts_for p2 p3 \<longrightarrow> acts_for p1 p3"
+lemma Z_001_02_acts_for_transitive: "\<forall>p1 p2 p3. acts_for p1 p2 \<longrightarrow> acts_for p2 p3 \<longrightarrow> acts_for p1 p3"
   by simp
 
 (* Z_001_03_acts_for_reflexive (matches Coq) *)
-lemma Z_001_03_acts_for_reflexive: "\<forall> p, acts_for p p"
+lemma Z_001_03_acts_for_reflexive: "\<forall>p. acts_for p p"
   by auto
 
 (* Z_001_04_authority_delegation (matches Coq) *)
-lemma Z_001_04_authority_delegation: "\<forall> p1 p2, principal_eqb p1 p2 = True \<longrightarrow> acts_for p1 p2"
+lemma Z_001_04_authority_delegation: "\<forall>p1 p2. principal_eqb p1 p2 = True \<longrightarrow> acts_for p1 p2"
   by auto
 
 (* Z_001_05_authority_bounded (matches Coq) *)
-lemma Z_001_05_authority_bounded: "\<forall> p1 p2 p3, acts_for p1 p2 \<longrightarrow> acts_for p2 p3 \<longrightarrow> principal_leq p2 p3 \<longrightarrow> principal_leq p1 p3"
+lemma Z_001_05_authority_bounded: "\<forall>p1 p2 p3. acts_for p1 p2 \<longrightarrow> acts_for p2 p3 \<longrightarrow> principal_leq p2 p3 \<longrightarrow> principal_leq p1 p3"
   by auto
 
 (* Z_001_06_principal_join (matches Coq) *)
-lemma Z_001_06_principal_join: "\<forall> p1 p2, \<exists> join, join = PJoin p1 p2 \<and> (principal_leq p1 join \<or> principal_leq p2 join)"
+lemma Z_001_06_principal_join: "\<forall>p1 p2. \<exists>join. join = PJoin p1 p2 \<and> (principal_leq p1 join \<or> principal_leq p2 join)"
   by simp
 
 (* Z_001_07_principal_meet (matches Coq) *)
-lemma Z_001_07_principal_meet: "\<forall> p1 p2, \<exists> meet, meet = PMeet p1 p2 \<and> (principal_leq meet p1 \<or> principal_leq meet p2)"
+lemma Z_001_07_principal_meet: "\<forall>p1 p2. \<exists>meet. meet = PMeet p1 p2 \<and> (principal_leq meet p1 \<or> principal_leq meet p2)"
   by simp
 
 (* ===============================================================================
     PROOFS: ROBUST DECLASSIFICATION (8 theorems)
     =============================================================================== *)
 (* Z_001_08_robust_definition (matches Coq) *)
-lemma Z_001_08_robust_definition: "\<forall> e public, robust e public <-> (\<forall> s1 s2, low_equiv s1 s2 public \<longrightarrow> e s1 = e s2)"
+lemma Z_001_08_robust_definition: "\<forall>e public. robust e public <-> (\<forall>s1 s2. low_equiv s1 s2 public \<longrightarrow> e s1 = e s2)"
   by auto
 
 (* Z_001_09_robust_guard (matches Coq) *)
-lemma Z_001_09_robust_guard: "\<forall> de public, valid_declass de public \<longrightarrow> robust (declass_guard de) public"
+lemma Z_001_09_robust_guard: "\<forall>de public. valid_declass de public \<longrightarrow> robust (declass_guard de) public"
   by auto
 
 (* Z_001_10_robust_decision (matches Coq) *)
-lemma Z_001_10_robust_decision: "\<forall> de public s1 s2, valid_declass de public \<longrightarrow> low_equiv s1 s2 public \<longrightarrow> declass_guard de s1 = declass_guard de s2"
+lemma Z_001_10_robust_decision: "\<forall>de public s1 s2. valid_declass de public \<longrightarrow> low_equiv s1 s2 public \<longrightarrow> declass_guard de s1 = declass_guard de s2"
   by auto
 
 (* Z_001_11_robust_composition (matches Coq) *)
-lemma Z_001_11_robust_composition: "\<forall> e1 e2 public, robust e1 public \<longrightarrow> robust e2 public \<longrightarrow> robust (fun s => e1 s + e2 s) public"
+lemma Z_001_11_robust_composition: "\<forall>e1 e2 public. robust e1 public \<longrightarrow> robust e2 public \<longrightarrow> robust (\<lambda>s. e1 s + e2 s) public"
   by auto
 
 (* Z_001_12_no_attacker_controlled (matches Coq) *)
-lemma Z_001_12_no_attacker_controlled: "\<forall> de public, valid_declass de public \<longrightarrow> \<forall> s1 s2, low_equiv s1 s2 public \<longrightarrow> declass_guard de s1 = declass_guard de s2"
+lemma Z_001_12_no_attacker_controlled: "\<forall>de public. valid_declass de public \<longrightarrow> \<forall>s1 s2. low_equiv s1 s2 public \<longrightarrow> declass_guard de s1 = declass_guard de s2"
   by auto
 
 (* Z_001_13_robust_preserves_ni (matches Coq) *)
-lemma Z_001_13_robust_preserves_ni: "\<forall> de public s1 s2 s1' s2', valid_declass de public \<longrightarrow> low_equiv s1 s2 public \<longrightarrow> steps (PDeclass de) s1 s1' \<longrightarrow> steps (PDeclass de) s2 s2' \<longrightarrow> low_equiv s1' s2' public"
+lemma Z_001_13_robust_preserves_ni: "\<forall>de public s1 s2 s1' s2'. valid_declass de public \<longrightarrow> low_equiv s1 s2 public \<longrightarrow> steps (PDeclass de) s1 s1' \<longrightarrow> steps (PDeclass de) s2 s2' \<longrightarrow> low_equiv s1' s2' public"
   by auto
 
 (* Z_001_14_downgrade_bounded (matches Coq) *)
-lemma Z_001_14_downgrade_bounded: "\<forall> de, valid_policy (declass_policy de) \<longrightarrow> level_leq (target_level (declass_policy de)) (source_level (declass_policy de)) = True"
+lemma Z_001_14_downgrade_bounded: "\<forall>de. valid_policy (declass_policy de) \<longrightarrow> level_leq (target_level (declass_policy de)) (source_level (declass_policy de)) = True"
   by auto
 
 (* Z_001_15_robust_checker_sound (matches Coq) *)
-lemma Z_001_15_robust_checker_sound: "\<forall> e public, robust e public \<longrightarrow> \<forall> s1 s2, low_equiv s1 s2 public \<longrightarrow> e s1 = e s2"
+lemma Z_001_15_robust_checker_sound: "\<forall>e public. robust e public \<longrightarrow> \<forall>s1 s2. low_equiv s1 s2 public \<longrightarrow> e s1 = e s2"
   by auto
 
 (* ===============================================================================
     PROOFS: INFORMATION BUDGETS (8 theorems)
     =============================================================================== *)
 (* Z_001_16_budget_wellformed (matches Coq) *)
-lemma Z_001_16_budget_wellformed: "\<forall> bs, wellformed_budget bs \<longrightarrow> total_leaked bs \<le> budget_total_limit bs"
+lemma Z_001_16_budget_wellformed: "\<forall>bs. wellformed_budget bs \<longrightarrow> total_leaked bs \<le> budget_total_limit bs"
   by auto
 
 (* Z_001_17_budget_consumption (matches Coq) *)
-lemma Z_001_17_budget_consumption: "\<forall> bs pid bits bs', consume_budget bs pid bits = Some bs' \<longrightarrow> budget_per_policy bs' pid = budget_per_policy bs pid - bits"
-  by (cases rule: ‹_›.cases; simp)
+lemma Z_001_17_budget_consumption: "\<forall>bs pid bits bs'. consume_budget bs pid bits = Some bs' \<longrightarrow> budget_per_policy bs' pid = budget_per_policy bs pid - bits"
+  by auto
 
 (* Z_001_18_budget_exhaustion (matches Coq) *)
-lemma Z_001_18_budget_exhaustion: "\<forall> bs pid bits, budget_per_policy bs pid < bits \<longrightarrow> consume_budget bs pid bits = None"
+lemma Z_001_18_budget_exhaustion: "\<forall>bs pid bits. budget_per_policy bs pid < bits \<longrightarrow> consume_budget bs pid bits = None"
   by simp
 
 (* Z_001_19_budget_reset (matches Coq) *)
-lemma Z_001_19_budget_reset: "\<forall> bs pid new_budget authorizer bs', reset_budget bs pid new_budget authorizer = Some bs' \<longrightarrow> principal_eqb authorizer PSystem = True"
+lemma Z_001_19_budget_reset: "\<forall>bs pid new_budget authorizer bs'. reset_budget bs pid new_budget authorizer = Some bs' \<longrightarrow> principal_eqb authorizer PSystem = True"
   by simp
 
 (* Z_001_20_total_leakage_bounded (matches Coq) *)
-lemma Z_001_20_total_leakage_bounded: "\<forall> bs pid bits bs', consume_budget bs pid bits = Some bs' \<longrightarrow> total_leaked bs' = total_leaked bs + bits"
-  by (cases rule: ‹_›.cases; simp)
+lemma Z_001_20_total_leakage_bounded: "\<forall>bs pid bits bs'. consume_budget bs pid bits = Some bs' \<longrightarrow> total_leaked bs' = total_leaked bs + bits"
+  by auto
 
 (* Z_001_21_mutual_information_bounded (matches Coq) *)
-lemma Z_001_21_mutual_information_bounded: "\<forall> bs pid bits bs', wellformed_budget bs \<longrightarrow> consume_budget bs pid bits = Some bs' \<longrightarrow> total_leaked bs' \<le> budget_total_limit bs'"
-  by (cases rule: ‹_›.cases; simp)
+lemma Z_001_21_mutual_information_bounded: "\<forall>bs pid bits bs'. wellformed_budget bs \<longrightarrow> consume_budget bs pid bits = Some bs' \<longrightarrow> total_leaked bs' \<le> budget_total_limit bs'"
+  by auto
 
 (* Z_001_22_budget_composition (matches Coq) *)
-lemma Z_001_22_budget_composition: "\<forall> bs pid1 pid2 bits1 bits2 bs' bs'', pid1 \<noteq> pid2 \<longrightarrow> consume_budget bs pid1 bits1 = Some bs' \<longrightarrow> consume_budget bs' pid2 bits2 = Some bs'' \<longrightarrow> total_leaked bs'' = total_leaked bs + bits1 + bits2"
+lemma Z_001_22_budget_composition: "\<forall>bs pid1 pid2 bits1 bits2 bs' bs''. pid1 \<noteq> pid2 \<longrightarrow> consume_budget bs pid1 bits1 = Some bs' \<longrightarrow> consume_budget bs' pid2 bits2 = Some bs'' \<longrightarrow> total_leaked bs'' = total_leaked bs + bits1 + bits2"
   by simp
 
 (* Z_001_23_budget_per_principal (matches Coq) *)
-lemma Z_001_23_budget_per_principal: "\<forall> bs pid1 pid2 bits bs', pid1 \<noteq> pid2 \<longrightarrow> consume_budget bs pid1 bits = Some bs' \<longrightarrow> budget_per_policy bs' pid2 = budget_per_policy bs pid2"
-  by (cases rule: ‹_›.cases; simp)
+lemma Z_001_23_budget_per_principal: "\<forall>bs pid1 pid2 bits bs'. pid1 \<noteq> pid2 \<longrightarrow> consume_budget bs pid1 bits = Some bs' \<longrightarrow> budget_per_policy bs' pid2 = budget_per_policy bs pid2"
+  by auto
 
 (* ===============================================================================
     PROOFS: POLICY ENFORCEMENT (7 theorems)
     =============================================================================== *)
 (* Z_001_24_policy_authorized (matches Coq) *)
-lemma Z_001_24_policy_authorized: "\<forall> de p, can_declassify de p \<longrightarrow> acts_for p (authorized_principal (declass_policy de))"
+lemma Z_001_24_policy_authorized: "\<forall>de p. can_declassify de p \<longrightarrow> acts_for p (authorized_principal (declass_policy de))"
   by auto
 
 (* Z_001_25_policy_guard_satisfied (matches Coq) *)
-lemma Z_001_25_policy_guard_satisfied: "\<forall> de s, guard_satisfied de s = True \<longrightarrow> guard_fn (declass_policy de) (declass_guard de s) = True"
+lemma Z_001_25_policy_guard_satisfied: "\<forall>de s. guard_satisfied de s = True \<longrightarrow> guard_fn (declass_policy de) (declass_guard de s) = True"
   by auto
 
 (* Z_001_26_policy_transform_applied (matches Coq) *)
-lemma Z_001_26_policy_transform_applied: "\<forall> de s, apply_transform de s = transform (declass_policy de) (declass_value de s)"
+lemma Z_001_26_policy_transform_applied: "\<forall>de s. apply_transform de s = transform (declass_policy de) (declass_value de s)"
   by simp
 
 (* Z_001_27_policy_audit_logged (matches Coq) *)
-lemma Z_001_27_policy_audit_logged: "\<forall> de log log', logged_declass de log log' \<longrightarrow> \<exists> entry, In entry log' \<and> audit_policy_id entry = policy_id (declass_policy de)"
+lemma Z_001_27_policy_audit_logged: "\<forall>de log log'. logged_declass de log log' \<longrightarrow> \<exists>entry. entry \<in> set log' \<and> audit_policy_id entry = policy_id (declass_policy de)"
   by auto
 
 (* Z_001_28_policy_no_bypass (matches Coq) *)
-lemma Z_001_28_policy_no_bypass: "\<forall> de, uses_policy (PDeclass de) de"
+lemma Z_001_28_policy_no_bypass: "\<forall>de. uses_policy (PDeclass de) de"
   by auto
 
 (* Z_001_29_policy_composition (matches Coq) *)
-lemma Z_001_29_policy_composition: "\<forall> de1 de2 public, valid_declass de1 public \<longrightarrow> valid_declass de2 public \<longrightarrow> robust (fun s => declass_guard de1 s + declass_guard de2 s) public"
+lemma Z_001_29_policy_composition: "\<forall>de1 de2 public. valid_declass de1 public \<longrightarrow> valid_declass de2 public \<longrightarrow> robust (\<lambda>s. declass_guard de1 s + declass_guard de2 s) public"
   by auto
 
 (* Z_001_30_policy_revocation (matches Coq) *)
-lemma Z_001_30_policy_revocation: "\<forall> p, policy_active (revoke_policy p) = False"
+lemma Z_001_30_policy_revocation: "\<forall>p. policy_active (revoke_policy p) = False"
   by simp
 
 (* Z_001_31_dp_definition (matches Coq) *)
-lemma Z_001_31_dp_definition: "\<forall> epsilon delta, epsilon > 0 \<longrightarrow> delta \<ge> 0 \<longrightarrow> dp_well_defined epsilon delta"
+lemma Z_001_31_dp_definition: "\<forall>epsilon delta. epsilon > 0 \<longrightarrow> delta \<ge> 0 \<longrightarrow> dp_well_defined epsilon delta"
   by auto
 
 (* Z_001_32_dp_composition (matches Coq) *)
-lemma Z_001_32_dp_composition: "\<forall> pb eps1 delta1 eps2 delta2 pb' pb'', compose_budget pb eps1 delta1 = Some pb' \<longrightarrow> compose_budget pb' eps2 delta2 = Some pb'' \<longrightarrow> epsilon_used pb'' = epsilon_used pb + eps1 + eps2 \<and> delta_used pb'' = delta_used pb + delta1 + delta2"
-  by (cases rule: ‹_›.cases; simp)
+lemma Z_001_32_dp_composition: "\<forall>pb eps1 delta1 eps2 delta2 pb' pb''. compose_budget pb eps1 delta1 = Some pb' \<longrightarrow> compose_budget pb' eps2 delta2 = Some pb'' \<longrightarrow> epsilon_used pb'' = epsilon_used pb + eps1 + eps2 \<and> delta_used pb'' = delta_used pb + delta1 + delta2"
+  by auto
 
 (* Z_001_33_dp_laplace_correct (matches Coq) *)
-lemma Z_001_33_dp_laplace_correct: "\<forall> q sensitivity epsilon, sensitivity > 0 \<longrightarrow> epsilon > 0 \<longrightarrow> \<exists> mechanism, mechanism = laplace_mechanism q sensitivity epsilon \<and> \<forall> db seed, mechanism db seed \<ge> q db"
+lemma Z_001_33_dp_laplace_correct: "\<forall>q sensitivity epsilon. sensitivity > 0 \<longrightarrow> epsilon > 0 \<longrightarrow> \<exists>mechanism. mechanism = laplace_mechanism q sensitivity epsilon \<and> \<forall>db seed. mechanism db seed \<ge> q db"
   by simp
 
 (* Z_001_34_dp_gaussian_correct (matches Coq) *)
-lemma Z_001_34_dp_gaussian_correct: "\<forall> q sensitivity epsilon delta, sensitivity > 0 \<longrightarrow> epsilon > 0 \<longrightarrow> delta > 0 \<longrightarrow> \<exists> mechanism, mechanism = gaussian_mechanism q sensitivity epsilon delta \<and> \<forall> db seed, mechanism db seed \<ge> q db"
+lemma Z_001_34_dp_gaussian_correct: "\<forall>q sensitivity epsilon delta. sensitivity > 0 \<longrightarrow> epsilon > 0 \<longrightarrow> delta > 0 \<longrightarrow> \<exists>mechanism. mechanism = gaussian_mechanism q sensitivity epsilon delta \<and> \<forall>db seed. mechanism db seed \<ge> q db"
   by simp
 
 (* Z_001_35_dp_privacy_budget (matches Coq) *)
-lemma Z_001_35_dp_privacy_budget: "\<forall> pb eps delta pb', compose_budget pb eps delta = Some pb' \<longrightarrow> epsilon_used pb' = epsilon_used pb + eps \<and> delta_used pb' = delta_used pb + delta \<and> epsilon_used pb' \<le> epsilon_total pb' \<and> delta_used pb' \<le> delta_total pb'"
-  by (cases rule: ‹_›.cases; simp)
+lemma Z_001_35_dp_privacy_budget: "\<forall>pb eps delta pb'. compose_budget pb eps delta = Some pb' \<longrightarrow> epsilon_used pb' = epsilon_used pb + eps \<and> delta_used pb' = delta_used pb + delta \<and> epsilon_used pb' \<le> epsilon_total pb' \<and> delta_used pb' \<le> delta_total pb'"
+  by auto
 
 end

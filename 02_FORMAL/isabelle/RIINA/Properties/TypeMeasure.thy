@@ -115,52 +115,52 @@ definition step_ty_measure :: "nat \<Rightarrow> ty \<Rightarrow> nat * nat" whe
   "step_ty_measure n T \<equiv> (n, ty_size T)"
 
 (* ty_size_pos (matches Coq) *)
-lemma ty_size_pos: "\<forall> T, ty_size T > 0"
+lemma ty_size_pos: "\<forall>T. ty_size T > 0"
   by simp
 
 (* TFn argument is strictly smaller *)
 (* ty_size_fn_arg (matches Coq) *)
-lemma ty_size_fn_arg: "\<forall> T1 T2 eff, ty_size T1 < ty_size (TFn T1 T2 eff)"
+lemma ty_size_fn_arg: "\<forall>T1 T2 eff. ty_size T1 < ty_size (TFn T1 T2 eff)"
   by simp
 
 (* TFn result is strictly smaller *)
 (* ty_size_fn_res (matches Coq) *)
-lemma ty_size_fn_res: "\<forall> T1 T2 eff, ty_size T2 < ty_size (TFn T1 T2 eff)"
+lemma ty_size_fn_res: "\<forall>T1 T2 eff. ty_size T2 < ty_size (TFn T1 T2 eff)"
   by simp
 
 (* TProd left is strictly smaller *)
 (* ty_size_prod_left (matches Coq) *)
-lemma ty_size_prod_left: "\<forall> T1 T2, ty_size T1 < ty_size (TProd T1 T2)"
+lemma ty_size_prod_left: "\<forall>T1 T2. ty_size T1 < ty_size (TProd T1 T2)"
   by simp
 
 (* TProd right is strictly smaller *)
 (* ty_size_prod_right (matches Coq) *)
-lemma ty_size_prod_right: "\<forall> T1 T2, ty_size T2 < ty_size (TProd T1 T2)"
+lemma ty_size_prod_right: "\<forall>T1 T2. ty_size T2 < ty_size (TProd T1 T2)"
   by simp
 
 (* TSum left is strictly smaller *)
 (* ty_size_sum_left (matches Coq) *)
-lemma ty_size_sum_left: "\<forall> T1 T2, ty_size T1 < ty_size (TSum T1 T2)"
+lemma ty_size_sum_left: "\<forall>T1 T2. ty_size T1 < ty_size (TSum T1 T2)"
   by simp
 
 (* TSum right is strictly smaller *)
 (* ty_size_sum_right (matches Coq) *)
-lemma ty_size_sum_right: "\<forall> T1 T2, ty_size T2 < ty_size (TSum T1 T2)"
+lemma ty_size_sum_right: "\<forall>T1 T2. ty_size T2 < ty_size (TSum T1 T2)"
   by simp
 
 (* TRef content is strictly smaller *)
 (* ty_size_ref_content (matches Coq) *)
-lemma ty_size_ref_content: "\<forall> T sl, ty_size T < ty_size (TRef T sl)"
+lemma ty_size_ref_content: "\<forall>T sl. ty_size T < ty_size (TRef T sl)"
   by simp
 
 (* TSecret content is strictly smaller *)
 (* ty_size_secret_content (matches Coq) *)
-lemma ty_size_secret_content: "\<forall> T, ty_size T < ty_size (TSecret T)"
+lemma ty_size_secret_content: "\<forall>T. ty_size T < ty_size (TSecret T)"
   by simp
 
 (* TProof content is strictly smaller *)
 (* ty_size_proof_content (matches Coq) *)
-lemma ty_size_proof_content: "\<forall> T, ty_size T < ty_size (TProof T)"
+lemma ty_size_proof_content: "\<forall>T. ty_size T < ty_size (TProof T)"
   by simp
 
 (* ty_size_lt is well-founded (inherits from lt on nat) *)
@@ -170,184 +170,184 @@ lemma ty_size_lt_wf: "well_founded ty_size_lt"
 
 (* Induction principle based on type size *)
 (* ty_size_induction (matches Coq) *)
-lemma ty_size_induction: "\<forall> (P : ty \<longrightarrow> Prop), (\<forall> T, (\<forall> T', ty_size T' < ty_size T \<longrightarrow> P T') \<longrightarrow> P T) \<longrightarrow> \<forall> T, P T"
+lemma ty_size_induction: "\<forall>(P : ty \<longrightarrow> Prop). (\<forall>T. (\<forall>T'. ty_size T' < ty_size T \<longrightarrow> P T') \<longrightarrow> P T) \<longrightarrow> \<forall>T. P T"
   by auto
 
 (* First-order types contain no TFn *)
 (* first_order_no_fn (matches Coq) *)
-lemma first_order_no_fn: "\<forall> T T1 T2 eff, first_order_type T = True \<longrightarrow> T \<noteq> TFn T1 T2 eff"
+lemma first_order_no_fn: "\<forall>T T1 T2 eff. first_order_type T = True \<longrightarrow> T \<noteq> TFn T1 T2 eff"
   by auto
 
 (* First-order is decidable *)
 (* first_order_decidable (matches Coq) *)
-lemma first_order_decidable: "\<forall> T, {first_order_type T = True} + {first_order_type T = False}"
+lemma first_order_decidable: "\<forall>T. (first_order_type T = True) \<or> (first_order_type T = False)"
   by auto
 
 (* First-order subtypes of first-order types *)
 (* first_order_prod_inv (matches Coq) *)
-lemma first_order_prod_inv: "\<forall> T1 T2, first_order_type (TProd T1 T2) = True \<longrightarrow> first_order_type T1 = True \<and> first_order_type T2 = True"
+lemma first_order_prod_inv: "\<forall>T1 T2. first_order_type (TProd T1 T2) = True \<longrightarrow> first_order_type T1 = True \<and> first_order_type T2 = True"
   by auto
 
 (* first_order_sum_inv (matches Coq) *)
-lemma first_order_sum_inv: "\<forall> T1 T2, first_order_type (TSum T1 T2) = True \<longrightarrow> first_order_type T1 = True \<and> first_order_type T2 = True"
+lemma first_order_sum_inv: "\<forall>T1 T2. first_order_type (TSum T1 T2) = True \<longrightarrow> first_order_type T1 = True \<and> first_order_type T2 = True"
   by auto
 
 (* first_order_ref_inv (matches Coq) *)
-lemma first_order_ref_inv: "\<forall> T sl, first_order_type (TRef T sl) = True \<longrightarrow> first_order_type T = True"
+lemma first_order_ref_inv: "\<forall>T sl. first_order_type (TRef T sl) = True \<longrightarrow> first_order_type T = True"
   by auto
 
 (* first_order_secret_inv (matches Coq) *)
-lemma first_order_secret_inv: "\<forall> T, first_order_type (TSecret T) = True \<longrightarrow> first_order_type T = True"
+lemma first_order_secret_inv: "\<forall>T. first_order_type (TSecret T) = True \<longrightarrow> first_order_type T = True"
   by auto
 
 (* first_order_proof_inv (matches Coq) *)
-lemma first_order_proof_inv: "\<forall> T, first_order_type (TProof T) = True \<longrightarrow> first_order_type T = True"
+lemma first_order_proof_inv: "\<forall>T. first_order_type (TProof T) = True \<longrightarrow> first_order_type T = True"
   by auto
 
 (* fo_compound_depth for TProd *)
 (* fo_compound_depth_prod (matches Coq) *)
-lemma fo_compound_depth_prod: "\<forall> T1 T2, fo_compound_depth (TProd T1 T2) = 1 + Nat.max (fo_compound_depth T1) (fo_compound_depth T2)"
+lemma fo_compound_depth_prod: "\<forall>T1 T2. fo_compound_depth (TProd T1 T2) = 1 + Nat.max (fo_compound_depth T1) (fo_compound_depth T2)"
   by simp
 
 (* fo_compound_depth for TSum *)
 (* fo_compound_depth_sum (matches Coq) *)
-lemma fo_compound_depth_sum: "\<forall> T1 T2, fo_compound_depth (TSum T1 T2) = 1 + Nat.max (fo_compound_depth T1) (fo_compound_depth T2)"
+lemma fo_compound_depth_sum: "\<forall>T1 T2. fo_compound_depth (TSum T1 T2) = 1 + Nat.max (fo_compound_depth T1) (fo_compound_depth T2)"
   by simp
 
 (* Component depths are less than parent *)
 (* fo_compound_depth_prod_left (matches Coq) *)
-lemma fo_compound_depth_prod_left: "\<forall> T1 T2, fo_compound_depth T1 < fo_compound_depth (TProd T1 T2)"
+lemma fo_compound_depth_prod_left: "\<forall>T1 T2. fo_compound_depth T1 < fo_compound_depth (TProd T1 T2)"
   by simp
 
 (* fo_compound_depth_prod_right (matches Coq) *)
-lemma fo_compound_depth_prod_right: "\<forall> T1 T2, fo_compound_depth T2 < fo_compound_depth (TProd T1 T2)"
+lemma fo_compound_depth_prod_right: "\<forall>T1 T2. fo_compound_depth T2 < fo_compound_depth (TProd T1 T2)"
   by simp
 
 (* fo_compound_depth_sum_left (matches Coq) *)
-lemma fo_compound_depth_sum_left: "\<forall> T1 T2, fo_compound_depth T1 < fo_compound_depth (TSum T1 T2)"
+lemma fo_compound_depth_sum_left: "\<forall>T1 T2. fo_compound_depth T1 < fo_compound_depth (TSum T1 T2)"
   by simp
 
 (* fo_compound_depth_sum_right (matches Coq) *)
-lemma fo_compound_depth_sum_right: "\<forall> T1 T2, fo_compound_depth T2 < fo_compound_depth (TSum T1 T2)"
+lemma fo_compound_depth_sum_right: "\<forall>T1 T2. fo_compound_depth T2 < fo_compound_depth (TSum T1 T2)"
   by simp
 
 (* Primitive and simple types have depth 0 *)
 (* fo_compound_depth_primitive (matches Coq) *)
-lemma fo_compound_depth_primitive: "\<forall> T, match T with | TProd _ _ | TSum _ _ => False | _ => True end \<longrightarrow> fo_compound_depth T = 0"
-  by (cases rule: ‹_›.cases; simp)
+lemma fo_compound_depth_primitive: "\<forall>T. match T with | TProd _ _ | TSum _ _ => False | _ => True end \<longrightarrow> fo_compound_depth T = 0"
+  by auto
 
 (* Depth subtype lemmas *)
 (* ty_depth_fn_arg (matches Coq) *)
-lemma ty_depth_fn_arg: "\<forall> T1 T2 eff, ty_depth T1 < ty_depth (TFn T1 T2 eff)"
+lemma ty_depth_fn_arg: "\<forall>T1 T2 eff. ty_depth T1 < ty_depth (TFn T1 T2 eff)"
   by simp
 
 (* ty_depth_fn_res (matches Coq) *)
-lemma ty_depth_fn_res: "\<forall> T1 T2 eff, ty_depth T2 < ty_depth (TFn T1 T2 eff)"
+lemma ty_depth_fn_res: "\<forall>T1 T2 eff. ty_depth T2 < ty_depth (TFn T1 T2 eff)"
   by simp
 
 (* First-order types have depth 0 for base types *)
 (* first_order_base_depth (matches Coq) *)
-lemma first_order_base_depth: "\<forall> T, first_order_type T = True \<longrightarrow> ty_depth T \<ge> 0"
+lemma first_order_base_depth: "\<forall>T. first_order_type T = True \<longrightarrow> ty_depth T \<ge> 0"
   by simp
 
 (* TList component is smaller *)
 (* ty_size_list (matches Coq) *)
-lemma ty_size_list: "\<forall> T, ty_size T < ty_size (TList T)"
+lemma ty_size_list: "\<forall>T. ty_size T < ty_size (TList T)"
   by simp
 
 (* TOption component is smaller *)
 (* ty_size_option (matches Coq) *)
-lemma ty_size_option: "\<forall> T, ty_size T < ty_size (TOption T)"
+lemma ty_size_option: "\<forall>T. ty_size T < ty_size (TOption T)"
   by simp
 
 (* TLabeled component is smaller *)
 (* ty_size_labeled (matches Coq) *)
-lemma ty_size_labeled: "\<forall> T sl, ty_size T < ty_size (TLabeled T sl)"
+lemma ty_size_labeled: "\<forall>T sl. ty_size T < ty_size (TLabeled T sl)"
   by simp
 
 (* TTainted component is smaller *)
 (* ty_size_tainted (matches Coq) *)
-lemma ty_size_tainted: "\<forall> T sl, ty_size T < ty_size (TTainted T sl)"
+lemma ty_size_tainted: "\<forall>T sl. ty_size T < ty_size (TTainted T sl)"
   by simp
 
 (* TSanitized component is smaller *)
 (* ty_size_sanitized (matches Coq) *)
-lemma ty_size_sanitized: "\<forall> T sl, ty_size T < ty_size (TSanitized T sl)"
+lemma ty_size_sanitized: "\<forall>T sl. ty_size T < ty_size (TSanitized T sl)"
   by simp
 
 (* TConstantTime component is smaller *)
 (* ty_size_constant_time (matches Coq) *)
-lemma ty_size_constant_time: "\<forall> T, ty_size T < ty_size (TConstantTime T)"
+lemma ty_size_constant_time: "\<forall>T. ty_size T < ty_size (TConstantTime T)"
   by simp
 
 (* TZeroizing component is smaller *)
 (* ty_size_zeroizing (matches Coq) *)
-lemma ty_size_zeroizing: "\<forall> T, ty_size T < ty_size (TZeroizing T)"
+lemma ty_size_zeroizing: "\<forall>T. ty_size T < ty_size (TZeroizing T)"
   by simp
 
 (* ty_depth for product left *)
 (* ty_depth_prod_left (matches Coq) *)
-lemma ty_depth_prod_left: "\<forall> T1 T2, ty_depth T1 < ty_depth (TProd T1 T2)"
+lemma ty_depth_prod_left: "\<forall>T1 T2. ty_depth T1 < ty_depth (TProd T1 T2)"
   by simp
 
 (* ty_depth for product right *)
 (* ty_depth_prod_right (matches Coq) *)
-lemma ty_depth_prod_right: "\<forall> T1 T2, ty_depth T2 < ty_depth (TProd T1 T2)"
+lemma ty_depth_prod_right: "\<forall>T1 T2. ty_depth T2 < ty_depth (TProd T1 T2)"
   by simp
 
 (* ty_depth for sum left *)
 (* ty_depth_sum_left (matches Coq) *)
-lemma ty_depth_sum_left: "\<forall> T1 T2, ty_depth T1 < ty_depth (TSum T1 T2)"
+lemma ty_depth_sum_left: "\<forall>T1 T2. ty_depth T1 < ty_depth (TSum T1 T2)"
   by simp
 
 (* ty_depth for sum right *)
 (* ty_depth_sum_right (matches Coq) *)
-lemma ty_depth_sum_right: "\<forall> T1 T2, ty_depth T2 < ty_depth (TSum T1 T2)"
+lemma ty_depth_sum_right: "\<forall>T1 T2. ty_depth T2 < ty_depth (TSum T1 T2)"
   by simp
 
 (* first_order_list_inv (matches Coq) *)
-lemma first_order_list_inv: "\<forall> T, first_order_type (TList T) = True \<longrightarrow> first_order_type T = True"
+lemma first_order_list_inv: "\<forall>T. first_order_type (TList T) = True \<longrightarrow> first_order_type T = True"
   by auto
 
 (* first_order_option_inv (matches Coq) *)
-lemma first_order_option_inv: "\<forall> T, first_order_type (TOption T) = True \<longrightarrow> first_order_type T = True"
+lemma first_order_option_inv: "\<forall>T. first_order_type (TOption T) = True \<longrightarrow> first_order_type T = True"
   by auto
 
 (* first_order_labeled_inv (matches Coq) *)
-lemma first_order_labeled_inv: "\<forall> T sl, first_order_type (TLabeled T sl) = True \<longrightarrow> first_order_type T = True"
+lemma first_order_labeled_inv: "\<forall>T sl. first_order_type (TLabeled T sl) = True \<longrightarrow> first_order_type T = True"
   by auto
 
 (* first_order_constant_time_inv (matches Coq) *)
-lemma first_order_constant_time_inv: "\<forall> T, first_order_type (TConstantTime T) = True \<longrightarrow> first_order_type T = True"
+lemma first_order_constant_time_inv: "\<forall>T. first_order_type (TConstantTime T) = True \<longrightarrow> first_order_type T = True"
   by auto
 
 (* first_order_zeroizing_inv (matches Coq) *)
-lemma first_order_zeroizing_inv: "\<forall> T, first_order_type (TZeroizing T) = True \<longrightarrow> first_order_type T = True"
+lemma first_order_zeroizing_inv: "\<forall>T. first_order_type (TZeroizing T) = True \<longrightarrow> first_order_type T = True"
   by auto
 
 (* Type depth is always non-negative (trivial but useful) *)
 (* ty_depth_nonneg (matches Coq) *)
-lemma ty_depth_nonneg: "\<forall> T, 0 \<le> ty_depth T"
+lemma ty_depth_nonneg: "\<forall>T. 0 \<le> ty_depth T"
   by simp
 
 (* Function type has strictly positive depth *)
 (* ty_depth_fn_positive (matches Coq) *)
-lemma ty_depth_fn_positive: "\<forall> T1 T2 ε, ty_depth (TFn T1 T2 ε) > 0"
+lemma ty_depth_fn_positive: "\<forall>T1 T2 ε. ty_depth (TFn T1 T2 ε) > 0"
   by simp
 
 (* Product type has strictly positive depth *)
 (* ty_depth_prod_positive (matches Coq) *)
-lemma ty_depth_prod_positive: "\<forall> T1 T2, ty_depth (TProd T1 T2) > 0"
+lemma ty_depth_prod_positive: "\<forall>T1 T2. ty_depth (TProd T1 T2) > 0"
   by simp
 
 (* Sum type has strictly positive depth *)
 (* ty_depth_sum_positive (matches Coq) *)
-lemma ty_depth_sum_positive: "\<forall> T1 T2, ty_depth (TSum T1 T2) > 0"
+lemma ty_depth_sum_positive: "\<forall>T1 T2. ty_depth (TSum T1 T2) > 0"
   by simp
 
 (* Secret type has strictly positive depth *)
 (* ty_depth_secret_positive (matches Coq) *)
-lemma ty_depth_secret_positive: "\<forall> T, ty_depth (TSecret T) > 0"
+lemma ty_depth_secret_positive: "\<forall>T. ty_depth (TSecret T) > 0"
   by simp
 
 end

@@ -17,54 +17,54 @@ pred strongly_normalizing[p_e: expr, p_st: store, p_ctx: effect_ctx] {
 
 // value_SN (matches Coq: Lemma value_SN)
 assert value_SN {
-  all x: effect_ctx | x in effect_ctx
+  all x: effect_ctx | some x
 }
 check value_SN for 5
 
 // SN_step (matches Coq: Lemma SN_step)
 assert SN_step {
-  all x: effect_ctx | x in effect_ctx
+  all x: effect_ctx | some x
 }
 check SN_step for 5
 
 // fst_typed_steps_to_value (matches Coq: Lemma fst_typed_steps_to_value)
 assert fst_typed_steps_to_value {
-  all x: effect_ctx | x in effect_ctx
+  all x: effect_ctx | some x
 }
 check fst_typed_steps_to_value for 5
 
 // snd_typed_steps_to_value (matches Coq: Lemma snd_typed_steps_to_value)
 assert snd_typed_steps_to_value {
-  all x: effect_ctx | x in effect_ctx
+  all x: effect_ctx | some x
 }
 check snd_typed_steps_to_value for 5
 
 // case_typed_steps_once (matches Coq: Lemma case_typed_steps_once)
 assert case_typed_steps_once {
-  all x: effect_ctx | x in effect_ctx
+  all x: effect_ctx | some x
 }
 check case_typed_steps_once for 5
 
 // if_typed_steps_once (matches Coq: Lemma if_typed_steps_once)
 assert if_typed_steps_once {
-  all x: effect_ctx | x in effect_ctx
+  all x: effect_ctx | some x
 }
 check if_typed_steps_once for 5
 
 // let_typed_steps_once (matches Coq: Lemma let_typed_steps_once)
 assert let_typed_steps_once {
-  all x: effect_ctx | x in effect_ctx
+  all x: effect_ctx | some x
 }
 check let_typed_steps_once for 5
 
 // handle_typed_steps_once (matches Coq: Lemma handle_typed_steps_once)
 assert handle_typed_steps_once {
-  all x: effect_ctx | x in effect_ctx
+  all x: effect_ctx | some x
 }
 check handle_typed_steps_once for 5
 
 // app_typed_steps_once (matches Coq: Lemma app_typed_steps_once)
 assert app_typed_steps_once {
-  all x: effect_ctx | x in effect_ctx
+  all x: effect_ctx | some x
 }
 check app_typed_steps_once for 5

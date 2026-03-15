@@ -49,140 +49,140 @@ begin
 (* The cumulative relation val_rel_le is defined to be downward-closed
     in the step index by construction. This lemma makes that explicit. *)
 (* val_rel_le_monotone (matches Coq) *)
-lemma val_rel_le_monotone: "\<forall> m n Σ T v1 v2, m \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
-  by (cases rule: ‹_›.cases; simp)
+lemma val_rel_le_monotone: "\<forall>m n Σ T v1 v2. m \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
+  by auto
 
 (* If related at S n, then related at n *)
 (* val_rel_le_pred (matches Coq) *)
-lemma val_rel_le_pred: "\<forall> n Σ T v1 v2, val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_pred: "\<forall>n Σ T v1 v2. val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by simp
 
 (* Monotonicity composes: if related at n and k ≤ m ≤ n, related at k *)
 (* val_rel_le_trans_mono (matches Coq) *)
-lemma val_rel_le_trans_mono: "\<forall> k m n Σ T v1 v2, k \<le> m \<longrightarrow> m \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le k Σ T v1 v2"
+lemma val_rel_le_trans_mono: "\<forall>k m n Σ T v1 v2. k \<le> m \<longrightarrow> m \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le k Σ T v1 v2"
   by auto
 
 (* If related at both m and n, related at max m n *)
 (* val_rel_le_max (matches Coq) *)
-lemma val_rel_le_max: "\<forall> m n Σ T v1 v2, val_rel_le m Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (max m n) Σ T v1 v2"
+lemma val_rel_le_max: "\<forall>m n Σ T v1 v2. val_rel_le m Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (max m n) Σ T v1 v2"
   by auto
 
 (* If related at max m n, related at both m and n *)
 (* val_rel_le_from_max (matches Coq) *)
-lemma val_rel_le_from_max: "\<forall> m n Σ T v1 v2, val_rel_le (max m n) Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2 \<and> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_from_max: "\<forall>m n Σ T v1 v2. val_rel_le (max m n) Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2 \<and> val_rel_le n Σ T v1 v2"
   by auto
 
 (* Related at either m or n implies related at min m n *)
 (* val_rel_le_to_min (matches Coq) *)
-lemma val_rel_le_to_min: "\<forall> m n Σ T v1 v2, val_rel_le m Σ T v1 v2 \<longrightarrow> val_rel_le (min m n) Σ T v1 v2"
+lemma val_rel_le_to_min: "\<forall>m n Σ T v1 v2. val_rel_le m Σ T v1 v2 \<longrightarrow> val_rel_le (min m n) Σ T v1 v2"
   by auto
 
 (* val_rel_le_to_min_r (matches Coq) *)
-lemma val_rel_le_to_min_r: "\<forall> m n Σ T v1 v2, val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (min m n) Σ T v1 v2"
+lemma val_rel_le_to_min_r: "\<forall>m n Σ T v1 v2. val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (min m n) Σ T v1 v2"
   by auto
 
 (* If related at n+k, then related at n (for any k) *)
 (* val_rel_le_drop (matches Coq) *)
-lemma val_rel_le_drop: "\<forall> k n Σ T v1 v2, val_rel_le (n + k) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_drop: "\<forall>k n Σ T v1 v2. val_rel_le (n + k) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by simp
 
 (* Double monotonicity: m <= n, k <= l, related at max n l *)
 (* val_rel_le_double_mono (matches Coq) *)
-lemma val_rel_le_double_mono: "\<forall> m n k l Σ T v1 v2, m \<le> n \<longrightarrow> k \<le> l \<longrightarrow> val_rel_le (Nat.max n l) Σ T v1 v2 \<longrightarrow> val_rel_le (Nat.min m k) Σ T v1 v2"
+lemma val_rel_le_double_mono: "\<forall>m n k l Σ T v1 v2. m \<le> n \<longrightarrow> k \<le> l \<longrightarrow> val_rel_le (Nat.max n l) Σ T v1 v2 \<longrightarrow> val_rel_le (Nat.min m k) Σ T v1 v2"
   by simp
 
 (* Step down by 1: S n -> n *)
 (* val_rel_le_step_down_1 (matches Coq) *)
-lemma val_rel_le_step_down_1: "\<forall> n Σ T v1 v2, val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_step_down_1: "\<forall>n Σ T v1 v2. val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* Step down by 2: S (S n) -> n *)
 (* val_rel_le_step_down_2 (matches Coq) *)
-lemma val_rel_le_step_down_2: "\<forall> n Σ T v1 v2, val_rel_le (S (S n)) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_step_down_2: "\<forall>n Σ T v1 v2. val_rel_le (S (S n)) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* Relation at n implies relation at n - 1 (for n > 0) *)
 (* val_rel_le_from_succ (matches Coq) *)
-lemma val_rel_le_from_succ: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (n - 1) Σ T v1 v2"
+lemma val_rel_le_from_succ: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (n - 1) Σ T v1 v2"
   by simp
 
 (* Monotonicity with explicit witness *)
 (* val_rel_le_mono_witness (matches Coq) *)
-lemma val_rel_le_mono_witness: "\<forall> n m Σ T v1 v2, val_rel_le n Σ T v1 v2 \<longrightarrow> m \<le> n \<longrightarrow> val_rel_le m Σ T v1 v2"
+lemma val_rel_le_mono_witness: "\<forall>n m Σ T v1 v2. val_rel_le n Σ T v1 v2 \<longrightarrow> m \<le> n \<longrightarrow> val_rel_le m Σ T v1 v2"
   by auto
 
 (* val_rel_le_half (matches Coq) *)
-lemma val_rel_le_half: "\<forall> n Σ T v1 v2, val_rel_le (2 * n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_half: "\<forall>n Σ T v1 v2. val_rel_le (2 * n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by simp
 
 (* Related at n implies related at n - k (for k <= n) *)
 (* val_rel_le_sub (matches Coq) *)
-lemma val_rel_le_sub: "\<forall> k n Σ T v1 v2, k \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (n - k) Σ T v1 v2"
+lemma val_rel_le_sub: "\<forall>k n Σ T v1 v2. k \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (n - k) Σ T v1 v2"
   by simp
 
 (* Related at n implies related at n / 2 (integer division) *)
 (* val_rel_le_div2 (matches Coq) *)
-lemma val_rel_le_div2: "\<forall> n Σ T v1 v2, val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (n / 2) Σ T v1 v2"
+lemma val_rel_le_div2: "\<forall>n Σ T v1 v2. val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (n / 2) Σ T v1 v2"
   by simp
 
 (* If related at both n and m, related at min *)
 (* val_rel_le_both_min (matches Coq) *)
-lemma val_rel_le_both_min: "\<forall> m n Σ T v1 v2, val_rel_le m Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (min m n) Σ T v1 v2"
+lemma val_rel_le_both_min: "\<forall>m n Σ T v1 v2. val_rel_le m Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (min m n) Σ T v1 v2"
   by auto
 
 (* ----------------------------------------------------------------- *)
 (* val_rel_le_step_down_3 (matches Coq) *)
-lemma val_rel_le_step_down_3: "\<forall> n Σ T v1 v2, val_rel_le (S (S (S n))) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_step_down_3: "\<forall>n Σ T v1 v2. val_rel_le (S (S (S n))) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* ----------------------------------------------------------------- *)
 (* val_rel_le_from_ge (matches Coq) *)
-lemma val_rel_le_from_ge: "\<forall> m n Σ T v1 v2, n \<ge> m \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
+lemma val_rel_le_from_ge: "\<forall>m n Σ T v1 v2. n \<ge> m \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
   by auto
 
 (* ----------------------------------------------------------------- *)
 (* val_rel_le_pred_nat (matches Coq) *)
-lemma val_rel_le_pred_nat: "\<forall> n Σ T v1 v2, val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (Nat.pred n) Σ T v1 v2"
+lemma val_rel_le_pred_nat: "\<forall>n Σ T v1 v2. val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (Nat.pred n) Σ T v1 v2"
   by simp
 
 (* Left projection: related at max m n implies related at m *)
 (* val_rel_le_from_max_l (matches Coq) *)
-lemma val_rel_le_from_max_l: "\<forall> m n Σ T v1 v2, val_rel_le (max m n) Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
+lemma val_rel_le_from_max_l: "\<forall>m n Σ T v1 v2. val_rel_le (max m n) Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
   by auto
 
 (* Right projection: related at max m n implies related at n *)
 (* val_rel_le_from_max_r (matches Coq) *)
-lemma val_rel_le_from_max_r: "\<forall> m n Σ T v1 v2, val_rel_le (max m n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_from_max_r: "\<forall>m n Σ T v1 v2. val_rel_le (max m n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* val_rel_le at step 0 is I (the trivial proposition) *)
 (* val_rel_le_zero_trivial (matches Coq) *)
-lemma val_rel_le_zero_trivial: "\<forall> Σ T v1 v2, val_rel_le 0 Σ T v1 v2"
+lemma val_rel_le_zero_trivial: "\<forall>Σ T v1 v2. val_rel_le 0 Σ T v1 v2"
   by auto
 
 (* ----------------------------------------------------------------- *)
 (* val_rel_le_step_down_4 (matches Coq) *)
-lemma val_rel_le_step_down_4: "\<forall> n Σ T v1 v2, val_rel_le (S (S (S (S n)))) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_step_down_4: "\<forall>n Σ T v1 v2. val_rel_le (S (S (S (S n)))) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by simp
 
 (* ----------------------------------------------------------------- *)
 (* val_rel_le_from_add (matches Coq) *)
-lemma val_rel_le_from_add: "\<forall> m k n Σ T v1 v2, n = m + k \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
+lemma val_rel_le_from_add: "\<forall>m k n Σ T v1 v2. n = m + k \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
   by auto
 
 (* ----------------------------------------------------------------- *)
 (* val_rel_le_from_max_min (matches Coq) *)
-lemma val_rel_le_from_max_min: "\<forall> m n Σ T v1 v2, val_rel_le (max m n) Σ T v1 v2 \<longrightarrow> val_rel_le (min m n) Σ T v1 v2"
+lemma val_rel_le_from_max_min: "\<forall>m n Σ T v1 v2. val_rel_le (max m n) Σ T v1 v2 \<longrightarrow> val_rel_le (min m n) Σ T v1 v2"
   by simp
 
 (* ----------------------------------------------------------------- *)
 (* val_rel_le_from_double (matches Coq) *)
-lemma val_rel_le_from_double: "\<forall> n Σ T v1 v2, val_rel_le (n + n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_from_double: "\<forall>n Σ T v1 v2. val_rel_le (n + n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by simp
 
 (* ----------------------------------------------------------------- *)
 (* val_rel_le_in_range (matches Coq) *)
-lemma val_rel_le_in_range: "\<forall> m n Σ T v1 v2, m \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
+lemma val_rel_le_in_range: "\<forall>m n Σ T v1 v2. m \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
   by auto
 
 end

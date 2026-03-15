@@ -116,7 +116,7 @@ definition regions_disjoint :: "bool" where
 
 (* addr_in_region (matches Coq: Definition addr_in_region) *)
 definition addr_in_region :: "MemRegion \<Rightarrow> bool" where
-  "addr_in_region r \<equiv> region_base r <= addr /\ addr + size <= region_base r + region_size r"
+  "addr_in_region r \<equiv> region_base r <= addr \<and> addr + size <= region_base r + region_size r"
 
 (* call_allowed (matches Coq: Definition call_allowed) *)
 definition call_allowed :: "Sandbox \<Rightarrow> nat \<Rightarrow> bool" where
@@ -141,15 +141,15 @@ definition marshal_into :: "MarshalBuffer \<Rightarrow> FFIType \<Rightarrow> op
     THEOREMS: FFI CALL VALIDATION
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* ffi_safe_implies_sandboxed (matches Coq) *)
-lemma ffi_safe_implies_sandboxed: "\<forall> call, ffi_call_safe call = True \<longrightarrow> ffi_sandboxed call = True"
+lemma ffi_safe_implies_sandboxed: "\<forall>call. ffi_call_safe call = True \<longrightarrow> ffi_sandboxed call = True"
   by auto
 
 (* ffi_safe_implies_validated (matches Coq) *)
-lemma ffi_safe_implies_validated: "\<forall> call, ffi_call_safe call = True \<longrightarrow> ffi_validated call = True"
+lemma ffi_safe_implies_validated: "\<forall>call. ffi_call_safe call = True \<longrightarrow> ffi_validated call = True"
   by auto
 
 (* ffi_safe_construct (matches Coq) *)
-lemma ffi_safe_construct: "\<forall> call, ffi_sandboxed call = True \<longrightarrow> ffi_validated call = True \<longrightarrow> ffi_call_safe call = True"
+lemma ffi_safe_construct: "\<forall>call. ffi_sandboxed call = True \<longrightarrow> ffi_validated call = True \<longrightarrow> ffi_call_safe call = True"
   by simp
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -160,15 +160,15 @@ lemma int8_alignment_positive: "ffi_type_align FFI_Int8 = 1"
   by simp
 
 (* ffi_type_align_ge_1 (matches Coq) *)
-lemma ffi_type_align_ge_1: "\<forall> t, ffi_type_align t \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma ffi_type_align_ge_1: "\<forall>t. ffi_type_align t \<ge> 1"
+  by auto
 
 (* ptr_size_constant (matches Coq) *)
-lemma ptr_size_constant: "\<forall> t, ffi_type_size (FFI_Ptr t) = 8"
+lemma ptr_size_constant: "\<forall>t. ffi_type_size (FFI_Ptr t) = 8"
   by simp
 
 (* array_size_correct (matches Coq) *)
-lemma array_size_correct: "\<forall> elem n, ffi_type_size (FFI_Array elem n) = n * ffi_type_size elem"
+lemma array_size_correct: "\<forall>elem n. ffi_type_size (FFI_Array elem n) = n * ffi_type_size elem"
   by simp
 
 (* empty_struct_zero_size (matches Coq) *)
@@ -179,42 +179,42 @@ lemma empty_struct_zero_size: "ffi_type_size (FFI_Struct []) = 0"
     THEOREMS: BUFFER SIZE BOUNDS & MARSHALLING
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* marshal_preserves_capacity (matches Coq) *)
-lemma marshal_preserves_capacity: "\<forall> b t b', marshal_into b t = Some b' \<longrightarrow> buf_capacity b' = buf_capacity b"
+lemma marshal_preserves_capacity: "\<forall>b t b'. marshal_into b t = Some b' \<longrightarrow> buf_capacity b' = buf_capacity b"
   by simp
 
 (* marshal_increases_used (matches Coq) *)
-lemma marshal_increases_used: "\<forall> b t b', marshal_into b t = Some b' \<longrightarrow> buf_used b' = buf_used b + ffi_type_size t"
+lemma marshal_increases_used: "\<forall>b t b'. marshal_into b t = Some b' \<longrightarrow> buf_used b' = buf_used b + ffi_type_size t"
   by simp
 
 (* marshal_never_overflows (matches Coq) *)
-lemma marshal_never_overflows: "\<forall> b t b', marshal_into b t = Some b' \<longrightarrow> buf_used b' \<le> buf_capacity b'"
-  by (cases rule: ‹_›.cases; simp)
+lemma marshal_never_overflows: "\<forall>b t b'. marshal_into b t = Some b' \<longrightarrow> buf_used b' \<le> buf_capacity b'"
+  by auto
 
 (* marshal_failure_means_insufficient (matches Coq) *)
-lemma marshal_failure_means_insufficient: "\<forall> b t, marshal_into b t = None \<longrightarrow> buf_capacity b < buf_used b + ffi_type_size t"
-  by (cases rule: ‹_›.cases; simp)
+lemma marshal_failure_means_insufficient: "\<forall>b t. marshal_into b t = None \<longrightarrow> buf_capacity b < buf_used b + ffi_type_size t"
+  by auto
 
 (* marshal_void_always_succeeds (matches Coq) *)
-lemma marshal_void_always_succeeds: "\<forall> b, buf_used b \<le> buf_capacity b \<longrightarrow> \<exists> b', marshal_into b FFI_Void = Some b'"
+lemma marshal_void_always_succeeds: "\<forall>b. buf_used b \<le> buf_capacity b \<longrightarrow> \<exists>b'. marshal_into b FFI_Void = Some b'"
   by simp
 
 (* ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: SANDBOX ESCAPE PREVENTION & MEMORY ISOLATION
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* disjoint_regions_no_overlap (matches Coq) *)
-lemma disjoint_regions_no_overlap: "\<forall> r1 r2 addr sz, regions_disjoint r1 r2 \<longrightarrow> addr_in_region addr sz r1 \<longrightarrow> sz > 0 \<longrightarrow> ~ addr_in_region addr sz r2"
-  by (cases rule: ‹_›.cases; simp)
+lemma disjoint_regions_no_overlap: "\<forall>r1 r2 addr sz. regions_disjoint r1 r2 \<longrightarrow> addr_in_region addr sz r1 \<longrightarrow> sz > 0 \<longrightarrow> ~ addr_in_region addr sz r2"
+  by auto
 
 (* sandbox_call_allowed_decidable (matches Coq) *)
-lemma sandbox_call_allowed_decidable: "\<forall> sb cid, call_allowed sb cid = True \<or> call_allowed sb cid = False"
+lemma sandbox_call_allowed_decidable: "\<forall>sb cid. call_allowed sb cid = True \<or> call_allowed sb cid = False"
   by auto
 
 (* disjoint_symmetric (matches Coq) *)
-lemma disjoint_symmetric: "\<forall> r1 r2, regions_disjoint r1 r2 \<longrightarrow> regions_disjoint r2 r1"
+lemma disjoint_symmetric: "\<forall>r1 r2. regions_disjoint r1 r2 \<longrightarrow> regions_disjoint r2 r1"
   by auto
 
 (* addr_in_region_bounds (matches Coq) *)
-lemma addr_in_region_bounds: "\<forall> addr sz r, addr_in_region addr sz r \<longrightarrow> addr \<ge> region_base r \<and> addr + sz \<le> region_base r + region_size r"
+lemma addr_in_region_bounds: "\<forall>addr sz r. addr_in_region addr sz r \<longrightarrow> addr \<ge> region_base r \<and> addr + sz \<le> region_base r + region_size r"
   by simp
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -229,7 +229,7 @@ lemma ffi_int8_size: "ffi_type_size FFI_Int8 = 1"
   by simp
 
 (* marshal_void_preserves_used (matches Coq) *)
-lemma marshal_void_preserves_used: "\<forall> b b', buf_used b \<le> buf_capacity b \<longrightarrow> marshal_into b FFI_Void = Some b' \<longrightarrow> buf_used b' = buf_used b"
+lemma marshal_void_preserves_used: "\<forall>b b'. buf_used b \<le> buf_capacity b \<longrightarrow> marshal_into b FFI_Void = Some b' \<longrightarrow> buf_used b' = buf_used b"
   by simp
 
 end

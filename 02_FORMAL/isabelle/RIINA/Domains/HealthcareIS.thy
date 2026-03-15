@@ -397,44 +397,44 @@ record data_export =
 
 (* encounter_complete (matches Coq: Definition encounter_complete) *)
 definition encounter_complete :: "Encounter \<Rightarrow> bool" where
-  "encounter_complete e \<equiv> chief_complaint e = True /\ history e = True /\
-  exam e = True /\ assessment e = True /\ plan e = True"
+  "encounter_complete e \<equiv> chief_complaint e = True \<and> history e = True \<and>
+  exam e = True \<and> assessment e = True \<and> plan e = True"
 
 (* finalized (matches Coq: Definition finalized) *)
 definition finalized :: "Encounter \<Rightarrow> bool" where
-  "finalized e \<equiv> is_finalized e = True /\ encounter_complete e"
+  "finalized e \<equiv> is_finalized e = True \<and> encounter_complete e"
 
 (* valid_amendment (matches Coq: Definition valid_amendment) *)
 definition valid_amendment :: "Amendment \<Rightarrow> bool" where
-  "valid_amendment a \<equiv> marked_as_amendment a = True /\ 
-  linked_to_original a = True /\
+  "valid_amendment a \<equiv> marked_as_amendment a = True \<and> 
+  linked_to_original a = True \<and>
   amend_timestamp a > 0"
 
 (* allergy_complete (matches Coq: Definition allergy_complete) *)
 definition allergy_complete :: "Allergy \<Rightarrow> bool" where
-  "allergy_complete a \<equiv> allergen_documented a = True /\
-  reaction_documented a = True /\
-  severity_documented a = True /\
-  allergen a > 0 /\
+  "allergy_complete a \<equiv> allergen_documented a = True \<and>
+  reaction_documented a = True \<and>
+  severity_documented a = True \<and>
+  allergen a > 0 \<and>
   reaction_type a > 0"
 
 (* interaction_detected (matches Coq: Definition interaction_detected) *)
 definition interaction_detected :: "DrugAllergyInteraction \<Rightarrow> bool" where
-  "interaction_detected dai \<equiv> patient_has_allergy dai = True /\ alert_triggered dai = True"
+  "interaction_detected dai \<equiv> patient_has_allergy dai = True \<and> alert_triggered dai = True"
 
 (* problem_coded (matches Coq: Definition problem_coded) *)
 definition problem_coded :: "Problem \<Rightarrow> bool" where
-  "problem_coded p \<equiv> snomed_assigned p = True /\ problem_snomed p > 0"
+  "problem_coded p \<equiv> snomed_assigned p = True \<and> problem_snomed p > 0"
 
 (* five_rights_verified (matches Coq: Definition five_rights_verified) *)
 definition five_rights_verified :: "Administration \<Rightarrow> bool" where
-  "five_rights_verified a \<equiv> right_patient a = True /\ right_drug a = True /\
-  right_dose a = True /\ right_route a = True /\
+  "five_rights_verified a \<equiv> right_patient a = True \<and> right_drug a = True \<and>
+  right_dose a = True \<and> right_route a = True \<and>
   right_time a = True"
 
 (* administration_allowed (matches Coq: Definition administration_allowed) *)
 definition administration_allowed :: "Administration \<Rightarrow> bool" where
-  "administration_allowed a \<equiv> five_rights_verified a /\ barcode_verified a = True"
+  "administration_allowed a \<equiv> five_rights_verified a \<and> barcode_verified a = True"
 
 (* interaction_alerted (matches Coq: Definition interaction_alerted) *)
 definition interaction_alerted :: "DrugInteraction \<Rightarrow> bool" where
@@ -442,27 +442,27 @@ definition interaction_alerted :: "DrugInteraction \<Rightarrow> bool" where
 
 (* dose_in_range (matches Coq: Definition dose_in_range) *)
 definition dose_in_range :: "DoseCheck \<Rightarrow> bool" where
-  "dose_in_range dc \<equiv> check_dose dc >= min_safe_dose dc /\
-  check_dose dc <= max_safe_dose dc /\
+  "dose_in_range dc \<equiv> check_dose dc >= min_safe_dose dc \<and>
+  check_dose dc <= max_safe_dose dc \<and>
   within_range dc = True"
 
 (* high_alert_safe (matches Coq: Definition high_alert_safe) *)
 definition high_alert_safe :: "HighAlertMed \<Rightarrow> bool" where
   "high_alert_safe ham \<equiv> is_high_alert ham = True ->
-  double_check_required ham = True /\
+  double_check_required ham = True \<and>
   double_check_performed ham = True"
 
 (* order_complete_check (matches Coq: Definition order_complete_check) *)
 definition order_complete_check :: "Order \<Rightarrow> bool" where
-  "order_complete_check o \<equiv> has_all_fields o = True /\
-  ord_drug o > 0 /\
-  ord_dose o > 0 /\
-  ord_route o > 0 /\
+  "order_complete_check o \<equiv> has_all_fields o = True \<and>
+  ord_drug o > 0 \<and>
+  ord_dose o > 0 \<and>
+  ord_route o > 0 \<and>
   ord_frequency o > 0"
 
 (* order_signed (matches Coq: Definition order_signed) *)
 definition order_signed :: "Order \<Rightarrow> bool" where
-  "order_signed o \<equiv> has_signature o = True /\ signature_valid o = True"
+  "order_signed o \<equiv> has_signature o = True \<and> signature_valid o = True"
 
 (* verbal_order_valid - complex match, needs manual translation *)
 definition verbal_order_valid :: "bool" where "verbal_order_valid = undefined"
@@ -470,7 +470,7 @@ definition verbal_order_valid :: "bool" where "verbal_order_valid = undefined"
 (* duplicate_handled (matches Coq: Definition duplicate_handled) *)
 definition duplicate_handled :: "DuplicateOrderCheck \<Rightarrow> bool" where
   "duplicate_handled doc \<equiv> is_duplicate doc = True ->
-  warning_shown doc = True /\ override_required doc = True"
+  warning_shown doc = True \<and> override_required doc = True"
 
 (* contraindication_blocked (matches Coq: Definition contraindication_blocked) *)
 definition contraindication_blocked :: "Contraindication \<Rightarrow> bool" where
@@ -492,33 +492,33 @@ definition delta_flagged :: "DeltaCheck \<Rightarrow> bool" where
 
 (* range_adjusted (matches Coq: Definition range_adjusted) *)
 definition range_adjusted :: "ReferenceRange \<Rightarrow> bool" where
-  "range_adjusted rr \<equiv> age_adjusted rr = True /\ sex_adjusted rr = True"
+  "range_adjusted rr \<equiv> age_adjusted rr = True \<and> sex_adjusted rr = True"
 
 (* phi_access_valid (matches Coq: Definition phi_access_valid) *)
 definition phi_access_valid :: "PHIAccess \<Rightarrow> bool" where
-  "phi_access_valid pa \<equiv> role_based pa = True /\ minimum_necessary pa = True"
+  "phi_access_valid pa \<equiv> role_based pa = True \<and> minimum_necessary pa = True"
 
 (* phi_accessed (matches Coq: Definition phi_accessed) *)
 definition phi_accessed :: "PHIAccess \<Rightarrow> bool" where
-  "phi_accessed pa \<equiv> access_timestamp pa > 0 /\ logged pa = True"
+  "phi_accessed pa \<equiv> access_timestamp pa > 0 \<and> logged pa = True"
 
 (* audit_complete (matches Coq: Definition audit_complete) *)
 definition audit_complete :: "AuditEntry \<Rightarrow> bool" where
-  "audit_complete ae \<equiv> reviewable ae = True /\ audit_timestamp ae > 0"
+  "audit_complete ae \<equiv> reviewable ae = True \<and> audit_timestamp ae > 0"
 
 (* breach_notified - complex match, needs manual translation *)
 definition breach_notified :: "bool" where "breach_notified = undefined"
 
 (* consent_valid (matches Coq: Definition consent_valid) *)
 definition consent_valid :: "Consent \<Rightarrow> bool" where
-  "consent_valid c \<equiv> explicit_consent c = True /\ 
-  consent_timestamp c > 0 /\
+  "consent_valid c \<equiv> explicit_consent c = True \<and> 
+  consent_timestamp c > 0 \<and>
   processing_allowed c = True"
 
 (* data_portable (matches Coq: Definition data_portable) *)
 definition data_portable :: "DataExport \<Rightarrow> bool" where
-  "data_portable de \<equiv> machine_readable de = True /\
-  export_format de > 0 /\
+  "data_portable de \<equiv> machine_readable de = True \<and>
+  export_format de > 0 \<and>
   export_complete de = True"
 
 (* high_confidence_match (matches Coq: Definition high_confidence_match) *)
@@ -549,19 +549,19 @@ definition note_immutable :: "ClinicalNote \<Rightarrow> bool" where
     MRNs are unique within the patient registry
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_01_patient_identity_uniqueness (matches Coq) *)
-lemma HIS_001_01_patient_identity_uniqueness: "\<forall> (reg : PatientRegistry) p1 p2, In p1 (patients reg) \<longrightarrow> In p2 (patients reg) \<longrightarrow> mrn p1 = mrn p2 \<longrightarrow> p1 = p2"
+lemma HIS_001_01_patient_identity_uniqueness: "\<forall>(reg :: PatientRegistry) p1 p2. In p1 (patients reg) \<longrightarrow> In p2 (patients reg) \<longrightarrow> mrn p1 = mrn p2 \<longrightarrow> p1 = p2"
   by auto
 
 (* HIS_001_02_patient_matching_accuracy (matches Coq) *)
-lemma HIS_001_02_patient_matching_accuracy: "\<forall> pm, match_score pm \<ge> 999 \<longrightarrow> high_confidence_match pm"
+lemma HIS_001_02_patient_matching_accuracy: "\<forall>pm. match_score pm \<ge> 999 \<longrightarrow> high_confidence_match pm"
   by auto
 
 (* HIS_001_03_duplicate_detection (matches Coq) *)
-lemma HIS_001_03_duplicate_detection: "\<forall> dc, similarity_score dc \<ge> 800 \<longrightarrow> flagged_for_review dc = True \<longrightarrow> properly_flagged dc"
+lemma HIS_001_03_duplicate_detection: "\<forall>dc. similarity_score dc \<ge> 800 \<longrightarrow> flagged_for_review dc = True \<longrightarrow> properly_flagged dc"
   by auto
 
 (* HIS_001_04_patient_merge_integrity (matches Coq) *)
-lemma HIS_001_04_patient_merge_integrity: "\<forall> m, merge_complete m = True \<longrightarrow> length (target_records_after m) = length (source_records m) + length (target_records_before m) \<longrightarrow> merge_preserves_records m"
+lemma HIS_001_04_patient_merge_integrity: "\<forall>m. merge_complete m = True \<longrightarrow> length (target_records_after m) = length (source_records m) + length (target_records_before m) \<longrightarrow> merge_preserves_records m"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -569,7 +569,7 @@ lemma HIS_001_04_patient_merge_integrity: "\<forall> m, merge_complete m = True 
     Amendments linked to original, timestamped
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_05_amendment_tracking (matches Coq) *)
-lemma HIS_001_05_amendment_tracking: "\<forall> a, valid_amendment a \<longrightarrow> linked_to_original a = True \<and> amend_timestamp a > 0"
+lemma HIS_001_05_amendment_tracking: "\<forall>a. valid_amendment a \<longrightarrow> linked_to_original a = True \<and> amend_timestamp a > 0"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -577,11 +577,11 @@ lemma HIS_001_05_amendment_tracking: "\<forall> a, valid_amendment a \<longright
     Complete encounters have all SOAP elements
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_06_encounter_completeness (matches Coq) *)
-lemma HIS_001_06_encounter_completeness: "\<forall> e, finalized e \<longrightarrow> encounter_complete e"
+lemma HIS_001_06_encounter_completeness: "\<forall>e. finalized e \<longrightarrow> encounter_complete e"
   by auto
 
 (* HIS_001_07_documentation_immutability (matches Coq) *)
-lemma HIS_001_07_documentation_immutability: "\<forall> n, is_signed n = True \<longrightarrow> note_content_hash n = note_content_hash n"
+lemma HIS_001_07_documentation_immutability: "\<forall>n. is_signed n = True \<longrightarrow> note_content_hash n = note_content_hash n"
   by simp
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -589,7 +589,7 @@ lemma HIS_001_07_documentation_immutability: "\<forall> n, is_signed n = True \<
     Allergies have allergen, reaction, severity
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_08_allergy_documentation (matches Coq) *)
-lemma HIS_001_08_allergy_documentation: "\<forall> a, allergy_complete a \<longrightarrow> allergen_documented a = True \<and> reaction_documented a = True \<and> severity_documented a = True"
+lemma HIS_001_08_allergy_documentation: "\<forall>a. allergy_complete a \<longrightarrow> allergen_documented a = True \<and> reaction_documented a = True \<and> severity_documented a = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -597,7 +597,7 @@ lemma HIS_001_08_allergy_documentation: "\<forall> a, allergy_complete a \<longr
     Drug-allergy interaction triggers alert
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_09_drug_allergy_alert (matches Coq) *)
-lemma HIS_001_09_drug_allergy_alert: "\<forall> dai, interaction_detected dai \<longrightarrow> alert_triggered dai = True"
+lemma HIS_001_09_drug_allergy_alert: "\<forall>dai. interaction_detected dai \<longrightarrow> alert_triggered dai = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -605,7 +605,7 @@ lemma HIS_001_09_drug_allergy_alert: "\<forall> dai, interaction_detected dai \<
     All problems have SNOMED codes
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_10_problem_list_coded (matches Coq) *)
-lemma HIS_001_10_problem_list_coded: "\<forall> p, problem_coded p \<longrightarrow> snomed_assigned p = True \<and> problem_snomed p > 0"
+lemma HIS_001_10_problem_list_coded: "\<forall>p. problem_coded p \<longrightarrow> snomed_assigned p = True \<and> problem_snomed p > 0"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -613,7 +613,7 @@ lemma HIS_001_10_problem_list_coded: "\<forall> p, problem_coded p \<longrightar
     Right patient/drug/dose/route/time
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_11_five_rights_verification (matches Coq) *)
-lemma HIS_001_11_five_rights_verification: "\<forall> a, administration_allowed a \<longrightarrow> five_rights_verified a"
+lemma HIS_001_11_five_rights_verification: "\<forall>a. administration_allowed a \<longrightarrow> five_rights_verified a"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -621,7 +621,7 @@ lemma HIS_001_11_five_rights_verification: "\<forall> a, administration_allowed 
     Interactions trigger severity-based alert
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_12_drug_interaction_checking (matches Coq) *)
-lemma HIS_001_12_drug_interaction_checking: "\<forall> di, interaction_alerted di \<longrightarrow> interaction_alert_shown di = True"
+lemma HIS_001_12_drug_interaction_checking: "\<forall>di. interaction_alerted di \<longrightarrow> interaction_alert_shown di = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -629,7 +629,7 @@ lemma HIS_001_12_drug_interaction_checking: "\<forall> di, interaction_alerted d
     Dose within safe range for patient
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_13_dose_range_checking (matches Coq) *)
-lemma HIS_001_13_dose_range_checking: "\<forall> dc, dose_in_range dc \<longrightarrow> check_dose dc \<ge> min_safe_dose dc \<and> check_dose dc \<le> max_safe_dose dc"
+lemma HIS_001_13_dose_range_checking: "\<forall>dc. dose_in_range dc \<longrightarrow> check_dose dc \<ge> min_safe_dose dc \<and> check_dose dc \<le> max_safe_dose dc"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -637,7 +637,7 @@ lemma HIS_001_13_dose_range_checking: "\<forall> dc, dose_in_range dc \<longrigh
     High-alert meds require double-check
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_14_high_alert_safeguards (matches Coq) *)
-lemma HIS_001_14_high_alert_safeguards: "\<forall> ham, high_alert_safe ham \<longrightarrow> is_high_alert ham = True \<longrightarrow> double_check_required ham = True \<and> double_check_performed ham = True"
+lemma HIS_001_14_high_alert_safeguards: "\<forall>ham. high_alert_safe ham \<longrightarrow> is_high_alert ham = True \<longrightarrow> double_check_required ham = True \<and> double_check_performed ham = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -645,7 +645,7 @@ lemma HIS_001_14_high_alert_safeguards: "\<forall> ham, high_alert_safe ham \<lo
     Scan verifies match before administration
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_15_barcode_verification (matches Coq) *)
-lemma HIS_001_15_barcode_verification: "\<forall> a, administration_allowed a \<longrightarrow> barcode_verified a = True"
+lemma HIS_001_15_barcode_verification: "\<forall>a. administration_allowed a \<longrightarrow> barcode_verified a = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -653,7 +653,7 @@ lemma HIS_001_15_barcode_verification: "\<forall> a, administration_allowed a \<
     Orders have all required fields
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_16_order_completeness (matches Coq) *)
-lemma HIS_001_16_order_completeness: "\<forall> o, order_complete_check o \<longrightarrow> has_all_fields o = True \<and> ord_drug o > 0 \<and> ord_dose o > 0"
+lemma HIS_001_16_order_completeness: "\<forall>o. order_complete_check o \<longrightarrow> has_all_fields o = True \<and> ord_drug o > 0 \<and> ord_dose o > 0"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -661,7 +661,7 @@ lemma HIS_001_16_order_completeness: "\<forall> o, order_complete_check o \<long
     Electronic signature is legally binding
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_17_order_signature (matches Coq) *)
-lemma HIS_001_17_order_signature: "\<forall> o, order_signed o \<longrightarrow> has_signature o = True \<and> signature_valid o = True"
+lemma HIS_001_17_order_signature: "\<forall>o. order_signed o \<longrightarrow> has_signature o = True \<and> signature_valid o = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -669,7 +669,7 @@ lemma HIS_001_17_order_signature: "\<forall> o, order_signed o \<longrightarrow>
     Verbal orders authenticated within 24hrs
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_18_verbal_order_auth (matches Coq) *)
-lemma HIS_001_18_verbal_order_auth: "\<forall> vo, verbal_order_valid vo \<longrightarrow> authenticated_within_24h vo = True"
+lemma HIS_001_18_verbal_order_auth: "\<forall>vo. verbal_order_valid vo \<longrightarrow> authenticated_within_24h vo = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -677,7 +677,7 @@ lemma HIS_001_18_verbal_order_auth: "\<forall> vo, verbal_order_valid vo \<longr
     Duplicate orders warn and require override
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_19_duplicate_order_prevention (matches Coq) *)
-lemma HIS_001_19_duplicate_order_prevention: "\<forall> doc, duplicate_handled doc \<longrightarrow> is_duplicate doc = True \<longrightarrow> warning_shown doc = True \<and> override_required doc = True"
+lemma HIS_001_19_duplicate_order_prevention: "\<forall>doc. duplicate_handled doc \<longrightarrow> is_duplicate doc = True \<longrightarrow> warning_shown doc = True \<and> override_required doc = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -685,7 +685,7 @@ lemma HIS_001_19_duplicate_order_prevention: "\<forall> doc, duplicate_handled d
     Contraindications trigger hard stop
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_20_contraindication_alert (matches Coq) *)
-lemma HIS_001_20_contraindication_alert: "\<forall> c, contraindication_blocked c \<longrightarrow> contra_detected c = True \<longrightarrow> hard_stop_triggered c = True"
+lemma HIS_001_20_contraindication_alert: "\<forall>c. contraindication_blocked c \<longrightarrow> contra_detected c = True \<longrightarrow> hard_stop_triggered c = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -693,7 +693,7 @@ lemma HIS_001_20_contraindication_alert: "\<forall> c, contraindication_blocked 
     Specimens tracked from collection to disposal
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_21_specimen_tracking (matches Coq) *)
-lemma HIS_001_21_specimen_tracking: "\<forall> s, specimen_tracked s \<longrightarrow> fully_tracked s = True \<and> collection_time s > 0"
+lemma HIS_001_21_specimen_tracking: "\<forall>s. specimen_tracked s \<longrightarrow> fully_tracked s = True \<and> collection_time s > 0"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -701,7 +701,7 @@ lemma HIS_001_21_specimen_tracking: "\<forall> s, specimen_tracked s \<longright
     Critical values notified within 30 min
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_22_critical_value_notification (matches Coq) *)
-lemma HIS_001_22_critical_value_notification: "\<forall> r, critical_notified r \<longrightarrow> is_critical r = True \<longrightarrow> notified_within_30min r = True"
+lemma HIS_001_22_critical_value_notification: "\<forall>r. critical_notified r \<longrightarrow> is_critical r = True \<longrightarrow> notified_within_30min r = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -709,7 +709,7 @@ lemma HIS_001_22_critical_value_notification: "\<forall> r, critical_notified r 
     Results auto-validated or flagged for review
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_23_result_validation (matches Coq) *)
-lemma HIS_001_23_result_validation: "\<forall> r, result_validated r \<longrightarrow> validated r = True \<or> needs_review r = True"
+lemma HIS_001_23_result_validation: "\<forall>r. result_validated r \<longrightarrow> validated r = True \<or> needs_review r = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -717,7 +717,7 @@ lemma HIS_001_23_result_validation: "\<forall> r, result_validated r \<longright
     Large changes from prior flagged
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_24_delta_check (matches Coq) *)
-lemma HIS_001_24_delta_check: "\<forall> dc, delta_flagged dc \<longrightarrow> exceeds_threshold dc = True \<longrightarrow> flagged dc = True"
+lemma HIS_001_24_delta_check: "\<forall>dc. delta_flagged dc \<longrightarrow> exceeds_threshold dc = True \<longrightarrow> flagged dc = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -725,7 +725,7 @@ lemma HIS_001_24_delta_check: "\<forall> dc, delta_flagged dc \<longrightarrow> 
     Ranges adjusted for age/sex
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_25_reference_range_adjusted (matches Coq) *)
-lemma HIS_001_25_reference_range_adjusted: "\<forall> rr, range_adjusted rr \<longrightarrow> age_adjusted rr = True \<and> sex_adjusted rr = True"
+lemma HIS_001_25_reference_range_adjusted: "\<forall>rr. range_adjusted rr \<longrightarrow> age_adjusted rr = True \<and> sex_adjusted rr = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -733,7 +733,7 @@ lemma HIS_001_25_reference_range_adjusted: "\<forall> rr, range_adjusted rr \<lo
     PHI access is role-based, minimum necessary
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_26_phi_access_control (matches Coq) *)
-lemma HIS_001_26_phi_access_control: "\<forall> pa, phi_access_valid pa \<longrightarrow> role_based pa = True \<and> minimum_necessary pa = True"
+lemma HIS_001_26_phi_access_control: "\<forall>pa. phi_access_valid pa \<longrightarrow> role_based pa = True \<and> minimum_necessary pa = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -741,7 +741,7 @@ lemma HIS_001_26_phi_access_control: "\<forall> pa, phi_access_valid pa \<longri
     All PHI access logged and reviewable
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_27_audit_trail_complete (matches Coq) *)
-lemma HIS_001_27_audit_trail_complete: "\<forall> pa, phi_accessed pa \<longrightarrow> logged pa = True"
+lemma HIS_001_27_audit_trail_complete: "\<forall>pa. phi_accessed pa \<longrightarrow> logged pa = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -749,7 +749,7 @@ lemma HIS_001_27_audit_trail_complete: "\<forall> pa, phi_accessed pa \<longrigh
     Breaches notified within 60 days
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_28_breach_notification (matches Coq) *)
-lemma HIS_001_28_breach_notification: "\<forall> b, breach_notified b \<longrightarrow> notified_within_60days b = True"
+lemma HIS_001_28_breach_notification: "\<forall>b. breach_notified b \<longrightarrow> notified_within_60days b = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -757,7 +757,7 @@ lemma HIS_001_28_breach_notification: "\<forall> b, breach_notified b \<longrigh
     Data processing requires explicit consent
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_29_consent_required (matches Coq) *)
-lemma HIS_001_29_consent_required: "\<forall> c, consent_valid c \<longrightarrow> explicit_consent c = True \<and> processing_allowed c = True"
+lemma HIS_001_29_consent_required: "\<forall>c. consent_valid c \<longrightarrow> explicit_consent c = True \<and> processing_allowed c = True"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -765,7 +765,7 @@ lemma HIS_001_29_consent_required: "\<forall> c, consent_valid c \<longrightarro
     Patient data exportable in machine-readable format
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* HIS_001_30_data_portability (matches Coq) *)
-lemma HIS_001_30_data_portability: "\<forall> de, data_portable de \<longrightarrow> machine_readable de = True \<and> export_complete de = True"
+lemma HIS_001_30_data_portability: "\<forall>de. data_portable de \<longrightarrow> machine_readable de = True \<and> export_complete de = True"
   by auto
 
 end

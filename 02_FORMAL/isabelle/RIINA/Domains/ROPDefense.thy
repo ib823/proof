@@ -233,11 +233,11 @@ definition is_valid_target :: "ValidTargets \<Rightarrow> InstrAddr \<Rightarrow
 
 (* indirect_branch_valid (matches Coq: Definition indirect_branch_valid) *)
 definition indirect_branch_valid :: "ValidTargets \<Rightarrow> InstrAddr \<Rightarrow> bool" where
-  "indirect_branch_valid targets addr \<equiv> In addr targets"
+  "indirect_branch_valid targets addr \<equiv> addr \<in> set targets"
 
 (* btb_entry_valid (matches Coq: Definition btb_entry_valid) *)
 definition btb_entry_valid :: "ValidTargets \<Rightarrow> BTBEntry \<Rightarrow> bool" where
-  "btb_entry_valid targets e \<equiv> btb_validated e = True /\ In (btb_target e) targets"
+  "btb_entry_valid targets e \<equiv> btb_validated e = True \<and> In (btb_target e) targets"
 
 (* gadget_blocked - complex match, needs manual translation *)
 definition gadget_blocked :: "bool" where "gadget_blocked = undefined"
@@ -289,20 +289,20 @@ definition riina_cpi :: "CPIConfig" where
     SECTION 1: BASIC LEMMAS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* andb_true_intro (matches Coq) *)
-lemma andb_true_intro: "\<forall> a b : bool, a = True \<longrightarrow> b = True \<longrightarrow> a && b = True"
+lemma andb_true_intro: "\<forall>a b : bool. a = True \<longrightarrow> b = True \<longrightarrow> a && b = True"
   by simp
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+  by auto
 
 (* orb_true_iff (matches Coq) *)
-lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma orb_true_iff: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = True"
+  by auto
 
 (* ============================================================================
     SECTION 9: BASIC COMPLIANCE THEOREMS (ROP_001 - ROP_025)
@@ -340,55 +340,55 @@ lemma ROP_008: "rop_aslr_compatible riina_rop = True"
   by simp
 
 (* ROP_009 (matches Coq) *)
-lemma ROP_009: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_shadow_stack c = True"
+lemma ROP_009: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_shadow_stack c = True"
   by auto
 
 (* ROP_010 (matches Coq) *)
-lemma ROP_010: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_indirect_branch_tracking c = True"
+lemma ROP_010: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_indirect_branch_tracking c = True"
   by auto
 
 (* ROP_011 (matches Coq) *)
-lemma ROP_011: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_return_address_protection c = True"
+lemma ROP_011: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_return_address_protection c = True"
   by auto
 
 (* ROP_012 (matches Coq) *)
-lemma ROP_012: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_backward_edge_cfi c = True"
+lemma ROP_012: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_backward_edge_cfi c = True"
   by auto
 
 (* ROP_013 (matches Coq) *)
-lemma ROP_013: "\<forall> r, code_reuse_prevented r = True \<longrightarrow> cr_gadget_elimination r = True"
+lemma ROP_013: "\<forall>r. code_reuse_prevented r = True \<longrightarrow> cr_gadget_elimination r = True"
   by auto
 
 (* ROP_014 (matches Coq) *)
-lemma ROP_014: "\<forall> r, code_reuse_prevented r = True \<longrightarrow> cr_code_pointer_integrity r = True"
+lemma ROP_014: "\<forall>r. code_reuse_prevented r = True \<longrightarrow> cr_code_pointer_integrity r = True"
   by auto
 
 (* ROP_015 (matches Coq) *)
-lemma ROP_015: "\<forall> r, rop_defended r = True \<longrightarrow> cfi_complete (rop_cfi r) = True"
+lemma ROP_015: "\<forall>r. rop_defended r = True \<longrightarrow> cfi_complete (rop_cfi r) = True"
   by auto
 
 (* ROP_016 (matches Coq) *)
-lemma ROP_016: "\<forall> r, rop_defended r = True \<longrightarrow> code_reuse_prevented (rop_code_reuse r) = True"
+lemma ROP_016: "\<forall>r. rop_defended r = True \<longrightarrow> code_reuse_prevented (rop_code_reuse r) = True"
   by auto
 
 (* ROP_017 (matches Coq) *)
-lemma ROP_017: "\<forall> r, rop_defended r = True \<longrightarrow> rop_aslr_compatible r = True"
+lemma ROP_017: "\<forall>r. rop_defended r = True \<longrightarrow> rop_aslr_compatible r = True"
   by auto
 
 (* ROP_018 (matches Coq) *)
-lemma ROP_018: "\<forall> r, rop_defended r = True \<longrightarrow> rop_dep_compatible r = True"
+lemma ROP_018: "\<forall>r. rop_defended r = True \<longrightarrow> rop_dep_compatible r = True"
   by auto
 
 (* ROP_019 (matches Coq) *)
-lemma ROP_019: "\<forall> r, rop_defended r = True \<longrightarrow> cfi_shadow_stack (rop_cfi r) = True"
+lemma ROP_019: "\<forall>r. rop_defended r = True \<longrightarrow> cfi_shadow_stack (rop_cfi r) = True"
   by auto
 
 (* ROP_020 (matches Coq) *)
-lemma ROP_020: "\<forall> r, rop_defended r = True \<longrightarrow> cfi_return_address_protection (rop_cfi r) = True"
+lemma ROP_020: "\<forall>r. rop_defended r = True \<longrightarrow> cfi_return_address_protection (rop_cfi r) = True"
   by auto
 
 (* ROP_021 (matches Coq) *)
-lemma ROP_021: "\<forall> r, rop_defended r = True \<longrightarrow> cr_gadget_elimination (rop_code_reuse r) = True"
+lemma ROP_021: "\<forall>r. rop_defended r = True \<longrightarrow> cr_gadget_elimination (rop_code_reuse r) = True"
   by auto
 
 (* ROP_022 (matches Coq) *)
@@ -404,125 +404,125 @@ lemma ROP_024: "rop_defended riina_rop = True \<and> rop_aslr_compatible riina_r
   by auto
 
 (* ROP_025_complete (matches Coq) *)
-lemma ROP_025_complete: "\<forall> r, rop_defended r = True \<longrightarrow> cfi_shadow_stack (rop_cfi r) = True \<and> cfi_return_address_protection (rop_cfi r) = True \<and> cr_gadget_elimination (rop_code_reuse r) = True \<and> rop_aslr_compatible r = True"
+lemma ROP_025_complete: "\<forall>r. rop_defended r = True \<longrightarrow> cfi_shadow_stack (rop_cfi r) = True \<and> cfi_return_address_protection (rop_cfi r) = True \<and> cr_gadget_elimination (rop_code_reuse r) = True \<and> rop_aslr_compatible r = True"
   by auto
 
 (* ============================================================================
     SECTION 10: SHADOW STACK THEOREMS (ROP_026 - ROP_035)
     ============================================================================ *)
 (* ROP_026_shadow_push_preserves (matches Coq) *)
-lemma ROP_026_shadow_push_preserves: "\<forall> ss ret caller fp, length (shadow_push ss ret caller fp) = S (length ss)"
+lemma ROP_026_shadow_push_preserves: "\<forall>ss ret caller fp. length (shadow_push ss ret caller fp) = S (length ss)"
   by simp
 
 (* ROP_027_shadow_pop_decreases (matches Coq) *)
-lemma ROP_027_shadow_pop_decreases: "\<forall> ss e rest, shadow_pop ss = Some (e, rest) \<longrightarrow> length rest = pred (length ss)"
-  by (cases rule: ‹_›.cases; simp)
+lemma ROP_027_shadow_pop_decreases: "\<forall>ss e rest. shadow_pop ss = Some (e, rest) \<longrightarrow> length rest = pred (length ss)"
+  by auto
 
 (* ROP_028_shadow_peek_top (matches Coq) *)
-lemma ROP_028_shadow_peek_top: "\<forall> ss e, shadow_peek ss = Some e \<longrightarrow> \<exists> rest, ss = e :: rest"
-  by (cases rule: ‹_›.cases; simp)
+lemma ROP_028_shadow_peek_top: "\<forall>ss e. shadow_peek ss = Some e \<longrightarrow> \<exists>rest. ss = e :: rest"
+  by auto
 
 (* ROP_029_valid_return_requires_entry (matches Coq) *)
-lemma ROP_029_valid_return_requires_entry: "\<forall> ss ret_addr, valid_return ss ret_addr \<longrightarrow> \<exists> e rest, ss = e :: rest \<and> se_return_addr e = ret_addr"
-  by (cases rule: ‹_›.cases; simp)
+lemma ROP_029_valid_return_requires_entry: "\<forall>ss ret_addr. valid_return ss ret_addr \<longrightarrow> \<exists>e rest. ss = e :: rest \<and> se_return_addr e = ret_addr"
+  by auto
 
 (* ROP_030_empty_stack_no_return (matches Coq) *)
-lemma ROP_030_empty_stack_no_return: "\<forall> ret_addr, ~ valid_return nil ret_addr"
+lemma ROP_030_empty_stack_no_return: "\<forall>ret_addr. ~ valid_return nil ret_addr"
   by auto
 
 (* ROP_031_push_pop_inverse (matches Coq) *)
-lemma ROP_031_push_pop_inverse: "\<forall> ss ret caller fp, shadow_pop (shadow_push ss ret caller fp) = Some (mkShadowEntry ret caller fp True, ss)"
+lemma ROP_031_push_pop_inverse: "\<forall>ss ret caller fp. shadow_pop (shadow_push ss ret caller fp) = Some (mkShadowEntry ret caller fp True, ss)"
   by simp
 
 (* ROP_032_pushed_entry_valid (matches Coq) *)
-lemma ROP_032_pushed_entry_valid: "\<forall> ss ret caller fp e rest, shadow_pop (shadow_push ss ret caller fp) = Some (e, rest) \<longrightarrow> se_mac_valid e = True"
+lemma ROP_032_pushed_entry_valid: "\<forall>ss ret caller fp e rest. shadow_pop (shadow_push ss ret caller fp) = Some (e, rest) \<longrightarrow> se_mac_valid e = True"
   by simp
 
 (* ROP_033_return_matches_pushed (matches Coq) *)
-lemma ROP_033_return_matches_pushed: "\<forall> ss ret caller fp, return_matches_shadow (shadow_push ss ret caller fp) ret = True"
+lemma ROP_033_return_matches_pushed: "\<forall>ss ret caller fp. return_matches_shadow (shadow_push ss ret caller fp) ret = True"
   by simp
 
 (* ROP_034_return_mismatch_fails (matches Coq) *)
-lemma ROP_034_return_mismatch_fails: "\<forall> ss ret caller fp wrong_addr, ret \<noteq> wrong_addr \<longrightarrow> return_matches_shadow (shadow_push ss ret caller fp) wrong_addr = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma ROP_034_return_mismatch_fails: "\<forall>ss ret caller fp wrong_addr. ret \<noteq> wrong_addr \<longrightarrow> return_matches_shadow (shadow_push ss ret caller fp) wrong_addr = False"
+  by auto
 
 (* ROP_035_shadow_stack_depth_bounded (matches Coq) *)
-lemma ROP_035_shadow_stack_depth_bounded: "\<forall> ss n, length ss \<le> n \<longrightarrow> \<forall> ret caller fp, length (shadow_push ss ret caller fp) \<le> S n"
+lemma ROP_035_shadow_stack_depth_bounded: "\<forall>ss n. length ss \<le> n \<longrightarrow> \<forall>ret caller fp. length (shadow_push ss ret caller fp) \<le> S n"
   by auto
 
 (* ============================================================================
     SECTION 11: BRANCH TARGET VALIDATION THEOREMS (ROP_036 - ROP_043)
     ============================================================================ *)
 (* ROP_036_valid_target_in_list (matches Coq) *)
-lemma ROP_036_valid_target_in_list: "\<forall> targets addr, indirect_branch_valid targets addr \<longrightarrow> In addr targets"
+lemma ROP_036_valid_target_in_list: "\<forall>targets addr. indirect_branch_valid targets addr \<longrightarrow> addr \<in> set targets"
   by auto
 
 (* ROP_037_empty_targets_no_valid (matches Coq) *)
-lemma ROP_037_empty_targets_no_valid: "\<forall> addr, ~ indirect_branch_valid nil addr"
+lemma ROP_037_empty_targets_no_valid: "\<forall>addr. ~ indirect_branch_valid nil addr"
   by auto
 
 (* ROP_038_singleton_target_exact (matches Coq) *)
-lemma ROP_038_singleton_target_exact: "\<forall> addr target, indirect_branch_valid [target] addr \<longrightarrow> addr = target"
+lemma ROP_038_singleton_target_exact: "\<forall>addr target. indirect_branch_valid [target] addr \<longrightarrow> addr = target"
   by auto
 
 (* ROP_039_is_valid_target_sound (matches Coq) *)
-lemma ROP_039_is_valid_target_sound: "\<forall> targets addr, is_valid_target targets addr = True \<longrightarrow> indirect_branch_valid targets addr"
+lemma ROP_039_is_valid_target_sound: "\<forall>targets addr. is_valid_target targets addr = True \<longrightarrow> indirect_branch_valid targets addr"
   by auto
 
 (* ROP_040_is_valid_target_complete (matches Coq) *)
-lemma ROP_040_is_valid_target_complete: "\<forall> targets addr, indirect_branch_valid targets addr \<longrightarrow> is_valid_target targets addr = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ROP_040_is_valid_target_complete: "\<forall>targets addr. indirect_branch_valid targets addr \<longrightarrow> is_valid_target targets addr = True"
+  by auto
 
 (* ROP_041_btb_validated_implies_valid (matches Coq) *)
-lemma ROP_041_btb_validated_implies_valid: "\<forall> targets e, btb_entry_valid targets e \<longrightarrow> In (btb_target e) targets"
+lemma ROP_041_btb_validated_implies_valid: "\<forall>targets e. btb_entry_valid targets e \<longrightarrow> In (btb_target e) targets"
   by auto
 
 (* ROP_042_unvalidated_btb_unsafe (matches Coq) *)
-lemma ROP_042_unvalidated_btb_unsafe: "\<forall> e, btb_validated e = False \<longrightarrow> \<forall> targets, ~ (btb_entry_valid targets e \<and> btb_validated e = True)"
+lemma ROP_042_unvalidated_btb_unsafe: "\<forall>e. btb_validated e = False \<longrightarrow> \<forall>targets. ~ (btb_entry_valid targets e \<and> btb_validated e = True)"
   by auto
 
 (* ROP_043_target_subset_preserved (matches Coq) *)
-lemma ROP_043_target_subset_preserved: "\<forall> targets1 targets2 addr, (\<forall> x, In x targets1 \<longrightarrow> In x targets2) \<longrightarrow> indirect_branch_valid targets1 addr \<longrightarrow> indirect_branch_valid targets2 addr"
+lemma ROP_043_target_subset_preserved: "\<forall>targets1 targets2 addr. (\<forall>x. x \<in> set targets1 \<longrightarrow> x \<in> set targets2) \<longrightarrow> indirect_branch_valid targets1 addr \<longrightarrow> indirect_branch_valid targets2 addr"
   by auto
 
 (* ============================================================================
     SECTION 12: GADGET CHAIN PREVENTION THEOREMS (ROP_044 - ROP_052)
     ============================================================================ *)
 (* ROP_044_rop_gadget_blocked (matches Coq) *)
-lemma ROP_044_rop_gadget_blocked: "\<forall> g, gadget_type g = GadgetROP \<longrightarrow> cfi_backward_edge_cfi riina_cfi = True \<longrightarrow> cfi_shadow_stack riina_cfi = True \<longrightarrow> gadget_blocked riina_cfi g = True"
+lemma ROP_044_rop_gadget_blocked: "\<forall>g. gadget_type g = GadgetROP \<longrightarrow> cfi_backward_edge_cfi riina_cfi = True \<longrightarrow> cfi_shadow_stack riina_cfi = True \<longrightarrow> gadget_blocked riina_cfi g = True"
   by simp
 
 (* ROP_045_jop_gadget_blocked (matches Coq) *)
-lemma ROP_045_jop_gadget_blocked: "\<forall> g, gadget_type g = GadgetJOP \<longrightarrow> cfi_forward_edge_cfi riina_cfi = True \<longrightarrow> cfi_indirect_branch_tracking riina_cfi = True \<longrightarrow> gadget_blocked riina_cfi g = True"
+lemma ROP_045_jop_gadget_blocked: "\<forall>g. gadget_type g = GadgetJOP \<longrightarrow> cfi_forward_edge_cfi riina_cfi = True \<longrightarrow> cfi_indirect_branch_tracking riina_cfi = True \<longrightarrow> gadget_blocked riina_cfi g = True"
   by simp
 
 (* ROP_046_cop_gadget_blocked (matches Coq) *)
-lemma ROP_046_cop_gadget_blocked: "\<forall> g, gadget_type g = GadgetCOP \<longrightarrow> cfi_forward_edge_cfi riina_cfi = True \<longrightarrow> gadget_blocked riina_cfi g = True"
+lemma ROP_046_cop_gadget_blocked: "\<forall>g. gadget_type g = GadgetCOP \<longrightarrow> cfi_forward_edge_cfi riina_cfi = True \<longrightarrow> gadget_blocked riina_cfi g = True"
   by auto
 
 (* ROP_047_srop_gadget_blocked (matches Coq) *)
-lemma ROP_047_srop_gadget_blocked: "\<forall> g, gadget_type g = GadgetSROP \<longrightarrow> cfi_backward_edge_cfi riina_cfi = True \<longrightarrow> cfi_shadow_stack riina_cfi = True \<longrightarrow> gadget_blocked riina_cfi g = True"
+lemma ROP_047_srop_gadget_blocked: "\<forall>g. gadget_type g = GadgetSROP \<longrightarrow> cfi_backward_edge_cfi riina_cfi = True \<longrightarrow> cfi_shadow_stack riina_cfi = True \<longrightarrow> gadget_blocked riina_cfi g = True"
   by simp
 
 (* ROP_048_riina_blocks_all_gadgets (matches Coq) *)
-lemma ROP_048_riina_blocks_all_gadgets: "\<forall> g, gadget_blocked riina_cfi g = True"
+lemma ROP_048_riina_blocks_all_gadgets: "\<forall>g. gadget_blocked riina_cfi g = True"
   by simp
 
 (* ROP_049_empty_chain_blocked (matches Coq) *)
-lemma ROP_049_empty_chain_blocked: "\<forall> cfi, chain_blocked cfi nil = True"
+lemma ROP_049_empty_chain_blocked: "\<forall>cfi. chain_blocked cfi nil = True"
   by simp
 
 (* ROP_050_riina_blocks_all_chains (matches Coq) *)
-lemma ROP_050_riina_blocks_all_chains: "\<forall> chain, chain_blocked riina_cfi chain = True"
+lemma ROP_050_riina_blocks_all_chains: "\<forall>chain. chain_blocked riina_cfi chain = True"
   by auto
 
 (* ROP_051_chain_blocked_implies_each_blocked (matches Coq) *)
-lemma ROP_051_chain_blocked_implies_each_blocked: "\<forall> cfi chain g, chain_blocked cfi chain = True \<longrightarrow> In g chain \<longrightarrow> gadget_blocked cfi g = True"
+lemma ROP_051_chain_blocked_implies_each_blocked: "\<forall>cfi chain g. chain_blocked cfi chain = True \<longrightarrow> g \<in> set chain \<longrightarrow> gadget_blocked cfi g = True"
   by auto
 
 (* ROP_052_single_unblocked_breaks_chain (matches Coq) *)
-lemma ROP_052_single_unblocked_breaks_chain: "\<forall> cfi chain g, In g chain \<longrightarrow> gadget_blocked cfi g = False \<longrightarrow> chain_blocked cfi chain = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma ROP_052_single_unblocked_breaks_chain: "\<forall>cfi chain g. g \<in> set chain \<longrightarrow> gadget_blocked cfi g = False \<longrightarrow> chain_blocked cfi chain = False"
+  by auto
 
 (* ============================================================================
     SECTION 13: CODE POINTER INTEGRITY THEOREMS (ROP_053 - ROP_060)
@@ -532,31 +532,31 @@ lemma ROP_053_cpi_complete_riina: "cpi_complete riina_cpi = True"
   by simp
 
 (* ROP_054_authenticated_ptr_protected (matches Coq) *)
-lemma ROP_054_authenticated_ptr_protected: "\<forall> cpi cp, cpi_ptr_authentication cpi = True \<longrightarrow> cp_authenticated cp = True \<longrightarrow> cp_bounds_checked cp = True \<longrightarrow> cp_protected cpi cp = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ROP_054_authenticated_ptr_protected: "\<forall>cpi cp. cpi_ptr_authentication cpi = True \<longrightarrow> cp_authenticated cp = True \<longrightarrow> cp_bounds_checked cp = True \<longrightarrow> cp_protected cpi cp = True"
+  by auto
 
 (* ROP_055_unauthenticated_ptr_unsafe (matches Coq) *)
-lemma ROP_055_unauthenticated_ptr_unsafe: "\<forall> cp, cp_authenticated cp = False \<longrightarrow> cpi_ptr_authentication riina_cpi = True \<longrightarrow> cp_protected riina_cpi cp = False"
+lemma ROP_055_unauthenticated_ptr_unsafe: "\<forall>cp. cp_authenticated cp = False \<longrightarrow> cpi_ptr_authentication riina_cpi = True \<longrightarrow> cp_protected riina_cpi cp = False"
   by simp
 
 (* ROP_056_bounds_unchecked_unsafe (matches Coq) *)
-lemma ROP_056_bounds_unchecked_unsafe: "\<forall> cp, cp_bounds_checked cp = False \<longrightarrow> cp_authenticated cp = True \<longrightarrow> cpi_bounds_checking riina_cpi = True \<longrightarrow> cp_protected riina_cpi cp = False"
+lemma ROP_056_bounds_unchecked_unsafe: "\<forall>cp. cp_bounds_checked cp = False \<longrightarrow> cp_authenticated cp = True \<longrightarrow> cpi_bounds_checking riina_cpi = True \<longrightarrow> cp_protected riina_cpi cp = False"
   by simp
 
 (* ROP_057_fully_protected_ptr (matches Coq) *)
-lemma ROP_057_fully_protected_ptr: "\<forall> cp, cp_authenticated cp = True \<longrightarrow> cp_bounds_checked cp = True \<longrightarrow> cp_protected riina_cpi cp = True"
+lemma ROP_057_fully_protected_ptr: "\<forall>cp. cp_authenticated cp = True \<longrightarrow> cp_bounds_checked cp = True \<longrightarrow> cp_protected riina_cpi cp = True"
   by simp
 
 (* ROP_058_no_auth_requirement_passes (matches Coq) *)
-lemma ROP_058_no_auth_requirement_passes: "\<forall> cp, cpi_ptr_authentication (mkCPI False True True True) = False \<longrightarrow> cp_bounds_checked cp = True \<longrightarrow> cp_protected (mkCPI False True True True) cp = True"
+lemma ROP_058_no_auth_requirement_passes: "\<forall>cp. cpi_ptr_authentication (mkCPI False True True True) = False \<longrightarrow> cp_bounds_checked cp = True \<longrightarrow> cp_protected (mkCPI False True True True) cp = True"
   by simp
 
 (* ROP_059_function_ptr_type (matches Coq) *)
-lemma ROP_059_function_ptr_type: "\<forall> addr, cp_type (mkCodePtr CPFunction addr True True) = CPFunction"
+lemma ROP_059_function_ptr_type: "\<forall>addr. cp_type (mkCodePtr CPFunction addr True True) = CPFunction"
   by simp
 
 (* ROP_060_return_addr_protected (matches Coq) *)
-lemma ROP_060_return_addr_protected: "\<forall> addr, cp_authenticated (mkCodePtr CPReturnAddr addr True True) = True \<longrightarrow> cp_bounds_checked (mkCodePtr CPReturnAddr addr True True) = True \<longrightarrow> cp_protected riina_cpi (mkCodePtr CPReturnAddr addr True True) = True"
+lemma ROP_060_return_addr_protected: "\<forall>addr. cp_authenticated (mkCodePtr CPReturnAddr addr True True) = True \<longrightarrow> cp_bounds_checked (mkCodePtr CPReturnAddr addr True True) = True \<longrightarrow> cp_protected riina_cpi (mkCodePtr CPReturnAddr addr True True) = True"
   by auto
 
 (* ============================================================================
@@ -571,23 +571,23 @@ lemma ROP_062_ibt_enabled: "cfi_indirect_branch_tracking riina_cfi = True"
   by simp
 
 (* ROP_063_forward_edge_complete (matches Coq) *)
-lemma ROP_063_forward_edge_complete: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_forward_edge_cfi c = True"
+lemma ROP_063_forward_edge_complete: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_forward_edge_cfi c = True"
   by auto
 
 (* ROP_064_forward_edge_blocks_jop (matches Coq) *)
-lemma ROP_064_forward_edge_blocks_jop: "\<forall> c g, cfi_forward_edge_cfi c = True \<longrightarrow> cfi_indirect_branch_tracking c = True \<longrightarrow> gadget_type g = GadgetJOP \<longrightarrow> gadget_blocked c g = True"
+lemma ROP_064_forward_edge_blocks_jop: "\<forall>c g. cfi_forward_edge_cfi c = True \<longrightarrow> cfi_indirect_branch_tracking c = True \<longrightarrow> gadget_type g = GadgetJOP \<longrightarrow> gadget_blocked c g = True"
   by simp
 
 (* ROP_065_forward_edge_blocks_cop (matches Coq) *)
-lemma ROP_065_forward_edge_blocks_cop: "\<forall> c g, cfi_forward_edge_cfi c = True \<longrightarrow> gadget_type g = GadgetCOP \<longrightarrow> gadget_blocked c g = True"
+lemma ROP_065_forward_edge_blocks_cop: "\<forall>c g. cfi_forward_edge_cfi c = True \<longrightarrow> gadget_type g = GadgetCOP \<longrightarrow> gadget_blocked c g = True"
   by auto
 
 (* ROP_066_indirect_call_requires_ibt (matches Coq) *)
-lemma ROP_066_indirect_call_requires_ibt: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_indirect_branch_tracking c = True"
+lemma ROP_066_indirect_call_requires_ibt: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_indirect_branch_tracking c = True"
   by auto
 
 (* ROP_067_forward_cfi_and_ibt_together (matches Coq) *)
-lemma ROP_067_forward_cfi_and_ibt_together: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_forward_edge_cfi c = True \<and> cfi_indirect_branch_tracking c = True"
+lemma ROP_067_forward_cfi_and_ibt_together: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_forward_edge_cfi c = True \<and> cfi_indirect_branch_tracking c = True"
   by auto
 
 (* ============================================================================
@@ -602,27 +602,27 @@ lemma ROP_069_shadow_stack_enabled: "cfi_shadow_stack riina_cfi = True"
   by simp
 
 (* ROP_070_backward_edge_complete (matches Coq) *)
-lemma ROP_070_backward_edge_complete: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_backward_edge_cfi c = True"
+lemma ROP_070_backward_edge_complete: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_backward_edge_cfi c = True"
   by auto
 
 (* ROP_071_backward_edge_blocks_rop (matches Coq) *)
-lemma ROP_071_backward_edge_blocks_rop: "\<forall> c g, cfi_backward_edge_cfi c = True \<longrightarrow> cfi_shadow_stack c = True \<longrightarrow> gadget_type g = GadgetROP \<longrightarrow> gadget_blocked c g = True"
+lemma ROP_071_backward_edge_blocks_rop: "\<forall>c g. cfi_backward_edge_cfi c = True \<longrightarrow> cfi_shadow_stack c = True \<longrightarrow> gadget_type g = GadgetROP \<longrightarrow> gadget_blocked c g = True"
   by simp
 
 (* ROP_072_backward_edge_blocks_srop (matches Coq) *)
-lemma ROP_072_backward_edge_blocks_srop: "\<forall> c g, cfi_backward_edge_cfi c = True \<longrightarrow> cfi_shadow_stack c = True \<longrightarrow> gadget_type g = GadgetSROP \<longrightarrow> gadget_blocked c g = True"
+lemma ROP_072_backward_edge_blocks_srop: "\<forall>c g. cfi_backward_edge_cfi c = True \<longrightarrow> cfi_shadow_stack c = True \<longrightarrow> gadget_type g = GadgetSROP \<longrightarrow> gadget_blocked c g = True"
   by simp
 
 (* ROP_073_return_requires_shadow (matches Coq) *)
-lemma ROP_073_return_requires_shadow: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_shadow_stack c = True"
+lemma ROP_073_return_requires_shadow: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_shadow_stack c = True"
   by auto
 
 (* ROP_074_backward_cfi_and_shadow_together (matches Coq) *)
-lemma ROP_074_backward_cfi_and_shadow_together: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_backward_edge_cfi c = True \<and> cfi_shadow_stack c = True"
+lemma ROP_074_backward_cfi_and_shadow_together: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_backward_edge_cfi c = True \<and> cfi_shadow_stack c = True"
   by auto
 
 (* ROP_075_return_address_protection_complete (matches Coq) *)
-lemma ROP_075_return_address_protection_complete: "\<forall> c, cfi_complete c = True \<longrightarrow> cfi_return_address_protection c = True"
+lemma ROP_075_return_address_protection_complete: "\<forall>c. cfi_complete c = True \<longrightarrow> cfi_return_address_protection c = True"
   by auto
 
 (* ============================================================================
@@ -641,31 +641,31 @@ lemma ROP_078_riina_full_rop_defense: "rop_defended riina_rop = True \<and> rop_
   by simp
 
 (* ROP_079_all_attack_types_blocked (matches Coq) *)
-lemma ROP_079_all_attack_types_blocked: "\<forall> g, gadget_blocked riina_cfi g = True"
+lemma ROP_079_all_attack_types_blocked: "\<forall>g. gadget_blocked riina_cfi g = True"
   by auto
 
 (* ROP_080_complete_defense_equivalence (matches Coq) *)
-lemma ROP_080_complete_defense_equivalence: "\<forall> r, rop_defended r = True <-> (cfi_complete (rop_cfi r) = True \<and> code_reuse_prevented (rop_code_reuse r) = True \<and> rop_aslr_compatible r = True \<and> rop_dep_compatible r = True)"
+lemma ROP_080_complete_defense_equivalence: "\<forall>r. rop_defended r = True <-> (cfi_complete (rop_cfi r) = True \<and> code_reuse_prevented (rop_code_reuse r) = True \<and> rop_aslr_compatible r = True \<and> rop_dep_compatible r = True)"
   by auto
 
 (* ROP_081_shadow_stack_prevents_rop (matches Coq) *)
-lemma ROP_081_shadow_stack_prevents_rop: "\<forall> ss ret_addr attacker_addr, valid_return ss ret_addr \<longrightarrow> attacker_addr \<noteq> ret_addr \<longrightarrow> ~ valid_return ss attacker_addr"
+lemma ROP_081_shadow_stack_prevents_rop: "\<forall>ss ret_addr attacker_addr. valid_return ss ret_addr \<longrightarrow> attacker_addr \<noteq> ret_addr \<longrightarrow> ~ valid_return ss attacker_addr"
   by auto
 
 (* ROP_082_ibt_prevents_jop (matches Coq) *)
-lemma ROP_082_ibt_prevents_jop: "\<forall> targets addr, cfi_indirect_branch_tracking riina_cfi = True \<longrightarrow> ~ In addr targets \<longrightarrow> ~ indirect_branch_valid targets addr"
+lemma ROP_082_ibt_prevents_jop: "\<forall>targets addr. cfi_indirect_branch_tracking riina_cfi = True \<longrightarrow> ~ addr \<in> set targets \<longrightarrow> ~ indirect_branch_valid targets addr"
   by auto
 
 (* ROP_083_cpi_prevents_ptr_hijack (matches Coq) *)
-lemma ROP_083_cpi_prevents_ptr_hijack: "\<forall> cp, cp_protected riina_cpi cp = True \<longrightarrow> cp_authenticated cp = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma ROP_083_cpi_prevents_ptr_hijack: "\<forall>cp. cp_protected riina_cpi cp = True \<longrightarrow> cp_authenticated cp = True"
+  by auto
 
 (* ROP_084_defense_in_depth (matches Coq) *)
 lemma ROP_084_defense_in_depth: "cfi_complete riina_cfi = True \<and> code_reuse_prevented riina_cr = True \<and> cpi_complete riina_cpi = True"
   by simp
 
 (* ROP_085_riina_rop_immune (matches Coq) *)
-lemma ROP_085_riina_rop_immune: "\<forall> chain, chain_blocked riina_cfi chain = True"
+lemma ROP_085_riina_rop_immune: "\<forall>chain. chain_blocked riina_cfi chain = True"
   by auto
 
 end

@@ -170,7 +170,7 @@ definition well_optimized_frame :: "Frame \<Rightarrow> bool" where
 
 (* frames_rendered (matches Coq: Definition frames_rendered) *)
 definition frames_rendered :: "Animation \<Rightarrow> nat" where
-  "frames_rendered a \<equiv> length (filter (fun f => frame_rendered f) (anim_frames a))"
+  "frames_rendered a \<equiv> length (filter (\<lambda>f. frame_rendered f) (anim_frames a))"
 
 (* frames_expected (matches Coq: Definition frames_expected) *)
 definition frames_expected :: "Animation \<Rightarrow> nat" where
@@ -179,12 +179,12 @@ definition frames_expected :: "Animation \<Rightarrow> nat" where
 (* well_formed_animation (matches Coq: Definition well_formed_animation) *)
 definition well_formed_animation :: "Animation \<Rightarrow> bool" where
   "well_formed_animation a \<equiv> forall f, In f (anim_frames a) -> 
-    frame_rendered f = True /\
+    frame_rendered f = True \<and>
     meets_frame_budget f"
 
 (* has_frame_drop (matches Coq: Definition has_frame_drop) *)
 definition has_frame_drop :: "Animation \<Rightarrow> bool" where
-  "has_frame_drop a \<equiv> exists f, In f (anim_frames a) /\ frame_rendered f = False"
+  "has_frame_drop a \<equiv> exists f, In f (anim_frames a) \<and> frame_rendered f = False"
 
 (* render_pipeline (matches Coq: Definition render_pipeline) *)
 definition render_pipeline :: "list RenderStage" where
@@ -192,43 +192,43 @@ definition render_pipeline :: "list RenderStage" where
 
 (* well_formed_gpu_mem (matches Coq: Definition well_formed_gpu_mem) *)
 definition well_formed_gpu_mem :: "GPUMemory \<Rightarrow> bool" where
-  "well_formed_gpu_mem m \<equiv> gpu_used_bytes m <= gpu_max_bytes m /\
-  gpu_texture_bytes m + gpu_buffer_bytes m <= gpu_used_bytes m /\
+  "well_formed_gpu_mem m \<equiv> gpu_used_bytes m <= gpu_max_bytes m \<and>
+  gpu_texture_bytes m + gpu_buffer_bytes m <= gpu_used_bytes m \<and>
   gpu_max_bytes m > 0"
 
 (* well_formed_shader (matches Coq: Definition well_formed_shader) *)
 definition well_formed_shader :: "Shader \<Rightarrow> bool" where
-  "well_formed_shader s \<equiv> shader_compiled s = True /\ shader_validated s = True"
+  "well_formed_shader s \<equiv> shader_compiled s = True \<and> shader_validated s = True"
 
 (* well_formed_framebuffer (matches Coq: Definition well_formed_framebuffer) *)
 definition well_formed_framebuffer :: "FrameBuffer \<Rightarrow> bool" where
-  "well_formed_framebuffer fb \<equiv> fb_width fb > 0 /\
-  fb_height fb > 0 /\
-  fb_double_buffered fb = True /\
+  "well_formed_framebuffer fb \<equiv> fb_width fb > 0 \<and>
+  fb_height fb > 0 \<and>
+  fb_double_buffered fb = True \<and>
   fb_front fb <> fb_back fb"
 
 (* well_formed_batch (matches Coq: Definition well_formed_batch) *)
 definition well_formed_batch :: "DrawBatch \<Rightarrow> bool" where
-  "well_formed_batch b \<equiv> batch_merged_calls b <= batch_draw_calls b /\
+  "well_formed_batch b \<equiv> batch_merged_calls b <= batch_draw_calls b \<and>
   batch_overdraw_ratio b >= 100"
 
 (* well_formed_render_thread (matches Coq: Definition well_formed_render_thread) *)
 definition well_formed_render_thread :: "RenderThread \<Rightarrow> bool" where
-  "well_formed_render_thread rt \<equiv> rt_priority rt > 0 /\
-  rt_vsync_aligned rt = True /\
+  "well_formed_render_thread rt \<equiv> rt_priority rt > 0 \<and>
+  rt_vsync_aligned rt = True \<and>
   rt_frame_time_us rt <= frame_budget_120hz"
 
 (* frame_rate_120hz_guaranteed (matches Coq) *)
-lemma frame_rate_120hz_guaranteed: "\<forall> (frame : Frame), well_optimized_frame frame \<longrightarrow> frame_complexity frame \<le> 1000 \<longrightarrow> frame_render_time frame \<le> frame_budget_120hz"
+lemma frame_rate_120hz_guaranteed: "\<forall>(frame :: Frame). well_optimized_frame frame \<longrightarrow> frame_complexity frame \<le> 1000 \<longrightarrow> frame_render_time frame \<le> frame_budget_120hz"
   by auto
 
 (* no_frame_drops (matches Coq) *)
-lemma no_frame_drops: "\<forall> (animation : Animation), well_formed_animation animation \<longrightarrow> ~ has_frame_drop animation"
+lemma no_frame_drops: "\<forall>(animation :: Animation). well_formed_animation animation \<longrightarrow> ~ has_frame_drop animation"
   by auto
 
 (* well_formed_renders_all (matches Coq) *)
-lemma well_formed_renders_all: "\<forall> (animation : Animation), well_formed_animation animation \<longrightarrow> frames_rendered animation = length (anim_frames animation)"
-  by (cases rule: ‹_›.cases; simp)
+lemma well_formed_renders_all: "\<forall>(animation :: Animation). well_formed_animation animation \<longrightarrow> frames_rendered animation = length (anim_frames animation)"
+  by auto
 
 (* render_pipeline_complete (matches Coq) *)
 lemma render_pipeline_complete: "length render_pipeline = 5"
@@ -243,63 +243,63 @@ lemma pipeline_ends_display: "last render_pipeline Geometry = Display"
   by simp
 
 (* render_pipeline_has_all_stages (matches Coq) *)
-lemma render_pipeline_has_all_stages: "In Geometry render_pipeline \<and> In Rasterization render_pipeline \<and> In Shading render_pipeline \<and> In Compositing render_pipeline \<and> In Display render_pipeline"
+lemma render_pipeline_has_all_stages: "Geometry \<in> set render_pipeline \<and> Rasterization \<in> set render_pipeline \<and> Shading \<in> set render_pipeline \<and> Compositing \<in> set render_pipeline \<and> Display \<in> set render_pipeline"
   by auto
 
 (* shader_compilation_validated (matches Coq) *)
-lemma shader_compilation_validated: "\<forall> (s : Shader), well_formed_shader s \<longrightarrow> shader_compiled s = True \<and> shader_validated s = True"
+lemma shader_compilation_validated: "\<forall>(s :: Shader). well_formed_shader s \<longrightarrow> shader_compiled s = True \<and> shader_validated s = True"
   by auto
 
 (* texture_memory_bounded (matches Coq) *)
-lemma texture_memory_bounded: "\<forall> (m : GPUMemory), well_formed_gpu_mem m \<longrightarrow> gpu_texture_bytes m \<le> gpu_used_bytes m"
-  by (cases rule: ‹_›.cases; simp)
+lemma texture_memory_bounded: "\<forall>(m :: GPUMemory). well_formed_gpu_mem m \<longrightarrow> gpu_texture_bytes m \<le> gpu_used_bytes m"
+  by auto
 
 (* draw_call_batched (matches Coq) *)
-lemma draw_call_batched: "\<forall> (b : DrawBatch), well_formed_batch b \<longrightarrow> batch_merged_calls b \<le> batch_draw_calls b"
+lemma draw_call_batched: "\<forall>(b :: DrawBatch). well_formed_batch b \<longrightarrow> batch_merged_calls b \<le> batch_draw_calls b"
   by auto
 
 (* vsync_synchronized (matches Coq) *)
-lemma vsync_synchronized: "\<forall> (rt : RenderThread), well_formed_render_thread rt \<longrightarrow> rt_vsync_aligned rt = True"
+lemma vsync_synchronized: "\<forall>(rt :: RenderThread). well_formed_render_thread rt \<longrightarrow> rt_vsync_aligned rt = True"
   by auto
 
 (* frame_buffer_double_buffered (matches Coq) *)
-lemma frame_buffer_double_buffered: "\<forall> (fb : FrameBuffer), well_formed_framebuffer fb \<longrightarrow> fb_double_buffered fb = True"
+lemma frame_buffer_double_buffered: "\<forall>(fb :: FrameBuffer). well_formed_framebuffer fb \<longrightarrow> fb_double_buffered fb = True"
   by auto
 
 (* gpu_memory_tracked (matches Coq) *)
-lemma gpu_memory_tracked: "\<forall> (m : GPUMemory), well_formed_gpu_mem m \<longrightarrow> gpu_used_bytes m \<le> gpu_max_bytes m"
+lemma gpu_memory_tracked: "\<forall>(m :: GPUMemory). well_formed_gpu_mem m \<longrightarrow> gpu_used_bytes m \<le> gpu_max_bytes m"
   by auto
 
 (* overdraw_minimized (matches Coq) *)
-lemma overdraw_minimized: "\<forall> (b : DrawBatch), well_formed_batch b \<longrightarrow> batch_overdraw_ratio b \<ge> 100"
+lemma overdraw_minimized: "\<forall>(b :: DrawBatch). well_formed_batch b \<longrightarrow> batch_overdraw_ratio b \<ge> 100"
   by auto
 
 (* culling_correct (matches Coq) *)
-lemma culling_correct: "\<forall> (a : Animation), well_formed_animation a \<longrightarrow> \<forall> f, In f (anim_frames a) \<longrightarrow> frame_rendered f = True"
+lemma culling_correct: "\<forall>(a :: Animation). well_formed_animation a \<longrightarrow> \<forall>f. In f (anim_frames a) \<longrightarrow> frame_rendered f = True"
   by auto
 
 (* z_buffer_precise (matches Coq) *)
-lemma z_buffer_precise: "\<forall> (zb : ZBuffer), zbuf_bits zb \<ge> 24 \<longrightarrow> zbuf_far zb > zbuf_near zb \<longrightarrow> zbuf_bits zb \<ge> 24"
+lemma z_buffer_precise: "\<forall>(zb :: ZBuffer). zbuf_bits zb \<ge> 24 \<longrightarrow> zbuf_far zb > zbuf_near zb \<longrightarrow> zbuf_bits zb \<ge> 24"
   by auto
 
 (* anti_aliasing_applied (matches Coq) *)
-lemma anti_aliasing_applied: "\<forall> (aa : AAMethod), aa \<noteq> NoAA \<longrightarrow> aa \<noteq> NoAA"
+lemma anti_aliasing_applied: "\<forall>(aa :: AAMethod). aa \<noteq> NoAA \<longrightarrow> aa \<noteq> NoAA"
   by auto
 
 (* color_space_correct (matches Coq) *)
-lemma color_space_correct: "\<forall> (cs : ColorSpace), cs = SRGB \<or> cs = LinearRGB \<or> cs = DisplayP3 \<or> cs = HDR10"
+lemma color_space_correct: "\<forall>(cs :: ColorSpace). cs = SRGB \<or> cs = LinearRGB \<or> cs = DisplayP3 \<or> cs = HDR10"
   by simp
 
 (* hdr_tone_mapped (matches Coq) *)
-lemma hdr_tone_mapped: "\<forall> (cs : ColorSpace), cs = HDR10 \<longrightarrow> cs = HDR10"
+lemma hdr_tone_mapped: "\<forall>(cs :: ColorSpace). cs = HDR10 \<longrightarrow> cs = HDR10"
   by auto
 
 (* gpu_timeout_handled (matches Coq) *)
-lemma gpu_timeout_handled: "\<forall> (rt : RenderThread), well_formed_render_thread rt \<longrightarrow> rt_frame_time_us rt \<le> 8333"
+lemma gpu_timeout_handled: "\<forall>(rt :: RenderThread). well_formed_render_thread rt \<longrightarrow> rt_frame_time_us rt \<le> 8333"
   by auto
 
 (* render_thread_priority (matches Coq) *)
-lemma render_thread_priority: "\<forall> (rt : RenderThread), well_formed_render_thread rt \<longrightarrow> rt_priority rt > 0"
+lemma render_thread_priority: "\<forall>(rt :: RenderThread). well_formed_render_thread rt \<longrightarrow> rt_priority rt > 0"
   by auto
 
 end

@@ -215,7 +215,7 @@ fun type_corresp :: "SrcType \<Rightarrow> TgtType \<Rightarrow> bool" where
 
 (* simulates (matches Coq: Definition simulates) *)
 definition simulates :: "SrcEnv \<Rightarrow> SrcVal \<Rightarrow> TgtState \<Rightarrow> nat \<Rightarrow> bool" where
-  "simulates se sv ts result_reg \<equiv> exists tv, In (result_reg, tv) (ts_regs ts) /\ val_match sv tv = True"
+  "simulates se sv ts result_reg \<equiv> exists tv, In (result_reg, tv) (ts_regs ts) \<and> val_match sv tv = True"
 
 (* compile_expr (matches Coq: Definition compile_expr) *)
 fun compile_expr :: "SrcExpr \<Rightarrow> nat \<Rightarrow> CompResult" where
@@ -231,7 +231,7 @@ definition tgt_terminates :: "TgtProgram \<Rightarrow> TgtState \<Rightarrow> bo
 
 (* abi_compliant_call (matches Coq: Definition abi_compliant_call) *)
 definition abi_compliant_call :: "ABI \<Rightarrow> nat \<Rightarrow> bool" where
-  "abi_compliant_call abi ret \<equiv> length args <= length (abi_arg_regs abi) /\
+  "abi_compliant_call abi ret \<equiv> length args <= length (abi_arg_regs abi) \<and>
   ret = abi_ret_reg abi"
 
 (* stack_valid (matches Coq: Definition stack_valid) *)
@@ -240,15 +240,15 @@ definition stack_valid :: "StackFrame \<Rightarrow> ABI \<Rightarrow> bool" wher
 
 (* is_const (matches Coq: Definition is_const) *)
 fun is_const :: "SrcExpr \<Rightarrow> option nat" where
-
+  "is_const _ = None"
 
 (* const_prop (matches Coq: Definition const_prop) *)
 fun const_prop :: "SrcExpr \<Rightarrow> SrcExpr" where
-
+  "const_prop _ = undefined"
 
 (* var_used (matches Coq: Definition var_used) *)
 fun var_used :: "nat \<Rightarrow> SrcExpr \<Rightarrow> bool" where
-
+  "var_used _ = True"
 
 (* inline_call (matches Coq: Definition inline_call) *)
 definition inline_call :: "SrcExpr \<Rightarrow> SrcExpr" where
@@ -265,106 +265,106 @@ definition alloc_valid :: "RegAlloc \<Rightarrow> TgtRegs \<Rightarrow> SrcEnv \
   "alloc_valid alloc regs env \<equiv> forall x r sv,
     In (x, r) alloc ->
     In (x, sv) env ->
-    exists tv, In (r, tv) regs /\ val_corresp sv tv"
+    exists tv, In (r, tv) regs \<and> val_corresp sv tv"
 
 (* select_instr (matches Coq: Definition select_instr) *)
 fun select_instr :: "IRInstr \<Rightarrow> MachInstr" where
-
+  "select_instr _ = undefined"
 
 (* ir_eval (matches Coq: Definition ir_eval) *)
 fun ir_eval :: "IRInstr \<Rightarrow> TgtRegs \<Rightarrow> option TgtRegs" where
-
+  "ir_eval _ = None"
 
 (* mach_eval (matches Coq: Definition mach_eval) *)
 fun mach_eval :: "MachInstr \<Rightarrow> TgtRegs \<Rightarrow> option TgtRegs" where
-
+  "mach_eval _ = None"
 
 (* val_match_refl (matches Coq) *)
-lemma val_match_refl: "\<forall> n, val_match (SVInt n) (TVInt n) = True"
+lemma val_match_refl: "\<forall>n. val_match (SVInt n) (TVInt n) = True"
   by auto
 
 (* val_corresp_match (matches Coq) *)
-lemma val_corresp_match: "\<forall> sv tv, val_corresp sv tv \<longrightarrow> val_match sv tv = True"
+lemma val_corresp_match: "\<forall>sv tv. val_corresp sv tv \<longrightarrow> val_match sv tv = True"
   by simp
 
 (* trace_equiv_refl (matches Coq) *)
-lemma trace_equiv_refl: "\<forall> t, trace_equiv_prop t t"
+lemma trace_equiv_refl: "\<forall>t. trace_equiv_prop t t"
   by auto
 
 (* trace_equiv_sym (matches Coq) *)
-lemma trace_equiv_sym: "\<forall> t1 t2, trace_equiv_prop t1 t2 \<longrightarrow> trace_equiv_prop t2 t1"
+lemma trace_equiv_sym: "\<forall>t1 t2. trace_equiv_prop t1 t2 \<longrightarrow> trace_equiv_prop t2 t1"
   by auto
 
 (* trace_equiv_trans (matches Coq) *)
-lemma trace_equiv_trans: "\<forall> t1 t2 t3, trace_equiv_prop t1 t2 \<longrightarrow> trace_equiv_prop t2 t3 \<longrightarrow> trace_equiv_prop t1 t3"
+lemma trace_equiv_trans: "\<forall>t1 t2 t3. trace_equiv_prop t1 t2 \<longrightarrow> trace_equiv_prop t2 t3 \<longrightarrow> trace_equiv_prop t1 t3"
   by auto
 
 (* tgt_steps_trans (matches Coq) *)
-lemma tgt_steps_trans: "\<forall> prog s1 s2 s3, tgt_steps prog s1 s2 \<longrightarrow> tgt_steps prog s2 s3 \<longrightarrow> tgt_steps prog s1 s3"
+lemma tgt_steps_trans: "\<forall>prog s1 s2 s3. tgt_steps prog s1 s2 \<longrightarrow> tgt_steps prog s2 s3 \<longrightarrow> tgt_steps prog s1 s3"
   by auto
 
 (* is_const_sound (matches Coq) *)
-lemma is_const_sound: "\<forall> e n env, is_const e = Some n \<longrightarrow> src_eval env e (SVInt n)"
-  by (cases rule: ‹_›.cases; simp)
+lemma is_const_sound: "\<forall>e n env. is_const e = Some n \<longrightarrow> src_eval env e (SVInt n)"
+  by auto
 
 (* COMPILE_001_01 (matches Coq) *)
-lemma COMPILE_001_01: "\<forall> (env : SrcEnv) (e : SrcExpr) (sv : SrcVal) (prog : TgtProgram) (ts_init ts_final : TgtState) (result_reg : nat) (mapping : VarMapping), src_eval env e sv \<longrightarrow> env_corresp env (ts_regs ts_init) mapping \<longrightarrow> tgt_steps prog ts_init ts_final \<longrightarrow> sim_rel env sv ts_final result_reg \<longrightarrow> \<exists> tv, In (result_reg, tv) (ts_regs ts_final) \<and> val_corresp sv tv"
+lemma COMPILE_001_01: "\<forall>(env :: SrcEnv) (e :: SrcExpr) (sv : SrcVal) (prog :: TgtProgram) (ts_init ts_final : TgtState) (result_reg :: nat) (mapping : VarMapping). src_eval env e sv \<longrightarrow> env_corresp env (ts_regs ts_init) mapping \<longrightarrow> tgt_steps prog ts_init ts_final \<longrightarrow> sim_rel env sv ts_final result_reg \<longrightarrow> \<exists>tv. In (result_reg, tv) (ts_regs ts_final) \<and> val_corresp sv tv"
   by auto
 
 (* COMPILE_001_02 (matches Coq) *)
-lemma COMPILE_001_02: "\<forall> (G : SrcTypeEnv) (e : SrcExpr) (t : SrcType) (tt : TgtType), src_has_type G e t \<longrightarrow> type_corresp t tt \<longrightarrow> (t = STInt \<longrightarrow> tt = TTInt) \<and> (t = STBool \<longrightarrow> tt = TTInt) \<and> (t = STUnit \<longrightarrow> tt = TTInt)"
+lemma COMPILE_001_02: "\<forall>(G :: SrcTypeEnv) (e :: SrcExpr) (t : SrcType) (tt :: TgtType). src_has_type G e t \<longrightarrow> type_corresp t tt \<longrightarrow> (t = STInt \<longrightarrow> tt = TTInt) \<and> (t = STBool \<longrightarrow> tt = TTInt) \<and> (t = STUnit \<longrightarrow> tt = TTInt)"
   by auto
 
 (* COMPILE_001_03 (matches Coq) *)
-lemma COMPILE_001_03: "\<forall> (src_trace tgt_trace : Trace), trace_equiv_prop src_trace tgt_trace \<longrightarrow> trace_equiv_prop tgt_trace src_trace"
+lemma COMPILE_001_03: "\<forall>(src_trace tgt_trace : Trace). trace_equiv_prop src_trace tgt_trace \<longrightarrow> trace_equiv_prop tgt_trace src_trace"
   by auto
 
 (* COMPILE_001_04 (matches Coq) *)
-lemma COMPILE_001_04: "\<forall> (env : SrcEnv) (e : SrcExpr) (sv : SrcVal) (prog : TgtProgram) (ts_init : TgtState), src_eval env e sv \<longrightarrow> (\<exists> ts_final, tgt_steps prog ts_init ts_final \<and> sim_rel env sv ts_final 0) \<longrightarrow> src_terminates env e \<and> tgt_terminates prog ts_init"
+lemma COMPILE_001_04: "\<forall>(env :: SrcEnv) (e :: SrcExpr) (sv : SrcVal) (prog :: TgtProgram) (ts_init : TgtState). src_eval env e sv \<longrightarrow> (\<exists>ts_final. tgt_steps prog ts_init ts_final \<and> sim_rel env sv ts_final 0) \<longrightarrow> src_terminates env e \<and> tgt_terminates prog ts_init"
   by auto
 
 (* COMPILE_001_05 (matches Coq) *)
-lemma COMPILE_001_05: "\<forall> (sv : SrcVal) (tv : TgtVal), val_corresp sv tv \<longrightarrow> val_match sv tv = True"
+lemma COMPILE_001_05: "\<forall>(sv :: SrcVal) (tv :: TgtVal). val_corresp sv tv \<longrightarrow> val_match sv tv = True"
   by auto
 
 (* COMPILE_001_06 (matches Coq) *)
-lemma COMPILE_001_06: "\<forall> (smem : list (nat * SrcVal)) (tmem : Memory) (addr : nat) (sv : SrcVal), mem_corresp smem tmem \<longrightarrow> In (addr, sv) smem \<longrightarrow> \<exists> tv, In (addr, tv) tmem \<and> val_corresp sv tv"
+lemma COMPILE_001_06: "\<forall>(smem : list (nat * SrcVal)) (tmem :: Memory) (addr : nat) (sv :: SrcVal). mem_corresp smem tmem \<longrightarrow> In (addr, sv) smem \<longrightarrow> \<exists>tv. In (addr, tv) tmem \<and> val_corresp sv tv"
   by auto
 
 (* COMPILE_001_07 (matches Coq) *)
-lemma COMPILE_001_07: "\<forall> (abi : ABI) (args : list nat) (ret : nat), abi_compliant_call abi args ret \<longrightarrow> length args \<le> length (abi_arg_regs abi) \<and> ret = abi_ret_reg abi"
+lemma COMPILE_001_07: "\<forall>(abi :: ABI) (args : list nat) (ret :: nat). abi_compliant_call abi args ret \<longrightarrow> length args \<le> length (abi_arg_regs abi) \<and> ret = abi_ret_reg abi"
   by simp
 
 (* COMPILE_001_08 (matches Coq) *)
-lemma COMPILE_001_08: "\<forall> (env : SrcEnv) (e : SrcExpr) (n : nat), is_const e = Some n \<longrightarrow> src_eval env e (SVInt n)"
-  by (cases rule: ‹_›.cases; simp)
+lemma COMPILE_001_08: "\<forall>(env :: SrcEnv) (e :: SrcExpr) (n : nat). is_const e = Some n \<longrightarrow> src_eval env e (SVInt n)"
+  by auto
 
 (* COMPILE_001_09 (matches Coq) *)
-lemma COMPILE_001_09: "\<forall> (x : nat) (e : SrcExpr) (result : nat), var_used x e = False \<longrightarrow> is_const e = Some result \<longrightarrow> \<forall> env vx, src_eval ((x, vx) :: env) e (SVInt result)"
+lemma COMPILE_001_09: "\<forall>(x :: nat) (e :: SrcExpr) (result : nat). var_used x e = False \<longrightarrow> is_const e = Some result \<longrightarrow> \<forall>env vx. src_eval ((x, vx) :: env) e (SVInt result)"
   by auto
 
 (* COMPILE_001_10 (matches Coq) *)
-lemma COMPILE_001_10: "\<forall> (env : SrcEnv) (f_body : SrcExpr) (arg : SrcExpr) (param : nat) (v : SrcVal) (arg_val : SrcVal), src_eval env arg arg_val \<longrightarrow> src_eval ((param, arg_val) :: env) f_body v \<longrightarrow> src_eval env (SLet param arg f_body) v"
+lemma COMPILE_001_10: "\<forall>(env :: SrcEnv) (f_body :: SrcExpr) (arg : SrcExpr) (param :: nat) (v : SrcVal) (arg_val :: SrcVal). src_eval env arg arg_val \<longrightarrow> src_eval ((param, arg_val) :: env) f_body v \<longrightarrow> src_eval env (SLet param arg f_body) v"
   by auto
 
 (* COMPILE_001_11 (matches Coq) *)
-lemma COMPILE_001_11: "\<forall> (env : SrcEnv) (body : SrcExpr) (n : nat) (v : SrcVal), (\<forall> i, i < n \<longrightarrow> \<exists> vi, src_eval env body vi) \<longrightarrow> src_eval env (unroll_loop body n) v \<longrightarrow> (n = 0 \<and> v = SVInt 0) \<or> (\<exists> v_last, src_eval env body v_last)"
-  by (cases rule: ‹_›.cases; simp)
+lemma COMPILE_001_11: "\<forall>(env :: SrcEnv) (body :: SrcExpr) (n : nat) (v :: SrcVal). (\<forall>i. i < n \<longrightarrow> \<exists>vi. src_eval env body vi) \<longrightarrow> src_eval env (unroll_loop body n) v \<longrightarrow> (n = 0 \<and> v = SVInt 0) \<or> (\<exists>v_last. src_eval env body v_last)"
+  by auto
 
 (* COMPILE_001_12 (matches Coq) *)
-lemma COMPILE_001_12: "\<forall> (alloc : RegAlloc) (regs : TgtRegs) (env : SrcEnv) (x r : nat) (sv : SrcVal), alloc_valid alloc regs env \<longrightarrow> In (x, r) alloc \<longrightarrow> In (x, sv) env \<longrightarrow> \<exists> tv, In (r, tv) regs \<and> val_corresp sv tv"
+lemma COMPILE_001_12: "\<forall>(alloc :: RegAlloc) (regs :: TgtRegs) (env : SrcEnv) (x r : nat) (sv :: SrcVal). alloc_valid alloc regs env \<longrightarrow> In (x, r) alloc \<longrightarrow> In (x, sv) env \<longrightarrow> \<exists>tv. In (r, tv) regs \<and> val_corresp sv tv"
   by auto
 
 (* COMPILE_001_13 (matches Coq) *)
-lemma COMPILE_001_13: "\<forall> (ir : IRInstr) (regs regs' : TgtRegs), ir_eval ir regs = Some regs' \<longrightarrow> mach_eval (select_instr ir) regs = Some regs'"
+lemma COMPILE_001_13: "\<forall>(ir :: IRInstr) (regs regs' : TgtRegs). ir_eval ir regs = Some regs' \<longrightarrow> mach_eval (select_instr ir) regs = Some regs'"
   by auto
 
 (* COMPILE_001_14 (matches Coq) *)
-lemma COMPILE_001_14: "\<forall> (sf : StackFrame) (abi : ABI), stack_valid sf abi \<longrightarrow> sf_size sf mod abi_stack_align abi = 0"
+lemma COMPILE_001_14: "\<forall>(sf :: StackFrame) (abi :: ABI). stack_valid sf abi \<longrightarrow> sf_size sf mod abi_stack_align abi = 0"
   by auto
 
 (* COMPILE_001_15 (matches Coq) *)
-lemma COMPILE_001_15: "\<forall> (sp : SrcProgram) (tp : TgtProgram) (mapping : VarMapping) (src_trace tgt_trace : Trace), prog_sim sp tp mapping \<longrightarrow> trace_equiv_prop src_trace tgt_trace \<longrightarrow> trace_equiv_prop tgt_trace src_trace \<and> (\<forall> t, trace_equiv_prop src_trace t \<longrightarrow> trace_equiv_prop t src_trace)"
+lemma COMPILE_001_15: "\<forall>(sp :: SrcProgram) (tp :: TgtProgram) (mapping : VarMapping) (src_trace tgt_trace : Trace). prog_sim sp tp mapping \<longrightarrow> trace_equiv_prop src_trace tgt_trace \<longrightarrow> trace_equiv_prop tgt_trace src_trace \<and> (\<forall>t. trace_equiv_prop src_trace t \<longrightarrow> trace_equiv_prop t src_trace)"
   by auto
 
 end

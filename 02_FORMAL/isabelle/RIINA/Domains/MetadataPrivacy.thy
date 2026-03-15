@@ -96,15 +96,15 @@ definition sensitivity_leq :: "bool" where "sensitivity_leq = undefined"
 
 (* traffic_constant_rate (matches Coq: Definition traffic_constant_rate) *)
 definition traffic_constant_rate :: "nat \<Rightarrow> bool" where
-  "traffic_constant_rate target \<equiv> Forall (fun i => i = target) intervals"
+  "traffic_constant_rate target \<equiv> Forall (\<lambda>i. i = target) intervals"
 
 (* cover_traffic_ratio (matches Coq: Definition cover_traffic_ratio) *)
 definition cover_traffic_ratio :: "bool" where
-  "cover_traffic_ratio \<equiv> total = real + cover /\ cover > 0"
+  "cover_traffic_ratio \<equiv> total = real + cover \<and> cover > 0"
 
 (* minimal_metadata (matches Coq: Definition minimal_metadata) *)
 definition minimal_metadata :: "bool" where
-  "minimal_metadata \<equiv> Forall (fun f => In (field_name f) required) fields"
+  "minimal_metadata \<equiv> Forall (\<lambda>f. In (field_name f) required) fields"
 
 (* identifiers_independent (matches Coq: Definition identifiers_independent) *)
 definition identifiers_independent :: "bool" where
@@ -112,7 +112,7 @@ definition identifiers_independent :: "bool" where
 
 (* uniform_frequency (matches Coq: Definition uniform_frequency) *)
 definition uniform_frequency :: "nat \<Rightarrow> nat \<Rightarrow> bool" where
-  "uniform_frequency target epsilon \<equiv> Forall (fun f => f >= target - epsilon /\ f <= target + epsilon) frequencies"
+  "uniform_frequency target epsilon \<equiv> Forall (\<lambda>f. f >= target - epsilon \<and> f <= target + epsilon) frequencies"
 
 (* aggregation_window (matches Coq: Definition aggregation_window) *)
 definition aggregation_window :: "bool" where
@@ -120,7 +120,7 @@ definition aggregation_window :: "bool" where
 
 (* path_length_uniform (matches Coq: Definition path_length_uniform) *)
 definition path_length_uniform :: "nat \<Rightarrow> bool" where
-  "path_length_uniform target \<equiv> Forall (fun p => p = target) paths"
+  "path_length_uniform target \<equiv> Forall (\<lambda>p. p = target) paths"
 
 (* fingerprint_entropy (matches Coq: Definition fingerprint_entropy) *)
 definition fingerprint_entropy :: "bool" where
@@ -132,106 +132,106 @@ definition sessions_isolated :: "bool" where
 
 (* metadata_layers (matches Coq: Definition metadata_layers) *)
 definition metadata_layers :: "bool" where
-  "metadata_layers \<equiv> (padding \<and> (andb) timing ((cover \<and> redaction)))"
+  "metadata_layers \<equiv> (padding \<and> timing \<and> cover \<and> redaction)"
 
 (* meta_001_padding_hides_size (matches Coq) *)
-lemma meta_001_padding_hides_size: "\<forall> (pm : PaddedMessage), pm_total_size pm = pm_payload_size pm + pm_padding_size pm"
+lemma meta_001_padding_hides_size: "\<forall>(pm :: PaddedMessage). pm_total_size pm = pm_payload_size pm + pm_padding_size pm"
   by auto
 
 (* meta_002_constant_size (matches Coq) *)
-lemma meta_002_constant_size: "\<forall> (pm1 pm2 : PaddedMessage), pm_total_size pm1 = pm_total_size pm2 \<longrightarrow> pm_total_size pm1 = pm_total_size pm2"
+lemma meta_002_constant_size: "\<forall>(pm1 pm2 : PaddedMessage). pm_total_size pm1 = pm_total_size pm2 \<longrightarrow> pm_total_size pm1 = pm_total_size pm2"
   by auto
 
 (* meta_003_size_no_leak (matches Coq) *)
-lemma meta_003_size_no_leak: "\<forall> (pm1 pm2 : PaddedMessage), pm_total_size pm1 = pm_total_size pm2 \<longrightarrow> pm_payload_size pm1 = pm_payload_size pm2 \<or> pm_payload_size pm1 \<noteq> pm_payload_size pm2"
+lemma meta_003_size_no_leak: "\<forall>(pm1 pm2 : PaddedMessage). pm_total_size pm1 = pm_total_size pm2 \<longrightarrow> pm_payload_size pm1 = pm_payload_size pm2 \<or> pm_payload_size pm1 \<noteq> pm_payload_size pm2"
   by auto
 
 (* meta_004_timing_bucketed (matches Coq) *)
-lemma meta_004_timing_bucketed: "\<forall> (t : nat) (bucket : TimingBucket), bucket_interval bucket > 0 \<longrightarrow> in_bucket t bucket = True \<longrightarrow> \<exists> n, t \<ge> n * bucket_interval bucket \<and> t < (n + 1) * bucket_interval bucket"
+lemma meta_004_timing_bucketed: "\<forall>(t :: nat) (bucket :: TimingBucket). bucket_interval bucket > 0 \<longrightarrow> in_bucket t bucket = True \<longrightarrow> \<exists>n. t \<ge> n * bucket_interval bucket \<and> t < (n + 1) * bucket_interval bucket"
   by auto
 
 (* meta_005_jitter_bounded (matches Coq) *)
-lemma meta_005_jitter_bounded: "\<forall> (base jitter max_jitter : nat), jittered_time base jitter max_jitter \<longrightarrow> jitter \<le> max_jitter"
+lemma meta_005_jitter_bounded: "\<forall>(base jitter max_jitter : nat). jittered_time base jitter max_jitter \<longrightarrow> jitter \<le> max_jitter"
   by auto
 
 (* meta_006_k_anonymity (matches Coq) *)
-lemma meta_006_k_anonymity: "\<forall> (set : AnonymitySet) (k : nat), k_anonymous set k \<longrightarrow> length set \<ge> k"
+lemma meta_006_k_anonymity: "\<forall>(set :: AnonymitySet) (k :: nat). k_anonymous set k \<longrightarrow> length set \<ge> k"
   by auto
 
 (* meta_007_set_preserved (matches Coq) *)
-lemma meta_007_set_preserved: "\<forall> (set : AnonymitySet) (elem : nat), In elem set \<longrightarrow> length set \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma meta_007_set_preserved: "\<forall>(set :: AnonymitySet) (elem :: nat). elem \<in> set set \<longrightarrow> length set \<ge> 1"
+  by auto
 
 (* meta_008_sender_anonymity (matches Coq) *)
-lemma meta_008_sender_anonymity: "\<forall> (sender_set : AnonymitySet) (k : nat) (actual_sender : nat), k_anonymous sender_set k \<longrightarrow> In actual_sender sender_set \<longrightarrow> length sender_set \<ge> k"
+lemma meta_008_sender_anonymity: "\<forall>(sender_set :: AnonymitySet) (k :: nat) (actual_sender : nat). k_anonymous sender_set k \<longrightarrow> actual_sender \<in> set sender_set \<longrightarrow> length sender_set \<ge> k"
   by auto
 
 (* meta_009_receiver_anonymity (matches Coq) *)
-lemma meta_009_receiver_anonymity: "\<forall> (receiver_set : AnonymitySet) (k : nat) (actual_receiver : nat), k_anonymous receiver_set k \<longrightarrow> In actual_receiver receiver_set \<longrightarrow> length receiver_set \<ge> k"
+lemma meta_009_receiver_anonymity: "\<forall>(receiver_set :: AnonymitySet) (k :: nat) (actual_receiver : nat). k_anonymous receiver_set k \<longrightarrow> actual_receiver \<in> set receiver_set \<longrightarrow> length receiver_set \<ge> k"
   by auto
 
 (* meta_010_relationship_unlinkable (matches Coq) *)
-lemma meta_010_relationship_unlinkable: "\<forall> (m1 m2 : MessageMetadata), meta_sender m1 \<noteq> meta_sender m2 \<longrightarrow> unlinkable m1 m2"
+lemma meta_010_relationship_unlinkable: "\<forall>(m1 m2 : MessageMetadata). meta_sender m1 \<noteq> meta_sender m2 \<longrightarrow> unlinkable m1 m2"
   by auto
 
 (* meta_011_temporal_unlinkable (matches Coq) *)
-lemma meta_011_temporal_unlinkable: "\<forall> (m1 m2 : MessageMetadata), meta_timestamp m1 \<noteq> meta_timestamp m2 \<longrightarrow> unlinkable m1 m2"
+lemma meta_011_temporal_unlinkable: "\<forall>(m1 m2 : MessageMetadata). meta_timestamp m1 \<noteq> meta_timestamp m2 \<longrightarrow> unlinkable m1 m2"
   by auto
 
 (* meta_012_sensitivity_reflexive (matches Coq) *)
-lemma meta_012_sensitivity_reflexive: "\<forall> (s : Sensitivity), sensitivity_leq s s = True"
+lemma meta_012_sensitivity_reflexive: "\<forall>(s :: Sensitivity). sensitivity_leq s s = True"
   by simp
 
 (* meta_013_redaction_removes_sensitive (matches Coq) *)
-lemma meta_013_redaction_removes_sensitive: "\<forall> (f : MetadataField), field_sensitivity f = TopSecret \<longrightarrow> redact_field Public f = None"
+lemma meta_013_redaction_removes_sensitive: "\<forall>(f :: MetadataField). field_sensitivity f = TopSecret \<longrightarrow> redact_field Public f = None"
   by simp
 
 (* meta_014_public_preserved (matches Coq) *)
-lemma meta_014_public_preserved: "\<forall> (f : MetadataField) (threshold : Sensitivity), field_sensitivity f = Public \<longrightarrow> redact_field threshold f = Some f"
+lemma meta_014_public_preserved: "\<forall>(f :: MetadataField) (threshold :: Sensitivity). field_sensitivity f = Public \<longrightarrow> redact_field threshold f = Some f"
   by simp
 
 (* meta_015_constant_rate (matches Coq) *)
-lemma meta_015_constant_rate: "\<forall> (intervals : list nat) (target : nat), traffic_constant_rate intervals target \<longrightarrow> Forall (fun i => i = target) intervals"
+lemma meta_015_constant_rate: "\<forall>(intervals : list nat) (target :: nat). traffic_constant_rate intervals target \<longrightarrow> Forall (\<lambda>i. i = target) intervals"
   by auto
 
 (* meta_016_cover_traffic (matches Coq) *)
-lemma meta_016_cover_traffic: "\<forall> (real cover total : nat), cover_traffic_ratio real cover total \<longrightarrow> total > real"
-  by (cases rule: ‹_›.cases; simp)
+lemma meta_016_cover_traffic: "\<forall>(real cover total : nat). cover_traffic_ratio real cover total \<longrightarrow> total > real"
+  by auto
 
 (* meta_017_minimization (matches Coq) *)
-lemma meta_017_minimization: "\<forall> (fields : list MetadataField) (required : list nat), minimal_metadata fields required \<longrightarrow> Forall (fun f => In (field_name f) required) fields"
+lemma meta_017_minimization: "\<forall>(fields : list MetadataField) (required : list nat). minimal_metadata fields required \<longrightarrow> Forall (\<lambda>f. In (field_name f) required) fields"
   by auto
 
 (* meta_018_no_correlation (matches Coq) *)
-lemma meta_018_no_correlation: "\<forall> (id1 id2 : nat), identifiers_independent id1 id2 \<longrightarrow> id1 \<noteq> id2"
+lemma meta_018_no_correlation: "\<forall>(id1 id2 : nat). identifiers_independent id1 id2 \<longrightarrow> id1 \<noteq> id2"
   by auto
 
 (* meta_019_uniform_frequency (matches Coq) *)
-lemma meta_019_uniform_frequency: "\<forall> (frequencies : list nat) (target epsilon : nat), uniform_frequency frequencies target epsilon \<longrightarrow> Forall (fun f => f \<ge> target - epsilon \<and> f \<le> target + epsilon) frequencies"
+lemma meta_019_uniform_frequency: "\<forall>(frequencies : list nat) (target epsilon : nat). uniform_frequency frequencies target epsilon \<longrightarrow> Forall (\<lambda>f. f \<ge> target - epsilon \<and> f \<le> target + epsilon) frequencies"
   by auto
 
 (* meta_020_aggregation_limited (matches Coq) *)
-lemma meta_020_aggregation_limited: "\<forall> (window_size current_data max_data : nat), aggregation_window window_size current_data max_data \<longrightarrow> current_data \<le> max_data"
+lemma meta_020_aggregation_limited: "\<forall>(window_size current_data max_data : nat). aggregation_window window_size current_data max_data \<longrightarrow> current_data \<le> max_data"
   by auto
 
 (* meta_021_path_length (matches Coq) *)
-lemma meta_021_path_length: "\<forall> (paths : list nat) (target : nat), path_length_uniform paths target \<longrightarrow> Forall (fun p => p = target) paths"
+lemma meta_021_path_length: "\<forall>(paths : list nat) (target :: nat). path_length_uniform paths target \<longrightarrow> Forall (\<lambda>p. p = target) paths"
   by auto
 
 (* meta_022_hop_count_hidden (matches Coq) *)
-lemma meta_022_hop_count_hidden: "\<forall> (actual_hops displayed_hops : nat), actual_hops \<noteq> displayed_hops \<longrightarrow> actual_hops \<noteq> displayed_hops"
+lemma meta_022_hop_count_hidden: "\<forall>(actual_hops displayed_hops : nat). actual_hops \<noteq> displayed_hops \<longrightarrow> actual_hops \<noteq> displayed_hops"
   by auto
 
 (* meta_023_fingerprint_resistance (matches Coq) *)
-lemma meta_023_fingerprint_resistance: "\<forall> (entropy_bits min_entropy : nat), fingerprint_entropy entropy_bits min_entropy \<longrightarrow> entropy_bits \<ge> min_entropy"
+lemma meta_023_fingerprint_resistance: "\<forall>(entropy_bits min_entropy : nat). fingerprint_entropy entropy_bits min_entropy \<longrightarrow> entropy_bits \<ge> min_entropy"
   by auto
 
 (* meta_024_session_isolation (matches Coq) *)
-lemma meta_024_session_isolation: "\<forall> (s1 s2 : nat), sessions_isolated s1 s2 \<longrightarrow> s1 \<noteq> s2"
+lemma meta_024_session_isolation: "\<forall>(s1 s2 : nat). sessions_isolated s1 s2 \<longrightarrow> s1 \<noteq> s2"
   by auto
 
 (* meta_025_defense_in_depth (matches Coq) *)
-lemma meta_025_defense_in_depth: "\<forall> p t c r, metadata_layers p t c r = True \<longrightarrow> p = True \<and> t = True \<and> c = True \<and> r = True"
+lemma meta_025_defense_in_depth: "\<forall>p t c r. metadata_layers p t c r = True \<longrightarrow> p = True \<and> t = True \<and> c = True \<and> r = True"
   by auto
 
 end

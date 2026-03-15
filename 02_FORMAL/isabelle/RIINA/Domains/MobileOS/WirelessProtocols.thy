@@ -188,7 +188,7 @@ record wireless_coexistence =
 
 (* secure_connection (matches Coq: Definition secure_connection) *)
 definition secure_connection :: "WirelessConnection \<Rightarrow> bool" where
-  "secure_connection c \<equiv> conn_encrypted c = True /\ conn_authenticated c = True"
+  "secure_connection c \<equiv> conn_encrypted c = True \<and> conn_authenticated c = True"
 
 (* protocol_secure - complex match, needs manual translation *)
 definition protocol_secure :: "bool" where "protocol_secure = undefined"
@@ -199,15 +199,15 @@ definition well_formed_wireless :: "WirelessConnection \<Rightarrow> bool" where
 
 (* bt_pairing_authenticated (matches Coq: Definition bt_pairing_authenticated) *)
 definition bt_pairing_authenticated :: "BluetoothPairing \<Rightarrow> bool" where
-  "bt_pairing_authenticated bp \<equiv> bt_authenticated bp = True /\ bt_pairing_method bp > 0"
+  "bt_pairing_authenticated bp \<equiv> bt_authenticated bp = True \<and> bt_pairing_method bp > 0"
 
 (* wifi_connection_encrypted (matches Coq: Definition wifi_connection_encrypted) *)
 definition wifi_connection_encrypted :: "WiFiConnection \<Rightarrow> bool" where
-  "wifi_connection_encrypted wc \<equiv> wifi_encrypted wc = True /\ (wifi_security wc = WPA3 \/ wifi_security wc = WPA2)"
+  "wifi_connection_encrypted wc \<equiv> wifi_encrypted wc = True \<and> (wifi_security wc = WPA3 \/ wifi_security wc = WPA2)"
 
 (* nfc_range_limited (matches Coq: Definition nfc_range_limited) *)
 definition nfc_range_limited :: "NFCTransaction \<Rightarrow> bool" where
-  "nfc_range_limited tx \<equiv> nfc_range_cm tx <= nfc_max_range_cm tx /\ nfc_max_range_cm tx <= 10"
+  "nfc_range_limited tx \<equiv> nfc_range_cm tx <= nfc_max_range_cm tx \<and> nfc_max_range_cm tx <= 10"
 
 (* uwb_distance_accurate (matches Coq: Definition uwb_distance_accurate) *)
 definition uwb_distance_accurate :: "UWBRanging \<Rightarrow> bool" where
@@ -223,7 +223,7 @@ definition wifi_password_secure :: "WiFiConnection \<Rightarrow> bool" where
 
 (* airdrop_permitted (matches Coq: Definition airdrop_permitted) *)
 definition airdrop_permitted :: "AirDropSession \<Rightarrow> bool" where
-  "airdrop_permitted a \<equiv> airdrop_permission_granted a = True /\ airdrop_encrypted a = True"
+  "airdrop_permitted a \<equiv> airdrop_permission_granted a = True \<and> airdrop_encrypted a = True"
 
 (* bt_discovery_bounded (matches Coq: Definition bt_discovery_bounded) *)
 definition bt_discovery_bounded :: "BTServiceDiscovery \<Rightarrow> bool" where
@@ -239,122 +239,122 @@ definition nfc_transaction_atomic :: "NFCTransaction \<Rightarrow> bool" where
 
 (* uwb_anchor_is_validated (matches Coq: Definition uwb_anchor_is_validated) *)
 definition uwb_anchor_is_validated :: "UWBAnchor \<Rightarrow> bool" where
-  "uwb_anchor_is_validated a \<equiv> anchor_validated a = True /\ anchor_certificate a > 0"
+  "uwb_anchor_is_validated a \<equiv> anchor_validated a = True \<and> anchor_certificate a > 0"
 
 (* bt_connection_has_timeout (matches Coq: Definition bt_connection_has_timeout) *)
 definition bt_connection_has_timeout :: "BTConnection \<Rightarrow> bool" where
-  "bt_connection_has_timeout bc \<equiv> bt_conn_timeout_ms bc <= bt_conn_max_timeout_ms bc /\ bt_conn_timeout_ms bc > 0"
+  "bt_connection_has_timeout bc \<equiv> bt_conn_timeout_ms bc <= bt_conn_max_timeout_ms bc \<and> bt_conn_timeout_ms bc > 0"
 
 (* wifi_roaming_is_seamless (matches Coq: Definition wifi_roaming_is_seamless) *)
 definition wifi_roaming_is_seamless :: "WiFiRoaming \<Rightarrow> bool" where
-  "wifi_roaming_is_seamless wr \<equiv> roaming_seamless wr = True /\ roaming_encrypted wr = True"
+  "wifi_roaming_is_seamless wr \<equiv> roaming_seamless wr = True \<and> roaming_encrypted wr = True"
 
 (* nfc_emulation_is_authorized (matches Coq: Definition nfc_emulation_is_authorized) *)
 definition nfc_emulation_is_authorized :: "NFCEmulation \<Rightarrow> bool" where
-  "nfc_emulation_is_authorized ne \<equiv> nfc_emu_authorized ne = True /\ nfc_emu_secure_element ne = True"
+  "nfc_emulation_is_authorized ne \<equiv> nfc_emu_authorized ne = True \<and> nfc_emu_secure_element ne = True"
 
 (* coexistence_is_managed (matches Coq: Definition coexistence_is_managed) *)
 definition coexistence_is_managed :: "WirelessCoexistence \<Rightarrow> bool" where
-  "coexistence_is_managed wc \<equiv> coexistence_managed wc = True /\ interference_level wc <= max_interference wc"
+  "coexistence_is_managed wc \<equiv> coexistence_managed wc = True \<and> interference_level wc <= max_interference wc"
 
 (* wifi_requires_wpa (matches Coq) *)
-lemma wifi_requires_wpa: "\<forall> (c : WirelessConnection), conn_protocol c = WiFi \<longrightarrow> protocol_secure c \<longrightarrow> conn_security c = WPA3 \<or> conn_security c = WPA2"
+lemma wifi_requires_wpa: "\<forall>(c :: WirelessConnection). conn_protocol c = WiFi \<longrightarrow> protocol_secure c \<longrightarrow> conn_security c = WPA3 \<or> conn_security c = WPA2"
   by auto
 
 (* secure_protocol_encrypted (matches Coq) *)
-lemma secure_protocol_encrypted: "\<forall> (c : WirelessConnection), well_formed_wireless c \<longrightarrow> protocol_secure c \<longrightarrow> conn_encrypted c = True"
+lemma secure_protocol_encrypted: "\<forall>(c :: WirelessConnection). well_formed_wireless c \<longrightarrow> protocol_secure c \<longrightarrow> conn_encrypted c = True"
   by auto
 
 (* secure_protocol_authenticated (matches Coq) *)
-lemma secure_protocol_authenticated: "\<forall> (c : WirelessConnection), well_formed_wireless c \<longrightarrow> protocol_secure c \<longrightarrow> conn_authenticated c = True"
+lemma secure_protocol_authenticated: "\<forall>(c :: WirelessConnection). well_formed_wireless c \<longrightarrow> protocol_secure c \<longrightarrow> conn_authenticated c = True"
   by auto
 
 (* bluetooth_uses_secure_ble (matches Coq) *)
-lemma bluetooth_uses_secure_ble: "\<forall> (c : WirelessConnection), conn_protocol c = Bluetooth \<longrightarrow> protocol_secure c \<longrightarrow> conn_security c = SecureBLE"
+lemma bluetooth_uses_secure_ble: "\<forall>(c :: WirelessConnection). conn_protocol c = Bluetooth \<longrightarrow> protocol_secure c \<longrightarrow> conn_security c = SecureBLE"
   by auto
 
 (* nfc_uses_secure_nfc (matches Coq) *)
-lemma nfc_uses_secure_nfc: "\<forall> (c : WirelessConnection), conn_protocol c = NFC \<longrightarrow> protocol_secure c \<longrightarrow> conn_security c = SecureNFC"
+lemma nfc_uses_secure_nfc: "\<forall>(c :: WirelessConnection). conn_protocol c = NFC \<longrightarrow> protocol_secure c \<longrightarrow> conn_security c = SecureNFC"
   by auto
 
 (* bluetooth_pairing_authenticated (matches Coq) *)
-lemma bluetooth_pairing_authenticated: "\<forall> (bp : BluetoothPairing), bt_pairing_authenticated bp \<longrightarrow> bt_authenticated bp = True"
+lemma bluetooth_pairing_authenticated: "\<forall>(bp :: BluetoothPairing). bt_pairing_authenticated bp \<longrightarrow> bt_authenticated bp = True"
   by auto
 
 (* wifi_connection_encrypted_thm (matches Coq) *)
-lemma wifi_connection_encrypted_thm: "\<forall> (wc : WiFiConnection), wifi_connection_encrypted wc \<longrightarrow> wifi_encrypted wc = True"
+lemma wifi_connection_encrypted_thm: "\<forall>(wc :: WiFiConnection). wifi_connection_encrypted wc \<longrightarrow> wifi_encrypted wc = True"
   by auto
 
 (* nfc_range_limited_thm (matches Coq) *)
-lemma nfc_range_limited_thm: "\<forall> (tx : NFCTransaction), nfc_range_limited tx \<longrightarrow> nfc_range_cm tx \<le> 10"
-  by (cases rule: ‹_›.cases; simp)
+lemma nfc_range_limited_thm: "\<forall>(tx :: NFCTransaction). nfc_range_limited tx \<longrightarrow> nfc_range_cm tx \<le> 10"
+  by auto
 
 (* uwb_distance_accurate_thm (matches Coq) *)
-lemma uwb_distance_accurate_thm: "\<forall> (ur : UWBRanging), uwb_distance_accurate ur \<longrightarrow> uwb_error_cm ur \<le> uwb_max_error_cm ur"
+lemma uwb_distance_accurate_thm: "\<forall>(ur :: UWBRanging). uwb_distance_accurate ur \<longrightarrow> uwb_error_cm ur \<le> uwb_max_error_cm ur"
   by auto
 
 (* bluetooth_data_encrypted (matches Coq) *)
-lemma bluetooth_data_encrypted: "\<forall> (td : BTDataTransfer), bt_data_is_encrypted td \<longrightarrow> bt_data_encrypted td = True"
+lemma bluetooth_data_encrypted: "\<forall>(td :: BTDataTransfer). bt_data_is_encrypted td \<longrightarrow> bt_data_encrypted td = True"
   by auto
 
 (* wifi_password_not_stored_plaintext (matches Coq) *)
-lemma wifi_password_not_stored_plaintext: "\<forall> (wc : WiFiConnection), wifi_password_secure wc \<longrightarrow> wifi_password_stored_plaintext wc = False"
+lemma wifi_password_not_stored_plaintext: "\<forall>(wc :: WiFiConnection). wifi_password_secure wc \<longrightarrow> wifi_password_stored_plaintext wc = False"
   by auto
 
 (* airdrop_permission_required (matches Coq) *)
-lemma airdrop_permission_required: "\<forall> (a : AirDropSession), airdrop_permitted a \<longrightarrow> airdrop_permission_granted a = True"
+lemma airdrop_permission_required: "\<forall>(a :: AirDropSession). airdrop_permitted a \<longrightarrow> airdrop_permission_granted a = True"
   by auto
 
 (* bluetooth_service_discovery_bounded (matches Coq) *)
-lemma bluetooth_service_discovery_bounded: "\<forall> (sd : BTServiceDiscovery), bt_discovery_bounded sd \<longrightarrow> length (bt_services_found sd) \<le> bt_max_services sd"
+lemma bluetooth_service_discovery_bounded: "\<forall>(sd :: BTServiceDiscovery). bt_discovery_bounded sd \<longrightarrow> length (bt_services_found sd) \<le> bt_max_services sd"
   by auto
 
 (* wifi_scanning_throttled (matches Coq) *)
-lemma wifi_scanning_throttled: "\<forall> (ws : WiFiScan), wifi_scan_throttled ws \<longrightarrow> scan_interval_ms ws \<ge> scan_min_interval_ms ws"
+lemma wifi_scanning_throttled: "\<forall>(ws :: WiFiScan). wifi_scan_throttled ws \<longrightarrow> scan_interval_ms ws \<ge> scan_min_interval_ms ws"
   by auto
 
 (* nfc_transaction_atomic_thm (matches Coq) *)
-lemma nfc_transaction_atomic_thm: "\<forall> (tx : NFCTransaction), nfc_transaction_atomic tx \<longrightarrow> nfc_atomic tx = True"
+lemma nfc_transaction_atomic_thm: "\<forall>(tx :: NFCTransaction). nfc_transaction_atomic tx \<longrightarrow> nfc_atomic tx = True"
   by auto
 
 (* uwb_anchor_validated (matches Coq) *)
-lemma uwb_anchor_validated: "\<forall> (a : UWBAnchor), uwb_anchor_is_validated a \<longrightarrow> anchor_validated a = True"
+lemma uwb_anchor_validated: "\<forall>(a :: UWBAnchor). uwb_anchor_is_validated a \<longrightarrow> anchor_validated a = True"
   by auto
 
 (* bluetooth_connection_timeout (matches Coq) *)
-lemma bluetooth_connection_timeout: "\<forall> (bc : BTConnection), bt_connection_has_timeout bc \<longrightarrow> bt_conn_timeout_ms bc \<le> bt_conn_max_timeout_ms bc"
+lemma bluetooth_connection_timeout: "\<forall>(bc :: BTConnection). bt_connection_has_timeout bc \<longrightarrow> bt_conn_timeout_ms bc \<le> bt_conn_max_timeout_ms bc"
   by auto
 
 (* wifi_roaming_seamless (matches Coq) *)
-lemma wifi_roaming_seamless: "\<forall> (wr : WiFiRoaming), wifi_roaming_is_seamless wr \<longrightarrow> roaming_seamless wr = True"
+lemma wifi_roaming_seamless: "\<forall>(wr :: WiFiRoaming). wifi_roaming_is_seamless wr \<longrightarrow> roaming_seamless wr = True"
   by auto
 
 (* nfc_emulation_authorized (matches Coq) *)
-lemma nfc_emulation_authorized: "\<forall> (ne : NFCEmulation), nfc_emulation_is_authorized ne \<longrightarrow> nfc_emu_authorized ne = True"
+lemma nfc_emulation_authorized: "\<forall>(ne :: NFCEmulation). nfc_emulation_is_authorized ne \<longrightarrow> nfc_emu_authorized ne = True"
   by auto
 
 (* wireless_coexistence_managed (matches Coq) *)
-lemma wireless_coexistence_managed: "\<forall> (wc : WirelessCoexistence), coexistence_is_managed wc \<longrightarrow> coexistence_managed wc = True"
+lemma wireless_coexistence_managed: "\<forall>(wc :: WirelessCoexistence). coexistence_is_managed wc \<longrightarrow> coexistence_managed wc = True"
   by auto
 
 (* uwb_uses_secure_uwb (matches Coq) *)
-lemma uwb_uses_secure_uwb: "\<forall> (c : WirelessConnection), conn_protocol c = UWB \<longrightarrow> protocol_secure c \<longrightarrow> conn_security c = SecureUWB"
+lemma uwb_uses_secure_uwb: "\<forall>(c :: WirelessConnection). conn_protocol c = UWB \<longrightarrow> protocol_secure c \<longrightarrow> conn_security c = SecureUWB"
   by auto
 
 (* airdrop_is_encrypted (matches Coq) *)
-lemma airdrop_is_encrypted: "\<forall> (a : AirDropSession), airdrop_permitted a \<longrightarrow> airdrop_encrypted a = True"
+lemma airdrop_is_encrypted: "\<forall>(a :: AirDropSession). airdrop_permitted a \<longrightarrow> airdrop_encrypted a = True"
   by auto
 
 (* bluetooth_connection_timeout_positive (matches Coq) *)
-lemma bluetooth_connection_timeout_positive: "\<forall> (bc : BTConnection), bt_connection_has_timeout bc \<longrightarrow> bt_conn_timeout_ms bc > 0"
+lemma bluetooth_connection_timeout_positive: "\<forall>(bc :: BTConnection). bt_connection_has_timeout bc \<longrightarrow> bt_conn_timeout_ms bc > 0"
   by auto
 
 (* wifi_roaming_preserves_encryption (matches Coq) *)
-lemma wifi_roaming_preserves_encryption: "\<forall> (wr : WiFiRoaming), wifi_roaming_is_seamless wr \<longrightarrow> roaming_encrypted wr = True"
+lemma wifi_roaming_preserves_encryption: "\<forall>(wr :: WiFiRoaming). wifi_roaming_is_seamless wr \<longrightarrow> roaming_encrypted wr = True"
   by auto
 
 (* coexistence_interference_bounded (matches Coq) *)
-lemma coexistence_interference_bounded: "\<forall> (wc : WirelessCoexistence), coexistence_is_managed wc \<longrightarrow> interference_level wc \<le> max_interference wc"
+lemma coexistence_interference_bounded: "\<forall>(wc :: WirelessCoexistence). coexistence_is_managed wc \<longrightarrow> interference_level wc \<le> max_interference wc"
   by auto
 
 end

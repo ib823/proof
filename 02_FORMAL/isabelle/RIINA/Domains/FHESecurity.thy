@@ -533,31 +533,31 @@ definition riina_rlwe :: "RLWEConfig" where
     SECTION A: BOOLEAN AND ARITHMETIC HELPER LEMMAS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* andb3_true_iff (matches Coq) *)
-lemma andb3_true_iff: "\<forall> a b c : bool, a && b && c = True <-> a = True \<and> b = True \<and> c = True"
+lemma andb3_true_iff: "\<forall>a b c : bool. a && b && c = True <-> a = True \<and> b = True \<and> c = True"
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+  by auto
 
 (* leb_le (matches Coq) *)
-lemma leb_le: "\<forall> n m : nat, (n <=? m) = True <-> n \<le> m"
+lemma leb_le: "\<forall>n m : nat. (n <=? m) = True <-> n \<le> m"
   by auto
 
 (* ltb_lt (matches Coq) *)
-lemma ltb_lt: "\<forall> n m : nat, (n <? m) = True <-> n < m"
+lemma ltb_lt: "\<forall>n m : nat. (n <? m) = True <-> n < m"
   by auto
 
 (* mult_le_compat (matches Coq) *)
-lemma mult_le_compat: "\<forall> a b c d : nat, a \<le> b \<longrightarrow> c \<le> d \<longrightarrow> a * c \<le> b * d"
+lemma mult_le_compat: "\<forall>a b c d : nat. a \<le> b \<longrightarrow> c \<le> d \<longrightarrow> a * c \<le> b * d"
   by auto
 
 (* add_le_compat (matches Coq) *)
-lemma add_le_compat: "\<forall> a b c d : nat, a \<le> b \<longrightarrow> c \<le> d \<longrightarrow> a + c \<le> b + d"
+lemma add_le_compat: "\<forall>a b c d : nat. a \<le> b \<longrightarrow> c \<le> d \<longrightarrow> a + c \<le> b + d"
   by auto
 
 (* Basic FHE configuration theorems *)
@@ -610,47 +610,47 @@ lemma FHE_012: "fhe_post_quantum riina_fhe = True"
   by simp
 
 (* FHE_013 (matches Coq) *)
-lemma FHE_013: "\<forall> o, ops_fully_homomorphic o = True \<longrightarrow> ho_multiplication o = True"
+lemma FHE_013: "\<forall>o. ops_fully_homomorphic o = True \<longrightarrow> ho_multiplication o = True"
   by auto
 
 (* FHE_014 (matches Coq) *)
-lemma FHE_014: "\<forall> o, ops_fully_homomorphic o = True \<longrightarrow> ho_arbitrary_depth o = True"
+lemma FHE_014: "\<forall>o. ops_fully_homomorphic o = True \<longrightarrow> ho_arbitrary_depth o = True"
   by auto
 
 (* FHE_015 (matches Coq) *)
-lemma FHE_015: "\<forall> s, fhe_security_complete s = True \<longrightarrow> fhe_ind_cpa s = True"
+lemma FHE_015: "\<forall>s. fhe_security_complete s = True \<longrightarrow> fhe_ind_cpa s = True"
   by auto
 
 (* FHE_016 (matches Coq) *)
-lemma FHE_016: "\<forall> n, noise_managed n = True \<longrightarrow> nm_bootstrapping n = True"
+lemma FHE_016: "\<forall>n. noise_managed n = True \<longrightarrow> nm_bootstrapping n = True"
   by auto
 
 (* FHE_017 (matches Coq) *)
-lemma FHE_017: "\<forall> f, fhe_fully_secure f = True \<longrightarrow> ops_fully_homomorphic (fhe_ops f) = True"
+lemma FHE_017: "\<forall>f. fhe_fully_secure f = True \<longrightarrow> ops_fully_homomorphic (fhe_ops f) = True"
   by auto
 
 (* FHE_018 (matches Coq) *)
-lemma FHE_018: "\<forall> f, fhe_fully_secure f = True \<longrightarrow> fhe_security_complete (fhe_security f) = True"
+lemma FHE_018: "\<forall>f. fhe_fully_secure f = True \<longrightarrow> fhe_security_complete (fhe_security f) = True"
   by auto
 
 (* FHE_019 (matches Coq) *)
-lemma FHE_019: "\<forall> f, fhe_fully_secure f = True \<longrightarrow> noise_managed (fhe_noise f) = True"
+lemma FHE_019: "\<forall>f. fhe_fully_secure f = True \<longrightarrow> noise_managed (fhe_noise f) = True"
   by auto
 
 (* FHE_020 (matches Coq) *)
-lemma FHE_020: "\<forall> f, fhe_fully_secure f = True \<longrightarrow> fhe_post_quantum f = True"
+lemma FHE_020: "\<forall>f. fhe_fully_secure f = True \<longrightarrow> fhe_post_quantum f = True"
   by auto
 
 (* FHE_021 (matches Coq) *)
-lemma FHE_021: "\<forall> f, fhe_fully_secure f = True \<longrightarrow> ho_arbitrary_depth (fhe_ops f) = True"
+lemma FHE_021: "\<forall>f. fhe_fully_secure f = True \<longrightarrow> ho_arbitrary_depth (fhe_ops f) = True"
   by auto
 
 (* FHE_022 (matches Coq) *)
-lemma FHE_022: "\<forall> f, fhe_fully_secure f = True \<longrightarrow> fhe_ind_cpa (fhe_security f) = True"
+lemma FHE_022: "\<forall>f. fhe_fully_secure f = True \<longrightarrow> fhe_ind_cpa (fhe_security f) = True"
   by auto
 
 (* FHE_023 (matches Coq) *)
-lemma FHE_023: "\<forall> f, fhe_fully_secure f = True \<longrightarrow> nm_bootstrapping (fhe_noise f) = True"
+lemma FHE_023: "\<forall>f. fhe_fully_secure f = True \<longrightarrow> nm_bootstrapping (fhe_noise f) = True"
   by auto
 
 (* FHE_024 (matches Coq) *)
@@ -658,7 +658,7 @@ lemma FHE_024: "fhe_fully_secure riina_fhe = True \<and> fhe_post_quantum riina_
   by auto
 
 (* FHE_025_complete (matches Coq) *)
-lemma FHE_025_complete: "\<forall> f, fhe_fully_secure f = True \<longrightarrow> ho_arbitrary_depth (fhe_ops f) = True \<and> fhe_ind_cpa (fhe_security f) = True \<and> nm_bootstrapping (fhe_noise f) = True \<and> fhe_post_quantum f = True"
+lemma FHE_025_complete: "\<forall>f. fhe_fully_secure f = True \<longrightarrow> ho_arbitrary_depth (fhe_ops f) = True \<and> fhe_ind_cpa (fhe_security f) = True \<and> nm_bootstrapping (fhe_noise f) = True \<and> fhe_post_quantum f = True"
   by auto
 
 (* IND-CPA-001: RIINA satisfies IND-CPA security *)
@@ -668,17 +668,17 @@ lemma indcpa_001_riina_secure: "indcpa_secure riina_indcpa = True"
 
 (* IND-CPA-002: Secure game has sufficient key size *)
 (* indcpa_002_key_size_sufficient (matches Coq) *)
-lemma indcpa_002_key_size_sufficient: "\<forall> g, indcpa_secure g = True \<longrightarrow> (128 <=? icpa_key_size g) = True"
+lemma indcpa_002_key_size_sufficient: "\<forall>g. indcpa_secure g = True \<longrightarrow> (128 <=? icpa_key_size g) = True"
   by auto
 
 (* IND-CPA-003: Secure game has encryption oracle *)
 (* indcpa_003_has_oracle (matches Coq) *)
-lemma indcpa_003_has_oracle: "\<forall> g, indcpa_secure g = True \<longrightarrow> icpa_encryption_oracle g = True"
+lemma indcpa_003_has_oracle: "\<forall>g. indcpa_secure g = True \<longrightarrow> icpa_encryption_oracle g = True"
   by auto
 
 (* IND-CPA-004: Secure game has negligible advantage *)
 (* indcpa_004_negligible_advantage (matches Coq) *)
-lemma indcpa_004_negligible_advantage: "\<forall> g, indcpa_secure g = True \<longrightarrow> (negligible_threshold <=? icpa_distinguisher_adv g) = True"
+lemma indcpa_004_negligible_advantage: "\<forall>g. indcpa_secure g = True \<longrightarrow> (negligible_threshold <=? icpa_distinguisher_adv g) = True"
   by auto
 
 (* SS-001: RIINA has semantic security *)
@@ -688,17 +688,17 @@ lemma ss_001_riina_semantic_secure: "semantic_secure riina_semantic = True"
 
 (* SS-002: Semantic security implies indistinguishability *)
 (* ss_002_implies_indistinguishable (matches Coq) *)
-lemma ss_002_implies_indistinguishable: "\<forall> ss, semantic_secure ss = True \<longrightarrow> ss_indistinguishable ss = True"
+lemma ss_002_implies_indistinguishable: "\<forall>ss. semantic_secure ss = True \<longrightarrow> ss_indistinguishable ss = True"
   by auto
 
 (* SS-003: Semantic security implies randomized encryption *)
 (* ss_003_implies_randomized (matches Coq) *)
-lemma ss_003_implies_randomized: "\<forall> ss, semantic_secure ss = True \<longrightarrow> ss_randomized ss = True"
+lemma ss_003_implies_randomized: "\<forall>ss. semantic_secure ss = True \<longrightarrow> ss_randomized ss = True"
   by auto
 
 (* SS-004: Semantic security implies ciphertext expansion *)
 (* ss_004_ciphertext_expansion (matches Coq) *)
-lemma ss_004_ciphertext_expansion: "\<forall> ss, semantic_secure ss = True \<longrightarrow> (ss_message_space ss <? ss_ciphertext_space ss) = True"
+lemma ss_004_ciphertext_expansion: "\<forall>ss. semantic_secure ss = True \<longrightarrow> (ss_message_space ss <? ss_ciphertext_space ss) = True"
   by auto
 
 (* HADD-001: RIINA homomorphic addition is correct *)
@@ -708,12 +708,12 @@ lemma hadd_001_riina_correct: "hom_add_correct riina_hom_add = True"
 
 (* HADD-002: Correct addition preserves structure *)
 (* hadd_002_preserves_structure (matches Coq) *)
-lemma hadd_002_preserves_structure: "\<forall> ha, hom_add_correct ha = True \<longrightarrow> ha_preserves_structure ha = True"
+lemma hadd_002_preserves_structure: "\<forall>ha. hom_add_correct ha = True \<longrightarrow> ha_preserves_structure ha = True"
   by auto
 
 (* HADD-003: Plaintext modulus less than ciphertext modulus *)
 (* hadd_003_modulus_relation (matches Coq) *)
-lemma hadd_003_modulus_relation: "\<forall> ha, hom_add_correct ha = True \<longrightarrow> (ha_plaintext_modulus ha <? ha_ciphertext_modulus ha) = True"
+lemma hadd_003_modulus_relation: "\<forall>ha. hom_add_correct ha = True \<longrightarrow> (ha_plaintext_modulus ha <? ha_ciphertext_modulus ha) = True"
   by auto
 
 (* HMULT-001: RIINA homomorphic multiplication is correct *)
@@ -723,12 +723,12 @@ lemma hmult_001_riina_correct: "hom_mult_correct riina_hom_mult = True"
 
 (* HMULT-002: Correct multiplication supports relinearization *)
 (* hmult_002_relinearization (matches Coq) *)
-lemma hmult_002_relinearization: "\<forall> hm, hom_mult_correct hm = True \<longrightarrow> hm_relinearization hm = True"
+lemma hmult_002_relinearization: "\<forall>hm. hom_mult_correct hm = True \<longrightarrow> hm_relinearization hm = True"
   by auto
 
 (* HMULT-003: Correct multiplication supports key switching *)
 (* hmult_003_key_switching (matches Coq) *)
-lemma hmult_003_key_switching: "\<forall> hm, hom_mult_correct hm = True \<longrightarrow> hm_key_switching hm = True"
+lemma hmult_003_key_switching: "\<forall>hm. hom_mult_correct hm = True \<longrightarrow> hm_key_switching hm = True"
   by auto
 
 (* HOPS-001: RIINA homomorphic operations are valid *)
@@ -738,17 +738,17 @@ lemma hops_001_riina_valid: "hom_ops_valid riina_hom_ops = True"
 
 (* HOPS-002: Valid operations have correct addition *)
 (* hops_002_addition_correct (matches Coq) *)
-lemma hops_002_addition_correct: "\<forall> ho, hom_ops_valid ho = True \<longrightarrow> hom_add_correct (hops_addition ho) = True"
+lemma hops_002_addition_correct: "\<forall>ho. hom_ops_valid ho = True \<longrightarrow> hom_add_correct (hops_addition ho) = True"
   by auto
 
 (* HOPS-003: Valid operations have correct multiplication *)
 (* hops_003_multiplication_correct (matches Coq) *)
-lemma hops_003_multiplication_correct: "\<forall> ho, hom_ops_valid ho = True \<longrightarrow> hom_mult_correct (hops_multiplication ho) = True"
+lemma hops_003_multiplication_correct: "\<forall>ho. hom_ops_valid ho = True \<longrightarrow> hom_mult_correct (hops_multiplication ho) = True"
   by auto
 
 (* HOPS-004: Valid operations support composition *)
 (* hops_004_composition (matches Coq) *)
-lemma hops_004_composition: "\<forall> ho, hom_ops_valid ho = True \<longrightarrow> hops_composition ho = True"
+lemma hops_004_composition: "\<forall>ho. hom_ops_valid ho = True \<longrightarrow> hops_composition ho = True"
   by auto
 
 (* NOISE-001: Initial noise is safe *)
@@ -768,12 +768,12 @@ lemma noise_003_10_multiplications_safe: "noise_safe riina_noise_model (noise_af
 
 (* NOISE-004: Addition increases noise linearly *)
 (* noise_004_add_linear_growth (matches Coq) *)
-lemma noise_004_add_linear_growth: "\<forall> nm n, noise_after_additions nm (S n) = noise_after_additions nm n + noise_add_growth nm"
+lemma noise_004_add_linear_growth: "\<forall>nm n. noise_after_additions nm (S n) = noise_after_additions nm n + noise_add_growth nm"
   by simp
 
 (* NOISE-005: Zero additions preserves initial noise *)
 (* noise_005_zero_additions (matches Coq) *)
-lemma noise_005_zero_additions: "\<forall> nm, noise_after_additions nm 0 = noise_initial nm"
+lemma noise_005_zero_additions: "\<forall>nm. noise_after_additions nm 0 = noise_initial nm"
   by simp
 
 (* NB-001: RIINA noise bounds are valid *)
@@ -783,12 +783,12 @@ lemma nb_001_riina_valid: "noise_bound_valid riina_noise_model riina_noise_bound
 
 (* NB-002: Valid bounds imply safe additions *)
 (* nb_002_additions_safe (matches Coq) *)
-lemma nb_002_additions_safe: "\<forall> nm nb, noise_bound_valid nm nb = True \<longrightarrow> noise_safe nm (noise_after_additions nm (nb_max_additions nb)) = True"
+lemma nb_002_additions_safe: "\<forall>nm nb. noise_bound_valid nm nb = True \<longrightarrow> noise_safe nm (noise_after_additions nm (nb_max_additions nb)) = True"
   by auto
 
 (* NB-003: Valid bounds imply safe multiplications *)
 (* nb_003_multiplications_safe (matches Coq) *)
-lemma nb_003_multiplications_safe: "\<forall> nm nb, noise_bound_valid nm nb = True \<longrightarrow> noise_safe nm (noise_after_multiplications nm (nb_max_multiplications nb)) = True"
+lemma nb_003_multiplications_safe: "\<forall>nm nb. noise_bound_valid nm nb = True \<longrightarrow> noise_safe nm (noise_after_multiplications nm (nb_max_multiplications nb)) = True"
   by auto
 
 (* BOOT-001: RIINA bootstrapping is correct *)
@@ -798,22 +798,22 @@ lemma boot_001_riina_correct: "bootstrapping_correct riina_bootstrap = True"
 
 (* BOOT-002: Correct bootstrapping reduces noise *)
 (* boot_002_reduces_noise (matches Coq) *)
-lemma boot_002_reduces_noise: "\<forall> bc, bootstrapping_correct bc = True \<longrightarrow> bs_reduces_noise bc = True"
+lemma boot_002_reduces_noise: "\<forall>bc. bootstrapping_correct bc = True \<longrightarrow> bs_reduces_noise bc = True"
   by auto
 
 (* BOOT-003: Correct bootstrapping preserves message *)
 (* boot_003_preserves_message (matches Coq) *)
-lemma boot_003_preserves_message: "\<forall> bc, bootstrapping_correct bc = True \<longrightarrow> bs_preserves_message bc = True"
+lemma boot_003_preserves_message: "\<forall>bc. bootstrapping_correct bc = True \<longrightarrow> bs_preserves_message bc = True"
   by auto
 
 (* BOOT-004: Correct bootstrapping runs in polynomial time *)
 (* boot_004_polynomial_time (matches Coq) *)
-lemma boot_004_polynomial_time: "\<forall> bc, bootstrapping_correct bc = True \<longrightarrow> bs_polynomial_time bc = True"
+lemma boot_004_polynomial_time: "\<forall>bc. bootstrapping_correct bc = True \<longrightarrow> bs_polynomial_time bc = True"
   by auto
 
 (* BOOT-005: Output noise less than input max *)
 (* boot_005_noise_reduction (matches Coq) *)
-lemma boot_005_noise_reduction: "\<forall> bc, bootstrapping_correct bc = True \<longrightarrow> (bs_noise_output bc <? bs_noise_input_max bc) = True"
+lemma boot_005_noise_reduction: "\<forall>bc. bootstrapping_correct bc = True \<longrightarrow> (bs_noise_output bc <? bs_noise_input_max bc) = True"
   by auto
 
 (* UFHE-001: RIINA unlimited FHE is valid *)
@@ -823,7 +823,7 @@ lemma ufhe_001_riina_valid: "unlimited_fhe_valid riina_unlimited = True"
 
 (* UFHE-002: Valid unlimited FHE has correct bootstrapping *)
 (* ufhe_002_bootstrap_correct (matches Coq) *)
-lemma ufhe_002_bootstrap_correct: "\<forall> u, unlimited_fhe_valid u = True \<longrightarrow> bootstrapping_correct (ufhe_bootstrap_config u) = True"
+lemma ufhe_002_bootstrap_correct: "\<forall>u. unlimited_fhe_valid u = True \<longrightarrow> bootstrapping_correct (ufhe_bootstrap_config u) = True"
   by auto
 
 (* KG-001: RIINA key generation is secure *)
@@ -833,22 +833,22 @@ lemma kg_001_riina_secure: "keygen_secure riina_keygen = True"
 
 (* KG-002: Secure keygen has sufficient security parameter *)
 (* kg_002_security_parameter (matches Coq) *)
-lemma kg_002_security_parameter: "\<forall> kg, keygen_secure kg = True \<longrightarrow> (128 <=? kg_security_parameter kg) = True"
+lemma kg_002_security_parameter: "\<forall>kg. keygen_secure kg = True \<longrightarrow> (128 <=? kg_security_parameter kg) = True"
   by auto
 
 (* KG-003: Secure keygen has sufficient polynomial degree *)
 (* kg_003_polynomial_degree (matches Coq) *)
-lemma kg_003_polynomial_degree: "\<forall> kg, keygen_secure kg = True \<longrightarrow> (1024 <=? kg_polynomial_degree kg) = True"
+lemma kg_003_polynomial_degree: "\<forall>kg. keygen_secure kg = True \<longrightarrow> (1024 <=? kg_polynomial_degree kg) = True"
   by auto
 
 (* KG-004: Secure keygen has non-zero error distribution *)
 (* kg_004_error_distribution (matches Coq) *)
-lemma kg_004_error_distribution: "\<forall> kg, keygen_secure kg = True \<longrightarrow> (0 <? kg_error_distribution kg) = True"
+lemma kg_004_error_distribution: "\<forall>kg. keygen_secure kg = True \<longrightarrow> (0 <? kg_error_distribution kg) = True"
   by auto
 
 (* KG-005: Secure keygen has sufficient modulus bits *)
 (* kg_005_modulus_bits (matches Coq) *)
-lemma kg_005_modulus_bits: "\<forall> kg, keygen_secure kg = True \<longrightarrow> (32 <=? kg_modulus_bits kg) = True"
+lemma kg_005_modulus_bits: "\<forall>kg. keygen_secure kg = True \<longrightarrow> (32 <=? kg_modulus_bits kg) = True"
   by auto
 
 (* KP-001: RIINA keypair is valid *)
@@ -858,7 +858,7 @@ lemma kp_001_riina_valid: "keypair_valid riina_keypair = True"
 
 (* KP-002: Valid keypair has secure parameters *)
 (* kp_002_secure_params (matches Coq) *)
-lemma kp_002_secure_params: "\<forall> kp, keypair_valid kp = True \<longrightarrow> keygen_secure (kp_params kp) = True"
+lemma kp_002_secure_params: "\<forall>kp. keypair_valid kp = True \<longrightarrow> keygen_secure (kp_params kp) = True"
   by auto
 
 (* CT-001: RIINA ciphertext is valid *)
@@ -868,27 +868,27 @@ lemma ct_001_riina_valid: "ciphertext_valid riina_ciphertext riina_noise_model =
 
 (* CT-002: Valid ciphertext has valid encryption flag *)
 (* ct_002_valid_encryption (matches Coq) *)
-lemma ct_002_valid_encryption: "\<forall> ct nm, ciphertext_valid ct nm = True \<longrightarrow> ct_valid_encryption ct = True"
+lemma ct_002_valid_encryption: "\<forall>ct nm. ciphertext_valid ct nm = True \<longrightarrow> ct_valid_encryption ct = True"
   by auto
 
 (* CT-003: Valid ciphertext has safe noise *)
 (* ct_003_safe_noise (matches Coq) *)
-lemma ct_003_safe_noise: "\<forall> ct nm, ciphertext_valid ct nm = True \<longrightarrow> noise_safe nm (ct_noise_estimate ct) = True"
+lemma ct_003_safe_noise: "\<forall>ct nm. ciphertext_valid ct nm = True \<longrightarrow> noise_safe nm (ct_noise_estimate ct) = True"
   by auto
 
 (* CT-004: Valid ciphertext has positive level *)
 (* ct_004_positive_level (matches Coq) *)
-lemma ct_004_positive_level: "\<forall> ct nm, ciphertext_valid ct nm = True \<longrightarrow> (0 <? ct_level ct) = True"
+lemma ct_004_positive_level: "\<forall>ct nm. ciphertext_valid ct nm = True \<longrightarrow> (0 <? ct_level ct) = True"
   by auto
 
 (* CAO-001: Operation on valid ciphertexts *)
 (* cao_001_valid_preserves (matches Coq) *)
-lemma cao_001_valid_preserves: "\<forall> cao nm, op_preserves_validity cao nm = True \<longrightarrow> ciphertext_valid (cao_original cao) nm = True"
+lemma cao_001_valid_preserves: "\<forall>cao nm. op_preserves_validity cao nm = True \<longrightarrow> ciphertext_valid (cao_original cao) nm = True"
   by auto
 
 (* CAO-002: Result ciphertext is valid *)
 (* cao_002_result_valid (matches Coq) *)
-lemma cao_002_result_valid: "\<forall> cao nm, op_preserves_validity cao nm = True \<longrightarrow> ciphertext_valid (cao_result cao) nm = True"
+lemma cao_002_result_valid: "\<forall>cao nm. op_preserves_validity cao nm = True \<longrightarrow> ciphertext_valid (cao_result cao) nm = True"
   by auto
 
 (* CFHE-001: RIINA complete FHE system is secure *)
@@ -898,47 +898,47 @@ lemma cfhe_001_riina_secure: "complete_fhe_secure riina_complete_fhe = True"
 
 (* CFHE-002: Secure system has fully secure config *)
 (* cfhe_002_config_secure (matches Coq) *)
-lemma cfhe_002_config_secure: "\<forall> sys, complete_fhe_secure sys = True \<longrightarrow> fhe_fully_secure (cfhe_config sys) = True"
+lemma cfhe_002_config_secure: "\<forall>sys. complete_fhe_secure sys = True \<longrightarrow> fhe_fully_secure (cfhe_config sys) = True"
   by auto
 
 (* CFHE-003: Secure system has secure keygen *)
 (* cfhe_003_keygen_secure (matches Coq) *)
-lemma cfhe_003_keygen_secure: "\<forall> sys, complete_fhe_secure sys = True \<longrightarrow> keygen_secure (cfhe_keygen sys) = True"
+lemma cfhe_003_keygen_secure: "\<forall>sys. complete_fhe_secure sys = True \<longrightarrow> keygen_secure (cfhe_keygen sys) = True"
   by auto
 
 (* CFHE-004: Secure system is IND-CPA secure *)
 (* cfhe_004_indcpa_secure (matches Coq) *)
-lemma cfhe_004_indcpa_secure: "\<forall> sys, complete_fhe_secure sys = True \<longrightarrow> indcpa_secure (cfhe_indcpa sys) = True"
+lemma cfhe_004_indcpa_secure: "\<forall>sys. complete_fhe_secure sys = True \<longrightarrow> indcpa_secure (cfhe_indcpa sys) = True"
   by auto
 
 (* CFHE-005: Secure system has correct bootstrapping *)
 (* cfhe_005_bootstrap_correct (matches Coq) *)
-lemma cfhe_005_bootstrap_correct: "\<forall> sys, complete_fhe_secure sys = True \<longrightarrow> bootstrapping_correct (cfhe_bootstrap sys) = True"
+lemma cfhe_005_bootstrap_correct: "\<forall>sys. complete_fhe_secure sys = True \<longrightarrow> bootstrapping_correct (cfhe_bootstrap sys) = True"
   by auto
 
 (* CFHE-006: Secure system has valid operations *)
 (* cfhe_006_ops_valid (matches Coq) *)
-lemma cfhe_006_ops_valid: "\<forall> sys, complete_fhe_secure sys = True \<longrightarrow> hom_ops_valid (cfhe_operations sys) = True"
+lemma cfhe_006_ops_valid: "\<forall>sys. complete_fhe_secure sys = True \<longrightarrow> hom_ops_valid (cfhe_operations sys) = True"
   by auto
 
 (* CFHE-007: Complete security implies post-quantum safety *)
 (* cfhe_007_pq_safe (matches Coq) *)
-lemma cfhe_007_pq_safe: "\<forall> sys, complete_fhe_secure sys = True \<longrightarrow> fhe_post_quantum (cfhe_config sys) = True"
+lemma cfhe_007_pq_safe: "\<forall>sys. complete_fhe_secure sys = True \<longrightarrow> fhe_post_quantum (cfhe_config sys) = True"
   by auto
 
 (* CFHE-008: Complete security implies arbitrary depth *)
 (* cfhe_008_arbitrary_depth (matches Coq) *)
-lemma cfhe_008_arbitrary_depth: "\<forall> sys, complete_fhe_secure sys = True \<longrightarrow> ho_arbitrary_depth (fhe_ops (cfhe_config sys)) = True"
+lemma cfhe_008_arbitrary_depth: "\<forall>sys. complete_fhe_secure sys = True \<longrightarrow> ho_arbitrary_depth (fhe_ops (cfhe_config sys)) = True"
   by auto
 
 (* CFHE-009: Complete security implies semantic security *)
 (* cfhe_009_semantic_secure (matches Coq) *)
-lemma cfhe_009_semantic_secure: "\<forall> sys, complete_fhe_secure sys = True \<longrightarrow> fhe_semantic_secure (fhe_security (cfhe_config sys)) = True"
+lemma cfhe_009_semantic_secure: "\<forall>sys. complete_fhe_secure sys = True \<longrightarrow> fhe_semantic_secure (fhe_security (cfhe_config sys)) = True"
   by auto
 
 (* CFHE-010: Complete security implies noise management *)
 (* cfhe_010_noise_managed (matches Coq) *)
-lemma cfhe_010_noise_managed: "\<forall> sys, complete_fhe_secure sys = True \<longrightarrow> noise_managed (fhe_noise (cfhe_config sys)) = True"
+lemma cfhe_010_noise_managed: "\<forall>sys. complete_fhe_secure sys = True \<longrightarrow> noise_managed (fhe_noise (cfhe_config sys)) = True"
   by auto
 
 (* CIRC-001: RIINA is circularly secure *)
@@ -948,7 +948,7 @@ lemma circ_001_riina_secure: "circular_secure riina_circular = True"
 
 (* CIRC-002: Circular security implies key encryption safety *)
 (* circ_002_key_encryption (matches Coq) *)
-lemma circ_002_key_encryption: "\<forall> cs, circular_secure cs = True \<longrightarrow> cs_key_encryption_safe cs = True"
+lemma circ_002_key_encryption: "\<forall>cs. circular_secure cs = True \<longrightarrow> cs_key_encryption_safe cs = True"
   by auto
 
 (* LWE-001: RIINA LWE parameters are secure *)
@@ -958,7 +958,7 @@ lemma lwe_001_riina_secure: "lwe_secure riina_lwe = True"
 
 (* LWE-002: Secure LWE has sufficient dimension *)
 (* lwe_002_dimension (matches Coq) *)
-lemma lwe_002_dimension: "\<forall> lwe, lwe_secure lwe = True \<longrightarrow> (512 <=? lwe_dimension lwe) = True"
+lemma lwe_002_dimension: "\<forall>lwe. lwe_secure lwe = True \<longrightarrow> (512 <=? lwe_dimension lwe) = True"
   by auto
 
 (* RLWE-001: RIINA RLWE is secure *)
@@ -968,7 +968,7 @@ lemma rlwe_001_riina_secure: "rlwe_secure riina_rlwe = True"
 
 (* RLWE-002: Secure RLWE has sufficient ring degree *)
 (* rlwe_002_ring_degree (matches Coq) *)
-lemma rlwe_002_ring_degree: "\<forall> r, rlwe_secure r = True \<longrightarrow> (1024 <=? rlwe_ring_degree r) = True"
+lemma rlwe_002_ring_degree: "\<forall>r. rlwe_secure r = True \<longrightarrow> (1024 <=? rlwe_ring_degree r) = True"
   by auto
 
 end

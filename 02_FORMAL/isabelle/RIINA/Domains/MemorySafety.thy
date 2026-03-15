@@ -497,20 +497,20 @@ definition guest_region :: "SecureMemoryRegion" where
   "guest_region \<equiv> mkSecureMemRegion allocated_region DomainGuest PermRead False"
 
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* andb_false_iff (matches Coq) *)
-lemma andb_false_iff: "\<forall> a b : bool, a && b = False <-> a = False \<or> b = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_false_iff: "\<forall>a b : bool. a && b = False <-> a = False \<or> b = False"
+  by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+  by auto
 
 (* negb_false_iff (matches Coq) *)
-lemma negb_false_iff: "\<forall> b : bool, (\<not> b) = False <-> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma negb_false_iff: "\<forall>b : bool. (\<not> b) = False <-> b = True"
+  by auto
 
 (* ============================================================================
     SECTION 8: BASIC CONFIGURATION THEOREMS (MEM_001 - MEM_040)
@@ -576,83 +576,83 @@ lemma MEM_015: "bg_fat_pointers riina_bounds = True"
   by simp
 
 (* MEM_016 (matches Coq) *)
-lemma MEM_016: "\<forall> u, uaf_protected u = True \<longrightarrow> uaf_lifetime_tracking u = True"
+lemma MEM_016: "\<forall>u. uaf_protected u = True \<longrightarrow> uaf_lifetime_tracking u = True"
   by auto
 
 (* MEM_017 (matches Coq) *)
-lemma MEM_017: "\<forall> u, uaf_protected u = True \<longrightarrow> uaf_ownership_clear u = True"
+lemma MEM_017: "\<forall>u. uaf_protected u = True \<longrightarrow> uaf_ownership_clear u = True"
   by auto
 
 (* MEM_018 (matches Coq) *)
-lemma MEM_018: "\<forall> u, uaf_protected u = True \<longrightarrow> uaf_access_check u = True"
+lemma MEM_018: "\<forall>u. uaf_protected u = True \<longrightarrow> uaf_access_check u = True"
   by auto
 
 (* MEM_019 (matches Coq) *)
-lemma MEM_019: "\<forall> d, df_protected d = True \<longrightarrow> df_state_tracking d = True"
+lemma MEM_019: "\<forall>d. df_protected d = True \<longrightarrow> df_state_tracking d = True"
   by auto
 
 (* MEM_020 (matches Coq) *)
-lemma MEM_020: "\<forall> d, df_protected d = True \<longrightarrow> df_single_owner d = True"
+lemma MEM_020: "\<forall>d. df_protected d = True \<longrightarrow> df_single_owner d = True"
   by auto
 
 (* MEM_021 (matches Coq) *)
-lemma MEM_021: "\<forall> d, df_protected d = True \<longrightarrow> df_freed_check d = True"
+lemma MEM_021: "\<forall>d. df_protected d = True \<longrightarrow> df_freed_check d = True"
   by auto
 
 (* MEM_022 (matches Coq) *)
-lemma MEM_022: "\<forall> n, nd_protected n = True \<longrightarrow> nd_null_check n = True"
+lemma MEM_022: "\<forall>n. nd_protected n = True \<longrightarrow> nd_null_check n = True"
   by auto
 
 (* MEM_023 (matches Coq) *)
-lemma MEM_023: "\<forall> n, nd_protected n = True \<longrightarrow> nd_option_types n = True"
+lemma MEM_023: "\<forall>n. nd_protected n = True \<longrightarrow> nd_option_types n = True"
   by auto
 
 (* MEM_024 (matches Coq) *)
-lemma MEM_024: "\<forall> n, nd_protected n = True \<longrightarrow> nd_init_required n = True"
+lemma MEM_024: "\<forall>n. nd_protected n = True \<longrightarrow> nd_init_required n = True"
   by auto
 
 (* MEM_025 (matches Coq) *)
-lemma MEM_025: "\<forall> b, bounds_protected b = True \<longrightarrow> bg_bounds_check b = True"
+lemma MEM_025: "\<forall>b. bounds_protected b = True \<longrightarrow> bg_bounds_check b = True"
   by auto
 
 (* MEM_026 (matches Coq) *)
-lemma MEM_026: "\<forall> b, bounds_protected b = True \<longrightarrow> bg_fat_pointers b = True"
+lemma MEM_026: "\<forall>b. bounds_protected b = True \<longrightarrow> bg_fat_pointers b = True"
   by auto
 
 (* MEM_027 (matches Coq) *)
-lemma MEM_027: "\<forall> b, bounds_protected b = True \<longrightarrow> bg_slice_safety b = True"
+lemma MEM_027: "\<forall>b. bounds_protected b = True \<longrightarrow> bg_slice_safety b = True"
   by auto
 
 (* MEM_028 (matches Coq) *)
-lemma MEM_028: "\<forall> m, memory_safe m = True \<longrightarrow> uaf_protected (ms_uaf m) = True"
+lemma MEM_028: "\<forall>m. memory_safe m = True \<longrightarrow> uaf_protected (ms_uaf m) = True"
   by auto
 
 (* MEM_029 (matches Coq) *)
-lemma MEM_029: "\<forall> m, memory_safe m = True \<longrightarrow> df_protected (ms_df m) = True"
+lemma MEM_029: "\<forall>m. memory_safe m = True \<longrightarrow> df_protected (ms_df m) = True"
   by auto
 
 (* MEM_030 (matches Coq) *)
-lemma MEM_030: "\<forall> m, memory_safe m = True \<longrightarrow> nd_protected (ms_nd m) = True"
+lemma MEM_030: "\<forall>m. memory_safe m = True \<longrightarrow> nd_protected (ms_nd m) = True"
   by auto
 
 (* MEM_031 (matches Coq) *)
-lemma MEM_031: "\<forall> m, memory_safe m = True \<longrightarrow> bounds_protected (ms_bounds m) = True"
+lemma MEM_031: "\<forall>m. memory_safe m = True \<longrightarrow> bounds_protected (ms_bounds m) = True"
   by auto
 
 (* MEM_032 (matches Coq) *)
-lemma MEM_032: "\<forall> m, memory_safe m = True \<longrightarrow> uaf_lifetime_tracking (ms_uaf m) = True"
+lemma MEM_032: "\<forall>m. memory_safe m = True \<longrightarrow> uaf_lifetime_tracking (ms_uaf m) = True"
   by auto
 
 (* MEM_033 (matches Coq) *)
-lemma MEM_033: "\<forall> m, memory_safe m = True \<longrightarrow> df_single_owner (ms_df m) = True"
+lemma MEM_033: "\<forall>m. memory_safe m = True \<longrightarrow> df_single_owner (ms_df m) = True"
   by auto
 
 (* MEM_034 (matches Coq) *)
-lemma MEM_034: "\<forall> m, memory_safe m = True \<longrightarrow> nd_null_check (ms_nd m) = True"
+lemma MEM_034: "\<forall>m. memory_safe m = True \<longrightarrow> nd_null_check (ms_nd m) = True"
   by auto
 
 (* MEM_035 (matches Coq) *)
-lemma MEM_035: "\<forall> m, memory_safe m = True \<longrightarrow> bg_bounds_check (ms_bounds m) = True"
+lemma MEM_035: "\<forall>m. memory_safe m = True \<longrightarrow> bg_bounds_check (ms_bounds m) = True"
   by auto
 
 (* MEM_036 (matches Coq) *)
@@ -664,15 +664,15 @@ lemma MEM_037: "nd_protected riina_nd = True \<and> bounds_protected riina_bound
   by auto
 
 (* MEM_038 (matches Coq) *)
-lemma MEM_038: "\<forall> u, uaf_protected u = True \<longrightarrow> uaf_lifetime_tracking u = True \<and> uaf_access_check u = True"
+lemma MEM_038: "\<forall>u. uaf_protected u = True \<longrightarrow> uaf_lifetime_tracking u = True \<and> uaf_access_check u = True"
   by auto
 
 (* MEM_039 (matches Coq) *)
-lemma MEM_039: "\<forall> d, df_protected d = True \<longrightarrow> df_state_tracking d = True \<and> df_freed_check d = True"
+lemma MEM_039: "\<forall>d. df_protected d = True \<longrightarrow> df_state_tracking d = True \<and> df_freed_check d = True"
   by auto
 
 (* MEM_040_complete (matches Coq) *)
-lemma MEM_040_complete: "\<forall> m, memory_safe m = True \<longrightarrow> uaf_lifetime_tracking (ms_uaf m) = True \<and> df_single_owner (ms_df m) = True \<and> nd_null_check (ms_nd m) = True \<and> bg_bounds_check (ms_bounds m) = True"
+lemma MEM_040_complete: "\<forall>m. memory_safe m = True \<longrightarrow> uaf_lifetime_tracking (ms_uaf m) = True \<and> df_single_owner (ms_df m) = True \<and> nd_null_check (ms_nd m) = True \<and> bg_bounds_check (ms_bounds m) = True"
   by auto
 
 (* ============================================================================
@@ -731,11 +731,11 @@ lemma MEM_053_dangling_not_safe_for_access: "ptr_safe_for_access dangling_pointe
   by simp
 
 (* MEM_054_safe_access_implies_valid (matches Coq) *)
-lemma MEM_054_safe_access_implies_valid: "\<forall> p, ptr_safe_for_access p = True \<longrightarrow> ptr_is_valid p = True"
+lemma MEM_054_safe_access_implies_valid: "\<forall>p. ptr_safe_for_access p = True \<longrightarrow> ptr_is_valid p = True"
   by auto
 
 (* MEM_055_safe_access_implies_in_bounds (matches Coq) *)
-lemma MEM_055_safe_access_implies_in_bounds: "\<forall> p, ptr_safe_for_access p = True \<longrightarrow> ptr_in_bounds p = True"
+lemma MEM_055_safe_access_implies_in_bounds: "\<forall>p. ptr_safe_for_access p = True \<longrightarrow> ptr_in_bounds p = True"
   by auto
 
 (* ============================================================================
@@ -770,16 +770,16 @@ lemma MEM_062_freed_cannot_access: "region_can_access freed_region = False"
   by simp
 
 (* MEM_063_access_implies_allocated (matches Coq) *)
-lemma MEM_063_access_implies_allocated: "\<forall> r, region_can_access r = True \<longrightarrow> region_is_allocated r = True"
+lemma MEM_063_access_implies_allocated: "\<forall>r. region_can_access r = True \<longrightarrow> region_is_allocated r = True"
   by auto
 
 (* MEM_064_access_implies_owned (matches Coq) *)
-lemma MEM_064_access_implies_owned: "\<forall> r, region_can_access r = True \<longrightarrow> mr_owned r = True"
+lemma MEM_064_access_implies_owned: "\<forall>r. region_can_access r = True \<longrightarrow> mr_owned r = True"
   by auto
 
 (* MEM_065_uaf_prevented (matches Coq) *)
-lemma MEM_065_uaf_prevented: "\<forall> r, region_is_freed r = True \<longrightarrow> region_can_access r = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma MEM_065_uaf_prevented: "\<forall>r. region_is_freed r = True \<longrightarrow> region_can_access r = False"
+  by auto
 
 (* ============================================================================
     SECTION 11: STACK SAFETY THEOREMS (MEM_066 - MEM_075)
@@ -805,23 +805,23 @@ lemma MEM_070_shadow_stack: "sg_shadow_stack riina_stack = True"
   by simp
 
 (* MEM_071_stack_implies_canary (matches Coq) *)
-lemma MEM_071_stack_implies_canary: "\<forall> s, stack_protected s = True \<longrightarrow> sg_canary_enabled s = True"
+lemma MEM_071_stack_implies_canary: "\<forall>s. stack_protected s = True \<longrightarrow> sg_canary_enabled s = True"
   by auto
 
 (* MEM_072_stack_implies_return_protected (matches Coq) *)
-lemma MEM_072_stack_implies_return_protected: "\<forall> s, stack_protected s = True \<longrightarrow> sg_return_addr_protected s = True"
+lemma MEM_072_stack_implies_return_protected: "\<forall>s. stack_protected s = True \<longrightarrow> sg_return_addr_protected s = True"
   by auto
 
 (* MEM_073_stack_implies_frame_isolation (matches Coq) *)
-lemma MEM_073_stack_implies_frame_isolation: "\<forall> s, stack_protected s = True \<longrightarrow> sg_frame_isolation s = True"
+lemma MEM_073_stack_implies_frame_isolation: "\<forall>s. stack_protected s = True \<longrightarrow> sg_frame_isolation s = True"
   by auto
 
 (* MEM_074_stack_implies_shadow (matches Coq) *)
-lemma MEM_074_stack_implies_shadow: "\<forall> s, stack_protected s = True \<longrightarrow> sg_shadow_stack s = True"
+lemma MEM_074_stack_implies_shadow: "\<forall>s. stack_protected s = True \<longrightarrow> sg_shadow_stack s = True"
   by auto
 
 (* MEM_075_complete_stack_protection (matches Coq) *)
-lemma MEM_075_complete_stack_protection: "\<forall> s, stack_protected s = True \<longrightarrow> sg_canary_enabled s = True \<and> sg_return_addr_protected s = True \<and> sg_frame_isolation s = True \<and> sg_shadow_stack s = True"
+lemma MEM_075_complete_stack_protection: "\<forall>s. stack_protected s = True \<longrightarrow> sg_canary_enabled s = True \<and> sg_return_addr_protected s = True \<and> sg_frame_isolation s = True \<and> sg_shadow_stack s = True"
   by auto
 
 (* ============================================================================
@@ -848,23 +848,23 @@ lemma MEM_080_metadata_integrity: "hg_metadata_integrity riina_heap = True"
   by simp
 
 (* MEM_081_heap_implies_allocation_tracking (matches Coq) *)
-lemma MEM_081_heap_implies_allocation_tracking: "\<forall> h, heap_protected h = True \<longrightarrow> hg_allocation_tracking h = True"
+lemma MEM_081_heap_implies_allocation_tracking: "\<forall>h. heap_protected h = True \<longrightarrow> hg_allocation_tracking h = True"
   by auto
 
 (* MEM_082_heap_implies_deallocation_check (matches Coq) *)
-lemma MEM_082_heap_implies_deallocation_check: "\<forall> h, heap_protected h = True \<longrightarrow> hg_deallocation_check h = True"
+lemma MEM_082_heap_implies_deallocation_check: "\<forall>h. heap_protected h = True \<longrightarrow> hg_deallocation_check h = True"
   by auto
 
 (* MEM_083_heap_implies_fragmentation_prevention (matches Coq) *)
-lemma MEM_083_heap_implies_fragmentation_prevention: "\<forall> h, heap_protected h = True \<longrightarrow> hg_fragmentation_prevention h = True"
+lemma MEM_083_heap_implies_fragmentation_prevention: "\<forall>h. heap_protected h = True \<longrightarrow> hg_fragmentation_prevention h = True"
   by auto
 
 (* MEM_084_heap_implies_metadata_integrity (matches Coq) *)
-lemma MEM_084_heap_implies_metadata_integrity: "\<forall> h, heap_protected h = True \<longrightarrow> hg_metadata_integrity h = True"
+lemma MEM_084_heap_implies_metadata_integrity: "\<forall>h. heap_protected h = True \<longrightarrow> hg_metadata_integrity h = True"
   by auto
 
 (* MEM_085_complete_heap_protection (matches Coq) *)
-lemma MEM_085_complete_heap_protection: "\<forall> h, heap_protected h = True \<longrightarrow> hg_allocation_tracking h = True \<and> hg_deallocation_check h = True \<and> hg_fragmentation_prevention h = True \<and> hg_metadata_integrity h = True"
+lemma MEM_085_complete_heap_protection: "\<forall>h. heap_protected h = True \<longrightarrow> hg_allocation_tracking h = True \<and> hg_deallocation_check h = True \<and> hg_fragmentation_prevention h = True \<and> hg_metadata_integrity h = True"
   by auto
 
 (* ============================================================================
@@ -891,23 +891,23 @@ lemma MEM_090_capability_required: "ig_capability_required riina_isolation = Tru
   by simp
 
 (* MEM_091_isolation_implies_domain_separation (matches Coq) *)
-lemma MEM_091_isolation_implies_domain_separation: "\<forall> i, isolation_protected i = True \<longrightarrow> ig_domain_separation i = True"
+lemma MEM_091_isolation_implies_domain_separation: "\<forall>i. isolation_protected i = True \<longrightarrow> ig_domain_separation i = True"
   by auto
 
 (* MEM_092_isolation_implies_permission_enforcement (matches Coq) *)
-lemma MEM_092_isolation_implies_permission_enforcement: "\<forall> i, isolation_protected i = True \<longrightarrow> ig_permission_enforcement i = True"
+lemma MEM_092_isolation_implies_permission_enforcement: "\<forall>i. isolation_protected i = True \<longrightarrow> ig_permission_enforcement i = True"
   by auto
 
 (* MEM_093_isolation_implies_cross_domain_check (matches Coq) *)
-lemma MEM_093_isolation_implies_cross_domain_check: "\<forall> i, isolation_protected i = True \<longrightarrow> ig_cross_domain_check i = True"
+lemma MEM_093_isolation_implies_cross_domain_check: "\<forall>i. isolation_protected i = True \<longrightarrow> ig_cross_domain_check i = True"
   by auto
 
 (* MEM_094_isolation_implies_capability (matches Coq) *)
-lemma MEM_094_isolation_implies_capability: "\<forall> i, isolation_protected i = True \<longrightarrow> ig_capability_required i = True"
+lemma MEM_094_isolation_implies_capability: "\<forall>i. isolation_protected i = True \<longrightarrow> ig_capability_required i = True"
   by auto
 
 (* MEM_095_complete_isolation (matches Coq) *)
-lemma MEM_095_complete_isolation: "\<forall> i, isolation_protected i = True \<longrightarrow> ig_domain_separation i = True \<and> ig_permission_enforcement i = True \<and> ig_cross_domain_check i = True \<and> ig_capability_required i = True"
+lemma MEM_095_complete_isolation: "\<forall>i. isolation_protected i = True \<longrightarrow> ig_domain_separation i = True \<and> ig_permission_enforcement i = True \<and> ig_cross_domain_check i = True \<and> ig_capability_required i = True"
   by auto
 
 (* ============================================================================
@@ -946,11 +946,11 @@ lemma MEM_103_untrusted_cannot_access_guest: "domain_can_access DomainUntrusted 
   by simp
 
 (* MEM_104_domain_access_reflexive (matches Coq) *)
-lemma MEM_104_domain_access_reflexive: "\<forall> d, domain_can_access d d = True"
+lemma MEM_104_domain_access_reflexive: "\<forall>d. domain_can_access d d = True"
   by simp
 
 (* MEM_105_domain_hierarchy_transitive (matches Coq) *)
-lemma MEM_105_domain_hierarchy_transitive: "\<forall> d1 d2 d3, domain_can_access d1 d2 = True \<longrightarrow> domain_can_access d2 d3 = True \<longrightarrow> domain_can_access d1 d3 = True"
+lemma MEM_105_domain_hierarchy_transitive: "\<forall>d1 d2 d3. domain_can_access d1 d2 = True \<longrightarrow> domain_can_access d2 d3 = True \<longrightarrow> domain_can_access d1 d3 = True"
   by auto
 
 (* ============================================================================
@@ -985,30 +985,30 @@ lemma MEM_112_kernel_write_user_region: "secure_region_can_write user_region Dom
   by simp
 
 (* MEM_113_read_requires_allocation (matches Coq) *)
-lemma MEM_113_read_requires_allocation: "\<forall> r d, secure_region_can_read r d = True \<longrightarrow> region_is_allocated (smr_base r) = True"
+lemma MEM_113_read_requires_allocation: "\<forall>r d. secure_region_can_read r d = True \<longrightarrow> region_is_allocated (smr_base r) = True"
   by auto
 
 (* MEM_114_write_requires_allocation (matches Coq) *)
-lemma MEM_114_write_requires_allocation: "\<forall> r d, secure_region_can_write r d = True \<longrightarrow> region_is_allocated (smr_base r) = True"
+lemma MEM_114_write_requires_allocation: "\<forall>r d. secure_region_can_write r d = True \<longrightarrow> region_is_allocated (smr_base r) = True"
   by auto
 
 (* MEM_115_read_requires_permission (matches Coq) *)
-lemma MEM_115_read_requires_permission: "\<forall> r d, secure_region_can_read r d = True \<longrightarrow> permission_allows_read (smr_permission r) = True"
+lemma MEM_115_read_requires_permission: "\<forall>r d. secure_region_can_read r d = True \<longrightarrow> permission_allows_read (smr_permission r) = True"
   by auto
 
 (* ============================================================================
     SECTION 16: COMPREHENSIVE MEMORY SAFETY THEOREMS (MEM_116 - MEM_125)
     ============================================================================ *)
 (* MEM_116_full_memory_safe_implies_stack (matches Coq) *)
-lemma MEM_116_full_memory_safe_implies_stack: "\<forall> m, memory_safe m = True \<longrightarrow> stack_protected (ms_stack m) = True"
+lemma MEM_116_full_memory_safe_implies_stack: "\<forall>m. memory_safe m = True \<longrightarrow> stack_protected (ms_stack m) = True"
   by auto
 
 (* MEM_117_full_memory_safe_implies_heap (matches Coq) *)
-lemma MEM_117_full_memory_safe_implies_heap: "\<forall> m, memory_safe m = True \<longrightarrow> heap_protected (ms_heap m) = True"
+lemma MEM_117_full_memory_safe_implies_heap: "\<forall>m. memory_safe m = True \<longrightarrow> heap_protected (ms_heap m) = True"
   by auto
 
 (* MEM_118_full_memory_safe_implies_isolation (matches Coq) *)
-lemma MEM_118_full_memory_safe_implies_isolation: "\<forall> m, memory_safe m = True \<longrightarrow> isolation_protected (ms_isolation m) = True"
+lemma MEM_118_full_memory_safe_implies_isolation: "\<forall>m. memory_safe m = True \<longrightarrow> isolation_protected (ms_isolation m) = True"
   by auto
 
 (* MEM_119_riina_full_protection (matches Coq) *)
@@ -1016,24 +1016,24 @@ lemma MEM_119_riina_full_protection: "memory_safe riina_mem_safety = True \<and>
   by auto
 
 (* MEM_120_no_uaf_with_tracking (matches Coq) *)
-lemma MEM_120_no_uaf_with_tracking: "\<forall> u, uaf_protected u = True \<longrightarrow> \<forall> r, region_is_freed r = True \<longrightarrow> (uaf_access_check u = True \<longrightarrow> region_can_access r = False)"
+lemma MEM_120_no_uaf_with_tracking: "\<forall>u. uaf_protected u = True \<longrightarrow> \<forall>r. region_is_freed r = True \<longrightarrow> (uaf_access_check u = True \<longrightarrow> region_can_access r = False)"
   by auto
 
 (* MEM_121_no_double_free_with_tracking (matches Coq) *)
-lemma MEM_121_no_double_free_with_tracking: "\<forall> d, df_protected d = True \<longrightarrow> df_state_tracking d = True \<and> df_freed_check d = True"
+lemma MEM_121_no_double_free_with_tracking: "\<forall>d. df_protected d = True \<longrightarrow> df_state_tracking d = True \<and> df_freed_check d = True"
   by auto
 
 (* MEM_122_null_safety_complete (matches Coq) *)
-lemma MEM_122_null_safety_complete: "\<forall> n, nd_protected n = True \<longrightarrow> nd_null_check n = True \<and> nd_option_types n = True \<and> nd_init_required n = True"
+lemma MEM_122_null_safety_complete: "\<forall>n. nd_protected n = True \<longrightarrow> nd_null_check n = True \<and> nd_option_types n = True \<and> nd_init_required n = True"
   by auto
 
 (* MEM_123_bounds_safety_complete (matches Coq) *)
-lemma MEM_123_bounds_safety_complete: "\<forall> b, bounds_protected b = True \<longrightarrow> bg_bounds_check b = True \<and> bg_fat_pointers b = True \<and> bg_slice_safety b = True"
+lemma MEM_123_bounds_safety_complete: "\<forall>b. bounds_protected b = True \<longrightarrow> bg_bounds_check b = True \<and> bg_fat_pointers b = True \<and> bg_slice_safety b = True"
   by auto
 
 (* MEM_124_ptr_safe_zero_offset (matches Coq) *)
-lemma MEM_124_ptr_safe_zero_offset: "\<forall> bounds, bounds > 0 \<longrightarrow> ptr_safe_for_access (mkPointer Valid 0 bounds) = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma MEM_124_ptr_safe_zero_offset: "\<forall>bounds. bounds > 0 \<longrightarrow> ptr_safe_for_access (mkPointer Valid 0 bounds) = True"
+  by auto
 
 (* MEM_125_complete_memory_safety_riina (matches Coq) *)
 lemma MEM_125_complete_memory_safety_riina: "memory_safe riina_mem_safety = True \<longrightarrow> uaf_protected riina_uaf = True \<and> df_protected riina_df = True \<and> nd_protected riina_nd = True \<and> bounds_protected riina_bounds = True \<and> stack_protected riina_stack = True \<and> heap_protected riina_heap = True \<and> isolation_protected riina_isolation = True"
@@ -1059,27 +1059,27 @@ lemma MEM_129_dangling_unsafe_for_range: "ptr_safe_for_access_range dangling_poi
   by simp
 
 (* MEM_130_safe_range_implies_valid (matches Coq) *)
-lemma MEM_130_safe_range_implies_valid: "\<forall> p len, ptr_safe_for_access_range p len = True \<longrightarrow> ptr_is_valid p = True"
+lemma MEM_130_safe_range_implies_valid: "\<forall>p len. ptr_safe_for_access_range p len = True \<longrightarrow> ptr_is_valid p = True"
   by auto
 
 (* MEM_131_zero_range_safe_if_valid (matches Coq) *)
-lemma MEM_131_zero_range_safe_if_valid: "\<forall> p, ptr_is_valid p = True \<longrightarrow> ptr_offset p \<le> ptr_bounds p \<longrightarrow> ptr_safe_for_access_range p 0 = True"
+lemma MEM_131_zero_range_safe_if_valid: "\<forall>p. ptr_is_valid p = True \<longrightarrow> ptr_offset p \<le> ptr_bounds p \<longrightarrow> ptr_safe_for_access_range p 0 = True"
   by auto
 
 (* MEM_132_safe_range_monotonic (matches Coq) *)
-lemma MEM_132_safe_range_monotonic: "\<forall> p len1 len2, len1 \<le> len2 \<longrightarrow> ptr_safe_for_access_range p len2 = True \<longrightarrow> ptr_safe_for_access_range p len1 = True"
+lemma MEM_132_safe_range_monotonic: "\<forall>p len1 len2. len1 \<le> len2 \<longrightarrow> ptr_safe_for_access_range p len2 = True \<longrightarrow> ptr_safe_for_access_range p len1 = True"
   by auto
 
 (* MEM_133_single_access_from_range (matches Coq) *)
-lemma MEM_133_single_access_from_range: "\<forall> p, ptr_safe_for_access_range p 1 = True \<longrightarrow> ptr_safe_for_access p = True"
+lemma MEM_133_single_access_from_range: "\<forall>p. ptr_safe_for_access_range p 1 = True \<longrightarrow> ptr_safe_for_access p = True"
   by auto
 
 (* MEM_134_out_of_bounds_unsafe (matches Coq) *)
-lemma MEM_134_out_of_bounds_unsafe: "\<forall> p len, ptr_offset p + len > ptr_bounds p \<longrightarrow> ptr_safe_for_access_range p len = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma MEM_134_out_of_bounds_unsafe: "\<forall>p len. ptr_offset p + len > ptr_bounds p \<longrightarrow> ptr_safe_for_access_range p len = False"
+  by auto
 
 (* MEM_135_safe_implies_not_exceeds_bounds (matches Coq) *)
-lemma MEM_135_safe_implies_not_exceeds_bounds: "\<forall> p len, ptr_safe_for_access_range p len = True \<longrightarrow> ptr_offset p + len \<le> ptr_bounds p"
+lemma MEM_135_safe_implies_not_exceeds_bounds: "\<forall>p len. ptr_safe_for_access_range p len = True \<longrightarrow> ptr_offset p + len \<le> ptr_bounds p"
   by auto
 
 end

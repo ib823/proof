@@ -99,10 +99,10 @@ definition version_lt :: "bool" where
 (* version_le (matches Coq: Definition version_le) *)
 definition version_le :: "bool" where
   "version_le \<equiv> version_lt v1 v2 \<or> 
-  (((major = v1)) (major v2) \<and> 
-   ((minor = v1)) (minor v2) \<and> 
-   ((patch = v1)) (patch v2) \<and> 
-   ((build = v1)) (build v2))"
+  ((major v1 = major v2) \<and> 
+   (minor v1 = minor v2) \<and> 
+   (patch v1 = patch v2) \<and> 
+   (build v1 = build v2))"
 
 (* initial_rollback_state (matches Coq: Definition initial_rollback_state) *)
 definition initial_rollback_state :: "RollbackState" where
@@ -125,7 +125,7 @@ definition can_boot_version :: "RollbackState \<Rightarrow> VersionedComponent \
 definition update_min_version :: "RollbackState \<Rightarrow> ComponentId \<Rightarrow> Version \<Rightarrow> bool \<Rightarrow> RollbackState" where
   "update_min_version st comp ver hw \<equiv> mkRollbackState
     (mkMinVersion comp ver hw :: 
-     filter (fun mv => (\<not> (if) comp_id_eq_dec (min_comp_id mv) comp then True else False))
+     filter (\<lambda>mv. (\<not> (if) comp_id_eq_dec (min_comp_id mv) comp then True else False))
             (minimum_versions st))
     (current_versions st)
     (anti_rollback_enabled st)"
@@ -134,7 +134,7 @@ definition update_min_version :: "RollbackState \<Rightarrow> ComponentId \<Righ
 definition record_current_version :: "RollbackState \<Rightarrow> VersionedComponent \<Rightarrow> RollbackState" where
   "record_current_version st comp \<equiv> mkRollbackState
     (minimum_versions st)
-    (comp :: filter (fun vc => (\<not> (if) comp_id_eq_dec (comp_id vc) (comp_id comp) then True else False))
+    (comp :: filter (\<lambda>vc. (\<not> (if) comp_id_eq_dec (comp_id vc) (comp_id comp) then True else False))
                     (current_versions st))
     (anti_rollback_enabled st)"
 
@@ -153,102 +153,102 @@ definition rollback_enforced :: "RollbackState \<Rightarrow> bool" where
   "rollback_enforced st \<equiv> anti_rollback_enabled st = True"
 
 (* rollback_protection (matches Coq) *)
-lemma rollback_protection: "\<forall> (st : RollbackState) (comp : ComponentId) (old_ver : Version), rollback_enforced st \<longrightarrow> is_rollback st comp old_ver \<longrightarrow> version_allowed st comp old_ver = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma rollback_protection: "\<forall>(st :: RollbackState) (comp :: ComponentId) (old_ver : Version). rollback_enforced st \<longrightarrow> is_rollback st comp old_ver \<longrightarrow> version_allowed st comp old_ver = False"
+  by auto
 
 (* old_version_cannot_boot (matches Coq) *)
-lemma old_version_cannot_boot: "\<forall> (st : RollbackState) (comp : VersionedComponent), rollback_enforced st \<longrightarrow> is_rollback st (comp_id comp) (comp_version comp) \<longrightarrow> ~ can_boot_prop st comp"
+lemma old_version_cannot_boot: "\<forall>(st :: RollbackState) (comp :: VersionedComponent). rollback_enforced st \<longrightarrow> is_rollback st (comp_id comp) (comp_version comp) \<longrightarrow> ~ can_boot_prop st comp"
   by auto
 
 (* current_or_newer_allowed (matches Coq) *)
-lemma current_or_newer_allowed: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version), rollback_enforced st \<longrightarrow> (\<forall> min_ver, get_min_version st comp = Some min_ver \<longrightarrow> version_lt ver min_ver = False) \<longrightarrow> version_allowed st comp ver = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma current_or_newer_allowed: "\<forall>(st :: RollbackState) (comp :: ComponentId) (ver : Version). rollback_enforced st \<longrightarrow> (\<forall>min_ver. get_min_version st comp = Some min_ver \<longrightarrow> version_lt ver min_ver = False) \<longrightarrow> version_allowed st comp ver = True"
+  by auto
 
 (* min_version_monotonic (matches Coq) *)
-lemma min_version_monotonic: "\<forall> (st : RollbackState) (comp : ComponentId) (old_ver new_ver : Version), get_min_version st comp = Some old_ver \<longrightarrow> version_lt new_ver old_ver = True \<longrightarrow> let st' := update_min_version st comp new_ver True in get_min_version st' comp = Some new_ver"
-  by (cases rule: ‹_›.cases; simp)
+lemma min_version_monotonic: "\<forall>(st :: RollbackState) (comp :: ComponentId) (old_ver new_ver : Version). get_min_version st comp = Some old_ver \<longrightarrow> version_lt new_ver old_ver = True \<longrightarrow> let st' := update_min_version st comp new_ver True in get_min_version st' comp = Some new_ver"
+  by auto
 
 (* no_minimum_any_allowed (matches Coq) *)
-lemma no_minimum_any_allowed: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version), get_min_version st comp = None \<longrightarrow> version_allowed st comp ver = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma no_minimum_any_allowed: "\<forall>(st :: RollbackState) (comp :: ComponentId) (ver : Version). get_min_version st comp = None \<longrightarrow> version_allowed st comp ver = True"
+  by auto
 
 (* disabled_rollback_allows_all (matches Coq) *)
-lemma disabled_rollback_allows_all: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version), anti_rollback_enabled st = False \<longrightarrow> version_allowed st comp ver = True"
+lemma disabled_rollback_allows_all: "\<forall>(st :: RollbackState) (comp :: ComponentId) (ver : Version). anti_rollback_enabled st = False \<longrightarrow> version_allowed st comp ver = True"
   by simp
 
 (* Version comparison is irreflexive: no version is less than itself *)
 (* version_lt_irreflexive (matches Coq) *)
-lemma version_lt_irreflexive: "\<forall> (v : Version), version_lt v v = False"
+lemma version_lt_irreflexive: "\<forall>(v :: Version). version_lt v v = False"
   by simp
 
 (* Same version is always allowed when rollback enforced *)
 (* same_version_always_allowed (matches Coq) *)
-lemma same_version_always_allowed: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version), rollback_enforced st \<longrightarrow> get_min_version st comp = Some ver \<longrightarrow> version_allowed st comp ver = True"
+lemma same_version_always_allowed: "\<forall>(st :: RollbackState) (comp :: ComponentId) (ver : Version). rollback_enforced st \<longrightarrow> get_min_version st comp = Some ver \<longrightarrow> version_allowed st comp ver = True"
   by simp
 
 (* Update stores new minimum correctly *)
 (* update_stores_new_min (matches Coq) *)
-lemma update_stores_new_min: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version) (hw : bool), get_min_version (update_min_version st comp ver hw) comp = Some ver"
-  by (cases rule: ‹_›.cases; simp)
+lemma update_stores_new_min: "\<forall>(st :: RollbackState) (comp :: ComponentId) (ver : Version) (hw :: bool). get_min_version (update_min_version st comp ver hw) comp = Some ver"
+  by auto
 
 (* Record current version preserves anti-rollback setting *)
 (* record_preserves_anti_rollback (matches Coq) *)
-lemma record_preserves_anti_rollback: "\<forall> (st : RollbackState) (comp : VersionedComponent), anti_rollback_enabled (record_current_version st comp) = anti_rollback_enabled st"
+lemma record_preserves_anti_rollback: "\<forall>(st :: RollbackState) (comp :: VersionedComponent). anti_rollback_enabled (record_current_version st comp) = anti_rollback_enabled st"
   by simp
 
 (* Record current version preserves minimum versions *)
 (* record_preserves_minimums (matches Coq) *)
-lemma record_preserves_minimums: "\<forall> (st : RollbackState) (comp : VersionedComponent), minimum_versions (record_current_version st comp) = minimum_versions st"
+lemma record_preserves_minimums: "\<forall>(st :: RollbackState) (comp :: VersionedComponent). minimum_versions (record_current_version st comp) = minimum_versions st"
   by simp
 
 (* Update minimum preserves anti-rollback setting *)
 (* update_preserves_anti_rollback (matches Coq) *)
-lemma update_preserves_anti_rollback: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version) (hw : bool), anti_rollback_enabled (update_min_version st comp ver hw) = anti_rollback_enabled st"
+lemma update_preserves_anti_rollback: "\<forall>(st :: RollbackState) (comp :: ComponentId) (ver : Version) (hw :: bool). anti_rollback_enabled (update_min_version st comp ver hw) = anti_rollback_enabled st"
   by simp
 
 (* Advance minimum preserves anti-rollback setting *)
 (* advance_preserves_anti_rollback (matches Coq) *)
-lemma advance_preserves_anti_rollback: "\<forall> (st : RollbackState) (comp : ComponentId), anti_rollback_enabled (advance_min_to_current st comp) = anti_rollback_enabled st"
-  by (cases rule: ‹_›.cases; simp)
+lemma advance_preserves_anti_rollback: "\<forall>(st :: RollbackState) (comp :: ComponentId). anti_rollback_enabled (advance_min_to_current st comp) = anti_rollback_enabled st"
+  by auto
 
 (* Version equality means not a rollback *)
 (* equal_version_not_rollback (matches Coq) *)
-lemma equal_version_not_rollback: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version), get_min_version st comp = Some ver \<longrightarrow> ~ is_rollback st comp ver"
+lemma equal_version_not_rollback: "\<forall>(st :: RollbackState) (comp :: ComponentId) (ver : Version). get_min_version st comp = Some ver \<longrightarrow> ~ is_rollback st comp ver"
   by auto
 
 (* Initial state allows all versions *)
 (* initial_state_allows_all (matches Coq) *)
-lemma initial_state_allows_all: "\<forall> (comp : ComponentId) (ver : Version), version_allowed initial_rollback_state comp ver = True"
+lemma initial_state_allows_all: "\<forall>(comp :: ComponentId) (ver :: Version). version_allowed initial_rollback_state comp ver = True"
   by simp
 
 (* Initial state has no minimums *)
 (* initial_state_no_minimums (matches Coq) *)
-lemma initial_state_no_minimums: "\<forall> (comp : ComponentId), get_min_version initial_rollback_state comp = None"
+lemma initial_state_no_minimums: "\<forall>(comp :: ComponentId). get_min_version initial_rollback_state comp = None"
   by simp
 
 (* Initial state has no current versions *)
 (* initial_state_no_current (matches Coq) *)
-lemma initial_state_no_current: "\<forall> (comp : ComponentId), get_current_version initial_rollback_state comp = None"
+lemma initial_state_no_current: "\<forall>(comp :: ComponentId). get_current_version initial_rollback_state comp = None"
   by simp
 
 (* Rollback enforced implies can detect rollback *)
 (* enforced_detects_rollback (matches Coq) *)
-lemma enforced_detects_rollback: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version), rollback_enforced st \<longrightarrow> is_rollback st comp ver \<longrightarrow> can_boot_version st (mkVersionedComp comp ver 0) = False"
+lemma enforced_detects_rollback: "\<forall>(st :: RollbackState) (comp :: ComponentId) (ver : Version). rollback_enforced st \<longrightarrow> is_rollback st comp ver \<longrightarrow> can_boot_version st (mkVersionedComp comp ver 0) = False"
   by auto
 
 (* Hardware-stored minimum is recorded *)
 (* hardware_stored_minimum_recorded (matches Coq) *)
-lemma hardware_stored_minimum_recorded: "\<forall> (st : RollbackState) (comp : ComponentId) (ver : Version), let st' := update_min_version st comp ver True in In (mkMinVersion comp ver True) (minimum_versions st')"
+lemma hardware_stored_minimum_recorded: "\<forall>(st :: RollbackState) (comp :: ComponentId) (ver : Version). let st' := update_min_version st comp ver True in In (mkMinVersion comp ver True) (minimum_versions st')"
   by simp
 
 (* Advance on missing current version is identity *)
 (* advance_missing_current_identity (matches Coq) *)
-lemma advance_missing_current_identity: "\<forall> (st : RollbackState) (comp : ComponentId), get_current_version st comp = None \<longrightarrow> advance_min_to_current st comp = st"
+lemma advance_missing_current_identity: "\<forall>(st :: RollbackState) (comp :: ComponentId). get_current_version st comp = None \<longrightarrow> advance_min_to_current st comp = st"
   by simp
 
 (* Different component minimums are independent *)
 (* independent_component_minimums (matches Coq) *)
-lemma independent_component_minimums: "\<forall> (st : RollbackState) (comp1 comp2 : ComponentId) (ver : Version) (hw : bool), comp1 \<noteq> comp2 \<longrightarrow> get_min_version st comp2 = None \<longrightarrow> let st' := update_min_version st comp1 ver hw in get_min_version st' comp2 = None"
-  by (cases rule: ‹_›.cases; simp)
+lemma independent_component_minimums: "\<forall>(st :: RollbackState) (comp1 comp2 : ComponentId) (ver :: Version) (hw : bool). comp1 \<noteq> comp2 \<longrightarrow> get_min_version st comp2 = None \<longrightarrow> let st' := update_min_version st comp1 ver hw in get_min_version st' comp2 = None"
+  by auto
 
 end

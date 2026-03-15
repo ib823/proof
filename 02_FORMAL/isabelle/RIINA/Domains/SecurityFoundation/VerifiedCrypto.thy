@@ -86,7 +86,7 @@ record crypto_context =
 
 (* key_in_plaintext (matches Coq: Definition key_in_plaintext) *)
 definition key_in_plaintext :: "CryptoKey \<Rightarrow> Memory \<Rightarrow> bool" where
-  "key_in_plaintext key mem \<equiv> key_wrapped key = False /\ mem_protected mem = False"
+  "key_in_plaintext key mem \<equiv> key_wrapped key = False \<and> mem_protected mem = False"
 
 (* key_protected (matches Coq: Definition key_protected) *)
 definition key_protected :: "CryptoKey \<Rightarrow> Memory \<Rightarrow> bool" where
@@ -94,7 +94,7 @@ definition key_protected :: "CryptoKey \<Rightarrow> Memory \<Rightarrow> bool" 
 
 (* secure_key_storage (matches Coq: Definition secure_key_storage) *)
 definition secure_key_storage :: "CryptoKey \<Rightarrow> Memory \<Rightarrow> bool" where
-  "secure_key_storage key mem \<equiv> key_wrapped key = True /\ mem_protected mem = True"
+  "secure_key_storage key mem \<equiv> key_wrapped key = True \<and> mem_protected mem = True"
 
 (* execution_time (matches Coq: Definition execution_time) *)
 fun execution_time :: "CryptoContext \<Rightarrow> CryptoOp \<Rightarrow> Data \<Rightarrow> nat" where
@@ -123,107 +123,107 @@ definition derived_key_independent :: "bool" where
 
 (* Theorem: Key material is never exposed in plaintext in unprotected memory. *)
 (* key_never_plaintext (matches Coq) *)
-lemma key_never_plaintext: "\<forall> (key : CryptoKey) (mem : Memory), secure_key_storage key mem \<longrightarrow> ~ key_in_plaintext key mem"
+lemma key_never_plaintext: "\<forall>(key :: CryptoKey) (mem :: Memory). secure_key_storage key mem \<longrightarrow> ~ key_in_plaintext key mem"
   by auto
 
 (* Theorem: Cryptographic operations execute in constant time regardless of input. *)
 (* crypto_constant_time (matches Coq) *)
-lemma crypto_constant_time: "\<forall> (ctx : CryptoContext) (op : CryptoOp) (input1 input2 : Data), ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input1 = execution_time ctx op input2"
+lemma crypto_constant_time: "\<forall>(ctx :: CryptoContext) (op :: CryptoOp) (input1 input2 : Data). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input1 = execution_time ctx op input2"
   by simp
 
 (* Key wrapping provides protection *)
 (* wrapped_key_protected (matches Coq) *)
-lemma wrapped_key_protected: "\<forall> (key : CryptoKey) (mem : Memory), key_wrapped key = True \<longrightarrow> key_protected key mem"
+lemma wrapped_key_protected: "\<forall>(key :: CryptoKey) (mem :: Memory). key_wrapped key = True \<longrightarrow> key_protected key mem"
   by auto
 
 (* Secure memory provides protection *)
 (* secure_memory_protects_key (matches Coq) *)
-lemma secure_memory_protects_key: "\<forall> (key : CryptoKey) (mem : Memory), mem_protected mem = True \<longrightarrow> key_protected key mem"
+lemma secure_memory_protects_key: "\<forall>(key :: CryptoKey) (mem :: Memory). mem_protected mem = True \<longrightarrow> key_protected key mem"
   by auto
 
 (* Constant time prevents timing attacks *)
 (* constant_time_prevents_timing_attack (matches Coq) *)
-lemma constant_time_prevents_timing_attack: "\<forall> (ctx : CryptoContext) (op : CryptoOp) (secret public : Data), ctx_constant_time ctx = True \<longrightarrow> execute_crypto ctx op secret = execute_crypto ctx op public"
+lemma constant_time_prevents_timing_attack: "\<forall>(ctx :: CryptoContext) (op :: CryptoOp) (secret public : Data). ctx_constant_time ctx = True \<longrightarrow> execute_crypto ctx op secret = execute_crypto ctx op public"
   by auto
 
 (* Non-constant time is vulnerable *)
 (* non_constant_time_vulnerable (matches Coq) *)
-lemma non_constant_time_vulnerable: "\<forall> (ctx : CryptoContext), ctx_constant_time ctx = False \<longrightarrow> True"
+lemma non_constant_time_vulnerable: "\<forall>(ctx :: CryptoContext). ctx_constant_time ctx = False \<longrightarrow> True"
   by auto
 
 (* Key never exposed: secure storage implies not in plaintext *)
 (* key_never_exposed (matches Coq) *)
-lemma key_never_exposed: "\<forall> (key : CryptoKey) (mem : Memory), key_wrapped key = True \<longrightarrow> mem_protected mem = True \<longrightarrow> ~ key_in_plaintext key mem"
+lemma key_never_exposed: "\<forall>(key :: CryptoKey) (mem :: Memory). key_wrapped key = True \<longrightarrow> mem_protected mem = True \<longrightarrow> ~ key_in_plaintext key mem"
   by auto
 
 (* Weak key detection: insufficient key strength *)
 (* weak_key_detected (matches Coq) *)
-lemma weak_key_detected: "\<forall> (key : CryptoKey), key_bits key < 128 \<longrightarrow> ~ key_strength_sufficient key"
+lemma weak_key_detected: "\<forall>(key :: CryptoKey). key_bits key < 128 \<longrightarrow> ~ key_strength_sufficient key"
   by simp
 
 (* Strong key implies sufficient strength *)
 (* strong_key_sufficient (matches Coq) *)
-lemma strong_key_sufficient: "\<forall> (key : CryptoKey), key_is_strong key \<longrightarrow> key_strength_sufficient key"
+lemma strong_key_sufficient: "\<forall>(key :: CryptoKey). key_is_strong key \<longrightarrow> key_strength_sufficient key"
   by simp
 
 (* Encryption and decryption take equal time *)
 (* encrypt_decrypt_equal_time (matches Coq) *)
-lemma encrypt_decrypt_equal_time: "\<forall> (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = True \<longrightarrow> execution_time ctx Encrypt input = execution_time ctx Decrypt input"
+lemma encrypt_decrypt_equal_time: "\<forall>(ctx :: CryptoContext) (input :: Data). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx Encrypt input = execution_time ctx Decrypt input"
   by simp
 
 (* Sign and verify take equal time *)
 (* sign_verify_equal_time (matches Coq) *)
-lemma sign_verify_equal_time: "\<forall> (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = True \<longrightarrow> execution_time ctx Sign input = execution_time ctx Verify input"
+lemma sign_verify_equal_time: "\<forall>(ctx :: CryptoContext) (input :: Data). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx Sign input = execution_time ctx Verify input"
   by simp
 
 (* Hash is the fastest operation *)
 (* hash_fastest_operation (matches Coq) *)
-lemma hash_fastest_operation: "\<forall> (ctx : CryptoContext) (input : Data) (op : CryptoOp), ctx_constant_time ctx = True \<longrightarrow> execution_time ctx Hash input \<le> execution_time ctx op input"
-  by (cases rule: ‹_›.cases; simp)
+lemma hash_fastest_operation: "\<forall>(ctx :: CryptoContext) (input :: Data) (op : CryptoOp). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx Hash input \<le> execution_time ctx op input"
+  by auto
 
 (* Key derivation is the slowest operation *)
 (* key_derive_slowest (matches Coq) *)
-lemma key_derive_slowest: "\<forall> (ctx : CryptoContext) (input : Data) (op : CryptoOp), ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input \<le> execution_time ctx KeyDerive input"
-  by (cases rule: ‹_›.cases; simp)
+lemma key_derive_slowest: "\<forall>(ctx :: CryptoContext) (input :: Data) (op : CryptoOp). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input \<le> execution_time ctx KeyDerive input"
+  by auto
 
 (* Secure key storage is stronger than key protected *)
 (* secure_storage_implies_protected (matches Coq) *)
-lemma secure_storage_implies_protected: "\<forall> (key : CryptoKey) (mem : Memory), secure_key_storage key mem \<longrightarrow> key_protected key mem"
+lemma secure_storage_implies_protected: "\<forall>(key :: CryptoKey) (mem :: Memory). secure_key_storage key mem \<longrightarrow> key_protected key mem"
   by auto
 
 (* Unprotected memory with unwrapped key is dangerous *)
 (* unprotected_key_vulnerable (matches Coq) *)
-lemma unprotected_key_vulnerable: "\<forall> (key : CryptoKey) (mem : Memory), key_wrapped key = False \<longrightarrow> mem_protected mem = False \<longrightarrow> key_in_plaintext key mem"
+lemma unprotected_key_vulnerable: "\<forall>(key :: CryptoKey) (mem :: Memory). key_wrapped key = False \<longrightarrow> mem_protected mem = False \<longrightarrow> key_in_plaintext key mem"
   by auto
 
 (* Wrapping and memory protection are complementary *)
 (* protection_complementary (matches Coq) *)
-lemma protection_complementary: "\<forall> (key : CryptoKey) (mem : Memory), key_wrapped key = True \<or> mem_protected mem = True \<longrightarrow> key_protected key mem"
+lemma protection_complementary: "\<forall>(key :: CryptoKey) (mem :: Memory). key_wrapped key = True \<or> mem_protected mem = True \<longrightarrow> key_protected key mem"
   by auto
 
 (* No protection means potential exposure *)
 (* no_protection_potential_exposure (matches Coq) *)
-lemma no_protection_potential_exposure: "\<forall> (key : CryptoKey) (mem : Memory), ~ key_protected key mem \<longrightarrow> key_in_plaintext key mem"
+lemma no_protection_potential_exposure: "\<forall>(key :: CryptoKey) (mem :: Memory). ~ key_protected key mem \<longrightarrow> key_in_plaintext key mem"
   by auto
 
 (* Constant time context with secure memory is fully hardened *)
 (* fully_hardened_context (matches Coq) *)
-lemma fully_hardened_context: "\<forall> (ctx : CryptoContext), ctx_constant_time ctx = True \<longrightarrow> ctx_secure_memory ctx = True \<longrightarrow> ctx_constant_time ctx = True \<and> ctx_secure_memory ctx = True"
+lemma fully_hardened_context: "\<forall>(ctx :: CryptoContext). ctx_constant_time ctx = True \<longrightarrow> ctx_secure_memory ctx = True \<longrightarrow> ctx_constant_time ctx = True \<and> ctx_secure_memory ctx = True"
   by auto
 
 (* Operation time is positive *)
 (* operation_time_positive (matches Coq) *)
-lemma operation_time_positive: "\<forall> (ctx : CryptoContext) (op : CryptoOp) (input : Data), ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input > 0"
-  by (cases rule: ‹_›.cases; simp)
+lemma operation_time_positive: "\<forall>(ctx :: CryptoContext) (op :: CryptoOp) (input : Data). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input > 0"
+  by auto
 
 (* Different operations may have different times *)
 (* encrypt_faster_than_sign (matches Coq) *)
-lemma encrypt_faster_than_sign: "\<forall> (ctx : CryptoContext) (input : Data), ctx_constant_time ctx = True \<longrightarrow> execution_time ctx Encrypt input < execution_time ctx Sign input"
+lemma encrypt_faster_than_sign: "\<forall>(ctx :: CryptoContext) (input :: Data). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx Encrypt input < execution_time ctx Sign input"
   by simp
 
 (* Execution is deterministic *)
 (* crypto_execution_deterministic (matches Coq) *)
-lemma crypto_execution_deterministic: "\<forall> (ctx : CryptoContext) (op : CryptoOp) (input : Data), execute_crypto ctx op input = execute_crypto ctx op input"
+lemma crypto_execution_deterministic: "\<forall>(ctx :: CryptoContext) (op :: CryptoOp) (input : Data). execute_crypto ctx op input = execute_crypto ctx op input"
   by simp
 
 end

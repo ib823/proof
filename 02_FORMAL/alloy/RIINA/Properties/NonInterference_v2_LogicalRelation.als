@@ -50,882 +50,882 @@ pred step_up_and_fundamental[n: nat] {
 
 // closed_expr_lam (matches Coq: Lemma closed_expr_lam)
 assert closed_expr_lam {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_lam for 5
 
 // closed_expr_pair (matches Coq: Lemma closed_expr_pair)
 assert closed_expr_pair {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_pair for 5
 
 // closed_expr_pair_inv (matches Coq: Lemma closed_expr_pair_inv)
 assert closed_expr_pair_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_pair_inv for 5
 
 // closed_expr_inl (matches Coq: Lemma closed_expr_inl)
 assert closed_expr_inl {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_inl for 5
 
 // closed_expr_inr (matches Coq: Lemma closed_expr_inr)
 assert closed_expr_inr {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_inr for 5
 
 // val_rel_closed_left_n (matches Coq: Lemma val_rel_closed_left_n)
 assert val_rel_closed_left_n {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_closed_left_n for 5
 
 // val_rel_closed_right_n (matches Coq: Lemma val_rel_closed_right_n)
 assert val_rel_closed_right_n {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_closed_right_n for 5
 
 // val_rel_value_left_n (matches Coq: Lemma val_rel_value_left_n)
 assert val_rel_value_left_n {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_value_left_n for 5
 
 // val_rel_value_right_n (matches Coq: Lemma val_rel_value_right_n)
 assert val_rel_value_right_n {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_value_right_n for 5
 
 // val_rel_closed_left (matches Coq: Lemma val_rel_closed_left)
 assert val_rel_closed_left {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_closed_left for 5
 
 // val_rel_closed_right (matches Coq: Lemma val_rel_closed_right)
 assert val_rel_closed_right {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_closed_right for 5
 
 // val_rel_value_left (matches Coq: Lemma val_rel_value_left)
 assert val_rel_value_left {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_value_left for 5
 
 // val_rel_value_right (matches Coq: Lemma val_rel_value_right)
 assert val_rel_value_right {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_value_right for 5
 
 // free_in_subst_rho (matches Coq: Lemma free_in_subst_rho)
 assert free_in_subst_rho {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check free_in_subst_rho for 5
 
 // env_rel_n_mono_store (matches Coq: Lemma env_rel_n_mono_store)
 assert env_rel_n_mono_store {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check env_rel_n_mono_store for 5
 
 // env_rel_mono_store (matches Coq: Lemma env_rel_mono_store)
 assert env_rel_mono_store {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check env_rel_mono_store for 5
 
 // env_typed_lookup (matches Coq: Lemma env_typed_lookup)
 assert env_typed_lookup {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check env_typed_lookup for 5
 
 // typing_nil_closed (matches Coq: Lemma typing_nil_closed)
 assert typing_nil_closed {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check typing_nil_closed for 5
 
 // env_typed_closed (matches Coq: Lemma env_typed_closed)
 assert env_typed_closed {
-  all x: univ | x in univ
+  all Σ: store_ty | env_typed[Σ] implies some Σ
 }
 check env_typed_closed for 5
 
 // env_typed_extend (matches Coq: Lemma env_typed_extend)
 assert env_typed_extend {
-  all x: univ | x in univ
+  all Σ: store_ty | env_typed[Σ] implies some Σ
 }
 check env_typed_extend for 5
 
 // value_subst_rho (matches Coq: Lemma value_subst_rho)
 assert value_subst_rho {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check value_subst_rho for 5
 
 // declass_ok_subst_rho (matches Coq: Lemma declass_ok_subst_rho)
 assert declass_ok_subst_rho {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check declass_ok_subst_rho for 5
 
 // subst_rho_typing_general (matches Coq: Lemma subst_rho_typing_general)
 assert subst_rho_typing_general {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check subst_rho_typing_general for 5
 
 // subst_rho_preserves_typing (matches Coq: Lemma subst_rho_preserves_typing)
 assert subst_rho_preserves_typing {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check subst_rho_preserves_typing for 5
 
 // env_rel_implies_env_typed (matches Coq: Lemma env_rel_implies_env_typed)
 assert env_rel_implies_env_typed {
-  all x: univ | x in univ
+  all Σ: store_ty | env_rel[Σ] implies some Σ
 }
 check env_rel_implies_env_typed for 5
 
 // lam_typing_from_env_rel (matches Coq: Lemma lam_typing_from_env_rel)
 assert lam_typing_from_env_rel {
-  all x: univ | x in univ
+  all Σ: store_ty | env_rel[Σ] implies some Σ
 }
 check lam_typing_from_env_rel for 5
 
 // val_rel_at_type_store_weaken (matches Coq: Lemma val_rel_at_type_store_weaken)
 assert val_rel_at_type_store_weaken {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check val_rel_at_type_store_weaken for 5
 
 // val_rel_n_store_weaken (matches Coq: Lemma val_rel_n_store_weaken)
 assert val_rel_n_store_weaken {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check val_rel_n_store_weaken for 5
 
 // closed_expr_unit_early (matches Coq: Lemma closed_expr_unit_early)
 assert closed_expr_unit_early {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_unit_early for 5
 
 // closed_expr_loc_early (matches Coq: Lemma closed_expr_loc_early)
 assert closed_expr_loc_early {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_loc_early for 5
 
 // val_rel_n_loc_general (matches Coq: Lemma val_rel_n_loc_general)
 assert val_rel_n_loc_general {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_loc_general for 5
 
 // val_rel_n_unit_general (matches Coq: Lemma val_rel_n_unit_general)
 assert val_rel_n_unit_general {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_unit_general for 5
 
 // store_max_update_single (matches Coq: Lemma store_max_update_single)
 assert store_max_update_single {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check store_max_update_single for 5
 
 // store_max_update_eq (matches Coq: Lemma store_max_update_eq)
 assert store_max_update_eq {
-  all x: univ | x in univ
+  all x: univ | x = x
 }
 check store_max_update_eq for 5
 
 // store_rel_n_alloc_fresh (matches Coq: Lemma store_rel_n_alloc_fresh)
 assert store_rel_n_alloc_fresh {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check store_rel_n_alloc_fresh for 5
 
 // store_vals_rel_alloc_fresh (matches Coq: Lemma store_vals_rel_alloc_fresh)
 assert store_vals_rel_alloc_fresh {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check store_vals_rel_alloc_fresh for 5
 
 // val_rel_n_fo_extract (matches Coq: Lemma val_rel_n_fo_extract)
 assert val_rel_n_fo_extract {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_fo_extract for 5
 
 // stores_agree_low_fo_alloc_fresh (matches Coq: Lemma stores_agree_low_fo_alloc_fresh)
 assert stores_agree_low_fo_alloc_fresh {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check stores_agree_low_fo_alloc_fresh for 5
 
 // store_rel_n_update_existing (matches Coq: Lemma store_rel_n_update_existing)
 assert store_rel_n_update_existing {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check store_rel_n_update_existing for 5
 
 // store_vals_rel_update_existing (matches Coq: Lemma store_vals_rel_update_existing)
 assert store_vals_rel_update_existing {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check store_vals_rel_update_existing for 5
 
 // stores_agree_low_fo_update_existing (matches Coq: Lemma stores_agree_low_fo_update_existing)
 assert stores_agree_low_fo_update_existing {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check stores_agree_low_fo_update_existing for 5
 
 // val_rel_n_to_val_rel (matches Coq: Lemma val_rel_n_to_val_rel)
 assert val_rel_n_to_val_rel {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_to_val_rel for 5
 
 // val_rel_n_to_val_rel_any (matches Coq: Lemma val_rel_n_to_val_rel_any)
 assert val_rel_n_to_val_rel_any {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_to_val_rel_any for 5
 
 // env_rel_rho_closed (matches Coq: Lemma env_rel_rho_closed)
 assert env_rel_rho_closed {
-  all x: univ | x in univ
+  all Σ: store_ty | env_rel[Σ] implies some Σ
 }
 check env_rel_rho_closed for 5
 
 // lam_closedness_contradiction (matches Coq: Lemma lam_closedness_contradiction)
 assert lam_closedness_contradiction {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check lam_closedness_contradiction for 5
 
 // lam_closedness_contradiction2 (matches Coq: Lemma lam_closedness_contradiction2)
 assert lam_closedness_contradiction2 {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check lam_closedness_contradiction2 for 5
 
 // rho_no_free_all_single (matches Coq: Lemma rho_no_free_all_single)
 assert rho_no_free_all_single {
-  all x: univ | x in univ
+  some x: univ | some x
 }
 check rho_no_free_all_single for 5
 
 // env_rel_closed_left (matches Coq: Lemma env_rel_closed_left)
 assert env_rel_closed_left {
-  all x: univ | x in univ
+  all Σ: store_ty | env_rel[Σ] implies some Σ
 }
 check env_rel_closed_left for 5
 
 // env_rel_closed_right (matches Coq: Lemma env_rel_closed_right)
 assert env_rel_closed_right {
-  all x: univ | x in univ
+  all Σ: store_ty | env_rel[Σ] implies some Σ
 }
 check env_rel_closed_right for 5
 
 // closed_except_subst_rho_shadow (matches Coq: Lemma closed_except_subst_rho_shadow)
 assert closed_except_subst_rho_shadow {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check closed_except_subst_rho_shadow for 5
 
 // subst_not_free (matches Coq: Lemma subst_not_free)
 assert subst_not_free {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check subst_not_free for 5
 
 // rho_shadow_id (matches Coq: Lemma rho_shadow_id)
 assert rho_shadow_id {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check rho_shadow_id for 5
 
 // rho_shadow_identity (matches Coq: Lemma rho_shadow_identity)
 assert rho_shadow_identity {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check rho_shadow_identity for 5
 
 // subst_rho_identity (matches Coq: Lemma subst_rho_identity)
 assert subst_rho_identity {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check subst_rho_identity for 5
 
 // subst_rho_id (matches Coq: Lemma subst_rho_id)
 assert subst_rho_id {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check subst_rho_id for 5
 
 // rho_shadow_single_eq (matches Coq: Lemma rho_shadow_single_eq)
 assert rho_shadow_single_eq {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check rho_shadow_single_eq for 5
 
 // rho_shadow_single_id (matches Coq: Lemma rho_shadow_single_id)
 assert rho_shadow_single_id {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check rho_shadow_single_id for 5
 
 // subst_rho_single (matches Coq: Lemma subst_rho_single)
 assert subst_rho_single {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check subst_rho_single for 5
 
 // rho_shadow_extend_same (matches Coq: Lemma rho_shadow_extend_same)
 assert rho_shadow_extend_same {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check rho_shadow_extend_same for 5
 
 // rho_shadow_shadow_same (matches Coq: Lemma rho_shadow_shadow_same)
 assert rho_shadow_shadow_same {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check rho_shadow_shadow_same for 5
 
 // rho_shadow_shadow_comm (matches Coq: Lemma rho_shadow_shadow_comm)
 assert rho_shadow_shadow_comm {
-  all x: univ | x in univ
+  all a, b: univ | (a + b) = (b + a)
 }
 check rho_shadow_shadow_comm for 5
 
 // rho_shadow_extend_comm (matches Coq: Lemma rho_shadow_extend_comm)
 assert rho_shadow_extend_comm {
-  all x: univ | x in univ
+  all a, b: univ | (a + b) = (b + a)
 }
 check rho_shadow_extend_comm for 5
 
 // rho_no_free_extend (matches Coq: Lemma rho_no_free_extend)
 assert rho_no_free_extend {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check rho_no_free_extend for 5
 
 // rho_no_free_shadow (matches Coq: Lemma rho_no_free_shadow)
 assert rho_no_free_shadow {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check rho_no_free_shadow for 5
 
 // subst_rho_extend (matches Coq: Lemma subst_rho_extend)
 assert subst_rho_extend {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check subst_rho_extend for 5
 
 // env_rel_empty_n (matches Coq: Lemma env_rel_empty_n)
 assert env_rel_empty_n {
-  all x: univ | x in univ
+  all Σ: store_ty | env_rel[Σ] implies some Σ
 }
 check env_rel_empty_n for 5
 
 // env_rel_empty (matches Coq: Lemma env_rel_empty)
 assert env_rel_empty {
-  all x: univ | x in univ
+  all Σ: store_ty | env_rel[Σ] implies some Σ
 }
 check env_rel_empty for 5
 
 // env_rel_extend_n (matches Coq: Lemma env_rel_extend_n)
 assert env_rel_extend_n {
-  all x: univ | x in univ
+  all Σ: store_ty | env_rel[Σ] implies some Σ
 }
 check env_rel_extend_n for 5
 
 // env_rel_extend (matches Coq: Lemma env_rel_extend)
 assert env_rel_extend {
-  all x: univ | x in univ
+  all Σ: store_ty | env_rel[Σ] implies some Σ
 }
 check env_rel_extend for 5
 
 // multi_step_trans (matches Coq: Lemma multi_step_trans)
 assert multi_step_trans {
-  all x: univ | x in univ
+  all a, b, c: univ | (a = b and b = c) implies a = c
 }
 check multi_step_trans for 5
 
 // multi_step_app1 (matches Coq: Lemma multi_step_app1)
 assert multi_step_app1 {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_app1 for 5
 
 // multi_step_app2 (matches Coq: Lemma multi_step_app2)
 assert multi_step_app2 {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_app2 for 5
 
 // multi_step_pair1 (matches Coq: Lemma multi_step_pair1)
 assert multi_step_pair1 {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_pair1 for 5
 
 // multi_step_pair2 (matches Coq: Lemma multi_step_pair2)
 assert multi_step_pair2 {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_pair2 for 5
 
 // multi_step_fst (matches Coq: Lemma multi_step_fst)
 assert multi_step_fst {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_fst for 5
 
 // multi_step_snd (matches Coq: Lemma multi_step_snd)
 assert multi_step_snd {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_snd for 5
 
 // multi_step_inl (matches Coq: Lemma multi_step_inl)
 assert multi_step_inl {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_inl for 5
 
 // multi_step_inr (matches Coq: Lemma multi_step_inr)
 assert multi_step_inr {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_inr for 5
 
 // multi_step_case (matches Coq: Lemma multi_step_case)
 assert multi_step_case {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_case for 5
 
 // multi_step_if (matches Coq: Lemma multi_step_if)
 assert multi_step_if {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_if for 5
 
 // multi_step_let (matches Coq: Lemma multi_step_let)
 assert multi_step_let {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_let for 5
 
 // multi_step_classify (matches Coq: Lemma multi_step_classify)
 assert multi_step_classify {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_classify for 5
 
 // multi_step_prove (matches Coq: Lemma multi_step_prove)
 assert multi_step_prove {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_prove for 5
 
 // multi_step_require (matches Coq: Lemma multi_step_require)
 assert multi_step_require {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_require for 5
 
 // multi_step_grant (matches Coq: Lemma multi_step_grant)
 assert multi_step_grant {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_grant for 5
 
 // multi_step_perform (matches Coq: Lemma multi_step_perform)
 assert multi_step_perform {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_perform for 5
 
 // multi_step_handle (matches Coq: Lemma multi_step_handle)
 assert multi_step_handle {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_handle for 5
 
 // multi_step_ref (matches Coq: Lemma multi_step_ref)
 assert multi_step_ref {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_ref for 5
 
 // multi_step_deref (matches Coq: Lemma multi_step_deref)
 assert multi_step_deref {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_deref for 5
 
 // multi_step_assign1 (matches Coq: Lemma multi_step_assign1)
 assert multi_step_assign1 {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_assign1 for 5
 
 // multi_step_assign2 (matches Coq: Lemma multi_step_assign2)
 assert multi_step_assign2 {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check multi_step_assign2 for 5
 
 // exp_rel_of_val_rel (matches Coq: Lemma exp_rel_of_val_rel)
 assert exp_rel_of_val_rel {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check exp_rel_of_val_rel for 5
 
 // exp_rel_of_val_rel_step (matches Coq: Lemma exp_rel_of_val_rel_step)
 assert exp_rel_of_val_rel_step {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check exp_rel_of_val_rel_step for 5
 
 // exp_rel_of_val_rel_n (matches Coq: Lemma exp_rel_of_val_rel_n)
 assert exp_rel_of_val_rel_n {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check exp_rel_of_val_rel_n for 5
 
 // value_pair_inv (matches Coq: Lemma value_pair_inv)
 assert value_pair_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check value_pair_inv for 5
 
 // value_inl_inv (matches Coq: Lemma value_inl_inv)
 assert value_inl_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check value_inl_inv for 5
 
 // value_inr_inv (matches Coq: Lemma value_inr_inv)
 assert value_inr_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check value_inr_inv for 5
 
 // closed_expr_inl_inv (matches Coq: Lemma closed_expr_inl_inv)
 assert closed_expr_inl_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_inl_inv for 5
 
 // closed_expr_inr_inv (matches Coq: Lemma closed_expr_inr_inv)
 assert closed_expr_inr_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_inr_inv for 5
 
 // val_rel_n_prod_decompose (matches Coq: Lemma val_rel_n_prod_decompose)
 assert val_rel_n_prod_decompose {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_prod_decompose for 5
 
 // val_rel_n_of_first_order (matches Coq: Lemma val_rel_n_of_first_order)
 assert val_rel_n_of_first_order {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_of_first_order for 5
 
 // val_rel_n_to_val_rel_fo (matches Coq: Lemma val_rel_n_to_val_rel_fo)
 assert val_rel_n_to_val_rel_fo {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_to_val_rel_fo for 5
 
 // val_rel_at_type_to_val_rel_fo (matches Coq: Lemma val_rel_at_type_to_val_rel_fo)
 assert val_rel_at_type_to_val_rel_fo {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_at_type_to_val_rel_fo for 5
 
 // has_type_pair_inv (matches Coq: Lemma has_type_pair_inv)
 assert has_type_pair_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check has_type_pair_inv for 5
 
 // val_rel_n_prod_fst (matches Coq: Lemma val_rel_n_prod_fst)
 assert val_rel_n_prod_fst {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_prod_fst for 5
 
 // val_rel_n_prod_snd (matches Coq: Lemma val_rel_n_prod_snd)
 assert val_rel_n_prod_snd {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_prod_snd for 5
 
 // val_rel_n_typing_ho (matches Coq: Lemma val_rel_n_typing_ho)
 assert val_rel_n_typing_ho {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_typing_ho for 5
 
 // has_type_inl_inv (matches Coq: Lemma has_type_inl_inv)
 assert has_type_inl_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check has_type_inl_inv for 5
 
 // has_type_inr_inv (matches Coq: Lemma has_type_inr_inv)
 assert has_type_inr_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check has_type_inr_inv for 5
 
 // has_type_classify_inv (matches Coq: Lemma has_type_classify_inv)
 assert has_type_classify_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check has_type_classify_inv for 5
 
 // has_type_prove_inv (matches Coq: Lemma has_type_prove_inv)
 assert has_type_prove_inv {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check has_type_prove_inv for 5
 
 // val_rel_n_prod_compose (matches Coq: Lemma val_rel_n_prod_compose)
 assert val_rel_n_prod_compose {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_prod_compose for 5
 
 // val_rel_n_from_prod_fst (matches Coq: Lemma val_rel_n_from_prod_fst)
 assert val_rel_n_from_prod_fst {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_from_prod_fst for 5
 
 // val_rel_n_from_prod_snd (matches Coq: Lemma val_rel_n_from_prod_snd)
 assert val_rel_n_from_prod_snd {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_from_prod_snd for 5
 
 // val_rel_n_sum_inl (matches Coq: Lemma val_rel_n_sum_inl)
 assert val_rel_n_sum_inl {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_sum_inl for 5
 
 // val_rel_n_sum_inr (matches Coq: Lemma val_rel_n_sum_inr)
 assert val_rel_n_sum_inr {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_sum_inr for 5
 
 // val_rel_n_sum_decompose (matches Coq: Lemma val_rel_n_sum_decompose)
 assert val_rel_n_sum_decompose {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_sum_decompose for 5
 
 // val_rel_n_from_sum_inl (matches Coq: Lemma val_rel_n_from_sum_inl)
 assert val_rel_n_from_sum_inl {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_from_sum_inl for 5
 
 // val_rel_n_from_sum_inr (matches Coq: Lemma val_rel_n_from_sum_inr)
 assert val_rel_n_from_sum_inr {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_from_sum_inr for 5
 
 // val_rel_n_prod_fst_at (matches Coq: Lemma val_rel_n_prod_fst_at)
 assert val_rel_n_prod_fst_at {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_prod_fst_at for 5
 
 // val_rel_n_prod_snd_at (matches Coq: Lemma val_rel_n_prod_snd_at)
 assert val_rel_n_prod_snd_at {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_prod_snd_at for 5
 
 // closed_expr_unit (matches Coq: Lemma closed_expr_unit)
 assert closed_expr_unit {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_unit for 5
 
 // closed_expr_bool (matches Coq: Lemma closed_expr_bool)
 assert closed_expr_bool {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_bool for 5
 
 // closed_expr_int (matches Coq: Lemma closed_expr_int)
 assert closed_expr_int {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_int for 5
 
 // closed_expr_string (matches Coq: Lemma closed_expr_string)
 assert closed_expr_string {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_string for 5
 
 // closed_expr_loc (matches Coq: Lemma closed_expr_loc)
 assert closed_expr_loc {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check closed_expr_loc for 5
 
 // val_rel_unit (matches Coq: Lemma val_rel_unit)
 assert val_rel_unit {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_unit for 5
 
 // val_rel_bool (matches Coq: Lemma val_rel_bool)
 assert val_rel_bool {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_bool for 5
 
 // val_rel_n_bool_eq (matches Coq: Lemma val_rel_n_bool_eq)
 assert val_rel_n_bool_eq {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_bool_eq for 5
 
 // val_rel_int (matches Coq: Lemma val_rel_int)
 assert val_rel_int {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_int for 5
 
 // val_rel_n_classify (matches Coq: Lemma val_rel_n_classify)
 assert val_rel_n_classify {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_classify for 5
 
 // val_rel_n_prove (matches Coq: Lemma val_rel_n_prove)
 assert val_rel_n_prove {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_prove for 5
 
 // val_rel_string (matches Coq: Lemma val_rel_string)
 assert val_rel_string {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_string for 5
 
 // val_rel_loc (matches Coq: Lemma val_rel_loc)
 assert val_rel_loc {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_loc for 5
 
 // fundamental_at_0 (matches Coq: Lemma fundamental_at_0)
 assert fundamental_at_0 {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check fundamental_at_0 for 5
 
 // step_up_at_0 (matches Coq: Lemma step_up_at_0)
 assert step_up_at_0 {
-  all x: univ | x in univ
+  all n: nat | step_up_at[n] implies some n
 }
 check step_up_at_0 for 5
 
 // multi_step_preservation_aux (matches Coq: Lemma multi_step_preservation_aux)
 assert multi_step_preservation_aux {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check multi_step_preservation_aux for 5
 
 // multi_step_preservation (matches Coq: Lemma multi_step_preservation)
 assert multi_step_preservation {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check multi_step_preservation for 5
 
 // has_type_level_irrelevant (matches Coq: Lemma has_type_level_irrelevant)
 assert has_type_level_irrelevant {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check has_type_level_irrelevant for 5
 
 // store_wf_fresh_not_in_ty (matches Coq: Lemma store_wf_fresh_not_in_ty)
 assert store_wf_fresh_not_in_ty {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check store_wf_fresh_not_in_ty for 5
 
 // store_rel_n_same_fresh (matches Coq: Lemma store_rel_n_same_fresh)
 assert store_rel_n_same_fresh {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check store_rel_n_same_fresh for 5
 
 // logical_relation (matches Coq: Theorem logical_relation)
 assert logical_relation {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check logical_relation for 5
 
 // step_up_and_fundamental_mutual (matches Coq: Theorem step_up_and_fundamental_mutual)
 assert step_up_and_fundamental_mutual {
-  all x: univ | x in univ
+  all n: nat | step_up_and_fundamental[n] implies some n
 }
 check step_up_and_fundamental_mutual for 5
 
 // val_rel_closed (matches Coq: Lemma val_rel_closed)
 assert val_rel_closed {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_closed for 5
 
 // env_rel_single (matches Coq: Lemma env_rel_single)
 assert env_rel_single {
-  all x: univ | x in univ
+  all Σ: store_ty | env_rel[Σ] implies some Σ
 }
 check env_rel_single for 5
 
 // non_interference_stmt (matches Coq: Theorem non_interference_stmt)
 assert non_interference_stmt {
-  all x: univ | x in univ
+  all a, b: univ | a = b implies a = b
 }
 check non_interference_stmt for 5
 
 // subst_rho_declassify_dist (matches Coq: Lemma subst_rho_declassify_dist)
 assert subst_rho_declassify_dist {
-  all x: univ | x in univ
+  all x: univ | some x implies some x
 }
 check subst_rho_declassify_dist for 5

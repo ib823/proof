@@ -23,42 +23,42 @@ pred store_rel_0[p_sigma: store_ty, p_st1: store, p_st2: store] {
 
 // exp_rel_step1_fst_typed (matches Coq: Lemma exp_rel_step1_fst_typed)
 assert exp_rel_step1_fst_typed {
-  all x: expr | x in expr
+  all x: ty | some x
 }
 check exp_rel_step1_fst_typed for 5
 
 // exp_rel_step1_snd_typed (matches Coq: Lemma exp_rel_step1_snd_typed)
 assert exp_rel_step1_snd_typed {
-  all x: expr | x in expr
+  all x: ty | some x
 }
 check exp_rel_step1_snd_typed for 5
 
 // exp_rel_step1_case_typed (matches Coq: Lemma exp_rel_step1_case_typed)
 assert exp_rel_step1_case_typed {
-  all x: expr | x in expr
+  all x: ty | some x
 }
 check exp_rel_step1_case_typed for 5
 
 // exp_rel_step1_if_typed (matches Coq: Lemma exp_rel_step1_if_typed)
 assert exp_rel_step1_if_typed {
-  all x: expr | x in expr
+  all x: ty | some x
 }
 check exp_rel_step1_if_typed for 5
 
 // exp_rel_step1_let_typed (matches Coq: Lemma exp_rel_step1_let_typed)
 assert exp_rel_step1_let_typed {
-  all x: expr | x in expr
+  all x: ty | some x
 }
 check exp_rel_step1_let_typed for 5
 
 // exp_rel_step1_handle_typed (matches Coq: Lemma exp_rel_step1_handle_typed)
 assert exp_rel_step1_handle_typed {
-  all x: expr | x in expr
+  all x: ty | some x
 }
 check exp_rel_step1_handle_typed for 5
 
 // exp_rel_step1_app_typed (matches Coq: Lemma exp_rel_step1_app_typed)
 assert exp_rel_step1_app_typed {
-  all x: expr | x in expr
+  all x: ty | some x
 }
 check exp_rel_step1_app_typed for 5

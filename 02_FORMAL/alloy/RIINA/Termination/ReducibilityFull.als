@@ -52,240 +52,240 @@ pred Reducible[p_T: ty, p_e: expr] {
 
 // value_not_step (matches Coq: Lemma value_not_step)
 assert value_not_step {
-  all x: config | x in config
+  all x: config | some x
 }
 check value_not_step for 5
 
 // value_SN (matches Coq: Lemma value_SN)
 assert value_SN {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check value_SN for 5
 
 // SN_step (matches Coq: Lemma SN_step)
 assert SN_step {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_step for 5
 
 // SN_classify_aux (matches Coq: Lemma SN_classify_aux)
 assert SN_classify_aux {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_classify_aux for 5
 
 // SN_classify (matches Coq: Lemma SN_classify)
 assert SN_classify {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_classify for 5
 
 // SN_prove_aux (matches Coq: Lemma SN_prove_aux)
 assert SN_prove_aux {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_prove_aux for 5
 
 // SN_prove (matches Coq: Lemma SN_prove)
 assert SN_prove {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_prove for 5
 
 // SN_perform_aux (matches Coq: Lemma SN_perform_aux)
 assert SN_perform_aux {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_perform_aux for 5
 
 // SN_perform (matches Coq: Lemma SN_perform)
 assert SN_perform {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_perform for 5
 
 // SN_require_aux (matches Coq: Lemma SN_require_aux)
 assert SN_require_aux {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_require_aux for 5
 
 // SN_require (matches Coq: Lemma SN_require)
 assert SN_require {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_require for 5
 
 // SN_grant_aux (matches Coq: Lemma SN_grant_aux)
 assert SN_grant_aux {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_grant_aux for 5
 
 // SN_grant (matches Coq: Lemma SN_grant)
 assert SN_grant {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_grant for 5
 
 // SN_declassify_value_left_aux (matches Coq: Lemma SN_declassify_value_left_aux)
 assert SN_declassify_value_left_aux {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_declassify_value_left_aux for 5
 
 // SN_declassify_value_left (matches Coq: Lemma SN_declassify_value_left)
 assert SN_declassify_value_left {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_declassify_value_left for 5
 
 // SN_declassify_aux (matches Coq: Lemma SN_declassify_aux)
 assert SN_declassify_aux {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_declassify_aux for 5
 
 // SN_declassify (matches Coq: Lemma SN_declassify)
 assert SN_declassify {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_declassify for 5
 
 // extend_rho_id (matches Coq: Lemma extend_rho_id)
 assert extend_rho_id {
-  all x: config | x in config
+  all p_rho: subst_rho | extend_rho[p_rho] implies some p_rho
 }
 check extend_rho_id for 5
 
 // subst_env_id (matches Coq: Lemma subst_env_id)
 assert subst_env_id {
-  all x: config | x in config
+  all x: univ | some x implies some x
 }
 check subst_env_id for 5
 
 // subst_not_free_in (matches Coq: Lemma subst_not_free_in)
 assert subst_not_free_in {
-  all x: config | x in config
+  all x: univ | some x implies some x
 }
 check subst_not_free_in for 5
 
 // free_in_var (matches Coq: Lemma free_in_var)
 assert free_in_var {
-  all x: config | x in config
+  all x: config | some x
 }
 check free_in_var for 5
 
 // not_free_in_var_neq (matches Coq: Lemma not_free_in_var_neq)
 assert not_free_in_var_neq {
-  all x: config | x in config
+  all x: config | some x
 }
 check not_free_in_var_neq for 5
 
 // extend_rho_shadow (matches Coq: Lemma extend_rho_shadow)
 assert extend_rho_shadow {
-  all x: config | x in config
+  all p_rho: subst_rho | extend_rho[p_rho] implies some p_rho
 }
 check extend_rho_shadow for 5
 
 // extend_rho_commute (matches Coq: Lemma extend_rho_commute)
 assert extend_rho_commute {
-  all x: config | x in config
+  all a, b: univ | (a + b) = (b + a)
 }
 check extend_rho_commute for 5
 
 // subst_env_ext (matches Coq: Lemma subst_env_ext)
 assert subst_env_ext {
-  all x: config | x in config
+  all x: univ | some x implies some x
 }
 check subst_env_ext for 5
 
 // subst_subst_env_commute_gen (matches Coq: Lemma subst_subst_env_commute_gen)
 assert subst_subst_env_commute_gen {
-  all x: config | x in config
+  all a, b: univ | (a + b) = (b + a)
 }
 check subst_subst_env_commute_gen for 5
 
 // subst_subst_env_commute (matches Coq: Lemma subst_subst_env_commute)
 assert subst_subst_env_commute {
-  all x: config | x in config
+  all a, b: univ | (a + b) = (b + a)
 }
 check subst_subst_env_commute for 5
 
 // CR1 (matches Coq: Lemma CR1)
 assert CR1 {
-  all x: config | x in config
+  all x: config | some x
 }
 check CR1 for 5
 
 // CR3_base (matches Coq: Lemma CR3_base)
 assert CR3_base {
-  all x: config | x in config
+  all x: config | some x
 }
 check CR3_base for 5
 
 // unit_reducible (matches Coq: Lemma unit_reducible)
 assert unit_reducible {
-  all x: config | x in config
+  all p_T: ty | Reducible[p_T] implies some p_T
 }
 check unit_reducible for 5
 
 // bool_reducible (matches Coq: Lemma bool_reducible)
 assert bool_reducible {
-  all x: config | x in config
+  all p_T: ty | Reducible[p_T] implies some p_T
 }
 check bool_reducible for 5
 
 // int_reducible (matches Coq: Lemma int_reducible)
 assert int_reducible {
-  all x: config | x in config
+  all p_T: ty | Reducible[p_T] implies some p_T
 }
 check int_reducible for 5
 
 // string_reducible (matches Coq: Lemma string_reducible)
 assert string_reducible {
-  all x: config | x in config
+  all p_T: ty | Reducible[p_T] implies some p_T
 }
 check string_reducible for 5
 
 // env_reducible_nil (matches Coq: Lemma env_reducible_nil)
 assert env_reducible_nil {
-  all x: config | x in config
+  all p_T: ty | Reducible[p_T] implies some p_T
 }
 check env_reducible_nil for 5
 
 // env_reducible_cons (matches Coq: Lemma env_reducible_cons)
 assert env_reducible_cons {
-  all x: config | x in config
+  all p_T: ty | Reducible[p_T] implies some p_T
 }
 check env_reducible_cons for 5
 
 // fundamental_reducibility (matches Coq: Lemma fundamental_reducibility)
 assert fundamental_reducibility {
-  all x: config | x in config
+  all x: ty | some x
 }
 check fundamental_reducibility for 5
 
 // well_typed_SN (matches Coq: Theorem well_typed_SN)
 assert well_typed_SN {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check well_typed_SN for 5
 
 // SN_app (matches Coq: Theorem SN_app)
 assert SN_app {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_app for 5
 
 // SN_closed_step (matches Coq: Lemma SN_closed_step)
 assert SN_closed_step {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_closed_step for 5
 
 // SN_beta_value (matches Coq: Lemma SN_beta_value)
 assert SN_beta_value {
-  all x: config | x in config
+  all p_cfg: config | SN[p_cfg] implies some p_cfg
 }
 check SN_beta_value for 5

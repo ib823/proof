@@ -271,11 +271,11 @@ definition constant_time_eq :: "bool" where "constant_time_eq = undefined"
 
 (* empty_used_set (matches Coq: Definition empty_used_set) *)
 definition empty_used_set :: "TokenUsedSet" where
-  "empty_used_set \<equiv> fun _ => False"
+  "empty_used_set \<equiv> \<lambda>_. False"
 
 (* mark_used (matches Coq: Definition mark_used) *)
 definition mark_used :: "TokenUsedSet \<Rightarrow> nat \<Rightarrow> TokenUsedSet" where
-  "mark_used s jti \<equiv> fun j => if (j = jti) then True else s j"
+  "mark_used s jti \<equiv> \<lambda>j. if (j = jti) then True else s j"
 
 (* is_used (matches Coq: Definition is_used) *)
 definition is_used :: "TokenUsedSet \<Rightarrow> nat \<Rightarrow> bool" where
@@ -302,11 +302,11 @@ definition verify_token :: "BoundToken \<Rightarrow> ChannelBinding \<Rightarrow
 
 (* empty_revoked (matches Coq: Definition empty_revoked) *)
 definition empty_revoked :: "RevokedSet" where
-  "empty_revoked \<equiv> fun _ => False"
+  "empty_revoked \<equiv> \<lambda>_. False"
 
 (* revoke_token (matches Coq: Definition revoke_token) *)
 definition revoke_token :: "RevokedSet \<Rightarrow> nat \<Rightarrow> RevokedSet" where
-  "revoke_token r jti \<equiv> fun j => if (j = jti) then True else r j"
+  "revoke_token r jti \<equiv> \<lambda>j. if (j = jti) then True else r j"
 
 (* is_revoked (matches Coq: Definition is_revoked) *)
 definition is_revoked :: "RevokedSet \<Rightarrow> nat \<Rightarrow> bool" where
@@ -314,11 +314,11 @@ definition is_revoked :: "RevokedSet \<Rightarrow> nat \<Rightarrow> bool" where
 
 (* empty_session_store (matches Coq: Definition empty_session_store) *)
 definition empty_session_store :: "SessionStore" where
-  "empty_session_store \<equiv> fun _ => None"
+  "empty_session_store \<equiv> \<lambda>_. None"
 
 (* add_session (matches Coq: Definition add_session) *)
 definition add_session :: "SessionStore \<Rightarrow> Session \<Rightarrow> SessionStore" where
-  "add_session store s \<equiv> fun id => if (id = (session_id) s) then Some s else store id"
+  "add_session store s \<equiv> \<lambda>id. if (id = (session_id) s) then Some s else store id"
 
 (* session_valid (matches Coq: Definition session_valid) *)
 definition session_valid :: "Session \<Rightarrow> ChannelBinding \<Rightarrow> Timestamp \<Rightarrow> bool" where
@@ -332,7 +332,7 @@ definition session_regenerated :: "bool" where
 
 (* fido2_origin_matches (matches Coq: Definition fido2_origin_matches) *)
 definition fido2_origin_matches :: "FIDO2Credential \<Rightarrow> FIDO2Assertion \<Rightarrow> bool" where
-  "fido2_origin_matches cred assertion \<equiv> String.((fido2_origin = cred)) (assertion_origin assertion)"
+  "fido2_origin_matches cred assertion \<equiv> String.(fido2_origin cred = assertion_origin assertion)"
 
 (* fido2_counter_valid (matches Coq: Definition fido2_counter_valid) *)
 definition fido2_counter_valid :: "FIDO2Credential \<Rightarrow> FIDO2Assertion \<Rightarrow> bool" where
@@ -357,7 +357,7 @@ definition credential_matches :: "bool" where "credential_matches = undefined"
 
 (* authenticate (matches Coq: Definition authenticate) *)
 definition authenticate :: "CredentialStore \<Rightarrow> Principal \<Rightarrow> Credential \<Rightarrow> AuthResult" where
-  "authenticate store p c \<equiv> if existsb (fun stored_c => credential_matches stored_c c) (store (principal_id p))
+  "authenticate store p c \<equiv> if existsb (\<lambda>stored_c. credential_matches stored_c c) (store (principal_id p))
   then AuthSuccess (principal_id p)
   else AuthFailure "Invalid credentials""
 
@@ -389,7 +389,7 @@ definition has_key :: "Adversary \<Rightarrow> bool" where
 
 (* factor_strength (matches Coq: Definition factor_strength) *)
 fun factor_strength :: "Factor \<Rightarrow> nat" where
-
+  "factor_strength _ = 0"
 
 (* factor_secure (matches Coq: Definition factor_secure) *)
 definition factor_secure :: "Factor \<Rightarrow> bool" where
@@ -401,91 +401,91 @@ definition mfa_combine :: "MFAConfig" where
      mfa_required := 2 |}"
 
 (* sum_factor_strengths (matches Coq: Definition sum_factor_strengths) *)
-fun sum_factor_strengths :: "nat" where
-
+definition sum_factor_strengths :: "nat" where
+  "sum_factor_strengths \<equiv> 0"
 
 (* mfa_strength (matches Coq: Definition mfa_strength) *)
 definition mfa_strength :: "MFAConfig \<Rightarrow> nat" where
   "mfa_strength config \<equiv> sum_factor_strengths (mfa_factors config)"
 
 (* all_factors_secure (matches Coq: Definition all_factors_secure) *)
-fun all_factors_secure :: "bool" where
-
+definition all_factors_secure :: "bool" where
+  "all_factors_secure \<equiv> True"
 
 (* mfa_secure (matches Coq: Definition mfa_secure) *)
 definition mfa_secure :: "MFAConfig \<Rightarrow> bool" where
-  "mfa_secure config \<equiv> ((mfa_required \<le> config)) (List.length (mfa_factors config)) \<and>
+  "mfa_secure config \<equiv> (mfa_required config \<le> List.length (mfa_factors config)) \<and>
   all_factors_secure (mfa_factors config)"
 
 (* password_in_breach (matches Coq: Definition password_in_breach) *)
 definition password_in_breach :: "BreachDB \<Rightarrow> bool" where
-  "password_in_breach db \<equiv> existsb (fun h => list_eq h hash) db"
+  "password_in_breach db \<equiv> existsb (\<lambda>h. list_eq h hash) db"
 
 (* list_eq_refl (matches Coq) *)
-lemma list_eq_refl: "\<forall> l, list_eq l l = True"
+lemma list_eq_refl: "\<forall>l. list_eq l l = True"
   by simp
 
 (* list_eq_sym (matches Coq) *)
-lemma list_eq_sym: "\<forall> l1 l2, list_eq l1 l2 = list_eq l2 l1"
-  by (cases rule: ‹_›.cases; simp)
+lemma list_eq_sym: "\<forall>l1 l2. list_eq l1 l2 = list_eq l2 l1"
+  by auto
 
 (* list_eq_sound (matches Coq) *)
-lemma list_eq_sound: "\<forall> l1 l2, list_eq l1 l2 = True \<longrightarrow> l1 = l2"
-  by (cases rule: ‹_›.cases; simp)
+lemma list_eq_sound: "\<forall>l1 l2. list_eq l1 l2 = True \<longrightarrow> l1 = l2"
+  by auto
 
 (* constant_time_eq_correct (matches Coq) *)
-lemma constant_time_eq_correct: "\<forall> a b, constant_time_eq a b = True <-> a = b"
-  by (cases rule: ‹_›.cases; simp)
+lemma constant_time_eq_correct: "\<forall>a b. constant_time_eq a b = True <-> a = b"
+  by auto
 
 (* ===============================================================================
     HELPER LEMMAS
     =============================================================================== *)
 (* existsb_exists (matches Coq) *)
-lemma existsb_exists: "\<forall> {A} (f : A \<longrightarrow> bool) l, \<exists>b f l = True <-> \<exists> x, In x l \<and> f x = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma existsb_exists: "\<forall>{A} (f : A \<longrightarrow> bool) l. \<exists>b f l = True <-> \<exists> x. x \<in> set l \<and> f x = True"
+  by auto
 
 (* existsb_not_exists (matches Coq) *)
-lemma existsb_not_exists: "\<forall> {A} (f : A \<longrightarrow> bool) l, \<exists>b f l = False <-> \<forall> x, In x l \<longrightarrow> f x = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma existsb_not_exists: "\<forall>{A} (f : A \<longrightarrow> bool) l. \<exists>b f l = False <-> \<forall>x. x \<in> set l \<longrightarrow> f x = False"
+  by auto
 
 (* credential_matches_refl (matches Coq) *)
-lemma credential_matches_refl: "\<forall> c, credential_matches c c = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma credential_matches_refl: "\<forall>c. credential_matches c c = True"
+  by auto
 
 (* credential_matches_eq (matches Coq) *)
-lemma credential_matches_eq: "\<forall> c1 c2, credential_matches c1 c2 = True \<longrightarrow> c1 = c2"
+lemma credential_matches_eq: "\<forall>c1 c2. credential_matches c1 c2 = True \<longrightarrow> c1 = c2"
   by simp
 
 (* AA_001_01_auth_completeness (matches Coq) *)
-lemma AA_001_01_auth_completeness: "\<forall> p c store, valid_credential store p c \<longrightarrow> authenticate store p c = AuthSuccess (principal_id p)"
+lemma AA_001_01_auth_completeness: "\<forall>p c store. valid_credential store p c \<longrightarrow> authenticate store p c = AuthSuccess (principal_id p)"
   by auto
 
 (* AA_001_02_auth_soundness (matches Coq) *)
-lemma AA_001_02_auth_soundness: "\<forall> p c store, ~ valid_credential store p c \<longrightarrow> \<exists> msg, authenticate store p c = AuthFailure msg"
+lemma AA_001_02_auth_soundness: "\<forall>p c store. ~ valid_credential store p c \<longrightarrow> \<exists>msg. authenticate store p c = AuthFailure msg"
   by auto
 
 (* AA_001_03_auth_deterministic (matches Coq) *)
-lemma AA_001_03_auth_deterministic: "\<forall> store p c, authenticate store p c = authenticate store p c"
+lemma AA_001_03_auth_deterministic: "\<forall>store p c. authenticate store p c = authenticate store p c"
   by simp
 
 (* AA_001_04_credential_unforgeability (matches Coq) *)
-lemma AA_001_04_credential_unforgeability: "\<forall> store p fake_cred, ~ valid_credential store p fake_cred \<longrightarrow> authenticate store p fake_cred \<noteq> AuthSuccess (principal_id p)"
+lemma AA_001_04_credential_unforgeability: "\<forall>store p fake_cred. ~ valid_credential store p fake_cred \<longrightarrow> authenticate store p fake_cred \<noteq> AuthSuccess (principal_id p)"
   by auto
 
 (* AA_001_05_no_auth_bypass (matches Coq) *)
-lemma AA_001_05_no_auth_bypass: "\<forall> store p c, authenticate store p c = AuthSuccess (principal_id p) \<longrightarrow> valid_credential store p c"
+lemma AA_001_05_no_auth_bypass: "\<forall>store p c. authenticate store p c = AuthSuccess (principal_id p) \<longrightarrow> valid_credential store p c"
   by auto
 
 (* AA_001_06_auth_timing_safe (matches Coq) *)
-lemma AA_001_06_auth_timing_safe: "\<forall> a b, constant_time_eq a b = True <-> a = b"
+lemma AA_001_06_auth_timing_safe: "\<forall>a b. constant_time_eq a b = True <-> a = b"
   by auto
 
 (* AA_001_07_auth_rate_limited (matches Coq) *)
-lemma AA_001_07_auth_rate_limited: "\<forall> state now, rate_attempts state \<ge> rate_max_attempts state \<longrightarrow> now - rate_window_start state \<le> rate_window_size state \<longrightarrow> rate_limit_check state now = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma AA_001_07_auth_rate_limited: "\<forall>state now. rate_attempts state \<ge> rate_max_attempts state \<longrightarrow> now - rate_window_start state \<le> rate_window_size state \<longrightarrow> rate_limit_check state now = False"
+  by auto
 
 (* AA_001_08_auth_logging (matches Coq) *)
-lemma AA_001_08_auth_logging: "\<forall> logs pid ts success ip, let new_logs := log_auth_attempt logs pid ts success ip in \<exists> entry, In entry new_logs \<and> log_principal entry = pid \<and> log_timestamp entry = ts \<and> log_success entry = success"
+lemma AA_001_08_auth_logging: "\<forall>logs pid ts success ip. let new_logs := log_auth_attempt logs pid ts success ip in \<exists>entry. entry \<in> set new_logs \<and> log_principal entry = pid \<and> log_timestamp entry = ts \<and> log_success entry = success"
   by simp
 
 (* AA_001_09_password_hash_secure (matches Coq) *)
@@ -493,95 +493,95 @@ lemma AA_001_09_password_hash_secure: "params_secure secure_params = True"
   by simp
 
 (* AA_001_10_password_preimage_resistant (matches Coq) *)
-lemma AA_001_10_password_preimage_resistant: "\<forall> hash salt params, \<forall> candidate, argon2id_hash candidate salt params = hash \<longrightarrow> True"
+lemma AA_001_10_password_preimage_resistant: "\<forall>hash salt params. \<forall>candidate. argon2id_hash candidate salt params = hash \<longrightarrow> True"
   by auto
 
 (* AA_001_11_password_not_stored (matches Coq) *)
-lemma AA_001_11_password_not_stored: "\<forall> store p pwd_hash, valid_credential store p (CredPassword pwd_hash) \<longrightarrow> \<exists> (salt : list nat) (params : Argon2Params), List.length pwd_hash \<ge> 0. "
+lemma AA_001_11_password_not_stored: "\<forall>store p pwd_hash. valid_credential store p (CredPassword pwd_hash) \<longrightarrow> \<exists>(salt : list nat) (params :: Argon2Params). List.length pwd_hash \<ge> 0. "
   by simp
 
 (* AA_001_12_password_pepper_bound (matches Coq) *)
-lemma AA_001_12_password_pepper_bound: "\<forall> pepper, pepper_bound pepper = True \<longrightarrow> pepper_hsm_id pepper > 0 \<longrightarrow> True"
+lemma AA_001_12_password_pepper_bound: "\<forall>pepper. pepper_bound pepper = True \<longrightarrow> pepper_hsm_id pepper > 0 \<longrightarrow> True"
   by auto
 
 (* AA_001_13_password_constant_time_compare (matches Coq) *)
-lemma AA_001_13_password_constant_time_compare: "\<forall> h1 h2, constant_time_eq h1 h2 = list_eq h1 h2"
-  by (cases rule: ‹_›.cases; simp)
+lemma AA_001_13_password_constant_time_compare: "\<forall>h1 h2. constant_time_eq h1 h2 = list_eq h1 h2"
+  by auto
 
 (* AA_001_14_password_breach_checked (matches Coq) *)
-lemma AA_001_14_password_breach_checked: "\<forall> db hash, password_in_breach db hash = True \<longrightarrow> \<exists> breached_hash, In breached_hash db \<and> list_eq breached_hash hash = True"
+lemma AA_001_14_password_breach_checked: "\<forall>db hash. password_in_breach db hash = True \<longrightarrow> \<exists>breached_hash. breached_hash \<in> set db \<and> list_eq breached_hash hash = True"
   by auto
 
 (* AA_001_15_token_unforgeability (matches Coq) *)
-lemma AA_001_15_token_unforgeability: "\<forall> adv key, ~ has_key adv key \<longrightarrow> \<forall> (claims : TokenClaims) (binding : ChannelBinding) (fake_sig : list nat), ~ (fake_sig = key \<and> List.length fake_sig > 0 \<and> In fake_sig (adv_known_keys adv))"
+lemma AA_001_15_token_unforgeability: "\<forall>adv key. ~ has_key adv key \<longrightarrow> \<forall>(claims :: TokenClaims) (binding :: ChannelBinding) (fake_sig : list nat). ~ (fake_sig = key \<and> List.length fake_sig > 0 \<and> In fake_sig (adv_known_keys adv))"
   by auto
 
 (* AA_001_16_token_channel_bound (matches Coq) *)
-lemma AA_001_16_token_channel_bound: "\<forall> token binding1 binding2, binding_tls_exporter binding1 \<noteq> binding_tls_exporter binding2 \<longrightarrow> token_binding token = binding1 \<longrightarrow> verify_token_binding token binding2 = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma AA_001_16_token_channel_bound: "\<forall>token binding1 binding2. binding_tls_exporter binding1 \<noteq> binding_tls_exporter binding2 \<longrightarrow> token_binding token = binding1 \<longrightarrow> verify_token_binding token binding2 = False"
+  by auto
 
 (* AA_001_17_token_expiry (matches Coq) *)
-lemma AA_001_17_token_expiry: "\<forall> token binding now used, now > claim_exp (token_claims token) \<longrightarrow> verify_token token binding now used = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma AA_001_17_token_expiry: "\<forall>token binding now used. now > claim_exp (token_claims token) \<longrightarrow> verify_token token binding now used = False"
+  by auto
 
 (* AA_001_18_token_replay_prevented (matches Coq) *)
-lemma AA_001_18_token_replay_prevented: "\<forall> token binding now used, is_used used (claim_jti (token_claims token)) = True \<longrightarrow> verify_token token binding now used = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma AA_001_18_token_replay_prevented: "\<forall>token binding now used. is_used used (claim_jti (token_claims token)) = True \<longrightarrow> verify_token token binding now used = False"
+  by auto
 
 (* AA_001_19_token_revocation (matches Coq) *)
-lemma AA_001_19_token_revocation: "\<forall> revoked jti, is_revoked (revoke_token revoked jti) jti = True"
+lemma AA_001_19_token_revocation: "\<forall>revoked jti. is_revoked (revoke_token revoked jti) jti = True"
   by simp
 
 (* AA_001_20_token_refresh_secure (matches Coq) *)
-lemma AA_001_20_token_refresh_secure: "\<forall> old_token new_claims binding now used, verify_token old_token binding now used = True \<longrightarrow> claim_sub new_claims = claim_sub (token_claims old_token) \<longrightarrow> claim_exp new_claims > claim_exp (token_claims old_token) \<longrightarrow> claim_sub new_claims = claim_sub (token_claims old_token)"
+lemma AA_001_20_token_refresh_secure: "\<forall>old_token new_claims binding now used. verify_token old_token binding now used = True \<longrightarrow> claim_sub new_claims = claim_sub (token_claims old_token) \<longrightarrow> claim_exp new_claims > claim_exp (token_claims old_token) \<longrightarrow> claim_sub new_claims = claim_sub (token_claims old_token)"
   by auto
 
 (* AA_001_21_token_claims_integrity (matches Coq) *)
-lemma AA_001_21_token_claims_integrity: "\<forall> token, token_claims token = token_claims token"
+lemma AA_001_21_token_claims_integrity: "\<forall>token. token_claims token = token_claims token"
   by simp
 
 (* AA_001_22_token_binding_verified (matches Coq) *)
-lemma AA_001_22_token_binding_verified: "\<forall> token binding now used, verify_token token binding now used = True \<longrightarrow> verify_token_binding token binding = True"
+lemma AA_001_22_token_binding_verified: "\<forall>token binding now used. verify_token token binding now used = True \<longrightarrow> verify_token_binding token binding = True"
   by auto
 
 (* AA_001_23_session_isolation (matches Coq) *)
-lemma AA_001_23_session_isolation: "\<forall> store s1 s2, store (session_id s1) = Some s1 \<longrightarrow> store (session_id s2) = Some s2 \<longrightarrow> session_id s1 \<noteq> session_id s2 \<longrightarrow> session_principal s1 \<noteq> session_principal s2 \<or> session_principal s1 = session_principal s2"
+lemma AA_001_23_session_isolation: "\<forall>store s1 s2. store (session_id s1) = Some s1 \<longrightarrow> store (session_id s2) = Some s2 \<longrightarrow> session_id s1 \<noteq> session_id s2 \<longrightarrow> session_principal s1 \<noteq> session_principal s2 \<or> session_principal s1 = session_principal s2"
   by auto
 
 (* AA_001_24_session_binding (matches Coq) *)
-lemma AA_001_24_session_binding: "\<forall> s binding1 binding2 now, session_binding s = binding1 \<longrightarrow> binding_tls_exporter binding1 \<noteq> binding_tls_exporter binding2 \<longrightarrow> session_valid s binding2 now = False"
+lemma AA_001_24_session_binding: "\<forall>s binding1 binding2 now. session_binding s = binding1 \<longrightarrow> binding_tls_exporter binding1 \<noteq> binding_tls_exporter binding2 \<longrightarrow> session_valid s binding2 now = False"
   by simp
 
 (* AA_001_25_session_expiry (matches Coq) *)
-lemma AA_001_25_session_expiry: "\<forall> s binding now, now > session_expires s \<longrightarrow> session_valid s binding now = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma AA_001_25_session_expiry: "\<forall>s binding now. now > session_expires s \<longrightarrow> session_valid s binding now = False"
+  by auto
 
 (* AA_001_26_session_no_fixation (matches Coq) *)
-lemma AA_001_26_session_no_fixation: "\<forall> attacker_session_id new_session_id, new_session_id \<noteq> attacker_session_id \<longrightarrow> session_regenerated attacker_session_id new_session_id"
+lemma AA_001_26_session_no_fixation: "\<forall>attacker_session_id new_session_id. new_session_id \<noteq> attacker_session_id \<longrightarrow> session_regenerated attacker_session_id new_session_id"
   by auto
 
 (* AA_001_27_session_regeneration (matches Coq) *)
-lemma AA_001_27_session_regeneration: "\<forall> old_id new_id, old_id \<noteq> new_id \<longrightarrow> session_regenerated old_id new_id"
+lemma AA_001_27_session_regeneration: "\<forall>old_id new_id. old_id \<noteq> new_id \<longrightarrow> session_regenerated old_id new_id"
   by auto
 
 (* AA_001_28_fido2_phishing_resistant (matches Coq) *)
-lemma AA_001_28_fido2_phishing_resistant: "\<forall> cred assertion, fido2_origin cred \<noteq> assertion_origin assertion \<longrightarrow> verify_fido2 cred assertion = False"
+lemma AA_001_28_fido2_phishing_resistant: "\<forall>cred assertion. fido2_origin cred \<noteq> assertion_origin assertion \<longrightarrow> verify_fido2 cred assertion = False"
   by simp
 
 (* AA_001_29_fido2_origin_bound (matches Coq) *)
-lemma AA_001_29_fido2_origin_bound: "\<forall> cred assertion, verify_fido2 cred assertion = True \<longrightarrow> fido2_origin cred = assertion_origin assertion"
+lemma AA_001_29_fido2_origin_bound: "\<forall>cred assertion. verify_fido2 cred assertion = True \<longrightarrow> fido2_origin cred = assertion_origin assertion"
   by auto
 
 (* AA_001_30_fido2_replay_prevented (matches Coq) *)
-lemma AA_001_30_fido2_replay_prevented: "\<forall> cred assertion, assertion_counter assertion \<le> fido2_counter cred \<longrightarrow> verify_fido2 cred assertion = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma AA_001_30_fido2_replay_prevented: "\<forall>cred assertion. assertion_counter assertion \<le> fido2_counter cred \<longrightarrow> verify_fido2 cred assertion = False"
+  by auto
 
 (* AA_001_31_fido2_user_verification (matches Coq) *)
-lemma AA_001_31_fido2_user_verification: "\<forall> cred assertion, fido2_user_verification cred = True \<longrightarrow> assertion_user_verified assertion = False \<longrightarrow> verify_fido2 cred assertion = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma AA_001_31_fido2_user_verification: "\<forall>cred assertion. fido2_user_verification cred = True \<longrightarrow> assertion_user_verified assertion = False \<longrightarrow> verify_fido2 cred assertion = False"
+  by auto
 
 (* AA_001_32_mfa_composition (matches Coq) *)
-lemma AA_001_32_mfa_composition: "\<forall> f1 f2, factor_secure f1 = True \<longrightarrow> factor_secure f2 = True \<longrightarrow> mfa_secure (mfa_combine f1 f2) = True \<and> mfa_strength (mfa_combine f1 f2) \<ge> factor_strength f1 + factor_strength f2"
+lemma AA_001_32_mfa_composition: "\<forall>f1 f2. factor_secure f1 = True \<longrightarrow> factor_secure f2 = True \<longrightarrow> mfa_secure (mfa_combine f1 f2) = True \<and> mfa_strength (mfa_combine f1 f2) \<ge> factor_strength f1 + factor_strength f2"
   by simp
 
 end

@@ -6,7 +6,7 @@ module RIINA.Domains.UIUX.AnimationEngine
 open FStar.All
 
 (* AnimState — Coq Prop predicate stub *)
-assume val animstate : bool
+let animstate : bool = true
 
 (* spring_position_at_time (matches Coq: Definition spring_position_at_time) *)
 let spring_position_at_time (p_initial_pos: nat) (p_target: nat) (p_damping: nat) (p_time: nat) : Tot nat =

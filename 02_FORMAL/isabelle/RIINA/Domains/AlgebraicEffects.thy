@@ -116,11 +116,11 @@ definition effectOp_eqb :: "bool" where "effectOp_eqb = undefined"
 
 (* in_row (matches Coq: Definition in_row) *)
 definition in_row :: "EffectOp \<Rightarrow> EffectRow \<Rightarrow> bool" where
-  "in_row op row \<equiv> existsb (fun o => effectOp_eqb op o) row"
+  "in_row op row \<equiv> existsb (\<lambda>o. effectOp_eqb op o) row"
 
 (* row_subset (matches Coq: Definition row_subset) *)
 definition row_subset :: "bool" where
-  "row_subset \<equiv> forallb (fun op => in_row op r2) r1"
+  "row_subset \<equiv> forallb (\<lambda>op. in_row op r2) r1"
 
 (* row_union (matches Coq: Definition row_union) *)
 definition row_union :: "EffectRow" where
@@ -136,11 +136,11 @@ definition empty_row :: "EffectRow" where
 
 (* getBaseTy (matches Coq: Definition getBaseTy) *)
 fun getBaseTy :: "CompTy \<Rightarrow> BaseTy" where
-
+  "getBaseTy _ = undefined"
 
 (* getEffectRow (matches Coq: Definition getEffectRow) *)
 fun getEffectRow :: "CompTy \<Rightarrow> EffectRow" where
-
+  "getEffectRow _ = undefined"
 
 (* opSignature (matches Coq: Definition opSignature) *)
 fun opSignature :: "EffectOp \<Rightarrow> OpSig" where
@@ -153,7 +153,7 @@ fun opSignature :: "EffectOp \<Rightarrow> OpSig" where
 
 (* handler_effects (matches Coq: Definition handler_effects) *)
 fun handler_effects :: "Handler \<Rightarrow> EffectRow" where
-
+  "handler_effects _ = undefined"
 
 (* sig_wellformed (matches Coq: Definition sig_wellformed) *)
 definition sig_wellformed :: "EffectSig \<Rightarrow> bool" where
@@ -161,7 +161,7 @@ definition sig_wellformed :: "EffectSig \<Rightarrow> bool" where
 
 (* row_minus (matches Coq: Definition row_minus) *)
 definition row_minus :: "EffectRow \<Rightarrow> EffectRow \<Rightarrow> EffectRow" where
-  "row_minus r handled \<equiv> filter (fun op => (\<not> (in_row) op handled)) r"
+  "row_minus r handled \<equiv> filter (\<lambda>op. (\<not> (in_row) op handled)) r"
 
 (* plug (matches Coq: Definition plug) *)
 fun plug :: "EvalCtx \<Rightarrow> Comp \<Rightarrow> Comp" where
@@ -173,11 +173,11 @@ fun is_return :: "Comp \<Rightarrow> option Val" where
 
 (* count_continuation_uses (matches Coq: Definition count_continuation_uses) *)
 fun count_continuation_uses :: "Comp \<Rightarrow> nat" where
-
+  "count_continuation_uses _ = 0"
 
 (* compose_handlers (matches Coq: Definition compose_handlers) *)
-fun compose_handlers :: "Handler" where
-
+definition compose_handlers :: "Handler" where
+  "compose_handlers \<equiv> undefined"
 
 (* effect_polymorphic_fn (matches Coq: Definition effect_polymorphic_fn) *)
 definition effect_polymorphic_fn :: "bool" where
@@ -189,102 +189,102 @@ definition effect_polymorphic_fn :: "bool" where
 definition all_effects_handled :: "Comp \<Rightarrow> EffectRow \<Rightarrow> bool" where
   "all_effects_handled c handled \<equiv> forall op v,
     c = CPerform op v ->
-    In op handled"
+    op \<in> set handled"
 
 (* respects_effects (matches Coq: Definition respects_effects) *)
 definition respects_effects :: "bool" where
   "respects_effects \<equiv> forall c t sig,
     comp_has_type c (CTyEff t sig) ->
     exists sig',
-      comp_has_type (f c) (CTyEff t sig') /\
+      comp_has_type (f c) (CTyEff t sig') \<and>
       incl sig' sig"
 
 (* effectOp_eqb_eq (matches Coq) *)
-lemma effectOp_eqb_eq: "\<forall> o1 o2, effectOp_eqb o1 o2 = True <-> o1 = o2"
-  by (cases rule: ‹_›.cases; simp)
+lemma effectOp_eqb_eq: "\<forall>o1 o2. effectOp_eqb o1 o2 = True <-> o1 = o2"
+  by auto
 
 (* effectOp_eqb_refl (matches Coq) *)
-lemma effectOp_eqb_refl: "\<forall> o, effectOp_eqb o o = True"
+lemma effectOp_eqb_refl: "\<forall>o. effectOp_eqb o o = True"
   by simp
 
 (* in_row_In (matches Coq) *)
-lemma in_row_In: "\<forall> op row, in_row op row = True <-> In op row"
+lemma in_row_In: "\<forall>op row. in_row op row = True <-> op \<in> set row"
   by auto
 
 (* row_subset_incl (matches Coq) *)
-lemma row_subset_incl: "\<forall> r1 r2, row_subset r1 r2 = True <-> incl r1 r2"
+lemma row_subset_incl: "\<forall>r1 r2. row_subset r1 r2 = True <-> incl r1 r2"
   by auto
 
 (* row_minus_spec (matches Coq) *)
-lemma row_minus_spec: "\<forall> r handled op, In op (row_minus r handled) <-> In op r \<and> ~In op handled"
+lemma row_minus_spec: "\<forall>r handled op. In op (row_minus r handled) <-> op \<in> set r \<and> ~op \<in> set handled"
   by auto
 
 (* EFF_001_01_effect_signature_wellformedness (matches Coq) *)
-lemma EFF_001_01_effect_signature_wellformedness: "\<forall> (sig : EffectSig), sig_wellformed sig \<longrightarrow> \<forall> op1 op2 i j, nth_error sig i = Some op1 \<longrightarrow> nth_error sig j = Some op2 \<longrightarrow> op1 = op2 \<longrightarrow> i = j"
+lemma EFF_001_01_effect_signature_wellformedness: "\<forall>(sig :: EffectSig). sig_wellformed sig \<longrightarrow> \<forall>op1 op2 i j. nth_error sig i = Some op1 \<longrightarrow> nth_error sig j = Some op2 \<longrightarrow> op1 = op2 \<longrightarrow> i = j"
   by simp
 
 (* EFF_001_02_operation_typing (matches Coq) *)
-lemma EFF_001_02_operation_typing: "\<forall> (op : EffectOp) (v : Val) (sig : EffectSig), val_has_type v (opInputTy (opSignature op)) \<longrightarrow> In op sig \<longrightarrow> comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig)"
+lemma EFF_001_02_operation_typing: "\<forall>(op :: EffectOp) (v :: Val) (sig : EffectSig). val_has_type v (opInputTy (opSignature op)) \<longrightarrow> op \<in> set sig \<longrightarrow> comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig)"
   by auto
 
 (* EFF_001_03_handler_typing (matches Coq) *)
-lemma EFF_001_03_handler_typing: "\<forall> (h : Handler) (c : Comp) (t : BaseTy) (sig sig' : EffectRow), comp_has_type c (CTyEff t sig) \<longrightarrow> handler_has_type h sig t sig' \<longrightarrow> comp_has_type (CHandle c h) (CTyEff t sig')"
+lemma EFF_001_03_handler_typing: "\<forall>(h :: Handler) (c :: Comp) (t : BaseTy) (sig sig' : EffectRow). comp_has_type c (CTyEff t sig) \<longrightarrow> handler_has_type h sig t sig' \<longrightarrow> comp_has_type (CHandle c h) (CTyEff t sig')"
   by auto
 
 (* EFF_001_04_effect_row_combination (matches Coq) *)
-lemma EFF_001_04_effect_row_combination: "\<forall> (r1 r2 : EffectRow), sig_wellformed r1 \<longrightarrow> sig_wellformed r2 \<longrightarrow> (\<forall> op, In op r1 \<longrightarrow> ~In op r2) \<longrightarrow> sig_wellformed (row_union r1 r2)"
+lemma EFF_001_04_effect_row_combination: "\<forall>(r1 r2 : EffectRow). sig_wellformed r1 \<longrightarrow> sig_wellformed r2 \<longrightarrow> (\<forall>op. op \<in> set r1 \<longrightarrow> ~op \<in> set r2) \<longrightarrow> sig_wellformed (row_union r1 r2)"
   by auto
 
 (* EFF_001_05_effect_subsumption (matches Coq) *)
-lemma EFF_001_05_effect_subsumption: "\<forall> (op : EffectOp) (v : Val) (sig sig' : EffectRow), comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig) \<longrightarrow> incl sig sig' \<longrightarrow> comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig')"
+lemma EFF_001_05_effect_subsumption: "\<forall>(op :: EffectOp) (v :: Val) (sig sig' : EffectRow). comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig) \<longrightarrow> incl sig sig' \<longrightarrow> comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig')"
   by auto
 
 (* EFF_001_06_pure_computation (matches Coq) *)
-lemma EFF_001_06_pure_computation: "\<forall> (c : Comp) (t : BaseTy), comp_has_type c (CTyPure t) \<longrightarrow> is_pure c"
+lemma EFF_001_06_pure_computation: "\<forall>(c :: Comp) (t :: BaseTy). comp_has_type c (CTyPure t) \<longrightarrow> is_pure c"
   by auto
 
 (* compose_handlers_effects (matches Coq) *)
-lemma compose_handlers_effects: "\<forall> h1 h2, handler_effects (compose_handlers h1 h2) = handler_effects h1 ++ handler_effects h2"
+lemma compose_handlers_effects: "\<forall>h1 h2. handler_effects (compose_handlers h1 h2) = handler_effects h1 ++ handler_effects h2"
   by simp
 
 (* EFF_001_07_handler_composition (matches Coq) *)
-lemma EFF_001_07_handler_composition: "\<forall> (h1 h2 : Handler) (t : BaseTy) (sig : EffectRow), handler_has_type h1 (handler_effects h1) t sig \<longrightarrow> handler_has_type h2 (handler_effects h2) t sig \<longrightarrow> (\<forall> op, In op (handler_effects h1) \<longrightarrow> ~In op (handler_effects h2)) \<longrightarrow> handler_has_type (compose_handlers h1 h2) (handler_effects h1 ++ handler_effects h2) t sig"
+lemma EFF_001_07_handler_composition: "\<forall>(h1 h2 : Handler) (t :: BaseTy) (sig : EffectRow). handler_has_type h1 (handler_effects h1) t sig \<longrightarrow> handler_has_type h2 (handler_effects h2) t sig \<longrightarrow> (\<forall>op. In op (handler_effects h1) \<longrightarrow> ~In op (handler_effects h2)) \<longrightarrow> handler_has_type (compose_handlers h1 h2) (handler_effects h1 ++ handler_effects h2) t sig"
   by auto
 
 (* EFF_001_08_effect_polymorphism (matches Coq) *)
-lemma EFF_001_08_effect_polymorphism: "\<forall> (f : \<forall> sig, Comp \<longrightarrow> Comp), (\<forall> sig c, f sig c = c) \<longrightarrow> effect_polymorphic_fn f"
+lemma EFF_001_08_effect_polymorphism: "\<forall>(f : \<forall> sig. Comp \<longrightarrow> Comp), (\<forall>sig c. f sig c = c) \<longrightarrow> effect_polymorphic_fn f"
   by auto
 
 (* EFF_001_09_deep_handler_semantics (matches Coq) *)
-lemma EFF_001_09_deep_handler_semantics: "\<forall> (op : EffectOp) (v : Val) (f : Val \<longrightarrow> (Val \<longrightarrow> Comp) \<longrightarrow> Comp) (h : Handler), deep_step (CHandle (CPerform op v) (HOp op f h)) (f v (fun r => CHandle (CReturn r) (HOp op f h)))"
+lemma EFF_001_09_deep_handler_semantics: "\<forall>(op :: EffectOp) (v :: Val) (f : Val \<longrightarrow> (Val \<longrightarrow> Comp) \<longrightarrow> Comp) (h :: Handler). deep_step (CHandle (CPerform op v) (HOp op f h)) (f v (\<lambda>r. CHandle (CReturn r) (HOp op f h)))"
   by auto
 
 (* EFF_001_10_shallow_handler_semantics (matches Coq) *)
-lemma EFF_001_10_shallow_handler_semantics: "\<forall> (op : EffectOp) (v : Val) (f : Val \<longrightarrow> (Val \<longrightarrow> Comp) \<longrightarrow> Comp) (h : Handler), shallow_step (CHandle (CPerform op v) (HOp op f h)) (f v (fun r => CReturn r))"
+lemma EFF_001_10_shallow_handler_semantics: "\<forall>(op :: EffectOp) (v :: Val) (f : Val \<longrightarrow> (Val \<longrightarrow> Comp) \<longrightarrow> Comp) (h :: Handler). shallow_step (CHandle (CPerform op v) (HOp op f h)) (f v (\<lambda>r. CReturn r))"
   by auto
 
 (* EFF_001_11_effect_masking (matches Coq) *)
-lemma EFF_001_11_effect_masking: "\<forall> (h : Handler) (sig : EffectRow) (op : EffectOp), In op (handler_effects h) \<longrightarrow> In op sig \<longrightarrow> ~In op (row_minus sig (handler_effects h))"
+lemma EFF_001_11_effect_masking: "\<forall>(h :: Handler) (sig :: EffectRow) (op : EffectOp). In op (handler_effects h) \<longrightarrow> op \<in> set sig \<longrightarrow> ~In op (row_minus sig (handler_effects h))"
   by auto
 
 (* EFF_001_12_resumption_linearity (matches Coq) *)
-lemma EFF_001_12_resumption_linearity: "\<forall> (f : Val \<longrightarrow> (Val \<longrightarrow> Comp) \<longrightarrow> Comp) (v : Val) (k : Val \<longrightarrow> Comp), linear_handler_clause f \<longrightarrow> \<exists> r, f v k = k r"
+lemma EFF_001_12_resumption_linearity: "\<forall>(f : Val \<longrightarrow> (Val \<longrightarrow> Comp) \<longrightarrow> Comp) (v :: Val) (k : Val \<longrightarrow> Comp). linear_handler_clause f \<longrightarrow> \<exists>r. f v k = k r"
   by auto
 
 (* EFF_001_13_effect_safety (matches Coq) *)
-lemma EFF_001_13_effect_safety: "\<forall> (c : Comp) (t : BaseTy), comp_has_type c (CTyEff t empty_row) \<longrightarrow> (\<forall> op v, c \<noteq> CPerform op v)"
+lemma EFF_001_13_effect_safety: "\<forall>(c :: Comp) (t :: BaseTy). comp_has_type c (CTyEff t empty_row) \<longrightarrow> (\<forall>op v. c \<noteq> CPerform op v)"
   by auto
 
 (* EFF_001_14_effect_parametricity (matches Coq) *)
-lemma EFF_001_14_effect_parametricity: "\<forall> (f : Comp \<longrightarrow> Comp), (\<forall> c, f c = c) \<longrightarrow> respects_effects f"
+lemma EFF_001_14_effect_parametricity: "\<forall>(f : Comp \<longrightarrow> Comp). (\<forall>c. f c = c) \<longrightarrow> respects_effects f"
   by auto
 
 (* eval_pure_deterministic (matches Coq) *)
-lemma eval_pure_deterministic: "\<forall> c v1 v2, eval_pure c v1 \<longrightarrow> eval_pure c v2 \<longrightarrow> v1 = v2"
+lemma eval_pure_deterministic: "\<forall>c v1 v2. eval_pure c v1 \<longrightarrow> eval_pure c v2 \<longrightarrow> v1 = v2"
   by simp
 
 (* EFF_001_15_effect_coherence (matches Coq) *)
-lemma EFF_001_15_effect_coherence: "\<forall> (c : Comp) (v1 v2 : Val), is_pure c \<longrightarrow> eval_pure c v1 \<longrightarrow> eval_pure c v2 \<longrightarrow> v1 = v2"
+lemma EFF_001_15_effect_coherence: "\<forall>(c :: Comp) (v1 v2 : Val). is_pure c \<longrightarrow> eval_pure c v1 \<longrightarrow> eval_pure c v2 \<longrightarrow> v1 = v2"
   by auto
 
 end

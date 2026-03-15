@@ -91,11 +91,11 @@ definition preserves :: "BackendKind \<Rightarrow> SecurityProp \<Rightarrow> bo
   "preserves bk prop \<equiv> True"
 
 (* backend_001_dispatch_total (matches Coq) *)
-lemma backend_001_dispatch_total: "\<forall> t, \<exists> bk, dispatch t = bk"
+lemma backend_001_dispatch_total: "\<forall>t. \<exists>bk. dispatch t = bk"
   by simp
 
 (* backend_001_dispatch_deterministic (matches Coq) *)
-lemma backend_001_dispatch_deterministic: "\<forall> t bk1 bk2, dispatch t = bk1 \<longrightarrow> dispatch t = bk2 \<longrightarrow> bk1 = bk2"
+lemma backend_001_dispatch_deterministic: "\<forall>t bk1 bk2. dispatch t = bk1 \<longrightarrow> dispatch t = bk2 \<longrightarrow> bk1 = bk2"
   by auto
 
 (* backend_001_native_is_c (matches Coq) *)
@@ -127,31 +127,31 @@ lemma backend_002_c_format: "backend_format (dispatch TNative) = FmtC"
   by simp
 
 (* backend_003_all_preserve_ni (matches Coq) *)
-lemma backend_003_all_preserve_ni: "\<forall> bk, preserves bk NonInterference = True"
+lemma backend_003_all_preserve_ni: "\<forall>bk. preserves bk NonInterference = True"
   by simp
 
 (* backend_003_all_preserve_effects (matches Coq) *)
-lemma backend_003_all_preserve_effects: "\<forall> bk, preserves bk EffectSafety = True"
+lemma backend_003_all_preserve_effects: "\<forall>bk. preserves bk EffectSafety = True"
   by simp
 
 (* backend_003_all_preserve_types (matches Coq) *)
-lemma backend_003_all_preserve_types: "\<forall> bk, preserves bk TypeSafety = True"
+lemma backend_003_all_preserve_types: "\<forall>bk. preserves bk TypeSafety = True"
   by simp
 
 (* backend_003_dispatch_preserves_all (matches Coq) *)
-lemma backend_003_dispatch_preserves_all: "\<forall> t prop, preserves (dispatch t) prop = True"
+lemma backend_003_dispatch_preserves_all: "\<forall>t prop. preserves (dispatch t) prop = True"
   by simp
 
 (* backend_004_format_total (matches Coq) *)
-lemma backend_004_format_total: "\<forall> t, \<exists> fmt, backend_format (dispatch t) = fmt"
+lemma backend_004_format_total: "\<forall>t. \<exists>fmt. backend_format (dispatch t) = fmt"
   by simp
 
 (* backend_004_wasm_produces_wasm (matches Coq) *)
-lemma backend_004_wasm_produces_wasm: "\<forall> t, dispatch t = BKWasm \<longrightarrow> backend_format (dispatch t) = FmtWasm"
+lemma backend_004_wasm_produces_wasm: "\<forall>t. dispatch t = BKWasm \<longrightarrow> backend_format (dispatch t) = FmtWasm"
   by simp
 
 (* backend_004_mobile_produces_bridge (matches Coq) *)
-lemma backend_004_mobile_produces_bridge: "\<forall> t, dispatch t = BKMobile \<longrightarrow> backend_format (dispatch t) = FmtCWithBridge"
+lemma backend_004_mobile_produces_bridge: "\<forall>t. dispatch t = BKMobile \<longrightarrow> backend_format (dispatch t) = FmtCWithBridge"
   by simp
 
 (* backend_004_native_produces_c (matches Coq) *)
@@ -159,7 +159,7 @@ lemma backend_004_native_produces_c: "backend_format (dispatch TNative) = FmtC"
   by simp
 
 (* backend_004_format_consistent (matches Coq) *)
-lemma backend_004_format_consistent: "\<forall> t1 t2, dispatch t1 = dispatch t2 \<longrightarrow> backend_format (dispatch t1) = backend_format (dispatch t2)"
+lemma backend_004_format_consistent: "\<forall>t1 t2. dispatch t1 = dispatch t2 \<longrightarrow> backend_format (dispatch t1) = backend_format (dispatch t2)"
   by simp
 
 (* backend_wasm32_format (matches Coq) *)

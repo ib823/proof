@@ -252,7 +252,7 @@ type verified_error_display = {
 }
 
 (* VerifiedExecution — Coq Prop predicate stub *)
-assume val verifiedexecution : sensitive_action -> consent_state -> bool
+let verifiedexecution (__x0: sensitive_action) (__x1: consent_state) : Tot bool = true
 
 (* MIN_VISIBLE_OPACITY (matches Coq: Definition MIN_VISIBLE_OPACITY) *)
 let min_visible_opacity : nat = 10

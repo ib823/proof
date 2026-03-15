@@ -126,7 +126,7 @@ definition capability_bounded :: "CapabilityLevel \<Rightarrow> bool" where
 
 (* component_isolated (matches Coq: Definition component_isolated) *)
 definition component_isolated :: "nat \<Rightarrow> bool" where
-  "component_isolated component \<equiv> existsb (fun i => (i = component)) isolated"
+  "component_isolated component \<equiv> existsb (\<lambda>i. (i = component)) isolated"
 
 (* failover_available (matches Coq: Definition failover_available) *)
 definition failover_available :: "bool" where
@@ -139,7 +139,7 @@ fun recovery_complete :: "bool" where
 
 (* recurrence_prevented (matches Coq: Definition recurrence_prevented) *)
 definition recurrence_prevented :: "nat \<Rightarrow> nat \<Rightarrow> bool" where
-  "recurrence_prevented fault_id window \<equiv> (\<not> (existsb) (fun f => (f = fault_id)) recent_faults)"
+  "recurrence_prevented fault_id window \<equiv> (\<not> (existsb) (\<lambda>f. (f = fault_id)) recent_faults)"
 
 (* degradation_ordered (matches Coq: Definition degradation_ordered) *)
 definition degradation_ordered :: "bool" where
@@ -179,110 +179,110 @@ definition audit_complete :: "bool" where
 
 (* learning_applied (matches Coq: Definition learning_applied) *)
 definition learning_applied :: "bool" where
-  "learning_applied \<equiv> ((old_threshold \<le> new_threshold) \<and> (improvement \<le> (new_threshold) - old_threshold))"
+  "learning_applied \<equiv> (old_threshold \<le> new_threshold \<and> improvement \<le> new_threshold - old_threshold)"
 
 (* healing_layers (matches Coq: Definition healing_layers) *)
 definition healing_layers :: "bool" where
-  "healing_layers \<equiv> (detect \<and> (andb) recover ((checkpoint \<and> degrade)))"
+  "healing_layers \<equiv> (detect \<and> recover \<and> checkpoint \<and> degrade)"
 
 (* heal_001_detection_complete (matches Coq) *)
-lemma heal_001_detection_complete: "\<forall> (detected total : nat), detection_complete detected total = True \<longrightarrow> detected = total"
+lemma heal_001_detection_complete: "\<forall>(detected total : nat). detection_complete detected total = True \<longrightarrow> detected = total"
   by auto
 
 (* heal_002_severity_bounded (matches Coq) *)
-lemma heal_002_severity_bounded: "\<forall> (fault : Fault) (max_sev : nat), severity_bounded fault max_sev = True \<longrightarrow> fault_severity fault \<le> max_sev"
+lemma heal_002_severity_bounded: "\<forall>(fault :: Fault) (max_sev :: nat). severity_bounded fault max_sev = True \<longrightarrow> fault_severity fault \<le> max_sev"
   by auto
 
 (* heal_003_plan_verified (matches Coq) *)
-lemma heal_003_plan_verified: "\<forall> (plan : RecoveryPlan), plan_verified plan = True \<longrightarrow> plan_verified plan = True"
+lemma heal_003_plan_verified: "\<forall>(plan :: RecoveryPlan). plan_verified plan = True \<longrightarrow> plan_verified plan = True"
   by auto
 
 (* heal_004_timeout_bounded (matches Coq) *)
-lemma heal_004_timeout_bounded: "\<forall> (plan : RecoveryPlan) (max_timeout : nat), timeout_ok plan max_timeout = True \<longrightarrow> plan_timeout plan \<le> max_timeout"
+lemma heal_004_timeout_bounded: "\<forall>(plan :: RecoveryPlan) (max_timeout :: nat). timeout_ok plan max_timeout = True \<longrightarrow> plan_timeout plan \<le> max_timeout"
   by auto
 
 (* heal_005_actions_exist (matches Coq) *)
-lemma heal_005_actions_exist: "\<forall> (plan : RecoveryPlan), plan_has_actions plan = True \<longrightarrow> length (plan_actions plan) > 0"
+lemma heal_005_actions_exist: "\<forall>(plan :: RecoveryPlan). plan_has_actions plan = True \<longrightarrow> length (plan_actions plan) > 0"
   by auto
 
 (* heal_006_checkpoint_verified (matches Coq) *)
-lemma heal_006_checkpoint_verified: "\<forall> (cp : Checkpoint), cp_verified cp = True \<longrightarrow> cp_verified cp = True"
+lemma heal_006_checkpoint_verified: "\<forall>(cp :: Checkpoint). cp_verified cp = True \<longrightarrow> cp_verified cp = True"
   by auto
 
 (* heal_007_checkpoint_fresh (matches Coq) *)
-lemma heal_007_checkpoint_fresh: "\<forall> (cp : Checkpoint) (current max_age : nat), checkpoint_fresh cp current max_age = True \<longrightarrow> current - cp_timestamp cp \<le> max_age"
+lemma heal_007_checkpoint_fresh: "\<forall>(cp :: Checkpoint) (current max_age : nat). checkpoint_fresh cp current max_age = True \<longrightarrow> current - cp_timestamp cp \<le> max_age"
   by auto
 
 (* heal_008_hash_valid (matches Coq) *)
-lemma heal_008_hash_valid: "\<forall> (computed stored : nat), hash_valid computed stored = True \<longrightarrow> computed = stored"
+lemma heal_008_hash_valid: "\<forall>(computed stored : nat). hash_valid computed stored = True \<longrightarrow> computed = stored"
   by auto
 
 (* heal_009_degradation_valid (matches Coq) *)
-lemma heal_009_degradation_valid: "\<forall> (level max_level : nat), degradation_valid level max_level = True \<longrightarrow> level \<le> max_level"
+lemma heal_009_degradation_valid: "\<forall>(level max_level : nat). degradation_valid level max_level = True \<longrightarrow> level \<le> max_level"
   by auto
 
 (* heal_010_capability_bounded (matches Coq) *)
-lemma heal_010_capability_bounded: "\<forall> (cap : CapabilityLevel), capability_bounded cap = True \<longrightarrow> cap_level cap \<le> 100"
+lemma heal_010_capability_bounded: "\<forall>(cap :: CapabilityLevel). capability_bounded cap = True \<longrightarrow> cap_level cap \<le> 100"
   by auto
 
 (* heal_011_isolation_effective (matches Coq) *)
-lemma heal_011_isolation_effective: "\<forall> (component : nat) (isolated : list nat), component_isolated component isolated = True \<longrightarrow> \<exists> i, In i isolated \<and> i = component"
+lemma heal_011_isolation_effective: "\<forall>(component :: nat) (isolated : list nat). component_isolated component isolated = True \<longrightarrow> \<exists>i. i \<in> set isolated \<and> i = component"
   by auto
 
 (* heal_012_failover_available (matches Coq) *)
-lemma heal_012_failover_available: "\<forall> (targets : list nat), failover_available targets = True \<longrightarrow> length targets > 0"
+lemma heal_012_failover_available: "\<forall>(targets : list nat). failover_available targets = True \<longrightarrow> length targets > 0"
   by auto
 
 (* heal_013_recovery_completes (matches Coq) *)
-lemma heal_013_recovery_completes: "\<forall> (before after : HealthState), recovery_complete before after = True \<longrightarrow> after = Healthy \<or> \<exists> n, after = Degraded n"
+lemma heal_013_recovery_completes: "\<forall>(before after : HealthState). recovery_complete before after = True \<longrightarrow> after = Healthy \<or> \<exists>n. after = Degraded n"
   by simp
 
 (* heal_014_no_recurrence (matches Coq) *)
-lemma heal_014_no_recurrence: "\<forall> (fault_id : nat) (recent : list nat) (window : nat), recurrence_prevented fault_id recent window = True \<longrightarrow> ~ In fault_id recent"
+lemma heal_014_no_recurrence: "\<forall>(fault_id :: nat) (recent : list nat) (window :: nat). recurrence_prevented fault_id recent window = True \<longrightarrow> ~ fault_id \<in> set recent"
   by auto
 
 (* heal_015_graceful_order (matches Coq) *)
-lemma heal_015_graceful_order: "\<forall> (from_level to_level : nat), degradation_ordered from_level to_level = True \<longrightarrow> to_level \<le> from_level"
+lemma heal_015_graceful_order: "\<forall>(from_level to_level : nat). degradation_ordered from_level to_level = True \<longrightarrow> to_level \<le> from_level"
   by auto
 
 (* heal_016_min_capability (matches Coq) *)
-lemma heal_016_min_capability: "\<forall> (current min_cap : nat), min_capability_ok current min_cap = True \<longrightarrow> min_cap \<le> current"
+lemma heal_016_min_capability: "\<forall>(current min_cap : nat). min_capability_ok current min_cap = True \<longrightarrow> min_cap \<le> current"
   by auto
 
 (* heal_017_attack_detected (matches Coq) *)
-lemma heal_017_attack_detected: "\<forall> (indicators threshold : nat), attack_detected indicators threshold = True \<longrightarrow> threshold \<le> indicators"
+lemma heal_017_attack_detected: "\<forall>(indicators threshold : nat). attack_detected indicators threshold = True \<longrightarrow> threshold \<le> indicators"
   by auto
 
 (* heal_018_attack_contained (matches Coq) *)
-lemma heal_018_attack_contained: "\<forall> (spread_count max_spread : nat), attack_contained spread_count max_spread = True \<longrightarrow> spread_count \<le> max_spread"
+lemma heal_018_attack_contained: "\<forall>(spread_count max_spread : nat). attack_contained spread_count max_spread = True \<longrightarrow> spread_count \<le> max_spread"
   by auto
 
 (* heal_019_evidence_preserved (matches Coq) *)
-lemma heal_019_evidence_preserved: "\<forall> (collected required : nat), evidence_preserved collected required = True \<longrightarrow> required \<le> collected"
+lemma heal_019_evidence_preserved: "\<forall>(collected required : nat). evidence_preserved collected required = True \<longrightarrow> required \<le> collected"
   by auto
 
 (* heal_020_rto_met (matches Coq) *)
-lemma heal_020_rto_met: "\<forall> (actual_time rto : nat), rto_met actual_time rto = True \<longrightarrow> actual_time \<le> rto"
+lemma heal_020_rto_met: "\<forall>(actual_time rto : nat). rto_met actual_time rto = True \<longrightarrow> actual_time \<le> rto"
   by auto
 
 (* heal_021_rpo_met (matches Coq) *)
-lemma heal_021_rpo_met: "\<forall> (data_loss_time rpo : nat), rpo_met data_loss_time rpo = True \<longrightarrow> data_loss_time \<le> rpo"
+lemma heal_021_rpo_met: "\<forall>(data_loss_time rpo : nat). rpo_met data_loss_time rpo = True \<longrightarrow> data_loss_time \<le> rpo"
   by auto
 
 (* heal_022_redundancy (matches Coq) *)
-lemma heal_022_redundancy: "\<forall> (active min_redundancy : nat), redundancy_ok active min_redundancy = True \<longrightarrow> min_redundancy \<le> active"
+lemma heal_022_redundancy: "\<forall>(active min_redundancy : nat). redundancy_ok active min_redundancy = True \<longrightarrow> min_redundancy \<le> active"
   by auto
 
 (* heal_023_audit_complete (matches Coq) *)
-lemma heal_023_audit_complete: "\<forall> (events logged : nat), audit_complete events logged = True \<longrightarrow> events = logged"
+lemma heal_023_audit_complete: "\<forall>(events logged : nat). audit_complete events logged = True \<longrightarrow> events = logged"
   by auto
 
 (* heal_024_learning_applied (matches Coq) *)
-lemma heal_024_learning_applied: "\<forall> (old_t new_t improvement : nat), learning_applied old_t new_t improvement = True \<longrightarrow> old_t \<le> new_t"
+lemma heal_024_learning_applied: "\<forall>(old_t new_t improvement : nat). learning_applied old_t new_t improvement = True \<longrightarrow> old_t \<le> new_t"
   by auto
 
 (* heal_025_defense_in_depth (matches Coq) *)
-lemma heal_025_defense_in_depth: "\<forall> d r c dg, healing_layers d r c dg = True \<longrightarrow> d = True \<and> r = True \<and> c = True \<and> dg = True"
+lemma heal_025_defense_in_depth: "\<forall>d r c dg. healing_layers d r c dg = True \<longrightarrow> d = True \<and> r = True \<and> c = True \<and> dg = True"
   by auto
 
 end

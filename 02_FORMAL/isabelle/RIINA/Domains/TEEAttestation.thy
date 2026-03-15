@@ -305,12 +305,12 @@ definition quote_svn_valid :: "AttestationQuote \<Rightarrow> VerificationContex
 
 (* quote_nonce_valid (matches Coq: Definition quote_nonce_valid) *)
 definition quote_nonce_valid :: "AttestationQuote \<Rightarrow> VerificationContext \<Rightarrow> bool" where
-  "quote_nonce_valid q ctx \<equiv> ((aq_nonce = q)) (vc_expected_nonce ctx)"
+  "quote_nonce_valid q ctx \<equiv> (aq_nonce q = vc_expected_nonce ctx)"
 
 (* quote_fresh (matches Coq: Definition quote_fresh) *)
 definition quote_fresh :: "AttestationQuote \<Rightarrow> VerificationContext \<Rightarrow> bool" where
-  "quote_fresh q ctx \<equiv> ((aq_timestamp \<le> q)) (vc_current_time ctx) \<and>
-  ((vc_current_time \<le> ctx) - aq_timestamp q) (vc_max_timestamp_age ctx)"
+  "quote_fresh q ctx \<equiv> (aq_timestamp q \<le> vc_current_time ctx) \<and>
+  (vc_current_time ctx - aq_timestamp q \<le> vc_max_timestamp_age ctx)"
 
 (* verify_quote (matches Coq: Definition verify_quote) *)
 definition verify_quote :: "AttestationQuote \<Rightarrow> VerificationContext \<Rightarrow> bool" where
@@ -338,12 +338,12 @@ definition can_unseal :: "bool" where "can_unseal = undefined"
 
 (* region_contains (matches Coq: Definition region_contains) *)
 definition region_contains :: "MemoryRegion \<Rightarrow> nat \<Rightarrow> bool" where
-  "region_contains r addr \<equiv> ((mr_base \<le> r)) addr \<and> (addr < (mr_base) r + mr_size r)"
+  "region_contains r addr \<equiv> (mr_base r \<le> addr) \<and> (addr < mr_base r + mr_size r)"
 
 (* regions_overlap (matches Coq: Definition regions_overlap) *)
 definition regions_overlap :: "bool" where
-  "regions_overlap \<equiv> (\<not> (Nat.leb) (mr_base r1 + mr_size r1) (mr_base r2) \<or>
-        ((mr_base \<le> r2) + mr_size r2) (mr_base r1))"
+  "regions_overlap \<equiv> (\<not> (mr_base r1 + mr_size r1 \<le> mr_base r2) \<or>
+        \<not> (mr_base r2 + mr_size r2 \<le> mr_base r1))"
 
 (* enclave_memory_protected - complex match, needs manual translation *)
 definition enclave_memory_protected :: "bool" where "enclave_memory_protected = undefined"
@@ -404,23 +404,23 @@ definition sample_kdp_mrsigner :: "KeyDerivationParams" where
     PART 1: FOUNDATIONAL DEFINITIONS AND HELPER LEMMAS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* andb_false_iff (matches Coq) *)
-lemma andb_false_iff: "\<forall> a b : bool, a && b = False <-> a = False \<or> b = False"
+lemma andb_false_iff: "\<forall>a b : bool. a && b = False <-> a = False \<or> b = False"
   by auto
 
 (* orb_true_iff (matches Coq) *)
-lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = True"
+lemma orb_true_iff: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = True"
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
+lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
   by auto
 
 (* negb_false_iff (matches Coq) *)
-lemma negb_false_iff: "\<forall> b : bool, (\<not> b) = False <-> b = True"
+lemma negb_false_iff: "\<forall>b : bool. (\<not> b) = False <-> b = True"
   by auto
 
 (* ============================================================================
@@ -479,43 +479,43 @@ lemma TEE_013: "tee_local_attestation riina_tee = True"
   by simp
 
 (* TEE_014 (matches Coq) *)
-lemma TEE_014: "\<forall> e, enclave_secure e = True \<longrightarrow> enc_memory_encrypted e = True"
+lemma TEE_014: "\<forall>e. enclave_secure e = True \<longrightarrow> enc_memory_encrypted e = True"
   by auto
 
 (* TEE_015 (matches Coq) *)
-lemma TEE_015: "\<forall> e, enclave_secure e = True \<longrightarrow> enc_isolated_execution e = True"
+lemma TEE_015: "\<forall>e. enclave_secure e = True \<longrightarrow> enc_isolated_execution e = True"
   by auto
 
 (* TEE_016 (matches Coq) *)
-lemma TEE_016: "\<forall> a, attestation_secure a = True \<longrightarrow> att_measurement a = True"
+lemma TEE_016: "\<forall>a. attestation_secure a = True \<longrightarrow> att_measurement a = True"
   by auto
 
 (* TEE_017 (matches Coq) *)
-lemma TEE_017: "\<forall> a, attestation_secure a = True \<longrightarrow> att_freshness a = True"
+lemma TEE_017: "\<forall>a. attestation_secure a = True \<longrightarrow> att_freshness a = True"
   by auto
 
 (* TEE_018 (matches Coq) *)
-lemma TEE_018: "\<forall> t, tee_secure t = True \<longrightarrow> enclave_secure (tee_enclave t) = True"
+lemma TEE_018: "\<forall>t. tee_secure t = True \<longrightarrow> enclave_secure (tee_enclave t) = True"
   by auto
 
 (* TEE_019 (matches Coq) *)
-lemma TEE_019: "\<forall> t, tee_secure t = True \<longrightarrow> attestation_secure (tee_attestation t) = True"
+lemma TEE_019: "\<forall>t. tee_secure t = True \<longrightarrow> attestation_secure (tee_attestation t) = True"
   by auto
 
 (* TEE_020 (matches Coq) *)
-lemma TEE_020: "\<forall> t, tee_secure t = True \<longrightarrow> tee_remote_attestation t = True"
+lemma TEE_020: "\<forall>t. tee_secure t = True \<longrightarrow> tee_remote_attestation t = True"
   by auto
 
 (* TEE_021 (matches Coq) *)
-lemma TEE_021: "\<forall> t, tee_secure t = True \<longrightarrow> enc_memory_encrypted (tee_enclave t) = True"
+lemma TEE_021: "\<forall>t. tee_secure t = True \<longrightarrow> enc_memory_encrypted (tee_enclave t) = True"
   by auto
 
 (* TEE_022 (matches Coq) *)
-lemma TEE_022: "\<forall> t, tee_secure t = True \<longrightarrow> att_measurement (tee_attestation t) = True"
+lemma TEE_022: "\<forall>t. tee_secure t = True \<longrightarrow> att_measurement (tee_attestation t) = True"
   by auto
 
 (* TEE_023 (matches Coq) *)
-lemma TEE_023: "\<forall> t, tee_secure t = True \<longrightarrow> att_freshness (tee_attestation t) = True"
+lemma TEE_023: "\<forall>t. tee_secure t = True \<longrightarrow> att_freshness (tee_attestation t) = True"
   by auto
 
 (* TEE_024 (matches Coq) *)
@@ -523,7 +523,7 @@ lemma TEE_024: "tee_secure riina_tee = True \<and> tee_remote_attestation riina_
   by auto
 
 (* TEE_025_complete (matches Coq) *)
-lemma TEE_025_complete: "\<forall> t, tee_secure t = True \<longrightarrow> enc_memory_encrypted (tee_enclave t) = True \<and> att_measurement (tee_attestation t) = True \<and> att_freshness (tee_attestation t) = True \<and> tee_remote_attestation t = True"
+lemma TEE_025_complete: "\<forall>t. tee_secure t = True \<longrightarrow> enc_memory_encrypted (tee_enclave t) = True \<and> att_measurement (tee_attestation t) = True \<and> att_freshness (tee_attestation t) = True \<and> tee_remote_attestation t = True"
   by auto
 
 (* ============================================================================
@@ -571,12 +571,12 @@ lemma TEE_035_no_enter_uninitialized: "enclave_transition ES_Uninitialized EE_En
 
 (* Enclave lifecycle: can reach Running from Uninitialized *)
 (* TEE_036_lifecycle_to_running (matches Coq) *)
-lemma TEE_036_lifecycle_to_running: "\<forall> s1 s2 s3, enclave_transition ES_Uninitialized EE_Create = Some s1 \<longrightarrow> enclave_transition s1 EE_Initialize = Some s2 \<longrightarrow> enclave_transition s2 EE_Enter = Some s3 \<longrightarrow> s3 = ES_Running"
+lemma TEE_036_lifecycle_to_running: "\<forall>s1 s2 s3. enclave_transition ES_Uninitialized EE_Create = Some s1 \<longrightarrow> enclave_transition s1 EE_Initialize = Some s2 \<longrightarrow> enclave_transition s2 EE_Enter = Some s3 \<longrightarrow> s3 = ES_Running"
   by simp
 
 (* Enclave can be suspended and resumed *)
 (* TEE_037_suspend_resume_cycle (matches Coq) *)
-lemma TEE_037_suspend_resume_cycle: "\<forall> s1 s2, enclave_transition ES_Running EE_Suspend = Some s1 \<longrightarrow> enclave_transition s1 EE_Resume = Some s2 \<longrightarrow> s2 = ES_Running"
+lemma TEE_037_suspend_resume_cycle: "\<forall>s1 s2. enclave_transition ES_Running EE_Suspend = Some s1 \<longrightarrow> enclave_transition s1 EE_Resume = Some s2 \<longrightarrow> s2 = ES_Running"
   by simp
 
 (* ============================================================================
@@ -611,27 +611,27 @@ lemma TEE_044_riina_quote_verifies: "verify_quote riina_quote riina_verification
   by simp
 
 (* TEE_045_verified_quote_has_valid_signature (matches Coq) *)
-lemma TEE_045_verified_quote_has_valid_signature: "\<forall> q ctx, verify_quote q ctx = True \<longrightarrow> aq_signature_valid q = True"
+lemma TEE_045_verified_quote_has_valid_signature: "\<forall>q ctx. verify_quote q ctx = True \<longrightarrow> aq_signature_valid q = True"
   by auto
 
 (* TEE_046_verified_quote_has_valid_measurement (matches Coq) *)
-lemma TEE_046_verified_quote_has_valid_measurement: "\<forall> q ctx, verify_quote q ctx = True \<longrightarrow> quote_measurement_valid q ctx = True"
+lemma TEE_046_verified_quote_has_valid_measurement: "\<forall>q ctx. verify_quote q ctx = True \<longrightarrow> quote_measurement_valid q ctx = True"
   by auto
 
 (* TEE_047_verified_quote_has_valid_nonce (matches Coq) *)
-lemma TEE_047_verified_quote_has_valid_nonce: "\<forall> q ctx, verify_quote q ctx = True \<longrightarrow> quote_nonce_valid q ctx = True"
+lemma TEE_047_verified_quote_has_valid_nonce: "\<forall>q ctx. verify_quote q ctx = True \<longrightarrow> quote_nonce_valid q ctx = True"
   by auto
 
 (* TEE_048_verified_quote_is_fresh (matches Coq) *)
-lemma TEE_048_verified_quote_is_fresh: "\<forall> q ctx, verify_quote q ctx = True \<longrightarrow> quote_fresh q ctx = True"
+lemma TEE_048_verified_quote_is_fresh: "\<forall>q ctx. verify_quote q ctx = True \<longrightarrow> quote_fresh q ctx = True"
   by auto
 
 (* TEE_049_invalid_signature_fails_verification (matches Coq) *)
-lemma TEE_049_invalid_signature_fails_verification: "\<forall> q ctx, aq_signature_valid q = False \<longrightarrow> verify_quote q ctx = False"
+lemma TEE_049_invalid_signature_fails_verification: "\<forall>q ctx. aq_signature_valid q = False \<longrightarrow> verify_quote q ctx = False"
   by simp
 
 (* TEE_050_stale_quote_fails_verification (matches Coq) *)
-lemma TEE_050_stale_quote_fails_verification: "\<forall> q ctx, quote_fresh q ctx = False \<longrightarrow> verify_quote q ctx = False"
+lemma TEE_050_stale_quote_fails_verification: "\<forall>q ctx. quote_fresh q ctx = False \<longrightarrow> verify_quote q ctx = False"
   by simp
 
 (* TEE_051_derive_key_mrenclave (matches Coq) *)
@@ -643,36 +643,36 @@ lemma TEE_052_derive_key_mrsigner: "derive_seal_key_id sample_kdp_mrsigner = ei_
   by simp
 
 (* TEE_053_key_derivation_deterministic (matches Coq) *)
-lemma TEE_053_key_derivation_deterministic: "\<forall> p1 p2, kdp_policy p1 = kdp_policy p2 \<longrightarrow> kdp_enclave_id p1 = kdp_enclave_id p2 \<longrightarrow> kdp_key_name p1 = kdp_key_name p2 \<longrightarrow> derive_seal_key_id p1 = derive_seal_key_id p2"
+lemma TEE_053_key_derivation_deterministic: "\<forall>p1 p2. kdp_policy p1 = kdp_policy p2 \<longrightarrow> kdp_enclave_id p1 = kdp_enclave_id p2 \<longrightarrow> kdp_key_name p1 = kdp_key_name p2 \<longrightarrow> derive_seal_key_id p1 = derive_seal_key_id p2"
   by simp
 
 (* TEE_054_different_policy_different_key (matches Coq) *)
-lemma TEE_054_different_policy_different_key: "\<forall> eid kn, ei_measurement eid \<noteq> ei_signer eid \<longrightarrow> derive_seal_key_id (mkKeyDerivationParams SP_MRENCLAVE eid kn 256) \<noteq> derive_seal_key_id (mkKeyDerivationParams SP_MRSIGNER eid kn 256)"
+lemma TEE_054_different_policy_different_key: "\<forall>eid kn. ei_measurement eid \<noteq> ei_signer eid \<longrightarrow> derive_seal_key_id (mkKeyDerivationParams SP_MRENCLAVE eid kn 256) \<noteq> derive_seal_key_id (mkKeyDerivationParams SP_MRSIGNER eid kn 256)"
   by simp
 
 (* TEE_055_keypolicy_uses_name_only (matches Coq) *)
-lemma TEE_055_keypolicy_uses_name_only: "\<forall> eid1 eid2 kn ks, derive_seal_key_id (mkKeyDerivationParams SP_KEYPOLICY eid1 kn ks) = derive_seal_key_id (mkKeyDerivationParams SP_KEYPOLICY eid2 kn ks)"
+lemma TEE_055_keypolicy_uses_name_only: "\<forall>eid1 eid2 kn ks. derive_seal_key_id (mkKeyDerivationParams SP_KEYPOLICY eid1 kn ks) = derive_seal_key_id (mkKeyDerivationParams SP_KEYPOLICY eid2 kn ks)"
   by simp
 
 (* TEE_056_mrenclave_binding_enclave_specific (matches Coq) *)
-lemma TEE_056_mrenclave_binding_enclave_specific: "\<forall> eid1 eid2 kn ks, ei_measurement eid1 \<noteq> ei_measurement eid2 \<longrightarrow> derive_seal_key_id (mkKeyDerivationParams SP_MRENCLAVE eid1 kn ks) \<noteq> derive_seal_key_id (mkKeyDerivationParams SP_MRENCLAVE eid2 kn ks)"
+lemma TEE_056_mrenclave_binding_enclave_specific: "\<forall>eid1 eid2 kn ks. ei_measurement eid1 \<noteq> ei_measurement eid2 \<longrightarrow> derive_seal_key_id (mkKeyDerivationParams SP_MRENCLAVE eid1 kn ks) \<noteq> derive_seal_key_id (mkKeyDerivationParams SP_MRENCLAVE eid2 kn ks)"
   by simp
 
 (* TEE_057_mrsigner_binding_signer_specific (matches Coq) *)
-lemma TEE_057_mrsigner_binding_signer_specific: "\<forall> eid1 eid2 kn ks, ei_signer eid1 \<noteq> ei_signer eid2 \<longrightarrow> derive_seal_key_id (mkKeyDerivationParams SP_MRSIGNER eid1 kn ks) \<noteq> derive_seal_key_id (mkKeyDerivationParams SP_MRSIGNER eid2 kn ks)"
+lemma TEE_057_mrsigner_binding_signer_specific: "\<forall>eid1 eid2 kn ks. ei_signer eid1 \<noteq> ei_signer eid2 \<longrightarrow> derive_seal_key_id (mkKeyDerivationParams SP_MRSIGNER eid1 kn ks) \<noteq> derive_seal_key_id (mkKeyDerivationParams SP_MRSIGNER eid2 kn ks)"
   by simp
 
 (* TEE_058_different_key_names_different_keys (matches Coq) *)
-lemma TEE_058_different_key_names_different_keys: "\<forall> pol eid kn1 kn2 ks, kn1 \<noteq> kn2 \<longrightarrow> derive_seal_key_id (mkKeyDerivationParams pol eid kn1 ks) \<noteq> derive_seal_key_id (mkKeyDerivationParams pol eid kn2 ks)"
-  by (cases rule: ‹_›.cases; simp)
+lemma TEE_058_different_key_names_different_keys: "\<forall>pol eid kn1 kn2 ks. kn1 \<noteq> kn2 \<longrightarrow> derive_seal_key_id (mkKeyDerivationParams pol eid kn1 ks) \<noteq> derive_seal_key_id (mkKeyDerivationParams pol eid kn2 ks)"
+  by auto
 
 (* TEE_059_keypolicy_unseal_always_possible (matches Coq) *)
-lemma TEE_059_keypolicy_unseal_always_possible: "\<forall> sealed current, sd_policy sealed = SP_KEYPOLICY \<longrightarrow> can_unseal sealed current = True"
+lemma TEE_059_keypolicy_unseal_always_possible: "\<forall>sealed current. sd_policy sealed = SP_KEYPOLICY \<longrightarrow> can_unseal sealed current = True"
   by simp
 
 (* TEE_060_key_size_does_not_affect_id (matches Coq) *)
-lemma TEE_060_key_size_does_not_affect_id: "\<forall> pol eid kn ks1 ks2, derive_seal_key_id (mkKeyDerivationParams pol eid kn ks1) = derive_seal_key_id (mkKeyDerivationParams pol eid kn ks2)"
-  by (cases rule: ‹_›.cases; simp)
+lemma TEE_060_key_size_does_not_affect_id: "\<forall>pol eid kn ks1 ks2. derive_seal_key_id (mkKeyDerivationParams pol eid kn ks1) = derive_seal_key_id (mkKeyDerivationParams pol eid kn ks2)"
+  by auto
 
 (* ============================================================================
     PART 13: MEMORY ISOLATION THEOREMS (TEE_061 - TEE_070)
@@ -690,31 +690,31 @@ lemma TEE_063_enclave_memory_is_protected: "enclave_memory_protected riina_secur
   by simp
 
 (* TEE_064_normal_memory_always_protected (matches Coq) *)
-lemma TEE_064_normal_memory_always_protected: "\<forall> r, mr_type r = MRT_Normal \<longrightarrow> enclave_memory_protected r = True"
+lemma TEE_064_normal_memory_always_protected: "\<forall>r. mr_type r = MRT_Normal \<longrightarrow> enclave_memory_protected r = True"
   by simp
 
 (* TEE_065_shared_memory_always_protected (matches Coq) *)
-lemma TEE_065_shared_memory_always_protected: "\<forall> r, mr_type r = MRT_Shared \<longrightarrow> enclave_memory_protected r = True"
+lemma TEE_065_shared_memory_always_protected: "\<forall>r. mr_type r = MRT_Shared \<longrightarrow> enclave_memory_protected r = True"
   by simp
 
 (* TEE_066_reserved_memory_always_protected (matches Coq) *)
-lemma TEE_066_reserved_memory_always_protected: "\<forall> r, mr_type r = MRT_Reserved \<longrightarrow> enclave_memory_protected r = True"
+lemma TEE_066_reserved_memory_always_protected: "\<forall>r. mr_type r = MRT_Reserved \<longrightarrow> enclave_memory_protected r = True"
   by simp
 
 (* TEE_067_enclave_memory_encrypted_implies_protected (matches Coq) *)
-lemma TEE_067_enclave_memory_encrypted_implies_protected: "\<forall> r, mr_type r = MRT_Enclave \<longrightarrow> mr_encrypted r = True \<longrightarrow> enclave_memory_protected r = True"
+lemma TEE_067_enclave_memory_encrypted_implies_protected: "\<forall>r. mr_type r = MRT_Enclave \<longrightarrow> mr_encrypted r = True \<longrightarrow> enclave_memory_protected r = True"
   by auto
 
 (* TEE_068_unencrypted_enclave_memory_unprotected (matches Coq) *)
-lemma TEE_068_unencrypted_enclave_memory_unprotected: "\<forall> r, mr_type r = MRT_Enclave \<longrightarrow> mr_encrypted r = False \<longrightarrow> enclave_memory_protected r = False"
+lemma TEE_068_unencrypted_enclave_memory_unprotected: "\<forall>r. mr_type r = MRT_Enclave \<longrightarrow> mr_encrypted r = False \<longrightarrow> enclave_memory_protected r = False"
   by auto
 
 (* TEE_069_address_in_region (matches Coq) *)
-lemma TEE_069_address_in_region: "\<forall> base size addr, base \<le> addr \<longrightarrow> addr < base + size \<longrightarrow> size > 0 \<longrightarrow> region_contains (mkMemoryRegion base size MRT_Enclave (mkMemoryPermissions True True False) True) addr = True"
+lemma TEE_069_address_in_region: "\<forall>base size addr. base \<le> addr \<longrightarrow> addr < base + size \<longrightarrow> size > 0 \<longrightarrow> region_contains (mkMemoryRegion base size MRT_Enclave (mkMemoryPermissions True True False) True) addr = True"
   by auto
 
 (* TEE_070_non_overlapping_regions_disjoint (matches Coq) *)
-lemma TEE_070_non_overlapping_regions_disjoint: "\<forall> r1 r2, mr_base r1 + mr_size r1 \<le> mr_base r2 \<longrightarrow> regions_overlap r1 r2 = False"
+lemma TEE_070_non_overlapping_regions_disjoint: "\<forall>r1 r2. mr_base r1 + mr_size r1 \<le> mr_base r2 \<longrightarrow> regions_overlap r1 r2 = False"
   by auto
 
 (* ============================================================================
@@ -733,86 +733,86 @@ lemma TEE_073_riina_platform_trusted: "platform_trusted riina_platform riina_tru
   by simp
 
 (* TEE_074_trust_chain_requires_root_key (matches Coq) *)
-lemma TEE_074_trust_chain_requires_root_key: "\<forall> tc, trust_chain_complete tc = True \<longrightarrow> tc_root_key_valid tc = True"
+lemma TEE_074_trust_chain_requires_root_key: "\<forall>tc. trust_chain_complete tc = True \<longrightarrow> tc_root_key_valid tc = True"
   by auto
 
 (* TEE_075_trust_chain_requires_pck_cert (matches Coq) *)
-lemma TEE_075_trust_chain_requires_pck_cert: "\<forall> tc, trust_chain_complete tc = True \<longrightarrow> tc_pck_cert_valid tc = True"
+lemma TEE_075_trust_chain_requires_pck_cert: "\<forall>tc. trust_chain_complete tc = True \<longrightarrow> tc_pck_cert_valid tc = True"
   by auto
 
 (* TEE_076_trust_chain_requires_tcb_signing (matches Coq) *)
-lemma TEE_076_trust_chain_requires_tcb_signing: "\<forall> tc, trust_chain_complete tc = True \<longrightarrow> tc_tcb_signing_valid tc = True"
+lemma TEE_076_trust_chain_requires_tcb_signing: "\<forall>tc. trust_chain_complete tc = True \<longrightarrow> tc_tcb_signing_valid tc = True"
   by auto
 
 (* TEE_077_trust_chain_requires_qe_report (matches Coq) *)
-lemma TEE_077_trust_chain_requires_qe_report: "\<forall> tc, trust_chain_complete tc = True \<longrightarrow> tc_qe_report_valid tc = True"
+lemma TEE_077_trust_chain_requires_qe_report: "\<forall>tc. trust_chain_complete tc = True \<longrightarrow> tc_qe_report_valid tc = True"
   by auto
 
 (* TEE_078_invalid_root_breaks_trust (matches Coq) *)
-lemma TEE_078_invalid_root_breaks_trust: "\<forall> tc, tc_root_key_valid tc = False \<longrightarrow> trust_chain_complete tc = False"
+lemma TEE_078_invalid_root_breaks_trust: "\<forall>tc. tc_root_key_valid tc = False \<longrightarrow> trust_chain_complete tc = False"
   by simp
 
 (* TEE_079_invalid_tcb_breaks_platform_trust (matches Coq) *)
-lemma TEE_079_invalid_tcb_breaks_platform_trust: "\<forall> pi tc, pi_tcb_info_valid pi = False \<longrightarrow> platform_trusted pi tc = False"
+lemma TEE_079_invalid_tcb_breaks_platform_trust: "\<forall>pi tc. pi_tcb_info_valid pi = False \<longrightarrow> platform_trusted pi tc = False"
   by simp
 
 (* TEE_080_incomplete_chain_breaks_platform_trust (matches Coq) *)
-lemma TEE_080_incomplete_chain_breaks_platform_trust: "\<forall> pi tc, trust_chain_complete tc = False \<longrightarrow> platform_trusted pi tc = False"
+lemma TEE_080_incomplete_chain_breaks_platform_trust: "\<forall>pi tc. trust_chain_complete tc = False \<longrightarrow> platform_trusted pi tc = False"
   by simp
 
 (* ============================================================================
     PART 15: COMPREHENSIVE SECURITY COMPOSITION THEOREMS (TEE_081 - TEE_095)
     ============================================================================ *)
 (* TEE_081_full_attestation_implies_all_properties (matches Coq) *)
-lemma TEE_081_full_attestation_implies_all_properties: "\<forall> q ctx, verify_quote q ctx = True \<longrightarrow> aq_signature_valid q = True \<and> quote_measurement_valid q ctx = True \<and> quote_signer_valid q ctx = True \<and> quote_svn_valid q ctx = True \<and> quote_nonce_valid q ctx = True \<and> quote_fresh q ctx = True"
+lemma TEE_081_full_attestation_implies_all_properties: "\<forall>q ctx. verify_quote q ctx = True \<longrightarrow> aq_signature_valid q = True \<and> quote_measurement_valid q ctx = True \<and> quote_signer_valid q ctx = True \<and> quote_svn_valid q ctx = True \<and> quote_nonce_valid q ctx = True \<and> quote_fresh q ctx = True"
   by auto
 
 (* TEE_082_secure_tee_implies_all_enclave_properties (matches Coq) *)
-lemma TEE_082_secure_tee_implies_all_enclave_properties: "\<forall> t, tee_secure t = True \<longrightarrow> enc_memory_encrypted (tee_enclave t) = True \<and> enc_code_integrity (tee_enclave t) = True \<and> enc_data_sealing (tee_enclave t) = True \<and> enc_isolated_execution (tee_enclave t) = True"
+lemma TEE_082_secure_tee_implies_all_enclave_properties: "\<forall>t. tee_secure t = True \<longrightarrow> enc_memory_encrypted (tee_enclave t) = True \<and> enc_code_integrity (tee_enclave t) = True \<and> enc_data_sealing (tee_enclave t) = True \<and> enc_isolated_execution (tee_enclave t) = True"
   by auto
 
 (* TEE_083_secure_tee_implies_all_attestation_properties (matches Coq) *)
-lemma TEE_083_secure_tee_implies_all_attestation_properties: "\<forall> t, tee_secure t = True \<longrightarrow> att_measurement (tee_attestation t) = True \<and> att_signature (tee_attestation t) = True \<and> att_freshness (tee_attestation t) = True \<and> att_binding (tee_attestation t) = True"
+lemma TEE_083_secure_tee_implies_all_attestation_properties: "\<forall>t. tee_secure t = True \<longrightarrow> att_measurement (tee_attestation t) = True \<and> att_signature (tee_attestation t) = True \<and> att_freshness (tee_attestation t) = True \<and> att_binding (tee_attestation t) = True"
   by auto
 
 (* TEE_084_secure_tee_implies_key_derivation (matches Coq) *)
-lemma TEE_084_secure_tee_implies_key_derivation: "\<forall> t, tee_secure t = True \<longrightarrow> tee_key_derivation t = True"
+lemma TEE_084_secure_tee_implies_key_derivation: "\<forall>t. tee_secure t = True \<longrightarrow> tee_key_derivation t = True"
   by auto
 
 (* TEE_085_secure_tee_implies_local_attestation (matches Coq) *)
-lemma TEE_085_secure_tee_implies_local_attestation: "\<forall> t, tee_secure t = True \<longrightarrow> tee_local_attestation t = True"
+lemma TEE_085_secure_tee_implies_local_attestation: "\<forall>t. tee_secure t = True \<longrightarrow> tee_local_attestation t = True"
   by auto
 
 (* TEE_086_enclave_security_composition (matches Coq) *)
-lemma TEE_086_enclave_security_composition: "\<forall> e, enc_memory_encrypted e = True \<longrightarrow> enc_code_integrity e = True \<longrightarrow> enc_data_sealing e = True \<longrightarrow> enc_isolated_execution e = True \<longrightarrow> enclave_secure e = True"
+lemma TEE_086_enclave_security_composition: "\<forall>e. enc_memory_encrypted e = True \<longrightarrow> enc_code_integrity e = True \<longrightarrow> enc_data_sealing e = True \<longrightarrow> enc_isolated_execution e = True \<longrightarrow> enclave_secure e = True"
   by simp
 
 (* TEE_087_attestation_security_composition (matches Coq) *)
-lemma TEE_087_attestation_security_composition: "\<forall> a, att_measurement a = True \<longrightarrow> att_signature a = True \<longrightarrow> att_freshness a = True \<longrightarrow> att_binding a = True \<longrightarrow> attestation_secure a = True"
+lemma TEE_087_attestation_security_composition: "\<forall>a. att_measurement a = True \<longrightarrow> att_signature a = True \<longrightarrow> att_freshness a = True \<longrightarrow> att_binding a = True \<longrightarrow> attestation_secure a = True"
   by simp
 
 (* TEE_088_tee_security_composition (matches Coq) *)
-lemma TEE_088_tee_security_composition: "\<forall> t, enclave_secure (tee_enclave t) = True \<longrightarrow> attestation_secure (tee_attestation t) = True \<longrightarrow> tee_remote_attestation t = True \<longrightarrow> tee_local_attestation t = True \<longrightarrow> tee_key_derivation t = True \<longrightarrow> tee_secure t = True"
+lemma TEE_088_tee_security_composition: "\<forall>t. enclave_secure (tee_enclave t) = True \<longrightarrow> attestation_secure (tee_attestation t) = True \<longrightarrow> tee_remote_attestation t = True \<longrightarrow> tee_local_attestation t = True \<longrightarrow> tee_key_derivation t = True \<longrightarrow> tee_secure t = True"
   by simp
 
 (* TEE_089_verified_quote_measurement_matches_context (matches Coq) *)
-lemma TEE_089_verified_quote_measurement_matches_context: "\<forall> q ctx, verify_quote q ctx = True \<longrightarrow> ei_measurement (aq_enclave_identity q) = vc_expected_measurement ctx"
+lemma TEE_089_verified_quote_measurement_matches_context: "\<forall>q ctx. verify_quote q ctx = True \<longrightarrow> ei_measurement (aq_enclave_identity q) = vc_expected_measurement ctx"
   by auto
 
 (* TEE_090_verified_quote_signer_matches_context (matches Coq) *)
-lemma TEE_090_verified_quote_signer_matches_context: "\<forall> q ctx, verify_quote q ctx = True \<longrightarrow> ei_signer (aq_enclave_identity q) = vc_expected_signer ctx"
+lemma TEE_090_verified_quote_signer_matches_context: "\<forall>q ctx. verify_quote q ctx = True \<longrightarrow> ei_signer (aq_enclave_identity q) = vc_expected_signer ctx"
   by auto
 
 (* TEE_091_verified_quote_svn_sufficient (matches Coq) *)
-lemma TEE_091_verified_quote_svn_sufficient: "\<forall> q ctx, verify_quote q ctx = True \<longrightarrow> vc_min_security_version ctx \<le> ei_security_version (aq_enclave_identity q)"
+lemma TEE_091_verified_quote_svn_sufficient: "\<forall>q ctx. verify_quote q ctx = True \<longrightarrow> vc_min_security_version ctx \<le> ei_security_version (aq_enclave_identity q)"
   by auto
 
 (* TEE_092_verified_quote_nonce_matches (matches Coq) *)
-lemma TEE_092_verified_quote_nonce_matches: "\<forall> q ctx, verify_quote q ctx = True \<longrightarrow> aq_nonce q = vc_expected_nonce ctx"
+lemma TEE_092_verified_quote_nonce_matches: "\<forall>q ctx. verify_quote q ctx = True \<longrightarrow> aq_nonce q = vc_expected_nonce ctx"
   by auto
 
 (* TEE_093_platform_trust_composition (matches Coq) *)
-lemma TEE_093_platform_trust_composition: "\<forall> pi tc, pi_tcb_info_valid pi = True \<longrightarrow> tc_root_key_valid tc = True \<longrightarrow> tc_pck_cert_valid tc = True \<longrightarrow> tc_tcb_signing_valid tc = True \<longrightarrow> tc_qe_report_valid tc = True \<longrightarrow> platform_trusted pi tc = True"
+lemma TEE_093_platform_trust_composition: "\<forall>pi tc. pi_tcb_info_valid pi = True \<longrightarrow> tc_root_key_valid tc = True \<longrightarrow> tc_pck_cert_valid tc = True \<longrightarrow> tc_tcb_signing_valid tc = True \<longrightarrow> tc_qe_report_valid tc = True \<longrightarrow> platform_trusted pi tc = True"
   by simp
 
 (* TEE_094_riina_complete_security (matches Coq) *)
@@ -820,7 +820,7 @@ lemma TEE_094_riina_complete_security: "tee_secure riina_tee = True \<and> verif
   by simp
 
 (* TEE_095_full_tee_security_decomposition (matches Coq) *)
-lemma TEE_095_full_tee_security_decomposition: "\<forall> t q ctx pi tc mem, tee_secure t = True \<longrightarrow> verify_quote q ctx = True \<longrightarrow> platform_trusted pi tc = True \<longrightarrow> mr_type mem = MRT_Enclave \<longrightarrow> mr_encrypted mem = True \<longrightarrow> enc_memory_encrypted (tee_enclave t) = True \<and> att_measurement (tee_attestation t) = True \<and> aq_signature_valid q = True \<and> pi_tcb_info_valid pi = True \<and> enclave_memory_protected mem = True"
+lemma TEE_095_full_tee_security_decomposition: "\<forall>t q ctx pi tc mem. tee_secure t = True \<longrightarrow> verify_quote q ctx = True \<longrightarrow> platform_trusted pi tc = True \<longrightarrow> mr_type mem = MRT_Enclave \<longrightarrow> mr_encrypted mem = True \<longrightarrow> enc_memory_encrypted (tee_enclave t) = True \<and> att_measurement (tee_attestation t) = True \<and> aq_signature_valid q = True \<and> pi_tcb_info_valid pi = True \<and> enclave_memory_protected mem = True"
   by auto
 
 end

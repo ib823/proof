@@ -144,54 +144,54 @@ definition within_occupancy :: "bool" where
 (* Section M01 - Smart Building Security
     Reference: IND_M_REALESTATE.md Section 3.1 *)
 (* smart_building_security (matches Coq) *)
-lemma smart_building_security: "\<forall> (controls : SmartBuildingControls) (building : nat), network_segmentation controls = True \<longrightarrow> device_authentication controls = True \<longrightarrow> True"
+lemma smart_building_security: "\<forall>(controls :: SmartBuildingControls) (building :: nat). network_segmentation controls = True \<longrightarrow> device_authentication controls = True \<longrightarrow> True"
   by simp
 
 (* Section M02 - BACnet Security
     Reference: IND_M_REALESTATE.md Section 3.2 *)
 (* bacnet_security (matches Coq) *)
-lemma bacnet_security: "\<forall> (bas_network : nat), True"
+lemma bacnet_security: "\<forall>(bas_network :: nat). True"
   by simp
 
 (* Section M03 - Access Control Systems
     Reference: IND_M_REALESTATE.md Section 3.3 *)
 (* access_control_security (matches Coq) *)
-lemma access_control_security: "\<forall> (credential : PropertyData) (access_point : nat), True"
+lemma access_control_security: "\<forall>(credential :: PropertyData) (access_point :: nat). True"
   by simp
 
 (* Section M04 - Transaction Data Protection
     Reference: IND_M_REALESTATE.md Section 3.4 *)
 (* transaction_protection (matches Coq) *)
-lemma transaction_protection: "\<forall> (transaction : nat), True"
+lemma transaction_protection: "\<forall>(transaction :: nat). True"
   by simp
 
 (* Section M05 - IoT Device Security
     Reference: IND_M_REALESTATE.md Section 3.5 *)
 (* iot_device_security (matches Coq) *)
-lemma iot_device_security: "\<forall> (device : nat), True"
+lemma iot_device_security: "\<forall>(device :: nat). True"
   by simp
 
 (* Building systems require network segmentation *)
 (* building_segmentation (matches Coq) *)
-lemma building_segmentation: "\<forall> (controls : SmartBuildingControls) (system : BuildingSystem), network_segmentation controls = True \<longrightarrow> True"
+lemma building_segmentation: "\<forall>(controls :: SmartBuildingControls) (system :: BuildingSystem). network_segmentation controls = True \<longrightarrow> True"
   by simp
 
 (* Safety systems must have failsafe operation *)
 (* safety_failsafe (matches Coq) *)
-lemma safety_failsafe: "\<forall> (controls : SmartBuildingControls) (safety_system : BuildingSystem), failsafe_operation controls = True \<longrightarrow> True"
+lemma safety_failsafe: "\<forall>(controls :: SmartBuildingControls) (safety_system :: BuildingSystem). failsafe_operation controls = True \<longrightarrow> True"
   by simp
 
 (* financial_records_max_sensitivity (matches Coq) *)
-lemma financial_records_max_sensitivity: "\<forall> d, property_sensitivity d \<le> property_sensitivity FinancialRecords"
-  by (cases rule: ‹_›.cases; simp)
+lemma financial_records_max_sensitivity: "\<forall>d. property_sensitivity d \<le> property_sensitivity FinancialRecords"
+  by auto
 
 (* access_credentials_max_sensitivity (matches Coq) *)
 lemma access_credentials_max_sensitivity: "property_sensitivity AccessCredentials = property_sensitivity FinancialRecords"
   by simp
 
 (* property_sensitivity_positive (matches Coq) *)
-lemma property_sensitivity_positive: "\<forall> d, property_sensitivity d \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma property_sensitivity_positive: "\<forall>d. property_sensitivity d \<ge> 1"
+  by auto
 
 (* fire_safety_critical (matches Coq) *)
 lemma fire_safety_critical: "system_criticality FireSafety = 5"
@@ -202,8 +202,8 @@ lemma elevator_critical: "system_criticality Elevator = 5"
   by simp
 
 (* system_criticality_positive (matches Coq) *)
-lemma system_criticality_positive: "\<forall> s, system_criticality s \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma system_criticality_positive: "\<forall>s. system_criticality s \<ge> 1"
+  by auto
 
 (* fire_elevator_equal_criticality (matches Coq) *)
 lemma fire_elevator_equal_criticality: "system_criticality FireSafety = system_criticality Elevator"
@@ -218,43 +218,43 @@ lemma hvac_not_safety_critical: "is_safety_critical HVAC = False"
   by simp
 
 (* safety_critical_high_criticality (matches Coq) *)
-lemma safety_critical_high_criticality: "\<forall> s, is_safety_critical s = True \<longrightarrow> system_criticality s \<ge> 5"
-  by (cases rule: ‹_›.cases; simp)
+lemma safety_critical_high_criticality: "\<forall>s. is_safety_critical s = True \<longrightarrow> system_criticality s \<ge> 5"
+  by auto
 
 (* all_controls_requires_segmentation (matches Coq) *)
-lemma all_controls_requires_segmentation: "\<forall> c, all_building_controls c = True \<longrightarrow> network_segmentation c = True"
+lemma all_controls_requires_segmentation: "\<forall>c. all_building_controls c = True \<longrightarrow> network_segmentation c = True"
   by auto
 
 (* all_controls_requires_auth (matches Coq) *)
-lemma all_controls_requires_auth: "\<forall> c, all_building_controls c = True \<longrightarrow> device_authentication c = True"
+lemma all_controls_requires_auth: "\<forall>c. all_building_controls c = True \<longrightarrow> device_authentication c = True"
   by auto
 
 (* all_controls_requires_failsafe (matches Coq) *)
-lemma all_controls_requires_failsafe: "\<forall> c, all_building_controls c = True \<longrightarrow> failsafe_operation c = True"
+lemma all_controls_requires_failsafe: "\<forall>c. all_building_controls c = True \<longrightarrow> failsafe_operation c = True"
   by auto
 
 (* count_building_bounded (matches Coq) *)
-lemma count_building_bounded: "\<forall> c, count_building_controls c \<le> 6"
-  by (cases rule: ‹_›.cases; simp)
+lemma count_building_bounded: "\<forall>c. count_building_controls c \<le> 6"
+  by auto
 
 (* all_controls_count_six (matches Coq) *)
-lemma all_controls_count_six: "\<forall> c, all_building_controls c = True \<longrightarrow> count_building_controls c = 6"
-  by (cases rule: ‹_›.cases; simp)
+lemma all_controls_count_six: "\<forall>c. all_building_controls c = True \<longrightarrow> count_building_controls c = 6"
+  by auto
 
 (* fire_safety_long_retention (matches Coq) *)
 lemma fire_safety_long_retention: "access_log_retention_days FireSafety = 150"
   by simp
 
 (* retention_positive (matches Coq) *)
-lemma retention_positive: "\<forall> s, access_log_retention_days s \<ge> 30"
-  by (cases rule: ‹_›.cases; simp)
+lemma retention_positive: "\<forall>s. access_log_retention_days s \<ge> 30"
+  by auto
 
 (* firmware_no_downgrade (matches Coq) *)
-lemma firmware_no_downgrade: "\<forall> old_v new_v, firmware_version_valid old_v new_v = True \<longrightarrow> old_v < new_v"
+lemma firmware_no_downgrade: "\<forall>old_v new_v. firmware_version_valid old_v new_v = True \<longrightarrow> old_v < new_v"
   by auto
 
 (* occupancy_bounded (matches Coq) *)
-lemma occupancy_bounded: "\<forall> curr max_o, within_occupancy curr max_o = True \<longrightarrow> curr \<le> max_o"
+lemma occupancy_bounded: "\<forall>curr max_o. within_occupancy curr max_o = True \<longrightarrow> curr \<le> max_o"
   by auto
 
 end

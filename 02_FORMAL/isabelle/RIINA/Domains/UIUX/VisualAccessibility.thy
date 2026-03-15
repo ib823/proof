@@ -100,7 +100,7 @@ definition reduce_motion_enabled :: "bool" where
 
 (* plays (matches Coq: Definition plays) *)
 definition plays :: "Animation \<Rightarrow> bool" where
-  "plays anim \<equiv> animation_active anim = True /\ is_essential anim = False"
+  "plays anim \<equiv> animation_active anim = True \<and> is_essential anim = False"
 
 (* is_root - complex match, needs manual translation *)
 definition is_root :: "bool" where "is_root = undefined"
@@ -111,19 +111,19 @@ fun id_in_tree :: "AccessibilityTree \<Rightarrow> nat \<Rightarrow> bool" where
 
 (* connected_to_root (matches Coq: Definition connected_to_root) *)
 definition connected_to_root :: "AccessibilityTree \<Rightarrow> bool" where
-  "connected_to_root tree \<equiv> forall n, In n tree ->
+  "connected_to_root tree \<equiv> forall n, n \<in> set tree ->
     node_parent n = None \/
-    (exists pid, node_parent n = Some pid /\ id_in_tree tree pid = True)"
+    (exists pid, node_parent n = Some pid \<and> id_in_tree tree pid = True)"
 
 (* element_has_node (matches Coq: Definition element_has_node) *)
 definition element_has_node :: "AccessibilityTree \<Rightarrow> UIElement \<Rightarrow> bool" where
-  "element_has_node tree elem \<equiv> exists n, In n tree /\ node_id n = element_id elem"
+  "element_has_node tree elem \<equiv> exists n, n \<in> set tree \<and> node_id n = element_id elem"
 
 (* well_formed_tree (matches Coq: Definition well_formed_tree) *)
 definition well_formed_tree :: "AccessibilityTree \<Rightarrow> bool" where
-  "well_formed_tree tree \<equiv> connected_to_root tree /\
-  (exists r, In r tree /\ is_root r = True) /\
-  (forall n1 n2, In n1 tree -> In n2 tree ->
+  "well_formed_tree tree \<equiv> connected_to_root tree \<and>
+  (exists r, r \<in> set tree \<and> is_root r = True) \<and>
+  (forall n1 n2, n1 \<in> set tree -> n2 \<in> set tree ->
      is_root n1 = True -> is_root n2 = True -> node_id n1 = node_id n2)"
 
 (* collect_ids (matches Coq: Definition collect_ids) *)
@@ -181,171 +181,171 @@ definition functional_without_animation :: "MotionElement \<Rightarrow> bool" wh
   "functional_without_animation me \<equiv> motion_active me = False -> motion_id me > 0"
 
 (* voiceover_complete_coverage (matches Coq) *)
-lemma voiceover_complete_coverage: "\<forall> (re : RIINA_UIElement), visible (riina_element re) \<longrightarrow> voiceover_accessible (riina_element re)"
+lemma voiceover_complete_coverage: "\<forall>(re :: RIINA_UIElement). visible (riina_element re) \<longrightarrow> voiceover_accessible (riina_element re)"
   by auto
 
 (* dynamic_type_universal (matches Coq) *)
-lemma dynamic_type_universal: "\<forall> (rt : RIINA_Text), readable (riina_text rt) (current_size rt)"
+lemma dynamic_type_universal: "\<forall>(rt :: RIINA_Text). readable (riina_text rt) (current_size rt)"
   by auto
 
 (* reduce_motion_complete (matches Coq) *)
-lemma reduce_motion_complete: "\<forall> (ra : RIINA_Animation), reduce_motion_enabled \<longrightarrow> is_essential (riina_animation ra) = False \<longrightarrow> ~ plays (riina_animation ra)"
+lemma reduce_motion_complete: "\<forall>(ra :: RIINA_Animation). reduce_motion_enabled \<longrightarrow> is_essential (riina_animation ra) = False \<longrightarrow> ~ plays (riina_animation ra)"
   by auto
 
 (* visible_decidable (matches Coq) *)
-lemma visible_decidable: "\<forall> (elem : UIElement), {visible elem} + {~ visible elem}"
+lemma visible_decidable: "\<forall>(elem :: UIElement). (visible elem) \<or> (~ visible elem)"
   by simp
 
 (* voiceover_accessible_decidable (matches Coq) *)
-lemma voiceover_accessible_decidable: "\<forall> (elem : UIElement), {voiceover_accessible elem} + {~ voiceover_accessible elem}"
+lemma voiceover_accessible_decidable: "\<forall>(elem :: UIElement). (voiceover_accessible elem) \<or> (~ voiceover_accessible elem)"
   by auto
 
 (* dynamic_type_size_decidable (matches Coq) *)
-lemma dynamic_type_size_decidable: "\<forall> (s1 s2 : DynamicTypeSize), {s1 = s2} + {s1 \<noteq> s2}"
+lemma dynamic_type_size_decidable: "\<forall>(s1 s2 : DynamicTypeSize). (s1 = s2) \<or> (s1 \<noteq> s2)"
   by simp
 
 (* readable_at_current_size (matches Coq) *)
-lemma readable_at_current_size: "\<forall> (text : Text), readable text (text_size text)"
+lemma readable_at_current_size: "\<forall>(text :: Text). readable text (text_size text)"
   by simp
 
 (* essential_animations_can_play (matches Coq) *)
-lemma essential_animations_can_play: "\<forall> (anim : Animation), is_essential anim = True \<longrightarrow> ~ (is_essential anim = False)"
+lemma essential_animations_can_play: "\<forall>(anim :: Animation). is_essential anim = True \<longrightarrow> ~ (is_essential anim = False)"
   by auto
 
 (* plays_implies_active (matches Coq) *)
-lemma plays_implies_active: "\<forall> (anim : Animation), plays anim \<longrightarrow> animation_active anim = True"
+lemma plays_implies_active: "\<forall>(anim :: Animation). plays anim \<longrightarrow> animation_active anim = True"
   by auto
 
 (* plays_implies_nonessential (matches Coq) *)
-lemma plays_implies_nonessential: "\<forall> (anim : Animation), plays anim \<longrightarrow> is_essential anim = False"
+lemma plays_implies_nonessential: "\<forall>(anim :: Animation). plays anim \<longrightarrow> is_essential anim = False"
   by auto
 
 (* all_visible_elements_in_tree (matches Coq) *)
-lemma all_visible_elements_in_tree: "\<forall> (v : RIINA_View) (elem : UIElement), In elem (view_elements v) \<longrightarrow> is_visible elem = True \<longrightarrow> element_has_node (view_tree v) elem"
+lemma all_visible_elements_in_tree: "\<forall>(v :: RIINA_View) (elem :: UIElement). In elem (view_elements v) \<longrightarrow> is_visible elem = True \<longrightarrow> element_has_node (view_tree v) elem"
   by auto
 
 (* no_orphan_nodes (matches Coq) *)
-lemma no_orphan_nodes: "\<forall> (v : RIINA_View) (n : AccessibilityNode), In n (view_tree v) \<longrightarrow> node_parent n = None \<or> (\<exists> pid, node_parent n = Some pid \<and> id_in_tree (view_tree v) pid = True)"
+lemma no_orphan_nodes: "\<forall>(v :: RIINA_View) (n :: AccessibilityNode). In n (view_tree v) \<longrightarrow> node_parent n = None \<or> (\<exists>pid. node_parent n = Some pid \<and> id_in_tree (view_tree v) pid = True)"
   by auto
 
 (* role_always_set (matches Coq) *)
-lemma role_always_set: "\<forall> (v : RIINA_View) (n : AccessibilityNode), In n (view_tree v) \<longrightarrow> node_interactive n = True \<longrightarrow> node_role n \<noteq> RoleStatic"
+lemma role_always_set: "\<forall>(v :: RIINA_View) (n :: AccessibilityNode). In n (view_tree v) \<longrightarrow> node_interactive n = True \<longrightarrow> node_role n \<noteq> RoleStatic"
   by auto
 
 (* label_always_nonempty (matches Coq) *)
-lemma label_always_nonempty: "\<forall> (v : RIINA_View) (n : AccessibilityNode), In n (view_tree v) \<longrightarrow> node_interactive n = True \<longrightarrow> node_label n \<noteq> 0"
+lemma label_always_nonempty: "\<forall>(v :: RIINA_View) (n :: AccessibilityNode). In n (view_tree v) \<longrightarrow> node_interactive n = True \<longrightarrow> node_label n \<noteq> 0"
   by auto
 
 (* collect_ids_complete (matches Coq) *)
-lemma collect_ids_complete: "\<forall> (tree : AccessibilityTree) (n : AccessibilityNode), In n tree \<longrightarrow> In (node_id n) (collect_ids tree)"
-  by (cases rule: ‹_›.cases; simp)
+lemma collect_ids_complete: "\<forall>(tree :: AccessibilityTree) (n :: AccessibilityNode). n \<in> set tree \<longrightarrow> In (node_id n) (collect_ids tree)"
+  by auto
 
 (* tree_traversal_complete (matches Coq) *)
-lemma tree_traversal_complete: "\<forall> (v : RIINA_View) (n : AccessibilityNode), In n (view_tree v) \<longrightarrow> In (node_id n) (collect_ids (view_tree v))"
+lemma tree_traversal_complete: "\<forall>(v :: RIINA_View) (n :: AccessibilityNode). In n (view_tree v) \<longrightarrow> In (node_id n) (collect_ids (view_tree v))"
   by auto
 
 (* focus_order_from_interactive (matches Coq) *)
-lemma focus_order_from_interactive: "\<forall> (tree : AccessibilityTree), focus_order tree = map node_id (interactive_nodes tree)"
-  by (cases rule: ‹_›.cases; simp)
+lemma focus_order_from_interactive: "\<forall>(tree :: AccessibilityTree). focus_order tree = map node_id (interactive_nodes tree)"
+  by auto
 
 (* focus_order_matches_tree (matches Coq) *)
-lemma focus_order_matches_tree: "\<forall> (v : RIINA_View) (n : AccessibilityNode), In n (view_tree v) \<longrightarrow> node_interactive n = True \<longrightarrow> In (node_id n) (focus_order (view_tree v))"
-  by (cases rule: ‹_›.cases; simp)
+lemma focus_order_matches_tree: "\<forall>(v :: RIINA_View) (n :: AccessibilityNode). In n (view_tree v) \<longrightarrow> node_interactive n = True \<longrightarrow> In (node_id n) (focus_order (view_tree v))"
+  by auto
 
 (* live_regions_announced (matches Coq) *)
-lemma live_regions_announced: "\<forall> (rlr : RIINA_LiveRegion), region_content_changed (riina_live_region rlr) = True \<longrightarrow> region_politeness (riina_live_region rlr) \<noteq> Off"
+lemma live_regions_announced: "\<forall>(rlr :: RIINA_LiveRegion). region_content_changed (riina_live_region rlr) = True \<longrightarrow> region_politeness (riina_live_region rlr) \<noteq> Off"
   by auto
 
 (* information_not_color_only (matches Coq) *)
-lemma information_not_color_only: "\<forall> (rs : RIINA_Signal), color_signal (riina_signal rs) = True \<longrightarrow> has_noncolor_alternative (riina_signal rs)"
+lemma information_not_color_only: "\<forall>(rs :: RIINA_Signal). color_signal (riina_signal rs) = True \<longrightarrow> has_noncolor_alternative (riina_signal rs)"
   by auto
 
 (* link_not_color_only (matches Coq) *)
-lemma link_not_color_only: "\<forall> (cs : ContextualSignal), ctx_context cs = CtxLink \<longrightarrow> underline_signal (riina_signal (ctx_signal cs)) = True"
+lemma link_not_color_only: "\<forall>(cs :: ContextualSignal). ctx_context cs = CtxLink \<longrightarrow> underline_signal (riina_signal (ctx_signal cs)) = True"
   by auto
 
 (* error_not_color_only (matches Coq) *)
-lemma error_not_color_only: "\<forall> (cs : ContextualSignal), ctx_context cs = CtxError \<longrightarrow> shape_signal (riina_signal (ctx_signal cs)) = True \<and> text_signal (riina_signal (ctx_signal cs)) = True"
+lemma error_not_color_only: "\<forall>(cs :: ContextualSignal). ctx_context cs = CtxError \<longrightarrow> shape_signal (riina_signal (ctx_signal cs)) = True \<and> text_signal (riina_signal (ctx_signal cs)) = True"
   by auto
 
 (* success_not_color_only (matches Coq) *)
-lemma success_not_color_only: "\<forall> (cs : ContextualSignal), ctx_context cs = CtxSuccess \<longrightarrow> text_signal (riina_signal (ctx_signal cs)) = True"
+lemma success_not_color_only: "\<forall>(cs :: ContextualSignal). ctx_context cs = CtxSuccess \<longrightarrow> text_signal (riina_signal (ctx_signal cs)) = True"
   by auto
 
 (* chart_patterns_available (matches Coq) *)
-lemma chart_patterns_available: "\<forall> (cs : ContextualSignal), ctx_context cs = CtxChart \<longrightarrow> pattern_signal (riina_signal (ctx_signal cs)) = True"
+lemma chart_patterns_available: "\<forall>(cs :: ContextualSignal). ctx_context cs = CtxChart \<longrightarrow> pattern_signal (riina_signal (ctx_signal cs)) = True"
   by auto
 
 (* status_indicators_labeled (matches Coq) *)
-lemma status_indicators_labeled: "\<forall> (cs : ContextualSignal), ctx_context cs = CtxStatus \<longrightarrow> text_signal (riina_signal (ctx_signal cs)) = True"
+lemma status_indicators_labeled: "\<forall>(cs :: ContextualSignal). ctx_context cs = CtxStatus \<longrightarrow> text_signal (riina_signal (ctx_signal cs)) = True"
   by auto
 
 (* text_scales_to_200_percent (matches Coq) *)
-lemma text_scales_to_200_percent: "\<forall> (rtp : RIINA_TextProperties), not_truncated (riina_tp rtp) 200"
+lemma text_scales_to_200_percent: "\<forall>(rtp :: RIINA_TextProperties). not_truncated (riina_tp rtp) 200"
   by simp
 
 (* no_text_truncation (matches Coq) *)
-lemma no_text_truncation: "\<forall> (rtp : RIINA_TextProperties) (scale_pct : nat), scale_pct \<ge> 100 \<longrightarrow> scale_pct \<le> 200 \<longrightarrow> not_truncated (riina_tp rtp) scale_pct"
+lemma no_text_truncation: "\<forall>(rtp :: RIINA_TextProperties) (scale_pct :: nat). scale_pct \<ge> 100 \<longrightarrow> scale_pct \<le> 200 \<longrightarrow> not_truncated (riina_tp rtp) scale_pct"
   by auto
 
 (* line_height_proportional (matches Coq) *)
-lemma line_height_proportional: "\<forall> (rtp : RIINA_TextProperties), line_height (riina_tp rtp) * 2 \<ge> font_size (riina_tp rtp) * 3"
+lemma line_height_proportional: "\<forall>(rtp :: RIINA_TextProperties). line_height (riina_tp rtp) * 2 \<ge> font_size (riina_tp rtp) * 3"
   by auto
 
 (* container_expands_with_text (matches Coq) *)
-lemma container_expands_with_text: "\<forall> (rtp : RIINA_TextProperties) (scale_pct : nat), scale_pct \<ge> 100 \<longrightarrow> scale_pct \<le> 200 \<longrightarrow> scaled_container_height (riina_tp rtp) scale_pct \<ge> scaled_font_size (riina_tp rtp) scale_pct"
+lemma container_expands_with_text: "\<forall>(rtp :: RIINA_TextProperties) (scale_pct :: nat). scale_pct \<ge> 100 \<longrightarrow> scale_pct \<le> 200 \<longrightarrow> scaled_container_height (riina_tp rtp) scale_pct \<ge> scaled_font_size (riina_tp rtp) scale_pct"
   by auto
 
 (* text_reflow (matches Coq) *)
-lemma text_reflow: "\<forall> (rtp : RIINA_TextProperties), reflows (riina_tp rtp)"
+lemma text_reflow: "\<forall>(rtp :: RIINA_TextProperties). reflows (riina_tp rtp)"
   by auto
 
 (* minimum_font_size (matches Coq) *)
-lemma minimum_font_size: "\<forall> (rtp : RIINA_TextProperties), font_size (riina_tp rtp) \<ge> 12"
+lemma minimum_font_size: "\<forall>(rtp :: RIINA_TextProperties). font_size (riina_tp rtp) \<ge> 12"
   by simp
 
 (* parallax_disableable (matches Coq) *)
-lemma parallax_disableable: "\<forall> (rme : RIINA_MotionElement), motion_type (riina_motion rme) = Parallax \<longrightarrow> respects_reduce_motion (riina_motion rme) = True"
+lemma parallax_disableable: "\<forall>(rme :: RIINA_MotionElement). motion_type (riina_motion rme) = Parallax \<longrightarrow> respects_reduce_motion (riina_motion rme) = True"
   by auto
 
 (* auto_play_disableable (matches Coq) *)
-lemma auto_play_disableable: "\<forall> (rme : RIINA_MotionElement), motion_type (riina_motion rme) = AutoPlay \<longrightarrow> user_controllable (riina_motion rme)"
+lemma auto_play_disableable: "\<forall>(rme :: RIINA_MotionElement). motion_type (riina_motion rme) = AutoPlay \<longrightarrow> user_controllable (riina_motion rme)"
   by auto
 
 (* flash_rate_safe (matches Coq) *)
-lemma flash_rate_safe: "\<forall> (rme : RIINA_MotionElement), safe_flash_rate (riina_motion rme)"
+lemma flash_rate_safe: "\<forall>(rme :: RIINA_MotionElement). safe_flash_rate (riina_motion rme)"
   by auto
 
 (* carousel_controllable (matches Coq) *)
-lemma carousel_controllable: "\<forall> (rme : RIINA_MotionElement), motion_type (riina_motion rme) = Carousel \<longrightarrow> user_controllable (riina_motion rme)"
+lemma carousel_controllable: "\<forall>(rme :: RIINA_MotionElement). motion_type (riina_motion rme) = Carousel \<longrightarrow> user_controllable (riina_motion rme)"
   by auto
 
 (* video_controllable (matches Coq) *)
-lemma video_controllable: "\<forall> (rme : RIINA_MotionElement), motion_type (riina_motion rme) = VideoContent \<longrightarrow> user_controllable (riina_motion rme)"
+lemma video_controllable: "\<forall>(rme :: RIINA_MotionElement). motion_type (riina_motion rme) = VideoContent \<longrightarrow> user_controllable (riina_motion rme)"
   by auto
 
 (* animation_not_required (matches Coq) *)
-lemma animation_not_required: "\<forall> (rme : RIINA_MotionElement), functional_without_animation (riina_motion rme)"
+lemma animation_not_required: "\<forall>(rme :: RIINA_MotionElement). functional_without_animation (riina_motion rme)"
   by auto
 
 (* color_independence_implies_screen_reader_friendly (matches Coq) *)
-lemma color_independence_implies_screen_reader_friendly: "\<forall> (rs : RIINA_Signal), text_signal (riina_signal rs) = True \<longrightarrow> has_noncolor_alternative (riina_signal rs)"
+lemma color_independence_implies_screen_reader_friendly: "\<forall>(rs :: RIINA_Signal). text_signal (riina_signal rs) = True \<longrightarrow> has_noncolor_alternative (riina_signal rs)"
   by auto
 
 (* error_signals_doubly_redundant (matches Coq) *)
-lemma error_signals_doubly_redundant: "\<forall> (cs : ContextualSignal), ctx_context cs = CtxError \<longrightarrow> shape_signal (riina_signal (ctx_signal cs)) = True \<and> text_signal (riina_signal (ctx_signal cs)) = True"
+lemma error_signals_doubly_redundant: "\<forall>(cs :: ContextualSignal). ctx_context cs = CtxError \<longrightarrow> shape_signal (riina_signal (ctx_signal cs)) = True \<and> text_signal (riina_signal (ctx_signal cs)) = True"
   by auto
 
 (* scaled_text_still_reflows (matches Coq) *)
-lemma scaled_text_still_reflows: "\<forall> (rtp : RIINA_TextProperties), reflows (riina_tp rtp)"
+lemma scaled_text_still_reflows: "\<forall>(rtp :: RIINA_TextProperties). reflows (riina_tp rtp)"
   by auto
 
 (* motion_safe_and_controllable (matches Coq) *)
-lemma motion_safe_and_controllable: "\<forall> (rme : RIINA_MotionElement), motion_type (riina_motion rme) = Carousel \<longrightarrow> safe_flash_rate (riina_motion rme) \<and> user_controllable (riina_motion rme)"
+lemma motion_safe_and_controllable: "\<forall>(rme :: RIINA_MotionElement). motion_type (riina_motion rme) = Carousel \<longrightarrow> safe_flash_rate (riina_motion rme) \<and> user_controllable (riina_motion rme)"
   by auto
 
 (* interactive_nodes_fully_accessible (matches Coq) *)
-lemma interactive_nodes_fully_accessible: "\<forall> (v : RIINA_View) (n : AccessibilityNode), In n (view_tree v) \<longrightarrow> node_interactive n = True \<longrightarrow> node_role n \<noteq> RoleStatic \<and> node_label n \<noteq> 0"
+lemma interactive_nodes_fully_accessible: "\<forall>(v :: RIINA_View) (n :: AccessibilityNode). In n (view_tree v) \<longrightarrow> node_interactive n = True \<longrightarrow> node_role n \<noteq> RoleStatic \<and> node_label n \<noteq> 0"
   by auto
 
 end

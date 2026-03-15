@@ -25,27 +25,27 @@ begin
 
 (* Transitivity of store typing extension *)
 (* store_ty_extends_trans_early (matches Coq) *)
-lemma store_ty_extends_trans_early: "\<forall> Σ1 Σ2 Σ3, store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ3 \<longrightarrow> store_ty_extends Σ1 Σ3"
+lemma store_ty_extends_trans_early: "\<forall>Σ1 Σ2 Σ3. store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ3 \<longrightarrow> store_ty_extends Σ1 Σ3"
   by auto
 
 (* val_rel_at_type is covariant in Σ for all types *)
 (* val_rel_at_type_mono_store (matches Coq) *)
-lemma val_rel_at_type_mono_store: "\<forall> T Σ Σ' (sp : store_ty \<longrightarrow> store \<longrightarrow> store \<longrightarrow> Prop) (vl : store_ty \<longrightarrow> ty \<longrightarrow> expr \<longrightarrow> expr \<longrightarrow> Prop) (sl : store_ty \<longrightarrow> store \<longrightarrow> store \<longrightarrow> Prop) (svp : store_ty \<longrightarrow> store \<longrightarrow> store \<longrightarrow> Prop) v1 v2, store_ty_extends Σ Σ' \<longrightarrow> val_rel_at_type Σ sp vl sl svp T v1 v2 \<longrightarrow> val_rel_at_type Σ' sp vl sl svp T v1 v2"
+lemma val_rel_at_type_mono_store: "\<forall>T Σ Σ' (sp : store_ty \<longrightarrow> store \<longrightarrow> store \<longrightarrow> Prop) (vl : store_ty \<longrightarrow> ty \<longrightarrow> expr \<longrightarrow> expr \<longrightarrow> Prop) (sl : store_ty \<longrightarrow> store \<longrightarrow> store \<longrightarrow> Prop) (svp : store_ty \<longrightarrow> store \<longrightarrow> store \<longrightarrow> Prop) v1 v2. store_ty_extends Σ Σ' \<longrightarrow> val_rel_at_type Σ sp vl sl svp T v1 v2 \<longrightarrow> val_rel_at_type Σ' sp vl sl svp T v1 v2"
   by auto
 
 (* First-order decidability helper *)
 (* first_order_decidable_local (matches Coq) *)
-lemma first_order_decidable_local: "\<forall> T, {first_order_type T = True} + {first_order_type T = False}"
-  by (cases rule: ‹_›.cases; simp)
+lemma first_order_decidable_local: "\<forall>T. (first_order_type T = True) \<or> (first_order_type T = False)"
+  by auto
 
 (* Store-typing monotonicity for first-order types *)
 (* val_rel_n_mono_store_fo (matches Coq) *)
-lemma val_rel_n_mono_store_fo: "\<forall> n Σ Σ' T v1 v2, first_order_type T = True \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> val_rel_n n Σ' T v1 v2"
+lemma val_rel_n_mono_store_fo: "\<forall>n Σ Σ' T v1 v2. first_order_type T = True \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> val_rel_n n Σ' T v1 v2"
   by auto
 
 (* Store-typing monotonicity (Kripke strengthening) *)
 (* val_rel_n_mono_store (matches Coq) *)
-lemma val_rel_n_mono_store: "\<forall> n Σ Σ' T v1 v2, store_ty_extends Σ Σ' \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> val_rel_n n Σ' T v1 v2"
+lemma val_rel_n_mono_store: "\<forall>n Σ Σ' T v1 v2. store_ty_extends Σ Σ' \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> val_rel_n n Σ' T v1 v2"
   by auto
 
 end

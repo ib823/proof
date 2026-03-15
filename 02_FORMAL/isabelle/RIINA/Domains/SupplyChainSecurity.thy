@@ -211,165 +211,165 @@ definition isolation_sufficient :: "IsolationLevel \<Rightarrow> bool" where
 
 (* FullSupplyChainSecurity (matches Coq: Definition FullSupplyChainSecurity) *)
 definition FullSupplyChainSecurity :: "bool" where
-  "FullSupplyChainSecurity \<equiv> DependencyMitigated /\
-  TyposquatMitigated /\
-  ConfusionMitigated /\
-  BuildMitigated /\
-  PackageManagerMitigated /\
-  FirmwareMitigated /\
-  HardwareMitigated /\
-  ThirdPartyMitigated /\
-  WateringHoleMitigated /\
-  UpdateMitigated /\
-  SourceMitigated /\
-  CompilerMitigated /\
-  BinaryMitigated /\
-  CertificateMitigated /\
-  DeveloperMitigated /\
+  "FullSupplyChainSecurity \<equiv> DependencyMitigated \<and>
+  TyposquatMitigated \<and>
+  ConfusionMitigated \<and>
+  BuildMitigated \<and>
+  PackageManagerMitigated \<and>
+  FirmwareMitigated \<and>
+  HardwareMitigated \<and>
+  ThirdPartyMitigated \<and>
+  WateringHoleMitigated \<and>
+  UpdateMitigated \<and>
+  SourceMitigated \<and>
+  CompilerMitigated \<and>
+  BinaryMitigated \<and>
+  CertificateMitigated \<and>
+  DeveloperMitigated \<and>
   MalwareMitigated"
 
 (* hash_eq_refl (matches Coq) *)
-lemma hash_eq_refl: "\<forall> h : Hash, hash_eq h h = True"
+lemma hash_eq_refl: "\<forall>h : Hash. hash_eq h h = True"
   by simp
 
 (* hash_eq_sym (matches Coq) *)
-lemma hash_eq_sym: "\<forall> h1 h2 : Hash, hash_eq h1 h2 = True \<longrightarrow> hash_eq h2 h1 = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma hash_eq_sym: "\<forall>h1 h2 : Hash. hash_eq h1 h2 = True \<longrightarrow> hash_eq h2 h1 = True"
+  by auto
 
 (* hash_eq_implies_eq (matches Coq) *)
-lemma hash_eq_implies_eq: "\<forall> h1 h2 : Hash, hash_eq h1 h2 = True \<longrightarrow> h1 = h2"
-  by (cases rule: ‹_›.cases; simp)
+lemma hash_eq_implies_eq: "\<forall>h1 h2 : Hash. hash_eq h1 h2 = True \<longrightarrow> h1 = h2"
+  by auto
 
 (* bool_impl (matches Coq) *)
-lemma bool_impl: "\<forall> a b : bool, a = True \<longrightarrow> (a = True \<longrightarrow> b = True) \<longrightarrow> b = True"
+lemma bool_impl: "\<forall>a b : bool. a = True \<longrightarrow> (a = True \<longrightarrow> b = True) \<longrightarrow> b = True"
   by auto
 
 (* sup_001_dependency_compromise_mitigated (matches Coq) *)
-lemma sup_001_dependency_compromise_mitigated: "\<forall> (sa : SignedArtifact), sa_verified sa = True \<longrightarrow> DependencyMitigated"
+lemma sup_001_dependency_compromise_mitigated: "\<forall>(sa :: SignedArtifact). sa_verified sa = True \<longrightarrow> DependencyMitigated"
   by auto
 
 (* sup_001_hash_signature_integrity (matches Coq) *)
-lemma sup_001_hash_signature_integrity: "\<forall> (sa : SignedArtifact) (expected_hash : Hash), sa_verified sa = True \<longrightarrow> hash_eq (sa_content_hash sa) expected_hash = True \<longrightarrow> sa_content_hash sa = expected_hash"
+lemma sup_001_hash_signature_integrity: "\<forall>(sa :: SignedArtifact) (expected_hash :: Hash). sa_verified sa = True \<longrightarrow> hash_eq (sa_content_hash sa) expected_hash = True \<longrightarrow> sa_content_hash sa = expected_hash"
   by auto
 
 (* sup_002_typosquatting_mitigated (matches Coq) *)
-lemma sup_002_typosquatting_mitigated: "\<forall> (vp : VerifiedPackage), vp_name_verified vp = True \<longrightarrow> vp_in_allowlist vp = True \<longrightarrow> TyposquatMitigated"
+lemma sup_002_typosquatting_mitigated: "\<forall>(vp :: VerifiedPackage). vp_name_verified vp = True \<longrightarrow> vp_in_allowlist vp = True \<longrightarrow> TyposquatMitigated"
   by auto
 
 (* sup_002_name_verification_canonical (matches Coq) *)
-lemma sup_002_name_verification_canonical: "\<forall> (vp : VerifiedPackage), vp_name_verified vp = True \<longrightarrow> name_eq (vp_name vp) (vp_canonical_name vp) = True \<longrightarrow> vp_name vp = vp_canonical_name vp"
+lemma sup_002_name_verification_canonical: "\<forall>(vp :: VerifiedPackage). vp_name_verified vp = True \<longrightarrow> name_eq (vp_name vp) (vp_canonical_name vp) = True \<longrightarrow> vp_name vp = vp_canonical_name vp"
   by auto
 
 (* sup_003_dependency_confusion_mitigated (matches Coq) *)
-lemma sup_003_dependency_confusion_mitigated: "\<forall> (sp : ScopedPackage), sp_namespace_verified sp = True \<longrightarrow> sp_internal_registry sp = True \<longrightarrow> ConfusionMitigated"
+lemma sup_003_dependency_confusion_mitigated: "\<forall>(sp :: ScopedPackage). sp_namespace_verified sp = True \<longrightarrow> sp_internal_registry sp = True \<longrightarrow> ConfusionMitigated"
   by auto
 
 (* sup_003_internal_registry_isolation (matches Coq) *)
-lemma sup_003_internal_registry_isolation: "\<forall> (sp1 sp2 : ScopedPackage), sp_internal_registry sp1 = True \<longrightarrow> sp_internal_registry sp2 = True \<longrightarrow> sp_namespace sp1 \<noteq> sp_namespace sp2 \<longrightarrow> sp_name sp1 = sp_name sp2 \<longrightarrow> ConfusionMitigated"
+lemma sup_003_internal_registry_isolation: "\<forall>(sp1 sp2 : ScopedPackage). sp_internal_registry sp1 = True \<longrightarrow> sp_internal_registry sp2 = True \<longrightarrow> sp_namespace sp1 \<noteq> sp_namespace sp2 \<longrightarrow> sp_name sp1 = sp_name sp2 \<longrightarrow> ConfusionMitigated"
   by auto
 
 (* sup_004_build_compromise_mitigated (matches Coq) *)
-lemma sup_004_build_compromise_mitigated: "\<forall> (rb : ReproducibleBuild), rb_hashes_match rb = True \<longrightarrow> hash_eq (rb_builder1_hash rb) (rb_builder2_hash rb) = True \<longrightarrow> rb_builder1_hash rb = rb_builder2_hash rb"
+lemma sup_004_build_compromise_mitigated: "\<forall>(rb :: ReproducibleBuild). rb_hashes_match rb = True \<longrightarrow> hash_eq (rb_builder1_hash rb) (rb_builder2_hash rb) = True \<longrightarrow> rb_builder1_hash rb = rb_builder2_hash rb"
   by auto
 
 (* sup_004_reproducible_detection (matches Coq) *)
-lemma sup_004_reproducible_detection: "\<forall> (rb : ReproducibleBuild), rb_hashes_match rb = True \<longrightarrow> BuildMitigated"
+lemma sup_004_reproducible_detection: "\<forall>(rb :: ReproducibleBuild). rb_hashes_match rb = True \<longrightarrow> BuildMitigated"
   by auto
 
 (* sup_005_package_manager_mitigated (matches Coq) *)
-lemma sup_005_package_manager_mitigated: "\<forall> (tuf : TUFPackage), tuf_root_signed tuf = True \<longrightarrow> tuf_targets_signed tuf = True \<longrightarrow> tuf_snapshot_signed tuf = True \<longrightarrow> tuf_timestamp_signed tuf = True \<longrightarrow> tuf_threshold_met tuf = True \<longrightarrow> PackageManagerMitigated"
+lemma sup_005_package_manager_mitigated: "\<forall>(tuf :: TUFPackage). tuf_root_signed tuf = True \<longrightarrow> tuf_targets_signed tuf = True \<longrightarrow> tuf_snapshot_signed tuf = True \<longrightarrow> tuf_timestamp_signed tuf = True \<longrightarrow> tuf_threshold_met tuf = True \<longrightarrow> PackageManagerMitigated"
   by auto
 
 (* sup_005_tuf_threshold_security (matches Coq) *)
-lemma sup_005_tuf_threshold_security: "\<forall> (tuf : TUFPackage), tuf_threshold_met tuf = True \<longrightarrow> tuf_root_signed tuf = True \<longrightarrow> PackageManagerMitigated"
+lemma sup_005_tuf_threshold_security: "\<forall>(tuf :: TUFPackage). tuf_threshold_met tuf = True \<longrightarrow> tuf_root_signed tuf = True \<longrightarrow> PackageManagerMitigated"
   by auto
 
 (* sup_006_firmware_mitigated (matches Coq) *)
-lemma sup_006_firmware_mitigated: "\<forall> (fw : VerifiedFirmware), fw_signature_valid fw = True \<longrightarrow> fw_rollback_protected fw = True \<longrightarrow> FirmwareMitigated"
+lemma sup_006_firmware_mitigated: "\<forall>(fw :: VerifiedFirmware). fw_signature_valid fw = True \<longrightarrow> fw_rollback_protected fw = True \<longrightarrow> FirmwareMitigated"
   by auto
 
 (* sup_006_firmware_integrity (matches Coq) *)
-lemma sup_006_firmware_integrity: "\<forall> (fw : VerifiedFirmware) (expected_hash : Hash), fw_signature_valid fw = True \<longrightarrow> hash_eq (fw_hash fw) expected_hash = True \<longrightarrow> fw_hash fw = expected_hash"
+lemma sup_006_firmware_integrity: "\<forall>(fw :: VerifiedFirmware) (expected_hash :: Hash). fw_signature_valid fw = True \<longrightarrow> hash_eq (fw_hash fw) expected_hash = True \<longrightarrow> fw_hash fw = expected_hash"
   by auto
 
 (* sup_007_hardware_mitigated (matches Coq) *)
-lemma sup_007_hardware_mitigated: "\<forall> (hw : HardwareAttestation), hw_tpm_present hw = True \<longrightarrow> hw_secure_boot hw = True \<longrightarrow> hw_chain_valid hw = True \<longrightarrow> HardwareMitigated"
+lemma sup_007_hardware_mitigated: "\<forall>(hw :: HardwareAttestation). hw_tpm_present hw = True \<longrightarrow> hw_secure_boot hw = True \<longrightarrow> hw_chain_valid hw = True \<longrightarrow> HardwareMitigated"
   by auto
 
 (* sup_007_attestation_chain_security (matches Coq) *)
-lemma sup_007_attestation_chain_security: "\<forall> (hw : HardwareAttestation), hw_chain_valid hw = True \<longrightarrow> hw_tpm_present hw = True \<longrightarrow> length (hw_attestation_chain hw) > 0 \<longrightarrow> HardwareMitigated"
+lemma sup_007_attestation_chain_security: "\<forall>(hw :: HardwareAttestation). hw_chain_valid hw = True \<longrightarrow> hw_tpm_present hw = True \<longrightarrow> length (hw_attestation_chain hw) > 0 \<longrightarrow> HardwareMitigated"
   by auto
 
 (* sup_008_third_party_mitigated (matches Coq) *)
-lemma sup_008_third_party_mitigated: "\<forall> (v : VendorVerification), vendor_cert_valid v = True \<longrightarrow> vendor_audit_passed v = True \<longrightarrow> vendor_in_approved_list v = True \<longrightarrow> ThirdPartyMitigated"
+lemma sup_008_third_party_mitigated: "\<forall>(v :: VendorVerification). vendor_cert_valid v = True \<longrightarrow> vendor_audit_passed v = True \<longrightarrow> vendor_in_approved_list v = True \<longrightarrow> ThirdPartyMitigated"
   by auto
 
 (* sup_008_vendor_audit_security (matches Coq) *)
-lemma sup_008_vendor_audit_security: "\<forall> (v : VendorVerification), vendor_audit_passed v = True \<longrightarrow> vendor_in_approved_list v = True \<longrightarrow> ThirdPartyMitigated"
+lemma sup_008_vendor_audit_security: "\<forall>(v :: VendorVerification). vendor_audit_passed v = True \<longrightarrow> vendor_in_approved_list v = True \<longrightarrow> ThirdPartyMitigated"
   by auto
 
 (* sup_009_watering_hole_mitigated (matches Coq) *)
-lemma sup_009_watering_hole_mitigated: "\<forall> (ns : NetworkSegmentation), ns_segments_isolated ns = True \<longrightarrow> WateringHoleMitigated"
+lemma sup_009_watering_hole_mitigated: "\<forall>(ns :: NetworkSegmentation). ns_segments_isolated ns = True \<longrightarrow> WateringHoleMitigated"
   by auto
 
 (* sup_009_segment_isolation_lateral (matches Coq) *)
-lemma sup_009_segment_isolation_lateral: "\<forall> (ns : NetworkSegmentation), ns_segments_isolated ns = True \<longrightarrow> ns_source_segment ns \<noteq> ns_dest_segment ns \<longrightarrow> pair_in_list (ns_source_segment ns, ns_dest_segment ns) (ns_firewall_rules ns) = False \<longrightarrow> WateringHoleMitigated"
+lemma sup_009_segment_isolation_lateral: "\<forall>(ns :: NetworkSegmentation). ns_segments_isolated ns = True \<longrightarrow> ns_source_segment ns \<noteq> ns_dest_segment ns \<longrightarrow> pair_in_list (ns_source_segment ns, ns_dest_segment ns) (ns_firewall_rules ns) = False \<longrightarrow> WateringHoleMitigated"
   by auto
 
 (* sup_010_update_attack_mitigated (matches Coq) *)
-lemma sup_010_update_attack_mitigated: "\<forall> (upd : SignedUpdate), upd_signature_valid upd = True \<longrightarrow> upd_version_incremented upd = True \<longrightarrow> UpdateMitigated"
+lemma sup_010_update_attack_mitigated: "\<forall>(upd :: SignedUpdate). upd_signature_valid upd = True \<longrightarrow> upd_version_incremented upd = True \<longrightarrow> UpdateMitigated"
   by auto
 
 (* sup_010_version_rollback_prevention (matches Coq) *)
-lemma sup_010_version_rollback_prevention: "\<forall> (upd : SignedUpdate), upd_signature_valid upd = True \<longrightarrow> upd_new_version upd > upd_current_version upd \<longrightarrow> UpdateMitigated"
+lemma sup_010_version_rollback_prevention: "\<forall>(upd :: SignedUpdate). upd_signature_valid upd = True \<longrightarrow> upd_new_version upd > upd_current_version upd \<longrightarrow> UpdateMitigated"
   by auto
 
 (* sup_011_source_compromise_mitigated (matches Coq) *)
-lemma sup_011_source_compromise_mitigated: "\<forall> (sc : SignedCode), code_signature_valid sc = True \<longrightarrow> code_review_approved sc = True \<longrightarrow> SourceMitigated"
+lemma sup_011_source_compromise_mitigated: "\<forall>(sc :: SignedCode). code_signature_valid sc = True \<longrightarrow> code_review_approved sc = True \<longrightarrow> SourceMitigated"
   by auto
 
 (* sup_011_multi_reviewer_security (matches Coq) *)
-lemma sup_011_multi_reviewer_security: "\<forall> (sc : SignedCode), code_signature_valid sc = True \<longrightarrow> code_review_approved sc = True \<longrightarrow> code_reviewer_count sc \<ge> code_min_reviewers sc \<longrightarrow> SourceMitigated"
+lemma sup_011_multi_reviewer_security: "\<forall>(sc :: SignedCode). code_signature_valid sc = True \<longrightarrow> code_review_approved sc = True \<longrightarrow> code_reviewer_count sc \<ge> code_min_reviewers sc \<longrightarrow> SourceMitigated"
   by auto
 
 (* sup_012_compiler_attack_mitigated (matches Coq) *)
-lemma sup_012_compiler_attack_mitigated: "\<forall> (ddc : DDCBuild), ddc_compilers_different ddc = True \<longrightarrow> ddc_outputs_match ddc = True \<longrightarrow> CompilerMitigated"
+lemma sup_012_compiler_attack_mitigated: "\<forall>(ddc :: DDCBuild). ddc_compilers_different ddc = True \<longrightarrow> ddc_outputs_match ddc = True \<longrightarrow> CompilerMitigated"
   by auto
 
 (* sup_012_ddc_output_verification (matches Coq) *)
-lemma sup_012_ddc_output_verification: "\<forall> (ddc : DDCBuild), ddc_compilers_different ddc = True \<longrightarrow> ddc_outputs_match ddc = True \<longrightarrow> hash_eq (ddc_output1_hash ddc) (ddc_output2_hash ddc) = True \<longrightarrow> ddc_output1_hash ddc = ddc_output2_hash ddc"
+lemma sup_012_ddc_output_verification: "\<forall>(ddc :: DDCBuild). ddc_compilers_different ddc = True \<longrightarrow> ddc_outputs_match ddc = True \<longrightarrow> hash_eq (ddc_output1_hash ddc) (ddc_output2_hash ddc) = True \<longrightarrow> ddc_output1_hash ddc = ddc_output2_hash ddc"
   by auto
 
 (* sup_013_binary_backdoor_mitigated (matches Coq) *)
-lemma sup_013_binary_backdoor_mitigated: "\<forall> (bv : BinaryVerification), bin_reproducible bv = True \<longrightarrow> BinaryMitigated"
+lemma sup_013_binary_backdoor_mitigated: "\<forall>(bv :: BinaryVerification). bin_reproducible bv = True \<longrightarrow> BinaryMitigated"
   by auto
 
 (* sup_013_binary_hash_verification (matches Coq) *)
-lemma sup_013_binary_hash_verification: "\<forall> (bv : BinaryVerification), bin_reproducible bv = True \<longrightarrow> hash_eq (bin_claimed_hash bv) (bin_reproduced_hash bv) = True \<longrightarrow> bin_claimed_hash bv = bin_reproduced_hash bv"
+lemma sup_013_binary_hash_verification: "\<forall>(bv :: BinaryVerification). bin_reproducible bv = True \<longrightarrow> hash_eq (bin_claimed_hash bv) (bin_reproduced_hash bv) = True \<longrightarrow> bin_claimed_hash bv = bin_reproduced_hash bv"
   by auto
 
 (* sup_014_certificate_compromise_mitigated (matches Coq) *)
-lemma sup_014_certificate_compromise_mitigated: "\<forall> (ct : CertificateTransparency), ct_in_log ct = True \<longrightarrow> ct_sct_valid ct = True \<longrightarrow> ct_log_consistent ct = True \<longrightarrow> CertificateMitigated"
+lemma sup_014_certificate_compromise_mitigated: "\<forall>(ct :: CertificateTransparency). ct_in_log ct = True \<longrightarrow> ct_sct_valid ct = True \<longrightarrow> ct_log_consistent ct = True \<longrightarrow> CertificateMitigated"
   by auto
 
 (* sup_014_ct_log_verification (matches Coq) *)
-lemma sup_014_ct_log_verification: "\<forall> (ct : CertificateTransparency), ct_in_log ct = True \<longrightarrow> ct_sct_valid ct = True \<longrightarrow> CertificateMitigated"
+lemma sup_014_ct_log_verification: "\<forall>(ct :: CertificateTransparency). ct_in_log ct = True \<longrightarrow> ct_sct_valid ct = True \<longrightarrow> CertificateMitigated"
   by auto
 
 (* sup_015_developer_compromise_mitigated (matches Coq) *)
-lemma sup_015_developer_compromise_mitigated: "\<forall> (ac : AccessControl), ac_mfa_enabled ac = True \<longrightarrow> ac_role_verified ac = True \<longrightarrow> ac_access_logged ac = True \<longrightarrow> DeveloperMitigated"
+lemma sup_015_developer_compromise_mitigated: "\<forall>(ac :: AccessControl). ac_mfa_enabled ac = True \<longrightarrow> ac_role_verified ac = True \<longrightarrow> ac_access_logged ac = True \<longrightarrow> DeveloperMitigated"
   by auto
 
 (* sup_015_mfa_security (matches Coq) *)
-lemma sup_015_mfa_security: "\<forall> (ac : AccessControl), ac_mfa_enabled ac = True \<longrightarrow> ac_role_verified ac = True \<longrightarrow> DeveloperMitigated"
+lemma sup_015_mfa_security: "\<forall>(ac :: AccessControl). ac_mfa_enabled ac = True \<longrightarrow> ac_role_verified ac = True \<longrightarrow> DeveloperMitigated"
   by auto
 
 (* sup_016_malware_mitigated (matches Coq) *)
-lemma sup_016_malware_mitigated: "\<forall> (di : DependencyIsolation), di_sandboxed di = True \<longrightarrow> di_network_restricted di = True \<longrightarrow> di_filesystem_restricted di = True \<longrightarrow> MalwareMitigated"
+lemma sup_016_malware_mitigated: "\<forall>(di :: DependencyIsolation). di_sandboxed di = True \<longrightarrow> di_network_restricted di = True \<longrightarrow> di_filesystem_restricted di = True \<longrightarrow> MalwareMitigated"
   by auto
 
 (* sup_016_isolation_level_security (matches Coq) *)
-lemma sup_016_isolation_level_security: "\<forall> (di : DependencyIsolation), di_sandboxed di = True \<longrightarrow> isolation_sufficient (di_isolation_level di) = True \<longrightarrow> MalwareMitigated"
+lemma sup_016_isolation_level_security: "\<forall>(di :: DependencyIsolation). di_sandboxed di = True \<longrightarrow> isolation_sufficient (di_isolation_level di) = True \<longrightarrow> MalwareMitigated"
   by auto
 
 (* supply_chain_full_security (matches Coq) *)

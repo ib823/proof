@@ -164,7 +164,7 @@ definition decompress :: "MemoryPage \<Rightarrow> MemoryPage" where
 
 (* well_behaved_app (matches Coq: Definition well_behaved_app) *)
 definition well_behaved_app :: "Application \<Rightarrow> bool" where
-  "well_behaved_app app \<equiv> app_well_behaved app = True /\
+  "well_behaved_app app \<equiv> app_well_behaved app = True \<and>
   app_current_memory app <= app_memory_limit app"
 
 (* system_out_of_memory (matches Coq: Definition system_out_of_memory) *)
@@ -178,7 +178,7 @@ fun can_cause :: "Application \<Rightarrow> SystemEvent \<Rightarrow> bool" wher
 
 (* pages_isolated (matches Coq: Definition pages_isolated) *)
 definition pages_isolated :: "bool" where
-  "pages_isolated \<equiv> forall p1 p2, In p1 pages -> In p2 pages ->
+  "pages_isolated \<equiv> forall p1 p2, p1 \<in> set pages -> p2 \<in> set pages ->
     page_owner p1 <> page_owner p2 ->
     page_id p1 <> page_id p2"
 
@@ -200,7 +200,7 @@ definition allocation_bounded :: "Heap \<Rightarrow> bool" where
 
 (* no_double_free_prop (matches Coq: Definition no_double_free_prop) *)
 definition no_double_free_prop :: "nat \<Rightarrow> bool" where
-  "no_double_free_prop bid \<equiv> forall b, In b blocks -> block_id b = bid -> block_state b <> Freed ->
+  "no_double_free_prop bid \<equiv> forall b, b \<in> set blocks -> block_id b = bid -> block_state b <> Freed ->
     block_state b = Allocated"
 
 (* no_use_after_free_prop (matches Coq: Definition no_use_after_free_prop) *)
@@ -217,7 +217,7 @@ definition stack_within_bounds :: "Stack \<Rightarrow> bool" where
 
 (* page_aligned (matches Coq: Definition page_aligned) *)
 definition page_aligned :: "VirtualMapping \<Rightarrow> bool" where
-  "page_aligned vm \<equiv> vmap_page_size vm > 0 /\
+  "page_aligned vm \<equiv> vmap_page_size vm > 0 \<and>
   Nat.modulo (vmap_virtual_page vm) (vmap_page_size vm) = 0"
 
 (* mappings_non_overlapping (matches Coq: Definition mappings_non_overlapping) *)
@@ -242,94 +242,94 @@ definition oom_graceful :: "Heap \<Rightarrow> nat \<Rightarrow> bool" where
 (* shared_memory_sync (matches Coq: Definition shared_memory_sync) *)
 definition shared_memory_sync :: "bool" where
   "shared_memory_sync \<equiv> block_id b1 = block_id b2 ->
-  block_start b1 = block_start b2 /\ block_size b1 = block_size b2"
+  block_start b1 = block_start b2 \<and> block_size b1 = block_size b2"
 
 (* dma_buffer_protected_prop (matches Coq: Definition dma_buffer_protected_prop) *)
 definition dma_buffer_protected_prop :: "MemoryBlock \<Rightarrow> bool" where
   "dma_buffer_protected_prop b \<equiv> block_allocated b -> block_owner b > 0"
 
 (* memory_compression_lossless (matches Coq) *)
-lemma memory_compression_lossless: "\<forall> (page : MemoryPage), page_contents (decompress (compress page)) = page_contents page"
+lemma memory_compression_lossless: "\<forall>(page :: MemoryPage). page_contents (decompress (compress page)) = page_contents page"
   by simp
 
 (* compression_preserves_id (matches Coq) *)
-lemma compression_preserves_id: "\<forall> (page : MemoryPage), page_id (compress page) = page_id page"
+lemma compression_preserves_id: "\<forall>(page :: MemoryPage). page_id (compress page) = page_id page"
   by simp
 
 (* compression_preserves_owner (matches Coq) *)
-lemma compression_preserves_owner: "\<forall> (page : MemoryPage), page_owner (compress page) = page_owner page"
+lemma compression_preserves_owner: "\<forall>(page :: MemoryPage). page_owner (compress page) = page_owner page"
   by simp
 
 (* no_system_oom_from_app (matches Coq) *)
-lemma no_system_oom_from_app: "\<forall> (app : Application), well_behaved_app app \<longrightarrow> ~ can_cause app system_out_of_memory"
+lemma no_system_oom_from_app: "\<forall>(app :: Application). well_behaved_app app \<longrightarrow> ~ can_cause app system_out_of_memory"
   by auto
 
 (* memory_isolation_sound (matches Coq) *)
-lemma memory_isolation_sound: "\<forall> (pages : list MemoryPage), pages_isolated pages \<longrightarrow> \<forall> p1 p2, In p1 pages \<longrightarrow> In p2 pages \<longrightarrow> page_owner p1 \<noteq> page_owner p2 \<longrightarrow> page_id p1 \<noteq> page_id p2"
+lemma memory_isolation_sound: "\<forall>(pages : list MemoryPage). pages_isolated pages \<longrightarrow> \<forall>p1 p2. p1 \<in> set pages \<longrightarrow> p2 \<in> set pages \<longrightarrow> page_owner p1 \<noteq> page_owner p2 \<longrightarrow> page_id p1 \<noteq> page_id p2"
   by auto
 
 (* decompress_compress_contents (matches Coq) *)
-lemma decompress_compress_contents: "\<forall> (page : MemoryPage), page_contents (decompress (compress page)) = page_contents page"
+lemma decompress_compress_contents: "\<forall>(page :: MemoryPage). page_contents (decompress (compress page)) = page_contents page"
   by simp
 
 (* allocation_always_bounded (matches Coq) *)
-lemma allocation_always_bounded: "\<forall> (h : Heap), allocation_bounded h \<longrightarrow> heap_used_size h \<le> heap_total_size h"
+lemma allocation_always_bounded: "\<forall>(h :: Heap). allocation_bounded h \<longrightarrow> heap_used_size h \<le> heap_total_size h"
   by auto
 
 (* deallocation_complete (matches Coq) *)
-lemma deallocation_complete: "\<forall> (b : MemoryBlock), block_state b = Freed \<longrightarrow> block_freed b"
+lemma deallocation_complete: "\<forall>(b :: MemoryBlock). block_state b = Freed \<longrightarrow> block_freed b"
   by auto
 
 (* no_double_free (matches Coq) *)
-lemma no_double_free: "\<forall> (b : MemoryBlock), block_freed b \<longrightarrow> ~ block_allocated b"
+lemma no_double_free: "\<forall>(b :: MemoryBlock). block_freed b \<longrightarrow> ~ block_allocated b"
   by auto
 
 (* no_use_after_free (matches Coq) *)
-lemma no_use_after_free: "\<forall> (b : MemoryBlock), block_freed b \<longrightarrow> ~ block_allocated b"
+lemma no_use_after_free: "\<forall>(b :: MemoryBlock). block_freed b \<longrightarrow> ~ block_allocated b"
   by auto
 
 (* memory_leak_impossible (matches Coq) *)
-lemma memory_leak_impossible: "\<forall> (h : Heap), (\<forall> b, In b (heap_blocks h) \<longrightarrow> block_allocated b \<or> block_freed b) \<longrightarrow> \<forall> b, In b (heap_blocks h) \<longrightarrow> block_state b = Allocated \<or> block_state b = Freed"
+lemma memory_leak_impossible: "\<forall>(h :: Heap). (\<forall>b. In b (heap_blocks h) \<longrightarrow> block_allocated b \<or> block_freed b) \<longrightarrow> \<forall>b. In b (heap_blocks h) \<longrightarrow> block_state b = Allocated \<or> block_state b = Freed"
   by auto
 
 (* stack_overflow_prevented (matches Coq) *)
-lemma stack_overflow_prevented: "\<forall> (s : Stack), stack_within_bounds s \<longrightarrow> stack_current_depth s \<le> stack_max_depth s"
+lemma stack_overflow_prevented: "\<forall>(s :: Stack). stack_within_bounds s \<longrightarrow> stack_current_depth s \<le> stack_max_depth s"
   by auto
 
 (* heap_fragmentation_bounded (matches Coq) *)
-lemma heap_fragmentation_bounded: "\<forall> (h : Heap) (max_frag : nat), heap_fragmentation_bounded_prop h max_frag \<longrightarrow> heap_fragmentation_ratio h \<le> max_frag"
+lemma heap_fragmentation_bounded: "\<forall>(h :: Heap) (max_frag :: nat). heap_fragmentation_bounded_prop h max_frag \<longrightarrow> heap_fragmentation_ratio h \<le> max_frag"
   by auto
 
 (* memory_pressure_handled (matches Coq) *)
-lemma memory_pressure_handled: "\<forall> (h : Heap), memory_pressure_handled_prop h \<longrightarrow> heap_used_size h > (heap_total_size h * 90) / 100 \<longrightarrow> heap_fragmentation_ratio h \<le> 50"
+lemma memory_pressure_handled: "\<forall>(h :: Heap). memory_pressure_handled_prop h \<longrightarrow> heap_used_size h > (heap_total_size h * 90) / 100 \<longrightarrow> heap_fragmentation_ratio h \<le> 50"
   by auto
 
 (* oom_graceful_recovery (matches Coq) *)
-lemma oom_graceful_recovery: "\<forall> (h : Heap) (request : nat), oom_graceful h request \<longrightarrow> heap_used_size h + request > heap_total_size h \<longrightarrow> heap_used_size h \<le> heap_total_size h"
+lemma oom_graceful_recovery: "\<forall>(h :: Heap) (request :: nat). oom_graceful h request \<longrightarrow> heap_used_size h + request > heap_total_size h \<longrightarrow> heap_used_size h \<le> heap_total_size h"
   by auto
 
 (* virtual_memory_page_aligned (matches Coq) *)
-lemma virtual_memory_page_aligned: "\<forall> (vm : VirtualMapping), page_aligned vm \<longrightarrow> vmap_page_size vm > 0"
+lemma virtual_memory_page_aligned: "\<forall>(vm :: VirtualMapping). page_aligned vm \<longrightarrow> vmap_page_size vm > 0"
   by auto
 
 (* memory_mapping_non_overlapping (matches Coq) *)
-lemma memory_mapping_non_overlapping: "\<forall> (vm1 vm2 : VirtualMapping), mappings_non_overlapping vm1 vm2 \<longrightarrow> \<forall> addr, vmap_virtual_page vm1 \<le> addr \<longrightarrow> addr < vmap_virtual_page vm1 + vmap_page_size vm1 \<longrightarrow> ~ (vmap_virtual_page vm2 \<le> addr \<and> addr < vmap_virtual_page vm2 + vmap_page_size vm2)"
-  by (cases rule: ‹_›.cases; simp)
+lemma memory_mapping_non_overlapping: "\<forall>(vm1 vm2 : VirtualMapping). mappings_non_overlapping vm1 vm2 \<longrightarrow> \<forall>addr. vmap_virtual_page vm1 \<le> addr \<longrightarrow> addr < vmap_virtual_page vm1 + vmap_page_size vm1 \<longrightarrow> ~ (vmap_virtual_page vm2 \<le> addr \<and> addr < vmap_virtual_page vm2 + vmap_page_size vm2)"
+  by auto
 
 (* shared_memory_synchronized (matches Coq) *)
-lemma shared_memory_synchronized: "\<forall> (b1 b2 : MemoryBlock), shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2"
+lemma shared_memory_synchronized: "\<forall>(b1 b2 : MemoryBlock). shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2"
   by auto
 
 (* cache_coherent (matches Coq) *)
-lemma cache_coherent: "\<forall> (b1 b2 : MemoryBlock), shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2 \<and> block_size b1 = block_size b2"
+lemma cache_coherent: "\<forall>(b1 b2 : MemoryBlock). shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2 \<and> block_size b1 = block_size b2"
   by auto
 
 (* dma_buffer_protected (matches Coq) *)
-lemma dma_buffer_protected: "\<forall> (b : MemoryBlock), dma_buffer_protected_prop b \<longrightarrow> block_allocated b \<longrightarrow> block_owner b > 0"
+lemma dma_buffer_protected: "\<forall>(b :: MemoryBlock). dma_buffer_protected_prop b \<longrightarrow> block_allocated b \<longrightarrow> block_owner b > 0"
   by auto
 
 (* memory_zeroed_on_free (matches Coq) *)
-lemma memory_zeroed_on_free: "\<forall> (b : MemoryBlock), block_zeroed_on_free b \<longrightarrow> block_freed b \<longrightarrow> block_zeroed b = True"
+lemma memory_zeroed_on_free: "\<forall>(b :: MemoryBlock). block_zeroed_on_free b \<longrightarrow> block_freed b \<longrightarrow> block_zeroed b = True"
   by auto
 
 end

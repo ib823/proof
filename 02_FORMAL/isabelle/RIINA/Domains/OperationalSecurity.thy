@@ -62,7 +62,7 @@ begin
 
 (* budget_ok (matches Coq: Definition budget_ok) *)
 definition budget_ok :: "InsiderBudget \<Rightarrow> bool" where
-  "budget_ok b \<equiv> queries_used b <= query_limit b /\
+  "budget_ok b \<equiv> queries_used b <= query_limit b \<and>
   exports_used b <= export_limit b"
 
 (* is_duress (matches Coq: Definition is_duress) *)
@@ -89,7 +89,7 @@ definition anomaly_detected :: "bool" where
 
 (* action_audited (matches Coq: Definition action_audited) *)
 definition action_audited :: "nat \<Rightarrow> bool" where
-  "action_audited action \<equiv> existsb (fun e => ((audit_action = e)) action) entries"
+  "action_audited action \<equiv> existsb (\<lambda>e. (audit_action e = action)) entries"
 
 (* platforms_independent (matches Coq: Definition platforms_independent) *)
 definition platforms_independent :: "bool" where
@@ -109,20 +109,20 @@ definition in_cancellation_window :: "bool" where
 
 (* principals_unique (matches Coq: Definition principals_unique) *)
 definition principals_unique :: "bool" where
-  "principals_unique \<equiv> NoDup (map (fun a => principal_id (approver a)) approvals)"
+  "principals_unique \<equiv> NoDup (map (\<lambda>a. principal_id (approver a)) approvals)"
 
 (* channels_diverse (matches Coq: Definition channels_diverse) *)
 definition channels_diverse :: "bool" where
-  "channels_diverse \<equiv> length (nodup Nat.eq_dec (map (fun a => principal_channel (approver a)) approvals)) > 1"
+  "channels_diverse \<equiv> length (nodup Nat.eq_dec (map (\<lambda>a. principal_channel (approver a)) approvals)) > 1"
 
 (* jurisdictions_spread (matches Coq: Definition jurisdictions_spread) *)
 definition jurisdictions_spread :: "ShareSet \<Rightarrow> bool" where
-  "jurisdictions_spread shares \<equiv> length shares = length jurisdictions /\
+  "jurisdictions_spread shares \<equiv> length shares = length jurisdictions \<and>
   length (nodup Nat.eq_dec jurisdictions) >= 3"
 
 (* all_signatures_valid (matches Coq: Definition all_signatures_valid) *)
 definition all_signatures_valid :: "bool" where
-  "all_signatures_valid \<equiv> forallb (fun a => signature_valid a) approvals"
+  "all_signatures_valid \<equiv> forallb (\<lambda>a. signature_valid a) approvals"
 
 (* reset_budget (matches Coq: Definition reset_budget) *)
 definition reset_budget :: "InsiderBudget \<Rightarrow> InsiderBudget" where
@@ -130,106 +130,106 @@ definition reset_budget :: "InsiderBudget \<Rightarrow> InsiderBudget" where
 
 (* layers_active (matches Coq: Definition layers_active) *)
 definition layers_active :: "bool" where
-  "layers_active \<equiv> (layer1 \<and> (andb) layer2 ((layer3 \<and> (andb) layer4 layer5)))"
+  "layers_active \<equiv> (layer1 \<and> layer2 \<and> layer3 \<and> layer4 \<and> layer5)"
 
 (* opsec_001_shamir_security (matches Coq) *)
-lemma opsec_001_shamir_security: "\<forall> (scheme : ShamirScheme) (shares : ShareSet), length shares < threshold scheme \<longrightarrow> True"
+lemma opsec_001_shamir_security: "\<forall>(scheme :: ShamirScheme) (shares :: ShareSet). length shares < threshold scheme \<longrightarrow> True"
   by auto
 
 (* opsec_002_shamir_reconstruction (matches Coq) *)
-lemma opsec_002_shamir_reconstruction: "\<forall> (scheme : ShamirScheme) (shares : ShareSet), length shares \<ge> threshold scheme \<longrightarrow> length shares \<le> total_shares scheme \<longrightarrow> length shares \<ge> threshold scheme"
+lemma opsec_002_shamir_reconstruction: "\<forall>(scheme :: ShamirScheme) (shares :: ShareSet). length shares \<ge> threshold scheme \<longrightarrow> length shares \<le> total_shares scheme \<longrightarrow> length shares \<ge> threshold scheme"
   by auto
 
 (* opsec_003_no_single_keyholder (matches Coq) *)
-lemma opsec_003_no_single_keyholder: "\<forall> (scheme : ShamirScheme), threshold scheme > 1 \<longrightarrow> 1 < threshold scheme"
+lemma opsec_003_no_single_keyholder: "\<forall>(scheme :: ShamirScheme). threshold scheme > 1 \<longrightarrow> 1 < threshold scheme"
   by auto
 
 (* opsec_004_geographic_distribution (matches Coq) *)
-lemma opsec_004_geographic_distribution: "\<forall> (shares : ShareSet) (locations : list nat), length shares = length locations \<longrightarrow> NoDup locations \<longrightarrow> length (nodup Nat.eq_dec locations) = length locations"
+lemma opsec_004_geographic_distribution: "\<forall>(shares :: ShareSet) (locations : list nat). length shares = length locations \<longrightarrow> NoDup locations \<longrightarrow> length (nodup Nat.eq_dec locations) = length locations"
   by auto
 
 (* opsec_005_multiparty_required (matches Coq) *)
-lemma opsec_005_multiparty_required: "\<forall> (mpa : MultiPartyAuth) (approvals : list Approval), required_approvers mpa > 1 \<longrightarrow> length approvals \<ge> required_approvers mpa \<longrightarrow> length approvals \<ge> required_approvers mpa"
+lemma opsec_005_multiparty_required: "\<forall>(mpa :: MultiPartyAuth) (approvals : list Approval). required_approvers mpa > 1 \<longrightarrow> length approvals \<ge> required_approvers mpa \<longrightarrow> length approvals \<ge> required_approvers mpa"
   by auto
 
 (* opsec_006_social_engineering_insufficient (matches Coq) *)
-lemma opsec_006_social_engineering_insufficient: "\<forall> (mpa : MultiPartyAuth) (compromised : nat), required_approvers mpa > 1 \<longrightarrow> compromised < required_approvers mpa \<longrightarrow> compromised < required_approvers mpa"
+lemma opsec_006_social_engineering_insufficient: "\<forall>(mpa :: MultiPartyAuth) (compromised :: nat). required_approvers mpa > 1 \<longrightarrow> compromised < required_approvers mpa \<longrightarrow> compromised < required_approvers mpa"
   by auto
 
 (* opsec_007_insider_bounded (matches Coq) *)
-lemma opsec_007_insider_bounded: "\<forall> (budget : InsiderBudget), budget_ok budget \<longrightarrow> queries_used budget \<le> query_limit budget"
+lemma opsec_007_insider_bounded: "\<forall>(budget :: InsiderBudget). budget_ok budget \<longrightarrow> queries_used budget \<le> query_limit budget"
   by auto
 
 (* opsec_008_export_limit (matches Coq) *)
-lemma opsec_008_export_limit: "\<forall> (budget : InsiderBudget), budget_ok budget \<longrightarrow> exports_used budget \<le> export_limit budget"
+lemma opsec_008_export_limit: "\<forall>(budget :: InsiderBudget). budget_ok budget \<longrightarrow> exports_used budget \<le> export_limit budget"
   by auto
 
 (* opsec_009_duress_detection (matches Coq) *)
-lemma opsec_009_duress_detection: "\<forall> (input duress_suffix : list nat), is_duress input duress_suffix = True \<longrightarrow> is_duress input duress_suffix = True"
+lemma opsec_009_duress_detection: "\<forall>(input duress_suffix : list nat). is_duress input duress_suffix = True \<longrightarrow> is_duress input duress_suffix = True"
   by auto
 
 (* opsec_010_dead_man_switch (matches Coq) *)
-lemma opsec_010_dead_man_switch: "\<forall> (last_checkin current_time interval : nat), dead_man_triggered last_checkin current_time interval = True \<longrightarrow> last_checkin + interval * 2 < current_time"
+lemma opsec_010_dead_man_switch: "\<forall>(last_checkin current_time interval : nat). dead_man_triggered last_checkin current_time interval = True \<longrightarrow> last_checkin + interval * 2 < current_time"
   by auto
 
 (* opsec_011_time_window (matches Coq) *)
-lemma opsec_011_time_window: "\<forall> (approval_time current_time window : nat), within_time_window approval_time current_time window = True \<longrightarrow> current_time - approval_time \<le> window"
+lemma opsec_011_time_window: "\<forall>(approval_time current_time window : nat). within_time_window approval_time current_time window = True \<longrightarrow> current_time - approval_time \<le> window"
   by auto
 
 (* opsec_012_role_separation (matches Coq) *)
-lemma opsec_012_role_separation: "\<forall> (roles : list nat), roles_distinct roles \<longrightarrow> NoDup roles"
+lemma opsec_012_role_separation: "\<forall>(roles : list nat). roles_distinct roles \<longrightarrow> NoDup roles"
   by auto
 
 (* opsec_013_anomaly_detection (matches Coq) *)
-lemma opsec_013_anomaly_detection: "\<forall> (score threshold : nat), anomaly_detected score threshold = True \<longrightarrow> threshold < score"
+lemma opsec_013_anomaly_detection: "\<forall>(score threshold : nat). anomaly_detected score threshold = True \<longrightarrow> threshold < score"
   by auto
 
 (* opsec_014_audit_complete (matches Coq) *)
-lemma opsec_014_audit_complete: "\<forall> (entries : list AuditEntry) (action : nat), action_audited entries action = True \<longrightarrow> \<exists> e, In e entries \<and> audit_action e = action"
+lemma opsec_014_audit_complete: "\<forall>(entries : list AuditEntry) (action :: nat). action_audited entries action = True \<longrightarrow> \<exists>e. e \<in> set entries \<and> audit_action e = action"
   by auto
 
 (* opsec_015_hardware_diversity (matches Coq) *)
-lemma opsec_015_hardware_diversity: "\<forall> (p1 p2 : nat), platforms_independent p1 p2 = True \<longrightarrow> p1 \<noteq> p2"
+lemma opsec_015_hardware_diversity: "\<forall>(p1 p2 : nat). platforms_independent p1 p2 = True \<longrightarrow> p1 \<noteq> p2"
   by auto
 
 (* opsec_016_nversion_consensus (matches Coq) *)
-lemma opsec_016_nversion_consensus: "\<forall> (results : list nat) (expected : nat), majority_agrees results expected = True \<longrightarrow> count_occ Nat.eq_dec results expected > length results / 2"
+lemma opsec_016_nversion_consensus: "\<forall>(results : list nat) (expected :: nat). majority_agrees results expected = True \<longrightarrow> count_occ Nat.eq_dec results expected > length results / 2"
   by auto
 
 (* opsec_017_time_lock (matches Coq) *)
-lemma opsec_017_time_lock: "\<forall> (unlock_time current_time : nat), time_lock_expired unlock_time current_time = True \<longrightarrow> unlock_time \<le> current_time"
+lemma opsec_017_time_lock: "\<forall>(unlock_time current_time : nat). time_lock_expired unlock_time current_time = True \<longrightarrow> unlock_time \<le> current_time"
   by auto
 
 (* opsec_018_cancellation_window (matches Coq) *)
-lemma opsec_018_cancellation_window: "\<forall> (op_time current_time cancel_window : nat), in_cancellation_window op_time current_time cancel_window = True \<longrightarrow> current_time < op_time + cancel_window"
+lemma opsec_018_cancellation_window: "\<forall>(op_time current_time cancel_window : nat). in_cancellation_window op_time current_time cancel_window = True \<longrightarrow> current_time < op_time + cancel_window"
   by auto
 
 (* opsec_019_principal_uniqueness (matches Coq) *)
-lemma opsec_019_principal_uniqueness: "\<forall> (approvals : list Approval), principals_unique approvals \<longrightarrow> NoDup (map (fun a => principal_id (approver a)) approvals)"
+lemma opsec_019_principal_uniqueness: "\<forall>(approvals : list Approval). principals_unique approvals \<longrightarrow> NoDup (map (\<lambda>a. principal_id (approver a)) approvals)"
   by auto
 
 (* opsec_020_channel_diversity (matches Coq) *)
-lemma opsec_020_channel_diversity: "\<forall> (approvals : list Approval) (channels : list nat), channels = map (fun a => principal_channel (approver a)) approvals \<longrightarrow> length (nodup Nat.eq_dec channels) > 1 \<longrightarrow> channels_diverse approvals"
+lemma opsec_020_channel_diversity: "\<forall>(approvals : list Approval) (channels : list nat). channels = map (\<lambda>a. principal_channel (approver a)) approvals \<longrightarrow> length (nodup Nat.eq_dec channels) > 1 \<longrightarrow> channels_diverse approvals"
   by auto
 
 (* opsec_021_coercion_resistant (matches Coq) *)
-lemma opsec_021_coercion_resistant: "\<forall> (scheme : ShamirScheme) (compromised : nat), compromised < threshold scheme \<longrightarrow> compromised < threshold scheme"
+lemma opsec_021_coercion_resistant: "\<forall>(scheme :: ShamirScheme) (compromised :: nat). compromised < threshold scheme \<longrightarrow> compromised < threshold scheme"
   by auto
 
 (* opsec_022_jurisdictional_spread (matches Coq) *)
-lemma opsec_022_jurisdictional_spread: "\<forall> (shares : ShareSet) (jurisdictions : list nat), jurisdictions_spread shares jurisdictions \<longrightarrow> length (nodup Nat.eq_dec jurisdictions) \<ge> 3"
+lemma opsec_022_jurisdictional_spread: "\<forall>(shares :: ShareSet) (jurisdictions : list nat). jurisdictions_spread shares jurisdictions \<longrightarrow> length (nodup Nat.eq_dec jurisdictions) \<ge> 3"
   by auto
 
 (* opsec_023_signatures_valid (matches Coq) *)
-lemma opsec_023_signatures_valid: "\<forall> (approvals : list Approval), all_signatures_valid approvals = True \<longrightarrow> Forall (fun a => signature_valid a = True) approvals"
+lemma opsec_023_signatures_valid: "\<forall>(approvals : list Approval). all_signatures_valid approvals = True \<longrightarrow> Forall (\<lambda>a. signature_valid a = True) approvals"
   by auto
 
 (* opsec_024_budget_reset (matches Coq) *)
-lemma opsec_024_budget_reset: "\<forall> (b : InsiderBudget), budget_ok (reset_budget b)"
+lemma opsec_024_budget_reset: "\<forall>(b :: InsiderBudget). budget_ok (reset_budget b)"
   by simp
 
 (* opsec_025_defense_in_depth (matches Coq) *)
-lemma opsec_025_defense_in_depth: "\<forall> l1 l2 l3 l4 l5, layers_active l1 l2 l3 l4 l5 = True \<longrightarrow> l1 = True \<and> l2 = True \<and> l3 = True \<and> l4 = True \<and> l5 = True"
+lemma opsec_025_defense_in_depth: "\<forall>l1 l2 l3 l4 l5. layers_active l1 l2 l3 l4 l5 = True \<longrightarrow> l1 = True \<and> l2 = True \<and> l3 = True \<and> l4 = True \<and> l5 = True"
   by auto
 
 end

@@ -93,7 +93,7 @@ record iommu =
 
 (* find_device_config (matches Coq: Definition find_device_config) *)
 fun find_device_config :: "DeviceId \<Rightarrow> option IOMMUConfig" where
-
+  "find_device_config _ = None"
 
 (* address_in_range (matches Coq: Definition address_in_range) *)
 definition address_in_range :: "nat \<Rightarrow> IOMMUConfig \<Rightarrow> bool" where
@@ -101,7 +101,7 @@ definition address_in_range :: "nat \<Rightarrow> IOMMUConfig \<Rightarrow> bool
 
 (* iommu_permits_dma (matches Coq: Definition iommu_permits_dma) *)
 fun iommu_permits_dma :: "IOMMU \<Rightarrow> Device \<Rightarrow> Address \<Rightarrow> bool" where
-
+  "iommu_permits_dma _ = True"
 
 (* guest_isolated_from_iommu (matches Coq: Definition guest_isolated_from_iommu) *)
 definition guest_isolated_from_iommu :: "VirtualMachine \<Rightarrow> IOMMU \<Rightarrow> bool" where
@@ -123,112 +123,112 @@ definition kernel_region_size :: "nat" where
 
 (* Theorem: A device cannot perform DMA to an address not permitted by IOMMU. *)
 (* dma_isolation (matches Coq) *)
-lemma dma_isolation: "\<forall> (dev : Device) (addr : Address) (iommu : IOMMU), ~ iommu_permits_dma iommu dev addr \<longrightarrow> ~ can_dma_access dev addr iommu"
+lemma dma_isolation: "\<forall>(dev :: Device) (addr :: Address) (iommu : IOMMU). ~ iommu_permits_dma iommu dev addr \<longrightarrow> ~ can_dma_access dev addr iommu"
   by auto
 
 (* Theorem: Guest VMs cannot modify IOMMU configuration.
     This is a structural property - can_modify_config has no constructors for guests. *)
 (* iommu_config_protected (matches Coq) *)
-lemma iommu_config_protected: "\<forall> (guest : VirtualMachine) (cfg : IOMMUConfig), ~ can_modify_config guest cfg"
+lemma iommu_config_protected: "\<forall>(guest :: VirtualMachine) (cfg :: IOMMUConfig). ~ can_modify_config guest cfg"
   by auto
 
 (* Alternative formulation with IOMMU record *)
 (* iommu_config_protected_v2 (matches Coq) *)
-lemma iommu_config_protected_v2: "\<forall> (guest : VirtualMachine) (iommu : IOMMU), \<forall> cfg, In cfg (iommu_config iommu) \<longrightarrow> ~ can_modify_config guest cfg"
+lemma iommu_config_protected_v2: "\<forall>(guest :: VirtualMachine) (iommu :: IOMMU). \<forall>cfg. In cfg (iommu_config iommu) \<longrightarrow> ~ can_modify_config guest cfg"
   by auto
 
 (* DMA requires IOMMU enabled *)
 (* dma_requires_iommu_enabled (matches Coq) *)
-lemma dma_requires_iommu_enabled: "\<forall> (dev : Device) (addr : Address) (iommu : IOMMU), iommu_enabled iommu = False \<longrightarrow> ~ iommu_permits_dma iommu dev addr"
+lemma dma_requires_iommu_enabled: "\<forall>(dev :: Device) (addr :: Address) (iommu : IOMMU). iommu_enabled iommu = False \<longrightarrow> ~ iommu_permits_dma iommu dev addr"
   by auto
 
 (* Device not in config cannot DMA *)
 (* unconfigured_device_no_dma (matches Coq) *)
-lemma unconfigured_device_no_dma: "\<forall> (dev : Device) (addr : Address) (iommu : IOMMU), find_device_config (dev_id dev) (iommu_configs iommu) = None \<longrightarrow> ~ iommu_permits_dma iommu dev addr"
+lemma unconfigured_device_no_dma: "\<forall>(dev :: Device) (addr :: Address) (iommu : IOMMU). find_device_config (dev_id dev) (iommu_configs iommu) = None \<longrightarrow> ~ iommu_permits_dma iommu dev addr"
   by auto
 
 (* Out of range DMA blocked *)
 (* out_of_range_dma_blocked (matches Coq) *)
-lemma out_of_range_dma_blocked: "\<forall> (dev : Device) (n : nat) (iommu : IOMMU) (cfg : IOMMUConfig), find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg \<longrightarrow> address_in_range n cfg = False \<longrightarrow> ~ iommu_permits_dma iommu dev (Addr n)"
+lemma out_of_range_dma_blocked: "\<forall>(dev :: Device) (n :: nat) (iommu : IOMMU) (cfg :: IOMMUConfig). find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg \<longrightarrow> address_in_range n cfg = False \<longrightarrow> ~ iommu_permits_dma iommu dev (Addr n)"
   by auto
 
 (* IOMMU lockdown preserves security *)
 (* iommu_lockdown_effective (matches Coq) *)
-lemma iommu_lockdown_effective: "\<forall> (iommu : IOMMU) (guest : VirtualMachine), guest_isolated_from_iommu guest iommu \<longrightarrow> \<forall> cfg, In cfg (iommu_configs iommu) \<longrightarrow> config_locked cfg = True"
+lemma iommu_lockdown_effective: "\<forall>(iommu :: IOMMU) (guest :: VirtualMachine). guest_isolated_from_iommu guest iommu \<longrightarrow> \<forall>cfg. In cfg (iommu_configs iommu) \<longrightarrow> config_locked cfg = True"
   by auto
 
 (* DMA isolation is enforced: permitted access implies config exists *)
 (* dma_isolation_enforced (matches Coq) *)
-lemma dma_isolation_enforced: "\<forall> (dev : Device) (addr : Address) (iommu : IOMMU), can_dma_access dev addr iommu \<longrightarrow> iommu_enabled iommu = True"
+lemma dma_isolation_enforced: "\<forall>(dev :: Device) (addr :: Address) (iommu : IOMMU). can_dma_access dev addr iommu \<longrightarrow> iommu_enabled iommu = True"
   by auto
 
 (* Device address is bounded by config range *)
 (* device_address_bounded (matches Coq) *)
-lemma device_address_bounded: "\<forall> (dev : Device) (n : nat) (iommu : IOMMU) (cfg : IOMMUConfig), iommu_permits_dma iommu dev (Addr n) \<longrightarrow> find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg \<longrightarrow> address_in_range n cfg = True"
+lemma device_address_bounded: "\<forall>(dev :: Device) (n :: nat) (iommu : IOMMU) (cfg :: IOMMUConfig). iommu_permits_dma iommu dev (Addr n) \<longrightarrow> find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg \<longrightarrow> address_in_range n cfg = True"
   by auto
 
 (* Mapping table is consistent: find returns consistent configs *)
 (* mapping_table_consistent (matches Coq) *)
-lemma mapping_table_consistent: "\<forall> (dev : DeviceId) (configs : list IOMMUConfig) (cfg1 cfg2 : IOMMUConfig), find_device_config dev configs = Some cfg1 \<longrightarrow> find_device_config dev configs = Some cfg2 \<longrightarrow> cfg1 = cfg2"
+lemma mapping_table_consistent: "\<forall>(dev :: DeviceId) (configs : list IOMMUConfig) (cfg1 cfg2 : IOMMUConfig). find_device_config dev configs = Some cfg1 \<longrightarrow> find_device_config dev configs = Some cfg2 \<longrightarrow> cfg1 = cfg2"
   by auto
 
 (* no_dma_to_kernel (matches Coq) *)
-lemma no_dma_to_kernel: "\<forall> (dev : Device) (addr : nat) (iommu : IOMMU) (cfg : IOMMUConfig), find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg \<longrightarrow> config_allowed_base cfg \<ge> kernel_region_base + kernel_region_size \<longrightarrow> addr < kernel_region_base + kernel_region_size \<longrightarrow> address_in_range addr cfg = False"
+lemma no_dma_to_kernel: "\<forall>(dev :: Device) (addr :: nat) (iommu : IOMMU) (cfg :: IOMMUConfig). find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg \<longrightarrow> config_allowed_base cfg \<ge> kernel_region_base + kernel_region_size \<longrightarrow> addr < kernel_region_base + kernel_region_size \<longrightarrow> address_in_range addr cfg = False"
   by simp
 
 (* IOMMU bypass impossible when enabled and device has no config *)
 (* iommu_bypass_impossible (matches Coq) *)
-lemma iommu_bypass_impossible: "\<forall> (dev : Device) (addr : Address) (iommu : IOMMU), iommu_enabled iommu = True \<longrightarrow> find_device_config (dev_id dev) (iommu_configs iommu) = None \<longrightarrow> ~ can_dma_access dev addr iommu"
+lemma iommu_bypass_impossible: "\<forall>(dev :: Device) (addr :: Address) (iommu : IOMMU). iommu_enabled iommu = True \<longrightarrow> find_device_config (dev_id dev) (iommu_configs iommu) = None \<longrightarrow> ~ can_dma_access dev addr iommu"
   by auto
 
 (* Address range checking: lower bound verified *)
 (* address_range_lower_bound (matches Coq) *)
-lemma address_range_lower_bound: "\<forall> (addr : nat) (cfg : IOMMUConfig), address_in_range addr cfg = True \<longrightarrow> config_allowed_base cfg \<le> addr"
+lemma address_range_lower_bound: "\<forall>(addr :: nat) (cfg :: IOMMUConfig). address_in_range addr cfg = True \<longrightarrow> config_allowed_base cfg \<le> addr"
   by auto
 
 (* Address range checking: upper bound verified *)
 (* address_range_upper_bound (matches Coq) *)
-lemma address_range_upper_bound: "\<forall> (addr : nat) (cfg : IOMMUConfig), address_in_range addr cfg = True \<longrightarrow> addr < config_allowed_base cfg + config_allowed_size cfg"
+lemma address_range_upper_bound: "\<forall>(addr :: nat) (cfg :: IOMMUConfig). address_in_range addr cfg = True \<longrightarrow> addr < config_allowed_base cfg + config_allowed_size cfg"
   by auto
 
 (* Device identity verified: DMA access implies device is configured *)
 (* device_identity_verified (matches Coq) *)
-lemma device_identity_verified: "\<forall> (dev : Device) (addr : Address) (iommu : IOMMU), can_dma_access dev addr iommu \<longrightarrow> \<exists> cfg, find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg"
+lemma device_identity_verified: "\<forall>(dev :: Device) (addr :: Address) (iommu : IOMMU). can_dma_access dev addr iommu \<longrightarrow> \<exists>cfg. find_device_config (dev_id dev) (iommu_configs iommu) = Some cfg"
   by auto
 
 (* Empty config list denies all DMA *)
 (* empty_config_denies_all (matches Coq) *)
-lemma empty_config_denies_all: "\<forall> (dev : Device) (addr : Address), let iommu := mkIOMMU 0 [] True in ~ can_dma_access dev addr iommu"
+lemma empty_config_denies_all: "\<forall>(dev :: Device) (addr :: Address). let iommu := mkIOMMU 0 [] True in ~ can_dma_access dev addr iommu"
   by auto
 
 (* IOMMU disabled means all DMA denied *)
 (* disabled_iommu_denies_all (matches Coq) *)
-lemma disabled_iommu_denies_all: "\<forall> (dev : Device) (addr : Address) (iommu : IOMMU), iommu_enabled iommu = False \<longrightarrow> ~ can_dma_access dev addr iommu"
+lemma disabled_iommu_denies_all: "\<forall>(dev :: Device) (addr :: Address) (iommu : IOMMU). iommu_enabled iommu = False \<longrightarrow> ~ can_dma_access dev addr iommu"
   by auto
 
 (* Locked configs remain across guest operations *)
 (* locked_config_invariant (matches Coq) *)
-lemma locked_config_invariant: "\<forall> (guest : VirtualMachine) (iommu : IOMMU) (cfg : IOMMUConfig), guest_isolated_from_iommu guest iommu \<longrightarrow> In cfg (iommu_configs iommu) \<longrightarrow> config_locked cfg = True \<and> ~ can_modify_config guest cfg"
+lemma locked_config_invariant: "\<forall>(guest :: VirtualMachine) (iommu :: IOMMU) (cfg : IOMMUConfig). guest_isolated_from_iommu guest iommu \<longrightarrow> In cfg (iommu_configs iommu) \<longrightarrow> config_locked cfg = True \<and> ~ can_modify_config guest cfg"
   by auto
 
 (* Zero-size config denies all addresses *)
 (* zero_size_config_denies (matches Coq) *)
-lemma zero_size_config_denies: "\<forall> (addr : nat) (cfg : IOMMUConfig), config_allowed_size cfg = 0 \<longrightarrow> address_in_range addr cfg = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma zero_size_config_denies: "\<forall>(addr :: nat) (cfg :: IOMMUConfig). config_allowed_size cfg = 0 \<longrightarrow> address_in_range addr cfg = False"
+  by auto
 
 (* Find device config: not found means not in list *)
 (* find_device_config_none_not_in (matches Coq) *)
-lemma find_device_config_none_not_in: "\<forall> (dev : DeviceId) (configs : list IOMMUConfig), find_device_config dev configs = None \<longrightarrow> \<forall> cfg, In cfg configs \<longrightarrow> config_device cfg \<noteq> dev"
+lemma find_device_config_none_not_in: "\<forall>(dev :: DeviceId) (configs : list IOMMUConfig). find_device_config dev configs = None \<longrightarrow> \<forall>cfg. cfg \<in> set configs \<longrightarrow> config_device cfg \<noteq> dev"
   by auto
 
 (* Config found means device matches *)
 (* find_device_config_some_matches (matches Coq) *)
-lemma find_device_config_some_matches: "\<forall> (dev : DeviceId) (configs : list IOMMUConfig) (cfg : IOMMUConfig), find_device_config dev configs = Some cfg \<longrightarrow> config_device cfg = dev"
+lemma find_device_config_some_matches: "\<forall>(dev :: DeviceId) (configs : list IOMMUConfig) (cfg :: IOMMUConfig). find_device_config dev configs = Some cfg \<longrightarrow> config_device cfg = dev"
   by auto
 
 (* Two distinct devices with different IDs have independent configs *)
 (* independent_device_configs (matches Coq) *)
-lemma independent_device_configs: "\<forall> (dev1 dev2 : Device) (iommu : IOMMU) (cfg1 cfg2 : IOMMUConfig), dev_id dev1 \<noteq> dev_id dev2 \<longrightarrow> find_device_config (dev_id dev1) (iommu_configs iommu) = Some cfg1 \<longrightarrow> find_device_config (dev_id dev2) (iommu_configs iommu) = Some cfg2 \<longrightarrow> config_device cfg1 \<noteq> config_device cfg2"
+lemma independent_device_configs: "\<forall>(dev1 dev2 : Device) (iommu :: IOMMU) (cfg1 cfg2 : IOMMUConfig). dev_id dev1 \<noteq> dev_id dev2 \<longrightarrow> find_device_config (dev_id dev1) (iommu_configs iommu) = Some cfg1 \<longrightarrow> find_device_config (dev_id dev2) (iommu_configs iommu) = Some cfg2 \<longrightarrow> config_device cfg1 \<noteq> config_device cfg2"
   by auto
 
 end

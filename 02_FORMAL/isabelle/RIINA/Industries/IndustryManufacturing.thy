@@ -182,94 +182,94 @@ fun patch_window_days :: "SecurityLevel \<Rightarrow> nat" where
 (* Section I01 - IEC 62443 Compliance
     Reference: IND_I_MANUFACTURING.md Section 3.1 *)
 (* iec_62443_compliance (matches Coq) *)
-lemma iec_62443_compliance: "\<forall> (compliance : IEC62443_Compliance), part_3_3_system_requirements compliance = True \<longrightarrow> True"
+lemma iec_62443_compliance: "\<forall>(compliance :: IEC62443_Compliance). part_3_3_system_requirements compliance = True \<longrightarrow> True"
   by simp
 
 (* Section I02 - IEC 61508 Safety
     Reference: IND_I_MANUFACTURING.md Section 3.2 *)
 (* iec_61508_safety (matches Coq) *)
-lemma iec_61508_safety: "\<forall> (system : nat) (sil : IEC61508_SIL), True"
+lemma iec_61508_safety: "\<forall>(system :: nat) (sil :: IEC61508_SIL). True"
   by simp
 
 (* Section I03 - Zone and Conduit Model
     Reference: IND_I_MANUFACTURING.md Section 3.3 *)
 (* zone_conduit_security (matches Coq) *)
-lemma zone_conduit_security: "\<forall> (zone : PurdueLevel) (conduit : nat), True"
+lemma zone_conduit_security: "\<forall>(zone :: PurdueLevel) (conduit :: nat). True"
   by simp
 
 (* Section I04 - Secure Development
     Reference: IND_I_MANUFACTURING.md Section 3.4 *)
 (* secure_development_lifecycle (matches Coq) *)
-lemma secure_development_lifecycle: "\<forall> (product : nat), True"
+lemma secure_development_lifecycle: "\<forall>(product :: nat). True"
   by simp
 
 (* Section I05 - NIST 800-82 ICS
     Reference: IND_I_MANUFACTURING.md Section 3.5 *)
 (* nist_800_82_compliance (matches Coq) *)
-lemma nist_800_82_compliance: "\<forall> (ics : nat), True"
+lemma nist_800_82_compliance: "\<forall>(ics :: nat). True"
   by simp
 
 (* SL-4 protects against state-level threats *)
 (* sl4_state_level_protection (matches Coq) *)
-lemma sl4_state_level_protection: "\<forall> (compliance : IEC62443_Compliance), target_security_level compliance = SL_4 \<longrightarrow> True"
+lemma sl4_state_level_protection: "\<forall>(compliance :: IEC62443_Compliance). target_security_level compliance = SL_4 \<longrightarrow> True"
   by simp
 
 (* Zone boundaries enforced *)
 (* zone_boundary_enforcement (matches Coq) *)
-lemma zone_boundary_enforcement: "\<forall> (l1 : PurdueLevel) (l2 : PurdueLevel), True"
+lemma zone_boundary_enforcement: "\<forall>(l1 :: PurdueLevel) (l2 :: PurdueLevel). True"
   by simp
 
 (* sl_le_refl (matches Coq) *)
-lemma sl_le_refl: "\<forall> s, sl_le s s = True"
+lemma sl_le_refl: "\<forall>s. sl_le s s = True"
   by simp
 
 (* sl_le_trans (matches Coq) *)
-lemma sl_le_trans: "\<forall> s1 s2 s3, sl_le s1 s2 = True \<longrightarrow> sl_le s2 s3 = True \<longrightarrow> sl_le s1 s3 = True"
+lemma sl_le_trans: "\<forall>s1 s2 s3. sl_le s1 s2 = True \<longrightarrow> sl_le s2 s3 = True \<longrightarrow> sl_le s1 s3 = True"
   by simp
 
 (* sl_le_antisym (matches Coq) *)
-lemma sl_le_antisym: "\<forall> s1 s2, sl_le s1 s2 = True \<longrightarrow> sl_le s2 s1 = True \<longrightarrow> s1 = s2"
-  by (cases rule: ‹_›.cases; simp)
+lemma sl_le_antisym: "\<forall>s1 s2. sl_le s1 s2 = True \<longrightarrow> sl_le s2 s1 = True \<longrightarrow> s1 = s2"
+  by auto
 
 (* sil_le_refl (matches Coq) *)
-lemma sil_le_refl: "\<forall> s, sil_le s s = True"
+lemma sil_le_refl: "\<forall>s. sil_le s s = True"
   by simp
 
 (* sil_positive (matches Coq) *)
-lemma sil_positive: "\<forall> s, sil_to_nat s \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma sil_positive: "\<forall>s. sil_to_nat s \<ge> 1"
+  by auto
 
 (* purdue_le_refl (matches Coq) *)
-lemma purdue_le_refl: "\<forall> p, purdue_le p p = True"
+lemma purdue_le_refl: "\<forall>p. purdue_le p p = True"
   by simp
 
 (* same_level_adjacent (matches Coq) *)
-lemma same_level_adjacent: "\<forall> p, purdue_adjacent p p = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma same_level_adjacent: "\<forall>p. purdue_adjacent p p = True"
+  by auto
 
 (* sff_minimum_60 (matches Coq) *)
-lemma sff_minimum_60: "\<forall> s, safe_failure_fraction_pct s \<ge> 60"
-  by (cases rule: ‹_›.cases; simp)
+lemma sff_minimum_60: "\<forall>s. safe_failure_fraction_pct s \<ge> 60"
+  by auto
 
 (* higher_sil_higher_sff (matches Coq) *)
-lemma higher_sil_higher_sff: "\<forall> s1 s2, sil_le s1 s2 = True \<longrightarrow> safe_failure_fraction_pct s1 \<le> safe_failure_fraction_pct s2"
-  by (cases rule: ‹_›.cases; simp)
+lemma higher_sil_higher_sff: "\<forall>s1 s2. sil_le s1 s2 = True \<longrightarrow> safe_failure_fraction_pct s1 \<le> safe_failure_fraction_pct s2"
+  by auto
 
 (* full_compliance_requires_zones (matches Coq) *)
-lemma full_compliance_requires_zones: "\<forall> c, iec62443_full_compliance c = True \<longrightarrow> part_3_2_zones_conduits c = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma full_compliance_requires_zones: "\<forall>c. iec62443_full_compliance c = True \<longrightarrow> part_3_2_zones_conduits c = True"
+  by auto
 
 (* full_compliance_requires_secure_dev (matches Coq) *)
-lemma full_compliance_requires_secure_dev: "\<forall> c, iec62443_full_compliance c = True \<longrightarrow> part_4_1_secure_development c = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma full_compliance_requires_secure_dev: "\<forall>c. iec62443_full_compliance c = True \<longrightarrow> part_4_1_secure_development c = True"
+  by auto
 
 (* sl4_full_coverage (matches Coq) *)
 lemma sl4_full_coverage: "testing_coverage_pct SL_4 = 100"
   by simp
 
 (* testing_coverage_monotone (matches Coq) *)
-lemma testing_coverage_monotone: "\<forall> s1 s2, sl_le s1 s2 = True \<longrightarrow> testing_coverage_pct s1 \<le> testing_coverage_pct s2"
-  by (cases rule: ‹_›.cases; simp)
+lemma testing_coverage_monotone: "\<forall>s1 s2. sl_le s1 s2 = True \<longrightarrow> testing_coverage_pct s1 \<le> testing_coverage_pct s2"
+  by auto
 
 (* process_level_isolated (matches Coq) *)
 lemma process_level_isolated: "ot_isolated Level_0_Process = True"
@@ -284,7 +284,7 @@ lemma business_level_not_ot: "ot_isolated Level_4_Business = False"
   by simp
 
 (* patch_window_decreasing (matches Coq) *)
-lemma patch_window_decreasing: "\<forall> s1 s2, sl_le s1 s2 = True \<longrightarrow> patch_window_days s2 \<le> patch_window_days s1"
-  by (cases rule: ‹_›.cases; simp)
+lemma patch_window_decreasing: "\<forall>s1 s2. sl_le s1 s2 = True \<longrightarrow> patch_window_days s2 \<le> patch_window_days s1"
+  by auto
 
 end

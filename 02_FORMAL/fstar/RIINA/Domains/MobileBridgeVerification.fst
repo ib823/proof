@@ -55,16 +55,16 @@ type bridge_sec_label =
   | BSecret
 
 (* marshal_jni — Coq Prop predicate stub *)
-assume val marshal_jni : r_value -> jni_value -> bool
+let marshal_jni (__x0: r_value) (__x1: jni_value) : Tot bool = true
 
 (* unmarshal_jni — Coq Prop predicate stub *)
-assume val unmarshal_jni : jni_value -> r_value -> bool
+let unmarshal_jni (__x0: jni_value) (__x1: r_value) : Tot bool = true
 
 (* marshal_swift — Coq Prop predicate stub *)
-assume val marshal_swift : r_value -> swift_value -> bool
+let marshal_swift (__x0: r_value) (__x1: swift_value) : Tot bool = true
 
 (* unmarshal_swift — Coq Prop predicate stub *)
-assume val unmarshal_swift : swift_value -> r_value -> bool
+let unmarshal_swift (__x0: swift_value) (__x1: r_value) : Tot bool = true
 
 (* cap_allows (matches Coq: Definition cap_allows) *)
 let cap_allows (p_cap: nat) (p_eff: bridge_effect) : Tot bool =

@@ -141,7 +141,7 @@ record thread_context =
 
 (* edge_in_cfg (matches Coq: Definition edge_in_cfg) *)
 definition edge_in_cfg :: "CFGEdge \<Rightarrow> ValidCFG \<Rightarrow> bool" where
-  "edge_in_cfg e cfg \<equiv> In e cfg"
+  "edge_in_cfg e cfg \<equiv> e \<in> set cfg"
 
 (* shadow_push (matches Coq: Definition shadow_push) *)
 definition shadow_push :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> FuncId \<Rightarrow> ShadowStack" where
@@ -161,11 +161,11 @@ definition valid_indirect_call :: "ValidTargets \<Rightarrow> TypedFuncPtr \<Rig
 
 (* has_perm (matches Coq: Definition has_perm) *)
 definition has_perm :: "MemPerm \<Rightarrow> bool" where
-  "has_perm p \<equiv> In p perms"
+  "has_perm p \<equiv> p \<in> set perms"
 
 (* w_xor_x (matches Coq: Definition w_xor_x) *)
 definition w_xor_x :: "bool" where
-  "w_xor_x \<equiv> ~ (has_perm perms Writable /\ has_perm perms Executable)"
+  "w_xor_x \<equiv> ~ (has_perm perms Writable \<and> has_perm perms Executable)"
 
 (* vtable_type_matches (matches Coq: Definition vtable_type_matches) *)
 definition vtable_type_matches :: "TypedObject \<Rightarrow> bool" where
@@ -173,7 +173,7 @@ definition vtable_type_matches :: "TypedObject \<Rightarrow> bool" where
 
 (* handler_registered (matches Coq: Definition handler_registered) *)
 definition handler_registered :: "ValidHandlers \<Rightarrow> ExceptionHandler \<Rightarrow> bool" where
-  "handler_registered vhs h \<equiv> In h vhs"
+  "handler_registered vhs h \<equiv> h \<in> set vhs"
 
 (* longjmp_safe (matches Coq: Definition longjmp_safe) *)
 definition longjmp_safe :: "JmpBuf \<Rightarrow> bool" where
@@ -189,74 +189,74 @@ definition got_protected :: "RelocState \<Rightarrow> bool" where
 
 (* thread_accessible (matches Coq: Definition thread_accessible) *)
 definition thread_accessible :: "ThreadContext \<Rightarrow> nat \<Rightarrow> bool" where
-  "thread_accessible tc accessor \<equiv> tc_owner tc = accessor /\ tc_valid tc = True"
+  "thread_accessible tc accessor \<equiv> tc_owner tc = accessor \<and> tc_valid tc = True"
 
 (* ctl_001_rop_impossible (matches Coq) *)
-lemma ctl_001_rop_impossible: "\<forall> (ss : ShadowStack) (attacker_addr : InstrAddr), valid_return ss attacker_addr \<longrightarrow> \<exists> e, In e ss \<and> se_return_addr e = attacker_addr"
-  by (cases rule: ‹_›.cases; simp)
+lemma ctl_001_rop_impossible: "\<forall>(ss :: ShadowStack) (attacker_addr :: InstrAddr). valid_return ss attacker_addr \<longrightarrow> \<exists>e. e \<in> set ss \<and> se_return_addr e = attacker_addr"
+  by auto
 
 (* ctl_002_jop_impossible (matches Coq) *)
-lemma ctl_002_jop_impossible: "\<forall> (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace \<longrightarrow> \<forall> b1 b2, In b1 trace \<longrightarrow> In b2 trace \<longrightarrow> (\<exists> rest, trace = b1 :: b2 :: rest) \<longrightarrow> \<exists> e, edge_in_cfg e cfg \<and> edge_src e = b1 \<and> edge_dst e = b2"
+lemma ctl_002_jop_impossible: "\<forall>(cfg :: ValidCFG) (trace :: Trace). valid_trace cfg trace \<longrightarrow> \<forall>b1 b2. b1 \<in> set trace \<longrightarrow> b2 \<in> set trace \<longrightarrow> (\<exists>rest. trace = b1 :: b2 :: rest) \<longrightarrow> \<exists>e. edge_in_cfg e cfg \<and> edge_src e = b1 \<and> edge_dst e = b2"
   by auto
 
 (* ctl_003_cop_impossible (matches Coq) *)
-lemma ctl_003_cop_impossible: "\<forall> (vt : ValidTargets) (fp : TypedFuncPtr), valid_indirect_call vt fp \<longrightarrow> In (tfp_addr fp) (vt (tfp_type fp))"
+lemma ctl_003_cop_impossible: "\<forall>(vt :: ValidTargets) (fp :: TypedFuncPtr). valid_indirect_call vt fp \<longrightarrow> In (tfp_addr fp) (vt (tfp_type fp))"
   by auto
 
 (* ctl_004_ret2libc_impossible (matches Coq) *)
-lemma ctl_004_ret2libc_impossible: "\<forall> (ss : ShadowStack) (libc_addr : InstrAddr), valid_return ss libc_addr \<longrightarrow> match ss with | nil => False | e :: _ => se_return_addr e = libc_addr end"
+lemma ctl_004_ret2libc_impossible: "\<forall>(ss :: ShadowStack) (libc_addr :: InstrAddr). valid_return ss libc_addr \<longrightarrow> match ss with | nil => False | e :: _ => se_return_addr e = libc_addr end"
   by auto
 
 (* ctl_005_srop_impossible (matches Coq) *)
-lemma ctl_005_srop_impossible: "\<forall> (ss : ShadowStack) (sig_frame_addr : InstrAddr), valid_return ss sig_frame_addr \<longrightarrow> \<exists> e, In e ss \<and> se_return_addr e = sig_frame_addr"
-  by (cases rule: ‹_›.cases; simp)
+lemma ctl_005_srop_impossible: "\<forall>(ss :: ShadowStack) (sig_frame_addr :: InstrAddr). valid_return ss sig_frame_addr \<longrightarrow> \<exists>e. e \<in> set ss \<and> se_return_addr e = sig_frame_addr"
+  by auto
 
 (* ctl_006_code_injection_impossible (matches Coq) *)
-lemma ctl_006_code_injection_impossible: "\<forall> (perms : list MemPerm), w_xor_x perms \<longrightarrow> ~ (has_perm perms Writable \<and> has_perm perms Executable)"
+lemma ctl_006_code_injection_impossible: "\<forall>(perms : list MemPerm). w_xor_x perms \<longrightarrow> ~ (has_perm perms Writable \<and> has_perm perms Executable)"
   by auto
 
 (* ctl_007_code_reuse_controlled (matches Coq) *)
-lemma ctl_007_code_reuse_controlled: "\<forall> (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace \<longrightarrow> \<forall> b1 b2 rest, trace = b1 :: b2 :: rest \<longrightarrow> \<exists> e, edge_in_cfg e cfg \<and> edge_src e = b1 \<and> edge_dst e = b2"
+lemma ctl_007_code_reuse_controlled: "\<forall>(cfg :: ValidCFG) (trace :: Trace). valid_trace cfg trace \<longrightarrow> \<forall>b1 b2 rest. trace = b1 :: b2 :: rest \<longrightarrow> \<exists>e. edge_in_cfg e cfg \<and> edge_src e = b1 \<and> edge_dst e = b2"
   by auto
 
 (* ctl_008_data_only_mitigated (matches Coq) *)
-lemma ctl_008_data_only_mitigated: "\<forall> (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace \<longrightarrow> \<forall> b1 b2, In b1 trace \<longrightarrow> (\<exists> rest, trace = b1 :: b2 :: rest) \<longrightarrow> \<exists> e, edge_in_cfg e cfg \<and> edge_src e = b1 \<and> edge_dst e = b2"
+lemma ctl_008_data_only_mitigated: "\<forall>(cfg :: ValidCFG) (trace :: Trace). valid_trace cfg trace \<longrightarrow> \<forall>b1 b2. b1 \<in> set trace \<longrightarrow> (\<exists>rest. trace = b1 :: b2 :: rest) \<longrightarrow> \<exists>e. edge_in_cfg e cfg \<and> edge_src e = b1 \<and> edge_dst e = b2"
   by auto
 
 (* ctl_009_cf_bending_impossible (matches Coq) *)
-lemma ctl_009_cf_bending_impossible: "\<forall> (cfg : ValidCFG) (trace : Trace), valid_trace cfg trace \<longrightarrow> \<forall> b1 b2 rest, trace = b1 :: b2 :: rest \<longrightarrow> \<exists> e, edge_in_cfg e cfg"
+lemma ctl_009_cf_bending_impossible: "\<forall>(cfg :: ValidCFG) (trace :: Trace). valid_trace cfg trace \<longrightarrow> \<forall>b1 b2 rest. trace = b1 :: b2 :: rest \<longrightarrow> \<exists>e. edge_in_cfg e cfg"
   by auto
 
 (* ctl_010_indirect_call_safe (matches Coq) *)
-lemma ctl_010_indirect_call_safe: "\<forall> (vt : ValidTargets) (fp : TypedFuncPtr), valid_indirect_call vt fp \<longrightarrow> In (tfp_addr fp) (vt (tfp_type fp))"
+lemma ctl_010_indirect_call_safe: "\<forall>(vt :: ValidTargets) (fp :: TypedFuncPtr). valid_indirect_call vt fp \<longrightarrow> In (tfp_addr fp) (vt (tfp_type fp))"
   by auto
 
 (* ctl_011_vtable_hijack_impossible (matches Coq) *)
-lemma ctl_011_vtable_hijack_impossible: "\<forall> (obj : TypedObject), vtable_type_matches obj \<longrightarrow> vt_type_id (to_vtable obj) = to_expected_type obj"
+lemma ctl_011_vtable_hijack_impossible: "\<forall>(obj :: TypedObject). vtable_type_matches obj \<longrightarrow> vt_type_id (to_vtable obj) = to_expected_type obj"
   by auto
 
 (* ctl_012_exception_safe (matches Coq) *)
-lemma ctl_012_exception_safe: "\<forall> (vhs : ValidHandlers) (h : ExceptionHandler), handler_registered vhs h \<longrightarrow> In h vhs"
+lemma ctl_012_exception_safe: "\<forall>(vhs :: ValidHandlers) (h :: ExceptionHandler). handler_registered vhs h \<longrightarrow> h \<in> set vhs"
   by auto
 
 (* ctl_013_longjmp_safe (matches Coq) *)
-lemma ctl_013_longjmp_safe: "\<forall> (jb : JmpBuf), longjmp_safe jb \<longrightarrow> jb_valid jb = True"
+lemma ctl_013_longjmp_safe: "\<forall>(jb :: JmpBuf). longjmp_safe jb \<longrightarrow> jb_valid jb = True"
   by auto
 
 (* ctl_014_got_plt_protected (matches Coq) *)
-lemma ctl_014_got_plt_protected: "\<forall> (rs : RelocState), got_protected rs \<longrightarrow> ~ got_writable rs"
+lemma ctl_014_got_plt_protected: "\<forall>(rs :: RelocState). got_protected rs \<longrightarrow> ~ got_writable rs"
   by auto
 
 (* ctl_015_thread_hijack_impossible (matches Coq) *)
-lemma ctl_015_thread_hijack_impossible: "\<forall> (tc : ThreadContext) (attacker : nat), tc_owner tc \<noteq> attacker \<longrightarrow> ~ thread_accessible tc attacker"
+lemma ctl_015_thread_hijack_impossible: "\<forall>(tc :: ThreadContext) (attacker :: nat). tc_owner tc \<noteq> attacker \<longrightarrow> ~ thread_accessible tc attacker"
   by auto
 
 (* ctl_016_shadow_push_pop_identity (matches Coq) *)
-lemma ctl_016_shadow_push_pop_identity: "\<forall> (ss : ShadowStack) (ret : InstrAddr) (caller : FuncId), shadow_pop (shadow_push ss ret caller) = Some (mkShadowEntry ret caller, ss)"
+lemma ctl_016_shadow_push_pop_identity: "\<forall>(ss :: ShadowStack) (ret :: InstrAddr) (caller : FuncId). shadow_pop (shadow_push ss ret caller) = Some (mkShadowEntry ret caller, ss)"
   by simp
 
 (* ctl_017_valid_return_after_push (matches Coq) *)
-lemma ctl_017_valid_return_after_push: "\<forall> (ss : ShadowStack) (ret : InstrAddr) (caller : FuncId), valid_return (shadow_push ss ret caller) ret"
+lemma ctl_017_valid_return_after_push: "\<forall>(ss :: ShadowStack) (ret :: InstrAddr) (caller : FuncId). valid_return (shadow_push ss ret caller) ret"
   by simp
 
 (* ctl_018_wxor_x_empty (matches Coq) *)
@@ -264,15 +264,15 @@ lemma ctl_018_wxor_x_empty: "w_xor_x nil"
   by auto
 
 (* ctl_019_reloc_state_decidable (matches Coq) *)
-lemma ctl_019_reloc_state_decidable: "\<forall> (rs : RelocState), got_writable rs \<or> got_protected rs"
+lemma ctl_019_reloc_state_decidable: "\<forall>(rs :: RelocState). got_writable rs \<or> got_protected rs"
   by simp
 
 (* ctl_020_shadow_push_length (matches Coq) *)
-lemma ctl_020_shadow_push_length: "\<forall> (ss : ShadowStack) (ret : InstrAddr) (caller : FuncId), length (shadow_push ss ret caller) = S (length ss)"
+lemma ctl_020_shadow_push_length: "\<forall>(ss :: ShadowStack) (ret :: InstrAddr) (caller : FuncId). length (shadow_push ss ret caller) = S (length ss)"
   by simp
 
 (* ctl_021_valid_trace_prefix (matches Coq) *)
-lemma ctl_021_valid_trace_prefix: "\<forall> (cfg : ValidCFG) (b : BasicBlock) (rest : Trace), valid_trace cfg (b :: rest) \<longrightarrow> valid_trace cfg rest"
+lemma ctl_021_valid_trace_prefix: "\<forall>(cfg :: ValidCFG) (b :: BasicBlock) (rest : Trace). valid_trace cfg (b :: rest) \<longrightarrow> valid_trace cfg rest"
   by auto
 
 end

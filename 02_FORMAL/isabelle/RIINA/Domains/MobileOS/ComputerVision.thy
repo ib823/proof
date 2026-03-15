@@ -219,20 +219,20 @@ definition Confidence :: "'a" where
 
 (* valid_detection (matches Coq: Definition valid_detection) *)
 definition valid_detection :: "Detection \<Rightarrow> bool" where
-  "valid_detection d \<equiv> det_valid d = True /\ det_confidence d >= 50"
+  "valid_detection d \<equiv> det_valid d = True \<and> det_confidence d >= 50"
 
 (* accurate_detection (matches Coq: Definition accurate_detection) *)
 definition accurate_detection :: "Detection \<Rightarrow> BoundingBox \<Rightarrow> bool" where
   "accurate_detection d ground_truth \<equiv> let box := det_box d in
   
   (max (bbox_x box) (bbox_x ground_truth) - min (bbox_x box) (bbox_x ground_truth)) <= 
-    (bbox_w box + bbox_w ground_truth) / 2 /\
+    (bbox_w box + bbox_w ground_truth) / 2 \<and>
   (max (bbox_y box) (bbox_y ground_truth) - min (bbox_y box) (bbox_y ground_truth)) <= 
     (bbox_h box + bbox_h ground_truth) / 2"
 
 (* detection_bounded (matches Coq: Definition detection_bounded) *)
 definition detection_bounded :: "ObjectDetectionResult \<Rightarrow> bool" where
-  "detection_bounded r \<equiv> length (od_detections r) <= 100 /\  
+  "detection_bounded r \<equiv> length (od_detections r) <= 100 \<and>  
   od_latency_ms r <= 100"
 
 (* cv_private (matches Coq: Definition cv_private) *)
@@ -241,7 +241,7 @@ definition cv_private :: "ObjectDetectionResult \<Rightarrow> bool" where
 
 (* face_privacy_preserving (matches Coq: Definition face_privacy_preserving) *)
 definition face_privacy_preserving :: "FaceDetection \<Rightarrow> bool" where
-  "face_privacy_preserving fd \<equiv> face_data_on_device fd = True /\ face_anonymized fd = True"
+  "face_privacy_preserving fd \<equiv> face_data_on_device fd = True \<and> face_anonymized fd = True"
 
 (* ocr_accuracy_within_bound (matches Coq: Definition ocr_accuracy_within_bound) *)
 definition ocr_accuracy_within_bound :: "OCRResult \<Rightarrow> bool" where
@@ -249,7 +249,7 @@ definition ocr_accuracy_within_bound :: "OCRResult \<Rightarrow> bool" where
 
 (* confidence_properly_reported (matches Coq: Definition confidence_properly_reported) *)
 definition confidence_properly_reported :: "ObjectDetection \<Rightarrow> bool" where
-  "confidence_properly_reported od \<equiv> obj_confidence_reported od = True /\ obj_confidence od <= 100"
+  "confidence_properly_reported od \<equiv> obj_confidence_reported od = True \<and> obj_confidence od <= 100"
 
 (* classification_deterministic (matches Coq: Definition classification_deterministic) *)
 definition classification_deterministic :: "ClassificationResult \<Rightarrow> bool" where
@@ -257,7 +257,7 @@ definition classification_deterministic :: "ClassificationResult \<Rightarrow> b
 
 (* barcode_format_known (matches Coq: Definition barcode_format_known) *)
 definition barcode_format_known :: "BarcodeResult \<Rightarrow> bool" where
-  "barcode_format_known br \<equiv> barcode_format br <> UnknownFormat /\ barcode_valid br = True"
+  "barcode_format_known br \<equiv> barcode_format br <> UnknownFormat \<and> barcode_valid br = True"
 
 (* photo_analysis_permitted (matches Coq: Definition photo_analysis_permitted) *)
 definition photo_analysis_permitted :: "PhotoAnalysis \<Rightarrow> bool" where
@@ -265,19 +265,19 @@ definition photo_analysis_permitted :: "PhotoAnalysis \<Rightarrow> bool" where
 
 (* depth_within_bounds (matches Coq: Definition depth_within_bounds) *)
 definition depth_within_bounds :: "DepthEstimate \<Rightarrow> bool" where
-  "depth_within_bounds de \<equiv> depth_min de <= depth_value de /\ depth_value de <= depth_max de"
+  "depth_within_bounds de \<equiv> depth_min de <= depth_value de \<and> depth_value de <= depth_max de"
 
 (* pose_is_stable (matches Coq: Definition pose_is_stable) *)
 definition pose_is_stable :: "PoseEstimate \<Rightarrow> bool" where
-  "pose_is_stable pe \<equiv> pose_stable pe = True /\ pose_frame_count pe >= 3"
+  "pose_is_stable pe \<equiv> pose_stable pe = True \<and> pose_frame_count pe >= 3"
 
 (* scene_is_consistent (matches Coq: Definition scene_is_consistent) *)
 definition scene_is_consistent :: "SceneClassification \<Rightarrow> bool" where
-  "scene_is_consistent sc \<equiv> scene_consistent sc = True /\ scene_confidence sc >= 50"
+  "scene_is_consistent sc \<equiv> scene_consistent sc = True \<and> scene_confidence sc >= 50"
 
 (* language_is_supported (matches Coq: Definition language_is_supported) *)
 definition language_is_supported :: "TextRecognition \<Rightarrow> bool" where
-  "language_is_supported tr \<equiv> text_language_supported tr = True /\ In (text_language tr) (text_supported_languages tr)"
+  "language_is_supported tr \<equiv> text_language_supported tr = True \<and> In (text_language tr) (text_supported_languages tr)"
 
 (* request_cancellable (matches Coq: Definition request_cancellable) *)
 definition request_cancellable :: "VisionRequest \<Rightarrow> bool" where
@@ -290,111 +290,111 @@ definition similarity_symmetric_pair :: "bool" where
   similarity_score p1 = similarity_score p2"
 
 (* pipeline_stages_ordered (matches Coq: Definition pipeline_stages_ordered) *)
-fun pipeline_stages_ordered :: "bool" where
-
+definition pipeline_stages_ordered :: "bool" where
+  "pipeline_stages_ordered \<equiv> True"
 
 (* frame_rate_limited (matches Coq: Definition frame_rate_limited) *)
 definition frame_rate_limited :: "bool" where
   "frame_rate_limited \<equiv> frame_timestamp_ms f2 >= frame_timestamp_ms f1 + min_interval_ms f1"
 
 (* object_detection_bounded (matches Coq) *)
-lemma object_detection_bounded: "\<forall> (result : ObjectDetectionResult), detection_bounded result \<longrightarrow> length (od_detections result) \<le> 100"
+lemma object_detection_bounded: "\<forall>(result :: ObjectDetectionResult). detection_bounded result \<longrightarrow> length (od_detections result) \<le> 100"
   by auto
 
 (* detection_latency_bounded (matches Coq) *)
-lemma detection_latency_bounded: "\<forall> (result : ObjectDetectionResult), detection_bounded result \<longrightarrow> od_latency_ms result \<le> 100"
+lemma detection_latency_bounded: "\<forall>(result :: ObjectDetectionResult). detection_bounded result \<longrightarrow> od_latency_ms result \<le> 100"
   by auto
 
 (* valid_detection_min_confidence (matches Coq) *)
-lemma valid_detection_min_confidence: "\<forall> (d : Detection), valid_detection d \<longrightarrow> det_confidence d \<ge> 50"
+lemma valid_detection_min_confidence: "\<forall>(d :: Detection). valid_detection d \<longrightarrow> det_confidence d \<ge> 50"
   by auto
 
 (* cv_stays_on_device (matches Coq) *)
-lemma cv_stays_on_device: "\<forall> (result : ObjectDetectionResult), cv_private result \<longrightarrow> od_processed_on_device result = True"
+lemma cv_stays_on_device: "\<forall>(result :: ObjectDetectionResult). cv_private result \<longrightarrow> od_processed_on_device result = True"
   by auto
 
 (* empty_result_bounded (matches Coq) *)
-lemma empty_result_bounded: "\<forall> (r : ObjectDetectionResult), od_detections r = [] \<longrightarrow> od_latency_ms r \<le> 100 \<longrightarrow> detection_bounded r"
+lemma empty_result_bounded: "\<forall>(r :: ObjectDetectionResult). od_detections r = [] \<longrightarrow> od_latency_ms r \<le> 100 \<longrightarrow> detection_bounded r"
   by auto
 
 (* face_detection_privacy_preserving (matches Coq) *)
-lemma face_detection_privacy_preserving: "\<forall> (fd : FaceDetection), face_privacy_preserving fd \<longrightarrow> face_data_on_device fd = True"
+lemma face_detection_privacy_preserving: "\<forall>(fd :: FaceDetection). face_privacy_preserving fd \<longrightarrow> face_data_on_device fd = True"
   by auto
 
 (* ocr_accuracy_bounded (matches Coq) *)
-lemma ocr_accuracy_bounded: "\<forall> (r : OCRResult), ocr_accuracy_within_bound r \<longrightarrow> ocr_confidence r \<ge> ocr_accuracy_bound r"
+lemma ocr_accuracy_bounded: "\<forall>(r :: OCRResult). ocr_accuracy_within_bound r \<longrightarrow> ocr_confidence r \<ge> ocr_accuracy_bound r"
   by auto
 
 (* object_detection_confidence_reported (matches Coq) *)
-lemma object_detection_confidence_reported: "\<forall> (od : ObjectDetection), confidence_properly_reported od \<longrightarrow> obj_confidence_reported od = True"
+lemma object_detection_confidence_reported: "\<forall>(od :: ObjectDetection). confidence_properly_reported od \<longrightarrow> obj_confidence_reported od = True"
   by auto
 
 (* image_classification_deterministic (matches Coq) *)
-lemma image_classification_deterministic: "\<forall> (cr : ClassificationResult), classification_deterministic cr \<longrightarrow> class_deterministic cr = True"
+lemma image_classification_deterministic: "\<forall>(cr :: ClassificationResult). classification_deterministic cr \<longrightarrow> class_deterministic cr = True"
   by auto
 
 (* barcode_format_validated (matches Coq) *)
-lemma barcode_format_validated: "\<forall> (br : BarcodeResult), barcode_format_known br \<longrightarrow> barcode_valid br = True"
+lemma barcode_format_validated: "\<forall>(br :: BarcodeResult). barcode_format_known br \<longrightarrow> barcode_valid br = True"
   by auto
 
 (* face_data_on_device_preserved (matches Coq) *)
-lemma face_data_on_device_preserved: "\<forall> (fd : FaceDetection), face_privacy_preserving fd \<longrightarrow> face_anonymized fd = True"
+lemma face_data_on_device_preserved: "\<forall>(fd :: FaceDetection). face_privacy_preserving fd \<longrightarrow> face_anonymized fd = True"
   by auto
 
 (* photo_analysis_permission_required (matches Coq) *)
-lemma photo_analysis_permission_required: "\<forall> (pa : PhotoAnalysis), photo_analysis_permitted pa \<longrightarrow> permission_granted pa = True"
+lemma photo_analysis_permission_required: "\<forall>(pa :: PhotoAnalysis). photo_analysis_permitted pa \<longrightarrow> permission_granted pa = True"
   by auto
 
 (* depth_estimation_bounded (matches Coq) *)
-lemma depth_estimation_bounded: "\<forall> (de : DepthEstimate), depth_within_bounds de \<longrightarrow> depth_min de \<le> depth_value de \<and> depth_value de \<le> depth_max de"
+lemma depth_estimation_bounded: "\<forall>(de :: DepthEstimate). depth_within_bounds de \<longrightarrow> depth_min de \<le> depth_value de \<and> depth_value de \<le> depth_max de"
   by auto
 
 (* pose_estimation_stable (matches Coq) *)
-lemma pose_estimation_stable: "\<forall> (pe : PoseEstimate), pose_is_stable pe \<longrightarrow> pose_stable pe = True"
+lemma pose_estimation_stable: "\<forall>(pe :: PoseEstimate). pose_is_stable pe \<longrightarrow> pose_stable pe = True"
   by auto
 
 (* scene_classification_consistent (matches Coq) *)
-lemma scene_classification_consistent: "\<forall> (sc : SceneClassification), scene_is_consistent sc \<longrightarrow> scene_consistent sc = True \<and> scene_confidence sc \<ge> 50"
+lemma scene_classification_consistent: "\<forall>(sc :: SceneClassification). scene_is_consistent sc \<longrightarrow> scene_consistent sc = True \<and> scene_confidence sc \<ge> 50"
   by auto
 
 (* text_recognition_language_supported (matches Coq) *)
-lemma text_recognition_language_supported: "\<forall> (tr : TextRecognition), language_is_supported tr \<longrightarrow> text_language_supported tr = True"
+lemma text_recognition_language_supported: "\<forall>(tr :: TextRecognition). language_is_supported tr \<longrightarrow> text_language_supported tr = True"
   by auto
 
 (* vision_request_cancellable (matches Coq) *)
-lemma vision_request_cancellable: "\<forall> (vr : VisionRequest), request_cancellable vr \<longrightarrow> vr_completed vr = False \<longrightarrow> vr_cancelled vr = True \<or> vr_cancelled vr = False"
+lemma vision_request_cancellable: "\<forall>(vr :: VisionRequest). request_cancellable vr \<longrightarrow> vr_completed vr = False \<longrightarrow> vr_cancelled vr = True \<or> vr_cancelled vr = False"
   by auto
 
 (* image_similarity_symmetric (matches Coq) *)
-lemma image_similarity_symmetric: "\<forall> (p1 p2 : ImagePair), similarity_symmetric_pair p1 p2 \<longrightarrow> img_a p1 = img_b p2 \<longrightarrow> img_b p1 = img_a p2 \<longrightarrow> similarity_score p1 = similarity_score p2"
+lemma image_similarity_symmetric: "\<forall>(p1 p2 : ImagePair). similarity_symmetric_pair p1 p2 \<longrightarrow> img_a p1 = img_b p2 \<longrightarrow> img_b p1 = img_a p2 \<longrightarrow> similarity_score p1 = similarity_score p2"
   by auto
 
 (* vision_pipeline_ordered (matches Coq) *)
-lemma vision_pipeline_ordered: "\<forall> (s1 s2 : PipelineStage), pipeline_stages_ordered [s1; s2] \<longrightarrow> stage_order s1 \<le> stage_order s2"
+lemma vision_pipeline_ordered: "\<forall>(s1 s2 : PipelineStage). pipeline_stages_ordered [s1; s2] \<longrightarrow> stage_order s1 \<le> stage_order s2"
   by auto
 
 (* frame_analysis_rate_limited (matches Coq) *)
-lemma frame_analysis_rate_limited: "\<forall> (f1 f2 : FrameAnalysis), frame_rate_limited f1 f2 \<longrightarrow> frame_timestamp_ms f2 \<ge> frame_timestamp_ms f1 + min_interval_ms f1"
+lemma frame_analysis_rate_limited: "\<forall>(f1 f2 : FrameAnalysis). frame_rate_limited f1 f2 \<longrightarrow> frame_timestamp_ms f2 \<ge> frame_timestamp_ms f1 + min_interval_ms f1"
   by auto
 
 (* object_detection_confidence_bounded (matches Coq) *)
-lemma object_detection_confidence_bounded: "\<forall> (od : ObjectDetection), confidence_properly_reported od \<longrightarrow> obj_confidence od \<le> 100"
+lemma object_detection_confidence_bounded: "\<forall>(od :: ObjectDetection). confidence_properly_reported od \<longrightarrow> obj_confidence od \<le> 100"
   by auto
 
 (* depth_estimation_lower_bound (matches Coq) *)
-lemma depth_estimation_lower_bound: "\<forall> (de : DepthEstimate), depth_within_bounds de \<longrightarrow> depth_min de \<le> depth_value de"
+lemma depth_estimation_lower_bound: "\<forall>(de :: DepthEstimate). depth_within_bounds de \<longrightarrow> depth_min de \<le> depth_value de"
   by auto
 
 (* pose_estimation_min_frames (matches Coq) *)
-lemma pose_estimation_min_frames: "\<forall> (pe : PoseEstimate), pose_is_stable pe \<longrightarrow> pose_frame_count pe \<ge> 3"
+lemma pose_estimation_min_frames: "\<forall>(pe :: PoseEstimate). pose_is_stable pe \<longrightarrow> pose_frame_count pe \<ge> 3"
   by auto
 
 (* language_in_supported_list (matches Coq) *)
-lemma language_in_supported_list: "\<forall> (tr : TextRecognition), language_is_supported tr \<longrightarrow> In (text_language tr) (text_supported_languages tr)"
+lemma language_in_supported_list: "\<forall>(tr :: TextRecognition). language_is_supported tr \<longrightarrow> In (text_language tr) (text_supported_languages tr)"
   by auto
 
 (* empty_detections_always_bounded (matches Coq) *)
-lemma empty_detections_always_bounded: "\<forall> (r : ObjectDetectionResult), od_detections r = [] \<longrightarrow> length (od_detections r) \<le> 100"
+lemma empty_detections_always_bounded: "\<forall>(r :: ObjectDetectionResult). od_detections r = [] \<longrightarrow> length (od_detections r) \<le> 100"
   by simp
 
 end

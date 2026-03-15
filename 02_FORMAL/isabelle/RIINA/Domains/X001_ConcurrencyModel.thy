@@ -206,7 +206,7 @@ definition no_write_during_read :: "AccessState \<Rightarrow> bool" where
 
 (* dual (matches Coq: Definition dual) *)
 fun dual :: "SessionType \<Rightarrow> SessionType" where
-
+  "dual _ = undefined"
 
 (* channel_used (matches Coq: Definition channel_used) *)
 definition channel_used :: "Channel \<Rightarrow> Channel" where
@@ -227,9 +227,9 @@ definition writes :: "Config \<Rightarrow> ThreadId \<Rightarrow> Loc \<Rightarr
 (* data_race (matches Coq: Definition data_race) *)
 definition data_race :: "Config \<Rightarrow> Loc \<Rightarrow> bool" where
   "data_race cfg l \<equiv> exists t1 t2,
-    t1 <> t2 /\
-    accesses cfg t1 l /\
-    accesses cfg t2 l /\
+    t1 <> t2 \<and>
+    accesses cfg t1 l \<and>
+    accesses cfg t2 l \<and>
     (writes cfg t1 l \/ writes cfg t2 l)"
 
 (* well_typed (matches Coq: Definition well_typed) *)
@@ -251,13 +251,13 @@ definition holding :: "Config \<Rightarrow> ThreadId \<Rightarrow> Resource \<Ri
 (* waits_for (matches Coq: Definition waits_for) *)
 definition waits_for :: "Config \<Rightarrow> bool" where
   "waits_for cfg \<equiv> exists resource,
-    waiting cfg t1 resource /\
+    waiting cfg t1 resource \<and>
     holding cfg t2 resource"
 
 (* circular_wait (matches Coq: Definition circular_wait) *)
 definition circular_wait :: "Config \<Rightarrow> bool" where
   "circular_wait cfg \<equiv> exists cycle,
-    length cycle >= 2 /\
+    length cycle >= 2 \<and>
     forall i, i < length cycle ->
       waits_for cfg (nth i cycle 0) (nth ((i + 1) mod length cycle) cycle 0)"
 
@@ -286,7 +286,7 @@ definition respects_order :: "Config \<Rightarrow> ThreadId \<Rightarrow> bool" 
 
 (* all_respect_order (matches Coq: Definition all_respect_order) *)
 definition all_respect_order :: "Config \<Rightarrow> bool" where
-  "all_respect_order cfg \<equiv> forall tc, In tc cfg -> respects_order cfg (thread_id tc)"
+  "all_respect_order cfg \<equiv> forall tc, tc \<in> set cfg -> respects_order cfg (thread_id tc)"
 
 (* init_mutex (matches Coq: Definition init_mutex) *)
 definition init_mutex :: "MutexState" where
@@ -302,7 +302,7 @@ definition mutex_release :: "bool" where "mutex_release = undefined"
 
 (* project (matches Coq: Definition project) *)
 fun project :: "GlobalType \<Rightarrow> Role \<Rightarrow> SessionType" where
-
+  "project _ = undefined"
 
 (* conforms (matches Coq: Definition conforms) *)
 definition conforms :: "CExpr \<Rightarrow> SessionType \<Rightarrow> bool" where
@@ -333,159 +333,159 @@ definition fair_scheduling :: "Config \<Rightarrow> bool" where
   "fair_scheduling cfg \<equiv> True"
 
 (* X_001_01_shared_xor_mutable (matches Coq) *)
-lemma X_001_01_shared_xor_mutable: "\<forall> as_ t1 t2 l, well_formed_access as_ \<longrightarrow> as_ t1 l = Some Exclusive \<longrightarrow> t1 \<noteq> t2 \<longrightarrow> as_ t2 l \<noteq> Some Shared"
+lemma X_001_01_shared_xor_mutable: "\<forall>as_ t1 t2 l. well_formed_access as_ \<longrightarrow> as_ t1 l = Some Exclusive \<longrightarrow> t1 \<noteq> t2 \<longrightarrow> as_ t2 l \<noteq> Some Shared"
   by auto
 
 (* X_001_02_ownership_exclusive (matches Coq) *)
-lemma X_001_02_ownership_exclusive: "\<forall> as_ t1 t2 l, well_formed_access as_ \<longrightarrow> as_ t1 l = Some Exclusive \<longrightarrow> t1 \<noteq> t2 \<longrightarrow> as_ t2 l = None"
+lemma X_001_02_ownership_exclusive: "\<forall>as_ t1 t2 l. well_formed_access as_ \<longrightarrow> as_ t1 l = Some Exclusive \<longrightarrow> t1 \<noteq> t2 \<longrightarrow> as_ t2 l = None"
   by auto
 
 (* X_001_03_no_concurrent_write (matches Coq) *)
-lemma X_001_03_no_concurrent_write: "\<forall> as_, well_formed_access as_ \<longrightarrow> no_concurrent_writes as_"
+lemma X_001_03_no_concurrent_write: "\<forall>as_. well_formed_access as_ \<longrightarrow> no_concurrent_writes as_"
   by auto
 
 (* X_001_04_no_write_during_read (matches Coq) *)
-lemma X_001_04_no_write_during_read: "\<forall> as_, well_formed_access as_ \<longrightarrow> (\<forall> t1 t2 l, t1 \<noteq> t2 \<longrightarrow> as_ t1 l = Some Shared \<longrightarrow> as_ t2 l = None \<or> as_ t2 l = Some Shared) \<longrightarrow> no_write_during_read as_"
+lemma X_001_04_no_write_during_read: "\<forall>as_. well_formed_access as_ \<longrightarrow> (\<forall>t1 t2 l. t1 \<noteq> t2 \<longrightarrow> as_ t1 l = Some Shared \<longrightarrow> as_ t2 l = None \<or> as_ t2 l = Some Shared) \<longrightarrow> no_write_during_read as_"
   by auto
 
 (* X_001_05_race_freedom (matches Coq) *)
-lemma X_001_05_race_freedom: "\<forall> cfg l, well_typed cfg \<longrightarrow> ~ data_race cfg l"
+lemma X_001_05_race_freedom: "\<forall>cfg l. well_typed cfg \<longrightarrow> ~ data_race cfg l"
   by auto
 
 (* X_001_06_race_freedom_composition (matches Coq) *)
-lemma X_001_06_race_freedom_composition: "\<forall> cfg1 cfg2 l, (~ data_race cfg1 l) \<longrightarrow> (~ data_race cfg2 l) \<longrightarrow> (\<forall> t, ~ (In t (map thread_id cfg1) \<and> In t (map thread_id cfg2))) \<longrightarrow> ~ data_race (cfg1 ++ cfg2) l"
+lemma X_001_06_race_freedom_composition: "\<forall>cfg1 cfg2 l. (~ data_race cfg1 l) \<longrightarrow> (~ data_race cfg2 l) \<longrightarrow> (\<forall>t. ~ (In t (map thread_id cfg1) \<and> In t (map thread_id cfg2))) \<longrightarrow> ~ data_race (cfg1 ++ cfg2) l"
   by auto
 
 (* X_001_07_atomic_operations (matches Coq) *)
-lemma X_001_07_atomic_operations: "\<forall> op, atomic_race_free op"
+lemma X_001_07_atomic_operations: "\<forall>op. atomic_race_free op"
   by auto
 
 (* X_001_08_lock_protects (matches Coq) *)
-lemma X_001_08_lock_protects: "\<forall> m t m', mutex_acquire m t = Some m' \<longrightarrow> mutex_locked m' = True"
+lemma X_001_08_lock_protects: "\<forall>m t m'. mutex_acquire m t = Some m' \<longrightarrow> mutex_locked m' = True"
   by simp
 
 (* X_001_09_session_type_dual (matches Coq) *)
-lemma X_001_09_session_type_dual: "\<forall> s, match s with | SSend m s' => dual (dual (SSend m s')) = SSend m s' \<longrightarrow> dual (dual s') = s' \<longrightarrow> True | SRecv m s' => dual (dual (SRecv m s')) = SRecv m s' \<longrightarrow> dual (dual s') = s' \<longrightarrow> True | SEnd => dual (dual SEnd) = SEnd | _ => True end"
+lemma X_001_09_session_type_dual: "\<forall>s. match s with | SSend m s' => dual (dual (SSend m s')) = SSend m s' \<longrightarrow> dual (dual s') = s' \<longrightarrow> True | SRecv m s' => dual (dual (SRecv m s')) = SRecv m s' \<longrightarrow> dual (dual s') = s' \<longrightarrow> True | SEnd => dual (dual SEnd) = SEnd | _ => True end"
   by auto
 
 (* X_001_09b_dual_send_recv (matches Coq) *)
-lemma X_001_09b_dual_send_recv: "\<forall> m, dual (dual (SSend m SEnd)) = SSend m SEnd \<and> dual (dual (SRecv m SEnd)) = SRecv m SEnd"
+lemma X_001_09b_dual_send_recv: "\<forall>m. dual (dual (SSend m SEnd)) = SSend m SEnd \<and> dual (dual (SRecv m SEnd)) = SRecv m SEnd"
   by simp
 
 (* X_001_09c_dual_compose (matches Coq) *)
-lemma X_001_09c_dual_compose: "\<forall> m1 m2, dual (dual (SSend m1 (SRecv m2 SEnd))) = SSend m1 (SRecv m2 SEnd)"
+lemma X_001_09c_dual_compose: "\<forall>m1 m2. dual (dual (SSend m1 (SRecv m2 SEnd))) = SSend m1 (SRecv m2 SEnd)"
   by simp
 
 (* X_001_10_session_fidelity (matches Coq) *)
-lemma X_001_10_session_fidelity: "\<forall> ch mt s, chan_type ch = SSend mt s \<longrightarrow> chan_type (mkChan (chan_id ch) s (chan_linear ch)) = s"
+lemma X_001_10_session_fidelity: "\<forall>ch mt s. chan_type ch = SSend mt s \<longrightarrow> chan_type (mkChan (chan_id ch) s (chan_linear ch)) = s"
   by simp
 
 (* X_001_11_session_progress (matches Coq) *)
-lemma X_001_11_session_progress: "\<forall> cfg : Config, session_typed cfg \<longrightarrow> cfg \<noteq> [] \<longrightarrow> \<exists> cfg' : Config, True. "
+lemma X_001_11_session_progress: "\<forall>cfg : Config. session_typed cfg \<longrightarrow> cfg \<noteq> [] \<longrightarrow> \<exists>cfg' : Config. True. "
   by auto
 
 (* X_001_12_session_safety (matches Coq) *)
-lemma X_001_12_session_safety: "\<forall> ch1 ch2, chan_type ch1 = dual (chan_type ch2) \<longrightarrow> chan_id ch1 = chan_id ch2 \<longrightarrow> True. "
+lemma X_001_12_session_safety: "\<forall>ch1 ch2. chan_type ch1 = dual (chan_type ch2) \<longrightarrow> chan_id ch1 = chan_id ch2 \<longrightarrow> True. "
   by auto
 
 (* X_001_13_channel_linear (matches Coq) *)
-lemma X_001_13_channel_linear: "\<forall> ch, is_fresh ch \<longrightarrow> chan_linear ch = True"
+lemma X_001_13_channel_linear: "\<forall>ch. is_fresh ch \<longrightarrow> chan_linear ch = True"
   by auto
 
 (* X_001_14_no_channel_reuse (matches Coq) *)
-lemma X_001_14_no_channel_reuse: "\<forall> ch, chan_linear (channel_used ch) = False"
+lemma X_001_14_no_channel_reuse: "\<forall>ch. chan_linear (channel_used ch) = False"
   by simp
 
 (* X_001_15_send_recv_match (matches Coq) *)
-lemma X_001_15_send_recv_match: "\<forall> mt s, dual (SSend mt s) = SRecv mt (dual s)"
+lemma X_001_15_send_recv_match: "\<forall>mt s. dual (SSend mt s) = SRecv mt (dual s)"
   by simp
 
 (* X_001_16_select_offer_match (matches Coq) *)
-lemma X_001_16_select_offer_match: "\<forall> branches, dual (SSelect branches) = SOffer (map (fun p => (fst p, dual (snd p))) branches)"
+lemma X_001_16_select_offer_match: "\<forall>branches. dual (SSelect branches) = SOffer (map (\<lambda>p. (fst p, dual (snd p))) branches)"
   by simp
 
 (* X_001_17_session_composition (matches Coq) *)
-lemma X_001_17_session_composition: "\<forall> s, dual (dual s) = s \<longrightarrow> \<forall> s2, dual s = s2 \<longrightarrow> dual s2 = s"
+lemma X_001_17_session_composition: "\<forall>s. dual (dual s) = s \<longrightarrow> \<forall>s2. dual s = s2 \<longrightarrow> dual s2 = s"
   by auto
 
 (* X_001_17b_dual_base_involutive (matches Coq) *)
-lemma X_001_17b_dual_base_involutive: "\<forall> m, dual (dual SEnd) = SEnd \<and> dual (dual (SSend m SEnd)) = SSend m SEnd \<and> dual (dual (SRecv m SEnd)) = SRecv m SEnd"
+lemma X_001_17b_dual_base_involutive: "\<forall>m. dual (dual SEnd) = SEnd \<and> dual (dual (SSend m SEnd)) = SSend m SEnd \<and> dual (dual (SRecv m SEnd)) = SRecv m SEnd"
   by simp
 
 (* X_001_17c_dual_chain (matches Coq) *)
-lemma X_001_17c_dual_chain: "\<forall> m1 m2, dual (dual (SSend m1 (SRecv m2 SEnd))) = SSend m1 (SRecv m2 SEnd) \<and> dual (dual (SRecv m1 (SSend m2 SEnd))) = SRecv m1 (SSend m2 SEnd)"
+lemma X_001_17c_dual_chain: "\<forall>m1 m2. dual (dual (SSend m1 (SRecv m2 SEnd))) = SSend m1 (SRecv m2 SEnd) \<and> dual (dual (SRecv m1 (SSend m2 SEnd))) = SRecv m1 (SSend m2 SEnd)"
   by simp
 
 (* X_001_18_no_circular_wait (matches Coq) *)
-lemma X_001_18_no_circular_wait: "\<forall> cfg, well_typed cfg \<longrightarrow> all_respect_order cfg \<longrightarrow> ~ circular_wait cfg"
-  by (cases rule: ‹_›.cases; simp)
+lemma X_001_18_no_circular_wait: "\<forall>cfg. well_typed cfg \<longrightarrow> all_respect_order cfg \<longrightarrow> ~ circular_wait cfg"
+  by auto
 
 (* X_001_19_lock_ordering (matches Coq) *)
-lemma X_001_19_lock_ordering: "\<forall> l1 l2, l1 \<noteq> l2 \<longrightarrow> lock_order l1 l2 \<or> lock_order l2 l1"
+lemma X_001_19_lock_ordering: "\<forall>l1 l2. l1 \<noteq> l2 \<longrightarrow> lock_order l1 l2 \<or> lock_order l2 l1"
   by simp
 
 (* X_001_20_session_deadlock_free (matches Coq) *)
-lemma X_001_20_session_deadlock_free: "\<forall> cfg, session_typed cfg \<longrightarrow> ~ deadlocked cfg"
-  by (cases rule: ‹_›.cases; simp)
+lemma X_001_20_session_deadlock_free: "\<forall>cfg. session_typed cfg \<longrightarrow> ~ deadlocked cfg"
+  by auto
 
 (* X_001_21_resource_ordering (matches Coq) *)
-lemma X_001_21_resource_ordering: "\<forall> r1 r2, r1 \<noteq> r2 \<longrightarrow> r1 < r2 \<or> r2 < r1"
+lemma X_001_21_resource_ordering: "\<forall>r1 r2. r1 \<noteq> r2 \<longrightarrow> r1 < r2 \<or> r2 < r1"
   by simp
 
 (* X_001_22_timeout_prevents_deadlock (matches Coq) *)
-lemma X_001_22_timeout_prevents_deadlock: "\<forall> cfg, has_timeout cfg \<longrightarrow> ~ deadlocked cfg \<or> True. "
+lemma X_001_22_timeout_prevents_deadlock: "\<forall>cfg. has_timeout cfg \<longrightarrow> ~ deadlocked cfg \<or> True. "
   by auto
 
 (* X_001_23_deadlock_detection (matches Coq) *)
-lemma X_001_23_deadlock_detection: "\<forall> cfg, deadlocked cfg \<or> ~ deadlocked cfg"
-  by (cases rule: ‹_›.cases; simp)
+lemma X_001_23_deadlock_detection: "\<forall>cfg. deadlocked cfg \<or> ~ deadlocked cfg"
+  by auto
 
 (* X_001_24_livelock_freedom (matches Coq) *)
-lemma X_001_24_livelock_freedom: "\<forall> cfg, bounded cfg \<longrightarrow> ~ livelock cfg"
+lemma X_001_24_livelock_freedom: "\<forall>cfg. bounded cfg \<longrightarrow> ~ livelock cfg"
   by auto
 
 (* X_001_25_starvation_freedom (matches Coq) *)
-lemma X_001_25_starvation_freedom: "\<forall> cfg t, fair_scheduling cfg \<longrightarrow> ~ starved cfg t"
+lemma X_001_25_starvation_freedom: "\<forall>cfg t. fair_scheduling cfg \<longrightarrow> ~ starved cfg t"
   by auto
 
 (* X_001_26_mutex_correct (matches Coq) *)
-lemma X_001_26_mutex_correct: "\<forall> m t1 t2 m1, mutex_acquire m t1 = Some m1 \<longrightarrow> mutex_acquire m1 t2 = None"
-  by (cases rule: ‹_›.cases; simp)
+lemma X_001_26_mutex_correct: "\<forall>m t1 t2 m1. mutex_acquire m t1 = Some m1 \<longrightarrow> mutex_acquire m1 t2 = None"
+  by auto
 
 (* X_001_27_rwlock_correct (matches Coq) *)
-lemma X_001_27_rwlock_correct: "\<forall> rw, rwlock_writer rw = None \<longrightarrow> rwlock_readers rw \<ge> 0"
+lemma X_001_27_rwlock_correct: "\<forall>rw. rwlock_writer rw = None \<longrightarrow> rwlock_readers rw \<ge> 0"
   by simp
 
 (* X_001_28_barrier_correct (matches Coq) *)
-lemma X_001_28_barrier_correct: "\<forall> b, barrier_count b \<le> barrier_total b \<longrightarrow> barrier_count b = barrier_total b \<or> barrier_count b < barrier_total b"
+lemma X_001_28_barrier_correct: "\<forall>b. barrier_count b \<le> barrier_total b \<longrightarrow> barrier_count b = barrier_total b \<or> barrier_count b < barrier_total b"
   by simp
 
 (* X_001_29_semaphore_correct (matches Coq) *)
-lemma X_001_29_semaphore_correct: "\<forall> s, sem_count s \<le> sem_max s"
+lemma X_001_29_semaphore_correct: "\<forall>s. sem_count s \<le> sem_max s"
   by auto
 
 (* X_001_30_condvar_correct (matches Coq) *)
-lemma X_001_30_condvar_correct: "\<forall> cv t, condvar_waiters (mkCondVar (t :: condvar_waiters cv)) = t :: condvar_waiters cv"
+lemma X_001_30_condvar_correct: "\<forall>cv t. condvar_waiters (mkCondVar (t :: condvar_waiters cv)) = t :: condvar_waiters cv"
   by simp
 
 (* X_001_31_global_type_projectable (matches Coq) *)
-lemma X_001_31_global_type_projectable: "\<forall> g r, \<exists> s, project g r = s"
+lemma X_001_31_global_type_projectable: "\<forall>g r. \<exists>s. project g r = s"
   by simp
 
 (* X_001_32_multiparty_safety (matches Coq) *)
-lemma X_001_32_multiparty_safety: "\<forall> g r1 r2, r1 \<noteq> r2 \<longrightarrow> \<exists> s1 s2, project g r1 = s1 \<and> project g r2 = s2"
+lemma X_001_32_multiparty_safety: "\<forall>g r1 r2. r1 \<noteq> r2 \<longrightarrow> \<exists>s1 s2. project g r1 = s1 \<and> project g r2 = s2"
   by simp
 
 (* X_001_33_multiparty_progress (matches Coq) *)
-lemma X_001_33_multiparty_progress: "\<forall> g, g \<noteq> GEnd \<longrightarrow> \<exists> r1 r2 mt g', g = GMsg r1 r2 mt g' \<or> (\<exists> branches, g = GChoice r1 branches)"
+lemma X_001_33_multiparty_progress: "\<forall>g. g \<noteq> GEnd \<longrightarrow> \<exists>r1 r2 mt g'. g = GMsg r1 r2 mt g' \<or> (\<exists>branches. g = GChoice r1 branches)"
   by simp
 
 (* X_001_34_role_conformance (matches Coq) *)
-lemma X_001_34_role_conformance: "\<forall> e g r, conforms e (project g r) \<longrightarrow> True"
+lemma X_001_34_role_conformance: "\<forall>e g r. conforms e (project g r) \<longrightarrow> True"
   by auto
 
 (* X_001_35_multiparty_composition (matches Coq) *)
-lemma X_001_35_multiparty_composition: "\<forall> g1 g2 r, project g1 r = SEnd \<longrightarrow> project g2 r = project g2 r"
+lemma X_001_35_multiparty_composition: "\<forall>g1 g2 r. project g1 r = SEnd \<longrightarrow> project g2 r = project g2 r"
   by simp
 
 end

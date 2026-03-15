@@ -40,69 +40,69 @@ theory Preservation
 begin
 
 (* 1 (matches Coq) *)
-lemma 1: "Free Variables in Context If x is free in e and e is well-typed in Γ, then x is in Γ. Lemma free_in_context : \<forall> x e Γ Σ Δ T ε, free_in x e \<longrightarrow> has_type Γ Σ Δ e T ε \<longrightarrow> \<exists> T', lookup x Γ = Some T'"
+lemma 1: "Free Variables in Context If x is free in e and e is well-typed in Γ, then x is in Γ. Lemma free_in_context : \<forall>x e Γ Σ Δ T ε. free_in x e \<longrightarrow> has_type Γ Σ Δ e T ε \<longrightarrow> \<exists>T'. lookup x Γ = Some T'"
   by auto
 
 (* store_lookup_update_eq (matches Coq) *)
-lemma store_lookup_update_eq: "\<forall> st l v, store_lookup l (store_update l v st) = Some v"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_lookup_update_eq: "\<forall>st l v. store_lookup l (store_update l v st) = Some v"
+  by auto
 
 (* store_lookup_update_neq (matches Coq) *)
-lemma store_lookup_update_neq: "\<forall> st l l' v, l \<noteq> l' \<longrightarrow> store_lookup l (store_update l' v st) = store_lookup l st"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_lookup_update_neq: "\<forall>st l l' v. l \<noteq> l' \<longrightarrow> store_lookup l (store_update l' v st) = store_lookup l st"
+  by auto
 
 (* store_ty_lookup_update_eq (matches Coq) *)
-lemma store_ty_lookup_update_eq: "\<forall> Σ l T sl, store_ty_lookup l (store_ty_update l T sl Σ) = Some (T, sl)"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_ty_lookup_update_eq: "\<forall>Σ l T sl. store_ty_lookup l (store_ty_update l T sl Σ) = Some (T, sl)"
+  by auto
 
 (* store_ty_lookup_update_neq (matches Coq) *)
-lemma store_ty_lookup_update_neq: "\<forall> Σ l l' T sl, l \<noteq> l' \<longrightarrow> store_ty_lookup l (store_ty_update l' T sl Σ) = store_ty_lookup l Σ"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_ty_lookup_update_neq: "\<forall>Σ l l' T sl. l \<noteq> l' \<longrightarrow> store_ty_lookup l (store_ty_update l' T sl Σ) = store_ty_lookup l Σ"
+  by auto
 
 (* store_ty_extends_update_fresh (matches Coq) *)
-lemma store_ty_extends_update_fresh: "\<forall> Σ l T sl, store_ty_lookup l Σ = None \<longrightarrow> store_ty_extends Σ (store_ty_update l T sl Σ)"
-  by (cases rule: ‹_›.cases; simp)
+lemma store_ty_extends_update_fresh: "\<forall>Σ l T sl. store_ty_lookup l Σ = None \<longrightarrow> store_ty_extends Σ (store_ty_update l T sl Σ)"
+  by auto
 
 (* store_ty_extends_preserves_typing (matches Coq) *)
-lemma store_ty_extends_preserves_typing: "\<forall> Γ Σ Σ' Δ e T ε, store_ty_extends Σ Σ' \<longrightarrow> has_type Γ Σ Δ e T ε \<longrightarrow> has_type Γ Σ' Δ e T ε"
+lemma store_ty_extends_preserves_typing: "\<forall>Γ Σ Σ' Δ e T ε. store_ty_extends Σ Σ' \<longrightarrow> has_type Γ Σ Δ e T ε \<longrightarrow> has_type Γ Σ' Δ e T ε"
   by auto
 
 (* store_ty_extends_refl (matches Coq) *)
-lemma store_ty_extends_refl: "\<forall> Σ, store_ty_extends Σ Σ"
+lemma store_ty_extends_refl: "\<forall>Σ. store_ty_extends Σ Σ"
   by auto
 
 (* store_wf_update_existing (matches Coq) *)
-lemma store_wf_update_existing: "\<forall> Σ st l T sl v, store_wf Σ st \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> value v \<longrightarrow> has_type nil Σ Public v T EffectPure \<longrightarrow> store_wf Σ (store_update l v st)"
+lemma store_wf_update_existing: "\<forall>Σ st l T sl v. store_wf Σ st \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> value v \<longrightarrow> has_type nil Σ Public v T EffectPure \<longrightarrow> store_wf Σ (store_update l v st)"
   by auto
 
 (* store_wf_update_fresh (matches Coq) *)
-lemma store_wf_update_fresh: "\<forall> Σ st l T sl v, store_wf Σ st \<longrightarrow> store_lookup l st = None \<longrightarrow> store_ty_lookup l Σ = None \<longrightarrow> value v \<longrightarrow> has_type nil Σ Public v T EffectPure \<longrightarrow> store_wf (store_ty_update l T sl Σ) (store_update l v st)"
+lemma store_wf_update_fresh: "\<forall>Σ st l T sl v. store_wf Σ st \<longrightarrow> store_lookup l st = None \<longrightarrow> store_ty_lookup l Σ = None \<longrightarrow> value v \<longrightarrow> has_type nil Σ Public v T EffectPure \<longrightarrow> store_wf (store_ty_update l T sl Σ) (store_update l v st)"
   by auto
 
 (* store_ty_lookup_fresh_none (matches Coq) *)
-lemma store_ty_lookup_fresh_none: "\<forall> Σ st, store_wf Σ st \<longrightarrow> store_ty_lookup (fresh_loc st) Σ = None"
+lemma store_ty_lookup_fresh_none: "\<forall>Σ st. store_wf Σ st \<longrightarrow> store_ty_lookup (fresh_loc st) Σ = None"
   by auto
 
 (* 2 (matches Coq) *)
-lemma 2: "Context Invariance Typing only depends on free variables. If all free variables of e have the same binding in Γ1 and Γ2, then e types the same in both. Lemma context_invariance : \<forall> Γ1 Γ2 Σ Δ e T ε, has_type Γ1 Σ Δ e T ε \<longrightarrow> (\<forall> x, free_in x e \<longrightarrow> lookup x Γ1 = lookup x Γ2) \<longrightarrow> has_type Γ2 Σ Δ e T ε"
-  by (cases rule: ‹_›.cases; simp)
+lemma 2: "Context Invariance Typing only depends on free variables. If all free variables of e have the same binding in Γ1 and Γ2, then e types the same in both. Lemma context_invariance : \<forall>Γ1 Γ2 Σ Δ e T ε. has_type Γ1 Σ Δ e T ε \<longrightarrow> (\<forall>x. free_in x e \<longrightarrow> lookup x Γ1 = lookup x Γ2) \<longrightarrow> has_type Γ2 Σ Δ e T ε"
+  by auto
 
 (* 3 (matches Coq) *)
-lemma 3: "Closed Terms Weaken A closed term (typed in empty context) can be typed in any context. Lemma closed_typing_weakening : \<forall> Σ Δ v T ε Γ, has_type nil Σ Δ v T ε \<longrightarrow> has_type Γ Σ Δ v T ε"
+lemma 3: "Closed Terms Weaken A closed term (typed in empty context) can be typed in any context. Lemma closed_typing_weakening : \<forall>Σ Δ v T ε Γ. has_type nil Σ Δ v T ε \<longrightarrow> has_type Γ Σ Δ v T ε"
   by auto
 
 (* substitution_preserves_typing (matches Coq) *)
-lemma substitution_preserves_typing: "\<forall> Γ Σ Δ z v e T1 T2 ε2, value v \<longrightarrow> has_type nil Σ Δ v T1 EffectPure \<longrightarrow> has_type ((z, T1) :: Γ) Σ Δ e T2 ε2 \<longrightarrow> has_type Γ Σ Δ ([z := v] e) T2 ε2"
-  by (cases rule: ‹_›.cases; simp)
+lemma substitution_preserves_typing: "\<forall>Γ Σ Δ z v e T1 T2 ε2. value v \<longrightarrow> has_type nil Σ Δ v T1 EffectPure \<longrightarrow> has_type ((z, T1) :: Γ) Σ Δ e T2 ε2 \<longrightarrow> has_type Γ Σ Δ (subst z v e) T2 ε2"
+  by auto
 
 (* Helper: values have pure effect when typed in empty context *)
 (* value_has_pure_effect (matches Coq) *)
-lemma value_has_pure_effect: "\<forall> v T ε Σ, value v \<longrightarrow> has_type nil Σ Public v T ε \<longrightarrow> has_type nil Σ Public v T EffectPure"
+lemma value_has_pure_effect: "\<forall>v T ε Σ. value v \<longrightarrow> has_type nil Σ Public v T ε \<longrightarrow> has_type nil Σ Public v T EffectPure"
   by simp
 
 (* Helper lemma for preservation with proper IH *)
 (* preservation_helper (matches Coq) *)
-lemma preservation_helper: "\<forall> cfg1 cfg2, cfg1 --> cfg2 \<longrightarrow> \<forall> e st ctx e' st' ctx' T ε Σ, cfg1 = (e, st, ctx) \<longrightarrow> cfg2 = (e', st', ctx') \<longrightarrow> has_type nil Σ Public e T ε \<longrightarrow> store_wf Σ st \<longrightarrow> \<exists> Σ' ε', store_ty_extends Σ Σ' \<and> store_wf Σ' st' \<and> has_type nil Σ' Public e' T ε'"
+lemma preservation_helper: "\<forall>cfg1 cfg2. cfg1 --> cfg2 \<longrightarrow> \<forall>e st ctx e' st' ctx' T ε Σ. cfg1 = (e, st, ctx) \<longrightarrow> cfg2 = (e', st', ctx') \<longrightarrow> has_type nil Σ Public e T ε \<longrightarrow> store_wf Σ st \<longrightarrow> \<exists>Σ' ε'. store_ty_extends Σ Σ' \<and> store_wf Σ' st' \<and> has_type nil Σ' Public e' T ε'"
   by auto
 
 (* preservation (matches Coq) *)
@@ -111,21 +111,21 @@ lemma preservation: "preservation_stmt"
 
 (* Store typing extension is transitive *)
 (* store_ty_extends_trans (matches Coq) *)
-lemma store_ty_extends_trans: "\<forall> Σ1 Σ2 Σ3, store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ3 \<longrightarrow> store_ty_extends Σ1 Σ3"
+lemma store_ty_extends_trans: "\<forall>Σ1 Σ2 Σ3. store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ3 \<longrightarrow> store_ty_extends Σ1 Σ3"
   by auto
 
 (* multi_step_preservation (matches Coq) *)
-lemma multi_step_preservation: "\<forall> cfg cfg', cfg -->* cfg' \<longrightarrow> \<forall> e e' T ε st st' ctx ctx' Σ, cfg = (e, st, ctx) \<longrightarrow> cfg' = (e', st', ctx') \<longrightarrow> has_type nil Σ Public e T ε \<longrightarrow> store_wf Σ st \<longrightarrow> \<exists> Σ' ε', store_ty_extends Σ Σ' \<and> store_wf Σ' st' \<and> has_type nil Σ' Public e' T ε'"
+lemma multi_step_preservation: "\<forall>cfg cfg'. cfg -->* cfg' \<longrightarrow> \<forall>e e' T ε st st' ctx ctx' Σ. cfg = (e, st, ctx) \<longrightarrow> cfg' = (e', st', ctx') \<longrightarrow> has_type nil Σ Public e T ε \<longrightarrow> store_wf Σ st \<longrightarrow> \<exists>Σ' ε'. store_ty_extends Σ Σ' \<and> store_wf Σ' st' \<and> has_type nil Σ' Public e' T ε'"
   by auto
 
-(* In a well-formed store, a typed location has a value *)
+(* a \<in> set well-formed store, a typed location has a value *)
 (* store_wf_typed_loc_value (matches Coq) *)
-lemma store_wf_typed_loc_value: "\<forall> Σ st l T sl, store_wf Σ st \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists> v, store_lookup l st = Some v \<and> value v"
+lemma store_wf_typed_loc_value: "\<forall>Σ st l T sl. store_wf Σ st \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists>v. store_lookup l st = Some v \<and> value v"
   by auto
 
-(* In a well-formed store, a typed location has a well-typed value *)
+(* a \<in> set well-formed store, a typed location has a well-typed value *)
 (* store_wf_lookup_has_type (matches Coq) *)
-lemma store_wf_lookup_has_type: "\<forall> Σ st l T sl, store_wf Σ st \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists> v, store_lookup l st = Some v \<and> value v \<and> has_type nil Σ Public v T EffectPure"
+lemma store_wf_lookup_has_type: "\<forall>Σ st l T sl. store_wf Σ st \<longrightarrow> store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> \<exists>v. store_lookup l st = Some v \<and> value v \<and> has_type nil Σ Public v T EffectPure"
   by auto
 
 end

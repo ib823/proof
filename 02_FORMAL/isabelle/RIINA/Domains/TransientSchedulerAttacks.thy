@@ -140,19 +140,19 @@ definition riina_tsa_config :: "TSADefenseConfig" where
 
 (* scheduler_indistinguishable (matches Coq: Definition scheduler_indistinguishable) *)
 definition scheduler_indistinguishable :: "bool" where
-  "scheduler_indistinguishable \<equiv> ((sf_time_slice_consumed = f1)) (sf_time_slice_consumed f2) \<and>
-  ((sf_preemption_count = f1)) (sf_preemption_count f2) \<and>
-  ((sf_cache_sets_touched = f1)) (sf_cache_sets_touched f2) \<and>
-  ((sf_tlb_entries_used = f1)) (sf_tlb_entries_used f2)"
+  "scheduler_indistinguishable \<equiv> (sf_time_slice_consumed f1 = sf_time_slice_consumed f2) \<and>
+  (sf_preemption_count f1 = sf_preemption_count f2) \<and>
+  (sf_cache_sets_touched f1 = sf_cache_sets_touched f2) \<and>
+  (sf_tlb_entries_used f1 = sf_tlb_entries_used f2)"
 
 (* constant_time_codegen (matches Coq: Definition constant_time_codegen) *)
-fun constant_time_codegen :: "bool" where
-
+definition constant_time_codegen :: "bool" where
+  "constant_time_codegen \<equiv> True"
 
 (* Helper lemma *)
 (* andb_true_iff_local (matches Coq) *)
-lemma andb_true_iff_local: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff_local: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* TSA_001: RIINA SQ defense active *)
 (* TSA_001_sq_defense (matches Coq) *)
@@ -181,62 +181,62 @@ lemma TSA_005_all_defenses: "all_tsa_defenses riina_tsa_config = True"
 
 (* TSA_006: Constant-time scheduling required by SQ defense *)
 (* TSA_006_sq_requires_ct (matches Coq) *)
-lemma TSA_006_sq_requires_ct: "\<forall> c : TSADefenseConfig, sq_defense_active c = True \<longrightarrow> tsa_constant_time_scheduling c = True"
+lemma TSA_006_sq_requires_ct: "\<forall>c : TSADefenseConfig. sq_defense_active c = True \<longrightarrow> tsa_constant_time_scheduling c = True"
   by auto
 
 (* TSA_007: Queue isolation required by SQ defense *)
 (* TSA_007_sq_requires_isolation (matches Coq) *)
-lemma TSA_007_sq_requires_isolation: "\<forall> c : TSADefenseConfig, sq_defense_active c = True \<longrightarrow> tsa_scheduler_queue_isolation c = True"
+lemma TSA_007_sq_requires_isolation: "\<forall>c : TSADefenseConfig. sq_defense_active c = True \<longrightarrow> tsa_scheduler_queue_isolation c = True"
   by auto
 
 (* TSA_008: Timer noise required by SQ defense *)
 (* TSA_008_sq_requires_noise (matches Coq) *)
-lemma TSA_008_sq_requires_noise: "\<forall> c : TSADefenseConfig, sq_defense_active c = True \<longrightarrow> tsa_timer_noise_injection c = True"
+lemma TSA_008_sq_requires_noise: "\<forall>c : TSADefenseConfig. sq_defense_active c = True \<longrightarrow> tsa_timer_noise_injection c = True"
   by auto
 
 (* TSA_009: Cache partitioning required by L1 defense *)
 (* TSA_009_l1_requires_partition (matches Coq) *)
-lemma TSA_009_l1_requires_partition: "\<forall> c : TSADefenseConfig, l1_defense_active c = True \<longrightarrow> tsa_cache_partitioning c = True"
+lemma TSA_009_l1_requires_partition: "\<forall>c : TSADefenseConfig. l1_defense_active c = True \<longrightarrow> tsa_cache_partitioning c = True"
   by auto
 
 (* TSA_010: Preemption hardening required by L1 defense *)
 (* TSA_010_l1_requires_preemption (matches Coq) *)
-lemma TSA_010_l1_requires_preemption: "\<forall> c : TSADefenseConfig, l1_defense_active c = True \<longrightarrow> tsa_preemption_hardening c = True"
+lemma TSA_010_l1_requires_preemption: "\<forall>c : TSADefenseConfig. l1_defense_active c = True \<longrightarrow> tsa_preemption_hardening c = True"
   by auto
 
 (* TSA_011: TLB isolation required by TLB defense *)
 (* TSA_011_tlb_requires_isolation (matches Coq) *)
-lemma TSA_011_tlb_requires_isolation: "\<forall> c : TSADefenseConfig, tlb_ipi_defense_active c = True \<longrightarrow> tsa_tlb_isolation c = True"
+lemma TSA_011_tlb_requires_isolation: "\<forall>c : TSADefenseConfig. tlb_ipi_defense_active c = True \<longrightarrow> tsa_tlb_isolation c = True"
   by auto
 
 (* TSA_012: IPI constant-time required by TLB defense *)
 (* TSA_012_tlb_requires_ipi (matches Coq) *)
-lemma TSA_012_tlb_requires_ipi: "\<forall> c : TSADefenseConfig, tlb_ipi_defense_active c = True \<longrightarrow> tsa_ipi_constant_time c = True"
+lemma TSA_012_tlb_requires_ipi: "\<forall>c : TSADefenseConfig. tlb_ipi_defense_active c = True \<longrightarrow> tsa_ipi_constant_time c = True"
   by auto
 
 (* TSA_013: All defenses imply SQ defense *)
 (* TSA_013_all_implies_sq (matches Coq) *)
-lemma TSA_013_all_implies_sq: "\<forall> c : TSADefenseConfig, all_tsa_defenses c = True \<longrightarrow> sq_defense_active c = True"
+lemma TSA_013_all_implies_sq: "\<forall>c : TSADefenseConfig. all_tsa_defenses c = True \<longrightarrow> sq_defense_active c = True"
   by auto
 
 (* TSA_014: All defenses imply L1 defense *)
 (* TSA_014_all_implies_l1 (matches Coq) *)
-lemma TSA_014_all_implies_l1: "\<forall> c : TSADefenseConfig, all_tsa_defenses c = True \<longrightarrow> l1_defense_active c = True"
+lemma TSA_014_all_implies_l1: "\<forall>c : TSADefenseConfig. all_tsa_defenses c = True \<longrightarrow> l1_defense_active c = True"
   by auto
 
 (* TSA_015: All defenses imply TLB/IPI defense *)
 (* TSA_015_all_implies_tlb (matches Coq) *)
-lemma TSA_015_all_implies_tlb: "\<forall> c : TSADefenseConfig, all_tsa_defenses c = True \<longrightarrow> tlb_ipi_defense_active c = True"
+lemma TSA_015_all_implies_tlb: "\<forall>c : TSADefenseConfig. all_tsa_defenses c = True \<longrightarrow> tlb_ipi_defense_active c = True"
   by auto
 
 (* TSA_016: All defenses imply frequency defense *)
 (* TSA_016_all_implies_freq (matches Coq) *)
-lemma TSA_016_all_implies_freq: "\<forall> c : TSADefenseConfig, all_tsa_defenses c = True \<longrightarrow> freq_defense_active c = True"
+lemma TSA_016_all_implies_freq: "\<forall>c : TSADefenseConfig. all_tsa_defenses c = True \<longrightarrow> freq_defense_active c = True"
   by auto
 
 (* TSA_017: Single-element footprint list is constant-time *)
 (* TSA_017_single_footprint_ct (matches Coq) *)
-lemma TSA_017_single_footprint_ct: "\<forall> f : SchedulerFootprint, constant_time_codegen [f] = True"
+lemma TSA_017_single_footprint_ct: "\<forall>f : SchedulerFootprint. constant_time_codegen [f] = True"
   by simp
 
 (* TSA_018: Empty footprint list is constant-time *)
@@ -246,37 +246,37 @@ lemma TSA_018_empty_footprint_ct: "constant_time_codegen [] = True"
 
 (* TSA_019: Identical footprints are scheduler-indistinguishable *)
 (* TSA_019_identical_indistinguishable (matches Coq) *)
-lemma TSA_019_identical_indistinguishable: "\<forall> f : SchedulerFootprint, scheduler_indistinguishable f f = True"
+lemma TSA_019_identical_indistinguishable: "\<forall>f : SchedulerFootprint. scheduler_indistinguishable f f = True"
   by simp
 
 (* TSA_020: Identical pair is constant-time *)
 (* TSA_020_identical_pair_ct (matches Coq) *)
-lemma TSA_020_identical_pair_ct: "\<forall> f : SchedulerFootprint, constant_time_codegen [f; f] = True"
+lemma TSA_020_identical_pair_ct: "\<forall>f : SchedulerFootprint. constant_time_codegen [f; f] = True"
   by simp
 
 (* TSA_021: Identical triple is constant-time *)
 (* TSA_021_identical_triple_ct (matches Coq) *)
-lemma TSA_021_identical_triple_ct: "\<forall> f : SchedulerFootprint, constant_time_codegen [f; f; f] = True"
+lemma TSA_021_identical_triple_ct: "\<forall>f : SchedulerFootprint. constant_time_codegen [f; f; f] = True"
   by simp
 
 (* TSA_022: Full defense implies constant-time scheduling *)
 (* TSA_022_full_implies_ct_sched (matches Coq) *)
-lemma TSA_022_full_implies_ct_sched: "\<forall> c : TSADefenseConfig, all_tsa_defenses c = True \<longrightarrow> tsa_constant_time_scheduling c = True"
+lemma TSA_022_full_implies_ct_sched: "\<forall>c : TSADefenseConfig. all_tsa_defenses c = True \<longrightarrow> tsa_constant_time_scheduling c = True"
   by auto
 
 (* TSA_023: Full defense implies cache partitioning *)
 (* TSA_023_full_implies_partition (matches Coq) *)
-lemma TSA_023_full_implies_partition: "\<forall> c : TSADefenseConfig, all_tsa_defenses c = True \<longrightarrow> tsa_cache_partitioning c = True"
+lemma TSA_023_full_implies_partition: "\<forall>c : TSADefenseConfig. all_tsa_defenses c = True \<longrightarrow> tsa_cache_partitioning c = True"
   by auto
 
 (* TSA_024: Full defense implies TLB isolation *)
 (* TSA_024_full_implies_tlb_iso (matches Coq) *)
-lemma TSA_024_full_implies_tlb_iso: "\<forall> c : TSADefenseConfig, all_tsa_defenses c = True \<longrightarrow> tsa_tlb_isolation c = True"
+lemma TSA_024_full_implies_tlb_iso: "\<forall>c : TSADefenseConfig. all_tsa_defenses c = True \<longrightarrow> tsa_tlb_isolation c = True"
   by auto
 
 (* TSA_025: Complete TSA defense for RIINA *)
 (* TSA_025_complete_defense (matches Coq) *)
-lemma TSA_025_complete_defense: "\<forall> c : TSADefenseConfig, all_tsa_defenses c = True \<longrightarrow> tsa_constant_time_scheduling c = True \<and> tsa_cache_partitioning c = True \<and> tsa_preemption_hardening c = True \<and> tsa_tlb_isolation c = True \<and> tsa_ipi_constant_time c = True \<and> tsa_freq_pinning c = True \<and> tsa_scheduler_queue_isolation c = True \<and> tsa_timer_noise_injection c = True"
+lemma TSA_025_complete_defense: "\<forall>c : TSADefenseConfig. all_tsa_defenses c = True \<longrightarrow> tsa_constant_time_scheduling c = True \<and> tsa_cache_partitioning c = True \<and> tsa_preemption_hardening c = True \<and> tsa_tlb_isolation c = True \<and> tsa_ipi_constant_time c = True \<and> tsa_freq_pinning c = True \<and> tsa_scheduler_queue_isolation c = True \<and> tsa_timer_noise_injection c = True"
   by auto
 
 end

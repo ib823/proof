@@ -312,19 +312,19 @@ definition riina_hypervisor :: "HypervisorConfig" where
     SECTION 1: CORE DEFINITIONS AND HELPERS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
-  by (cases rule: ‹_›.cases; simp)
+lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
+  by auto
 
 (* andb_true_intro (matches Coq) *)
-lemma andb_true_intro: "\<forall> a b : bool, a = True \<longrightarrow> b = True \<longrightarrow> a && b = True"
+lemma andb_true_intro: "\<forall>a b : bool. a = True \<longrightarrow> b = True \<longrightarrow> a && b = True"
   by simp
 
 (* andb_true_elim_l (matches Coq) *)
-lemma andb_true_elim_l: "\<forall> a b : bool, a && b = True \<longrightarrow> a = True"
+lemma andb_true_elim_l: "\<forall>a b : bool. a && b = True \<longrightarrow> a = True"
   by auto
 
 (* andb_true_elim_r (matches Coq) *)
-lemma andb_true_elim_r: "\<forall> a b : bool, a && b = True \<longrightarrow> b = True"
+lemma andb_true_elim_r: "\<forall>a b : bool. a && b = True \<longrightarrow> b = True"
   by auto
 
 (* ============================================================================
@@ -375,62 +375,62 @@ lemma HV_011: "hv_iommu_enabled riina_hypervisor = True"
   by simp
 
 (* HV_012 (matches Coq) *)
-lemma HV_012: "\<forall> v, vm_fully_isolated v = True \<longrightarrow> vmi_memory_isolated v = True"
+lemma HV_012: "\<forall>v. vm_fully_isolated v = True \<longrightarrow> vmi_memory_isolated v = True"
   by auto
 
 (* HV_013 (matches Coq) *)
-lemma HV_013: "\<forall> v, vm_fully_isolated v = True \<longrightarrow> vmi_cpu_isolated v = True"
+lemma HV_013: "\<forall>v. vm_fully_isolated v = True \<longrightarrow> vmi_cpu_isolated v = True"
   by auto
 
 (* HV_014 (matches Coq) *)
-lemma HV_014: "\<forall> v, vm_fully_isolated v = True \<longrightarrow> vmi_io_isolated v = True"
+lemma HV_014: "\<forall>v. vm_fully_isolated v = True \<longrightarrow> vmi_io_isolated v = True"
   by auto
 
 (* HV_015 (matches Coq) *)
-lemma HV_015: "\<forall> v, vm_fully_isolated v = True \<longrightarrow> vmi_interrupt_isolated v = True"
+lemma HV_015: "\<forall>v. vm_fully_isolated v = True \<longrightarrow> vmi_interrupt_isolated v = True"
   by auto
 
 (* HV_016 (matches Coq) *)
-lemma HV_016: "\<forall> h, hv_secure h = True \<longrightarrow> vm_fully_isolated (hv_isolation h) = True"
+lemma HV_016: "\<forall>h. hv_secure h = True \<longrightarrow> vm_fully_isolated (hv_isolation h) = True"
   by auto
 
 (* HV_017 (matches Coq) *)
-lemma HV_017: "\<forall> h, hv_secure h = True \<longrightarrow> hv_secure_boot h = True"
+lemma HV_017: "\<forall>h. hv_secure h = True \<longrightarrow> hv_secure_boot h = True"
   by auto
 
 (* HV_018 (matches Coq) *)
-lemma HV_018: "\<forall> h, hv_secure h = True \<longrightarrow> hv_attestation h = True"
+lemma HV_018: "\<forall>h. hv_secure h = True \<longrightarrow> hv_attestation h = True"
   by auto
 
 (* HV_019 (matches Coq) *)
-lemma HV_019: "\<forall> h, hv_secure h = True \<longrightarrow> hv_memory_encryption h = True"
+lemma HV_019: "\<forall>h. hv_secure h = True \<longrightarrow> hv_memory_encryption h = True"
   by auto
 
 (* HV_020 (matches Coq) *)
-lemma HV_020: "\<forall> h, hv_secure h = True \<longrightarrow> hv_nested_paging h = True"
+lemma HV_020: "\<forall>h. hv_secure h = True \<longrightarrow> hv_nested_paging h = True"
   by auto
 
 (* ============================================================================
     SECTION 7: MEMORY VIRTUALIZATION THEOREMS (HV_021 - HV_035)
     ============================================================================ *)
 (* HV_021 (matches Coq) *)
-lemma HV_021: "\<forall> h, hv_secure h = True \<longrightarrow> hv_iommu_enabled h = True"
+lemma HV_021: "\<forall>h. hv_secure h = True \<longrightarrow> hv_iommu_enabled h = True"
   by auto
 
 (* HV_022 (matches Coq) *)
-lemma HV_022: "\<forall> h, hv_secure h = True \<longrightarrow> vmi_memory_isolated (hv_isolation h) = True"
+lemma HV_022: "\<forall>h. hv_secure h = True \<longrightarrow> vmi_memory_isolated (hv_isolation h) = True"
   by auto
 
 (* HV_023 (matches Coq) *)
-lemma HV_023: "\<forall> h, hv_secure h = True \<longrightarrow> vmi_cpu_isolated (hv_isolation h) = True"
+lemma HV_023: "\<forall>h. hv_secure h = True \<longrightarrow> vmi_cpu_isolated (hv_isolation h) = True"
   by auto
 
 (* HV_024 (matches Coq) *)
-lemma HV_024: "\<forall> h, hv_secure h = True \<longrightarrow> vmi_io_isolated (hv_isolation h) = True"
+lemma HV_024: "\<forall>h. hv_secure h = True \<longrightarrow> vmi_io_isolated (hv_isolation h) = True"
   by auto
 
 (* HV_025 (matches Coq) *)
-lemma HV_025: "\<forall> h, hv_secure h = True \<longrightarrow> vmi_interrupt_isolated (hv_isolation h) = True"
+lemma HV_025: "\<forall>h. hv_secure h = True \<longrightarrow> vmi_interrupt_isolated (hv_isolation h) = True"
   by auto
 
 (* HV_026 (matches Coq) *)
@@ -450,27 +450,27 @@ lemma HV_029: "mv_accessed_dirty riina_mem_virt = True"
   by simp
 
 (* HV_030 (matches Coq) *)
-lemma HV_030: "\<forall> m, mem_virt_secure m = True \<longrightarrow> mv_ept_enabled m = True"
+lemma HV_030: "\<forall>m. mem_virt_secure m = True \<longrightarrow> mv_ept_enabled m = True"
   by auto
 
 (* HV_031 (matches Coq) *)
-lemma HV_031: "\<forall> m, mem_virt_secure m = True \<longrightarrow> mv_vpid_enabled m = True"
+lemma HV_031: "\<forall>m. mem_virt_secure m = True \<longrightarrow> mv_vpid_enabled m = True"
   by auto
 
 (* HV_032 (matches Coq) *)
-lemma HV_032: "\<forall> m, mem_virt_secure m = True \<longrightarrow> mv_accessed_dirty m = True"
+lemma HV_032: "\<forall>m. mem_virt_secure m = True \<longrightarrow> mv_accessed_dirty m = True"
   by auto
 
 (* HV_033 (matches Coq) *)
-lemma HV_033: "\<forall> h, mem_virt_secure (hv_mem_virt h) = True \<longrightarrow> mv_ept_enabled (hv_mem_virt h) = True \<and> mv_vpid_enabled (hv_mem_virt h) = True"
+lemma HV_033: "\<forall>h. mem_virt_secure (hv_mem_virt h) = True \<longrightarrow> mv_ept_enabled (hv_mem_virt h) = True \<and> mv_vpid_enabled (hv_mem_virt h) = True"
   by auto
 
 (* HV_034 (matches Coq) *)
-lemma HV_034: "\<forall> h, hv_secure h = True \<longrightarrow> mem_virt_secure (hv_mem_virt h) = True \<longrightarrow> hv_nested_paging h = True \<and> mv_ept_enabled (hv_mem_virt h) = True"
+lemma HV_034: "\<forall>h. hv_secure h = True \<longrightarrow> mem_virt_secure (hv_mem_virt h) = True \<longrightarrow> hv_nested_paging h = True \<and> mv_ept_enabled (hv_mem_virt h) = True"
   by auto
 
 (* HV_035 (matches Coq) *)
-lemma HV_035: "\<forall> h, hv_secure h = True \<longrightarrow> hv_iommu_enabled h = True \<and> hv_nested_paging h = True"
+lemma HV_035: "\<forall>h. hv_secure h = True \<longrightarrow> hv_iommu_enabled h = True \<and> hv_nested_paging h = True"
   by auto
 
 (* ============================================================================
@@ -497,31 +497,31 @@ lemma HV_040: "iv_virtual_nmi riina_int_virt = True"
   by simp
 
 (* HV_041 (matches Coq) *)
-lemma HV_041: "\<forall> i, int_virt_secure i = True \<longrightarrow> iv_apic_virtualization i = True"
+lemma HV_041: "\<forall>i. int_virt_secure i = True \<longrightarrow> iv_apic_virtualization i = True"
   by auto
 
 (* HV_042 (matches Coq) *)
-lemma HV_042: "\<forall> i, int_virt_secure i = True \<longrightarrow> iv_interrupt_exit i = True"
+lemma HV_042: "\<forall>i. int_virt_secure i = True \<longrightarrow> iv_interrupt_exit i = True"
   by auto
 
 (* HV_043 (matches Coq) *)
-lemma HV_043: "\<forall> i, int_virt_secure i = True \<longrightarrow> iv_nmi_exiting i = True"
+lemma HV_043: "\<forall>i. int_virt_secure i = True \<longrightarrow> iv_nmi_exiting i = True"
   by auto
 
 (* HV_044 (matches Coq) *)
-lemma HV_044: "\<forall> h, int_virt_secure (hv_int_virt h) = True \<longrightarrow> iv_apic_virtualization (hv_int_virt h) = True \<and> iv_interrupt_exit (hv_int_virt h) = True"
+lemma HV_044: "\<forall>h. int_virt_secure (hv_int_virt h) = True \<longrightarrow> iv_apic_virtualization (hv_int_virt h) = True \<and> iv_interrupt_exit (hv_int_virt h) = True"
   by auto
 
 (* HV_045 (matches Coq) *)
-lemma HV_045: "\<forall> h, hv_secure h = True \<longrightarrow> int_virt_secure (hv_int_virt h) = True \<longrightarrow> vmi_interrupt_isolated (hv_isolation h) = True \<and> iv_nmi_exiting (hv_int_virt h) = True"
+lemma HV_045: "\<forall>h. hv_secure h = True \<longrightarrow> int_virt_secure (hv_int_virt h) = True \<longrightarrow> vmi_interrupt_isolated (hv_isolation h) = True \<and> iv_nmi_exiting (hv_int_virt h) = True"
   by auto
 
 (* HV_046 (matches Coq) *)
-lemma HV_046: "\<forall> i, int_virt_secure i = True \<longrightarrow> iv_nmi_exiting i = True"
+lemma HV_046: "\<forall>i. int_virt_secure i = True \<longrightarrow> iv_nmi_exiting i = True"
   by auto
 
 (* HV_047 (matches Coq) *)
-lemma HV_047: "\<forall> i, int_virt_secure i = True \<longrightarrow> iv_apic_virtualization i = True \<and> iv_nmi_exiting i = True"
+lemma HV_047: "\<forall>i. int_virt_secure i = True \<longrightarrow> iv_apic_virtualization i = True \<and> iv_nmi_exiting i = True"
   by auto
 
 (* HV_048 (matches Coq) *)
@@ -568,35 +568,35 @@ lemma HV_057: "scm_mds_clear riina_side_channel = True"
   by simp
 
 (* HV_058 (matches Coq) *)
-lemma HV_058: "\<forall> s, side_channel_mitigated s = True \<longrightarrow> scm_flush_l1d s = True"
+lemma HV_058: "\<forall>s. side_channel_mitigated s = True \<longrightarrow> scm_flush_l1d s = True"
   by auto
 
 (* HV_059 (matches Coq) *)
-lemma HV_059: "\<forall> s, side_channel_mitigated s = True \<longrightarrow> scm_ibrs_enabled s = True"
+lemma HV_059: "\<forall>s. side_channel_mitigated s = True \<longrightarrow> scm_ibrs_enabled s = True"
   by auto
 
 (* HV_060 (matches Coq) *)
-lemma HV_060: "\<forall> s, side_channel_mitigated s = True \<longrightarrow> scm_ibpb_enabled s = True"
+lemma HV_060: "\<forall>s. side_channel_mitigated s = True \<longrightarrow> scm_ibpb_enabled s = True"
   by auto
 
 (* HV_061 (matches Coq) *)
-lemma HV_061: "\<forall> s, side_channel_mitigated s = True \<longrightarrow> scm_stibp_enabled s = True"
+lemma HV_061: "\<forall>s. side_channel_mitigated s = True \<longrightarrow> scm_stibp_enabled s = True"
   by auto
 
 (* HV_062 (matches Coq) *)
-lemma HV_062: "\<forall> s, side_channel_mitigated s = True \<longrightarrow> scm_ssbd_enabled s = True"
+lemma HV_062: "\<forall>s. side_channel_mitigated s = True \<longrightarrow> scm_ssbd_enabled s = True"
   by auto
 
 (* HV_063 (matches Coq) *)
-lemma HV_063: "\<forall> s, side_channel_mitigated s = True \<longrightarrow> scm_mds_clear s = True"
+lemma HV_063: "\<forall>s. side_channel_mitigated s = True \<longrightarrow> scm_mds_clear s = True"
   by auto
 
 (* HV_064 (matches Coq) *)
-lemma HV_064: "\<forall> s, side_channel_mitigated s = True \<longrightarrow> scm_ibrs_enabled s = True \<and> scm_ibpb_enabled s = True \<and> scm_stibp_enabled s = True"
+lemma HV_064: "\<forall>s. side_channel_mitigated s = True \<longrightarrow> scm_ibrs_enabled s = True \<and> scm_ibpb_enabled s = True \<and> scm_stibp_enabled s = True"
   by auto
 
 (* HV_065 (matches Coq) *)
-lemma HV_065: "\<forall> s, side_channel_mitigated s = True \<longrightarrow> scm_flush_l1d s = True \<and> scm_mds_clear s = True"
+lemma HV_065: "\<forall>s. side_channel_mitigated s = True \<longrightarrow> scm_flush_l1d s = True \<and> scm_mds_clear s = True"
   by auto
 
 (* ============================================================================
@@ -627,23 +627,23 @@ lemma HV_071: "ws_tzpc_enabled riina_world_switch = True"
   by simp
 
 (* HV_072 (matches Coq) *)
-lemma HV_072: "\<forall> w, world_switch_secure w = True \<longrightarrow> ws_smc_filtering w = True"
+lemma HV_072: "\<forall>w. world_switch_secure w = True \<longrightarrow> ws_smc_filtering w = True"
   by auto
 
 (* HV_073 (matches Coq) *)
-lemma HV_073: "\<forall> w, world_switch_secure w = True \<longrightarrow> ws_ns_bit_control w = True"
+lemma HV_073: "\<forall>w. world_switch_secure w = True \<longrightarrow> ws_ns_bit_control w = True"
   by auto
 
 (* HV_074 (matches Coq) *)
-lemma HV_074: "\<forall> w, world_switch_secure w = True \<longrightarrow> ws_secure_monitor w = True"
+lemma HV_074: "\<forall>w. world_switch_secure w = True \<longrightarrow> ws_secure_monitor w = True"
   by auto
 
 (* HV_075 (matches Coq) *)
-lemma HV_075: "\<forall> w, world_switch_secure w = True \<longrightarrow> ws_smc_filtering w = True \<and> ws_ns_bit_control w = True"
+lemma HV_075: "\<forall>w. world_switch_secure w = True \<longrightarrow> ws_smc_filtering w = True \<and> ws_ns_bit_control w = True"
   by auto
 
 (* HV_076 (matches Coq) *)
-lemma HV_076: "\<forall> w, world_switch_secure w = True \<longrightarrow> ws_secure_monitor w = True"
+lemma HV_076: "\<forall>w. world_switch_secure w = True \<longrightarrow> ws_secure_monitor w = True"
   by auto
 
 (* HV_077 (matches Coq) *)
@@ -651,15 +651,15 @@ lemma HV_077: "ws_tzasc_enabled riina_world_switch = True \<and> ws_tzpc_enabled
   by auto
 
 (* HV_078 (matches Coq) *)
-lemma HV_078: "\<forall> w, world_switch_secure w = True \<longrightarrow> ws_smc_filtering w = True \<and> ws_ns_bit_control w = True \<and> ws_secure_monitor w = True"
+lemma HV_078: "\<forall>w. world_switch_secure w = True \<longrightarrow> ws_smc_filtering w = True \<and> ws_ns_bit_control w = True \<and> ws_secure_monitor w = True"
   by auto
 
 (* HV_079 (matches Coq) *)
-lemma HV_079: "\<forall> h, hv_secure h = True \<longrightarrow> world_switch_secure (hv_world_switch h) = True \<longrightarrow> vm_fully_isolated (hv_isolation h) = True \<and> ws_secure_monitor (hv_world_switch h) = True"
+lemma HV_079: "\<forall>h. hv_secure h = True \<longrightarrow> world_switch_secure (hv_world_switch h) = True \<longrightarrow> vm_fully_isolated (hv_isolation h) = True \<and> ws_secure_monitor (hv_world_switch h) = True"
   by auto
 
 (* HV_080 (matches Coq) *)
-lemma HV_080: "\<forall> h, world_switch_secure (hv_world_switch h) = True \<longrightarrow> ws_smc_filtering (hv_world_switch h) = True"
+lemma HV_080: "\<forall>h. world_switch_secure (hv_world_switch h) = True \<longrightarrow> ws_smc_filtering (hv_world_switch h) = True"
   by auto
 
 (* ============================================================================
@@ -670,15 +670,15 @@ lemma HV_081: "hv_fully_secure riina_hypervisor = True"
   by simp
 
 (* HV_082 (matches Coq) *)
-lemma HV_082: "\<forall> h, hv_fully_secure h = True \<longrightarrow> hv_secure h = True \<and> mem_virt_secure (hv_mem_virt h) = True"
+lemma HV_082: "\<forall>h. hv_fully_secure h = True \<longrightarrow> hv_secure h = True \<and> mem_virt_secure (hv_mem_virt h) = True"
   by auto
 
 (* HV_083 (matches Coq) *)
-lemma HV_083: "\<forall> h, hv_fully_secure h = True \<longrightarrow> int_virt_secure (hv_int_virt h) = True \<and> world_switch_secure (hv_world_switch h) = True"
+lemma HV_083: "\<forall>h. hv_fully_secure h = True \<longrightarrow> int_virt_secure (hv_int_virt h) = True \<and> world_switch_secure (hv_world_switch h) = True"
   by auto
 
 (* HV_084 (matches Coq) *)
-lemma HV_084: "\<forall> h, hv_fully_secure h = True \<longrightarrow> vm_fully_isolated (hv_isolation h) = True \<and> side_channel_mitigated (hv_side_channel h) = True \<and> mem_virt_secure (hv_mem_virt h) = True \<and> int_virt_secure (hv_int_virt h) = True \<and> world_switch_secure (hv_world_switch h) = True"
+lemma HV_084: "\<forall>h. hv_fully_secure h = True \<longrightarrow> vm_fully_isolated (hv_isolation h) = True \<and> side_channel_mitigated (hv_side_channel h) = True \<and> mem_virt_secure (hv_mem_virt h) = True \<and> int_virt_secure (hv_int_virt h) = True \<and> world_switch_secure (hv_world_switch h) = True"
   by auto
 
 (* HV_085_complete (matches Coq) *)

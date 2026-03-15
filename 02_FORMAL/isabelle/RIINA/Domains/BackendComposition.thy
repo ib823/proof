@@ -92,28 +92,28 @@ definition ni_strong :: "bool" where
 
 (* semantics_preserving (matches Coq: Definition semantics_preserving) *)
 definition semantics_preserving :: "Backend \<Rightarrow> bool" where
-  "semantics_preserving b \<equiv> forall (p : Program) (input : LValue),
-    lv_val (b p input) = lv_val (p input) /\
+  "semantics_preserving b \<equiv> forall (p : Program) (input :: LValue),
+    lv_val (b p input) = lv_val (p input) \<and>
     lv_label (b p input) = lv_label (p input)"
 
 (* public_semantics_preserving (matches Coq: Definition public_semantics_preserving) *)
 definition public_semantics_preserving :: "Backend \<Rightarrow> bool" where
-  "public_semantics_preserving b \<equiv> forall (p : Program) (input : LValue),
+  "public_semantics_preserving b \<equiv> forall (p : Program) (input :: LValue),
     lv_label (p input) = Lo ->
     lv_val (b p input) = lv_val (p input)"
 
 (* label_preserving (matches Coq: Definition label_preserving) *)
 definition label_preserving :: "Backend \<Rightarrow> bool" where
-  "label_preserving b \<equiv> forall (p : Program) (input : LValue),
+  "label_preserving b \<equiv> forall (p : Program) (input :: LValue),
     lv_label (b p input) = lv_label (p input)"
 
 (* id_backend (matches Coq: Definition id_backend) *)
 definition id_backend :: "Backend" where
-  "id_backend \<equiv> fun p => p"
+  "id_backend \<equiv> \<lambda>p. p"
 
 (* compose_backend (matches Coq: Definition compose_backend) *)
 definition compose_backend :: "Backend" where
-  "compose_backend \<equiv> fun p => b2 (b1 p)"
+  "compose_backend \<equiv> \<lambda>p. b2 (b1 p)"
 
 (* wasm_backend_correct (matches Coq: Definition wasm_backend_correct) *)
 definition wasm_backend_correct :: "Backend \<Rightarrow> bool" where
@@ -128,11 +128,11 @@ definition swift_backend_correct :: "Backend \<Rightarrow> bool" where
   "swift_backend_correct sb \<equiv> semantics_preserving sb"
 
 (* ni_secure_binary (matches Coq) *)
-lemma ni_secure_binary: "\<forall> (p : Program) (b : Backend), ni_secure p \<longrightarrow> semantics_preserving b \<longrightarrow> ni_secure (b p)"
+lemma ni_secure_binary: "\<forall>(p :: Program) (b :: Backend). ni_secure p \<longrightarrow> semantics_preserving b \<longrightarrow> ni_secure (b p)"
   by simp
 
 (* ni_strong_binary (matches Coq) *)
-lemma ni_strong_binary: "\<forall> (p : Program) (b : Backend), ni_strong p \<longrightarrow> semantics_preserving b \<longrightarrow> ni_strong (b p)"
+lemma ni_strong_binary: "\<forall>(p :: Program) (b :: Backend). ni_strong p \<longrightarrow> semantics_preserving b \<longrightarrow> ni_strong (b p)"
   by auto
 
 (* id_backend_semantics_preserving (matches Coq) *)
@@ -140,75 +140,75 @@ lemma id_backend_semantics_preserving: "semantics_preserving id_backend"
   by auto
 
 (* id_backend_preserves_ni (matches Coq) *)
-lemma id_backend_preserves_ni: "\<forall> p, ni_secure p \<longrightarrow> ni_secure (id_backend p)"
+lemma id_backend_preserves_ni: "\<forall>p. ni_secure p \<longrightarrow> ni_secure (id_backend p)"
   by auto
 
 (* compose_semantics_preserving (matches Coq) *)
-lemma compose_semantics_preserving: "\<forall> b1 b2, semantics_preserving b1 \<longrightarrow> semantics_preserving b2 \<longrightarrow> semantics_preserving (compose_backend b1 b2)"
+lemma compose_semantics_preserving: "\<forall>b1 b2. semantics_preserving b1 \<longrightarrow> semantics_preserving b2 \<longrightarrow> semantics_preserving (compose_backend b1 b2)"
   by auto
 
 (* ni_secure_composed (matches Coq) *)
-lemma ni_secure_composed: "\<forall> p b1 b2, ni_secure p \<longrightarrow> semantics_preserving b1 \<longrightarrow> semantics_preserving b2 \<longrightarrow> ni_secure (compose_backend b1 b2 p)"
+lemma ni_secure_composed: "\<forall>p b1 b2. ni_secure p \<longrightarrow> semantics_preserving b1 \<longrightarrow> semantics_preserving b2 \<longrightarrow> ni_secure (compose_backend b1 b2 p)"
   by auto
 
 (* sem_pres_implies_label_pres (matches Coq) *)
-lemma sem_pres_implies_label_pres: "\<forall> b, semantics_preserving b \<longrightarrow> label_preserving b"
+lemma sem_pres_implies_label_pres: "\<forall>b. semantics_preserving b \<longrightarrow> label_preserving b"
   by auto
 
 (* public_output_preserved (matches Coq) *)
-lemma public_output_preserved: "\<forall> p b input, semantics_preserving b \<longrightarrow> lv_label (p input) = Lo \<longrightarrow> lv_label (b p input) = Lo"
+lemma public_output_preserved: "\<forall>p b input. semantics_preserving b \<longrightarrow> lv_label (p input) = Lo \<longrightarrow> lv_label (b p input) = Lo"
   by auto
 
 (* secret_output_preserved (matches Coq) *)
-lemma secret_output_preserved: "\<forall> p b input, semantics_preserving b \<longrightarrow> lv_label (p input) = Hi \<longrightarrow> lv_label (b p input) = Hi"
+lemma secret_output_preserved: "\<forall>p b input. semantics_preserving b \<longrightarrow> lv_label (p input) = Hi \<longrightarrow> lv_label (b p input) = Hi"
   by auto
 
 (* full_pipeline_ni (matches Coq) *)
-lemma full_pipeline_ni: "\<forall> p wb jb, ni_secure p \<longrightarrow> wasm_backend_correct wb \<longrightarrow> jni_backend_correct jb \<longrightarrow> ni_secure (compose_backend wb jb p)"
+lemma full_pipeline_ni: "\<forall>p wb jb. ni_secure p \<longrightarrow> wasm_backend_correct wb \<longrightarrow> jni_backend_correct jb \<longrightarrow> ni_secure (compose_backend wb jb p)"
   by auto
 
 (* full_pipeline_swift_ni (matches Coq) *)
-lemma full_pipeline_swift_ni: "\<forall> p wb sb, ni_secure p \<longrightarrow> wasm_backend_correct wb \<longrightarrow> swift_backend_correct sb \<longrightarrow> ni_secure (compose_backend wb sb p)"
+lemma full_pipeline_swift_ni: "\<forall>p wb sb. ni_secure p \<longrightarrow> wasm_backend_correct wb \<longrightarrow> swift_backend_correct sb \<longrightarrow> ni_secure (compose_backend wb sb p)"
   by auto
 
 (* label_le_refl (matches Coq) *)
-lemma label_le_refl: "\<forall> l, label_le l l"
+lemma label_le_refl: "\<forall>l. label_le l l"
   by auto
 
 (* label_le_trans (matches Coq) *)
-lemma label_le_trans: "\<forall> l1 l2 l3, label_le l1 l2 \<longrightarrow> label_le l2 l3 \<longrightarrow> label_le l1 l3"
+lemma label_le_trans: "\<forall>l1 l2 l3. label_le l1 l2 \<longrightarrow> label_le l2 l3 \<longrightarrow> label_le l1 l3"
   by auto
 
 (* lo_is_bottom (matches Coq) *)
-lemma lo_is_bottom: "\<forall> l, label_le Lo l"
+lemma lo_is_bottom: "\<forall>l. label_le Lo l"
   by auto
 
 (* hi_is_top (matches Coq) *)
-lemma hi_is_top: "\<forall> l, label_le l Hi"
+lemma hi_is_top: "\<forall>l. label_le l Hi"
   by auto
 
 (* compose_id_left (matches Coq) *)
-lemma compose_id_left: "\<forall> b p input, compose_backend id_backend b p input = b p input"
+lemma compose_id_left: "\<forall>b p input. compose_backend id_backend b p input = b p input"
   by simp
 
 (* compose_id_right (matches Coq) *)
-lemma compose_id_right: "\<forall> b p input, compose_backend b id_backend p input = b p input"
+lemma compose_id_right: "\<forall>b p input. compose_backend b id_backend p input = b p input"
   by simp
 
 (* compose_backend_assoc (matches Coq) *)
-lemma compose_backend_assoc: "\<forall> b1 b2 b3 p input, compose_backend (compose_backend b1 b2) b3 p input = compose_backend b1 (compose_backend b2 b3) p input"
+lemma compose_backend_assoc: "\<forall>b1 b2 b3 p input. compose_backend (compose_backend b1 b2) b3 p input = compose_backend b1 (compose_backend b2 b3) p input"
   by simp
 
 (* label_preserving_compose (matches Coq) *)
-lemma label_preserving_compose: "\<forall> b1 b2, label_preserving b1 \<longrightarrow> label_preserving b2 \<longrightarrow> label_preserving (compose_backend b1 b2)"
+lemma label_preserving_compose: "\<forall>b1 b2. label_preserving b1 \<longrightarrow> label_preserving b2 \<longrightarrow> label_preserving (compose_backend b1 b2)"
   by auto
 
 (* sem_pres_implies_public_sem_pres (matches Coq) *)
-lemma sem_pres_implies_public_sem_pres: "\<forall> b, semantics_preserving b \<longrightarrow> public_semantics_preserving b"
+lemma sem_pres_implies_public_sem_pres: "\<forall>b. semantics_preserving b \<longrightarrow> public_semantics_preserving b"
   by auto
 
 (* ni_strong_triple_pipeline (matches Coq) *)
-lemma ni_strong_triple_pipeline: "\<forall> p b1 b2 b3, ni_strong p \<longrightarrow> semantics_preserving b1 \<longrightarrow> semantics_preserving b2 \<longrightarrow> semantics_preserving b3 \<longrightarrow> ni_strong (compose_backend (compose_backend b1 b2) b3 p)"
+lemma ni_strong_triple_pipeline: "\<forall>p b1 b2 b3. ni_strong p \<longrightarrow> semantics_preserving b1 \<longrightarrow> semantics_preserving b2 \<longrightarrow> semantics_preserving b3 \<longrightarrow> ni_strong (compose_backend (compose_backend b1 b2) b3 p)"
   by auto
 
 end

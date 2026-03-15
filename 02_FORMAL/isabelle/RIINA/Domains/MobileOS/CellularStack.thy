@@ -242,22 +242,22 @@ definition no_audio_gap :: "Call \<Rightarrow> bool" where
 
 (* seamless_handoff_system (matches Coq: Definition seamless_handoff_system) *)
 definition seamless_handoff_system :: "Call \<Rightarrow> Handoff \<Rightarrow> bool" where
-  "seamless_handoff_system c h \<equiv> during_call c h /\ handoff_seamless h = True -> no_audio_gap c"
+  "seamless_handoff_system c h \<equiv> during_call c h \<and> handoff_seamless h = True -> no_audio_gap c"
 
 (* imsi_protected (matches Coq: Definition imsi_protected) *)
 definition imsi_protected :: "IMSIProtection \<Rightarrow> bool" where
-  "imsi_protected ip \<equiv> imsi_encrypted ip = True /\ imsi_exposed ip = False"
+  "imsi_protected ip \<equiv> imsi_encrypted ip = True \<and> imsi_exposed ip = False"
 
 (* baseband_fully_isolated (matches Coq: Definition baseband_fully_isolated) *)
 definition baseband_fully_isolated :: "BasebandIsolation \<Rightarrow> bool" where
-  "baseband_fully_isolated bbi \<equiv> bbi_memory_isolated bbi = True /\
-  bbi_dma_blocked bbi = True /\
+  "baseband_fully_isolated bbi \<equiv> bbi_memory_isolated bbi = True \<and>
+  bbi_dma_blocked bbi = True \<and>
   bbi_firmware_verified bbi = True"
 
 (* sim_authentication_complete (matches Coq: Definition sim_authentication_complete) *)
 definition sim_authentication_complete :: "SIMAuth \<Rightarrow> bool" where
-  "sim_authentication_complete sa \<equiv> sim_auth_complete sa = True /\
-  sim_mutual_auth sa = True /\
+  "sim_authentication_complete sa \<equiv> sim_auth_complete sa = True \<and>
+  sim_mutual_auth sa = True \<and>
   sim_key_agreement sa = True"
 
 (* data_roaming_permitted (matches Coq: Definition data_roaming_permitted) *)
@@ -266,7 +266,7 @@ definition data_roaming_permitted :: "RoamingConfig \<Rightarrow> bool" where
 
 (* cellular_encryption_enforced (matches Coq: Definition cellular_encryption_enforced) *)
 definition cellular_encryption_enforced :: "CellularEncryption \<Rightarrow> bool" where
-  "cellular_encryption_enforced ce \<equiv> cell_encrypted ce = True /\ cell_integrity_protected ce = True"
+  "cellular_encryption_enforced ce \<equiv> cell_encrypted ce = True \<and> cell_integrity_protected ce = True"
 
 (* stingray_detection (matches Coq: Definition stingray_detection) *)
 definition stingray_detection :: "CellTowerInfo \<Rightarrow> bool" where
@@ -278,20 +278,20 @@ definition sms_encryption_available :: "SMSMessage \<Rightarrow> bool" where
 
 (* volte_quality_guaranteed (matches Coq: Definition volte_quality_guaranteed) *)
 definition volte_quality_guaranteed :: "VoLTECall \<Rightarrow> bool" where
-  "volte_quality_guaranteed vc \<equiv> volte_hd_voice vc = True /\ volte_quality_score vc >= volte_min_quality vc"
+  "volte_quality_guaranteed vc \<equiv> volte_hd_voice vc = True \<and> volte_quality_score vc >= volte_min_quality vc"
 
 (* esim_activation_secure (matches Coq: Definition esim_activation_secure) *)
 definition esim_activation_secure :: "eSIMActivation \<Rightarrow> bool" where
-  "esim_activation_secure ea \<equiv> esim_profile_encrypted ea = True /\
+  "esim_activation_secure ea \<equiv> esim_profile_encrypted ea = True \<and>
   esim_activation_code_valid ea = True"
 
 (* carrier_settings_validated (matches Coq: Definition carrier_settings_validated) *)
 definition carrier_settings_validated :: "CarrierSettings \<Rightarrow> bool" where
-  "carrier_settings_validated cs \<equiv> carrier_validated cs = True /\ carrier_version cs > 0"
+  "carrier_settings_validated cs \<equiv> carrier_validated cs = True \<and> carrier_version cs > 0"
 
 (* data_usage_tracked (matches Coq: Definition data_usage_tracked) *)
 definition data_usage_tracked :: "DataUsage \<Rightarrow> bool" where
-  "data_usage_tracked du \<equiv> du_tracked du = True /\
+  "data_usage_tracked du \<equiv> du_tracked du = True \<and>
   (du_bytes_used du > du_bytes_limit du -> du_warning_sent du = True)"
 
 (* cellular_failover_handled (matches Coq: Definition cellular_failover_handled) *)
@@ -300,110 +300,110 @@ definition cellular_failover_handled :: "CellularFailover \<Rightarrow> bool" wh
 
 (* signal_strength_accurate (matches Coq: Definition signal_strength_accurate) *)
 definition signal_strength_accurate :: "SignalMeasurement \<Rightarrow> bool" where
-  "signal_strength_accurate sm \<equiv> sm_accurate sm = True /\ sm_timestamp sm > 0"
+  "signal_strength_accurate sm \<equiv> sm_accurate sm = True \<and> sm_timestamp sm > 0"
 
 (* emergency_call_always_available (matches Coq: Definition emergency_call_always_available) *)
 definition emergency_call_always_available :: "EmergencyCall \<Rightarrow> bool" where
-  "emergency_call_always_available ec \<equiv> ec_available ec = True /\ ec_any_network ec = True"
+  "emergency_call_always_available ec \<equiv> ec_available ec = True \<and> ec_any_network ec = True"
 
 (* carrier_lock_enforced (matches Coq: Definition carrier_lock_enforced) *)
 definition carrier_lock_enforced :: "CarrierLock \<Rightarrow> bool" where
   "carrier_lock_enforced cl \<equiv> cl_locked cl = True -> cl_enforced cl = True"
 
 (* baseband_isolation (matches Coq) *)
-lemma baseband_isolation: "\<forall> (baseband : BasebandProcessor) (ap_mem : Memory), baseband_properly_isolated baseband \<longrightarrow> bb_isolated baseband = True \<longrightarrow> is_ap_memory ap_mem \<longrightarrow> ~ can_access_mem baseband ap_mem"
+lemma baseband_isolation: "\<forall>(baseband :: BasebandProcessor) (ap_mem :: Memory). baseband_properly_isolated baseband \<longrightarrow> bb_isolated baseband = True \<longrightarrow> is_ap_memory ap_mem \<longrightarrow> ~ can_access_mem baseband ap_mem"
   by auto
 
 (* call_handoff_is_seamless (matches Coq) *)
-lemma call_handoff_is_seamless: "\<forall> (call : Call) (handoff : Handoff), seamless_handoff_system call handoff \<longrightarrow> during_call call handoff \<longrightarrow> handoff_seamless handoff = True \<longrightarrow> no_audio_gap call"
+lemma call_handoff_is_seamless: "\<forall>(call :: Call) (handoff :: Handoff). seamless_handoff_system call handoff \<longrightarrow> during_call call handoff \<longrightarrow> handoff_seamless handoff = True \<longrightarrow> no_audio_gap call"
   by auto
 
 (* isolation_preserves_separation (matches Coq) *)
-lemma isolation_preserves_separation: "\<forall> (bb : BasebandProcessor), bb_isolated bb = True \<longrightarrow> bb_accessible_memory bb = [] \<longrightarrow> \<forall> m, ~ can_access_mem bb m"
+lemma isolation_preserves_separation: "\<forall>(bb :: BasebandProcessor). bb_isolated bb = True \<longrightarrow> bb_accessible_memory bb = [] \<longrightarrow> \<forall>m. ~ can_access_mem bb m"
   by auto
 
 (* baseband_isolation_contrapositive (matches Coq) *)
-lemma baseband_isolation_contrapositive: "\<forall> (bb : BasebandProcessor) (m : Memory), baseband_properly_isolated bb \<longrightarrow> bb_isolated bb = True \<longrightarrow> can_access_mem bb m \<longrightarrow> ~ is_ap_memory m"
+lemma baseband_isolation_contrapositive: "\<forall>(bb :: BasebandProcessor) (m :: Memory). baseband_properly_isolated bb \<longrightarrow> bb_isolated bb = True \<longrightarrow> can_access_mem bb m \<longrightarrow> ~ is_ap_memory m"
   by auto
 
 (* imsi_protected_thm (matches Coq) *)
-lemma imsi_protected_thm: "\<forall> (ip : IMSIProtection), imsi_protected ip \<longrightarrow> imsi_encrypted ip = True"
+lemma imsi_protected_thm: "\<forall>(ip :: IMSIProtection). imsi_protected ip \<longrightarrow> imsi_encrypted ip = True"
   by auto
 
 (* baseband_isolated_thm (matches Coq) *)
-lemma baseband_isolated_thm: "\<forall> (bbi : BasebandIsolation), baseband_fully_isolated bbi \<longrightarrow> bbi_memory_isolated bbi = True"
+lemma baseband_isolated_thm: "\<forall>(bbi :: BasebandIsolation). baseband_fully_isolated bbi \<longrightarrow> bbi_memory_isolated bbi = True"
   by auto
 
 (* sim_authentication_complete_thm (matches Coq) *)
-lemma sim_authentication_complete_thm: "\<forall> (sa : SIMAuth), sim_authentication_complete sa \<longrightarrow> sim_auth_complete sa = True"
+lemma sim_authentication_complete_thm: "\<forall>(sa :: SIMAuth). sim_authentication_complete sa \<longrightarrow> sim_auth_complete sa = True"
   by auto
 
 (* data_roaming_permission (matches Coq) *)
-lemma data_roaming_permission: "\<forall> (rc : RoamingConfig), data_roaming_permitted rc \<longrightarrow> roaming_enabled rc = True \<longrightarrow> roaming_user_consented rc = True"
+lemma data_roaming_permission: "\<forall>(rc :: RoamingConfig). data_roaming_permitted rc \<longrightarrow> roaming_enabled rc = True \<longrightarrow> roaming_user_consented rc = True"
   by auto
 
 (* cellular_encryption_enforced_thm (matches Coq) *)
-lemma cellular_encryption_enforced_thm: "\<forall> (ce : CellularEncryption), cellular_encryption_enforced ce \<longrightarrow> cell_encrypted ce = True"
+lemma cellular_encryption_enforced_thm: "\<forall>(ce :: CellularEncryption). cellular_encryption_enforced ce \<longrightarrow> cell_encrypted ce = True"
   by auto
 
 (* stingray_detection_thm (matches Coq) *)
-lemma stingray_detection_thm: "\<forall> (ct : CellTowerInfo), stingray_detection ct \<longrightarrow> tower_anomaly_detected ct = True \<longrightarrow> tower_stingray_suspected ct = True"
+lemma stingray_detection_thm: "\<forall>(ct :: CellTowerInfo). stingray_detection ct \<longrightarrow> tower_anomaly_detected ct = True \<longrightarrow> tower_stingray_suspected ct = True"
   by auto
 
 (* sms_encryption_available_thm (matches Coq) *)
-lemma sms_encryption_available_thm: "\<forall> (sms : SMSMessage), sms_encryption_available sms \<longrightarrow> sms_rcs_enabled sms = True \<longrightarrow> sms_encrypted sms = True"
+lemma sms_encryption_available_thm: "\<forall>(sms :: SMSMessage). sms_encryption_available sms \<longrightarrow> sms_rcs_enabled sms = True \<longrightarrow> sms_encrypted sms = True"
   by auto
 
 (* volte_quality_guaranteed_thm (matches Coq) *)
-lemma volte_quality_guaranteed_thm: "\<forall> (vc : VoLTECall), volte_quality_guaranteed vc \<longrightarrow> volte_quality_score vc \<ge> volte_min_quality vc"
+lemma volte_quality_guaranteed_thm: "\<forall>(vc :: VoLTECall). volte_quality_guaranteed vc \<longrightarrow> volte_quality_score vc \<ge> volte_min_quality vc"
   by auto
 
 (* esim_activation_secure_thm (matches Coq) *)
-lemma esim_activation_secure_thm: "\<forall> (ea : eSIMActivation), esim_activation_secure ea \<longrightarrow> esim_profile_encrypted ea = True"
+lemma esim_activation_secure_thm: "\<forall>(ea :: eSIMActivation). esim_activation_secure ea \<longrightarrow> esim_profile_encrypted ea = True"
   by auto
 
 (* carrier_settings_validated_thm (matches Coq) *)
-lemma carrier_settings_validated_thm: "\<forall> (cs : CarrierSettings), carrier_settings_validated cs \<longrightarrow> carrier_validated cs = True"
+lemma carrier_settings_validated_thm: "\<forall>(cs :: CarrierSettings). carrier_settings_validated cs \<longrightarrow> carrier_validated cs = True"
   by auto
 
 (* data_usage_tracked_thm (matches Coq) *)
-lemma data_usage_tracked_thm: "\<forall> (du : DataUsage), data_usage_tracked du \<longrightarrow> du_tracked du = True"
+lemma data_usage_tracked_thm: "\<forall>(du :: DataUsage). data_usage_tracked du \<longrightarrow> du_tracked du = True"
   by auto
 
 (* cellular_failover_handled_thm (matches Coq) *)
-lemma cellular_failover_handled_thm: "\<forall> (cf : CellularFailover), cellular_failover_handled cf \<longrightarrow> fo_failover_handled cf = True"
+lemma cellular_failover_handled_thm: "\<forall>(cf :: CellularFailover). cellular_failover_handled cf \<longrightarrow> fo_failover_handled cf = True"
   by auto
 
 (* signal_strength_accurate_thm (matches Coq) *)
-lemma signal_strength_accurate_thm: "\<forall> (sm : SignalMeasurement), signal_strength_accurate sm \<longrightarrow> sm_accurate sm = True"
+lemma signal_strength_accurate_thm: "\<forall>(sm :: SignalMeasurement). signal_strength_accurate sm \<longrightarrow> sm_accurate sm = True"
   by auto
 
 (* emergency_call_always_available_thm (matches Coq) *)
-lemma emergency_call_always_available_thm: "\<forall> (ec : EmergencyCall), emergency_call_always_available ec \<longrightarrow> ec_available ec = True"
+lemma emergency_call_always_available_thm: "\<forall>(ec :: EmergencyCall). emergency_call_always_available ec \<longrightarrow> ec_available ec = True"
   by auto
 
 (* carrier_lock_enforced_thm (matches Coq) *)
-lemma carrier_lock_enforced_thm: "\<forall> (cl : CarrierLock), carrier_lock_enforced cl \<longrightarrow> cl_locked cl = True \<longrightarrow> cl_enforced cl = True"
+lemma carrier_lock_enforced_thm: "\<forall>(cl :: CarrierLock). carrier_lock_enforced cl \<longrightarrow> cl_locked cl = True \<longrightarrow> cl_enforced cl = True"
   by auto
 
 (* imsi_not_exposed (matches Coq) *)
-lemma imsi_not_exposed: "\<forall> (ip : IMSIProtection), imsi_protected ip \<longrightarrow> imsi_exposed ip = False"
+lemma imsi_not_exposed: "\<forall>(ip :: IMSIProtection). imsi_protected ip \<longrightarrow> imsi_exposed ip = False"
   by auto
 
 (* baseband_dma_blocked (matches Coq) *)
-lemma baseband_dma_blocked: "\<forall> (bbi : BasebandIsolation), baseband_fully_isolated bbi \<longrightarrow> bbi_dma_blocked bbi = True"
+lemma baseband_dma_blocked: "\<forall>(bbi :: BasebandIsolation). baseband_fully_isolated bbi \<longrightarrow> bbi_dma_blocked bbi = True"
   by auto
 
 (* sim_mutual_auth_thm (matches Coq) *)
-lemma sim_mutual_auth_thm: "\<forall> (sa : SIMAuth), sim_authentication_complete sa \<longrightarrow> sim_mutual_auth sa = True"
+lemma sim_mutual_auth_thm: "\<forall>(sa :: SIMAuth). sim_authentication_complete sa \<longrightarrow> sim_mutual_auth sa = True"
   by auto
 
 (* emergency_call_any_network (matches Coq) *)
-lemma emergency_call_any_network: "\<forall> (ec : EmergencyCall), emergency_call_always_available ec \<longrightarrow> ec_any_network ec = True"
+lemma emergency_call_any_network: "\<forall>(ec :: EmergencyCall). emergency_call_always_available ec \<longrightarrow> ec_any_network ec = True"
   by auto
 
 (* esim_activation_code_valid_thm (matches Coq) *)
-lemma esim_activation_code_valid_thm: "\<forall> (ea : eSIMActivation), esim_activation_secure ea \<longrightarrow> esim_activation_code_valid ea = True"
+lemma esim_activation_code_valid_thm: "\<forall>(ea :: eSIMActivation). esim_activation_secure ea \<longrightarrow> esim_activation_code_valid ea = True"
   by auto
 
 end

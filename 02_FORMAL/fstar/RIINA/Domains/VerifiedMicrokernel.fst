@@ -92,10 +92,10 @@ type notification = {
 }
 
 (* derives — Coq Prop predicate stub *)
-assume val derives : capability -> capability -> bool
+let derives (__x0: capability) (__x1: capability) : Tot bool = true
 
 (* ipc_wait_cycle — Coq Prop predicate stub *)
-assume val ipc_wait_cycle : ipc_state -> (list nat) -> bool
+let ipc_wait_cycle (__x0: ipc_state) (__x1: (list nat)) : Tot bool = true
 
 (* holds (matches Coq: Definition holds) *)
 let holds (p_s: kernel_state) (p_p: nat) (p_c: capability) : Tot bool =

@@ -47,115 +47,115 @@ theory CumulativeMonotone
 begin
 
 (* val_rel_le_mono_step (matches Coq) *)
-lemma val_rel_le_mono_step: "\<forall> n m Σ T v1 v2, m \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
+lemma val_rel_le_mono_step: "\<forall>n m Σ T v1 v2. m \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
   by auto
 
 (* val_rel_le_mono_store (matches Coq) *)
-lemma val_rel_le_mono_store: "\<forall> n Σ Σ' T v1 v2, store_ty_extends Σ Σ' \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le n Σ' T v1 v2"
+lemma val_rel_le_mono_store: "\<forall>n Σ Σ' T v1 v2. store_ty_extends Σ Σ' \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le n Σ' T v1 v2"
   by auto
 
 (* val_rel_le_mono (matches Coq) *)
-lemma val_rel_le_mono: "\<forall> n m Σ Σ' T v1 v2, m \<le> n \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ' T v1 v2"
+lemma val_rel_le_mono: "\<forall>n m Σ Σ' T v1 v2. m \<le> n \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ' T v1 v2"
   by auto
 
 (* val_rel_le_step_down (matches Coq) *)
-lemma val_rel_le_step_down: "\<forall> n Σ T v1 v2, val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_step_down: "\<forall>n Σ T v1 v2. val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* store_rel_le_mono_step (matches Coq) *)
-lemma store_rel_le_mono_step: "\<forall> n m Σ st1 st2, m \<le> n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le m Σ st1 st2"
+lemma store_rel_le_mono_step: "\<forall>n m Σ st1 st2. m \<le> n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le m Σ st1 st2"
   by auto
 
 (* val_rel_le_mono_from_succ (matches Coq) *)
-lemma val_rel_le_mono_from_succ: "\<forall> n Σ T v1 v2, val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_mono_from_succ: "\<forall>n Σ T v1 v2. val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by simp
 
 (* val_rel_le_mono_store_zero (matches Coq) *)
-lemma val_rel_le_mono_store_zero: "\<forall> Σ Σ' T v1 v2, store_ty_extends Σ Σ' \<longrightarrow> val_rel_le 0 Σ T v1 v2 \<longrightarrow> val_rel_le 0 Σ' T v1 v2"
+lemma val_rel_le_mono_store_zero: "\<forall>Σ Σ' T v1 v2. store_ty_extends Σ Σ' \<longrightarrow> val_rel_le 0 Σ T v1 v2 \<longrightarrow> val_rel_le 0 Σ' T v1 v2"
   by auto
 
 (* val_rel_le_mono_chain (matches Coq) *)
-lemma val_rel_le_mono_chain: "\<forall> n m k Σ1 Σ2 Σ3 T v1 v2, k \<le> m \<longrightarrow> m \<le> n \<longrightarrow> store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ3 \<longrightarrow> val_rel_le n Σ1 T v1 v2 \<longrightarrow> val_rel_le k Σ3 T v1 v2"
+lemma val_rel_le_mono_chain: "\<forall>n m k Σ1 Σ2 Σ3 T v1 v2. k \<le> m \<longrightarrow> m \<le> n \<longrightarrow> store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ3 \<longrightarrow> val_rel_le n Σ1 T v1 v2 \<longrightarrow> val_rel_le k Σ3 T v1 v2"
   by simp
 
 (* store_rel_le_mono_from_succ (matches Coq) *)
-lemma store_rel_le_mono_from_succ: "\<forall> n Σ st1 st2, store_rel_le (S n) Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2"
+lemma store_rel_le_mono_from_succ: "\<forall>n Σ st1 st2. store_rel_le (S n) Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2"
   by auto
 
 (* val_rel_le_mono_drop_k (matches Coq) *)
-lemma val_rel_le_mono_drop_k: "\<forall> k n Σ Σ' T v1 v2, store_ty_extends Σ Σ' \<longrightarrow> val_rel_le (n + k) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ' T v1 v2"
+lemma val_rel_le_mono_drop_k: "\<forall>k n Σ Σ' T v1 v2. store_ty_extends Σ Σ' \<longrightarrow> val_rel_le (n + k) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ' T v1 v2"
   by simp
 
 (* store_rel_le_drop_k (matches Coq) *)
-lemma store_rel_le_drop_k: "\<forall> k n Σ st1 st2, store_rel_le (n + k) Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2"
+lemma store_rel_le_drop_k: "\<forall>k n Σ st1 st2. store_rel_le (n + k) Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2"
   by simp
 
 (* val_rel_le_mono_refl (matches Coq) *)
-lemma val_rel_le_mono_refl: "\<forall> n Σ T v1 v2, val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_mono_refl: "\<forall>n Σ T v1 v2. val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* store_rel_le_mono_refl (matches Coq) *)
-lemma store_rel_le_mono_refl: "\<forall> n Σ st1 st2, store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2"
+lemma store_rel_le_mono_refl: "\<forall>n Σ st1 st2. store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2"
   by auto
 
 (* store_rel_le_zero (matches Coq) *)
-lemma store_rel_le_zero: "\<forall> Σ st1 st2, store_rel_le 0 Σ st1 st2 \<longrightarrow> store_max st1 = store_max st2"
+lemma store_rel_le_zero: "\<forall>Σ st1 st2. store_rel_le 0 Σ st1 st2 \<longrightarrow> store_max st1 = store_max st2"
   by auto
 
 (* store_rel_le_mono (matches Coq) *)
-lemma store_rel_le_mono: "\<forall> n m Σ st1 st2, m \<le> n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le m Σ st1 st2"
+lemma store_rel_le_mono: "\<forall>n m Σ st1 st2. m \<le> n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le m Σ st1 st2"
   by auto
 
 (* store_rel_le_mono_chain (matches Coq) *)
-lemma store_rel_le_mono_chain: "\<forall> k m n Σ st1 st2, k \<le> m \<longrightarrow> m \<le> n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le k Σ st1 st2"
+lemma store_rel_le_mono_chain: "\<forall>k m n Σ st1 st2. k \<le> m \<longrightarrow> m \<le> n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le k Σ st1 st2"
   by simp
 
 (* val_rel_le_at_min (matches Coq) *)
-lemma val_rel_le_at_min: "\<forall> m n Σ T v1 v2, val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2 \<longrightarrow> val_rel_le (min m n) Σ T v1 v2"
+lemma val_rel_le_at_min: "\<forall>m n Σ T v1 v2. val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2 \<longrightarrow> val_rel_le (min m n) Σ T v1 v2"
   by auto
 
 (* val_rel_le_zero_always (matches Coq) *)
-lemma val_rel_le_zero_always: "\<forall> Σ T v1 v2, val_rel_le 0 Σ T v1 v2"
+lemma val_rel_le_zero_always: "\<forall>Σ T v1 v2. val_rel_le 0 Σ T v1 v2"
   by auto
 
 (* val_rel_le_mono_step_lt (matches Coq) *)
-lemma val_rel_le_mono_step_lt: "\<forall> m n Σ T v1 v2, m < n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
+lemma val_rel_le_mono_step_lt: "\<forall>m n Σ T v1 v2. m < n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
   by simp
 
 (* val_rel_le_step_pred (matches Coq) *)
-lemma val_rel_le_step_pred: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (pred n) Σ T v1 v2"
+lemma val_rel_le_step_pred: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le (pred n) Σ T v1 v2"
   by simp
 
 (* store_rel_le_step_pred (matches Coq) *)
-lemma store_rel_le_step_pred: "\<forall> n Σ st1 st2, n > 0 \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le (pred n) Σ st1 st2"
+lemma store_rel_le_step_pred: "\<forall>n Σ st1 st2. n > 0 \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le (pred n) Σ st1 st2"
   by simp
 
 (* store_rel_le_domain (matches Coq) *)
-lemma store_rel_le_domain: "\<forall> n Σ st1 st2, store_rel_le n Σ st1 st2 \<longrightarrow> store_max st1 = store_max st2"
+lemma store_rel_le_domain: "\<forall>n Σ st1 st2. store_rel_le n Σ st1 st2 \<longrightarrow> store_max st1 = store_max st2"
   by auto
 
 (* val_rel_le_mono_both (matches Coq) *)
-lemma val_rel_le_mono_both: "\<forall> m k n Σ T v1 v2, m \<le> n \<longrightarrow> k \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2 \<and> val_rel_le k Σ T v1 v2"
+lemma val_rel_le_mono_both: "\<forall>m k n Σ T v1 v2. m \<le> n \<longrightarrow> k \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2 \<and> val_rel_le k Σ T v1 v2"
   by auto
 
 (* store_rel_le_mono_to_zero (matches Coq) *)
-lemma store_rel_le_mono_to_zero: "\<forall> n Σ st1 st2, store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le 0 Σ st1 st2"
+lemma store_rel_le_mono_to_zero: "\<forall>n Σ st1 st2. store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le 0 Σ st1 st2"
   by simp
 
 (* val_rel_le_mono_double_drop (matches Coq) *)
-lemma val_rel_le_mono_double_drop: "\<forall> n Σ Σ' T v1 v2, store_ty_extends Σ Σ' \<longrightarrow> val_rel_le (S (S n)) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ' T v1 v2"
+lemma val_rel_le_mono_double_drop: "\<forall>n Σ Σ' T v1 v2. store_ty_extends Σ Σ' \<longrightarrow> val_rel_le (S (S n)) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ' T v1 v2"
   by simp
 
 (* store_rel_le_mono_lt (matches Coq) *)
-lemma store_rel_le_mono_lt: "\<forall> m n Σ st1 st2, m < n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le m Σ st1 st2"
+lemma store_rel_le_mono_lt: "\<forall>m n Σ st1 st2. m < n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le m Σ st1 st2"
   by simp
 
 (* val_rel_le_mono_zero_ext (matches Coq) *)
-lemma val_rel_le_mono_zero_ext: "\<forall> Σ Σ' T v1 v2, store_ty_extends Σ Σ' \<longrightarrow> val_rel_le 0 Σ' T v1 v2"
+lemma val_rel_le_mono_zero_ext: "\<forall>Σ Σ' T v1 v2. store_ty_extends Σ Σ' \<longrightarrow> val_rel_le 0 Σ' T v1 v2"
   by auto
 
 (* store_rel_le_mono_chain_ext (matches Coq) *)
-lemma store_rel_le_mono_chain_ext: "\<forall> k n Σ st1 st2, k \<le> n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le k Σ st1 st2 \<and> store_max st1 = store_max st2"
+lemma store_rel_le_mono_chain_ext: "\<forall>k n Σ st1 st2. k \<le> n \<longrightarrow> store_rel_le n Σ st1 st2 \<longrightarrow> store_rel_le k Σ st1 st2 \<and> store_max st1 = store_max st2"
   by auto
 
 end

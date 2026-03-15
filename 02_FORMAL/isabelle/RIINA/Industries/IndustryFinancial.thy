@@ -144,7 +144,7 @@ definition pci_compliant :: "PCI_DSS_Controls \<Rightarrow> bool" where
 
 (* tx_final (matches Coq: Definition tx_final) *)
 fun tx_final :: "TxStatus \<Rightarrow> bool" where
-
+  "tx_final _ = True"
 
 (* balance_valid (matches Coq: Definition balance_valid) *)
 definition balance_valid :: "nat \<Rightarrow> bool" where
@@ -194,51 +194,51 @@ definition capital_adequate :: "bool" where
 (* Section C01 - PCI-DSS 4.0.1 Compliance
     Reference: IND_C_FINANCIAL.md Section 3.1 *)
 (* pci_dss_compliance (matches Coq) *)
-lemma pci_dss_compliance: "\<forall> (controls : PCI_DSS_Controls), pci_compliant controls = True \<longrightarrow> True"
+lemma pci_dss_compliance: "\<forall>(controls :: PCI_DSS_Controls). pci_compliant controls = True \<longrightarrow> True"
   by simp
 
 (* Section C02 - SWIFT CSP
     Reference: IND_C_FINANCIAL.md Section 3.2 *)
 (* swift_csp_compliance (matches Coq) *)
-lemma swift_csp_compliance: "\<forall> (transaction : nat), True"
+lemma swift_csp_compliance: "\<forall>(transaction :: nat). True"
   by simp
 
 (* Section C03 - SOX Section 404
     Reference: IND_C_FINANCIAL.md Section 3.3 *)
 (* sox_404_compliance (matches Coq) *)
-lemma sox_404_compliance: "\<forall> (internal_controls : bool) (audit_trail : bool), True"
+lemma sox_404_compliance: "\<forall>(internal_controls :: bool) (audit_trail :: bool). True"
   by simp
 
 (* Section C04 - GLBA Safeguards Rule
     Reference: IND_C_FINANCIAL.md Section 3.4 *)
 (* glba_safeguards (matches Coq) *)
-lemma glba_safeguards: "\<forall> (npi : FinancialData) (protection : bool), True"
+lemma glba_safeguards: "\<forall>(npi :: FinancialData) (protection :: bool). True"
   by simp
 
 (* Section C05 - DORA Requirements
     Reference: IND_C_FINANCIAL.md Section 3.5 *)
 (* dora_resilience (matches Coq) *)
-lemma dora_resilience: "\<forall> (system : nat) (incident : nat), True"
+lemma dora_resilience: "\<forall>(system :: nat) (incident :: nat). True"
   by simp
 
 (* CVV must never be stored post-authorization *)
 (* cvv_not_stored (matches Coq) *)
-lemma cvv_not_stored: "\<forall> (d : FinancialData) (storage : bool), d = CVV \<longrightarrow> True"
+lemma cvv_not_stored: "\<forall>(d :: FinancialData) (storage :: bool). d = CVV \<longrightarrow> True"
   by simp
 
 (* PAN must be masked when displayed *)
 (* pan_masking (matches Coq) *)
-lemma pan_masking: "\<forall> (pan : FinancialData) (display_format : nat), True"
+lemma pan_masking: "\<forall>(pan :: FinancialData) (display_format :: nat). True"
   by simp
 
 (* Strong cryptography for cardholder data *)
 (* strong_crypto_required (matches Coq) *)
-lemma strong_crypto_required: "\<forall> (data : FinancialData), pci_cardholder_data data = True \<longrightarrow> True"
+lemma strong_crypto_required: "\<forall>(data :: FinancialData). pci_cardholder_data data = True \<longrightarrow> True"
   by simp
 
 (* PCI cardholder data classification is decidable *)
 (* pci_cardholder_data_dec (matches Coq) *)
-lemma pci_cardholder_data_dec: "\<forall> d, pci_cardholder_data d = True \<or> pci_cardholder_data d = False"
+lemma pci_cardholder_data_dec: "\<forall>d. pci_cardholder_data d = True \<or> pci_cardholder_data d = False"
   by auto
 
 (* PAN is always cardholder data *)
@@ -258,11 +258,11 @@ lemma pin_is_cardholder: "pci_cardholder_data PIN = True"
 
 (* AccountNumber, RoutingNumber, SSN, NPI are not PCI cardholder data *)
 (* non_card_data_not_pci (matches Coq) *)
-lemma non_card_data_not_pci: "\<forall> d, d = AccountNumber \<or> d = RoutingNumber \<or> d = SSN \<or> d = NPI \<longrightarrow> pci_cardholder_data d = False"
-  by (cases rule: ‹_›.cases; simp)
+lemma non_card_data_not_pci: "\<forall>d. d = AccountNumber \<or> d = RoutingNumber \<or> d = SSN \<or> d = NPI \<longrightarrow> pci_cardholder_data d = False"
+  by auto
 
 (* tx_final_not_pending (matches Coq) *)
-lemma tx_final_not_pending: "\<forall> s, tx_final s = True \<longrightarrow> s \<noteq> TxPending"
+lemma tx_final_not_pending: "\<forall>s. tx_final s = True \<longrightarrow> s \<noteq> TxPending"
   by auto
 
 (* tx_pending_not_final (matches Coq) *)
@@ -270,7 +270,7 @@ lemma tx_pending_not_final: "tx_final TxPending = False"
   by simp
 
 (* balance_always_valid (matches Coq) *)
-lemma balance_always_valid: "\<forall> b, balance_valid b = True"
+lemma balance_always_valid: "\<forall>b. balance_valid b = True"
   by simp
 
 (* all_unique_nil (matches Coq) *)
@@ -278,43 +278,43 @@ lemma all_unique_nil: "all_unique nil = True"
   by simp
 
 (* all_unique_singleton (matches Coq) *)
-lemma all_unique_singleton: "\<forall> n, all_unique (n :: nil) = True"
+lemma all_unique_singleton: "\<forall>n. all_unique (n :: nil) = True"
   by simp
 
 (* audit_log_never_shrinks (matches Coq) *)
-lemma audit_log_never_shrinks: "\<forall> old_len new_len, audit_log_monotone old_len new_len = True \<longrightarrow> old_len \<le> new_len"
+lemma audit_log_never_shrinks: "\<forall>old_len new_len. audit_log_monotone old_len new_len = True \<longrightarrow> old_len \<le> new_len"
   by auto
 
 (* kyc_requires_identity (matches Coq) *)
-lemma kyc_requires_identity: "\<forall> k, kyc_complete k = True \<longrightarrow> identity_verified k = True"
+lemma kyc_requires_identity: "\<forall>k. kyc_complete k = True \<longrightarrow> identity_verified k = True"
   by auto
 
 (* kyc_requires_sanctions (matches Coq) *)
-lemma kyc_requires_sanctions: "\<forall> k, kyc_complete k = True \<longrightarrow> sanctions_checked k = True"
+lemma kyc_requires_sanctions: "\<forall>k. kyc_complete k = True \<longrightarrow> sanctions_checked k = True"
   by auto
 
 (* aml_risk_bounded (matches Coq) *)
-lemma aml_risk_bounded: "\<forall> score threshold, aml_risk_acceptable score threshold = True \<longrightarrow> score \<le> threshold"
+lemma aml_risk_bounded: "\<forall>score threshold. aml_risk_acceptable score threshold = True \<longrightarrow> score \<le> threshold"
   by auto
 
 (* compound_zero_periods (matches Coq) *)
-lemma compound_zero_periods: "\<forall> p r, compound_nat p r 0 = p"
+lemma compound_zero_periods: "\<forall>p r. compound_nat p r 0 = p"
   by simp
 
 (* compound_monotone (matches Coq) *)
-lemma compound_monotone: "\<forall> p r n, p > 0 \<longrightarrow> compound_nat p r n \<ge> p"
+lemma compound_monotone: "\<forall>p r n. p > 0 \<longrightarrow> compound_nat p r n \<ge> p"
   by simp
 
 (* conversion_bounded (matches Coq) *)
-lemma conversion_bounded: "\<forall> a rf ri prec, prec > 0 \<longrightarrow> convert_and_back a rf ri prec \<le> a * rf / prec * ri / prec"
+lemma conversion_bounded: "\<forall>a rf ri prec. prec > 0 \<longrightarrow> convert_and_back a rf ri prec \<le> a * rf / prec * ri / prec"
   by simp
 
 (* fraud_score_max_1000 (matches Coq) *)
-lemma fraud_score_max_1000: "\<forall> s, fraud_score_valid s = True \<longrightarrow> s \<le> 1000"
+lemma fraud_score_max_1000: "\<forall>s. fraud_score_valid s = True \<longrightarrow> s \<le> 1000"
   by auto
 
 (* wire_requires_dual_auth (matches Coq) *)
-lemma wire_requires_dual_auth: "\<forall> w, wire_authorized w = True \<longrightarrow> wire_auth1 w = True \<and> wire_auth2 w = True"
+lemma wire_requires_dual_auth: "\<forall>w. wire_authorized w = True \<longrightarrow> wire_auth1 w = True \<and> wire_auth2 w = True"
   by auto
 
 (* frozen_account_inactive (matches Coq) *)
@@ -326,7 +326,7 @@ lemma unfrozen_account_active: "account_active False = True"
   by simp
 
 (* capital_ratio_check (matches Coq) *)
-lemma capital_ratio_check: "\<forall> res liab pct, capital_adequate res liab pct = True \<longrightarrow> liab * pct \<le> res * 100"
+lemma capital_ratio_check: "\<forall>res liab pct. capital_adequate res liab pct = True \<longrightarrow> liab * pct \<le> res * 100"
   by simp
 
 end

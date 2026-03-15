@@ -160,57 +160,57 @@ definition lab_in_normal_range :: "bool" where
 (* Section B01 - HIPAA Privacy Rule
     Reference: IND_B_HEALTHCARE.md Section 3.1 *)
 (* hipaa_privacy_rule (matches Coq) *)
-lemma hipaa_privacy_rule: "\<forall> (phi : PHI_Category) (accessor : nat) (purpose : nat), True"
+lemma hipaa_privacy_rule: "\<forall>(phi :: PHI_Category) (accessor :: nat) (purpose : nat). True"
   by simp
 
 (* Section B02 - HIPAA Security Rule
     Reference: IND_B_HEALTHCARE.md Section 3.2 *)
 (* hipaa_security_rule (matches Coq) *)
-lemma hipaa_security_rule: "\<forall> (policy : HIPAA_Policy), access_control policy = True \<longrightarrow> audit_controls policy = True \<longrightarrow> integrity_controls policy = True \<longrightarrow> transmission_security policy = True \<longrightarrow> True"
+lemma hipaa_security_rule: "\<forall>(policy :: HIPAA_Policy). access_control policy = True \<longrightarrow> audit_controls policy = True \<longrightarrow> integrity_controls policy = True \<longrightarrow> transmission_security policy = True \<longrightarrow> True"
   by simp
 
 (* Section B03 - FDA 21 CFR Part 11
     Reference: IND_B_HEALTHCARE.md Section 3.3 *)
 (* fda_21_cfr_11 (matches Coq) *)
-lemma fda_21_cfr_11: "\<forall> (electronic_record : nat) (signature : nat), True"
+lemma fda_21_cfr_11: "\<forall>(electronic_record :: nat) (signature :: nat). True"
   by simp
 
 (* Section B04 - HITECH Breach Notification
     Reference: IND_B_HEALTHCARE.md Section 3.4 *)
 (* hitech_breach_notification (matches Coq) *)
-lemma hitech_breach_notification: "\<forall> (breach : nat) (affected_individuals : nat), True"
+lemma hitech_breach_notification: "\<forall>(breach :: nat) (affected_individuals :: nat). True"
   by simp
 
 (* Section B05 - HL7 FHIR Security
     Reference: IND_B_HEALTHCARE.md Section 3.5 *)
 (* hl7_fhir_security (matches Coq) *)
-lemma hl7_fhir_security: "\<forall> (resource : nat) (access_token : nat), True"
+lemma hl7_fhir_security: "\<forall>(resource :: nat) (access_token :: nat). True"
   by simp
 
 (* PHI must be encrypted in transit *)
 (* phi_encryption_required (matches Coq) *)
-lemma phi_encryption_required: "\<forall> (policy : HIPAA_Policy) (phi : PHI_Category), transmission_security policy = True \<longrightarrow> True"
+lemma phi_encryption_required: "\<forall>(policy :: HIPAA_Policy) (phi :: PHI_Category). transmission_security policy = True \<longrightarrow> True"
   by simp
 
 (* Minimum necessary access *)
 (* minimum_necessary_access (matches Coq) *)
-lemma minimum_necessary_access: "\<forall> phi_requested treatment_required, minimum_necessary phi_requested treatment_required = True \<longrightarrow> True"
+lemma minimum_necessary_access: "\<forall>phi_requested treatment_required. minimum_necessary phi_requested treatment_required = True \<longrightarrow> True"
   by simp
 
 (* Sensitivity ordering *)
 (* phi_sensitivity_positive (matches Coq) *)
-lemma phi_sensitivity_positive: "\<forall> cat, phi_sensitivity cat \<ge> 1"
-  by (cases rule: ‹_›.cases; simp)
+lemma phi_sensitivity_positive: "\<forall>cat. phi_sensitivity cat \<ge> 1"
+  by auto
 
 (* Psychotherapy, Substance, HIV all have maximum sensitivity *)
 (* max_sensitivity_categories (matches Coq) *)
-lemma max_sensitivity_categories: "\<forall> cat, cat = Psychotherapy \<or> cat = Substance \<or> cat = HIV_Status \<longrightarrow> phi_sensitivity cat = 4"
-  by (cases rule: ‹_›.cases; simp)
+lemma max_sensitivity_categories: "\<forall>cat. cat = Psychotherapy \<or> cat = Substance \<or> cat = HIV_Status \<longrightarrow> phi_sensitivity cat = 4"
+  by auto
 
 (* Demographics has minimum sensitivity *)
 (* demographics_minimum (matches Coq) *)
-lemma demographics_minimum: "\<forall> cat, phi_sensitivity Demographics \<le> phi_sensitivity cat"
-  by (cases rule: ‹_›.cases; simp)
+lemma demographics_minimum: "\<forall>cat. phi_sensitivity Demographics \<le> phi_sensitivity cat"
+  by auto
 
 (* Genetic data is less sensitive than psychotherapy but more than medical records *)
 (* genetic_sensitivity_ordering (matches Coq) *)
@@ -239,15 +239,15 @@ lemma hipaa_all_controls_encryption: "encryption_at_rest hipaa_all_controls = Tr
 
 (* Full security implies minimum *)
 (* hipaa_full_implies_minimum (matches Coq) *)
-lemma hipaa_full_implies_minimum: "\<forall> p, access_control p = True \<longrightarrow> audit_controls p = True \<longrightarrow> integrity_controls p = True \<longrightarrow> transmission_security p = True \<longrightarrow> hipaa_security_minimum p = True"
+lemma hipaa_full_implies_minimum: "\<forall>p. access_control p = True \<longrightarrow> audit_controls p = True \<longrightarrow> integrity_controls p = True \<longrightarrow> transmission_security p = True \<longrightarrow> hipaa_security_minimum p = True"
   by simp
 
 (* break_glass_must_be_logged (matches Coq) *)
-lemma break_glass_must_be_logged: "\<forall> evt, bg_logged evt = True \<longrightarrow> bg_logged evt \<noteq> False"
+lemma break_glass_must_be_logged: "\<forall>evt. bg_logged evt = True \<longrightarrow> bg_logged evt \<noteq> False"
   by auto
 
 (* high_role_accesses_demographics (matches Coq) *)
-lemma high_role_accesses_demographics: "\<forall> r, r \<ge> 1 \<longrightarrow> access_permitted r Demographics = True"
+lemma high_role_accesses_demographics: "\<forall>r. r \<ge> 1 \<longrightarrow> access_permitted r Demographics = True"
   by simp
 
 (* low_role_denied_psychotherapy (matches Coq) *)
@@ -256,39 +256,39 @@ lemma low_role_denied_psychotherapy: "access_permitted 2 Psychotherapy = False"
 
 (* Sufficient role level grants access *)
 (* role_sufficient_access (matches Coq) *)
-lemma role_sufficient_access: "\<forall> r cat, r \<ge> phi_sensitivity cat \<longrightarrow> access_permitted r cat = True"
+lemma role_sufficient_access: "\<forall>r cat. r \<ge> phi_sensitivity cat \<longrightarrow> access_permitted r cat = True"
   by auto
 
 (* consent_expired_invalid (matches Coq) *)
-lemma consent_expired_invalid: "\<forall> c t, (t < (consent_expiry) c) = False \<longrightarrow> consent_valid c t = False"
+lemma consent_expired_invalid: "\<forall>c t. (t < (consent_expiry) c) = False \<longrightarrow> consent_valid c t = False"
   by auto
 
 (* consent_not_granted_invalid (matches Coq) *)
-lemma consent_not_granted_invalid: "\<forall> c t, consent_granted c = False \<longrightarrow> consent_valid c t = False"
+lemma consent_not_granted_invalid: "\<forall>c t. consent_granted c = False \<longrightarrow> consent_valid c t = False"
   by simp
 
 (* retention_minimum_6_years (matches Coq) *)
-lemma retention_minimum_6_years: "\<forall> cat, retention_years cat \<ge> 6"
-  by (cases rule: ‹_›.cases; simp)
+lemma retention_minimum_6_years: "\<forall>cat. retention_years cat \<ge> 6"
+  by auto
 
 (* genetic_longest_retention (matches Coq) *)
-lemma genetic_longest_retention: "\<forall> cat, retention_years cat \<le> retention_years Genetic"
-  by (cases rule: ‹_›.cases; simp)
+lemma genetic_longest_retention: "\<forall>cat. retention_years cat \<le> retention_years Genetic"
+  by auto
 
 (* deidentification_removes_sensitivity (matches Coq) *)
-lemma deidentification_removes_sensitivity: "\<forall> cat, deidentified_sensitivity True cat = 0"
+lemma deidentification_removes_sensitivity: "\<forall>cat. deidentified_sensitivity True cat = 0"
   by simp
 
 (* non_deidentified_preserves_sensitivity (matches Coq) *)
-lemma non_deidentified_preserves_sensitivity: "\<forall> cat, deidentified_sensitivity False cat = phi_sensitivity cat"
+lemma non_deidentified_preserves_sensitivity: "\<forall>cat. deidentified_sensitivity False cat = phi_sensitivity cat"
   by simp
 
 (* dose_range_valid (matches Coq) *)
-lemma dose_range_valid: "\<forall> dose min_d max_d, dose_in_range dose min_d max_d = True \<longrightarrow> min_d \<le> dose \<and> dose \<le> max_d"
+lemma dose_range_valid: "\<forall>dose min_d max_d. dose_in_range dose min_d max_d = True \<longrightarrow> min_d \<le> dose \<and> dose \<le> max_d"
   by auto
 
 (* lab_range_bounded (matches Coq) *)
-lemma lab_range_bounded: "\<forall> v lo hi, lab_in_normal_range v lo hi = True \<longrightarrow> lo \<le> v \<and> v \<le> hi"
+lemma lab_range_bounded: "\<forall>v lo hi. lab_in_normal_range v lo hi = True \<longrightarrow> lo \<le> v \<and> v \<le> hi"
   by auto
 
 end

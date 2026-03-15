@@ -28,36 +28,36 @@ begin
 (* stuck (matches Coq: Definition stuck) *)
 definition stuck :: "bool" where
   "stuck \<equiv> let '(e, st, ctx) := cfg in
-  ~ value e /\ ~ exists cfg', cfg --> cfg'"
+  ~ value e \<and> ~ exists cfg', cfg --> cfg'"
 
 (* type_safety (matches Coq) *)
-lemma type_safety: "\<forall> e T ε st ctx Σ, has_type nil Σ Public e T ε \<longrightarrow> store_wf Σ st \<longrightarrow> ~ stuck (e, st, ctx)"
+lemma type_safety: "\<forall>e T ε st ctx Σ. has_type nil Σ Public e T ε \<longrightarrow> store_wf Σ st \<longrightarrow> ~ stuck (e, st, ctx)"
   by auto
 
 (* Multi-step safety: well-typed terms stay well-typed after any
     number of steps. This is a direct consequence of preservation. *)
 (* multi_step_safety (matches Coq) *)
-lemma multi_step_safety: "\<forall> e e' T ε st st' ctx ctx' Σ, has_type nil Σ Public e T ε \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) -->* (e', st', ctx') \<longrightarrow> \<exists> Σ', store_wf Σ' st' \<and> ~ stuck (e', st', ctx')"
+lemma multi_step_safety: "\<forall>e e' T ε st st' ctx ctx' Σ. has_type nil Σ Public e T ε \<longrightarrow> store_wf Σ st \<longrightarrow> (e, st, ctx) -->* (e', st', ctx') \<longrightarrow> \<exists>Σ'. store_wf Σ' st' \<and> ~ stuck (e', st', ctx')"
   by auto
 
 (* If stuck, not a value *)
 (* stuck_implies_not_value (matches Coq) *)
-lemma stuck_implies_not_value: "\<forall> e st ctx, stuck (e, st, ctx) \<longrightarrow> ~ value e"
+lemma stuck_implies_not_value: "\<forall>e st ctx. stuck (e, st, ctx) \<longrightarrow> ~ value e"
   by auto
 
 (* If stuck, cannot step *)
 (* stuck_implies_not_stepping (matches Coq) *)
-lemma stuck_implies_not_stepping: "\<forall> e st ctx, stuck (e, st, ctx) \<longrightarrow> ~ \<exists> cfg', (e, st, ctx) --> cfg'"
+lemma stuck_implies_not_stepping: "\<forall>e st ctx. stuck (e, st, ctx) \<longrightarrow> ~ \<exists>cfg'. (e, st, ctx) --> cfg'"
   by auto
 
 (* Value or stepping implies not stuck *)
 (* not_stuck_from_value_or_step (matches Coq) *)
-lemma not_stuck_from_value_or_step: "\<forall> e st ctx, (value e \<or> \<exists> e' st' ctx', (e, st, ctx) --> (e', st', ctx')) \<longrightarrow> ~ stuck (e, st, ctx)"
+lemma not_stuck_from_value_or_step: "\<forall>e st ctx. (value e \<or> \<exists>e' st' ctx'. (e, st, ctx) --> (e', st', ctx')) \<longrightarrow> ~ stuck (e, st, ctx)"
   by auto
 
 (* Stuck implies neither value nor stepping — constructive version *)
 (* stuck_complete (matches Coq) *)
-lemma stuck_complete: "\<forall> e st ctx, stuck (e, st, ctx) \<longrightarrow> ~ value e \<and> ~ \<exists> e' st' ctx', (e, st, ctx) --> (e', st', ctx')"
+lemma stuck_complete: "\<forall>e st ctx. stuck (e, st, ctx) \<longrightarrow> ~ value e \<and> ~ \<exists>e' st' ctx'. (e, st, ctx) --> (e', st', ctx')"
   by auto
 
 end

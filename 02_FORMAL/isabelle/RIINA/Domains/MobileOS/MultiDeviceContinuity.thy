@@ -215,15 +215,15 @@ definition state :: "Application \<Rightarrow> Device \<Rightarrow> AppState" wh
 
 (* handoff (matches Coq: Definition handoff) *)
 definition handoff :: "Application \<Rightarrow> bool" where
-  "handoff app \<equiv> app_supports_handoff app = True /\
-  dev_authenticated d1 = True /\
-  dev_authenticated d2 = True /\
-  dev_paired d1 = True /\
+  "handoff app \<equiv> app_supports_handoff app = True \<and>
+  dev_authenticated d1 = True \<and>
+  dev_authenticated d2 = True \<and>
+  dev_paired d1 = True \<and>
   dev_paired d2 = True"
 
 (* complete_handoff (matches Coq: Definition complete_handoff) *)
 definition complete_handoff :: "Handoff \<Rightarrow> bool" where
-  "complete_handoff h \<equiv> handoff_complete h = True /\
+  "complete_handoff h \<equiv> handoff_complete h = True \<and>
   handoff_encrypted h = True"
 
 (* handoff_preserves_state (matches Coq: Definition handoff_preserves_state) *)
@@ -233,7 +233,7 @@ definition handoff_preserves_state :: "Handoff \<Rightarrow> bool" where
 
 (* handoff_data_encrypted (matches Coq: Definition handoff_data_encrypted) *)
 definition handoff_data_encrypted :: "HandoffData \<Rightarrow> bool" where
-  "handoff_data_encrypted hd \<equiv> hd_encrypted hd = True /\ hd_integrity_checked hd = True"
+  "handoff_data_encrypted hd \<equiv> hd_encrypted hd = True \<and> hd_integrity_checked hd = True"
 
 (* clipboard_sync_is_encrypted (matches Coq: Definition clipboard_sync_is_encrypted) *)
 definition clipboard_sync_is_encrypted :: "ClipboardSync \<Rightarrow> bool" where
@@ -241,27 +241,27 @@ definition clipboard_sync_is_encrypted :: "ClipboardSync \<Rightarrow> bool" whe
 
 (* clipboard_has_expiry (matches Coq: Definition clipboard_has_expiry) *)
 definition clipboard_has_expiry :: "ClipboardSync \<Rightarrow> bool" where
-  "clipboard_has_expiry cs \<equiv> cb_expiry_seconds cs <= cb_max_expiry_seconds cs /\ cb_expiry_seconds cs > 0"
+  "clipboard_has_expiry cs \<equiv> cb_expiry_seconds cs <= cb_max_expiry_seconds cs \<and> cb_expiry_seconds cs > 0"
 
 (* device_trust_verified (matches Coq: Definition device_trust_verified) *)
 definition device_trust_verified :: "DeviceTrust \<Rightarrow> bool" where
-  "device_trust_verified dt \<equiv> dt_verified dt = True /\ dt_trust_score dt >= dt_trust_threshold dt"
+  "device_trust_verified dt \<equiv> dt_verified dt = True \<and> dt_trust_score dt >= dt_trust_threshold dt"
 
 (* proximity_required (matches Coq: Definition proximity_required) *)
 definition proximity_required :: "ProximityCheck \<Rightarrow> bool" where
-  "proximity_required pc \<equiv> pc_within_range pc = True /\ pc_distance_m pc <= pc_max_distance_m pc"
+  "proximity_required pc \<equiv> pc_within_range pc = True \<and> pc_distance_m pc <= pc_max_distance_m pc"
 
 (* continuity_permission_explicit (matches Coq: Definition continuity_permission_explicit) *)
 definition continuity_permission_explicit :: "ContinuityPermission \<Rightarrow> bool" where
-  "continuity_permission_explicit cp \<equiv> cp_explicit_grant cp = True /\ cp_revocable cp = True"
+  "continuity_permission_explicit cp \<equiv> cp_explicit_grant cp = True \<and> cp_revocable cp = True"
 
 (* universal_link_validated (matches Coq: Definition universal_link_validated) *)
 definition universal_link_validated :: "UniversalLink \<Rightarrow> bool" where
-  "universal_link_validated ul \<equiv> ul_validated ul = True /\ ul_domain_verified ul = True"
+  "universal_link_validated ul \<equiv> ul_validated ul = True \<and> ul_domain_verified ul = True"
 
 (* device_pairing_authenticated (matches Coq: Definition device_pairing_authenticated) *)
 definition device_pairing_authenticated :: "DevicePairing \<Rightarrow> bool" where
-  "device_pairing_authenticated dp \<equiv> dp_authenticated dp = True /\ dp_encryption_key_exchanged dp = True"
+  "device_pairing_authenticated dp \<equiv> dp_authenticated dp = True \<and> dp_encryption_key_exchanged dp = True"
 
 (* sync_conflict_resolved (matches Coq: Definition sync_conflict_resolved) *)
 definition sync_conflict_resolved :: "SyncConflict \<Rightarrow> bool" where
@@ -269,11 +269,11 @@ definition sync_conflict_resolved :: "SyncConflict \<Rightarrow> bool" where
 
 (* continuity_fallback_available (matches Coq: Definition continuity_fallback_available) *)
 definition continuity_fallback_available :: "ContinuityFallback \<Rightarrow> bool" where
-  "continuity_fallback_available cf \<equiv> cf_fallback_available cf = True /\ cf_primary_method cf <> cf_fallback_method cf"
+  "continuity_fallback_available cf \<equiv> cf_fallback_available cf = True \<and> cf_primary_method cf <> cf_fallback_method cf"
 
 (* shared_keychain_access_controlled (matches Coq: Definition shared_keychain_access_controlled) *)
 definition shared_keychain_access_controlled :: "SharedKeychain \<Rightarrow> bool" where
-  "shared_keychain_access_controlled sk \<equiv> sk_access_controlled sk = True /\ sk_access_group sk <> []"
+  "shared_keychain_access_controlled sk \<equiv> sk_access_controlled sk = True \<and> sk_access_group sk <> []"
 
 (* nearby_interaction_consented (matches Coq: Definition nearby_interaction_consented) *)
 definition nearby_interaction_consented :: "NearbyInteraction \<Rightarrow> bool" where
@@ -292,103 +292,103 @@ definition session_within_timeout :: "ContinuitySession \<Rightarrow> bool" wher
   "session_within_timeout cs \<equiv> cs_active cs = True -> cs_elapsed_seconds cs <= cs_timeout_seconds cs"
 
 (* cross_device_handoff_complete (matches Coq) *)
-lemma cross_device_handoff_complete: "\<forall> (app : Application) (device1 device2 : Device), handoff app device1 device2 \<longrightarrow> state app device2 = state app device1"
+lemma cross_device_handoff_complete: "\<forall>(app :: Application) (device1 device2 : Device). handoff app device1 device2 \<longrightarrow> state app device2 = state app device1"
   by simp
 
 (* handoff_requires_auth (matches Coq) *)
-lemma handoff_requires_auth: "\<forall> (app : Application) (d1 d2 : Device), handoff app d1 d2 \<longrightarrow> dev_authenticated d1 = True \<and> dev_authenticated d2 = True"
+lemma handoff_requires_auth: "\<forall>(app :: Application) (d1 d2 : Device). handoff app d1 d2 \<longrightarrow> dev_authenticated d1 = True \<and> dev_authenticated d2 = True"
   by auto
 
 (* handoff_requires_pairing (matches Coq) *)
-lemma handoff_requires_pairing: "\<forall> (app : Application) (d1 d2 : Device), handoff app d1 d2 \<longrightarrow> dev_paired d1 = True \<and> dev_paired d2 = True"
+lemma handoff_requires_pairing: "\<forall>(app :: Application) (d1 d2 : Device). handoff app d1 d2 \<longrightarrow> dev_paired d1 = True \<and> dev_paired d2 = True"
   by auto
 
 (* complete_handoff_encrypted (matches Coq) *)
-lemma complete_handoff_encrypted: "\<forall> (h : Handoff), complete_handoff h \<longrightarrow> handoff_encrypted h = True"
+lemma complete_handoff_encrypted: "\<forall>(h :: Handoff). complete_handoff h \<longrightarrow> handoff_encrypted h = True"
   by auto
 
 (* only_enabled_apps_handoff (matches Coq) *)
-lemma only_enabled_apps_handoff: "\<forall> (app : Application) (d1 d2 : Device), handoff app d1 d2 \<longrightarrow> app_supports_handoff app = True"
+lemma only_enabled_apps_handoff: "\<forall>(app :: Application) (d1 d2 : Device). handoff app d1 d2 \<longrightarrow> app_supports_handoff app = True"
   by auto
 
 (* handoff_data_encrypted_thm (matches Coq) *)
-lemma handoff_data_encrypted_thm: "\<forall> (hd : HandoffData), handoff_data_encrypted hd \<longrightarrow> hd_encrypted hd = True"
+lemma handoff_data_encrypted_thm: "\<forall>(hd :: HandoffData). handoff_data_encrypted hd \<longrightarrow> hd_encrypted hd = True"
   by auto
 
 (* clipboard_sync_encrypted (matches Coq) *)
-lemma clipboard_sync_encrypted: "\<forall> (cs : ClipboardSync), clipboard_sync_is_encrypted cs \<longrightarrow> cb_encrypted cs = True"
+lemma clipboard_sync_encrypted: "\<forall>(cs :: ClipboardSync). clipboard_sync_is_encrypted cs \<longrightarrow> cb_encrypted cs = True"
   by auto
 
 (* device_trust_verified_thm (matches Coq) *)
-lemma device_trust_verified_thm: "\<forall> (dt : DeviceTrust), device_trust_verified dt \<longrightarrow> dt_verified dt = True"
+lemma device_trust_verified_thm: "\<forall>(dt :: DeviceTrust). device_trust_verified dt \<longrightarrow> dt_verified dt = True"
   by auto
 
 (* proximity_required_thm (matches Coq) *)
-lemma proximity_required_thm: "\<forall> (pc : ProximityCheck), proximity_required pc \<longrightarrow> pc_distance_m pc \<le> pc_max_distance_m pc"
+lemma proximity_required_thm: "\<forall>(pc :: ProximityCheck). proximity_required pc \<longrightarrow> pc_distance_m pc \<le> pc_max_distance_m pc"
   by auto
 
 (* continuity_permission_explicit_thm (matches Coq) *)
-lemma continuity_permission_explicit_thm: "\<forall> (cp : ContinuityPermission), continuity_permission_explicit cp \<longrightarrow> cp_explicit_grant cp = True"
+lemma continuity_permission_explicit_thm: "\<forall>(cp :: ContinuityPermission). continuity_permission_explicit cp \<longrightarrow> cp_explicit_grant cp = True"
   by auto
 
 (* shared_clipboard_expiry (matches Coq) *)
-lemma shared_clipboard_expiry: "\<forall> (cs : ClipboardSync), clipboard_has_expiry cs \<longrightarrow> cb_expiry_seconds cs > 0"
+lemma shared_clipboard_expiry: "\<forall>(cs :: ClipboardSync). clipboard_has_expiry cs \<longrightarrow> cb_expiry_seconds cs > 0"
   by auto
 
 (* universal_link_validated_thm (matches Coq) *)
-lemma universal_link_validated_thm: "\<forall> (ul : UniversalLink), universal_link_validated ul \<longrightarrow> ul_validated ul = True \<and> ul_domain_verified ul = True"
+lemma universal_link_validated_thm: "\<forall>(ul :: UniversalLink). universal_link_validated ul \<longrightarrow> ul_validated ul = True \<and> ul_domain_verified ul = True"
   by auto
 
 (* device_pairing_authenticated_thm (matches Coq) *)
-lemma device_pairing_authenticated_thm: "\<forall> (dp : DevicePairing), device_pairing_authenticated dp \<longrightarrow> dp_authenticated dp = True"
+lemma device_pairing_authenticated_thm: "\<forall>(dp :: DevicePairing). device_pairing_authenticated dp \<longrightarrow> dp_authenticated dp = True"
   by auto
 
 (* sync_conflict_resolved_thm (matches Coq) *)
-lemma sync_conflict_resolved_thm: "\<forall> (sc : SyncConflict), sync_conflict_resolved sc \<longrightarrow> sc_resolved sc = True"
+lemma sync_conflict_resolved_thm: "\<forall>(sc :: SyncConflict). sync_conflict_resolved sc \<longrightarrow> sc_resolved sc = True"
   by auto
 
 (* continuity_fallback_available_thm (matches Coq) *)
-lemma continuity_fallback_available_thm: "\<forall> (cf : ContinuityFallback), continuity_fallback_available cf \<longrightarrow> cf_fallback_available cf = True"
+lemma continuity_fallback_available_thm: "\<forall>(cf :: ContinuityFallback). continuity_fallback_available cf \<longrightarrow> cf_fallback_available cf = True"
   by auto
 
 (* shared_keychain_access_controlled_thm (matches Coq) *)
-lemma shared_keychain_access_controlled_thm: "\<forall> (sk : SharedKeychain), shared_keychain_access_controlled sk \<longrightarrow> sk_access_controlled sk = True"
+lemma shared_keychain_access_controlled_thm: "\<forall>(sk :: SharedKeychain). shared_keychain_access_controlled sk \<longrightarrow> sk_access_controlled sk = True"
   by auto
 
 (* nearby_interaction_consent (matches Coq) *)
-lemma nearby_interaction_consent: "\<forall> (ni : NearbyInteraction), nearby_interaction_consented ni \<longrightarrow> ni_consent_given ni = True"
+lemma nearby_interaction_consent: "\<forall>(ni :: NearbyInteraction). nearby_interaction_consented ni \<longrightarrow> ni_consent_given ni = True"
   by auto
 
 (* device_discovery_limited_thm (matches Coq) *)
-lemma device_discovery_limited_thm: "\<forall> (dd : DeviceDiscovery), device_discovery_limited dd \<longrightarrow> length (dd_devices_found dd) \<le> dd_max_devices dd"
+lemma device_discovery_limited_thm: "\<forall>(dd :: DeviceDiscovery). device_discovery_limited dd \<longrightarrow> length (dd_devices_found dd) \<le> dd_max_devices dd"
   by auto
 
 (* relay_traffic_encrypted_thm (matches Coq) *)
-lemma relay_traffic_encrypted_thm: "\<forall> (rt : RelayTraffic), relay_traffic_encrypted rt \<longrightarrow> rt_encrypted rt = True"
+lemma relay_traffic_encrypted_thm: "\<forall>(rt :: RelayTraffic). relay_traffic_encrypted rt \<longrightarrow> rt_encrypted rt = True"
   by auto
 
 (* continuity_session_timeout (matches Coq) *)
-lemma continuity_session_timeout: "\<forall> (cs : ContinuitySession), session_within_timeout cs \<longrightarrow> cs_active cs = True \<longrightarrow> cs_elapsed_seconds cs \<le> cs_timeout_seconds cs"
+lemma continuity_session_timeout: "\<forall>(cs :: ContinuitySession). session_within_timeout cs \<longrightarrow> cs_active cs = True \<longrightarrow> cs_elapsed_seconds cs \<le> cs_timeout_seconds cs"
   by auto
 
 (* device_pairing_key_exchange (matches Coq) *)
-lemma device_pairing_key_exchange: "\<forall> (dp : DevicePairing), device_pairing_authenticated dp \<longrightarrow> dp_encryption_key_exchanged dp = True"
+lemma device_pairing_key_exchange: "\<forall>(dp :: DevicePairing). device_pairing_authenticated dp \<longrightarrow> dp_encryption_key_exchanged dp = True"
   by auto
 
 (* continuity_permission_revocable (matches Coq) *)
-lemma continuity_permission_revocable: "\<forall> (cp : ContinuityPermission), continuity_permission_explicit cp \<longrightarrow> cp_revocable cp = True"
+lemma continuity_permission_revocable: "\<forall>(cp :: ContinuityPermission). continuity_permission_explicit cp \<longrightarrow> cp_revocable cp = True"
   by auto
 
 (* clipboard_expiry_within_max (matches Coq) *)
-lemma clipboard_expiry_within_max: "\<forall> (cs : ClipboardSync), clipboard_has_expiry cs \<longrightarrow> cb_expiry_seconds cs \<le> cb_max_expiry_seconds cs"
+lemma clipboard_expiry_within_max: "\<forall>(cs :: ClipboardSync). clipboard_has_expiry cs \<longrightarrow> cb_expiry_seconds cs \<le> cb_max_expiry_seconds cs"
   by auto
 
 (* shared_keychain_has_group (matches Coq) *)
-lemma shared_keychain_has_group: "\<forall> (sk : SharedKeychain), shared_keychain_access_controlled sk \<longrightarrow> sk_access_group sk \<noteq> []"
+lemma shared_keychain_has_group: "\<forall>(sk :: SharedKeychain). shared_keychain_access_controlled sk \<longrightarrow> sk_access_group sk \<noteq> []"
   by auto
 
 (* handoff_data_integrity_checked (matches Coq) *)
-lemma handoff_data_integrity_checked: "\<forall> (hd : HandoffData), handoff_data_encrypted hd \<longrightarrow> hd_integrity_checked hd = True"
+lemma handoff_data_integrity_checked: "\<forall>(hd :: HandoffData). handoff_data_encrypted hd \<longrightarrow> hd_integrity_checked hd = True"
   by auto
 
 end

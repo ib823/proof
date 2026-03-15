@@ -403,134 +403,135 @@ definition traffic_analysis_defense_enabled :: "TrafficAnalysisConfig \<Rightarr
 
 (* all_defenses_enabled (matches Coq: Definition all_defenses_enabled) *)
 definition all_defenses_enabled :: "NetworkSecurityConfig \<Rightarrow> bool" where
-  "all_defenses_enabled config \<equiv> ((tls_mitm_defense_enabled \<and> (ns_tls) config))
-  (((arp_spoofing_defense_enabled \<and> (ns_arp) config))
-  (((dns_poisoning_defense_enabled \<and> (ns_dnssec) config))
-  (((bgp_hijacking_defense_enabled \<and> (ns_bgp) config))
-  (((ssl_stripping_defense_enabled \<and> (ns_https) config))
-  (((packet_sniffing_defense_enabled \<and> (ns_encryption) config))
-  (((packet_injection_defense_enabled \<and> (ns_auth_protocol) config))
-  (((replay_attack_defense_enabled \<and> (ns_replay) config))
-  (((volumetric_dos_defense_enabled \<and> (ns_rate_limiter) config))
-  (((protocol_dos_defense_enabled \<and> (ns_protocol_impl) config))
-  (((application_dos_defense_enabled \<and> (ns_resource_limits) config))
-  (((amplification_dos_defense_enabled \<and> (ns_amplification) config))
-  (((syn_flood_defense_enabled \<and> (ns_syn) config))
-  (((udp_flood_defense_enabled \<and> (ns_udp) config))
-  (((icmp_flood_defense_enabled \<and> (ns_icmp) config))
-  (((slowloris_defense_enabled \<and> (ns_slowloris) config))
-  (((dns_amplification_defense_enabled \<and> (ns_dns_server) config))
-  (((ntp_amplification_defense_enabled \<and> (ns_ntp_server) config))
-  (((ip_spoofing_defense_enabled \<and> (ns_ip_spoofing) config))
-  (((mac_spoofing_defense_enabled \<and> (ns_mac) config))
-  (((vlan_hopping_defense_enabled \<and> (ns_vlan) config))
-  (((rogue_dhcp_defense_enabled \<and> (ns_dhcp) config))
-  (((ntp_attack_defense_enabled \<and> (ns_ntp_client) config))
-  (((tcp_reset_defense_enabled \<and> (ns_tcp) config))
-        (traffic_analysis_defense_enabled (ns_traffic_analysis config)))))))))))))))))))))))))"
+  "all_defenses_enabled config \<equiv>
+    tls_mitm_defense_enabled (ns_tls config) \<and>
+    arp_spoofing_defense_enabled (ns_arp config) \<and>
+    dns_poisoning_defense_enabled (ns_dnssec config) \<and>
+    bgp_hijacking_defense_enabled (ns_bgp config) \<and>
+    ssl_stripping_defense_enabled (ns_https config) \<and>
+    packet_sniffing_defense_enabled (ns_encryption config) \<and>
+    packet_injection_defense_enabled (ns_auth_protocol config) \<and>
+    replay_attack_defense_enabled (ns_replay config) \<and>
+    volumetric_dos_defense_enabled (ns_rate_limiter config) \<and>
+    protocol_dos_defense_enabled (ns_protocol_impl config) \<and>
+    application_dos_defense_enabled (ns_resource_limits config) \<and>
+    amplification_dos_defense_enabled (ns_amplification config) \<and>
+    syn_flood_defense_enabled (ns_syn config) \<and>
+    udp_flood_defense_enabled (ns_udp config) \<and>
+    icmp_flood_defense_enabled (ns_icmp config) \<and>
+    slowloris_defense_enabled (ns_slowloris config) \<and>
+    dns_amplification_defense_enabled (ns_dns_server config) \<and>
+    ntp_amplification_defense_enabled (ns_ntp_server config) \<and>
+    ip_spoofing_defense_enabled (ns_ip_spoofing config) \<and>
+    mac_spoofing_defense_enabled (ns_mac config) \<and>
+    vlan_hopping_defense_enabled (ns_vlan config) \<and>
+    rogue_dhcp_defense_enabled (ns_dhcp config) \<and>
+    ntp_attack_defense_enabled (ns_ntp_client config) \<and>
+    tcp_reset_defense_enabled (ns_tcp config) \<and>
+    traffic_analysis_defense_enabled (ns_traffic_analysis config)"
 
 (* net_001_man_in_the_middle_mitigated (matches Coq) *)
-lemma net_001_man_in_the_middle_mitigated: "\<forall> (config : TLSConfig), tls_mitm_defense_enabled config = True \<longrightarrow> True"
+lemma net_001_man_in_the_middle_mitigated: "\<forall>(config :: TLSConfig). tls_mitm_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_002_arp_spoofing_mitigated (matches Coq) *)
-lemma net_002_arp_spoofing_mitigated: "\<forall> (config : ARPConfig), arp_spoofing_defense_enabled config = True \<longrightarrow> True"
+lemma net_002_arp_spoofing_mitigated: "\<forall>(config :: ARPConfig). arp_spoofing_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_003_dns_poisoning_mitigated (matches Coq) *)
-lemma net_003_dns_poisoning_mitigated: "\<forall> (config : DNSSECConfig), dns_poisoning_defense_enabled config = True \<longrightarrow> True"
+lemma net_003_dns_poisoning_mitigated: "\<forall>(config :: DNSSECConfig). dns_poisoning_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_004_bgp_hijacking_mitigated (matches Coq) *)
-lemma net_004_bgp_hijacking_mitigated: "\<forall> (config : BGPConfig), bgp_hijacking_defense_enabled config = True \<longrightarrow> True"
+lemma net_004_bgp_hijacking_mitigated: "\<forall>(config :: BGPConfig). bgp_hijacking_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_005_ssl_stripping_mitigated (matches Coq) *)
-lemma net_005_ssl_stripping_mitigated: "\<forall> (config : HTTPSConfig), ssl_stripping_defense_enabled config = True \<longrightarrow> True"
+lemma net_005_ssl_stripping_mitigated: "\<forall>(config :: HTTPSConfig). ssl_stripping_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_006_packet_sniffing_mitigated (matches Coq) *)
-lemma net_006_packet_sniffing_mitigated: "\<forall> (config : EncryptionConfig), packet_sniffing_defense_enabled config = True \<longrightarrow> True"
+lemma net_006_packet_sniffing_mitigated: "\<forall>(config :: EncryptionConfig). packet_sniffing_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_007_packet_injection_mitigated (matches Coq) *)
-lemma net_007_packet_injection_mitigated: "\<forall> (config : AuthProtocolConfig), packet_injection_defense_enabled config = True \<longrightarrow> True"
+lemma net_007_packet_injection_mitigated: "\<forall>(config :: AuthProtocolConfig). packet_injection_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_008_replay_attack_mitigated (matches Coq) *)
-lemma net_008_replay_attack_mitigated: "\<forall> (config : ReplayProtectionConfig), replay_attack_defense_enabled config = True \<longrightarrow> True"
+lemma net_008_replay_attack_mitigated: "\<forall>(config :: ReplayProtectionConfig). replay_attack_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_009_volumetric_dos_mitigated (matches Coq) *)
-lemma net_009_volumetric_dos_mitigated: "\<forall> (config : RateLimiterConfig), volumetric_dos_defense_enabled config = True \<longrightarrow> True"
+lemma net_009_volumetric_dos_mitigated: "\<forall>(config :: RateLimiterConfig). volumetric_dos_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_010_protocol_dos_mitigated (matches Coq) *)
-lemma net_010_protocol_dos_mitigated: "\<forall> (config : ProtocolImplConfig), protocol_dos_defense_enabled config = True \<longrightarrow> True"
+lemma net_010_protocol_dos_mitigated: "\<forall>(config :: ProtocolImplConfig). protocol_dos_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_011_application_dos_mitigated (matches Coq) *)
-lemma net_011_application_dos_mitigated: "\<forall> (config : ResourceLimitsConfig), application_dos_defense_enabled config = True \<longrightarrow> True"
+lemma net_011_application_dos_mitigated: "\<forall>(config :: ResourceLimitsConfig). application_dos_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_012_amplification_dos_mitigated (matches Coq) *)
-lemma net_012_amplification_dos_mitigated: "\<forall> (config : AmplificationConfig), amplification_dos_defense_enabled config = True \<longrightarrow> True"
+lemma net_012_amplification_dos_mitigated: "\<forall>(config :: AmplificationConfig). amplification_dos_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_013_syn_flood_mitigated (matches Coq) *)
-lemma net_013_syn_flood_mitigated: "\<forall> (config : SYNProtectionConfig), syn_flood_defense_enabled config = True \<longrightarrow> True"
+lemma net_013_syn_flood_mitigated: "\<forall>(config :: SYNProtectionConfig). syn_flood_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_014_udp_flood_mitigated (matches Coq) *)
-lemma net_014_udp_flood_mitigated: "\<forall> (config : UDPProtectionConfig), udp_flood_defense_enabled config = True \<longrightarrow> True"
+lemma net_014_udp_flood_mitigated: "\<forall>(config :: UDPProtectionConfig). udp_flood_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_015_icmp_flood_mitigated (matches Coq) *)
-lemma net_015_icmp_flood_mitigated: "\<forall> (config : ICMPProtectionConfig), icmp_flood_defense_enabled config = True \<longrightarrow> True"
+lemma net_015_icmp_flood_mitigated: "\<forall>(config :: ICMPProtectionConfig). icmp_flood_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_016_slowloris_mitigated (matches Coq) *)
-lemma net_016_slowloris_mitigated: "\<forall> (config : SlowlorisProtectionConfig), slowloris_defense_enabled config = True \<longrightarrow> True"
+lemma net_016_slowloris_mitigated: "\<forall>(config :: SlowlorisProtectionConfig). slowloris_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_017_dns_amplification_mitigated (matches Coq) *)
-lemma net_017_dns_amplification_mitigated: "\<forall> (config : DNSServerConfig), dns_amplification_defense_enabled config = True \<longrightarrow> True"
+lemma net_017_dns_amplification_mitigated: "\<forall>(config :: DNSServerConfig). dns_amplification_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_018_ntp_amplification_mitigated (matches Coq) *)
-lemma net_018_ntp_amplification_mitigated: "\<forall> (config : NTPServerConfig), ntp_amplification_defense_enabled config = True \<longrightarrow> True"
+lemma net_018_ntp_amplification_mitigated: "\<forall>(config :: NTPServerConfig). ntp_amplification_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_019_ip_spoofing_mitigated (matches Coq) *)
-lemma net_019_ip_spoofing_mitigated: "\<forall> (config : IPSpoofingConfig), ip_spoofing_defense_enabled config = True \<longrightarrow> True"
+lemma net_019_ip_spoofing_mitigated: "\<forall>(config :: IPSpoofingConfig). ip_spoofing_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_020_mac_spoofing_mitigated (matches Coq) *)
-lemma net_020_mac_spoofing_mitigated: "\<forall> (config : MACSecurityConfig), mac_spoofing_defense_enabled config = True \<longrightarrow> True"
+lemma net_020_mac_spoofing_mitigated: "\<forall>(config :: MACSecurityConfig). mac_spoofing_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_021_vlan_hopping_mitigated (matches Coq) *)
-lemma net_021_vlan_hopping_mitigated: "\<forall> (config : VLANSecurityConfig), vlan_hopping_defense_enabled config = True \<longrightarrow> True"
+lemma net_021_vlan_hopping_mitigated: "\<forall>(config :: VLANSecurityConfig). vlan_hopping_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_022_rogue_dhcp_mitigated (matches Coq) *)
-lemma net_022_rogue_dhcp_mitigated: "\<forall> (config : DHCPSecurityConfig), rogue_dhcp_defense_enabled config = True \<longrightarrow> True"
+lemma net_022_rogue_dhcp_mitigated: "\<forall>(config :: DHCPSecurityConfig). rogue_dhcp_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_023_ntp_attack_mitigated (matches Coq) *)
-lemma net_023_ntp_attack_mitigated: "\<forall> (config : NTPClientConfig), ntp_attack_defense_enabled config = True \<longrightarrow> True"
+lemma net_023_ntp_attack_mitigated: "\<forall>(config :: NTPClientConfig). ntp_attack_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_024_tcp_reset_mitigated (matches Coq) *)
-lemma net_024_tcp_reset_mitigated: "\<forall> (config : TCPSecurityConfig), tcp_reset_defense_enabled config = True \<longrightarrow> True"
+lemma net_024_tcp_reset_mitigated: "\<forall>(config :: TCPSecurityConfig). tcp_reset_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* net_025_traffic_analysis_mitigated (matches Coq) *)
-lemma net_025_traffic_analysis_mitigated: "\<forall> (config : TrafficAnalysisConfig), traffic_analysis_defense_enabled config = True \<longrightarrow> True"
+lemma net_025_traffic_analysis_mitigated: "\<forall>(config :: TrafficAnalysisConfig). traffic_analysis_defense_enabled config = True \<longrightarrow> True"
   by auto
 
 (* network_security_comprehensive (matches Coq) *)
-lemma network_security_comprehensive: "\<forall> (config : NetworkSecurityConfig), all_defenses_enabled config = True \<longrightarrow> True"
+lemma network_security_comprehensive: "\<forall>(config :: NetworkSecurityConfig). all_defenses_enabled config = True \<longrightarrow> True"
   by auto
 
 end

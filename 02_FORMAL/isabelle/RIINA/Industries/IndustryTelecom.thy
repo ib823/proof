@@ -166,50 +166,50 @@ definition li_valid :: "LawfulIntercept \<Rightarrow> bool" where
 (* Section F01 - 5G Security Architecture
     Reference: IND_F_TELECOM.md Section 3.1 *)
 (* security_5g_compliance (matches Coq) *)
-lemma security_5g_compliance: "\<forall> (sec : Security_5G), primary_authentication sec = True \<longrightarrow> nas_security sec = True \<longrightarrow> True"
+lemma security_5g_compliance: "\<forall>(sec :: Security_5G). primary_authentication sec = True \<longrightarrow> nas_security sec = True \<longrightarrow> True"
   by simp
 
 (* Section F02 - GSMA Security
     Reference: IND_F_TELECOM.md Section 3.2 *)
 (* gsma_security (matches Coq) *)
-lemma gsma_security: "\<forall> (sim_card : nat) (network : nat), True"
+lemma gsma_security: "\<forall>(sim_card :: nat) (network :: nat). True"
   by simp
 
 (* Section F03 - Network Slicing Security
     Reference: IND_F_TELECOM.md Section 3.3 *)
 (* slice_isolation (matches Coq) *)
-lemma slice_isolation: "\<forall> (slice1 : nat) (slice2 : nat), True"
+lemma slice_isolation: "\<forall>(slice1 :: nat) (slice2 :: nat). True"
   by simp
 
 (* Section F04 - SS7/Diameter Security
     Reference: IND_F_TELECOM.md Section 3.4 *)
 (* signaling_security (matches Coq) *)
-lemma signaling_security: "\<forall> (message : nat), True"
+lemma signaling_security: "\<forall>(message :: nat). True"
   by simp
 
 (* Section F05 - NFV Security
     Reference: IND_F_TELECOM.md Section 3.5 *)
 (* nfv_security (matches Coq) *)
-lemma nfv_security: "\<forall> (vnf : NetworkFunction), True"
+lemma nfv_security: "\<forall>(vnf :: NetworkFunction). True"
   by simp
 
 (* 5G requires integrity protection *)
 (* integrity_mandatory_5g (matches Coq) *)
-lemma integrity_mandatory_5g: "\<forall> (sec : Security_5G), nas_security sec = True \<longrightarrow> True"
+lemma integrity_mandatory_5g: "\<forall>(sec :: Security_5G). nas_security sec = True \<longrightarrow> True"
   by simp
 
 (* User plane integrity available in 5G *)
 (* up_integrity_available (matches Coq) *)
-lemma up_integrity_available: "\<forall> (sec : Security_5G), user_plane_integrity sec = True \<longrightarrow> True"
+lemma up_integrity_available: "\<forall>(sec :: Security_5G). user_plane_integrity sec = True \<longrightarrow> True"
   by simp
 
 (* core_most_critical (matches Coq) *)
-lemma core_most_critical: "\<forall> d, domain_criticality d \<le> domain_criticality Core"
-  by (cases rule: ‹_›.cases; simp)
+lemma core_most_critical: "\<forall>d. domain_criticality d \<le> domain_criticality Core"
+  by auto
 
 (* domain_criticality_positive (matches Coq) *)
-lemma domain_criticality_positive: "\<forall> d, domain_criticality d \<ge> 2"
-  by (cases rule: ‹_›.cases; simp)
+lemma domain_criticality_positive: "\<forall>d. domain_criticality d \<ge> 2"
+  by auto
 
 (* ausf_is_auth (matches Coq) *)
 lemma ausf_is_auth: "is_auth_function AUSF = True"
@@ -220,27 +220,27 @@ lemma amf_not_auth: "is_auth_function AMF = False"
   by simp
 
 (* all_sec_requires_auth (matches Coq) *)
-lemma all_sec_requires_auth: "\<forall> s, security_5g_all s = True \<longrightarrow> primary_authentication s = True"
+lemma all_sec_requires_auth: "\<forall>s. security_5g_all s = True \<longrightarrow> primary_authentication s = True"
   by auto
 
 (* all_sec_requires_nas (matches Coq) *)
-lemma all_sec_requires_nas: "\<forall> s, security_5g_all s = True \<longrightarrow> nas_security s = True"
+lemma all_sec_requires_nas: "\<forall>s. security_5g_all s = True \<longrightarrow> nas_security s = True"
   by auto
 
 (* all_sec_requires_slicing (matches Coq) *)
-lemma all_sec_requires_slicing: "\<forall> s, security_5g_all s = True \<longrightarrow> network_slicing_isolation s = True"
+lemma all_sec_requires_slicing: "\<forall>s. security_5g_all s = True \<longrightarrow> network_slicing_isolation s = True"
   by auto
 
 (* same_slice_not_isolated (matches Coq) *)
-lemma same_slice_not_isolated: "\<forall> s, slices_isolated s s = False"
+lemma same_slice_not_isolated: "\<forall>s. slices_isolated s s = False"
   by simp
 
 (* latency_bounded (matches Coq) *)
-lemma latency_bounded: "\<forall> s max_l, latency_acceptable s max_l = True \<longrightarrow> slice_sla_latency_ms s \<le> max_l"
+lemma latency_bounded: "\<forall>s max_l. latency_acceptable s max_l = True \<longrightarrow> slice_sla_latency_ms s \<le> max_l"
   by auto
 
 (* supi_always_concealed_in_core (matches Coq) *)
-lemma supi_always_concealed_in_core: "\<forall> enc, supi_concealed enc Core = True"
+lemma supi_always_concealed_in_core: "\<forall>enc. supi_concealed enc Core = True"
   by simp
 
 (* supi_concealed_ran_requires_encryption (matches Coq) *)
@@ -252,23 +252,23 @@ lemma supi_concealed_ran_with_encryption: "supi_concealed True RAN = True"
   by simp
 
 (* ran_deepest_key_hierarchy (matches Coq) *)
-lemma ran_deepest_key_hierarchy: "\<forall> d, key_derivation_depth d \<le> key_derivation_depth RAN"
-  by (cases rule: ‹_›.cases; simp)
+lemma ran_deepest_key_hierarchy: "\<forall>d. key_derivation_depth d \<le> key_derivation_depth RAN"
+  by auto
 
 (* roaming_no_upgrade (matches Coq) *)
-lemma roaming_no_upgrade: "\<forall> h v, roaming_security_level h v \<le> h"
+lemma roaming_no_upgrade: "\<forall>h v. roaming_security_level h v \<le> h"
   by simp
 
 (* roaming_bounded_by_visited (matches Coq) *)
-lemma roaming_bounded_by_visited: "\<forall> h v, roaming_security_level h v \<le> v"
+lemma roaming_bounded_by_visited: "\<forall>h v. roaming_security_level h v \<le> v"
   by simp
 
 (* li_requires_authorization (matches Coq) *)
-lemma li_requires_authorization: "\<forall> li, li_valid li = True \<longrightarrow> li_authorized li = True"
+lemma li_requires_authorization: "\<forall>li. li_valid li = True \<longrightarrow> li_authorized li = True"
   by auto
 
 (* li_requires_logging (matches Coq) *)
-lemma li_requires_logging: "\<forall> li, li_valid li = True \<longrightarrow> li_logged li = True"
+lemma li_requires_logging: "\<forall>li. li_valid li = True \<longrightarrow> li_logged li = True"
   by auto
 
 end
