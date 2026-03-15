@@ -45,16 +45,16 @@ pred fdisjoint {}
 pred funion {}
 
 // 1 (matches Coq: Theorem 1)
-assert 1 {
+assert t1 {
   all x: hprop | x in hprop
 }
-check 1 for 5
+check t1 for 5
 
 // 2 (matches Coq: Theorem 2)
-assert 2 {
+assert t2 {
   all x: hprop | x in hprop
 }
-check 2 for 5
+check t2 for 5
 
 // disjoint_sym (matches Coq: Lemma disjoint_sym)
 assert disjoint_sym {
@@ -63,22 +63,22 @@ assert disjoint_sym {
 check disjoint_sym for 5
 
 // 3 (matches Coq: Theorem 3)
-assert 3 {
+assert t3 {
   all x: hprop | x in hprop
 }
-check 3 for 5
+check t3 for 5
 
 // 4 (matches Coq: Theorem 4)
-assert 4 {
+assert t4 {
   all x: hprop | x in hprop
 }
-check 4 for 5
+check t4 for 5
 
 // 5 (matches Coq: Theorem 5)
-assert 5 {
+assert t5 {
   all x: hprop | x in hprop
 }
-check 5 for 5
+check t5 for 5
 
 // frame_rule (matches Coq: Theorem frame_rule)
 assert frame_rule {
@@ -87,10 +87,10 @@ assert frame_rule {
 check frame_rule for 5
 
 // 7 (matches Coq: Theorem 7)
-assert 7 {
+assert t7 {
   all x: hprop | x in hprop
 }
-check 7 for 5
+check t7 for 5
 
 // fdisjoint_empty_r (matches Coq: Theorem fdisjoint_empty_r)
 assert fdisjoint_empty_r {
@@ -99,10 +99,10 @@ assert fdisjoint_empty_r {
 check fdisjoint_empty_r for 5
 
 // 9 (matches Coq: Theorem 9)
-assert 9 {
+assert t9 {
   all x: hprop | x in hprop
 }
-check 9 for 5
+check t9 for 5
 
 // funion_empty_r (matches Coq: Theorem funion_empty_r)
 assert funion_empty_r {
@@ -111,61 +111,61 @@ assert funion_empty_r {
 check funion_empty_r for 5
 
 // 11 (matches Coq: Theorem 11)
-assert 11 {
+assert t11 {
   all x: hprop | x in hprop
 }
-check 11 for 5
+check t11 for 5
 
 // 12 (matches Coq: Theorem 12)
-assert 12 {
+assert t12 {
   all x: hprop | x in hprop
 }
-check 12 for 5
+check t12 for 5
 
 // 13 (matches Coq: Theorem 13)
-assert 13 {
+assert t13 {
   all x: hprop | x in hprop
 }
-check 13 for 5
+check t13 for 5
 
 // 14 (matches Coq: Theorem 14)
-assert 14 {
+assert t14 {
   all x: hprop | x in hprop
 }
-check 14 for 5
+check t14 for 5
 
 // 15 (matches Coq: Theorem 15)
-assert 15 {
+assert t15 {
   all x: hprop | x in hprop
 }
-check 15 for 5
+check t15 for 5
 
 // 16 (matches Coq: Theorem 16)
-assert 16 {
+assert t16 {
   all x: hprop | x in hprop
 }
-check 16 for 5
+check t16 for 5
 
 // 17 (matches Coq: Theorem 17)
-assert 17 {
+assert t17 {
   all x: hprop | x in hprop
 }
-check 17 for 5
+check t17 for 5
 
 // 18 (matches Coq: Theorem 18)
-assert 18 {
+assert t18 {
   all x: hprop | x in hprop
 }
-check 18 for 5
+check t18 for 5
 
 // 19 (matches Coq: Theorem 19)
-assert 19 {
+assert t19 {
   all x: hprop | x in hprop
 }
-check 19 for 5
+check t19 for 5
 
 // 20 (matches Coq: Theorem 20)
-assert 20 {
+assert t20 {
   all x: hprop | x in hprop
 }
-check 20 for 5
+check t20 for 5

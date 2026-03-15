@@ -18,8 +18,8 @@ abstract sig AnonymitySet {}
 abstract sig TimingBucket {}
 
 // k_anonymous (matches Coq: Definition k_anonymous)
-pred k_anonymous[set: AnonymitySet, k: Int] {
-  some set
+pred k_anonymous[aset: AnonymitySet, k: Int] {
+  some aset
 }
 
 // unlinkable (matches Coq: Definition unlinkable)

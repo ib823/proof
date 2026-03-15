@@ -29,8 +29,8 @@ one sig ParentPortal extends EducationEffect {}
 one sig LearningAnalytics extends EducationEffect {}
 one sig AssessmentData extends EducationEffect {}
 
-abstract sig student_grade_level {}
-abstract sig student_min_age {}
+abstract sig Student_GradeLevel_Proof {}
+abstract sig Student_MinAge_Proof {}
 
 // FERPA_Compliance (matches Coq: Record FERPA_Compliance)
 sig FERPA_Compliance {
@@ -49,8 +49,8 @@ sig StudentRecord {
   student_min_age: one Int,
   student_grade_level: one Int,
   student_max_grade: one Int,
-  student_age_valid: one student_min_age,
-  student_grade_valid: one student_grade_level
+  student_age_valid: one Student_MinAge_Proof,
+  student_grade_valid: one Student_GradeLevel_Proof
 }
 
 // student_data_sensitivity (matches Coq: Definition student_data_sensitivity)

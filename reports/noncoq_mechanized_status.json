@@ -1,34 +1,38 @@
 {
-  "generated_utc": "2026-03-15T08:54:07Z",
-  "repo_head": "2711c74e36b08ef9aeb6e91da5bde017b87e7b7c",
-  "repo_branch": "main",
+  "generated_utc": "2026-03-15T11:21:36Z",
+  "repo_head": "20a949cff130db105f26cc01b0aac75178e47bb5",
+  "repo_branch": "claude/alloy-verification-build-55pxw",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
-    "lake": true,
-    "isabelle": true,
+    "lake": false,
+    "isabelle": false,
     "docker": false,
-    "isabelle_bin": "/workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle",
-    "isabelle_local_error": "",
+    "isabelle_bin": "",
+    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
+Run: bash scripts/provision-smoke-toolchains.sh
+     or: bash scripts/provision-isabelle.sh",
     "java": true,
-    "z3": true,
-    "fstar": true,
-    "fstar_bin": "/workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe",
-    "fstar_local_error": "",
+    "z3": false,
+    "fstar": false,
+    "fstar_bin": "",
+    "fstar_local_error": "ERROR: pinned local F* not found at /home/user/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe.
+Run: bash scripts/provision-smoke-toolchains.sh
+     or: bash scripts/provision-fstar.sh",
     "verus": false,
     "kani": false,
     "tla2tools_jar": true,
     "alloy_jar": true,
-    "tla2tools_path": "/workspaces/proof/05_TOOLING/tools/formal/tla2tools.jar",
-    "alloy_path": "/workspaces/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
+    "tla2tools_path": "/home/user/proof/05_TOOLING/tools/formal/tla2tools.jar",
+    "alloy_path": "/home/user/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
   },
   "lanes": {
     "lean": {
-      "full_build_ok": true,
+      "full_build_ok": false,
       "files": 155,
       "sorry": 0,
       "axioms": 0,
-      "mechanized_ready": true,
-      "pending": "none"
+      "mechanized_ready": false,
+      "pending": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA"
     },
     "isabelle": {
       "full_build_ok": false,
@@ -37,13 +41,15 @@
       "files": 275,
       "sorry": 0,
       "smoke_session": "RIINA_CORE",
-      "smoke_build_ok": true,
+      "smoke_build_ok": false,
       "smoke_declared_theories": 1,
       "smoke_declared_lemmas": 5,
-      "smoke_compiled_theories": 1,
-      "smoke_compiled_lemmas": 5,
+      "smoke_compiled_theories": 0,
+      "smoke_compiled_lemmas": 0,
       "mechanized_ready": false,
-      "pending": "quarantined generated corpus; dequarantine only after full Isabelle replacement"
+      "pending": "quarantined generated corpus; dequarantine only after full Isabelle replacement (local Isabelle enforcement: ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
+Run: bash scripts/provision-smoke-toolchains.sh
+     or: bash scripts/provision-isabelle.sh)"
     },
     "fstar": {
       "full_exec_ok": false,
@@ -51,11 +57,13 @@
       "files": 265,
       "generated_files": 7,
       "smoke_module": "RIINA.Active.CryptographicSecurityActive",
-      "smoke_build_ok": true,
+      "smoke_build_ok": false,
       "smoke_declared_lemmas": 3,
-      "smoke_compiled_lemmas": 3,
+      "smoke_compiled_lemmas": 0,
       "mechanized_ready": false,
-      "pending": "partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending"
+      "pending": "quarantined generated corpus; dequarantine only after full F* replacement (local F* enforcement: ERROR: pinned local F* not found at /home/user/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe.
+Run: bash scripts/provision-smoke-toolchains.sh
+     or: bash scripts/provision-fstar.sh)"
     },
     "tlaplus": {
       "full_exec_ok": false,
@@ -70,22 +78,22 @@
       "pending": "partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending"
     },
     "alloy": {
-      "full_exec_ok": false,
-      "quarantined": true,
+      "full_exec_ok": true,
+      "quarantined": false,
       "files": 260,
       "smoke_model": "RIINA.Active.TelusProcurementAccessControl",
       "smoke_build_ok": true,
       "smoke_declared_assertions": 6,
       "smoke_checked_assertions": 6,
-      "mechanized_ready": false,
-      "pending": "partial TelusProcurementAccessControl smoke model checked; full-lane executable Alloy checks across corpus still pending"
-    },
-    "smt": {
-      "full_exec_ok": true,
-      "files": 267,
-      "generated_files": 0,
       "mechanized_ready": true,
       "pending": "none"
+    },
+    "smt": {
+      "full_exec_ok": false,
+      "files": 267,
+      "generated_files": 0,
+      "mechanized_ready": false,
+      "pending": "require full-lane Z3 checks and zero generated placeholders"
     },
     "verus": {
       "full_exec_ok": false,
@@ -103,7 +111,7 @@
       "pending": "require full-lane Kani checks and zero generated placeholders"
     },
     "tv": {
-      "full_exec_ok": true,
+      "full_exec_ok": false,
       "files": 266,
       "generated_files": 7,
       "mechanized_ready": false,

@@ -55,30 +55,30 @@ one sig ActionDismiss extends RecoveryAction {}
 one sig ActionNavigate extends RecoveryAction {}
 one sig ActionContact extends RecoveryAction {}
 
-abstract sig Forall {}
+abstract sig ForallQ {}
 abstract sig Opacity {}
 abstract sig TLS {}
 abstract sig ZIndex {}
-abstract sig all {}
-abstract sig browser_displayed_url {}
-abstract sig browser_tls_verified {}
-abstract sig critical {}
-abstract sig display {}
-abstract sig displayed {}
-abstract sig displayed_total {}
-abstract sig err_display_style {}
-abstract sig err_message {}
-abstract sig err_severity {}
-abstract sig err_visible {}
-abstract sig focus_modal_active {}
-abstract sig focus_valid {}
-abstract sig font {}
-abstract sig forall {}
+abstract sig AllQ {}
+abstract sig BrowserDisplayedUrlProof {}
+abstract sig BrowserTlsVerifiedProof {}
+abstract sig CriticalProof {}
+abstract sig DisplayProof {}
+abstract sig DisplayedProof {}
+abstract sig DisplayedTotal {}
+abstract sig ErrDisplayStyleProof {}
+abstract sig ErrMessageProof {}
+abstract sig ErrSeverityProof {}
+abstract sig ErrVisibleProof {}
+abstract sig FocusModalActiveProof {}
+abstract sig FocusValidProof {}
+abstract sig FontProof {}
+abstract sig ForallQProof {}
 abstract sig list {}
 abstract sig option {}
 abstract sig string {}
-abstract sig tab_loaded_origin {}
-abstract sig touch {}
+abstract sig TabLoadedOriginProof {}
+abstract sig TouchProof {}
 
 // Point (matches Coq: Record Point)
 sig Point {
@@ -122,7 +122,7 @@ sig TabState {
   tab_id: one Int,
   tab_loaded_origin: one Origin,
   tab_content_origin: one Origin, // INVARIANT: content origin matches loaded origin
-  tab_origin_match: one tab_loaded_origin
+  tab_origin_match: one TabLoadedOriginProof
 }
 
 // FrameState (matches Coq: Record FrameState)
@@ -135,16 +135,16 @@ sig FrameState {
 
 // VerifiedBrowserState (matches Coq: Record VerifiedBrowserState)
 sig VerifiedBrowserState {
-  browser_displayed_url: one string,
+  vbs_displayed_url: one string,
   browser_actual_origin: one Origin,
   browser_cert_status: one CertStatus,
-  browser_tls_verified: one Bool,
+  vbs_tls_verified: one Bool,
   browser_tabs: one list,
   browser_frames: one list,
-  INVARIANT: one displayed,
-  browser_url_derived: one browser_displayed_url,
-  INVARIANT: one TLS,
-  browser_tls_implies_https: one browser_tls_verified
+  INVARIANT_displayed: one DisplayedProof,
+  browser_url_derived: one BrowserDisplayedUrlProof,
+  INVARIANT_tls: one TLS,
+  browser_tls_implies_https: one BrowserTlsVerifiedProof
 }
 
 // ConsentRecord (matches Coq: Record ConsentRecord)
@@ -166,21 +166,21 @@ sig DialogOption {
 // VerifiedDialog (matches Coq: Record VerifiedDialog)
 sig VerifiedDialog {
   dialog_options: one list,
-  dialog_balanced: one forall,
-  dialog_cancel_neutral: one forall
+  dialog_balanced: one ForallQProof,
+  dialog_cancel_neutral: one ForallQProof
 }
 
 // PriceDisplay (matches Coq: Record PriceDisplay)
 sig PriceDisplay {
   displayed_total: one Int,
   actual_total: one Int,
-  price_verified: one displayed_total
+  price_verified: one DisplayedTotal
 }
 
 // ConsentState (matches Coq: Record ConsentState)
 sig ConsentState {
   consent_records: one list,
-  consent_all_revocable: one Forall
+  consent_all_revocable: one ForallQ
 }
 
 // SensitiveAction (matches Coq: Record SensitiveAction)
@@ -216,10 +216,10 @@ sig FocusState {
 // VerifiedFocusState (matches Coq: Record VerifiedFocusState)
 sig VerifiedFocusState {
   vf_state: one FocusState,
-  vf_valid: one focus_valid,
+  vf_valid: one FocusValidProof,
   vf_visible_elements: one list,
-  vf_tab_in_visible: one forall,
-  vf_modal_subset: one focus_modal_active
+  vf_tab_in_visible: one ForallQProof,
+  vf_modal_subset: one FocusModalActiveProof
 }
 
 // ViewportBounds (matches Coq: Record ViewportBounds)
@@ -254,12 +254,9 @@ sig LayoutElement {
 sig ResponsiveLayout {
   rl_viewport: one Viewport,
   rl_elements: one list,
-  INVARIANT: one all,
-  rl_all_fit: one Forall,
-  INVARIANT: one touch,
-  rl_touch_targets: one Forall,
-  INVARIANT: one font,
-  rl_font_appropriate: one Forall
+  rl_all_fit: one ForallQ,
+  rl_touch_targets: one ForallQ,
+  rl_font_appropriate: one ForallQ
 }
 
 // ErrorDisplay (matches Coq: Record ErrorDisplay)
@@ -276,13 +273,13 @@ sig ErrorDisplay {
 // VerifiedErrorDisplay (matches Coq: Record VerifiedErrorDisplay)
 sig VerifiedErrorDisplay {
   ve_display: one ErrorDisplay, // INVARIANT: errors are always visible
-  ve_always_visible: one err_visible,
-  INVARIANT: one critical,
-  ve_critical_persistent: one err_severity,
-  INVARIANT: one display,
-  ve_style_matches: one err_display_style,
-  INVARIANT: one displayed,
-  ve_honest_message: one err_message
+  ve_always_visible: one ErrVisibleProof,
+  INVARIANT_critical: one CriticalProof,
+  ve_critical_persistent: one ErrSeverityProof,
+  INVARIANT_display: one DisplayProof,
+  ve_style_matches: one ErrDisplayStyleProof,
+  INVARIANT_displayed: one DisplayedProof,
+  ve_honest_message: one ErrMessageProof
 }
 
 // MIN_VISIBLE_OPACITY (matches Coq: Definition MIN_VISIBLE_OPACITY)

@@ -103,22 +103,22 @@ pred dpo_requirement_met[policy: ASEANDataPolicy, dpo_appointed: Bool] {
 }
 
 // 1 (matches Coq: Theorem 1)
-assert 1 {
+assert t1 {
   all x: DataLocalization | x in DataLocalization
 }
-check 1 for 5
+check t1 for 5
 
 // 2 (matches Coq: Theorem 2)
-assert 2 {
+assert t2 {
   all x: DataLocalization | x in DataLocalization
 }
-check 2 for 5
+check t2 for 5
 
 // 3 (matches Coq: Theorem 3)
-assert 3 {
+assert t3 {
   all x: DataLocalization | x in DataLocalization
 }
-check 3 for 5
+check t3 for 5
 
 // jurisdiction_leq_transitive (matches Coq: Theorem jurisdiction_leq_transitive)
 assert jurisdiction_leq_transitive {
@@ -133,28 +133,28 @@ assert jurisdiction_preorder {
 check jurisdiction_preorder for 5
 
 // 4 (matches Coq: Theorem 4)
-assert 4 {
+assert t4 {
   all x: DataLocalization | x in DataLocalization
 }
-check 4 for 5
+check t4 for 5
 
 // 5 (matches Coq: Theorem 5)
-assert 5 {
+assert t5 {
   all x: DataLocalization | x in DataLocalization
 }
-check 5 for 5
+check t5 for 5
 
 // 6 (matches Coq: Theorem 6)
-assert 6 {
+assert t6 {
   all x: DataLocalization | x in DataLocalization
 }
-check 6 for 5
+check t6 for 5
 
 // 7 (matches Coq: Theorem 7)
-assert 7 {
+assert t7 {
   all x: DataLocalization | x in DataLocalization
 }
-check 7 for 5
+check t7 for 5
 
 // audit_trail_preservation (matches Coq: Theorem audit_trail_preservation)
 assert audit_trail_preservation {
@@ -163,22 +163,22 @@ assert audit_trail_preservation {
 check audit_trail_preservation for 5
 
 // 8 (matches Coq: Theorem 8)
-assert 8 {
+assert t8 {
   all x: DataLocalization | x in DataLocalization
 }
-check 8 for 5
+check t8 for 5
 
 // 9 (matches Coq: Theorem 9)
-assert 9 {
+assert t9 {
   all x: DataLocalization | x in DataLocalization
 }
-check 9 for 5
+check t9 for 5
 
 // 10 (matches Coq: Theorem 10)
-assert 10 {
+assert t10 {
   all x: DataLocalization | x in DataLocalization
 }
-check 10 for 5
+check t10 for 5
 
 // local_only_blocks_cross_border (matches Coq: Theorem local_only_blocks_cross_border)
 assert local_only_blocks_cross_border {

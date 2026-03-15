@@ -126,12 +126,12 @@ pred system_unchanged[sys: System, new_sys: System] {
 }
 
 // always (matches Coq: Definition always)
-pred always[d: Device] {
+pred always_holds[d: Device] {
   some d
 }
 
 // eventually (matches Coq: Definition eventually)
-pred eventually[d: Device] {
+pred eventually_holds[d: Device] {
   some d
 }
 

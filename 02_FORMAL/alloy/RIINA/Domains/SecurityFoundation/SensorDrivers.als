@@ -18,7 +18,7 @@ one sig GPS extends SensorType {}
 one sig Accelerometer extends SensorType {}
 one sig Gyroscope extends SensorType {}
 
-abstract sig bs_current_rate {}
+abstract sig BS_CurrentRate_Proof {}
 
 // Sensor (matches Coq: Record Sensor)
 sig Sensor {
@@ -55,7 +55,7 @@ sig BoundedSensor {
   bs_sensor: one Sensor,
   bs_max_rate: one Int,
   bs_current_rate: one Int,
-  bs_rate_ok: one bs_current_rate
+  bs_rate_ok: one BS_CurrentRate_Proof
 }
 
 // has_sensor_permission (matches Coq: Definition has_sensor_permission)

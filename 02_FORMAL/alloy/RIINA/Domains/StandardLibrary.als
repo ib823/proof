@@ -58,14 +58,14 @@ sig SecureString {
 sig ReadResult {
   read_count: one Int,
   read_buffer_size: one Int,
-  read_valid: one read_count
+  read_valid: one Bool
 }
 
 // WriteResult (matches Coq: Record WriteResult)
 sig WriteResult {
   write_count: one Int,
   write_buffer_size: one Int,
-  write_valid: one write_count
+  write_valid: one Bool
 }
 
 // FileHandle (matches Coq: Record FileHandle)
@@ -270,8 +270,8 @@ pred sign_data[private_key: Int] {
 }
 
 // verify_signature (matches Coq: Definition verify_signature)
-pred verify_signature[sig: Signature, public_key: Int] {
-  some sig
+pred verify_signature[s: Signature, public_key: Int] {
+  some s
 }
 
 // crypto_key_drop (matches Coq: Definition crypto_key_drop)

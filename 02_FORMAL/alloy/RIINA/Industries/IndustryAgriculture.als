@@ -29,8 +29,8 @@ one sig TraceabilityRecord extends AgricultureEffect {}
 one sig QualityTestResult extends AgricultureEffect {}
 
 abstract sig FoodSafetyHazard {}
-abstract sig farm_min_area {}
-abstract sig trace_timestamp {}
+abstract sig Farm_MinArea_Proof {}
+abstract sig Trace_Timestamp_Proof {}
 
 // FoodSafetyControls (matches Coq: Record FoodSafetyControls)
 sig FoodSafetyControls {
@@ -50,7 +50,7 @@ sig CertifiedFarm {
   farm_organic_certified: one Bool,
   farm_gps_lat: one Int,
   farm_gps_lon: one Int,
-  farm_area_valid: one farm_min_area
+  farm_area_valid: one Farm_MinArea_Proof
 }
 
 // TraceEntry (matches Coq: Record TraceEntry)
@@ -61,7 +61,7 @@ sig TraceEntry {
   trace_processing_plant: one Int,
   trace_timestamp: one Int,
   trace_expiry: one Int,
-  trace_valid_dates: one trace_timestamp
+  trace_valid_dates: one Trace_Timestamp_Proof
 }
 
 // agri_data_sensitivity (matches Coq: Definition agri_data_sensitivity)

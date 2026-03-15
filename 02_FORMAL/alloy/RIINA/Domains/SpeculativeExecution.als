@@ -65,22 +65,22 @@ assert eff_le_trans {
 check eff_le_trans for 5
 
 // 1 (matches Coq: Theorem 1)
-assert 1 {
+assert t1 {
   all x: effect | x in effect
 }
-check 1 for 5
+check t1 for 5
 
 // 2 (matches Coq: Theorem 2)
-assert 2 {
+assert t2 {
   all x: effect | x in effect
 }
-check 2 for 5
+check t2 for 5
 
 // 3 (matches Coq: Theorem 3)
-assert 3 {
+assert t3 {
   all x: effect | x in effect
 }
-check 3 for 5
+check t3 for 5
 
 // spec_safe_no_secret_branch_aux (matches Coq: Lemma spec_safe_no_secret_branch_aux)
 assert spec_safe_no_secret_branch_aux {
@@ -95,10 +95,10 @@ assert spec_safe_implies_no_secret_leakage {
 check spec_safe_implies_no_secret_leakage for 5
 
 // 4 (matches Coq: Theorem 4)
-assert 4 {
+assert t4 {
   all x: effect | x in effect
 }
-check 4 for 5
+check t4 for 5
 
 // effect_preorder_trans (matches Coq: Theorem effect_preorder_trans)
 assert effect_preorder_trans {
@@ -107,28 +107,28 @@ assert effect_preorder_trans {
 check effect_preorder_trans for 5
 
 // 5 (matches Coq: Theorem 5)
-assert 5 {
+assert t5 {
   all x: effect | x in effect
 }
-check 5 for 5
+check t5 for 5
 
 // 6 (matches Coq: Theorem 6)
-assert 6 {
+assert t6 {
   all x: effect | x in effect
 }
-check 6 for 5
+check t6 for 5
 
 // 7 (matches Coq: Theorem 7)
-assert 7 {
+assert t7 {
   all x: effect | x in effect
 }
-check 7 for 5
+check t7 for 5
 
 // 8 (matches Coq: Theorem 8)
-assert 8 {
+assert t8 {
   all x: effect | x in effect
 }
-check 8 for 5
+check t8 for 5
 
 // binop_preserves_ct (matches Coq: Theorem binop_preserves_ct)
 assert binop_preserves_ct {
@@ -143,19 +143,19 @@ assert pure_implies_spec_safe {
 check pure_implies_spec_safe for 5
 
 // 11 (matches Coq: Theorem 11)
-assert 11 {
+assert t11 {
   all x: effect | x in effect
 }
-check 11 for 5
+check t11 for 5
 
 // 12 (matches Coq: Theorem 12)
-assert 12 {
+assert t12 {
   all x: effect | x in effect
 }
-check 12 for 5
+check t12 for 5
 
 // 13 (matches Coq: Theorem 13)
-assert 13 {
+assert t13 {
   all x: effect | x in effect
 }
-check 13 for 5
+check t13 for 5

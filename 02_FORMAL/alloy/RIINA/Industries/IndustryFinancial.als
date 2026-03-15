@@ -15,8 +15,6 @@ one sig AccountNumber extends FinancialData {}
 one sig RoutingNumber extends FinancialData {}
 one sig SSN extends FinancialData {} // Social Security Number
 one sig NPI extends FinancialData {}
-one sig PAN extends FinancialData {}
-one sig CVV extends FinancialData {}
 
 // FinancialEffect (matches Coq: Inductive FinancialEffect)
 abstract sig FinancialEffect {}
