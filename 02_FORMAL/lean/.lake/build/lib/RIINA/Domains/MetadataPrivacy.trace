@@ -1,0 +1,8 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false -Dpp.unicode.fun=true ././././RIINA/Domains/MetadataPrivacy.lean -R ./././. -o ././.lake/build/lib/RIINA/Domains/MetadataPrivacy.olean -i ././.lake/build/lib/RIINA/Domains/MetadataPrivacy.ilean -c ././.lake/build/ir/RIINA/Domains/MetadataPrivacy.c --json",
+   "level": "trace"},
+  {"message":
+   "././././RIINA/Domains/MetadataPrivacy.lean:227:5: unused variable `hpos`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"}],
+ "depHash": "14120700547277048114"}

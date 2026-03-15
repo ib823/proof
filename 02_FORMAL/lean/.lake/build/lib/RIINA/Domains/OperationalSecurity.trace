@@ -1,0 +1,23 @@
+{"log":
+ [{"message":
+   ".> LEAN_PATH=././.lake/build/lib LD_LIBRARY_PATH= /home/codespace/.elan/toolchains/leanprover--lean4---v4.16.0/bin/lean -DautoImplicit=false -Dpp.unicode.fun=true ././././RIINA/Domains/OperationalSecurity.lean -R ./././. -o ././.lake/build/lib/RIINA/Domains/OperationalSecurity.olean -i ././.lake/build/lib/RIINA/Domains/OperationalSecurity.ilean -c ././.lake/build/ir/RIINA/Domains/OperationalSecurity.c --json",
+   "level": "trace"},
+  {"message":
+   "././././RIINA/Domains/OperationalSecurity.lean:201:39: unused variable `coeffs`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Domains/OperationalSecurity.lean:221:41: unused variable `coeffs`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Domains/OperationalSecurity.lean:221:63: unused variable `p`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Domains/OperationalSecurity.lean:225:42: unused variable `coeffs`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Domains/OperationalSecurity.lean:225:64: unused variable `p`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "././././RIINA/Domains/OperationalSecurity.lean:241:77: unused variable `party`\nnote: this linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"}],
+ "depHash": "8649122090990037195"}
