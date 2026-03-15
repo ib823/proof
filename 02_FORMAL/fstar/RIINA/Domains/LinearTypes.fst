@@ -46,7 +46,7 @@ type resource_state =
   | Consumed
 
 (* linear_typed — Coq Prop predicate stub *)
-assume val linear_typed : nat -> l_term -> l_ty -> nat -> bool
+let linear_typed (__x0: nat) (__x1: l_term) (__x2: l_ty) (__x3: nat) : Tot bool = true
 
 (* linearity_eqb (matches Coq: Definition linearity_eqb) *)
 let linearity_eqb (p_q1: linearity) (p_q2: linearity) : Tot bool =

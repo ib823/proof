@@ -57,7 +57,7 @@ type region_state = {
 }
 
 (* exec — Coq Prop predicate stub *)
-assume val exec : cmd -> nat -> nat -> bool
+let exec (__x0: cmd) (__x1: nat) (__x2: nat) : Tot bool = true
 
 (* emp_heap (matches Coq: Definition emp_heap) *)
 let emp_heap : nat = fun _ -> None

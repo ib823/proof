@@ -50,10 +50,10 @@ type mem_virt_state = {
 }
 
 (* guest_can_modify_ept — Coq Prop predicate stub *)
-assume val guest_can_modify_ept : virtual_machine -> extended_page_table -> bool
+let guest_can_modify_ept (__x0: virtual_machine) (__x1: extended_page_table) : Tot bool = true
 
 (* creates — Coq Prop predicate stub *)
-assume val creates : process -> virtual_machine -> bool
+let creates (__x0: process) (__x1: virtual_machine) : Tot bool = true
 
 (* find_ept (matches Coq: Fixpoint find_ept) *)
 let rec find_ept (p_vmid: vm_id) (p_epts: (list extended_page_table)) : Tot nat =

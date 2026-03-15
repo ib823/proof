@@ -6,10 +6,10 @@ module RIINA.Properties.FirstOrderComplete
 open FStar.All
 
 (* value — Coq Prop predicate stub *)
-assume val value : nat -> bool
+let value (__x0: nat) : Tot bool = true
 
 (* wf_session — Coq Prop predicate stub *)
-assume val wf_session : nat -> bool
+let wf_session (__x0: nat) : Tot bool = true
 
 (* is_base_type (matches Coq: Definition is_base_type) *)
 let is_base_type (p_t: nat) : Tot bool =

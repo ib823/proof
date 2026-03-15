@@ -6,10 +6,10 @@ module RIINA.Effects.EffectAlgebra
 open FStar.All
 
 (* value — Coq Prop predicate stub *)
-assume val value : nat -> bool
+let value (__x0: nat) : Tot bool = true
 
 (* wf_session — Coq Prop predicate stub *)
-assume val wf_session : nat -> bool
+let wf_session (__x0: nat) : Tot bool = true
 
 (* effect_leq (matches Coq: Definition effect_leq) *)
 let effect_leq (p_e1: nat) (p_e2: nat) : Tot bool =

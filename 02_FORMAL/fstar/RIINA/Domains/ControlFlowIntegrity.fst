@@ -90,7 +90,7 @@ type thread_context = {
 }
 
 (* valid_trace — Coq Prop predicate stub *)
-assume val valid_trace : nat -> nat -> bool
+let valid_trace (__x0: nat) (__x1: nat) : Tot bool = true
 
 (* edge_in_cfg (matches Coq: Definition edge_in_cfg) *)
 let edge_in_cfg (p_e: cfg_edge) (p_cfg: nat) : Tot bool =

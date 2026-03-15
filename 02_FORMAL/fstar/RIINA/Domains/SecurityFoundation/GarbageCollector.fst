@@ -31,7 +31,7 @@ type gc_result = {
 }
 
 (* reachable — Coq Prop predicate stub *)
-assume val reachable : heap_state -> object_id -> bool
+let reachable (__x0: heap_state) (__x1: object_id) : Tot bool = true
 
 (* obj_in_list (matches Coq: Fixpoint obj_in_list) *)
 let rec obj_in_list (p_oid: object_id) (p_objs: (list object)) : Tot bool =

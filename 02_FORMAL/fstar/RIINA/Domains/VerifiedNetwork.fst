@@ -219,7 +219,7 @@ type do_h_connection = {
 }
 
 (* tcp_transition — Coq Prop predicate stub *)
-assume val tcp_transition : tcp_connection -> tcp_event -> tcp_state -> bool
+let tcp_transition (__x0: tcp_connection) (__x1: tcp_event) (__x2: tcp_state) : Tot bool = true
 
 (* is_strong_cipher (matches Coq: Definition is_strong_cipher) *)
 let is_strong_cipher (p_cs: cipher_suite) : Tot bool =

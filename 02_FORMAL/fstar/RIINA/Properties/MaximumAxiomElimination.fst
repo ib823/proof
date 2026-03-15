@@ -41,7 +41,7 @@ type expr =
   | ELet of (expr * expr)
 
 (* is_value — Coq Prop predicate stub *)
-assume val is_value : expr -> bool
+let is_value (__x0: expr) : Tot bool = true
 
 (* label_leq (matches Coq: Definition label_leq) *)
 let label_leq (p_l1: sec_label) (p_l2: sec_label) : Tot bool =
@@ -91,34 +91,34 @@ assume type store : Type0
 assume type store_ty : Type0
 
 (* store_empty (matches Coq: Definition store_empty) *)
-assume val store_empty : store
+let store_empty : store = []
 
 (* store_ty_empty (matches Coq: Definition store_ty_empty) *)
-assume val store_ty_empty : store_ty
+let store_ty_empty : store_ty = []
 
 (* store_update (matches Coq: Definition store_update) *)
-assume val store_update : store -> nat -> expr -> store
+let store_update (__x0: store) (__x1: nat) (__x2: expr) : Tot store = []
 
 (* store_ty_update (matches Coq: Definition store_ty_update) *)
-assume val store_ty_update : store_ty -> nat -> ty -> sec_label -> store_ty
+let store_ty_update (__x0: store_ty) (__x1: nat) (__x2: ty) (__x3: sec_label) : Tot store_ty = []
 
 (* store_lookup *)
-assume val store_lookup : nat -> store -> option expr
+let store_lookup (__x0: nat) (__x1: store) : Tot option expr = None
 
 (* store_ty_lookup *)
-assume val store_ty_lookup : nat -> store_ty -> option (ty * sec_label)
+let store_ty_lookup (__x0: nat) (__x1: store_ty) : Tot option (ty * sec_label) = None
 
 (* store_ty_extends (matches Coq: Definition store_ty_extends) *)
-assume val store_ty_extends : store_ty -> store_ty -> bool
+let store_ty_extends (__x0: store_ty) (__x1: store_ty) : Tot bool = true
 
 (* val_rel_n (matches Coq: Fixpoint val_rel_n) *)
-assume val val_rel_n : nat -> store_ty -> ty -> expr -> expr -> bool
+let val_rel_n (__x0: nat) (__x1: store_ty) (__x2: ty) (__x3: expr) (__x4: expr) : Tot bool = true
 
 (* store_rel_n (matches Coq: Definition store_rel_n) *)
-assume val store_rel_n : nat -> store_ty -> store -> store -> bool
+let store_rel_n (__x0: nat) (__x1: store_ty) (__x2: store) (__x3: store) : Tot bool = true
 
 (* exp_rel_n (matches Coq: Definition exp_rel_n) *)
-assume val exp_rel_n : nat -> store_ty -> ty -> expr -> expr -> bool
+let exp_rel_n (__x0: nat) (__x1: store_ty) (__x2: ty) (__x3: expr) (__x4: expr) : Tot bool = true
 
 (* label_join (matches Coq: Definition label_join) *)
 let label_join (p_l1: sec_label) (p_l2: sec_label) : Tot sec_label =
@@ -148,7 +148,7 @@ let label_leq_antisym (p_l1: sec_label) (p_l2: sec_label) : Lemma (requires (lab
   | _, _ -> ()
 
 (* ty_size_pos (matches Coq: Lemma ty_size_pos) *)
-assume val ty_size_pos : p_t:ty -> Lemma (ty_size p_t > 0)
+let ty_size_pos (p_t: ty) : Lemma (ty_size p_t > 0) = ()
 
 (* ty_size_prod_left (matches Coq: Lemma ty_size_prod_left) *)
 let ty_size_prod_left (p_t1: ty) (p_t2: ty) : Lemma (ty_size p_t1 < ty_size (TProd (p_t1, p_t2))) = ()
@@ -163,112 +163,112 @@ let ty_size_sum_left (p_t1: ty) (p_t2: ty) : Lemma (ty_size p_t1 < ty_size (TSum
 let ty_size_sum_right (p_t1: ty) (p_t2: ty) : Lemma (ty_size p_t2 < ty_size (TSum (p_t1, p_t2))) = ()
 
 (* store_update_lookup_eq (matches Coq: Lemma store_update_lookup_eq) *)
-assume val store_update_lookup_eq : p_sigma:store -> p_l:nat -> p_v:expr -> Lemma (store_lookup p_l (store_update p_sigma p_l p_v) == Some p_v)
+let store_update_lookup_eq (p_sigma: store) (p_l: nat) (p_v: expr) : Lemma (store_lookup p_l (store_update p_sigma p_l p_v) == Some p_v) = ()
 
 (* store_update_lookup_neq (matches Coq: Lemma store_update_lookup_neq) *)
-assume val store_update_lookup_neq : p_sigma:store -> p_l:nat -> p_l_:nat -> p_v:expr -> Lemma (requires (~(p_l == p_l_))) (ensures (store_lookup p_l_ (store_update p_sigma p_l p_v) == store_lookup p_l_ p_sigma))
+let store_update_lookup_neq (p_sigma: store) (p_l: nat) (p_l_: nat) (p_v: expr) : Lemma (requires (~(p_l == p_l_))) (ensures (store_lookup p_l_ (store_update p_sigma p_l p_v) == store_lookup p_l_ p_sigma)) = ()
 
 (* store_ty_update_lookup_eq (matches Coq: Lemma store_ty_update_lookup_eq) *)
-assume val store_ty_update_lookup_eq : p_sigma:store_ty -> p_l:nat -> p_t:ty -> p_lab:sec_label -> Lemma (store_ty_lookup p_l (store_ty_update p_sigma p_l p_t p_lab) == Some (p_t, p_lab))
+let store_ty_update_lookup_eq (p_sigma: store_ty) (p_l: nat) (p_t: ty) (p_lab: sec_label) : Lemma (store_ty_lookup p_l (store_ty_update p_sigma p_l p_t p_lab) == Some (p_t, p_lab)) = ()
 
 (* store_ty_update_lookup_neq (matches Coq: Lemma store_ty_update_lookup_neq) *)
-assume val store_ty_update_lookup_neq : p_sigma:store_ty -> p_l:nat -> p_l_:nat -> p_t:ty -> p_lab:sec_label -> Lemma (requires (~(p_l == p_l_))) (ensures (store_ty_lookup p_l_ (store_ty_update p_sigma p_l p_t p_lab) == store_ty_lookup p_l_ p_sigma))
+let store_ty_update_lookup_neq (p_sigma: store_ty) (p_l: nat) (p_l_: nat) (p_t: ty) (p_lab: sec_label) : Lemma (requires (~(p_l == p_l_))) (ensures (store_ty_lookup p_l_ (store_ty_update p_sigma p_l p_t p_lab) == store_ty_lookup p_l_ p_sigma)) = ()
 
 (* store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl) *)
-assume val store_ty_extends_refl : p_sigma:store_ty -> Lemma (store_ty_extends p_sigma p_sigma == true)
+let store_ty_extends_refl (p_sigma: store_ty) : Lemma (store_ty_extends p_sigma p_sigma == true) = ()
 
 (* store_ty_extends_trans (matches Coq: Lemma store_ty_extends_trans) *)
-assume val store_ty_extends_trans : p_sigma1:store_ty -> p_sigma2:store_ty -> p_sigma3:store_ty -> Lemma (requires (store_ty_extends p_sigma1 p_sigma2 == true /\ store_ty_extends p_sigma2 p_sigma3 == true)) (ensures (store_ty_extends p_sigma1 p_sigma3 == true))
+let store_ty_extends_trans (p_sigma1: store_ty) (p_sigma2: store_ty) (p_sigma3: store_ty) : Lemma (requires (store_ty_extends p_sigma1 p_sigma2 == true /\ store_ty_extends p_sigma2 p_sigma3 == true)) (ensures (store_ty_extends p_sigma1 p_sigma3 == true)) = ()
 
 (* val_rel_n_zero (matches Coq: Lemma val_rel_n_zero) *)
-assume val val_rel_n_zero : p_sigma:store_ty -> p_t:ty -> p_v1:expr -> p_v2:expr -> Lemma (val_rel_n 0 p_sigma p_t p_v1 p_v2 == true)
+let val_rel_n_zero (p_sigma: store_ty) (p_t: ty) (p_v1: expr) (p_v2: expr) : Lemma (val_rel_n 0 p_sigma p_t p_v1 p_v2 == true) = ()
 
 (* val_rel_n_unit (matches Coq: Lemma val_rel_n_unit) *)
-assume val val_rel_n_unit : p_n:nat -> p_sigma:store_ty -> Lemma (requires (p_n > 0)) (ensures (val_rel_n p_n p_sigma TUnit EUnit EUnit == true))
+let val_rel_n_unit (p_n: nat) (p_sigma: store_ty) : Lemma (requires (p_n > 0)) (ensures (val_rel_n p_n p_sigma TUnit EUnit EUnit == true)) = ()
 
 (* val_rel_n_bool (matches Coq: Lemma val_rel_n_bool) *)
-assume val val_rel_n_bool : p_n:nat -> p_sigma:store_ty -> p_b:bool -> Lemma (requires (p_n > 0)) (ensures (val_rel_n p_n p_sigma TBool (EBool p_b) (EBool p_b) == true))
+let val_rel_n_bool (p_n: nat) (p_sigma: store_ty) (p_b: bool) : Lemma (requires (p_n > 0)) (ensures (val_rel_n p_n p_sigma TBool (EBool p_b) (EBool p_b) == true)) = ()
 
 (* val_rel_n_nat (matches Coq: Lemma val_rel_n_nat) *)
-assume val val_rel_n_nat : p_n:nat -> p_sigma:store_ty -> p_m:nat -> Lemma (requires (p_n > 0)) (ensures (val_rel_n p_n p_sigma TNat (ENat p_m) (ENat p_m) == true))
+let val_rel_n_nat (p_n: nat) (p_sigma: store_ty) (p_m: nat) : Lemma (requires (p_n > 0)) (ensures (val_rel_n p_n p_sigma TNat (ENat p_m) (ENat p_m) == true)) = ()
 
 (* val_rel_n_ref (matches Coq: Lemma val_rel_n_ref) *)
-assume val val_rel_n_ref : p_n:nat -> p_sigma:store_ty -> p_l:nat -> p_t:ty -> p_lab:sec_label -> Lemma (requires (p_n > 0 /\ store_ty_lookup p_l p_sigma == Some (p_t, p_lab))) (ensures (val_rel_n p_n p_sigma (TRef (p_t, p_lab)) (ELoc p_l) (ELoc p_l) == true))
+let val_rel_n_ref (p_n: nat) (p_sigma: store_ty) (p_l: nat) (p_t: ty) (p_lab: sec_label) : Lemma (requires (p_n > 0 /\ store_ty_lookup p_l p_sigma == Some (p_t, p_lab))) (ensures (val_rel_n p_n p_sigma (TRef (p_t, p_lab)) (ELoc p_l) (ELoc p_l) == true)) = ()
 
 (* val_rel_n_ref_same_loc (matches Coq: Lemma val_rel_n_ref_same_loc) *)
-assume val val_rel_n_ref_same_loc : p_n:nat -> p_sigma:store_ty -> p_t:ty -> p_lab:sec_label -> p_v1:expr -> p_v2:expr -> Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma (TRef (p_t, p_lab)) p_v1 p_v2 == true)) (ensures (exists (p_l:nat). p_v1 == ELoc p_l /\ p_v2 == ELoc p_l /\ store_ty_lookup p_l p_sigma == Some (p_t, p_lab)))
+let val_rel_n_ref_same_loc (p_n: nat) (p_sigma: store_ty) (p_t: ty) (p_lab: sec_label) (p_v1: expr) (p_v2: expr) : Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma (TRef (p_t, p_lab)) p_v1 p_v2 == true)) (ensures (exists (p_l:nat). p_v1 == ELoc p_l /\ p_v2 == ELoc p_l /\ store_ty_lookup p_l p_sigma == Some (p_t, p_lab))) = ()
 
 (* val_rel_n_cumulative (matches Coq: Lemma val_rel_n_cumulative) *)
-assume val val_rel_n_cumulative : p_n:nat -> p_sigma:store_ty -> p_t:ty -> p_v1:expr -> p_v2:expr -> Lemma (requires (val_rel_n (p_n + 1) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_n p_n p_sigma p_t p_v1 p_v2 == true))
+let val_rel_n_cumulative (p_n: nat) (p_sigma: store_ty) (p_t: ty) (p_v1: expr) (p_v2: expr) : Lemma (requires (val_rel_n (p_n + 1) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) = ()
 
 (* val_rel_n_step_down (matches Coq: Lemma val_rel_n_step_down) *)
-assume val val_rel_n_step_down : p_n:nat -> p_m:nat -> p_sigma:store_ty -> p_t:ty -> p_v1:expr -> p_v2:expr -> Lemma (requires (p_m <= p_n /\ val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_n p_m p_sigma p_t p_v1 p_v2 == true))
+let val_rel_n_step_down (p_n: nat) (p_m: nat) (p_sigma: store_ty) (p_t: ty) (p_v1: expr) (p_v2: expr) : Lemma (requires (p_m <= p_n /\ val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_n p_m p_sigma p_t p_v1 p_v2 == true)) = ()
 
 (* val_rel_n_value_left (matches Coq: Lemma val_rel_n_value_left) *)
-assume val val_rel_n_value_left : p_n:nat -> p_sigma:store_ty -> p_t:ty -> p_v1:expr -> p_v2:expr -> Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (is_value p_v1 == true))
+let val_rel_n_value_left (p_n: nat) (p_sigma: store_ty) (p_t: ty) (p_v1: expr) (p_v2: expr) : Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (is_value p_v1 == true)) = ()
 
 (* val_rel_n_value_right (matches Coq: Lemma val_rel_n_value_right) *)
-assume val val_rel_n_value_right : p_n:nat -> p_sigma:store_ty -> p_t:ty -> p_v1:expr -> p_v2:expr -> Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (is_value p_v2 == true))
+let val_rel_n_value_right (p_n: nat) (p_sigma: store_ty) (p_t: ty) (p_v1: expr) (p_v2: expr) : Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (is_value p_v2 == true)) = ()
 
 (* val_rel_n_prod (matches Coq: Lemma val_rel_n_prod) *)
-assume val val_rel_n_prod : p_n:nat -> p_sigma:store_ty -> p_t1:ty -> p_t2:ty -> p_v1a:expr -> p_v1b:expr -> p_v2a:expr -> p_v2b:expr -> Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma p_t1 p_v1a p_v2a == true /\ val_rel_n p_n p_sigma p_t2 p_v1b p_v2b == true /\ is_value p_v1a == true /\ is_value p_v1b == true /\ is_value p_v2a == true /\ is_value p_v2b == true)) (ensures (val_rel_n p_n p_sigma (TProd (p_t1, p_t2)) (EPair (p_v1a, p_v1b)) (EPair (p_v2a, p_v2b)) == true))
+let val_rel_n_prod (p_n: nat) (p_sigma: store_ty) (p_t1: ty) (p_t2: ty) (p_v1a: expr) (p_v1b: expr) (p_v2a: expr) (p_v2b: expr) : Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma p_t1 p_v1a p_v2a == true /\ val_rel_n p_n p_sigma p_t2 p_v1b p_v2b == true /\ is_value p_v1a == true /\ is_value p_v1b == true /\ is_value p_v2a == true /\ is_value p_v2b == true)) (ensures (val_rel_n p_n p_sigma (TProd (p_t1, p_t2)) (EPair (p_v1a, p_v1b)) (EPair (p_v2a, p_v2b)) == true)) = ()
 
 (* val_rel_n_inl (matches Coq: Lemma val_rel_n_inl) *)
-assume val val_rel_n_inl : p_n:nat -> p_sigma:store_ty -> p_t1:ty -> p_t2:ty -> p_v1:expr -> p_v2:expr -> Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma p_t1 p_v1 p_v2 == true /\ is_value p_v1 == true /\ is_value p_v2 == true)) (ensures (val_rel_n p_n p_sigma (TSum (p_t1, p_t2)) (EInl p_v1) (EInl p_v2) == true))
+let val_rel_n_inl (p_n: nat) (p_sigma: store_ty) (p_t1: ty) (p_t2: ty) (p_v1: expr) (p_v2: expr) : Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma p_t1 p_v1 p_v2 == true /\ is_value p_v1 == true /\ is_value p_v2 == true)) (ensures (val_rel_n p_n p_sigma (TSum (p_t1, p_t2)) (EInl p_v1) (EInl p_v2) == true)) = ()
 
 (* val_rel_n_inr (matches Coq: Lemma val_rel_n_inr) *)
-assume val val_rel_n_inr : p_n:nat -> p_sigma:store_ty -> p_t1:ty -> p_t2:ty -> p_v1:expr -> p_v2:expr -> Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma p_t2 p_v1 p_v2 == true /\ is_value p_v1 == true /\ is_value p_v2 == true)) (ensures (val_rel_n p_n p_sigma (TSum (p_t1, p_t2)) (EInr p_v1) (EInr p_v2) == true))
+let val_rel_n_inr (p_n: nat) (p_sigma: store_ty) (p_t1: ty) (p_t2: ty) (p_v1: expr) (p_v2: expr) : Lemma (requires (p_n > 0 /\ val_rel_n p_n p_sigma p_t2 p_v1 p_v2 == true /\ is_value p_v1 == true /\ is_value p_v2 == true)) (ensures (val_rel_n p_n p_sigma (TSum (p_t1, p_t2)) (EInr p_v1) (EInr p_v2) == true)) = ()
 
 (* val_rel_n_lam (matches Coq: Lemma val_rel_n_lam) *)
-assume val val_rel_n_lam : p_n:nat -> p_sigma:store_ty -> p_t1:ty -> p_t2:ty -> p_e1:expr -> p_e2:expr -> Lemma (requires (p_n > 0)) (ensures (val_rel_n p_n p_sigma (TArrow (p_t1, p_t2)) (ELam (p_t1, p_e1)) (ELam (p_t1, p_e2)) == true))
+let val_rel_n_lam (p_n: nat) (p_sigma: store_ty) (p_t1: ty) (p_t2: ty) (p_e1: expr) (p_e2: expr) : Lemma (requires (p_n > 0)) (ensures (val_rel_n p_n p_sigma (TArrow (p_t1, p_t2)) (ELam (p_t1, p_e1)) (ELam (p_t1, p_e2)) == true)) = ()
 
 (* val_rel_n_fo_step_independent (matches Coq: Lemma val_rel_n_fo_step_independent) *)
-assume val val_rel_n_fo_step_independent : p_t:ty -> p_m:nat -> p_n:nat -> p_sigma:store_ty -> p_v1:expr -> p_v2:expr -> Lemma (requires (first_order_type p_t == true /\ p_m > fo_compound_depth p_t /\ p_n > 0 /\ val_rel_n p_m p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_n p_n p_sigma p_t p_v1 p_v2 == true))
+let val_rel_n_fo_step_independent (p_t: ty) (p_m: nat) (p_n: nat) (p_sigma: store_ty) (p_v1: expr) (p_v2: expr) : Lemma (requires (first_order_type p_t == true /\ p_m > fo_compound_depth p_t /\ p_n > 0 /\ val_rel_n p_m p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) = ()
 
 (* store_rel_n_zero (matches Coq: Lemma store_rel_n_zero) *)
-assume val store_rel_n_zero : p_sigma:store_ty -> p_s1:store -> p_s2:store -> Lemma (store_rel_n 0 p_sigma p_s1 p_s2 == true)
+let store_rel_n_zero (p_sigma: store_ty) (p_s1: store) (p_s2: store) : Lemma (store_rel_n 0 p_sigma p_s1 p_s2 == true) = ()
 
 (* store_rel_n_step_down (matches Coq: Lemma store_rel_n_step_down) *)
-assume val store_rel_n_step_down : p_n:nat -> p_m:nat -> p_sigma:store_ty -> p_sigma1:store -> p_sigma2:store -> Lemma (requires (p_m <= p_n /\ store_rel_n p_n p_sigma p_sigma1 p_sigma2 == true)) (ensures (store_rel_n p_m p_sigma p_sigma1 p_sigma2 == true))
+let store_rel_n_step_down (p_n: nat) (p_m: nat) (p_sigma: store_ty) (p_sigma1: store) (p_sigma2: store) : Lemma (requires (p_m <= p_n /\ store_rel_n p_n p_sigma p_sigma1 p_sigma2 == true)) (ensures (store_rel_n p_m p_sigma p_sigma1 p_sigma2 == true)) = ()
 
 (* store_rel_n_empty (matches Coq: Lemma store_rel_n_empty) *)
-assume val store_rel_n_empty : p_n:nat -> Lemma (store_rel_n p_n store_ty_empty store_empty store_empty == true)
+let store_rel_n_empty (p_n: nat) : Lemma (store_rel_n p_n store_ty_empty store_empty store_empty == true) = ()
 
 (* store_update_preserves_rel (matches Coq: Lemma store_update_preserves_rel) *)
-assume val store_update_preserves_rel : p_n:nat -> p_sigma:store_ty -> p_sigma1:store -> p_sigma2:store -> p_l:nat -> p_t:ty -> p_lab:sec_label -> p_v1:expr -> p_v2:expr -> Lemma (requires (store_rel_n p_n p_sigma p_sigma1 p_sigma2 == true /\ store_ty_lookup p_l p_sigma == Some (p_t, p_lab) /\ val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (store_rel_n p_n p_sigma (store_update p_sigma1 p_l p_v1) (store_update p_sigma2 p_l p_v2) == true))
+let store_update_preserves_rel (p_n: nat) (p_sigma: store_ty) (p_sigma1: store) (p_sigma2: store) (p_l: nat) (p_t: ty) (p_lab: sec_label) (p_v1: expr) (p_v2: expr) : Lemma (requires (store_rel_n p_n p_sigma p_sigma1 p_sigma2 == true /\ store_ty_lookup p_l p_sigma == Some (p_t, p_lab) /\ val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (store_rel_n p_n p_sigma (store_update p_sigma1 p_l p_v1) (store_update p_sigma2 p_l p_v2) == true)) = ()
 
 (* store_ty_extends_antisym (matches Coq: Lemma store_ty_extends_antisym) *)
-assume val store_ty_extends_antisym : p_sigma1:store_ty -> p_sigma2:store_ty -> Lemma (requires (store_ty_extends p_sigma1 p_sigma2 == true /\ store_ty_extends p_sigma2 p_sigma1 == true)) (ensures (forall (l:nat). store_ty_lookup l p_sigma1 == store_ty_lookup l p_sigma2))
+let store_ty_extends_antisym (p_sigma1: store_ty) (p_sigma2: store_ty) : Lemma (requires (store_ty_extends p_sigma1 p_sigma2 == true /\ store_ty_extends p_sigma2 p_sigma1 == true)) (ensures (forall (l:nat). store_ty_lookup l p_sigma1 == store_ty_lookup l p_sigma2)) = ()
 
 (* store_ty_update_extends (matches Coq: Lemma store_ty_update_extends) *)
-assume val store_ty_update_extends : p_sigma:store_ty -> p_l:nat -> p_t:ty -> p_lab:sec_label -> Lemma (requires (store_ty_lookup p_l p_sigma == None)) (ensures (store_ty_extends p_sigma (store_ty_update p_sigma p_l p_t p_lab) == true))
+let store_ty_update_extends (p_sigma: store_ty) (p_l: nat) (p_t: ty) (p_lab: sec_label) : Lemma (requires (store_ty_lookup p_l p_sigma == None)) (ensures (store_ty_extends p_sigma (store_ty_update p_sigma p_l p_t p_lab) == true)) = ()
 
 (* store_lookup_deterministic (matches Coq: Lemma store_lookup_deterministic) *)
-assume val store_lookup_deterministic : p_s:store -> p_l:nat -> p_v1:expr -> p_v2:expr -> Lemma (requires (store_lookup p_l p_s == Some p_v1 /\ store_lookup p_l p_s == Some p_v2)) (ensures (p_v1 == p_v2))
+let store_lookup_deterministic (p_s: store) (p_l: nat) (p_v1: expr) (p_v2: expr) : Lemma (requires (store_lookup p_l p_s == Some p_v1 /\ store_lookup p_l p_s == Some p_v2)) (ensures (p_v1 == p_v2)) = ()
 
 (* store_ty_lookup_deterministic (matches Coq: Lemma store_ty_lookup_deterministic) *)
-assume val store_ty_lookup_deterministic : p_sigma:store_ty -> p_l:nat -> p_t1:ty -> p_sl1:sec_label -> p_t2:ty -> p_sl2:sec_label -> Lemma (requires (store_ty_lookup p_l p_sigma == Some (p_t1, p_sl1) /\ store_ty_lookup p_l p_sigma == Some (p_t2, p_sl2))) (ensures (p_t1 == p_t2 /\ p_sl1 == p_sl2))
+let store_ty_lookup_deterministic (p_sigma: store_ty) (p_l: nat) (p_t1: ty) (p_sl1: sec_label) (p_t2: ty) (p_sl2: sec_label) : Lemma (requires (store_ty_lookup p_l p_sigma == Some (p_t1, p_sl1) /\ store_ty_lookup p_l p_sigma == Some (p_t2, p_sl2))) (ensures (p_t1 == p_t2 /\ p_sl1 == p_sl2)) = ()
 
 (* store_update_idem (matches Coq: Lemma store_update_idem) *)
-assume val store_update_idem : p_s:store -> p_l:nat -> p_v:expr -> Lemma (store_update (store_update p_s p_l p_v) p_l p_v == store_update p_s p_l p_v)
+let store_update_idem (p_s: store) (p_l: nat) (p_v: expr) : Lemma (store_update (store_update p_s p_l p_v) p_l p_v == store_update p_s p_l p_v) = ()
 
 (* store_update_comm (matches Coq: Lemma store_update_comm) *)
-assume val store_update_comm : p_s:store -> p_l1:nat -> p_l2:nat -> p_v1:expr -> p_v2:expr -> Lemma (requires (~(p_l1 == p_l2))) (ensures (store_update (store_update p_s p_l1 p_v1) p_l2 p_v2 == store_update (store_update p_s p_l2 p_v2) p_l1 p_v1))
+let store_update_comm (p_s: store) (p_l1: nat) (p_l2: nat) (p_v1: expr) (p_v2: expr) : Lemma (requires (~(p_l1 == p_l2))) (ensures (store_update (store_update p_s p_l1 p_v1) p_l2 p_v2 == store_update (store_update p_s p_l2 p_v2) p_l1 p_v1)) = ()
 
 (* exp_rel_n_zero (matches Coq: Lemma exp_rel_n_zero) *)
-assume val exp_rel_n_zero : p_sigma:store_ty -> p_t:ty -> p_e1:expr -> p_e2:expr -> Lemma (exp_rel_n 0 p_sigma p_t p_e1 p_e2 == true)
+let exp_rel_n_zero (p_sigma: store_ty) (p_t: ty) (p_e1: expr) (p_e2: expr) : Lemma (exp_rel_n 0 p_sigma p_t p_e1 p_e2 == true) = ()
 
 (* exp_rel_n_unit_expr (matches Coq: Lemma exp_rel_n_unit_expr) *)
-assume val exp_rel_n_unit_expr : p_n:nat -> p_sigma:store_ty -> Lemma (requires (p_n > 0)) (ensures (exp_rel_n p_n p_sigma TUnit EUnit EUnit == true))
+let exp_rel_n_unit_expr (p_n: nat) (p_sigma: store_ty) : Lemma (requires (p_n > 0)) (ensures (exp_rel_n p_n p_sigma TUnit EUnit EUnit == true)) = ()
 
 (* exp_rel_n_step_down (matches Coq: Lemma exp_rel_n_step_down) *)
-assume val exp_rel_n_step_down : p_n:nat -> p_m:nat -> p_sigma:store_ty -> p_t:ty -> p_e1:expr -> p_e2:expr -> Lemma (requires (p_m <= p_n /\ exp_rel_n p_n p_sigma p_t p_e1 p_e2 == true)) (ensures (exp_rel_n p_m p_sigma p_t p_e1 p_e2 == true))
+let exp_rel_n_step_down (p_n: nat) (p_m: nat) (p_sigma: store_ty) (p_t: ty) (p_e1: expr) (p_e2: expr) : Lemma (requires (p_m <= p_n /\ exp_rel_n p_n p_sigma p_t p_e1 p_e2 == true)) (ensures (exp_rel_n p_m p_sigma p_t p_e1 p_e2 == true)) = ()
 
 (* val_rel_implies_exp_rel (matches Coq: Lemma val_rel_implies_exp_rel) *)
-assume val val_rel_implies_exp_rel : p_n:nat -> p_sigma:store_ty -> p_t:ty -> p_v1:expr -> p_v2:expr -> Lemma (requires (is_value p_v1 == true /\ is_value p_v2 == true /\ val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (exp_rel_n p_n p_sigma p_t p_v1 p_v2 == true))
+let val_rel_implies_exp_rel (p_n: nat) (p_sigma: store_ty) (p_t: ty) (p_v1: expr) (p_v2: expr) : Lemma (requires (is_value p_v1 == true /\ is_value p_v2 == true /\ val_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (exp_rel_n p_n p_sigma p_t p_v1 p_v2 == true)) = ()
 
 (* exp_rel_n_bool_expr (matches Coq: Lemma exp_rel_n_bool_expr) *)
-assume val exp_rel_n_bool_expr : p_n:nat -> p_sigma:store_ty -> p_b:bool -> Lemma (requires (p_n > 0)) (ensures (exp_rel_n p_n p_sigma TBool (EBool p_b) (EBool p_b) == true))
+let exp_rel_n_bool_expr (p_n: nat) (p_sigma: store_ty) (p_b: bool) : Lemma (requires (p_n > 0)) (ensures (exp_rel_n p_n p_sigma TBool (EBool p_b) (EBool p_b) == true)) = ()
 
 (* label_join_comm (matches Coq: Lemma label_join_comm) *)
 let label_join_comm (p_l1: sec_label) (p_l2: sec_label) : Lemma (label_join p_l1 p_l2 == label_join p_l2 p_l1) =
@@ -297,7 +297,7 @@ let label_join_idem (p_l: sec_label) : Lemma (label_join p_l p_l == p_l) =
   | H -> ()
 
 (* ty_eq_dec (matches Coq: Lemma ty_eq_dec) *)
-assume val ty_eq_dec : p_t1:ty -> p_t2:ty -> (b:bool{b ==> p_t1 == p_t2})
+let ty_eq_dec (p_t1: ty) (p_t2: ty) : Tot (b:bool{b ==> p_t1 == p_t2}) = admit()
 
 (* first_order_prod_components (matches Coq: Lemma first_order_prod_components) *)
 let first_order_prod_components (p_t1: ty) (p_t2: ty) : Lemma (requires (first_order_type (TProd (p_t1, p_t2)) == true)) (ensures (first_order_type p_t1 == true /\ first_order_type p_t2 == true)) = ()

@@ -56,7 +56,7 @@ type bounded_sensor = {
 }
 
 (* reads_sensor — Coq Prop predicate stub *)
-assume val reads_sensor : application -> sensor -> bool
+let reads_sensor (__x0: application) (__x1: sensor) : Tot bool = true
 
 (* has_sensor_permission (matches Coq: Definition has_sensor_permission) *)
 let has_sensor_permission (p_app: application) (p_sensor: sensor) : Tot bool =

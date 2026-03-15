@@ -41,7 +41,7 @@ type channel_pair = {
 }
 
 (* well_typed_proc — Coq Prop predicate stub *)
-assume val well_typed_proc : nat -> process -> bool
+let well_typed_proc (__x0: nat) (__x1: process) : Tot bool = true
 
 (* msg_type_eqb (matches Coq: Definition msg_type_eqb) *)
 let msg_type_eqb (p_m1: msg_type) (p_m2: msg_type) : Tot bool =

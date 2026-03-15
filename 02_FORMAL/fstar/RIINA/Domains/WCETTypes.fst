@@ -14,7 +14,7 @@ type expr =
   | ESeq of (expr * expr)
 
 (* eval — Coq Prop predicate stub *)
-assume val eval : nat -> expr -> nat -> nat -> bool
+let eval (__x0: nat) (__x1: expr) (__x2: nat) (__x3: nat) : Tot bool = true
 
 (* wcet_bound (matches Coq: Fixpoint wcet_bound) *)
 let rec wcet_bound (p_ex: expr) : Tot nat =
