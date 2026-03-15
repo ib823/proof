@@ -82,15 +82,15 @@ record sql_security_config =
 
 (* taint_safe (matches Coq: Definition taint_safe) *)
 fun taint_safe :: "TaintLevel \<Rightarrow> bool" where
-  "taint_safe Untainted = true"
-|   "taint_safe Sanitized = true"
-|   "taint_safe UserInput = false"
+  "taint_safe Untainted = True"
+|   "taint_safe Sanitized = True"
+|   "taint_safe UserInput = False"
 
 (* method_safe (matches Coq: Definition method_safe) *)
 fun method_safe :: "QueryMethod \<Rightarrow> bool" where
-  "method_safe StringConcat = false"
-|   "method_safe Parameterized = true"
-|   "method_safe ORM = true"
+  "method_safe StringConcat = False"
+|   "method_safe Parameterized = True"
+|   "method_safe ORM = True"
 
 (* sql_injection_protected (matches Coq: Definition sql_injection_protected) *)
 definition sql_injection_protected :: "SQLSecurityConfig \<Rightarrow> bool" where

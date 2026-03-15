@@ -108,8 +108,8 @@ fun privilege_strength :: "PrivilegeType \<Rightarrow> nat" where
 
 (* privilege_effective (matches Coq: Definition privilege_effective) *)
 fun privilege_effective :: "PrivilegeType \<Rightarrow> bool" where
-  "privilege_effective Qualified = true"
-|   "privilege_effective Waived = false"
+  "privilege_effective Qualified = True"
+|   "privilege_effective Waived = False"
 
 (* all_legal_controls (matches Coq: Definition all_legal_controls) *)
 definition all_legal_controls :: "LegalSecurityControls \<Rightarrow> bool" where
@@ -137,7 +137,7 @@ fun legal_retention_years :: "LegalData \<Rightarrow> nat" where
 
 (* no_conflict (matches Coq: Definition no_conflict) *)
 definition no_conflict :: "bool" where
-  "no_conflict \<equiv> (\<not> (Nat.eqb) party1 party2)"
+  "no_conflict \<equiv> (\<not> (=) party1 party2)"
 
 (* trust_balanced (matches Coq: Definition trust_balanced) *)
 definition trust_balanced :: "bool" where
@@ -184,7 +184,7 @@ lemma privilege_requires_encryption: "\<forall>(controls :: legal_security_contr
 
 (* Ethical walls prevent conflicts *)
 (* ethical_walls_effective (matches Coq) *)
-lemma ethical_walls_effective: "\<forall>(controls :: legal_security_controls) (matter1 :: nat) (matter2 : nat). ethical_walls controls = True \<longrightarrow> True"
+lemma ethical_walls_effective: "\<forall>(controls :: legal_security_controls) (matter1 :: nat) (matter2 :: nat). ethical_walls controls = True \<longrightarrow> True"
   by simp
 
 (* privilege_max_sensitivity (matches Coq) *)

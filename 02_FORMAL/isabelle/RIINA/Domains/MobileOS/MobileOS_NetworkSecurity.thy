@@ -283,11 +283,11 @@ lemma ddos_mitigation_active: "\<forall>(rl :: rate_limiter). rate_limit_enforce
   by simp
 
 (* man_in_middle_detected (matches Coq) *)
-lemma man_in_middle_detected: "\<forall>(p1 p2 : packet). pkt_src_ip p1 = pkt_src_ip p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2 \<longrightarrow> mitm_detected p1 p2"
+lemma man_in_middle_detected: "\<forall>(p1 :: packet) (p2 :: packet). pkt_src_ip p1 = pkt_src_ip p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2 \<longrightarrow> mitm_detected p1 p2"
   by auto
 
 (* replay_attack_prevented (matches Coq) *)
-lemma replay_attack_prevented: "\<forall>(p1 p2 : packet). replay_prevented p1 p2 \<longrightarrow> pkt_sequence p1 = pkt_sequence p2 \<longrightarrow> pkt_timestamp p1 = pkt_timestamp p2 \<longrightarrow> pkt_id p1 = pkt_id p2"
+lemma replay_attack_prevented: "\<forall>(p1 :: packet) (p2 :: packet). replay_prevented p1 p2 \<longrightarrow> pkt_sequence p1 = pkt_sequence p2 \<longrightarrow> pkt_timestamp p1 = pkt_timestamp p2 \<longrightarrow> pkt_id p1 = pkt_id p2"
   by auto
 
 (* session_hijacking_prevented (matches Coq) *)
@@ -299,11 +299,11 @@ lemma ssl_stripping_prevented_thm: "\<forall>(cfg :: ssl_config). ssl_stripping_
   by auto
 
 (* dns_poisoning_detected_thm (matches Coq) *)
-lemma dns_poisoning_detected_thm: "\<forall>(q1 q2 : connection_negotiation). neg_selected_version q1 \<noteq> neg_selected_version q2 \<longrightarrow> dns_poisoning_detected q1 q2"
+lemma dns_poisoning_detected_thm: "\<forall>(q1 :: connection_negotiation) (q2 :: connection_negotiation). neg_selected_version q1 \<noteq> neg_selected_version q2 \<longrightarrow> dns_poisoning_detected q1 q2"
   by auto
 
 (* arp_spoofing_detected (matches Coq) *)
-lemma arp_spoofing_detected: "\<forall>(p1 p2 : packet). pkt_src_ip p1 = pkt_src_ip p2 \<longrightarrow> pkt_id p1 \<noteq> pkt_id p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2"
+lemma arp_spoofing_detected: "\<forall>(p1 :: packet) (p2 :: packet). pkt_src_ip p1 = pkt_src_ip p2 \<longrightarrow> pkt_id p1 \<noteq> pkt_id p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2 \<longrightarrow> pkt_payload_hash p1 \<noteq> pkt_payload_hash p2"
   by auto
 
 (* port_scanning_limited (matches Coq) *)

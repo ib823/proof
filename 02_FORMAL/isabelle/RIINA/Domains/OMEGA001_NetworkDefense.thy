@@ -260,7 +260,7 @@ lemma OMEGA_002_06_empty_cap_permits_nothing: "\<forall>port. cap_permits {| cap
   by simp
 
 (* OMEGA_002_07_cap_permits_sound (matches Coq) *)
-lemma OMEGA_002_07_cap_permits_sound: "\<forall>cap port. cap_permits cap port = True \<longrightarrow> In port (cap_permissions cap) \<or> \<exists>p. In p (cap_permissions cap) \<and> (port = p) = True"
+lemma OMEGA_002_07_cap_permits_sound: "\<forall>cap port. cap_permits cap port = True \<longrightarrow> port \<in> set (cap_permissions cap) \<or> \<exists>p. p \<in> set (cap_permissions cap) \<and> (port = p) = True"
   by auto
 
 (* ===============================================================================

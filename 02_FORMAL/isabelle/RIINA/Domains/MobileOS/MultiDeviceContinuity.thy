@@ -295,15 +295,15 @@ definition session_within_timeout :: "ContinuitySession \<Rightarrow> bool" wher
   "session_within_timeout cs \<equiv> cs_active cs = True -> cs_elapsed_seconds cs <= cs_timeout_seconds cs"
 
 (* cross_device_handoff_complete (matches Coq) *)
-lemma cross_device_handoff_complete: "\<forall>(app :: application) (device1 device2 : device). handoff app device1 device2 \<longrightarrow> state app device2 = state app device1"
+lemma cross_device_handoff_complete: "\<forall>(app :: application) (device1 :: device) (device2 :: device). handoff app device1 device2 \<longrightarrow> state app device2 = state app device1"
   by simp
 
 (* handoff_requires_auth (matches Coq) *)
-lemma handoff_requires_auth: "\<forall>(app :: application) (d1 d2 : device). handoff app d1 d2 \<longrightarrow> dev_authenticated d1 = True \<and> dev_authenticated d2 = True"
+lemma handoff_requires_auth: "\<forall>(app :: application) (d1 :: device) (d2 :: device). handoff app d1 d2 \<longrightarrow> dev_authenticated d1 = True \<and> dev_authenticated d2 = True"
   by auto
 
 (* handoff_requires_pairing (matches Coq) *)
-lemma handoff_requires_pairing: "\<forall>(app :: application) (d1 d2 : device). handoff app d1 d2 \<longrightarrow> dev_paired d1 = True \<and> dev_paired d2 = True"
+lemma handoff_requires_pairing: "\<forall>(app :: application) (d1 :: device) (d2 :: device). handoff app d1 d2 \<longrightarrow> dev_paired d1 = True \<and> dev_paired d2 = True"
   by auto
 
 (* complete_handoff_encrypted (matches Coq) *)
@@ -311,7 +311,7 @@ lemma complete_handoff_encrypted: "\<forall>(h :: handoff). complete_handoff h \
   by auto
 
 (* only_enabled_apps_handoff (matches Coq) *)
-lemma only_enabled_apps_handoff: "\<forall>(app :: application) (d1 d2 : device). handoff app d1 d2 \<longrightarrow> app_supports_handoff app = True"
+lemma only_enabled_apps_handoff: "\<forall>(app :: application) (d1 :: device) (d2 :: device). handoff app d1 d2 \<longrightarrow> app_supports_handoff app = True"
   by auto
 
 (* handoff_data_encrypted_thm (matches Coq) *)

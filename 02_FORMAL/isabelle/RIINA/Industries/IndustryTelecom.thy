@@ -124,8 +124,8 @@ fun domain_criticality :: "TelecomDomain \<Rightarrow> nat" where
 
 (* is_auth_function (matches Coq: Definition is_auth_function) *)
 fun is_auth_function :: "NetworkFunction \<Rightarrow> bool" where
-  "is_auth_function AUSF = true"
-|   "is_auth_function _ = false"
+  "is_auth_function AUSF = True"
+|   "is_auth_function _ = False"
 
 (* security_5g_all (matches Coq: Definition security_5g_all) *)
 definition security_5g_all :: "Security_5G \<Rightarrow> bool" where
@@ -135,7 +135,7 @@ definition security_5g_all :: "Security_5G \<Rightarrow> bool" where
 
 (* slices_isolated (matches Coq: Definition slices_isolated) *)
 definition slices_isolated :: "bool" where
-  "slices_isolated \<equiv> (\<not> (Nat.eqb) (slice_id s1) (slice_id s2)) \<and>
+  "slices_isolated \<equiv> (\<not> (=) (slice_id s1) (slice_id s2)) \<and>
   slice_isolated s1 \<and> slice_isolated s2"
 
 (* latency_acceptable (matches Coq: Definition latency_acceptable) *)
@@ -145,7 +145,7 @@ definition latency_acceptable :: "NetworkSlice \<Rightarrow> nat \<Rightarrow> b
 (* supi_concealed (matches Coq: Definition supi_concealed) *)
 fun supi_concealed :: "bool \<Rightarrow> telecom_domain \<Rightarrow> bool" where
   "supi_concealed RAN = encrypted"
-|   "supi_concealed _ = true"
+|   "supi_concealed _ = True"
 
 (* key_derivation_depth (matches Coq: Definition key_derivation_depth) *)
 fun key_derivation_depth :: "TelecomDomain \<Rightarrow> nat" where

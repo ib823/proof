@@ -212,19 +212,19 @@ lemma jam_006_channel_diversity: "\<forall>(pattern :: hopping_pattern) (min_cha
   by auto
 
 (* jam_007_detection_threshold (matches Coq) *)
-lemma jam_007_detection_threshold: "\<forall>(snr threshold : nat). snr < threshold / 2 \<longrightarrow> detect_jamming snr threshold = ConfirmedJamming"
+lemma jam_007_detection_threshold: "\<forall>(snr :: nat) (threshold :: nat). snr < threshold / 2 \<longrightarrow> detect_jamming snr threshold = ConfirmedJamming"
   by simp
 
 (* jam_008_no_false_positive (matches Coq) *)
-lemma jam_008_no_false_positive: "\<forall>(snr threshold : nat). snr \<ge> threshold \<longrightarrow> detect_jamming snr threshold = NoJamming"
+lemma jam_008_no_false_positive: "\<forall>(snr :: nat) (threshold :: nat). snr \<ge> threshold \<longrightarrow> detect_jamming snr threshold = NoJamming"
   by auto
 
 (* jam_009_adaptation_improves (matches Coq) *)
-lemma jam_009_adaptation_improves: "\<forall>(before after : nat) (action :: adapt_action). adaptation_applied before after action \<longrightarrow> after \<ge> before"
+lemma jam_009_adaptation_improves: "\<forall>(before :: nat) (after :: nat) (action :: adapt_action). adaptation_applied before after action \<longrightarrow> after \<ge> before"
   by auto
 
 (* jam_010_power_bounded (matches Coq) *)
-lemma jam_010_power_bounded: "\<forall>(current max_power : nat). power_increase_bounded current max_power = True \<longrightarrow> current \<le> max_power"
+lemma jam_010_power_bounded: "\<forall>(current :: nat) (max_power :: nat). power_increase_bounded current max_power = True \<longrightarrow> current \<le> max_power"
   by auto
 
 (* jam_011_avoids_jammed (matches Coq) *)
@@ -232,23 +232,23 @@ lemma jam_011_avoids_jammed: "\<forall>(channel :: nat) (jammed_channels : list 
   by auto
 
 (* jam_012_rate_minimum (matches Coq) *)
-lemma jam_012_rate_minimum: "\<forall>(current min_rate : nat). rate_above_minimum current min_rate = True \<longrightarrow> min_rate \<le> current"
+lemma jam_012_rate_minimum: "\<forall>(current :: nat) (min_rate :: nat). rate_above_minimum current min_rate = True \<longrightarrow> min_rate \<le> current"
   by auto
 
 (* jam_013_fec_gain (matches Coq) *)
-lemma jam_013_fec_gain: "\<forall>(redundancy min_gain : nat). fec_gain_sufficient redundancy min_gain = True \<longrightarrow> min_gain \<le> redundancy"
+lemma jam_013_fec_gain: "\<forall>(redundancy :: nat) (min_gain :: nat). fec_gain_sufficient redundancy min_gain = True \<longrightarrow> min_gain \<le> redundancy"
   by auto
 
 (* jam_014_switch_latency (matches Coq) *)
-lemma jam_014_switch_latency: "\<forall>(latency max_latency : nat). switch_latency_ok latency max_latency = True \<longrightarrow> latency \<le> max_latency"
+lemma jam_014_switch_latency: "\<forall>(latency :: nat) (max_latency :: nat). switch_latency_ok latency max_latency = True \<longrightarrow> latency \<le> max_latency"
   by auto
 
 (* jam_015_synchronized (matches Coq) *)
-lemma jam_015_synchronized: "\<forall>(sender receiver : nat). hops_synchronized sender receiver = True \<longrightarrow> sender = receiver"
+lemma jam_015_synchronized: "\<forall>(sender :: nat) (receiver :: nat). hops_synchronized sender receiver = True \<longrightarrow> sender = receiver"
   by auto
 
 (* jam_016_key_required (matches Coq) *)
-lemma jam_016_key_required: "\<forall>(provided expected : nat). key_valid provided expected = True \<longrightarrow> provided = expected"
+lemma jam_016_key_required: "\<forall>(provided :: nat) (expected :: nat). key_valid provided expected = True \<longrightarrow> provided = expected"
   by auto
 
 (* jam_017_sweep_detected (matches Coq) *)
@@ -256,19 +256,19 @@ lemma jam_017_sweep_detected: "\<forall>(affected : list nat) (threshold :: nat)
   by auto
 
 (* jam_018_reactive_mitigation (matches Coq) *)
-lemma jam_018_reactive_mitigation: "\<forall>(silence min_silence : nat). silence_period_ok silence min_silence = True \<longrightarrow> min_silence \<le> silence"
+lemma jam_018_reactive_mitigation: "\<forall>(silence :: nat) (min_silence :: nat). silence_period_ok silence min_silence = True \<longrightarrow> min_silence \<le> silence"
   by auto
 
 (* jam_019_adaptation_speed (matches Coq) *)
-lemma jam_019_adaptation_speed: "\<forall>(adapt_time max_time : nat). adaptation_fast_enough adapt_time max_time = True \<longrightarrow> adapt_time \<le> max_time"
+lemma jam_019_adaptation_speed: "\<forall>(adapt_time :: nat) (max_time :: nat). adaptation_fast_enough adapt_time max_time = True \<longrightarrow> adapt_time \<le> max_time"
   by auto
 
 (* jam_020_quality_acceptable (matches Coq) *)
-lemma jam_020_quality_acceptable: "\<forall>(snr min_snr : nat). quality_acceptable snr min_snr = True \<longrightarrow> min_snr \<le> snr"
+lemma jam_020_quality_acceptable: "\<forall>(snr :: nat) (min_snr :: nat). quality_acceptable snr min_snr = True \<longrightarrow> min_snr \<le> snr"
   by auto
 
 (* jam_021_graceful_degradation (matches Coq) *)
-lemma jam_021_graceful_degradation: "\<forall>(service_level min_level : nat). degradation_graceful service_level min_level = True \<longrightarrow> min_level \<le> service_level"
+lemma jam_021_graceful_degradation: "\<forall>(service_level :: nat) (min_level :: nat). degradation_graceful service_level min_level = True \<longrightarrow> min_level \<le> service_level"
   by auto
 
 (* jam_022_fallback_available (matches Coq) *)
@@ -280,7 +280,7 @@ lemma jam_023_interference_localized: "\<forall>(sources : list nat). interferen
   by auto
 
 (* jam_024_redundant_paths (matches Coq) *)
-lemma jam_024_redundant_paths: "\<forall>(paths min_paths : nat). paths_redundant paths min_paths = True \<longrightarrow> min_paths \<le> paths"
+lemma jam_024_redundant_paths: "\<forall>(paths :: nat) (min_paths :: nat). paths_redundant paths min_paths = True \<longrightarrow> min_paths \<le> paths"
   by auto
 
 (* jam_025_defense_in_depth (matches Coq) *)

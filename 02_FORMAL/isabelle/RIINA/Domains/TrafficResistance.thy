@@ -68,7 +68,7 @@ type_synonym traffic_flow = "nat"
 definition constant_rate :: "TrafficFlow \<Rightarrow> nat \<Rightarrow> bool" where
   "constant_rate flow interval \<equiv> forall i p1 p2,
     nth_error flow i = Some p1 ->
-    nth_error flow (S i) = Some p2 ->
+    nth_error flow (Suc i) = Some p2 ->
     pkt_time p2 - pkt_time p1 = interval"
 
 (* constant_size (matches Coq: Definition constant_size) *)
@@ -133,7 +133,7 @@ definition traffic_layers :: "bool" where
   "traffic_layers \<equiv> (rate \<and> size \<and> mixing \<and> decoy)"
 
 (* traffic_001_constant_rate_hides (matches Coq) *)
-lemma traffic_001_constant_rate_hides: "\<forall>(flow :: traffic_flow) (interval :: nat). constant_rate flow interval \<longrightarrow> \<forall>i p1 p2. nth_error flow i = Some p1 \<longrightarrow> nth_error flow (S i) = Some p2 \<longrightarrow> pkt_time p2 - pkt_time p1 = interval"
+lemma traffic_001_constant_rate_hides: "\<forall>(flow :: traffic_flow) (interval :: nat). constant_rate flow interval \<longrightarrow> \<forall>i p1 p2. nth_error flow i = Some p1 \<longrightarrow> nth_error flow (Suc i) = Some p2 \<longrightarrow> pkt_time p2 - pkt_time p1 = interval"
   by auto
 
 (* traffic_002_constant_size_hides (matches Coq) *)
@@ -141,15 +141,15 @@ lemma traffic_002_constant_size_hides: "\<forall>(flow :: traffic_flow) (size ::
   by auto
 
 (* traffic_003_cover_indistinguishable (matches Coq) *)
-lemma traffic_003_cover_indistinguishable: "\<forall>(real_pkt cover_pkt : Packet). pkt_size real_pkt = pkt_size cover_pkt \<longrightarrow> pkt_time real_pkt = pkt_time cover_pkt \<longrightarrow> pkt_size real_pkt = pkt_size cover_pkt"
+lemma traffic_003_cover_indistinguishable: "\<forall>(real_pkt :: Packet) (cover_pkt :: Packet). pkt_size real_pkt = pkt_size cover_pkt \<longrightarrow> pkt_time real_pkt = pkt_time cover_pkt \<longrightarrow> pkt_size real_pkt = pkt_size cover_pkt"
   by auto
 
 (* traffic_004_flow_indistinguishable (matches Coq) *)
-lemma traffic_004_flow_indistinguishable: "\<forall>(f1 f2 : traffic_flow). indistinguishable f1 f2 \<longrightarrow> map pkt_size f1 = map pkt_size f2"
+lemma traffic_004_flow_indistinguishable: "\<forall>(f1 :: traffic_flow) (f2 :: traffic_flow). indistinguishable f1 f2 \<longrightarrow> map pkt_size f1 = map pkt_size f2"
   by auto
 
 (* traffic_005_timing_indistinguishable (matches Coq) *)
-lemma traffic_005_timing_indistinguishable: "\<forall>(f1 f2 : traffic_flow). indistinguishable f1 f2 \<longrightarrow> map pkt_time f1 = map pkt_time f2"
+lemma traffic_005_timing_indistinguishable: "\<forall>(f1 :: traffic_flow) (f2 :: traffic_flow). indistinguishable f1 f2 \<longrightarrow> map pkt_time f1 = map pkt_time f2"
   by auto
 
 (* traffic_006_mix_delay (matches Coq) *)
@@ -177,7 +177,7 @@ lemma traffic_011_receiver_anonymity: "\<forall>(batch : list mix_message). leng
   by auto
 
 (* traffic_012_padding_ratio (matches Coq) *)
-lemma traffic_012_padding_ratio: "\<forall>(payload_size padded_size : nat). padding_sufficient payload_size padded_size \<longrightarrow> padded_size \<ge> payload_size"
+lemma traffic_012_padding_ratio: "\<forall>(payload_size :: nat) (padded_size :: nat). padding_sufficient payload_size padded_size \<longrightarrow> padded_size \<ge> payload_size"
   by auto
 
 (* traffic_013_decoy_rate (matches Coq) *)
@@ -185,7 +185,7 @@ lemma traffic_013_decoy_rate: "\<forall>(real_count decoy_count min_ratio : nat)
   by auto
 
 (* traffic_014_jitter_bounded (matches Coq) *)
-lemma traffic_014_jitter_bounded: "\<forall>(jitter max_jitter : nat). jitter_bounded jitter max_jitter \<longrightarrow> jitter \<le> max_jitter"
+lemma traffic_014_jitter_bounded: "\<forall>(jitter :: nat) (max_jitter :: nat). jitter_bounded jitter max_jitter \<longrightarrow> jitter \<le> max_jitter"
   by auto
 
 (* traffic_015_no_timing_correlation (matches Coq) *)
@@ -193,11 +193,11 @@ lemma traffic_015_no_timing_correlation: "\<forall>(t1 t2 bucket : nat). bucket 
   by auto
 
 (* traffic_016_size_quantization (matches Coq) *)
-lemma traffic_016_size_quantization: "\<forall>(size quantum : nat). quantum > 0 \<longrightarrow> size_quantized size quantum \<ge> size"
+lemma traffic_016_size_quantization: "\<forall>(size :: nat) (quantum :: nat). quantum > 0 \<longrightarrow> size_quantized size quantum \<ge> size"
   by simp
 
 (* traffic_017_flow_correlation (matches Coq) *)
-lemma traffic_017_flow_correlation: "\<forall>(f1 f2 : traffic_flow) (size :: nat). constant_size f1 size \<longrightarrow> constant_size f2 size \<longrightarrow> Forall (\<lambda>p. pkt_size p = size) f1"
+lemma traffic_017_flow_correlation: "\<forall>(f1 :: traffic_flow) (f2 :: traffic_flow) (size :: nat). constant_size f1 size \<longrightarrow> constant_size f2 size \<longrightarrow> Forall (\<lambda>p. pkt_size p = size) f1"
   by auto
 
 (* traffic_018_guard_diversity (matches Coq) *)
@@ -217,11 +217,11 @@ lemma traffic_021_statistical_indist: "\<forall>(dist1 dist2 : list nat) (epsilo
   by auto
 
 (* traffic_022_session_unlinkability (matches Coq) *)
-lemma traffic_022_session_unlinkability: "\<forall>(s1 s2 : nat). sessions_unlinkable s1 s2 \<longrightarrow> s1 \<noteq> s2"
+lemma traffic_022_session_unlinkability: "\<forall>(s1 :: nat) (s2 :: nat). sessions_unlinkable s1 s2 \<longrightarrow> s1 \<noteq> s2"
   by auto
 
 (* traffic_023_intersection_resistance (matches Coq) *)
-lemma traffic_023_intersection_resistance: "\<forall>(observations needed : nat). intersection_resistant observations needed \<longrightarrow> needed > observations"
+lemma traffic_023_intersection_resistance: "\<forall>(observations :: nat) (needed :: nat). intersection_resistant observations needed \<longrightarrow> needed > observations"
   by auto
 
 (* traffic_024_volume_resistance (matches Coq) *)

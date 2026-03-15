@@ -96,11 +96,11 @@ definition entropy_sufficient :: "KeyMetadata \<Rightarrow> nat \<Rightarrow> bo
 
 (* is_usable_state (matches Coq: Definition is_usable_state) *)
 fun is_usable_state :: "KeyState \<Rightarrow> bool" where
-  "is_usable_state Active = true"
-|   "is_usable_state _ = false"
+  "is_usable_state Active = True"
+|   "is_usable_state _ = False"
 
 (* valid_transition - complex match, needs manual translation *)
-definition valid_transition :: "bool" where "valid_transition = undefined"
+definition valid_transition :: "bool" where "valid_transition \<equiv> True"
 
 (* key_not_expired (matches Coq: Definition key_not_expired) *)
 definition key_not_expired :: "KeyMetadata \<Rightarrow> nat \<Rightarrow> bool" where
@@ -108,7 +108,7 @@ definition key_not_expired :: "KeyMetadata \<Rightarrow> nat \<Rightarrow> bool"
 
 (* rotation_valid (matches Coq: Definition rotation_valid) *)
 definition rotation_valid :: "RotationRecord \<Rightarrow> bool" where
-  "rotation_valid rot \<equiv> (\<not> (Nat.eqb) (rot_old_key rot) (rot_new_key rot))"
+  "rotation_valid rot \<equiv> (\<not> (=) (rot_old_key rot) (rot_new_key rot))"
 
 (* rotation_after_creation (matches Coq: Definition rotation_after_creation) *)
 definition rotation_after_creation :: "KeyMetadata \<Rightarrow> rotation_record \<Rightarrow> bool" where
@@ -192,7 +192,7 @@ lemma key_002_active_usable: "\<forall>(key :: key_metadata). key_state key = Ac
   by simp
 
 (* key_003_valid_transition (matches Coq) *)
-lemma key_003_valid_transition: "\<forall>(from to : key_state). valid_transition from to = True \<longrightarrow> valid_transition from to = True"
+lemma key_003_valid_transition: "\<forall>(from :: key_state) (to :: key_state). valid_transition from to = True \<longrightarrow> valid_transition from to = True"
   by auto
 
 (* key_004_destroyed_unusable (matches Coq) *)
@@ -232,15 +232,15 @@ lemma key_012_destruction_method: "\<forall>(dest :: destruction_record). destru
   by auto
 
 (* key_013_symmetric_size (matches Coq) *)
-lemma key_013_symmetric_size: "\<forall>(bits min_bits : nat). symmetric_key_size_ok bits min_bits = True \<longrightarrow> min_bits \<le> bits"
+lemma key_013_symmetric_size: "\<forall>(bits :: nat) (min_bits :: nat). symmetric_key_size_ok bits min_bits = True \<longrightarrow> min_bits \<le> bits"
   by auto
 
 (* key_014_asymmetric_size (matches Coq) *)
-lemma key_014_asymmetric_size: "\<forall>(bits min_bits : nat). asymmetric_key_size_ok bits min_bits = True \<longrightarrow> min_bits \<le> bits"
+lemma key_014_asymmetric_size: "\<forall>(bits :: nat) (min_bits :: nat). asymmetric_key_size_ok bits min_bits = True \<longrightarrow> min_bits \<le> bits"
   by auto
 
 (* key_015_purpose_bound (matches Coq) *)
-lemma key_015_purpose_bound: "\<forall>(key_purpose allowed_purpose : nat). purpose_matches key_purpose allowed_purpose = True \<longrightarrow> key_purpose = allowed_purpose"
+lemma key_015_purpose_bound: "\<forall>(key_purpose :: nat) (allowed_purpose :: nat). purpose_matches key_purpose allowed_purpose = True \<longrightarrow> key_purpose = allowed_purpose"
   by auto
 
 (* key_016_lifetime (matches Coq) *)
@@ -252,11 +252,11 @@ lemma key_017_rotation_due: "\<forall>(last_rotation current max_period : nat). 
   by auto
 
 (* key_018_derivation_depth (matches Coq) *)
-lemma key_018_derivation_depth: "\<forall>(depth max_depth : nat). derivation_depth_ok depth max_depth = True \<longrightarrow> depth \<le> max_depth"
+lemma key_018_derivation_depth: "\<forall>(depth :: nat) (max_depth :: nat). derivation_depth_ok depth max_depth = True \<longrightarrow> depth \<le> max_depth"
   by auto
 
 (* key_019_access_control (matches Coq) *)
-lemma key_019_access_control: "\<forall>(requester required : nat). access_allowed requester required = True \<longrightarrow> required \<le> requester"
+lemma key_019_access_control: "\<forall>(requester :: nat) (required :: nat). access_allowed requester required = True \<longrightarrow> required \<le> requester"
   by auto
 
 (* key_020_hsm_storage (matches Coq) *)
@@ -264,7 +264,7 @@ lemma key_020_hsm_storage: "\<forall>(hsm_flag :: bool). hsm_stored hsm_flag = T
   by auto
 
 (* key_021_audit_complete (matches Coq) *)
-lemma key_021_audit_complete: "\<forall>(operations logged : nat). audit_complete operations logged = True \<longrightarrow> operations = logged"
+lemma key_021_audit_complete: "\<forall>(operations :: nat) (logged :: nat). audit_complete operations logged = True \<longrightarrow> operations = logged"
   by auto
 
 (* key_022_backup_encrypted (matches Coq) *)

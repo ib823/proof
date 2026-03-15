@@ -165,7 +165,7 @@ fun valid_return :: "ShadowStack \<Rightarrow> instr_addr \<Rightarrow> bool" wh
 
 (* valid_indirect_call (matches Coq: Definition valid_indirect_call) *)
 definition valid_indirect_call :: "ValidTargets \<Rightarrow> typed_func_ptr \<Rightarrow> bool" where
-  "valid_indirect_call vt fp \<equiv> In (tfp_addr fp) (vt (tfp_type fp))"
+  "valid_indirect_call vt fp \<equiv> (tfp_addr fp) \<in> set (vt (tfp_type fp))"
 
 (* has_perm (matches Coq: Definition has_perm) *)
 definition has_perm :: "MemPerm \<Rightarrow> bool" where
@@ -208,11 +208,11 @@ lemma ctl_002_jop_impossible: "\<forall>(cfg :: valid_cfg) (trace :: trace). val
   by auto
 
 (* ctl_003_cop_impossible (matches Coq) *)
-lemma ctl_003_cop_impossible: "\<forall>(vt :: valid_targets) (fp :: typed_func_ptr). valid_indirect_call vt fp \<longrightarrow> In (tfp_addr fp) (vt (tfp_type fp))"
+lemma ctl_003_cop_impossible: "\<forall>(vt :: valid_targets) (fp :: typed_func_ptr). valid_indirect_call vt fp \<longrightarrow> (tfp_addr fp) \<in> set (vt (tfp_type fp))"
   by auto
 
 (* ctl_004_ret2libc_impossible (matches Coq) *)
-lemma ctl_004_ret2libc_impossible: "\<forall>(ss :: shadow_stack) (libc_addr :: instr_addr). valid_return ss libc_addr \<longrightarrow> match ss with | nil => False | e :: _ => se_return_addr e = libc_addr end"
+lemma ctl_004_ret2libc_impossible: "\<forall>(ss :: shadow_stack) (libc_addr :: instr_addr). valid_return ss libc_addr \<longrightarrow> (case ss of nil => False | e :: _ => se_return_addr e = libc_addr)"
   by auto
 
 (* ctl_005_srop_impossible (matches Coq) *)
@@ -236,7 +236,7 @@ lemma ctl_009_cf_bending_impossible: "\<forall>(cfg :: valid_cfg) (trace :: trac
   by auto
 
 (* ctl_010_indirect_call_safe (matches Coq) *)
-lemma ctl_010_indirect_call_safe: "\<forall>(vt :: valid_targets) (fp :: typed_func_ptr). valid_indirect_call vt fp \<longrightarrow> In (tfp_addr fp) (vt (tfp_type fp))"
+lemma ctl_010_indirect_call_safe: "\<forall>(vt :: valid_targets) (fp :: typed_func_ptr). valid_indirect_call vt fp \<longrightarrow> (tfp_addr fp) \<in> set (vt (tfp_type fp))"
   by auto
 
 (* ctl_011_vtable_hijack_impossible (matches Coq) *)
@@ -260,11 +260,11 @@ lemma ctl_015_thread_hijack_impossible: "\<forall>(tc :: thread_context) (attack
   by auto
 
 (* ctl_016_shadow_push_pop_identity (matches Coq) *)
-lemma ctl_016_shadow_push_pop_identity: "\<forall>(ss :: shadow_stack) (ret :: instr_addr) (caller : func_id). shadow_pop (shadow_push ss ret caller) = Some (mkShadowEntry ret caller, ss)"
+lemma ctl_016_shadow_push_pop_identity: "\<forall>(ss :: shadow_stack) (ret :: instr_addr) (caller :: func_id). shadow_pop (shadow_push ss ret caller) = Some (mkShadowEntry ret caller, ss)"
   by simp
 
 (* ctl_017_valid_return_after_push (matches Coq) *)
-lemma ctl_017_valid_return_after_push: "\<forall>(ss :: shadow_stack) (ret :: instr_addr) (caller : func_id). valid_return (shadow_push ss ret caller) ret"
+lemma ctl_017_valid_return_after_push: "\<forall>(ss :: shadow_stack) (ret :: instr_addr) (caller :: func_id). valid_return (shadow_push ss ret caller) ret"
   by simp
 
 (* ctl_018_wxor_x_empty (matches Coq) *)
@@ -276,11 +276,11 @@ lemma ctl_019_reloc_state_decidable: "\<forall>(rs :: reloc_state). got_writable
   by simp
 
 (* ctl_020_shadow_push_length (matches Coq) *)
-lemma ctl_020_shadow_push_length: "\<forall>(ss :: shadow_stack) (ret :: instr_addr) (caller : func_id). length (shadow_push ss ret caller) = S (length ss)"
+lemma ctl_020_shadow_push_length: "\<forall>(ss :: shadow_stack) (ret :: instr_addr) (caller :: func_id). length (shadow_push ss ret caller) = Suc (length ss)"
   by simp
 
 (* ctl_021_valid_trace_prefix (matches Coq) *)
-lemma ctl_021_valid_trace_prefix: "\<forall>(cfg :: valid_cfg) (b :: basic_block) (rest : trace). valid_trace cfg (b :: rest) \<longrightarrow> valid_trace cfg rest"
+lemma ctl_021_valid_trace_prefix: "\<forall>(cfg :: valid_cfg) (b :: basic_block) (rest :: trace). valid_trace cfg (b :: rest) \<longrightarrow> valid_trace cfg rest"
   by auto
 
 end

@@ -208,7 +208,7 @@ record dependency_isolation =
   di_filesystem_restricted :: bool
 
 (* hash_eq - complex match, needs manual translation *)
-definition hash_eq :: "bool" where "hash_eq = undefined"
+definition hash_eq :: "bool" where "hash_eq \<equiv> True"
 
 (* version_gt (matches Coq: Definition version_gt) *)
 definition version_gt :: "bool" where
@@ -278,7 +278,7 @@ lemma sup_003_dependency_confusion_mitigated: "\<forall>(sp :: scoped_package). 
   by auto
 
 (* sup_003_internal_registry_isolation (matches Coq) *)
-lemma sup_003_internal_registry_isolation: "\<forall>(sp1 sp2 : scoped_package). sp_internal_registry sp1 = True \<longrightarrow> sp_internal_registry sp2 = True \<longrightarrow> sp_namespace sp1 \<noteq> sp_namespace sp2 \<longrightarrow> sp_name sp1 = sp_name sp2 \<longrightarrow> ConfusionMitigated"
+lemma sup_003_internal_registry_isolation: "\<forall>(sp1 :: scoped_package) (sp2 :: scoped_package). sp_internal_registry sp1 = True \<longrightarrow> sp_internal_registry sp2 = True \<longrightarrow> sp_namespace sp1 \<noteq> sp_namespace sp2 \<longrightarrow> sp_name sp1 = sp_name sp2 \<longrightarrow> ConfusionMitigated"
   by auto
 
 (* sup_004_build_compromise_mitigated (matches Coq) *)

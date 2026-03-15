@@ -180,8 +180,8 @@ definition record_field_count :: "Record \<Rightarrow> nat" where
 
 (* all_fields_present (matches Coq: Definition all_fields_present) *)
 definition all_fields_present :: "Record \<Rightarrow> bool" where
-  "all_fields_present r \<equiv> forall fn, In fn (schema_fields old_schema) ->
-    In fn (schema_fields new_schema) \/
+  "all_fields_present r \<equiv> forall fn, fn \<in> set (schema_fields old_schema) ->
+    fn \<in> set (schema_fields new_schema) \/
     exists fv, In (fn, fv) r"
 
 (* migrate_record (matches Coq: Definition migrate_record) *)
@@ -195,14 +195,14 @@ definition migrates :: "Database \<Rightarrow> bool" where
 
 (* no_data_loss (matches Coq: Definition no_data_loss) *)
 definition no_data_loss :: "Database \<Rightarrow> bool" where
-  "no_data_loss db \<equiv> forall r, In r (db_records db) ->
+  "no_data_loss db \<equiv> forall r, r \<in> set (db_records db) ->
     record_field_count r > 0"
 
 (* migration_preserves_data (matches Coq: Definition migration_preserves_data) *)
 definition migration_preserves_data :: "Record \<Rightarrow> bool" where
   "migration_preserves_data r \<equiv> forall fn fv, In (fn, fv) r ->
-    In fn (schema_fields new_s) ->
-    In (fn, fv) (migrate_record old_s new_s r)"
+    fn \<in> set (schema_fields new_s) ->
+    (fn, fv) \<in> set (migrate_record old_s new_s r)"
 
 (* sync_correct (matches Coq: Definition sync_correct) *)
 definition sync_correct :: "SyncState \<Rightarrow> bool" where
@@ -276,15 +276,15 @@ definition data_export_sanitized :: "DataExport \<Rightarrow> bool" where
   "data_export_sanitized de \<equiv> export_sanitized de = True \<and> export_encrypted de = True"
 
 (* migration_lossless (matches Coq) *)
-lemma migration_lossless: "\<forall>(data :: database) (schema1 schema2 : schema). migrates data schema1 schema2 \<longrightarrow> (\<forall>fn. In fn (schema_fields schema1) \<longrightarrow> In fn (schema_fields schema2)) \<longrightarrow> no_data_loss data \<longrightarrow> no_data_loss data"
+lemma migration_lossless: "\<forall>(data :: database) (schema1 :: schema) (schema2 :: schema). migrates data schema1 schema2 \<longrightarrow> (\<forall>fn. fn \<in> set (schema_fields schema1) \<longrightarrow> fn \<in> set (schema_fields schema2)) \<longrightarrow> no_data_loss data \<longrightarrow> no_data_loss data"
   by auto
 
 (* migration_preserves_existing_fields (matches Coq) *)
-lemma migration_preserves_existing_fields: "\<forall>(old_s new_s : schema) (r :: record) (fn : FieldName) (fv :: field_value). In (fn, fv) r \<longrightarrow> In fn (schema_fields new_s) \<longrightarrow> \<exists>b ((fn) = (schema_fields) new_s) = True \<longrightarrow> In (fn. fv) (migrate_record old_s new_s r)"
+lemma migration_preserves_existing_fields: "\<forall>(old_s :: schema) (new_s :: schema) (r :: record) (fn :: FieldName) (fv :: field_value). In (fn, fv) r \<longrightarrow> fn \<in> set (schema_fields new_s) \<longrightarrow> \<exists>b ((fn) = (schema_fields) new_s) = True \<longrightarrow> (fn. fv) \<in> set (migrate_record old_s new_s r)"
   by auto
 
 (* migration_increases_version (matches Coq) *)
-lemma migration_increases_version: "\<forall>(db :: database) (old_s new_s : schema). migrates db old_s new_s \<longrightarrow> schema_version new_s > schema_version old_s"
+lemma migration_increases_version: "\<forall>(db :: database) (old_s :: schema) (new_s :: schema). migrates db old_s new_s \<longrightarrow> schema_version new_s > schema_version old_s"
   by auto
 
 (* sync_after_resolution (matches Coq) *)
@@ -324,7 +324,7 @@ lemma transaction_acid_compliant: "\<forall>(txn :: transaction). transaction_ac
   by auto
 
 (* concurrent_access_safe (matches Coq) *)
-lemma concurrent_access_safe: "\<forall>(txn1 txn2 : transaction). concurrent_access_safe_prop txn1 txn2 \<longrightarrow> txn_id txn1 \<noteq> txn_id txn2 \<longrightarrow> ~ (txn_committed txn1 = True \<and> txn_rolled_back txn1 = True)"
+lemma concurrent_access_safe: "\<forall>(txn1 :: transaction) (txn2 :: transaction). concurrent_access_safe_prop txn1 txn2 \<longrightarrow> txn_id txn1 \<noteq> txn_id txn2 \<longrightarrow> ~ (txn_committed txn1 = True \<and> txn_rolled_back txn1 = True)"
   by auto
 
 (* data_deletion_complete (matches Coq) *)

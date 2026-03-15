@@ -71,7 +71,7 @@ definition is_quorum :: "Config \<Rightarrow> bool" where
 
 (* all_honest_propose (matches Coq: Definition all_honest_propose) *)
 definition all_honest_propose :: "Config \<Rightarrow> nat \<Rightarrow> bool" where
-  "all_honest_propose c v \<equiv> forall nd, In nd (nodes c) -> honest c (node_id nd) = True -> node_value nd = v"
+  "all_honest_propose c v \<equiv> forall nd, nd \<in> set (nodes c) -> honest c (node_id nd) = True -> node_value nd = v"
 
 (* honest_decided (matches Coq: Definition honest_decided) *)
 definition honest_decided :: "Config \<Rightarrow> Node \<Rightarrow> bool" where
@@ -80,7 +80,7 @@ definition honest_decided :: "Config \<Rightarrow> Node \<Rightarrow> bool" wher
 (* honest_votes_once_per_round (matches Coq: Definition honest_votes_once_per_round) *)
 definition honest_votes_once_per_round :: "Config \<Rightarrow> bool" where
   "honest_votes_once_per_round c \<equiv> forall v1 v2,
-    In v1 (votes c) -> In v2 (votes c) ->
+    v1 \<in> set (votes c) -> v2 \<in> set (votes c) ->
     honest c (vote_sender v1) = True ->
     vote_sender v1 = vote_sender v2 ->
     vote_round v1 = vote_round v2 ->
@@ -88,12 +88,12 @@ definition honest_votes_once_per_round :: "Config \<Rightarrow> bool" where
 
 (* messages_from_honest_authentic (matches Coq: Definition messages_from_honest_authentic) *)
 definition messages_from_honest_authentic :: "Config \<Rightarrow> bool" where
-  "messages_from_honest_authentic c \<equiv> forall m, In m (messages c) -> honest c (msg_sender m) = True -> msg_authentic m = True"
+  "messages_from_honest_authentic c \<equiv> forall m, m \<in> set (messages c) -> honest c (msg_sender m) = True -> msg_authentic m = True"
 
 (* decided_nodes_agree (matches Coq: Definition decided_nodes_agree) *)
 definition decided_nodes_agree :: "Config \<Rightarrow> bool" where
   "decided_nodes_agree c \<equiv> forall n1 n2,
-    In n1 (nodes c) -> In n2 (nodes c) ->
+    n1 \<in> set (nodes c) -> n2 \<in> set (nodes c) ->
     honest_decided c n1 -> honest_decided c n2 ->
     node_decision n1 = node_decision n2"
 
@@ -120,15 +120,15 @@ definition intersect :: "list nat" where
   "intersect \<equiv> undefined"
 
 (* 1 (matches Coq) *)
-lemma 1: "Agreement --- If the configuration satisfies decided_nodes_agree, then any two honest decided nodes have the same decision. This is modeled as: the agreement property is preserved by construction. Theorem agreement : \<forall>c n1 n2. decided_nodes_agree c \<longrightarrow> In n1 (nodes c) \<longrightarrow> In n2 (nodes c) \<longrightarrow> honest_decided c n1 \<longrightarrow> honest_decided c n2 \<longrightarrow> node_decision n1 = node_decision n2"
+lemma lemma_1: "Agreement --- If the configuration satisfies decided_nodes_agree, then any two honest decided nodes have the same decision. This is modeled as: the agreement property is preserved by construction. Theorem agreement : \<forall>c n1 n2. decided_nodes_agree c \<longrightarrow> n1 \<in> set (nodes c) \<longrightarrow> n2 \<in> set (nodes c) \<longrightarrow> honest_decided c n1 \<longrightarrow> honest_decided c n2 \<longrightarrow> node_decision n1 = node_decision n2"
   by auto
 
 (* 2 (matches Coq) *)
-lemma 2: "Validity --- If all honest nodes propose v, and the protocol decides based on honest proposals, then the decision equals v. Theorem validity : \<forall>c nd v. all_honest_propose c v \<longrightarrow> In nd (nodes c) \<longrightarrow> honest c (node_id nd) = True \<longrightarrow> node_decision nd = node_value nd \<longrightarrow> node_decision nd = v"
+lemma lemma_2: "Validity --- If all honest nodes propose v, and the protocol decides based on honest proposals, then the decision equals v. Theorem validity : \<forall>c nd v. all_honest_propose c v \<longrightarrow> nd \<in> set (nodes c) \<longrightarrow> honest c (node_id nd) = True \<longrightarrow> node_decision nd = node_value nd \<longrightarrow> node_decision nd = v"
   by auto
 
 (* 3 (matches Coq) *)
-lemma 3: "Quorum Intersection --- Two quorums each of size > 2n/3 must overlap. We prove this for abstract sizes: if |Q1| + |Q2| > total, they intersect. Lemma pigeonhole_overlap : \<forall>(n a b : nat). a \<le> n \<longrightarrow> b \<le> n \<longrightarrow> a + b > n \<longrightarrow> a + b - n \<ge> 1"
+lemma lemma_3: "Quorum Intersection --- Two quorums each of size > 2n/3 must overlap. We prove this for abstract sizes: if |Q1| + |Q2| > total, they intersect. Lemma pigeonhole_overlap : \<forall>(n a b : nat). a \<le> n \<longrightarrow> b \<le> n \<longrightarrow> a + b > n \<longrightarrow> a + b - n \<ge> 1"
   by simp
 
 (* quorum_intersection_size (matches Coq) *)
@@ -140,7 +140,7 @@ lemma quorum_intersection: "\<forall>(n q1s q2s : nat). 3 * q1s > 2 * n \<longri
   by simp
 
 (* 4 (matches Coq) *)
-lemma 4: "Round Monotonicity --- Theorem round_monotonicity : \<forall>old new_. round_update old new_ \<longrightarrow> node_round new_ \<ge> node_round old"
+lemma lemma_4: "Round Monotonicity --- Theorem round_monotonicity : \<forall>old new_. round_update old new_ \<longrightarrow> node_round new_ \<ge> node_round old"
   by auto
 
 (* round_monotonicity_transitive (matches Coq) *)
@@ -148,11 +148,11 @@ lemma round_monotonicity_transitive: "\<forall>a b c_. node_id a = node_id b \<l
   by simp
 
 (* 5 (matches Coq) *)
-lemma 5: "Vote Uniqueness --- Theorem vote_uniqueness : \<forall>c v1 v2. honest_votes_once_per_round c \<longrightarrow> In v1 (votes c) \<longrightarrow> In v2 (votes c) \<longrightarrow> honest c (vote_sender v1) = True \<longrightarrow> vote_sender v1 = vote_sender v2 \<longrightarrow> vote_round v1 = vote_round v2 \<longrightarrow> vote_value v1 = vote_value v2"
+lemma lemma_5: "Vote Uniqueness --- Theorem vote_uniqueness : \<forall>c v1 v2. honest_votes_once_per_round c \<longrightarrow> v1 \<in> set (votes c) \<longrightarrow> v2 \<in> set (votes c) \<longrightarrow> honest c (vote_sender v1) = True \<longrightarrow> vote_sender v1 = vote_sender v2 \<longrightarrow> vote_round v1 = vote_round v2 \<longrightarrow> vote_value v1 = vote_value v2"
   by auto
 
 (* 6 (matches Coq) *)
-lemma 6: "Quorum Sufficiency --- When f < n/3, honest nodes (n - f) form a quorum (> 2n/3). Theorem quorum_sufficiency : \<forall>n f : nat. n > 0 \<longrightarrow> 3 * f < n \<longrightarrow> 3 * (n - f) > 2 * n"
+lemma lemma_6: "Quorum Sufficiency --- When f < n/3, honest nodes (n - f) form a quorum (> 2n/3). Theorem quorum_sufficiency : \<forall>n f : nat. n > 0 \<longrightarrow> 3 * f < n \<longrightarrow> 3 * (n - f) > 2 * n"
   by simp
 
 (* honest_majority_in_quorum (matches Coq) *)
@@ -160,59 +160,59 @@ lemma honest_majority_in_quorum: "\<forall>n f q : nat. 3 * f < n \<longrightarr
   by simp
 
 (* 7 (matches Coq) *)
-lemma 7: "Message Integrity --- Theorem message_integrity : \<forall>c m. messages_from_honest_authentic c \<longrightarrow> In m (messages c) \<longrightarrow> honest c (msg_sender m) = True \<longrightarrow> msg_authentic m = True"
+lemma lemma_7: "Message Integrity --- Theorem message_integrity : \<forall>c m. messages_from_honest_authentic c \<longrightarrow> m \<in> set (messages c) \<longrightarrow> honest c (msg_sender m) = True \<longrightarrow> msg_authentic m = True"
   by auto
 
 (* 8 (matches Coq) *)
-lemma 8: "Decision Stability --- Theorem decision_stability : \<forall>nd_before nd_after. decision_stable nd_before nd_after \<longrightarrow> node_id nd_before = node_id nd_after \<longrightarrow> node_decided nd_before = True \<longrightarrow> node_decided nd_after = True \<and> node_decision nd_after = node_decision nd_before"
+lemma lemma_8: "Decision Stability --- Theorem decision_stability : \<forall>nd_before nd_after. decision_stable nd_before nd_after \<longrightarrow> node_id nd_before = node_id nd_after \<longrightarrow> node_decided nd_before = True \<longrightarrow> node_decided nd_after = True \<and> node_decision nd_after = node_decision nd_before"
   by auto
 
 (* 9 (matches Coq) *)
-lemma 9: "BFT threshold arithmetic --- The classical n \<ge> 3f+1 bound Theorem bft_threshold : \<forall>n f : nat. 3 * f < n \<longrightarrow> n \<ge> 3 * f + 1"
+lemma lemma_9: "BFT threshold arithmetic --- The classical n \<ge> 3f+1 bound Theorem bft_threshold : \<forall>n f : nat. 3 * f < n \<longrightarrow> n \<ge> 3 * f + 1"
   by simp
 
 (* 10 (matches Coq) *)
-lemma 10: "Two quorums share an honest node --- Combining quorum intersection with honest majority Theorem two_quorums_share_honest : \<forall>n f q1 q2 : nat. 3 * f < n \<longrightarrow> 3 * q1 > 2 * n \<longrightarrow> 3 * q2 > 2 * n \<longrightarrow> q1 \<le> n \<longrightarrow> q2 \<le> n \<longrightarrow> q1 + q2 - n \<ge> 1 \<and> q1 + q2 - n > f"
+lemma lemma_10: "Two quorums share an honest node --- Combining quorum intersection with honest majority Theorem two_quorums_share_honest : \<forall>n f q1 q2 : nat. 3 * f < n \<longrightarrow> 3 * q1 > 2 * n \<longrightarrow> 3 * q2 > 2 * n \<longrightarrow> q1 \<le> n \<longrightarrow> q2 \<le> n \<longrightarrow> q1 + q2 - n \<ge> 1 \<and> q1 + q2 - n > f"
   by simp
 
 (* 11 (matches Coq) *)
-lemma 11: "BFT requires at least 4 nodes for f=1 --- Theorem bft_min_nodes_f1 : \<forall>n : nat. 3 * 1 < n \<longrightarrow> n \<ge> 4"
+lemma lemma_11: "BFT requires at least 4 nodes for f=1 --- Theorem bft_min_nodes_f1 : \<forall>n : nat. 3 * 1 < n \<longrightarrow> n \<ge> 4"
   by simp
 
 (* 12 (matches Coq) *)
-lemma 12: "Count honest empty list is zero --- Theorem count_honest_nil : \<forall>h. count_honest h [] = 0"
+lemma lemma_12: "Count honest empty list is zero --- Theorem count_honest_nil : \<forall>h. count_honest h [] = 0"
   by simp
 
 (* 13 (matches Coq) *)
-lemma 13: "Count honest singleton --- Theorem count_honest_singleton : \<forall>h x. count_honest h [x] = if h x then 1 else 0"
+lemma lemma_13: "Count honest singleton --- Theorem count_honest_singleton : \<forall>h x. count_honest h [x] = if h x then 1 else 0"
   by simp
 
 (* 14 (matches Coq) *)
-lemma 14: "Intersect with nil is nil --- Theorem intersect_nil_l : \<forall>l. intersect [] l = []"
+lemma lemma_14: "Intersect with nil is nil --- Theorem intersect_nil_l : \<forall>l. intersect [] l = []"
   by simp
 
 (* 15 (matches Coq) *)
-lemma 15: "mem_nat reflexive --- Theorem mem_nat_refl : \<forall>x. mem_nat x [x] = True"
+lemma lemma_15: "mem_nat reflexive --- Theorem mem_nat_refl : \<forall>x. mem_nat x [x] = True"
   by simp
 
 (* 16 (matches Coq) *)
-lemma 16: "Quorum size is positive when num_nodes > 0 --- Theorem quorum_size_pos : \<forall>c. num_nodes c > 0 \<longrightarrow> quorum_size c \<ge> 1"
+lemma lemma_16: "Quorum size is positive when num_nodes > 0 --- Theorem quorum_size_pos : \<forall>c. num_nodes c > 0 \<longrightarrow> quorum_size c \<ge> 1"
   by simp
 
 (* 17 (matches Coq) *)
-lemma 17: "Agreement is preserved when adding non-decided node --- Theorem agreement_non_decided : \<forall>c n1 n2. decided_nodes_agree c \<longrightarrow> In n1 (nodes c) \<longrightarrow> In n2 (nodes c) \<longrightarrow> honest_decided c n1 \<longrightarrow> node_decided n2 = False \<longrightarrow> True"
+lemma lemma_17: "Agreement is preserved when adding non-decided node --- Theorem agreement_non_decided : \<forall>c n1 n2. decided_nodes_agree c \<longrightarrow> n1 \<in> set (nodes c) \<longrightarrow> n2 \<in> set (nodes c) \<longrightarrow> honest_decided c n1 \<longrightarrow> node_decided n2 = False \<longrightarrow> True"
   by simp
 
 (* 18 (matches Coq) *)
-lemma 18: "Round update is reflexive --- Theorem round_update_refl : \<forall>nd. round_update nd nd"
+lemma lemma_18: "Round update is reflexive --- Theorem round_update_refl : \<forall>nd. round_update nd nd"
   by simp
 
 (* 19 (matches Coq) *)
-lemma 19: "BFT for f=0 any positive n works --- Theorem bft_f0 : \<forall>n : nat. n > 0 \<longrightarrow> 3 * 0 < n"
+lemma lemma_19: "BFT for f=0 any positive n works --- Theorem bft_f0 : \<forall>n : nat. n > 0 \<longrightarrow> 3 * 0 < n"
   by simp
 
 (* 20 (matches Coq) *)
-lemma 20: "Honest majority in total --- Theorem honest_majority_total : \<forall>n f : nat. 3 * f < n \<longrightarrow> n - f > f"
+lemma lemma_20: "Honest majority in total --- Theorem honest_majority_total : \<forall>n f : nat. 3 * f < n \<longrightarrow> n - f > f"
   by simp
 
 end

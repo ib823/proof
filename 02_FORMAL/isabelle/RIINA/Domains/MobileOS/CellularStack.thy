@@ -227,7 +227,7 @@ definition is_ap_memory :: "Memory \<Rightarrow> bool" where
 
 (* can_access_mem (matches Coq: Definition can_access_mem) *)
 definition can_access_mem :: "BasebandProcessor \<Rightarrow> memory \<Rightarrow> bool" where
-  "can_access_mem bb m \<equiv> In m (bb_accessible_memory bb)"
+  "can_access_mem bb m \<equiv> m \<in> set (bb_accessible_memory bb)"
 
 (* baseband_properly_isolated (matches Coq: Definition baseband_properly_isolated) *)
 definition baseband_properly_isolated :: "BasebandProcessor \<Rightarrow> bool" where

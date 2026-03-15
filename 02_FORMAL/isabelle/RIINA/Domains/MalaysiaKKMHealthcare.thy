@@ -242,7 +242,7 @@ lemma medical_device_sl2: "\<forall>(md :: medical_device_security). md_authenti
   by auto
 
 (* higher_sl_subsumes (matches Coq) *)
-lemma higher_sl_subsumes: "\<forall>(md :: medical_device_security) (sl1 sl2 : nat). sl1 \<le> sl2 \<longrightarrow> md_security_adequate md sl2 \<longrightarrow> md_security_adequate md sl1"
+lemma higher_sl_subsumes: "\<forall>(md :: medical_device_security) (sl1 :: nat) (sl2 :: nat). sl1 \<le> sl2 \<longrightarrow> md_security_adequate md sl2 \<longrightarrow> md_security_adequate md sl1"
   by simp
 
 (* cross_facility_requires_encryption (matches Coq) *)

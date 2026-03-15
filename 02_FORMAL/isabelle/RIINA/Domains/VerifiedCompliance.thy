@@ -252,15 +252,15 @@ record remediation =
 
 (* is_gap (matches Coq: Definition is_gap) *)
 fun is_gap :: "ControlStatus \<Rightarrow> bool" where
-  "is_gap _ = false"
+  "is_gap _ = False"
 
 (* is_partial (matches Coq: Definition is_partial) *)
 fun is_partial :: "ControlStatus \<Rightarrow> bool" where
-  "is_partial _ = false"
+  "is_partial _ = False"
 
 (* is_proven (matches Coq: Definition is_proven) *)
 fun is_proven :: "ControlStatus \<Rightarrow> bool" where
-  "is_proven _ = false"
+  "is_proven _ = False"
 
 (* data_minimization_holds (matches Coq: Definition data_minimization_holds) *)
 definition data_minimization_holds :: "DataStore \<Rightarrow> bool" where
@@ -485,7 +485,7 @@ lemma AJ_001_06_gdpr_access_right: "\<forall>data purpose subject. (\<forall>pd.
   by simp
 
 (* AJ_001_07_gdpr_erasure_right (matches Coq) *)
-lemma AJ_001_07_gdpr_erasure_right: "\<forall>data purpose subject. let store := make_compliant_store data purpose in let store' := make_compliant_store (filter (\<lambda>pd. (\<not> (Nat.eqb) pd.(pd_subject) subject)) data) purpose in (\<forall>pd. pd \<in> set data \<longrightarrow> pd.(pd_subject) = subject \<longrightarrow> ~ In pd (filter (\<lambda>pd. (\<not> (Nat.eqb) pd.(pd_subject) subject)) data)) \<longrightarrow> (\<forall>pd. pd \<in> set data \<longrightarrow> pd.(pd_subject) \<noteq> subject \<longrightarrow> In pd (filter (\<lambda>pd. (\<not> (Nat.eqb) pd.(pd_subject) subject)) data)) \<longrightarrow> erasure_right_holds store store' subject"
+lemma AJ_001_07_gdpr_erasure_right: "\<forall>data purpose subject. let store := make_compliant_store data purpose in let store' := make_compliant_store (filter (\<lambda>pd. (\<not> (=) pd.(pd_subject) subject)) data) purpose in (\<forall>pd. pd \<in> set data \<longrightarrow> pd.(pd_subject) = subject \<longrightarrow> pd \<notin> set (filter (\<lambda>pd. (\<not> (=) pd.(pd_subject) subject)) data)) \<longrightarrow> (\<forall>pd. pd \<in> set data \<longrightarrow> pd.(pd_subject) \<noteq> subject \<longrightarrow> pd \<in> set (filter (\<lambda>pd. (\<not> (=) pd.(pd_subject) subject)) data)) \<longrightarrow> erasure_right_holds store store' subject"
   by simp
 
 (* AJ_001_08_gdpr_portability (matches Coq) *)

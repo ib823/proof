@@ -111,8 +111,8 @@ fun system_criticality :: "BuildingSystem \<Rightarrow> nat" where
 
 (* is_safety_critical (matches Coq: Definition is_safety_critical) *)
 fun is_safety_critical :: "BuildingSystem \<Rightarrow> bool" where
-  "is_safety_critical Elevator = true"
-|   "is_safety_critical _ = false"
+  "is_safety_critical Elevator = True"
+|   "is_safety_critical _ = False"
 
 (* all_building_controls (matches Coq: Definition all_building_controls) *)
 definition all_building_controls :: "SmartBuildingControls \<Rightarrow> bool" where

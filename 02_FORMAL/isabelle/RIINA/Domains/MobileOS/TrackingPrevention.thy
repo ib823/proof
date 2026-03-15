@@ -227,7 +227,7 @@ definition consent_scope_invariant :: "User \<Rightarrow> bool" where
 (* explicit_consent (matches Coq: Definition explicit_consent) *)
 definition explicit_consent :: "User \<Rightarrow> application \<Rightarrow> bool" where
   "explicit_consent user app \<equiv> tracking_consent_given user = True \<and>
-  In (app_id app) (consent_scope user)"
+  (app_id app) \<in> set (consent_scope user)"
 
 (* tracks (matches Coq: Definition tracks) *)
 definition tracks :: "Application \<Rightarrow> user \<Rightarrow> bool" where
@@ -238,16 +238,16 @@ definition tracks :: "Application \<Rightarrow> user \<Rightarrow> bool" where
 definition privacy_state_well_formed :: "PrivacyState \<Rightarrow> bool" where
   "privacy_state_well_formed ps \<equiv> tracking_transparency_enabled ps = True \<and>
   forall aid uid,
-    In (aid, uid) (approved_tracking ps) ->
-    In (aid, uid) (app_tracking_requests ps)"
+    (aid, uid) \<in> set (approved_tracking ps) ->
+    (aid, uid) \<in> set (app_tracking_requests ps)"
 
 (* tracking_requested (matches Coq: Definition tracking_requested) *)
 definition tracking_requested :: "PrivacyState \<Rightarrow> application \<Rightarrow> user \<Rightarrow> bool" where
-  "tracking_requested ps app user \<equiv> In (app_id app, user_id user) (app_tracking_requests ps)"
+  "tracking_requested ps app user \<equiv> (app_id app, user_id user) \<in> set (app_tracking_requests ps)"
 
 (* tracking_approved (matches Coq: Definition tracking_approved) *)
 definition tracking_approved :: "PrivacyState \<Rightarrow> application \<Rightarrow> user \<Rightarrow> bool" where
-  "tracking_approved ps app user \<equiv> In (app_id app, user_id user) (approved_tracking ps)"
+  "tracking_approved ps app user \<equiv> (app_id app, user_id user) \<in> set (approved_tracking ps)"
 
 (* tracking_allowed (matches Coq: Definition tracking_allowed) *)
 definition tracking_allowed :: "PrivacyState \<Rightarrow> application \<Rightarrow> user \<Rightarrow> bool" where
@@ -329,15 +329,15 @@ lemma no_tracking_without_consent: "\<forall>(app :: application) (user :: user)
   by auto
 
 (* tracking_requires_transparency_prompt (matches Coq) *)
-lemma tracking_requires_transparency_prompt: "\<forall>(ps :: privacy_state) (app :: application) (user : user). privacy_state_well_formed ps \<longrightarrow> tracking_approved ps app user \<longrightarrow> tracking_requested ps app user"
+lemma tracking_requires_transparency_prompt: "\<forall>(ps :: privacy_state) (app :: application) (user :: user). privacy_state_well_formed ps \<longrightarrow> tracking_approved ps app user \<longrightarrow> tracking_requested ps app user"
   by auto
 
 (* denied_tracking_not_approved (matches Coq) *)
-lemma denied_tracking_not_approved: "\<forall>(ps :: privacy_state) (app :: application) (user : user). In (app_id app, user_id user) (denied_tracking ps) \<longrightarrow> ~ In (app_id app, user_id user) (approved_tracking ps) \<longrightarrow> tracking_allowed ps app user = False"
+lemma denied_tracking_not_approved: "\<forall>(ps :: privacy_state) (app :: application) (user :: user). (app_id app, user_id user) \<in> set (denied_tracking ps) \<longrightarrow> ~ (app_id app, user_id user) \<in> set (approved_tracking ps) \<longrightarrow> tracking_allowed ps app user = False"
   by auto
 
 (* consent_revocation_effective (matches Coq) *)
-lemma consent_revocation_effective: "\<forall>(user_before user_after : user) (app :: application). explicit_consent user_before app \<longrightarrow> tracking_consent_given user_after = False \<longrightarrow> user_id user_before = user_id user_after \<longrightarrow> ~ explicit_consent user_after app"
+lemma consent_revocation_effective: "\<forall>(user_before :: user) (user_after :: user) (app :: application). explicit_consent user_before app \<longrightarrow> tracking_consent_given user_after = False \<longrightarrow> user_id user_before = user_id user_after \<longrightarrow> ~ explicit_consent user_after app"
   by auto
 
 (* no_consent_no_data (matches Coq) *)

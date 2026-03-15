@@ -281,7 +281,7 @@ definition scene_is_consistent :: "SceneClassification \<Rightarrow> bool" where
 
 (* language_is_supported (matches Coq: Definition language_is_supported) *)
 definition language_is_supported :: "TextRecognition \<Rightarrow> bool" where
-  "language_is_supported tr \<equiv> text_language_supported tr = True \<and> In (text_language tr) (text_supported_languages tr)"
+  "language_is_supported tr \<equiv> text_language_supported tr = True \<and> (text_language tr) \<in> set (text_supported_languages tr)"
 
 (* request_cancellable (matches Coq: Definition request_cancellable) *)
 definition request_cancellable :: "VisionRequest \<Rightarrow> bool" where
@@ -370,15 +370,15 @@ lemma vision_request_cancellable: "\<forall>(vr :: vision_request). request_canc
   by auto
 
 (* image_similarity_symmetric (matches Coq) *)
-lemma image_similarity_symmetric: "\<forall>(p1 p2 : image_pair). similarity_symmetric_pair p1 p2 \<longrightarrow> img_a p1 = img_b p2 \<longrightarrow> img_b p1 = img_a p2 \<longrightarrow> similarity_score p1 = similarity_score p2"
+lemma image_similarity_symmetric: "\<forall>(p1 :: image_pair) (p2 :: image_pair). similarity_symmetric_pair p1 p2 \<longrightarrow> img_a p1 = img_b p2 \<longrightarrow> img_b p1 = img_a p2 \<longrightarrow> similarity_score p1 = similarity_score p2"
   by auto
 
 (* vision_pipeline_ordered (matches Coq) *)
-lemma vision_pipeline_ordered: "\<forall>(s1 s2 : pipeline_stage). pipeline_stages_ordered [s1; s2] \<longrightarrow> stage_order s1 \<le> stage_order s2"
+lemma vision_pipeline_ordered: "\<forall>(s1 :: pipeline_stage) (s2 :: pipeline_stage). pipeline_stages_ordered [s1; s2] \<longrightarrow> stage_order s1 \<le> stage_order s2"
   by auto
 
 (* frame_analysis_rate_limited (matches Coq) *)
-lemma frame_analysis_rate_limited: "\<forall>(f1 f2 : frame_analysis). frame_rate_limited f1 f2 \<longrightarrow> frame_timestamp_ms f2 \<ge> frame_timestamp_ms f1 + min_interval_ms f1"
+lemma frame_analysis_rate_limited: "\<forall>(f1 :: frame_analysis) (f2 :: frame_analysis). frame_rate_limited f1 f2 \<longrightarrow> frame_timestamp_ms f2 \<ge> frame_timestamp_ms f1 + min_interval_ms f1"
   by auto
 
 (* object_detection_confidence_bounded (matches Coq) *)
@@ -394,7 +394,7 @@ lemma pose_estimation_min_frames: "\<forall>(pe :: pose_estimate). pose_is_stabl
   by auto
 
 (* language_in_supported_list (matches Coq) *)
-lemma language_in_supported_list: "\<forall>(tr :: text_recognition). language_is_supported tr \<longrightarrow> In (text_language tr) (text_supported_languages tr)"
+lemma language_in_supported_list: "\<forall>(tr :: text_recognition). language_is_supported tr \<longrightarrow> (text_language tr) \<in> set (text_supported_languages tr)"
   by auto
 
 (* empty_detections_always_bounded (matches Coq) *)

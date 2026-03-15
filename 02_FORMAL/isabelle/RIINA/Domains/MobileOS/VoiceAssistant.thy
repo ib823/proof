@@ -252,7 +252,7 @@ definition voice_command_intent_validated :: "VoiceCommand \<Rightarrow> bool" w
 
 (* speech_recognition_language_supported (matches Coq: Definition speech_recognition_language_supported) *)
 definition speech_recognition_language_supported :: "SpeechRecognition \<Rightarrow> bool" where
-  "speech_recognition_language_supported sr \<equiv> sr_language_supported sr = True \<and> In (sr_language sr) (sr_supported_languages sr)"
+  "speech_recognition_language_supported sr \<equiv> sr_language_supported sr = True \<and> (sr_language sr) \<in> set (sr_supported_languages sr)"
 
 (* voice_feedback_appropriate (matches Coq: Definition voice_feedback_appropriate) *)
 definition voice_feedback_appropriate :: "VoiceFeedback \<Rightarrow> bool" where

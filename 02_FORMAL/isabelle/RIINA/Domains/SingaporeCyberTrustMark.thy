@@ -177,7 +177,7 @@ lemma ctm_certification: "\<forall>(a :: ctm_assessment) (t :: ctm_tier). govern
   by auto
 
 (* tier_monotonicity (matches Coq) *)
-lemma tier_monotonicity: "\<forall>(t1 t2 : ctm_tier). tier_level t1 \<le> tier_level t2 \<longrightarrow> tier_threshold t1 \<le> tier_threshold t2"
+lemma tier_monotonicity: "\<forall>(t1 :: ctm_tier) (t2 :: ctm_tier). tier_level t1 \<le> tier_level t2 \<longrightarrow> tier_threshold t1 \<le> tier_threshold t2"
   by auto
 
 (* ctm_tier_coverage (matches Coq) *)

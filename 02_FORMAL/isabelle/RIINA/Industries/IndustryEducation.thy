@@ -107,9 +107,9 @@ fun student_data_sensitivity :: "StudentData \<Rightarrow> nat" where
 
 (* coppa_applies (matches Coq: Definition coppa_applies) *)
 fun coppa_applies :: "StudentAge \<Rightarrow> bool" where
-  "coppa_applies Under13 = true"
-|   "coppa_applies Teen = false"
-|   "coppa_applies Adult = false"
+  "coppa_applies Under13 = True"
+|   "coppa_applies Teen = False"
+|   "coppa_applies Adult = False"
 
 (* all_ferpa_controls (matches Coq: Definition all_ferpa_controls) *)
 definition all_ferpa_controls :: "FERPA_Compliance \<Rightarrow> bool" where

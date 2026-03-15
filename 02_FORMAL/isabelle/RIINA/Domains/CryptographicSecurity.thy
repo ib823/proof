@@ -719,7 +719,7 @@ lemma riina_complete_crypto_security: "ct_valid riina_ct_op = True \<and> aead_s
 
 (* ENC-001: Authenticated encryption preserves plaintext length *)
 (* enc_001_length_preservation (matches Coq) *)
-lemma enc_001_length_preservation: "\<forall>(scheme :: encryption_scheme) (pt_len ct_len : nat). enc_is_authenticated scheme = True \<longrightarrow> pt_len = ct_len \<longrightarrow> pt_len = ct_len"
+lemma enc_001_length_preservation: "\<forall>(scheme :: encryption_scheme) (pt_len :: nat) (ct_len :: nat). enc_is_authenticated scheme = True \<longrightarrow> pt_len = ct_len \<longrightarrow> pt_len = ct_len"
   by auto
 
 (* ENC-002: Encryption requires valid key size *)
@@ -809,12 +809,12 @@ lemma nonce_001_counter_incrementable: "\<forall>(cn :: counter_nonce). counter_
 
 (* NONCE-002: Incrementing counter changes nonce *)
 (* nonce_002_increment_changes_nonce (matches Coq) *)
-lemma nonce_002_increment_changes_nonce: "\<forall>(cn :: counter_nonce). counter_nonce_valid cn = True \<longrightarrow> cn_counter cn \<noteq> S (cn_counter cn)"
+lemma nonce_002_increment_changes_nonce: "\<forall>(cn :: counter_nonce). counter_nonce_valid cn = True \<longrightarrow> cn_counter cn \<noteq> Suc (cn_counter cn)"
   by auto
 
 (* NONCE-003: Different counters produce different nonces *)
 (* nonce_003_different_counters_different_nonces (matches Coq) *)
-lemma nonce_003_different_counters_different_nonces: "\<forall>(n m : nat). n \<noteq> m \<longrightarrow> n \<noteq> m"
+lemma nonce_003_different_counters_different_nonces: "\<forall>(n :: nat) (m :: nat). n \<noteq> m \<longrightarrow> n \<noteq> m"
   by auto
 
 (* Empty set contains no nonces *)
@@ -824,7 +824,7 @@ lemma nonce_004_empty_set_no_collision: "\<forall>(n : list nat). nonce_in_set n
 
 (* NONCE-005: Adding to set increases size *)
 (* nonce_005_add_increases_size (matches Coq) *)
-lemma nonce_005_add_increases_size: "\<forall>(n : list nat) (ns :: nonce_set). length (n :: ns) = S (length ns)"
+lemma nonce_005_add_increases_size: "\<forall>(n : list nat) (ns :: nonce_set). length (n :: ns) = Suc (length ns)"
   by simp
 
 (* FULL-001: RIINA full crypto config is secure *)

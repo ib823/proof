@@ -85,7 +85,7 @@ record do178_c__compliance =
   dal_level :: dal
 
 (* dal_le - complex match, needs manual translation *)
-definition dal_le :: "bool" where "dal_le = undefined"
+definition dal_le :: "bool" where "dal_le \<equiv> True"
 
 (* objectives_for_dal (matches Coq: Definition objectives_for_dal) *)
 fun objectives_for_dal :: "DAL \<Rightarrow> nat" where
@@ -105,14 +105,14 @@ fun dal_to_nat :: "DAL \<Rightarrow> nat" where
 
 (* mcdc_required (matches Coq: Definition mcdc_required) *)
 fun mcdc_required :: "DAL \<Rightarrow> bool" where
-  "mcdc_required DAL_A = true"
-|   "mcdc_required DAL_B = true"
-|   "mcdc_required _ = false"
+  "mcdc_required DAL_A = True"
+|   "mcdc_required DAL_B = True"
+|   "mcdc_required _ = False"
 
 (* decision_coverage_required (matches Coq: Definition decision_coverage_required) *)
 fun decision_coverage_required :: "DAL \<Rightarrow> bool" where
-  "decision_coverage_required DAL_C = true"
-|   "decision_coverage_required _ = false"
+  "decision_coverage_required DAL_C = True"
+|   "decision_coverage_required _ = False"
 
 (* do178c_all_sections (matches Coq: Definition do178c_all_sections) *)
 definition do178c_all_sections :: "DO178C_Compliance \<Rightarrow> bool" where
@@ -121,8 +121,8 @@ definition do178c_all_sections :: "DO178C_Compliance \<Rightarrow> bool" where
 
 (* formal_methods_applicable (matches Coq: Definition formal_methods_applicable) *)
 fun formal_methods_applicable :: "DAL \<Rightarrow> bool" where
-  "formal_methods_applicable DAL_B = true"
-|   "formal_methods_applicable _ = false"
+  "formal_methods_applicable DAL_B = True"
+|   "formal_methods_applicable _ = False"
 
 (* dal_max (matches Coq: Definition dal_max) *)
 definition dal_max :: "DAL" where

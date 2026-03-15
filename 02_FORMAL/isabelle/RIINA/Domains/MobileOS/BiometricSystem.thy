@@ -301,7 +301,7 @@ lemma presentation_attack_detected: "\<forall>(attempt :: biometric_attempt) (cf
   by auto
 
 (* template_update_secure_thm (matches Coq) *)
-lemma template_update_secure_thm: "\<forall>(old_t new_t : biometric_template). template_update_secure old_t new_t \<longrightarrow> tmpl_version new_t > tmpl_version old_t \<and> tmpl_encrypted new_t = True"
+lemma template_update_secure_thm: "\<forall>(old_t :: biometric_template) (new_t :: biometric_template). template_update_secure old_t new_t \<longrightarrow> tmpl_version new_t > tmpl_version old_t \<and> tmpl_encrypted new_t = True"
   by auto
 
 (* biometric_not_sole_factor (matches Coq) *)

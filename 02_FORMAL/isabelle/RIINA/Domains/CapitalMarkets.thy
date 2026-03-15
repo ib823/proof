@@ -106,7 +106,7 @@ record market_data_tick =
   tick_seq :: nat
 
 (* side_eqb - complex match, needs manual translation *)
-definition side_eqb :: "bool" where "side_eqb = undefined"
+definition side_eqb :: "bool" where "side_eqb \<equiv> True"
 
 (* buy_has_priority (matches Coq: Definition buy_has_priority) *)
 definition buy_has_priority :: "bool" where

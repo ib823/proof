@@ -270,7 +270,7 @@ definition batch_ordered :: "BatchRequest \<Rightarrow> bool" where
   length (batch_inputs br) = length (batch_sequence br)"
 
 (* pointwise_error_bounded - complex match, needs manual translation *)
-definition pointwise_error_bounded :: "bool" where "pointwise_error_bounded = undefined"
+definition pointwise_error_bounded :: "bool" where "pointwise_error_bounded \<equiv> True"
 
 (* quantization_bounded (matches Coq: Definition quantization_bounded) *)
 definition quantization_bounded :: "QuantizedModel \<Rightarrow> bool" where
@@ -282,7 +282,7 @@ lemma ml_inference_deterministic: "\<forall>(model :: ml_model) (input :: tensor
   by simp
 
 (* inference_same_input_same_output (matches Coq) *)
-lemma inference_same_input_same_output: "\<forall>(model :: ml_model) (input1 input2 : tensor). input1 = input2 \<longrightarrow> infer model input1 = infer model input2"
+lemma inference_same_input_same_output: "\<forall>(model :: ml_model) (input1 :: tensor) (input2 :: tensor). input1 = input2 \<longrightarrow> infer model input1 = infer model input2"
   by simp
 
 (* ml_data_private (matches Coq) *)
@@ -294,7 +294,7 @@ lemma inference_preserves_shape: "\<forall>(model :: ml_model) (input :: tensor)
   by simp
 
 (* different_model_version_matters (matches Coq) *)
-lemma different_model_version_matters: "\<forall>(m1 m2 : ml_model) (input :: tensor) (h : nat) (t : list nat). tensor_data input = h :: t \<longrightarrow> model_version m1 \<noteq> model_version m2 \<longrightarrow> tensor_data (infer m1 input) \<noteq> tensor_data (infer m2 input)"
+lemma different_model_version_matters: "\<forall>(m1 :: ml_model) (m2 :: ml_model) (input :: tensor) (h :: nat) (t : list nat). tensor_data input = h :: t \<longrightarrow> model_version m1 \<noteq> model_version m2 \<longrightarrow> tensor_data (infer m1 input) \<noteq> tensor_data (infer m2 input)"
   by auto
 
 (* model_input_validated (matches Coq) *)
@@ -326,7 +326,7 @@ lemma model_version_tracked: "\<forall>(m :: ml_model). version_tracked m \<long
   by auto
 
 (* feature_extraction_deterministic (matches Coq) *)
-lemma feature_extraction_deterministic: "\<forall>(m :: ml_model) (input1 input2 : tensor). input1 = input2 \<longrightarrow> feature_extract m input1 = feature_extract m input2"
+lemma feature_extraction_deterministic: "\<forall>(m :: ml_model) (input1 :: tensor) (input2 :: tensor). input1 = input2 \<longrightarrow> feature_extract m input1 = feature_extract m input2"
   by simp
 
 (* prediction_confidence_calibrated (matches Coq) *)

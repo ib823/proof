@@ -265,13 +265,13 @@ definition valid_target :: "Backend \<Rightarrow> bool" where
 
 (* routes_to (matches Coq: Definition routes_to) *)
 definition routes_to :: "LBState \<Rightarrow> http_request \<Rightarrow> backend \<Rightarrow> bool" where
-  "routes_to lb req b \<equiv> In b (lb_backends lb) \<and> valid_target b \<and>
+  "routes_to lb req b \<equiv> b \<in> set (lb_backends lb) \<and> valid_target b \<and>
   req_method req <> EmptyString \<and> req_path req <> EmptyString"
 
 (* session_affinity_maintained (matches Coq: Definition session_affinity_maintained) *)
 definition session_affinity_maintained :: "LBState \<Rightarrow> nat \<Rightarrow> backend \<Rightarrow> bool" where
   "session_affinity_maintained lb s b \<equiv> lb_session_map lb s = Some (backend_id b) ->
-  In b (lb_backends lb) ->
+  b \<in> set (lb_backends lb) ->
   healthy b ->
   routes_to lb (mkRequest "GET" "/" [] [] (Some s)) b"
 
@@ -334,15 +334,15 @@ definition access_audited :: "AuditLog \<Rightarrow> nat \<Rightarrow> Key \<Rig
 
 (* sent (matches Coq: Definition sent) *)
 definition sent :: "QueueState \<Rightarrow> message \<Rightarrow> bool" where
-  "sent q m \<equiv> In m (q_messages q) \/ exists c, In (m, c) (q_delivered q)"
+  "sent q m \<equiv> m \<in> set (q_messages q) \/ exists c, (m, c) \<in> set (q_delivered q)"
 
 (* delivered (matches Coq: Definition delivered) *)
 definition delivered :: "QueueState \<Rightarrow> message \<Rightarrow> Consumer \<Rightarrow> bool" where
-  "delivered q m c \<equiv> In (m, c) (q_delivered q)"
+  "delivered q m c \<equiv> (m, c) \<in> set (q_delivered q)"
 
 (* acknowledged (matches Coq: Definition acknowledged) *)
 definition acknowledged :: "QueueState \<Rightarrow> message \<Rightarrow> Consumer \<Rightarrow> bool" where
-  "acknowledged q m c \<equiv> In (msg_id m, c) (q_acked q)"
+  "acknowledged q m c \<equiv> (msg_id m, c) \<in> set (q_acked q)"
 
 (* eventually (matches Coq: Definition eventually) *)
 definition eventually :: "bool \<Rightarrow> bool" where
@@ -357,8 +357,8 @@ definition delivered_count :: "QueueState \<Rightarrow> message \<Rightarrow> Co
 (* preserves_order (matches Coq: Definition preserves_order) *)
 definition preserves_order :: "QueueState \<Rightarrow> bool" where
   "preserves_order q \<equiv> forall m1 m2 c,
-    In (m1, c) (q_delivered q) ->
-    In (m2, c) (q_delivered q) ->
+    (m1, c) \<in> set (q_delivered q) ->
+    (m2, c) \<in> set (q_delivered q) ->
     msg_id m1 < msg_id m2 ->
     True"
 
@@ -392,7 +392,7 @@ fun hash_chain_valid :: "Log \<Rightarrow> bool" where
 
 (* aol_append (matches Coq: Definition aol_append) *)
 definition aol_append :: "AppendOnlyLog \<Rightarrow> log_entry \<Rightarrow> AppendOnlyLog" where
-  "aol_append l e \<equiv> mkAOLog (e :: aol_entries l) (S (aol_write_count l))"
+  "aol_append l e \<equiv> mkAOLog (e :: aol_entries l) (Suc (aol_write_count l))"
 
 (* safe_log_entry (matches Coq: Definition safe_log_entry) *)
 definition safe_log_entry :: "nat \<Rightarrow> string \<Rightarrow> nat \<Rightarrow> LogEntry" where
@@ -427,14 +427,14 @@ definition secret_expired :: "Secret \<Rightarrow> nat \<Rightarrow> bool" where
 
 (* secret_access_audited (matches Coq: Definition secret_access_audited) *)
 definition secret_access_audited :: "SecretsStore \<Rightarrow> service \<Rightarrow> secret \<Rightarrow> nat \<Rightarrow> bool" where
-  "secret_access_audited ss svc sec ts \<equiv> In (svc, secret_id sec, ts) (access_log ss)"
+  "secret_access_audited ss svc sec ts \<equiv> (svc, secret_id sec, ts) \<in> set (access_log ss)"
 
 (* INF_001_01_lb_routes_correctly (matches Coq) *)
 lemma INF_001_01_lb_routes_correctly: "\<forall>lb req b. routes_to lb req b \<longrightarrow> healthy b \<and> has_capacity b"
   by auto
 
 (* INF_001_02_lb_session_affinity (matches Coq) *)
-lemma INF_001_02_lb_session_affinity: "\<forall>lb s b. lb_session_map lb s = Some (backend_id b) \<longrightarrow> In b (lb_backends lb) \<longrightarrow> healthy b \<longrightarrow> has_capacity b \<longrightarrow> routes_to lb (mkRequest "GET"%string "/"%string [] [] (Some s)) b"
+lemma INF_001_02_lb_session_affinity: "\<forall>lb s b. lb_session_map lb s = Some (backend_id b) \<longrightarrow> b \<in> set (lb_backends lb) \<longrightarrow> healthy b \<longrightarrow> has_capacity b \<longrightarrow> routes_to lb (mkRequest "GET"%string "/"%string [] [] (Some s)) b"
   by auto
 
 (* INF_001_03_lb_no_request_smuggling (matches Coq) *)
@@ -498,7 +498,7 @@ lemma INF_001_16_mq_no_deser_attack: "\<forall>payload expected. \<exists>result
   by simp
 
 (* INF_001_17_mq_dlq_complete (matches Coq) *)
-lemma INF_001_17_mq_dlq_complete: "\<forall>q m err. goes_to_dlq q m (POFailure err) \<longrightarrow> In m (q_dlq q)"
+lemma INF_001_17_mq_dlq_complete: "\<forall>q m err. goes_to_dlq q m (POFailure err) \<longrightarrow> m \<in> set (q_dlq q)"
   by auto
 
 (* INF_001_18_mq_backpressure (matches Coq) *)
@@ -530,7 +530,7 @@ lemma INF_001_24_secret_expiry: "\<forall>sec current_time. current_time > secre
   by auto
 
 (* INF_001_25_secret_audited (matches Coq) *)
-lemma INF_001_25_secret_audited: "\<forall>ss svc sec ts. In (svc, secret_id sec, ts) (access_log ss) \<longrightarrow> secret_access_audited ss svc sec ts"
+lemma INF_001_25_secret_audited: "\<forall>ss svc sec ts. (svc, secret_id sec, ts) \<in> set (access_log ss) \<longrightarrow> secret_access_audited ss svc sec ts"
   by auto
 
 end

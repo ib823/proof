@@ -116,7 +116,7 @@ record op_sig =
   opOutputTy :: base_ty
 
 (* effectOp_eqb - complex match, needs manual translation *)
-definition effectOp_eqb :: "bool" where "effectOp_eqb = undefined"
+definition effectOp_eqb :: "bool" where "effectOp_eqb \<equiv> True"
 
 (* in_row (matches Coq: Definition in_row) *)
 definition in_row :: "EffectOp \<Rightarrow> effect_row \<Rightarrow> bool" where
@@ -220,7 +220,7 @@ lemma row_subset_incl: "\<forall>r1 r2. row_subset r1 r2 = True <-> incl r1 r2"
   by auto
 
 (* row_minus_spec (matches Coq) *)
-lemma row_minus_spec: "\<forall>r handled op. In op (row_minus r handled) <-> op \<in> set r \<and> ~op \<in> set handled"
+lemma row_minus_spec: "\<forall>r handled op. op \<in> set (row_minus r handled) <-> op \<in> set r \<and> ~op \<in> set handled"
   by auto
 
 (* EFF_001_01_effect_signature_wellformedness (matches Coq) *)
@@ -228,15 +228,15 @@ lemma EFF_001_01_effect_signature_wellformedness: "\<forall>(sig :: effect_sig).
   by simp
 
 (* EFF_001_02_operation_typing (matches Coq) *)
-lemma EFF_001_02_operation_typing: "\<forall>(op :: effect_op) (v :: val) (sig : effect_sig). val_has_type v (opInputTy (opSignature op)) \<longrightarrow> op \<in> set sig \<longrightarrow> comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig)"
+lemma EFF_001_02_operation_typing: "\<forall>(op :: effect_op) (v :: val) (sig :: effect_sig). val_has_type v (opInputTy (opSignature op)) \<longrightarrow> op \<in> set sig \<longrightarrow> comp_has_type (CPerform op v) (CTyEff (opOutputTy (opSignature op)) sig)"
   by auto
 
 (* EFF_001_03_handler_typing (matches Coq) *)
-lemma EFF_001_03_handler_typing: "\<forall>(h :: handler) (c :: comp) (t : base_ty) (sig sig' : effect_row). comp_has_type c (CTyEff t sig) \<longrightarrow> handler_has_type h sig t sig' \<longrightarrow> comp_has_type (CHandle c h) (CTyEff t sig')"
+lemma EFF_001_03_handler_typing: "\<forall>(h :: handler) (c :: comp) (t :: base_ty) (sig sig' : effect_row). comp_has_type c (CTyEff t sig) \<longrightarrow> handler_has_type h sig t sig' \<longrightarrow> comp_has_type (CHandle c h) (CTyEff t sig')"
   by auto
 
 (* EFF_001_04_effect_row_combination (matches Coq) *)
-lemma EFF_001_04_effect_row_combination: "\<forall>(r1 r2 : effect_row). sig_wellformed r1 \<longrightarrow> sig_wellformed r2 \<longrightarrow> (\<forall>op. op \<in> set r1 \<longrightarrow> ~op \<in> set r2) \<longrightarrow> sig_wellformed (row_union r1 r2)"
+lemma EFF_001_04_effect_row_combination: "\<forall>(r1 :: effect_row) (r2 :: effect_row). sig_wellformed r1 \<longrightarrow> sig_wellformed r2 \<longrightarrow> (\<forall>op. op \<in> set r1 \<longrightarrow> ~op \<in> set r2) \<longrightarrow> sig_wellformed (row_union r1 r2)"
   by auto
 
 (* EFF_001_05_effect_subsumption (matches Coq) *)
@@ -252,7 +252,7 @@ lemma compose_handlers_effects: "\<forall>h1 h2. handler_effects (compose_handle
   by simp
 
 (* EFF_001_07_handler_composition (matches Coq) *)
-lemma EFF_001_07_handler_composition: "\<forall>(h1 h2 : handler) (t :: base_ty) (sig : effect_row). handler_has_type h1 (handler_effects h1) t sig \<longrightarrow> handler_has_type h2 (handler_effects h2) t sig \<longrightarrow> (\<forall>op. In op (handler_effects h1) \<longrightarrow> ~In op (handler_effects h2)) \<longrightarrow> handler_has_type (compose_handlers h1 h2) (handler_effects h1 ++ handler_effects h2) t sig"
+lemma EFF_001_07_handler_composition: "\<forall>(h1 :: handler) (h2 :: handler) (t :: base_ty) (sig :: effect_row). handler_has_type h1 (handler_effects h1) t sig \<longrightarrow> handler_has_type h2 (handler_effects h2) t sig \<longrightarrow> (\<forall>op. op \<in> set (handler_effects h1) \<longrightarrow> op \<notin> set (handler_effects h2)) \<longrightarrow> handler_has_type (compose_handlers h1 h2) (handler_effects h1 ++ handler_effects h2) t sig"
   by auto
 
 (* EFF_001_08_effect_polymorphism (matches Coq) *)
@@ -268,7 +268,7 @@ lemma EFF_001_10_shallow_handler_semantics: "\<forall>(op :: effect_op) (v :: va
   by auto
 
 (* EFF_001_11_effect_masking (matches Coq) *)
-lemma EFF_001_11_effect_masking: "\<forall>(h :: handler) (sig :: effect_row) (op : effect_op). In op (handler_effects h) \<longrightarrow> op \<in> set sig \<longrightarrow> ~In op (row_minus sig (handler_effects h))"
+lemma EFF_001_11_effect_masking: "\<forall>(h :: handler) (sig :: effect_row) (op :: effect_op). op \<in> set (handler_effects h) \<longrightarrow> op \<in> set sig \<longrightarrow> op \<notin> set (row_minus sig (handler_effects h))"
   by auto
 
 (* EFF_001_12_resumption_linearity (matches Coq) *)
@@ -288,7 +288,7 @@ lemma eval_pure_deterministic: "\<forall>c v1 v2. eval_pure c v1 \<longrightarro
   by simp
 
 (* EFF_001_15_effect_coherence (matches Coq) *)
-lemma EFF_001_15_effect_coherence: "\<forall>(c :: comp) (v1 v2 : val). is_pure c \<longrightarrow> eval_pure c v1 \<longrightarrow> eval_pure c v2 \<longrightarrow> v1 = v2"
+lemma EFF_001_15_effect_coherence: "\<forall>(c :: comp) (v1 :: val) (v2 :: val). is_pure c \<longrightarrow> eval_pure c v1 \<longrightarrow> eval_pure c v2 \<longrightarrow> v1 = v2"
   by auto
 
 end

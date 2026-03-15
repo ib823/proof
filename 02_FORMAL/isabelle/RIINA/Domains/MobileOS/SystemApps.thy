@@ -265,7 +265,7 @@ lemma app_sandbox_enforced: "\<forall>(app :: system_app) (perm :: app_permissio
   by auto
 
 (* no_cross_app_data_access (matches Coq) *)
-lemma no_cross_app_data_access: "\<forall>(app1 app2 : system_app). no_cross_app_access app1 app2 \<longrightarrow> sys_app_id app1 \<noteq> sys_app_id app2 \<longrightarrow> has_sandbox app1 = True \<and> has_sandbox app2 = True"
+lemma no_cross_app_data_access: "\<forall>(app1 :: system_app) (app2 :: system_app). no_cross_app_access app1 app2 \<longrightarrow> sys_app_id app1 \<noteq> sys_app_id app2 \<longrightarrow> has_sandbox app1 = True \<and> has_sandbox app2 = True"
   by auto
 
 (* app_permission_checked_at_runtime (matches Coq) *)

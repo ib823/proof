@@ -154,14 +154,14 @@ lemma val_rel_le_includes_at: "\<forall>n Σ T v1 v2. val_rel_le n Σ T v1 v2 \<
 
 (* val_rel_at plus cumulative gives val_rel_le *)
 (* val_rel_at_to_le (matches Coq) *)
-lemma val_rel_at_to_le: "\<forall>n Σ T v1 v2. val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_at (S n) Σ T v1 v2 \<longrightarrow> val_rel_le (S n) Σ T v1 v2"
+lemma val_rel_at_to_le: "\<forall>n Σ T v1 v2. val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_at (Suc n) Σ T v1 v2 \<longrightarrow> val_rel_le (Suc n) Σ T v1 v2"
   by auto
 
 (* Helper lemma for building relations on indistinguishable types.
     These are types where val_rel_struct is True (not requiring equality).
     NOTE: TBytes is excluded because it requires v1 = v2. *)
 (* val_rel_le_build_indist (matches Coq) *)
-lemma val_rel_le_build_indist: "\<forall>m Σ T v1 v2. value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> match T with | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ | TCapability _ | TCapabilityFull _ | TProof _ | TChan _ | TSecureChan _ _ | TConstantTime _ | TZeroizing _ | TList _ | TOption _ => True | _ => False end \<longrightarrow> val_rel_le m Σ T v1 v2"
+lemma val_rel_le_build_indist: "\<forall>m Σ T v1 v2. value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> (case T of TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ | TCapability _ | TCapabilityFull _ | TProof _ | TChan _ | TSecureChan _ _ | TConstantTime _ | TZeroizing _ | TList _ | TOption _ => True | _ => False) \<longrightarrow> val_rel_le m Σ T v1 v2"
   by auto
 
 (* val_rel_le_step_up_fo (matches Coq) *)
@@ -170,7 +170,7 @@ lemma val_rel_le_step_up_fo: "\<forall>n m Σ T v1 v2. first_order_type T = True
 
 (* For base/indistinguishable types, relation at step 1 implies relation at all steps *)
 (* val_rel_le_base_permanent (matches Coq) *)
-lemma val_rel_le_base_permanent: "\<forall>Σ T v1 v2. match T with | TUnit | TBool | TInt | TString | TBytes => True | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ => True | TCapability _ | TCapabilityFull _ | TProof _ => True | TChan _ | TSecureChan _ _ => True | TConstantTime _ | TZeroizing _ => True | TList _ | TOption _ => True | _ => False end \<longrightarrow> val_rel_le 1 Σ T v1 v2 \<longrightarrow> \<forall>n. val_rel_le n Σ T v1 v2"
+lemma val_rel_le_base_permanent: "\<forall>Σ T v1 v2. (case T of TUnit | TBool | TInt | TString | TBytes => True | TSecret _ | TLabeled _ _ | TTainted _ _ | TSanitized _ _ => True | TCapability _ | TCapabilityFull _ | TProof _ => True | TChan _ | TSecureChan _ _ => True | TConstantTime _ | TZeroizing _ => True | TList _ | TOption _ => True | _ => False) \<longrightarrow> val_rel_le 1 Σ T v1 v2 \<longrightarrow> \<forall>n. val_rel_le n Σ T v1 v2"
   by auto
 
 (* Two closed values of TUnit are equal iff related at any positive step *)

@@ -82,7 +82,7 @@ definition exists_in_heap :: "HeapState \<Rightarrow> object_id \<Rightarrow> bo
 
 (* exists_obj (matches Coq: Definition exists_obj) *)
 definition exists_obj :: "HeapState \<Rightarrow> object \<Rightarrow> bool" where
-  "exists_obj st obj \<equiv> In obj (live_objects st)"
+  "exists_obj st obj \<equiv> obj \<in> set (live_objects st)"
 
 (* after_gc_exists (matches Coq: Definition after_gc_exists) *)
 definition after_gc_exists :: "GCResult \<Rightarrow> object \<Rightarrow> bool" where
@@ -120,12 +120,12 @@ lemma gc_collects_garbage: "\<forall>(result :: gc_result) (obj :: object). vali
 
 (* Roots are always reachable *)
 (* roots_reachable (matches Coq) *)
-lemma roots_reachable: "\<forall>(st :: heap_state) (oid :: object_id). In oid (root_set st) \<longrightarrow> \<exists>_in_heap st oid \<longrightarrow> reachable st oid"
+lemma roots_reachable: "\<forall>(st :: heap_state) (oid :: object_id). oid \<in> set (root_set st) \<longrightarrow> \<exists>_in_heap st oid \<longrightarrow> reachable st oid"
   by auto
 
 (* Referenced objects are reachable *)
 (* references_reachable (matches Coq) *)
-lemma references_reachable: "\<forall>(st :: heap_state) (parent :: object) (child_oid : object_id). reachable st (obj_id parent) \<longrightarrow> In parent (live_objects st) \<longrightarrow> In child_oid (obj_references parent) \<longrightarrow> \<exists>_in_heap st child_oid \<longrightarrow> reachable st child_oid"
+lemma references_reachable: "\<forall>(st :: heap_state) (parent :: object) (child_oid :: object_id). reachable st (obj_id parent) \<longrightarrow> parent \<in> set (live_objects st) \<longrightarrow> child_oid \<in> set (obj_references parent) \<longrightarrow> \<exists>_in_heap st child_oid \<longrightarrow> reachable st child_oid"
   by auto
 
 (* Empty root set means only explicitly reachable objects survive *)
@@ -135,7 +135,7 @@ lemma empty_roots_gc: "\<forall>(result :: gc_result). valid_gc result \<longrig
 
 (* GC preserves root set *)
 (* gc_preserves_root_set (matches Coq) *)
-lemma gc_preserves_root_set: "\<forall>(result :: gc_result). valid_gc result \<longrightarrow> \<forall>oid. In oid (root_set (gc_pre_state result)) \<longrightarrow> \<exists>_in_heap (gc_pre_state result) oid \<longrightarrow> \<exists>_in_heap (gc_post_state result) oid"
+lemma gc_preserves_root_set: "\<forall>(result :: gc_result). valid_gc result \<longrightarrow> \<forall>oid. oid \<in> set (root_set (gc_pre_state result)) \<longrightarrow> \<exists>_in_heap (gc_pre_state result) oid \<longrightarrow> \<exists>_in_heap (gc_post_state result) oid"
   by auto
 
 (* No objects survive GC if heap was entirely unreachable *)
@@ -150,12 +150,12 @@ lemma gc_safety: "\<forall>(result :: gc_result). valid_gc result \<longrightarr
 
 (* Root reachability is a subset of general reachability *)
 (* root_reachable_subset (matches Coq) *)
-lemma root_reachable_subset: "\<forall>(st :: heap_state) (oid :: object_id). In oid (root_set st) \<longrightarrow> \<exists>_in_heap st oid \<longrightarrow> reachable st oid"
+lemma root_reachable_subset: "\<forall>(st :: heap_state) (oid :: object_id). oid \<in> set (root_set st) \<longrightarrow> \<exists>_in_heap st oid \<longrightarrow> reachable st oid"
   by auto
 
 (* Transitive reachability: if A reaches B and B reaches C, A reaches C *)
 (* reachability_transitive (matches Coq) *)
-lemma reachability_transitive: "\<forall>(st :: heap_state) (a_oid c_oid : object_id) (b :: object). reachable st a_oid \<longrightarrow> In b (live_objects st) \<longrightarrow> obj_id b = a_oid \<longrightarrow> In c_oid (obj_references b) \<longrightarrow> \<exists>_in_heap st c_oid \<longrightarrow> reachable st c_oid"
+lemma reachability_transitive: "\<forall>(st :: heap_state) (a_oid :: object_id) (c_oid :: object_id) (b :: object). reachable st a_oid \<longrightarrow> b \<in> set (live_objects st) \<longrightarrow> obj_id b = a_oid \<longrightarrow> c_oid \<in> set (obj_references b) \<longrightarrow> \<exists>_in_heap st c_oid \<longrightarrow> reachable st c_oid"
   by auto
 
 (* GC idempotent: running GC on GC result doesn't change anything *)
@@ -170,7 +170,7 @@ lemma empty_heap_gc_safe: "\<forall>(result :: gc_result). live_objects (gc_pre_
 
 (* object with no references doesn't contribute to reachability *)
 (* no_refs_no_children (matches Coq) *)
-lemma no_refs_no_children: "\<forall>(st :: heap_state) (parent :: object) (child_oid : object_id). obj_references parent = [] \<longrightarrow> ~ (In parent (live_objects st) \<and> In child_oid (obj_references parent))"
+lemma no_refs_no_children: "\<forall>(st :: heap_state) (parent :: object) (child_oid :: object_id). obj_references parent = [] \<longrightarrow> ~ (parent \<in> set (live_objects st) \<and> child_oid \<in> set (obj_references parent))"
   by auto
 
 (* GC preserves reachable objects deterministically *)
@@ -180,7 +180,7 @@ lemma gc_preserves_deterministic: "\<forall>(result :: gc_result) (oid :: object
 
 (* Single-object heap with root: object survives GC *)
 (* single_root_survives (matches Coq) *)
-lemma single_root_survives: "\<forall>(result :: gc_result) (obj :: object). valid_gc result \<longrightarrow> live_objects (gc_pre_state result) = [obj] \<longrightarrow> In (obj_id obj) (root_set (gc_pre_state result)) \<longrightarrow> \<exists>_in_heap (gc_post_state result) (obj_id obj)"
+lemma single_root_survives: "\<forall>(result :: gc_result) (obj :: object). valid_gc result \<longrightarrow> live_objects (gc_pre_state result) = [obj] \<longrightarrow> (obj_id obj) \<in> set (root_set (gc_pre_state result)) \<longrightarrow> \<exists>_in_heap (gc_post_state result) (obj_id obj)"
   by auto
 
 (* Heap utilization non-negative *)

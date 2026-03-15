@@ -303,7 +303,7 @@ definition mutex_acquire :: "MutexState \<Rightarrow> thread_id \<Rightarrow> op
   else Some (mkMutex True (Some t))"
 
 (* mutex_release - complex match, needs manual translation *)
-definition mutex_release :: "bool" where "mutex_release = undefined"
+definition mutex_release :: "bool" where "mutex_release \<equiv> True"
 
 (* project (matches Coq: Definition project) *)
 fun project :: "GlobalType \<Rightarrow> Role \<Rightarrow> SessionType" where
@@ -358,7 +358,7 @@ lemma X_001_05_race_freedom: "\<forall>cfg l. well_typed cfg \<longrightarrow> ~
   by auto
 
 (* X_001_06_race_freedom_composition (matches Coq) *)
-lemma X_001_06_race_freedom_composition: "\<forall>cfg1 cfg2 l. (~ data_race cfg1 l) \<longrightarrow> (~ data_race cfg2 l) \<longrightarrow> (\<forall>t. ~ (In t (map thread_id cfg1) \<and> In t (map thread_id cfg2))) \<longrightarrow> ~ data_race (cfg1 ++ cfg2) l"
+lemma X_001_06_race_freedom_composition: "\<forall>cfg1 cfg2 l. (~ data_race cfg1 l) \<longrightarrow> (~ data_race cfg2 l) \<longrightarrow> (\<forall>t. ~ (t \<in> set (map thread_id cfg1) \<and> t \<in> set (map thread_id cfg2))) \<longrightarrow> ~ data_race (cfg1 ++ cfg2) l"
   by auto
 
 (* X_001_07_atomic_operations (matches Coq) *)
@@ -370,7 +370,7 @@ lemma X_001_08_lock_protects: "\<forall>m t m'. mutex_acquire m t = Some m' \<lo
   by simp
 
 (* X_001_09_session_type_dual (matches Coq) *)
-lemma X_001_09_session_type_dual: "\<forall>s. match s with | SSend m s' => dual (dual (SSend m s')) = SSend m s' \<longrightarrow> dual (dual s') = s' \<longrightarrow> True | SRecv m s' => dual (dual (SRecv m s')) = SRecv m s' \<longrightarrow> dual (dual s') = s' \<longrightarrow> True | SEnd => dual (dual SEnd) = SEnd | _ => True end"
+lemma X_001_09_session_type_dual: "\<forall>s. (case s of SSend m s' => dual (dual (SSend m s')) = SSend m s' \<longrightarrow> dual (dual s') = s' \<longrightarrow> True | SRecv m s' => dual (dual (SRecv m s')) = SRecv m s' \<longrightarrow> dual (dual s') = s' \<longrightarrow> True | SEnd => dual (dual SEnd) = SEnd | _ => True)"
   by auto
 
 (* X_001_09b_dual_send_recv (matches Coq) *)

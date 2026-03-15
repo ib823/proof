@@ -158,7 +158,7 @@ lemma unlicensed_no_presumption: "\<forall>(c :: certificate). cert_ca_licensed 
   by auto
 
 (* signature_verification (matches Coq) *)
-lemma signature_verification: "\<forall>(s :: digital_signature) (c :: certificate) (t : nat). sig_verified s = True \<longrightarrow> sig_cert_id s = cert_id c \<longrightarrow> cert_valid c t \<longrightarrow> signature_legally_valid s c t"
+lemma signature_verification: "\<forall>(s :: digital_signature) (c :: certificate) (t :: nat). sig_verified s = True \<longrightarrow> sig_cert_id s = cert_id c \<longrightarrow> cert_valid c t \<longrightarrow> signature_legally_valid s c t"
   by auto
 
 (* key_strength_2048 (matches Coq) *)
@@ -166,11 +166,11 @@ lemma key_strength_2048: "\<forall>(c :: certificate). 2048 \<le> cert_key_lengt
   by auto
 
 (* subscriber_duty_encrypted (matches Coq) *)
-lemma subscriber_duty_encrypted: "\<forall>(enc hsm : bool). enc = True \<longrightarrow> private_key_protected enc hsm"
+lemma subscriber_duty_encrypted: "\<forall>(enc :: bool) (hsm :: bool). enc = True \<longrightarrow> private_key_protected enc hsm"
   by auto
 
 (* subscriber_duty_hsm (matches Coq) *)
-lemma subscriber_duty_hsm: "\<forall>(enc hsm : bool). hsm = True \<longrightarrow> private_key_protected enc hsm"
+lemma subscriber_duty_hsm: "\<forall>(enc :: bool) (hsm :: bool). hsm = True \<longrightarrow> private_key_protected enc hsm"
   by auto
 
 (* active_not_terminated (matches Coq) *)
@@ -198,7 +198,7 @@ lemma cert_valid_implies_licensed: "\<forall>(c :: certificate) (t :: nat). cert
   by auto
 
 (* key_strength_downward (matches Coq) *)
-lemma key_strength_downward: "\<forall>(c :: certificate) (bits1 bits2 : nat). bits1 \<le> bits2 \<longrightarrow> key_strength_adequate c bits2 \<longrightarrow> key_strength_adequate c bits1"
+lemma key_strength_downward: "\<forall>(c :: certificate) (bits1 :: nat) (bits2 :: nat). bits1 \<le> bits2 \<longrightarrow> key_strength_adequate c bits2 \<longrightarrow> key_strength_adequate c bits1"
   by auto
 
 (* key_strength_4096_implies_2048 (matches Coq) *)
@@ -218,7 +218,7 @@ lemma revoked_cert_on_crl: "\<forall>(crl : list crl_entry) (entry :: crl_entry)
   by auto
 
 (* crl_addition_preserves (matches Coq) *)
-lemma crl_addition_preserves: "\<forall>(crl : list crl_entry) (new_entry :: crl_entry) (cid : nat). cert_on_crl crl cid \<longrightarrow> cert_on_crl (new_entry :: crl) cid"
+lemma crl_addition_preserves: "\<forall>(crl : list crl_entry) (new_entry :: crl_entry) (cid :: nat). cert_on_crl crl cid \<longrightarrow> cert_on_crl (new_entry :: crl) cid"
   by auto
 
 (* signature_timestamp_in_cert_validity (matches Coq) *)
@@ -226,7 +226,7 @@ lemma signature_timestamp_in_cert_validity: "\<forall>(s :: digital_signature) (
   by auto
 
 (* dsa_composition (matches Coq) *)
-lemma dsa_composition: "\<forall>(c :: certificate) (s :: digital_signature) (t : nat) (key_enc key_hsm : bool). cert_valid c t \<longrightarrow> signature_legally_valid s c t \<longrightarrow> key_strength_adequate c 2048 \<longrightarrow> private_key_protected key_enc key_hsm \<longrightarrow> dsa_fully_compliant c s t key_enc key_hsm"
+lemma dsa_composition: "\<forall>(c :: certificate) (s :: digital_signature) (t :: nat) (key_enc :: bool) (key_hsm :: bool). cert_valid c t \<longrightarrow> signature_legally_valid s c t \<longrightarrow> key_strength_adequate c 2048 \<longrightarrow> private_key_protected key_enc key_hsm \<longrightarrow> dsa_fully_compliant c s t key_enc key_hsm"
   by simp
 
 (* cert_status_coverage (matches Coq) *)

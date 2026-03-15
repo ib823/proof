@@ -108,7 +108,7 @@ definition pixel_count :: "FrameBuffer \<Rightarrow> nat" where
 (* Theorem: An application cannot read another application's frame buffer
     without explicit permission. *)
 (* display_buffer_isolated (matches Coq) *)
-lemma display_buffer_isolated: "\<forall>(app1 app2 : application) (buffer :: frame_buffer). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_buffer app1 buffer \<longrightarrow> app_screen_capture_perm app2 = False \<longrightarrow> ~ can_read_buffer app2 buffer"
+lemma display_buffer_isolated: "\<forall>(app1 :: application) (app2 :: application) (buffer :: frame_buffer). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_buffer app1 buffer \<longrightarrow> app_screen_capture_perm app2 = False \<longrightarrow> ~ can_read_buffer app2 buffer"
   by auto
 
 (* Theorem: Screen capture requires explicit permission. *)
@@ -128,7 +128,7 @@ lemma no_permission_no_capture: "\<forall>(app :: application). app_screen_captu
 
 (* Buffer ownership is exclusive *)
 (* buffer_ownership_exclusive (matches Coq) *)
-lemma buffer_ownership_exclusive: "\<forall>(app1 app2 : application) (fb :: frame_buffer). owns_buffer app1 fb \<longrightarrow> owns_buffer app2 fb \<longrightarrow> app_id app1 = app_id app2"
+lemma buffer_ownership_exclusive: "\<forall>(app1 :: application) (app2 :: application) (fb :: frame_buffer). owns_buffer app1 fb \<longrightarrow> owns_buffer app2 fb \<longrightarrow> app_id app1 = app_id app2"
   by auto
 
 (* Overlay requires permission *)
@@ -143,7 +143,7 @@ lemma no_overlay_without_permission: "\<forall>(app :: application). app_overlay
 
 (* Display output integrity: frame is from a valid buffer *)
 (* display_output_integrity (matches Coq) *)
-lemma display_output_integrity: "\<forall>(app :: application) (fb :: frame_buffer) (frame : frame). owns_buffer app fb \<longrightarrow> frame_source frame = fb_id fb \<longrightarrow> fb_owner fb = app_id app"
+lemma display_output_integrity: "\<forall>(app :: application) (fb :: frame_buffer) (frame :: frame). owns_buffer app fb \<longrightarrow> frame_source frame = fb_id fb \<longrightarrow> fb_owner fb = app_id app"
   by auto
 
 (* Valid framebuffer has positive pixel count *)
@@ -188,12 +188,12 @@ lemma no_overlay_no_app: "\<forall>(ds :: display_state). active_overlay ds = No
 
 (* Buffer identity via frame buffer id *)
 (* fb_id_determines_buffer (matches Coq) *)
-lemma fb_id_determines_buffer: "\<forall>(fb1 fb2 : frame_buffer). fb_id fb1 = fb_id fb2 \<longrightarrow> fb_owner fb1 = fb_owner fb2 \<longrightarrow> fb_width fb1 = fb_width fb2 \<longrightarrow> fb_height fb1 = fb_height fb2 \<longrightarrow> fb_protected fb1 = fb_protected fb2 \<longrightarrow> fb1 = fb2"
+lemma fb_id_determines_buffer: "\<forall>(fb1 :: frame_buffer) (fb2 :: frame_buffer). fb_id fb1 = fb_id fb2 \<longrightarrow> fb_owner fb1 = fb_owner fb2 \<longrightarrow> fb_width fb1 = fb_width fb2 \<longrightarrow> fb_height fb1 = fb_height fb2 \<longrightarrow> fb_protected fb1 = fb_protected fb2 \<longrightarrow> fb1 = fb2"
   by auto
 
 (* Display isolation symmetric: if app1 isolated from app2, vice versa *)
 (* display_isolation_symmetric (matches Coq) *)
-lemma display_isolation_symmetric: "\<forall>(app1 app2 : application) (fb :: frame_buffer). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_buffer app2 fb \<longrightarrow> app_screen_capture_perm app1 = False \<longrightarrow> ~ can_read_buffer app1 fb"
+lemma display_isolation_symmetric: "\<forall>(app1 :: application) (app2 :: application) (fb :: frame_buffer). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_buffer app2 fb \<longrightarrow> app_screen_capture_perm app1 = False \<longrightarrow> ~ can_read_buffer app1 fb"
   by auto
 
 (* Capture permission for capture and overlay are independent *)
@@ -213,12 +213,12 @@ lemma no_perm_app: "\<forall>(app :: application). app_screen_capture_perm app =
 
 (* Display state with no buffers has no readable buffers *)
 (* empty_display_no_read (matches Coq) *)
-lemma empty_display_no_read: "\<forall>(ds :: display_state) (app :: application) (fb : frame_buffer). frame_buffers ds = [] \<longrightarrow> In fb (frame_buffers ds) \<longrightarrow> can_read_buffer app fb"
+lemma empty_display_no_read: "\<forall>(ds :: display_state) (app :: application) (fb :: frame_buffer). frame_buffers ds = [] \<longrightarrow> fb \<in> set (frame_buffers ds) \<longrightarrow> can_read_buffer app fb"
   by auto
 
 (* frame timestamps are comparable *)
 (* frame_timestamp_order (matches Coq) *)
-lemma frame_timestamp_order: "\<forall>(f1 f2 : frame). frame_timestamp f1 \<le> frame_timestamp f2 \<or> frame_timestamp f2 < frame_timestamp f1"
+lemma frame_timestamp_order: "\<forall>(f1 :: frame) (f2 :: frame). frame_timestamp f1 \<le> frame_timestamp f2 \<or> frame_timestamp f2 < frame_timestamp f1"
   by auto
 
 end

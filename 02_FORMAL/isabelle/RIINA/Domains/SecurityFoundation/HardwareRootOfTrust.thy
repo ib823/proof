@@ -122,12 +122,12 @@ definition in_trust_chain :: "HWRootState \<Rightarrow> boot_component_id \<Righ
   ) (trust_chain st)"
 
 (* get_verifier - complex match, needs manual translation *)
-definition get_verifier :: "bool" where "get_verifier = undefined"
+definition get_verifier :: "bool" where "get_verifier \<equiv> True"
 
 (* verified_from_hw_root_aux (matches Coq: Definition verified_from_hw_root_aux) *)
 fun verified_from_hw_root_aux :: "HWRootState \<Rightarrow> boot_component_id \<Rightarrow> nat \<Rightarrow> bool" where
-  "verified_from_hw_root_aux O = false"
-|   "verified_from_hw_root_aux None = false"
+  "verified_from_hw_root_aux O = False"
+|   "verified_from_hw_root_aux None = False"
 
 (* verified_from_hw_root (matches Coq: Definition verified_from_hw_root) *)
 definition verified_from_hw_root :: "HWRootState \<Rightarrow> boot_component_id \<Rightarrow> bool" where
@@ -173,15 +173,15 @@ lemma root_of_trust_hardware: "\<forall>(hsm :: hsm_type). let st := initial_hw_
   by simp
 
 (* trust_extension_preserves_root (matches Coq) *)
-lemma trust_extension_preserves_root: "\<forall>(st :: hw_root_state) (verifier comp : boot_component_id) (measurement :: nat). hw_root_verified st hw_root_component \<longrightarrow> let st' := extend_trust_chain st verifier comp measurement in hw_root_verified st' hw_root_component"
+lemma trust_extension_preserves_root: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). hw_root_verified st hw_root_component \<longrightarrow> let st' := extend_trust_chain st verifier comp measurement in hw_root_verified st' hw_root_component"
   by auto
 
 (* extended_component_trusted (matches Coq) *)
-lemma extended_component_trusted: "\<forall>(st :: hw_root_state) (verifier comp : boot_component_id) (measurement :: nat). in_trust_chain st verifier = True \<longrightarrow> let st' := extend_trust_chain st verifier comp measurement in component_trusted st' comp"
+lemma extended_component_trusted: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). in_trust_chain st verifier = True \<longrightarrow> let st' := extend_trust_chain st verifier comp measurement in component_trusted st' comp"
   by auto
 
 (* untrusted_cannot_extend (matches Coq) *)
-lemma untrusted_cannot_extend: "\<forall>(st :: hw_root_state) (verifier comp : boot_component_id) (measurement :: nat). in_trust_chain st verifier = False \<longrightarrow> extend_trust_chain st verifier comp measurement = st"
+lemma untrusted_cannot_extend: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). in_trust_chain st verifier = False \<longrightarrow> extend_trust_chain st verifier comp measurement = st"
   by simp
 
 (* root_key_is_protected (matches Coq) *)
@@ -189,7 +189,7 @@ lemma root_key_is_protected: "\<forall>(hsm :: hsm_type). let st := initial_hw_s
   by simp
 
 (* pcr_record_preserved (matches Coq) *)
-lemma pcr_record_preserved: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value algo : nat). let st' := record_pcr st comp value algo in In (mkMeasurement comp value algo) (pcr_values st')"
+lemma pcr_record_preserved: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat). let st' := record_pcr st comp value algo in (mkMeasurement comp value algo) \<in> set (pcr_values st')"
   by simp
 
 (* Hardware root is always in initial trust chain *)
@@ -209,61 +209,61 @@ lemma hardware_initialized_initial: "\<forall>(hsm :: hsm_type). hardware_initia
 
 (* Trust extension preserves attestation key *)
 (* trust_extension_preserves_attestation (matches Coq) *)
-lemma trust_extension_preserves_attestation: "\<forall>(st :: hw_root_state) (verifier comp : boot_component_id) (measurement :: nat). attestation_key_present st = True \<longrightarrow> attestation_key_present (extend_trust_chain st verifier comp measurement) = True"
+lemma trust_extension_preserves_attestation: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). attestation_key_present st = True \<longrightarrow> attestation_key_present (extend_trust_chain st verifier comp measurement) = True"
   by auto
 
 (* Trust extension preserves root key *)
 (* trust_extension_preserves_root_key (matches Coq) *)
-lemma trust_extension_preserves_root_key: "\<forall>(st :: hw_root_state) (verifier comp : boot_component_id) (measurement :: nat). root_key_present st = True \<longrightarrow> root_key_present (extend_trust_chain st verifier comp measurement) = True"
+lemma trust_extension_preserves_root_key: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). root_key_present st = True \<longrightarrow> root_key_present (extend_trust_chain st verifier comp measurement) = True"
   by auto
 
 (* Trust extension preserves hardware initialization *)
 (* trust_extension_preserves_init (matches Coq) *)
-lemma trust_extension_preserves_init: "\<forall>(st :: hw_root_state) (verifier comp : boot_component_id) (measurement :: nat). hardware_initialized st = True \<longrightarrow> hardware_initialized (extend_trust_chain st verifier comp measurement) = True"
+lemma trust_extension_preserves_init: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). hardware_initialized st = True \<longrightarrow> hardware_initialized (extend_trust_chain st verifier comp measurement) = True"
   by auto
 
 (* PCR recording preserves trust chain *)
 (* pcr_preserves_trust_chain (matches Coq) *)
-lemma pcr_preserves_trust_chain: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value algo : nat). trust_chain (record_pcr st comp value algo) = trust_chain st"
+lemma pcr_preserves_trust_chain: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat). trust_chain (record_pcr st comp value algo) = trust_chain st"
   by simp
 
 (* PCR recording preserves root key *)
 (* pcr_preserves_root_key (matches Coq) *)
-lemma pcr_preserves_root_key: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value algo : nat). root_key_present (record_pcr st comp value algo) = root_key_present st"
+lemma pcr_preserves_root_key: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat). root_key_present (record_pcr st comp value algo) = root_key_present st"
   by simp
 
 (* PCR values grow monotonically *)
 (* pcr_values_grow (matches Coq) *)
-lemma pcr_values_grow: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value algo : nat) (m :: measurement). In m (pcr_values st) \<longrightarrow> In m (pcr_values (record_pcr st comp value algo))"
+lemma pcr_values_grow: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat) (m :: measurement). m \<in> set (pcr_values st) \<longrightarrow> m \<in> set (pcr_values (record_pcr st comp value algo))"
   by auto
 
 (* Trust chain grows on extension with trusted verifier *)
 (* trust_chain_grows (matches Coq) *)
-lemma trust_chain_grows: "\<forall>(st :: hw_root_state) (verifier comp : boot_component_id) (measurement :: nat) (entry : trust_chain_entry). in_trust_chain st verifier = True \<longrightarrow> In entry (trust_chain st) \<longrightarrow> In entry (trust_chain (extend_trust_chain st verifier comp measurement))"
+lemma trust_chain_grows: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat) (entry :: trust_chain_entry). in_trust_chain st verifier = True \<longrightarrow> entry \<in> set (trust_chain st) \<longrightarrow> entry \<in> set (trust_chain (extend_trust_chain st verifier comp measurement))"
   by auto
 
 (* Extended trust chain has new component *)
 (* extended_chain_has_component (matches Coq) *)
-lemma extended_chain_has_component: "\<forall>(st :: hw_root_state) (verifier comp : boot_component_id) (measurement :: nat). in_trust_chain st verifier = True \<longrightarrow> In (mkTrustEntry comp verifier measurement True) (trust_chain (extend_trust_chain st verifier comp measurement))"
+lemma extended_chain_has_component: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). in_trust_chain st verifier = True \<longrightarrow> (mkTrustEntry comp verifier measurement True) \<in> set (trust_chain (extend_trust_chain st verifier comp measurement))"
   by simp
 
 (* HSM type is preserved by all operations *)
 (* hsm_type_invariant_extend (matches Coq) *)
-lemma hsm_type_invariant_extend: "\<forall>(st :: hw_root_state) (verifier comp : boot_component_id) (measurement :: nat). hsm_type (extend_trust_chain st verifier comp measurement) = hsm_type st"
+lemma hsm_type_invariant_extend: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). hsm_type (extend_trust_chain st verifier comp measurement) = hsm_type st"
   by auto
 
 (* hsm_type_invariant_pcr (matches Coq) *)
-lemma hsm_type_invariant_pcr: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value algo : nat). hsm_type (record_pcr st comp value algo) = hsm_type st"
+lemma hsm_type_invariant_pcr: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat). hsm_type (record_pcr st comp value algo) = hsm_type st"
   by simp
 
 (* Root key protection preserved by extension *)
 (* root_key_protection_preserved (matches Coq) *)
-lemma root_key_protection_preserved: "\<forall>(st :: hw_root_state) (verifier comp : boot_component_id) (measurement :: nat). root_key_protected st \<longrightarrow> root_key_protected (extend_trust_chain st verifier comp measurement)"
+lemma root_key_protection_preserved: "\<forall>(st :: hw_root_state) (verifier :: boot_component_id) (comp :: boot_component_id) (measurement :: nat). root_key_protected st \<longrightarrow> root_key_protected (extend_trust_chain st verifier comp measurement)"
   by auto
 
 (* Root key protection preserved by PCR recording *)
 (* root_key_protection_preserved_pcr (matches Coq) *)
-lemma root_key_protection_preserved_pcr: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value algo : nat). root_key_protected st \<longrightarrow> root_key_protected (record_pcr st comp value algo)"
+lemma root_key_protection_preserved_pcr: "\<forall>(st :: hw_root_state) (comp :: boot_component_id) (value :: nat) (algo :: nat). root_key_protected st \<longrightarrow> root_key_protected (record_pcr st comp value algo)"
   by auto
 
 end

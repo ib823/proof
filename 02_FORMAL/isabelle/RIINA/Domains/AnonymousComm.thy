@@ -166,7 +166,7 @@ lemma anon_009_nonce_unique: "\<forall>(messages : list onion_message). nonces_u
   by auto
 
 (* anon_010_unlinkability (matches Coq) *)
-lemma anon_010_unlinkability: "\<forall>(sender receiver : nat) (obs :: observation). unlinkable sender receiver obs \<longrightarrow> unlinkable sender receiver obs"
+lemma anon_010_unlinkability: "\<forall>(sender :: nat) (receiver :: nat) (obs :: observation). unlinkable sender receiver obs \<longrightarrow> unlinkable sender receiver obs"
   by auto
 
 (* anon_011_no_sender_in_obs (matches Coq) *)
@@ -186,7 +186,7 @@ lemma anon_014_path_safe: "\<forall>(path compromised : list nat). path_avoids p
   by auto
 
 (* anon_015_pseudonym_rotation (matches Coq) *)
-lemma anon_015_pseudonym_rotation: "\<forall>(old_pseudo new_pseudo : nat). pseudonyms_rotated old_pseudo new_pseudo \<longrightarrow> old_pseudo \<noteq> new_pseudo"
+lemma anon_015_pseudonym_rotation: "\<forall>(old_pseudo :: nat) (new_pseudo :: nat). pseudonyms_rotated old_pseudo new_pseudo \<longrightarrow> old_pseudo \<noteq> new_pseudo"
   by auto
 
 (* anon_016_circuit_lifetime (matches Coq) *)
@@ -202,11 +202,11 @@ lemma anon_018_uniform_size: "\<forall>(sizes : list nat) (target :: nat). sizes
   by auto
 
 (* anon_019_forward_secrecy (matches Coq) *)
-lemma anon_019_forward_secrecy: "\<forall>(session_key long_term_key : nat). forward_secret session_key long_term_key \<longrightarrow> session_key \<noteq> long_term_key"
+lemma anon_019_forward_secrecy: "\<forall>(session_key :: nat) (long_term_key :: nat). forward_secret session_key long_term_key \<longrightarrow> session_key \<noteq> long_term_key"
   by auto
 
 (* anon_020_intersection_resistance (matches Coq) *)
-lemma anon_020_intersection_resistance: "\<forall>(observations required : nat). intersection_resistant observations required \<longrightarrow> required > observations"
+lemma anon_020_intersection_resistance: "\<forall>(observations :: nat) (required :: nat). intersection_resistant observations required \<longrightarrow> required > observations"
   by auto
 
 (* anon_021_rendezvous_hidden (matches Coq) *)
@@ -214,7 +214,7 @@ lemma anon_021_rendezvous_hidden: "\<forall>(rp_id :: nat) (observer_known : lis
   by auto
 
 (* anon_022_bidirectional (matches Coq) *)
-lemma anon_022_bidirectional: "\<forall>(sender receiver : nat) (sender_set receiver_set : anonymity_set). k_anonymous sender_set 2 \<longrightarrow> k_anonymous receiver_set 2 \<longrightarrow> length sender_set \<ge> 2 \<and> length receiver_set \<ge> 2"
+lemma anon_022_bidirectional: "\<forall>(sender :: nat) (receiver :: nat) (sender_set :: anonymity_set) (receiver_set :: anonymity_set). k_anonymous sender_set 2 \<longrightarrow> k_anonymous receiver_set 2 \<longrightarrow> length sender_set \<ge> 2 \<and> length receiver_set \<ge> 2"
   by auto
 
 (* anon_023_no_spof (matches Coq) *)

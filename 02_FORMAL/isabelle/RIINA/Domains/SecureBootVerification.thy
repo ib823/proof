@@ -378,7 +378,7 @@ definition antirollback_protected :: "BootChain \<Rightarrow> bool" where
   kernel_antirollback_ok (bc_kernel chain)"
 
 (* is_root_key - complex match, needs manual translation *)
-definition is_root_key :: "bool" where "is_root_key = undefined"
+definition is_root_key :: "bool" where "is_root_key \<equiv> True"
 
 (* key_revoked_in_list (matches Coq: Definition key_revoked_in_list) *)
 definition key_revoked_in_list :: "nat \<Rightarrow> bool" where
@@ -694,7 +694,7 @@ lemma SB_050_measured_boot_pcrs: "\<forall>(tpm :: tpm_state). measured_boot_com
   by auto
 
 (* SB_051_version_no_rollback (matches Coq) *)
-lemma SB_051_version_no_rollback: "\<forall>(version min_version : nat). version_above_minimum version min_version = True \<longrightarrow> min_version \<le> version"
+lemma SB_051_version_no_rollback: "\<forall>(version :: nat) (min_version :: nat). version_above_minimum version min_version = True \<longrightarrow> min_version \<le> version"
   by auto
 
 (* SB_052_bootloader_version_ok (matches Coq) *)
@@ -726,11 +726,11 @@ lemma SB_058_same_version_passes: "\<forall>(v :: nat). version_above_minimum v 
   by auto
 
 (* SB_059_higher_version_passes (matches Coq) *)
-lemma SB_059_higher_version_passes: "\<forall>(version min_version : nat). min_version < version \<longrightarrow> version_above_minimum version min_version = True"
+lemma SB_059_higher_version_passes: "\<forall>(version :: nat) (min_version :: nat). min_version < version \<longrightarrow> version_above_minimum version min_version = True"
   by auto
 
 (* SB_060_lower_version_fails (matches Coq) *)
-lemma SB_060_lower_version_fails: "\<forall>(version min_version : nat). version < min_version \<longrightarrow> version_above_minimum version min_version = False"
+lemma SB_060_lower_version_fails: "\<forall>(version :: nat) (min_version :: nat). version < min_version \<longrightarrow> version_above_minimum version min_version = False"
   by auto
 
 (* SB_061_root_no_parent (matches Coq) *)

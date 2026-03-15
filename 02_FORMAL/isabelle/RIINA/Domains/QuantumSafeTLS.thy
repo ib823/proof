@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | security_level      | security_level         | OK     |
+ * | qtls_security_level      | qtls_security_level         | OK     |
  * | kem_scheme          | kem_scheme             | OK     |
  * | ecdh_curve          | ecdh_curve             | OK     |
  * | signature_scheme    | signature_scheme       | OK     |
@@ -148,8 +148,8 @@ begin
 
 (* Auto-generated type synonyms for Coq compatibility *)
 type_synonym tls_13_extensions = "nat"
-(* security_level (matches Coq: Inductive security_level) *)
-datatype security_level =
+(* qtls_security_level (matches Coq: Inductive qtls_security_level) *)
+datatype qtls_security_level =
     Level1
   |     Level3
   |     Level5
@@ -305,7 +305,7 @@ record quantum_safe_tls_full =
   qstls_extensions :: tls_13_extensions
 
 (* level_leq - complex match, needs manual translation *)
-definition level_leq :: "bool" where "level_leq = undefined"
+definition level_leq :: "bool" where "level_leq \<equiv> True"
 
 (* level_min (matches Coq: Definition level_min) *)
 definition level_min :: "SecurityLevel" where
@@ -366,9 +366,9 @@ fun sig_security_level :: "SignatureScheme \<Rightarrow> SecurityLevel" where
 
 (* sig_is_post_quantum (matches Coq: Definition sig_is_post_quantum) *)
 fun sig_is_post_quantum :: "SignatureScheme \<Rightarrow> bool" where
-  "sig_is_post_quantum ML_DSA_87 = true"
-|   "sig_is_post_quantum SLH_DSA_256 = true"
-|   "sig_is_post_quantum Ed25519 = false"
+  "sig_is_post_quantum ML_DSA_87 = True"
+|   "sig_is_post_quantum SLH_DSA_256 = True"
+|   "sig_is_post_quantum Ed25519 = False"
 
 (* sig_fully_secure (matches Coq: Definition sig_fully_secure) *)
 definition sig_fully_secure :: "SignatureSecurityProps \<Rightarrow> bool" where

@@ -293,7 +293,7 @@ lemma process_isolation_enforced: "\<forall>(pt :: process_table). (\<forall>p1 
   by auto
 
 (* memory_space_disjoint (matches Coq) *)
-lemma memory_space_disjoint: "\<forall>(p1 p2 : ext_process). ext_mem_disjoint p1 p2 \<longrightarrow> \<forall>addr. (ext_mem_start p1 \<le> addr \<and> addr < ext_mem_start p1 + ext_mem_size p1) \<longrightarrow> ~ (ext_mem_start p2 \<le> addr \<and> addr < ext_mem_start p2 + ext_mem_size p2)"
+lemma memory_space_disjoint: "\<forall>(p1 :: ext_process) (p2 :: ext_process). ext_mem_disjoint p1 p2 \<longrightarrow> \<forall>addr. (ext_mem_start p1 \<le> addr \<and> addr < ext_mem_start p1 + ext_mem_size p1) \<longrightarrow> ~ (ext_mem_start p2 \<le> addr \<and> addr < ext_mem_start p2 + ext_mem_size p2)"
   by auto
 
 (* syscall_validation_complete (matches Coq) *)
@@ -337,7 +337,7 @@ lemma pid_uniqueness: "\<forall>(pt :: process_table). all_pids_unique pt \<long
   by auto
 
 (* scheduler_fairness (matches Coq) *)
-lemma scheduler_fairness: "\<forall>(sched :: scheduler_state) (pid :: nat). In pid (sched_ready_queue sched) \<longrightarrow> sched_time_slice sched > 0 \<longrightarrow> \<exists>ts. ts > 0 \<and> ts = sched_time_slice sched"
+lemma scheduler_fairness: "\<forall>(sched :: scheduler_state) (pid :: nat). pid \<in> set (sched_ready_queue sched) \<longrightarrow> sched_time_slice sched > 0 \<longrightarrow> \<exists>ts. ts > 0 \<and> ts = sched_time_slice sched"
   by auto
 
 (* context_switch_atomic (matches Coq) *)

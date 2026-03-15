@@ -172,7 +172,7 @@ lemma cii_obligation_3: "\<forall>(i :: sg_cyber_incident). sg_incident_reported
   by auto
 
 (* sg_stricter_than_my (matches Coq) *)
-lemma sg_stricter_than_my: "\<forall>(detected_at reported_at : nat). reported_at \<le> detected_at + 2 \<longrightarrow> reported_at \<le> detected_at + 6"
+lemma sg_stricter_than_my: "\<forall>(detected_at :: nat) (reported_at :: nat). reported_at \<le> detected_at + 2 \<longrightarrow> reported_at \<le> detected_at + 6"
   by auto
 
 (* cii_obligation_4 (matches Coq) *)

@@ -292,7 +292,7 @@ lemma no_use_after_free: "\<forall>(b :: memory_block). block_freed b \<longrigh
   by auto
 
 (* memory_leak_impossible (matches Coq) *)
-lemma memory_leak_impossible: "\<forall>(h :: heap). (\<forall>b. In b (heap_blocks h) \<longrightarrow> block_allocated b \<or> block_freed b) \<longrightarrow> \<forall>b. In b (heap_blocks h) \<longrightarrow> block_state b = Allocated \<or> block_state b = Freed"
+lemma memory_leak_impossible: "\<forall>(h :: heap). (\<forall>b. b \<in> set (heap_blocks h) \<longrightarrow> block_allocated b \<or> block_freed b) \<longrightarrow> \<forall>b. b \<in> set (heap_blocks h) \<longrightarrow> block_state b = Allocated \<or> block_state b = Freed"
   by auto
 
 (* stack_overflow_prevented (matches Coq) *)
@@ -316,15 +316,15 @@ lemma virtual_memory_page_aligned: "\<forall>(vm :: virtual_mapping). page_align
   by auto
 
 (* memory_mapping_non_overlapping (matches Coq) *)
-lemma memory_mapping_non_overlapping: "\<forall>(vm1 vm2 : virtual_mapping). mappings_non_overlapping vm1 vm2 \<longrightarrow> \<forall>addr. vmap_virtual_page vm1 \<le> addr \<longrightarrow> addr < vmap_virtual_page vm1 + vmap_page_size vm1 \<longrightarrow> ~ (vmap_virtual_page vm2 \<le> addr \<and> addr < vmap_virtual_page vm2 + vmap_page_size vm2)"
+lemma memory_mapping_non_overlapping: "\<forall>(vm1 :: virtual_mapping) (vm2 :: virtual_mapping). mappings_non_overlapping vm1 vm2 \<longrightarrow> \<forall>addr. vmap_virtual_page vm1 \<le> addr \<longrightarrow> addr < vmap_virtual_page vm1 + vmap_page_size vm1 \<longrightarrow> ~ (vmap_virtual_page vm2 \<le> addr \<and> addr < vmap_virtual_page vm2 + vmap_page_size vm2)"
   by auto
 
 (* shared_memory_synchronized (matches Coq) *)
-lemma shared_memory_synchronized: "\<forall>(b1 b2 : memory_block). shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2"
+lemma shared_memory_synchronized: "\<forall>(b1 :: memory_block) (b2 :: memory_block). shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2"
   by auto
 
 (* cache_coherent (matches Coq) *)
-lemma cache_coherent: "\<forall>(b1 b2 : memory_block). shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2 \<and> block_size b1 = block_size b2"
+lemma cache_coherent: "\<forall>(b1 :: memory_block) (b2 :: memory_block). shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2 \<and> block_size b1 = block_size b2"
   by auto
 
 (* dma_buffer_protected (matches Coq) *)

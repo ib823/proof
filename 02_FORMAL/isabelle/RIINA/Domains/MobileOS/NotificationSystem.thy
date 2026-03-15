@@ -163,10 +163,10 @@ definition eventually_delivered_or_expired :: "Notification \<Rightarrow> bool" 
 
 (* passes_focus_filter (matches Coq: Definition passes_focus_filter) *)
 fun passes_focus_filter :: "Notification \<Rightarrow> focus_mode \<Rightarrow> bool" where
-  "passes_focus_filter AllNotifications = true"
+  "passes_focus_filter AllNotifications = True"
 |   "passes_focus_filter PriorityOnly = match"
-|   "passes_focus_filter High = true"
-|   "passes_focus_filter _ = false"
+|   "passes_focus_filter High = True"
+|   "passes_focus_filter _ = False"
 
 (* notification_system_correct (matches Coq: Definition notification_system_correct) *)
 definition notification_system_correct :: "Notification \<Rightarrow> bool" where

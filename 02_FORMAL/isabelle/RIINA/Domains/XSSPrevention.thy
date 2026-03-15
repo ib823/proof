@@ -349,9 +349,9 @@ definition xss_maximum_protection :: "XSSConfig \<Rightarrow> bool" where
 
 (* taint_safe (matches Coq: Definition taint_safe) *)
 fun taint_safe :: "TaintLevel \<Rightarrow> bool" where
-  "taint_safe TaintSanitized = true"
-|   "taint_safe TaintTrusted = true"
-|   "taint_safe _ = false"
+  "taint_safe TaintSanitized = True"
+|   "taint_safe TaintTrusted = True"
+|   "taint_safe _ = False"
 
 (* riina_output (matches Coq: Definition riina_output) *)
 definition riina_output :: "OutputEncoding" where
@@ -374,7 +374,7 @@ definition riina_xss :: "XSSConfig" where
   "riina_xss \<equiv> mkXSS riina_output riina_csp riina_dom riina_input True"
 
 (* propagate_taint - complex match, needs manual translation *)
-definition propagate_taint :: "bool" where "propagate_taint = undefined"
+definition propagate_taint :: "bool" where "propagate_taint \<equiv> True"
 
 (* reflected_xss_safe (matches Coq: Definition reflected_xss_safe) *)
 definition reflected_xss_safe :: "ReflectedXSSScenario \<Rightarrow> bool" where

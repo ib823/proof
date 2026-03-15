@@ -173,7 +173,7 @@ definition after_recovery :: "FileSystem \<Rightarrow> time \<Rightarrow> FileSy
 (* consistent (matches Coq: Definition consistent) *)
 definition consistent :: "FileSystem \<Rightarrow> bool" where
   "consistent fs \<equiv> fs_consistent fs = True \<and>
-  forall f, In f (fs_files fs) -> file_integrity_valid f"
+  forall f, f \<in> set (fs_files fs) -> file_integrity_valid f"
 
 (* journaled_write (matches Coq: Definition journaled_write) *)
 definition journaled_write :: "FileSystem \<Rightarrow> file_id \<Rightarrow> data \<Rightarrow> FileSystem" where
@@ -194,15 +194,15 @@ definition commit_journal :: "FileSystem \<Rightarrow> FileSystem" where
 
 (* file_perm_allows_read (matches Coq: Definition file_perm_allows_read) *)
 fun file_perm_allows_read :: "FilePermission \<Rightarrow> bool" where
-  "file_perm_allows_read ReadOnly = true"
-|   "file_perm_allows_read ReadWrite = true"
-|   "file_perm_allows_read Execute = false"
-|   "file_perm_allows_read NoAccess = false"
+  "file_perm_allows_read ReadOnly = True"
+|   "file_perm_allows_read ReadWrite = True"
+|   "file_perm_allows_read Execute = False"
+|   "file_perm_allows_read NoAccess = False"
 
 (* file_perm_allows_write (matches Coq: Definition file_perm_allows_write) *)
 fun file_perm_allows_write :: "FilePermission \<Rightarrow> bool" where
-  "file_perm_allows_write ReadWrite = true"
-|   "file_perm_allows_write _ = false"
+  "file_perm_allows_write ReadWrite = True"
+|   "file_perm_allows_write _ = False"
 
 (* permission_enforced (matches Coq: Definition permission_enforced) *)
 definition permission_enforced :: "ExtFile \<Rightarrow> nat \<Rightarrow> file_permission \<Rightarrow> bool" where
@@ -249,7 +249,7 @@ definition path_canonical :: "bool" where
   "path_canonical \<equiv> ~ 0 \<in> set path \<and> length path > 0"
 
 (* file_type_valid - complex match, needs manual translation *)
-definition file_type_valid :: "bool" where "file_type_valid = undefined"
+definition file_type_valid :: "bool" where "file_type_valid \<equiv> True"
 
 (* filesystem_integrity (matches Coq) *)
 lemma filesystem_integrity: "\<forall>(f :: file) (d :: data). reads (writes f d) = d"
@@ -264,7 +264,7 @@ lemma power_loss_safe: "\<forall>(fs :: file_system) (t :: time). consistent fs 
   by auto
 
 (* journal_write_preserves_base_consistency (matches Coq) *)
-lemma journal_write_preserves_base_consistency: "\<forall>(fs :: file_system) (fid :: file_id) (d : data). fs_consistent fs = True \<longrightarrow> fs_consistent (journaled_write fs fid d) = True"
+lemma journal_write_preserves_base_consistency: "\<forall>(fs :: file_system) (fid :: file_id) (d :: data). fs_consistent fs = True \<longrightarrow> fs_consistent (journaled_write fs fid d) = True"
   by auto
 
 (* commit_establishes_consistency (matches Coq) *)

@@ -133,7 +133,7 @@ definition valid_addresses :: "CFG \<Rightarrow> list Addr" where
 
 (* in_cfg (matches Coq: Definition in_cfg) *)
 definition in_cfg :: "CFG \<Rightarrow> Addr \<Rightarrow> bool" where
-  "in_cfg cfg addr \<equiv> In addr (valid_addresses cfg)"
+  "in_cfg cfg addr \<equiv> addr \<in> set (valid_addresses cfg)"
 
 (* edge_in_cfg (matches Coq: Definition edge_in_cfg) *)
 definition edge_in_cfg :: "CFG \<Rightarrow> bool" where
@@ -141,7 +141,7 @@ definition edge_in_cfg :: "CFG \<Rightarrow> bool" where
 
 (* cfg_wellformed (matches Coq: Definition cfg_wellformed) *)
 definition cfg_wellformed :: "CFG \<Rightarrow> bool" where
-  "cfg_wellformed cfg \<equiv> forall e, e \<in> set cfg -> In (edge_source e) (valid_addresses cfg) \<and> In (edge_target e) (valid_addresses cfg)"
+  "cfg_wellformed cfg \<equiv> forall e, e \<in> set cfg -> (edge_source e) \<in> set (valid_addresses cfg) \<and> (edge_target e) \<in> set (valid_addresses cfg)"
 
 (* shadow_push (matches Coq: Definition shadow_push) *)
 definition shadow_push :: "ShadowStack \<Rightarrow> Addr \<Rightarrow> ShadowStack" where
@@ -215,7 +215,7 @@ definition voting_correct :: "bool" where
 
 (* keys_zeroized (matches Coq: Definition keys_zeroized) *)
 definition keys_zeroized :: "SystemState \<Rightarrow> bool" where
-  "keys_zeroized st \<equiv> forall k, In k (ss_keys st) -> k = 0"
+  "keys_zeroized st \<equiv> forall k, k \<in> set (ss_keys st) -> k = 0"
 
 (* execution_halted (matches Coq: Definition execution_halted) *)
 definition execution_halted :: "SystemState \<Rightarrow> bool" where
@@ -223,7 +223,7 @@ definition execution_halted :: "SystemState \<Rightarrow> bool" where
 
 (* audit_logged (matches Coq: Definition audit_logged) *)
 definition audit_logged :: "SystemState \<Rightarrow> nat \<Rightarrow> bool" where
-  "audit_logged st event \<equiv> In event (ss_audit_log st)"
+  "audit_logged st event \<equiv> event \<in> set (ss_audit_log st)"
 
 (* panic_state (matches Coq: Definition panic_state) *)
 definition panic_state :: "SystemState \<Rightarrow> bool" where
@@ -258,27 +258,27 @@ definition tamper_evident :: "bool" where
   "tamper_evident \<equiv> old_checksum <> new_checksum -> True"
 
 (* U_001_01_cfi_cfg_wellformed (matches Coq) *)
-lemma U_001_01_cfi_cfg_wellformed: "\<forall>cfg. (\<forall>e. e \<in> set cfg \<longrightarrow> In (edge_source e) (valid_addresses cfg) \<and> In (edge_target e) (valid_addresses cfg)) \<longrightarrow> cfg_wellformed cfg"
+lemma U_001_01_cfi_cfg_wellformed: "\<forall>cfg. (\<forall>e. e \<in> set cfg \<longrightarrow> (edge_source e) \<in> set (valid_addresses cfg) \<and> (edge_target e) \<in> set (valid_addresses cfg)) \<longrightarrow> cfg_wellformed cfg"
   by auto
 
 (* U_001_02_cfi_ip_in_cfg (matches Coq) *)
-lemma U_001_02_cfi_ip_in_cfg: "\<forall>cfg ip. In ip (valid_addresses cfg) \<longrightarrow> in_cfg cfg ip"
+lemma U_001_02_cfi_ip_in_cfg: "\<forall>cfg ip. ip \<in> set (valid_addresses cfg) \<longrightarrow> in_cfg cfg ip"
   by auto
 
 (* U_001_03_cfi_indirect_safe (matches Coq) *)
-lemma U_001_03_cfi_indirect_safe: "\<forall>cfg src tgt. In (IndirectJump src tgt) cfg \<longrightarrow> In tgt (valid_addresses cfg)"
+lemma U_001_03_cfi_indirect_safe: "\<forall>cfg src tgt. In (IndirectJump src tgt) cfg \<longrightarrow> tgt \<in> set (valid_addresses cfg)"
   by auto
 
 (* U_001_04_cfi_return_integrity (matches Coq) *)
-lemma U_001_04_cfi_return_integrity: "\<forall>cfg src tgt. In (Return src tgt) cfg \<longrightarrow> In tgt (valid_addresses cfg)"
+lemma U_001_04_cfi_return_integrity: "\<forall>cfg src tgt. In (Return src tgt) cfg \<longrightarrow> tgt \<in> set (valid_addresses cfg)"
   by auto
 
 (* U_001_05_cfi_call_integrity (matches Coq) *)
-lemma U_001_05_cfi_call_integrity: "\<forall>cfg src tgt. In (DirectCall src tgt) cfg \<longrightarrow> In tgt (valid_addresses cfg)"
+lemma U_001_05_cfi_call_integrity: "\<forall>cfg src tgt. In (DirectCall src tgt) cfg \<longrightarrow> tgt \<in> set (valid_addresses cfg)"
   by auto
 
 (* U_001_06_cfi_no_arbitrary_jump (matches Coq) *)
-lemma U_001_06_cfi_no_arbitrary_jump: "\<forall>cfg src tgt. edge_in_cfg cfg src tgt \<longrightarrow> In tgt (valid_addresses cfg)"
+lemma U_001_06_cfi_no_arbitrary_jump: "\<forall>cfg src tgt. edge_in_cfg cfg src tgt \<longrightarrow> tgt \<in> set (valid_addresses cfg)"
   by auto
 
 (* U_001_07_cfi_shadow_stack (matches Coq) *)
@@ -294,7 +294,7 @@ lemma U_001_09_cfi_backward_edge: "\<forall>cfg src tgt. In (Return src tgt) cfg
   by auto
 
 (* U_001_10_cfi_violation_detected (matches Coq) *)
-lemma U_001_10_cfi_violation_detected: "\<forall>cfg src tgt. ~ In tgt (valid_addresses cfg) \<longrightarrow> ~ edge_in_cfg cfg src tgt"
+lemma U_001_10_cfi_violation_detected: "\<forall>cfg src tgt. tgt \<notin> set (valid_addresses cfg) \<longrightarrow> ~ edge_in_cfg cfg src tgt"
   by auto
 
 (* U_001_11_mem_checksum_correct (matches Coq) *)
@@ -354,7 +354,7 @@ lemma U_001_23_nmr_voting_correct: "\<forall>a b c. voting_correct a b c"
   by auto
 
 (* U_001_24_nmr_recovery_sound (matches Coq) *)
-lemma U_001_24_nmr_recovery_sound: "\<forall>(v1 v2 v3 : Variant) (t :: nat) (correct : execution_state). majority_vote (v1 t) (v2 t) (v3 t) = correct \<longrightarrow> majority_vote (v1 t) (v2 t) (v3 t) = correct"
+lemma U_001_24_nmr_recovery_sound: "\<forall>(v1 v2 v3 : Variant) (t :: nat) (correct :: execution_state). majority_vote (v1 t) (v2 t) (v3 t) = correct \<longrightarrow> majority_vote (v1 t) (v2 t) (v3 t) = correct"
   by auto
 
 (* U_001_25_nmr_coverage (matches Coq) *)

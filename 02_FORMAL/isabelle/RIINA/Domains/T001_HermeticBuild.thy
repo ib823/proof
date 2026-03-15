@@ -246,7 +246,7 @@ lemma T_001_13_environment_clean: "\<forall>env. is_hermetic env \<longrightarro
   by auto
 
 (* T_001_14_inputs_whitelisted (matches Coq) *)
-lemma T_001_14_inputs_whitelisted: "\<forall>env h. In h (env_inputs env) \<longrightarrow> In h (env_inputs env)"
+lemma T_001_14_inputs_whitelisted: "\<forall>env h. h \<in> set (env_inputs env) \<longrightarrow> h \<in> set (env_inputs env)"
   by auto
 
 (* T_001_15_hermetic_composition (matches Coq) *)

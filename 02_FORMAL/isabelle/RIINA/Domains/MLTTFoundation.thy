@@ -95,39 +95,39 @@ fun subst :: "nat \<Rightarrow> Term" where
   "subst TmUnit = TmUnit"
 
 (* cumulativity_level (matches Coq) *)
-lemma cumulativity_level: "\<forall>A l. has_level A l \<longrightarrow> has_level A (S l)"
+lemma cumulativity_level: "\<forall>A l. has_level A l \<longrightarrow> has_level A (Suc l)"
   by simp
 
 (* TYPE_001_01 (matches Coq) *)
-lemma TYPE_001_01: "\<forall>(g :: ctx) (A B : ty). wf_ctx g \<longrightarrow> wf_ty g A \<longrightarrow> wf_ty (ctx_extend g A) B \<longrightarrow> wf_ty g (TPi A B)"
+lemma TYPE_001_01: "\<forall>(g :: ctx) (A :: ty) (B :: ty). wf_ctx g \<longrightarrow> wf_ty g A \<longrightarrow> wf_ty (ctx_extend g A) B \<longrightarrow> wf_ty g (TPi A B)"
   by auto
 
 (* TYPE_001_02 (matches Coq) *)
-lemma TYPE_001_02: "\<forall>(g :: ctx) (A B : ty) (f a : term). has_type g f (TPi A B) \<longrightarrow> has_type g a A \<longrightarrow> has_type g (TmApp f a) B"
+lemma TYPE_001_02: "\<forall>(g :: ctx) (A :: ty) (B :: ty) (f :: term) (a :: term). has_type g f (TPi A B) \<longrightarrow> has_type g a A \<longrightarrow> has_type g (TmApp f a) B"
   by auto
 
 (* TYPE_001_03 (matches Coq) *)
-lemma TYPE_001_03: "\<forall>(g :: ctx) (A B : ty) (a b : term). wf_ty g (TSigma A B) \<longrightarrow> has_type g a A \<longrightarrow> has_type g b B \<longrightarrow> has_type g (TmPair a b) (TSigma A B)"
+lemma TYPE_001_03: "\<forall>(g :: ctx) (A :: ty) (B :: ty) (a :: term) (b :: term). wf_ty g (TSigma A B) \<longrightarrow> has_type g a A \<longrightarrow> has_type g b B \<longrightarrow> has_type g (TmPair a b) (TSigma A B)"
   by auto
 
 (* TYPE_001_04 (matches Coq) *)
-lemma TYPE_001_04: "\<forall>(g :: ctx) (A B : ty) (p :: term). has_type g p (TSigma A B) \<longrightarrow> has_type g (TmFst p) A \<and> has_type g (TmSnd p) B"
+lemma TYPE_001_04: "\<forall>(g :: ctx) (A :: ty) (B :: ty) (p :: term). has_type g p (TSigma A B) \<longrightarrow> has_type g (TmFst p) A \<and> has_type g (TmSnd p) B"
   by auto
 
 (* TYPE_001_05 (matches Coq) *)
-lemma TYPE_001_05: "\<forall>(g :: ctx) (A :: ty) (a : term). wf_ty g A \<longrightarrow> has_type g a A \<longrightarrow> has_type g (TmRefl a) (TId A)"
+lemma TYPE_001_05: "\<forall>(g :: ctx) (A :: ty) (a :: term). wf_ty g A \<longrightarrow> has_type g a A \<longrightarrow> has_type g (TmRefl a) (TId A)"
   by auto
 
 (* TYPE_001_06 (matches Coq) *)
-lemma TYPE_001_06: "\<forall>(g :: ctx) (A :: ty) (C : ty) (d p : term). wf_ty g A \<longrightarrow> has_type g d C \<longrightarrow> has_type g p (TId A) \<longrightarrow> has_type g (TmJ A C d p) C"
+lemma TYPE_001_06: "\<forall>(g :: ctx) (A :: ty) (C :: ty) (d :: term) (p :: term). wf_ty g A \<longrightarrow> has_type g d C \<longrightarrow> has_type g p (TId A) \<longrightarrow> has_type g (TmJ A C d p) C"
   by auto
 
 (* TYPE_001_07 (matches Coq) *)
-lemma TYPE_001_07: "\<forall>l. has_level (TUniverse l) (S l)"
+lemma TYPE_001_07: "\<forall>l. has_level (TUniverse l) (Suc l)"
   by simp
 
 (* TYPE_001_08 (matches Coq) *)
-lemma TYPE_001_08: "\<forall>(A :: ty) (l :: level). has_level A l \<longrightarrow> has_level A (S l)"
+lemma TYPE_001_08: "\<forall>(A :: ty) (l :: level). has_level A l \<longrightarrow> has_level A (Suc l)"
   by auto
 
 (* TYPE_001_09 (matches Coq) *)

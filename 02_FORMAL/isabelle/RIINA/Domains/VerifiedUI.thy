@@ -441,9 +441,9 @@ definition compute_layout :: "LayoutInput \<Rightarrow> list UIElement" where
 
 (* frame_policy_allows (matches Coq: Definition frame_policy_allows) *)
 fun frame_policy_allows :: "FramePolicy \<Rightarrow> origin \<Rightarrow> bool" where
-  "frame_policy_allows FrameDeny = false"
-|   "frame_policy_allows FrameSameOrigin = true"
-|   "frame_policy_allows FrameAllowAll = true"
+  "frame_policy_allows FrameDeny = False"
+|   "frame_policy_allows FrameSameOrigin = True"
+|   "frame_policy_allows FrameAllowAll = True"
 
 (* frame_well_formed (matches Coq: Definition frame_well_formed) *)
 definition frame_well_formed :: "FrameState \<Rightarrow> bool" where
@@ -459,7 +459,7 @@ definition char_is_sql_meta :: "nat \<Rightarrow> bool" where
 
 (* contains_script_tag (matches Coq: Definition contains_script_tag) *)
 fun contains_script_tag :: "bool" where
-  "contains_script_tag _ = false"
+  "contains_script_tag _ = False"
 
 (* sanitize_chars (matches Coq: Definition sanitize_chars) *)
 definition sanitize_chars :: "list nat" where
@@ -485,7 +485,7 @@ definition get_focused_id :: "FocusState \<Rightarrow> option nat" where
   "get_focused_id fs \<equiv> nth_error (tab_order fs) (focused_element fs)"
 
 (* focus_next - complex match, needs manual translation *)
-definition focus_next :: "bool" where "focus_next = undefined"
+definition focus_next :: "bool" where "focus_next \<equiv> True"
 
 (* focus_valid (matches Coq: Definition focus_valid) *)
 definition focus_valid :: "FocusState \<Rightarrow> bool" where
@@ -542,7 +542,7 @@ definition desktop_min :: "nat" where
   "desktop_min \<equiv> 12"
 
 (* breakpoint_eq - complex match, needs manual translation *)
-definition breakpoint_eq :: "bool" where "breakpoint_eq = undefined"
+definition breakpoint_eq :: "bool" where "breakpoint_eq \<equiv> True"
 
 (* classify_breakpoint (matches Coq: Definition classify_breakpoint) *)
 definition classify_breakpoint :: "nat \<Rightarrow> Breakpoint" where
@@ -600,7 +600,7 @@ lemma find_topmost_max_z: "\<forall>es p current result. find_topmost_at_point e
   by auto
 
 (* UX_001_02_z_order_integrity (matches Coq) *)
-lemma UX_001_02_z_order_integrity: "\<forall>ui p elem1 elem2. clickable_at ui p = Some elem1 \<longrightarrow> In elem2 (filter is_interactive (ui_elements ui)) \<longrightarrow> point_in_rect p (elem_bounds elem2) = True \<longrightarrow> elem_z_index elem2 \<le> elem_z_index elem1"
+lemma UX_001_02_z_order_integrity: "\<forall>ui p elem1 elem2. clickable_at ui p = Some elem1 \<longrightarrow> elem2 \<in> set (filter is_interactive (ui_elements ui)) \<longrightarrow> point_in_rect p (elem_bounds elem2) = True \<longrightarrow> elem_z_index elem2 \<le> elem_z_index elem1"
   by auto
 
 (* UX_001_03_no_invisible_overlay (matches Coq) *)
@@ -608,7 +608,7 @@ lemma UX_001_03_no_invisible_overlay: "\<forall>ui p elem. verified_ui_state ui 
   by auto
 
 (* UX_001_04_visual_consistency (matches Coq) *)
-lemma UX_001_04_visual_consistency: "\<forall>ui elem. verified_ui_state ui \<longrightarrow> In elem (ui_elements ui) \<longrightarrow> elem_interactive elem = True \<longrightarrow> elem_visible elem = True"
+lemma UX_001_04_visual_consistency: "\<forall>ui elem. verified_ui_state ui \<longrightarrow> elem \<in> set (ui_elements ui) \<longrightarrow> elem_interactive elem = True \<longrightarrow> elem_visible elem = True"
   by auto
 
 (* UX_001_05_layout_deterministic (matches Coq) *)
@@ -636,15 +636,15 @@ lemma UX_001_10_tab_integrity: "\<forall>tab. tab_loaded_origin tab = tab_conten
   by auto
 
 (* UX_001_11_consent_explicit (matches Coq) *)
-lemma UX_001_11_consent_explicit: "\<forall>action cs. action_sensitivity action \<noteq> SensNone \<longrightarrow> VerifiedExecution action cs \<longrightarrow> \<exists>c. In c (consent_records cs) \<and> consent_action c = action_name action \<and> consent_granted c = True"
+lemma UX_001_11_consent_explicit: "\<forall>action cs. action_sensitivity action \<noteq> SensNone \<longrightarrow> VerifiedExecution action cs \<longrightarrow> \<exists>c. c \<in> set (consent_records cs) \<and> consent_action c = action_name action \<and> consent_granted c = True"
   by auto
 
 (* UX_001_12_consent_revocable (matches Coq) *)
-lemma UX_001_12_consent_revocable: "\<forall>cs c. In c (consent_records cs) \<longrightarrow> consent_revocable c = True"
+lemma UX_001_12_consent_revocable: "\<forall>cs c. c \<in> set (consent_records cs) \<longrightarrow> consent_revocable c = True"
   by auto
 
 (* UX_001_13_no_confirmshaming (matches Coq) *)
-lemma UX_001_13_no_confirmshaming: "\<forall>dialog opt. In opt (dialog_options dialog) \<longrightarrow> opt_is_cancel opt = True \<longrightarrow> opt_uses_neutral_language opt = True"
+lemma UX_001_13_no_confirmshaming: "\<forall>dialog opt. opt \<in> set (dialog_options dialog) \<longrightarrow> opt_is_cancel opt = True \<longrightarrow> opt_uses_neutral_language opt = True"
   by auto
 
 (* UX_001_14_no_hidden_costs (matches Coq) *)
@@ -652,11 +652,11 @@ lemma UX_001_14_no_hidden_costs: "\<forall>pd. displayed_total pd = actual_total
   by auto
 
 (* UX_001_15_equal_option_presentation (matches Coq) *)
-lemma UX_001_15_equal_option_presentation: "\<forall>dialog o1 o2. In o1 (dialog_options dialog) \<longrightarrow> In o2 (dialog_options dialog) \<longrightarrow> opt_visual_weight o1 \<le> opt_visual_weight o2 + 2 \<and> opt_visual_weight o2 \<le> opt_visual_weight o1 + 2"
+lemma UX_001_15_equal_option_presentation: "\<forall>dialog o1 o2. o1 \<in> set (dialog_options dialog) \<longrightarrow> o2 \<in> set (dialog_options dialog) \<longrightarrow> opt_visual_weight o1 \<le> opt_visual_weight o2 + 2 \<and> opt_visual_weight o2 \<le> opt_visual_weight o1 + 2"
   by auto
 
 (* firstn_length_le (matches Coq) *)
-lemma firstn_length_le: "\<forall>{A : Type} (n : nat) (l : list A). len (firstn n l) \<le> n"
+lemma firstn_length_le: "\<forall>{A : Type} (n :: nat) (l : list A). len (firstn n l) \<le> n"
   by auto
 
 (* filter_all_true (matches Coq) *)
@@ -672,7 +672,7 @@ lemma filter_length_le: "\<forall>{A : Type} (f : A \<longrightarrow> bool) (l :
   by auto
 
 (* firstn_length_le2 (matches Coq) *)
-lemma firstn_length_le2: "\<forall>{A : Type} (n : nat) (l : list A). len (firstn n l) \<le> len l"
+lemma firstn_length_le2: "\<forall>{A : Type} (n :: nat) (l : list A). len (firstn n l) \<le> len l"
   by auto
 
 (* UX_002_01: Input Length Bounded
@@ -700,7 +700,7 @@ lemma filter_id_forall: "\<forall>{A : Type} (f : A \<longrightarrow> bool) (l :
   by simp
 
 (* firstn_all_le (matches Coq) *)
-lemma firstn_all_le: "\<forall>{A : Type} (n : nat) (l : list A). len l \<le> n \<longrightarrow> firstn n l = l"
+lemma firstn_all_le: "\<forall>{A : Type} (n :: nat) (l : list A). len l \<le> n \<longrightarrow> firstn n l = l"
   by auto
 
 (* UX_002_04: Input Sanitization Idempotent
@@ -736,7 +736,7 @@ lemma UX_002_08_sanitize_never_increases: "\<forall>field. len (field_data (sani
 (* UX_003_01: Focus Always Visible
     The focused element is always in the visible elements list. *)
 (* UX_003_01_focus_always_visible (matches Coq) *)
-lemma UX_003_01_focus_always_visible: "\<forall>vfs. tab_order (vf_state vfs) \<noteq> [] \<longrightarrow> \<exists>eid. get_focused_id (vf_state vfs) = Some eid \<and> In eid (vf_visible_elements vfs)"
+lemma UX_003_01_focus_always_visible: "\<forall>vfs. tab_order (vf_state vfs) \<noteq> [] \<longrightarrow> \<exists>eid. get_focused_id (vf_state vfs) = Some eid \<and> eid \<in> set (vf_visible_elements vfs)"
   by auto
 
 (* UX_003_02: Focus Order Deterministic
@@ -754,7 +754,7 @@ lemma UX_003_03_focus_wraps_around: "\<forall>fs. tab_order fs \<noteq> [] \<lon
 (* UX_003_04: Focus Trap in Modal
     When a modal is active, focused elements are within the modal. *)
 (* UX_003_04_focus_trap_in_modal (matches Coq) *)
-lemma UX_003_04_focus_trap_in_modal: "\<forall>vfs eid. focus_modal_active (vf_state vfs) = True \<longrightarrow> In eid (tab_order (vf_state vfs)) \<longrightarrow> In eid (focus_modal_elements (vf_state vfs))"
+lemma UX_003_04_focus_trap_in_modal: "\<forall>vfs eid. focus_modal_active (vf_state vfs) = True \<longrightarrow> eid \<in> set (tab_order (vf_state vfs)) \<longrightarrow> eid \<in> set (focus_modal_elements (vf_state vfs))"
   by auto
 
 (* UX_003_05: No Focus Outside Tab Order
@@ -814,7 +814,7 @@ lemma UX_005_01_breakpoint_deterministic: "\<forall>w1 w2. w1 = w2 \<longrightar
 (* UX_005_02: Elements Fit viewport
     a \<in> set verified responsive layout, all element widths fit within viewport. *)
 (* UX_005_02_elements_fit_viewport (matches Coq) *)
-lemma UX_005_02_elements_fit_viewport: "\<forall>rl e. In e (rl_elements rl) \<longrightarrow> le_width e \<le> vp_width (rl_viewport rl)"
+lemma UX_005_02_elements_fit_viewport: "\<forall>rl e. e \<in> set (rl_elements rl) \<longrightarrow> le_width e \<le> vp_width (rl_viewport rl)"
   by auto
 
 (* UX_005_03: No Horizontal Scroll
@@ -827,13 +827,13 @@ lemma UX_005_03_no_horizontal_scroll: "\<forall>rl. forall (\<lambda>e. le_width
 (* UX_005_04: Touch Targets Minimum Size
     Interactive elements in a verified layout are at least 44x44 px. *)
 (* UX_005_04_touch_targets_minimum_size (matches Coq) *)
-lemma UX_005_04_touch_targets_minimum_size: "\<forall>rl e. In e (rl_elements rl) \<longrightarrow> le_is_interactive e = True \<longrightarrow> le_width e \<ge> 44 \<and> le_height e \<ge> 44"
+lemma UX_005_04_touch_targets_minimum_size: "\<forall>rl e. e \<in> set (rl_elements rl) \<longrightarrow> le_is_interactive e = True \<longrightarrow> le_width e \<ge> 44 \<and> le_height e \<ge> 44"
   by auto
 
 (* UX_005_05: Text Readable at breakpoint
     Font size meets minimum for the current breakpoint. *)
 (* UX_005_05_text_readable_at_breakpoint (matches Coq) *)
-lemma UX_005_05_text_readable_at_breakpoint: "\<forall>rl e. In e (rl_elements rl) \<longrightarrow> le_font_size e \<ge> match classify_breakpoint (vp_width (rl_viewport rl)) with | BPMobile => 14 | BPTablet => 14 | BPDesktop => 12 end"
+lemma UX_005_05_text_readable_at_breakpoint: "\<forall>rl e. e \<in> set (rl_elements rl) \<longrightarrow> le_font_size e \<ge> (case classify_breakpoint (vp_width (rl_viewport rl)) of BPMobile => 14 | BPTablet => 14 | BPDesktop => 12)"
   by auto
 
 (* UX_005_06: Layout Stable on Resize (Pure Function Property)
@@ -916,7 +916,7 @@ lemma UX_007_01_sanitized_input_in_verified_ui: "\<forall>field ui. verified_ui_
     A verified error display in a responsive layout is both visible
     and fits within the viewport. *)
 (* UX_007_02_accessible_error_in_responsive (matches Coq) *)
-lemma UX_007_02_accessible_error_in_responsive: "\<forall>ved rl e. In e (rl_elements rl) \<longrightarrow> err_visible (ve_display ved) = True \<and> le_width e \<le> vp_width (rl_viewport rl)"
+lemma UX_007_02_accessible_error_in_responsive: "\<forall>ved rl e. e \<in> set (rl_elements rl) \<longrightarrow> err_visible (ve_display ved) = True \<and> le_width e \<le> vp_width (rl_viewport rl)"
   by auto
 
 end

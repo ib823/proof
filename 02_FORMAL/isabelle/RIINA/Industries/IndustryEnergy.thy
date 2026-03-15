@@ -178,7 +178,7 @@ lemma substation_security: "\<forall>(ied :: nat). True"
 
 (* High impact requires all CIP controls *)
 (* high_impact_all_controls (matches Coq) *)
-lemma high_impact_all_controls: "\<forall>(controls :: NERC_CIP_Controls) (asset :: nat) (impact : CIP_Impact). impact = High_Impact \<longrightarrow> True"
+lemma high_impact_all_controls: "\<forall>(controls :: NERC_CIP_Controls) (asset :: nat) (impact :: CIP_Impact). impact = High_Impact \<longrightarrow> True"
   by simp
 
 (* Electronic Security Perimeter required for routable protocols *)

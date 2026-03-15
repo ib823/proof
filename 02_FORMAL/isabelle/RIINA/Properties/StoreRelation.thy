@@ -282,7 +282,7 @@ lemma store_rel_le_max_eq: "\<forall>n Σ st1 st2. store_rel_le n Σ st1 st2 \<l
   by auto
 
 (* store_rel_le_from_succ (matches Coq) *)
-lemma store_rel_le_from_succ: "\<forall>n Σ st1 st2. store_rel_le (S n) Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2"
+lemma store_rel_le_from_succ: "\<forall>n Σ st1 st2. store_rel_le (Suc n) Σ st1 st2 \<longrightarrow> store_rel_le n Σ st1 st2"
   by auto
 
 (* val_rel_le_ref_refl (matches Coq) *)

@@ -223,7 +223,7 @@ definition step_up_at :: "nat \<Rightarrow> bool" where
     val_rel_n n Σ T v1 v2 ->
     has_type nil Σ Public v1 T EffectPure ->
     has_type nil Σ Public v2 T EffectPure ->
-    val_rel_n (S n) Σ T v1 v2"
+    val_rel_n (Suc n) Σ T v1 v2"
 
 (* step_up_and_fundamental (matches Coq: Definition step_up_and_fundamental) *)
 definition step_up_and_fundamental :: "nat \<Rightarrow> bool" where
@@ -435,7 +435,7 @@ lemma stores_agree_low_fo_update_existing: "\<forall>Σ st1 st2 loc T l v1 v2. s
     then for any target step m, either step down (val_rel_n_mono) or
     step up (val_rel_n_step_up) to reach m. *)
 (* val_rel_n_to_val_rel (matches Coq) *)
-lemma val_rel_n_to_val_rel: "\<forall>Σ T v1 v2. is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> (\<exists>n. val_rel_n (S n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
+lemma val_rel_n_to_val_rel: "\<forall>Σ T v1 v2. is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> (\<exists>n. val_rel_n (Suc n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
   by auto
 
 (* Helper: convert val_rel_n at ANY step (including 0) to val_rel.
@@ -666,7 +666,7 @@ lemma exp_rel_of_val_rel: "\<forall>Σ T v1 v2. val_rel Σ T v1 v2 \<longrightar
   by auto
 
 (* exp_rel_of_val_rel_step (matches Coq) *)
-lemma exp_rel_of_val_rel_step: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> exp_rel_n (S n) Σ T v1 v2"
+lemma exp_rel_of_val_rel_step: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_n n Σ T v1 v2 \<longrightarrow> exp_rel_n (Suc n) Σ T v1 v2"
   by auto
 
 (* exp_rel_of_val_rel_n (matches Coq) *)
@@ -711,7 +711,7 @@ lemma val_rel_n_of_first_order: "\<forall>n Σ T v1 v2. first_order_type T = Tru
 
 (* LEMMA: For first-order types, convert val_rel_n to val_rel. *)
 (* val_rel_n_to_val_rel_fo (matches Coq) *)
-lemma val_rel_n_to_val_rel_fo: "\<forall>Σ T v1 v2. first_order_type T = True \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> (\<exists>n. val_rel_n (S n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
+lemma val_rel_n_to_val_rel_fo: "\<forall>Σ T v1 v2. first_order_type T = True \<longrightarrow> is_value v1 \<longrightarrow> is_value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> (\<exists>n. val_rel_n (Suc n) Σ T v1 v2) \<longrightarrow> val_rel Σ T v1 v2"
   by simp
 
 (* For first-order types, convert val_rel_at_type to val_rel.
@@ -814,11 +814,11 @@ lemma val_rel_n_from_sum_inr: "\<forall>n Σ T1 T2 b1 b2. n > 0 \<longrightarrow
 
 (* Extract val_rel_at_type from product decomposition (for any type) *)
 (* val_rel_n_prod_fst_at (matches Coq) *)
-lemma val_rel_n_prod_fst_at: "\<forall>n Σ T1 T2 v1 v2 v1' v2'. val_rel_n (S n) Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2') \<longrightarrow> is_value v1 \<and> is_value v1' \<and> closed_expr v1 \<and> closed_expr v1' \<and> val_rel_at_type Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T1 v1 v1'"
+lemma val_rel_n_prod_fst_at: "\<forall>n Σ T1 T2 v1 v2 v1' v2'. val_rel_n (Suc n) Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2') \<longrightarrow> is_value v1 \<and> is_value v1' \<and> closed_expr v1 \<and> closed_expr v1' \<and> val_rel_at_type Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T1 v1 v1'"
   by auto
 
 (* val_rel_n_prod_snd_at (matches Coq) *)
-lemma val_rel_n_prod_snd_at: "\<forall>n Σ T1 T2 v1 v2 v1' v2'. val_rel_n (S n) Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2') \<longrightarrow> is_value v2 \<and> is_value v2' \<and> closed_expr v2 \<and> closed_expr v2' \<and> val_rel_at_type Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T2 v2 v2'"
+lemma val_rel_n_prod_snd_at: "\<forall>n Σ T1 T2 v1 v2 v1' v2'. val_rel_n (Suc n) Σ (TProd T1 T2) (EPair v1 v2) (EPair v1' v2') \<longrightarrow> is_value v2 \<and> is_value v2' \<and> closed_expr v2 \<and> closed_expr v2' \<and> val_rel_at_type Σ (store_rel_n n) (val_rel_n n) (store_rel_n n) (store_vals_rel n) T2 v2 v2'"
   by auto
 
 (* Helper: closed_expr for closed is_value constructors *)

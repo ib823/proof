@@ -171,7 +171,7 @@ definition storage_redundant :: "bool" where
 
 (* tamper_detected (matches Coq: Definition tamper_detected) *)
 definition tamper_detected :: "bool" where
-  "tamper_detected \<equiv> (\<not> (Nat.eqb) stored_hash computed_hash)"
+  "tamper_detected \<equiv> (\<not> (=) stored_hash computed_hash)"
 
 (* audit_layers (matches Coq: Definition audit_layers) *)
 definition audit_layers :: "bool" where
@@ -182,7 +182,7 @@ lemma audit_001_entry_hashed: "\<forall>(entry :: audit_entry). entry_hash entry
   by simp
 
 (* audit_002_append_only (matches Coq) *)
-lemma audit_002_append_only: "\<forall>(old_log new_log : audit_log). log_append_only old_log new_log = True \<longrightarrow> log_sequence old_log \<le> log_sequence new_log"
+lemma audit_002_append_only: "\<forall>(old_log :: audit_log) (new_log :: audit_log). log_append_only old_log new_log = True \<longrightarrow> log_sequence old_log \<le> log_sequence new_log"
   by auto
 
 (* audit_003_sequence_monotonic (matches Coq) *)
@@ -206,7 +206,7 @@ lemma audit_007_witness_root: "\<forall>(ws :: witness_signature) (expected :: n
   by auto
 
 (* audit_008_timestamp_ordered (matches Coq) *)
-lemma audit_008_timestamp_ordered: "\<forall>(e1 e2 : audit_entry). timestamp_ordered e1 e2 = True \<longrightarrow> entry_timestamp e1 \<le> entry_timestamp e2"
+lemma audit_008_timestamp_ordered: "\<forall>(e1 :: audit_entry) (e2 :: audit_entry). timestamp_ordered e1 e2 = True \<longrightarrow> entry_timestamp e1 \<le> entry_timestamp e2"
   by auto
 
 (* audit_009_principal_logged (matches Coq) *)
@@ -222,7 +222,7 @@ lemma audit_011_resource_logged: "\<forall>(entry :: audit_entry). resource_logg
   by auto
 
 (* audit_012_hash_binds (matches Coq) *)
-lemma audit_012_hash_binds: "\<forall>(computed stored : nat). hash_matches computed stored = True \<longrightarrow> computed = stored"
+lemma audit_012_hash_binds: "\<forall>(computed :: nat) (stored :: nat). hash_matches computed stored = True \<longrightarrow> computed = stored"
   by auto
 
 (* audit_013_log_not_empty (matches Coq) *)
@@ -234,7 +234,7 @@ lemma audit_014_checkpoint_seq: "\<forall>(cp :: checkpoint) (log :: audit_log).
   by auto
 
 (* audit_015_witness_recent (matches Coq) *)
-lemma audit_015_witness_recent: "\<forall>(ws :: witness_signature) (current max_age : nat). witness_recent ws current max_age = True \<longrightarrow> current - witness_timestamp ws \<le> max_age"
+lemma audit_015_witness_recent: "\<forall>(ws :: witness_signature) (current :: nat) (max_age :: nat). witness_recent ws current max_age = True \<longrightarrow> current - witness_timestamp ws \<le> max_age"
   by auto
 
 (* audit_016_witnesses_diverse (matches Coq) *)
@@ -254,23 +254,23 @@ lemma audit_019_entry_unique: "\<forall>(entries : list audit_entry). entry_ids_
   by auto
 
 (* audit_020_signature_valid (matches Coq) *)
-lemma audit_020_signature_valid: "\<forall>(sig expected : nat). signature_valid sig expected = True \<longrightarrow> sig = expected"
+lemma audit_020_signature_valid: "\<forall>(sig :: nat) (expected :: nat). signature_valid sig expected = True \<longrightarrow> sig = expected"
   by auto
 
 (* audit_021_retention (matches Coq) *)
-lemma audit_021_retention: "\<forall>(entry_age max_age : nat). retention_ok entry_age max_age = True \<longrightarrow> entry_age \<le> max_age"
+lemma audit_021_retention: "\<forall>(entry_age :: nat) (max_age :: nat). retention_ok entry_age max_age = True \<longrightarrow> entry_age \<le> max_age"
   by auto
 
 (* audit_022_query_complete (matches Coq) *)
-lemma audit_022_query_complete: "\<forall>(matching returned : nat). query_complete matching returned = True \<longrightarrow> matching = returned"
+lemma audit_022_query_complete: "\<forall>(matching :: nat) (returned :: nat). query_complete matching returned = True \<longrightarrow> matching = returned"
   by auto
 
 (* audit_023_storage_redundant (matches Coq) *)
-lemma audit_023_storage_redundant: "\<forall>(copies min_copies : nat). storage_redundant copies min_copies = True \<longrightarrow> min_copies \<le> copies"
+lemma audit_023_storage_redundant: "\<forall>(copies :: nat) (min_copies :: nat). storage_redundant copies min_copies = True \<longrightarrow> min_copies \<le> copies"
   by auto
 
 (* audit_024_tamper_detected (matches Coq) *)
-lemma audit_024_tamper_detected: "\<forall>(stored computed : nat). tamper_detected stored computed = True \<longrightarrow> stored \<noteq> computed"
+lemma audit_024_tamper_detected: "\<forall>(stored :: nat) (computed :: nat). tamper_detected stored computed = True \<longrightarrow> stored \<noteq> computed"
   by auto
 
 (* audit_025_defense_in_depth (matches Coq) *)

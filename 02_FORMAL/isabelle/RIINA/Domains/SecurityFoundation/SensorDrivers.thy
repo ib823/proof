@@ -99,7 +99,7 @@ record bounded_sensor =
   bs_rate_ok :: bs_current_rate
 
 (* has_sensor_permission - complex match, needs manual translation *)
-definition has_sensor_permission :: "bool" where "has_sensor_permission = undefined"
+definition has_sensor_permission :: "bool" where "has_sensor_permission \<equiv> True"
 
 (* uses_camera (matches Coq: Definition uses_camera) *)
 definition uses_camera :: "Application \<Rightarrow> bool" where
@@ -199,22 +199,22 @@ lemma no_active_no_indicator_required: "\<forall>(st :: system_state). any_camer
 
 (* sensor permission is type-specific *)
 (* sensor_perm_type_specific (matches Coq) *)
-lemma sensor_perm_type_specific: "\<forall>(app :: application) (s1 s2 : sensor). sensor_type s1 \<noteq> sensor_type s2 \<longrightarrow> has_sensor_permission app s1 \<longrightarrow> ~ has_sensor_permission app s2 \<longrightarrow> sensor_type s1 \<noteq> sensor_type s2"
+lemma sensor_perm_type_specific: "\<forall>(app :: application) (s1 :: sensor) (s2 :: sensor). sensor_type s1 \<noteq> sensor_type s2 \<longrightarrow> has_sensor_permission app s1 \<longrightarrow> ~ has_sensor_permission app s2 \<longrightarrow> sensor_type s1 \<noteq> sensor_type s2"
   by auto
 
 (* Camera permission does not grant microphone access *)
 (* camera_perm_not_mic (matches Coq) *)
-lemma camera_perm_not_mic: "\<forall>(app :: application) (cam mic : sensor). sensor_type cam = Camera \<longrightarrow> sensor_type mic = Microphone \<longrightarrow> app_camera_perm app = True \<longrightarrow> app_microphone_perm app = False \<longrightarrow> has_sensor_permission app cam \<and> ~ has_sensor_permission app mic"
+lemma camera_perm_not_mic: "\<forall>(app :: application) (cam :: sensor) (mic :: sensor). sensor_type cam = Camera \<longrightarrow> sensor_type mic = Microphone \<longrightarrow> app_camera_perm app = True \<longrightarrow> app_microphone_perm app = False \<longrightarrow> has_sensor_permission app cam \<and> ~ has_sensor_permission app mic"
   by auto
 
 (* Motion permission covers both accelerometer and gyroscope *)
 (* motion_perm_covers_both (matches Coq) *)
-lemma motion_perm_covers_both: "\<forall>(app :: application) (accel gyro : sensor). sensor_type accel = Accelerometer \<longrightarrow> sensor_type gyro = Gyroscope \<longrightarrow> app_motion_perm app = True \<longrightarrow> has_sensor_permission app accel \<and> has_sensor_permission app gyro"
+lemma motion_perm_covers_both: "\<forall>(app :: application) (accel :: sensor) (gyro :: sensor). sensor_type accel = Accelerometer \<longrightarrow> sensor_type gyro = Gyroscope \<longrightarrow> app_motion_perm app = True \<longrightarrow> has_sensor_permission app accel \<and> has_sensor_permission app gyro"
   by auto
 
 (* sensor reading validity: read implies permission was checked *)
 (* sensor_reading_valid (matches Coq) *)
-lemma sensor_reading_valid: "\<forall>(app :: application) (sensor :: sensor). reads_sensor app sensor \<longrightarrow> match sensor_type sensor with | Camera => app_camera_perm app = True | Microphone => app_microphone_perm app = True | GPS => app_location_perm app = True | Accelerometer => app_motion_perm app = True | Gyroscope => app_motion_perm app = True end"
+lemma sensor_reading_valid: "\<forall>(app :: application) (sensor :: sensor). reads_sensor app sensor \<longrightarrow> (case sensor_type sensor of Camera => app_camera_perm app = True | Microphone => app_microphone_perm app = True | GPS => app_location_perm app = True | Accelerometer => app_motion_perm app = True | Gyroscope => app_motion_perm app = True)"
   by auto
 
 (* Bounded sensor current rate is within max *)

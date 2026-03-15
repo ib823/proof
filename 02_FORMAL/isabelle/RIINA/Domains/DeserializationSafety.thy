@@ -161,11 +161,11 @@ definition check_input :: "DeserPolicy \<Rightarrow> serialized_input \<Rightarr
 
 (* is_deser_ok (matches Coq: Definition is_deser_ok) *)
 fun is_deser_ok :: "DeserResult \<Rightarrow> bool" where
-  "is_deser_ok _ = false"
+  "is_deser_ok _ = False"
 
 (* is_gadget_blocked (matches Coq: Definition is_gadget_blocked) *)
 fun is_gadget_blocked :: "DeserResult \<Rightarrow> bool" where
-  "is_gadget_blocked _ = false"
+  "is_gadget_blocked _ = False"
 
 (* Helper *)
 (* andb_true_iff_deser (matches Coq) *)

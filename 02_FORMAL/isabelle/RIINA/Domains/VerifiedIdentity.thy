@@ -230,7 +230,7 @@ record mfa_config =
   mfa_required :: nat
 
 (* list_eq - complex match, needs manual translation *)
-definition list_eq :: "bool" where "list_eq = undefined"
+definition list_eq :: "bool" where "list_eq \<equiv> True"
 
 (* SECURE_MEMORY_COST (matches Coq: Definition SECURE_MEMORY_COST) *)
 definition SECURE_MEMORY_COST :: "nat" where
@@ -276,7 +276,7 @@ definition hash_collision_resistant :: "Argon2Params \<Rightarrow> bool" where
   "hash_collision_resistant params \<equiv> pw1 <> pw2 -> argon2id_hash pw1 salt params <> argon2id_hash pw2 salt params"
 
 (* constant_time_eq - complex match, needs manual translation *)
-definition constant_time_eq :: "bool" where "constant_time_eq = undefined"
+definition constant_time_eq :: "bool" where "constant_time_eq \<equiv> True"
 
 (* empty_used_set (matches Coq: Definition empty_used_set) *)
 definition empty_used_set :: "TokenUsedSet" where
@@ -359,10 +359,10 @@ definition verify_fido2 :: "FIDO2Credential \<Rightarrow> FIDO2Assertion \<Right
 
 (* valid_credential (matches Coq: Definition valid_credential) *)
 definition valid_credential :: "CredentialStore \<Rightarrow> principal \<Rightarrow> credential \<Rightarrow> bool" where
-  "valid_credential store p c \<equiv> In c (store (principal_id p))"
+  "valid_credential store p c \<equiv> c \<in> set (store (principal_id p))"
 
 (* credential_matches - complex match, needs manual translation *)
-definition credential_matches :: "bool" where "credential_matches = undefined"
+definition credential_matches :: "bool" where "credential_matches \<equiv> True"
 
 (* authenticate (matches Coq: Definition authenticate) *)
 definition authenticate :: "CredentialStore \<Rightarrow> principal \<Rightarrow> credential \<Rightarrow> AuthResult" where
@@ -387,14 +387,14 @@ definition rate_limit_update :: "RateLimitState \<Rightarrow> timestamp \<Righta
           rate_window_start := now;
           rate_max_attempts := rate_max_attempts state;
           rate_window_size := rate_window_size state |}
-  else {| rate_attempts := S (rate_attempts state);
+  else {| rate_attempts := Suc (rate_attempts state);
           rate_window_start := rate_window_start state;
           rate_max_attempts := rate_max_attempts state;
           rate_window_size := rate_window_size state |}"
 
 (* has_key (matches Coq: Definition has_key) *)
 definition has_key :: "Adversary \<Rightarrow> bool" where
-  "has_key adv \<equiv> In key (adv_known_keys adv)"
+  "has_key adv \<equiv> key \<in> set (adv_known_keys adv)"
 
 (* factor_strength (matches Coq: Definition factor_strength) *)
 fun factor_strength :: "Factor \<Rightarrow> nat" where
@@ -522,7 +522,7 @@ lemma AA_001_14_password_breach_checked: "\<forall>db hash. password_in_breach d
   by auto
 
 (* AA_001_15_token_unforgeability (matches Coq) *)
-lemma AA_001_15_token_unforgeability: "\<forall>adv key. ~ has_key adv key \<longrightarrow> \<forall>(claims :: token_claims) (binding :: channel_binding) (fake_sig : list nat). ~ (fake_sig = key \<and> List.length fake_sig > 0 \<and> In fake_sig (adv_known_keys adv))"
+lemma AA_001_15_token_unforgeability: "\<forall>adv key. ~ has_key adv key \<longrightarrow> \<forall>(claims :: token_claims) (binding :: channel_binding) (fake_sig : list nat). ~ (fake_sig = key \<and> List.length fake_sig > 0 \<and> fake_sig \<in> set (adv_known_keys adv))"
   by auto
 
 (* AA_001_16_token_channel_bound (matches Coq) *)

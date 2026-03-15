@@ -157,11 +157,11 @@ lemma mas_cyber_hygiene: "\<forall>(e :: mas_regulated_entity). mas_mfa_enabled 
   by simp
 
 (* critical_patch_14_days (matches Coq) *)
-lemma critical_patch_14_days: "\<forall>(d a : nat). a \<le> d + 14 \<longrightarrow> patch_applied_in_time PatchCritical d a"
+lemma critical_patch_14_days: "\<forall>(d :: nat) (a :: nat). a \<le> d + 14 \<longrightarrow> patch_applied_in_time PatchCritical d a"
   by auto
 
 (* critical_strictest (matches Coq) *)
-lemma critical_strictest: "\<forall>(d a : nat). patch_applied_in_time PatchCritical d a \<longrightarrow> patch_applied_in_time PatchHigh d a"
+lemma critical_strictest: "\<forall>(d :: nat) (a :: nat). patch_applied_in_time PatchCritical d a \<longrightarrow> patch_applied_in_time PatchHigh d a"
   by simp
 
 (* trm_governance_proof (matches Coq) *)

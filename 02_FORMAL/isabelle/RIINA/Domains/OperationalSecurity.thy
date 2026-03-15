@@ -98,7 +98,7 @@ definition action_audited :: "nat \<Rightarrow> bool" where
 
 (* platforms_independent (matches Coq: Definition platforms_independent) *)
 definition platforms_independent :: "bool" where
-  "platforms_independent \<equiv> (\<not> (Nat.eqb) p1 p2)"
+  "platforms_independent \<equiv> (\<not> (=) p1 p2)"
 
 (* majority_agrees (matches Coq: Definition majority_agrees) *)
 definition majority_agrees :: "nat \<Rightarrow> bool" where
@@ -186,7 +186,7 @@ lemma opsec_012_role_separation: "\<forall>(roles : list nat). roles_distinct ro
   by auto
 
 (* opsec_013_anomaly_detection (matches Coq) *)
-lemma opsec_013_anomaly_detection: "\<forall>(score threshold : nat). anomaly_detected score threshold = True \<longrightarrow> threshold < score"
+lemma opsec_013_anomaly_detection: "\<forall>(score :: nat) (threshold :: nat). anomaly_detected score threshold = True \<longrightarrow> threshold < score"
   by auto
 
 (* opsec_014_audit_complete (matches Coq) *)
@@ -194,7 +194,7 @@ lemma opsec_014_audit_complete: "\<forall>(entries : list AuditEntry) (action ::
   by auto
 
 (* opsec_015_hardware_diversity (matches Coq) *)
-lemma opsec_015_hardware_diversity: "\<forall>(p1 p2 : nat). platforms_independent p1 p2 = True \<longrightarrow> p1 \<noteq> p2"
+lemma opsec_015_hardware_diversity: "\<forall>(p1 :: nat) (p2 :: nat). platforms_independent p1 p2 = True \<longrightarrow> p1 \<noteq> p2"
   by auto
 
 (* opsec_016_nversion_consensus (matches Coq) *)
@@ -202,7 +202,7 @@ lemma opsec_016_nversion_consensus: "\<forall>(results : list nat) (expected :: 
   by auto
 
 (* opsec_017_time_lock (matches Coq) *)
-lemma opsec_017_time_lock: "\<forall>(unlock_time current_time : nat). time_lock_expired unlock_time current_time = True \<longrightarrow> unlock_time \<le> current_time"
+lemma opsec_017_time_lock: "\<forall>(unlock_time :: nat) (current_time :: nat). time_lock_expired unlock_time current_time = True \<longrightarrow> unlock_time \<le> current_time"
   by auto
 
 (* opsec_018_cancellation_window (matches Coq) *)

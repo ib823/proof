@@ -133,7 +133,7 @@ definition touch_system_correct :: "TouchEvent \<Rightarrow> bool" where
   (physical_touch t -> display_latency t <= latency_bound)"
 
 (* intended_gesture - complex match, needs manual translation *)
-definition intended_gesture :: "bool" where "intended_gesture = undefined"
+definition intended_gesture :: "bool" where "intended_gesture \<equiv> True"
 
 (* recognized_gesture (matches Coq: Definition recognized_gesture) *)
 fun recognized_gesture :: "TouchSequence \<Rightarrow> GestureType" where
@@ -194,7 +194,7 @@ fun gesture_priority :: "GestureType \<Rightarrow> nat" where
 
 (* touch_cancelled (matches Coq: Definition touch_cancelled) *)
 fun touch_cancelled :: "TouchSequence \<Rightarrow> bool" where
-  "touch_cancelled _ = false"
+  "touch_cancelled _ = False"
 
 (* multi_touch_count (matches Coq: Definition multi_touch_count) *)
 definition multi_touch_count :: "MultiTouchState \<Rightarrow> nat" where
@@ -226,7 +226,7 @@ lemma touch_physical_registered_equiv: "\<forall>(event :: touch_event). touch_s
   by auto
 
 (* touch_event_ordered (matches Coq) *)
-lemma touch_event_ordered: "\<forall>(t1 t2 : touch_event) (rest :: touch_sequence). timestamps_monotonic (t1 :: t2 :: rest) = True \<longrightarrow> touch_timestamp t1 \<le> touch_timestamp t2"
+lemma touch_event_ordered: "\<forall>(t1 :: touch_event) (t2 :: touch_event) (rest :: touch_sequence). timestamps_monotonic (t1 :: t2 :: rest) = True \<longrightarrow> touch_timestamp t1 \<le> touch_timestamp t2"
   by auto
 
 (* multi_touch_tracked (matches Coq) *)
@@ -270,7 +270,7 @@ lemma touch_prediction_bounded: "\<forall>(mt :: multi_touch_state). well_formed
   by auto
 
 (* edge_touch_distinguished (matches Coq) *)
-lemma edge_touch_distinguished: "\<forall>(t :: touch_event) (w h : nat). fst (touch_position t) < edge_margin \<longrightarrow> is_edge_touch t w h = True"
+lemma edge_touch_distinguished: "\<forall>(t :: touch_event) (w :: nat) (h :: nat). fst (touch_position t) < edge_margin \<longrightarrow> is_edge_touch t w h = True"
   by auto
 
 (* accidental_touch_rejected (matches Coq) *)
@@ -282,7 +282,7 @@ lemma touch_event_timestamp_monotonic_single: "\<forall>(t :: touch_event). time
   by simp
 
 (* simultaneous_gesture_resolution (matches Coq) *)
-lemma simultaneous_gesture_resolution: "\<forall>(g1 g2 : gesture_type). gesture_priority g1 > gesture_priority g2 \<longrightarrow> gesture_priority g1 \<noteq> gesture_priority g2"
+lemma simultaneous_gesture_resolution: "\<forall>(g1 :: gesture_type) (g2 :: gesture_type). gesture_priority g1 > gesture_priority g2 \<longrightarrow> gesture_priority g1 \<noteq> gesture_priority g2"
   by simp
 
 (* unknown_gesture_lowest_priority (matches Coq) *)

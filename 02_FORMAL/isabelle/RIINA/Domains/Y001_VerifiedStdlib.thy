@@ -133,7 +133,7 @@ definition is_utf8_start_4 :: "nat \<Rightarrow> bool" where
 
 (* is_valid_utf8 (matches Coq: Definition is_valid_utf8) *)
 fun is_valid_utf8 :: "bool" where
-  "is_valid_utf8 _ = false"
+  "is_valid_utf8 _ = False"
 
 (* utf8_len_bytes (matches Coq: Definition utf8_len_bytes) *)
 definition utf8_len_bytes :: "Utf8String \<Rightarrow> nat" where
@@ -166,7 +166,7 @@ definition bigint_add :: "BigInt" where
   "bigint_add \<equiv> a ++ b"
 
 (* Y_001_01_option_map_correct (matches Coq) *)
-lemma Y_001_01_option_map_correct: "\<forall>(a B : type) (f : a \<longrightarrow> B) (o : option a). (\<forall>x. o = Some x \<longrightarrow> option_map f o = Some (f x)) \<and> (o = None \<longrightarrow> option_map f o = None)"
+lemma Y_001_01_option_map_correct: "\<forall>(a :: type) (B :: type) (f : a \<longrightarrow> B) (o : option a). (\<forall>x. o = Some x \<longrightarrow> option_map f o = Some (f x)) \<and> (o = None \<longrightarrow> option_map f o = None)"
   by simp
 
 (* Y_001_02_option_bind_correct (matches Coq) *)
@@ -182,11 +182,11 @@ lemma Y_001_04_result_and_then_correct: "\<forall>(a B C e : type) (r : Result a
   by auto
 
 (* Y_001_05_option_unwrap_safe (matches Coq) *)
-lemma Y_001_05_option_unwrap_safe: "\<forall>(a :: type) (o : option a) (default val : a). option_unwrap o default = val \<longrightarrow> (o = Some val) \<or> (o = None \<and> val = default)"
+lemma Y_001_05_option_unwrap_safe: "\<forall>(a :: type) (o : option a) (default :: a) (val :: a). option_unwrap o default = val \<longrightarrow> (o = Some val) \<or> (o = None \<and> val = default)"
   by auto
 
 (* Y_001_06_result_unwrap_safe (matches Coq) *)
-lemma Y_001_06_result_unwrap_safe: "\<forall>(a e : type) (r : Result a e) (default val : a). result_unwrap r default = val \<longrightarrow> (\<exists>x. r = Ok x \<and> val = x) \<or> (\<exists>e. r = Err e \<and> val = default)"
+lemma Y_001_06_result_unwrap_safe: "\<forall>(a :: type) (e :: type) (r : Result a e) (default :: a) (val :: a). result_unwrap r default = val \<longrightarrow> (\<exists>x. r = Ok x \<and> val = x) \<or> (\<exists>e. r = Err e \<and> val = default)"
   by auto
 
 (* Y_001_07_option_or_default (matches Coq) *)
@@ -194,7 +194,7 @@ lemma Y_001_07_option_or_default: "\<forall>(a :: type) (default :: a). option_o
   by simp
 
 (* Y_001_08_result_or_default (matches Coq) *)
-lemma Y_001_08_result_or_default: "\<forall>(a e : type) (e :: e) (default : a). result_or_default (Err e) default = default"
+lemma Y_001_08_result_or_default: "\<forall>(a :: type) (e :: type) (e :: e) (default :: a). result_or_default (Err e) default = default"
   by simp
 
 (* Y_001_09_vec_push_correct (matches Coq) *)
@@ -214,19 +214,19 @@ lemma Y_001_12_vec_len_accurate: "\<forall>(a :: type) (v : Vec a). vec_len v = 
   by auto
 
 (* Y_001_13_hashmap_get_put (matches Coq) *)
-lemma Y_001_13_hashmap_get_put: "\<forall>(k v : type) (eq_dec : \<forall> k1 k2 : K. (k1 = k2) \<or> (k1 \<noteq> k2)) (m : HashMap k v) (k :: k) (v : v), hashmap_get eq_dec (hashmap_put eq_dec m k v) k = Some v"
+lemma Y_001_13_hashmap_get_put: "\<forall>(k :: type) (v :: type) (eq_dec : \<forall> k1 k2 : K. (k1 = k2) \<or> (k1 \<noteq> k2)) (m : HashMap k v) (k :: k) (v :: v), hashmap_get eq_dec (hashmap_put eq_dec m k v) k = Some v"
   by auto
 
 (* Y_001_14_hashmap_get_other (matches Coq) *)
-lemma Y_001_14_hashmap_get_other: "\<forall>(k v : type) (eq_dec : \<forall> k1 k2 : K. (k1 = k2) \<or> (k1 \<noteq> k2)) (m : HashMap k v) (k1 k2 : k) (v :: v), k1 \<noteq> k2 \<longrightarrow> \<forall>v2. hashmap_get eq_dec (hashmap_put eq_dec m k1 v) k2 = Some v2 \<longrightarrow> \<exists>entry. entry \<in> set m \<and> fst entry = k2 \<and> snd entry = v2"
+lemma Y_001_14_hashmap_get_other: "\<forall>(k :: type) (v :: type) (eq_dec : \<forall> k1 k2 : K. (k1 = k2) \<or> (k1 \<noteq> k2)) (m : HashMap k v) (k1 :: k) (k2 :: k) (v :: v), k1 \<noteq> k2 \<longrightarrow> \<forall>v2. hashmap_get eq_dec (hashmap_put eq_dec m k1 v) k2 = Some v2 \<longrightarrow> \<exists>entry. entry \<in> set m \<and> fst entry = k2 \<and> snd entry = v2"
   by auto
 
 (* Y_001_14b_hashmap_different_key (matches Coq) *)
-lemma Y_001_14b_hashmap_different_key: "\<forall>(k v : type) (eq_dec : \<forall> k1 k2 : K. (k1 = k2) \<or> (k1 \<noteq> k2)) (k1 k2 : k) (v :: v), k1 \<noteq> k2 \<longrightarrow> hashmap_get eq_dec [(k1, v)] k2 = None"
+lemma Y_001_14b_hashmap_different_key: "\<forall>(k :: type) (v :: type) (eq_dec : \<forall> k1 k2 : K. (k1 = k2) \<or> (k1 \<noteq> k2)) (k1 :: k) (k2 :: k) (v :: v), k1 \<noteq> k2 \<longrightarrow> hashmap_get eq_dec [(k1, v)] k2 = None"
   by auto
 
 (* Y_001_15_hashmap_remove_correct (matches Coq) *)
-lemma Y_001_15_hashmap_remove_correct: "\<forall>(k v : type) (eq_dec : \<forall> k1 k2 : K. (k1 = k2) \<or> (k1 \<noteq> k2)) (m : HashMap k v) (k :: k), hashmap_get eq_dec (hashmap_remove eq_dec m k) k = None"
+lemma Y_001_15_hashmap_remove_correct: "\<forall>(k :: type) (v :: type) (eq_dec : \<forall> k1 k2 : K. (k1 = k2) \<or> (k1 \<noteq> k2)) (m : HashMap k v) (k :: k), hashmap_get eq_dec (hashmap_remove eq_dec m k) k = None"
   by auto
 
 (* Y_001_16_btree_ordered (matches Coq) *)
@@ -238,7 +238,7 @@ lemma Y_001_17_btree_balanced: "\<forall>(a :: type) (t : BTree a). btree_balanc
   by auto
 
 (* Y_001_18_collection_no_overflow (matches Coq) *)
-lemma Y_001_18_collection_no_overflow: "\<forall>(a :: type) (v : Vec a) (x :: a). vec_length (vec_push v x) = S (vec_length v)"
+lemma Y_001_18_collection_no_overflow: "\<forall>(a :: type) (v : Vec a) (x :: a). vec_length (vec_push v x) = Suc (vec_length v)"
   by simp
 
 (* Y_001_19_utf8_valid_preserved (matches Coq) *)
@@ -246,7 +246,7 @@ lemma Y_001_19_utf8_valid_preserved: "\<forall>(s :: utf8_string). is_valid_utf8
   by auto
 
 (* Y_001_20_string_concat_valid (matches Coq) *)
-lemma Y_001_20_string_concat_valid: "\<forall>(s1 s2 : utf8_string). is_valid_utf8 (utf8_bytes s1) = True \<longrightarrow> is_valid_utf8 (utf8_bytes s2) = True \<longrightarrow> True. "
+lemma Y_001_20_string_concat_valid: "\<forall>(s1 :: utf8_string) (s2 :: utf8_string). is_valid_utf8 (utf8_bytes s1) = True \<longrightarrow> is_valid_utf8 (utf8_bytes s2) = True \<longrightarrow> True. "
   by auto
 
 (* Y_001_21_string_len_bytes (matches Coq) *)
@@ -258,7 +258,7 @@ lemma Y_001_22_string_len_chars: "\<forall>(s :: utf8_string). utf8_len_chars s 
   by simp
 
 (* Y_001_23_string_slice_valid (matches Coq) *)
-lemma Y_001_23_string_slice_valid: "\<forall>(s :: utf8_string) (start len : nat). is_valid_utf8 (utf8_bytes s) = True \<longrightarrow> True. "
+lemma Y_001_23_string_slice_valid: "\<forall>(s :: utf8_string) (start :: nat) (len :: nat). is_valid_utf8 (utf8_bytes s) = True \<longrightarrow> True. "
   by auto
 
 (* Y_001_24_format_bounded (matches Coq) *)
@@ -322,7 +322,7 @@ lemma Y_001_38_float_nan_propagates: "True"
   by auto
 
 (* Y_001_39_bigint_correct (matches Coq) *)
-lemma Y_001_39_bigint_correct: "\<forall>(a b : big_int). length (bigint_add a b) = length a + length b"
+lemma Y_001_39_bigint_correct: "\<forall>(a :: big_int) (b :: big_int). length (bigint_add a b) = length a + length b"
   by auto
 
 (* Y_001_40_numeric_constant_time (matches Coq) *)

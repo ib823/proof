@@ -491,75 +491,75 @@ definition science_based :: "ScienceBasedTarget \<Rightarrow> bool" where
   "science_based t \<equiv> paris_aligned t = True \<and> reduction_percent t >= 42"
 
 (* ESG_001_01_scope1_completeness (matches Coq) *)
-lemma ESG_001_01_scope1_completeness: "\<forall>(sys :: esg_compliant_system) s. In s (sys_emissions sys) \<longrightarrow> source_type s = Scope1 \<longrightarrow> owned_or_controlled_flag s = True \<longrightarrow> is_tracked s = True \<and> is_measured s = True \<and> is_reported s = True"
+lemma ESG_001_01_scope1_completeness: "\<forall>(sys :: esg_compliant_system) s. s \<in> set (sys_emissions sys) \<longrightarrow> source_type s = Scope1 \<longrightarrow> owned_or_controlled_flag s = True \<longrightarrow> is_tracked s = True \<and> is_measured s = True \<and> is_reported s = True"
   by auto
 
 (* ESG_001_02_scope2_calculation (matches Coq) *)
-lemma ESG_001_02_scope2_calculation: "\<forall>(sys :: esg_compliant_system) s. In s (sys_emissions sys) \<longrightarrow> (source_type s = Scope2_Location \<or> source_type s = Scope2_Market) \<longrightarrow> emission_factor s > 0 \<and> is_tracked s = True"
+lemma ESG_001_02_scope2_calculation: "\<forall>(sys :: esg_compliant_system) s. s \<in> set (sys_emissions sys) \<longrightarrow> (source_type s = Scope2_Location \<or> source_type s = Scope2_Market) \<longrightarrow> emission_factor s > 0 \<and> is_tracked s = True"
   by auto
 
 (* ESG_001_03_scope3_coverage (matches Coq) *)
-lemma ESG_001_03_scope3_coverage: "\<forall>(sys :: esg_compliant_system) n. valid_scope3_category n \<longrightarrow> \<exists>s. In s (sys_emissions sys) \<and> source_type s = Scope3 n"
+lemma ESG_001_03_scope3_coverage: "\<forall>(sys :: esg_compliant_system) n. valid_scope3_category n \<longrightarrow> \<exists>s. s \<in> set (sys_emissions sys) \<and> source_type s = Scope3 n"
   by auto
 
 (* ESG_001_04_emission_factor_accuracy (matches Coq) *)
-lemma ESG_001_04_emission_factor_accuracy: "\<forall>(sys :: esg_compliant_system) s. In s (sys_emissions sys) \<longrightarrow> emission_factor s > 0"
+lemma ESG_001_04_emission_factor_accuracy: "\<forall>(sys :: esg_compliant_system) s. s \<in> set (sys_emissions sys) \<longrightarrow> emission_factor s > 0"
   by auto
 
 (* ESG_001_05_no_double_counting (matches Coq) *)
-lemma ESG_001_05_no_double_counting: "\<forall>(sys :: esg_compliant_system) s1 s2. In s1 (sys_emissions sys) \<longrightarrow> In s2 (sys_emissions sys) \<longrightarrow> same_emission s1 s2 \<longrightarrow> s1 = s2"
+lemma ESG_001_05_no_double_counting: "\<forall>(sys :: esg_compliant_system) s1 s2. s1 \<in> set (sys_emissions sys) \<longrightarrow> s2 \<in> set (sys_emissions sys) \<longrightarrow> same_emission s1 s2 \<longrightarrow> s1 = s2"
   by auto
 
 (* ESG_001_06_renewable_tracking (matches Coq) *)
-lemma ESG_001_06_renewable_tracking: "\<forall>(sys :: esg_compliant_system) r. In r (sys_renewables sys) \<longrightarrow> unique_claim r = True"
+lemma ESG_001_06_renewable_tracking: "\<forall>(sys :: esg_compliant_system) r. r \<in> set (sys_renewables sys) \<longrightarrow> unique_claim r = True"
   by auto
 
 (* ESG_001_07_carbon_calculation_precision (matches Coq) *)
-lemma ESG_001_07_carbon_calculation_precision: "\<forall>(sys :: esg_compliant_system) s. In s (sys_emissions sys) \<longrightarrow> \<exists>scaled_emission : Z. scaled_emission = emission s"
+lemma ESG_001_07_carbon_calculation_precision: "\<forall>(sys :: esg_compliant_system) s. s \<in> set (sys_emissions sys) \<longrightarrow> \<exists>scaled_emission : Z. scaled_emission = emission s"
   by simp
 
 (* ESG_001_08_water_withdrawal_tracking (matches Coq) *)
-lemma ESG_001_08_water_withdrawal_tracking: "\<forall>(sys :: esg_compliant_system) w. In w (sys_water sys) \<longrightarrow> source_documented w = True"
+lemma ESG_001_08_water_withdrawal_tracking: "\<forall>(sys :: esg_compliant_system) w. w \<in> set (sys_water sys) \<longrightarrow> source_documented w = True"
   by auto
 
 (* ESG_001_09_waste_diversion_rate (matches Coq) *)
-lemma ESG_001_09_waste_diversion_rate: "\<forall>(sys :: esg_compliant_system) w. In w (sys_waste sys) \<longrightarrow> waste_accounting_correct w"
+lemma ESG_001_09_waste_diversion_rate: "\<forall>(sys :: esg_compliant_system) w. w \<in> set (sys_waste sys) \<longrightarrow> waste_accounting_correct w"
   by auto
 
 (* ESG_001_10_biodiversity_assessment (matches Coq) *)
-lemma ESG_001_10_biodiversity_assessment: "\<forall>(sys :: esg_compliant_system) b. In b (sys_biodiversity sys) \<longrightarrow> dependencies_mapped b = True"
+lemma ESG_001_10_biodiversity_assessment: "\<forall>(sys :: esg_compliant_system) b. b \<in> set (sys_biodiversity sys) \<longrightarrow> dependencies_mapped b = True"
   by auto
 
 (* ESG_001_11_circular_economy_metrics (matches Coq) *)
-lemma ESG_001_11_circular_economy_metrics: "\<forall>(sys :: esg_compliant_system) c. In c (sys_circular sys) \<longrightarrow> measurement_verified c = True"
+lemma ESG_001_11_circular_economy_metrics: "\<forall>(sys :: esg_compliant_system) c. c \<in> set (sys_circular sys) \<longrightarrow> measurement_verified c = True"
   by auto
 
 (* ESG_001_12_pollution_compliance (matches Coq) *)
-lemma ESG_001_12_pollution_compliance: "\<forall>(sys :: esg_compliant_system) p. In p (sys_pollution sys) \<longrightarrow> pollution_compliant p"
+lemma ESG_001_12_pollution_compliance: "\<forall>(sys :: esg_compliant_system) p. p \<in> set (sys_pollution sys) \<longrightarrow> pollution_compliant p"
   by auto
 
 (* ESG_001_13_living_wage_guarantee (matches Coq) *)
-lemma ESG_001_13_living_wage_guarantee: "\<forall>(sys :: esg_compliant_system) e. In e (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> paid_living_wage e"
+lemma ESG_001_13_living_wage_guarantee: "\<forall>(sys :: esg_compliant_system) e. e \<in> set (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> paid_living_wage e"
   by auto
 
 (* ESG_001_14_no_forced_labor (matches Coq) *)
-lemma ESG_001_14_no_forced_labor: "\<forall>(sys :: esg_compliant_system) e. In e (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> no_forced_labor e"
+lemma ESG_001_14_no_forced_labor: "\<forall>(sys :: esg_compliant_system) e. e \<in> set (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> no_forced_labor e"
   by auto
 
 (* ESG_001_15_no_child_labor (matches Coq) *)
-lemma ESG_001_15_no_child_labor: "\<forall>(sys :: esg_compliant_system) e. In e (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> no_child_labor e"
+lemma ESG_001_15_no_child_labor: "\<forall>(sys :: esg_compliant_system) e. e \<in> set (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> no_child_labor e"
   by auto
 
 (* ESG_001_16_safety_incident_tracking (matches Coq) *)
-lemma ESG_001_16_safety_incident_tracking: "\<forall>(sys :: esg_compliant_system) i. In i (sys_incidents sys) \<longrightarrow> incident_properly_handled i"
+lemma ESG_001_16_safety_incident_tracking: "\<forall>(sys :: esg_compliant_system) i. i \<in> set (sys_incidents sys) \<longrightarrow> incident_properly_handled i"
   by auto
 
 (* ESG_001_17_non_discrimination (matches Coq) *)
-lemma ESG_001_17_non_discrimination: "\<forall>(sys :: esg_compliant_system) d. In d (sys_decisions sys) \<longrightarrow> non_discriminatory d"
+lemma ESG_001_17_non_discrimination: "\<forall>(sys :: esg_compliant_system) d. d \<in> set (sys_decisions sys) \<longrightarrow> non_discriminatory d"
   by auto
 
 (* ESG_001_18_equal_pay_verification (matches Coq) *)
-lemma ESG_001_18_equal_pay_verification: "\<forall>(sys :: esg_compliant_system) p. In p (sys_paygap sys) \<longrightarrow> gap_calculated p = True \<and> gap_disclosed p = True"
+lemma ESG_001_18_equal_pay_verification: "\<forall>(sys :: esg_compliant_system) p. p \<in> set (sys_paygap sys) \<longrightarrow> gap_calculated p = True \<and> gap_disclosed p = True"
   by auto
 
 (* ESG_001_19_hrdd_process (matches Coq) *)
@@ -567,11 +567,11 @@ lemma ESG_001_19_hrdd_process: "\<forall>(sys :: esg_compliant_system). hrdd_imp
   by auto
 
 (* ESG_001_20_supply_chain_assessment (matches Coq) *)
-lemma ESG_001_20_supply_chain_assessment: "\<forall>(sys :: esg_compliant_system) s year. In s (sys_suppliers sys) \<longrightarrow> supplier_recently_assessed s year"
+lemma ESG_001_20_supply_chain_assessment: "\<forall>(sys :: esg_compliant_system) s year. s \<in> set (sys_suppliers sys) \<longrightarrow> supplier_recently_assessed s year"
   by auto
 
 (* ESG_001_21_fpic_requirement (matches Coq) *)
-lemma ESG_001_21_fpic_requirement: "\<forall>(sys :: esg_compliant_system) c. In c (sys_indigenous sys) \<longrightarrow> fpic_satisfied c"
+lemma ESG_001_21_fpic_requirement: "\<forall>(sys :: esg_compliant_system) c. c \<in> set (sys_indigenous sys) \<longrightarrow> fpic_satisfied c"
   by auto
 
 (* ESG_001_22_grievance_mechanism (matches Coq) *)
@@ -579,7 +579,7 @@ lemma ESG_001_22_grievance_mechanism: "\<forall>(sys :: esg_compliant_system). g
   by auto
 
 (* ESG_001_23_stakeholder_engagement (matches Coq) *)
-lemma ESG_001_23_stakeholder_engagement: "\<forall>(sys :: esg_compliant_system) s. In s (sys_stakeholder sys) \<longrightarrow> stakeholder_engaged s"
+lemma ESG_001_23_stakeholder_engagement: "\<forall>(sys :: esg_compliant_system) s. s \<in> set (sys_stakeholder sys) \<longrightarrow> stakeholder_engaged s"
   by auto
 
 (* ESG_001_24_board_independence (matches Coq) *)
@@ -587,7 +587,7 @@ lemma ESG_001_24_board_independence: "\<forall>(sys :: esg_compliant_system). in
   by auto
 
 (* ESG_001_25_esg_linked_compensation (matches Coq) *)
-lemma ESG_001_25_esg_linked_compensation: "\<forall>(sys :: esg_compliant_system) ec. In ec (sys_exec_comp sys) \<longrightarrow> esg_linked ec"
+lemma ESG_001_25_esg_linked_compensation: "\<forall>(sys :: esg_compliant_system) ec. ec \<in> set (sys_exec_comp sys) \<longrightarrow> esg_linked ec"
   by auto
 
 (* ESG_001_26_anti_corruption_policy (matches Coq) *)
@@ -603,7 +603,7 @@ lemma ESG_001_28_conflict_of_interest: "\<forall>(sys :: esg_compliant_system). 
   by auto
 
 (* ESG_001_29_related_party_disclosure (matches Coq) *)
-lemma ESG_001_29_related_party_disclosure: "\<forall>(sys :: esg_compliant_system) r. In r (sys_rpt sys) \<longrightarrow> rpt_compliant r"
+lemma ESG_001_29_related_party_disclosure: "\<forall>(sys :: esg_compliant_system) r. r \<in> set (sys_rpt sys) \<longrightarrow> rpt_compliant r"
   by auto
 
 (* ESG_001_30_gri_compliance (matches Coq) *)

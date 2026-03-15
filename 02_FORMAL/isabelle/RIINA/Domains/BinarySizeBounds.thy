@@ -259,7 +259,7 @@ lemma PERF_002_07: "\<forall>(bs :: bss_section) (var_size :: size). var_size \<
   by auto
 
 (* PERF_002_08 (matches Coq) *)
-lemma PERF_002_08: "\<forall>(arch :: arch_params) (sf :: stack_frame) (max_locals max_saved_regs : nat). sf_locals sf \<le> max_locals \<longrightarrow> sf_saved_regs sf \<le> max_saved_regs \<longrightarrow> stack_frame_size arch sf \<le> max_locals * arch_word_size arch + max_saved_regs * arch_word_size arch"
+lemma PERF_002_08: "\<forall>(arch :: arch_params) (sf :: stack_frame) (max_locals :: nat) (max_saved_regs :: nat). sf_locals sf \<le> max_locals \<longrightarrow> sf_saved_regs sf \<le> max_saved_regs \<longrightarrow> stack_frame_size arch sf \<le> max_locals * arch_word_size arch + max_saved_regs * arch_word_size arch"
   by simp
 
 (* PERF_002_09 (matches Coq) *)
@@ -283,7 +283,7 @@ lemma PERF_002_13: "\<forall>(arch :: arch_params). bb_size arch [] = 0"
   by simp
 
 (* PERF_002_14 (matches Coq) *)
-lemma PERF_002_14: "\<forall>(arch :: arch_params) (data bss : size). let m := mkMod [] data bss in mod_size arch m = data"
+lemma PERF_002_14: "\<forall>(arch :: arch_params) (data :: size) (bss :: size). let m := mkMod [] data bss in mod_size arch m = data"
   by simp
 
 (* PERF_002_15 (matches Coq) *)

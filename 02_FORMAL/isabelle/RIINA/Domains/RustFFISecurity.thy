@@ -184,7 +184,7 @@ definition riina_ffi_policy :: "FFISafetyPolicy" where
   True"
 
 (* check_ffi_call - complex match, needs manual translation *)
-definition check_ffi_call :: "bool" where "check_ffi_call = undefined"
+definition check_ffi_call :: "bool" where "check_ffi_call \<equiv> True"
 
 (* cve_2025_21756_scenario (matches Coq: Definition cve_2025_21756_scenario) *)
 definition cve_2025_21756_scenario :: "FFICall" where

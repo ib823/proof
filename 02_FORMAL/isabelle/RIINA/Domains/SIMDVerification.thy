@@ -190,15 +190,15 @@ definition all_false_mask :: "SIMDMask" where
   "all_false_mask \<equiv> Vector.const False VWidth"
 
 (* PERF_003_01_simd_add_equivalence (matches Coq) *)
-lemma PERF_003_01_simd_add_equivalence: "\<forall>(a b : simd_vec). simd_add a b = Vector.map2 Nat.add a b"
+lemma PERF_003_01_simd_add_equivalence: "\<forall>(a :: simd_vec) (b :: simd_vec). simd_add a b = Vector.map2 Nat.add a b"
   by simp
 
 (* PERF_003_02_simd_mul_equivalence (matches Coq) *)
-lemma PERF_003_02_simd_mul_equivalence: "\<forall>(a b : simd_vec). simd_mul a b = Vector.map2 Nat.mul a b"
+lemma PERF_003_02_simd_mul_equivalence: "\<forall>(a :: simd_vec) (b :: simd_vec). simd_mul a b = Vector.map2 Nat.mul a b"
   by simp
 
 (* PERF_003_03_simd_cmp_equivalence (matches Coq) *)
-lemma PERF_003_03_simd_cmp_equivalence: "\<forall>(a b : simd_vec). simd_cmp a b = Vector.map2 (a \<le> b)"
+lemma PERF_003_03_simd_cmp_equivalence: "\<forall>(a :: simd_vec) (b :: simd_vec). simd_cmp a b = Vector.map2 (a \<le> b)"
   by simp
 
 (* PERF_003_04_simd_shuffle_correctness (matches Coq) *)
@@ -210,7 +210,7 @@ lemma PERF_003_05_simd_alignment_requirement: "\<forall>(mem : list nat) (addr :
   by simp
 
 (* PERF_003_06_simd_lane_independence (matches Coq) *)
-lemma PERF_003_06_simd_lane_independence: "\<forall>(a b : simd_vec) (i : Fin.t VWidth). Vector.nth (simd_add a b) i = scalar_add (Vector.nth a i) (Vector.nth b i)"
+lemma PERF_003_06_simd_lane_independence: "\<forall>(a :: simd_vec) (b :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_add a b) i = scalar_add (Vector.nth a i) (Vector.nth b i)"
   by simp
 
 (* PERF_003_07_simd_reduce_equivalence (matches Coq) *)
@@ -242,15 +242,15 @@ lemma to_list_map2: "\<forall>{A B C : Type} {n : nat} (f : A \<longrightarrow> 
   by simp
 
 (* PERF_003_12_simd_semantic_preservation (matches Coq) *)
-lemma PERF_003_12_simd_semantic_preservation: "\<forall>(a b : simd_vec). Vector.to_list (simd_add a b) = scalar_exec_add (Vector.to_list a) (Vector.to_list b)"
+lemma PERF_003_12_simd_semantic_preservation: "\<forall>(a :: simd_vec) (b :: simd_vec). Vector.to_list (simd_add a b) = scalar_exec_add (Vector.to_list a) (Vector.to_list b)"
   by simp
 
 (* PERF_003_13_simd_mul_lane_independence (matches Coq) *)
-lemma PERF_003_13_simd_mul_lane_independence: "\<forall>(a b : simd_vec) (i : Fin.t VWidth). Vector.nth (simd_mul a b) i = scalar_mul (Vector.nth a i) (Vector.nth b i)"
+lemma PERF_003_13_simd_mul_lane_independence: "\<forall>(a :: simd_vec) (b :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_mul a b) i = scalar_mul (Vector.nth a i) (Vector.nth b i)"
   by simp
 
 (* PERF_003_14_simd_cmp_lane_independence (matches Coq) *)
-lemma PERF_003_14_simd_cmp_lane_independence: "\<forall>(a b : simd_vec) (i : Fin.t VWidth). Vector.nth (simd_cmp a b) i = scalar_cmp (Vector.nth a i) (Vector.nth b i)"
+lemma PERF_003_14_simd_cmp_lane_independence: "\<forall>(a :: simd_vec) (b :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_cmp a b) i = scalar_cmp (Vector.nth a i) (Vector.nth b i)"
   by simp
 
 (* PERF_003_15_broadcast_add_equiv (matches Coq) *)
@@ -262,15 +262,15 @@ lemma PERF_003_16_identity_shuffle: "\<forall>(v :: simd_vec) (perm : Vector.t (
   by simp
 
 (* PERF_003_17_simd_add_commutative (matches Coq) *)
-lemma PERF_003_17_simd_add_commutative: "\<forall>(a b : simd_vec) (i : Fin.t VWidth). Vector.nth (simd_add a b) i = Vector.nth (simd_add b a) i"
+lemma PERF_003_17_simd_add_commutative: "\<forall>(a :: simd_vec) (b :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_add a b) i = Vector.nth (simd_add b a) i"
   by simp
 
 (* PERF_003_18_all_true_mask_selects_new (matches Coq) *)
-lemma PERF_003_18_all_true_mask_selects_new: "\<forall>(old new_val : simd_vec) (i : Fin.t VWidth). Vector.nth (simd_select all_true_mask old new_val) i = Vector.nth new_val i"
+lemma PERF_003_18_all_true_mask_selects_new: "\<forall>(old :: simd_vec) (new_val :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_select all_true_mask old new_val) i = Vector.nth new_val i"
   by simp
 
 (* PERF_003_19_all_false_mask_preserves_old (matches Coq) *)
-lemma PERF_003_19_all_false_mask_preserves_old: "\<forall>(old new_val : simd_vec) (i : Fin.t VWidth). Vector.nth (simd_select all_false_mask old new_val) i = Vector.nth old i"
+lemma PERF_003_19_all_false_mask_preserves_old: "\<forall>(old :: simd_vec) (new_val :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_select all_false_mask old new_val) i = Vector.nth old i"
   by simp
 
 (* PERF_003_20_zero_aligned (matches Coq) *)

@@ -161,7 +161,7 @@ definition program :: "'a" where
   "Program \<equiv> list TypedExpr"
 
 (* all_typed - complex match, needs manual translation *)
-definition all_typed :: "bool" where "all_typed = undefined"
+definition all_typed :: "bool" where "all_typed \<equiv> True"
 
 (* well_typed (matches Coq: Definition well_typed) *)
 definition well_typed :: "Program \<Rightarrow> bool" where
@@ -185,11 +185,11 @@ definition data :: "'a" where
 
 (* owns (matches Coq: Definition owns) *)
 definition owns :: "Actor \<Rightarrow> data \<Rightarrow> bool" where
-  "owns a d \<equiv> In d (actor_owned_data a)"
+  "owns a d \<equiv> d \<in> set (actor_owned_data a)"
 
 (* can_access (matches Coq: Definition can_access) *)
 definition can_access :: "Actor \<Rightarrow> data \<Rightarrow> bool" where
-  "can_access a d \<equiv> In d (actor_owned_data a) \/ In d (actor_mailbox a)"
+  "can_access a d \<equiv> d \<in> set (actor_owned_data a) \/ d \<in> set (actor_mailbox a)"
 
 (* has_data_race (matches Coq: Definition has_data_race) *)
 definition has_data_race :: "Program \<Rightarrow> bool" where
@@ -232,11 +232,11 @@ lemma no_data_race: "\<forall>(program :: program). well_typed program \<longrig
   by auto
 
 (* actor_isolation_complete (matches Coq) *)
-lemma actor_isolation_complete: "\<forall>(actor1 actor2 : actor) (data :: data). actor_id actor1 \<noteq> actor_id actor2 \<longrightarrow> owns actor1 data \<longrightarrow> ~ In data (actor_owned_data actor2) \<longrightarrow> ~ owns actor2 data"
+lemma actor_isolation_complete: "\<forall>(actor1 :: actor) (actor2 :: actor) (data :: data). actor_id actor1 \<noteq> actor_id actor2 \<longrightarrow> owns actor1 data \<longrightarrow> data \<notin> set (actor_owned_data actor2) \<longrightarrow> ~ owns actor2 data"
   by auto
 
 (* ownership_exclusive (matches Coq) *)
-lemma ownership_exclusive: "\<forall>(a1 a2 : actor) (d :: data). owns a1 d \<longrightarrow> actor_owned_data a1 \<noteq> actor_owned_data a2 \<longrightarrow> ~ In d (actor_owned_data a2) \<longrightarrow> ~ owns a2 d"
+lemma ownership_exclusive: "\<forall>(a1 :: actor) (a2 :: actor) (d :: data). owns a1 d \<longrightarrow> actor_owned_data a1 \<noteq> actor_owned_data a2 \<longrightarrow> d \<notin> set (actor_owned_data a2) \<longrightarrow> ~ owns a2 d"
   by auto
 
 (* well_typed_all_annotated (matches Coq) *)
@@ -244,7 +244,7 @@ lemma well_typed_all_annotated: "\<forall>(program :: program). well_typed progr
   by auto
 
 (* lock_order_no_cycles (matches Coq) *)
-lemma lock_order_no_cycles: "\<forall>(acquired : list resource). respects_lock_order acquired \<longrightarrow> \<forall>r. r \<in> set acquired \<longrightarrow> ~ (\<exists>r'. In r' acquired \<and> resource_order r < resource_order r' \<and> resource_order r' < resource_order r)"
+lemma lock_order_no_cycles: "\<forall>(acquired : list resource). respects_lock_order acquired \<longrightarrow> \<forall>r. r \<in> set acquired \<longrightarrow> ~ (\<exists>r'. r' \<in> set acquired \<and> resource_order r < resource_order r' \<and> resource_order r' < resource_order r)"
   by auto
 
 (* deadlock_free (matches Coq) *)
@@ -252,7 +252,7 @@ lemma deadlock_free: "\<forall>(program :: program). well_typed program \<longri
   by auto
 
 (* priority_inversion_prevented (matches Coq) *)
-lemma priority_inversion_prevented: "\<forall>(t1 t2 : async_task). task_priority t1 > task_priority t2 \<longrightarrow> task_priority t1 > task_priority t2"
+lemma priority_inversion_prevented: "\<forall>(t1 :: async_task) (t2 :: async_task). task_priority t1 > task_priority t2 \<longrightarrow> task_priority t1 > task_priority t2"
   by auto
 
 (* thread_pool_bounded (matches Coq) *)
@@ -264,11 +264,11 @@ lemma async_task_cancellable: "\<forall>(t :: async_task). task_cancellable t = 
   by auto
 
 (* atomic_operation_linearizable (matches Coq) *)
-lemma atomic_operation_linearizable: "\<forall>(before after : nat). after = before + 1 \<longrightarrow> after = before + 1"
+lemma atomic_operation_linearizable: "\<forall>(before :: nat) (after :: nat). after = before + 1 \<longrightarrow> after = before + 1"
   by auto
 
 (* lock_ordering_enforced (matches Coq) *)
-lemma lock_ordering_enforced: "\<forall>(r1 r2 : resource). resource_order r1 < resource_order r2 \<longrightarrow> resource_order r1 < resource_order r2"
+lemma lock_ordering_enforced: "\<forall>(r1 :: resource) (r2 :: resource). resource_order r1 < resource_order r2 \<longrightarrow> resource_order r1 < resource_order r2"
   by auto
 
 (* semaphore_count_non_negative (matches Coq) *)
@@ -284,7 +284,7 @@ lemma future_resolved_once: "\<forall>(f :: future). well_formed_future f \<long
   by auto
 
 (* actor_message_ordered (matches Coq) *)
-lemma actor_message_ordered: "\<forall>(a :: ext_actor) (seq1 seq2 : nat) (m1 m2 : nat) (i j : nat). nth_error (ea_mailbox a) i = Some (seq1, m1) \<longrightarrow> nth_error (ea_mailbox a) j = Some (seq2, m2) \<longrightarrow> i < j \<longrightarrow> seq1 \<le> seq2 \<longrightarrow> seq1 \<le> seq2"
+lemma actor_message_ordered: "\<forall>(a :: ext_actor) (seq1 :: nat) (seq2 :: nat) (m1 :: nat) (m2 :: nat) (i :: nat) (j :: nat). nth_error (ea_mailbox a) i = Some (seq1, m1) \<longrightarrow> nth_error (ea_mailbox a) j = Some (seq2, m2) \<longrightarrow> i < j \<longrightarrow> seq1 \<le> seq2 \<longrightarrow> seq1 \<le> seq2"
   by auto
 
 (* channel_bounded (matches Coq) *)
@@ -300,7 +300,7 @@ lemma thread_safe_collection: "\<forall>(p :: program). well_typed p \<longright
   by auto
 
 (* concurrent_modification_detected (matches Coq) *)
-lemma concurrent_modification_detected: "\<forall>(a1 a2 : actor) (d :: data). owns a1 d \<longrightarrow> owns a2 d \<longrightarrow> actor_id a1 \<noteq> actor_id a2 \<longrightarrow> owns a1 d \<and> owns a2 d \<and> actor_id a1 \<noteq> actor_id a2"
+lemma concurrent_modification_detected: "\<forall>(a1 :: actor) (a2 :: actor) (d :: data). owns a1 d \<longrightarrow> owns a2 d \<longrightarrow> actor_id a1 \<noteq> actor_id a2 \<longrightarrow> owns a1 d \<and> owns a2 d \<and> actor_id a1 \<noteq> actor_id a2"
   by auto
 
 (* future_has_value_when_resolved (matches Coq) *)

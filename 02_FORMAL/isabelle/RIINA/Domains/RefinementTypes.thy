@@ -154,11 +154,11 @@ definition positive_pred :: "Pred" where
   "positive_pred \<equiv> PGtC 0"
 
 (* TYPE_004_01_refinement_subtyping (matches Coq) *)
-lemma TYPE_004_01_refinement_subtyping: "\<forall>(b :: base_ty) (p q : pred). pred_implies p q \<longrightarrow> refty_subtype (RRefine b p) (RRefine b q)"
+lemma TYPE_004_01_refinement_subtyping: "\<forall>(b :: base_ty) (p :: pred) (q :: pred). pred_implies p q \<longrightarrow> refty_subtype (RRefine b p) (RRefine b q)"
   by auto
 
 (* TYPE_004_02_refinement_introduction (matches Coq) *)
-lemma TYPE_004_02_refinement_introduction: "\<forall>(v :: nat) (b :: base_ty) (p : pred). sat_pred v p \<longrightarrow> inhabits_refinement v b p"
+lemma TYPE_004_02_refinement_introduction: "\<forall>(v :: nat) (b :: base_ty) (p :: pred). sat_pred v p \<longrightarrow> inhabits_refinement v b p"
   by auto
 
 (* TYPE_004_03_refinement_elimination (matches Coq) *)
@@ -166,15 +166,15 @@ lemma TYPE_004_03_refinement_elimination: "\<forall>(b :: base_ty) (p :: pred). 
   by auto
 
 (* TYPE_004_04_refinement_conjunction (matches Coq) *)
-lemma TYPE_004_04_refinement_conjunction: "\<forall>(v :: nat) (b :: base_ty) (p q : pred). sat_pred v (PAnd p q) <-> (sat_pred v p \<and> sat_pred v q)"
+lemma TYPE_004_04_refinement_conjunction: "\<forall>(v :: nat) (b :: base_ty) (p :: pred) (q :: pred). sat_pred v (PAnd p q) <-> (sat_pred v p \<and> sat_pred v q)"
   by auto
 
 (* TYPE_004_05_dependent_function_refinement (matches Coq) *)
-lemma TYPE_004_05_dependent_function_refinement: "\<forall>(b1 b2 : base_ty) (p :: pred) (q : nat \<longrightarrow> pred). (\<forall>x. sat_pred x p \<longrightarrow> \<exists>y. sat_pred y (q x)) \<longrightarrow> \<forall>(f : nat \<longrightarrow> nat) (arg :: nat). sat_pred arg p \<longrightarrow> sat_pred (f arg) (q arg) \<longrightarrow> \<exists>result. sat_pred result (q arg)"
+lemma TYPE_004_05_dependent_function_refinement: "\<forall>(b1 :: base_ty) (b2 :: base_ty) (p :: pred) (q : nat \<longrightarrow> pred). (\<forall>x. sat_pred x p \<longrightarrow> \<exists>y. sat_pred y (q x)) \<longrightarrow> \<forall>(f : nat \<longrightarrow> nat) (arg :: nat). sat_pred arg p \<longrightarrow> sat_pred (f arg) (q arg) \<longrightarrow> \<exists>result. sat_pred result (q arg)"
   by auto
 
 (* TYPE_004_06_refinement_substitution (matches Coq) *)
-lemma TYPE_004_06_refinement_substitution: "\<forall>(x :: nat) (v :: nat) (env : TyEnv) (e :: expr) (b : base_ty) (p :: pred). has_type ((x, RRefine b p) :: env) e (RRefine b p) \<longrightarrow> sat_pred v p \<longrightarrow> \<forall>result. eval ((x, v) :: nil) e = Some result \<longrightarrow> sat_pred result p \<longrightarrow> inhabits_refinement result b p"
+lemma TYPE_004_06_refinement_substitution: "\<forall>(x :: nat) (v :: nat) (env :: TyEnv) (e :: expr) (b :: base_ty) (p :: pred). has_type ((x, RRefine b p) :: env) e (RRefine b p) \<longrightarrow> sat_pred v p \<longrightarrow> \<forall>result. eval ((x, v) :: nil) e = Some result \<longrightarrow> sat_pred result p \<longrightarrow> inhabits_refinement result b p"
   by auto
 
 (* TYPE_004_07_smt_decidability (matches Coq) *)
@@ -194,11 +194,11 @@ lemma TYPE_004_10_array_bounds_safety: "\<forall>(arr :: array) (i :: nat). sat_
   by auto
 
 (* TYPE_004_11_positive_refinement (matches Coq) *)
-lemma TYPE_004_11_positive_refinement: "\<forall>(x y : nat). sat_pred x positive_pred \<longrightarrow> sat_pred y positive_pred \<longrightarrow> sat_pred (x * y) positive_pred"
+lemma TYPE_004_11_positive_refinement: "\<forall>(x :: nat) (y :: nat). sat_pred x positive_pred \<longrightarrow> sat_pred y positive_pred \<longrightarrow> sat_pred (x * y) positive_pred"
   by auto
 
 (* TYPE_004_12_refinement_preservation (matches Coq) *)
-lemma TYPE_004_12_refinement_preservation: "\<forall>(e e' : expr) (b :: base_ty) (p : pred) (n :: nat). step_clean e e' \<longrightarrow> e' = EVal n \<longrightarrow> sat_pred n p \<longrightarrow> has_type nil e' (RRefine b p)"
+lemma TYPE_004_12_refinement_preservation: "\<forall>(e e' : expr) (b :: base_ty) (p :: pred) (n :: nat). step_clean e e' \<longrightarrow> e' = EVal n \<longrightarrow> sat_pred n p \<longrightarrow> has_type nil e' (RRefine b p)"
   by auto
 
 (* TYPE_004_13_pred_true_satisfied (matches Coq) *)

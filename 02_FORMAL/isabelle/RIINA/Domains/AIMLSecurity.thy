@@ -14,7 +14,7 @@
  * |--------------------|------------------------|--------|
  * | attack_state        | attack_state           | OK     |
  * | AIAttackType       | ai_attack_type         | OK     |
- * | security_level      | security_level         | OK     |
+ * | aiml_security_level      | aiml_security_level         | OK     |
  * | differential_privacy | differential_privacy   | OK     |
  * | input_validation    | input_validation       | OK     |
  * | access_control      | access_control         | OK     |
@@ -129,8 +129,8 @@ datatype ai_attack_type =
   |     AIAgentSwarms
   |     MCPServerExploitation
 
-(* security_level (matches Coq: Inductive security_level) *)
-datatype security_level =
+(* aiml_security_level (matches Coq: Inductive aiml_security_level) *)
+datatype aiml_security_level =
     Critical
   |     High
   |     Medium
@@ -260,8 +260,8 @@ record backdoor_detection =
   bd_spectral_analysis :: bool
 
 (* all_true (matches Coq: Definition all_true) *)
-definition all_true :: "bool" where
-  "all_true \<equiv> True"
+definition all_true :: "bool list \<Rightarrow> bool" where
+  "all_true xs \<equiv> list_all id xs"
 
 (* adversarial_examples_protected (matches Coq: Definition adversarial_examples_protected) *)
 definition adversarial_examples_protected :: "RobustTraining \<Rightarrow> input_validation \<Rightarrow> bool" where
@@ -349,8 +349,8 @@ definition mcp_server_exploitation_protected :: "ProtocolVerification \<Rightarr
   "mcp_server_exploitation_protected pv ac \<equiv> pv_schema_validated pv \<and> pv_auth_required pv \<and> (pv_integrity_checked pv \<and> ac_authenticated ac)"
 
 (* mitigation_transitive (matches Coq: Definition mitigation_transitive) *)
-definition mitigation_transitive :: "bool" where
-  "mitigation_transitive \<equiv> implb m1 m2"
+definition mitigation_transitive :: "bool \<Rightarrow> bool \<Rightarrow> bool" where
+  "mitigation_transitive \<equiv> (m1 \<longrightarrow> m2)"
 
 (* Lemma: all_true with single element *)
 (* all_true_single (matches Coq) *)
@@ -526,7 +526,7 @@ lemma composition_strengthens_security: "\<forall>(b1 b2 b3 :: bool). b1 = True 
   by simp
 
 (* mitigation_transitivity (matches Coq) *)
-lemma mitigation_transitivity: "\<forall>(base enhanced : bool). base = True \<longrightarrow> implb base enhanced = True \<longrightarrow> enhanced = True"
+lemma mitigation_transitivity: "\<forall>(base :: bool) (enhanced :: bool). base = True \<longrightarrow> (base \<longrightarrow> enhanced) = True \<longrightarrow> enhanced = True"
   by auto
 
 (* Defense layers accumulate protection *)

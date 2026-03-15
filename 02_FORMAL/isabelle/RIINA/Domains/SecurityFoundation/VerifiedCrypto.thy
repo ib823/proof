@@ -128,7 +128,7 @@ lemma key_never_plaintext: "\<forall>(key :: crypto_key) (mem :: memory). secure
 
 (* Theorem: Cryptographic operations execute in constant time regardless of input. *)
 (* crypto_constant_time (matches Coq) *)
-lemma crypto_constant_time: "\<forall>(ctx :: crypto_context) (op :: crypto_op) (input1 input2 : data). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input1 = execution_time ctx op input2"
+lemma crypto_constant_time: "\<forall>(ctx :: crypto_context) (op :: crypto_op) (input1 :: data) (input2 :: data). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input1 = execution_time ctx op input2"
   by simp
 
 (* Key wrapping provides protection *)
@@ -143,7 +143,7 @@ lemma secure_memory_protects_key: "\<forall>(key :: crypto_key) (mem :: memory).
 
 (* Constant time prevents timing attacks *)
 (* constant_time_prevents_timing_attack (matches Coq) *)
-lemma constant_time_prevents_timing_attack: "\<forall>(ctx :: crypto_context) (op :: crypto_op) (secret public : data). ctx_constant_time ctx = True \<longrightarrow> execute_crypto ctx op secret = execute_crypto ctx op public"
+lemma constant_time_prevents_timing_attack: "\<forall>(ctx :: crypto_context) (op :: crypto_op) (secret :: data) (public :: data). ctx_constant_time ctx = True \<longrightarrow> execute_crypto ctx op secret = execute_crypto ctx op public"
   by auto
 
 (* Non-constant time is vulnerable *)
@@ -178,12 +178,12 @@ lemma sign_verify_equal_time: "\<forall>(ctx :: crypto_context) (input :: data).
 
 (* Hash is the fastest operation *)
 (* hash_fastest_operation (matches Coq) *)
-lemma hash_fastest_operation: "\<forall>(ctx :: crypto_context) (input :: data) (op : crypto_op). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx Hash input \<le> execution_time ctx op input"
+lemma hash_fastest_operation: "\<forall>(ctx :: crypto_context) (input :: data) (op :: crypto_op). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx Hash input \<le> execution_time ctx op input"
   by auto
 
 (* Key derivation is the slowest operation *)
 (* key_derive_slowest (matches Coq) *)
-lemma key_derive_slowest: "\<forall>(ctx :: crypto_context) (input :: data) (op : crypto_op). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input \<le> execution_time ctx KeyDerive input"
+lemma key_derive_slowest: "\<forall>(ctx :: crypto_context) (input :: data) (op :: crypto_op). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input \<le> execution_time ctx KeyDerive input"
   by auto
 
 (* Secure key storage is stronger than key protected *)
@@ -213,7 +213,7 @@ lemma fully_hardened_context: "\<forall>(ctx :: crypto_context). ctx_constant_ti
 
 (* Operation time is positive *)
 (* operation_time_positive (matches Coq) *)
-lemma operation_time_positive: "\<forall>(ctx :: crypto_context) (op :: crypto_op) (input : data). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input > 0"
+lemma operation_time_positive: "\<forall>(ctx :: crypto_context) (op :: crypto_op) (input :: data). ctx_constant_time ctx = True \<longrightarrow> execution_time ctx op input > 0"
   by auto
 
 (* Different operations may have different times *)
@@ -223,7 +223,7 @@ lemma encrypt_faster_than_sign: "\<forall>(ctx :: crypto_context) (input :: data
 
 (* Execution is deterministic *)
 (* crypto_execution_deterministic (matches Coq) *)
-lemma crypto_execution_deterministic: "\<forall>(ctx :: crypto_context) (op :: crypto_op) (input : data). execute_crypto ctx op input = execute_crypto ctx op input"
+lemma crypto_execution_deterministic: "\<forall>(ctx :: crypto_context) (op :: crypto_op) (input :: data). execute_crypto ctx op input = execute_crypto ctx op input"
   by simp
 
 end

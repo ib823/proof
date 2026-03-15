@@ -134,8 +134,8 @@ fun phys_transition :: "PhysState \<Rightarrow> bool \<Rightarrow> PhysState" wh
 
 (* is_operational (matches Coq: Definition is_operational) *)
 fun is_operational :: "PhysState \<Rightarrow> bool" where
-  "is_operational Error = false"
-|   "is_operational _ = true"
+  "is_operational Error = False"
+|   "is_operational _ = True"
 
 (* phys_run (matches Coq: Definition phys_run) *)
 fun phys_run :: "PhysState \<Rightarrow> PhysState" where

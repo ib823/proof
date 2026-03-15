@@ -96,11 +96,11 @@ definition license_eqb :: "bool" where
   "license_eqb \<equiv> (license_level a = license_level b)"
 
 (* s234_encrypted_compliant (matches Coq) *)
-lemma s234_encrypted_compliant: "\<forall>(enc auth : bool). enc = True \<longrightarrow> no_unauthorized_interception enc auth"
+lemma s234_encrypted_compliant: "\<forall>(enc :: bool) (auth :: bool). enc = True \<longrightarrow> no_unauthorized_interception enc auth"
   by auto
 
 (* s234_authorized_compliant (matches Coq) *)
-lemma s234_authorized_compliant: "\<forall>(enc auth : bool). auth = True \<longrightarrow> no_unauthorized_interception enc auth"
+lemma s234_authorized_compliant: "\<forall>(enc :: bool) (auth :: bool). auth = True \<longrightarrow> no_unauthorized_interception enc auth"
   by auto
 
 (* s236_fraud_prevention (matches Coq) *)

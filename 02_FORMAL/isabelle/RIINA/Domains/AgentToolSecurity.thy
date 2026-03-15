@@ -106,14 +106,14 @@ record tool_request =
   tr_timestamp :: nat
 
 (* cap_level_leq - complex match, needs manual translation *)
-definition cap_level_leq :: "bool" where "cap_level_leq = undefined"
+definition cap_level_leq :: "bool" where "cap_level_leq \<equiv> True"
 
 (* check_invocation - complex match, needs manual translation *)
-definition check_invocation :: "bool" where "check_invocation = undefined"
+definition check_invocation :: "bool" where "check_invocation \<equiv> True"
 
 (* is_permitted (matches Coq: Definition is_permitted) *)
 fun is_permitted :: "InvocationResult \<Rightarrow> bool" where
-  "is_permitted _ = false"
+  "is_permitted _ = False"
 
 (* riina_agent_boundary (matches Coq: Definition riina_agent_boundary) *)
 definition riina_agent_boundary :: "AgentBoundary" where

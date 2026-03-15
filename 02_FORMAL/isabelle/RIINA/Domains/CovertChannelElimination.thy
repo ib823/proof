@@ -169,7 +169,7 @@ definition protocol_verified :: "ProtocolMessage \<Rightarrow> bool" where
 
 (* domains_isolated (matches Coq: Definition domains_isolated) *)
 definition domains_isolated :: "bool" where
-  "domains_isolated \<equiv> forall r : nat, ~(In r (id_resources d1) \<and> In r (id_resources d2))"
+  "domains_isolated \<equiv> forall r : nat, ~(r \<in> set (id_resources d1) \<and> r \<in> set (id_resources d2))"
 
 (* partitions_disjoint (matches Coq: Definition partitions_disjoint) *)
 definition partitions_disjoint :: "bool" where
@@ -213,7 +213,7 @@ lemma cov_001_storage_channel_eliminated: "\<forall>(sc :: storage_channel). can
     If all operations execute in constant time regardless of input,
     no timing information can leak secret data. *)
 (* cov_002_timing_channel_eliminated (matches Coq) *)
-lemma cov_002_timing_channel_eliminated: "\<forall>(tc :: timing_channel). is_constant_time tc \<longrightarrow> \<forall>(secret1 secret2 : nat). tc_execution_time tc secret1 = tc_execution_time tc secret2"
+lemma cov_002_timing_channel_eliminated: "\<forall>(tc :: timing_channel). is_constant_time tc \<longrightarrow> \<forall>(secret1 :: nat) (secret2 :: nat). tc_execution_time tc secret1 = tc_execution_time tc secret2"
   by auto
 
 (* COV-003: Network Covert Channel Bounded via Traffic Padding
@@ -221,7 +221,7 @@ lemma cov_002_timing_channel_eliminated: "\<forall>(tc :: timing_channel). is_co
     If all network packets are padded to a fixed size,
     packet size cannot leak payload information. *)
 (* cov_003_network_covert_channel_bounded (matches Coq) *)
-lemma cov_003_network_covert_channel_bounded: "\<forall>(fixed_size :: nat) (nt1 nt2 : network_traffic). is_padded_traffic nt1 \<longrightarrow> is_padded_traffic nt2 \<longrightarrow> nt_total_size nt1 = fixed_size \<longrightarrow> nt_total_size nt2 = fixed_size \<longrightarrow> nt_total_size nt1 = nt_total_size nt2"
+lemma cov_003_network_covert_channel_bounded: "\<forall>(fixed_size :: nat) (nt1 :: network_traffic) (nt2 :: network_traffic). is_padded_traffic nt1 \<longrightarrow> is_padded_traffic nt2 \<longrightarrow> nt_total_size nt1 = fixed_size \<longrightarrow> nt_total_size nt2 = fixed_size \<longrightarrow> nt_total_size nt1 = nt_total_size nt2"
   by simp
 
 (* COV-004: Steganography Channel Eliminated via Content Filtering
@@ -245,7 +245,7 @@ lemma cov_005_subliminal_channel_eliminated: "\<forall>(pm :: protocol_message) 
     If two domains are acoustically isolated (share no acoustic resources),
     no acoustic covert channel exists between them. *)
 (* cov_006_acoustic_channel_eliminated (matches Coq) *)
-lemma cov_006_acoustic_channel_eliminated: "\<forall>(d1 d2 : isolation_domain). domains_isolated d1 d2 \<longrightarrow> \<forall>(acoustic_resource :: nat). In acoustic_resource (id_resources d1) \<longrightarrow> ~In acoustic_resource (id_resources d2)"
+lemma cov_006_acoustic_channel_eliminated: "\<forall>(d1 :: isolation_domain) (d2 :: isolation_domain). domains_isolated d1 d2 \<longrightarrow> \<forall>(acoustic_resource :: nat). acoustic_resource \<in> set (id_resources d1) \<longrightarrow> acoustic_resource \<notin> set (id_resources d2)"
   by auto
 
 (* COV-007: Thermal Channel Eliminated via Domain Isolation
@@ -253,7 +253,7 @@ lemma cov_006_acoustic_channel_eliminated: "\<forall>(d1 d2 : isolation_domain).
     If two domains share no thermal resources (heat sinks, sensors),
     no thermal covert channel exists between them. *)
 (* cov_007_thermal_channel_eliminated (matches Coq) *)
-lemma cov_007_thermal_channel_eliminated: "\<forall>(d1 d2 : isolation_domain). domains_isolated d1 d2 \<longrightarrow> \<forall>(thermal_resource :: nat). In thermal_resource (id_resources d1) \<longrightarrow> ~In thermal_resource (id_resources d2)"
+lemma cov_007_thermal_channel_eliminated: "\<forall>(d1 :: isolation_domain) (d2 :: isolation_domain). domains_isolated d1 d2 \<longrightarrow> \<forall>(thermal_resource :: nat). thermal_resource \<in> set (id_resources d1) \<longrightarrow> thermal_resource \<notin> set (id_resources d2)"
   by auto
 
 (* COV-008: Power Channel Eliminated via Domain Isolation
@@ -261,7 +261,7 @@ lemma cov_007_thermal_channel_eliminated: "\<forall>(d1 d2 : isolation_domain). 
     If two domains share no power resources,
     no power-based covert channel exists between them. *)
 (* cov_008_power_channel_eliminated (matches Coq) *)
-lemma cov_008_power_channel_eliminated: "\<forall>(d1 d2 : isolation_domain). domains_isolated d1 d2 \<longrightarrow> \<forall>(power_resource :: nat). In power_resource (id_resources d1) \<longrightarrow> ~In power_resource (id_resources d2)"
+lemma cov_008_power_channel_eliminated: "\<forall>(d1 :: isolation_domain) (d2 :: isolation_domain). domains_isolated d1 d2 \<longrightarrow> \<forall>(power_resource :: nat). power_resource \<in> set (id_resources d1) \<longrightarrow> power_resource \<notin> set (id_resources d2)"
   by auto
 
 (* COV-009: Cache Channel Eliminated via Cache Partitioning
@@ -269,7 +269,7 @@ lemma cov_008_power_channel_eliminated: "\<forall>(d1 d2 : isolation_domain). do
     If cache is partitioned with non-overlapping regions per security domain,
     no cache-based covert channel exists between partitions. *)
 (* cov_009_cache_channel_eliminated (matches Coq) *)
-lemma cov_009_cache_channel_eliminated: "\<forall>(p1 p2 : partition). partitions_disjoint p1 p2 \<longrightarrow> can_flow (part_label p1) (part_label p2) = False \<longrightarrow> \<forall>(cache_line :: nat). (part_start p1 \<le> cache_line < part_start p1 + part_size p1) \<longrightarrow> ~(part_start p2 \<le> cache_line < part_start p2 + part_size p2)"
+lemma cov_009_cache_channel_eliminated: "\<forall>(p1 :: partition) (p2 :: partition). partitions_disjoint p1 p2 \<longrightarrow> can_flow (part_label p1) (part_label p2) = False \<longrightarrow> \<forall>(cache_line :: nat). (part_start p1 \<le> cache_line < part_start p1 + part_size p1) \<longrightarrow> ~(part_start p2 \<le> cache_line < part_start p2 + part_size p2)"
   by auto
 
 (* COV-010: Memory Channel Eliminated via Memory Partitioning
@@ -277,7 +277,7 @@ lemma cov_009_cache_channel_eliminated: "\<forall>(p1 p2 : partition). partition
     If memory is partitioned with non-overlapping regions per security domain,
     no memory-based covert channel exists between partitions. *)
 (* cov_010_memory_channel_eliminated (matches Coq) *)
-lemma cov_010_memory_channel_eliminated: "\<forall>(p1 p2 : partition). partitions_disjoint p1 p2 \<longrightarrow> can_flow (part_label p1) (part_label p2) = False \<longrightarrow> \<forall>(mem_addr :: nat). (part_start p1 \<le> mem_addr < part_start p1 + part_size p1) \<longrightarrow> ~(part_start p2 \<le> mem_addr < part_start p2 + part_size p2)"
+lemma cov_010_memory_channel_eliminated: "\<forall>(p1 :: partition) (p2 :: partition). partitions_disjoint p1 p2 \<longrightarrow> can_flow (part_label p1) (part_label p2) = False \<longrightarrow> \<forall>(mem_addr :: nat). (part_start p1 \<le> mem_addr < part_start p1 + part_size p1) \<longrightarrow> ~(part_start p2 \<le> mem_addr < part_start p2 + part_size p2)"
   by auto
 
 (* COV-011: File System Channel Eliminated via FS Isolation
@@ -285,7 +285,7 @@ lemma cov_010_memory_channel_eliminated: "\<forall>(p1 p2 : partition). partitio
     If file systems are isolated between domains (no shared paths),
     no file system covert channel exists. *)
 (* cov_011_filesystem_channel_eliminated (matches Coq) *)
-lemma cov_011_filesystem_channel_eliminated: "\<forall>(d1 d2 : isolation_domain). domains_isolated d1 d2 \<longrightarrow> \<forall>(fs_path :: nat). In fs_path (id_resources d1) \<longrightarrow> ~In fs_path (id_resources d2)"
+lemma cov_011_filesystem_channel_eliminated: "\<forall>(d1 :: isolation_domain) (d2 :: isolation_domain). domains_isolated d1 d2 \<longrightarrow> \<forall>(fs_path :: nat). fs_path \<in> set (id_resources d1) \<longrightarrow> fs_path \<notin> set (id_resources d2)"
   by auto
 
 (* COV-012: Process Channel Eliminated via container Isolation
@@ -293,7 +293,7 @@ lemma cov_011_filesystem_channel_eliminated: "\<forall>(d1 d2 : isolation_domain
     If processes run in different namespaces (containers),
     they cannot directly communicate, eliminating process covert channels. *)
 (* cov_012_process_channel_eliminated (matches Coq) *)
-lemma cov_012_process_channel_eliminated: "\<forall>(c1 c2 : container). containers_isolated c1 c2 \<longrightarrow> \<forall>(communicate : container \<longrightarrow> container \<longrightarrow> bool). (\<forall>c1' c2'. containers_isolated c1' c2' \<longrightarrow> communicate c1' c2' = False) \<longrightarrow> communicate c1 c2 = False"
+lemma cov_012_process_channel_eliminated: "\<forall>(c1 :: container) (c2 :: container). containers_isolated c1 c2 \<longrightarrow> \<forall>(communicate : container \<longrightarrow> container \<longrightarrow> bool). (\<forall>c1' c2'. containers_isolated c1' c2' \<longrightarrow> communicate c1' c2' = False) \<longrightarrow> communicate c1 c2 = False"
   by auto
 
 (* COV-013: Kernel Channel Eliminated via Verified Kernel
@@ -322,7 +322,7 @@ lemma cov_015_electromagnetic_channel_eliminated: "\<forall>(ems :: em_shielding
 
 (* Theorem: Complete isolation implies no information flow *)
 (* complete_isolation_no_flow (matches Coq) *)
-lemma complete_isolation_no_flow: "\<forall>(d1 d2 : isolation_domain). domains_isolated d1 d2 \<longrightarrow> can_flow (id_label d1) (id_label d2) = False \<longrightarrow> \<forall>resource : nat. In resource (id_resources d1) \<longrightarrow> ~In resource (id_resources d2)"
+lemma complete_isolation_no_flow: "\<forall>(d1 :: isolation_domain) (d2 :: isolation_domain). domains_isolated d1 d2 \<longrightarrow> can_flow (id_label d1) (id_label d2) = False \<longrightarrow> \<forall>resource : nat. resource \<in> set (id_resources d1) \<longrightarrow> resource \<notin> set (id_resources d2)"
   by auto
 
 (* Theorem: Information flow control is a partial order *)

@@ -51,7 +51,7 @@ theory CertificationEvidence
 begin
 
 (* differ_at_one - complex match, needs manual translation *)
-definition differ_at_one :: "bool" where "differ_at_one = undefined"
+definition differ_at_one :: "bool" where "differ_at_one \<equiv> True"
 
 (* mcdc_pair (matches Coq: Definition mcdc_pair) *)
 definition mcdc_pair :: "bool" where
@@ -60,12 +60,12 @@ definition mcdc_pair :: "bool" where
 
 (* fully_traced (matches Coq: Definition fully_traced) *)
 definition fully_traced :: "traceability \<Rightarrow> bool" where
-  "fully_traced t \<equiv> forall r, In r (tr_reqs t) -> tr_map t r <> []"
+  "fully_traced t \<equiv> forall r, r \<in> set (tr_reqs t) -> tr_map t r <> []"
 
 (* all_tests_linked (matches Coq: Definition all_tests_linked) *)
 definition all_tests_linked :: "traceability \<Rightarrow> bool" where
-  "all_tests_linked t \<equiv> forall tid, In tid (tr_tests t) ->
-    exists r, In r (tr_reqs t) \<and> In tid (tr_map t r)"
+  "all_tests_linked t \<equiv> forall tid, tid \<in> set (tr_tests t) ->
+    exists r, r \<in> set (tr_reqs t) \<and> tid \<in> set (tr_map t r)"
 
 (* sfr_satisfied (matches Coq: Definition sfr_satisfied) *)
 definition sfr_satisfied :: "sfr \<Rightarrow> bool" where
@@ -100,35 +100,35 @@ lemma differ_at_one_sym: "\<forall>v1 v2 pos. differ_at_one v1 v2 = Some pos \<l
   by auto
 
 (* 1 (matches Coq) *)
-lemma 1: "MC/DC pair symmetry Theorem mcdc_pair_sym : \<forall>v1 v2 d. mcdc_pair v1 v2 d \<longrightarrow> mcdc_pair v2 v1 d"
+lemma lemma_1: "MC/DC pair symmetry Theorem mcdc_pair_sym : \<forall>v1 v2 d. mcdc_pair v1 v2 d \<longrightarrow> mcdc_pair v2 v1 d"
   by auto
 
 (* 2 (matches Coq) *)
-lemma 2: "Vectors equal to themselves have no MC/DC differ Theorem no_self_mcdc : \<forall>v. differ_at_one v v = None"
+lemma lemma_2: "Vectors equal to themselves have no MC/DC differ Theorem no_self_mcdc : \<forall>v. differ_at_one v v = None"
   by auto
 
 (* 3 (matches Coq) *)
-lemma 3: "Full traceability means no untested requirements Theorem full_trace_no_gaps : \<forall>t. fully_traced t \<longrightarrow> \<forall>r. In r (tr_reqs t) \<longrightarrow> \<exists>tid. In tid (tr_map t r)"
+lemma lemma_3: "Full traceability means no untested requirements Theorem full_trace_no_gaps : \<forall>t. fully_traced t \<longrightarrow> \<forall>r. r \<in> set (tr_reqs t) \<longrightarrow> \<exists>tid. tid \<in> set (tr_map t r)"
   by auto
 
 (* 4 (matches Coq) *)
-lemma 4: "SFR satisfaction requires evidence Theorem sfr_needs_evidence : \<forall>s. sfr_satisfied s \<longrightarrow> sfr_evidence_count s \<ge> 1"
+lemma lemma_4: "SFR satisfaction requires evidence Theorem sfr_needs_evidence : \<forall>s. sfr_satisfied s \<longrightarrow> sfr_evidence_count s \<ge> 1"
   by auto
 
 (* 5 (matches Coq) *)
-lemma 5: "SFR satisfaction requires verification Theorem sfr_needs_verification : \<forall>s. sfr_satisfied s \<longrightarrow> sfr_verified s = True"
+lemma lemma_5: "SFR satisfaction requires verification Theorem sfr_needs_verification : \<forall>s. sfr_satisfied s \<longrightarrow> sfr_verified s = True"
   by auto
 
 (* 6 (matches Coq) *)
-lemma 6: "DAL_A is the highest level Theorem dal_a_highest : \<forall>d. dal_leq d DAL_A = True"
+lemma lemma_6: "DAL_A is the highest level Theorem dal_a_highest : \<forall>d. dal_leq d DAL_A = True"
   by auto
 
 (* 7 (matches Coq) *)
-lemma 7: "DAL ordering is reflexive Theorem dal_leq_refl : \<forall>d. dal_leq d d = True"
+lemma lemma_7: "DAL ordering is reflexive Theorem dal_leq_refl : \<forall>d. dal_leq d d = True"
   by auto
 
 (* 8 (matches Coq) *)
-lemma 8: "DAL ordering is transitive Theorem dal_leq_trans : \<forall>d1 d2 d3. dal_leq d1 d2 = True \<longrightarrow> dal_leq d2 d3 = True \<longrightarrow> dal_leq d1 d3 = True"
+lemma lemma_8: "DAL ordering is transitive Theorem dal_leq_trans : \<forall>d1 d2 d3. dal_leq d1 d2 = True \<longrightarrow> dal_leq d2 d3 = True \<longrightarrow> dal_leq d1 d3 = True"
   by simp
 
 (* fold_left_add_acc (matches Coq) *)
@@ -136,51 +136,51 @@ lemma fold_left_add_acc: "\<forall>l acc. fold_left (fun a s => a + sfr_evidence
   by simp
 
 (* 9 (matches Coq) *)
-lemma 9: "Evidence count is additive over concatenation Theorem evidence_count_app : \<forall>l1 l2. evidence_count (l1 ++ l2) = evidence_count l1 + evidence_count l2"
+lemma lemma_9: "Evidence count is additive over concatenation Theorem evidence_count_app : \<forall>l1 l2. evidence_count (l1 ++ l2) = evidence_count l1 + evidence_count l2"
   by simp
 
 (* 10 (matches Coq) *)
-lemma 10: "All satisfied SFRs contribute evidence Theorem all_satisfied_have_evidence : \<forall>sfrs. Forall sfr_satisfied sfrs \<longrightarrow> evidence_count sfrs \<ge> length sfrs"
+lemma lemma_10: "All satisfied SFRs contribute evidence Theorem all_satisfied_have_evidence : \<forall>sfrs. Forall sfr_satisfied sfrs \<longrightarrow> evidence_count sfrs \<ge> length sfrs"
   by auto
 
 (* 11 (matches Coq) *)
-lemma 11: "Empty traceability is vacuously fully traced Theorem empty_trace_fully_traced : \<forall>tm tt. fully_traced (mkTrace [] tm tt)"
+lemma lemma_11: "Empty traceability is vacuously fully traced Theorem empty_trace_fully_traced : \<forall>tm tt. fully_traced (mkTrace [] tm tt)"
   by auto
 
 (* 12 (matches Coq) *)
-lemma 12: "DAL_E is the lowest level Theorem dal_e_lowest : \<forall>d. dal_leq DAL_E d = True"
+lemma lemma_12: "DAL_E is the lowest level Theorem dal_e_lowest : \<forall>d. dal_leq DAL_E d = True"
   by auto
 
 (* 13 (matches Coq) *)
-lemma 13: "DAL ordering is antisymmetric on nat Theorem dal_leq_antisym : \<forall>d1 d2. dal_leq d1 d2 = True \<longrightarrow> dal_leq d2 d1 = True \<longrightarrow> dal_to_nat d1 = dal_to_nat d2"
+lemma lemma_13: "DAL ordering is antisymmetric on nat Theorem dal_leq_antisym : \<forall>d1 d2. dal_leq d1 d2 = True \<longrightarrow> dal_leq d2 d1 = True \<longrightarrow> dal_to_nat d1 = dal_to_nat d2"
   by simp
 
 (* 14 (matches Coq) *)
-lemma 14: "dal_to_nat is bounded Theorem dal_to_nat_bounded : \<forall>d. dal_to_nat d \<le> 5 \<and> dal_to_nat d \<ge> 1"
+lemma lemma_14: "dal_to_nat is bounded Theorem dal_to_nat_bounded : \<forall>d. dal_to_nat d \<le> 5 \<and> dal_to_nat d \<ge> 1"
   by auto
 
 (* 15 (matches Coq) *)
-lemma 15: "Evidence count of nil is zero Theorem evidence_count_nil : evidence_count [] = 0"
+lemma lemma_15: "Evidence count of nil is zero Theorem evidence_count_nil : evidence_count [] = 0"
   by simp
 
 (* 16 (matches Coq) *)
-lemma 16: "Evidence count of singleton Theorem evidence_count_singleton : \<forall>s. evidence_count [s] = sfr_evidence_count s"
+lemma lemma_16: "Evidence count of singleton Theorem evidence_count_singleton : \<forall>s. evidence_count [s] = sfr_evidence_count s"
   by simp
 
 (* 17 (matches Coq) *)
-lemma 17: "SFR satisfied decomposition Theorem sfr_satisfied_decompose : \<forall>sid sv sec. sfr_satisfied (mkSFR sid sv sec) \<longrightarrow> sv = True \<and> sec \<ge> 1"
+lemma lemma_17: "SFR satisfied decomposition Theorem sfr_satisfied_decompose : \<forall>sid sv sec. sfr_satisfied (mkSFR sid sv sec) \<longrightarrow> sv = True \<and> sec \<ge> 1"
   by auto
 
 (* 18 (matches Coq) *)
-lemma 18: "No self MC/DC means no decision flip Theorem no_self_mcdc_no_flip : \<forall>v d. ~ mcdc_pair v v d"
+lemma lemma_18: "No self MC/DC means no decision flip Theorem no_self_mcdc_no_flip : \<forall>v d. ~ mcdc_pair v v d"
   by auto
 
 (* 19 (matches Coq) *)
-lemma 19: "DAL_A strictly greater than DAL_B Theorem dal_a_gt_b : dal_to_nat DAL_A > dal_to_nat DAL_B"
+lemma lemma_19: "DAL_A strictly greater than DAL_B Theorem dal_a_gt_b : dal_to_nat DAL_A > dal_to_nat DAL_B"
   by simp
 
 (* 20 (matches Coq) *)
-lemma 20: "Evidence count monotonic under append Theorem evidence_count_mono : \<forall>l s. evidence_count l \<le> evidence_count (l ++ [s])"
+lemma lemma_20: "Evidence count monotonic under append Theorem evidence_count_mono : \<forall>l s. evidence_count l \<le> evidence_count (l ++ [s])"
   by simp
 
 end

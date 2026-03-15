@@ -220,7 +220,7 @@ definition key_length_sufficient_prop :: "EncryptionKey \<Rightarrow> bool" wher
 (* iv_never_reused (matches Coq: Definition iv_never_reused) *)
 definition iv_never_reused :: "IVTracker \<Rightarrow> bool" where
   "iv_never_reused tracker \<equiv> iv_unique tracker = True \<and>
-  ~ In (iv_current tracker) (iv_used_list tracker)"
+  ~ (iv_current tracker) \<in> set (iv_used_list tracker)"
 
 (* aead_verified (matches Coq: Definition aead_verified) *)
 definition aead_verified :: "EncryptionOperation \<Rightarrow> bool" where
@@ -306,7 +306,7 @@ lemma encryption_decryption_inverse: "\<forall>(key :: nat) (plaintext : list na
   by simp
 
 (* key_generation_random (matches Coq) *)
-lemma key_generation_random: "\<forall>(k1 k2 : encryption_key). key_id k1 \<noteq> key_id k2 \<longrightarrow> k1 \<noteq> k2"
+lemma key_generation_random: "\<forall>(k1 :: encryption_key) (k2 :: encryption_key). key_id k1 \<noteq> key_id k2 \<longrightarrow> k1 \<noteq> k2"
   by simp
 
 (* key_length_sufficient (matches Coq) *)
@@ -314,7 +314,7 @@ lemma key_length_sufficient: "\<forall>(key :: encryption_key). strong_encryptio
   by auto
 
 (* iv_never_reused_thm (matches Coq) *)
-lemma iv_never_reused_thm: "\<forall>(tracker :: iv_tracker). iv_never_reused tracker \<longrightarrow> ~ In (iv_current tracker) (iv_used_list tracker)"
+lemma iv_never_reused_thm: "\<forall>(tracker :: iv_tracker). iv_never_reused tracker \<longrightarrow> ~ (iv_current tracker) \<in> set (iv_used_list tracker)"
   by auto
 
 (* aead_authentication_verified (matches Coq) *)
@@ -322,7 +322,7 @@ lemma aead_authentication_verified: "\<forall>(op :: encryption_operation). aead
   by auto
 
 (* key_derivation_deterministic (matches Coq) *)
-lemma key_derivation_deterministic: "\<forall>(kd1 kd2 : key_derivation). key_derivation_deterministic_prop kd1 kd2 \<longrightarrow> derivation_salt kd1 = derivation_salt kd2 \<longrightarrow> derivation_iterations kd1 = derivation_iterations kd2 \<longrightarrow> key_id (master_key kd1) = key_id (master_key kd2) \<longrightarrow> key_id (derived_key kd1) = key_id (derived_key kd2)"
+lemma key_derivation_deterministic: "\<forall>(kd1 :: key_derivation) (kd2 :: key_derivation). key_derivation_deterministic_prop kd1 kd2 \<longrightarrow> derivation_salt kd1 = derivation_salt kd2 \<longrightarrow> derivation_iterations kd1 = derivation_iterations kd2 \<longrightarrow> key_id (master_key kd1) = key_id (master_key kd2) \<longrightarrow> key_id (derived_key kd1) = key_id (derived_key kd2)"
   by auto
 
 (* password_hash_one_way_thm (matches Coq) *)
@@ -330,7 +330,7 @@ lemma password_hash_one_way_thm: "\<forall>(h :: password_hash). password_hash_o
   by auto
 
 (* salt_unique_per_password (matches Coq) *)
-lemma salt_unique_per_password: "\<forall>(h1 h2 : password_hash). salt_unique h1 h2 \<longrightarrow> pwd_salt h1 \<noteq> pwd_salt h2"
+lemma salt_unique_per_password: "\<forall>(h1 :: password_hash) (h2 :: password_hash). salt_unique h1 h2 \<longrightarrow> pwd_salt h1 \<noteq> pwd_salt h2"
   by auto
 
 (* key_rotation_seamless_thm (matches Coq) *)
@@ -338,7 +338,7 @@ lemma key_rotation_seamless_thm: "\<forall>(kr :: key_rotation). key_rotation_se
   by auto
 
 (* encrypted_data_indistinguishable_thm (matches Coq) *)
-lemma encrypted_data_indistinguishable_thm: "\<forall>(op1 op2 : encryption_operation). encrypted_data_indistinguishable op1 op2 \<longrightarrow> enc_op_key op1 = enc_op_key op2 \<longrightarrow> length (enc_op_ciphertext op1) = length (enc_op_ciphertext op2) \<longrightarrow> length (enc_op_plaintext op1) = length (enc_op_plaintext op2)"
+lemma encrypted_data_indistinguishable_thm: "\<forall>(op1 :: encryption_operation) (op2 :: encryption_operation). encrypted_data_indistinguishable op1 op2 \<longrightarrow> enc_op_key op1 = enc_op_key op2 \<longrightarrow> length (enc_op_ciphertext op1) = length (enc_op_ciphertext op2) \<longrightarrow> length (enc_op_plaintext op1) = length (enc_op_plaintext op2)"
   by auto
 
 (* padding_oracle_prevented_thm (matches Coq) *)

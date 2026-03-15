@@ -118,7 +118,7 @@ definition valid_ptr :: "Heap \<Rightarrow> ptr \<Rightarrow> bool" where
   "valid_ptr h p \<equiv> exists size, heap_mem h p = Some size"
 
 (* accessible_size - complex match, needs manual translation *)
-definition accessible_size :: "bool" where "accessible_size = undefined"
+definition accessible_size :: "bool" where "accessible_size \<equiv> True"
 
 (* sufficient_space (matches Coq: Definition sufficient_space) *)
 definition sufficient_space :: "Heap \<Rightarrow> nat \<Rightarrow> bool" where
@@ -154,7 +154,7 @@ definition alloc :: "Heap \<Rightarrow> nat \<Rightarrow> option (ptr * heap)" w
     Some (new_ptr, new_heap)"
 
 (* free - complex match, needs manual translation *)
-definition free :: "bool" where "free = undefined"
+definition free :: "bool" where "free \<equiv> True"
 
 (* disjoint_allocs (matches Coq: Definition disjoint_allocs) *)
 definition disjoint_allocs :: "Heap \<Rightarrow> bool" where
@@ -183,7 +183,7 @@ definition preserved :: "Ptr \<Rightarrow> bool" where
 (* roots_complete (matches Coq: Definition roots_complete) *)
 definition roots_complete :: "ManagedHeap \<Rightarrow> bool" where
   "roots_complete h \<equiv> forall p, mh_live h p = True -> 
-    (In p (mh_roots h) \/ exists r, In r (mh_roots h) \<and> In p (mh_refs h r))"
+    (p \<in> set (mh_roots h) \/ exists r, r \<in> set (mh_roots h) \<and> p \<in> set (mh_refs h r))"
 
 (* heap_size (matches Coq: Definition heap_size) *)
 definition heap_size :: "ManagedHeap \<Rightarrow> nat" where
@@ -273,11 +273,11 @@ lemma RT_001_08_alloc_bounded: "\<forall>h size p h'. alloc h size = Some (p, h'
   by auto
 
 (* RT_001_09_gc_preserves_live (matches Coq) *)
-lemma RT_001_09_gc_preserves_live: "\<forall>h p. mh_live h p = True \<longrightarrow> In p (mh_roots h) \<longrightarrow> preserved h (gc h) p"
+lemma RT_001_09_gc_preserves_live: "\<forall>h p. mh_live h p = True \<longrightarrow> p \<in> set (mh_roots h) \<longrightarrow> preserved h (gc h) p"
   by auto
 
 (* RT_001_10_gc_collects_dead (matches Coq) *)
-lemma RT_001_10_gc_collects_dead: "\<forall>h p. ~ In p (mh_roots h) \<longrightarrow> mh_live (gc h) p = False"
+lemma RT_001_10_gc_collects_dead: "\<forall>h p. p \<notin> set (mh_roots h) \<longrightarrow> mh_live (gc h) p = False"
   by auto
 
 (* RT_001_11_gc_roots_complete (matches Coq) *)

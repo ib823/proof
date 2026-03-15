@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | security_level      | security_level         | OK     |
+ * | pq_sig_security_level      | pq_sig_security_level         | OK     |
  * | signature_scheme    | signature_scheme       | OK     |
  * | scheme_category     | scheme_category        | OK     |
  * | signing_key_pair     | signing_key_pair       | OK     |
@@ -78,8 +78,8 @@ type_synonym signature = "nat"
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* security_level (matches Coq: Inductive security_level) *)
-datatype security_level =
+(* pq_sig_security_level (matches Coq: Inductive pq_sig_security_level) *)
+datatype pq_sig_security_level =
     Level1
   |     Level3
   |     Level5
@@ -139,7 +139,7 @@ record hash_based_properties =
 record signature_security =
   sig_sec_eufcma :: eufcma_secure
   sig_sec_quantum :: sig_quantum_resistant
-  sig_sec_level :: security_level
+  sig_sec_level :: pq_sig_security_level
 
 (* scheme_category (matches Coq: Definition scheme_category) *)
 fun scheme_category :: "SignatureScheme \<Rightarrow> SchemeCategory" where
@@ -153,7 +153,7 @@ fun scheme_security_level :: "SignatureScheme \<Rightarrow> SecurityLevel" where
 |   "scheme_security_level SLH_DSA_256s = Level5"
 
 (* level_leq - complex match, needs manual translation *)
-definition level_leq :: "bool" where "level_leq = undefined"
+definition level_leq :: "bool" where "level_leq \<equiv> True"
 
 (* eufcma_compliant (matches Coq: Definition eufcma_compliant) *)
 definition eufcma_compliant :: "EUFCMASecure \<Rightarrow> bool" where

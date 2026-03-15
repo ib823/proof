@@ -180,13 +180,13 @@ definition frames_expected :: "Animation \<Rightarrow> nat" where
 
 (* well_formed_animation (matches Coq: Definition well_formed_animation) *)
 definition well_formed_animation :: "Animation \<Rightarrow> bool" where
-  "well_formed_animation a \<equiv> forall f, In f (anim_frames a) -> 
+  "well_formed_animation a \<equiv> forall f, f \<in> set (anim_frames a) -> 
     frame_rendered f = True \<and>
     meets_frame_budget f"
 
 (* has_frame_drop (matches Coq: Definition has_frame_drop) *)
 definition has_frame_drop :: "Animation \<Rightarrow> bool" where
-  "has_frame_drop a \<equiv> exists f, In f (anim_frames a) \<and> frame_rendered f = False"
+  "has_frame_drop a \<equiv> exists f, f \<in> set (anim_frames a) \<and> frame_rendered f = False"
 
 (* render_pipeline (matches Coq: Definition render_pipeline) *)
 definition render_pipeline :: "list RenderStage" where
@@ -277,7 +277,7 @@ lemma overdraw_minimized: "\<forall>(b :: draw_batch). well_formed_batch b \<lon
   by auto
 
 (* culling_correct (matches Coq) *)
-lemma culling_correct: "\<forall>(a :: animation). well_formed_animation a \<longrightarrow> \<forall>f. In f (anim_frames a) \<longrightarrow> frame_rendered f = True"
+lemma culling_correct: "\<forall>(a :: animation). well_formed_animation a \<longrightarrow> \<forall>f. f \<in> set (anim_frames a) \<longrightarrow> frame_rendered f = True"
   by auto
 
 (* z_buffer_precise (matches Coq) *)

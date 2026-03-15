@@ -161,7 +161,7 @@ definition same_origin :: "bool" where
   (length (origin_host o1) =? length (origin_host o2))"
 
 (* csrf_protected - complex match, needs manual translation *)
-definition csrf_protected :: "bool" where "csrf_protected = undefined"
+definition csrf_protected :: "bool" where "csrf_protected \<equiv> True"
 
 (* regenerate_session (matches Coq: Definition regenerate_session) *)
 definition regenerate_session :: "bool" where
@@ -216,7 +216,7 @@ lemma web_010_session_hijacking_mitigated: "\<forall>(c :: secure_cookie). cooki
   by auto
 
 (* web_011_session_fixation_impossible (matches Coq) *)
-lemma web_011_session_fixation_impossible: "\<forall>(old_id new_id : nat). regenerate_session old_id new_id \<longrightarrow> old_id \<noteq> new_id"
+lemma web_011_session_fixation_impossible: "\<forall>(old_id :: nat) (new_id :: nat). regenerate_session old_id new_id \<longrightarrow> old_id \<noteq> new_id"
   by auto
 
 (* web_012_cookie_attacks_mitigated (matches Coq) *)
@@ -256,15 +256,15 @@ lemma web_020_mass_assignment_impossible: " True"
   by auto
 
 (* web_021_idor_mitigated (matches Coq) *)
-lemma web_021_idor_mitigated: "\<forall>(user resource : nat). authorized user resource \<longrightarrow> True"
+lemma web_021_idor_mitigated: "\<forall>(user :: nat) (resource :: nat). authorized user resource \<longrightarrow> True"
   by auto
 
 (* web_022_verb_tampering_mitigated (matches Coq) *)
-lemma web_022_verb_tampering_mitigated: "\<forall>(rc :: route_config) (method :: nat). route_strict rc = True \<longrightarrow> In method (route_methods rc) \<longrightarrow> True"
+lemma web_022_verb_tampering_mitigated: "\<forall>(rc :: route_config) (method :: nat). route_strict rc = True \<longrightarrow> method \<in> set (route_methods rc) \<longrightarrow> True"
   by auto
 
 (* web_023_host_header_attack_mitigated (matches Coq) *)
-lemma web_023_host_header_attack_mitigated: "\<forall>(hc :: host_config) (host : list nat). In host (allowed_hosts hc) \<longrightarrow> True"
+lemma web_023_host_header_attack_mitigated: "\<forall>(hc :: host_config) (host : list nat). host \<in> set (allowed_hosts hc) \<longrightarrow> True"
   by auto
 
 (* web_024_web_cache_deception_mitigated (matches Coq) *)

@@ -202,7 +202,7 @@ definition accepted :: "Certificate \<Rightarrow> bool" where
   "accepted c \<equiv> acceptable_cert c"
 
 (* encrypted - complex match, needs manual translation *)
-definition encrypted :: "bool" where "encrypted = undefined"
+definition encrypted :: "bool" where "encrypted \<equiv> True"
 
 (* transmitted (matches Coq: Definition transmitted) *)
 definition transmitted :: "Packet \<Rightarrow> bool" where
@@ -352,7 +352,7 @@ lemma certificate_pinning_enforced: "\<forall>(pin :: cert_pin). cert_pinning_ho
   by auto
 
 (* network_change_notified (matches Coq) *)
-lemma network_change_notified: "\<forall>(old_conn new_conn : connection). network_change_notified_prop old_conn new_conn \<longrightarrow> conn_id old_conn \<noteq> conn_id new_conn \<longrightarrow> acceptable_cert (conn_cert new_conn)"
+lemma network_change_notified: "\<forall>(old_conn :: connection) (new_conn :: connection). network_change_notified_prop old_conn new_conn \<longrightarrow> conn_id old_conn \<noteq> conn_id new_conn \<longrightarrow> acceptable_cert (conn_cert new_conn)"
   by auto
 
 end

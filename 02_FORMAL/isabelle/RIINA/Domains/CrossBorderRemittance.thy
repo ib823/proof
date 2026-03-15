@@ -254,36 +254,36 @@ definition rate_lock_valid :: "FXQuote \<Rightarrow> nat \<Rightarrow> bool" whe
 
 (* is_instant_rail (matches Coq: Definition is_instant_rail) *)
 fun is_instant_rail :: "PaymentRail \<Rightarrow> bool" where
-  "is_instant_rail SWIFT = false"
-|   "is_instant_rail SEPA_Instant = true"
-|   "is_instant_rail FasterPayments = true"
-|   "is_instant_rail RTP = true"
-|   "is_instant_rail Blockchain = true"
-|   "is_instant_rail MobileMoney = true"
-|   "is_instant_rail LocalACH = false"
+  "is_instant_rail SWIFT = False"
+|   "is_instant_rail SEPA_Instant = True"
+|   "is_instant_rail FasterPayments = True"
+|   "is_instant_rail RTP = True"
+|   "is_instant_rail Blockchain = True"
+|   "is_instant_rail MobileMoney = True"
+|   "is_instant_rail LocalACH = False"
 
 (* is_blockchain_rail (matches Coq: Definition is_blockchain_rail) *)
 fun is_blockchain_rail :: "PaymentRail \<Rightarrow> bool" where
-  "is_blockchain_rail Blockchain = true"
-|   "is_blockchain_rail _ = false"
+  "is_blockchain_rail Blockchain = True"
+|   "is_blockchain_rail _ = False"
 
 (* is_mobile_money_rail (matches Coq: Definition is_mobile_money_rail) *)
 fun is_mobile_money_rail :: "PaymentRail \<Rightarrow> bool" where
-  "is_mobile_money_rail MobileMoney = true"
-|   "is_mobile_money_rail _ = false"
+  "is_mobile_money_rail MobileMoney = True"
+|   "is_mobile_money_rail _ = False"
 
 (* is_swift_rail (matches Coq: Definition is_swift_rail) *)
 fun is_swift_rail :: "PaymentRail \<Rightarrow> bool" where
-  "is_swift_rail SWIFT = true"
-|   "is_swift_rail _ = false"
+  "is_swift_rail SWIFT = True"
+|   "is_swift_rail _ = False"
 
 (* is_local_rail (matches Coq: Definition is_local_rail) *)
 fun is_local_rail :: "PaymentRail \<Rightarrow> bool" where
-  "is_local_rail LocalACH = true"
-|   "is_local_rail SEPA_Instant = true"
-|   "is_local_rail FasterPayments = true"
-|   "is_local_rail RTP = true"
-|   "is_local_rail _ = false"
+  "is_local_rail LocalACH = True"
+|   "is_local_rail SEPA_Instant = True"
+|   "is_local_rail FasterPayments = True"
+|   "is_local_rail RTP = True"
+|   "is_local_rail _ = False"
 
 (* valid_transfer (matches Coq: Definition valid_transfer) *)
 definition valid_transfer :: "Transfer \<Rightarrow> bool" where

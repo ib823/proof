@@ -123,17 +123,17 @@ lemma dual_mode_agreement: "\<forall>(rt :: refined_type) (v :: nat). decidable_
 
 (* Theorem 7: Weakening — stronger refinement implies weaker. *)
 (* refinement_weakening (matches Coq) *)
-lemma refinement_weakening: "\<forall>(r1 r2 : refined_type) (v :: nat). refine_subtype r1 r2 \<longrightarrow> full_check r1 v \<longrightarrow> full_check r2 v"
+lemma refinement_weakening: "\<forall>(r1 :: refined_type) (r2 :: refined_type) (v :: nat). refine_subtype r1 r2 \<longrightarrow> full_check r1 v \<longrightarrow> full_check r2 v"
   by auto
 
 (* Theorem 8: Conjunction subtype left projection. *)
 (* conj_subtype_left (matches Coq) *)
-lemma conj_subtype_left: "\<forall>(r1 r2 : refined_type). refine_subtype (refine_conj r1 r2) r1"
+lemma conj_subtype_left: "\<forall>(r1 :: refined_type) (r2 :: refined_type). refine_subtype (refine_conj r1 r2) r1"
   by auto
 
 (* Theorem 9: Conjunction subtype right projection. *)
 (* conj_subtype_right (matches Coq) *)
-lemma conj_subtype_right: "\<forall>(r1 r2 : refined_type). refine_subtype (refine_conj r1 r2) r2"
+lemma conj_subtype_right: "\<forall>(r1 :: refined_type) (r2 :: refined_type). refine_subtype (refine_conj r1 r2) r2"
   by auto
 
 (* Theorem 10: Conjunction is the greatest lower bound. *)
@@ -143,7 +143,7 @@ lemma conj_greatest_lower_bound: "\<forall>(r1 r2 r3 : refined_type). refine_sub
 
 (* Theorem 11: Conjunction is commutative on full_pred *)
 (* conj_full_pred_comm (matches Coq) *)
-lemma conj_full_pred_comm: "\<forall>(r1 r2 : refined_type) (v :: nat). full_pred (refine_conj r1 r2) v <-> full_pred (refine_conj r2 r1) v"
+lemma conj_full_pred_comm: "\<forall>(r1 :: refined_type) (r2 :: refined_type) (v :: nat). full_pred (refine_conj r1 r2) v <-> full_pred (refine_conj r2 r1) v"
   by auto
 
 (* Theorem 12: Conjunction is associative on full_pred *)
@@ -153,7 +153,7 @@ lemma conj_full_pred_assoc: "\<forall>(r1 r2 r3 : refined_type) (v :: nat). full
 
 (* Theorem 13: Conjunction light_pred is AND *)
 (* conj_light_is_andb (matches Coq) *)
-lemma conj_light_is_andb: "\<forall>(r1 r2 : refined_type) (v :: nat). light_pred (refine_conj r1 r2) v = (light_pred r1 v && light_pred r2 v)%bool"
+lemma conj_light_is_andb: "\<forall>(r1 :: refined_type) (r2 :: refined_type) (v :: nat). light_pred (refine_conj r1 r2) v = (light_pred r1 v && light_pred r2 v)%bool"
   by simp
 
 (* Theorem 14: Eval of EConst is the constant itself *)
@@ -173,17 +173,17 @@ lemma lightweight_false_implies_not_full: "\<forall>(rt :: refined_type) (v :: n
 
 (* Theorem 17: Subtype preserves lightweight soundness *)
 (* subtype_lightweight_sound (matches Coq) *)
-lemma subtype_lightweight_sound: "\<forall>(r1 r2 : refined_type) (v :: nat). refine_subtype r1 r2 \<longrightarrow> lightweight_check r1 v = True \<longrightarrow> full_check r2 v"
+lemma subtype_lightweight_sound: "\<forall>(r1 :: refined_type) (r2 :: refined_type) (v :: nat). refine_subtype r1 r2 \<longrightarrow> lightweight_check r1 v = True \<longrightarrow> full_check r2 v"
   by auto
 
 (* Theorem 18: Conjunction of decidable refinements is decidable *)
 (* conj_decidable (matches Coq) *)
-lemma conj_decidable: "\<forall>(r1 r2 : refined_type). decidable_refinement r1 \<longrightarrow> decidable_refinement r2 \<longrightarrow> decidable_refinement (refine_conj r1 r2)"
+lemma conj_decidable: "\<forall>(r1 :: refined_type) (r2 :: refined_type). decidable_refinement r1 \<longrightarrow> decidable_refinement r2 \<longrightarrow> decidable_refinement (refine_conj r1 r2)"
   by auto
 
 (* Theorem 19: Refine_subtype is antisymmetric under full_pred equality *)
 (* refine_subtype_antisym_eq (matches Coq) *)
-lemma refine_subtype_antisym_eq: "\<forall>(r1 r2 : refined_type). refine_subtype r1 r2 \<longrightarrow> refine_subtype r2 r1 \<longrightarrow> \<forall>n. full_pred r1 n <-> full_pred r2 n"
+lemma refine_subtype_antisym_eq: "\<forall>(r1 :: refined_type) (r2 :: refined_type). refine_subtype r1 r2 \<longrightarrow> refine_subtype r2 r1 \<longrightarrow> \<forall>n. full_pred r1 n <-> full_pred r2 n"
   by auto
 
 (* Theorem 20: Eval of EIf with 0 guard takes else branch *)
@@ -198,7 +198,7 @@ lemma eval_if_true: "\<forall>n et ef. n \<noteq> 0 \<longrightarrow> eval (EIf 
 
 (* Theorem 22: Conjunction subtyping both ways *)
 (* conj_sub_both (matches Coq) *)
-lemma conj_sub_both: "\<forall>(r1 r2 : refined_type) (v :: nat). full_check (refine_conj r1 r2) v \<longrightarrow> full_check r1 v \<and> full_check r2 v"
+lemma conj_sub_both: "\<forall>(r1 :: refined_type) (r2 :: refined_type) (v :: nat). full_check (refine_conj r1 r2) v \<longrightarrow> full_check r1 v \<and> full_check r2 v"
   by auto
 
 end

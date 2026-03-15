@@ -162,7 +162,7 @@ lemma obligation_3_reporting: "\<forall>(i :: cyber_incident). incident_reported
   by auto
 
 (* severity_ordering (matches Coq) *)
-lemma severity_ordering: "\<forall>(s1 s2 : risk_level). risk_level_nat Critical \<ge> risk_level_nat s1"
+lemma severity_ordering: "\<forall>(s1 :: risk_level) (s2 :: risk_level). risk_level_nat Critical \<ge> risk_level_nat s1"
   by auto
 
 (* obligation_4_controls (matches Coq) *)
@@ -174,7 +174,7 @@ lemma obligation_5_cssp: "\<forall>(l :: cssp_license) (t :: nat). cssp_licensed
   by auto
 
 (* act854_composition (matches Coq) *)
-lemma act854_composition: "\<forall>(e :: ncii_entity) (l :: cssp_license) (t : nat). risk_assessment_current e \<longrightarrow> audit_current e t \<longrightarrow> controls_sufficient e \<longrightarrow> cssp_valid l t \<longrightarrow> act854_compliant e l t"
+lemma act854_composition: "\<forall>(e :: ncii_entity) (l :: cssp_license) (t :: nat). risk_assessment_current e \<longrightarrow> audit_current e t \<longrightarrow> controls_sufficient e \<longrightarrow> cssp_valid l t \<longrightarrow> act854_compliant e l t"
   by auto
 
 (* ncii_sector_coverage (matches Coq) *)
@@ -206,19 +206,19 @@ lemma more_controls_still_sufficient: "\<forall>(e :: ncii_entity) (extra :: nat
   by auto
 
 (* act854_implies_risk_assessed (matches Coq) *)
-lemma act854_implies_risk_assessed: "\<forall>(e :: ncii_entity) (l :: cssp_license) (t : nat). act854_compliant e l t \<longrightarrow> risk_assessment_current e"
+lemma act854_implies_risk_assessed: "\<forall>(e :: ncii_entity) (l :: cssp_license) (t :: nat). act854_compliant e l t \<longrightarrow> risk_assessment_current e"
   by auto
 
 (* act854_implies_audit_current (matches Coq) *)
-lemma act854_implies_audit_current: "\<forall>(e :: ncii_entity) (l :: cssp_license) (t : nat). act854_compliant e l t \<longrightarrow> audit_current e t"
+lemma act854_implies_audit_current: "\<forall>(e :: ncii_entity) (l :: cssp_license) (t :: nat). act854_compliant e l t \<longrightarrow> audit_current e t"
   by auto
 
 (* act854_implies_controls (matches Coq) *)
-lemma act854_implies_controls: "\<forall>(e :: ncii_entity) (l :: cssp_license) (t : nat). act854_compliant e l t \<longrightarrow> controls_sufficient e"
+lemma act854_implies_controls: "\<forall>(e :: ncii_entity) (l :: cssp_license) (t :: nat). act854_compliant e l t \<longrightarrow> controls_sufficient e"
   by auto
 
 (* act854_implies_cssp_valid (matches Coq) *)
-lemma act854_implies_cssp_valid: "\<forall>(e :: ncii_entity) (l :: cssp_license) (t : nat). act854_compliant e l t \<longrightarrow> cssp_valid l t"
+lemma act854_implies_cssp_valid: "\<forall>(e :: ncii_entity) (l :: cssp_license) (t :: nat). act854_compliant e l t \<longrightarrow> cssp_valid l t"
   by auto
 
 (* cssp_expired (matches Coq) *)

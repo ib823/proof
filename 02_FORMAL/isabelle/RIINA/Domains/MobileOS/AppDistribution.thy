@@ -367,7 +367,7 @@ lemma security_scan_complete: "\<forall>(app :: store_application). no_malware a
   by auto
 
 (* update_is_atomic (matches Coq) *)
-lemma update_is_atomic: "\<forall>(inst_before inst_after : installation) (upd :: app_update). update_verified upd = True \<longrightarrow> update_atomic inst_before inst_after upd \<longrightarrow> (installed_version inst_after = new_version upd \<or> installed_version inst_after = installed_version inst_before)"
+lemma update_is_atomic: "\<forall>(inst_before :: installation) (inst_after :: installation) (upd :: app_update). update_verified upd = True \<longrightarrow> update_atomic inst_before inst_after upd \<longrightarrow> (installed_version inst_after = new_version upd \<or> installed_version inst_after = installed_version inst_before)"
   by auto
 
 (* update_rollback_available (matches Coq) *)
@@ -383,7 +383,7 @@ lemma signature_required_for_store: "\<forall>(app :: store_application). no_mal
   by auto
 
 (* failed_install_no_corruption (matches Coq) *)
-lemma failed_install_no_corruption: "\<forall>(inst_before inst_after : installation) (upd :: app_update). install_state inst_after = Failed \<longrightarrow> update_atomic inst_before inst_after upd \<longrightarrow> installed_version inst_after = installed_version inst_before"
+lemma failed_install_no_corruption: "\<forall>(inst_before :: installation) (inst_after :: installation) (upd :: app_update). install_state inst_after = Failed \<longrightarrow> update_atomic inst_before inst_after upd \<longrightarrow> installed_version inst_after = installed_version inst_before"
   by auto
 
 (* app_signature_verified_thm (matches Coq) *)

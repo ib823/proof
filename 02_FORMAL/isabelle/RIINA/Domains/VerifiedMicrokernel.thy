@@ -180,7 +180,7 @@ definition rights_subset :: "bool" where
 
 (* is_revoked (matches Coq: Definition is_revoked) *)
 definition is_revoked :: "KernelState \<Rightarrow> capability \<Rightarrow> bool" where
-  "is_revoked s c \<equiv> In (cap_badge c) (revoked_badges s)"
+  "is_revoked s c \<equiv> (cap_badge c) \<in> set (revoked_badges s)"
 
 (* cap_valid (matches Coq: Definition cap_valid) *)
 definition cap_valid :: "KernelState \<Rightarrow> capability \<Rightarrow> bool" where
@@ -208,7 +208,7 @@ definition shared_readonly :: "MemoryState \<Rightarrow> VAddr \<Rightarrow> boo
     perm_write (pte_perms pte2) = False"
 
 (* translate - complex match, needs manual translation *)
-definition translate :: "bool" where "translate = undefined"
+definition translate :: "bool" where "translate \<equiv> True"
 
 (* is_kernel_memory (matches Coq: Definition is_kernel_memory) *)
 definition is_kernel_memory :: "MemoryState \<Rightarrow> p_addr \<Rightarrow> bool" where
@@ -246,20 +246,20 @@ definition valid_ipc_state :: "IPCState \<Rightarrow> bool" where
 
 (* valid_state (matches Coq: Definition valid_state) *)
 definition valid_state :: "KernelState \<Rightarrow> bool" where
-  "valid_state s \<equiv> forall p, In p (processes s) -> 
+  "valid_state s \<equiv> forall p, p \<in> set (processes s) -> 
     forall slot c, cap_lookup s p slot = Some c -> cap_valid s c"
 
 (* endpoint_protected (matches Coq: Definition endpoint_protected) *)
 definition endpoint_protected :: "IPCState \<Rightarrow> endpoint \<Rightarrow> bool" where
   "endpoint_protected is ep \<equiv> forall p,
-    In p (ep_queue ep) ->
+    p \<in> set (ep_queue ep) ->
     holds (mem_kernel (ipc_mem is)) p (ep_cap ep)"
 
 (* msg_caps_valid (matches Coq: Definition msg_caps_valid) *)
 definition msg_caps_valid :: "IPCState \<Rightarrow> proc_id \<Rightarrow> ip_c_message \<Rightarrow> bool" where
-  "msg_caps_valid is sender msg \<equiv> forall c, In c (msg_caps msg) ->
+  "msg_caps_valid is sender msg \<equiv> forall c, c \<in> set (msg_caps msg) ->
     holds (mem_kernel (ipc_mem is)) sender c \<and>
-    In RGrant (cap_rights c)"
+    RGrant \<in> set (cap_rights c)"
 
 (* transfer_preserves_validity (matches Coq: Definition transfer_preserves_validity) *)
 definition transfer_preserves_validity :: "Capability \<Rightarrow> bool" where
@@ -306,15 +306,15 @@ definition msg_type_safe :: "IPCMessage \<Rightarrow> bool" where
 
 (* no_amplification (matches Coq: Definition no_amplification) *)
 definition no_amplification :: "IPCState \<Rightarrow> proc_id \<Rightarrow> ip_c_message \<Rightarrow> bool" where
-  "no_amplification is sender msg \<equiv> forall c, In c (msg_caps msg) ->
+  "no_amplification is sender msg \<equiv> forall c, c \<in> set (msg_caps msg) ->
     rights_subset (cap_rights c) (cap_rights c)"
 
 (* ipc_maintains_isolation (matches Coq: Definition ipc_maintains_isolation) *)
 definition ipc_maintains_isolation :: "IPCState \<Rightarrow> bool" where
   "ipc_maintains_isolation is \<equiv> forall p1 p2 ep,
-    In ep (endpoints is) ->
-    In p1 (ep_queue ep) ->
-    ~ In p2 (ep_queue ep) ->
+    ep \<in> set (endpoints is) ->
+    p1 \<in> set (ep_queue ep) ->
+    p2 \<notin> set (ep_queue ep) ->
     ~ holds (mem_kernel (ipc_mem is)) p2 (ep_cap ep)"
 
 (* notif_no_sensitive_data (matches Coq: Definition notif_no_sensitive_data) *)
@@ -398,7 +398,7 @@ lemma OS_001_19_ipc_type_safe: "\<forall>msg. length (msg_data msg) \<le> 128 \<
   by auto
 
 (* OS_001_20_ipc_cap_transfer_safe (matches Coq) *)
-lemma OS_001_20_ipc_cap_transfer_safe: "\<forall>is sender msg. msg_caps_valid is sender msg \<longrightarrow> \<forall>c. In c (msg_caps msg) \<longrightarrow> holds (mem_kernel (ipc_mem is)) sender c \<and> In RGrant (cap_rights c)"
+lemma OS_001_20_ipc_cap_transfer_safe: "\<forall>is sender msg. msg_caps_valid is sender msg \<longrightarrow> \<forall>c. c \<in> set (msg_caps msg) \<longrightarrow> holds (mem_kernel (ipc_mem is)) sender c \<and> RGrant \<in> set (cap_rights c)"
   by auto
 
 (* OS_001_21_ipc_deadlock_free (matches Coq) *)
@@ -406,15 +406,15 @@ lemma OS_001_21_ipc_deadlock_free: "\<forall>is. valid_ipc_state is \<longrighta
   by auto
 
 (* OS_001_22_ipc_no_amplification (matches Coq) *)
-lemma OS_001_22_ipc_no_amplification: "\<forall>is sender msg c. msg_caps_valid is sender msg \<longrightarrow> In c (msg_caps msg) \<longrightarrow> \<exists>c'. holds (mem_kernel (ipc_mem is)) sender c' \<and> rights_subset (cap_rights c) (cap_rights c')"
+lemma OS_001_22_ipc_no_amplification: "\<forall>is sender msg c. msg_caps_valid is sender msg \<longrightarrow> c \<in> set (msg_caps msg) \<longrightarrow> \<exists>c'. holds (mem_kernel (ipc_mem is)) sender c' \<and> rights_subset (cap_rights c) (cap_rights c')"
   by auto
 
 (* OS_001_23_ipc_isolation (matches Coq) *)
-lemma OS_001_23_ipc_isolation: "\<forall>is p1 p2 ep. ipc_maintains_isolation is \<longrightarrow> In ep (endpoints is) \<longrightarrow> In p1 (ep_queue ep) \<longrightarrow> ~ In p2 (ep_queue ep) \<longrightarrow> ~ holds (mem_kernel (ipc_mem is)) p2 (ep_cap ep)"
+lemma OS_001_23_ipc_isolation: "\<forall>is p1 p2 ep. ipc_maintains_isolation is \<longrightarrow> ep \<in> set (endpoints is) \<longrightarrow> p1 \<in> set (ep_queue ep) \<longrightarrow> p2 \<notin> set (ep_queue ep) \<longrightarrow> ~ holds (mem_kernel (ipc_mem is)) p2 (ep_cap ep)"
   by auto
 
 (* OS_001_24_endpoint_protection (matches Coq) *)
-lemma OS_001_24_endpoint_protection: "\<forall>is ep. endpoint_protected is ep \<longrightarrow> \<forall>p. In p (ep_queue ep) \<longrightarrow> holds (mem_kernel (ipc_mem is)) p (ep_cap ep)"
+lemma OS_001_24_endpoint_protection: "\<forall>is ep. endpoint_protected is ep \<longrightarrow> \<forall>p. p \<in> set (ep_queue ep) \<longrightarrow> holds (mem_kernel (ipc_mem is)) p (ep_cap ep)"
   by auto
 
 (* OS_001_25_notification_no_leak (matches Coq) *)

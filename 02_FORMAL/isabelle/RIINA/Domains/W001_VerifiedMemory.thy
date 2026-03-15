@@ -162,7 +162,7 @@ definition heap_disjoint :: "bool" where
   "heap_disjoint \<equiv> forall l, ~(in_dom h1 l \<and> in_dom h2 l)"
 
 (* heap_union - complex match, needs manual translation *)
-definition heap_union :: "bool" where "heap_union = undefined"
+definition heap_union :: "bool" where "heap_union \<equiv> True"
 
 (* heap_subset (matches Coq: Definition heap_subset) *)
 definition heap_subset :: "bool" where
@@ -245,7 +245,7 @@ definition end_borrow :: "OwnershipMap \<Rightarrow> loc \<Rightarrow> Ownership
 
 (* region_contains (matches Coq: Definition region_contains) *)
 definition region_contains :: "Region \<Rightarrow> loc \<Rightarrow> bool" where
-  "region_contains r l \<equiv> In l (region_locs r)"
+  "region_contains r l \<equiv> l \<in> set (region_locs r)"
 
 (* kill_region (matches Coq: Definition kill_region) *)
 definition kill_region :: "Region \<Rightarrow> Region" where

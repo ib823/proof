@@ -768,7 +768,7 @@ lemma noise_003_10_multiplications_safe: "noise_safe riina_noise_model (noise_af
 
 (* NOISE-004: Addition increases noise linearly *)
 (* noise_004_add_linear_growth (matches Coq) *)
-lemma noise_004_add_linear_growth: "\<forall>nm n. noise_after_additions nm (S n) = noise_after_additions nm n + noise_add_growth nm"
+lemma noise_004_add_linear_growth: "\<forall>nm n. noise_after_additions nm (Suc n) = noise_after_additions nm n + noise_add_growth nm"
   by simp
 
 (* NOISE-005: Zero additions preserves initial noise *)

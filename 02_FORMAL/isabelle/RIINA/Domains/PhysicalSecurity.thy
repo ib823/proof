@@ -170,7 +170,7 @@ Parameter synthesis_preserves_semantics : forall rtl,
 
 (* timing_met (matches Coq: Definition timing_met) *)
 definition timing_met :: "Netlist \<Rightarrow> ClockPeriod \<Rightarrow> bool" where
-  "timing_met nl clk \<equiv> forall path, In path (extract_paths nl) -> path_delay path <= clk.
+  "timing_met nl clk \<equiv> forall path, path \<in> set (extract_paths nl) -> path_delay path <= clk.
 
 
 Parameter timing_analysis : netlist -> ClockPeriod -> bool.

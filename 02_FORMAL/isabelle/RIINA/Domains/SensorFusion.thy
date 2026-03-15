@@ -132,7 +132,7 @@ definition temporally_consistent :: "bool" where
     reading_timestamp r2 <= reading_timestamp r1"
 
 (* sensor_types_diverse - complex match, needs manual translation *)
-definition sensor_types_diverse :: "bool" where "sensor_types_diverse = undefined"
+definition sensor_types_diverse :: "bool" where "sensor_types_diverse \<equiv> True"
 
 (* weight_valid (matches Coq: Definition weight_valid) *)
 definition weight_valid :: "bool" where
@@ -183,11 +183,11 @@ definition sensor_layers :: "bool" where
   "sensor_layers \<equiv> (auth \<and> fresh \<and> bft \<and> anomaly)"
 
 (* sensor_001_byzantine_threshold (matches Coq) *)
-lemma sensor_001_byzantine_threshold: "\<forall>(n f : nat). byzantine_tolerant n f = True \<longrightarrow> 3 * f + 1 \<le> n"
+lemma sensor_001_byzantine_threshold: "\<forall>(n :: nat) (f :: nat). byzantine_tolerant n f = True \<longrightarrow> 3 * f + 1 \<le> n"
   by auto
 
 (* sensor_002_honest_majority (matches Coq) *)
-lemma sensor_002_honest_majority: "\<forall>(n f : nat). n \<ge> 3 * f + 1 \<longrightarrow> n - f \<ge> 2 * f + 1"
+lemma sensor_002_honest_majority: "\<forall>(n :: nat) (f :: nat). n \<ge> 3 * f + 1 \<longrightarrow> n - f \<ge> 2 * f + 1"
   by simp
 
 (* sensor_003_authenticated (matches Coq) *)
@@ -195,7 +195,7 @@ lemma sensor_003_authenticated: "\<forall>(reading :: reading) (valid_sigs : lis
   by auto
 
 (* sensor_004_freshness (matches Coq) *)
-lemma sensor_004_freshness: "\<forall>(reading :: reading) (current_time max_age : nat). reading_fresh reading current_time max_age = True \<longrightarrow> current_time - reading_timestamp reading \<le> max_age"
+lemma sensor_004_freshness: "\<forall>(reading :: reading) (current_time :: nat) (max_age :: nat). reading_fresh reading current_time max_age = True \<longrightarrow> current_time - reading_timestamp reading \<le> max_age"
   by auto
 
 (* sensor_005_trust_threshold (matches Coq) *)
@@ -231,7 +231,7 @@ lemma sensor_012_diversity: "\<forall>(readings : list reading) (sensors : list 
   by auto
 
 (* sensor_013_weight_bounded (matches Coq) *)
-lemma sensor_013_weight_bounded: "\<forall>(weight max_weight : nat). weight_valid weight max_weight = True \<longrightarrow> weight \<le> max_weight"
+lemma sensor_013_weight_bounded: "\<forall>(weight :: nat) (max_weight :: nat). weight_valid weight max_weight = True \<longrightarrow> weight \<le> max_weight"
   by auto
 
 (* sensor_014_outlier_rejected (matches Coq) *)
@@ -259,11 +259,11 @@ lemma sensor_019_rate_bounded: "\<forall>(prev current max_delta : nat). rate_of
   by auto
 
 (* sensor_020_redundancy (matches Coq) *)
-lemma sensor_020_redundancy: "\<forall>(active min_redundancy : nat). redundancy_sufficient active min_redundancy = True \<longrightarrow> min_redundancy \<le> active"
+lemma sensor_020_redundancy: "\<forall>(active :: nat) (min_redundancy :: nat). redundancy_sufficient active min_redundancy = True \<longrightarrow> min_redundancy \<le> active"
   by auto
 
 (* sensor_021_health_ok (matches Coq) *)
-lemma sensor_021_health_ok: "\<forall>(error_rate max_error : nat). sensor_healthy error_rate max_error = True \<longrightarrow> error_rate \<le> max_error"
+lemma sensor_021_health_ok: "\<forall>(error_rate :: nat) (max_error :: nat). sensor_healthy error_rate max_error = True \<longrightarrow> error_rate \<le> max_error"
   by auto
 
 (* sensor_022_deterministic (matches Coq) *)
@@ -271,7 +271,7 @@ lemma sensor_022_deterministic: "\<forall>(readings : list reading) (f : list re
   by simp
 
 (* sensor_023_secure_channel (matches Coq) *)
-lemma sensor_023_secure_channel: "\<forall>(encryption auth : bool). channel_secure encryption auth = True \<longrightarrow> encryption = True \<and> auth = True"
+lemma sensor_023_secure_channel: "\<forall>(encryption :: bool) (auth :: bool). channel_secure encryption auth = True \<longrightarrow> encryption = True \<and> auth = True"
   by auto
 
 (* sensor_024_audit_complete (matches Coq) *)

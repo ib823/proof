@@ -527,7 +527,7 @@ definition no_riba :: "ShariahTransaction \<Rightarrow> bool" where
   "no_riba st \<equiv> shariah_compliant st = True -> txn_type st <> InterestBased"
 
 (* BANK_001_01_customer_identity_uniqueness (matches Coq) *)
-lemma BANK_001_01_customer_identity_uniqueness: "\<forall>(customers : list customer) (c1 c2 : customer). unique_customer_ids customers \<longrightarrow> c1 \<in> set customers \<longrightarrow> c2 \<in> set customers \<longrightarrow> customer_id c1 = customer_id c2 \<longrightarrow> c1 = c2"
+lemma BANK_001_01_customer_identity_uniqueness: "\<forall>(customers : list customer) (c1 :: customer) (c2 :: customer). unique_customer_ids customers \<longrightarrow> c1 \<in> set customers \<longrightarrow> c2 \<in> set customers \<longrightarrow> customer_id c1 = customer_id c2 \<longrightarrow> c1 = c2"
   by auto
 
 (* BANK_001_02_kyc_completeness (matches Coq) *)
@@ -599,7 +599,7 @@ lemma BANK_001_17_payment_irrevocability: "\<forall>(p :: payment). status p = C
   by auto
 
 (* BANK_001_18_idempotency (matches Coq) *)
-lemma BANK_001_18_idempotency: "\<forall>(p1 p2 : payment) (executed : list payment). unique_idempotency_keys executed \<longrightarrow> p1 \<in> set executed \<longrightarrow> p2 \<in> set executed \<longrightarrow> idempotency_key p1 = idempotency_key p2 \<longrightarrow> p1 = p2"
+lemma BANK_001_18_idempotency: "\<forall>(p1 :: payment) (p2 :: payment) (executed : list payment). unique_idempotency_keys executed \<longrightarrow> p1 \<in> set executed \<longrightarrow> p2 \<in> set executed \<longrightarrow> idempotency_key p1 = idempotency_key p2 \<longrightarrow> p1 = p2"
   by auto
 
 (* BANK_001_19_nostro_reconciliation (matches Coq) *)
@@ -639,7 +639,7 @@ lemma BANK_001_27_ijarah_ownership: "\<forall>(ij :: ijarah). bank_retains_owner
   by auto
 
 (* BANK_001_28_musharakah_profit_loss (matches Coq) *)
-lemma BANK_001_28_musharakah_profit_loss: "\<forall>(p :: musharakah_partner) (m :: musharakah) (actual_profit_share actual_loss_share : z). profit_by_ratio_loss_by_capital p m actual_profit_share actual_loss_share \<longrightarrow> total_capital m > 0 \<longrightarrow> actual_profit_share = partner_profit_share p m \<and> actual_loss_share = partner_loss_share p m"
+lemma BANK_001_28_musharakah_profit_loss: "\<forall>(p :: musharakah_partner) (m :: musharakah) (actual_profit_share :: z) (actual_loss_share :: z). profit_by_ratio_loss_by_capital p m actual_profit_share actual_loss_share \<longrightarrow> total_capital m > 0 \<longrightarrow> actual_profit_share = partner_profit_share p m \<and> actual_loss_share = partner_loss_share p m"
   by auto
 
 (* BANK_001_29_sukuk_asset_backing (matches Coq) *)

@@ -180,7 +180,7 @@ lemma inside_within_radius: "\<forall>(fence :: geofence) (pos :: position). ins
   by auto
 
 (* distance_symmetric (matches Coq) *)
-lemma distance_symmetric: "\<forall>(c1 c2 : coordinate). distance c1 c2 = distance c2 c1"
+lemma distance_symmetric: "\<forall>(c1 :: coordinate) (c2 :: coordinate). distance c1 c2 = distance c2 c1"
   by simp
 
 (* distance_self_zero (matches Coq) *)
@@ -216,7 +216,7 @@ lemma no_location_tracking_without_consent: "\<forall>(config :: location_config
   by auto
 
 (* location_cache_expiry (matches Coq) *)
-lemma location_cache_expiry: "\<forall>(config :: location_config) (current entry : nat). loc_cache_ttl config < current - entry \<longrightarrow> cache_expired config current entry = True"
+lemma location_cache_expiry: "\<forall>(config :: location_config) (current :: nat) (entry :: nat). loc_cache_ttl config < current - entry \<longrightarrow> cache_expired config current entry = True"
   by auto
 
 (* altitude_accuracy_bounded (matches Coq) *)

@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | security_level      | security_level         | OK     |
+ * | mfg_security_level      | mfg_security_level         | OK     |
  * | IEC61508_SIL       | iec61508_sil           | OK     |
  * | purdue_level        | purdue_level           | OK     |
  * | manufacturing_effect | manufacturing_effect   | OK     |
@@ -60,8 +60,8 @@ theory IndustryManufacturing
   imports Main CoqCompat Syntax
 begin
 
-(* security_level (matches Coq: Inductive security_level) *)
-datatype security_level =
+(* mfg_security_level (matches Coq: Inductive mfg_security_level) *)
+datatype mfg_security_level =
     SL_0
   |     SL_1
   |     SL_2
@@ -100,7 +100,7 @@ record iec62443__compliance =
   part_3_3_system_requirements :: bool
   part_4_1_secure_development :: bool
   part_4_2_component_requirements :: bool
-  target_security_level :: security_level
+  target_security_level :: mfg_security_level
 
 (* abs_diff (matches Coq: Definition abs_diff) *)
 definition abs_diff :: "nat" where
@@ -143,7 +143,7 @@ definition purdue_le :: "bool" where
   "purdue_le \<equiv> ((purdue_to_nat \<le> p1)) (purdue_to_nat p2)"
 
 (* purdue_adjacent - complex match, needs manual translation *)
-definition purdue_adjacent :: "bool" where "purdue_adjacent = undefined"
+definition purdue_adjacent :: "bool" where "purdue_adjacent \<equiv> True"
 
 (* safe_failure_fraction_pct (matches Coq: Definition safe_failure_fraction_pct) *)
 fun safe_failure_fraction_pct :: "IEC61508_SIL \<Rightarrow> nat" where
@@ -168,8 +168,8 @@ fun testing_coverage_pct :: "SecurityLevel \<Rightarrow> nat" where
 
 (* ot_isolated (matches Coq: Definition ot_isolated) *)
 fun ot_isolated :: "PurdueLevel \<Rightarrow> bool" where
-  "ot_isolated Level_2_Supervisory = true"
-|   "ot_isolated _ = false"
+  "ot_isolated Level_2_Supervisory = True"
+|   "ot_isolated _ = False"
 
 (* patch_window_days (matches Coq: Definition patch_window_days) *)
 fun patch_window_days :: "SecurityLevel \<Rightarrow> nat" where

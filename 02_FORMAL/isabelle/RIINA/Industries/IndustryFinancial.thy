@@ -124,8 +124,8 @@ record wire_transfer =
 
 (* pci_cardholder_data (matches Coq: Definition pci_cardholder_data) *)
 fun pci_cardholder_data :: "FinancialData \<Rightarrow> bool" where
-  "pci_cardholder_data PIN = true"
-|   "pci_cardholder_data _ = false"
+  "pci_cardholder_data PIN = True"
+|   "pci_cardholder_data _ = False"
 
 (* pci_compliant (matches Coq: Definition pci_compliant) *)
 definition pci_compliant :: "PCI_DSS_Controls \<Rightarrow> bool" where
@@ -152,7 +152,7 @@ definition balance_valid :: "nat \<Rightarrow> bool" where
 
 (* all_unique (matches Coq: Definition all_unique) *)
 fun all_unique :: "bool" where
-  "all_unique nil = true"
+  "all_unique nil = True"
 
 (* audit_log_monotone (matches Coq: Definition audit_log_monotone) *)
 definition audit_log_monotone :: "bool" where

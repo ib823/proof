@@ -207,11 +207,11 @@ lemma mesh_003_loop_free: "\<forall>(route :: route). loop_free route = True \<l
   by auto
 
 (* mesh_004_seq_increasing (matches Coq) *)
-lemma mesh_004_seq_increasing: "\<forall>(old_seq new_seq : nat). seq_increasing old_seq new_seq = True \<longrightarrow> old_seq < new_seq"
+lemma mesh_004_seq_increasing: "\<forall>(old_seq :: nat) (new_seq :: nat). seq_increasing old_seq new_seq = True \<longrightarrow> old_seq < new_seq"
   by auto
 
 (* mesh_005_route_fresh (matches Coq) *)
-lemma mesh_005_route_fresh: "\<forall>(entry :: route_entry) (current max_age : nat). route_fresh entry current max_age = True \<longrightarrow> current - route_timestamp entry \<le> max_age"
+lemma mesh_005_route_fresh: "\<forall>(entry :: route_entry) (current :: nat) (max_age :: nat). route_fresh entry current max_age = True \<longrightarrow> current - route_timestamp entry \<le> max_age"
   by auto
 
 (* mesh_006_multi_path (matches Coq) *)
@@ -247,11 +247,11 @@ lemma mesh_013_healing: "\<forall>(paths : list route). healing_path_\<exists> p
   by auto
 
 (* mesh_014_convergence (matches Coq) *)
-lemma mesh_014_convergence: "\<forall>(elapsed max_time : nat). converged_in_time elapsed max_time = True \<longrightarrow> elapsed \<le> max_time"
+lemma mesh_014_convergence: "\<forall>(elapsed :: nat) (max_time :: nat). converged_in_time elapsed max_time = True \<longrightarrow> elapsed \<le> max_time"
   by auto
 
 (* mesh_015_flood_bounded (matches Coq) *)
-lemma mesh_015_flood_bounded: "\<forall>(ttl max_ttl : nat). flood_bounded ttl max_ttl = True \<longrightarrow> ttl \<le> max_ttl"
+lemma mesh_015_flood_bounded: "\<forall>(ttl :: nat) (max_ttl :: nat). flood_bounded ttl max_ttl = True \<longrightarrow> ttl \<le> max_ttl"
   by auto
 
 (* mesh_016_msg_unique (matches Coq) *)
@@ -259,19 +259,19 @@ lemma mesh_016_msg_unique: "\<forall>(msg_id :: nat) (seen : list nat). msg_id_u
   by auto
 
 (* mesh_017_link_quality (matches Coq) *)
-lemma mesh_017_link_quality: "\<forall>(quality min_quality : nat). link_quality_ok quality min_quality = True \<longrightarrow> min_quality \<le> quality"
+lemma mesh_017_link_quality: "\<forall>(quality :: nat) (min_quality :: nat). link_quality_ok quality min_quality = True \<longrightarrow> min_quality \<le> quality"
   by auto
 
 (* mesh_018_reputation (matches Coq) *)
-lemma mesh_018_reputation: "\<forall>(rep min_rep : nat). reputation_sufficient rep min_rep = True \<longrightarrow> min_rep \<le> rep"
+lemma mesh_018_reputation: "\<forall>(rep :: nat) (min_rep :: nat). reputation_sufficient rep min_rep = True \<longrightarrow> min_rep \<le> rep"
   by auto
 
 (* mesh_019_secure_channel (matches Coq) *)
-lemma mesh_019_secure_channel: "\<forall>(encrypted authenticated : bool). channel_secure encrypted authenticated = True \<longrightarrow> encrypted = True \<and> authenticated = True"
+lemma mesh_019_secure_channel: "\<forall>(encrypted :: bool) (authenticated :: bool). channel_secure encrypted authenticated = True \<longrightarrow> encrypted = True \<and> authenticated = True"
   by auto
 
 (* mesh_020_rate_limited (matches Coq) *)
-lemma mesh_020_rate_limited: "\<forall>(current max_rate : nat). rate_ok current max_rate = True \<longrightarrow> current \<le> max_rate"
+lemma mesh_020_rate_limited: "\<forall>(current :: nat) (max_rate :: nat). rate_ok current max_rate = True \<longrightarrow> current \<le> max_rate"
   by auto
 
 (* mesh_021_geo_diversity (matches Coq) *)
@@ -283,7 +283,7 @@ lemma mesh_022_store_forward: "\<forall>(stored_time current timeout : nat). sto
   by auto
 
 (* mesh_023_delay_tolerance (matches Coq) *)
-lemma mesh_023_delay_tolerance: "\<forall>(delay max_delay : nat). delay_acceptable delay max_delay = True \<longrightarrow> delay \<le> max_delay"
+lemma mesh_023_delay_tolerance: "\<forall>(delay :: nat) (max_delay :: nat). delay_acceptable delay max_delay = True \<longrightarrow> delay \<le> max_delay"
   by auto
 
 (* mesh_024_traffic_analysis (matches Coq) *)

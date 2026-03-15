@@ -131,7 +131,7 @@ fun localization_permits_transfer :: "DataLocalization \<Rightarrow> bool" where
 
 (* adequacy_recognized (matches Coq: Definition adequacy_recognized) *)
 definition adequacy_recognized :: "ASEANDataPolicy \<Rightarrow> jurisdiction \<Rightarrow> bool" where
-  "adequacy_recognized policy target \<equiv> In target (adp_adequacy_recognized policy)"
+  "adequacy_recognized policy target \<equiv> target \<in> set (adp_adequacy_recognized policy)"
 
 (* cbf_compliant (matches Coq: Definition cbf_compliant) *)
 definition cbf_compliant :: "CBDataFlow \<Rightarrow> bool" where
@@ -166,15 +166,15 @@ definition dpo_requirement_met :: "ASEANDataPolicy \<Rightarrow> bool \<Rightarr
   "dpo_requirement_met policy dpo_appointed \<equiv> adp_dpo_required policy = True -> dpo_appointed = True"
 
 (* 1 (matches Coq) *)
-lemma 1: "Data Residency — data stays in declared jurisdiction Definition data_resident (d : data_item) (loc :: jurisdiction) : Prop := data_jurisdiction d = loc. Theorem data_residency : \<forall>d : DataItem. data_resident d (data_jurisdiction d)"
+lemma lemma_1: "Data Residency — data stays in declared jurisdiction Definition data_resident (d :: data_item) (loc :: jurisdiction) : Prop := data_jurisdiction d = loc. Theorem data_residency : \<forall>d : DataItem. data_resident d (data_jurisdiction d)"
   by simp
 
 (* 2 (matches Coq) *)
-lemma 2: "Cross-border transfer requires authorization Definition well_formed_transfer (agreements : agreements) (trail :: audit_trail) (d : data_item) (target :: jurisdiction) : Prop := data_jurisdiction d \<noteq> target \<longrightarrow> transfer_logged trail (data_id d) (data_jurisdiction d) target \<longrightarrow> authorized agreements (data_jurisdiction d) target (data_classification d). Theorem cross_border_requires_auth : \<forall>(agreements :: agreements) (d :: data_item) (target : jurisdiction) (trail :: audit_trail). data_jurisdiction d \<noteq> target \<longrightarrow> authorized agreements (data_jurisdiction d) target (data_classification d) \<longrightarrow> well_formed_transfer agreements (mkTransfer (data_id d) (data_jurisdiction d) target :: trail) d target"
+lemma lemma_2: "Cross-border transfer requires authorization Definition well_formed_transfer (agreements :: agreements) (trail :: audit_trail) (d :: data_item) (target :: jurisdiction) : Prop := data_jurisdiction d \<noteq> target \<longrightarrow> transfer_logged trail (data_id d) (data_jurisdiction d) target \<longrightarrow> authorized agreements (data_jurisdiction d) target (data_classification d). Theorem cross_border_requires_auth : \<forall>(agreements :: agreements) (d :: data_item) (target :: jurisdiction) (trail :: audit_trail). data_jurisdiction d \<noteq> target \<longrightarrow> authorized agreements (data_jurisdiction d) target (data_classification d) \<longrightarrow> well_formed_transfer agreements (mkTransfer (data_id d) (data_jurisdiction d) target :: trail) d target"
   by auto
 
 (* 3 (matches Coq) *)
-lemma 3: "Jurisdiction ordering is a preorder Theorem jurisdiction_leq_reflexive : \<forall>j : jurisdiction. jurisdiction_leq j j"
+lemma lemma_3: "Jurisdiction ordering is a preorder Theorem jurisdiction_leq_reflexive : \<forall>j : jurisdiction. jurisdiction_leq j j"
   by auto
 
 (* jurisdiction_leq_transitive (matches Coq) *)
@@ -186,19 +186,19 @@ lemma jurisdiction_preorder: "\<forall>j : jurisdiction. jurisdiction_leq j j \<
   by auto
 
 (* 4 (matches Coq) *)
-lemma 4: "Compliance composition — compliant legs compose Definition compliant_op (agreements : agreements) (from to : jurisdiction) (cls :: nat) : Prop := from = to \<or> authorized agreements from to cls. Theorem compliance_composition : \<forall>(agreements :: agreements) (j1 j2 j3 : jurisdiction) (cls :: nat). compliant_op agreements j1 j2 cls \<longrightarrow> compliant_op agreements j2 j3 cls \<longrightarrow> compliant_op agreements j1 j2 cls \<and> compliant_op agreements j2 j3 cls"
+lemma lemma_4: "Compliance composition — compliant legs compose Definition compliant_op (agreements :: agreements) (from :: jurisdiction) (to :: jurisdiction) (cls :: nat) : Prop := from = to \<or> authorized agreements from to cls. Theorem compliance_composition : \<forall>(agreements :: agreements) (j1 j2 j3 : jurisdiction) (cls :: nat). compliant_op agreements j1 j2 cls \<longrightarrow> compliant_op agreements j2 j3 cls \<longrightarrow> compliant_op agreements j1 j2 cls \<and> compliant_op agreements j2 j3 cls"
   by auto
 
 (* 5 (matches Coq) *)
-lemma 5: "Data sovereignty — local data cannot leave without Theorem data_sovereignty : \<forall>(agreements :: agreements) (d :: data_item) (target : jurisdiction). data_jurisdiction d \<noteq> target \<longrightarrow> compliant_op agreements (data_jurisdiction d) target (data_classification d) \<longrightarrow> authorized agreements (data_jurisdiction d) target (data_classification d)"
+lemma lemma_5: "Data sovereignty — local data cannot leave without Theorem data_sovereignty : \<forall>(agreements :: agreements) (d :: data_item) (target :: jurisdiction). data_jurisdiction d \<noteq> target \<longrightarrow> compliant_op agreements (data_jurisdiction d) target (data_classification d) \<longrightarrow> authorized agreements (data_jurisdiction d) target (data_classification d)"
   by auto
 
 (* 6 (matches Coq) *)
-lemma 6: "Authorization is downward-closed (transitive across Theorem authorization_downward_closed : \<forall>(agreements :: agreements) (from to : jurisdiction) (cls cls' : nat). authorized agreements from to cls \<longrightarrow> cls' \<le> cls \<longrightarrow> authorized agreements from to cls'"
+lemma lemma_6: "Authorization is downward-closed (transitive across Theorem authorization_downward_closed : \<forall>(agreements :: agreements) (from :: jurisdiction) (to :: jurisdiction) (cls cls' : nat). authorized agreements from to cls \<longrightarrow> cls' \<le> cls \<longrightarrow> authorized agreements from to cls'"
   by auto
 
 (* 7 (matches Coq) *)
-lemma 7: "Audit trail completeness — every transfer is logged Definition log_transfer (trail : audit_trail) (did from to : nat) : audit_trail := mkTransfer did from to :: trail. Theorem audit_trail_completeness : \<forall>(trail :: audit_trail) (did from to : nat). transfer_logged (log_transfer trail did from to) did from to"
+lemma lemma_7: "Audit trail completeness — every transfer is logged Definition log_transfer (trail :: audit_trail) (did from to : nat) : audit_trail := mkTransfer did from to :: trail. Theorem audit_trail_completeness : \<forall>(trail :: audit_trail) (did from to : nat). transfer_logged (log_transfer trail did from to) did from to"
   by simp
 
 (* audit_trail_preservation (matches Coq) *)
@@ -206,27 +206,27 @@ lemma audit_trail_preservation: "\<forall>(trail :: audit_trail) (did from to di
   by auto
 
 (* 8 (matches Coq) *)
-lemma 8: "Policy monotonicity — stricter policies subsume Definition policy_allows (threshold : nat) (cls :: nat) : Prop := cls \<le> threshold. Theorem policy_monotonicity : \<forall>(strict weak : nat) (cls :: nat). policy_stricter strict weak \<longrightarrow> policy_allows strict cls \<longrightarrow> policy_allows weak cls"
+lemma lemma_8: "Policy monotonicity — stricter policies subsume Definition policy_allows (threshold :: nat) (cls :: nat) : Prop := cls \<le> threshold. Theorem policy_monotonicity : \<forall>(strict :: nat) (weak :: nat) (cls :: nat). policy_stricter strict weak \<longrightarrow> policy_allows strict cls \<longrightarrow> policy_allows weak cls"
   by auto
 
 (* 9 (matches Coq) *)
-lemma 9: "Same-jurisdiction transfers are always compliant Theorem same_jurisdiction_compliant : \<forall>(agreements :: agreements) (j :: jurisdiction) (cls : nat). compliant_op agreements j j cls"
+lemma lemma_9: "Same-jurisdiction transfers are always compliant Theorem same_jurisdiction_compliant : \<forall>(agreements :: agreements) (j :: jurisdiction) (cls :: nat). compliant_op agreements j j cls"
   by simp
 
 (* 10 (matches Coq) *)
-lemma 10: "Audit trail length grows with each transfer Theorem audit_trail_grows : \<forall>(trail :: audit_trail) (did from to : nat). length (log_transfer trail did from to) = S (length trail)"
+lemma lemma_10: "Audit trail length grows with each transfer Theorem audit_trail_grows : \<forall>(trail :: audit_trail) (did from to : nat). length (log_transfer trail did from to) = Suc (length trail)"
   by simp
 
 (* local_only_blocks_cross_border (matches Coq) *)
-lemma local_only_blocks_cross_border: "\<forall>(from to : jurisdiction). from \<noteq> to \<longrightarrow> ~ localization_permits_transfer LocalOnly from to"
+lemma local_only_blocks_cross_border: "\<forall>(from :: jurisdiction) (to :: jurisdiction). from \<noteq> to \<longrightarrow> ~ localization_permits_transfer LocalOnly from to"
   by auto
 
 (* regional_allows_intra_asean (matches Coq) *)
-lemma regional_allows_intra_asean: "\<forall>(from to : jurisdiction). from \<le> 9 \<longrightarrow> to \<le> 9 \<longrightarrow> localization_permits_transfer RegionalASEAN from to"
+lemma regional_allows_intra_asean: "\<forall>(from :: jurisdiction) (to :: jurisdiction). from \<le> 9 \<longrightarrow> to \<le> 9 \<longrightarrow> localization_permits_transfer RegionalASEAN from to"
   by auto
 
 (* global_allows_all (matches Coq) *)
-lemma global_allows_all: "\<forall>(from to : jurisdiction). localization_permits_transfer GlobalAllowed from to"
+lemma global_allows_all: "\<forall>(from :: jurisdiction) (to :: jurisdiction). localization_permits_transfer GlobalAllowed from to"
   by auto
 
 (* adequacy_list_membership (matches Coq) *)
@@ -238,11 +238,11 @@ lemma asean_data_flow_compliant: "\<forall>(flow :: cb_data_flow). (adp_consent_
   by simp
 
 (* breach_notification_timeliness (matches Coq) *)
-lemma breach_notification_timeliness: "\<forall>(policy :: asean_data_policy) (det notif : nat). notif \<le> det + adp_breach_notification_hours policy \<longrightarrow> breach_notification_compliant policy det notif"
+lemma breach_notification_timeliness: "\<forall>(policy :: asean_data_policy) (det :: nat) (notif :: nat). notif \<le> det + adp_breach_notification_hours policy \<longrightarrow> breach_notification_compliant policy det notif"
   by simp
 
 (* stricter_deadline_satisfies_weaker (matches Coq) *)
-lemma stricter_deadline_satisfies_weaker: "\<forall>(p1 p2 : asean_data_policy) (det notif : nat). adp_breach_notification_hours p1 \<le> adp_breach_notification_hours p2 \<longrightarrow> breach_notification_compliant p1 det notif \<longrightarrow> breach_notification_compliant p2 det notif"
+lemma stricter_deadline_satisfies_weaker: "\<forall>(p1 :: asean_data_policy) (p2 :: asean_data_policy) (det :: nat) (notif :: nat). adp_breach_notification_hours p1 \<le> adp_breach_notification_hours p2 \<longrightarrow> breach_notification_compliant p1 det notif \<longrightarrow> breach_notification_compliant p2 det notif"
   by simp
 
 (* mcc_compliance (matches Coq) *)
@@ -250,11 +250,11 @@ lemma mcc_compliance: "\<forall>(mcc :: model_contractual_clause) (min :: nat). 
   by auto
 
 (* higher_standard_subsumes (matches Coq) *)
-lemma higher_standard_subsumes: "\<forall>(mcc :: model_contractual_clause) (s1 s2 : nat). s1 \<le> s2 \<longrightarrow> mcc_adequate mcc s2 \<longrightarrow> mcc_adequate mcc s1"
+lemma higher_standard_subsumes: "\<forall>(mcc :: model_contractual_clause) (s1 :: nat) (s2 :: nat). s1 \<le> s2 \<longrightarrow> mcc_adequate mcc s2 \<longrightarrow> mcc_adequate mcc s1"
   by auto
 
 (* mutual_recognition_symmetric (matches Coq) *)
-lemma mutual_recognition_symmetric: "\<forall>(j1 j2 : jurisdiction) (agreements :: agreements). mutual_recognition j1 j2 agreements \<longrightarrow> mutual_recognition j2 j1 agreements"
+lemma mutual_recognition_symmetric: "\<forall>(j1 :: jurisdiction) (j2 :: jurisdiction) (agreements :: agreements). mutual_recognition j1 j2 agreements \<longrightarrow> mutual_recognition j2 j1 agreements"
   by auto
 
 (* classification_bounded (matches Coq) *)
@@ -262,7 +262,7 @@ lemma classification_bounded: "\<forall>(d :: data_item). data_classification d 
   by auto
 
 (* audit_trail_monotonic (matches Coq) *)
-lemma audit_trail_monotonic: "\<forall>(trail :: audit_trail) (did from to : nat) (e :: transfer_entry). e \<in> set trail \<longrightarrow> In e (log_transfer trail did from to)"
+lemma audit_trail_monotonic: "\<forall>(trail :: audit_trail) (did from to : nat) (e :: transfer_entry). e \<in> set trail \<longrightarrow> e \<in> set (log_transfer trail did from to)"
   by auto
 
 (* two_transfers_logged (matches Coq) *)

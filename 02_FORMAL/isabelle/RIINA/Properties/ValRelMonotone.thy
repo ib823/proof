@@ -54,7 +54,7 @@ lemma val_rel_le_monotone: "\<forall>m n Σ T v1 v2. m \<le> n \<longrightarrow>
 
 (* If related at S n, then related at n *)
 (* val_rel_le_pred (matches Coq) *)
-lemma val_rel_le_pred: "\<forall>n Σ T v1 v2. val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_pred: "\<forall>n Σ T v1 v2. val_rel_le (Suc n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by simp
 
 (* Monotonicity composes: if related at n and k ≤ m ≤ n, related at k *)
@@ -93,12 +93,12 @@ lemma val_rel_le_double_mono: "\<forall>m n k l Σ T v1 v2. m \<le> n \<longrigh
 
 (* Step down by 1: S n -> n *)
 (* val_rel_le_step_down_1 (matches Coq) *)
-lemma val_rel_le_step_down_1: "\<forall>n Σ T v1 v2. val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_step_down_1: "\<forall>n Σ T v1 v2. val_rel_le (Suc n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* Step down by 2: S (S n) -> n *)
 (* val_rel_le_step_down_2 (matches Coq) *)
-lemma val_rel_le_step_down_2: "\<forall>n Σ T v1 v2. val_rel_le (S (S n)) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_step_down_2: "\<forall>n Σ T v1 v2. val_rel_le (Suc (Suc n)) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* Relation at n implies relation at n - 1 (for n > 0) *)
@@ -132,7 +132,7 @@ lemma val_rel_le_both_min: "\<forall>m n Σ T v1 v2. val_rel_le m Σ T v1 v2 \<l
 
 (* ----------------------------------------------------------------- *)
 (* val_rel_le_step_down_3 (matches Coq) *)
-lemma val_rel_le_step_down_3: "\<forall>n Σ T v1 v2. val_rel_le (S (S (S n))) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_step_down_3: "\<forall>n Σ T v1 v2. val_rel_le (Suc (Suc (Suc n))) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* ----------------------------------------------------------------- *)
@@ -162,7 +162,7 @@ lemma val_rel_le_zero_trivial: "\<forall>Σ T v1 v2. val_rel_le 0 Σ T v1 v2"
 
 (* ----------------------------------------------------------------- *)
 (* val_rel_le_step_down_4 (matches Coq) *)
-lemma val_rel_le_step_down_4: "\<forall>n Σ T v1 v2. val_rel_le (S (S (S (S n)))) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_step_down_4: "\<forall>n Σ T v1 v2. val_rel_le (Suc (Suc (Suc (Suc n)))) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by simp
 
 (* ----------------------------------------------------------------- *)

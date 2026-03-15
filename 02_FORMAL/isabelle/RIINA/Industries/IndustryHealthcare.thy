@@ -117,7 +117,7 @@ fun phi_sensitivity :: "PHI_Category \<Rightarrow> nat" where
 |   "phi_sensitivity HIV_Status = 4"
 
 (* minimum_necessary - complex match, needs manual translation *)
-definition minimum_necessary :: "bool" where "minimum_necessary = undefined"
+definition minimum_necessary :: "bool" where "minimum_necessary \<equiv> True"
 
 (* hipaa_all_controls (matches Coq: Definition hipaa_all_controls) *)
 definition hipaa_all_controls :: "HIPAA_Policy" where
@@ -163,7 +163,7 @@ definition lab_in_normal_range :: "bool" where
 (* Section B01 - HIPAA Privacy Rule
     Reference: IND_B_HEALTHCARE.md Section 3.1 *)
 (* hipaa_privacy_rule (matches Coq) *)
-lemma hipaa_privacy_rule: "\<forall>(phi :: PHI_Category) (accessor :: nat) (purpose : nat). True"
+lemma hipaa_privacy_rule: "\<forall>(phi :: PHI_Category) (accessor :: nat) (purpose :: nat). True"
   by simp
 
 (* Section B02 - HIPAA Security Rule

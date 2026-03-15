@@ -105,12 +105,12 @@ definition firewall_permits :: "bool" where
 
 (* Theorem: An application cannot access another application's sockets. *)
 (* network_isolation (matches Coq) *)
-lemma network_isolation: "\<forall>(app1 app2 : application) (socket :: socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 socket \<longrightarrow> ~ can_access_socket app2 socket"
+lemma network_isolation: "\<forall>(app1 :: application) (app2 :: application) (socket :: socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 socket \<longrightarrow> ~ can_access_socket app2 socket"
   by auto
 
 (* socket ownership is exclusive *)
 (* socket_ownership_exclusive (matches Coq) *)
-lemma socket_ownership_exclusive: "\<forall>(app1 app2 : application) (sock :: socket). owns_socket app1 sock \<longrightarrow> owns_socket app2 sock \<longrightarrow> app_id app1 = app_id app2"
+lemma socket_ownership_exclusive: "\<forall>(app1 :: application) (app2 :: application) (sock :: socket). owns_socket app1 sock \<longrightarrow> owns_socket app2 sock \<longrightarrow> app_id app1 = app_id app2"
   by auto
 
 (* unbound_socket_not_usable (matches Coq) *)
@@ -149,17 +149,17 @@ lemma unbound_blocks_receive: "\<forall>(app :: application) (sock :: socket). s
 
 (* Default deny firewall: empty rules block all *)
 (* default_deny_firewall (matches Coq) *)
-lemma default_deny_firewall: "\<forall>(src_port dst_port : nat). firewall_permits [] src_port dst_port = False"
+lemma default_deny_firewall: "\<forall>(src_port :: nat) (dst_port :: nat). firewall_permits [] src_port dst_port = False"
   by simp
 
 (* Cross-app socket access is impossible *)
 (* cross_app_socket_impossible (matches Coq) *)
-lemma cross_app_socket_impossible: "\<forall>(app1 app2 : application) (sock :: socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock \<longrightarrow> ~ sends_data app2 sock"
+lemma cross_app_socket_impossible: "\<forall>(app1 :: application) (app2 :: application) (sock :: socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock \<longrightarrow> ~ sends_data app2 sock"
   by auto
 
 (* Cross-app receive impossible *)
 (* cross_app_receive_impossible (matches Coq) *)
-lemma cross_app_receive_impossible: "\<forall>(app1 app2 : application) (sock :: socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock \<longrightarrow> ~ receives_data app2 sock"
+lemma cross_app_receive_impossible: "\<forall>(app1 :: application) (app2 :: application) (sock :: socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock \<longrightarrow> ~ receives_data app2 sock"
   by auto
 
 (* Send implies socket bound *)
@@ -174,7 +174,7 @@ lemma receive_implies_bound: "\<forall>(app :: application) (sock :: socket). re
 
 (* socket isolation: different apps have different sockets *)
 (* socket_isolation_by_owner (matches Coq) *)
-lemma socket_isolation_by_owner: "\<forall>(app1 app2 : application) (sock1 sock2 : socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock1 \<longrightarrow> owns_socket app2 sock2 \<longrightarrow> socket_owner sock1 \<noteq> socket_owner sock2"
+lemma socket_isolation_by_owner: "\<forall>(app1 :: application) (app2 :: application) (sock1 :: socket) (sock2 :: socket). app_id app1 \<noteq> app_id app2 \<longrightarrow> owns_socket app1 sock1 \<longrightarrow> owns_socket app2 sock2 \<longrightarrow> socket_owner sock1 \<noteq> socket_owner sock2"
   by auto
 
 (* Access control consistent: can_access implies ownership *)

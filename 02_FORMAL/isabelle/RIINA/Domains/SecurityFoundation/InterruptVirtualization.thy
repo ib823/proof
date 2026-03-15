@@ -90,11 +90,11 @@ record interrupt_controller =
 
 (* vm_owns_irq (matches Coq: Definition vm_owns_irq) *)
 definition vm_owns_irq :: "InterruptState \<Rightarrow> virtual_machine \<Rightarrow> nat \<Rightarrow> bool" where
-  "vm_owns_irq st vm irq \<equiv> In (irq, vm_id vm) (irq_assignments st)"
+  "vm_owns_irq st vm irq \<equiv> (irq, vm_id vm) \<in> set (irq_assignments st)"
 
 (* ipi_authorized (matches Coq: Definition ipi_authorized) *)
 definition ipi_authorized :: "InterruptState \<Rightarrow> bool" where
-  "ipi_authorized st \<equiv> In (source, target) (ipi_allowed st)"
+  "ipi_authorized st \<equiv> (source, target) \<in> set (ipi_allowed st)"
 
 (* authorized_injection (matches Coq: Definition authorized_injection) *)
 fun authorized_injection :: "InterruptState \<Rightarrow> interrupt_source \<Rightarrow> virtual_machine \<Rightarrow> bool" where
@@ -118,17 +118,17 @@ definition irq_deliverable :: "InterruptController \<Rightarrow> nat \<Rightarro
 
 (* Theorem: Any interrupt injection must be authorized by the hypervisor. *)
 (* interrupt_injection_authorized (matches Coq) *)
-lemma interrupt_injection_authorized: "\<forall>(st :: interrupt_state) (source :: interrupt_source) (target : virtual_machine). injects_interrupt st source target \<longrightarrow> authorized_injection st source target"
+lemma interrupt_injection_authorized: "\<forall>(st :: interrupt_state) (source :: interrupt_source) (target :: virtual_machine). injects_interrupt st source target \<longrightarrow> authorized_injection st source target"
   by auto
 
 (* Theorem: One VM cannot inject interrupts to another VM without explicit authorization. *)
 (* interrupt_isolation (matches Coq) *)
-lemma interrupt_isolation: "\<forall>(vm1 vm2 : virtual_machine) (irq :: interrupt) (st : interrupt_state). vm_id vm1 \<noteq> vm_id vm2 \<longrightarrow> ~ ipi_authorized st (vm_id vm1) (vm_id vm2) \<longrightarrow> ~ can_inject st vm1 irq vm2"
+lemma interrupt_isolation: "\<forall>(vm1 :: virtual_machine) (vm2 :: virtual_machine) (irq :: interrupt) (st :: interrupt_state). vm_id vm1 \<noteq> vm_id vm2 \<longrightarrow> ~ ipi_authorized st (vm_id vm1) (vm_id vm2) \<longrightarrow> ~ can_inject st vm1 irq vm2"
   by auto
 
 (* IRQ ownership is unique when assignment exists *)
 (* device_irq_unique_owner (matches Coq) *)
-lemma device_irq_unique_owner: "\<forall>(st :: interrupt_state) (vm1 vm2 : virtual_machine) (irq :: nat). find_vm_for_irq (irq_assignments st) irq = Some (vm_id vm1) \<longrightarrow> find_vm_for_irq (irq_assignments st) irq = Some (vm_id vm2) \<longrightarrow> vm_id vm1 = vm_id vm2"
+lemma device_irq_unique_owner: "\<forall>(st :: interrupt_state) (vm1 :: virtual_machine) (vm2 :: virtual_machine) (irq :: nat). find_vm_for_irq (irq_assignments st) irq = Some (vm_id vm1) \<longrightarrow> find_vm_for_irq (irq_assignments st) irq = Some (vm_id vm2) \<longrightarrow> vm_id vm1 = vm_id vm2"
   by auto
 
 (* Timer interrupts are always local *)
@@ -138,32 +138,32 @@ lemma timer_interrupt_local: "\<forall>(st :: interrupt_state) (vm :: virtual_ma
 
 (* IPI requires explicit authorization *)
 (* ipi_requires_authorization (matches Coq) *)
-lemma ipi_requires_authorization: "\<forall>(st :: interrupt_state) (src tgt : virtual_machine). authorized_injection st (IPISource (vm_id src)) tgt \<longrightarrow> ipi_authorized st (vm_id src) (vm_id tgt)"
+lemma ipi_requires_authorization: "\<forall>(st :: interrupt_state) (src :: virtual_machine) (tgt :: virtual_machine). authorized_injection st (IPISource (vm_id src)) tgt \<longrightarrow> ipi_authorized st (vm_id src) (vm_id tgt)"
   by auto
 
 (* Unauthorized IPI blocked *)
 (* unauthorized_ipi_blocked (matches Coq) *)
-lemma unauthorized_ipi_blocked: "\<forall>(st :: interrupt_state) (src_vm tgt_vm : virtual_machine). ~ ipi_authorized st (vm_id src_vm) (vm_id tgt_vm) \<longrightarrow> ~ injects_interrupt st (IPISource (vm_id src_vm)) tgt_vm"
+lemma unauthorized_ipi_blocked: "\<forall>(st :: interrupt_state) (src_vm :: virtual_machine) (tgt_vm :: virtual_machine). ~ ipi_authorized st (vm_id src_vm) (vm_id tgt_vm) \<longrightarrow> ~ injects_interrupt st (IPISource (vm_id src_vm)) tgt_vm"
   by auto
 
 (* Self-injection always allowed *)
 (* self_injection_allowed (matches Coq) *)
-lemma self_injection_allowed: "\<forall>(st :: interrupt_state) (vm :: virtual_machine) (irq : interrupt). can_inject st vm irq vm"
+lemma self_injection_allowed: "\<forall>(st :: interrupt_state) (vm :: virtual_machine) (irq :: interrupt). can_inject st vm irq vm"
   by simp
 
 (* Masked IRQ cannot fire *)
 (* masked_irq_not_deliverable (matches Coq) *)
-lemma masked_irq_not_deliverable: "\<forall>(ctrl :: interrupt_controller) (irq :: nat) (ip : interrupt_priority). find_irq_prio irq (ctrl_irqs ctrl) = Some ip \<longrightarrow> irq_priority ip < ctrl_mask_threshold ctrl \<longrightarrow> ~ irq_deliverable ctrl irq"
+lemma masked_irq_not_deliverable: "\<forall>(ctrl :: interrupt_controller) (irq :: nat) (ip :: interrupt_priority). find_irq_prio irq (ctrl_irqs ctrl) = Some ip \<longrightarrow> irq_priority ip < ctrl_mask_threshold ctrl \<longrightarrow> ~ irq_deliverable ctrl irq"
   by auto
 
 (* Disabled IRQ cannot fire *)
 (* disabled_irq_not_deliverable (matches Coq) *)
-lemma disabled_irq_not_deliverable: "\<forall>(ctrl :: interrupt_controller) (irq :: nat) (ip : interrupt_priority). find_irq_prio irq (ctrl_irqs ctrl) = Some ip \<longrightarrow> irq_enabled ip = False \<longrightarrow> ~ irq_deliverable ctrl irq"
+lemma disabled_irq_not_deliverable: "\<forall>(ctrl :: interrupt_controller) (irq :: nat) (ip :: interrupt_priority). find_irq_prio irq (ctrl_irqs ctrl) = Some ip \<longrightarrow> irq_enabled ip = False \<longrightarrow> ~ irq_deliverable ctrl irq"
   by auto
 
 (* Non-pending IRQ cannot fire *)
 (* non_pending_irq_not_deliverable (matches Coq) *)
-lemma non_pending_irq_not_deliverable: "\<forall>(ctrl :: interrupt_controller) (irq :: nat) (ip : interrupt_priority). find_irq_prio irq (ctrl_irqs ctrl) = Some ip \<longrightarrow> irq_pending ip = False \<longrightarrow> ~ irq_deliverable ctrl irq"
+lemma non_pending_irq_not_deliverable: "\<forall>(ctrl :: interrupt_controller) (irq :: nat) (ip :: interrupt_priority). find_irq_prio irq (ctrl_irqs ctrl) = Some ip \<longrightarrow> irq_pending ip = False \<longrightarrow> ~ irq_deliverable ctrl irq"
   by auto
 
 (* Unknown IRQ cannot fire *)
@@ -173,37 +173,37 @@ lemma unknown_irq_not_deliverable: "\<forall>(ctrl :: interrupt_controller) (irq
 
 (* Injection requires authorization — contrapositive *)
 (* no_auth_no_injection (matches Coq) *)
-lemma no_auth_no_injection: "\<forall>(st :: interrupt_state) (source :: interrupt_source) (target : virtual_machine). ~ authorized_injection st source target \<longrightarrow> ~ injects_interrupt st source target"
+lemma no_auth_no_injection: "\<forall>(st :: interrupt_state) (source :: interrupt_source) (target :: virtual_machine). ~ authorized_injection st source target \<longrightarrow> ~ injects_interrupt st source target"
   by auto
 
 (* Device IRQ injection requires ownership *)
 (* device_irq_requires_ownership (matches Coq) *)
-lemma device_irq_requires_ownership: "\<forall>(st :: interrupt_state) (irq :: nat) (target : virtual_machine). injects_interrupt st (DeviceSource irq) target \<longrightarrow> vm_owns_irq st target irq"
+lemma device_irq_requires_ownership: "\<forall>(st :: interrupt_state) (irq :: nat) (target :: virtual_machine). injects_interrupt st (DeviceSource irq) target \<longrightarrow> vm_owns_irq st target irq"
   by auto
 
 (* VM cannot inject to different VM without IPI *)
 (* cross_vm_requires_ipi (matches Coq) *)
-lemma cross_vm_requires_ipi: "\<forall>(vm1 vm2 : virtual_machine) (irq :: interrupt) (st : interrupt_state). vm_id vm1 \<noteq> vm_id vm2 \<longrightarrow> can_inject st vm1 irq vm2 \<longrightarrow> ipi_authorized st (vm_id vm1) (vm_id vm2)"
+lemma cross_vm_requires_ipi: "\<forall>(vm1 :: virtual_machine) (vm2 :: virtual_machine) (irq :: interrupt) (st :: interrupt_state). vm_id vm1 \<noteq> vm_id vm2 \<longrightarrow> can_inject st vm1 irq vm2 \<longrightarrow> ipi_authorized st (vm_id vm1) (vm_id vm2)"
   by auto
 
 (* IPI authorization is directional *)
 (* ipi_authorization_directional (matches Coq) *)
-lemma ipi_authorization_directional: "\<forall>(st :: interrupt_state) (vm1 vm2 : virtual_machine). ipi_authorized st (vm_id vm1) (vm_id vm2) \<longrightarrow> ~ ipi_authorized st (vm_id vm2) (vm_id vm1) \<longrightarrow> ~ can_inject st vm2 (IRQ 0) vm1 \<or> vm_id vm1 = vm_id vm2"
+lemma ipi_authorization_directional: "\<forall>(st :: interrupt_state) (vm1 :: virtual_machine) (vm2 :: virtual_machine). ipi_authorized st (vm_id vm1) (vm_id vm2) \<longrightarrow> ~ ipi_authorized st (vm_id vm2) (vm_id vm1) \<longrightarrow> ~ can_inject st vm2 (IRQ 0) vm1 \<or> vm_id vm1 = vm_id vm2"
   by auto
 
 (* Empty IPI list blocks all cross-VM injection *)
 (* empty_ipi_blocks_cross_vm (matches Coq) *)
-lemma empty_ipi_blocks_cross_vm: "\<forall>(st :: interrupt_state) (vm1 vm2 : virtual_machine) (irq :: interrupt). ipi_allowed st = [] \<longrightarrow> vm_id vm1 \<noteq> vm_id vm2 \<longrightarrow> ~ can_inject st vm1 irq vm2"
+lemma empty_ipi_blocks_cross_vm: "\<forall>(st :: interrupt_state) (vm1 :: virtual_machine) (vm2 :: virtual_machine) (irq :: interrupt). ipi_allowed st = [] \<longrightarrow> vm_id vm1 \<noteq> vm_id vm2 \<longrightarrow> ~ can_inject st vm1 irq vm2"
   by auto
 
 (* Empty assignment list blocks all device IRQ injection *)
 (* empty_assignments_blocks_device_irqs (matches Coq) *)
-lemma empty_assignments_blocks_device_irqs: "\<forall>(st :: interrupt_state) (irq :: nat) (vm : virtual_machine). irq_assignments st = [] \<longrightarrow> ~ injects_interrupt st (DeviceSource irq) vm"
+lemma empty_assignments_blocks_device_irqs: "\<forall>(st :: interrupt_state) (irq :: nat) (vm :: virtual_machine). irq_assignments st = [] \<longrightarrow> ~ injects_interrupt st (DeviceSource irq) vm"
   by auto
 
 (* IRQ assignment deterministic *)
 (* irq_assignment_deterministic (matches Coq) *)
-lemma irq_assignment_deterministic: "\<forall>(st :: interrupt_state) (irq :: nat) (vm1 vm2 : vm_id). find_vm_for_irq (irq_assignments st) irq = Some vm1 \<longrightarrow> find_vm_for_irq (irq_assignments st) irq = Some vm2 \<longrightarrow> vm1 = vm2"
+lemma irq_assignment_deterministic: "\<forall>(st :: interrupt_state) (irq :: nat) (vm1 :: vm_id) (vm2 :: vm_id). find_vm_for_irq (irq_assignments st) irq = Some vm1 \<longrightarrow> find_vm_for_irq (irq_assignments st) irq = Some vm2 \<longrightarrow> vm1 = vm2"
   by auto
 
 (* Timer injection always succeeds *)
@@ -218,7 +218,7 @@ lemma self_ipi_possible: "\<forall>(st :: interrupt_state) (vm :: virtual_machin
 
 (* Injection implies source is valid *)
 (* injection_source_valid (matches Coq) *)
-lemma injection_source_valid: "\<forall>(st :: interrupt_state) (src :: interrupt_source) (tgt : virtual_machine). injects_interrupt st src tgt \<longrightarrow> match src with | DeviceSource irq => vm_owns_irq st tgt irq | TimerSource => True | IPISource vm => ipi_authorized st vm (vm_id tgt) end"
+lemma injection_source_valid: "\<forall>(st :: interrupt_state) (src :: interrupt_source) (tgt :: virtual_machine). injects_interrupt st src tgt \<longrightarrow> (case src of DeviceSource irq => vm_owns_irq st tgt irq | TimerSource => True | IPISource vm => ipi_authorized st vm (vm_id tgt))"
   by auto
 
 end

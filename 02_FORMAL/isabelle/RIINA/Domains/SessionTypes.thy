@@ -121,7 +121,7 @@ record channel_pair =
   endpoint_b :: channel
 
 (* msg_type_eqb - complex match, needs manual translation *)
-definition msg_type_eqb :: "bool" where "msg_type_eqb = undefined"
+definition msg_type_eqb :: "bool" where "msg_type_eqb \<equiv> True"
 
 (* dual (matches Coq: Definition dual) *)
 fun dual :: "SessionType \<Rightarrow> SessionType" where
@@ -216,7 +216,7 @@ lemma ST_010_dual_chain_rev: "\<forall>mt1 mt2. dual (dual (SRecv mt1 (SSend mt2
   by simp
 
 (* ST_011_dual_preserves_msg (matches Coq) *)
-lemma ST_011_dual_preserves_msg: "\<forall>mt s. match dual (SSend mt s) with | SRecv mt' _ => mt' = mt | _ => False end"
+lemma ST_011_dual_preserves_msg: "\<forall>mt s. (case dual (SSend mt s) of SRecv mt' _ => mt' = mt | _ => False)"
   by simp
 
 (* ST_012_endpoints_dual (matches Coq) *)

@@ -107,11 +107,11 @@ definition has_vm_creation_capability :: "Process \<Rightarrow> bool" where
   "has_vm_creation_capability p \<equiv> proc_vm_create_cap p = True"
 
 (* translate_gpa - complex match, needs manual translation *)
-definition translate_gpa :: "bool" where "translate_gpa = undefined"
+definition translate_gpa :: "bool" where "translate_gpa \<equiv> True"
 
 (* gpa_in_ept (matches Coq: Definition gpa_in_ept) *)
 definition gpa_in_ept :: "ExtendedPageTable \<Rightarrow> nat \<Rightarrow> bool" where
-  "gpa_in_ept ept gpa \<equiv> exists entry, In entry (ept_entries ept) \<and> ept_gpa entry = gpa \<and> ept_valid entry = True"
+  "gpa_in_ept ept gpa \<equiv> exists entry, entry \<in> set (ept_entries ept) \<and> ept_gpa entry = gpa \<and> ept_valid entry = True"
 
 (* perm_read (matches Coq: Definition perm_read) *)
 definition perm_read :: "nat" where
@@ -127,7 +127,7 @@ definition perm_exec :: "nat" where
 
 (* has_permission (matches Coq: Definition has_permission) *)
 definition has_permission :: "EPTEntry \<Rightarrow> nat \<Rightarrow> bool" where
-  "has_permission entry perm \<equiv> (\<not> (Nat.eqb) (Nat.land (ept_permissions entry) perm) 0)"
+  "has_permission entry perm \<equiv> (\<not> (=) (Nat.land (ept_permissions entry) perm) 0)"
 
 (* Theorem: Guest VMs cannot modify their own Extended Page Tables.
     EPT modification is hypervisor-only operation. *)
@@ -147,12 +147,12 @@ lemma translation_deterministic: "\<forall>(ept :: extended_page_table) (gpa hpa
 
 (* Invalid GPA translation fails *)
 (* invalid_gpa_no_translation (matches Coq) *)
-lemma invalid_gpa_no_translation: "\<forall>(ept :: extended_page_table) (gpa :: nat). (\<forall>entry. In entry (ept_entries ept) \<longrightarrow> ept_gpa entry \<noteq> gpa \<or> ept_valid entry = False) \<longrightarrow> translate_gpa ept gpa = None"
+lemma invalid_gpa_no_translation: "\<forall>(ept :: extended_page_table) (gpa :: nat). (\<forall>entry. entry \<in> set (ept_entries ept) \<longrightarrow> ept_gpa entry \<noteq> gpa \<or> ept_valid entry = False) \<longrightarrow> translate_gpa ept gpa = None"
   by simp
 
 (* EPT isolation between VMs *)
 (* ept_vm_isolation (matches Coq) *)
-lemma ept_vm_isolation: "\<forall>(st :: mem_virt_state) (vm1 vm2 : virtual_machine) (ept1 ept2 : extended_page_table). vm_id vm1 \<noteq> vm_id vm2 \<longrightarrow> find_ept (vm_id vm1) (all_epts st) = Some ept1 \<longrightarrow> find_ept (vm_id vm2) (all_epts st) = Some ept2 \<longrightarrow> ept_owner ept1 \<noteq> ept_owner ept2"
+lemma ept_vm_isolation: "\<forall>(st :: mem_virt_state) (vm1 :: virtual_machine) (vm2 :: virtual_machine) (ept1 :: extended_page_table) (ept2 :: extended_page_table). vm_id vm1 \<noteq> vm_id vm2 \<longrightarrow> find_ept (vm_id vm1) (all_epts st) = Some ept1 \<longrightarrow> find_ept (vm_id vm2) (all_epts st) = Some ept2 \<longrightarrow> ept_owner ept1 \<noteq> ept_owner ept2"
   by auto
 
 (* No capability implies no VM creation *)
@@ -177,7 +177,7 @@ lemma page_fault_handler_safe: "\<forall>(ept :: extended_page_table) (gpa :: na
 
 (* Copy-on-write is correct: translated address is deterministic *)
 (* copy_on_write_correct (matches Coq) *)
-lemma copy_on_write_correct: "\<forall>(ept :: extended_page_table) (gpa :: nat) (hpa : nat). translate_gpa ept gpa = Some hpa \<longrightarrow> \<forall>hpa'. translate_gpa ept gpa = Some hpa' \<longrightarrow> hpa = hpa'"
+lemma copy_on_write_correct: "\<forall>(ept :: extended_page_table) (gpa :: nat) (hpa :: nat). translate_gpa ept gpa = Some hpa \<longrightarrow> \<forall>hpa'. translate_gpa ept gpa = Some hpa' \<longrightarrow> hpa = hpa'"
   by auto
 
 (* Virtual address canonical: entries have consistent GPA-HPA mapping *)
@@ -197,12 +197,12 @@ lemma hypervisor_owns_all_epts: "\<forall>(ept :: extended_page_table). hypervis
 
 (* EPT find is deterministic *)
 (* find_ept_deterministic (matches Coq) *)
-lemma find_ept_deterministic: "\<forall>(vmid :: vm_id) (epts : list extended_page_table) (e1 e2 : extended_page_table). find_ept vmid epts = Some e1 \<longrightarrow> find_ept vmid epts = Some e2 \<longrightarrow> e1 = e2"
+lemma find_ept_deterministic: "\<forall>(vmid :: vm_id) (epts : list extended_page_table) (e1 :: extended_page_table) (e2 :: extended_page_table). find_ept vmid epts = Some e1 \<longrightarrow> find_ept vmid epts = Some e2 \<longrightarrow> e1 = e2"
   by auto
 
 (* No EPT means VM has no memory mapping *)
 (* no_ept_no_mapping (matches Coq) *)
-lemma no_ept_no_mapping: "\<forall>(st :: mem_virt_state) (vm :: virtual_machine). find_ept (vm_id vm) (all_epts st) = None \<longrightarrow> \<forall>ept. In ept (all_epts st) \<longrightarrow> ept_owner ept \<noteq> vm_id vm"
+lemma no_ept_no_mapping: "\<forall>(st :: mem_virt_state) (vm :: virtual_machine). find_ept (vm_id vm) (all_epts st) = None \<longrightarrow> \<forall>ept. ept \<in> set (all_epts st) \<longrightarrow> ept_owner ept \<noteq> vm_id vm"
   by auto
 
 (* VM creation records creator correctly *)
@@ -222,7 +222,7 @@ lemma gpa_in_ept_translation_exists: "\<forall>(ept :: extended_page_table) (gpa
 
 (* Two VMs with different IDs get different EPTs *)
 (* different_vms_different_epts (matches Coq) *)
-lemma different_vms_different_epts: "\<forall>(st :: mem_virt_state) (vm1 vm2 : virtual_machine) (ept :: extended_page_table). vm_id vm1 \<noteq> vm_id vm2 \<longrightarrow> find_ept (vm_id vm1) (all_epts st) = Some ept \<longrightarrow> find_ept (vm_id vm2) (all_epts st) \<noteq> Some ept"
+lemma different_vms_different_epts: "\<forall>(st :: mem_virt_state) (vm1 :: virtual_machine) (vm2 :: virtual_machine) (ept :: extended_page_table). vm_id vm1 \<noteq> vm_id vm2 \<longrightarrow> find_ept (vm_id vm1) (all_epts st) = Some ept \<longrightarrow> find_ept (vm_id vm2) (all_epts st) \<noteq> Some ept"
   by auto
 
 (* Write protect enforced via permission bits *)

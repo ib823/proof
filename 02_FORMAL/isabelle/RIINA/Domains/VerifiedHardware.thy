@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | security_level      | security_level         | OK     |
+ * | hw_security_level      | hw_security_level         | OK     |
  * | instruction        | instruction            | OK     |
  * | pipeline_stage      | pipeline_stage         | OK     |
  * | leakage            | leakage                | OK     |
@@ -115,8 +115,8 @@ type_synonym r_tls_tate = "nat"
 type_synonym reg_id = "nat"
 type_synonym voltage_range = "nat"
 type_synonym word = "nat"
-(* security_level (matches Coq: Inductive security_level) *)
-datatype security_level =
+(* hw_security_level (matches Coq: Inductive hw_security_level) *)
+datatype hw_security_level =
     Public
   |     Secret
 
@@ -326,13 +326,13 @@ definition ecc_correct_single :: "ECCWord \<Rightarrow> Word" where
 
 (* ecc_is_double_error (matches Coq: Definition ecc_is_double_error) *)
 definition ecc_is_double_error :: "ECCWord \<Rightarrow> bool" where
-  "ecc_is_double_error w \<equiv> (\<not> Nat.eqb (ecc_syndrome w) 0 \<and> \<not> ecc_parity w)"
+  "ecc_is_double_error w \<equiv> (\<not> (=) (ecc_syndrome w) 0 \<and> \<not> ecc_parity w)"
 
 (* exec_zeroize (matches Coq: Definition exec_zeroize) *)
 definition exec_zeroize :: "RTLState \<Rightarrow> RTLState" where
   "exec_zeroize s \<equiv> {| rtl_regs := \<lambda>_. 0;
      rtl_mem := rtl_mem s;
-     rtl_pc := S (rtl_pc s);
+     rtl_pc := Suc (rtl_pc s);
      rtl_pipeline := [];
      rtl_cycle := rtl_cycle s + 32;
      rtl_security_labels := \<lambda>_. Public;
@@ -408,7 +408,7 @@ lemma update_neq: "\<forall>{A : Type} (f : nat \<longrightarrow> A) k1 k2 v. k1
   by simp
 
 (* isa_rtl_add_equiv (matches Coq) *)
-lemma isa_rtl_add_equiv: "\<forall>rd rs1 rs2 s. rtl_to_arch (rtl_execute_instr (IAdd rd rs1 rs2) s) = {| regs := update (rtl_regs s) rd (rtl_regs s rs1 + rtl_regs s rs2); mem := rtl_mem s; pc := S (rtl_pc s); security_labels := rtl_security_labels s; isolation_mode := rtl_isolation_mode s |}"
+lemma isa_rtl_add_equiv: "\<forall>rd rs1 rs2 s. rtl_to_arch (rtl_execute_instr (IAdd rd rs1 rs2) s) = {| regs := update (rtl_regs s) rd (rtl_regs s rs1 + rtl_regs s rs2); mem := rtl_mem s; pc := Suc (rtl_pc s); security_labels := rtl_security_labels s; isolation_mode := rtl_isolation_mode s |}"
   by simp
 
 (* PHI_001_01_rtl_isa_equivalence (matches Coq) *)
@@ -432,7 +432,7 @@ lemma PHI_001_05_alu_correct: "\<forall>rd rs1 rs2 s. rtl_regs (rtl_execute_inst
   by simp
 
 (* PHI_001_06_branch_correct (matches Coq) *)
-lemma PHI_001_06_branch_correct: "\<forall>rs1 rs2 target s. (rtl_regs s rs1 = rtl_regs s rs2 \<longrightarrow> rtl_pc (rtl_execute_instr (IBranch rs1 rs2 target) s) = target) \<and> (rtl_regs s rs1 \<noteq> rtl_regs s rs2 \<longrightarrow> rtl_pc (rtl_execute_instr (IBranch rs1 rs2 target) s) = S (rtl_pc s))"
+lemma PHI_001_06_branch_correct: "\<forall>rs1 rs2 target s. (rtl_regs s rs1 = rtl_regs s rs2 \<longrightarrow> rtl_pc (rtl_execute_instr (IBranch rs1 rs2 target) s) = target) \<and> (rtl_regs s rs1 \<noteq> rtl_regs s rs2 \<longrightarrow> rtl_pc (rtl_execute_instr (IBranch rs1 rs2 target) s) = Suc (rtl_pc s))"
   by auto
 
 (* PHI_001_07_interrupt_correct (matches Coq) *)
@@ -440,7 +440,7 @@ lemma PHI_001_07_interrupt_correct: "\<forall>s. rtl_speculating s = False \<lon
   by auto
 
 (* PHI_001_08_instruction_fetch_correct (matches Coq) *)
-lemma PHI_001_08_instruction_fetch_correct: "\<forall>instr s. instr \<noteq> IZEROIZE \<longrightarrow> rtl_pc (rtl_execute_instr instr s) = S (rtl_pc s) \<or> \<exists>target. rtl_pc (rtl_execute_instr instr s) = target"
+lemma PHI_001_08_instruction_fetch_correct: "\<forall>instr s. instr \<noteq> IZEROIZE \<longrightarrow> rtl_pc (rtl_execute_instr instr s) = Suc (rtl_pc s) \<or> \<exists>target. rtl_pc (rtl_execute_instr instr s) = target"
   by auto
 
 (* PHI_001_09_timing_independent (matches Coq) *)
@@ -448,7 +448,7 @@ lemma PHI_001_09_timing_independent: "\<forall>instr s1 s2. rtl_public_equiv s1 
   by simp
 
 (* PHI_001_10_no_data_dependent_timing (matches Coq) *)
-lemma PHI_001_10_no_data_dependent_timing: "\<forall>instr. match instr with | IAdd _ _ _ => cycles instr = 1 | ISub _ _ _ => cycles instr = 1 | IAnd _ _ _ => cycles instr = 1 | IOr _ _ _ => cycles instr = 1 | IXor _ _ _ => cycles instr = 1 | IMul _ _ _ => cycles instr = 3 | IDiv _ _ _ => cycles instr = 32 | _ => True end"
+lemma PHI_001_10_no_data_dependent_timing: "\<forall>instr. (case instr of IAdd _ _ _ => cycles instr = 1 | ISub _ _ _ => cycles instr = 1 | IAnd _ _ _ => cycles instr = 1 | IOr _ _ _ => cycles instr = 1 | IXor _ _ _ => cycles instr = 1 | IMul _ _ _ => cycles instr = 3 | IDiv _ _ _ => cycles instr = 32 | _ => True)"
   by auto
 
 (* PHI_001_11_cache_constant_time (matches Coq) *)

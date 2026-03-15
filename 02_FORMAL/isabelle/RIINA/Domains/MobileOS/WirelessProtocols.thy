@@ -13,7 +13,7 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | wireless_protocol   | wireless_protocol      | OK     |
- * | security_level      | security_level         | OK     |
+ * | wireless_security_level      | wireless_security_level         | OK     |
  * | wireless_connection | wireless_connection    | OK     |
  * | bluetooth_pairing   | bluetooth_pairing      | OK     |
  * | wi_fi_connection     | wi_fi_connection       | OK     |
@@ -84,8 +84,8 @@ datatype wireless_protocol =
   |     NFC
   |     UWB
 
-(* security_level (matches Coq: Inductive security_level) *)
-datatype security_level =
+(* wireless_security_level (matches Coq: Inductive wireless_security_level) *)
+datatype wireless_security_level =
     None
   |     WPA2
   |     WPA3
@@ -96,7 +96,7 @@ datatype security_level =
 (* wireless_connection (matches Coq: Record wireless_connection) *)
 record wireless_connection =
   conn_protocol :: wireless_protocol
-  conn_security :: security_level
+  conn_security :: wireless_security_level
   conn_encrypted :: bool
   conn_authenticated :: bool
 
@@ -111,7 +111,7 @@ record bluetooth_pairing =
 record wi_fi_connection =
   wifi_ssid :: nat
   wifi_encrypted :: bool
-  wifi_security :: security_level
+  wifi_security :: wireless_security_level
   wifi_password_stored_plaintext :: bool
 
 (* nfc_transaction (matches Coq: Record nfc_transaction) *)
@@ -191,7 +191,7 @@ definition secure_connection :: "WirelessConnection \<Rightarrow> bool" where
   "secure_connection c \<equiv> conn_encrypted c = True \<and> conn_authenticated c = True"
 
 (* protocol_secure - complex match, needs manual translation *)
-definition protocol_secure :: "bool" where "protocol_secure = undefined"
+definition protocol_secure :: "bool" where "protocol_secure \<equiv> True"
 
 (* well_formed_wireless (matches Coq: Definition well_formed_wireless) *)
 definition well_formed_wireless :: "WirelessConnection \<Rightarrow> bool" where

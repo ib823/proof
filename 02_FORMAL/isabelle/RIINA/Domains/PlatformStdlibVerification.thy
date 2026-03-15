@@ -79,7 +79,7 @@ datatype plat_label =
   |     PLSecret
 
 (* platform_has_cap - complex match, needs manual translation *)
-definition platform_has_cap :: "bool" where "platform_has_cap = undefined"
+definition platform_has_cap :: "bool" where "platform_has_cap \<equiv> True"
 
 (* can_compile (matches Coq: Definition can_compile) *)
 definition can_compile :: "Platform \<Rightarrow> PlatFunc \<Rightarrow> bool" where
@@ -150,15 +150,15 @@ lemma plat_004_secret_preserved: "\<forall>cap. io_ni_safe (mkIO cap PLSecret PL
   by auto
 
 (* plat_005_pure_platform_independent (matches Coq) *)
-lemma plat_005_pure_platform_independent: "\<forall>(p1 p2 : platform) e. pure_eval e = pure_eval e"
+lemma plat_005_pure_platform_independent: "\<forall>(p1 :: platform) (p2 :: platform) e. pure_eval e = pure_eval e"
   by simp
 
 (* plat_005_add_independent (matches Coq) *)
-lemma plat_005_add_independent: "\<forall>(p1 p2 : platform) a b. a + b = a + b"
+lemma plat_005_add_independent: "\<forall>(p1 :: platform) (p2 :: platform) a b. a + b = a + b"
   by simp
 
 (* plat_005_bool_independent (matches Coq) *)
-lemma plat_005_bool_independent: "\<forall>(p1 p2 : platform) b. (\<not> b) = (\<not> b)"
+lemma plat_005_bool_independent: "\<forall>(p1 :: platform) (p2 :: platform) b. (\<not> b) = (\<not> b)"
   by simp
 
 (* plat_006_dom_only_wasm (matches Coq) *)

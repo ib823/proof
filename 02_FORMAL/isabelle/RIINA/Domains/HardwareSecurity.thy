@@ -159,7 +159,7 @@ lemma hw_012_hertzbleed_mitigated: "\<forall>(tp :: timing_protection). tp_const
   by auto
 
 (* hw_013_pacman_mitigated (matches Coq) *)
-lemma hw_013_pacman_mitigated: "\<forall>(pac_enabled :: bool) (cfi_enabled :: bool) (sb : speculation_barrier). pac_enabled = True \<longrightarrow> cfi_enabled = True \<longrightarrow> sb_csdb sb = True \<longrightarrow> True"
+lemma hw_013_pacman_mitigated: "\<forall>(pac_enabled :: bool) (cfi_enabled :: bool) (sb :: speculation_barrier). pac_enabled = True \<longrightarrow> cfi_enabled = True \<longrightarrow> sb_csdb sb = True \<longrightarrow> True"
   by auto
 
 (* hw_014_augury_mitigated (matches Coq) *)

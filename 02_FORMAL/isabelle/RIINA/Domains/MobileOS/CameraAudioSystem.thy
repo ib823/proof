@@ -228,7 +228,7 @@ lemma audio_latency_bounded: "\<forall>(sample :: audio_sample). low_latency_aud
   by auto
 
 (* capture_preserves_identity (matches Coq) *)
-lemma capture_preserves_identity: "\<forall>(s1 s2 : scene) (p :: raw_photo). captures s1 p \<longrightarrow> captures s2 p \<longrightarrow> sensor_data s1 = sensor_data s2"
+lemma capture_preserves_identity: "\<forall>(s1 :: scene) (s2 :: scene) (p :: raw_photo). captures s1 p \<longrightarrow> captures s2 p \<longrightarrow> sensor_data s1 = sensor_data s2"
   by simp
 
 (* empty_video_zero_frames (matches Coq) *)
@@ -288,7 +288,7 @@ lemma camera_interrupt_handled: "\<forall>(rs :: recording_session). well_formed
   by auto
 
 (* audio_route_change_handled (matches Coq) *)
-lemma audio_route_change_handled: "\<forall>(ac1 ac2 : audio_config). well_formed_audio ac1 \<longrightarrow> well_formed_audio ac2 \<longrightarrow> sample_rate ac1 \<ge> 8000 \<and> sample_rate ac2 \<ge> 8000"
+lemma audio_route_change_handled: "\<forall>(ac1 :: audio_config) (ac2 :: audio_config). well_formed_audio ac1 \<longrightarrow> well_formed_audio ac2 \<longrightarrow> sample_rate ac1 \<ge> 8000 \<and> sample_rate ac2 \<ge> 8000"
   by auto
 
 (* video_stabilization_bounded (matches Coq) *)

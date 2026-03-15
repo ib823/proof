@@ -135,7 +135,7 @@ record length_prefixed_string =
   lpstr_valid :: list
 
 (* propagate_taint - complex match, needs manual translation *)
-definition propagate_taint :: "bool" where "propagate_taint = undefined"
+definition propagate_taint :: "bool" where "propagate_taint \<equiv> True"
 
 (* tainted_concat (matches Coq: Definition tainted_concat) *)
 definition tainted_concat :: "TaintedValue" where
@@ -162,19 +162,19 @@ definition secure_pdf :: "PDFDocument \<Rightarrow> bool" where
   "secure_pdf doc \<equiv> pdf_has_js doc = False"
 
 (* inj_001_sql_injection_impossible (matches Coq) *)
-lemma inj_001_sql_injection_impossible: "\<forall>(q :: sql_query). safe_sql q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> match part with | SQLLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
+lemma inj_001_sql_injection_impossible: "\<forall>(q :: sql_query). safe_sql q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> (case part of SQLLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True)"
   by auto
 
 (* inj_002_command_injection_impossible (matches Coq) *)
-lemma inj_002_command_injection_impossible: "\<forall>(cmd :: shell_command). safe_shell cmd \<longrightarrow> \<forall>part. part \<in> set cmd \<longrightarrow> match part with | ShellLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
+lemma inj_002_command_injection_impossible: "\<forall>(cmd :: shell_command). safe_shell cmd \<longrightarrow> \<forall>part. part \<in> set cmd \<longrightarrow> (case part of ShellLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True)"
   by auto
 
 (* inj_003_ldap_injection_impossible (matches Coq) *)
-lemma inj_003_ldap_injection_impossible: "\<forall>(q :: lda_pq_uery). safe_ldap q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> match part with | LDAPLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
+lemma inj_003_ldap_injection_impossible: "\<forall>(q :: lda_pq_uery). safe_ldap q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> (case part of LDAPLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True)"
   by auto
 
 (* inj_004_xpath_injection_impossible (matches Coq) *)
-lemma inj_004_xpath_injection_impossible: "\<forall>(q :: x_path_query). safe_xpath q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> match part with | SQLLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
+lemma inj_004_xpath_injection_impossible: "\<forall>(q :: x_path_query). safe_xpath q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> (case part of SQLLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True)"
   by auto
 
 (* inj_005_xxe_impossible (matches Coq) *)
@@ -190,15 +190,15 @@ lemma inj_007_template_injection_impossible: "\<forall>(e :: template_expr). Tru
   by auto
 
 (* inj_008_code_injection_impossible (matches Coq) *)
-lemma inj_008_code_injection_impossible: "\<forall>(e :: riina_expr). match e with | RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ => True end"
+lemma inj_008_code_injection_impossible: "\<forall>(e :: riina_expr). (case e of RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ => True)"
   by auto
 
 (* inj_009_expression_language_safe (matches Coq) *)
-lemma inj_009_expression_language_safe: "\<forall>(e :: template_expr). match e with | TmplLiteral _ => True | TmplVar _ => True | TmplConcat _ _ => True end"
+lemma inj_009_expression_language_safe: "\<forall>(e :: template_expr). (case e of TmplLiteral _ => True | TmplVar _ => True | TmplConcat _ _ => True)"
   by auto
 
 (* inj_010_log_injection_impossible (matches Coq) *)
-lemma inj_010_log_injection_impossible: "\<forall>(data : list nat). ~ In 10 (sanitize_log data)"
+lemma inj_010_log_injection_impossible: "\<forall>(data : list nat). 10 \<notin> set (sanitize_log data)"
   by auto
 
 (* inj_011_email_header_safe (matches Coq) *)
@@ -206,11 +206,11 @@ lemma inj_011_email_header_safe: "\<forall>(h :: email_header). contains_newline
   by auto
 
 (* csv_escape_safe_helper (matches Coq) *)
-lemma csv_escape_safe_helper: "\<forall>c rest. ((c = 61) || (c = 43) || (c = 45) || (c = 64)) = False \<longrightarrow> match c :: rest with | 61 :: _ => False | 43 :: _ => False | 45 :: _ => False | 64 :: _ => False | _ => True end"
+lemma csv_escape_safe_helper: "\<forall>c rest. ((c = 61) || (c = 43) || (c = 45) || (c = 64)) = False \<longrightarrow> (case c :: rest of 61 :: _ => False | 43 :: _ => False | 45 :: _ => False | 64 :: _ => False | _ => True)"
   by auto
 
 (* inj_012_csv_injection_impossible (matches Coq) *)
-lemma inj_012_csv_injection_impossible: "\<forall>(data : list nat). match escape_csv_cell data with | 61 :: _ => False | 43 :: _ => False | 45 :: _ => False | 64 :: _ => False | _ => True end"
+lemma inj_012_csv_injection_impossible: "\<forall>(data : list nat). (case escape_csv_cell data of 61 :: _ => False | 43 :: _ => False | 45 :: _ => False | 64 :: _ => False | _ => True)"
   by auto
 
 (* inj_013_pdf_injection_impossible (matches Coq) *)

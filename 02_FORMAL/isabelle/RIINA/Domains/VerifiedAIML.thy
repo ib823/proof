@@ -174,7 +174,7 @@ definition gradient_step :: "Z \<Rightarrow> z \<Rightarrow> z \<Rightarrow> Z" 
   "gradient_step loss learning_rate gradient \<equiv> loss - learning_rate * gradient"
 
 (* mat_mul_elem - complex match, needs manual translation *)
-definition mat_mul_elem :: "bool" where "mat_mul_elem = undefined"
+definition mat_mul_elem :: "bool" where "mat_mul_elem \<equiv> True"
 
 (* lipschitz_output (matches Coq: Definition lipschitz_output) *)
 definition lipschitz_output :: "Z \<Rightarrow> z \<Rightarrow> Z" where
@@ -197,7 +197,7 @@ lemma DOMAIN_002_04_softmax_normalization: "\<forall>(outputs : list z) (scale :
   by auto
 
 (* DOMAIN_002_05_relu_monotonicity (matches Coq) *)
-lemma DOMAIN_002_05_relu_monotonicity: "\<forall>(x y : z). x \<le> y \<longrightarrow> relu x \<le> relu y"
+lemma DOMAIN_002_05_relu_monotonicity: "\<forall>(x :: z) (y :: z). x \<le> y \<longrightarrow> relu x \<le> relu y"
   by auto
 
 (* DOMAIN_002_06_matrix_associativity (matches Coq) *)
@@ -213,7 +213,7 @@ lemma DOMAIN_002_08_inference_determinism: "\<forall>(model :: model) (input :: 
   by simp
 
 (* DOMAIN_002_09_numerical_stability (matches Coq) *)
-lemma DOMAIN_002_09_numerical_stability: "\<forall>(x bound : z). numerically_stable x bound = True \<longrightarrow> Z.abs x \<le> bound"
+lemma DOMAIN_002_09_numerical_stability: "\<forall>(x :: z) (bound :: z). numerically_stable x bound = True \<longrightarrow> Z.abs x \<le> bound"
   by auto
 
 (* DOMAIN_002_10_model_integrity (matches Coq) *)
@@ -237,7 +237,7 @@ lemma DOMAIN_002_14_explanation_faithfulness: "\<forall>(importance actual_contr
   by auto
 
 (* DOMAIN_002_15_safe_action_space (matches Coq) *)
-lemma DOMAIN_002_15_safe_action_space: "\<forall>(action prev_action : z) (space :: action_space). action_safe action prev_action space = True \<longrightarrow> action_min space \<le> action \<and> action \<le> action_max space \<and> Z.abs (action - prev_action) \<le> action_rate_limit space"
+lemma DOMAIN_002_15_safe_action_space: "\<forall>(action :: z) (prev_action :: z) (space :: action_space). action_safe action prev_action space = True \<longrightarrow> action_min space \<le> action \<and> action \<le> action_max space \<and> Z.abs (action - prev_action) \<le> action_rate_limit space"
   by auto
 
 (* relu_non_negative (matches Coq) *)

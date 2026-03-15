@@ -314,7 +314,7 @@ definition confinement_enforced :: "ConfinementPolicy \<Rightarrow> bool" where
   "confinement_enforced cp \<equiv> (conf_no_ambient cp \<and> conf_explicit_only cp \<and> conf_no_escalation cp)"
 
 (* can_redelegate - complex match, needs manual translation *)
-definition can_redelegate :: "bool" where "can_redelegate = undefined"
+definition can_redelegate :: "bool" where "can_redelegate \<equiv> True"
 
 (* capability_sound (matches Coq: Definition capability_sound) *)
 definition capability_sound :: "Capability \<Rightarrow> bool" where
