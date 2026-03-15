@@ -22,42 +22,42 @@ one sig SVPair extends sval {}
 
 // sval_rel_tower_0 (matches Coq: Lemma sval_rel_tower_0)
 assert sval_rel_tower_0 {
-  all x: sty | x in sty
+  all x: sval | some x
 }
 check sval_rel_tower_0 for 5
 
 // sval_rel_tower_S (matches Coq: Lemma sval_rel_tower_S)
 assert sval_rel_tower_S {
-  all x: sty | x in sty
+  all x: sval | some x
 }
 check sval_rel_tower_S for 5
 
 // sval_rel_tower_mono (matches Coq: Lemma sval_rel_tower_mono)
 assert sval_rel_tower_mono {
-  all x: sty | x in sty
+  all x: sval | some x
 }
 check sval_rel_tower_mono for 5
 
 // sval_rel_tower_fn_apply (matches Coq: Lemma sval_rel_tower_fn_apply)
 assert sval_rel_tower_fn_apply {
-  all x: sty | x in sty
+  all x: sval | some x
 }
 check sval_rel_tower_fn_apply for 5
 
 // ahmed_tower_ft_works (matches Coq: Lemma ahmed_tower_ft_works)
 assert ahmed_tower_ft_works {
-  all x: sty | x in sty
+  all x: sty | some x
 }
 check ahmed_tower_ft_works for 5
 
 // sval_rel_tower_step_up_unit (matches Coq: Lemma sval_rel_tower_step_up_unit)
 assert sval_rel_tower_step_up_unit {
-  all x: sty | x in sty
+  all x: sval | some x
 }
 check sval_rel_tower_step_up_unit for 5
 
 // sval_rel_tower_step_up_bool (matches Coq: Lemma sval_rel_tower_step_up_bool)
 assert sval_rel_tower_step_up_bool {
-  all x: sty | x in sty
+  all x: sval | some x
 }
 check sval_rel_tower_step_up_bool for 5

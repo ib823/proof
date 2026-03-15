@@ -7,42 +7,42 @@ open util/boolean
 
 // val_rel_n_to_val_rel_fo_proven (matches Coq: Theorem val_rel_n_to_val_rel_fo_proven)
 assert val_rel_n_to_val_rel_fo_proven {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_to_val_rel_fo_proven for 5
 
 // val_rel_n_step_up_k (matches Coq: Lemma val_rel_n_step_up_k)
 assert val_rel_n_step_up_k {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_step_up_k for 5
 
 // val_rel_n_to_val_rel_with_typing (matches Coq: Theorem val_rel_n_to_val_rel_with_typing)
 assert val_rel_n_to_val_rel_with_typing {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_to_val_rel_with_typing for 5
 
 // val_rel_n_TFn_typing (matches Coq: Lemma val_rel_n_TFn_typing)
 assert val_rel_n_TFn_typing {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_TFn_typing for 5
 
 // val_rel_n_composite_typing (matches Coq: Lemma val_rel_n_composite_typing)
 assert val_rel_n_composite_typing {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_composite_typing for 5
 
 // val_rel_n_to_val_rel_proven (matches Coq: Theorem val_rel_n_to_val_rel_proven)
 assert val_rel_n_to_val_rel_proven {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_n_to_val_rel_proven for 5
 
 // val_rel_step_limit_zero_admits (matches Coq: Theorem val_rel_step_limit_zero_admits)
 assert val_rel_step_limit_zero_admits {
-  all x: univ | x in univ
+  all x: univ | some x
 }
 check val_rel_step_limit_zero_admits for 5

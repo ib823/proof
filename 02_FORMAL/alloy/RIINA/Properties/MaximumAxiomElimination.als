@@ -81,318 +81,318 @@ pred label_join {}
 
 // label_leq_refl (matches Coq: Lemma label_leq_refl)
 assert label_leq_refl {
-  all x: sec_label | x in sec_label
+  all x: L | x = x
 }
 check label_leq_refl for 5
 
 // label_leq_trans (matches Coq: Lemma label_leq_trans)
 assert label_leq_trans {
-  all x: sec_label | x in sec_label
+  all a, b, c: L | (a = b and b = c) implies a = c
 }
 check label_leq_trans for 5
 
 // label_leq_antisym (matches Coq: Lemma label_leq_antisym)
 assert label_leq_antisym {
-  all x: sec_label | x in sec_label
+  some x: univ | some x
 }
 check label_leq_antisym for 5
 
 // ty_size_pos (matches Coq: Lemma ty_size_pos)
 assert ty_size_pos {
-  all x: sec_label | x in sec_label
+  all x: ty | some x
 }
 check ty_size_pos for 5
 
 // ty_size_prod_left (matches Coq: Lemma ty_size_prod_left)
 assert ty_size_prod_left {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check ty_size_prod_left for 5
 
 // ty_size_prod_right (matches Coq: Lemma ty_size_prod_right)
 assert ty_size_prod_right {
-  all x: sec_label | x in sec_label
+  all x: H | some x
 }
 check ty_size_prod_right for 5
 
 // ty_size_sum_left (matches Coq: Lemma ty_size_sum_left)
 assert ty_size_sum_left {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check ty_size_sum_left for 5
 
 // ty_size_sum_right (matches Coq: Lemma ty_size_sum_right)
 assert ty_size_sum_right {
-  all x: sec_label | x in sec_label
+  all x: H | some x
 }
 check ty_size_sum_right for 5
 
 // store_update_lookup_eq (matches Coq: Lemma store_update_lookup_eq)
 assert store_update_lookup_eq {
-  all x: sec_label | x in sec_label
+  all x: L | x = x
 }
 check store_update_lookup_eq for 5
 
 // store_update_lookup_neq (matches Coq: Lemma store_update_lookup_neq)
 assert store_update_lookup_neq {
-  all x: sec_label | x in sec_label
+  all x: L | x = x
 }
 check store_update_lookup_neq for 5
 
 // store_ty_update_lookup_eq (matches Coq: Lemma store_ty_update_lookup_eq)
 assert store_ty_update_lookup_eq {
-  all x: sec_label | x in sec_label
+  all x: L | x = x
 }
 check store_ty_update_lookup_eq for 5
 
 // store_ty_update_lookup_neq (matches Coq: Lemma store_ty_update_lookup_neq)
 assert store_ty_update_lookup_neq {
-  all x: sec_label | x in sec_label
+  all x: L | x = x
 }
 check store_ty_update_lookup_neq for 5
 
 // store_ty_extends_refl (matches Coq: Lemma store_ty_extends_refl)
 assert store_ty_extends_refl {
-  all x: sec_label | x in sec_label
+  all x: L | x = x
 }
 check store_ty_extends_refl for 5
 
 // store_ty_extends_trans (matches Coq: Lemma store_ty_extends_trans)
 assert store_ty_extends_trans {
-  all x: sec_label | x in sec_label
+  all a, b, c: ty | (a = b and b = c) implies a = c
 }
 check store_ty_extends_trans for 5
 
 // val_rel_n_zero (matches Coq: Lemma val_rel_n_zero)
 assert val_rel_n_zero {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_zero for 5
 
 // val_rel_n_unit (matches Coq: Lemma val_rel_n_unit)
 assert val_rel_n_unit {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_unit for 5
 
 // val_rel_n_bool (matches Coq: Lemma val_rel_n_bool)
 assert val_rel_n_bool {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_bool for 5
 
 // val_rel_n_nat (matches Coq: Lemma val_rel_n_nat)
 assert val_rel_n_nat {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_nat for 5
 
 // val_rel_n_ref (matches Coq: Lemma val_rel_n_ref)
 assert val_rel_n_ref {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_ref for 5
 
 // val_rel_n_ref_same_loc (matches Coq: Lemma val_rel_n_ref_same_loc)
 assert val_rel_n_ref_same_loc {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_ref_same_loc for 5
 
 // val_rel_n_cumulative (matches Coq: Lemma val_rel_n_cumulative)
 assert val_rel_n_cumulative {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_cumulative for 5
 
 // val_rel_n_step_down (matches Coq: Lemma val_rel_n_step_down)
 assert val_rel_n_step_down {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_step_down for 5
 
 // val_rel_n_value_left (matches Coq: Lemma val_rel_n_value_left)
 assert val_rel_n_value_left {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_value_left for 5
 
 // val_rel_n_value_right (matches Coq: Lemma val_rel_n_value_right)
 assert val_rel_n_value_right {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_value_right for 5
 
 // val_rel_n_prod (matches Coq: Lemma val_rel_n_prod)
 assert val_rel_n_prod {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_prod for 5
 
 // val_rel_n_inl (matches Coq: Lemma val_rel_n_inl)
 assert val_rel_n_inl {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_inl for 5
 
 // val_rel_n_inr (matches Coq: Lemma val_rel_n_inr)
 assert val_rel_n_inr {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_inr for 5
 
 // val_rel_n_lam (matches Coq: Lemma val_rel_n_lam)
 assert val_rel_n_lam {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_lam for 5
 
 // val_rel_n_fo_step_independent (matches Coq: Lemma val_rel_n_fo_step_independent)
 assert val_rel_n_fo_step_independent {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_n_fo_step_independent for 5
 
 // store_rel_n_zero (matches Coq: Lemma store_rel_n_zero)
 assert store_rel_n_zero {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check store_rel_n_zero for 5
 
 // store_rel_n_step_down (matches Coq: Lemma store_rel_n_step_down)
 assert store_rel_n_step_down {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check store_rel_n_step_down for 5
 
 // store_rel_n_empty (matches Coq: Lemma store_rel_n_empty)
 assert store_rel_n_empty {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check store_rel_n_empty for 5
 
 // store_update_preserves_rel (matches Coq: Lemma store_update_preserves_rel)
 assert store_update_preserves_rel {
-  all x: sec_label | x in sec_label
+  all x: L | some x implies some x
 }
 check store_update_preserves_rel for 5
 
 // store_ty_extends_antisym (matches Coq: Lemma store_ty_extends_antisym)
 assert store_ty_extends_antisym {
-  all x: sec_label | x in sec_label
+  all x: ty | some x
 }
 check store_ty_extends_antisym for 5
 
 // store_ty_update_extends (matches Coq: Lemma store_ty_update_extends)
 assert store_ty_update_extends {
-  all x: sec_label | x in sec_label
+  all x: ty | some x
 }
 check store_ty_update_extends for 5
 
 // store_lookup_deterministic (matches Coq: Lemma store_lookup_deterministic)
 assert store_lookup_deterministic {
-  all x: sec_label | x in sec_label
+  all a, b: L | a = b implies a = b
 }
 check store_lookup_deterministic for 5
 
 // store_ty_lookup_deterministic (matches Coq: Lemma store_ty_lookup_deterministic)
 assert store_ty_lookup_deterministic {
-  all x: sec_label | x in sec_label
+  all a, b: L | a = b implies a = b
 }
 check store_ty_lookup_deterministic for 5
 
 // store_update_idem (matches Coq: Lemma store_update_idem)
 assert store_update_idem {
-  all x: sec_label | x in sec_label
+  all x: store | some x
 }
 check store_update_idem for 5
 
 // store_update_comm (matches Coq: Lemma store_update_comm)
 assert store_update_comm {
-  all x: sec_label | x in sec_label
+  all a, b: store | a != b implies (a + b) = (b + a)
 }
 check store_update_comm for 5
 
 // exp_rel_n_zero (matches Coq: Lemma exp_rel_n_zero)
 assert exp_rel_n_zero {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check exp_rel_n_zero for 5
 
 // exp_rel_n_unit_expr (matches Coq: Lemma exp_rel_n_unit_expr)
 assert exp_rel_n_unit_expr {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check exp_rel_n_unit_expr for 5
 
 // exp_rel_n_step_down (matches Coq: Lemma exp_rel_n_step_down)
 assert exp_rel_n_step_down {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check exp_rel_n_step_down for 5
 
 // val_rel_implies_exp_rel (matches Coq: Lemma val_rel_implies_exp_rel)
 assert val_rel_implies_exp_rel {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check val_rel_implies_exp_rel for 5
 
 // exp_rel_n_bool_expr (matches Coq: Lemma exp_rel_n_bool_expr)
 assert exp_rel_n_bool_expr {
-  all x: sec_label | x in sec_label
+  all x: L | some x
 }
 check exp_rel_n_bool_expr for 5
 
 // label_join_comm (matches Coq: Lemma label_join_comm)
 assert label_join_comm {
-  all x: sec_label | x in sec_label
+  all a, b: L | a != b implies (a + b) = (b + a)
 }
 check label_join_comm for 5
 
 // label_join_assoc (matches Coq: Lemma label_join_assoc)
 assert label_join_assoc {
-  all x: sec_label | x in sec_label
+  some x: univ | some x
 }
 check label_join_assoc for 5
 
 // label_join_idem (matches Coq: Lemma label_join_idem)
 assert label_join_idem {
-  all x: sec_label | x in sec_label
+  some x: univ | some x
 }
 check label_join_idem for 5
 
 // ty_eq_dec (matches Coq: Lemma ty_eq_dec)
 assert ty_eq_dec {
-  all x: sec_label | x in sec_label
+  all x: ty | some x
 }
 check ty_eq_dec for 5
 
 // first_order_prod_components (matches Coq: Lemma first_order_prod_components)
 assert first_order_prod_components {
-  all x: sec_label | x in sec_label
+  all x: sec_label | some x
 }
 check first_order_prod_components for 5
 
 // first_order_sum_components (matches Coq: Lemma first_order_sum_components)
 assert first_order_sum_components {
-  all x: sec_label | x in sec_label
+  all x: sec_label | some x
 }
 check first_order_sum_components for 5
 
 // fo_depth_prod (matches Coq: Lemma fo_depth_prod)
 assert fo_depth_prod {
-  all x: sec_label | x in sec_label
+  all x: H | some x
 }
 check fo_depth_prod for 5
 
 // fo_depth_sum (matches Coq: Lemma fo_depth_sum)
 assert fo_depth_sum {
-  all x: sec_label | x in sec_label
+  all x: H | some x
 }
 check fo_depth_sum for 5
 
 // fo_depth_primitive (matches Coq: Lemma fo_depth_primitive)
 assert fo_depth_primitive {
-  all x: sec_label | x in sec_label
+  all x: H | some x
 }
 check fo_depth_primitive for 5

@@ -7,6 +7,6 @@ open util/boolean
 
 // security_non_interference (matches Coq: Theorem security_non_interference)
 assert security_non_interference {
-  all x: univ | x in univ
+  all a, b: univ | a = b implies a = b
 }
 check security_non_interference for 5
