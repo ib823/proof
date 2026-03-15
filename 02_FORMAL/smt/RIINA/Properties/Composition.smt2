@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; RIINA Composition — SMT Verification
-; Auto-generated from 02_FORMAL/coq/properties/Composition.v (6 assertions)
+; Derived from 02_FORMAL/coq/properties/Composition.v (6 assertions)
 ; Module: Composition
 ;
 ; Real verification: datatype invariants, guard completeness,

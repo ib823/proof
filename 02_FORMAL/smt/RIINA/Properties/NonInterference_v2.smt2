@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; RIINA NonInterference_v2 — SMT Verification
-; Auto-generated from 02_FORMAL/coq/properties/NonInterference_v2.v (50 assertions)
+; Derived from 02_FORMAL/coq/properties/NonInterference_v2.v (50 assertions)
 ; Module: NonInterference_v2
 ;
 ; Real verification: datatype invariants, guard completeness,

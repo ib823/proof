@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; RIINA ValRelStepLimit_PROOF — SMT Verification
-; Auto-generated from 02_FORMAL/coq/properties/ValRelStepLimit_PROOF.v (7 assertions)
+; Derived from 02_FORMAL/coq/properties/ValRelStepLimit_PROOF.v (7 assertions)
 ; Module: ValRelStepLimit_PROOF
 ;
 ; Real verification: datatype invariants, guard completeness,

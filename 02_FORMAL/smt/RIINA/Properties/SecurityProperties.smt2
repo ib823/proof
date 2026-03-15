@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; RIINA SecurityProperties — SMT Verification
-; Auto-generated from 02_FORMAL/coq/properties/SecurityProperties.v (1 assertions)
+; Derived from 02_FORMAL/coq/properties/SecurityProperties.v (1 assertions)
 ; Module: SecurityProperties
 ;
 ; Real verification: datatype invariants, guard completeness,

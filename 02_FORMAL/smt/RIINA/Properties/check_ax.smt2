@@ -1,6 +1,6 @@
 ; Copyright (c) 2026 The RIINA Authors. All rights reserved.
 ; RIINA check_ax — SMT Verification
-; Auto-generated from 02_FORMAL/coq/properties/check_ax.v (0 assertions)
+; Derived from 02_FORMAL/coq/properties/check_ax.v (0 assertions)
 ; Module: check_ax
 ;
 ; Real verification: datatype invariants, guard completeness,
