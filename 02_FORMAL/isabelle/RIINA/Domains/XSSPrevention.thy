@@ -12,17 +12,17 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | XSSContext         | xss_context            | OK     |
- * | TaintLevel         | taint_level            | OK     |
- * | OutputEncoding     | output_encoding        | OK     |
- * | ContentSecurityPolicy | content_security_policy | OK     |
- * | DOMSanitizer       | dom_sanitizer          | OK     |
- * | InputValidator     | input_validator        | OK     |
- * | TaintedString      | tainted_string         | OK     |
- * | XSSConfig          | xss_config             | OK     |
- * | ReflectedXSSScenario | reflected_xss_scenario | OK     |
- * | StoredXSSScenario  | stored_xss_scenario    | OK     |
- * | DOMBasedXSSScenario | dom_based_xss_scenario | OK     |
+ * | xss_context         | xss_context            | OK     |
+ * | taint_level         | taint_level            | OK     |
+ * | output_encoding     | output_encoding        | OK     |
+ * | content_security_policy | content_security_policy | OK     |
+ * | dom_sanitizer       | dom_sanitizer          | OK     |
+ * | input_validator     | input_validator        | OK     |
+ * | tainted_string      | tainted_string         | OK     |
+ * | xss_config          | xss_config             | OK     |
+ * | reflected_xss_scenario | reflected_xss_scenario | OK     |
+ * | stored_xss_scenario  | stored_xss_scenario    | OK     |
+ * | dom_based_xss_scenario | dom_based_xss_scenario | OK     |
  * | output_safe        | output_safe            | OK     |
  * | csp_enforced       | csp_enforced           | OK     |
  * | csp_maximum        | csp_maximum            | OK     |
@@ -232,7 +232,7 @@ theory XSSPrevention
   imports Main CoqCompat
 begin
 
-(* XSSContext (matches Coq: Inductive XSSContext) *)
+(* xss_context (matches Coq: Inductive xss_context) *)
 datatype xss_context =
     CtxHTML
   |     CtxAttribute
@@ -240,21 +240,21 @@ datatype xss_context =
   |     CtxCSS
   |     CtxURL
 
-(* TaintLevel (matches Coq: Inductive TaintLevel) *)
+(* taint_level (matches Coq: Inductive taint_level) *)
 datatype taint_level =
     TaintUntrusted
   |     TaintValidated
   |     TaintSanitized
   |     TaintTrusted
 
-(* OutputEncoding (matches Coq: Record OutputEncoding) *)
+(* output_encoding (matches Coq: Record output_encoding) *)
 record output_encoding =
   oe_html_escape :: bool
   oe_js_escape :: bool
   oe_url_encode :: bool
   oe_css_escape :: bool
 
-(* ContentSecurityPolicy (matches Coq: Record ContentSecurityPolicy) *)
+(* content_security_policy (matches Coq: Record content_security_policy) *)
 record content_security_policy =
   csp_script_src :: bool
   csp_style_src :: bool
@@ -264,7 +264,7 @@ record content_security_policy =
   csp_frame_ancestors :: bool
   csp_report_uri :: bool
 
-(* DOMSanitizer (matches Coq: Record DOMSanitizer) *)
+(* dom_sanitizer (matches Coq: Record dom_sanitizer) *)
 record dom_sanitizer =
   dom_remove_scripts :: bool
   dom_remove_event_handlers :: bool
@@ -272,41 +272,41 @@ record dom_sanitizer =
   dom_allowlist_tags :: bool
   dom_allowlist_attrs :: bool
 
-(* InputValidator (matches Coq: Record InputValidator) *)
+(* input_validator (matches Coq: Record input_validator) *)
 record input_validator =
   iv_max_length :: nat
   iv_encoding_validation :: bool
   iv_strip_null_bytes :: bool
   iv_normalize_unicode :: bool
 
-(* TaintedString (matches Coq: Record TaintedString) *)
+(* tainted_string (matches Coq: Record tainted_string) *)
 record tainted_string =
   ts_data :: 'a list
-  ts_taint :: TaintLevel
-  ts_context :: XSSContext
+  ts_taint :: taint_level
+  ts_context :: xss_context
 
-(* XSSConfig (matches Coq: Record XSSConfig) *)
+(* xss_config (matches Coq: Record xss_config) *)
 record xss_config =
-  xss_output :: OutputEncoding
-  xss_csp :: ContentSecurityPolicy
-  xss_dom :: DOMSanitizer
-  xss_input :: InputValidator
+  xss_output :: output_encoding
+  xss_csp :: content_security_policy
+  xss_dom :: dom_sanitizer
+  xss_input :: input_validator
   xss_dom_sanitization :: bool
 
-(* ReflectedXSSScenario (matches Coq: Record ReflectedXSSScenario) *)
+(* reflected_xss_scenario (matches Coq: Record reflected_xss_scenario) *)
 record reflected_xss_scenario =
-  rx_input_taint :: TaintLevel
+  rx_input_taint :: taint_level
   rx_sanitization_applied :: bool
   rx_output_encoded :: bool
 
-(* StoredXSSScenario (matches Coq: Record StoredXSSScenario) *)
+(* stored_xss_scenario (matches Coq: Record stored_xss_scenario) *)
 record stored_xss_scenario =
   sx_input_validated :: bool
   sx_storage_sanitized :: bool
   sx_retrieval_encoded :: bool
   sx_output_context_aware :: bool
 
-(* DOMBasedXSSScenario (matches Coq: Record DOMBasedXSSScenario) *)
+(* dom_based_xss_scenario (matches Coq: Record dom_based_xss_scenario) *)
 record dom_based_xss_scenario =
   dx_source_sanitized :: bool
   dx_sink_safe :: bool

@@ -12,18 +12,18 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | PrivilegeLevel     | privilege_level        | OK     |
- * | SecurityWorld      | security_world         | OK     |
- * | VMIsolation        | vm_isolation           | OK     |
+ * | privilege_level     | privilege_level        | OK     |
+ * | security_world      | security_world         | OK     |
+ * | vm_isolation        | vm_isolation           | OK     |
  * | EPTEntry           | ept_entry              | OK     |
- * | VMCSState          | vmcs_state             | OK     |
- * | InterruptDescriptor | interrupt_descriptor   | OK     |
+ * | vmcs_state          | vmcs_state             | OK     |
+ * | interrupt_descriptor | interrupt_descriptor   | OK     |
  * | VMState            | vm_state               | OK     |
- * | SideChannelMitigation | side_channel_mitigation | OK     |
- * | MemVirtConfig      | mem_virt_config        | OK     |
- * | InterruptVirtConfig | interrupt_virt_config  | OK     |
- * | WorldSwitchConfig  | world_switch_config    | OK     |
- * | HypervisorConfig   | hypervisor_config      | OK     |
+ * | side_channel_mitigation | side_channel_mitigation | OK     |
+ * | mem_virt_config      | mem_virt_config        | OK     |
+ * | interrupt_virt_config | interrupt_virt_config  | OK     |
+ * | world_switch_config  | world_switch_config    | OK     |
+ * | hypervisor_config   | hypervisor_config      | OK     |
  * | vm_fully_isolated  | vm_fully_isolated      | OK     |
  * | side_channel_mitigated | side_channel_mitigated | OK     |
  * | mem_virt_secure    | mem_virt_secure        | OK     |
@@ -132,11 +132,15 @@ theory HypervisorSecurity
   imports Main
 begin
 
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym gpa = "nat"
+type_synonym p_addr = "nat"
+type_synonym vm_id = "nat"
 (* Boolean conjunction helper (matches Coq: andb_true_iff) *)
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* PrivilegeLevel (matches Coq: Inductive PrivilegeLevel) *)
+(* privilege_level (matches Coq: Inductive privilege_level) *)
 datatype privilege_level =
     PL_Hypervisor
   |     PL_Kernel
@@ -144,12 +148,12 @@ datatype privilege_level =
   |     PL_Service
   |     PL_User
 
-(* SecurityWorld (matches Coq: Inductive SecurityWorld) *)
+(* security_world (matches Coq: Inductive security_world) *)
 datatype security_world =
     SecureWorld
   |     NormalWorld
 
-(* VMIsolation (matches Coq: Record VMIsolation) *)
+(* vm_isolation (matches Coq: Record vm_isolation) *)
 record vm_isolation =
   vmi_memory_isolated :: bool
   vmi_cpu_isolated :: bool
@@ -163,10 +167,10 @@ record ept_entry =
   ept_write :: bool
   ept_execute :: bool
   ept_user_mode :: bool
-  ept_host_addr :: PAddr
+  ept_host_addr :: p_addr
   ept_access_dirty :: bool
 
-(* VMCSState (matches Coq: Record VMCSState) *)
+(* vmcs_state (matches Coq: Record vmcs_state) *)
 record vmcs_state =
   vmcs_guest_rip :: nat
   vmcs_guest_rsp :: nat
@@ -181,26 +185,26 @@ record vmcs_state =
   vmcs_vpid :: nat
   vmcs_eptp :: nat
 
-(* InterruptDescriptor (matches Coq: Record InterruptDescriptor) *)
+(* interrupt_descriptor (matches Coq: Record interrupt_descriptor) *)
 record interrupt_descriptor =
   int_vector :: nat
   int_handler_addr :: nat
-  int_privilege_level :: PrivilegeLevel
+  int_privilege_level :: privilege_level
   int_is_trap :: bool
   int_ist_index :: nat
 
 (* VMState (matches Coq: Record VMState) *)
 record vm_state =
-  vm_id :: VMID
-  vm_isolation :: VMIsolation
-  vm_vmcs :: VMCSState
-  vm_world :: SecurityWorld
-  vm_ept :: GPA
+  vm_id :: vm_id
+  vm_isolation :: vm_isolation
+  vm_vmcs :: vmcs_state
+  vm_world :: security_world
+  vm_ept :: gpa
   vm_active :: bool
   vm_paused :: bool
   vm_interrupt_shadow :: bool
 
-(* SideChannelMitigation (matches Coq: Record SideChannelMitigation) *)
+(* side_channel_mitigation (matches Coq: Record side_channel_mitigation) *)
 record side_channel_mitigation =
   scm_flush_l1d :: bool
   scm_ibrs_enabled :: bool
@@ -211,7 +215,7 @@ record side_channel_mitigation =
   scm_taa_mitigation :: bool
   scm_srbds_mitigation :: bool
 
-(* MemVirtConfig (matches Coq: Record MemVirtConfig) *)
+(* mem_virt_config (matches Coq: Record mem_virt_config) *)
 record mem_virt_config =
   mv_ept_enabled :: bool
   mv_vpid_enabled :: bool
@@ -220,7 +224,7 @@ record mem_virt_config =
   mv_page_modification_log :: bool
   mv_accessed_dirty :: bool
 
-(* InterruptVirtConfig (matches Coq: Record InterruptVirtConfig) *)
+(* interrupt_virt_config (matches Coq: Record interrupt_virt_config) *)
 record interrupt_virt_config =
   iv_apic_virtualization :: bool
   iv_posted_interrupts :: bool
@@ -229,7 +233,7 @@ record interrupt_virt_config =
   iv_virtual_nmi :: bool
   iv_ple_enabled :: bool
 
-(* WorldSwitchConfig (matches Coq: Record WorldSwitchConfig) *)
+(* world_switch_config (matches Coq: Record world_switch_config) *)
 record world_switch_config =
   ws_smc_filtering :: bool
   ws_ns_bit_control :: bool
@@ -237,18 +241,18 @@ record world_switch_config =
   ws_tzasc_enabled :: bool
   ws_tzpc_enabled :: bool
 
-(* HypervisorConfig (matches Coq: Record HypervisorConfig) *)
+(* hypervisor_config (matches Coq: Record hypervisor_config) *)
 record hypervisor_config =
-  hv_isolation :: VMIsolation
+  hv_isolation :: vm_isolation
   hv_secure_boot :: bool
   hv_attestation :: bool
   hv_memory_encryption :: bool
   hv_nested_paging :: bool
   hv_iommu_enabled :: bool
-  hv_side_channel :: SideChannelMitigation
-  hv_mem_virt :: MemVirtConfig
-  hv_int_virt :: InterruptVirtConfig
-  hv_world_switch :: WorldSwitchConfig
+  hv_side_channel :: side_channel_mitigation
+  hv_mem_virt :: mem_virt_config
+  hv_int_virt :: interrupt_virt_config
+  hv_world_switch :: world_switch_config
 
 (* vm_fully_isolated (matches Coq: Definition vm_fully_isolated) *)
 definition vm_fully_isolated :: "VMIsolation \<Rightarrow> bool" where

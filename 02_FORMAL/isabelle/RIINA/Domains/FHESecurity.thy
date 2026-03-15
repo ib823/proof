@@ -12,27 +12,27 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | HomomorphicOps     | homomorphic_ops        | OK     |
- * | FHESecurityProps   | fhe_security_props     | OK     |
- * | NoiseManagement    | noise_management       | OK     |
- * | FHEConfig          | fhe_config             | OK     |
- * | INDCPAGame         | indcpa_game            | OK     |
- * | SemanticSecurity   | semantic_security      | OK     |
- * | HomAddition        | hom_addition           | OK     |
- * | HomMultiplication  | hom_multiplication     | OK     |
- * | HomOperations      | hom_operations         | OK     |
- * | NoiseModel         | noise_model            | OK     |
- * | NoiseBound         | noise_bound            | OK     |
- * | BootstrappingConfig | bootstrapping_config   | OK     |
- * | UnlimitedFHE       | unlimited_fhe          | OK     |
- * | KeyGenParams       | key_gen_params         | OK     |
- * | FHEKeyPair         | fhe_key_pair           | OK     |
- * | FHECiphertext      | fhe_ciphertext         | OK     |
- * | CiphertextAfterOp  | ciphertext_after_op    | OK     |
- * | CompleteFHESystem  | complete_fhe_system    | OK     |
- * | CircularSecurity   | circular_security      | OK     |
- * | LWEHardness        | lwe_hardness           | OK     |
- * | RLWEConfig         | rlwe_config            | OK     |
+ * | homomorphic_ops     | homomorphic_ops        | OK     |
+ * | fhe_security_props   | fhe_security_props     | OK     |
+ * | noise_management    | noise_management       | OK     |
+ * | fhe_config          | fhe_config             | OK     |
+ * | indcpa_game         | indcpa_game            | OK     |
+ * | semantic_security   | semantic_security      | OK     |
+ * | hom_addition        | hom_addition           | OK     |
+ * | hom_multiplication  | hom_multiplication     | OK     |
+ * | hom_operations      | hom_operations         | OK     |
+ * | noise_model         | noise_model            | OK     |
+ * | noise_bound         | noise_bound            | OK     |
+ * | bootstrapping_config | bootstrapping_config   | OK     |
+ * | unlimited_fhe       | unlimited_fhe          | OK     |
+ * | key_gen_params       | key_gen_params         | OK     |
+ * | fhe_key_pair         | fhe_key_pair           | OK     |
+ * | fhe_ciphertext      | fhe_ciphertext         | OK     |
+ * | ciphertext_after_op  | ciphertext_after_op    | OK     |
+ * | complete_fhe_system  | complete_fhe_system    | OK     |
+ * | circular_security   | circular_security      | OK     |
+ * | lwe_hardness        | lwe_hardness           | OK     |
+ * | rlwe_config         | rlwe_config            | OK     |
  * | ops_fully_homomorphic | ops_fully_homomorphic  | OK     |
  * | fhe_security_complete | fhe_security_complete  | OK     |
  * | noise_managed      | noise_managed          | OK     |
@@ -175,82 +175,82 @@
  *)
 
 theory FHESecurity
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics
 begin
 
-(* HomomorphicOps (matches Coq: Record HomomorphicOps) *)
+(* homomorphic_ops (matches Coq: Record homomorphic_ops) *)
 record homomorphic_ops =
   ho_addition :: bool
   ho_multiplication :: bool
   ho_arbitrary_depth :: bool
 
-(* FHESecurityProps (matches Coq: Record FHESecurityProps) *)
+(* fhe_security_props (matches Coq: Record fhe_security_props) *)
 record fhe_security_props =
   fhe_ind_cpa :: bool
   fhe_circular_secure :: bool
   fhe_semantic_secure :: bool
 
-(* NoiseManagement (matches Coq: Record NoiseManagement) *)
+(* noise_management (matches Coq: Record noise_management) *)
 record noise_management =
   nm_bootstrapping :: bool
   nm_modulus_switching :: bool
   nm_noise_bounded :: bool
 
-(* FHEConfig (matches Coq: Record FHEConfig) *)
+(* fhe_config (matches Coq: Record fhe_config) *)
 record fhe_config =
-  fhe_ops :: HomomorphicOps
-  fhe_security :: FHESecurityProps
-  fhe_noise :: NoiseManagement
+  fhe_ops :: homomorphic_ops
+  fhe_security :: fhe_security_props
+  fhe_noise :: noise_management
   fhe_lattice_based :: bool
   fhe_post_quantum :: bool
 
-(* INDCPAGame (matches Coq: Record INDCPAGame) *)
+(* indcpa_game (matches Coq: Record indcpa_game) *)
 record indcpa_game =
   icpa_key_size :: nat
   icpa_challenge_bit :: bool
   icpa_encryption_oracle :: bool
   icpa_distinguisher_adv :: nat
 
-(* SemanticSecurity (matches Coq: Record SemanticSecurity) *)
+(* semantic_security (matches Coq: Record semantic_security) *)
 record semantic_security =
   ss_message_space :: nat
   ss_ciphertext_space :: nat
   ss_indistinguishable :: bool
   ss_randomized :: bool
 
-(* HomAddition (matches Coq: Record HomAddition) *)
+(* hom_addition (matches Coq: Record hom_addition) *)
 record hom_addition =
   ha_plaintext_modulus :: nat
   ha_ciphertext_modulus :: nat
   ha_preserves_structure :: bool
 
-(* HomMultiplication (matches Coq: Record HomMultiplication) *)
+(* hom_multiplication (matches Coq: Record hom_multiplication) *)
 record hom_multiplication =
   hm_plaintext_modulus :: nat
   hm_ciphertext_modulus :: nat
   hm_relinearization :: bool
   hm_key_switching :: bool
 
-(* HomOperations (matches Coq: Record HomOperations) *)
+(* hom_operations (matches Coq: Record hom_operations) *)
 record hom_operations =
-  hops_addition :: HomAddition
-  hops_multiplication :: HomMultiplication
+  hops_addition :: hom_addition
+  hops_multiplication :: hom_multiplication
   hops_composition :: bool
 
-(* NoiseModel (matches Coq: Record NoiseModel) *)
+(* noise_model (matches Coq: Record noise_model) *)
 record noise_model =
   noise_initial :: nat
   noise_add_growth :: nat
   noise_mult_growth :: nat
   noise_threshold :: nat
 
-(* NoiseBound (matches Coq: Record NoiseBound) *)
+(* noise_bound (matches Coq: Record noise_bound) *)
 record noise_bound =
   nb_max_additions :: nat
   nb_max_multiplications :: nat
   nb_modulus :: nat
 
-(* BootstrappingConfig (matches Coq: Record BootstrappingConfig) *)
+(* bootstrapping_config (matches Coq: Record bootstrapping_config) *)
 record bootstrapping_config =
   bs_reduces_noise :: bool
   bs_preserves_message :: bool
@@ -258,27 +258,27 @@ record bootstrapping_config =
   bs_noise_output :: nat
   bs_noise_input_max :: nat
 
-(* UnlimitedFHE (matches Coq: Record UnlimitedFHE) *)
+(* unlimited_fhe (matches Coq: Record unlimited_fhe) *)
 record unlimited_fhe =
-  ufhe_bootstrap_config :: BootstrappingConfig
-  ufhe_noise_model :: NoiseModel
+  ufhe_bootstrap_config :: bootstrapping_config
+  ufhe_noise_model :: noise_model
   ufhe_leveled_depth :: nat
 
-(* KeyGenParams (matches Coq: Record KeyGenParams) *)
+(* key_gen_params (matches Coq: Record key_gen_params) *)
 record key_gen_params =
   kg_security_parameter :: nat
   kg_polynomial_degree :: nat
   kg_error_distribution :: nat
   kg_modulus_bits :: nat
 
-(* FHEKeyPair (matches Coq: Record FHEKeyPair) *)
+(* fhe_key_pair (matches Coq: Record fhe_key_pair) *)
 record fhe_key_pair =
   kp_public :: nat
   kp_secret :: nat
   kp_evaluation :: nat
-  kp_params :: KeyGenParams
+  kp_params :: key_gen_params
 
-(* FHECiphertext (matches Coq: Record FHECiphertext) *)
+(* fhe_ciphertext (matches Coq: Record fhe_ciphertext) *)
 record fhe_ciphertext =
   ct_polynomial_0 :: nat
   ct_polynomial_1 :: nat
@@ -286,35 +286,35 @@ record fhe_ciphertext =
   ct_level :: nat
   ct_valid_encryption :: bool
 
-(* CiphertextAfterOp (matches Coq: Record CiphertextAfterOp) *)
+(* ciphertext_after_op (matches Coq: Record ciphertext_after_op) *)
 record ciphertext_after_op =
-  cao_original :: FHECiphertext
-  cao_result :: FHECiphertext
+  cao_original :: fhe_ciphertext
+  cao_result :: fhe_ciphertext
   cao_operation :: nat
 
-(* CompleteFHESystem (matches Coq: Record CompleteFHESystem) *)
+(* complete_fhe_system (matches Coq: Record complete_fhe_system) *)
 record complete_fhe_system =
-  cfhe_config :: FHEConfig
-  cfhe_keygen :: KeyGenParams
-  cfhe_noise :: NoiseModel
-  cfhe_bootstrap :: BootstrappingConfig
-  cfhe_operations :: HomOperations
-  cfhe_indcpa :: INDCPAGame
+  cfhe_config :: fhe_config
+  cfhe_keygen :: key_gen_params
+  cfhe_noise :: noise_model
+  cfhe_bootstrap :: bootstrapping_config
+  cfhe_operations :: hom_operations
+  cfhe_indcpa :: indcpa_game
 
-(* CircularSecurity (matches Coq: Record CircularSecurity) *)
+(* circular_security (matches Coq: Record circular_security) *)
 record circular_security =
   cs_key_encryption_safe :: bool
   cs_kDM_secure :: bool
   cs_multi_key :: bool
 
-(* LWEHardness (matches Coq: Record LWEHardness) *)
+(* lwe_hardness (matches Coq: Record lwe_hardness) *)
 record lwe_hardness =
   lwe_dimension :: nat
   lwe_modulus :: nat
   lwe_error_rate :: nat
   lwe_assumed_hard :: bool
 
-(* RLWEConfig (matches Coq: Record RLWEConfig) *)
+(* rlwe_config (matches Coq: Record rlwe_config) *)
 record rlwe_config =
   rlwe_ring_degree :: nat
   rlwe_modulus :: nat
@@ -426,7 +426,7 @@ definition riina_noise_model :: "NoiseModel" where
   "riina_noise_model \<equiv> mkNoiseModel 10 2 2 100000"
 
 (* noise_bound_valid (matches Coq: Definition noise_bound_valid) *)
-definition noise_bound_valid :: "NoiseModel \<Rightarrow> NoiseBound \<Rightarrow> bool" where
+definition noise_bound_valid :: "NoiseModel \<Rightarrow> noise_bound \<Rightarrow> bool" where
   "noise_bound_valid nm nb \<equiv> noise_safe nm (noise_after_additions nm (nb_max_additions nb)) \<and>
   noise_safe nm (noise_after_multiplications nm (nb_max_multiplications nb))"
 
@@ -474,7 +474,7 @@ definition riina_keypair :: "FHEKeyPair" where
   "riina_keypair \<equiv> mkFHEKeyPair 12345 67890 11111 riina_keygen"
 
 (* ciphertext_valid (matches Coq: Definition ciphertext_valid) *)
-definition ciphertext_valid :: "FHECiphertext \<Rightarrow> NoiseModel \<Rightarrow> bool" where
+definition ciphertext_valid :: "FHECiphertext \<Rightarrow> noise_model \<Rightarrow> bool" where
   "ciphertext_valid ct nm \<equiv> ct_valid_encryption ct \<and>
   noise_safe nm (ct_noise_estimate ct) \<and>
   (0 <? ct_level ct)"
@@ -484,7 +484,7 @@ definition riina_ciphertext :: "FHECiphertext" where
   "riina_ciphertext \<equiv> mkFHECiphertext 1000 2000 50 10 True"
 
 (* op_preserves_validity (matches Coq: Definition op_preserves_validity) *)
-definition op_preserves_validity :: "CiphertextAfterOp \<Rightarrow> NoiseModel \<Rightarrow> bool" where
+definition op_preserves_validity :: "CiphertextAfterOp \<Rightarrow> noise_model \<Rightarrow> bool" where
   "op_preserves_validity cao nm \<equiv> ciphertext_valid (cao_original cao) nm \<and>
   ciphertext_valid (cao_result cao) nm"
 

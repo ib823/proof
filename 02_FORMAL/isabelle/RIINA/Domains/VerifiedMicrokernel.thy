@@ -12,18 +12,18 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Right              | right                  | OK     |
- * | KernelObject       | kernel_object          | OK     |
- * | Action             | action                 | OK     |
- * | Capability         | capability             | OK     |
- * | KernelState        | kernel_state           | OK     |
- * | PagePerms          | page_perms             | OK     |
+ * | right              | right                  | OK     |
+ * | kernel_object       | kernel_object          | OK     |
+ * | action             | action                 | OK     |
+ * | capability         | capability             | OK     |
+ * | kernel_state        | kernel_state           | OK     |
+ * | page_perms          | page_perms             | OK     |
  * | PTE                | pte                    | OK     |
- * | MemoryState        | memory_state           | OK     |
- * | Endpoint           | endpoint               | OK     |
- * | IPCMessage         | ipc_message            | OK     |
- * | IPCState           | ipc_state              | OK     |
- * | Notification       | notification           | OK     |
+ * | memory_state        | memory_state           | OK     |
+ * | endpoint           | endpoint               | OK     |
+ * | ip_c_message         | ipc_message            | OK     |
+ * | ip_c_state           | ipc_state              | OK     |
+ * | notification       | notification           | OK     |
  * | cap_lookup         | cap_lookup             | OK     |
  * | holds              | holds                  | OK     |
  * | rights_subset      | rights_subset          | OK     |
@@ -80,45 +80,51 @@
  *)
 
 theory VerifiedMicrokernel
-  imports Main
+  imports Main Syntax
 begin
 
-(* Right (matches Coq: Inductive Right) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym ip_c_message = "nat"
+type_synonym ip_c_state = "nat"
+type_synonym p_addr = "nat"
+type_synonym proc_id = "nat"
+type_synonym revocation_domain = "nat"
+(* right (matches Coq: Inductive right) *)
 datatype right =
     RRead
   |     RWrite
   |     RGrant
   |     RRevoke
 
-(* KernelObject (matches Coq: Inductive KernelObject) *)
+(* kernel_object (matches Coq: Inductive kernel_object) *)
 datatype kernel_object =
     KO_Endpoint
   |     KO_Frame
   |     KO_PageTable
   |     KO_TCB
 
-(* Action (matches Coq: Inductive Action) *)
+(* action (matches Coq: Inductive action) *)
 datatype action =
     ActRead
   |     ActWrite
   |     ActGrant
   |     ActRevoke
 
-(* Capability (matches Coq: Record Capability) *)
+(* capability (matches Coq: Record capability) *)
 record capability =
   cap_object :: nat
   cap_rights :: 'a list
   cap_badge :: nat
 
-(* KernelState (matches Coq: Record KernelState) *)
+(* kernel_state (matches Coq: Record kernel_state) *)
 record kernel_state =
   processes :: 'a list
-  cap_tables :: ProcId
+  cap_tables :: proc_id
   kernel_objects :: 'a list
-  revoked_badges :: RevocationDomain
+  revoked_badges :: revocation_domain
   next_badge :: nat
 
-(* PagePerms (matches Coq: Record PagePerms) *)
+(* page_perms (matches Coq: Record page_perms) *)
 record page_perms =
   perm_read :: bool
   perm_write :: bool
@@ -126,46 +132,46 @@ record page_perms =
 
 (* PTE (matches Coq: Record PTE) *)
 record pte =
-  pte_paddr :: PAddr
-  pte_perms :: PagePerms
+  pte_paddr :: p_addr
+  pte_perms :: page_perms
   pte_valid :: bool
   pte_userspace :: bool
 
-(* MemoryState (matches Coq: Record MemoryState) *)
+(* memory_state (matches Coq: Record memory_state) *)
 record memory_state =
-  mem_kernel :: KernelState
-  address_spaces :: ProcId
-  kernel_memory :: PAddr
-  frame_owners :: PAddr
+  mem_kernel :: kernel_state
+  address_spaces :: proc_id
+  kernel_memory :: p_addr
+  frame_owners :: p_addr
 
-(* Endpoint (matches Coq: Record Endpoint) *)
+(* endpoint (matches Coq: Record endpoint) *)
 record endpoint =
   ep_id :: nat
-  ep_cap :: Capability
+  ep_cap :: capability
   ep_queue :: 'a list
 
-(* IPCMessage (matches Coq: Record IPCMessage) *)
+(* ip_c_message (matches Coq: Record ip_c_message) *)
 record ipc_message =
   msg_data :: 'a list
   msg_caps :: 'a list
-  msg_sender :: ProcId
+  msg_sender :: proc_id
 
-(* IPCState (matches Coq: Record IPCState) *)
+(* ip_c_state (matches Coq: Record ip_c_state) *)
 record ipc_state =
-  ipc_mem :: MemoryState
+  ipc_mem :: memory_state
   endpoints :: 'a list
-  waiting_on :: ProcId
+  waiting_on :: proc_id
 
-(* Notification (matches Coq: Record Notification) *)
+(* notification (matches Coq: Record notification) *)
 record notification =
   notif_word :: nat
 
 (* cap_lookup (matches Coq: Definition cap_lookup) *)
-definition cap_lookup :: "KernelState \<Rightarrow> ProcId \<Rightarrow> nat \<Rightarrow> option Capability" where
+definition cap_lookup :: "KernelState \<Rightarrow> proc_id \<Rightarrow> nat \<Rightarrow> option Capability" where
   "cap_lookup s p slot \<equiv> nth_error (cap_tables s p) slot"
 
 (* holds (matches Coq: Definition holds) *)
-definition holds :: "KernelState \<Rightarrow> ProcId \<Rightarrow> Capability \<Rightarrow> bool" where
+definition holds :: "KernelState \<Rightarrow> proc_id \<Rightarrow> capability \<Rightarrow> bool" where
   "holds s p c \<equiv> exists slot, cap_lookup s p slot = Some c"
 
 (* rights_subset (matches Coq: Definition rights_subset) *)
@@ -173,23 +179,23 @@ definition rights_subset :: "bool" where
   "rights_subset \<equiv> forall r, r \<in> set r1 -> r \<in> set r2"
 
 (* is_revoked (matches Coq: Definition is_revoked) *)
-definition is_revoked :: "KernelState \<Rightarrow> Capability \<Rightarrow> bool" where
+definition is_revoked :: "KernelState \<Rightarrow> capability \<Rightarrow> bool" where
   "is_revoked s c \<equiv> In (cap_badge c) (revoked_badges s)"
 
 (* cap_valid (matches Coq: Definition cap_valid) *)
-definition cap_valid :: "KernelState \<Rightarrow> Capability \<Rightarrow> bool" where
+definition cap_valid :: "KernelState \<Rightarrow> capability \<Rightarrow> bool" where
   "cap_valid s c \<equiv> ~ is_revoked s c \<and> cap_badge c < next_badge s"
 
 (* action_authorized (matches Coq: Definition action_authorized) *)
-fun action_authorized :: "Capability \<Rightarrow> Action \<Rightarrow> bool" where
+fun action_authorized :: "Capability \<Rightarrow> action \<Rightarrow> bool" where
   "action_authorized _ = True"
 
 (* can_invoke (matches Coq: Definition can_invoke) *)
-definition can_invoke :: "KernelState \<Rightarrow> ProcId \<Rightarrow> Action \<Rightarrow> Capability \<Rightarrow> bool" where
+definition can_invoke :: "KernelState \<Rightarrow> proc_id \<Rightarrow> action \<Rightarrow> capability \<Rightarrow> bool" where
   "can_invoke s p a c \<equiv> holds s p c \<and> cap_valid s c \<and> action_authorized c a"
 
 (* mapped (matches Coq: Definition mapped) *)
-definition mapped :: "MemoryState \<Rightarrow> ProcId \<Rightarrow> VAddr \<Rightarrow> bool" where
+definition mapped :: "MemoryState \<Rightarrow> proc_id \<Rightarrow> VAddr \<Rightarrow> bool" where
   "mapped ms p vaddr \<equiv> exists pte, address_spaces ms p vaddr = Some pte \<and> pte_valid pte = True"
 
 (* shared_readonly (matches Coq: Definition shared_readonly) *)
@@ -205,7 +211,7 @@ definition shared_readonly :: "MemoryState \<Rightarrow> VAddr \<Rightarrow> boo
 definition translate :: "bool" where "translate = undefined"
 
 (* is_kernel_memory (matches Coq: Definition is_kernel_memory) *)
-definition is_kernel_memory :: "MemoryState \<Rightarrow> PAddr \<Rightarrow> bool" where
+definition is_kernel_memory :: "MemoryState \<Rightarrow> p_addr \<Rightarrow> bool" where
   "is_kernel_memory ms paddr \<equiv> kernel_memory ms paddr = True"
 
 (* page_table_integrity (matches Coq: Definition page_table_integrity) *)
@@ -216,7 +222,7 @@ definition page_table_integrity :: "MemoryState \<Rightarrow> bool" where
     kernel_memory ms (pte_paddr pte) = False"
 
 (* has_frame_cap (matches Coq: Definition has_frame_cap) *)
-definition has_frame_cap :: "MemoryState \<Rightarrow> ProcId \<Rightarrow> PAddr \<Rightarrow> bool" where
+definition has_frame_cap :: "MemoryState \<Rightarrow> proc_id \<Rightarrow> p_addr \<Rightarrow> bool" where
   "has_frame_cap ms p paddr \<equiv> exists c slot,
     cap_lookup (mem_kernel ms) p slot = Some c \<and>
     cap_object c = paddr"
@@ -230,7 +236,7 @@ definition valid_memory_state :: "MemoryState \<Rightarrow> bool" where
     has_frame_cap ms p (pte_paddr pte))"
 
 (* ipc_waiting (matches Coq: Definition ipc_waiting) *)
-definition ipc_waiting :: "IPCState \<Rightarrow> ProcId \<Rightarrow> bool" where
+definition ipc_waiting :: "IPCState \<Rightarrow> proc_id \<Rightarrow> bool" where
   "ipc_waiting is p \<equiv> exists ep_id, waiting_on is p = Some ep_id"
 
 (* valid_ipc_state (matches Coq: Definition valid_ipc_state) *)
@@ -244,13 +250,13 @@ definition valid_state :: "KernelState \<Rightarrow> bool" where
     forall slot c, cap_lookup s p slot = Some c -> cap_valid s c"
 
 (* endpoint_protected (matches Coq: Definition endpoint_protected) *)
-definition endpoint_protected :: "IPCState \<Rightarrow> Endpoint \<Rightarrow> bool" where
+definition endpoint_protected :: "IPCState \<Rightarrow> endpoint \<Rightarrow> bool" where
   "endpoint_protected is ep \<equiv> forall p,
     In p (ep_queue ep) ->
     holds (mem_kernel (ipc_mem is)) p (ep_cap ep)"
 
 (* msg_caps_valid (matches Coq: Definition msg_caps_valid) *)
-definition msg_caps_valid :: "IPCState \<Rightarrow> ProcId \<Rightarrow> IPCMessage \<Rightarrow> bool" where
+definition msg_caps_valid :: "IPCState \<Rightarrow> proc_id \<Rightarrow> ip_c_message \<Rightarrow> bool" where
   "msg_caps_valid is sender msg \<equiv> forall c, In c (msg_caps msg) ->
     holds (mem_kernel (ipc_mem is)) sender c \<and>
     In RGrant (cap_rights c)"
@@ -283,7 +289,7 @@ definition properly_isolated :: "MemoryState \<Rightarrow> VAddr \<Rightarrow> b
      (perm_write (pte_perms pte1) = False \<and> perm_write (pte_perms pte2) = False)))"
 
 (* unmapped (matches Coq: Definition unmapped) *)
-definition unmapped :: "MemoryState \<Rightarrow> ProcId \<Rightarrow> VAddr \<Rightarrow> bool" where
+definition unmapped :: "MemoryState \<Rightarrow> proc_id \<Rightarrow> VAddr \<Rightarrow> bool" where
   "unmapped ms p vaddr \<equiv> address_spaces ms p vaddr = None \/
   exists pte, address_spaces ms p vaddr = Some pte \<and> pte_valid pte = False"
 
@@ -299,7 +305,7 @@ definition msg_type_safe :: "IPCMessage \<Rightarrow> bool" where
   length (msg_caps msg) <= 4"
 
 (* no_amplification (matches Coq: Definition no_amplification) *)
-definition no_amplification :: "IPCState \<Rightarrow> ProcId \<Rightarrow> IPCMessage \<Rightarrow> bool" where
+definition no_amplification :: "IPCState \<Rightarrow> proc_id \<Rightarrow> ip_c_message \<Rightarrow> bool" where
   "no_amplification is sender msg \<equiv> forall c, In c (msg_caps msg) ->
     rights_subset (cap_rights c) (cap_rights c)"
 

@@ -12,27 +12,27 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ScreenState        | screen_state           | OK     |
- * | ButtonState        | button_state           | OK     |
- * | ImageLoadState     | image_load_state       | OK     |
- * | UIElement          | ui_element             | OK     |
- * | Screen             | screen                 | OK     |
- * | Transition         | transition             | OK     |
- * | Button             | button                 | OK     |
- * | TextField          | text_field             | OK     |
- * | ListView           | list_view              | OK     |
- * | ScrollView         | scroll_view            | OK     |
- * | ImageView          | image_view             | OK     |
- * | SwitchToggle       | switch_toggle          | OK     |
- * | Slider             | slider                 | OK     |
- * | ProgressBar        | progress_bar           | OK     |
- * | TabBar             | tab_bar                | OK     |
- * | NavigationStack    | navigation_stack       | OK     |
- * | AlertDialog        | alert_dialog           | OK     |
- * | ActionSheet        | action_sheet           | OK     |
- * | DatePicker         | date_picker            | OK     |
- * | ColorPicker        | color_picker           | OK     |
- * | SearchBar          | search_bar             | OK     |
+ * | screen_state        | screen_state           | OK     |
+ * | button_state        | button_state           | OK     |
+ * | image_load_state     | image_load_state       | OK     |
+ * | ui_element          | ui_element             | OK     |
+ * | screen             | screen                 | OK     |
+ * | transition         | transition             | OK     |
+ * | button             | button                 | OK     |
+ * | text_field          | text_field             | OK     |
+ * | list_view           | list_view              | OK     |
+ * | scroll_view         | scroll_view            | OK     |
+ * | image_view          | image_view             | OK     |
+ * | switch_toggle       | switch_toggle          | OK     |
+ * | slider             | slider                 | OK     |
+ * | progress_bar        | progress_bar           | OK     |
+ * | tab_bar             | tab_bar                | OK     |
+ * | navigation_stack    | navigation_stack       | OK     |
+ * | alert_dialog        | alert_dialog           | OK     |
+ * | action_sheet        | action_sheet           | OK     |
+ * | date_picker         | date_picker            | OK     |
+ * | color_picker        | color_picker           | OK     |
+ * | search_bar          | search_bar             | OK     |
  * | visible            | visible                | OK     |
  * | has_accessibility_label | has_accessibility_label | OK     |
  * | navigable_by_voiceover | navigable_by_voiceover | OK     |
@@ -89,7 +89,7 @@ theory UIComponents
   imports Main
 begin
 
-(* ScreenState (matches Coq: Inductive ScreenState) *)
+(* screen_state (matches Coq: Inductive screen_state) *)
 datatype screen_state =
     Loading
   |     Ready
@@ -97,21 +97,21 @@ datatype screen_state =
   |     Error
   |     Dismissed
 
-(* ButtonState (matches Coq: Inductive ButtonState) *)
+(* button_state (matches Coq: Inductive button_state) *)
 datatype button_state =
     BtnNormal
   |     BtnHighlighted
   |     BtnDisabled
   |     BtnSelected
 
-(* ImageLoadState (matches Coq: Inductive ImageLoadState) *)
+(* image_load_state (matches Coq: Inductive image_load_state) *)
 datatype image_load_state =
     ImgNotLoaded
   |     ImgLoading
   |     ImgLoaded
   |     ImgFailed
 
-(* UIElement (matches Coq: Record UIElement) *)
+(* ui_element (matches Coq: Record ui_element) *)
 record ui_element =
   element_id :: nat
   element_visible :: bool
@@ -119,112 +119,112 @@ record ui_element =
   element_accessibility_label :: option
   element_voiceover_navigable :: bool
 
-(* Screen (matches Coq: Record Screen) *)
+(* screen (matches Coq: Record screen) *)
 record screen =
   screen_id :: nat
-  screen_state :: ScreenState
+  screen_state :: screen_state
   screen_elements :: 'a list
 
-(* Transition (matches Coq: Record Transition) *)
+(* transition (matches Coq: Record transition) *)
 record transition =
-  trans_from :: ScreenState
-  trans_to :: ScreenState
+  trans_from :: screen_state
+  trans_to :: screen_state
   trans_valid :: bool
 
-(* Button (matches Coq: Record Button) *)
+(* button (matches Coq: Record button) *)
 record button =
   btn_id :: nat
-  btn_state :: ButtonState
+  btn_state :: button_state
   btn_enabled :: bool
   btn_visible :: bool
 
-(* TextField (matches Coq: Record TextField) *)
+(* text_field (matches Coq: Record text_field) *)
 record text_field =
   tf_id :: nat
   tf_input :: 'a list
   tf_max_length :: nat
   tf_sanitized :: bool
 
-(* ListView (matches Coq: Record ListView) *)
+(* list_view (matches Coq: Record list_view) *)
 record list_view =
   lv_total_items :: nat
   lv_visible_items :: nat
   lv_recycled_views :: nat
   lv_recycling_correct :: bool
 
-(* ScrollView (matches Coq: Record ScrollView) *)
+(* scroll_view (matches Coq: Record scroll_view) *)
 record scroll_view =
   sv_content_offset :: nat
   sv_content_size :: nat
   sv_bounds_checked :: bool
 
-(* ImageView (matches Coq: Record ImageView) *)
+(* image_view (matches Coq: Record image_view) *)
 record image_view =
   iv_id :: nat
-  iv_load_state :: ImageLoadState
+  iv_load_state :: image_load_state
   iv_placeholder_shown :: bool
   iv_loading_handled :: bool
 
-(* SwitchToggle (matches Coq: Record SwitchToggle) *)
+(* switch_toggle (matches Coq: Record switch_toggle) *)
 record switch_toggle =
   sw_id :: nat
   sw_on :: bool
   sw_transitioning :: bool
   sw_atomic :: bool
 
-(* Slider (matches Coq: Record Slider) *)
+(* slider (matches Coq: Record slider) *)
 record slider =
   sl_value :: nat
   sl_min_value :: nat
   sl_max_value :: nat
 
-(* ProgressBar (matches Coq: Record ProgressBar) *)
+(* progress_bar (matches Coq: Record progress_bar) *)
 record progress_bar =
   pb_current :: nat
   pb_previous :: nat
   pb_max :: nat
   pb_monotonic :: bool
 
-(* TabBar (matches Coq: Record TabBar) *)
+(* tab_bar (matches Coq: Record tab_bar) *)
 record tab_bar =
   tb_tabs :: 'a list
   tb_selected_index :: nat
   tb_selection_exclusive :: bool
 
-(* NavigationStack (matches Coq: Record NavigationStack) *)
+(* navigation_stack (matches Coq: Record navigation_stack) *)
 record navigation_stack =
   ns_stack :: 'a list
   ns_stack_valid :: bool
 
-(* AlertDialog (matches Coq: Record AlertDialog) *)
+(* alert_dialog (matches Coq: Record alert_dialog) *)
 record alert_dialog =
   ad_id :: nat
   ad_modal :: bool
   ad_blocking_input :: bool
   ad_dismissible :: bool
 
-(* ActionSheet (matches Coq: Record ActionSheet) *)
+(* action_sheet (matches Coq: Record action_sheet) *)
 record action_sheet =
   as_id :: nat
   as_actions :: 'a list
   as_dismissible :: bool
   as_cancel_available :: bool
 
-(* DatePicker (matches Coq: Record DatePicker) *)
+(* date_picker (matches Coq: Record date_picker) *)
 record date_picker =
   dp_selected :: nat
   dp_min_date :: nat
   dp_max_date :: nat
   dp_range_valid :: bool
 
-(* ColorPicker (matches Coq: Record ColorPicker) *)
+(* color_picker (matches Coq: Record color_picker) *)
 record color_picker =
   cp_red :: nat
   cp_green :: nat
   cp_blue :: nat
   cp_gamut_valid :: bool
 
-(* SearchBar (matches Coq: Record SearchBar) *)
+(* search_bar (matches Coq: Record search_bar) *)
 record search_bar =
   sb_query :: 'a list
   sb_last_search_ms :: nat
@@ -251,7 +251,7 @@ definition valid_source_state :: "Transition \<Rightarrow> bool" where
   valid_state_transition (trans_from t) (trans_to t) = True"
 
 (* apply_transition (matches Coq: Definition apply_transition) *)
-definition apply_transition :: "Transition \<Rightarrow> Screen \<Rightarrow> Screen" where
+definition apply_transition :: "Transition \<Rightarrow> screen \<Rightarrow> Screen" where
   "apply_transition t s \<equiv> if trans_valid t \<and> valid_state_transition (screen_state s) (trans_to t) then
     mkScreen (screen_id s) (trans_to t) (screen_elements s)
   else
@@ -340,11 +340,11 @@ definition search_bar_input_debounced :: "SearchBar \<Rightarrow> bool" where
   "search_bar_input_debounced sb \<equiv> sb_current_ms sb >= sb_last_search_ms sb + sb_debounce_ms sb"
 
 (* accessibility_complete (matches Coq) *)
-lemma accessibility_complete: "\<forall>(element :: UIElement). accessible_element element \<longrightarrow> visible element \<longrightarrow> has_accessibility_label element \<and> navigable_by_voiceover element"
+lemma accessibility_complete: "\<forall>(element :: ui_element). accessible_element element \<longrightarrow> visible element \<longrightarrow> has_accessibility_label element \<and> navigable_by_voiceover element"
   by auto
 
 (* ui_state_valid (matches Coq) *)
-lemma ui_state_valid: "\<forall>(screen :: Screen) (transition :: Transition). valid_target_state (apply_transition transition screen)"
+lemma ui_state_valid: "\<forall>(screen :: screen) (transition :: transition). valid_target_state (apply_transition transition screen)"
   by auto
 
 (* loading_to_ready_valid (matches Coq) *)
@@ -360,87 +360,87 @@ lemma error_recovery_valid: "valid_state_transition Error Ready = True"
   by simp
 
 (* invalid_transition_preserves_state (matches Coq) *)
-lemma invalid_transition_preserves_state: "\<forall>(screen :: Screen) (transition :: Transition). trans_valid transition = False \<longrightarrow> screen_state (apply_transition transition screen) = screen_state screen"
+lemma invalid_transition_preserves_state: "\<forall>(screen :: screen) (transition :: transition). trans_valid transition = False \<longrightarrow> screen_state (apply_transition transition screen) = screen_state screen"
   by simp
 
 (* button_state_valid_thm (matches Coq) *)
-lemma button_state_valid_thm: "\<forall>(b :: Button). button_state_valid b \<longrightarrow> btn_enabled b = False \<longrightarrow> btn_state b = BtnDisabled"
+lemma button_state_valid_thm: "\<forall>(b :: button). button_state_valid b \<longrightarrow> btn_enabled b = False \<longrightarrow> btn_state b = BtnDisabled"
   by auto
 
 (* text_field_input_sanitized_thm (matches Coq) *)
-lemma text_field_input_sanitized_thm: "\<forall>(tf :: TextField). text_field_input_sanitized tf \<longrightarrow> tf_sanitized tf = True"
+lemma text_field_input_sanitized_thm: "\<forall>(tf :: text_field). text_field_input_sanitized tf \<longrightarrow> tf_sanitized tf = True"
   by auto
 
 (* list_view_recycling_correct_thm (matches Coq) *)
-lemma list_view_recycling_correct_thm: "\<forall>(lv :: ListView). list_view_recycling_correct lv \<longrightarrow> lv_visible_items lv \<le> lv_total_items lv"
+lemma list_view_recycling_correct_thm: "\<forall>(lv :: list_view). list_view_recycling_correct lv \<longrightarrow> lv_visible_items lv \<le> lv_total_items lv"
   by auto
 
 (* scroll_view_bounds_checked_thm (matches Coq) *)
-lemma scroll_view_bounds_checked_thm: "\<forall>(sv :: ScrollView). scroll_view_bounds_checked sv \<longrightarrow> sv_content_offset sv \<le> sv_content_size sv"
+lemma scroll_view_bounds_checked_thm: "\<forall>(sv :: scroll_view). scroll_view_bounds_checked sv \<longrightarrow> sv_content_offset sv \<le> sv_content_size sv"
   by auto
 
 (* image_view_loading_handled_thm (matches Coq) *)
-lemma image_view_loading_handled_thm: "\<forall>(iv :: ImageView). image_view_loading_handled iv \<longrightarrow> iv_loading_handled iv = True"
+lemma image_view_loading_handled_thm: "\<forall>(iv :: image_view). image_view_loading_handled iv \<longrightarrow> iv_loading_handled iv = True"
   by auto
 
 (* switch_toggle_atomic_thm (matches Coq) *)
-lemma switch_toggle_atomic_thm: "\<forall>(sw :: SwitchToggle). switch_toggle_atomic sw \<longrightarrow> sw_atomic sw = True"
+lemma switch_toggle_atomic_thm: "\<forall>(sw :: switch_toggle). switch_toggle_atomic sw \<longrightarrow> sw_atomic sw = True"
   by auto
 
 (* slider_value_bounded_thm (matches Coq) *)
-lemma slider_value_bounded_thm: "\<forall>(s :: Slider). slider_value_bounded s \<longrightarrow> sl_min_value s \<le> sl_value s \<and> sl_value s \<le> sl_max_value s"
+lemma slider_value_bounded_thm: "\<forall>(s :: slider). slider_value_bounded s \<longrightarrow> sl_min_value s \<le> sl_value s \<and> sl_value s \<le> sl_max_value s"
   by auto
 
 (* progress_bar_monotonic_thm (matches Coq) *)
-lemma progress_bar_monotonic_thm: "\<forall>(pb :: ProgressBar). progress_bar_monotonic pb \<longrightarrow> pb_previous pb \<le> pb_current pb"
+lemma progress_bar_monotonic_thm: "\<forall>(pb :: progress_bar). progress_bar_monotonic pb \<longrightarrow> pb_previous pb \<le> pb_current pb"
   by auto
 
 (* tab_bar_selection_exclusive_thm (matches Coq) *)
-lemma tab_bar_selection_exclusive_thm: "\<forall>(tb :: TabBar). tab_bar_selection_exclusive tb \<longrightarrow> tb_selection_exclusive tb = True"
+lemma tab_bar_selection_exclusive_thm: "\<forall>(tb :: tab_bar). tab_bar_selection_exclusive tb \<longrightarrow> tb_selection_exclusive tb = True"
   by auto
 
 (* navigation_stack_valid_thm (matches Coq) *)
-lemma navigation_stack_valid_thm: "\<forall>(ns :: NavigationStack). navigation_stack_valid ns \<longrightarrow> ns_stack ns \<noteq> []"
+lemma navigation_stack_valid_thm: "\<forall>(ns :: navigation_stack). navigation_stack_valid ns \<longrightarrow> ns_stack ns \<noteq> []"
   by auto
 
 (* alert_dialog_modal_thm (matches Coq) *)
-lemma alert_dialog_modal_thm: "\<forall>(ad :: AlertDialog). alert_dialog_modal ad \<longrightarrow> ad_modal ad = True"
+lemma alert_dialog_modal_thm: "\<forall>(ad :: alert_dialog). alert_dialog_modal ad \<longrightarrow> ad_modal ad = True"
   by auto
 
 (* action_sheet_dismissible_thm (matches Coq) *)
-lemma action_sheet_dismissible_thm: "\<forall>(a :: ActionSheet). action_sheet_dismissible a \<longrightarrow> as_dismissible a = True"
+lemma action_sheet_dismissible_thm: "\<forall>(a :: action_sheet). action_sheet_dismissible a \<longrightarrow> as_dismissible a = True"
   by auto
 
 (* date_picker_range_valid_thm (matches Coq) *)
-lemma date_picker_range_valid_thm: "\<forall>(dp :: DatePicker). date_picker_range_valid dp \<longrightarrow> dp_min_date dp \<le> dp_selected dp \<and> dp_selected dp \<le> dp_max_date dp"
+lemma date_picker_range_valid_thm: "\<forall>(dp :: date_picker). date_picker_range_valid dp \<longrightarrow> dp_min_date dp \<le> dp_selected dp \<and> dp_selected dp \<le> dp_max_date dp"
   by auto
 
 (* color_picker_gamut_valid_thm (matches Coq) *)
-lemma color_picker_gamut_valid_thm: "\<forall>(cp :: ColorPicker). color_picker_gamut_valid cp \<longrightarrow> cp_red cp \<le> 255 \<and> cp_green cp \<le> 255 \<and> cp_blue cp \<le> 255"
+lemma color_picker_gamut_valid_thm: "\<forall>(cp :: color_picker). color_picker_gamut_valid cp \<longrightarrow> cp_red cp \<le> 255 \<and> cp_green cp \<le> 255 \<and> cp_blue cp \<le> 255"
   by auto
 
 (* search_bar_input_debounced_thm (matches Coq) *)
-lemma search_bar_input_debounced_thm: "\<forall>(sb :: SearchBar). search_bar_input_debounced sb \<longrightarrow> sb_current_ms sb \<ge> sb_last_search_ms sb + sb_debounce_ms sb"
+lemma search_bar_input_debounced_thm: "\<forall>(sb :: search_bar). search_bar_input_debounced sb \<longrightarrow> sb_current_ms sb \<ge> sb_last_search_ms sb + sb_debounce_ms sb"
   by auto
 
 (* alert_dialog_blocks_input (matches Coq) *)
-lemma alert_dialog_blocks_input: "\<forall>(ad :: AlertDialog). alert_dialog_modal ad \<longrightarrow> ad_blocking_input ad = True"
+lemma alert_dialog_blocks_input: "\<forall>(ad :: alert_dialog). alert_dialog_modal ad \<longrightarrow> ad_blocking_input ad = True"
   by auto
 
 (* progress_bar_within_max (matches Coq) *)
-lemma progress_bar_within_max: "\<forall>(pb :: ProgressBar). progress_bar_monotonic pb \<longrightarrow> pb_current pb \<le> pb_max pb"
+lemma progress_bar_within_max: "\<forall>(pb :: progress_bar). progress_bar_monotonic pb \<longrightarrow> pb_current pb \<le> pb_max pb"
   by auto
 
 (* tab_bar_index_in_range (matches Coq) *)
-lemma tab_bar_index_in_range: "\<forall>(tb :: TabBar). tab_bar_selection_exclusive tb \<longrightarrow> tb_selected_index tb < List.length (tb_tabs tb)"
+lemma tab_bar_index_in_range: "\<forall>(tb :: tab_bar). tab_bar_selection_exclusive tb \<longrightarrow> tb_selected_index tb < List.length (tb_tabs tb)"
   by auto
 
 (* action_sheet_has_cancel (matches Coq) *)
-lemma action_sheet_has_cancel: "\<forall>(a :: ActionSheet). action_sheet_dismissible a \<longrightarrow> as_cancel_available a = True"
+lemma action_sheet_has_cancel: "\<forall>(a :: action_sheet). action_sheet_dismissible a \<longrightarrow> as_cancel_available a = True"
   by auto
 
 (* text_field_length_bounded (matches Coq) *)
-lemma text_field_length_bounded: "\<forall>(tf :: TextField). text_field_input_sanitized tf \<longrightarrow> List.length (tf_input tf) \<le> tf_max_length tf"
+lemma text_field_length_bounded: "\<forall>(tf :: text_field). text_field_input_sanitized tf \<longrightarrow> List.length (tf_input tf) \<le> tf_max_length tf"
   by auto
 
 end

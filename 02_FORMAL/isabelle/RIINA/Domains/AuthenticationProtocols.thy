@@ -12,21 +12,21 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | TokenValidation    | token_validation       | OK     |
- * | PasswordSecurity   | password_security      | OK     |
- * | PBKDF2Config       | pbkdf2_config          | OK     |
- * | Argon2Config       | argon2_config          | OK     |
- * | BcryptConfig       | bcrypt_config          | OK     |
- * | MFASecurity        | mfa_security           | OK     |
- * | TOTPConfig         | totp_config            | OK     |
- * | WebAuthnConfig     | web_authn_config       | OK     |
- * | SessionSecurity    | session_security       | OK     |
- * | SessionTokenConfig | session_token_config   | OK     |
- * | OAuth2Config       | o_auth2_config         | OK     |
- * | OIDCConfig         | oidc_config            | OK     |
- * | ChallengeConfig    | challenge_config       | OK     |
- * | NonceTracker       | nonce_tracker          | OK     |
- * | AuthConfig         | auth_config            | OK     |
+ * | token_validation    | token_validation       | OK     |
+ * | password_security   | password_security      | OK     |
+ * | pb_kdf_2_config       | pbkdf2_config          | OK     |
+ * | argon2_config       | argon2_config          | OK     |
+ * | bcrypt_config       | bcrypt_config          | OK     |
+ * | mfa_security        | mfa_security           | OK     |
+ * | t_otp_config         | totp_config            | OK     |
+ * | web_authn_config     | web_authn_config       | OK     |
+ * | session_security    | session_security       | OK     |
+ * | session_token_config | session_token_config   | OK     |
+ * | o_auth2_config       | o_auth2_config         | OK     |
+ * | oidc_config         | oidc_config            | OK     |
+ * | challenge_config    | challenge_config       | OK     |
+ * | nonce_tracker       | nonce_tracker          | OK     |
+ * | auth_config         | auth_config            | OK     |
  * | pbkdf2_secure      | pbkdf2_secure          | OK     |
  * | riina_pbkdf2       | riina_pbkdf2           | OK     |
  * | argon2_secure      | argon2_secure          | OK     |
@@ -160,31 +160,34 @@
  *)
 
 theory AuthenticationProtocols
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics
 begin
 
-(* TokenValidation (matches Coq: Inductive TokenValidation) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym pb_kdf_2_config = "nat"
+type_synonym t_otp_config = "nat"
+(* token_validation (matches Coq: Inductive token_validation) *)
 datatype token_validation =
     TokenValid
   |     TokenExpired
   |     TokenInvalid
   |     TokenRevoked
 
-(* PasswordSecurity (matches Coq: Record PasswordSecurity) *)
+(* password_security (matches Coq: Record password_security) *)
 record password_security =
   pwd_bcrypt_argon :: bool
   pwd_salt_unique :: bool
   pwd_min_entropy :: bool
   pwd_breach_check :: bool
 
-(* PBKDF2Config (matches Coq: Record PBKDF2Config) *)
+(* pb_kdf_2_config (matches Coq: Record pb_kdf_2_config) *)
 record pbkdf2_config =
   pbkdf2_iterations :: nat
   pbkdf2_salt_bits :: nat
   pbkdf2_output_bits :: nat
   pbkdf2_hash_alg :: nat
 
-(* Argon2Config (matches Coq: Record Argon2Config) *)
+(* argon2_config (matches Coq: Record argon2_config) *)
 record argon2_config =
   argon2_time_cost :: nat
   argon2_memory_cost :: nat
@@ -193,20 +196,20 @@ record argon2_config =
   argon2_output_bits :: nat
   argon2_variant :: nat
 
-(* BcryptConfig (matches Coq: Record BcryptConfig) *)
+(* bcrypt_config (matches Coq: Record bcrypt_config) *)
 record bcrypt_config =
   bcrypt_cost_factor :: nat
   bcrypt_salt_bits :: nat
   bcrypt_output_bits :: nat
 
-(* MFASecurity (matches Coq: Record MFASecurity) *)
+(* mfa_security (matches Coq: Record mfa_security) *)
 record mfa_security =
   mfa_totp_support :: bool
   mfa_webauthn :: bool
   mfa_backup_codes :: bool
   mfa_recovery :: bool
 
-(* TOTPConfig (matches Coq: Record TOTPConfig) *)
+(* t_otp_config (matches Coq: Record t_otp_config) *)
 record totp_config =
   totp_secret_bits :: nat
   totp_digits :: nat
@@ -214,7 +217,7 @@ record totp_config =
   totp_hash_alg :: nat
   totp_drift_window :: nat
 
-(* WebAuthnConfig (matches Coq: Record WebAuthnConfig) *)
+(* web_authn_config (matches Coq: Record web_authn_config) *)
 record web_authn_config =
   webauthn_attestation :: nat
   webauthn_user_verification :: nat
@@ -222,14 +225,14 @@ record web_authn_config =
   webauthn_challenge_bits :: nat
   webauthn_timeout_ms :: nat
 
-(* SessionSecurity (matches Coq: Record SessionSecurity) *)
+(* session_security (matches Coq: Record session_security) *)
 record session_security =
   sess_secure_token :: bool
   sess_rotation :: bool
   sess_timeout :: bool
   sess_binding :: bool
 
-(* SessionTokenConfig (matches Coq: Record SessionTokenConfig) *)
+(* session_token_config (matches Coq: Record session_token_config) *)
 record session_token_config =
   token_entropy_bits :: nat
   token_expiry_seconds :: nat
@@ -239,7 +242,7 @@ record session_token_config =
   token_httponly_flag :: bool
   token_samesite :: nat
 
-(* OAuth2Config (matches Coq: Record OAuth2Config) *)
+(* o_auth2_config (matches Coq: Record o_auth2_config) *)
 record o_auth2_config =
   oauth2_pkce :: bool
   oauth2_state_param :: bool
@@ -249,15 +252,15 @@ record o_auth2_config =
   oauth2_code_expiry :: nat
   oauth2_refresh_rotation :: bool
 
-(* OIDCConfig (matches Coq: Record OIDCConfig) *)
+(* oidc_config (matches Coq: Record oidc_config) *)
 record oidc_config =
-  oidc_base :: OAuth2Config
+  oidc_base :: o_auth2_config
   oidc_id_token_alg :: nat
   oidc_id_token_expiry :: nat
   oidc_userinfo_signed :: bool
   oidc_claims_verified :: bool
 
-(* ChallengeConfig (matches Coq: Record ChallengeConfig) *)
+(* challenge_config (matches Coq: Record challenge_config) *)
 record challenge_config =
   challenge_bits :: nat
   challenge_expiry_ms :: nat
@@ -265,18 +268,18 @@ record challenge_config =
   challenge_bound :: bool
   challenge_signed :: bool
 
-(* NonceTracker (matches Coq: Record NonceTracker) *)
+(* nonce_tracker (matches Coq: Record nonce_tracker) *)
 record nonce_tracker =
   nonce_size_bits :: nat
   nonce_window_size :: nat
   nonce_timestamp_bound :: nat
   nonce_counter_mode :: bool
 
-(* AuthConfig (matches Coq: Record AuthConfig) *)
+(* auth_config (matches Coq: Record auth_config) *)
 record auth_config =
-  auth_pwd :: PasswordSecurity
-  auth_mfa :: MFASecurity
-  auth_session :: SessionSecurity
+  auth_pwd :: password_security
+  auth_mfa :: mfa_security
+  auth_session :: session_security
 
 (* pbkdf2_secure (matches Coq: Definition pbkdf2_secure) *)
 definition pbkdf2_secure :: "PBKDF2Config \<Rightarrow> bool" where

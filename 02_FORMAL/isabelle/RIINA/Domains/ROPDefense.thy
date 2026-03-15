@@ -12,16 +12,16 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | GadgetType         | gadget_type            | OK     |
- * | CodePtrType        | code_ptr_type          | OK     |
- * | CFIConfig          | cfi_config             | OK     |
- * | CodeReuse          | code_reuse             | OK     |
- * | ROPDefenseConfig   | rop_defense_config     | OK     |
- * | ShadowEntry        | shadow_entry           | OK     |
+ * | gadget_type         | gadget_type            | OK     |
+ * | code_ptr_type        | code_ptr_type          | OK     |
+ * | cfi_config          | cfi_config             | OK     |
+ * | code_reuse          | code_reuse             | OK     |
+ * | rop_defense_config   | rop_defense_config     | OK     |
+ * | shadow_entry        | shadow_entry           | OK     |
  * | BTBEntry           | btb_entry              | OK     |
- * | Gadget             | gadget                 | OK     |
- * | CodePointer        | code_pointer           | OK     |
- * | CPIConfig          | cpi_config             | OK     |
+ * | gadget             | gadget                 | OK     |
+ * | code_pointer        | code_pointer           | OK     |
+ * | cpi_config          | cpi_config             | OK     |
  * | shadow_push        | shadow_push            | OK     |
  * | shadow_pop         | shadow_pop             | OK     |
  * | shadow_peek        | shadow_peek            | OK     |
@@ -136,14 +136,19 @@ theory ROPDefense
   imports Main CoqCompat
 begin
 
-(* GadgetType (matches Coq: Inductive GadgetType) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym func_id = "nat"
+type_synonym instr_addr = "nat"
+type_synonym shadow_stack = "nat"
+type_synonym valid_targets = "nat"
+(* gadget_type (matches Coq: Inductive gadget_type) *)
 datatype gadget_type =
     GadgetROP
   |     GadgetJOP
   |     GadgetCOP
   |     GadgetSROP
 
-(* CodePtrType (matches Coq: Inductive CodePtrType) *)
+(* code_ptr_type (matches Coq: Inductive code_ptr_type) *)
 datatype code_ptr_type =
     CPFunction
   |     CPVTable
@@ -151,7 +156,7 @@ datatype code_ptr_type =
   |     CPExceptionHandler
   |     CPSignalHandler
 
-(* CFIConfig (matches Coq: Record CFIConfig) *)
+(* cfi_config (matches Coq: Record cfi_config) *)
 record cfi_config =
   cfi_shadow_stack :: bool
   cfi_indirect_branch_tracking :: bool
@@ -159,48 +164,48 @@ record cfi_config =
   cfi_forward_edge_cfi :: bool
   cfi_backward_edge_cfi :: bool
 
-(* CodeReuse (matches Coq: Record CodeReuse) *)
+(* code_reuse (matches Coq: Record code_reuse) *)
 record code_reuse =
   cr_gadget_elimination :: bool
   cr_instruction_alignment :: bool
   cr_code_pointer_integrity :: bool
 
-(* ROPDefenseConfig (matches Coq: Record ROPDefenseConfig) *)
+(* rop_defense_config (matches Coq: Record rop_defense_config) *)
 record rop_defense_config =
-  rop_cfi :: CFIConfig
-  rop_code_reuse :: CodeReuse
+  rop_cfi :: cfi_config
+  rop_code_reuse :: code_reuse
   rop_aslr_compatible :: bool
   rop_dep_compatible :: bool
 
-(* ShadowEntry (matches Coq: Record ShadowEntry) *)
+(* shadow_entry (matches Coq: Record shadow_entry) *)
 record shadow_entry =
-  se_return_addr :: InstrAddr
-  se_caller_func :: FuncId
+  se_return_addr :: instr_addr
+  se_caller_func :: func_id
   se_frame_ptr :: nat
   se_mac_valid :: bool
 
 (* BTBEntry (matches Coq: Record BTBEntry) *)
 record btb_entry =
-  btb_source :: InstrAddr
-  btb_target :: InstrAddr
+  btb_source :: instr_addr
+  btb_target :: instr_addr
   btb_validated :: bool
 
-(* Gadget (matches Coq: Record Gadget) *)
+(* gadget (matches Coq: Record gadget) *)
 record gadget =
-  gadget_type :: GadgetType
-  gadget_addr :: InstrAddr
+  gadget_type :: gadget_type
+  gadget_addr :: instr_addr
   gadget_length :: nat
   gadget_ends_in_ret :: bool
   gadget_ends_in_jump :: bool
 
-(* CodePointer (matches Coq: Record CodePointer) *)
+(* code_pointer (matches Coq: Record code_pointer) *)
 record code_pointer =
-  cp_type :: CodePtrType
-  cp_addr :: InstrAddr
+  cp_type :: code_ptr_type
+  cp_addr :: instr_addr
   cp_authenticated :: bool
   cp_bounds_checked :: bool
 
-(* CPIConfig (matches Coq: Record CPIConfig) *)
+(* cpi_config (matches Coq: Record cpi_config) *)
 record cpi_config =
   cpi_ptr_authentication :: bool
   cpi_bounds_checking :: bool
@@ -208,11 +213,11 @@ record cpi_config =
   cpi_isolation :: bool
 
 (* shadow_push (matches Coq: Definition shadow_push) *)
-definition shadow_push :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> FuncId \<Rightarrow> nat \<Rightarrow> ShadowStack" where
+definition shadow_push :: "ShadowStack \<Rightarrow> instr_addr \<Rightarrow> func_id \<Rightarrow> nat \<Rightarrow> ShadowStack" where
   "shadow_push ss ret caller fp \<equiv> mkShadowEntry ret caller fp True :: ss"
 
 (* shadow_pop (matches Coq: Definition shadow_pop) *)
-fun shadow_pop :: "ShadowStack \<Rightarrow> option (ShadowEntry * ShadowStack)" where
+fun shadow_pop :: "ShadowStack \<Rightarrow> option (ShadowEntry * shadow_stack)" where
   "shadow_pop nil = None"
 
 (* shadow_peek (matches Coq: Definition shadow_peek) *)
@@ -220,19 +225,19 @@ fun shadow_peek :: "ShadowStack \<Rightarrow> option ShadowEntry" where
   "shadow_peek nil = None"
 
 (* return_matches_shadow (matches Coq: Definition return_matches_shadow) *)
-fun return_matches_shadow :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> bool" where
+fun return_matches_shadow :: "ShadowStack \<Rightarrow> instr_addr \<Rightarrow> bool" where
   "return_matches_shadow nil = false"
 
 (* valid_return (matches Coq: Definition valid_return) *)
-fun valid_return :: "ShadowStack \<Rightarrow> InstrAddr \<Rightarrow> bool" where
+fun valid_return :: "ShadowStack \<Rightarrow> instr_addr \<Rightarrow> bool" where
   "valid_return nil = False"
 
 (* is_valid_target (matches Coq: Definition is_valid_target) *)
-definition is_valid_target :: "ValidTargets \<Rightarrow> InstrAddr \<Rightarrow> bool" where
+definition is_valid_target :: "ValidTargets \<Rightarrow> instr_addr \<Rightarrow> bool" where
   "is_valid_target targets addr \<equiv> existsb ((addr) = targets)"
 
 (* indirect_branch_valid (matches Coq: Definition indirect_branch_valid) *)
-definition indirect_branch_valid :: "ValidTargets \<Rightarrow> InstrAddr \<Rightarrow> bool" where
+definition indirect_branch_valid :: "ValidTargets \<Rightarrow> instr_addr \<Rightarrow> bool" where
   "indirect_branch_valid targets addr \<equiv> addr \<in> set targets"
 
 (* btb_entry_valid (matches Coq: Definition btb_entry_valid) *)
@@ -247,7 +252,7 @@ definition chain_blocked :: "CFIConfig \<Rightarrow> GadgetChain \<Rightarrow> b
   "chain_blocked cfi chain \<equiv> forallb (gadget_blocked cfi) chain"
 
 (* cp_protected (matches Coq: Definition cp_protected) *)
-definition cp_protected :: "CPIConfig \<Rightarrow> CodePointer \<Rightarrow> bool" where
+definition cp_protected :: "CPIConfig \<Rightarrow> code_pointer \<Rightarrow> bool" where
   "cp_protected cpi cp \<equiv> ((\<not> (cpi_ptr_authentication) cpi) \<or> cp_authenticated cp) \<and>
   ((\<not> (cpi_bounds_checking) cpi) \<or> cp_bounds_checked cp)"
 

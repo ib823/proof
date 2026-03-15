@@ -12,17 +12,17 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Permission         | permission             | OK     |
- * | DelegationType     | delegation_type        | OK     |
- * | Capability         | capability             | OK     |
- * | ObjectCapability   | object_capability      | OK     |
- * | LeastPrivilege     | least_privilege        | OK     |
- * | CapabilityConfig   | capability_config      | OK     |
- * | MemCapability      | mem_capability         | OK     |
- * | RevocationTable    | revocation_table       | OK     |
- * | Principal          | principal              | OK     |
- * | ConfinementPolicy  | confinement_policy     | OK     |
- * | Delegation         | delegation             | OK     |
+ * | permission         | permission             | OK     |
+ * | delegation_type     | delegation_type        | OK     |
+ * | capability         | capability             | OK     |
+ * | object_capability   | object_capability      | OK     |
+ * | least_privilege     | least_privilege        | OK     |
+ * | capability_config   | capability_config      | OK     |
+ * | mem_capability      | mem_capability         | OK     |
+ * | revocation_table    | revocation_table       | OK     |
+ * | principal          | principal              | OK     |
+ * | confinement_policy  | confinement_policy     | OK     |
+ * | delegation         | delegation             | OK     |
  * | perm_level         | perm_level             | OK     |
  * | perm_leq           | perm_leq               | OK     |
  * | perm_lt            | perm_lt                | OK     |
@@ -163,10 +163,12 @@
  *)
 
 theory CapabilitySecurity
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* Permission (matches Coq: Inductive Permission) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym perm_set = "nat list"
+(* permission (matches Coq: Inductive permission) *)
 datatype permission =
     Read
   |     Write
@@ -175,67 +177,67 @@ datatype permission =
   |     Create
   |     Admin
 
-(* DelegationType (matches Coq: Inductive DelegationType) *)
+(* delegation_type (matches Coq: Inductive delegation_type) *)
 datatype delegation_type =
     DelegFull
   |     DelegRestricted
   |     DelegOnce
 
-(* Capability (matches Coq: Record Capability) *)
+(* capability (matches Coq: Record capability) *)
 record capability =
   cap_unforgeable :: bool
   cap_transferable :: bool
   cap_revocable :: bool
   cap_attenuatable :: bool
 
-(* ObjectCapability (matches Coq: Record ObjectCapability) *)
+(* object_capability (matches Coq: Record object_capability) *)
 record object_capability =
   ocap_no_ambient_authority :: bool
   ocap_explicit_grant :: bool
   ocap_encapsulation :: bool
   ocap_connectivity :: bool
 
-(* LeastPrivilege (matches Coq: Record LeastPrivilege) *)
+(* least_privilege (matches Coq: Record least_privilege) *)
 record least_privilege =
   lp_minimal_permissions :: bool
   lp_time_limited :: bool
   lp_scope_limited :: bool
 
-(* CapabilityConfig (matches Coq: Record CapabilityConfig) *)
+(* capability_config (matches Coq: Record capability_config) *)
 record capability_config =
-  cc_cap :: Capability
-  cc_ocap :: ObjectCapability
-  cc_lp :: LeastPrivilege
+  cc_cap :: capability
+  cc_ocap :: object_capability
+  cc_lp :: least_privilege
 
-(* MemCapability (matches Coq: Record MemCapability) *)
+(* mem_capability (matches Coq: Record mem_capability) *)
 record mem_capability =
   mem_base :: nat
   mem_length :: nat
-  mem_perms :: PermSet
+  mem_perms :: perm_set
   mem_sealed :: bool
   mem_valid :: bool
 
-(* RevocationTable (matches Coq: Record RevocationTable) *)
+(* revocation_table (matches Coq: Record revocation_table) *)
 record revocation_table =
   rev_entries :: 'a list
 
-(* Principal (matches Coq: Record Principal) *)
+(* principal (matches Coq: Record principal) *)
 record principal =
   prin_id :: nat
   prin_capabilities :: 'a list
 
-(* ConfinementPolicy (matches Coq: Record ConfinementPolicy) *)
+(* confinement_policy (matches Coq: Record confinement_policy) *)
 record confinement_policy =
   conf_no_ambient :: bool
   conf_explicit_only :: bool
   conf_no_escalation :: bool
 
-(* Delegation (matches Coq: Record Delegation) *)
+(* delegation (matches Coq: Record delegation) *)
 record delegation =
   del_from :: nat
   del_to :: nat
   del_cap_id :: nat
-  del_type :: DelegationType
+  del_type :: delegation_type
   del_active :: bool
 
 (* perm_level (matches Coq: Definition perm_level) *)
@@ -260,7 +262,7 @@ definition perm_eq :: "bool" where
   "perm_eq \<equiv> (perm_level p1 = perm_level p2)"
 
 (* perm_in (matches Coq: Definition perm_in) *)
-fun perm_in :: "Permission \<Rightarrow> PermSet \<Rightarrow> bool" where
+fun perm_in :: "Permission \<Rightarrow> perm_set \<Rightarrow> bool" where
   "perm_in _ = True"
 
 (* mem_bounds_check (matches Coq: Definition mem_bounds_check) *)
@@ -269,7 +271,7 @@ definition mem_bounds_check :: "MemCapability \<Rightarrow> nat \<Rightarrow> bo
        ((addr < (mem_base) mc + mem_length mc))"
 
 (* mem_has_perm (matches Coq: Definition mem_has_perm) *)
-definition mem_has_perm :: "MemCapability \<Rightarrow> Permission \<Rightarrow> bool" where
+definition mem_has_perm :: "MemCapability \<Rightarrow> permission \<Rightarrow> bool" where
   "mem_has_perm mc p \<equiv> (mem_valid mc \<and> perm_in p (mem_perms mc))"
 
 (* mem_can_read (matches Coq: Definition mem_can_read) *)

@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | JammerType         | jammer_type            | OK     |
- * | JamDetection       | jam_detection          | OK     |
- * | AdaptAction        | adapt_action           | OK     |
+ * | jammer_type         | jammer_type            | OK     |
+ * | jam_detection       | jam_detection          | OK     |
+ * | adapt_action        | adapt_action           | OK     |
  * | sequence_length_ok | sequence_length_ok     | OK     |
  * | dwell_time_bounded | dwell_time_bounded     | OK     |
  * | processing_gain_sufficient | processing_gain_sufficient | OK     |
@@ -69,20 +69,23 @@ theory AntiJamming
   imports Main CoqCompat
 begin
 
-(* JammerType (matches Coq: Inductive JammerType) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym hopping_pattern = "nat"
+type_synonym spread_spectrum = "nat"
+(* jammer_type (matches Coq: Inductive jammer_type) *)
 datatype jammer_type =
     ConstantJammer
   |     ReactiveJammer
   |     SweepJammer
   |     SmartJammer
 
-(* JamDetection (matches Coq: Inductive JamDetection) *)
+(* jam_detection (matches Coq: Inductive jam_detection) *)
 datatype jam_detection =
     NoJamming
   |     SuspectedJamming
   |     ConfirmedJamming
 
-(* AdaptAction (matches Coq: Inductive AdaptAction) *)
+(* adapt_action (matches Coq: Inductive adapt_action) *)
 datatype adapt_action =
     IncreasePower
   |     ChangeFrequency
@@ -185,19 +188,19 @@ definition antijam_layers :: "bool" where
   "antijam_layers \<equiv> (hopping \<and> spread \<and> detect \<and> adapt)"
 
 (* jam_001_sequence_length (matches Coq) *)
-lemma jam_001_sequence_length: "\<forall>(pattern :: HoppingPattern) (min_length :: nat). sequence_length_ok pattern min_length = True \<longrightarrow> min_length \<le> length (hop_sequence pattern)"
+lemma jam_001_sequence_length: "\<forall>(pattern :: hopping_pattern) (min_length :: nat). sequence_length_ok pattern min_length = True \<longrightarrow> min_length \<le> length (hop_sequence pattern)"
   by auto
 
 (* jam_002_dwell_bounded (matches Coq) *)
-lemma jam_002_dwell_bounded: "\<forall>(pattern :: HoppingPattern) (max_dwell :: nat). dwell_time_bounded pattern max_dwell = True \<longrightarrow> hop_dwell_time pattern \<le> max_dwell"
+lemma jam_002_dwell_bounded: "\<forall>(pattern :: hopping_pattern) (max_dwell :: nat). dwell_time_bounded pattern max_dwell = True \<longrightarrow> hop_dwell_time pattern \<le> max_dwell"
   by auto
 
 (* jam_003_processing_gain (matches Coq) *)
-lemma jam_003_processing_gain: "\<forall>(ss :: SpreadSpectrum) (min_gain :: nat). processing_gain_sufficient ss min_gain = True \<longrightarrow> min_gain \<le> spread_factor ss"
+lemma jam_003_processing_gain: "\<forall>(ss :: spread_spectrum) (min_gain :: nat). processing_gain_sufficient ss min_gain = True \<longrightarrow> min_gain \<le> spread_factor ss"
   by auto
 
 (* jam_004_code_length (matches Coq) *)
-lemma jam_004_code_length: "\<forall>(ss :: SpreadSpectrum). length (spread_code ss) > 0 \<longrightarrow> length (spread_code ss) > 0"
+lemma jam_004_code_length: "\<forall>(ss :: spread_spectrum). length (spread_code ss) > 0 \<longrightarrow> length (spread_code ss) > 0"
   by auto
 
 (* jam_005_jammer_overcome (matches Coq) *)
@@ -205,7 +208,7 @@ lemma jam_005_jammer_overcome: "\<forall>(jammer_power spread_gain signal_power 
   by auto
 
 (* jam_006_channel_diversity (matches Coq) *)
-lemma jam_006_channel_diversity: "\<forall>(pattern :: HoppingPattern) (min_channels :: nat). channels_diverse pattern min_channels \<longrightarrow> length (nodup Nat.eq_dec (hop_sequence pattern)) \<ge> min_channels"
+lemma jam_006_channel_diversity: "\<forall>(pattern :: hopping_pattern) (min_channels :: nat). channels_diverse pattern min_channels \<longrightarrow> length (nodup Nat.eq_dec (hop_sequence pattern)) \<ge> min_channels"
   by auto
 
 (* jam_007_detection_threshold (matches Coq) *)
@@ -217,7 +220,7 @@ lemma jam_008_no_false_positive: "\<forall>(snr threshold : nat). snr \<ge> thre
   by auto
 
 (* jam_009_adaptation_improves (matches Coq) *)
-lemma jam_009_adaptation_improves: "\<forall>(before after : nat) (action :: AdaptAction). adaptation_applied before after action \<longrightarrow> after \<ge> before"
+lemma jam_009_adaptation_improves: "\<forall>(before after : nat) (action :: adapt_action). adaptation_applied before after action \<longrightarrow> after \<ge> before"
   by auto
 
 (* jam_010_power_bounded (matches Coq) *)

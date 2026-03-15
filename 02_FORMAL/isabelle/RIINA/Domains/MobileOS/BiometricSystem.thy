@@ -12,12 +12,12 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | BiometricType      | biometric_type         | OK     |
- * | BiometricAttempt   | biometric_attempt      | OK     |
- * | BiometricTemplate  | biometric_template     | OK     |
- * | BiometricEnrollment | biometric_enrollment   | OK     |
- * | BiometricSession   | biometric_session      | OK     |
- * | BiometricConfig    | biometric_config       | OK     |
+ * | biometric_type      | biometric_type         | OK     |
+ * | biometric_attempt   | biometric_attempt      | OK     |
+ * | biometric_template  | biometric_template     | OK     |
+ * | biometric_enrollment | biometric_enrollment   | OK     |
+ * | biometric_session   | biometric_session      | OK     |
+ * | biometric_config    | biometric_config       | OK     |
  * | authentic          | authentic              | OK     |
  * | is_spoof           | is_spoof               | OK     |
  * | accepted           | accepted               | OK     |
@@ -68,16 +68,16 @@ theory BiometricSystem
   imports Main CoqCompat
 begin
 
-(* BiometricType (matches Coq: Inductive BiometricType) *)
+(* biometric_type (matches Coq: Inductive biometric_type) *)
 datatype biometric_type =
     FaceID
   |     Fingerprint
   |     Iris
 
-(* BiometricAttempt (matches Coq: Record BiometricAttempt) *)
+(* biometric_attempt (matches Coq: Record biometric_attempt) *)
 record biometric_attempt =
   attempt_id :: nat
-  attempt_type :: BiometricType
+  attempt_type :: biometric_type
   attempt_authentic :: bool
   attempt_is_spoof :: bool
   attempt_match_score :: nat
@@ -85,33 +85,33 @@ record biometric_attempt =
   attempt_accepted :: bool
   attempt_rejected :: bool
 
-(* BiometricTemplate (matches Coq: Record BiometricTemplate) *)
+(* biometric_template (matches Coq: Record biometric_template) *)
 record biometric_template =
   tmpl_id :: nat
-  tmpl_type :: BiometricType
+  tmpl_type :: biometric_type
   tmpl_encrypted :: bool
   tmpl_on_device :: bool
   tmpl_exportable :: bool
   tmpl_version :: nat
 
-(* BiometricEnrollment (matches Coq: Record BiometricEnrollment) *)
+(* biometric_enrollment (matches Coq: Record biometric_enrollment) *)
 record biometric_enrollment =
   enroll_id :: nat
-  enroll_type :: BiometricType
+  enroll_type :: biometric_type
   enroll_auth_verified :: bool
-  enroll_template :: BiometricTemplate
+  enroll_template :: biometric_template
   enroll_samples_count :: nat
 
-(* BiometricSession (matches Coq: Record BiometricSession) *)
+(* biometric_session (matches Coq: Record biometric_session) *)
 record biometric_session =
   bio_session_id :: nat
-  bio_session_type :: BiometricType
+  bio_session_type :: biometric_type
   bio_session_timeout_ms :: nat
   bio_session_active :: bool
   bio_session_fallback_available :: bool
   bio_session_multi_factor :: bool
 
-(* BiometricConfig (matches Coq: Record BiometricConfig) *)
+(* biometric_config (matches Coq: Record biometric_config) *)
 record biometric_config =
   bio_cfg_max_attempts :: nat
   bio_cfg_lockout_ms :: nat
@@ -167,7 +167,7 @@ definition biometric_data_never_exported :: "BiometricTemplate \<Rightarrow> boo
   "biometric_data_never_exported t \<equiv> tmpl_exportable t = False"
 
 (* far_bounded (matches Coq: Definition far_bounded) *)
-definition far_bounded :: "BiometricConfig \<Rightarrow> BiometricAttempt \<Rightarrow> bool" where
+definition far_bounded :: "BiometricConfig \<Rightarrow> biometric_attempt \<Rightarrow> bool" where
   "far_bounded cfg attempt \<equiv> ~ authentic attempt ->
   secure_biometric_system attempt ->
   ~ accepted attempt"
@@ -213,7 +213,7 @@ definition biometric_revocable :: "BiometricTemplate \<Rightarrow> bool" where
   "biometric_revocable t \<equiv> tmpl_version t > 0"
 
 (* presentation_attack_detected_prop (matches Coq: Definition presentation_attack_detected_prop) *)
-definition presentation_attack_detected_prop :: "BiometricAttempt \<Rightarrow> BiometricConfig \<Rightarrow> bool" where
+definition presentation_attack_detected_prop :: "BiometricAttempt \<Rightarrow> biometric_config \<Rightarrow> bool" where
   "presentation_attack_detected_prop attempt cfg \<equiv> bio_cfg_anti_spoofing cfg = True ->
   is_spoof attempt ->
   rejected attempt"
@@ -229,83 +229,83 @@ definition biometric_not_sole_factor_prop :: "BiometricSession \<Rightarrow> boo
   "biometric_not_sole_factor_prop s \<equiv> bio_session_multi_factor s = True \/ bio_session_fallback_available s = True"
 
 (* biometric_false_acceptance_bounded (matches Coq) *)
-lemma biometric_false_acceptance_bounded: "\<forall>(attempt :: BiometricAttempt). secure_biometric_system attempt \<longrightarrow> ~ authentic attempt \<longrightarrow> ~ accepted attempt"
+lemma biometric_false_acceptance_bounded: "\<forall>(attempt :: biometric_attempt). secure_biometric_system attempt \<longrightarrow> ~ authentic attempt \<longrightarrow> ~ accepted attempt"
   by auto
 
 (* liveness_detection_accurate (matches Coq) *)
-lemma liveness_detection_accurate: "\<forall>(attempt :: BiometricAttempt). secure_biometric_system attempt \<longrightarrow> is_spoof attempt \<longrightarrow> rejected attempt"
+lemma liveness_detection_accurate: "\<forall>(attempt :: biometric_attempt). secure_biometric_system attempt \<longrightarrow> is_spoof attempt \<longrightarrow> rejected attempt"
   by auto
 
 (* accepted_requires_high_score (matches Coq) *)
-lemma accepted_requires_high_score: "\<forall>(attempt :: BiometricAttempt). secure_biometric_system attempt \<longrightarrow> accepted attempt \<longrightarrow> attempt_match_score attempt \<ge> match_threshold"
+lemma accepted_requires_high_score: "\<forall>(attempt :: biometric_attempt). secure_biometric_system attempt \<longrightarrow> accepted attempt \<longrightarrow> attempt_match_score attempt \<ge> match_threshold"
   by auto
 
 (* accepted_requires_liveness (matches Coq) *)
-lemma accepted_requires_liveness: "\<forall>(attempt :: BiometricAttempt). secure_biometric_system attempt \<longrightarrow> accepted attempt \<longrightarrow> attempt_liveness_score attempt \<ge> liveness_threshold"
+lemma accepted_requires_liveness: "\<forall>(attempt :: biometric_attempt). secure_biometric_system attempt \<longrightarrow> accepted attempt \<longrightarrow> attempt_liveness_score attempt \<ge> liveness_threshold"
   by auto
 
 (* spoof_not_accepted (matches Coq) *)
-lemma spoof_not_accepted: "\<forall>(attempt :: BiometricAttempt). secure_biometric_system attempt \<longrightarrow> well_formed_attempt attempt \<longrightarrow> is_spoof attempt \<longrightarrow> ~ accepted attempt"
+lemma spoof_not_accepted: "\<forall>(attempt :: biometric_attempt). secure_biometric_system attempt \<longrightarrow> well_formed_attempt attempt \<longrightarrow> is_spoof attempt \<longrightarrow> ~ accepted attempt"
   by auto
 
 (* biometric_data_never_exported_thm (matches Coq) *)
-lemma biometric_data_never_exported_thm: "\<forall>(t :: BiometricTemplate). biometric_data_never_exported t \<longrightarrow> tmpl_exportable t = False"
+lemma biometric_data_never_exported_thm: "\<forall>(t :: biometric_template). biometric_data_never_exported t \<longrightarrow> tmpl_exportable t = False"
   by auto
 
 (* false_acceptance_rate_bounded (matches Coq) *)
-lemma false_acceptance_rate_bounded: "\<forall>(cfg :: BiometricConfig) (attempt :: BiometricAttempt). far_bounded cfg attempt \<longrightarrow> ~ authentic attempt \<longrightarrow> secure_biometric_system attempt \<longrightarrow> ~ accepted attempt"
+lemma false_acceptance_rate_bounded: "\<forall>(cfg :: biometric_config) (attempt :: biometric_attempt). far_bounded cfg attempt \<longrightarrow> ~ authentic attempt \<longrightarrow> secure_biometric_system attempt \<longrightarrow> ~ accepted attempt"
   by auto
 
 (* false_rejection_rate_bounded (matches Coq) *)
-lemma false_rejection_rate_bounded: "\<forall>(cfg :: BiometricConfig). frr_bounded cfg \<longrightarrow> bio_cfg_frr_threshold cfg \<le> 5"
+lemma false_rejection_rate_bounded: "\<forall>(cfg :: biometric_config). frr_bounded cfg \<longrightarrow> bio_cfg_frr_threshold cfg \<le> 5"
   by auto
 
 (* biometric_template_encrypted (matches Coq) *)
-lemma biometric_template_encrypted: "\<forall>(t :: BiometricTemplate). template_encrypted t \<longrightarrow> tmpl_encrypted t = True"
+lemma biometric_template_encrypted: "\<forall>(t :: biometric_template). template_encrypted t \<longrightarrow> tmpl_encrypted t = True"
   by auto
 
 (* liveness_detection_active (matches Coq) *)
-lemma liveness_detection_active: "\<forall>(cfg :: BiometricConfig). liveness_active cfg \<longrightarrow> bio_cfg_liveness_required cfg = True"
+lemma liveness_detection_active: "\<forall>(cfg :: biometric_config). liveness_active cfg \<longrightarrow> bio_cfg_liveness_required cfg = True"
   by auto
 
 (* biometric_fallback_available (matches Coq) *)
-lemma biometric_fallback_available: "\<forall>(s :: BiometricSession). fallback_available s \<longrightarrow> bio_session_fallback_available s = True"
+lemma biometric_fallback_available: "\<forall>(s :: biometric_session). fallback_available s \<longrightarrow> bio_session_fallback_available s = True"
   by auto
 
 (* enrollment_requires_auth (matches Coq) *)
-lemma enrollment_requires_auth: "\<forall>(e :: BiometricEnrollment). enrollment_requires_auth_prop e \<longrightarrow> enroll_auth_verified e = True"
+lemma enrollment_requires_auth: "\<forall>(e :: biometric_enrollment). enrollment_requires_auth_prop e \<longrightarrow> enroll_auth_verified e = True"
   by auto
 
 (* biometric_timeout_enforced (matches Coq) *)
-lemma biometric_timeout_enforced: "\<forall>(s :: BiometricSession). timeout_enforced s \<longrightarrow> bio_session_timeout_ms s > 0 \<and> bio_session_timeout_ms s \<le> 30000"
+lemma biometric_timeout_enforced: "\<forall>(s :: biometric_session). timeout_enforced s \<longrightarrow> bio_session_timeout_ms s > 0 \<and> bio_session_timeout_ms s \<le> 30000"
   by auto
 
 (* anti_spoofing_active (matches Coq) *)
-lemma anti_spoofing_active: "\<forall>(cfg :: BiometricConfig). anti_spoofing_active_prop cfg \<longrightarrow> bio_cfg_anti_spoofing cfg = True"
+lemma anti_spoofing_active: "\<forall>(cfg :: biometric_config). anti_spoofing_active_prop cfg \<longrightarrow> bio_cfg_anti_spoofing cfg = True"
   by auto
 
 (* biometric_data_on_device_only (matches Coq) *)
-lemma biometric_data_on_device_only: "\<forall>(t :: BiometricTemplate). on_device_only t \<longrightarrow> tmpl_on_device t = True \<and> tmpl_exportable t = False"
+lemma biometric_data_on_device_only: "\<forall>(t :: biometric_template). on_device_only t \<longrightarrow> tmpl_on_device t = True \<and> tmpl_exportable t = False"
   by auto
 
 (* multi_factor_supported (matches Coq) *)
-lemma multi_factor_supported: "\<forall>(s :: BiometricSession). multi_factor_supported_prop s \<longrightarrow> bio_session_multi_factor s = True"
+lemma multi_factor_supported: "\<forall>(s :: biometric_session). multi_factor_supported_prop s \<longrightarrow> bio_session_multi_factor s = True"
   by auto
 
 (* biometric_revocable_thm (matches Coq) *)
-lemma biometric_revocable_thm: "\<forall>(t :: BiometricTemplate). biometric_revocable t \<longrightarrow> tmpl_version t > 0"
+lemma biometric_revocable_thm: "\<forall>(t :: biometric_template). biometric_revocable t \<longrightarrow> tmpl_version t > 0"
   by auto
 
 (* presentation_attack_detected (matches Coq) *)
-lemma presentation_attack_detected: "\<forall>(attempt :: BiometricAttempt) (cfg :: BiometricConfig). presentation_attack_detected_prop attempt cfg \<longrightarrow> bio_cfg_anti_spoofing cfg = True \<longrightarrow> is_spoof attempt \<longrightarrow> rejected attempt"
+lemma presentation_attack_detected: "\<forall>(attempt :: biometric_attempt) (cfg :: biometric_config). presentation_attack_detected_prop attempt cfg \<longrightarrow> bio_cfg_anti_spoofing cfg = True \<longrightarrow> is_spoof attempt \<longrightarrow> rejected attempt"
   by auto
 
 (* template_update_secure_thm (matches Coq) *)
-lemma template_update_secure_thm: "\<forall>(old_t new_t : BiometricTemplate). template_update_secure old_t new_t \<longrightarrow> tmpl_version new_t > tmpl_version old_t \<and> tmpl_encrypted new_t = True"
+lemma template_update_secure_thm: "\<forall>(old_t new_t : biometric_template). template_update_secure old_t new_t \<longrightarrow> tmpl_version new_t > tmpl_version old_t \<and> tmpl_encrypted new_t = True"
   by auto
 
 (* biometric_not_sole_factor (matches Coq) *)
-lemma biometric_not_sole_factor: "\<forall>(s :: BiometricSession). biometric_not_sole_factor_prop s \<longrightarrow> bio_session_multi_factor s = True \<or> bio_session_fallback_available s = True"
+lemma biometric_not_sole_factor: "\<forall>(s :: biometric_session). biometric_not_sole_factor_prop s \<longrightarrow> bio_session_multi_factor s = True \<or> bio_session_fallback_available s = True"
   by auto
 
 end

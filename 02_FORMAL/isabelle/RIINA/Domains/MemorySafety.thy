@@ -12,21 +12,21 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | AllocState         | alloc_state            | OK     |
- * | PointerValidity    | pointer_validity       | OK     |
- * | SecurityDomain     | security_domain        | OK     |
- * | AccessPermission   | access_permission      | OK     |
- * | MemoryRegion       | memory_region          | OK     |
- * | Pointer            | pointer                | OK     |
- * | SecureMemoryRegion | secure_memory_region   | OK     |
- * | UseAfterFreeGuard  | use_after_free_guard   | OK     |
- * | DoubleFreeGuard    | double_free_guard      | OK     |
- * | NullDerefGuard     | null_deref_guard       | OK     |
- * | BoundsGuard        | bounds_guard           | OK     |
- * | StackGuard         | stack_guard            | OK     |
- * | HeapGuard          | heap_guard             | OK     |
- * | IsolationGuard     | isolation_guard        | OK     |
- * | MemorySafetyConfig | memory_safety_config   | OK     |
+ * | alloc_state         | alloc_state            | OK     |
+ * | pointer_validity    | pointer_validity       | OK     |
+ * | security_domain     | security_domain        | OK     |
+ * | access_permission   | access_permission      | OK     |
+ * | memory_region       | memory_region          | OK     |
+ * | pointer            | pointer                | OK     |
+ * | secure_memory_region | secure_memory_region   | OK     |
+ * | use_after_free_guard  | use_after_free_guard   | OK     |
+ * | double_free_guard    | double_free_guard      | OK     |
+ * | null_deref_guard     | null_deref_guard       | OK     |
+ * | bounds_guard        | bounds_guard           | OK     |
+ * | stack_guard         | stack_guard            | OK     |
+ * | heap_guard          | heap_guard             | OK     |
+ * | isolation_guard     | isolation_guard        | OK     |
+ * | memory_safety_config | memory_safety_config   | OK     |
  * | uaf_protected      | uaf_protected          | OK     |
  * | df_protected       | df_protected           | OK     |
  * | nd_protected       | nd_protected           | OK     |
@@ -214,27 +214,27 @@ theory MemorySafety
   imports Main CoqCompat
 begin
 
-(* AllocState (matches Coq: Inductive AllocState) *)
+(* alloc_state (matches Coq: Inductive alloc_state) *)
 datatype alloc_state =
     Unallocated
   |     Allocated
   |     Freed
 
-(* PointerValidity (matches Coq: Inductive PointerValidity) *)
+(* pointer_validity (matches Coq: Inductive pointer_validity) *)
 datatype pointer_validity =
     Valid
   |     Null
   |     Dangling
   |     OutOfBounds
 
-(* SecurityDomain (matches Coq: Inductive SecurityDomain) *)
+(* security_domain (matches Coq: Inductive security_domain) *)
 datatype security_domain =
     DomainKernel
   |     DomainUser
   |     DomainGuest
   |     DomainUntrusted
 
-(* AccessPermission (matches Coq: Inductive AccessPermission) *)
+(* access_permission (matches Coq: Inductive access_permission) *)
 datatype access_permission =
     PermNone
   |     PermRead
@@ -242,80 +242,80 @@ datatype access_permission =
   |     PermReadWrite
   |     PermExecute
 
-(* MemoryRegion (matches Coq: Record MemoryRegion) *)
+(* memory_region (matches Coq: Record memory_region) *)
 record memory_region =
-  mr_alloc_state :: AllocState
+  mr_alloc_state :: alloc_state
   mr_size :: nat
   mr_initialized :: bool
   mr_owned :: bool
 
-(* Pointer (matches Coq: Record Pointer) *)
+(* pointer (matches Coq: Record pointer) *)
 record pointer =
-  ptr_validity :: PointerValidity
+  ptr_validity :: pointer_validity
   ptr_offset :: nat
   ptr_bounds :: nat
 
-(* SecureMemoryRegion (matches Coq: Record SecureMemoryRegion) *)
+(* secure_memory_region (matches Coq: Record secure_memory_region) *)
 record secure_memory_region =
-  smr_base :: MemoryRegion
-  smr_domain :: SecurityDomain
-  smr_permission :: AccessPermission
+  smr_base :: memory_region
+  smr_domain :: security_domain
+  smr_permission :: access_permission
   smr_encrypted :: bool
 
-(* UseAfterFreeGuard (matches Coq: Record UseAfterFreeGuard) *)
+(* use_after_free_guard (matches Coq: Record use_after_free_guard) *)
 record use_after_free_guard =
   uaf_lifetime_tracking :: bool
   uaf_ownership_clear :: bool
   uaf_access_check :: bool
 
-(* DoubleFreeGuard (matches Coq: Record DoubleFreeGuard) *)
+(* double_free_guard (matches Coq: Record double_free_guard) *)
 record double_free_guard =
   df_state_tracking :: bool
   df_single_owner :: bool
   df_freed_check :: bool
 
-(* NullDerefGuard (matches Coq: Record NullDerefGuard) *)
+(* null_deref_guard (matches Coq: Record null_deref_guard) *)
 record null_deref_guard =
   nd_null_check :: bool
   nd_option_types :: bool
   nd_init_required :: bool
 
-(* BoundsGuard (matches Coq: Record BoundsGuard) *)
+(* bounds_guard (matches Coq: Record bounds_guard) *)
 record bounds_guard =
   bg_bounds_check :: bool
   bg_fat_pointers :: bool
   bg_slice_safety :: bool
 
-(* StackGuard (matches Coq: Record StackGuard) *)
+(* stack_guard (matches Coq: Record stack_guard) *)
 record stack_guard =
   sg_canary_enabled :: bool
   sg_return_addr_protected :: bool
   sg_frame_isolation :: bool
   sg_shadow_stack :: bool
 
-(* HeapGuard (matches Coq: Record HeapGuard) *)
+(* heap_guard (matches Coq: Record heap_guard) *)
 record heap_guard =
   hg_allocation_tracking :: bool
   hg_deallocation_check :: bool
   hg_fragmentation_prevention :: bool
   hg_metadata_integrity :: bool
 
-(* IsolationGuard (matches Coq: Record IsolationGuard) *)
+(* isolation_guard (matches Coq: Record isolation_guard) *)
 record isolation_guard =
   ig_domain_separation :: bool
   ig_permission_enforcement :: bool
   ig_cross_domain_check :: bool
   ig_capability_required :: bool
 
-(* MemorySafetyConfig (matches Coq: Record MemorySafetyConfig) *)
+(* memory_safety_config (matches Coq: Record memory_safety_config) *)
 record memory_safety_config =
-  ms_uaf :: UseAfterFreeGuard
-  ms_df :: DoubleFreeGuard
-  ms_nd :: NullDerefGuard
-  ms_bounds :: BoundsGuard
-  ms_stack :: StackGuard
-  ms_heap :: HeapGuard
-  ms_isolation :: IsolationGuard
+  ms_uaf :: use_after_free_guard
+  ms_df :: double_free_guard
+  ms_nd :: null_deref_guard
+  ms_bounds :: bounds_guard
+  ms_stack :: stack_guard
+  ms_heap :: heap_guard
+  ms_isolation :: isolation_guard
 
 (* uaf_protected (matches Coq: Definition uaf_protected) *)
 definition uaf_protected :: "UseAfterFreeGuard \<Rightarrow> bool" where
@@ -412,13 +412,13 @@ fun permission_allows_write :: "AccessPermission \<Rightarrow> bool" where
 |   "permission_allows_write _ = false"
 
 (* secure_region_can_read (matches Coq: Definition secure_region_can_read) *)
-definition secure_region_can_read :: "SecureMemoryRegion \<Rightarrow> SecurityDomain \<Rightarrow> bool" where
+definition secure_region_can_read :: "SecureMemoryRegion \<Rightarrow> security_domain \<Rightarrow> bool" where
   "secure_region_can_read r from \<equiv> region_is_allocated (smr_base r) \<and>
   domain_can_access from (smr_domain r) \<and>
   permission_allows_read (smr_permission r)"
 
 (* secure_region_can_write (matches Coq: Definition secure_region_can_write) *)
-definition secure_region_can_write :: "SecureMemoryRegion \<Rightarrow> SecurityDomain \<Rightarrow> bool" where
+definition secure_region_can_write :: "SecureMemoryRegion \<Rightarrow> security_domain \<Rightarrow> bool" where
   "secure_region_can_write r from \<equiv> region_is_allocated (smr_base r) \<and>
   domain_can_access from (smr_domain r) \<and>
   permission_allows_write (smr_permission r)"

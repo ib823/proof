@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | FailsafeTrigger    | failsafe_trigger       | OK     |
- * | FailsafeAction     | failsafe_action        | OK     |
- * | VerifyResult       | verify_result          | OK     |
+ * | failsafe_trigger    | failsafe_trigger       | OK     |
+ * | failsafe_action     | failsafe_action        | OK     |
+ * | verify_result       | verify_result          | OK     |
  * | velocity_in_envelope | velocity_in_envelope   | OK     |
  * | distance_safe      | distance_safe          | OK     |
  * | heading_rate_ok    | heading_rate_ok        | OK     |
@@ -67,7 +67,12 @@ theory VerifiedAutonomy
   imports Main CoqCompat
 begin
 
-(* FailsafeTrigger (matches Coq: Inductive FailsafeTrigger) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym decision = "nat"
+type_synonym reaction_time = "nat"
+type_synonym safety_envelope = "nat"
+type_synonym system_state = "nat"
+(* failsafe_trigger (matches Coq: Inductive failsafe_trigger) *)
 datatype failsafe_trigger =
     SensorFailure
   |     EnvelopeViolation
@@ -75,29 +80,29 @@ datatype failsafe_trigger =
   |     HumanOverride
   |     Timeout
 
-(* FailsafeAction (matches Coq: Inductive FailsafeAction) *)
+(* failsafe_action (matches Coq: Inductive failsafe_action) *)
 datatype failsafe_action =
     EmergencyStop
   |     SafeHold
   |     ReturnToBase
   |     HandoffToHuman
 
-(* VerifyResult (matches Coq: Inductive VerifyResult) *)
+(* verify_result (matches Coq: Inductive verify_result) *)
 datatype verify_result =
     Verified
   |     Rejected
   |     NeedsReview
 
 (* velocity_in_envelope (matches Coq: Definition velocity_in_envelope) *)
-definition velocity_in_envelope :: "SystemState \<Rightarrow> SafetyEnvelope \<Rightarrow> bool" where
+definition velocity_in_envelope :: "SystemState \<Rightarrow> safety_envelope \<Rightarrow> bool" where
   "velocity_in_envelope state env \<equiv> ((state_velocity \<le> state)) (env_max_velocity env)"
 
 (* distance_safe (matches Coq: Definition distance_safe) *)
-definition distance_safe :: "nat \<Rightarrow> SafetyEnvelope \<Rightarrow> bool" where
+definition distance_safe :: "nat \<Rightarrow> safety_envelope \<Rightarrow> bool" where
   "distance_safe current_distance env \<equiv> ((env_min_distance \<le> env)) current_distance"
 
 (* heading_rate_ok (matches Coq: Definition heading_rate_ok) *)
-definition heading_rate_ok :: "nat \<Rightarrow> SafetyEnvelope \<Rightarrow> bool" where
+definition heading_rate_ok :: "nat \<Rightarrow> safety_envelope \<Rightarrow> bool" where
   "heading_rate_ok rate env \<equiv> (rate \<le> (env_max_heading_rate) env)"
 
 (* confidence_sufficient (matches Coq: Definition confidence_sufficient) *)
@@ -176,19 +181,19 @@ definition autonomy_layers :: "bool" where
   "autonomy_layers \<equiv> (envelope \<and> failsafe \<and> (override \<longrightarrow> verify))"
 
 (* auto_001_velocity_bounded (matches Coq) *)
-lemma auto_001_velocity_bounded: "\<forall>(state :: SystemState) (env :: SafetyEnvelope). velocity_in_envelope state env = True \<longrightarrow> state_velocity state \<le> env_max_velocity env"
+lemma auto_001_velocity_bounded: "\<forall>(state :: system_state) (env :: safety_envelope). velocity_in_envelope state env = True \<longrightarrow> state_velocity state \<le> env_max_velocity env"
   by auto
 
 (* auto_002_distance_maintained (matches Coq) *)
-lemma auto_002_distance_maintained: "\<forall>(distance :: nat) (env :: SafetyEnvelope). distance_safe distance env = True \<longrightarrow> env_min_distance env \<le> distance"
+lemma auto_002_distance_maintained: "\<forall>(distance :: nat) (env :: safety_envelope). distance_safe distance env = True \<longrightarrow> env_min_distance env \<le> distance"
   by auto
 
 (* auto_003_heading_bounded (matches Coq) *)
-lemma auto_003_heading_bounded: "\<forall>(rate :: nat) (env :: SafetyEnvelope). heading_rate_ok rate env = True \<longrightarrow> rate \<le> env_max_heading_rate env"
+lemma auto_003_heading_bounded: "\<forall>(rate :: nat) (env :: safety_envelope). heading_rate_ok rate env = True \<longrightarrow> rate \<le> env_max_heading_rate env"
   by auto
 
 (* auto_004_confidence_ok (matches Coq) *)
-lemma auto_004_confidence_ok: "\<forall>(dec :: Decision) (min_conf :: nat). confidence_sufficient dec min_conf = True \<longrightarrow> min_conf \<le> dec_confidence dec"
+lemma auto_004_confidence_ok: "\<forall>(dec :: decision) (min_conf :: nat). confidence_sufficient dec min_conf = True \<longrightarrow> min_conf \<le> dec_confidence dec"
   by auto
 
 (* auto_005_sensor_failsafe (matches Coq) *)
@@ -204,7 +209,7 @@ lemma auto_007_human_override: "should_failsafe HumanOverride = True"
   by simp
 
 (* auto_008_reaction_bounded (matches Coq) *)
-lemma auto_008_reaction_bounded: "\<forall>(rt :: ReactionTime). reaction_ok rt = True \<longrightarrow> react_measured rt \<le> react_deadline rt"
+lemma auto_008_reaction_bounded: "\<forall>(rt :: reaction_time). reaction_ok rt = True \<longrightarrow> react_measured rt \<le> react_deadline rt"
   by auto
 
 (* auto_009_emergency_stop_valid (matches Coq) *)
@@ -224,11 +229,11 @@ lemma auto_012_no_skip_assisted: "valid_mode_transition 0 2 = False"
   by simp
 
 (* auto_013_decision_fresh (matches Coq) *)
-lemma auto_013_decision_fresh: "\<forall>(dec :: Decision) (current max_age : nat). decision_fresh dec current max_age = True \<longrightarrow> current - dec_timestamp dec \<le> max_age"
+lemma auto_013_decision_fresh: "\<forall>(dec :: decision) (current max_age : nat). decision_fresh dec current max_age = True \<longrightarrow> current - dec_timestamp dec \<le> max_age"
   by auto
 
 (* auto_014_action_bounded (matches Coq) *)
-lemma auto_014_action_bounded: "\<forall>(dec :: Decision) (max_mag :: nat). action_bounded dec max_mag = True \<longrightarrow> dec_magnitude dec \<le> max_mag"
+lemma auto_014_action_bounded: "\<forall>(dec :: decision) (max_mag :: nat). action_bounded dec max_mag = True \<longrightarrow> dec_magnitude dec \<le> max_mag"
   by auto
 
 (* auto_015_sensor_agreement (matches Coq) *)

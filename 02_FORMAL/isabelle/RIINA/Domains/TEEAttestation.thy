@@ -12,22 +12,22 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | EnclaveState       | enclave_state          | OK     |
- * | EnclaveEvent       | enclave_event          | OK     |
- * | SealingPolicy      | sealing_policy         | OK     |
- * | MemoryRegionType   | memory_region_type     | OK     |
- * | EnclaveProperties  | enclave_properties     | OK     |
- * | EnclaveIdentity    | enclave_identity       | OK     |
- * | AttestationProperties | attestation_properties | OK     |
- * | AttestationQuote   | attestation_quote      | OK     |
- * | VerificationContext | verification_context   | OK     |
- * | TEEConfig          | tee_config             | OK     |
- * | SealedData         | sealed_data            | OK     |
- * | KeyDerivationParams | key_derivation_params  | OK     |
- * | MemoryPermissions  | memory_permissions     | OK     |
- * | MemoryRegion       | memory_region          | OK     |
- * | PlatformIdentity   | platform_identity      | OK     |
- * | TrustChain         | trust_chain            | OK     |
+ * | enclave_state       | enclave_state          | OK     |
+ * | enclave_event       | enclave_event          | OK     |
+ * | sealing_policy      | sealing_policy         | OK     |
+ * | memory_region_type   | memory_region_type     | OK     |
+ * | enclave_properties  | enclave_properties     | OK     |
+ * | enclave_identity    | enclave_identity       | OK     |
+ * | attestation_properties | attestation_properties | OK     |
+ * | attestation_quote   | attestation_quote      | OK     |
+ * | verification_context | verification_context   | OK     |
+ * | tee_config          | tee_config             | OK     |
+ * | sealed_data         | sealed_data            | OK     |
+ * | key_derivation_params | key_derivation_params  | OK     |
+ * | memory_permissions  | memory_permissions     | OK     |
+ * | memory_region       | memory_region          | OK     |
+ * | platform_identity   | platform_identity      | OK     |
+ * | trust_chain         | trust_chain            | OK     |
  * | enclave_transition | enclave_transition     | OK     |
  * | enclave_secure     | enclave_secure         | OK     |
  * | quote_measurement_valid | quote_measurement_valid | OK     |
@@ -162,7 +162,7 @@ theory TEEAttestation
   imports Main CoqCompat
 begin
 
-(* EnclaveState (matches Coq: Inductive EnclaveState) *)
+(* enclave_state (matches Coq: Inductive enclave_state) *)
 datatype enclave_state =
     ES_Uninitialized
   |     ES_Created
@@ -171,7 +171,7 @@ datatype enclave_state =
   |     ES_Suspended
   |     ES_Destroyed
 
-(* EnclaveEvent (matches Coq: Inductive EnclaveEvent) *)
+(* enclave_event (matches Coq: Inductive enclave_event) *)
 datatype enclave_event =
     EE_Create
   |     EE_Initialize
@@ -181,50 +181,50 @@ datatype enclave_event =
   |     EE_Resume
   |     EE_Destroy
 
-(* SealingPolicy (matches Coq: Inductive SealingPolicy) *)
+(* sealing_policy (matches Coq: Inductive sealing_policy) *)
 datatype sealing_policy =
     SP_MRENCLAVE
   |     SP_MRSIGNER
   |     SP_KEYPOLICY
 
-(* MemoryRegionType (matches Coq: Inductive MemoryRegionType) *)
+(* memory_region_type (matches Coq: Inductive memory_region_type) *)
 datatype memory_region_type =
     MRT_Normal
   |     MRT_Enclave
   |     MRT_Shared
   |     MRT_Reserved
 
-(* EnclaveProperties (matches Coq: Record EnclaveProperties) *)
+(* enclave_properties (matches Coq: Record enclave_properties) *)
 record enclave_properties =
   enc_memory_encrypted :: bool
   enc_code_integrity :: bool
   enc_data_sealing :: bool
   enc_isolated_execution :: bool
 
-(* EnclaveIdentity (matches Coq: Record EnclaveIdentity) *)
+(* enclave_identity (matches Coq: Record enclave_identity) *)
 record enclave_identity =
   ei_measurement :: nat
   ei_signer :: nat
   ei_product_id :: nat
   ei_security_version :: nat
 
-(* AttestationProperties (matches Coq: Record AttestationProperties) *)
+(* attestation_properties (matches Coq: Record attestation_properties) *)
 record attestation_properties =
   att_measurement :: bool
   att_signature :: bool
   att_freshness :: bool
   att_binding :: bool
 
-(* AttestationQuote (matches Coq: Record AttestationQuote) *)
+(* attestation_quote (matches Coq: Record attestation_quote) *)
 record attestation_quote =
-  aq_enclave_identity :: EnclaveIdentity
+  aq_enclave_identity :: enclave_identity
   aq_report_data :: nat
   aq_nonce :: nat
   aq_timestamp :: nat
   aq_platform_info :: nat
   aq_signature_valid :: bool
 
-(* VerificationContext (matches Coq: Record VerificationContext) *)
+(* verification_context (matches Coq: Record verification_context) *)
 record verification_context =
   vc_expected_measurement :: nat
   vc_expected_signer :: nat
@@ -233,43 +233,43 @@ record verification_context =
   vc_max_timestamp_age :: nat
   vc_current_time :: nat
 
-(* TEEConfig (matches Coq: Record TEEConfig) *)
+(* tee_config (matches Coq: Record tee_config) *)
 record tee_config =
-  tee_enclave :: EnclaveProperties
-  tee_attestation :: AttestationProperties
+  tee_enclave :: enclave_properties
+  tee_attestation :: attestation_properties
   tee_remote_attestation :: bool
   tee_local_attestation :: bool
   tee_key_derivation :: bool
 
-(* SealedData (matches Coq: Record SealedData) *)
+(* sealed_data (matches Coq: Record sealed_data) *)
 record sealed_data =
-  sd_policy :: SealingPolicy
+  sd_policy :: sealing_policy
   sd_ciphertext :: nat
   sd_auth_tag :: nat
   sd_key_id :: nat
 
-(* KeyDerivationParams (matches Coq: Record KeyDerivationParams) *)
+(* key_derivation_params (matches Coq: Record key_derivation_params) *)
 record key_derivation_params =
-  kdp_policy :: SealingPolicy
-  kdp_enclave_id :: EnclaveIdentity
+  kdp_policy :: sealing_policy
+  kdp_enclave_id :: enclave_identity
   kdp_key_name :: nat
   kdp_key_size :: nat
 
-(* MemoryPermissions (matches Coq: Record MemoryPermissions) *)
+(* memory_permissions (matches Coq: Record memory_permissions) *)
 record memory_permissions =
   mp_read :: bool
   mp_write :: bool
   mp_execute :: bool
 
-(* MemoryRegion (matches Coq: Record MemoryRegion) *)
+(* memory_region (matches Coq: Record memory_region) *)
 record memory_region =
   mr_base :: nat
   mr_size :: nat
-  mr_type :: MemoryRegionType
-  mr_permissions :: MemoryPermissions
+  mr_type :: memory_region_type
+  mr_permissions :: memory_permissions
   mr_encrypted :: bool
 
-(* PlatformIdentity (matches Coq: Record PlatformIdentity) *)
+(* platform_identity (matches Coq: Record platform_identity) *)
 record platform_identity =
   pi_cpu_svn :: nat
   pi_pce_svn :: nat
@@ -277,7 +277,7 @@ record platform_identity =
   pi_platform_id :: nat
   pi_tcb_info_valid :: bool
 
-(* TrustChain (matches Coq: Record TrustChain) *)
+(* trust_chain (matches Coq: Record trust_chain) *)
 record trust_chain =
   tc_root_key_valid :: bool
   tc_pck_cert_valid :: bool
@@ -292,28 +292,28 @@ definition enclave_secure :: "EnclaveProperties \<Rightarrow> bool" where
   "enclave_secure e \<equiv> enc_memory_encrypted e \<and> enc_code_integrity e \<and> enc_data_sealing e \<and> enc_isolated_execution e"
 
 (* quote_measurement_valid (matches Coq: Definition quote_measurement_valid) *)
-definition quote_measurement_valid :: "AttestationQuote \<Rightarrow> VerificationContext \<Rightarrow> bool" where
+definition quote_measurement_valid :: "AttestationQuote \<Rightarrow> verification_context \<Rightarrow> bool" where
   "quote_measurement_valid q ctx \<equiv> ((ei_measurement = (aq_enclave_identity) q)) (vc_expected_measurement ctx)"
 
 (* quote_signer_valid (matches Coq: Definition quote_signer_valid) *)
-definition quote_signer_valid :: "AttestationQuote \<Rightarrow> VerificationContext \<Rightarrow> bool" where
+definition quote_signer_valid :: "AttestationQuote \<Rightarrow> verification_context \<Rightarrow> bool" where
   "quote_signer_valid q ctx \<equiv> ((ei_signer = (aq_enclave_identity) q)) (vc_expected_signer ctx)"
 
 (* quote_svn_valid (matches Coq: Definition quote_svn_valid) *)
-definition quote_svn_valid :: "AttestationQuote \<Rightarrow> VerificationContext \<Rightarrow> bool" where
+definition quote_svn_valid :: "AttestationQuote \<Rightarrow> verification_context \<Rightarrow> bool" where
   "quote_svn_valid q ctx \<equiv> ((vc_min_security_version \<le> ctx)) (ei_security_version (aq_enclave_identity q))"
 
 (* quote_nonce_valid (matches Coq: Definition quote_nonce_valid) *)
-definition quote_nonce_valid :: "AttestationQuote \<Rightarrow> VerificationContext \<Rightarrow> bool" where
+definition quote_nonce_valid :: "AttestationQuote \<Rightarrow> verification_context \<Rightarrow> bool" where
   "quote_nonce_valid q ctx \<equiv> (aq_nonce q = vc_expected_nonce ctx)"
 
 (* quote_fresh (matches Coq: Definition quote_fresh) *)
-definition quote_fresh :: "AttestationQuote \<Rightarrow> VerificationContext \<Rightarrow> bool" where
+definition quote_fresh :: "AttestationQuote \<Rightarrow> verification_context \<Rightarrow> bool" where
   "quote_fresh q ctx \<equiv> (aq_timestamp q \<le> vc_current_time ctx) \<and>
   (vc_current_time ctx - aq_timestamp q \<le> vc_max_timestamp_age ctx)"
 
 (* verify_quote (matches Coq: Definition verify_quote) *)
-definition verify_quote :: "AttestationQuote \<Rightarrow> VerificationContext \<Rightarrow> bool" where
+definition verify_quote :: "AttestationQuote \<Rightarrow> verification_context \<Rightarrow> bool" where
   "verify_quote q ctx \<equiv> aq_signature_valid q \<and>
   quote_measurement_valid q ctx \<and>
   quote_signer_valid q ctx \<and>
@@ -353,7 +353,7 @@ definition trust_chain_complete :: "TrustChain \<Rightarrow> bool" where
   "trust_chain_complete tc \<equiv> tc_root_key_valid tc \<and> tc_pck_cert_valid tc \<and> tc_tcb_signing_valid tc \<and> tc_qe_report_valid tc"
 
 (* platform_trusted (matches Coq: Definition platform_trusted) *)
-definition platform_trusted :: "PlatformIdentity \<Rightarrow> TrustChain \<Rightarrow> bool" where
+definition platform_trusted :: "PlatformIdentity \<Rightarrow> trust_chain \<Rightarrow> bool" where
   "platform_trusted pi tc \<equiv> pi_tcb_info_valid pi \<and> trust_chain_complete tc"
 
 (* riina_enclave (matches Coq: Definition riina_enclave) *)

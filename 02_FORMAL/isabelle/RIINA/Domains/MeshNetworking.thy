@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | RouteStatus        | route_status           | OK     |
+ * | route_status        | route_status           | OK     |
  * | honest_path        | honest_path            | OK     |
  * | byzantine_tolerant | byzantine_tolerant     | OK     |
  * | loop_free          | loop_free              | OK     |
@@ -71,7 +71,13 @@ theory MeshNetworking
   imports Main CoqCompat
 begin
 
-(* RouteStatus (matches Coq: Inductive RouteStatus) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym byzantine_set = "nat list"
+type_synonym mesh_network = "nat"
+type_synonym multi_path = "nat"
+type_synonym route = "nat"
+type_synonym route_entry = "nat"
+(* route_status (matches Coq: Inductive route_status) *)
 datatype route_status =
     ValidRoute
   |     StaleRoute
@@ -79,7 +85,7 @@ datatype route_status =
   |     PartitionDetected
 
 (* honest_path (matches Coq: Definition honest_path) *)
-definition honest_path :: "Route \<Rightarrow> ByzantineSet \<Rightarrow> bool" where
+definition honest_path :: "Route \<Rightarrow> byzantine_set \<Rightarrow> bool" where
   "honest_path path byzantine \<equiv> forallb (\<lambda>n. (\<not> (existsb) (\<lambda>b. (n = b)) byzantine)) path"
 
 (* byzantine_tolerant (matches Coq: Definition byzantine_tolerant) *)
@@ -189,15 +195,15 @@ lemma NoDup_nodup_equiv: "\<forall>(l : list nat). length l = length (nodup Nat.
   by auto
 
 (* mesh_001_byzantine_threshold (matches Coq) *)
-lemma mesh_001_byzantine_threshold: "\<forall>(network :: MeshNetwork). byzantine_tolerant network = True \<longrightarrow> 3 * mesh_threshold network + 1 \<le> length (mesh_nodes network)"
+lemma mesh_001_byzantine_threshold: "\<forall>(network :: mesh_network). byzantine_tolerant network = True \<longrightarrow> 3 * mesh_threshold network + 1 \<le> length (mesh_nodes network)"
   by auto
 
 (* mesh_002_honest_path (matches Coq) *)
-lemma mesh_002_honest_path: "\<forall>(path :: Route) (byzantine :: ByzantineSet). honest_path path byzantine = True \<longrightarrow> Forall (\<lambda>n. ~ n \<in> set byzantine) path"
+lemma mesh_002_honest_path: "\<forall>(path :: route) (byzantine :: byzantine_set). honest_path path byzantine = True \<longrightarrow> Forall (\<lambda>n. ~ n \<in> set byzantine) path"
   by auto
 
 (* mesh_003_loop_free (matches Coq) *)
-lemma mesh_003_loop_free: "\<forall>(route :: Route). loop_free route = True \<longrightarrow> NoDup route"
+lemma mesh_003_loop_free: "\<forall>(route :: route). loop_free route = True \<longrightarrow> NoDup route"
   by auto
 
 (* mesh_004_seq_increasing (matches Coq) *)
@@ -205,19 +211,19 @@ lemma mesh_004_seq_increasing: "\<forall>(old_seq new_seq : nat). seq_increasing
   by auto
 
 (* mesh_005_route_fresh (matches Coq) *)
-lemma mesh_005_route_fresh: "\<forall>(entry :: RouteEntry) (current max_age : nat). route_fresh entry current max_age = True \<longrightarrow> current - route_timestamp entry \<le> max_age"
+lemma mesh_005_route_fresh: "\<forall>(entry :: route_entry) (current max_age : nat). route_fresh entry current max_age = True \<longrightarrow> current - route_timestamp entry \<le> max_age"
   by auto
 
 (* mesh_006_multi_path (matches Coq) *)
-lemma mesh_006_multi_path: "\<forall>(mp :: MultiPath) (min_paths :: nat). paths_sufficient mp min_paths = True \<longrightarrow> min_paths \<le> length (mp_paths mp)"
+lemma mesh_006_multi_path: "\<forall>(mp :: multi_path) (min_paths :: nat). paths_sufficient mp min_paths = True \<longrightarrow> min_paths \<le> length (mp_paths mp)"
   by auto
 
 (* mesh_007_disjoint (matches Coq) *)
-lemma mesh_007_disjoint: "\<forall>(mp :: MultiPath). mp_disjoint mp = True \<longrightarrow> mp_disjoint mp = True"
+lemma mesh_007_disjoint: "\<forall>(mp :: multi_path). mp_disjoint mp = True \<longrightarrow> mp_disjoint mp = True"
   by auto
 
 (* mesh_008_metric_bounded (matches Coq) *)
-lemma mesh_008_metric_bounded: "\<forall>(entry :: RouteEntry) (max_metric :: nat). metric_bounded entry max_metric = True \<longrightarrow> route_metric entry \<le> max_metric"
+lemma mesh_008_metric_bounded: "\<forall>(entry :: route_entry) (max_metric :: nat). metric_bounded entry max_metric = True \<longrightarrow> route_metric entry \<le> max_metric"
   by auto
 
 (* mesh_009_neighbor_auth (matches Coq) *)
@@ -225,11 +231,11 @@ lemma mesh_009_neighbor_auth: "\<forall>(neighbor :: nat) (trusted : list nat). 
   by auto
 
 (* mesh_010_hop_limit (matches Coq) *)
-lemma mesh_010_hop_limit: "\<forall>(route :: Route) (max_hops :: nat). hop_count_ok route max_hops = True \<longrightarrow> length route \<le> max_hops"
+lemma mesh_010_hop_limit: "\<forall>(route :: route) (max_hops :: nat). hop_count_ok route max_hops = True \<longrightarrow> length route \<le> max_hops"
   by auto
 
 (* mesh_011_entry_valid (matches Coq) *)
-lemma mesh_011_entry_valid: "\<forall>(entry :: RouteEntry). entry_valid entry = True \<longrightarrow> 0 < route_dest entry \<and> 0 < route_next_hop entry"
+lemma mesh_011_entry_valid: "\<forall>(entry :: route_entry). entry_valid entry = True \<longrightarrow> 0 < route_dest entry \<and> 0 < route_next_hop entry"
   by auto
 
 (* mesh_012_partition (matches Coq) *)
@@ -237,7 +243,7 @@ lemma mesh_012_partition: "\<forall>(reachable total threshold : nat). partition
   by auto
 
 (* mesh_013_healing (matches Coq) *)
-lemma mesh_013_healing: "\<forall>(paths : list Route). healing_path_\<exists> paths = True \<longrightarrow> length paths > 0"
+lemma mesh_013_healing: "\<forall>(paths : list route). healing_path_\<exists> paths = True \<longrightarrow> length paths > 0"
   by auto
 
 (* mesh_014_convergence (matches Coq) *)

@@ -12,17 +12,17 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | AuthMechanism      | auth_mechanism         | OK     |
- * | HumanThreat        | human_threat           | OK     |
- * | UserRole           | user_role              | OK     |
- * | TrainingStatus     | training_status        | OK     |
- * | VerificationLevel  | verification_level     | OK     |
- * | PhysicalAccessLevel | physical_access_level  | OK     |
- * | DisposalMethod     | disposal_method        | OK     |
- * | PasswordPolicy     | password_policy        | OK     |
- * | ConfigManagement   | config_management      | OK     |
- * | ReviewProcess      | review_process         | OK     |
- * | SecurityPolicyState | security_policy_state  | OK     |
+ * | auth_mechanism      | auth_mechanism         | OK     |
+ * | human_threat        | human_threat           | OK     |
+ * | user_role           | user_role              | OK     |
+ * | training_status     | training_status        | OK     |
+ * | verification_level  | verification_level     | OK     |
+ * | physical_access_level | physical_access_level  | OK     |
+ * | disposal_method     | disposal_method        | OK     |
+ * | password_policy     | password_policy        | OK     |
+ * | config_management   | config_management      | OK     |
+ * | review_process      | review_process         | OK     |
+ * | security_policy_state | security_policy_state  | OK     |
  * | webauthn_is_phishing_resistant | webauthn_is_phishing_resistant | OK     |
  * | is_phishing_resistant_auth | is_phishing_resistant_auth | OK     |
  * | verification_procedures_adequate | verification_procedures_adequate | OK     |
@@ -110,7 +110,7 @@ theory HumanFactorSecurity
   imports Main
 begin
 
-(* AuthMechanism (matches Coq: Inductive AuthMechanism) *)
+(* auth_mechanism (matches Coq: Inductive auth_mechanism) *)
 datatype auth_mechanism =
     PasswordOnly
   |     WebAuthn
@@ -119,7 +119,7 @@ datatype auth_mechanism =
   |     Biometric
   |     MultiFactorAuth
 
-(* HumanThreat (matches Coq: Inductive HumanThreat) *)
+(* human_threat (matches Coq: Inductive human_threat) *)
 datatype human_threat =
     Phishing
   |     SpearPhishing
@@ -143,7 +143,7 @@ datatype human_threat =
   |     ConfigurationError
   |     SockPuppetCampaign
 
-(* UserRole (matches Coq: Inductive UserRole) *)
+(* user_role (matches Coq: Inductive user_role) *)
 datatype user_role =
     StandardUser
   |     PrivilegedUser
@@ -151,21 +151,21 @@ datatype user_role =
   |     Administrator
   |     Maintainer
 
-(* TrainingStatus (matches Coq: Inductive TrainingStatus) *)
+(* training_status (matches Coq: Inductive training_status) *)
 datatype training_status =
     NotTrained
   |     BasicTrained
   |     AdvancedTrained
   |     CertifiedTrained
 
-(* VerificationLevel (matches Coq: Inductive VerificationLevel) *)
+(* verification_level (matches Coq: Inductive verification_level) *)
 datatype verification_level =
     NoVerification
   |     SingleVerification
   |     DualVerification
   |     MultiPartyVerification
 
-(* PhysicalAccessLevel (matches Coq: Inductive PhysicalAccessLevel) *)
+(* physical_access_level (matches Coq: Inductive physical_access_level) *)
 datatype physical_access_level =
     OpenAccess
   |     BadgeRequired
@@ -173,7 +173,7 @@ datatype physical_access_level =
   |     MantrapRequired
   |     EscortRequired
 
-(* DisposalMethod (matches Coq: Inductive DisposalMethod) *)
+(* disposal_method (matches Coq: Inductive disposal_method) *)
 datatype disposal_method =
     StandardTrash
   |     Shredding
@@ -181,7 +181,7 @@ datatype disposal_method =
   |     SecureIncineration
   |     DegaussingAndDestruction
 
-(* PasswordPolicy (matches Coq: Inductive PasswordPolicy) *)
+(* password_policy (matches Coq: Inductive password_policy) *)
 datatype password_policy =
     NoPolicy
   |     BasicPolicy
@@ -189,7 +189,7 @@ datatype password_policy =
   |     EnterprisePolicy
   |     ZeroTrustPolicy
 
-(* ConfigManagement (matches Coq: Inductive ConfigManagement) *)
+(* config_management (matches Coq: Inductive config_management) *)
 datatype config_management =
     ManualConfig
   |     ScriptedConfig
@@ -197,7 +197,7 @@ datatype config_management =
   |     AutomatedWithValidation
   |     ImmutableInfrastructure
 
-(* ReviewProcess (matches Coq: Inductive ReviewProcess) *)
+(* review_process (matches Coq: Inductive review_process) *)
 datatype review_process =
     NoReview
   |     SingleReview
@@ -205,20 +205,20 @@ datatype review_process =
   |     MultiMaintainerReview
   |     FormalVerificationReview
 
-(* SecurityPolicyState (matches Coq: Record SecurityPolicyState) *)
+(* security_policy_state (matches Coq: Record security_policy_state) *)
 record security_policy_state =
-  auth_mechanism :: AuthMechanism
+  auth_mechanism :: auth_mechanism
   mfa_enabled :: bool
   webauthn_enforced :: bool
-  training_status :: TrainingStatus
+  training_status :: training_status
   phishing_training_complete :: bool
   social_engineering_awareness :: bool
-  verification_level :: VerificationLevel
+  verification_level :: verification_level
   callback_verification :: bool
   out_of_band_verification :: bool
-  physical_access_level :: PhysicalAccessLevel
+  physical_access_level :: physical_access_level
   privacy_screens_deployed :: bool
-  disposal_method :: DisposalMethod
+  disposal_method :: disposal_method
   device_control_policy :: bool
   url_filtering_enabled :: bool
   least_privilege_enforced :: bool
@@ -229,12 +229,12 @@ record security_policy_state =
   background_checks_performed :: bool
   behavioral_monitoring :: bool
   security_culture_established :: bool
-  password_policy :: PasswordPolicy
+  password_policy :: password_policy
   unique_passwords_enforced :: bool
   breach_detection_enabled :: bool
   technical_controls_active :: bool
-  config_management :: ConfigManagement
-  review_process :: ReviewProcess
+  config_management :: config_management
+  review_process :: review_process
   multi_maintainer_required :: bool
 
 (* webauthn_is_phishing_resistant (matches Coq: Definition webauthn_is_phishing_resistant) *)
@@ -320,7 +320,7 @@ definition automated_config_active :: "bool" where "automated_config_active = un
 definition multi_maintainer_review_active :: "bool" where "multi_maintainer_review_active = undefined"
 
 (* threat_mitigated (matches Coq: Definition threat_mitigated) *)
-fun threat_mitigated :: "HumanThreat \<Rightarrow> SecurityPolicyState \<Rightarrow> bool" where
+fun threat_mitigated :: "HumanThreat \<Rightarrow> security_policy_state \<Rightarrow> bool" where
   "threat_mitigated Phishing = is_phishing_resistant_auth"
 |   "threat_mitigated SpearPhishing = verification_procedures_adequate"
 |   "threat_mitigated Whaling = executive_verification_enhanced"
@@ -348,7 +348,7 @@ definition attack_success_rate :: "HumanThreat \<Rightarrow> bool \<Rightarrow> 
   "attack_success_rate threat mitigated \<equiv> if mitigated then 0 else 100"
 
 (* control_effective (matches Coq: Definition control_effective) *)
-definition control_effective :: "HumanThreat \<Rightarrow> SecurityPolicyState \<Rightarrow> bool" where
+definition control_effective :: "HumanThreat \<Rightarrow> security_policy_state \<Rightarrow> bool" where
   "control_effective threat state \<equiv> threat_mitigated threat state -> attack_success_rate threat True = 0"
 
 (* fully_secured_state (matches Coq: Definition fully_secured_state) *)
@@ -415,175 +415,175 @@ lemma zero_trust_is_strong: "\<forall>pp. pp = ZeroTrustPolicy \<longrightarrow>
   by auto
 
 (* hum_001_phishing_mitigated_by_webauthn (matches Coq) *)
-lemma hum_001_phishing_mitigated_by_webauthn: "\<forall>(state :: SecurityPolicyState). webauthn_enforced state = True \<longrightarrow> auth_mechanism state = WebAuthn \<longrightarrow> threat_mitigated Phishing state"
+lemma hum_001_phishing_mitigated_by_webauthn: "\<forall>(state :: security_policy_state). webauthn_enforced state = True \<longrightarrow> auth_mechanism state = WebAuthn \<longrightarrow> threat_mitigated Phishing state"
   by auto
 
 (* hum_001_phishing_control_effective (matches Coq) *)
-lemma hum_001_phishing_control_effective: "\<forall>(state :: SecurityPolicyState). is_phishing_resistant_auth state \<longrightarrow> control_effective Phishing state"
+lemma hum_001_phishing_control_effective: "\<forall>(state :: security_policy_state). is_phishing_resistant_auth state \<longrightarrow> control_effective Phishing state"
   by simp
 
 (* hum_002_spear_phishing_mitigated (matches Coq) *)
-lemma hum_002_spear_phishing_mitigated: "\<forall>(state :: SecurityPolicyState). (verification_level state = DualVerification \<or> verification_level state = MultiPartyVerification) \<longrightarrow> (training_status state = AdvancedTrained \<or> training_status state = CertifiedTrained) \<longrightarrow> threat_mitigated SpearPhishing state"
+lemma hum_002_spear_phishing_mitigated: "\<forall>(state :: security_policy_state). (verification_level state = DualVerification \<or> verification_level state = MultiPartyVerification) \<longrightarrow> (training_status state = AdvancedTrained \<or> training_status state = CertifiedTrained) \<longrightarrow> threat_mitigated SpearPhishing state"
   by auto
 
 (* hum_002_spear_phishing_control_effective (matches Coq) *)
-lemma hum_002_spear_phishing_control_effective: "\<forall>(state :: SecurityPolicyState). verification_procedures_adequate state \<longrightarrow> training_effective state \<longrightarrow> control_effective SpearPhishing state"
+lemma hum_002_spear_phishing_control_effective: "\<forall>(state :: security_policy_state). verification_procedures_adequate state \<longrightarrow> training_effective state \<longrightarrow> control_effective SpearPhishing state"
   by simp
 
 (* hum_003_whaling_mitigated (matches Coq) *)
-lemma hum_003_whaling_mitigated: "\<forall>(state :: SecurityPolicyState). verification_level state = MultiPartyVerification \<longrightarrow> out_of_band_verification state = True \<longrightarrow> threat_mitigated Whaling state"
+lemma hum_003_whaling_mitigated: "\<forall>(state :: security_policy_state). verification_level state = MultiPartyVerification \<longrightarrow> out_of_band_verification state = True \<longrightarrow> threat_mitigated Whaling state"
   by auto
 
 (* hum_003_whaling_control_effective (matches Coq) *)
-lemma hum_003_whaling_control_effective: "\<forall>(state :: SecurityPolicyState). executive_verification_enhanced state \<longrightarrow> control_effective Whaling state"
+lemma hum_003_whaling_control_effective: "\<forall>(state :: security_policy_state). executive_verification_enhanced state \<longrightarrow> control_effective Whaling state"
   by simp
 
 (* hum_004_vishing_mitigated (matches Coq) *)
-lemma hum_004_vishing_mitigated: "\<forall>(state :: SecurityPolicyState). callback_verification state = True \<longrightarrow> out_of_band_verification state = True \<longrightarrow> threat_mitigated Vishing state"
+lemma hum_004_vishing_mitigated: "\<forall>(state :: security_policy_state). callback_verification state = True \<longrightarrow> out_of_band_verification state = True \<longrightarrow> threat_mitigated Vishing state"
   by auto
 
 (* hum_004_vishing_control_effective (matches Coq) *)
-lemma hum_004_vishing_control_effective: "\<forall>(state :: SecurityPolicyState). callback_verification_active state \<longrightarrow> control_effective Vishing state"
+lemma hum_004_vishing_control_effective: "\<forall>(state :: security_policy_state). callback_verification_active state \<longrightarrow> control_effective Vishing state"
   by simp
 
 (* hum_005_smishing_mitigated (matches Coq) *)
-lemma hum_005_smishing_mitigated: "\<forall>(state :: SecurityPolicyState). url_filtering_enabled state = True \<longrightarrow> (training_status state = AdvancedTrained \<or> training_status state = CertifiedTrained) \<longrightarrow> threat_mitigated Smishing state"
+lemma hum_005_smishing_mitigated: "\<forall>(state :: security_policy_state). url_filtering_enabled state = True \<longrightarrow> (training_status state = AdvancedTrained \<or> training_status state = CertifiedTrained) \<longrightarrow> threat_mitigated Smishing state"
   by auto
 
 (* hum_005_smishing_control_effective (matches Coq) *)
-lemma hum_005_smishing_control_effective: "\<forall>(state :: SecurityPolicyState). smishing_controls_active state \<longrightarrow> control_effective Smishing state"
+lemma hum_005_smishing_control_effective: "\<forall>(state :: security_policy_state). smishing_controls_active state \<longrightarrow> control_effective Smishing state"
   by simp
 
 (* hum_006_pretexting_mitigated (matches Coq) *)
-lemma hum_006_pretexting_mitigated: "\<forall>(state :: SecurityPolicyState). (verification_level state = DualVerification \<or> verification_level state = MultiPartyVerification) \<longrightarrow> threat_mitigated Pretexting state"
+lemma hum_006_pretexting_mitigated: "\<forall>(state :: security_policy_state). (verification_level state = DualVerification \<or> verification_level state = MultiPartyVerification) \<longrightarrow> threat_mitigated Pretexting state"
   by auto
 
 (* hum_006_pretexting_control_effective (matches Coq) *)
-lemma hum_006_pretexting_control_effective: "\<forall>(state :: SecurityPolicyState). verification_procedures_adequate state \<longrightarrow> control_effective Pretexting state"
+lemma hum_006_pretexting_control_effective: "\<forall>(state :: security_policy_state). verification_procedures_adequate state \<longrightarrow> control_effective Pretexting state"
   by simp
 
 (* hum_007_baiting_mitigated (matches Coq) *)
-lemma hum_007_baiting_mitigated: "\<forall>(state :: SecurityPolicyState). device_control_policy state = True \<longrightarrow> technical_controls_active state = True \<longrightarrow> threat_mitigated Baiting state"
+lemma hum_007_baiting_mitigated: "\<forall>(state :: security_policy_state). device_control_policy state = True \<longrightarrow> technical_controls_active state = True \<longrightarrow> threat_mitigated Baiting state"
   by auto
 
 (* hum_007_baiting_control_effective (matches Coq) *)
-lemma hum_007_baiting_control_effective: "\<forall>(state :: SecurityPolicyState). device_control_active state \<longrightarrow> control_effective Baiting state"
+lemma hum_007_baiting_control_effective: "\<forall>(state :: security_policy_state). device_control_active state \<longrightarrow> control_effective Baiting state"
   by simp
 
 (* hum_008_tailgating_mitigated (matches Coq) *)
-lemma hum_008_tailgating_mitigated: "\<forall>(state :: SecurityPolicyState). (physical_access_level state = BiometricRequired \<or> physical_access_level state = MantrapRequired \<or> physical_access_level state = EscortRequired) \<longrightarrow> threat_mitigated Tailgating state"
+lemma hum_008_tailgating_mitigated: "\<forall>(state :: security_policy_state). (physical_access_level state = BiometricRequired \<or> physical_access_level state = MantrapRequired \<or> physical_access_level state = EscortRequired) \<longrightarrow> threat_mitigated Tailgating state"
   by auto
 
 (* hum_008_tailgating_control_effective (matches Coq) *)
-lemma hum_008_tailgating_control_effective: "\<forall>(state :: SecurityPolicyState). physical_access_controlled state \<longrightarrow> control_effective Tailgating state"
+lemma hum_008_tailgating_control_effective: "\<forall>(state :: security_policy_state). physical_access_controlled state \<longrightarrow> control_effective Tailgating state"
   by simp
 
 (* hum_009_dumpster_diving_mitigated (matches Coq) *)
-lemma hum_009_dumpster_diving_mitigated: "\<forall>(state :: SecurityPolicyState). (disposal_method state = CrossCutShredding \<or> disposal_method state = SecureIncineration \<or> disposal_method state = DegaussingAndDestruction) \<longrightarrow> threat_mitigated DumpsterDiving state"
+lemma hum_009_dumpster_diving_mitigated: "\<forall>(state :: security_policy_state). (disposal_method state = CrossCutShredding \<or> disposal_method state = SecureIncineration \<or> disposal_method state = DegaussingAndDestruction) \<longrightarrow> threat_mitigated DumpsterDiving state"
   by auto
 
 (* hum_009_dumpster_diving_control_effective (matches Coq) *)
-lemma hum_009_dumpster_diving_control_effective: "\<forall>(state :: SecurityPolicyState). secure_disposal_implemented state \<longrightarrow> control_effective DumpsterDiving state"
+lemma hum_009_dumpster_diving_control_effective: "\<forall>(state :: security_policy_state). secure_disposal_implemented state \<longrightarrow> control_effective DumpsterDiving state"
   by simp
 
 (* hum_010_shoulder_surfing_mitigated (matches Coq) *)
-lemma hum_010_shoulder_surfing_mitigated: "\<forall>(state :: SecurityPolicyState). privacy_screens_deployed state = True \<longrightarrow> threat_mitigated ShoulderSurfing state"
+lemma hum_010_shoulder_surfing_mitigated: "\<forall>(state :: security_policy_state). privacy_screens_deployed state = True \<longrightarrow> threat_mitigated ShoulderSurfing state"
   by auto
 
 (* hum_010_shoulder_surfing_control_effective (matches Coq) *)
-lemma hum_010_shoulder_surfing_control_effective: "\<forall>(state :: SecurityPolicyState). privacy_protection_active state \<longrightarrow> control_effective ShoulderSurfing state"
+lemma hum_010_shoulder_surfing_control_effective: "\<forall>(state :: security_policy_state). privacy_protection_active state \<longrightarrow> control_effective ShoulderSurfing state"
   by simp
 
 (* hum_011_insider_threat_mitigated (matches Coq) *)
-lemma hum_011_insider_threat_mitigated: "\<forall>(state :: SecurityPolicyState). least_privilege_enforced state = True \<longrightarrow> audit_logging_enabled state = True \<longrightarrow> threat_mitigated InsiderThreat state"
+lemma hum_011_insider_threat_mitigated: "\<forall>(state :: security_policy_state). least_privilege_enforced state = True \<longrightarrow> audit_logging_enabled state = True \<longrightarrow> threat_mitigated InsiderThreat state"
   by auto
 
 (* hum_011_insider_threat_control_effective (matches Coq) *)
-lemma hum_011_insider_threat_control_effective: "\<forall>(state :: SecurityPolicyState). insider_threat_controls_active state \<longrightarrow> control_effective InsiderThreat state"
+lemma hum_011_insider_threat_control_effective: "\<forall>(state :: security_policy_state). insider_threat_controls_active state \<longrightarrow> control_effective InsiderThreat state"
   by simp
 
 (* hum_012_coercion_mitigated (matches Coq) *)
-lemma hum_012_coercion_mitigated: "\<forall>(state :: SecurityPolicyState). duress_codes_enabled state = True \<longrightarrow> plausible_deniability_possible state = True \<longrightarrow> threat_mitigated Coercion state"
+lemma hum_012_coercion_mitigated: "\<forall>(state :: security_policy_state). duress_codes_enabled state = True \<longrightarrow> plausible_deniability_possible state = True \<longrightarrow> threat_mitigated Coercion state"
   by auto
 
 (* hum_012_coercion_control_effective (matches Coq) *)
-lemma hum_012_coercion_control_effective: "\<forall>(state :: SecurityPolicyState). coercion_resilience_active state \<longrightarrow> control_effective Coercion state"
+lemma hum_012_coercion_control_effective: "\<forall>(state :: security_policy_state). coercion_resilience_active state \<longrightarrow> control_effective Coercion state"
   by simp
 
 (* hum_013_bribery_mitigated (matches Coq) *)
-lemma hum_013_bribery_mitigated: "\<forall>(state :: SecurityPolicyState). background_checks_performed state = True \<longrightarrow> behavioral_monitoring state = True \<longrightarrow> threat_mitigated Bribery state"
+lemma hum_013_bribery_mitigated: "\<forall>(state :: security_policy_state). background_checks_performed state = True \<longrightarrow> behavioral_monitoring state = True \<longrightarrow> threat_mitigated Bribery state"
   by auto
 
 (* hum_013_bribery_control_effective (matches Coq) *)
-lemma hum_013_bribery_control_effective: "\<forall>(state :: SecurityPolicyState). bribery_controls_active state \<longrightarrow> control_effective Bribery state"
+lemma hum_013_bribery_control_effective: "\<forall>(state :: security_policy_state). bribery_controls_active state \<longrightarrow> control_effective Bribery state"
   by simp
 
 (* hum_014_blackmail_mitigated (matches Coq) *)
-lemma hum_014_blackmail_mitigated: "\<forall>(state :: SecurityPolicyState). security_culture_established state = True \<longrightarrow> (training_status state = AdvancedTrained \<or> training_status state = CertifiedTrained) \<longrightarrow> threat_mitigated Blackmail state"
+lemma hum_014_blackmail_mitigated: "\<forall>(state :: security_policy_state). security_culture_established state = True \<longrightarrow> (training_status state = AdvancedTrained \<or> training_status state = CertifiedTrained) \<longrightarrow> threat_mitigated Blackmail state"
   by auto
 
 (* hum_014_blackmail_control_effective (matches Coq) *)
-lemma hum_014_blackmail_control_effective: "\<forall>(state :: SecurityPolicyState). security_culture_active state \<longrightarrow> control_effective Blackmail state"
+lemma hum_014_blackmail_control_effective: "\<forall>(state :: security_policy_state). security_culture_active state \<longrightarrow> control_effective Blackmail state"
   by simp
 
 (* hum_015_social_engineering_mitigated (matches Coq) *)
-lemma hum_015_social_engineering_mitigated: "\<forall>(state :: SecurityPolicyState). (training_status state = AdvancedTrained \<or> training_status state = CertifiedTrained) \<longrightarrow> (verification_level state = DualVerification \<or> verification_level state = MultiPartyVerification) \<longrightarrow> threat_mitigated SocialEngineering state"
+lemma hum_015_social_engineering_mitigated: "\<forall>(state :: security_policy_state). (training_status state = AdvancedTrained \<or> training_status state = CertifiedTrained) \<longrightarrow> (verification_level state = DualVerification \<or> verification_level state = MultiPartyVerification) \<longrightarrow> threat_mitigated SocialEngineering state"
   by auto
 
 (* hum_015_social_engineering_control_effective (matches Coq) *)
-lemma hum_015_social_engineering_control_effective: "\<forall>(state :: SecurityPolicyState). social_engineering_controls_active state \<longrightarrow> control_effective SocialEngineering state"
+lemma hum_015_social_engineering_control_effective: "\<forall>(state :: security_policy_state). social_engineering_controls_active state \<longrightarrow> control_effective SocialEngineering state"
   by simp
 
 (* hum_016_credential_sharing_mitigated (matches Coq) *)
-lemma hum_016_credential_sharing_mitigated: "\<forall>(state :: SecurityPolicyState). mfa_enabled state = True \<longrightarrow> credential_monitoring state = True \<longrightarrow> threat_mitigated CredentialSharing state"
+lemma hum_016_credential_sharing_mitigated: "\<forall>(state :: security_policy_state). mfa_enabled state = True \<longrightarrow> credential_monitoring state = True \<longrightarrow> threat_mitigated CredentialSharing state"
   by auto
 
 (* hum_016_credential_sharing_control_effective (matches Coq) *)
-lemma hum_016_credential_sharing_control_effective: "\<forall>(state :: SecurityPolicyState). credential_sharing_controls_active state \<longrightarrow> control_effective CredentialSharing state"
+lemma hum_016_credential_sharing_control_effective: "\<forall>(state :: security_policy_state). credential_sharing_controls_active state \<longrightarrow> control_effective CredentialSharing state"
   by simp
 
 (* hum_017_weak_passwords_mitigated (matches Coq) *)
-lemma hum_017_weak_passwords_mitigated: "\<forall>(state :: SecurityPolicyState). (password_policy state = EnterprisePolicy \<or> password_policy state = ZeroTrustPolicy) \<longrightarrow> threat_mitigated WeakPasswords state"
+lemma hum_017_weak_passwords_mitigated: "\<forall>(state :: security_policy_state). (password_policy state = EnterprisePolicy \<or> password_policy state = ZeroTrustPolicy) \<longrightarrow> threat_mitigated WeakPasswords state"
   by auto
 
 (* hum_017_weak_passwords_control_effective (matches Coq) *)
-lemma hum_017_weak_passwords_control_effective: "\<forall>(state :: SecurityPolicyState). password_policy_strong state \<longrightarrow> control_effective WeakPasswords state"
+lemma hum_017_weak_passwords_control_effective: "\<forall>(state :: security_policy_state). password_policy_strong state \<longrightarrow> control_effective WeakPasswords state"
   by simp
 
 (* hum_018_password_reuse_mitigated (matches Coq) *)
-lemma hum_018_password_reuse_mitigated: "\<forall>(state :: SecurityPolicyState). unique_passwords_enforced state = True \<longrightarrow> breach_detection_enabled state = True \<longrightarrow> threat_mitigated PasswordReuse state"
+lemma hum_018_password_reuse_mitigated: "\<forall>(state :: security_policy_state). unique_passwords_enforced state = True \<longrightarrow> breach_detection_enabled state = True \<longrightarrow> threat_mitigated PasswordReuse state"
   by auto
 
 (* hum_018_password_reuse_control_effective (matches Coq) *)
-lemma hum_018_password_reuse_control_effective: "\<forall>(state :: SecurityPolicyState). unique_passwords_active state \<longrightarrow> control_effective PasswordReuse state"
+lemma hum_018_password_reuse_control_effective: "\<forall>(state :: security_policy_state). unique_passwords_active state \<longrightarrow> control_effective PasswordReuse state"
   by simp
 
 (* hum_019_unsafe_behavior_mitigated (matches Coq) *)
-lemma hum_019_unsafe_behavior_mitigated: "\<forall>(state :: SecurityPolicyState). (training_status state = AdvancedTrained \<or> training_status state = CertifiedTrained) \<longrightarrow> technical_controls_active state = True \<longrightarrow> threat_mitigated UnsafeBehavior state"
+lemma hum_019_unsafe_behavior_mitigated: "\<forall>(state :: security_policy_state). (training_status state = AdvancedTrained \<or> training_status state = CertifiedTrained) \<longrightarrow> technical_controls_active state = True \<longrightarrow> threat_mitigated UnsafeBehavior state"
   by auto
 
 (* hum_019_unsafe_behavior_control_effective (matches Coq) *)
-lemma hum_019_unsafe_behavior_control_effective: "\<forall>(state :: SecurityPolicyState). unsafe_behavior_controls_active state \<longrightarrow> control_effective UnsafeBehavior state"
+lemma hum_019_unsafe_behavior_control_effective: "\<forall>(state :: security_policy_state). unsafe_behavior_controls_active state \<longrightarrow> control_effective UnsafeBehavior state"
   by simp
 
 (* hum_020_configuration_error_mitigated (matches Coq) *)
-lemma hum_020_configuration_error_mitigated: "\<forall>(state :: SecurityPolicyState). (config_management state = AutomatedWithValidation \<or> config_management state = ImmutableInfrastructure) \<longrightarrow> threat_mitigated ConfigurationError state"
+lemma hum_020_configuration_error_mitigated: "\<forall>(state :: security_policy_state). (config_management state = AutomatedWithValidation \<or> config_management state = ImmutableInfrastructure) \<longrightarrow> threat_mitigated ConfigurationError state"
   by auto
 
 (* hum_020_configuration_error_control_effective (matches Coq) *)
-lemma hum_020_configuration_error_control_effective: "\<forall>(state :: SecurityPolicyState). automated_config_active state \<longrightarrow> control_effective ConfigurationError state"
+lemma hum_020_configuration_error_control_effective: "\<forall>(state :: security_policy_state). automated_config_active state \<longrightarrow> control_effective ConfigurationError state"
   by simp
 
 (* hum_021_sock_puppet_campaign_mitigated (matches Coq) *)
-lemma hum_021_sock_puppet_campaign_mitigated: "\<forall>(state :: SecurityPolicyState). multi_maintainer_required state = True \<longrightarrow> (review_process state = MultiMaintainerReview \<or> review_process state = FormalVerificationReview) \<longrightarrow> threat_mitigated SockPuppetCampaign state"
+lemma hum_021_sock_puppet_campaign_mitigated: "\<forall>(state :: security_policy_state). multi_maintainer_required state = True \<longrightarrow> (review_process state = MultiMaintainerReview \<or> review_process state = FormalVerificationReview) \<longrightarrow> threat_mitigated SockPuppetCampaign state"
   by auto
 
 (* hum_021_sock_puppet_campaign_control_effective (matches Coq) *)
-lemma hum_021_sock_puppet_campaign_control_effective: "\<forall>(state :: SecurityPolicyState). multi_maintainer_review_active state \<longrightarrow> control_effective SockPuppetCampaign state"
+lemma hum_021_sock_puppet_campaign_control_effective: "\<forall>(state :: security_policy_state). multi_maintainer_review_active state \<longrightarrow> control_effective SockPuppetCampaign state"
   by simp
 
 (* all_human_threats_mitigated (matches Coq) *)
-lemma all_human_threats_mitigated: "\<forall>(state :: SecurityPolicyState) (threat :: HumanThreat). fully_secured_state state \<longrightarrow> threat_mitigated threat state"
+lemma all_human_threats_mitigated: "\<forall>(state :: security_policy_state) (threat :: human_threat). fully_secured_state state \<longrightarrow> threat_mitigated threat state"
   by auto
 
 (* example_state_is_phishing_resistant (matches Coq) *)
@@ -595,15 +595,15 @@ lemma example_state_mitigates_phishing: "threat_mitigated Phishing example_secur
   by auto
 
 (* training_enhances_defenses (matches Coq) *)
-lemma training_enhances_defenses: "\<forall>(state :: SecurityPolicyState). training_effective state \<longrightarrow> (smishing_controls_active state \<longrightarrow> url_filtering_enabled state = True) \<and> (security_culture_active state \<longrightarrow> security_culture_established state = True) \<and> (social_engineering_controls_active state \<longrightarrow> verification_procedures_adequate state) \<and> (unsafe_behavior_controls_active state \<longrightarrow> technical_controls_active state = True)"
+lemma training_enhances_defenses: "\<forall>(state :: security_policy_state). training_effective state \<longrightarrow> (smishing_controls_active state \<longrightarrow> url_filtering_enabled state = True) \<and> (security_culture_active state \<longrightarrow> security_culture_established state = True) \<and> (social_engineering_controls_active state \<longrightarrow> verification_procedures_adequate state) \<and> (unsafe_behavior_controls_active state \<longrightarrow> technical_controls_active state = True)"
   by auto
 
 (* verification_provides_layered_defense (matches Coq) *)
-lemma verification_provides_layered_defense: "\<forall>(state :: SecurityPolicyState). verification_procedures_adequate state \<longrightarrow> threat_mitigated Pretexting state"
+lemma verification_provides_layered_defense: "\<forall>(state :: security_policy_state). verification_procedures_adequate state \<longrightarrow> threat_mitigated Pretexting state"
   by auto
 
 (* physical_logical_complement (matches Coq) *)
-lemma physical_logical_complement: "\<forall>(state :: SecurityPolicyState). physical_access_controlled state \<longrightarrow> insider_threat_controls_active state \<longrightarrow> threat_mitigated Tailgating state \<and> threat_mitigated InsiderThreat state"
+lemma physical_logical_complement: "\<forall>(state :: security_policy_state). physical_access_controlled state \<longrightarrow> insider_threat_controls_active state \<longrightarrow> threat_mitigated Tailgating state \<and> threat_mitigated InsiderThreat state"
   by auto
 
 end

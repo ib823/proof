@@ -55,9 +55,12 @@
  *)
 
 theory ClosedValueLemmas
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* closed_expr_cv (matches Coq: Definition closed_expr_cv) *)
 definition closed_expr_cv :: "expr \<Rightarrow> bool" where
   "closed_expr_cv e \<equiv> forall x, ~ free_in x e"

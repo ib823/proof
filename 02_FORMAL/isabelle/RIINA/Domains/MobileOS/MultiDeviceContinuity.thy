@@ -12,26 +12,26 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ConflictResolution | conflict_resolution    | OK     |
- * | Device             | device                 | OK     |
- * | Application        | application            | OK     |
- * | Handoff            | handoff                | OK     |
- * | HandoffData        | handoff_data           | OK     |
- * | ClipboardSync      | clipboard_sync         | OK     |
- * | DeviceTrust        | device_trust           | OK     |
- * | ProximityCheck     | proximity_check        | OK     |
- * | ContinuityPermission | continuity_permission  | OK     |
- * | UniversalLink      | universal_link         | OK     |
- * | DevicePairing      | device_pairing         | OK     |
- * | SyncConflict       | sync_conflict          | OK     |
- * | ContinuityFallback | continuity_fallback    | OK     |
- * | SharedKeychain     | shared_keychain        | OK     |
- * | NearbyInteraction  | nearby_interaction     | OK     |
- * | DeviceDiscovery    | device_discovery       | OK     |
- * | RelayTraffic       | relay_traffic          | OK     |
- * | ContinuitySession  | continuity_session     | OK     |
- * | DeviceId           | DeviceId               | OK     |
- * | AppState           | AppState               | OK     |
+ * | conflict_resolution | conflict_resolution    | OK     |
+ * | device             | device                 | OK     |
+ * | application        | application            | OK     |
+ * | handoff            | handoff                | OK     |
+ * | handoff_data        | handoff_data           | OK     |
+ * | clipboard_sync      | clipboard_sync         | OK     |
+ * | device_trust        | device_trust           | OK     |
+ * | proximity_check     | proximity_check        | OK     |
+ * | continuity_permission | continuity_permission  | OK     |
+ * | universal_link      | universal_link         | OK     |
+ * | device_pairing      | device_pairing         | OK     |
+ * | sync_conflict       | sync_conflict          | OK     |
+ * | continuity_fallback | continuity_fallback    | OK     |
+ * | shared_keychain     | shared_keychain        | OK     |
+ * | nearby_interaction  | nearby_interaction     | OK     |
+ * | device_discovery    | device_discovery       | OK     |
+ * | relay_traffic       | relay_traffic          | OK     |
+ * | continuity_session  | continuity_session     | OK     |
+ * | device_id           | device_id               | OK     |
+ * | app_state           | app_state               | OK     |
  * | state              | state                  | OK     |
  * | handoff            | handoff                | OK     |
  * | complete_handoff   | complete_handoff       | OK     |
@@ -82,135 +82,138 @@ theory MultiDeviceContinuity
   imports Main
 begin
 
-(* ConflictResolution (matches Coq: Inductive ConflictResolution) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym app_state = "nat"
+type_synonym device_id = "nat"
+(* conflict_resolution (matches Coq: Inductive conflict_resolution) *)
 datatype conflict_resolution =
     LatestWins
   |     MergeAll
   |     UserChoice
 
-(* Device (matches Coq: Record Device) *)
+(* device (matches Coq: Record device) *)
 record device =
-  dev_id :: DeviceId
+  dev_id :: device_id
   dev_name :: nat
   dev_authenticated :: bool
   dev_paired :: bool
 
-(* Application (matches Coq: Record Application) *)
+(* application (matches Coq: Record application) *)
 record application =
   app_id :: nat
-  app_state :: AppState
+  app_state :: app_state
   app_supports_handoff :: bool
 
-(* Handoff (matches Coq: Record Handoff) *)
+(* handoff (matches Coq: Record handoff) *)
 record handoff =
-  handoff_app :: Application
-  handoff_from :: Device
-  handoff_to :: Device
+  handoff_app :: application
+  handoff_from :: device
+  handoff_to :: device
   handoff_encrypted :: bool
   handoff_complete :: bool
 
-(* HandoffData (matches Coq: Record HandoffData) *)
+(* handoff_data (matches Coq: Record handoff_data) *)
 record handoff_data =
   hd_payload :: 'a list
   hd_encrypted :: bool
   hd_integrity_checked :: bool
 
-(* ClipboardSync (matches Coq: Record ClipboardSync) *)
+(* clipboard_sync (matches Coq: Record clipboard_sync) *)
 record clipboard_sync =
   cb_data :: 'a list
   cb_encrypted :: bool
   cb_expiry_seconds :: nat
   cb_max_expiry_seconds :: nat
 
-(* DeviceTrust (matches Coq: Record DeviceTrust) *)
+(* device_trust (matches Coq: Record device_trust) *)
 record device_trust =
-  dt_device :: Device
+  dt_device :: device
   dt_trust_score :: nat
   dt_trust_threshold :: nat
   dt_verified :: bool
 
-(* ProximityCheck (matches Coq: Record ProximityCheck) *)
+(* proximity_check (matches Coq: Record proximity_check) *)
 record proximity_check =
   pc_distance_m :: nat
   pc_max_distance_m :: nat
   pc_within_range :: bool
 
-(* ContinuityPermission (matches Coq: Record ContinuityPermission) *)
+(* continuity_permission (matches Coq: Record continuity_permission) *)
 record continuity_permission =
   cp_user_id :: nat
   cp_feature :: nat
   cp_explicit_grant :: bool
   cp_revocable :: bool
 
-(* UniversalLink (matches Coq: Record UniversalLink) *)
+(* universal_link (matches Coq: Record universal_link) *)
 record universal_link =
   ul_url :: 'a list
   ul_app_id :: nat
   ul_validated :: bool
   ul_domain_verified :: bool
 
-(* DevicePairing (matches Coq: Record DevicePairing) *)
+(* device_pairing (matches Coq: Record device_pairing) *)
 record device_pairing =
-  dp_device_a :: Device
-  dp_device_b :: Device
+  dp_device_a :: device
+  dp_device_b :: device
   dp_authenticated :: bool
   dp_encryption_key_exchanged :: bool
 
-(* SyncConflict (matches Coq: Record SyncConflict) *)
+(* sync_conflict (matches Coq: Record sync_conflict) *)
 record sync_conflict =
   sc_item_id :: nat
   sc_version_a :: nat
   sc_version_b :: nat
   sc_resolved :: bool
-  sc_strategy :: ConflictResolution
+  sc_strategy :: conflict_resolution
 
-(* ContinuityFallback (matches Coq: Record ContinuityFallback) *)
+(* continuity_fallback (matches Coq: Record continuity_fallback) *)
 record continuity_fallback =
   cf_primary_method :: nat
   cf_fallback_method :: nat
   cf_fallback_available :: bool
 
-(* SharedKeychain (matches Coq: Record SharedKeychain) *)
+(* shared_keychain (matches Coq: Record shared_keychain) *)
 record shared_keychain =
   sk_item_id :: nat
   sk_access_group :: 'a list
   sk_access_controlled :: bool
 
-(* NearbyInteraction (matches Coq: Record NearbyInteraction) *)
+(* nearby_interaction (matches Coq: Record nearby_interaction) *)
 record nearby_interaction =
   ni_device_id :: nat
   ni_consent_given :: bool
   ni_session_active :: bool
 
-(* DeviceDiscovery (matches Coq: Record DeviceDiscovery) *)
+(* device_discovery (matches Coq: Record device_discovery) *)
 record device_discovery =
   dd_devices_found :: 'a list
   dd_max_devices :: nat
   dd_timeout_seconds :: nat
 
-(* RelayTraffic (matches Coq: Record RelayTraffic) *)
+(* relay_traffic (matches Coq: Record relay_traffic) *)
 record relay_traffic =
   rt_data :: 'a list
   rt_encrypted :: bool
   rt_relay_node :: nat
 
-(* ContinuitySession (matches Coq: Record ContinuitySession) *)
+(* continuity_session (matches Coq: Record continuity_session) *)
 record continuity_session =
   cs_session_id :: nat
   cs_elapsed_seconds :: nat
   cs_timeout_seconds :: nat
   cs_active :: bool
 
-(* DeviceId (matches Coq: Definition DeviceId) *)
-definition DeviceId :: "'a" where
+(* device_id (matches Coq: Definition device_id) *)
+definition device_id :: "'a" where
   "DeviceId \<equiv> nat"
 
-(* AppState (matches Coq: Definition AppState) *)
-definition AppState :: "'a" where
+(* app_state (matches Coq: Definition app_state) *)
+definition app_state :: "'a" where
   "AppState \<equiv> list nat"
 
 (* state (matches Coq: Definition state) *)
-definition state :: "Application \<Rightarrow> Device \<Rightarrow> AppState" where
+definition state :: "Application \<Rightarrow> device \<Rightarrow> AppState" where
   "state app dev \<equiv> app_state app"
 
 (* handoff (matches Coq: Definition handoff) *)
@@ -292,103 +295,103 @@ definition session_within_timeout :: "ContinuitySession \<Rightarrow> bool" wher
   "session_within_timeout cs \<equiv> cs_active cs = True -> cs_elapsed_seconds cs <= cs_timeout_seconds cs"
 
 (* cross_device_handoff_complete (matches Coq) *)
-lemma cross_device_handoff_complete: "\<forall>(app :: Application) (device1 device2 : Device). handoff app device1 device2 \<longrightarrow> state app device2 = state app device1"
+lemma cross_device_handoff_complete: "\<forall>(app :: application) (device1 device2 : device). handoff app device1 device2 \<longrightarrow> state app device2 = state app device1"
   by simp
 
 (* handoff_requires_auth (matches Coq) *)
-lemma handoff_requires_auth: "\<forall>(app :: Application) (d1 d2 : Device). handoff app d1 d2 \<longrightarrow> dev_authenticated d1 = True \<and> dev_authenticated d2 = True"
+lemma handoff_requires_auth: "\<forall>(app :: application) (d1 d2 : device). handoff app d1 d2 \<longrightarrow> dev_authenticated d1 = True \<and> dev_authenticated d2 = True"
   by auto
 
 (* handoff_requires_pairing (matches Coq) *)
-lemma handoff_requires_pairing: "\<forall>(app :: Application) (d1 d2 : Device). handoff app d1 d2 \<longrightarrow> dev_paired d1 = True \<and> dev_paired d2 = True"
+lemma handoff_requires_pairing: "\<forall>(app :: application) (d1 d2 : device). handoff app d1 d2 \<longrightarrow> dev_paired d1 = True \<and> dev_paired d2 = True"
   by auto
 
 (* complete_handoff_encrypted (matches Coq) *)
-lemma complete_handoff_encrypted: "\<forall>(h :: Handoff). complete_handoff h \<longrightarrow> handoff_encrypted h = True"
+lemma complete_handoff_encrypted: "\<forall>(h :: handoff). complete_handoff h \<longrightarrow> handoff_encrypted h = True"
   by auto
 
 (* only_enabled_apps_handoff (matches Coq) *)
-lemma only_enabled_apps_handoff: "\<forall>(app :: Application) (d1 d2 : Device). handoff app d1 d2 \<longrightarrow> app_supports_handoff app = True"
+lemma only_enabled_apps_handoff: "\<forall>(app :: application) (d1 d2 : device). handoff app d1 d2 \<longrightarrow> app_supports_handoff app = True"
   by auto
 
 (* handoff_data_encrypted_thm (matches Coq) *)
-lemma handoff_data_encrypted_thm: "\<forall>(hd :: HandoffData). handoff_data_encrypted hd \<longrightarrow> hd_encrypted hd = True"
+lemma handoff_data_encrypted_thm: "\<forall>(hd :: handoff_data). handoff_data_encrypted hd \<longrightarrow> hd_encrypted hd = True"
   by auto
 
 (* clipboard_sync_encrypted (matches Coq) *)
-lemma clipboard_sync_encrypted: "\<forall>(cs :: ClipboardSync). clipboard_sync_is_encrypted cs \<longrightarrow> cb_encrypted cs = True"
+lemma clipboard_sync_encrypted: "\<forall>(cs :: clipboard_sync). clipboard_sync_is_encrypted cs \<longrightarrow> cb_encrypted cs = True"
   by auto
 
 (* device_trust_verified_thm (matches Coq) *)
-lemma device_trust_verified_thm: "\<forall>(dt :: DeviceTrust). device_trust_verified dt \<longrightarrow> dt_verified dt = True"
+lemma device_trust_verified_thm: "\<forall>(dt :: device_trust). device_trust_verified dt \<longrightarrow> dt_verified dt = True"
   by auto
 
 (* proximity_required_thm (matches Coq) *)
-lemma proximity_required_thm: "\<forall>(pc :: ProximityCheck). proximity_required pc \<longrightarrow> pc_distance_m pc \<le> pc_max_distance_m pc"
+lemma proximity_required_thm: "\<forall>(pc :: proximity_check). proximity_required pc \<longrightarrow> pc_distance_m pc \<le> pc_max_distance_m pc"
   by auto
 
 (* continuity_permission_explicit_thm (matches Coq) *)
-lemma continuity_permission_explicit_thm: "\<forall>(cp :: ContinuityPermission). continuity_permission_explicit cp \<longrightarrow> cp_explicit_grant cp = True"
+lemma continuity_permission_explicit_thm: "\<forall>(cp :: continuity_permission). continuity_permission_explicit cp \<longrightarrow> cp_explicit_grant cp = True"
   by auto
 
 (* shared_clipboard_expiry (matches Coq) *)
-lemma shared_clipboard_expiry: "\<forall>(cs :: ClipboardSync). clipboard_has_expiry cs \<longrightarrow> cb_expiry_seconds cs > 0"
+lemma shared_clipboard_expiry: "\<forall>(cs :: clipboard_sync). clipboard_has_expiry cs \<longrightarrow> cb_expiry_seconds cs > 0"
   by auto
 
 (* universal_link_validated_thm (matches Coq) *)
-lemma universal_link_validated_thm: "\<forall>(ul :: UniversalLink). universal_link_validated ul \<longrightarrow> ul_validated ul = True \<and> ul_domain_verified ul = True"
+lemma universal_link_validated_thm: "\<forall>(ul :: universal_link). universal_link_validated ul \<longrightarrow> ul_validated ul = True \<and> ul_domain_verified ul = True"
   by auto
 
 (* device_pairing_authenticated_thm (matches Coq) *)
-lemma device_pairing_authenticated_thm: "\<forall>(dp :: DevicePairing). device_pairing_authenticated dp \<longrightarrow> dp_authenticated dp = True"
+lemma device_pairing_authenticated_thm: "\<forall>(dp :: device_pairing). device_pairing_authenticated dp \<longrightarrow> dp_authenticated dp = True"
   by auto
 
 (* sync_conflict_resolved_thm (matches Coq) *)
-lemma sync_conflict_resolved_thm: "\<forall>(sc :: SyncConflict). sync_conflict_resolved sc \<longrightarrow> sc_resolved sc = True"
+lemma sync_conflict_resolved_thm: "\<forall>(sc :: sync_conflict). sync_conflict_resolved sc \<longrightarrow> sc_resolved sc = True"
   by auto
 
 (* continuity_fallback_available_thm (matches Coq) *)
-lemma continuity_fallback_available_thm: "\<forall>(cf :: ContinuityFallback). continuity_fallback_available cf \<longrightarrow> cf_fallback_available cf = True"
+lemma continuity_fallback_available_thm: "\<forall>(cf :: continuity_fallback). continuity_fallback_available cf \<longrightarrow> cf_fallback_available cf = True"
   by auto
 
 (* shared_keychain_access_controlled_thm (matches Coq) *)
-lemma shared_keychain_access_controlled_thm: "\<forall>(sk :: SharedKeychain). shared_keychain_access_controlled sk \<longrightarrow> sk_access_controlled sk = True"
+lemma shared_keychain_access_controlled_thm: "\<forall>(sk :: shared_keychain). shared_keychain_access_controlled sk \<longrightarrow> sk_access_controlled sk = True"
   by auto
 
 (* nearby_interaction_consent (matches Coq) *)
-lemma nearby_interaction_consent: "\<forall>(ni :: NearbyInteraction). nearby_interaction_consented ni \<longrightarrow> ni_consent_given ni = True"
+lemma nearby_interaction_consent: "\<forall>(ni :: nearby_interaction). nearby_interaction_consented ni \<longrightarrow> ni_consent_given ni = True"
   by auto
 
 (* device_discovery_limited_thm (matches Coq) *)
-lemma device_discovery_limited_thm: "\<forall>(dd :: DeviceDiscovery). device_discovery_limited dd \<longrightarrow> length (dd_devices_found dd) \<le> dd_max_devices dd"
+lemma device_discovery_limited_thm: "\<forall>(dd :: device_discovery). device_discovery_limited dd \<longrightarrow> length (dd_devices_found dd) \<le> dd_max_devices dd"
   by auto
 
 (* relay_traffic_encrypted_thm (matches Coq) *)
-lemma relay_traffic_encrypted_thm: "\<forall>(rt :: RelayTraffic). relay_traffic_encrypted rt \<longrightarrow> rt_encrypted rt = True"
+lemma relay_traffic_encrypted_thm: "\<forall>(rt :: relay_traffic). relay_traffic_encrypted rt \<longrightarrow> rt_encrypted rt = True"
   by auto
 
 (* continuity_session_timeout (matches Coq) *)
-lemma continuity_session_timeout: "\<forall>(cs :: ContinuitySession). session_within_timeout cs \<longrightarrow> cs_active cs = True \<longrightarrow> cs_elapsed_seconds cs \<le> cs_timeout_seconds cs"
+lemma continuity_session_timeout: "\<forall>(cs :: continuity_session). session_within_timeout cs \<longrightarrow> cs_active cs = True \<longrightarrow> cs_elapsed_seconds cs \<le> cs_timeout_seconds cs"
   by auto
 
 (* device_pairing_key_exchange (matches Coq) *)
-lemma device_pairing_key_exchange: "\<forall>(dp :: DevicePairing). device_pairing_authenticated dp \<longrightarrow> dp_encryption_key_exchanged dp = True"
+lemma device_pairing_key_exchange: "\<forall>(dp :: device_pairing). device_pairing_authenticated dp \<longrightarrow> dp_encryption_key_exchanged dp = True"
   by auto
 
 (* continuity_permission_revocable (matches Coq) *)
-lemma continuity_permission_revocable: "\<forall>(cp :: ContinuityPermission). continuity_permission_explicit cp \<longrightarrow> cp_revocable cp = True"
+lemma continuity_permission_revocable: "\<forall>(cp :: continuity_permission). continuity_permission_explicit cp \<longrightarrow> cp_revocable cp = True"
   by auto
 
 (* clipboard_expiry_within_max (matches Coq) *)
-lemma clipboard_expiry_within_max: "\<forall>(cs :: ClipboardSync). clipboard_has_expiry cs \<longrightarrow> cb_expiry_seconds cs \<le> cb_max_expiry_seconds cs"
+lemma clipboard_expiry_within_max: "\<forall>(cs :: clipboard_sync). clipboard_has_expiry cs \<longrightarrow> cb_expiry_seconds cs \<le> cb_max_expiry_seconds cs"
   by auto
 
 (* shared_keychain_has_group (matches Coq) *)
-lemma shared_keychain_has_group: "\<forall>(sk :: SharedKeychain). shared_keychain_access_controlled sk \<longrightarrow> sk_access_group sk \<noteq> []"
+lemma shared_keychain_has_group: "\<forall>(sk :: shared_keychain). shared_keychain_access_controlled sk \<longrightarrow> sk_access_group sk \<noteq> []"
   by auto
 
 (* handoff_data_integrity_checked (matches Coq) *)
-lemma handoff_data_integrity_checked: "\<forall>(hd :: HandoffData). handoff_data_encrypted hd \<longrightarrow> hd_integrity_checked hd = True"
+lemma handoff_data_integrity_checked: "\<forall>(hd :: handoff_data). handoff_data_encrypted hd \<longrightarrow> hd_integrity_checked hd = True"
   by auto
 
 end

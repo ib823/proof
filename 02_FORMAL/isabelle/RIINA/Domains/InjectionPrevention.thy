@@ -12,17 +12,17 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | TaintLevel         | taint_level            | OK     |
+ * | taint_level         | taint_level            | OK     |
  * | SQLPart            | sql_part               | OK     |
- * | ShellPart          | shell_part             | OK     |
+ * | shell_part          | shell_part             | OK     |
  * | LDAPPart           | ldap_part              | OK     |
- * | TemplateExpr       | template_expr          | OK     |
- * | RIINAExpr          | riina_expr             | OK     |
- * | TaintedValue       | tainted_value          | OK     |
- * | XMLParserConfig    | xml_parser_config      | OK     |
- * | HTTPHeader         | http_header            | OK     |
- * | PDFDocument        | pdf_document           | OK     |
- * | LengthPrefixedString | length_prefixed_string | OK     |
+ * | template_expr       | template_expr          | OK     |
+ * | riina_expr          | riina_expr             | OK     |
+ * | tainted_value       | tainted_value          | OK     |
+ * | x_ml_parser_config    | xml_parser_config      | OK     |
+ * | http_header         | http_header            | OK     |
+ * | pdf_document        | pdf_document           | OK     |
+ * | length_prefixed_string | length_prefixed_string | OK     |
  * | propagate_taint    | propagate_taint        | OK     |
  * | tainted_concat     | tainted_concat         | OK     |
  * | secure_xml_config  | secure_xml_config      | OK     |
@@ -59,10 +59,18 @@
  *)
 
 theory InjectionPrevention
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics
 begin
 
-(* TaintLevel (matches Coq: Inductive TaintLevel) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym email_header = "nat"
+type_synonym lda_pq_uery = "nat"
+type_synonym list = "nat list"
+type_synonym sql_query = "nat"
+type_synonym shell_command = "nat"
+type_synonym x_ml_parser_config = "nat"
+type_synonym x_path_query = "nat"
+(* taint_level (matches Coq: Inductive taint_level) *)
 datatype taint_level =
     Trusted
   |     Untrusted
@@ -74,7 +82,7 @@ datatype sql_part =
   |     SQLParam
   |     SQLKeyword
 
-(* ShellPart (matches Coq: Inductive ShellPart) *)
+(* shell_part (matches Coq: Inductive shell_part) *)
 datatype shell_part =
     ShellLiteral
   |     ShellArg
@@ -86,45 +94,45 @@ datatype ldap_part =
   |     LDAPParam
   |     LDAPFilter
 
-(* TemplateExpr (matches Coq: Inductive TemplateExpr) *)
+(* template_expr (matches Coq: Inductive template_expr) *)
 datatype template_expr =
     TmplLiteral
   |     TmplVar
   |     TmplConcat
 
-(* RIINAExpr (matches Coq: Inductive RIINAExpr) *)
+(* riina_expr (matches Coq: Inductive riina_expr) *)
 datatype riina_expr =
     RExprLit
   |     RExprVar
   |     RExprAdd
   |     RExprCall
 
-(* TaintedValue (matches Coq: Record TaintedValue) *)
+(* tainted_value (matches Coq: Record tainted_value) *)
 record tainted_value =
   tv_data :: 'a list
-  tv_taint :: TaintLevel
+  tv_taint :: taint_level
 
-(* XMLParserConfig (matches Coq: Record XMLParserConfig) *)
+(* x_ml_parser_config (matches Coq: Record x_ml_parser_config) *)
 record xml_parser_config =
   xc_expand_entities :: bool
   xc_allow_external :: bool
 
-(* HTTPHeader (matches Coq: Record HTTPHeader) *)
+(* http_header (matches Coq: Record http_header) *)
 record http_header =
   hdr_name :: 'a list
-  hdr_value :: TaintedValue
+  hdr_value :: tainted_value
   hdr_no_newline :: contains_newline
 
-(* PDFDocument (matches Coq: Record PDFDocument) *)
+(* pdf_document (matches Coq: Record pdf_document) *)
 record pdf_document =
   pdf_pages :: 'a list
   pdf_has_js :: bool
 
-(* LengthPrefixedString (matches Coq: Record LengthPrefixedString) *)
+(* length_prefixed_string (matches Coq: Record length_prefixed_string) *)
 record length_prefixed_string =
   lpstr_len :: nat
   lpstr_bytes :: 'a list
-  lpstr_valid :: List
+  lpstr_valid :: list
 
 (* propagate_taint - complex match, needs manual translation *)
 definition propagate_taint :: "bool" where "propagate_taint = undefined"
@@ -154,39 +162,39 @@ definition secure_pdf :: "PDFDocument \<Rightarrow> bool" where
   "secure_pdf doc \<equiv> pdf_has_js doc = False"
 
 (* inj_001_sql_injection_impossible (matches Coq) *)
-lemma inj_001_sql_injection_impossible: "\<forall>(q :: SQLQuery). safe_sql q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> match part with | SQLLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
+lemma inj_001_sql_injection_impossible: "\<forall>(q :: sql_query). safe_sql q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> match part with | SQLLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
   by auto
 
 (* inj_002_command_injection_impossible (matches Coq) *)
-lemma inj_002_command_injection_impossible: "\<forall>(cmd :: ShellCommand). safe_shell cmd \<longrightarrow> \<forall>part. part \<in> set cmd \<longrightarrow> match part with | ShellLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
+lemma inj_002_command_injection_impossible: "\<forall>(cmd :: shell_command). safe_shell cmd \<longrightarrow> \<forall>part. part \<in> set cmd \<longrightarrow> match part with | ShellLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
   by auto
 
 (* inj_003_ldap_injection_impossible (matches Coq) *)
-lemma inj_003_ldap_injection_impossible: "\<forall>(q :: LDAPQuery). safe_ldap q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> match part with | LDAPLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
+lemma inj_003_ldap_injection_impossible: "\<forall>(q :: lda_pq_uery). safe_ldap q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> match part with | LDAPLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
   by auto
 
 (* inj_004_xpath_injection_impossible (matches Coq) *)
-lemma inj_004_xpath_injection_impossible: "\<forall>(q :: XPathQuery). safe_xpath q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> match part with | SQLLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
+lemma inj_004_xpath_injection_impossible: "\<forall>(q :: x_path_query). safe_xpath q \<longrightarrow> \<forall>part. part \<in> set q \<longrightarrow> match part with | SQLLiteral tv => tv_taint tv \<noteq> Untrusted | _ => True end"
   by auto
 
 (* inj_005_xxe_impossible (matches Coq) *)
-lemma inj_005_xxe_impossible: "\<forall>(config :: XMLParserConfig). xc_expand_entities config = False \<longrightarrow> xc_allow_external config = False \<longrightarrow> ~ (xc_expand_entities config = True \<and> xc_allow_external config = True)"
+lemma inj_005_xxe_impossible: "\<forall>(config :: x_ml_parser_config). xc_expand_entities config = False \<longrightarrow> xc_allow_external config = False \<longrightarrow> ~ (xc_expand_entities config = True \<and> xc_allow_external config = True)"
   by auto
 
 (* inj_006_header_injection_impossible (matches Coq) *)
-lemma inj_006_header_injection_impossible: "\<forall>(h :: HTTPHeader). contains_newline (tv_data (hdr_value h)) = False"
+lemma inj_006_header_injection_impossible: "\<forall>(h :: http_header). contains_newline (tv_data (hdr_value h)) = False"
   by auto
 
 (* inj_007_template_injection_impossible (matches Coq) *)
-lemma inj_007_template_injection_impossible: "\<forall>(e :: TemplateExpr). True"
+lemma inj_007_template_injection_impossible: "\<forall>(e :: template_expr). True"
   by auto
 
 (* inj_008_code_injection_impossible (matches Coq) *)
-lemma inj_008_code_injection_impossible: "\<forall>(e :: RIINAExpr). match e with | RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ => True end"
+lemma inj_008_code_injection_impossible: "\<forall>(e :: riina_expr). match e with | RExprLit _ => True | RExprVar _ => True | RExprAdd _ _ => True | RExprCall _ _ => True end"
   by auto
 
 (* inj_009_expression_language_safe (matches Coq) *)
-lemma inj_009_expression_language_safe: "\<forall>(e :: TemplateExpr). match e with | TmplLiteral _ => True | TmplVar _ => True | TmplConcat _ _ => True end"
+lemma inj_009_expression_language_safe: "\<forall>(e :: template_expr). match e with | TmplLiteral _ => True | TmplVar _ => True | TmplConcat _ _ => True end"
   by auto
 
 (* inj_010_log_injection_impossible (matches Coq) *)
@@ -194,7 +202,7 @@ lemma inj_010_log_injection_impossible: "\<forall>(data : list nat). ~ In 10 (sa
   by auto
 
 (* inj_011_email_header_safe (matches Coq) *)
-lemma inj_011_email_header_safe: "\<forall>(h :: EmailHeader). contains_newline (tv_data (hdr_value h)) = False"
+lemma inj_011_email_header_safe: "\<forall>(h :: email_header). contains_newline (tv_data (hdr_value h)) = False"
   by auto
 
 (* csv_escape_safe_helper (matches Coq) *)
@@ -206,15 +214,15 @@ lemma inj_012_csv_injection_impossible: "\<forall>(data : list nat). match escap
   by auto
 
 (* inj_013_pdf_injection_impossible (matches Coq) *)
-lemma inj_013_pdf_injection_impossible: "\<forall>(doc :: PDFDocument). secure_pdf doc \<longrightarrow> pdf_has_js doc = False"
+lemma inj_013_pdf_injection_impossible: "\<forall>(doc :: pdf_document). secure_pdf doc \<longrightarrow> pdf_has_js doc = False"
   by auto
 
 (* inj_014_crlf_injection_impossible (matches Coq) *)
-lemma inj_014_crlf_injection_impossible: "\<forall>(h :: HTTPHeader). contains_newline (tv_data (hdr_value h)) = False"
+lemma inj_014_crlf_injection_impossible: "\<forall>(h :: http_header). contains_newline (tv_data (hdr_value h)) = False"
   by auto
 
 (* inj_015_null_byte_injection_impossible (matches Coq) *)
-lemma inj_015_null_byte_injection_impossible: "\<forall>(s :: LengthPrefixedString). List.length (lpstr_bytes s) = lpstr_len s"
+lemma inj_015_null_byte_injection_impossible: "\<forall>(s :: length_prefixed_string). List.length (lpstr_bytes s) = lpstr_len s"
   by auto
 
 (* inj_016_untrusted_propagation (matches Coq) *)

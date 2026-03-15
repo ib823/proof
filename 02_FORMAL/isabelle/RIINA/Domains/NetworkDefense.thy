@@ -12,18 +12,18 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | NetPerm            | net_perm               | OK     |
- * | NetworkAction      | network_action         | OK     |
- * | SimpleRegex        | simple_regex           | OK     |
- * | Puzzle             | puzzle                 | OK     |
- * | Solution           | solution               | OK     |
- * | TokenBucket        | token_bucket           | OK     |
- * | ClientBucket       | client_bucket          | OK     |
- * | Endpoint           | endpoint               | OK     |
- * | NetCapability      | net_capability         | OK     |
- * | Connection         | connection             | OK     |
- * | SynFloodState      | syn_flood_state        | OK     |
- * | SipHashTable       | sip_hash_table         | OK     |
+ * | net_perm            | net_perm               | OK     |
+ * | network_action      | network_action         | OK     |
+ * | simple_regex        | simple_regex           | OK     |
+ * | puzzle             | puzzle                 | OK     |
+ * | solution           | solution               | OK     |
+ * | token_bucket        | token_bucket           | OK     |
+ * | client_bucket       | client_bucket          | OK     |
+ * | endpoint           | endpoint               | OK     |
+ * | net_capability      | net_capability         | OK     |
+ * | connection         | connection             | OK     |
+ * | syn_flood_state      | syn_flood_state        | OK     |
+ * | sip_hash_table       | sip_hash_table         | OK     |
  * | sha256             | sha256                 | OK     |
  * | leading_zeros      | leading_zeros          | OK     |
  * | valid_solution     | valid_solution         | OK     |
@@ -120,78 +120,81 @@ theory NetworkDefense
   imports Main CoqCompat
 begin
 
-(* NetPerm (matches Coq: Inductive NetPerm) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym client_id = "nat"
+type_synonym syn_secret = "nat"
+(* net_perm (matches Coq: Inductive net_perm) *)
 datatype net_perm =
     NPSend
   |     NPReceive
   |     NPListen
   |     NPConnect
 
-(* NetworkAction (matches Coq: Inductive NetworkAction) *)
+(* network_action (matches Coq: Inductive network_action) *)
 datatype network_action =
     NASend
   |     NAReceive
   |     NAConnect
   |     NAListen
 
-(* SimpleRegex (matches Coq: Inductive SimpleRegex) *)
+(* simple_regex (matches Coq: Inductive simple_regex) *)
 datatype simple_regex =
     RChar
   |     RSeq
   |     RAlt
   |     RStar
 
-(* Puzzle (matches Coq: Record Puzzle) *)
+(* puzzle (matches Coq: Record puzzle) *)
 record puzzle =
   puzzle_challenge :: 'a list
   puzzle_difficulty :: nat
   puzzle_timestamp :: nat
   puzzle_server_nonce :: 'a list
 
-(* Solution (matches Coq: Record Solution) *)
+(* solution (matches Coq: Record solution) *)
 record solution =
-  sol_puzzle :: Puzzle
+  sol_puzzle :: puzzle
   sol_client_nonce :: 'a list
 
-(* TokenBucket (matches Coq: Record TokenBucket) *)
+(* token_bucket (matches Coq: Record token_bucket) *)
 record token_bucket =
   bucket_tokens :: nat
   bucket_max :: nat
   bucket_refill_rate :: nat
   bucket_last_refill :: nat
 
-(* ClientBucket (matches Coq: Record ClientBucket) *)
+(* client_bucket (matches Coq: Record client_bucket) *)
 record client_bucket =
-  cb_client :: ClientId
-  cb_bucket :: TokenBucket
+  cb_client :: client_id
+  cb_bucket :: token_bucket
 
-(* Endpoint (matches Coq: Record Endpoint) *)
+(* endpoint (matches Coq: Record endpoint) *)
 record endpoint =
   ep_ip :: nat
   ep_port :: nat
 
-(* NetCapability (matches Coq: Record NetCapability) *)
+(* net_capability (matches Coq: Record net_capability) *)
 record net_capability =
-  cap_target :: Endpoint
+  cap_target :: endpoint
   cap_permissions :: 'a list
   cap_valid_until :: nat
   cap_signature :: 'a list
   cap_issuer :: nat
 
-(* Connection (matches Coq: Record Connection) *)
+(* connection (matches Coq: Record connection) *)
 record connection =
   conn_src_ip :: nat
   conn_src_port :: nat
   conn_dst_ip :: nat
   conn_dst_port :: nat
 
-(* SynFloodState (matches Coq: Record SynFloodState) *)
+(* syn_flood_state (matches Coq: Record syn_flood_state) *)
 record syn_flood_state =
   sfs_pending_connections :: nat
   sfs_completed_connections :: nat
   sfs_dropped_connections :: nat
 
-(* SipHashTable (matches Coq: Record SipHashTable) *)
+(* sip_hash_table (matches Coq: Record sip_hash_table) *)
 record sip_hash_table =
   sht_key :: 'a list
   sht_buckets :: 'a list
@@ -319,7 +322,7 @@ definition cap_valid :: "NetCapability \<Rightarrow> nat \<Rightarrow> bool" whe
   "cap_valid cap now \<equiv> (now \<le> (cap_valid_until) cap) \<and> verify_signature pubkey cap"
 
 (* grants_access (matches Coq: Definition grants_access) *)
-definition grants_access :: "NetCapability \<Rightarrow> Endpoint \<Rightarrow> NetPerm \<Rightarrow> bool" where
+definition grants_access :: "NetCapability \<Rightarrow> endpoint \<Rightarrow> net_perm \<Rightarrow> bool" where
   "grants_access cap target perm \<equiv> endpoint_eq (cap_target cap) target \<and>
   existsb (\<lambda>p. netperm_eq p perm) (cap_permissions cap)"
 
@@ -369,11 +372,11 @@ definition hash_to_nat :: "nat" where
   "hash_to_nat \<equiv> fold_left Nat.add l 0"
 
 (* syn_cookie (matches Coq: Definition syn_cookie) *)
-definition syn_cookie :: "SynSecret \<Rightarrow> Connection \<Rightarrow> nat \<Rightarrow> nat" where
+definition syn_cookie :: "SynSecret \<Rightarrow> connection \<Rightarrow> nat \<Rightarrow> nat" where
   "syn_cookie secret conn time \<equiv> hash_to_nat (sha256 (encode_connection conn ++ encode_nat time ++ secret))"
 
 (* verify_syn_cookie (matches Coq: Definition verify_syn_cookie) *)
-definition verify_syn_cookie :: "SynSecret \<Rightarrow> Connection \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> bool" where
+definition verify_syn_cookie :: "SynSecret \<Rightarrow> connection \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> bool" where
   "verify_syn_cookie secret conn cookie now \<equiv> (((\<or> = cookie)) (syn_cookie secret conn now))
       ((((\<or> = cookie)) (syn_cookie secret conn (now - 1)))
            ((cookie = (syn_cookie) secret conn (now - 2))))"
@@ -529,7 +532,7 @@ lemma OMEGA_001_16_cap_unforgeable: "\<forall>cap now pubkey. cap_valid cap now 
   by auto
 
 (* OMEGA_001_17_cap_required (matches Coq) *)
-lemma OMEGA_001_17_cap_required: "\<forall>(action :: NetworkAction) (cap :: NetCapability) now pubkey. grants_access cap (action_target action) (action_to_perm action) = True \<longrightarrow> cap_valid cap now pubkey = True \<longrightarrow> endpoint_eq (cap_target cap) (action_target action) = True"
+lemma OMEGA_001_17_cap_required: "\<forall>(action :: network_action) (cap :: net_capability) now pubkey. grants_access cap (action_target action) (action_to_perm action) = True \<longrightarrow> cap_valid cap now pubkey = True \<longrightarrow> endpoint_eq (cap_target cap) (action_target action) = True"
   by auto
 
 (* OMEGA_001_18_cap_attenuate (matches Coq) *)

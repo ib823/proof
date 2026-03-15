@@ -12,24 +12,24 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | KeyUsage           | key_usage              | OK     |
- * | HashValue          | hash_value             | OK     |
- * | Signature          | signature              | OK     |
- * | PublicKey          | public_key             | OK     |
- * | BootROM            | boot_rom               | OK     |
- * | Bootloader         | bootloader             | OK     |
- * | Kernel             | kernel                 | OK     |
- * | Initramfs          | initramfs              | OK     |
- * | AppModule          | app_module             | OK     |
- * | BootChain          | boot_chain             | OK     |
- * | PCRValue           | pcr_value              | OK     |
- * | TPMState           | tpm_state              | OK     |
- * | MeasurementEvent   | measurement_event      | OK     |
- * | AttestationQuote   | attestation_quote      | OK     |
- * | HierarchyKey       | hierarchy_key          | OK     |
- * | KeyDatabase        | key_database           | OK     |
- * | SecureBootPolicy   | secure_boot_policy     | OK     |
- * | SecureBootConfig   | secure_boot_config     | OK     |
+ * | key_usage           | key_usage              | OK     |
+ * | hash_value          | hash_value             | OK     |
+ * | signature          | signature              | OK     |
+ * | public_key          | public_key             | OK     |
+ * | boot_rom            | boot_rom               | OK     |
+ * | bootloader         | bootloader             | OK     |
+ * | kernel             | kernel                 | OK     |
+ * | initramfs          | initramfs              | OK     |
+ * | app_module          | app_module             | OK     |
+ * | boot_chain          | boot_chain             | OK     |
+ * | pcr_value           | pcr_value              | OK     |
+ * | tpm_state           | tpm_state              | OK     |
+ * | measurement_event   | measurement_event      | OK     |
+ * | attestation_quote   | attestation_quote      | OK     |
+ * | hierarchy_key       | hierarchy_key          | OK     |
+ * | key_database        | key_database           | OK     |
+ * | secure_boot_policy   | secure_boot_policy     | OK     |
+ * | secure_boot_config   | secure_boot_config     | OK     |
  * | rom_is_root_of_trust | rom_is_root_of_trust   | OK     |
  * | rom_fully_secure   | rom_fully_secure       | OK     |
  * | key_valid_for_verification | key_valid_for_verification | OK     |
@@ -168,10 +168,10 @@
  *)
 
 theory SecureBootVerification
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics
 begin
 
-(* KeyUsage (matches Coq: Inductive KeyUsage) *)
+(* key_usage (matches Coq: Inductive key_usage) *)
 datatype key_usage =
     RootKey
   |     PlatformKey
@@ -179,20 +179,20 @@ datatype key_usage =
   |     DatabaseKey
   |     ForbiddenKey
 
-(* HashValue (matches Coq: Record HashValue) *)
+(* hash_value (matches Coq: Record hash_value) *)
 record hash_value =
   hash_algorithm :: nat
   hash_length :: nat
   hash_computed :: bool
 
-(* Signature (matches Coq: Record Signature) *)
+(* signature (matches Coq: Record signature) *)
 record signature =
   sig_algorithm :: nat
   sig_key_id :: nat
   sig_valid :: bool
   sig_timestamp :: nat
 
-(* PublicKey (matches Coq: Record PublicKey) *)
+(* public_key (matches Coq: Record public_key) *)
 record public_key =
   pk_id :: nat
   pk_algorithm :: nat
@@ -200,58 +200,58 @@ record public_key =
   pk_expired :: bool
   pk_trusted :: bool
 
-(* BootROM (matches Coq: Record BootROM) *)
+(* boot_rom (matches Coq: Record boot_rom) *)
 record boot_rom =
   rom_hash_verified :: bool
   rom_fused :: bool
   rom_contains_root_key :: bool
   rom_anti_debug :: bool
 
-(* Bootloader (matches Coq: Record Bootloader) *)
+(* bootloader (matches Coq: Record bootloader) *)
 record bootloader =
-  bl_signature :: Signature
+  bl_signature :: signature
   bl_version :: nat
   bl_min_version :: nat
-  bl_hash :: HashValue
+  bl_hash :: hash_value
   bl_verified :: bool
 
-(* Kernel (matches Coq: Record Kernel) *)
+(* kernel (matches Coq: Record kernel) *)
 record kernel =
-  kern_signature :: Signature
+  kern_signature :: signature
   kern_version :: nat
   kern_min_version :: nat
-  kern_hash :: HashValue
+  kern_hash :: hash_value
   kern_verified :: bool
   kern_secure_boot_enforced :: bool
 
-(* Initramfs (matches Coq: Record Initramfs) *)
+(* initramfs (matches Coq: Record initramfs) *)
 record initramfs =
-  initrd_signature :: Signature
-  initrd_hash :: HashValue
+  initrd_signature :: signature
+  initrd_hash :: hash_value
   initrd_verified :: bool
 
-(* AppModule (matches Coq: Record AppModule) *)
+(* app_module (matches Coq: Record app_module) *)
 record app_module =
-  app_signature :: Signature
-  app_hash :: HashValue
+  app_signature :: signature
+  app_hash :: hash_value
   app_verified :: bool
   app_allowed_by_policy :: bool
 
-(* BootChain (matches Coq: Record BootChain) *)
+(* boot_chain (matches Coq: Record boot_chain) *)
 record boot_chain =
-  bc_rom :: BootROM
-  bc_bootloader :: Bootloader
-  bc_kernel :: Kernel
-  bc_initramfs :: Initramfs
+  bc_rom :: boot_rom
+  bc_bootloader :: bootloader
+  bc_kernel :: kernel
+  bc_initramfs :: initramfs
 
-(* PCRValue (matches Coq: Record PCRValue) *)
+(* pcr_value (matches Coq: Record pcr_value) *)
 record pcr_value =
   pcr_index :: nat
   pcr_value :: nat
   pcr_extended :: bool
   pcr_locked :: bool
 
-(* TPMState (matches Coq: Record TPMState) *)
+(* tpm_state (matches Coq: Record tpm_state) *)
 record tpm_state =
   tpm_enabled :: bool
   tpm_activated :: bool
@@ -259,35 +259,35 @@ record tpm_state =
   tpm_pcrs :: 'a list
   tpm_locality :: nat
 
-(* MeasurementEvent (matches Coq: Record MeasurementEvent) *)
+(* measurement_event (matches Coq: Record measurement_event) *)
 record measurement_event =
   meas_pcr_index :: nat
   meas_event_type :: nat
-  meas_hash :: HashValue
+  meas_hash :: hash_value
   meas_description :: nat
 
-(* AttestationQuote (matches Coq: Record AttestationQuote) *)
+(* attestation_quote (matches Coq: Record attestation_quote) *)
 record attestation_quote =
   quote_pcr_mask :: nat
   quote_nonce :: nat
-  quote_signature :: Signature
+  quote_signature :: signature
   quote_valid :: bool
 
-(* HierarchyKey (matches Coq: Record HierarchyKey) *)
+(* hierarchy_key (matches Coq: Record hierarchy_key) *)
 record hierarchy_key =
   hk_id :: nat
-  hk_usage :: KeyUsage
-  hk_public :: PublicKey
+  hk_usage :: key_usage
+  hk_public :: public_key
   hk_parent_id :: option
   hk_revocation_list :: 'a list
 
-(* KeyDatabase (matches Coq: Record KeyDatabase) *)
+(* key_database (matches Coq: Record key_database) *)
 record key_database =
   db_trusted_keys :: 'a list
   db_forbidden_hashes :: 'a list
   db_forbidden_keys :: 'a list
 
-(* SecureBootPolicy (matches Coq: Record SecureBootPolicy) *)
+(* secure_boot_policy (matches Coq: Record secure_boot_policy) *)
 record secure_boot_policy =
   sbp_enabled :: bool
   sbp_enforcing :: bool
@@ -295,12 +295,12 @@ record secure_boot_policy =
   sbp_require_tpm :: bool
   sbp_remote_attestation :: bool
 
-(* SecureBootConfig (matches Coq: Record SecureBootConfig) *)
+(* secure_boot_config (matches Coq: Record secure_boot_config) *)
 record secure_boot_config =
-  sb_chain :: BootChain
-  sb_tpm :: TPMState
-  sb_key_db :: KeyDatabase
-  sb_policy :: SecureBootPolicy
+  sb_chain :: boot_chain
+  sb_tpm :: tpm_state
+  sb_key_db :: key_database
+  sb_policy :: secure_boot_policy
 
 (* rom_is_root_of_trust (matches Coq: Definition rom_is_root_of_trust) *)
 definition rom_is_root_of_trust :: "BootROM \<Rightarrow> bool" where
@@ -315,7 +315,7 @@ definition key_valid_for_verification :: "PublicKey \<Rightarrow> bool" where
   "key_valid_for_verification pk \<equiv> pk_trusted pk \<and> (\<not> pk_revoked pk) \<and> (\<not> pk_expired pk)"
 
 (* signature_valid_with_key (matches Coq: Definition signature_valid_with_key) *)
-definition signature_valid_with_key :: "Signature \<Rightarrow> PublicKey \<Rightarrow> bool" where
+definition signature_valid_with_key :: "Signature \<Rightarrow> public_key \<Rightarrow> bool" where
   "signature_valid_with_key sig pk \<equiv> sig_valid sig \<and>
   (sig_key_id sig = pk_id pk) \<and>
   key_valid_for_verification pk"
@@ -402,7 +402,7 @@ definition key_forbidden :: "nat \<Rightarrow> bool" where
   "key_forbidden key_id \<equiv> existsb ((key_id) = forbidden)"
 
 (* db_allows_signature (matches Coq: Definition db_allows_signature) *)
-definition db_allows_signature :: "KeyDatabase \<Rightarrow> Signature \<Rightarrow> bool" where
+definition db_allows_signature :: "KeyDatabase \<Rightarrow> signature \<Rightarrow> bool" where
   "db_allows_signature db sig \<equiv> key_in_trusted_db (sig_key_id sig) (db_trusted_keys db) \<and>
   (\<not> (key_forbidden) (sig_key_id sig) (db_forbidden_keys db))"
 
@@ -494,155 +494,155 @@ lemma orb_true_iff: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = T
   by auto
 
 (* SB_001_rom_integrity (matches Coq) *)
-lemma SB_001_rom_integrity: "\<forall>(rom :: BootROM). rom_hash_verified rom = True \<longrightarrow> rom_fused rom = True \<longrightarrow> rom_is_root_of_trust rom = rom_contains_root_key rom"
+lemma SB_001_rom_integrity: "\<forall>(rom :: boot_rom). rom_hash_verified rom = True \<longrightarrow> rom_fused rom = True \<longrightarrow> rom_is_root_of_trust rom = rom_contains_root_key rom"
   by simp
 
 (* SB_002_rom_immutability (matches Coq) *)
-lemma SB_002_rom_immutability: "\<forall>(rom :: BootROM). rom_fused rom = True \<longrightarrow> True"
+lemma SB_002_rom_immutability: "\<forall>(rom :: boot_rom). rom_fused rom = True \<longrightarrow> True"
   by auto
 
 (* SB_003_rot_complete (matches Coq) *)
-lemma SB_003_rot_complete: "\<forall>(rom :: BootROM). rom_is_root_of_trust rom = True \<longrightarrow> rom_hash_verified rom = True \<and> rom_fused rom = True \<and> rom_contains_root_key rom = True"
+lemma SB_003_rot_complete: "\<forall>(rom :: boot_rom). rom_is_root_of_trust rom = True \<longrightarrow> rom_hash_verified rom = True \<and> rom_fused rom = True \<and> rom_contains_root_key rom = True"
   by auto
 
 (* SB_004_rot_anti_debug (matches Coq) *)
-lemma SB_004_rot_anti_debug: "\<forall>(rom :: BootROM). rom_is_root_of_trust rom = True \<longrightarrow> rom_anti_debug rom = True \<longrightarrow> True"
+lemma SB_004_rot_anti_debug: "\<forall>(rom :: boot_rom). rom_is_root_of_trust rom = True \<longrightarrow> rom_anti_debug rom = True \<longrightarrow> True"
   by auto
 
 (* SB_005_root_key_enables_cot (matches Coq) *)
-lemma SB_005_root_key_enables_cot: "\<forall>(rom :: BootROM). rom_contains_root_key rom = True \<longrightarrow> rom_fused rom = True \<longrightarrow> True"
+lemma SB_005_root_key_enables_cot: "\<forall>(rom :: boot_rom). rom_contains_root_key rom = True \<longrightarrow> rom_fused rom = True \<longrightarrow> True"
   by auto
 
 (* SB_006_full_rom_implies_rot (matches Coq) *)
-lemma SB_006_full_rom_implies_rot: "\<forall>(rom :: BootROM). rom_fully_secure rom = True \<longrightarrow> rom_is_root_of_trust rom = True"
+lemma SB_006_full_rom_implies_rot: "\<forall>(rom :: boot_rom). rom_fully_secure rom = True \<longrightarrow> rom_is_root_of_trust rom = True"
   by auto
 
 (* SB_007_full_rom_implies_antidebug (matches Coq) *)
-lemma SB_007_full_rom_implies_antidebug: "\<forall>(rom :: BootROM). rom_fully_secure rom = True \<longrightarrow> rom_anti_debug rom = True"
+lemma SB_007_full_rom_implies_antidebug: "\<forall>(rom :: boot_rom). rom_fully_secure rom = True \<longrightarrow> rom_anti_debug rom = True"
   by auto
 
 (* SB_008_construct_full_rom (matches Coq) *)
-lemma SB_008_construct_full_rom: "\<forall>(rom :: BootROM). rom_is_root_of_trust rom = True \<longrightarrow> rom_anti_debug rom = True \<longrightarrow> rom_fully_secure rom = True"
+lemma SB_008_construct_full_rom: "\<forall>(rom :: boot_rom). rom_is_root_of_trust rom = True \<longrightarrow> rom_anti_debug rom = True \<longrightarrow> rom_fully_secure rom = True"
   by auto
 
 (* SB_009_rom_starts_verification (matches Coq) *)
-lemma SB_009_rom_starts_verification: "\<forall>(rom :: BootROM). rom_is_root_of_trust rom = True \<longrightarrow> rom_contains_root_key rom = True"
+lemma SB_009_rom_starts_verification: "\<forall>(rom :: boot_rom). rom_is_root_of_trust rom = True \<longrightarrow> rom_contains_root_key rom = True"
   by auto
 
 (* SB_010_rom_integrity_required (matches Coq) *)
-lemma SB_010_rom_integrity_required: "\<forall>(rom :: BootROM). rom_is_root_of_trust rom = True \<longrightarrow> rom_hash_verified rom = True"
+lemma SB_010_rom_integrity_required: "\<forall>(rom :: boot_rom). rom_is_root_of_trust rom = True \<longrightarrow> rom_hash_verified rom = True"
   by auto
 
 (* SB_011_sig_requires_nonrevoked (matches Coq) *)
-lemma SB_011_sig_requires_nonrevoked: "\<forall>(sig :: Signature) (pk :: PublicKey). signature_valid_with_key sig pk = True \<longrightarrow> pk_revoked pk = False"
+lemma SB_011_sig_requires_nonrevoked: "\<forall>(sig :: signature) (pk :: public_key). signature_valid_with_key sig pk = True \<longrightarrow> pk_revoked pk = False"
   by auto
 
 (* SB_012_sig_requires_nonexpired (matches Coq) *)
-lemma SB_012_sig_requires_nonexpired: "\<forall>(sig :: Signature) (pk :: PublicKey). signature_valid_with_key sig pk = True \<longrightarrow> pk_expired pk = False"
+lemma SB_012_sig_requires_nonexpired: "\<forall>(sig :: signature) (pk :: public_key). signature_valid_with_key sig pk = True \<longrightarrow> pk_expired pk = False"
   by auto
 
 (* SB_013_sig_requires_trusted (matches Coq) *)
-lemma SB_013_sig_requires_trusted: "\<forall>(sig :: Signature) (pk :: PublicKey). signature_valid_with_key sig pk = True \<longrightarrow> pk_trusted pk = True"
+lemma SB_013_sig_requires_trusted: "\<forall>(sig :: signature) (pk :: public_key). signature_valid_with_key sig pk = True \<longrightarrow> pk_trusted pk = True"
   by auto
 
 (* SB_014_sig_key_id_match (matches Coq) *)
-lemma SB_014_sig_key_id_match: "\<forall>(sig :: Signature) (pk :: PublicKey). signature_valid_with_key sig pk = True \<longrightarrow> sig_key_id sig = pk_id pk"
+lemma SB_014_sig_key_id_match: "\<forall>(sig :: signature) (pk :: public_key). signature_valid_with_key sig pk = True \<longrightarrow> sig_key_id sig = pk_id pk"
   by auto
 
 (* SB_015_sig_crypto_verified (matches Coq) *)
-lemma SB_015_sig_crypto_verified: "\<forall>(sig :: Signature) (pk :: PublicKey). signature_valid_with_key sig pk = True \<longrightarrow> sig_valid sig = True"
+lemma SB_015_sig_crypto_verified: "\<forall>(sig :: signature) (pk :: public_key). signature_valid_with_key sig pk = True \<longrightarrow> sig_valid sig = True"
   by auto
 
 (* SB_016_key_validity_complete (matches Coq) *)
-lemma SB_016_key_validity_complete: "\<forall>(pk :: PublicKey). key_valid_for_verification pk = True \<longrightarrow> pk_trusted pk = True \<and> pk_revoked pk = False \<and> pk_expired pk = False"
+lemma SB_016_key_validity_complete: "\<forall>(pk :: public_key). key_valid_for_verification pk = True \<longrightarrow> pk_trusted pk = True \<and> pk_revoked pk = False \<and> pk_expired pk = False"
   by auto
 
 (* SB_017_construct_valid_key (matches Coq) *)
-lemma SB_017_construct_valid_key: "\<forall>(pk :: PublicKey). pk_trusted pk = True \<longrightarrow> pk_revoked pk = False \<longrightarrow> pk_expired pk = False \<longrightarrow> key_valid_for_verification pk = True"
+lemma SB_017_construct_valid_key: "\<forall>(pk :: public_key). pk_trusted pk = True \<longrightarrow> pk_revoked pk = False \<longrightarrow> pk_expired pk = False \<longrightarrow> key_valid_for_verification pk = True"
   by simp
 
 (* SB_018_revoked_key_invalid (matches Coq) *)
-lemma SB_018_revoked_key_invalid: "\<forall>(pk :: PublicKey). pk_revoked pk = True \<longrightarrow> key_valid_for_verification pk = False"
+lemma SB_018_revoked_key_invalid: "\<forall>(pk :: public_key). pk_revoked pk = True \<longrightarrow> key_valid_for_verification pk = False"
   by auto
 
 (* SB_019_expired_key_invalid (matches Coq) *)
-lemma SB_019_expired_key_invalid: "\<forall>(pk :: PublicKey). pk_expired pk = True \<longrightarrow> key_valid_for_verification pk = False"
+lemma SB_019_expired_key_invalid: "\<forall>(pk :: public_key). pk_expired pk = True \<longrightarrow> key_valid_for_verification pk = False"
   by auto
 
 (* SB_020_untrusted_key_invalid (matches Coq) *)
-lemma SB_020_untrusted_key_invalid: "\<forall>(pk :: PublicKey). pk_trusted pk = False \<longrightarrow> key_valid_for_verification pk = False"
+lemma SB_020_untrusted_key_invalid: "\<forall>(pk :: public_key). pk_trusted pk = False \<longrightarrow> key_valid_for_verification pk = False"
   by simp
 
 (* SB_021_cot_requires_rot (matches Coq) *)
-lemma SB_021_cot_requires_rot: "\<forall>(chain :: BootChain). chain_of_trust_complete chain = True \<longrightarrow> rom_is_root_of_trust (bc_rom chain) = True"
+lemma SB_021_cot_requires_rot: "\<forall>(chain :: boot_chain). chain_of_trust_complete chain = True \<longrightarrow> rom_is_root_of_trust (bc_rom chain) = True"
   by auto
 
 (* SB_022_cot_requires_bootloader (matches Coq) *)
-lemma SB_022_cot_requires_bootloader: "\<forall>(chain :: BootChain). chain_of_trust_complete chain = True \<longrightarrow> bootloader_verified (bc_bootloader chain) = True"
+lemma SB_022_cot_requires_bootloader: "\<forall>(chain :: boot_chain). chain_of_trust_complete chain = True \<longrightarrow> bootloader_verified (bc_bootloader chain) = True"
   by auto
 
 (* SB_023_cot_requires_kernel (matches Coq) *)
-lemma SB_023_cot_requires_kernel: "\<forall>(chain :: BootChain). chain_of_trust_complete chain = True \<longrightarrow> kernel_verified (bc_kernel chain) = True"
+lemma SB_023_cot_requires_kernel: "\<forall>(chain :: boot_chain). chain_of_trust_complete chain = True \<longrightarrow> kernel_verified (bc_kernel chain) = True"
   by auto
 
 (* SB_024_cot_requires_initramfs (matches Coq) *)
-lemma SB_024_cot_requires_initramfs: "\<forall>(chain :: BootChain). chain_of_trust_complete chain = True \<longrightarrow> initramfs_verified (bc_initramfs chain) = True"
+lemma SB_024_cot_requires_initramfs: "\<forall>(chain :: boot_chain). chain_of_trust_complete chain = True \<longrightarrow> initramfs_verified (bc_initramfs chain) = True"
   by auto
 
 (* SB_025_bootloader_sig_valid (matches Coq) *)
-lemma SB_025_bootloader_sig_valid: "\<forall>(bl :: Bootloader). bootloader_verified bl = True \<longrightarrow> sig_valid (bl_signature bl) = True"
+lemma SB_025_bootloader_sig_valid: "\<forall>(bl :: bootloader). bootloader_verified bl = True \<longrightarrow> sig_valid (bl_signature bl) = True"
   by auto
 
 (* SB_026_kernel_sig_valid (matches Coq) *)
-lemma SB_026_kernel_sig_valid: "\<forall>(kern :: Kernel). kernel_verified kern = True \<longrightarrow> sig_valid (kern_signature kern) = True"
+lemma SB_026_kernel_sig_valid: "\<forall>(kern :: kernel). kernel_verified kern = True \<longrightarrow> sig_valid (kern_signature kern) = True"
   by auto
 
 (* SB_027_initramfs_sig_valid (matches Coq) *)
-lemma SB_027_initramfs_sig_valid: "\<forall>(initrd :: Initramfs). initramfs_verified initrd = True \<longrightarrow> sig_valid (initrd_signature initrd) = True"
+lemma SB_027_initramfs_sig_valid: "\<forall>(initrd :: initramfs). initramfs_verified initrd = True \<longrightarrow> sig_valid (initrd_signature initrd) = True"
   by auto
 
 (* SB_028_bootloader_hash_computed (matches Coq) *)
-lemma SB_028_bootloader_hash_computed: "\<forall>(bl :: Bootloader). bootloader_verified bl = True \<longrightarrow> hash_computed (bl_hash bl) = True"
+lemma SB_028_bootloader_hash_computed: "\<forall>(bl :: bootloader). bootloader_verified bl = True \<longrightarrow> hash_computed (bl_hash bl) = True"
   by auto
 
 (* SB_029_kernel_hash_computed (matches Coq) *)
-lemma SB_029_kernel_hash_computed: "\<forall>(kern :: Kernel). kernel_verified kern = True \<longrightarrow> hash_computed (kern_hash kern) = True"
+lemma SB_029_kernel_hash_computed: "\<forall>(kern :: kernel). kernel_verified kern = True \<longrightarrow> hash_computed (kern_hash kern) = True"
   by auto
 
 (* SB_030_initramfs_hash_computed (matches Coq) *)
-lemma SB_030_initramfs_hash_computed: "\<forall>(initrd :: Initramfs). initramfs_verified initrd = True \<longrightarrow> hash_computed (initrd_hash initrd) = True"
+lemma SB_030_initramfs_hash_computed: "\<forall>(initrd :: initramfs). initramfs_verified initrd = True \<longrightarrow> hash_computed (initrd_hash initrd) = True"
   by auto
 
 (* SB_031_construct_verified_bootloader (matches Coq) *)
-lemma SB_031_construct_verified_bootloader: "\<forall>(bl :: Bootloader). bl_verified bl = True \<longrightarrow> sig_valid (bl_signature bl) = True \<longrightarrow> hash_computed (bl_hash bl) = True \<longrightarrow> bootloader_verified bl = True"
+lemma SB_031_construct_verified_bootloader: "\<forall>(bl :: bootloader). bl_verified bl = True \<longrightarrow> sig_valid (bl_signature bl) = True \<longrightarrow> hash_computed (bl_hash bl) = True \<longrightarrow> bootloader_verified bl = True"
   by simp
 
 (* SB_032_construct_verified_kernel (matches Coq) *)
-lemma SB_032_construct_verified_kernel: "\<forall>(kern :: Kernel). kern_verified kern = True \<longrightarrow> sig_valid (kern_signature kern) = True \<longrightarrow> hash_computed (kern_hash kern) = True \<longrightarrow> kernel_verified kern = True"
+lemma SB_032_construct_verified_kernel: "\<forall>(kern :: kernel). kern_verified kern = True \<longrightarrow> sig_valid (kern_signature kern) = True \<longrightarrow> hash_computed (kern_hash kern) = True \<longrightarrow> kernel_verified kern = True"
   by simp
 
 (* SB_033_construct_verified_initramfs (matches Coq) *)
-lemma SB_033_construct_verified_initramfs: "\<forall>(initrd :: Initramfs). initrd_verified initrd = True \<longrightarrow> sig_valid (initrd_signature initrd) = True \<longrightarrow> hash_computed (initrd_hash initrd) = True \<longrightarrow> initramfs_verified initrd = True"
+lemma SB_033_construct_verified_initramfs: "\<forall>(initrd :: initramfs). initrd_verified initrd = True \<longrightarrow> sig_valid (initrd_signature initrd) = True \<longrightarrow> hash_computed (initrd_hash initrd) = True \<longrightarrow> initramfs_verified initrd = True"
   by simp
 
 (* SB_034_construct_cot (matches Coq) *)
-lemma SB_034_construct_cot: "\<forall>(chain :: BootChain). rom_is_root_of_trust (bc_rom chain) = True \<longrightarrow> bootloader_verified (bc_bootloader chain) = True \<longrightarrow> kernel_verified (bc_kernel chain) = True \<longrightarrow> initramfs_verified (bc_initramfs chain) = True \<longrightarrow> chain_of_trust_complete chain = True"
+lemma SB_034_construct_cot: "\<forall>(chain :: boot_chain). rom_is_root_of_trust (bc_rom chain) = True \<longrightarrow> bootloader_verified (bc_bootloader chain) = True \<longrightarrow> kernel_verified (bc_kernel chain) = True \<longrightarrow> initramfs_verified (bc_initramfs chain) = True \<longrightarrow> chain_of_trust_complete chain = True"
   by simp
 
 (* SB_035_cot_all_verified (matches Coq) *)
-lemma SB_035_cot_all_verified: "\<forall>(chain :: BootChain). chain_of_trust_complete chain = True \<longrightarrow> bl_verified (bc_bootloader chain) = True \<and> kern_verified (bc_kernel chain) = True \<and> initrd_verified (bc_initramfs chain) = True"
+lemma SB_035_cot_all_verified: "\<forall>(chain :: boot_chain). chain_of_trust_complete chain = True \<longrightarrow> bl_verified (bc_bootloader chain) = True \<and> kern_verified (bc_kernel chain) = True \<and> initrd_verified (bc_initramfs chain) = True"
   by auto
 
 (* SB_036_tpm_requires_enabled (matches Coq) *)
-lemma SB_036_tpm_requires_enabled: "\<forall>(tpm :: TPMState). tpm_operational tpm = True \<longrightarrow> tpm_enabled tpm = True"
+lemma SB_036_tpm_requires_enabled: "\<forall>(tpm :: tpm_state). tpm_operational tpm = True \<longrightarrow> tpm_enabled tpm = True"
   by auto
 
 (* SB_037_tpm_requires_activated (matches Coq) *)
-lemma SB_037_tpm_requires_activated: "\<forall>(tpm :: TPMState). tpm_operational tpm = True \<longrightarrow> tpm_activated tpm = True"
+lemma SB_037_tpm_requires_activated: "\<forall>(tpm :: tpm_state). tpm_operational tpm = True \<longrightarrow> tpm_activated tpm = True"
   by auto
 
 (* SB_038_construct_operational_tpm (matches Coq) *)
-lemma SB_038_construct_operational_tpm: "\<forall>(tpm :: TPMState). tpm_enabled tpm = True \<longrightarrow> tpm_activated tpm = True \<longrightarrow> tpm_operational tpm = True"
+lemma SB_038_construct_operational_tpm: "\<forall>(tpm :: tpm_state). tpm_enabled tpm = True \<longrightarrow> tpm_activated tpm = True \<longrightarrow> tpm_operational tpm = True"
   by simp
 
 (* SB_039_empty_pcrs_extended (matches Coq) *)
@@ -650,47 +650,47 @@ lemma SB_039_empty_pcrs_extended: "all_pcrs_extended [] = True"
   by simp
 
 (* SB_040_single_pcr_extended (matches Coq) *)
-lemma SB_040_single_pcr_extended: "\<forall>(pcr :: PCRValue). pcr_extended pcr = True \<longrightarrow> all_pcrs_extended [pcr] = True"
+lemma SB_040_single_pcr_extended: "\<forall>(pcr :: pcr_value). pcr_extended pcr = True \<longrightarrow> all_pcrs_extended [pcr] = True"
   by simp
 
 (* SB_041_cons_preserves_extended (matches Coq) *)
-lemma SB_041_cons_preserves_extended: "\<forall>(pcr :: PCRValue) (rest : list PCRValue). pcr_extended pcr = True \<longrightarrow> all_pcrs_extended rest = True \<longrightarrow> all_pcrs_extended (pcr :: rest) = True"
+lemma SB_041_cons_preserves_extended: "\<forall>(pcr :: pcr_value) (rest : list pcr_value). pcr_extended pcr = True \<longrightarrow> all_pcrs_extended rest = True \<longrightarrow> all_pcrs_extended (pcr :: rest) = True"
   by simp
 
 (* SB_042_head_extended (matches Coq) *)
-lemma SB_042_head_extended: "\<forall>(pcr :: PCRValue) (rest : list PCRValue). all_pcrs_extended (pcr :: rest) = True \<longrightarrow> pcr_extended pcr = True"
+lemma SB_042_head_extended: "\<forall>(pcr :: pcr_value) (rest : list pcr_value). all_pcrs_extended (pcr :: rest) = True \<longrightarrow> pcr_extended pcr = True"
   by auto
 
 (* SB_043_tail_extended (matches Coq) *)
-lemma SB_043_tail_extended: "\<forall>(pcr :: PCRValue) (rest : list PCRValue). all_pcrs_extended (pcr :: rest) = True \<longrightarrow> all_pcrs_extended rest = True"
+lemma SB_043_tail_extended: "\<forall>(pcr :: pcr_value) (rest : list pcr_value). all_pcrs_extended (pcr :: rest) = True \<longrightarrow> all_pcrs_extended rest = True"
   by auto
 
 (* SB_044_measurement_hash_computed (matches Coq) *)
-lemma SB_044_measurement_hash_computed: "\<forall>(meas :: MeasurementEvent) (pcrs : list PCRValue). measurement_valid meas pcrs = True \<longrightarrow> hash_computed (meas_hash meas) = True"
+lemma SB_044_measurement_hash_computed: "\<forall>(meas :: measurement_event) (pcrs : list pcr_value). measurement_valid meas pcrs = True \<longrightarrow> hash_computed (meas_hash meas) = True"
   by auto
 
 (* SB_045_measurement_pcr_in_bounds (matches Coq) *)
-lemma SB_045_measurement_pcr_in_bounds: "\<forall>(meas :: MeasurementEvent) (pcrs : list PCRValue). measurement_valid meas pcrs = True \<longrightarrow> meas_pcr_index meas < length pcrs"
+lemma SB_045_measurement_pcr_in_bounds: "\<forall>(meas :: measurement_event) (pcrs : list pcr_value). measurement_valid meas pcrs = True \<longrightarrow> meas_pcr_index meas < length pcrs"
   by auto
 
 (* SB_046_quote_requires_sig (matches Coq) *)
-lemma SB_046_quote_requires_sig: "\<forall>(quote :: AttestationQuote). quote_valid quote = True \<longrightarrow> sig_valid (quote_signature quote) = True \<longrightarrow> True"
+lemma SB_046_quote_requires_sig: "\<forall>(quote :: attestation_quote). quote_valid quote = True \<longrightarrow> sig_valid (quote_signature quote) = True \<longrightarrow> True"
   by auto
 
 (* SB_047_pcr_sealed (matches Coq) *)
-lemma SB_047_pcr_sealed: "\<forall>(pcr :: PCRValue). pcr_extended pcr = True \<longrightarrow> pcr_locked pcr = True \<longrightarrow> True"
+lemma SB_047_pcr_sealed: "\<forall>(pcr :: pcr_value). pcr_extended pcr = True \<longrightarrow> pcr_locked pcr = True \<longrightarrow> True"
   by auto
 
 (* SB_048_locality_access (matches Coq) *)
-lemma SB_048_locality_access: "\<forall>(tpm :: TPMState) (required_locality :: nat). tpm_operational tpm = True \<longrightarrow> (required_locality \<le> (tpm_locality) tpm) = True \<longrightarrow> True"
+lemma SB_048_locality_access: "\<forall>(tpm :: tpm_state) (required_locality :: nat). tpm_operational tpm = True \<longrightarrow> (required_locality \<le> (tpm_locality) tpm) = True \<longrightarrow> True"
   by auto
 
 (* SB_049_measured_boot_tpm (matches Coq) *)
-lemma SB_049_measured_boot_tpm: "\<forall>(tpm :: TPMState). measured_boot_complete tpm = True \<longrightarrow> tpm_operational tpm = True"
+lemma SB_049_measured_boot_tpm: "\<forall>(tpm :: tpm_state). measured_boot_complete tpm = True \<longrightarrow> tpm_operational tpm = True"
   by auto
 
 (* SB_050_measured_boot_pcrs (matches Coq) *)
-lemma SB_050_measured_boot_pcrs: "\<forall>(tpm :: TPMState). measured_boot_complete tpm = True \<longrightarrow> all_pcrs_extended (tpm_pcrs tpm) = True"
+lemma SB_050_measured_boot_pcrs: "\<forall>(tpm :: tpm_state). measured_boot_complete tpm = True \<longrightarrow> all_pcrs_extended (tpm_pcrs tpm) = True"
   by auto
 
 (* SB_051_version_no_rollback (matches Coq) *)
@@ -698,23 +698,23 @@ lemma SB_051_version_no_rollback: "\<forall>(version min_version : nat). version
   by auto
 
 (* SB_052_bootloader_version_ok (matches Coq) *)
-lemma SB_052_bootloader_version_ok: "\<forall>(bl :: Bootloader). bootloader_antirollback_ok bl = True \<longrightarrow> bl_min_version bl \<le> bl_version bl"
+lemma SB_052_bootloader_version_ok: "\<forall>(bl :: bootloader). bootloader_antirollback_ok bl = True \<longrightarrow> bl_min_version bl \<le> bl_version bl"
   by auto
 
 (* SB_053_kernel_version_ok (matches Coq) *)
-lemma SB_053_kernel_version_ok: "\<forall>(kern :: Kernel). kernel_antirollback_ok kern = True \<longrightarrow> kern_min_version kern \<le> kern_version kern"
+lemma SB_053_kernel_version_ok: "\<forall>(kern :: kernel). kernel_antirollback_ok kern = True \<longrightarrow> kern_min_version kern \<le> kern_version kern"
   by auto
 
 (* SB_054_chain_bootloader_ok (matches Coq) *)
-lemma SB_054_chain_bootloader_ok: "\<forall>(chain :: BootChain). antirollback_protected chain = True \<longrightarrow> bootloader_antirollback_ok (bc_bootloader chain) = True"
+lemma SB_054_chain_bootloader_ok: "\<forall>(chain :: boot_chain). antirollback_protected chain = True \<longrightarrow> bootloader_antirollback_ok (bc_bootloader chain) = True"
   by auto
 
 (* SB_055_chain_kernel_ok (matches Coq) *)
-lemma SB_055_chain_kernel_ok: "\<forall>(chain :: BootChain). antirollback_protected chain = True \<longrightarrow> kernel_antirollback_ok (bc_kernel chain) = True"
+lemma SB_055_chain_kernel_ok: "\<forall>(chain :: boot_chain). antirollback_protected chain = True \<longrightarrow> kernel_antirollback_ok (bc_kernel chain) = True"
   by auto
 
 (* SB_056_construct_antirollback (matches Coq) *)
-lemma SB_056_construct_antirollback: "\<forall>(chain :: BootChain). bootloader_antirollback_ok (bc_bootloader chain) = True \<longrightarrow> kernel_antirollback_ok (bc_kernel chain) = True \<longrightarrow> antirollback_protected chain = True"
+lemma SB_056_construct_antirollback: "\<forall>(chain :: boot_chain). bootloader_antirollback_ok (bc_bootloader chain) = True \<longrightarrow> kernel_antirollback_ok (bc_kernel chain) = True \<longrightarrow> antirollback_protected chain = True"
   by simp
 
 (* SB_057_min_zero_passes (matches Coq) *)
@@ -734,23 +734,23 @@ lemma SB_060_lower_version_fails: "\<forall>(version min_version : nat). version
   by auto
 
 (* SB_061_root_no_parent (matches Coq) *)
-lemma SB_061_root_no_parent: "\<forall>(key :: HierarchyKey). is_root_key key = True \<longrightarrow> hk_parent_id key = None"
+lemma SB_061_root_no_parent: "\<forall>(key :: hierarchy_key). is_root_key key = True \<longrightarrow> hk_parent_id key = None"
   by simp
 
 (* SB_062_nonroot_has_parent (matches Coq) *)
-lemma SB_062_nonroot_has_parent: "\<forall>(key :: HierarchyKey) (parent_id :: nat). hk_parent_id key = Some parent_id \<longrightarrow> is_root_key key = False"
+lemma SB_062_nonroot_has_parent: "\<forall>(key :: hierarchy_key) (parent_id :: nat). hk_parent_id key = Some parent_id \<longrightarrow> is_root_key key = False"
   by simp
 
 (* SB_063_valid_hierarchy_public (matches Coq) *)
-lemma SB_063_valid_hierarchy_public: "\<forall>(key :: HierarchyKey). hierarchy_key_valid key = True \<longrightarrow> key_valid_for_verification (hk_public key) = True"
+lemma SB_063_valid_hierarchy_public: "\<forall>(key :: hierarchy_key). hierarchy_key_valid key = True \<longrightarrow> key_valid_for_verification (hk_public key) = True"
   by auto
 
 (* SB_064_valid_not_self_revoked (matches Coq) *)
-lemma SB_064_valid_not_self_revoked: "\<forall>(key :: HierarchyKey). hierarchy_key_valid key = True \<longrightarrow> key_revoked_in_list (hk_id key) (hk_revocation_list key) = False"
+lemma SB_064_valid_not_self_revoked: "\<forall>(key :: hierarchy_key). hierarchy_key_valid key = True \<longrightarrow> key_revoked_in_list (hk_id key) (hk_revocation_list key) = False"
   by auto
 
 (* SB_065_key_in_db (matches Coq) *)
-lemma SB_065_key_in_db: "\<forall>(key_id :: nat) (key :: HierarchyKey) (rest : list HierarchyKey). hk_id key = key_id \<longrightarrow> key_in_trusted_db key_id (key :: rest) = True"
+lemma SB_065_key_in_db: "\<forall>(key_id :: nat) (key :: hierarchy_key) (rest : list hierarchy_key). hk_id key = key_id \<longrightarrow> key_in_trusted_db key_id (key :: rest) = True"
   by simp
 
 (* SB_066_key_not_in_empty (matches Coq) *)
@@ -766,51 +766,51 @@ lemma SB_068_key_is_forbidden: "\<forall>(key_id :: nat) (forbidden : list nat).
   by simp
 
 (* SB_069_allowed_uses_trusted (matches Coq) *)
-lemma SB_069_allowed_uses_trusted: "\<forall>(db :: KeyDatabase) (sig :: Signature). db_allows_signature db sig = True \<longrightarrow> key_in_trusted_db (sig_key_id sig) (db_trusted_keys db) = True"
+lemma SB_069_allowed_uses_trusted: "\<forall>(db :: key_database) (sig :: signature). db_allows_signature db sig = True \<longrightarrow> key_in_trusted_db (sig_key_id sig) (db_trusted_keys db) = True"
   by auto
 
 (* SB_070_allowed_not_forbidden (matches Coq) *)
-lemma SB_070_allowed_not_forbidden: "\<forall>(db :: KeyDatabase) (sig :: Signature). db_allows_signature db sig = True \<longrightarrow> key_forbidden (sig_key_id sig) (db_forbidden_keys db) = False"
+lemma SB_070_allowed_not_forbidden: "\<forall>(db :: key_database) (sig :: signature). db_allows_signature db sig = True \<longrightarrow> key_forbidden (sig_key_id sig) (db_forbidden_keys db) = False"
   by auto
 
 (* SB_071_complete_has_cot (matches Coq) *)
-lemma SB_071_complete_has_cot: "\<forall>(config :: SecureBootConfig). secure_boot_complete config = True \<longrightarrow> chain_of_trust_complete (sb_chain config) = True"
+lemma SB_071_complete_has_cot: "\<forall>(config :: secure_boot_config). secure_boot_complete config = True \<longrightarrow> chain_of_trust_complete (sb_chain config) = True"
   by auto
 
 (* SB_072_complete_has_measured (matches Coq) *)
-lemma SB_072_complete_has_measured: "\<forall>(config :: SecureBootConfig). secure_boot_complete config = True \<longrightarrow> measured_boot_complete (sb_tpm config) = True"
+lemma SB_072_complete_has_measured: "\<forall>(config :: secure_boot_config). secure_boot_complete config = True \<longrightarrow> measured_boot_complete (sb_tpm config) = True"
   by auto
 
 (* SB_073_complete_has_antirollback (matches Coq) *)
-lemma SB_073_complete_has_antirollback: "\<forall>(config :: SecureBootConfig). secure_boot_complete config = True \<longrightarrow> antirollback_protected (sb_chain config) = True"
+lemma SB_073_complete_has_antirollback: "\<forall>(config :: secure_boot_config). secure_boot_complete config = True \<longrightarrow> antirollback_protected (sb_chain config) = True"
   by auto
 
 (* SB_074_complete_has_policy (matches Coq) *)
-lemma SB_074_complete_has_policy: "\<forall>(config :: SecureBootConfig). secure_boot_complete config = True \<longrightarrow> policy_enforced (sb_policy config) = True"
+lemma SB_074_complete_has_policy: "\<forall>(config :: secure_boot_config). secure_boot_complete config = True \<longrightarrow> policy_enforced (sb_policy config) = True"
   by auto
 
 (* SB_075_policy_enabled (matches Coq) *)
-lemma SB_075_policy_enabled: "\<forall>(policy :: SecureBootPolicy). policy_enforced policy = True \<longrightarrow> sbp_enabled policy = True"
+lemma SB_075_policy_enabled: "\<forall>(policy :: secure_boot_policy). policy_enforced policy = True \<longrightarrow> sbp_enabled policy = True"
   by auto
 
 (* SB_076_policy_enforcing (matches Coq) *)
-lemma SB_076_policy_enforcing: "\<forall>(policy :: SecureBootPolicy). policy_enforced policy = True \<longrightarrow> sbp_enforcing policy = True"
+lemma SB_076_policy_enforcing: "\<forall>(policy :: secure_boot_policy). policy_enforced policy = True \<longrightarrow> sbp_enforcing policy = True"
   by auto
 
 (* SB_077_policy_no_unsigned (matches Coq) *)
-lemma SB_077_policy_no_unsigned: "\<forall>(policy :: SecureBootPolicy). policy_enforced policy = True \<longrightarrow> sbp_allow_unsigned policy = False"
+lemma SB_077_policy_no_unsigned: "\<forall>(policy :: secure_boot_policy). policy_enforced policy = True \<longrightarrow> sbp_allow_unsigned policy = False"
   by auto
 
 (* SB_078_construct_policy (matches Coq) *)
-lemma SB_078_construct_policy: "\<forall>(policy :: SecureBootPolicy). sbp_enabled policy = True \<longrightarrow> sbp_enforcing policy = True \<longrightarrow> sbp_allow_unsigned policy = False \<longrightarrow> policy_enforced policy = True"
+lemma SB_078_construct_policy: "\<forall>(policy :: secure_boot_policy). sbp_enabled policy = True \<longrightarrow> sbp_enforcing policy = True \<longrightarrow> sbp_allow_unsigned policy = False \<longrightarrow> policy_enforced policy = True"
   by simp
 
 (* SB_079_construct_complete (matches Coq) *)
-lemma SB_079_construct_complete: "\<forall>(config :: SecureBootConfig). chain_of_trust_complete (sb_chain config) = True \<longrightarrow> measured_boot_complete (sb_tpm config) = True \<longrightarrow> antirollback_protected (sb_chain config) = True \<longrightarrow> policy_enforced (sb_policy config) = True \<longrightarrow> secure_boot_complete config = True"
+lemma SB_079_construct_complete: "\<forall>(config :: secure_boot_config). chain_of_trust_complete (sb_chain config) = True \<longrightarrow> measured_boot_complete (sb_tpm config) = True \<longrightarrow> antirollback_protected (sb_chain config) = True \<longrightarrow> policy_enforced (sb_policy config) = True \<longrightarrow> secure_boot_complete config = True"
   by simp
 
 (* SB_080_complete_all_verified (matches Coq) *)
-lemma SB_080_complete_all_verified: "\<forall>(config :: SecureBootConfig). secure_boot_complete config = True \<longrightarrow> rom_is_root_of_trust (bc_rom (sb_chain config)) = True \<and> bootloader_verified (bc_bootloader (sb_chain config)) = True \<and> kernel_verified (bc_kernel (sb_chain config)) = True \<and> initramfs_verified (bc_initramfs (sb_chain config)) = True \<and> tpm_operational (sb_tpm config) = True"
+lemma SB_080_complete_all_verified: "\<forall>(config :: secure_boot_config). secure_boot_complete config = True \<longrightarrow> rom_is_root_of_trust (bc_rom (sb_chain config)) = True \<and> bootloader_verified (bc_bootloader (sb_chain config)) = True \<and> kernel_verified (bc_kernel (sb_chain config)) = True \<and> initramfs_verified (bc_initramfs (sb_chain config)) = True \<and> tpm_operational (sb_tpm config) = True"
   by auto
 
 (* SB_081_riina_rot (matches Coq) *)

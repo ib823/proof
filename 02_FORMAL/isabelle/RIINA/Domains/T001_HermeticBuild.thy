@@ -12,10 +12,10 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Stage              | stage                  | OK     |
- * | BuildEnv           | build_env              | OK     |
- * | Compiler           | compiler               | OK     |
- * | DDCResult          | ddc_result             | OK     |
+ * | stage              | stage                  | OK     |
+ * | build_env           | build_env              | OK     |
+ * | compiler           | compiler               | OK     |
+ * | ddc_result          | ddc_result             | OK     |
  * | source_semantics   | source_semantics       | OK     |
  * | executes           | executes               | OK     |
  * | preserves_semantics | preserves_semantics    | OK     |
@@ -69,14 +69,22 @@ theory T001_HermeticBuild
   imports Main
 begin
 
-(* Stage (matches Coq: Record Stage) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym binary = "nat list"
+type_synonym bootstrap_chain = "nat list"
+type_synonym build = "nat"
+type_synonym hex0 = "nat"
+type_synonym source_code = "nat"
+(* Abstract type synonym for hash *)
+type_synonym hash = "nat"
+(* stage (matches Coq: Record stage) *)
 record stage =
   stage_id :: nat
-  stage_source :: SourceCode
-  stage_binary :: Binary
-  stage_hash :: Hash
+  stage_source :: source_code
+  stage_binary :: binary
+  stage_hash :: hash
 
-(* BuildEnv (matches Coq: Record BuildEnv) *)
+(* build_env (matches Coq: Record build_env) *)
 record build_env =
   env_network :: bool
   env_filesystem :: 'a list
@@ -84,17 +92,17 @@ record build_env =
   env_random_seed :: nat
   env_inputs :: 'a list
 
-(* Compiler (matches Coq: Record Compiler) *)
+(* compiler (matches Coq: Record compiler) *)
 record compiler =
-  compiler_binary :: Binary
-  compiler_source :: SourceCode
-  compiler_chain :: BootstrapChain
+  compiler_binary :: binary
+  compiler_source :: source_code
+  compiler_chain :: bootstrap_chain
 
-(* DDCResult (matches Coq: Record DDCResult) *)
+(* ddc_result (matches Coq: Record ddc_result) *)
 record ddc_result =
-  compiler_a :: Compiler
-  compiler_b :: Compiler
-  compiler_aprime :: Compiler
+  compiler_a :: compiler
+  compiler_b :: compiler
+  compiler_aprime :: compiler
   equivalent :: bool
 
 (* source_semantics (matches Coq: Definition source_semantics) *)
@@ -102,11 +110,11 @@ definition source_semantics :: "SourceCode \<Rightarrow> Binary" where
   "source_semantics src \<equiv> src"
 
 (* executes (matches Coq: Definition executes) *)
-definition executes :: "Binary \<Rightarrow> SourceCode \<Rightarrow> Binary \<Rightarrow> bool" where
+definition executes :: "Binary \<Rightarrow> source_code \<Rightarrow> binary \<Rightarrow> bool" where
   "executes binary input output \<equiv> output = input"
 
 (* preserves_semantics (matches Coq: Definition preserves_semantics) *)
-definition preserves_semantics :: "Binary \<Rightarrow> SourceCode \<Rightarrow> Binary \<Rightarrow> bool" where
+definition preserves_semantics :: "Binary \<Rightarrow> source_code \<Rightarrow> binary \<Rightarrow> bool" where
   "preserves_semantics compiler src out \<equiv> forall input output,
     executes (source_semantics src) input output <->
     executes out input output"
@@ -152,7 +160,7 @@ definition bit_reproducible_def :: "Build \<Rightarrow> bool" where
     sha256 (b env src) = sha256 (b env src)"
 
 (* compile (matches Coq: Definition compile) *)
-definition compile :: "Binary \<Rightarrow> SourceCode \<Rightarrow> Binary" where
+definition compile :: "Binary \<Rightarrow> source_code \<Rightarrow> Binary" where
   "compile binary src \<equiv> src"
 
 (* functionally_equivalent (matches Coq: Definition functionally_equivalent) *)

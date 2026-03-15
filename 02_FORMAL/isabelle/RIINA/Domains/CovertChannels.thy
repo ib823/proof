@@ -12,19 +12,19 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SecLevel           | sec_level              | OK     |
- * | Observation        | observation            | OK     |
- * | State              | state                  | OK     |
- * | Trace              | trace                  | OK     |
- * | ResourceUsage      | resource_usage         | OK     |
- * | Partition          | partition              | OK     |
- * | SecureProgram      | secure_program         | OK     |
- * | NetworkTrace       | network_trace          | OK     |
- * | ScheduleTrace      | schedule_trace         | OK     |
- * | PowerTrace         | power_trace            | OK     |
+ * | sec_level           | sec_level              | OK     |
+ * | observation        | observation            | OK     |
+ * | state              | state                  | OK     |
+ * | trace              | trace                  | OK     |
+ * | resource_usage      | resource_usage         | OK     |
+ * | partition          | partition              | OK     |
+ * | secure_program      | secure_program         | OK     |
+ * | network_trace       | network_trace          | OK     |
+ * | schedule_trace      | schedule_trace         | OK     |
+ * | power_trace         | power_trace            | OK     |
  * | EMTrace            | em_trace               | OK     |
- * | BranchTrace        | branch_trace           | OK     |
- * | StorageState       | storage_state          | OK     |
+ * | branch_trace        | branch_trace           | OK     |
+ * | storage_state       | storage_state          | OK     |
  * | level_leq          | level_leq              | OK     |
  * | level_eq           | level_eq               | OK     |
  * | low_equiv          | low_equiv              | OK     |
@@ -89,13 +89,13 @@ theory CovertChannels
   imports Main CoqCompat
 begin
 
-(* SecLevel (matches Coq: Inductive SecLevel) *)
+(* sec_level (matches Coq: Inductive sec_level) *)
 datatype sec_level =
     Public
   |     Secret
   |     TopSecret
 
-(* Observation (matches Coq: Inductive Observation) *)
+(* observation (matches Coq: Inductive observation) *)
 datatype observation =
     ObsTime
   |     ObsMemory
@@ -104,14 +104,14 @@ datatype observation =
   |     ObsTermination
   |     ObsException
 
-(* State (matches Coq: Record State) *)
+(* state (matches Coq: Record state) *)
 record state =
   state_public :: nat
   state_secret :: nat
   state_memory :: 'a list
   state_cache :: 'a list
 
-(* Trace (matches Coq: Record Trace) *)
+(* trace (matches Coq: Record trace) *)
 record trace =
   trace_time :: nat
   trace_mem_accesses :: 'a list
@@ -120,35 +120,35 @@ record trace =
   trace_terminated :: bool
   trace_exception :: option
 
-(* ResourceUsage (matches Coq: Record ResourceUsage) *)
+(* resource_usage (matches Coq: Record resource_usage) *)
 record resource_usage =
   res_cpu_cycles :: nat
   res_memory_alloc :: nat
   res_cache_misses :: nat
   res_branch_mispredict :: nat
 
-(* Partition (matches Coq: Record Partition) *)
+(* partition (matches Coq: Record partition) *)
 record partition =
-  part_level :: SecLevel
+  part_level :: sec_level
   part_addresses :: 'a list
 
-(* SecureProgram (matches Coq: Record SecureProgram) *)
+(* secure_program (matches Coq: Record secure_program) *)
 record secure_program =
-  prog_execute :: State
-  prog_resources :: State
+  prog_execute :: state
+  prog_resources :: state
   prog_secure :: forall
 
-(* NetworkTrace (matches Coq: Record NetworkTrace) *)
+(* network_trace (matches Coq: Record network_trace) *)
 record network_trace =
   net_packet_times :: 'a list
   net_packet_sizes :: 'a list
 
-(* ScheduleTrace (matches Coq: Record ScheduleTrace) *)
+(* schedule_trace (matches Coq: Record schedule_trace) *)
 record schedule_trace =
   sched_quantum :: nat
   sched_priority :: nat
 
-(* PowerTrace (matches Coq: Record PowerTrace) *)
+(* power_trace (matches Coq: Record power_trace) *)
 record power_trace =
   power_samples :: 'a list
 
@@ -156,15 +156,15 @@ record power_trace =
 record em_trace =
   em_samples :: 'a list
 
-(* BranchTrace (matches Coq: Record BranchTrace) *)
+(* branch_trace (matches Coq: Record branch_trace) *)
 record branch_trace =
   branch_taken :: 'a list
   branch_predicted :: 'a list
 
-(* StorageState (matches Coq: Record StorageState) *)
+(* storage_state (matches Coq: Record storage_state) *)
 record storage_state =
   storage_contents :: 'a list
-  storage_level :: SecLevel
+  storage_level :: sec_level
 
 (* level_leq - complex match, needs manual translation *)
 definition level_leq :: "bool" where "level_leq = undefined"
@@ -337,7 +337,7 @@ lemma SEC_002_07: "\<forall>s1 s2 : State. let e1 := secure_em s1 in let e2 := s
   by simp
 
 (* SEC_002_08 (matches Coq) *)
-lemma SEC_002_08: "\<forall>(obs : list Observation) (secret_bits :: nat). channel_bandwidth obs secret_bits \<le> bandwidth_threshold \<longrightarrow> channel_bandwidth obs secret_bits \<le> 1"
+lemma SEC_002_08: "\<forall>(obs : list observation) (secret_bits :: nat). channel_bandwidth obs secret_bits \<le> bandwidth_threshold \<longrightarrow> channel_bandwidth obs secret_bits \<le> 1"
   by auto
 
 (* SEC_002_09 (matches Coq) *)

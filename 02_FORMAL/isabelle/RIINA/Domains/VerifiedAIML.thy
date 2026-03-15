@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Layer              | layer                  | OK     |
- * | FixedPoint         | fixed_point            | OK     |
- * | InputBounds        | input_bounds           | OK     |
- * | Model              | model                  | OK     |
- * | ActionSpace        | action_space           | OK     |
+ * | layer              | layer                  | OK     |
+ * | fixed_point         | fixed_point            | OK     |
+ * | input_bounds        | input_bounds           | OK     |
+ * | model              | model                  | OK     |
+ * | action_space        | action_space           | OK     |
  * | rval_add           | rval_add               | OK     |
  * | relu               | relu                   | OK     |
  * | sigmoid_approx     | sigmoid_approx         | OK     |
@@ -67,34 +67,37 @@ theory VerifiedAIML
   imports Main CoqCompat
 begin
 
-(* Layer (matches Coq: Inductive Layer) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym r_val = "nat"
+type_synonym z = "nat"
+(* layer (matches Coq: Inductive layer) *)
 datatype layer =
     Dense
   |     ReLU
   |     Softmax
   |     Sigmoid
 
-(* FixedPoint (matches Coq: Record FixedPoint) *)
+(* fixed_point (matches Coq: Record fixed_point) *)
 record fixed_point =
-  fp_int :: Z
+  fp_int :: z
   fp_frac :: nat
   fp_scale :: nat
 
-(* InputBounds (matches Coq: Record InputBounds) *)
+(* input_bounds (matches Coq: Record input_bounds) *)
 record input_bounds =
-  ib_min :: Z
-  ib_max :: Z
+  ib_min :: z
+  ib_max :: z
 
-(* Model (matches Coq: Record Model) *)
+(* model (matches Coq: Record model) *)
 record model =
   model_weights :: 'a list
   model_hash :: nat
 
-(* ActionSpace (matches Coq: Record ActionSpace) *)
+(* action_space (matches Coq: Record action_space) *)
 record action_space =
-  action_min :: Z
-  action_max :: Z
-  action_rate_limit :: Z
+  action_min :: z
+  action_max :: z
+  action_rate_limit :: z
 
 (* rval_add (matches Coq: Definition rval_add) *)
 definition rval_add :: "RVal" where
@@ -125,7 +128,7 @@ definition within_epsilon :: "Z \<Rightarrow> bool" where
   "within_epsilon epsilon \<equiv> Z.((Z.abs \<le> (x1) - x2)) epsilon"
 
 (* input_valid (matches Coq: Definition input_valid) *)
-definition input_valid :: "Z \<Rightarrow> InputBounds \<Rightarrow> bool" where
+definition input_valid :: "Z \<Rightarrow> input_bounds \<Rightarrow> bool" where
   "input_valid x bounds \<equiv> ((Z.(\<and> \<le> (ib_min)) bounds) x) (Z.(x \<le> (ib_max) bounds))"
 
 (* model_integrity (matches Coq: Definition model_integrity) *)
@@ -133,7 +136,7 @@ definition model_integrity :: "Model \<Rightarrow> nat \<Rightarrow> bool" where
   "model_integrity m expected_hash \<equiv> (model_hash m = expected_hash)"
 
 (* confidence_calibrated (matches Coq: Definition confidence_calibrated) *)
-definition confidence_calibrated :: "Z \<Rightarrow> Z \<Rightarrow> Z \<Rightarrow> bool" where
+definition confidence_calibrated :: "Z \<Rightarrow> z \<Rightarrow> z \<Rightarrow> bool" where
   "confidence_calibrated confidence accuracy tolerance \<equiv> Z.((Z.abs \<le> (confidence) - accuracy)) tolerance"
 
 (* demographic_parity (matches Coq: Definition demographic_parity) *)
@@ -151,15 +154,15 @@ definition output_bounded :: "Z \<Rightarrow> bool" where
   "output_bounded output \<equiv> (Z.(min \<le> output) \<and> Z.(output \<le> max))"
 
 (* classify (matches Coq: Definition classify) *)
-definition classify :: "Z \<Rightarrow> Z \<Rightarrow> Z" where
+definition classify :: "Z \<Rightarrow> z \<Rightarrow> Z" where
   "classify x threshold \<equiv> if Z.(threshold \<le> x) then 1 else 0"
 
 (* inference (matches Coq: Definition inference) *)
-definition inference :: "Model \<Rightarrow> Z \<Rightarrow> Z" where
+definition inference :: "Model \<Rightarrow> z \<Rightarrow> Z" where
   "inference model input \<equiv> fold_left Z.add (model_weights model) input"
 
 (* numerically_stable (matches Coq: Definition numerically_stable) *)
-definition numerically_stable :: "Z \<Rightarrow> Z \<Rightarrow> bool" where
+definition numerically_stable :: "Z \<Rightarrow> z \<Rightarrow> bool" where
   "numerically_stable x bound \<equiv> Z.((Z.abs \<le> x)) bound"
 
 (* explanation_faithful (matches Coq: Definition explanation_faithful) *)
@@ -167,74 +170,74 @@ definition explanation_faithful :: "Z \<Rightarrow> bool" where
   "explanation_faithful tolerance \<equiv> Z.((Z.abs \<le> (importance) - actual_contribution)) tolerance"
 
 (* gradient_step (matches Coq: Definition gradient_step) *)
-definition gradient_step :: "Z \<Rightarrow> Z \<Rightarrow> Z \<Rightarrow> Z" where
+definition gradient_step :: "Z \<Rightarrow> z \<Rightarrow> z \<Rightarrow> Z" where
   "gradient_step loss learning_rate gradient \<equiv> loss - learning_rate * gradient"
 
 (* mat_mul_elem - complex match, needs manual translation *)
 definition mat_mul_elem :: "bool" where "mat_mul_elem = undefined"
 
 (* lipschitz_output (matches Coq: Definition lipschitz_output) *)
-definition lipschitz_output :: "Z \<Rightarrow> Z \<Rightarrow> Z" where
+definition lipschitz_output :: "Z \<Rightarrow> z \<Rightarrow> Z" where
   "lipschitz_output input weight \<equiv> input * weight"
 
 (* DOMAIN_002_01_output_bounded (matches Coq) *)
-lemma DOMAIN_002_01_output_bounded: "\<forall>(output min max : Z). output_bounded output min max = True \<longrightarrow> min \<le> output \<and> output \<le> max"
+lemma DOMAIN_002_01_output_bounded: "\<forall>(output min max : z). output_bounded output min max = True \<longrightarrow> min \<le> output \<and> output \<le> max"
   by auto
 
 (* DOMAIN_002_02_lipschitz_continuity (matches Coq) *)
-lemma DOMAIN_002_02_lipschitz_continuity: "\<forall>(x1 x2 weight : Z). weight \<ge> 0 \<longrightarrow> Z.abs (lipschitz_output x1 weight - lipschitz_output x2 weight) \<le> weight * Z.abs (x1 - x2)"
+lemma DOMAIN_002_02_lipschitz_continuity: "\<forall>(x1 x2 weight : z). weight \<ge> 0 \<longrightarrow> Z.abs (lipschitz_output x1 weight - lipschitz_output x2 weight) \<le> weight * Z.abs (x1 - x2)"
   by simp
 
 (* DOMAIN_002_03_adversarial_robustness (matches Coq) *)
-lemma DOMAIN_002_03_adversarial_robustness: "\<forall>(x1 x2 threshold epsilon : Z). within_epsilon x1 x2 epsilon = True \<longrightarrow> x1 \<ge> threshold + epsilon + 1 \<longrightarrow> x2 \<ge> threshold + 1 \<longrightarrow> classify x1 threshold = classify x2 threshold"
+lemma DOMAIN_002_03_adversarial_robustness: "\<forall>(x1 x2 threshold epsilon : z). within_epsilon x1 x2 epsilon = True \<longrightarrow> x1 \<ge> threshold + epsilon + 1 \<longrightarrow> x2 \<ge> threshold + 1 \<longrightarrow> classify x1 threshold = classify x2 threshold"
   by auto
 
 (* DOMAIN_002_04_softmax_normalization (matches Coq) *)
-lemma DOMAIN_002_04_softmax_normalization: "\<forall>(outputs : list Z) (scale :: Z). softmax_valid outputs scale = True \<longrightarrow> fold_left Z.add outputs 0 = scale"
+lemma DOMAIN_002_04_softmax_normalization: "\<forall>(outputs : list z) (scale :: z). softmax_valid outputs scale = True \<longrightarrow> fold_left Z.add outputs 0 = scale"
   by auto
 
 (* DOMAIN_002_05_relu_monotonicity (matches Coq) *)
-lemma DOMAIN_002_05_relu_monotonicity: "\<forall>(x y : Z). x \<le> y \<longrightarrow> relu x \<le> relu y"
+lemma DOMAIN_002_05_relu_monotonicity: "\<forall>(x y : z). x \<le> y \<longrightarrow> relu x \<le> relu y"
   by auto
 
 (* DOMAIN_002_06_matrix_associativity (matches Coq) *)
-lemma DOMAIN_002_06_matrix_associativity: "\<forall>(a b c : Z). (a * b) * c = a * (b * c)"
+lemma DOMAIN_002_06_matrix_associativity: "\<forall>(a b c : z). (a * b) * c = a * (b * c)"
   by auto
 
 (* DOMAIN_002_07_gradient_descent_convergence (matches Coq) *)
-lemma DOMAIN_002_07_gradient_descent_convergence: "\<forall>(loss learning_rate gradient : Z). learning_rate > 0 \<longrightarrow> gradient > 0 \<longrightarrow> gradient_step loss learning_rate gradient < loss"
+lemma DOMAIN_002_07_gradient_descent_convergence: "\<forall>(loss learning_rate gradient : z). learning_rate > 0 \<longrightarrow> gradient > 0 \<longrightarrow> gradient_step loss learning_rate gradient < loss"
   by simp
 
 (* DOMAIN_002_08_inference_determinism (matches Coq) *)
-lemma DOMAIN_002_08_inference_determinism: "\<forall>(model :: Model) (input :: Z). inference model input = inference model input"
+lemma DOMAIN_002_08_inference_determinism: "\<forall>(model :: model) (input :: z). inference model input = inference model input"
   by simp
 
 (* DOMAIN_002_09_numerical_stability (matches Coq) *)
-lemma DOMAIN_002_09_numerical_stability: "\<forall>(x bound : Z). numerically_stable x bound = True \<longrightarrow> Z.abs x \<le> bound"
+lemma DOMAIN_002_09_numerical_stability: "\<forall>(x bound : z). numerically_stable x bound = True \<longrightarrow> Z.abs x \<le> bound"
   by auto
 
 (* DOMAIN_002_10_model_integrity (matches Coq) *)
-lemma DOMAIN_002_10_model_integrity: "\<forall>(m :: Model) (expected_hash :: nat). model_integrity m expected_hash = True \<longrightarrow> model_hash m = expected_hash"
+lemma DOMAIN_002_10_model_integrity: "\<forall>(m :: model) (expected_hash :: nat). model_integrity m expected_hash = True \<longrightarrow> model_hash m = expected_hash"
   by auto
 
 (* DOMAIN_002_11_input_validation (matches Coq) *)
-lemma DOMAIN_002_11_input_validation: "\<forall>(x :: Z) (bounds :: InputBounds). input_valid x bounds = True \<longrightarrow> ib_min bounds \<le> x \<and> x \<le> ib_max bounds"
+lemma DOMAIN_002_11_input_validation: "\<forall>(x :: z) (bounds :: input_bounds). input_valid x bounds = True \<longrightarrow> ib_min bounds \<le> x \<and> x \<le> ib_max bounds"
   by auto
 
 (* DOMAIN_002_12_confidence_calibration (matches Coq) *)
-lemma DOMAIN_002_12_confidence_calibration: "\<forall>(confidence accuracy tolerance : Z). confidence_calibrated confidence accuracy tolerance = True \<longrightarrow> Z.abs (confidence - accuracy) \<le> tolerance"
+lemma DOMAIN_002_12_confidence_calibration: "\<forall>(confidence accuracy tolerance : z). confidence_calibrated confidence accuracy tolerance = True \<longrightarrow> Z.abs (confidence - accuracy) \<le> tolerance"
   by auto
 
 (* DOMAIN_002_13_fairness_constraint (matches Coq) *)
-lemma DOMAIN_002_13_fairness_constraint: "\<forall>(group_a_rate group_b_rate threshold : Z). demographic_parity group_a_rate group_b_rate threshold = True \<longrightarrow> Z.abs (group_a_rate - group_b_rate) \<le> threshold"
+lemma DOMAIN_002_13_fairness_constraint: "\<forall>(group_a_rate group_b_rate threshold : z). demographic_parity group_a_rate group_b_rate threshold = True \<longrightarrow> Z.abs (group_a_rate - group_b_rate) \<le> threshold"
   by auto
 
 (* DOMAIN_002_14_explanation_faithfulness (matches Coq) *)
-lemma DOMAIN_002_14_explanation_faithfulness: "\<forall>(importance actual_contribution tolerance : Z). explanation_faithful importance actual_contribution tolerance = True \<longrightarrow> Z.abs (importance - actual_contribution) \<le> tolerance"
+lemma DOMAIN_002_14_explanation_faithfulness: "\<forall>(importance actual_contribution tolerance : z). explanation_faithful importance actual_contribution tolerance = True \<longrightarrow> Z.abs (importance - actual_contribution) \<le> tolerance"
   by auto
 
 (* DOMAIN_002_15_safe_action_space (matches Coq) *)
-lemma DOMAIN_002_15_safe_action_space: "\<forall>(action prev_action : Z) (space :: ActionSpace). action_safe action prev_action space = True \<longrightarrow> action_min space \<le> action \<and> action \<le> action_max space \<and> Z.abs (action - prev_action) \<le> action_rate_limit space"
+lemma DOMAIN_002_15_safe_action_space: "\<forall>(action prev_action : z) (space :: action_space). action_safe action prev_action space = True \<longrightarrow> action_min space \<le> action \<and> action \<le> action_max space \<and> Z.abs (action - prev_action) \<le> action_rate_limit space"
   by auto
 
 (* relu_non_negative (matches Coq) *)

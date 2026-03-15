@@ -42,7 +42,7 @@
  *)
 
 theory QuantitativeDeclassification
-  imports Main
+  imports Main Syntax
 begin
 
 (* level (matches Coq: Inductive level) *)

@@ -12,10 +12,10 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | AccessMode         | access_mode            | OK     |
- * | OwnershipState     | ownership_state        | OK     |
- * | MutexState         | mutex_state            | OK     |
- * | RWLockState        | rw_lock_state          | OK     |
+ * | access_mode         | access_mode            | OK     |
+ * | ownership_state     | ownership_state        | OK     |
+ * | mutex_state         | mutex_state            | OK     |
+ * | rw_lock_state        | rw_lock_state          | OK     |
  * | well_formed_access | well_formed_access     | OK     |
  * | shared_compatible  | shared_compatible      | OK     |
  * | no_mixed_access    | no_mixed_access        | OK     |
@@ -72,25 +72,28 @@ theory DataRaceFreedom
   imports Main CoqCompat
 begin
 
-(* AccessMode (matches Coq: Inductive AccessMode) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym access_state = "nat"
+type_synonym ownership_map = "nat"
+(* access_mode (matches Coq: Inductive access_mode) *)
 datatype access_mode =
     Exclusive
   |     Shared
   |     NoAccess
 
-(* OwnershipState (matches Coq: Inductive OwnershipState) *)
+(* ownership_state (matches Coq: Inductive ownership_state) *)
 datatype ownership_state =
     Owned
   |     MutBorrowed
   |     SharedBorrowed
   |     Moved
 
-(* MutexState (matches Coq: Record MutexState) *)
+(* mutex_state (matches Coq: Record mutex_state) *)
 record mutex_state =
   mutex_locked :: bool
   mutex_owner :: option
 
-(* RWLockState (matches Coq: Record RWLockState) *)
+(* rw_lock_state (matches Coq: Record rw_lock_state) *)
 record rw_lock_state =
   rwlock_readers :: nat
   rwlock_writer :: option

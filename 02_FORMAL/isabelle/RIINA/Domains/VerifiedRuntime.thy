@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Resource           | resource               | OK     |
- * | Heap               | heap                   | OK     |
- * | ManagedHeap        | managed_heap           | OK     |
- * | Sandbox            | sandbox                | OK     |
- * | Channel            | channel                | OK     |
+ * | resource           | resource               | OK     |
+ * | heap               | heap                   | OK     |
+ * | managed_heap        | managed_heap           | OK     |
+ * | sandbox            | sandbox                | OK     |
+ * | channel            | channel                | OK     |
  * | valid_ptr          | valid_ptr              | OK     |
  * | accessible_size    | accessible_size        | OK     |
  * | sufficient_space   | sufficient_space       | OK     |
@@ -66,49 +66,55 @@ theory VerifiedRuntime
   imports Main CoqCompat
 begin
 
-(* Resource (matches Coq: Inductive Resource) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym mem_map = "nat"
+type_synonym ptr = "nat"
+type_synonym refs = "nat list"
+type_synonym roots = "nat list"
+type_synonym sandbox_id = "nat"
+(* resource (matches Coq: Inductive resource) *)
 datatype resource =
     ResMemory
   |     ResCPU
   |     ResNetwork
   |     ResFileSystem
 
-(* Heap (matches Coq: Record Heap) *)
+(* heap (matches Coq: Record heap) *)
 record heap =
-  heap_mem :: MemMap
+  heap_mem :: mem_map
   heap_next_ptr :: nat
   heap_total_size :: nat
   heap_used_size :: nat
   heap_max_alloc :: nat
 
-(* ManagedHeap (matches Coq: Record ManagedHeap) *)
+(* managed_heap (matches Coq: Record managed_heap) *)
 record managed_heap =
-  mh_live :: Ptr
-  mh_roots :: Roots
-  mh_refs :: Refs
-  mh_size :: Ptr
-  mh_finalizer :: Ptr
-  mh_finalized :: Ptr
+  mh_live :: ptr
+  mh_roots :: roots
+  mh_refs :: refs
+  mh_size :: ptr
+  mh_finalizer :: ptr
+  mh_finalized :: ptr
   mh_max_size :: nat
   mh_pause_budget :: nat
 
-(* Sandbox (matches Coq: Record Sandbox) *)
+(* sandbox (matches Coq: Record sandbox) *)
 record sandbox =
-  sb_id :: SandboxId
-  sb_accessible :: Ptr
+  sb_id :: sandbox_id
+  sb_accessible :: ptr
   sb_granted :: nat
-  sb_limits :: Resource
-  sb_usage :: Resource
+  sb_limits :: resource
+  sb_usage :: resource
   sb_terminated :: bool
 
-(* Channel (matches Coq: Record Channel) *)
+(* channel (matches Coq: Record channel) *)
 record channel =
-  ch_sender :: SandboxId
-  ch_receiver :: SandboxId
+  ch_sender :: sandbox_id
+  ch_receiver :: sandbox_id
   ch_authorized :: bool
 
 (* valid_ptr (matches Coq: Definition valid_ptr) *)
-definition valid_ptr :: "Heap \<Rightarrow> Ptr \<Rightarrow> bool" where
+definition valid_ptr :: "Heap \<Rightarrow> ptr \<Rightarrow> bool" where
   "valid_ptr h p \<equiv> exists size, heap_mem h p = Some size"
 
 (* accessible_size - complex match, needs manual translation *)
@@ -129,11 +135,11 @@ definition aligned :: "Ptr \<Rightarrow> Alignment \<Rightarrow> bool" where
   "aligned p a \<equiv> a > 0 -> Nat.modulo p a = 0"
 
 (* mem_update (matches Coq: Definition mem_update) *)
-definition mem_update :: "MemMap \<Rightarrow> Ptr \<Rightarrow> MemMap" where
+definition mem_update :: "MemMap \<Rightarrow> ptr \<Rightarrow> MemMap" where
   "mem_update m p \<equiv> fun p' => if (p' = p) then v else m p'"
 
 (* alloc (matches Coq: Definition alloc) *)
-definition alloc :: "Heap \<Rightarrow> nat \<Rightarrow> option (Ptr * Heap)" where
+definition alloc :: "Heap \<Rightarrow> nat \<Rightarrow> option (ptr * heap)" where
   "alloc h size \<equiv> if (size \<le> 0) then None
   else if ((heap_total_size \<le> h) - heap_used_size h) size then None
   else if ((heap_max_alloc < h)) size then None
@@ -189,7 +195,7 @@ definition gc_makes_progress :: "ManagedHeap \<Rightarrow> bool" where
   "gc_makes_progress h \<equiv> forall p, mh_live (gc h) p = True -> mh_live h p = True"
 
 (* accessible (matches Coq: Definition accessible) *)
-definition accessible :: "Sandbox \<Rightarrow> Ptr \<Rightarrow> bool" where
+definition accessible :: "Sandbox \<Rightarrow> ptr \<Rightarrow> bool" where
   "accessible sb p \<equiv> sb_accessible sb p = True"
 
 (* granted (matches Coq: Definition granted) *)

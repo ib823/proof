@@ -12,12 +12,12 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | FinancialData      | financial_data         | OK     |
- * | FinancialEffect    | financial_effect       | OK     |
- * | TxStatus           | tx_status              | OK     |
+ * | financial_data      | financial_data         | OK     |
+ * | financial_effect    | financial_effect       | OK     |
+ * | tx_status           | tx_status              | OK     |
  * | PCI_DSS_Controls   | pci_dss__controls      | OK     |
  * | KYC_Record         | kyc__record            | OK     |
- * | WireTransfer       | wire_transfer          | OK     |
+ * | wire_transfer       | wire_transfer          | OK     |
  * | pci_cardholder_data | pci_cardholder_data    | OK     |
  * | pci_compliant      | pci_compliant          | OK     |
  * | tx_final           | tx_final               | OK     |
@@ -68,7 +68,7 @@ theory IndustryFinancial
   imports Main CoqCompat
 begin
 
-(* FinancialData (matches Coq: Inductive FinancialData) *)
+(* financial_data (matches Coq: Inductive financial_data) *)
 datatype financial_data =
     PAN
   |     CVV
@@ -78,7 +78,7 @@ datatype financial_data =
   |     SSN
   |     NPI
 
-(* FinancialEffect (matches Coq: Inductive FinancialEffect) *)
+(* financial_effect (matches Coq: Inductive financial_effect) *)
 datatype financial_effect =
     PaymentProcess
   |     AccountAccess
@@ -86,7 +86,7 @@ datatype financial_effect =
   |     TradeExecution
   |     AuditLog
 
-(* TxStatus (matches Coq: Inductive TxStatus) *)
+(* tx_status (matches Coq: Inductive tx_status) *)
 datatype tx_status =
     TxPending
   |     TxCommitted
@@ -115,7 +115,7 @@ record kyc__record =
   sanctions_checked :: bool
   pep_screened :: bool
 
-(* WireTransfer (matches Coq: Record WireTransfer) *)
+(* wire_transfer (matches Coq: Record wire_transfer) *)
 record wire_transfer =
   wire_amount :: nat
   wire_auth1 :: bool
@@ -212,7 +212,7 @@ lemma sox_404_compliance: "\<forall>(internal_controls :: bool) (audit_trail :: 
 (* Section C04 - GLBA Safeguards Rule
     Reference: IND_C_FINANCIAL.md Section 3.4 *)
 (* glba_safeguards (matches Coq) *)
-lemma glba_safeguards: "\<forall>(npi :: FinancialData) (protection :: bool). True"
+lemma glba_safeguards: "\<forall>(npi :: financial_data) (protection :: bool). True"
   by simp
 
 (* Section C05 - DORA Requirements
@@ -223,17 +223,17 @@ lemma dora_resilience: "\<forall>(system :: nat) (incident :: nat). True"
 
 (* CVV must never be stored post-authorization *)
 (* cvv_not_stored (matches Coq) *)
-lemma cvv_not_stored: "\<forall>(d :: FinancialData) (storage :: bool). d = CVV \<longrightarrow> True"
+lemma cvv_not_stored: "\<forall>(d :: financial_data) (storage :: bool). d = CVV \<longrightarrow> True"
   by simp
 
 (* PAN must be masked when displayed *)
 (* pan_masking (matches Coq) *)
-lemma pan_masking: "\<forall>(pan :: FinancialData) (display_format :: nat). True"
+lemma pan_masking: "\<forall>(pan :: financial_data) (display_format :: nat). True"
   by simp
 
 (* Strong cryptography for cardholder data *)
 (* strong_crypto_required (matches Coq) *)
-lemma strong_crypto_required: "\<forall>(data :: FinancialData). pci_cardholder_data data = True \<longrightarrow> True"
+lemma strong_crypto_required: "\<forall>(data :: financial_data). pci_cardholder_data data = True \<longrightarrow> True"
   by simp
 
 (* PCI cardholder data classification is decidable *)

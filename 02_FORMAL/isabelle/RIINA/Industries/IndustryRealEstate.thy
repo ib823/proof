@@ -12,10 +12,10 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | PropertyData       | property_data          | OK     |
- * | BuildingSystem     | building_system        | OK     |
- * | RealEstateEffect   | real_estate_effect     | OK     |
- * | SmartBuildingControls | smart_building_controls | OK     |
+ * | property_data       | property_data          | OK     |
+ * | building_system     | building_system        | OK     |
+ * | real_estate_effect   | real_estate_effect     | OK     |
+ * | smart_building_controls | smart_building_controls | OK     |
  * | property_sensitivity | property_sensitivity   | OK     |
  * | system_criticality | system_criticality     | OK     |
  * | is_safety_critical | is_safety_critical     | OK     |
@@ -56,7 +56,7 @@ theory IndustryRealEstate
   imports Main CoqCompat
 begin
 
-(* PropertyData (matches Coq: Inductive PropertyData) *)
+(* property_data (matches Coq: Inductive property_data) *)
 datatype property_data =
     OwnerPII
   |     FinancialRecords
@@ -65,7 +65,7 @@ datatype property_data =
   |     SmartHomeData
   |     BuildingTelemetry
 
-(* BuildingSystem (matches Coq: Inductive BuildingSystem) *)
+(* building_system (matches Coq: Inductive building_system) *)
 datatype building_system =
     HVAC
   |     Lighting
@@ -74,7 +74,7 @@ datatype building_system =
   |     FireSafety
   |     Elevator
 
-(* RealEstateEffect (matches Coq: Inductive RealEstateEffect) *)
+(* real_estate_effect (matches Coq: Inductive real_estate_effect) *)
 datatype real_estate_effect =
     PropertyTransaction
   |     BuildingControl
@@ -82,7 +82,7 @@ datatype real_estate_effect =
   |     TenantDataAccess
   |     SmartHomeIO
 
-(* SmartBuildingControls (matches Coq: Record SmartBuildingControls) *)
+(* smart_building_controls (matches Coq: Record smart_building_controls) *)
 record smart_building_controls =
   network_segmentation :: bool
   device_authentication :: bool
@@ -144,7 +144,7 @@ definition within_occupancy :: "bool" where
 (* Section M01 - Smart Building Security
     Reference: IND_M_REALESTATE.md Section 3.1 *)
 (* smart_building_security (matches Coq) *)
-lemma smart_building_security: "\<forall>(controls :: SmartBuildingControls) (building :: nat). network_segmentation controls = True \<longrightarrow> device_authentication controls = True \<longrightarrow> True"
+lemma smart_building_security: "\<forall>(controls :: smart_building_controls) (building :: nat). network_segmentation controls = True \<longrightarrow> device_authentication controls = True \<longrightarrow> True"
   by simp
 
 (* Section M02 - BACnet Security
@@ -156,7 +156,7 @@ lemma bacnet_security: "\<forall>(bas_network :: nat). True"
 (* Section M03 - Access Control Systems
     Reference: IND_M_REALESTATE.md Section 3.3 *)
 (* access_control_security (matches Coq) *)
-lemma access_control_security: "\<forall>(credential :: PropertyData) (access_point :: nat). True"
+lemma access_control_security: "\<forall>(credential :: property_data) (access_point :: nat). True"
   by simp
 
 (* Section M04 - Transaction Data Protection
@@ -173,12 +173,12 @@ lemma iot_device_security: "\<forall>(device :: nat). True"
 
 (* Building systems require network segmentation *)
 (* building_segmentation (matches Coq) *)
-lemma building_segmentation: "\<forall>(controls :: SmartBuildingControls) (system :: BuildingSystem). network_segmentation controls = True \<longrightarrow> True"
+lemma building_segmentation: "\<forall>(controls :: smart_building_controls) (system :: building_system). network_segmentation controls = True \<longrightarrow> True"
   by simp
 
 (* Safety systems must have failsafe operation *)
 (* safety_failsafe (matches Coq) *)
-lemma safety_failsafe: "\<forall>(controls :: SmartBuildingControls) (safety_system :: BuildingSystem). failsafe_operation controls = True \<longrightarrow> True"
+lemma safety_failsafe: "\<forall>(controls :: smart_building_controls) (safety_system :: building_system). failsafe_operation controls = True \<longrightarrow> True"
   by simp
 
 (* financial_records_max_sensitivity (matches Coq) *)

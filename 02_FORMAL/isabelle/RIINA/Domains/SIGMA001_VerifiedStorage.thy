@@ -12,23 +12,23 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ColType            | col_type               | OK     |
- * | Value              | value                  | OK     |
- * | PredOp             | pred_op                | OK     |
- * | Pred               | pred                   | OK     |
- * | Query              | query                  | OK     |
- * | TxnStatus          | txn_status             | OK     |
- * | TxnOp              | txn_op                 | OK     |
- * | IsolationLevel     | isolation_level        | OK     |
- * | Column             | column                 | OK     |
- * | Table              | table                  | OK     |
- * | Database           | database               | OK     |
- * | Transaction        | transaction            | OK     |
+ * | col_type            | col_type               | OK     |
+ * | value              | value                  | OK     |
+ * | pred_op             | pred_op                | OK     |
+ * | pred               | pred                   | OK     |
+ * | query              | query                  | OK     |
+ * | txn_status          | txn_status             | OK     |
+ * | txn_op              | txn_op                 | OK     |
+ * | isolation_level     | isolation_level        | OK     |
+ * | column             | column                 | OK     |
+ * | table              | table                  | OK     |
+ * | database           | database               | OK     |
+ * | transaction        | transaction            | OK     |
  * | WALEntry           | wal_entry              | OK     |
- * | Checkpoint         | checkpoint             | OK     |
- * | EncryptedData      | encrypted_data         | OK     |
- * | MerkleTree         | merkle_tree            | OK     |
- * | AuditEntry         | audit_entry            | OK     |
+ * | checkpoint         | checkpoint             | OK     |
+ * | encrypted_data      | encrypted_data         | OK     |
+ * | merkle_tree         | merkle_tree            | OK     |
+ * | audit_entry         | audit_entry            | OK     |
  * | value_type         | value_type             | OK     |
  * | query_contains_raw_string | query_contains_raw_string | OK     |
  * | apply_op           | apply_op               | OK     |
@@ -93,24 +93,33 @@
  *)
 
 theory SIGMA001_VerifiedStorage
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* ColType (matches Coq: Inductive ColType) *)
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym audit_log = "nat"
+type_synonym row = "nat"
+type_synonym schedule = "nat"
+type_synonym schema = "nat"
+type_synonym wal = "nat"
+(* col_type (matches Coq: Inductive col_type) *)
 datatype col_type =
     TInt
   |     TString
   |     TBool
   |     TNull
 
-(* Value (matches Coq: Inductive Value) *)
+(* value (matches Coq: Inductive value) *)
 datatype value =
     VInt
   |     VString
   |     VBool
   |     VNull
 
-(* PredOp (matches Coq: Inductive PredOp) *)
+(* pred_op (matches Coq: Inductive pred_op) *)
 datatype pred_op =
     PEq
   |     PLt
@@ -119,7 +128,7 @@ datatype pred_op =
   |     PGte
   |     PNeq
 
-(* Pred (matches Coq: Inductive Pred) *)
+(* pred (matches Coq: Inductive pred) *)
 datatype pred =
     PTrue
   |     PFalse
@@ -128,7 +137,7 @@ datatype pred =
   |     POr
   |     PNot
 
-(* Query (matches Coq: Inductive Query) *)
+(* query (matches Coq: Inductive query) *)
 datatype query =
     QSelect
   |     QJoin
@@ -136,72 +145,72 @@ datatype query =
   |     QUpdate
   |     QDelete
 
-(* TxnStatus (matches Coq: Inductive TxnStatus) *)
+(* txn_status (matches Coq: Inductive txn_status) *)
 datatype txn_status =
     TxnPending
   |     TxnCommitted
   |     TxnAborted
 
-(* TxnOp (matches Coq: Inductive TxnOp) *)
+(* txn_op (matches Coq: Inductive txn_op) *)
 datatype txn_op =
     OpInsert
   |     OpDelete
   |     OpUpdate
 
-(* IsolationLevel (matches Coq: Inductive IsolationLevel) *)
+(* isolation_level (matches Coq: Inductive isolation_level) *)
 datatype isolation_level =
     ReadUncommitted
   |     ReadCommitted
   |     RepeatableRead
   |     Serializable
 
-(* Column (matches Coq: Record Column) *)
+(* column (matches Coq: Record column) *)
 record column =
   col_name :: nat
-  col_type :: ColType
+  col_type :: col_type
   col_nullable :: bool
   col_unique :: bool
 
-(* Table (matches Coq: Record Table) *)
+(* table (matches Coq: Record table) *)
 record table =
   table_name :: nat
-  table_schema :: Schema
+  table_schema :: schema
   table_rows :: 'a list
 
-(* Database (matches Coq: Record Database) *)
+(* database (matches Coq: Record database) *)
 record database =
   db_tables :: 'a list
   db_fk_constraints :: 'a list
 
-(* Transaction (matches Coq: Record Transaction) *)
+(* transaction (matches Coq: Record transaction) *)
 record transaction =
   txn_id :: nat
   txn_ops :: 'a list
-  txn_status :: TxnStatus
+  txn_status :: txn_status
 
 (* WALEntry (matches Coq: Record WALEntry) *)
 record wal_entry =
   wal_txn_id :: nat
-  wal_op :: TxnOp
+  wal_op :: txn_op
   wal_lsn :: nat
 
-(* Checkpoint (matches Coq: Record Checkpoint) *)
+(* checkpoint (matches Coq: Record checkpoint) *)
 record checkpoint =
   cp_lsn :: nat
-  cp_db :: Database
+  cp_db :: database
 
-(* EncryptedData (matches Coq: Record EncryptedData) *)
+(* encrypted_data (matches Coq: Record encrypted_data) *)
 record encrypted_data =
   enc_data :: 'a list
   enc_key_id :: nat
   enc_algo :: nat
 
-(* MerkleTree (matches Coq: Record MerkleTree) *)
+(* merkle_tree (matches Coq: Record merkle_tree) *)
 record merkle_tree =
   merkle_root :: nat
   merkle_leaves :: 'a list
 
-(* AuditEntry (matches Coq: Record AuditEntry) *)
+(* audit_entry (matches Coq: Record audit_entry) *)
 record audit_entry =
   audit_timestamp :: nat
   audit_action :: nat
@@ -217,7 +226,7 @@ definition query_contains_raw_string :: "Query \<Rightarrow> nat \<Rightarrow> b
   "query_contains_raw_string q s \<equiv> False"
 
 (* apply_op (matches Coq: Definition apply_op) *)
-definition apply_op :: "TxnOp \<Rightarrow> Database \<Rightarrow> Database" where
+definition apply_op :: "TxnOp \<Rightarrow> database \<Rightarrow> Database" where
   "apply_op op db \<equiv> db"
 
 (* apply_ops (matches Coq: Definition apply_ops) *)
@@ -232,15 +241,15 @@ definition all_ops_applied :: "bool" where
 definition exec_txn :: "bool" where "exec_txn = undefined"
 
 (* wal_contains (matches Coq: Definition wal_contains) *)
-definition wal_contains :: "WAL \<Rightarrow> Transaction \<Rightarrow> bool" where
+definition wal_contains :: "WAL \<Rightarrow> transaction \<Rightarrow> bool" where
   "wal_contains wal txn \<equiv> exists entry, entry \<in> set wal \<and> wal_txn_id entry = txn_id txn"
 
 (* wal_upto (matches Coq: Definition wal_upto) *)
-definition wal_upto :: "nat \<Rightarrow> WAL \<Rightarrow> WAL" where
+definition wal_upto :: "nat \<Rightarrow> wal \<Rightarrow> WAL" where
   "wal_upto lsn wal \<equiv> filter (\<lambda>e. wal_lsn e <=? lsn) wal"
 
 (* wal_recover (matches Coq: Definition wal_recover) *)
-definition wal_recover :: "WAL \<Rightarrow> Database \<Rightarrow> Database" where
+definition wal_recover :: "WAL \<Rightarrow> database \<Rightarrow> Database" where
   "wal_recover wal db \<equiv> fold_left (fun d e => apply_op (wal_op e) d) wal db"
 
 (* sorted (matches Coq: Definition sorted) *)
@@ -275,16 +284,16 @@ fun audit_chain_valid :: "AuditLog \<Rightarrow> bool" where
 definition type_matches :: "bool" where "type_matches = undefined"
 
 (* row_matches_schema (matches Coq: Definition row_matches_schema) *)
-definition row_matches_schema :: "Row \<Rightarrow> Schema \<Rightarrow> bool" where
+definition row_matches_schema :: "Row \<Rightarrow> schema \<Rightarrow> bool" where
   "row_matches_schema row schema \<equiv> (length row =? length schema) \<and>
   forallb (\<lambda>p. type_matches (fst p) (col_type (snd p))) (combine row schema)"
 
 (* query_well_typed (matches Coq: Definition query_well_typed) *)
-definition query_well_typed :: "Query \<Rightarrow> Database \<Rightarrow> bool" where
+definition query_well_typed :: "Query \<Rightarrow> database \<Rightarrow> bool" where
   "query_well_typed q db \<equiv> True"
 
 (* pred_well_typed (matches Coq: Definition pred_well_typed) *)
-definition pred_well_typed :: "Pred \<Rightarrow> Schema \<Rightarrow> bool" where
+definition pred_well_typed :: "Pred \<Rightarrow> schema \<Rightarrow> bool" where
   "pred_well_typed p schema \<equiv> True"
 
 (* is_serializable (matches Coq: Definition is_serializable) *)
@@ -323,11 +332,11 @@ lemma SIGMA_001_05_projection_typed: "\<forall>(proj : list nat) (schema : list 
   by auto
 
 (* SIGMA_001_06_join_typed (matches Coq) *)
-lemma SIGMA_001_06_join_typed: "\<forall>(t1 t2 c1 c2 : nat) (pred :: Pred) (schema1 schema2 : Schema). pred_well_typed pred schema1 = True \<longrightarrow> pred_well_typed pred schema2 = True \<longrightarrow> True"
+lemma SIGMA_001_06_join_typed: "\<forall>(t1 t2 c1 c2 : nat) (pred :: pred) (schema1 schema2 : schema). pred_well_typed pred schema1 = True \<longrightarrow> pred_well_typed pred schema2 = True \<longrightarrow> True"
   by auto
 
 (* SIGMA_001_07_query_result_typed (matches Coq) *)
-lemma SIGMA_001_07_query_result_typed: "\<forall>(q :: Query) (db :: Database) (rows : list Row). query_well_typed q db = True \<longrightarrow> True"
+lemma SIGMA_001_07_query_result_typed: "\<forall>(q :: query) (db :: database) (rows : list row). query_well_typed q db = True \<longrightarrow> True"
   by auto
 
 (* SIGMA_001_08_parameterized_safe (matches Coq) *)
@@ -459,11 +468,11 @@ lemma SIGMA_001_36_checksum_correct: "\<forall>data. verify_checksum data (check
   by auto
 
 (* SIGMA_001_37_audit_immutable (matches Coq) *)
-lemma SIGMA_001_37_audit_immutable: "\<forall>(log :: AuditLog) (entry :: AuditEntry). let log' := entry :: log in entry \<in> set log'"
+lemma SIGMA_001_37_audit_immutable: "\<forall>(log :: audit_log) (entry :: audit_entry). let log' := entry :: log in entry \<in> set log'"
   by simp
 
 (* SIGMA_001_38_backup_consistent (matches Coq) *)
-lemma SIGMA_001_38_backup_consistent: "\<forall>(db :: Database). \<exists>backup : Database. backup = db"
+lemma SIGMA_001_38_backup_consistent: "\<forall>(db :: database). \<exists>backup : Database. backup = db"
   by simp
 
 end

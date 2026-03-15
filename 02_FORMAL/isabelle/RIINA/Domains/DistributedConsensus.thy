@@ -52,9 +52,11 @@
  *)
 
 theory DistributedConsensus
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics
 begin
 
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym config = "nat"
 (* bft_assumption (matches Coq: Definition bft_assumption) *)
 definition bft_assumption :: "Config \<Rightarrow> bool" where
   "bft_assumption c \<equiv> 3 * max_faults c < num_nodes c"

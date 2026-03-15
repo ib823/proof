@@ -47,9 +47,12 @@
  *)
 
 theory AhmedStyleTest
-  imports Main
+  imports Main Semantics
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* sty (matches Coq: Inductive sty) *)
 datatype sty =
     STUnit

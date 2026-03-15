@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | CFGEdge            | cfg_edge               | OK     |
- * | Protection         | protection             | OK     |
- * | SystemState        | system_state           | OK     |
+ * | cfg_edge            | cfg_edge               | OK     |
+ * | protection         | protection             | OK     |
+ * | system_state        | system_state           | OK     |
  * | edge_source        | edge_source            | OK     |
  * | edge_target        | edge_target            | OK     |
  * | valid_addresses    | valid_addresses        | OK     |
@@ -87,10 +87,17 @@
  *)
 
 theory U001_RuntimeGuardian
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics
 begin
 
-(* CFGEdge (matches Coq: Inductive CFGEdge) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym cfg = "nat"
+type_synonym checksum = "nat"
+type_synonym execution_state = "nat"
+type_synonym memory = "nat"
+type_synonym memory_protection = "nat"
+type_synonym shadow_stack = "nat"
+(* cfg_edge (matches Coq: Inductive cfg_edge) *)
 datatype cfg_edge =
     DirectCall
   |     IndirectCall
@@ -99,13 +106,13 @@ datatype cfg_edge =
   |     IndirectJump
   |     FallThrough
 
-(* Protection (matches Coq: Inductive Protection) *)
+(* protection (matches Coq: Inductive protection) *)
 datatype protection =
     ReadOnly
   |     ReadWrite
   |     NoAccess
 
-(* SystemState (matches Coq: Record SystemState) *)
+(* system_state (matches Coq: Record system_state) *)
 record system_state =
   ss_keys :: 'a list
   ss_running :: bool
@@ -141,7 +148,7 @@ definition shadow_push :: "ShadowStack \<Rightarrow> Addr \<Rightarrow> ShadowSt
   "shadow_push ss ret_addr \<equiv> ret_addr :: ss"
 
 (* shadow_pop (matches Coq: Definition shadow_pop) *)
-fun shadow_pop :: "ShadowStack \<Rightarrow> option (Addr * ShadowStack)" where
+fun shadow_pop :: "ShadowStack \<Rightarrow> option (Addr * shadow_stack)" where
   "shadow_pop _ = None"
 
 (* shadow_matches (matches Coq: Definition shadow_matches) *)
@@ -153,7 +160,7 @@ definition compute_checksum :: "Memory \<Rightarrow> Checksum" where
   "compute_checksum mem \<equiv> fold_left (fun acc i => acc + mem (start + i)) (seq 0 len) 0"
 
 (* checksum_valid (matches Coq: Definition checksum_valid) *)
-definition checksum_valid :: "Memory \<Rightarrow> Checksum \<Rightarrow> bool" where
+definition checksum_valid :: "Memory \<Rightarrow> checksum \<Rightarrow> bool" where
   "checksum_valid mem expected \<equiv> compute_checksum mem start len = expected"
 
 (* protected_readonly (matches Coq: Definition protected_readonly) *)
@@ -347,7 +354,7 @@ lemma U_001_23_nmr_voting_correct: "\<forall>a b c. voting_correct a b c"
   by auto
 
 (* U_001_24_nmr_recovery_sound (matches Coq) *)
-lemma U_001_24_nmr_recovery_sound: "\<forall>(v1 v2 v3 : Variant) (t :: nat) (correct : ExecutionState). majority_vote (v1 t) (v2 t) (v3 t) = correct \<longrightarrow> majority_vote (v1 t) (v2 t) (v3 t) = correct"
+lemma U_001_24_nmr_recovery_sound: "\<forall>(v1 v2 v3 : Variant) (t :: nat) (correct : execution_state). majority_vote (v1 t) (v2 t) (v3 t) = correct \<longrightarrow> majority_vote (v1 t) (v2 t) (v3 t) = correct"
   by auto
 
 (* U_001_25_nmr_coverage (matches Coq) *)

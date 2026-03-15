@@ -87,7 +87,7 @@
  *)
 
 theory MaximumAxiomElimination
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics Syntax Typing
 begin
 
 (* sec_label (matches Coq: Inductive sec_label) *)

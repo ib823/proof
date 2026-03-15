@@ -75,9 +75,12 @@
  *)
 
 theory FirstOrderComplete
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* is_base_type (matches Coq: Definition is_base_type) *)
 fun is_base_type :: "ty \<Rightarrow> bool" where
   "is_base_type TBytes = true"

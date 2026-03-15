@@ -71,7 +71,7 @@
  *)
 
 theory TypeMeasure
-  imports Main
+  imports Main Syntax
 begin
 
 (* Boolean conjunction helper (matches Coq: andb_true_iff) *)

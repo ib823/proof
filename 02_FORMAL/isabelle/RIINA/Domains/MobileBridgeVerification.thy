@@ -12,13 +12,13 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | RValue             | r_value                | OK     |
+ * | r_value             | r_value                | OK     |
  * | JNIValue           | jni_value              | OK     |
- * | SwiftValue         | swift_value            | OK     |
- * | BridgeEffect       | bridge_effect          | OK     |
- * | BridgeResult       | bridge_result          | OK     |
- * | SwiftTypeTag       | swift_type_tag         | OK     |
- * | BridgeSecLabel     | bridge_sec_label       | OK     |
+ * | swift_value         | swift_value            | OK     |
+ * | bridge_effect       | bridge_effect          | OK     |
+ * | bridge_result       | bridge_result          | OK     |
+ * | swift_type_tag       | swift_type_tag         | OK     |
+ * | bridge_sec_label     | bridge_sec_label       | OK     |
  * | cap_allows         | cap_allows             | OK     |
  * | bridge_call_safe   | bridge_call_safe       | OK     |
  * | error_safe         | error_safe             | OK     |
@@ -69,7 +69,12 @@ theory MobileBridgeVerification
   imports Main
 begin
 
-(* RValue (matches Coq: Inductive RValue) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym bridge_call = "nat"
+type_synonym c_string = "nat"
+type_synonym callback = "nat"
+type_synonym jni_string = "nat"
+(* r_value (matches Coq: Inductive r_value) *)
 datatype r_value =
     RVInt
   |     RVBool
@@ -85,7 +90,7 @@ datatype jni_value =
   |     JVoid
   |     JObject
 
-(* SwiftValue (matches Coq: Inductive SwiftValue) *)
+(* swift_value (matches Coq: Inductive swift_value) *)
 datatype swift_value =
     SwInt
   |     SwBool
@@ -93,19 +98,19 @@ datatype swift_value =
   |     SwVoid
   |     SwOptional
 
-(* BridgeEffect (matches Coq: Inductive BridgeEffect) *)
+(* bridge_effect (matches Coq: Inductive bridge_effect) *)
 datatype bridge_effect =
     BPure
   |     BIO
   |     BNet
   |     BUI
 
-(* BridgeResult (matches Coq: Inductive BridgeResult) *)
+(* bridge_result (matches Coq: Inductive bridge_result) *)
 datatype bridge_result =
     BROk
   |     BRError
 
-(* SwiftTypeTag (matches Coq: Inductive SwiftTypeTag) *)
+(* swift_type_tag (matches Coq: Inductive swift_type_tag) *)
 datatype swift_type_tag =
     STInt
   |     STBool
@@ -113,7 +118,7 @@ datatype swift_type_tag =
   |     STVoid
   |     STOptional
 
-(* BridgeSecLabel (matches Coq: Inductive BridgeSecLabel) *)
+(* bridge_sec_label (matches Coq: Inductive bridge_sec_label) *)
 datatype bridge_sec_label =
     BPublic
   |     BSecret

@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SpectreVariant     | spectre_variant        | OK     |
- * | DefenseMechanism   | defense_mechanism      | OK     |
- * | SpectreDefenseConfig | spectre_defense_config | OK     |
+ * | spectre_variant     | spectre_variant        | OK     |
+ * | defense_mechanism   | defense_mechanism      | OK     |
+ * | spectre_defense_config | spectre_defense_config | OK     |
  * | all_variants_protected | all_variants_protected | OK     |
  * | defense_mechanisms_enabled | defense_mechanisms_enabled | OK     |
  * | fully_protected    | fully_protected        | OK     |
@@ -50,7 +50,7 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* SpectreVariant (matches Coq: Inductive SpectreVariant) *)
+(* spectre_variant (matches Coq: Inductive spectre_variant) *)
 datatype spectre_variant =
     Spectre_V1
   |     Spectre_V2
@@ -58,7 +58,7 @@ datatype spectre_variant =
   |     Spectre_RSB
   |     Spectre_BHB
 
-(* DefenseMechanism (matches Coq: Inductive DefenseMechanism) *)
+(* defense_mechanism (matches Coq: Inductive defense_mechanism) *)
 datatype defense_mechanism =
     Serialization
   |     ArrayMasking
@@ -67,7 +67,7 @@ datatype defense_mechanism =
   |     STIBP
   |     Flushing
 
-(* SpectreDefenseConfig (matches Coq: Record SpectreDefenseConfig) *)
+(* spectre_defense_config (matches Coq: Record spectre_defense_config) *)
 record spectre_defense_config =
   sdc_v1_protected :: bool
   sdc_v2_protected :: bool

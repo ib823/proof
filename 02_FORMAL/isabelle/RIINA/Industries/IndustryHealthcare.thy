@@ -13,10 +13,10 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | PHI_Category       | phi__category          | OK     |
- * | HealthcareEffect   | healthcare_effect      | OK     |
+ * | healthcare_effect   | healthcare_effect      | OK     |
  * | HIPAA_Policy       | hipaa__policy          | OK     |
- * | BreakGlassEvent    | break_glass_event      | OK     |
- * | ConsentRecord      | consent_record         | OK     |
+ * | break_glass_event    | break_glass_event      | OK     |
+ * | consent_record      | consent_record         | OK     |
  * | phi_sensitivity    | phi_sensitivity        | OK     |
  * | minimum_necessary  | minimum_necessary      | OK     |
  * | hipaa_all_controls | hipaa_all_controls     | OK     |
@@ -63,6 +63,9 @@ theory IndustryHealthcare
   imports Main CoqCompat
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* PHI_Category (matches Coq: Inductive PHI_Category) *)
 datatype phi__category =
     Demographics
@@ -72,7 +75,7 @@ datatype phi__category =
   |     Substance
   |     HIV_Status
 
-(* HealthcareEffect (matches Coq: Inductive HealthcareEffect) *)
+(* healthcare_effect (matches Coq: Inductive healthcare_effect) *)
 datatype healthcare_effect =
     PHI_Access
   |     EHR_Write
@@ -88,7 +91,7 @@ record hipaa__policy =
   transmission_security :: bool
   encryption_at_rest :: bool
 
-(* BreakGlassEvent (matches Coq: Record BreakGlassEvent) *)
+(* break_glass_event (matches Coq: Record break_glass_event) *)
 record break_glass_event =
   bg_accessor :: nat
   bg_patient :: nat
@@ -96,7 +99,7 @@ record break_glass_event =
   bg_reason :: nat
   bg_logged :: bool
 
-(* ConsentRecord (matches Coq: Record ConsentRecord) *)
+(* consent_record (matches Coq: Record consent_record) *)
 record consent_record =
   consent_patient :: nat
   consent_purpose :: nat

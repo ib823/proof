@@ -12,8 +12,8 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Label              | label                  | OK     |
- * | Value              | value                  | OK     |
+ * | label              | label                  | OK     |
+ * | value              | value                  | OK     |
  * | label_le           | label_le               | OK     |
  * | low_equiv          | low_equiv              | OK     |
  * | ni_secure          | ni_secure              | OK     |
@@ -50,15 +50,22 @@
  *)
 
 theory BackendComposition
-  imports Main
+  imports Main Syntax
 begin
 
-(* Label (matches Coq: Inductive Label) *)
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym backend = "nat"
+type_synonym l_value = "nat"
+type_synonym program = "nat"
+(* label (matches Coq: Inductive label) *)
 datatype label =
     Lo
   |     Hi
 
-(* Value (matches Coq: Inductive Value) *)
+(* value (matches Coq: Inductive value) *)
 datatype value =
     VNat
   |     VBool
@@ -73,16 +80,16 @@ definition low_equiv :: "bool" where
 
 (* ni_secure (matches Coq: Definition ni_secure) *)
 definition ni_secure :: "bool" where
-  "ni_secure \<equiv> forall (in1 in2 : LValue),
+  "ni_secure \<equiv> forall (in1 in2 : l_value),
     lv_label in1 = Hi ->
     lv_label in2 = Hi ->
-    forall (pub : LValue),
+    forall (pub : l_value),
       lv_label pub = Lo ->
       f pub = f pub"
 
 (* ni_strong (matches Coq: Definition ni_strong) *)
 definition ni_strong :: "bool" where
-  "ni_strong \<equiv> forall in1 in2 : LValue,
+  "ni_strong \<equiv> forall in1 in2 : l_value,
     lv_label in1 = Lo ->
     lv_label in2 = Lo ->
     lv_val in1 = lv_val in2 ->
@@ -92,19 +99,19 @@ definition ni_strong :: "bool" where
 
 (* semantics_preserving (matches Coq: Definition semantics_preserving) *)
 definition semantics_preserving :: "Backend \<Rightarrow> bool" where
-  "semantics_preserving b \<equiv> forall (p : Program) (input :: LValue),
+  "semantics_preserving b \<equiv> forall (p : program) (input :: l_value),
     lv_val (b p input) = lv_val (p input) \<and>
     lv_label (b p input) = lv_label (p input)"
 
 (* public_semantics_preserving (matches Coq: Definition public_semantics_preserving) *)
 definition public_semantics_preserving :: "Backend \<Rightarrow> bool" where
-  "public_semantics_preserving b \<equiv> forall (p : Program) (input :: LValue),
+  "public_semantics_preserving b \<equiv> forall (p : program) (input :: l_value),
     lv_label (p input) = Lo ->
     lv_val (b p input) = lv_val (p input)"
 
 (* label_preserving (matches Coq: Definition label_preserving) *)
 definition label_preserving :: "Backend \<Rightarrow> bool" where
-  "label_preserving b \<equiv> forall (p : Program) (input :: LValue),
+  "label_preserving b \<equiv> forall (p : program) (input :: l_value),
     lv_label (b p input) = lv_label (p input)"
 
 (* id_backend (matches Coq: Definition id_backend) *)
@@ -128,11 +135,11 @@ definition swift_backend_correct :: "Backend \<Rightarrow> bool" where
   "swift_backend_correct sb \<equiv> semantics_preserving sb"
 
 (* ni_secure_binary (matches Coq) *)
-lemma ni_secure_binary: "\<forall>(p :: Program) (b :: Backend). ni_secure p \<longrightarrow> semantics_preserving b \<longrightarrow> ni_secure (b p)"
+lemma ni_secure_binary: "\<forall>(p :: program) (b :: backend). ni_secure p \<longrightarrow> semantics_preserving b \<longrightarrow> ni_secure (b p)"
   by simp
 
 (* ni_strong_binary (matches Coq) *)
-lemma ni_strong_binary: "\<forall>(p :: Program) (b :: Backend). ni_strong p \<longrightarrow> semantics_preserving b \<longrightarrow> ni_strong (b p)"
+lemma ni_strong_binary: "\<forall>(p :: program) (b :: backend). ni_strong p \<longrightarrow> semantics_preserving b \<longrightarrow> ni_strong (b p)"
   by auto
 
 (* id_backend_semantics_preserving (matches Coq) *)

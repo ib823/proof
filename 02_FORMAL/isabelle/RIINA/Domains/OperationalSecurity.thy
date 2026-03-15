@@ -60,6 +60,11 @@ theory OperationalSecurity
   imports Main CoqCompat
 begin
 
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym insider_budget = "nat"
+type_synonym multi_party_auth = "nat"
+type_synonym shamir_scheme = "nat"
+type_synonym share_set = "nat list"
 (* budget_ok (matches Coq: Definition budget_ok) *)
 definition budget_ok :: "InsiderBudget \<Rightarrow> bool" where
   "budget_ok b \<equiv> queries_used b <= query_limit b \<and>
@@ -133,35 +138,35 @@ definition layers_active :: "bool" where
   "layers_active \<equiv> (layer1 \<and> layer2 \<and> layer3 \<and> layer4 \<and> layer5)"
 
 (* opsec_001_shamir_security (matches Coq) *)
-lemma opsec_001_shamir_security: "\<forall>(scheme :: ShamirScheme) (shares :: ShareSet). length shares < threshold scheme \<longrightarrow> True"
+lemma opsec_001_shamir_security: "\<forall>(scheme :: shamir_scheme) (shares :: share_set). length shares < threshold scheme \<longrightarrow> True"
   by auto
 
 (* opsec_002_shamir_reconstruction (matches Coq) *)
-lemma opsec_002_shamir_reconstruction: "\<forall>(scheme :: ShamirScheme) (shares :: ShareSet). length shares \<ge> threshold scheme \<longrightarrow> length shares \<le> total_shares scheme \<longrightarrow> length shares \<ge> threshold scheme"
+lemma opsec_002_shamir_reconstruction: "\<forall>(scheme :: shamir_scheme) (shares :: share_set). length shares \<ge> threshold scheme \<longrightarrow> length shares \<le> total_shares scheme \<longrightarrow> length shares \<ge> threshold scheme"
   by auto
 
 (* opsec_003_no_single_keyholder (matches Coq) *)
-lemma opsec_003_no_single_keyholder: "\<forall>(scheme :: ShamirScheme). threshold scheme > 1 \<longrightarrow> 1 < threshold scheme"
+lemma opsec_003_no_single_keyholder: "\<forall>(scheme :: shamir_scheme). threshold scheme > 1 \<longrightarrow> 1 < threshold scheme"
   by auto
 
 (* opsec_004_geographic_distribution (matches Coq) *)
-lemma opsec_004_geographic_distribution: "\<forall>(shares :: ShareSet) (locations : list nat). length shares = length locations \<longrightarrow> NoDup locations \<longrightarrow> length (nodup Nat.eq_dec locations) = length locations"
+lemma opsec_004_geographic_distribution: "\<forall>(shares :: share_set) (locations : list nat). length shares = length locations \<longrightarrow> NoDup locations \<longrightarrow> length (nodup Nat.eq_dec locations) = length locations"
   by auto
 
 (* opsec_005_multiparty_required (matches Coq) *)
-lemma opsec_005_multiparty_required: "\<forall>(mpa :: MultiPartyAuth) (approvals : list Approval). required_approvers mpa > 1 \<longrightarrow> length approvals \<ge> required_approvers mpa \<longrightarrow> length approvals \<ge> required_approvers mpa"
+lemma opsec_005_multiparty_required: "\<forall>(mpa :: multi_party_auth) (approvals : list Approval). required_approvers mpa > 1 \<longrightarrow> length approvals \<ge> required_approvers mpa \<longrightarrow> length approvals \<ge> required_approvers mpa"
   by auto
 
 (* opsec_006_social_engineering_insufficient (matches Coq) *)
-lemma opsec_006_social_engineering_insufficient: "\<forall>(mpa :: MultiPartyAuth) (compromised :: nat). required_approvers mpa > 1 \<longrightarrow> compromised < required_approvers mpa \<longrightarrow> compromised < required_approvers mpa"
+lemma opsec_006_social_engineering_insufficient: "\<forall>(mpa :: multi_party_auth) (compromised :: nat). required_approvers mpa > 1 \<longrightarrow> compromised < required_approvers mpa \<longrightarrow> compromised < required_approvers mpa"
   by auto
 
 (* opsec_007_insider_bounded (matches Coq) *)
-lemma opsec_007_insider_bounded: "\<forall>(budget :: InsiderBudget). budget_ok budget \<longrightarrow> queries_used budget \<le> query_limit budget"
+lemma opsec_007_insider_bounded: "\<forall>(budget :: insider_budget). budget_ok budget \<longrightarrow> queries_used budget \<le> query_limit budget"
   by auto
 
 (* opsec_008_export_limit (matches Coq) *)
-lemma opsec_008_export_limit: "\<forall>(budget :: InsiderBudget). budget_ok budget \<longrightarrow> exports_used budget \<le> export_limit budget"
+lemma opsec_008_export_limit: "\<forall>(budget :: insider_budget). budget_ok budget \<longrightarrow> exports_used budget \<le> export_limit budget"
   by auto
 
 (* opsec_009_duress_detection (matches Coq) *)
@@ -213,11 +218,11 @@ lemma opsec_020_channel_diversity: "\<forall>(approvals : list Approval) (channe
   by auto
 
 (* opsec_021_coercion_resistant (matches Coq) *)
-lemma opsec_021_coercion_resistant: "\<forall>(scheme :: ShamirScheme) (compromised :: nat). compromised < threshold scheme \<longrightarrow> compromised < threshold scheme"
+lemma opsec_021_coercion_resistant: "\<forall>(scheme :: shamir_scheme) (compromised :: nat). compromised < threshold scheme \<longrightarrow> compromised < threshold scheme"
   by auto
 
 (* opsec_022_jurisdictional_spread (matches Coq) *)
-lemma opsec_022_jurisdictional_spread: "\<forall>(shares :: ShareSet) (jurisdictions : list nat). jurisdictions_spread shares jurisdictions \<longrightarrow> length (nodup Nat.eq_dec jurisdictions) \<ge> 3"
+lemma opsec_022_jurisdictional_spread: "\<forall>(shares :: share_set) (jurisdictions : list nat). jurisdictions_spread shares jurisdictions \<longrightarrow> length (nodup Nat.eq_dec jurisdictions) \<ge> 3"
   by auto
 
 (* opsec_023_signatures_valid (matches Coq) *)
@@ -225,7 +230,7 @@ lemma opsec_023_signatures_valid: "\<forall>(approvals : list Approval). all_sig
   by auto
 
 (* opsec_024_budget_reset (matches Coq) *)
-lemma opsec_024_budget_reset: "\<forall>(b :: InsiderBudget). budget_ok (reset_budget b)"
+lemma opsec_024_budget_reset: "\<forall>(b :: insider_budget). budget_ok (reset_budget b)"
   by simp
 
 (* opsec_025_defense_in_depth (matches Coq) *)

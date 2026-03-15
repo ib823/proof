@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | VEBTree            | veb_tree               | OK     |
- * | CASResult          | cas_result             | OK     |
- * | OptExpr            | opt_expr               | OK     |
- * | MSQueue            | ms_queue               | OK     |
- * | LinPoint           | lin_point              | OK     |
+ * | veb_tree            | veb_tree               | OK     |
+ * | cas_result          | cas_result             | OK     |
+ * | opt_expr            | opt_expr               | OK     |
+ * | ms_queue            | ms_queue               | OK     |
+ * | lin_point           | lin_point              | OK     |
  * | scalar_add         | scalar_add             | OK     |
  * | simd_add           | simd_add               | OK     |
  * | scalar_mul         | scalar_mul             | OK     |
@@ -80,17 +80,20 @@ theory PI001_VerifiedPerformance
   imports Main CoqCompat
 begin
 
-(* VEBTree (matches Coq: Inductive VEBTree) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym opt_env = "nat"
+type_synonym simd_reg = "nat"
+(* veb_tree (matches Coq: Inductive veb_tree) *)
 datatype veb_tree =
     VEBLeaf
   |     VEBNode
 
-(* CASResult (matches Coq: Inductive CASResult) *)
+(* cas_result (matches Coq: Inductive cas_result) *)
 datatype cas_result =
     CASSuccess
   |     CASFailure
 
-(* OptExpr (matches Coq: Inductive OptExpr) *)
+(* opt_expr (matches Coq: Inductive opt_expr) *)
 datatype opt_expr =
     OConst
   |     OVar
@@ -98,13 +101,13 @@ datatype opt_expr =
   |     OMul
   |     OIf
 
-(* MSQueue (matches Coq: Record MSQueue) *)
+(* ms_queue (matches Coq: Record ms_queue) *)
 record ms_queue =
   msq_items :: 'a list
   msq_head :: nat
   msq_tail :: nat
 
-(* LinPoint (matches Coq: Record LinPoint) *)
+(* lin_point (matches Coq: Record lin_point) *)
 record lin_point =
   lp_op :: nat
   lp_time :: nat
@@ -179,7 +182,7 @@ definition lin_ordered :: "bool" where
   "lin_ordered \<equiv> sorted (map lp_time points)"
 
 (* opt_eval (matches Coq: Definition opt_eval) *)
-fun opt_eval :: "OptEnv \<Rightarrow> OptExpr \<Rightarrow> nat" where
+fun opt_eval :: "OptEnv \<Rightarrow> opt_expr \<Rightarrow> nat" where
   "opt_eval _ = 0"
 
 (* dce (matches Coq: Definition dce) *)

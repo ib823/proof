@@ -2,7 +2,7 @@
 (* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
- * RIINA SmartContractSecurity - Isabelle/HOL Port
+ * RIINA smart_contract_security - Isabelle/HOL Port
  *
  * Auto-generated port of 02_FORMAL/coq/domains/SmartContractSecurity.v (36 theorems).
  *
@@ -12,14 +12,14 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ContractVulnerability | contract_vulnerability | OK     |
+ * | contract_vulnerability | contract_vulnerability | OK     |
  * | CEIPhase           | cei_phase              | OK     |
- * | ReentrancyGuard    | reentrancy_guard       | OK     |
- * | IntegerSafety      | integer_safety         | OK     |
- * | AccessControlPolicy | access_control_policy  | OK     |
- * | DelegateCallSafety | delegate_call_safety   | OK     |
- * | FlashLoanDefense   | flash_loan_defense     | OK     |
- * | SmartContractSecurity | smart_contract_security | OK     |
+ * | reentrancy_guard    | reentrancy_guard       | OK     |
+ * | integer_safety      | integer_safety         | OK     |
+ * | access_control_policy | access_control_policy  | OK     |
+ * | delegate_call_safety | delegate_call_safety   | OK     |
+ * | flash_loan_defense   | flash_loan_defense     | OK     |
+ * | smart_contract_security | smart_contract_security | OK     |
  * | reentrancy_protected | reentrancy_protected   | OK     |
  * | integer_safe       | integer_safe           | OK     |
  * | access_controlled  | access_controlled      | OK     |
@@ -70,7 +70,7 @@
  * | SC_035_complete_security | SC_035_complete_security | OK     |
  *)
 
-theory SmartContractSecurity
+theory smart_contract_security
   imports Main
 begin
 
@@ -78,7 +78,7 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* ContractVulnerability (matches Coq: Inductive ContractVulnerability) *)
+(* contract_vulnerability (matches Coq: Inductive contract_vulnerability) *)
 datatype contract_vulnerability =
     Reentrancy
   |     IntegerOverflow
@@ -97,44 +97,44 @@ datatype cei_phase =
   |     Effects
   |     Interactions
 
-(* ReentrancyGuard (matches Coq: Record ReentrancyGuard) *)
+(* reentrancy_guard (matches Coq: Record reentrancy_guard) *)
 record reentrancy_guard =
   rg_mutex_lock :: bool
   rg_cei_pattern :: bool
   rg_pull_over_push :: bool
 
-(* IntegerSafety (matches Coq: Record IntegerSafety) *)
+(* integer_safety (matches Coq: Record integer_safety) *)
 record integer_safety =
   is_overflow_check :: bool
   is_underflow_check :: bool
   is_safe_math :: bool
 
-(* AccessControlPolicy (matches Coq: Record AccessControlPolicy) *)
+(* access_control_policy (matches Coq: Record access_control_policy) *)
 record access_control_policy =
   ac_owner_only :: bool
   ac_role_based :: bool
   ac_no_tx_origin :: bool
   ac_multi_sig :: bool
 
-(* DelegateCallSafety (matches Coq: Record DelegateCallSafety) *)
+(* delegate_call_safety (matches Coq: Record delegate_call_safety) *)
 record delegate_call_safety =
   dc_storage_collision_check :: bool
   dc_initialization_check :: bool
   dc_selector_clashing_check :: bool
 
-(* FlashLoanDefense (matches Coq: Record FlashLoanDefense) *)
+(* flash_loan_defense (matches Coq: Record flash_loan_defense) *)
 record flash_loan_defense =
   fl_oracle_checks :: bool
   fl_time_weighted_price :: bool
   fl_multiple_oracles :: bool
 
-(* SmartContractSecurity (matches Coq: Record SmartContractSecurity) *)
+(* smart_contract_security (matches Coq: Record smart_contract_security) *)
 record smart_contract_security =
-  sc_reentrancy :: ReentrancyGuard
-  sc_integer :: IntegerSafety
-  sc_access :: AccessControlPolicy
-  sc_delegate :: DelegateCallSafety
-  sc_flash :: FlashLoanDefense
+  sc_reentrancy :: reentrancy_guard
+  sc_integer :: integer_safety
+  sc_access :: access_control_policy
+  sc_delegate :: delegate_call_safety
+  sc_flash :: flash_loan_defense
 
 (* reentrancy_protected (matches Coq: Definition reentrancy_protected) *)
 definition reentrancy_protected :: "ReentrancyGuard \<Rightarrow> bool" where

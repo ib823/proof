@@ -12,34 +12,34 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Capability         | capability             | OK     |
- * | TlsVersion         | tls_version            | OK     |
- * | SecurityLevel      | security_level         | OK     |
- * | SipHashState       | sip_hash_state         | OK     |
- * | RiinaString        | riina_string           | OK     |
- * | SecureString       | secure_string          | OK     |
- * | ReadResult         | read_result            | OK     |
- * | WriteResult        | write_result           | OK     |
- * | FileHandle         | file_handle            | OK     |
- * | AuditEntry         | audit_entry            | OK     |
- * | AuditedFile        | audited_file           | OK     |
- * | TcpStream          | tcp_stream             | OK     |
- * | TlsConfig          | tls_config             | OK     |
- * | TlsConnection      | tls_connection         | OK     |
- * | ConnectionAudit    | connection_audit       | OK     |
- * | Duration           | duration               | OK     |
- * | Instant            | instant                | OK     |
- * | SecureTimestamp    | secure_timestamp       | OK     |
- * | MonotonicCounter   | monotonic_counter      | OK     |
- * | MutexState         | mutex_state            | OK     |
- * | RwLockState        | rw_lock_state          | OK     |
- * | AtomicNat          | atomic_nat             | OK     |
- * | CondvarState       | condvar_state          | OK     |
- * | ResourceOrder      | resource_order         | OK     |
- * | AesKey             | aes_key                | OK     |
- * | Signature          | signature              | OK     |
- * | CryptoKey          | crypto_key             | OK     |
- * | Label              | label                  | OK     |
+ * | capability         | capability             | OK     |
+ * | tls_version         | tls_version            | OK     |
+ * | security_level      | security_level         | OK     |
+ * | sip_hash_state       | sip_hash_state         | OK     |
+ * | riina_string        | riina_string           | OK     |
+ * | secure_string       | secure_string          | OK     |
+ * | read_result         | read_result            | OK     |
+ * | write_result        | write_result           | OK     |
+ * | file_handle         | file_handle            | OK     |
+ * | audit_entry         | audit_entry            | OK     |
+ * | audited_file        | audited_file           | OK     |
+ * | tcp_stream          | tcp_stream             | OK     |
+ * | tls_config          | tls_config             | OK     |
+ * | tls_connection      | tls_connection         | OK     |
+ * | connection_audit    | connection_audit       | OK     |
+ * | duration           | duration               | OK     |
+ * | instant            | instant                | OK     |
+ * | secure_timestamp    | secure_timestamp       | OK     |
+ * | monotonic_counter   | monotonic_counter      | OK     |
+ * | mutex_state         | mutex_state            | OK     |
+ * | rw_lock_state        | rw_lock_state          | OK     |
+ * | atomic_nat          | atomic_nat             | OK     |
+ * | condvar_state       | condvar_state          | OK     |
+ * | resource_order      | resource_order         | OK     |
+ * | aes_key             | aes_key                | OK     |
+ * | signature          | signature              | OK     |
+ * | crypto_key          | crypto_key             | OK     |
+ * | label              | label                  | OK     |
  * | siphash_collision_resistant | siphash_collision_resistant | OK     |
  * | is_valid_utf8_byte | is_valid_utf8_byte     | OK     |
  * | all_valid_utf8     | all_valid_utf8         | OK     |
@@ -138,10 +138,17 @@
  *)
 
 theory StandardLibrary
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* Capability (matches Coq: Inductive Capability) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym a = "nat"
+type_synonym capability_set = "nat list"
+type_synonym e = "nat"
+type_synonym k = "nat"
+type_synonym t = "nat"
+type_synonym type = "nat"
+(* capability (matches Coq: Inductive capability) *)
 datatype capability =
     CapFileRead
   |     CapFileWrite
@@ -150,14 +157,14 @@ datatype capability =
   |     CapCryptoSign
   |     CapCryptoEncrypt
 
-(* TlsVersion (matches Coq: Inductive TlsVersion) *)
+(* tls_version (matches Coq: Inductive tls_version) *)
 datatype tls_version =
     TLS10
   |     TLS11
   |     TLS12
   |     TLS13
 
-(* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
+(* security_level (matches Coq: Inductive security_level) *)
 datatype security_level =
     Public
   |     Internal
@@ -165,131 +172,131 @@ datatype security_level =
   |     Secret
   |     TopSecret
 
-(* SipHashState (matches Coq: Record SipHashState) *)
+(* sip_hash_state (matches Coq: Record sip_hash_state) *)
 record sip_hash_state =
   siphash_key :: nat
 
-(* RiinaString (matches Coq: Record RiinaString) *)
+(* riina_string (matches Coq: Record riina_string) *)
 record riina_string =
   str_bytes :: 'a list
   str_is_utf8 :: bool
 
-(* SecureString (matches Coq: Record SecureString) *)
+(* secure_string (matches Coq: Record secure_string) *)
 record secure_string =
   sstr_data :: 'a list
   sstr_zeroized :: bool
   sstr_redacted :: bool
 
-(* ReadResult (matches Coq: Record ReadResult) *)
+(* read_result (matches Coq: Record read_result) *)
 record read_result =
   read_count :: nat
   read_buffer_size :: nat
   read_valid :: read_count
 
-(* WriteResult (matches Coq: Record WriteResult) *)
+(* write_result (matches Coq: Record write_result) *)
 record write_result =
   write_count :: nat
   write_buffer_size :: nat
   write_valid :: write_count
 
-(* FileHandle (matches Coq: Record FileHandle) *)
+(* file_handle (matches Coq: Record file_handle) *)
 record file_handle =
   fh_id :: nat
   fh_caps :: 'a list
 
-(* AuditEntry (matches Coq: Record AuditEntry) *)
+(* audit_entry (matches Coq: Record audit_entry) *)
 record audit_entry =
   ae_operation :: nat
   ae_file_id :: nat
   ae_size :: nat
 
-(* AuditedFile (matches Coq: Record AuditedFile) *)
+(* audited_file (matches Coq: Record audited_file) *)
 record audited_file =
-  af_handle :: FileHandle
+  af_handle :: file_handle
   af_log :: 'a list
 
-(* TcpStream (matches Coq: Record TcpStream) *)
+(* tcp_stream (matches Coq: Record tcp_stream) *)
 record tcp_stream =
   tcp_id :: nat
   tcp_caps :: 'a list
   tcp_buffer :: 'a list
 
-(* TlsConfig (matches Coq: Record TlsConfig) *)
+(* tls_config (matches Coq: Record tls_config) *)
 record tls_config =
-  tls_min_version :: TlsVersion
+  tls_min_version :: tls_version
 
-(* TlsConnection (matches Coq: Record TlsConnection) *)
+(* tls_connection (matches Coq: Record tls_connection) *)
 record tls_connection =
-  tls_negotiated_version :: TlsVersion
-  tls_config :: TlsConfig
+  tls_negotiated_version :: tls_version
+  tls_config :: tls_config
 
-(* ConnectionAudit (matches Coq: Record ConnectionAudit) *)
+(* connection_audit (matches Coq: Record connection_audit) *)
 record connection_audit =
-  ca_stream :: TcpStream
+  ca_stream :: tcp_stream
   ca_log :: 'a list
 
-(* Duration (matches Coq: Record Duration) *)
+(* duration (matches Coq: Record duration) *)
 record duration =
   dur_secs :: nat
   dur_nanos :: nat
 
-(* Instant (matches Coq: Record Instant) *)
+(* instant (matches Coq: Record instant) *)
 record instant =
   inst_ticks :: nat
 
-(* SecureTimestamp (matches Coq: Record SecureTimestamp) *)
+(* secure_timestamp (matches Coq: Record secure_timestamp) *)
 record secure_timestamp =
   st_time :: nat
   st_signature :: nat
   st_signed :: bool
 
-(* MonotonicCounter (matches Coq: Record MonotonicCounter) *)
+(* monotonic_counter (matches Coq: Record monotonic_counter) *)
 record monotonic_counter =
   mc_value :: nat
 
-(* MutexState (matches Coq: Record MutexState) *)
+(* mutex_state (matches Coq: Record mutex_state) *)
 record mutex_state =
   mutex_locked :: bool
   mutex_owner :: option
 
-(* RwLockState (matches Coq: Record RwLockState) *)
+(* rw_lock_state (matches Coq: Record rw_lock_state) *)
 record rw_lock_state =
   rwlock_readers :: nat
   rwlock_writer :: option
 
-(* AtomicNat (matches Coq: Record AtomicNat) *)
+(* atomic_nat (matches Coq: Record atomic_nat) *)
 record atomic_nat =
   atomic_value :: nat
   atomic_seq :: nat
 
-(* CondvarState (matches Coq: Record CondvarState) *)
+(* condvar_state (matches Coq: Record condvar_state) *)
 record condvar_state =
   cv_waiters :: 'a list
   cv_signaled :: bool
 
-(* ResourceOrder (matches Coq: Record ResourceOrder) *)
+(* resource_order (matches Coq: Record resource_order) *)
 record resource_order =
   ro_resources :: 'a list
   ro_acquired :: 'a list
 
-(* AesKey (matches Coq: Record AesKey) *)
+(* aes_key (matches Coq: Record aes_key) *)
 record aes_key =
   aes_key_data :: 'a list
   aes_key_zeroized :: bool
 
-(* Signature (matches Coq: Record Signature) *)
+(* signature (matches Coq: Record signature) *)
 record signature =
   sig_data :: 'a list
   sig_public_key :: nat
 
-(* CryptoKey (matches Coq: Record CryptoKey) *)
+(* crypto_key (matches Coq: Record crypto_key) *)
 record crypto_key =
   ck_data :: 'a list
   ck_zeroized :: bool
 
-(* Label (matches Coq: Record Label) *)
+(* label (matches Coq: Record label) *)
 record label =
-  lab_level :: SecurityLevel
+  lab_level :: security_level
   lab_compartments :: 'a list
 
 (* siphash_collision_resistant (matches Coq: Definition siphash_collision_resistant) *)
@@ -350,7 +357,7 @@ definition audited_read :: "bool" where "audited_read = undefined"
 definition audited_write :: "bool" where "audited_write = undefined"
 
 (* tcp_read (matches Coq: Definition tcp_read) *)
-definition tcp_read :: "TcpStream \<Rightarrow> nat \<Rightarrow> Option (list nat * TcpStream)" where
+definition tcp_read :: "TcpStream \<Rightarrow> nat \<Rightarrow> Option (list nat * tcp_stream)" where
   "tcp_read s n \<equiv> if has_capability (tcp_caps s) CapNetConnect
   then Some (firstn n (tcp_buffer s), mkTcpStream (tcp_id s) (tcp_caps s) (skipn n (tcp_buffer s)))
   else None"
@@ -372,7 +379,7 @@ fun tls_version_secure :: "TlsVersion \<Rightarrow> bool" where
 definition tls_version_geq :: "bool" where "tls_version_geq = undefined"
 
 (* tls_handshake (matches Coq: Definition tls_handshake) *)
-definition tls_handshake :: "TlsConfig \<Rightarrow> TlsVersion \<Rightarrow> Option TlsConnection" where
+definition tls_handshake :: "TlsConfig \<Rightarrow> tls_version \<Rightarrow> Option TlsConnection" where
   "tls_handshake cfg offered \<equiv> if tls_version_geq offered (tls_min_version cfg)
   then Some (mkTlsConnection offered cfg)
   else None"
@@ -469,7 +476,7 @@ definition cap_set_inter :: "CapabilitySet" where
   "cap_set_inter \<equiv> filter (\<lambda>c. existsb (cap_eq c) s2) s1"
 
 (* cap_set_contains (matches Coq: Definition cap_set_contains) *)
-definition cap_set_contains :: "CapabilitySet \<Rightarrow> Capability \<Rightarrow> bool" where
+definition cap_set_contains :: "CapabilitySet \<Rightarrow> capability \<Rightarrow> bool" where
   "cap_set_contains s c \<equiv> existsb (cap_eq c) s"
 
 (* level_leq - complex match, needs manual translation *)
@@ -511,43 +518,43 @@ definition label_meet :: "Label" where
           (list_inter (lab_compartments l1) (lab_compartments l2))"
 
 (* P_001_01 (matches Coq) *)
-lemma P_001_01: "\<forall>(A B C : Type) (x :: A) (f : A \<longrightarrow> Option B) (g : B \<longrightarrow> Option C) (m : Option A). option_bind (option_return x) f = f x \<and> option_bind m option_return = m \<and> option_bind (option_bind m f) g = option_bind m (\<lambda>y. option_bind (f y) g)"
+lemma P_001_01: "\<forall>(a B C : type) (x :: a) (f : a \<longrightarrow> Option B) (g : B \<longrightarrow> Option C) (m : Option a). option_bind (option_return x) f = f x \<and> option_bind m option_return = m \<and> option_bind (option_bind m f) g = option_bind m (\<lambda>y. option_bind (f y) g)"
   by simp
 
 (* P_001_02 (matches Coq) *)
-lemma P_001_02: "\<forall>(T U V E : Type) (x :: T) (f : T \<longrightarrow> Result U E) (g : U \<longrightarrow> Result V E) (m : Result T E). result_bind (result_return x) f = f x \<and> result_bind m result_return = m \<and> result_bind (result_bind m f) g = result_bind m (\<lambda>y. result_bind (f y) g)"
+lemma P_001_02: "\<forall>(t U V e : type) (x :: t) (f : t \<longrightarrow> Result U e) (g : U \<longrightarrow> Result V e) (m : Result t e). result_bind (result_return x) f = f x \<and> result_bind m result_return = m \<and> result_bind (result_bind m f) g = result_bind m (\<lambda>y. result_bind (f y) g)"
   by simp
 
 (* P_001_03 (matches Coq) *)
-lemma P_001_03: "\<forall>(A B E : Type) (e :: E). (\<forall>(h : A \<longrightarrow> Option B). option_bind (@None A) h = @None B) \<and> (\<forall>(h : A \<longrightarrow> Result B E). result_bind (@Err A E e) h = @Err B E e)"
+lemma P_001_03: "\<forall>(a B e : type) (e :: e). (\<forall>(h : a \<longrightarrow> Option B). option_bind (@None a) h = @None B) \<and> (\<forall>(h : a \<longrightarrow> Result B e). result_bind (@Err a e e) h = @Err B e e)"
   by simp
 
 (* rev_app_single (matches Coq) *)
-lemma rev_app_single: "\<forall>{A : Type} (l : list A) (x :: A). rev (l ++ [x]) = x :: rev l"
+lemma rev_app_single: "\<forall>{A : Type} (l : list a) (x :: a). rev (l ++ [x]) = x :: rev l"
   by simp
 
 (* P_001_04 (matches Coq) *)
-lemma P_001_04: "\<forall>(A :: Type) (v : Vec A) (x :: A). vlen v > 0 \<longrightarrow> \<exists>v'. vec_pop (vec_push v x) = Some (x, v') \<and> vdata v' = vdata v \<and> vlen v' = vlen v"
+lemma P_001_04: "\<forall>(a :: type) (v : Vec a) (x :: a). vlen v > 0 \<longrightarrow> \<exists>v'. vec_pop (vec_push v x) = Some (x, v') \<and> vdata v' = vdata v \<and> vlen v' = vlen v"
   by auto
 
 (* P_001_05 (matches Coq) *)
-lemma P_001_05: "\<forall>(A :: Type) (v : Vec A) (i :: nat). vec_in_bounds v i = True <-> i < vlen v"
+lemma P_001_05: "\<forall>(a :: type) (v : Vec a) (i :: nat). vec_in_bounds v i = True <-> i < vlen v"
   by simp
 
 (* P_001_06 (matches Coq) *)
-lemma P_001_06: "\<forall>(K V : Type) (eq : K \<longrightarrow> K \<longrightarrow> bool) (m : HashMap K V) (k :: K) (v : V). (\<forall>k'. eq k k' = True <-> k = k') \<longrightarrow> hashmap_get eq (hashmap_insert eq m k v) k = Some v"
+lemma P_001_06: "\<forall>(k V : type) (eq : k \<longrightarrow> k \<longrightarrow> bool) (m : HashMap k V) (k :: k) (v : V). (\<forall>k'. eq k k' = True <-> k = k') \<longrightarrow> hashmap_get eq (hashmap_insert eq m k v) k = Some v"
   by simp
 
 (* P_001_07 (matches Coq) *)
-lemma P_001_07: "\<forall>(h :: SipHashState). siphash_collision_resistant h"
+lemma P_001_07: "\<forall>(h :: sip_hash_state). siphash_collision_resistant h"
   by auto
 
 (* P_001_08 (matches Coq) *)
-lemma P_001_08: "\<forall>(K V : Type) (lt : K \<longrightarrow> K \<longrightarrow> bool) (t : BTree K V) (k :: K) (v : V). (\<forall>a b. lt a b = True \<or> a = b \<or> lt b a = True) \<longrightarrow> btree_ordered lt t \<longrightarrow> btree_ordered lt (btree_insert lt t k v)"
+lemma P_001_08: "\<forall>(k V : type) (lt : k \<longrightarrow> k \<longrightarrow> bool) (t : BTree k V) (k :: k) (v : V). (\<forall>a b. lt a b = True \<or> a = b \<or> lt b a = True) \<longrightarrow> btree_ordered lt t \<longrightarrow> btree_ordered lt (btree_insert lt t k v)"
   by auto
 
 (* P_001_09 (matches Coq) *)
-lemma P_001_09: "\<forall>(A :: Type) (zero :: A) (sv : SecureVec A). let dropped := secure_vec_drop zero sv in svec_zeroized dropped = True \<and> \<forall>x. In x (svec_data dropped) \<longrightarrow> x = zero"
+lemma P_001_09: "\<forall>(a :: type) (zero :: a) (sv : SecureVec a). let dropped := secure_vec_drop zero sv in svec_zeroized dropped = True \<and> \<forall>x. In x (svec_data dropped) \<longrightarrow> x = zero"
   by auto
 
 (* P_001_10 (matches Coq) *)
@@ -555,87 +562,87 @@ lemma P_001_10: "\<forall>(bytes : list nat). all_valid_utf8 bytes = True \<long
   by auto
 
 (* P_001_11 (matches Coq) *)
-lemma P_001_11: "\<forall>(s :: RiinaString) (start len : nat) (s' : RiinaString). string_slice s start len = Some s' \<longrightarrow> start \<le> length (str_bytes s) \<and> start + len \<le> length (str_bytes s)"
+lemma P_001_11: "\<forall>(s :: riina_string) (start len : nat) (s' : riina_string). string_slice s start len = Some s' \<longrightarrow> start \<le> length (str_bytes s) \<and> start + len \<le> length (str_bytes s)"
   by auto
 
 (* P_001_12 (matches Coq) *)
-lemma P_001_12: "\<forall>(ss :: SecureString). let dropped := secure_string_drop ss in sstr_zeroized dropped = True \<and> \<forall>x. In x (sstr_data dropped) \<longrightarrow> x = 0"
+lemma P_001_12: "\<forall>(ss :: secure_string). let dropped := secure_string_drop ss in sstr_zeroized dropped = True \<and> \<forall>x. In x (sstr_data dropped) \<longrightarrow> x = 0"
   by auto
 
 (* P_001_13 (matches Coq) *)
-lemma P_001_13: "\<forall>(ss :: SecureString). sstr_redacted ss = True \<longrightarrow> secure_string_debug ss = [42; 42; 42]"
+lemma P_001_13: "\<forall>(ss :: secure_string). sstr_redacted ss = True \<longrightarrow> secure_string_debug ss = [42; 42; 42]"
   by simp
 
 (* P_001_14 (matches Coq) *)
-lemma P_001_14: "\<forall>(rr :: ReadResult). read_count rr \<le> read_buffer_size rr"
+lemma P_001_14: "\<forall>(rr :: read_result). read_count rr \<le> read_buffer_size rr"
   by auto
 
 (* P_001_15 (matches Coq) *)
-lemma P_001_15: "\<forall>(wr :: WriteResult). write_count wr \<le> write_buffer_size wr"
+lemma P_001_15: "\<forall>(wr :: write_result). write_count wr \<le> write_buffer_size wr"
   by auto
 
 (* P_001_16 (matches Coq) *)
-lemma P_001_16: "\<forall>(fh :: FileHandle) (buf_size :: nat). has_capability (fh_caps fh) CapFileRead = False \<longrightarrow> file_read fh buf_size = None"
+lemma P_001_16: "\<forall>(fh :: file_handle) (buf_size :: nat). has_capability (fh_caps fh) CapFileRead = False \<longrightarrow> file_read fh buf_size = None"
   by simp
 
 (* P_001_17 (matches Coq) *)
-lemma P_001_17: "\<forall>(af :: AuditedFile) (buf_size :: nat) (rr : ReadResult) (af' : AuditedFile). audited_read af buf_size = Some (rr, af') \<longrightarrow> length (af_log af') = S (length (af_log af))"
+lemma P_001_17: "\<forall>(af :: audited_file) (buf_size :: nat) (rr : read_result) (af' : audited_file). audited_read af buf_size = Some (rr, af') \<longrightarrow> length (af_log af') = S (length (af_log af))"
   by auto
 
 (* P_001_18 (matches Coq) *)
-lemma P_001_18: "\<forall>(s :: TcpStream) (data : list nat) (s' : TcpStream). has_capability (tcp_caps s) CapNetConnect = True \<longrightarrow> tcp_write s data = Some s' \<longrightarrow> tcp_buffer s' = tcp_buffer s ++ data"
+lemma P_001_18: "\<forall>(s :: tcp_stream) (data : list nat) (s' : tcp_stream). has_capability (tcp_caps s) CapNetConnect = True \<longrightarrow> tcp_write s data = Some s' \<longrightarrow> tcp_buffer s' = tcp_buffer s ++ data"
   by simp
 
 (* P_001_19 (matches Coq) *)
-lemma P_001_19: "\<forall>(s :: TcpStream) (n :: nat). has_capability (tcp_caps s) CapNetConnect = False \<longrightarrow> tcp_read s n = None"
+lemma P_001_19: "\<forall>(s :: tcp_stream) (n :: nat). has_capability (tcp_caps s) CapNetConnect = False \<longrightarrow> tcp_read s n = None"
   by simp
 
 (* P_001_20 (matches Coq) *)
-lemma P_001_20: "\<forall>(cfg :: TlsConfig) (offered :: TlsVersion) (conn : TlsConnection). tls_handshake cfg offered = Some conn \<longrightarrow> tls_version_geq (tls_negotiated_version conn) (tls_min_version cfg) = True"
+lemma P_001_20: "\<forall>(cfg :: tls_config) (offered :: tls_version) (conn : tls_connection). tls_handshake cfg offered = Some conn \<longrightarrow> tls_version_geq (tls_negotiated_version conn) (tls_min_version cfg) = True"
   by auto
 
 (* P_001_21 (matches Coq) *)
-lemma P_001_21: "\<forall>(ca :: ConnectionAudit) (entry :: AuditEntry). let ca' := mkConnAudit (ca_stream ca) (entry :: ca_log ca) in length (ca_log ca') = S (length (ca_log ca))"
+lemma P_001_21: "\<forall>(ca :: connection_audit) (entry :: audit_entry). let ca' := mkConnAudit (ca_stream ca) (entry :: ca_log ca) in length (ca_log ca') = S (length (ca_log ca))"
   by simp
 
 (* P_001_22 (matches Coq) *)
-lemma P_001_22: "\<forall>(d1 d2 : Duration). dur_nanos (duration_add d1 d2) < NANOS_PER_SEC"
+lemma P_001_22: "\<forall>(d1 d2 : duration). dur_nanos (duration_add d1 d2) < NANOS_PER_SEC"
   by simp
 
 (* P_001_23 (matches Coq) *)
-lemma P_001_23: "\<forall>(i1 i2 : Instant). inst_ticks i1 \<le> inst_ticks i2 \<longrightarrow> instant_elapsed i1 i2 \<ge> 0"
+lemma P_001_23: "\<forall>(i1 i2 : instant). inst_ticks i1 \<le> inst_ticks i2 \<longrightarrow> instant_elapsed i1 i2 \<ge> 0"
   by simp
 
 (* P_001_24 (matches Coq) *)
-lemma P_001_24: "\<forall>(ts :: SecureTimestamp) (expected_sig :: nat). verify_timestamp ts expected_sig = True \<longrightarrow> st_signed ts = True \<and> st_signature ts = expected_sig"
+lemma P_001_24: "\<forall>(ts :: secure_timestamp) (expected_sig :: nat). verify_timestamp ts expected_sig = True \<longrightarrow> st_signed ts = True \<and> st_signature ts = expected_sig"
   by auto
 
 (* P_001_25 (matches Coq) *)
-lemma P_001_25: "\<forall>(c :: MonotonicCounter). mc_value (mono_increment c) > mc_value c"
+lemma P_001_25: "\<forall>(c :: monotonic_counter). mc_value (mono_increment c) > mc_value c"
   by simp
 
 (* P_001_26 (matches Coq) *)
-lemma P_001_26: "\<forall>(m :: MutexState) (t1 t2 : nat) (m' : MutexState). mutex_acquire m t1 = Some m' \<longrightarrow> mutex_acquire m' t2 = None"
+lemma P_001_26: "\<forall>(m :: mutex_state) (t1 t2 : nat) (m' : mutex_state). mutex_acquire m t1 = Some m' \<longrightarrow> mutex_acquire m' t2 = None"
   by auto
 
 (* P_001_27 (matches Coq) *)
-lemma P_001_27: "\<forall>(rw :: RwLockState) (t1 t2 : nat) (rw' : RwLockState). rwlock_write_acquire rw t1 = Some rw' \<longrightarrow> rwlock_read_acquire rw' t2 = None"
+lemma P_001_27: "\<forall>(rw :: rw_lock_state) (t1 t2 : nat) (rw' : rw_lock_state). rwlock_write_acquire rw t1 = Some rw' \<longrightarrow> rwlock_read_acquire rw' t2 = None"
   by auto
 
 (* P_001_28 (matches Coq) *)
-lemma P_001_28: "\<forall>(a :: AtomicNat) (v :: nat). let a' := atomic_store a v in atomic_seq a' > atomic_seq a \<and> atomic_value a' = v"
+lemma P_001_28: "\<forall>(a :: atomic_nat) (v :: nat). let a' := atomic_store a v in atomic_seq a' > atomic_seq a \<and> atomic_value a' = v"
   by simp
 
 (* P_001_29 (matches Coq) *)
-lemma P_001_29: "\<forall>(cv :: CondvarState) (t :: nat). cv_waiters cv = [t] \<longrightarrow> let (cv', signaled) := condvar_signal cv in signaled = Some t \<and> cv_waiters cv' = []"
+lemma P_001_29: "\<forall>(cv :: condvar_state) (t :: nat). cv_waiters cv = [t] \<longrightarrow> let (cv', signaled) := condvar_signal cv in signaled = Some t \<and> cv_waiters cv' = []"
   by simp
 
 (* P_001_30 (matches Coq) *)
-lemma P_001_30: "\<forall>(ro :: ResourceOrder) (r1 r2 : nat). ro_acquired ro = [] \<longrightarrow> r1 < r2 \<longrightarrow> \<exists>ro'. acquire_ordered ro r1 = Some ro' \<and> \<exists>ro''. acquire_ordered ro' r2 = Some ro''"
+lemma P_001_30: "\<forall>(ro :: resource_order) (r1 r2 : nat). ro_acquired ro = [] \<longrightarrow> r1 < r2 \<longrightarrow> \<exists>ro'. acquire_ordered ro r1 = Some ro' \<and> \<exists>ro''. acquire_ordered ro' r2 = Some ro''"
   by auto
 
 (* P_001_31 (matches Coq) *)
-lemma P_001_31: "\<forall>(k :: AesKey). let dropped := aes_key_drop k in aes_key_zeroized dropped = True \<and> \<forall>x. In x (aes_key_data dropped) \<longrightarrow> x = 0"
+lemma P_001_31: "\<forall>(k :: aes_key). let dropped := aes_key_drop k in aes_key_zeroized dropped = True \<and> \<forall>x. In x (aes_key_data dropped) \<longrightarrow> x = 0"
   by auto
 
 (* P_001_32 (matches Coq) *)
@@ -647,19 +654,19 @@ lemma P_001_33: "\<forall>(data : list nat) (private_key :: nat). let sig := sig
   by simp
 
 (* P_001_34 (matches Coq) *)
-lemma P_001_34: "\<forall>(k :: CryptoKey). let dropped := crypto_key_drop k in ck_zeroized dropped = True \<and> \<forall>x. In x (ck_data dropped) \<longrightarrow> x = 0"
+lemma P_001_34: "\<forall>(k :: crypto_key). let dropped := crypto_key_drop k in ck_zeroized dropped = True \<and> \<forall>x. In x (ck_data dropped) \<longrightarrow> x = 0"
   by auto
 
 (* P_001_35 (matches Coq) *)
-lemma P_001_35: "\<forall>(s1 s2 : CapabilitySet) (c :: Capability). cap_set_contains s1 c = True \<or> cap_set_contains s2 c = True \<longrightarrow> cap_set_contains (cap_set_union s1 s2) c = True"
+lemma P_001_35: "\<forall>(s1 s2 : capability_set) (c :: capability). cap_set_contains s1 c = True \<or> cap_set_contains s2 c = True \<longrightarrow> cap_set_contains (cap_set_union s1 s2) c = True"
   by auto
 
 (* P_001_36 (matches Coq) *)
-lemma P_001_36: "\<forall>(s1 s2 : CapabilitySet) (c :: Capability). cap_set_contains (cap_set_inter s1 s2) c = True \<longrightarrow> cap_set_contains s1 c = True \<and> cap_set_contains s2 c = True"
+lemma P_001_36: "\<forall>(s1 s2 : capability_set) (c :: capability). cap_set_contains (cap_set_inter s1 s2) c = True \<longrightarrow> cap_set_contains s1 c = True \<and> cap_set_contains s2 c = True"
   by auto
 
 (* P_001_37 (matches Coq) *)
-lemma P_001_37: "\<forall>(s :: CapabilitySet) (c :: Capability). cap_set_contains s c = False \<longrightarrow> \<forall>c'. In c' s \<longrightarrow> cap_eq c c' = False"
+lemma P_001_37: "\<forall>(s :: capability_set) (c :: capability). cap_set_contains s c = False \<longrightarrow> \<forall>c'. In c' s \<longrightarrow> cap_eq c c' = False"
   by auto
 
 (* level_leq_refl (matches Coq) *)
@@ -671,7 +678,7 @@ lemma compartments_subset_refl: "\<forall>c. compartments_subset c c = True"
   by auto
 
 (* P_001_38 (matches Coq) *)
-lemma P_001_38: "\<forall>(l1 l2 : Label). flows_to l1 (label_join l1 l2) = True \<and> flows_to l2 (label_join l1 l2) = True \<and> flows_to l1 l1 = True"
+lemma P_001_38: "\<forall>(l1 l2 : label). flows_to l1 (label_join l1 l2) = True \<and> flows_to l2 (label_join l1 l2) = True \<and> flows_to l1 l1 = True"
   by auto
 
 (* level_leq_trans (matches Coq) *)
@@ -683,11 +690,11 @@ lemma compartments_subset_trans: "\<forall>c1 c2 c3. compartments_subset c1 c2 =
   by auto
 
 (* P_001_39 (matches Coq) *)
-lemma P_001_39: "\<forall>(l1 l2 l3 : Label). flows_to l1 l2 = True \<longrightarrow> flows_to l2 l3 = True \<longrightarrow> flows_to l1 l3 = True"
+lemma P_001_39: "\<forall>(l1 l2 l3 : label). flows_to l1 l2 = True \<longrightarrow> flows_to l2 l3 = True \<longrightarrow> flows_to l1 l3 = True"
   by auto
 
 (* P_001_40 (matches Coq) *)
-lemma P_001_40: "\<forall>(A :: Type) (lv : Labeled A) (clearance :: Label) (v : A). unlabel lv clearance = Some v \<longrightarrow> flows_to (labeled_label lv) clearance = True \<and> v = labeled_value lv"
+lemma P_001_40: "\<forall>(a :: type) (lv : Labeled a) (clearance :: label) (v : a). unlabel lv clearance = Some v \<longrightarrow> flows_to (labeled_label lv) clearance = True \<and> v = labeled_value lv"
   by auto
 
 end

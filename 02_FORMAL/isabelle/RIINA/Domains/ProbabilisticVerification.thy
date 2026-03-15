@@ -41,6 +41,8 @@ theory ProbabilisticVerification
   imports Main
 begin
 
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym q = "nat"
 (* negligible (matches Coq: Definition negligible) *)
 definition negligible :: "bool" where
   "negligible \<equiv> forall c : nat, (0 < c)%nat ->
@@ -86,12 +88,12 @@ lemma Qabs_Qminus_self: "\<forall>a : Q. Qabs (a - a) == 0"
 
 (* Helper: fold over combine l l equals accumulator *)
 (* fold_combine_self_gen (matches Coq) *)
-lemma fold_combine_self_gen: "\<forall>(l : list Q) (acc :: Q). fold_left (fun a p => a + Qabs (fst p - snd p)) (combine l l) acc == acc"
+lemma fold_combine_self_gen: "\<forall>(l : list q) (acc :: q). fold_left (fun a p => a + Qabs (fst p - snd p)) (combine l l) acc == acc"
   by simp
 
 (* Helper: fold over combine l l starting at 0 is 0 *)
 (* fold_combine_self (matches Coq) *)
-lemma fold_combine_self: "\<forall>(l : list Q). fold_left (fun acc p => acc + Qabs (fst p - snd p)) (combine l l) 0 == 0"
+lemma fold_combine_self: "\<forall>(l : list q). fold_left (fun acc p => acc + Qabs (fst p - snd p)) (combine l l) 0 == 0"
   by auto
 
 (* 4 (matches Coq) *)

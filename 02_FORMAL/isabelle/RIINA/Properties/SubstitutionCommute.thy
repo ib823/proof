@@ -72,9 +72,12 @@
  *)
 
 theory SubstitutionCommute
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* id_rho_sc (matches Coq: Definition id_rho_sc) *)
 definition id_rho_sc :: "subst_rho_sc" where
   "id_rho_sc \<equiv> \<lambda>x. EVar x"

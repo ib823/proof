@@ -179,7 +179,7 @@ lemma 9: "Compiler Determinism =================================================
   by simp
 
 (* 10 (matches Coq) *)
-lemma 10: "Security Label Lattice Correctness ==================================================================== Theorem label_lattice_join_upper_bound : \<forall>l1 l2. label_leb l1 (label_join l1 l2) = True \<and> label_leb l2 (label_join l1 l2) = True"
+lemma 10: "Security label Lattice Correctness ==================================================================== Theorem label_lattice_join_upper_bound : \<forall>l1 l2. label_leb l1 (label_join l1 l2) = True \<and> label_leb l2 (label_join l1 l2) = True"
   by auto
 
 (* label_lattice_join_least (matches Coq) *)

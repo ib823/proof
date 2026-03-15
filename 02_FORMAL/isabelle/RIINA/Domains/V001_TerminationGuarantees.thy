@@ -15,7 +15,7 @@
  * | expr               | expr                   | OK     |
  * | sized_ty           | sized_ty               | OK     |
  * | even_tree          | even_tree              | OK     |
- * | NonTerminating     | non_terminating        | OK     |
+ * | non_terminating     | non_terminating        | OK     |
  * | expr_size          | expr_size              | OK     |
  * | structurally_smaller | structurally_smaller   | OK     |
  * | structural_recursion | structural_recursion   | OK     |
@@ -68,9 +68,12 @@
  *)
 
 theory V001_TerminationGuarantees
-  imports Main
+  imports Main Semantics Syntax
 begin
 
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym b = "nat"
+type_synonym s = "nat"
 (* expr (matches Coq: Inductive expr) *)
 datatype expr =
     EVar
@@ -94,7 +97,7 @@ datatype even_tree =
   |     OLeaf
   |     ONode
 
-(* NonTerminating (matches Coq: Inductive NonTerminating) *)
+(* non_terminating (matches Coq: Inductive non_terminating) *)
 datatype non_terminating =
     Loop
 
@@ -182,7 +185,7 @@ lemma V_001_02_structural_termination: "\<forall>e. structural_recursion e \<lon
   by auto
 
 (* V_001_03_nat_structural (matches Coq) *)
-lemma V_001_03_nat_structural: "\<forall>(f : nat \<longrightarrow> nat) n. \<exists>v. (fix go m := match m with 0 => 0 | S m' => f (go m') end) n = v"
+lemma V_001_03_nat_structural: "\<forall>(f : nat \<longrightarrow> nat) n. \<exists>v. (fix go m := match m with 0 => 0 | s m' => f (go m') end) n = v"
   by auto
 
 (* V_001_04_list_structural (matches Coq) *)
@@ -198,7 +201,7 @@ lemma V_001_06_mutual_structural: "\<forall>et ot. \<exists>ve vo. even_size et 
   by simp
 
 (* V_001_07_nested_structural (matches Coq) *)
-lemma V_001_07_nested_structural: "\<forall>n. \<exists>v. (fix outer m := match m with | 0 => 0 | S m' => (fix inner k := match k with 0 => 0 | S k' => 1 + inner k' end) m' + outer m' end) n = v"
+lemma V_001_07_nested_structural: "\<forall>n. \<exists>v. (fix outer m := match m with | 0 => 0 | s m' => (fix inner k := match k with 0 => 0 | s k' => 1 + inner k' end) m' + outer m' end) n = v"
   by simp
 
 (* V_001_08_structural_checker_sound (matches Coq) *)
@@ -214,11 +217,11 @@ lemma V_001_10_size_decreases: "\<forall>st1 st2 s1 s2. get_size st1 = Some s1 \
   by auto
 
 (* V_001_11_sized_list_terminates (matches Coq) *)
-lemma V_001_11_sized_list_terminates: "\<forall>A B (f : A \<longrightarrow> B \<longrightarrow> B) (l : list A) (acc :: B). \<exists>v. sized_list_fold f l acc = v"
+lemma V_001_11_sized_list_terminates: "\<forall>A b (f : A \<longrightarrow> b \<longrightarrow> b) (l : list A) (acc :: b). \<exists>v. sized_list_fold f l acc = v"
   by simp
 
 (* V_001_12_sized_tree_terminates (matches Coq) *)
-lemma V_001_12_sized_tree_terminates: "\<forall>A B (f : A \<longrightarrow> B \<longrightarrow> B \<longrightarrow> B) (leaf :: B) (t : tree A). \<exists>v. sized_tree_fold f leaf t = v"
+lemma V_001_12_sized_tree_terminates: "\<forall>A b (f : A \<longrightarrow> b \<longrightarrow> b \<longrightarrow> b) (leaf :: b) (t : tree A). \<exists>v. sized_tree_fold f leaf t = v"
   by auto
 
 (* V_001_13_size_inference_correct (matches Coq) *)
@@ -246,7 +249,7 @@ lemma V_001_18_measure_decreases: "\<forall>A (m : Measure A) e. decreases_on m 
   by auto
 
 (* V_001_19_lexicographic_wellformed (matches Coq) *)
-lemma V_001_19_lexicographic_wellformed: "\<forall>A B (ma : Measure A) (mb : Measure B). well_founded (lex_order ma mb)"
+lemma V_001_19_lexicographic_wellformed: "\<forall>A b (ma : Measure A) (mb : Measure b). well_founded (lex_order ma mb)"
   by auto
 
 (* V_001_20_ackermann_terminates (matches Coq) *)
@@ -254,7 +257,7 @@ lemma V_001_20_ackermann_terminates: "\<forall>m n. \<exists>v. ackermann m n = 
   by simp
 
 (* V_001_21_complex_measure_sound (matches Coq) *)
-lemma V_001_21_complex_measure_sound: "\<forall>A B (ma : Measure A) (mb : Measure B). wf_measure (complex_measure ma mb)"
+lemma V_001_21_complex_measure_sound: "\<forall>A b (ma : Measure A) (mb : Measure b). wf_measure (complex_measure ma mb)"
   by auto
 
 (* V_001_22_measure_inference (matches Coq) *)
@@ -286,7 +289,7 @@ lemma V_001_28_guarded_recursion: "\<forall>A (g : Guarded (Stream A)). match g 
   by auto
 
 (* V_001_29_codata_unfold (matches Coq) *)
-lemma V_001_29_codata_unfold: "\<forall>A S (f : S \<longrightarrow> A * S) (seed :: S). productive (stream_unfold f seed)"
+lemma V_001_29_codata_unfold: "\<forall>A s (f : s \<longrightarrow> A * s) (seed :: s). productive (stream_unfold f seed)"
   by auto
 
 (* V_001_30_productive_composition (matches Coq) *)

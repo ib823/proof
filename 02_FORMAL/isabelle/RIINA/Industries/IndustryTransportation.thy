@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ASIL               | asil                   | OK     |
- * | SIL                | sil                    | OK     |
- * | TransportationEffect | transportation_effect  | OK     |
+ * | asil               | asil                   | OK     |
+ * | sil                | sil                    | OK     |
+ * | transportation_effect | transportation_effect  | OK     |
  * | ISO26262_Compliance | iso26262__compliance   | OK     |
  * | asil_to_nat        | asil_to_nat            | OK     |
  * | asil_le            | asil_le                | OK     |
@@ -55,7 +55,7 @@ theory IndustryTransportation
   imports Main CoqCompat
 begin
 
-(* ASIL (matches Coq: Inductive ASIL) *)
+(* asil (matches Coq: Inductive asil) *)
 datatype asil =
     ASIL_A
   |     ASIL_B
@@ -63,7 +63,7 @@ datatype asil =
   |     ASIL_D
   |     QM
 
-(* SIL (matches Coq: Inductive SIL) *)
+(* sil (matches Coq: Inductive sil) *)
 datatype sil =
     SIL_0
   |     SIL_1
@@ -71,7 +71,7 @@ datatype sil =
   |     SIL_3
   |     SIL_4
 
-(* TransportationEffect (matches Coq: Inductive TransportationEffect) *)
+(* transportation_effect (matches Coq: Inductive transportation_effect) *)
 datatype transportation_effect =
     VehicleControl
   |     RailwaySignaling
@@ -159,7 +159,7 @@ definition version_valid :: "bool" where
 (* Section H01 - ISO 26262 Compliance
     Reference: IND_H_TRANSPORTATION.md Section 3.1 *)
 (* iso_26262_compliance (matches Coq) *)
-lemma iso_26262_compliance: "\<forall>(compliance :: ISO26262_Compliance) (asil :: ASIL). hazard_analysis compliance = True \<longrightarrow> True"
+lemma iso_26262_compliance: "\<forall>(compliance :: ISO26262_Compliance) (asil :: asil). hazard_analysis compliance = True \<longrightarrow> True"
   by simp
 
 (* Section H02 - ISO/SAE 21434 Cybersecurity
@@ -177,7 +177,7 @@ lemma unece_r155_compliance: "\<forall>(vehicle_type :: nat). True"
 (* Section H04 - EN 50128 Railway Software
     Reference: IND_H_TRANSPORTATION.md Section 3.4 *)
 (* en_50128_compliance (matches Coq) *)
-lemma en_50128_compliance: "\<forall>(railway_software :: nat) (sil :: SIL). True"
+lemma en_50128_compliance: "\<forall>(railway_software :: nat) (sil :: sil). True"
   by simp
 
 (* Section H05 - Maritime Cyber
@@ -186,7 +186,7 @@ lemma en_50128_compliance: "\<forall>(railway_software :: nat) (sil :: SIL). Tru
 lemma imo_maritime_cyber: "\<forall>(vessel :: nat). True"
   by simp
 
-(* ASIL D requires highest rigor *)
+(* asil D requires highest rigor *)
 (* asil_d_highest_rigor (matches Coq) *)
 lemma asil_d_highest_rigor: "\<forall>(compliance :: ISO26262_Compliance). True"
   by simp

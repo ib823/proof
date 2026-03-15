@@ -22,7 +22,7 @@
  *)
 
 theory ValRelStepLimit_PROOF
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
 (* For first-order types, step indices are irrelevant.

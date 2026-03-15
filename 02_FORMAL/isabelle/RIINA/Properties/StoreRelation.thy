@@ -59,9 +59,12 @@
  *)
 
 theory StoreRelation
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* Related stores have the same max location *)
 (* store_rel_simple_max (matches Coq) *)
 lemma store_rel_simple_max: "\<forall>Σ st1 st2. store_rel_simple Σ st1 st2 \<longrightarrow> store_max st1 = store_max st2"

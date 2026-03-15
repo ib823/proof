@@ -73,9 +73,12 @@
  *)
 
 theory TaintSystemCorrectness
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* taint_source (matches Coq: Inductive taint_source) *)
 datatype taint_source =
     TaintNetworkExternal

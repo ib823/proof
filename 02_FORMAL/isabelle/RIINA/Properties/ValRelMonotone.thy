@@ -43,7 +43,7 @@
  *)
 
 theory ValRelMonotone
-  imports Main
+  imports Main Semantics
 begin
 
 (* The cumulative relation val_rel_le is defined to be downward-closed

@@ -12,22 +12,22 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ModelUpdateState   | model_update_state     | OK     |
- * | Tensor             | tensor                 | OK     |
- * | MLModel            | ml_model               | OK     |
- * | UserData           | user_data              | OK     |
- * | InferenceRequest   | inference_request      | OK     |
- * | MemoryBudget       | memory_budget          | OK     |
- * | ModelUpdate        | model_update           | OK     |
- * | PrivacyBudget      | privacy_budget         | OK     |
- * | Prediction         | prediction             | OK     |
- * | ModelPolicy        | model_policy           | OK     |
- * | TrainingData       | training_data          | OK     |
- * | InputAnalysis      | input_analysis         | OK     |
- * | ModelWithFallback  | model_with_fallback    | OK     |
- * | BatchRequest       | batch_request          | OK     |
- * | QuantizedModel     | quantized_model        | OK     |
- * | TensorData         | TensorData             | OK     |
+ * | model_update_state   | model_update_state     | OK     |
+ * | tensor             | tensor                 | OK     |
+ * | ml_model            | ml_model               | OK     |
+ * | user_data           | user_data              | OK     |
+ * | inference_request   | inference_request      | OK     |
+ * | memory_budget       | memory_budget          | OK     |
+ * | model_update        | model_update           | OK     |
+ * | privacy_budget      | privacy_budget         | OK     |
+ * | prediction         | prediction             | OK     |
+ * | model_policy        | model_policy           | OK     |
+ * | training_data       | training_data          | OK     |
+ * | input_analysis      | input_analysis         | OK     |
+ * | model_with_fallback  | model_with_fallback    | OK     |
+ * | batch_request       | batch_request          | OK     |
+ * | quantized_model     | quantized_model        | OK     |
+ * | tensor_data         | tensor_data             | OK     |
  * | compute_inference  | compute_inference      | OK     |
  * | infer              | infer                  | OK     |
  * | transmitted        | transmitted            | OK     |
@@ -82,111 +82,113 @@ theory OnDeviceML
   imports Main
 begin
 
-(* ModelUpdateState (matches Coq: Inductive ModelUpdateState) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym tensor_data = "nat list"
+(* model_update_state (matches Coq: Inductive model_update_state) *)
 datatype model_update_state =
     UpdateIdle
   |     UpdateInProgress
   |     UpdateComplete
   |     UpdateFailed
 
-(* Tensor (matches Coq: Record Tensor) *)
+(* tensor (matches Coq: Record tensor) *)
 record tensor =
   tensor_shape :: 'a list
-  tensor_data :: TensorData
+  tensor_data :: tensor_data
 
-(* MLModel (matches Coq: Record MLModel) *)
+(* ml_model (matches Coq: Record ml_model) *)
 record ml_model =
   model_id :: nat
   model_weights :: 'a list
   model_version :: nat
   model_deterministic :: bool
 
-(* UserData (matches Coq: Record UserData) *)
+(* user_data (matches Coq: Record user_data) *)
 record user_data =
   data_id :: nat
   data_content :: 'a list
   data_sensitive :: bool
 
-(* InferenceRequest (matches Coq: Record InferenceRequest) *)
+(* inference_request (matches Coq: Record inference_request) *)
 record inference_request =
-  req_model :: MLModel
-  req_input :: Tensor
+  req_model :: ml_model
+  req_input :: tensor
   req_latency_ms :: nat
   req_max_latency_ms :: nat
 
-(* MemoryBudget (matches Coq: Record MemoryBudget) *)
+(* memory_budget (matches Coq: Record memory_budget) *)
 record memory_budget =
   budget_max_bytes :: nat
   model_size_bytes :: nat
 
-(* ModelUpdate (matches Coq: Record ModelUpdate) *)
+(* model_update (matches Coq: Record model_update) *)
 record model_update =
-  update_old_model :: MLModel
-  update_new_model :: MLModel
-  update_state :: ModelUpdateState
+  update_old_model :: ml_model
+  update_new_model :: ml_model
+  update_state :: model_update_state
   update_version_increased :: bool
 
-(* PrivacyBudget (matches Coq: Record PrivacyBudget) *)
+(* privacy_budget (matches Coq: Record privacy_budget) *)
 record privacy_budget =
   epsilon :: nat
   delta :: nat
   max_epsilon :: nat
   max_delta :: nat
 
-(* Prediction (matches Coq: Record Prediction) *)
+(* prediction (matches Coq: Record prediction) *)
 record prediction =
   pred_class :: nat
   pred_confidence :: nat
   pred_calibrated :: bool
 
-(* ModelPolicy (matches Coq: Record ModelPolicy) *)
+(* model_policy (matches Coq: Record model_policy) *)
 record model_policy =
-  policy_model :: MLModel
+  policy_model :: ml_model
   policy_exportable :: bool
   policy_on_device_only :: bool
 
-(* TrainingData (matches Coq: Record TrainingData) *)
+(* training_data (matches Coq: Record training_data) *)
 record training_data =
   td_records :: 'a list
   td_anonymized :: bool
   td_pii_removed :: bool
 
-(* InputAnalysis (matches Coq: Record InputAnalysis) *)
+(* input_analysis (matches Coq: Record input_analysis) *)
 record input_analysis =
-  ia_input :: Tensor
+  ia_input :: tensor
   ia_perturbation_score :: nat
   ia_threshold :: nat
   ia_flagged :: bool
 
-(* ModelWithFallback (matches Coq: Record ModelWithFallback) *)
+(* model_with_fallback (matches Coq: Record model_with_fallback) *)
 record model_with_fallback =
-  primary_model :: MLModel
-  fallback_model :: MLModel
+  primary_model :: ml_model
+  fallback_model :: ml_model
   primary_available :: bool
 
-(* BatchRequest (matches Coq: Record BatchRequest) *)
+(* batch_request (matches Coq: Record batch_request) *)
 record batch_request =
   batch_id :: nat
   batch_inputs :: 'a list
   batch_sequence :: 'a list
 
-(* QuantizedModel (matches Coq: Record QuantizedModel) *)
+(* quantized_model (matches Coq: Record quantized_model) *)
 record quantized_model =
   qm_original_weights :: 'a list
   qm_quantized_weights :: 'a list
   qm_max_error :: nat
 
-(* TensorData (matches Coq: Definition TensorData) *)
-definition TensorData :: "'a" where
+(* tensor_data (matches Coq: Definition tensor_data) *)
+definition tensor_data :: "'a" where
   "TensorData \<equiv> list nat"
 
 (* compute_inference (matches Coq: Definition compute_inference) *)
-definition compute_inference :: "MLModel \<Rightarrow> Tensor \<Rightarrow> Tensor" where
+definition compute_inference :: "MLModel \<Rightarrow> tensor \<Rightarrow> Tensor" where
   "compute_inference m input \<equiv> mkTensor (tensor_shape input) 
            (map (\<lambda>x. x + model_version m) (tensor_data input))"
 
 (* infer (matches Coq: Definition infer) *)
-definition infer :: "MLModel \<Rightarrow> Tensor \<Rightarrow> Tensor" where
+definition infer :: "MLModel \<Rightarrow> tensor \<Rightarrow> Tensor" where
   "infer m input \<equiv> compute_inference m input"
 
 (* transmitted (matches Coq: Definition transmitted) *)
@@ -194,12 +196,12 @@ definition transmitted :: "UserData \<Rightarrow> bool" where
   "transmitted d \<equiv> False"
 
 (* used_for_inference (matches Coq: Definition used_for_inference) *)
-definition used_for_inference :: "UserData \<Rightarrow> MLModel \<Rightarrow> bool" where
+definition used_for_inference :: "UserData \<Rightarrow> ml_model \<Rightarrow> bool" where
   "used_for_inference d m \<equiv> True"
 
 (* private_ml_system (matches Coq: Definition private_ml_system) *)
 definition private_ml_system :: "bool" where
-  "private_ml_system \<equiv> forall (d : UserData) (m :: MLModel),
+  "private_ml_system \<equiv> forall (d : user_data) (m :: ml_model),
     used_for_inference d m -> ~ transmitted d"
 
 (* input_shape_valid (matches Coq: Definition input_shape_valid) *)
@@ -235,7 +237,7 @@ definition version_tracked :: "MLModel \<Rightarrow> bool" where
   "version_tracked m \<equiv> model_version m > 0"
 
 (* feature_extract (matches Coq: Definition feature_extract) *)
-definition feature_extract :: "MLModel \<Rightarrow> Tensor \<Rightarrow> list nat" where
+definition feature_extract :: "MLModel \<Rightarrow> tensor \<Rightarrow> list nat" where
   "feature_extract m input \<equiv> map (\<lambda>x. x * model_version m) (tensor_data input)"
 
 (* confidence_calibrated (matches Coq: Definition confidence_calibrated) *)
@@ -276,103 +278,103 @@ definition quantization_bounded :: "QuantizedModel \<Rightarrow> bool" where
   length (qm_original_weights qm) = length (qm_quantized_weights qm)"
 
 (* ml_inference_deterministic (matches Coq) *)
-lemma ml_inference_deterministic: "\<forall>(model :: MLModel) (input :: Tensor). infer model input = infer model input"
+lemma ml_inference_deterministic: "\<forall>(model :: ml_model) (input :: tensor). infer model input = infer model input"
   by simp
 
 (* inference_same_input_same_output (matches Coq) *)
-lemma inference_same_input_same_output: "\<forall>(model :: MLModel) (input1 input2 : Tensor). input1 = input2 \<longrightarrow> infer model input1 = infer model input2"
+lemma inference_same_input_same_output: "\<forall>(model :: ml_model) (input1 input2 : tensor). input1 = input2 \<longrightarrow> infer model input1 = infer model input2"
   by simp
 
 (* ml_data_private (matches Coq) *)
-lemma ml_data_private: "\<forall>(data :: UserData) (model :: MLModel). private_ml_system \<longrightarrow> used_for_inference data model \<longrightarrow> ~ transmitted data"
+lemma ml_data_private: "\<forall>(data :: user_data) (model :: ml_model). private_ml_system \<longrightarrow> used_for_inference data model \<longrightarrow> ~ transmitted data"
   by auto
 
 (* inference_preserves_shape (matches Coq) *)
-lemma inference_preserves_shape: "\<forall>(model :: MLModel) (input :: Tensor). tensor_shape (infer model input) = tensor_shape input"
+lemma inference_preserves_shape: "\<forall>(model :: ml_model) (input :: tensor). tensor_shape (infer model input) = tensor_shape input"
   by simp
 
 (* different_model_version_matters (matches Coq) *)
-lemma different_model_version_matters: "\<forall>(m1 m2 : MLModel) (input :: Tensor) (h : nat) (t : list nat). tensor_data input = h :: t \<longrightarrow> model_version m1 \<noteq> model_version m2 \<longrightarrow> tensor_data (infer m1 input) \<noteq> tensor_data (infer m2 input)"
+lemma different_model_version_matters: "\<forall>(m1 m2 : ml_model) (input :: tensor) (h : nat) (t : list nat). tensor_data input = h :: t \<longrightarrow> model_version m1 \<noteq> model_version m2 \<longrightarrow> tensor_data (infer m1 input) \<noteq> tensor_data (infer m2 input)"
   by auto
 
 (* model_input_validated (matches Coq) *)
-lemma model_input_validated: "\<forall>(input :: Tensor) (expected : list nat). input_shape_valid input expected \<longrightarrow> tensor_shape input = expected"
+lemma model_input_validated: "\<forall>(input :: tensor) (expected : list nat). input_shape_valid input expected \<longrightarrow> tensor_shape input = expected"
   by auto
 
 (* model_output_bounded (matches Coq) *)
-lemma model_output_bounded: "\<forall>(output :: Tensor) (bound :: nat). output_bounded output bound \<longrightarrow> all_below bound (tensor_data output)"
+lemma model_output_bounded: "\<forall>(output :: tensor) (bound :: nat). output_bounded output bound \<longrightarrow> all_below bound (tensor_data output)"
   by auto
 
 (* inference_latency_bounded (matches Coq) *)
-lemma inference_latency_bounded: "\<forall>(r :: InferenceRequest). latency_within_bound r \<longrightarrow> req_latency_ms r \<le> req_max_latency_ms r"
+lemma inference_latency_bounded: "\<forall>(r :: inference_request). latency_within_bound r \<longrightarrow> req_latency_ms r \<le> req_max_latency_ms r"
   by auto
 
 (* model_size_within_memory (matches Coq) *)
-lemma model_size_within_memory: "\<forall>(b :: MemoryBudget). model_fits_memory b \<longrightarrow> model_size_bytes b \<le> budget_max_bytes b"
+lemma model_size_within_memory: "\<forall>(b :: memory_budget). model_fits_memory b \<longrightarrow> model_size_bytes b \<le> budget_max_bytes b"
   by auto
 
 (* model_update_atomic (matches Coq) *)
-lemma model_update_atomic: "\<forall>(u :: ModelUpdate). update_atomic u \<longrightarrow> update_state u = UpdateComplete \<or> update_state u = UpdateFailed"
+lemma model_update_atomic: "\<forall>(u :: model_update). update_atomic u \<longrightarrow> update_state u = UpdateComplete \<or> update_state u = UpdateFailed"
   by auto
 
 (* differential_privacy_guaranteed (matches Coq) *)
-lemma differential_privacy_guaranteed: "\<forall>(pb :: PrivacyBudget). within_privacy_budget pb \<longrightarrow> epsilon pb \<le> max_epsilon pb \<and> delta pb \<le> max_delta pb"
+lemma differential_privacy_guaranteed: "\<forall>(pb :: privacy_budget). within_privacy_budget pb \<longrightarrow> epsilon pb \<le> max_epsilon pb \<and> delta pb \<le> max_delta pb"
   by auto
 
 (* model_version_tracked (matches Coq) *)
-lemma model_version_tracked: "\<forall>(m :: MLModel). version_tracked m \<longrightarrow> model_version m > 0"
+lemma model_version_tracked: "\<forall>(m :: ml_model). version_tracked m \<longrightarrow> model_version m > 0"
   by auto
 
 (* feature_extraction_deterministic (matches Coq) *)
-lemma feature_extraction_deterministic: "\<forall>(m :: MLModel) (input1 input2 : Tensor). input1 = input2 \<longrightarrow> feature_extract m input1 = feature_extract m input2"
+lemma feature_extraction_deterministic: "\<forall>(m :: ml_model) (input1 input2 : tensor). input1 = input2 \<longrightarrow> feature_extract m input1 = feature_extract m input2"
   by simp
 
 (* prediction_confidence_calibrated (matches Coq) *)
-lemma prediction_confidence_calibrated: "\<forall>(p :: Prediction). confidence_calibrated p \<longrightarrow> pred_confidence p \<le> 100"
+lemma prediction_confidence_calibrated: "\<forall>(p :: prediction). confidence_calibrated p \<longrightarrow> pred_confidence p \<le> 100"
   by auto
 
 (* model_not_exported (matches Coq) *)
-lemma model_not_exported: "\<forall>(mp :: ModelPolicy). model_not_exportable mp \<longrightarrow> policy_exportable mp = False"
+lemma model_not_exported: "\<forall>(mp :: model_policy). model_not_exportable mp \<longrightarrow> policy_exportable mp = False"
   by auto
 
 (* training_data_anonymized (matches Coq) *)
-lemma training_data_anonymized: "\<forall>(td :: TrainingData). data_anonymized td \<longrightarrow> td_anonymized td = True \<and> td_pii_removed td = True"
+lemma training_data_anonymized: "\<forall>(td :: training_data). data_anonymized td \<longrightarrow> td_anonymized td = True \<and> td_pii_removed td = True"
   by auto
 
 (* adversarial_input_detected (matches Coq) *)
-lemma adversarial_input_detected: "\<forall>(ia :: InputAnalysis). adversarial_detected ia \<longrightarrow> ia_flagged ia = True"
+lemma adversarial_input_detected: "\<forall>(ia :: input_analysis). adversarial_detected ia \<longrightarrow> ia_flagged ia = True"
   by auto
 
 (* model_fallback_available (matches Coq) *)
-lemma model_fallback_available: "\<forall>(mf :: ModelWithFallback). fallback_ready mf \<longrightarrow> primary_available mf = False \<longrightarrow> model_version (fallback_model mf) > 0"
+lemma model_fallback_available: "\<forall>(mf :: model_with_fallback). fallback_ready mf \<longrightarrow> primary_available mf = False \<longrightarrow> model_version (fallback_model mf) > 0"
   by auto
 
 (* batch_inference_ordered (matches Coq) *)
-lemma batch_inference_ordered: "\<forall>(br :: BatchRequest). batch_ordered br \<longrightarrow> is_sorted (batch_sequence br)"
+lemma batch_inference_ordered: "\<forall>(br :: batch_request). batch_ordered br \<longrightarrow> is_sorted (batch_sequence br)"
   by auto
 
 (* model_quantization_bounded_error (matches Coq) *)
-lemma model_quantization_bounded_error: "\<forall>(qm :: QuantizedModel). quantization_bounded qm \<longrightarrow> length (qm_original_weights qm) = length (qm_quantized_weights qm)"
+lemma model_quantization_bounded_error: "\<forall>(qm :: quantized_model). quantization_bounded qm \<longrightarrow> length (qm_original_weights qm) = length (qm_quantized_weights qm)"
   by auto
 
 (* on_device_only_preserves_privacy (matches Coq) *)
-lemma on_device_only_preserves_privacy: "\<forall>(mp :: ModelPolicy). model_not_exportable mp \<longrightarrow> policy_on_device_only mp = True"
+lemma on_device_only_preserves_privacy: "\<forall>(mp :: model_policy). model_not_exportable mp \<longrightarrow> policy_on_device_only mp = True"
   by auto
 
 (* adversarial_implies_high_perturbation (matches Coq) *)
-lemma adversarial_implies_high_perturbation: "\<forall>(ia :: InputAnalysis). adversarial_detected ia \<longrightarrow> ia_perturbation_score ia > ia_threshold ia"
+lemma adversarial_implies_high_perturbation: "\<forall>(ia :: input_analysis). adversarial_detected ia \<longrightarrow> ia_perturbation_score ia > ia_threshold ia"
   by auto
 
 (* batch_length_consistency (matches Coq) *)
-lemma batch_length_consistency: "\<forall>(br :: BatchRequest). batch_ordered br \<longrightarrow> length (batch_inputs br) = length (batch_sequence br)"
+lemma batch_length_consistency: "\<forall>(br :: batch_request). batch_ordered br \<longrightarrow> length (batch_inputs br) = length (batch_sequence br)"
   by auto
 
 (* privacy_budget_epsilon_bounded (matches Coq) *)
-lemma privacy_budget_epsilon_bounded: "\<forall>(pb :: PrivacyBudget). within_privacy_budget pb \<longrightarrow> epsilon pb \<le> max_epsilon pb"
+lemma privacy_budget_epsilon_bounded: "\<forall>(pb :: privacy_budget). within_privacy_budget pb \<longrightarrow> epsilon pb \<le> max_epsilon pb"
   by auto
 
 (* failed_update_preserves_version (matches Coq) *)
-lemma failed_update_preserves_version: "\<forall>(u :: ModelUpdate). update_state u = UpdateFailed \<longrightarrow> model_version (update_old_model u) = model_version (update_old_model u)"
+lemma failed_update_preserves_version: "\<forall>(u :: model_update). update_state u = UpdateFailed \<longrightarrow> model_version (update_old_model u) = model_version (update_old_model u)"
   by simp
 
 end

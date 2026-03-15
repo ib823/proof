@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Layer              | layer                  | OK     |
- * | SecurityProperty   | security_property      | OK     |
- * | AttackType         | attack_type            | OK     |
- * | LayerVerification  | layer_verification     | OK     |
- * | StackState         | stack_state            | OK     |
+ * | layer              | layer                  | OK     |
+ * | security_property   | security_property      | OK     |
+ * | attack_type         | attack_type            | OK     |
+ * | layer_verification  | layer_verification     | OK     |
+ * | stack_state         | stack_state            | OK     |
  * | layer_eqb          | layer_eqb              | OK     |
  * | layer_index        | layer_index            | OK     |
  * | layer_adjacent     | layer_adjacent         | OK     |
@@ -105,7 +105,7 @@ theory TotalStackFoundation
   imports Main CoqCompat
 begin
 
-(* Layer (matches Coq: Inductive Layer) *)
+(* layer (matches Coq: Inductive layer) *)
 datatype layer =
     L0_Physics
   |     L1_Silicon
@@ -116,7 +116,7 @@ datatype layer =
   |     L6_App
   |     L7_UX
 
-(* SecurityProperty (matches Coq: Inductive SecurityProperty) *)
+(* security_property (matches Coq: Inductive security_property) *)
 datatype security_property =
     SPConfidentiality
   |     SPIntegrity
@@ -125,7 +125,7 @@ datatype security_property =
   |     SPAuthorization
   |     SPNonRepudiation
 
-(* AttackType (matches Coq: Inductive AttackType) *)
+(* attack_type (matches Coq: Inductive attack_type) *)
 datatype attack_type =
     ATMemoryCorruption
   |     ATSideChannel
@@ -139,13 +139,13 @@ datatype attack_type =
   |     ATMalwareExec
   |     ATInsiderThreat
 
-(* LayerVerification (matches Coq: Record LayerVerification) *)
+(* layer_verification (matches Coq: Record layer_verification) *)
 record layer_verification =
-  lv_layer :: Layer
+  lv_layer :: layer
   lv_verified :: bool
   lv_properties :: 'a list
 
-(* StackState (matches Coq: Record StackState) *)
+(* stack_state (matches Coq: Record stack_state) *)
 record stack_state =
   ss_layers :: 'a list
   ss_interfaces_verified :: 'a list
@@ -183,11 +183,11 @@ fun interface_verified :: "StackState \<Rightarrow> bool" where
   "interface_verified _ = True"
 
 (* property_preserved (matches Coq: Definition property_preserved) *)
-definition property_preserved :: "LayerVerification \<Rightarrow> SecurityProperty \<Rightarrow> bool" where
+definition property_preserved :: "LayerVerification \<Rightarrow> security_property \<Rightarrow> bool" where
   "property_preserved lv p \<equiv> existsb (\<lambda>sp. sp_eqb sp p) lv.(lv_properties)"
 
 (* attack_blocked (matches Coq: Definition attack_blocked) *)
-definition attack_blocked :: "StackState \<Rightarrow> AttackType \<Rightarrow> bool" where
+definition attack_blocked :: "StackState \<Rightarrow> attack_type \<Rightarrow> bool" where
   "attack_blocked ss a \<equiv> existsb (\<lambda>lv. lv.(lv_verified) \<and> layer_defends lv.(lv_layer) a) ss.(ss_layers)"
 
 (* full_stack (matches Coq: Definition full_stack) *)
@@ -195,15 +195,15 @@ definition full_stack :: "list Layer" where
   "full_stack \<equiv> [L0_Physics; L1_Silicon; L2_Firmware; L3_Network; L4_OS; L5_Runtime; L6_App; L7_UX]"
 
 (* layer_in_stack (matches Coq: Definition layer_in_stack) *)
-definition layer_in_stack :: "StackState \<Rightarrow> Layer \<Rightarrow> bool" where
+definition layer_in_stack :: "StackState \<Rightarrow> layer \<Rightarrow> bool" where
   "layer_in_stack ss l \<equiv> existsb (\<lambda>lv. layer_eqb lv.(lv_layer) l) ss.(ss_layers)"
 
 (* layer_verified_in_stack (matches Coq: Definition layer_verified_in_stack) *)
-definition layer_verified_in_stack :: "StackState \<Rightarrow> Layer \<Rightarrow> bool" where
+definition layer_verified_in_stack :: "StackState \<Rightarrow> layer \<Rightarrow> bool" where
   "layer_verified_in_stack ss l \<equiv> existsb (\<lambda>lv. layer_eqb lv.(lv_layer) l \<and> lv.(lv_verified)) ss.(ss_layers)"
 
 (* property_in_layer (matches Coq: Definition property_in_layer) *)
-definition property_in_layer :: "StackState \<Rightarrow> Layer \<Rightarrow> SecurityProperty \<Rightarrow> bool" where
+definition property_in_layer :: "StackState \<Rightarrow> layer \<Rightarrow> security_property \<Rightarrow> bool" where
   "property_in_layer ss l p \<equiv> existsb (\<lambda>lv. layer_eqb lv.(lv_layer) l \<and> property_preserved lv p) ss.(ss_layers)"
 
 (* all_interfaces_verified (matches Coq: Definition all_interfaces_verified) *)
@@ -247,7 +247,7 @@ definition complete_layer_verifs :: "list LayerVerification" where
    make_layer_verif L7_UX all_properties]"
 
 (* complete_interfaces (matches Coq: Definition complete_interfaces) *)
-definition complete_interfaces :: "list (Layer * Layer)" where
+definition complete_interfaces :: "list (layer * layer)" where
   "complete_interfaces \<equiv> [(L0_Physics, L1_Silicon);
    (L1_Silicon, L2_Firmware);
    (L2_Firmware, L3_Network);
@@ -268,7 +268,7 @@ definition interface_secure :: "StackState \<Rightarrow> bool" where
   True"
 
 (* property_preserved_across_layers (matches Coq: Definition property_preserved_across_layers) *)
-definition property_preserved_across_layers :: "StackState \<Rightarrow> SecurityProperty \<Rightarrow> bool" where
+definition property_preserved_across_layers :: "StackState \<Rightarrow> security_property \<Rightarrow> bool" where
   "property_preserved_across_layers ss p \<equiv> forall l, l \<in> set layers -> property_in_layer ss l p = True"
 
 (* network_to_ux_layers (matches Coq: Definition network_to_ux_layers) *)
@@ -280,7 +280,7 @@ definition os_to_ux_layers :: "list Layer" where
   "os_to_ux_layers \<equiv> [L4_OS; L5_Runtime; L6_App; L7_UX]"
 
 (* layer_compromised (matches Coq: Definition layer_compromised) *)
-definition layer_compromised :: "StackState \<Rightarrow> Layer \<Rightarrow> bool" where
+definition layer_compromised :: "StackState \<Rightarrow> layer \<Rightarrow> bool" where
   "layer_compromised ss l \<equiv> layer_verified_in_stack ss l = False"
 
 (* hardware_root_of_trust (matches Coq: Definition hardware_root_of_trust) *)

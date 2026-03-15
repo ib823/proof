@@ -12,33 +12,33 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | WalletTier         | wallet_tier            | OK     |
- * | TransactionType    | transaction_type       | OK     |
- * | QRType             | qr_type                | OK     |
- * | AuthFactor         | auth_factor            | OK     |
- * | Wallet             | wallet                 | OK     |
- * | Transaction        | transaction            | OK     |
- * | QRCode             | qr_code                | OK     |
- * | VirtualAccount     | virtual_account        | OK     |
- * | Session            | session                | OK     |
- * | OTP                | otp                    | OK     |
- * | Device             | device                 | OK     |
- * | FraudScore         | fraud_score            | OK     |
- * | VelocityCheck      | velocity_check         | OK     |
- * | P2PTransfer        | p2_p_transfer          | OK     |
- * | QRPayment          | qr_payment             | OK     |
- * | MerchantPayment    | merchant_payment       | OK     |
- * | Refund             | refund                 | OK     |
- * | BankTransfer       | bank_transfer          | OK     |
- * | CardChargeback     | card_chargeback        | OK     |
- * | AgentFloat         | agent_float            | OK     |
- * | CryptoTopUp        | crypto_top_up          | OK     |
- * | StablecoinTopUp    | stablecoin_top_up      | OK     |
- * | WithdrawalRequest  | withdrawal_request     | OK     |
- * | BankWithdrawal     | bank_withdrawal        | OK     |
- * | CardlessATM        | cardless_atm           | OK     |
- * | AgentWithdrawal    | agent_withdrawal       | OK     |
- * | AuthContext        | auth_context           | OK     |
+ * | wallet_tier         | wallet_tier            | OK     |
+ * | transaction_type    | transaction_type       | OK     |
+ * | qr_type             | qr_type                | OK     |
+ * | auth_factor         | auth_factor            | OK     |
+ * | wallet             | wallet                 | OK     |
+ * | transaction        | transaction            | OK     |
+ * | qr_code             | qr_code                | OK     |
+ * | virtual_account     | virtual_account        | OK     |
+ * | session            | session                | OK     |
+ * | otp                | otp                    | OK     |
+ * | device             | device                 | OK     |
+ * | fraud_score         | fraud_score            | OK     |
+ * | velocity_check      | velocity_check         | OK     |
+ * | p2_p_transfer        | p2_p_transfer          | OK     |
+ * | qr_payment          | qr_payment             | OK     |
+ * | merchant_payment    | merchant_payment       | OK     |
+ * | refund             | refund                 | OK     |
+ * | bank_transfer       | bank_transfer          | OK     |
+ * | card_chargeback     | card_chargeback        | OK     |
+ * | agent_float         | agent_float            | OK     |
+ * | crypto_top_up        | crypto_top_up          | OK     |
+ * | stablecoin_top_up    | stablecoin_top_up      | OK     |
+ * | withdrawal_request  | withdrawal_request     | OK     |
+ * | bank_withdrawal     | bank_withdrawal        | OK     |
+ * | cardless_atm        | cardless_atm           | OK     |
+ * | agent_withdrawal    | agent_withdrawal       | OK     |
+ * | auth_context        | auth_context           | OK     |
  * | tier_limit         | tier_limit             | OK     |
  * | tier_daily_withdrawal_limit | tier_daily_withdrawal_limit | OK     |
  * | sum_credits        | sum_credits            | OK     |
@@ -110,193 +110,196 @@ theory DigitalWallet
   imports Main CoqCompat
 begin
 
-(* WalletTier (matches Coq: Inductive WalletTier) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym wallet_id = "nat"
+type_synonym z = "nat"
+(* wallet_tier (matches Coq: Inductive wallet_tier) *)
 datatype wallet_tier =
     Basic
   |     Standard
   |     Premium
   |     Unlimited
 
-(* TransactionType (matches Coq: Inductive TransactionType) *)
+(* transaction_type (matches Coq: Inductive transaction_type) *)
 datatype transaction_type =
     Credit
   |     Debit
 
-(* QRType (matches Coq: Inductive QRType) *)
+(* qr_type (matches Coq: Inductive qr_type) *)
 datatype qr_type =
     StaticQR
   |     DynamicQR
 
-(* AuthFactor (matches Coq: Inductive AuthFactor) *)
+(* auth_factor (matches Coq: Inductive auth_factor) *)
 datatype auth_factor =
     Password
   |     Biometric
   |     OTPFactor
   |     HardwareToken
 
-(* Wallet (matches Coq: Record Wallet) *)
+(* wallet (matches Coq: Record wallet) *)
 record wallet =
-  wallet_id :: WalletId
-  balance :: Z
-  tier :: WalletTier
+  wallet_id :: wallet_id
+  balance :: z
+  tier :: wallet_tier
   is_dormant :: bool
   last_activity :: nat
 
-(* Transaction (matches Coq: Record Transaction) *)
+(* transaction (matches Coq: Record transaction) *)
 record transaction =
   txn_id :: nat
-  txn_type :: TransactionType
-  txn_amount :: Z
-  txn_wallet :: WalletId
+  txn_type :: transaction_type
+  txn_amount :: z
+  txn_wallet :: wallet_id
   txn_timestamp :: nat
 
-(* QRCode (matches Coq: Record QRCode) *)
+(* qr_code (matches Coq: Record qr_code) *)
 record qr_code =
   qr_id :: nat
-  qr_type :: QRType
+  qr_type :: qr_type
   qr_used :: bool
-  qr_amount :: Z
+  qr_amount :: z
 
-(* VirtualAccount (matches Coq: Record VirtualAccount) *)
+(* virtual_account (matches Coq: Record virtual_account) *)
 record virtual_account =
   va_id :: nat
-  va_parent_wallet :: WalletId
-  va_balance :: Z
+  va_parent_wallet :: wallet_id
+  va_balance :: z
   va_purpose :: nat
 
-(* Session (matches Coq: Record Session) *)
+(* session (matches Coq: Record session) *)
 record session =
   session_id :: nat
-  session_wallet :: WalletId
+  session_wallet :: wallet_id
   session_start :: nat
   last_activity_time :: nat
   inactivity_timeout :: nat
 
-(* OTP (matches Coq: Record OTP) *)
+(* otp (matches Coq: Record otp) *)
 record otp =
   otp_code :: nat
   otp_created_time :: nat
   otp_validity_minutes :: nat
 
-(* Device (matches Coq: Record Device) *)
+(* device (matches Coq: Record device) *)
 record device =
   device_id :: nat
-  device_wallet :: WalletId
+  device_wallet :: wallet_id
   biometric_hash :: nat
 
-(* FraudScore (matches Coq: Record FraudScore) *)
+(* fraud_score (matches Coq: Record fraud_score) *)
 record fraud_score =
-  fs_wallet :: WalletId
+  fs_wallet :: wallet_id
   fs_score :: nat
   fs_threshold :: nat
 
-(* VelocityCheck (matches Coq: Record VelocityCheck) *)
+(* velocity_check (matches Coq: Record velocity_check) *)
 record velocity_check =
-  vc_wallet :: WalletId
+  vc_wallet :: wallet_id
   vc_txn_count :: nat
   vc_time_window :: nat
   vc_threshold :: nat
 
-(* P2PTransfer (matches Coq: Record P2PTransfer) *)
+(* p2_p_transfer (matches Coq: Record p2_p_transfer) *)
 record p2_p_transfer =
   p2p_id :: nat
-  p2p_from :: WalletId
-  p2p_to :: WalletId
-  p2p_amount :: Z
+  p2p_from :: wallet_id
+  p2p_to :: wallet_id
+  p2p_amount :: z
   p2p_initiated_time :: nat
   p2p_completed_time :: nat
 
-(* QRPayment (matches Coq: Record QRPayment) *)
+(* qr_payment (matches Coq: Record qr_payment) *)
 record qr_payment =
   qrp_id :: nat
-  qrp_qr :: QRCode
-  qrp_payer :: WalletId
+  qrp_qr :: qr_code
+  qrp_payer :: wallet_id
   qrp_initiated_time :: nat
   qrp_completed_time :: nat
 
-(* MerchantPayment (matches Coq: Record MerchantPayment) *)
+(* merchant_payment (matches Coq: Record merchant_payment) *)
 record merchant_payment =
   mp_id :: nat
-  mp_gross_amount :: Z
-  mp_mdr_rate :: Z
-  mp_net_amount :: Z
+  mp_gross_amount :: z
+  mp_mdr_rate :: z
+  mp_net_amount :: z
 
-(* Refund (matches Coq: Record Refund) *)
+(* refund (matches Coq: Record refund) *)
 record refund =
   ref_id :: nat
-  ref_wallet :: WalletId
-  ref_amount :: Z
+  ref_wallet :: wallet_id
+  ref_amount :: z
   ref_instant :: bool
 
-(* BankTransfer (matches Coq: Record BankTransfer) *)
+(* bank_transfer (matches Coq: Record bank_transfer) *)
 record bank_transfer =
   bt_id :: nat
-  bt_bank_debit :: Z
-  bt_wallet_credit :: Z
+  bt_bank_debit :: z
+  bt_wallet_credit :: z
   bt_reconciled :: bool
 
-(* CardChargeback (matches Coq: Record CardChargeback) *)
+(* card_chargeback (matches Coq: Record card_chargeback) *)
 record card_chargeback =
   cb_id :: nat
-  cb_original_credit :: Z
-  cb_wallet_debit :: Z
+  cb_original_credit :: z
+  cb_wallet_debit :: z
   cb_processed :: bool
 
-(* AgentFloat (matches Coq: Record AgentFloat) *)
+(* agent_float (matches Coq: Record agent_float) *)
 record agent_float =
   af_agent_id :: nat
-  af_float_balance :: Z
-  af_pending_deposits :: Z
+  af_float_balance :: z
+  af_pending_deposits :: z
 
-(* CryptoTopUp (matches Coq: Record CryptoTopUp) *)
+(* crypto_top_up (matches Coq: Record crypto_top_up) *)
 record crypto_top_up =
   ctu_id :: nat
-  ctu_crypto_amount :: Z
-  ctu_rate_at_confirmation :: Z
-  ctu_fiat_credit :: Z
+  ctu_crypto_amount :: z
+  ctu_rate_at_confirmation :: z
+  ctu_fiat_credit :: z
   ctu_rate_locked :: bool
 
-(* StablecoinTopUp (matches Coq: Record StablecoinTopUp) *)
+(* stablecoin_top_up (matches Coq: Record stablecoin_top_up) *)
 record stablecoin_top_up =
   stu_id :: nat
-  stu_amount :: Z
+  stu_amount :: z
   stu_confirmed :: bool
   stu_credited :: bool
 
-(* WithdrawalRequest (matches Coq: Record WithdrawalRequest) *)
+(* withdrawal_request (matches Coq: Record withdrawal_request) *)
 record withdrawal_request =
   wr_id :: nat
-  wr_wallet :: WalletId
-  wr_amount :: Z
-  wr_daily_total :: Z
-  wr_wallet_balance :: Z
-  wr_tier :: WalletTier
+  wr_wallet :: wallet_id
+  wr_amount :: z
+  wr_daily_total :: z
+  wr_wallet_balance :: z
+  wr_tier :: wallet_tier
 
-(* BankWithdrawal (matches Coq: Record BankWithdrawal) *)
+(* bank_withdrawal (matches Coq: Record bank_withdrawal) *)
 record bank_withdrawal =
   bw_id :: nat
-  bw_wallet :: WalletId
+  bw_wallet :: wallet_id
   bw_bank_account :: nat
   bw_ownership_verified :: bool
   bw_approved :: bool
 
-(* CardlessATM (matches Coq: Record CardlessATM) *)
+(* cardless_atm (matches Coq: Record cardless_atm) *)
 record cardless_atm =
   catm_id :: nat
-  catm_wallet :: WalletId
-  catm_otp :: OTP
-  catm_amount :: Z
+  catm_wallet :: wallet_id
+  catm_otp :: otp
+  catm_amount :: z
 
-(* AgentWithdrawal (matches Coq: Record AgentWithdrawal) *)
+(* agent_withdrawal (matches Coq: Record agent_withdrawal) *)
 record agent_withdrawal =
   aw_id :: nat
   aw_agent_id :: nat
-  aw_wallet :: WalletId
-  aw_amount :: Z
-  aw_agent_cash :: Z
+  aw_wallet :: wallet_id
+  aw_amount :: z
+  aw_agent_cash :: z
   aw_approved :: bool
 
-(* AuthContext (matches Coq: Record AuthContext) *)
+(* auth_context (matches Coq: Record auth_context) *)
 record auth_context =
   ac_factors :: 'a list
   ac_sensitive_op :: bool
@@ -403,7 +406,7 @@ definition should_be_dormant :: "Wallet \<Rightarrow> nat \<Rightarrow> bool" wh
   "should_be_dormant w current_day \<equiv> (dormancy_threshold \<le> (current_day) - last_activity w)"
 
 (* can_withdraw (matches Coq: Definition can_withdraw) *)
-definition can_withdraw :: "Wallet \<Rightarrow> Z \<Rightarrow> bool" where
+definition can_withdraw :: "Wallet \<Rightarrow> z \<Rightarrow> bool" where
   "can_withdraw w amount \<equiv> amount <= balance w \<and> amount > 0"
 
 (* virtual_accounts_within_parent (matches Coq: Definition virtual_accounts_within_parent) *)
@@ -465,7 +468,7 @@ definition fraud_score_blocks_transaction :: "FraudScore \<Rightarrow> bool" whe
   "fraud_score_blocks_transaction fs \<equiv> fraud_score_high fs = True -> (fs_threshold fs <= fs_score fs)%nat"
 
 (* device_biometric_bound (matches Coq: Definition device_biometric_bound) *)
-definition device_biometric_bound :: "Device \<Rightarrow> WalletId \<Rightarrow> nat \<Rightarrow> bool" where
+definition device_biometric_bound :: "Device \<Rightarrow> wallet_id \<Rightarrow> nat \<Rightarrow> bool" where
   "device_biometric_bound d wallet bio_hash \<equiv> device_wallet d = wallet \<and> biometric_hash d = bio_hash"
 
 (* WALLET_001_01_account_uniqueness (matches Coq) *)

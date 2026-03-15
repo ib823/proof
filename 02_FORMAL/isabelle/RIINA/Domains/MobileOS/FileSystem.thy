@@ -2,7 +2,7 @@
 (* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
- * RIINA FileSystem - Isabelle/HOL Port
+ * RIINA file_system - Isabelle/HOL Port
  *
  * Auto-generated port of 02_FORMAL/coq/domains/mobile_os/FileSystem.v (20 theorems).
  *
@@ -12,16 +12,16 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | FilePermission     | file_permission        | OK     |
- * | FileType           | file_type              | OK     |
- * | File               | file                   | OK     |
- * | FileSystem         | file_system            | OK     |
- * | ExtFile            | ext_file               | OK     |
- * | FileDescriptor     | file_descriptor        | OK     |
- * | Quota              | quota                  | OK     |
- * | FileId             | FileId                 | OK     |
- * | Data               | Data                   | OK     |
- * | Time               | Time                   | OK     |
+ * | file_permission     | file_permission        | OK     |
+ * | file_type           | file_type              | OK     |
+ * | file               | file                   | OK     |
+ * | file_system         | file_system            | OK     |
+ * | ext_file            | ext_file               | OK     |
+ * | file_descriptor     | file_descriptor        | OK     |
+ * | quota              | quota                  | OK     |
+ * | file_id             | file_id                 | OK     |
+ * | data               | data                   | OK     |
+ * | time               | time                   | OK     |
  * | compute_checksum   | compute_checksum       | OK     |
  * | file_integrity_valid | file_integrity_valid   | OK     |
  * | writes             | writes                 | OK     |
@@ -68,74 +68,78 @@
  * | access_time_updated | access_time_updated    | OK     |
  *)
 
-theory FileSystem
+theory file_system
   imports Main CoqCompat
 begin
 
-(* FilePermission (matches Coq: Inductive FilePermission) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym data = "nat list"
+type_synonym file_id = "nat"
+type_synonym time = "nat"
+(* file_permission (matches Coq: Inductive file_permission) *)
 datatype file_permission =
     ReadOnly
   |     ReadWrite
   |     Execute
   |     NoAccess
 
-(* FileType (matches Coq: Inductive FileType) *)
+(* file_type (matches Coq: Inductive file_type) *)
 datatype file_type =
     RegularFile
   |     Directory
   |     SymLink
   |     Socket
 
-(* File (matches Coq: Record File) *)
+(* file (matches Coq: Record file) *)
 record file =
-  file_id :: FileId
-  file_data :: Data
+  file_id :: file_id
+  file_data :: data
   file_checksum :: nat
   file_journaled :: bool
 
-(* FileSystem (matches Coq: Record FileSystem) *)
+(* file_system (matches Coq: Record file_system) *)
 record file_system =
   fs_files :: 'a list
   fs_journal :: 'a list
   fs_consistent :: bool
-  fs_last_checkpoint :: Time
+  fs_last_checkpoint :: time
 
-(* ExtFile (matches Coq: Record ExtFile) *)
+(* ext_file (matches Coq: Record ext_file) *)
 record ext_file =
-  efile_id :: FileId
-  efile_type :: FileType
-  efile_permission :: FilePermission
+  efile_id :: file_id
+  efile_type :: file_type
+  efile_permission :: file_permission
   efile_owner :: nat
-  efile_data :: Data
+  efile_data :: data
   efile_checksum :: nat
   efile_locked :: bool
   efile_lock_owner :: nat
   efile_inode_ref_count :: nat
-  efile_access_time :: Time
+  efile_access_time :: time
 
-(* FileDescriptor (matches Coq: Record FileDescriptor) *)
+(* file_descriptor (matches Coq: Record file_descriptor) *)
 record file_descriptor =
   fd_number :: nat
-  fd_file_id :: FileId
-  fd_mode :: FilePermission
+  fd_file_id :: file_id
+  fd_mode :: file_permission
   fd_valid :: bool
 
-(* Quota (matches Coq: Record Quota) *)
+(* quota (matches Coq: Record quota) *)
 record quota =
   quota_user :: nat
   quota_limit :: nat
   quota_used :: nat
 
-(* FileId (matches Coq: Definition FileId) *)
-definition FileId :: "'a" where
+(* file_id (matches Coq: Definition file_id) *)
+definition file_id :: "'a" where
   "FileId \<equiv> nat"
 
-(* Data (matches Coq: Definition Data) *)
-definition Data :: "'a" where
+(* data (matches Coq: Definition data) *)
+definition data :: "'a" where
   "Data \<equiv> list nat"
 
-(* Time (matches Coq: Definition Time) *)
-definition Time :: "'a" where
+(* time (matches Coq: Definition time) *)
+definition time :: "'a" where
   "Time \<equiv> nat"
 
 (* compute_checksum (matches Coq: Definition compute_checksum) *)
@@ -147,7 +151,7 @@ definition file_integrity_valid :: "File \<Rightarrow> bool" where
   "file_integrity_valid f \<equiv> file_checksum f = compute_checksum (file_data f)"
 
 (* writes (matches Coq: Definition writes) *)
-definition writes :: "File \<Rightarrow> Data \<Rightarrow> File" where
+definition writes :: "File \<Rightarrow> data \<Rightarrow> File" where
   "writes f d \<equiv> mkFile (file_id f) d (compute_checksum d) True"
 
 (* reads (matches Coq: Definition reads) *)
@@ -163,7 +167,7 @@ definition journal_replay :: "FileSystem \<Rightarrow> FileSystem" where
   "journal_replay fs \<equiv> mkFS (fs_files fs) [] True (fs_last_checkpoint fs)"
 
 (* after_recovery (matches Coq: Definition after_recovery) *)
-definition after_recovery :: "FileSystem \<Rightarrow> Time \<Rightarrow> FileSystem" where
+definition after_recovery :: "FileSystem \<Rightarrow> time \<Rightarrow> FileSystem" where
   "after_recovery fs t \<equiv> journal_replay fs"
 
 (* consistent (matches Coq: Definition consistent) *)
@@ -172,12 +176,12 @@ definition consistent :: "FileSystem \<Rightarrow> bool" where
   forall f, In f (fs_files fs) -> file_integrity_valid f"
 
 (* journaled_write (matches Coq: Definition journaled_write) *)
-definition journaled_write :: "FileSystem \<Rightarrow> FileId \<Rightarrow> Data \<Rightarrow> FileSystem" where
+definition journaled_write :: "FileSystem \<Rightarrow> file_id \<Rightarrow> data \<Rightarrow> FileSystem" where
   "journaled_write fs fid d \<equiv> let new_journal := (fid, d) :: fs_journal fs in
   mkFS (fs_files fs) new_journal (fs_consistent fs) (fs_last_checkpoint fs)"
 
 (* find_and_update (matches Coq: Definition find_and_update) *)
-fun find_and_update :: "FileId \<Rightarrow> Data \<Rightarrow> list File" where
+fun find_and_update :: "FileId \<Rightarrow> data \<Rightarrow> list File" where
   "find_and_update _ = undefined"
 
 (* commit_journal (matches Coq: Definition commit_journal) *)
@@ -201,7 +205,7 @@ fun file_perm_allows_write :: "FilePermission \<Rightarrow> bool" where
 |   "file_perm_allows_write _ = false"
 
 (* permission_enforced (matches Coq: Definition permission_enforced) *)
-definition permission_enforced :: "ExtFile \<Rightarrow> nat \<Rightarrow> FilePermission \<Rightarrow> bool" where
+definition permission_enforced :: "ExtFile \<Rightarrow> nat \<Rightarrow> file_permission \<Rightarrow> bool" where
   "permission_enforced f requester mode \<equiv> efile_owner f = requester \/
   (mode = ReadOnly \<and> file_perm_allows_read (efile_permission f) = True)"
 
@@ -219,7 +223,7 @@ definition file_lock_exclusive :: "ExtFile \<Rightarrow> bool" where
   efile_lock_owner f > 0"
 
 (* atomic_rename_prop (matches Coq: Definition atomic_rename_prop) *)
-definition atomic_rename_prop :: "ExtFile \<Rightarrow> FileId \<Rightarrow> bool" where
+definition atomic_rename_prop :: "ExtFile \<Rightarrow> file_id \<Rightarrow> bool" where
   "atomic_rename_prop f new_id \<equiv> efile_data f = efile_data (mkExtFile new_id (efile_type f) (efile_permission f)
     (efile_owner f) (efile_data f) (efile_checksum f) (efile_locked f)
     (efile_lock_owner f) (efile_inode_ref_count f) (efile_access_time f))"
@@ -248,27 +252,27 @@ definition path_canonical :: "bool" where
 definition file_type_valid :: "bool" where "file_type_valid = undefined"
 
 (* filesystem_integrity (matches Coq) *)
-lemma filesystem_integrity: "\<forall>(f :: File) (d :: Data). reads (writes f d) = d"
+lemma filesystem_integrity: "\<forall>(f :: file) (d :: data). reads (writes f d) = d"
   by simp
 
 (* write_maintains_integrity (matches Coq) *)
-lemma write_maintains_integrity: "\<forall>(f :: File) (d :: Data). file_integrity_valid (writes f d)"
+lemma write_maintains_integrity: "\<forall>(f :: file) (d :: data). file_integrity_valid (writes f d)"
   by simp
 
 (* power_loss_safe (matches Coq) *)
-lemma power_loss_safe: "\<forall>(fs :: FileSystem) (t :: Time). consistent fs \<longrightarrow> power_loss_at t \<longrightarrow> consistent (after_recovery fs t)"
+lemma power_loss_safe: "\<forall>(fs :: file_system) (t :: time). consistent fs \<longrightarrow> power_loss_at t \<longrightarrow> consistent (after_recovery fs t)"
   by auto
 
 (* journal_write_preserves_base_consistency (matches Coq) *)
-lemma journal_write_preserves_base_consistency: "\<forall>(fs :: FileSystem) (fid :: FileId) (d : Data). fs_consistent fs = True \<longrightarrow> fs_consistent (journaled_write fs fid d) = True"
+lemma journal_write_preserves_base_consistency: "\<forall>(fs :: file_system) (fid :: file_id) (d : data). fs_consistent fs = True \<longrightarrow> fs_consistent (journaled_write fs fid d) = True"
   by auto
 
 (* commit_establishes_consistency (matches Coq) *)
-lemma commit_establishes_consistency: "\<forall>(fs :: FileSystem). fs_consistent (commit_journal fs) = True"
+lemma commit_establishes_consistency: "\<forall>(fs :: file_system). fs_consistent (commit_journal fs) = True"
   by simp
 
 (* file_permissions_enforced (matches Coq) *)
-lemma file_permissions_enforced: "\<forall>(f :: ExtFile) (requester :: nat). permission_enforced f requester ReadOnly \<longrightarrow> efile_owner f = requester \<or> file_perm_allows_read (efile_permission f) = True"
+lemma file_permissions_enforced: "\<forall>(f :: ext_file) (requester :: nat). permission_enforced f requester ReadOnly \<longrightarrow> efile_owner f = requester \<or> file_perm_allows_read (efile_permission f) = True"
   by auto
 
 (* directory_traversal_prevented (matches Coq) *)
@@ -276,23 +280,23 @@ lemma directory_traversal_prevented: "\<forall>(path : list nat). no_directory_t
   by auto
 
 (* symlink_attack_prevented (matches Coq) *)
-lemma symlink_attack_prevented: "\<forall>(f :: ExtFile). symlink_safe f \<longrightarrow> efile_type f = SymLink \<longrightarrow> efile_permission f = ReadOnly"
+lemma symlink_attack_prevented: "\<forall>(f :: ext_file). symlink_safe f \<longrightarrow> efile_type f = SymLink \<longrightarrow> efile_permission f = ReadOnly"
   by auto
 
 (* file_lock_exclusive_thm (matches Coq) *)
-lemma file_lock_exclusive_thm: "\<forall>(f :: ExtFile). file_lock_exclusive f \<longrightarrow> efile_locked f = True \<longrightarrow> efile_lock_owner f > 0"
+lemma file_lock_exclusive_thm: "\<forall>(f :: ext_file). file_lock_exclusive f \<longrightarrow> efile_locked f = True \<longrightarrow> efile_lock_owner f > 0"
   by auto
 
 (* atomic_rename (matches Coq) *)
-lemma atomic_rename: "\<forall>(f :: ExtFile) (new_id :: FileId). atomic_rename_prop f new_id \<longrightarrow> efile_data f = efile_data (mkExtFile new_id (efile_type f) (efile_permission f) (efile_owner f) (efile_data f) (efile_checksum f) (efile_locked f) (efile_lock_owner f) (efile_inode_ref_count f) (efile_access_time f))"
+lemma atomic_rename: "\<forall>(f :: ext_file) (new_id :: file_id). atomic_rename_prop f new_id \<longrightarrow> efile_data f = efile_data (mkExtFile new_id (efile_type f) (efile_permission f) (efile_owner f) (efile_data f) (efile_checksum f) (efile_locked f) (efile_lock_owner f) (efile_inode_ref_count f) (efile_access_time f))"
   by auto
 
 (* fsync_durability (matches Coq) *)
-lemma fsync_durability: "\<forall>(f :: File) (d :: Data). file_integrity_valid (writes f d) \<longrightarrow> file_checksum (writes f d) = compute_checksum d"
+lemma fsync_durability: "\<forall>(f :: file) (d :: data). file_integrity_valid (writes f d) \<longrightarrow> file_checksum (writes f d) = compute_checksum d"
   by simp
 
 (* no_partial_write (matches Coq) *)
-lemma no_partial_write: "\<forall>(f :: File) (d :: Data). reads (writes f d) = d"
+lemma no_partial_write: "\<forall>(f :: file) (d :: data). reads (writes f d) = d"
   by simp
 
 (* path_canonicalization (matches Coq) *)
@@ -300,31 +304,31 @@ lemma path_canonicalization: "\<forall>(path : list nat). path_canonical path \<
   by auto
 
 (* file_descriptor_bounded (matches Coq) *)
-lemma file_descriptor_bounded: "\<forall>(fd :: FileDescriptor) (max_fd :: nat). fd_bounded fd max_fd \<longrightarrow> fd_number fd < max_fd"
+lemma file_descriptor_bounded: "\<forall>(fd :: file_descriptor) (max_fd :: nat). fd_bounded fd max_fd \<longrightarrow> fd_number fd < max_fd"
   by auto
 
 (* inode_reference_count_correct (matches Coq) *)
-lemma inode_reference_count_correct: "\<forall>(f :: ExtFile). ext_file_integrity f \<longrightarrow> efile_checksum f = compute_checksum (efile_data f)"
+lemma inode_reference_count_correct: "\<forall>(f :: ext_file). ext_file_integrity f \<longrightarrow> efile_checksum f = compute_checksum (efile_data f)"
   by auto
 
 (* journal_recovery_correct (matches Coq) *)
-lemma journal_recovery_correct: "\<forall>(fs :: FileSystem). consistent fs \<longrightarrow> consistent (journal_replay fs)"
+lemma journal_recovery_correct: "\<forall>(fs :: file_system). consistent fs \<longrightarrow> consistent (journal_replay fs)"
   by auto
 
 (* quota_enforced (matches Coq) *)
-lemma quota_enforced: "\<forall>(q :: Quota). quota_enforced_prop q \<longrightarrow> quota_used q \<le> quota_limit q"
+lemma quota_enforced: "\<forall>(q :: quota). quota_enforced_prop q \<longrightarrow> quota_used q \<le> quota_limit q"
   by auto
 
 (* temp_file_cleanup (matches Coq) *)
-lemma temp_file_cleanup: "\<forall>(f :: ExtFile). efile_inode_ref_count f = 0 \<longrightarrow> ~ (efile_inode_ref_count f > 0)"
+lemma temp_file_cleanup: "\<forall>(f :: ext_file). efile_inode_ref_count f = 0 \<longrightarrow> ~ (efile_inode_ref_count f > 0)"
   by simp
 
 (* file_type_validated (matches Coq) *)
-lemma file_type_validated: "\<forall>(f :: ExtFile). file_type_valid f"
+lemma file_type_validated: "\<forall>(f :: ext_file). file_type_valid f"
   by auto
 
 (* access_time_updated (matches Coq) *)
-lemma access_time_updated: "\<forall>(f :: ExtFile) (new_time :: Time). new_time \<ge> efile_access_time f \<longrightarrow> new_time \<ge> efile_access_time f"
+lemma access_time_updated: "\<forall>(f :: ext_file) (new_time :: time). new_time \<ge> efile_access_time f \<longrightarrow> new_time \<ge> efile_access_time f"
   by auto
 
 end

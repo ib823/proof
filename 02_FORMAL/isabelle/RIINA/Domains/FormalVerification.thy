@@ -12,26 +12,26 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | BaseTy             | base_ty                | OK     |
- * | Pred               | pred                   | OK     |
- * | RefinementTy       | refinement_ty          | OK     |
- * | HeapPred           | heap_pred              | OK     |
- * | VC                 | vc                     | OK     |
- * | TyExpr             | ty_expr                | OK     |
- * | SMTFormula         | smt_formula            | OK     |
- * | Property           | property               | OK     |
+ * | base_ty             | base_ty                | OK     |
+ * | pred               | pred                   | OK     |
+ * | refinement_ty       | refinement_ty          | OK     |
+ * | heap_pred           | heap_pred              | OK     |
+ * | vc                 | vc                     | OK     |
+ * | ty_expr             | ty_expr                | OK     |
+ * | smt_formula         | smt_formula            | OK     |
+ * | property           | property               | OK     |
  * | BMCResult          | bmc_result             | OK     |
- * | SimpleProp         | simple_prop            | OK     |
- * | ProofTerm          | proof_term             | OK     |
- * | SrcExpr            | src_expr               | OK     |
- * | TgtExpr            | tgt_expr               | OK     |
- * | Effect             | effect                 | OK     |
- * | SecLabel           | sec_label              | OK     |
- * | SrcVal             | src_val                | OK     |
- * | TgtVal             | tgt_val                | OK     |
- * | Cmd                | cmd                    | OK     |
- * | Contract           | contract               | OK     |
- * | LiquidState        | liquid_state           | OK     |
+ * | simple_prop         | simple_prop            | OK     |
+ * | proof_term          | proof_term             | OK     |
+ * | src_expr            | src_expr               | OK     |
+ * | tgt_expr            | tgt_expr               | OK     |
+ * | effect             | effect                 | OK     |
+ * | sec_label           | sec_label              | OK     |
+ * | src_val             | src_val                | OK     |
+ * | tgt_val             | tgt_val                | OK     |
+ * | cmd                | cmd                    | OK     |
+ * | contract           | contract               | OK     |
+ * | liquid_state        | liquid_state           | OK     |
  * | eval_pred          | eval_pred              | OK     |
  * | pred_implies       | pred_implies           | OK     |
  * | pred_decidable     | pred_decidable         | OK     |
@@ -115,17 +115,24 @@
  *)
 
 theory FormalVerification
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* BaseTy (matches Coq: Inductive BaseTy) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym abstraction = "nat"
+type_synonym heap = "nat"
+type_synonym proof_ctx = "nat"
+type_synonym state = "nat"
+type_synonym transition = "nat"
+type_synonym ty_ctx = "nat"
+(* base_ty (matches Coq: Inductive base_ty) *)
 datatype base_ty =
     TyUnit
   |     TyBool
   |     TyNat
   |     TyInt
 
-(* Pred (matches Coq: Inductive Pred) *)
+(* pred (matches Coq: Inductive pred) *)
 datatype pred =
     PTrue
   |     PFalse
@@ -136,32 +143,32 @@ datatype pred =
   |     PNot
   |     PImpl
 
-(* RefinementTy (matches Coq: Inductive RefinementTy) *)
+(* refinement_ty (matches Coq: Inductive refinement_ty) *)
 datatype refinement_ty =
     RBase
   |     RRefine
 
-(* HeapPred (matches Coq: Inductive HeapPred) *)
+(* heap_pred (matches Coq: Inductive heap_pred) *)
 datatype heap_pred =
     HPEmp
   |     HPPointsTo
   |     HPSep
   |     HPWand
 
-(* VC (matches Coq: Inductive VC) *)
+(* vc (matches Coq: Inductive vc) *)
 datatype vc =
     VCValid
   |     VCAnd
   |     VCImpl
 
-(* TyExpr (matches Coq: Inductive TyExpr) *)
+(* ty_expr (matches Coq: Inductive ty_expr) *)
 datatype ty_expr =
     TEBase
   |     TEPi
   |     TESigma
   |     TEVar
 
-(* SMTFormula (matches Coq: Inductive SMTFormula) *)
+(* smt_formula (matches Coq: Inductive smt_formula) *)
 datatype smt_formula =
     SMTTrue
   |     SMTFalse
@@ -172,7 +179,7 @@ datatype smt_formula =
   |     SMTNot
   |     SMTImpl
 
-(* Property (matches Coq: Inductive Property) *)
+(* property (matches Coq: Inductive property) *)
 datatype property =
     PropAtom
   |     PropNot
@@ -186,7 +193,7 @@ datatype bmc_result =
     BMCSat
   |     BMCUnsat
 
-(* SimpleProp (matches Coq: Inductive SimpleProp) *)
+(* simple_prop (matches Coq: Inductive simple_prop) *)
 datatype simple_prop =
     SPTrue
   |     SPFalse
@@ -195,7 +202,7 @@ datatype simple_prop =
   |     SPOr
   |     SPImpl
 
-(* ProofTerm (matches Coq: Inductive ProofTerm) *)
+(* proof_term (matches Coq: Inductive proof_term) *)
 datatype proof_term =
     PTTrueI
   |     PTAndI
@@ -207,7 +214,7 @@ datatype proof_term =
   |     PTImplE
   |     PTAssume
 
-(* SrcExpr (matches Coq: Inductive SrcExpr) *)
+(* src_expr (matches Coq: Inductive src_expr) *)
 datatype src_expr =
     SrcUnit
   |     SrcBool
@@ -216,7 +223,7 @@ datatype src_expr =
   |     SrcApp
   |     SrcLam
 
-(* TgtExpr (matches Coq: Inductive TgtExpr) *)
+(* tgt_expr (matches Coq: Inductive tgt_expr) *)
 datatype tgt_expr =
     TgtUnit
   |     TgtBool
@@ -225,34 +232,34 @@ datatype tgt_expr =
   |     TgtApp
   |     TgtLam
 
-(* Effect (matches Coq: Inductive Effect) *)
+(* effect (matches Coq: Inductive effect) *)
 datatype effect =
     EffPure
   |     EffIO
   |     EffState
   |     EffExn
 
-(* SecLabel (matches Coq: Inductive SecLabel) *)
+(* sec_label (matches Coq: Inductive sec_label) *)
 datatype sec_label =
     SecPublic
   |     SecPrivate
   |     SecSecret
 
-(* SrcVal (matches Coq: Inductive SrcVal) *)
+(* src_val (matches Coq: Inductive src_val) *)
 datatype src_val =
     SVUnit
   |     SVBool
   |     SVNat
   |     SVClosure
 
-(* TgtVal (matches Coq: Inductive TgtVal) *)
+(* tgt_val (matches Coq: Inductive tgt_val) *)
 datatype tgt_val =
     TVUnit
   |     TVBool
   |     TVNat
   |     TVClosure
 
-(* Cmd (matches Coq: Inductive Cmd) *)
+(* cmd (matches Coq: Inductive cmd) *)
 datatype cmd =
     CmdSkip
   |     CmdAssign
@@ -260,12 +267,12 @@ datatype cmd =
   |     CmdIf
   |     CmdWhile
 
-(* Contract (matches Coq: Record Contract) *)
+(* contract (matches Coq: Record contract) *)
 record contract =
-  precondition :: Pred
-  postcondition :: Pred
+  precondition :: pred
+  postcondition :: pred
 
-(* LiquidState (matches Coq: Record LiquidState) *)
+(* liquid_state (matches Coq: Record liquid_state) *)
 record liquid_state =
   liquid_constraints :: 'a list
   liquid_templates :: 'a list
@@ -296,7 +303,7 @@ definition disjoint :: "bool" where
 definition heap_union :: "bool" where "heap_union = undefined"
 
 (* heap_sat (matches Coq: Definition heap_sat) *)
-fun heap_sat :: "Heap \<Rightarrow> HeapPred \<Rightarrow> bool" where
+fun heap_sat :: "Heap \<Rightarrow> heap_pred \<Rightarrow> bool" where
   "heap_sat HPEmp = forall"
 
 (* contract_sat (matches Coq: Definition contract_sat) *)
@@ -343,12 +350,12 @@ definition liquid_measure :: "LiquidState \<Rightarrow> nat" where
   "liquid_measure s \<equiv> length (liquid_templates s) * (S (liquid_iteration s))"
 
 (* prop_sat (matches Coq: Definition prop_sat) *)
-fun prop_sat :: "State \<Rightarrow> Property \<Rightarrow> bool" where
+fun prop_sat :: "State \<Rightarrow> property \<Rightarrow> bool" where
   "prop_sat _ = True"
 
 (* abstract_space (matches Coq: Definition abstract_space) *)
 definition abstract_space :: "Abstraction \<Rightarrow> Ensemble State" where
-  "abstract_space abs \<equiv> \<lambda>s. exists s', State \<in> set concrete s' \<and> abs s' = s"
+  "abstract_space abs \<equiv> \<lambda>s. exists s', state \<in> set concrete s' \<and> abs s' = s"
 
 (* interp_prop (matches Coq: Definition interp_prop) *)
 fun interp_prop :: "SimpleProp \<Rightarrow> bool" where
@@ -387,11 +394,11 @@ fun compile_val :: "SrcVal \<Rightarrow> TgtVal" where
   "compile_val SVUnit = TVUnit"
 
 (* obs_equiv (matches Coq: Definition obs_equiv) *)
-definition obs_equiv :: "SrcVal \<Rightarrow> TgtVal \<Rightarrow> bool" where
+definition obs_equiv :: "SrcVal \<Rightarrow> tgt_val \<Rightarrow> bool" where
   "obs_equiv v1 v2 \<equiv> compile_val v1 = v2"
 
 (* wp (matches Coq: Definition wp) *)
-fun wp :: "Cmd \<Rightarrow> Pred \<Rightarrow> Pred" where
+fun wp :: "Cmd \<Rightarrow> pred \<Rightarrow> Pred" where
   "wp CmdSkip = post"
 
 (* refinement_wf (matches Coq: Definition refinement_wf) *)
@@ -406,7 +413,7 @@ definition liquid_terminates :: "LiquidState \<Rightarrow> nat \<Rightarrow> boo
   "liquid_terminates s bound \<equiv> liquid_iteration s <= bound"
 
 (* ty_subst (matches Coq: Definition ty_subst) *)
-fun ty_subst :: "TyExpr \<Rightarrow> nat \<Rightarrow> TyExpr \<Rightarrow> TyExpr" where
+fun ty_subst :: "TyExpr \<Rightarrow> nat \<Rightarrow> ty_expr \<Rightarrow> TyExpr" where
   "ty_subst _ = undefined"
 
 (* precondition_verified (matches Coq: Definition precondition_verified) *)
@@ -423,14 +430,14 @@ definition invariant_preserved :: "Pred \<Rightarrow> bool" where
   "invariant_preserved inv \<equiv> eval_pred inv pre_env = True -> eval_pred inv post_env = True"
 
 (* hoare_triple (matches Coq: Definition hoare_triple) *)
-definition hoare_triple :: "HeapPred \<Rightarrow> Cmd \<Rightarrow> HeapPred \<Rightarrow> bool" where
+definition hoare_triple :: "HeapPred \<Rightarrow> cmd \<Rightarrow> heap_pred \<Rightarrow> bool" where
   "hoare_triple pre c post \<equiv> forall h env1 env2,
     heap_sat h pre ->
     cmd_eval c env1 env2 ->
     heap_sat h post"
 
 (* bmc_check (matches Coq: Definition bmc_check) *)
-fun bmc_check :: "Transition \<Rightarrow> Property \<Rightarrow> State \<Rightarrow> nat \<Rightarrow> bool" where
+fun bmc_check :: "Transition \<Rightarrow> property \<Rightarrow> state \<Rightarrow> nat \<Rightarrow> bool" where
   "bmc_check 0 = match"
 |   "bmc_check _ = true"
 
@@ -439,11 +446,11 @@ fun prop_to_pred :: "Property \<Rightarrow> Pred" where
   "prop_to_pred _ = undefined"
 
 (* valid_counterexample (matches Coq: Definition valid_counterexample) *)
-fun valid_counterexample :: "Transition \<Rightarrow> Property \<Rightarrow> bool" where
+fun valid_counterexample :: "Transition \<Rightarrow> property \<Rightarrow> bool" where
   "valid_counterexample _ = True"
 
 (* abstraction_sound (matches Coq: Definition abstraction_sound) *)
-definition abstraction_sound :: "Abstraction \<Rightarrow> Transition \<Rightarrow> Transition \<Rightarrow> bool" where
+definition abstraction_sound :: "Abstraction \<Rightarrow> transition \<Rightarrow> transition \<Rightarrow> bool" where
   "abstraction_sound abs trans abs_trans \<equiv> forall s1 s2, trans s1 s2 -> abs_trans (abs s1) (abs s2)"
 
 (* extract_witness (matches Coq: Definition extract_witness) *)

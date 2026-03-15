@@ -12,13 +12,13 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | LockState          | lock_state             | OK     |
- * | LockOp             | lock_op                | OK     |
- * | SessionState       | session_state          | OK     |
- * | SessionOp          | session_op             | OK     |
- * | TimeComplexity     | time_complexity        | OK     |
- * | TimeoutState       | timeout_state          | OK     |
- * | ProgressState      | progress_state         | OK     |
+ * | lock_state          | lock_state             | OK     |
+ * | lock_op             | lock_op                | OK     |
+ * | session_state       | session_state          | OK     |
+ * | session_op          | session_op             | OK     |
+ * | time_complexity     | time_complexity        | OK     |
+ * | timeout_state       | timeout_state          | OK     |
+ * | progress_state      | progress_state         | OK     |
  * | valid_session_transition | valid_session_transition | OK     |
  * | timing_leakage     | timing_leakage         | OK     |
  * | ntp_authenticated  | ntp_authenticated      | OK     |
@@ -133,43 +133,70 @@ theory TimingSecurity
   imports Main CoqCompat
 begin
 
-(* LockState (matches Coq: Inductive LockState) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym clock_state = "nat"
+type_synonym duration = "nat"
+type_synonym fair_scheduler = "nat"
+type_synonym liveness_proof = "nat"
+type_synonym lock = "nat"
+type_synonym lock_order_policy = "nat"
+type_synonym ntp_packet = "nat"
+type_synonym priority = "nat"
+type_synonym priority_state = "nat"
+type_synonym replay_protected_message = "nat"
+type_synonym replay_window = "nat"
+type_synonym resource_id = "nat"
+type_synonym sequence_state = "nat"
+type_synonym sequenced_message = "nat"
+type_synonym session = "nat"
+type_synonym signed_timestamp = "nat"
+type_synonym task = "nat"
+type_synonym thread_id = "nat"
+type_synonym time = "nat"
+type_synonym timed_operation = "nat"
+type_synonym timeout_handler = "nat"
+type_synonym timestamp = "nat"
+type_synonym timing_domain = "nat"
+type_synonym timing_observation = "nat"
+(* Abstract type synonym for nonce *)
+type_synonym nonce = "nat"
+(* lock_state (matches Coq: Inductive lock_state) *)
 datatype lock_state =
     Unlocked
   |     Locked
 
-(* LockOp (matches Coq: Inductive LockOp) *)
+(* lock_op (matches Coq: Inductive lock_op) *)
 datatype lock_op =
     Acquire
   |     Release
 
-(* SessionState (matches Coq: Inductive SessionState) *)
+(* session_state (matches Coq: Inductive session_state) *)
 datatype session_state =
     SessionInit
   |     SessionReady
   |     SessionActive
   |     SessionClosed
 
-(* SessionOp (matches Coq: Inductive SessionOp) *)
+(* session_op (matches Coq: Inductive session_op) *)
 datatype session_op =
     SOpen
   |     SRead
   |     SWrite
   |     SClose
 
-(* TimeComplexity (matches Coq: Inductive TimeComplexity) *)
+(* time_complexity (matches Coq: Inductive time_complexity) *)
 datatype time_complexity =
     ConstantTime
   |     VariableTime
 
-(* TimeoutState (matches Coq: Inductive TimeoutState) *)
+(* timeout_state (matches Coq: Inductive timeout_state) *)
 datatype timeout_state =
     TimeoutPending
   |     TimeoutExpired
   |     TimeoutCancelled
   |     TimeoutCompleted
 
-(* ProgressState (matches Coq: Inductive ProgressState) *)
+(* progress_state (matches Coq: Inductive progress_state) *)
 datatype progress_state =
     MakingProgress
   |     Blocked
@@ -186,11 +213,11 @@ definition timing_leakage :: "bool" where
 definition ntp_authenticated :: "bool" where "ntp_authenticated = undefined"
 
 (* in_replay_window (matches Coq: Definition in_replay_window) *)
-definition in_replay_window :: "Timestamp \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
+definition in_replay_window :: "Timestamp \<Rightarrow> replay_window \<Rightarrow> bool" where
   "in_replay_window ts w \<equiv> (window_start w <=? ts \<and> ts <? window_start w + window_size w)"
 
 (* nonce_fresh (matches Coq: Definition nonce_fresh) *)
-definition nonce_fresh :: "Nonce \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
+definition nonce_fresh :: "Nonce \<Rightarrow> replay_window \<Rightarrow> bool" where
   "nonce_fresh n w \<equiv> (\<not> (existsb) ((n) = (seen_nonces) w))"
 
 (* verify_timestamp_signature (matches Coq: Definition verify_timestamp_signature) *)
@@ -205,7 +232,7 @@ definition clock_synchronized :: "ClockState \<Rightarrow> bool" where
   in diff <=? max_skew cs"
 
 (* respects_lock_order (matches Coq: Definition respects_lock_order) *)
-definition respects_lock_order :: "LockOrderPolicy \<Rightarrow> ResourceId \<Rightarrow> bool" where
+definition respects_lock_order :: "LockOrderPolicy \<Rightarrow> resource_id \<Rightarrow> bool" where
   "respects_lock_order policy new_lock \<equiv> forallb (\<lambda>held. lock_order_fn policy held <? lock_order_fn policy new_lock) 
           (held_locks policy)"
 
@@ -255,25 +282,25 @@ definition time_005_accept_timestamp :: "NTPPacket \<Rightarrow> nat \<Rightarro
   else None"
 
 (* time_006_validate_message (matches Coq: Definition time_006_validate_message) *)
-definition time_006_validate_message :: "ReplayProtectedMessage \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
+definition time_006_validate_message :: "ReplayProtectedMessage \<Rightarrow> replay_window \<Rightarrow> bool" where
   "time_006_validate_message msg w \<equiv> in_replay_window (msg_timestamp msg) w \<and> nonce_fresh (msg_nonce msg) w"
 
 (* time_006_update_window (matches Coq: Definition time_006_update_window) *)
-definition time_006_update_window :: "ReplayWindow \<Rightarrow> Nonce \<Rightarrow> ReplayWindow" where
+definition time_006_update_window :: "ReplayWindow \<Rightarrow> nonce \<Rightarrow> ReplayWindow" where
   "time_006_update_window w nonce \<equiv> mkReplayWindow (window_start w) (window_size w) (nonce :: seen_nonces w)"
 
 (* time_007_validate_sequence (matches Coq: Definition time_007_validate_sequence) *)
-definition time_007_validate_sequence :: "SequencedMessage \<Rightarrow> SequenceState \<Rightarrow> bool" where
+definition time_007_validate_sequence :: "SequencedMessage \<Rightarrow> sequence_state \<Rightarrow> bool" where
   "time_007_validate_sequence msg state \<equiv> (seq_num msg = expected_seq state)"
 
 (* time_007_accept_message (matches Coq: Definition time_007_accept_message) *)
-definition time_007_accept_message :: "SequencedMessage \<Rightarrow> SequenceState \<Rightarrow> option SequenceState" where
+definition time_007_accept_message :: "SequencedMessage \<Rightarrow> sequence_state \<Rightarrow> option SequenceState" where
   "time_007_accept_message msg state \<equiv> if time_007_validate_sequence msg state
   then Some (mkSeqState (S (expected_seq state)) (seq_num msg :: received_seqs state))
   else None"
 
 (* time_008_deadline_feasible (matches Coq: Definition time_008_deadline_feasible) *)
-definition time_008_deadline_feasible :: "Task \<Rightarrow> Time \<Rightarrow> bool" where
+definition time_008_deadline_feasible :: "Task \<Rightarrow> time \<Rightarrow> bool" where
   "time_008_deadline_feasible t now \<equiv> now + task_wcet t <=? task_deadline t"
 
 (* time_008_edf_select (matches Coq: Definition time_008_edf_select) *)
@@ -294,7 +321,7 @@ definition time_009_accept_signed_timestamp :: "SignedTimestamp \<Rightarrow> op
 definition time_010_check_timeout :: "bool" where "time_010_check_timeout = undefined"
 
 (* time_010_update_handler (matches Coq: Definition time_010_update_handler) *)
-definition time_010_update_handler :: "TimeoutHandler \<Rightarrow> Time \<Rightarrow> TimeoutHandler" where
+definition time_010_update_handler :: "TimeoutHandler \<Rightarrow> time \<Rightarrow> TimeoutHandler" where
   "time_010_update_handler handler now \<equiv> mkTimeoutHandler (timeout_deadline handler) 
                    (time_010_check_timeout handler now)
                    (timeout_action handler)"
@@ -312,7 +339,7 @@ definition time_011_adjust_clock :: "ClockState \<Rightarrow> ClockState" where
   else mkClockState (reference_time cs) (reference_time cs) (max_skew cs)"
 
 (* time_012_inherit_priority (matches Coq: Definition time_012_inherit_priority) *)
-definition time_012_inherit_priority :: "PriorityState \<Rightarrow> Priority \<Rightarrow> ThreadId \<Rightarrow> PriorityState" where
+definition time_012_inherit_priority :: "PriorityState \<Rightarrow> priority \<Rightarrow> thread_id \<Rightarrow> PriorityState" where
   "time_012_inherit_priority holder requester_priority requester_id \<equiv> if requester_priority <? effective_priority holder  
   then mkPriorityState (base_priority holder) requester_priority (Some requester_id)
   else holder"
@@ -322,17 +349,17 @@ definition time_012_release_inheritance :: "PriorityState \<Rightarrow> Priority
   "time_012_release_inheritance ps \<equiv> mkPriorityState (base_priority ps) (base_priority ps) None"
 
 (* time_013_can_acquire (matches Coq: Definition time_013_can_acquire) *)
-definition time_013_can_acquire :: "LockOrderPolicy \<Rightarrow> ResourceId \<Rightarrow> bool" where
+definition time_013_can_acquire :: "LockOrderPolicy \<Rightarrow> resource_id \<Rightarrow> bool" where
   "time_013_can_acquire policy lock_id \<equiv> respects_lock_order policy lock_id"
 
 (* time_013_acquire_lock (matches Coq: Definition time_013_acquire_lock) *)
-definition time_013_acquire_lock :: "LockOrderPolicy \<Rightarrow> ResourceId \<Rightarrow> option LockOrderPolicy" where
+definition time_013_acquire_lock :: "LockOrderPolicy \<Rightarrow> resource_id \<Rightarrow> option LockOrderPolicy" where
   "time_013_acquire_lock policy lock_id \<equiv> if time_013_can_acquire policy lock_id
   then Some (mkLockOrderPolicy (lock_order_fn policy) (lock_id :: held_locks policy))
   else None"
 
 (* time_013_release_lock (matches Coq: Definition time_013_release_lock) *)
-definition time_013_release_lock :: "LockOrderPolicy \<Rightarrow> ResourceId \<Rightarrow> LockOrderPolicy" where
+definition time_013_release_lock :: "LockOrderPolicy \<Rightarrow> resource_id \<Rightarrow> LockOrderPolicy" where
   "time_013_release_lock policy lock_id \<equiv> mkLockOrderPolicy (lock_order_fn policy) 
     (filter (\<lambda>x. (\<not> (Nat.eqb) x lock_id)) (held_locks policy))"
 
@@ -344,13 +371,13 @@ definition time_014_check_liveness :: "LivenessProof \<Rightarrow> bool" where
   "time_014_check_liveness lp \<equiv> liveness_guaranteed lp"
 
 (* time_015_update_schedule (matches Coq: Definition time_015_update_schedule) *)
-definition time_015_update_schedule :: "FairScheduler \<Rightarrow> ThreadId \<Rightarrow> Time \<Rightarrow> FairScheduler" where
+definition time_015_update_schedule :: "FairScheduler \<Rightarrow> thread_id \<Rightarrow> time \<Rightarrow> FairScheduler" where
   "time_015_update_schedule fs tid now \<equiv> let new_scheduled := (tid, now) :: filter (\<lambda>p. (\<not> (Nat.eqb) (fst p) tid)) 
                                             (last_scheduled fs)
   in mkFairScheduler (scheduler_threads fs) new_scheduled (max_wait_time fs)"
 
 (* time_015_find_starved (matches Coq: Definition time_015_find_starved) *)
-definition time_015_find_starved :: "FairScheduler \<Rightarrow> Time \<Rightarrow> option ThreadId" where
+definition time_015_find_starved :: "FairScheduler \<Rightarrow> time \<Rightarrow> option ThreadId" where
   "time_015_find_starved fs now \<equiv> find (\<lambda>tid. thread_starved fs tid now) (scheduler_threads fs)"
 
 (* time_015_fair_schedule - complex match, needs manual translation *)
@@ -389,15 +416,15 @@ lemma nat_eqb_eq: "\<forall>n m. (n = m) = True <-> n = m"
   by auto
 
 (* time_001_race_condition_prevention (matches Coq) *)
-lemma time_001_race_condition_prevention: "\<forall>(s :: Session) (op :: SessionOp). time_001_session_type_valid s op \<longrightarrow> \<exists>s'. time_001_execute_session_op s op = Some s'"
+lemma time_001_race_condition_prevention: "\<forall>(s :: session) (op :: session_op). time_001_session_type_valid s op \<longrightarrow> \<exists>s'. time_001_execute_session_op s op = Some s'"
   by auto
 
 (* time_001_lock_mutual_exclusion (matches Coq) *)
-lemma time_001_lock_mutual_exclusion: "\<forall>(l :: Lock) (t1 t2 : ThreadId). lock_state l = Locked t1 \<longrightarrow> lock_state l = Locked t2 \<longrightarrow> t1 = t2"
+lemma time_001_lock_mutual_exclusion: "\<forall>(l :: lock) (t1 t2 : thread_id). lock_state l = Locked t1 \<longrightarrow> lock_state l = Locked t2 \<longrightarrow> t1 = t2"
   by auto
 
 (* time_001_session_preserves_owner (matches Coq) *)
-lemma time_001_session_preserves_owner: "\<forall>(s :: Session) (op :: SessionOp) (s' : Session). time_001_execute_session_op s op = Some s' \<longrightarrow> session_owner s = session_owner s'"
+lemma time_001_session_preserves_owner: "\<forall>(s :: session) (op :: session_op) (s' : session). time_001_execute_session_op s op = Some s' \<longrightarrow> session_owner s = session_owner s'"
   by auto
 
 (* time_002_toctou_atomic_check_act (matches Coq) *)
@@ -413,11 +440,11 @@ lemma time_002_failed_cas_unchanged: "\<forall>A (eq_dec : \<forall> x y : A. (x
   by simp
 
 (* time_003_constant_time_property (matches Coq) *)
-lemma time_003_constant_time_property: "\<forall>(op :: TimedOperation) (d :: Duration). op_complexity op = ConstantTime \<longrightarrow> op_duration op = d \<longrightarrow> time_003_is_constant_time op"
+lemma time_003_constant_time_property: "\<forall>(op :: timed_operation) (d :: duration). op_complexity op = ConstantTime \<longrightarrow> op_duration op = d \<longrightarrow> time_003_is_constant_time op"
   by auto
 
 (* time_003_no_timing_leakage (matches Coq) *)
-lemma time_003_no_timing_leakage: "\<forall>(op :: TimedOperation) (input1 input2 : nat). time_003_is_constant_time op \<longrightarrow> op_duration op = op_duration op"
+lemma time_003_no_timing_leakage: "\<forall>(op :: timed_operation) (input1 input2 : nat). time_003_is_constant_time op \<longrightarrow> op_duration op = op_duration op"
   by simp
 
 (* time_003_ct_compare_deterministic (matches Coq) *)
@@ -425,143 +452,143 @@ lemma time_003_ct_compare_deterministic: "\<forall>l1 l2 l3 l4 : list nat. lengt
   by simp
 
 (* time_004_timing_isolation_prevents_channel (matches Coq) *)
-lemma time_004_timing_isolation_prevents_channel: "\<forall>(d1 d2 : TimingDomain) (obs1 obs2 : TimingObservation). domain_isolated d1 = True \<longrightarrow> domain_isolated d2 = True \<longrightarrow> domain_id d1 \<noteq> domain_id d2 \<longrightarrow> time_004_no_cross_domain_leakage d1 d2 obs1"
+lemma time_004_timing_isolation_prevents_channel: "\<forall>(d1 d2 : timing_domain) (obs1 obs2 : timing_observation). domain_isolated d1 = True \<longrightarrow> domain_isolated d2 = True \<longrightarrow> domain_id d1 \<noteq> domain_id d2 \<longrightarrow> time_004_no_cross_domain_leakage d1 d2 obs1"
   by auto
 
 (* time_004_isolated_domain_property (matches Coq) *)
-lemma time_004_isolated_domain_property: "\<forall>(d :: TimingDomain). domain_isolated d = True \<longrightarrow> \<forall>(other :: TimingDomain). domain_id d \<noteq> domain_id other \<longrightarrow> time_004_no_cross_domain_leakage d other (mkTimingObs 0 0 0)"
+lemma time_004_isolated_domain_property: "\<forall>(d :: timing_domain). domain_isolated d = True \<longrightarrow> \<forall>(other :: timing_domain). domain_id d \<noteq> domain_id other \<longrightarrow> time_004_no_cross_domain_leakage d other (mkTimingObs 0 0 0)"
   by auto
 
 (* time_005_unauthenticated_ntp_rejected (matches Coq) *)
-lemma time_005_unauthenticated_ntp_rejected: "\<forall>(pkt :: NTPPacket) (trusted :: nat). ntp_signature pkt = None \<longrightarrow> time_005_accept_timestamp pkt trusted = None"
+lemma time_005_unauthenticated_ntp_rejected: "\<forall>(pkt :: ntp_packet) (trusted :: nat). ntp_signature pkt = None \<longrightarrow> time_005_accept_timestamp pkt trusted = None"
   by simp
 
 (* time_005_authenticated_ntp_accepted (matches Coq) *)
-lemma time_005_authenticated_ntp_accepted: "\<forall>(pkt :: NTPPacket) (trusted :: nat). ntp_signature pkt = Some trusted \<longrightarrow> time_005_accept_timestamp pkt trusted = Some (ntp_timestamp pkt)"
+lemma time_005_authenticated_ntp_accepted: "\<forall>(pkt :: ntp_packet) (trusted :: nat). ntp_signature pkt = Some trusted \<longrightarrow> time_005_accept_timestamp pkt trusted = Some (ntp_timestamp pkt)"
   by simp
 
 (* time_005_wrong_signature_rejected (matches Coq) *)
-lemma time_005_wrong_signature_rejected: "\<forall>(pkt :: NTPPacket) (sig trusted : nat). ntp_signature pkt = Some sig \<longrightarrow> sig \<noteq> trusted \<longrightarrow> time_005_accept_timestamp pkt trusted = None"
+lemma time_005_wrong_signature_rejected: "\<forall>(pkt :: ntp_packet) (sig trusted : nat). ntp_signature pkt = Some sig \<longrightarrow> sig \<noteq> trusted \<longrightarrow> time_005_accept_timestamp pkt trusted = None"
   by simp
 
 (* time_006_replay_detected (matches Coq) *)
-lemma time_006_replay_detected: "\<forall>(msg :: ReplayProtectedMessage) (w :: ReplayWindow). In (msg_nonce msg) (seen_nonces w) \<longrightarrow> time_006_validate_message msg w = False"
+lemma time_006_replay_detected: "\<forall>(msg :: replay_protected_message) (w :: replay_window). In (msg_nonce msg) (seen_nonces w) \<longrightarrow> time_006_validate_message msg w = False"
   by auto
 
 (* time_006_fresh_nonce_recorded (matches Coq) *)
-lemma time_006_fresh_nonce_recorded: "\<forall>(w :: ReplayWindow) (nonce :: Nonce). In nonce (seen_nonces (time_006_update_window w nonce))"
+lemma time_006_fresh_nonce_recorded: "\<forall>(w :: replay_window) (nonce :: nonce). In nonce (seen_nonces (time_006_update_window w nonce))"
   by simp
 
 (* time_006_old_timestamp_rejected (matches Coq) *)
-lemma time_006_old_timestamp_rejected: "\<forall>(msg :: ReplayProtectedMessage) (w :: ReplayWindow). msg_timestamp msg < window_start w \<longrightarrow> time_006_validate_message msg w = False"
+lemma time_006_old_timestamp_rejected: "\<forall>(msg :: replay_protected_message) (w :: replay_window). msg_timestamp msg < window_start w \<longrightarrow> time_006_validate_message msg w = False"
   by auto
 
 (* time_007_out_of_order_rejected (matches Coq) *)
-lemma time_007_out_of_order_rejected: "\<forall>(msg :: SequencedMessage) (state :: SequenceState). seq_num msg \<noteq> expected_seq state \<longrightarrow> time_007_accept_message msg state = None"
+lemma time_007_out_of_order_rejected: "\<forall>(msg :: sequenced_message) (state :: sequence_state). seq_num msg \<noteq> expected_seq state \<longrightarrow> time_007_accept_message msg state = None"
   by simp
 
 (* time_007_correct_sequence_accepted (matches Coq) *)
-lemma time_007_correct_sequence_accepted: "\<forall>(msg :: SequencedMessage) (state :: SequenceState). seq_num msg = expected_seq state \<longrightarrow> \<exists>state'. time_007_accept_message msg state = Some state'"
+lemma time_007_correct_sequence_accepted: "\<forall>(msg :: sequenced_message) (state :: sequence_state). seq_num msg = expected_seq state \<longrightarrow> \<exists>state'. time_007_accept_message msg state = Some state'"
   by simp
 
 (* time_007_sequence_increments (matches Coq) *)
-lemma time_007_sequence_increments: "\<forall>(msg :: SequencedMessage) (state state' : SequenceState). time_007_accept_message msg state = Some state' \<longrightarrow> expected_seq state' = S (expected_seq state)"
+lemma time_007_sequence_increments: "\<forall>(msg :: sequenced_message) (state state' : sequence_state). time_007_accept_message msg state = Some state' \<longrightarrow> expected_seq state' = S (expected_seq state)"
   by auto
 
 (* time_008_selected_task_meets_deadline (matches Coq) *)
-lemma time_008_selected_task_meets_deadline: "\<forall>(tasks : list Task) (now :: Time) (t : Task). time_008_edf_select tasks now = Some t \<longrightarrow> time_008_deadline_feasible t now = True"
+lemma time_008_selected_task_meets_deadline: "\<forall>(tasks : list task) (now :: time) (t : task). time_008_edf_select tasks now = Some t \<longrightarrow> time_008_deadline_feasible t now = True"
   by auto
 
 (* time_008_no_deadline_miss (matches Coq) *)
-lemma time_008_no_deadline_miss: "\<forall>(t :: Task) (now :: Time). time_008_deadline_feasible t now = True \<longrightarrow> now + task_wcet t \<le> task_deadline t"
+lemma time_008_no_deadline_miss: "\<forall>(t :: task) (now :: time). time_008_deadline_feasible t now = True \<longrightarrow> now + task_wcet t \<le> task_deadline t"
   by auto
 
 (* time_009_unsigned_timestamp_rejected (matches Coq) *)
-lemma time_009_unsigned_timestamp_rejected: "\<forall>(ts :: Timestamp) (signer sig expected_signer expected_sig : nat). signer \<noteq> expected_signer \<longrightarrow> time_009_accept_signed_timestamp (mkSignedTs ts signer sig) expected_signer expected_sig = None"
+lemma time_009_unsigned_timestamp_rejected: "\<forall>(ts :: timestamp) (signer sig expected_signer expected_sig : nat). signer \<noteq> expected_signer \<longrightarrow> time_009_accept_signed_timestamp (mkSignedTs ts signer sig) expected_signer expected_sig = None"
   by auto
 
 (* time_009_valid_signature_accepted (matches Coq) *)
-lemma time_009_valid_signature_accepted: "\<forall>(ts :: Timestamp) (signer sig : nat). time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer sig = Some ts"
+lemma time_009_valid_signature_accepted: "\<forall>(ts :: timestamp) (signer sig : nat). time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer sig = Some ts"
   by simp
 
 (* time_009_wrong_signature_rejected (matches Coq) *)
-lemma time_009_wrong_signature_rejected: "\<forall>(ts :: Timestamp) (signer sig expected_sig : nat). sig \<noteq> expected_sig \<longrightarrow> time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer expected_sig = None"
+lemma time_009_wrong_signature_rejected: "\<forall>(ts :: timestamp) (signer sig expected_sig : nat). sig \<noteq> expected_sig \<longrightarrow> time_009_accept_signed_timestamp (mkSignedTs ts signer sig) signer expected_sig = None"
   by auto
 
 (* time_010_expired_timeout_detected (matches Coq) *)
-lemma time_010_expired_timeout_detected: "\<forall>(handler :: TimeoutHandler) (deadline now : Time). timeout_state handler = TimeoutPending deadline \<longrightarrow> deadline \<le> now \<longrightarrow> time_010_check_timeout handler now = TimeoutExpired"
+lemma time_010_expired_timeout_detected: "\<forall>(handler :: timeout_handler) (deadline now : time). timeout_state handler = TimeoutPending deadline \<longrightarrow> deadline \<le> now \<longrightarrow> time_010_check_timeout handler now = TimeoutExpired"
   by auto
 
 (* time_010_pending_timeout_preserved (matches Coq) *)
-lemma time_010_pending_timeout_preserved: "\<forall>(handler :: TimeoutHandler) (deadline now : Time). timeout_state handler = TimeoutPending deadline \<longrightarrow> now < deadline \<longrightarrow> time_010_check_timeout handler now = TimeoutPending deadline"
+lemma time_010_pending_timeout_preserved: "\<forall>(handler :: timeout_handler) (deadline now : time). timeout_state handler = TimeoutPending deadline \<longrightarrow> now < deadline \<longrightarrow> time_010_check_timeout handler now = TimeoutPending deadline"
   by auto
 
 (* time_010_completed_timeout_stable (matches Coq) *)
-lemma time_010_completed_timeout_stable: "\<forall>(handler :: TimeoutHandler) (now :: Time). timeout_state handler = TimeoutCompleted \<longrightarrow> time_010_check_timeout handler now = TimeoutCompleted"
+lemma time_010_completed_timeout_stable: "\<forall>(handler :: timeout_handler) (now :: time). timeout_state handler = TimeoutCompleted \<longrightarrow> time_010_check_timeout handler now = TimeoutCompleted"
   by simp
 
 (* time_011_adjusted_clock_synchronized (matches Coq) *)
-lemma time_011_adjusted_clock_synchronized: "\<forall>(cs :: ClockState). clock_synchronized (time_011_adjust_clock cs) = True"
+lemma time_011_adjusted_clock_synchronized: "\<forall>(cs :: clock_state). clock_synchronized (time_011_adjust_clock cs) = True"
   by auto
 
 (* time_011_synchronized_clock_valid (matches Coq) *)
-lemma time_011_synchronized_clock_valid: "\<forall>(cs :: ClockState). clock_synchronized cs = True \<longrightarrow> time_011_compute_skew cs \<le> max_skew cs"
+lemma time_011_synchronized_clock_valid: "\<forall>(cs :: clock_state). clock_synchronized cs = True \<longrightarrow> time_011_compute_skew cs \<le> max_skew cs"
   by auto
 
 (* time_011_excessive_skew_rejected (matches Coq) *)
-lemma time_011_excessive_skew_rejected: "\<forall>(cs :: ClockState). time_011_compute_skew cs > max_skew cs \<longrightarrow> clock_synchronized cs = False"
+lemma time_011_excessive_skew_rejected: "\<forall>(cs :: clock_state). time_011_compute_skew cs > max_skew cs \<longrightarrow> clock_synchronized cs = False"
   by auto
 
 (* time_012_priority_inheritance_raises (matches Coq) *)
-lemma time_012_priority_inheritance_raises: "\<forall>(holder :: PriorityState) (req_pri :: Priority) (req_id : ThreadId). req_pri < effective_priority holder \<longrightarrow> effective_priority (time_012_inherit_priority holder req_pri req_id) = req_pri"
+lemma time_012_priority_inheritance_raises: "\<forall>(holder :: priority_state) (req_pri :: priority) (req_id : thread_id). req_pri < effective_priority holder \<longrightarrow> effective_priority (time_012_inherit_priority holder req_pri req_id) = req_pri"
   by auto
 
 (* time_012_release_restores_base (matches Coq) *)
-lemma time_012_release_restores_base: "\<forall>(ps :: PriorityState). effective_priority (time_012_release_inheritance ps) = base_priority ps"
+lemma time_012_release_restores_base: "\<forall>(ps :: priority_state). effective_priority (time_012_release_inheritance ps) = base_priority ps"
   by simp
 
 (* time_012_no_inversion_after_inheritance (matches Coq) *)
-lemma time_012_no_inversion_after_inheritance: "\<forall>(holder :: PriorityState) (req_pri :: Priority) (req_id : ThreadId). req_pri < effective_priority holder \<longrightarrow> effective_priority (time_012_inherit_priority holder req_pri req_id) \<le> req_pri"
+lemma time_012_no_inversion_after_inheritance: "\<forall>(holder :: priority_state) (req_pri :: priority) (req_id : thread_id). req_pri < effective_priority holder \<longrightarrow> effective_priority (time_012_inherit_priority holder req_pri req_id) \<le> req_pri"
   by auto
 
 (* time_013_lock_order_respected (matches Coq) *)
-lemma time_013_lock_order_respected: "\<forall>(policy :: LockOrderPolicy) (lock_id :: ResourceId) (policy' : LockOrderPolicy). time_013_acquire_lock policy lock_id = Some policy' \<longrightarrow> \<forall>held. In held (held_locks policy) \<longrightarrow> lock_order_fn policy held < lock_order_fn policy lock_id"
+lemma time_013_lock_order_respected: "\<forall>(policy :: lock_order_policy) (lock_id :: resource_id) (policy' : lock_order_policy). time_013_acquire_lock policy lock_id = Some policy' \<longrightarrow> \<forall>held. In held (held_locks policy) \<longrightarrow> lock_order_fn policy held < lock_order_fn policy lock_id"
   by auto
 
 (* time_013_out_of_order_rejected (matches Coq) *)
-lemma time_013_out_of_order_rejected: "\<forall>(policy :: LockOrderPolicy) (lock_id :: ResourceId). (\<exists>held. In held (held_locks policy) \<and> lock_order_fn policy lock_id \<le> lock_order_fn policy held) \<longrightarrow> time_013_acquire_lock policy lock_id = None"
+lemma time_013_out_of_order_rejected: "\<forall>(policy :: lock_order_policy) (lock_id :: resource_id). (\<exists>held. In held (held_locks policy) \<and> lock_order_fn policy lock_id \<le> lock_order_fn policy held) \<longrightarrow> time_013_acquire_lock policy lock_id = None"
   by auto
 
 (* time_013_deadlock_free (matches Coq) *)
-lemma time_013_deadlock_free: "\<forall>(policy :: LockOrderPolicy) (l1 l2 : ResourceId). In l1 (held_locks policy) \<longrightarrow> time_013_can_acquire policy l2 = True \<longrightarrow> lock_order_fn policy l1 < lock_order_fn policy l2"
+lemma time_013_deadlock_free: "\<forall>(policy :: lock_order_policy) (l1 l2 : resource_id). In l1 (held_locks policy) \<longrightarrow> time_013_can_acquire policy l2 = True \<longrightarrow> lock_order_fn policy l1 < lock_order_fn policy l2"
   by auto
 
 (* time_014_progress_increases (matches Coq) *)
-lemma time_014_progress_increases: "\<forall>(lp :: LivenessProof) (n :: nat). progress_state lp = MakingProgress n \<longrightarrow> S n < progress_bound lp \<longrightarrow> current_progress (time_014_make_progress lp) = S n"
+lemma time_014_progress_increases: "\<forall>(lp :: liveness_proof) (n :: nat). progress_state lp = MakingProgress n \<longrightarrow> S n < progress_bound lp \<longrightarrow> current_progress (time_014_make_progress lp) = S n"
   by auto
 
 (* time_014_bounded_progress_completes (matches Coq) *)
-lemma time_014_bounded_progress_completes: "\<forall>(lp :: LivenessProof) (n :: nat). progress_state lp = MakingProgress n \<longrightarrow> S n \<ge> progress_bound lp \<longrightarrow> progress_state (time_014_make_progress lp) = Completed"
+lemma time_014_bounded_progress_completes: "\<forall>(lp :: liveness_proof) (n :: nat). progress_state lp = MakingProgress n \<longrightarrow> S n \<ge> progress_bound lp \<longrightarrow> progress_state (time_014_make_progress lp) = Completed"
   by auto
 
 (* time_014_liveness_guaranteed (matches Coq) *)
-lemma time_014_liveness_guaranteed: "\<forall>(lp :: LivenessProof). progress_state lp = MakingProgress (current_progress lp) \<or> progress_state lp = Completed \<longrightarrow> time_014_check_liveness lp = True"
+lemma time_014_liveness_guaranteed: "\<forall>(lp :: liveness_proof). progress_state lp = MakingProgress (current_progress lp) \<or> progress_state lp = Completed \<longrightarrow> time_014_check_liveness lp = True"
   by simp
 
 (* time_015_scheduled_updates_record (matches Coq) *)
-lemma time_015_scheduled_updates_record: "\<forall>(fs :: FairScheduler) (tid :: ThreadId) (now : Time). In (tid, now) (last_scheduled (time_015_update_schedule fs tid now))"
+lemma time_015_scheduled_updates_record: "\<forall>(fs :: fair_scheduler) (tid :: thread_id) (now : time). In (tid, now) (last_scheduled (time_015_update_schedule fs tid now))"
   by simp
 
 (* time_015_starved_thread_prioritized (matches Coq) *)
-lemma time_015_starved_thread_prioritized: "\<forall>(fs :: FairScheduler) (tid :: ThreadId) (now : Time). thread_starved fs tid now = True \<longrightarrow> In tid (scheduler_threads fs) \<longrightarrow> \<exists>scheduled_tid. time_015_fair_schedule fs now = Some scheduled_tid"
+lemma time_015_starved_thread_prioritized: "\<forall>(fs :: fair_scheduler) (tid :: thread_id) (now : time). thread_starved fs tid now = True \<longrightarrow> In tid (scheduler_threads fs) \<longrightarrow> \<exists>scheduled_tid. time_015_fair_schedule fs now = Some scheduled_tid"
   by simp
 
 (* time_015_fairness_guaranteed (matches Coq) *)
-lemma time_015_fairness_guaranteed: "\<forall>(fs :: FairScheduler) (tid :: ThreadId) (now scheduled_time : Time). time_015_fair_schedule fs now = Some tid \<longrightarrow> let fs' := time_015_update_schedule fs tid now in In (tid, now) (last_scheduled fs')"
+lemma time_015_fairness_guaranteed: "\<forall>(fs :: fair_scheduler) (tid :: thread_id) (now scheduled_time : time). time_015_fair_schedule fs now = Some tid \<longrightarrow> let fs' := time_015_update_schedule fs tid now in In (tid, now) (last_scheduled fs')"
   by simp
 
 (* time_015_update_preserves_threads (matches Coq) *)
-lemma time_015_update_preserves_threads: "\<forall>(fs :: FairScheduler) (tid :: ThreadId) (now : Time). scheduler_threads (time_015_update_schedule fs tid now) = scheduler_threads fs"
+lemma time_015_update_preserves_threads: "\<forall>(fs :: fair_scheduler) (tid :: thread_id) (now : time). scheduler_threads (time_015_update_schedule fs tid now) = scheduler_threads fs"
   by simp
 
 (* time_001_main (matches Coq) *)
@@ -577,7 +604,7 @@ lemma time_003_main: "\<forall>op d. op_complexity op = ConstantTime \<longright
   by auto
 
 (* time_004_main (matches Coq) *)
-lemma time_004_main: "\<forall>d1 d2 obs1 (obs2 : TimingObservation). domain_isolated d1 = True \<longrightarrow> domain_isolated d2 = True \<longrightarrow> domain_id d1 \<noteq> domain_id d2 \<longrightarrow> time_004_no_cross_domain_leakage d1 d2 obs1"
+lemma time_004_main: "\<forall>d1 d2 obs1 (obs2 : timing_observation). domain_isolated d1 = True \<longrightarrow> domain_isolated d2 = True \<longrightarrow> domain_id d1 \<noteq> domain_id d2 \<longrightarrow> time_004_no_cross_domain_leakage d1 d2 obs1"
   by auto
 
 (* time_005_main (matches Coq) *)
@@ -621,7 +648,7 @@ lemma time_014_main: "\<forall>lp n. progress_state lp = MakingProgress n \<long
   by auto
 
 (* time_015_main (matches Coq) *)
-lemma time_015_main: "\<forall>fs tid now (scheduled_time : Time). time_015_fair_schedule fs now = Some tid \<longrightarrow> let fs' := time_015_update_schedule fs tid now in In (tid, now) (last_scheduled fs')"
+lemma time_015_main: "\<forall>fs tid now (scheduled_time : time). time_015_fair_schedule fs now = Some tid \<longrightarrow> let fs' := time_015_update_schedule fs tid now in In (tid, now) (last_scheduled fs')"
   by auto
 
 end

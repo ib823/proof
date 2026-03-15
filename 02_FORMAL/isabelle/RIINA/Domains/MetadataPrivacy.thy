@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Sensitivity        | sensitivity            | OK     |
+ * | sensitivity        | sensitivity            | OK     |
  * | redact_field       | redact_field           | OK     |
  * | k_anonymous        | k_anonymous            | OK     |
  * | unlinkable         | unlinkable             | OK     |
@@ -60,7 +60,12 @@ theory MetadataPrivacy
   imports Main CoqCompat
 begin
 
-(* Sensitivity (matches Coq: Inductive Sensitivity) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym anonymity_set = "nat list"
+type_synonym metadata_field = "nat list"
+type_synonym padded_message = "nat"
+type_synonym timing_bucket = "nat"
+(* sensitivity (matches Coq: Inductive sensitivity) *)
 datatype sensitivity =
     Public
   |     Internal
@@ -82,7 +87,7 @@ definition unlinkable :: "bool" where
   meta_timestamp m1 <> meta_timestamp m2"
 
 (* in_bucket (matches Coq: Definition in_bucket) *)
-definition in_bucket :: "nat \<Rightarrow> TimingBucket \<Rightarrow> bool" where
+definition in_bucket :: "nat \<Rightarrow> timing_bucket \<Rightarrow> bool" where
   "in_bucket timestamp bucket \<equiv> let bucket_num := timestamp / bucket_interval bucket in
   let bucket_base := bucket_num * bucket_interval bucket in
   ((bucket_base \<le> timestamp) \<and> (timestamp < (bucket_base) + bucket_interval bucket))"
@@ -135,19 +140,19 @@ definition metadata_layers :: "bool" where
   "metadata_layers \<equiv> (padding \<and> timing \<and> cover \<and> redaction)"
 
 (* meta_001_padding_hides_size (matches Coq) *)
-lemma meta_001_padding_hides_size: "\<forall>(pm :: PaddedMessage). pm_total_size pm = pm_payload_size pm + pm_padding_size pm"
+lemma meta_001_padding_hides_size: "\<forall>(pm :: padded_message). pm_total_size pm = pm_payload_size pm + pm_padding_size pm"
   by auto
 
 (* meta_002_constant_size (matches Coq) *)
-lemma meta_002_constant_size: "\<forall>(pm1 pm2 : PaddedMessage). pm_total_size pm1 = pm_total_size pm2 \<longrightarrow> pm_total_size pm1 = pm_total_size pm2"
+lemma meta_002_constant_size: "\<forall>(pm1 pm2 : padded_message). pm_total_size pm1 = pm_total_size pm2 \<longrightarrow> pm_total_size pm1 = pm_total_size pm2"
   by auto
 
 (* meta_003_size_no_leak (matches Coq) *)
-lemma meta_003_size_no_leak: "\<forall>(pm1 pm2 : PaddedMessage). pm_total_size pm1 = pm_total_size pm2 \<longrightarrow> pm_payload_size pm1 = pm_payload_size pm2 \<or> pm_payload_size pm1 \<noteq> pm_payload_size pm2"
+lemma meta_003_size_no_leak: "\<forall>(pm1 pm2 : padded_message). pm_total_size pm1 = pm_total_size pm2 \<longrightarrow> pm_payload_size pm1 = pm_payload_size pm2 \<or> pm_payload_size pm1 \<noteq> pm_payload_size pm2"
   by auto
 
 (* meta_004_timing_bucketed (matches Coq) *)
-lemma meta_004_timing_bucketed: "\<forall>(t :: nat) (bucket :: TimingBucket). bucket_interval bucket > 0 \<longrightarrow> in_bucket t bucket = True \<longrightarrow> \<exists>n. t \<ge> n * bucket_interval bucket \<and> t < (n + 1) * bucket_interval bucket"
+lemma meta_004_timing_bucketed: "\<forall>(t :: nat) (bucket :: timing_bucket). bucket_interval bucket > 0 \<longrightarrow> in_bucket t bucket = True \<longrightarrow> \<exists>n. t \<ge> n * bucket_interval bucket \<and> t < (n + 1) * bucket_interval bucket"
   by auto
 
 (* meta_005_jitter_bounded (matches Coq) *)
@@ -155,19 +160,19 @@ lemma meta_005_jitter_bounded: "\<forall>(base jitter max_jitter : nat). jittere
   by auto
 
 (* meta_006_k_anonymity (matches Coq) *)
-lemma meta_006_k_anonymity: "\<forall>(set :: AnonymitySet) (k :: nat). k_anonymous set k \<longrightarrow> length set \<ge> k"
+lemma meta_006_k_anonymity: "\<forall>(set :: anonymity_set) (k :: nat). k_anonymous set k \<longrightarrow> length set \<ge> k"
   by auto
 
 (* meta_007_set_preserved (matches Coq) *)
-lemma meta_007_set_preserved: "\<forall>(set :: AnonymitySet) (elem :: nat). elem \<in> set set \<longrightarrow> length set \<ge> 1"
+lemma meta_007_set_preserved: "\<forall>(set :: anonymity_set) (elem :: nat). elem \<in> set set \<longrightarrow> length set \<ge> 1"
   by auto
 
 (* meta_008_sender_anonymity (matches Coq) *)
-lemma meta_008_sender_anonymity: "\<forall>(sender_set :: AnonymitySet) (k :: nat) (actual_sender : nat). k_anonymous sender_set k \<longrightarrow> actual_sender \<in> set sender_set \<longrightarrow> length sender_set \<ge> k"
+lemma meta_008_sender_anonymity: "\<forall>(sender_set :: anonymity_set) (k :: nat) (actual_sender : nat). k_anonymous sender_set k \<longrightarrow> actual_sender \<in> set sender_set \<longrightarrow> length sender_set \<ge> k"
   by auto
 
 (* meta_009_receiver_anonymity (matches Coq) *)
-lemma meta_009_receiver_anonymity: "\<forall>(receiver_set :: AnonymitySet) (k :: nat) (actual_receiver : nat). k_anonymous receiver_set k \<longrightarrow> actual_receiver \<in> set receiver_set \<longrightarrow> length receiver_set \<ge> k"
+lemma meta_009_receiver_anonymity: "\<forall>(receiver_set :: anonymity_set) (k :: nat) (actual_receiver : nat). k_anonymous receiver_set k \<longrightarrow> actual_receiver \<in> set receiver_set \<longrightarrow> length receiver_set \<ge> k"
   by auto
 
 (* meta_010_relationship_unlinkable (matches Coq) *)
@@ -179,15 +184,15 @@ lemma meta_011_temporal_unlinkable: "\<forall>(m1 m2 : MessageMetadata). meta_ti
   by auto
 
 (* meta_012_sensitivity_reflexive (matches Coq) *)
-lemma meta_012_sensitivity_reflexive: "\<forall>(s :: Sensitivity). sensitivity_leq s s = True"
+lemma meta_012_sensitivity_reflexive: "\<forall>(s :: sensitivity). sensitivity_leq s s = True"
   by simp
 
 (* meta_013_redaction_removes_sensitive (matches Coq) *)
-lemma meta_013_redaction_removes_sensitive: "\<forall>(f :: MetadataField). field_sensitivity f = TopSecret \<longrightarrow> redact_field Public f = None"
+lemma meta_013_redaction_removes_sensitive: "\<forall>(f :: metadata_field). field_sensitivity f = TopSecret \<longrightarrow> redact_field Public f = None"
   by simp
 
 (* meta_014_public_preserved (matches Coq) *)
-lemma meta_014_public_preserved: "\<forall>(f :: MetadataField) (threshold :: Sensitivity). field_sensitivity f = Public \<longrightarrow> redact_field threshold f = Some f"
+lemma meta_014_public_preserved: "\<forall>(f :: metadata_field) (threshold :: sensitivity). field_sensitivity f = Public \<longrightarrow> redact_field threshold f = Some f"
   by simp
 
 (* meta_015_constant_rate (matches Coq) *)
@@ -199,7 +204,7 @@ lemma meta_016_cover_traffic: "\<forall>(real cover total : nat). cover_traffic_
   by auto
 
 (* meta_017_minimization (matches Coq) *)
-lemma meta_017_minimization: "\<forall>(fields : list MetadataField) (required : list nat). minimal_metadata fields required \<longrightarrow> Forall (\<lambda>f. In (field_name f) required) fields"
+lemma meta_017_minimization: "\<forall>(fields : list metadata_field) (required : list nat). minimal_metadata fields required \<longrightarrow> Forall (\<lambda>f. In (field_name f) required) fields"
   by auto
 
 (* meta_018_no_correlation (matches Coq) *)

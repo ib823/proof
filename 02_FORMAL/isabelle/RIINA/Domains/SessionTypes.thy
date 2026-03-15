@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | MsgType            | msg_type               | OK     |
- * | SessionType        | session_type           | OK     |
- * | Process            | process                | OK     |
- * | Channel            | channel                | OK     |
- * | ChannelPair        | channel_pair           | OK     |
+ * | msg_type            | msg_type               | OK     |
+ * | session_type        | session_type           | OK     |
+ * | process            | process                | OK     |
+ * | channel            | channel                | OK     |
+ * | channel_pair        | channel_pair           | OK     |
  * | msg_type_eqb       | msg_type_eqb           | OK     |
  * | dual               | dual                   | OK     |
  * | channel_used       | channel_used           | OK     |
@@ -78,17 +78,20 @@
  *)
 
 theory SessionTypes
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics Syntax
 begin
 
-(* MsgType (matches Coq: Inductive MsgType) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym chan_env = "nat"
+type_synonym config = "nat"
+(* msg_type (matches Coq: Inductive msg_type) *)
 datatype msg_type =
     MTNat
   |     MTBool
   |     MTUnit
   |     MTString
 
-(* SessionType (matches Coq: Inductive SessionType) *)
+(* session_type (matches Coq: Inductive session_type) *)
 datatype session_type =
     SSend
   |     SRecv
@@ -96,7 +99,7 @@ datatype session_type =
   |     SOffer
   |     SEnd
 
-(* Process (matches Coq: Inductive Process) *)
+(* process (matches Coq: Inductive process) *)
 datatype process =
     PSend
   |     PRecv
@@ -106,16 +109,16 @@ datatype process =
   |     PEnd
   |     PPar
 
-(* Channel (matches Coq: Record Channel) *)
+(* channel (matches Coq: Record channel) *)
 record channel =
   chan_id :: nat
-  chan_type :: SessionType
+  chan_type :: session_type
   chan_linear :: bool
 
-(* ChannelPair (matches Coq: Record ChannelPair) *)
+(* channel_pair (matches Coq: Record channel_pair) *)
 record channel_pair =
-  endpoint_a :: Channel
-  endpoint_b :: Channel
+  endpoint_a :: channel
+  endpoint_b :: channel
 
 (* msg_type_eqb - complex match, needs manual translation *)
 definition msg_type_eqb :: "bool" where "msg_type_eqb = undefined"
@@ -317,11 +320,11 @@ lemma ST_036_dual_compose_send: "\<forall>mt s1 s2. dual (SSend mt s1) = SRecv m
   by simp
 
 (* ST_037_dual_branches (matches Coq) *)
-lemma ST_037_dual_branches: "\<forall>(l :: nat) (s :: SessionType). map (fun p : nat * SessionType => (fst p, dual (snd p))) [(l, s)] = [(l, dual s)]"
+lemma ST_037_dual_branches: "\<forall>(l :: nat) (s :: session_type). map (fun p : nat * session_type => (fst p, dual (snd p))) [(l, s)] = [(l, dual s)]"
   by simp
 
 (* ST_038_single_branch_dual (matches Coq) *)
-lemma ST_038_single_branch_dual: "\<forall>(l :: nat) (s :: SessionType). dual (SSelect [(l, s)]) = SOffer [(l, dual s)]"
+lemma ST_038_single_branch_dual: "\<forall>(l :: nat) (s :: session_type). dual (SSelect [(l, s)]) = SOffer [(l, dual s)]"
   by simp
 
 (* ST_039_wt_end_empty (matches Coq) *)

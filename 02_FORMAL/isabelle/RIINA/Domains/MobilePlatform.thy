@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Resource           | resource               | OK     |
- * | PermLevel          | perm_level             | OK     |
- * | IpcResult          | ipc_result             | OK     |
+ * | resource           | resource               | OK     |
+ * | perm_level          | perm_level             | OK     |
+ * | ipc_result          | ipc_result             | OK     |
  * | uids_unique        | uids_unique            | OK     |
  * | sandbox_valid      | sandbox_valid          | OK     |
  * | file_isolated      | file_isolated          | OK     |
@@ -67,7 +67,14 @@ theory MobilePlatform
   imports Main CoqCompat
 begin
 
-(* Resource (matches Coq: Inductive Resource) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym app_id = "nat"
+type_synonym intent = "nat"
+type_synonym key_props = "nat"
+type_synonym perm_grant = "nat"
+type_synonym permission = "nat"
+type_synonym sandbox = "nat"
+(* resource (matches Coq: Inductive resource) *)
 datatype resource =
     FileResource
   |     NetworkResource
@@ -77,14 +84,14 @@ datatype resource =
   |     CameraResource
   |     MicrophoneResource
 
-(* PermLevel (matches Coq: Inductive PermLevel) *)
+(* perm_level (matches Coq: Inductive perm_level) *)
 datatype perm_level =
     Normal
   |     Dangerous
   |     Signature
   |     System
 
-(* IpcResult (matches Coq: Inductive IpcResult) *)
+(* ipc_result (matches Coq: Inductive ipc_result) *)
 datatype ipc_result =
     IpcAllowed
   |     IpcDenied
@@ -95,7 +102,7 @@ definition uids_unique :: "bool" where
   "uids_unique \<equiv> NoDup (map app_uid apps)"
 
 (* sandbox_valid (matches Coq: Definition sandbox_valid) *)
-definition sandbox_valid :: "Sandbox \<Rightarrow> AppId \<Rightarrow> bool" where
+definition sandbox_valid :: "Sandbox \<Rightarrow> app_id \<Rightarrow> bool" where
   "sandbox_valid sandbox app \<equiv> Forall (\<lambda>r. exists g, g \<in> set grants \<and>
                              grant_app g = app \<and>
                              perm_resource (grant_perm g) = r) sandbox"
@@ -171,75 +178,75 @@ definition mobile_layers :: "bool" where
   "mobile_layers \<equiv> (sandbox \<and> perm \<and> ipc \<and> keystore \<and> boot)"
 
 (* mobile_001_unique_uids (matches Coq) *)
-lemma mobile_001_unique_uids: "\<forall>(apps : list AppId). uids_unique apps \<longrightarrow> NoDup (map app_uid apps)"
+lemma mobile_001_unique_uids: "\<forall>(apps : list app_id). uids_unique apps \<longrightarrow> NoDup (map app_uid apps)"
   by auto
 
 (* mobile_002_sandbox_valid (matches Coq) *)
-lemma mobile_002_sandbox_valid: "\<forall>(sandbox :: Sandbox) (grants : list PermGrant) (app :: AppId). sandbox_valid sandbox grants app \<longrightarrow> Forall (\<lambda>r. \<exists>g. g \<in> set grants \<and> grant_app g = app \<and> perm_resource (grant_perm g) = r) sandbox"
+lemma mobile_002_sandbox_valid: "\<forall>(sandbox :: sandbox) (grants : list perm_grant) (app :: app_id). sandbox_valid sandbox grants app \<longrightarrow> Forall (\<lambda>r. \<exists>g. g \<in> set grants \<and> grant_app g = app \<and> perm_resource (grant_perm g) = r) sandbox"
   by auto
 
 (* mobile_003_file_isolation (matches Coq) *)
-lemma mobile_003_file_isolation: "\<forall>(owner accessor : AppId). file_isolated owner accessor = True \<longrightarrow> app_uid owner = app_uid accessor"
+lemma mobile_003_file_isolation: "\<forall>(owner accessor : app_id). file_isolated owner accessor = True \<longrightarrow> app_uid owner = app_uid accessor"
   by auto
 
 (* mobile_004_dangerous_consent (matches Coq) *)
-lemma mobile_004_dangerous_consent: "\<forall>(p :: Permission). perm_level p = Dangerous \<longrightarrow> requires_user_consent p = True"
+lemma mobile_004_dangerous_consent: "\<forall>(p :: permission). perm_level p = Dangerous \<longrightarrow> requires_user_consent p = True"
   by simp
 
 (* mobile_005_signature_permission (matches Coq) *)
-lemma mobile_005_signature_permission: "\<forall>(app :: AppId) (required_sig :: nat). signature_matches app required_sig = True \<longrightarrow> app_signature app = required_sig"
+lemma mobile_005_signature_permission: "\<forall>(app :: app_id) (required_sig :: nat). signature_matches app required_sig = True \<longrightarrow> app_signature app = required_sig"
   by auto
 
 (* mobile_006_system_permission (matches Coq) *)
-lemma mobile_006_system_permission: "\<forall>(app :: AppId) (system_uids : list nat). is_system_app app system_uids = True \<longrightarrow> \<exists>uid. uid \<in> set system_uids \<and> app_uid app = uid"
+lemma mobile_006_system_permission: "\<forall>(app :: app_id) (system_uids : list nat). is_system_app app system_uids = True \<longrightarrow> \<exists>uid. uid \<in> set system_uids \<and> app_uid app = uid"
   by auto
 
 (* mobile_007_unexported_denied (matches Coq) *)
-lemma mobile_007_unexported_denied: "\<forall>(intent :: Intent). intent_exported intent = False \<longrightarrow> ipc_allowed intent False False = False"
+lemma mobile_007_unexported_denied: "\<forall>(intent :: intent). intent_exported intent = False \<longrightarrow> ipc_allowed intent False False = False"
   by simp
 
 (* mobile_008_same_app_ipc (matches Coq) *)
-lemma mobile_008_same_app_ipc: "\<forall>(intent :: Intent) (exported :: bool). ipc_allowed intent exported True = True"
+lemma mobile_008_same_app_ipc: "\<forall>(intent :: intent) (exported :: bool). ipc_allowed intent exported True = True"
   by simp
 
 (* mobile_009_hw_key_protected (matches Coq) *)
-lemma mobile_009_hw_key_protected: "\<forall>(props :: KeyProps). key_hardware_backed props = True \<longrightarrow> key_extractable props = False"
+lemma mobile_009_hw_key_protected: "\<forall>(props :: key_props). key_hardware_backed props = True \<longrightarrow> key_extractable props = False"
   by simp
 
 (* mobile_010_auth_required (matches Coq) *)
-lemma mobile_010_auth_required: "\<forall>(props :: KeyProps) (last_auth current : nat). key_requires_auth props = True \<longrightarrow> auth_recent last_auth current (key_valid_seconds props) = True \<longrightarrow> current - last_auth \<le> key_valid_seconds props"
+lemma mobile_010_auth_required: "\<forall>(props :: key_props) (last_auth current : nat). key_requires_auth props = True \<longrightarrow> auth_recent last_auth current (key_valid_seconds props) = True \<longrightarrow> current - last_auth \<le> key_valid_seconds props"
   by auto
 
 (* mobile_011_grant_owner (matches Coq) *)
-lemma mobile_011_grant_owner: "\<forall>(g :: PermGrant). app_uid (grant_app g) = app_uid (grant_app g)"
+lemma mobile_011_grant_owner: "\<forall>(g :: perm_grant). app_uid (grant_app g) = app_uid (grant_app g)"
   by simp
 
 (* mobile_012_expired_invalid (matches Coq) *)
-lemma mobile_012_expired_invalid: "\<forall>(g :: PermGrant) (current_time expiry : nat). grant_expiry g = Some expiry \<longrightarrow> current_time \<ge> expiry \<longrightarrow> grant_valid g current_time = False"
+lemma mobile_012_expired_invalid: "\<forall>(g :: perm_grant) (current_time expiry : nat). grant_expiry g = Some expiry \<longrightarrow> current_time \<ge> expiry \<longrightarrow> grant_valid g current_time = False"
   by simp
 
 (* mobile_013_network_permission (matches Coq) *)
-lemma mobile_013_network_permission: "\<forall>(grants : list PermGrant) (app :: AppId). has_network_permission grants app = True \<longrightarrow> \<exists>g. g \<in> set grants \<and> app_uid (grant_app g) = app_uid app"
+lemma mobile_013_network_permission: "\<forall>(grants : list perm_grant) (app :: app_id). has_network_permission grants app = True \<longrightarrow> \<exists>g. g \<in> set grants \<and> app_uid (grant_app g) = app_uid app"
   by auto
 
 (* mobile_014_location_permission (matches Coq) *)
-lemma mobile_014_location_permission: "\<forall>(grants : list PermGrant) (app :: AppId). has_location_permission grants app = True \<longrightarrow> \<exists>g. g \<in> set grants \<and> app_uid (grant_app g) = app_uid app"
+lemma mobile_014_location_permission: "\<forall>(grants : list perm_grant) (app :: app_id). has_location_permission grants app = True \<longrightarrow> \<exists>g. g \<in> set grants \<and> app_uid (grant_app g) = app_uid app"
   by auto
 
 (* mobile_015_camera_permission (matches Coq) *)
-lemma mobile_015_camera_permission: "\<forall>(grants : list PermGrant) (app :: AppId). has_camera_permission grants app = True \<longrightarrow> \<exists>g. g \<in> set grants"
+lemma mobile_015_camera_permission: "\<forall>(grants : list perm_grant) (app :: app_id). has_camera_permission grants app = True \<longrightarrow> \<exists>g. g \<in> set grants"
   by auto
 
 (* mobile_016_microphone_permission (matches Coq) *)
-lemma mobile_016_microphone_permission: "\<forall>(grants : list PermGrant) (app :: AppId) (g : PermGrant). g \<in> set grants \<longrightarrow> app_uid (grant_app g) = app_uid app \<longrightarrow> perm_resource (grant_perm g) = MicrophoneResource \<longrightarrow> g \<in> set grants"
+lemma mobile_016_microphone_permission: "\<forall>(grants : list perm_grant) (app :: app_id) (g : perm_grant). g \<in> set grants \<longrightarrow> app_uid (grant_app g) = app_uid app \<longrightarrow> perm_resource (grant_perm g) = MicrophoneResource \<longrightarrow> g \<in> set grants"
   by auto
 
 (* mobile_017_intent_filter (matches Coq) *)
-lemma mobile_017_intent_filter: "\<forall>(intent :: Intent) (filter_action :: nat). intent_matches intent filter_action = True \<longrightarrow> intent_action intent = filter_action"
+lemma mobile_017_intent_filter: "\<forall>(intent :: intent) (filter_action :: nat). intent_matches intent filter_action = True \<longrightarrow> intent_action intent = filter_action"
   by auto
 
 (* mobile_018_explicit_target (matches Coq) *)
-lemma mobile_018_explicit_target: "\<forall>(intent :: Intent). explicit_intent intent = True \<longrightarrow> \<exists>target. intent_target intent = Some target"
+lemma mobile_018_explicit_target: "\<forall>(intent :: intent). explicit_intent intent = True \<longrightarrow> \<exists>target. intent_target intent = Some target"
   by simp
 
 (* mobile_019_process_isolation (matches Coq) *)
@@ -263,7 +270,7 @@ lemma mobile_023_biometric_tee: "\<forall>(storage tee : nat). biometric_in_tee 
   by auto
 
 (* mobile_024_signature_verified (matches Coq) *)
-lemma mobile_024_signature_verified: "\<forall>(app :: AppId) (trusted_sigs : list nat). signature_valid app trusted_sigs = True \<longrightarrow> \<exists>sig. sig \<in> set trusted_sigs \<and> app_signature app = sig"
+lemma mobile_024_signature_verified: "\<forall>(app :: app_id) (trusted_sigs : list nat). signature_valid app trusted_sigs = True \<longrightarrow> \<exists>sig. sig \<in> set trusted_sigs \<and> app_signature app = sig"
   by auto
 
 (* mobile_025_defense_in_depth (matches Coq) *)

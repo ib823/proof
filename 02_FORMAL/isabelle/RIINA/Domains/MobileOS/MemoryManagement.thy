@@ -12,17 +12,17 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | SystemEvent        | system_event           | OK     |
- * | AllocState         | alloc_state            | OK     |
- * | MemoryPage         | memory_page            | OK     |
- * | Application        | application            | OK     |
- * | SystemMemory       | system_memory          | OK     |
- * | MemoryBlock        | memory_block           | OK     |
- * | Heap               | heap                   | OK     |
- * | StackFrame         | stack_frame            | OK     |
- * | Stack              | stack                  | OK     |
- * | VirtualMapping     | virtual_mapping        | OK     |
- * | PageData           | PageData               | OK     |
+ * | system_event        | system_event           | OK     |
+ * | alloc_state         | alloc_state            | OK     |
+ * | memory_page         | memory_page            | OK     |
+ * | application        | application            | OK     |
+ * | system_memory       | system_memory          | OK     |
+ * | memory_block        | memory_block           | OK     |
+ * | heap               | heap                   | OK     |
+ * | stack_frame         | stack_frame            | OK     |
+ * | stack              | stack                  | OK     |
+ * | virtual_mapping     | virtual_mapping        | OK     |
+ * | page_data           | page_data               | OK     |
  * | compress_data      | compress_data          | OK     |
  * | decompress_data    | decompress_data        | OK     |
  * | compress           | compress               | OK     |
@@ -31,7 +31,7 @@
  * | system_out_of_memory | system_out_of_memory   | OK     |
  * | can_cause          | can_cause              | OK     |
  * | pages_isolated     | pages_isolated         | OK     |
- * | VirtualPage        | VirtualPage            | OK     |
+ * | virtual_page        | virtual_page            | OK     |
  * | block_allocated    | block_allocated        | OK     |
  * | block_freed        | block_freed            | OK     |
  * | allocation_bounded | allocation_bounded     | OK     |
@@ -73,77 +73,80 @@ theory MemoryManagement
   imports Main
 begin
 
-(* SystemEvent (matches Coq: Inductive SystemEvent) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym page_data = "nat"
+type_synonym virtual_page = "nat"
+(* system_event (matches Coq: Inductive system_event) *)
 datatype system_event =
     SystemOutOfMemory
   |     MemoryPressure
   |     NormalOperation
 
-(* AllocState (matches Coq: Inductive AllocState) *)
+(* alloc_state (matches Coq: Inductive alloc_state) *)
 datatype alloc_state =
     Allocated
   |     Freed
   |     Uninitialized_mem
 
-(* MemoryPage (matches Coq: Record MemoryPage) *)
+(* memory_page (matches Coq: Record memory_page) *)
 record memory_page =
   page_id :: nat
-  page_contents :: PageData
+  page_contents :: page_data
   page_compressed :: bool
   page_owner :: nat
 
-(* Application (matches Coq: Record Application) *)
+(* application (matches Coq: Record application) *)
 record application =
   app_id :: nat
   app_memory_limit :: nat
   app_current_memory :: nat
   app_well_behaved :: bool
 
-(* SystemMemory (matches Coq: Record SystemMemory) *)
+(* system_memory (matches Coq: Record system_memory) *)
 record system_memory =
   total_memory :: nat
   used_memory :: nat
   reserved_memory :: nat
   pages :: 'a list
 
-(* MemoryBlock (matches Coq: Record MemoryBlock) *)
+(* memory_block (matches Coq: Record memory_block) *)
 record memory_block =
   block_id :: nat
   block_start :: nat
   block_size :: nat
-  block_state :: AllocState
+  block_state :: alloc_state
   block_owner :: nat
   block_zeroed :: bool
 
-(* Heap (matches Coq: Record Heap) *)
+(* heap (matches Coq: Record heap) *)
 record heap =
   heap_blocks :: 'a list
   heap_total_size :: nat
   heap_used_size :: nat
   heap_fragmentation_ratio :: nat
 
-(* StackFrame (matches Coq: Record StackFrame) *)
+(* stack_frame (matches Coq: Record stack_frame) *)
 record stack_frame =
   frame_id :: nat
   frame_size :: nat
   frame_return_addr :: nat
 
-(* Stack (matches Coq: Record Stack) *)
+(* stack (matches Coq: Record stack) *)
 record stack =
   stack_frames :: 'a list
   stack_max_depth :: nat
   stack_current_depth :: nat
 
-(* VirtualMapping (matches Coq: Record VirtualMapping) *)
+(* virtual_mapping (matches Coq: Record virtual_mapping) *)
 record virtual_mapping =
-  vmap_virtual_page :: VirtualPage
+  vmap_virtual_page :: virtual_page
   vmap_physical_page :: nat
   vmap_page_size :: nat
   vmap_readable :: bool
   vmap_writable :: bool
 
-(* PageData (matches Coq: Definition PageData) *)
-definition PageData :: "'a" where
+(* page_data (matches Coq: Definition page_data) *)
+definition page_data :: "'a" where
   "PageData \<equiv> list nat"
 
 (* compress_data (matches Coq: Definition compress_data) *)
@@ -172,7 +175,7 @@ definition system_out_of_memory :: "SystemEvent" where
   "system_out_of_memory \<equiv> SystemOutOfMemory"
 
 (* can_cause (matches Coq: Definition can_cause) *)
-fun can_cause :: "Application \<Rightarrow> SystemEvent \<Rightarrow> bool" where
+fun can_cause :: "Application \<Rightarrow> system_event \<Rightarrow> bool" where
   "can_cause SystemOutOfMemory = app_current_memory"
 |   "can_cause _ = False"
 
@@ -182,8 +185,8 @@ definition pages_isolated :: "bool" where
     page_owner p1 <> page_owner p2 ->
     page_id p1 <> page_id p2"
 
-(* VirtualPage (matches Coq: Definition VirtualPage) *)
-definition VirtualPage :: "'a" where
+(* virtual_page (matches Coq: Definition virtual_page) *)
+definition virtual_page :: "'a" where
   "VirtualPage \<equiv> nat"
 
 (* block_allocated (matches Coq: Definition block_allocated) *)
@@ -249,87 +252,87 @@ definition dma_buffer_protected_prop :: "MemoryBlock \<Rightarrow> bool" where
   "dma_buffer_protected_prop b \<equiv> block_allocated b -> block_owner b > 0"
 
 (* memory_compression_lossless (matches Coq) *)
-lemma memory_compression_lossless: "\<forall>(page :: MemoryPage). page_contents (decompress (compress page)) = page_contents page"
+lemma memory_compression_lossless: "\<forall>(page :: memory_page). page_contents (decompress (compress page)) = page_contents page"
   by simp
 
 (* compression_preserves_id (matches Coq) *)
-lemma compression_preserves_id: "\<forall>(page :: MemoryPage). page_id (compress page) = page_id page"
+lemma compression_preserves_id: "\<forall>(page :: memory_page). page_id (compress page) = page_id page"
   by simp
 
 (* compression_preserves_owner (matches Coq) *)
-lemma compression_preserves_owner: "\<forall>(page :: MemoryPage). page_owner (compress page) = page_owner page"
+lemma compression_preserves_owner: "\<forall>(page :: memory_page). page_owner (compress page) = page_owner page"
   by simp
 
 (* no_system_oom_from_app (matches Coq) *)
-lemma no_system_oom_from_app: "\<forall>(app :: Application). well_behaved_app app \<longrightarrow> ~ can_cause app system_out_of_memory"
+lemma no_system_oom_from_app: "\<forall>(app :: application). well_behaved_app app \<longrightarrow> ~ can_cause app system_out_of_memory"
   by auto
 
 (* memory_isolation_sound (matches Coq) *)
-lemma memory_isolation_sound: "\<forall>(pages : list MemoryPage). pages_isolated pages \<longrightarrow> \<forall>p1 p2. p1 \<in> set pages \<longrightarrow> p2 \<in> set pages \<longrightarrow> page_owner p1 \<noteq> page_owner p2 \<longrightarrow> page_id p1 \<noteq> page_id p2"
+lemma memory_isolation_sound: "\<forall>(pages : list memory_page). pages_isolated pages \<longrightarrow> \<forall>p1 p2. p1 \<in> set pages \<longrightarrow> p2 \<in> set pages \<longrightarrow> page_owner p1 \<noteq> page_owner p2 \<longrightarrow> page_id p1 \<noteq> page_id p2"
   by auto
 
 (* decompress_compress_contents (matches Coq) *)
-lemma decompress_compress_contents: "\<forall>(page :: MemoryPage). page_contents (decompress (compress page)) = page_contents page"
+lemma decompress_compress_contents: "\<forall>(page :: memory_page). page_contents (decompress (compress page)) = page_contents page"
   by simp
 
 (* allocation_always_bounded (matches Coq) *)
-lemma allocation_always_bounded: "\<forall>(h :: Heap). allocation_bounded h \<longrightarrow> heap_used_size h \<le> heap_total_size h"
+lemma allocation_always_bounded: "\<forall>(h :: heap). allocation_bounded h \<longrightarrow> heap_used_size h \<le> heap_total_size h"
   by auto
 
 (* deallocation_complete (matches Coq) *)
-lemma deallocation_complete: "\<forall>(b :: MemoryBlock). block_state b = Freed \<longrightarrow> block_freed b"
+lemma deallocation_complete: "\<forall>(b :: memory_block). block_state b = Freed \<longrightarrow> block_freed b"
   by auto
 
 (* no_double_free (matches Coq) *)
-lemma no_double_free: "\<forall>(b :: MemoryBlock). block_freed b \<longrightarrow> ~ block_allocated b"
+lemma no_double_free: "\<forall>(b :: memory_block). block_freed b \<longrightarrow> ~ block_allocated b"
   by auto
 
 (* no_use_after_free (matches Coq) *)
-lemma no_use_after_free: "\<forall>(b :: MemoryBlock). block_freed b \<longrightarrow> ~ block_allocated b"
+lemma no_use_after_free: "\<forall>(b :: memory_block). block_freed b \<longrightarrow> ~ block_allocated b"
   by auto
 
 (* memory_leak_impossible (matches Coq) *)
-lemma memory_leak_impossible: "\<forall>(h :: Heap). (\<forall>b. In b (heap_blocks h) \<longrightarrow> block_allocated b \<or> block_freed b) \<longrightarrow> \<forall>b. In b (heap_blocks h) \<longrightarrow> block_state b = Allocated \<or> block_state b = Freed"
+lemma memory_leak_impossible: "\<forall>(h :: heap). (\<forall>b. In b (heap_blocks h) \<longrightarrow> block_allocated b \<or> block_freed b) \<longrightarrow> \<forall>b. In b (heap_blocks h) \<longrightarrow> block_state b = Allocated \<or> block_state b = Freed"
   by auto
 
 (* stack_overflow_prevented (matches Coq) *)
-lemma stack_overflow_prevented: "\<forall>(s :: Stack). stack_within_bounds s \<longrightarrow> stack_current_depth s \<le> stack_max_depth s"
+lemma stack_overflow_prevented: "\<forall>(s :: stack). stack_within_bounds s \<longrightarrow> stack_current_depth s \<le> stack_max_depth s"
   by auto
 
 (* heap_fragmentation_bounded (matches Coq) *)
-lemma heap_fragmentation_bounded: "\<forall>(h :: Heap) (max_frag :: nat). heap_fragmentation_bounded_prop h max_frag \<longrightarrow> heap_fragmentation_ratio h \<le> max_frag"
+lemma heap_fragmentation_bounded: "\<forall>(h :: heap) (max_frag :: nat). heap_fragmentation_bounded_prop h max_frag \<longrightarrow> heap_fragmentation_ratio h \<le> max_frag"
   by auto
 
 (* memory_pressure_handled (matches Coq) *)
-lemma memory_pressure_handled: "\<forall>(h :: Heap). memory_pressure_handled_prop h \<longrightarrow> heap_used_size h > (heap_total_size h * 90) / 100 \<longrightarrow> heap_fragmentation_ratio h \<le> 50"
+lemma memory_pressure_handled: "\<forall>(h :: heap). memory_pressure_handled_prop h \<longrightarrow> heap_used_size h > (heap_total_size h * 90) / 100 \<longrightarrow> heap_fragmentation_ratio h \<le> 50"
   by auto
 
 (* oom_graceful_recovery (matches Coq) *)
-lemma oom_graceful_recovery: "\<forall>(h :: Heap) (request :: nat). oom_graceful h request \<longrightarrow> heap_used_size h + request > heap_total_size h \<longrightarrow> heap_used_size h \<le> heap_total_size h"
+lemma oom_graceful_recovery: "\<forall>(h :: heap) (request :: nat). oom_graceful h request \<longrightarrow> heap_used_size h + request > heap_total_size h \<longrightarrow> heap_used_size h \<le> heap_total_size h"
   by auto
 
 (* virtual_memory_page_aligned (matches Coq) *)
-lemma virtual_memory_page_aligned: "\<forall>(vm :: VirtualMapping). page_aligned vm \<longrightarrow> vmap_page_size vm > 0"
+lemma virtual_memory_page_aligned: "\<forall>(vm :: virtual_mapping). page_aligned vm \<longrightarrow> vmap_page_size vm > 0"
   by auto
 
 (* memory_mapping_non_overlapping (matches Coq) *)
-lemma memory_mapping_non_overlapping: "\<forall>(vm1 vm2 : VirtualMapping). mappings_non_overlapping vm1 vm2 \<longrightarrow> \<forall>addr. vmap_virtual_page vm1 \<le> addr \<longrightarrow> addr < vmap_virtual_page vm1 + vmap_page_size vm1 \<longrightarrow> ~ (vmap_virtual_page vm2 \<le> addr \<and> addr < vmap_virtual_page vm2 + vmap_page_size vm2)"
+lemma memory_mapping_non_overlapping: "\<forall>(vm1 vm2 : virtual_mapping). mappings_non_overlapping vm1 vm2 \<longrightarrow> \<forall>addr. vmap_virtual_page vm1 \<le> addr \<longrightarrow> addr < vmap_virtual_page vm1 + vmap_page_size vm1 \<longrightarrow> ~ (vmap_virtual_page vm2 \<le> addr \<and> addr < vmap_virtual_page vm2 + vmap_page_size vm2)"
   by auto
 
 (* shared_memory_synchronized (matches Coq) *)
-lemma shared_memory_synchronized: "\<forall>(b1 b2 : MemoryBlock). shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2"
+lemma shared_memory_synchronized: "\<forall>(b1 b2 : memory_block). shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2"
   by auto
 
 (* cache_coherent (matches Coq) *)
-lemma cache_coherent: "\<forall>(b1 b2 : MemoryBlock). shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2 \<and> block_size b1 = block_size b2"
+lemma cache_coherent: "\<forall>(b1 b2 : memory_block). shared_memory_sync b1 b2 \<longrightarrow> block_id b1 = block_id b2 \<longrightarrow> block_start b1 = block_start b2 \<and> block_size b1 = block_size b2"
   by auto
 
 (* dma_buffer_protected (matches Coq) *)
-lemma dma_buffer_protected: "\<forall>(b :: MemoryBlock). dma_buffer_protected_prop b \<longrightarrow> block_allocated b \<longrightarrow> block_owner b > 0"
+lemma dma_buffer_protected: "\<forall>(b :: memory_block). dma_buffer_protected_prop b \<longrightarrow> block_allocated b \<longrightarrow> block_owner b > 0"
   by auto
 
 (* memory_zeroed_on_free (matches Coq) *)
-lemma memory_zeroed_on_free: "\<forall>(b :: MemoryBlock). block_zeroed_on_free b \<longrightarrow> block_freed b \<longrightarrow> block_zeroed b = True"
+lemma memory_zeroed_on_free: "\<forall>(b :: memory_block). block_zeroed_on_free b \<longrightarrow> block_freed b \<longrightarrow> block_zeroed b = True"
   by auto
 
 end

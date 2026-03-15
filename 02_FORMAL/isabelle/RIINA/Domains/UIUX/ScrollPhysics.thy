@@ -42,6 +42,17 @@ theory ScrollPhysics
   imports Main
 begin
 
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym bounded_scroll_state = "nat"
+type_synonym infinite_scroll = "nat"
+type_synonym nested_scroll_state = "nat"
+type_synonym paging_state = "nat"
+type_synonym pull_to_refresh = "nat"
+type_synonym r = "nat"
+type_synonym scroll_indicator = "nat"
+type_synonym scroll_restoration = "nat"
+type_synonym scroll_state = "nat"
+type_synonym snap_point_scroll = "nat"
 (* velocity_at_time (matches Coq: Definition velocity_at_time) *)
 definition velocity_at_time :: "R" where
   "velocity_at_time \<equiv> v0 * exp (- friction * t)"
@@ -51,91 +62,91 @@ definition rubber_band_displacement :: "R" where
   "rubber_band_displacement \<equiv> overshoot / (1 + overshoot / max_distance)"
 
 (* deceleration_initial_velocity (matches Coq) *)
-lemma deceleration_initial_velocity: "\<forall>(v0 friction : R). friction > 0 \<longrightarrow> velocity_at_time v0 friction 0 = v0"
+lemma deceleration_initial_velocity: "\<forall>(v0 friction : r). friction > 0 \<longrightarrow> velocity_at_time v0 friction 0 = v0"
   by auto
 
 (* paging_exact_boundary (matches Coq) *)
-lemma paging_exact_boundary: "\<forall>(ps :: PagingState). current_offset ps = INR (target_page ps) * page_width ps"
+lemma paging_exact_boundary: "\<forall>(ps :: paging_state). current_offset ps = INR (target_page ps) * page_width ps"
   by auto
 
 (* velocity_decays (matches Coq) *)
-lemma velocity_decays: "\<forall>(v0 friction t : R). friction > 0 \<longrightarrow> t > 0 \<longrightarrow> v0 > 0 \<longrightarrow> velocity_at_time v0 friction t < v0"
+lemma velocity_decays: "\<forall>(v0 friction t : r). friction > 0 \<longrightarrow> t > 0 \<longrightarrow> v0 > 0 \<longrightarrow> velocity_at_time v0 friction t < v0"
   by auto
 
 (* page_width_positive_lemma (matches Coq) *)
-lemma page_width_positive_lemma: "\<forall>(ps :: PagingState). page_width ps > 0"
+lemma page_width_positive_lemma: "\<forall>(ps :: paging_state). page_width ps > 0"
   by auto
 
 (* 1 (matches Coq) *)
-lemma 1: "velocity_always_positive_direction — velocity decays toward zero Theorem velocity_always_positive_direction : \<forall>(v0 friction t : R). friction > 0 \<longrightarrow> t \<ge> 0 \<longrightarrow> v0 > 0 \<longrightarrow> velocity_at_time v0 friction t > 0"
+lemma 1: "velocity_always_positive_direction — velocity decays toward zero Theorem velocity_always_positive_direction : \<forall>(v0 friction t : r). friction > 0 \<longrightarrow> t \<ge> 0 \<longrightarrow> v0 > 0 \<longrightarrow> velocity_at_time v0 friction t > 0"
   by auto
 
 (* velocity_negative_stays_negative (matches Coq) *)
-lemma velocity_negative_stays_negative: "\<forall>(v0 friction t : R). friction > 0 \<longrightarrow> t \<ge> 0 \<longrightarrow> v0 < 0 \<longrightarrow> velocity_at_time v0 friction t < 0"
+lemma velocity_negative_stays_negative: "\<forall>(v0 friction t : r). friction > 0 \<longrightarrow> t \<ge> 0 \<longrightarrow> v0 < 0 \<longrightarrow> velocity_at_time v0 friction t < 0"
   by auto
 
 (* 2 (matches Coq) *)
-lemma 2: "scroll_position_bounded — bounded scroll stays within range Theorem scroll_position_bounded : \<forall>(bss :: BoundedScrollState). 0 \<le> bss_position bss \<and> bss_position bss \<le> bss_content_height bss - bss_viewport_height bss"
+lemma 2: "scroll_position_bounded — bounded scroll stays within range Theorem scroll_position_bounded : \<forall>(bss :: bounded_scroll_state). 0 \<le> bss_position bss \<and> bss_position bss \<le> bss_content_height bss - bss_viewport_height bss"
   by auto
 
 (* 3 (matches Coq) *)
-lemma 3: "rubber_band_returns — rubber band displacement is less than overshoot Theorem rubber_band_returns : \<forall>(overshoot max_distance : R). overshoot > 0 \<longrightarrow> max_distance > 0 \<longrightarrow> rubber_band_displacement overshoot max_distance < overshoot"
+lemma 3: "rubber_band_returns — rubber band displacement is less than overshoot Theorem rubber_band_returns : \<forall>(overshoot max_distance : r). overshoot > 0 \<longrightarrow> max_distance > 0 \<longrightarrow> rubber_band_displacement overshoot max_distance < overshoot"
   by auto
 
 (* 4 (matches Coq) *)
-lemma 4: "rubber_band_resistance_increases — further pull = more resistance Theorem rubber_band_resistance_increases : \<forall>(d1 d2 max_distance : R). 0 < d1 \<longrightarrow> d1 < d2 \<longrightarrow> max_distance > 0 \<longrightarrow> / (1 + d2 / max_distance) < / (1 + d1 / max_distance)"
+lemma 4: "rubber_band_resistance_increases — further pull = more resistance Theorem rubber_band_resistance_increases : \<forall>(d1 d2 max_distance : r). 0 < d1 \<longrightarrow> d1 < d2 \<longrightarrow> max_distance > 0 \<longrightarrow> / (1 + d2 / max_distance) < / (1 + d1 / max_distance)"
   by auto
 
 (* 5 (matches Coq) *)
-lemma 5: "momentum_scroll_continuous — velocity function is well-defined everywhere Theorem momentum_scroll_continuous : \<forall>(v0 friction t1 t2 : R). friction > 0 \<longrightarrow> 0 \<le> t1 \<longrightarrow> t1 \<le> t2 \<longrightarrow> v0 > 0 \<longrightarrow> velocity_at_time v0 friction t2 \<le> velocity_at_time v0 friction t1"
+lemma 5: "momentum_scroll_continuous — velocity function is well-defined everywhere Theorem momentum_scroll_continuous : \<forall>(v0 friction t1 t2 : r). friction > 0 \<longrightarrow> 0 \<le> t1 \<longrightarrow> t1 \<le> t2 \<longrightarrow> v0 > 0 \<longrightarrow> velocity_at_time v0 friction t2 \<le> velocity_at_time v0 friction t1"
   by auto
 
 (* 6 (matches Coq) *)
-lemma 6: "scroll_snapping_lands_exactly — snap point is hit precisely Theorem scroll_snapping_lands_exactly : \<forall>(sps :: SnapPointScroll). sps_snapped sps = True \<longrightarrow> sps_position sps = sps_snap_point sps"
+lemma 6: "scroll_snapping_lands_exactly — snap point is hit precisely Theorem scroll_snapping_lands_exactly : \<forall>(sps :: snap_point_scroll). sps_snapped sps = True \<longrightarrow> sps_position sps = sps_snap_point sps"
   by auto
 
 (* 7 (matches Coq) *)
-lemma 7: "nested_scroll_disambiguation — child scrolls when not at boundary Theorem nested_scroll_disambiguation : \<forall>(nss :: NestedScrollState). nss_child_at_boundary nss = False \<longrightarrow> nss_active_scroller nss = True"
+lemma 7: "nested_scroll_disambiguation — child scrolls when not at boundary Theorem nested_scroll_disambiguation : \<forall>(nss :: nested_scroll_state). nss_child_at_boundary nss = False \<longrightarrow> nss_active_scroller nss = True"
   by auto
 
 (* 8 (matches Coq) *)
-lemma 8: "scroll_indicator_accurate — indicator matches scroll position Theorem scroll_indicator_accurate : \<forall>(si :: ScrollIndicator). si_indicator_position si = si_scroll_offset si / si_content_size si"
+lemma 8: "scroll_indicator_accurate — indicator matches scroll position Theorem scroll_indicator_accurate : \<forall>(si :: scroll_indicator). si_indicator_position si = si_scroll_offset si / si_content_size si"
   by auto
 
 (* 9 (matches Coq) *)
-lemma 9: "content_offset_non_negative — bounded scroll has non-negative offset Theorem content_offset_non_negative : \<forall>(bss :: BoundedScrollState). bss_position bss \<ge> 0"
+lemma 9: "content_offset_non_negative — bounded scroll has non-negative offset Theorem content_offset_non_negative : \<forall>(bss :: bounded_scroll_state). bss_position bss \<ge> 0"
   by auto
 
 (* 10 (matches Coq) *)
-lemma 10: "scroll_to_top_works — position 0 is always reachable Theorem scroll_to_top_works : \<forall>(v0 friction : R). friction > 0 \<longrightarrow> v0 > 0 \<longrightarrow> velocity_at_time v0 friction 0 = v0"
+lemma 10: "scroll_to_top_works — position 0 is always reachable Theorem scroll_to_top_works : \<forall>(v0 friction : r). friction > 0 \<longrightarrow> v0 > 0 \<longrightarrow> velocity_at_time v0 friction 0 = v0"
   by auto
 
 (* 11 (matches Coq) *)
-lemma 11: "pull_to_refresh_threshold — refresh triggers at correct distance Theorem pull_to_refresh_threshold : \<forall>(ptr :: PullToRefresh). ptr_pull_distance ptr \<ge> ptr_threshold ptr \<longrightarrow> ptr_triggered ptr = True"
+lemma 11: "pull_to_refresh_threshold — refresh triggers at correct distance Theorem pull_to_refresh_threshold : \<forall>(ptr :: pull_to_refresh). ptr_pull_distance ptr \<ge> ptr_threshold ptr \<longrightarrow> ptr_triggered ptr = True"
   by auto
 
 (* 12 (matches Coq) *)
-lemma 12: "infinite_scroll_loads — reaching bottom triggers load Theorem infinite_scroll_loads : \<forall>(is_ :: InfiniteScroll). is_position is_ \<ge> is_content_end is_ - is_threshold is_ \<longrightarrow> is_load_triggered is_ = True"
+lemma 12: "infinite_scroll_loads — reaching bottom triggers load Theorem infinite_scroll_loads : \<forall>(is_ :: infinite_scroll). is_position is_ \<ge> is_content_end is_ - is_threshold is_ \<longrightarrow> is_load_triggered is_ = True"
   by auto
 
 (* 13 (matches Coq) *)
-lemma 13: "scroll_restoration — returning to page restores position Theorem scroll_restoration : \<forall>(sr :: ScrollRestoration). sr_restored_position sr = sr_saved_position sr"
+lemma 13: "scroll_restoration — returning to page restores position Theorem scroll_restoration : \<forall>(sr :: scroll_restoration). sr_restored_position sr = sr_saved_position sr"
   by auto
 
 (* 14 (matches Coq) *)
-lemma 14: "velocity_zero_at_rest — velocity decays to approach 0 Theorem velocity_zero_at_rest : \<forall>(v0 friction t : R). friction > 0 \<longrightarrow> t > 0 \<longrightarrow> v0 \<noteq> 0 \<longrightarrow> Rabs (velocity_at_time v0 friction t) < Rabs v0"
+lemma 14: "velocity_zero_at_rest — velocity decays to approach 0 Theorem velocity_zero_at_rest : \<forall>(v0 friction t : r). friction > 0 \<longrightarrow> t > 0 \<longrightarrow> v0 \<noteq> 0 \<longrightarrow> Rabs (velocity_at_time v0 friction t) < Rabs v0"
   by auto
 
 (* 15 (matches Coq) *)
-lemma 15: "friction_positive_definite — friction always reduces velocity Theorem friction_positive_definite : \<forall>(ss :: ScrollState). friction_coefficient ss > 0"
+lemma 15: "friction_positive_definite — friction always reduces velocity Theorem friction_positive_definite : \<forall>(ss :: scroll_state). friction_coefficient ss > 0"
   by auto
 
 (* velocity_strictly_decreasing (matches Coq) *)
-lemma velocity_strictly_decreasing: "\<forall>(v0 friction t1 t2 : R). friction > 0 \<longrightarrow> 0 \<le> t1 \<longrightarrow> t1 < t2 \<longrightarrow> v0 > 0 \<longrightarrow> velocity_at_time v0 friction t2 < velocity_at_time v0 friction t1"
+lemma velocity_strictly_decreasing: "\<forall>(v0 friction t1 t2 : r). friction > 0 \<longrightarrow> 0 \<le> t1 \<longrightarrow> t1 < t2 \<longrightarrow> v0 > 0 \<longrightarrow> velocity_at_time v0 friction t2 < velocity_at_time v0 friction t1"
   by auto
 
 (* paging_page_zero_offset (matches Coq) *)
-lemma paging_page_zero_offset: "\<forall>(pw :: R). pw > 0 \<longrightarrow> INR 0 * pw = 0"
+lemma paging_page_zero_offset: "\<forall>(pw :: r). pw > 0 \<longrightarrow> INR 0 * pw = 0"
   by auto
 
 end

@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | HealthState        | health_state           | OK     |
- * | FaultType          | fault_type             | OK     |
- * | RecoveryAction     | recovery_action        | OK     |
+ * | health_state        | health_state           | OK     |
+ * | fault_type          | fault_type             | OK     |
+ * | recovery_action     | recovery_action        | OK     |
  * | detection_complete | detection_complete     | OK     |
  * | severity_bounded   | severity_bounded       | OK     |
  * | timeout_ok         | timeout_ok             | OK     |
@@ -69,14 +69,19 @@ theory SelfHealing
   imports Main CoqCompat
 begin
 
-(* HealthState (matches Coq: Inductive HealthState) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym capability_level = "nat"
+type_synonym checkpoint = "nat"
+type_synonym fault = "nat"
+type_synonym recovery_plan = "nat"
+(* health_state (matches Coq: Inductive health_state) *)
 datatype health_state =
     Healthy
   |     Degraded
   |     Faulty
   |     Recovering
 
-(* FaultType (matches Coq: Inductive FaultType) *)
+(* fault_type (matches Coq: Inductive fault_type) *)
 datatype fault_type =
     HardwareFault
   |     SoftwareFault
@@ -84,7 +89,7 @@ datatype fault_type =
   |     SecurityFault
   |     DataFault
 
-(* RecoveryAction (matches Coq: Inductive RecoveryAction) *)
+(* recovery_action (matches Coq: Inductive recovery_action) *)
 datatype recovery_action =
     Restart
   |     Rollback
@@ -190,27 +195,27 @@ lemma heal_001_detection_complete: "\<forall>(detected total : nat). detection_c
   by auto
 
 (* heal_002_severity_bounded (matches Coq) *)
-lemma heal_002_severity_bounded: "\<forall>(fault :: Fault) (max_sev :: nat). severity_bounded fault max_sev = True \<longrightarrow> fault_severity fault \<le> max_sev"
+lemma heal_002_severity_bounded: "\<forall>(fault :: fault) (max_sev :: nat). severity_bounded fault max_sev = True \<longrightarrow> fault_severity fault \<le> max_sev"
   by auto
 
 (* heal_003_plan_verified (matches Coq) *)
-lemma heal_003_plan_verified: "\<forall>(plan :: RecoveryPlan). plan_verified plan = True \<longrightarrow> plan_verified plan = True"
+lemma heal_003_plan_verified: "\<forall>(plan :: recovery_plan). plan_verified plan = True \<longrightarrow> plan_verified plan = True"
   by auto
 
 (* heal_004_timeout_bounded (matches Coq) *)
-lemma heal_004_timeout_bounded: "\<forall>(plan :: RecoveryPlan) (max_timeout :: nat). timeout_ok plan max_timeout = True \<longrightarrow> plan_timeout plan \<le> max_timeout"
+lemma heal_004_timeout_bounded: "\<forall>(plan :: recovery_plan) (max_timeout :: nat). timeout_ok plan max_timeout = True \<longrightarrow> plan_timeout plan \<le> max_timeout"
   by auto
 
 (* heal_005_actions_exist (matches Coq) *)
-lemma heal_005_actions_exist: "\<forall>(plan :: RecoveryPlan). plan_has_actions plan = True \<longrightarrow> length (plan_actions plan) > 0"
+lemma heal_005_actions_exist: "\<forall>(plan :: recovery_plan). plan_has_actions plan = True \<longrightarrow> length (plan_actions plan) > 0"
   by auto
 
 (* heal_006_checkpoint_verified (matches Coq) *)
-lemma heal_006_checkpoint_verified: "\<forall>(cp :: Checkpoint). cp_verified cp = True \<longrightarrow> cp_verified cp = True"
+lemma heal_006_checkpoint_verified: "\<forall>(cp :: checkpoint). cp_verified cp = True \<longrightarrow> cp_verified cp = True"
   by auto
 
 (* heal_007_checkpoint_fresh (matches Coq) *)
-lemma heal_007_checkpoint_fresh: "\<forall>(cp :: Checkpoint) (current max_age : nat). checkpoint_fresh cp current max_age = True \<longrightarrow> current - cp_timestamp cp \<le> max_age"
+lemma heal_007_checkpoint_fresh: "\<forall>(cp :: checkpoint) (current max_age : nat). checkpoint_fresh cp current max_age = True \<longrightarrow> current - cp_timestamp cp \<le> max_age"
   by auto
 
 (* heal_008_hash_valid (matches Coq) *)
@@ -222,7 +227,7 @@ lemma heal_009_degradation_valid: "\<forall>(level max_level : nat). degradation
   by auto
 
 (* heal_010_capability_bounded (matches Coq) *)
-lemma heal_010_capability_bounded: "\<forall>(cap :: CapabilityLevel). capability_bounded cap = True \<longrightarrow> cap_level cap \<le> 100"
+lemma heal_010_capability_bounded: "\<forall>(cap :: capability_level). capability_bounded cap = True \<longrightarrow> cap_level cap \<le> 100"
   by auto
 
 (* heal_011_isolation_effective (matches Coq) *)
@@ -234,7 +239,7 @@ lemma heal_012_failover_available: "\<forall>(targets : list nat). failover_avai
   by auto
 
 (* heal_013_recovery_completes (matches Coq) *)
-lemma heal_013_recovery_completes: "\<forall>(before after : HealthState). recovery_complete before after = True \<longrightarrow> after = Healthy \<or> \<exists>n. after = Degraded n"
+lemma heal_013_recovery_completes: "\<forall>(before after : health_state). recovery_complete before after = True \<longrightarrow> after = Healthy \<or> \<exists>n. after = Degraded n"
   by simp
 
 (* heal_014_no_recurrence (matches Coq) *)

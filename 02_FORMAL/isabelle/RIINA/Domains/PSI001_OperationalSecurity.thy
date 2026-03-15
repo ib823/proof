@@ -12,15 +12,15 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | AuthMode           | auth_mode              | OK     |
- * | Share              | share                  | OK     |
- * | ThresholdPolicy    | threshold_policy       | OK     |
- * | DuressResponse     | duress_response        | OK     |
- * | DeadManSwitch      | dead_man_switch        | OK     |
- * | InsiderBudget      | insider_budget         | OK     |
- * | AuditEntry         | audit_entry            | OK     |
- * | Platform           | platform               | OK     |
- * | TimeLock           | time_lock              | OK     |
+ * | auth_mode           | auth_mode              | OK     |
+ * | share              | share                  | OK     |
+ * | threshold_policy    | threshold_policy       | OK     |
+ * | duress_response     | duress_response        | OK     |
+ * | dead_man_switch      | dead_man_switch        | OK     |
+ * | insider_budget      | insider_budget         | OK     |
+ * | audit_entry         | audit_entry            | OK     |
+ * | platform           | platform               | OK     |
+ * | time_lock           | time_lock              | OK     |
  * | field_add          | field_add              | OK     |
  * | field_mul          | field_mul              | OK     |
  * | field_sub          | field_sub              | OK     |
@@ -89,38 +89,42 @@ theory PSI001_OperationalSecurity
   imports Main CoqCompat
 begin
 
-(* AuthMode (matches Coq: Inductive AuthMode) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym a = "nat"
+type_synonym audit_log = "nat"
+type_synonym type = "nat"
+(* auth_mode (matches Coq: Inductive auth_mode) *)
 datatype auth_mode =
     NormalAuth
   |     DuressAuth
   |     EmergencyAuth
 
-(* Share (matches Coq: Record Share) *)
+(* share (matches Coq: Record share) *)
 record share =
   share_x :: nat
   share_y :: nat
 
-(* ThresholdPolicy (matches Coq: Record ThresholdPolicy) *)
+(* threshold_policy (matches Coq: Record threshold_policy) *)
 record threshold_policy =
   tp_n :: nat
   tp_m :: nat
   tp_approvals :: 'a list
 
-(* DuressResponse (matches Coq: Record DuressResponse) *)
+(* duress_response (matches Coq: Record duress_response) *)
 record duress_response =
   dr_silent_alert :: bool
   dr_fake_access :: bool
   dr_real_lockdown :: bool
   dr_audit_logged :: bool
 
-(* DeadManSwitch (matches Coq: Record DeadManSwitch) *)
+(* dead_man_switch (matches Coq: Record dead_man_switch) *)
 record dead_man_switch =
   dms_last_checkin :: nat
   dms_timeout :: nat
   dms_triggered :: bool
   dms_recovery_action :: nat
 
-(* InsiderBudget (matches Coq: Record InsiderBudget) *)
+(* insider_budget (matches Coq: Record insider_budget) *)
 record insider_budget =
   ib_max_bytes :: nat
   ib_max_queries :: nat
@@ -128,7 +132,7 @@ record insider_budget =
   ib_queries_used :: nat
   ib_window_start :: nat
 
-(* AuditEntry (matches Coq: Record AuditEntry) *)
+(* audit_entry (matches Coq: Record audit_entry) *)
 record audit_entry =
   ae_timestamp :: nat
   ae_actor :: nat
@@ -136,13 +140,13 @@ record audit_entry =
   ae_data_hash :: nat
   ae_prev_hash :: nat
 
-(* Platform (matches Coq: Record Platform) *)
+(* platform (matches Coq: Record platform) *)
 record platform =
   plat_vendor :: nat
   plat_arch :: nat
   plat_firmware_hash :: nat
 
-(* TimeLock (matches Coq: Record TimeLock) *)
+(* time_lock (matches Coq: Record time_lock) *)
 record time_lock =
   tl_operation :: nat
   tl_submit_time :: nat
@@ -227,7 +231,7 @@ definition ib_record_query :: "InsiderBudget \<Rightarrow> nat \<Rightarrow> Ins
      ib_window_start := budget.(ib_window_start) |}"
 
 (* audit_log_append (matches Coq: Definition audit_log_append) *)
-definition audit_log_append :: "AuditLog \<Rightarrow> AuditEntry \<Rightarrow> AuditLog" where
+definition audit_log_append :: "AuditLog \<Rightarrow> audit_entry \<Rightarrow> AuditLog" where
   "audit_log_append log entry \<equiv> entry :: log"
 
 (* audit_chain_valid (matches Coq: Definition audit_chain_valid) *)
@@ -263,7 +267,7 @@ definition tl_cancel :: "TimeLock \<Rightarrow> TimeLock" where
      tl_cancelled := True |}"
 
 (* nth_map_seq (matches Coq) *)
-lemma nth_map_seq: "\<forall>(A :: Type) (f : nat \<longrightarrow> A) (start len i : nat) (d :: A). i < len \<longrightarrow> nth i (map f (seq start len)) d = f (start + i)"
+lemma nth_map_seq: "\<forall>(a :: type) (f : nat \<longrightarrow> a) (start len i : nat) (d :: a). i < len \<longrightarrow> nth i (map f (seq start len)) d = f (start + i)"
   by auto
 
 (* ===============================================================================

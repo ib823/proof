@@ -12,12 +12,12 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | WasmValType        | wasm_val_type          | OK     |
- * | RiinaType          | riina_type             | OK     |
- * | SecLabel           | sec_label              | OK     |
- * | WasmInstr          | wasm_instr             | OK     |
- * | RiinaIR            | riina_ir               | OK     |
- * | RiinaEffect        | riina_effect           | OK     |
+ * | wasm_val_type        | wasm_val_type          | OK     |
+ * | riina_type          | riina_type             | OK     |
+ * | sec_label           | sec_label              | OK     |
+ * | wasm_instr          | wasm_instr             | OK     |
+ * | riina_ir            | riina_ir               | OK     |
+ * | riina_effect        | riina_effect           | OK     |
  * | sec_le             | sec_le                 | OK     |
  * | type_compile       | type_compile           | OK     |
  * | ir_eval            | ir_eval                | OK     |
@@ -85,17 +85,23 @@
  *)
 
 theory WasmBackendVerification
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* WasmValType (matches Coq: Inductive WasmValType) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym bump_alloc = "nat"
+type_synonym closure = "nat"
+type_synonym pair_layout = "nat"
+type_synonym string_const = "nat"
+type_synonym sum_layout = "nat"
+(* wasm_val_type (matches Coq: Inductive wasm_val_type) *)
 datatype wasm_val_type =
     I32
   |     I64
   |     F32
   |     F64
 
-(* RiinaType (matches Coq: Inductive RiinaType) *)
+(* riina_type (matches Coq: Inductive riina_type) *)
 datatype riina_type =
     RTNombor
   |     RTTeks
@@ -103,12 +109,12 @@ datatype riina_type =
   |     RTUnit
   |     RTSecret
 
-(* SecLabel (matches Coq: Inductive SecLabel) *)
+(* sec_label (matches Coq: Inductive sec_label) *)
 datatype sec_label =
     Public
   |     Secret
 
-(* WasmInstr (matches Coq: Inductive WasmInstr) *)
+(* wasm_instr (matches Coq: Inductive wasm_instr) *)
 datatype wasm_instr =
     WConst
   |     WLoad
@@ -123,7 +129,7 @@ datatype wasm_instr =
   |     WDrop
   |     WNop
 
-(* RiinaIR (matches Coq: Inductive RiinaIR) *)
+(* riina_ir (matches Coq: Inductive riina_ir) *)
 datatype riina_ir =
     IRConst
   |     IRVar
@@ -135,7 +141,7 @@ datatype riina_ir =
   |     IRLoad
   |     IRStore
 
-(* RiinaEffect (matches Coq: Inductive RiinaEffect) *)
+(* riina_effect (matches Coq: Inductive riina_effect) *)
 datatype riina_effect =
     EffPure
   |     EffIO
@@ -181,7 +187,7 @@ definition memory_partitioned :: "bool" where
 definition effect_le :: "bool" where "effect_le = undefined"
 
 (* import_effect_safe (matches Coq: Definition import_effect_safe) *)
-definition import_effect_safe :: "RiinaEffect \<Rightarrow> RiinaEffect \<Rightarrow> bool" where
+definition import_effect_safe :: "RiinaEffect \<Rightarrow> riina_effect \<Rightarrow> bool" where
   "import_effect_safe declared import_effect \<equiv> effect_le import_effect declared = True"
 
 (* regions_disjoint (matches Coq: Definition regions_disjoint) *)
@@ -190,7 +196,7 @@ definition regions_disjoint :: "bool" where
   region_start r2 + region_size r2 <= region_start r1"
 
 (* no_cross_label_access (matches Coq: Definition no_cross_label_access) *)
-definition no_cross_label_access :: "nat \<Rightarrow> SecLabel \<Rightarrow> bool" where
+definition no_cross_label_access :: "nat \<Rightarrow> sec_label \<Rightarrow> bool" where
   "no_cross_label_access addr label \<equiv> forall r, r \<in> set regions ->
     region_label r = Secret ->
     label = Public ->
@@ -235,7 +241,7 @@ definition sum_tag_valid :: "SumLayout \<Rightarrow> bool" where
   "sum_tag_valid s \<equiv> sum_tag s = 0 \/ sum_tag s = 1"
 
 (* bump_alloc (matches Coq: Definition bump_alloc) *)
-definition bump_alloc :: "BumpAlloc \<Rightarrow> nat \<Rightarrow> option (nat * BumpAlloc)" where
+definition bump_alloc :: "BumpAlloc \<Rightarrow> nat \<Rightarrow> option (nat * bump_alloc)" where
   "bump_alloc a size \<equiv> if ((bump_ptr \<le> a) + size) (bump_limit a)
   then Some (bump_ptr a, mkBump (bump_ptr a + size) (bump_limit a))
   else None"
@@ -309,7 +315,7 @@ lemma wasm_007_closure_layout: "\<forall>cl addr. closure_layout_valid cl addr"
   by simp
 
 (* wasm_007_closure_no_overlap (matches Coq) *)
-lemma wasm_007_closure_no_overlap: "\<forall>(cl1 cl2 : Closure) a1 a2. a1 + 8 \<le> a2 \<or> a2 + 8 \<le> a1 \<longrightarrow> regions_disjoint (mkRegion a1 8 Public) (mkRegion a2 8 Public)"
+lemma wasm_007_closure_no_overlap: "\<forall>(cl1 cl2 : closure) a1 a2. a1 + 8 \<le> a2 \<or> a2 + 8 \<le> a1 \<longrightarrow> regions_disjoint (mkRegion a1 8 Public) (mkRegion a2 8 Public)"
   by simp
 
 (* wasm_007_closure_func_idx_recoverable (matches Coq) *)

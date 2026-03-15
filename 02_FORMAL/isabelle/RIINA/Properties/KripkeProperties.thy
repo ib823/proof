@@ -57,9 +57,12 @@
  *)
 
 theory KripkeProperties
-  imports Main
+  imports Main Semantics Syntax Typing
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* val_rel_at (matches Coq: Definition val_rel_at) *)
 fun val_rel_at :: "nat \<Rightarrow> store_ty \<Rightarrow> ty \<Rightarrow> bool" where
   "val_rel_at 0 = True"

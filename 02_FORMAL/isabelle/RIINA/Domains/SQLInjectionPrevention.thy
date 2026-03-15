@@ -12,10 +12,10 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | TaintLevel         | taint_level            | OK     |
- * | QueryMethod        | query_method           | OK     |
+ * | taint_level         | taint_level            | OK     |
+ * | query_method        | query_method           | OK     |
  * | SQLOperation       | sql_operation          | OK     |
- * | SQLSecurityConfig  | sql_security_config    | OK     |
+ * | sql_security_config  | sql_security_config    | OK     |
  * | taint_safe         | taint_safe             | OK     |
  * | method_safe        | method_safe            | OK     |
  * | sql_injection_protected | sql_injection_protected | OK     |
@@ -52,13 +52,13 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* TaintLevel (matches Coq: Inductive TaintLevel) *)
+(* taint_level (matches Coq: Inductive taint_level) *)
 datatype taint_level =
     Untainted
   |     UserInput
   |     Sanitized
 
-(* QueryMethod (matches Coq: Inductive QueryMethod) *)
+(* query_method (matches Coq: Inductive query_method) *)
 datatype query_method =
     StringConcat
   |     Parameterized
@@ -72,7 +72,7 @@ datatype sql_operation =
   |     SQL_Delete
   |     SQL_Execute
 
-(* SQLSecurityConfig (matches Coq: Record SQLSecurityConfig) *)
+(* sql_security_config (matches Coq: Record sql_security_config) *)
 record sql_security_config =
   sql_parameterized_only :: bool
   sql_no_string_concat :: bool

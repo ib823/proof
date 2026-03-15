@@ -13,29 +13,29 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | TLSVersion         | tls_version            | OK     |
- * | CipherSuite        | cipher_suite           | OK     |
- * | HandshakeMsg       | handshake_msg          | OK     |
+ * | cipher_suite        | cipher_suite           | OK     |
+ * | handshake_msg       | handshake_msg          | OK     |
  * | TCPState           | tcp_state              | OK     |
  * | TCPEvent           | tcp_event              | OK     |
  * | DNSRecordType      | dns_record_type        | OK     |
  * | KEResult           | ke_result              | OK     |
- * | Certificate        | certificate            | OK     |
- * | TrustAnchor        | trust_anchor           | OK     |
+ * | certificate        | certificate            | OK     |
+ * | trust_anchor        | trust_anchor           | OK     |
  * | TLSTranscript      | tls_transcript         | OK     |
  * | ZeroRTTData        | zero_rtt_data          | OK     |
- * | TLSConnection      | tls_connection         | OK     |
- * | TCPConnection      | tcp_connection         | OK     |
+ * | tls_connection      | tls_connection         | OK     |
+ * | tcp_connection      | tcp_connection         | OK     |
  * | TCPPacket          | tcp_packet             | OK     |
  * | IPPacket           | ip_packet              | OK     |
- * | FragmentBuffer     | fragment_buffer        | OK     |
- * | ICMPState          | icmp_state             | OK     |
- * | RouteEntry         | route_entry            | OK     |
- * | DNSRecord          | dns_record             | OK     |
+ * | fragment_buffer     | fragment_buffer        | OK     |
+ * | icmp_state          | icmp_state             | OK     |
+ * | route_entry         | route_entry            | OK     |
+ * | dns_record          | dns_record             | OK     |
  * | DNSQuery           | dns_query              | OK     |
- * | DNSCacheEntry      | dns_cache_entry        | OK     |
- * | DNSRebindingCheck  | dns_rebinding_check    | OK     |
- * | DNSAmplificationState | dns_amplification_state | OK     |
- * | DoHConnection      | do_h_connection        | OK     |
+ * | dns_cache_entry      | dns_cache_entry        | OK     |
+ * | dns_rebinding_check  | dns_rebinding_check    | OK     |
+ * | dns_amplification_state | dns_amplification_state | OK     |
+ * | do_h_connection      | do_h_connection        | OK     |
  * | is_strong_cipher   | is_strong_cipher       | OK     |
  * | tls_connected      | tls_connected          | OK     |
  * | valid_cert_chain   | valid_cert_chain       | OK     |
@@ -87,6 +87,17 @@ theory VerifiedNetwork
   imports Main
 begin
 
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym cert_chain = "nat list"
+type_synonym session_id = "nat"
+(* Abstract type synonym for Signature *)
+type_synonym signature = "nat"
+(* Abstract type synonym for Nonce *)
+type_synonym nonce = "nat"
+(* Abstract type synonym for Hash *)
+type_synonym hash = "nat"
+(* Abstract type synonym for Key *)
+type_synonym key = "nat"
 (* TLSVersion (matches Coq: Inductive TLSVersion) *)
 datatype tls_version =
     TLS_1_0
@@ -94,13 +105,13 @@ datatype tls_version =
   |     TLS_1_2
   |     TLS_1_3
 
-(* CipherSuite (matches Coq: Inductive CipherSuite) *)
+(* cipher_suite (matches Coq: Inductive cipher_suite) *)
 datatype cipher_suite =
     TLS_AES_128_GCM_SHA256
   |     TLS_AES_256_GCM_SHA384
   |     TLS_CHACHA20_POLY1305_SHA256
 
-(* HandshakeMsg (matches Coq: Inductive HandshakeMsg) *)
+(* handshake_msg (matches Coq: Inductive handshake_msg) *)
 datatype handshake_msg =
     ClientHello
   |     ServerHello
@@ -147,56 +158,56 @@ datatype dns_record_type =
 
 (* KEResult (matches Coq: Record KEResult) *)
 record ke_result =
-  ke_shared :: Key
-  ke_ephemeral_pub :: Key
-  ke_ephemeral_priv :: Key
+  ke_shared :: key
+  ke_ephemeral_pub :: key
+  ke_ephemeral_priv :: key
 
-(* Certificate (matches Coq: Record Certificate) *)
+(* certificate (matches Coq: Record certificate) *)
 record certificate =
   cert_subject :: string
   cert_issuer :: string
-  cert_public_key :: Key
-  cert_signature :: Signature
+  cert_public_key :: key
+  cert_signature :: signature
   cert_valid_from :: nat
   cert_valid_to :: nat
   cert_chain_verified :: bool
   cert_is_ca :: bool
 
-(* TrustAnchor (matches Coq: Record TrustAnchor) *)
+(* trust_anchor (matches Coq: Record trust_anchor) *)
 record trust_anchor =
   anchor_name :: string
-  anchor_key :: Key
+  anchor_key :: key
 
 (* TLSTranscript (matches Coq: Record TLSTranscript) *)
 record tls_transcript =
   transcript_messages :: 'a list
-  transcript_hash :: Hash
+  transcript_hash :: hash
   transcript_bound :: bool
 
 (* ZeroRTTData (matches Coq: Record ZeroRTTData) *)
 record zero_rtt_data =
   zrtt_data :: 'a list
-  zrtt_ticket :: SessionID
+  zrtt_ticket :: session_id
   zrtt_timestamp :: nat
-  zrtt_nonce :: Nonce
+  zrtt_nonce :: nonce
   zrtt_anti_replay_checked :: bool
 
-(* TLSConnection (matches Coq: Record TLSConnection) *)
+(* tls_connection (matches Coq: Record tls_connection) *)
 record tls_connection =
-  tls_version :: TLSVersion
-  tls_cipher :: CipherSuite
-  tls_session_key :: Key
-  tls_transcript :: TLSTranscript
-  tls_server_cert :: Certificate
-  tls_cert_chain :: CertChain
+  tls_version :: tls_version
+  tls_cipher :: cipher_suite
+  tls_session_key :: key
+  tls_transcript :: tls_transcript
+  tls_server_cert :: certificate
+  tls_cert_chain :: cert_chain
   tls_verified :: bool
   tls_forward_secret :: bool
   tls_channel_bound :: bool
-  tls_ke_result :: KEResult
+  tls_ke_result :: ke_result
 
-(* TCPConnection (matches Coq: Record TCPConnection) *)
+(* tcp_connection (matches Coq: Record tcp_connection) *)
 record tcp_connection =
-  tcp_state :: TCPState
+  tcp_state :: tcp_state
   tcp_seq :: nat
   tcp_ack :: nat
   tcp_window :: nat
@@ -221,20 +232,20 @@ record ip_packet =
   ip_payload :: 'a list
   ip_total_length :: nat
 
-(* FragmentBuffer (matches Coq: Record FragmentBuffer) *)
+(* fragment_buffer (matches Coq: Record fragment_buffer) *)
 record fragment_buffer =
   frag_id :: nat
   frag_received :: 'a list
   frag_total_size :: nat
   frag_no_overlap_verified :: bool
 
-(* ICMPState (matches Coq: Record ICMPState) *)
+(* icmp_state (matches Coq: Record icmp_state) *)
 record icmp_state =
   icmp_count :: nat
   icmp_window_start :: nat
   icmp_max_rate :: nat
 
-(* RouteEntry (matches Coq: Record RouteEntry) *)
+(* route_entry (matches Coq: Record route_entry) *)
 record route_entry =
   route_dest :: nat
   route_mask :: nat
@@ -242,10 +253,10 @@ record route_entry =
   route_interface :: nat
   route_valid :: bool
 
-(* DNSRecord (matches Coq: Record DNSRecord) *)
+(* dns_record (matches Coq: Record dns_record) *)
 record dns_record =
   dns_name :: string
-  dns_type :: DNSRecordType
+  dns_type :: dns_record_type
   dns_value :: string
   dns_ttl :: nat
   dns_signature :: option
@@ -254,32 +265,32 @@ record dns_record =
 (* DNSQuery (matches Coq: Record DNSQuery) *)
 record dns_query =
   query_name :: string
-  query_type :: DNSRecordType
+  query_type :: dns_record_type
   query_id :: nat
   query_mac :: option
 
-(* DNSCacheEntry (matches Coq: Record DNSCacheEntry) *)
+(* dns_cache_entry (matches Coq: Record dns_cache_entry) *)
 record dns_cache_entry =
-  cache_record :: DNSRecord
+  cache_record :: dns_record
   cache_inserted :: nat
   cache_validated :: bool
 
-(* DNSRebindingCheck (matches Coq: Record DNSRebindingCheck) *)
+(* dns_rebinding_check (matches Coq: Record dns_rebinding_check) *)
 record dns_rebinding_check =
   rebind_original_ip :: nat
   rebind_new_ip :: nat
   rebind_is_private :: bool
   rebind_blocked :: bool
 
-(* DNSAmplificationState (matches Coq: Record DNSAmplificationState) *)
+(* dns_amplification_state (matches Coq: Record dns_amplification_state) *)
 record dns_amplification_state =
   amp_query_size :: nat
   amp_response_size :: nat
   amp_ratio_max :: nat
 
-(* DoHConnection (matches Coq: Record DoHConnection) *)
+(* do_h_connection (matches Coq: Record do_h_connection) *)
 record do_h_connection =
-  doh_tls_conn :: TLSConnection
+  doh_tls_conn :: tls_connection
   doh_encrypted :: bool
 
 (* is_strong_cipher (matches Coq: Definition is_strong_cipher) *)

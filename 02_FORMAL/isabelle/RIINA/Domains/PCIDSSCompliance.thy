@@ -12,21 +12,21 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | CHDType            | chd_type               | OK     |
- * | EncState           | enc_state              | OK     |
- * | PANDisplay         | pan_display            | OK     |
- * | AccessLevel        | access_level           | OK     |
- * | TLSVersion         | tls_version            | OK     |
- * | DeletionState      | deletion_state         | OK     |
- * | CHDRecord          | chd_record             | OK     |
- * | KeyState           | key_state              | OK     |
+ * | chd_type            | chd_type               | OK     |
+ * | enc_state           | enc_state              | OK     |
+ * | pan_display         | pan_display            | OK     |
+ * | access_level        | access_level           | OK     |
+ * | tls_version         | tls_version            | OK     |
+ * | deletion_state      | deletion_state         | OK     |
+ * | chd_record          | chd_record             | OK     |
+ * | key_state           | key_state              | OK     |
  * | PCIAudit           | pci_audit              | OK     |
- * | TokenVault         | token_vault            | OK     |
- * | PCISystem          | pci_system             | OK     |
- * | User               | user                   | OK     |
- * | Transmission       | transmission           | OK     |
- * | RetentionPolicy    | retention_policy       | OK     |
- * | NetworkZone        | network_zone           | OK     |
+ * | token_vault         | token_vault            | OK     |
+ * | pci_system          | pci_system             | OK     |
+ * | user               | user                   | OK     |
+ * | transmission       | transmission           | OK     |
+ * | retention_policy    | retention_policy       | OK     |
+ * | network_zone        | network_zone           | OK     |
  * | can_store          | can_store              | OK     |
  * | pci_compliant_encryption | pci_compliant_encryption | OK     |
  * | display_compliant  | display_compliant      | OK     |
@@ -87,7 +87,7 @@ theory PCIDSSCompliance
   imports Main CoqCompat
 begin
 
-(* CHDType (matches Coq: Inductive CHDType) *)
+(* chd_type (matches Coq: Inductive chd_type) *)
 datatype chd_type =
     PAN
   |     CVV
@@ -95,48 +95,48 @@ datatype chd_type =
   |     Expiry
   |     CardholderName
 
-(* EncState (matches Coq: Inductive EncState) *)
+(* enc_state (matches Coq: Inductive enc_state) *)
 datatype enc_state =
     Plain
   |     AES128
   |     AES256
   |     Tokenized
 
-(* PANDisplay (matches Coq: Inductive PANDisplay) *)
+(* pan_display (matches Coq: Inductive pan_display) *)
 datatype pan_display =
     FullPAN
   |     MaskedPAN
   |     TokenizedPAN
 
-(* AccessLevel (matches Coq: Inductive AccessLevel) *)
+(* access_level (matches Coq: Inductive access_level) *)
 datatype access_level =
     NoAccess
   |     ReadOnly
   |     ReadWrite
   |     Admin
 
-(* TLSVersion (matches Coq: Inductive TLSVersion) *)
+(* tls_version (matches Coq: Inductive tls_version) *)
 datatype tls_version =
     TLS10
   |     TLS11
   |     TLS12
   |     TLS13
 
-(* DeletionState (matches Coq: Inductive DeletionState) *)
+(* deletion_state (matches Coq: Inductive deletion_state) *)
 datatype deletion_state =
     NotDeleted
   |     MarkedForDeletion
   |     Overwritten
   |     SecurelyDeleted
 
-(* CHDRecord (matches Coq: Record CHDRecord) *)
+(* chd_record (matches Coq: Record chd_record) *)
 record chd_record =
-  chd_type :: CHDType
+  chd_type :: chd_type
   chd_value :: nat
-  chd_encryption :: EncState
-  chd_display_format :: PANDisplay
+  chd_encryption :: enc_state
+  chd_display_format :: pan_display
 
-(* KeyState (matches Coq: Record KeyState) *)
+(* key_state (matches Coq: Record key_state) *)
 record key_state =
   key_id :: nat
   key_creation_time :: nat
@@ -148,42 +148,42 @@ record pci_audit =
   pci_timestamp :: nat
   pci_user :: nat
   pci_action :: nat
-  pci_chd_accessed :: CHDType
+  pci_chd_accessed :: chd_type
   pci_success :: bool
   pci_hash :: nat
 
-(* TokenVault (matches Coq: Record TokenVault) *)
+(* token_vault (matches Coq: Record token_vault) *)
 record token_vault =
   vault_tokens :: 'a list
-  vault_key :: KeyState
+  vault_key :: key_state
   vault_isolated :: bool
 
-(* PCISystem (matches Coq: Record PCISystem) *)
+(* pci_system (matches Coq: Record pci_system) *)
 record pci_system =
   pci_chd_records :: 'a list
   pci_audit_log :: 'a list
   pci_keys :: 'a list
-  pci_vault :: TokenVault
+  pci_vault :: token_vault
 
-(* User (matches Coq: Record User) *)
+(* user (matches Coq: Record user) *)
 record user =
   user_id :: nat
-  user_access_level :: AccessLevel
+  user_access_level :: access_level
   user_mfa_enabled :: bool
   user_need_to_know :: bool
 
-(* Transmission (matches Coq: Record Transmission) *)
+(* transmission (matches Coq: Record transmission) *)
 record transmission =
-  trans_tls_version :: TLSVersion
+  trans_tls_version :: tls_version
   trans_encrypted :: bool
-  trans_chd_type :: CHDType
+  trans_chd_type :: chd_type
 
-(* RetentionPolicy (matches Coq: Record RetentionPolicy) *)
+(* retention_policy (matches Coq: Record retention_policy) *)
 record retention_policy =
   retention_max_days :: nat
   retention_auto_delete :: bool
 
-(* NetworkZone (matches Coq: Record NetworkZone) *)
+(* network_zone (matches Coq: Record network_zone) *)
 record network_zone =
   zone_id :: nat
   zone_is_cde :: bool
@@ -199,7 +199,7 @@ fun can_store :: "CHDType \<Rightarrow> bool" where
 |   "can_store PIN = false"
 
 (* pci_compliant_encryption (matches Coq: Definition pci_compliant_encryption) *)
-fun pci_compliant_encryption :: "EncState \<Rightarrow> CHDType \<Rightarrow> bool" where
+fun pci_compliant_encryption :: "EncState \<Rightarrow> chd_type \<Rightarrow> bool" where
   "pci_compliant_encryption PAN = match"
 |   "pci_compliant_encryption Tokenized = true"
 |   "pci_compliant_encryption _ = false"
@@ -277,7 +277,7 @@ definition users_unique_ids :: "bool" where
   ((List.length = ids)) (List.length (nodup Nat.eq_dec ids))"
 
 (* COMPLY_002_01_pan_masking (matches Coq) *)
-lemma COMPLY_002_01_pan_masking: "\<forall>(disp :: PANDisplay). disp = FullPAN \<longrightarrow> display_compliant disp = False"
+lemma COMPLY_002_01_pan_masking: "\<forall>(disp :: pan_display). disp = FullPAN \<longrightarrow> display_compliant disp = False"
   by simp
 
 (* COMPLY_002_01_pan_masking_valid (matches Coq) *)
@@ -285,7 +285,7 @@ lemma COMPLY_002_01_pan_masking_valid: "display_compliant MaskedPAN = True \<and
   by auto
 
 (* COMPLY_002_02_pan_encryption (matches Coq) *)
-lemma COMPLY_002_02_pan_encryption: "\<forall>(enc :: EncState). pci_compliant_encryption enc PAN = True \<longrightarrow> enc = AES256 \<or> enc = Tokenized"
+lemma COMPLY_002_02_pan_encryption: "\<forall>(enc :: enc_state). pci_compliant_encryption enc PAN = True \<longrightarrow> enc = AES256 \<or> enc = Tokenized"
   by auto
 
 (* COMPLY_002_02_pan_plain_forbidden (matches Coq) *)
@@ -301,7 +301,7 @@ lemma COMPLY_002_03_cvv_never_stored: "can_store CVV = False"
   by simp
 
 (* COMPLY_002_03_cvv_no_compliant_encryption (matches Coq) *)
-lemma COMPLY_002_03_cvv_no_compliant_encryption: "\<forall>(enc :: EncState). pci_compliant_encryption enc CVV = False"
+lemma COMPLY_002_03_cvv_no_compliant_encryption: "\<forall>(enc :: enc_state). pci_compliant_encryption enc CVV = False"
   by auto
 
 (* COMPLY_002_04_pin_never_stored (matches Coq) *)
@@ -309,27 +309,27 @@ lemma COMPLY_002_04_pin_never_stored: "can_store PIN = False"
   by simp
 
 (* COMPLY_002_04_pin_no_compliant_encryption (matches Coq) *)
-lemma COMPLY_002_04_pin_no_compliant_encryption: "\<forall>(enc :: EncState). pci_compliant_encryption enc PIN = False"
+lemma COMPLY_002_04_pin_no_compliant_encryption: "\<forall>(enc :: enc_state). pci_compliant_encryption enc PIN = False"
   by auto
 
 (* COMPLY_002_05_key_rotation_detection (matches Coq) *)
-lemma COMPLY_002_05_key_rotation_detection: "\<forall>(k :: KeyState) (current_time :: nat). key_creation_time k + key_rotation_period k < current_time \<longrightarrow> key_needs_rotation k current_time = True"
+lemma COMPLY_002_05_key_rotation_detection: "\<forall>(k :: key_state) (current_time :: nat). key_creation_time k + key_rotation_period k < current_time \<longrightarrow> key_needs_rotation k current_time = True"
   by auto
 
 (* COMPLY_002_05_key_no_rotation_needed (matches Coq) *)
-lemma COMPLY_002_05_key_no_rotation_needed: "\<forall>(k :: KeyState) (current_time :: nat). current_time \<le> key_creation_time k + key_rotation_period k \<longrightarrow> key_needs_rotation k current_time = False"
+lemma COMPLY_002_05_key_no_rotation_needed: "\<forall>(k :: key_state) (current_time :: nat). current_time \<le> key_creation_time k + key_rotation_period k \<longrightarrow> key_needs_rotation k current_time = False"
   by auto
 
 (* COMPLY_002_06_access_requires_need_to_know (matches Coq) *)
-lemma COMPLY_002_06_access_requires_need_to_know: "\<forall>(u :: User). user_need_to_know u = False \<longrightarrow> grant_chd_access u = False"
+lemma COMPLY_002_06_access_requires_need_to_know: "\<forall>(u :: user). user_need_to_know u = False \<longrightarrow> grant_chd_access u = False"
   by simp
 
 (* COMPLY_002_06_no_access_level_denied (matches Coq) *)
-lemma COMPLY_002_06_no_access_level_denied: "\<forall>(u :: User). user_access_level u = NoAccess \<longrightarrow> grant_chd_access u = False"
+lemma COMPLY_002_06_no_access_level_denied: "\<forall>(u :: user). user_access_level u = NoAccess \<longrightarrow> grant_chd_access u = False"
   by simp
 
 (* COMPLY_002_07_unique_ids_singleton (matches Coq) *)
-lemma COMPLY_002_07_unique_ids_singleton: "\<forall>(u :: User). users_unique_ids [u] = True"
+lemma COMPLY_002_07_unique_ids_singleton: "\<forall>(u :: user). users_unique_ids [u] = True"
   by auto
 
 (* COMPLY_002_07_unique_ids_empty (matches Coq) *)
@@ -337,27 +337,27 @@ lemma COMPLY_002_07_unique_ids_empty: "users_unique_ids [] = True"
   by simp
 
 (* COMPLY_002_08_mfa_required (matches Coq) *)
-lemma COMPLY_002_08_mfa_required: "\<forall>(u :: User). user_mfa_enabled u = False \<longrightarrow> user_access_level u \<noteq> NoAccess \<longrightarrow> grant_chd_access u = False"
+lemma COMPLY_002_08_mfa_required: "\<forall>(u :: user). user_mfa_enabled u = False \<longrightarrow> user_access_level u \<noteq> NoAccess \<longrightarrow> grant_chd_access u = False"
   by auto
 
 (* COMPLY_002_08_access_granted_implies_mfa (matches Coq) *)
-lemma COMPLY_002_08_access_granted_implies_mfa: "\<forall>(u :: User). grant_chd_access u = True \<longrightarrow> user_mfa_enabled u = True"
+lemma COMPLY_002_08_access_granted_implies_mfa: "\<forall>(u :: user). grant_chd_access u = True \<longrightarrow> user_mfa_enabled u = True"
   by auto
 
 (* COMPLY_002_09_audit_entry_has_timestamp (matches Coq) *)
-lemma COMPLY_002_09_audit_entry_has_timestamp: "\<forall>(ts usr act : nat) (chd :: CHDType) (succ : bool) (prev :: nat). pci_timestamp (create_audit_entry ts usr act chd succ prev) = ts"
+lemma COMPLY_002_09_audit_entry_has_timestamp: "\<forall>(ts usr act : nat) (chd :: chd_type) (succ : bool) (prev :: nat). pci_timestamp (create_audit_entry ts usr act chd succ prev) = ts"
   by simp
 
 (* COMPLY_002_09_audit_entry_has_user (matches Coq) *)
-lemma COMPLY_002_09_audit_entry_has_user: "\<forall>(ts usr act : nat) (chd :: CHDType) (succ : bool) (prev :: nat). pci_user (create_audit_entry ts usr act chd succ prev) = usr"
+lemma COMPLY_002_09_audit_entry_has_user: "\<forall>(ts usr act : nat) (chd :: chd_type) (succ : bool) (prev :: nat). pci_user (create_audit_entry ts usr act chd succ prev) = usr"
   by simp
 
 (* COMPLY_002_09_audit_entry_has_action (matches Coq) *)
-lemma COMPLY_002_09_audit_entry_has_action: "\<forall>(ts usr act : nat) (chd :: CHDType) (succ : bool) (prev :: nat). pci_action (create_audit_entry ts usr act chd succ prev) = act"
+lemma COMPLY_002_09_audit_entry_has_action: "\<forall>(ts usr act : nat) (chd :: chd_type) (succ : bool) (prev :: nat). pci_action (create_audit_entry ts usr act chd succ prev) = act"
   by simp
 
 (* COMPLY_002_10_audit_has_hash (matches Coq) *)
-lemma COMPLY_002_10_audit_has_hash: "\<forall>(ts usr act : nat) (chd :: CHDType) (succ : bool) (prev :: nat). pci_hash (create_audit_entry ts usr act chd succ prev) = prev + ts + usr + act"
+lemma COMPLY_002_10_audit_has_hash: "\<forall>(ts usr act : nat) (chd :: chd_type) (succ : bool) (prev :: nat). pci_hash (create_audit_entry ts usr act chd succ prev) = prev + ts + usr + act"
   by simp
 
 (* COMPLY_002_10_empty_log_valid (matches Coq) *)
@@ -377,15 +377,15 @@ lemma COMPLY_002_11_old_tls_non_compliant: "tls_compliant TLS10 = False \<and> t
   by auto
 
 (* COMPLY_002_11_transmission_requires_encryption (matches Coq) *)
-lemma COMPLY_002_11_transmission_requires_encryption: "\<forall>(t :: Transmission). transmission_compliant t = True \<longrightarrow> trans_encrypted t = True"
+lemma COMPLY_002_11_transmission_requires_encryption: "\<forall>(t :: transmission). transmission_compliant t = True \<longrightarrow> trans_encrypted t = True"
   by auto
 
 (* COMPLY_002_12_token_no_key_no_pan (matches Coq) *)
-lemma COMPLY_002_12_token_no_key_no_pan: "\<forall>(vault :: TokenVault) (token :: nat). token_lookup vault token False = None"
+lemma COMPLY_002_12_token_no_key_no_pan: "\<forall>(vault :: token_vault) (token :: nat). token_lookup vault token False = None"
   by simp
 
 (* COMPLY_002_12_tokenization_irreversible_without_key (matches Coq) *)
-lemma COMPLY_002_12_tokenization_irreversible_without_key: "\<forall>(vault :: TokenVault) (token pan : nat). token_lookup vault token False = Some pan \<longrightarrow> False"
+lemma COMPLY_002_12_tokenization_irreversible_without_key: "\<forall>(vault :: token_vault) (token pan : nat). token_lookup vault token False = Some pan \<longrightarrow> False"
   by auto
 
 (* COMPLY_002_13_past_retention_detected (matches Coq) *)
@@ -397,7 +397,7 @@ lemma COMPLY_002_13_within_retention_ok: "\<forall>(creation current max_days : 
   by auto
 
 (* COMPLY_002_14_secure_deletion_unrecoverable (matches Coq) *)
-lemma COMPLY_002_14_secure_deletion_unrecoverable: "\<forall>(ds :: DeletionState). deletion_secure ds = True \<longrightarrow> deletion_unrecoverable ds = True"
+lemma COMPLY_002_14_secure_deletion_unrecoverable: "\<forall>(ds :: deletion_state). deletion_secure ds = True \<longrightarrow> deletion_unrecoverable ds = True"
   by auto
 
 (* COMPLY_002_14_not_deleted_recoverable (matches Coq) *)
@@ -409,19 +409,19 @@ lemma COMPLY_002_14_marked_still_recoverable: "deletion_unrecoverable MarkedForD
   by simp
 
 (* COMPLY_002_15_cde_requires_isolation (matches Coq) *)
-lemma COMPLY_002_15_cde_requires_isolation: "\<forall>(z :: NetworkZone). zone_is_cde z = True \<longrightarrow> zone_compliant z = True \<longrightarrow> zone_isolated z = True"
+lemma COMPLY_002_15_cde_requires_isolation: "\<forall>(z :: network_zone). zone_is_cde z = True \<longrightarrow> zone_compliant z = True \<longrightarrow> zone_isolated z = True"
   by auto
 
 (* COMPLY_002_15_cde_requires_firewall (matches Coq) *)
-lemma COMPLY_002_15_cde_requires_firewall: "\<forall>(z :: NetworkZone). zone_is_cde z = True \<longrightarrow> zone_compliant z = True \<longrightarrow> zone_firewall_protected z = True"
+lemma COMPLY_002_15_cde_requires_firewall: "\<forall>(z :: network_zone). zone_is_cde z = True \<longrightarrow> zone_compliant z = True \<longrightarrow> zone_firewall_protected z = True"
   by auto
 
 (* COMPLY_002_15_non_cde_always_compliant (matches Coq) *)
-lemma COMPLY_002_15_non_cde_always_compliant: "\<forall>(z :: NetworkZone). zone_is_cde z = False \<longrightarrow> zone_compliant z = True"
+lemma COMPLY_002_15_non_cde_always_compliant: "\<forall>(z :: network_zone). zone_is_cde z = False \<longrightarrow> zone_compliant z = True"
   by simp
 
 (* COMPLY_002_15_vault_isolation (matches Coq) *)
-lemma COMPLY_002_15_vault_isolation: "\<forall>(sys :: PCISystem). vault_isolated (pci_vault sys) = True \<longrightarrow> system_scope_isolated sys = True"
+lemma COMPLY_002_15_vault_isolation: "\<forall>(sys :: pci_system). vault_isolated (pci_vault sys) = True \<longrightarrow> system_scope_isolated sys = True"
   by auto
 
 end

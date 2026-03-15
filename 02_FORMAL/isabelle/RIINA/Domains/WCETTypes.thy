@@ -39,9 +39,12 @@
  *)
 
 theory WCETTypes
-  imports Main
+  imports Main Syntax
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
 (* expr (matches Coq: Inductive expr) *)
 datatype expr =
     EConst

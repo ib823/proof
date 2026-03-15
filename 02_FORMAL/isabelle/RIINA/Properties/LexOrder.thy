@@ -54,7 +54,7 @@
  *)
 
 theory LexOrder
-  imports Main
+  imports Main Semantics Syntax
 begin
 
 (* lex_lt (matches Coq: Definition lex_lt) *)

@@ -12,8 +12,8 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | DAL                | dal                    | OK     |
- * | AerospaceEffect    | aerospace_effect       | OK     |
+ * | dal                | dal                    | OK     |
+ * | aerospace_effect    | aerospace_effect       | OK     |
  * | DO178C_Compliance  | do178_c__compliance    | OK     |
  * | dal_le             | dal_le                 | OK     |
  * | objectives_for_dal | objectives_for_dal     | OK     |
@@ -58,7 +58,7 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* DAL (matches Coq: Inductive DAL) *)
+(* dal (matches Coq: Inductive dal) *)
 datatype dal =
     DAL_A
   |     DAL_B
@@ -66,7 +66,7 @@ datatype dal =
   |     DAL_D
   |     DAL_E
 
-(* AerospaceEffect (matches Coq: Inductive AerospaceEffect) *)
+(* aerospace_effect (matches Coq: Inductive aerospace_effect) *)
 datatype aerospace_effect =
     FlightControl
   |     Navigation
@@ -82,7 +82,7 @@ record do178_c__compliance =
   configuration_management :: bool
   quality_assurance :: bool
   certification_liaison :: bool
-  dal_level :: DAL
+  dal_level :: dal
 
 (* dal_le - complex match, needs manual translation *)
 definition dal_le :: "bool" where "dal_le = undefined"
@@ -158,37 +158,37 @@ lemma arp4754a_development: "\<forall>(system_architecture :: nat). True"
 lemma do_254_hardware: "\<forall>(hardware_design :: nat). True"
   by simp
 
-(* DAL A requires MC/DC coverage *)
+(* dal A requires MC/DC coverage *)
 (* dal_a_mcdc_required (matches Coq) *)
 lemma dal_a_mcdc_required: "\<forall>(compliance :: DO178C_Compliance). dal_level compliance = DAL_A \<longrightarrow> True"
   by simp
 
-(* Higher DAL requires more objectives *)
+(* Higher dal requires more objectives *)
 (* dal_objectives_monotone (matches Coq) *)
 lemma dal_objectives_monotone: "\<forall>d1 d2. dal_le d2 d1 = True \<longrightarrow> objectives_for_dal d1 \<ge> objectives_for_dal d2"
   by auto
 
-(* DAL ordering agrees with nat *)
+(* dal ordering agrees with nat *)
 (* dal_le_iff_nat (matches Coq) *)
 lemma dal_le_iff_nat: "\<forall>d1 d2. dal_le d1 d2 = True <-> dal_to_nat d1 \<le> dal_to_nat d2"
   by auto
 
-(* DAL ordering is reflexive *)
+(* dal ordering is reflexive *)
 (* dal_le_refl (matches Coq) *)
 lemma dal_le_refl: "\<forall>d. dal_le d d = True"
   by auto
 
-(* DAL ordering is transitive *)
+(* dal ordering is transitive *)
 (* dal_le_trans (matches Coq) *)
 lemma dal_le_trans: "\<forall>d1 d2 d3. dal_le d1 d2 = True \<longrightarrow> dal_le d2 d3 = True \<longrightarrow> dal_le d1 d3 = True"
   by simp
 
-(* DAL ordering is antisymmetric *)
+(* dal ordering is antisymmetric *)
 (* dal_le_antisym (matches Coq) *)
 lemma dal_le_antisym: "\<forall>d1 d2. dal_le d1 d2 = True \<longrightarrow> dal_le d2 d1 = True \<longrightarrow> d1 = d2"
   by auto
 
-(* DAL ordering is total *)
+(* dal ordering is total *)
 (* dal_le_total (matches Coq) *)
 lemma dal_le_total: "\<forall>d1 d2. dal_le d1 d2 = True \<or> dal_le d2 d1 = True"
   by auto
@@ -245,7 +245,7 @@ lemma dal_max_dominates_left: "\<forall>d1 d2. dal_le d1 (dal_max d1 d2) = True"
 lemma dal_max_dominates_right: "\<forall>d1 d2. dal_le d2 (dal_max d1 d2) = True"
   by auto
 
-(* ASIL decomposition analogy: combined DAL must dominate both components *)
+(* ASIL decomposition analogy: combined dal must dominate both components *)
 (* dal_max_objectives (matches Coq) *)
 lemma dal_max_objectives: "\<forall>d1 d2. objectives_for_dal (dal_max d1 d2) \<ge> objectives_for_dal d1 \<and> objectives_for_dal (dal_max d1 d2) \<ge> objectives_for_dal d2"
   by auto

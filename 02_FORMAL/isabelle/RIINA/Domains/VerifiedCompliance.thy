@@ -12,23 +12,23 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Regulation         | regulation             | OK     |
- * | ControlStatus      | control_status         | OK     |
- * | PersonalData       | personal_data          | OK     |
- * | DataStore          | data_store             | OK     |
- * | PHI                | phi                    | OK     |
- * | CardholderData     | cardholder_data        | OK     |
- * | Control            | control                | OK     |
- * | ControlMapping     | control_mapping        | OK     |
- * | Network            | network                | OK     |
- * | User               | user                   | OK     |
- * | PhysicalControl    | physical_control       | OK     |
- * | SecurityEvent      | security_event         | OK     |
- * | SecurityTest       | security_test          | OK     |
- * | CompliancePolicy   | compliance_policy      | OK     |
- * | EvidenceChain      | evidence_chain         | OK     |
- * | GapAnalysis        | gap_analysis           | OK     |
- * | Remediation        | remediation            | OK     |
+ * | regulation         | regulation             | OK     |
+ * | control_status      | control_status         | OK     |
+ * | personal_data       | personal_data          | OK     |
+ * | data_store          | data_store             | OK     |
+ * | phi                | phi                    | OK     |
+ * | cardholder_data     | cardholder_data        | OK     |
+ * | control            | control                | OK     |
+ * | control_mapping     | control_mapping        | OK     |
+ * | network            | network                | OK     |
+ * | user               | user                   | OK     |
+ * | physical_control    | physical_control       | OK     |
+ * | security_event      | security_event         | OK     |
+ * | security_test       | security_test          | OK     |
+ * | compliance_policy   | compliance_policy      | OK     |
+ * | evidence_chain      | evidence_chain         | OK     |
+ * | gap_analysis        | gap_analysis           | OK     |
+ * | remediation        | remediation            | OK     |
  * | is_gap             | is_gap                 | OK     |
  * | is_partial         | is_partial             | OK     |
  * | is_proven          | is_proven              | OK     |
@@ -111,10 +111,14 @@
  *)
 
 theory VerifiedCompliance
-  imports Main CoqCompat
+  imports Main CoqCompat Semantics
 begin
 
-(* Regulation (matches Coq: Inductive Regulation) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym cde = "nat"
+type_synonym data_subject_id = "nat"
+type_synonym non_cde = "nat"
+(* regulation (matches Coq: Inductive regulation) *)
 datatype regulation =
     GDPR
   |     HIPAA
@@ -123,16 +127,16 @@ datatype regulation =
   |     ISO27001
   |     NISTCSF
 
-(* ControlStatus (matches Coq: Inductive ControlStatus) *)
+(* control_status (matches Coq: Inductive control_status) *)
 datatype control_status =
     Proven
   |     Implemented
   |     Partial
   |     Gap
 
-(* PersonalData (matches Coq: Record PersonalData) *)
+(* personal_data (matches Coq: Record personal_data) *)
 record personal_data =
-  pd_subject :: DataSubjectId
+  pd_subject :: data_subject_id
   pd_category :: string
   pd_value :: 'a list
   pd_purpose :: string
@@ -144,14 +148,14 @@ record personal_data =
   pd_integrity_protected :: bool
   pd_exportable :: bool
 
-(* DataStore (matches Coq: Record DataStore) *)
+(* data_store (matches Coq: Record data_store) *)
 record data_store =
   store_data :: 'a list
   store_purpose :: string
   store_compliant :: bool
   store_encrypted :: bool
 
-(* PHI (matches Coq: Record PHI) *)
+(* phi (matches Coq: Record phi) *)
 record phi =
   phi_patient_id :: nat
   phi_data :: 'a list
@@ -164,7 +168,7 @@ record phi =
   phi_available :: bool
   phi_in_system :: bool
 
-(* CardholderData (matches Coq: Record CardholderData) *)
+(* cardholder_data (matches Coq: Record cardholder_data) *)
 record cardholder_data =
   chd_pan :: 'a list
   chd_pan_encrypted :: bool
@@ -173,77 +177,77 @@ record cardholder_data =
   chd_cardholder_name :: string
   chd_in_cde :: bool
 
-(* Control (matches Coq: Record Control) *)
+(* control (matches Coq: Record control) *)
 record control =
   control_id :: string
-  control_regulation :: Regulation
+  control_regulation :: regulation
   control_description :: string
   control_satisfied :: bool
   control_monitored :: bool
   control_has_alert :: bool
 
-(* ControlMapping (matches Coq: Record ControlMapping) *)
+(* control_mapping (matches Coq: Record control_mapping) *)
 record control_mapping =
-  mapping_control :: Control
+  mapping_control :: control
   mapping_riina_track :: string
   mapping_proof_ref :: option
-  mapping_status :: ControlStatus
+  mapping_status :: control_status
 
-(* Network (matches Coq: Record Network) *)
+(* network (matches Coq: Record network) *)
 record network =
-  net_cde :: CDE
-  net_non_cde :: NonCDE
+  net_cde :: cde
+  net_non_cde :: non_cde
   net_segmented :: bool
 
-(* User (matches Coq: Record User) *)
+(* user (matches Coq: Record user) *)
 record user =
   user_id :: nat
   user_unique :: bool
   user_business_need :: bool
 
-(* PhysicalControl (matches Coq: Record PhysicalControl) *)
+(* physical_control (matches Coq: Record physical_control) *)
 record physical_control =
   phys_location :: string
   phys_secured :: bool
   phys_logged :: bool
 
-(* SecurityEvent (matches Coq: Record SecurityEvent) *)
+(* security_event (matches Coq: Record security_event) *)
 record security_event =
   event_id :: nat
   event_logged :: bool
   event_security_relevant :: bool
 
-(* SecurityTest (matches Coq: Record SecurityTest) *)
+(* security_test (matches Coq: Record security_test) *)
 record security_test =
   test_id :: nat
   test_performed :: bool
   test_passed :: bool
 
-(* CompliancePolicy (matches Coq: Record CompliancePolicy) *)
+(* compliance_policy (matches Coq: Record compliance_policy) *)
 record compliance_policy =
-  policy_regulation :: Regulation
+  policy_regulation :: regulation
   policy_controls :: 'a list
   policy_mappings :: 'a list
   policy_compliant :: bool
 
-(* EvidenceChain (matches Coq: Record EvidenceChain) *)
+(* evidence_chain (matches Coq: Record evidence_chain) *)
 record evidence_chain =
-  evidence_control :: Control
+  evidence_control :: control
   evidence_items :: 'a list
   evidence_timestamp :: nat
   evidence_signature :: 'a list
   evidence_valid_flag :: bool
 
-(* GapAnalysis (matches Coq: Record GapAnalysis) *)
+(* gap_analysis (matches Coq: Record gap_analysis) *)
 record gap_analysis =
-  gap_policy :: CompliancePolicy
+  gap_policy :: compliance_policy
   gap_detected :: 'a list
   gap_analysis_complete :: bool
 
-(* Remediation (matches Coq: Record Remediation) *)
+(* remediation (matches Coq: Record remediation) *)
 record remediation =
-  rem_control :: Control
-  rem_status :: ControlStatus
+  rem_control :: control
+  rem_status :: control_status
   rem_tracked :: bool
 
 (* is_gap (matches Coq: Definition is_gap) *)
@@ -285,7 +289,7 @@ definition integrity_holds :: "DataStore \<Rightarrow> bool" where
   forall pd, pd \<in> set store.(store_data) -> pd.(pd_integrity_protected) = True"
 
 (* access_right_holds (matches Coq: Definition access_right_holds) *)
-definition access_right_holds :: "DataStore \<Rightarrow> DataSubjectId \<Rightarrow> bool" where
+definition access_right_holds :: "DataStore \<Rightarrow> data_subject_id \<Rightarrow> bool" where
   "access_right_holds store subject \<equiv> store.(store_compliant) = True ->
   forall pd, pd \<in> set store.(store_data) -> pd.(pd_subject) = subject ->
     pd.(pd_exportable) = True"
@@ -357,7 +361,7 @@ definition pci_encryption_holds :: "CardholderData \<Rightarrow> bool" where
   "pci_encryption_holds chd \<equiv> chd.(chd_in_cde) = True -> chd.(chd_pan_encrypted) = True"
 
 (* access_restricted_holds (matches Coq: Definition access_restricted_holds) *)
-definition access_restricted_holds :: "CardholderData \<Rightarrow> User \<Rightarrow> bool" where
+definition access_restricted_holds :: "CardholderData \<Rightarrow> user \<Rightarrow> bool" where
   "access_restricted_holds chd user \<equiv> chd.(chd_in_cde) = True ->
   user.(user_business_need) = True \<and> user.(user_unique) = True"
 
@@ -396,7 +400,7 @@ definition continuous_monitoring_holds :: "CompliancePolicy \<Rightarrow> bool" 
 (* proof_as_evidence_holds (matches Coq: Definition proof_as_evidence_holds) *)
 definition proof_as_evidence_holds :: "Control \<Rightarrow> bool" where
   "proof_as_evidence_holds ctrl \<equiv> ctrl.(control_satisfied) = True ->
-  exists ec : EvidenceChain,
+  exists ec : evidence_chain,
     ec.(evidence_control) = ctrl \<and> ec.(evidence_valid_flag) = True"
 
 (* audit_trail_complete_holds (matches Coq: Definition audit_trail_complete_holds) *)

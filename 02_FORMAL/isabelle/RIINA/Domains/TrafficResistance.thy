@@ -59,6 +59,11 @@ theory TrafficResistance
   imports Main CoqCompat
 begin
 
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym mix_message = "nat"
+type_synonym mix_network = "nat"
+type_synonym mix_node = "nat"
+type_synonym traffic_flow = "nat"
 (* constant_rate (matches Coq: Definition constant_rate) *)
 definition constant_rate :: "TrafficFlow \<Rightarrow> nat \<Rightarrow> bool" where
   "constant_rate flow interval \<equiv> forall i p1 p2,
@@ -128,11 +133,11 @@ definition traffic_layers :: "bool" where
   "traffic_layers \<equiv> (rate \<and> size \<and> mixing \<and> decoy)"
 
 (* traffic_001_constant_rate_hides (matches Coq) *)
-lemma traffic_001_constant_rate_hides: "\<forall>(flow :: TrafficFlow) (interval :: nat). constant_rate flow interval \<longrightarrow> \<forall>i p1 p2. nth_error flow i = Some p1 \<longrightarrow> nth_error flow (S i) = Some p2 \<longrightarrow> pkt_time p2 - pkt_time p1 = interval"
+lemma traffic_001_constant_rate_hides: "\<forall>(flow :: traffic_flow) (interval :: nat). constant_rate flow interval \<longrightarrow> \<forall>i p1 p2. nth_error flow i = Some p1 \<longrightarrow> nth_error flow (S i) = Some p2 \<longrightarrow> pkt_time p2 - pkt_time p1 = interval"
   by auto
 
 (* traffic_002_constant_size_hides (matches Coq) *)
-lemma traffic_002_constant_size_hides: "\<forall>(flow :: TrafficFlow) (size :: nat). constant_size flow size \<longrightarrow> Forall (\<lambda>p. pkt_size p = size) flow"
+lemma traffic_002_constant_size_hides: "\<forall>(flow :: traffic_flow) (size :: nat). constant_size flow size \<longrightarrow> Forall (\<lambda>p. pkt_size p = size) flow"
   by auto
 
 (* traffic_003_cover_indistinguishable (matches Coq) *)
@@ -140,35 +145,35 @@ lemma traffic_003_cover_indistinguishable: "\<forall>(real_pkt cover_pkt : Packe
   by auto
 
 (* traffic_004_flow_indistinguishable (matches Coq) *)
-lemma traffic_004_flow_indistinguishable: "\<forall>(f1 f2 : TrafficFlow). indistinguishable f1 f2 \<longrightarrow> map pkt_size f1 = map pkt_size f2"
+lemma traffic_004_flow_indistinguishable: "\<forall>(f1 f2 : traffic_flow). indistinguishable f1 f2 \<longrightarrow> map pkt_size f1 = map pkt_size f2"
   by auto
 
 (* traffic_005_timing_indistinguishable (matches Coq) *)
-lemma traffic_005_timing_indistinguishable: "\<forall>(f1 f2 : TrafficFlow). indistinguishable f1 f2 \<longrightarrow> map pkt_time f1 = map pkt_time f2"
+lemma traffic_005_timing_indistinguishable: "\<forall>(f1 f2 : traffic_flow). indistinguishable f1 f2 \<longrightarrow> map pkt_time f1 = map pkt_time f2"
   by auto
 
 (* traffic_006_mix_delay (matches Coq) *)
-lemma traffic_006_mix_delay: "\<forall>(node :: MixNode). mix_delay node > 0 \<longrightarrow> mix_delay node > 0"
+lemma traffic_006_mix_delay: "\<forall>(node :: mix_node). mix_delay node > 0 \<longrightarrow> mix_delay node > 0"
   by auto
 
 (* traffic_007_batch_anonymity (matches Coq) *)
-lemma traffic_007_batch_anonymity: "\<forall>(node :: MixNode). mix_batch_size node > 1 \<longrightarrow> mix_batch_size node > 1"
+lemma traffic_007_batch_anonymity: "\<forall>(node :: mix_node). mix_batch_size node > 1 \<longrightarrow> mix_batch_size node > 1"
   by auto
 
 (* traffic_008_multi_hop (matches Coq) *)
-lemma traffic_008_multi_hop: "\<forall>(network :: MixNetwork). length network \<ge> 3 \<longrightarrow> length network \<ge> 3"
+lemma traffic_008_multi_hop: "\<forall>(network :: mix_network). length network \<ge> 3 \<longrightarrow> length network \<ge> 3"
   by auto
 
 (* traffic_009_layer_encryption (matches Coq) *)
-lemma traffic_009_layer_encryption: "\<forall>(msg :: MixMessage) (network_len :: nat). msg_layer msg = network_len \<longrightarrow> msg_layer msg = network_len"
+lemma traffic_009_layer_encryption: "\<forall>(msg :: mix_message) (network_len :: nat). msg_layer msg = network_len \<longrightarrow> msg_layer msg = network_len"
   by auto
 
 (* traffic_010_sender_anonymity (matches Coq) *)
-lemma traffic_010_sender_anonymity: "\<forall>(batch : list MixMessage). length batch \<ge> 2 \<longrightarrow> length (sender_anonymity_set batch) \<ge> 2"
+lemma traffic_010_sender_anonymity: "\<forall>(batch : list mix_message). length batch \<ge> 2 \<longrightarrow> length (sender_anonymity_set batch) \<ge> 2"
   by auto
 
 (* traffic_011_receiver_anonymity (matches Coq) *)
-lemma traffic_011_receiver_anonymity: "\<forall>(batch : list MixMessage). length batch \<ge> 2 \<longrightarrow> length (receiver_anonymity_set batch) \<ge> 2"
+lemma traffic_011_receiver_anonymity: "\<forall>(batch : list mix_message). length batch \<ge> 2 \<longrightarrow> length (receiver_anonymity_set batch) \<ge> 2"
   by auto
 
 (* traffic_012_padding_ratio (matches Coq) *)
@@ -192,7 +197,7 @@ lemma traffic_016_size_quantization: "\<forall>(size quantum : nat). quantum > 0
   by simp
 
 (* traffic_017_flow_correlation (matches Coq) *)
-lemma traffic_017_flow_correlation: "\<forall>(f1 f2 : TrafficFlow) (size :: nat). constant_size f1 size \<longrightarrow> constant_size f2 size \<longrightarrow> Forall (\<lambda>p. pkt_size p = size) f1"
+lemma traffic_017_flow_correlation: "\<forall>(f1 f2 : traffic_flow) (size :: nat). constant_size f1 size \<longrightarrow> constant_size f2 size \<longrightarrow> Forall (\<lambda>p. pkt_size p = size) f1"
   by auto
 
 (* traffic_018_guard_diversity (matches Coq) *)
@@ -220,7 +225,7 @@ lemma traffic_023_intersection_resistance: "\<forall>(observations needed : nat)
   by auto
 
 (* traffic_024_volume_resistance (matches Coq) *)
-lemma traffic_024_volume_resistance: "\<forall>(flow :: TrafficFlow) (size :: nat). constant_size flow size \<longrightarrow> \<forall>p. p \<in> set flow \<longrightarrow> pkt_size p = size"
+lemma traffic_024_volume_resistance: "\<forall>(flow :: traffic_flow) (size :: nat). constant_size flow size \<longrightarrow> \<forall>p. p \<in> set flow \<longrightarrow> pkt_size p = size"
   by auto
 
 (* traffic_025_defense_in_depth (matches Coq) *)

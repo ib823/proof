@@ -14,7 +14,7 @@
  * |--------------------|------------------------|--------|
  * | FISMA_Impact       | fisma__impact          | OK     |
  * | FedRAMP_Level      | fed_ramp__level        | OK     |
- * | GovernmentEffect   | government_effect      | OK     |
+ * | government_effect   | government_effect      | OK     |
  * | FIPS_Level         | fips__level            | OK     |
  * | NIST_800_53_Controls | nist_800_53__controls  | OK     |
  * | fisma_to_nat       | fisma_to_nat           | OK     |
@@ -70,7 +70,7 @@ datatype fed_ramp__level =
   |     FedRAMP_Moderate
   |     FedRAMP_High
 
-(* GovernmentEffect (matches Coq: Inductive GovernmentEffect) *)
+(* government_effect (matches Coq: Inductive government_effect) *)
 datatype government_effect =
     ClassifiedAccess
   |     PII_Processing

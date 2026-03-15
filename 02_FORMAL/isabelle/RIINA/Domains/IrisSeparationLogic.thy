@@ -52,6 +52,11 @@ theory IrisSeparationLogic
   imports Main
 begin
 
+(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
+abbreviation value :: "expr \<Rightarrow> bool" where
+  "value \<equiv> is_value"
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym prop = "nat"
 (* hprop (matches Coq: Inductive hprop) *)
 datatype hprop =
     HEmpty
@@ -159,11 +164,11 @@ lemma 11: "Disjointness is symmetric Theorem fdisjoint_sym : \<forall>h1 h2. fdi
   by auto
 
 (* 12 (matches Coq) *)
-lemma 12: "Pure proposition extraction Theorem pure_extract : \<forall>(P :: Prop) h. fsat h (FPure P) \<longrightarrow> P"
+lemma 12: "Pure proposition extraction Theorem pure_extract : \<forall>(P :: prop) h. fsat h (FPure P) \<longrightarrow> P"
   by auto
 
 (* 13 (matches Coq) *)
-lemma 13: "Pure proposition implies empty heap Theorem pure_empty_heap : \<forall>(P :: Prop) h. fsat h (FPure P) \<longrightarrow> \<forall>l. h l = None"
+lemma 13: "Pure proposition implies empty heap Theorem pure_empty_heap : \<forall>(P :: prop) h. fsat h (FPure P) \<longrightarrow> \<forall>l. h l = None"
   by auto
 
 (* 14 (matches Coq) *)

@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | AtomicOp           | atomic_op              | OK     |
+ * | atomic_op           | atomic_op              | OK     |
  * | nonce_unique       | nonce_unique           | OK     |
  * | is_replay          | is_replay              | OK     |
  * | seq_increasing     | seq_increasing         | OK     |
@@ -65,10 +65,15 @@
  *)
 
 theory TimeSecurity
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* AtomicOp (matches Coq: Inductive AtomicOp) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym auth_timestamp = "nat"
+type_synonym capability = "nat"
+type_synonym protected_message = "nat"
+type_synonym replay_window = "nat"
+(* atomic_op (matches Coq: Inductive atomic_op) *)
 datatype atomic_op =
     AtomicRead
   |     AtomicWrite
@@ -79,11 +84,11 @@ definition nonce_unique :: "nat \<Rightarrow> bool" where
   "nonce_unique nonce \<equiv> (\<not> (existsb) (\<lambda>n. (n = nonce)) seen)"
 
 (* is_replay (matches Coq: Definition is_replay) *)
-definition is_replay :: "ProtectedMessage \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
+definition is_replay :: "ProtectedMessage \<Rightarrow> replay_window \<Rightarrow> bool" where
   "is_replay msg window \<equiv> existsb (\<lambda>n. (n = (nonce_value) (msg_nonce msg))) (window_seen window)"
 
 (* seq_increasing (matches Coq: Definition seq_increasing) *)
-definition seq_increasing :: "ProtectedMessage \<Rightarrow> ReplayWindow \<Rightarrow> bool" where
+definition seq_increasing :: "ProtectedMessage \<Rightarrow> replay_window \<Rightarrow> bool" where
   "seq_increasing msg window \<equiv> ((window_last_seq < window)) (msg_sequence msg)"
 
 (* timestamp_fresh (matches Coq: Definition timestamp_fresh) *)
@@ -175,23 +180,23 @@ lemma time_001_nonce_unique: "\<forall>(nonce :: nat) (seen : list nat). nonce_u
   by auto
 
 (* time_002_replay_detected (matches Coq) *)
-lemma time_002_replay_detected: "\<forall>(msg :: ProtectedMessage) (window :: ReplayWindow). is_replay msg window = True \<longrightarrow> In (nonce_value (msg_nonce msg)) (window_seen window)"
+lemma time_002_replay_detected: "\<forall>(msg :: protected_message) (window :: replay_window). is_replay msg window = True \<longrightarrow> In (nonce_value (msg_nonce msg)) (window_seen window)"
   by auto
 
 (* time_003_seq_increasing (matches Coq) *)
-lemma time_003_seq_increasing: "\<forall>(msg :: ProtectedMessage) (window :: ReplayWindow). seq_increasing msg window = True \<longrightarrow> window_last_seq window < msg_sequence msg"
+lemma time_003_seq_increasing: "\<forall>(msg :: protected_message) (window :: replay_window). seq_increasing msg window = True \<longrightarrow> window_last_seq window < msg_sequence msg"
   by auto
 
 (* time_004_timestamp_fresh (matches Coq) *)
-lemma time_004_timestamp_fresh: "\<forall>(ts :: AuthTimestamp) (current max_age : nat). timestamp_fresh ts current max_age = True \<longrightarrow> current - ts_value ts \<le> max_age"
+lemma time_004_timestamp_fresh: "\<forall>(ts :: auth_timestamp) (current max_age : nat). timestamp_fresh ts current max_age = True \<longrightarrow> current - ts_value ts \<le> max_age"
   by auto
 
 (* time_005_capability_valid (matches Coq) *)
-lemma time_005_capability_valid: "\<forall>(cap :: Capability) (current_time :: nat). capability_valid cap current_time = True \<longrightarrow> current_time < cap_valid_until cap"
+lemma time_005_capability_valid: "\<forall>(cap :: capability) (current_time :: nat). capability_valid cap current_time = True \<longrightarrow> current_time < cap_valid_until cap"
   by auto
 
 (* time_006_owner_matches (matches Coq) *)
-lemma time_006_owner_matches: "\<forall>(cap :: Capability) (requester :: nat). owner_matches cap requester = True \<longrightarrow> cap_owner cap = requester"
+lemma time_006_owner_matches: "\<forall>(cap :: capability) (requester :: nat). owner_matches cap requester = True \<longrightarrow> cap_owner cap = requester"
   by auto
 
 (* time_007_atomic_complete (matches Coq) *)

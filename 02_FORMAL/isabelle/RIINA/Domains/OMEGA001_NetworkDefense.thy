@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ConnState          | conn_state             | OK     |
- * | TokenBucket        | token_bucket           | OK     |
- * | NetCapability      | net_capability         | OK     |
- * | SynCookie          | syn_cookie             | OK     |
- * | Connection         | connection             | OK     |
+ * | conn_state          | conn_state             | OK     |
+ * | token_bucket        | token_bucket           | OK     |
+ * | net_capability      | net_capability         | OK     |
+ * | syn_cookie          | syn_cookie             | OK     |
+ * | connection         | connection             | OK     |
  * | tb_refill          | tb_refill              | OK     |
  * | tb_consume         | tb_consume             | OK     |
  * | tb_available       | tb_available           | OK     |
@@ -70,21 +70,23 @@ theory OMEGA001_NetworkDefense
   imports Main CoqCompat
 begin
 
-(* ConnState (matches Coq: Inductive ConnState) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym conn_table = "nat"
+(* conn_state (matches Coq: Inductive conn_state) *)
 datatype conn_state =
     ConnNew
   |     ConnEstablished
   |     ConnClosing
   |     ConnClosed
 
-(* TokenBucket (matches Coq: Record TokenBucket) *)
+(* token_bucket (matches Coq: Record token_bucket) *)
 record token_bucket =
   tb_tokens :: nat
   tb_capacity :: nat
   tb_refill_rate :: nat
   tb_last_refill :: nat
 
-(* NetCapability (matches Coq: Record NetCapability) *)
+(* net_capability (matches Coq: Record net_capability) *)
 record net_capability =
   cap_id :: nat
   cap_permissions :: 'a list
@@ -92,7 +94,7 @@ record net_capability =
   cap_delegatable :: bool
   cap_signature :: nat
 
-(* SynCookie (matches Coq: Record SynCookie) *)
+(* syn_cookie (matches Coq: Record syn_cookie) *)
 record syn_cookie =
   sc_client_ip :: nat
   sc_client_port :: nat
@@ -100,11 +102,11 @@ record syn_cookie =
   sc_timestamp :: nat
   sc_mss_index :: nat
 
-(* Connection (matches Coq: Record Connection) *)
+(* connection (matches Coq: Record connection) *)
 record connection =
   conn_src :: nat
   conn_dst :: nat
-  conn_state :: ConnState
+  conn_state :: conn_state
   conn_bytes_in :: nat
   conn_bytes_out :: nat
   conn_start_time :: nat
@@ -159,12 +161,12 @@ definition hmac_compute :: "nat \<Rightarrow> nat \<Rightarrow> nat" where
   "hmac_compute key data \<equiv> key + data"
 
 (* syn_cookie_generate (matches Coq: Definition syn_cookie_generate) *)
-definition syn_cookie_generate :: "nat \<Rightarrow> SynCookie \<Rightarrow> nat" where
+definition syn_cookie_generate :: "nat \<Rightarrow> syn_cookie \<Rightarrow> nat" where
   "syn_cookie_generate secret cookie \<equiv> hmac_compute secret (sc_client_ip cookie + sc_client_port cookie +
                        sc_server_port cookie + sc_timestamp cookie)"
 
 (* syn_cookie_verify (matches Coq: Definition syn_cookie_verify) *)
-definition syn_cookie_verify :: "nat \<Rightarrow> SynCookie \<Rightarrow> nat \<Rightarrow> bool" where
+definition syn_cookie_verify :: "nat \<Rightarrow> syn_cookie \<Rightarrow> nat \<Rightarrow> bool" where
   "syn_cookie_verify secret cookie mac \<equiv> ((syn_cookie_generate = secret) cookie) mac"
 
 (* pow_hash (matches Coq: Definition pow_hash) *)

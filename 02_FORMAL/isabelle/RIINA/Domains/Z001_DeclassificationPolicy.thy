@@ -12,14 +12,14 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | Principal          | principal              | OK     |
- * | SecurityLevel      | security_level         | OK     |
- * | Program            | program                | OK     |
- * | DeclassPolicy      | declass_policy         | OK     |
- * | BudgetState        | budget_state           | OK     |
- * | DeclassExpr        | declass_expr           | OK     |
- * | AuditEntry         | audit_entry            | OK     |
- * | PrivacyBudget      | privacy_budget         | OK     |
+ * | principal          | principal              | OK     |
+ * | security_level      | security_level         | OK     |
+ * | program            | program                | OK     |
+ * | declass_policy      | declass_policy         | OK     |
+ * | budget_state        | budget_state           | OK     |
+ * | declass_expr        | declass_expr           | OK     |
+ * | audit_entry         | audit_entry            | OK     |
+ * | privacy_budget      | privacy_budget         | OK     |
  * | principal_eqb      | principal_eqb          | OK     |
  * | acts_for           | acts_for               | OK     |
  * | principal_leq      | principal_leq          | OK     |
@@ -83,10 +83,14 @@
  *)
 
 theory Z001_DeclassificationPolicy
-  imports Main CoqCompat
+  imports Main CoqCompat Syntax
 begin
 
-(* Principal (matches Coq: Inductive Principal) *)
+(* Auto-generated type synonyms for Coq compatibility *)
+type_synonym expr = "nat"
+type_synonym query = "nat"
+type_synonym ty = "nat"
+(* principal (matches Coq: Inductive principal) *)
 datatype principal =
     PUser
   |     PRole
@@ -94,55 +98,55 @@ datatype principal =
   |     PJoin
   |     PMeet
 
-(* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
+(* security_level (matches Coq: Inductive security_level) *)
 datatype security_level =
     Public
   |     Secret
   |     TopSecret
 
-(* Program (matches Coq: Inductive Program) *)
+(* program (matches Coq: Inductive program) *)
 datatype program =
     PSkip
   |     PAssign
   |     PDeclass
   |     PSeq
 
-(* DeclassPolicy (matches Coq: Record DeclassPolicy) *)
+(* declass_policy (matches Coq: Record declass_policy) *)
 record declass_policy =
   policy_id :: nat
-  authorized_principal :: Principal
-  source_level :: SecurityLevel
-  target_level :: SecurityLevel
-  source_type :: Ty
-  target_type :: Ty
+  authorized_principal :: principal
+  source_level :: security_level
+  target_level :: security_level
+  source_type :: ty
+  target_type :: ty
   guard_fn :: nat
   transform :: nat
   budget :: nat
   policy_active :: bool
 
-(* BudgetState (matches Coq: Record BudgetState) *)
+(* budget_state (matches Coq: Record budget_state) *)
 record budget_state =
-  budget_principal :: Principal
+  budget_principal :: principal
   budget_per_policy :: nat
   total_leaked :: nat
   budget_window :: nat
   budget_total_limit :: nat
 
-(* DeclassExpr (matches Coq: Record DeclassExpr) *)
+(* declass_expr (matches Coq: Record declass_expr) *)
 record declass_expr =
-  declass_value :: Expr
-  declass_policy :: DeclassPolicy
-  declass_guard :: Expr
+  declass_value :: expr
+  declass_policy :: declass_policy
+  declass_guard :: expr
 
-(* AuditEntry (matches Coq: Record AuditEntry) *)
+(* audit_entry (matches Coq: Record audit_entry) *)
 record audit_entry =
-  audit_principal :: Principal
+  audit_principal :: principal
   audit_policy_id :: nat
   audit_bits_leaked :: nat
   audit_timestamp :: nat
   audit_value_hash :: nat
 
-(* PrivacyBudget (matches Coq: Record PrivacyBudget) *)
+(* privacy_budget (matches Coq: Record privacy_budget) *)
 record privacy_budget =
   epsilon_total :: nat
   delta_total :: nat
@@ -195,7 +199,7 @@ definition consume_budget :: "BudgetState \<Rightarrow> nat \<Rightarrow> nat \<
   |}"
 
 (* reset_budget (matches Coq: Definition reset_budget) *)
-definition reset_budget :: "BudgetState \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> Principal \<Rightarrow> option BudgetState" where
+definition reset_budget :: "BudgetState \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> principal \<Rightarrow> option BudgetState" where
   "reset_budget bs pid new_budget authorizer \<equiv> if principal_eqb authorizer PSystem then
     Some {|
       budget_principal := budget_principal bs;
@@ -221,7 +225,7 @@ definition valid_declass :: "DeclassExpr \<Rightarrow> bool" where
   "valid_declass de \<equiv> robust (declass_guard de) public \<and> valid_policy (declass_policy de)"
 
 (* can_declassify (matches Coq: Definition can_declassify) *)
-definition can_declassify :: "DeclassExpr \<Rightarrow> Principal \<Rightarrow> bool" where
+definition can_declassify :: "DeclassExpr \<Rightarrow> principal \<Rightarrow> bool" where
   "can_declassify de p \<equiv> acts_for p (authorized_principal (declass_policy de)) \<and>
   valid_policy (declass_policy de)"
 

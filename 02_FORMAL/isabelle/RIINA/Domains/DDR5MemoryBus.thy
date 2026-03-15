@@ -13,10 +13,10 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | DDR5Feature        | ddr5_feature           | OK     |
- * | PhysicalAttack     | physical_attack        | OK     |
- * | IntegrityMechanism | integrity_mechanism    | OK     |
- * | DDR5DefenseConfig  | ddr5_defense_config    | OK     |
- * | MemoryRegion       | memory_region          | OK     |
+ * | physical_attack     | physical_attack        | OK     |
+ * | integrity_mechanism | integrity_mechanism    | OK     |
+ * | ddr5_defense_config  | ddr5_defense_config    | OK     |
+ * | memory_region       | memory_region          | OK     |
  * | bus_defense_active | bus_defense_active     | OK     |
  * | rowhammer_defense_active | rowhammer_defense_active | OK     |
  * | cold_boot_defense_active | cold_boot_defense_active | OK     |
@@ -65,7 +65,7 @@ datatype ddr5_feature =
   |     PMIC
   |     RefreshManagement
 
-(* PhysicalAttack (matches Coq: Inductive PhysicalAttack) *)
+(* physical_attack (matches Coq: Inductive physical_attack) *)
 datatype physical_attack =
     BusInterposition
   |     Rowhammer
@@ -73,7 +73,7 @@ datatype physical_attack =
   |     FaultInjection
   |     ECCBypass
 
-(* IntegrityMechanism (matches Coq: Inductive IntegrityMechanism) *)
+(* integrity_mechanism (matches Coq: Inductive integrity_mechanism) *)
 datatype integrity_mechanism =
     SoftwareEncryption
   |     IntegrityTree
@@ -81,7 +81,7 @@ datatype integrity_mechanism =
   |     Checksumming
   |     RedundantStorage
 
-(* DDR5DefenseConfig (matches Coq: Record DDR5DefenseConfig) *)
+(* ddr5_defense_config (matches Coq: Record ddr5_defense_config) *)
 record ddr5_defense_config =
   ddr5_software_encryption :: bool
   ddr5_integrity_tree :: bool
@@ -94,7 +94,7 @@ record ddr5_defense_config =
   ddr5_redundant_storage :: bool
   ddr5_refresh_randomization :: bool
 
-(* MemoryRegion (matches Coq: Record MemoryRegion) *)
+(* memory_region (matches Coq: Record memory_region) *)
 record memory_region =
   mr_base_addr :: nat
   mr_size :: nat

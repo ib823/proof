@@ -12,12 +12,12 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | TelecomDomain      | telecom_domain         | OK     |
- * | NetworkFunction    | network_function       | OK     |
- * | TelecomEffect      | telecom_effect         | OK     |
+ * | telecom_domain      | telecom_domain         | OK     |
+ * | network_function    | network_function       | OK     |
+ * | telecom_effect      | telecom_effect         | OK     |
  * | Security_5G        | security_5_g           | OK     |
- * | NetworkSlice       | network_slice          | OK     |
- * | LawfulIntercept    | lawful_intercept       | OK     |
+ * | network_slice       | network_slice          | OK     |
+ * | lawful_intercept    | lawful_intercept       | OK     |
  * | domain_to_nat      | domain_to_nat          | OK     |
  * | domain_criticality | domain_criticality     | OK     |
  * | is_auth_function   | is_auth_function       | OK     |
@@ -58,7 +58,7 @@ theory IndustryTelecom
   imports Main CoqCompat
 begin
 
-(* TelecomDomain (matches Coq: Inductive TelecomDomain) *)
+(* telecom_domain (matches Coq: Inductive telecom_domain) *)
 datatype telecom_domain =
     RAN
   |     Core
@@ -66,7 +66,7 @@ datatype telecom_domain =
   |     Service
   |     Management
 
-(* NetworkFunction (matches Coq: Inductive NetworkFunction) *)
+(* network_function (matches Coq: Inductive network_function) *)
 datatype network_function =
     AMF
   |     SMF
@@ -74,7 +74,7 @@ datatype network_function =
   |     AUSF
   |     UDM
 
-(* TelecomEffect (matches Coq: Inductive TelecomEffect) *)
+(* telecom_effect (matches Coq: Inductive telecom_effect) *)
 datatype telecom_effect =
     SignalingIO
   |     UserPlaneIO
@@ -91,15 +91,15 @@ record security_5_g =
   service_based_security :: bool
   network_slicing_isolation :: bool
 
-(* NetworkSlice (matches Coq: Record NetworkSlice) *)
+(* network_slice (matches Coq: Record network_slice) *)
 record network_slice =
   slice_id :: nat
-  slice_domain :: TelecomDomain
+  slice_domain :: telecom_domain
   slice_encrypted :: bool
   slice_isolated :: bool
   slice_sla_latency_ms :: nat
 
-(* LawfulIntercept (matches Coq: Record LawfulIntercept) *)
+(* lawful_intercept (matches Coq: Record lawful_intercept) *)
 record lawful_intercept =
   li_target :: nat
   li_warrant_id :: nat
@@ -143,7 +143,7 @@ definition latency_acceptable :: "NetworkSlice \<Rightarrow> nat \<Rightarrow> b
   "latency_acceptable s max_latency \<equiv> ((slice_sla_latency_ms \<le> s)) max_latency"
 
 (* supi_concealed (matches Coq: Definition supi_concealed) *)
-fun supi_concealed :: "bool \<Rightarrow> TelecomDomain \<Rightarrow> bool" where
+fun supi_concealed :: "bool \<Rightarrow> telecom_domain \<Rightarrow> bool" where
   "supi_concealed RAN = encrypted"
 |   "supi_concealed _ = true"
 
@@ -190,7 +190,7 @@ lemma signaling_security: "\<forall>(message :: nat). True"
 (* Section F05 - NFV Security
     Reference: IND_F_TELECOM.md Section 3.5 *)
 (* nfv_security (matches Coq) *)
-lemma nfv_security: "\<forall>(vnf :: NetworkFunction). True"
+lemma nfv_security: "\<forall>(vnf :: network_function). True"
   by simp
 
 (* 5G requires integrity protection *)

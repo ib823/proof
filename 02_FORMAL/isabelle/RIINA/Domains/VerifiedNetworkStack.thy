@@ -12,19 +12,19 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | TCPState           | tcp_state              | OK     |
- * | SocketState        | socket_state           | OK     |
- * | HandshakeStep      | handshake_step         | OK     |
- * | NetworkSecurity    | network_security       | OK     |
- * | NetworkReliability | network_reliability    | OK     |
- * | VerifiedNetStack   | verified_net_stack     | OK     |
+ * | tcp_state           | tcp_state              | OK     |
+ * | socket_state        | socket_state           | OK     |
+ * | handshake_step      | handshake_step         | OK     |
+ * | network_security    | network_security       | OK     |
+ * | network_reliability | network_reliability    | OK     |
+ * | verified_net_stack   | verified_net_stack     | OK     |
  * | TCPFlags           | tcp_flags              | OK     |
- * | TCPSegment         | tcp_segment            | OK     |
- * | Buffer             | buffer                 | OK     |
- * | CongestionState    | congestion_state       | OK     |
- * | SocketOptions      | socket_options         | OK     |
- * | Socket             | socket                 | OK     |
- * | HandshakeState     | handshake_state        | OK     |
+ * | tcp_segment         | tcp_segment            | OK     |
+ * | buffer             | buffer                 | OK     |
+ * | congestion_state    | congestion_state       | OK     |
+ * | socket_options      | socket_options         | OK     |
+ * | socket             | socket                 | OK     |
+ * | handshake_state     | handshake_state        | OK     |
  * | net_security_sound | net_security_sound     | OK     |
  * | net_reliability_sound | net_reliability_sound  | OK     |
  * | net_stack_verified | net_stack_verified     | OK     |
@@ -215,7 +215,7 @@ theory VerifiedNetworkStack
   imports Main CoqCompat
 begin
 
-(* TCPState (matches Coq: Inductive TCPState) *)
+(* tcp_state (matches Coq: Inductive tcp_state) *)
 datatype tcp_state =
     CLOSED
   |     LISTEN
@@ -229,7 +229,7 @@ datatype tcp_state =
   |     LAST_ACK
   |     TIME_WAIT
 
-(* SocketState (matches Coq: Inductive SocketState) *)
+(* socket_state (matches Coq: Inductive socket_state) *)
 datatype socket_state =
     SockUnbound
   |     SockBound
@@ -239,7 +239,7 @@ datatype socket_state =
   |     SockClosing
   |     SockClosed
 
-(* HandshakeStep (matches Coq: Inductive HandshakeStep) *)
+(* handshake_step (matches Coq: Inductive handshake_step) *)
 datatype handshake_step =
     HS_Init
   |     HS_SynSent
@@ -247,24 +247,24 @@ datatype handshake_step =
   |     HS_Complete
   |     HS_Failed
 
-(* NetworkSecurity (matches Coq: Record NetworkSecurity) *)
+(* network_security (matches Coq: Record network_security) *)
 record network_security =
   ns_packet_validation :: bool
   ns_protocol_compliance :: bool
   ns_firewall_enforced :: bool
   ns_encryption_in_transit :: bool
 
-(* NetworkReliability (matches Coq: Record NetworkReliability) *)
+(* network_reliability (matches Coq: Record network_reliability) *)
 record network_reliability =
   nr_congestion_control :: bool
   nr_flow_control :: bool
   nr_error_detection :: bool
   nr_retransmission :: bool
 
-(* VerifiedNetStack (matches Coq: Record VerifiedNetStack) *)
+(* verified_net_stack (matches Coq: Record verified_net_stack) *)
 record verified_net_stack =
-  vns_security :: NetworkSecurity
-  vns_reliability :: NetworkReliability
+  vns_security :: network_security
+  vns_reliability :: network_reliability
   vns_rfc_compliant :: bool
   vns_formally_verified :: bool
 
@@ -277,28 +277,28 @@ record tcp_flags =
   flag_psh :: bool
   flag_urg :: bool
 
-(* TCPSegment (matches Coq: Record TCPSegment) *)
+(* tcp_segment (matches Coq: Record tcp_segment) *)
 record tcp_segment =
   seg_seq_num :: nat
   seg_ack_num :: nat
-  seg_flags :: TCPFlags
+  seg_flags :: tcp_flags
   seg_window :: nat
   seg_data_len :: nat
 
-(* Buffer (matches Coq: Record Buffer) *)
+(* buffer (matches Coq: Record buffer) *)
 record buffer =
   buf_data :: 'a list
   buf_capacity :: nat
   buf_position :: nat
 
-(* CongestionState (matches Coq: Record CongestionState) *)
+(* congestion_state (matches Coq: Record congestion_state) *)
 record congestion_state =
   cwnd :: nat
   ssthresh :: nat
   rtt_est :: nat
   rto :: nat
 
-(* SocketOptions (matches Coq: Record SocketOptions) *)
+(* socket_options (matches Coq: Record socket_options) *)
 record socket_options =
   opt_reuse_addr :: bool
   opt_keep_alive :: bool
@@ -306,17 +306,17 @@ record socket_options =
   opt_recv_timeout :: nat
   opt_send_timeout :: nat
 
-(* Socket (matches Coq: Record Socket) *)
+(* socket (matches Coq: Record socket) *)
 record socket =
-  sock_state :: SocketState
+  sock_state :: socket_state
   sock_local_port :: option
   sock_remote_port :: option
-  sock_tcp_state :: TCPState
-  sock_options :: SocketOptions
+  sock_tcp_state :: tcp_state
+  sock_options :: socket_options
 
-(* HandshakeState (matches Coq: Record HandshakeState) *)
+(* handshake_state (matches Coq: Record handshake_state) *)
 record handshake_state =
-  hs_step :: HandshakeStep
+  hs_step :: handshake_step
   hs_client_isn :: nat
   hs_server_isn :: nat
 
@@ -349,7 +349,7 @@ definition riina_net_stack :: "VerifiedNetStack" where
 definition tcp_state_eqb :: "bool" where "tcp_state_eqb = undefined"
 
 (* tcp_transition (matches Coq: Definition tcp_transition) *)
-fun tcp_transition :: "TCPState \<Rightarrow> TCPSegment \<Rightarrow> bool \<Rightarrow> TCPState" where
+fun tcp_transition :: "TCPState \<Rightarrow> tcp_segment \<Rightarrow> bool \<Rightarrow> TCPState" where
   "tcp_transition CLOSED = if"
 |   "tcp_transition LISTEN = if"
 |   "tcp_transition SYN_SENT = if"
@@ -508,7 +508,7 @@ definition make_ack :: "TCPSegment" where
 definition handshake_complete :: "bool" where "handshake_complete = undefined"
 
 (* valid_syn_segment (matches Coq: Definition valid_syn_segment) *)
-fun valid_syn_segment :: "TCPSegment \<Rightarrow> TCPState \<Rightarrow> bool" where
+fun valid_syn_segment :: "TCPSegment \<Rightarrow> tcp_state \<Rightarrow> bool" where
   "valid_syn_segment SYN_SENT = true"
 |   "valid_syn_segment _ = false"
 

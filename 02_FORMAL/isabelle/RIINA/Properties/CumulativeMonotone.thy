@@ -43,7 +43,7 @@
  *)
 
 theory CumulativeMonotone
-  imports Main
+  imports Main Semantics Typing
 begin
 
 (* val_rel_le_mono_step (matches Coq) *)
