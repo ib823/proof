@@ -345,17 +345,13 @@ impl WasmBackend {
         let mut var_to_func: HashMap<VarId, FuncId> = HashMap::new();
 
         // Closure calling convention: local 0 = closure_ptr, local 1 = arg
-        // The IR's VarId(0) is the function param → maps to local 1 (arg)
-        var_to_local.insert(VarId::new(0), 1);
-
-        // For functions with captures, load captures from closure memory.
-        // Captures are at closure_ptr + 4, closure_ptr + 8, etc.
-        // The IR uses sequential VarIds starting after the param for captures,
-        // but actually the lowering puts captures as VarId(0)=param, then
-        // instructions Copy the captures from implicit locations.
-        // We handle this by providing a "capture_base" local that the Copy
-        // instructions will use when referencing captures stored at VarId > 0
-        // that aren't instruction results.
+        // The IR's variable numbering for functions with captures:
+        //   VarId(0..N-1) = captures (loaded from closure_ptr + (i+1)*4)
+        //   VarId(N) = param (local 1 = arg)
+        // For functions without captures:
+        //   VarId(0) = param (local 1 = arg)
+        let num_captures = func.captures.len() as u32;
+        var_to_local.insert(VarId::new(num_captures), 1); // param = local 1
 
         for block in &func.blocks {
             for instr in &block.instrs {
@@ -383,10 +379,10 @@ impl WasmBackend {
             }
         }
 
-        // Allocate locals for captures before creating ctx
+        // Allocate locals for captures: VarId(0..N-1) → locals 2, 3, ...
         if !func.captures.is_empty() {
-            for (i, _cap) in func.captures.iter().enumerate() {
-                let cap_var = VarId::new((i + 1) as u32);
+            for i in 0..func.captures.len() {
+                let cap_var = VarId::new(i as u32);
                 if !var_to_local.contains_key(&cap_var) {
                     var_to_local.insert(cap_var, local_count);
                     local_count += 1;
@@ -412,9 +408,10 @@ impl WasmBackend {
         // Load captures from closure memory into locals.
         // Closure layout: [func_index: i32, capture0: i32, capture1: i32, ...]
         // closure_ptr is local 0. Captures start at offset +4.
+        // VarId(i) = capture i, loaded from closure_ptr + (i+1)*4
         if !func.captures.is_empty() {
             for (i, _cap) in func.captures.iter().enumerate() {
-                let cap_var = VarId::new((i + 1) as u32);
+                let cap_var = VarId::new(i as u32);
                 code.push(Op::LocalGet as u8);
                 wasm_encode::encode_uleb128(0, &mut code); // closure_ptr = local 0
                 code.push(Op::I32Load as u8);
