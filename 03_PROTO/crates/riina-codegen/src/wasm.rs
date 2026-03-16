@@ -176,7 +176,8 @@ impl WasmBackend {
         let alloc_func_index = NUM_IMPORTS; // 2 imports, then alloc is index 2
 
         // === User functions ===
-        let func_ids: Vec<FuncId> = program.functions.keys().copied().collect();
+        let mut func_ids: Vec<FuncId> = program.functions.keys().copied().collect();
+        func_ids.sort_by_key(|f| f.0); // Deterministic order
         let mut func_index_map: HashMap<FuncId, u32> = HashMap::new();
         for (i, &fid) in func_ids.iter().enumerate() {
             // User functions start after imports + alloc
@@ -336,6 +337,9 @@ impl WasmBackend {
         let mut var_to_local: HashMap<VarId, u32> = HashMap::new();
         let mut var_to_func: HashMap<VarId, FuncId> = HashMap::new();
 
+        // Map VarId(0) to local 0 (the function parameter)
+        var_to_local.insert(VarId::new(0), 0);
+
         for block in &func.blocks {
             for instr in &block.instrs {
                 let result = instr.result;
@@ -343,8 +347,16 @@ impl WasmBackend {
                     e.insert(local_count);
                     local_count += 1;
                 }
-                if let Instruction::Closure { func: fid, .. } = &instr.instr {
-                    var_to_func.insert(result, *fid);
+                match &instr.instr {
+                    Instruction::Closure { func: fid, .. } => {
+                        var_to_func.insert(result, *fid);
+                    }
+                    Instruction::Copy(src) => {
+                        if let Some(&fid) = var_to_func.get(src) {
+                            var_to_func.insert(result, fid);
+                        }
+                    }
+                    _ => {}
                 }
             }
         }

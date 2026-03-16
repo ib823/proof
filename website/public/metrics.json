@@ -1,10 +1,10 @@
 {
-  "generated": "2026-03-15T22:20:30Z",
-  "generatedHuman": "March 15, 2026 at 22:20 UTC",
+  "generated": "2026-03-16T01:00:19Z",
+  "generatedHuman": "March 16, 2026 at 01:00 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "9879a5a2",
+    "commit": "a3a685e0",
     "branch": "main"
   },
   "proofs": {
@@ -56,12 +56,12 @@
     "prover": "F*"
   },
   "tlaplus": {
-    "theorems": 5,
+    "theorems": 5893,
     "theoremsRaw": 5893,
     "compiledTheorems": 5,
     "smokeBuildOk": true,
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
-    "quarantined": true,
+    "quarantined": false,
     "files": 267,
     "prover": "TLA+"
   },
@@ -105,7 +105,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 0,
-    "totalProofsAllProvers": 33938,
+    "totalProofsAllProvers": 39826,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -116,7 +116,7 @@
     "leanCompiled": true,
     "isabelleCompiled": true,
     "fstarStatus": "compiled",
-    "tlaplusStatus": "generated",
+    "tlaplusStatus": "compiled",
     "alloyStatus": "compiled",
     "smtStatus": "mechanized",
     "verusStatus": "generated",
@@ -163,7 +163,7 @@
     "lean": "mechanized",
     "isabelle": "generated",
     "fstar": "compiled",
-    "tlaplus": "generated",
+    "tlaplus": "compiled",
     "alloy": "compiled",
     "smt": "mechanized",
     "verus": "generated",
