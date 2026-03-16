@@ -281,8 +281,7 @@ const RiinaWebsite = () => {
             ))}
           </div>
           <p className="triple-prover__note" style={{marginTop:16}}>
-            7 additional verification lanes (F*, TLA+, Alloy, Z3/CVC5, Verus, Kani, Translation Validation) are published
-            at the <em>generated</em> claim level. Full details on the <button style={{background:'none',border:'none',color:'var(--text-accent)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:13,padding:0}} onClick={() => nav('how')}>How It Works</button> page.
+            SMT/Z3 is <em>mechanized</em> (11,843 assertions verified). F*, TLA+, and Alloy are <em>compiled</em>. Verus, Kani, and Translation Validation remain at <em>generated</em>. Full details on the <button style={{background:'none',border:'none',color:'var(--text-accent)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:13,padding:0}} onClick={() => nav('how')}>How It Works</button> page.
           </p>
         </div>
       </section>
