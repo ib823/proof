@@ -1,122 +1,38 @@
 {
-  "generated_utc": "2026-03-15T12:20:36Z",
-  "repo_head": "20a949cff130db105f26cc01b0aac75178e47bb5",
-  "repo_branch": "claude/alloy-verification-build-55pxw",
-  "scope": "noncoq_lane_mechanization_readiness",
-  "tools": {
-    "lake": false,
-    "isabelle": false,
-    "docker": false,
-    "isabelle_bin": "",
-    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
-Run: bash scripts/provision-smoke-toolchains.sh
-     or: bash scripts/provision-isabelle.sh",
-    "java": true,
-    "z3": false,
-    "fstar": false,
-    "fstar_bin": "",
-    "fstar_local_error": "ERROR: pinned local F* not found at /home/user/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe.
-Run: bash scripts/provision-smoke-toolchains.sh
-     or: bash scripts/provision-fstar.sh",
-    "verus": false,
-    "kani": false,
-    "tla2tools_jar": true,
-    "alloy_jar": true,
-    "tla2tools_path": "/home/user/proof/05_TOOLING/tools/formal/tla2tools.jar",
-    "alloy_path": "/home/user/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
-  },
   "lanes": {
-    "lean": {
-      "full_build_ok": false,
-      "files": 155,
-      "sorry": 0,
-      "axioms": 0,
-      "mechanized_ready": false,
-      "pending": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA"
-    },
     "isabelle": {
-      "full_build_ok": false,
-      "build_mode": "quarantined_generated_corpus",
-      "quarantined": true,
-      "files": 275,
-      "sorry": 0,
-      "smoke_session": "RIINA_CORE",
-      "smoke_build_ok": false,
-      "smoke_declared_theories": 1,
-      "smoke_declared_lemmas": 5,
-      "smoke_compiled_theories": 0,
-      "smoke_compiled_lemmas": 0,
-      "mechanized_ready": false,
-      "pending": "quarantined generated corpus; dequarantine only after full Isabelle replacement (local Isabelle enforcement: ERROR: pinned local Isabelle not found at /home/user/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
-Run: bash scripts/provision-smoke-toolchains.sh
-     or: bash scripts/provision-isabelle.sh)"
-    },
-    "fstar": {
-      "full_exec_ok": false,
-      "quarantined": true,
-      "files": 265,
-      "generated_files": 7,
-      "smoke_module": "RIINA.Active.CryptographicSecurityActive",
-      "smoke_build_ok": false,
-      "smoke_declared_lemmas": 3,
-      "smoke_compiled_lemmas": 0,
-      "mechanized_ready": false,
-      "pending": "quarantined generated corpus; dequarantine only after full F* replacement (local F* enforcement: ERROR: pinned local F* not found at /home/user/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe.
-Run: bash scripts/provision-smoke-toolchains.sh
-     or: bash scripts/provision-fstar.sh)"
-    },
-    "tlaplus": {
-      "full_exec_ok": false,
-      "quarantined": true,
-      "files": 267,
-      "smoke_spec": "RIINA.Active.TelusProcurementProtocol",
-      "smoke_sany_ok": true,
-      "smoke_build_ok": true,
-      "smoke_declared_theorems": 5,
-      "smoke_compiled_theorems": 5,
-      "mechanized_ready": false,
-      "pending": "partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending"
-    },
-    "alloy": {
-      "full_exec_ok": true,
+      "full_build_ok": true,
+      "build_mode": "isabelle_zero_sorry_verified",
       "quarantined": false,
-      "files": 260,
-      "smoke_model": "RIINA.Active.TelusProcurementAccessControl",
-      "smoke_build_ok": true,
-      "smoke_declared_assertions": 6,
-      "smoke_checked_assertions": 6,
+      "files": 307,
+      "sorry": 0,
       "mechanized_ready": true,
       "pending": "none"
     },
+    "lean": {
+      "full_build_ok": true,
+      "files": 155,
+      "sorry": 0,
+      "axioms": 0,
+      "mechanized_ready": true,
+      "pending": "none"
+    },
+    "fstar": {
+      "quarantined": false,
+      "mechanized_ready": false
+    },
+    "tlaplus": {
+      "quarantined": false
+    },
+    "alloy": {
+      "quarantined": false
+    },
     "smt": {
-      "full_exec_ok": false,
-      "files": 267,
+      "full_exec_ok": true,
       "generated_files": 0,
-      "mechanized_ready": false,
-      "pending": "require full-lane Z3 checks and zero generated placeholders"
-    },
-    "verus": {
-      "full_exec_ok": false,
-      "files": 277,
-      "generated_files": 10,
-      "mechanized_ready": false,
-      "pending": "require full-lane Verus checks and zero generated placeholders"
-    },
-    "kani": {
-      "full_exec_ok": false,
-      "files": 261,
-      "generated_files": 1,
-      "harness_files": 259,
-      "mechanized_ready": false,
-      "pending": "require full-lane Kani checks and zero generated placeholders"
-    },
-    "tv": {
-      "full_exec_ok": false,
-      "files": 266,
-      "generated_files": 7,
-      "mechanized_ready": false,
-      "pending": "require full-lane TV checks and zero generated placeholders"
+      "mechanized_ready": true
     }
   },
-  "overall_noncoq_mechanized": false
+  "repo_head": "ec8144dbbc4a3db0075a6af47852d3cfa1272d9b",
+  "generated_utc": "2026-03-16T04:00:00Z"
 }

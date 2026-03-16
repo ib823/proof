@@ -359,6 +359,10 @@ proof (intro allI impI)
   qed
 qed
 
+(* Single-variable substitution *)
+definition single_subst :: "ident \<Rightarrow> expr \<Rightarrow> subst" where
+  "single_subst x v \<equiv> \<lambda>y. if y = x then Some v else None"
+
 (* Bridge lemma: apply_subst with single_subst equals subst
    (matches Coq: single-variable substitution correspondence) *)
 lemma apply_subst_single_subst:
@@ -468,10 +472,6 @@ section \<open>Non-Interference Statement\<close>
 text \<open>
   The main non-interference theorem.
 \<close>
-
-(* Single-variable substitution *)
-definition single_subst :: "ident \<Rightarrow> expr \<Rightarrow> subst" where
-  "single_subst x v \<equiv> \<lambda>y. if y = x then Some v else None"
 
 (* Non-interference: substituting related values yields related expressions
    (matches Coq: Theorem non_interference_stmt)

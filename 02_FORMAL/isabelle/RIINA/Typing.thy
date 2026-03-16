@@ -259,12 +259,18 @@ next
   case T_App
   note ih1 = T_App.IH(1) and ih2 = T_App.IH(2)
   from T_App.prems show ?case
-    by (auto elim!: has_type.cases dest: ih1 ih2)
+  proof (cases rule: has_type.cases)
+    case T_App
+    with ih1 ih2 show ?thesis by blast
+  qed
 next
   case T_Pair
   note ih1 = T_Pair.IH(1) and ih2 = T_Pair.IH(2)
   from T_Pair.prems show ?case
-    by (auto elim!: has_type.cases dest: ih1 ih2)
+  proof (cases rule: has_type.cases)
+    case T_Pair
+    with ih1 ih2 show ?thesis by blast
+  qed
 next
   case T_Fst then show ?case by (auto elim: has_type.cases dest: T_Fst.IH)
 next
@@ -277,24 +283,36 @@ next
   case T_Case
   note ih1 = T_Case.IH(1) and ih2 = T_Case.IH(2) and ih3 = T_Case.IH(3)
   from T_Case.prems show ?case
-    by (auto elim!: has_type.cases dest: ih1 ih2 ih3)
+  proof (cases rule: has_type.cases)
+    case T_Case
+    with ih1 ih2 ih3 show ?thesis by blast
+  qed
 next
   case T_If
   note ih1 = T_If.IH(1) and ih2 = T_If.IH(2) and ih3 = T_If.IH(3)
   from T_If.prems show ?case
-    by (auto elim!: has_type.cases dest: ih1 ih2 ih3)
+  proof (cases rule: has_type.cases)
+    case T_If
+    with ih1 ih2 ih3 show ?thesis by blast
+  qed
 next
   case T_Let
   note ih1 = T_Let.IH(1) and ih2 = T_Let.IH(2)
   from T_Let.prems show ?case
-    by (auto elim!: has_type.cases dest: ih1 ih2)
+  proof (cases rule: has_type.cases)
+    case T_Let
+    with ih1 ih2 show ?thesis by blast
+  qed
 next
   case T_Perform then show ?case by (auto elim: has_type.cases dest: T_Perform.IH)
 next
   case T_Handle
   note ih1 = T_Handle.IH(1) and ih2 = T_Handle.IH(2)
   from T_Handle.prems show ?case
-    by (auto elim!: has_type.cases dest: ih1 ih2)
+  proof (cases rule: has_type.cases)
+    case T_Handle
+    with ih1 ih2 show ?thesis by blast
+  qed
 next
   case T_Ref then show ?case by (auto elim: has_type.cases dest: T_Ref.IH)
 next
@@ -303,14 +321,20 @@ next
   case T_Assign
   note ih1 = T_Assign.IH(1) and ih2 = T_Assign.IH(2)
   from T_Assign.prems show ?case
-    by (auto elim!: has_type.cases dest: ih1 ih2)
+  proof (cases rule: has_type.cases)
+    case T_Assign
+    with ih1 ih2 show ?thesis by blast
+  qed
 next
   case T_Classify then show ?case by (auto elim: has_type.cases dest: T_Classify.IH)
 next
   case T_Declassify
   note ih1 = T_Declassify.IH(1) and ih2 = T_Declassify.IH(2)
   from T_Declassify.prems show ?case
-    by (auto elim!: has_type.cases dest: ih1 ih2)
+  proof (cases rule: has_type.cases)
+    case T_Declassify
+    with ih1 ih2 show ?thesis by blast
+  qed
 next
   case T_Prove then show ?case by (auto elim: has_type.cases dest: T_Prove.IH)
 next
