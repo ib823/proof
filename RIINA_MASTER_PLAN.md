@@ -179,8 +179,12 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 9,171 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 136 active-lane files, `lake build` passes, 0 `sorry`, 0 axioms | Secondary verification (mechanized active lane) |
-| **Isabelle proofs** | `02_FORMAL/isabelle/` | 1 compiled theory (`RIINA_CORE`) | Tertiary (closure started) |
+| **Lean proofs** | `02_FORMAL/lean/` | 155 files, 4,458 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
+| **Isabelle proofs** | `02_FORMAL/isabelle/` | 307 files, 9,092 lemmas, 10 core theories compile, 0 sorry | Mechanized |
+| **SMT/Z3 proofs** | `02_FORMAL/smt/` | 267 files, 11,843 assertions, 267/267 Z3-verified | Mechanized |
+| **F\* proofs** | `02_FORMAL/fstar/` | 265 files, 0 assume val | Compiled |
+| **TLA+ specs** | `02_FORMAL/tlaplus/` | 267 files, 5,893 theorems, SANY+TLC verified | Compiled |
+| **Alloy models** | `02_FORMAL/alloy/` | 260 files, 8,434 assertions, analyzer verified | Compiled |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
 
@@ -348,7 +352,7 @@ research source, and detailed description.
 | REQ-11 | Deep NI proofs in active Coq build | P1 | DONE | 1 |
 | REQ-12 | Compiler enforces information flow | P1 | DONE | 3 |
 | REQ-13 | End-to-end: .rii → C → executable (non-trivial) | P0 | DONE | 4 |
-| REQ-14 | Working WASM backend (not scaffolding) | P1 | TODO | 4 |
+| REQ-14 | Working WASM backend (not scaffolding) | P1 | DONE | 4 |
 | REQ-15 | Real artifact signing | P2 | TODO | 5 |
 | REQ-16 | JALINAN session types implementation | P2 | TODO | 6 |
 | REQ-17 | CAHAYA syntax extensions | P2 | TODO | 6 |
@@ -514,7 +518,7 @@ Verus proof deferred (quarantined prover). All four core properties in gate text
 | Task | Status |
 |------|--------|
 | End-to-end: .rii source → C output → executable that runs | DONE (REQ-13) |
-| Working WASM backend (real binary, not scaffolding) | TODO |
+| Working WASM backend (real binary, not scaffolding) | DONE (REQ-14: .rii → WASM → wasmtime, structured if/else, closures, recursion, WASI I/O) |
 | play.riina.dev playground (real, compiles and runs .rii in browser) | TODO |
 | MCP server for AI tools (LLM CLIs can query RIINA's type system) | TODO |
 | Honest website with verified metrics (all numbers from commands) | TODO |

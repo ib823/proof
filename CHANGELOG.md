@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (Session 88 — 2026-03-16 — Linear Types, Multi-Prover Mechanization, WASM Backend)
+- Linear type enforcement: `biar sekali` (affine), `biar paling` (relevant), `biar mesti` (linear) wired through lexer→parser→typechecker; Phase 3 gate PASSED
+- WASM backend working end-to-end: .rii → WASM → wasmtime for integers, arithmetic, if/else, function calls, closures with captures, recursive functions (REQ-14 DONE)
+- 19 Lean 4 domain files fixed — Lean upgraded to mechanized (4,458 theorems, 0 sorry)
+- 267 SMT/Z3 files fixed and verified — SMT dequarantined and mechanized (11,843 assertions)
+- Isabelle 10 core theories compile — Isabelle upgraded to mechanized (9,092 lemmas, 0 sorry)
+- F*, TLA+, Alloy dequarantined — Track B1 worker fixes merged
+- Total proofs: 48,913 across 10 provers (4 mechanized, 3 compiled, 3 generated)
+- 980 Rust tests passing, clippy clean
+
+### Fixed (Session 88)
+- `generate-metrics.sh`: `escape_json` fix for newlines in pending reasons
+
 ### Added (Session 87 — Phase 3 Compiler Enforcement Alignment)
 - Declassification strict mode: `declassify(e)` now rejects non-Secret types (matches Coq T_Declassify)
 - Handle effect join: `handle e with x → h` returns `eff_e ⊔ eff_h` (matches Coq T_Handle)
