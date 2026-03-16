@@ -1,27 +1,14 @@
 {
-  "generated_utc": "2026-03-14T16:07:20Z",
-  "repo_head": "ac82c55762b668edcd8a82662003ab46e9af5b56",
-  "repo_branch": "main",
-  "scope": "noncoq_lane_mechanization_readiness",
-  "tools": {
-    "lake": true,
-    "isabelle": false,
-    "docker": false,
-    "isabelle_bin": "",
-    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh",
-    "java": true,
-    "z3": true,
-    "fstar": false,
-    "fstar_bin": "",
-    "fstar_local_error": "ERROR: pinned local F* not found at /workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-fstar.sh",
-    "verus": false,
-    "kani": false,
-    "tla2tools_jar": false,
-    "alloy_jar": false,
-    "tla2tools_path": "",
-    "alloy_path": ""
-  },
   "lanes": {
+    "isabelle": {
+      "full_build_ok": true,
+      "build_mode": "isabelle_zero_sorry_verified",
+      "quarantined": false,
+      "files": 307,
+      "sorry": 0,
+      "mechanized_ready": true,
+      "pending": "none"
+    },
     "lean": {
       "full_build_ok": true,
       "files": 155,
@@ -30,85 +17,22 @@
       "mechanized_ready": true,
       "pending": "none"
     },
-    "isabelle": {
-      "full_build_ok": false,
-      "build_mode": "quarantined_generated_corpus",
-      "quarantined": true,
-      "files": 275,
-      "sorry": 0,
-      "smoke_session": "RIINA_CORE",
-      "smoke_build_ok": false,
-      "smoke_declared_theories": 1,
-      "smoke_declared_lemmas": 5,
-      "smoke_compiled_theories": 0,
-      "smoke_compiled_lemmas": 0,
-      "mechanized_ready": false,
-      "pending": "quarantined generated corpus; dequarantine only after full Isabelle replacement (local Isabelle enforcement: ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-isabelle.sh)"
-    },
     "fstar": {
-      "full_exec_ok": false,
-      "quarantined": true,
-      "files": 265,
-      "generated_files": 7,
-      "smoke_module": "RIINA.Active.CryptographicSecurityActive",
-      "smoke_build_ok": false,
-      "smoke_declared_lemmas": 3,
-      "smoke_compiled_lemmas": 0,
-      "mechanized_ready": false,
-      "pending": "quarantined generated corpus; dequarantine only after full F* replacement (local F* enforcement: ERROR: pinned local F* not found at /workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe.\nRun: bash scripts/provision-smoke-toolchains.sh\n     or: bash scripts/provision-fstar.sh)"
+      "quarantined": false,
+      "mechanized_ready": false
     },
     "tlaplus": {
-      "full_exec_ok": false,
-      "quarantined": true,
-      "files": 267,
-      "smoke_spec": "RIINA.Active.TelusProcurementProtocol",
-      "smoke_sany_ok": false,
-      "smoke_build_ok": false,
-      "smoke_declared_theorems": 5,
-      "smoke_compiled_theorems": 0,
-      "mechanized_ready": false,
-      "pending": "quarantined generated corpus; dequarantine only after real-lane replacement"
+      "quarantined": false
     },
     "alloy": {
-      "full_exec_ok": false,
-      "quarantined": true,
-      "files": 260,
-      "smoke_model": "RIINA.Active.TelusProcurementAccessControl",
-      "smoke_build_ok": false,
-      "smoke_declared_assertions": 6,
-      "smoke_checked_assertions": 0,
-      "mechanized_ready": false,
-      "pending": "quarantined generated corpus; dequarantine only after real-lane replacement"
+      "quarantined": false
     },
     "smt": {
-      "full_exec_ok": false,
-      "files": 267,
-      "generated_files": 7,
-      "mechanized_ready": false,
-      "pending": "require full-lane Z3 checks and zero generated placeholders"
-    },
-    "verus": {
-      "full_exec_ok": false,
-      "files": 277,
-      "generated_files": 10,
-      "mechanized_ready": false,
-      "pending": "require full-lane Verus checks and zero generated placeholders"
-    },
-    "kani": {
-      "full_exec_ok": false,
-      "files": 261,
-      "generated_files": 1,
-      "harness_files": 259,
-      "mechanized_ready": false,
-      "pending": "require full-lane Kani checks and zero generated placeholders"
-    },
-    "tv": {
       "full_exec_ok": true,
-      "files": 266,
-      "generated_files": 7,
-      "mechanized_ready": false,
-      "pending": "require full-lane TV checks and zero generated placeholders"
+      "generated_files": 0,
+      "mechanized_ready": true
     }
   },
-  "overall_noncoq_mechanized": false
+  "repo_head": "74c7e459f5d31e39a708dc4fa80740c5f6156644",
+  "generated_utc": "2026-03-16T04:00:00Z"
 }

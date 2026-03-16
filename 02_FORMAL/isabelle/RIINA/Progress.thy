@@ -37,7 +37,7 @@ text \<open>Progress statement: well-typed closed expressions are values or can 
 definition progress_stmt :: bool where
   "progress_stmt \<equiv>
      \<forall>e T \<epsilon> st ctx \<Sigma>.
-       has_type [] \<Sigma> Public e T \<epsilon> \<longrightarrow>
+       has_type [] \<Sigma> LPublic e T \<epsilon> \<longrightarrow>
        store_wf \<Sigma> st \<longrightarrow>
        value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<longrightarrow> (e', st', ctx'))"
 
@@ -47,7 +47,7 @@ section \<open>Canonical Forms (Closed Context Variants)\<close>
 text \<open>Canonical form for bool (matches Coq: canonical_bool)\<close>
 
 lemma canonical_bool:
-  assumes "has_type [] \<Sigma> Public v TBool \<epsilon>"
+  assumes "has_type [] \<Sigma> LPublic v TBool \<epsilon>"
       and "value v"
   shows "\<exists>b. v = EBool b"
   using assms by (cases v rule: value.cases; auto elim: has_type.cases)
@@ -55,7 +55,7 @@ lemma canonical_bool:
 text \<open>Canonical form for function (matches Coq: canonical_fn)\<close>
 
 lemma canonical_fn:
-  assumes "has_type [] \<Sigma> Public v (TFn T1 T2 \<epsilon>) \<epsilon>'"
+  assumes "has_type [] \<Sigma> LPublic v (TFn T1 T2 \<epsilon>) \<epsilon>'"
       and "value v"
   shows "\<exists>x body. v = ELam x T1 body"
   using assms by (cases v rule: value.cases; auto elim: has_type.cases)
@@ -63,7 +63,7 @@ lemma canonical_fn:
 text \<open>Canonical form for pair (matches Coq: canonical_pair)\<close>
 
 lemma canonical_pair:
-  assumes "has_type [] \<Sigma> Public v (TProd T1 T2) \<epsilon>"
+  assumes "has_type [] \<Sigma> LPublic v (TProd T1 T2) \<epsilon>"
       and "value v"
   shows "\<exists>v1 v2. v = EPair v1 v2 \<and> value v1 \<and> value v2"
   using assms
@@ -75,7 +75,7 @@ qed (auto elim: has_type.cases)
 text \<open>Canonical form for sum (matches Coq: canonical_sum)\<close>
 
 lemma canonical_sum:
-  assumes "has_type [] \<Sigma> Public v (TSum T1 T2) \<epsilon>"
+  assumes "has_type [] \<Sigma> LPublic v (TSum T1 T2) \<epsilon>"
       and "value v"
   shows "(\<exists>v'. v = EInl v' T2 \<and> value v') \<or> (\<exists>v'. v = EInr v' T1 \<and> value v')"
   using assms
@@ -90,7 +90,7 @@ qed (auto elim: has_type.cases)
 text \<open>Canonical form for reference (matches Coq: canonical_ref)\<close>
 
 lemma canonical_ref:
-  assumes "has_type [] \<Sigma> Public v (TRef T l) \<epsilon>"
+  assumes "has_type [] \<Sigma> LPublic v (TRef T l) \<epsilon>"
       and "value v"
   shows "\<exists>l'. v = ELoc l'"
   using assms by (cases v rule: value.cases; auto elim: has_type.cases)
@@ -98,7 +98,7 @@ lemma canonical_ref:
 text \<open>Canonical form for secret (matches Coq: canonical_secret)\<close>
 
 lemma canonical_secret:
-  assumes "has_type [] \<Sigma> Public v (TSecret T) \<epsilon>"
+  assumes "has_type [] \<Sigma> LPublic v (TSecret T) \<epsilon>"
       and "value v"
   shows "\<exists>v'. v = EClassify v' \<and> value v'"
   using assms
@@ -110,7 +110,7 @@ qed (auto elim: has_type.cases)
 text \<open>Canonical form for proof (matches Coq: canonical_proof)\<close>
 
 lemma canonical_proof:
-  assumes "has_type [] \<Sigma> Public v (TProof T) \<epsilon>"
+  assumes "has_type [] \<Sigma> LPublic v (TProof T) \<epsilon>"
       and "value v"
   shows "\<exists>v'. v = EProve v' \<and> value v'"
   using assms
@@ -136,11 +136,11 @@ theorem progress: "progress_stmt"
   unfolding progress_stmt_def
 proof (intro allI impI)
   fix e T \<epsilon> st ctx \<Sigma>
-  assume Hty: "has_type [] \<Sigma> Public e T \<epsilon>"
+  assume Hty: "has_type [] \<Sigma> LPublic e T \<epsilon>"
      and Hwf: "store_wf \<Sigma> st"
   show "value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<longrightarrow> (e', st', ctx'))"
     using Hty Hwf
-  proof (induction "[] :: type_env" \<Sigma> Public e T \<epsilon> arbitrary: st ctx rule: has_type.induct)
+  proof (induction "[] :: type_env" \<Sigma> LPublic e T \<epsilon> arbitrary: st ctx rule: has_type.induct)
     case (T_Unit \<Sigma> \<Delta>)
     then show ?case by (auto intro: value.VUnit)
   next
@@ -374,7 +374,7 @@ proof (intro allI impI)
       case hv: True
       from canonical_ref[OF T_Deref.hyps hv]
       obtain l' where heq: "e = ELoc l'" by auto
-      from T_Deref.hyps heq have "has_type [] \<Sigma> Public (ELoc l') (TRef T l) \<epsilon>" by simp
+      from T_Deref.hyps heq have "has_type [] \<Sigma> LPublic (ELoc l') (TRef T l) \<epsilon>" by simp
       then obtain Tl sl where Hlook: "store_ty_lookup l' \<Sigma> = Some (Tl, sl)"
         by (auto elim: has_type.cases)
       from Hwf[unfolded store_wf_def] Hlook
@@ -394,7 +394,7 @@ proof (intro allI impI)
       case hv1: True
       from canonical_ref[OF T_Assign.hyps(1) hv1]
       obtain l' where heq: "e1 = ELoc l'" by auto
-      from T_Assign.hyps(1) heq have "has_type [] \<Sigma> Public (ELoc l') (TRef T l) \<epsilon>1" by simp
+      from T_Assign.hyps(1) heq have "has_type [] \<Sigma> LPublic (ELoc l') (TRef T l) \<epsilon>1" by simp
       then obtain Tl sl where Hlook: "store_ty_lookup l' \<Sigma> = Some (Tl, sl)"
         by (auto elim: has_type.cases)
       from Hwf[unfolded store_wf_def] Hlook
