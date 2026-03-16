@@ -76,15 +76,15 @@ lemma free_in_context:
   shows "\<exists>T'. env_lookup x \<Gamma> = Some T'"
 using assms
 proof (induction e arbitrary: \<Gamma> \<Sigma> \<Delta> T \<epsilon>)
-  case EUnit thus ?case by (cases "free_in x EUnit") simp
+  case EUnit thus ?case by simp
 next
-  case (EBool b) thus ?case by (cases "free_in x (EBool b)") simp
+  case (EBool b) thus ?case by simp
 next
-  case (EInt n) thus ?case by (cases "free_in x (EInt n)") simp
+  case (EInt n) thus ?case by simp
 next
-  case (EString s) thus ?case by (cases "free_in x (EString s)") simp
+  case (EString s) thus ?case by simp
 next
-  case (ELoc l) thus ?case by (cases "free_in x (ELoc l)") simp
+  case (ELoc l) thus ?case by simp
 next
   case (EVar y)
   from EVar.prems have "x = y" and "env_lookup y \<Gamma> = Some T"
@@ -212,9 +212,13 @@ lemma store_ty_extends_preserves_typing:
   assumes "store_ty_extends \<Sigma> \<Sigma>'"
     and "has_type \<Gamma> \<Sigma> \<Delta> e T \<epsilon>"
   shows "has_type \<Gamma> \<Sigma>' \<Delta> e T \<epsilon>"
-  using assms
-  by (induction \<Gamma> \<Sigma> \<Delta> e T \<epsilon> rule: has_type.induct)
-     (auto intro: has_type.intros simp: store_ty_extends_def)
+  using assms(2,1)
+proof (induction \<Gamma> \<Sigma> \<Delta> e T \<epsilon> rule: has_type.induct)
+  case (T_Loc l \<Sigma> T sl \<Gamma> \<Delta>)
+  from T_Loc.hyps T_Loc.prems show ?case
+    unfolding store_ty_extends_def
+    by (auto intro: has_type.T_Loc)
+qed (auto intro: has_type.intros)
 
 lemma store_ty_extends_refl: "store_ty_extends \<Sigma> \<Sigma>"
   unfolding store_ty_extends_def by simp
@@ -441,16 +445,16 @@ next
   case (T_Loc l \<Sigma> T' sl \<Gamma> \<Delta>)
   thus ?case by (simp add: has_type.T_Loc)
 next
-  case (T_Var y T' \<Gamma> \<Sigma> \<Delta>)
+  case (T_Var y \<Gamma>v Tv \<Sigma>v \<Delta>v)
   show ?case
   proof (cases "x = y")
     case True
-    then have "S = T'" using T_Var by simp
+    then have "S = Tv" using T_Var by simp
     moreover have "subst x v (EVar y) = v" using True by simp
     ultimately show ?thesis using T_Var closed_typing_weakening by auto
   next
     case False
-    then have "env_lookup y \<Gamma>0 = Some T'" using T_Var by auto
+    then have "env_lookup y \<Gamma>0 = Some Tv" using T_Var by auto
     then show ?thesis using False by (simp add: has_type.T_Var)
   qed
 next

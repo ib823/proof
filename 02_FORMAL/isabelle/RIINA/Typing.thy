@@ -257,25 +257,14 @@ next
   case T_Lam then show ?case by (auto elim: has_type.cases dest: T_Lam.IH)
 next
   case T_App
+  note ih1 = T_App.IH(1) and ih2 = T_App.IH(2)
   from T_App.prems show ?case
-  proof (cases rule: has_type.cases)
-    case T_App
-    then have eq1: "TFn T1 T2 \<epsilon> = TFn T1a T2a \<epsilon>a \<and> \<epsilon>1 = \<epsilon>1a"
-      using T_App.IH(1) by blast
-    then have "T1 = T1a" "T2 = T2a" "\<epsilon> = \<epsilon>a" by auto
-    moreover have "\<epsilon>2 = \<epsilon>2a"
-      using T_App.IH(2) T_App \<open>T1 = T1a\<close> by auto
-    ultimately show ?thesis using T_App by auto
-  qed
+    by (auto elim!: has_type.cases dest: ih1 ih2)
 next
   case T_Pair
+  note ih1 = T_Pair.IH(1) and ih2 = T_Pair.IH(2)
   from T_Pair.prems show ?case
-  proof (cases rule: has_type.cases)
-    case T_Pair
-    then have "T1 = T1a \<and> \<epsilon>1 = \<epsilon>1a" using T_Pair.IH(1) by blast
-    moreover have "T2 = T2a \<and> \<epsilon>2 = \<epsilon>2a" using T_Pair.IH(2) T_Pair by blast
-    ultimately show ?thesis using T_Pair by auto
-  qed
+    by (auto elim!: has_type.cases dest: ih1 ih2)
 next
   case T_Fst then show ?case by (auto elim: has_type.cases dest: T_Fst.IH)
 next
@@ -286,74 +275,42 @@ next
   case T_Inr then show ?case by (auto elim: has_type.cases dest: T_Inr.IH)
 next
   case T_Case
+  note ih1 = T_Case.IH(1) and ih2 = T_Case.IH(2) and ih3 = T_Case.IH(3)
   from T_Case.prems show ?case
-  proof (cases rule: has_type.cases)
-    case T_Case
-    then have eq0: "TSum T1 T2 = TSum T1a T2a \<and> \<epsilon> = \<epsilon>a"
-      using T_Case.IH(1) by blast
-    then have "T1 = T1a" "T2 = T2a" by auto
-    then have "T = Ta \<and> \<epsilon>1 = \<epsilon>1a" using T_Case.IH(2) T_Case by auto
-    moreover have "\<epsilon>2 = \<epsilon>2a" using T_Case.IH(3) T_Case \<open>T2 = T2a\<close> by auto
-    ultimately show ?thesis using T_Case eq0 by auto
-  qed
+    by (auto elim!: has_type.cases dest: ih1 ih2 ih3)
 next
   case T_If
+  note ih1 = T_If.IH(1) and ih2 = T_If.IH(2) and ih3 = T_If.IH(3)
   from T_If.prems show ?case
-  proof (cases rule: has_type.cases)
-    case T_If
-    then have "\<epsilon>1 = \<epsilon>1a" using T_If.IH(1) by auto
-    moreover have "T = Ta \<and> \<epsilon>2 = \<epsilon>2a" using T_If.IH(2) T_If by blast
-    moreover have "\<epsilon>3 = \<epsilon>3a" using T_If.IH(3) T_If by auto
-    ultimately show ?thesis using T_If by auto
-  qed
+    by (auto elim!: has_type.cases dest: ih1 ih2 ih3)
 next
   case T_Let
+  note ih1 = T_Let.IH(1) and ih2 = T_Let.IH(2)
   from T_Let.prems show ?case
-  proof (cases rule: has_type.cases)
-    case T_Let
-    then have "T1 = T1a \<and> \<epsilon>1 = \<epsilon>1a" using T_Let.IH(1) by blast
-    then have "T2 = T2a \<and> \<epsilon>2 = \<epsilon>2a" using T_Let.IH(2) T_Let by auto
-    then show ?thesis using T_Let by auto
-  qed
+    by (auto elim!: has_type.cases dest: ih1 ih2)
 next
   case T_Perform then show ?case by (auto elim: has_type.cases dest: T_Perform.IH)
 next
   case T_Handle
+  note ih1 = T_Handle.IH(1) and ih2 = T_Handle.IH(2)
   from T_Handle.prems show ?case
-  proof (cases rule: has_type.cases)
-    case T_Handle
-    then have "T1 = T1a \<and> \<epsilon>1 = \<epsilon>1a" using T_Handle.IH(1) by blast
-    then have "T2 = T2a \<and> \<epsilon>2 = \<epsilon>2a" using T_Handle.IH(2) T_Handle by auto
-    then show ?thesis using T_Handle by auto
-  qed
+    by (auto elim!: has_type.cases dest: ih1 ih2)
 next
   case T_Ref then show ?case by (auto elim: has_type.cases dest: T_Ref.IH)
 next
   case T_Deref then show ?case by (auto elim: has_type.cases dest: T_Deref.IH)
 next
   case T_Assign
+  note ih1 = T_Assign.IH(1) and ih2 = T_Assign.IH(2)
   from T_Assign.prems show ?case
-  proof (cases rule: has_type.cases)
-    case T_Assign
-    then have eq1: "TRef T l = TRef Ta la \<and> \<epsilon>1 = \<epsilon>1a"
-      using T_Assign.IH(1) by blast
-    then have "T = Ta" by auto
-    then have "\<epsilon>2 = \<epsilon>2a" using T_Assign.IH(2) T_Assign by auto
-    then show ?thesis using T_Assign eq1 by auto
-  qed
+    by (auto elim!: has_type.cases dest: ih1 ih2)
 next
   case T_Classify then show ?case by (auto elim: has_type.cases dest: T_Classify.IH)
 next
   case T_Declassify
+  note ih1 = T_Declassify.IH(1) and ih2 = T_Declassify.IH(2)
   from T_Declassify.prems show ?case
-  proof (cases rule: has_type.cases)
-    case T_Declassify
-    then have eq1: "TSecret T = TSecret Ta \<and> \<epsilon>1 = \<epsilon>1a"
-      using T_Declassify.IH(1) by blast
-    then have "T = Ta" by auto
-    then have "\<epsilon>2 = \<epsilon>2a" using T_Declassify.IH(2) T_Declassify by auto
-    then show ?thesis using T_Declassify eq1 by auto
-  qed
+    by (auto elim!: has_type.cases dest: ih1 ih2)
 next
   case T_Prove then show ?case by (auto elim: has_type.cases dest: T_Prove.IH)
 next
