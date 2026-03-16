@@ -191,11 +191,12 @@ impl WasmBackend {
             max: Some(total_funcs),
         });
 
-        // Element segment: initialize table with all function indices
-        let all_func_indices: Vec<u32> = (0..total_funcs).collect();
+        // Element segment: initialize table with defined functions (not imports).
+        // Starts at table offset NUM_IMPORTS so table[func_idx] = function[func_idx].
+        let all_func_indices: Vec<u32> = (NUM_IMPORTS..total_funcs).collect();
         let mut elem_offset = Vec::new();
         elem_offset.push(Op::I32Const as u8);
-        wasm_encode::encode_sleb128(0, &mut elem_offset);
+        wasm_encode::encode_sleb128(NUM_IMPORTS as i64, &mut elem_offset);
         elem_offset.push(Op::End as u8);
         module.elements.push(ElemSegment {
             offset_expr: elem_offset,
@@ -369,6 +370,11 @@ impl WasmBackend {
                     }
                     Instruction::Copy(src) => {
                         if let Some(&fid) = var_to_func.get(src) {
+                            var_to_func.insert(result, fid);
+                        }
+                    }
+                    Instruction::FixClosure { closure, .. } => {
+                        if let Some(&fid) = var_to_func.get(closure) {
                             var_to_func.insert(result, fid);
                         }
                     }
