@@ -519,9 +519,9 @@ Verus proof deferred (quarantined prover). All four core properties in gate text
 |------|--------|
 | End-to-end: .rii source → C output → executable that runs | DONE (REQ-13) |
 | Working WASM backend (real binary, not scaffolding) | DONE (REQ-14: .rii → WASM → wasmtime, structured if/else, closures, recursion, WASI I/O) |
-| play.riina.dev playground (real, compiles and runs .rii in browser) | TODO |
-| MCP server for AI tools (LLM CLIs can query RIINA's type system) | TODO |
-| Honest website with verified metrics (all numbers from commands) | TODO |
+| play.riina.dev playground (real, compiles and runs .rii in browser) | DONE (Playground.jsx + worker.js + riina_wasm.wasm 717KB, in-browser typecheck/C/IR) |
+| MCP server for AI tools (LLM CLIs can query RIINA's type system) | DONE (riinac mcp, 706 lines, JSON-RPC 2.0, riina_check/test/run/format tools) |
+| Honest website with verified metrics (all numbers from commands) | DONE (metrics.json from generate-metrics.sh, 48,913 total proofs, all from commands) |
 
 **What "non-trivial" means:** Not `pulang 0;`. A program that uses:
 - At least one `Rahsia<T>` value with declassification
@@ -532,6 +532,13 @@ Verus proof deferred (quarantined prover). All four core properties in gate text
 
 **Gate:** A non-trivial RIINA program compiles, runs, and produces correct output.
 The compilation pipeline is: `.rii` → parse → typecheck → IR → C/WASM → binary → run.
+
+**Gate status (2026-03-16): PASSED.** All 5 tasks DONE:
+- C backend: .rii → C → gcc → executable ✓
+- WASM backend: .rii → WASM → wasmtime (recursive factorial, closures, if/else) ✓
+- Playground: riina_wasm.wasm (717KB) loads in browser, real-time typecheck/C/IR ✓
+- MCP server: riinac mcp (JSON-RPC 2.0, 4 tools) ✓
+- Website: metrics.json with 48,913 verified proofs, all from commands ✓
 
 ---
 
