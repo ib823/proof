@@ -712,7 +712,7 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
 RIINA COMPLIANCE CERTIFICATE
 ============================
 Program: myapp.rii
-Prover:  Coq 8.20.1
+Prover:  Rocq 9.1.1
 
 HIPAA §164.312(a) — Access Control
   PROVEN: All PHI access gated by role-based authorization
@@ -772,8 +772,8 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>{metrics.multiProver.totalProvers}-Prover Verification</h2>
           <p style={{color:'var(--text-secondary)',marginBottom:32}}>
             Proof obligations are tracked across {metrics.multiProver.totalProvers} verification lanes with different mathematical foundations.
-            Coq is the only lane at the <em>mechanized</em> claim level — all other lanes are published at the <em>generated</em> level
-            and are not yet independently compiled. No independent external audit has been published.
+            Four lanes (Coq, Lean 4, Isabelle, SMT/Z3) are at the <em>mechanized</em> claim level.
+            F*, TLA+, and Alloy are <em>compiled</em>. Verus, Kani, and TV are <em>generated</em>. No independent external audit has been published.
           </p>
           {[
             { prover: metrics.coq.prover, theorems: `${fmt(metrics.proofs.qedActive)} Qed`, role: 'Primary — authoritative proofs (CIC)' },

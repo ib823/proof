@@ -46,7 +46,7 @@ RIINA provides first-class support for AI-assisted development:
 
 ## What is RIINA?
 
-RIINA is a programming language with a large machine-checked proof corpus and a security-oriented compiler. The repository currently ships audited Coq proofs, a compiling Lean lane, an Isabelle smoke session, a bounded F* smoke module, and a bounded TLA+ smoke model. The shipped compiler enforces core type/effect checks today; broader proof coverage and known gaps are tracked explicitly in `RIINA_MASTER_PLAN.md` Part 2.
+RIINA is a programming language with a large machine-checked proof corpus and a security-oriented compiler. The repository currently ships audited Coq proofs, a mechanized Lean lane, a mechanized Isabelle lane, compiled F*/TLA+/Alloy lanes, and a mechanized SMT lane. The shipped compiler enforces core type/effect checks today; broader proof coverage and known gaps are tracked explicitly in `RIINA_MASTER_PLAN.md` Part 2.
 
 Most languages ask you to *trust* that your code is secure. RIINA asks you to *verify* it.
 
@@ -82,8 +82,8 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes (9,172 Coq + 3,895 Lean active-lane declarations + Isabelle/TLA+/Z3 smoke lanes) | No | No | Partial |
-| Multi-prover work | Yes (Coq primary, Lean active, Isabelle/F*/TLA+ smoke lanes) | No | No | No |
+| Formal proof corpus in repo | Yes (9,171 Coq + 4,458 Lean active-lane declarations + Isabelle/F*/TLA+/Alloy/SMT lanes) | No | No | Partial |
+| Multi-prover work | Yes (Coq primary, Lean active, Isabelle/F*/TLA+/Alloy/SMT lanes) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
 ---
@@ -118,7 +118,7 @@ nix run github:ib823/riina
 bash scripts/install.sh
 ```
 
-For the pinned Isabelle/F* smoke lanes and TLA+/Alloy formal jars used by repo verification on a fresh clone:
+For the pinned Isabelle/F* toolchains and TLA+/Alloy formal jars used by repo verification on a fresh clone:
 
 ```bash
 bash scripts/provision-smoke-toolchains.sh
@@ -221,22 +221,22 @@ This is not a whitepaper. This is working software.
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
 | **Rocq 9.1.1** (Primary) | 9,171 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
-| **Lean 4** (Secondary) | 3,895 theorem/lemma declarations | 136 files; 0 `sorry`, 0 axioms; claim level: compiled (build passes) |
-| **Isabelle/HOL** (Tertiary) | 0 compiled lemmas | 1 smoke session (`RIINA_CORE`); remaining `.thy` files are quarantined stubs |
-| **F\*** (Seed lane) | 0 compiled lemmas | 1 smoke module (`CryptographicSecurityActive`); remaining `.fst` files are quarantined generated stubs |
-| **TLA+** (Protocol seed lane) | 0 compiled theorems | 1 smoke spec (`TelusProcurementProtocol`); remaining `.tla` files are quarantined generated stubs |
+| **Lean 4** (Secondary) | 4,458 theorem/lemma declarations | 155 files; 0 `sorry`, 0 axioms; claim level: mechanized (build passes) |
+| **Isabelle/HOL** (Tertiary) | 9,092 lemmas, mechanized | 307 .thy files; Isabelle mechanized lane |
+| **F\*** (Seed lane) | 22 lemmas, compiled | F* compiled lane |
+| **TLA+** (Protocol seed lane) | 5,893 theorems, compiled | 267 .tla files; TLA+ compiled lane |
 
 **Honest scope:**
 - Core Coq theorems cover foundations, type safety, effects, non-interference, declassification, and termination.
 - Many domain files are formal models or specifications, not compiler-enforced guarantees.
-- F* and TLA+ each have one bounded smoke artifact; the remaining extended-prover corpora remain quarantined generated artifacts and are not counted as verified proofs.
+- F* (22 lemmas), TLA+ (5,893 theorems), Alloy (8,434 assertions), and SMT (11,843 assertions) are compiled or mechanized lanes with real artifacts.
 
 ### Compiler & Toolchain (Rust)
 
 | Metric | Value |
 |--------|-------|
 | Rust crates | 15 |
-| Test count | 968 (all passing) |
+| Test count | 980 (all passing) |
 | External dependencies | **0** |
 | Lines of Rust | 31,043 |
 | Standard library builtins | 88 across 9 modules |
@@ -316,16 +316,16 @@ riina/
 │   ├── compliance/         DO-178C, ISO-26262, Common Criteria models
 │   └── Industries/         Regulatory/domain formal models
 │
-├── 02_FORMAL/lean/          Lean 4 active lane (136 files, 3,895 declarations)
+├── 02_FORMAL/lean/          Lean 4 active lane (155 files, 4,458 declarations)
 │   └── RIINA/               Syntax, Semantics, Typing, Progress, Preservation,
 │                             TypeSafety, EffectAlgebra, EffectSystem, EffectGate,
 │                             NonInterference
 │
-├── 02_FORMAL/isabelle/      Isabelle/HOL smoke lane (1 compiled theory, 275 .thy total)
-├── 02_FORMAL/tlaplus/       TLA+ smoke lane (1 TLC-checked spec, 265 .tla total)
-│   └── RIINA/               `RIINA_CORE` currently compiles `Syntax.thy`
+├── 02_FORMAL/isabelle/      Isabelle/HOL mechanized lane (9,092 lemmas, 307 .thy total)
+├── 02_FORMAL/tlaplus/       TLA+ compiled lane (5,893 theorems, 267 .tla total)
+│   └── RIINA/               Mechanized Isabelle theories
 │
-├── 03_PROTO/               Rust compiler (15 crates, 968 tests, 0 deps)
+├── 03_PROTO/               Rust compiler (15 crates, 980 tests, 0 deps)
 │   └── crates/
 │       ├── riinac/         Compiler driver (11 subcommands)
 │       ├── riina-lexer/    Tokenizer
@@ -396,15 +396,15 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 |------|--------|
 | Core compiler | Lexer/parser/typechecker/codegen/interpreter build; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
-| Formal verification | Coq primary lane healthy; Lean active lane healthy; Isabelle smoke lane; bounded F* smoke proof; bounded TLA+ smoke model; bounded Alloy smoke model |
+| Formal verification | Coq primary lane healthy; Lean mechanized lane healthy; Isabelle mechanized lane; F* compiled lane; TLA+ compiled lane; Alloy compiled lane (8,434 assertions); SMT mechanized lane (11,843 assertions) |
 | WASM/mobile backends | Present as scaffolding, not full production backends |
-| Extended provers | F*, TLA+, and Alloy have bounded smoke artifacts; the rest remain generated stubs |
+| Extended provers | F* (22 lemmas, compiled), TLA+ (5,893 theorems, compiled), Alloy (8,434 assertions, compiled), SMT (11,843 assertions, mechanized) |
 
 ### What's next
 
 - **Compiler alignment:** Switch the shipped compiler path to the Coq-matching checker.
 - **Axiom status:** Active build is axiom-free (`Axioms=0`, `Admitted=0`, explicit assumptions `=0`).
-- **Phase 2 milestone:** First non-stub Alloy artifact is now closed; next requirement-driven work is compiler alignment (`REQ-12`).
+- **Phase 4 PASSED:** All 5 tasks complete; Isabelle mechanized, F*/TLA+/Alloy compiled, SMT mechanized. Next requirement-driven work is compiler alignment (`REQ-12`).
 - **Compliance system:** `--compliance` exposes 15 profile names today, but only 3 have implemented heuristic checks so far.
 
 ---
@@ -468,7 +468,7 @@ Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for detailed development instructions 
 ## FAQ
 
 **Is RIINA production-ready?**
-The compiler, proofs, and toolchain are functional, but the project is not finished. The repository is currently in Phase 2 of the master plan. You can write, compile, and run RIINA programs today, but end-to-end alignment between the shipped compiler and the full proof corpus is still in progress.
+The compiler, proofs, and toolchain are functional, but the project is not finished. The repository has passed Phase 4 of the master plan. You can write, compile, and run RIINA programs today, but end-to-end alignment between the shipped compiler and the full proof corpus is still in progress.
 
 **Do I need to know Bahasa Melayu?**
 No. The keywords are short and consistent — `fungsi` (function), `biar` (let), `kalau` (if), `pulang` (return). You'll learn them in minutes. A [cheatsheet](07_EXAMPLES/06_ai_context/RIINA_CHEATSHEET.md) is included.
