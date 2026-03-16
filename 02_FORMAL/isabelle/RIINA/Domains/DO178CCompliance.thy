@@ -80,7 +80,7 @@
  * | DO178_040_complete_certification | DO178_040_complete_certification | OK     |
  *)
 
-theory do178_c_compliance
+theory DO178CCompliance
   imports Main
 begin
 

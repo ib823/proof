@@ -70,7 +70,7 @@
  * | ISO_035_complete_certification | ISO_035_complete_certification | OK     |
  *)
 
-theory iso26262_compliance
+theory ISO26262Compliance
   imports Main
 begin
 

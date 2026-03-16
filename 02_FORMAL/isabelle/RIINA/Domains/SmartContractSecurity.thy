@@ -70,7 +70,7 @@
  * | SC_035_complete_security | SC_035_complete_security | OK     |
  *)
 
-theory smart_contract_security
+theory SmartContractSecurity
   imports Main
 begin
 

@@ -51,7 +51,7 @@
  * | MELTDOWN_029_complete_decomposition | MELTDOWN_029_complete_decomposition | OK     |
  *)
 
-theory meltdown_defense
+theory MeltdownDefense
   imports Main
 begin
 

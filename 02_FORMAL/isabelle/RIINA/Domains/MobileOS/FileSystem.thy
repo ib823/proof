@@ -68,7 +68,7 @@
  * | access_time_updated | access_time_updated    | OK     |
  *)
 
-theory file_system
+theory FileSystem
   imports Main CoqCompat
 begin
 
