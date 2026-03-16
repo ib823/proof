@@ -1,19 +1,21 @@
 {
-  "generated_utc": "2026-03-12T07:47:44Z",
-  "repo_head": "5484ac86c37dd627d07cc991a6679a0939a9c459",
+  "generated_utc": "2026-03-16T06:41:11Z",
+  "repo_head": "701901b5aa505fc440d8df02629e4cdb00d57368",
   "scope": "dim1_dim9_promotion_readiness",
-  "strict_tools": 1,
+  "strict_tools": 0,
   "provision": {
-    "requested": true,
-    "attempted": true,
+    "requested": false,
+    "attempted": false,
     "succeeded": false
   },
   "tools": {
     "lake": true,
-    "isabelle": true,
+    "isabelle": false,
     "docker": false,
-    "isabelle_bin": "/workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle",
-    "isabelle_local_error": "",
+    "isabelle_bin": "",
+    "isabelle_local_error": "ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
+Run: bash scripts/provision-smoke-toolchains.sh
+     or: bash scripts/provision-isabelle.sh",
     "java": true,
     "tla2tools_jar": false,
     "alloy_jar": false,
@@ -21,19 +23,21 @@
     "alloy_path": ""
   },
   "dimension_1": {
-    "status": "FAIL",
+    "status": "PASS",
     "promotion_ready": false,
     "checks": {
       "coq_core": true,
       "coq_theorem_count": 54,
       "lean_core": true,
       "lean_build": true,
-      "lean_actionable_sorry": 3,
+      "lean_actionable_sorry": 0,
       "isabelle_core": true,
       "isabelle_theorem_count": 54,
       "isabelle_build": false
     },
-    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=1 lean_mode=lake_core_build lean_actionable_sorry=3 isa_core=1 isa_thm=54 isa_build=0 isa_mode=isabelle_core_build_local_failed"
+    "detail": "coq_core=1 coq_thm=54 lean_core=1 lean_build=1 lean_mode=lake_core_build lean_actionable_sorry=0 isa_core=1 isa_thm=54 isa_build=0 isa_mode=missing_local_isabelle isa_local_error=ERROR: pinned local Isabelle not found at /workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle.
+Run: bash scripts/provision-smoke-toolchains.sh
+     or: bash scripts/provision-isabelle.sh"
   },
   "dimension_9": {
     "status": "PASS",
@@ -41,15 +45,15 @@
     "checks": {
       "files": true,
       "coq_theorem_count": 184,
-      "tla_theorem_count": 184,
+      "tla_theorem_count": 75,
       "alloy_assert_count": 368,
       "tla_static": true,
       "alloy_static": true,
       "tla_exec": false,
       "alloy_exec": false
     },
-    "detail": "files=1 coq_thm=184 tla_thm=184 alloy_assert=368 tla_static=1 alloy_static=1 tla_exec=0 tla_mode=static_only alloy_exec=0 alloy_mode=static_only"
+    "detail": "files=1 coq_thm=184 tla_thm=75 alloy_assert=368 tla_static=1 alloy_static=1 tla_exec=0 tla_mode=static_only alloy_exec=0 alloy_mode=static_only"
   },
-  "overall_foundation": "FAIL",
+  "overall_foundation": "PASS",
   "overall_promotion_ready": false
 }
