@@ -202,26 +202,25 @@ impl WasmBackend {
             func_indices: all_func_indices,
         });
 
-        // Emit each user function
+        // Emit each user function — all share the same type: (i32, i32) -> i32
+        let user_func_type_idx = module.types.len() as u32;
+        module.types.push(FuncType {
+            params: vec![ValType::I32, ValType::I32], // closure_ptr, arg
+            results: vec![ValType::I32],
+        });
+
         for &fid in &func_ids {
             let func = program.function(fid).unwrap();
+            module.functions.push(user_func_type_idx);
 
-            let (param_types, result_types) = self.function_signature(func);
-            let type_idx = module.types.len() as u32;
-            module.types.push(FuncType {
-                params: param_types,
-                results: result_types,
-            });
-            module.functions.push(type_idx);
-
-            let body = self.emit_function(func, &func_index_map, &string_table, alloc_func_index)?;
+            let body = self.emit_function(func, &func_index_map, &string_table, alloc_func_index, user_func_type_idx)?;
             module.codes.push(body);
 
         }
 
         // === _start trampoline ===
         // WASI expects _start with signature () -> ().
-        // Main has signature (i32) -> i32. The trampoline calls main(0) and drops the result.
+        // Main has signature (i32, i32) -> i32. The trampoline calls main(0, 0) and drops the result.
         if let Some(&main_idx) = func_index_map.get(&FuncId::MAIN) {
             let start_type_idx = module.types.len() as u32;
             module.types.push(FuncType {
@@ -231,7 +230,9 @@ impl WasmBackend {
             module.functions.push(start_type_idx);
 
             let mut trampoline_code = Vec::new();
-            // Push arg 0 for main
+            // Push closure_ptr=0 and arg=0 for main
+            trampoline_code.push(Op::I32Const as u8);
+            wasm_encode::encode_sleb128(0, &mut trampoline_code);
             trampoline_code.push(Op::I32Const as u8);
             wasm_encode::encode_sleb128(0, &mut trampoline_code);
             // Call main
@@ -311,8 +312,12 @@ impl WasmBackend {
     }
 
     /// Determine the WASM function signature for an IR function.
+    /// All user functions use the closure calling convention:
+    ///   (closure_ptr: i32, arg: i32) -> i32
+    /// The closure_ptr is local 0, arg is local 1.
+    /// Functions without captures simply ignore local 0.
     fn function_signature(&self, _func: &Function) -> (Vec<ValType>, Vec<ValType>) {
-        let params = vec![ValType::I32];
+        let params = vec![ValType::I32, ValType::I32]; // closure_ptr, arg
         let results = vec![ValType::I32];
         (params, results)
     }
@@ -329,16 +334,27 @@ impl WasmBackend {
         func_map: &HashMap<FuncId, u32>,
         string_table: &HashMap<String, u32>,
         alloc_func_index: u32,
+        user_func_type_idx: u32,
     ) -> Result<FuncBody> {
         let mut code = Vec::new();
         let mut locals: Vec<(u32, ValType)> = Vec::new();
-        let mut local_count: u32 = 1; // One param
+        let mut local_count: u32 = 2; // Two params: closure_ptr (local 0), arg (local 1)
 
         let mut var_to_local: HashMap<VarId, u32> = HashMap::new();
         let mut var_to_func: HashMap<VarId, FuncId> = HashMap::new();
 
-        // Map VarId(0) to local 0 (the function parameter)
-        var_to_local.insert(VarId::new(0), 0);
+        // Closure calling convention: local 0 = closure_ptr, local 1 = arg
+        // The IR's VarId(0) is the function param → maps to local 1 (arg)
+        var_to_local.insert(VarId::new(0), 1);
+
+        // For functions with captures, load captures from closure memory.
+        // Captures are at closure_ptr + 4, closure_ptr + 8, etc.
+        // The IR uses sequential VarIds starting after the param for captures,
+        // but actually the lowering puts captures as VarId(0)=param, then
+        // instructions Copy the captures from implicit locations.
+        // We handle this by providing a "capture_base" local that the Copy
+        // instructions will use when referencing captures stored at VarId > 0
+        // that aren't instruction results.
 
         for block in &func.blocks {
             for instr in &block.instrs {
@@ -361,7 +377,19 @@ impl WasmBackend {
             }
         }
 
-        let extra_locals = local_count.saturating_sub(1);
+        // Allocate locals for captures before creating ctx
+        if !func.captures.is_empty() {
+            for (i, _cap) in func.captures.iter().enumerate() {
+                let cap_var = VarId::new((i + 1) as u32);
+                if !var_to_local.contains_key(&cap_var) {
+                    var_to_local.insert(cap_var, local_count);
+                    local_count += 1;
+                }
+            }
+        }
+
+        // Finalize locals: subtract 2 params (closure_ptr, arg)
+        let extra_locals = local_count.saturating_sub(2);
         if extra_locals > 0 {
             locals.push((extra_locals, ValType::I32));
         }
@@ -372,7 +400,26 @@ impl WasmBackend {
             var_to_func: &var_to_func,
             string_table,
             alloc_func_index,
+            user_func_type_idx,
         };
+
+        // Load captures from closure memory into locals.
+        // Closure layout: [func_index: i32, capture0: i32, capture1: i32, ...]
+        // closure_ptr is local 0. Captures start at offset +4.
+        if !func.captures.is_empty() {
+            for (i, _cap) in func.captures.iter().enumerate() {
+                let cap_var = VarId::new((i + 1) as u32);
+                code.push(Op::LocalGet as u8);
+                wasm_encode::encode_uleb128(0, &mut code); // closure_ptr = local 0
+                code.push(Op::I32Load as u8);
+                code.push(0x02); // align 4
+                code.push(((i + 1) * 4) as u8); // offset
+                if let Some(&local) = var_to_local.get(&cap_var) {
+                    code.push(Op::LocalSet as u8);
+                    wasm_encode::encode_uleb128(local as u64, &mut code);
+                }
+            }
+        }
 
         // Build a block index for quick lookup by BlockId.
         // Note: if multiple blocks share a BlockId, only the last one is kept.
@@ -702,29 +749,33 @@ impl WasmBackend {
                 }
             }
             Instruction::Call(func_var, arg) => {
-                Self::emit_local_get(arg, ctx.var_map, code);
                 if let Some(fid) = ctx.var_to_func.get(func_var) {
                     if let Some(&idx) = ctx.func_map.get(fid) {
+                        // Direct call: push closure_ptr (the var itself), then arg
+                        Self::emit_local_get(func_var, ctx.var_map, code);
+                        Self::emit_local_get(arg, ctx.var_map, code);
                         code.push(Op::Call as u8);
                         wasm_encode::encode_uleb128(idx as u64, code);
                     } else {
+                        code.push(Op::I32Const as u8);
+                        wasm_encode::encode_sleb128(0, code);
+                        Self::emit_local_get(arg, ctx.var_map, code);
                         code.push(Op::Call as u8);
                         wasm_encode::encode_uleb128(0, code);
                     }
                 } else {
                     // Indirect call through closure pointer
-                    // Load func_idx from closure memory: closure_ptr + 0
+                    // Push closure_ptr (first arg), then arg (second arg)
+                    Self::emit_local_get(func_var, ctx.var_map, code);
+                    Self::emit_local_get(arg, ctx.var_map, code);
+                    // Load func_idx from closure memory for table index
                     Self::emit_local_get(func_var, ctx.var_map, code);
                     code.push(Op::I32Load as u8);
-                    code.push(0x02); // align 4
-                    code.push(0x00); // offset 0
-                    // call_indirect with type index 0 (i32->i32), table 0
-                    // We need a type index for (i32) -> (i32). Use a convention:
-                    // the standard function type is always type index = NUM_IMPORTS + 1
-                    // (after cetak_type, panic_type, alloc_type come user types)
-                    // For simplicity, use type 2 (alloc type is (i32)->(i32))
+                    code.push(0x02); code.push(0x00); // load func_table_idx from closure[0]
+                    // call_indirect: type must match (i32, i32) -> i32
+                    // Find the user function type index (first user function type)
                     code.push(Op::CallIndirect as u8);
-                    wasm_encode::encode_uleb128(2, code); // alloc type = (i32)->i32
+                    wasm_encode::encode_uleb128(ctx.user_func_type_idx as u64, code);
                     wasm_encode::encode_uleb128(0, code); // table 0
                 }
             }
@@ -1096,6 +1147,7 @@ struct EmitCtx<'a> {
     var_to_func: &'a HashMap<VarId, FuncId>,
     string_table: &'a HashMap<String, u32>,
     alloc_func_index: u32,
+    user_func_type_idx: u32,
 }
 
 impl Backend for WasmBackend {
