@@ -18,14 +18,39 @@
       "pending": "none"
     },
     "fstar": {
+      "full_build_ok": false,
       "quarantined": false,
-      "mechanized_ready": false
+      "files": 265,
+      "sorry": 0,
+      "smoke_build_ok": true,
+      "smoke_compiled_lemmas": 3,
+      "generated_files": 0,
+      "mechanized_ready": false,
+      "claim_level": "compiled",
+      "pending": "none",
+      "full_exec_ok": true
     },
     "tlaplus": {
-      "quarantined": false
+      "full_exec_ok": true,
+      "quarantined": false,
+      "files": 267,
+      "smoke_build_ok": true,
+      "smoke_compiled_theorems": 5,
+      "generated_files": 0,
+      "mechanized_ready": false,
+      "claim_level": "compiled",
+      "pending": "none"
     },
     "alloy": {
-      "quarantined": false
+      "full_exec_ok": true,
+      "quarantined": false,
+      "files": 260,
+      "smoke_build_ok": true,
+      "smoke_checked_assertions": 6,
+      "generated_files": 0,
+      "mechanized_ready": false,
+      "claim_level": "compiled",
+      "pending": "none"
     },
     "smt": {
       "full_exec_ok": true,
@@ -33,6 +58,6 @@
       "mechanized_ready": true
     }
   },
-  "repo_head": "74c7e459f5d31e39a708dc4fa80740c5f6156644",
+  "repo_head": "4a1564f97db6315153ab87ea11fb2d72b6da41f1",
   "generated_utc": "2026-03-16T04:00:00Z"
 }
