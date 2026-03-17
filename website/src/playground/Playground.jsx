@@ -44,63 +44,75 @@ kalau umur >= 18 {
 }`
   },
   {
-    name: 'Security Types',
-    code: `// Secret types prevent information leakage
-fungsi proses_kata_laluan(
-    kata: Rahsia<Teks>,
-    garam: Bait
-) -> Rahsia<Bait> kesan Kripto {
-    masa_tetap {
-        biar derivasi = kripto::argon2id(kata, garam);
-        pulang derivasi;
-    }
-}
-
-// Compiler proves: no secret leakage, constant-time`
-  },
-  {
     name: 'Effects',
-    code: `// Effect declarations track side effects
-fungsi baca_fail(laluan: Teks) -> Teks kesan Baca {
-    biar kandungan = io::baca(laluan);
-    pulang kandungan;
+    code: `// RIINA tracks side effects with kesan:
+//   kesan Bersih  = pure (no side effects)
+//   kesan Tulis   = can write output
+//   kesan Kripto  = cryptographic operations
+//   kesan Baca    = can read input
+//
+// The compiler proves functions only do
+// what they declare. No hidden side effects.
+
+// Pure function — guaranteed no I/O
+fungsi tambah(x: Nombor, y: Nombor) -> Nombor {
+  x + y
 }
 
-fungsi tulis_log(mesej: Teks) kesan Tulis {
-    io::cetak(mesej);
-}
-
-// Pure function — no effects allowed
-fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
-    pulang x + y;
-}`
+biar a = tambah(10, 20);
+biar b = tambah(a, 5);
+b`
   },
   {
-    name: 'Linear Types',
-    code: `// Linear types: used exactly once
-biar sekali sambungan = rangkaian::buka("localhost:8080");
-rangkaian::hantar(sambungan, "Hello");
-// sambungan is consumed — cannot be reused
+    name: 'Recursion',
+    code: `// Recursive functions
+fungsi faktorial(n: Nombor) -> Nombor {
+  kalau n == 0 { 1 }
+  lain { n * faktorial(n - 1) }
+}
 
-// Compiler proves: no resource leaks, no double-free`
+fungsi fibonacci(n: Nombor) -> Nombor {
+  kalau n <= 1 { n }
+  lain { fibonacci(n - 1) + fibonacci(n - 2) }
+}
+
+biar f = faktorial(6);
+biar g = fibonacci(10);
+f + g`
   },
   {
-    name: 'Pattern Matching',
-    code: `// Pattern matching with padan
-pilihan Bentuk {
-    Bulatan(Nombor),
-    SegiEmpat(Nombor, Nombor),
+    name: 'Composition',
+    code: `// Function composition
+fungsi ganda(x: Nombor) -> Nombor {
+  x * 2
+}
+fungsi tambah_satu(x: Nombor) -> Nombor {
+  x + 1
+}
+fungsi kuadrat(x: Nombor) -> Nombor {
+  x * x
 }
 
-fungsi luas(b: Bentuk) -> Nombor kesan Bersih {
-    padan b {
-        Bulatan(jejari) => 3.14 * jejari * jejari,
-        SegiEmpat(p, l) => p * l,
-    }
+// Compose: (5 * 2 + 1)^2 = 121
+biar a = ganda(5);
+biar b = tambah_satu(a);
+biar c = kuadrat(b);
+c`
+  },
+  {
+    name: 'Tail Recursion',
+    code: `// Tail-recursive power function
+fungsi kuasa_akum(asas: Nombor, n: Nombor, hasil: Nombor) -> Nombor {
+  kalau n == 0 { hasil }
+  lain { kuasa_akum(asas, n - 1, hasil * asas) }
 }
 
-biar b = Bulatan(5);
-luas(b)`
+fungsi kuasa(asas: Nombor, eksponen: Nombor) -> Nombor {
+  kuasa_akum(asas, eksponen, 1)
+}
+
+biar h = kuasa(2, 10);
+h`
   },
   {
     name: 'Builtins',

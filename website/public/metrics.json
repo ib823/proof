@@ -1,25 +1,25 @@
 {
-  "generated": "2026-03-17T22:19:21Z",
-  "generatedHuman": "March 17, 2026 at 22:19 UTC",
+  "generated": "2026-03-17T23:20:57Z",
+  "generatedHuman": "March 17, 2026 at 23:20 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "488466f5",
+    "commit": "dc40558a",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 9171,
+    "qedActive": 10038,
     "qedDeprecated": 758,
-    "qedTotal": 9929,
+    "qedTotal": 10796,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 299,
-    "filesActive": 259,
-    "domains": 202,
+    "filesTotal": 316,
+    "filesActive": 276,
+    "domains": 219,
     "prover": "Rocq 9.1.1"
   },
   "lean": {
@@ -105,7 +105,7 @@
   },
   "multiProver": {
     "tripleProverTheorems": 3153,
-    "totalProofsAllProvers": 48913,
+    "totalProofsAllProvers": 49780,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -151,8 +151,8 @@
     },
     "coqTiers": {
       "core": 1621,
-      "domain": 7550,
-      "domainTrivial": 784
+      "domain": 8417,
+      "domainTrivial": 1107
     }
   },
   "claimLevels": {
@@ -172,8 +172,8 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 1282,
-    "testsVerified": 1282,
+    "tests": 1494,
+    "testsVerified": 1494,
     "testsEstimated": 0,
     "testsSource": "full_cargo_test",
     "crates": 15
