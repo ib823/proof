@@ -104,12 +104,28 @@ const RiinaWebsite = () => {
     <div>
       {/* Act 1: Hero */}
       <section className="hero">
-        <p className="hero-stat-line">
-          <span>{fmt(metrics.proofs.qedActive)}</span> Coq proofs &middot; <span>{metrics.proofs.admitted}</span> admitted &middot; <span>{metrics.proofs.axioms}</span> axioms &middot; <span>{fmt(metrics.rust.tests)}</span> tests
-        </p>
+        <div className="hero-stats">
+          <div className="hero-stat">
+            <span className="hero-stat__num">{fmt(metrics.multiProver.totalProofsAllProvers)}</span>
+            <span className="hero-stat__label">mathematical proofs</span>
+          </div>
+          <div className="hero-stat-divider" />
+          <div className="hero-stat">
+            <span className="hero-stat__num">{metrics.multiProver.totalProvers}</span>
+            <span className="hero-stat__label">independent provers</span>
+          </div>
+          <div className="hero-stat-divider" />
+          <div className="hero-stat">
+            <span className="hero-stat__num">{fmt(metrics.rust.tests)}</span>
+            <span className="hero-stat__label">tests passing</span>
+          </div>
+        </div>
         <h1>
           Security<br/><strong>proven at compile time.</strong>
         </h1>
+        <p className="hero-stat-line">
+          <span>{fmt(metrics.proofs.qedActive)}</span> Coq Qed &middot; <span>{metrics.proofs.admitted}</span> admitted &middot; <span>{metrics.proofs.axioms}</span> axioms
+        </p>
         <div className="hero-cta">
           <button onClick={() => nav('playground')} className="btn btn--primary">Try It</button>
           <a href="https://github.com/ib823/riina" className="btn btn--outline">GitHub</a>
@@ -281,7 +297,7 @@ const RiinaWebsite = () => {
             ))}
           </div>
           <p className="triple-prover__note" style={{marginTop:16}}>
-            SMT/Z3 is <em>mechanized</em> (11,843 assertions verified). F*, TLA+, and Alloy are <em>compiled</em>. Verus, Kani, and Translation Validation remain at <em>generated</em>. Full details on the <button style={{background:'none',border:'none',color:'var(--text-accent)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:13,padding:0}} onClick={() => nav('how')}>How It Works</button> page.
+            SMT/Z3 is <em>mechanized</em> ({fmt((metrics.smt || {}).assertions || 0)} assertions verified). F*, TLA+, and Alloy are <em>compiled</em>. Verus, Kani, and Translation Validation remain at <em>generated</em>. Full details on the <button style={{background:'none',border:'none',color:'var(--text-accent)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:13,padding:0}} onClick={() => nav('how')}>How It Works</button> page.
           </p>
         </div>
       </section>
@@ -772,8 +788,8 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>{metrics.multiProver.totalProvers}-Prover Verification</h2>
           <p style={{color:'var(--text-secondary)',marginBottom:32}}>
             Proof obligations are tracked across {metrics.multiProver.totalProvers} verification lanes with different mathematical foundations.
-            Four lanes (Coq, Lean 4, Isabelle, SMT/Z3) are at the <em>mechanized</em> claim level.
-            F*, TLA+, and Alloy are <em>compiled</em>. Verus, Kani, and TV are <em>generated</em>. No independent external audit has been published.
+            Four lanes (Coq, Lean 4, Isabelle, SMT/Z3) are at the <em>{laneClaim('coq')}</em> claim level.
+            Three lanes (F*, TLA+, Alloy) are <em>{laneClaim('fstar')}</em>. Three lanes (Verus, Kani, TV) are <em>{laneClaim('verus')}</em>. No independent external audit has been published.
           </p>
           {[
             { prover: metrics.coq.prover, theorems: `${fmt(metrics.proofs.qedActive)} Qed`, role: 'Primary — authoritative proofs (CIC)' },
@@ -948,9 +964,9 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
       </div>
 
       <div className="footer-bottom">
-        <span>&copy; 2026 RIINA</span>
+        <span>&copy; 2026 RIINA &middot; v{metrics.version}{metrics.generated ? ` \u00b7 ${new Date(metrics.generated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}</span>
         <div className="footer-status">
-          <span className="footer-dot" /> Build passing &middot; v{metrics.version} &middot; Proprietary
+          <span className="footer-dot" /> Build passing &middot; <a href="https://github.com/ib823/riina" style={{color:'var(--text-muted)',textDecoration:'none'}}>GitHub</a> &middot; Proprietary
         </div>
       </div>
     </footer>

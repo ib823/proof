@@ -2,7 +2,7 @@
 // RIINA Playground — In-Browser Compiler
 // Zero external dependencies (no Monaco, no CodeMirror).
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 // Pre-loaded examples
 const EXAMPLES = [
@@ -44,6 +44,65 @@ kalau umur >= 18 {
 }`
   },
   {
+    name: 'Security Types',
+    code: `// Secret types prevent information leakage
+fungsi proses_kata_laluan(
+    kata: Rahsia<Teks>,
+    garam: Bait
+) -> Rahsia<Bait> kesan Kripto {
+    masa_tetap {
+        biar derivasi = kripto::argon2id(kata, garam);
+        pulang derivasi;
+    }
+}
+
+// Compiler proves: no secret leakage, constant-time`
+  },
+  {
+    name: 'Effects',
+    code: `// Effect declarations track side effects
+fungsi baca_fail(laluan: Teks) -> Teks kesan Baca {
+    biar kandungan = io::baca(laluan);
+    pulang kandungan;
+}
+
+fungsi tulis_log(mesej: Teks) kesan Tulis {
+    io::cetak(mesej);
+}
+
+// Pure function — no effects allowed
+fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
+    pulang x + y;
+}`
+  },
+  {
+    name: 'Linear Types',
+    code: `// Linear types: used exactly once
+biar sekali sambungan = rangkaian::buka("localhost:8080");
+rangkaian::hantar(sambungan, "Hello");
+// sambungan is consumed — cannot be reused
+
+// Compiler proves: no resource leaks, no double-free`
+  },
+  {
+    name: 'Pattern Matching',
+    code: `// Pattern matching with padan
+pilihan Bentuk {
+    Bulatan(Nombor),
+    SegiEmpat(Nombor, Nombor),
+}
+
+fungsi luas(b: Bentuk) -> Nombor kesan Bersih {
+    padan b {
+        Bulatan(jejari) => 3.14 * jejari * jejari,
+        SegiEmpat(p, l) => p * l,
+    }
+}
+
+biar b = Bulatan(5);
+luas(b)`
+  },
+  {
     name: 'Builtins',
     code: `// Built-in functions (bilingual)
 biar nama = "RIINA";
@@ -53,17 +112,162 @@ mesej`
   }
 ];
 
+// ============================================================================
+// SYNTAX HIGHLIGHTING
+// ============================================================================
+
+const KEYWORDS = new Set([
+  'fungsi', 'biar', 'ubah', 'tetap', 'bentuk', 'pilihan', 'jenis', 'sifat',
+  'laksana', 'modul', 'guna', 'awam', 'kalau', 'lain', 'untuk', 'selagi',
+  'ulang', 'pulang', 'padan', 'keluar', 'terus', 'kesan', 'masa_tetap',
+  'sekali', 'benar', 'palsu', 'tiada',
+]);
+
+const TYPES = new Set([
+  'Nombor', 'Bool', 'Teks', 'Bait', 'Rahsia', 'Senarai', 'Pilihan', 'Hasil',
+  'Unit', 'Bersih', 'Baca', 'Tulis', 'Kripto',
+]);
+
+function highlightLine(line) {
+  const parts = [];
+  let i = 0;
+
+  while (i < line.length) {
+    // Comments
+    if (line[i] === '/' && line[i + 1] === '/') {
+      parts.push({ type: 'comment', text: line.slice(i) });
+      return parts;
+    }
+
+    // Strings
+    if (line[i] === '"') {
+      let j = i + 1;
+      while (j < line.length && line[j] !== '"') {
+        if (line[j] === '\\') j++;
+        j++;
+      }
+      parts.push({ type: 'string', text: line.slice(i, j + 1) });
+      i = j + 1;
+      continue;
+    }
+
+    // Numbers
+    if (/[0-9]/.test(line[i]) && (i === 0 || /[\s(,=+\-*/<>!]/.test(line[i - 1]))) {
+      let j = i;
+      while (j < line.length && /[0-9.]/.test(line[j])) j++;
+      parts.push({ type: 'number', text: line.slice(i, j) });
+      i = j;
+      continue;
+    }
+
+    // Words (keywords, types, identifiers)
+    if (/[a-zA-Z_]/.test(line[i])) {
+      let j = i;
+      while (j < line.length && /[a-zA-Z0-9_]/.test(line[j])) j++;
+      const word = line.slice(i, j);
+      if (KEYWORDS.has(word)) {
+        parts.push({ type: 'keyword', text: word });
+      } else if (TYPES.has(word)) {
+        parts.push({ type: 'type', text: word });
+      } else {
+        parts.push({ type: 'plain', text: word });
+      }
+      i = j;
+      continue;
+    }
+
+    // Other characters
+    parts.push({ type: 'plain', text: line[i] });
+    i++;
+  }
+
+  return parts;
+}
+
+const TOKEN_COLORS = {
+  keyword: 'var(--text-keyword)',
+  type: 'var(--text-accent)',
+  string: 'var(--text-string)',
+  comment: 'var(--text-comment)',
+  number: '#60a5fa',
+  plain: 'var(--text-primary)',
+};
+
+function HighlightedCode({ source }) {
+  const lines = source.split('\n');
+  return (
+    <>
+      {lines.map((line, li) => (
+        <React.Fragment key={li}>
+          {li > 0 && '\n'}
+          {highlightLine(line).map((tok, ti) => (
+            <span key={ti} style={{ color: TOKEN_COLORS[tok.type] }}>{tok.text}</span>
+          ))}
+        </React.Fragment>
+      ))}
+    </>
+  );
+}
+
+// ============================================================================
+// ERROR FORMATTING
+// ============================================================================
+
+function formatDiagnostics(raw) {
+  if (!raw || raw === 'OK') return { text: 'All checks passed.', isError: false };
+  if (raw.startsWith('Error:') || raw.startsWith('Parse error') || raw.startsWith('Type error')) {
+    return { text: raw, isError: true };
+  }
+  return { text: raw, isError: false };
+}
+
+// ============================================================================
+// URL SHARING
+// ============================================================================
+
+function encodeSource(src) {
+  try {
+    return btoa(unescape(encodeURIComponent(src)));
+  } catch {
+    return '';
+  }
+}
+
+function decodeSource(encoded) {
+  try {
+    return decodeURIComponent(escape(atob(encoded)));
+  } catch {
+    return null;
+  }
+}
+
+function getSourceFromHash() {
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#code=')) {
+    return decodeSource(hash.slice(6));
+  }
+  return null;
+}
+
+// ============================================================================
+// PLAYGROUND COMPONENT
+// ============================================================================
+
 const PlaygroundPage = ({ onNavigate }) => {
-  const [source, setSource] = useState(EXAMPLES[0].code);
+  const initialSource = useMemo(() => getSourceFromHash() || EXAMPLES[0].code, []);
+  const [source, setSource] = useState(initialSource);
   const [activeTab, setActiveTab] = useState('Type Check');
   const [diagnostics, setDiagnostics] = useState('');
   const [cOutput, setCOutput] = useState('');
   const [irOutput, setIrOutput] = useState('');
   const [wasmReady, setWasmReady] = useState(false);
   const [wasmError, setWasmError] = useState(null);
+  const [shared, setShared] = useState(false);
   const workerRef = useRef(null);
   const debounceRef = useRef(null);
   const reqIdRef = useRef(0);
+  const textareaRef = useRef(null);
+  const highlightRef = useRef(null);
 
   // Initialize Web Worker
   useEffect(() => {
@@ -132,10 +336,36 @@ const PlaygroundPage = ({ onNavigate }) => {
     return () => clearTimeout(debounceRef.current);
   }, [source, compile]);
 
+  // Sync scroll between textarea and highlight overlay
+  const syncScroll = useCallback(() => {
+    if (textareaRef.current && highlightRef.current) {
+      highlightRef.current.scrollTop = textareaRef.current.scrollTop;
+      highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
+    }
+  }, []);
+
   const handleExampleChange = (e) => {
     const example = EXAMPLES.find(ex => ex.name === e.target.value);
     if (example) setSource(example.code);
   };
+
+  const handleShare = () => {
+    const encoded = encodeSource(source);
+    if (encoded) {
+      const url = window.location.origin + window.location.pathname + '#code=' + encoded;
+      navigator.clipboard.writeText(url).then(() => {
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      }).catch(() => {
+        // Fallback: update URL hash
+        window.location.hash = 'code=' + encoded;
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      });
+    }
+  };
+
+  const diag = formatDiagnostics(diagnostics);
 
   const tabContent = {
     'Type Check': diagnostics,
@@ -144,6 +374,16 @@ const PlaygroundPage = ({ onNavigate }) => {
   };
 
   const tabs = ['Type Check', 'C Output', 'Verified IR'];
+
+  // Shared font styles for textarea/overlay alignment
+  const editorFont = {
+    fontFamily: 'var(--font-mono)',
+    fontSize: 14,
+    lineHeight: '22.4px',
+    tabSize: 2,
+    letterSpacing: 'normal',
+    wordSpacing: 'normal',
+  };
 
   return (
     <div>
@@ -154,112 +394,103 @@ const PlaygroundPage = ({ onNavigate }) => {
             Write RIINA code in your browser. Every program that type-checks inherits
             mathematically proven security guarantees.
           </p>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 12, fontFamily: 'var(--font-mono)' }}>
-            {wasmReady ? 'WASM compiler loaded' : wasmError ? wasmError : 'Loading WASM compiler...'}
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', margin: 0 }}>
+              {wasmReady ? 'WASM compiler loaded' : wasmError ? wasmError : 'Loading WASM compiler...'}
+            </p>
+          </div>
         </div>
       </section>
 
-      <div style={{ padding: '0 24px 60px', maxWidth: 1100, margin: '0 auto' }}>
-        {/* Example selector */}
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 13, color: 'var(--text-muted)', marginRight: 8 }}>Example: </label>
-          <select
-            onChange={handleExampleChange}
+      <div className="playground-container">
+        {/* Toolbar */}
+        <div className="playground-toolbar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <label style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Example:</label>
+            <select
+              onChange={handleExampleChange}
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 13,
+                padding: '4px 8px',
+                border: '1px solid var(--border)',
+                borderRadius: 4,
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {EXAMPLES.map(ex => (
+                <option key={ex.name} value={ex.name}>{ex.name}</option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={handleShare}
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 13,
-              padding: '4px 8px',
+              fontSize: 12,
+              padding: '5px 14px',
               border: '1px solid var(--border)',
               borderRadius: 4,
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-primary)',
+              background: shared ? 'var(--bg-tertiary)' : 'var(--bg-secondary)',
+              color: shared ? 'var(--text-string)' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
             }}
           >
-            {EXAMPLES.map(ex => (
-              <option key={ex.name} value={ex.name}>{ex.name}</option>
-            ))}
-          </select>
+            {shared ? 'Copied!' : 'Share'}
+          </button>
         </div>
 
         {/* Split pane */}
-        <div style={{ display: 'flex', gap: 16, minHeight: 400 }}>
-          {/* Editor */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{
-              fontSize: 11, fontWeight: 500, marginBottom: 4, color: 'var(--text-muted)',
-              textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)'
-            }}>
-              Source
+        <div className="playground-split">
+          {/* Editor with syntax highlighting overlay */}
+          <div className="playground-editor-wrap">
+            <div className="playground-editor-label">Source</div>
+            <div className="playground-editor-container">
+              <pre
+                ref={highlightRef}
+                className="playground-highlight"
+                style={editorFont}
+                aria-hidden="true"
+              >
+                <HighlightedCode source={source} />
+                {/* Extra newline so the highlight pre matches textarea scroll height */}
+                {'\n'}
+              </pre>
+              <textarea
+                ref={textareaRef}
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                onScroll={syncScroll}
+                spellCheck={false}
+                className="playground-textarea"
+                style={editorFont}
+              />
             </div>
-            <textarea
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              spellCheck={false}
-              style={{
-                flex: 1,
-                fontFamily: 'var(--font-mono)',
-                fontSize: 14,
-                lineHeight: 1.6,
-                padding: 16,
-                border: '1px solid var(--border)',
-                borderRadius: 6,
-                resize: 'none',
-                outline: 'none',
-                background: 'var(--bg-code)',
-                color: 'var(--text-primary)',
-                tabSize: 2,
-              }}
-            />
           </div>
 
           {/* Output */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', gap: 0, marginBottom: 4 }}>
+          <div className="playground-output-wrap">
+            <div className="playground-tabs">
               {tabs.map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  style={{
-                    padding: '6px 16px',
-                    fontSize: 11,
-                    fontWeight: activeTab === tab ? 600 : 400,
-                    fontFamily: 'var(--font-mono)',
-                    background: activeTab === tab ? 'var(--bg-tertiary)' : 'var(--bg-secondary)',
-                    color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-muted)',
-                    border: '1px solid var(--border)',
-                    borderBottom: activeTab === tab ? '1px solid var(--bg-tertiary)' : '1px solid var(--border)',
-                    borderRadius: tab === tabs[0] ? '6px 0 0 0' : tab === tabs[tabs.length - 1] ? '0 6px 0 0' : 0,
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                  }}
+                  className={`playground-tab${activeTab === tab ? ' playground-tab--active' : ''}`}
                 >
                   {tab}
                 </button>
               ))}
             </div>
-            <pre style={{
-              flex: 1,
-              fontFamily: 'var(--font-mono)',
-              fontSize: 13,
-              lineHeight: 1.5,
-              padding: 16,
-              border: '1px solid var(--border)',
-              borderRadius: '0 6px 6px 6px',
-              overflow: 'auto',
-              background: 'var(--bg-code)',
-              color: 'var(--text-primary)',
-              margin: 0,
-              whiteSpace: 'pre-wrap',
-            }}>
+            <pre className={`playground-output${activeTab === 'Type Check' && diag.isError ? ' playground-output--error' : ''}`}>
               {tabContent[activeTab] || (wasmReady ? 'Compiling...' : 'Loading WASM...')}
             </pre>
           </div>
         </div>
 
         {/* Footer info */}
-        <div style={{ marginTop: 24, fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
+        <div style={{ marginTop: 16, fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
           RIINA Compiler v0.2.0 &middot; Proprietary
         </div>
       </div>
