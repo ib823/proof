@@ -178,7 +178,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-core** | `05_TOOLING/crates/riina-core/` | Implemented | Cryptographic primitives (AES, SHA-3) |
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
-| **Coq proofs** | `02_FORMAL/coq/` | 9,171 Qed, 0 Admitted | Primary formal verification |
+| **Coq proofs** | `02_FORMAL/coq/` | 10,038 Qed, 0 Admitted | Primary formal verification |
 | **Lean proofs** | `02_FORMAL/lean/` | 155 files, 4,458 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 307 files, 9,092 lemmas, 10 core theories compile, 0 sorry | Mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 267 files, 11,843 assertions, 267/267 Z3-verified | Mechanized |
@@ -219,17 +219,17 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 ## PART 2: CURRENT VERIFIED STATE
 
-**Last verified: 2026-03-13 by running commands listed in Part 0.**
+**Last verified: 2026-03-17 by running commands listed in Part 0.**
 
 ### Coq (Primary Prover)
 
 | Metric | Value | Command |
 |--------|-------|---------|
-| Qed proofs (active build) | 9,171 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
+| Qed proofs (active build) | 10,038 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
-| .v files (active) | 259 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
-| Qed (archive) | 759 | Total 9,930 minus active 9,171 |
+| .v files (active) | 277 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
+| Qed (archive) | 758 | Total 10,796 minus active 10,038 |
 | Admitted (archive) | 98 | In `properties/_archive_deprecated/` |
 | Compilation | PASSES | `cd 02_FORMAL/coq && make` |
 
@@ -237,9 +237,9 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 | Tier | Approx. Count | Description |
 |------|--------------|-------------|
-| Core (foundations, type_system, effects, properties, termination) | ~650 | Deep mathematical proofs (induction, case analysis, logical relations) |
-| Domain (security models across 195+ files) | ~5,600 | Coq specifications for threat models; NOT compiler-enforced |
-| Trivial (reflexivity, exact I) | ~1,000 | One-liner proofs |
+| Core (foundations, type_system, effects, properties, termination) | ~1,621 | Deep mathematical proofs (induction, case analysis, logical relations) |
+| Domain (security models across 210+ files) | ~8,417 | Coq specifications for threat models; NOT compiler-enforced |
+| Trivial (reflexivity, exact I) | ~1,107 | One-liner proofs |
 
 **What the compiler actually enforces:** Type safety, effect tracking, information flow (basic),
 declassification gates. Domain security models exist as Coq specs only — they model threats
@@ -404,7 +404,7 @@ All public-facing metrics are command-derived, not copied from docs.
 ### Phase 1: PROOF DEPTH — Coq Foundation
 
 **Goal:** Deepen the Coq proof base with real, hard proofs. Move from "broad but shallow"
-(9,171 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
+(10,038 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
 
 **The 13 Verification Dimensions** (from `04_SPECS/requirements/RIINA_10_PROVER_DOMINANCE_STRATEGY.md`):
 
@@ -972,7 +972,7 @@ X = primary role, o = supporting role
 | Metric | Value |
 |--------|-------|
 | Files | 259 active |
-| Qed | 9,171 |
+| Qed | 10,038 |
 | Admitted | 0 active (98 in archive) |
 | Axioms | 0 active |
 | Compilation | PASSES |

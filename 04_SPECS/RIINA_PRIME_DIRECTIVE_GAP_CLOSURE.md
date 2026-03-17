@@ -1,6 +1,6 @@
 # RIINA PRIME DIRECTIVE GAP CLOSURE SPECIFICATION
 
-**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 1282 Rust tests
+**Verification:** 10,038 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 1494 Rust tests
 
 ## Document Status: AUTHORITATIVE | Version 1.0.0 | 2026-01-22
 

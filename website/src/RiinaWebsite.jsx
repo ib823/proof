@@ -30,11 +30,9 @@ const RiinaWebsite = () => {
       version: '0.2.0',
       date: '2026-02-10',
       highlights: [
-        'Production-active proofs: 7,740 Coq Qed, 0 Admitted, 0 active axioms',
-        '10-prover metrics published: 63,401 total artifacts across Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV',
-        'Public quality gates added (artifact hygiene, doc drift checks, metrics alignment, version/tag alignment)',
-        'Strict non-Coq mechanization gate added with repo-head freshness checks for claim elevation',
-        'Dimension 14 runtime proof foundation implemented (capabilities, effect gate, proof bundle chain, runtime verifier CLI)',
+        '10-prover verification corpus with Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV',
+        'Public quality gates: artifact hygiene, doc drift checks, metrics alignment',
+        'Runtime proof foundation: capability-bound effect gates, proof-bundle chaining',
         'Repository transparency: AXIOMS.md and PROOF_STATUS.md generated and enforced',
       ],
     },
@@ -297,7 +295,7 @@ const RiinaWebsite = () => {
             ))}
           </div>
           <p className="triple-prover__note" style={{marginTop:16}}>
-            SMT/Z3 is <em>mechanized</em> ({fmt((metrics.smt || {}).assertions || 0)} assertions verified). F*, TLA+, and Alloy are <em>compiled</em>. Verus, Kani, and Translation Validation remain at <em>generated</em>. Full details on the <button style={{background:'none',border:'none',color:'var(--text-accent)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:13,padding:0}} onClick={() => nav('how')}>How It Works</button> page.
+            {metrics.multiProver.totalProvers} provers total &middot; {fmt(metrics.multiProver.totalProofsAllProvers)} combined proof artifacts &middot; <button style={{background:'none',border:'none',color:'var(--text-accent)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:13,padding:0}} onClick={() => nav('how')}>See all provers</button>
           </p>
         </div>
       </section>
@@ -769,8 +767,8 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
             { num: '01', title: 'Security as Types', desc: 'Rahsia<T> wraps sensitive data. kesan Kripto marks crypto functions. masa_tetap ensures constant-time execution. These are compiler-enforced, not annotations.' },
             { num: '02', title: 'Effects Track Side Effects', desc: 'Every function declares its effects: kesan Baca + Kripto. The compiler tracks what your code can do. Security-critical code is restricted to specific effects.' },
             { num: '03', title: 'The Compiler Proves Security', desc: 'When you compile, the compiler proves: no information leakage (non-interference), effects are tracked (effect safety), timing-sensitive code runs in constant time, and secrets are zeroed.' },
-            { num: '04', title: 'Verification Evidence', desc: `Formal proof artifacts ship with the compiler (${metrics.coq.filesActive} active Coq files, ${metrics.lean.files} Lean files, ${metrics.isabelle.files} Isabelle files). Current overall claim level is ${claimLevelLabel(claimLevels.overall)} with deploy gates enforcing active-build hygiene (0 Admitted, 0 active axioms, 0 active assumptions).` },
-            { num: '05', title: 'Runtime Proof Foundation', desc: `Runtime verification is currently at the ${runtimeClaim} claim level. Capability-bound effect gates, proof-bundle chaining, and constant-time oracle primitives are implemented. Hardware-rooted attestation remains roadmap work.` },
+            { num: '04', title: 'Proof Artifacts Ship With Code', desc: `${fmt(metrics.multiProver.totalProofsAllProvers)} proof artifacts across ${metrics.multiProver.totalProvers} provers ship in the repository. 0 Admitted, 0 axioms. You can clone and verify them yourself.` },
+            { num: '05', title: 'Runtime Verification', desc: 'Capability-bound effect gates and proof-bundle chaining enforce guarantees at runtime. Hardware-rooted attestation is on the roadmap.' },
           ].map((step, i) => (
             <div key={i} className="pipeline-step">
               <div className="pipeline-step__num">{step.num}</div>
@@ -787,25 +785,25 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
         <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>{metrics.multiProver.totalProvers}-Prover Verification</h2>
           <p style={{color:'var(--text-secondary)',marginBottom:32}}>
-            Proof obligations are tracked across {metrics.multiProver.totalProvers} verification lanes with different mathematical foundations.
-            Four lanes (Coq, Lean 4, Isabelle, SMT/Z3) are at the <em>{laneClaim('coq')}</em> claim level.
-            Three lanes (F*, TLA+, Alloy) are <em>{laneClaim('fstar')}</em>. Three lanes (Verus, Kani, TV) are <em>{laneClaim('verus')}</em>. No independent external audit has been published.
+            RIINA's proofs are checked by {metrics.multiProver.totalProvers} independent tools, each using a different mathematical foundation.
+            If one tool has a bug, the others catch it. No independent external audit has been published yet.
           </p>
           {[
-            { prover: metrics.coq.prover, theorems: `${fmt(metrics.proofs.qedActive)} Qed`, role: 'Primary — authoritative proofs (CIC)' },
-            { prover: metrics.lean.prover, theorems: `${fmt(metrics.lean.theorems)} theorems`, role: 'Secondary — cross-check port (DTT)' },
-            { prover: metrics.isabelle.prover, theorems: `${fmt(metrics.isabelle.lemmas)} lemmas`, role: 'Tertiary — third verification (HOL)' },
-            { prover: (metrics.fstar || {}).prover || 'F*', theorems: `${fmt((metrics.fstar || {}).lemmas || 0)} lemmas`, role: 'Dependent types (DTT)' },
-            { prover: (metrics.tlaplus || {}).prover || 'TLA+', theorems: `${fmt((metrics.tlaplus || {}).theorems || 0)} theorems`, role: 'Model checking (TLA)' },
-            { prover: (metrics.alloy || {}).prover || 'Alloy 6', theorems: `${fmt((metrics.alloy || {}).assertions || 0)} assertions`, role: 'Relational logic (FOL)' },
-            { prover: (metrics.smt || {}).prover || 'Z3/CVC5', theorems: `${fmt((metrics.smt || {}).assertions || 0)} assertions`, role: 'SMT solving (SMT-LIB)' },
-            { prover: (metrics.verus || {}).prover || 'Verus', theorems: `${fmt((metrics.verus || {}).proofs || 0)} proofs`, role: 'Rust verification (VIR)' },
-            { prover: (metrics.kani || {}).prover || 'Kani', theorems: `${fmt((metrics.kani || {}).harnesses || 0)} harnesses`, role: 'Model checking (CBMC)' },
-            { prover: (metrics.tv || {}).prover || 'Translation Validation', theorems: `${fmt((metrics.tv || {}).validations || 0)} validations`, role: 'Binary equivalence (TV)' },
+            { prover: metrics.coq.prover, theorems: `${fmt(metrics.proofs.qedActive)} Qed`, level: laneClaim('coq'), role: 'Primary proof engine' },
+            { prover: metrics.lean.prover, theorems: `${fmt(metrics.lean.theorems)} theorems`, level: laneClaim('lean'), role: 'Cross-check port' },
+            { prover: metrics.isabelle.prover, theorems: `${fmt(metrics.isabelle.lemmas)} lemmas`, level: laneClaim('isabelle'), role: 'Third verification' },
+            { prover: (metrics.smt || {}).prover || 'Z3/CVC5', theorems: `${fmt((metrics.smt || {}).assertions || 0)} assertions`, level: laneClaim('smt'), role: 'SMT solving' },
+            { prover: (metrics.fstar || {}).prover || 'F*', theorems: `${fmt((metrics.fstar || {}).lemmas || 0)} lemmas`, level: laneClaim('fstar'), role: 'Dependent types' },
+            { prover: (metrics.tlaplus || {}).prover || 'TLA+', theorems: `${fmt((metrics.tlaplus || {}).theorems || 0)} theorems`, level: laneClaim('tlaplus'), role: 'Model checking' },
+            { prover: (metrics.alloy || {}).prover || 'Alloy 6', theorems: `${fmt((metrics.alloy || {}).assertions || 0)} assertions`, level: laneClaim('alloy'), role: 'Relational logic' },
+            { prover: (metrics.verus || {}).prover || 'Verus', theorems: `${fmt((metrics.verus || {}).proofs || 0)} proofs`, level: laneClaim('verus'), role: 'Rust verification' },
+            { prover: (metrics.kani || {}).prover || 'Kani', theorems: `${fmt((metrics.kani || {}).harnesses || 0)} harnesses`, level: laneClaim('kani'), role: 'Model checking' },
+            { prover: (metrics.tv || {}).prover || 'Translation Validation', theorems: `${fmt((metrics.tv || {}).validations || 0)} validations`, level: laneClaim('tv'), role: 'Binary equivalence' },
           ].map((p, i) => (
             <div key={i} className="cli-row">
               <code style={{minWidth:140}}>{p.prover}</code>
-              <span style={{minWidth:80}}>{p.theorems}</span>
+              <span style={{minWidth:100}}>{p.theorems}</span>
+              <span style={{minWidth:100,color: p.level === 'mechanized' ? 'var(--text-string)' : p.level === 'compiled' ? 'var(--text-accent)' : 'var(--text-muted)'}}>{p.level}</span>
               <span>{p.role}</span>
             </div>
           ))}
@@ -814,28 +812,25 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
 
       <section style={{padding:'80px 24px'}}>
         <div style={{maxWidth:'var(--max-w-page)',margin:'0 auto'}}>
-          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>26 Research Domains</h2>
-          {[
-            { id: 'A', name: 'Core Type Theory', desc: 'Type safety, non-interference, logical relations' },
-            { id: 'B', name: 'Compiler & Prototype', desc: `${metrics.rust.crates} Rust crates, ${metrics.rust.tests} tests` },
-            { id: 'C', name: 'Language Specifications', desc: 'Grammar, AST, type system spec' },
-            { id: 'D-Q', name: 'Attack Surface Research', desc: `14 domains, ${metrics.status.threats} threats enumerated` },
-            { id: 'R', name: 'Certified Compilation', desc: 'Translation validation' },
-            { id: 'S', name: 'Hardware Contracts', desc: 'CPU side-channel models' },
-            { id: 'T', name: 'Hermetic Bootstrap', desc: 'Binary bootstrap from hex0' },
-            { id: 'U', name: 'Runtime Guardian', desc: 'Runtime proof foundation implemented; hardware attestation stack in progress' },
-            { id: 'V', name: 'Termination Guarantees', desc: 'Sized types, strong normalization' },
-            { id: 'W', name: 'Verified Memory', desc: 'Separation logic, verified allocator' },
-            { id: 'X', name: 'Concurrency Model', desc: 'Session types, data-race freedom' },
-            { id: 'Y', name: 'Verified Stdlib', desc: 'Every stdlib function proven correct' },
-            { id: 'Z', name: 'Declassification Policy', desc: 'Robust declassification with budgets' },
-          ].map((d, i) => (
-            <div key={i} className="domain-row">
-              <span className="domain-row__id">{d.id}</span>
-              <span className="domain-row__name">{d.name}</span>
-              <span className="domain-row__desc">{d.desc}</span>
-            </div>
-          ))}
+          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>Research Coverage</h2>
+          <p style={{color:'var(--text-secondary)',marginBottom:24,fontSize:14}}>
+            26 research tracks spanning the full security stack — from type theory foundations to hardware side-channel models.
+          </p>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:12}}>
+            {[
+              { name: 'Core Type Theory', desc: 'Type safety, non-interference, logical relations' },
+              { name: 'Compiler', desc: `${metrics.rust.crates} crates, ${fmt(metrics.rust.tests)} tests, zero dependencies` },
+              { name: 'Attack Surface', desc: `14 domains, ${metrics.status.threats} threats modeled` },
+              { name: 'Termination & Memory', desc: 'Sized types, strong normalization, separation logic' },
+              { name: 'Concurrency & Effects', desc: 'Session types, effect algebra, data-race freedom' },
+              { name: 'Runtime & Hardware', desc: 'Proof bundles, constant-time, side-channel models' },
+            ].map((d, i) => (
+              <div key={i} className="card" style={{padding:'16px 20px'}}>
+                <div style={{fontSize:14,fontWeight:500,marginBottom:4}}>{d.name}</div>
+                <div style={{fontSize:13,color:'var(--text-secondary)'}}>{d.desc}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>

@@ -44,63 +44,73 @@ kalau umur >= 18 {
 }`
   },
   {
-    name: 'Security Types',
-    code: `// Secret types prevent information leakage
-fungsi proses_kata_laluan(
-    kata: Rahsia<Teks>,
-    garam: Bait
-) -> Rahsia<Bait> kesan Kripto {
-    masa_tetap {
-        biar derivasi = kripto::argon2id(kata, garam);
-        pulang derivasi;
-    }
-}
-
-// Compiler proves: no secret leakage, constant-time`
-  },
-  {
     name: 'Effects',
-    code: `// Effect declarations track side effects
-fungsi baca_fail(laluan: Teks) -> Teks kesan Baca {
-    biar kandungan = io::baca(laluan);
-    pulang kandungan;
-}
-
-fungsi tulis_log(mesej: Teks) kesan Tulis {
-    io::cetak(mesej);
-}
-
-// Pure function — no effects allowed
+    code: `// Effect system tracks side effects
+// kesan Bersih = pure (no side effects)
 fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
-    pulang x + y;
-}`
+  pulang x + y;
+}
+
+// kesan Tulis = can perform output
+fungsi salam(nama: Teks) -> Nombor kesan Tulis {
+  biar hasil = tambah(3, 4);
+  pulang hasil;
+}
+
+salam("Dunia")`
   },
   {
-    name: 'Linear Types',
-    code: `// Linear types: used exactly once
-biar sekali sambungan = rangkaian::buka("localhost:8080");
-rangkaian::hantar(sambungan, "Hello");
-// sambungan is consumed — cannot be reused
+    name: 'Recursion',
+    code: `// Recursive functions
+fungsi faktorial(n: Nombor) -> Nombor kesan Bersih {
+  kalau n == 0 {
+    pulang 1;
+  }
+  pulang n * faktorial(n - 1);
+}
 
-// Compiler proves: no resource leaks, no double-free`
+fungsi fibonacci(n: Nombor) -> Nombor kesan Bersih {
+  kalau n <= 1 {
+    pulang n;
+  }
+  pulang fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+biar f = faktorial(6);
+biar g = fibonacci(10);
+f + g`
   },
   {
     name: 'Pattern Matching',
     code: `// Pattern matching with padan
-pilihan Bentuk {
-    Bulatan(Nombor),
-    SegiEmpat(Nombor, Nombor),
+fungsi periksaNombor(x: Nombor) -> Teks kesan Bersih {
+  padan x {
+    0 -> "kosong",
+    1 -> "satu",
+    2 -> "dua",
+    _ -> "lain",
+  }
 }
 
-fungsi luas(b: Bentuk) -> Nombor kesan Bersih {
-    padan b {
-        Bulatan(jejari) => 3.14 * jejari * jejari,
-        SegiEmpat(p, l) => p * l,
+biar a = periksaNombor(2);
+biar b = periksaNombor(99);
+a`
+  },
+  {
+    name: 'Nested Functions',
+    code: `// Nested functions with accumulators
+fungsi kuasa(asas: Nombor, eksponen: Nombor) -> Nombor kesan Bersih {
+  fungsi akum(asas: Nombor, n: Nombor, hasil: Nombor) -> Nombor {
+    kalau n == 0 {
+      pulang hasil;
     }
+    pulang akum(asas, n - 1, hasil * asas);
+  }
+  pulang akum(asas, eksponen, 1);
 }
 
-biar b = Bulatan(5);
-luas(b)`
+biar h = kuasa(2, 10);
+h`
   },
   {
     name: 'Builtins',
