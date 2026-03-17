@@ -42,8 +42,7 @@ pub mod ml_kem;
 pub mod x25519;
 
 // Hybrid schemes (Law 2: ML-KEM-768 + X25519, ML-DSA-65 + Ed25519)
-// TODO: Re-enable once ML-KEM and ML-DSA are fully implemented
-// pub mod hybrid;
+pub mod hybrid;
 
 /// Error type for cryptographic operations
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

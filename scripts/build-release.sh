@@ -60,6 +60,25 @@ echo "[4/4] Generating SHA256SUMS..."
 cd "$DIST_DIR"
 sha256sum "$(basename "$TARBALL")" > SHA256SUMS
 
+# Step 5: Sign artifacts (if signing key is set)
+if [ -n "${RIINA_SIGNING_KEY:-}" ]; then
+    echo "[5/5] Signing artifacts..."
+    SIGN_TOOL="$REPO_ROOT/05_TOOLING/target/release/riina-artifact-sign"
+    if [ ! -f "$SIGN_TOOL" ]; then
+        SIGN_TOOL="$REPO_ROOT/05_TOOLING/target/debug/riina-artifact-sign"
+    fi
+    if [ -f "$SIGN_TOOL" ]; then
+        "$SIGN_TOOL" sign "$TARBALL" --key "$RIINA_SIGNING_KEY"
+        "$SIGN_TOOL" sign "$DIST_DIR/SHA256SUMS" --key "$RIINA_SIGNING_KEY"
+        echo "Tarball signature:  ${TARBALL}.sig"
+        echo "Checksums signature: $DIST_DIR/SHA256SUMS.sig"
+    else
+        echo "WARN: riina-artifact-sign not found, skipping signing"
+    fi
+else
+    echo "[5/5] Skipping signing (RIINA_SIGNING_KEY not set)"
+fi
+
 echo ""
 echo "=== Build Complete ==="
 echo "Tarball:   $TARBALL"

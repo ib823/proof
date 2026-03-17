@@ -553,6 +553,8 @@ name = "riina-artifact-sign"
 version = "0.2.0"
 dependencies = [
  "clap",
+ "riina-core",
+ "sha2",
 ]
 
 [[package]]
