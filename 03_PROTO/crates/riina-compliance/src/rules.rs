@@ -3,7 +3,7 @@
 //! Compliance rule definitions per profile.
 //! Spec: 04_SPECS/industries/
 //!
-//! 127 rules across 15 compliance profiles, each with AST-level detection.
+//! 233 rules across 15 compliance profiles, each with AST-level detection.
 
 use riina_types::{Expr, Effect};
 
@@ -25,21 +25,21 @@ pub struct ComplianceRule {
 /// Number of implemented rules for a profile.
 pub fn rule_count(profile: ComplianceProfile) -> usize {
     match profile {
-        ComplianceProfile::PciDss => 15,
-        ComplianceProfile::Pdpa => 10,
-        ComplianceProfile::Bnm => 10,
-        ComplianceProfile::Hipaa => 10,
-        ComplianceProfile::Cmmc => 6,
-        ComplianceProfile::Sox => 8,
-        ComplianceProfile::Gdpr => 10,
-        ComplianceProfile::Do178c => 10,
-        ComplianceProfile::Iec62443 => 6,
-        ComplianceProfile::NercCip => 5,
-        ComplianceProfile::Fda21cfr => 5,
-        ComplianceProfile::Iso27001 => 10,
-        ComplianceProfile::Nist80053 => 10,
-        ComplianceProfile::MasTrm => 8,
-        ComplianceProfile::Itar => 4,
+        ComplianceProfile::PciDss => 25,
+        ComplianceProfile::Pdpa => 18,
+        ComplianceProfile::Bnm => 18,
+        ComplianceProfile::Hipaa => 18,
+        ComplianceProfile::Cmmc => 12,
+        ComplianceProfile::Sox => 15,
+        ComplianceProfile::Gdpr => 18,
+        ComplianceProfile::Do178c => 18,
+        ComplianceProfile::Iec62443 => 12,
+        ComplianceProfile::NercCip => 10,
+        ComplianceProfile::Fda21cfr => 10,
+        ComplianceProfile::Iso27001 => 18,
+        ComplianceProfile::Nist80053 => 18,
+        ComplianceProfile::MasTrm => 15,
+        ComplianceProfile::Itar => 8,
     }
 }
 
@@ -537,8 +537,247 @@ fn tainted_input_rule(
     }
 }
 
+/// Template O: String literal containing a hardcoded IP address pattern.
+fn hardcoded_ip_rule(
+    id: &'static str,
+    profile: ComplianceProfile,
+    description: &'static str,
+    severity: Severity,
+) -> ComplianceRule {
+    ComplianceRule {
+        id, profile, description,
+        check: Box::new(move |expr| {
+            if let Expr::String(s) = expr {
+                // Simple heuristic: contains digit.digit.digit.digit pattern
+                let bytes = s.as_bytes();
+                let mut i = 0;
+                while i < bytes.len() {
+                    if bytes[i].is_ascii_digit() {
+                        // Try to match N.N.N.N
+                        let mut parts = 0;
+                        let mut j = i;
+                        while j < bytes.len() && parts < 4 {
+                            if !bytes[j].is_ascii_digit() { break; }
+                            while j < bytes.len() && bytes[j].is_ascii_digit() { j += 1; }
+                            parts += 1;
+                            if parts < 4 {
+                                if j < bytes.len() && bytes[j] == b'.' {
+                                    j += 1;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                        if parts == 4 {
+                            return Some(ComplianceViolation {
+                                rule_id: id,
+                                profile,
+                                message: format!("Hardcoded IP address detected in string: '{}'", s),
+                                severity,
+                            });
+                        }
+                    }
+                    i += 1;
+                }
+            }
+            None
+        }),
+    }
+}
+
+/// Template P: Integer literal matching a well-known network port.
+fn hardcoded_port_rule(
+    id: &'static str,
+    profile: ComplianceProfile,
+    description: &'static str,
+    severity: Severity,
+) -> ComplianceRule {
+    ComplianceRule {
+        id, profile, description,
+        check: Box::new(move |expr| {
+            if let Expr::Int(n) = expr {
+                let well_known: &[u64] = &[
+                    20, 21, 22, 23, 25, 53, 80, 110, 143, 443,
+                    445, 993, 995, 1433, 1521, 3306, 3389, 5432,
+                    5900, 6379, 8080, 8443, 9090, 27017,
+                ];
+                if well_known.contains(n) {
+                    return Some(ComplianceViolation {
+                        rule_id: id,
+                        profile,
+                        message: format!("Hardcoded network port detected: {}", n),
+                        severity,
+                    });
+                }
+            }
+            None
+        }),
+    }
+}
+
+/// Template Q: String literal containing debug/diagnostic patterns.
+fn debug_code_rule(
+    id: &'static str,
+    profile: ComplianceProfile,
+    description: &'static str,
+    severity: Severity,
+) -> ComplianceRule {
+    ComplianceRule {
+        id, profile, description,
+        check: Box::new(move |expr| {
+            if let Expr::String(s) = expr {
+                let lower = s.to_lowercase();
+                if lower.contains("debug") || lower.contains("println")
+                    || lower.contains("console.log") || lower.contains("print_debug")
+                    || lower.contains("todo!") || lower.contains("fixme")
+                    || lower.contains("hack:")
+                {
+                    return Some(ComplianceViolation {
+                        rule_id: id,
+                        profile,
+                        message: format!("Debug/diagnostic code detected: '{}'", s),
+                        severity,
+                    });
+                }
+            }
+            None
+        }),
+    }
+}
+
+/// Template R: Let binding with security-flag name bound to Bool(false).
+fn insecure_default_rule(
+    id: &'static str,
+    profile: ComplianceProfile,
+    description: &'static str,
+    keywords: &[&str],
+    severity: Severity,
+) -> ComplianceRule {
+    let kw = to_owned_keywords(keywords);
+    ComplianceRule {
+        id, profile, description,
+        check: Box::new(move |expr| {
+            if let Expr::Let(name, _, value, _) = expr {
+                if name_matches(name, &kw) && matches!(value.as_ref(), Expr::Bool(false)) {
+                    return Some(ComplianceViolation {
+                        rule_id: id,
+                        profile,
+                        message: format!("Security setting '{}' defaults to false (insecure default)", name),
+                        severity,
+                    });
+                }
+            }
+            None
+        }),
+    }
+}
+
+/// Template S: Let binding with temporal name but body lacks Time effect.
+fn temporal_no_expiry_rule(
+    id: &'static str,
+    profile: ComplianceProfile,
+    description: &'static str,
+    keywords: &[&str],
+    severity: Severity,
+) -> ComplianceRule {
+    let kw = to_owned_keywords(keywords);
+    ComplianceRule {
+        id, profile, description,
+        check: Box::new(move |expr| {
+            if let Expr::Let(name, _, _value, body) = expr {
+                if name_matches(name, &kw) && !contains_effect(body, Effect::Time) {
+                    return Some(ComplianceViolation {
+                        rule_id: id,
+                        profile,
+                        message: format!("Variable '{}' holds temporal data but body lacks Time effect for expiry handling", name),
+                        severity,
+                    });
+                }
+            }
+            None
+        }),
+    }
+}
+
+/// Template T: Grant with non-standard effects (FileSystem, Random, Time) beyond System/Process.
+fn excessive_grant_rule(
+    id: &'static str,
+    profile: ComplianceProfile,
+    description: &'static str,
+    severity: Severity,
+) -> ComplianceRule {
+    ComplianceRule {
+        id, profile, description,
+        check: Box::new(move |expr| {
+            if let Expr::Grant(effect, _) = expr {
+                if matches!(effect, Effect::FileSystem | Effect::Random | Effect::Time) {
+                    return Some(ComplianceViolation {
+                        rule_id: id,
+                        profile,
+                        message: format!("Excessive capability grant: {:?} effect should be minimized", effect),
+                        severity,
+                    });
+                }
+            }
+            None
+        }),
+    }
+}
+
+/// Template U: Classify operation in Let value but body lacks Write (audit) effect.
+fn classify_without_audit_rule(
+    id: &'static str,
+    profile: ComplianceProfile,
+    description: &'static str,
+    severity: Severity,
+) -> ComplianceRule {
+    ComplianceRule {
+        id, profile, description,
+        check: Box::new(move |expr| {
+            if let Expr::Let(_, _, value, body) = expr {
+                if matches!(value.as_ref(), Expr::Classify(_)) && !contains_effect(body, Effect::Write) {
+                    return Some(ComplianceViolation {
+                        rule_id: id,
+                        profile,
+                        message: "Classification operation without audit trail (missing Write effect in continuation)".into(),
+                        severity,
+                    });
+                }
+            }
+            None
+        }),
+    }
+}
+
+/// Template V: FFICall with sensitive-looking function name.
+fn sensitive_ffi_rule(
+    id: &'static str,
+    profile: ComplianceProfile,
+    description: &'static str,
+    keywords: &[&str],
+    severity: Severity,
+) -> ComplianceRule {
+    let kw = to_owned_keywords(keywords);
+    ComplianceRule {
+        id, profile, description,
+        check: Box::new(move |expr| {
+            if let Expr::FFICall { name, .. } = expr {
+                if name_matches(name, &kw) {
+                    return Some(ComplianceViolation {
+                        rule_id: id,
+                        profile,
+                        message: format!("FFI call to sensitive function '{}' requires enhanced security review", name),
+                        severity,
+                    });
+                }
+            }
+            None
+        }),
+    }
+}
+
 // ===========================================================================
-// PCI-DSS rules (15)
+// PCI-DSS rules (25)
 // ===========================================================================
 
 fn pci_dss_rules() -> Vec<ComplianceRule> {
@@ -685,11 +924,77 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "Recursive functions must have a visible base case",
             Severity::Warning,
         ),
+        // --- 10 new rules (templates O-V + L, N) ---
+        hardcoded_ip_rule(
+            "PCI-DSS-1.3.1",
+            ComplianceProfile::PciDss,
+            "No hardcoded IP addresses in payment systems",
+            Severity::Warning,
+        ),
+        hardcoded_port_rule(
+            "PCI-DSS-1.3.2",
+            ComplianceProfile::PciDss,
+            "No hardcoded network ports in payment systems",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "PCI-DSS-2.2.1",
+            ComplianceProfile::PciDss,
+            "Security settings must not default to false",
+            &["encryption_enabled", "tls_required", "auth_required", "secure_mode", "verify_ssl"],
+            Severity::Error,
+        ),
+        temporal_no_expiry_rule(
+            "PCI-DSS-3.6.1",
+            ComplianceProfile::PciDss,
+            "Cryptographic keys must have expiry handling",
+            &["key_created", "cert_date", "token_issued", "key_timestamp", "session_start"],
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "PCI-DSS-4.2.1",
+            ComplianceProfile::PciDss,
+            "No debug code in production payment systems",
+            Severity::Warning,
+        ),
+        sensitive_network_send_rule(
+            "PCI-DSS-6.5.7",
+            ComplianceProfile::PciDss,
+            "Card data must not be sent over network without sanitization",
+            &["card", "pan", "cvv", "card_number", "expiry"],
+            Severity::Error,
+        ),
+        tainted_input_rule(
+            "PCI-DSS-6.5.8",
+            ComplianceProfile::PciDss,
+            "User input in payment flow must be taint-tracked",
+            &["user_input", "form_data", "payment_input", "card_input"],
+            Severity::Error,
+        ),
+        excessive_grant_rule(
+            "PCI-DSS-7.1.1",
+            ComplianceProfile::PciDss,
+            "Excessive capability grants in payment context",
+            Severity::Warning,
+        ),
+        sensitive_ffi_rule(
+            "PCI-DSS-8.5.1",
+            ComplianceProfile::PciDss,
+            "FFI calls to auth-related functions need enhanced review",
+            &["auth", "login", "password", "credential", "token"],
+            Severity::Warning,
+        ),
+        classify_without_audit_rule(
+            "PCI-DSS-10.3.1",
+            ComplianceProfile::PciDss,
+            "Classification operations must have audit trail",
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// HIPAA rules (10)
+// HIPAA rules (18)
 // ===========================================================================
 
 fn hipaa_rules() -> Vec<ComplianceRule> {
@@ -758,11 +1063,64 @@ fn hipaa_rules() -> Vec<ComplianceRule> {
             "Health system errors must not be swallowed",
             Severity::Warning,
         ),
+        // --- 8 new rules ---
+        hardcoded_ip_rule(
+            "HIPAA-164.308-a1",
+            ComplianceProfile::Hipaa,
+            "No hardcoded IPs in health systems",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "HIPAA-164.308-a3",
+            ComplianceProfile::Hipaa,
+            "No debug code in clinical systems",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "HIPAA-164.310-a",
+            ComplianceProfile::Hipaa,
+            "Health system security defaults must be enabled",
+            &["encryption_enabled", "hipaa_mode", "audit_enabled", "phi_protection", "access_control"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "HIPAA-164.312-b",
+            ComplianceProfile::Hipaa,
+            "No hardcoded ports in health systems",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "HIPAA-164.312-c2",
+            ComplianceProfile::Hipaa,
+            "Health records must have retention handling",
+            &["record_date", "admission_date", "discharge_date", "prescription_date", "consent_date"],
+            Severity::Warning,
+        ),
+        excessive_grant_rule(
+            "HIPAA-164.312-e2",
+            ComplianceProfile::Hipaa,
+            "Excessive grants in health context",
+            Severity::Warning,
+        ),
+        tainted_input_rule(
+            "HIPAA-164.530-a",
+            ComplianceProfile::Hipaa,
+            "Patient input must be taint-tracked",
+            &["patient_input", "medical_form", "health_data", "clinical_input"],
+            Severity::Error,
+        ),
+        sensitive_ffi_rule(
+            "HIPAA-164.530-b",
+            ComplianceProfile::Hipaa,
+            "FFI to health-data functions need enhanced review",
+            &["patient", "medical", "health", "clinical", "pharma"],
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// GDPR rules (10)
+// GDPR rules (18)
 // ===========================================================================
 
 fn gdpr_rules() -> Vec<ComplianceRule> {
@@ -830,11 +1188,64 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             "Data handling errors must not be silently discarded",
             Severity::Warning,
         ),
+        // --- 8 new rules ---
+        hardcoded_ip_rule(
+            "GDPR-5.1-d",
+            ComplianceProfile::Gdpr,
+            "No hardcoded IPs (data localization)",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "GDPR-6.1",
+            ComplianceProfile::Gdpr,
+            "No debug code with personal data",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "GDPR-13.1",
+            ComplianceProfile::Gdpr,
+            "Privacy defaults must be enabled (privacy by default)",
+            &["consent_required", "data_protection", "privacy_mode", "gdpr_enabled", "anonymize"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "GDPR-15.1",
+            ComplianceProfile::Gdpr,
+            "No hardcoded ports in data processing",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "GDPR-17.1",
+            ComplianceProfile::Gdpr,
+            "Personal data must have retention/expiry handling",
+            &["consent_date", "data_collected", "retention_start", "processing_date", "erasure_date"],
+            Severity::Warning,
+        ),
+        tainted_input_rule(
+            "GDPR-20.1",
+            ComplianceProfile::Gdpr,
+            "User input must be taint-tracked for GDPR",
+            &["user_input", "subject_data", "consent_form", "data_request"],
+            Severity::Error,
+        ),
+        excessive_grant_rule(
+            "GDPR-25.2",
+            ComplianceProfile::Gdpr,
+            "Excessive grants violate data minimization",
+            Severity::Warning,
+        ),
+        sensitive_ffi_rule(
+            "GDPR-44.1",
+            ComplianceProfile::Gdpr,
+            "FFI to data-transfer functions need review",
+            &["transfer", "export", "personal", "subject", "consent"],
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// PDPA Malaysia rules (10)
+// PDPA Malaysia rules (18)
 // ===========================================================================
 
 fn pdpa_rules() -> Vec<ComplianceRule> {
@@ -933,6 +1344,59 @@ fn pdpa_rules() -> Vec<ComplianceRule> {
             "Error handling for personal data must not be swallowed (breach notification)",
             Severity::Warning,
         ),
+        // --- 8 new rules ---
+        hardcoded_ip_rule(
+            "PDPA-S5",
+            ComplianceProfile::Pdpa,
+            "No hardcoded IPs in personal data systems",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "PDPA-S7-1",
+            ComplianceProfile::Pdpa,
+            "No debug code exposing personal data",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "PDPA-S14",
+            ComplianceProfile::Pdpa,
+            "Data protection defaults must be enabled",
+            &["perlindungan", "data_protection", "consent_enabled", "privacy_mode", "kebenaran_data"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "PDPA-S15",
+            ComplianceProfile::Pdpa,
+            "No hardcoded ports in data systems",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "PDPA-S16",
+            ComplianceProfile::Pdpa,
+            "Personal data must have retention period",
+            &["tarikh_kutip", "data_collected", "tarikh_persetujuan", "consent_date", "tarikh_simpan"],
+            Severity::Warning,
+        ),
+        tainted_input_rule(
+            "PDPA-S17",
+            ComplianceProfile::Pdpa,
+            "User input must be taint-tracked",
+            &["input_pengguna", "data_borang", "user_input", "form_data"],
+            Severity::Error,
+        ),
+        excessive_grant_rule(
+            "PDPA-S18",
+            ComplianceProfile::Pdpa,
+            "Excessive grants on personal data",
+            Severity::Warning,
+        ),
+        sensitive_ffi_rule(
+            "PDPA-S19",
+            ComplianceProfile::Pdpa,
+            "FFI calls handling personal data need review",
+            &["personal", "nama", "ic_number", "data_peribadi", "pengguna"],
+            Severity::Warning,
+        ),
     ]
 }
 
@@ -952,7 +1416,7 @@ fn contains_personal_data_var(expr: &Expr) -> bool {
 }
 
 // ===========================================================================
-// BNM RMiT rules (10)
+// BNM RMiT rules (18)
 // ===========================================================================
 
 fn bnm_rules() -> Vec<ComplianceRule> {
@@ -1034,11 +1498,64 @@ fn bnm_rules() -> Vec<ComplianceRule> {
             "Financial system URLs must use HTTPS",
             Severity::Warning,
         ),
+        // --- 8 new rules ---
+        hardcoded_ip_rule(
+            "BNM-10.18-1",
+            ComplianceProfile::Bnm,
+            "No hardcoded IPs in financial systems",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "BNM-10.49-c",
+            ComplianceProfile::Bnm,
+            "No debug code in banking systems",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "BNM-10.53",
+            ComplianceProfile::Bnm,
+            "Financial security defaults must be enabled",
+            &["keselamatan", "encryption_enabled", "audit_mode", "tls_required", "pengesahan_aktif"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "BNM-10.57",
+            ComplianceProfile::Bnm,
+            "No hardcoded ports in banking",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "BNM-10.59",
+            ComplianceProfile::Bnm,
+            "Financial records must have retention handling",
+            &["tarikh_transaksi", "transaction_date", "statement_date", "tarikh_audit", "maturity_date"],
+            Severity::Warning,
+        ),
+        tainted_input_rule(
+            "BNM-10.60",
+            ComplianceProfile::Bnm,
+            "Financial user input must be taint-tracked",
+            &["input_pelanggan", "customer_input", "form_bank", "transaction_input"],
+            Severity::Error,
+        ),
+        excessive_grant_rule(
+            "BNM-10.61",
+            ComplianceProfile::Bnm,
+            "Excessive grants in financial context",
+            Severity::Warning,
+        ),
+        sensitive_ffi_rule(
+            "BNM-10.62",
+            ComplianceProfile::Bnm,
+            "FFI to financial functions need review",
+            &["bank", "financial", "transaksi", "akaun", "payment"],
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// MAS TRM Singapore rules (8)
+// MAS TRM Singapore rules (15)
 // ===========================================================================
 
 fn mas_trm_rules() -> Vec<ComplianceRule> {
@@ -1095,11 +1612,57 @@ fn mas_trm_rules() -> Vec<ComplianceRule> {
             "Overly broad grants require review in financial systems",
             Severity::Warning,
         ),
+        // --- 7 new rules ---
+        hardcoded_ip_rule(
+            "MAS-TRM-5.1.2",
+            ComplianceProfile::MasTrm,
+            "No hardcoded IPs in financial systems",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "MAS-TRM-9.1.2",
+            ComplianceProfile::MasTrm,
+            "No debug code in financial systems",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "MAS-TRM-9.2.2",
+            ComplianceProfile::MasTrm,
+            "Security defaults must be enabled",
+            &["encryption_enabled", "mfa_required", "audit_enabled", "tls_mode", "auth_required"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "MAS-TRM-9.4.2",
+            ComplianceProfile::MasTrm,
+            "No hardcoded ports in financial systems",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "MAS-TRM-11.1.2",
+            ComplianceProfile::MasTrm,
+            "Financial data must have retention handling",
+            &["transaction_date", "statement_date", "audit_timestamp", "session_created", "token_issued"],
+            Severity::Warning,
+        ),
+        tainted_input_rule(
+            "MAS-TRM-11.2.2",
+            ComplianceProfile::MasTrm,
+            "Customer input must be taint-tracked",
+            &["customer_input", "user_input", "form_data", "transaction_input"],
+            Severity::Error,
+        ),
+        excessive_grant_rule(
+            "MAS-TRM-12.1.2",
+            ComplianceProfile::MasTrm,
+            "Excessive grants in financial systems",
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// NIST 800-53 rules (10)
+// NIST 800-53 rules (18)
 // ===========================================================================
 
 fn nist_rules() -> Vec<ComplianceRule> {
@@ -1168,11 +1731,63 @@ fn nist_rules() -> Vec<ComplianceRule> {
             &["user_input", "form_data", "request_body", "query_param"],
             Severity::Error,
         ),
+        // --- 8 new rules ---
+        hardcoded_ip_rule(
+            "NIST-AC-2",
+            ComplianceProfile::Nist80053,
+            "No hardcoded IPs in federal systems",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "NIST-AU-3",
+            ComplianceProfile::Nist80053,
+            "No debug code in production",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "NIST-CM-6",
+            ComplianceProfile::Nist80053,
+            "Security configs must not default to false",
+            &["fips_mode", "encryption_enabled", "audit_enabled", "tls_required", "auth_required"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "NIST-IA-6",
+            ComplianceProfile::Nist80053,
+            "No hardcoded ports in federal systems",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "NIST-SC-4",
+            ComplianceProfile::Nist80053,
+            "Sensitive data must have retention handling",
+            &["classification_date", "cert_expiry", "key_created", "session_start", "token_timestamp"],
+            Severity::Warning,
+        ),
+        excessive_grant_rule(
+            "NIST-AC-6-1",
+            ComplianceProfile::Nist80053,
+            "Least privilege enforcement",
+            Severity::Warning,
+        ),
+        sensitive_ffi_rule(
+            "NIST-SA-11",
+            ComplianceProfile::Nist80053,
+            "FFI calls require developer security testing",
+            &["crypto", "auth", "certificate", "classified", "secure"],
+            Severity::Warning,
+        ),
+        classify_without_audit_rule(
+            "NIST-AU-12",
+            ComplianceProfile::Nist80053,
+            "Classification must produce audit events",
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// ISO 27001 rules (10)
+// ISO 27001 rules (18)
 // ===========================================================================
 
 fn iso27001_rules() -> Vec<ComplianceRule> {
@@ -1240,11 +1855,64 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "Compliance: URLs must use HTTPS",
             Severity::Warning,
         ),
+        // --- 8 new rules ---
+        hardcoded_ip_rule(
+            "ISO-A5.2",
+            ComplianceProfile::Iso27001,
+            "No hardcoded IPs in information systems",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "ISO-A7.1",
+            ComplianceProfile::Iso27001,
+            "No debug code in production",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "ISO-A8.2",
+            ComplianceProfile::Iso27001,
+            "Security defaults must be enabled",
+            &["encryption_enabled", "access_control", "audit_enabled", "secure_mode", "tls_required"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "ISO-A9.2",
+            ComplianceProfile::Iso27001,
+            "No hardcoded ports in information systems",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "ISO-A11.1",
+            ComplianceProfile::Iso27001,
+            "Data must have retention handling",
+            &["classification_date", "review_date", "access_granted_date", "cert_expiry", "policy_date"],
+            Severity::Warning,
+        ),
+        tainted_input_rule(
+            "ISO-A12.2",
+            ComplianceProfile::Iso27001,
+            "External input must be taint-tracked",
+            &["user_input", "external_data", "api_input", "form_data"],
+            Severity::Error,
+        ),
+        excessive_grant_rule(
+            "ISO-A15.1",
+            ComplianceProfile::Iso27001,
+            "Supplier grants must be minimal",
+            Severity::Warning,
+        ),
+        sensitive_ffi_rule(
+            "ISO-A17.1",
+            ComplianceProfile::Iso27001,
+            "FFI calls in continuity planning need review",
+            &["backup", "recovery", "restore", "continuity", "disaster"],
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// DO-178C rules (10)
+// DO-178C rules (18)
 // ===========================================================================
 
 fn do178c_rules() -> Vec<ComplianceRule> {
@@ -1323,11 +1991,64 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "Aviation systems must use secure communication channels",
             Severity::Error,
         ),
+        // --- 8 new rules ---
+        hardcoded_ip_rule(
+            "DO178C-6.3.4",
+            ComplianceProfile::Do178c,
+            "No hardcoded IPs in avionics",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "DO178C-6.3.5",
+            ComplianceProfile::Do178c,
+            "No debug code in safety-critical systems",
+            Severity::Error,
+        ),
+        insecure_default_rule(
+            "DO178C-6.4.6",
+            ComplianceProfile::Do178c,
+            "Safety defaults must be enabled",
+            &["safety_enabled", "redundancy_active", "failsafe_mode", "monitoring_enabled", "watchdog_active"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "DO178C-6.4.7",
+            ComplianceProfile::Do178c,
+            "No hardcoded ports in avionics",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "DO178C-6.4.8",
+            ComplianceProfile::Do178c,
+            "Flight data must have temporal handling",
+            &["flight_time", "sensor_timestamp", "calibration_date", "maintenance_date", "inspection_date"],
+            Severity::Warning,
+        ),
+        tainted_input_rule(
+            "DO178C-6.7.3",
+            ComplianceProfile::Do178c,
+            "Sensor input must be taint-tracked",
+            &["sensor_input", "pilot_input", "radar_data", "telemetry_input"],
+            Severity::Error,
+        ),
+        excessive_grant_rule(
+            "DO178C-6.7.4",
+            ComplianceProfile::Do178c,
+            "Excessive grants in safety system",
+            Severity::Error,
+        ),
+        sensitive_ffi_rule(
+            "DO178C-6.7.5",
+            ComplianceProfile::Do178c,
+            "FFI in safety-critical code needs review",
+            &["flight", "navigation", "autopilot", "engine", "control"],
+            Severity::Error,
+        ),
     ]
 }
 
 // ===========================================================================
-// SOX rules (8)
+// SOX rules (15)
 // ===========================================================================
 
 fn sox_rules() -> Vec<ComplianceRule> {
@@ -1383,11 +2104,57 @@ fn sox_rules() -> Vec<ComplianceRule> {
             "Broad grants in financial system require review",
             Severity::Warning,
         ),
+        // --- 7 new rules ---
+        hardcoded_ip_rule(
+            "SOX-302-3",
+            ComplianceProfile::Sox,
+            "No hardcoded IPs in financial reporting",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "SOX-302-4",
+            ComplianceProfile::Sox,
+            "No debug code in financial systems",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "SOX-404-3",
+            ComplianceProfile::Sox,
+            "Financial security defaults must be enabled",
+            &["audit_enabled", "reporting_secure", "internal_control", "sox_compliance", "review_required"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "SOX-404-4",
+            ComplianceProfile::Sox,
+            "No hardcoded ports in financial systems",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "SOX-409-2",
+            ComplianceProfile::Sox,
+            "Financial records need retention handling",
+            &["report_date", "filing_date", "audit_date", "fiscal_period", "statement_date"],
+            Severity::Warning,
+        ),
+        tainted_input_rule(
+            "SOX-802-2",
+            ComplianceProfile::Sox,
+            "Financial input must be taint-tracked",
+            &["financial_input", "accounting_input", "report_data", "audit_input"],
+            Severity::Error,
+        ),
+        excessive_grant_rule(
+            "SOX-906-2",
+            ComplianceProfile::Sox,
+            "Excessive grants in financial context",
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// CMMC rules (6)
+// CMMC rules (12)
 // ===========================================================================
 
 fn cmmc_rules() -> Vec<ComplianceRule> {
@@ -1430,11 +2197,50 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "Security operations must have audit trail",
             Severity::Warning,
         ),
+        // --- 6 new rules ---
+        hardcoded_ip_rule(
+            "CMMC-AC-3",
+            ComplianceProfile::Cmmc,
+            "No hardcoded IPs in defense systems",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "CMMC-AC-4",
+            ComplianceProfile::Cmmc,
+            "No debug code in defense systems",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "CMMC-SC-3",
+            ComplianceProfile::Cmmc,
+            "Security defaults in defense context",
+            &["fips_enabled", "encryption_required", "cmmc_mode", "secure_boot", "access_control"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "CMMC-SC-4",
+            ComplianceProfile::Cmmc,
+            "No hardcoded ports in defense systems",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "CMMC-SI-2",
+            ComplianceProfile::Cmmc,
+            "CUI must have retention handling",
+            &["classification_date", "cui_created", "access_granted", "clearance_date", "review_date"],
+            Severity::Warning,
+        ),
+        excessive_grant_rule(
+            "CMMC-AU-2",
+            ComplianceProfile::Cmmc,
+            "Excessive grants in defense systems",
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// IEC 62443 rules (6)
+// IEC 62443 rules (12)
 // ===========================================================================
 
 fn iec62443_rules() -> Vec<ComplianceRule> {
@@ -1477,11 +2283,50 @@ fn iec62443_rules() -> Vec<ComplianceRule> {
             "Weak crypto prohibited in ICS",
             Severity::Error,
         ),
+        // --- 6 new rules ---
+        hardcoded_ip_rule(
+            "IEC62443-SR-7",
+            ComplianceProfile::Iec62443,
+            "No hardcoded IPs in ICS",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "IEC62443-SR-8",
+            ComplianceProfile::Iec62443,
+            "No debug code in ICS",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "IEC62443-SR-9",
+            ComplianceProfile::Iec62443,
+            "ICS security defaults must be enabled",
+            &["safety_enabled", "scada_secure", "plc_auth", "hmi_locked", "network_segmented"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "IEC62443-SR-10",
+            ComplianceProfile::Iec62443,
+            "No hardcoded ports in ICS",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "IEC62443-SR-11",
+            ComplianceProfile::Iec62443,
+            "ICS data must have retention handling",
+            &["sensor_timestamp", "calibration_date", "maintenance_date", "alarm_time", "log_date"],
+            Severity::Warning,
+        ),
+        excessive_grant_rule(
+            "IEC62443-SR-12",
+            ComplianceProfile::Iec62443,
+            "Excessive grants in ICS",
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// NERC CIP rules (5)
+// NERC CIP rules (10)
 // ===========================================================================
 
 fn nerc_cip_rules() -> Vec<ComplianceRule> {
@@ -1518,11 +2363,44 @@ fn nerc_cip_rules() -> Vec<ComplianceRule> {
             "Broad grants in energy systems require review",
             Severity::Warning,
         ),
+        // --- 5 new rules ---
+        hardcoded_ip_rule(
+            "NERC-CIP-003",
+            ComplianceProfile::NercCip,
+            "No hardcoded IPs in energy grid",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "NERC-CIP-006",
+            ComplianceProfile::NercCip,
+            "No debug code in energy systems",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "NERC-CIP-008",
+            ComplianceProfile::NercCip,
+            "Energy security defaults must be enabled",
+            &["grid_protection", "scada_secure", "monitoring_enabled", "alarm_active", "failsafe_mode"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "NERC-CIP-009",
+            ComplianceProfile::NercCip,
+            "No hardcoded ports in grid systems",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "NERC-CIP-012",
+            ComplianceProfile::NercCip,
+            "Grid data must have retention handling",
+            &["outage_date", "maintenance_date", "inspection_date", "meter_timestamp", "load_date"],
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// FDA 21 CFR Part 11 rules (5)
+// FDA 21 CFR Part 11 rules (10)
 // ===========================================================================
 
 fn fda_rules() -> Vec<ComplianceRule> {
@@ -1560,11 +2438,44 @@ fn fda_rules() -> Vec<ComplianceRule> {
             "Clinical data transmission must use secure channel",
             Severity::Error,
         ),
+        // --- 5 new rules ---
+        hardcoded_ip_rule(
+            "FDA-11.10-f",
+            ComplianceProfile::Fda21cfr,
+            "No hardcoded IPs in pharma systems",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "FDA-11.10-g",
+            ComplianceProfile::Fda21cfr,
+            "No debug code in clinical systems",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "FDA-11.10-h",
+            ComplianceProfile::Fda21cfr,
+            "Clinical security defaults must be enabled",
+            &["validation_enabled", "audit_trail", "electronic_sig", "access_control", "data_integrity"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "FDA-11.10-i",
+            ComplianceProfile::Fda21cfr,
+            "No hardcoded ports in pharma systems",
+            Severity::Warning,
+        ),
+        temporal_no_expiry_rule(
+            "FDA-11.10-j",
+            ComplianceProfile::Fda21cfr,
+            "Clinical trial data must have retention handling",
+            &["trial_date", "batch_date", "expiry_date", "approval_date", "manufacturing_date"],
+            Severity::Warning,
+        ),
     ]
 }
 
 // ===========================================================================
-// ITAR rules (4)
+// ITAR rules (8)
 // ===========================================================================
 
 fn itar_rules() -> Vec<ComplianceRule> {
@@ -1593,6 +2504,32 @@ fn itar_rules() -> Vec<ComplianceRule> {
             ComplianceProfile::Itar,
             "Broad grants in defense systems require review",
             Severity::Error,
+        ),
+        // --- 4 new rules ---
+        hardcoded_ip_rule(
+            "ITAR-120.5",
+            ComplianceProfile::Itar,
+            "No hardcoded IPs in defense export systems",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "ITAR-120.6",
+            ComplianceProfile::Itar,
+            "No debug code in ITAR systems",
+            Severity::Error,
+        ),
+        insecure_default_rule(
+            "ITAR-120.7",
+            ComplianceProfile::Itar,
+            "Defense security defaults must be enabled",
+            &["export_control", "classification_enabled", "itar_mode", "dcs_required", "encryption_required"],
+            Severity::Error,
+        ),
+        hardcoded_port_rule(
+            "ITAR-120.8",
+            ComplianceProfile::Itar,
+            "No hardcoded ports in defense systems",
+            Severity::Warning,
         ),
     ]
 }
