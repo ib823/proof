@@ -353,7 +353,7 @@ research source, and detailed description.
 | REQ-12 | Compiler enforces information flow | P1 | DONE | 3 |
 | REQ-13 | End-to-end: .rii → C → executable (non-trivial) | P0 | DONE | 4 |
 | REQ-14 | Working WASM backend (not scaffolding) | P1 | DONE | 4 |
-| REQ-15 | Real artifact signing | P2 | TODO | 5 |
+| REQ-15 | Real artifact signing | P2 | DONE | 5 |
 | REQ-16 | JALINAN session types implementation | P2 | TODO | 6 |
 | REQ-17 | CAHAYA syntax extensions | P2 | TODO | 6 |
 | REQ-18 | Self-hosting compiler | P3 | TODO | 10 |
@@ -548,7 +548,7 @@ The compilation pipeline is: `.rii` → parse → typecheck → IR → C/WASM �
 
 | Task | Status |
 |------|--------|
-| Real artifact signing (Ed25519/ML-DSA, not placeholder) | TODO |
+| Real artifact signing (Ed25519/ML-DSA, not placeholder) | DONE (Ed25519 + ML-DSA-65 + Hybrid, keygen/sign/verify, integrated into build-release.sh) |
 | Real compliance rules (tested, not 6/1054) | TODO |
 | Trademark filing for RIINA | TODO |
 | Package registry (real, hosted, not local-only) | TODO |
