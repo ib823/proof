@@ -345,3 +345,22 @@ domains/RustFFISecurity.v
 # Worker F: Hardware + Runtime proofs (0 Admitted, 0 axioms)
 runtime/CPUModel.v
 runtime/RuntimeProof.v
+
+# Phase 16: 10K Milestone Domain Proofs (zero admits, zero axioms)
+domains/QuantumResistance.v
+domains/PrivacyPreservation.v
+domains/BlockchainConsensus.v
+domains/IoTSecurity.v
+domains/CloudSecurity.v
+domains/DatabaseSecurity.v
+domains/APIGatewaySecurity.v
+domains/EdgeComputing.v
+domains/IdentityManagement.v
+domains/SecureMessaging.v
+domains/VehicleSecurity.v
+domains/SatelliteSecurity.v
+domains/IndustrialControl.v
+domains/DigitalForensics.v
+domains/ZeroTrustArchitecture.v
+domains/FirmwareSecurity.v
+domains/DNSSecurity.v
