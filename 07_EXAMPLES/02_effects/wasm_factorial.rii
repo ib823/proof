@@ -1,0 +1,29 @@
+/// WASM_FACTORIAL.RII - Recursive factorial for WASM backend
+/// Faktorial rekursif untuk backend WebAssembly
+///
+/// Demonstrates: Recursive function definition compiled to WASM.
+/// WASM compilation: riinac build --target=wasm32 wasm_factorial.rii
+///
+/// The factorial function is a classic example that exercises:
+/// - Recursive function calls (LetRec in the AST)
+/// - Conditional branching (kalau/lain)
+/// - Arithmetic operations (*, -)
+/// - Base case termination
+
+/// Kira faktorial n! secara rekursif
+/// Calculate n! recursively
+///
+/// faktorial(0) = 1
+/// faktorial(n) = n * faktorial(n - 1)
+fungsi faktorial(n: Nombor) -> Nombor kesan Bersih {
+    kalau n == 0 {
+        1
+    } lain {
+        n * faktorial(n - 1)
+    }
+}
+
+/// Fungsi utama: kira 5! = 120
+fungsi utama() -> Nombor kesan Bersih {
+    faktorial(5)
+}

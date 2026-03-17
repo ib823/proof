@@ -13,7 +13,7 @@
 #[allow(unused_imports)]
 use crate::{ParseError, ParseErrorKind, Parser};
 #[allow(unused_imports)]
-use riina_types::{BinOp, Effect, Expr, Program, SecurityLevel, SessionType, TopLevelDecl, Ty};
+use riina_types::{BinOp, Effect, Expr, Linearity, Program, SecurityLevel, SessionType, TopLevelDecl, Ty};
 
 // =============================================================================
 // LITERAL TESTS
@@ -2172,5 +2172,144 @@ fn test_parse_let_no_linearity() {
             assert_eq!(lin, None);
         }
         other => panic!("Expected Let, got {:?}", other),
+    }
+}
+
+// =============================================================================
+// EDGE CASE TESTS — Nested, multi-function, linearity in functions
+// =============================================================================
+
+#[test]
+fn test_parse_nested_if_else() {
+    // Input: Nested conditional — if true { if false { 1 } else { 2 } } else { 3 }
+    // Expected: Expr::If containing another Expr::If in the true branch
+    // Rationale: Nested conditionals must parse correctly with proper nesting
+    let mut p = Parser::new("kalau betul { kalau salah { 1 } lain { 2 } } lain { 3 }");
+    match p.parse_expr().unwrap() {
+        Expr::If(cond, then_br, else_br) => {
+            assert_eq!(*cond, Expr::Bool(true));
+            match *then_br {
+                Expr::If(inner_cond, inner_then, inner_else) => {
+                    assert_eq!(*inner_cond, Expr::Bool(false));
+                    assert_eq!(*inner_then, Expr::Int(1));
+                    assert_eq!(*inner_else, Expr::Int(2));
+                }
+                other => panic!("Expected nested If, got {:?}", other),
+            }
+            assert_eq!(*else_br, Expr::Int(3));
+        }
+        other => panic!("Expected If, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_nested_if_else_in_else_branch() {
+    // Input: Nested conditional in else branch
+    // Expected: Correct nesting of If expressions
+    let mut p = Parser::new("kalau salah { 0 } lain { kalau betul { 1 } lain { 2 } }");
+    match p.parse_expr().unwrap() {
+        Expr::If(cond, then_br, else_br) => {
+            assert_eq!(*cond, Expr::Bool(false));
+            assert_eq!(*then_br, Expr::Int(0));
+            match *else_br {
+                Expr::If(inner_cond, inner_then, inner_else) => {
+                    assert_eq!(*inner_cond, Expr::Bool(true));
+                    assert_eq!(*inner_then, Expr::Int(1));
+                    assert_eq!(*inner_else, Expr::Int(2));
+                }
+                other => panic!("Expected nested If in else, got {:?}", other),
+            }
+        }
+        other => panic!("Expected If, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_multiple_functions() {
+    // Input: Program with 3 top-level function declarations
+    // Expected: 4 top-level decls (3 functions + 1 trailing expression)
+    // Rationale: Multiple function definitions must parse independently
+    let source = r#"
+        fungsi satu() -> Nombor kesan Bersih { 1 }
+        fungsi dua() -> Nombor kesan Bersih { 2 }
+        fungsi tiga() -> Nombor kesan Bersih { 3 }
+        satu()
+    "#;
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    // 3 function decls + 1 expression
+    assert!(
+        program.decls.len() >= 4,
+        "Expected at least 4 decls, got {}",
+        program.decls.len()
+    );
+    // First three should be functions
+    for i in 0..3 {
+        match &program.decls[i] {
+            TopLevelDecl::Function { .. } => {}
+            other => panic!("Expected Function at index {}, got {:?}", i, other),
+        }
+    }
+}
+
+#[test]
+fn test_parse_multiple_functions_with_params() {
+    // Input: Program with functions that have parameters
+    // Rationale: Parameterized functions followed by calls must parse
+    let source = "fungsi tambah(a: Nombor, b: Nombor) -> Nombor kesan Bersih { a + b }\ntambah(1, 2)";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    assert_eq!(program.decls.len(), 2);
+    match &program.decls[0] {
+        TopLevelDecl::Function { name, params, .. } => {
+            assert_eq!(name, "tambah");
+            assert_eq!(params.len(), 2);
+        }
+        other => panic!("Expected Function, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_linearity_in_function() {
+    use riina_types::Linearity;
+    // Input: Function body containing biar sekali (linear let)
+    // Expected: Function with a Let(sekali) in the body
+    // Rationale: Linearity qualifiers must work inside function bodies
+    let source = "fungsi pakai() -> Nombor kesan Bersih { biar sekali x = 42; x }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Function { body, .. } => {
+            match body.as_ref() {
+                Expr::Let(name, lin, val, _) => {
+                    assert_eq!(name, "x");
+                    assert_eq!(*lin, Some(Linearity::Linear));
+                    assert_eq!(**val, Expr::Int(42));
+                }
+                other => panic!("Expected Let in function body, got {:?}", other),
+            }
+        }
+        other => panic!("Expected Function, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_linearity_paling_in_function() {
+    use riina_types::Linearity;
+    // Input: Function body with biar paling (affine let)
+    let source = "fungsi maybe() -> Nombor kesan Bersih { biar paling y = 10; y }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Function { body, .. } => {
+            match body.as_ref() {
+                Expr::Let(name, lin, _, _) => {
+                    assert_eq!(name, "y");
+                    assert_eq!(*lin, Some(Linearity::Affine));
+                }
+                other => panic!("Expected Let in function body, got {:?}", other),
+            }
+        }
+        other => panic!("Expected Function, got {:?}", other),
     }
 }

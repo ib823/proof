@@ -1,0 +1,20 @@
+/// WASM_HELLO.RII - Simple WASM-compatible program
+/// Program mudah yang serasi dengan backend WebAssembly
+///
+/// Demonstrates: Basic integer computation targeting WASM backend.
+/// WASM compilation: riinac build --target=wasm32 wasm_hello.rii
+///
+/// This program computes a simple greeting code (ASCII sum) and returns it.
+/// When compiled to WASM, it produces a valid .wasm binary with WASI imports.
+
+/// Kira kod ASCII untuk 'H' + 'i' = 72 + 105 = 177
+fungsi kod_salam() -> Nombor kesan Bersih {
+    biar h = 72;
+    biar i = 105;
+    h + i
+}
+
+/// Fungsi utama - pulangkan kod salam
+fungsi utama() -> Nombor kesan Bersih {
+    kod_salam()
+}

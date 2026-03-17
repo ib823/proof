@@ -26,6 +26,8 @@ riina-types.workspace = true
 
 [dev-dependencies]
 # Testing dependencies (internal only)
+riina-parser = { path = "../riina-parser" }
+riina-typechecker = { path = "../riina-typechecker" }
 
 # No feature flags - ZERO LAZINESS means we include EVERYTHING
 # All backends (interpreter, C emission) are always available

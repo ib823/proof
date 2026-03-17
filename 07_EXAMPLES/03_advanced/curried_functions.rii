@@ -1,0 +1,37 @@
+/// CURRIED_FUNCTIONS.RII - Multi-argument curried functions
+/// Fungsi kari berbilang argumen
+///
+/// Demonstrates: Currying and partial application in RIINA.
+///
+/// In RIINA, multi-argument functions are syntactic sugar for curried
+/// single-argument functions. A function `fungsi f(x: A, y: B) -> C`
+/// is internally represented as `fn(x: A) -> fn(y: B) -> C`.
+///
+/// This enables partial application: calling f with one argument
+/// returns a new function waiting for the second argument.
+
+/// Fungsi tambah dua nombor (kari secara dalaman)
+/// Add two numbers (internally curried)
+fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
+    x + y
+}
+
+/// Fungsi darab dua nombor
+/// Multiply two numbers
+fungsi darab(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
+    x * y
+}
+
+/// Fungsi tiga argumen - kari dua kali
+/// Three-argument function - curried twice
+fungsi jumlah_tiga(a: Nombor, b: Nombor, c: Nombor) -> Nombor kesan Bersih {
+    a + b + c
+}
+
+/// Fungsi utama - tunjuk penggunaan fungsi kari
+fungsi utama() -> Nombor kesan Bersih {
+    biar hasil1 = tambah(3, 4);
+    biar hasil2 = darab(5, 6);
+    biar hasil3 = jumlah_tiga(1, 2, 3);
+    hasil1 + hasil2 + hasil3
+}

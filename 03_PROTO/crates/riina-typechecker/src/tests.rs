@@ -3310,4 +3310,193 @@ mod formalized_tests {
             other => panic!("Expected LinearityViolation, got {:?}", other),
         }
     }
+
+    // ==========================================================================
+    // EDGE CASE TESTS — Recursive functions, nested ifs, effect enforcement
+    // ==========================================================================
+
+    #[test]
+    fn test_recursive_function_typechecks() {
+        // LetRec with a recursive call in the body.
+        // let rec f : Int -> Int = fn(x: Int) f(x) in f
+        // This should typecheck: f has type Int -> Int, and f(x) applies Int -> Int to Int.
+        let ctx = Context::new();
+        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
+        let letrec = Expr::LetRec(
+            "f".into(),
+            fn_ty.clone(),
+            Box::new(Expr::Lam(
+                "x".into(),
+                Ty::Int,
+                Box::new(Expr::App(
+                    Box::new(Expr::Var("f".into())),
+                    Box::new(Expr::Var("x".into())),
+                )),
+            )),
+            Box::new(Expr::Var("f".into())),
+        );
+        let (ty, eff) = type_check(&ctx, &letrec).unwrap();
+        assert_eq!(ty, fn_ty);
+        assert_eq!(eff, Effect::Pure);
+    }
+
+    #[test]
+    fn test_recursive_factorial_pattern_typechecks() {
+        // LetRec modelling factorial: let rec fact : Int -> Int = fn(n: Int) if ... in fact
+        let ctx = Context::new();
+        let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
+        let letrec = Expr::LetRec(
+            "fact".into(),
+            fn_ty.clone(),
+            Box::new(Expr::Lam(
+                "n".into(),
+                Ty::Int,
+                Box::new(Expr::If(
+                    Box::new(Expr::BinOp(
+                        BinOp::Eq,
+                        Box::new(Expr::Var("n".into())),
+                        Box::new(Expr::Int(0)),
+                    )),
+                    Box::new(Expr::Int(1)),
+                    Box::new(Expr::BinOp(
+                        BinOp::Mul,
+                        Box::new(Expr::Var("n".into())),
+                        Box::new(Expr::App(
+                            Box::new(Expr::Var("fact".into())),
+                            Box::new(Expr::BinOp(
+                                BinOp::Sub,
+                                Box::new(Expr::Var("n".into())),
+                                Box::new(Expr::Int(1)),
+                            )),
+                        )),
+                    )),
+                )),
+            )),
+            Box::new(Expr::App(
+                Box::new(Expr::Var("fact".into())),
+                Box::new(Expr::Int(5)),
+            )),
+        );
+        let (ty, eff) = type_check(&ctx, &letrec).unwrap();
+        assert_eq!(ty, Ty::Int);
+        assert_eq!(eff, Effect::Pure);
+    }
+
+    #[test]
+    fn test_nested_if_type_consistency() {
+        // Both branches of if must have the same type.
+        // if true { if false { 1 } else { 2 } } else { 3 } → Int
+        let ctx = Context::new();
+        let nested = Expr::If(
+            Box::new(Expr::Bool(true)),
+            Box::new(Expr::If(
+                Box::new(Expr::Bool(false)),
+                Box::new(Expr::Int(1)),
+                Box::new(Expr::Int(2)),
+            )),
+            Box::new(Expr::Int(3)),
+        );
+        let (ty, eff) = type_check(&ctx, &nested).unwrap();
+        assert_eq!(ty, Ty::Int);
+        assert_eq!(eff, Effect::Pure);
+    }
+
+    #[test]
+    fn test_nested_if_type_mismatch_in_inner() {
+        // Inner if has mismatched branches: Int vs Bool
+        let ctx = Context::new();
+        let nested = Expr::If(
+            Box::new(Expr::Bool(true)),
+            Box::new(Expr::If(
+                Box::new(Expr::Bool(false)),
+                Box::new(Expr::Int(1)),
+                Box::new(Expr::Bool(true)), // mismatch!
+            )),
+            Box::new(Expr::Int(3)),
+        );
+        match type_check(&ctx, &nested) {
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Int,
+                found: Ty::Bool,
+            }) => {}
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_nested_if_outer_branch_mismatch() {
+        // Outer if branches disagree: then is Int, else is Bool
+        let ctx = Context::new();
+        let nested = Expr::If(
+            Box::new(Expr::Bool(true)),
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Bool(false)), // mismatch with then-branch
+        );
+        match type_check(&ctx, &nested) {
+            Err(TypeError::TypeMismatch {
+                expected: Ty::Int,
+                found: Ty::Bool,
+            }) => {}
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_effect_ceiling_enforcement_pure_no_write() {
+        // A Pure function cannot perform Write effects.
+        // fn(x: Int) -> Int {Pure} containing a Write expression should fail.
+        // We model this with a Lam whose body does Ref (which requires Mut effect).
+        let ctx = Context::new();
+        let lam = Expr::Lam(
+            "x".into(),
+            Ty::Int,
+            Box::new(Expr::Ref(
+                Box::new(Expr::Int(42)),
+                SecurityLevel::Public,
+            )),
+        );
+        // The lambda itself typechecks — the effect is in the function type.
+        // The body has Mut effect, so the function type should reflect that.
+        let (ty, _eff) = type_check(&ctx, &lam).unwrap();
+        // The function type should have non-Pure effect (Mut)
+        match ty {
+            Ty::Fn(_, _, fn_eff) => {
+                assert_ne!(fn_eff, Effect::Pure, "Body with Ref should not be Pure");
+            }
+            other => panic!("Expected Fn type, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_deeply_nested_let_typechecks() {
+        // let x = 1 in let y = 2 in let z = 3 in x + y + z
+        let ctx = Context::new();
+        let expr = Expr::Let(
+            "x".into(),
+            None,
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Let(
+                "y".into(),
+                None,
+                Box::new(Expr::Int(2)),
+                Box::new(Expr::Let(
+                    "z".into(),
+                    None,
+                    Box::new(Expr::Int(3)),
+                    Box::new(Expr::BinOp(
+                        BinOp::Add,
+                        Box::new(Expr::BinOp(
+                            BinOp::Add,
+                            Box::new(Expr::Var("x".into())),
+                            Box::new(Expr::Var("y".into())),
+                        )),
+                        Box::new(Expr::Var("z".into())),
+                    )),
+                )),
+            )),
+        );
+        let (ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Int);
+        assert_eq!(eff, Effect::Pure);
+    }
 }

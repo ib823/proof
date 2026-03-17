@@ -551,8 +551,8 @@ The compilation pipeline is: `.rii` → parse → typecheck → IR → C/WASM �
 | Real artifact signing (Ed25519/ML-DSA, not placeholder) | DONE (Ed25519 + ML-DSA-65 + Hybrid, keygen/sign/verify, integrated into build-release.sh) |
 | Real compliance rules (tested, not 6/1054) | TODO |
 | Trademark filing for RIINA | TODO |
-| Package registry (real, hosted, not local-only) | TODO |
-| Single consistent license (resolve all contradictions) | TODO |
+| Package registry (real, hosted, not local-only) | PARTIAL (local FsRegistry works: init/add/remove/lock/build/publish CLI, 2,664 lines; HTTP registry TODO) |
+| Single consistent license (resolve all contradictions) | DONE (REQ-03: RIINA Proprietary License, consistent across all Cargo.toml) |
 
 **Gate:** All release infrastructure is real, not scaffolding.
 

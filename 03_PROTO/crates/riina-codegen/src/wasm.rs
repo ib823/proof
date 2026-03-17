@@ -312,16 +312,6 @@ impl WasmBackend {
         }
     }
 
-    /// Determine the WASM function signature for an IR function.
-    /// All user functions use the closure calling convention:
-    ///   (closure_ptr: i32, arg: i32) -> i32
-    /// The closure_ptr is local 0, arg is local 1.
-    /// Functions without captures simply ignore local 0.
-    fn function_signature(&self, _func: &Function) -> (Vec<ValType>, Vec<ValType>) {
-        let params = vec![ValType::I32, ValType::I32]; // closure_ptr, arg
-        let results = vec![ValType::I32];
-        (params, results)
-    }
 
     /// Emit WASM instructions for a function.
     ///

@@ -1,0 +1,46 @@
+/// LINEAR_RESOURCES.RII - Linear and affine resource management
+/// Pengurusan sumber linear dan afin
+///
+/// Demonstrates: RIINA's linearity qualifiers for resource safety.
+///
+/// RIINA provides three linearity qualifiers on let-bindings:
+///
+///   biar sekali x = ...   (Linear)   - must be used EXACTLY once
+///   biar paling x = ...   (Affine)   - must be used AT MOST once
+///   biar mesti x = ...    (Relevant) - must be used AT LEAST once
+///   biar x = ...          (Normal)   - no usage restriction
+///
+/// These qualifiers are enforced by the typechecker (A3 axiom).
+/// Linear types are essential for safe resource management:
+/// - File handles must be closed exactly once (sekali)
+/// - Network connections can be optionally used (paling)
+/// - Configuration values must be consumed (mesti)
+
+/// Contoh penggunaan linear: sumber mesti digunakan tepat sekali
+/// Linear usage example: resource must be used exactly once
+fungsi guna_sekali() -> Nombor kesan Bersih {
+    biar sekali token = 42;
+    token
+}
+
+/// Contoh penggunaan afin: sumber boleh digunakan paling sekali
+/// Affine usage example: resource may be used at most once
+fungsi guna_paling() -> Nombor kesan Bersih {
+    biar paling sumber = 100;
+    sumber
+}
+
+/// Contoh penggunaan relevan: sumber mesti digunakan sekurang-kurangnya sekali
+/// Relevant usage example: resource must be used at least once
+fungsi guna_mesti() -> Nombor kesan Bersih {
+    biar mesti config = 7;
+    config + config
+}
+
+/// Fungsi utama - tunjuk semua mod lineariti
+fungsi utama() -> Nombor kesan Bersih {
+    biar a = guna_sekali();
+    biar b = guna_paling();
+    biar c = guna_mesti();
+    a + b + c
+}
