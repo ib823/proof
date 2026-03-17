@@ -5,7 +5,7 @@
 > It is not the live execution tracker.
 > Use `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`, `PROOF_STATUS.md`, and `website/public/metrics.json` for current state.
 
-**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 980 Rust tests
+**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 1276 Rust tests
 
 ## Comprehensive Analysis & Execution Plan
 
