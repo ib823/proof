@@ -45,35 +45,35 @@ kalau umur >= 18 {
   },
   {
     name: 'Effects',
-    code: `// Effect system tracks side effects
-// kesan Bersih = pure (no side effects)
-fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
-  pulang x + y;
+    code: `// RIINA tracks side effects with kesan:
+//   kesan Bersih  = pure (no side effects)
+//   kesan Tulis   = can write output
+//   kesan Kripto  = cryptographic operations
+//   kesan Baca    = can read input
+//
+// The compiler proves functions only do
+// what they declare. No hidden side effects.
+
+// Pure function — guaranteed no I/O
+fungsi tambah(x: Nombor, y: Nombor) -> Nombor {
+  x + y
 }
 
-// kesan Tulis = can perform output
-fungsi salam(nama: Teks) -> Nombor kesan Tulis {
-  biar hasil = tambah(3, 4);
-  pulang hasil;
-}
-
-salam("Dunia")`
+biar a = tambah(10, 20);
+biar b = tambah(a, 5);
+b`
   },
   {
     name: 'Recursion',
     code: `// Recursive functions
-fungsi faktorial(n: Nombor) -> Nombor kesan Bersih {
-  kalau n == 0 {
-    pulang 1;
-  }
-  pulang n * faktorial(n - 1);
+fungsi faktorial(n: Nombor) -> Nombor {
+  kalau n == 0 { 1 }
+  lain { n * faktorial(n - 1) }
 }
 
-fungsi fibonacci(n: Nombor) -> Nombor kesan Bersih {
-  kalau n <= 1 {
-    pulang n;
-  }
-  pulang fibonacci(n - 1) + fibonacci(n - 2);
+fungsi fibonacci(n: Nombor) -> Nombor {
+  kalau n <= 1 { n }
+  lain { fibonacci(n - 1) + fibonacci(n - 2) }
 }
 
 biar f = faktorial(6);
@@ -81,32 +81,34 @@ biar g = fibonacci(10);
 f + g`
   },
   {
-    name: 'Pattern Matching',
-    code: `// Pattern matching with padan
-fungsi periksaNombor(x: Nombor) -> Teks kesan Bersih {
-  padan x {
-    0 -> "kosong",
-    1 -> "satu",
-    2 -> "dua",
-    _ -> "lain",
-  }
+    name: 'Composition',
+    code: `// Function composition
+fungsi ganda(x: Nombor) -> Nombor {
+  x * 2
+}
+fungsi tambah_satu(x: Nombor) -> Nombor {
+  x + 1
+}
+fungsi kuadrat(x: Nombor) -> Nombor {
+  x * x
 }
 
-biar a = periksaNombor(2);
-biar b = periksaNombor(99);
-a`
+// Compose: (5 * 2 + 1)^2 = 121
+biar a = ganda(5);
+biar b = tambah_satu(a);
+biar c = kuadrat(b);
+c`
   },
   {
-    name: 'Nested Functions',
-    code: `// Nested functions with accumulators
-fungsi kuasa(asas: Nombor, eksponen: Nombor) -> Nombor kesan Bersih {
-  fungsi akum(asas: Nombor, n: Nombor, hasil: Nombor) -> Nombor {
-    kalau n == 0 {
-      pulang hasil;
-    }
-    pulang akum(asas, n - 1, hasil * asas);
-  }
-  pulang akum(asas, eksponen, 1);
+    name: 'Tail Recursion',
+    code: `// Tail-recursive power function
+fungsi kuasa_akum(asas: Nombor, n: Nombor, hasil: Nombor) -> Nombor {
+  kalau n == 0 { hasil }
+  lain { kuasa_akum(asas, n - 1, hasil * asas) }
+}
+
+fungsi kuasa(asas: Nombor, eksponen: Nombor) -> Nombor {
+  kuasa_akum(asas, eksponen, 1)
 }
 
 biar h = kuasa(2, 10);
