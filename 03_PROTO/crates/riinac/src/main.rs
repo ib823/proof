@@ -61,6 +61,8 @@ struct Options {
     stdin: bool,
     /// Auto-update expected values in jangkakan (expect-test) assertions
     update: bool,
+    /// Run the compiled binary after building (native: ./output, wasm: wasmtime)
+    run_after_build: bool,
 }
 
 fn usage() -> ! {
@@ -69,7 +71,7 @@ fn usage() -> ! {
     eprintln!("Commands:");
     eprintln!("  check    Parse and typecheck only (default)");
     eprintln!("  run      Parse, typecheck, and interpret");
-    eprintln!("  build    Parse, typecheck, emit C, and compile");
+    eprintln!("  build    Parse, typecheck, emit C/WASM, and compile (--run to execute)");
     eprintln!("  emit-c   Parse, typecheck, and emit C to stdout");
     eprintln!("  emit-ir  Parse, typecheck, lower, and print IR");
     eprintln!("  test     Discover and run inline ujian (test) blocks");
@@ -161,6 +163,9 @@ fn parse_args() -> (Command, Option<PathBuf>, Options) {
             }
             "--update" => {
                 opts.update = true;
+            }
+            "--run" => {
+                opts.run_after_build = true;
             }
             "--compliance" => {
                 i += 1;
@@ -703,6 +708,17 @@ fn main() {
                 match status {
                     Ok(s) if s.success() => {
                         eprintln!("Built: {}", output_name.display());
+                        if opts.run_after_build {
+                            let run_status = process::Command::new(&output_name).status();
+                            match run_status {
+                                Ok(s) if s.success() => {}
+                                Ok(s) => process::exit(s.code().unwrap_or(1)),
+                                Err(e) => {
+                                    eprintln!("Failed to run {}: {}", output_name.display(), e);
+                                    process::exit(1);
+                                }
+                            }
+                        }
                     }
                     Ok(s) => {
                         eprintln!("C compiler exited with: {}", s);
@@ -732,6 +748,26 @@ fn main() {
                 }
 
                 eprintln!("Built for target: {}", target);
+
+                // --run: execute WASM with wasmtime
+                if opts.run_after_build {
+                    let wasm_path = output_dir.join(format!("{}{}", stem, output.extension));
+                    let status = process::Command::new("wasmtime")
+                        .arg("run")
+                        .arg(&wasm_path)
+                        .status();
+                    match status {
+                        Ok(s) if s.success() => {}
+                        Ok(s) => {
+                            eprintln!("wasmtime exited with: {}", s);
+                            process::exit(s.code().unwrap_or(1));
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to invoke wasmtime: {} (install: curl https://wasmtime.dev/install.sh -sSf | bash)", e);
+                            process::exit(1);
+                        }
+                    }
+                }
             }
         }
         Command::Fmt => match riina_fmt::format_source(&source) {
