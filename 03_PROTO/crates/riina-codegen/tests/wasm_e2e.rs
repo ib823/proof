@@ -301,3 +301,48 @@ fn wasm_e2e_negative_result() {
     let wasm = compile_to_wasm("3 - 10");
     assert_valid_wasm_header(&wasm);
 }
+
+// =============================================================================
+// RECURSIVE FUNCTIONS (REQ-14 full verification)
+// =============================================================================
+
+#[test]
+fn wasm_e2e_recursive_factorial() {
+    let source = "fungsi faktorial(n: Nombor) -> Nombor kesan Bersih { kalau n <= 1 { 1 } lain { n * faktorial(n - 1) } }\nfaktorial(5)";
+    let wasm = compile_to_wasm(source);
+    assert_valid_wasm_header(&wasm);
+}
+
+#[test]
+fn wasm_e2e_recursive_fibonacci() {
+    let source = "fungsi fib(n: Nombor) -> Nombor kesan Bersih { kalau n <= 1 { n } lain { fib(n - 1) + fib(n - 2) } }\nfib(8)";
+    let wasm = compile_to_wasm(source);
+    assert_valid_wasm_header(&wasm);
+}
+
+#[test]
+fn wasm_e2e_recursive_countdown() {
+    let source = "fungsi kira(n: Nombor) -> Nombor kesan Bersih { kalau n <= 0 { 0 } lain { kira(n - 1) } }\nkira(10)";
+    let wasm = compile_to_wasm(source);
+    assert_valid_wasm_header(&wasm);
+}
+
+#[test]
+fn wasm_e2e_nested_function_calls() {
+    let source = "fungsi ganda(x: Nombor) -> Nombor kesan Bersih { x * 2 }\nfungsi tambah_satu(x: Nombor) -> Nombor kesan Bersih { x + 1 }\ntambah_satu(ganda(5))";
+    let wasm = compile_to_wasm(source);
+    assert_valid_wasm_header(&wasm);
+}
+
+#[test]
+fn wasm_e2e_multi_function_chain() {
+    let source = "fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }\nbiar a = tambah(10, 20); biar b = tambah(a, 5); b";
+    let wasm = compile_to_wasm(source);
+    assert_valid_wasm_header(&wasm);
+}
+
+#[test]
+fn wasm_e2e_classify_sulit() {
+    let wasm = compile_to_wasm("biar x = sulit 42; x");
+    assert_valid_wasm_header(&wasm);
+}
