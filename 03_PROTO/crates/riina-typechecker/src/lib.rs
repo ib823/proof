@@ -7,7 +7,7 @@
 //!
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
-use riina_types::{BinOp, Effect, Expr, Ident, Linearity, Location, SecurityLevel, StoreTy, Ty, Usage};
+use riina_types::{BinOp, Effect, Expr, Ident, Linearity, Location, SecurityLevel, SessionType, StoreTy, Ty, Usage};
 use std::collections::{HashMap, HashSet};
 
 pub mod program;
@@ -88,6 +88,19 @@ pub enum TypeError {
         var: Ident,
         linearity: Linearity,
         usage: Usage,
+        message: String,
+    },
+    /// Expected an actor type but found something else
+    ExpectedActor(Ty),
+    /// Expected a CRDT type but found something else
+    ExpectedCRDT(Ty),
+    /// CRDT merge type mismatch: left and right operands have different CRDT types
+    CRDTMismatch {
+        left: Ty,
+        right: Ty,
+    },
+    /// Choreography validation error
+    ChoreographyError {
         message: String,
     },
 }
@@ -194,6 +207,18 @@ impl std::fmt::Display for TypeError {
                     "Linearity violation for '{}': {:?} variable has {:?} usage — {}",
                     var, linearity, usage, message
                 )
+            }
+            TypeError::ExpectedActor(ty) => write!(f, "Expected actor type, found {:?}", ty),
+            TypeError::ExpectedCRDT(ty) => write!(f, "Expected CRDT type, found {:?}", ty),
+            TypeError::CRDTMismatch { left, right } => {
+                write!(
+                    f,
+                    "CRDT merge type mismatch: left {:?}, right {:?}",
+                    left, right
+                )
+            }
+            TypeError::ChoreographyError { message } => {
+                write!(f, "Choreography error: {}", message)
             }
         }
     }
@@ -311,6 +336,18 @@ impl TypeError {
                     Linearity::Unrestricted => "Unrestricted variables have no usage constraints — this error should not occur".to_string(),
                 }
             }
+            TypeError::ExpectedActor(_) => {
+                "Expected an Actor type. Use 'aktor' to declare an actor first".to_string()
+            }
+            TypeError::ExpectedCRDT(_) => {
+                "Expected a CRDT type. Use CRDT(T, Op) type annotation".to_string()
+            }
+            TypeError::CRDTMismatch { .. } => {
+                "Both operands of CRDT merge must have the same CRDT type".to_string()
+            }
+            TypeError::ChoreographyError { .. } => {
+                "Choreography blocks require at least 2 roles and a well-formed protocol".to_string()
+            }
         })
     }
 
@@ -337,6 +374,10 @@ impl TypeError {
             TypeError::SanitizerMismatch { .. } => "TAINT002",
             TypeError::ConstantTimeViolation { .. } => "CT0001",
             TypeError::LinearityViolation { .. } => "LIN0001",
+            TypeError::ExpectedActor(_) => "J0001",
+            TypeError::ExpectedCRDT(_) => "J0002",
+            TypeError::CRDTMismatch { .. } => "J0003",
+            TypeError::ChoreographyError { .. } => "J0004",
         }
     }
 
@@ -2332,6 +2373,67 @@ fn strip_constant_time(ty: &Ty) -> (&Ty, bool) {
     }
 }
 
+// ============================================================================
+// SESSION TYPE HELPERS (JALINAN Phase 6)
+// ============================================================================
+
+/// Compute the dual of a session type.
+/// Send ↔ Recv, Select ↔ Branch, End ↔ End, Rec/Var preserved.
+pub fn session_dual(s: &SessionType) -> SessionType {
+    match s {
+        SessionType::End => SessionType::End,
+        SessionType::Send(ty, cont) => {
+            SessionType::Recv(ty.clone(), Box::new(session_dual(cont)))
+        }
+        SessionType::Recv(ty, cont) => {
+            SessionType::Send(ty.clone(), Box::new(session_dual(cont)))
+        }
+        SessionType::Select(l, r) => {
+            SessionType::Branch(Box::new(session_dual(l)), Box::new(session_dual(r)))
+        }
+        SessionType::Branch(l, r) => {
+            SessionType::Select(Box::new(session_dual(l)), Box::new(session_dual(r)))
+        }
+        SessionType::Rec(x, body) => {
+            SessionType::Rec(x.clone(), Box::new(session_dual(body)))
+        }
+        SessionType::Var(x) => SessionType::Var(x.clone()),
+    }
+}
+
+/// Check if two session types are dual to each other.
+pub fn is_dual(s1: &SessionType, s2: &SessionType) -> bool {
+    session_dual(s1) == *s2
+}
+
+/// Session type subtyping.
+/// - Send: covariant in payload, covariant in continuation
+/// - Recv: contravariant in payload, covariant in continuation
+/// - Select/Branch: covariant in both branches
+pub fn session_subtype(sub: &SessionType, sup: &SessionType) -> bool {
+    match (sub, sup) {
+        (SessionType::End, SessionType::End) => true,
+        (SessionType::Send(t1, c1), SessionType::Send(t2, c2)) => {
+            types_compatible(t1, t2) && session_subtype(c1, c2)
+        }
+        (SessionType::Recv(t1, c1), SessionType::Recv(t2, c2)) => {
+            // Contravariant in payload: sup's payload must be subtype of sub's
+            types_compatible(t2, t1) && session_subtype(c1, c2)
+        }
+        (SessionType::Select(l1, r1), SessionType::Select(l2, r2)) => {
+            session_subtype(l1, l2) && session_subtype(r1, r2)
+        }
+        (SessionType::Branch(l1, r1), SessionType::Branch(l2, r2)) => {
+            session_subtype(l1, l2) && session_subtype(r1, r2)
+        }
+        (SessionType::Rec(x1, b1), SessionType::Rec(x2, b2)) => {
+            x1 == x2 && session_subtype(b1, b2)
+        }
+        (SessionType::Var(x1), SessionType::Var(x2)) => x1 == x2,
+        _ => false,
+    }
+}
+
 /// Full typechecker with Coq-matching signature.
 ///
 /// Implements `has_type Γ Σ Δ e T ε` from Typing.v.
@@ -2917,14 +3019,133 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             }
         }
 
-        // JALINAN Phase 6 variants
-        Expr::ActorDecl { .. }
-        | Expr::ChoreographyBlock { .. }
-        | Expr::Spawn(_, _)
-        | Expr::ActorSend(_, _)
-        | Expr::ActorRecv(_)
-        | Expr::CRDTMerge(_, _)
-        | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
+        // ════════════════════════════════════════════════════════════════════
+        // JALINAN Phase 6: Session Types, Actors, Choreography, CRDTs
+        // ════════════════════════════════════════════════════════════════════
+
+        Expr::ActorDecl {
+            name: _,
+            state_ty,
+            message_ty,
+            init_state,
+            handler,
+        } => {
+            // Type-check init_state: must match declared state_ty
+            let (init_ty, eff1) = type_check_full(ctx, init_state)?;
+            if !types_compatible(state_ty, &init_ty) {
+                return Err(TypeError::TypeMismatch {
+                    expected: state_ty.clone(),
+                    found: init_ty,
+                });
+            }
+            // Type-check handler: must be Fn(message_ty) -> state_ty
+            let (handler_ty, eff2) = type_check_full(ctx, handler)?;
+            match &handler_ty {
+                Ty::Fn(arg, ret, _) => {
+                    if !types_compatible(message_ty, arg) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: message_ty.clone(),
+                            found: *arg.clone(),
+                        });
+                    }
+                    if !types_compatible(state_ty, ret) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: state_ty.clone(),
+                            found: *ret.clone(),
+                        });
+                    }
+                }
+                _ => return Err(TypeError::ExpectedFunction(handler_ty)),
+            }
+            Ok((
+                Ty::Actor(Box::new(state_ty.clone()), Box::new(message_ty.clone())),
+                eff1.join(eff2),
+            ))
+        }
+
+        Expr::ChoreographyBlock {
+            name: _,
+            roles,
+            protocol,
+        } => {
+            if roles.len() < 2 {
+                return Err(TypeError::ChoreographyError {
+                    message: "Choreography requires at least 2 roles".into(),
+                });
+            }
+            Ok((
+                Ty::Choreography(roles.clone(), protocol.clone()),
+                Effect::Pure,
+            ))
+        }
+
+        Expr::Spawn(actor_expr, init_state_expr) => {
+            let (actor_ty, eff1) = type_check_full(ctx, actor_expr)?;
+            let (init_ty, eff2) = type_check_full(ctx, init_state_expr)?;
+            match &actor_ty {
+                Ty::Actor(state_ty, msg_ty) => {
+                    if !types_compatible(state_ty, &init_ty) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: *state_ty.clone(),
+                            found: init_ty,
+                        });
+                    }
+                    Ok((
+                        Ty::Actor(state_ty.clone(), msg_ty.clone()),
+                        eff1.join(eff2).join(Effect::Process),
+                    ))
+                }
+                _ => Err(TypeError::ExpectedActor(actor_ty)),
+            }
+        }
+
+        Expr::ActorSend(actor_expr, msg_expr) => {
+            let (actor_ty, eff1) = type_check_full(ctx, actor_expr)?;
+            let (msg_ty, eff2) = type_check_full(ctx, msg_expr)?;
+            match &actor_ty {
+                Ty::Actor(_, expected_msg) => {
+                    if !types_compatible(expected_msg, &msg_ty) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: *expected_msg.clone(),
+                            found: msg_ty,
+                        });
+                    }
+                    Ok((Ty::Unit, eff1.join(eff2).join(Effect::Network)))
+                }
+                _ => Err(TypeError::ExpectedActor(actor_ty)),
+            }
+        }
+
+        Expr::ActorRecv(actor_expr) => {
+            let (actor_ty, eff) = type_check_full(ctx, actor_expr)?;
+            match &actor_ty {
+                Ty::Actor(_, msg_ty) => Ok((*msg_ty.clone(), eff.join(Effect::Network))),
+                _ => Err(TypeError::ExpectedActor(actor_ty)),
+            }
+        }
+
+        Expr::CRDTMerge(left, right) => {
+            let (left_ty, eff1) = type_check_full(ctx, left)?;
+            let (right_ty, eff2) = type_check_full(ctx, right)?;
+            match (&left_ty, &right_ty) {
+                (Ty::CRDT(t1, op1), Ty::CRDT(t2, op2)) => {
+                    if !types_compatible(t1, t2) || !types_compatible(op1, op2) {
+                        return Err(TypeError::CRDTMismatch {
+                            left: left_ty,
+                            right: right_ty,
+                        });
+                    }
+                    Ok((Ty::CRDT(t1.clone(), op1.clone()), eff1.join(eff2)))
+                }
+                (Ty::CRDT(_, _), _) => Err(TypeError::ExpectedCRDT(right_ty)),
+                _ => Err(TypeError::ExpectedCRDT(left_ty)),
+            }
+        }
+
+        Expr::ContentHash(expr) => {
+            let (inner_ty, eff) = type_check_full(ctx, expr)?;
+            Ok((Ty::ContentAddressed(Box::new(inner_ty)), eff.join(Effect::Crypto)))
+        }
     }
 }
 
@@ -3272,14 +3493,131 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             }
         }
 
-        // JALINAN Phase 6 variants
-        Expr::ActorDecl { .. }
-        | Expr::ChoreographyBlock { .. }
-        | Expr::Spawn(_, _)
-        | Expr::ActorSend(_, _)
-        | Expr::ActorRecv(_)
-        | Expr::CRDTMerge(_, _)
-        | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
+        // ════════════════════════════════════════════════════════════════════
+        // JALINAN Phase 6: Session Types, Actors, Choreography, CRDTs
+        // ════════════════════════════════════════════════════════════════════
+
+        Expr::ActorDecl {
+            name: _,
+            state_ty,
+            message_ty,
+            init_state,
+            handler,
+        } => {
+            let (init_ty, eff1) = type_check(ctx, init_state)?;
+            if !types_compatible(state_ty, &init_ty) {
+                return Err(TypeError::TypeMismatch {
+                    expected: state_ty.clone(),
+                    found: init_ty,
+                });
+            }
+            let (handler_ty, eff2) = type_check(ctx, handler)?;
+            match &handler_ty {
+                Ty::Fn(arg, ret, _) => {
+                    if !types_compatible(message_ty, arg) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: message_ty.clone(),
+                            found: *arg.clone(),
+                        });
+                    }
+                    if !types_compatible(state_ty, ret) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: state_ty.clone(),
+                            found: *ret.clone(),
+                        });
+                    }
+                }
+                _ => return Err(TypeError::ExpectedFunction(handler_ty)),
+            }
+            Ok((
+                Ty::Actor(Box::new(state_ty.clone()), Box::new(message_ty.clone())),
+                eff1.join(eff2),
+            ))
+        }
+
+        Expr::ChoreographyBlock {
+            name: _,
+            roles,
+            protocol,
+        } => {
+            if roles.len() < 2 {
+                return Err(TypeError::ChoreographyError {
+                    message: "Choreography requires at least 2 roles".into(),
+                });
+            }
+            Ok((
+                Ty::Choreography(roles.clone(), protocol.clone()),
+                Effect::Pure,
+            ))
+        }
+
+        Expr::Spawn(actor_expr, init_state_expr) => {
+            let (actor_ty, eff1) = type_check(ctx, actor_expr)?;
+            let (init_ty, eff2) = type_check(ctx, init_state_expr)?;
+            match &actor_ty {
+                Ty::Actor(state_ty, msg_ty) => {
+                    if !types_compatible(state_ty, &init_ty) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: *state_ty.clone(),
+                            found: init_ty,
+                        });
+                    }
+                    Ok((
+                        Ty::Actor(state_ty.clone(), msg_ty.clone()),
+                        eff1.join(eff2).join(Effect::Process),
+                    ))
+                }
+                _ => Err(TypeError::ExpectedActor(actor_ty)),
+            }
+        }
+
+        Expr::ActorSend(actor_expr, msg_expr) => {
+            let (actor_ty, eff1) = type_check(ctx, actor_expr)?;
+            let (msg_ty, eff2) = type_check(ctx, msg_expr)?;
+            match &actor_ty {
+                Ty::Actor(_, expected_msg) => {
+                    if !types_compatible(expected_msg, &msg_ty) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: *expected_msg.clone(),
+                            found: msg_ty,
+                        });
+                    }
+                    Ok((Ty::Unit, eff1.join(eff2).join(Effect::Network)))
+                }
+                _ => Err(TypeError::ExpectedActor(actor_ty)),
+            }
+        }
+
+        Expr::ActorRecv(actor_expr) => {
+            let (actor_ty, eff) = type_check(ctx, actor_expr)?;
+            match &actor_ty {
+                Ty::Actor(_, msg_ty) => Ok((*msg_ty.clone(), eff.join(Effect::Network))),
+                _ => Err(TypeError::ExpectedActor(actor_ty)),
+            }
+        }
+
+        Expr::CRDTMerge(left, right) => {
+            let (left_ty, eff1) = type_check(ctx, left)?;
+            let (right_ty, eff2) = type_check(ctx, right)?;
+            match (&left_ty, &right_ty) {
+                (Ty::CRDT(t1, op1), Ty::CRDT(t2, op2)) => {
+                    if !types_compatible(t1, t2) || !types_compatible(op1, op2) {
+                        return Err(TypeError::CRDTMismatch {
+                            left: left_ty,
+                            right: right_ty,
+                        });
+                    }
+                    Ok((Ty::CRDT(t1.clone(), op1.clone()), eff1.join(eff2)))
+                }
+                (Ty::CRDT(_, _), _) => Err(TypeError::ExpectedCRDT(right_ty)),
+                _ => Err(TypeError::ExpectedCRDT(left_ty)),
+            }
+        }
+
+        Expr::ContentHash(expr) => {
+            let (inner_ty, eff) = type_check(ctx, expr)?;
+            Ok((Ty::ContentAddressed(Box::new(inner_ty)), eff.join(Effect::Crypto)))
+        }
     }
 }
 
