@@ -3500,3 +3500,847 @@ mod formalized_tests {
         assert_eq!(eff, Effect::Pure);
     }
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// JALINAN Phase 6: Session Types, Actors, Choreography, CRDTs — 51 Tests
+// ════════════════════════════════════════════════════════════════════════════
+
+#[cfg(test)]
+mod jalinan_phase6_tests {
+    use crate::{
+        is_dual, session_dual, session_subtype, type_check, type_check_full, types_compatible,
+        Context, TypeError, TypingContext,
+    };
+    use riina_types::{Effect, Expr, SecurityLevel, SessionType, Ty};
+
+    // ── Helper: make a handler function Fn(msg_ty) -> state_ty ──
+
+    fn make_handler(msg_ty: Ty, state_ty: Ty) -> Expr {
+        Expr::Lam(
+            "msg".into(),
+            msg_ty,
+            Box::new(match state_ty.clone() {
+                Ty::Int => Expr::Int(0),
+                Ty::Bool => Expr::Bool(false),
+                Ty::String => Expr::String("".into()),
+                _ => Expr::Unit,
+            }),
+        )
+    }
+
+    fn make_actor_decl(state_ty: Ty, message_ty: Ty, init: Expr, handler: Expr) -> Expr {
+        Expr::ActorDecl {
+            name: "myActor".into(),
+            state_ty,
+            message_ty,
+            init_state: Box::new(init),
+            handler: Box::new(handler),
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Session Duality Tests (10)
+    // ════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_session_dual_end() {
+        assert_eq!(session_dual(&SessionType::End), SessionType::End);
+    }
+
+    #[test]
+    fn test_session_dual_send_to_recv() {
+        let s = SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End));
+        let expected = SessionType::Recv(Box::new(Ty::Int), Box::new(SessionType::End));
+        assert_eq!(session_dual(&s), expected);
+    }
+
+    #[test]
+    fn test_session_dual_recv_to_send() {
+        let s = SessionType::Recv(Box::new(Ty::String), Box::new(SessionType::End));
+        let expected = SessionType::Send(Box::new(Ty::String), Box::new(SessionType::End));
+        assert_eq!(session_dual(&s), expected);
+    }
+
+    #[test]
+    fn test_session_dual_select_to_branch() {
+        let s = SessionType::Select(
+            Box::new(SessionType::End),
+            Box::new(SessionType::End),
+        );
+        let expected = SessionType::Branch(
+            Box::new(SessionType::End),
+            Box::new(SessionType::End),
+        );
+        assert_eq!(session_dual(&s), expected);
+    }
+
+    #[test]
+    fn test_session_dual_branch_to_select() {
+        let s = SessionType::Branch(
+            Box::new(SessionType::End),
+            Box::new(SessionType::End),
+        );
+        let expected = SessionType::Select(
+            Box::new(SessionType::End),
+            Box::new(SessionType::End),
+        );
+        assert_eq!(session_dual(&s), expected);
+    }
+
+    #[test]
+    fn test_session_dual_nested() {
+        // Send(Int, Recv(Bool, End)) → Recv(Int, Send(Bool, End))
+        let s = SessionType::Send(
+            Box::new(Ty::Int),
+            Box::new(SessionType::Recv(
+                Box::new(Ty::Bool),
+                Box::new(SessionType::End),
+            )),
+        );
+        let expected = SessionType::Recv(
+            Box::new(Ty::Int),
+            Box::new(SessionType::Send(
+                Box::new(Ty::Bool),
+                Box::new(SessionType::End),
+            )),
+        );
+        assert_eq!(session_dual(&s), expected);
+    }
+
+    #[test]
+    fn test_session_dual_rec() {
+        let s = SessionType::Rec(
+            "X".into(),
+            Box::new(SessionType::Send(
+                Box::new(Ty::Int),
+                Box::new(SessionType::Var("X".into())),
+            )),
+        );
+        let expected = SessionType::Rec(
+            "X".into(),
+            Box::new(SessionType::Recv(
+                Box::new(Ty::Int),
+                Box::new(SessionType::Var("X".into())),
+            )),
+        );
+        assert_eq!(session_dual(&s), expected);
+    }
+
+    #[test]
+    fn test_session_dual_var() {
+        assert_eq!(
+            session_dual(&SessionType::Var("X".into())),
+            SessionType::Var("X".into())
+        );
+    }
+
+    #[test]
+    fn test_is_dual_symmetric() {
+        let s1 = SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End));
+        let s2 = SessionType::Recv(Box::new(Ty::Int), Box::new(SessionType::End));
+        assert!(is_dual(&s1, &s2));
+        assert!(is_dual(&s2, &s1));
+    }
+
+    #[test]
+    fn test_session_dual_involution() {
+        // dual(dual(s)) == s
+        let s = SessionType::Send(
+            Box::new(Ty::Int),
+            Box::new(SessionType::Recv(
+                Box::new(Ty::Bool),
+                Box::new(SessionType::Select(
+                    Box::new(SessionType::End),
+                    Box::new(SessionType::End),
+                )),
+            )),
+        );
+        assert_eq!(session_dual(&session_dual(&s)), s);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Session Subtyping Tests (5)
+    // ════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_session_subtype_end() {
+        assert!(session_subtype(&SessionType::End, &SessionType::End));
+    }
+
+    #[test]
+    fn test_session_subtype_send_covariant() {
+        let s1 = SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End));
+        let s2 = SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End));
+        assert!(session_subtype(&s1, &s2));
+    }
+
+    #[test]
+    fn test_session_subtype_recv_contravariant() {
+        // Recv is contravariant in payload: Recv(Any, End) <: Recv(Int, End)
+        // because Any is compatible with Int
+        let s1 = SessionType::Recv(Box::new(Ty::Any), Box::new(SessionType::End));
+        let s2 = SessionType::Recv(Box::new(Ty::Int), Box::new(SessionType::End));
+        assert!(session_subtype(&s1, &s2));
+    }
+
+    #[test]
+    fn test_session_subtype_mismatch() {
+        let s1 = SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End));
+        let s2 = SessionType::Recv(Box::new(Ty::Int), Box::new(SessionType::End));
+        assert!(!session_subtype(&s1, &s2));
+    }
+
+    #[test]
+    fn test_session_subtype_var() {
+        assert!(session_subtype(
+            &SessionType::Var("X".into()),
+            &SessionType::Var("X".into())
+        ));
+        assert!(!session_subtype(
+            &SessionType::Var("X".into()),
+            &SessionType::Var("Y".into())
+        ));
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Actor Type Checking Tests (15)
+    // ════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_actor_decl_ok() {
+        let ctx = Context::new();
+        let handler = make_handler(Ty::String, Ty::Int);
+        let expr = make_actor_decl(Ty::Int, Ty::String, Expr::Int(0), handler);
+        let (ty, _eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)));
+    }
+
+    #[test]
+    fn test_actor_decl_init_state_mismatch() {
+        let ctx = Context::new();
+        let handler = make_handler(Ty::String, Ty::Int);
+        // init is Bool but state_ty is Int
+        let expr = make_actor_decl(Ty::Int, Ty::String, Expr::Bool(true), handler);
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::Int);
+                assert_eq!(found, Ty::Bool);
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_actor_decl_handler_not_function() {
+        let ctx = Context::new();
+        // handler is just an Int, not a function
+        let expr = make_actor_decl(Ty::Int, Ty::String, Expr::Int(0), Expr::Int(42));
+        match type_check(&ctx, &expr) {
+            Err(TypeError::ExpectedFunction(_)) => {}
+            other => panic!("Expected ExpectedFunction, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_actor_decl_handler_wrong_param() {
+        let ctx = Context::new();
+        // handler takes Int but message_ty is String
+        let handler = Expr::Lam("msg".into(), Ty::Int, Box::new(Expr::Int(0)));
+        let expr = make_actor_decl(Ty::Int, Ty::String, Expr::Int(0), handler);
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::String);
+                assert_eq!(found, Ty::Int);
+            }
+            other => panic!("Expected TypeMismatch for handler param, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_actor_decl_handler_wrong_return() {
+        let ctx = Context::new();
+        // handler returns Bool but state_ty is Int
+        let handler = Expr::Lam("msg".into(), Ty::String, Box::new(Expr::Bool(false)));
+        let expr = make_actor_decl(Ty::Int, Ty::String, Expr::Int(0), handler);
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::Int);
+                assert_eq!(found, Ty::Bool);
+            }
+            other => panic!("Expected TypeMismatch for handler return, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_actor_decl_full_context() {
+        let mut ctx = TypingContext::new();
+        let handler = make_handler(Ty::String, Ty::Int);
+        let expr = make_actor_decl(Ty::Int, Ty::String, Expr::Int(0), handler);
+        let (ty, _eff) = type_check_full(&mut ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)));
+    }
+
+    #[test]
+    fn test_spawn_ok() {
+        let ctx = Context::new().extend(
+            "a".into(),
+            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)),
+        );
+        let expr = Expr::Spawn(Box::new(Expr::Var("a".into())), Box::new(Expr::Int(42)));
+        let (ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)));
+        // Spawn should have Process effect
+        assert_ne!(eff, Effect::Pure);
+    }
+
+    #[test]
+    fn test_spawn_init_mismatch() {
+        let ctx = Context::new().extend(
+            "a".into(),
+            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)),
+        );
+        // init state is Bool, but actor expects Int
+        let expr = Expr::Spawn(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::Bool(true)),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::Int);
+                assert_eq!(found, Ty::Bool);
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_spawn_non_actor() {
+        let ctx = Context::new().extend("x".into(), Ty::Int);
+        let expr = Expr::Spawn(Box::new(Expr::Var("x".into())), Box::new(Expr::Int(0)));
+        match type_check(&ctx, &expr) {
+            Err(TypeError::ExpectedActor(_)) => {}
+            other => panic!("Expected ExpectedActor, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_actor_send_ok() {
+        let ctx = Context::new().extend(
+            "a".into(),
+            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)),
+        );
+        let expr = Expr::ActorSend(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::String("hello".into())),
+        );
+        let (ty, _eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Unit);
+    }
+
+    #[test]
+    fn test_actor_send_wrong_msg() {
+        let ctx = Context::new().extend(
+            "a".into(),
+            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)),
+        );
+        // send Int, but actor expects String messages
+        let expr = Expr::ActorSend(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::Int(42)),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::String);
+                assert_eq!(found, Ty::Int);
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_actor_send_non_actor() {
+        let ctx = Context::new().extend("x".into(), Ty::Int);
+        let expr = Expr::ActorSend(
+            Box::new(Expr::Var("x".into())),
+            Box::new(Expr::Int(0)),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::ExpectedActor(_)) => {}
+            other => panic!("Expected ExpectedActor, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_actor_recv_ok() {
+        let ctx = Context::new().extend(
+            "a".into(),
+            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)),
+        );
+        let expr = Expr::ActorRecv(Box::new(Expr::Var("a".into())));
+        let (ty, _eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::String);
+    }
+
+    #[test]
+    fn test_actor_recv_non_actor() {
+        let ctx = Context::new().extend("x".into(), Ty::Bool);
+        let expr = Expr::ActorRecv(Box::new(Expr::Var("x".into())));
+        match type_check(&ctx, &expr) {
+            Err(TypeError::ExpectedActor(_)) => {}
+            other => panic!("Expected ExpectedActor, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_actor_send_effect_is_network() {
+        let ctx = Context::new().extend(
+            "a".into(),
+            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)),
+        );
+        let expr = Expr::ActorSend(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::String("hi".into())),
+        );
+        let (_ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(eff, Effect::Network);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Choreography Tests (10)
+    // ════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_choreography_ok() {
+        let ctx = Context::new();
+        let expr = Expr::ChoreographyBlock {
+            name: "proto".into(),
+            roles: vec!["Alice".into(), "Bob".into()],
+            protocol: SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End)),
+        };
+        let (ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(eff, Effect::Pure);
+        match ty {
+            Ty::Choreography(roles, _) => {
+                assert_eq!(roles.len(), 2);
+            }
+            other => panic!("Expected Choreography type, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_choreography_end_protocol() {
+        let ctx = Context::new();
+        let expr = Expr::ChoreographyBlock {
+            name: "simple".into(),
+            roles: vec!["A".into(), "B".into()],
+            protocol: SessionType::End,
+        };
+        let (ty, _eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(
+            ty,
+            Ty::Choreography(vec!["A".into(), "B".into()], SessionType::End)
+        );
+    }
+
+    #[test]
+    fn test_choreography_send_recv_protocol() {
+        let ctx = Context::new();
+        let protocol = SessionType::Send(
+            Box::new(Ty::Int),
+            Box::new(SessionType::Recv(
+                Box::new(Ty::Bool),
+                Box::new(SessionType::End),
+            )),
+        );
+        let expr = Expr::ChoreographyBlock {
+            name: "ping_pong".into(),
+            roles: vec!["Client".into(), "Server".into()],
+            protocol: protocol.clone(),
+        };
+        let (ty, _eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(
+            ty,
+            Ty::Choreography(
+                vec!["Client".into(), "Server".into()],
+                protocol,
+            )
+        );
+    }
+
+    #[test]
+    fn test_choreography_too_few_roles() {
+        let ctx = Context::new();
+        let expr = Expr::ChoreographyBlock {
+            name: "bad".into(),
+            roles: vec!["Alice".into()],
+            protocol: SessionType::End,
+        };
+        match type_check(&ctx, &expr) {
+            Err(TypeError::ChoreographyError { message }) => {
+                assert!(message.contains("at least 2 roles"));
+            }
+            other => panic!("Expected ChoreographyError, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_choreography_zero_roles() {
+        let ctx = Context::new();
+        let expr = Expr::ChoreographyBlock {
+            name: "empty".into(),
+            roles: vec![],
+            protocol: SessionType::End,
+        };
+        assert!(type_check(&ctx, &expr).is_err());
+    }
+
+    #[test]
+    fn test_choreography_type_has_roles() {
+        let ctx = Context::new();
+        let expr = Expr::ChoreographyBlock {
+            name: "test".into(),
+            roles: vec!["R1".into(), "R2".into(), "R3".into()],
+            protocol: SessionType::End,
+        };
+        let (ty, _) = type_check(&ctx, &expr).unwrap();
+        match ty {
+            Ty::Choreography(roles, _) => {
+                assert_eq!(roles, vec!["R1".to_string(), "R2".to_string(), "R3".to_string()]);
+            }
+            other => panic!("Expected Choreography, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_choreography_type_has_protocol() {
+        let ctx = Context::new();
+        let protocol = SessionType::Recv(Box::new(Ty::Bool), Box::new(SessionType::End));
+        let expr = Expr::ChoreographyBlock {
+            name: "test".into(),
+            roles: vec!["A".into(), "B".into()],
+            protocol: protocol.clone(),
+        };
+        let (ty, _) = type_check(&ctx, &expr).unwrap();
+        match ty {
+            Ty::Choreography(_, p) => assert_eq!(p, protocol),
+            other => panic!("Expected Choreography, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_choreography_pure_effect() {
+        let ctx = Context::new();
+        let expr = Expr::ChoreographyBlock {
+            name: "test".into(),
+            roles: vec!["A".into(), "B".into()],
+            protocol: SessionType::End,
+        };
+        let (_, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(eff, Effect::Pure);
+    }
+
+    #[test]
+    fn test_choreography_full_context() {
+        let mut ctx = TypingContext::new();
+        let expr = Expr::ChoreographyBlock {
+            name: "test".into(),
+            roles: vec!["A".into(), "B".into()],
+            protocol: SessionType::End,
+        };
+        let (ty, eff) = type_check_full(&mut ctx, &expr).unwrap();
+        assert_eq!(eff, Effect::Pure);
+        assert!(matches!(ty, Ty::Choreography(_, _)));
+    }
+
+    #[test]
+    fn test_choreography_complex_protocol() {
+        let ctx = Context::new();
+        // Select between two branches
+        let protocol = SessionType::Select(
+            Box::new(SessionType::Send(
+                Box::new(Ty::Int),
+                Box::new(SessionType::End),
+            )),
+            Box::new(SessionType::Send(
+                Box::new(Ty::String),
+                Box::new(SessionType::End),
+            )),
+        );
+        let expr = Expr::ChoreographyBlock {
+            name: "branching".into(),
+            roles: vec!["A".into(), "B".into()],
+            protocol: protocol.clone(),
+        };
+        let (ty, _) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(
+            ty,
+            Ty::Choreography(vec!["A".into(), "B".into()], protocol)
+        );
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // CRDT Type Tests (10)
+    // ════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_crdt_merge_ok() {
+        let crdt_ty = Ty::CRDT(Box::new(Ty::Int), Box::new(Ty::Int));
+        let ctx = Context::new()
+            .extend("a".into(), crdt_ty.clone())
+            .extend("b".into(), crdt_ty.clone());
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::Var("b".into())),
+        );
+        let (ty, _eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, crdt_ty);
+    }
+
+    #[test]
+    fn test_crdt_merge_type_mismatch() {
+        let ctx = Context::new()
+            .extend("a".into(), Ty::CRDT(Box::new(Ty::Int), Box::new(Ty::Int)))
+            .extend(
+                "b".into(),
+                Ty::CRDT(Box::new(Ty::String), Box::new(Ty::Int)),
+            );
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::Var("b".into())),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::CRDTMismatch { .. }) => {}
+            other => panic!("Expected CRDTMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_crdt_merge_op_mismatch() {
+        let ctx = Context::new()
+            .extend("a".into(), Ty::CRDT(Box::new(Ty::Int), Box::new(Ty::Int)))
+            .extend(
+                "b".into(),
+                Ty::CRDT(Box::new(Ty::Int), Box::new(Ty::Bool)),
+            );
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::Var("b".into())),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::CRDTMismatch { .. }) => {}
+            other => panic!("Expected CRDTMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_crdt_merge_left_not_crdt() {
+        let ctx = Context::new()
+            .extend("a".into(), Ty::Int)
+            .extend("b".into(), Ty::CRDT(Box::new(Ty::Int), Box::new(Ty::Int)));
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::Var("b".into())),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::ExpectedCRDT(ty)) => assert_eq!(ty, Ty::Int),
+            other => panic!("Expected ExpectedCRDT, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_crdt_merge_right_not_crdt() {
+        let ctx = Context::new()
+            .extend("a".into(), Ty::CRDT(Box::new(Ty::Int), Box::new(Ty::Int)))
+            .extend("b".into(), Ty::Bool);
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::Var("b".into())),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::ExpectedCRDT(ty)) => assert_eq!(ty, Ty::Bool),
+            other => panic!("Expected ExpectedCRDT, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_crdt_merge_returns_same_type() {
+        let crdt_ty = Ty::CRDT(Box::new(Ty::String), Box::new(Ty::Bool));
+        let ctx = Context::new()
+            .extend("a".into(), crdt_ty.clone())
+            .extend("b".into(), crdt_ty.clone());
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::Var("b".into())),
+        );
+        let (ty, _) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, crdt_ty);
+    }
+
+    #[test]
+    fn test_content_hash_int() {
+        let ctx = Context::new();
+        let expr = Expr::ContentHash(Box::new(Expr::Int(42)));
+        let (ty, _eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::ContentAddressed(Box::new(Ty::Int)));
+    }
+
+    #[test]
+    fn test_content_hash_string() {
+        let ctx = Context::new();
+        let expr = Expr::ContentHash(Box::new(Expr::String("data".into())));
+        let (ty, _eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::ContentAddressed(Box::new(Ty::String)));
+    }
+
+    #[test]
+    fn test_content_hash_compound() {
+        let ctx = Context::new();
+        let expr = Expr::ContentHash(Box::new(Expr::Pair(
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Bool(true)),
+        )));
+        let (ty, _eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(
+            ty,
+            Ty::ContentAddressed(Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Bool))))
+        );
+    }
+
+    #[test]
+    fn test_content_hash_effect_is_crypto() {
+        let ctx = Context::new();
+        let expr = Expr::ContentHash(Box::new(Expr::Int(1)));
+        let (_ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(eff, Effect::Crypto);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // Integration & Error Tests (6)
+    // ════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_spawn_effect_is_process() {
+        let ctx = Context::new().extend(
+            "a".into(),
+            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)),
+        );
+        let expr = Expr::Spawn(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::Int(0)),
+        );
+        let (_ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(eff, Effect::Process);
+    }
+
+    #[test]
+    fn test_actor_recv_effect_is_network() {
+        let ctx = Context::new().extend(
+            "a".into(),
+            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::Bool)),
+        );
+        let expr = Expr::ActorRecv(Box::new(Expr::Var("a".into())));
+        let (_ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(eff, Effect::Network);
+    }
+
+    #[test]
+    fn test_content_hash_nested() {
+        let ctx = Context::new();
+        let expr = Expr::ContentHash(Box::new(Expr::ContentHash(Box::new(Expr::Int(1)))));
+        let (ty, _eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(
+            ty,
+            Ty::ContentAddressed(Box::new(Ty::ContentAddressed(Box::new(Ty::Int))))
+        );
+    }
+
+    #[test]
+    fn test_actor_full_lifecycle() {
+        // Declare actor, then test send and recv in separate contexts
+        let ctx = Context::new();
+        let handler = make_handler(Ty::String, Ty::Int);
+        let decl = make_actor_decl(Ty::Int, Ty::String, Expr::Int(0), handler);
+        let (decl_ty, _) = type_check(&ctx, &decl).unwrap();
+        assert_eq!(
+            decl_ty,
+            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String))
+        );
+
+        // Spawn: use the actor type in context
+        let ctx2 = Context::new().extend("actor".into(), decl_ty);
+        let spawn_expr = Expr::Spawn(
+            Box::new(Expr::Var("actor".into())),
+            Box::new(Expr::Int(42)),
+        );
+        let (spawn_ty, _) = type_check(&ctx2, &spawn_expr).unwrap();
+        assert_eq!(
+            spawn_ty,
+            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String))
+        );
+
+        // Send
+        let ctx3 = Context::new().extend("spawned".into(), spawn_ty);
+        let send_expr = Expr::ActorSend(
+            Box::new(Expr::Var("spawned".into())),
+            Box::new(Expr::String("msg".into())),
+        );
+        let (send_ty, _) = type_check(&ctx3, &send_expr).unwrap();
+        assert_eq!(send_ty, Ty::Unit);
+
+        // Recv
+        let recv_expr = Expr::ActorRecv(Box::new(Expr::Var("spawned".into())));
+        let (recv_ty, _) = type_check(&ctx3, &recv_expr).unwrap();
+        assert_eq!(recv_ty, Ty::String);
+    }
+
+    #[test]
+    fn test_session_dual_complex_protocol() {
+        // A complex multi-step protocol
+        let protocol = SessionType::Rec(
+            "loop".into(),
+            Box::new(SessionType::Send(
+                Box::new(Ty::Int),
+                Box::new(SessionType::Recv(
+                    Box::new(Ty::Bool),
+                    Box::new(SessionType::Select(
+                        Box::new(SessionType::Var("loop".into())),
+                        Box::new(SessionType::End),
+                    )),
+                )),
+            )),
+        );
+        let dual = session_dual(&protocol);
+        let expected_dual = SessionType::Rec(
+            "loop".into(),
+            Box::new(SessionType::Recv(
+                Box::new(Ty::Int),
+                Box::new(SessionType::Send(
+                    Box::new(Ty::Bool),
+                    Box::new(SessionType::Branch(
+                        Box::new(SessionType::Var("loop".into())),
+                        Box::new(SessionType::End),
+                    )),
+                )),
+            )),
+        );
+        assert_eq!(dual, expected_dual);
+        // Involution: dual(dual(s)) == s
+        assert_eq!(session_dual(&dual), protocol);
+        // is_dual check
+        assert!(is_dual(&protocol, &dual));
+    }
+
+    #[test]
+    fn test_crdt_merge_full_context() {
+        let mut ctx = TypingContext::new();
+        let crdt_ty = Ty::CRDT(Box::new(Ty::Int), Box::new(Ty::Int));
+        ctx.gamma.vars.insert("a".into(), crdt_ty.clone());
+        ctx.gamma.vars.insert("b".into(), crdt_ty.clone());
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Var("a".into())),
+            Box::new(Expr::Var("b".into())),
+        );
+        let (ty, _eff) = type_check_full(&mut ctx, &expr).unwrap();
+        assert_eq!(ty, crdt_ty);
+    }
+}
