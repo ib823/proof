@@ -374,3 +374,8 @@ domains/AccessControlModels.v
 domains/DataLossPrevention.v
 domains/WirelessProtocolSecurity.v
 domains/ComplianceAutomation.v
+domains/WebApplicationSecurity.v
+domains/MachineLearningSecurity.v
+domains/MobileAppSecurity.v
+domains/CriticalInfrastructure.v
+domains/PrivacyEngineering.v
