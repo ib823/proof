@@ -689,11 +689,11 @@ Proof.
   destruct (Nat.eqb (cs_id (ch_spec x)) cid) eqn:Ecid;
   destruct (child_crashed x) eqn:Ecrash; simpl in Heq.
   - subst. simpl in Hr. discriminate.
-  - subst. exists x. split. exact Hin_orig. split. exact Hr.
+  - symmetry in Heq. subst. exists x. split. exact Hin_orig. split. exact Hr.
     intro Heq. apply Nat.eqb_eq in Heq. rewrite Heq in Ecid. discriminate.
-  - subst. exists c. split. exact Hin_orig. split. exact Hr.
+  - symmetry in Heq. subst. exists x. split. exact Hin_orig. split. exact Hr.
     intro Heq. apply Nat.eqb_eq in Heq. rewrite Heq in Ecid. discriminate.
-  - subst. exists c. split. exact Hin_orig. split. exact Hr.
+  - symmetry in Heq. subst. exists x. split. exact Hin_orig. split. exact Hr.
     intro Heq. apply Nat.eqb_eq in Heq. rewrite Heq in Ecid. discriminate.
 Qed.
 

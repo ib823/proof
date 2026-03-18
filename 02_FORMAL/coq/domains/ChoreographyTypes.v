@@ -584,7 +584,7 @@ Lemma CT_076_wf_end : well_formed_global GEnd.
 Proof. simpl. exact I. Qed.
 
 Lemma CT_077_wf_var : forall n, well_formed_global (GVar n).
-Proof. simpl. exact I. Qed.
+Proof. intro. simpl. exact I. Qed.
 
 Lemma CT_078_wf_rec : forall n g, well_formed_global g -> well_formed_global (GRec n g).
 Proof. intros n g H. simpl. exact H. Qed.

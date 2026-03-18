@@ -332,7 +332,7 @@ Proof.
   - subst. reflexivity.
   - subst. unfold gc_merge, gc_bottom, pointwise_max. simpl.
     f_equal.
-    + apply Nat.max_0_l.
+    + lia.
     + fold (pointwise_max (repeat 0 (length xs)) xs).
       fold (gc_merge (gc_bottom (length xs)) xs).
       apply IH. reflexivity.
