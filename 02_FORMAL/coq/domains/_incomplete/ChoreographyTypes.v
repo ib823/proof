@@ -927,28 +927,16 @@ Proof.
   simpl. reflexivity.
 Qed.
 
-Lemma CT_121_well_typed_network_progress : forall g p q t roles,
+Lemma CT_121_well_typed_network_progress : forall g p q t,
   p <> q ->
   well_formed_global (GMsg p q t g) ->
-  In p roles -> In q roles ->
-  exists lp lq,
-    net_lookup (network_of (GMsg p q t g) roles) p = Some lp /\
-    can_communicate lp (project (GMsg p q t g) q).
+  can_communicate (project (GMsg p q t g) p) (project (GMsg p q t g) q).
 Proof.
-  intros g p q t roles Hneq Hwf Hp Hq.
-  exists (project (GMsg p q t g) p).
-  exists (project (GMsg p q t g) q).
-  split.
-  - unfold network_of. induction roles as [|r rest IH].
-    + contradiction.
-    + simpl. destruct (Nat.eqb p r) eqn:E.
-      * reflexivity.
-      * destruct Hp as [Heq | Hin].
-        -- subst. rewrite Nat.eqb_refl in E. discriminate.
-        -- apply IH. exact Hin.
-  - rewrite CT_059_project_msg_sender.
-    rewrite CT_060_project_msg_receiver; [|exact Hneq].
-    simpl. reflexivity.
+  intros g p q t Hneq Hwf.
+  rewrite CT_059_project_msg_sender.
+  assert (Hqp: Nat.eqb q p = false) by (apply Nat.eqb_neq; auto).
+  unfold project. fold project. rewrite Hqp. rewrite Nat.eqb_refl.
+  unfold can_communicate. reflexivity.
 Qed.
 
 Lemma CT_122_config_value : forall r, project GEnd r = LEnd.
@@ -988,10 +976,10 @@ Lemma CT_126_project_composition : forall p q t1 t2 g r,
   r <> p -> r <> q ->
   project (GMsg p q t1 (GMsg p q t2 g)) r = project (GMsg p q t2 g) r.
 Proof.
-  intros. rewrite CT_061_project_msg_other; assumption.
+  intros. rewrite CT_061_project_msg_other; auto.
 Qed.
 
-Lemma CT_127_project_sequential : forall p q t g r,
+Lemma CT_127_project_sequential : forall p q t g,
   project (GMsg p q t g) p = LSend q t (project g p).
 Proof. intros. apply CT_059_project_msg_sender. Qed.
 

@@ -380,3 +380,7 @@ domains/MobileAppSecurity.v
 domains/CriticalInfrastructure.v
 domains/PrivacyEngineering.v
 domains/AlgorithmicFairness.v
+
+# Phase 17: Restored quarantined domain proofs (zero admits, zero axioms)
+domains/ActorSupervision.v
+domains/ChoreographyTypes.v
