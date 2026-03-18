@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | sensor_kind         | sensor_kind            | OK     |
- * | phys_state          | phys_state             | OK     |
- * | sensor_reading      | sensor_reading         | OK     |
- * | measurement_spec    | measurement_spec       | OK     |
- * | timing_constraint   | timing_constraint      | OK     |
+ * | SensorKind         | sensor_kind            | OK     |
+ * | PhysState          | phys_state             | OK     |
+ * | SensorReading      | sensor_reading         | OK     |
+ * | MeasurementSpec    | measurement_spec       | OK     |
+ * | TimingConstraint   | timing_constraint      | OK     |
  * | reading_in_bounds  | reading_in_bounds      | OK     |
  * | reading_valid      | reading_valid          | OK     |
  * | spec_feasible      | spec_feasible          | OK     |
@@ -59,14 +59,14 @@ theory PhysicsSecurity
   imports Main CoqCompat
 begin
 
-(* sensor_kind (matches Coq: Inductive sensor_kind) *)
+(* SensorKind (matches Coq: Inductive SensorKind) *)
 datatype sensor_kind =
     Temperature
   |     Pressure
   |     Accelerometer
   |     Gyroscope
 
-(* phys_state (matches Coq: Inductive phys_state) *)
+(* PhysState (matches Coq: Inductive PhysState) *)
 datatype phys_state =
     Idle
   |     Sensing
@@ -74,22 +74,22 @@ datatype phys_state =
   |     Actuating
   |     Error
 
-(* sensor_reading (matches Coq: Record sensor_reading) *)
+(* SensorReading (matches Coq: Record SensorReading) *)
 record sensor_reading =
-  sensor_kind :: sensor_kind
+  sensor_kind :: SensorKind
   reading_value :: nat
   reading_min :: nat
   reading_max :: nat
   timestamp :: nat
   sensor_id :: nat
 
-(* measurement_spec (matches Coq: Record measurement_spec) *)
+(* MeasurementSpec (matches Coq: Record MeasurementSpec) *)
 record measurement_spec =
   meas_tolerance :: nat
   meas_samples :: nat
   meas_min_samples :: nat
 
-(* timing_constraint (matches Coq: Record timing_constraint) *)
+(* TimingConstraint (matches Coq: Record TimingConstraint) *)
 record timing_constraint =
   deadline :: nat
   wcet :: nat
@@ -102,7 +102,7 @@ definition reading_in_bounds :: "SensorReading \<Rightarrow> bool" where
 
 (* reading_valid (matches Coq: Definition reading_valid) *)
 definition reading_valid :: "SensorReading \<Rightarrow> bool" where
-  "reading_valid r \<equiv> reading_min r <= reading_value r \<and> reading_value r <= reading_max r"
+  "reading_valid r \<equiv> reading_min r <= reading_value r /\ reading_value r <= reading_max r"
 
 (* spec_feasible (matches Coq: Definition spec_feasible) *)
 definition spec_feasible :: "MeasurementSpec \<Rightarrow> bool" where
@@ -114,7 +114,7 @@ fun readings_avg :: "nat" where
 
 (* all_within_tolerance (matches Coq: Definition all_within_tolerance) *)
 definition all_within_tolerance :: "bool" where
-  "all_within_tolerance \<equiv> forallb (\<lambda>v. (ref - tol <=? v) \<and> (v <=? ref + tol)) vals"
+  "all_within_tolerance \<equiv> forallb (fun v => (ref - tol <=? v) \<and> (v <=? ref + tol)) vals"
 
 (* timing_feasible (matches Coq: Definition timing_feasible) *)
 definition timing_feasible :: "TimingConstraint \<Rightarrow> bool" where
@@ -122,7 +122,7 @@ definition timing_feasible :: "TimingConstraint \<Rightarrow> bool" where
 
 (* timing_schedulable (matches Coq: Definition timing_schedulable) *)
 definition timing_schedulable :: "TimingConstraint \<Rightarrow> bool" where
-  "timing_schedulable tc \<equiv> wcet tc + jitter_bound tc <= deadline tc \<and> deadline tc <= period tc"
+  "timing_schedulable tc \<equiv> wcet tc + jitter_bound tc <= deadline tc /\ deadline tc <= period tc"
 
 (* phys_transition (matches Coq: Definition phys_transition) *)
 fun phys_transition :: "PhysState \<Rightarrow> bool \<Rightarrow> PhysState" where
@@ -134,38 +134,38 @@ fun phys_transition :: "PhysState \<Rightarrow> bool \<Rightarrow> PhysState" wh
 
 (* is_operational (matches Coq: Definition is_operational) *)
 fun is_operational :: "PhysState \<Rightarrow> bool" where
-  "is_operational Error = False"
-|   "is_operational _ = True"
+  "is_operational Error = false"
+|   "is_operational _ = true"
 
 (* phys_run (matches Coq: Definition phys_run) *)
 fun phys_run :: "PhysState \<Rightarrow> PhysState" where
-  "phys_run _ = undefined"
+
 
 (* ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: SENSOR READING VALIDATION
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* reading_in_bounds_correct (matches Coq) *)
-lemma reading_in_bounds_correct: "\<forall>r. reading_in_bounds r = True <-> reading_valid r"
+lemma reading_in_bounds_correct: "\<forall> r, reading_in_bounds r = True <-> reading_valid r"
   by auto
 
 (* valid_reading_min_le_max (matches Coq) *)
-lemma valid_reading_min_le_max: "\<forall>r. reading_valid r \<longrightarrow> reading_min r \<le> reading_max r"
+lemma valid_reading_min_le_max: "\<forall> r, reading_valid r \<longrightarrow> reading_min r \<le> reading_max r"
   by simp
 
 (* reading_value_bounded (matches Coq) *)
-lemma reading_value_bounded: "\<forall>r. reading_valid r \<longrightarrow> reading_value r \<le> reading_max r"
+lemma reading_value_bounded: "\<forall> r, reading_valid r \<longrightarrow> reading_value r \<le> reading_max r"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: MEASUREMENT PRECISION BOUNDS
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* spec_feasible_correct (matches Coq) *)
-lemma spec_feasible_correct: "\<forall>spec. spec_feasible spec = True \<longrightarrow> 1 \<le> meas_min_samples spec \<and> meas_min_samples spec \<le> meas_samples spec"
+lemma spec_feasible_correct: "\<forall> spec, spec_feasible spec = True \<longrightarrow> 1 \<le> meas_min_samples spec \<and> meas_min_samples spec \<le> meas_samples spec"
   by auto
 
 (* spec_feasible_nonzero_samples (matches Coq) *)
-lemma spec_feasible_nonzero_samples: "\<forall>spec. spec_feasible spec = True \<longrightarrow> meas_samples spec > 0"
-  by auto
+lemma spec_feasible_nonzero_samples: "\<forall> spec, spec_feasible spec = True \<longrightarrow> meas_samples spec > 0"
+  by (cases rule: ‹_›.cases; simp)
 
 (* empty_readings_avg_zero (matches Coq) *)
 lemma empty_readings_avg_zero: "readings_avg [] = 0"
@@ -175,22 +175,22 @@ lemma empty_readings_avg_zero: "readings_avg [] = 0"
     THEOREMS: TIMING CONSTRAINT SATISFACTION
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* timing_feasible_correct (matches Coq) *)
-lemma timing_feasible_correct: "\<forall>tc. timing_feasible tc = True <-> timing_schedulable tc"
+lemma timing_feasible_correct: "\<forall> tc, timing_feasible tc = True <-> timing_schedulable tc"
   by auto
 
 (* feasible_wcet_within_deadline (matches Coq) *)
-lemma feasible_wcet_within_deadline: "\<forall>tc. timing_schedulable tc \<longrightarrow> wcet tc \<le> deadline tc"
+lemma feasible_wcet_within_deadline: "\<forall> tc, timing_schedulable tc \<longrightarrow> wcet tc \<le> deadline tc"
   by simp
 
 (* feasible_deadline_within_period (matches Coq) *)
-lemma feasible_deadline_within_period: "\<forall>tc. timing_schedulable tc \<longrightarrow> deadline tc \<le> period tc"
+lemma feasible_deadline_within_period: "\<forall> tc, timing_schedulable tc \<longrightarrow> deadline tc \<le> period tc"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: PHYSICAL STATE MACHINE CORRECTNESS
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* idle_always_transitions_to_sensing (matches Coq) *)
-lemma idle_always_transitions_to_sensing: "\<forall>ok. phys_transition Idle ok = Sensing"
+lemma idle_always_transitions_to_sensing: "\<forall> ok, phys_transition Idle ok = Sensing"
   by simp
 
 (* sensing_error_on_failure (matches Coq) *)
@@ -202,12 +202,12 @@ lemma sensing_proceeds_on_success: "phys_transition Sensing True = Processing"
   by simp
 
 (* error_recovers_to_idle (matches Coq) *)
-lemma error_recovers_to_idle: "\<forall>ok. phys_transition Error ok = Idle"
+lemma error_recovers_to_idle: "\<forall> ok, phys_transition Error ok = Idle"
   by simp
 
 (* full_cycle_returns_to_idle (matches Coq) *)
-lemma full_cycle_returns_to_idle: "\<forall>ok. phys_run Idle [True; True; True; ok] = Idle"
-  by auto
+lemma full_cycle_returns_to_idle: "\<forall> ok, phys_run Idle [True; True; True; ok] = Idle"
+  by (cases rule: ‹_›.cases; simp)
 
 (* error_state_not_operational (matches Coq) *)
 lemma error_state_not_operational: "is_operational Error = False"
@@ -218,7 +218,7 @@ lemma idle_is_operational: "is_operational Idle = True"
   by simp
 
 (* reading_bounded_values (matches Coq) *)
-lemma reading_bounded_values: "\<forall>r. reading_in_bounds r = True \<longrightarrow> reading_min r \<le> reading_value r \<and> reading_value r \<le> reading_max r"
+lemma reading_bounded_values: "\<forall> r, reading_in_bounds r = True \<longrightarrow> reading_min r \<le> reading_value r \<and> reading_value r \<le> reading_max r"
   by auto
 
 (* sensing_transitions_depend_on_input (matches Coq) *)
@@ -226,11 +226,11 @@ lemma sensing_transitions_depend_on_input: "phys_transition Sensing True \<noteq
   by auto
 
 (* actuating_transitions_to_idle (matches Coq) *)
-lemma actuating_transitions_to_idle: "\<forall>ok. phys_transition Actuating ok = Idle"
+lemma actuating_transitions_to_idle: "\<forall> ok, phys_transition Actuating ok = Idle"
   by simp
 
 (* processing_transitions_to_actuating (matches Coq) *)
-lemma processing_transitions_to_actuating: "\<forall>ok. phys_transition Processing ok = Actuating"
+lemma processing_transitions_to_actuating: "\<forall> ok, phys_transition Processing ok = Actuating"
   by simp
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -249,15 +249,15 @@ lemma sensing_is_operational: "is_operational Sensing = True"
   by simp
 
 (* error_recovery_cycle (matches Coq) *)
-lemma error_recovery_cycle: "\<forall>ok. phys_run Error [ok; True; True; True; ok] = Idle"
-  by auto
+lemma error_recovery_cycle: "\<forall> ok, phys_run Error [ok; True; True; True; ok] = Idle"
+  by (cases rule: ‹_›.cases; simp)
 
 (* reading_bounds_decomposition (matches Coq) *)
-lemma reading_bounds_decomposition: "\<forall>r. reading_in_bounds r = True \<longrightarrow> (reading_min r <=? reading_value r) = True \<and> (reading_value r <=? reading_max r) = True"
+lemma reading_bounds_decomposition: "\<forall> r, reading_in_bounds r = True \<longrightarrow> (reading_min r <=? reading_value r) = True \<and> (reading_value r <=? reading_max r) = True"
   by auto
 
 (* timing_feasible_decomposition (matches Coq) *)
-lemma timing_feasible_decomposition: "\<forall>tc. timing_feasible tc = True \<longrightarrow> (wcet tc + jitter_bound tc <=? deadline tc) = True \<and> (deadline tc <=? period tc) = True"
+lemma timing_feasible_decomposition: "\<forall> tc, timing_feasible tc = True \<longrightarrow> (wcet tc + jitter_bound tc <=? deadline tc) = True \<and> (deadline tc <=? period tc) = True"
   by auto
 
 end

@@ -12,10 +12,10 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | base_ty             | base_ty                | OK     |
- * | pred               | pred                   | OK     |
- * | ref_ty              | ref_ty                 | OK     |
- * | expr               | expr                   | OK     |
+ * | BaseTy             | base_ty                | OK     |
+ * | Pred               | pred                   | OK     |
+ * | RefTy              | ref_ty                 | OK     |
+ * | Expr               | expr                   | OK     |
  * | sat_pred           | sat_pred               | OK     |
  * | pred_implies       | pred_implies           | OK     |
  * | inhabits_refinement | inhabits_refinement    | OK     |
@@ -56,20 +56,17 @@
  *)
 
 theory RefinementTypes
-  imports Main CoqCompat Syntax Typing
+  imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym array = "nat"
-type_synonym val_env = "nat"
-(* base_ty (matches Coq: Inductive base_ty) *)
+(* BaseTy (matches Coq: Inductive BaseTy) *)
 datatype base_ty =
     TyNat
   |     TyInt
   |     TyBool
   |     TyPtr
 
-(* pred (matches Coq: Inductive pred) *)
+(* Pred (matches Coq: Inductive Pred) *)
 datatype pred =
     PTrue
   |     PFalse
@@ -84,14 +81,14 @@ datatype pred =
   |     PNot
   |     PImpl
 
-(* ref_ty (matches Coq: Inductive ref_ty) *)
+(* RefTy (matches Coq: Inductive RefTy) *)
 datatype ref_ty =
     RBase
   |     RRefine
   |     RFun
   |     RDepFun
 
-(* expr (matches Coq: Inductive expr) *)
+(* Expr (matches Coq: Inductive Expr) *)
 datatype expr =
     EVal
   |     EVar
@@ -101,7 +98,7 @@ datatype expr =
   |     EMult
 
 (* sat_pred (matches Coq: Definition sat_pred) *)
-fun sat_pred :: "nat \<Rightarrow> pred \<Rightarrow> bool" where
+fun sat_pred :: "nat \<Rightarrow> Pred \<Rightarrow> bool" where
   "sat_pred PTrue = True"
 |   "sat_pred PFalse = False"
 
@@ -110,24 +107,24 @@ definition pred_implies :: "bool" where
   "pred_implies \<equiv> forall v, sat_pred v p -> sat_pred v q"
 
 (* inhabits_refinement (matches Coq: Definition inhabits_refinement) *)
-definition inhabits_refinement :: "nat \<Rightarrow> base_ty \<Rightarrow> pred \<Rightarrow> bool" where
+definition inhabits_refinement :: "nat \<Rightarrow> BaseTy \<Rightarrow> Pred \<Rightarrow> bool" where
   "inhabits_refinement v b p \<equiv> sat_pred v p"
 
 (* lookup (matches Coq: Definition lookup) *)
 fun lookup :: "nat \<Rightarrow> TyEnv \<Rightarrow> option RefTy" where
-  "lookup _ = None"
+
 
 (* lookup_val (matches Coq: Definition lookup_val) *)
-fun lookup_val :: "nat \<Rightarrow> val_env \<Rightarrow> option nat" where
-  "lookup_val _ = None"
+fun lookup_val :: "nat \<Rightarrow> ValEnv \<Rightarrow> option nat" where
+
 
 (* eval (matches Coq: Definition eval) *)
-fun eval :: "ValEnv \<Rightarrow> expr \<Rightarrow> option nat" where
-  "eval _ = None"
+fun eval :: "ValEnv \<Rightarrow> Expr \<Rightarrow> option nat" where
+
 
 (* do_subst (matches Coq: Definition do_subst) *)
-fun do_subst :: "nat \<Rightarrow> nat \<Rightarrow> expr \<Rightarrow> Expr" where
-  "do_subst _ = undefined"
+fun do_subst :: "nat \<Rightarrow> nat \<Rightarrow> Expr \<Rightarrow> Expr" where
+
 
 (* is_null (matches Coq: Definition is_null) *)
 definition is_null :: "nat \<Rightarrow> bool" where
@@ -154,99 +151,99 @@ definition positive_pred :: "Pred" where
   "positive_pred \<equiv> PGtC 0"
 
 (* TYPE_004_01_refinement_subtyping (matches Coq) *)
-lemma TYPE_004_01_refinement_subtyping: "\<forall>(b :: base_ty) (p :: pred) (q :: pred). pred_implies p q \<longrightarrow> refty_subtype (RRefine b p) (RRefine b q)"
+lemma TYPE_004_01_refinement_subtyping: "\<forall> (b : BaseTy) (p q : Pred), pred_implies p q \<longrightarrow> refty_subtype (RRefine b p) (RRefine b q)"
   by auto
 
 (* TYPE_004_02_refinement_introduction (matches Coq) *)
-lemma TYPE_004_02_refinement_introduction: "\<forall>(v :: nat) (b :: base_ty) (p :: pred). sat_pred v p \<longrightarrow> inhabits_refinement v b p"
+lemma TYPE_004_02_refinement_introduction: "\<forall> (v : nat) (b : BaseTy) (p : Pred), sat_pred v p \<longrightarrow> inhabits_refinement v b p"
   by auto
 
 (* TYPE_004_03_refinement_elimination (matches Coq) *)
-lemma TYPE_004_03_refinement_elimination: "\<forall>(b :: base_ty) (p :: pred). refty_subtype (RRefine b p) (RBase b)"
+lemma TYPE_004_03_refinement_elimination: "\<forall> (b : BaseTy) (p : Pred), refty_subtype (RRefine b p) (RBase b)"
   by auto
 
 (* TYPE_004_04_refinement_conjunction (matches Coq) *)
-lemma TYPE_004_04_refinement_conjunction: "\<forall>(v :: nat) (b :: base_ty) (p :: pred) (q :: pred). sat_pred v (PAnd p q) <-> (sat_pred v p \<and> sat_pred v q)"
+lemma TYPE_004_04_refinement_conjunction: "\<forall> (v : nat) (b : BaseTy) (p q : Pred), sat_pred v (PAnd p q) <-> (sat_pred v p \<and> sat_pred v q)"
   by auto
 
 (* TYPE_004_05_dependent_function_refinement (matches Coq) *)
-lemma TYPE_004_05_dependent_function_refinement: "\<forall>(b1 :: base_ty) (b2 :: base_ty) (p :: pred) (q : nat \<longrightarrow> pred). (\<forall>x. sat_pred x p \<longrightarrow> \<exists>y. sat_pred y (q x)) \<longrightarrow> \<forall>(f : nat \<longrightarrow> nat) (arg :: nat). sat_pred arg p \<longrightarrow> sat_pred (f arg) (q arg) \<longrightarrow> \<exists>result. sat_pred result (q arg)"
+lemma TYPE_004_05_dependent_function_refinement: "\<forall> (b1 b2 : BaseTy) (p : Pred) (q : nat \<longrightarrow> Pred), (\<forall> x, sat_pred x p \<longrightarrow> \<exists> y, sat_pred y (q x)) \<longrightarrow> \<forall> (f : nat \<longrightarrow> nat) (arg : nat), sat_pred arg p \<longrightarrow> sat_pred (f arg) (q arg) \<longrightarrow> \<exists> result, sat_pred result (q arg)"
   by auto
 
 (* TYPE_004_06_refinement_substitution (matches Coq) *)
-lemma TYPE_004_06_refinement_substitution: "\<forall>(x :: nat) (v :: nat) (env :: TyEnv) (e :: expr) (b :: base_ty) (p :: pred). has_type ((x, RRefine b p) :: env) e (RRefine b p) \<longrightarrow> sat_pred v p \<longrightarrow> \<forall>result. eval ((x, v) :: nil) e = Some result \<longrightarrow> sat_pred result p \<longrightarrow> inhabits_refinement result b p"
+lemma TYPE_004_06_refinement_substitution: "\<forall> (x : nat) (v : nat) (env : TyEnv) (e : Expr) (b : BaseTy) (p : Pred), has_type ((x, RRefine b p) :: env) e (RRefine b p) \<longrightarrow> sat_pred v p \<longrightarrow> \<forall> result, eval ((x, v) :: nil) e = Some result \<longrightarrow> sat_pred result p \<longrightarrow> inhabits_refinement result b p"
   by auto
 
 (* TYPE_004_07_smt_decidability (matches Coq) *)
-lemma TYPE_004_07_smt_decidability: "\<forall>(v :: nat) (p :: pred). (sat_pred v p) \<or> (~ sat_pred v p)"
+lemma TYPE_004_07_smt_decidability: "\<forall> (v : nat) (p : Pred), {sat_pred v p} + {~ sat_pred v p}"
   by auto
 
 (* TYPE_004_08_bounds_checking (matches Coq) *)
-lemma TYPE_004_08_bounds_checking: "\<forall>(len :: nat) (idx :: nat). sat_pred idx (bounds_pred len) \<longrightarrow> idx < len"
+lemma TYPE_004_08_bounds_checking: "\<forall> (len : nat) (idx : nat), sat_pred idx (bounds_pred len) \<longrightarrow> idx < len"
   by auto
 
 (* TYPE_004_09_non_null_refinement (matches Coq) *)
-lemma TYPE_004_09_non_null_refinement: "\<forall>(p :: nat). sat_pred p non_null_pred \<longrightarrow> is_non_null p"
+lemma TYPE_004_09_non_null_refinement: "\<forall> (p : nat), sat_pred p non_null_pred \<longrightarrow> is_non_null p"
   by auto
 
 (* TYPE_004_10_array_bounds_safety (matches Coq) *)
-lemma TYPE_004_10_array_bounds_safety: "\<forall>(arr :: array) (i :: nat). sat_pred i (array_index_pred arr) \<longrightarrow> i < length (arr_data arr)"
-  by auto
+lemma TYPE_004_10_array_bounds_safety: "\<forall> (arr : Array) (i : nat), sat_pred i (array_index_pred arr) \<longrightarrow> i < length (arr_data arr)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* TYPE_004_11_positive_refinement (matches Coq) *)
-lemma TYPE_004_11_positive_refinement: "\<forall>(x :: nat) (y :: nat). sat_pred x positive_pred \<longrightarrow> sat_pred y positive_pred \<longrightarrow> sat_pred (x * y) positive_pred"
-  by auto
+lemma TYPE_004_11_positive_refinement: "\<forall> (x y : nat), sat_pred x positive_pred \<longrightarrow> sat_pred y positive_pred \<longrightarrow> sat_pred (x * y) positive_pred"
+  by (cases rule: ‹_›.cases; simp)
 
 (* TYPE_004_12_refinement_preservation (matches Coq) *)
-lemma TYPE_004_12_refinement_preservation: "\<forall>(e e' : expr) (b :: base_ty) (p :: pred) (n :: nat). step_clean e e' \<longrightarrow> e' = EVal n \<longrightarrow> sat_pred n p \<longrightarrow> has_type nil e' (RRefine b p)"
+lemma TYPE_004_12_refinement_preservation: "\<forall> (e e' : Expr) (b : BaseTy) (p : Pred) (n : nat), step_clean e e' \<longrightarrow> e' = EVal n \<longrightarrow> sat_pred n p \<longrightarrow> has_type nil e' (RRefine b p)"
   by auto
 
 (* TYPE_004_13_pred_true_satisfied (matches Coq) *)
-lemma TYPE_004_13_pred_true_satisfied: "\<forall>v. sat_pred v PTrue"
+lemma TYPE_004_13_pred_true_satisfied: "\<forall> v, sat_pred v PTrue"
   by auto
 
 (* TYPE_004_14_pred_false_unsatisfied (matches Coq) *)
-lemma TYPE_004_14_pred_false_unsatisfied: "\<forall>v. ~ sat_pred v PFalse"
+lemma TYPE_004_14_pred_false_unsatisfied: "\<forall> v, ~ sat_pred v PFalse"
   by auto
 
 (* TYPE_004_15_pred_and_comm (matches Coq) *)
-lemma TYPE_004_15_pred_and_comm: "\<forall>v p q. sat_pred v (PAnd p q) <-> sat_pred v (PAnd q p)"
+lemma TYPE_004_15_pred_and_comm: "\<forall> v p q, sat_pred v (PAnd p q) <-> sat_pred v (PAnd q p)"
   by auto
 
 (* TYPE_004_16_pred_or_comm (matches Coq) *)
-lemma TYPE_004_16_pred_or_comm: "\<forall>v p q. sat_pred v (POr p q) <-> sat_pred v (POr q p)"
+lemma TYPE_004_16_pred_or_comm: "\<forall> v p q, sat_pred v (POr p q) <-> sat_pred v (POr q p)"
   by auto
 
 (* TYPE_004_17_pred_implies_ptrue (matches Coq) *)
-lemma TYPE_004_17_pred_implies_ptrue: "\<forall>p. pred_implies p PTrue"
+lemma TYPE_004_17_pred_implies_ptrue: "\<forall> p, pred_implies p PTrue"
   by auto
 
 (* TYPE_004_18_pred_pfalse_implies (matches Coq) *)
-lemma TYPE_004_18_pred_pfalse_implies: "\<forall>p. pred_implies PFalse p"
+lemma TYPE_004_18_pred_pfalse_implies: "\<forall> p, pred_implies PFalse p"
   by auto
 
 (* TYPE_004_19_subtype_refl (matches Coq) *)
-lemma TYPE_004_19_subtype_refl: "\<forall>b. refty_subtype (RBase b) (RBase b)"
+lemma TYPE_004_19_subtype_refl: "\<forall> b, refty_subtype (RBase b) (RBase b)"
   by auto
 
 (* TYPE_004_20_pred_double_neg (matches Coq) *)
-lemma TYPE_004_20_pred_double_neg: "\<forall>v p. sat_pred v p \<longrightarrow> sat_pred v (PNot (PNot p))"
+lemma TYPE_004_20_pred_double_neg: "\<forall> v p, sat_pred v p \<longrightarrow> sat_pred v (PNot (PNot p))"
   by auto
 
 (* TYPE_004_21_eval_val (matches Coq) *)
-lemma TYPE_004_21_eval_val: "\<forall>env n. eval env (EVal n) = Some n"
+lemma TYPE_004_21_eval_val: "\<forall> env n, eval env (EVal n) = Some n"
   by simp
 
 (* TYPE_004_22_pred_impl_refl (matches Coq) *)
-lemma TYPE_004_22_pred_impl_refl: "\<forall>v p. sat_pred v (PImpl p p)"
+lemma TYPE_004_22_pred_impl_refl: "\<forall> v p, sat_pred v (PImpl p p)"
   by auto
 
 (* TYPE_004_23_pred_and_assoc (matches Coq) *)
-lemma TYPE_004_23_pred_and_assoc: "\<forall>v p q r. sat_pred v (PAnd (PAnd p q) r) <-> sat_pred v (PAnd p (PAnd q r))"
+lemma TYPE_004_23_pred_and_assoc: "\<forall> v p q r, sat_pred v (PAnd (PAnd p q) r) <-> sat_pred v (PAnd p (PAnd q r))"
   by auto
 
 (* TYPE_004_24_pred_or_assoc (matches Coq) *)
-lemma TYPE_004_24_pred_or_assoc: "\<forall>v p q r. sat_pred v (POr (POr p q) r) <-> sat_pred v (POr p (POr q r))"
+lemma TYPE_004_24_pred_or_assoc: "\<forall> v p q r, sat_pred v (POr (POr p q) r) <-> sat_pred v (POr p (POr q r))"
   by auto
 
 end

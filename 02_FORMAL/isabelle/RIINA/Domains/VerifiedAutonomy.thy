@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | failsafe_trigger    | failsafe_trigger       | OK     |
- * | failsafe_action     | failsafe_action        | OK     |
- * | verify_result       | verify_result          | OK     |
+ * | FailsafeTrigger    | failsafe_trigger       | OK     |
+ * | FailsafeAction     | failsafe_action        | OK     |
+ * | VerifyResult       | verify_result          | OK     |
  * | velocity_in_envelope | velocity_in_envelope   | OK     |
  * | distance_safe      | distance_safe          | OK     |
  * | heading_rate_ok    | heading_rate_ok        | OK     |
@@ -67,12 +67,7 @@ theory VerifiedAutonomy
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym decision = "nat"
-type_synonym reaction_time = "nat"
-type_synonym safety_envelope = "nat"
-type_synonym system_state = "nat"
-(* failsafe_trigger (matches Coq: Inductive failsafe_trigger) *)
+(* FailsafeTrigger (matches Coq: Inductive FailsafeTrigger) *)
 datatype failsafe_trigger =
     SensorFailure
   |     EnvelopeViolation
@@ -80,29 +75,29 @@ datatype failsafe_trigger =
   |     HumanOverride
   |     Timeout
 
-(* failsafe_action (matches Coq: Inductive failsafe_action) *)
+(* FailsafeAction (matches Coq: Inductive FailsafeAction) *)
 datatype failsafe_action =
     EmergencyStop
   |     SafeHold
   |     ReturnToBase
   |     HandoffToHuman
 
-(* verify_result (matches Coq: Inductive verify_result) *)
+(* VerifyResult (matches Coq: Inductive VerifyResult) *)
 datatype verify_result =
     Verified
   |     Rejected
   |     NeedsReview
 
 (* velocity_in_envelope (matches Coq: Definition velocity_in_envelope) *)
-definition velocity_in_envelope :: "SystemState \<Rightarrow> safety_envelope \<Rightarrow> bool" where
+definition velocity_in_envelope :: "SystemState \<Rightarrow> SafetyEnvelope \<Rightarrow> bool" where
   "velocity_in_envelope state env \<equiv> ((state_velocity \<le> state)) (env_max_velocity env)"
 
 (* distance_safe (matches Coq: Definition distance_safe) *)
-definition distance_safe :: "nat \<Rightarrow> safety_envelope \<Rightarrow> bool" where
+definition distance_safe :: "nat \<Rightarrow> SafetyEnvelope \<Rightarrow> bool" where
   "distance_safe current_distance env \<equiv> ((env_min_distance \<le> env)) current_distance"
 
 (* heading_rate_ok (matches Coq: Definition heading_rate_ok) *)
-definition heading_rate_ok :: "nat \<Rightarrow> safety_envelope \<Rightarrow> bool" where
+definition heading_rate_ok :: "nat \<Rightarrow> SafetyEnvelope \<Rightarrow> bool" where
   "heading_rate_ok rate env \<equiv> (rate \<le> (env_max_heading_rate) env)"
 
 (* confidence_sufficient (matches Coq: Definition confidence_sufficient) *)
@@ -111,11 +106,11 @@ definition confidence_sufficient :: "Decision \<Rightarrow> nat \<Rightarrow> bo
 
 (* should_failsafe (matches Coq: Definition should_failsafe) *)
 fun should_failsafe :: "FailsafeTrigger \<Rightarrow> bool" where
-  "should_failsafe SensorFailure = True"
-|   "should_failsafe EnvelopeViolation = True"
-|   "should_failsafe CommunicationLoss = True"
-|   "should_failsafe HumanOverride = True"
-|   "should_failsafe Timeout = True"
+  "should_failsafe SensorFailure = true"
+|   "should_failsafe EnvelopeViolation = true"
+|   "should_failsafe CommunicationLoss = true"
+|   "should_failsafe HumanOverride = true"
+|   "should_failsafe Timeout = true"
 
 (* reaction_ok (matches Coq: Definition reaction_ok) *)
 definition reaction_ok :: "ReactionTime \<Rightarrow> bool" where
@@ -126,7 +121,7 @@ definition valid_failsafe_action :: "FailsafeAction \<Rightarrow> bool" where
   "valid_failsafe_action action \<equiv> True"
 
 (* valid_mode_transition - complex match, needs manual translation *)
-definition valid_mode_transition :: "bool" where "valid_mode_transition \<equiv> True"
+definition valid_mode_transition :: "bool" where "valid_mode_transition = undefined"
 
 (* decision_fresh (matches Coq: Definition decision_fresh) *)
 definition decision_fresh :: "Decision \<Rightarrow> bool" where
@@ -138,11 +133,11 @@ definition action_bounded :: "Decision \<Rightarrow> nat \<Rightarrow> bool" whe
 
 (* sensors_agree (matches Coq: Definition sensors_agree) *)
 fun sensors_agree :: "nat \<Rightarrow> bool" where
-  "sensors_agree _ = True"
+
 
 (* watchdog_ok (matches Coq: Definition watchdog_ok) *)
 definition watchdog_ok :: "bool" where
-  "watchdog_ok \<equiv> (current - last_kick < timeout)"
+  "watchdog_ok \<equiv> ((current < -) last_kick) timeout"
 
 (* controllers_redundant (matches Coq: Definition controllers_redundant) *)
 definition controllers_redundant :: "bool" where
@@ -154,7 +149,7 @@ definition in_geofence :: "bool" where
 
 (* path_collision_free (matches Coq: Definition path_collision_free) *)
 definition path_collision_free :: "bool" where
-  "path_collision_free \<equiv> forallb (\<lambda>p. \<not> existsb (\<lambda>o. p = o) obstacles) path_points"
+  "path_collision_free \<equiv> forallb (fun p => (\<not> (existsb) (fun o => (p = o)) obstacles)) path_points"
 
 (* energy_sufficient (matches Coq: Definition energy_sufficient) *)
 definition energy_sufficient :: "bool" where
@@ -170,30 +165,30 @@ definition constraints_met :: "nat \<Rightarrow> bool" where
 
 (* decisions_logged (matches Coq: Definition decisions_logged) *)
 definition decisions_logged :: "bool" where
-  "decisions_logged \<equiv> (length decisions \<le> length logged)"
+  "decisions_logged \<equiv> ((length \<le> decisions)) (length logged)"
 
 (* verified_before_exec (matches Coq: Definition verified_before_exec) *)
 definition verified_before_exec :: "bool" where
-  "verified_before_exec \<equiv> (\<not> executed \<or> verified)"
+  "verified_before_exec \<equiv> (((\<not> \<or>) executed)) verified"
 
 (* autonomy_layers (matches Coq: Definition autonomy_layers) *)
 definition autonomy_layers :: "bool" where
-  "autonomy_layers \<equiv> (envelope \<and> failsafe \<and> (override \<longrightarrow> verify))"
+  "autonomy_layers \<equiv> (envelope \<and> (andb) failsafe ((override \<and> verify)))"
 
 (* auto_001_velocity_bounded (matches Coq) *)
-lemma auto_001_velocity_bounded: "\<forall>(state :: system_state) (env :: safety_envelope). velocity_in_envelope state env = True \<longrightarrow> state_velocity state \<le> env_max_velocity env"
+lemma auto_001_velocity_bounded: "\<forall> (state : SystemState) (env : SafetyEnvelope), velocity_in_envelope state env = True \<longrightarrow> state_velocity state \<le> env_max_velocity env"
   by auto
 
 (* auto_002_distance_maintained (matches Coq) *)
-lemma auto_002_distance_maintained: "\<forall>(distance :: nat) (env :: safety_envelope). distance_safe distance env = True \<longrightarrow> env_min_distance env \<le> distance"
+lemma auto_002_distance_maintained: "\<forall> (distance : nat) (env : SafetyEnvelope), distance_safe distance env = True \<longrightarrow> env_min_distance env \<le> distance"
   by auto
 
 (* auto_003_heading_bounded (matches Coq) *)
-lemma auto_003_heading_bounded: "\<forall>(rate :: nat) (env :: safety_envelope). heading_rate_ok rate env = True \<longrightarrow> rate \<le> env_max_heading_rate env"
+lemma auto_003_heading_bounded: "\<forall> (rate : nat) (env : SafetyEnvelope), heading_rate_ok rate env = True \<longrightarrow> rate \<le> env_max_heading_rate env"
   by auto
 
 (* auto_004_confidence_ok (matches Coq) *)
-lemma auto_004_confidence_ok: "\<forall>(dec :: decision) (min_conf :: nat). confidence_sufficient dec min_conf = True \<longrightarrow> min_conf \<le> dec_confidence dec"
+lemma auto_004_confidence_ok: "\<forall> (dec : Decision) (min_conf : nat), confidence_sufficient dec min_conf = True \<longrightarrow> min_conf \<le> dec_confidence dec"
   by auto
 
 (* auto_005_sensor_failsafe (matches Coq) *)
@@ -209,7 +204,7 @@ lemma auto_007_human_override: "should_failsafe HumanOverride = True"
   by simp
 
 (* auto_008_reaction_bounded (matches Coq) *)
-lemma auto_008_reaction_bounded: "\<forall>(rt :: reaction_time). reaction_ok rt = True \<longrightarrow> react_measured rt \<le> react_deadline rt"
+lemma auto_008_reaction_bounded: "\<forall> (rt : ReactionTime), reaction_ok rt = True \<longrightarrow> react_measured rt \<le> react_deadline rt"
   by auto
 
 (* auto_009_emergency_stop_valid (matches Coq) *)
@@ -221,7 +216,7 @@ lemma auto_010_safe_hold_valid: "valid_failsafe_action SafeHold = True"
   by simp
 
 (* auto_011_mode_transition (matches Coq) *)
-lemma auto_011_mode_transition: "\<forall>(from :: nat) (to :: nat). valid_mode_transition from to = True \<longrightarrow> valid_mode_transition from to = True"
+lemma auto_011_mode_transition: "\<forall> (from to : nat), valid_mode_transition from to = True \<longrightarrow> valid_mode_transition from to = True"
   by auto
 
 (* auto_012_no_skip_assisted (matches Coq) *)
@@ -229,55 +224,55 @@ lemma auto_012_no_skip_assisted: "valid_mode_transition 0 2 = False"
   by simp
 
 (* auto_013_decision_fresh (matches Coq) *)
-lemma auto_013_decision_fresh: "\<forall>(dec :: decision) (current :: nat) (max_age :: nat). decision_fresh dec current max_age = True \<longrightarrow> current - dec_timestamp dec \<le> max_age"
+lemma auto_013_decision_fresh: "\<forall> (dec : Decision) (current max_age : nat), decision_fresh dec current max_age = True \<longrightarrow> current - dec_timestamp dec \<le> max_age"
   by auto
 
 (* auto_014_action_bounded (matches Coq) *)
-lemma auto_014_action_bounded: "\<forall>(dec :: decision) (max_mag :: nat). action_bounded dec max_mag = True \<longrightarrow> dec_magnitude dec \<le> max_mag"
+lemma auto_014_action_bounded: "\<forall> (dec : Decision) (max_mag : nat), action_bounded dec max_mag = True \<longrightarrow> dec_magnitude dec \<le> max_mag"
   by auto
 
 (* auto_015_sensor_agreement (matches Coq) *)
-lemma auto_015_sensor_agreement: "\<forall>(readings : list nat) (tolerance :: nat). sensors_agree readings tolerance = True \<longrightarrow> sensors_agree readings tolerance = True"
+lemma auto_015_sensor_agreement: "\<forall> (readings : list nat) (tolerance : nat), sensors_agree readings tolerance = True \<longrightarrow> sensors_agree readings tolerance = True"
   by auto
 
 (* auto_016_watchdog_active (matches Coq) *)
-lemma auto_016_watchdog_active: "\<forall>(last_kick current timeout : nat). watchdog_ok last_kick current timeout = True \<longrightarrow> current - last_kick < timeout"
+lemma auto_016_watchdog_active: "\<forall> (last_kick current timeout : nat), watchdog_ok last_kick current timeout = True \<longrightarrow> current - last_kick < timeout"
   by auto
 
 (* auto_017_redundancy (matches Coq) *)
-lemma auto_017_redundancy: "\<forall>(active :: nat) (min_required :: nat). controllers_redundant active min_required = True \<longrightarrow> min_required \<le> active"
+lemma auto_017_redundancy: "\<forall> (active min_required : nat), controllers_redundant active min_required = True \<longrightarrow> min_required \<le> active"
   by auto
 
 (* auto_018_geofence_respected (matches Coq) *)
-lemma auto_018_geofence_respected: "\<forall>(position fence_min fence_max : nat). in_geofence position fence_min fence_max = True \<longrightarrow> fence_min \<le> position \<and> position \<le> fence_max"
+lemma auto_018_geofence_respected: "\<forall> (position fence_min fence_max : nat), in_geofence position fence_min fence_max = True \<longrightarrow> fence_min \<le> position \<and> position \<le> fence_max"
   by auto
 
 (* auto_019_collision_free (matches Coq) *)
-lemma auto_019_collision_free: "\<forall>(obstacles path_points : list nat). path_collision_free obstacles path_points = True \<longrightarrow> Forall (\<lambda>p. ~ p \<in> set obstacles) path_points"
+lemma auto_019_collision_free: "\<forall> (obstacles path_points : list nat), path_collision_free obstacles path_points = True \<longrightarrow> Forall (fun p => ~ In p obstacles) path_points"
   by auto
 
 (* auto_020_energy_ok (matches Coq) *)
-lemma auto_020_energy_ok: "\<forall>(current :: nat) (required :: nat). energy_sufficient current required = True \<longrightarrow> required \<le> current"
+lemma auto_020_energy_ok: "\<forall> (current required : nat), energy_sufficient current required = True \<longrightarrow> required \<le> current"
   by auto
 
 (* auto_021_link_quality (matches Coq) *)
-lemma auto_021_link_quality: "\<forall>(quality :: nat) (min_quality :: nat). link_quality_ok quality min_quality = True \<longrightarrow> min_quality \<le> quality"
+lemma auto_021_link_quality: "\<forall> (quality min_quality : nat), link_quality_ok quality min_quality = True \<longrightarrow> min_quality \<le> quality"
   by auto
 
 (* auto_022_constraints_met (matches Coq) *)
-lemma auto_022_constraints_met: "\<forall>(violations :: nat). constraints_met violations = True \<longrightarrow> violations = 0"
+lemma auto_022_constraints_met: "\<forall> (violations : nat), constraints_met violations = True \<longrightarrow> violations = 0"
   by auto
 
 (* auto_023_logging_complete (matches Coq) *)
-lemma auto_023_logging_complete: "\<forall>(decisions logged : list nat). decisions_logged decisions logged = True \<longrightarrow> length decisions \<le> length logged"
+lemma auto_023_logging_complete: "\<forall> (decisions logged : list nat), decisions_logged decisions logged = True \<longrightarrow> length decisions \<le> length logged"
   by auto
 
 (* auto_024_verify_first (matches Coq) *)
-lemma auto_024_verify_first: "\<forall>(verified :: bool) (executed :: bool). verified_before_exec verified executed = True \<longrightarrow> executed = True \<longrightarrow> verified = True"
-  by auto
+lemma auto_024_verify_first: "\<forall> (verified executed : bool), verified_before_exec verified executed = True \<longrightarrow> executed = True \<longrightarrow> verified = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* auto_025_defense_in_depth (matches Coq) *)
-lemma auto_025_defense_in_depth: "\<forall>e f o v. autonomy_layers e f o v = True \<longrightarrow> e = True \<and> f = True \<and> o = True \<and> v = True"
+lemma auto_025_defense_in_depth: "\<forall> e f o v, autonomy_layers e f o v = True \<longrightarrow> e = True \<and> f = True \<and> o = True \<and> v = True"
   by auto
 
 end

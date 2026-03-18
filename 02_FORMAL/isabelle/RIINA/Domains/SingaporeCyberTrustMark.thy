@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | ctm_tier            | ctm_tier               | OK     |
+ * | CTMTier            | ctm_tier               | OK     |
  * | tier_level         | tier_level             | OK     |
  * | tier_threshold     | tier_threshold         | OK     |
  * | governance_meets_tier | governance_meets_tier  | OK     |
@@ -61,10 +61,7 @@ theory SingaporeCyberTrustMark
   imports Main
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym cssp_entity = "nat"
-type_synonym ctm_assessment = "nat"
-(* ctm_tier (matches Coq: Inductive ctm_tier) *)
+(* CTMTier (matches Coq: Inductive CTMTier) *)
 datatype ctm_tier =
     Essential
   |     Intermediate
@@ -86,23 +83,23 @@ fun tier_threshold :: "CTMTier \<Rightarrow> nat" where
 |   "tier_threshold Expert = 90"
 
 (* governance_meets_tier (matches Coq: Definition governance_meets_tier) *)
-definition governance_meets_tier :: "CTMAssessment \<Rightarrow> ctm_tier \<Rightarrow> bool" where
+definition governance_meets_tier :: "CTMAssessment \<Rightarrow> CTMTier \<Rightarrow> bool" where
   "governance_meets_tier a t \<equiv> tier_threshold t <= ctm_governance a"
 
 (* protection_meets_tier (matches Coq: Definition protection_meets_tier) *)
-definition protection_meets_tier :: "CTMAssessment \<Rightarrow> ctm_tier \<Rightarrow> bool" where
+definition protection_meets_tier :: "CTMAssessment \<Rightarrow> CTMTier \<Rightarrow> bool" where
   "protection_meets_tier a t \<equiv> tier_threshold t <= ctm_protection a"
 
 (* resilience_meets_tier (matches Coq: Definition resilience_meets_tier) *)
-definition resilience_meets_tier :: "CTMAssessment \<Rightarrow> ctm_tier \<Rightarrow> bool" where
+definition resilience_meets_tier :: "CTMAssessment \<Rightarrow> CTMTier \<Rightarrow> bool" where
   "resilience_meets_tier a t \<equiv> tier_threshold t <= ctm_resilience a"
 
 (* assurance_meets_tier (matches Coq: Definition assurance_meets_tier) *)
-definition assurance_meets_tier :: "CTMAssessment \<Rightarrow> ctm_tier \<Rightarrow> bool" where
+definition assurance_meets_tier :: "CTMAssessment \<Rightarrow> CTMTier \<Rightarrow> bool" where
   "assurance_meets_tier a t \<equiv> tier_threshold t <= ctm_assurance a"
 
 (* education_meets_tier (matches Coq: Definition education_meets_tier) *)
-definition education_meets_tier :: "CTMAssessment \<Rightarrow> ctm_tier \<Rightarrow> bool" where
+definition education_meets_tier :: "CTMAssessment \<Rightarrow> CTMTier \<Rightarrow> bool" where
   "education_meets_tier a t \<equiv> tier_threshold t <= ctm_education a"
 
 (* ai_security_assessed (matches Coq: Definition ai_security_assessed) *)
@@ -110,11 +107,11 @@ definition ai_security_assessed :: "CTMAssessment \<Rightarrow> bool" where
   "ai_security_assessed a \<equiv> ctm_ai_security a = True"
 
 (* ctm_certified_at_tier (matches Coq: Definition ctm_certified_at_tier) *)
-definition ctm_certified_at_tier :: "CTMAssessment \<Rightarrow> ctm_tier \<Rightarrow> bool" where
-  "ctm_certified_at_tier a t \<equiv> governance_meets_tier a t \<and>
-  protection_meets_tier a t \<and>
-  resilience_meets_tier a t \<and>
-  assurance_meets_tier a t \<and>
+definition ctm_certified_at_tier :: "CTMAssessment \<Rightarrow> CTMTier \<Rightarrow> bool" where
+  "ctm_certified_at_tier a t \<equiv> governance_meets_tier a t /\
+  protection_meets_tier a t /\
+  resilience_meets_tier a t /\
+  assurance_meets_tier a t /\
   education_meets_tier a t"
 
 (* all_ctm_tiers (matches Coq: Definition all_ctm_tiers) *)
@@ -131,57 +128,57 @@ definition ot_security_assessed :: "CTMAssessment \<Rightarrow> bool" where
 
 (* ctm_2025_extensions_compliant (matches Coq: Definition ctm_2025_extensions_compliant) *)
 definition ctm_2025_extensions_compliant :: "CTMAssessment \<Rightarrow> bool" where
-  "ctm_2025_extensions_compliant a \<equiv> ai_security_assessed a \<and>
-  cloud_security_assessed a \<and>
+  "ctm_2025_extensions_compliant a \<equiv> ai_security_assessed a /\
+  cloud_security_assessed a /\
   ot_security_assessed a"
 
 (* all_domains_above (matches Coq: Definition all_domains_above) *)
 definition all_domains_above :: "CTMAssessment \<Rightarrow> nat \<Rightarrow> bool" where
-  "all_domains_above a min \<equiv> ctm_governance a >= min \<and>
-  ctm_protection a >= min \<and>
-  ctm_resilience a >= min \<and>
-  ctm_assurance a >= min \<and>
+  "all_domains_above a min \<equiv> ctm_governance a >= min /\
+  ctm_protection a >= min /\
+  ctm_resilience a >= min /\
+  ctm_assurance a >= min /\
   ctm_education a >= min"
 
 (* cssp_ctm_requirement (matches Coq: Definition cssp_ctm_requirement) *)
 definition cssp_ctm_requirement :: "CSSPEntity \<Rightarrow> bool" where
-  "cssp_ctm_requirement e \<equiv> cssp_ctm_certified e = True \<and>
+  "cssp_ctm_requirement e \<equiv> cssp_ctm_certified e = True /\
   cssp_license_valid e = True"
 
 (* ctm_governance_check (matches Coq) *)
-lemma ctm_governance_check: "\<forall>(a :: ctm_assessment) (t :: ctm_tier). tier_threshold t \<le> ctm_governance a \<longrightarrow> governance_meets_tier a t"
+lemma ctm_governance_check: "\<forall> (a : CTMAssessment) (t : CTMTier), tier_threshold t \<le> ctm_governance a \<longrightarrow> governance_meets_tier a t"
   by auto
 
 (* ctm_protection_check (matches Coq) *)
-lemma ctm_protection_check: "\<forall>(a :: ctm_assessment) (t :: ctm_tier). tier_threshold t \<le> ctm_protection a \<longrightarrow> protection_meets_tier a t"
+lemma ctm_protection_check: "\<forall> (a : CTMAssessment) (t : CTMTier), tier_threshold t \<le> ctm_protection a \<longrightarrow> protection_meets_tier a t"
   by auto
 
 (* ctm_resilience_check (matches Coq) *)
-lemma ctm_resilience_check: "\<forall>(a :: ctm_assessment) (t :: ctm_tier). tier_threshold t \<le> ctm_resilience a \<longrightarrow> resilience_meets_tier a t"
+lemma ctm_resilience_check: "\<forall> (a : CTMAssessment) (t : CTMTier), tier_threshold t \<le> ctm_resilience a \<longrightarrow> resilience_meets_tier a t"
   by auto
 
 (* ctm_assurance_check (matches Coq) *)
-lemma ctm_assurance_check: "\<forall>(a :: ctm_assessment) (t :: ctm_tier). tier_threshold t \<le> ctm_assurance a \<longrightarrow> assurance_meets_tier a t"
+lemma ctm_assurance_check: "\<forall> (a : CTMAssessment) (t : CTMTier), tier_threshold t \<le> ctm_assurance a \<longrightarrow> assurance_meets_tier a t"
   by auto
 
 (* ctm_education_check (matches Coq) *)
-lemma ctm_education_check: "\<forall>(a :: ctm_assessment) (t :: ctm_tier). tier_threshold t \<le> ctm_education a \<longrightarrow> education_meets_tier a t"
+lemma ctm_education_check: "\<forall> (a : CTMAssessment) (t : CTMTier), tier_threshold t \<le> ctm_education a \<longrightarrow> education_meets_tier a t"
   by auto
 
 (* ctm_ai_check (matches Coq) *)
-lemma ctm_ai_check: "\<forall>(a :: ctm_assessment). ctm_ai_security a = True \<longrightarrow> ai_security_assessed a"
+lemma ctm_ai_check: "\<forall> (a : CTMAssessment), ctm_ai_security a = True \<longrightarrow> ai_security_assessed a"
   by auto
 
 (* ctm_certification (matches Coq) *)
-lemma ctm_certification: "\<forall>(a :: ctm_assessment) (t :: ctm_tier). governance_meets_tier a t \<longrightarrow> protection_meets_tier a t \<longrightarrow> resilience_meets_tier a t \<longrightarrow> assurance_meets_tier a t \<longrightarrow> education_meets_tier a t \<longrightarrow> ctm_certified_at_tier a t"
+lemma ctm_certification: "\<forall> (a : CTMAssessment) (t : CTMTier), governance_meets_tier a t \<longrightarrow> protection_meets_tier a t \<longrightarrow> resilience_meets_tier a t \<longrightarrow> assurance_meets_tier a t \<longrightarrow> education_meets_tier a t \<longrightarrow> ctm_certified_at_tier a t"
   by auto
 
 (* tier_monotonicity (matches Coq) *)
-lemma tier_monotonicity: "\<forall>(t1 :: ctm_tier) (t2 :: ctm_tier). tier_level t1 \<le> tier_level t2 \<longrightarrow> tier_threshold t1 \<le> tier_threshold t2"
-  by auto
+lemma tier_monotonicity: "\<forall> (t1 t2 : CTMTier), tier_level t1 \<le> tier_level t2 \<longrightarrow> tier_threshold t1 \<le> tier_threshold t2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* ctm_tier_coverage (matches Coq) *)
-lemma ctm_tier_coverage: "\<forall>(t :: ctm_tier). t \<in> set all_ctm_tiers"
+lemma ctm_tier_coverage: "\<forall> (t : CTMTier), In t all_ctm_tiers"
   by auto
 
 (* essential_is_tier_1 (matches Coq) *)
@@ -193,12 +190,12 @@ lemma expert_is_tier_4: "tier_level Expert = 4"
   by simp
 
 (* tier_level_positive (matches Coq) *)
-lemma tier_level_positive: "\<forall>(t :: ctm_tier). tier_level t \<ge> 1"
-  by auto
+lemma tier_level_positive: "\<forall> (t : CTMTier), tier_level t \<ge> 1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* tier_level_bounded (matches Coq) *)
-lemma tier_level_bounded: "\<forall>(t :: ctm_tier). tier_level t \<le> 4"
-  by auto
+lemma tier_level_bounded: "\<forall> (t : CTMTier), tier_level t \<le> 4"
+  by (cases rule: ‹_›.cases; simp)
 
 (* essential_threshold_30 (matches Coq) *)
 lemma essential_threshold_30: "tier_threshold Essential = 30"
@@ -209,51 +206,51 @@ lemma expert_threshold_90: "tier_threshold Expert = 90"
   by simp
 
 (* threshold_positive (matches Coq) *)
-lemma threshold_positive: "\<forall>(t :: ctm_tier). tier_threshold t \<ge> 30"
-  by auto
+lemma threshold_positive: "\<forall> (t : CTMTier), tier_threshold t \<ge> 30"
+  by (cases rule: ‹_›.cases; simp)
 
 (* threshold_bounded (matches Coq) *)
-lemma threshold_bounded: "\<forall>(t :: ctm_tier). tier_threshold t \<le> 90"
-  by auto
+lemma threshold_bounded: "\<forall> (t : CTMTier), tier_threshold t \<le> 90"
+  by (cases rule: ‹_›.cases; simp)
 
 (* certified_expert_implies_advanced (matches Coq) *)
-lemma certified_expert_implies_advanced: "\<forall>(a :: ctm_assessment). ctm_certified_at_tier a Expert \<longrightarrow> ctm_certified_at_tier a Advanced"
+lemma certified_expert_implies_advanced: "\<forall> (a : CTMAssessment), ctm_certified_at_tier a Expert \<longrightarrow> ctm_certified_at_tier a Advanced"
   by simp
 
 (* certified_advanced_implies_intermediate (matches Coq) *)
-lemma certified_advanced_implies_intermediate: "\<forall>(a :: ctm_assessment). ctm_certified_at_tier a Advanced \<longrightarrow> ctm_certified_at_tier a Intermediate"
+lemma certified_advanced_implies_intermediate: "\<forall> (a : CTMAssessment), ctm_certified_at_tier a Advanced \<longrightarrow> ctm_certified_at_tier a Intermediate"
   by simp
 
 (* certified_intermediate_implies_essential (matches Coq) *)
-lemma certified_intermediate_implies_essential: "\<forall>(a :: ctm_assessment). ctm_certified_at_tier a Intermediate \<longrightarrow> ctm_certified_at_tier a Essential"
+lemma certified_intermediate_implies_essential: "\<forall> (a : CTMAssessment), ctm_certified_at_tier a Intermediate \<longrightarrow> ctm_certified_at_tier a Essential"
   by simp
 
 (* ctm_cloud_check (matches Coq) *)
-lemma ctm_cloud_check: "\<forall>(a :: ctm_assessment). ctm_cloud_security a = True \<longrightarrow> cloud_security_assessed a"
+lemma ctm_cloud_check: "\<forall> (a : CTMAssessment), ctm_cloud_security a = True \<longrightarrow> cloud_security_assessed a"
   by auto
 
 (* ctm_ot_check (matches Coq) *)
-lemma ctm_ot_check: "\<forall>(a :: ctm_assessment). ctm_ot_security a = True \<longrightarrow> ot_security_assessed a"
+lemma ctm_ot_check: "\<forall> (a : CTMAssessment), ctm_ot_security a = True \<longrightarrow> ot_security_assessed a"
   by auto
 
 (* ctm_2025_full (matches Coq) *)
-lemma ctm_2025_full: "\<forall>(a :: ctm_assessment). ctm_ai_security a = True \<longrightarrow> ctm_cloud_security a = True \<longrightarrow> ctm_ot_security a = True \<longrightarrow> ctm_2025_extensions_compliant a"
+lemma ctm_2025_full: "\<forall> (a : CTMAssessment), ctm_ai_security a = True \<longrightarrow> ctm_cloud_security a = True \<longrightarrow> ctm_ot_security a = True \<longrightarrow> ctm_2025_extensions_compliant a"
   by simp
 
 (* all_domains_above_implies_tier (matches Coq) *)
-lemma all_domains_above_implies_tier: "\<forall>(a :: ctm_assessment) (t :: ctm_tier). all_domains_above a (tier_threshold t) \<longrightarrow> ctm_certified_at_tier a t"
+lemma all_domains_above_implies_tier: "\<forall> (a : CTMAssessment) (t : CTMTier), all_domains_above a (tier_threshold t) \<longrightarrow> ctm_certified_at_tier a t"
   by simp
 
 (* cssp_must_have_ctm (matches Coq) *)
-lemma cssp_must_have_ctm: "\<forall>(e :: cssp_entity). cssp_ctm_certified e = True \<longrightarrow> cssp_license_valid e = True \<longrightarrow> cssp_ctm_requirement e"
+lemma cssp_must_have_ctm: "\<forall> (e : CSSPEntity), cssp_ctm_certified e = True \<longrightarrow> cssp_license_valid e = True \<longrightarrow> cssp_ctm_requirement e"
   by auto
 
 (* cssp_without_ctm_non_compliant (matches Coq) *)
-lemma cssp_without_ctm_non_compliant: "\<forall>(e :: cssp_entity). cssp_ctm_certified e = False \<longrightarrow> ~ cssp_ctm_requirement e"
+lemma cssp_without_ctm_non_compliant: "\<forall> (e : CSSPEntity), cssp_ctm_certified e = False \<longrightarrow> ~ cssp_ctm_requirement e"
   by auto
 
 (* expert_requires_90_all_domains (matches Coq) *)
-lemma expert_requires_90_all_domains: "\<forall>(a :: ctm_assessment). ctm_certified_at_tier a Expert \<longrightarrow> ctm_governance a \<ge> 90 \<and> ctm_protection a \<ge> 90 \<and> ctm_resilience a \<ge> 90 \<and> ctm_assurance a \<ge> 90 \<and> ctm_education a \<ge> 90"
+lemma expert_requires_90_all_domains: "\<forall> (a : CTMAssessment), ctm_certified_at_tier a Expert \<longrightarrow> ctm_governance a \<ge> 90 \<and> ctm_protection a \<ge> 90 \<and> ctm_resilience a \<ge> 90 \<and> ctm_assurance a \<ge> 90 \<and> ctm_education a \<ge> 90"
   by simp
 
 end

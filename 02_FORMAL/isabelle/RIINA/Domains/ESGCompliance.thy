@@ -12,34 +12,34 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | emission_scope      | emission_scope         | OK     |
- * | water_source        | water_source           | OK     |
- * | emission_source     | emission_source        | OK     |
- * | water_withdrawal    | water_withdrawal       | OK     |
- * | waste_record        | waste_record           | OK     |
- * | biodiversity_assessment | biodiversity_assessment | OK     |
- * | circular_economy_metric | circular_economy_metric | OK     |
- * | pollution_record    | pollution_record       | OK     |
- * | renewable_energy_certificate | renewable_energy_certificate | OK     |
- * | employee           | employee               | OK     |
- * | safety_incident     | safety_incident        | OK     |
- * | employment_decision | employment_decision    | OK     |
- * | pay_gap_record       | pay_gap_record         | OK     |
- * | hrdd_process        | hrdd_process           | OK     |
- * | supplier           | supplier               | OK     |
- * | indigenous_community | indigenous_community   | OK     |
- * | grievance_mechanism | grievance_mechanism    | OK     |
- * | stakeholder_engagement | stakeholder_engagement | OK     |
- * | director           | director               | OK     |
- * | board              | board                  | OK     |
- * | executive_comp      | executive_comp         | OK     |
- * | anti_corruption_policy | anti_corruption_policy | OK     |
- * | whistleblower_policy | whistleblower_policy   | OK     |
- * | conflict_of_interest | conflict_of_interest   | OK     |
- * | related_party_transaction | related_party_transaction | OK     |
- * | disclosure         | disclosure             | OK     |
- * | science_based_target | science_based_target   | OK     |
- * | esg_compliant_system | esg_compliant_system   | OK     |
+ * | EmissionScope      | emission_scope         | OK     |
+ * | WaterSource        | water_source           | OK     |
+ * | EmissionSource     | emission_source        | OK     |
+ * | WaterWithdrawal    | water_withdrawal       | OK     |
+ * | WasteRecord        | waste_record           | OK     |
+ * | BiodiversityAssessment | biodiversity_assessment | OK     |
+ * | CircularEconomyMetric | circular_economy_metric | OK     |
+ * | PollutionRecord    | pollution_record       | OK     |
+ * | RenewableEnergyCertificate | renewable_energy_certificate | OK     |
+ * | Employee           | employee               | OK     |
+ * | SafetyIncident     | safety_incident        | OK     |
+ * | EmploymentDecision | employment_decision    | OK     |
+ * | PayGapRecord       | pay_gap_record         | OK     |
+ * | HRDDProcess        | hrdd_process           | OK     |
+ * | Supplier           | supplier               | OK     |
+ * | IndigenousCommunity | indigenous_community   | OK     |
+ * | GrievanceMechanism | grievance_mechanism    | OK     |
+ * | StakeholderEngagement | stakeholder_engagement | OK     |
+ * | Director           | director               | OK     |
+ * | Board              | board                  | OK     |
+ * | ExecutiveComp      | executive_comp         | OK     |
+ * | AntiCorruptionPolicy | anti_corruption_policy | OK     |
+ * | WhistleblowerPolicy | whistleblower_policy   | OK     |
+ * | ConflictOfInterest | conflict_of_interest   | OK     |
+ * | RelatedPartyTransaction | related_party_transaction | OK     |
+ * | Disclosure         | disclosure             | OK     |
+ * | ScienceBasedTarget | science_based_target   | OK     |
+ * | ESGCompliantSystem | esg_compliant_system   | OK     |
  * | emission           | emission               | OK     |
  * | same_emission      | same_emission          | OK     |
  * | valid_scope3_category | valid_scope3_category  | OK     |
@@ -107,16 +107,14 @@ theory ESGCompliance
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym z = "nat"
-(* emission_scope (matches Coq: Inductive emission_scope) *)
+(* EmissionScope (matches Coq: Inductive EmissionScope) *)
 datatype emission_scope =
     Scope1
   |     Scope2_Location
   |     Scope2_Market
   |     Scope3
 
-(* water_source (matches Coq: Inductive water_source) *)
+(* WaterSource (matches Coq: Inductive WaterSource) *)
 datatype water_source =
     SurfaceWater
   |     Groundwater
@@ -124,67 +122,67 @@ datatype water_source =
   |     Municipal
   |     Rainwater
 
-(* emission_source (matches Coq: Record emission_source) *)
+(* EmissionSource (matches Coq: Record EmissionSource) *)
 record emission_source =
   source_id :: nat
-  source_type :: emission_scope
-  quantity :: z
-  emission_factor :: z
+  source_type :: EmissionScope
+  quantity :: Z
+  emission_factor :: Z
   is_tracked :: bool
   is_measured :: bool
   is_reported :: bool
   owned_or_controlled_flag :: bool
   emission_hash :: nat
 
-(* water_withdrawal (matches Coq: Record water_withdrawal) *)
+(* WaterWithdrawal (matches Coq: Record WaterWithdrawal) *)
 record water_withdrawal =
   withdrawal_id :: nat
-  water_source :: water_source
-  volume :: z
+  water_source :: WaterSource
+  volume :: Z
   quality :: nat
   source_documented :: bool
 
-(* waste_record (matches Coq: Record waste_record) *)
+(* WasteRecord (matches Coq: Record WasteRecord) *)
 record waste_record =
   waste_id :: nat
-  waste_generated :: z
-  waste_diverted :: z
-  waste_landfilled :: z
+  waste_generated :: Z
+  waste_diverted :: Z
+  waste_landfilled :: Z
   waste_documented :: bool
 
-(* biodiversity_assessment (matches Coq: Record biodiversity_assessment) *)
+(* BiodiversityAssessment (matches Coq: Record BiodiversityAssessment) *)
 record biodiversity_assessment =
   bio_id :: nat
   dependencies_mapped :: bool
   impacts_assessed :: bool
   mitigation_planned :: bool
 
-(* circular_economy_metric (matches Coq: Record circular_economy_metric) *)
+(* CircularEconomyMetric (matches Coq: Record CircularEconomyMetric) *)
 record circular_economy_metric =
   circular_id :: nat
-  recycled_input :: z
-  total_input :: z
+  recycled_input :: Z
+  total_input :: Z
   measurement_verified :: bool
 
-(* pollution_record (matches Coq: Record pollution_record) *)
+(* PollutionRecord (matches Coq: Record PollutionRecord) *)
 record pollution_record =
   pollution_id :: nat
-  emission_level :: z
-  regulatory_limit :: z
+  emission_level :: Z
+  regulatory_limit :: Z
   permit_valid :: bool
 
-(* renewable_energy_certificate (matches Coq: Record renewable_energy_certificate) *)
+(* RenewableEnergyCertificate (matches Coq: Record RenewableEnergyCertificate) *)
 record renewable_energy_certificate =
   rec_id :: nat
-  energy_amount :: z
+  energy_amount :: Z
   certificate_valid :: bool
   unique_claim :: bool
 
-(* employee (matches Coq: Record employee) *)
+(* Employee (matches Coq: Record Employee) *)
 record employee =
   employee_id :: nat
-  compensation :: z
-  living_wage_threshold :: z
+  compensation :: Z
+  living_wage_threshold :: Z
   age :: nat
   voluntary_employment :: bool
   no_debt_bondage :: bool
@@ -192,7 +190,7 @@ record employee =
   employed_flag :: bool
   gender :: nat
 
-(* safety_incident (matches Coq: Record safety_incident) *)
+(* SafetyIncident (matches Coq: Record SafetyIncident) *)
 record safety_incident =
   incident_id :: nat
   recorded :: bool
@@ -200,22 +198,22 @@ record safety_incident =
   corrective_action :: bool
   root_cause_documented :: bool
 
-(* employment_decision (matches Coq: Record employment_decision) *)
+(* EmploymentDecision (matches Coq: Record EmploymentDecision) *)
 record employment_decision =
   decision_id :: nat
   merit_based :: bool
   documented_criteria :: bool
   no_protected_class_bias :: bool
 
-(* pay_gap_record (matches Coq: Record pay_gap_record) *)
+(* PayGapRecord (matches Coq: Record PayGapRecord) *)
 record pay_gap_record =
   paygap_id :: nat
-  male_median :: z
-  female_median :: z
+  male_median :: Z
+  female_median :: Z
   gap_calculated :: bool
   gap_disclosed :: bool
 
-(* hrdd_process (matches Coq: Record hrdd_process) *)
+(* HRDDProcess (matches Coq: Record HRDDProcess) *)
 record hrdd_process =
   hrdd_id :: nat
   policy_adopted :: bool
@@ -223,7 +221,7 @@ record hrdd_process =
   mitigation_implemented :: bool
   monitoring_active :: bool
 
-(* supplier (matches Coq: Record supplier) *)
+(* Supplier (matches Coq: Record Supplier) *)
 record supplier =
   supplier_id :: nat
   risk_assessed :: bool
@@ -231,46 +229,46 @@ record supplier =
   current_year :: nat
   high_risk :: bool
 
-(* indigenous_community (matches Coq: Record indigenous_community) *)
+(* IndigenousCommunity (matches Coq: Record IndigenousCommunity) *)
 record indigenous_community =
   community_id :: nat
   fpic_obtained :: bool
   consent_documented :: bool
   ongoing_engagement :: bool
 
-(* grievance_mechanism (matches Coq: Record grievance_mechanism) *)
+(* GrievanceMechanism (matches Coq: Record GrievanceMechanism) *)
 record grievance_mechanism =
   grievance_id :: nat
   anonymous_reporting :: bool
   accessible :: bool
   response_timeline :: nat
 
-(* stakeholder_engagement (matches Coq: Record stakeholder_engagement) *)
+(* StakeholderEngagement (matches Coq: Record StakeholderEngagement) *)
 record stakeholder_engagement =
   engagement_id :: nat
   communities_identified :: bool
   consultation_done :: bool
   feedback_incorporated :: bool
 
-(* director (matches Coq: Record director) *)
+(* Director (matches Coq: Record Director) *)
 record director =
   director_id :: nat
   is_independent :: bool
 
-(* board (matches Coq: Record board) *)
+(* Board (matches Coq: Record Board) *)
 record board =
   board_id :: nat
   directors :: 'a list
   board_valid :: bool
 
-(* executive_comp (matches Coq: Record executive_comp) *)
+(* ExecutiveComp (matches Coq: Record ExecutiveComp) *)
 record executive_comp =
   exec_id :: nat
-  total_comp :: z
-  esg_linked_portion :: z
+  total_comp :: Z
+  esg_linked_portion :: Z
   esg_metrics_defined :: bool
 
-(* anti_corruption_policy (matches Coq: Record anti_corruption_policy) *)
+(* AntiCorruptionPolicy (matches Coq: Record AntiCorruptionPolicy) *)
 record anti_corruption_policy =
   ac_id :: nat
   fcpa_compliant :: bool
@@ -278,28 +276,28 @@ record anti_corruption_policy =
   training_provided :: bool
   controls_implemented :: bool
 
-(* whistleblower_policy (matches Coq: Record whistleblower_policy) *)
+(* WhistleblowerPolicy (matches Coq: Record WhistleblowerPolicy) *)
 record whistleblower_policy =
   wb_id :: nat
   no_retaliation_policy :: bool
   protection_enforced :: bool
   anonymous_channel :: bool
 
-(* conflict_of_interest (matches Coq: Record conflict_of_interest) *)
+(* ConflictOfInterest (matches Coq: Record ConflictOfInterest) *)
 record conflict_of_interest =
   coi_id :: nat
   policy_exists :: bool
   disclosure_required :: bool
   recusal_enforced :: bool
 
-(* related_party_transaction (matches Coq: Record related_party_transaction) *)
+(* RelatedPartyTransaction (matches Coq: Record RelatedPartyTransaction) *)
 record related_party_transaction =
   rpt_id :: nat
   disclosed :: bool
   board_approved :: bool
   arms_length :: bool
 
-(* disclosure (matches Coq: Record disclosure) *)
+(* Disclosure (matches Coq: Record Disclosure) *)
 record disclosure =
   disc_id :: nat
   gri_compliant :: bool
@@ -308,16 +306,16 @@ record disclosure =
   methodology_documented :: bool
   externally_verified :: bool
 
-(* science_based_target (matches Coq: Record science_based_target) *)
+(* ScienceBasedTarget (matches Coq: Record ScienceBasedTarget) *)
 record science_based_target =
   sbt_id :: nat
   target_year :: nat
   base_year :: nat
-  reduction_percent :: z
+  reduction_percent :: Z
   validated :: bool
   paris_aligned :: bool
 
-(* esg_compliant_system (matches Coq: Record esg_compliant_system) *)
+(* ESGCompliantSystem (matches Coq: Record ESGCompliantSystem) *)
 record esg_compliant_system =
   sys_emissions :: 'a list
   sys_water :: 'a list
@@ -330,19 +328,19 @@ record esg_compliant_system =
   sys_incidents :: 'a list
   sys_decisions :: 'a list
   sys_paygap :: 'a list
-  sys_hrdd :: hrdd_process
+  sys_hrdd :: HRDDProcess
   sys_suppliers :: 'a list
   sys_indigenous :: 'a list
-  sys_grievance :: grievance_mechanism
+  sys_grievance :: GrievanceMechanism
   sys_stakeholder :: 'a list
-  sys_board :: board
+  sys_board :: Board
   sys_exec_comp :: 'a list
-  sys_anti_corruption :: anti_corruption_policy
-  sys_whistleblower :: whistleblower_policy
-  sys_coi :: conflict_of_interest
+  sys_anti_corruption :: AntiCorruptionPolicy
+  sys_whistleblower :: WhistleblowerPolicy
+  sys_coi :: ConflictOfInterest
   sys_rpt :: 'a list
-  sys_disclosure :: disclosure
-  sys_sbt :: science_based_target
+  sys_disclosure :: Disclosure
+  sys_sbt :: ScienceBasedTarget
   emissions_complete :: forall
   scope2_tracked :: forall
   emissions_unique :: forall
@@ -388,7 +386,7 @@ definition same_emission :: "bool" where
 
 (* valid_scope3_category (matches Coq: Definition valid_scope3_category) *)
 definition valid_scope3_category :: "nat \<Rightarrow> bool" where
-  "valid_scope3_category n \<equiv> (n >= 1)%nat \<and> (n <= 15)%nat"
+  "valid_scope3_category n \<equiv> (n >= 1)%nat /\ (n <= 15)%nat"
 
 (* diversion_rate (matches Coq: Definition diversion_rate) *)
 definition diversion_rate :: "WasteRecord \<Rightarrow> Z" where
@@ -404,7 +402,7 @@ definition recycled_content_rate :: "CircularEconomyMetric \<Rightarrow> Z" wher
 
 (* pollution_compliant (matches Coq: Definition pollution_compliant) *)
 definition pollution_compliant :: "PollutionRecord \<Rightarrow> bool" where
-  "pollution_compliant p \<equiv> emission_level p <= regulatory_limit p \<and> permit_valid p = True"
+  "pollution_compliant p \<equiv> emission_level p <= regulatory_limit p /\ permit_valid p = True"
 
 (* paid_living_wage (matches Coq: Definition paid_living_wage) *)
 definition paid_living_wage :: "Employee \<Rightarrow> bool" where
@@ -412,8 +410,8 @@ definition paid_living_wage :: "Employee \<Rightarrow> bool" where
 
 (* no_forced_labor (matches Coq: Definition no_forced_labor) *)
 definition no_forced_labor :: "Employee \<Rightarrow> bool" where
-  "no_forced_labor e \<equiv> voluntary_employment e = True \<and>
-  no_debt_bondage e = True \<and>
+  "no_forced_labor e \<equiv> voluntary_employment e = True /\
+  no_debt_bondage e = True /\
   documents_retained e = False"
 
 (* no_child_labor (matches Coq: Definition no_child_labor) *)
@@ -422,11 +420,11 @@ definition no_child_labor :: "Employee \<Rightarrow> bool" where
 
 (* incident_properly_handled (matches Coq: Definition incident_properly_handled) *)
 definition incident_properly_handled :: "SafetyIncident \<Rightarrow> bool" where
-  "incident_properly_handled i \<equiv> recorded i = True \<and> investigated i = True \<and> corrective_action i = True"
+  "incident_properly_handled i \<equiv> recorded i = True /\ investigated i = True /\ corrective_action i = True"
 
 (* non_discriminatory (matches Coq: Definition non_discriminatory) *)
 definition non_discriminatory :: "EmploymentDecision \<Rightarrow> bool" where
-  "non_discriminatory d \<equiv> merit_based d = True \<and> no_protected_class_bias d = True"
+  "non_discriminatory d \<equiv> merit_based d = True /\ no_protected_class_bias d = True"
 
 (* pay_gap_percentage (matches Coq: Definition pay_gap_percentage) *)
 definition pay_gap_percentage :: "PayGapRecord \<Rightarrow> Z" where
@@ -434,9 +432,9 @@ definition pay_gap_percentage :: "PayGapRecord \<Rightarrow> Z" where
 
 (* hrdd_implemented (matches Coq: Definition hrdd_implemented) *)
 definition hrdd_implemented :: "HRDDProcess \<Rightarrow> bool" where
-  "hrdd_implemented h \<equiv> policy_adopted h = True \<and>
-  risk_assessment_done h = True \<and>
-  mitigation_implemented h = True \<and>
+  "hrdd_implemented h \<equiv> policy_adopted h = True /\
+  risk_assessment_done h = True /\
+  mitigation_implemented h = True /\
   monitoring_active h = True"
 
 (* supplier_recently_assessed (matches Coq: Definition supplier_recently_assessed) *)
@@ -445,21 +443,21 @@ definition supplier_recently_assessed :: "Supplier \<Rightarrow> nat \<Rightarro
 
 (* fpic_satisfied (matches Coq: Definition fpic_satisfied) *)
 definition fpic_satisfied :: "IndigenousCommunity \<Rightarrow> bool" where
-  "fpic_satisfied c \<equiv> fpic_obtained c = True \<and> consent_documented c = True"
+  "fpic_satisfied c \<equiv> fpic_obtained c = True /\ consent_documented c = True"
 
 (* grievance_adequate (matches Coq: Definition grievance_adequate) *)
 definition grievance_adequate :: "GrievanceMechanism \<Rightarrow> bool" where
-  "grievance_adequate g \<equiv> anonymous_reporting g = True \<and> accessible g = True"
+  "grievance_adequate g \<equiv> anonymous_reporting g = True /\ accessible g = True"
 
 (* stakeholder_engaged (matches Coq: Definition stakeholder_engaged) *)
 definition stakeholder_engaged :: "StakeholderEngagement \<Rightarrow> bool" where
-  "stakeholder_engaged s \<equiv> communities_identified s = True \<and>
-  consultation_done s = True \<and>
+  "stakeholder_engaged s \<equiv> communities_identified s = True /\
+  consultation_done s = True /\
   feedback_incorporated s = True"
 
 (* independent_count (matches Coq: Definition independent_count) *)
 definition independent_count :: "Board \<Rightarrow> nat" where
-  "independent_count b \<equiv> length (filter (\<lambda>d. is_independent d) (directors b))"
+  "independent_count b \<equiv> length (filter (fun d => is_independent d) (directors b))"
 
 (* independent_majority (matches Coq: Definition independent_majority) *)
 definition independent_majority :: "Board \<Rightarrow> bool" where
@@ -467,167 +465,167 @@ definition independent_majority :: "Board \<Rightarrow> bool" where
 
 (* esg_linked (matches Coq: Definition esg_linked) *)
 definition esg_linked :: "ExecutiveComp \<Rightarrow> bool" where
-  "esg_linked ec \<equiv> esg_linked_portion ec > 0 \<and> esg_metrics_defined ec = True"
+  "esg_linked ec \<equiv> esg_linked_portion ec > 0 /\ esg_metrics_defined ec = True"
 
 (* anti_corruption_adequate (matches Coq: Definition anti_corruption_adequate) *)
 definition anti_corruption_adequate :: "AntiCorruptionPolicy \<Rightarrow> bool" where
-  "anti_corruption_adequate a \<equiv> fcpa_compliant a = True \<and> uk_bribery_compliant a = True \<and>
-  training_provided a = True \<and> controls_implemented a = True"
+  "anti_corruption_adequate a \<equiv> fcpa_compliant a = True /\ uk_bribery_compliant a = True /\
+  training_provided a = True /\ controls_implemented a = True"
 
 (* whistleblower_protected (matches Coq: Definition whistleblower_protected) *)
 definition whistleblower_protected :: "WhistleblowerPolicy \<Rightarrow> bool" where
-  "whistleblower_protected w \<equiv> no_retaliation_policy w = True \<and> protection_enforced w = True"
+  "whistleblower_protected w \<equiv> no_retaliation_policy w = True /\ protection_enforced w = True"
 
 (* coi_managed (matches Coq: Definition coi_managed) *)
 definition coi_managed :: "ConflictOfInterest \<Rightarrow> bool" where
-  "coi_managed c \<equiv> policy_exists c = True \<and> disclosure_required c = True \<and> recusal_enforced c = True"
+  "coi_managed c \<equiv> policy_exists c = True /\ disclosure_required c = True /\ recusal_enforced c = True"
 
 (* rpt_compliant (matches Coq: Definition rpt_compliant) *)
 definition rpt_compliant :: "RelatedPartyTransaction \<Rightarrow> bool" where
-  "rpt_compliant r \<equiv> disclosed r = True \<and> board_approved r = True"
+  "rpt_compliant r \<equiv> disclosed r = True /\ board_approved r = True"
 
 (* science_based (matches Coq: Definition science_based) *)
 definition science_based :: "ScienceBasedTarget \<Rightarrow> bool" where
-  "science_based t \<equiv> paris_aligned t = True \<and> reduction_percent t >= 42"
+  "science_based t \<equiv> paris_aligned t = True /\ reduction_percent t >= 42"
 
 (* ESG_001_01_scope1_completeness (matches Coq) *)
-lemma ESG_001_01_scope1_completeness: "\<forall>(sys :: esg_compliant_system) s. s \<in> set (sys_emissions sys) \<longrightarrow> source_type s = Scope1 \<longrightarrow> owned_or_controlled_flag s = True \<longrightarrow> is_tracked s = True \<and> is_measured s = True \<and> is_reported s = True"
+lemma ESG_001_01_scope1_completeness: "\<forall> (sys : ESGCompliantSystem) s, In s (sys_emissions sys) \<longrightarrow> source_type s = Scope1 \<longrightarrow> owned_or_controlled_flag s = True \<longrightarrow> is_tracked s = True \<and> is_measured s = True \<and> is_reported s = True"
   by auto
 
 (* ESG_001_02_scope2_calculation (matches Coq) *)
-lemma ESG_001_02_scope2_calculation: "\<forall>(sys :: esg_compliant_system) s. s \<in> set (sys_emissions sys) \<longrightarrow> (source_type s = Scope2_Location \<or> source_type s = Scope2_Market) \<longrightarrow> emission_factor s > 0 \<and> is_tracked s = True"
+lemma ESG_001_02_scope2_calculation: "\<forall> (sys : ESGCompliantSystem) s, In s (sys_emissions sys) \<longrightarrow> (source_type s = Scope2_Location \<or> source_type s = Scope2_Market) \<longrightarrow> emission_factor s > 0 \<and> is_tracked s = True"
   by auto
 
 (* ESG_001_03_scope3_coverage (matches Coq) *)
-lemma ESG_001_03_scope3_coverage: "\<forall>(sys :: esg_compliant_system) n. valid_scope3_category n \<longrightarrow> \<exists>s. s \<in> set (sys_emissions sys) \<and> source_type s = Scope3 n"
+lemma ESG_001_03_scope3_coverage: "\<forall> (sys : ESGCompliantSystem) n, valid_scope3_category n \<longrightarrow> \<exists> s, In s (sys_emissions sys) \<and> source_type s = Scope3 n"
   by auto
 
 (* ESG_001_04_emission_factor_accuracy (matches Coq) *)
-lemma ESG_001_04_emission_factor_accuracy: "\<forall>(sys :: esg_compliant_system) s. s \<in> set (sys_emissions sys) \<longrightarrow> emission_factor s > 0"
+lemma ESG_001_04_emission_factor_accuracy: "\<forall> (sys : ESGCompliantSystem) s, In s (sys_emissions sys) \<longrightarrow> emission_factor s > 0"
   by auto
 
 (* ESG_001_05_no_double_counting (matches Coq) *)
-lemma ESG_001_05_no_double_counting: "\<forall>(sys :: esg_compliant_system) s1 s2. s1 \<in> set (sys_emissions sys) \<longrightarrow> s2 \<in> set (sys_emissions sys) \<longrightarrow> same_emission s1 s2 \<longrightarrow> s1 = s2"
+lemma ESG_001_05_no_double_counting: "\<forall> (sys : ESGCompliantSystem) s1 s2, In s1 (sys_emissions sys) \<longrightarrow> In s2 (sys_emissions sys) \<longrightarrow> same_emission s1 s2 \<longrightarrow> s1 = s2"
   by auto
 
 (* ESG_001_06_renewable_tracking (matches Coq) *)
-lemma ESG_001_06_renewable_tracking: "\<forall>(sys :: esg_compliant_system) r. r \<in> set (sys_renewables sys) \<longrightarrow> unique_claim r = True"
+lemma ESG_001_06_renewable_tracking: "\<forall> (sys : ESGCompliantSystem) r, In r (sys_renewables sys) \<longrightarrow> unique_claim r = True"
   by auto
 
 (* ESG_001_07_carbon_calculation_precision (matches Coq) *)
-lemma ESG_001_07_carbon_calculation_precision: "\<forall>(sys :: esg_compliant_system) s. s \<in> set (sys_emissions sys) \<longrightarrow> \<exists>scaled_emission : Z. scaled_emission = emission s"
+lemma ESG_001_07_carbon_calculation_precision: "\<forall> (sys : ESGCompliantSystem) s, In s (sys_emissions sys) \<longrightarrow> \<exists> scaled_emission : Z, scaled_emission = emission s"
   by simp
 
 (* ESG_001_08_water_withdrawal_tracking (matches Coq) *)
-lemma ESG_001_08_water_withdrawal_tracking: "\<forall>(sys :: esg_compliant_system) w. w \<in> set (sys_water sys) \<longrightarrow> source_documented w = True"
+lemma ESG_001_08_water_withdrawal_tracking: "\<forall> (sys : ESGCompliantSystem) w, In w (sys_water sys) \<longrightarrow> source_documented w = True"
   by auto
 
 (* ESG_001_09_waste_diversion_rate (matches Coq) *)
-lemma ESG_001_09_waste_diversion_rate: "\<forall>(sys :: esg_compliant_system) w. w \<in> set (sys_waste sys) \<longrightarrow> waste_accounting_correct w"
+lemma ESG_001_09_waste_diversion_rate: "\<forall> (sys : ESGCompliantSystem) w, In w (sys_waste sys) \<longrightarrow> waste_accounting_correct w"
   by auto
 
 (* ESG_001_10_biodiversity_assessment (matches Coq) *)
-lemma ESG_001_10_biodiversity_assessment: "\<forall>(sys :: esg_compliant_system) b. b \<in> set (sys_biodiversity sys) \<longrightarrow> dependencies_mapped b = True"
+lemma ESG_001_10_biodiversity_assessment: "\<forall> (sys : ESGCompliantSystem) b, In b (sys_biodiversity sys) \<longrightarrow> dependencies_mapped b = True"
   by auto
 
 (* ESG_001_11_circular_economy_metrics (matches Coq) *)
-lemma ESG_001_11_circular_economy_metrics: "\<forall>(sys :: esg_compliant_system) c. c \<in> set (sys_circular sys) \<longrightarrow> measurement_verified c = True"
+lemma ESG_001_11_circular_economy_metrics: "\<forall> (sys : ESGCompliantSystem) c, In c (sys_circular sys) \<longrightarrow> measurement_verified c = True"
   by auto
 
 (* ESG_001_12_pollution_compliance (matches Coq) *)
-lemma ESG_001_12_pollution_compliance: "\<forall>(sys :: esg_compliant_system) p. p \<in> set (sys_pollution sys) \<longrightarrow> pollution_compliant p"
+lemma ESG_001_12_pollution_compliance: "\<forall> (sys : ESGCompliantSystem) p, In p (sys_pollution sys) \<longrightarrow> pollution_compliant p"
   by auto
 
 (* ESG_001_13_living_wage_guarantee (matches Coq) *)
-lemma ESG_001_13_living_wage_guarantee: "\<forall>(sys :: esg_compliant_system) e. e \<in> set (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> paid_living_wage e"
+lemma ESG_001_13_living_wage_guarantee: "\<forall> (sys : ESGCompliantSystem) e, In e (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> paid_living_wage e"
   by auto
 
 (* ESG_001_14_no_forced_labor (matches Coq) *)
-lemma ESG_001_14_no_forced_labor: "\<forall>(sys :: esg_compliant_system) e. e \<in> set (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> no_forced_labor e"
+lemma ESG_001_14_no_forced_labor: "\<forall> (sys : ESGCompliantSystem) e, In e (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> no_forced_labor e"
   by auto
 
 (* ESG_001_15_no_child_labor (matches Coq) *)
-lemma ESG_001_15_no_child_labor: "\<forall>(sys :: esg_compliant_system) e. e \<in> set (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> no_child_labor e"
+lemma ESG_001_15_no_child_labor: "\<forall> (sys : ESGCompliantSystem) e, In e (sys_employees sys) \<longrightarrow> employed_flag e = True \<longrightarrow> no_child_labor e"
   by auto
 
 (* ESG_001_16_safety_incident_tracking (matches Coq) *)
-lemma ESG_001_16_safety_incident_tracking: "\<forall>(sys :: esg_compliant_system) i. i \<in> set (sys_incidents sys) \<longrightarrow> incident_properly_handled i"
+lemma ESG_001_16_safety_incident_tracking: "\<forall> (sys : ESGCompliantSystem) i, In i (sys_incidents sys) \<longrightarrow> incident_properly_handled i"
   by auto
 
 (* ESG_001_17_non_discrimination (matches Coq) *)
-lemma ESG_001_17_non_discrimination: "\<forall>(sys :: esg_compliant_system) d. d \<in> set (sys_decisions sys) \<longrightarrow> non_discriminatory d"
+lemma ESG_001_17_non_discrimination: "\<forall> (sys : ESGCompliantSystem) d, In d (sys_decisions sys) \<longrightarrow> non_discriminatory d"
   by auto
 
 (* ESG_001_18_equal_pay_verification (matches Coq) *)
-lemma ESG_001_18_equal_pay_verification: "\<forall>(sys :: esg_compliant_system) p. p \<in> set (sys_paygap sys) \<longrightarrow> gap_calculated p = True \<and> gap_disclosed p = True"
+lemma ESG_001_18_equal_pay_verification: "\<forall> (sys : ESGCompliantSystem) p, In p (sys_paygap sys) \<longrightarrow> gap_calculated p = True \<and> gap_disclosed p = True"
   by auto
 
 (* ESG_001_19_hrdd_process (matches Coq) *)
-lemma ESG_001_19_hrdd_process: "\<forall>(sys :: esg_compliant_system). hrdd_implemented (sys_hrdd sys)"
+lemma ESG_001_19_hrdd_process: "\<forall> (sys : ESGCompliantSystem), hrdd_implemented (sys_hrdd sys)"
   by auto
 
 (* ESG_001_20_supply_chain_assessment (matches Coq) *)
-lemma ESG_001_20_supply_chain_assessment: "\<forall>(sys :: esg_compliant_system) s year. s \<in> set (sys_suppliers sys) \<longrightarrow> supplier_recently_assessed s year"
+lemma ESG_001_20_supply_chain_assessment: "\<forall> (sys : ESGCompliantSystem) s year, In s (sys_suppliers sys) \<longrightarrow> supplier_recently_assessed s year"
   by auto
 
 (* ESG_001_21_fpic_requirement (matches Coq) *)
-lemma ESG_001_21_fpic_requirement: "\<forall>(sys :: esg_compliant_system) c. c \<in> set (sys_indigenous sys) \<longrightarrow> fpic_satisfied c"
+lemma ESG_001_21_fpic_requirement: "\<forall> (sys : ESGCompliantSystem) c, In c (sys_indigenous sys) \<longrightarrow> fpic_satisfied c"
   by auto
 
 (* ESG_001_22_grievance_mechanism (matches Coq) *)
-lemma ESG_001_22_grievance_mechanism: "\<forall>(sys :: esg_compliant_system). grievance_adequate (sys_grievance sys)"
+lemma ESG_001_22_grievance_mechanism: "\<forall> (sys : ESGCompliantSystem), grievance_adequate (sys_grievance sys)"
   by auto
 
 (* ESG_001_23_stakeholder_engagement (matches Coq) *)
-lemma ESG_001_23_stakeholder_engagement: "\<forall>(sys :: esg_compliant_system) s. s \<in> set (sys_stakeholder sys) \<longrightarrow> stakeholder_engaged s"
+lemma ESG_001_23_stakeholder_engagement: "\<forall> (sys : ESGCompliantSystem) s, In s (sys_stakeholder sys) \<longrightarrow> stakeholder_engaged s"
   by auto
 
 (* ESG_001_24_board_independence (matches Coq) *)
-lemma ESG_001_24_board_independence: "\<forall>(sys :: esg_compliant_system). independent_majority (sys_board sys)"
+lemma ESG_001_24_board_independence: "\<forall> (sys : ESGCompliantSystem), independent_majority (sys_board sys)"
   by auto
 
 (* ESG_001_25_esg_linked_compensation (matches Coq) *)
-lemma ESG_001_25_esg_linked_compensation: "\<forall>(sys :: esg_compliant_system) ec. ec \<in> set (sys_exec_comp sys) \<longrightarrow> esg_linked ec"
+lemma ESG_001_25_esg_linked_compensation: "\<forall> (sys : ESGCompliantSystem) ec, In ec (sys_exec_comp sys) \<longrightarrow> esg_linked ec"
   by auto
 
 (* ESG_001_26_anti_corruption_policy (matches Coq) *)
-lemma ESG_001_26_anti_corruption_policy: "\<forall>(sys :: esg_compliant_system). anti_corruption_adequate (sys_anti_corruption sys)"
+lemma ESG_001_26_anti_corruption_policy: "\<forall> (sys : ESGCompliantSystem), anti_corruption_adequate (sys_anti_corruption sys)"
   by auto
 
 (* ESG_001_27_whistleblower_protection (matches Coq) *)
-lemma ESG_001_27_whistleblower_protection: "\<forall>(sys :: esg_compliant_system). whistleblower_protected (sys_whistleblower sys)"
+lemma ESG_001_27_whistleblower_protection: "\<forall> (sys : ESGCompliantSystem), whistleblower_protected (sys_whistleblower sys)"
   by auto
 
 (* ESG_001_28_conflict_of_interest (matches Coq) *)
-lemma ESG_001_28_conflict_of_interest: "\<forall>(sys :: esg_compliant_system). coi_managed (sys_coi sys)"
+lemma ESG_001_28_conflict_of_interest: "\<forall> (sys : ESGCompliantSystem), coi_managed (sys_coi sys)"
   by auto
 
 (* ESG_001_29_related_party_disclosure (matches Coq) *)
-lemma ESG_001_29_related_party_disclosure: "\<forall>(sys :: esg_compliant_system) r. r \<in> set (sys_rpt sys) \<longrightarrow> rpt_compliant r"
+lemma ESG_001_29_related_party_disclosure: "\<forall> (sys : ESGCompliantSystem) r, In r (sys_rpt sys) \<longrightarrow> rpt_compliant r"
   by auto
 
 (* ESG_001_30_gri_compliance (matches Coq) *)
-lemma ESG_001_30_gri_compliance: "\<forall>(sys :: esg_compliant_system). gri_compliant (sys_disclosure sys) = True"
+lemma ESG_001_30_gri_compliance: "\<forall> (sys : ESGCompliantSystem), gri_compliant (sys_disclosure sys) = True"
   by auto
 
 (* ESG_001_31_tcfd_alignment (matches Coq) *)
-lemma ESG_001_31_tcfd_alignment: "\<forall>(sys :: esg_compliant_system). tcfd_aligned (sys_disclosure sys) = True"
+lemma ESG_001_31_tcfd_alignment: "\<forall> (sys : ESGCompliantSystem), tcfd_aligned (sys_disclosure sys) = True"
   by auto
 
 (* ESG_001_32_sasb_alignment (matches Coq) *)
-lemma ESG_001_32_sasb_alignment: "\<forall>(sys :: esg_compliant_system). sasb_aligned (sys_disclosure sys) = True"
+lemma ESG_001_32_sasb_alignment: "\<forall> (sys : ESGCompliantSystem), sasb_aligned (sys_disclosure sys) = True"
   by auto
 
 (* ESG_001_33_data_quality (matches Coq) *)
-lemma ESG_001_33_data_quality: "\<forall>(sys :: esg_compliant_system). methodology_documented (sys_disclosure sys) = True"
+lemma ESG_001_33_data_quality: "\<forall> (sys : ESGCompliantSystem), methodology_documented (sys_disclosure sys) = True"
   by auto
 
 (* ESG_001_34_third_party_assurance (matches Coq) *)
-lemma ESG_001_34_third_party_assurance: "\<forall>(sys :: esg_compliant_system). externally_verified (sys_disclosure sys) = True"
+lemma ESG_001_34_third_party_assurance: "\<forall> (sys : ESGCompliantSystem), externally_verified (sys_disclosure sys) = True"
   by auto
 
 (* ESG_001_35_sbti_validation (matches Coq) *)
-lemma ESG_001_35_sbti_validation: "\<forall>(sys :: esg_compliant_system). science_based (sys_sbt sys) \<longrightarrow> validated (sys_sbt sys) = True"
+lemma ESG_001_35_sbti_validation: "\<forall> (sys : ESGCompliantSystem), science_based (sys_sbt sys) \<longrightarrow> validated (sys_sbt sys) = True"
   by auto
 
 end

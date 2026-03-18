@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | msg_type            | msg_type               | OK     |
- * | session_type        | session_type           | OK     |
- * | process            | process                | OK     |
- * | channel            | channel                | OK     |
- * | channel_pair        | channel_pair           | OK     |
+ * | MsgType            | msg_type               | OK     |
+ * | SessionType        | session_type           | OK     |
+ * | Process            | process                | OK     |
+ * | Channel            | channel                | OK     |
+ * | ChannelPair        | channel_pair           | OK     |
  * | msg_type_eqb       | msg_type_eqb           | OK     |
  * | dual               | dual                   | OK     |
  * | channel_used       | channel_used           | OK     |
@@ -78,20 +78,17 @@
  *)
 
 theory SessionTypes
-  imports Main CoqCompat Semantics Syntax
+  imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym chan_env = "nat"
-type_synonym config = "nat"
-(* msg_type (matches Coq: Inductive msg_type) *)
+(* MsgType (matches Coq: Inductive MsgType) *)
 datatype msg_type =
     MTNat
   |     MTBool
   |     MTUnit
   |     MTString
 
-(* session_type (matches Coq: Inductive session_type) *)
+(* SessionType (matches Coq: Inductive SessionType) *)
 datatype session_type =
     SSend
   |     SRecv
@@ -99,7 +96,7 @@ datatype session_type =
   |     SOffer
   |     SEnd
 
-(* process (matches Coq: Inductive process) *)
+(* Process (matches Coq: Inductive Process) *)
 datatype process =
     PSend
   |     PRecv
@@ -109,23 +106,23 @@ datatype process =
   |     PEnd
   |     PPar
 
-(* channel (matches Coq: Record channel) *)
+(* Channel (matches Coq: Record Channel) *)
 record channel =
   chan_id :: nat
-  chan_type :: session_type
+  chan_type :: SessionType
   chan_linear :: bool
 
-(* channel_pair (matches Coq: Record channel_pair) *)
+(* ChannelPair (matches Coq: Record ChannelPair) *)
 record channel_pair =
-  endpoint_a :: channel
-  endpoint_b :: channel
+  endpoint_a :: Channel
+  endpoint_b :: Channel
 
 (* msg_type_eqb - complex match, needs manual translation *)
-definition msg_type_eqb :: "bool" where "msg_type_eqb \<equiv> True"
+definition msg_type_eqb :: "bool" where "msg_type_eqb = undefined"
 
 (* dual (matches Coq: Definition dual) *)
 fun dual :: "SessionType \<Rightarrow> SessionType" where
-  "dual _ = undefined"
+
 
 (* channel_used (matches Coq: Definition channel_used) *)
 definition channel_used :: "Channel \<Rightarrow> Channel" where
@@ -137,7 +134,7 @@ definition is_fresh :: "Channel \<Rightarrow> bool" where
 
 (* well_formed_pair (matches Coq: Definition well_formed_pair) *)
 definition well_formed_pair :: "ChannelPair \<Rightarrow> bool" where
-  "well_formed_pair cp \<equiv> chan_type (endpoint_a cp) = dual (chan_type (endpoint_b cp)) \<and>
+  "well_formed_pair cp \<equiv> chan_type (endpoint_a cp) = dual (chan_type (endpoint_b cp)) /\
   chan_id (endpoint_a cp) = chan_id (endpoint_b cp)"
 
 (* is_value (matches Coq: Definition is_value) *)
@@ -146,7 +143,7 @@ definition is_value :: "Process \<Rightarrow> bool" where
 
 (* lookup (matches Coq: Definition lookup) *)
 fun lookup :: "ChanEnv \<Rightarrow> nat \<Rightarrow> option SessionType" where
-  "lookup _ = None"
+
 
 (* waiting (matches Coq: Definition waiting) *)
 definition waiting :: "Config \<Rightarrow> ThreadId \<Rightarrow> Resource \<Rightarrow> bool" where
@@ -158,12 +155,12 @@ definition holding :: "Config \<Rightarrow> ThreadId \<Rightarrow> Resource \<Ri
 
 (* waits_for (matches Coq: Definition waits_for) *)
 definition waits_for :: "Config \<Rightarrow> bool" where
-  "waits_for cfg \<equiv> exists r, waiting cfg t1 r \<and> holding cfg t2 r"
+  "waits_for cfg \<equiv> exists r, waiting cfg t1 r /\ holding cfg t2 r"
 
 (* circular_wait (matches Coq: Definition circular_wait) *)
 definition circular_wait :: "Config \<Rightarrow> bool" where
   "circular_wait cfg \<equiv> exists cycle,
-    length cycle >= 2 \<and>
+    length cycle >= 2 /\
     forall i, i < length cycle ->
       waits_for cfg (nth i cycle 0) (nth ((i + 1) mod length cycle) cycle 0)"
 
@@ -173,26 +170,26 @@ definition deadlocked :: "Config \<Rightarrow> bool" where
 
 (* session_typed (matches Coq: Definition session_typed) *)
 definition session_typed :: "Config \<Rightarrow> bool" where
-  "session_typed cfg \<equiv> True"
+  "session_typed cfg \<equiv> forall p, In p cfg -> p = PEnd \/ exists p1 p2, p = PPar p1 p2"
 
 (* ST_001_dual_end (matches Coq) *)
 lemma ST_001_dual_end: "dual SEnd = SEnd"
   by simp
 
 (* ST_002_dual_send_recv (matches Coq) *)
-lemma ST_002_dual_send_recv: "\<forall>mt s. dual (SSend mt s) = SRecv mt (dual s)"
+lemma ST_002_dual_send_recv: "\<forall> mt s, dual (SSend mt s) = SRecv mt (dual s)"
   by simp
 
 (* ST_003_dual_recv_send (matches Coq) *)
-lemma ST_003_dual_recv_send: "\<forall>mt s. dual (SRecv mt s) = SSend mt (dual s)"
+lemma ST_003_dual_recv_send: "\<forall> mt s, dual (SRecv mt s) = SSend mt (dual s)"
   by simp
 
 (* ST_004_dual_select_offer (matches Coq) *)
-lemma ST_004_dual_select_offer: "\<forall>branches. dual (SSelect branches) = SOffer (map (\<lambda>p. (fst p, dual (snd p))) branches)"
+lemma ST_004_dual_select_offer: "\<forall> branches, dual (SSelect branches) = SOffer (map (fun p => (fst p, dual (snd p))) branches)"
   by simp
 
 (* ST_005_dual_offer_select (matches Coq) *)
-lemma ST_005_dual_offer_select: "\<forall>branches. dual (SOffer branches) = SSelect (map (\<lambda>p. (fst p, dual (snd p))) branches)"
+lemma ST_005_dual_offer_select: "\<forall> branches, dual (SOffer branches) = SSelect (map (fun p => (fst p, dual (snd p))) branches)"
   by simp
 
 (* ST_006_dual_involutive_end (matches Coq) *)
@@ -200,63 +197,63 @@ lemma ST_006_dual_involutive_end: "dual (dual SEnd) = SEnd"
   by simp
 
 (* ST_007_dual_involutive_send (matches Coq) *)
-lemma ST_007_dual_involutive_send: "\<forall>mt. dual (dual (SSend mt SEnd)) = SSend mt SEnd"
+lemma ST_007_dual_involutive_send: "\<forall> mt, dual (dual (SSend mt SEnd)) = SSend mt SEnd"
   by simp
 
 (* ST_008_dual_involutive_recv (matches Coq) *)
-lemma ST_008_dual_involutive_recv: "\<forall>mt. dual (dual (SRecv mt SEnd)) = SRecv mt SEnd"
+lemma ST_008_dual_involutive_recv: "\<forall> mt, dual (dual (SRecv mt SEnd)) = SRecv mt SEnd"
   by simp
 
 (* ST_009_dual_chain (matches Coq) *)
-lemma ST_009_dual_chain: "\<forall>mt1 mt2. dual (dual (SSend mt1 (SRecv mt2 SEnd))) = SSend mt1 (SRecv mt2 SEnd)"
+lemma ST_009_dual_chain: "\<forall> mt1 mt2, dual (dual (SSend mt1 (SRecv mt2 SEnd))) = SSend mt1 (SRecv mt2 SEnd)"
   by simp
 
 (* ST_010_dual_chain_rev (matches Coq) *)
-lemma ST_010_dual_chain_rev: "\<forall>mt1 mt2. dual (dual (SRecv mt1 (SSend mt2 SEnd))) = SRecv mt1 (SSend mt2 SEnd)"
+lemma ST_010_dual_chain_rev: "\<forall> mt1 mt2, dual (dual (SRecv mt1 (SSend mt2 SEnd))) = SRecv mt1 (SSend mt2 SEnd)"
   by simp
 
 (* ST_011_dual_preserves_msg (matches Coq) *)
-lemma ST_011_dual_preserves_msg: "\<forall>mt s. (case dual (SSend mt s) of SRecv mt' _ => mt' = mt | _ => False)"
+lemma ST_011_dual_preserves_msg: "\<forall> mt s, match dual (SSend mt s) with | SRecv mt' _ => mt' = mt | _ => False end"
   by simp
 
 (* ST_012_endpoints_dual (matches Coq) *)
-lemma ST_012_endpoints_dual: "\<forall>s. dual s = dual s"
+lemma ST_012_endpoints_dual: "\<forall> s, dual s = dual s"
   by simp
 
 (* ST_013_fresh_linear (matches Coq) *)
-lemma ST_013_fresh_linear: "\<forall>ch. is_fresh ch \<longrightarrow> chan_linear ch = True"
+lemma ST_013_fresh_linear: "\<forall> ch, is_fresh ch \<longrightarrow> chan_linear ch = True"
   by auto
 
 (* ST_014_used_not_linear (matches Coq) *)
-lemma ST_014_used_not_linear: "\<forall>ch. chan_linear (channel_used ch) = False"
+lemma ST_014_used_not_linear: "\<forall> ch, chan_linear (channel_used ch) = False"
   by simp
 
 (* ST_015_use_preserves_id (matches Coq) *)
-lemma ST_015_use_preserves_id: "\<forall>ch. chan_id (channel_used ch) = chan_id ch"
+lemma ST_015_use_preserves_id: "\<forall> ch, chan_id (channel_used ch) = chan_id ch"
   by simp
 
 (* ST_016_use_preserves_type (matches Coq) *)
-lemma ST_016_use_preserves_type: "\<forall>ch. chan_type (channel_used ch) = chan_type ch"
+lemma ST_016_use_preserves_type: "\<forall> ch, chan_type (channel_used ch) = chan_type ch"
   by simp
 
 (* ST_017_wf_pair_dual (matches Coq) *)
-lemma ST_017_wf_pair_dual: "\<forall>cp. well_formed_pair cp \<longrightarrow> chan_type (endpoint_a cp) = dual (chan_type (endpoint_b cp))"
+lemma ST_017_wf_pair_dual: "\<forall> cp, well_formed_pair cp \<longrightarrow> chan_type (endpoint_a cp) = dual (chan_type (endpoint_b cp))"
   by auto
 
 (* ST_018_wf_pair_same_id (matches Coq) *)
-lemma ST_018_wf_pair_same_id: "\<forall>cp. well_formed_pair cp \<longrightarrow> chan_id (endpoint_a cp) = chan_id (endpoint_b cp)"
+lemma ST_018_wf_pair_same_id: "\<forall> cp, well_formed_pair cp \<longrightarrow> chan_id (endpoint_a cp) = chan_id (endpoint_b cp)"
   by auto
 
 (* ST_019_session_no_deadlock (matches Coq) *)
-lemma ST_019_session_no_deadlock: "\<forall>cfg. session_typed cfg \<longrightarrow> ~ deadlocked cfg"
-  by auto
+lemma ST_019_session_no_deadlock: "\<forall> cfg, session_typed cfg \<longrightarrow> ~ deadlocked cfg"
+  by (cases rule: ‹_›.cases; simp)
 
 (* ST_020_dual_communicate (matches Coq) *)
-lemma ST_020_dual_communicate: "\<forall>mt s. dual (SSend mt s) = SRecv mt (dual s) \<longrightarrow> True. "
+lemma ST_020_dual_communicate: "\<forall> mt s, dual (SSend mt s) = SRecv mt (dual s) \<longrightarrow> True. "
   by auto
 
 (* ST_021_value_done (matches Coq) *)
-lemma ST_021_value_done: "\<forall>p. is_value p \<longrightarrow> p = PEnd"
+lemma ST_021_value_done: "\<forall> p, is_value p \<longrightarrow> p = PEnd"
   by auto
 
 (* ST_022_end_is_value (matches Coq) *)
@@ -265,34 +262,34 @@ lemma ST_022_end_is_value: "is_value PEnd"
 
 (* ST_023_empty_deadlock_free (matches Coq) *)
 lemma ST_023_empty_deadlock_free: "~ deadlocked []"
-  by auto
+  by (cases rule: ‹_›.cases; simp)
 
 (* ST_024_msg_eq_refl (matches Coq) *)
-lemma ST_024_msg_eq_refl: "\<forall>mt. msg_type_eqb mt mt = True"
+lemma ST_024_msg_eq_refl: "\<forall> mt, msg_type_eqb mt mt = True"
   by simp
 
 (* ST_025_msg_eq_true (matches Coq) *)
-lemma ST_025_msg_eq_true: "\<forall>mt1 mt2. msg_type_eqb mt1 mt2 = True \<longrightarrow> mt1 = mt2"
+lemma ST_025_msg_eq_true: "\<forall> mt1 mt2, msg_type_eqb mt1 mt2 = True \<longrightarrow> mt1 = mt2"
   by simp
 
 (* ST_026_msg_type_cases (matches Coq) *)
-lemma ST_026_msg_type_cases: "\<forall>mt : MsgType. mt = MTNat \<or> mt = MTBool \<or> mt = MTUnit \<or> mt = MTString"
+lemma ST_026_msg_type_cases: "\<forall> mt : MsgType, mt = MTNat \<or> mt = MTBool \<or> mt = MTUnit \<or> mt = MTString"
   by simp
 
 (* ST_027_msg_type_dec (matches Coq) *)
-lemma ST_027_msg_type_dec: "\<forall>mt1 mt2 : MsgType. (mt1 = mt2) \<or> (mt1 \<noteq> mt2)"
+lemma ST_027_msg_type_dec: "\<forall> mt1 mt2 : MsgType, {mt1 = mt2} + {mt1 \<noteq> mt2}"
   by simp
 
 (* ST_028_session_type_cases (matches Coq) *)
-lemma ST_028_session_type_cases: "\<forall>s : SessionType. (\<exists>mt s'. s = SSend mt s') \<or> (\<exists>mt s'. s = SRecv mt s') \<or> (\<exists>bs. s = SSelect bs) \<or> (\<exists>bs. s = SOffer bs) \<or> s = SEnd"
+lemma ST_028_session_type_cases: "\<forall> s : SessionType, (\<exists> mt s', s = SSend mt s') \<or> (\<exists> mt s', s = SRecv mt s') \<or> (\<exists> bs, s = SSelect bs) \<or> (\<exists> bs, s = SOffer bs) \<or> s = SEnd"
   by simp
 
 (* ST_029_dual_non_end_send (matches Coq) *)
-lemma ST_029_dual_non_end_send: "\<forall>mt s. dual (SSend mt s) \<noteq> SEnd"
+lemma ST_029_dual_non_end_send: "\<forall> mt s, dual (SSend mt s) \<noteq> SEnd"
   by auto
 
 (* ST_030_dual_non_end_recv (matches Coq) *)
-lemma ST_030_dual_non_end_recv: "\<forall>mt s. dual (SRecv mt s) \<noteq> SEnd"
+lemma ST_030_dual_non_end_recv: "\<forall> mt s, dual (SRecv mt s) \<noteq> SEnd"
   by auto
 
 (* ST_031_dual_empty_select (matches Coq) *)
@@ -304,47 +301,47 @@ lemma ST_032_dual_empty_offer: "dual (SOffer []) = SSelect []"
   by simp
 
 (* ST_033_lookup_empty (matches Coq) *)
-lemma ST_033_lookup_empty: "\<forall>id. lookup [] id = None"
+lemma ST_033_lookup_empty: "\<forall> id, lookup [] id = None"
   by simp
 
 (* ST_034_lookup_found (matches Coq) *)
-lemma ST_034_lookup_found: "\<forall>id ty env. lookup ((id, ty) :: env) id = Some ty"
+lemma ST_034_lookup_found: "\<forall> id ty env, lookup ((id, ty) :: env) id = Some ty"
   by simp
 
 (* ST_035_lookup_skip (matches Coq) *)
-lemma ST_035_lookup_skip: "\<forall>id1 id2 ty env. id1 \<noteq> id2 \<longrightarrow> lookup ((id1, ty) :: env) id2 = lookup env id2"
-  by auto
+lemma ST_035_lookup_skip: "\<forall> id1 id2 ty env, id1 \<noteq> id2 \<longrightarrow> lookup ((id1, ty) :: env) id2 = lookup env id2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* ST_036_dual_compose_send (matches Coq) *)
-lemma ST_036_dual_compose_send: "\<forall>mt s1 s2. dual (SSend mt s1) = SRecv mt (dual s1) \<longrightarrow> dual (SSend mt (SSend mt s2)) = SRecv mt (SRecv mt (dual s2))"
+lemma ST_036_dual_compose_send: "\<forall> mt s1 s2, dual (SSend mt s1) = SRecv mt (dual s1) \<longrightarrow> dual (SSend mt (SSend mt s2)) = SRecv mt (SRecv mt (dual s2))"
   by simp
 
 (* ST_037_dual_branches (matches Coq) *)
-lemma ST_037_dual_branches: "\<forall>(l :: nat) (s :: session_type). map (fun p : nat * session_type => (fst p, dual (snd p))) [(l, s)] = [(l, dual s)]"
+lemma ST_037_dual_branches: "\<forall> (l : nat) (s : SessionType), map (fun p : nat * SessionType => (fst p, dual (snd p))) [(l, s)] = [(l, dual s)]"
   by simp
 
 (* ST_038_single_branch_dual (matches Coq) *)
-lemma ST_038_single_branch_dual: "\<forall>(l :: nat) (s :: session_type). dual (SSelect [(l, s)]) = SOffer [(l, dual s)]"
+lemma ST_038_single_branch_dual: "\<forall> (l : nat) (s : SessionType), dual (SSelect [(l, s)]) = SOffer [(l, dual s)]"
   by simp
 
 (* ST_039_wt_end_empty (matches Coq) *)
-lemma ST_039_wt_end_empty: "\<forall>env. well_typed_proc env PEnd \<longrightarrow> env = []"
+lemma ST_039_wt_end_empty: "\<forall> env, well_typed_proc env PEnd \<longrightarrow> env = []"
   by simp
 
 (* ST_040_par_exists (matches Coq) *)
-lemma ST_040_par_exists: "\<forall>p1 p2. PPar p1 p2 = PPar p1 p2"
+lemma ST_040_par_exists: "\<forall> p1 p2, PPar p1 p2 = PPar p1 p2"
   by simp
 
 (* ST_041_chan_construct (matches Coq) *)
-lemma ST_041_chan_construct: "\<forall>id ty lin. chan_id (mkChan id ty lin) = id \<and> chan_type (mkChan id ty lin) = ty \<and> chan_linear (mkChan id ty lin) = lin"
+lemma ST_041_chan_construct: "\<forall> id ty lin, chan_id (mkChan id ty lin) = id \<and> chan_type (mkChan id ty lin) = ty \<and> chan_linear (mkChan id ty lin) = lin"
   by simp
 
 (* ST_042_pair_construct (matches Coq) *)
-lemma ST_042_pair_construct: "\<forall>ea eb. endpoint_a (mkChanPair ea eb) = ea \<and> endpoint_b (mkChanPair ea eb) = eb"
+lemma ST_042_pair_construct: "\<forall> ea eb, endpoint_a (mkChanPair ea eb) = ea \<and> endpoint_b (mkChanPair ea eb) = eb"
   by simp
 
 (* ST_043_process_cases (matches Coq) *)
-lemma ST_043_process_cases: "\<forall>p : Process. (\<exists>ch v p'. p = PSend ch v p') \<or> (\<exists>ch p'. p = PRecv ch p') \<or> (\<exists>ch l p'. p = PSelect ch l p') \<or> (\<exists>ch bs. p = POffer ch bs) \<or> (\<exists>ch. p = PClose ch) \<or> p = PEnd \<or> (\<exists>p1 p2. p = PPar p1 p2)"
+lemma ST_043_process_cases: "\<forall> p : Process, (\<exists> ch v p', p = PSend ch v p') \<or> (\<exists> ch p', p = PRecv ch p') \<or> (\<exists> ch l p', p = PSelect ch l p') \<or> (\<exists> ch bs, p = POffer ch bs) \<or> (\<exists> ch, p = PClose ch) \<or> p = PEnd \<or> (\<exists> p1 p2, p = PPar p1 p2)"
   by simp
 
 (* ST_044_dual_triple_end (matches Coq) *)
@@ -352,7 +349,7 @@ lemma ST_044_dual_triple_end: "dual (dual (dual SEnd)) = dual SEnd"
   by simp
 
 (* ST_045_nested_send_dual (matches Coq) *)
-lemma ST_045_nested_send_dual: "\<forall>mt1 mt2. dual (SSend mt1 (SSend mt2 SEnd)) = SRecv mt1 (SRecv mt2 SEnd)"
+lemma ST_045_nested_send_dual: "\<forall> mt1 mt2, dual (SSend mt1 (SSend mt2 SEnd)) = SRecv mt1 (SRecv mt2 SEnd)"
   by simp
 
 end

@@ -12,14 +12,14 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | stark_properties    | stark_properties       | OK     |
- * | ai_r_properties      | air_properties         | OK     |
- * | fri_properties      | fri_properties         | OK     |
- * | prover_state        | prover_state           | OK     |
- * | verifier_state      | verifier_state         | OK     |
- * | simulator_state     | simulator_state        | OK     |
- * | stark_security      | stark_security         | OK     |
- * | extended_stark_security | extended_stark_security | OK     |
+ * | STARKProperties    | stark_properties       | OK     |
+ * | AIRProperties      | air_properties         | OK     |
+ * | FRIProperties      | fri_properties         | OK     |
+ * | ProverState        | prover_state           | OK     |
+ * | VerifierState      | verifier_state         | OK     |
+ * | SimulatorState     | simulator_state        | OK     |
+ * | STARKSecurity      | stark_security         | OK     |
+ * | ExtendedSTARKSecurity | extended_stark_security | OK     |
  * | stark_props_secure | stark_props_secure     | OK     |
  * | air_secure         | air_secure             | OK     |
  * | fri_secure         | fri_secure             | OK     |
@@ -164,21 +164,19 @@ theory ZKSTARKSecurity
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym ai_r_properties = "nat"
-(* stark_properties (matches Coq: Record stark_properties) *)
+(* STARKProperties (matches Coq: Record STARKProperties) *)
 record stark_properties =
   stark_transparent :: bool
   stark_scalable :: bool
   stark_post_quantum :: bool
 
-(* ai_r_properties (matches Coq: Record ai_r_properties) *)
+(* AIRProperties (matches Coq: Record AIRProperties) *)
 record air_properties =
   air_algebraic :: bool
   air_low_degree :: bool
   air_fri_verified :: bool
 
-(* fri_properties (matches Coq: Record fri_properties) *)
+(* FRIProperties (matches Coq: Record FRIProperties) *)
 record fri_properties =
   fri_soundness :: bool
   fri_query_bound :: bool
@@ -187,37 +185,37 @@ record fri_properties =
   fri_round_complexity :: nat
   fri_proximity_param :: nat
 
-(* prover_state (matches Coq: Record prover_state) *)
+(* ProverState (matches Coq: Record ProverState) *)
 record prover_state =
   prover_witness :: nat
   prover_randomness :: nat
   prover_committed :: bool
   prover_fri_complete :: bool
 
-(* verifier_state (matches Coq: Record verifier_state) *)
+(* VerifierState (matches Coq: Record VerifierState) *)
 record verifier_state =
   verifier_challenges :: 'a list
   verifier_queries :: 'a list
   verifier_accepting :: bool
 
-(* simulator_state (matches Coq: Record simulator_state) *)
+(* SimulatorState (matches Coq: Record SimulatorState) *)
 record simulator_state =
   sim_transcript :: 'a list
   sim_rewinding :: bool
   sim_indistinguishable :: bool
 
-(* stark_security (matches Coq: Record stark_security) *)
+(* STARKSecurity (matches Coq: Record STARKSecurity) *)
 record stark_security =
   starks_completeness :: bool
   starks_soundness :: bool
   starks_zero_knowledge :: bool
-  starks_stark :: stark_properties
-  starks_air :: ai_r_properties
+  starks_stark :: STARKProperties
+  starks_air :: AIRProperties
 
-(* extended_stark_security (matches Coq: Record extended_stark_security) *)
+(* ExtendedSTARKSecurity (matches Coq: Record ExtendedSTARKSecurity) *)
 record extended_stark_security =
-  ext_base :: stark_security
-  ext_fri :: fri_properties
+  ext_base :: STARKSecurity
+  ext_fri :: FRIProperties
   ext_simulation_secure :: bool
   ext_extraction_secure :: bool
   ext_quantum_resistant :: bool
@@ -290,7 +288,7 @@ definition valid_simulator :: "SimulatorState" where
   "valid_simulator \<equiv> mkSimulatorState [1;2;3;4;5] True True"
 
 (* computational_soundness (matches Coq: Definition computational_soundness) *)
-definition computational_soundness :: "STARKSecurity \<Rightarrow> fri_properties \<Rightarrow> bool" where
+definition computational_soundness :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> bool" where
   "computational_soundness s f \<equiv> starks_soundness s \<and> fri_soundness f \<and> fri_commitment_binding f"
 
 (* amplified_soundness (matches Coq: Definition amplified_soundness) *)
@@ -298,79 +296,79 @@ definition amplified_soundness :: "bool \<Rightarrow> nat \<Rightarrow> bool" wh
   "amplified_soundness base_sound rounds \<equiv> base_sound \<and> (0 < rounds)"
 
 (* simulation_based_zk (matches Coq: Definition simulation_based_zk) *)
-definition simulation_based_zk :: "STARKSecurity \<Rightarrow> simulator_state \<Rightarrow> bool" where
+definition simulation_based_zk :: "STARKSecurity \<Rightarrow> SimulatorState \<Rightarrow> bool" where
   "simulation_based_zk s sim \<equiv> starks_zero_knowledge s \<and> sim_indistinguishable sim"
 
 (* perfect_zk (matches Coq: Definition perfect_zk) *)
-definition perfect_zk :: "STARKSecurity \<Rightarrow> simulator_state \<Rightarrow> bool" where
+definition perfect_zk :: "STARKSecurity \<Rightarrow> SimulatorState \<Rightarrow> bool" where
   "perfect_zk s sim \<equiv> starks_zero_knowledge s \<and> sim_indistinguishable sim \<and> sim_rewinding sim"
 
 (* zk_with_soundness (matches Coq: Definition zk_with_soundness) *)
-definition zk_with_soundness :: "STARKSecurity \<Rightarrow> fri_properties \<Rightarrow> simulator_state \<Rightarrow> bool" where
+definition zk_with_soundness :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> SimulatorState \<Rightarrow> bool" where
   "zk_with_soundness s f sim \<equiv> computational_soundness s f \<and> simulation_based_zk s sim"
 
 (* interaction_complete (matches Coq: Definition interaction_complete) *)
-definition interaction_complete :: "ProverState \<Rightarrow> verifier_state \<Rightarrow> stark_security \<Rightarrow> bool" where
+definition interaction_complete :: "ProverState \<Rightarrow> VerifierState \<Rightarrow> STARKSecurity \<Rightarrow> bool" where
   "interaction_complete p v s \<equiv> prover_honest p \<and> starks_completeness s \<and> verifier_accepting v"
 
 (* fri_complete (matches Coq: Definition fri_complete) *)
-definition fri_complete :: "ProverState \<Rightarrow> fri_properties \<Rightarrow> bool" where
+definition fri_complete :: "ProverState \<Rightarrow> FRIProperties \<Rightarrow> bool" where
   "fri_complete p f \<equiv> prover_fri_complete p \<and> fri_soundness f"
 
 (* post_quantum_secure (matches Coq: Definition post_quantum_secure) *)
-definition post_quantum_secure :: "STARKProperties \<Rightarrow> extended_stark_security \<Rightarrow> bool" where
+definition post_quantum_secure :: "STARKProperties \<Rightarrow> ExtendedSTARKSecurity \<Rightarrow> bool" where
   "post_quantum_secure s e \<equiv> stark_post_quantum s \<and> ext_quantum_resistant e"
 
 (* hash_based_security (matches Coq: Definition hash_based_security) *)
-definition hash_based_security :: "STARKProperties \<Rightarrow> fri_properties \<Rightarrow> bool" where
+definition hash_based_security :: "STARKProperties \<Rightarrow> FRIProperties \<Rightarrow> bool" where
   "hash_based_security s f \<equiv> stark_post_quantum s \<and> fri_commitment_binding f"
 
 (* fully_transparent (matches Coq: Definition fully_transparent) *)
-definition fully_transparent :: "STARKProperties \<Rightarrow> fri_properties \<Rightarrow> bool" where
+definition fully_transparent :: "STARKProperties \<Rightarrow> FRIProperties \<Rightarrow> bool" where
   "fully_transparent s f \<equiv> stark_transparent s \<and> fri_interactive_to_non f"
 
 (* publicly_verifiable (matches Coq: Definition publicly_verifiable) *)
-definition publicly_verifiable :: "STARKSecurity \<Rightarrow> fri_properties \<Rightarrow> bool" where
+definition publicly_verifiable :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> bool" where
   "publicly_verifiable s f \<equiv> stark_transparent (starks_stark s) \<and> fri_interactive_to_non f \<and>
   starks_soundness s"
 
 (* extraction_secure (matches Coq: Definition extraction_secure) *)
-definition extraction_secure :: "ExtendedSTARKSecurity \<Rightarrow> fri_properties \<Rightarrow> bool" where
+definition extraction_secure :: "ExtendedSTARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> bool" where
   "extraction_secure e f \<equiv> ext_extraction_secure e \<and> fri_soundness f \<and> fri_query_bound f"
 
 (* air_stark_connection (matches Coq: Definition air_stark_connection) *)
-definition air_stark_connection :: "AIRProperties \<Rightarrow> stark_security \<Rightarrow> bool" where
+definition air_stark_connection :: "AIRProperties \<Rightarrow> STARKSecurity \<Rightarrow> bool" where
   "air_stark_connection a s \<equiv> air_secure a \<and> air_fri_verified a"
 
 (* modular_stark (matches Coq: Definition modular_stark) *)
-definition modular_stark :: "STARKSecurity \<Rightarrow> fri_properties \<Rightarrow> simulator_state \<Rightarrow> bool" where
+definition modular_stark :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> SimulatorState \<Rightarrow> bool" where
   "modular_stark s f sim \<equiv> stark_fully_secure s \<and> fri_secure f \<and> simulation_valid sim"
 
 (* full_stark_security (matches Coq: Definition full_stark_security) *)
-definition full_stark_security :: "STARKSecurity \<Rightarrow> fri_properties \<Rightarrow> simulator_state \<Rightarrow> extended_stark_security \<Rightarrow> bool" where
+definition full_stark_security :: "STARKSecurity \<Rightarrow> FRIProperties \<Rightarrow> SimulatorState \<Rightarrow> ExtendedSTARKSecurity \<Rightarrow> bool" where
   "full_stark_security s f sim e \<equiv> modular_stark s f sim \<and> extended_secure e"
 
 (* ============================================================================
     SECTION 1: BOOLEAN UTILITIES
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
-  by auto
+lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* orb_true_iff (matches Coq) *)
-lemma orb_true_iff: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = True"
+lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = True"
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by auto
 
 (* bool_dec (matches Coq) *)
-lemma bool_dec: "\<forall>b : bool. b = True \<or> b = False"
+lemma bool_dec: "\<forall> b : bool, b = True \<or> b = False"
   by auto
 
 (* andb_false_iff (matches Coq) *)
-lemma andb_false_iff: "\<forall>a b : bool. a && b = False <-> a = False \<or> b = False"
+lemma andb_false_iff: "\<forall> a b : bool, a && b = False <-> a = False \<or> b = False"
   by auto
 
 (* ============================================================================
@@ -425,43 +423,43 @@ lemma STARK_012: "starks_zero_knowledge riina_stark = True"
   by simp
 
 (* STARK_013 (matches Coq) *)
-lemma STARK_013: "\<forall>s. stark_props_secure s = True \<longrightarrow> stark_transparent s = True"
+lemma STARK_013: "\<forall> s, stark_props_secure s = True \<longrightarrow> stark_transparent s = True"
   by auto
 
 (* STARK_014 (matches Coq) *)
-lemma STARK_014: "\<forall>s. stark_props_secure s = True \<longrightarrow> stark_post_quantum s = True"
+lemma STARK_014: "\<forall> s, stark_props_secure s = True \<longrightarrow> stark_post_quantum s = True"
   by auto
 
 (* STARK_015 (matches Coq) *)
-lemma STARK_015: "\<forall>a. air_secure a = True \<longrightarrow> air_fri_verified a = True"
+lemma STARK_015: "\<forall> a, air_secure a = True \<longrightarrow> air_fri_verified a = True"
   by auto
 
 (* STARK_016 (matches Coq) *)
-lemma STARK_016: "\<forall>s. stark_fully_secure s = True \<longrightarrow> starks_soundness s = True"
+lemma STARK_016: "\<forall> s, stark_fully_secure s = True \<longrightarrow> starks_soundness s = True"
   by auto
 
 (* STARK_017 (matches Coq) *)
-lemma STARK_017: "\<forall>s. stark_fully_secure s = True \<longrightarrow> starks_zero_knowledge s = True"
+lemma STARK_017: "\<forall> s, stark_fully_secure s = True \<longrightarrow> starks_zero_knowledge s = True"
   by auto
 
 (* STARK_018 (matches Coq) *)
-lemma STARK_018: "\<forall>s. stark_fully_secure s = True \<longrightarrow> stark_props_secure (starks_stark s) = True"
+lemma STARK_018: "\<forall> s, stark_fully_secure s = True \<longrightarrow> stark_props_secure (starks_stark s) = True"
   by auto
 
 (* STARK_019 (matches Coq) *)
-lemma STARK_019: "\<forall>s. stark_fully_secure s = True \<longrightarrow> air_secure (starks_air s) = True"
+lemma STARK_019: "\<forall> s, stark_fully_secure s = True \<longrightarrow> air_secure (starks_air s) = True"
   by auto
 
 (* STARK_020 (matches Coq) *)
-lemma STARK_020: "\<forall>s. stark_fully_secure s = True \<longrightarrow> stark_transparent (starks_stark s) = True"
+lemma STARK_020: "\<forall> s, stark_fully_secure s = True \<longrightarrow> stark_transparent (starks_stark s) = True"
   by auto
 
 (* STARK_021 (matches Coq) *)
-lemma STARK_021: "\<forall>s. stark_fully_secure s = True \<longrightarrow> stark_post_quantum (starks_stark s) = True"
+lemma STARK_021: "\<forall> s, stark_fully_secure s = True \<longrightarrow> stark_post_quantum (starks_stark s) = True"
   by auto
 
 (* STARK_022 (matches Coq) *)
-lemma STARK_022: "\<forall>s. stark_fully_secure s = True \<longrightarrow> air_fri_verified (starks_air s) = True"
+lemma STARK_022: "\<forall> s, stark_fully_secure s = True \<longrightarrow> air_fri_verified (starks_air s) = True"
   by auto
 
 (* STARK_023 (matches Coq) *)
@@ -473,26 +471,26 @@ lemma STARK_024: "stark_transparent riina_stark_props = True \<and> air_fri_veri
   by auto
 
 (* STARK_025_complete (matches Coq) *)
-lemma STARK_025_complete: "\<forall>s. stark_fully_secure s = True \<longrightarrow> starks_soundness s = True \<and> starks_zero_knowledge s = True \<and> stark_transparent (starks_stark s) = True \<and> stark_post_quantum (starks_stark s) = True"
+lemma STARK_025_complete: "\<forall> s, stark_fully_secure s = True \<longrightarrow> starks_soundness s = True \<and> starks_zero_knowledge s = True \<and> stark_transparent (starks_stark s) = True \<and> stark_post_quantum (starks_stark s) = True"
   by auto
 
 (* ============================================================================
     SECTION 6: FRI PROTOCOL SECURITY THEOREMS
     ============================================================================ *)
 (* FRI_soundness_property (matches Coq) *)
-lemma FRI_soundness_property: "\<forall>f. fri_secure f = True \<longrightarrow> fri_soundness f = True"
+lemma FRI_soundness_property: "\<forall> f, fri_secure f = True \<longrightarrow> fri_soundness f = True"
   by auto
 
 (* FRI_query_bound_property (matches Coq) *)
-lemma FRI_query_bound_property: "\<forall>f. fri_secure f = True \<longrightarrow> fri_query_bound f = True"
+lemma FRI_query_bound_property: "\<forall> f, fri_secure f = True \<longrightarrow> fri_query_bound f = True"
   by auto
 
 (* FRI_commitment_binding_property (matches Coq) *)
-lemma FRI_commitment_binding_property: "\<forall>f. fri_secure f = True \<longrightarrow> fri_commitment_binding f = True"
+lemma FRI_commitment_binding_property: "\<forall> f, fri_secure f = True \<longrightarrow> fri_commitment_binding f = True"
   by auto
 
 (* FRI_fiat_shamir_property (matches Coq) *)
-lemma FRI_fiat_shamir_property: "\<forall>f. fri_secure f = True \<longrightarrow> fri_interactive_to_non f = True"
+lemma FRI_fiat_shamir_property: "\<forall> f, fri_secure f = True \<longrightarrow> fri_interactive_to_non f = True"
   by auto
 
 (* FRI_riina_soundness (matches Coq) *)
@@ -524,15 +522,15 @@ lemma FRI_proximity_positive: "fri_proximity_param riina_fri > 0"
   by auto
 
 (* soundness_implies_starks (matches Coq) *)
-lemma soundness_implies_starks: "\<forall>s f. computational_soundness s f = True \<longrightarrow> starks_soundness s = True"
+lemma soundness_implies_starks: "\<forall> s f, computational_soundness s f = True \<longrightarrow> starks_soundness s = True"
   by auto
 
 (* soundness_implies_fri (matches Coq) *)
-lemma soundness_implies_fri: "\<forall>s f. computational_soundness s f = True \<longrightarrow> fri_soundness f = True"
+lemma soundness_implies_fri: "\<forall> s f, computational_soundness s f = True \<longrightarrow> fri_soundness f = True"
   by auto
 
 (* soundness_implies_binding (matches Coq) *)
-lemma soundness_implies_binding: "\<forall>s f. computational_soundness s f = True \<longrightarrow> fri_commitment_binding f = True"
+lemma soundness_implies_binding: "\<forall> s f, computational_soundness s f = True \<longrightarrow> fri_commitment_binding f = True"
   by auto
 
 (* riina_computational_soundness (matches Coq) *)
@@ -540,27 +538,27 @@ lemma riina_computational_soundness: "computational_soundness riina_stark riina_
   by simp
 
 (* soundness_amplification (matches Coq) *)
-lemma soundness_amplification: "\<forall>s f. computational_soundness s f = True \<longrightarrow> fri_round_complexity f > 0 \<longrightarrow> amplified_soundness (computational_soundness s f) (fri_round_complexity f) = True"
+lemma soundness_amplification: "\<forall> s f, computational_soundness s f = True \<longrightarrow> fri_round_complexity f > 0 \<longrightarrow> amplified_soundness (computational_soundness s f) (fri_round_complexity f) = True"
   by auto
 
 (* soundness_composition (matches Coq) *)
-lemma soundness_composition: "\<forall>s f. starks_soundness s = True \<longrightarrow> fri_soundness f = True \<longrightarrow> fri_commitment_binding f = True \<longrightarrow> computational_soundness s f = True"
+lemma soundness_composition: "\<forall> s f, starks_soundness s = True \<longrightarrow> fri_soundness f = True \<longrightarrow> fri_commitment_binding f = True \<longrightarrow> computational_soundness s f = True"
   by simp
 
 (* zk_implies_starks_zk (matches Coq) *)
-lemma zk_implies_starks_zk: "\<forall>s sim. simulation_based_zk s sim = True \<longrightarrow> starks_zero_knowledge s = True"
+lemma zk_implies_starks_zk: "\<forall> s sim, simulation_based_zk s sim = True \<longrightarrow> starks_zero_knowledge s = True"
   by auto
 
 (* zk_implies_indistinguishable (matches Coq) *)
-lemma zk_implies_indistinguishable: "\<forall>s sim. simulation_based_zk s sim = True \<longrightarrow> sim_indistinguishable sim = True"
+lemma zk_implies_indistinguishable: "\<forall> s sim, simulation_based_zk s sim = True \<longrightarrow> sim_indistinguishable sim = True"
   by auto
 
 (* perfect_zk_implies_simulation (matches Coq) *)
-lemma perfect_zk_implies_simulation: "\<forall>s sim. perfect_zk s sim = True \<longrightarrow> simulation_based_zk s sim = True"
+lemma perfect_zk_implies_simulation: "\<forall> s sim, perfect_zk s sim = True \<longrightarrow> simulation_based_zk s sim = True"
   by auto
 
 (* perfect_zk_rewinding (matches Coq) *)
-lemma perfect_zk_rewinding: "\<forall>s sim. perfect_zk s sim = True \<longrightarrow> sim_rewinding sim = True"
+lemma perfect_zk_rewinding: "\<forall> s sim, perfect_zk s sim = True \<longrightarrow> sim_rewinding sim = True"
   by auto
 
 (* riina_simulation_zk (matches Coq) *)
@@ -576,7 +574,7 @@ lemma simulator_validity: "simulation_valid valid_simulator = True"
   by simp
 
 (* zk_soundness_composition (matches Coq) *)
-lemma zk_soundness_composition: "\<forall>s f sim. computational_soundness s f = True \<longrightarrow> simulation_based_zk s sim = True \<longrightarrow> zk_with_soundness s f sim = True"
+lemma zk_soundness_composition: "\<forall> s f sim, computational_soundness s f = True \<longrightarrow> simulation_based_zk s sim = True \<longrightarrow> zk_with_soundness s f sim = True"
   by simp
 
 (* riina_zk_soundness (matches Coq) *)
@@ -584,15 +582,15 @@ lemma riina_zk_soundness: "zk_with_soundness riina_stark riina_fri valid_simulat
   by simp
 
 (* completeness_requires_honest_prover (matches Coq) *)
-lemma completeness_requires_honest_prover: "\<forall>p v s. interaction_complete p v s = True \<longrightarrow> prover_honest p = True"
+lemma completeness_requires_honest_prover: "\<forall> p v s, interaction_complete p v s = True \<longrightarrow> prover_honest p = True"
   by auto
 
 (* completeness_requires_starks (matches Coq) *)
-lemma completeness_requires_starks: "\<forall>p v s. interaction_complete p v s = True \<longrightarrow> starks_completeness s = True"
+lemma completeness_requires_starks: "\<forall> p v s, interaction_complete p v s = True \<longrightarrow> starks_completeness s = True"
   by auto
 
 (* completeness_implies_acceptance (matches Coq) *)
-lemma completeness_implies_acceptance: "\<forall>p v s. interaction_complete p v s = True \<longrightarrow> verifier_accepting v = True"
+lemma completeness_implies_acceptance: "\<forall> p v s, interaction_complete p v s = True \<longrightarrow> verifier_accepting v = True"
   by auto
 
 (* riina_complete_interaction (matches Coq) *)
@@ -608,7 +606,7 @@ lemma honest_verifier_property: "verifier_honest honest_verifier = True"
   by simp
 
 (* fri_completeness_requires_prover (matches Coq) *)
-lemma fri_completeness_requires_prover: "\<forall>p f. fri_complete p f = True \<longrightarrow> prover_fri_complete p = True"
+lemma fri_completeness_requires_prover: "\<forall> p f, fri_complete p f = True \<longrightarrow> prover_fri_complete p = True"
   by auto
 
 (* riina_fri_complete (matches Coq) *)
@@ -616,11 +614,11 @@ lemma riina_fri_complete: "fri_complete honest_prover riina_fri = True"
   by simp
 
 (* pq_implies_stark_pq (matches Coq) *)
-lemma pq_implies_stark_pq: "\<forall>s e. post_quantum_secure s e = True \<longrightarrow> stark_post_quantum s = True"
+lemma pq_implies_stark_pq: "\<forall> s e, post_quantum_secure s e = True \<longrightarrow> stark_post_quantum s = True"
   by auto
 
 (* pq_implies_ext_resistant (matches Coq) *)
-lemma pq_implies_ext_resistant: "\<forall>s e. post_quantum_secure s e = True \<longrightarrow> ext_quantum_resistant e = True"
+lemma pq_implies_ext_resistant: "\<forall> s e, post_quantum_secure s e = True \<longrightarrow> ext_quantum_resistant e = True"
   by auto
 
 (* riina_post_quantum (matches Coq) *)
@@ -628,11 +626,11 @@ lemma riina_post_quantum: "post_quantum_secure riina_stark_props riina_extended 
   by simp
 
 (* hash_security_pq (matches Coq) *)
-lemma hash_security_pq: "\<forall>s f. hash_based_security s f = True \<longrightarrow> stark_post_quantum s = True"
+lemma hash_security_pq: "\<forall> s f, hash_based_security s f = True \<longrightarrow> stark_post_quantum s = True"
   by auto
 
 (* hash_security_binding (matches Coq) *)
-lemma hash_security_binding: "\<forall>s f. hash_based_security s f = True \<longrightarrow> fri_commitment_binding f = True"
+lemma hash_security_binding: "\<forall> s f, hash_based_security s f = True \<longrightarrow> fri_commitment_binding f = True"
   by auto
 
 (* riina_hash_security (matches Coq) *)
@@ -641,15 +639,15 @@ lemma riina_hash_security: "hash_based_security riina_stark_props riina_fri = Tr
 
 (* No trusted setup implies quantum resistance *)
 (* transparency_enables_pq (matches Coq) *)
-lemma transparency_enables_pq: "\<forall>s. stark_transparent s = True \<longrightarrow> stark_post_quantum s = True \<longrightarrow> stark_props_secure s = True \<or> stark_scalable s = False"
+lemma transparency_enables_pq: "\<forall> s, stark_transparent s = True \<longrightarrow> stark_post_quantum s = True \<longrightarrow> stark_props_secure s = True \<or> stark_scalable s = False"
   by simp
 
 (* transparency_no_setup (matches Coq) *)
-lemma transparency_no_setup: "\<forall>s f. fully_transparent s f = True \<longrightarrow> stark_transparent s = True"
+lemma transparency_no_setup: "\<forall> s f, fully_transparent s f = True \<longrightarrow> stark_transparent s = True"
   by auto
 
 (* transparency_fiat_shamir (matches Coq) *)
-lemma transparency_fiat_shamir: "\<forall>s f. fully_transparent s f = True \<longrightarrow> fri_interactive_to_non f = True"
+lemma transparency_fiat_shamir: "\<forall> s f, fully_transparent s f = True \<longrightarrow> fri_interactive_to_non f = True"
   by auto
 
 (* riina_fully_transparent (matches Coq) *)
@@ -657,11 +655,11 @@ lemma riina_fully_transparent: "fully_transparent riina_stark_props riina_fri = 
   by simp
 
 (* public_verify_transparent (matches Coq) *)
-lemma public_verify_transparent: "\<forall>s f. publicly_verifiable s f = True \<longrightarrow> stark_transparent (starks_stark s) = True"
+lemma public_verify_transparent: "\<forall> s f, publicly_verifiable s f = True \<longrightarrow> stark_transparent (starks_stark s) = True"
   by auto
 
 (* public_verify_sound (matches Coq) *)
-lemma public_verify_sound: "\<forall>s f. publicly_verifiable s f = True \<longrightarrow> starks_soundness s = True"
+lemma public_verify_sound: "\<forall> s f, publicly_verifiable s f = True \<longrightarrow> starks_soundness s = True"
   by auto
 
 (* riina_publicly_verifiable (matches Coq) *)
@@ -672,23 +670,23 @@ lemma riina_publicly_verifiable: "publicly_verifiable riina_stark riina_fri = Tr
     SECTION 12: EXTENDED STARK SECURITY THEOREMS
     ============================================================================ *)
 (* extended_implies_base (matches Coq) *)
-lemma extended_implies_base: "\<forall>e. extended_secure e = True \<longrightarrow> stark_fully_secure (ext_base e) = True"
+lemma extended_implies_base: "\<forall> e, extended_secure e = True \<longrightarrow> stark_fully_secure (ext_base e) = True"
   by auto
 
 (* extended_implies_fri (matches Coq) *)
-lemma extended_implies_fri: "\<forall>e. extended_secure e = True \<longrightarrow> fri_secure (ext_fri e) = True"
+lemma extended_implies_fri: "\<forall> e, extended_secure e = True \<longrightarrow> fri_secure (ext_fri e) = True"
   by auto
 
 (* extended_implies_simulation (matches Coq) *)
-lemma extended_implies_simulation: "\<forall>e. extended_secure e = True \<longrightarrow> ext_simulation_secure e = True"
+lemma extended_implies_simulation: "\<forall> e, extended_secure e = True \<longrightarrow> ext_simulation_secure e = True"
   by auto
 
 (* extended_implies_extraction (matches Coq) *)
-lemma extended_implies_extraction: "\<forall>e. extended_secure e = True \<longrightarrow> ext_extraction_secure e = True"
+lemma extended_implies_extraction: "\<forall> e, extended_secure e = True \<longrightarrow> ext_extraction_secure e = True"
   by auto
 
 (* extended_implies_quantum (matches Coq) *)
-lemma extended_implies_quantum: "\<forall>e. extended_secure e = True \<longrightarrow> ext_quantum_resistant e = True"
+lemma extended_implies_quantum: "\<forall> e, extended_secure e = True \<longrightarrow> ext_quantum_resistant e = True"
   by auto
 
 (* riina_extended_secure (matches Coq) *)
@@ -696,15 +694,15 @@ lemma riina_extended_secure: "extended_secure riina_extended = True"
   by simp
 
 (* extraction_implies_ext (matches Coq) *)
-lemma extraction_implies_ext: "\<forall>e f. extraction_secure e f = True \<longrightarrow> ext_extraction_secure e = True"
+lemma extraction_implies_ext: "\<forall> e f, extraction_secure e f = True \<longrightarrow> ext_extraction_secure e = True"
   by auto
 
 (* extraction_implies_fri_sound (matches Coq) *)
-lemma extraction_implies_fri_sound: "\<forall>e f. extraction_secure e f = True \<longrightarrow> fri_soundness f = True"
+lemma extraction_implies_fri_sound: "\<forall> e f, extraction_secure e f = True \<longrightarrow> fri_soundness f = True"
   by auto
 
 (* extraction_implies_query_bound (matches Coq) *)
-lemma extraction_implies_query_bound: "\<forall>e f. extraction_secure e f = True \<longrightarrow> fri_query_bound f = True"
+lemma extraction_implies_query_bound: "\<forall> e f, extraction_secure e f = True \<longrightarrow> fri_query_bound f = True"
   by auto
 
 (* riina_extraction_secure (matches Coq) *)
@@ -715,15 +713,15 @@ lemma riina_extraction_secure: "extraction_secure riina_extended riina_fri = Tru
     SECTION 14: AIR (ALGEBRAIC INTERMEDIATE REPRESENTATION) THEOREMS
     ============================================================================ *)
 (* air_algebraic_required (matches Coq) *)
-lemma air_algebraic_required: "\<forall>a. air_secure a = True \<longrightarrow> air_algebraic a = True"
+lemma air_algebraic_required: "\<forall> a, air_secure a = True \<longrightarrow> air_algebraic a = True"
   by auto
 
 (* air_low_degree_required (matches Coq) *)
-lemma air_low_degree_required: "\<forall>a. air_secure a = True \<longrightarrow> air_low_degree a = True"
+lemma air_low_degree_required: "\<forall> a, air_secure a = True \<longrightarrow> air_low_degree a = True"
   by auto
 
 (* air_fri_required (matches Coq) *)
-lemma air_fri_required: "\<forall>a. air_secure a = True \<longrightarrow> air_fri_verified a = True"
+lemma air_fri_required: "\<forall> a, air_secure a = True \<longrightarrow> air_fri_verified a = True"
   by auto
 
 (* riina_air_fri_connection (matches Coq) *)
@@ -731,15 +729,15 @@ lemma riina_air_fri_connection: "air_fri_verified riina_air = True \<and> fri_so
   by auto
 
 (* modular_implies_stark (matches Coq) *)
-lemma modular_implies_stark: "\<forall>s f sim. modular_stark s f sim = True \<longrightarrow> stark_fully_secure s = True"
+lemma modular_implies_stark: "\<forall> s f sim, modular_stark s f sim = True \<longrightarrow> stark_fully_secure s = True"
   by auto
 
 (* modular_implies_fri (matches Coq) *)
-lemma modular_implies_fri: "\<forall>s f sim. modular_stark s f sim = True \<longrightarrow> fri_secure f = True"
+lemma modular_implies_fri: "\<forall> s f sim, modular_stark s f sim = True \<longrightarrow> fri_secure f = True"
   by auto
 
 (* modular_implies_sim (matches Coq) *)
-lemma modular_implies_sim: "\<forall>s f sim. modular_stark s f sim = True \<longrightarrow> simulation_valid sim = True"
+lemma modular_implies_sim: "\<forall> s f sim, modular_stark s f sim = True \<longrightarrow> simulation_valid sim = True"
   by auto
 
 (* riina_modular_stark (matches Coq) *)
@@ -747,11 +745,11 @@ lemma riina_modular_stark: "modular_stark riina_stark riina_fri valid_simulator 
   by simp
 
 (* full_security_modular (matches Coq) *)
-lemma full_security_modular: "\<forall>s f sim e. full_stark_security s f sim e = True \<longrightarrow> modular_stark s f sim = True"
+lemma full_security_modular: "\<forall> s f sim e, full_stark_security s f sim e = True \<longrightarrow> modular_stark s f sim = True"
   by auto
 
 (* full_security_extended (matches Coq) *)
-lemma full_security_extended: "\<forall>s f sim e. full_stark_security s f sim e = True \<longrightarrow> extended_secure e = True"
+lemma full_security_extended: "\<forall> s f sim e, full_stark_security s f sim e = True \<longrightarrow> extended_secure e = True"
   by auto
 
 (* riina_full_security (matches Coq) *)
@@ -760,7 +758,7 @@ lemma riina_full_security: "full_stark_security riina_stark riina_fri valid_simu
 
 (* The master theorem proving all essential STARK properties *)
 (* STARK_MASTER_SECURITY (matches Coq) *)
-lemma STARK_MASTER_SECURITY: "\<forall>s f sim e. full_stark_security s f sim e = True \<longrightarrow> starks_completeness (ext_base e) = True \<and> starks_soundness (ext_base e) = True \<and> starks_zero_knowledge (ext_base e) = True \<and> stark_transparent (starks_stark (ext_base e)) = True \<and> stark_post_quantum (starks_stark (ext_base e)) = True \<and> ext_quantum_resistant e = True \<and> fri_soundness (ext_fri e) = True \<and> fri_commitment_binding (ext_fri e) = True \<and> ext_simulation_secure e = True \<and> ext_extraction_secure e = True"
+lemma STARK_MASTER_SECURITY: "\<forall> s f sim e, full_stark_security s f sim e = True \<longrightarrow> starks_completeness (ext_base e) = True \<and> starks_soundness (ext_base e) = True \<and> starks_zero_knowledge (ext_base e) = True \<and> stark_transparent (starks_stark (ext_base e)) = True \<and> stark_post_quantum (starks_stark (ext_base e)) = True \<and> ext_quantum_resistant e = True \<and> fri_soundness (ext_fri e) = True \<and> fri_commitment_binding (ext_fri e) = True \<and> ext_simulation_secure e = True \<and> ext_extraction_secure e = True"
   by auto
 
 (* riina_master_security (matches Coq) *)
@@ -769,32 +767,32 @@ lemma riina_master_security: "starks_completeness (ext_base riina_extended) = Tr
 
 (* Equivalence theorems *)
 (* stark_security_equivalence (matches Coq) *)
-lemma stark_security_equivalence: "\<forall>s. stark_fully_secure s = True <-> (starks_completeness s = True \<and> starks_soundness s = True \<and> starks_zero_knowledge s = True \<and> stark_props_secure (starks_stark s) = True \<and> air_secure (starks_air s) = True)"
+lemma stark_security_equivalence: "\<forall> s, stark_fully_secure s = True <-> (starks_completeness s = True \<and> starks_soundness s = True \<and> starks_zero_knowledge s = True \<and> stark_props_secure (starks_stark s) = True \<and> air_secure (starks_air s) = True)"
   by auto
 
 (* fri_security_equivalence (matches Coq) *)
-lemma fri_security_equivalence: "\<forall>f. fri_secure f = True <-> (fri_soundness f = True \<and> fri_query_bound f = True \<and> fri_commitment_binding f = True \<and> fri_interactive_to_non f = True)"
+lemma fri_security_equivalence: "\<forall> f, fri_secure f = True <-> (fri_soundness f = True \<and> fri_query_bound f = True \<and> fri_commitment_binding f = True \<and> fri_interactive_to_non f = True)"
   by auto
 
 (* Decisability of security predicates *)
 (* stark_props_secure_dec (matches Coq) *)
-lemma stark_props_secure_dec: "\<forall>s. stark_props_secure s = True \<or> stark_props_secure s = False"
+lemma stark_props_secure_dec: "\<forall> s, stark_props_secure s = True \<or> stark_props_secure s = False"
   by auto
 
 (* air_secure_dec (matches Coq) *)
-lemma air_secure_dec: "\<forall>a. air_secure a = True \<or> air_secure a = False"
+lemma air_secure_dec: "\<forall> a, air_secure a = True \<or> air_secure a = False"
   by auto
 
 (* fri_secure_dec (matches Coq) *)
-lemma fri_secure_dec: "\<forall>f. fri_secure f = True \<or> fri_secure f = False"
+lemma fri_secure_dec: "\<forall> f, fri_secure f = True \<or> fri_secure f = False"
   by auto
 
 (* stark_fully_secure_dec (matches Coq) *)
-lemma stark_fully_secure_dec: "\<forall>s. stark_fully_secure s = True \<or> stark_fully_secure s = False"
+lemma stark_fully_secure_dec: "\<forall> s, stark_fully_secure s = True \<or> stark_fully_secure s = False"
   by auto
 
 (* extended_secure_dec (matches Coq) *)
-lemma extended_secure_dec: "\<forall>e. extended_secure e = True \<or> extended_secure e = False"
+lemma extended_secure_dec: "\<forall> e, extended_secure e = True \<or> extended_secure e = False"
   by auto
 
 end

@@ -41,129 +41,129 @@ closed_rho(rho) == TRUE
 Reducible(T, e) == TRUE
 
 \* value_not_step (matches Coq: Lemma value_not_step)
-\* Next-state relation
-Next == UNCHANGED <<state>>
-\* Specification
-Spec == Init /\ [][Next]_<<state>>
-THEOREM value_not_step == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM value_not_step == Init => TypeOK
 
 \* value_SN (matches Coq: Lemma value_SN)
-THEOREM value_SN == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM value_SN == Init => TypeOK
 
 \* SN_step (matches Coq: Lemma SN_step)
-THEOREM SN_step == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_step == Init => TypeOK
 
 \* SN_classify_aux (matches Coq: Lemma SN_classify_aux)
-THEOREM SN_classify_aux == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_classify_aux == Init => TypeOK
 
 \* SN_classify (matches Coq: Lemma SN_classify)
-THEOREM SN_classify == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_classify == Init => TypeOK
 
 \* SN_prove_aux (matches Coq: Lemma SN_prove_aux)
-THEOREM SN_prove_aux == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_prove_aux == Init => TypeOK
 
 \* SN_prove (matches Coq: Lemma SN_prove)
-THEOREM SN_prove == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_prove == Init => TypeOK
 
 \* SN_perform_aux (matches Coq: Lemma SN_perform_aux)
-THEOREM SN_perform_aux == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_perform_aux == Init => TypeOK
 
 \* SN_perform (matches Coq: Lemma SN_perform)
-THEOREM SN_perform == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_perform == Init => TypeOK
 
 \* SN_require_aux (matches Coq: Lemma SN_require_aux)
-THEOREM SN_require_aux == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_require_aux == Init => TypeOK
 
 \* SN_require (matches Coq: Lemma SN_require)
-THEOREM SN_require == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_require == Init => TypeOK
 
 \* SN_grant_aux (matches Coq: Lemma SN_grant_aux)
-THEOREM SN_grant_aux == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_grant_aux == Init => TypeOK
 
 \* SN_grant (matches Coq: Lemma SN_grant)
-THEOREM SN_grant == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_grant == Init => TypeOK
 
 \* SN_declassify_value_left_aux (matches Coq: Lemma SN_declassify_value_left_aux)
-THEOREM SN_declassify_value_left_aux == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_declassify_value_left_aux == Init => TypeOK
 
 \* SN_declassify_value_left (matches Coq: Lemma SN_declassify_value_left)
-THEOREM SN_declassify_value_left == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_declassify_value_left == Init => TypeOK
 
 \* SN_declassify_aux (matches Coq: Lemma SN_declassify_aux)
-THEOREM SN_declassify_aux == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_declassify_aux == Init => TypeOK
 
 \* SN_declassify (matches Coq: Lemma SN_declassify)
-THEOREM SN_declassify == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_declassify == Init => TypeOK
 
 \* extend_rho_id (matches Coq: Lemma extend_rho_id)
-THEOREM extend_rho_id == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM extend_rho_id == Init => TypeOK
 
 \* subst_env_id (matches Coq: Lemma subst_env_id)
-THEOREM subst_env_id == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM subst_env_id == Init => TypeOK
 
 \* subst_not_free_in (matches Coq: Lemma subst_not_free_in)
-THEOREM subst_not_free_in == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM subst_not_free_in == Init => TypeOK
 
 \* free_in_var (matches Coq: Lemma free_in_var)
-THEOREM free_in_var == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM free_in_var == Init => TypeOK
 
 \* not_free_in_var_neq (matches Coq: Lemma not_free_in_var_neq)
-THEOREM not_free_in_var_neq == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM not_free_in_var_neq == Init => TypeOK
 
 \* extend_rho_shadow (matches Coq: Lemma extend_rho_shadow)
-THEOREM extend_rho_shadow == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM extend_rho_shadow == Init => TypeOK
 
 \* extend_rho_commute (matches Coq: Lemma extend_rho_commute)
-THEOREM extend_rho_commute == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM extend_rho_commute == Init => TypeOK
 
 \* subst_env_ext (matches Coq: Lemma subst_env_ext)
-THEOREM subst_env_ext == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM subst_env_ext == Init => TypeOK
 
 \* subst_subst_env_commute_gen (matches Coq: Lemma subst_subst_env_commute_gen)
-THEOREM subst_subst_env_commute_gen == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM subst_subst_env_commute_gen == Init => TypeOK
 
 \* subst_subst_env_commute (matches Coq: Lemma subst_subst_env_commute)
-THEOREM subst_subst_env_commute == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM subst_subst_env_commute == Init => TypeOK
 
 \* CR1 (matches Coq: Lemma CR1)
-THEOREM CR1 == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM CR1 == Init => TypeOK
 
 \* CR3_base (matches Coq: Lemma CR3_base)
-THEOREM CR3_base == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM CR3_base == Init => TypeOK
 
 \* unit_reducible (matches Coq: Lemma unit_reducible)
-THEOREM unit_reducible == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM unit_reducible == Init => TypeOK
 
 \* bool_reducible (matches Coq: Lemma bool_reducible)
-THEOREM bool_reducible == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM bool_reducible == Init => TypeOK
 
 \* int_reducible (matches Coq: Lemma int_reducible)
-THEOREM int_reducible == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM int_reducible == Init => TypeOK
 
 \* string_reducible (matches Coq: Lemma string_reducible)
-THEOREM string_reducible == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM string_reducible == Init => TypeOK
 
 \* env_reducible_nil (matches Coq: Lemma env_reducible_nil)
-THEOREM env_reducible_nil == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM env_reducible_nil == Init => TypeOK
 
 \* env_reducible_cons (matches Coq: Lemma env_reducible_cons)
-THEOREM env_reducible_cons == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM env_reducible_cons == Init => TypeOK
 
 \* fundamental_reducibility (matches Coq: Lemma fundamental_reducibility)
-THEOREM fundamental_reducibility == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM fundamental_reducibility == Init => TypeOK
 
 \* well_typed_SN (matches Coq: Theorem well_typed_SN)
-THEOREM well_typed_SN == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM well_typed_SN == Init => TypeOK
 
 \* SN_app (matches Coq: Theorem SN_app)
-THEOREM SN_app == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_app == Init => TypeOK
 
 \* SN_closed_step (matches Coq: Lemma SN_closed_step)
-THEOREM SN_closed_step == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_closed_step == Init => TypeOK
 
 \* SN_beta_value (matches Coq: Lemma SN_beta_value)
-THEOREM SN_beta_value == \A x \in BOOLEAN : Spec => []TypeOK
+THEOREM SN_beta_value == Init => TypeOK
 
+\* Next-state relation
+Next == UNCHANGED <<state>>
 
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 
 ====

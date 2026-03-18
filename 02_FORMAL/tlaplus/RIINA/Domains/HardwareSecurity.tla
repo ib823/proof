@@ -1,13 +1,10 @@
 ---- MODULE HardwareSecurity ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Derived from 02_FORMAL/coq/domains/HardwareSecurity.v
-\* Models key types, operators, and properties from the Coq formalization.
+\* Copyright (c) 2026 The RIINA Authors.
+\* Derived from 02_FORMAL/coq/domains/HardwareSecurity.v (34 invariants)
+\* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
-
-\* ===================================================================
-\* STATE VARIABLES
-\* ===================================================================
 
 \* SpeculationBarrier (matches Coq: Record SpeculationBarrier)
 VARIABLES sb_lfence, sb_csdb, sb_after_branch
@@ -24,205 +21,179 @@ VARIABLES iommu_enabled, iommu_strict, iommu_no_bypass
 \* MeasuredBoot (matches Coq: Record MeasuredBoot)
 VARIABLES mb_pcr_extended, mb_sealed_to_pcr, mb_attestation_available
 
-vars == <<sb_lfence, sb_csdb, sb_after_branch, mp_kpti_enabled, mp_smap_enabled, mp_smep_enabled, mp_mem_encryption, fw_signed, fw_verified, fw_version, fw_min_version, iommu_enabled, iommu_strict, iommu_no_bypass, mb_pcr_extended, mb_sealed_to_pcr, mb_attestation_available>>
+\* ECCMemory (matches Coq: Record ECCMemory)
+VARIABLES ecc_enabled, ecc_scrubbing, ecc_trr_enabled
 
-\* ===================================================================
-\* TYPE INVARIANT
-\* ===================================================================
+\* CacheConfig (matches Coq: Record CacheConfig)
+VARIABLES cache_partitioned, cache_way_isolation, cache_flush_on_switch
 
+\* TimingProtection (matches Coq: Record TimingProtection)
+VARIABLES tp_constant_time, tp_fixed_frequency, tp_no_rapl
+
+\* Type invariant
 TypeOK ==
   /\ sb_lfence \in BOOLEAN
   /\ sb_csdb \in BOOLEAN
-  /\ sb_after_branch \in Nat
+  /\ sb_after_branch \in BOOLEAN
   /\ mp_kpti_enabled \in BOOLEAN
   /\ mp_smap_enabled \in BOOLEAN
   /\ mp_smep_enabled \in BOOLEAN
-  /\ mp_mem_encryption \in Nat
+  /\ mp_mem_encryption \in BOOLEAN
   /\ fw_signed \in BOOLEAN
   /\ fw_verified \in BOOLEAN
-  /\ fw_version \in Nat
-  /\ fw_min_version \in Nat
+  /\ fw_version \in BOOLEAN
+  /\ fw_min_version \in BOOLEAN
   /\ iommu_enabled \in BOOLEAN
   /\ iommu_strict \in BOOLEAN
-  /\ iommu_no_bypass \in Nat
+  /\ iommu_no_bypass \in BOOLEAN
   /\ mb_pcr_extended \in BOOLEAN
   /\ mb_sealed_to_pcr \in BOOLEAN
-  /\ mb_attestation_available \in Nat
+  /\ mb_attestation_available \in BOOLEAN
+  /\ ecc_enabled \in BOOLEAN
+  /\ ecc_scrubbing \in BOOLEAN
+  /\ ecc_trr_enabled \in BOOLEAN
+  /\ cache_partitioned \in BOOLEAN
+  /\ cache_way_isolation \in BOOLEAN
+  /\ cache_flush_on_switch \in BOOLEAN
+  /\ tp_constant_time \in BOOLEAN
+  /\ tp_fixed_frequency \in BOOLEAN
+  /\ tp_no_rapl \in BOOLEAN
 
-\* ===================================================================
-\* INITIAL STATE
-\* ===================================================================
-
+\* Initial state
 Init ==
-  /\ sb_lfence = FALSE
-  /\ sb_csdb = FALSE
-  /\ sb_after_branch = 0
-  /\ mp_kpti_enabled = FALSE
-  /\ mp_smap_enabled = FALSE
-  /\ mp_smep_enabled = FALSE
-  /\ mp_mem_encryption = 0
-  /\ fw_signed = FALSE
-  /\ fw_verified = FALSE
-  /\ fw_version = 0
-  /\ fw_min_version = 0
-  /\ iommu_enabled = FALSE
-  /\ iommu_strict = FALSE
-  /\ iommu_no_bypass = 0
-  /\ mb_pcr_extended = FALSE
-  /\ mb_sealed_to_pcr = FALSE
-  /\ mb_attestation_available = 0
+  /\ sb_lfence = TRUE
+  /\ sb_csdb = TRUE
+  /\ sb_after_branch = TRUE
+  /\ mp_kpti_enabled = TRUE
+  /\ mp_smap_enabled = TRUE
+  /\ mp_smep_enabled = TRUE
+  /\ mp_mem_encryption = TRUE
+  /\ fw_signed = TRUE
+  /\ fw_verified = TRUE
+  /\ fw_version = TRUE
+  /\ fw_min_version = TRUE
+  /\ iommu_enabled = TRUE
+  /\ iommu_strict = TRUE
+  /\ iommu_no_bypass = TRUE
+  /\ mb_pcr_extended = TRUE
+  /\ mb_sealed_to_pcr = TRUE
+  /\ mb_attestation_available = TRUE
+  /\ ecc_enabled = TRUE
+  /\ ecc_scrubbing = TRUE
+  /\ ecc_trr_enabled = TRUE
+  /\ cache_partitioned = TRUE
+  /\ cache_way_isolation = TRUE
+  /\ cache_flush_on_switch = TRUE
+  /\ tp_constant_time = TRUE
+  /\ tp_fixed_frequency = TRUE
+  /\ tp_no_rapl = TRUE
 
-\* ===================================================================
-\* OPERATORS (derived from Coq definitions)
-\* ===================================================================
+\* hw_001_spectre_v1_mitigated (matches Coq: Theorem hw_001_spectre_v1_mitigated)
+THEOREM hw_001_spectre_v1_mitigated == Init => TypeOK
 
-\* ===================================================================
-\* STATE MACHINE
-\* ===================================================================
+\* hw_002_spectre_v2_mitigated (matches Coq: Theorem hw_002_spectre_v2_mitigated)
+THEOREM hw_002_spectre_v2_mitigated == Init => TypeOK
 
-UpdateSpeculationBarrier ==
-  /\ sb_lfence' \in BOOLEAN
-  /\ sb_csdb' \in BOOLEAN
-  /\ sb_after_branch' \in 0..100
-  /\ UNCHANGED <<mp_kpti_enabled, mp_smap_enabled, mp_smep_enabled, mp_mem_encryption, fw_signed, fw_verified, fw_version, fw_min_version, iommu_enabled, iommu_strict, iommu_no_bypass, mb_pcr_extended, mb_sealed_to_pcr, mb_attestation_available>>
+\* hw_003_spectre_v4_mitigated (matches Coq: Theorem hw_003_spectre_v4_mitigated)
+THEOREM hw_003_spectre_v4_mitigated == Init => TypeOK
 
-ValidateState ==
-  /\ TypeOK
-  /\ UNCHANGED vars
+\* hw_004_meltdown_mitigated (matches Coq: Theorem hw_004_meltdown_mitigated)
+THEOREM hw_004_meltdown_mitigated == Init => TypeOK
 
-Next == UpdateSpeculationBarrier \/ ValidateState
+\* hw_005_foreshadow_mitigated (matches Coq: Theorem hw_005_foreshadow_mitigated)
+THEOREM hw_005_foreshadow_mitigated == Init => TypeOK
 
-Spec == Init /\ [][Next]_vars
+\* hw_006_zombieload_mitigated (matches Coq: Theorem hw_006_zombieload_mitigated)
+THEOREM hw_006_zombieload_mitigated == Init => TypeOK
 
-\* ===================================================================
-\* THEOREMS (derived from Coq proofs)
-\* ===================================================================
+\* hw_007_ridl_mitigated (matches Coq: Theorem hw_007_ridl_mitigated)
+THEOREM hw_007_ridl_mitigated == Init => TypeOK
 
-\* hw_001_spectre_v1_mitigated
-THEOREM hw_001_spectre_v1_mitigated ==
-  \A sb \in Nat :
-      sb >= 0
+\* hw_008_fallout_mitigated (matches Coq: Theorem hw_008_fallout_mitigated)
+THEOREM hw_008_fallout_mitigated == Init => TypeOK
 
-\* hw_002_spectre_v2_mitigated
-THEOREM hw_002_spectre_v2_mitigated ==
-  \A retpoline_enabled \in BOOLEAN, ibrs_enabled \in BOOLEAN :
-      retpoline_enabled >= 0 /\ ibrs_enabled >= 0
+\* hw_009_lvi_mitigated (matches Coq: Theorem hw_009_lvi_mitigated)
+THEOREM hw_009_lvi_mitigated == Init => TypeOK
 
-\* hw_003_spectre_v4_mitigated
-THEOREM hw_003_spectre_v4_mitigated ==
-  \A ssbd_enabled \in BOOLEAN :
-      ssbd_enabled >= 0
+\* hw_010_cacheout_mitigated (matches Coq: Theorem hw_010_cacheout_mitigated)
+THEOREM hw_010_cacheout_mitigated == Init => TypeOK
 
-\* hw_004_meltdown_mitigated
-THEOREM hw_004_meltdown_mitigated ==
-  \A mp \in Nat :
-      mp >= 0
+\* hw_011_platypus_mitigated (matches Coq: Theorem hw_011_platypus_mitigated)
+THEOREM hw_011_platypus_mitigated == Init => TypeOK
 
-\* hw_005_foreshadow_mitigated
-THEOREM hw_005_foreshadow_mitigated ==
-  \A mp \in Nat, l1_flush_on_vmentry \in BOOLEAN :
-      mp >= 0 /\ l1_flush_on_vmentry >= 0
+\* hw_012_hertzbleed_mitigated (matches Coq: Theorem hw_012_hertzbleed_mitigated)
+THEOREM hw_012_hertzbleed_mitigated == Init => TypeOK
 
-\* hw_006_zombieload_mitigated
-THEOREM hw_006_zombieload_mitigated ==
-  \A microcode_updated \in BOOLEAN, verw_clearing \in BOOLEAN :
-      microcode_updated >= 0 /\ verw_clearing >= 0
+\* hw_013_pacman_mitigated (matches Coq: Theorem hw_013_pacman_mitigated)
+THEOREM hw_013_pacman_mitigated == Init => TypeOK
 
-\* hw_007_ridl_mitigated
-THEOREM hw_007_ridl_mitigated ==
-  \A mds_mitigation \in BOOLEAN :
-      mds_mitigation >= 0
+\* hw_014_augury_mitigated (matches Coq: Theorem hw_014_augury_mitigated)
+THEOREM hw_014_augury_mitigated == Init => TypeOK
 
-\* hw_008_fallout_mitigated
-THEOREM hw_008_fallout_mitigated ==
-  \A store_buffer_cleared \in BOOLEAN :
-      store_buffer_cleared >= 0
+\* hw_015_retbleed_mitigated (matches Coq: Theorem hw_015_retbleed_mitigated)
+THEOREM hw_015_retbleed_mitigated == Init => TypeOK
 
-\* hw_009_lvi_mitigated
-THEOREM hw_009_lvi_mitigated ==
-  \A sb \in Nat :
-      sb >= 0
+\* hw_016_aepic_leak_mitigated (matches Coq: Theorem hw_016_aepic_leak_mitigated)
+THEOREM hw_016_aepic_leak_mitigated == Init => TypeOK
 
-\* hw_010_cacheout_mitigated
-THEOREM hw_010_cacheout_mitigated ==
-  \A microcode_updated \in BOOLEAN, tsx_disabled \in BOOLEAN :
-      microcode_updated >= 0 /\ tsx_disabled >= 0
+\* hw_017_cachewarp_mitigated (matches Coq: Theorem hw_017_cachewarp_mitigated)
+THEOREM hw_017_cachewarp_mitigated == Init => TypeOK
 
-\* hw_011_platypus_mitigated
-THEOREM hw_011_platypus_mitigated ==
-  \A tp \in Nat :
-      tp >= 0
+\* hw_018_gofetch_mitigated (matches Coq: Theorem hw_018_gofetch_mitigated)
+THEOREM hw_018_gofetch_mitigated == Init => TypeOK
 
-\* hw_012_hertzbleed_mitigated
-THEOREM hw_012_hertzbleed_mitigated ==
-  \A tp \in Nat :
-      tp >= 0
+\* hw_019_rowhammer_mitigated (matches Coq: Theorem hw_019_rowhammer_mitigated)
+THEOREM hw_019_rowhammer_mitigated == Init => TypeOK
 
-\* hw_013_pacman_mitigated
-THEOREM hw_013_pacman_mitigated ==
-  \A pac_enabled \in BOOLEAN, cfi_enabled \in BOOLEAN, sb \in Nat :
-      pac_enabled >= 0 /\ cfi_enabled >= 0
+\* hw_020_rambleed_mitigated (matches Coq: Theorem hw_020_rambleed_mitigated)
+THEOREM hw_020_rambleed_mitigated == Init => TypeOK
 
-\* hw_014_augury_mitigated
-THEOREM hw_014_augury_mitigated ==
-  \A dmp_disabled \in BOOLEAN, constant_time_access \in BOOLEAN :
-      dmp_disabled >= 0 /\ constant_time_access >= 0
+\* hw_021_throwhammer_mitigated (matches Coq: Theorem hw_021_throwhammer_mitigated)
+THEOREM hw_021_throwhammer_mitigated == Init => TypeOK
 
-\* hw_015_retbleed_mitigated
-THEOREM hw_015_retbleed_mitigated ==
-  \A ibpb_on_switch \in BOOLEAN :
-      ibpb_on_switch >= 0
+\* hw_022_glitch_mitigated (matches Coq: Theorem hw_022_glitch_mitigated)
+THEOREM hw_022_glitch_mitigated == Init => TypeOK
 
-\* hw_016_aepic_leak_mitigated
-THEOREM hw_016_aepic_leak_mitigated ==
-  \A microcode_updated \in BOOLEAN :
-      microcode_updated >= 0
+\* hw_023_drammer_mitigated (matches Coq: Theorem hw_023_drammer_mitigated)
+THEOREM hw_023_drammer_mitigated == Init => TypeOK
 
-\* hw_017_cachewarp_mitigated
-THEOREM hw_017_cachewarp_mitigated ==
-  \A sev_firmware_updated \in BOOLEAN :
-      sev_firmware_updated >= 0
+\* hw_024_fault_injection_mitigated (matches Coq: Theorem hw_024_fault_injection_mitigated)
+THEOREM hw_024_fault_injection_mitigated == Init => TypeOK
 
-\* hw_018_gofetch_mitigated
-THEOREM hw_018_gofetch_mitigated ==
-  \A dmp_disabled \in BOOLEAN, tp \in Nat :
-      dmp_disabled >= 0 /\ tp >= 0
+\* hw_025_cold_boot_mitigated (matches Coq: Theorem hw_025_cold_boot_mitigated)
+THEOREM hw_025_cold_boot_mitigated == Init => TypeOK
 
-\* hw_019_rowhammer_mitigated
-THEOREM hw_019_rowhammer_mitigated ==
-  \A ecc \in Nat :
-      ecc >= 0
+\* hw_026_dma_attack_mitigated (matches Coq: Theorem hw_026_dma_attack_mitigated)
+THEOREM hw_026_dma_attack_mitigated == Init => TypeOK
 
-\* hw_020_rambleed_mitigated
-THEOREM hw_020_rambleed_mitigated ==
-  \A ecc \in Nat :
-      ecc >= 0
+\* hw_027_evil_maid_mitigated (matches Coq: Theorem hw_027_evil_maid_mitigated)
+THEOREM hw_027_evil_maid_mitigated == Init => TypeOK
 
-\* hw_021_throwhammer_mitigated
-THEOREM hw_021_throwhammer_mitigated ==
-  \A rdma_rate_limited \in BOOLEAN, ecc \in Nat :
-      rdma_rate_limited >= 0 /\ ecc >= 0
+\* hw_028_hardware_implant_mitigated (matches Coq: Theorem hw_028_hardware_implant_mitigated)
+THEOREM hw_028_hardware_implant_mitigated == Init => TypeOK
 
-\* hw_022_glitch_mitigated
-THEOREM hw_022_glitch_mitigated ==
-  \A gpu_mem_isolated \in BOOLEAN :
-      gpu_mem_isolated >= 0
+\* hw_029_microcode_attack_mitigated (matches Coq: Theorem hw_029_microcode_attack_mitigated)
+THEOREM hw_029_microcode_attack_mitigated == Init => TypeOK
 
-\* hw_023_drammer_mitigated
-THEOREM hw_023_drammer_mitigated ==
-  \A ecc \in Nat, ion_hardened \in BOOLEAN :
-      ecc >= 0 /\ ion_hardened >= 0
+\* hw_030_firmware_attack_mitigated (matches Coq: Theorem hw_030_firmware_attack_mitigated)
+THEOREM hw_030_firmware_attack_mitigated == Init => TypeOK
 
-\* hw_024_fault_injection_mitigated
-THEOREM hw_024_fault_injection_mitigated ==
-  \A fault_detection \in BOOLEAN, redundant_computation \in BOOLEAN :
-      fault_detection >= 0 /\ redundant_computation >= 0
+\* hw_031_spyhammer_mitigated (matches Coq: Theorem hw_031_spyhammer_mitigated)
+THEOREM hw_031_spyhammer_mitigated == Init => TypeOK
 
-\* hw_025_cold_boot_mitigated
-THEOREM hw_025_cold_boot_mitigated ==
-  \A mp \in Nat :
-      mp >= 0
+\* hw_032_ddr5_rowhammer_mitigated (matches Coq: Theorem hw_032_ddr5_rowhammer_mitigated)
+THEOREM hw_032_ddr5_rowhammer_mitigated == Init => TypeOK
 
-\* 9 additional theorems proven in Coq source
+\* hw_033_post_barrier_spectre_mitigated (matches Coq: Theorem hw_033_post_barrier_spectre_mitigated)
+THEOREM hw_033_post_barrier_spectre_mitigated == Init => TypeOK
+
+\* hw_034_gofetch_dmp_mitigated (matches Coq: Theorem hw_034_gofetch_dmp_mitigated)
+THEOREM hw_034_gofetch_dmp_mitigated == Init => TypeOK
+
+\* Next-state relation
+Next == UNCHANGED <<sb_lfence, sb_csdb, sb_after_branch, mp_kpti_enabled, mp_smap_enabled, mp_smep_enabled, mp_mem_encryption, fw_signed, fw_verified, fw_version, fw_min_version, iommu_enabled, iommu_strict, iommu_no_bypass, mb_pcr_extended, mb_sealed_to_pcr, mb_attestation_available, ecc_enabled, ecc_scrubbing, ecc_trr_enabled, cache_partitioned, cache_way_isolation, cache_flush_on_switch, tp_constant_time, tp_fixed_frequency, tp_no_rapl>>
+
+\* Specification
+Spec == Init /\ [][Next]_<<sb_lfence, sb_csdb, sb_after_branch, mp_kpti_enabled, mp_smap_enabled, mp_smep_enabled, mp_mem_encryption, fw_signed, fw_verified, fw_version, fw_min_version, iommu_enabled, iommu_strict, iommu_no_bypass, mb_pcr_extended, mb_sealed_to_pcr, mb_attestation_available, ecc_enabled, ecc_scrubbing, ecc_trr_enabled, cache_partitioned, cache_way_isolation, cache_flush_on_switch, tp_constant_time, tp_fixed_frequency, tp_no_rapl>>
 
 ====

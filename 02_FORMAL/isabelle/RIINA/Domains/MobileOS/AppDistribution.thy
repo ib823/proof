@@ -12,27 +12,27 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | install_state       | install_state          | OK     |
- * | app_package         | app_package            | OK     |
- * | security_scan       | security_scan          | OK     |
- * | store_application   | store_application      | OK     |
- * | app_update          | app_update             | OK     |
- * | installation       | installation           | OK     |
- * | app_signature       | app_signature          | OK     |
- * | code_integrity      | code_integrity         | OK     |
- * | entitlement_set     | entitlement_set        | OK     |
- * | provisioning_profile | provisioning_profile   | OK     |
- * | app_review          | app_review             | OK     |
- * | binary_report       | binary_report          | OK     |
- * | app_version_history  | app_version_history    | OK     |
- * | os_requirement      | os_requirement         | OK     |
- * | api_usage           | api_usage              | OK     |
- * | privacy_manifest    | privacy_manifest       | OK     |
- * | data_declaration    | data_declaration       | OK     |
- * | app_clip            | app_clip               | OK     |
- * | test_flight_build    | test_flight_build      | OK     |
- * | enterprise_cert     | enterprise_cert        | OK     |
- * | notarization_status | notarization_status    | OK     |
+ * | InstallState       | install_state          | OK     |
+ * | AppPackage         | app_package            | OK     |
+ * | SecurityScan       | security_scan          | OK     |
+ * | StoreApplication   | store_application      | OK     |
+ * | AppUpdate          | app_update             | OK     |
+ * | Installation       | installation           | OK     |
+ * | AppSignature       | app_signature          | OK     |
+ * | CodeIntegrity      | code_integrity         | OK     |
+ * | EntitlementSet     | entitlement_set        | OK     |
+ * | ProvisioningProfile | provisioning_profile   | OK     |
+ * | AppReview          | app_review             | OK     |
+ * | BinaryReport       | binary_report          | OK     |
+ * | AppVersionHistory  | app_version_history    | OK     |
+ * | OSRequirement      | os_requirement         | OK     |
+ * | APIUsage           | api_usage              | OK     |
+ * | PrivacyManifest    | privacy_manifest       | OK     |
+ * | DataDeclaration    | data_declaration       | OK     |
+ * | AppClip            | app_clip               | OK     |
+ * | TestFlightBuild    | test_flight_build      | OK     |
+ * | EnterpriseCert     | enterprise_cert        | OK     |
+ * | NotarizationStatus | notarization_status    | OK     |
  * | passes_security_checks | passes_security_checks | OK     |
  * | no_malware         | no_malware             | OK     |
  * | in_store           | in_store               | OK     |
@@ -91,7 +91,7 @@ theory AppDistribution
   imports Main CoqCompat
 begin
 
-(* install_state (matches Coq: Inductive install_state) *)
+(* InstallState (matches Coq: Inductive InstallState) *)
 datatype install_state =
     NotInstalled
   |     Installing
@@ -99,7 +99,7 @@ datatype install_state =
   |     Updating
   |     Failed
 
-(* app_package (matches Coq: Record app_package) *)
+(* AppPackage (matches Coq: Record AppPackage) *)
 record app_package =
   package_id :: nat
   package_version :: nat
@@ -107,7 +107,7 @@ record app_package =
   entitlements :: 'a list
   sandbox_profile :: nat
 
-(* security_scan (matches Coq: Record security_scan) *)
+(* SecurityScan (matches Coq: Record SecurityScan) *)
 record security_scan =
   scan_package_id :: nat
   static_analysis_passed :: bool
@@ -116,30 +116,30 @@ record security_scan =
   known_malware_match :: bool
   behavior_anomaly :: bool
 
-(* store_application (matches Coq: Record store_application) *)
+(* StoreApplication (matches Coq: Record StoreApplication) *)
 record store_application =
   store_app_id :: nat
-  store_package :: app_package
-  scan_result :: security_scan
+  store_package :: AppPackage
+  scan_result :: SecurityScan
   review_approved :: bool
   in_riina_store :: bool
 
-(* app_update (matches Coq: Record app_update) *)
+(* AppUpdate (matches Coq: Record AppUpdate) *)
 record app_update =
   update_app_id :: nat
   old_version :: nat
   new_version :: nat
-  update_package :: app_package
+  update_package :: AppPackage
   update_verified :: bool
 
-(* installation (matches Coq: Record installation) *)
+(* Installation (matches Coq: Record Installation) *)
 record installation =
   install_app_id :: nat
-  install_state :: install_state
+  install_state :: InstallState
   installed_version :: nat
   rollback_available :: bool
 
-(* app_signature (matches Coq: Record app_signature) *)
+(* AppSignature (matches Coq: Record AppSignature) *)
 record app_signature =
   sig_app_id :: nat
   sig_hash :: nat
@@ -147,94 +147,94 @@ record app_signature =
   sig_verified :: bool
   sig_timestamp :: nat
 
-(* code_integrity (matches Coq: Record code_integrity) *)
+(* CodeIntegrity (matches Coq: Record CodeIntegrity) *)
 record code_integrity =
   ci_app_id :: nat
   ci_hash_original :: nat
   ci_hash_current :: nat
   ci_integrity_valid :: bool
 
-(* entitlement_set (matches Coq: Record entitlement_set) *)
+(* EntitlementSet (matches Coq: Record EntitlementSet) *)
 record entitlement_set =
   ent_app_id :: nat
   ent_requested :: 'a list
   ent_granted :: 'a list
   ent_validated :: bool
 
-(* provisioning_profile (matches Coq: Record provisioning_profile) *)
+(* ProvisioningProfile (matches Coq: Record ProvisioningProfile) *)
 record provisioning_profile =
   pp_app_id :: nat
   pp_expiry_date :: nat
   pp_current_date :: nat
   pp_valid :: bool
 
-(* app_review (matches Coq: Record app_review) *)
+(* AppReview (matches Coq: Record AppReview) *)
 record app_review =
   ar_app_id :: nat
   ar_reviewed :: bool
   ar_passed :: bool
   ar_reviewer_id :: nat
 
-(* binary_report (matches Coq: Record binary_report) *)
+(* BinaryReport (matches Coq: Record BinaryReport) *)
 record binary_report =
   br_app_id :: nat
   br_size_bytes :: nat
   br_reported_size :: nat
   br_size_reported :: bool
 
-(* app_version_history (matches Coq: Record app_version_history) *)
+(* AppVersionHistory (matches Coq: Record AppVersionHistory) *)
 record app_version_history =
   vh_app_id :: nat
   vh_versions :: 'a list
   vh_monotonic :: bool
 
-(* os_requirement (matches Coq: Record os_requirement) *)
+(* OSRequirement (matches Coq: Record OSRequirement) *)
 record os_requirement =
   os_req_app_id :: nat
   os_req_min_version :: nat
   os_current_version :: nat
   os_req_enforced :: bool
 
-(* api_usage (matches Coq: Record api_usage) *)
+(* APIUsage (matches Coq: Record APIUsage) *)
 record api_usage =
   api_name_hash :: nat
   api_deprecated :: bool
   api_flagged :: bool
 
-(* privacy_manifest (matches Coq: Record privacy_manifest) *)
+(* PrivacyManifest (matches Coq: Record PrivacyManifest) *)
 record privacy_manifest =
   pm_app_id :: nat
   pm_data_types :: 'a list
   pm_purposes :: 'a list
   pm_manifest_present :: bool
 
-(* data_declaration (matches Coq: Record data_declaration) *)
+(* DataDeclaration (matches Coq: Record DataDeclaration) *)
 record data_declaration =
   dd_app_id :: nat
   dd_collected_types :: 'a list
   dd_declared_types :: 'a list
   dd_declared :: bool
 
-(* app_clip (matches Coq: Record app_clip) *)
+(* AppClip (matches Coq: Record AppClip) *)
 record app_clip =
   ac_app_id :: nat
   ac_size_mb :: nat
   ac_max_size_mb :: nat
 
-(* test_flight_build (matches Coq: Record test_flight_build) *)
+(* TestFlightBuild (matches Coq: Record TestFlightBuild) *)
 record test_flight_build =
   tf_build_id :: nat
   tf_expiry_days :: nat
   tf_max_days :: nat
   tf_enforced :: bool
 
-(* enterprise_cert (matches Coq: Record enterprise_cert) *)
+(* EnterpriseCert (matches Coq: Record EnterpriseCert) *)
 record enterprise_cert =
   ec_org_id :: nat
   ec_valid :: bool
   ec_revoked :: bool
 
-(* notarization_status (matches Coq: Record notarization_status) *)
+(* NotarizationStatus (matches Coq: Record NotarizationStatus) *)
 record notarization_status =
   ns_app_id :: nat
   ns_notarized :: bool
@@ -242,15 +242,15 @@ record notarization_status =
 
 (* passes_security_checks (matches Coq: Definition passes_security_checks) *)
 definition passes_security_checks :: "SecurityScan \<Rightarrow> bool" where
-  "passes_security_checks scan \<equiv> static_analysis_passed scan = True \<and>
-  dynamic_analysis_passed scan = True \<and>
-  signature_valid scan = True \<and>
-  known_malware_match scan = False \<and>
+  "passes_security_checks scan \<equiv> static_analysis_passed scan = True /\
+  dynamic_analysis_passed scan = True /\
+  signature_valid scan = True /\
+  known_malware_match scan = False /\
   behavior_anomaly scan = False"
 
 (* no_malware (matches Coq: Definition no_malware) *)
 definition no_malware :: "StoreApplication \<Rightarrow> bool" where
-  "no_malware app \<equiv> passes_security_checks (scan_result app) \<and>
+  "no_malware app \<equiv> passes_security_checks (scan_result app) /\
   review_approved app = True"
 
 (* in_store (matches Coq: Definition in_store) *)
@@ -259,20 +259,20 @@ definition in_store :: "StoreApplication \<Rightarrow> bool" where
 
 (* store_well_formed (matches Coq: Definition store_well_formed) *)
 definition store_well_formed :: "bool" where
-  "store_well_formed \<equiv> forall app, app \<in> set apps ->
+  "store_well_formed \<equiv> forall app, In app apps ->
     in_riina_store app = True ->
     no_malware app"
 
 (* update_atomic (matches Coq: Definition update_atomic) *)
 definition update_atomic :: "AppUpdate \<Rightarrow> bool" where
-  "update_atomic upd \<equiv> (install_state inst_after = Installed \<and> 
+  "update_atomic upd \<equiv> (install_state inst_after = Installed /\ 
    installed_version inst_after = new_version upd) \/
-  (install_state inst_after = install_state inst_before \<and>
+  (install_state inst_after = install_state inst_before /\
    installed_version inst_after = installed_version inst_before)"
 
 (* rollback_possible (matches Coq: Definition rollback_possible) *)
 definition rollback_possible :: "Installation \<Rightarrow> bool" where
-  "rollback_possible inst \<equiv> rollback_available inst = True \<and>
+  "rollback_possible inst \<equiv> rollback_available inst = True /\
   install_state inst = Installed"
 
 (* version_increases (matches Coq: Definition version_increases) *)
@@ -293,20 +293,20 @@ definition app_is_safe :: "StoreApplication \<Rightarrow> bool" where
 
 (* app_signature_verified (matches Coq: Definition app_signature_verified) *)
 definition app_signature_verified :: "AppSignature \<Rightarrow> bool" where
-  "app_signature_verified s \<equiv> sig_verified s = True \<and> sig_timestamp s > 0"
+  "app_signature_verified s \<equiv> sig_verified s = True /\ sig_timestamp s > 0"
 
 (* code_integrity_checked (matches Coq: Definition code_integrity_checked) *)
 definition code_integrity_checked :: "CodeIntegrity \<Rightarrow> bool" where
-  "code_integrity_checked ci \<equiv> ci_integrity_valid ci = True \<and> ci_hash_original ci = ci_hash_current ci"
+  "code_integrity_checked ci \<equiv> ci_integrity_valid ci = True /\ ci_hash_original ci = ci_hash_current ci"
 
 (* entitlements_validated (matches Coq: Definition entitlements_validated) *)
 definition entitlements_validated :: "EntitlementSet \<Rightarrow> bool" where
-  "entitlements_validated es \<equiv> ent_validated es = True \<and>
+  "entitlements_validated es \<equiv> ent_validated es = True /\
   length (ent_granted es) <= length (ent_requested es)"
 
 (* provisioning_profile_valid (matches Coq: Definition provisioning_profile_valid) *)
 definition provisioning_profile_valid :: "ProvisioningProfile \<Rightarrow> bool" where
-  "provisioning_profile_valid pp \<equiv> pp_valid pp = True \<and> pp_current_date pp <= pp_expiry_date pp"
+  "provisioning_profile_valid pp \<equiv> pp_valid pp = True /\ pp_current_date pp <= pp_expiry_date pp"
 
 (* app_review_required (matches Coq: Definition app_review_required) *)
 definition app_review_required :: "AppReview \<Rightarrow> bool" where
@@ -314,15 +314,15 @@ definition app_review_required :: "AppReview \<Rightarrow> bool" where
 
 (* binary_size_reported (matches Coq: Definition binary_size_reported) *)
 definition binary_size_reported :: "BinaryReport \<Rightarrow> bool" where
-  "binary_size_reported br \<equiv> br_size_reported br = True \<and> br_size_bytes br = br_reported_size br"
+  "binary_size_reported br \<equiv> br_size_reported br = True /\ br_size_bytes br = br_reported_size br"
 
 (* list_monotonic (matches Coq: Definition list_monotonic) *)
-definition list_monotonic :: "bool" where
-  "list_monotonic \<equiv> True"
+fun list_monotonic :: "bool" where
+
 
 (* app_version_monotonic (matches Coq: Definition app_version_monotonic) *)
 definition app_version_monotonic :: "AppVersionHistory \<Rightarrow> bool" where
-  "app_version_monotonic vh \<equiv> vh_monotonic vh = True \<and> list_monotonic (vh_versions vh)"
+  "app_version_monotonic vh \<equiv> vh_monotonic vh = True /\ list_monotonic (vh_versions vh)"
 
 (* minimum_os_version_enforced (matches Coq: Definition minimum_os_version_enforced) *)
 definition minimum_os_version_enforced :: "OSRequirement \<Rightarrow> bool" where
@@ -335,11 +335,11 @@ definition deprecated_api_flagged :: "APIUsage \<Rightarrow> bool" where
 
 (* privacy_manifest_required (matches Coq: Definition privacy_manifest_required) *)
 definition privacy_manifest_required :: "PrivacyManifest \<Rightarrow> bool" where
-  "privacy_manifest_required pm \<equiv> pm_manifest_present pm = True \<and> pm_data_types pm <> []"
+  "privacy_manifest_required pm \<equiv> pm_manifest_present pm = True /\ pm_data_types pm <> []"
 
 (* data_collection_declared (matches Coq: Definition data_collection_declared) *)
 definition data_collection_declared :: "DataDeclaration \<Rightarrow> bool" where
-  "data_collection_declared dd \<equiv> dd_declared dd = True \<and>
+  "data_collection_declared dd \<equiv> dd_declared dd = True /\
   length (dd_collected_types dd) <= length (dd_declared_types dd)"
 
 (* app_clip_size_bounded (matches Coq: Definition app_clip_size_bounded) *)
@@ -348,122 +348,122 @@ definition app_clip_size_bounded :: "AppClip \<Rightarrow> bool" where
 
 (* testflight_expiry_enforced (matches Coq: Definition testflight_expiry_enforced) *)
 definition testflight_expiry_enforced :: "TestFlightBuild \<Rightarrow> bool" where
-  "testflight_expiry_enforced tf \<equiv> tf_enforced tf = True \<and> tf_expiry_days tf <= tf_max_days tf"
+  "testflight_expiry_enforced tf \<equiv> tf_enforced tf = True /\ tf_expiry_days tf <= tf_max_days tf"
 
 (* enterprise_certificate_validated (matches Coq: Definition enterprise_certificate_validated) *)
 definition enterprise_certificate_validated :: "EnterpriseCert \<Rightarrow> bool" where
-  "enterprise_certificate_validated ec \<equiv> ec_valid ec = True \<and> ec_revoked ec = False"
+  "enterprise_certificate_validated ec \<equiv> ec_valid ec = True /\ ec_revoked ec = False"
 
 (* notarization_required (matches Coq: Definition notarization_required) *)
 definition notarization_required :: "NotarizationStatus \<Rightarrow> bool" where
-  "notarization_required ns \<equiv> ns_notarized ns = True \<and> ns_ticket_stapled ns = True"
+  "notarization_required ns \<equiv> ns_notarized ns = True /\ ns_ticket_stapled ns = True"
 
 (* store_malware_free (matches Coq) *)
-lemma store_malware_free: "\<forall>(app :: store_application). in_store app \<longrightarrow> store_well_formed [app] \<longrightarrow> no_malware app"
+lemma store_malware_free: "\<forall> (app : StoreApplication), in_store app \<longrightarrow> store_well_formed [app] \<longrightarrow> no_malware app"
   by auto
 
 (* security_scan_complete (matches Coq) *)
-lemma security_scan_complete: "\<forall>(app :: store_application). no_malware app \<longrightarrow> passes_security_checks (scan_result app)"
+lemma security_scan_complete: "\<forall> (app : StoreApplication), no_malware app \<longrightarrow> passes_security_checks (scan_result app)"
   by auto
 
 (* update_is_atomic (matches Coq) *)
-lemma update_is_atomic: "\<forall>(inst_before :: installation) (inst_after :: installation) (upd :: app_update). update_verified upd = True \<longrightarrow> update_atomic inst_before inst_after upd \<longrightarrow> (installed_version inst_after = new_version upd \<or> installed_version inst_after = installed_version inst_before)"
+lemma update_is_atomic: "\<forall> (inst_before inst_after : Installation) (upd : AppUpdate), update_verified upd = True \<longrightarrow> update_atomic inst_before inst_after upd \<longrightarrow> (installed_version inst_after = new_version upd \<or> installed_version inst_after = installed_version inst_before)"
   by auto
 
 (* update_rollback_available (matches Coq) *)
-lemma update_rollback_available: "\<forall>(inst :: installation). rollback_possible inst \<longrightarrow> rollback_available inst = True"
+lemma update_rollback_available: "\<forall> (inst : Installation), rollback_possible inst \<longrightarrow> rollback_available inst = True"
   by auto
 
 (* no_version_downgrade (matches Coq) *)
-lemma no_version_downgrade: "\<forall>(upd :: app_update). update_verified upd = True \<longrightarrow> version_increases upd \<longrightarrow> new_version upd > old_version upd"
+lemma no_version_downgrade: "\<forall> (upd : AppUpdate), update_verified upd = True \<longrightarrow> version_increases upd \<longrightarrow> new_version upd > old_version upd"
   by auto
 
 (* signature_required_for_store (matches Coq) *)
-lemma signature_required_for_store: "\<forall>(app :: store_application). no_malware app \<longrightarrow> signature_valid (scan_result app) = True"
+lemma signature_required_for_store: "\<forall> (app : StoreApplication), no_malware app \<longrightarrow> signature_valid (scan_result app) = True"
   by auto
 
 (* failed_install_no_corruption (matches Coq) *)
-lemma failed_install_no_corruption: "\<forall>(inst_before :: installation) (inst_after :: installation) (upd :: app_update). install_state inst_after = Failed \<longrightarrow> update_atomic inst_before inst_after upd \<longrightarrow> installed_version inst_after = installed_version inst_before"
+lemma failed_install_no_corruption: "\<forall> (inst_before inst_after : Installation) (upd : AppUpdate), install_state inst_after = Failed \<longrightarrow> update_atomic inst_before inst_after upd \<longrightarrow> installed_version inst_after = installed_version inst_before"
   by auto
 
 (* app_signature_verified_thm (matches Coq) *)
-lemma app_signature_verified_thm: "\<forall>(s :: app_signature). app_signature_verified s \<longrightarrow> sig_verified s = True"
+lemma app_signature_verified_thm: "\<forall> (s : AppSignature), app_signature_verified s \<longrightarrow> sig_verified s = True"
   by auto
 
 (* code_integrity_checked_thm (matches Coq) *)
-lemma code_integrity_checked_thm: "\<forall>(ci :: code_integrity). code_integrity_checked ci \<longrightarrow> ci_hash_original ci = ci_hash_current ci"
+lemma code_integrity_checked_thm: "\<forall> (ci : CodeIntegrity), code_integrity_checked ci \<longrightarrow> ci_hash_original ci = ci_hash_current ci"
   by auto
 
 (* entitlements_validated_thm (matches Coq) *)
-lemma entitlements_validated_thm: "\<forall>(es :: entitlement_set). entitlements_validated es \<longrightarrow> ent_validated es = True"
+lemma entitlements_validated_thm: "\<forall> (es : EntitlementSet), entitlements_validated es \<longrightarrow> ent_validated es = True"
   by auto
 
 (* provisioning_profile_valid_thm (matches Coq) *)
-lemma provisioning_profile_valid_thm: "\<forall>(pp :: provisioning_profile). provisioning_profile_valid pp \<longrightarrow> pp_valid pp = True"
+lemma provisioning_profile_valid_thm: "\<forall> (pp : ProvisioningProfile), provisioning_profile_valid pp \<longrightarrow> pp_valid pp = True"
   by auto
 
 (* app_review_required_thm (matches Coq) *)
-lemma app_review_required_thm: "\<forall>(ar :: app_review). app_review_required ar \<longrightarrow> ar_passed ar = True \<longrightarrow> ar_reviewed ar = True"
+lemma app_review_required_thm: "\<forall> (ar : AppReview), app_review_required ar \<longrightarrow> ar_passed ar = True \<longrightarrow> ar_reviewed ar = True"
   by auto
 
 (* binary_size_reported_thm (matches Coq) *)
-lemma binary_size_reported_thm: "\<forall>(br :: binary_report). binary_size_reported br \<longrightarrow> br_size_bytes br = br_reported_size br"
+lemma binary_size_reported_thm: "\<forall> (br : BinaryReport), binary_size_reported br \<longrightarrow> br_size_bytes br = br_reported_size br"
   by auto
 
 (* app_version_monotonic_thm (matches Coq) *)
-lemma app_version_monotonic_thm: "\<forall>(vh :: app_version_history). app_version_monotonic vh \<longrightarrow> list_monotonic (vh_versions vh)"
+lemma app_version_monotonic_thm: "\<forall> (vh : AppVersionHistory), app_version_monotonic vh \<longrightarrow> list_monotonic (vh_versions vh)"
   by auto
 
 (* minimum_os_version_enforced_thm (matches Coq) *)
-lemma minimum_os_version_enforced_thm: "\<forall>(req :: os_requirement). minimum_os_version_enforced req \<longrightarrow> os_req_enforced req = True \<longrightarrow> os_current_version req \<ge> os_req_min_version req"
+lemma minimum_os_version_enforced_thm: "\<forall> (req : OSRequirement), minimum_os_version_enforced req \<longrightarrow> os_req_enforced req = True \<longrightarrow> os_current_version req \<ge> os_req_min_version req"
   by auto
 
 (* deprecated_api_flagged_thm (matches Coq) *)
-lemma deprecated_api_flagged_thm: "\<forall>(au :: api_usage). deprecated_api_flagged au \<longrightarrow> api_deprecated au = True \<longrightarrow> api_flagged au = True"
+lemma deprecated_api_flagged_thm: "\<forall> (au : APIUsage), deprecated_api_flagged au \<longrightarrow> api_deprecated au = True \<longrightarrow> api_flagged au = True"
   by auto
 
 (* privacy_manifest_required_thm (matches Coq) *)
-lemma privacy_manifest_required_thm: "\<forall>(pm :: privacy_manifest). privacy_manifest_required pm \<longrightarrow> pm_manifest_present pm = True"
+lemma privacy_manifest_required_thm: "\<forall> (pm : PrivacyManifest), privacy_manifest_required pm \<longrightarrow> pm_manifest_present pm = True"
   by auto
 
 (* data_collection_declared_thm (matches Coq) *)
-lemma data_collection_declared_thm: "\<forall>(dd :: data_declaration). data_collection_declared dd \<longrightarrow> dd_declared dd = True"
+lemma data_collection_declared_thm: "\<forall> (dd : DataDeclaration), data_collection_declared dd \<longrightarrow> dd_declared dd = True"
   by auto
 
 (* app_clip_size_bounded_thm (matches Coq) *)
-lemma app_clip_size_bounded_thm: "\<forall>(ac :: app_clip). app_clip_size_bounded ac \<longrightarrow> ac_size_mb ac \<le> ac_max_size_mb ac"
+lemma app_clip_size_bounded_thm: "\<forall> (ac : AppClip), app_clip_size_bounded ac \<longrightarrow> ac_size_mb ac \<le> ac_max_size_mb ac"
   by auto
 
 (* testflight_expiry_enforced_thm (matches Coq) *)
-lemma testflight_expiry_enforced_thm: "\<forall>(tf :: test_flight_build). testflight_expiry_enforced tf \<longrightarrow> tf_enforced tf = True"
+lemma testflight_expiry_enforced_thm: "\<forall> (tf : TestFlightBuild), testflight_expiry_enforced tf \<longrightarrow> tf_enforced tf = True"
   by auto
 
 (* enterprise_certificate_validated_thm (matches Coq) *)
-lemma enterprise_certificate_validated_thm: "\<forall>(ec :: enterprise_cert). enterprise_certificate_validated ec \<longrightarrow> ec_valid ec = True \<and> ec_revoked ec = False"
+lemma enterprise_certificate_validated_thm: "\<forall> (ec : EnterpriseCert), enterprise_certificate_validated ec \<longrightarrow> ec_valid ec = True \<and> ec_revoked ec = False"
   by auto
 
 (* notarization_required_thm (matches Coq) *)
-lemma notarization_required_thm: "\<forall>(ns :: notarization_status). notarization_required ns \<longrightarrow> ns_notarized ns = True"
+lemma notarization_required_thm: "\<forall> (ns : NotarizationStatus), notarization_required ns \<longrightarrow> ns_notarized ns = True"
   by auto
 
 (* provisioning_profile_not_expired (matches Coq) *)
-lemma provisioning_profile_not_expired: "\<forall>(pp :: provisioning_profile). provisioning_profile_valid pp \<longrightarrow> pp_current_date pp \<le> pp_expiry_date pp"
+lemma provisioning_profile_not_expired: "\<forall> (pp : ProvisioningProfile), provisioning_profile_valid pp \<longrightarrow> pp_current_date pp \<le> pp_expiry_date pp"
   by auto
 
 (* entitlements_granted_bounded (matches Coq) *)
-lemma entitlements_granted_bounded: "\<forall>(es :: entitlement_set). entitlements_validated es \<longrightarrow> length (ent_granted es) \<le> length (ent_requested es)"
+lemma entitlements_granted_bounded: "\<forall> (es : EntitlementSet), entitlements_validated es \<longrightarrow> length (ent_granted es) \<le> length (ent_requested es)"
   by auto
 
 (* enterprise_cert_not_revoked (matches Coq) *)
-lemma enterprise_cert_not_revoked: "\<forall>(ec :: enterprise_cert). enterprise_certificate_validated ec \<longrightarrow> ec_revoked ec = False"
+lemma enterprise_cert_not_revoked: "\<forall> (ec : EnterpriseCert), enterprise_certificate_validated ec \<longrightarrow> ec_revoked ec = False"
   by auto
 
 (* notarization_ticket_stapled (matches Coq) *)
-lemma notarization_ticket_stapled: "\<forall>(ns :: notarization_status). notarization_required ns \<longrightarrow> ns_ticket_stapled ns = True"
+lemma notarization_ticket_stapled: "\<forall> (ns : NotarizationStatus), notarization_required ns \<longrightarrow> ns_ticket_stapled ns = True"
   by auto
 
 (* app_signature_has_timestamp (matches Coq) *)
-lemma app_signature_has_timestamp: "\<forall>(s :: app_signature). app_signature_verified s \<longrightarrow> sig_timestamp s > 0"
+lemma app_signature_has_timestamp: "\<forall> (s : AppSignature), app_signature_verified s \<longrightarrow> sig_timestamp s > 0"
   by auto
 
 end

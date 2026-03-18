@@ -50,71 +50,104 @@ type mem_virt_state = {
 }
 
 (* guest_can_modify_ept — Coq Prop predicate stub *)
-let guest_can_modify_ept (__x0: virtual_machine) (__x1: extended_page_table) : Tot bool =
-  true
+assume val guest_can_modify_ept : virtual_machine -> extended_page_table -> bool
+
 (* creates — Coq Prop predicate stub *)
-let creates (__x0: process) (__x1: virtual_machine) : Tot bool =
-  true
+assume val creates : process -> virtual_machine -> bool
+
 (* find_ept (matches Coq: Fixpoint find_ept) *)
-let find_ept (p_vmid: vm_id) (p_epts: (list extended_page_table)) : Tot nat =
-  0
+let rec find_ept (p_vmid: vm_id) (p_epts: (list extended_page_table)) : Tot nat =
+  match p_epts with
+  | [] -> None
+  | ept :: rest -> match VMId_eq_dec (ept.f_ept_owner) p_vmid with
+  | left _ -> Some ept
+  | right _ -> find_ept p_vmid rest
+  | _ -> 0 end
+
 (* hypervisor_owns_ept (matches Coq: Definition hypervisor_owns_ept) *)
 let hypervisor_owns_ept (p_ept: extended_page_table) : Tot bool =
   true
+
 (* has_vm_creation_capability (matches Coq: Definition has_vm_creation_capability) *)
 let has_vm_creation_capability (p_p: process) : Tot bool =
   true
+
 (* gpa_in_ept (matches Coq: Definition gpa_in_ept) *)
 let gpa_in_ept (p_ept: extended_page_table) (p_gpa: nat) : Tot bool =
   true
+
 (* perm_read (matches Coq: Definition perm_read) *)
-let perm_read : nat = 0
+let perm_read : nat = 1
+
 (* perm_write (matches Coq: Definition perm_write) *)
-let perm_write : nat = 0
+let perm_write : nat = 2
+
 (* perm_exec (matches Coq: Definition perm_exec) *)
-let perm_exec : nat = 0
+let perm_exec : nat = 4
+
 (* has_permission (matches Coq: Definition has_permission) *)
 let has_permission (p_entry: ept_entry) (p_perm: nat) : Tot bool =
-  true
+  (not (Nat.eqb (Nat.land (p_entry.f_ept_permissions)) p_perm) 0)
+
 (* ept_integrity (matches Coq: Theorem ept_integrity) *)
-let ept_integrity (p_guest: virtual_machine) (p_ept: extended_page_table) : Lemma True = ()
+let ept_integrity (p_guest: virtual_machine) (p_ept: extended_page_table) : Lemma (~(guest_can_modify_ept p_guest p_ept == true)) = admit ()
+
 (* vm_creation_authorized (matches Coq: Theorem vm_creation_authorized) *)
-let vm_creation_authorized (p_creator: process) (p_new_vm: virtual_machine) : Lemma True = ()
+let vm_creation_authorized (p_creator: process) (p_new_vm: virtual_machine) : Lemma (requires (creates p_creator p_new_vm == true)) (ensures (has_vm_creation_capability p_creator == true)) = admit ()
+
 (* translation_deterministic (matches Coq: Theorem translation_deterministic) *)
-let translation_deterministic (p_ept: extended_page_table) (p_gpa: nat) (p_hpa1: nat) (p_hpa2: nat) : Lemma True = ()
+let translation_deterministic (p_ept: extended_page_table) (p_gpa: nat) (p_hpa1: nat) (p_hpa2: nat) : Lemma (requires (translate_gpa p_ept p_gpa == Some p_hpa1 /\ translate_gpa p_ept p_gpa == Some p_hpa2)) (ensures (p_hpa1 == p_hpa2)) = admit ()
+
 (* invalid_gpa_no_translation (matches Coq: Theorem invalid_gpa_no_translation) *)
-let invalid_gpa_no_translation (p_ept: extended_page_table) (p_gpa: nat) : Lemma True = ()
+let invalid_gpa_no_translation (p_ept: extended_page_table) (p_gpa: nat) : Lemma (requires (((forall (entry: _). List.Tot.memP entry (p_ept.f_ept_entries)) \/ entry.f_ept_valid == false))) (ensures (translate_gpa p_ept p_gpa == None)) = admit ()
+
 (* ept_vm_isolation (matches Coq: Theorem ept_vm_isolation) *)
-let ept_vm_isolation (p_st: mem_virt_state) (p_vm1: virtual_machine) (p_vm2: virtual_machine) (p_ept1: extended_page_table) (p_ept2: extended_page_table) : Lemma True = ()
+let ept_vm_isolation (p_st: mem_virt_state) (p_vm1: virtual_machine) (p_vm2: virtual_machine) (p_ept1: extended_page_table) (p_ept2: extended_page_table) : Lemma (requires (~(p_vm1.f_vm_id == p_vm2.f_vm_id) /\ find_ept (p_vm1.f_vm_id) (p_st.f_all_epts) == Some p_ept1 /\ find_ept (p_vm2.f_vm_id) (p_st.f_all_epts) == Some p_ept2)) (ensures (~(p_ept1.f_ept_owner == p_ept2.f_ept_owner))) = admit ()
+
 (* no_cap_no_vm_creation (matches Coq: Theorem no_cap_no_vm_creation) *)
-let no_cap_no_vm_creation (p_p: process) : Lemma True = ()
+let no_cap_no_vm_creation (p_p: process) : Lemma (requires (p_p.f_proc_vm_create_cap == false)) (ensures ((forall (vm: _). ~(creates p_p vm == true)))) = admit ()
+
 (* page_table_permission_enforced (matches Coq: Theorem page_table_permission_enforced) *)
-let page_table_permission_enforced (p_entry: ept_entry) (p_perm: nat) : Lemma True = ()
+let page_table_permission_enforced (p_entry: ept_entry) (p_perm: nat) : Lemma (requires (has_permission p_entry p_perm == false)) (ensures (Nat.land (p_entry.f_ept_permissions) p_perm == 0)) = admit ()
+
 (* kernel_pages_non_writable_from_user (matches Coq: Theorem kernel_pages_non_writable_from_user) *)
-let kernel_pages_non_writable_from_user (p_entry: ept_entry) : Lemma True = ()
+let kernel_pages_non_writable_from_user (p_entry: ept_entry) : Lemma (requires (has_permission p_entry perm_write == false)) (ensures (Nat.land (p_entry.f_ept_permissions) perm_write == 0)) = admit ()
+
 (* page_fault_handler_safe (matches Coq: Theorem page_fault_handler_safe) *)
-let page_fault_handler_safe (p_ept: extended_page_table) (p_gpa: nat) : Lemma True = ()
+let page_fault_handler_safe (p_ept: extended_page_table) (p_gpa: nat) : Lemma (requires (translate_gpa p_ept p_gpa == None)) (ensures (~(gpa_in_ept p_ept p_gpa == true))) = admit ()
+
 (* copy_on_write_correct (matches Coq: Theorem copy_on_write_correct) *)
-let copy_on_write_correct (p_ept: extended_page_table) (p_gpa: nat) (p_hpa: nat) : Lemma True = ()
+let copy_on_write_correct (p_ept: extended_page_table) (p_gpa: nat) (p_hpa: nat) : Lemma (requires (translate_gpa p_ept p_gpa == Some p_hpa /\ (forall (p_hpa: _). translate_gpa p_ept p_gpa == Some hpa_))) (ensures (p_hpa == hpa_)) = admit ()
+
 (* virtual_address_canonical (matches Coq: Theorem virtual_address_canonical) *)
-let virtual_address_canonical (p_ept: extended_page_table) (p_gpa: nat) : Lemma True = ()
+let virtual_address_canonical (p_ept: extended_page_table) (p_gpa: nat) : Lemma (requires (~(translate_gpa p_ept p_gpa == None))) (ensures ((exists p_hpa. translate_gpa p_ept p_gpa == Some p_hpa))) = admit ()
+
 (* guest_cannot_modify_any_ept (matches Coq: Theorem guest_cannot_modify_any_ept) *)
-let guest_cannot_modify_any_ept (p_vm: virtual_machine) (p_ept: extended_page_table) : Lemma True = ()
+let guest_cannot_modify_any_ept (p_vm: virtual_machine) (p_ept: extended_page_table) : Lemma (~(guest_can_modify_ept p_vm p_ept == true)) = admit ()
+
 (* hypervisor_owns_all_epts (matches Coq: Theorem hypervisor_owns_all_epts) *)
-let hypervisor_owns_all_epts (p_ept: extended_page_table) : Lemma True = ()
+let hypervisor_owns_all_epts (p_ept: extended_page_table) : Lemma (hypervisor_owns_ept p_ept == true) = admit ()
+
 (* find_ept_deterministic (matches Coq: Theorem find_ept_deterministic) *)
-let find_ept_deterministic (p_vmid: vm_id) (p_epts: (list extended_page_table)) (p_e1: extended_page_table) (p_e2: extended_page_table) : Lemma True = ()
+let find_ept_deterministic (p_vmid: vm_id) (p_epts: (list extended_page_table)) (p_e1: extended_page_table) (p_e2: extended_page_table) : Lemma (requires (find_ept p_vmid p_epts == Some p_e1 /\ find_ept p_vmid p_epts == Some p_e2)) (ensures (p_e1 == p_e2)) = admit ()
+
 (* no_ept_no_mapping (matches Coq: Theorem no_ept_no_mapping) *)
-let no_ept_no_mapping (p_st: mem_virt_state) (p_vm: virtual_machine) : Lemma True = ()
+let no_ept_no_mapping (p_st: mem_virt_state) (p_vm: virtual_machine) : Lemma (requires (find_ept (p_vm.f_vm_id) (p_st.f_all_epts) == None /\ (forall (ept: _). List.Tot.memP ept (p_st.f_all_epts)))) (ensures (~(ept.f_ept_owner == p_vm.f_vm_id))) = admit ()
+
 (* vm_creation_records_creator (matches Coq: Theorem vm_creation_records_creator) *)
-let vm_creation_records_creator (p_p: process) (p_vm: virtual_machine) : Lemma True = ()
+let vm_creation_records_creator (p_p: process) (p_vm: virtual_machine) : Lemma (requires (creates p_p p_vm == true)) (ensures (p_vm.f_vm_creator == p_p.f_proc_id)) = admit ()
+
 (* empty_ept_no_translations (matches Coq: Theorem empty_ept_no_translations) *)
-let empty_ept_no_translations (p_ept: extended_page_table) (p_gpa: nat) : Lemma True = ()
+let empty_ept_no_translations (p_ept: extended_page_table) (p_gpa: nat) : Lemma (requires (p_ept.f_ept_entries == [])) (ensures (translate_gpa p_ept p_gpa == None)) = admit ()
+
 (* gpa_in_ept_translation_exists (matches Coq: Theorem gpa_in_ept_translation_exists) *)
-let gpa_in_ept_translation_exists (p_ept: extended_page_table) (p_gpa: nat) : Lemma True = ()
+let gpa_in_ept_translation_exists (p_ept: extended_page_table) (p_gpa: nat) : Lemma (requires (gpa_in_ept p_ept p_gpa == true)) (ensures ((exists p_hpa. translate_gpa p_ept p_gpa == Some p_hpa))) = admit ()
+
 (* different_vms_different_epts (matches Coq: Theorem different_vms_different_epts) *)
-let different_vms_different_epts (p_st: mem_virt_state) (p_vm1: virtual_machine) (p_vm2: virtual_machine) (p_ept: extended_page_table) : Lemma True = ()
+let different_vms_different_epts (p_st: mem_virt_state) (p_vm1: virtual_machine) (p_vm2: virtual_machine) (p_ept: extended_page_table) : Lemma (requires (~(p_vm1.f_vm_id == p_vm2.f_vm_id) /\ find_ept (p_vm1.f_vm_id) (p_st.f_all_epts) == Some p_ept)) (ensures (~(find_ept (p_vm2.f_vm_id) (p_st.f_all_epts) == Some p_ept))) = admit ()
+
 (* write_protect_enforced (matches Coq: Theorem write_protect_enforced) *)
-let write_protect_enforced (p_entry: ept_entry) : Lemma True = ()
+let write_protect_enforced (p_entry: ept_entry) : Lemma (requires (has_permission p_entry perm_write == false /\ has_permission p_entry perm_exec == false)) (ensures (Nat.land (p_entry.f_ept_permissions) perm_write == 0 /\ Nat.land (p_entry.f_ept_permissions) perm_exec == 0)) = admit ()
+
 (* execute_disable_respected (matches Coq: Theorem execute_disable_respected) *)
-let execute_disable_respected (p_entry: ept_entry) : Lemma True = ()
+let execute_disable_respected (p_entry: ept_entry) : Lemma (requires (has_permission p_entry perm_exec == false)) (ensures (Nat.land (p_entry.f_ept_permissions) perm_exec == 0)) = admit ()

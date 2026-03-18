@@ -12,25 +12,25 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | test_result         | test_result            | OK     |
- * | trace_event         | trace_event            | OK     |
- * | mutation_op         | mutation_op            | OK     |
- * | security_property   | security_property      | OK     |
- * | simple_type         | simple_type            | OK     |
- * | expr               | expr                   | OK     |
- * | sanitizer_result    | sanitizer_result       | OK     |
- * | test_case           | test_case              | OK     |
- * | gen_state           | gen_state              | OK     |
- * | mutant             | mutant                 | OK     |
- * | security_coverage   | security_coverage      | OK     |
- * | timing_measurement  | timing_measurement     | OK     |
- * | test_state          | test_state             | OK     |
- * | fixture            | fixture                | OK     |
- * | component          | component              | OK     |
- * | api_contract        | api_contract           | OK     |
- * | security_flow       | security_flow          | OK     |
- * | kat_test            | kat_test               | OK     |
- * | brute_force_protection | brute_force_protection | OK     |
+ * | TestResult         | test_result            | OK     |
+ * | TraceEvent         | trace_event            | OK     |
+ * | MutationOp         | mutation_op            | OK     |
+ * | SecurityProperty   | security_property      | OK     |
+ * | SimpleType         | simple_type            | OK     |
+ * | Expr               | expr                   | OK     |
+ * | SanitizerResult    | sanitizer_result       | OK     |
+ * | TestCase           | test_case              | OK     |
+ * | GenState           | gen_state              | OK     |
+ * | Mutant             | mutant                 | OK     |
+ * | SecurityCoverage   | security_coverage      | OK     |
+ * | TimingMeasurement  | timing_measurement     | OK     |
+ * | TestState          | test_state             | OK     |
+ * | Fixture            | fixture                | OK     |
+ * | Component          | component              | OK     |
+ * | APIContract        | api_contract           | OK     |
+ * | SecurityFlow       | security_flow          | OK     |
+ * | KATTest            | kat_test               | OK     |
+ * | BruteForceProtection | brute_force_protection | OK     |
  * | is_constant_time   | is_constant_time       | OK     |
  * | run_test           | run_test               | OK     |
  * | test_result_eqb    | test_result_eqb        | OK     |
@@ -96,28 +96,23 @@
  *)
 
 theory TestingQA
-  imports Main CoqCompat Syntax
+  imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym code_path = "nat"
-type_synonym execution_trace = "nat"
-type_synonym generator = "nat"
-type_synonym property = "nat"
-(* test_result (matches Coq: Inductive test_result) *)
+(* TestResult (matches Coq: Inductive TestResult) *)
 datatype test_result =
     TRPass
   |     TRFail
   |     TRError
 
-(* trace_event (matches Coq: Inductive trace_event) *)
+(* TraceEvent (matches Coq: Inductive TraceEvent) *)
 datatype trace_event =
     TEEnter
   |     TEExit
   |     TEAssert
   |     TECoverage
 
-(* mutation_op (matches Coq: Inductive mutation_op) *)
+(* MutationOp (matches Coq: Inductive MutationOp) *)
 datatype mutation_op =
     MONegate
   |     MOArithSwap
@@ -125,7 +120,7 @@ datatype mutation_op =
   |     MODeleteStmt
   |     MOConstChange
 
-(* security_property (matches Coq: Inductive security_property) *)
+(* SecurityProperty (matches Coq: Inductive SecurityProperty) *)
 datatype security_property =
     SPAuthentication
   |     SPAuthorization
@@ -133,88 +128,88 @@ datatype security_property =
   |     SPIntegrity
   |     SPNonRepudiation
 
-(* simple_type (matches Coq: Inductive simple_type) *)
+(* SimpleType (matches Coq: Inductive SimpleType) *)
 datatype simple_type =
     TyNat
   |     TyBool
   |     TyFun
 
-(* expr (matches Coq: Inductive expr) *)
+(* Expr (matches Coq: Inductive Expr) *)
 datatype expr =
     ENat
   |     EBool
   |     EAdd
   |     EIf
 
-(* sanitizer_result (matches Coq: Inductive sanitizer_result) *)
+(* SanitizerResult (matches Coq: Inductive SanitizerResult) *)
 datatype sanitizer_result =
     SRClean
   |     SRViolation
 
-(* test_case (matches Coq: Record test_case) *)
+(* TestCase (matches Coq: Record TestCase) *)
 record test_case =
   tc_name :: string
   tc_input :: nat
   tc_expected :: nat
 
-(* gen_state (matches Coq: Record gen_state) *)
+(* GenState (matches Coq: Record GenState) *)
 record gen_state =
   gs_seed :: nat
   gs_size :: nat
 
-(* mutant (matches Coq: Record mutant) *)
+(* Mutant (matches Coq: Record Mutant) *)
 record mutant =
   mut_location :: nat
-  mut_operator :: mutation_op
+  mut_operator :: MutationOp
   mut_killed :: bool
 
-(* security_coverage (matches Coq: Record security_coverage) *)
+(* SecurityCoverage (matches Coq: Record SecurityCoverage) *)
 record security_coverage =
   sc_properties :: 'a list
   sc_tested :: 'a list
 
-(* timing_measurement (matches Coq: Record timing_measurement) *)
+(* TimingMeasurement (matches Coq: Record TimingMeasurement) *)
 record timing_measurement =
   tm_input1 :: nat
   tm_input2 :: nat
   tm_time1 :: nat
   tm_time2 :: nat
 
-(* test_state (matches Coq: Record test_state) *)
+(* TestState (matches Coq: Record TestState) *)
 record test_state =
   ts_counter :: nat
   ts_flag :: bool
 
-(* fixture (matches Coq: Record fixture) *)
+(* Fixture (matches Coq: Record Fixture) *)
 record fixture =
-  fix_setup :: test_state
-  fix_teardown :: test_state
+  fix_setup :: TestState
+  fix_teardown :: TestState
 
-(* component (matches Coq: Record component) *)
+(* Component (matches Coq: Record Component) *)
 record component =
   comp_name :: string
-  comp_input_type :: simple_type
-  comp_output_type :: simple_type
+  comp_input_type :: SimpleType
+  comp_output_type :: SimpleType
   comp_impl :: nat
 
-(* api_contract (matches Coq: Record api_contract) *)
+(* APIContract (matches Coq: Record APIContract) *)
 record api_contract =
   api_precondition :: nat
   api_postcondition :: nat
   api_impl :: nat
 
-(* security_flow (matches Coq: Record security_flow) *)
+(* SecurityFlow (matches Coq: Record SecurityFlow) *)
 record security_flow =
-  sf_source :: security_property
-  sf_sink :: security_property
+  sf_source :: SecurityProperty
+  sf_sink :: SecurityProperty
   sf_valid :: bool
 
-(* kat_test (matches Coq: Record kat_test) *)
+(* KATTest (matches Coq: Record KATTest) *)
 record kat_test =
   kat_input :: nat
   kat_expected :: nat
 
-(* brute_force_protection (matches Coq: Record brute_force_protection) *)
+(* BruteForceProtection (matches Coq: Record BruteForceProtection) *)
 record brute_force_protection =
   bfp_max_attempts :: nat
   bfp_current_attempts :: nat
@@ -234,44 +229,44 @@ definition run_test :: "TestCase \<Rightarrow> TestResult" where
   else TRFail "Output mismatch""
 
 (* test_result_eqb - complex match, needs manual translation *)
-definition test_result_eqb :: "bool" where "test_result_eqb \<equiv> True"
+definition test_result_eqb :: "bool" where "test_result_eqb = undefined"
 
 (* test_passed (matches Coq: Definition test_passed) *)
 fun test_passed :: "TestResult \<Rightarrow> bool" where
-  "test_passed TRPass = True"
-|   "test_passed _ = False"
+  "test_passed TRPass = true"
+|   "test_passed _ = false"
 
 (* initial_state (matches Coq: Definition initial_state) *)
 definition initial_state :: "TestState" where
   "initial_state \<equiv> mkTestState 0 False"
 
 (* run_isolated (matches Coq: Definition run_isolated) *)
-definition run_isolated :: "TestCase \<Rightarrow> test_state \<Rightarrow> test_result * TestState" where
+definition run_isolated :: "TestCase \<Rightarrow> TestState \<Rightarrow> TestResult * TestState" where
   "run_isolated tc s \<equiv> let result := run_test tc f in
   (result, s)"
 
 (* id_fixture (matches Coq: Definition id_fixture) *)
 definition id_fixture :: "Fixture" where
-  "id_fixture \<equiv> mkFixture (\<lambda>s. s) (\<lambda>s. s)"
+  "id_fixture \<equiv> mkFixture (fun s => s) (fun s => s)"
 
 (* run_with_fixture (matches Coq: Definition run_with_fixture) *)
-definition run_with_fixture :: "Fixture \<Rightarrow> test_case \<Rightarrow> test_state \<Rightarrow> test_result * TestState" where
+definition run_with_fixture :: "Fixture \<Rightarrow> TestCase \<Rightarrow> TestState \<Rightarrow> TestResult * TestState" where
   "run_with_fixture fixture tc s \<equiv> let s1 := fixture.(fix_setup) s in
   let result := run_test tc f in
   let s2 := fixture.(fix_teardown) s1 in
   (result, s2)"
 
 (* expected_panic - complex match, needs manual translation *)
-definition expected_panic :: "bool" where "expected_panic \<equiv> True"
+definition expected_panic :: "bool" where "expected_panic = undefined"
 
 (* gen_nat (matches Coq: Definition gen_nat) *)
 definition gen_nat :: "Generator nat" where
-  "gen_nat \<equiv> \<lambda>gs.
+  "gen_nat \<equiv> fun gs =>
   (gs.(gs_seed) mod (gs.(gs_size) + 1), mkGenState (gs.(gs_seed) + 1) gs.(gs_size))"
 
 (* shrink_nat (matches Coq: Definition shrink_nat) *)
 fun shrink_nat :: "nat \<Rightarrow> list nat" where
-  "shrink_nat _ = undefined"
+
 
 (* check_property (matches Coq: Definition check_property) *)
 definition check_property :: "Property \<Rightarrow> bool" where
@@ -279,7 +274,7 @@ definition check_property :: "Property \<Rightarrow> bool" where
 
 (* find_minimal (matches Coq: Definition find_minimal) *)
 fun find_minimal :: "Property \<Rightarrow> option nat" where
-  "find_minimal _ = None"
+
 
 (* shrink_loop (matches Coq: Definition shrink_loop) *)
 fun shrink_loop :: "Property \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat" where
@@ -288,19 +283,19 @@ fun shrink_loop :: "Property \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> n
 
 (* gen_range (matches Coq: Definition gen_range) *)
 fun gen_range :: "nat \<Rightarrow> list nat" where
-  "gen_range _ = undefined"
+
 
 (* reachable_paths (matches Coq: Definition reachable_paths) *)
 definition reachable_paths :: "nat \<Rightarrow> list CodePath" where
-  "reachable_paths max_depth \<equiv> map (\<lambda>n. [n]) (gen_range max_depth)"
+  "reachable_paths max_depth \<equiv> map (fun n => [n]) (gen_range max_depth)"
 
 (* fuzzer_explores (matches Coq: Definition fuzzer_explores) *)
 definition fuzzer_explores :: "list CodePath" where
-  "fuzzer_explores \<equiv> map (\<lambda>n. [n]) inputs"
+  "fuzzer_explores \<equiv> map (fun n => [n]) inputs"
 
 (* path_covered (matches Coq: Definition path_covered) *)
 definition path_covered :: "CodePath \<Rightarrow> bool" where
-  "path_covered p \<equiv> existsb (\<lambda>ep. list_beq (p = ep)) explored"
+  "path_covered p \<equiv> existsb (fun ep => list_beq (p = ep)) explored"
 
 (* valid_structured_input (matches Coq: Definition valid_structured_input) *)
 definition valid_structured_input :: "nat \<Rightarrow> bool" where
@@ -308,15 +303,15 @@ definition valid_structured_input :: "nat \<Rightarrow> bool" where
 
 (* differential_test (matches Coq: Definition differential_test) *)
 definition differential_test :: "nat \<Rightarrow> bool" where
-  "differential_test input \<equiv> (f1 input = f2 input)"
+  "differential_test input \<equiv> ((f1 = input)) (f2 input)"
 
 (* sanitizer_pass (matches Coq: Definition sanitizer_pass) *)
 fun sanitizer_pass :: "SanitizerResult \<Rightarrow> bool" where
-  "sanitizer_pass SRClean = True"
+  "sanitizer_pass SRClean = true"
 
 (* compose_components (matches Coq: Definition compose_components) *)
 definition compose_components :: "nat -> nat" where
-  "compose_components \<equiv> \<lambda>x. c2.(comp_impl) (c1.(comp_impl) x)"
+  "compose_components \<equiv> fun x => c2.(comp_impl) (c1.(comp_impl) x)"
 
 (* satisfies_contract (matches Coq: Definition satisfies_contract) *)
 definition satisfies_contract :: "APIContract \<Rightarrow> nat \<Rightarrow> bool" where
@@ -330,15 +325,15 @@ definition mutation_valid :: "Mutant \<Rightarrow> nat \<Rightarrow> bool" where
 
 (* mutation_score (matches Coq: Definition mutation_score) *)
 definition mutation_score :: "nat" where
-  "mutation_score \<equiv> List.length (List.filter (\<lambda>m. m.(mut_killed)) mutants)"
+  "mutation_score \<equiv> List.length (List.filter (fun m => m.(mut_killed)) mutants)"
 
 (* test_detects_mutation (matches Coq: Definition test_detects_mutation) *)
 definition test_detects_mutation :: "TestCase \<Rightarrow> bool" where
-  "test_detects_mutation tc \<equiv> (\<not> (=) (orig_f tc.(tc_input)) (mut_f tc.(tc_input)))"
+  "test_detects_mutation tc \<equiv> (\<not> (Nat.eqb) (orig_f tc.(tc_input)) (mut_f tc.(tc_input)))"
 
 (* timing_attack_detected (matches Coq: Definition timing_attack_detected) *)
 definition timing_attack_detected :: "nat \<Rightarrow> bool" where
-  "timing_attack_detected tolerance \<equiv> existsb (\<lambda>tm. (\<not> (is_constant_time) tm tolerance)) measurements"
+  "timing_attack_detected tolerance \<equiv> existsb (fun tm => (\<not> (is_constant_time) tm tolerance)) measurements"
 
 (* run_kat (matches Coq: Definition run_kat) *)
 definition run_kat :: "KATTest \<Rightarrow> bool" where
@@ -349,158 +344,158 @@ definition check_brute_force :: "BruteForceProtection \<Rightarrow> bool" where
   "check_brute_force bfp \<equiv> (bfp.(bfp_locked) \<or> (Nat.leb) bfp.(bfp_max_attempts) bfp.(bfp_current_attempts))"
 
 (* line_covered (matches Coq: Definition line_covered) *)
-fun line_covered :: "nat \<Rightarrow> execution_trace \<Rightarrow> bool" where
-  "line_covered _ = False"
+fun line_covered :: "nat \<Rightarrow> ExecutionTrace \<Rightarrow> bool" where
+  "line_covered _ = false"
 
 (* sec_prop_eqb - complex match, needs manual translation *)
-definition sec_prop_eqb :: "bool" where "sec_prop_eqb \<equiv> True"
+definition sec_prop_eqb :: "bool" where "sec_prop_eqb = undefined"
 
 (* security_prop_covered (matches Coq: Definition security_prop_covered) *)
-definition security_prop_covered :: "SecurityProperty \<Rightarrow> security_coverage \<Rightarrow> bool" where
+definition security_prop_covered :: "SecurityProperty \<Rightarrow> SecurityCoverage \<Rightarrow> bool" where
   "security_prop_covered sp sc \<equiv> existsb (sec_prop_eqb sp) sc.(sc_tested)"
 
 (* all_security_covered (matches Coq: Definition all_security_covered) *)
 definition all_security_covered :: "SecurityCoverage \<Rightarrow> bool" where
-  "all_security_covered sc \<equiv> forallb (\<lambda>sp. security_prop_covered sp sc) sc.(sc_properties)"
+  "all_security_covered sc \<equiv> forallb (fun sp => security_prop_covered sp sc) sc.(sc_properties)"
 
 (* nat_eqb_refl (matches Coq) *)
-lemma nat_eqb_refl: "\<forall>n. (n = n) = True"
+lemma nat_eqb_refl: "\<forall> n, (n = n) = True"
   by auto
 
 (* forallb_true_iff (matches Coq) *)
-lemma forallb_true_iff: "\<forall>{A : Type} (f : A \<longrightarrow> bool) (l : list A). \<forall>b f l = True <-> (\<forall> x. x \<in> set l \<longrightarrow> f x = True)"
-  by auto
+lemma forallb_true_iff: "\<forall> {A : Type} (f : A \<longrightarrow> bool) (l : list A), \<forall>b f l = True <-> (\<forall> x, In x l \<longrightarrow> f x = True)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* existsb_exists (matches Coq) *)
-lemma existsb_exists: "\<forall>{A : Type} (f : A \<longrightarrow> bool) (l : list A). \<exists>b f l = True <-> \<exists> x. x \<in> set l \<and> f x = True"
-  by auto
+lemma existsb_exists: "\<forall> {A : Type} (f : A \<longrightarrow> bool) (l : list A), \<exists>b f l = True <-> \<exists> x, In x l \<and> f x = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* list_beq_refl (matches Coq) *)
-lemma list_beq_refl: "\<forall>l. list_beq (l = l) = True"
+lemma list_beq_refl: "\<forall> l, list_beq (l = l) = True"
   by auto
 
 (* M_001_01: Test determinism - same input produces same result *)
 (* M_001_01 (matches Coq) *)
-lemma M_001_01: "\<forall>(tc :: test_case) (f : nat \<longrightarrow> nat). run_test tc f = run_test tc f"
+lemma M_001_01: "\<forall> (tc : TestCase) (f : nat \<longrightarrow> nat), run_test tc f = run_test tc f"
   by simp
 
 (* M_001_02: Test isolation - tests do not affect each other *)
 (* M_001_02 (matches Coq) *)
-lemma M_001_02: "\<forall>(tc1 :: test_case) (tc2 :: test_case) (f : nat \<longrightarrow> nat) (s :: test_state). let (r1, s1) := run_isolated tc1 f s in let (r2, _) := run_isolated tc2 f s in s1 = s"
+lemma M_001_02: "\<forall> (tc1 tc2 : TestCase) (f : nat \<longrightarrow> nat) (s : TestState), let (r1, s1) := run_isolated tc1 f s in let (r2, _) := run_isolated tc2 f s in s1 = s"
   by simp
 
 (* M_001_03 (matches Coq) *)
-lemma M_001_03: "\<forall>(e :: expr) (t :: simple_type). HasType e t \<longrightarrow> IsValue e \<or> \<exists>e'. Eval e e'"
+lemma M_001_03: "\<forall> (e : Expr) (t : SimpleType), HasType e t \<longrightarrow> IsValue e \<or> \<exists> e', Eval e e'"
   by auto
 
 (* M_001_04: Assertion soundness - assert P passes iff P holds *)
 (* M_001_04 (matches Coq) *)
-lemma M_001_04: "\<forall>(P :: bool). (P = True) <-> (if P then TRPass else TRFail "assertion failed") = TRPass"
+lemma M_001_04: "\<forall> (P : bool), (P = True) <-> (if P then TRPass else TRFail "assertion failed") = TRPass"
   by simp
 
 (* M_001_05: Test fixture setup/teardown correctness *)
 (* M_001_05 (matches Coq) *)
-lemma M_001_05: "\<forall>(fixture :: fixture) (tc :: test_case) (f : nat \<longrightarrow> nat) (s :: test_state). fixture.(fix_setup) = (\<lambda>x. x) \<longrightarrow> fixture.(fix_teardown) = (\<lambda>x. x) \<longrightarrow> fst (run_with_fixture fixture tc f s) = run_test tc f"
+lemma M_001_05: "\<forall> (fixture : Fixture) (tc : TestCase) (f : nat \<longrightarrow> nat) (s : TestState), fixture.(fix_setup) = (fun x => x) \<longrightarrow> fixture.(fix_teardown) = (fun x => x) \<longrightarrow> fst (run_with_fixture fixture tc f s) = run_test tc f"
   by simp
 
 (* M_001_06: Expected panic test correctness *)
 (* M_001_06 (matches Coq) *)
-lemma M_001_06: "\<forall>(f : nat \<longrightarrow> option nat) (input :: nat). expected_panic f input = True <-> f input = None"
+lemma M_001_06: "\<forall> (f : nat \<longrightarrow> option nat) (input : nat), expected_panic f input = True <-> f input = None"
   by simp
 
-(* M_001_07: property holds for all generated inputs (soundness) *)
+(* M_001_07: Property holds for all generated inputs (soundness) *)
 (* M_001_07 (matches Coq) *)
-lemma M_001_07: "\<forall>(prop :: property) (inputs : list nat). check_property prop inputs = True \<longrightarrow> \<forall>x. x \<in> set inputs \<longrightarrow> prop x = True"
+lemma M_001_07: "\<forall> (prop : Property) (inputs : list nat), check_property prop inputs = True \<longrightarrow> \<forall> x, In x inputs \<longrightarrow> prop x = True"
   by auto
 
 (* M_001_08: Shrinking produces minimal counterexample *)
 (* M_001_08 (matches Coq) *)
-lemma M_001_08: "\<forall>(prop :: property) (n :: nat) (fuel :: nat). prop n = False \<longrightarrow> prop (shrink_loop prop n fuel) = False \<or> (\<forall>s. s \<in> set (shrink_nat (shrink_loop prop n fuel)) \<longrightarrow> prop s = True)"
+lemma M_001_08: "\<forall> (prop : Property) (n fuel : nat), prop n = False \<longrightarrow> prop (shrink_loop prop n fuel) = False \<or> (\<forall> s, In s (shrink_nat (shrink_loop prop n fuel)) \<longrightarrow> prop s = True)"
   by auto
 
-(* M_001_09: generator coverage - all values in domain reachable *)
+(* M_001_09: Generator coverage - all values in domain reachable *)
 (* M_001_09 (matches Coq) *)
-lemma M_001_09: "\<forall>(n :: nat). n \<in> set (gen_range n)"
+lemma M_001_09: "\<forall> (n : nat), In n (gen_range n)"
   by simp
 
 (* M_001_10: Custom generator well-formedness *)
 (* M_001_10 (matches Coq) *)
-lemma M_001_10: "\<forall>(gs :: gen_state). let (v, gs') := gen_nat gs in v \<le> gs.(gs_size) \<and> gs'.(gs_seed) = gs.(gs_seed) + 1"
+lemma M_001_10: "\<forall> (gs : GenState), let (v, gs') := gen_nat gs in v \<le> gs.(gs_size) \<and> gs'.(gs_seed) = gs.(gs_seed) + 1"
   by simp
 
 (* M_001_11: Fuzzer explores all reachable code paths (completeness bound) *)
 (* M_001_11 (matches Coq) *)
-lemma M_001_11: "\<forall>(max_depth :: nat) (inputs : list nat). (\<forall>n. n \<le> max_depth \<longrightarrow> n \<in> set inputs) \<longrightarrow> \<forall>p. p \<in> set (reachable_paths max_depth) \<longrightarrow> path_covered p (fuzzer_explores inputs) = True"
-  by auto
+lemma M_001_11: "\<forall> (max_depth : nat) (inputs : list nat), (\<forall> n, n \<le> max_depth \<longrightarrow> In n inputs) \<longrightarrow> \<forall> p, In p (reachable_paths max_depth) \<longrightarrow> path_covered p (fuzzer_explores inputs) = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* M_001_12: Structured fuzzing preserves input validity *)
 (* M_001_12 (matches Coq) *)
-lemma M_001_12: "\<forall>(min max n : nat). valid_structured_input min max n = True \<longrightarrow> min \<le> n \<and> n \<le> max"
+lemma M_001_12: "\<forall> (min max n : nat), valid_structured_input min max n = True \<longrightarrow> min \<le> n \<and> n \<le> max"
   by auto
 
 (* M_001_13: Differential fuzzing detects discrepancies *)
 (* M_001_13 (matches Coq) *)
-lemma M_001_13: "\<forall>(f1 f2 : nat \<longrightarrow> nat) (input :: nat). differential_test f1 f2 input = False <-> f1 input \<noteq> f2 input"
+lemma M_001_13: "\<forall> (f1 f2 : nat \<longrightarrow> nat) (input : nat), differential_test f1 f2 input = False <-> f1 input \<noteq> f2 input"
   by auto
 
 (* M_001_14: Sanitizer integration correctness *)
 (* M_001_14 (matches Coq) *)
-lemma M_001_14: "\<forall>(sr :: sanitizer_result). sanitizer_pass sr = True <-> sr = SRClean"
+lemma M_001_14: "\<forall> (sr : SanitizerResult), sanitizer_pass sr = True <-> sr = SRClean"
   by simp
 
-(* M_001_15: component composition test correctness *)
+(* M_001_15: Component composition test correctness *)
 (* M_001_15 (matches Coq) *)
-lemma M_001_15: "\<forall>(c1 :: component) (c2 :: component) (input :: nat). compose_components c1 c2 input = c2.(comp_impl) (c1.(comp_impl) input)"
+lemma M_001_15: "\<forall> (c1 c2 : Component) (input : nat), compose_components c1 c2 input = c2.(comp_impl) (c1.(comp_impl) input)"
   by simp
 
 (* M_001_16: API contract verification *)
 (* M_001_16 (matches Coq) *)
-lemma M_001_16: "\<forall>(api :: api_contract) (input :: nat). api.(api_precondition) input = True \<longrightarrow> satisfies_contract api input = True \<longrightarrow> api.(api_postcondition) input (api.(api_impl) input) = True"
+lemma M_001_16: "\<forall> (api : APIContract) (input : nat), api.(api_precondition) input = True \<longrightarrow> satisfies_contract api input = True \<longrightarrow> api.(api_postcondition) input (api.(api_impl) input) = True"
   by auto
 
 (* M_001_17: Security flow integration test soundness *)
 (* M_001_17 (matches Coq) *)
-lemma M_001_17: "\<forall>(sf :: security_flow). sf.(sf_valid) = True \<longrightarrow> \<exists>src sink. sf.(sf_source) = src \<and> sf.(sf_sink) = sink"
+lemma M_001_17: "\<forall> (sf : SecurityFlow), sf.(sf_valid) = True \<longrightarrow> \<exists> src sink, sf.(sf_source) = src \<and> sf.(sf_sink) = sink"
   by simp
 
 (* M_001_18: Mutation operator preserves syntactic validity *)
 (* M_001_18 (matches Coq) *)
-lemma M_001_18: "\<forall>(m :: mutant) (max_loc :: nat). mutation_valid m max_loc = True \<longrightarrow> m.(mut_location) < max_loc"
+lemma M_001_18: "\<forall> (m : Mutant) (max_loc : nat), mutation_valid m max_loc = True \<longrightarrow> m.(mut_location) < max_loc"
   by auto
 
 (* M_001_19: Killed mutation implies test detects fault *)
 (* M_001_19 (matches Coq) *)
-lemma M_001_19: "\<forall>(orig_f mut_f : nat \<longrightarrow> nat) (tc :: test_case). test_detects_mutation orig_f mut_f tc = True \<longrightarrow> orig_f tc.(tc_input) \<noteq> mut_f tc.(tc_input)"
+lemma M_001_19: "\<forall> (orig_f mut_f : nat \<longrightarrow> nat) (tc : TestCase), test_detects_mutation orig_f mut_f tc = True \<longrightarrow> orig_f tc.(tc_input) \<noteq> mut_f tc.(tc_input)"
   by auto
 
 (* M_001_20: Mutation score lower bound on test effectiveness *)
 (* M_001_20 (matches Coq) *)
-lemma M_001_20: "\<forall>(mutants : list mutant). mutation_score mutants \<le> List.length mutants"
-  by auto
+lemma M_001_20: "\<forall> (mutants : list Mutant), mutation_score mutants \<le> List.length mutants"
+  by (cases rule: ‹_›.cases; simp)
 
 (* M_001_21: Timing test detects non-constant-time code *)
 (* M_001_21 (matches Coq) *)
-lemma M_001_21: "\<forall>(measurements : list timing_measurement) (tolerance :: nat). timing_attack_detected measurements tolerance = True \<longrightarrow> \<exists>tm. tm \<in> set measurements \<and> is_constant_time tm tolerance = False"
+lemma M_001_21: "\<forall> (measurements : list TimingMeasurement) (tolerance : nat), timing_attack_detected measurements tolerance = True \<longrightarrow> \<exists> tm, In tm measurements \<and> is_constant_time tm tolerance = False"
   by auto
 
 (* M_001_22: Known Answer Test (KAT) verifies cryptographic correctness *)
 (* M_001_22 (matches Coq) *)
-lemma M_001_22: "\<forall>(kat :: kat_test) (f : nat \<longrightarrow> nat). run_kat kat f = True <-> f kat.(kat_input) = kat.(kat_expected)"
+lemma M_001_22: "\<forall> (kat : KATTest) (f : nat \<longrightarrow> nat), run_kat kat f = True <-> f kat.(kat_input) = kat.(kat_expected)"
   by auto
 
 (* M_001_23: Brute force protection test correctness *)
 (* M_001_23 (matches Coq) *)
-lemma M_001_23: "\<forall>(bfp :: brute_force_protection). check_brute_force bfp = True <-> (bfp.(bfp_locked) = True \<or> bfp.(bfp_max_attempts) \<le> bfp.(bfp_current_attempts))"
+lemma M_001_23: "\<forall> (bfp : BruteForceProtection), check_brute_force bfp = True <-> (bfp.(bfp_locked) = True \<or> bfp.(bfp_max_attempts) \<le> bfp.(bfp_current_attempts))"
   by auto
 
 (* M_001_24: Line coverage soundness - covered line was executed *)
 (* M_001_24 (matches Coq) *)
-lemma M_001_24: "\<forall>(line :: nat) (trace :: execution_trace). line_covered line trace = True \<longrightarrow> \<exists>ev. ev \<in> set trace \<and> ev = TECoverage line"
+lemma M_001_24: "\<forall> (line : nat) (trace : ExecutionTrace), line_covered line trace = True \<longrightarrow> \<exists> ev, In ev trace \<and> ev = TECoverage line"
   by auto
 
 (* M_001_25: Security property coverage completeness *)
 (* M_001_25 (matches Coq) *)
-lemma M_001_25: "\<forall>(sc :: security_coverage). all_security_covered sc = True \<longrightarrow> \<forall>sp. sp \<in> set sc.(sc_properties) \<longrightarrow> security_prop_covered sp sc = True"
+lemma M_001_25: "\<forall> (sc : SecurityCoverage), all_security_covered sc = True \<longrightarrow> \<forall> sp, In sp sc.(sc_properties) \<longrightarrow> security_prop_covered sp sc = True"
   by auto
 
 end

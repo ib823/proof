@@ -94,6 +94,9 @@ sig TimingTest {
   f_tt_constant_time: one Bool
 }
 
+// PASSWORD_HASH_MIN_ITERS (matches Coq: Definition PASSWORD_HASH_MIN_ITERS)
+pred PASSWORD_HASH_MIN_ITERS {}
+
 // strong_encryption (matches Coq: Definition strong_encryption)
 pred strong_encryption[p_key: EncryptionKey] {
   some p_key

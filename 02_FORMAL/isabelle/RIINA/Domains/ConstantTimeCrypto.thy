@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | timing_operation    | timing_operation       | OK     |
+ * | TimingOperation    | timing_operation       | OK     |
  * | CTOperation        | ct_operation           | OK     |
- * | crypto_operation    | crypto_operation       | OK     |
- * | constant_time_config | constant_time_config   | OK     |
- * | crypto_implementation | crypto_implementation  | OK     |
+ * | CryptoOperation    | crypto_operation       | OK     |
+ * | ConstantTimeConfig | constant_time_config   | OK     |
+ * | CryptoImplementation | crypto_implementation  | OK     |
  * | ct_branch_free     | ct_branch_free         | OK     |
  * | ct_memory_safe     | ct_memory_safe         | OK     |
  * | ct_operation_safe  | ct_operation_safe      | OK     |
@@ -61,7 +61,7 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* timing_operation (matches Coq: Inductive timing_operation) *)
+(* TimingOperation (matches Coq: Inductive TimingOperation) *)
 datatype timing_operation =
     Op_Branch
   |     Op_MemAccess
@@ -77,7 +77,7 @@ datatype ct_operation =
   |     CT_CTMul
   |     CT_ScatterGather
 
-(* crypto_operation (matches Coq: Inductive crypto_operation) *)
+(* CryptoOperation (matches Coq: Inductive CryptoOperation) *)
 datatype crypto_operation =
     Crypto_AES_Encrypt
   |     Crypto_AES_Decrypt
@@ -89,7 +89,7 @@ datatype crypto_operation =
   |     Crypto_RSA_Decrypt
   |     Crypto_KeyCompare
 
-(* constant_time_config (matches Coq: Record constant_time_config) *)
+(* ConstantTimeConfig (matches Coq: Record ConstantTimeConfig) *)
 record constant_time_config =
   ct_no_secret_branches :: bool
   ct_no_secret_addresses :: bool
@@ -99,9 +99,9 @@ record constant_time_config =
   ct_masked_memory :: bool
   ct_constant_loops :: bool
 
-(* crypto_implementation (matches Coq: Record crypto_implementation) *)
+(* CryptoImplementation (matches Coq: Record CryptoImplementation) *)
 record crypto_implementation =
-  ci_operation :: crypto_operation
+  ci_operation :: CryptoOperation
   ci_constant_time :: bool
   ci_no_table_lookups :: bool
   ci_bitsliced :: bool
@@ -142,8 +142,8 @@ definition riina_sha256 :: "CryptoImplementation" where
   Crypto_SHA256 True True False"
 
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
-  by auto
+lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* CT_001: RIINA Branch Free *)
 (* CT_001_branch_free (matches Coq) *)
@@ -167,47 +167,47 @@ lemma CT_004_fully_ct: "fully_constant_time riina_ct_config = True"
 
 (* CT_005: No Secret Branches Required *)
 (* CT_005_no_secret_branches (matches Coq) *)
-lemma CT_005_no_secret_branches: "\<forall>c : ConstantTimeConfig. ct_branch_free c = True \<longrightarrow> ct_no_secret_branches c = True"
+lemma CT_005_no_secret_branches: "\<forall> c : ConstantTimeConfig, ct_branch_free c = True \<longrightarrow> ct_no_secret_branches c = True"
   by auto
 
 (* CT_006: Branchless Compare Required *)
 (* CT_006_branchless_compare (matches Coq) *)
-lemma CT_006_branchless_compare: "\<forall>c : ConstantTimeConfig. ct_branch_free c = True \<longrightarrow> ct_branchless_compare c = True"
+lemma CT_006_branchless_compare: "\<forall> c : ConstantTimeConfig, ct_branch_free c = True \<longrightarrow> ct_branchless_compare c = True"
   by auto
 
 (* CT_007: No Secret Addresses Required *)
 (* CT_007_no_secret_addresses (matches Coq) *)
-lemma CT_007_no_secret_addresses: "\<forall>c : ConstantTimeConfig. ct_memory_safe c = True \<longrightarrow> ct_no_secret_addresses c = True"
+lemma CT_007_no_secret_addresses: "\<forall> c : ConstantTimeConfig, ct_memory_safe c = True \<longrightarrow> ct_no_secret_addresses c = True"
   by auto
 
 (* CT_008: No Cache Timing Required *)
 (* CT_008_no_cache_timing (matches Coq) *)
-lemma CT_008_no_cache_timing: "\<forall>c : ConstantTimeConfig. ct_memory_safe c = True \<longrightarrow> ct_no_cache_timing c = True"
+lemma CT_008_no_cache_timing: "\<forall> c : ConstantTimeConfig, ct_memory_safe c = True \<longrightarrow> ct_no_cache_timing c = True"
   by auto
 
 (* CT_009: No Variable Time Ops *)
 (* CT_009_no_var_time (matches Coq) *)
-lemma CT_009_no_var_time: "\<forall>c : ConstantTimeConfig. ct_operation_safe c = True \<longrightarrow> ct_no_variable_time_ops c = True"
+lemma CT_009_no_var_time: "\<forall> c : ConstantTimeConfig, ct_operation_safe c = True \<longrightarrow> ct_no_variable_time_ops c = True"
   by auto
 
 (* CT_010: Constant Loops Required *)
 (* CT_010_constant_loops (matches Coq) *)
-lemma CT_010_constant_loops: "\<forall>c : ConstantTimeConfig. ct_operation_safe c = True \<longrightarrow> ct_constant_loops c = True"
+lemma CT_010_constant_loops: "\<forall> c : ConstantTimeConfig, ct_operation_safe c = True \<longrightarrow> ct_constant_loops c = True"
   by auto
 
 (* CT_011: Full CT Implies Branch Free *)
 (* CT_011_full_implies_branch (matches Coq) *)
-lemma CT_011_full_implies_branch: "\<forall>c : ConstantTimeConfig. fully_constant_time c = True \<longrightarrow> ct_branch_free c = True"
+lemma CT_011_full_implies_branch: "\<forall> c : ConstantTimeConfig, fully_constant_time c = True \<longrightarrow> ct_branch_free c = True"
   by auto
 
 (* CT_012: Full CT Implies Memory Safe *)
 (* CT_012_full_implies_memory (matches Coq) *)
-lemma CT_012_full_implies_memory: "\<forall>c : ConstantTimeConfig. fully_constant_time c = True \<longrightarrow> ct_memory_safe c = True"
+lemma CT_012_full_implies_memory: "\<forall> c : ConstantTimeConfig, fully_constant_time c = True \<longrightarrow> ct_memory_safe c = True"
   by auto
 
 (* CT_013: Full CT Implies Op Safe *)
 (* CT_013_full_implies_op (matches Coq) *)
-lemma CT_013_full_implies_op: "\<forall>c : ConstantTimeConfig. fully_constant_time c = True \<longrightarrow> ct_operation_safe c = True"
+lemma CT_013_full_implies_op: "\<forall> c : ConstantTimeConfig, fully_constant_time c = True \<longrightarrow> ct_operation_safe c = True"
   by auto
 
 (* CT_014: RIINA AES Safe *)
@@ -232,12 +232,12 @@ lemma CT_017_riina_aes_bitsliced: "ci_bitsliced riina_aes = True"
 
 (* CT_018: Crypto Safe Implies CT *)
 (* CT_018_safe_implies_ct (matches Coq) *)
-lemma CT_018_safe_implies_ct: "\<forall>impl : CryptoImplementation. crypto_safe impl = True \<longrightarrow> ci_constant_time impl = True"
+lemma CT_018_safe_implies_ct: "\<forall> impl : CryptoImplementation, crypto_safe impl = True \<longrightarrow> ci_constant_time impl = True"
   by auto
 
 (* CT_019: Crypto Safe Implies No Tables *)
 (* CT_019_safe_implies_no_tables (matches Coq) *)
-lemma CT_019_safe_implies_no_tables: "\<forall>impl : CryptoImplementation. crypto_safe impl = True \<longrightarrow> ci_no_table_lookups impl = True"
+lemma CT_019_safe_implies_no_tables: "\<forall> impl : CryptoImplementation, crypto_safe impl = True \<longrightarrow> ci_no_table_lookups impl = True"
   by auto
 
 (* CT_020: RIINA No Secret Branches *)
@@ -252,22 +252,22 @@ lemma CT_021_riina_no_addresses: "ct_no_secret_addresses riina_ct_config = True"
 
 (* CT_022: Full CT Implies No Secret Branches *)
 (* CT_022_full_implies_no_branches (matches Coq) *)
-lemma CT_022_full_implies_no_branches: "\<forall>c : ConstantTimeConfig. fully_constant_time c = True \<longrightarrow> ct_no_secret_branches c = True"
+lemma CT_022_full_implies_no_branches: "\<forall> c : ConstantTimeConfig, fully_constant_time c = True \<longrightarrow> ct_no_secret_branches c = True"
   by auto
 
 (* CT_023: Full CT Implies No Cache Timing *)
 (* CT_023_full_implies_no_cache (matches Coq) *)
-lemma CT_023_full_implies_no_cache: "\<forall>c : ConstantTimeConfig. fully_constant_time c = True \<longrightarrow> ct_no_cache_timing c = True"
+lemma CT_023_full_implies_no_cache: "\<forall> c : ConstantTimeConfig, fully_constant_time c = True \<longrightarrow> ct_no_cache_timing c = True"
   by auto
 
 (* CT_024: Full CT Implies Constant Loops *)
 (* CT_024_full_implies_const_loops (matches Coq) *)
-lemma CT_024_full_implies_const_loops: "\<forall>c : ConstantTimeConfig. fully_constant_time c = True \<longrightarrow> ct_constant_loops c = True"
+lemma CT_024_full_implies_const_loops: "\<forall> c : ConstantTimeConfig, fully_constant_time c = True \<longrightarrow> ct_constant_loops c = True"
   by auto
 
 (* CT_025: Complete Constant Time Security *)
 (* CT_025_complete_ct_security (matches Coq) *)
-lemma CT_025_complete_ct_security: "\<forall>c : ConstantTimeConfig. fully_constant_time c = True \<longrightarrow> ct_no_secret_branches c = True \<and> ct_no_secret_addresses c = True \<and> ct_no_cache_timing c = True \<and> ct_no_variable_time_ops c = True \<and> ct_constant_loops c = True"
+lemma CT_025_complete_ct_security: "\<forall> c : ConstantTimeConfig, fully_constant_time c = True \<longrightarrow> ct_no_secret_branches c = True \<and> ct_no_secret_addresses c = True \<and> ct_no_cache_timing c = True \<and> ct_no_variable_time_ops c = True \<and> ct_constant_loops c = True"
   by auto
 
 end

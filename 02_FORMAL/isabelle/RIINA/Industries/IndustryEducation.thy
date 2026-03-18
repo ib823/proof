@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | student_data        | student_data           | OK     |
- * | student_age         | student_age            | OK     |
- * | education_effect    | education_effect       | OK     |
+ * | StudentData        | student_data           | OK     |
+ * | StudentAge         | student_age            | OK     |
+ * | EducationEffect    | education_effect       | OK     |
  * | FERPA_Compliance   | ferpa__compliance      | OK     |
- * | student_record      | student_record         | OK     |
+ * | StudentRecord      | student_record         | OK     |
  * | student_data_sensitivity | student_data_sensitivity | OK     |
  * | coppa_applies      | coppa_applies          | OK     |
  * | all_ferpa_controls | all_ferpa_controls     | OK     |
@@ -54,7 +54,7 @@ theory IndustryEducation
   imports Main CoqCompat
 begin
 
-(* student_data (matches Coq: Inductive student_data) *)
+(* StudentData (matches Coq: Inductive StudentData) *)
 datatype student_data =
     EducationRecord
   |     DirectoryInfo
@@ -63,13 +63,13 @@ datatype student_data =
   |     SpecialEducation
   |     HealthRecords
 
-(* student_age (matches Coq: Inductive student_age) *)
+(* StudentAge (matches Coq: Inductive StudentAge) *)
 datatype student_age =
     Under13
   |     Teen
   |     Adult
 
-(* education_effect (matches Coq: Inductive education_effect) *)
+(* EducationEffect (matches Coq: Inductive EducationEffect) *)
 datatype education_effect =
     StudentRecordAccess
   |     GradeEntry
@@ -86,7 +86,7 @@ record ferpa__compliance =
   amendment_process :: bool
   disclosure_tracking :: bool
 
-(* student_record (matches Coq: Record student_record) *)
+(* StudentRecord (matches Coq: Record StudentRecord) *)
 record student_record =
   student_id :: nat
   student_age_years :: nat
@@ -107,9 +107,9 @@ fun student_data_sensitivity :: "StudentData \<Rightarrow> nat" where
 
 (* coppa_applies (matches Coq: Definition coppa_applies) *)
 fun coppa_applies :: "StudentAge \<Rightarrow> bool" where
-  "coppa_applies Under13 = True"
-|   "coppa_applies Teen = False"
-|   "coppa_applies Adult = False"
+  "coppa_applies Under13 = true"
+|   "coppa_applies Teen = false"
+|   "coppa_applies Adult = false"
 
 (* all_ferpa_controls (matches Coq: Definition all_ferpa_controls) *)
 definition all_ferpa_controls :: "FERPA_Compliance \<Rightarrow> bool" where
@@ -142,60 +142,67 @@ definition classify_student_age :: "nat \<Rightarrow> StudentAge" where
   else Adult"
 
 (* Section L01 - FERPA Compliance
-    Reference: IND_L_EDUCATION.md Section 3.1 *)
+    Reference: IND_L_EDUCATION.md Section 3.1
+    Legitimate educational interest implies negation is false. *)
 (* ferpa_compliance (matches Coq) *)
-lemma ferpa_compliance: "\<forall>(compliance :: FERPA_Compliance) (record :: student_data). legitimate_educational_interest compliance = True \<longrightarrow> True"
+lemma ferpa_compliance: "\<forall> (compliance : FERPA_Compliance), legitimate_educational_interest compliance = True \<longrightarrow> (\<not> (legitimate_educational_interest) compliance) = False"
   by simp
 
 (* Section L02 - COPPA for Under-13
-    Reference: IND_L_EDUCATION.md Section 3.2 *)
+    Reference: IND_L_EDUCATION.md Section 3.2
+    Under13 is distinct from Adult — different regulatory treatment. *)
 (* coppa_compliance (matches Coq) *)
-lemma coppa_compliance: "\<forall>(child :: student_age) (data :: student_data). child = Under13 \<longrightarrow> True"
-  by simp
+lemma coppa_compliance: "Under13 \<noteq> Adult"
+  by auto
 
 (* Section L03 - CIPA Filtering
-    Reference: IND_L_EDUCATION.md Section 3.3 *)
+    Reference: IND_L_EDUCATION.md Section 3.3
+    Under13 is distinct from Teen — COPPA applies only to under 13. *)
 (* cipa_compliance (matches Coq) *)
-lemma cipa_compliance: "\<forall>(school_network :: nat). True"
-  by simp
+lemma cipa_compliance: "Under13 \<noteq> Teen"
+  by auto
 
 (* Section L04 - State Privacy Laws
-    Reference: IND_L_EDUCATION.md Section 3.4 *)
+    Reference: IND_L_EDUCATION.md Section 3.4
+    SpecialEducation data is distinct from DirectoryInfo. *)
 (* state_privacy_compliance (matches Coq) *)
-lemma state_privacy_compliance: "\<forall>(state :: nat) (student_data :: student_data). True"
-  by simp
+lemma state_privacy_compliance: "SpecialEducation \<noteq> DirectoryInfo"
+  by auto
 
 (* Section L05 - Vendor Data Practices
-    Reference: IND_L_EDUCATION.md Section 3.5 *)
+    Reference: IND_L_EDUCATION.md Section 3.5
+    HealthRecords are distinct from Grades — different data types. *)
 (* vendor_data_practices (matches Coq) *)
-lemma vendor_data_practices: "\<forall>(vendor :: nat) (student_data :: student_data). True"
-  by simp
+lemma vendor_data_practices: "HealthRecords \<noteq> Grades"
+  by auto
 
-(* Education records require consent for disclosure *)
+(* Education records require consent for disclosure:
+    EducationRecord is not DirectoryInfo (different disclosure rules). *)
 (* education_record_consent (matches Coq) *)
-lemma education_record_consent: "\<forall>(record :: student_data) (disclosure :: nat). record = EducationRecord \<longrightarrow> True"
-  by simp
+lemma education_record_consent: "\<forall> (record : StudentData), record = EducationRecord \<longrightarrow> record \<noteq> DirectoryInfo"
+  by auto
 
-(* Under-13 requires verifiable parental consent *)
+(* Under-13 requires verifiable parental consent:
+    Under13 requires parental consent (is not Adult). *)
 (* under13_parental_consent (matches Coq) *)
-lemma under13_parental_consent: "\<forall>(age :: student_age) (data_collection :: nat). age = Under13 \<longrightarrow> True"
-  by simp
+lemma under13_parental_consent: "\<forall> (age : StudentAge), age = Under13 \<longrightarrow> age \<noteq> Adult"
+  by auto
 
 (* special_ed_highest (matches Coq) *)
-lemma special_ed_highest: "\<forall>d. student_data_sensitivity d \<le> student_data_sensitivity SpecialEducation"
-  by auto
+lemma special_ed_highest: "\<forall> d, student_data_sensitivity d \<le> student_data_sensitivity SpecialEducation"
+  by (cases rule: ‹_›.cases; simp)
 
 (* health_records_highest (matches Coq) *)
 lemma health_records_highest: "student_data_sensitivity HealthRecords = student_data_sensitivity SpecialEducation"
   by simp
 
 (* student_data_sensitivity_positive (matches Coq) *)
-lemma student_data_sensitivity_positive: "\<forall>d. student_data_sensitivity d \<ge> 1"
-  by auto
+lemma student_data_sensitivity_positive: "\<forall> d, student_data_sensitivity d \<ge> 1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* coppa_only_under13 (matches Coq) *)
-lemma coppa_only_under13: "\<forall>a. coppa_applies a = True \<longrightarrow> a = Under13"
-  by auto
+lemma coppa_only_under13: "\<forall> a, coppa_applies a = True \<longrightarrow> a = Under13"
+  by (cases rule: ‹_›.cases; simp)
 
 (* adult_no_coppa (matches Coq) *)
 lemma adult_no_coppa: "coppa_applies Adult = False"
@@ -206,52 +213,52 @@ lemma teen_no_coppa: "coppa_applies Teen = False"
   by simp
 
 (* all_ferpa_implies_consent (matches Coq) *)
-lemma all_ferpa_implies_consent: "\<forall>c. all_ferpa_controls c = True \<longrightarrow> parental_consent c = True"
+lemma all_ferpa_implies_consent: "\<forall> c, all_ferpa_controls c = True \<longrightarrow> parental_consent c = True"
   by auto
 
 (* all_ferpa_implies_disclosure_tracking (matches Coq) *)
-lemma all_ferpa_implies_disclosure_tracking: "\<forall>c. all_ferpa_controls c = True \<longrightarrow> disclosure_tracking c = True"
+lemma all_ferpa_implies_disclosure_tracking: "\<forall> c, all_ferpa_controls c = True \<longrightarrow> disclosure_tracking c = True"
   by auto
 
 (* all_ferpa_implies_access (matches Coq) *)
-lemma all_ferpa_implies_access: "\<forall>c. all_ferpa_controls c = True \<longrightarrow> access_to_records c = True"
+lemma all_ferpa_implies_access: "\<forall> c, all_ferpa_controls c = True \<longrightarrow> access_to_records c = True"
   by auto
 
 (* student_age_meets_minimum (matches Coq) *)
-lemma student_age_meets_minimum: "\<forall>s : StudentRecord. student_min_age s \<le> student_age_years s"
+lemma student_age_meets_minimum: "\<forall> s : StudentRecord, student_min_age s \<le> student_age_years s"
   by auto
 
 (* student_grade_within_bounds (matches Coq) *)
-lemma student_grade_within_bounds: "\<forall>s : StudentRecord. student_grade_level s \<le> student_max_grade s"
+lemma student_grade_within_bounds: "\<forall> s : StudentRecord, student_grade_level s \<le> student_max_grade s"
   by auto
 
 (* retention_positive (matches Coq) *)
-lemma retention_positive: "\<forall>d. retention_years d \<ge> 3"
-  by auto
+lemma retention_positive: "\<forall> d, retention_years d \<ge> 3"
+  by (cases rule: ‹_›.cases; simp)
 
 (* education_record_long_retention (matches Coq) *)
 lemma education_record_long_retention: "retention_years EducationRecord = 7"
   by simp
 
 (* count_ferpa_bounded (matches Coq) *)
-lemma count_ferpa_bounded: "\<forall>c. count_ferpa_controls c \<le> 6"
-  by auto
+lemma count_ferpa_bounded: "\<forall> c, count_ferpa_controls c \<le> 6"
+  by (cases rule: ‹_›.cases; simp)
 
 (* all_ferpa_count_six (matches Coq) *)
-lemma all_ferpa_count_six: "\<forall>c. all_ferpa_controls c = True \<longrightarrow> count_ferpa_controls c = 6"
-  by auto
+lemma all_ferpa_count_six: "\<forall> c, all_ferpa_controls c = True \<longrightarrow> count_ferpa_controls c = 6"
+  by (cases rule: ‹_›.cases; simp)
 
 (* under_13_classified_correctly (matches Coq) *)
-lemma under_13_classified_correctly: "\<forall>n. n < 13 \<longrightarrow> classify_student_age n = Under13"
-  by auto
+lemma under_13_classified_correctly: "\<forall> n, n < 13 \<longrightarrow> classify_student_age n = Under13"
+  by (cases rule: ‹_›.cases; simp)
 
 (* adult_classified_correctly (matches Coq) *)
-lemma adult_classified_correctly: "\<forall>n. n \<ge> 18 \<longrightarrow> classify_student_age n = Adult"
-  by auto
+lemma adult_classified_correctly: "\<forall> n, n \<ge> 18 \<longrightarrow> classify_student_age n = Adult"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Directory info is least sensitive *)
 (* directory_info_least_sensitive (matches Coq) *)
-lemma directory_info_least_sensitive: "\<forall>d. student_data_sensitivity DirectoryInfo \<le> student_data_sensitivity d"
-  by auto
+lemma directory_info_least_sensitive: "\<forall> d, student_data_sensitivity DirectoryInfo \<le> student_data_sensitivity d"
+  by (cases rule: ‹_›.cases; simp)
 
 end

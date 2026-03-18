@@ -60,173 +60,173 @@ fun performs_within :: "expr \<Rightarrow> effect \<Rightarrow> bool" where
   "performs_within EUnit = True"
 
 (* effect_leq_pure (matches Coq) *)
-lemma effect_leq_pure: "\<forall>eff. effect_leq EffectPure eff"
+lemma effect_leq_pure: "\<forall> eff, effect_leq EffectPure eff"
   by auto
 
 (* performs_within_mono (matches Coq) *)
-lemma performs_within_mono: "\<forall>e eff1 eff2. effect_leq eff1 eff2 \<longrightarrow> performs_within e eff1 \<longrightarrow> performs_within e eff2"
+lemma performs_within_mono: "\<forall> e eff1 eff2, effect_leq eff1 eff2 \<longrightarrow> performs_within e eff1 \<longrightarrow> performs_within e eff2"
   by auto
 
 (* Helper lemmas for effect ordering in complex cases *)
 (* effect_leq_join_ub_l_trans (matches Coq) *)
-lemma effect_leq_join_ub_l_trans: "\<forall>e1 e2 e3. effect_leq e1 (effect_join e2 (effect_join e1 e3))"
+lemma effect_leq_join_ub_l_trans: "\<forall> e1 e2 e3, effect_leq e1 (effect_join e2 (effect_join e1 e3))"
   by auto
 
 (* effect_leq_join_ub_r_trans (matches Coq) *)
-lemma effect_leq_join_ub_r_trans: "\<forall>e1 e2 e3. effect_leq e3 (effect_join e2 (effect_join e1 e3))"
+lemma effect_leq_join_ub_r_trans: "\<forall> e1 e2 e3, effect_leq e3 (effect_join e2 (effect_join e1 e3))"
   by auto
 
 (* core_effects_within (matches Coq) *)
-lemma core_effects_within: "\<forall>G S D e T eff. has_type G S D e T eff \<longrightarrow> performs_within e eff"
+lemma core_effects_within: "\<forall> G S D e T eff, has_type G S D e T eff \<longrightarrow> performs_within e eff"
   by auto
 
 (* effect_safety (matches Coq) *)
-lemma effect_safety: "\<forall>G S D e T eff. has_type_full G S D e T eff \<longrightarrow> performs_within e eff"
+lemma effect_safety: "\<forall> G S D e T eff, has_type_full G S D e T eff \<longrightarrow> performs_within e eff"
   by auto
 
 (* Values contain no performed effects (they are fully evaluated). *)
 (* performs_within_value (matches Coq) *)
-lemma performs_within_value: "\<forall>v eff. value v \<longrightarrow> performs_within v eff"
+lemma performs_within_value: "\<forall> v eff, value v \<longrightarrow> performs_within v eff"
   by auto
 
 (* Values perform within EffPure. *)
 (* performs_within_value_pure (matches Coq) *)
-lemma performs_within_value_pure: "\<forall>v. value v \<longrightarrow> performs_within v EffPure"
+lemma performs_within_value_pure: "\<forall> v, value v \<longrightarrow> performs_within v EffPure"
   by auto
 
 (* The join of two bounds covers both sub-expressions. *)
 (* performs_within_join_l (matches Coq) *)
-lemma performs_within_join_l: "\<forall>e eff1 eff2. performs_within e eff1 \<longrightarrow> performs_within e (effect_join eff1 eff2)"
+lemma performs_within_join_l: "\<forall> e eff1 eff2, performs_within e eff1 \<longrightarrow> performs_within e (effect_join eff1 eff2)"
   by auto
 
 (* performs_within_join_r (matches Coq) *)
-lemma performs_within_join_r: "\<forall>e eff1 eff2. performs_within e eff2 \<longrightarrow> performs_within e (effect_join eff1 eff2)"
+lemma performs_within_join_r: "\<forall> e eff1 eff2, performs_within e eff2 \<longrightarrow> performs_within e (effect_join eff1 eff2)"
   by auto
 
 (* Top effect (EffGapura) bounds everything. *)
 (* performs_within_top (matches Coq) *)
-lemma performs_within_top: "\<forall>e eff. performs_within e eff \<longrightarrow> performs_within e EffGapura"
+lemma performs_within_top: "\<forall> e eff, performs_within e eff \<longrightarrow> performs_within e EffGapura"
   by auto
 
 (* has_type embeds into has_type_full. *)
 (* has_type_embed (matches Coq) *)
-lemma has_type_embed: "\<forall>G S D e T eff. has_type G S D e T eff \<longrightarrow> has_type_full G S D e T eff"
+lemma has_type_embed: "\<forall> G S D e T eff, has_type G S D e T eff \<longrightarrow> has_type_full G S D e T eff"
   by auto
 
 (* has_type_full preserves effect ordering via performs_within. *)
 (* has_type_full_effect_bound (matches Coq) *)
-lemma has_type_full_effect_bound: "\<forall>G S D e T eff eff'. has_type_full G S D e T eff \<longrightarrow> effect_leq eff eff' \<longrightarrow> performs_within e eff'"
+lemma has_type_full_effect_bound: "\<forall> G S D e T eff eff', has_type_full G S D e T eff \<longrightarrow> effect_leq eff eff' \<longrightarrow> performs_within e eff'"
   by auto
 
 (* The core typing relation's effect is sound for performs_within. *)
 (* core_typing_sound (matches Coq) *)
-lemma core_typing_sound: "\<forall>G S D e T eff. has_type G S D e T eff \<longrightarrow> \<forall>eff'. effect_leq eff eff' \<longrightarrow> performs_within e eff'"
+lemma core_typing_sound: "\<forall> G S D e T eff, has_type G S D e T eff \<longrightarrow> \<forall> eff', effect_leq eff eff' \<longrightarrow> performs_within e eff'"
   by auto
 
 (* Application composes effects correctly: the join covers both sub-effects. *)
 (* app_effect_covers_fn_and_arg (matches Coq) *)
-lemma app_effect_covers_fn_and_arg: "\<forall>ε_fn ε1 ε2. effect_leq ε_fn (effect_join ε_fn (effect_join ε1 ε2)) \<and> effect_leq ε1 (effect_join ε_fn (effect_join ε1 ε2)) \<and> effect_leq ε2 (effect_join ε_fn (effect_join ε1 ε2))"
+lemma app_effect_covers_fn_and_arg: "\<forall> ε_fn ε1 ε2, effect_leq ε_fn (effect_join ε_fn (effect_join ε1 ε2)) \<and> effect_leq ε1 (effect_join ε_fn (effect_join ε1 ε2)) \<and> effect_leq ε2 (effect_join ε_fn (effect_join ε1 ε2))"
   by auto
 
 (* If-expression effect covers all three branches. *)
 (* if_effect_covers_branches (matches Coq) *)
-lemma if_effect_covers_branches: "\<forall>ε1 ε2 ε3. effect_leq ε1 (effect_join ε1 (effect_join ε2 ε3)) \<and> effect_leq ε2 (effect_join ε1 (effect_join ε2 ε3)) \<and> effect_leq ε3 (effect_join ε1 (effect_join ε2 ε3))"
+lemma if_effect_covers_branches: "\<forall> ε1 ε2 ε3, effect_leq ε1 (effect_join ε1 (effect_join ε2 ε3)) \<and> effect_leq ε2 (effect_join ε1 (effect_join ε2 ε3)) \<and> effect_leq ε3 (effect_join ε1 (effect_join ε2 ε3))"
   by auto
 
 (* Let-expression effect covers binding and body. *)
 (* let_effect_covers_both (matches Coq) *)
-lemma let_effect_covers_both: "\<forall>ε1 ε2. effect_leq ε1 (effect_join ε1 ε2) \<and> effect_leq ε2 (effect_join ε1 ε2)"
+lemma let_effect_covers_both: "\<forall> ε1 ε2, effect_leq ε1 (effect_join ε1 ε2) \<and> effect_leq ε2 (effect_join ε1 ε2)"
   by auto
 
 (* Pair effect covers both components. *)
 (* pair_effect_covers_both (matches Coq) *)
-lemma pair_effect_covers_both: "\<forall>ε1 ε2. effect_leq ε1 (effect_join ε1 ε2) \<and> effect_leq ε2 (effect_join ε1 ε2)"
+lemma pair_effect_covers_both: "\<forall> ε1 ε2, effect_leq ε1 (effect_join ε1 ε2) \<and> effect_leq ε2 (effect_join ε1 ε2)"
   by auto
 
 (* If has_type_full gives effect ε, any effect ε' ≥ ε also bounds the expression. *)
 (* has_type_full_weaken_effect (matches Coq) *)
-lemma has_type_full_weaken_effect: "\<forall>G S D e T ε ε'. has_type_full G S D e T ε \<longrightarrow> effect_leq ε ε' \<longrightarrow> performs_within e ε'"
+lemma has_type_full_weaken_effect: "\<forall> G S D e T ε ε', has_type_full G S D e T ε \<longrightarrow> effect_leq ε ε' \<longrightarrow> performs_within e ε'"
   by auto
 
 (* The pure effect is always a valid lower bound. *)
 (* pure_within_any_effect (matches Coq) *)
-lemma pure_within_any_effect: "\<forall>e. performs_within e EffPure \<longrightarrow> \<forall>eff. performs_within e eff"
+lemma pure_within_any_effect: "\<forall> e, performs_within e EffPure \<longrightarrow> \<forall> eff, performs_within e eff"
   by auto
 
 (* Assign composes three effects: lhs + rhs + EffWrite. *)
 (* assign_effect_covers (matches Coq) *)
-lemma assign_effect_covers: "\<forall>ε1 ε2. effect_leq ε1 (effect_join ε1 (effect_join ε2 EffectWrite)) \<and> effect_leq ε2 (effect_join ε1 (effect_join ε2 EffectWrite)) \<and> effect_leq EffectWrite (effect_join ε1 (effect_join ε2 EffectWrite))"
+lemma assign_effect_covers: "\<forall> ε1 ε2, effect_leq ε1 (effect_join ε1 (effect_join ε2 EffectWrite)) \<and> effect_leq ε2 (effect_join ε1 (effect_join ε2 EffectWrite)) \<and> effect_leq EffectWrite (effect_join ε1 (effect_join ε2 EffectWrite))"
   by auto
 
 (* Case expression effect covers scrutinee and both branches. *)
 (* case_effect_covers (matches Coq) *)
-lemma case_effect_covers: "\<forall>ε ε1 ε2. effect_leq ε (effect_join ε (effect_join ε1 ε2)) \<and> effect_leq ε1 (effect_join ε (effect_join ε1 ε2)) \<and> effect_leq ε2 (effect_join ε (effect_join ε1 ε2))"
+lemma case_effect_covers: "\<forall> ε ε1 ε2, effect_leq ε (effect_join ε (effect_join ε1 ε2)) \<and> effect_leq ε1 (effect_join ε (effect_join ε1 ε2)) \<and> effect_leq ε2 (effect_join ε (effect_join ε1 ε2))"
   by auto
 
 (* Handle combines body and handler effects. *)
 (* handle_effect_covers (matches Coq) *)
-lemma handle_effect_covers: "\<forall>ε1 ε2. effect_leq ε1 (effect_join ε1 ε2) \<and> effect_leq ε2 (effect_join ε1 ε2)"
+lemma handle_effect_covers: "\<forall> ε1 ε2, effect_leq ε1 (effect_join ε1 ε2) \<and> effect_leq ε2 (effect_join ε1 ε2)"
   by auto
 
 (* Declassify composes secret and proof effects. *)
 (* declassify_effect_covers (matches Coq) *)
-lemma declassify_effect_covers: "\<forall>ε1 ε2. effect_leq ε1 (effect_join ε1 ε2) \<and> effect_leq ε2 (effect_join ε1 ε2)"
+lemma declassify_effect_covers: "\<forall> ε1 ε2, effect_leq ε1 (effect_join ε1 ε2) \<and> effect_leq ε2 (effect_join ε1 ε2)"
   by auto
 
 (* If an expression's effects are bounded by ε, joining with ε is idempotent. *)
 (* performs_within_join_self (matches Coq) *)
-lemma performs_within_join_self: "\<forall>e eff. performs_within e eff \<longrightarrow> performs_within e (effect_join eff eff)"
+lemma performs_within_join_self: "\<forall> e eff, performs_within e eff \<longrightarrow> performs_within e (effect_join eff eff)"
   by auto
 
 (* Effect bound is preserved under join with pure. *)
 (* performs_within_join_pure_l (matches Coq) *)
-lemma performs_within_join_pure_l: "\<forall>e eff. performs_within e eff \<longrightarrow> performs_within e (effect_join EffPure eff)"
+lemma performs_within_join_pure_l: "\<forall> e eff, performs_within e eff \<longrightarrow> performs_within e (effect_join EffPure eff)"
   by auto
 
 (* Effect bound is preserved under join with pure (right). *)
 (* performs_within_join_pure_r (matches Coq) *)
-lemma performs_within_join_pure_r: "\<forall>e eff. performs_within e eff \<longrightarrow> performs_within e (effect_join eff EffPure)"
+lemma performs_within_join_pure_r: "\<forall> e eff, performs_within e eff \<longrightarrow> performs_within e (effect_join eff EffPure)"
   by auto
 
 (* has_type_full_value_pure (matches Coq) *)
-lemma has_type_full_value_pure: "\<forall>v S D T eff. value v \<longrightarrow> has_type_full nil S D v T eff \<longrightarrow> performs_within v EffPure"
+lemma has_type_full_value_pure: "\<forall> v S D T eff, value v \<longrightarrow> has_type_full nil S D v T eff \<longrightarrow> performs_within v EffPure"
   by auto
 
 (* effect_safety_value (matches Coq) *)
-lemma effect_safety_value: "\<forall>v S D T eff. value v \<longrightarrow> has_type_full nil S D v T eff \<longrightarrow> \<forall>eff'. performs_within v eff'"
+lemma effect_safety_value: "\<forall> v S D T eff, value v \<longrightarrow> has_type_full nil S D v T eff \<longrightarrow> \<forall> eff', performs_within v eff'"
   by auto
 
 (* performs_within_pure_refl (matches Coq) *)
-lemma performs_within_pure_refl: "\<forall>e. performs_within e EffPure \<longrightarrow> performs_within e EffPure"
+lemma performs_within_pure_refl: "\<forall> e, performs_within e EffPure \<longrightarrow> performs_within e EffPure"
   by auto
 
 (* performs_within_double_join (matches Coq) *)
-lemma performs_within_double_join: "\<forall>e eff1 eff2 eff3. performs_within e eff1 \<longrightarrow> performs_within e (effect_join eff1 (effect_join eff2 eff3))"
+lemma performs_within_double_join: "\<forall> e eff1 eff2 eff3, performs_within e eff1 \<longrightarrow> performs_within e (effect_join eff1 (effect_join eff2 eff3))"
   by auto
 
 (* Pair decomposition: if pair performs within eff, so do both components *)
 (* performs_within_pair_components (matches Coq) *)
-lemma performs_within_pair_components: "\<forall>e1 e2 eff. performs_within (EPair e1 e2) eff \<longrightarrow> performs_within e1 eff \<and> performs_within e2 eff"
+lemma performs_within_pair_components: "\<forall> e1 e2 eff, performs_within (EPair e1 e2) eff \<longrightarrow> performs_within e1 eff \<and> performs_within e2 eff"
   by auto
 
 (* App decomposition: if app performs within eff, so do both sub-expressions *)
 (* performs_within_app_components (matches Coq) *)
-lemma performs_within_app_components: "\<forall>e1 e2 eff. performs_within (EApp e1 e2) eff \<longrightarrow> performs_within e1 eff \<and> performs_within e2 eff"
+lemma performs_within_app_components: "\<forall> e1 e2 eff, performs_within (EApp e1 e2) eff \<longrightarrow> performs_within e1 eff \<and> performs_within e2 eff"
   by auto
 
 (* If decomposition: if-expression components all perform within eff *)
 (* performs_within_if_components (matches Coq) *)
-lemma performs_within_if_components: "\<forall>e1 e2 e3 eff. performs_within (EIf e1 e2 e3) eff \<longrightarrow> performs_within e1 eff \<and> performs_within e2 eff \<and> performs_within e3 eff"
+lemma performs_within_if_components: "\<forall> e1 e2 e3 eff, performs_within (EIf e1 e2 e3) eff \<longrightarrow> performs_within e1 eff \<and> performs_within e2 eff \<and> performs_within e3 eff"
   by auto
 
 (* Let decomposition: both binding and body perform within eff *)
 (* performs_within_let_components (matches Coq) *)
-lemma performs_within_let_components: "\<forall>x e1 e2 eff. performs_within (ELet x e1 e2) eff \<longrightarrow> performs_within e1 eff \<and> performs_within e2 eff"
+lemma performs_within_let_components: "\<forall> x e1 e2 eff, performs_within (ELet x e1 e2) eff \<longrightarrow> performs_within e1 eff \<and> performs_within e2 eff"
   by auto
 
 (* Case decomposition: scrutinee and both branches perform within eff *)
 (* performs_within_case_components (matches Coq) *)
-lemma performs_within_case_components: "\<forall>e x1 e1 x2 e2 eff. performs_within (ECase e x1 e1 x2 e2) eff \<longrightarrow> performs_within e eff \<and> performs_within e1 eff \<and> performs_within e2 eff"
+lemma performs_within_case_components: "\<forall> e x1 e1 x2 e2 eff, performs_within (ECase e x1 e1 x2 e2) eff \<longrightarrow> performs_within e eff \<and> performs_within e1 eff \<and> performs_within e2 eff"
   by auto
 
 end

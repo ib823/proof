@@ -12,14 +12,14 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | role               | role                   | OK     |
- * | bft_phase           | bft_phase              | OK     |
- * | log_entry           | log_entry              | OK     |
- * | raft_node           | raft_node              | OK     |
- * | raft_cluster        | raft_cluster           | OK     |
+ * | Role               | role                   | OK     |
+ * | BFTPhase           | bft_phase              | OK     |
+ * | LogEntry           | log_entry              | OK     |
+ * | RaftNode           | raft_node              | OK     |
+ * | RaftCluster        | raft_cluster           | OK     |
  * | BFTMessage         | bft_message            | OK     |
- * | bft_state           | bft_state              | OK     |
- * | hash_ring           | hash_ring              | OK     |
+ * | BFTState           | bft_state              | OK     |
+ * | HashRing           | hash_ring              | OK     |
  * | is_quorum          | is_quorum              | OK     |
  * | voted_for_in_term  | voted_for_in_term      | OK     |
  * | count_votes        | count_votes            | OK     |
@@ -75,60 +75,55 @@ theory DELTA001_VerifiedDistribution
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym g_counter = "nat"
-type_synonym g_set = "nat list"
-type_synonym node_id = "nat"
-type_synonym term = "nat"
-(* role (matches Coq: Inductive role) *)
+(* Role (matches Coq: Inductive Role) *)
 datatype role =
     Follower
   |     Candidate
   |     Leader
 
-(* bft_phase (matches Coq: Inductive bft_phase) *)
+(* BFTPhase (matches Coq: Inductive BFTPhase) *)
 datatype bft_phase =
     PrePrepare
   |     Prepare
   |     Commit
   |     Reply
 
-(* log_entry (matches Coq: Record log_entry) *)
+(* LogEntry (matches Coq: Record LogEntry) *)
 record log_entry =
-  entry_term :: term
+  entry_term :: Term
   entry_index :: nat
   entry_command :: nat
 
-(* raft_node (matches Coq: Record raft_node) *)
+(* RaftNode (matches Coq: Record RaftNode) *)
 record raft_node =
-  node_id :: node_id
-  node_term :: term
-  node_role :: role
+  node_id :: NodeId
+  node_term :: Term
+  node_role :: Role
   node_log :: 'a list
   node_voted_for :: option
   node_commit_index :: nat
 
-(* raft_cluster (matches Coq: Record raft_cluster) *)
+(* RaftCluster (matches Coq: Record RaftCluster) *)
 record raft_cluster =
   cluster_nodes :: 'a list
   cluster_size :: nat
 
 (* BFTMessage (matches Coq: Record BFTMessage) *)
 record bft_message =
-  bft_phase :: bft_phase
+  bft_phase :: BFTPhase
   bft_view :: nat
   bft_seq :: nat
   bft_digest :: nat
-  bft_sender :: node_id
+  bft_sender :: NodeId
 
-(* bft_state (matches Coq: Record bft_state) *)
+(* BFTState (matches Coq: Record BFTState) *)
 record bft_state =
   bft_n :: nat
   bft_f :: nat
   bft_correct :: 'a list
   bft_faulty :: 'a list
 
-(* hash_ring (matches Coq: Record hash_ring) *)
+(* HashRing (matches Coq: Record HashRing) *)
 record hash_ring =
   ring_nodes :: 'a list
   ring_size :: nat
@@ -138,11 +133,11 @@ definition is_quorum :: "nat \<Rightarrow> nat \<Rightarrow> bool" where
   "is_quorum votes total \<equiv> total <? 2 * votes"
 
 (* voted_for_in_term - complex match, needs manual translation *)
-definition voted_for_in_term :: "bool" where "voted_for_in_term \<equiv> True"
+definition voted_for_in_term :: "bool" where "voted_for_in_term = undefined"
 
 (* count_votes (matches Coq: Definition count_votes) *)
-definition count_votes :: "NodeId \<Rightarrow> term \<Rightarrow> nat" where
-  "count_votes candidate term \<equiv> length (filter (\<lambda>n. voted_for_in_term n candidate term) nodes)"
+definition count_votes :: "NodeId \<Rightarrow> Term \<Rightarrow> nat" where
+  "count_votes candidate term \<equiv> length (filter (fun n => voted_for_in_term n candidate term) nodes)"
 
 (* log_entry_at (matches Coq: Definition log_entry_at) *)
 definition log_entry_at :: "nat \<Rightarrow> option LogEntry" where
@@ -158,7 +153,7 @@ definition logs_match_at :: "nat \<Rightarrow> bool" where
 
 (* entry_committed (matches Coq: Definition entry_committed) *)
 definition entry_committed :: "RaftCluster \<Rightarrow> nat \<Rightarrow> bool" where
-  "entry_committed cluster idx \<equiv> let matching := filter (\<lambda>n. idx <? length (node_log n)) (cluster_nodes cluster) in
+  "entry_committed cluster idx \<equiv> let matching := filter (fun n => idx <? length (node_log n)) (cluster_nodes cluster) in
   is_quorum (length matching) (cluster_size cluster)"
 
 (* bft_quorum (matches Coq: Definition bft_quorum) *)
@@ -171,7 +166,7 @@ definition bft_valid :: "BFTState \<Rightarrow> bool" where
 
 (* gc_increment (matches Coq: Definition gc_increment) *)
 definition gc_increment :: "GCounter \<Rightarrow> nat \<Rightarrow> GCounter" where
-  "gc_increment gc node \<equiv> map (\<lambda>p. if (fst p = node) then Suc (snd p) else snd p)
+  "gc_increment gc node \<equiv> map (fun p => if ((fst = p)) node then S (snd p) else snd p)
       (combine (seq 0 (length gc)) gc)"
 
 (* gc_value (matches Coq: Definition gc_value) *)
@@ -180,7 +175,7 @@ definition gc_value :: "GCounter \<Rightarrow> nat" where
 
 (* gc_merge (matches Coq: Definition gc_merge) *)
 definition gc_merge :: "GCounter" where
-  "gc_merge \<equiv> map (\<lambda>p. Nat.max (fst p) (snd p)) (combine a b)"
+  "gc_merge \<equiv> map (fun p => Nat.max (fst p) (snd p)) (combine a b)"
 
 (* gs_add (matches Coq: Definition gs_add) *)
 definition gs_add :: "GSet \<Rightarrow> nat \<Rightarrow> GSet" where
@@ -195,126 +190,126 @@ definition gs_member :: "GSet \<Rightarrow> nat \<Rightarrow> bool" where
   "gs_member s v \<equiv> existsb ((v) = s)"
 
 (* ring_lookup - complex match, needs manual translation *)
-definition ring_lookup :: "bool" where "ring_lookup \<equiv> True"
+definition ring_lookup :: "bool" where "ring_lookup = undefined"
 
 (* ring_add_node (matches Coq: Definition ring_add_node) *)
-definition ring_add_node :: "HashRing \<Rightarrow> nat \<Rightarrow> node_id \<Rightarrow> HashRing" where
+definition ring_add_node :: "HashRing \<Rightarrow> nat \<Rightarrow> NodeId \<Rightarrow> HashRing" where
   "ring_add_node ring pos node \<equiv> {| ring_nodes := (pos, node) :: ring_nodes ring;
      ring_size := ring_size ring |}"
 
 (* ring_remove_node (matches Coq: Definition ring_remove_node) *)
-definition ring_remove_node :: "HashRing \<Rightarrow> node_id \<Rightarrow> HashRing" where
-  "ring_remove_node ring node \<equiv> {| ring_nodes := filter (\<lambda>p. (\<not> (=) (snd p) node)) (ring_nodes ring);
+definition ring_remove_node :: "HashRing \<Rightarrow> NodeId \<Rightarrow> HashRing" where
+  "ring_remove_node ring node \<equiv> {| ring_nodes := filter (fun p => (\<not> (Nat.eqb) (snd p) node)) (ring_nodes ring);
      ring_size := ring_size ring |}"
 
 (* DELTA_001_01_quorum_intersection (matches Coq) *)
-lemma DELTA_001_01_quorum_intersection: "\<forall>n q1 q2. is_quorum q1 n = True \<longrightarrow> is_quorum q2 n = True \<longrightarrow> q1 + q2 > n"
+lemma DELTA_001_01_quorum_intersection: "\<forall> n q1 q2, is_quorum q1 n = True \<longrightarrow> is_quorum q2 n = True \<longrightarrow> q1 + q2 > n"
   by simp
 
 (* DELTA_001_02_single_vote_per_term (matches Coq) *)
-lemma DELTA_001_02_single_vote_per_term: "\<forall>node c1 c2 term. voted_for_in_term node c1 term = True \<longrightarrow> voted_for_in_term node c2 term = True \<longrightarrow> c1 = c2"
-  by auto
+lemma DELTA_001_02_single_vote_per_term: "\<forall> node c1 c2 term, voted_for_in_term node c1 term = True \<longrightarrow> voted_for_in_term node c2 term = True \<longrightarrow> c1 = c2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* DELTA_001_03_log_matching_reflexive (matches Coq) *)
-lemma DELTA_001_03_log_matching_reflexive: "\<forall>log idx. logs_match_at log log idx"
+lemma DELTA_001_03_log_matching_reflexive: "\<forall> log idx, logs_match_at log log idx"
   by simp
 
 (* DELTA_001_04_committed_requires_quorum (matches Coq) *)
-lemma DELTA_001_04_committed_requires_quorum: "\<forall>cluster idx. entry_committed cluster idx = True \<longrightarrow> let matching := filter (\<lambda>n. idx <? length (node_log n)) (cluster_nodes cluster) in is_quorum (length matching) (cluster_size cluster) = True"
+lemma DELTA_001_04_committed_requires_quorum: "\<forall> cluster idx, entry_committed cluster idx = True \<longrightarrow> let matching := filter (fun n => idx <? length (node_log n)) (cluster_nodes cluster) in is_quorum (length matching) (cluster_size cluster) = True"
   by auto
 
 (* DELTA_001_05_empty_log_no_commit (matches Coq) *)
-lemma DELTA_001_05_empty_log_no_commit: "\<forall>cluster idx. (\<forall>n. n \<in> set (cluster_nodes cluster) \<longrightarrow> node_log n = []) \<longrightarrow> idx > 0 \<longrightarrow> entry_committed cluster idx = False"
-  by auto
+lemma DELTA_001_05_empty_log_no_commit: "\<forall> cluster idx, (\<forall> n, In n (cluster_nodes cluster) \<longrightarrow> node_log n = []) \<longrightarrow> idx > 0 \<longrightarrow> entry_committed cluster idx = False"
+  by (cases rule: ‹_›.cases; simp)
 
 (* DELTA_001_06_leader_append_only (matches Coq) *)
-lemma DELTA_001_06_leader_append_only: "\<forall>leader entry. node_role leader = Leader \<longrightarrow> let log' := node_log leader ++ [entry] in length log' = Suc (length (node_log leader))"
+lemma DELTA_001_06_leader_append_only: "\<forall> leader entry, node_role leader = Leader \<longrightarrow> let log' := node_log leader ++ [entry] in length log' = S (length (node_log leader))"
   by simp
 
 (* DELTA_001_07_term_monotonic (matches Coq) *)
-lemma DELTA_001_07_term_monotonic: "\<forall>t1 t2. t1 < t2 \<longrightarrow> t1 \<noteq> t2"
+lemma DELTA_001_07_term_monotonic: "\<forall> t1 t2, t1 < t2 \<longrightarrow> t1 \<noteq> t2"
   by simp
 
 (* DELTA_001_08_entry_at_deterministic (matches Coq) *)
-lemma DELTA_001_08_entry_at_deterministic: "\<forall>log idx e1 e2. log_entry_at log idx = Some e1 \<longrightarrow> log_entry_at log idx = Some e2 \<longrightarrow> e1 = e2"
+lemma DELTA_001_08_entry_at_deterministic: "\<forall> log idx e1 e2, log_entry_at log idx = Some e1 \<longrightarrow> log_entry_at log idx = Some e2 \<longrightarrow> e1 = e2"
   by auto
 
 (* DELTA_001_09_log_prefix_match (matches Coq) *)
-lemma DELTA_001_09_log_prefix_match: "\<forall>log1 log2 idx e1 e2. log_entry_at log1 idx = Some e1 \<longrightarrow> log_entry_at log2 idx = Some e2 \<longrightarrow> entry_term e1 = entry_term e2 \<longrightarrow> entry_index e1 = entry_index e2 \<longrightarrow> entry_command e1 = entry_command e2 \<longrightarrow> logs_match_at log1 log2 idx"
+lemma DELTA_001_09_log_prefix_match: "\<forall> log1 log2 idx e1 e2, log_entry_at log1 idx = Some e1 \<longrightarrow> log_entry_at log2 idx = Some e2 \<longrightarrow> entry_term e1 = entry_term e2 \<longrightarrow> entry_index e1 = entry_index e2 \<longrightarrow> entry_command e1 = entry_command e2 \<longrightarrow> logs_match_at log1 log2 idx"
   by auto
 
 (* DELTA_001_10_quorum_nonempty (matches Coq) *)
-lemma DELTA_001_10_quorum_nonempty: "\<forall>n votes. is_quorum votes n = True \<longrightarrow> votes > 0"
+lemma DELTA_001_10_quorum_nonempty: "\<forall> n votes, is_quorum votes n = True \<longrightarrow> votes > 0"
   by simp
 
 (* ===============================================================================
     PROOFS: BFT SAFETY (6 theorems)
     =============================================================================== *)
 (* DELTA_002_01_bft_bound (matches Coq) *)
-lemma DELTA_002_01_bft_bound: "\<forall>state. bft_valid state = True \<longrightarrow> bft_n state \<ge> 3 * bft_f state + 1"
+lemma DELTA_002_01_bft_bound: "\<forall> state, bft_valid state = True \<longrightarrow> bft_n state \<ge> 3 * bft_f state + 1"
   by simp
 
 (* DELTA_002_02_bft_quorum_sufficient (matches Coq) *)
-lemma DELTA_002_02_bft_quorum_sufficient: "\<forall>state. bft_valid state = True \<longrightarrow> bft_quorum state \<le> bft_n state"
+lemma DELTA_002_02_bft_quorum_sufficient: "\<forall> state, bft_valid state = True \<longrightarrow> bft_quorum state \<le> bft_n state"
   by simp
 
 (* DELTA_002_03_bft_two_quorums_overlap (matches Coq) *)
-lemma DELTA_002_03_bft_two_quorums_overlap: "\<forall>state. bft_valid state = True \<longrightarrow> bft_n state = 3 * bft_f state + 1 \<longrightarrow> 2 * bft_quorum state > bft_n state"
+lemma DELTA_002_03_bft_two_quorums_overlap: "\<forall> state, bft_valid state = True \<longrightarrow> bft_n state = 3 * bft_f state + 1 \<longrightarrow> 2 * bft_quorum state > bft_n state"
   by simp
 
 (* DELTA_002_04_correct_majority (matches Coq) *)
-lemma DELTA_002_04_correct_majority: "\<forall>state. bft_valid state = True \<longrightarrow> length (bft_correct state) + length (bft_faulty state) = bft_n state \<longrightarrow> length (bft_faulty state) \<le> bft_f state \<longrightarrow> length (bft_correct state) > bft_f state"
+lemma DELTA_002_04_correct_majority: "\<forall> state, bft_valid state = True \<longrightarrow> length (bft_correct state) + length (bft_faulty state) = bft_n state \<longrightarrow> length (bft_faulty state) \<le> bft_f state \<longrightarrow> length (bft_correct state) > bft_f state"
   by simp
 
 (* DELTA_002_05_bft_f_zero (matches Coq) *)
-lemma DELTA_002_05_bft_f_zero: "\<forall>state. bft_f state = 0 \<longrightarrow> bft_quorum state = 1"
+lemma DELTA_002_05_bft_f_zero: "\<forall> state, bft_f state = 0 \<longrightarrow> bft_quorum state = 1"
   by simp
 
 (* DELTA_002_06_bft_phases_ordered (matches Coq) *)
-lemma DELTA_002_06_bft_phases_ordered: "\<forall>p1 p2 : BFTPhase. True"
+lemma DELTA_002_06_bft_phases_ordered: "\<forall> p1 p2 : BFTPhase, True"
   by auto
 
 (* ===============================================================================
     PROOFS: CRDT PROPERTIES (10 theorems)
     =============================================================================== *)
 (* DELTA_003_01_gc_merge_comm (matches Coq) *)
-lemma DELTA_003_01_gc_merge_comm: "\<forall>a b. length a = length b \<longrightarrow> gc_merge a b = gc_merge b a"
-  by auto
+lemma DELTA_003_01_gc_merge_comm: "\<forall> a b, length a = length b \<longrightarrow> gc_merge a b = gc_merge b a"
+  by (cases rule: ‹_›.cases; simp)
 
 (* DELTA_003_02_gc_merge_assoc (matches Coq) *)
-lemma DELTA_003_02_gc_merge_assoc: "\<forall>a b c. length a = length b \<longrightarrow> length b = length c \<longrightarrow> gc_merge (gc_merge a b) c = gc_merge a (gc_merge b c)"
-  by auto
+lemma DELTA_003_02_gc_merge_assoc: "\<forall> a b c, length a = length b \<longrightarrow> length b = length c \<longrightarrow> gc_merge (gc_merge a b) c = gc_merge a (gc_merge b c)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* DELTA_003_03_gc_merge_idempotent (matches Coq) *)
-lemma DELTA_003_03_gc_merge_idempotent: "\<forall>a. gc_merge a a = a"
+lemma DELTA_003_03_gc_merge_idempotent: "\<forall> a, gc_merge a a = a"
   by simp
 
 (* DELTA_003_04_gc_value_nonneg (matches Coq) *)
-lemma DELTA_003_04_gc_value_nonneg: "\<forall>gc. gc_value gc \<ge> 0"
+lemma DELTA_003_04_gc_value_nonneg: "\<forall> gc, gc_value gc \<ge> 0"
   by simp
 
 (* fold_left_add_mono (matches Coq) *)
-lemma fold_left_add_mono: "\<forall>l acc1 acc2. acc1 \<le> acc2 \<longrightarrow> fold_left Nat.add l acc1 \<le> fold_left Nat.add l acc2"
+lemma fold_left_add_mono: "\<forall> l acc1 acc2, acc1 \<le> acc2 \<longrightarrow> fold_left Nat.add l acc1 \<le> fold_left Nat.add l acc2"
   by simp
 
 (* DELTA_003_05_gc_merge_monotone (matches Coq) *)
-lemma DELTA_003_05_gc_merge_monotone: "\<forall>a b. length a = length b \<longrightarrow> gc_value (gc_merge a b) \<ge> gc_value a"
-  by auto
+lemma DELTA_003_05_gc_merge_monotone: "\<forall> a b, length a = length b \<longrightarrow> gc_value (gc_merge a b) \<ge> gc_value a"
+  by (cases rule: ‹_›.cases; simp)
 
 (* DELTA_003_06_gs_add_member (matches Coq) *)
-lemma DELTA_003_06_gs_add_member: "\<forall>s v. gs_member (gs_add s v) v = True"
-  by auto
+lemma DELTA_003_06_gs_add_member: "\<forall> s v, gs_member (gs_add s v) v = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* DELTA_003_07_gs_add_preserves (matches Coq) *)
-lemma DELTA_003_07_gs_add_preserves: "\<forall>s v v'. gs_member s v' = True \<longrightarrow> gs_member (gs_add s v) v' = True"
-  by auto
+lemma DELTA_003_07_gs_add_preserves: "\<forall> s v v', gs_member s v' = True \<longrightarrow> gs_member (gs_add s v) v' = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* DELTA_003_08_gs_merge_contains_left (matches Coq) *)
-lemma DELTA_003_08_gs_merge_contains_left: "\<forall>a b v. gs_member a v = True \<longrightarrow> gs_member (gs_merge a b) v = True"
+lemma DELTA_003_08_gs_merge_contains_left: "\<forall> a b v, gs_member a v = True \<longrightarrow> gs_member (gs_merge a b) v = True"
   by auto
 
 (* DELTA_003_09_gs_add_idempotent (matches Coq) *)
-lemma DELTA_003_09_gs_add_idempotent: "\<forall>s v. gs_member s v = True \<longrightarrow> gs_add s v = s"
+lemma DELTA_003_09_gs_add_idempotent: "\<forall> s v, gs_member s v = True \<longrightarrow> gs_add s v = s"
   by simp
 
 (* DELTA_003_10_gc_empty_zero (matches Coq) *)
@@ -325,23 +320,23 @@ lemma DELTA_003_10_gc_empty_zero: "gc_value [] = 0"
     PROOFS: CONSISTENT HASHING (5 theorems)
     =============================================================================== *)
 (* DELTA_004_01_ring_add_increases (matches Coq) *)
-lemma DELTA_004_01_ring_add_increases: "\<forall>ring pos node. length (ring_nodes (ring_add_node ring pos node)) = Suc (length (ring_nodes ring))"
+lemma DELTA_004_01_ring_add_increases: "\<forall> ring pos node, length (ring_nodes (ring_add_node ring pos node)) = S (length (ring_nodes ring))"
   by simp
 
 (* DELTA_004_02_ring_remove_decreases (matches Coq) *)
-lemma DELTA_004_02_ring_remove_decreases: "\<forall>ring node. length (ring_nodes (ring_remove_node ring node)) \<le> length (ring_nodes ring)"
+lemma DELTA_004_02_ring_remove_decreases: "\<forall> ring node, length (ring_nodes (ring_remove_node ring node)) \<le> length (ring_nodes ring)"
   by auto
 
 (* DELTA_004_03_ring_size_preserved_add (matches Coq) *)
-lemma DELTA_004_03_ring_size_preserved_add: "\<forall>ring pos node. ring_size (ring_add_node ring pos node) = ring_size ring"
+lemma DELTA_004_03_ring_size_preserved_add: "\<forall> ring pos node, ring_size (ring_add_node ring pos node) = ring_size ring"
   by simp
 
 (* DELTA_004_04_ring_size_preserved_remove (matches Coq) *)
-lemma DELTA_004_04_ring_size_preserved_remove: "\<forall>ring node. ring_size (ring_remove_node ring node) = ring_size ring"
+lemma DELTA_004_04_ring_size_preserved_remove: "\<forall> ring node, ring_size (ring_remove_node ring node) = ring_size ring"
   by simp
 
 (* DELTA_004_05_empty_ring_no_lookup (matches Coq) *)
-lemma DELTA_004_05_empty_ring_no_lookup: "\<forall>key. ring_lookup {| ring_nodes := []; ring_size := 0 |} key = None"
+lemma DELTA_004_05_empty_ring_no_lookup: "\<forall> key, ring_lookup {| ring_nodes := []; ring_size := 0 |} key = None"
   by simp
 
 end

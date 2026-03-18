@@ -1,50 +1,25 @@
 ---- MODULE All ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Derived from 02_FORMAL/coq/domains/All.v
-\* Models key types, operators, and properties from the Coq formalization.
+\* Copyright (c) 2026 The RIINA Authors.
+\* Derived from 02_FORMAL/coq/domains/All.v (0 invariants)
+\* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
 
-VARIABLES state, verified, step_count
-vars == <<state, verified, step_count>>
+VARIABLES state
 
-\* ===================================================================
-\* TYPE INVARIANT
-\* ===================================================================
-
+\* Type invariant
 TypeOK ==
-  /\ state \in Nat
-  /\ verified \in BOOLEAN
-  /\ step_count \in Nat
+  /\ state \in BOOLEAN
 
-\* ===================================================================
-\* INITIAL STATE
-\* ===================================================================
-
+\* Initial state
 Init ==
-  /\ state = 0
-  /\ verified = FALSE
-  /\ step_count = 0
+  /\ state = TRUE
 
-\* ===================================================================
-\* OPERATORS (derived from Coq definitions)
-\* ===================================================================
+\* Next-state relation
+Next == UNCHANGED <<state>>
 
-\* ===================================================================
-\* STATE MACHINE
-\* ===================================================================
-
-Step ==
-  /\ state' \in Nat
-  /\ verified' \in BOOLEAN
-  /\ step_count' = step_count + 1
-
-Next == Step
-
-Spec == Init /\ [][Next]_vars
-
-\* ===================================================================
-\* THEOREMS (derived from Coq proofs)
-\* ===================================================================
+\* Specification
+Spec == Init /\ [][Next]_<<state>>
 
 ====

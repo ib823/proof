@@ -12,9 +12,9 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | spectre_variant     | spectre_variant        | OK     |
- * | defense_mechanism   | defense_mechanism      | OK     |
- * | spectre_defense_config | spectre_defense_config | OK     |
+ * | SpectreVariant     | spectre_variant        | OK     |
+ * | DefenseMechanism   | defense_mechanism      | OK     |
+ * | SpectreDefenseConfig | spectre_defense_config | OK     |
  * | all_variants_protected | all_variants_protected | OK     |
  * | defense_mechanisms_enabled | defense_mechanisms_enabled | OK     |
  * | fully_protected    | fully_protected        | OK     |
@@ -50,7 +50,7 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* spectre_variant (matches Coq: Inductive spectre_variant) *)
+(* SpectreVariant (matches Coq: Inductive SpectreVariant) *)
 datatype spectre_variant =
     Spectre_V1
   |     Spectre_V2
@@ -58,7 +58,7 @@ datatype spectre_variant =
   |     Spectre_RSB
   |     Spectre_BHB
 
-(* defense_mechanism (matches Coq: Inductive defense_mechanism) *)
+(* DefenseMechanism (matches Coq: Inductive DefenseMechanism) *)
 datatype defense_mechanism =
     Serialization
   |     ArrayMasking
@@ -67,7 +67,7 @@ datatype defense_mechanism =
   |     STIBP
   |     Flushing
 
-(* spectre_defense_config (matches Coq: Record spectre_defense_config) *)
+(* SpectreDefenseConfig (matches Coq: Record SpectreDefenseConfig) *)
 record spectre_defense_config =
   sdc_v1_protected :: bool
   sdc_v2_protected :: bool
@@ -103,8 +103,8 @@ definition riina_spectre_config :: "SpectreDefenseConfig" where
 
 (* Helper lemma *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
-  by auto
+lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* SPECTRE_001: RIINA Protects Against All Variants *)
 (* SPECTRE_001_all_variants (matches Coq) *)
@@ -123,52 +123,52 @@ lemma SPECTRE_003_fully_protected: "fully_protected riina_spectre_config = True"
 
 (* SPECTRE_004: V1 Protection Required *)
 (* SPECTRE_004_v1_required (matches Coq) *)
-lemma SPECTRE_004_v1_required: "\<forall>c : SpectreDefenseConfig. all_variants_protected c = True \<longrightarrow> sdc_v1_protected c = True"
+lemma SPECTRE_004_v1_required: "\<forall> c : SpectreDefenseConfig, all_variants_protected c = True \<longrightarrow> sdc_v1_protected c = True"
   by auto
 
 (* SPECTRE_005: V2 Protection Required *)
 (* SPECTRE_005_v2_required (matches Coq) *)
-lemma SPECTRE_005_v2_required: "\<forall>c : SpectreDefenseConfig. all_variants_protected c = True \<longrightarrow> sdc_v2_protected c = True"
+lemma SPECTRE_005_v2_required: "\<forall> c : SpectreDefenseConfig, all_variants_protected c = True \<longrightarrow> sdc_v2_protected c = True"
   by auto
 
 (* SPECTRE_006: V4 Protection Required *)
 (* SPECTRE_006_v4_required (matches Coq) *)
-lemma SPECTRE_006_v4_required: "\<forall>c : SpectreDefenseConfig. all_variants_protected c = True \<longrightarrow> sdc_v4_protected c = True"
+lemma SPECTRE_006_v4_required: "\<forall> c : SpectreDefenseConfig, all_variants_protected c = True \<longrightarrow> sdc_v4_protected c = True"
   by auto
 
 (* SPECTRE_007: RSB Protection Required *)
 (* SPECTRE_007_rsb_required (matches Coq) *)
-lemma SPECTRE_007_rsb_required: "\<forall>c : SpectreDefenseConfig. all_variants_protected c = True \<longrightarrow> sdc_rsb_protected c = True"
+lemma SPECTRE_007_rsb_required: "\<forall> c : SpectreDefenseConfig, all_variants_protected c = True \<longrightarrow> sdc_rsb_protected c = True"
   by auto
 
 (* SPECTRE_008: BHB Protection Required *)
 (* SPECTRE_008_bhb_required (matches Coq) *)
-lemma SPECTRE_008_bhb_required: "\<forall>c : SpectreDefenseConfig. all_variants_protected c = True \<longrightarrow> sdc_bhb_protected c = True"
+lemma SPECTRE_008_bhb_required: "\<forall> c : SpectreDefenseConfig, all_variants_protected c = True \<longrightarrow> sdc_bhb_protected c = True"
   by auto
 
 (* SPECTRE_009: Serialization Required *)
 (* SPECTRE_009_serialization (matches Coq) *)
-lemma SPECTRE_009_serialization: "\<forall>c : SpectreDefenseConfig. defense_mechanisms_enabled c = True \<longrightarrow> sdc_serialization_enabled c = True"
+lemma SPECTRE_009_serialization: "\<forall> c : SpectreDefenseConfig, defense_mechanisms_enabled c = True \<longrightarrow> sdc_serialization_enabled c = True"
   by auto
 
 (* SPECTRE_010: Array Masking Required *)
 (* SPECTRE_010_array_masking (matches Coq) *)
-lemma SPECTRE_010_array_masking: "\<forall>c : SpectreDefenseConfig. defense_mechanisms_enabled c = True \<longrightarrow> sdc_array_masking_enabled c = True"
+lemma SPECTRE_010_array_masking: "\<forall> c : SpectreDefenseConfig, defense_mechanisms_enabled c = True \<longrightarrow> sdc_array_masking_enabled c = True"
   by auto
 
 (* SPECTRE_011: Retpoline Required *)
 (* SPECTRE_011_retpoline (matches Coq) *)
-lemma SPECTRE_011_retpoline: "\<forall>c : SpectreDefenseConfig. defense_mechanisms_enabled c = True \<longrightarrow> sdc_retpoline_enabled c = True"
+lemma SPECTRE_011_retpoline: "\<forall> c : SpectreDefenseConfig, defense_mechanisms_enabled c = True \<longrightarrow> sdc_retpoline_enabled c = True"
   by auto
 
 (* SPECTRE_012: Full Protection Implies Variants *)
 (* SPECTRE_012_full_implies_variants (matches Coq) *)
-lemma SPECTRE_012_full_implies_variants: "\<forall>c : SpectreDefenseConfig. fully_protected c = True \<longrightarrow> all_variants_protected c = True"
+lemma SPECTRE_012_full_implies_variants: "\<forall> c : SpectreDefenseConfig, fully_protected c = True \<longrightarrow> all_variants_protected c = True"
   by auto
 
 (* SPECTRE_013: Full Protection Implies Mechanisms *)
 (* SPECTRE_013_full_implies_mechanisms (matches Coq) *)
-lemma SPECTRE_013_full_implies_mechanisms: "\<forall>c : SpectreDefenseConfig. fully_protected c = True \<longrightarrow> defense_mechanisms_enabled c = True"
+lemma SPECTRE_013_full_implies_mechanisms: "\<forall> c : SpectreDefenseConfig, fully_protected c = True \<longrightarrow> defense_mechanisms_enabled c = True"
   by auto
 
 (* SPECTRE_014: RIINA V1 Protected *)
@@ -193,17 +193,17 @@ lemma SPECTRE_017_riina_retpoline: "sdc_retpoline_enabled riina_spectre_config =
 
 (* SPECTRE_018: Full Protection Implies V1 *)
 (* SPECTRE_018_full_implies_v1 (matches Coq) *)
-lemma SPECTRE_018_full_implies_v1: "\<forall>c : SpectreDefenseConfig. fully_protected c = True \<longrightarrow> sdc_v1_protected c = True"
+lemma SPECTRE_018_full_implies_v1: "\<forall> c : SpectreDefenseConfig, fully_protected c = True \<longrightarrow> sdc_v1_protected c = True"
   by auto
 
 (* SPECTRE_019: Full Protection Implies Serialization *)
 (* SPECTRE_019_full_implies_serial (matches Coq) *)
-lemma SPECTRE_019_full_implies_serial: "\<forall>c : SpectreDefenseConfig. fully_protected c = True \<longrightarrow> sdc_serialization_enabled c = True"
+lemma SPECTRE_019_full_implies_serial: "\<forall> c : SpectreDefenseConfig, fully_protected c = True \<longrightarrow> sdc_serialization_enabled c = True"
   by auto
 
 (* SPECTRE_020: Complete Spectre Defense *)
 (* SPECTRE_020_complete_defense (matches Coq) *)
-lemma SPECTRE_020_complete_defense: "\<forall>c : SpectreDefenseConfig. fully_protected c = True \<longrightarrow> sdc_v1_protected c = True \<and> sdc_v2_protected c = True \<and> sdc_v4_protected c = True \<and> sdc_serialization_enabled c = True \<and> sdc_retpoline_enabled c = True"
+lemma SPECTRE_020_complete_defense: "\<forall> c : SpectreDefenseConfig, fully_protected c = True \<longrightarrow> sdc_v1_protected c = True \<and> sdc_v2_protected c = True \<and> sdc_v4_protected c = True \<and> sdc_serialization_enabled c = True \<and> sdc_retpoline_enabled c = True"
   by auto
 
 end

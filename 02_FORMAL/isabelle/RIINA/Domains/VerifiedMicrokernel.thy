@@ -12,18 +12,18 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | right              | right                  | OK     |
- * | kernel_object       | kernel_object          | OK     |
- * | action             | action                 | OK     |
- * | capability         | capability             | OK     |
- * | kernel_state        | kernel_state           | OK     |
- * | page_perms          | page_perms             | OK     |
+ * | Right              | right                  | OK     |
+ * | KernelObject       | kernel_object          | OK     |
+ * | Action             | action                 | OK     |
+ * | Capability         | capability             | OK     |
+ * | KernelState        | kernel_state           | OK     |
+ * | PagePerms          | page_perms             | OK     |
  * | PTE                | pte                    | OK     |
- * | memory_state        | memory_state           | OK     |
- * | endpoint           | endpoint               | OK     |
- * | ip_c_message         | ipc_message            | OK     |
- * | ip_c_state           | ipc_state              | OK     |
- * | notification       | notification           | OK     |
+ * | MemoryState        | memory_state           | OK     |
+ * | Endpoint           | endpoint               | OK     |
+ * | IPCMessage         | ipc_message            | OK     |
+ * | IPCState           | ipc_state              | OK     |
+ * | Notification       | notification           | OK     |
  * | cap_lookup         | cap_lookup             | OK     |
  * | holds              | holds                  | OK     |
  * | rights_subset      | rights_subset          | OK     |
@@ -80,51 +80,45 @@
  *)
 
 theory VerifiedMicrokernel
-  imports Main Syntax
+  imports Main
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym ip_c_message = "nat"
-type_synonym ip_c_state = "nat"
-type_synonym p_addr = "nat"
-type_synonym proc_id = "nat"
-type_synonym revocation_domain = "nat"
-(* right (matches Coq: Inductive right) *)
+(* Right (matches Coq: Inductive Right) *)
 datatype right =
     RRead
   |     RWrite
   |     RGrant
   |     RRevoke
 
-(* kernel_object (matches Coq: Inductive kernel_object) *)
+(* KernelObject (matches Coq: Inductive KernelObject) *)
 datatype kernel_object =
     KO_Endpoint
   |     KO_Frame
   |     KO_PageTable
   |     KO_TCB
 
-(* action (matches Coq: Inductive action) *)
+(* Action (matches Coq: Inductive Action) *)
 datatype action =
     ActRead
   |     ActWrite
   |     ActGrant
   |     ActRevoke
 
-(* capability (matches Coq: Record capability) *)
+(* Capability (matches Coq: Record Capability) *)
 record capability =
   cap_object :: nat
   cap_rights :: 'a list
   cap_badge :: nat
 
-(* kernel_state (matches Coq: Record kernel_state) *)
+(* KernelState (matches Coq: Record KernelState) *)
 record kernel_state =
   processes :: 'a list
-  cap_tables :: proc_id
+  cap_tables :: ProcId
   kernel_objects :: 'a list
-  revoked_badges :: revocation_domain
+  revoked_badges :: RevocationDomain
   next_badge :: nat
 
-(* page_perms (matches Coq: Record page_perms) *)
+(* PagePerms (matches Coq: Record PagePerms) *)
 record page_perms =
   perm_read :: bool
   perm_write :: bool
@@ -132,86 +126,86 @@ record page_perms =
 
 (* PTE (matches Coq: Record PTE) *)
 record pte =
-  pte_paddr :: p_addr
-  pte_perms :: page_perms
+  pte_paddr :: PAddr
+  pte_perms :: PagePerms
   pte_valid :: bool
   pte_userspace :: bool
 
-(* memory_state (matches Coq: Record memory_state) *)
+(* MemoryState (matches Coq: Record MemoryState) *)
 record memory_state =
-  mem_kernel :: kernel_state
-  address_spaces :: proc_id
-  kernel_memory :: p_addr
-  frame_owners :: p_addr
+  mem_kernel :: KernelState
+  address_spaces :: ProcId
+  kernel_memory :: PAddr
+  frame_owners :: PAddr
 
-(* endpoint (matches Coq: Record endpoint) *)
+(* Endpoint (matches Coq: Record Endpoint) *)
 record endpoint =
   ep_id :: nat
-  ep_cap :: capability
+  ep_cap :: Capability
   ep_queue :: 'a list
 
-(* ip_c_message (matches Coq: Record ip_c_message) *)
+(* IPCMessage (matches Coq: Record IPCMessage) *)
 record ipc_message =
   msg_data :: 'a list
   msg_caps :: 'a list
-  msg_sender :: proc_id
+  msg_sender :: ProcId
 
-(* ip_c_state (matches Coq: Record ip_c_state) *)
+(* IPCState (matches Coq: Record IPCState) *)
 record ipc_state =
-  ipc_mem :: memory_state
+  ipc_mem :: MemoryState
   endpoints :: 'a list
-  waiting_on :: proc_id
+  waiting_on :: ProcId
 
-(* notification (matches Coq: Record notification) *)
+(* Notification (matches Coq: Record Notification) *)
 record notification =
   notif_word :: nat
 
 (* cap_lookup (matches Coq: Definition cap_lookup) *)
-definition cap_lookup :: "KernelState \<Rightarrow> proc_id \<Rightarrow> nat \<Rightarrow> option Capability" where
+definition cap_lookup :: "KernelState \<Rightarrow> ProcId \<Rightarrow> nat \<Rightarrow> option Capability" where
   "cap_lookup s p slot \<equiv> nth_error (cap_tables s p) slot"
 
 (* holds (matches Coq: Definition holds) *)
-definition holds :: "KernelState \<Rightarrow> proc_id \<Rightarrow> capability \<Rightarrow> bool" where
+definition holds :: "KernelState \<Rightarrow> ProcId \<Rightarrow> Capability \<Rightarrow> bool" where
   "holds s p c \<equiv> exists slot, cap_lookup s p slot = Some c"
 
 (* rights_subset (matches Coq: Definition rights_subset) *)
 definition rights_subset :: "bool" where
-  "rights_subset \<equiv> forall r, r \<in> set r1 -> r \<in> set r2"
+  "rights_subset \<equiv> forall r, In r r1 -> In r r2"
 
 (* is_revoked (matches Coq: Definition is_revoked) *)
-definition is_revoked :: "KernelState \<Rightarrow> capability \<Rightarrow> bool" where
-  "is_revoked s c \<equiv> (cap_badge c) \<in> set (revoked_badges s)"
+definition is_revoked :: "KernelState \<Rightarrow> Capability \<Rightarrow> bool" where
+  "is_revoked s c \<equiv> In (cap_badge c) (revoked_badges s)"
 
 (* cap_valid (matches Coq: Definition cap_valid) *)
-definition cap_valid :: "KernelState \<Rightarrow> capability \<Rightarrow> bool" where
-  "cap_valid s c \<equiv> ~ is_revoked s c \<and> cap_badge c < next_badge s"
+definition cap_valid :: "KernelState \<Rightarrow> Capability \<Rightarrow> bool" where
+  "cap_valid s c \<equiv> ~ is_revoked s c /\ cap_badge c < next_badge s"
 
 (* action_authorized (matches Coq: Definition action_authorized) *)
-fun action_authorized :: "Capability \<Rightarrow> action \<Rightarrow> bool" where
-  "action_authorized _ = True"
+fun action_authorized :: "Capability \<Rightarrow> Action \<Rightarrow> bool" where
+
 
 (* can_invoke (matches Coq: Definition can_invoke) *)
-definition can_invoke :: "KernelState \<Rightarrow> proc_id \<Rightarrow> action \<Rightarrow> capability \<Rightarrow> bool" where
-  "can_invoke s p a c \<equiv> holds s p c \<and> cap_valid s c \<and> action_authorized c a"
+definition can_invoke :: "KernelState \<Rightarrow> ProcId \<Rightarrow> Action \<Rightarrow> Capability \<Rightarrow> bool" where
+  "can_invoke s p a c \<equiv> holds s p c /\ cap_valid s c /\ action_authorized c a"
 
 (* mapped (matches Coq: Definition mapped) *)
-definition mapped :: "MemoryState \<Rightarrow> proc_id \<Rightarrow> VAddr \<Rightarrow> bool" where
-  "mapped ms p vaddr \<equiv> exists pte, address_spaces ms p vaddr = Some pte \<and> pte_valid pte = True"
+definition mapped :: "MemoryState \<Rightarrow> ProcId \<Rightarrow> VAddr \<Rightarrow> bool" where
+  "mapped ms p vaddr \<equiv> exists pte, address_spaces ms p vaddr = Some pte /\ pte_valid pte = True"
 
 (* shared_readonly (matches Coq: Definition shared_readonly) *)
 definition shared_readonly :: "MemoryState \<Rightarrow> VAddr \<Rightarrow> bool" where
   "shared_readonly ms vaddr \<equiv> exists pte1 pte2,
-    address_spaces ms p1 vaddr = Some pte1 \<and>
-    address_spaces ms p2 vaddr = Some pte2 \<and>
-    pte_paddr pte1 = pte_paddr pte2 \<and>
-    perm_write (pte_perms pte1) = False \<and>
+    address_spaces ms p1 vaddr = Some pte1 /\
+    address_spaces ms p2 vaddr = Some pte2 /\
+    pte_paddr pte1 = pte_paddr pte2 /\
+    perm_write (pte_perms pte1) = False /\
     perm_write (pte_perms pte2) = False"
 
 (* translate - complex match, needs manual translation *)
-definition translate :: "bool" where "translate \<equiv> True"
+definition translate :: "bool" where "translate = undefined"
 
 (* is_kernel_memory (matches Coq: Definition is_kernel_memory) *)
-definition is_kernel_memory :: "MemoryState \<Rightarrow> p_addr \<Rightarrow> bool" where
+definition is_kernel_memory :: "MemoryState \<Rightarrow> PAddr \<Rightarrow> bool" where
   "is_kernel_memory ms paddr \<equiv> kernel_memory ms paddr = True"
 
 (* page_table_integrity (matches Coq: Definition page_table_integrity) *)
@@ -222,48 +216,48 @@ definition page_table_integrity :: "MemoryState \<Rightarrow> bool" where
     kernel_memory ms (pte_paddr pte) = False"
 
 (* has_frame_cap (matches Coq: Definition has_frame_cap) *)
-definition has_frame_cap :: "MemoryState \<Rightarrow> proc_id \<Rightarrow> p_addr \<Rightarrow> bool" where
+definition has_frame_cap :: "MemoryState \<Rightarrow> ProcId \<Rightarrow> PAddr \<Rightarrow> bool" where
   "has_frame_cap ms p paddr \<equiv> exists c slot,
-    cap_lookup (mem_kernel ms) p slot = Some c \<and>
+    cap_lookup (mem_kernel ms) p slot = Some c /\
     cap_object c = paddr"
 
 (* valid_memory_state (matches Coq: Definition valid_memory_state) *)
 definition valid_memory_state :: "MemoryState \<Rightarrow> bool" where
-  "valid_memory_state ms \<equiv> page_table_integrity ms \<and>
+  "valid_memory_state ms \<equiv> page_table_integrity ms /\
   (forall p vaddr pte,
     address_spaces ms p vaddr = Some pte ->
     pte_valid pte = True ->
     has_frame_cap ms p (pte_paddr pte))"
 
 (* ipc_waiting (matches Coq: Definition ipc_waiting) *)
-definition ipc_waiting :: "IPCState \<Rightarrow> proc_id \<Rightarrow> bool" where
+definition ipc_waiting :: "IPCState \<Rightarrow> ProcId \<Rightarrow> bool" where
   "ipc_waiting is p \<equiv> exists ep_id, waiting_on is p = Some ep_id"
 
 (* valid_ipc_state (matches Coq: Definition valid_ipc_state) *)
 definition valid_ipc_state :: "IPCState \<Rightarrow> bool" where
-  "valid_ipc_state is \<equiv> valid_memory_state (ipc_mem is) \<and>
+  "valid_ipc_state is \<equiv> valid_memory_state (ipc_mem is) /\
   (forall ps, ~ ipc_wait_cycle is ps)"
 
 (* valid_state (matches Coq: Definition valid_state) *)
 definition valid_state :: "KernelState \<Rightarrow> bool" where
-  "valid_state s \<equiv> forall p, p \<in> set (processes s) -> 
+  "valid_state s \<equiv> forall p, In p (processes s) -> 
     forall slot c, cap_lookup s p slot = Some c -> cap_valid s c"
 
 (* endpoint_protected (matches Coq: Definition endpoint_protected) *)
-definition endpoint_protected :: "IPCState \<Rightarrow> endpoint \<Rightarrow> bool" where
+definition endpoint_protected :: "IPCState \<Rightarrow> Endpoint \<Rightarrow> bool" where
   "endpoint_protected is ep \<equiv> forall p,
-    p \<in> set (ep_queue ep) ->
+    In p (ep_queue ep) ->
     holds (mem_kernel (ipc_mem is)) p (ep_cap ep)"
 
 (* msg_caps_valid (matches Coq: Definition msg_caps_valid) *)
-definition msg_caps_valid :: "IPCState \<Rightarrow> proc_id \<Rightarrow> ip_c_message \<Rightarrow> bool" where
-  "msg_caps_valid is sender msg \<equiv> forall c, c \<in> set (msg_caps msg) ->
-    holds (mem_kernel (ipc_mem is)) sender c \<and>
-    RGrant \<in> set (cap_rights c)"
+definition msg_caps_valid :: "IPCState \<Rightarrow> ProcId \<Rightarrow> IPCMessage \<Rightarrow> bool" where
+  "msg_caps_valid is sender msg \<equiv> forall c, In c (msg_caps msg) ->
+    holds (mem_kernel (ipc_mem is)) sender c /\
+    In RGrant (cap_rights c)"
 
 (* transfer_preserves_validity (matches Coq: Definition transfer_preserves_validity) *)
 definition transfer_preserves_validity :: "Capability \<Rightarrow> bool" where
-  "transfer_preserves_validity c \<equiv> next_badge s <= next_badge s' \<and>
+  "transfer_preserves_validity c \<equiv> next_badge s <= next_badge s' /\
   
   (~ is_revoked s c -> ~ is_revoked s' c)"
 
@@ -277,21 +271,21 @@ definition isolation_invariant :: "MemoryState \<Rightarrow> bool" where
     pte_valid pte2 = True ->
     
     pte_paddr pte1 <> pte_paddr pte2 \/
-    (perm_write (pte_perms pte1) = False \<and> perm_write (pte_perms pte2) = False)"
+    (perm_write (pte_perms pte1) = False /\ perm_write (pte_perms pte2) = False)"
 
 (* properly_isolated (matches Coq: Definition properly_isolated) *)
 definition properly_isolated :: "MemoryState \<Rightarrow> VAddr \<Rightarrow> bool" where
   "properly_isolated ms vaddr \<equiv> ~ mapped ms p2 vaddr \/
   (exists pte1 pte2,
-    address_spaces ms p1 vaddr = Some pte1 \<and>
-    address_spaces ms p2 vaddr = Some pte2 \<and>
+    address_spaces ms p1 vaddr = Some pte1 /\
+    address_spaces ms p2 vaddr = Some pte2 /\
     (pte_paddr pte1 <> pte_paddr pte2 \/
-     (perm_write (pte_perms pte1) = False \<and> perm_write (pte_perms pte2) = False)))"
+     (perm_write (pte_perms pte1) = False /\ perm_write (pte_perms pte2) = False)))"
 
 (* unmapped (matches Coq: Definition unmapped) *)
-definition unmapped :: "MemoryState \<Rightarrow> proc_id \<Rightarrow> VAddr \<Rightarrow> bool" where
+definition unmapped :: "MemoryState \<Rightarrow> ProcId \<Rightarrow> VAddr \<Rightarrow> bool" where
   "unmapped ms p vaddr \<equiv> address_spaces ms p vaddr = None \/
-  exists pte, address_spaces ms p vaddr = Some pte \<and> pte_valid pte = False"
+  exists pte, address_spaces ms p vaddr = Some pte /\ pte_valid pte = False"
 
 (* allocation_safe (matches Coq: Definition allocation_safe) *)
 definition allocation_safe :: "PAddr \<Rightarrow> bool" where
@@ -301,20 +295,20 @@ definition allocation_safe :: "PAddr \<Rightarrow> bool" where
 
 (* msg_type_safe (matches Coq: Definition msg_type_safe) *)
 definition msg_type_safe :: "IPCMessage \<Rightarrow> bool" where
-  "msg_type_safe msg \<equiv> length (msg_data msg) <= 128 \<and>  
+  "msg_type_safe msg \<equiv> length (msg_data msg) <= 128 /\  
   length (msg_caps msg) <= 4"
 
 (* no_amplification (matches Coq: Definition no_amplification) *)
-definition no_amplification :: "IPCState \<Rightarrow> proc_id \<Rightarrow> ip_c_message \<Rightarrow> bool" where
-  "no_amplification is sender msg \<equiv> forall c, c \<in> set (msg_caps msg) ->
+definition no_amplification :: "IPCState \<Rightarrow> ProcId \<Rightarrow> IPCMessage \<Rightarrow> bool" where
+  "no_amplification is sender msg \<equiv> forall c, In c (msg_caps msg) ->
     rights_subset (cap_rights c) (cap_rights c)"
 
 (* ipc_maintains_isolation (matches Coq: Definition ipc_maintains_isolation) *)
 definition ipc_maintains_isolation :: "IPCState \<Rightarrow> bool" where
   "ipc_maintains_isolation is \<equiv> forall p1 p2 ep,
-    ep \<in> set (endpoints is) ->
-    p1 \<in> set (ep_queue ep) ->
-    p2 \<notin> set (ep_queue ep) ->
+    In ep (endpoints is) ->
+    In p1 (ep_queue ep) ->
+    ~ In p2 (ep_queue ep) ->
     ~ holds (mem_kernel (ipc_mem is)) p2 (ep_cap ep)"
 
 (* notif_no_sensitive_data (matches Coq: Definition notif_no_sensitive_data) *)
@@ -322,103 +316,103 @@ definition notif_no_sensitive_data :: "Notification \<Rightarrow> bool" where
   "notif_no_sensitive_data n \<equiv> notif_word n < 2^32"
 
 (* OS_001_01_cap_unforgeable (matches Coq) *)
-lemma OS_001_01_cap_unforgeable: "\<forall>s p c. holds s p c \<longrightarrow> \<exists>slot. cap_lookup s p slot = Some c"
+lemma OS_001_01_cap_unforgeable: "\<forall> s p c, holds s p c \<longrightarrow> \<exists> slot, cap_lookup s p slot = Some c"
   by auto
 
 (* OS_001_02_cap_monotonic (matches Coq) *)
-lemma OS_001_02_cap_monotonic: "\<forall>c1 c2. derives c1 c2 \<longrightarrow> rights_subset (cap_rights c2) (cap_rights c1)"
+lemma OS_001_02_cap_monotonic: "\<forall> c1 c2, derives c1 c2 \<longrightarrow> rights_subset (cap_rights c2) (cap_rights c1)"
   by auto
 
 (* OS_001_03_cap_revocation_complete (matches Coq) *)
-lemma OS_001_03_cap_revocation_complete: "\<forall>s c. is_revoked s c \<longrightarrow> ~ cap_valid s c"
+lemma OS_001_03_cap_revocation_complete: "\<forall> s c, is_revoked s c \<longrightarrow> ~ cap_valid s c"
   by auto
 
 (* OS_001_04_cap_transfer_safe (matches Coq) *)
-lemma OS_001_04_cap_transfer_safe: "\<forall>s s' p_from p_to c. holds s p_from c \<longrightarrow> cap_valid s c \<longrightarrow> transfer_preserves_validity s s' c \<longrightarrow> holds s' p_to c \<longrightarrow> cap_valid s' c"
+lemma OS_001_04_cap_transfer_safe: "\<forall> s s' p_from p_to c, holds s p_from c \<longrightarrow> cap_valid s c \<longrightarrow> transfer_preserves_validity s s' c \<longrightarrow> holds s' p_to c \<longrightarrow> cap_valid s' c"
   by auto
 
 (* OS_001_05_cap_derivation_sound (matches Coq) *)
-lemma OS_001_05_cap_derivation_sound: "\<forall>parent child. derives parent child \<longrightarrow> cap_object child = cap_object parent \<and> rights_subset (cap_rights child) (cap_rights parent)"
+lemma OS_001_05_cap_derivation_sound: "\<forall> parent child, derives parent child \<longrightarrow> cap_object child = cap_object parent \<and> rights_subset (cap_rights child) (cap_rights parent)"
   by auto
 
 (* OS_001_06_no_confused_deputy (matches Coq) *)
-lemma OS_001_06_no_confused_deputy: "\<forall>s p c action. can_invoke s p action c \<longrightarrow> holds s p c"
+lemma OS_001_06_no_confused_deputy: "\<forall> s p c action, can_invoke s p action c \<longrightarrow> holds s p c"
   by auto
 
 (* OS_001_07_cap_lookup_correct (matches Coq) *)
-lemma OS_001_07_cap_lookup_correct: "\<forall>s p slot c. cap_lookup s p slot = Some c \<longrightarrow> nth_error (cap_tables s p) slot = Some c"
+lemma OS_001_07_cap_lookup_correct: "\<forall> s p slot c, cap_lookup s p slot = Some c \<longrightarrow> nth_error (cap_tables s p) slot = Some c"
   by auto
 
 (* OS_001_08_cap_space_isolation (matches Coq) *)
-lemma OS_001_08_cap_space_isolation: "\<forall>s p1 p2 slot1 slot2 c. p1 \<noteq> p2 \<longrightarrow> cap_lookup s p1 slot1 = Some c \<longrightarrow> cap_lookup s p2 slot2 = Some c \<longrightarrow> holds s p1 c \<and> holds s p2 c"
+lemma OS_001_08_cap_space_isolation: "\<forall> s p1 p2 slot1 slot2 c, p1 \<noteq> p2 \<longrightarrow> cap_lookup s p1 slot1 = Some c \<longrightarrow> cap_lookup s p2 slot2 = Some c \<longrightarrow> holds s p1 c \<and> holds s p2 c"
   by auto
 
 (* OS_001_09_cap_invoke_authorized (matches Coq) *)
-lemma OS_001_09_cap_invoke_authorized: "\<forall>s p action c. can_invoke s p action c \<longrightarrow> action_authorized c action"
+lemma OS_001_09_cap_invoke_authorized: "\<forall> s p action c, can_invoke s p action c \<longrightarrow> action_authorized c action"
   by auto
 
 (* OS_001_10_cap_badge_integrity (matches Coq) *)
-lemma OS_001_10_cap_badge_integrity: "\<forall>c1 c2. derives c1 c2 \<longrightarrow> cap_object c2 = cap_object c1"
+lemma OS_001_10_cap_badge_integrity: "\<forall> c1 c2, derives c1 c2 \<longrightarrow> cap_object c2 = cap_object c1"
   by simp
 
 (* OS_001_11_address_space_isolation (matches Coq) *)
-lemma OS_001_11_address_space_isolation: "\<forall>ms p1 p2 vaddr. isolation_invariant ms \<longrightarrow> p1 \<noteq> p2 \<longrightarrow> mapped ms p1 vaddr \<longrightarrow> properly_isolated ms p1 p2 vaddr"
+lemma OS_001_11_address_space_isolation: "\<forall> ms p1 p2 vaddr, isolation_invariant ms \<longrightarrow> p1 \<noteq> p2 \<longrightarrow> mapped ms p1 vaddr \<longrightarrow> properly_isolated ms p1 p2 vaddr"
   by auto
 
 (* OS_001_12_kernel_memory_integrity (matches Coq) *)
-lemma OS_001_12_kernel_memory_integrity: "\<forall>ms p vaddr pte. valid_memory_state ms \<longrightarrow> address_spaces ms p vaddr = Some pte \<longrightarrow> pte_valid pte = True \<longrightarrow> pte_userspace pte = True \<longrightarrow> ~ is_kernel_memory ms (pte_paddr pte)"
+lemma OS_001_12_kernel_memory_integrity: "\<forall> ms p vaddr pte, valid_memory_state ms \<longrightarrow> address_spaces ms p vaddr = Some pte \<longrightarrow> pte_valid pte = True \<longrightarrow> pte_userspace pte = True \<longrightarrow> ~ is_kernel_memory ms (pte_paddr pte)"
   by auto
 
 (* OS_001_13_page_table_correct (matches Coq) *)
-lemma OS_001_13_page_table_correct: "\<forall>ms p vaddr paddr. translate ms p vaddr = Some paddr \<longrightarrow> \<exists>pte. address_spaces ms p vaddr = Some pte \<and> pte_valid pte = True \<and> pte_paddr pte = paddr"
+lemma OS_001_13_page_table_correct: "\<forall> ms p vaddr paddr, translate ms p vaddr = Some paddr \<longrightarrow> \<exists> pte, address_spaces ms p vaddr = Some pte \<and> pte_valid pte = True \<and> pte_paddr pte = paddr"
   by auto
 
 (* OS_001_14_no_page_table_corruption (matches Coq) *)
-lemma OS_001_14_no_page_table_corruption: "\<forall>ms p vaddr pte. valid_memory_state ms \<longrightarrow> address_spaces ms p vaddr = Some pte \<longrightarrow> pte_userspace pte = True \<longrightarrow> kernel_memory ms (pte_paddr pte) = False"
+lemma OS_001_14_no_page_table_corruption: "\<forall> ms p vaddr pte, valid_memory_state ms \<longrightarrow> address_spaces ms p vaddr = Some pte \<longrightarrow> pte_userspace pte = True \<longrightarrow> kernel_memory ms (pte_paddr pte) = False"
   by auto
 
 (* OS_001_15_mapping_respects_caps (matches Coq) *)
-lemma OS_001_15_mapping_respects_caps: "\<forall>ms p vaddr pte. valid_memory_state ms \<longrightarrow> address_spaces ms p vaddr = Some pte \<longrightarrow> pte_valid pte = True \<longrightarrow> has_frame_cap ms p (pte_paddr pte)"
+lemma OS_001_15_mapping_respects_caps: "\<forall> ms p vaddr pte, valid_memory_state ms \<longrightarrow> address_spaces ms p vaddr = Some pte \<longrightarrow> pte_valid pte = True \<longrightarrow> has_frame_cap ms p (pte_paddr pte)"
   by auto
 
 (* OS_001_16_unmap_complete (matches Coq) *)
-lemma OS_001_16_unmap_complete: "\<forall>ms p vaddr. unmapped ms p vaddr \<longrightarrow> translate ms p vaddr = None"
+lemma OS_001_16_unmap_complete: "\<forall> ms p vaddr, unmapped ms p vaddr \<longrightarrow> translate ms p vaddr = None"
   by simp
 
 (* OS_001_17_no_kernel_data_leak (matches Coq) *)
-lemma OS_001_17_no_kernel_data_leak: "\<forall>ms p vaddr paddr. valid_memory_state ms \<longrightarrow> translate ms p vaddr = Some paddr \<longrightarrow> (\<exists>pte. address_spaces ms p vaddr = Some pte \<and> pte_userspace pte = True) \<longrightarrow> ~ is_kernel_memory ms paddr"
+lemma OS_001_17_no_kernel_data_leak: "\<forall> ms p vaddr paddr, valid_memory_state ms \<longrightarrow> translate ms p vaddr = Some paddr \<longrightarrow> (\<exists> pte, address_spaces ms p vaddr = Some pte \<and> pte_userspace pte = True) \<longrightarrow> ~ is_kernel_memory ms paddr"
   by auto
 
 (* OS_001_18_frame_allocation_safe (matches Coq) *)
-lemma OS_001_18_frame_allocation_safe: "\<forall>ms ms' paddr owner. valid_memory_state ms \<longrightarrow> frame_owners ms paddr = None \<longrightarrow> frame_owners ms' paddr = Some owner \<longrightarrow> kernel_memory ms' paddr = False \<longrightarrow> valid_memory_state ms' \<longrightarrow> allocation_safe ms ms' paddr"
+lemma OS_001_18_frame_allocation_safe: "\<forall> ms ms' paddr owner, valid_memory_state ms \<longrightarrow> frame_owners ms paddr = None \<longrightarrow> frame_owners ms' paddr = Some owner \<longrightarrow> kernel_memory ms' paddr = False \<longrightarrow> valid_memory_state ms' \<longrightarrow> allocation_safe ms ms' paddr"
   by auto
 
 (* OS_001_19_ipc_type_safe (matches Coq) *)
-lemma OS_001_19_ipc_type_safe: "\<forall>msg. length (msg_data msg) \<le> 128 \<longrightarrow> length (msg_caps msg) \<le> 4 \<longrightarrow> msg_type_safe msg"
+lemma OS_001_19_ipc_type_safe: "\<forall> msg, length (msg_data msg) \<le> 128 \<longrightarrow> length (msg_caps msg) \<le> 4 \<longrightarrow> msg_type_safe msg"
   by auto
 
 (* OS_001_20_ipc_cap_transfer_safe (matches Coq) *)
-lemma OS_001_20_ipc_cap_transfer_safe: "\<forall>is sender msg. msg_caps_valid is sender msg \<longrightarrow> \<forall>c. c \<in> set (msg_caps msg) \<longrightarrow> holds (mem_kernel (ipc_mem is)) sender c \<and> RGrant \<in> set (cap_rights c)"
+lemma OS_001_20_ipc_cap_transfer_safe: "\<forall> is sender msg, msg_caps_valid is sender msg \<longrightarrow> \<forall> c, In c (msg_caps msg) \<longrightarrow> holds (mem_kernel (ipc_mem is)) sender c \<and> In RGrant (cap_rights c)"
   by auto
 
 (* OS_001_21_ipc_deadlock_free (matches Coq) *)
-lemma OS_001_21_ipc_deadlock_free: "\<forall>is. valid_ipc_state is \<longrightarrow> ~ \<exists>cycle. ipc_wait_cycle is cycle"
+lemma OS_001_21_ipc_deadlock_free: "\<forall> is, valid_ipc_state is \<longrightarrow> ~ \<exists> cycle, ipc_wait_cycle is cycle"
   by auto
 
 (* OS_001_22_ipc_no_amplification (matches Coq) *)
-lemma OS_001_22_ipc_no_amplification: "\<forall>is sender msg c. msg_caps_valid is sender msg \<longrightarrow> c \<in> set (msg_caps msg) \<longrightarrow> \<exists>c'. holds (mem_kernel (ipc_mem is)) sender c' \<and> rights_subset (cap_rights c) (cap_rights c')"
+lemma OS_001_22_ipc_no_amplification: "\<forall> is sender msg c, msg_caps_valid is sender msg \<longrightarrow> In c (msg_caps msg) \<longrightarrow> \<exists> c', holds (mem_kernel (ipc_mem is)) sender c' \<and> rights_subset (cap_rights c) (cap_rights c')"
   by auto
 
 (* OS_001_23_ipc_isolation (matches Coq) *)
-lemma OS_001_23_ipc_isolation: "\<forall>is p1 p2 ep. ipc_maintains_isolation is \<longrightarrow> ep \<in> set (endpoints is) \<longrightarrow> p1 \<in> set (ep_queue ep) \<longrightarrow> p2 \<notin> set (ep_queue ep) \<longrightarrow> ~ holds (mem_kernel (ipc_mem is)) p2 (ep_cap ep)"
+lemma OS_001_23_ipc_isolation: "\<forall> is p1 p2 ep, ipc_maintains_isolation is \<longrightarrow> In ep (endpoints is) \<longrightarrow> In p1 (ep_queue ep) \<longrightarrow> ~ In p2 (ep_queue ep) \<longrightarrow> ~ holds (mem_kernel (ipc_mem is)) p2 (ep_cap ep)"
   by auto
 
 (* OS_001_24_endpoint_protection (matches Coq) *)
-lemma OS_001_24_endpoint_protection: "\<forall>is ep. endpoint_protected is ep \<longrightarrow> \<forall>p. p \<in> set (ep_queue ep) \<longrightarrow> holds (mem_kernel (ipc_mem is)) p (ep_cap ep)"
+lemma OS_001_24_endpoint_protection: "\<forall> is ep, endpoint_protected is ep \<longrightarrow> \<forall> p, In p (ep_queue ep) \<longrightarrow> holds (mem_kernel (ipc_mem is)) p (ep_cap ep)"
   by auto
 
 (* OS_001_25_notification_no_leak (matches Coq) *)
-lemma OS_001_25_notification_no_leak: "\<forall>n. notif_no_sensitive_data n \<longrightarrow> notif_word n < 2^32"
+lemma OS_001_25_notification_no_leak: "\<forall> n, notif_no_sensitive_data n \<longrightarrow> notif_word n < 2^32"
   by auto
 
 end

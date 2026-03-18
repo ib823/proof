@@ -12,19 +12,20 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | role               | role                   | OK     |
- * | phi_category        | phi_category           | OK     |
- * | encryption_state    | encryption_state       | OK     |
- * | transport_security  | transport_security     | OK     |
- * | auth_factor         | auth_factor            | OK     |
- * | auth_state          | auth_state             | OK     |
- * | phi_record          | phi_record             | OK     |
- * | audit_entry         | audit_entry            | OK     |
- * | disposal_record     | disposal_record        | OK     |
- * | breach_event        | breach_event           | OK     |
- * | session            | session                | OK     |
- * | system_state        | system_state           | OK     |
- * | transmission       | transmission           | OK     |
+ * | Role               | role                   | OK     |
+ * | PHICategory        | phi_category           | OK     |
+ * | EncryptionState    | encryption_state       | OK     |
+ * | TransportSecurity  | transport_security     | OK     |
+ * | AuthFactor         | auth_factor            | OK     |
+ * | AuthState          | auth_state             | OK     |
+ * | PHIRecord          | phi_record             | OK     |
+ * | AuditEntry         | audit_entry            | OK     |
+ * | DisposalRecord     | disposal_record        | OK     |
+ * | BreachEvent        | breach_event           | OK     |
+ * | Session            | session                | OK     |
+ * | SystemState        | system_state           | OK     |
+ * | Transmission       | transmission           | OK     |
+ * | BREACH_DETECTION_LIMIT_S | BREACH_DETECTION_LIMIT_S | OK     |
  * | can_access         | can_access             | OK     |
  * | is_hipaa_encrypted | is_hipaa_encrypted     | OK     |
  * | is_hipaa_transport | is_hipaa_transport     | OK     |
@@ -70,7 +71,7 @@ theory HIPAACompliance
   imports Main CoqCompat
 begin
 
-(* role (matches Coq: Inductive role) *)
+(* Role (matches Coq: Inductive Role) *)
 datatype role =
     Physician
   |     Nurse
@@ -79,7 +80,7 @@ datatype role =
   |     Auditor
   |     Emergency
 
-(* phi_category (matches Coq: Inductive phi_category) *)
+(* PHICategory (matches Coq: Inductive PHICategory) *)
 datatype phi_category =
     Demographics
   |     MedicalHistory
@@ -88,39 +89,39 @@ datatype phi_category =
   |     Billing
   |     Genetic
 
-(* encryption_state (matches Coq: Inductive encryption_state) *)
+(* EncryptionState (matches Coq: Inductive EncryptionState) *)
 datatype encryption_state =
     Plaintext
   |     EncryptedAES128
   |     EncryptedAES256
 
-(* transport_security (matches Coq: Inductive transport_security) *)
+(* TransportSecurity (matches Coq: Inductive TransportSecurity) *)
 datatype transport_security =
     NoTLS
   |     TLS12
   |     TLS13
 
-(* auth_factor (matches Coq: Inductive auth_factor) *)
+(* AuthFactor (matches Coq: Inductive AuthFactor) *)
 datatype auth_factor =
     Password
   |     Token
   |     Biometric
 
-(* auth_state (matches Coq: Record auth_state) *)
+(* AuthState (matches Coq: Record AuthState) *)
 record auth_state =
   auth_factors :: 'a list
   auth_user_id :: nat
   auth_timestamp :: nat
 
-(* phi_record (matches Coq: Record phi_record) *)
+(* PHIRecord (matches Coq: Record PHIRecord) *)
 record phi_record =
-  phi_category :: phi_category
+  phi_category :: PHICategory
   phi_patient_id :: nat
   phi_data :: nat
-  phi_encryption :: encryption_state
+  phi_encryption :: EncryptionState
   phi_consent_documented :: bool
 
-(* audit_entry (matches Coq: Record audit_entry) *)
+(* AuditEntry (matches Coq: Record AuditEntry) *)
 record audit_entry =
   audit_timestamp :: nat
   audit_user_id :: nat
@@ -128,28 +129,28 @@ record audit_entry =
   audit_phi_id :: nat
   audit_success :: bool
 
-(* disposal_record (matches Coq: Record disposal_record) *)
+(* DisposalRecord (matches Coq: Record DisposalRecord) *)
 record disposal_record =
   disposal_phi_id :: nat
   disposal_method :: nat
   disposal_passes :: nat
   disposal_verified :: bool
 
-(* breach_event (matches Coq: Record breach_event) *)
+(* BreachEvent (matches Coq: Record BreachEvent) *)
 record breach_event =
   breach_detected_time :: nat
   breach_occurred_time :: nat
   breach_user_id :: nat
   breach_phi_ids :: 'a list
 
-(* session (matches Coq: Record session) *)
+(* Session (matches Coq: Record Session) *)
 record session =
   session_user_id :: nat
   session_start_time :: nat
   session_last_activity :: nat
   session_is_active :: bool
 
-(* system_state (matches Coq: Record system_state) *)
+(* SystemState (matches Coq: Record SystemState) *)
 record system_state =
   state_phi_records :: 'a list
   state_audit_log :: 'a list
@@ -158,25 +159,29 @@ record system_state =
   state_disposals :: 'a list
   state_current_time :: nat
 
-(* transmission (matches Coq: Record transmission) *)
+(* Transmission (matches Coq: Record Transmission) *)
 record transmission =
-  trans_phi :: phi_record
-  trans_security :: transport_security
+  trans_phi :: PHIRecord
+  trans_security :: TransportSecurity
   trans_integrity_hash :: nat
   trans_verified :: bool
 
+(* BREACH_DETECTION_LIMIT_S (matches Coq: Definition BREACH_DETECTION_LIMIT_S) *)
+definition BREACH_DETECTION_LIMIT_S :: "nat" where
+  "BREACH_DETECTION_LIMIT_S \<equiv> Z.to_nat 86400%Z"
+
 (* can_access - complex match, needs manual translation *)
-definition can_access :: "bool" where "can_access \<equiv> True"
+definition can_access :: "bool" where "can_access = undefined"
 
 (* is_hipaa_encrypted (matches Coq: Definition is_hipaa_encrypted) *)
 fun is_hipaa_encrypted :: "EncryptionState \<Rightarrow> bool" where
-  "is_hipaa_encrypted EncryptedAES256 = True"
-|   "is_hipaa_encrypted _ = False"
+  "is_hipaa_encrypted EncryptedAES256 = true"
+|   "is_hipaa_encrypted _ = false"
 
 (* is_hipaa_transport (matches Coq: Definition is_hipaa_transport) *)
 fun is_hipaa_transport :: "TransportSecurity \<Rightarrow> bool" where
-  "is_hipaa_transport TLS13 = True"
-|   "is_hipaa_transport _ = False"
+  "is_hipaa_transport TLS13 = true"
+|   "is_hipaa_transport _ = false"
 
 (* session_timeout (matches Coq: Definition session_timeout) *)
 definition session_timeout :: "nat" where
@@ -191,11 +196,11 @@ definition is_mfa :: "AuthState \<Rightarrow> bool" where
   "is_mfa auth \<equiv> (2 \<le> (length) (auth_factors auth))"
 
 (* is_secure_disposal - complex match, needs manual translation *)
-definition is_secure_disposal :: "bool" where "is_secure_disposal \<equiv> True"
+definition is_secure_disposal :: "bool" where "is_secure_disposal = undefined"
 
 (* breach_detection_limit (matches Coq: Definition breach_detection_limit) *)
 definition breach_detection_limit :: "nat" where
-  "breach_detection_limit \<equiv> 86400"
+  "breach_detection_limit \<equiv> BREACH_DETECTION_LIMIT_S"
 
 (* breach_detected_timely (matches Coq: Definition breach_detected_timely) *)
 definition breach_detected_timely :: "BreachEvent \<Rightarrow> bool" where
@@ -203,8 +208,8 @@ definition breach_detected_timely :: "BreachEvent \<Rightarrow> bool" where
 
 (* audit_exists_for (matches Coq: Definition audit_exists_for) *)
 definition audit_exists_for :: "bool" where
-  "audit_exists_for \<equiv> existsb (\<lambda>e. (audit_user_id e = user_id) 
-                         ((audit_phi_id e = phi_id))) log"
+  "audit_exists_for \<equiv> existsb (fun e => (((\<and> = (audit_user_id)) e) user_id) 
+                         (((audit_phi_id = e)) phi_id)) log"
 
 (* access_with_audit (matches Coq: Definition access_with_audit) *)
 definition access_with_audit :: "nat \<Rightarrow> bool \<Rightarrow> list AuditEntry" where
@@ -219,17 +224,17 @@ definition can_disclose :: "PHIRecord \<Rightarrow> bool" where
   "can_disclose phi \<equiv> phi_consent_documented phi"
 
 (* authorized_modification (matches Coq: Definition authorized_modification) *)
-fun authorized_modification :: "Role \<Rightarrow> phi_category \<Rightarrow> bool" where
-  "authorized_modification Physician = True"
-|   "authorized_modification Emergency = True"
-|   "authorized_modification _ = False"
+fun authorized_modification :: "Role \<Rightarrow> PHICategory \<Rightarrow> bool" where
+  "authorized_modification Physician = true"
+|   "authorized_modification Emergency = true"
+|   "authorized_modification _ = false"
 
 (* terminate_session (matches Coq: Definition terminate_session) *)
 definition terminate_session :: "Session \<Rightarrow> Session" where
   "terminate_session s \<equiv> mkSession (session_user_id s) (session_start_time s) (session_last_activity s) False"
 
 (* check_and_terminate (matches Coq: Definition check_and_terminate) *)
-definition check_and_terminate :: "nat \<Rightarrow> session \<Rightarrow> Session" where
+definition check_and_terminate :: "nat \<Rightarrow> Session \<Rightarrow> Session" where
   "check_and_terminate current_time s \<equiv> if session_expired current_time (session_last_activity s)
   then terminate_session s
   else s"
@@ -240,72 +245,72 @@ definition emergency_access :: "list AuditEntry" where
 
 (* transmission_secure (matches Coq: Definition transmission_secure) *)
 definition transmission_secure :: "Transmission \<Rightarrow> bool" where
-  "transmission_secure t \<equiv> (is_hipaa_transport (trans_security t))
-       (is_hipaa_encrypted (phi_encryption (trans_phi t)))
+  "transmission_secure t \<equiv> ((is_hipaa_transport \<and> (trans_security) t))
+       (((is_hipaa_encrypted \<and> (phi_encryption) (trans_phi t)))
              (trans_verified t))"
 
 (* COMPLY_001_01 (matches Coq) *)
-lemma COMPLY_001_01: "\<forall>(phi :: phi_record). is_hipaa_encrypted (phi_encryption phi) = True \<longrightarrow> phi_encryption phi = EncryptedAES256"
+lemma COMPLY_001_01: "\<forall> (phi : PHIRecord), is_hipaa_encrypted (phi_encryption phi) = True \<longrightarrow> phi_encryption phi = EncryptedAES256"
   by simp
 
 (* COMPLY_001_02 (matches Coq) *)
-lemma COMPLY_001_02: "\<forall>(ts :: transport_security). is_hipaa_transport ts = True \<longrightarrow> ts = TLS13"
+lemma COMPLY_001_02: "\<forall> (ts : TransportSecurity), is_hipaa_transport ts = True \<longrightarrow> ts = TLS13"
   by simp
 
 (* COMPLY_001_03 (matches Coq) *)
-lemma COMPLY_001_03: "\<forall>(role :: role) (cat :: phi_category). can_access role cat = False \<longrightarrow> ~ (can_access role cat = True)"
+lemma COMPLY_001_03: "\<forall> (role : Role) (cat : PHICategory), can_access role cat = False \<longrightarrow> ~ (can_access role cat = True)"
   by auto
 
 (* COMPLY_001_04 (matches Coq) *)
-lemma COMPLY_001_04: "\<forall>(log : list audit_entry) (user_id phi_id timestamp action : nat) (success :: bool). let new_log := access_with_audit log user_id phi_id timestamp action success in audit_\<exists>_for new_log user_id phi_id = True"
+lemma COMPLY_001_04: "\<forall> (log : list AuditEntry) (user_id phi_id timestamp action : nat) (success : bool), let new_log := access_with_audit log user_id phi_id timestamp action success in audit_\<exists>_for new_log user_id phi_id = True"
   by simp
 
 (* COMPLY_001_05 (matches Coq) *)
-lemma COMPLY_001_05: "\<forall>(role :: role) (requested : list phi_category) (cat :: phi_category). cat \<in> set (minimum_necessary_access role requested) \<longrightarrow> can_access role cat = True"
+lemma COMPLY_001_05: "\<forall> (role : Role) (requested : list PHICategory) (cat : PHICategory), In cat (minimum_necessary_access role requested) \<longrightarrow> can_access role cat = True"
   by auto
 
 (* COMPLY_001_06 (matches Coq) *)
-lemma COMPLY_001_06: "\<forall>(phi :: phi_record). can_disclose phi = True <-> phi_consent_documented phi = True"
+lemma COMPLY_001_06: "\<forall> (phi : PHIRecord), can_disclose phi = True <-> phi_consent_documented phi = True"
   by auto
 
 (* COMPLY_001_07 (matches Coq) *)
-lemma COMPLY_001_07: "\<forall>(b :: breach_event). breach_detected_timely b = True \<longrightarrow> breach_detected_time b - breach_occurred_time b \<le> breach_detection_limit"
+lemma COMPLY_001_07: "\<forall> (b : BreachEvent), breach_detected_timely b = True \<longrightarrow> breach_detected_time b - breach_occurred_time b \<le> breach_detection_limit"
   by auto
 
 (* COMPLY_001_08 (matches Coq) *)
-lemma COMPLY_001_08: "\<forall>(role :: role) (cat :: phi_category). authorized_modification role cat = True \<longrightarrow> can_access role cat = True \<and> (role = Physician \<or> role = Emergency)"
-  by auto
+lemma COMPLY_001_08: "\<forall> (role : Role) (cat : PHICategory), authorized_modification role cat = True \<longrightarrow> can_access role cat = True \<and> (role = Physician \<or> role = Emergency)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* COMPLY_001_09 (matches Coq) *)
-lemma COMPLY_001_09: "\<forall>(d :: disposal_record). is_secure_disposal d = True \<longrightarrow> (disposal_method d = 1) \<or> (disposal_method d = 2) \<or> (disposal_method d = 0 \<and> disposal_passes d \<ge> 3)"
+lemma COMPLY_001_09: "\<forall> (d : DisposalRecord), is_secure_disposal d = True \<longrightarrow> (disposal_method d = 1) \<or> (disposal_method d = 2) \<or> (disposal_method d = 0 \<and> disposal_passes d \<ge> 3)"
   by auto
 
 (* COMPLY_001_10 (matches Coq) *)
-lemma COMPLY_001_10: "\<forall>(auth :: auth_state). is_mfa auth = True \<longrightarrow> length (auth_factors auth) \<ge> 2"
+lemma COMPLY_001_10: "\<forall> (auth : AuthState), is_mfa auth = True \<longrightarrow> length (auth_factors auth) \<ge> 2"
   by auto
 
 (* COMPLY_001_11 (matches Coq) *)
-lemma COMPLY_001_11: "\<forall>(current_time :: nat) (last_activity :: nat). current_time - last_activity > session_timeout \<longrightarrow> session_expired current_time last_activity = True"
+lemma COMPLY_001_11: "\<forall> (current_time last_activity : nat), current_time - last_activity > session_timeout \<longrightarrow> session_expired current_time last_activity = True"
   by auto
 
 (* COMPLY_001_12 (matches Coq) *)
-lemma COMPLY_001_12: "\<forall>(s :: session) (current_time :: nat). session_is_active s = True \<longrightarrow> current_time - session_last_activity s > session_timeout \<longrightarrow> session_is_active (check_and_terminate current_time s) = False"
+lemma COMPLY_001_12: "\<forall> (s : Session) (current_time : nat), session_is_active s = True \<longrightarrow> current_time - session_last_activity s > session_timeout \<longrightarrow> session_is_active (check_and_terminate current_time s) = False"
   by auto
 
 (* COMPLY_001_13 (matches Coq) *)
-lemma COMPLY_001_13: "\<forall>(users : list (nat * role)) (uid :: nat) (r1 :: role) (r2 :: role). all_unique_ids users = True \<longrightarrow> In (uid, r1) users \<longrightarrow> In (uid, r2) users \<longrightarrow> r1 = r2"
-  by auto
+lemma COMPLY_001_13: "\<forall> (users : list (nat * Role)) (uid : nat) (r1 r2 : Role), all_unique_ids users = True \<longrightarrow> In (uid, r1) users \<longrightarrow> In (uid, r2) users \<longrightarrow> r1 = r2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* COMPLY_001_14 (matches Coq) *)
-lemma COMPLY_001_14: "\<forall>(log : list audit_entry) (user_id phi_id timestamp : nat) (cat :: phi_category). let new_log := emergency_access log user_id phi_id timestamp in audit_\<exists>_for new_log user_id phi_id = True \<and> can_access Emergency cat = True"
-  by auto
+lemma COMPLY_001_14: "\<forall> (log : list AuditEntry) (user_id phi_id timestamp : nat) (cat : PHICategory), let new_log := emergency_access log user_id phi_id timestamp in audit_\<exists>_for new_log user_id phi_id = True \<and> can_access Emergency cat = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* COMPLY_001_15 (matches Coq) *)
-lemma COMPLY_001_15: "\<forall>(t :: transmission). transmission_secure t = True \<longrightarrow> trans_security t = TLS13 \<and> phi_encryption (trans_phi t) = EncryptedAES256 \<and> trans_verified t = True"
+lemma COMPLY_001_15: "\<forall> (t : Transmission), transmission_secure t = True \<longrightarrow> trans_security t = TLS13 \<and> phi_encryption (trans_phi t) = EncryptedAES256 \<and> trans_verified t = True"
   by auto
 
 (* COMPLY_001_16 (matches Coq) *)
-lemma COMPLY_001_16: "\<forall>(cat :: phi_category). can_access Physician cat = True"
+lemma COMPLY_001_16: "\<forall> (cat : PHICategory), can_access Physician cat = True"
   by simp
 
 (* COMPLY_001_17 (matches Coq) *)
@@ -313,19 +318,19 @@ lemma COMPLY_001_17: "can_access Patient Billing = False \<and> can_access Patie
   by auto
 
 (* COMPLY_001_18 (matches Coq) *)
-lemma COMPLY_001_18: "\<forall>(log : list audit_entry) (user_id phi_id timestamp action : nat) (success :: bool). let new_log := access_with_audit log user_id phi_id timestamp action success in length new_log = Suc (length log)"
+lemma COMPLY_001_18: "\<forall> (log : list AuditEntry) (user_id phi_id timestamp action : nat) (success : bool), let new_log := access_with_audit log user_id phi_id timestamp action success in length new_log = S (length log)"
   by simp
 
 (* COMPLY_001_19 (matches Coq) *)
-lemma COMPLY_001_19: "\<forall>(role :: role) (requested : list phi_category) (cat :: phi_category). cat \<in> set (minimum_necessary_access role requested) \<longrightarrow> cat \<in> set requested"
+lemma COMPLY_001_19: "\<forall> (role : Role) (requested : list PHICategory) (cat : PHICategory), In cat (minimum_necessary_access role requested) \<longrightarrow> In cat requested"
   by auto
 
 (* COMPLY_001_20 (matches Coq) *)
-lemma COMPLY_001_20: "\<forall>(s :: session). session_is_active (terminate_session s) = False"
+lemma COMPLY_001_20: "\<forall> (s : Session), session_is_active (terminate_session s) = False"
   by simp
 
 (* COMPLY_001_21 (matches Coq) *)
-lemma COMPLY_001_21: "\<forall>(enc :: encryption_state). is_hipaa_encrypted enc = True \<longrightarrow> enc \<noteq> Plaintext \<and> enc \<noteq> EncryptedAES128"
+lemma COMPLY_001_21: "\<forall> (enc : EncryptionState), is_hipaa_encrypted enc = True \<longrightarrow> enc \<noteq> Plaintext \<and> enc \<noteq> EncryptedAES128"
   by auto
 
 end

@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | mcmc_license        | mcmc_license           | OK     |
+ * | MCMCLicense        | mcmc_license           | OK     |
  * | no_unauthorized_interception | no_unauthorized_interception | OK     |
  * | fraud_controls_active | fraud_controls_active  | OK     |
  * | mcmc_fully_compliant | mcmc_fully_compliant   | OK     |
@@ -46,9 +46,7 @@ theory MalaysiaMCMC
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym mcmc_compliance = "nat"
-(* mcmc_license (matches Coq: Inductive mcmc_license) *)
+(* MCMCLicense (matches Coq: Inductive MCMCLicense) *)
 datatype mcmc_license =
     NFP
   |     NSP
@@ -62,14 +60,14 @@ definition no_unauthorized_interception :: "bool \<Rightarrow> bool \<Rightarrow
 
 (* fraud_controls_active (matches Coq: Definition fraud_controls_active) *)
 definition fraud_controls_active :: "bool \<Rightarrow> bool \<Rightarrow> bool \<Rightarrow> bool" where
-  "fraud_controls_active identity_verified transaction_signed audit_logged \<equiv> identity_verified = True \<and> transaction_signed = True \<and> audit_logged = True"
+  "fraud_controls_active identity_verified transaction_signed audit_logged \<equiv> identity_verified = True /\ transaction_signed = True /\ audit_logged = True"
 
 (* mcmc_fully_compliant (matches Coq: Definition mcmc_fully_compliant) *)
 definition mcmc_fully_compliant :: "MCMCCompliance \<Rightarrow> bool" where
-  "mcmc_fully_compliant c \<equiv> mcmc_licensed c = True \<and>
-  mcmc_technical_standards_met c = True \<and>
-  mcmc_consumer_code_adopted c = True \<and>
-  mcmc_interception_protected c = True \<and>
+  "mcmc_fully_compliant c \<equiv> mcmc_licensed c = True /\
+  mcmc_technical_standards_met c = True /\
+  mcmc_consumer_code_adopted c = True /\
+  mcmc_interception_protected c = True /\
   mcmc_fraud_controls c = True"
 
 (* all_mcmc_licenses (matches Coq: Definition all_mcmc_licenses) *)
@@ -93,84 +91,84 @@ definition count_mcmc_controls :: "MCMCCompliance \<Rightarrow> nat" where
 
 (* license_eqb (matches Coq: Definition license_eqb) *)
 definition license_eqb :: "bool" where
-  "license_eqb \<equiv> (license_level a = license_level b)"
+  "license_eqb \<equiv> ((license_level = a)) (license_level b)"
 
 (* s234_encrypted_compliant (matches Coq) *)
-lemma s234_encrypted_compliant: "\<forall>(enc :: bool) (auth :: bool). enc = True \<longrightarrow> no_unauthorized_interception enc auth"
+lemma s234_encrypted_compliant: "\<forall> (enc auth : bool), enc = True \<longrightarrow> no_unauthorized_interception enc auth"
   by auto
 
 (* s234_authorized_compliant (matches Coq) *)
-lemma s234_authorized_compliant: "\<forall>(enc :: bool) (auth :: bool). auth = True \<longrightarrow> no_unauthorized_interception enc auth"
+lemma s234_authorized_compliant: "\<forall> (enc auth : bool), auth = True \<longrightarrow> no_unauthorized_interception enc auth"
   by auto
 
 (* s236_fraud_prevention (matches Coq) *)
-lemma s236_fraud_prevention: "\<forall>(id_v tx_s audit : bool). id_v = True \<longrightarrow> tx_s = True \<longrightarrow> audit = True \<longrightarrow> fraud_controls_active id_v tx_s audit"
+lemma s236_fraud_prevention: "\<forall> (id_v tx_s audit : bool), id_v = True \<longrightarrow> tx_s = True \<longrightarrow> audit = True \<longrightarrow> fraud_controls_active id_v tx_s audit"
   by auto
 
 (* mcmc_composition (matches Coq) *)
-lemma mcmc_composition: "\<forall>(c :: mcmc_compliance). mcmc_licensed c = True \<longrightarrow> mcmc_technical_standards_met c = True \<longrightarrow> mcmc_consumer_code_adopted c = True \<longrightarrow> mcmc_interception_protected c = True \<longrightarrow> mcmc_fraud_controls c = True \<longrightarrow> mcmc_fully_compliant c"
+lemma mcmc_composition: "\<forall> (c : MCMCCompliance), mcmc_licensed c = True \<longrightarrow> mcmc_technical_standards_met c = True \<longrightarrow> mcmc_consumer_code_adopted c = True \<longrightarrow> mcmc_interception_protected c = True \<longrightarrow> mcmc_fraud_controls c = True \<longrightarrow> mcmc_fully_compliant c"
   by simp
 
 (* mcmc_license_coverage (matches Coq) *)
-lemma mcmc_license_coverage: "\<forall>(l :: mcmc_license). l \<in> set all_mcmc_licenses"
+lemma mcmc_license_coverage: "\<forall> (l : MCMCLicense), In l all_mcmc_licenses"
   by auto
 
 (* nfp_highest_level (matches Coq) *)
-lemma nfp_highest_level: "\<forall>l. license_level l \<le> license_level NFP"
-  by auto
+lemma nfp_highest_level: "\<forall> l, license_level l \<le> license_level NFP"
+  by (cases rule: ‹_›.cases; simp)
 
 (* csp_lowest_level (matches Coq) *)
-lemma csp_lowest_level: "\<forall>l. license_level CSP \<le> license_level l"
-  by auto
+lemma csp_lowest_level: "\<forall> l, license_level CSP \<le> license_level l"
+  by (cases rule: ‹_›.cases; simp)
 
 (* license_level_positive (matches Coq) *)
-lemma license_level_positive: "\<forall>l. license_level l \<ge> 1"
-  by auto
+lemma license_level_positive: "\<forall> l, license_level l \<ge> 1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Compliance field decomposition *)
 (* mcmc_compliant_licensed (matches Coq) *)
-lemma mcmc_compliant_licensed: "\<forall>c. mcmc_fully_compliant c \<longrightarrow> mcmc_licensed c = True"
+lemma mcmc_compliant_licensed: "\<forall> c, mcmc_fully_compliant c \<longrightarrow> mcmc_licensed c = True"
   by auto
 
 (* mcmc_compliant_technical (matches Coq) *)
-lemma mcmc_compliant_technical: "\<forall>c. mcmc_fully_compliant c \<longrightarrow> mcmc_technical_standards_met c = True"
+lemma mcmc_compliant_technical: "\<forall> c, mcmc_fully_compliant c \<longrightarrow> mcmc_technical_standards_met c = True"
   by auto
 
 (* mcmc_compliant_consumer (matches Coq) *)
-lemma mcmc_compliant_consumer: "\<forall>c. mcmc_fully_compliant c \<longrightarrow> mcmc_consumer_code_adopted c = True"
+lemma mcmc_compliant_consumer: "\<forall> c, mcmc_fully_compliant c \<longrightarrow> mcmc_consumer_code_adopted c = True"
   by auto
 
 (* mcmc_compliant_interception (matches Coq) *)
-lemma mcmc_compliant_interception: "\<forall>c. mcmc_fully_compliant c \<longrightarrow> mcmc_interception_protected c = True"
+lemma mcmc_compliant_interception: "\<forall> c, mcmc_fully_compliant c \<longrightarrow> mcmc_interception_protected c = True"
   by auto
 
 (* mcmc_compliant_fraud (matches Coq) *)
-lemma mcmc_compliant_fraud: "\<forall>c. mcmc_fully_compliant c \<longrightarrow> mcmc_fraud_controls c = True"
+lemma mcmc_compliant_fraud: "\<forall> c, mcmc_fully_compliant c \<longrightarrow> mcmc_fraud_controls c = True"
   by auto
 
 (* count_mcmc_bounded (matches Coq) *)
-lemma count_mcmc_bounded: "\<forall>c. count_mcmc_controls c \<le> 5"
-  by auto
+lemma count_mcmc_bounded: "\<forall> c, count_mcmc_controls c \<le> 5"
+  by (cases rule: ‹_›.cases; simp)
 
 (* mcmc_compliant_all_five (matches Coq) *)
-lemma mcmc_compliant_all_five: "\<forall>c. mcmc_fully_compliant c \<longrightarrow> count_mcmc_controls c = 5"
+lemma mcmc_compliant_all_five: "\<forall> c, mcmc_fully_compliant c \<longrightarrow> count_mcmc_controls c = 5"
   by simp
 
 (* license_eqb_refl (matches Coq) *)
-lemma license_eqb_refl: "\<forall>l. license_eqb l l = True"
+lemma license_eqb_refl: "\<forall> l, license_eqb l l = True"
   by auto
 
 (* Fraud controls require identity *)
 (* fraud_requires_identity (matches Coq) *)
-lemma fraud_requires_identity: "\<forall>id_v tx_s audit. fraud_controls_active id_v tx_s audit \<longrightarrow> id_v = True"
+lemma fraud_requires_identity: "\<forall> id_v tx_s audit, fraud_controls_active id_v tx_s audit \<longrightarrow> id_v = True"
   by auto
 
 (* fraud_requires_signing (matches Coq) *)
-lemma fraud_requires_signing: "\<forall>id_v tx_s audit. fraud_controls_active id_v tx_s audit \<longrightarrow> tx_s = True"
+lemma fraud_requires_signing: "\<forall> id_v tx_s audit, fraud_controls_active id_v tx_s audit \<longrightarrow> tx_s = True"
   by auto
 
 (* fraud_requires_audit (matches Coq) *)
-lemma fraud_requires_audit: "\<forall>id_v tx_s audit. fraud_controls_active id_v tx_s audit \<longrightarrow> audit = True"
+lemma fraud_requires_audit: "\<forall> id_v tx_s audit, fraud_controls_active id_v tx_s audit \<longrightarrow> audit = True"
   by auto
 
 (* Four license types *)

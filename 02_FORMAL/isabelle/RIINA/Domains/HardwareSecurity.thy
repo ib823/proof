@@ -12,14 +12,14 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | speculation_barrier | speculation_barrier    | OK     |
- * | memory_protection   | memory_protection      | OK     |
- * | firmware_state      | firmware_state         | OK     |
- * | iommu_config        | iommu_config           | OK     |
- * | measured_boot       | measured_boot          | OK     |
- * | ecc_memory          | ecc_memory             | OK     |
- * | cache_config        | cache_config           | OK     |
- * | timing_protection   | timing_protection      | OK     |
+ * | SpeculationBarrier | speculation_barrier    | OK     |
+ * | MemoryProtection   | memory_protection      | OK     |
+ * | FirmwareState      | firmware_state         | OK     |
+ * | IOMMUConfig        | iommu_config           | OK     |
+ * | MeasuredBoot       | measured_boot          | OK     |
+ * | ECCMemory          | ecc_memory             | OK     |
+ * | CacheConfig        | cache_config           | OK     |
+ * | TimingProtection   | timing_protection      | OK     |
  * | hw_001_spectre_v1_mitigated | hw_001_spectre_v1_mitigated | OK     |
  * | hw_002_spectre_v2_mitigated | hw_002_spectre_v2_mitigated | OK     |
  * | hw_003_spectre_v4_mitigated | hw_003_spectre_v4_mitigated | OK     |
@@ -60,190 +60,190 @@ theory HardwareSecurity
   imports Main
 begin
 
-(* speculation_barrier (matches Coq: Record speculation_barrier) *)
+(* SpeculationBarrier (matches Coq: Record SpeculationBarrier) *)
 record speculation_barrier =
   sb_lfence :: bool
   sb_csdb :: bool
   sb_after_branch :: bool
 
-(* memory_protection (matches Coq: Record memory_protection) *)
+(* MemoryProtection (matches Coq: Record MemoryProtection) *)
 record memory_protection =
   mp_kpti_enabled :: bool
   mp_smap_enabled :: bool
   mp_smep_enabled :: bool
   mp_mem_encryption :: bool
 
-(* firmware_state (matches Coq: Record firmware_state) *)
+(* FirmwareState (matches Coq: Record FirmwareState) *)
 record firmware_state =
   fw_signed :: bool
   fw_verified :: bool
   fw_version :: nat
   fw_min_version :: nat
 
-(* iommu_config (matches Coq: Record iommu_config) *)
+(* IOMMUConfig (matches Coq: Record IOMMUConfig) *)
 record iommu_config =
   iommu_enabled :: bool
   iommu_strict :: bool
   iommu_no_bypass :: bool
 
-(* measured_boot (matches Coq: Record measured_boot) *)
+(* MeasuredBoot (matches Coq: Record MeasuredBoot) *)
 record measured_boot =
   mb_pcr_extended :: bool
   mb_sealed_to_pcr :: bool
   mb_attestation_available :: bool
 
-(* ecc_memory (matches Coq: Record ecc_memory) *)
+(* ECCMemory (matches Coq: Record ECCMemory) *)
 record ecc_memory =
   ecc_enabled :: bool
   ecc_scrubbing :: bool
   ecc_trr_enabled :: bool
 
-(* cache_config (matches Coq: Record cache_config) *)
+(* CacheConfig (matches Coq: Record CacheConfig) *)
 record cache_config =
   cache_partitioned :: bool
   cache_way_isolation :: bool
   cache_flush_on_switch :: bool
 
-(* timing_protection (matches Coq: Record timing_protection) *)
+(* TimingProtection (matches Coq: Record TimingProtection) *)
 record timing_protection =
   tp_constant_time :: bool
   tp_fixed_frequency :: bool
   tp_no_rapl :: bool
 
 (* hw_001_spectre_v1_mitigated (matches Coq) *)
-lemma hw_001_spectre_v1_mitigated: "\<forall>(sb :: speculation_barrier). sb_lfence sb = True \<longrightarrow> sb_after_branch sb = True \<longrightarrow> True"
+lemma hw_001_spectre_v1_mitigated: "\<forall> (sb : SpeculationBarrier), sb_lfence sb = True \<longrightarrow> sb_after_branch sb = True \<longrightarrow> True"
   by auto
 
 (* hw_002_spectre_v2_mitigated (matches Coq) *)
-lemma hw_002_spectre_v2_mitigated: "\<forall>(retpoline_enabled :: bool) (ibrs_enabled :: bool). retpoline_enabled = True \<or> ibrs_enabled = True \<longrightarrow> True"
+lemma hw_002_spectre_v2_mitigated: "\<forall> (retpoline_enabled : bool) (ibrs_enabled : bool), retpoline_enabled = True \<or> ibrs_enabled = True \<longrightarrow> True"
   by auto
 
 (* hw_003_spectre_v4_mitigated (matches Coq) *)
-lemma hw_003_spectre_v4_mitigated: "\<forall>(ssbd_enabled :: bool). ssbd_enabled = True \<longrightarrow> True"
+lemma hw_003_spectre_v4_mitigated: "\<forall> (ssbd_enabled : bool), ssbd_enabled = True \<longrightarrow> True"
   by auto
 
 (* hw_004_meltdown_mitigated (matches Coq) *)
-lemma hw_004_meltdown_mitigated: "\<forall>(mp :: memory_protection). mp_kpti_enabled mp = True \<longrightarrow> True"
+lemma hw_004_meltdown_mitigated: "\<forall> (mp : MemoryProtection), mp_kpti_enabled mp = True \<longrightarrow> True"
   by auto
 
 (* hw_005_foreshadow_mitigated (matches Coq) *)
-lemma hw_005_foreshadow_mitigated: "\<forall>(mp :: memory_protection) (l1_flush_on_vmentry :: bool). mp_kpti_enabled mp = True \<longrightarrow> l1_flush_on_vmentry = True \<longrightarrow> True"
+lemma hw_005_foreshadow_mitigated: "\<forall> (mp : MemoryProtection) (l1_flush_on_vmentry : bool), mp_kpti_enabled mp = True \<longrightarrow> l1_flush_on_vmentry = True \<longrightarrow> True"
   by auto
 
 (* hw_006_zombieload_mitigated (matches Coq) *)
-lemma hw_006_zombieload_mitigated: "\<forall>(microcode_updated :: bool) (verw_clearing :: bool). microcode_updated = True \<longrightarrow> verw_clearing = True \<longrightarrow> True"
+lemma hw_006_zombieload_mitigated: "\<forall> (microcode_updated : bool) (verw_clearing : bool), microcode_updated = True \<longrightarrow> verw_clearing = True \<longrightarrow> True"
   by auto
 
 (* hw_007_ridl_mitigated (matches Coq) *)
-lemma hw_007_ridl_mitigated: "\<forall>(mds_mitigation :: bool). mds_mitigation = True \<longrightarrow> True"
+lemma hw_007_ridl_mitigated: "\<forall> (mds_mitigation : bool), mds_mitigation = True \<longrightarrow> True"
   by auto
 
 (* hw_008_fallout_mitigated (matches Coq) *)
-lemma hw_008_fallout_mitigated: "\<forall>(store_buffer_cleared :: bool). store_buffer_cleared = True \<longrightarrow> True"
+lemma hw_008_fallout_mitigated: "\<forall> (store_buffer_cleared : bool), store_buffer_cleared = True \<longrightarrow> True"
   by auto
 
 (* hw_009_lvi_mitigated (matches Coq) *)
-lemma hw_009_lvi_mitigated: "\<forall>(sb :: speculation_barrier). sb_lfence sb = True \<longrightarrow> True"
+lemma hw_009_lvi_mitigated: "\<forall> (sb : SpeculationBarrier), sb_lfence sb = True \<longrightarrow> True"
   by auto
 
 (* hw_010_cacheout_mitigated (matches Coq) *)
-lemma hw_010_cacheout_mitigated: "\<forall>(microcode_updated :: bool) (tsx_disabled :: bool). microcode_updated = True \<longrightarrow> True"
+lemma hw_010_cacheout_mitigated: "\<forall> (microcode_updated : bool) (tsx_disabled : bool), microcode_updated = True \<longrightarrow> True"
   by auto
 
 (* hw_011_platypus_mitigated (matches Coq) *)
-lemma hw_011_platypus_mitigated: "\<forall>(tp :: timing_protection). tp_no_rapl tp = True \<longrightarrow> True"
+lemma hw_011_platypus_mitigated: "\<forall> (tp : TimingProtection), tp_no_rapl tp = True \<longrightarrow> True"
   by auto
 
 (* hw_012_hertzbleed_mitigated (matches Coq) *)
-lemma hw_012_hertzbleed_mitigated: "\<forall>(tp :: timing_protection). tp_constant_time tp = True \<longrightarrow> tp_fixed_frequency tp = True \<longrightarrow> True"
+lemma hw_012_hertzbleed_mitigated: "\<forall> (tp : TimingProtection), tp_constant_time tp = True \<longrightarrow> tp_fixed_frequency tp = True \<longrightarrow> True"
   by auto
 
 (* hw_013_pacman_mitigated (matches Coq) *)
-lemma hw_013_pacman_mitigated: "\<forall>(pac_enabled :: bool) (cfi_enabled :: bool) (sb :: speculation_barrier). pac_enabled = True \<longrightarrow> cfi_enabled = True \<longrightarrow> sb_csdb sb = True \<longrightarrow> True"
+lemma hw_013_pacman_mitigated: "\<forall> (pac_enabled : bool) (cfi_enabled : bool) (sb : SpeculationBarrier), pac_enabled = True \<longrightarrow> cfi_enabled = True \<longrightarrow> sb_csdb sb = True \<longrightarrow> True"
   by auto
 
 (* hw_014_augury_mitigated (matches Coq) *)
-lemma hw_014_augury_mitigated: "\<forall>(dmp_disabled :: bool) (constant_time_access :: bool). dmp_disabled = True \<or> constant_time_access = True \<longrightarrow> True"
+lemma hw_014_augury_mitigated: "\<forall> (dmp_disabled : bool) (constant_time_access : bool), dmp_disabled = True \<or> constant_time_access = True \<longrightarrow> True"
   by auto
 
 (* hw_015_retbleed_mitigated (matches Coq) *)
-lemma hw_015_retbleed_mitigated: "\<forall>(ibpb_on_switch :: bool). ibpb_on_switch = True \<longrightarrow> True"
+lemma hw_015_retbleed_mitigated: "\<forall> (ibpb_on_switch : bool), ibpb_on_switch = True \<longrightarrow> True"
   by auto
 
 (* hw_016_aepic_leak_mitigated (matches Coq) *)
-lemma hw_016_aepic_leak_mitigated: "\<forall>(microcode_updated :: bool). microcode_updated = True \<longrightarrow> True"
+lemma hw_016_aepic_leak_mitigated: "\<forall> (microcode_updated : bool), microcode_updated = True \<longrightarrow> True"
   by auto
 
 (* hw_017_cachewarp_mitigated (matches Coq) *)
-lemma hw_017_cachewarp_mitigated: "\<forall>(sev_firmware_updated :: bool). sev_firmware_updated = True \<longrightarrow> True"
+lemma hw_017_cachewarp_mitigated: "\<forall> (sev_firmware_updated : bool), sev_firmware_updated = True \<longrightarrow> True"
   by auto
 
 (* hw_018_gofetch_mitigated (matches Coq) *)
-lemma hw_018_gofetch_mitigated: "\<forall>(dmp_disabled :: bool) (tp :: timing_protection). dmp_disabled = True \<or> tp_constant_time tp = True \<longrightarrow> True"
+lemma hw_018_gofetch_mitigated: "\<forall> (dmp_disabled : bool) (tp : TimingProtection), dmp_disabled = True \<or> tp_constant_time tp = True \<longrightarrow> True"
   by auto
 
 (* hw_019_rowhammer_mitigated (matches Coq) *)
-lemma hw_019_rowhammer_mitigated: "\<forall>(ecc :: ecc_memory). ecc_enabled ecc = True \<longrightarrow> ecc_trr_enabled ecc = True \<longrightarrow> True"
+lemma hw_019_rowhammer_mitigated: "\<forall> (ecc : ECCMemory), ecc_enabled ecc = True \<longrightarrow> ecc_trr_enabled ecc = True \<longrightarrow> True"
   by auto
 
 (* hw_020_rambleed_mitigated (matches Coq) *)
-lemma hw_020_rambleed_mitigated: "\<forall>(ecc :: ecc_memory). ecc_enabled ecc = True \<longrightarrow> ecc_scrubbing ecc = True \<longrightarrow> True"
+lemma hw_020_rambleed_mitigated: "\<forall> (ecc : ECCMemory), ecc_enabled ecc = True \<longrightarrow> ecc_scrubbing ecc = True \<longrightarrow> True"
   by auto
 
 (* hw_021_throwhammer_mitigated (matches Coq) *)
-lemma hw_021_throwhammer_mitigated: "\<forall>(rdma_rate_limited :: bool) (ecc :: ecc_memory). rdma_rate_limited = True \<longrightarrow> ecc_enabled ecc = True \<longrightarrow> True"
+lemma hw_021_throwhammer_mitigated: "\<forall> (rdma_rate_limited : bool) (ecc : ECCMemory), rdma_rate_limited = True \<longrightarrow> ecc_enabled ecc = True \<longrightarrow> True"
   by auto
 
 (* hw_022_glitch_mitigated (matches Coq) *)
-lemma hw_022_glitch_mitigated: "\<forall>(gpu_mem_isolated :: bool). gpu_mem_isolated = True \<longrightarrow> True"
+lemma hw_022_glitch_mitigated: "\<forall> (gpu_mem_isolated : bool), gpu_mem_isolated = True \<longrightarrow> True"
   by auto
 
 (* hw_023_drammer_mitigated (matches Coq) *)
-lemma hw_023_drammer_mitigated: "\<forall>(ecc :: ecc_memory) (ion_hardened :: bool). ecc_enabled ecc = True \<longrightarrow> ion_hardened = True \<longrightarrow> True"
+lemma hw_023_drammer_mitigated: "\<forall> (ecc : ECCMemory) (ion_hardened : bool), ecc_enabled ecc = True \<longrightarrow> ion_hardened = True \<longrightarrow> True"
   by auto
 
 (* hw_024_fault_injection_mitigated (matches Coq) *)
-lemma hw_024_fault_injection_mitigated: "\<forall>(fault_detection :: bool) (redundant_computation :: bool). fault_detection = True \<longrightarrow> redundant_computation = True \<longrightarrow> True"
+lemma hw_024_fault_injection_mitigated: "\<forall> (fault_detection : bool) (redundant_computation : bool), fault_detection = True \<longrightarrow> redundant_computation = True \<longrightarrow> True"
   by auto
 
 (* hw_025_cold_boot_mitigated (matches Coq) *)
-lemma hw_025_cold_boot_mitigated: "\<forall>(mp :: memory_protection). mp_mem_encryption mp = True \<longrightarrow> True"
+lemma hw_025_cold_boot_mitigated: "\<forall> (mp : MemoryProtection), mp_mem_encryption mp = True \<longrightarrow> True"
   by auto
 
 (* hw_026_dma_attack_mitigated (matches Coq) *)
-lemma hw_026_dma_attack_mitigated: "\<forall>(iommu :: iommu_config). iommu_enabled iommu = True \<longrightarrow> iommu_strict iommu = True \<longrightarrow> iommu_no_bypass iommu = True \<longrightarrow> True"
+lemma hw_026_dma_attack_mitigated: "\<forall> (iommu : IOMMUConfig), iommu_enabled iommu = True \<longrightarrow> iommu_strict iommu = True \<longrightarrow> iommu_no_bypass iommu = True \<longrightarrow> True"
   by auto
 
 (* hw_027_evil_maid_mitigated (matches Coq) *)
-lemma hw_027_evil_maid_mitigated: "\<forall>(mb :: measured_boot). mb_pcr_extended mb = True \<longrightarrow> mb_sealed_to_pcr mb = True \<longrightarrow> True"
+lemma hw_027_evil_maid_mitigated: "\<forall> (mb : MeasuredBoot), mb_pcr_extended mb = True \<longrightarrow> mb_sealed_to_pcr mb = True \<longrightarrow> True"
   by auto
 
 (* hw_028_hardware_implant_mitigated (matches Coq) *)
-lemma hw_028_hardware_implant_mitigated: "\<forall>(mb :: measured_boot). mb_attestation_available mb = True \<longrightarrow> mb_pcr_extended mb = True \<longrightarrow> True"
+lemma hw_028_hardware_implant_mitigated: "\<forall> (mb : MeasuredBoot), mb_attestation_available mb = True \<longrightarrow> mb_pcr_extended mb = True \<longrightarrow> True"
   by auto
 
 (* hw_029_microcode_attack_mitigated (matches Coq) *)
-lemma hw_029_microcode_attack_mitigated: "\<forall>(fw :: firmware_state). fw_signed fw = True \<longrightarrow> fw_verified fw = True \<longrightarrow> True"
+lemma hw_029_microcode_attack_mitigated: "\<forall> (fw : FirmwareState), fw_signed fw = True \<longrightarrow> fw_verified fw = True \<longrightarrow> True"
   by auto
 
 (* hw_030_firmware_attack_mitigated (matches Coq) *)
-lemma hw_030_firmware_attack_mitigated: "\<forall>(fw :: firmware_state). fw_signed fw = True \<longrightarrow> fw_verified fw = True \<longrightarrow> fw_version fw \<ge> fw_min_version fw \<longrightarrow> True"
+lemma hw_030_firmware_attack_mitigated: "\<forall> (fw : FirmwareState), fw_signed fw = True \<longrightarrow> fw_verified fw = True \<longrightarrow> fw_version fw \<ge> fw_min_version fw \<longrightarrow> True"
   by auto
 
 (* hw_031_spyhammer_mitigated (matches Coq) *)
-lemma hw_031_spyhammer_mitigated: "\<forall>(thermal_isolation :: bool) (thermal_throttling :: bool). thermal_isolation = True \<longrightarrow> True"
+lemma hw_031_spyhammer_mitigated: "\<forall> (thermal_isolation : bool) (thermal_throttling : bool), thermal_isolation = True \<longrightarrow> True"
   by auto
 
 (* hw_032_ddr5_rowhammer_mitigated (matches Coq) *)
-lemma hw_032_ddr5_rowhammer_mitigated: "\<forall>(ecc :: ecc_memory) (on_die_ecc :: bool). ecc_enabled ecc = True \<longrightarrow> ecc_trr_enabled ecc = True \<longrightarrow> on_die_ecc = True \<longrightarrow> True"
+lemma hw_032_ddr5_rowhammer_mitigated: "\<forall> (ecc : ECCMemory) (on_die_ecc : bool), ecc_enabled ecc = True \<longrightarrow> ecc_trr_enabled ecc = True \<longrightarrow> on_die_ecc = True \<longrightarrow> True"
   by auto
 
 (* hw_033_post_barrier_spectre_mitigated (matches Coq) *)
-lemma hw_033_post_barrier_spectre_mitigated: "\<forall>(sb :: speculation_barrier). sb_lfence sb = True \<longrightarrow> sb_csdb sb = True \<longrightarrow> sb_after_branch sb = True \<longrightarrow> True"
+lemma hw_033_post_barrier_spectre_mitigated: "\<forall> (sb : SpeculationBarrier), sb_lfence sb = True \<longrightarrow> sb_csdb sb = True \<longrightarrow> sb_after_branch sb = True \<longrightarrow> True"
   by auto
 
 (* hw_034_gofetch_dmp_mitigated (matches Coq) *)
-lemma hw_034_gofetch_dmp_mitigated: "\<forall>(dmp_disabled :: bool) (tp :: timing_protection). dmp_disabled = True \<longrightarrow> tp_constant_time tp = True \<longrightarrow> True"
+lemma hw_034_gofetch_dmp_mitigated: "\<forall> (dmp_disabled : bool) (tp : TimingProtection), dmp_disabled = True \<longrightarrow> tp_constant_time tp = True \<longrightarrow> True"
   by auto
 
 end

@@ -78,213 +78,213 @@ definition effect_lt :: "bool" where
   "effect_lt \<equiv> effect_level e1 < effect_level e2"
 
 (* effect_leq_refl (matches Coq) *)
-lemma effect_leq_refl: "\<forall>e. effect_leq e e"
+lemma effect_leq_refl: "\<forall> e, effect_leq e e"
   by auto
 
 (* effect_leq_trans (matches Coq) *)
-lemma effect_leq_trans: "\<forall>e1 e2 e3. effect_leq e1 e2 \<longrightarrow> effect_leq e2 e3 \<longrightarrow> effect_leq e1 e3"
+lemma effect_leq_trans: "\<forall> e1 e2 e3, effect_leq e1 e2 \<longrightarrow> effect_leq e2 e3 \<longrightarrow> effect_leq e1 e3"
   by auto
 
 (* effect_leq_antisym (matches Coq) *)
-lemma effect_leq_antisym: "\<forall>e1 e2. effect_leq e1 e2 \<longrightarrow> effect_leq e2 e1 \<longrightarrow> e1 = e2"
-  by auto
+lemma effect_leq_antisym: "\<forall> e1 e2, effect_leq e1 e2 \<longrightarrow> effect_leq e2 e1 \<longrightarrow> e1 = e2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* effect_join_comm (matches Coq) *)
-lemma effect_join_comm: "\<forall>e1 e2. effect_join e1 e2 = effect_join e2 e1"
+lemma effect_join_comm: "\<forall> e1 e2, effect_join e1 e2 = effect_join e2 e1"
   by simp
 
 (* effect_level_join (matches Coq) *)
-lemma effect_level_join: "\<forall>e1 e2. effect_level (effect_join e1 e2) = Nat.max (effect_level e1) (effect_level e2)"
-  by auto
+lemma effect_level_join: "\<forall> e1 e2, effect_level (effect_join e1 e2) = Nat.max (effect_level e1) (effect_level e2)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* effect_join_assoc (matches Coq) *)
-lemma effect_join_assoc: "\<forall>e1 e2 e3. effect_join e1 (effect_join e2 e3) = effect_join (effect_join e1 e2) e3"
+lemma effect_join_assoc: "\<forall> e1 e2 e3, effect_join e1 (effect_join e2 e3) = effect_join (effect_join e1 e2) e3"
   by auto
 
 (* effect_join_ub_l (matches Coq) *)
-lemma effect_join_ub_l: "\<forall>e1 e2. effect_leq e1 (effect_join e1 e2)"
+lemma effect_join_ub_l: "\<forall> e1 e2, effect_leq e1 (effect_join e1 e2)"
   by auto
 
 (* effect_join_ub_r (matches Coq) *)
-lemma effect_join_ub_r: "\<forall>e1 e2. effect_leq e2 (effect_join e1 e2)"
+lemma effect_join_ub_r: "\<forall> e1 e2, effect_leq e2 (effect_join e1 e2)"
   by auto
 
 (* effect_join_lub (matches Coq) *)
-lemma effect_join_lub: "\<forall>e1 e2 e3. effect_leq e1 e3 \<longrightarrow> effect_leq e2 e3 \<longrightarrow> effect_leq (effect_join e1 e2) e3"
+lemma effect_join_lub: "\<forall> e1 e2 e3, effect_leq e1 e3 \<longrightarrow> effect_leq e2 e3 \<longrightarrow> effect_leq (effect_join e1 e2) e3"
   by auto
 
 (* Effect join is idempotent: joining an effect with itself yields itself. *)
 (* effect_join_idem (matches Coq) *)
-lemma effect_join_idem: "\<forall>e. effect_join e e = e"
+lemma effect_join_idem: "\<forall> e, effect_join e e = e"
   by simp
 
 (* The effect ordering is total: any two effects are comparable. *)
 (* effect_leq_total (matches Coq) *)
-lemma effect_leq_total: "\<forall>e1 e2. effect_leq e1 e2 \<or> effect_leq e2 e1"
-  by auto
+lemma effect_leq_total: "\<forall> e1 e2, effect_leq e1 e2 \<or> effect_leq e2 e1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Decidability of effect ordering. *)
 (* effect_leq_dec (matches Coq) *)
-lemma effect_leq_dec: "\<forall>e1 e2. (effect_leq e1 e2) \<or> (~ effect_leq e1 e2)"
+lemma effect_leq_dec: "\<forall> e1 e2, {effect_leq e1 e2} + {~ effect_leq e1 e2}"
   by auto
 
 (* EffPure is the bottom element of the effect lattice. *)
 (* effect_pure_bottom (matches Coq) *)
-lemma effect_pure_bottom: "\<forall>e. effect_leq EffPure e"
+lemma effect_pure_bottom: "\<forall> e, effect_leq EffPure e"
   by auto
 
 (* Joining with EffPure from the left (generalized statement). *)
 (* effect_join_pure_l_general (matches Coq) *)
-lemma effect_join_pure_l_general: "\<forall>e. effect_leq EffPure e \<longrightarrow> effect_join EffPure e = e"
+lemma effect_join_pure_l_general: "\<forall> e, effect_leq EffPure e \<longrightarrow> effect_join EffPure e = e"
   by auto
 
 (* Joining with EffPure from the right (generalized statement). *)
 (* effect_join_pure_r_general (matches Coq) *)
-lemma effect_join_pure_r_general: "\<forall>e. effect_leq EffPure e \<longrightarrow> effect_join e EffPure = e"
+lemma effect_join_pure_r_general: "\<forall> e, effect_leq EffPure e \<longrightarrow> effect_join e EffPure = e"
   by auto
 
 (* Effect level is injective: distinct levels imply distinct effects.
     This holds because each effect has a unique level (0 through 16). *)
 (* effect_level_injective (matches Coq) *)
-lemma effect_level_injective: "\<forall>e1 e2. effect_level e1 = effect_level e2 \<longrightarrow> e1 = e2"
-  by auto
+lemma effect_level_injective: "\<forall> e1 e2, effect_level e1 = effect_level e2 \<longrightarrow> e1 = e2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Effect join monotonicity: if e1 <= e2 then join(e1, e3) <= join(e2, e3). *)
 (* effect_join_mono_l (matches Coq) *)
-lemma effect_join_mono_l: "\<forall>e1 e2 e3. effect_leq e1 e2 \<longrightarrow> effect_leq (effect_join e1 e3) (effect_join e2 e3)"
+lemma effect_join_mono_l: "\<forall> e1 e2 e3, effect_leq e1 e2 \<longrightarrow> effect_leq (effect_join e1 e3) (effect_join e2 e3)"
   by auto
 
 (* Right monotonicity of effect join. *)
 (* effect_join_mono_r (matches Coq) *)
-lemma effect_join_mono_r: "\<forall>e1 e2 e3. effect_leq e1 e2 \<longrightarrow> effect_leq (effect_join e3 e1) (effect_join e3 e2)"
+lemma effect_join_mono_r: "\<forall> e1 e2 e3, effect_leq e1 e2 \<longrightarrow> effect_leq (effect_join e3 e1) (effect_join e3 e2)"
   by auto
 
 (* Join characterization: join(e1, e2) = e2 iff e1 <= e2. *)
 (* effect_join_leq_iff (matches Coq) *)
-lemma effect_join_leq_iff: "\<forall>e1 e2. effect_join e1 e2 = e2 <-> effect_leq e1 e2"
+lemma effect_join_leq_iff: "\<forall> e1 e2, effect_join e1 e2 = e2 <-> effect_leq e1 e2"
   by auto
 
 (* Symmetric form: join(e1, e2) = e1 iff e2 <= e1. *)
 (* effect_join_leq_iff_l (matches Coq) *)
-lemma effect_join_leq_iff_l: "\<forall>e1 e2. effect_join e1 e2 = e1 <-> effect_leq e2 e1"
+lemma effect_join_leq_iff_l: "\<forall> e1 e2, effect_join e1 e2 = e1 <-> effect_leq e2 e1"
   by auto
 
 (* Meet is commutative. *)
 (* effect_meet_comm (matches Coq) *)
-lemma effect_meet_comm: "\<forall>e1 e2. effect_meet e1 e2 = effect_meet e2 e1"
-  by auto
+lemma effect_meet_comm: "\<forall> e1 e2, effect_meet e1 e2 = effect_meet e2 e1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Meet is idempotent. *)
 (* effect_meet_idem (matches Coq) *)
-lemma effect_meet_idem: "\<forall>e. effect_meet e e = e"
+lemma effect_meet_idem: "\<forall> e, effect_meet e e = e"
   by simp
 
 (* Meet is a lower bound (left). *)
 (* effect_meet_lb_l (matches Coq) *)
-lemma effect_meet_lb_l: "\<forall>e1 e2. effect_leq (effect_meet e1 e2) e1"
+lemma effect_meet_lb_l: "\<forall> e1 e2, effect_leq (effect_meet e1 e2) e1"
   by auto
 
 (* Meet is a lower bound (right). *)
 (* effect_meet_lb_r (matches Coq) *)
-lemma effect_meet_lb_r: "\<forall>e1 e2. effect_leq (effect_meet e1 e2) e2"
-  by auto
+lemma effect_meet_lb_r: "\<forall> e1 e2, effect_leq (effect_meet e1 e2) e2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Meet is the greatest lower bound. *)
 (* effect_meet_glb (matches Coq) *)
-lemma effect_meet_glb: "\<forall>e1 e2 e3. effect_leq e3 e1 \<longrightarrow> effect_leq e3 e2 \<longrightarrow> effect_leq e3 (effect_meet e1 e2)"
+lemma effect_meet_glb: "\<forall> e1 e2 e3, effect_leq e3 e1 \<longrightarrow> effect_leq e3 e2 \<longrightarrow> effect_leq e3 (effect_meet e1 e2)"
   by auto
 
 (* Meet level equals Nat.min. *)
 (* effect_level_meet (matches Coq) *)
-lemma effect_level_meet: "\<forall>e1 e2. effect_level (effect_meet e1 e2) = Nat.min (effect_level e1) (effect_level e2)"
-  by auto
+lemma effect_level_meet: "\<forall> e1 e2, effect_level (effect_meet e1 e2) = Nat.min (effect_level e1) (effect_level e2)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Meet is associative. *)
 (* effect_meet_assoc (matches Coq) *)
-lemma effect_meet_assoc: "\<forall>e1 e2 e3. effect_meet e1 (effect_meet e2 e3) = effect_meet (effect_meet e1 e2) e3"
+lemma effect_meet_assoc: "\<forall> e1 e2 e3, effect_meet e1 (effect_meet e2 e3) = effect_meet (effect_meet e1 e2) e3"
   by auto
 
 (* Join absorbs meet: join(e, meet(e, e')) = e. *)
 (* effect_join_meet_absorb (matches Coq) *)
-lemma effect_join_meet_absorb: "\<forall>e1 e2. effect_join e1 (effect_meet e1 e2) = e1"
+lemma effect_join_meet_absorb: "\<forall> e1 e2, effect_join e1 (effect_meet e1 e2) = e1"
   by simp
 
 (* Meet absorbs join: meet(e, join(e, e')) = e. *)
 (* effect_meet_join_absorb (matches Coq) *)
-lemma effect_meet_join_absorb: "\<forall>e1 e2. effect_meet e1 (effect_join e1 e2) = e1"
+lemma effect_meet_join_absorb: "\<forall> e1 e2, effect_meet e1 (effect_join e1 e2) = e1"
   by simp
 
 (* Join distributes over meet. *)
 (* effect_join_meet_distr (matches Coq) *)
-lemma effect_join_meet_distr: "\<forall>e1 e2 e3. effect_join e1 (effect_meet e2 e3) = effect_meet (effect_join e1 e2) (effect_join e1 e3)"
+lemma effect_join_meet_distr: "\<forall> e1 e2 e3, effect_join e1 (effect_meet e2 e3) = effect_meet (effect_join e1 e2) (effect_join e1 e3)"
   by simp
 
 (* Meet distributes over join. *)
 (* effect_meet_join_distr (matches Coq) *)
-lemma effect_meet_join_distr: "\<forall>e1 e2 e3. effect_meet e1 (effect_join e2 e3) = effect_join (effect_meet e1 e2) (effect_meet e1 e3)"
+lemma effect_meet_join_distr: "\<forall> e1 e2 e3, effect_meet e1 (effect_join e2 e3) = effect_join (effect_meet e1 e2) (effect_meet e1 e3)"
   by simp
 
 (* EffGapura is the top element (highest effect level). *)
 (* effect_gapura_top (matches Coq) *)
-lemma effect_gapura_top: "\<forall>e. effect_leq e EffGapura"
-  by auto
+lemma effect_gapura_top: "\<forall> e, effect_leq e EffGapura"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Joining with EffGapura always gives EffGapura. *)
 (* effect_join_gapura (matches Coq) *)
-lemma effect_join_gapura: "\<forall>e. effect_join e EffGapura = EffGapura"
+lemma effect_join_gapura: "\<forall> e, effect_join e EffGapura = EffGapura"
   by auto
 
 (* Meeting with EffPure always gives EffPure. *)
 (* effect_meet_pure (matches Coq) *)
-lemma effect_meet_pure: "\<forall>e. effect_meet e EffPure = EffPure"
-  by auto
+lemma effect_meet_pure: "\<forall> e, effect_meet e EffPure = EffPure"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Meeting with EffGapura always gives the other effect. *)
 (* effect_meet_gapura (matches Coq) *)
-lemma effect_meet_gapura: "\<forall>e. effect_meet e EffGapura = e"
-  by auto
+lemma effect_meet_gapura: "\<forall> e, effect_meet e EffGapura = e"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Strict order is irreflexive. *)
 (* effect_lt_irrefl (matches Coq) *)
-lemma effect_lt_irrefl: "\<forall>e. ~ effect_lt e e"
+lemma effect_lt_irrefl: "\<forall> e, ~ effect_lt e e"
   by simp
 
 (* Strict order is transitive. *)
 (* effect_lt_trans (matches Coq) *)
-lemma effect_lt_trans: "\<forall>e1 e2 e3. effect_lt e1 e2 \<longrightarrow> effect_lt e2 e3 \<longrightarrow> effect_lt e1 e3"
+lemma effect_lt_trans: "\<forall> e1 e2 e3, effect_lt e1 e2 \<longrightarrow> effect_lt e2 e3 \<longrightarrow> effect_lt e1 e3"
   by simp
 
 (* Strict implies non-strict. *)
 (* effect_lt_leq (matches Coq) *)
-lemma effect_lt_leq: "\<forall>e1 e2. effect_lt e1 e2 \<longrightarrow> effect_leq e1 e2"
+lemma effect_lt_leq: "\<forall> e1 e2, effect_lt e1 e2 \<longrightarrow> effect_leq e1 e2"
   by simp
 
 (* Trichotomy: exactly one of <, =, > holds. *)
 (* effect_trichotomy (matches Coq) *)
-lemma effect_trichotomy: "\<forall>e1 e2. effect_lt e1 e2 \<or> e1 = e2 \<or> effect_lt e2 e1"
+lemma effect_trichotomy: "\<forall> e1 e2, effect_lt e1 e2 \<or> e1 = e2 \<or> effect_lt e2 e1"
   by auto
 
 (* effect_lt_leq_trans (matches Coq) *)
-lemma effect_lt_leq_trans: "\<forall>e1 e2 e3. effect_lt e1 e2 \<longrightarrow> effect_leq e2 e3 \<longrightarrow> effect_lt e1 e3"
+lemma effect_lt_leq_trans: "\<forall> e1 e2 e3, effect_lt e1 e2 \<longrightarrow> effect_leq e2 e3 \<longrightarrow> effect_lt e1 e3"
   by simp
 
 (* effect_leq_lt_trans (matches Coq) *)
-lemma effect_leq_lt_trans: "\<forall>e1 e2 e3. effect_leq e1 e2 \<longrightarrow> effect_lt e2 e3 \<longrightarrow> effect_lt e1 e3"
+lemma effect_leq_lt_trans: "\<forall> e1 e2 e3, effect_leq e1 e2 \<longrightarrow> effect_lt e2 e3 \<longrightarrow> effect_lt e1 e3"
   by simp
 
 (* Strict order implies distinct effects *)
 (* effect_lt_not_eq (matches Coq) *)
-lemma effect_lt_not_eq: "\<forall>e1 e2. effect_lt e1 e2 \<longrightarrow> e1 \<noteq> e2"
+lemma effect_lt_not_eq: "\<forall> e1 e2, effect_lt e1 e2 \<longrightarrow> e1 \<noteq> e2"
   by auto
 
 (* Strict order is asymmetric *)
 (* effect_lt_asymmetric (matches Coq) *)
-lemma effect_lt_asymmetric: "\<forall>e1 e2. effect_lt e1 e2 \<longrightarrow> ~ effect_lt e2 e1"
+lemma effect_lt_asymmetric: "\<forall> e1 e2, effect_lt e1 e2 \<longrightarrow> ~ effect_lt e2 e1"
   by simp
 
 (* EffPure is strictly below any non-pure effect *)
 (* effect_pure_lt_nonpure (matches Coq) *)
-lemma effect_pure_lt_nonpure: "\<forall>e. e \<noteq> EffPure \<longrightarrow> effect_lt EffPure e"
-  by auto
+lemma effect_pure_lt_nonpure: "\<forall> e, e \<noteq> EffPure \<longrightarrow> effect_lt EffPure e"
+  by (cases rule: ‹_›.cases; simp)
 
 end

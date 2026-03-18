@@ -95,142 +95,212 @@ type storage_state = {
 
 (* level_leq (matches Coq: Definition level_leq) *)
 let level_leq (p_l1: sec_level) (p_l2: sec_level) : Tot bool =
-  true
+  match p_l1, p_l2 with
+  | Public, _ -> true
+  | Secret, Secret -> true
+  | Secret, TopSecret -> true
+  | TopSecret, TopSecret -> true
+  | _, _ -> false
+  | _ -> false
+
 (* level_eq (matches Coq: Definition level_eq) *)
 let level_eq (p_l1: sec_level) (p_l2: sec_level) : Tot bool =
-  true
+  match p_l1, p_l2 with
+  | Public, Public -> true
+  | Secret, Secret -> true
+  | TopSecret, TopSecret -> true
+  | _, _ -> false
+  | _ -> false
+
 (* low_equiv (matches Coq: Definition low_equiv) *)
 let low_equiv (p_s1: state) (p_s2: state) : Tot bool =
-  true
+  Nat.eqb (p_s1.f_state_public) (p_s2.f_state_public)
+
 (* constant_time (matches Coq: Definition constant_time) *)
 let constant_time (p_s1: state) (p_s2: state) (p_t1: trace) (p_t2: trace) : Tot bool =
   true
+
 (* constant_memory_pattern (matches Coq: Definition constant_memory_pattern) *)
 let constant_memory_pattern (p_s1: state) (p_s2: state) (p_t1: trace) (p_t2: trace) : Tot bool =
   true
+
 (* constant_cache (matches Coq: Definition constant_cache) *)
 let constant_cache (p_s1: state) (p_s2: state) (p_t1: trace) (p_t2: trace) : Tot bool =
   true
+
 (* constant_termination (matches Coq: Definition constant_termination) *)
 let constant_termination (p_s1: state) (p_s2: state) (p_t1: trace) (p_t2: trace) : Tot bool =
   true
+
 (* constant_exception (matches Coq: Definition constant_exception) *)
 let constant_exception (p_s1: state) (p_s2: state) (p_t1: trace) (p_t2: trace) : Tot bool =
   true
+
 (* constant_output (matches Coq: Definition constant_output) *)
 let constant_output (p_s1: state) (p_s2: state) (p_t1: trace) (p_t2: trace) : Tot bool =
   true
+
 (* channel_bandwidth (matches Coq: Definition channel_bandwidth) *)
 let channel_bandwidth (p_observations: (list observation)) (p_secret_bits: nat) : Tot nat =
-  0
+  List.Tot.length p_observations
+
 (* bandwidth_threshold (matches Coq: Definition bandwidth_threshold) *)
-let bandwidth_threshold : nat = 0
+let bandwidth_threshold : nat = 1
+
 (* constant_resources (matches Coq: Definition constant_resources) *)
 let constant_resources (p_s1: state) (p_s2: state) (p_r1: resource_usage) (p_r2: resource_usage) : Tot bool =
   true
+
 (* memory_zeroed (matches Coq: Definition memory_zeroed) *)
 let memory_zeroed (p_addr: nat) (p_mem: (list nat)) : Tot bool =
-  true
+  match nth_error p_mem p_addr with
+  | Some v -> (v = 0)
+  | None -> true
+  | _ -> false
+
 (* partitions_disjoint (matches Coq: Definition partitions_disjoint) *)
 let partitions_disjoint (p_p1: partition) (p_p2: partition) : Tot bool =
-  true
+  forallb (fun a -> (not (existsb (Nat.eqb a)) (p_p2.f_part_addresses))) (p_p1.f_part_addresses)
+
 (* secure_execute (matches Coq: Definition secure_execute) *)
-let secure_execute (p_s: state) : trace =
-  { f_trace_time = 0; f_trace_mem_accesses = []; f_trace_cache_pattern = []; f_trace_output = 0; f_trace_terminated = true; f_trace_exception = 0 }
+let secure_execute (p_s: state) : Tot trace =
+  mkTrace (p_s.f_state_public) [p_s.f_state_public] [true] (p_s.f_state_public) true None
+
 (* secure_resources (matches Coq: Definition secure_resources) *)
-let secure_resources (p_s: state) : resource_usage =
-  { f_res_cpu_cycles = 0; f_res_memory_alloc = 0; f_res_cache_misses = 0; f_res_branch_mispredict = 0 }
+let secure_resources (p_s: state) : Tot resource_usage =
+  {f_res_cpu_cycles=100; f_res_memory_alloc=256; f_res_cache_misses=0; f_res_branch_mispredict=0}
+
 (* riina_program (matches Coq: Definition riina_program) *)
-let riina_program : secure_program = { f_prog_execute = { f_state_public = 0; f_state_secret = 0; f_state_memory = []; f_state_cache = [] }; f_prog_resources = { f_state_public = 0; f_state_secret = 0; f_state_memory = []; f_state_cache = [] }; f_prog_secure = 0 }
+let riina_program : secure_program = {f_prog_execute=secure_execute; f_prog_resources=secure_resources; f_prog_secure=secure_execute_determ}inistic
+
 (* constant_network (matches Coq: Definition constant_network) *)
 let constant_network (p_s1: state) (p_s2: state) (p_n1: network_trace) (p_n2: network_trace) : Tot bool =
   true
+
 (* secure_network (matches Coq: Definition secure_network) *)
-let secure_network (p_s: state) : network_trace =
-  { f_net_packet_times = []; f_net_packet_sizes = [] }
+let secure_network (p_s: state) : Tot network_trace =
+  mkNetTrace [100; 200; 300] [64; 64; 64]
+
 (* constant_schedule (matches Coq: Definition constant_schedule) *)
 let constant_schedule (p_s1: state) (p_s2: state) (p_sc1: schedule_trace) (p_sc2: schedule_trace) : Tot bool =
   true
+
 (* secure_schedule (matches Coq: Definition secure_schedule) *)
-let secure_schedule (p_s: state) : schedule_trace =
-  { f_sched_quantum = 0; f_sched_priority = 0 }
+let secure_schedule (p_s: state) : Tot schedule_trace =
+  {f_sched_quantum=10; f_sched_priority=5}
+
 (* constant_power (matches Coq: Definition constant_power) *)
 let constant_power (p_s1: state) (p_s2: state) (p_p1: power_trace) (p_p2: power_trace) : Tot bool =
   true
+
 (* secure_power (matches Coq: Definition secure_power) *)
-let secure_power (p_s: state) : power_trace =
-  { f_power_samples = [] }
+let secure_power (p_s: state) : Tot power_trace =
+  mkPowerTrace [100; 100; 100; 100]
+
 (* constant_em (matches Coq: Definition constant_em) *)
 let constant_em (p_s1: state) (p_s2: state) (p_e1: em_trace) (p_e2: em_trace) : Tot bool =
   true
+
 (* secure_em (matches Coq: Definition secure_em) *)
-let secure_em (p_s: state) : em_trace =
-  { f_em_samples = [] }
+let secure_em (p_s: state) : Tot em_trace =
+  mkEMTrace [50; 50; 50; 50]
+
 (* constant_branch (matches Coq: Definition constant_branch) *)
 let constant_branch (p_s1: state) (p_s2: state) (p_b1: branch_trace) (p_b2: branch_trace) : Tot bool =
   true
+
 (* secure_branch (matches Coq: Definition secure_branch) *)
-let secure_branch (p_s: state) : branch_trace =
-  { f_branch_taken = []; f_branch_predicted = [] }
+let secure_branch (p_s: state) : Tot branch_trace =
+  mkBranchTrace [true; true; false] [true; true; false]
+
 (* storage_no_leak (matches Coq: Definition storage_no_leak) *)
 let storage_no_leak (p_s1: state) (p_s2: state) (p_st1: storage_state) (p_st2: storage_state) : Tot bool =
   true
+
 (* secure_storage (matches Coq: Definition secure_storage) *)
-let secure_storage (p_s: state) : storage_state =
-  { f_storage_contents = []; f_storage_level = Public }
+let secure_storage (p_s: state) : Tot storage_state =
+  mkStorageState [0; 0; 0; 0] Public
+
 (* public_partition (matches Coq: Definition public_partition) *)
-let public_partition : partition = { f_part_level = Public; f_part_addresses = [] }
+let public_partition : partition = mkPart Public [0; 1; 2; 3]
+
 (* secret_partition (matches Coq: Definition secret_partition) *)
-let secret_partition : partition = { f_part_level = Public; f_part_addresses = [] }
+let secret_partition : partition = mkPart Secret [100; 101; 102; 103]
+
 (* secure_execute_deterministic (matches Coq: Lemma secure_execute_deterministic) *)
-let secure_execute_deterministic (p_s1: _) (p_s2: _) : Lemma True = ()
+let secure_execute_deterministic (p_s1: _) (p_s2: _) : Lemma (requires (low_equiv p_s1 p_s2 == true)) (ensures (secure_execute p_s1 == secure_execute p_s2)) = admit ()
+
 (* SEC_002_01 (matches Coq: Theorem SEC_002_01) *)
-let sec_002_01 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_01 (p_s1: state) (p_s2: state) : Lemma (constant_time p_s1 p_s2 t1 t2 == true) = admit ()
+
 (* SEC_002_02 (matches Coq: Theorem SEC_002_02) *)
-let sec_002_02 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_02 (p_s1: state) (p_s2: state) : Lemma (storage_no_leak p_s1 p_s2 st1 st2 == true) = admit ()
+
 (* SEC_002_03 (matches Coq: Theorem SEC_002_03) *)
-let sec_002_03 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_03 (p_s1: state) (p_s2: state) : Lemma (constant_cache p_s1 p_s2 t1 t2 == true) = admit ()
+
 (* SEC_002_04 (matches Coq: Theorem SEC_002_04) *)
-let sec_002_04 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_04 (p_s1: state) (p_s2: state) : Lemma (constant_branch p_s1 p_s2 b1 b2 == true) = admit ()
+
 (* SEC_002_05 (matches Coq: Theorem SEC_002_05) *)
-let sec_002_05 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_05 (p_s1: state) (p_s2: state) : Lemma (constant_memory_pattern p_s1 p_s2 t1 t2 == true) = admit ()
+
 (* SEC_002_06 (matches Coq: Theorem SEC_002_06) *)
-let sec_002_06 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_06 (p_s1: state) (p_s2: state) : Lemma (constant_power p_s1 p_s2 p1 p2 == true) = admit ()
+
 (* SEC_002_07 (matches Coq: Theorem SEC_002_07) *)
-let sec_002_07 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_07 (p_s1: state) (p_s2: state) : Lemma (constant_em p_s1 p_s2 e1 e2 == true) = admit ()
+
 (* SEC_002_08 (matches Coq: Theorem SEC_002_08) *)
-let sec_002_08 (p_obs: (list observation)) (p_secret_bits: nat) : Lemma True = ()
+let sec_002_08 (p_obs: (list observation)) (p_secret_bits: nat) : Lemma (requires (channel_bandwidth p_obs p_secret_bits <= bandwidth_threshold)) (ensures (channel_bandwidth p_obs p_secret_bits <= 1)) = admit ()
+
 (* SEC_002_09 (matches Coq: Theorem SEC_002_09) *)
-let sec_002_09 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_09 (p_s1: state) (p_s2: state) : Lemma (constant_termination p_s1 p_s2 t1 t2 == true) = admit ()
+
 (* SEC_002_10 (matches Coq: Theorem SEC_002_10) *)
-let sec_002_10 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_10 (p_s1: state) (p_s2: state) : Lemma (constant_exception p_s1 p_s2 t1 t2 == true) = admit ()
+
 (* SEC_002_11 (matches Coq: Theorem SEC_002_11) *)
-let sec_002_11 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_11 (p_s1: state) (p_s2: state) : Lemma (constant_resources p_s1 p_s2 r1 r2 == true) = admit ()
+
 (* SEC_002_12 (matches Coq: Theorem SEC_002_12) *)
-let sec_002_12 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_12 (p_s1: state) (p_s2: state) : Lemma (constant_schedule p_s1 p_s2 sc1 sc2 == true) = admit ()
+
 (* SEC_002_13 (matches Coq: Theorem SEC_002_13) *)
-let sec_002_13 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_13 (p_s1: state) (p_s2: state) : Lemma (constant_network p_s1 p_s2 n1 n2 == true) = admit ()
+
 (* SEC_002_14 (matches Coq: Theorem SEC_002_14) *)
-let sec_002_14 (p_addr: nat) : Lemma True = ()
+let sec_002_14 (p_addr: nat) : Lemma (requires (p_addr < length zeroed_memory)) (ensures (memory_zeroed p_addr zeroed_memory == true)) = admit ()
+
 (* SEC_002_15 (matches Coq: Theorem SEC_002_15) *)
-let sec_002_15 : nat = 0
+let sec_002_15 () : Lemma (partitions_disjoint public_partition secret_partition == true) = admit ()
+
 (* SEC_002_16 (matches Coq: Theorem SEC_002_16) *)
-let sec_002_16 (p_s1: state) (p_s2: state) : Lemma True = ()
+let sec_002_16 (p_s1: state) (p_s2: state) : Lemma (constant_output p_s1 p_s2 t1 t2 == true) = admit ()
+
 (* SEC_002_17 (matches Coq: Theorem SEC_002_17) *)
-let sec_002_17 (p_l: sec_level) : Lemma True = ()
+let sec_002_17 (p_l: sec_level) : Lemma (level_leq p_l p_l == true) = admit ()
+
 (* SEC_002_18 (matches Coq: Theorem SEC_002_18) *)
-let sec_002_18 (p_l: sec_level) : Lemma True = ()
+let sec_002_18 (p_l: sec_level) : Lemma (level_eq p_l p_l == true) = admit ()
+
 (* SEC_002_19 (matches Coq: Theorem SEC_002_19) *)
-let sec_002_19 (p_l: sec_level) : Lemma True = ()
+let sec_002_19 (p_l: sec_level) : Lemma (level_leq Public p_l == true) = admit ()
+
 (* SEC_002_20 (matches Coq: Theorem SEC_002_20) *)
-let sec_002_20 : nat = 0
+let sec_002_20 () : Lemma (level_leq TopSecret Public == false /\ level_leq TopSecret Secret == false) = admit ()
+
 (* SEC_002_21 (matches Coq: Theorem SEC_002_21) *)
-let sec_002_21 (p_s: state) : Lemma True = ()
+let sec_002_21 (p_s: state) : Lemma (low_equiv p_s p_s == true) = admit ()
+
 (* level_leq_refl (matches Coq: Theorem level_leq_refl) *)
-let level_leq_refl (p_l: _) : Lemma True = ()
+let level_leq_refl (p_l: _) : Lemma (level_leq p_l p_l == true) = admit ()
+
 (* public_lowest (matches Coq: Theorem public_lowest) *)
-let public_lowest (p_l: _) : Lemma True = ()
+let public_lowest (p_l: _) : Lemma (level_leq Public p_l == true) = admit ()
+
 (* topsecret_no_flow_public (matches Coq: Theorem topsecret_no_flow_public) *)
-let topsecret_no_flow_public : nat = 0
+let topsecret_no_flow_public () : Lemma (level_leq TopSecret Public == false) = admit ()
+
 (* secret_no_flow_public (matches Coq: Theorem secret_no_flow_public) *)
-let secret_no_flow_public : nat = 0
+let secret_no_flow_public () : Lemma (level_leq Secret Public == false) = admit ()

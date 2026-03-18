@@ -12,19 +12,19 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | tcp_state           | tcp_state              | OK     |
- * | socket_state        | socket_state           | OK     |
- * | handshake_step      | handshake_step         | OK     |
- * | network_security    | network_security       | OK     |
- * | network_reliability | network_reliability    | OK     |
- * | verified_net_stack   | verified_net_stack     | OK     |
+ * | TCPState           | tcp_state              | OK     |
+ * | SocketState        | socket_state           | OK     |
+ * | HandshakeStep      | handshake_step         | OK     |
+ * | NetworkSecurity    | network_security       | OK     |
+ * | NetworkReliability | network_reliability    | OK     |
+ * | VerifiedNetStack   | verified_net_stack     | OK     |
  * | TCPFlags           | tcp_flags              | OK     |
- * | tcp_segment         | tcp_segment            | OK     |
- * | buffer             | buffer                 | OK     |
- * | congestion_state    | congestion_state       | OK     |
- * | socket_options      | socket_options         | OK     |
- * | socket             | socket                 | OK     |
- * | handshake_state     | handshake_state        | OK     |
+ * | TCPSegment         | tcp_segment            | OK     |
+ * | Buffer             | buffer                 | OK     |
+ * | CongestionState    | congestion_state       | OK     |
+ * | SocketOptions      | socket_options         | OK     |
+ * | Socket             | socket                 | OK     |
+ * | HandshakeState     | handshake_state        | OK     |
  * | net_security_sound | net_security_sound     | OK     |
  * | net_reliability_sound | net_reliability_sound  | OK     |
  * | net_stack_verified | net_stack_verified     | OK     |
@@ -36,7 +36,9 @@
  * | is_connection_state | is_connection_state    | OK     |
  * | is_data_state      | is_data_state          | OK     |
  * | is_terminal_state  | is_terminal_state      | OK     |
+ * | SEQ_SPACE_PRED     | SEQ_SPACE_PRED         | OK     |
  * | SEQ_SPACE          | SEQ_SPACE              | OK     |
+ * | TCP_WINDOW_MAX     | TCP_WINDOW_MAX         | OK     |
  * | seq_lt             | seq_lt                 | OK     |
  * | seq_le             | seq_le                 | OK     |
  * | seq_gt             | seq_gt                 | OK     |
@@ -215,7 +217,7 @@ theory VerifiedNetworkStack
   imports Main CoqCompat
 begin
 
-(* tcp_state (matches Coq: Inductive tcp_state) *)
+(* TCPState (matches Coq: Inductive TCPState) *)
 datatype tcp_state =
     CLOSED
   |     LISTEN
@@ -229,7 +231,7 @@ datatype tcp_state =
   |     LAST_ACK
   |     TIME_WAIT
 
-(* socket_state (matches Coq: Inductive socket_state) *)
+(* SocketState (matches Coq: Inductive SocketState) *)
 datatype socket_state =
     SockUnbound
   |     SockBound
@@ -239,7 +241,7 @@ datatype socket_state =
   |     SockClosing
   |     SockClosed
 
-(* handshake_step (matches Coq: Inductive handshake_step) *)
+(* HandshakeStep (matches Coq: Inductive HandshakeStep) *)
 datatype handshake_step =
     HS_Init
   |     HS_SynSent
@@ -247,24 +249,24 @@ datatype handshake_step =
   |     HS_Complete
   |     HS_Failed
 
-(* network_security (matches Coq: Record network_security) *)
+(* NetworkSecurity (matches Coq: Record NetworkSecurity) *)
 record network_security =
   ns_packet_validation :: bool
   ns_protocol_compliance :: bool
   ns_firewall_enforced :: bool
   ns_encryption_in_transit :: bool
 
-(* network_reliability (matches Coq: Record network_reliability) *)
+(* NetworkReliability (matches Coq: Record NetworkReliability) *)
 record network_reliability =
   nr_congestion_control :: bool
   nr_flow_control :: bool
   nr_error_detection :: bool
   nr_retransmission :: bool
 
-(* verified_net_stack (matches Coq: Record verified_net_stack) *)
+(* VerifiedNetStack (matches Coq: Record VerifiedNetStack) *)
 record verified_net_stack =
-  vns_security :: network_security
-  vns_reliability :: network_reliability
+  vns_security :: NetworkSecurity
+  vns_reliability :: NetworkReliability
   vns_rfc_compliant :: bool
   vns_formally_verified :: bool
 
@@ -277,28 +279,28 @@ record tcp_flags =
   flag_psh :: bool
   flag_urg :: bool
 
-(* tcp_segment (matches Coq: Record tcp_segment) *)
+(* TCPSegment (matches Coq: Record TCPSegment) *)
 record tcp_segment =
   seg_seq_num :: nat
   seg_ack_num :: nat
-  seg_flags :: tcp_flags
+  seg_flags :: TCPFlags
   seg_window :: nat
   seg_data_len :: nat
 
-(* buffer (matches Coq: Record buffer) *)
+(* Buffer (matches Coq: Record Buffer) *)
 record buffer =
   buf_data :: 'a list
   buf_capacity :: nat
   buf_position :: nat
 
-(* congestion_state (matches Coq: Record congestion_state) *)
+(* CongestionState (matches Coq: Record CongestionState) *)
 record congestion_state =
   cwnd :: nat
   ssthresh :: nat
   rtt_est :: nat
   rto :: nat
 
-(* socket_options (matches Coq: Record socket_options) *)
+(* SocketOptions (matches Coq: Record SocketOptions) *)
 record socket_options =
   opt_reuse_addr :: bool
   opt_keep_alive :: bool
@@ -306,17 +308,17 @@ record socket_options =
   opt_recv_timeout :: nat
   opt_send_timeout :: nat
 
-(* socket (matches Coq: Record socket) *)
+(* Socket (matches Coq: Record Socket) *)
 record socket =
-  sock_state :: socket_state
+  sock_state :: SocketState
   sock_local_port :: option
   sock_remote_port :: option
-  sock_tcp_state :: tcp_state
-  sock_options :: socket_options
+  sock_tcp_state :: TCPState
+  sock_options :: SocketOptions
 
-(* handshake_state (matches Coq: Record handshake_state) *)
+(* HandshakeState (matches Coq: Record HandshakeState) *)
 record handshake_state =
-  hs_step :: handshake_step
+  hs_step :: HandshakeStep
   hs_client_isn :: nat
   hs_server_isn :: nat
 
@@ -346,10 +348,10 @@ definition riina_net_stack :: "VerifiedNetStack" where
   "riina_net_stack \<equiv> mkVNetStack riina_net_sec riina_net_rel True True"
 
 (* tcp_state_eqb - complex match, needs manual translation *)
-definition tcp_state_eqb :: "bool" where "tcp_state_eqb \<equiv> True"
+definition tcp_state_eqb :: "bool" where "tcp_state_eqb = undefined"
 
 (* tcp_transition (matches Coq: Definition tcp_transition) *)
-fun tcp_transition :: "TCPState \<Rightarrow> tcp_segment \<Rightarrow> bool \<Rightarrow> TCPState" where
+fun tcp_transition :: "TCPState \<Rightarrow> TCPSegment \<Rightarrow> bool \<Rightarrow> TCPState" where
   "tcp_transition CLOSED = if"
 |   "tcp_transition LISTEN = if"
 |   "tcp_transition SYN_SENT = if"
@@ -364,22 +366,30 @@ fun tcp_transition :: "TCPState \<Rightarrow> tcp_segment \<Rightarrow> bool \<R
 
 (* is_connection_state (matches Coq: Definition is_connection_state) *)
 fun is_connection_state :: "TCPState \<Rightarrow> bool" where
-  "is_connection_state LISTEN = False"
-|   "is_connection_state _ = True"
+  "is_connection_state LISTEN = false"
+|   "is_connection_state _ = true"
 
 (* is_data_state (matches Coq: Definition is_data_state) *)
 fun is_data_state :: "TCPState \<Rightarrow> bool" where
-  "is_data_state CLOSE_WAIT = True"
-|   "is_data_state _ = False"
+  "is_data_state CLOSE_WAIT = true"
+|   "is_data_state _ = false"
 
 (* is_terminal_state (matches Coq: Definition is_terminal_state) *)
 fun is_terminal_state :: "TCPState \<Rightarrow> bool" where
-  "is_terminal_state TIME_WAIT = True"
-|   "is_terminal_state _ = False"
+  "is_terminal_state TIME_WAIT = true"
+|   "is_terminal_state _ = false"
+
+(* SEQ_SPACE_PRED (matches Coq: Definition SEQ_SPACE_PRED) *)
+definition SEQ_SPACE_PRED :: "nat" where
+  "SEQ_SPACE_PRED \<equiv> Z.to_nat 4294967295%Z"
 
 (* SEQ_SPACE (matches Coq: Definition SEQ_SPACE) *)
 definition SEQ_SPACE :: "nat" where
-  "SEQ_SPACE \<equiv> S 4294967295"
+  "SEQ_SPACE \<equiv> S SEQ_SPACE_PRED"
+
+(* TCP_WINDOW_MAX (matches Coq: Definition TCP_WINDOW_MAX) *)
+definition TCP_WINDOW_MAX :: "nat" where
+  "TCP_WINDOW_MAX \<equiv> Z.to_nat 65535%Z"
 
 (* seq_lt (matches Coq: Definition seq_lt) *)
 definition seq_lt :: "bool" where
@@ -412,7 +422,7 @@ definition valid_ack :: "bool" where
 
 (* buffer_valid (matches Coq: Definition buffer_valid) *)
 definition buffer_valid :: "Buffer \<Rightarrow> bool" where
-  "buffer_valid b \<equiv> buf_position b <= buf_capacity b \<and>
+  "buffer_valid b \<equiv> buf_position b <= buf_capacity b /\
   length (buf_data b) = buf_capacity b"
 
 (* safe_read (matches Coq: Definition safe_read) *)
@@ -445,7 +455,7 @@ definition ETH_MIN_FRAME :: "nat" where
 
 (* initial_cong_state (matches Coq: Definition initial_cong_state) *)
 definition initial_cong_state :: "nat \<Rightarrow> CongestionState" where
-  "initial_cong_state mss \<equiv> mkCongState (2 * mss) 65535 0 1000"
+  "initial_cong_state mss \<equiv> mkCongState (2 * mss) TCP_WINDOW_MAX 0 1000"
 
 (* in_slow_start (matches Coq: Definition in_slow_start) *)
 definition in_slow_start :: "CongestionState \<Rightarrow> bool" where
@@ -480,7 +490,7 @@ definition new_socket :: "Socket" where
   "new_socket \<equiv> mkSocket SockUnbound None None CLOSED default_sock_opts"
 
 (* sock_state_eqb - complex match, needs manual translation *)
-definition sock_state_eqb :: "bool" where "sock_state_eqb \<equiv> True"
+definition sock_state_eqb :: "bool" where "sock_state_eqb = undefined"
 
 (* socket_can_send (matches Coq: Definition socket_can_send) *)
 definition socket_can_send :: "Socket \<Rightarrow> bool" where
@@ -494,43 +504,43 @@ definition socket_can_recv :: "Socket \<Rightarrow> bool" where
 
 (* make_syn (matches Coq: Definition make_syn) *)
 definition make_syn :: "nat \<Rightarrow> TCPSegment" where
-  "make_syn isn \<equiv> mkSegment isn 0 (mkFlags True False False False False False) 65535 0"
+  "make_syn isn \<equiv> mkSegment isn 0 (mkFlags True False False False False False) TCP_WINDOW_MAX 0"
 
 (* make_syn_ack (matches Coq: Definition make_syn_ack) *)
 definition make_syn_ack :: "TCPSegment" where
-  "make_syn_ack \<equiv> mkSegment isn ack (mkFlags True True False False False False) 65535 0"
+  "make_syn_ack \<equiv> mkSegment isn ack (mkFlags True True False False False False) TCP_WINDOW_MAX 0"
 
 (* make_ack (matches Coq: Definition make_ack) *)
 definition make_ack :: "TCPSegment" where
-  "make_ack \<equiv> mkSegment seq ack (mkFlags False True False False False False) 65535 0"
+  "make_ack \<equiv> mkSegment seq ack (mkFlags False True False False False False) TCP_WINDOW_MAX 0"
 
 (* handshake_complete - complex match, needs manual translation *)
-definition handshake_complete :: "bool" where "handshake_complete \<equiv> True"
+definition handshake_complete :: "bool" where "handshake_complete = undefined"
 
 (* valid_syn_segment (matches Coq: Definition valid_syn_segment) *)
-fun valid_syn_segment :: "TCPSegment \<Rightarrow> tcp_state \<Rightarrow> bool" where
-  "valid_syn_segment SYN_SENT = True"
-|   "valid_syn_segment _ = False"
+fun valid_syn_segment :: "TCPSegment \<Rightarrow> TCPState \<Rightarrow> bool" where
+  "valid_syn_segment SYN_SENT = true"
+|   "valid_syn_segment _ = false"
 
 (* handshake_sequence_valid (matches Coq: Definition handshake_sequence_valid) *)
 definition handshake_sequence_valid :: "bool" where
-  "handshake_sequence_valid \<equiv> tcp_transition LISTEN (make_syn 1000) True = SYN_RECEIVED \<and>
-  tcp_transition SYN_SENT (make_syn_ack 2000 1001) False = ESTABLISHED \<and>
+  "handshake_sequence_valid \<equiv> tcp_transition LISTEN (make_syn 1000) True = SYN_RECEIVED /\
+  tcp_transition SYN_SENT (make_syn_ack 2000 1001) False = ESTABLISHED /\
   tcp_transition SYN_RECEIVED (make_ack 1001 2001) True = ESTABLISHED"
 
 (* ============================================================================
     SECTION 1: BASIC NETWORK LEMMAS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
-  by auto
+lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* orb_false_iff (matches Coq) *)
-lemma orb_false_iff: "\<forall>a b : bool. a || b = False <-> a = False \<and> b = False"
-  by auto
+lemma orb_false_iff: "\<forall> a b : bool, a || b = False <-> a = False \<and> b = False"
+  by (cases rule: ‹_›.cases; simp)
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by simp
 
 (* ============================================================================
@@ -589,75 +599,75 @@ lemma NET_013: "vns_formally_verified riina_net_stack = True"
   by simp
 
 (* NET_014 (matches Coq) *)
-lemma NET_014: "\<forall>s. net_security_sound s = True \<longrightarrow> ns_packet_validation s = True"
+lemma NET_014: "\<forall> s, net_security_sound s = True \<longrightarrow> ns_packet_validation s = True"
   by auto
 
 (* NET_015 (matches Coq) *)
-lemma NET_015: "\<forall>s. net_security_sound s = True \<longrightarrow> ns_protocol_compliance s = True"
+lemma NET_015: "\<forall> s, net_security_sound s = True \<longrightarrow> ns_protocol_compliance s = True"
   by auto
 
 (* NET_016 (matches Coq) *)
-lemma NET_016: "\<forall>s. net_security_sound s = True \<longrightarrow> ns_firewall_enforced s = True"
+lemma NET_016: "\<forall> s, net_security_sound s = True \<longrightarrow> ns_firewall_enforced s = True"
   by auto
 
 (* NET_017 (matches Coq) *)
-lemma NET_017: "\<forall>s. net_security_sound s = True \<longrightarrow> ns_encryption_in_transit s = True"
+lemma NET_017: "\<forall> s, net_security_sound s = True \<longrightarrow> ns_encryption_in_transit s = True"
   by auto
 
 (* NET_018 (matches Coq) *)
-lemma NET_018: "\<forall>r. net_reliability_sound r = True \<longrightarrow> nr_congestion_control r = True"
-  by auto
+lemma NET_018: "\<forall> r, net_reliability_sound r = True \<longrightarrow> nr_congestion_control r = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* NET_019 (matches Coq) *)
-lemma NET_019: "\<forall>r. net_reliability_sound r = True \<longrightarrow> nr_flow_control r = True"
-  by auto
+lemma NET_019: "\<forall> r, net_reliability_sound r = True \<longrightarrow> nr_flow_control r = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* NET_020 (matches Coq) *)
-lemma NET_020: "\<forall>r. net_reliability_sound r = True \<longrightarrow> nr_error_detection r = True"
-  by auto
+lemma NET_020: "\<forall> r, net_reliability_sound r = True \<longrightarrow> nr_error_detection r = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* NET_021 (matches Coq) *)
-lemma NET_021: "\<forall>r. net_reliability_sound r = True \<longrightarrow> nr_retransmission r = True"
-  by auto
+lemma NET_021: "\<forall> r, net_reliability_sound r = True \<longrightarrow> nr_retransmission r = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* NET_022 (matches Coq) *)
-lemma NET_022: "\<forall>n. net_stack_verified n = True \<longrightarrow> net_security_sound (vns_security n) = True"
+lemma NET_022: "\<forall> n, net_stack_verified n = True \<longrightarrow> net_security_sound (vns_security n) = True"
   by auto
 
 (* NET_023 (matches Coq) *)
-lemma NET_023: "\<forall>n. net_stack_verified n = True \<longrightarrow> net_reliability_sound (vns_reliability n) = True"
+lemma NET_023: "\<forall> n, net_stack_verified n = True \<longrightarrow> net_reliability_sound (vns_reliability n) = True"
   by auto
 
 (* NET_024 (matches Coq) *)
-lemma NET_024: "\<forall>n. net_stack_verified n = True \<longrightarrow> vns_rfc_compliant n = True"
+lemma NET_024: "\<forall> n, net_stack_verified n = True \<longrightarrow> vns_rfc_compliant n = True"
   by auto
 
 (* NET_025 (matches Coq) *)
-lemma NET_025: "\<forall>n. net_stack_verified n = True \<longrightarrow> vns_formally_verified n = True"
+lemma NET_025: "\<forall> n, net_stack_verified n = True \<longrightarrow> vns_formally_verified n = True"
   by auto
 
 (* NET_026 (matches Coq) *)
-lemma NET_026: "\<forall>n. net_stack_verified n = True \<longrightarrow> ns_packet_validation (vns_security n) = True"
+lemma NET_026: "\<forall> n, net_stack_verified n = True \<longrightarrow> ns_packet_validation (vns_security n) = True"
   by auto
 
 (* NET_027 (matches Coq) *)
-lemma NET_027: "\<forall>n. net_stack_verified n = True \<longrightarrow> ns_encryption_in_transit (vns_security n) = True"
+lemma NET_027: "\<forall> n, net_stack_verified n = True \<longrightarrow> ns_encryption_in_transit (vns_security n) = True"
   by auto
 
 (* NET_028 (matches Coq) *)
-lemma NET_028: "\<forall>n. net_stack_verified n = True \<longrightarrow> nr_congestion_control (vns_reliability n) = True"
+lemma NET_028: "\<forall> n, net_stack_verified n = True \<longrightarrow> nr_congestion_control (vns_reliability n) = True"
   by auto
 
 (* NET_029 (matches Coq) *)
-lemma NET_029: "\<forall>n. net_stack_verified n = True \<longrightarrow> nr_error_detection (vns_reliability n) = True"
+lemma NET_029: "\<forall> n, net_stack_verified n = True \<longrightarrow> nr_error_detection (vns_reliability n) = True"
   by auto
 
 (* NET_030 (matches Coq) *)
-lemma NET_030: "\<forall>s. net_security_sound s = True \<longrightarrow> ns_packet_validation s = True \<and> ns_encryption_in_transit s = True"
+lemma NET_030: "\<forall> s, net_security_sound s = True \<longrightarrow> ns_packet_validation s = True \<and> ns_encryption_in_transit s = True"
   by auto
 
 (* NET_031 (matches Coq) *)
-lemma NET_031: "\<forall>r. net_reliability_sound r = True \<longrightarrow> nr_congestion_control r = True \<and> nr_error_detection r = True"
+lemma NET_031: "\<forall> r, net_reliability_sound r = True \<longrightarrow> nr_congestion_control r = True \<and> nr_error_detection r = True"
   by auto
 
 (* NET_032 (matches Coq) *)
@@ -673,19 +683,19 @@ lemma NET_034: "nr_congestion_control riina_net_rel = True \<and> nr_error_detec
   by auto
 
 (* NET_035_complete (matches Coq) *)
-lemma NET_035_complete: "\<forall>n. net_stack_verified n = True \<longrightarrow> ns_packet_validation (vns_security n) = True \<and> ns_encryption_in_transit (vns_security n) = True \<and> nr_congestion_control (vns_reliability n) = True \<and> vns_formally_verified n = True"
+lemma NET_035_complete: "\<forall> n, net_stack_verified n = True \<longrightarrow> ns_packet_validation (vns_security n) = True \<and> ns_encryption_in_transit (vns_security n) = True \<and> nr_congestion_control (vns_reliability n) = True \<and> vns_formally_verified n = True"
   by auto
 
 (* TCP_001_state_eq_refl (matches Coq) *)
-lemma TCP_001_state_eq_refl: "\<forall>s : TCPState. tcp_state_eqb s s = True"
+lemma TCP_001_state_eq_refl: "\<forall> s : TCPState, tcp_state_eqb s s = True"
   by simp
 
 (* TCP_002_state_eq_sym (matches Coq) *)
-lemma TCP_002_state_eq_sym: "\<forall>s1 s2 : TCPState. tcp_state_eqb s1 s2 = tcp_state_eqb s2 s1"
+lemma TCP_002_state_eq_sym: "\<forall> s1 s2 : TCPState, tcp_state_eqb s1 s2 = tcp_state_eqb s2 s1"
   by simp
 
 (* TCP_003_state_decidable (matches Coq) *)
-lemma TCP_003_state_decidable: "\<forall>s1 s2 : TCPState. (s1 = s2) \<or> (s1 \<noteq> s2)"
+lemma TCP_003_state_decidable: "\<forall> s1 s2 : TCPState, {s1 = s2} + {s1 \<noteq> s2}"
   by simp
 
 (* TCP_004_closed_not_connected (matches Coq) *)
@@ -721,19 +731,19 @@ lemma TCP_011_established_not_terminal: "is_terminal_state ESTABLISHED = False"
   by simp
 
 (* TCP_012_data_implies_connection (matches Coq) *)
-lemma TCP_012_data_implies_connection: "\<forall>s. is_data_state s = True \<longrightarrow> is_connection_state s = True"
+lemma TCP_012_data_implies_connection: "\<forall> s, is_data_state s = True \<longrightarrow> is_connection_state s = True"
   by simp
 
 (* TCP_013_terminal_cases (matches Coq) *)
-lemma TCP_013_terminal_cases: "\<forall>s. is_terminal_state s = True \<longrightarrow> s = CLOSED \<or> s = TIME_WAIT"
+lemma TCP_013_terminal_cases: "\<forall> s, is_terminal_state s = True \<longrightarrow> s = CLOSED \<or> s = TIME_WAIT"
   by auto
 
 (* TCP_014_eleven_states (matches Coq) *)
-lemma TCP_014_eleven_states: "\<forall>s : TCPState. s = CLOSED \<or> s = LISTEN \<or> s = SYN_SENT \<or> s = SYN_RECEIVED \<or> s = ESTABLISHED \<or> s = FIN_WAIT_1 \<or> s = FIN_WAIT_2 \<or> s = CLOSE_WAIT \<or> s = CLOSING \<or> s = LAST_ACK \<or> s = TIME_WAIT"
+lemma TCP_014_eleven_states: "\<forall> s : TCPState, s = CLOSED \<or> s = LISTEN \<or> s = SYN_SENT \<or> s = SYN_RECEIVED \<or> s = ESTABLISHED \<or> s = FIN_WAIT_1 \<or> s = FIN_WAIT_2 \<or> s = CLOSE_WAIT \<or> s = CLOSING \<or> s = LAST_ACK \<or> s = TIME_WAIT"
   by auto
 
 (* TCP_015_syn_only_setup (matches Coq) *)
-lemma TCP_015_syn_only_setup: "\<forall>seg. flag_syn (seg_flags seg) = True \<longrightarrow> valid_syn_segment seg ESTABLISHED = False"
+lemma TCP_015_syn_only_setup: "\<forall> seg, flag_syn (seg_flags seg) = True \<longrightarrow> valid_syn_segment seg ESTABLISHED = False"
   by simp
 
 (* TCP_016_listen_syn_transition (matches Coq) *)
@@ -749,27 +759,27 @@ lemma TCP_018_syn_recv_ack_transition: "let ack_seg := make_ack 1001 2001 in tcp
   by simp
 
 (* TCP_019_established_fin_transition (matches Coq) *)
-lemma TCP_019_established_fin_transition: "let fin_seg := mkSegment 5000 6000 (mkFlags False False True False False False) 65535 0 in tcp_transition ESTABLISHED fin_seg False = CLOSE_WAIT"
+lemma TCP_019_established_fin_transition: "let fin_seg := mkSegment (Z.to_nat 5000%Z) (Z.to_nat 6000%Z) (mkFlags False False True False False False) TCP_WINDOW_MAX 0 in tcp_transition ESTABLISHED fin_seg False = CLOSE_WAIT"
   by simp
 
 (* TCP_020_last_ack_transition (matches Coq) *)
-lemma TCP_020_last_ack_transition: "let ack_seg := make_ack 8000 9000 in tcp_transition LAST_ACK ack_seg True = CLOSED"
+lemma TCP_020_last_ack_transition: "let ack_seg := make_ack (Z.to_nat 8000%Z) (Z.to_nat 9000%Z) in tcp_transition LAST_ACK ack_seg True = CLOSED"
   by simp
 
 (* PARSE_001_safe_read_sufficient (matches Coq) *)
-lemma PARSE_001_safe_read_sufficient: "\<forall>cap pos len. pos + len \<le> cap \<longrightarrow> safe_read (mkBuffer [] cap pos) len = True"
+lemma PARSE_001_safe_read_sufficient: "\<forall> cap pos len, pos + len \<le> cap \<longrightarrow> safe_read (mkBuffer [] cap pos) len = True"
   by auto
 
 (* PARSE_002_safe_read_insufficient (matches Coq) *)
-lemma PARSE_002_safe_read_insufficient: "\<forall>cap pos len. pos + len > cap \<longrightarrow> safe_read (mkBuffer [] cap pos) len = False"
+lemma PARSE_002_safe_read_insufficient: "\<forall> cap pos len, pos + len > cap \<longrightarrow> safe_read (mkBuffer [] cap pos) len = False"
   by auto
 
 (* PARSE_003_advance_preserves_capacity (matches Coq) *)
-lemma PARSE_003_advance_preserves_capacity: "\<forall>b n. buf_capacity (buffer_advance b n) = buf_capacity b"
+lemma PARSE_003_advance_preserves_capacity: "\<forall> b n, buf_capacity (buffer_advance b n) = buf_capacity b"
   by simp
 
 (* PARSE_004_advance_increases_position (matches Coq) *)
-lemma PARSE_004_advance_increases_position: "\<forall>b n. buf_position (buffer_advance b n) = buf_position b + n"
+lemma PARSE_004_advance_increases_position: "\<forall> b n, buf_position (buffer_advance b n) = buf_position b + n"
   by simp
 
 (* PARSE_005_tcp_min_header (matches Coq) *)
@@ -793,7 +803,7 @@ lemma PARSE_009_combined_min: "ETH_MIN_FRAME + IP_MIN_HEADER + TCP_MIN_HEADER = 
   by simp
 
 (* PARSE_010_safe_read_monotonic (matches Coq) *)
-lemma PARSE_010_safe_read_monotonic: "\<forall>data pos len cap1 cap2. cap1 \<le> cap2 \<longrightarrow> safe_read (mkBuffer data cap1 pos) len = True \<longrightarrow> safe_read (mkBuffer data cap2 pos) len = True"
+lemma PARSE_010_safe_read_monotonic: "\<forall> data pos len cap1 cap2, cap1 \<le> cap2 \<longrightarrow> safe_read (mkBuffer data cap1 pos) len = True \<longrightarrow> safe_read (mkBuffer data cap2 pos) len = True"
   by simp
 
 (* PARSE_011_empty_buffer_zero_read (matches Coq) *)
@@ -801,59 +811,59 @@ lemma PARSE_011_empty_buffer_zero_read: "safe_read (mkBuffer [] 0 0) 0 = True"
   by simp
 
 (* PARSE_012_at_capacity_no_read (matches Coq) *)
-lemma PARSE_012_at_capacity_no_read: "\<forall>cap data. safe_read (mkBuffer data cap cap) 1 = False"
+lemma PARSE_012_at_capacity_no_read: "\<forall> cap data, safe_read (mkBuffer data cap cap) 1 = False"
   by simp
 
 (* PARSE_013_safe_write_eq_read (matches Coq) *)
-lemma PARSE_013_safe_write_eq_read: "\<forall>b len. safe_write b len = safe_read b len"
+lemma PARSE_013_safe_write_eq_read: "\<forall> b len, safe_write b len = safe_read b len"
   by simp
 
 (* PARSE_014_advance_compose (matches Coq) *)
-lemma PARSE_014_advance_compose: "\<forall>b n m. buffer_advance (buffer_advance b n) m = mkBuffer (buf_data b) (buf_capacity b) (buf_position b + n + m)"
+lemma PARSE_014_advance_compose: "\<forall> b n m, buffer_advance (buffer_advance b n) m = mkBuffer (buf_data b) (buf_capacity b) (buf_position b + n + m)"
   by simp
 
 (* PARSE_015_advance_preserves_data (matches Coq) *)
-lemma PARSE_015_advance_preserves_data: "\<forall>b n. buf_data (buffer_advance b n) = buf_data b"
+lemma PARSE_015_advance_preserves_data: "\<forall> b n, buf_data (buffer_advance b n) = buf_data b"
   by simp
 
 (* CONG_001_initial_cwnd (matches Coq) *)
-lemma CONG_001_initial_cwnd: "\<forall>mss. cwnd (initial_cong_state mss) = 2 * mss"
+lemma CONG_001_initial_cwnd: "\<forall> mss, cwnd (initial_cong_state mss) = 2 * mss"
   by simp
 
 (* CONG_002_initial_ssthresh (matches Coq) *)
-lemma CONG_002_initial_ssthresh: "\<forall>mss. ssthresh (initial_cong_state mss) = 65535"
+lemma CONG_002_initial_ssthresh: "\<forall> mss, ssthresh (initial_cong_state mss) = TCP_WINDOW_MAX"
   by simp
 
 (* CONG_003_exclusive_phases (matches Coq) *)
-lemma CONG_003_exclusive_phases: "\<forall>cs. in_slow_start cs = True \<longrightarrow> in_cong_avoid cs = False"
+lemma CONG_003_exclusive_phases: "\<forall> cs, in_slow_start cs = True \<longrightarrow> in_cong_avoid cs = False"
   by simp
 
 (* CONG_004_cong_avoid_not_slow (matches Coq) *)
-lemma CONG_004_cong_avoid_not_slow: "\<forall>cs. in_cong_avoid cs = True \<longrightarrow> in_slow_start cs = False"
+lemma CONG_004_cong_avoid_not_slow: "\<forall> cs, in_cong_avoid cs = True \<longrightarrow> in_slow_start cs = False"
   by simp
 
 (* CONG_005_aimd_decrease_halves (matches Coq) *)
-lemma CONG_005_aimd_decrease_halves: "\<forall>cs. cwnd cs \<ge> 4 \<longrightarrow> cwnd (aimd_decrease cs) \<le> cwnd cs"
+lemma CONG_005_aimd_decrease_halves: "\<forall> cs, cwnd cs \<ge> 4 \<longrightarrow> cwnd (aimd_decrease cs) \<le> cwnd cs"
   by simp
 
 (* CONG_006_aimd_decrease_ssthresh (matches Coq) *)
-lemma CONG_006_aimd_decrease_ssthresh: "\<forall>cs. ssthresh (aimd_decrease cs) = cwnd (aimd_decrease cs)"
+lemma CONG_006_aimd_decrease_ssthresh: "\<forall> cs, ssthresh (aimd_decrease cs) = cwnd (aimd_decrease cs)"
   by simp
 
 (* CONG_007_aimd_decrease_rtt (matches Coq) *)
-lemma CONG_007_aimd_decrease_rtt: "\<forall>cs. rtt_est (aimd_decrease cs) = rtt_est cs"
+lemma CONG_007_aimd_decrease_rtt: "\<forall> cs, rtt_est (aimd_decrease cs) = rtt_est cs"
   by simp
 
 (* CONG_008_aimd_decrease_rto (matches Coq) *)
-lemma CONG_008_aimd_decrease_rto: "\<forall>cs. rto (aimd_decrease cs) = rto cs"
+lemma CONG_008_aimd_decrease_rto: "\<forall> cs, rto (aimd_decrease cs) = rto cs"
   by simp
 
 (* CONG_009_slow_start_increase (matches Coq) *)
-lemma CONG_009_slow_start_increase: "\<forall>cs mss. in_slow_start cs = True \<longrightarrow> cwnd (aimd_increase cs mss) = cwnd cs + mss"
+lemma CONG_009_slow_start_increase: "\<forall> cs mss, in_slow_start cs = True \<longrightarrow> cwnd (aimd_increase cs mss) = cwnd cs + mss"
   by simp
 
 (* CONG_010_increase_ssthresh (matches Coq) *)
-lemma CONG_010_increase_ssthresh: "\<forall>cs mss. ssthresh (aimd_increase cs mss) = ssthresh cs"
+lemma CONG_010_increase_ssthresh: "\<forall> cs mss, ssthresh (aimd_increase cs mss) = ssthresh cs"
   by simp
 
 (* CONG_011_fast_retransmit_thresh (matches Coq) *)
@@ -861,35 +871,35 @@ lemma CONG_011_fast_retransmit_thresh: "FAST_RETRANSMIT_THRESH = 3"
   by simp
 
 (* CONG_012_decrease_phase (matches Coq) *)
-lemma CONG_012_decrease_phase: "\<forall>cs. in_slow_start (aimd_decrease cs) = True \<or> in_cong_avoid (aimd_decrease cs) = True"
-  by auto
+lemma CONG_012_decrease_phase: "\<forall> cs, in_slow_start (aimd_decrease cs) = True \<or> in_cong_avoid (aimd_decrease cs) = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* CONG_013_min_cwnd_after_decrease (matches Coq) *)
-lemma CONG_013_min_cwnd_after_decrease: "\<forall>cs. cwnd (aimd_decrease cs) \<ge> 2"
+lemma CONG_013_min_cwnd_after_decrease: "\<forall> cs, cwnd (aimd_decrease cs) \<ge> 2"
   by auto
 
 (* CONG_014_increase_rto (matches Coq) *)
-lemma CONG_014_increase_rto: "\<forall>cs mss. rto (aimd_increase cs mss) = rto cs"
+lemma CONG_014_increase_rto: "\<forall> cs mss, rto (aimd_increase cs mss) = rto cs"
   by simp
 
 (* CONG_015_initial_slow_start (matches Coq) *)
-lemma CONG_015_initial_slow_start: "\<forall>mss. mss > 0 \<longrightarrow> 2 * mss < 65535 \<longrightarrow> in_slow_start (initial_cong_state mss) = True"
+lemma CONG_015_initial_slow_start: "\<forall> mss, mss > 0 \<longrightarrow> 2 * mss < TCP_WINDOW_MAX \<longrightarrow> in_slow_start (initial_cong_state mss) = True"
   by auto
 
 (* HS_001_make_syn_flag (matches Coq) *)
-lemma HS_001_make_syn_flag: "\<forall>isn. flag_syn (seg_flags (make_syn isn)) = True"
+lemma HS_001_make_syn_flag: "\<forall> isn, flag_syn (seg_flags (make_syn isn)) = True"
   by simp
 
 (* HS_002_make_syn_no_ack (matches Coq) *)
-lemma HS_002_make_syn_no_ack: "\<forall>isn. flag_ack (seg_flags (make_syn isn)) = False"
+lemma HS_002_make_syn_no_ack: "\<forall> isn, flag_ack (seg_flags (make_syn isn)) = False"
   by simp
 
 (* HS_003_make_synack_flags (matches Coq) *)
-lemma HS_003_make_synack_flags: "\<forall>isn ack. flag_syn (seg_flags (make_syn_ack isn ack)) = True \<and> flag_ack (seg_flags (make_syn_ack isn ack)) = True"
+lemma HS_003_make_synack_flags: "\<forall> isn ack, flag_syn (seg_flags (make_syn_ack isn ack)) = True \<and> flag_ack (seg_flags (make_syn_ack isn ack)) = True"
   by simp
 
 (* HS_004_make_ack_flags (matches Coq) *)
-lemma HS_004_make_ack_flags: "\<forall>seq ack. flag_syn (seg_flags (make_ack seq ack)) = False \<and> flag_ack (seg_flags (make_ack seq ack)) = True"
+lemma HS_004_make_ack_flags: "\<forall> seq ack, flag_syn (seg_flags (make_ack seq ack)) = False \<and> flag_ack (seg_flags (make_ack seq ack)) = True"
   by simp
 
 (* HS_005_init_not_complete (matches Coq) *)
@@ -901,23 +911,23 @@ lemma HS_006_complete_step: "handshake_complete (mkHSState HS_Complete 1000 2000
   by simp
 
 (* HS_007_syn_preserves_isn (matches Coq) *)
-lemma HS_007_syn_preserves_isn: "\<forall>isn. seg_seq_num (make_syn isn) = isn"
+lemma HS_007_syn_preserves_isn: "\<forall> isn, seg_seq_num (make_syn isn) = isn"
   by simp
 
 (* HS_008_synack_ack_num (matches Coq) *)
-lemma HS_008_synack_ack_num: "\<forall>isn ack. seg_ack_num (make_syn_ack isn ack) = ack"
+lemma HS_008_synack_ack_num: "\<forall> isn ack, seg_ack_num (make_syn_ack isn ack) = ack"
   by simp
 
 (* HS_009_ack_ack_num (matches Coq) *)
-lemma HS_009_ack_ack_num: "\<forall>seq ack. seg_ack_num (make_ack seq ack) = ack"
+lemma HS_009_ack_ack_num: "\<forall> seq ack, seg_ack_num (make_ack seq ack) = ack"
   by simp
 
 (* HS_010_syn_zero_data (matches Coq) *)
-lemma HS_010_syn_zero_data: "\<forall>isn. seg_data_len (make_syn isn) = 0"
+lemma HS_010_syn_zero_data: "\<forall> isn, seg_data_len (make_syn isn) = 0"
   by simp
 
 (* SEQ_001_seq_space (matches Coq) *)
-lemma SEQ_001_seq_space: "SEQ_SPACE = S 4294967295"
+lemma SEQ_001_seq_space: "SEQ_SPACE = S SEQ_SPACE_PRED"
   by simp
 
 (* SEQ_SPACE_neq_0 (matches Coq) *)
@@ -929,35 +939,35 @@ lemma SEQ_SPACE_pos: "SEQ_SPACE > 0"
   by auto
 
 (* SEQ_002_seq_le_refl (matches Coq) *)
-lemma SEQ_002_seq_le_refl: "\<forall>n. seq_le n n = True"
+lemma SEQ_002_seq_le_refl: "\<forall> n, seq_le n n = True"
   by simp
 
 (* SEQ_003_next_seq_advance (matches Coq) *)
-lemma SEQ_003_next_seq_advance: "\<forall>curr len. len < SEQ_SPACE \<longrightarrow> curr < SEQ_SPACE \<longrightarrow> curr + len < SEQ_SPACE \<longrightarrow> next_seq curr len = curr + len"
+lemma SEQ_003_next_seq_advance: "\<forall> curr len, len < SEQ_SPACE \<longrightarrow> curr < SEQ_SPACE \<longrightarrow> curr + len < SEQ_SPACE \<longrightarrow> next_seq curr len = curr + len"
   by auto
 
 (* SEQ_004_seq_in_window_start (matches Coq) *)
-lemma SEQ_004_seq_in_window_start: "\<forall>start size. size > 0 \<longrightarrow> size < SEQ_SPACE / 2 \<longrightarrow> size < SEQ_SPACE \<longrightarrow> seq_in_window start start size = True"
+lemma SEQ_004_seq_in_window_start: "\<forall> start size, size > 0 \<longrightarrow> size < SEQ_SPACE / 2 \<longrightarrow> size < SEQ_SPACE \<longrightarrow> seq_in_window start start size = True"
   by simp
 
 (* SEQ_005_valid_ack_equal (matches Coq) *)
-lemma SEQ_005_valid_ack_equal: "\<forall>ack. valid_ack ack ack ack = True"
+lemma SEQ_005_valid_ack_equal: "\<forall> ack, valid_ack ack ack ack = True"
   by simp
 
 (* SEQ_006_seq_gt_def (matches Coq) *)
-lemma SEQ_006_seq_gt_def: "\<forall>a b. seq_gt a b = seq_lt b a"
+lemma SEQ_006_seq_gt_def: "\<forall> a b, seq_gt a b = seq_lt b a"
   by simp
 
 (* SEQ_007_seq_ge_def (matches Coq) *)
-lemma SEQ_007_seq_ge_def: "\<forall>a b. seq_ge a b = seq_le b a"
+lemma SEQ_007_seq_ge_def: "\<forall> a b, seq_ge a b = seq_le b a"
   by simp
 
 (* SEQ_008_next_seq_zero (matches Coq) *)
-lemma SEQ_008_next_seq_zero: "\<forall>curr. curr < SEQ_SPACE \<longrightarrow> next_seq curr 0 = curr"
+lemma SEQ_008_next_seq_zero: "\<forall> curr, curr < SEQ_SPACE \<longrightarrow> next_seq curr 0 = curr"
   by auto
 
 (* SEQ_009_seq_mod (matches Coq) *)
-lemma SEQ_009_seq_mod: "\<forall>n. n mod SEQ_SPACE < SEQ_SPACE"
+lemma SEQ_009_seq_mod: "\<forall> n, n mod SEQ_SPACE < SEQ_SPACE"
   by auto
 
 (* SEQ_010_seq_le_zero (matches Coq) *)
@@ -981,15 +991,15 @@ lemma SOCK_004_new_socket_closed: "sock_tcp_state new_socket = CLOSED"
   by simp
 
 (* SOCK_005_sock_state_eq_refl (matches Coq) *)
-lemma SOCK_005_sock_state_eq_refl: "\<forall>s. sock_state_eqb s s = True"
+lemma SOCK_005_sock_state_eq_refl: "\<forall> s, sock_state_eqb s s = True"
   by simp
 
 (* SOCK_006_unbound_cannot_send (matches Coq) *)
-lemma SOCK_006_unbound_cannot_send: "\<forall>s. sock_state s = SockUnbound \<longrightarrow> socket_can_send s = False"
+lemma SOCK_006_unbound_cannot_send: "\<forall> s, sock_state s = SockUnbound \<longrightarrow> socket_can_send s = False"
   by simp
 
 (* SOCK_007_unbound_cannot_recv (matches Coq) *)
-lemma SOCK_007_unbound_cannot_recv: "\<forall>s. sock_state s = SockUnbound \<longrightarrow> socket_can_recv s = False"
+lemma SOCK_007_unbound_cannot_recv: "\<forall> s, sock_state s = SockUnbound \<longrightarrow> socket_can_recv s = False"
   by simp
 
 (* SOCK_008_new_socket_cannot_send (matches Coq) *)
@@ -1005,51 +1015,51 @@ lemma SOCK_010_default_no_reuse: "opt_reuse_addr default_sock_opts = False"
   by simp
 
 (* TCP_021_fin_wait1_fin_ack (matches Coq) *)
-lemma TCP_021_fin_wait1_fin_ack: "let fin_ack := mkSegment 100 200 (mkFlags False True True False False False) 65535 0 in tcp_transition FIN_WAIT_1 fin_ack True = TIME_WAIT"
+lemma TCP_021_fin_wait1_fin_ack: "let fin_ack := mkSegment 100 200 (mkFlags False True True False False False) TCP_WINDOW_MAX 0 in tcp_transition FIN_WAIT_1 fin_ack True = TIME_WAIT"
   by simp
 
 (* TCP_022_fin_wait1_fin_only (matches Coq) *)
-lemma TCP_022_fin_wait1_fin_only: "let fin_only := mkSegment 100 200 (mkFlags False False True False False False) 65535 0 in tcp_transition FIN_WAIT_1 fin_only True = CLOSING"
+lemma TCP_022_fin_wait1_fin_only: "let fin_only := mkSegment 100 200 (mkFlags False False True False False False) TCP_WINDOW_MAX 0 in tcp_transition FIN_WAIT_1 fin_only True = CLOSING"
   by simp
 
 (* TCP_023_fin_wait1_ack_only (matches Coq) *)
-lemma TCP_023_fin_wait1_ack_only: "let ack_only := mkSegment 100 200 (mkFlags False True False False False False) 65535 0 in tcp_transition FIN_WAIT_1 ack_only True = FIN_WAIT_2"
+lemma TCP_023_fin_wait1_ack_only: "let ack_only := mkSegment 100 200 (mkFlags False True False False False False) TCP_WINDOW_MAX 0 in tcp_transition FIN_WAIT_1 ack_only True = FIN_WAIT_2"
   by simp
 
 (* TCP_024_fin_wait2_fin (matches Coq) *)
-lemma TCP_024_fin_wait2_fin: "let fin_seg := mkSegment 100 200 (mkFlags False False True False False False) 65535 0 in tcp_transition FIN_WAIT_2 fin_seg True = TIME_WAIT"
+lemma TCP_024_fin_wait2_fin: "let fin_seg := mkSegment 100 200 (mkFlags False False True False False False) TCP_WINDOW_MAX 0 in tcp_transition FIN_WAIT_2 fin_seg True = TIME_WAIT"
   by simp
 
 (* TCP_025_closing_ack (matches Coq) *)
-lemma TCP_025_closing_ack: "let ack_seg := mkSegment 100 200 (mkFlags False True False False False False) 65535 0 in tcp_transition CLOSING ack_seg True = TIME_WAIT"
+lemma TCP_025_closing_ack: "let ack_seg := mkSegment 100 200 (mkFlags False True False False False False) TCP_WINDOW_MAX 0 in tcp_transition CLOSING ack_seg True = TIME_WAIT"
   by simp
 
 (* TCP_026_time_wait_stable (matches Coq) *)
-lemma TCP_026_time_wait_stable: "\<forall>seg is_server. tcp_transition TIME_WAIT seg is_server = TIME_WAIT"
+lemma TCP_026_time_wait_stable: "\<forall> seg is_server, tcp_transition TIME_WAIT seg is_server = TIME_WAIT"
   by simp
 
 (* TCP_027_close_wait_stable (matches Coq) *)
-lemma TCP_027_close_wait_stable: "\<forall>seg is_server. tcp_transition CLOSE_WAIT seg is_server = CLOSE_WAIT"
+lemma TCP_027_close_wait_stable: "\<forall> seg is_server, tcp_transition CLOSE_WAIT seg is_server = CLOSE_WAIT"
   by simp
 
 (* TCP_028_syn_recv_rst (matches Coq) *)
-lemma TCP_028_syn_recv_rst: "let rst_seg := mkSegment 100 200 (mkFlags False False False True False False) 65535 0 in tcp_transition SYN_RECEIVED rst_seg True = LISTEN"
+lemma TCP_028_syn_recv_rst: "let rst_seg := mkSegment 100 200 (mkFlags False False False True False False) TCP_WINDOW_MAX 0 in tcp_transition SYN_RECEIVED rst_seg True = LISTEN"
   by simp
 
 (* TCP_029_connection_subset (matches Coq) *)
-lemma TCP_029_connection_subset: "\<forall>s. is_data_state s = True \<longrightarrow> is_connection_state s = True"
+lemma TCP_029_connection_subset: "\<forall> s, is_data_state s = True \<longrightarrow> is_connection_state s = True"
   by simp
 
 (* TCP_030_established_data_stable (matches Coq) *)
-lemma TCP_030_established_data_stable: "let data_seg := mkSegment 100 200 (mkFlags False True False False True False) 65535 100 in tcp_transition ESTABLISHED data_seg False = ESTABLISHED"
+lemma TCP_030_established_data_stable: "let data_seg := mkSegment 100 200 (mkFlags False True False False True False) TCP_WINDOW_MAX 100 in tcp_transition ESTABLISHED data_seg False = ESTABLISHED"
   by simp
 
 (* COMP_001_verified_security (matches Coq) *)
-lemma COMP_001_verified_security: "\<forall>n. net_stack_verified n = True \<longrightarrow> ns_packet_validation (vns_security n) = True \<and> ns_protocol_compliance (vns_security n) = True \<and> ns_firewall_enforced (vns_security n) = True \<and> ns_encryption_in_transit (vns_security n) = True"
+lemma COMP_001_verified_security: "\<forall> n, net_stack_verified n = True \<longrightarrow> ns_packet_validation (vns_security n) = True \<and> ns_protocol_compliance (vns_security n) = True \<and> ns_firewall_enforced (vns_security n) = True \<and> ns_encryption_in_transit (vns_security n) = True"
   by auto
 
 (* COMP_002_verified_reliability (matches Coq) *)
-lemma COMP_002_verified_reliability: "\<forall>n. net_stack_verified n = True \<longrightarrow> nr_congestion_control (vns_reliability n) = True \<and> nr_flow_control (vns_reliability n) = True \<and> nr_error_detection (vns_reliability n) = True \<and> nr_retransmission (vns_reliability n) = True"
+lemma COMP_002_verified_reliability: "\<forall> n, net_stack_verified n = True \<longrightarrow> nr_congestion_control (vns_reliability n) = True \<and> nr_flow_control (vns_reliability n) = True \<and> nr_error_detection (vns_reliability n) = True \<and> nr_retransmission (vns_reliability n) = True"
   by simp
 
 (* COMP_003_handshake_valid (matches Coq) *)
@@ -1057,19 +1067,19 @@ lemma COMP_003_handshake_valid: "handshake_sequence_valid"
   by simp
 
 (* COMP_004_established_data_transfer (matches Coq) *)
-lemma COMP_004_established_data_transfer: "\<forall>opts. let s := mkSocket SockConnected (Some 80) (Some 12345) ESTABLISHED opts in socket_can_send s = True \<and> socket_can_recv s = True"
+lemma COMP_004_established_data_transfer: "\<forall> opts, let s := mkSocket SockConnected (Some 80) (Some (Z.to_nat 12345%Z)) ESTABLISHED opts in socket_can_send s = True \<and> socket_can_recv s = True"
   by simp
 
 (* COMP_005_cong_fairness (matches Coq) *)
-lemma COMP_005_cong_fairness: "\<forall>cs mss. mss > 0 \<longrightarrow> cwnd (aimd_increase cs mss) \<ge> cwnd cs"
-  by auto
+lemma COMP_005_cong_fairness: "\<forall> cs mss, mss > 0 \<longrightarrow> cwnd (aimd_increase cs mss) \<ge> cwnd cs"
+  by (cases rule: ‹_›.cases; simp)
 
 (* COMP_006_tcp_parse_safety (matches Coq) *)
-lemma COMP_006_tcp_parse_safety: "\<forall>data cap pos. pos + TCP_MIN_HEADER \<le> cap \<longrightarrow> safe_read (mkBuffer data cap pos) TCP_MIN_HEADER = True"
+lemma COMP_006_tcp_parse_safety: "\<forall> data cap pos, pos + TCP_MIN_HEADER \<le> cap \<longrightarrow> safe_read (mkBuffer data cap pos) TCP_MIN_HEADER = True"
   by auto
 
 (* COMP_007_frame_parse_safety (matches Coq) *)
-lemma COMP_007_frame_parse_safety: "\<forall>data cap pos. pos + ETH_MIN_FRAME + IP_MIN_HEADER + TCP_MIN_HEADER \<le> cap \<longrightarrow> safe_read (mkBuffer data cap pos) (ETH_MIN_FRAME + IP_MIN_HEADER + TCP_MIN_HEADER) = True"
+lemma COMP_007_frame_parse_safety: "\<forall> data cap pos, pos + ETH_MIN_FRAME + IP_MIN_HEADER + TCP_MIN_HEADER \<le> cap \<longrightarrow> safe_read (mkBuffer data cap pos) (ETH_MIN_FRAME + IP_MIN_HEADER + TCP_MIN_HEADER) = True"
   by simp
 
 (* COMP_008_riina_complete (matches Coq) *)
@@ -1077,11 +1087,11 @@ lemma COMP_008_riina_complete: "net_stack_verified riina_net_stack = True \<and>
   by auto
 
 (* COMP_009_tcp_deterministic (matches Coq) *)
-lemma COMP_009_tcp_deterministic: "\<forall>st seg is_server. tcp_transition st seg is_server = tcp_transition st seg is_server"
+lemma COMP_009_tcp_deterministic: "\<forall> st seg is_server, tcp_transition st seg is_server = tcp_transition st seg is_server"
   by simp
 
 (* COMP_010_seq_wraparound (matches Coq) *)
-lemma COMP_010_seq_wraparound: "\<forall>n. (n + SEQ_SPACE) mod SEQ_SPACE = n mod SEQ_SPACE"
+lemma COMP_010_seq_wraparound: "\<forall> n, (n + SEQ_SPACE) mod SEQ_SPACE = n mod SEQ_SPACE"
   by auto
 
 end

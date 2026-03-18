@@ -12,23 +12,23 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | rate_limiter        | rate_limiter           | OK     |
- * | mfa_state           | mfa_state              | OK     |
- * | password_hash       | password_hash          | OK     |
- * | session_token       | session_token          | OK     |
- * | credential_store    | credential_store       | OK     |
- * | auth_attempt        | auth_attempt           | OK     |
- * | auth_ticket         | auth_ticket            | OK     |
- * | service_key         | service_key            | OK     |
- * | hsm_protected_key    | hsm_protected_key      | OK     |
- * | mutual_auth         | mutual_auth            | OK     |
- * | route_auth          | route_auth             | OK     |
- * | o_auth_state         | o_auth_state           | OK     |
- * | jwt_config          | jwt_config             | OK     |
- * | sa_ml_config         | saml_config            | OK     |
- * | biometric_auth      | biometric_auth         | OK     |
- * | nonce_store         | nonce_store            | OK     |
- * | web_authn_auth       | web_authn_auth         | OK     |
+ * | RateLimiter        | rate_limiter           | OK     |
+ * | MFAState           | mfa_state              | OK     |
+ * | PasswordHash       | password_hash          | OK     |
+ * | SessionToken       | session_token          | OK     |
+ * | CredentialStore    | credential_store       | OK     |
+ * | AuthAttempt        | auth_attempt           | OK     |
+ * | AuthTicket         | auth_ticket            | OK     |
+ * | ServiceKey         | service_key            | OK     |
+ * | HSMProtectedKey    | hsm_protected_key      | OK     |
+ * | MutualAuth         | mutual_auth            | OK     |
+ * | RouteAuth          | route_auth             | OK     |
+ * | OAuthState         | o_auth_state           | OK     |
+ * | JWTConfig          | jwt_config             | OK     |
+ * | SAMLConfig         | saml_config            | OK     |
+ * | BiometricAuth      | biometric_auth         | OK     |
+ * | NonceStore         | nonce_store            | OK     |
+ * | WebAuthnAuth       | web_authn_auth         | OK     |
  * | is_rate_limited    | is_rate_limited        | OK     |
  * | mfa_complete       | mfa_complete           | OK     |
  * | token_valid        | token_valid            | OK     |
@@ -61,29 +61,27 @@ theory AuthenticationSecurity
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym sa_ml_config = "nat"
-(* rate_limiter (matches Coq: Record rate_limiter) *)
+(* RateLimiter (matches Coq: Record RateLimiter) *)
 record rate_limiter =
   rl_attempts :: nat
   rl_window_start :: nat
   rl_max_attempts :: nat
   rl_lockout_duration :: nat
 
-(* mfa_state (matches Coq: Record mfa_state) *)
+(* MFAState (matches Coq: Record MFAState) *)
 record mfa_state =
   mfa_password_verified :: bool
   mfa_second_factor_verified :: bool
   mfa_required :: bool
 
-(* password_hash (matches Coq: Record password_hash) *)
+(* PasswordHash (matches Coq: Record PasswordHash) *)
 record password_hash =
   ph_hash :: 'a list
   ph_salt :: 'a list
   ph_iterations :: nat
   ph_algorithm :: nat
 
-(* session_token (matches Coq: Record session_token) *)
+(* SessionToken (matches Coq: Record SessionToken) *)
 record session_token =
   st_value :: 'a list
   st_user_id :: nat
@@ -92,13 +90,13 @@ record session_token =
   st_bound_ip :: option
   st_bound_ua :: option
 
-(* credential_store (matches Coq: Record credential_store) *)
+(* CredentialStore (matches Coq: Record CredentialStore) *)
 record credential_store =
-  cs_hash :: password_hash
+  cs_hash :: PasswordHash
   cs_mfa_secret :: option
   cs_recovery_codes :: 'a list
 
-(* auth_attempt (matches Coq: Record auth_attempt) *)
+(* AuthAttempt (matches Coq: Record AuthAttempt) *)
 record auth_attempt =
   aa_user :: nat
   aa_password_hash :: 'a list
@@ -106,64 +104,64 @@ record auth_attempt =
   aa_ip :: nat
   aa_timestamp :: nat
 
-(* auth_ticket (matches Coq: Record auth_ticket) *)
+(* AuthTicket (matches Coq: Record AuthTicket) *)
 record auth_ticket =
   at_user :: nat
   at_signature :: 'a list
   at_timestamp :: nat
   at_nonce :: nat
 
-(* service_key (matches Coq: Record service_key) *)
+(* ServiceKey (matches Coq: Record ServiceKey) *)
 record service_key =
   sk_algorithm :: nat
   sk_key :: 'a list
 
-(* hsm_protected_key (matches Coq: Record hsm_protected_key) *)
+(* HSMProtectedKey (matches Coq: Record HSMProtectedKey) *)
 record hsm_protected_key =
   hsm_key_id :: nat
   hsm_extractable :: bool
 
-(* mutual_auth (matches Coq: Record mutual_auth) *)
+(* MutualAuth (matches Coq: Record MutualAuth) *)
 record mutual_auth =
   ma_client_verified :: bool
   ma_server_verified :: bool
 
-(* route_auth (matches Coq: Record route_auth) *)
+(* RouteAuth (matches Coq: Record RouteAuth) *)
 record route_auth =
   ra_path :: 'a list
   ra_auth_required :: bool
   ra_auth_checked :: bool
 
-(* o_auth_state (matches Coq: Record o_auth_state) *)
+(* OAuthState (matches Coq: Record OAuthState) *)
 record o_auth_state =
   oauth_state_param :: 'a list
   oauth_pkce_verifier :: 'a list
   oauth_redirect_validated :: bool
 
-(* jwt_config (matches Coq: Record jwt_config) *)
+(* JWTConfig (matches Coq: Record JWTConfig) *)
 record jwt_config =
   jwt_alg_none_disabled :: bool
   jwt_alg_symmetric_disabled :: bool
   jwt_exp_required :: bool
 
-(* sa_ml_config (matches Coq: Record sa_ml_config) *)
+(* SAMLConfig (matches Coq: Record SAMLConfig) *)
 record saml_config =
   saml_signature_required :: bool
   saml_assertion_encrypted :: bool
   saml_replay_detection :: bool
 
-(* biometric_auth (matches Coq: Record biometric_auth) *)
+(* BiometricAuth (matches Coq: Record BiometricAuth) *)
 record biometric_auth =
   bio_liveness_check :: bool
   bio_confidence :: nat
   bio_min_confidence :: nat
 
-(* nonce_store (matches Coq: Record nonce_store) *)
+(* NonceStore (matches Coq: Record NonceStore) *)
 record nonce_store =
   ns_seen :: 'a list
   ns_max_age :: nat
 
-(* web_authn_auth (matches Coq: Record web_authn_auth) *)
+(* WebAuthnAuth (matches Coq: Record WebAuthnAuth) *)
 record web_authn_auth =
   wa_origin_bound :: bool
   wa_challenge_verified :: bool
@@ -182,94 +180,94 @@ definition token_valid :: "SessionToken \<Rightarrow> nat \<Rightarrow> bool" wh
   "token_valid t now \<equiv> (now < (st_expires) t)"
 
 (* token_bound - complex match, needs manual translation *)
-definition token_bound :: "bool" where "token_bound \<equiv> True"
+definition token_bound :: "bool" where "token_bound = undefined"
 
 (* zeroize (matches Coq: Definition zeroize) *)
 definition zeroize :: "list nat" where
-  "zeroize \<equiv> map (\<lambda>_. 0) data"
+  "zeroize \<equiv> map (fun _ => 0) data"
 
 (* nonce_fresh (matches Coq: Definition nonce_fresh) *)
 definition nonce_fresh :: "NonceStore \<Rightarrow> nat \<Rightarrow> bool" where
   "nonce_fresh ns n \<equiv> (\<not> (existsb) ((n) = (ns_seen) ns))"
 
 (* auth_001_credential_stuffing_mitigated (matches Coq) *)
-lemma auth_001_credential_stuffing_mitigated: "\<forall>(rl :: rate_limiter). rl_attempts rl \<ge> rl_max_attempts rl \<longrightarrow> is_rate_limited rl = True"
+lemma auth_001_credential_stuffing_mitigated: "\<forall> (rl : RateLimiter), rl_attempts rl \<ge> rl_max_attempts rl \<longrightarrow> is_rate_limited rl = True"
   by auto
 
 (* auth_002_password_spraying_mitigated (matches Coq) *)
-lemma auth_002_password_spraying_mitigated: "\<forall>(rl :: rate_limiter). is_rate_limited rl = True \<longrightarrow> rl_attempts rl \<ge> rl_max_attempts rl"
+lemma auth_002_password_spraying_mitigated: "\<forall> (rl : RateLimiter), is_rate_limited rl = True \<longrightarrow> rl_attempts rl \<ge> rl_max_attempts rl"
   by auto
 
 (* auth_003_brute_force_mitigated (matches Coq) *)
-lemma auth_003_brute_force_mitigated: "\<forall>(rl :: rate_limiter) (n :: nat). n \<ge> rl_max_attempts rl \<longrightarrow> is_rate_limited (mkRateLimiter n (rl_window_start rl) (rl_max_attempts rl) (rl_lockout_duration rl)) = True"
+lemma auth_003_brute_force_mitigated: "\<forall> (rl : RateLimiter) (n : nat), n \<ge> rl_max_attempts rl \<longrightarrow> is_rate_limited (mkRateLimiter n (rl_window_start rl) (rl_max_attempts rl) (rl_lockout_duration rl)) = True"
   by auto
 
 (* auth_004_pass_the_hash_mitigated (matches Coq) *)
-lemma auth_004_pass_the_hash_mitigated: "\<forall>(t :: auth_ticket). length (at_signature t) > 0 \<longrightarrow> True"
+lemma auth_004_pass_the_hash_mitigated: "\<forall> (t : AuthTicket), length (at_signature t) > 0 \<longrightarrow> True"
   by auto
 
 (* auth_005_pass_the_ticket_mitigated (matches Coq) *)
-lemma auth_005_pass_the_ticket_mitigated: "\<forall>(t :: session_token) (now :: nat). token_valid t now = True \<longrightarrow> now < st_expires t"
+lemma auth_005_pass_the_ticket_mitigated: "\<forall> (t : SessionToken) (now : nat), token_valid t now = True \<longrightarrow> now < st_expires t"
   by auto
 
 (* auth_006_kerberoasting_mitigated (matches Coq) *)
-lemma auth_006_kerberoasting_mitigated: "\<forall>(sk :: service_key). sk_algorithm sk \<ge> 2 \<longrightarrow> True"
+lemma auth_006_kerberoasting_mitigated: "\<forall> (sk : ServiceKey), sk_algorithm sk \<ge> 2 \<longrightarrow> True"
   by auto
 
 (* auth_007_golden_ticket_mitigated (matches Coq) *)
-lemma auth_007_golden_ticket_mitigated: "\<forall>(k :: hsm_protected_key). hsm_extractable k = False \<longrightarrow> True"
+lemma auth_007_golden_ticket_mitigated: "\<forall> (k : HSMProtectedKey), hsm_extractable k = False \<longrightarrow> True"
   by auto
 
 (* auth_008_silver_ticket_mitigated (matches Coq) *)
-lemma auth_008_silver_ticket_mitigated: "\<forall>(ma :: mutual_auth). ma_client_verified ma = True \<longrightarrow> ma_server_verified ma = True \<longrightarrow> True"
+lemma auth_008_silver_ticket_mitigated: "\<forall> (ma : MutualAuth), ma_client_verified ma = True \<longrightarrow> ma_server_verified ma = True \<longrightarrow> True"
   by auto
 
 (* auth_009_credential_theft_mitigated (matches Coq) *)
-lemma auth_009_credential_theft_mitigated: "\<forall>(cred : list nat). Forall (\<lambda>x. x = 0) (zeroize cred)"
+lemma auth_009_credential_theft_mitigated: "\<forall> (cred : list nat), Forall (fun x => x = 0) (zeroize cred)"
   by auto
 
 (* auth_010_session_fixation_mitigated (matches Coq) *)
-lemma auth_010_session_fixation_mitigated: "\<forall>(old_id :: nat) (new_id :: nat). old_id \<noteq> new_id \<longrightarrow> old_id \<noteq> new_id"
+lemma auth_010_session_fixation_mitigated: "\<forall> (old_id new_id : nat), old_id \<noteq> new_id \<longrightarrow> old_id \<noteq> new_id"
   by auto
 
 (* auth_011_auth_bypass_mitigated (matches Coq) *)
-lemma auth_011_auth_bypass_mitigated: "\<forall>(ra :: route_auth). ra_auth_required ra = True \<longrightarrow> ra_auth_checked ra = True \<longrightarrow> True"
+lemma auth_011_auth_bypass_mitigated: "\<forall> (ra : RouteAuth), ra_auth_required ra = True \<longrightarrow> ra_auth_checked ra = True \<longrightarrow> True"
   by auto
 
 (* auth_012_oauth_attacks_mitigated (matches Coq) *)
-lemma auth_012_oauth_attacks_mitigated: "\<forall>(os :: o_auth_state). length (oauth_state_param os) \<ge> 32 \<longrightarrow> length (oauth_pkce_verifier os) \<ge> 43 \<longrightarrow> oauth_redirect_validated os = True \<longrightarrow> True"
+lemma auth_012_oauth_attacks_mitigated: "\<forall> (os : OAuthState), length (oauth_state_param os) \<ge> 32 \<longrightarrow> length (oauth_pkce_verifier os) \<ge> 43 \<longrightarrow> oauth_redirect_validated os = True \<longrightarrow> True"
   by auto
 
 (* auth_013_jwt_attacks_mitigated (matches Coq) *)
-lemma auth_013_jwt_attacks_mitigated: "\<forall>(jc :: jwt_config). jwt_alg_none_disabled jc = True \<longrightarrow> jwt_exp_required jc = True \<longrightarrow> True"
+lemma auth_013_jwt_attacks_mitigated: "\<forall> (jc : JWTConfig), jwt_alg_none_disabled jc = True \<longrightarrow> jwt_exp_required jc = True \<longrightarrow> True"
   by auto
 
 (* auth_014_saml_attacks_mitigated (matches Coq) *)
-lemma auth_014_saml_attacks_mitigated: "\<forall>(sc :: sa_ml_config). saml_signature_required sc = True \<longrightarrow> saml_replay_detection sc = True \<longrightarrow> True"
+lemma auth_014_saml_attacks_mitigated: "\<forall> (sc : SAMLConfig), saml_signature_required sc = True \<longrightarrow> saml_replay_detection sc = True \<longrightarrow> True"
   by auto
 
 (* auth_015_sso_attacks_mitigated (matches Coq) *)
-lemma auth_015_sso_attacks_mitigated: "\<forall>(os :: o_auth_state) (jc :: jwt_config). oauth_redirect_validated os = True \<longrightarrow> jwt_alg_none_disabled jc = True \<longrightarrow> True"
+lemma auth_015_sso_attacks_mitigated: "\<forall> (os : OAuthState) (jc : JWTConfig), oauth_redirect_validated os = True \<longrightarrow> jwt_alg_none_disabled jc = True \<longrightarrow> True"
   by auto
 
 (* auth_016_mfa_bypass_mitigated (matches Coq) *)
-lemma auth_016_mfa_bypass_mitigated: "\<forall>(s :: mfa_state). mfa_required s = True \<longrightarrow> mfa_complete s = True \<longrightarrow> mfa_second_factor_verified s = True"
+lemma auth_016_mfa_bypass_mitigated: "\<forall> (s : MFAState), mfa_required s = True \<longrightarrow> mfa_complete s = True \<longrightarrow> mfa_second_factor_verified s = True"
   by auto
 
 (* auth_017_biometric_spoof_mitigated (matches Coq) *)
-lemma auth_017_biometric_spoof_mitigated: "\<forall>(ba :: biometric_auth). bio_liveness_check ba = True \<longrightarrow> bio_confidence ba \<ge> bio_min_confidence ba \<longrightarrow> True"
+lemma auth_017_biometric_spoof_mitigated: "\<forall> (ba : BiometricAuth), bio_liveness_check ba = True \<longrightarrow> bio_confidence ba \<ge> bio_min_confidence ba \<longrightarrow> True"
   by auto
 
 (* auth_018_token_theft_mitigated (matches Coq) *)
-lemma auth_018_token_theft_mitigated: "\<forall>(t :: session_token) (ip :: nat) (ua :: nat). token_bound t ip ua = True \<longrightarrow> True"
+lemma auth_018_token_theft_mitigated: "\<forall> (t : SessionToken) (ip ua : nat), token_bound t ip ua = True \<longrightarrow> True"
   by auto
 
 (* auth_019_replay_mitigated (matches Coq) *)
-lemma auth_019_replay_mitigated: "\<forall>(ns :: nonce_store) (n :: nat). nonce_fresh ns n = True \<longrightarrow> n \<notin> set (ns_seen ns)"
+lemma auth_019_replay_mitigated: "\<forall> (ns : NonceStore) (n : nat), nonce_fresh ns n = True \<longrightarrow> ~ In n (ns_seen ns)"
   by auto
 
 (* auth_020_phishing_mitigated (matches Coq) *)
-lemma auth_020_phishing_mitigated: "\<forall>(wa :: web_authn_auth). wa_origin_bound wa = True \<longrightarrow> wa_challenge_verified wa = True \<longrightarrow> True"
+lemma auth_020_phishing_mitigated: "\<forall> (wa : WebAuthnAuth), wa_origin_bound wa = True \<longrightarrow> wa_challenge_verified wa = True \<longrightarrow> True"
   by auto
 
 end

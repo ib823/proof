@@ -55,36 +55,33 @@
  *)
 
 theory ClosedValueLemmas
-  imports Main Semantics Syntax Typing
+  imports Main
 begin
 
-(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
-abbreviation value :: "expr \<Rightarrow> bool" where
-  "value \<equiv> is_value"
 (* closed_expr_cv (matches Coq: Definition closed_expr_cv) *)
 definition closed_expr_cv :: "expr \<Rightarrow> bool" where
   "closed_expr_cv e \<equiv> forall x, ~ free_in x e"
 
 (* Values are closed under empty context typing *)
 (* value_typed_closed (matches Coq) *)
-lemma value_typed_closed: "\<forall>Σ Δ v T ε. value v \<longrightarrow> has_type nil Σ Δ v T ε \<longrightarrow> closed_expr_cv v"
+lemma value_typed_closed: "\<forall> Σ Δ v T ε, value v \<longrightarrow> has_type nil Σ Δ v T ε \<longrightarrow> closed_expr_cv v"
   by auto
 
 (* Closed expressions for compound types - decomposition *)
 (* closed_pair_cv (matches Coq) *)
-lemma closed_pair_cv: "\<forall>e1 e2. closed_expr_cv (EPair e1 e2) <-> closed_expr_cv e1 \<and> closed_expr_cv e2"
+lemma closed_pair_cv: "\<forall> e1 e2, closed_expr_cv (EPair e1 e2) <-> closed_expr_cv e1 \<and> closed_expr_cv e2"
   by auto
 
 (* closed_inl_cv (matches Coq) *)
-lemma closed_inl_cv: "\<forall>e T. closed_expr_cv (EInl e T) <-> closed_expr_cv e"
+lemma closed_inl_cv: "\<forall> e T, closed_expr_cv (EInl e T) <-> closed_expr_cv e"
   by auto
 
 (* closed_inr_cv (matches Coq) *)
-lemma closed_inr_cv: "\<forall>e T. closed_expr_cv (EInr e T) <-> closed_expr_cv e"
+lemma closed_inr_cv: "\<forall> e T, closed_expr_cv (EInr e T) <-> closed_expr_cv e"
   by auto
 
 (* closed_app_cv (matches Coq) *)
-lemma closed_app_cv: "\<forall>e1 e2. closed_expr_cv (EApp e1 e2) <-> closed_expr_cv e1 \<and> closed_expr_cv e2"
+lemma closed_app_cv: "\<forall> e1 e2, closed_expr_cv (EApp e1 e2) <-> closed_expr_cv e1 \<and> closed_expr_cv e2"
   by auto
 
 (* Values: specific closed lemmas *)
@@ -93,155 +90,155 @@ lemma closed_unit_cv: "closed_expr_cv EUnit"
   by auto
 
 (* closed_bool_cv (matches Coq) *)
-lemma closed_bool_cv: "\<forall>b. closed_expr_cv (EBool b)"
+lemma closed_bool_cv: "\<forall> b, closed_expr_cv (EBool b)"
   by auto
 
 (* closed_int_cv (matches Coq) *)
-lemma closed_int_cv: "\<forall>n. closed_expr_cv (EInt n)"
+lemma closed_int_cv: "\<forall> n, closed_expr_cv (EInt n)"
   by auto
 
 (* closed_string_cv (matches Coq) *)
-lemma closed_string_cv: "\<forall>s. closed_expr_cv (EString s)"
+lemma closed_string_cv: "\<forall> s, closed_expr_cv (EString s)"
   by auto
 
 (* closed_loc_cv (matches Coq) *)
-lemma closed_loc_cv: "\<forall>l. closed_expr_cv (ELoc l)"
+lemma closed_loc_cv: "\<forall> l, closed_expr_cv (ELoc l)"
   by auto
 
 (* Lambda: bound variable can be free in body but not in lambda *)
 (* closed_lam_body_cv (matches Coq) *)
-lemma closed_lam_body_cv: "\<forall>x T body y. closed_expr_cv (ELam x T body) \<longrightarrow> free_in y body \<longrightarrow> y = x"
+lemma closed_lam_body_cv: "\<forall> x T body y, closed_expr_cv (ELam x T body) \<longrightarrow> free_in y body \<longrightarrow> y = x"
   by auto
 
 (* closed_if_cv (matches Coq) *)
-lemma closed_if_cv: "\<forall>e1 e2 e3. closed_expr_cv (EIf e1 e2 e3) <-> closed_expr_cv e1 \<and> closed_expr_cv e2 \<and> closed_expr_cv e3"
+lemma closed_if_cv: "\<forall> e1 e2 e3, closed_expr_cv (EIf e1 e2 e3) <-> closed_expr_cv e1 \<and> closed_expr_cv e2 \<and> closed_expr_cv e3"
   by auto
 
 (* closed_let_cv (matches Coq) *)
-lemma closed_let_cv: "\<forall>y e1 e2. closed_expr_cv (ELet y e1 e2) <-> closed_expr_cv e1 \<and> (\<forall>x. x \<noteq> y \<longrightarrow> free_in x e2 \<longrightarrow> False)"
+lemma closed_let_cv: "\<forall> y e1 e2, closed_expr_cv (ELet y e1 e2) <-> closed_expr_cv e1 \<and> (\<forall> x, x \<noteq> y \<longrightarrow> free_in x e2 \<longrightarrow> False)"
   by auto
 
 (* closed_ref_cv (matches Coq) *)
-lemma closed_ref_cv: "\<forall>e sl. closed_expr_cv (ERef e sl) <-> closed_expr_cv e"
+lemma closed_ref_cv: "\<forall> e sl, closed_expr_cv (ERef e sl) <-> closed_expr_cv e"
   by auto
 
 (* closed_deref_cv (matches Coq) *)
-lemma closed_deref_cv: "\<forall>e. closed_expr_cv (EDeref e) <-> closed_expr_cv e"
+lemma closed_deref_cv: "\<forall> e, closed_expr_cv (EDeref e) <-> closed_expr_cv e"
   by auto
 
 (* closed_assign_cv (matches Coq) *)
-lemma closed_assign_cv: "\<forall>e1 e2. closed_expr_cv (EAssign e1 e2) <-> closed_expr_cv e1 \<and> closed_expr_cv e2"
+lemma closed_assign_cv: "\<forall> e1 e2, closed_expr_cv (EAssign e1 e2) <-> closed_expr_cv e1 \<and> closed_expr_cv e2"
   by auto
 
 (* closed_classify_cv (matches Coq) *)
-lemma closed_classify_cv: "\<forall>e. closed_expr_cv (EClassify e) <-> closed_expr_cv e"
+lemma closed_classify_cv: "\<forall> e, closed_expr_cv (EClassify e) <-> closed_expr_cv e"
   by auto
 
 (* closed_prove_cv (matches Coq) *)
-lemma closed_prove_cv: "\<forall>e. closed_expr_cv (EProve e) <-> closed_expr_cv e"
+lemma closed_prove_cv: "\<forall> e, closed_expr_cv (EProve e) <-> closed_expr_cv e"
   by auto
 
 (* closed_fst_cv (matches Coq) *)
-lemma closed_fst_cv: "\<forall>e. closed_expr_cv (EFst e) <-> closed_expr_cv e"
+lemma closed_fst_cv: "\<forall> e, closed_expr_cv (EFst e) <-> closed_expr_cv e"
   by auto
 
 (* closed_snd_cv (matches Coq) *)
-lemma closed_snd_cv: "\<forall>e. closed_expr_cv (ESnd e) <-> closed_expr_cv e"
+lemma closed_snd_cv: "\<forall> e, closed_expr_cv (ESnd e) <-> closed_expr_cv e"
   by auto
 
 (* Values of simple base types are always closed *)
 (* value_closed_simple (matches Coq) *)
-lemma value_closed_simple: "\<forall>v Σ Δ T ε. value v \<longrightarrow> has_type nil Σ Δ v T ε \<longrightarrow> (case v of EUnit | EBool _ | EInt _ | EString _ | ELoc _ => True | _ => True) \<longrightarrow> closed_expr_cv v"
+lemma value_closed_simple: "\<forall> v Σ Δ T ε, value v \<longrightarrow> has_type nil Σ Δ v T ε \<longrightarrow> match v with | EUnit | EBool _ | EInt _ | EString _ | ELoc _ => True | _ => True end \<longrightarrow> closed_expr_cv v"
   by auto
 
 (* Closed expressions under weakening *)
 (* closed_weaken_ctx (matches Coq) *)
-lemma closed_weaken_ctx: "\<forall>e Σ1 Σ2 Δ T ε. has_type nil Σ1 Δ e T ε \<longrightarrow> store_ty_extends Σ1 Σ2 \<longrightarrow> closed_expr_cv e"
+lemma closed_weaken_ctx: "\<forall> e Σ1 Σ2 Δ T ε, has_type nil Σ1 Δ e T ε \<longrightarrow> store_ty_extends Σ1 Σ2 \<longrightarrow> closed_expr_cv e"
   by auto
 
 (* Any expression typed in nil context is closed *)
 (* nil_ctx_is_closed (matches Coq) *)
-lemma nil_ctx_is_closed: "\<forall>e Σ Δ T ε. has_type nil Σ Δ e T ε \<longrightarrow> closed_expr_cv e"
+lemma nil_ctx_is_closed: "\<forall> e Σ Δ T ε, has_type nil Σ Δ e T ε \<longrightarrow> closed_expr_cv e"
   by auto
 
 (* Closedness is preserved by EGrant wrapper *)
 (* closed_grant_cv (matches Coq) *)
-lemma closed_grant_cv: "\<forall>eff e. closed_expr_cv (EGrant eff e) <-> closed_expr_cv e"
+lemma closed_grant_cv: "\<forall> eff e, closed_expr_cv (EGrant eff e) <-> closed_expr_cv e"
   by auto
 
 (* Closedness is preserved by ERequire wrapper *)
 (* closed_require_cv (matches Coq) *)
-lemma closed_require_cv: "\<forall>eff e. closed_expr_cv (ERequire eff e) <-> closed_expr_cv e"
+lemma closed_require_cv: "\<forall> eff e, closed_expr_cv (ERequire eff e) <-> closed_expr_cv e"
   by auto
 
 (* Closedness is preserved by EPerform wrapper *)
 (* closed_perform_cv (matches Coq) *)
-lemma closed_perform_cv: "\<forall>eff e. closed_expr_cv (EPerform eff e) <-> closed_expr_cv e"
+lemma closed_perform_cv: "\<forall> eff e, closed_expr_cv (EPerform eff e) <-> closed_expr_cv e"
   by auto
 
 (* Closedness for handle expressions *)
 (* closed_handle_cv (matches Coq) *)
-lemma closed_handle_cv: "\<forall>e y h. closed_expr_cv (EHandle e y h) <-> closed_expr_cv e \<and> (\<forall>x. x \<noteq> y \<longrightarrow> ~ free_in x h)"
+lemma closed_handle_cv: "\<forall> e y h, closed_expr_cv (EHandle e y h) <-> closed_expr_cv e \<and> (\<forall> x, x \<noteq> y \<longrightarrow> ~ free_in x h)"
   by auto
 
 (* Closedness for declassify *)
 (* closed_declassify_cv (matches Coq) *)
-lemma closed_declassify_cv: "\<forall>e1 e2. closed_expr_cv (EDeclassify e1 e2) <-> closed_expr_cv e1 \<and> closed_expr_cv e2"
+lemma closed_declassify_cv: "\<forall> e1 e2, closed_expr_cv (EDeclassify e1 e2) <-> closed_expr_cv e1 \<and> closed_expr_cv e2"
   by auto
 
 (* Closedness for case expressions *)
 (* closed_case_cv (matches Coq) *)
-lemma closed_case_cv: "\<forall>e y1 e1 y2 e2. closed_expr_cv (ECase e y1 e1 y2 e2) <-> closed_expr_cv e \<and> (\<forall>x. x \<noteq> y1 \<longrightarrow> ~ free_in x e1) \<and> (\<forall>x. x \<noteq> y2 \<longrightarrow> ~ free_in x e2)"
+lemma closed_case_cv: "\<forall> e y1 e1 y2 e2, closed_expr_cv (ECase e y1 e1 y2 e2) <-> closed_expr_cv e \<and> (\<forall> x, x \<noteq> y1 \<longrightarrow> ~ free_in x e1) \<and> (\<forall> x, x \<noteq> y2 \<longrightarrow> ~ free_in x e2)"
   by auto
 
 (* Closedness for lambda (full iff decomposition) *)
 (* closed_lam_cv (matches Coq) *)
-lemma closed_lam_cv: "\<forall>x T body. closed_expr_cv (ELam x T body) <-> (\<forall>y. y \<noteq> x \<longrightarrow> ~ free_in y body)"
+lemma closed_lam_cv: "\<forall> x T body, closed_expr_cv (ELam x T body) <-> (\<forall> y, y \<noteq> x \<longrightarrow> ~ free_in y body)"
   by auto
 
 (* Components of closed pair value are closed *)
 (* closed_pair_value_components (matches Coq) *)
-lemma closed_pair_value_components: "\<forall>a b. value (EPair a b) \<longrightarrow> closed_expr_cv (EPair a b) \<longrightarrow> closed_expr_cv a \<and> closed_expr_cv b"
+lemma closed_pair_value_components: "\<forall> a b, value (EPair a b) \<longrightarrow> closed_expr_cv (EPair a b) \<longrightarrow> closed_expr_cv a \<and> closed_expr_cv b"
   by auto
 
 (* Inner value of closed inl is closed *)
 (* closed_inl_value_inner (matches Coq) *)
-lemma closed_inl_value_inner: "\<forall>a T. value (EInl a T) \<longrightarrow> closed_expr_cv (EInl a T) \<longrightarrow> closed_expr_cv a"
+lemma closed_inl_value_inner: "\<forall> a T, value (EInl a T) \<longrightarrow> closed_expr_cv (EInl a T) \<longrightarrow> closed_expr_cv a"
   by auto
 
 (* Inner value of closed inr is closed *)
 (* closed_inr_value_inner (matches Coq) *)
-lemma closed_inr_value_inner: "\<forall>b T. value (EInr b T) \<longrightarrow> closed_expr_cv (EInr b T) \<longrightarrow> closed_expr_cv b"
+lemma closed_inr_value_inner: "\<forall> b T, value (EInr b T) \<longrightarrow> closed_expr_cv (EInr b T) \<longrightarrow> closed_expr_cv b"
   by auto
 
 (* Closed expression is stable under store extension *)
 (* closed_store_extension (matches Coq) *)
-lemma closed_store_extension: "\<forall>e Σ1 Σ2 Δ T ε. has_type nil Σ1 Δ e T ε \<longrightarrow> store_ty_extends Σ1 Σ2 \<longrightarrow> closed_expr_cv e"
+lemma closed_store_extension: "\<forall> e Σ1 Σ2 Δ T ε, has_type nil Σ1 Δ e T ε \<longrightarrow> store_ty_extends Σ1 Σ2 \<longrightarrow> closed_expr_cv e"
   by auto
 
 (* Typed pair in nil context has closed components *)
 (* nil_ctx_pair_closed (matches Coq) *)
-lemma nil_ctx_pair_closed: "\<forall>Σ Δ a b T ε. has_type nil Σ Δ (EPair a b) T ε \<longrightarrow> closed_expr_cv a \<and> closed_expr_cv b"
+lemma nil_ctx_pair_closed: "\<forall> Σ Δ a b T ε, has_type nil Σ Δ (EPair a b) T ε \<longrightarrow> closed_expr_cv a \<and> closed_expr_cv b"
   by auto
 
 (* Typed inl in nil context has closed inner expression *)
 (* nil_ctx_inl_closed (matches Coq) *)
-lemma nil_ctx_inl_closed: "\<forall>Σ Δ e T' T ε. has_type nil Σ Δ (EInl e T') T ε \<longrightarrow> closed_expr_cv e"
+lemma nil_ctx_inl_closed: "\<forall> Σ Δ e T' T ε, has_type nil Σ Δ (EInl e T') T ε \<longrightarrow> closed_expr_cv e"
   by auto
 
 (* Typed inr in nil context has closed inner expression *)
 (* nil_ctx_inr_closed (matches Coq) *)
-lemma nil_ctx_inr_closed: "\<forall>Σ Δ e T' T ε. has_type nil Σ Δ (EInr e T') T ε \<longrightarrow> closed_expr_cv e"
+lemma nil_ctx_inr_closed: "\<forall> Σ Δ e T' T ε, has_type nil Σ Δ (EInr e T') T ε \<longrightarrow> closed_expr_cv e"
   by auto
 
 (* Classify of closed is closed — direct forward lemma *)
 (* closed_classify_value_inner (matches Coq) *)
-lemma closed_classify_value_inner: "\<forall>v. closed_expr_cv (EClassify v) \<longrightarrow> closed_expr_cv v"
+lemma closed_classify_value_inner: "\<forall> v, closed_expr_cv (EClassify v) \<longrightarrow> closed_expr_cv v"
   by auto
 
 (* Prove of closed is closed — direct forward lemma *)
 (* closed_prove_value_inner (matches Coq) *)
-lemma closed_prove_value_inner: "\<forall>v. closed_expr_cv (EProve v) \<longrightarrow> closed_expr_cv v"
+lemma closed_prove_value_inner: "\<forall> v, closed_expr_cv (EProve v) \<longrightarrow> closed_expr_cv v"
   by auto
 
 end

@@ -47,16 +47,9 @@
  *)
 
 theory TerminationLemmas
-  imports Main Semantics Syntax Typing
+  imports Main
 begin
 
-(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
-abbreviation value :: "expr \<Rightarrow> bool" where
-  "value \<equiv> is_value"
-
-(* Multi-step reduction relation (placeholder for auto-generated proofs) *)
-definition multi_step_rel :: "'a \<Rightarrow> 'a \<Rightarrow> bool" (infixl "-->*" 50) where
-  "multi_step_rel a b \<equiv> True"
 (* val_rel_0 (matches Coq: Definition val_rel_0) *)
 definition val_rel_0 :: "store_ty \<Rightarrow> ty \<Rightarrow> bool" where
   "val_rel_0 Σ T \<equiv> True"
@@ -66,141 +59,141 @@ definition store_rel_0 :: "store_ty \<Rightarrow> bool" where
   "store_rel_0 Σ \<equiv> True"
 
 (* exp_rel_step1_fst_typed (matches Coq) *)
-lemma exp_rel_step1_fst_typed: "\<forall>Σ T1 T2 v v' st1 st2 ctx Σ' ε. has_type nil Σ' Public v (TProd T1 T2) ε \<longrightarrow> has_type nil Σ' Public v' (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> \<exists>a1 a2 st1' st2' ctx1' ctx2' Σ''. store_ty_extends Σ' Σ'' \<and> (EFst v, st1, ctx) -->* (a1, st1', ctx1') \<and> (EFst v', st2, ctx) -->* (a2, st2', ctx2') \<and> value a1 \<and> value a2 \<and> val_rel_0 Σ'' T1 a1 a2 \<and> store_rel_0 Σ'' st1' st2'"
+lemma exp_rel_step1_fst_typed: "\<forall> Σ T1 T2 v v' st1 st2 ctx Σ' ε, has_type nil Σ' Public v (TProd T1 T2) ε \<longrightarrow> has_type nil Σ' Public v' (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> \<exists> a1 a2 st1' st2' ctx1' ctx2' Σ'', store_ty_extends Σ' Σ'' \<and> (EFst v, st1, ctx) -->* (a1, st1', ctx1') \<and> (EFst v', st2, ctx) -->* (a2, st2', ctx2') \<and> value a1 \<and> value a2 \<and> val_rel_0 Σ'' T1 a1 a2 \<and> store_rel_0 Σ'' st1' st2'"
   by auto
 
 (* exp_rel_step1_snd_typed (matches Coq) *)
-lemma exp_rel_step1_snd_typed: "\<forall>Σ T1 T2 v v' st1 st2 ctx Σ' ε. has_type nil Σ' Public v (TProd T1 T2) ε \<longrightarrow> has_type nil Σ' Public v' (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> \<exists>b1 b2 st1' st2' ctx1' ctx2' Σ''. store_ty_extends Σ' Σ'' \<and> (ESnd v, st1, ctx) -->* (b1, st1', ctx1') \<and> (ESnd v', st2, ctx) -->* (b2, st2', ctx2') \<and> value b1 \<and> value b2 \<and> val_rel_0 Σ'' T2 b1 b2 \<and> store_rel_0 Σ'' st1' st2'"
+lemma exp_rel_step1_snd_typed: "\<forall> Σ T1 T2 v v' st1 st2 ctx Σ' ε, has_type nil Σ' Public v (TProd T1 T2) ε \<longrightarrow> has_type nil Σ' Public v' (TProd T1 T2) ε \<longrightarrow> value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> \<exists> b1 b2 st1' st2' ctx1' ctx2' Σ'', store_ty_extends Σ' Σ'' \<and> (ESnd v, st1, ctx) -->* (b1, st1', ctx1') \<and> (ESnd v', st2, ctx) -->* (b2, st2', ctx2') \<and> value b1 \<and> value b2 \<and> val_rel_0 Σ'' T2 b1 b2 \<and> store_rel_0 Σ'' st1' st2'"
   by auto
 
 (* exp_rel_step1_case_typed (matches Coq) *)
-lemma exp_rel_step1_case_typed: "\<forall>Σ T T1 T2 v v' x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ' ε. has_type nil Σ' Public v (TSum T1 T2) ε \<longrightarrow> has_type nil Σ' Public v' (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> (\<forall>v1. value v1 \<longrightarrow> terminates (subst x1 v1 e1) st1 ctx) \<longrightarrow> (\<forall>v2. value v2 \<longrightarrow> terminates (subst x2 v2 e2) st1 ctx) \<longrightarrow> (\<forall>v1'. value v1' \<longrightarrow> terminates ([x1 := v1'] e1') st2 ctx) \<longrightarrow> (\<forall>v2'. value v2' \<longrightarrow> terminates ([x2 := v2'] e2') st2 ctx) \<longrightarrow> \<exists>r1 r2 st1' st2' ctx1' ctx2' Σ''. store_ty_extends Σ' Σ'' \<and> (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx1') \<and> (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx2') \<and> value r1 \<and> value r2 \<and> val_rel_0 Σ'' T r1 r2 \<and> store_rel_0 Σ'' st1' st2'"
+lemma exp_rel_step1_case_typed: "\<forall> Σ T T1 T2 v v' x1 e1 e1' x2 e2 e2' st1 st2 ctx Σ' ε, has_type nil Σ' Public v (TSum T1 T2) ε \<longrightarrow> has_type nil Σ' Public v' (TSum T1 T2) ε \<longrightarrow> value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> (\<forall> v1, value v1 \<longrightarrow> terminates (subst[x1 := v1] e1) st1 ctx) \<longrightarrow> (\<forall> v2, value v2 \<longrightarrow> terminates (subst[x2 := v2] e2) st1 ctx) \<longrightarrow> (\<forall> v1', value v1' \<longrightarrow> terminates (subst[x1 := v1'] e1') st2 ctx) \<longrightarrow> (\<forall> v2', value v2' \<longrightarrow> terminates (subst[x2 := v2'] e2') st2 ctx) \<longrightarrow> \<exists> r1 r2 st1' st2' ctx1' ctx2' Σ'', store_ty_extends Σ' Σ'' \<and> (ECase v x1 e1 x2 e2, st1, ctx) -->* (r1, st1', ctx1') \<and> (ECase v' x1 e1' x2 e2', st2, ctx) -->* (r2, st2', ctx2') \<and> value r1 \<and> value r2 \<and> val_rel_0 Σ'' T r1 r2 \<and> store_rel_0 Σ'' st1' st2'"
   by auto
 
 (* exp_rel_step1_if_typed (matches Coq) *)
-lemma exp_rel_step1_if_typed: "\<forall>Σ T v v' e2 e2' e3 e3' st1 st2 ctx Σ' ε. has_type nil Σ' Public v TBool ε \<longrightarrow> has_type nil Σ' Public v' TBool ε \<longrightarrow> value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> terminates e2 st1 ctx \<longrightarrow> terminates e3 st1 ctx \<longrightarrow> terminates e2' st2 ctx \<longrightarrow> terminates e3' st2 ctx \<longrightarrow> \<exists>r1 r2 st1' st2' ctx1' ctx2' Σ''. store_ty_extends Σ' Σ'' \<and> (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx1') \<and> (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx2') \<and> value r1 \<and> value r2 \<and> val_rel_0 Σ'' T r1 r2 \<and> store_rel_0 Σ'' st1' st2'"
+lemma exp_rel_step1_if_typed: "\<forall> Σ T v v' e2 e2' e3 e3' st1 st2 ctx Σ' ε, has_type nil Σ' Public v TBool ε \<longrightarrow> has_type nil Σ' Public v' TBool ε \<longrightarrow> value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> terminates e2 st1 ctx \<longrightarrow> terminates e3 st1 ctx \<longrightarrow> terminates e2' st2 ctx \<longrightarrow> terminates e3' st2 ctx \<longrightarrow> \<exists> r1 r2 st1' st2' ctx1' ctx2' Σ'', store_ty_extends Σ' Σ'' \<and> (EIf v e2 e3, st1, ctx) -->* (r1, st1', ctx1') \<and> (EIf v' e2' e3', st2, ctx) -->* (r2, st2', ctx2') \<and> value r1 \<and> value r2 \<and> val_rel_0 Σ'' T r1 r2 \<and> store_rel_0 Σ'' st1' st2'"
   by auto
 
 (* exp_rel_step1_let_typed (matches Coq) *)
-lemma exp_rel_step1_let_typed: "\<forall>Σ T v v' x e2 e2' st1 st2 ctx Σ'. value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> terminates (subst x v e2) st1 ctx \<longrightarrow> terminates ([x := v'] e2') st2 ctx \<longrightarrow> \<exists>r1 r2 st1' st2' ctx1' ctx2' Σ''. store_ty_extends Σ' Σ'' \<and> (ELet x v e2, st1, ctx) -->* (r1, st1', ctx1') \<and> (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx2') \<and> value r1 \<and> value r2 \<and> val_rel_0 Σ'' T r1 r2 \<and> store_rel_0 Σ'' st1' st2'"
+lemma exp_rel_step1_let_typed: "\<forall> Σ T v v' x e2 e2' st1 st2 ctx Σ', value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> terminates (subst[x := v] e2) st1 ctx \<longrightarrow> terminates (subst[x := v'] e2') st2 ctx \<longrightarrow> \<exists> r1 r2 st1' st2' ctx1' ctx2' Σ'', store_ty_extends Σ' Σ'' \<and> (ELet x v e2, st1, ctx) -->* (r1, st1', ctx1') \<and> (ELet x v' e2', st2, ctx) -->* (r2, st2', ctx2') \<and> value r1 \<and> value r2 \<and> val_rel_0 Σ'' T r1 r2 \<and> store_rel_0 Σ'' st1' st2'"
   by auto
 
 (* exp_rel_step1_handle_typed (matches Coq) *)
-lemma exp_rel_step1_handle_typed: "\<forall>Σ T v v' x h h' st1 st2 ctx Σ'. value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> terminates (subst x v h) st1 ctx \<longrightarrow> terminates ([x := v'] h') st2 ctx \<longrightarrow> \<exists>r1 r2 st1' st2' ctx1' ctx2' Σ''. store_ty_extends Σ' Σ'' \<and> (EHandle v x h, st1, ctx) -->* (r1, st1', ctx1') \<and> (EHandle v' x h', st2, ctx) -->* (r2, st2', ctx2') \<and> value r1 \<and> value r2 \<and> val_rel_0 Σ'' T r1 r2 \<and> store_rel_0 Σ'' st1' st2'"
+lemma exp_rel_step1_handle_typed: "\<forall> Σ T v v' x h h' st1 st2 ctx Σ', value v \<longrightarrow> value v' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> terminates (subst[x := v] h) st1 ctx \<longrightarrow> terminates (subst[x := v'] h') st2 ctx \<longrightarrow> \<exists> r1 r2 st1' st2' ctx1' ctx2' Σ'', store_ty_extends Σ' Σ'' \<and> (EHandle v x h, st1, ctx) -->* (r1, st1', ctx1') \<and> (EHandle v' x h', st2, ctx) -->* (r2, st2', ctx2') \<and> value r1 \<and> value r2 \<and> val_rel_0 Σ'' T r1 r2 \<and> store_rel_0 Σ'' st1' st2'"
   by auto
 
 (* exp_rel_step1_app_typed (matches Coq) *)
-lemma exp_rel_step1_app_typed: "\<forall>Σ T1 T2 f f' a a' st1 st2 ctx Σ' ε ε'. has_type nil Σ' Public f (TFn T1 T2 ε) ε' \<longrightarrow> has_type nil Σ' Public f' (TFn T1 T2 ε) ε' \<longrightarrow> value f \<longrightarrow> value f' \<longrightarrow> value a \<longrightarrow> value a' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> (\<forall>x body. f = ELam x T1 body \<longrightarrow> terminates (subst x a body) st1 ctx) \<longrightarrow> (\<forall>x body. f' = ELam x T1 body \<longrightarrow> terminates ([x := a'] body) st2 ctx) \<longrightarrow> \<exists>r1 r2 st1' st2' ctx1' ctx2' Σ''. store_ty_extends Σ' Σ'' \<and> (EApp f a, st1, ctx) -->* (r1, st1', ctx1') \<and> (EApp f' a', st2, ctx) -->* (r2, st2', ctx2') \<and> value r1 \<and> value r2 \<and> val_rel_0 Σ'' T2 r1 r2 \<and> store_rel_0 Σ'' st1' st2'"
+lemma exp_rel_step1_app_typed: "\<forall> Σ T1 T2 f f' a a' st1 st2 ctx Σ' ε ε', has_type nil Σ' Public f (TFn T1 T2 ε) ε' \<longrightarrow> has_type nil Σ' Public f' (TFn T1 T2 ε) ε' \<longrightarrow> value f \<longrightarrow> value f' \<longrightarrow> value a \<longrightarrow> value a' \<longrightarrow> store_rel_0 Σ' st1 st2 \<longrightarrow> store_ty_extends Σ Σ' \<longrightarrow> (\<forall> x body, f = ELam x T1 body \<longrightarrow> terminates (subst[x := a] body) st1 ctx) \<longrightarrow> (\<forall> x body, f' = ELam x T1 body \<longrightarrow> terminates (subst[x := a'] body) st2 ctx) \<longrightarrow> \<exists> r1 r2 st1' st2' ctx1' ctx2' Σ'', store_ty_extends Σ' Σ'' \<and> (EApp f a, st1, ctx) -->* (r1, st1', ctx1') \<and> (EApp f' a', st2, ctx) -->* (r2, st2', ctx2') \<and> value r1 \<and> value r2 \<and> val_rel_0 Σ'' T2 r1 r2 \<and> store_rel_0 Σ'' st1' st2'"
   by auto
 
 (* Multi-step composed with single step *)
 (* multi_step_step_left (matches Coq) *)
-lemma multi_step_step_left: "\<forall>cfg1 cfg2 cfg3. cfg1 --> cfg2 \<longrightarrow> cfg2 -->* cfg3 \<longrightarrow> cfg1 -->* cfg3"
+lemma multi_step_step_left: "\<forall> cfg1 cfg2 cfg3, cfg1 --> cfg2 \<longrightarrow> cfg2 -->* cfg3 \<longrightarrow> cfg1 -->* cfg3"
   by auto
 
 (* val_rel_0 is trivially true for any type *)
 (* val_rel_0_trivial (matches Coq) *)
-lemma val_rel_0_trivial: "\<forall>Σ T v1 v2. val_rel_0 Σ T v1 v2"
+lemma val_rel_0_trivial: "\<forall> Σ T v1 v2, val_rel_0 Σ T v1 v2"
   by auto
 
 (* store_rel_0 is trivially true for any stores *)
 (* store_rel_0_trivial (matches Coq) *)
-lemma store_rel_0_trivial: "\<forall>Σ st1 st2. store_rel_0 Σ st1 st2"
+lemma store_rel_0_trivial: "\<forall> Σ st1 st2, store_rel_0 Σ st1 st2"
   by auto
 
 (* val_rel_0 is irrelevant to the type parameter *)
 (* val_rel_0_type_irrelevant (matches Coq) *)
-lemma val_rel_0_type_irrelevant: "\<forall>Σ T1 T2 v1 v2. val_rel_0 Σ T1 v1 v2 <-> val_rel_0 Σ T2 v1 v2"
+lemma val_rel_0_type_irrelevant: "\<forall> Σ T1 T2 v1 v2, val_rel_0 Σ T1 v1 v2 <-> val_rel_0 Σ T2 v1 v2"
   by auto
 
 (* val_rel_0 is irrelevant to the store typing *)
 (* val_rel_0_store_irrelevant (matches Coq) *)
-lemma val_rel_0_store_irrelevant: "\<forall>Σ1 Σ2 T v1 v2. val_rel_0 Σ1 T v1 v2 <-> val_rel_0 Σ2 T v1 v2"
+lemma val_rel_0_store_irrelevant: "\<forall> Σ1 Σ2 T v1 v2, val_rel_0 Σ1 T v1 v2 <-> val_rel_0 Σ2 T v1 v2"
   by auto
 
 (* store_rel_0 is symmetric *)
 (* store_rel_0_sym (matches Coq) *)
-lemma store_rel_0_sym: "\<forall>Σ st1 st2. store_rel_0 Σ st1 st2 \<longrightarrow> store_rel_0 Σ st2 st1"
+lemma store_rel_0_sym: "\<forall> Σ st1 st2, store_rel_0 Σ st1 st2 \<longrightarrow> store_rel_0 Σ st2 st1"
   by auto
 
 (* Fst terminates in exactly one step on a pair value *)
 (* fst_terminates (matches Coq) *)
-lemma fst_terminates: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> terminates (EFst (EPair v1 v2)) st ctx"
+lemma fst_terminates: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> terminates (EFst (EPair v1 v2)) st ctx"
   by auto
 
 (* Snd terminates in exactly one step on a pair value *)
 (* snd_terminates (matches Coq) *)
-lemma snd_terminates: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> terminates (ESnd (EPair v1 v2)) st ctx"
+lemma snd_terminates: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> terminates (ESnd (EPair v1 v2)) st ctx"
   by auto
 
 (* If with true terminates if the true branch terminates *)
 (* if_true_terminates (matches Coq) *)
-lemma if_true_terminates: "\<forall>e2 e3 st ctx. terminates e2 st ctx \<longrightarrow> terminates (EIf (EBool True) e2 e3) st ctx"
+lemma if_true_terminates: "\<forall> e2 e3 st ctx, terminates e2 st ctx \<longrightarrow> terminates (EIf (EBool True) e2 e3) st ctx"
   by auto
 
 (* If with false terminates if the false branch terminates *)
 (* if_false_terminates (matches Coq) *)
-lemma if_false_terminates: "\<forall>e2 e3 st ctx. terminates e3 st ctx \<longrightarrow> terminates (EIf (EBool False) e2 e3) st ctx"
+lemma if_false_terminates: "\<forall> e2 e3 st ctx, terminates e3 st ctx \<longrightarrow> terminates (EIf (EBool False) e2 e3) st ctx"
   by auto
 
 (* Let terminates if the substituted body terminates *)
 (* let_terminates (matches Coq) *)
-lemma let_terminates: "\<forall>x v e2 st ctx. value v \<longrightarrow> terminates (subst x v e2) st ctx \<longrightarrow> terminates (ELet x v e2) st ctx"
+lemma let_terminates: "\<forall> x v e2 st ctx, value v \<longrightarrow> terminates (subst[x := v] e2) st ctx \<longrightarrow> terminates (ELet x v e2) st ctx"
   by auto
 
 (* App terminates if the substituted body terminates *)
 (* app_lam_terminates (matches Coq) *)
-lemma app_lam_terminates: "\<forall>x T body v st ctx. value v \<longrightarrow> terminates (subst x v body) st ctx \<longrightarrow> terminates (EApp (ELam x T body) v) st ctx"
+lemma app_lam_terminates: "\<forall> x T body v st ctx, value v \<longrightarrow> terminates (subst[x := v] body) st ctx \<longrightarrow> terminates (EApp (ELam x T body) v) st ctx"
   by auto
 
 (* Values terminate immediately *)
 (* value_terminates (matches Coq) *)
-lemma value_terminates: "\<forall>v st ctx. value v \<longrightarrow> terminates v st ctx"
+lemma value_terminates: "\<forall> v st ctx, value v \<longrightarrow> terminates v st ctx"
   by auto
 
 (* case_inl_terminates (matches Coq) *)
-lemma case_inl_terminates: "\<forall>v T x1 e1 x2 e2 st ctx. value v \<longrightarrow> terminates (subst x1 v e1) st ctx \<longrightarrow> terminates (ECase (EInl v T) x1 e1 x2 e2) st ctx"
+lemma case_inl_terminates: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> terminates (subst[x1 := v] e1) st ctx \<longrightarrow> terminates (ECase (EInl v T) x1 e1 x2 e2) st ctx"
   by auto
 
 (* case_inr_terminates (matches Coq) *)
-lemma case_inr_terminates: "\<forall>v T x1 e1 x2 e2 st ctx. value v \<longrightarrow> terminates (subst x2 v e2) st ctx \<longrightarrow> terminates (ECase (EInr v T) x1 e1 x2 e2) st ctx"
+lemma case_inr_terminates: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> terminates (subst[x2 := v] e2) st ctx \<longrightarrow> terminates (ECase (EInr v T) x1 e1 x2 e2) st ctx"
   by auto
 
 (* handle_terminates (matches Coq) *)
-lemma handle_terminates: "\<forall>x v h st ctx. value v \<longrightarrow> terminates (subst x v h) st ctx \<longrightarrow> terminates (EHandle v x h) st ctx"
+lemma handle_terminates: "\<forall> x v h st ctx, value v \<longrightarrow> terminates (subst[x := v] h) st ctx \<longrightarrow> terminates (EHandle v x h) st ctx"
   by auto
 
 (* terminates_trans (matches Coq) *)
-lemma terminates_trans: "\<forall>e e' st st' ctx ctx'. (e, st, ctx) -->* (e', st', ctx') \<longrightarrow> terminates e' st' ctx' \<longrightarrow> terminates e st ctx"
+lemma terminates_trans: "\<forall> e e' st st' ctx ctx', (e, st, ctx) -->* (e', st', ctx') \<longrightarrow> terminates e' st' ctx' \<longrightarrow> terminates e st ctx"
   by auto
 
 (* value_terminates_refl (matches Coq) *)
-lemma value_terminates_refl: "\<forall>v st ctx. value v \<longrightarrow> terminates v st ctx"
+lemma value_terminates_refl: "\<forall> v st ctx, value v \<longrightarrow> terminates v st ctx"
   by auto
 
 (* val_rel_0 is reflexive *)
 (* val_rel_0_refl (matches Coq) *)
-lemma val_rel_0_refl: "\<forall>Σ T v. val_rel_0 Σ T v v"
+lemma val_rel_0_refl: "\<forall> Σ T v, val_rel_0 Σ T v v"
   by auto
 
 (* val_rel_0 is symmetric *)
 (* val_rel_0_sym (matches Coq) *)
-lemma val_rel_0_sym: "\<forall>Σ T v1 v2. val_rel_0 Σ T v1 v2 \<longrightarrow> val_rel_0 Σ T v2 v1"
+lemma val_rel_0_sym: "\<forall> Σ T v1 v2, val_rel_0 Σ T v1 v2 \<longrightarrow> val_rel_0 Σ T v2 v1"
   by auto
 
 (* store_rel_0 is transitive *)
 (* store_rel_0_trans (matches Coq) *)
-lemma store_rel_0_trans: "\<forall>Σ st1 st2 st3. store_rel_0 Σ st1 st2 \<longrightarrow> store_rel_0 Σ st2 st3 \<longrightarrow> store_rel_0 Σ st1 st3"
+lemma store_rel_0_trans: "\<forall> Σ st1 st2 st3, store_rel_0 Σ st1 st2 \<longrightarrow> store_rel_0 Σ st2 st3 \<longrightarrow> store_rel_0 Σ st1 st3"
   by auto
 
 (* If e steps to e' and e' terminates, then e terminates *)
 (* terminates_step (matches Coq) *)
-lemma terminates_step: "\<forall>e e' st st' ctx ctx'. (e, st, ctx) --> (e', st', ctx') \<longrightarrow> terminates e' st' ctx' \<longrightarrow> terminates e st ctx"
+lemma terminates_step: "\<forall> e e' st st' ctx ctx', (e, st, ctx) --> (e', st', ctx') \<longrightarrow> terminates e' st' ctx' \<longrightarrow> terminates e st ctx"
   by auto
 
 (* Combined if termination: if value is a bool and both branches terminate *)
 (* if_terminates (matches Coq) *)
-lemma if_terminates: "\<forall>b e2 e3 st ctx. terminates e2 st ctx \<longrightarrow> terminates e3 st ctx \<longrightarrow> terminates (EIf (EBool b) e2 e3) st ctx"
+lemma if_terminates: "\<forall> b e2 e3 st ctx, terminates e2 st ctx \<longrightarrow> terminates e3 st ctx \<longrightarrow> terminates (EIf (EBool b) e2 e3) st ctx"
   by auto
 
 end

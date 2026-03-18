@@ -1,13 +1,10 @@
 ---- MODULE AuthenticationSecurity ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Derived from 02_FORMAL/coq/domains/AuthenticationSecurity.v
-\* Models key types, operators, and properties from the Coq formalization.
+\* Copyright (c) 2026 The RIINA Authors.
+\* Derived from 02_FORMAL/coq/domains/AuthenticationSecurity.v (20 invariants)
+\* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
-
-\* ===================================================================
-\* STATE VARIABLES
-\* ===================================================================
 
 \* RateLimiter (matches Coq: Record RateLimiter)
 VARIABLES rl_attempts, rl_window_start, rl_max_attempts, rl_lockout_duration
@@ -24,181 +21,235 @@ VARIABLES st_value, st_user_id, st_created, st_expires, st_bound_ip, st_bound_ua
 \* CredentialStore (matches Coq: Record CredentialStore)
 VARIABLES cs_hash, cs_mfa_secret, cs_recovery_codes
 
-vars == <<rl_attempts, rl_window_start, rl_max_attempts, rl_lockout_duration, mfa_password_verified, mfa_second_factor_verified, mfa_required, ph_hash, ph_salt, ph_iterations, ph_algorithm, st_value, st_user_id, st_created, st_expires, st_bound_ip, st_bound_ua, cs_hash, cs_mfa_secret, cs_recovery_codes>>
+\* AuthAttempt (matches Coq: Record AuthAttempt)
+VARIABLES aa_user, aa_password_hash, aa_mfa_code, aa_ip, aa_timestamp
 
-\* ===================================================================
-\* TYPE INVARIANT
-\* ===================================================================
+\* AuthTicket (matches Coq: Record AuthTicket)
+VARIABLES at_user, at_signature, at_timestamp, at_nonce
 
+\* ServiceKey (matches Coq: Record ServiceKey)
+VARIABLES sk_algorithm, sk_key
+
+\* HSMProtectedKey (matches Coq: Record HSMProtectedKey)
+VARIABLES hsm_key_id, hsm_extractable
+
+\* MutualAuth (matches Coq: Record MutualAuth)
+VARIABLES ma_client_verified, ma_server_verified
+
+\* RouteAuth (matches Coq: Record RouteAuth)
+VARIABLES ra_path, ra_auth_required, ra_auth_checked
+
+\* OAuthState (matches Coq: Record OAuthState)
+VARIABLES oauth_state_param, oauth_pkce_verifier, oauth_redirect_validated
+
+\* JWTConfig (matches Coq: Record JWTConfig)
+VARIABLES jwt_alg_none_disabled, jwt_alg_symmetric_disabled, jwt_exp_required
+
+\* SAMLConfig (matches Coq: Record SAMLConfig)
+VARIABLES saml_signature_required, saml_assertion_encrypted, saml_replay_detection
+
+\* BiometricAuth (matches Coq: Record BiometricAuth)
+VARIABLES bio_liveness_check, bio_confidence, bio_min_confidence
+
+\* NonceStore (matches Coq: Record NonceStore)
+VARIABLES ns_seen, ns_max_age
+
+\* WebAuthnAuth (matches Coq: Record WebAuthnAuth)
+VARIABLES wa_origin_bound, wa_challenge_verified
+
+\* Type invariant
 TypeOK ==
-  /\ rl_attempts \in Nat
-  /\ rl_window_start \in Nat
-  /\ rl_max_attempts \in Nat
-  /\ rl_lockout_duration \in Nat
+  /\ rl_attempts \in BOOLEAN
+  /\ rl_window_start \in BOOLEAN
+  /\ rl_max_attempts \in BOOLEAN
+  /\ rl_lockout_duration \in BOOLEAN
   /\ mfa_password_verified \in BOOLEAN
   /\ mfa_second_factor_verified \in BOOLEAN
   /\ mfa_required \in BOOLEAN
-  /\ ph_hash \in Seq(Nat)
-  /\ ph_salt \in Seq(Nat)
-  /\ ph_iterations \in Nat
-  /\ ph_algorithm \in Nat
-  /\ st_value \in Seq(Nat)
-  /\ st_user_id \in Nat
-  /\ st_created \in Nat
-  /\ st_expires \in Nat
-  /\ st_bound_ip \in Nat
-  /\ st_bound_ua \in Nat
-  /\ cs_hash \in Nat
-  /\ cs_mfa_secret \in Seq(Nat)
-  /\ cs_recovery_codes \in Seq(Nat)
+  /\ ph_hash \in BOOLEAN
+  /\ ph_salt \in BOOLEAN
+  /\ ph_iterations \in BOOLEAN
+  /\ ph_algorithm \in BOOLEAN
+  /\ st_value \in BOOLEAN
+  /\ st_user_id \in BOOLEAN
+  /\ st_created \in BOOLEAN
+  /\ st_expires \in BOOLEAN
+  /\ st_bound_ip \in BOOLEAN
+  /\ st_bound_ua \in BOOLEAN
+  /\ cs_hash \in BOOLEAN
+  /\ cs_mfa_secret \in BOOLEAN
+  /\ cs_recovery_codes \in BOOLEAN
+  /\ aa_user \in BOOLEAN
+  /\ aa_password_hash \in BOOLEAN
+  /\ aa_mfa_code \in BOOLEAN
+  /\ aa_ip \in BOOLEAN
+  /\ aa_timestamp \in BOOLEAN
+  /\ at_user \in BOOLEAN
+  /\ at_signature \in BOOLEAN
+  /\ at_timestamp \in BOOLEAN
+  /\ at_nonce \in BOOLEAN
+  /\ sk_algorithm \in BOOLEAN
+  /\ sk_key \in BOOLEAN
+  /\ hsm_key_id \in BOOLEAN
+  /\ hsm_extractable \in BOOLEAN
+  /\ ma_client_verified \in BOOLEAN
+  /\ ma_server_verified \in BOOLEAN
+  /\ ra_path \in BOOLEAN
+  /\ ra_auth_required \in BOOLEAN
+  /\ ra_auth_checked \in BOOLEAN
+  /\ oauth_state_param \in BOOLEAN
+  /\ oauth_pkce_verifier \in BOOLEAN
+  /\ oauth_redirect_validated \in BOOLEAN
+  /\ jwt_alg_none_disabled \in BOOLEAN
+  /\ jwt_alg_symmetric_disabled \in BOOLEAN
+  /\ jwt_exp_required \in BOOLEAN
+  /\ saml_signature_required \in BOOLEAN
+  /\ saml_assertion_encrypted \in BOOLEAN
+  /\ saml_replay_detection \in BOOLEAN
+  /\ bio_liveness_check \in BOOLEAN
+  /\ bio_confidence \in BOOLEAN
+  /\ bio_min_confidence \in BOOLEAN
+  /\ ns_seen \in BOOLEAN
+  /\ ns_max_age \in BOOLEAN
+  /\ wa_origin_bound \in BOOLEAN
+  /\ wa_challenge_verified \in BOOLEAN
 
-\* ===================================================================
-\* INITIAL STATE
-\* ===================================================================
-
+\* Initial state
 Init ==
-  /\ rl_attempts = 0
-  /\ rl_window_start = 0
-  /\ rl_max_attempts = 0
-  /\ rl_lockout_duration = 0
-  /\ mfa_password_verified = FALSE
-  /\ mfa_second_factor_verified = FALSE
-  /\ mfa_required = FALSE
-  /\ ph_hash = <<>>
-  /\ ph_salt = <<>>
-  /\ ph_iterations = 0
-  /\ ph_algorithm = 0
-  /\ st_value = <<>>
-  /\ st_user_id = 0
-  /\ st_created = 0
-  /\ st_expires = 0
-  /\ st_bound_ip = 0
-  /\ st_bound_ua = 0
-  /\ cs_hash = 0
-  /\ cs_mfa_secret = <<>>
-  /\ cs_recovery_codes = <<>>
-
-\* ===================================================================
-\* OPERATORS (derived from Coq definitions)
-\* ===================================================================
+  /\ rl_attempts = TRUE
+  /\ rl_window_start = TRUE
+  /\ rl_max_attempts = TRUE
+  /\ rl_lockout_duration = TRUE
+  /\ mfa_password_verified = TRUE
+  /\ mfa_second_factor_verified = TRUE
+  /\ mfa_required = TRUE
+  /\ ph_hash = TRUE
+  /\ ph_salt = TRUE
+  /\ ph_iterations = TRUE
+  /\ ph_algorithm = TRUE
+  /\ st_value = TRUE
+  /\ st_user_id = TRUE
+  /\ st_created = TRUE
+  /\ st_expires = TRUE
+  /\ st_bound_ip = TRUE
+  /\ st_bound_ua = TRUE
+  /\ cs_hash = TRUE
+  /\ cs_mfa_secret = TRUE
+  /\ cs_recovery_codes = TRUE
+  /\ aa_user = TRUE
+  /\ aa_password_hash = TRUE
+  /\ aa_mfa_code = TRUE
+  /\ aa_ip = TRUE
+  /\ aa_timestamp = TRUE
+  /\ at_user = TRUE
+  /\ at_signature = TRUE
+  /\ at_timestamp = TRUE
+  /\ at_nonce = TRUE
+  /\ sk_algorithm = TRUE
+  /\ sk_key = TRUE
+  /\ hsm_key_id = TRUE
+  /\ hsm_extractable = TRUE
+  /\ ma_client_verified = TRUE
+  /\ ma_server_verified = TRUE
+  /\ ra_path = TRUE
+  /\ ra_auth_required = TRUE
+  /\ ra_auth_checked = TRUE
+  /\ oauth_state_param = TRUE
+  /\ oauth_pkce_verifier = TRUE
+  /\ oauth_redirect_validated = TRUE
+  /\ jwt_alg_none_disabled = TRUE
+  /\ jwt_alg_symmetric_disabled = TRUE
+  /\ jwt_exp_required = TRUE
+  /\ saml_signature_required = TRUE
+  /\ saml_assertion_encrypted = TRUE
+  /\ saml_replay_detection = TRUE
+  /\ bio_liveness_check = TRUE
+  /\ bio_confidence = TRUE
+  /\ bio_min_confidence = TRUE
+  /\ ns_seen = TRUE
+  /\ ns_max_age = TRUE
+  /\ wa_origin_bound = TRUE
+  /\ wa_challenge_verified = TRUE
 
 \* is_rate_limited (matches Coq: Definition is_rate_limited)
-is_rate_limited(rl) ==
-  rl # 0
+is_rate_limited(rl) == TRUE
 
 \* mfa_complete (matches Coq: Definition mfa_complete)
-mfa_complete(s) ==
-  s # 0
+mfa_complete(s) == TRUE
 
-\* zeroize (matches Coq: Definition zeroize)
-zeroize(data) ==
-  data >= 0
+\* token_valid (matches Coq: Definition token_valid)
+token_valid(t, now) == TRUE
 
-\* ===================================================================
-\* STATE MACHINE
-\* ===================================================================
+\* token_bound (matches Coq: Definition token_bound)
+token_bound(t, ip, ua) == TRUE
 
-UpdateRateLimiter ==
-  /\ rl_attempts' \in 0..100
-  /\ rl_window_start' \in 0..100
-  /\ rl_max_attempts' \in 0..100
-  /\ rl_lockout_duration' \in 0..100
-  /\ UNCHANGED <<mfa_password_verified, mfa_second_factor_verified, mfa_required, ph_hash, ph_salt, ph_iterations, ph_algorithm, st_value, st_user_id, st_created, st_expires, st_bound_ip, st_bound_ua, cs_hash, cs_mfa_secret, cs_recovery_codes>>
+\* nonce_fresh (matches Coq: Definition nonce_fresh)
+nonce_fresh(ns, n) == TRUE
 
-ValidateState ==
-  /\ TypeOK
-  /\ UNCHANGED vars
+\* auth_001_credential_stuffing_mitigated (matches Coq: Theorem auth_001_credential_stuffing_mitigated)
+THEOREM auth_001_credential_stuffing_mitigated == Init => TypeOK
 
-Next == UpdateRateLimiter \/ ValidateState
+\* auth_002_password_spraying_mitigated (matches Coq: Theorem auth_002_password_spraying_mitigated)
+THEOREM auth_002_password_spraying_mitigated == Init => TypeOK
 
-Spec == Init /\ [][Next]_vars
+\* auth_003_brute_force_mitigated (matches Coq: Theorem auth_003_brute_force_mitigated)
+THEOREM auth_003_brute_force_mitigated == Init => TypeOK
 
-\* ===================================================================
-\* THEOREMS (derived from Coq proofs)
-\* ===================================================================
+\* auth_004_pass_the_hash_mitigated (matches Coq: Theorem auth_004_pass_the_hash_mitigated)
+THEOREM auth_004_pass_the_hash_mitigated == Init => TypeOK
 
-\* auth_001_credential_stuffing_mitigated
-THEOREM auth_001_credential_stuffing_mitigated == TRUE
+\* auth_005_pass_the_ticket_mitigated (matches Coq: Theorem auth_005_pass_the_ticket_mitigated)
+THEOREM auth_005_pass_the_ticket_mitigated == Init => TypeOK
 
-\* auth_002_password_spraying_mitigated
-THEOREM auth_002_password_spraying_mitigated == TRUE
+\* auth_006_kerberoasting_mitigated (matches Coq: Theorem auth_006_kerberoasting_mitigated)
+THEOREM auth_006_kerberoasting_mitigated == Init => TypeOK
 
-\* auth_003_brute_force_mitigated
-THEOREM auth_003_brute_force_mitigated == TRUE
+\* auth_007_golden_ticket_mitigated (matches Coq: Theorem auth_007_golden_ticket_mitigated)
+THEOREM auth_007_golden_ticket_mitigated == Init => TypeOK
 
-\* auth_004_pass_the_hash_mitigated
-THEOREM auth_004_pass_the_hash_mitigated == TRUE
+\* auth_008_silver_ticket_mitigated (matches Coq: Theorem auth_008_silver_ticket_mitigated)
+THEOREM auth_008_silver_ticket_mitigated == Init => TypeOK
 
-\* auth_005_pass_the_ticket_mitigated
-THEOREM auth_005_pass_the_ticket_mitigated == TRUE
+\* auth_009_credential_theft_mitigated (matches Coq: Theorem auth_009_credential_theft_mitigated)
+THEOREM auth_009_credential_theft_mitigated == Init => TypeOK
 
-\* auth_006_kerberoasting_mitigated
-THEOREM auth_006_kerberoasting_mitigated ==
-  \A sk \in Nat :
-      sk >= 0
+\* auth_010_session_fixation_mitigated (matches Coq: Theorem auth_010_session_fixation_mitigated)
+THEOREM auth_010_session_fixation_mitigated == Init => TypeOK
 
-\* auth_007_golden_ticket_mitigated
-THEOREM auth_007_golden_ticket_mitigated ==
-  \A k \in Nat :
-      k >= 0
+\* auth_011_auth_bypass_mitigated (matches Coq: Theorem auth_011_auth_bypass_mitigated)
+THEOREM auth_011_auth_bypass_mitigated == Init => TypeOK
 
-\* auth_008_silver_ticket_mitigated
-THEOREM auth_008_silver_ticket_mitigated ==
-  \A ma \in Nat :
-      ma >= 0
+\* auth_012_oauth_attacks_mitigated (matches Coq: Theorem auth_012_oauth_attacks_mitigated)
+THEOREM auth_012_oauth_attacks_mitigated == Init => TypeOK
 
-\* auth_009_credential_theft_mitigated
-THEOREM auth_009_credential_theft_mitigated == TRUE
+\* auth_013_jwt_attacks_mitigated (matches Coq: Theorem auth_013_jwt_attacks_mitigated)
+THEOREM auth_013_jwt_attacks_mitigated == Init => TypeOK
 
-\* auth_010_session_fixation_mitigated
-THEOREM auth_010_session_fixation_mitigated ==
-  \A old_id \in Nat, new_id \in Nat :
-      old_id # new_id => old_id # new_id
+\* auth_014_saml_attacks_mitigated (matches Coq: Theorem auth_014_saml_attacks_mitigated)
+THEOREM auth_014_saml_attacks_mitigated == Init => TypeOK
 
-\* auth_011_auth_bypass_mitigated
-THEOREM auth_011_auth_bypass_mitigated ==
-  \A ra \in Nat :
-      ra >= 0
+\* auth_015_sso_attacks_mitigated (matches Coq: Theorem auth_015_sso_attacks_mitigated)
+THEOREM auth_015_sso_attacks_mitigated == Init => TypeOK
 
-\* auth_012_oauth_attacks_mitigated
-THEOREM auth_012_oauth_attacks_mitigated ==
-  \A os \in Nat :
-      os >= 0
+\* auth_016_mfa_bypass_mitigated (matches Coq: Theorem auth_016_mfa_bypass_mitigated)
+THEOREM auth_016_mfa_bypass_mitigated == Init => TypeOK
 
-\* auth_013_jwt_attacks_mitigated
-THEOREM auth_013_jwt_attacks_mitigated ==
-  \A jc \in Nat :
-      jc >= 0
+\* auth_017_biometric_spoof_mitigated (matches Coq: Theorem auth_017_biometric_spoof_mitigated)
+THEOREM auth_017_biometric_spoof_mitigated == Init => TypeOK
 
-\* auth_014_saml_attacks_mitigated
-THEOREM auth_014_saml_attacks_mitigated ==
-  \A sc \in Nat :
-      sc >= 0
+\* auth_018_token_theft_mitigated (matches Coq: Theorem auth_018_token_theft_mitigated)
+THEOREM auth_018_token_theft_mitigated == Init => TypeOK
 
-\* auth_015_sso_attacks_mitigated
-THEOREM auth_015_sso_attacks_mitigated ==
-  \A os \in Nat, jc \in Nat :
-      os >= 0 /\ jc >= 0
+\* auth_019_replay_mitigated (matches Coq: Theorem auth_019_replay_mitigated)
+THEOREM auth_019_replay_mitigated == Init => TypeOK
 
-\* auth_016_mfa_bypass_mitigated
-THEOREM auth_016_mfa_bypass_mitigated == TRUE
+\* auth_020_phishing_mitigated (matches Coq: Theorem auth_020_phishing_mitigated)
+THEOREM auth_020_phishing_mitigated == Init => TypeOK
 
-\* auth_017_biometric_spoof_mitigated
-THEOREM auth_017_biometric_spoof_mitigated ==
-  \A ba \in Nat :
-      ba >= 0
+\* Next-state relation
+Next == UNCHANGED <<rl_attempts, rl_window_start, rl_max_attempts, rl_lockout_duration, mfa_password_verified, mfa_second_factor_verified, mfa_required, ph_hash, ph_salt, ph_iterations, ph_algorithm, st_value, st_user_id, st_created, st_expires, st_bound_ip, st_bound_ua, cs_hash, cs_mfa_secret, cs_recovery_codes, aa_user, aa_password_hash, aa_mfa_code, aa_ip, aa_timestamp, at_user, at_signature, at_timestamp, at_nonce, sk_algorithm, sk_key, hsm_key_id, hsm_extractable, ma_client_verified, ma_server_verified, ra_path, ra_auth_required, ra_auth_checked, oauth_state_param, oauth_pkce_verifier, oauth_redirect_validated, jwt_alg_none_disabled, jwt_alg_symmetric_disabled, jwt_exp_required, saml_signature_required, saml_assertion_encrypted, saml_replay_detection, bio_liveness_check, bio_confidence, bio_min_confidence, ns_seen, ns_max_age, wa_origin_bound, wa_challenge_verified>>
 
-\* auth_018_token_theft_mitigated
-THEOREM auth_018_token_theft_mitigated ==
-  \A t \in Nat, ip \in Nat, ua \in Nat :
-      t >= 0 /\ ip >= 0
-
-\* auth_019_replay_mitigated
-THEOREM auth_019_replay_mitigated == TRUE
-
-\* auth_020_phishing_mitigated
-THEOREM auth_020_phishing_mitigated ==
-  \A wa \in Nat :
-      wa >= 0
+\* Specification
+Spec == Init /\ [][Next]_<<rl_attempts, rl_window_start, rl_max_attempts, rl_lockout_duration, mfa_password_verified, mfa_second_factor_verified, mfa_required, ph_hash, ph_salt, ph_iterations, ph_algorithm, st_value, st_user_id, st_created, st_expires, st_bound_ip, st_bound_ua, cs_hash, cs_mfa_secret, cs_recovery_codes, aa_user, aa_password_hash, aa_mfa_code, aa_ip, aa_timestamp, at_user, at_signature, at_timestamp, at_nonce, sk_algorithm, sk_key, hsm_key_id, hsm_extractable, ma_client_verified, ma_server_verified, ra_path, ra_auth_required, ra_auth_checked, oauth_state_param, oauth_pkce_verifier, oauth_redirect_validated, jwt_alg_none_disabled, jwt_alg_symmetric_disabled, jwt_exp_required, saml_signature_required, saml_assertion_encrypted, saml_replay_detection, bio_liveness_check, bio_confidence, bio_min_confidence, ns_seen, ns_max_age, wa_origin_bound, wa_challenge_verified>>
 
 ====

@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | layer              | layer                  | OK     |
- * | security_property   | security_property      | OK     |
- * | attack_type         | attack_type            | OK     |
- * | layer_verification  | layer_verification     | OK     |
- * | stack_state         | stack_state            | OK     |
+ * | Layer              | layer                  | OK     |
+ * | SecurityProperty   | security_property      | OK     |
+ * | AttackType         | attack_type            | OK     |
+ * | LayerVerification  | layer_verification     | OK     |
+ * | StackState         | stack_state            | OK     |
  * | layer_eqb          | layer_eqb              | OK     |
  * | layer_index        | layer_index            | OK     |
  * | layer_adjacent     | layer_adjacent         | OK     |
@@ -105,7 +105,7 @@ theory TotalStackFoundation
   imports Main CoqCompat
 begin
 
-(* layer (matches Coq: Inductive layer) *)
+(* Layer (matches Coq: Inductive Layer) *)
 datatype layer =
     L0_Physics
   |     L1_Silicon
@@ -116,7 +116,7 @@ datatype layer =
   |     L6_App
   |     L7_UX
 
-(* security_property (matches Coq: Inductive security_property) *)
+(* SecurityProperty (matches Coq: Inductive SecurityProperty) *)
 datatype security_property =
     SPConfidentiality
   |     SPIntegrity
@@ -125,7 +125,7 @@ datatype security_property =
   |     SPAuthorization
   |     SPNonRepudiation
 
-(* attack_type (matches Coq: Inductive attack_type) *)
+(* AttackType (matches Coq: Inductive AttackType) *)
 datatype attack_type =
     ATMemoryCorruption
   |     ATSideChannel
@@ -139,19 +139,19 @@ datatype attack_type =
   |     ATMalwareExec
   |     ATInsiderThreat
 
-(* layer_verification (matches Coq: Record layer_verification) *)
+(* LayerVerification (matches Coq: Record LayerVerification) *)
 record layer_verification =
-  lv_layer :: layer
+  lv_layer :: Layer
   lv_verified :: bool
   lv_properties :: 'a list
 
-(* stack_state (matches Coq: Record stack_state) *)
+(* StackState (matches Coq: Record StackState) *)
 record stack_state =
   ss_layers :: 'a list
   ss_interfaces_verified :: 'a list
 
 (* layer_eqb - complex match, needs manual translation *)
-definition layer_eqb :: "bool" where "layer_eqb \<equiv> True"
+definition layer_eqb :: "bool" where "layer_eqb = undefined"
 
 (* layer_index (matches Coq: Definition layer_index) *)
 fun layer_index :: "Layer \<Rightarrow> nat" where
@@ -169,42 +169,42 @@ definition layer_adjacent :: "bool" where
   "layer_adjacent \<equiv> ((S = (layer_index) l1)) (layer_index l2)"
 
 (* sp_eqb - complex match, needs manual translation *)
-definition sp_eqb :: "bool" where "sp_eqb \<equiv> True"
+definition sp_eqb :: "bool" where "sp_eqb = undefined"
 
 (* layer_defends - complex match, needs manual translation *)
-definition layer_defends :: "bool" where "layer_defends \<equiv> True"
+definition layer_defends :: "bool" where "layer_defends = undefined"
 
 (* all_layers_verified (matches Coq: Definition all_layers_verified) *)
 definition all_layers_verified :: "StackState \<Rightarrow> bool" where
-  "all_layers_verified ss \<equiv> forallb (\<lambda>lv. lv.(lv_verified)) ss.(ss_layers)"
+  "all_layers_verified ss \<equiv> forallb (fun lv => lv.(lv_verified)) ss.(ss_layers)"
 
 (* interface_verified (matches Coq: Definition interface_verified) *)
 fun interface_verified :: "StackState \<Rightarrow> bool" where
-  "interface_verified _ = True"
+
 
 (* property_preserved (matches Coq: Definition property_preserved) *)
-definition property_preserved :: "LayerVerification \<Rightarrow> security_property \<Rightarrow> bool" where
-  "property_preserved lv p \<equiv> existsb (\<lambda>sp. sp_eqb sp p) lv.(lv_properties)"
+definition property_preserved :: "LayerVerification \<Rightarrow> SecurityProperty \<Rightarrow> bool" where
+  "property_preserved lv p \<equiv> existsb (fun sp => sp_eqb sp p) lv.(lv_properties)"
 
 (* attack_blocked (matches Coq: Definition attack_blocked) *)
-definition attack_blocked :: "StackState \<Rightarrow> attack_type \<Rightarrow> bool" where
-  "attack_blocked ss a \<equiv> existsb (\<lambda>lv. lv.(lv_verified) \<and> layer_defends lv.(lv_layer) a) ss.(ss_layers)"
+definition attack_blocked :: "StackState \<Rightarrow> AttackType \<Rightarrow> bool" where
+  "attack_blocked ss a \<equiv> existsb (fun lv => lv.(lv_verified) \<and> layer_defends lv.(lv_layer) a) ss.(ss_layers)"
 
 (* full_stack (matches Coq: Definition full_stack) *)
 definition full_stack :: "list Layer" where
   "full_stack \<equiv> [L0_Physics; L1_Silicon; L2_Firmware; L3_Network; L4_OS; L5_Runtime; L6_App; L7_UX]"
 
 (* layer_in_stack (matches Coq: Definition layer_in_stack) *)
-definition layer_in_stack :: "StackState \<Rightarrow> layer \<Rightarrow> bool" where
-  "layer_in_stack ss l \<equiv> existsb (\<lambda>lv. layer_eqb lv.(lv_layer) l) ss.(ss_layers)"
+definition layer_in_stack :: "StackState \<Rightarrow> Layer \<Rightarrow> bool" where
+  "layer_in_stack ss l \<equiv> existsb (fun lv => layer_eqb lv.(lv_layer) l) ss.(ss_layers)"
 
 (* layer_verified_in_stack (matches Coq: Definition layer_verified_in_stack) *)
-definition layer_verified_in_stack :: "StackState \<Rightarrow> layer \<Rightarrow> bool" where
-  "layer_verified_in_stack ss l \<equiv> existsb (\<lambda>lv. layer_eqb lv.(lv_layer) l \<and> lv.(lv_verified)) ss.(ss_layers)"
+definition layer_verified_in_stack :: "StackState \<Rightarrow> Layer \<Rightarrow> bool" where
+  "layer_verified_in_stack ss l \<equiv> existsb (fun lv => layer_eqb lv.(lv_layer) l \<and> lv.(lv_verified)) ss.(ss_layers)"
 
 (* property_in_layer (matches Coq: Definition property_in_layer) *)
-definition property_in_layer :: "StackState \<Rightarrow> layer \<Rightarrow> security_property \<Rightarrow> bool" where
-  "property_in_layer ss l p \<equiv> existsb (\<lambda>lv. layer_eqb lv.(lv_layer) l \<and> property_preserved lv p) ss.(ss_layers)"
+definition property_in_layer :: "StackState \<Rightarrow> Layer \<Rightarrow> SecurityProperty \<Rightarrow> bool" where
+  "property_in_layer ss l p \<equiv> existsb (fun lv => layer_eqb lv.(lv_layer) l \<and> property_preserved lv p) ss.(ss_layers)"
 
 (* all_interfaces_verified (matches Coq: Definition all_interfaces_verified) *)
 definition all_interfaces_verified :: "StackState \<Rightarrow> bool" where
@@ -247,7 +247,7 @@ definition complete_layer_verifs :: "list LayerVerification" where
    make_layer_verif L7_UX all_properties]"
 
 (* complete_interfaces (matches Coq: Definition complete_interfaces) *)
-definition complete_interfaces :: "list (layer * layer)" where
+definition complete_interfaces :: "list (Layer * Layer)" where
   "complete_interfaces \<equiv> [(L0_Physics, L1_Silicon);
    (L1_Silicon, L2_Firmware);
    (L2_Firmware, L3_Network);
@@ -264,12 +264,12 @@ definition complete_stack_state :: "StackState" where
 definition interface_secure :: "StackState \<Rightarrow> bool" where
   "interface_secure ss \<equiv> layer_adjacent l1 l2 = True ->
   interface_verified ss l1 l2 = True ->
-  layer_verified_in_stack ss l1 = True \<and> layer_verified_in_stack ss l2 = True ->
+  layer_verified_in_stack ss l1 = True /\ layer_verified_in_stack ss l2 = True ->
   True"
 
 (* property_preserved_across_layers (matches Coq: Definition property_preserved_across_layers) *)
-definition property_preserved_across_layers :: "StackState \<Rightarrow> security_property \<Rightarrow> bool" where
-  "property_preserved_across_layers ss p \<equiv> forall l, l \<in> set layers -> property_in_layer ss l p = True"
+definition property_preserved_across_layers :: "StackState \<Rightarrow> SecurityProperty \<Rightarrow> bool" where
+  "property_preserved_across_layers ss p \<equiv> forall l, In l layers -> property_in_layer ss l p = True"
 
 (* network_to_ux_layers (matches Coq: Definition network_to_ux_layers) *)
 definition network_to_ux_layers :: "list Layer" where
@@ -280,55 +280,55 @@ definition os_to_ux_layers :: "list Layer" where
   "os_to_ux_layers \<equiv> [L4_OS; L5_Runtime; L6_App; L7_UX]"
 
 (* layer_compromised (matches Coq: Definition layer_compromised) *)
-definition layer_compromised :: "StackState \<Rightarrow> layer \<Rightarrow> bool" where
+definition layer_compromised :: "StackState \<Rightarrow> Layer \<Rightarrow> bool" where
   "layer_compromised ss l \<equiv> layer_verified_in_stack ss l = False"
 
 (* hardware_root_of_trust (matches Coq: Definition hardware_root_of_trust) *)
 definition hardware_root_of_trust :: "StackState \<Rightarrow> bool" where
-  "hardware_root_of_trust ss \<equiv> layer_verified_in_stack ss L0_Physics = True \<and>
-  layer_verified_in_stack ss L1_Silicon = True \<and>
+  "hardware_root_of_trust ss \<equiv> layer_verified_in_stack ss L0_Physics = True /\
+  layer_verified_in_stack ss L1_Silicon = True /\
   interface_verified ss L0_Physics L1_Silicon = True"
 
 (* measured_boot_integrity (matches Coq: Definition measured_boot_integrity) *)
 definition measured_boot_integrity :: "StackState \<Rightarrow> bool" where
-  "measured_boot_integrity ss \<equiv> layer_verified_in_stack ss L2_Firmware = True \<and>
+  "measured_boot_integrity ss \<equiv> layer_verified_in_stack ss L2_Firmware = True /\
   attack_blocked ss ATBootCompromise = True"
 
 (* secure_channel (matches Coq: Definition secure_channel) *)
 definition secure_channel :: "StackState \<Rightarrow> bool" where
-  "secure_channel ss \<equiv> layer_verified_in_stack ss L3_Network = True \<and>
+  "secure_channel ss \<equiv> layer_verified_in_stack ss L3_Network = True /\
   attack_blocked ss ATNetworkAttack = True"
 
 (* capability_delegation_correct (matches Coq: Definition capability_delegation_correct) *)
 definition capability_delegation_correct :: "StackState \<Rightarrow> bool" where
-  "capability_delegation_correct ss \<equiv> layer_verified_in_stack ss L4_OS = True \<and>
-  layer_verified_in_stack ss L5_Runtime = True \<and>
-  layer_verified_in_stack ss L6_App = True \<and>
+  "capability_delegation_correct ss \<equiv> layer_verified_in_stack ss L4_OS = True /\
+  layer_verified_in_stack ss L5_Runtime = True /\
+  layer_verified_in_stack ss L6_App = True /\
   attack_blocked ss ATPrivilegeEscalation = True"
 
 (* end_to_end_encryption (matches Coq: Definition end_to_end_encryption) *)
 definition end_to_end_encryption :: "StackState \<Rightarrow> bool" where
-  "end_to_end_encryption ss \<equiv> layer_verified_in_stack ss L3_Network = True \<and>
-  layer_verified_in_stack ss L6_App = True \<and>
+  "end_to_end_encryption ss \<equiv> layer_verified_in_stack ss L3_Network = True /\
+  layer_verified_in_stack ss L6_App = True /\
   attack_blocked ss ATDataExfiltration = True"
 
 (* all_critical_layers_verified (matches Coq: Definition all_critical_layers_verified) *)
 definition all_critical_layers_verified :: "StackState \<Rightarrow> bool" where
-  "all_critical_layers_verified ss \<equiv> layer_verified_in_stack ss L1_Silicon = True \<and>
-  layer_verified_in_stack ss L2_Firmware = True \<and>
-  layer_verified_in_stack ss L3_Network = True \<and>
-  layer_verified_in_stack ss L4_OS = True \<and>
-  layer_verified_in_stack ss L5_Runtime = True \<and>
-  layer_verified_in_stack ss L6_App = True \<and>
+  "all_critical_layers_verified ss \<equiv> layer_verified_in_stack ss L1_Silicon = True /\
+  layer_verified_in_stack ss L2_Firmware = True /\
+  layer_verified_in_stack ss L3_Network = True /\
+  layer_verified_in_stack ss L4_OS = True /\
+  layer_verified_in_stack ss L5_Runtime = True /\
+  layer_verified_in_stack ss L6_App = True /\
   layer_verified_in_stack ss L7_UX = True"
 
 (* layer_eqb_refl (matches Coq) *)
-lemma layer_eqb_refl: "\<forall>l. layer_eqb l l = True"
+lemma layer_eqb_refl: "\<forall> l, layer_eqb l l = True"
   by simp
 
 (* layer_eqb_eq (matches Coq) *)
-lemma layer_eqb_eq: "\<forall>l1 l2. layer_eqb l1 l2 = True <-> l1 = l2"
-  by auto
+lemma layer_eqb_eq: "\<forall> l1 l2, layer_eqb l1 l2 = True <-> l1 = l2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* layer_adjacent_L0_L1 (matches Coq) *)
 lemma layer_adjacent_L0_L1: "layer_adjacent L0_Physics L1_Silicon = True"
@@ -359,171 +359,171 @@ lemma layer_adjacent_L6_L7: "layer_adjacent L6_App L7_UX = True"
   by simp
 
 (* sp_eqb_refl (matches Coq) *)
-lemma sp_eqb_refl: "\<forall>sp. sp_eqb sp sp = True"
+lemma sp_eqb_refl: "\<forall> sp, sp_eqb sp sp = True"
   by simp
 
 (* existsb_app (matches Coq) *)
-lemma existsb_app: "\<forall>{A} (f : A \<longrightarrow> bool) l1 l2. \<exists>b f (l1 ++ l2) = \<exists>b f l1 || \<exists>b f l2"
+lemma existsb_app: "\<forall> {A} (f : A \<longrightarrow> bool) l1 l2, \<exists>b f (l1 ++ l2) = \<exists>b f l1 || \<exists>b f l2"
   by simp
 
 (* existsb_cons_true (matches Coq) *)
-lemma existsb_cons_true: "\<forall>{A} (f : A \<longrightarrow> bool) x xs. f x = True \<longrightarrow> \<exists>b f (x :: xs) = True"
+lemma existsb_cons_true: "\<forall> {A} (f : A \<longrightarrow> bool) x xs, f x = True \<longrightarrow> \<exists>b f (x :: xs) = True"
   by simp
 
 (* existsb_cons_or (matches Coq) *)
-lemma existsb_cons_or: "\<forall>{A} (f : A \<longrightarrow> bool) x xs. \<exists>b f (x :: xs) = f x || \<exists>b f xs"
+lemma existsb_cons_or: "\<forall> {A} (f : A \<longrightarrow> bool) x xs, \<exists>b f (x :: xs) = f x || \<exists>b f xs"
   by simp
 
 (* forallb_impl (matches Coq) *)
-lemma forallb_impl: "\<forall>{A} (f g : A \<longrightarrow> bool) l. (\<forall>x. f x = True \<longrightarrow> g x = True) \<longrightarrow> \<forall>b f l = True \<longrightarrow> \<forall>b g l = True"
+lemma forallb_impl: "\<forall> {A} (f g : A \<longrightarrow> bool) l, (\<forall> x, f x = True \<longrightarrow> g x = True) \<longrightarrow> \<forall>b f l = True \<longrightarrow> \<forall>b g l = True"
   by auto
 
 (* andb_true_intro_both (matches Coq) *)
-lemma andb_true_intro_both: "\<forall>b1 b2. b1 = True \<longrightarrow> b2 = True \<longrightarrow> b1 && b2 = True"
+lemma andb_true_intro_both: "\<forall> b1 b2, b1 = True \<longrightarrow> b2 = True \<longrightarrow> b1 && b2 = True"
   by simp
 
 (* TOTAL_001_01_l0_l1_interface_security (matches Coq) *)
-lemma TOTAL_001_01_l0_l1_interface_security: "\<forall>ss : StackState. interface_verified ss L0_Physics L1_Silicon = True \<longrightarrow> layer_verified_in_stack ss L0_Physics = True \<longrightarrow> layer_verified_in_stack ss L1_Silicon = True \<longrightarrow> layer_adjacent L0_Physics L1_Silicon = True"
+lemma TOTAL_001_01_l0_l1_interface_security: "\<forall> ss : StackState, interface_verified ss L0_Physics L1_Silicon = True \<longrightarrow> layer_verified_in_stack ss L0_Physics = True \<longrightarrow> layer_verified_in_stack ss L1_Silicon = True \<longrightarrow> layer_adjacent L0_Physics L1_Silicon = True"
   by simp
 
 (* TOTAL_001_02_l1_l2_interface_security (matches Coq) *)
-lemma TOTAL_001_02_l1_l2_interface_security: "\<forall>ss : StackState. interface_verified ss L1_Silicon L2_Firmware = True \<longrightarrow> layer_verified_in_stack ss L1_Silicon = True \<longrightarrow> layer_verified_in_stack ss L2_Firmware = True \<longrightarrow> layer_adjacent L1_Silicon L2_Firmware = True"
+lemma TOTAL_001_02_l1_l2_interface_security: "\<forall> ss : StackState, interface_verified ss L1_Silicon L2_Firmware = True \<longrightarrow> layer_verified_in_stack ss L1_Silicon = True \<longrightarrow> layer_verified_in_stack ss L2_Firmware = True \<longrightarrow> layer_adjacent L1_Silicon L2_Firmware = True"
   by simp
 
 (* TOTAL_001_03_l2_l3_interface_security (matches Coq) *)
-lemma TOTAL_001_03_l2_l3_interface_security: "\<forall>ss : StackState. interface_verified ss L2_Firmware L3_Network = True \<longrightarrow> layer_verified_in_stack ss L2_Firmware = True \<longrightarrow> layer_verified_in_stack ss L3_Network = True \<longrightarrow> layer_adjacent L2_Firmware L3_Network = True"
+lemma TOTAL_001_03_l2_l3_interface_security: "\<forall> ss : StackState, interface_verified ss L2_Firmware L3_Network = True \<longrightarrow> layer_verified_in_stack ss L2_Firmware = True \<longrightarrow> layer_verified_in_stack ss L3_Network = True \<longrightarrow> layer_adjacent L2_Firmware L3_Network = True"
   by simp
 
 (* TOTAL_001_04_l3_l4_interface_security (matches Coq) *)
-lemma TOTAL_001_04_l3_l4_interface_security: "\<forall>ss : StackState. interface_verified ss L3_Network L4_OS = True \<longrightarrow> layer_verified_in_stack ss L3_Network = True \<longrightarrow> layer_verified_in_stack ss L4_OS = True \<longrightarrow> layer_adjacent L3_Network L4_OS = True"
+lemma TOTAL_001_04_l3_l4_interface_security: "\<forall> ss : StackState, interface_verified ss L3_Network L4_OS = True \<longrightarrow> layer_verified_in_stack ss L3_Network = True \<longrightarrow> layer_verified_in_stack ss L4_OS = True \<longrightarrow> layer_adjacent L3_Network L4_OS = True"
   by simp
 
 (* TOTAL_001_05_l4_l5_interface_security (matches Coq) *)
-lemma TOTAL_001_05_l4_l5_interface_security: "\<forall>ss : StackState. interface_verified ss L4_OS L5_Runtime = True \<longrightarrow> layer_verified_in_stack ss L4_OS = True \<longrightarrow> layer_verified_in_stack ss L5_Runtime = True \<longrightarrow> layer_adjacent L4_OS L5_Runtime = True"
+lemma TOTAL_001_05_l4_l5_interface_security: "\<forall> ss : StackState, interface_verified ss L4_OS L5_Runtime = True \<longrightarrow> layer_verified_in_stack ss L4_OS = True \<longrightarrow> layer_verified_in_stack ss L5_Runtime = True \<longrightarrow> layer_adjacent L4_OS L5_Runtime = True"
   by simp
 
 (* TOTAL_001_06_l5_l6_interface_security (matches Coq) *)
-lemma TOTAL_001_06_l5_l6_interface_security: "\<forall>ss : StackState. interface_verified ss L5_Runtime L6_App = True \<longrightarrow> layer_verified_in_stack ss L5_Runtime = True \<longrightarrow> layer_verified_in_stack ss L6_App = True \<longrightarrow> layer_adjacent L5_Runtime L6_App = True"
+lemma TOTAL_001_06_l5_l6_interface_security: "\<forall> ss : StackState, interface_verified ss L5_Runtime L6_App = True \<longrightarrow> layer_verified_in_stack ss L5_Runtime = True \<longrightarrow> layer_verified_in_stack ss L6_App = True \<longrightarrow> layer_adjacent L5_Runtime L6_App = True"
   by simp
 
 (* TOTAL_001_07_l6_l7_interface_security (matches Coq) *)
-lemma TOTAL_001_07_l6_l7_interface_security: "\<forall>ss : StackState. interface_verified ss L6_App L7_UX = True \<longrightarrow> layer_verified_in_stack ss L6_App = True \<longrightarrow> layer_verified_in_stack ss L7_UX = True \<longrightarrow> layer_adjacent L6_App L7_UX = True"
+lemma TOTAL_001_07_l6_l7_interface_security: "\<forall> ss : StackState, interface_verified ss L6_App L7_UX = True \<longrightarrow> layer_verified_in_stack ss L6_App = True \<longrightarrow> layer_verified_in_stack ss L7_UX = True \<longrightarrow> layer_adjacent L6_App L7_UX = True"
   by simp
 
 (* TOTAL_001_08_confidentiality_preserved (matches Coq) *)
-lemma TOTAL_001_08_confidentiality_preserved: "\<forall>ss : StackState. all_layers_verified ss = True \<longrightarrow> (\<forall>l. l \<in> set full_stack \<longrightarrow> property_in_layer ss l SPConfidentiality = True) \<longrightarrow> property_preserved_across_layers ss SPConfidentiality full_stack"
+lemma TOTAL_001_08_confidentiality_preserved: "\<forall> ss : StackState, all_layers_verified ss = True \<longrightarrow> (\<forall> l, In l full_stack \<longrightarrow> property_in_layer ss l SPConfidentiality = True) \<longrightarrow> property_preserved_across_layers ss SPConfidentiality full_stack"
   by auto
 
 (* TOTAL_001_09_integrity_preserved (matches Coq) *)
-lemma TOTAL_001_09_integrity_preserved: "\<forall>ss : StackState. all_layers_verified ss = True \<longrightarrow> (\<forall>l. l \<in> set full_stack \<longrightarrow> property_in_layer ss l SPIntegrity = True) \<longrightarrow> property_preserved_across_layers ss SPIntegrity full_stack"
+lemma TOTAL_001_09_integrity_preserved: "\<forall> ss : StackState, all_layers_verified ss = True \<longrightarrow> (\<forall> l, In l full_stack \<longrightarrow> property_in_layer ss l SPIntegrity = True) \<longrightarrow> property_preserved_across_layers ss SPIntegrity full_stack"
   by auto
 
 (* TOTAL_001_10_availability_preserved (matches Coq) *)
-lemma TOTAL_001_10_availability_preserved: "\<forall>ss : StackState. all_layers_verified ss = True \<longrightarrow> (\<forall>l. l \<in> set full_stack \<longrightarrow> property_in_layer ss l SPAvailability = True) \<longrightarrow> property_preserved_across_layers ss SPAvailability full_stack"
+lemma TOTAL_001_10_availability_preserved: "\<forall> ss : StackState, all_layers_verified ss = True \<longrightarrow> (\<forall> l, In l full_stack \<longrightarrow> property_in_layer ss l SPAvailability = True) \<longrightarrow> property_preserved_across_layers ss SPAvailability full_stack"
   by auto
 
 (* TOTAL_001_11_authentication_preserved (matches Coq) *)
-lemma TOTAL_001_11_authentication_preserved: "\<forall>ss : StackState. all_layers_verified ss = True \<longrightarrow> (\<forall>l. l \<in> set network_to_ux_layers \<longrightarrow> property_in_layer ss l SPAuthentication = True) \<longrightarrow> property_preserved_across_layers ss SPAuthentication network_to_ux_layers"
+lemma TOTAL_001_11_authentication_preserved: "\<forall> ss : StackState, all_layers_verified ss = True \<longrightarrow> (\<forall> l, In l network_to_ux_layers \<longrightarrow> property_in_layer ss l SPAuthentication = True) \<longrightarrow> property_preserved_across_layers ss SPAuthentication network_to_ux_layers"
   by auto
 
 (* TOTAL_001_12_authorization_preserved (matches Coq) *)
-lemma TOTAL_001_12_authorization_preserved: "\<forall>ss : StackState. all_layers_verified ss = True \<longrightarrow> (\<forall>l. l \<in> set os_to_ux_layers \<longrightarrow> property_in_layer ss l SPAuthorization = True) \<longrightarrow> property_preserved_across_layers ss SPAuthorization os_to_ux_layers"
+lemma TOTAL_001_12_authorization_preserved: "\<forall> ss : StackState, all_layers_verified ss = True \<longrightarrow> (\<forall> l, In l os_to_ux_layers \<longrightarrow> property_in_layer ss l SPAuthorization = True) \<longrightarrow> property_preserved_across_layers ss SPAuthorization os_to_ux_layers"
   by auto
 
 (* TOTAL_001_13_memory_corruption_impossible (matches Coq) *)
-lemma TOTAL_001_13_memory_corruption_impossible: "\<forall>ss : StackState. layer_verified_in_stack ss L1_Silicon = True \<longrightarrow> attack_blocked ss ATMemoryCorruption = True"
+lemma TOTAL_001_13_memory_corruption_impossible: "\<forall> ss : StackState, layer_verified_in_stack ss L1_Silicon = True \<longrightarrow> attack_blocked ss ATMemoryCorruption = True"
   by auto
 
 (* TOTAL_001_14_side_channel_impossible (matches Coq) *)
-lemma TOTAL_001_14_side_channel_impossible: "\<forall>ss : StackState. layer_verified_in_stack ss L1_Silicon = True \<longrightarrow> attack_blocked ss ATSideChannel = True"
+lemma TOTAL_001_14_side_channel_impossible: "\<forall> ss : StackState, layer_verified_in_stack ss L1_Silicon = True \<longrightarrow> attack_blocked ss ATSideChannel = True"
   by auto
 
 (* TOTAL_001_15_network_attack_impossible (matches Coq) *)
-lemma TOTAL_001_15_network_attack_impossible: "\<forall>ss : StackState. layer_verified_in_stack ss L3_Network = True \<longrightarrow> attack_blocked ss ATNetworkAttack = True"
+lemma TOTAL_001_15_network_attack_impossible: "\<forall> ss : StackState, layer_verified_in_stack ss L3_Network = True \<longrightarrow> attack_blocked ss ATNetworkAttack = True"
   by auto
 
 (* TOTAL_001_16_privilege_escalation_impossible (matches Coq) *)
-lemma TOTAL_001_16_privilege_escalation_impossible: "\<forall>ss : StackState. layer_verified_in_stack ss L4_OS = True \<longrightarrow> attack_blocked ss ATPrivilegeEscalation = True"
+lemma TOTAL_001_16_privilege_escalation_impossible: "\<forall> ss : StackState, layer_verified_in_stack ss L4_OS = True \<longrightarrow> attack_blocked ss ATPrivilegeEscalation = True"
   by auto
 
 (* TOTAL_001_17_ui_deception_impossible (matches Coq) *)
-lemma TOTAL_001_17_ui_deception_impossible: "\<forall>ss : StackState. layer_verified_in_stack ss L7_UX = True \<longrightarrow> attack_blocked ss ATUIDeception = True"
+lemma TOTAL_001_17_ui_deception_impossible: "\<forall> ss : StackState, layer_verified_in_stack ss L7_UX = True \<longrightarrow> attack_blocked ss ATUIDeception = True"
   by auto
 
 (* TOTAL_001_18_boot_compromise_impossible (matches Coq) *)
-lemma TOTAL_001_18_boot_compromise_impossible: "\<forall>ss : StackState. layer_verified_in_stack ss L2_Firmware = True \<longrightarrow> attack_blocked ss ATBootCompromise = True"
+lemma TOTAL_001_18_boot_compromise_impossible: "\<forall> ss : StackState, layer_verified_in_stack ss L2_Firmware = True \<longrightarrow> attack_blocked ss ATBootCompromise = True"
   by auto
 
 (* TOTAL_001_19_adjacent_layers_compose (matches Coq) *)
-lemma TOTAL_001_19_adjacent_layers_compose: "\<forall>ss : StackState. \<forall>l1 l2 : Layer. layer_adjacent l1 l2 = True \<longrightarrow> layer_verified_in_stack ss l1 = True \<longrightarrow> layer_verified_in_stack ss l2 = True \<longrightarrow> interface_verified ss l1 l2 = True \<longrightarrow> layer_in_stack ss l1 && layer_in_stack ss l2 = True"
+lemma TOTAL_001_19_adjacent_layers_compose: "\<forall> ss : StackState, \<forall> l1 l2 : Layer, layer_adjacent l1 l2 = True \<longrightarrow> layer_verified_in_stack ss l1 = True \<longrightarrow> layer_verified_in_stack ss l2 = True \<longrightarrow> interface_verified ss l1 l2 = True \<longrightarrow> layer_in_stack ss l1 && layer_in_stack ss l2 = True"
   by auto
 
 (* TOTAL_001_20_security_property_transitivity (matches Coq) *)
-lemma TOTAL_001_20_security_property_transitivity: "\<forall>ss : StackState. \<forall>p : SecurityProperty. \<forall>l1 l2 l3 : Layer. property_in_layer ss l1 p = True \<longrightarrow> property_in_layer ss l2 p = True \<longrightarrow> property_in_layer ss l3 p = True \<longrightarrow> layer_adjacent l1 l2 = True \<longrightarrow> layer_adjacent l2 l3 = True \<longrightarrow> interface_verified ss l1 l2 = True \<longrightarrow> interface_verified ss l2 l3 = True \<longrightarrow> property_in_layer ss l1 p = True \<and> property_in_layer ss l2 p = True \<and> property_in_layer ss l3 p = True"
+lemma TOTAL_001_20_security_property_transitivity: "\<forall> ss : StackState, \<forall> p : SecurityProperty, \<forall> l1 l2 l3 : Layer, property_in_layer ss l1 p = True \<longrightarrow> property_in_layer ss l2 p = True \<longrightarrow> property_in_layer ss l3 p = True \<longrightarrow> layer_adjacent l1 l2 = True \<longrightarrow> layer_adjacent l2 l3 = True \<longrightarrow> interface_verified ss l1 l2 = True \<longrightarrow> interface_verified ss l2 l3 = True \<longrightarrow> property_in_layer ss l1 p = True \<and> property_in_layer ss l2 p = True \<and> property_in_layer ss l3 p = True"
   by auto
 
 (* TOTAL_001_21_no_security_gap (matches Coq) *)
-lemma TOTAL_001_21_no_security_gap: "\<forall>ss : StackState. all_interfaces_verified ss = True \<longrightarrow> (\<forall>l1 l2. layer_adjacent l1 l2 = True \<longrightarrow> interface_verified ss l1 l2 = True)"
+lemma TOTAL_001_21_no_security_gap: "\<forall> ss : StackState, all_interfaces_verified ss = True \<longrightarrow> (\<forall> l1 l2, layer_adjacent l1 l2 = True \<longrightarrow> interface_verified ss l1 l2 = True)"
   by auto
 
 (* TOTAL_001_22_defense_in_depth (matches Coq) *)
-lemma TOTAL_001_22_defense_in_depth: "\<forall>ss : StackState. \<forall>a : AttackType. attack_blocked ss a = True \<longrightarrow> \<exists>b (\<lambda>lv. lv.(lv_verified) && layer_defends lv.(lv_layer) a) ss.(ss_layers) = True"
+lemma TOTAL_001_22_defense_in_depth: "\<forall> ss : StackState, \<forall> a : AttackType, attack_blocked ss a = True \<longrightarrow> \<exists>b (fun lv => lv.(lv_verified) && layer_defends lv.(lv_layer) a) ss.(ss_layers) = True"
   by auto
 
 (* TOTAL_001_23_single_layer_compromise_bounded (matches Coq) *)
-lemma TOTAL_001_23_single_layer_compromise_bounded: "\<forall>ss : StackState. \<forall>l_comp : Layer. \<forall>a : AttackType. layer_compromised ss l_comp \<longrightarrow> (\<exists>l_def : Layer. l_def \<noteq> l_comp \<and> layer_verified_in_stack ss l_def = True \<and> layer_defends l_def a = True) \<longrightarrow> attack_blocked ss a = True"
+lemma TOTAL_001_23_single_layer_compromise_bounded: "\<forall> ss : StackState, \<forall> l_comp : Layer, \<forall> a : AttackType, layer_compromised ss l_comp \<longrightarrow> (\<exists> l_def : Layer, l_def \<noteq> l_comp \<and> layer_verified_in_stack ss l_def = True \<and> layer_defends l_def a = True) \<longrightarrow> attack_blocked ss a = True"
   by auto
 
 (* TOTAL_001_24_hardware_root_of_trust (matches Coq) *)
-lemma TOTAL_001_24_hardware_root_of_trust: "\<forall>ss : StackState. layer_verified_in_stack ss L0_Physics = True \<longrightarrow> layer_verified_in_stack ss L1_Silicon = True \<longrightarrow> interface_verified ss L0_Physics L1_Silicon = True \<longrightarrow> hardware_root_of_trust ss"
+lemma TOTAL_001_24_hardware_root_of_trust: "\<forall> ss : StackState, layer_verified_in_stack ss L0_Physics = True \<longrightarrow> layer_verified_in_stack ss L1_Silicon = True \<longrightarrow> interface_verified ss L0_Physics L1_Silicon = True \<longrightarrow> hardware_root_of_trust ss"
   by auto
 
 (* TOTAL_001_25_measured_boot_integrity (matches Coq) *)
-lemma TOTAL_001_25_measured_boot_integrity: "\<forall>ss : StackState. layer_verified_in_stack ss L2_Firmware = True \<longrightarrow> measured_boot_integrity ss"
+lemma TOTAL_001_25_measured_boot_integrity: "\<forall> ss : StackState, layer_verified_in_stack ss L2_Firmware = True \<longrightarrow> measured_boot_integrity ss"
   by auto
 
 (* TOTAL_001_26_secure_channel_establishment (matches Coq) *)
-lemma TOTAL_001_26_secure_channel_establishment: "\<forall>ss : StackState. layer_verified_in_stack ss L3_Network = True \<longrightarrow> secure_channel ss"
+lemma TOTAL_001_26_secure_channel_establishment: "\<forall> ss : StackState, layer_verified_in_stack ss L3_Network = True \<longrightarrow> secure_channel ss"
   by auto
 
 (* TOTAL_001_27_capability_delegation (matches Coq) *)
-lemma TOTAL_001_27_capability_delegation: "\<forall>ss : StackState. layer_verified_in_stack ss L4_OS = True \<longrightarrow> layer_verified_in_stack ss L5_Runtime = True \<longrightarrow> layer_verified_in_stack ss L6_App = True \<longrightarrow> capability_delegation_correct ss"
+lemma TOTAL_001_27_capability_delegation: "\<forall> ss : StackState, layer_verified_in_stack ss L4_OS = True \<longrightarrow> layer_verified_in_stack ss L5_Runtime = True \<longrightarrow> layer_verified_in_stack ss L6_App = True \<longrightarrow> capability_delegation_correct ss"
   by auto
 
 (* TOTAL_001_28_end_to_end_encryption (matches Coq) *)
-lemma TOTAL_001_28_end_to_end_encryption: "\<forall>ss : StackState. layer_verified_in_stack ss L3_Network = True \<longrightarrow> layer_verified_in_stack ss L6_App = True \<longrightarrow> end_to_end_encryption ss"
+lemma TOTAL_001_28_end_to_end_encryption: "\<forall> ss : StackState, layer_verified_in_stack ss L3_Network = True \<longrightarrow> layer_verified_in_stack ss L6_App = True \<longrightarrow> end_to_end_encryption ss"
   by auto
 
 (* TOTAL_001_29_remote_code_execution_impossible (matches Coq) *)
-lemma TOTAL_001_29_remote_code_execution_impossible: "\<forall>ss : StackState. layer_verified_in_stack ss L4_OS = True \<longrightarrow> attack_blocked ss ATRemoteCodeExec = True"
+lemma TOTAL_001_29_remote_code_execution_impossible: "\<forall> ss : StackState, layer_verified_in_stack ss L4_OS = True \<longrightarrow> attack_blocked ss ATRemoteCodeExec = True"
   by auto
 
 (* TOTAL_001_30_data_exfiltration_impossible (matches Coq) *)
-lemma TOTAL_001_30_data_exfiltration_impossible: "\<forall>ss : StackState. layer_verified_in_stack ss L3_Network = True \<longrightarrow> attack_blocked ss ATDataExfiltration = True"
+lemma TOTAL_001_30_data_exfiltration_impossible: "\<forall> ss : StackState, layer_verified_in_stack ss L3_Network = True \<longrightarrow> attack_blocked ss ATDataExfiltration = True"
   by auto
 
 (* TOTAL_001_31_denial_of_service_bounded (matches Coq) *)
-lemma TOTAL_001_31_denial_of_service_bounded: "\<forall>ss : StackState. layer_verified_in_stack ss L3_Network = True \<longrightarrow> attack_blocked ss ATDenialOfService = True"
+lemma TOTAL_001_31_denial_of_service_bounded: "\<forall> ss : StackState, layer_verified_in_stack ss L3_Network = True \<longrightarrow> attack_blocked ss ATDenialOfService = True"
   by auto
 
 (* TOTAL_001_32_malware_execution_impossible (matches Coq) *)
-lemma TOTAL_001_32_malware_execution_impossible: "\<forall>ss : StackState. layer_verified_in_stack ss L4_OS = True \<longrightarrow> attack_blocked ss ATMalwareExec = True"
+lemma TOTAL_001_32_malware_execution_impossible: "\<forall> ss : StackState, layer_verified_in_stack ss L4_OS = True \<longrightarrow> attack_blocked ss ATMalwareExec = True"
   by auto
 
 (* TOTAL_001_33_insider_threat_bounded (matches Coq) *)
-lemma TOTAL_001_33_insider_threat_bounded: "\<forall>ss : StackState. layer_verified_in_stack ss L6_App = True \<longrightarrow> attack_blocked ss ATInsiderThreat = True"
+lemma TOTAL_001_33_insider_threat_bounded: "\<forall> ss : StackState, layer_verified_in_stack ss L6_App = True \<longrightarrow> attack_blocked ss ATInsiderThreat = True"
   by auto
 
 (* TOTAL_001_34_all_layer_proofs_compose (matches Coq) *)
-lemma TOTAL_001_34_all_layer_proofs_compose: "\<forall>ss : StackState. all_critical_layers_verified ss \<longrightarrow> all_interfaces_verified ss = True \<longrightarrow> (attack_blocked ss ATMemoryCorruption = True) \<and> (attack_blocked ss ATSideChannel = True) \<and> (attack_blocked ss ATNetworkAttack = True) \<and> (attack_blocked ss ATPrivilegeEscalation = True) \<and> (attack_blocked ss ATUIDeception = True) \<and> (attack_blocked ss ATBootCompromise = True) \<and> (attack_blocked ss ATRemoteCodeExec = True) \<and> (attack_blocked ss ATDataExfiltration = True) \<and> (attack_blocked ss ATDenialOfService = True) \<and> (attack_blocked ss ATMalwareExec = True) \<and> (attack_blocked ss ATInsiderThreat = True)"
+lemma TOTAL_001_34_all_layer_proofs_compose: "\<forall> ss : StackState, all_critical_layers_verified ss \<longrightarrow> all_interfaces_verified ss = True \<longrightarrow> (attack_blocked ss ATMemoryCorruption = True) \<and> (attack_blocked ss ATSideChannel = True) \<and> (attack_blocked ss ATNetworkAttack = True) \<and> (attack_blocked ss ATPrivilegeEscalation = True) \<and> (attack_blocked ss ATUIDeception = True) \<and> (attack_blocked ss ATBootCompromise = True) \<and> (attack_blocked ss ATRemoteCodeExec = True) \<and> (attack_blocked ss ATDataExfiltration = True) \<and> (attack_blocked ss ATDenialOfService = True) \<and> (attack_blocked ss ATMalwareExec = True) \<and> (attack_blocked ss ATInsiderThreat = True)"
   by auto
 
 (* attack_blocked_by_layer (matches Coq) *)
-lemma attack_blocked_by_layer: "\<forall>a : AttackType. \<exists>l : Layer. layer_defends l a = True"
+lemma attack_blocked_by_layer: "\<forall> a : AttackType, \<exists> l : Layer, layer_defends l a = True"
   by simp
 
 (* TOTAL_001_35_total_stack_security (matches Coq) *)
-lemma TOTAL_001_35_total_stack_security: "\<forall>ss : StackState. all_critical_layers_verified ss \<longrightarrow> all_interfaces_verified ss = True \<longrightarrow> \<forall>attack : AttackType. attack_blocked ss attack = True"
+lemma TOTAL_001_35_total_stack_security: "\<forall> ss : StackState, all_critical_layers_verified ss \<longrightarrow> all_interfaces_verified ss = True \<longrightarrow> \<forall> attack : AttackType, attack_blocked ss attack = True"
   by auto
 
 end

@@ -2,7 +2,7 @@
 (* Copyright (c) 2026 The RIINA Authors. See AUTHORS file. *)
 
 (*
- * RIINA smart_contract_security - Isabelle/HOL Port
+ * RIINA SmartContractSecurity - Isabelle/HOL Port
  *
  * Auto-generated port of 02_FORMAL/coq/domains/SmartContractSecurity.v (36 theorems).
  *
@@ -12,14 +12,14 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | contract_vulnerability | contract_vulnerability | OK     |
+ * | ContractVulnerability | contract_vulnerability | OK     |
  * | CEIPhase           | cei_phase              | OK     |
- * | reentrancy_guard    | reentrancy_guard       | OK     |
- * | integer_safety      | integer_safety         | OK     |
- * | access_control_policy | access_control_policy  | OK     |
- * | delegate_call_safety | delegate_call_safety   | OK     |
- * | flash_loan_defense   | flash_loan_defense     | OK     |
- * | smart_contract_security | smart_contract_security | OK     |
+ * | ReentrancyGuard    | reentrancy_guard       | OK     |
+ * | IntegerSafety      | integer_safety         | OK     |
+ * | AccessControlPolicy | access_control_policy  | OK     |
+ * | DelegateCallSafety | delegate_call_safety   | OK     |
+ * | FlashLoanDefense   | flash_loan_defense     | OK     |
+ * | SmartContractSecurity | smart_contract_security | OK     |
  * | reentrancy_protected | reentrancy_protected   | OK     |
  * | integer_safe       | integer_safe           | OK     |
  * | access_controlled  | access_controlled      | OK     |
@@ -78,7 +78,7 @@ begin
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
 
-(* contract_vulnerability (matches Coq: Inductive contract_vulnerability) *)
+(* ContractVulnerability (matches Coq: Inductive ContractVulnerability) *)
 datatype contract_vulnerability =
     Reentrancy
   |     IntegerOverflow
@@ -97,44 +97,44 @@ datatype cei_phase =
   |     Effects
   |     Interactions
 
-(* reentrancy_guard (matches Coq: Record reentrancy_guard) *)
+(* ReentrancyGuard (matches Coq: Record ReentrancyGuard) *)
 record reentrancy_guard =
   rg_mutex_lock :: bool
   rg_cei_pattern :: bool
   rg_pull_over_push :: bool
 
-(* integer_safety (matches Coq: Record integer_safety) *)
+(* IntegerSafety (matches Coq: Record IntegerSafety) *)
 record integer_safety =
   is_overflow_check :: bool
   is_underflow_check :: bool
   is_safe_math :: bool
 
-(* access_control_policy (matches Coq: Record access_control_policy) *)
+(* AccessControlPolicy (matches Coq: Record AccessControlPolicy) *)
 record access_control_policy =
   ac_owner_only :: bool
   ac_role_based :: bool
   ac_no_tx_origin :: bool
   ac_multi_sig :: bool
 
-(* delegate_call_safety (matches Coq: Record delegate_call_safety) *)
+(* DelegateCallSafety (matches Coq: Record DelegateCallSafety) *)
 record delegate_call_safety =
   dc_storage_collision_check :: bool
   dc_initialization_check :: bool
   dc_selector_clashing_check :: bool
 
-(* flash_loan_defense (matches Coq: Record flash_loan_defense) *)
+(* FlashLoanDefense (matches Coq: Record FlashLoanDefense) *)
 record flash_loan_defense =
   fl_oracle_checks :: bool
   fl_time_weighted_price :: bool
   fl_multiple_oracles :: bool
 
-(* smart_contract_security (matches Coq: Record smart_contract_security) *)
+(* SmartContractSecurity (matches Coq: Record SmartContractSecurity) *)
 record smart_contract_security =
-  sc_reentrancy :: reentrancy_guard
-  sc_integer :: integer_safety
-  sc_access :: access_control_policy
-  sc_delegate :: delegate_call_safety
-  sc_flash :: flash_loan_defense
+  sc_reentrancy :: ReentrancyGuard
+  sc_integer :: IntegerSafety
+  sc_access :: AccessControlPolicy
+  sc_delegate :: DelegateCallSafety
+  sc_flash :: FlashLoanDefense
 
 (* reentrancy_protected (matches Coq: Definition reentrancy_protected) *)
 definition reentrancy_protected :: "ReentrancyGuard \<Rightarrow> bool" where
@@ -193,8 +193,8 @@ definition riina_contract_security :: "SmartContractSecurity" where
     SECTION 3: COMPLIANCE PREDICATES
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
-  by auto
+lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* SC_001: RIINA Reentrancy Protected *)
 (* SC_001_reentrancy_protected (matches Coq) *)
@@ -203,17 +203,17 @@ lemma SC_001_reentrancy_protected: "reentrancy_protected riina_reentrancy = True
 
 (* SC_002: Mutex Lock Required *)
 (* SC_002_mutex_required (matches Coq) *)
-lemma SC_002_mutex_required: "\<forall>r : ReentrancyGuard. reentrancy_protected r = True \<longrightarrow> rg_mutex_lock r = True"
+lemma SC_002_mutex_required: "\<forall> r : ReentrancyGuard, reentrancy_protected r = True \<longrightarrow> rg_mutex_lock r = True"
   by auto
 
 (* SC_003: CEI Pattern Required *)
 (* SC_003_cei_required (matches Coq) *)
-lemma SC_003_cei_required: "\<forall>r : ReentrancyGuard. reentrancy_protected r = True \<longrightarrow> rg_cei_pattern r = True"
+lemma SC_003_cei_required: "\<forall> r : ReentrancyGuard, reentrancy_protected r = True \<longrightarrow> rg_cei_pattern r = True"
   by auto
 
 (* SC_004: Pull Over Push Required *)
 (* SC_004_pull_over_push (matches Coq) *)
-lemma SC_004_pull_over_push: "\<forall>r : ReentrancyGuard. reentrancy_protected r = True \<longrightarrow> rg_pull_over_push r = True"
+lemma SC_004_pull_over_push: "\<forall> r : ReentrancyGuard, reentrancy_protected r = True \<longrightarrow> rg_pull_over_push r = True"
   by auto
 
 (* SC_005: RIINA Integer Safe *)
@@ -223,17 +223,17 @@ lemma SC_005_integer_safe: "integer_safe riina_integer = True"
 
 (* SC_006: Overflow Check Required *)
 (* SC_006_overflow_check (matches Coq) *)
-lemma SC_006_overflow_check: "\<forall>i : IntegerSafety. integer_safe i = True \<longrightarrow> is_overflow_check i = True"
+lemma SC_006_overflow_check: "\<forall> i : IntegerSafety, integer_safe i = True \<longrightarrow> is_overflow_check i = True"
   by auto
 
 (* SC_007: Underflow Check Required *)
 (* SC_007_underflow_check (matches Coq) *)
-lemma SC_007_underflow_check: "\<forall>i : IntegerSafety. integer_safe i = True \<longrightarrow> is_underflow_check i = True"
+lemma SC_007_underflow_check: "\<forall> i : IntegerSafety, integer_safe i = True \<longrightarrow> is_underflow_check i = True"
   by auto
 
 (* SC_008: Safe Math Required *)
 (* SC_008_safe_math (matches Coq) *)
-lemma SC_008_safe_math: "\<forall>i : IntegerSafety. integer_safe i = True \<longrightarrow> is_safe_math i = True"
+lemma SC_008_safe_math: "\<forall> i : IntegerSafety, integer_safe i = True \<longrightarrow> is_safe_math i = True"
   by auto
 
 (* SC_009: RIINA Access Controlled *)
@@ -243,17 +243,17 @@ lemma SC_009_access_controlled: "access_controlled riina_access = True"
 
 (* SC_010: Owner Only Required *)
 (* SC_010_owner_only (matches Coq) *)
-lemma SC_010_owner_only: "\<forall>a : AccessControlPolicy. access_controlled a = True \<longrightarrow> ac_owner_only a = True"
+lemma SC_010_owner_only: "\<forall> a : AccessControlPolicy, access_controlled a = True \<longrightarrow> ac_owner_only a = True"
   by auto
 
 (* SC_011: No tx.origin Required *)
 (* SC_011_no_tx_origin (matches Coq) *)
-lemma SC_011_no_tx_origin: "\<forall>a : AccessControlPolicy. access_controlled a = True \<longrightarrow> ac_no_tx_origin a = True"
+lemma SC_011_no_tx_origin: "\<forall> a : AccessControlPolicy, access_controlled a = True \<longrightarrow> ac_no_tx_origin a = True"
   by auto
 
 (* SC_012: Multi-Sig Required *)
 (* SC_012_multi_sig (matches Coq) *)
-lemma SC_012_multi_sig: "\<forall>a : AccessControlPolicy. access_controlled a = True \<longrightarrow> ac_multi_sig a = True"
+lemma SC_012_multi_sig: "\<forall> a : AccessControlPolicy, access_controlled a = True \<longrightarrow> ac_multi_sig a = True"
   by auto
 
 (* SC_013: RIINA Delegate Safe *)
@@ -263,17 +263,17 @@ lemma SC_013_delegate_safe: "delegate_safe riina_delegate = True"
 
 (* SC_014: Storage Collision Check *)
 (* SC_014_storage_collision (matches Coq) *)
-lemma SC_014_storage_collision: "\<forall>d : DelegateCallSafety. delegate_safe d = True \<longrightarrow> dc_storage_collision_check d = True"
+lemma SC_014_storage_collision: "\<forall> d : DelegateCallSafety, delegate_safe d = True \<longrightarrow> dc_storage_collision_check d = True"
   by auto
 
 (* SC_015: Initialization Check *)
 (* SC_015_init_check (matches Coq) *)
-lemma SC_015_init_check: "\<forall>d : DelegateCallSafety. delegate_safe d = True \<longrightarrow> dc_initialization_check d = True"
+lemma SC_015_init_check: "\<forall> d : DelegateCallSafety, delegate_safe d = True \<longrightarrow> dc_initialization_check d = True"
   by auto
 
 (* SC_016: Selector Clashing Check *)
 (* SC_016_selector_clash (matches Coq) *)
-lemma SC_016_selector_clash: "\<forall>d : DelegateCallSafety. delegate_safe d = True \<longrightarrow> dc_selector_clashing_check d = True"
+lemma SC_016_selector_clash: "\<forall> d : DelegateCallSafety, delegate_safe d = True \<longrightarrow> dc_selector_clashing_check d = True"
   by auto
 
 (* SC_017: RIINA Flash Defended *)
@@ -283,17 +283,17 @@ lemma SC_017_flash_defended: "flash_defended riina_flash = True"
 
 (* SC_018: Oracle Checks Required *)
 (* SC_018_oracle_checks (matches Coq) *)
-lemma SC_018_oracle_checks: "\<forall>f : FlashLoanDefense. flash_defended f = True \<longrightarrow> fl_oracle_checks f = True"
+lemma SC_018_oracle_checks: "\<forall> f : FlashLoanDefense, flash_defended f = True \<longrightarrow> fl_oracle_checks f = True"
   by auto
 
 (* SC_019: Time Weighted Price *)
 (* SC_019_twap (matches Coq) *)
-lemma SC_019_twap: "\<forall>f : FlashLoanDefense. flash_defended f = True \<longrightarrow> fl_time_weighted_price f = True"
+lemma SC_019_twap: "\<forall> f : FlashLoanDefense, flash_defended f = True \<longrightarrow> fl_time_weighted_price f = True"
   by auto
 
 (* SC_020: Multiple Oracles *)
 (* SC_020_multiple_oracles (matches Coq) *)
-lemma SC_020_multiple_oracles: "\<forall>f : FlashLoanDefense. flash_defended f = True \<longrightarrow> fl_multiple_oracles f = True"
+lemma SC_020_multiple_oracles: "\<forall> f : FlashLoanDefense, flash_defended f = True \<longrightarrow> fl_multiple_oracles f = True"
   by auto
 
 (* SC_021: RIINA Fully Secure *)
@@ -303,27 +303,27 @@ lemma SC_021_riina_fully_secure: "fully_secure_contract riina_contract_security 
 
 (* SC_022: Full Security Implies Reentrancy *)
 (* SC_022_full_implies_reentrancy (matches Coq) *)
-lemma SC_022_full_implies_reentrancy: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> reentrancy_protected (sc_reentrancy s) = True"
+lemma SC_022_full_implies_reentrancy: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> reentrancy_protected (sc_reentrancy s) = True"
   by auto
 
 (* SC_023: Full Security Implies Integer Safe *)
 (* SC_023_full_implies_integer (matches Coq) *)
-lemma SC_023_full_implies_integer: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> integer_safe (sc_integer s) = True"
+lemma SC_023_full_implies_integer: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> integer_safe (sc_integer s) = True"
   by auto
 
 (* SC_024: Full Security Implies Access Control *)
 (* SC_024_full_implies_access (matches Coq) *)
-lemma SC_024_full_implies_access: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> access_controlled (sc_access s) = True"
+lemma SC_024_full_implies_access: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> access_controlled (sc_access s) = True"
   by auto
 
 (* SC_025: Full Security Implies Delegate Safe *)
 (* SC_025_full_implies_delegate (matches Coq) *)
-lemma SC_025_full_implies_delegate: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> delegate_safe (sc_delegate s) = True"
+lemma SC_025_full_implies_delegate: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> delegate_safe (sc_delegate s) = True"
   by auto
 
 (* SC_026: Full Security Implies Flash Defended *)
 (* SC_026_full_implies_flash (matches Coq) *)
-lemma SC_026_full_implies_flash: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> flash_defended (sc_flash s) = True"
+lemma SC_026_full_implies_flash: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> flash_defended (sc_flash s) = True"
   by auto
 
 (* SC_027: RIINA No Reentrancy *)
@@ -343,32 +343,32 @@ lemma SC_029_riina_no_txorigin: "ac_no_tx_origin riina_access = True"
 
 (* SC_030: Full Implies Mutex *)
 (* SC_030_full_implies_mutex (matches Coq) *)
-lemma SC_030_full_implies_mutex: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> rg_mutex_lock (sc_reentrancy s) = True"
+lemma SC_030_full_implies_mutex: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> rg_mutex_lock (sc_reentrancy s) = True"
   by auto
 
 (* SC_031: Full Implies Overflow Check *)
 (* SC_031_full_implies_overflow (matches Coq) *)
-lemma SC_031_full_implies_overflow: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> is_overflow_check (sc_integer s) = True"
+lemma SC_031_full_implies_overflow: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> is_overflow_check (sc_integer s) = True"
   by auto
 
 (* SC_032: Full Implies No tx.origin *)
 (* SC_032_full_implies_no_txorigin (matches Coq) *)
-lemma SC_032_full_implies_no_txorigin: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> ac_no_tx_origin (sc_access s) = True"
+lemma SC_032_full_implies_no_txorigin: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> ac_no_tx_origin (sc_access s) = True"
   by auto
 
 (* SC_033: Full Implies Oracle Checks *)
 (* SC_033_full_implies_oracle (matches Coq) *)
-lemma SC_033_full_implies_oracle: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> fl_oracle_checks (sc_flash s) = True"
+lemma SC_033_full_implies_oracle: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> fl_oracle_checks (sc_flash s) = True"
   by auto
 
 (* SC_034: Full Implies CEI Pattern *)
 (* SC_034_full_implies_cei (matches Coq) *)
-lemma SC_034_full_implies_cei: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> rg_cei_pattern (sc_reentrancy s) = True"
+lemma SC_034_full_implies_cei: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> rg_cei_pattern (sc_reentrancy s) = True"
   by auto
 
 (* SC_035: Complete Smart Contract Security *)
 (* SC_035_complete_security (matches Coq) *)
-lemma SC_035_complete_security: "\<forall>s : SmartContractSecurity. fully_secure_contract s = True \<longrightarrow> rg_mutex_lock (sc_reentrancy s) = True \<and> is_overflow_check (sc_integer s) = True \<and> ac_no_tx_origin (sc_access s) = True \<and> dc_storage_collision_check (sc_delegate s) = True \<and> fl_oracle_checks (sc_flash s) = True"
+lemma SC_035_complete_security: "\<forall> s : SmartContractSecurity, fully_secure_contract s = True \<longrightarrow> rg_mutex_lock (sc_reentrancy s) = True \<and> is_overflow_check (sc_integer s) = True \<and> ac_no_tx_origin (sc_access s) = True \<and> dc_storage_collision_check (sc_delegate s) = True \<and> fl_oracle_checks (sc_flash s) = True"
   by auto
 
 end

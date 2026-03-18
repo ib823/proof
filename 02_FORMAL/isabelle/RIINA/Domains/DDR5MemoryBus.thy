@@ -13,10 +13,10 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | DDR5Feature        | ddr5_feature           | OK     |
- * | physical_attack     | physical_attack        | OK     |
- * | integrity_mechanism | integrity_mechanism    | OK     |
- * | ddr5_defense_config  | ddr5_defense_config    | OK     |
- * | memory_region       | memory_region          | OK     |
+ * | PhysicalAttack     | physical_attack        | OK     |
+ * | IntegrityMechanism | integrity_mechanism    | OK     |
+ * | DDR5DefenseConfig  | ddr5_defense_config    | OK     |
+ * | MemoryRegion       | memory_region          | OK     |
  * | bus_defense_active | bus_defense_active     | OK     |
  * | rowhammer_defense_active | rowhammer_defense_active | OK     |
  * | cold_boot_defense_active | cold_boot_defense_active | OK     |
@@ -65,7 +65,7 @@ datatype ddr5_feature =
   |     PMIC
   |     RefreshManagement
 
-(* physical_attack (matches Coq: Inductive physical_attack) *)
+(* PhysicalAttack (matches Coq: Inductive PhysicalAttack) *)
 datatype physical_attack =
     BusInterposition
   |     Rowhammer
@@ -73,7 +73,7 @@ datatype physical_attack =
   |     FaultInjection
   |     ECCBypass
 
-(* integrity_mechanism (matches Coq: Inductive integrity_mechanism) *)
+(* IntegrityMechanism (matches Coq: Inductive IntegrityMechanism) *)
 datatype integrity_mechanism =
     SoftwareEncryption
   |     IntegrityTree
@@ -81,7 +81,7 @@ datatype integrity_mechanism =
   |     Checksumming
   |     RedundantStorage
 
-(* ddr5_defense_config (matches Coq: Record ddr5_defense_config) *)
+(* DDR5DefenseConfig (matches Coq: Record DDR5DefenseConfig) *)
 record ddr5_defense_config =
   ddr5_software_encryption :: bool
   ddr5_integrity_tree :: bool
@@ -94,7 +94,7 @@ record ddr5_defense_config =
   ddr5_redundant_storage :: bool
   ddr5_refresh_randomization :: bool
 
-(* memory_region (matches Coq: Record memory_region) *)
+(* MemoryRegion (matches Coq: Record MemoryRegion) *)
 record memory_region =
   mr_base_addr :: nat
   mr_size :: nat
@@ -151,8 +151,8 @@ definition all_regions_protected :: "bool" where
 
 (* Helper *)
 (* andb_true_iff_ddr5 (matches Coq) *)
-lemma andb_true_iff_ddr5: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
-  by auto
+lemma andb_true_iff_ddr5: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* DDR5_001: RIINA bus defense active *)
 (* DDR5_001_bus_defense (matches Coq) *)
@@ -181,77 +181,77 @@ lemma DDR5_005_all_defenses: "all_ddr5_defenses riina_ddr5_config = True"
 
 (* DDR5_006: Bus defense requires software encryption *)
 (* DDR5_006_bus_requires_encryption (matches Coq) *)
-lemma DDR5_006_bus_requires_encryption: "\<forall>c : DDR5DefenseConfig. bus_defense_active c = True \<longrightarrow> ddr5_software_encryption c = True"
+lemma DDR5_006_bus_requires_encryption: "\<forall> c : DDR5DefenseConfig, bus_defense_active c = True \<longrightarrow> ddr5_software_encryption c = True"
   by auto
 
 (* DDR5_007: Bus defense requires integrity tree *)
 (* DDR5_007_bus_requires_tree (matches Coq) *)
-lemma DDR5_007_bus_requires_tree: "\<forall>c : DDR5DefenseConfig. bus_defense_active c = True \<longrightarrow> ddr5_integrity_tree c = True"
+lemma DDR5_007_bus_requires_tree: "\<forall> c : DDR5DefenseConfig, bus_defense_active c = True \<longrightarrow> ddr5_integrity_tree c = True"
   by auto
 
 (* DDR5_008: Bus defense requires MAC signing *)
 (* DDR5_008_bus_requires_mac (matches Coq) *)
-lemma DDR5_008_bus_requires_mac: "\<forall>c : DDR5DefenseConfig. bus_defense_active c = True \<longrightarrow> ddr5_mac_signing c = True"
+lemma DDR5_008_bus_requires_mac: "\<forall> c : DDR5DefenseConfig, bus_defense_active c = True \<longrightarrow> ddr5_mac_signing c = True"
   by auto
 
 (* DDR5_009: Bus defense requires interposition defense *)
 (* DDR5_009_bus_requires_interposition (matches Coq) *)
-lemma DDR5_009_bus_requires_interposition: "\<forall>c : DDR5DefenseConfig. bus_defense_active c = True \<longrightarrow> ddr5_bus_interposition_defense c = True"
+lemma DDR5_009_bus_requires_interposition: "\<forall> c : DDR5DefenseConfig, bus_defense_active c = True \<longrightarrow> ddr5_bus_interposition_defense c = True"
   by auto
 
 (* DDR5_010: Rowhammer defense requires mitigation *)
 (* DDR5_010_rowhammer_requires_mitigation (matches Coq) *)
-lemma DDR5_010_rowhammer_requires_mitigation: "\<forall>c : DDR5DefenseConfig. rowhammer_defense_active c = True \<longrightarrow> ddr5_rowhammer_mitigation c = True"
+lemma DDR5_010_rowhammer_requires_mitigation: "\<forall> c : DDR5DefenseConfig, rowhammer_defense_active c = True \<longrightarrow> ddr5_rowhammer_mitigation c = True"
   by auto
 
 (* DDR5_011: Rowhammer defense requires ECC bypass defense *)
 (* DDR5_011_rowhammer_requires_ecc (matches Coq) *)
-lemma DDR5_011_rowhammer_requires_ecc: "\<forall>c : DDR5DefenseConfig. rowhammer_defense_active c = True \<longrightarrow> ddr5_ecc_bypass_defense c = True"
+lemma DDR5_011_rowhammer_requires_ecc: "\<forall> c : DDR5DefenseConfig, rowhammer_defense_active c = True \<longrightarrow> ddr5_ecc_bypass_defense c = True"
   by auto
 
 (* DDR5_012: Rowhammer defense requires refresh randomization *)
 (* DDR5_012_rowhammer_requires_refresh (matches Coq) *)
-lemma DDR5_012_rowhammer_requires_refresh: "\<forall>c : DDR5DefenseConfig. rowhammer_defense_active c = True \<longrightarrow> ddr5_refresh_randomization c = True"
+lemma DDR5_012_rowhammer_requires_refresh: "\<forall> c : DDR5DefenseConfig, rowhammer_defense_active c = True \<longrightarrow> ddr5_refresh_randomization c = True"
   by auto
 
 (* DDR5_013: Cold boot defense requires encryption *)
 (* DDR5_013_coldboot_requires_encryption (matches Coq) *)
-lemma DDR5_013_coldboot_requires_encryption: "\<forall>c : DDR5DefenseConfig. cold_boot_defense_active c = True \<longrightarrow> ddr5_software_encryption c = True"
+lemma DDR5_013_coldboot_requires_encryption: "\<forall> c : DDR5DefenseConfig, cold_boot_defense_active c = True \<longrightarrow> ddr5_software_encryption c = True"
   by auto
 
 (* DDR5_014: Cold boot defense requires cold boot defense flag *)
 (* DDR5_014_coldboot_requires_flag (matches Coq) *)
-lemma DDR5_014_coldboot_requires_flag: "\<forall>c : DDR5DefenseConfig. cold_boot_defense_active c = True \<longrightarrow> ddr5_cold_boot_defense c = True"
+lemma DDR5_014_coldboot_requires_flag: "\<forall> c : DDR5DefenseConfig, cold_boot_defense_active c = True \<longrightarrow> ddr5_cold_boot_defense c = True"
   by auto
 
 (* DDR5_015: Fault defense requires detection *)
 (* DDR5_015_fault_requires_detection (matches Coq) *)
-lemma DDR5_015_fault_requires_detection: "\<forall>c : DDR5DefenseConfig. fault_defense_active c = True \<longrightarrow> ddr5_fault_detection c = True"
+lemma DDR5_015_fault_requires_detection: "\<forall> c : DDR5DefenseConfig, fault_defense_active c = True \<longrightarrow> ddr5_fault_detection c = True"
   by auto
 
 (* DDR5_016: Fault defense requires redundancy *)
 (* DDR5_016_fault_requires_redundancy (matches Coq) *)
-lemma DDR5_016_fault_requires_redundancy: "\<forall>c : DDR5DefenseConfig. fault_defense_active c = True \<longrightarrow> ddr5_redundant_storage c = True"
+lemma DDR5_016_fault_requires_redundancy: "\<forall> c : DDR5DefenseConfig, fault_defense_active c = True \<longrightarrow> ddr5_redundant_storage c = True"
   by auto
 
 (* DDR5_017: All defenses imply bus defense *)
 (* DDR5_017_all_implies_bus (matches Coq) *)
-lemma DDR5_017_all_implies_bus: "\<forall>c : DDR5DefenseConfig. all_ddr5_defenses c = True \<longrightarrow> bus_defense_active c = True"
+lemma DDR5_017_all_implies_bus: "\<forall> c : DDR5DefenseConfig, all_ddr5_defenses c = True \<longrightarrow> bus_defense_active c = True"
   by auto
 
 (* DDR5_018: All defenses imply rowhammer defense *)
 (* DDR5_018_all_implies_rowhammer (matches Coq) *)
-lemma DDR5_018_all_implies_rowhammer: "\<forall>c : DDR5DefenseConfig. all_ddr5_defenses c = True \<longrightarrow> rowhammer_defense_active c = True"
+lemma DDR5_018_all_implies_rowhammer: "\<forall> c : DDR5DefenseConfig, all_ddr5_defenses c = True \<longrightarrow> rowhammer_defense_active c = True"
   by auto
 
 (* DDR5_019: All defenses imply cold boot defense *)
 (* DDR5_019_all_implies_coldboot (matches Coq) *)
-lemma DDR5_019_all_implies_coldboot: "\<forall>c : DDR5DefenseConfig. all_ddr5_defenses c = True \<longrightarrow> cold_boot_defense_active c = True"
+lemma DDR5_019_all_implies_coldboot: "\<forall> c : DDR5DefenseConfig, all_ddr5_defenses c = True \<longrightarrow> cold_boot_defense_active c = True"
   by auto
 
 (* DDR5_020: All defenses imply fault defense *)
 (* DDR5_020_all_implies_fault (matches Coq) *)
-lemma DDR5_020_all_implies_fault: "\<forall>c : DDR5DefenseConfig. all_ddr5_defenses c = True \<longrightarrow> fault_defense_active c = True"
+lemma DDR5_020_all_implies_fault: "\<forall> c : DDR5DefenseConfig, all_ddr5_defenses c = True \<longrightarrow> fault_defense_active c = True"
   by auto
 
 (* DDR5_021: Empty region list is all-protected *)
@@ -261,22 +261,22 @@ lemma DDR5_021_empty_regions_protected: "all_regions_protected [] = True"
 
 (* DDR5_022: Fully annotated region is protected *)
 (* DDR5_022_annotated_region_protected (matches Coq) *)
-lemma DDR5_022_annotated_region_protected: "\<forall>base size. region_protected (mkMemRegion base size True True True True) = True"
+lemma DDR5_022_annotated_region_protected: "\<forall> base size, region_protected (mkMemRegion base size True True True True) = True"
   by simp
 
 (* DDR5_023: Single protected region list is all-protected *)
 (* DDR5_023_single_protected (matches Coq) *)
-lemma DDR5_023_single_protected: "\<forall>base size. all_regions_protected [mkMemRegion base size True True True True] = True"
+lemma DDR5_023_single_protected: "\<forall> base size, all_regions_protected [mkMemRegion base size True True True True] = True"
   by simp
 
 (* DDR5_024: Full defense implies encryption *)
 (* DDR5_024_full_implies_encryption (matches Coq) *)
-lemma DDR5_024_full_implies_encryption: "\<forall>c : DDR5DefenseConfig. all_ddr5_defenses c = True \<longrightarrow> ddr5_software_encryption c = True"
+lemma DDR5_024_full_implies_encryption: "\<forall> c : DDR5DefenseConfig, all_ddr5_defenses c = True \<longrightarrow> ddr5_software_encryption c = True"
   by auto
 
 (* DDR5_025: Complete DDR5 defense — all properties hold *)
 (* DDR5_025_complete_defense (matches Coq) *)
-lemma DDR5_025_complete_defense: "\<forall>c : DDR5DefenseConfig. all_ddr5_defenses c = True \<longrightarrow> ddr5_software_encryption c = True \<and> ddr5_integrity_tree c = True \<and> ddr5_mac_signing c = True \<and> ddr5_rowhammer_mitigation c = True \<and> ddr5_cold_boot_defense c = True \<and> ddr5_fault_detection c = True \<and> ddr5_ecc_bypass_defense c = True \<and> ddr5_bus_interposition_defense c = True \<and> ddr5_redundant_storage c = True \<and> ddr5_refresh_randomization c = True"
+lemma DDR5_025_complete_defense: "\<forall> c : DDR5DefenseConfig, all_ddr5_defenses c = True \<longrightarrow> ddr5_software_encryption c = True \<and> ddr5_integrity_tree c = True \<and> ddr5_mac_signing c = True \<and> ddr5_rowhammer_mitigation c = True \<and> ddr5_cold_boot_defense c = True \<and> ddr5_fault_detection c = True \<and> ddr5_ecc_bypass_defense c = True \<and> ddr5_bus_interposition_defense c = True \<and> ddr5_redundant_storage c = True \<and> ddr5_refresh_randomization c = True"
   by auto
 
 end

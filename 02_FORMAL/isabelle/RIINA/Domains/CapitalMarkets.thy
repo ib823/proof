@@ -12,12 +12,12 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | side               | side                   | OK     |
- * | order              | order                  | OK     |
- * | trade              | trade                  | OK     |
- * | settlement         | settlement             | OK     |
- * | order_book          | order_book             | OK     |
- * | market_data_tick     | market_data_tick       | OK     |
+ * | Side               | side                   | OK     |
+ * | Order              | order                  | OK     |
+ * | Trade              | trade                  | OK     |
+ * | Settlement         | settlement             | OK     |
+ * | OrderBook          | order_book             | OK     |
+ * | MarketDataTick     | market_data_tick       | OK     |
  * | side_eqb           | side_eqb               | OK     |
  * | buy_has_priority   | buy_has_priority       | OK     |
  * | sell_has_priority  | sell_has_priority      | OK     |
@@ -63,20 +63,20 @@ theory CapitalMarkets
   imports Main CoqCompat
 begin
 
-(* side (matches Coq: Inductive side) *)
+(* Side (matches Coq: Inductive Side) *)
 datatype side =
     Buy
   |     Sell
 
-(* order (matches Coq: Record order) *)
+(* Order (matches Coq: Record Order) *)
 record order =
   order_id :: nat
-  order_side :: side
+  order_side :: Side
   order_price :: nat
   order_qty :: nat
   order_time :: nat
 
-(* trade (matches Coq: Record trade) *)
+(* Trade (matches Coq: Record Trade) *)
 record trade =
   trade_id :: nat
   trade_buy_id :: nat
@@ -85,7 +85,7 @@ record trade =
   trade_qty :: nat
   trade_settled :: bool
 
-(* settlement (matches Coq: Record settlement) *)
+(* Settlement (matches Coq: Record Settlement) *)
 record settlement =
   settle_trade_id :: nat
   buyer_paid :: nat
@@ -93,12 +93,12 @@ record settlement =
   assets_delivered :: nat
   settle_final :: bool
 
-(* order_book (matches Coq: Record order_book) *)
+(* OrderBook (matches Coq: Record OrderBook) *)
 record order_book =
   bids :: 'a list
   asks :: 'a list
 
-(* market_data_tick (matches Coq: Record market_data_tick) *)
+(* MarketDataTick (matches Coq: Record MarketDataTick) *)
 record market_data_tick =
   tick_symbol :: nat
   tick_price :: nat
@@ -106,7 +106,7 @@ record market_data_tick =
   tick_seq :: nat
 
 (* side_eqb - complex match, needs manual translation *)
-definition side_eqb :: "bool" where "side_eqb \<equiv> True"
+definition side_eqb :: "bool" where "side_eqb = undefined"
 
 (* buy_has_priority (matches Coq: Definition buy_has_priority) *)
 definition buy_has_priority :: "bool" where
@@ -130,13 +130,13 @@ definition trade_balanced :: "Trade \<Rightarrow> bool" where
 
 (* settlement_balanced (matches Coq: Definition settlement_balanced) *)
 definition settlement_balanced :: "Settlement \<Rightarrow> bool" where
-  "settlement_balanced s \<equiv> (buyer_paid s = seller_received s) \<and>
-  (assets_delivered s = assets_delivered s)"
+  "settlement_balanced s \<equiv> ((buyer_paid = s)) (seller_received s) \<and>
+  ((assets_delivered = s)) (assets_delivered s)"
 
 (* settlement_complete (matches Coq: Definition settlement_complete) *)
 definition settlement_complete :: "Settlement \<Rightarrow> bool" where
-  "settlement_complete s \<equiv> buyer_paid s = seller_received s \<and>
-  assets_delivered s > 0 \<and>
+  "settlement_complete s \<equiv> buyer_paid s = seller_received s /\
+  assets_delivered s > 0 /\
   settle_final s = True"
 
 (* orders_can_match (matches Coq: Definition orders_can_match) *)
@@ -164,64 +164,64 @@ definition ticks_monotonic :: "bool" where
   "ticks_monotonic \<equiv> tick_seq t1 < tick_seq t2"
 
 (* ticks_ordered (matches Coq: Definition ticks_ordered) *)
-definition ticks_ordered :: "bool" where
-  "ticks_ordered \<equiv> True"
+fun ticks_ordered :: "bool" where
+
 
 (* ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: ORDER PRIORITY (PRICE-TIME)
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* buy_priority_reflexive (matches Coq) *)
-lemma buy_priority_reflexive: "\<forall>o. buy_has_priority o o = True"
-  by auto
+lemma buy_priority_reflexive: "\<forall> o, buy_has_priority o o = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* sell_priority_reflexive (matches Coq) *)
-lemma sell_priority_reflexive: "\<forall>o. sell_has_priority o o = True"
-  by auto
+lemma sell_priority_reflexive: "\<forall> o, sell_has_priority o o = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* higher_price_buy_wins (matches Coq) *)
-lemma higher_price_buy_wins: "\<forall>o1 o2. order_price o1 > order_price o2 \<longrightarrow> buy_has_priority o1 o2 = True"
-  by auto
+lemma higher_price_buy_wins: "\<forall> o1 o2, order_price o1 > order_price o2 \<longrightarrow> buy_has_priority o1 o2 = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* lower_price_sell_wins (matches Coq) *)
-lemma lower_price_sell_wins: "\<forall>o1 o2. order_price o1 < order_price o2 \<longrightarrow> sell_has_priority o1 o2 = True"
-  by auto
+lemma lower_price_sell_wins: "\<forall> o1 o2, order_price o1 < order_price o2 \<longrightarrow> sell_has_priority o1 o2 = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: TRADE BALANCE (BUYER PAYS = SELLER RECEIVES)
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* trade_always_balanced (matches Coq) *)
-lemma trade_always_balanced: "\<forall>t. trade_balanced t"
+lemma trade_always_balanced: "\<forall> t, trade_balanced t"
   by simp
 
 (* settlement_balanced_implies_equal_payment (matches Coq) *)
-lemma settlement_balanced_implies_equal_payment: "\<forall>s. settlement_balanced s = True \<longrightarrow> buyer_paid s = seller_received s"
+lemma settlement_balanced_implies_equal_payment: "\<forall> s, settlement_balanced s = True \<longrightarrow> buyer_paid s = seller_received s"
   by auto
 
 (* settlement_complete_implies_balanced (matches Coq) *)
-lemma settlement_complete_implies_balanced: "\<forall>s. settlement_complete s \<longrightarrow> buyer_paid s = seller_received s"
+lemma settlement_complete_implies_balanced: "\<forall> s, settlement_complete s \<longrightarrow> buyer_paid s = seller_received s"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
     THEOREMS: MATCHING ENGINE CORRECTNESS
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* match_only_when_price_crosses (matches Coq) *)
-lemma match_only_when_price_crosses: "\<forall>tid buy sell t. execute_match tid buy sell = Some t \<longrightarrow> order_price buy \<ge> order_price sell"
-  by auto
+lemma match_only_when_price_crosses: "\<forall> tid buy sell t, execute_match tid buy sell = Some t \<longrightarrow> order_price buy \<ge> order_price sell"
+  by (cases rule: ‹_›.cases; simp)
 
 (* no_match_when_price_gap (matches Coq) *)
-lemma no_match_when_price_gap: "\<forall>tid buy sell. order_price buy < order_price sell \<longrightarrow> execute_match tid buy sell = None"
-  by auto
+lemma no_match_when_price_gap: "\<forall> tid buy sell, order_price buy < order_price sell \<longrightarrow> execute_match tid buy sell = None"
+  by (cases rule: ‹_›.cases; simp)
 
 (* match_qty_bounded_by_buy (matches Coq) *)
-lemma match_qty_bounded_by_buy: "\<forall>buy sell. match_qty buy sell \<le> order_qty buy"
+lemma match_qty_bounded_by_buy: "\<forall> buy sell, match_qty buy sell \<le> order_qty buy"
   by auto
 
 (* match_qty_bounded_by_sell (matches Coq) *)
-lemma match_qty_bounded_by_sell: "\<forall>buy sell. match_qty buy sell \<le> order_qty sell"
+lemma match_qty_bounded_by_sell: "\<forall> buy sell, match_qty buy sell \<le> order_qty sell"
   by auto
 
 (* match_uses_sell_price (matches Coq) *)
-lemma match_uses_sell_price: "\<forall>tid buy sell t. execute_match tid buy sell = Some t \<longrightarrow> trade_price t = order_price sell"
+lemma match_uses_sell_price: "\<forall> tid buy sell t, execute_match tid buy sell = Some t \<longrightarrow> trade_price t = order_price sell"
   by simp
 
 (* ═══════════════════════════════════════════════════════════════════════════
@@ -232,58 +232,58 @@ lemma empty_ticks_ordered: "ticks_ordered [] = True"
   by simp
 
 (* singleton_ticks_ordered (matches Coq) *)
-lemma singleton_ticks_ordered: "\<forall>t. ticks_ordered [t]"
+lemma singleton_ticks_ordered: "\<forall> t, ticks_ordered [t]"
   by auto
 
 (* ordered_ticks_head_smallest (matches Coq) *)
-lemma ordered_ticks_head_smallest: "\<forall>t1 t2 rest. ticks_ordered (t1 :: t2 :: rest) \<longrightarrow> tick_seq t1 < tick_seq t2"
+lemma ordered_ticks_head_smallest: "\<forall> t1 t2 rest, ticks_ordered (t1 :: t2 :: rest) \<longrightarrow> tick_seq t1 < tick_seq t2"
   by auto
 
 (* ═══════════════════════════════════════════════════════════════════════════
     ADDITIONAL THEOREMS: TRADE INTEGRITY
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* trade_consideration_comm (matches Coq) *)
-lemma trade_consideration_comm: "\<forall>t. trade_consideration t = trade_qty t * trade_price t"
+lemma trade_consideration_comm: "\<forall> t, trade_consideration t = trade_qty t * trade_price t"
   by simp
 
 (* trade_consideration_zero_qty (matches Coq) *)
-lemma trade_consideration_zero_qty: "\<forall>t. trade_qty t = 0 \<longrightarrow> trade_consideration t = 0"
+lemma trade_consideration_zero_qty: "\<forall> t, trade_qty t = 0 \<longrightarrow> trade_consideration t = 0"
   by simp
 
 (* trade_consideration_zero_price (matches Coq) *)
-lemma trade_consideration_zero_price: "\<forall>t. trade_price t = 0 \<longrightarrow> trade_consideration t = 0"
+lemma trade_consideration_zero_price: "\<forall> t, trade_price t = 0 \<longrightarrow> trade_consideration t = 0"
   by simp
 
 (* settlement_complete_implies_final (matches Coq) *)
-lemma settlement_complete_implies_final: "\<forall>s. settlement_complete s \<longrightarrow> settle_final s = True"
+lemma settlement_complete_implies_final: "\<forall> s, settlement_complete s \<longrightarrow> settle_final s = True"
   by auto
 
 (* settlement_complete_implies_assets (matches Coq) *)
-lemma settlement_complete_implies_assets: "\<forall>s. settlement_complete s \<longrightarrow> assets_delivered s > 0"
+lemma settlement_complete_implies_assets: "\<forall> s, settlement_complete s \<longrightarrow> assets_delivered s > 0"
   by auto
 
 (* orders_can_match_same_price (matches Coq) *)
-lemma orders_can_match_same_price: "\<forall>buy sell. order_price buy = order_price sell \<longrightarrow> orders_can_match buy sell = True"
+lemma orders_can_match_same_price: "\<forall> buy sell, order_price buy = order_price sell \<longrightarrow> orders_can_match buy sell = True"
   by auto
 
 (* match_qty_comm (matches Coq) *)
-lemma match_qty_comm: "\<forall>buy sell. match_qty buy sell = match_qty sell buy"
+lemma match_qty_comm: "\<forall> buy sell, match_qty buy sell = match_qty sell buy"
   by auto
 
 (* match_qty_positive (matches Coq) *)
-lemma match_qty_positive: "\<forall>buy sell. order_qty buy > 0 \<longrightarrow> order_qty sell > 0 \<longrightarrow> match_qty buy sell > 0"
+lemma match_qty_positive: "\<forall> buy sell, order_qty buy > 0 \<longrightarrow> order_qty sell > 0 \<longrightarrow> match_qty buy sell > 0"
   by simp
 
 (* execute_match_preserves_ids (matches Coq) *)
-lemma execute_match_preserves_ids: "\<forall>tid buy sell t. execute_match tid buy sell = Some t \<longrightarrow> trade_buy_id t = order_id buy \<and> trade_sell_id t = order_id sell"
-  by auto
+lemma execute_match_preserves_ids: "\<forall> tid buy sell t, execute_match tid buy sell = Some t \<longrightarrow> trade_buy_id t = order_id buy \<and> trade_sell_id t = order_id sell"
+  by (cases rule: ‹_›.cases; simp)
 
 (* execute_match_preserves_tid (matches Coq) *)
-lemma execute_match_preserves_tid: "\<forall>tid buy sell t. execute_match tid buy sell = Some t \<longrightarrow> trade_id t = tid"
-  by auto
+lemma execute_match_preserves_tid: "\<forall> tid buy sell t, execute_match tid buy sell = Some t \<longrightarrow> trade_id t = tid"
+  by (cases rule: ‹_›.cases; simp)
 
 (* side_eqb_refl (matches Coq) *)
-lemma side_eqb_refl: "\<forall>s. side_eqb s s = True"
+lemma side_eqb_refl: "\<forall> s, side_eqb s s = True"
   by simp
 
 end

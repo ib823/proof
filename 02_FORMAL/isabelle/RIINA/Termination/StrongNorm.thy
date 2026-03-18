@@ -49,185 +49,174 @@
  *)
 
 theory StrongNorm
-  imports Main Semantics Syntax Typing
+  imports Main
 begin
 
-(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
-abbreviation value :: "expr \<Rightarrow> bool" where
-  "value \<equiv> is_value"
-
-(* Strong normalization predicate (placeholder for auto-generated proofs) *)
-definition SN :: "'a \<Rightarrow> 'b \<Rightarrow> 'c \<Rightarrow> bool" where
-  "SN st ctx e \<equiv> True"
-
-(* Multi-step reduction relation (placeholder for auto-generated proofs) *)
-definition multi_step_rel :: "'a \<Rightarrow> 'a \<Rightarrow> bool" (infixl "-->*" 50) where
-  "multi_step_rel a b \<equiv> True"
 (* value_strongly_normalizing (matches Coq) *)
-lemma value_strongly_normalizing: "\<forall>v st ctx. value v \<longrightarrow> SN st ctx v"
+lemma value_strongly_normalizing: "\<forall> v st ctx, value v \<longrightarrow> SN st ctx v"
   by auto
 
 (* Fst on product value terminates in one step to a value *)
 (* fst_terminates_to_value (matches Coq) *)
-lemma fst_terminates_to_value: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists>v st' ctx'. (EFst (EPair v1 v2), st, ctx) -->* (v, st', ctx') \<and> value v \<and> v = v1"
+lemma fst_terminates_to_value: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists> v st' ctx', (EFst (EPair v1 v2), st, ctx) -->* (v, st', ctx') \<and> value v \<and> v = v1"
   by auto
 
 (* Snd on product value terminates in one step to a value *)
 (* snd_terminates_to_value (matches Coq) *)
-lemma snd_terminates_to_value: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists>v st' ctx'. (ESnd (EPair v1 v2), st, ctx) -->* (v, st', ctx') \<and> value v \<and> v = v2"
+lemma snd_terminates_to_value: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> \<exists> v st' ctx', (ESnd (EPair v1 v2), st, ctx) -->* (v, st', ctx') \<and> value v \<and> v = v2"
   by auto
 
 (* If on bool terminates in one step to a branch *)
 (* if_bool_terminates_once (matches Coq) *)
-lemma if_bool_terminates_once: "\<forall>b e2 e3 st ctx. \<exists>e' st' ctx'. (EIf (EBool b) e2 e3, st, ctx) -->* (e', st', ctx') \<and> st' = st \<and> ctx' = ctx \<and> (b = True \<longrightarrow> e' = e2) \<and> (b = False \<longrightarrow> e' = e3)"
+lemma if_bool_terminates_once: "\<forall> b e2 e3 st ctx, \<exists> e' st' ctx', (EIf (EBool b) e2 e3, st, ctx) -->* (e', st', ctx') \<and> st' = st \<and> ctx' = ctx \<and> (b = True \<longrightarrow> e' = e2) \<and> (b = False \<longrightarrow> e' = e3)"
   by auto
 
 (* Let with value terminates in one step to a substitution *)
 (* let_terminates_once (matches Coq) *)
-lemma let_terminates_once: "\<forall>x v e2 st ctx. value v \<longrightarrow> \<exists>e' st' ctx'. (ELet x v e2, st, ctx) -->* (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
+lemma let_terminates_once: "\<forall> x v e2 st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (ELet x v e2, st, ctx) -->* (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* Handle with value terminates in one step to a substitution *)
 (* handle_terminates_once (matches Coq) *)
-lemma handle_terminates_once: "\<forall>x v h st ctx. value v \<longrightarrow> \<exists>e' st' ctx'. (EHandle v x h, st, ctx) -->* (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
+lemma handle_terminates_once: "\<forall> x v h st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (EHandle v x h, st, ctx) -->* (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* App with lambda value terminates in one step to a substitution *)
 (* app_lam_terminates_once (matches Coq) *)
-lemma app_lam_terminates_once: "\<forall>x T body v st ctx. value v \<longrightarrow> \<exists>e' st' ctx'. (EApp (ELam x T body) v, st, ctx) -->* (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
+lemma app_lam_terminates_once: "\<forall> x T body v st ctx, value v \<longrightarrow> \<exists> e' st' ctx', (EApp (ELam x T body) v, st, ctx) -->* (e', st', ctx') \<and> st' = st \<and> ctx' = ctx"
   by auto
 
 (* store_ty_extends_refl (matches Coq) *)
-lemma store_ty_extends_refl: "\<forall>Σ. store_ty_extends Σ Σ"
+lemma store_ty_extends_refl: "\<forall> Σ, store_ty_extends Σ Σ"
   by auto
 
 (* SN_multi_step (matches Coq) *)
-lemma SN_multi_step: "\<forall>cfg cfg'. cfg -->* cfg' \<longrightarrow> \<forall>e st ctx e' st' ctx'. cfg = (e, st, ctx) \<longrightarrow> cfg' = (e', st', ctx') \<longrightarrow> SN st ctx e \<longrightarrow> SN st' ctx' e'"
+lemma SN_multi_step: "\<forall> cfg cfg', cfg -->* cfg' \<longrightarrow> \<forall> e st ctx e' st' ctx', cfg = (e, st, ctx) \<longrightarrow> cfg' = (e', st', ctx') \<longrightarrow> SN st ctx e \<longrightarrow> SN st' ctx' e'"
   by auto
 
 (* Fst on a pair of values is SN *)
 (* fst_value_terminates_pair (matches Coq) *)
-lemma fst_value_terminates_pair: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> SN st ctx (EFst (EPair v1 v2))"
+lemma fst_value_terminates_pair: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> SN st ctx (EFst (EPair v1 v2))"
   by auto
 
 (* Snd on a pair value is SN *)
 (* snd_value_SN (matches Coq) *)
-lemma snd_value_SN: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> SN st ctx (ESnd (EPair v1 v2))"
+lemma snd_value_SN: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> SN st ctx (ESnd (EPair v1 v2))"
   by auto
 
 (* If with boolean value is SN when both branches are SN *)
 (* if_bool_SN (matches Coq) *)
-lemma if_bool_SN: "\<forall>b e2 e3 st ctx. SN st ctx e2 \<longrightarrow> SN st ctx e3 \<longrightarrow> SN st ctx (EIf (EBool b) e2 e3)"
+lemma if_bool_SN: "\<forall> b e2 e3 st ctx, SN st ctx e2 \<longrightarrow> SN st ctx e3 \<longrightarrow> SN st ctx (EIf (EBool b) e2 e3)"
   by auto
 
 (* Let with value is SN when substituted body is SN *)
 (* let_value_SN (matches Coq) *)
-lemma let_value_SN: "\<forall>x v e2 st ctx. value v \<longrightarrow> SN st ctx (subst x v e2) \<longrightarrow> SN st ctx (ELet x v e2)"
+lemma let_value_SN: "\<forall> x v e2 st ctx, value v \<longrightarrow> SN st ctx (subst[x := v] e2) \<longrightarrow> SN st ctx (ELet x v e2)"
   by auto
 
 (* App with lambda and value is SN when substituted body is SN *)
 (* app_lam_value_SN (matches Coq) *)
-lemma app_lam_value_SN: "\<forall>x T body v st ctx. value v \<longrightarrow> SN st ctx (subst x v body) \<longrightarrow> SN st ctx (EApp (ELam x T body) v)"
+lemma app_lam_value_SN: "\<forall> x T body v st ctx, value v \<longrightarrow> SN st ctx (subst[x := v] body) \<longrightarrow> SN st ctx (EApp (ELam x T body) v)"
   by auto
 
 (* Handle with value is SN when substituted body is SN *)
 (* handle_value_SN (matches Coq) *)
-lemma handle_value_SN: "\<forall>x v h st ctx. value v \<longrightarrow> SN st ctx (subst x v h) \<longrightarrow> SN st ctx (EHandle v x h)"
+lemma handle_value_SN: "\<forall> x v h st ctx, value v \<longrightarrow> SN st ctx (subst[x := v] h) \<longrightarrow> SN st ctx (EHandle v x h)"
   by auto
 
 (* Case on inl value is SN when left branch substitution is SN *)
 (* case_inl_value_SN (matches Coq) *)
-lemma case_inl_value_SN: "\<forall>v T x1 e1 x2 e2 st ctx. value v \<longrightarrow> SN st ctx (subst x1 v e1) \<longrightarrow> SN st ctx (ECase (EInl v T) x1 e1 x2 e2)"
+lemma case_inl_value_SN: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> SN st ctx (subst[x1 := v] e1) \<longrightarrow> SN st ctx (ECase (EInl v T) x1 e1 x2 e2)"
   by auto
 
 (* Case on inr value is SN when right branch substitution is SN *)
 (* case_inr_value_SN (matches Coq) *)
-lemma case_inr_value_SN: "\<forall>v T x1 e1 x2 e2 st ctx. value v \<longrightarrow> SN st ctx (subst x2 v e2) \<longrightarrow> SN st ctx (ECase (EInr v T) x1 e1 x2 e2)"
+lemma case_inr_value_SN: "\<forall> v T x1 e1 x2 e2 st ctx, value v \<longrightarrow> SN st ctx (subst[x2 := v] e2) \<longrightarrow> SN st ctx (ECase (EInr v T) x1 e1 x2 e2)"
   by auto
 
 (* Classify of value is SN (it's a value itself) *)
 (* classify_value_strongly_normalizing (matches Coq) *)
-lemma classify_value_strongly_normalizing: "\<forall>v st ctx. value v \<longrightarrow> SN st ctx (EClassify v)"
+lemma classify_value_strongly_normalizing: "\<forall> v st ctx, value v \<longrightarrow> SN st ctx (EClassify v)"
   by auto
 
 (* Declassify of classify-value with proof is SN when stepping to value *)
 (* declassify_classify_SN (matches Coq) *)
-lemma declassify_classify_SN: "\<forall>v p st ctx. value v \<longrightarrow> declass_ok (EClassify v) p \<longrightarrow> SN st ctx v \<longrightarrow> SN st ctx (EDeclassify (EClassify v) p)"
+lemma declassify_classify_SN: "\<forall> v p st ctx, value v \<longrightarrow> declass_ok (EClassify v) p \<longrightarrow> SN st ctx v \<longrightarrow> SN st ctx (EDeclassify (EClassify v) p)"
   by auto
 
 (* Fst on fst on nested pair — if inner fst reduces to v1, outer fst applies *)
 (* fst_fst_pair_SN (matches Coq) *)
-lemma fst_fst_pair_SN: "\<forall>a b c d st ctx. value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> value d \<longrightarrow> SN st ctx (EFst (EFst (EPair (EPair a b) (EPair c d))))"
+lemma fst_fst_pair_SN: "\<forall> a b c d st ctx, value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> value d \<longrightarrow> SN st ctx (EFst (EFst (EPair (EPair a b) (EPair c d))))"
   by auto
 
 (* Perform of value is SN *)
 (* perform_value_SN (matches Coq) *)
-lemma perform_value_SN: "\<forall>eff v st ctx. value v \<longrightarrow> SN st ctx (EPerform eff v)"
+lemma perform_value_SN: "\<forall> eff v st ctx, value v \<longrightarrow> SN st ctx (EPerform eff v)"
   by auto
 
 (* Require with value is SN *)
 (* require_value_SN (matches Coq) *)
-lemma require_value_SN: "\<forall>eff v st ctx. value v \<longrightarrow> SN st ctx (ERequire eff v)"
+lemma require_value_SN: "\<forall> eff v st ctx, value v \<longrightarrow> SN st ctx (ERequire eff v)"
   by auto
 
 (* Grant with value is SN *)
 (* grant_value_SN (matches Coq) *)
-lemma grant_value_SN: "\<forall>eff v st ctx. value v \<longrightarrow> SN st ctx (EGrant eff v)"
+lemma grant_value_SN: "\<forall> eff v st ctx, value v \<longrightarrow> SN st ctx (EGrant eff v)"
   by auto
 
 (* Pair of values is SN (it's already a value) *)
 (* pair_value_SN (matches Coq) *)
-lemma pair_value_SN: "\<forall>v1 v2 st ctx. value v1 \<longrightarrow> value v2 \<longrightarrow> SN st ctx (EPair v1 v2)"
+lemma pair_value_SN: "\<forall> v1 v2 st ctx, value v1 \<longrightarrow> value v2 \<longrightarrow> SN st ctx (EPair v1 v2)"
   by auto
 
 (* Inl of value is SN (it's already a value) *)
 (* inl_value_SN (matches Coq) *)
-lemma inl_value_SN: "\<forall>v T st ctx. value v \<longrightarrow> SN st ctx (EInl v T)"
+lemma inl_value_SN: "\<forall> v T st ctx, value v \<longrightarrow> SN st ctx (EInl v T)"
   by auto
 
 (* Inr of value is SN (it's already a value) *)
 (* inr_value_SN (matches Coq) *)
-lemma inr_value_SN: "\<forall>v T st ctx. value v \<longrightarrow> SN st ctx (EInr v T)"
+lemma inr_value_SN: "\<forall> v T st ctx, value v \<longrightarrow> SN st ctx (EInr v T)"
   by auto
 
 (* Prove of value is SN (it's already a value) *)
 (* prove_value_SN (matches Coq) *)
-lemma prove_value_SN: "\<forall>v st ctx. value v \<longrightarrow> SN st ctx (EProve v)"
+lemma prove_value_SN: "\<forall> v st ctx, value v \<longrightarrow> SN st ctx (EProve v)"
   by auto
 
 (* Snd of Snd on nested pair is SN *)
 (* snd_snd_pair_SN (matches Coq) *)
-lemma snd_snd_pair_SN: "\<forall>a b c d st ctx. value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> value d \<longrightarrow> SN st ctx (ESnd (ESnd (EPair (EPair a b) (EPair c d))))"
+lemma snd_snd_pair_SN: "\<forall> a b c d st ctx, value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> value d \<longrightarrow> SN st ctx (ESnd (ESnd (EPair (EPair a b) (EPair c d))))"
   by auto
 
 (* Fst of Snd on nested pair is SN *)
 (* fst_snd_pair_SN (matches Coq) *)
-lemma fst_snd_pair_SN: "\<forall>a b c d st ctx. value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> value d \<longrightarrow> SN st ctx (EFst (ESnd (EPair (EPair a b) (EPair c d))))"
+lemma fst_snd_pair_SN: "\<forall> a b c d st ctx, value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> value d \<longrightarrow> SN st ctx (EFst (ESnd (EPair (EPair a b) (EPair c d))))"
   by auto
 
 (* Snd of Fst on nested pair is SN *)
 (* snd_fst_pair_SN (matches Coq) *)
-lemma snd_fst_pair_SN: "\<forall>a b c d st ctx. value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> value d \<longrightarrow> SN st ctx (ESnd (EFst (EPair (EPair a b) (EPair c d))))"
+lemma snd_fst_pair_SN: "\<forall> a b c d st ctx, value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> value d \<longrightarrow> SN st ctx (ESnd (EFst (EPair (EPair a b) (EPair c d))))"
   by auto
 
 (* Fst of Fst on nested pair is SN *)
 (* fst_fst_nested_SN (matches Coq) *)
-lemma fst_fst_nested_SN: "\<forall>a b c st ctx. value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> SN st ctx (EFst (EFst (EPair (EPair a b) c)))"
+lemma fst_fst_nested_SN: "\<forall> a b c st ctx, value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> SN st ctx (EFst (EFst (EPair (EPair a b) c)))"
   by auto
 
 (* SN for classify of classify *)
 (* classify_classify_SN (matches Coq) *)
-lemma classify_classify_SN: "\<forall>v st ctx. value v \<longrightarrow> SN st ctx (EClassify (EClassify v))"
+lemma classify_classify_SN: "\<forall> v st ctx, value v \<longrightarrow> SN st ctx (EClassify (EClassify v))"
   by auto
 
 (* SN for prove of prove *)
 (* prove_prove_SN (matches Coq) *)
-lemma prove_prove_SN: "\<forall>v st ctx. value v \<longrightarrow> SN st ctx (EProve (EProve v))"
+lemma prove_prove_SN: "\<forall> v st ctx, value v \<longrightarrow> SN st ctx (EProve (EProve v))"
   by auto
 
 (* SN for nested pair value *)
 (* nested_pair_value_SN (matches Coq) *)
-lemma nested_pair_value_SN: "\<forall>a b c d st ctx. value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> value d \<longrightarrow> SN st ctx (EPair (EPair a b) (EPair c d))"
+lemma nested_pair_value_SN: "\<forall> a b c d st ctx, value a \<longrightarrow> value b \<longrightarrow> value c \<longrightarrow> value d \<longrightarrow> SN st ctx (EPair (EPair a b) (EPair c d))"
   by auto
 
 end

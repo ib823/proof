@@ -51,21 +51,6 @@ theory Transitions
   imports Main
 begin
 
-(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
-abbreviation value :: "expr \<Rightarrow> bool" where
-  "value \<equiv> is_value"
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym context_preserving_transition = "nat"
-type_synonym crossfade_transition = "nat"
-type_synonym duration_bounded_transition = "nat"
-type_synonym easing_function = "nat"
-type_synonym hero_transition = "nat"
-type_synonym interruptible_transition = "nat"
-type_synonym parallel_transition_group = "nat"
-type_synonym r = "nat"
-type_synonym shared_element_transition = "nat"
-type_synonym transition = "nat"
-type_synonym transition_element = "nat"
 (* lerp_position (matches Coq: Definition lerp_position) *)
 definition lerp_position :: "R \<Rightarrow> Position" where
   "lerp_position t \<equiv> mkPosition
@@ -81,123 +66,123 @@ definition lerp :: "R" where
   "lerp \<equiv> a + t * (b - a)"
 
 (* shared_element_at_zero_is_source (matches Coq) *)
-lemma shared_element_at_zero_is_source: "\<forall>(src :: Position) (dest :: Position). lerp_position src dest 0 = src"
+lemma shared_element_at_zero_is_source: "\<forall> (src dest : Position), lerp_position src dest 0 = src"
   by auto
 
 (* shared_element_at_one_is_dest (matches Coq) *)
-lemma shared_element_at_one_is_dest: "\<forall>(src :: Position) (dest :: Position). lerp_position src dest 1 = dest"
+lemma shared_element_at_one_is_dest: "\<forall> (src dest : Position), lerp_position src dest 1 = dest"
   by auto
 
 (* transition_context_preserved (matches Coq) *)
-lemma transition_context_preserved: "\<forall>(cpt :: context_preserving_transition). context_preserved cpt = True"
+lemma transition_context_preserved: "\<forall> (cpt : ContextPreservingTransition), context_preserved cpt = True"
   by auto
 
 (* hero_element_always_matched (matches Coq) *)
-lemma hero_element_always_matched: "\<forall>(hero :: hero_transition). hero_element_matched hero = True"
+lemma hero_element_always_matched: "\<forall> (hero : HeroTransition), hero_element_matched hero = True"
   by auto
 
 (* lerp_monotonic_x (matches Coq) *)
-lemma lerp_monotonic_x: "\<forall>(src :: Position) (dest :: Position) (t1 :: r) (t2 :: r). 0 \<le> t1 \<le> t2 \<longrightarrow> t2 \<le> 1 \<longrightarrow> pos_x dest \<ge> pos_x src \<longrightarrow> pos_x (lerp_position src dest t1) \<le> pos_x (lerp_position src dest t2)"
+lemma lerp_monotonic_x: "\<forall> (src dest : Position) (t1 t2 : R), 0 \<le> t1 \<le> t2 \<longrightarrow> t2 \<le> 1 \<longrightarrow> pos_x dest \<ge> pos_x src \<longrightarrow> pos_x (lerp_position src dest t1) \<le> pos_x (lerp_position src dest t2)"
   by auto
 
 (* progress_bounds_valid (matches Coq) *)
-lemma progress_bounds_valid: "\<forall>(trans :: shared_element_transition). 0 \<le> transition_progress trans \<and> transition_progress trans \<le> 1"
+lemma progress_bounds_valid: "\<forall> (trans : SharedElementTransition), 0 \<le> transition_progress trans \<and> transition_progress trans \<le> 1"
   by auto
 
 (* 1 (matches Coq) *)
-lemma lemma_1: "lerp_at_midpoint — lerp at t=0.5 is average Theorem lerp_at_midpoint : \<forall>(a :: r) (b :: r). lerp a b (1/2) = (a + b) / 2"
+lemma 1: "lerp_at_midpoint — lerp at t=0.5 is average Theorem lerp_at_midpoint : \<forall> (a b : R), lerp a b (1/2) = (a + b) / 2"
   by auto
 
 (* 2 (matches Coq) *)
-lemma lemma_2: "lerp_within_bounds — interpolated value between endpoints Theorem lerp_within_bounds : \<forall>(a b t : r). 0 \<le> t \<longrightarrow> t \<le> 1 \<longrightarrow> a \<le> b \<longrightarrow> a \<le> lerp a b t \<le> b"
+lemma 2: "lerp_within_bounds — interpolated value between endpoints Theorem lerp_within_bounds : \<forall> (a b t : R), 0 \<le> t \<longrightarrow> t \<le> 1 \<longrightarrow> a \<le> b \<longrightarrow> a \<le> lerp a b t \<le> b"
   by auto
 
 (* 3 (matches Coq) *)
-lemma lemma_3: "transition_duration_bounded — duration within bounds Theorem transition_duration_bounded : \<forall>(dbt :: duration_bounded_transition). dbt_min_duration dbt \<le> dbt_duration dbt \<le> dbt_max_duration dbt"
+lemma 3: "transition_duration_bounded — duration within bounds Theorem transition_duration_bounded : \<forall> (dbt : DurationBoundedTransition), dbt_min_duration dbt \<le> dbt_duration dbt \<le> dbt_max_duration dbt"
   by auto
 
 (* 4 (matches Coq) *)
-lemma lemma_4: "shared_element_continuous — lerp is continuous at boundaries Theorem shared_element_continuous : \<forall>(src :: Position) (dest :: Position). lerp_position src dest 0 = src \<and> lerp_position src dest 1 = dest"
+lemma 4: "shared_element_continuous — lerp is continuous at boundaries Theorem shared_element_continuous : \<forall> (src dest : Position), lerp_position src dest 0 = src \<and> lerp_position src dest 1 = dest"
   by auto
 
 (* 5 (matches Coq) *)
-lemma lemma_5: "back_transition_reverse — back transition is reverse of forward Theorem back_transition_reverse : \<forall>(a b t : r). 0 \<le> t \<longrightarrow> t \<le> 1 \<longrightarrow> lerp a b t + lerp b a t = a + b"
+lemma 5: "back_transition_reverse — back transition is reverse of forward Theorem back_transition_reverse : \<forall> (a b t : R), 0 \<le> t \<longrightarrow> t \<le> 1 \<longrightarrow> lerp a b t + lerp b a t = a + b"
   by auto
 
 (* 6 (matches Coq) *)
-lemma lemma_6: "transition_interruptible — mid-flight value is well-defined Theorem transition_interruptible : \<forall>(it :: interruptible_transition). it_current_value it = lerp (it_source it) (it_dest it) (it_progress it)"
+lemma 6: "transition_interruptible — mid-flight value is well-defined Theorem transition_interruptible : \<forall> (it : InterruptibleTransition), it_current_value it = lerp (it_source it) (it_dest it) (it_progress it)"
   by auto
 
 (* 7 (matches Coq) *)
-lemma lemma_7: "interrupted_transition_smooth — interruption gives value within range Theorem interrupted_transition_smooth : \<forall>(it :: interruptible_transition). it_source it \<le> it_dest it \<longrightarrow> it_source it \<le> it_current_value it \<le> it_dest it"
+lemma 7: "interrupted_transition_smooth — interruption gives value within range Theorem interrupted_transition_smooth : \<forall> (it : InterruptibleTransition), it_source it \<le> it_dest it \<longrightarrow> it_source it \<le> it_current_value it \<le> it_dest it"
   by auto
 
 (* 8 (matches Coq) *)
-lemma lemma_8: "crossfade_opacity_sum_one — opacities always sum to 1 Theorem crossfade_opacity_sum_one : \<forall>(cf :: crossfade_transition). cf_opacity_outgoing cf + cf_opacity_incoming cf = 1"
+lemma 8: "crossfade_opacity_sum_one — opacities always sum to 1 Theorem crossfade_opacity_sum_one : \<forall> (cf : CrossfadeTransition), cf_opacity_outgoing cf + cf_opacity_incoming cf = 1"
   by auto
 
 (* 9 (matches Coq) *)
-lemma lemma_9: "staggered_timing_ordered — later children have \<ge> delay Theorem staggered_timing_ordered : \<forall>(base_delay :: r) (per_child :: r) (i :: nat) (j :: nat). per_child \<ge> 0 \<longrightarrow> (i \<le> j)%nat \<longrightarrow> base_delay + INR i * per_child \<le> base_delay + INR j * per_child"
+lemma 9: "staggered_timing_ordered — later children have \<ge> delay Theorem staggered_timing_ordered : \<forall> (base_delay per_child : R) (i j : nat), per_child \<ge> 0 \<longrightarrow> (i \<le> j)%nat \<longrightarrow> base_delay + INR i * per_child \<le> base_delay + INR j * per_child"
   by auto
 
 (* 10 (matches Coq) *)
-lemma lemma_10: "transition_preserves_identity — element identity maintained Theorem transition_preserves_identity : \<forall>(te :: transition_element). te_id_before te = te_id_after te"
+lemma 10: "transition_preserves_identity — element identity maintained Theorem transition_preserves_identity : \<forall> (te : TransitionElement), te_id_before te = te_id_after te"
   by auto
 
 (* 11 (matches Coq) *)
-lemma lemma_11: "no_z_fighting — distinct elements have distinct z-indices Theorem no_z_fighting : \<forall>(tl1 :: TransitionLayer) (tl2 :: TransitionLayer). tl_element_id tl1 \<noteq> tl_element_id tl2 \<longrightarrow> tl_z_index tl1 \<noteq> tl_z_index tl2 \<longrightarrow> tl_z_index tl1 \<noteq> tl_z_index tl2"
+lemma 11: "no_z_fighting — distinct elements have distinct z-indices Theorem no_z_fighting : \<forall> (tl1 tl2 : TransitionLayer), tl_element_id tl1 \<noteq> tl_element_id tl2 \<longrightarrow> tl_z_index tl1 \<noteq> tl_z_index tl2 \<longrightarrow> tl_z_index tl1 \<noteq> tl_z_index tl2"
   by auto
 
 (* z_index_assignable (matches Coq) *)
-lemma z_index_assignable: "\<forall>(n :: nat). \<exists>(f : nat \<longrightarrow> nat). \<forall>(i :: nat) (j :: nat). (i < n)%nat \<longrightarrow> (j < n)%nat \<longrightarrow> i \<noteq> j \<longrightarrow> f i \<noteq> f j"
+lemma z_index_assignable: "\<forall> (n : nat), \<exists> (f : nat \<longrightarrow> nat), \<forall> (i j : nat), (i < n)%nat \<longrightarrow> (j < n)%nat \<longrightarrow> i \<noteq> j \<longrightarrow> f i \<noteq> f j"
   by auto
 
 (* 12 (matches Coq) *)
-lemma lemma_12: "transition_completes — progress reaches 1 in Complete state Theorem transition_completes : \<forall>(tr :: transition). tr_state tr = TSComplete \<longrightarrow> tr_progress tr = 1"
+lemma 12: "transition_completes — progress reaches 1 in Complete state Theorem transition_completes : \<forall> (tr : Transition), tr_state tr = TSComplete \<longrightarrow> tr_progress tr = 1"
   by auto
 
 (* transition_idle_zero (matches Coq) *)
-lemma transition_idle_zero: "\<forall>(tr :: transition). tr_state tr = TSIdle \<longrightarrow> tr_progress tr = 0"
+lemma transition_idle_zero: "\<forall> (tr : Transition), tr_state tr = TSIdle \<longrightarrow> tr_progress tr = 0"
   by auto
 
 (* 13 (matches Coq) *)
-lemma lemma_13: "parallel_transitions_synchronized — group start/end times match Theorem parallel_transitions_synchronized : \<forall>(ptg :: parallel_transition_group). ptg_start_time ptg = ptg_start_time ptg \<and> ptg_end_time ptg = ptg_end_time ptg"
+lemma 13: "parallel_transitions_synchronized — group start/end times match Theorem parallel_transitions_synchronized : \<forall> (ptg : ParallelTransitionGroup), ptg_start_time ptg = ptg_start_time ptg \<and> ptg_end_time ptg = ptg_end_time ptg"
   by simp
 
 (* parallel_group_duration (matches Coq) *)
-lemma parallel_group_duration: "\<forall>(ptg :: parallel_transition_group). ptg_end_time ptg - ptg_start_time ptg = ptg_end_time ptg - ptg_start_time ptg"
+lemma parallel_group_duration: "\<forall> (ptg : ParallelTransitionGroup), ptg_end_time ptg - ptg_start_time ptg = ptg_end_time ptg - ptg_start_time ptg"
   by simp
 
 (* 14 (matches Coq) *)
-lemma lemma_14: "transition_easing_monotonic — easing is monotonically increasing Theorem transition_easing_monotonic : \<forall>(ef :: easing_function) (t1 :: r) (t2 :: r). 0 \<le> t1 \<longrightarrow> t1 \<le> t2 \<longrightarrow> t2 \<le> 1 \<longrightarrow> ef_eval ef t1 \<le> ef_eval ef t2"
+lemma 14: "transition_easing_monotonic — easing is monotonically increasing Theorem transition_easing_monotonic : \<forall> (ef : EasingFunction) (t1 t2 : R), 0 \<le> t1 \<longrightarrow> t1 \<le> t2 \<longrightarrow> t2 \<le> 1 \<longrightarrow> ef_eval ef t1 \<le> ef_eval ef t2"
   by auto
 
 (* easing_boundary_zero (matches Coq) *)
-lemma easing_boundary_zero: "\<forall>(ef :: easing_function). ef_eval ef 0 = 0"
+lemma easing_boundary_zero: "\<forall> (ef : EasingFunction), ef_eval ef 0 = 0"
   by auto
 
 (* easing_boundary_one (matches Coq) *)
-lemma easing_boundary_one: "\<forall>(ef :: easing_function). ef_eval ef 1 = 1"
+lemma easing_boundary_one: "\<forall> (ef : EasingFunction), ef_eval ef 1 = 1"
   by auto
 
 (* 15 (matches Coq) *)
-lemma lemma_15: "spring_transition_settles — spring position approaches target Theorem spring_transition_settles : \<forall>(pos target damping t : r). damping > 0 \<longrightarrow> t > 0 \<longrightarrow> pos \<noteq> target \<longrightarrow> Rabs ((target + (pos - target) * exp (- damping * t)) - target) < Rabs (pos - target)"
+lemma 15: "spring_transition_settles — spring position approaches target Theorem spring_transition_settles : \<forall> (pos target damping t : R), damping > 0 \<longrightarrow> t > 0 \<longrightarrow> pos \<noteq> target \<longrightarrow> Rabs ((target + (pos - target) * exp (- damping * t)) - target) < Rabs (pos - target)"
   by auto
 
 (* lerp_at_zero (matches Coq) *)
-lemma lerp_at_zero: "\<forall>(a :: r) (b :: r). lerp a b 0 = a"
+lemma lerp_at_zero: "\<forall> (a b : R), lerp a b 0 = a"
   by auto
 
 (* lerp_at_one (matches Coq) *)
-lemma lerp_at_one: "\<forall>(a :: r) (b :: r). lerp a b 1 = b"
+lemma lerp_at_one: "\<forall> (a b : R), lerp a b 1 = b"
   by auto
 
 (* crossfade_outgoing_valid (matches Coq) *)
-lemma crossfade_outgoing_valid: "\<forall>(cf :: crossfade_transition). 0 \<le> cf_opacity_outgoing cf \<le> 1"
+lemma crossfade_outgoing_valid: "\<forall> (cf : CrossfadeTransition), 0 \<le> cf_opacity_outgoing cf \<le> 1"
   by auto
 
 (* crossfade_incoming_valid (matches Coq) *)
-lemma crossfade_incoming_valid: "\<forall>(cf :: crossfade_transition). 0 \<le> cf_opacity_incoming cf \<le> 1"
+lemma crossfade_incoming_valid: "\<forall> (cf : CrossfadeTransition), 0 \<le> cf_opacity_incoming cf \<le> 1"
   by auto
 
 end

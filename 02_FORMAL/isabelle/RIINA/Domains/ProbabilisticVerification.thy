@@ -41,8 +41,6 @@ theory ProbabilisticVerification
   imports Main
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym q = "nat"
 (* negligible (matches Coq: Definition negligible) *)
 definition negligible :: "bool" where
   "negligible \<equiv> forall c : nat, (0 < c)%nat ->
@@ -51,7 +49,7 @@ definition negligible :: "bool" where
 
 (* comp_indist (matches Coq: Definition comp_indist) *)
 definition comp_indist :: "bool" where
-  "comp_indist \<equiv> negligible (\<lambda>n.
+  "comp_indist \<equiv> negligible (fun n =>
     fold_left (fun acc p => acc + Qabs (fst p - snd p))
       (combine (map snd (f n)) (map snd (g n))) 0)"
 
@@ -60,88 +58,88 @@ definition xor_nat :: "nat" where
   "xor_nat \<equiv> Nat.lxor a b"
 
 (* 1 (matches Coq) *)
-lemma lemma_1: "Uniform distribution has non-negative probabilities Theorem uniform_nonneg : \<forall>n (Hn : (0 < n)%nat). all_nonneg (uniform_dist n Hn)"
-  by auto
+lemma 1: "Uniform distribution has non-negative probabilities Theorem uniform_nonneg : \<forall> n (Hn : (0 < n)%nat), all_nonneg (uniform_dist n Hn)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* 2 (matches Coq) *)
-lemma lemma_2: "Zero function is negligible Theorem zero_negligible : negligible (\<lambda>_. 0)"
+lemma 2: "Zero function is negligible Theorem zero_negligible : negligible (fun _ => 0)"
   by simp
 
 (* Auxiliary: sum of Q-strict-less *)
 (* Qplus_lt_compat2 (matches Coq) *)
-lemma Qplus_lt_compat2: "\<forall>a b c d : Q. a < b \<longrightarrow> c < d \<longrightarrow> a + c < b + d"
+lemma Qplus_lt_compat2: "\<forall> a b c d : Q, a < b \<longrightarrow> c < d \<longrightarrow> a + c < b + d"
   by auto
 
 (* Auxiliary: 2/n^(S c) <= 1/n^c for n > 2 *)
 (* two_over_nSc_le_one_over_nc (matches Coq) *)
-lemma two_over_nSc_le_one_over_nc: "\<forall>n c : nat. (n > 2)%nat \<longrightarrow> (0 < c)%nat \<longrightarrow> (1 # Pos.of_nat (n ^ Suc c)) + (1 # Pos.of_nat (n ^ Suc c)) \<le> 1 # Pos.of_nat (n ^ c)"
+lemma two_over_nSc_le_one_over_nc: "\<forall> n c : nat, (n > 2)%nat \<longrightarrow> (0 < c)%nat \<longrightarrow> (1 # Pos.of_nat (n ^ S c)) + (1 # Pos.of_nat (n ^ S c)) \<le> 1 # Pos.of_nat (n ^ c)"
   by simp
 
 (* 3 (matches Coq) *)
-lemma lemma_3: "Sum of negligibles is negligible Theorem negligible_sum : \<forall>f g. negligible f \<longrightarrow> negligible g \<longrightarrow> negligible (\<lambda>n. f n + g n)"
-  by auto
+lemma 3: "Sum of negligibles is negligible Theorem negligible_sum : \<forall> f g, negligible f \<longrightarrow> negligible g \<longrightarrow> negligible (fun n => f n + g n)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Helper: Qabs of self-difference is zero *)
 (* Qabs_Qminus_self (matches Coq) *)
-lemma Qabs_Qminus_self: "\<forall>a : Q. Qabs (a - a) == 0"
+lemma Qabs_Qminus_self: "\<forall> a : Q, Qabs (a - a) == 0"
   by simp
 
 (* Helper: fold over combine l l equals accumulator *)
 (* fold_combine_self_gen (matches Coq) *)
-lemma fold_combine_self_gen: "\<forall>(l : list q) (acc :: q). fold_left (fun a p => a + Qabs (fst p - snd p)) (combine l l) acc == acc"
+lemma fold_combine_self_gen: "\<forall> (l : list Q) (acc : Q), fold_left (fun a p => a + Qabs (fst p - snd p)) (combine l l) acc == acc"
   by simp
 
 (* Helper: fold over combine l l starting at 0 is 0 *)
 (* fold_combine_self (matches Coq) *)
-lemma fold_combine_self: "\<forall>(l : list q). fold_left (fun acc p => acc + Qabs (fst p - snd p)) (combine l l) 0 == 0"
+lemma fold_combine_self: "\<forall> (l : list Q), fold_left (fun acc p => acc + Qabs (fst p - snd p)) (combine l l) 0 == 0"
   by auto
 
 (* 4 (matches Coq) *)
-lemma lemma_4: "Identical distributions are indistinguishable Theorem identical_indist : \<forall>f. comp_indist f f"
+lemma 4: "Identical distributions are indistinguishable Theorem identical_indist : \<forall> f, comp_indist f f"
   by simp
 
 (* 5 (matches Coq) *)
-lemma lemma_5: "Indistinguishability is reflexive Theorem comp_indist_refl : \<forall>f. comp_indist f f"
+lemma 5: "Indistinguishability is reflexive Theorem comp_indist_refl : \<forall> f, comp_indist f f"
   by auto
 
 (* 6 (matches Coq) *)
-lemma lemma_6: "XOR is self-inverse Theorem xor_self_inverse : \<forall>a b. xor_nat (xor_nat a b) b = a"
+lemma 6: "XOR is self-inverse Theorem xor_self_inverse : \<forall> a b, xor_nat (xor_nat a b) b = a"
   by simp
 
 (* 7 (matches Coq) *)
-lemma lemma_7: "XOR is commutative Theorem xor_comm : \<forall>a b. xor_nat a b = xor_nat b a"
+lemma 7: "XOR is commutative Theorem xor_comm : \<forall> a b, xor_nat a b = xor_nat b a"
   by auto
 
 (* 8 (matches Coq) *)
-lemma lemma_8: "XOR with zero is identity Theorem xor_zero_id : \<forall>a. xor_nat a 0 = a"
+lemma 8: "XOR with zero is identity Theorem xor_zero_id : \<forall> a, xor_nat a 0 = a"
   by auto
 
 (* 9 (matches Coq) *)
-lemma lemma_9: "XOR is associative Theorem xor_assoc : \<forall>a b c. xor_nat (xor_nat a b) c = xor_nat a (xor_nat b c)"
+lemma 9: "XOR is associative Theorem xor_assoc : \<forall> a b c, xor_nat (xor_nat a b) c = xor_nat a (xor_nat b c)"
   by auto
 
 (* 10 (matches Coq) *)
-lemma lemma_10: "XOR self is zero Theorem xor_self_zero : \<forall>a. xor_nat a a = 0%nat"
+lemma 10: "XOR self is zero Theorem xor_self_zero : \<forall> a, xor_nat a a = 0%nat"
   by auto
 
 (* 11 (matches Coq) *)
-lemma lemma_11: "Double OTP encryption-decryption roundtrip Theorem otp_roundtrip : \<forall>msg key. xor_nat (xor_nat msg key) key = msg"
+lemma 11: "Double OTP encryption-decryption roundtrip Theorem otp_roundtrip : \<forall> msg key, xor_nat (xor_nat msg key) key = msg"
   by auto
 
 (* 12 (matches Coq) *)
-lemma lemma_12: "XOR with same key is deterministic Theorem xor_deterministic : \<forall>a b k. xor_nat a k = xor_nat b k \<longrightarrow> a = b"
+lemma 12: "XOR with same key is deterministic Theorem xor_deterministic : \<forall> a b k, xor_nat a k = xor_nat b k \<longrightarrow> a = b"
   by auto
 
 (* 13 (matches Coq) *)
-lemma lemma_13: "Uniform distribution has correct length Theorem uniform_length : \<forall>n (Hn : (0 < n)%nat). length (uniform_dist n Hn) = n"
+lemma 13: "Uniform distribution has correct length Theorem uniform_length : \<forall> n (Hn : (0 < n)%nat), length (uniform_dist n Hn) = n"
   by simp
 
 (* 14 (matches Coq) *)
-lemma lemma_14: "Qabs is non-negative Theorem qabs_nonneg : \<forall>q : Q. (0 \<le> Qabs q)%Q"
+lemma 14: "Qabs is non-negative Theorem qabs_nonneg : \<forall> q : Q, (0 \<le> Qabs q)%Q"
   by auto
 
 (* 15 (matches Coq) *)
-lemma lemma_15: "Qabs of zero is zero Theorem qabs_zero : Qabs 0 == 0"
+lemma 15: "Qabs of zero is zero Theorem qabs_zero : Qabs 0 == 0"
   by auto
 
 end

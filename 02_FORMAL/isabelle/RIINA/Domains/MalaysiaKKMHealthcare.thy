@@ -12,8 +12,8 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | facility_type       | facility_type          | OK     |
- * | emr_classification  | emr_classification     | OK     |
+ * | FacilityType       | facility_type          | OK     |
+ * | EMRClassification  | emr_classification     | OK     |
  * | patient_confidentiality | patient_confidentiality | OK     |
  * | emr_access_authorized | emr_access_authorized  | OK     |
  * | is_sensitive       | is_sensitive           | OK     |
@@ -59,12 +59,7 @@ theory MalaysiaKKMHealthcare
   imports Main
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym ccms_compliance = "nat"
-type_synonym healthcare_record = "nat"
-type_synonym medical_device_security = "nat"
-type_synonym this_compliance = "nat"
-(* facility_type (matches Coq: Inductive facility_type) *)
+(* FacilityType (matches Coq: Inductive FacilityType) *)
 datatype facility_type =
     Hospital
   |     Clinic
@@ -72,7 +67,7 @@ datatype facility_type =
   |     Laboratory
   |     Pharmacy
 
-(* emr_classification (matches Coq: Inductive emr_classification) *)
+(* EMRClassification (matches Coq: Inductive EMRClassification) *)
 datatype emr_classification =
     PatientDemographics
   |     ClinicalNotes
@@ -83,7 +78,7 @@ datatype emr_classification =
 
 (* patient_confidentiality (matches Coq: Definition patient_confidentiality) *)
 definition patient_confidentiality :: "HealthcareRecord \<Rightarrow> bool" where
-  "patient_confidentiality r \<equiv> hc_encrypted r = True \<and> hc_access_controlled r = True"
+  "patient_confidentiality r \<equiv> hc_encrypted r = True /\ hc_access_controlled r = True"
 
 (* emr_access_authorized (matches Coq: Definition emr_access_authorized) *)
 definition emr_access_authorized :: "HealthcareRecord \<Rightarrow> bool \<Rightarrow> bool" where
@@ -96,7 +91,7 @@ definition is_sensitive :: "EMRClassification \<Rightarrow> bool" where
 (* sensitive_protection (matches Coq: Definition sensitive_protection) *)
 definition sensitive_protection :: "HealthcareRecord \<Rightarrow> bool" where
   "sensitive_protection r \<equiv> is_sensitive (hc_classification r) ->
-  hc_encrypted r = True \<and> hc_access_controlled r = True \<and> hc_audit_logged r = True"
+  hc_encrypted r = True /\ hc_access_controlled r = True /\ hc_audit_logged r = True"
 
 (* emr_audit_compliant (matches Coq: Definition emr_audit_compliant) *)
 definition emr_audit_compliant :: "HealthcareRecord \<Rightarrow> bool" where
@@ -104,14 +99,14 @@ definition emr_audit_compliant :: "HealthcareRecord \<Rightarrow> bool" where
 
 (* cross_facility_authorized (matches Coq: Definition cross_facility_authorized) *)
 definition cross_facility_authorized :: "HealthcareRecord \<Rightarrow> nat \<Rightarrow> bool" where
-  "cross_facility_authorized r target_facility \<equiv> hc_consent_obtained r = True \<and>
-  hc_encrypted r = True \<and>
+  "cross_facility_authorized r target_facility \<equiv> hc_consent_obtained r = True /\
+  hc_encrypted r = True /\
   hc_facility_id r <> target_facility"
 
 (* kkm_fully_compliant (matches Coq: Definition kkm_fully_compliant) *)
 definition kkm_fully_compliant :: "HealthcareRecord \<Rightarrow> bool" where
-  "kkm_fully_compliant r \<equiv> patient_confidentiality r \<and>
-  emr_audit_compliant r \<and>
+  "kkm_fully_compliant r \<equiv> patient_confidentiality r /\
+  emr_audit_compliant r /\
   hc_consent_obtained r = True"
 
 (* all_facility_types (matches Coq: Definition all_facility_types) *)
@@ -125,60 +120,60 @@ definition all_emr_classifications :: "list EMRClassification" where
 
 (* this_security_adequate (matches Coq: Definition this_security_adequate) *)
 definition this_security_adequate :: "THISCompliance \<Rightarrow> bool" where
-  "this_security_adequate tc \<equiv> this_network_segmented tc = True \<and>
-  this_data_encrypted tc = True \<and>
-  this_backup_tested tc = True \<and>
-  this_access_logged tc = True \<and>
+  "this_security_adequate tc \<equiv> this_network_segmented tc = True /\
+  this_data_encrypted tc = True /\
+  this_backup_tested tc = True /\
+  this_access_logged tc = True /\
   this_staff_trained tc = True"
 
 (* ccms_compliant (matches Coq: Definition ccms_compliant) *)
 definition ccms_compliant :: "CCMSCompliance \<Rightarrow> bool" where
-  "ccms_compliant cc \<equiv> ccms_patient_data_encrypted cc = True \<and>
-  ccms_prescription_secured cc = True \<and>
-  ccms_audit_trail cc = True \<and>
+  "ccms_compliant cc \<equiv> ccms_patient_data_encrypted cc = True /\
+  ccms_prescription_secured cc = True /\
+  ccms_audit_trail cc = True /\
   ccms_network_secured cc = True"
 
 (* md_security_adequate (matches Coq: Definition md_security_adequate) *)
 definition md_security_adequate :: "MedicalDeviceSecurity \<Rightarrow> nat \<Rightarrow> bool" where
-  "md_security_adequate md min_sl \<equiv> md_authenticated md = True \<and>
-  md_data_encrypted md = True \<and>
-  md_firmware_signed md = True \<and>
+  "md_security_adequate md min_sl \<equiv> md_authenticated md = True /\
+  md_data_encrypted md = True /\
+  md_firmware_signed md = True /\
   md_security_level md >= min_sl"
 
 (* kkm_confidentiality (matches Coq) *)
-lemma kkm_confidentiality: "\<forall>(r :: healthcare_record). hc_encrypted r = True \<longrightarrow> hc_access_controlled r = True \<longrightarrow> patient_confidentiality r"
+lemma kkm_confidentiality: "\<forall> (r : HealthcareRecord), hc_encrypted r = True \<longrightarrow> hc_access_controlled r = True \<longrightarrow> patient_confidentiality r"
   by auto
 
 (* kkm_consent_access (matches Coq) *)
-lemma kkm_consent_access: "\<forall>(r :: healthcare_record). hc_consent_obtained r = True \<longrightarrow> emr_access_authorized r False"
+lemma kkm_consent_access: "\<forall> (r : HealthcareRecord), hc_consent_obtained r = True \<longrightarrow> emr_access_authorized r False"
   by auto
 
 (* kkm_emergency_access (matches Coq) *)
-lemma kkm_emergency_access: "\<forall>(r :: healthcare_record). emr_access_authorized r True"
+lemma kkm_emergency_access: "\<forall> (r : HealthcareRecord), emr_access_authorized r True"
   by simp
 
 (* kkm_sensitive_protected (matches Coq) *)
-lemma kkm_sensitive_protected: "\<forall>(r :: healthcare_record). hc_encrypted r = True \<longrightarrow> hc_access_controlled r = True \<longrightarrow> hc_audit_logged r = True \<longrightarrow> sensitive_protection r"
+lemma kkm_sensitive_protected: "\<forall> (r : HealthcareRecord), hc_encrypted r = True \<longrightarrow> hc_access_controlled r = True \<longrightarrow> hc_audit_logged r = True \<longrightarrow> sensitive_protection r"
   by auto
 
 (* kkm_audit (matches Coq) *)
-lemma kkm_audit: "\<forall>(r :: healthcare_record). hc_audit_logged r = True \<longrightarrow> emr_audit_compliant r"
+lemma kkm_audit: "\<forall> (r : HealthcareRecord), hc_audit_logged r = True \<longrightarrow> emr_audit_compliant r"
   by simp
 
 (* kkm_cross_facility (matches Coq) *)
-lemma kkm_cross_facility: "\<forall>(r :: healthcare_record) (target :: nat). hc_consent_obtained r = True \<longrightarrow> hc_encrypted r = True \<longrightarrow> hc_facility_id r \<noteq> target \<longrightarrow> cross_facility_authorized r target"
+lemma kkm_cross_facility: "\<forall> (r : HealthcareRecord) (target : nat), hc_consent_obtained r = True \<longrightarrow> hc_encrypted r = True \<longrightarrow> hc_facility_id r \<noteq> target \<longrightarrow> cross_facility_authorized r target"
   by auto
 
 (* kkm_composition (matches Coq) *)
-lemma kkm_composition: "\<forall>(r :: healthcare_record). patient_confidentiality r \<longrightarrow> emr_audit_compliant r \<longrightarrow> hc_consent_obtained r = True \<longrightarrow> kkm_fully_compliant r"
+lemma kkm_composition: "\<forall> (r : HealthcareRecord), patient_confidentiality r \<longrightarrow> emr_audit_compliant r \<longrightarrow> hc_consent_obtained r = True \<longrightarrow> kkm_fully_compliant r"
   by simp
 
 (* facility_coverage (matches Coq) *)
-lemma facility_coverage: "\<forall>(f :: facility_type). f \<in> set all_facility_types"
+lemma facility_coverage: "\<forall> (f : FacilityType), In f all_facility_types"
   by auto
 
 (* emr_classification_coverage (matches Coq) *)
-lemma emr_classification_coverage: "\<forall>(c :: emr_classification). c \<in> set all_emr_classifications"
+lemma emr_classification_coverage: "\<forall> (c : EMRClassification), In c all_emr_classifications"
   by auto
 
 (* demographics_not_sensitive (matches Coq) *)
@@ -198,59 +193,59 @@ lemma hiv_sti_is_sensitive_kkm: "is_sensitive HIV_STI"
   by simp
 
 (* kkm_full_implies_confidentiality (matches Coq) *)
-lemma kkm_full_implies_confidentiality: "\<forall>(r :: healthcare_record). kkm_fully_compliant r \<longrightarrow> patient_confidentiality r"
+lemma kkm_full_implies_confidentiality: "\<forall> (r : HealthcareRecord), kkm_fully_compliant r \<longrightarrow> patient_confidentiality r"
   by auto
 
 (* kkm_full_implies_audit (matches Coq) *)
-lemma kkm_full_implies_audit: "\<forall>(r :: healthcare_record). kkm_fully_compliant r \<longrightarrow> emr_audit_compliant r"
+lemma kkm_full_implies_audit: "\<forall> (r : HealthcareRecord), kkm_fully_compliant r \<longrightarrow> emr_audit_compliant r"
   by auto
 
 (* kkm_full_implies_consent (matches Coq) *)
-lemma kkm_full_implies_consent: "\<forall>(r :: healthcare_record). kkm_fully_compliant r \<longrightarrow> hc_consent_obtained r = True"
+lemma kkm_full_implies_consent: "\<forall> (r : HealthcareRecord), kkm_fully_compliant r \<longrightarrow> hc_consent_obtained r = True"
   by auto
 
 (* confidentiality_implies_encrypted (matches Coq) *)
-lemma confidentiality_implies_encrypted: "\<forall>(r :: healthcare_record). patient_confidentiality r \<longrightarrow> hc_encrypted r = True"
+lemma confidentiality_implies_encrypted: "\<forall> (r : HealthcareRecord), patient_confidentiality r \<longrightarrow> hc_encrypted r = True"
   by auto
 
 (* confidentiality_implies_access_controlled (matches Coq) *)
-lemma confidentiality_implies_access_controlled: "\<forall>(r :: healthcare_record). patient_confidentiality r \<longrightarrow> hc_access_controlled r = True"
+lemma confidentiality_implies_access_controlled: "\<forall> (r : HealthcareRecord), patient_confidentiality r \<longrightarrow> hc_access_controlled r = True"
   by auto
 
 (* emergency_always_authorized (matches Coq) *)
-lemma emergency_always_authorized: "\<forall>(r :: healthcare_record). emr_access_authorized r True"
+lemma emergency_always_authorized: "\<forall> (r : HealthcareRecord), emr_access_authorized r True"
   by simp
 
 (* non_emergency_requires_consent (matches Coq) *)
-lemma non_emergency_requires_consent: "\<forall>(r :: healthcare_record). hc_consent_obtained r = False \<longrightarrow> ~ emr_access_authorized r False"
+lemma non_emergency_requires_consent: "\<forall> (r : HealthcareRecord), hc_consent_obtained r = False \<longrightarrow> ~ emr_access_authorized r False"
   by auto
 
 (* this_compliance (matches Coq) *)
-lemma this_compliance: "\<forall>(tc :: this_compliance). this_network_segmented tc = True \<longrightarrow> this_data_encrypted tc = True \<longrightarrow> this_backup_tested tc = True \<longrightarrow> this_access_logged tc = True \<longrightarrow> this_staff_trained tc = True \<longrightarrow> this_security_adequate tc"
+lemma this_compliance: "\<forall> (tc : THISCompliance), this_network_segmented tc = True \<longrightarrow> this_data_encrypted tc = True \<longrightarrow> this_backup_tested tc = True \<longrightarrow> this_access_logged tc = True \<longrightarrow> this_staff_trained tc = True \<longrightarrow> this_security_adequate tc"
   by auto
 
 (* this_missing_backup_non_compliant (matches Coq) *)
-lemma this_missing_backup_non_compliant: "\<forall>(tc :: this_compliance). this_backup_tested tc = False \<longrightarrow> ~ this_security_adequate tc"
+lemma this_missing_backup_non_compliant: "\<forall> (tc : THISCompliance), this_backup_tested tc = False \<longrightarrow> ~ this_security_adequate tc"
   by auto
 
 (* ccms_full_compliance (matches Coq) *)
-lemma ccms_full_compliance: "\<forall>(cc :: ccms_compliance). ccms_patient_data_encrypted cc = True \<longrightarrow> ccms_prescription_secured cc = True \<longrightarrow> ccms_audit_trail cc = True \<longrightarrow> ccms_network_secured cc = True \<longrightarrow> ccms_compliant cc"
+lemma ccms_full_compliance: "\<forall> (cc : CCMSCompliance), ccms_patient_data_encrypted cc = True \<longrightarrow> ccms_prescription_secured cc = True \<longrightarrow> ccms_audit_trail cc = True \<longrightarrow> ccms_network_secured cc = True \<longrightarrow> ccms_compliant cc"
   by simp
 
 (* medical_device_sl2 (matches Coq) *)
-lemma medical_device_sl2: "\<forall>(md :: medical_device_security). md_authenticated md = True \<longrightarrow> md_data_encrypted md = True \<longrightarrow> md_firmware_signed md = True \<longrightarrow> md_security_level md \<ge> 2 \<longrightarrow> md_security_adequate md 2"
+lemma medical_device_sl2: "\<forall> (md : MedicalDeviceSecurity), md_authenticated md = True \<longrightarrow> md_data_encrypted md = True \<longrightarrow> md_firmware_signed md = True \<longrightarrow> md_security_level md \<ge> 2 \<longrightarrow> md_security_adequate md 2"
   by auto
 
 (* higher_sl_subsumes (matches Coq) *)
-lemma higher_sl_subsumes: "\<forall>(md :: medical_device_security) (sl1 :: nat) (sl2 :: nat). sl1 \<le> sl2 \<longrightarrow> md_security_adequate md sl2 \<longrightarrow> md_security_adequate md sl1"
+lemma higher_sl_subsumes: "\<forall> (md : MedicalDeviceSecurity) (sl1 sl2 : nat), sl1 \<le> sl2 \<longrightarrow> md_security_adequate md sl2 \<longrightarrow> md_security_adequate md sl1"
   by simp
 
 (* cross_facility_requires_encryption (matches Coq) *)
-lemma cross_facility_requires_encryption: "\<forall>(r :: healthcare_record) (target :: nat). cross_facility_authorized r target \<longrightarrow> hc_encrypted r = True"
+lemma cross_facility_requires_encryption: "\<forall> (r : HealthcareRecord) (target : nat), cross_facility_authorized r target \<longrightarrow> hc_encrypted r = True"
   by auto
 
 (* cross_facility_requires_consent (matches Coq) *)
-lemma cross_facility_requires_consent: "\<forall>(r :: healthcare_record) (target :: nat). cross_facility_authorized r target \<longrightarrow> hc_consent_obtained r = True"
+lemma cross_facility_requires_consent: "\<forall> (r : HealthcareRecord) (target : nat), cross_facility_authorized r target \<longrightarrow> hc_consent_obtained r = True"
   by auto
 
 end

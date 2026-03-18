@@ -67,12 +67,9 @@
  *)
 
 theory SN_Closure
-  imports Main Semantics Syntax Typing
+  imports Main
 begin
 
-(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
-abbreviation value :: "expr \<Rightarrow> bool" where
-  "value \<equiv> is_value"
 (* step_inv (matches Coq: Definition step_inv) *)
 definition step_inv :: "bool" where
   "step_inv \<equiv> let '(e2, st2, ctx2) := cfg2 in
@@ -90,7 +87,7 @@ definition SN_expr :: "expr \<Rightarrow> bool" where
 (* direct_lambda_SN (matches Coq: Definition direct_lambda_SN) *)
 definition direct_lambda_SN :: "expr \<Rightarrow> bool" where
   "direct_lambda_SN e1 \<equiv> forall x T body, e1 = ELam x T body ->
-    forall v st ctx, value v -> SN (subst x v body, st, ctx)"
+    forall v st ctx, value v -> SN (subst[x := v] body, st, ctx)"
 
 (* family_lambda_SN (matches Coq: Definition family_lambda_SN) *)
 definition family_lambda_SN :: "expr \<Rightarrow> bool" where
@@ -104,165 +101,165 @@ definition store_wf :: "store \<Rightarrow> bool" where
     SECTION 2: BASIC SN LEMMAS
     ======================================================================== *)
 (* SN_step (matches Coq) *)
-lemma SN_step: "\<forall>e st ctx e' st' ctx'. SN (e, st, ctx) \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> SN (e', st', ctx')"
+lemma SN_step: "\<forall> e st ctx e' st' ctx', SN (e, st, ctx) \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> SN (e', st', ctx')"
   by auto
 
 (* value_not_step (matches Coq) *)
-lemma value_not_step: "\<forall>v st ctx e' st' ctx'. value v \<longrightarrow> (v, st, ctx) --> (e', st', ctx') \<longrightarrow> False"
+lemma value_not_step: "\<forall> v st ctx e' st' ctx', value v \<longrightarrow> (v, st, ctx) --> (e', st', ctx') \<longrightarrow> False"
   by auto
 
 (* value_SN (matches Coq) *)
-lemma value_SN: "\<forall>v st ctx. value v \<longrightarrow> SN (v, st, ctx)"
+lemma value_SN: "\<forall> v st ctx, value v \<longrightarrow> SN (v, st, ctx)"
   by auto
 
 (* Auxiliary: SN implies all reducts are SN *)
 (* SN_all_reducts (matches Coq) *)
-lemma SN_all_reducts: "\<forall>e st ctx. SN (e, st, ctx) \<longrightarrow> \<forall>e' st' ctx'. (e, st, ctx) --> (e', st', ctx') \<longrightarrow> SN (e', st', ctx')"
+lemma SN_all_reducts: "\<forall> e st ctx, SN (e, st, ctx) \<longrightarrow> \<forall> e' st' ctx', (e, st, ctx) --> (e', st', ctx') \<longrightarrow> SN (e', st', ctx')"
   by auto
 
 (* Helper: When e1 is a value, SN_app follows from SN(e2) *)
 (* SN_app_value_left_aux (matches Coq) *)
-lemma SN_app_value_left_aux: "\<forall>v cfg. value v \<longrightarrow> SN cfg \<longrightarrow> (\<forall>x body v' st' ctx'. value v' \<longrightarrow> SN ([x := v'] body, st', ctx')) \<longrightarrow> SN (EApp v (fst (fst cfg)), snd (fst cfg), snd cfg)"
+lemma SN_app_value_left_aux: "\<forall> v cfg, value v \<longrightarrow> SN cfg \<longrightarrow> (\<forall> x body v' st' ctx', value v' \<longrightarrow> SN (subst[x := v'] body, st', ctx')) \<longrightarrow> SN (EApp v (fst (fst cfg)), snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_app_value_left (matches Coq) *)
-lemma SN_app_value_left: "\<forall>v e2 st ctx. value v \<longrightarrow> SN (e2, st, ctx) \<longrightarrow> (\<forall>x body v' st' ctx'. value v' \<longrightarrow> SN ([x := v'] body, st', ctx')) \<longrightarrow> SN (EApp v e2, st, ctx)"
+lemma SN_app_value_left: "\<forall> v e2 st ctx, value v \<longrightarrow> SN (e2, st, ctx) \<longrightarrow> (\<forall> x body v' st' ctx', value v' \<longrightarrow> SN (subst[x := v'] body, st', ctx')) \<longrightarrow> SN (EApp v e2, st, ctx)"
   by auto
 
 (* Main lemma with store-polymorphic e2 premise *)
 (* SN_app_aux (matches Coq) *)
-lemma SN_app_aux: "\<forall>cfg e2. SN cfg \<longrightarrow> (\<forall>st ctx. SN (e2, st, ctx)) \<longrightarrow> (\<forall>x body v st' ctx'. value v \<longrightarrow> SN (subst x v body, st', ctx')) \<longrightarrow> SN (EApp (fst (fst cfg)) e2, snd (fst cfg), snd cfg)"
+lemma SN_app_aux: "\<forall> cfg e2, SN cfg \<longrightarrow> (\<forall> st ctx, SN (e2, st, ctx)) \<longrightarrow> (\<forall> x body v st' ctx', value v \<longrightarrow> SN (subst[x := v] body, st', ctx')) \<longrightarrow> SN (EApp (fst (fst cfg)) e2, snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_app (matches Coq) *)
-lemma SN_app: "\<forall>e1 e2 st ctx. (\<forall>st' ctx'. SN (e1, st', ctx')) \<longrightarrow> (\<forall>st' ctx'. SN (e2, st', ctx')) \<longrightarrow> (\<forall>x body v st' ctx'. value v \<longrightarrow> SN (subst x v body, st', ctx')) \<longrightarrow> SN (EApp e1 e2, st, ctx)"
+lemma SN_app: "\<forall> e1 e2 st ctx, (\<forall> st' ctx', SN (e1, st', ctx')) \<longrightarrow> (\<forall> st' ctx', SN (e2, st', ctx')) \<longrightarrow> (\<forall> x body v st' ctx', value v \<longrightarrow> SN (subst[x := v] body, st', ctx')) \<longrightarrow> SN (EApp e1 e2, st, ctx)"
   by auto
 
 (* Helper: SN_app for values *)
 (* SN_app_value_left_direct_aux (matches Coq) *)
-lemma SN_app_value_left_direct_aux: "\<forall>f cfg. value f \<longrightarrow> SN cfg \<longrightarrow> direct_lambda_SN f \<longrightarrow> SN (EApp f (fst (fst cfg)), snd (fst cfg), snd cfg)"
+lemma SN_app_value_left_direct_aux: "\<forall> f cfg, value f \<longrightarrow> SN cfg \<longrightarrow> direct_lambda_SN f \<longrightarrow> SN (EApp f (fst (fst cfg)), snd (fst cfg), snd cfg)"
   by simp
 
 (* SN_app_value_left_direct (matches Coq) *)
-lemma SN_app_value_left_direct: "\<forall>f e2 st ctx. value f \<longrightarrow> SN (e2, st, ctx) \<longrightarrow> direct_lambda_SN f \<longrightarrow> SN (EApp f e2, st, ctx)"
+lemma SN_app_value_left_direct: "\<forall> f e2 st ctx, value f \<longrightarrow> SN (e2, st, ctx) \<longrightarrow> direct_lambda_SN f \<longrightarrow> SN (EApp f e2, st, ctx)"
   by auto
 
 (* Key: family_lambda_SN is preserved by stepping *)
 (* family_lambda_SN_step (matches Coq) *)
-lemma family_lambda_SN_step: "\<forall>e1 e1' st ctx st' ctx'. (e1, st, ctx) --> (e1', st', ctx') \<longrightarrow> family_lambda_SN e1 \<longrightarrow> family_lambda_SN e1'"
+lemma family_lambda_SN_step: "\<forall> e1 e1' st ctx st' ctx', (e1, st, ctx) --> (e1', st', ctx') \<longrightarrow> family_lambda_SN e1 \<longrightarrow> family_lambda_SN e1'"
   by auto
 
 (* Helper for value case with family *)
 (* SN_app_value_left_family_aux (matches Coq) *)
-lemma SN_app_value_left_family_aux: "\<forall>f cfg. value f \<longrightarrow> SN cfg \<longrightarrow> direct_lambda_SN f \<longrightarrow> SN (EApp f (fst (fst cfg)), snd (fst cfg), snd cfg)"
+lemma SN_app_value_left_family_aux: "\<forall> f cfg, value f \<longrightarrow> SN cfg \<longrightarrow> direct_lambda_SN f \<longrightarrow> SN (EApp f (fst (fst cfg)), snd (fst cfg), snd cfg)"
   by simp
 
 (* Main auxiliary with family *)
 (* SN_app_family_aux (matches Coq) *)
-lemma SN_app_family_aux: "\<forall>cfg e2. SN cfg \<longrightarrow> (\<forall>st ctx. SN (e2, st, ctx)) \<longrightarrow> family_lambda_SN (fst (fst cfg)) \<longrightarrow> SN (EApp (fst (fst cfg)) e2, snd (fst cfg), snd cfg)"
+lemma SN_app_family_aux: "\<forall> cfg e2, SN cfg \<longrightarrow> (\<forall> st ctx, SN (e2, st, ctx)) \<longrightarrow> family_lambda_SN (fst (fst cfg)) \<longrightarrow> SN (EApp (fst (fst cfg)) e2, snd (fst cfg), snd cfg)"
   by auto
 
 (* Main theorem: SN_app with family premise *)
 (* SN_app_family (matches Coq) *)
-lemma SN_app_family: "\<forall>e1 e2 st ctx. (\<forall>st' ctx'. SN (e1, st', ctx')) \<longrightarrow> (\<forall>st' ctx'. SN (e2, st', ctx')) \<longrightarrow> family_lambda_SN e1 \<longrightarrow> SN (EApp e1 e2, st, ctx)"
+lemma SN_app_family: "\<forall> e1 e2 st ctx, (\<forall> st' ctx', SN (e1, st', ctx')) \<longrightarrow> (\<forall> st' ctx', SN (e2, st', ctx')) \<longrightarrow> family_lambda_SN e1 \<longrightarrow> SN (EApp e1 e2, st, ctx)"
   by auto
 
 (* Helper: When e1 is a value, SN_pair follows from SN(e2) *)
 (* SN_pair_value_left_aux (matches Coq) *)
-lemma SN_pair_value_left_aux: "\<forall>v cfg. value v \<longrightarrow> SN cfg \<longrightarrow> SN (EPair v (fst (fst cfg)), snd (fst cfg), snd cfg)"
+lemma SN_pair_value_left_aux: "\<forall> v cfg, value v \<longrightarrow> SN cfg \<longrightarrow> SN (EPair v (fst (fst cfg)), snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_pair_value_left (matches Coq) *)
-lemma SN_pair_value_left: "\<forall>v e2 st ctx. value v \<longrightarrow> SN (e2, st, ctx) \<longrightarrow> SN (EPair v e2, st, ctx)"
+lemma SN_pair_value_left: "\<forall> v e2 st ctx, value v \<longrightarrow> SN (e2, st, ctx) \<longrightarrow> SN (EPair v e2, st, ctx)"
   by auto
 
 (* Main SN_pair with store-polymorphic e2 premise *)
 (* SN_pair_aux (matches Coq) *)
-lemma SN_pair_aux: "\<forall>cfg e2. SN cfg \<longrightarrow> (\<forall>st ctx. SN (e2, st, ctx)) \<longrightarrow> SN (EPair (fst (fst cfg)) e2, snd (fst cfg), snd cfg)"
+lemma SN_pair_aux: "\<forall> cfg e2, SN cfg \<longrightarrow> (\<forall> st ctx, SN (e2, st, ctx)) \<longrightarrow> SN (EPair (fst (fst cfg)) e2, snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_pair (matches Coq) *)
-lemma SN_pair: "\<forall>e1 e2 st ctx. (\<forall>st' ctx'. SN (e1, st', ctx')) \<longrightarrow> (\<forall>st' ctx'. SN (e2, st', ctx')) \<longrightarrow> SN (EPair e1 e2, st, ctx)"
+lemma SN_pair: "\<forall> e1 e2 st ctx, (\<forall> st' ctx', SN (e1, st', ctx')) \<longrightarrow> (\<forall> st' ctx', SN (e2, st', ctx')) \<longrightarrow> SN (EPair e1 e2, st, ctx)"
   by auto
 
 (* SN_fst: Simplified version - projection result is a value, hence SN *)
 (* SN_fst_aux (matches Coq) *)
-lemma SN_fst_aux: "\<forall>cfg. SN cfg \<longrightarrow> SN (EFst (fst (fst cfg)), snd (fst cfg), snd cfg)"
+lemma SN_fst_aux: "\<forall> cfg, SN cfg \<longrightarrow> SN (EFst (fst (fst cfg)), snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_fst (matches Coq) *)
-lemma SN_fst: "\<forall>e st ctx. SN (e, st, ctx) \<longrightarrow> SN (EFst e, st, ctx)"
+lemma SN_fst: "\<forall> e st ctx, SN (e, st, ctx) \<longrightarrow> SN (EFst e, st, ctx)"
   by auto
 
 (* SN_snd: Simplified version - projection result is a value, hence SN *)
 (* SN_snd_aux (matches Coq) *)
-lemma SN_snd_aux: "\<forall>cfg. SN cfg \<longrightarrow> SN (ESnd (fst (fst cfg)), snd (fst cfg), snd cfg)"
+lemma SN_snd_aux: "\<forall> cfg, SN cfg \<longrightarrow> SN (ESnd (fst (fst cfg)), snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_snd (matches Coq) *)
-lemma SN_snd: "\<forall>e st ctx. SN (e, st, ctx) \<longrightarrow> SN (ESnd e, st, ctx)"
+lemma SN_snd: "\<forall> e st ctx, SN (e, st, ctx) \<longrightarrow> SN (ESnd e, st, ctx)"
   by auto
 
 (* SN_inl: Simplified using auxiliary lemma pattern *)
 (* SN_inl_aux (matches Coq) *)
-lemma SN_inl_aux: "\<forall>cfg T. SN cfg \<longrightarrow> SN (EInl (fst (fst cfg)) T, snd (fst cfg), snd cfg)"
+lemma SN_inl_aux: "\<forall> cfg T, SN cfg \<longrightarrow> SN (EInl (fst (fst cfg)) T, snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_inl (matches Coq) *)
-lemma SN_inl: "\<forall>e T st ctx. SN (e, st, ctx) \<longrightarrow> SN (EInl e T, st, ctx)"
+lemma SN_inl: "\<forall> e T st ctx, SN (e, st, ctx) \<longrightarrow> SN (EInl e T, st, ctx)"
   by auto
 
 (* SN_inr: Simplified using auxiliary lemma pattern *)
 (* SN_inr_aux (matches Coq) *)
-lemma SN_inr_aux: "\<forall>cfg T. SN cfg \<longrightarrow> SN (EInr (fst (fst cfg)) T, snd (fst cfg), snd cfg)"
+lemma SN_inr_aux: "\<forall> cfg T, SN cfg \<longrightarrow> SN (EInr (fst (fst cfg)) T, snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_inr (matches Coq) *)
-lemma SN_inr: "\<forall>e T st ctx. SN (e, st, ctx) \<longrightarrow> SN (EInr e T, st, ctx)"
+lemma SN_inr: "\<forall> e T st ctx, SN (e, st, ctx) \<longrightarrow> SN (EInr e T, st, ctx)"
   by auto
 
 (* ========================================================================
     SECTION 7: SN CLOSURE FOR CASE
     ======================================================================== *)
 (* SN_case_aux (matches Coq) *)
-lemma SN_case_aux: "\<forall>cfg x1 e1 x2 e2. SN cfg \<longrightarrow> (\<forall>v st' ctx'. value v \<longrightarrow> SN (subst x1 v e1, st', ctx')) \<longrightarrow> (\<forall>v st' ctx'. value v \<longrightarrow> SN (subst x2 v e2, st', ctx')) \<longrightarrow> SN (ECase (fst (fst cfg)) x1 e1 x2 e2, snd (fst cfg), snd cfg)"
+lemma SN_case_aux: "\<forall> cfg x1 e1 x2 e2, SN cfg \<longrightarrow> (\<forall> v st' ctx', value v \<longrightarrow> SN (subst[x1 := v] e1, st', ctx')) \<longrightarrow> (\<forall> v st' ctx', value v \<longrightarrow> SN (subst[x2 := v] e2, st', ctx')) \<longrightarrow> SN (ECase (fst (fst cfg)) x1 e1 x2 e2, snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_case (matches Coq) *)
-lemma SN_case: "\<forall>e x1 e1 x2 e2 st ctx. SN (e, st, ctx) \<longrightarrow> (\<forall>v st' ctx'. value v \<longrightarrow> SN (subst x1 v e1, st', ctx')) \<longrightarrow> (\<forall>v st' ctx'. value v \<longrightarrow> SN (subst x2 v e2, st', ctx')) \<longrightarrow> SN (ECase e x1 e1 x2 e2, st, ctx)"
+lemma SN_case: "\<forall> e x1 e1 x2 e2 st ctx, SN (e, st, ctx) \<longrightarrow> (\<forall> v st' ctx', value v \<longrightarrow> SN (subst[x1 := v] e1, st', ctx')) \<longrightarrow> (\<forall> v st' ctx', value v \<longrightarrow> SN (subst[x2 := v] e2, st', ctx')) \<longrightarrow> SN (ECase e x1 e1 x2 e2, st, ctx)"
   by auto
 
 (* ========================================================================
     SECTION 8: SN CLOSURE FOR IF
     ======================================================================== *)
 (* SN_if_aux (matches Coq) *)
-lemma SN_if_aux: "\<forall>cfg e2 e3. SN cfg \<longrightarrow> (\<forall>st' ctx'. SN (e2, st', ctx')) \<longrightarrow> (\<forall>st' ctx'. SN (e3, st', ctx')) \<longrightarrow> SN (EIf (fst (fst cfg)) e2 e3, snd (fst cfg), snd cfg)"
+lemma SN_if_aux: "\<forall> cfg e2 e3, SN cfg \<longrightarrow> (\<forall> st' ctx', SN (e2, st', ctx')) \<longrightarrow> (\<forall> st' ctx', SN (e3, st', ctx')) \<longrightarrow> SN (EIf (fst (fst cfg)) e2 e3, snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_if (matches Coq) *)
-lemma SN_if: "\<forall>e1 e2 e3 st ctx. SN (e1, st, ctx) \<longrightarrow> (\<forall>st' ctx'. SN (e2, st', ctx')) \<longrightarrow> (\<forall>st' ctx'. SN (e3, st', ctx')) \<longrightarrow> SN (EIf e1 e2 e3, st, ctx)"
+lemma SN_if: "\<forall> e1 e2 e3 st ctx, SN (e1, st, ctx) \<longrightarrow> (\<forall> st' ctx', SN (e2, st', ctx')) \<longrightarrow> (\<forall> st' ctx', SN (e3, st', ctx')) \<longrightarrow> SN (EIf e1 e2 e3, st, ctx)"
   by auto
 
 (* ========================================================================
     SECTION 9: SN CLOSURE FOR LET
     ======================================================================== *)
 (* SN_let_aux (matches Coq) *)
-lemma SN_let_aux: "\<forall>cfg x e2. SN cfg \<longrightarrow> (\<forall>v st' ctx'. value v \<longrightarrow> SN (subst x v e2, st', ctx')) \<longrightarrow> SN (ELet x (fst (fst cfg)) e2, snd (fst cfg), snd cfg)"
+lemma SN_let_aux: "\<forall> cfg x e2, SN cfg \<longrightarrow> (\<forall> v st' ctx', value v \<longrightarrow> SN (subst[x := v] e2, st', ctx')) \<longrightarrow> SN (ELet x (fst (fst cfg)) e2, snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_let (matches Coq) *)
-lemma SN_let: "\<forall>x e1 e2 st ctx. SN (e1, st, ctx) \<longrightarrow> (\<forall>v st' ctx'. value v \<longrightarrow> SN (subst x v e2, st', ctx')) \<longrightarrow> SN (ELet x e1 e2, st, ctx)"
+lemma SN_let: "\<forall> x e1 e2 st ctx, SN (e1, st, ctx) \<longrightarrow> (\<forall> v st' ctx', value v \<longrightarrow> SN (subst[x := v] e2, st', ctx')) \<longrightarrow> SN (ELet x e1 e2, st, ctx)"
   by auto
 
 (* ========================================================================
     SECTION 10: SN CLOSURE FOR REFERENCES
     ======================================================================== *)
 (* SN_ref_aux (matches Coq) *)
-lemma SN_ref_aux: "\<forall>cfg sl. SN cfg \<longrightarrow> SN (ERef (fst (fst cfg)) sl, snd (fst cfg), snd cfg)"
+lemma SN_ref_aux: "\<forall> cfg sl, SN cfg \<longrightarrow> SN (ERef (fst (fst cfg)) sl, snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_ref (matches Coq) *)
-lemma SN_ref: "\<forall>e sl st ctx. SN (e, st, ctx) \<longrightarrow> SN (ERef e sl, st, ctx)"
+lemma SN_ref: "\<forall> e sl st ctx, SN (e, st, ctx) \<longrightarrow> SN (ERef e sl, st, ctx)"
   by auto
 
 (* Empty store is trivially well-formed *)
@@ -272,54 +269,54 @@ lemma store_wf_nil: "store_wf nil"
 
 (* Helper: store_lookup at the updated location returns the new value *)
 (* store_lookup_update_eq (matches Coq) *)
-lemma store_lookup_update_eq: "\<forall>l v st. store_lookup l (store_update l v st) = Some v"
-  by auto
+lemma store_lookup_update_eq: "\<forall> l v st, store_lookup l (store_update l v st) = Some v"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Helper: store_lookup at a different location is unchanged *)
 (* store_lookup_update_neq (matches Coq) *)
-lemma store_lookup_update_neq: "\<forall>l0 l v st. l0 \<noteq> l \<longrightarrow> store_lookup l0 (store_update l v st) = store_lookup l0 st"
-  by auto
+lemma store_lookup_update_neq: "\<forall> l0 l v st, l0 \<noteq> l \<longrightarrow> store_lookup l0 (store_update l v st) = store_lookup l0 st"
+  by (cases rule: ‹_›.cases; simp)
 
 (* store_update preserves store_wf when storing a value *)
 (* store_update_preserves_wf (matches Coq) *)
-lemma store_update_preserves_wf: "\<forall>st l v. store_wf st \<longrightarrow> value v \<longrightarrow> store_wf (store_update l v st)"
+lemma store_update_preserves_wf: "\<forall> st l v, store_wf st \<longrightarrow> value v \<longrightarrow> store_wf (store_update l v st)"
   by auto
 
 (* step preserves store well-formedness *)
 (* step_preserves_store_wf (matches Coq) *)
-lemma step_preserves_store_wf: "\<forall>e st ctx e' st' ctx'. store_wf st \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> store_wf st'"
+lemma step_preserves_store_wf: "\<forall> e st ctx e' st' ctx', store_wf st \<longrightarrow> (e, st, ctx) --> (e', st', ctx') \<longrightarrow> store_wf st'"
   by auto
 
 (* SN_deref_aux (matches Coq) *)
-lemma SN_deref_aux: "\<forall>cfg. SN cfg \<longrightarrow> (\<forall>l v st'. store_lookup l st' = Some v \<longrightarrow> value v) \<longrightarrow> SN (EDeref (fst (fst cfg)), snd (fst cfg), snd cfg)"
+lemma SN_deref_aux: "\<forall> cfg, SN cfg \<longrightarrow> (\<forall> l v st', store_lookup l st' = Some v \<longrightarrow> value v) \<longrightarrow> SN (EDeref (fst (fst cfg)), snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_deref (matches Coq) *)
-lemma SN_deref: "\<forall>e st ctx. SN (e, st, ctx) \<longrightarrow> (\<forall>l v st'. store_lookup l st' = Some v \<longrightarrow> value v) \<longrightarrow> SN (EDeref e, st, ctx)"
+lemma SN_deref: "\<forall> e st ctx, SN (e, st, ctx) \<longrightarrow> (\<forall> l v st', store_lookup l st' = Some v \<longrightarrow> value v) \<longrightarrow> SN (EDeref e, st, ctx)"
   by auto
 
 (* Helper for SN_assign when e1 is a value *)
 (* SN_assign_value_left_aux (matches Coq) *)
-lemma SN_assign_value_left_aux: "\<forall>v cfg. value v \<longrightarrow> SN cfg \<longrightarrow> SN (EAssign v (fst (fst cfg)), snd (fst cfg), snd cfg)"
+lemma SN_assign_value_left_aux: "\<forall> v cfg, value v \<longrightarrow> SN cfg \<longrightarrow> SN (EAssign v (fst (fst cfg)), snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_assign_aux (matches Coq) *)
-lemma SN_assign_aux: "\<forall>cfg e2. SN cfg \<longrightarrow> (\<forall>st ctx. SN (e2, st, ctx)) \<longrightarrow> SN (EAssign (fst (fst cfg)) e2, snd (fst cfg), snd cfg)"
+lemma SN_assign_aux: "\<forall> cfg e2, SN cfg \<longrightarrow> (\<forall> st ctx, SN (e2, st, ctx)) \<longrightarrow> SN (EAssign (fst (fst cfg)) e2, snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_assign (matches Coq) *)
-lemma SN_assign: "\<forall>e1 e2 st ctx. (\<forall>st' ctx'. SN (e1, st', ctx')) \<longrightarrow> (\<forall>st' ctx'. SN (e2, st', ctx')) \<longrightarrow> SN (EAssign e1 e2, st, ctx)"
+lemma SN_assign: "\<forall> e1 e2 st ctx, (\<forall> st' ctx', SN (e1, st', ctx')) \<longrightarrow> (\<forall> st' ctx', SN (e2, st', ctx')) \<longrightarrow> SN (EAssign e1 e2, st, ctx)"
   by auto
 
 (* ========================================================================
     SECTION 11: SN CLOSURE FOR HANDLE
     ======================================================================== *)
 (* SN_handle_aux (matches Coq) *)
-lemma SN_handle_aux: "\<forall>cfg x h. SN cfg \<longrightarrow> (\<forall>v st' ctx'. value v \<longrightarrow> SN (subst x v h, st', ctx')) \<longrightarrow> SN (EHandle (fst (fst cfg)) x h, snd (fst cfg), snd cfg)"
+lemma SN_handle_aux: "\<forall> cfg x h, SN cfg \<longrightarrow> (\<forall> v st' ctx', value v \<longrightarrow> SN (subst[x := v] h, st', ctx')) \<longrightarrow> SN (EHandle (fst (fst cfg)) x h, snd (fst cfg), snd cfg)"
   by auto
 
 (* SN_handle (matches Coq) *)
-lemma SN_handle: "\<forall>e x h st ctx. SN (e, st, ctx) \<longrightarrow> (\<forall>v st' ctx'. value v \<longrightarrow> SN (subst x v h, st', ctx')) \<longrightarrow> SN (EHandle e x h, st, ctx)"
+lemma SN_handle: "\<forall> e x h st ctx, SN (e, st, ctx) \<longrightarrow> (\<forall> v st' ctx', value v \<longrightarrow> SN (subst[x := v] h, st', ctx')) \<longrightarrow> SN (EHandle e x h, st, ctx)"
   by auto
 
 end

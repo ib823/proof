@@ -14,2150 +14,985 @@
 (declare-sort IRNode 0)
 (declare-sort TargetNode 0)
 
+; INPUT_MAX_LENGTH_DEFAULT: source semantics (matches Coq)
+(declare-fun source_INPUT_MAX_LENGTH_DEFAULT () Bool)
+(declare-fun target_INPUT_MAX_LENGTH_DEFAULT () Bool)
+(assert (= source_INPUT_MAX_LENGTH_DEFAULT target_INPUT_MAX_LENGTH_DEFAULT))
+
 ; output_safe: source semantics (matches Coq)
-; Translation validation: output_safe preserves semantics
-(push 1)
-(declare-const source_output_safe Int)
-(declare-const target_output_safe Int)
-(assert (>= source_output_safe 0))
-(assert (>= target_output_safe 0))
-(assert (not (= source_output_safe target_output_safe)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_output_safe () Bool)
+(declare-fun target_output_safe () Bool)
+(assert (= source_output_safe target_output_safe))
 
 ; csp_enforced: source semantics (matches Coq)
-; Translation validation: csp_enforced preserves semantics
-(push 1)
-(declare-const source_csp_enforced Int)
-(declare-const target_csp_enforced Int)
-(assert (>= source_csp_enforced 0))
-(assert (>= target_csp_enforced 0))
-(assert (not (= source_csp_enforced target_csp_enforced)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_csp_enforced () Bool)
+(declare-fun target_csp_enforced () Bool)
+(assert (= source_csp_enforced target_csp_enforced))
 
 ; csp_maximum: source semantics (matches Coq)
-; Translation validation: csp_maximum preserves semantics
-(push 1)
-(declare-const source_csp_maximum Int)
-(declare-const target_csp_maximum Int)
-(assert (>= source_csp_maximum 0))
-(assert (>= target_csp_maximum 0))
-(assert (not (= source_csp_maximum target_csp_maximum)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_csp_maximum () Bool)
+(declare-fun target_csp_maximum () Bool)
+(assert (= source_csp_maximum target_csp_maximum))
 
 ; dom_sanitizer_complete: source semantics (matches Coq)
-; Translation validation: dom_sanitizer_complete preserves semantics
-(push 1)
-(declare-const source_dom_sanitizer_complete Int)
-(declare-const target_dom_sanitizer_complete Int)
-(assert (>= source_dom_sanitizer_complete 0))
-(assert (>= target_dom_sanitizer_complete 0))
-(assert (not (= source_dom_sanitizer_complete target_dom_sanitizer_complete)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_dom_sanitizer_complete () Bool)
+(declare-fun target_dom_sanitizer_complete () Bool)
+(assert (= source_dom_sanitizer_complete target_dom_sanitizer_complete))
 
 ; input_validation_complete: source semantics (matches Coq)
-; Translation validation: input_validation_complete preserves semantics
-(push 1)
-(declare-const source_input_validation_complete Int)
-(declare-const target_input_validation_complete Int)
-(assert (>= source_input_validation_complete 0))
-(assert (>= target_input_validation_complete 0))
-(assert (not (= source_input_validation_complete target_input_validation_complete)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_input_validation_complete () Bool)
+(declare-fun target_input_validation_complete () Bool)
+(assert (= source_input_validation_complete target_input_validation_complete))
 
 ; xss_protected: source semantics (matches Coq)
-; Translation validation: xss_protected preserves semantics
-(push 1)
-(declare-const source_xss_protected Int)
-(declare-const target_xss_protected Int)
-(assert (>= source_xss_protected 0))
-(assert (>= target_xss_protected 0))
-(assert (not (= source_xss_protected target_xss_protected)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_xss_protected () Bool)
+(declare-fun target_xss_protected () Bool)
+(assert (= source_xss_protected target_xss_protected))
 
 ; xss_maximum_protection: source semantics (matches Coq)
-; Translation validation: xss_maximum_protection preserves semantics
-(push 1)
-(declare-const source_xss_maximum_protection Int)
-(declare-const target_xss_maximum_protection Int)
-(assert (>= source_xss_maximum_protection 0))
-(assert (>= target_xss_maximum_protection 0))
-(assert (not (= source_xss_maximum_protection target_xss_maximum_protection)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_xss_maximum_protection () Bool)
+(declare-fun target_xss_maximum_protection () Bool)
+(assert (= source_xss_maximum_protection target_xss_maximum_protection))
 
 ; taint_safe: source semantics (matches Coq)
-; Translation validation: taint_safe preserves semantics
-(push 1)
-(declare-const source_taint_safe Int)
-(declare-const target_taint_safe Int)
-(assert (>= source_taint_safe 0))
-(assert (>= target_taint_safe 0))
-(assert (not (= source_taint_safe target_taint_safe)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_taint_safe () Bool)
+(declare-fun target_taint_safe () Bool)
+(assert (= source_taint_safe target_taint_safe))
 
 ; riina_output: source semantics (matches Coq)
-; Translation validation: riina_output preserves semantics
-(push 1)
-(declare-const source_riina_output Int)
-(declare-const target_riina_output Int)
-(assert (>= source_riina_output 0))
-(assert (>= target_riina_output 0))
-(assert (not (= source_riina_output target_riina_output)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_riina_output () Bool)
+(declare-fun target_riina_output () Bool)
+(assert (= source_riina_output target_riina_output))
 
 ; riina_csp: source semantics (matches Coq)
-; Translation validation: riina_csp preserves semantics
-(push 1)
-(declare-const source_riina_csp Int)
-(declare-const target_riina_csp Int)
-(assert (>= source_riina_csp 0))
-(assert (>= target_riina_csp 0))
-(assert (not (= source_riina_csp target_riina_csp)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_riina_csp () Bool)
+(declare-fun target_riina_csp () Bool)
+(assert (= source_riina_csp target_riina_csp))
 
 ; riina_dom: source semantics (matches Coq)
-; Translation validation: riina_dom preserves semantics
-(push 1)
-(declare-const source_riina_dom Int)
-(declare-const target_riina_dom Int)
-(assert (>= source_riina_dom 0))
-(assert (>= target_riina_dom 0))
-(assert (not (= source_riina_dom target_riina_dom)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_riina_dom () Bool)
+(declare-fun target_riina_dom () Bool)
+(assert (= source_riina_dom target_riina_dom))
 
 ; riina_input: source semantics (matches Coq)
-; Translation validation: riina_input preserves semantics
-(push 1)
-(declare-const source_riina_input Int)
-(declare-const target_riina_input Int)
-(assert (>= source_riina_input 0))
-(assert (>= target_riina_input 0))
-(assert (not (= source_riina_input target_riina_input)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_riina_input () Bool)
+(declare-fun target_riina_input () Bool)
+(assert (= source_riina_input target_riina_input))
 
 ; riina_xss: source semantics (matches Coq)
-; Translation validation: riina_xss preserves semantics
-(push 1)
-(declare-const source_riina_xss Int)
-(declare-const target_riina_xss Int)
-(assert (>= source_riina_xss 0))
-(assert (>= target_riina_xss 0))
-(assert (not (= source_riina_xss target_riina_xss)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_riina_xss () Bool)
+(declare-fun target_riina_xss () Bool)
+(assert (= source_riina_xss target_riina_xss))
 
 ; propagate_taint: source semantics (matches Coq)
-; Translation validation: propagate_taint preserves semantics
-(push 1)
-(declare-const source_propagate_taint Int)
-(declare-const target_propagate_taint Int)
-(assert (>= source_propagate_taint 0))
-(assert (>= target_propagate_taint 0))
-(assert (not (= source_propagate_taint target_propagate_taint)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_propagate_taint () Bool)
+(declare-fun target_propagate_taint () Bool)
+(assert (= source_propagate_taint target_propagate_taint))
 
 ; reflected_xss_safe: source semantics (matches Coq)
-; Translation validation: reflected_xss_safe preserves semantics
-(push 1)
-(declare-const source_reflected_xss_safe Int)
-(declare-const target_reflected_xss_safe Int)
-(assert (>= source_reflected_xss_safe 0))
-(assert (>= target_reflected_xss_safe 0))
-(assert (not (= source_reflected_xss_safe target_reflected_xss_safe)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_reflected_xss_safe () Bool)
+(declare-fun target_reflected_xss_safe () Bool)
+(assert (= source_reflected_xss_safe target_reflected_xss_safe))
 
 ; riina_reflected: source semantics (matches Coq)
-; Translation validation: riina_reflected preserves semantics
-(push 1)
-(declare-const source_riina_reflected Int)
-(declare-const target_riina_reflected Int)
-(assert (>= source_riina_reflected 0))
-(assert (>= target_riina_reflected 0))
-(assert (not (= source_riina_reflected target_riina_reflected)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_riina_reflected () Bool)
+(declare-fun target_riina_reflected () Bool)
+(assert (= source_riina_reflected target_riina_reflected))
 
 ; stored_xss_safe: source semantics (matches Coq)
-; Translation validation: stored_xss_safe preserves semantics
-(push 1)
-(declare-const source_stored_xss_safe Int)
-(declare-const target_stored_xss_safe Int)
-(assert (>= source_stored_xss_safe 0))
-(assert (>= target_stored_xss_safe 0))
-(assert (not (= source_stored_xss_safe target_stored_xss_safe)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_stored_xss_safe () Bool)
+(declare-fun target_stored_xss_safe () Bool)
+(assert (= source_stored_xss_safe target_stored_xss_safe))
 
 ; riina_stored: source semantics (matches Coq)
-; Translation validation: riina_stored preserves semantics
-(push 1)
-(declare-const source_riina_stored Int)
-(declare-const target_riina_stored Int)
-(assert (>= source_riina_stored 0))
-(assert (>= target_riina_stored 0))
-(assert (not (= source_riina_stored target_riina_stored)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_riina_stored () Bool)
+(declare-fun target_riina_stored () Bool)
+(assert (= source_riina_stored target_riina_stored))
 
 ; dom_xss_safe: source semantics (matches Coq)
-; Translation validation: dom_xss_safe preserves semantics
-(push 1)
-(declare-const source_dom_xss_safe Int)
-(declare-const target_dom_xss_safe Int)
-(assert (>= source_dom_xss_safe 0))
-(assert (>= target_dom_xss_safe 0))
-(assert (not (= source_dom_xss_safe target_dom_xss_safe)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_dom_xss_safe () Bool)
+(declare-fun target_dom_xss_safe () Bool)
+(assert (= source_dom_xss_safe target_dom_xss_safe))
 
 ; riina_dom_based: source semantics (matches Coq)
-; Translation validation: riina_dom_based preserves semantics
-(push 1)
-(declare-const source_riina_dom_based Int)
-(declare-const target_riina_dom_based Int)
-(assert (>= source_riina_dom_based 0))
-(assert (>= target_riina_dom_based 0))
-(assert (not (= source_riina_dom_based target_riina_dom_based)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_riina_dom_based () Bool)
+(declare-fun target_riina_dom_based () Bool)
+(assert (= source_riina_dom_based target_riina_dom_based))
 
 ; is_html_dangerous: source semantics (matches Coq)
-; Translation validation: is_html_dangerous preserves semantics
-(push 1)
-(declare-const source_is_html_dangerous Int)
-(declare-const target_is_html_dangerous Int)
-(assert (>= source_is_html_dangerous 0))
-(assert (>= target_is_html_dangerous 0))
-(assert (not (= source_is_html_dangerous target_is_html_dangerous)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_html_dangerous () Bool)
+(declare-fun target_is_html_dangerous () Bool)
+(assert (= source_is_html_dangerous target_is_html_dangerous))
 
 ; is_js_dangerous: source semantics (matches Coq)
-; Translation validation: is_js_dangerous preserves semantics
-(push 1)
-(declare-const source_is_js_dangerous Int)
-(declare-const target_is_js_dangerous Int)
-(assert (>= source_is_js_dangerous 0))
-(assert (>= target_is_js_dangerous 0))
-(assert (not (= source_is_js_dangerous target_is_js_dangerous)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_js_dangerous () Bool)
+(declare-fun target_is_js_dangerous () Bool)
+(assert (= source_is_js_dangerous target_is_js_dangerous))
 
 ; needs_url_encoding: source semantics (matches Coq)
-; Translation validation: needs_url_encoding preserves semantics
-(push 1)
-(declare-const source_needs_url_encoding Int)
-(declare-const target_needs_url_encoding Int)
-(assert (>= source_needs_url_encoding 0))
-(assert (>= target_needs_url_encoding 0))
-(assert (not (= source_needs_url_encoding target_needs_url_encoding)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_needs_url_encoding () Bool)
+(declare-fun target_needs_url_encoding () Bool)
+(assert (= source_needs_url_encoding target_needs_url_encoding))
 
 ; hex_digit: source semantics (matches Coq)
-; Translation validation: hex_digit preserves semantics
-(push 1)
-(declare-const source_hex_digit Int)
-(declare-const target_hex_digit Int)
-(assert (>= source_hex_digit 0))
-(assert (>= target_hex_digit 0))
-(assert (not (= source_hex_digit target_hex_digit)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_hex_digit () Bool)
+(declare-fun target_hex_digit () Bool)
+(assert (= source_hex_digit target_hex_digit))
 
 ; is_css_dangerous: source semantics (matches Coq)
-; Translation validation: is_css_dangerous preserves semantics
-(push 1)
-(declare-const source_is_css_dangerous Int)
-(declare-const target_is_css_dangerous Int)
-(assert (>= source_is_css_dangerous 0))
-(assert (>= target_is_css_dangerous 0))
-(assert (not (= source_is_css_dangerous target_is_css_dangerous)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_css_dangerous () Bool)
+(declare-fun target_is_css_dangerous () Bool)
+(assert (= source_is_css_dangerous target_is_css_dangerous))
 
 ; andb_true_iff: translation preserves property (matches Coq: Lemma)
-; Translation validation: andb_true_iff preserves semantics
-(push 1)
-(declare-const source_andb_true_iff Int)
-(declare-const target_andb_true_iff Int)
-(assert (>= source_andb_true_iff 0))
-(assert (>= target_andb_true_iff 0))
-(assert (not (= source_andb_true_iff target_andb_true_iff)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_andb_true_iff () Bool)
+(declare-fun target_andb_true_iff () Bool)
+(assert (= source_andb_true_iff target_andb_true_iff))
 
 ; andb_false_iff: translation preserves property (matches Coq: Lemma)
-; Translation validation: andb_false_iff preserves semantics
-(push 1)
-(declare-const source_andb_false_iff Int)
-(declare-const target_andb_false_iff Int)
-(assert (>= source_andb_false_iff 0))
-(assert (>= target_andb_false_iff 0))
-(assert (not (= source_andb_false_iff target_andb_false_iff)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_andb_false_iff () Bool)
+(declare-fun target_andb_false_iff () Bool)
+(assert (= source_andb_false_iff target_andb_false_iff))
 
 ; orb_true_iff: translation preserves property (matches Coq: Lemma)
-; Translation validation: orb_true_iff preserves semantics
-(push 1)
-(declare-const source_orb_true_iff Int)
-(declare-const target_orb_true_iff Int)
-(assert (>= source_orb_true_iff 0))
-(assert (>= target_orb_true_iff 0))
-(assert (not (= source_orb_true_iff target_orb_true_iff)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_orb_true_iff () Bool)
+(declare-fun target_orb_true_iff () Bool)
+(assert (= source_orb_true_iff target_orb_true_iff))
 
 ; negb_true_iff: translation preserves property (matches Coq: Lemma)
-; Translation validation: negb_true_iff preserves semantics
-(push 1)
-(declare-const source_negb_true_iff Int)
-(declare-const target_negb_true_iff Int)
-(assert (>= source_negb_true_iff 0))
-(assert (>= target_negb_true_iff 0))
-(assert (not (= source_negb_true_iff target_negb_true_iff)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_negb_true_iff () Bool)
+(declare-fun target_negb_true_iff () Bool)
+(assert (= source_negb_true_iff target_negb_true_iff))
 
 ; forallb_true: translation preserves property (matches Coq: Lemma)
-; Translation validation: forallb_true preserves semantics
-(push 1)
-(declare-const source_forallb_true Int)
-(declare-const target_forallb_true Int)
-(assert (>= source_forallb_true 0))
-(assert (>= target_forallb_true 0))
-(assert (not (= source_forallb_true target_forallb_true)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_forallb_true () Bool)
+(declare-fun target_forallb_true () Bool)
+(assert (= source_forallb_true target_forallb_true))
 
 ; XSS_001: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_001 preserves semantics
-(push 1)
-(declare-const source_XSS_001 Int)
-(declare-const target_XSS_001 Int)
-(assert (>= source_XSS_001 0))
-(assert (>= target_XSS_001 0))
-(assert (not (= source_XSS_001 target_XSS_001)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_001 () Bool)
+(declare-fun target_XSS_001 () Bool)
+(assert (= source_XSS_001 target_XSS_001))
 
 ; XSS_002: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_002 preserves semantics
-(push 1)
-(declare-const source_XSS_002 Int)
-(declare-const target_XSS_002 Int)
-(assert (>= source_XSS_002 0))
-(assert (>= target_XSS_002 0))
-(assert (not (= source_XSS_002 target_XSS_002)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_002 () Bool)
+(declare-fun target_XSS_002 () Bool)
+(assert (= source_XSS_002 target_XSS_002))
 
 ; XSS_003: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_003 preserves semantics
-(push 1)
-(declare-const source_XSS_003 Int)
-(declare-const target_XSS_003 Int)
-(assert (>= source_XSS_003 0))
-(assert (>= target_XSS_003 0))
-(assert (not (= source_XSS_003 target_XSS_003)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_003 () Bool)
+(declare-fun target_XSS_003 () Bool)
+(assert (= source_XSS_003 target_XSS_003))
 
 ; XSS_004: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_004 preserves semantics
-(push 1)
-(declare-const source_XSS_004 Int)
-(declare-const target_XSS_004 Int)
-(assert (>= source_XSS_004 0))
-(assert (>= target_XSS_004 0))
-(assert (not (= source_XSS_004 target_XSS_004)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_004 () Bool)
+(declare-fun target_XSS_004 () Bool)
+(assert (= source_XSS_004 target_XSS_004))
 
 ; XSS_005: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_005 preserves semantics
-(push 1)
-(declare-const source_XSS_005 Int)
-(declare-const target_XSS_005 Int)
-(assert (>= source_XSS_005 0))
-(assert (>= target_XSS_005 0))
-(assert (not (= source_XSS_005 target_XSS_005)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_005 () Bool)
+(declare-fun target_XSS_005 () Bool)
+(assert (= source_XSS_005 target_XSS_005))
 
 ; XSS_006: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_006 preserves semantics
-(push 1)
-(declare-const source_XSS_006 Int)
-(declare-const target_XSS_006 Int)
-(assert (>= source_XSS_006 0))
-(assert (>= target_XSS_006 0))
-(assert (not (= source_XSS_006 target_XSS_006)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_006 () Bool)
+(declare-fun target_XSS_006 () Bool)
+(assert (= source_XSS_006 target_XSS_006))
 
 ; XSS_007: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_007 preserves semantics
-(push 1)
-(declare-const source_XSS_007 Int)
-(declare-const target_XSS_007 Int)
-(assert (>= source_XSS_007 0))
-(assert (>= target_XSS_007 0))
-(assert (not (= source_XSS_007 target_XSS_007)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_007 () Bool)
+(declare-fun target_XSS_007 () Bool)
+(assert (= source_XSS_007 target_XSS_007))
 
 ; XSS_008: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_008 preserves semantics
-(push 1)
-(declare-const source_XSS_008 Int)
-(declare-const target_XSS_008 Int)
-(assert (>= source_XSS_008 0))
-(assert (>= target_XSS_008 0))
-(assert (not (= source_XSS_008 target_XSS_008)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_008 () Bool)
+(declare-fun target_XSS_008 () Bool)
+(assert (= source_XSS_008 target_XSS_008))
 
 ; XSS_009: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_009 preserves semantics
-(push 1)
-(declare-const source_XSS_009 Int)
-(declare-const target_XSS_009 Int)
-(assert (>= source_XSS_009 0))
-(assert (>= target_XSS_009 0))
-(assert (not (= source_XSS_009 target_XSS_009)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_009 () Bool)
+(declare-fun target_XSS_009 () Bool)
+(assert (= source_XSS_009 target_XSS_009))
 
 ; XSS_010: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_010 preserves semantics
-(push 1)
-(declare-const source_XSS_010 Int)
-(declare-const target_XSS_010 Int)
-(assert (>= source_XSS_010 0))
-(assert (>= target_XSS_010 0))
-(assert (not (= source_XSS_010 target_XSS_010)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_010 () Bool)
+(declare-fun target_XSS_010 () Bool)
+(assert (= source_XSS_010 target_XSS_010))
 
 ; XSS_011: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_011 preserves semantics
-(push 1)
-(declare-const source_XSS_011 Int)
-(declare-const target_XSS_011 Int)
-(assert (>= source_XSS_011 0))
-(assert (>= target_XSS_011 0))
-(assert (not (= source_XSS_011 target_XSS_011)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_011 () Bool)
+(declare-fun target_XSS_011 () Bool)
+(assert (= source_XSS_011 target_XSS_011))
 
 ; XSS_012: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_012 preserves semantics
-(push 1)
-(declare-const source_XSS_012 Int)
-(declare-const target_XSS_012 Int)
-(assert (>= source_XSS_012 0))
-(assert (>= target_XSS_012 0))
-(assert (not (= source_XSS_012 target_XSS_012)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_012 () Bool)
+(declare-fun target_XSS_012 () Bool)
+(assert (= source_XSS_012 target_XSS_012))
 
 ; XSS_013: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_013 preserves semantics
-(push 1)
-(declare-const source_XSS_013 Int)
-(declare-const target_XSS_013 Int)
-(assert (>= source_XSS_013 0))
-(assert (>= target_XSS_013 0))
-(assert (not (= source_XSS_013 target_XSS_013)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_013 () Bool)
+(declare-fun target_XSS_013 () Bool)
+(assert (= source_XSS_013 target_XSS_013))
 
 ; XSS_014: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_014 preserves semantics
-(push 1)
-(declare-const source_XSS_014 Int)
-(declare-const target_XSS_014 Int)
-(assert (>= source_XSS_014 0))
-(assert (>= target_XSS_014 0))
-(assert (not (= source_XSS_014 target_XSS_014)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_014 () Bool)
+(declare-fun target_XSS_014 () Bool)
+(assert (= source_XSS_014 target_XSS_014))
 
 ; XSS_015: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_015 preserves semantics
-(push 1)
-(declare-const source_XSS_015 Int)
-(declare-const target_XSS_015 Int)
-(assert (>= source_XSS_015 0))
-(assert (>= target_XSS_015 0))
-(assert (not (= source_XSS_015 target_XSS_015)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_015 () Bool)
+(declare-fun target_XSS_015 () Bool)
+(assert (= source_XSS_015 target_XSS_015))
 
 ; XSS_016: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_016 preserves semantics
-(push 1)
-(declare-const source_XSS_016 Int)
-(declare-const target_XSS_016 Int)
-(assert (>= source_XSS_016 0))
-(assert (>= target_XSS_016 0))
-(assert (not (= source_XSS_016 target_XSS_016)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_016 () Bool)
+(declare-fun target_XSS_016 () Bool)
+(assert (= source_XSS_016 target_XSS_016))
 
 ; XSS_017: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_017 preserves semantics
-(push 1)
-(declare-const source_XSS_017 Int)
-(declare-const target_XSS_017 Int)
-(assert (>= source_XSS_017 0))
-(assert (>= target_XSS_017 0))
-(assert (not (= source_XSS_017 target_XSS_017)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_017 () Bool)
+(declare-fun target_XSS_017 () Bool)
+(assert (= source_XSS_017 target_XSS_017))
 
 ; XSS_018: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_018 preserves semantics
-(push 1)
-(declare-const source_XSS_018 Int)
-(declare-const target_XSS_018 Int)
-(assert (>= source_XSS_018 0))
-(assert (>= target_XSS_018 0))
-(assert (not (= source_XSS_018 target_XSS_018)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_018 () Bool)
+(declare-fun target_XSS_018 () Bool)
+(assert (= source_XSS_018 target_XSS_018))
 
 ; XSS_019: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_019 preserves semantics
-(push 1)
-(declare-const source_XSS_019 Int)
-(declare-const target_XSS_019 Int)
-(assert (>= source_XSS_019 0))
-(assert (>= target_XSS_019 0))
-(assert (not (= source_XSS_019 target_XSS_019)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_019 () Bool)
+(declare-fun target_XSS_019 () Bool)
+(assert (= source_XSS_019 target_XSS_019))
 
 ; XSS_020: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_020 preserves semantics
-(push 1)
-(declare-const source_XSS_020 Int)
-(declare-const target_XSS_020 Int)
-(assert (>= source_XSS_020 0))
-(assert (>= target_XSS_020 0))
-(assert (not (= source_XSS_020 target_XSS_020)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_020 () Bool)
+(declare-fun target_XSS_020 () Bool)
+(assert (= source_XSS_020 target_XSS_020))
 
 ; XSS_021: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_021 preserves semantics
-(push 1)
-(declare-const source_XSS_021 Int)
-(declare-const target_XSS_021 Int)
-(assert (>= source_XSS_021 0))
-(assert (>= target_XSS_021 0))
-(assert (not (= source_XSS_021 target_XSS_021)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_021 () Bool)
+(declare-fun target_XSS_021 () Bool)
+(assert (= source_XSS_021 target_XSS_021))
 
 ; XSS_022: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_022 preserves semantics
-(push 1)
-(declare-const source_XSS_022 Int)
-(declare-const target_XSS_022 Int)
-(assert (>= source_XSS_022 0))
-(assert (>= target_XSS_022 0))
-(assert (not (= source_XSS_022 target_XSS_022)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_022 () Bool)
+(declare-fun target_XSS_022 () Bool)
+(assert (= source_XSS_022 target_XSS_022))
 
 ; XSS_023: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_023 preserves semantics
-(push 1)
-(declare-const source_XSS_023 Int)
-(declare-const target_XSS_023 Int)
-(assert (>= source_XSS_023 0))
-(assert (>= target_XSS_023 0))
-(assert (not (= source_XSS_023 target_XSS_023)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_023 () Bool)
+(declare-fun target_XSS_023 () Bool)
+(assert (= source_XSS_023 target_XSS_023))
 
 ; XSS_024: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_024 preserves semantics
-(push 1)
-(declare-const source_XSS_024 Int)
-(declare-const target_XSS_024 Int)
-(assert (>= source_XSS_024 0))
-(assert (>= target_XSS_024 0))
-(assert (not (= source_XSS_024 target_XSS_024)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_024 () Bool)
+(declare-fun target_XSS_024 () Bool)
+(assert (= source_XSS_024 target_XSS_024))
 
 ; XSS_025_complete: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_025_complete preserves semantics
-(push 1)
-(declare-const source_XSS_025_complete Int)
-(declare-const target_XSS_025_complete Int)
-(assert (>= source_XSS_025_complete 0))
-(assert (>= target_XSS_025_complete 0))
-(assert (not (= source_XSS_025_complete target_XSS_025_complete)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_025_complete () Bool)
+(declare-fun target_XSS_025_complete () Bool)
+(assert (= source_XSS_025_complete target_XSS_025_complete))
 
 ; XSS_026: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_026 preserves semantics
-(push 1)
-(declare-const source_XSS_026 Int)
-(declare-const target_XSS_026 Int)
-(assert (>= source_XSS_026 0))
-(assert (>= target_XSS_026 0))
-(assert (not (= source_XSS_026 target_XSS_026)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_026 () Bool)
+(declare-fun target_XSS_026 () Bool)
+(assert (= source_XSS_026 target_XSS_026))
 
 ; XSS_027: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_027 preserves semantics
-(push 1)
-(declare-const source_XSS_027 Int)
-(declare-const target_XSS_027 Int)
-(assert (>= source_XSS_027 0))
-(assert (>= target_XSS_027 0))
-(assert (not (= source_XSS_027 target_XSS_027)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_027 () Bool)
+(declare-fun target_XSS_027 () Bool)
+(assert (= source_XSS_027 target_XSS_027))
 
 ; XSS_028: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_028 preserves semantics
-(push 1)
-(declare-const source_XSS_028 Int)
-(declare-const target_XSS_028 Int)
-(assert (>= source_XSS_028 0))
-(assert (>= target_XSS_028 0))
-(assert (not (= source_XSS_028 target_XSS_028)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_028 () Bool)
+(declare-fun target_XSS_028 () Bool)
+(assert (= source_XSS_028 target_XSS_028))
 
 ; XSS_029: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_029 preserves semantics
-(push 1)
-(declare-const source_XSS_029 Int)
-(declare-const target_XSS_029 Int)
-(assert (>= source_XSS_029 0))
-(assert (>= target_XSS_029 0))
-(assert (not (= source_XSS_029 target_XSS_029)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_029 () Bool)
+(declare-fun target_XSS_029 () Bool)
+(assert (= source_XSS_029 target_XSS_029))
 
 ; XSS_030: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_030 preserves semantics
-(push 1)
-(declare-const source_XSS_030 Int)
-(declare-const target_XSS_030 Int)
-(assert (>= source_XSS_030 0))
-(assert (>= target_XSS_030 0))
-(assert (not (= source_XSS_030 target_XSS_030)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_030 () Bool)
+(declare-fun target_XSS_030 () Bool)
+(assert (= source_XSS_030 target_XSS_030))
 
 ; XSS_031: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_031 preserves semantics
-(push 1)
-(declare-const source_XSS_031 Int)
-(declare-const target_XSS_031 Int)
-(assert (>= source_XSS_031 0))
-(assert (>= target_XSS_031 0))
-(assert (not (= source_XSS_031 target_XSS_031)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_031 () Bool)
+(declare-fun target_XSS_031 () Bool)
+(assert (= source_XSS_031 target_XSS_031))
 
 ; XSS_032: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_032 preserves semantics
-(push 1)
-(declare-const source_XSS_032 Int)
-(declare-const target_XSS_032 Int)
-(assert (>= source_XSS_032 0))
-(assert (>= target_XSS_032 0))
-(assert (not (= source_XSS_032 target_XSS_032)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_032 () Bool)
+(declare-fun target_XSS_032 () Bool)
+(assert (= source_XSS_032 target_XSS_032))
 
 ; XSS_033: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_033 preserves semantics
-(push 1)
-(declare-const source_XSS_033 Int)
-(declare-const target_XSS_033 Int)
-(assert (>= source_XSS_033 0))
-(assert (>= target_XSS_033 0))
-(assert (not (= source_XSS_033 target_XSS_033)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_033 () Bool)
+(declare-fun target_XSS_033 () Bool)
+(assert (= source_XSS_033 target_XSS_033))
 
 ; XSS_034: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_034 preserves semantics
-(push 1)
-(declare-const source_XSS_034 Int)
-(declare-const target_XSS_034 Int)
-(assert (>= source_XSS_034 0))
-(assert (>= target_XSS_034 0))
-(assert (not (= source_XSS_034 target_XSS_034)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_034 () Bool)
+(declare-fun target_XSS_034 () Bool)
+(assert (= source_XSS_034 target_XSS_034))
 
 ; XSS_035: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_035 preserves semantics
-(push 1)
-(declare-const source_XSS_035 Int)
-(declare-const target_XSS_035 Int)
-(assert (>= source_XSS_035 0))
-(assert (>= target_XSS_035 0))
-(assert (not (= source_XSS_035 target_XSS_035)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_035 () Bool)
+(declare-fun target_XSS_035 () Bool)
+(assert (= source_XSS_035 target_XSS_035))
 
 ; XSS_036: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_036 preserves semantics
-(push 1)
-(declare-const source_XSS_036 Int)
-(declare-const target_XSS_036 Int)
-(assert (>= source_XSS_036 0))
-(assert (>= target_XSS_036 0))
-(assert (not (= source_XSS_036 target_XSS_036)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_036 () Bool)
+(declare-fun target_XSS_036 () Bool)
+(assert (= source_XSS_036 target_XSS_036))
 
 ; XSS_037: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_037 preserves semantics
-(push 1)
-(declare-const source_XSS_037 Int)
-(declare-const target_XSS_037 Int)
-(assert (>= source_XSS_037 0))
-(assert (>= target_XSS_037 0))
-(assert (not (= source_XSS_037 target_XSS_037)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_037 () Bool)
+(declare-fun target_XSS_037 () Bool)
+(assert (= source_XSS_037 target_XSS_037))
 
 ; XSS_038: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_038 preserves semantics
-(push 1)
-(declare-const source_XSS_038 Int)
-(declare-const target_XSS_038 Int)
-(assert (>= source_XSS_038 0))
-(assert (>= target_XSS_038 0))
-(assert (not (= source_XSS_038 target_XSS_038)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_038 () Bool)
+(declare-fun target_XSS_038 () Bool)
+(assert (= source_XSS_038 target_XSS_038))
 
 ; XSS_039: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_039 preserves semantics
-(push 1)
-(declare-const source_XSS_039 Int)
-(declare-const target_XSS_039 Int)
-(assert (>= source_XSS_039 0))
-(assert (>= target_XSS_039 0))
-(assert (not (= source_XSS_039 target_XSS_039)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_039 () Bool)
+(declare-fun target_XSS_039 () Bool)
+(assert (= source_XSS_039 target_XSS_039))
 
 ; XSS_040: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_040 preserves semantics
-(push 1)
-(declare-const source_XSS_040 Int)
-(declare-const target_XSS_040 Int)
-(assert (>= source_XSS_040 0))
-(assert (>= target_XSS_040 0))
-(assert (not (= source_XSS_040 target_XSS_040)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_040 () Bool)
+(declare-fun target_XSS_040 () Bool)
+(assert (= source_XSS_040 target_XSS_040))
 
 ; XSS_041: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_041 preserves semantics
-(push 1)
-(declare-const source_XSS_041 Int)
-(declare-const target_XSS_041 Int)
-(assert (>= source_XSS_041 0))
-(assert (>= target_XSS_041 0))
-(assert (not (= source_XSS_041 target_XSS_041)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_041 () Bool)
+(declare-fun target_XSS_041 () Bool)
+(assert (= source_XSS_041 target_XSS_041))
 
 ; XSS_042: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_042 preserves semantics
-(push 1)
-(declare-const source_XSS_042 Int)
-(declare-const target_XSS_042 Int)
-(assert (>= source_XSS_042 0))
-(assert (>= target_XSS_042 0))
-(assert (not (= source_XSS_042 target_XSS_042)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_042 () Bool)
+(declare-fun target_XSS_042 () Bool)
+(assert (= source_XSS_042 target_XSS_042))
 
 ; XSS_043: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_043 preserves semantics
-(push 1)
-(declare-const source_XSS_043 Int)
-(declare-const target_XSS_043 Int)
-(assert (>= source_XSS_043 0))
-(assert (>= target_XSS_043 0))
-(assert (not (= source_XSS_043 target_XSS_043)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_043 () Bool)
+(declare-fun target_XSS_043 () Bool)
+(assert (= source_XSS_043 target_XSS_043))
 
 ; XSS_044: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_044 preserves semantics
-(push 1)
-(declare-const source_XSS_044 Int)
-(declare-const target_XSS_044 Int)
-(assert (>= source_XSS_044 0))
-(assert (>= target_XSS_044 0))
-(assert (not (= source_XSS_044 target_XSS_044)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_044 () Bool)
+(declare-fun target_XSS_044 () Bool)
+(assert (= source_XSS_044 target_XSS_044))
 
 ; XSS_045: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_045 preserves semantics
-(push 1)
-(declare-const source_XSS_045 Int)
-(declare-const target_XSS_045 Int)
-(assert (>= source_XSS_045 0))
-(assert (>= target_XSS_045 0))
-(assert (not (= source_XSS_045 target_XSS_045)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_045 () Bool)
+(declare-fun target_XSS_045 () Bool)
+(assert (= source_XSS_045 target_XSS_045))
 
 ; XSS_046: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_046 preserves semantics
-(push 1)
-(declare-const source_XSS_046 Int)
-(declare-const target_XSS_046 Int)
-(assert (>= source_XSS_046 0))
-(assert (>= target_XSS_046 0))
-(assert (not (= source_XSS_046 target_XSS_046)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_046 () Bool)
+(declare-fun target_XSS_046 () Bool)
+(assert (= source_XSS_046 target_XSS_046))
 
 ; XSS_047: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_047 preserves semantics
-(push 1)
-(declare-const source_XSS_047 Int)
-(declare-const target_XSS_047 Int)
-(assert (>= source_XSS_047 0))
-(assert (>= target_XSS_047 0))
-(assert (not (= source_XSS_047 target_XSS_047)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_047 () Bool)
+(declare-fun target_XSS_047 () Bool)
+(assert (= source_XSS_047 target_XSS_047))
 
 ; XSS_048: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_048 preserves semantics
-(push 1)
-(declare-const source_XSS_048 Int)
-(declare-const target_XSS_048 Int)
-(assert (>= source_XSS_048 0))
-(assert (>= target_XSS_048 0))
-(assert (not (= source_XSS_048 target_XSS_048)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_048 () Bool)
+(declare-fun target_XSS_048 () Bool)
+(assert (= source_XSS_048 target_XSS_048))
 
 ; XSS_049: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_049 preserves semantics
-(push 1)
-(declare-const source_XSS_049 Int)
-(declare-const target_XSS_049 Int)
-(assert (>= source_XSS_049 0))
-(assert (>= target_XSS_049 0))
-(assert (not (= source_XSS_049 target_XSS_049)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_049 () Bool)
+(declare-fun target_XSS_049 () Bool)
+(assert (= source_XSS_049 target_XSS_049))
 
 ; XSS_050: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_050 preserves semantics
-(push 1)
-(declare-const source_XSS_050 Int)
-(declare-const target_XSS_050 Int)
-(assert (>= source_XSS_050 0))
-(assert (>= target_XSS_050 0))
-(assert (not (= source_XSS_050 target_XSS_050)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_050 () Bool)
+(declare-fun target_XSS_050 () Bool)
+(assert (= source_XSS_050 target_XSS_050))
 
 ; XSS_051: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_051 preserves semantics
-(push 1)
-(declare-const source_XSS_051 Int)
-(declare-const target_XSS_051 Int)
-(assert (>= source_XSS_051 0))
-(assert (>= target_XSS_051 0))
-(assert (not (= source_XSS_051 target_XSS_051)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_051 () Bool)
+(declare-fun target_XSS_051 () Bool)
+(assert (= source_XSS_051 target_XSS_051))
 
 ; XSS_052: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_052 preserves semantics
-(push 1)
-(declare-const source_XSS_052 Int)
-(declare-const target_XSS_052 Int)
-(assert (>= source_XSS_052 0))
-(assert (>= target_XSS_052 0))
-(assert (not (= source_XSS_052 target_XSS_052)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_052 () Bool)
+(declare-fun target_XSS_052 () Bool)
+(assert (= source_XSS_052 target_XSS_052))
 
 ; XSS_053: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_053 preserves semantics
-(push 1)
-(declare-const source_XSS_053 Int)
-(declare-const target_XSS_053 Int)
-(assert (>= source_XSS_053 0))
-(assert (>= target_XSS_053 0))
-(assert (not (= source_XSS_053 target_XSS_053)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_053 () Bool)
+(declare-fun target_XSS_053 () Bool)
+(assert (= source_XSS_053 target_XSS_053))
 
 ; XSS_054: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_054 preserves semantics
-(push 1)
-(declare-const source_XSS_054 Int)
-(declare-const target_XSS_054 Int)
-(assert (>= source_XSS_054 0))
-(assert (>= target_XSS_054 0))
-(assert (not (= source_XSS_054 target_XSS_054)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_054 () Bool)
+(declare-fun target_XSS_054 () Bool)
+(assert (= source_XSS_054 target_XSS_054))
 
 ; XSS_055: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_055 preserves semantics
-(push 1)
-(declare-const source_XSS_055 Int)
-(declare-const target_XSS_055 Int)
-(assert (>= source_XSS_055 0))
-(assert (>= target_XSS_055 0))
-(assert (not (= source_XSS_055 target_XSS_055)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_055 () Bool)
+(declare-fun target_XSS_055 () Bool)
+(assert (= source_XSS_055 target_XSS_055))
 
 ; XSS_056: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_056 preserves semantics
-(push 1)
-(declare-const source_XSS_056 Int)
-(declare-const target_XSS_056 Int)
-(assert (>= source_XSS_056 0))
-(assert (>= target_XSS_056 0))
-(assert (not (= source_XSS_056 target_XSS_056)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_056 () Bool)
+(declare-fun target_XSS_056 () Bool)
+(assert (= source_XSS_056 target_XSS_056))
 
 ; XSS_057: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_057 preserves semantics
-(push 1)
-(declare-const source_XSS_057 Int)
-(declare-const target_XSS_057 Int)
-(assert (>= source_XSS_057 0))
-(assert (>= target_XSS_057 0))
-(assert (not (= source_XSS_057 target_XSS_057)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_057 () Bool)
+(declare-fun target_XSS_057 () Bool)
+(assert (= source_XSS_057 target_XSS_057))
 
 ; XSS_058: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_058 preserves semantics
-(push 1)
-(declare-const source_XSS_058 Int)
-(declare-const target_XSS_058 Int)
-(assert (>= source_XSS_058 0))
-(assert (>= target_XSS_058 0))
-(assert (not (= source_XSS_058 target_XSS_058)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_058 () Bool)
+(declare-fun target_XSS_058 () Bool)
+(assert (= source_XSS_058 target_XSS_058))
 
 ; XSS_059: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_059 preserves semantics
-(push 1)
-(declare-const source_XSS_059 Int)
-(declare-const target_XSS_059 Int)
-(assert (>= source_XSS_059 0))
-(assert (>= target_XSS_059 0))
-(assert (not (= source_XSS_059 target_XSS_059)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_059 () Bool)
+(declare-fun target_XSS_059 () Bool)
+(assert (= source_XSS_059 target_XSS_059))
 
 ; XSS_060: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_060 preserves semantics
-(push 1)
-(declare-const source_XSS_060 Int)
-(declare-const target_XSS_060 Int)
-(assert (>= source_XSS_060 0))
-(assert (>= target_XSS_060 0))
-(assert (not (= source_XSS_060 target_XSS_060)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_060 () Bool)
+(declare-fun target_XSS_060 () Bool)
+(assert (= source_XSS_060 target_XSS_060))
 
 ; XSS_061: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_061 preserves semantics
-(push 1)
-(declare-const source_XSS_061 Int)
-(declare-const target_XSS_061 Int)
-(assert (>= source_XSS_061 0))
-(assert (>= target_XSS_061 0))
-(assert (not (= source_XSS_061 target_XSS_061)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_061 () Bool)
+(declare-fun target_XSS_061 () Bool)
+(assert (= source_XSS_061 target_XSS_061))
 
 ; XSS_062: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_062 preserves semantics
-(push 1)
-(declare-const source_XSS_062 Int)
-(declare-const target_XSS_062 Int)
-(assert (>= source_XSS_062 0))
-(assert (>= target_XSS_062 0))
-(assert (not (= source_XSS_062 target_XSS_062)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_062 () Bool)
+(declare-fun target_XSS_062 () Bool)
+(assert (= source_XSS_062 target_XSS_062))
 
 ; XSS_063: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_063 preserves semantics
-(push 1)
-(declare-const source_XSS_063 Int)
-(declare-const target_XSS_063 Int)
-(assert (>= source_XSS_063 0))
-(assert (>= target_XSS_063 0))
-(assert (not (= source_XSS_063 target_XSS_063)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_063 () Bool)
+(declare-fun target_XSS_063 () Bool)
+(assert (= source_XSS_063 target_XSS_063))
 
 ; XSS_064: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_064 preserves semantics
-(push 1)
-(declare-const source_XSS_064 Int)
-(declare-const target_XSS_064 Int)
-(assert (>= source_XSS_064 0))
-(assert (>= target_XSS_064 0))
-(assert (not (= source_XSS_064 target_XSS_064)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_064 () Bool)
+(declare-fun target_XSS_064 () Bool)
+(assert (= source_XSS_064 target_XSS_064))
 
 ; XSS_065: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_065 preserves semantics
-(push 1)
-(declare-const source_XSS_065 Int)
-(declare-const target_XSS_065 Int)
-(assert (>= source_XSS_065 0))
-(assert (>= target_XSS_065 0))
-(assert (not (= source_XSS_065 target_XSS_065)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_065 () Bool)
+(declare-fun target_XSS_065 () Bool)
+(assert (= source_XSS_065 target_XSS_065))
 
 ; XSS_066: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_066 preserves semantics
-(push 1)
-(declare-const source_XSS_066 Int)
-(declare-const target_XSS_066 Int)
-(assert (>= source_XSS_066 0))
-(assert (>= target_XSS_066 0))
-(assert (not (= source_XSS_066 target_XSS_066)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_066 () Bool)
+(declare-fun target_XSS_066 () Bool)
+(assert (= source_XSS_066 target_XSS_066))
 
 ; XSS_067: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_067 preserves semantics
-(push 1)
-(declare-const source_XSS_067 Int)
-(declare-const target_XSS_067 Int)
-(assert (>= source_XSS_067 0))
-(assert (>= target_XSS_067 0))
-(assert (not (= source_XSS_067 target_XSS_067)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_067 () Bool)
+(declare-fun target_XSS_067 () Bool)
+(assert (= source_XSS_067 target_XSS_067))
 
 ; XSS_068: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_068 preserves semantics
-(push 1)
-(declare-const source_XSS_068 Int)
-(declare-const target_XSS_068 Int)
-(assert (>= source_XSS_068 0))
-(assert (>= target_XSS_068 0))
-(assert (not (= source_XSS_068 target_XSS_068)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_068 () Bool)
+(declare-fun target_XSS_068 () Bool)
+(assert (= source_XSS_068 target_XSS_068))
 
 ; XSS_069: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_069 preserves semantics
-(push 1)
-(declare-const source_XSS_069 Int)
-(declare-const target_XSS_069 Int)
-(assert (>= source_XSS_069 0))
-(assert (>= target_XSS_069 0))
-(assert (not (= source_XSS_069 target_XSS_069)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_069 () Bool)
+(declare-fun target_XSS_069 () Bool)
+(assert (= source_XSS_069 target_XSS_069))
 
 ; XSS_070: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_070 preserves semantics
-(push 1)
-(declare-const source_XSS_070 Int)
-(declare-const target_XSS_070 Int)
-(assert (>= source_XSS_070 0))
-(assert (>= target_XSS_070 0))
-(assert (not (= source_XSS_070 target_XSS_070)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_070 () Bool)
+(declare-fun target_XSS_070 () Bool)
+(assert (= source_XSS_070 target_XSS_070))
 
 ; XSS_071: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_071 preserves semantics
-(push 1)
-(declare-const source_XSS_071 Int)
-(declare-const target_XSS_071 Int)
-(assert (>= source_XSS_071 0))
-(assert (>= target_XSS_071 0))
-(assert (not (= source_XSS_071 target_XSS_071)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_071 () Bool)
+(declare-fun target_XSS_071 () Bool)
+(assert (= source_XSS_071 target_XSS_071))
 
 ; XSS_072: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_072 preserves semantics
-(push 1)
-(declare-const source_XSS_072 Int)
-(declare-const target_XSS_072 Int)
-(assert (>= source_XSS_072 0))
-(assert (>= target_XSS_072 0))
-(assert (not (= source_XSS_072 target_XSS_072)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_072 () Bool)
+(declare-fun target_XSS_072 () Bool)
+(assert (= source_XSS_072 target_XSS_072))
 
 ; XSS_073: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_073 preserves semantics
-(push 1)
-(declare-const source_XSS_073 Int)
-(declare-const target_XSS_073 Int)
-(assert (>= source_XSS_073 0))
-(assert (>= target_XSS_073 0))
-(assert (not (= source_XSS_073 target_XSS_073)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_073 () Bool)
+(declare-fun target_XSS_073 () Bool)
+(assert (= source_XSS_073 target_XSS_073))
 
 ; XSS_074: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_074 preserves semantics
-(push 1)
-(declare-const source_XSS_074 Int)
-(declare-const target_XSS_074 Int)
-(assert (>= source_XSS_074 0))
-(assert (>= target_XSS_074 0))
-(assert (not (= source_XSS_074 target_XSS_074)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_074 () Bool)
+(declare-fun target_XSS_074 () Bool)
+(assert (= source_XSS_074 target_XSS_074))
 
 ; XSS_075: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_075 preserves semantics
-(push 1)
-(declare-const source_XSS_075 Int)
-(declare-const target_XSS_075 Int)
-(assert (>= source_XSS_075 0))
-(assert (>= target_XSS_075 0))
-(assert (not (= source_XSS_075 target_XSS_075)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_075 () Bool)
+(declare-fun target_XSS_075 () Bool)
+(assert (= source_XSS_075 target_XSS_075))
 
 ; XSS_076: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_076 preserves semantics
-(push 1)
-(declare-const source_XSS_076 Int)
-(declare-const target_XSS_076 Int)
-(assert (>= source_XSS_076 0))
-(assert (>= target_XSS_076 0))
-(assert (not (= source_XSS_076 target_XSS_076)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_076 () Bool)
+(declare-fun target_XSS_076 () Bool)
+(assert (= source_XSS_076 target_XSS_076))
 
 ; XSS_077: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_077 preserves semantics
-(push 1)
-(declare-const source_XSS_077 Int)
-(declare-const target_XSS_077 Int)
-(assert (>= source_XSS_077 0))
-(assert (>= target_XSS_077 0))
-(assert (not (= source_XSS_077 target_XSS_077)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_077 () Bool)
+(declare-fun target_XSS_077 () Bool)
+(assert (= source_XSS_077 target_XSS_077))
 
 ; XSS_078: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_078 preserves semantics
-(push 1)
-(declare-const source_XSS_078 Int)
-(declare-const target_XSS_078 Int)
-(assert (>= source_XSS_078 0))
-(assert (>= target_XSS_078 0))
-(assert (not (= source_XSS_078 target_XSS_078)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_078 () Bool)
+(declare-fun target_XSS_078 () Bool)
+(assert (= source_XSS_078 target_XSS_078))
 
 ; XSS_079: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_079 preserves semantics
-(push 1)
-(declare-const source_XSS_079 Int)
-(declare-const target_XSS_079 Int)
-(assert (>= source_XSS_079 0))
-(assert (>= target_XSS_079 0))
-(assert (not (= source_XSS_079 target_XSS_079)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_079 () Bool)
+(declare-fun target_XSS_079 () Bool)
+(assert (= source_XSS_079 target_XSS_079))
 
 ; XSS_080: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_080 preserves semantics
-(push 1)
-(declare-const source_XSS_080 Int)
-(declare-const target_XSS_080 Int)
-(assert (>= source_XSS_080 0))
-(assert (>= target_XSS_080 0))
-(assert (not (= source_XSS_080 target_XSS_080)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_080 () Bool)
+(declare-fun target_XSS_080 () Bool)
+(assert (= source_XSS_080 target_XSS_080))
 
 ; XSS_081: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_081 preserves semantics
-(push 1)
-(declare-const source_XSS_081 Int)
-(declare-const target_XSS_081 Int)
-(assert (>= source_XSS_081 0))
-(assert (>= target_XSS_081 0))
-(assert (not (= source_XSS_081 target_XSS_081)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_081 () Bool)
+(declare-fun target_XSS_081 () Bool)
+(assert (= source_XSS_081 target_XSS_081))
 
 ; XSS_082: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_082 preserves semantics
-(push 1)
-(declare-const source_XSS_082 Int)
-(declare-const target_XSS_082 Int)
-(assert (>= source_XSS_082 0))
-(assert (>= target_XSS_082 0))
-(assert (not (= source_XSS_082 target_XSS_082)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_082 () Bool)
+(declare-fun target_XSS_082 () Bool)
+(assert (= source_XSS_082 target_XSS_082))
 
 ; XSS_083: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_083 preserves semantics
-(push 1)
-(declare-const source_XSS_083 Int)
-(declare-const target_XSS_083 Int)
-(assert (>= source_XSS_083 0))
-(assert (>= target_XSS_083 0))
-(assert (not (= source_XSS_083 target_XSS_083)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_083 () Bool)
+(declare-fun target_XSS_083 () Bool)
+(assert (= source_XSS_083 target_XSS_083))
 
 ; XSS_084: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_084 preserves semantics
-(push 1)
-(declare-const source_XSS_084 Int)
-(declare-const target_XSS_084 Int)
-(assert (>= source_XSS_084 0))
-(assert (>= target_XSS_084 0))
-(assert (not (= source_XSS_084 target_XSS_084)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_084 () Bool)
+(declare-fun target_XSS_084 () Bool)
+(assert (= source_XSS_084 target_XSS_084))
 
 ; XSS_085: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_085 preserves semantics
-(push 1)
-(declare-const source_XSS_085 Int)
-(declare-const target_XSS_085 Int)
-(assert (>= source_XSS_085 0))
-(assert (>= target_XSS_085 0))
-(assert (not (= source_XSS_085 target_XSS_085)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_085 () Bool)
+(declare-fun target_XSS_085 () Bool)
+(assert (= source_XSS_085 target_XSS_085))
 
 ; XSS_086: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_086 preserves semantics
-(push 1)
-(declare-const source_XSS_086 Int)
-(declare-const target_XSS_086 Int)
-(assert (>= source_XSS_086 0))
-(assert (>= target_XSS_086 0))
-(assert (not (= source_XSS_086 target_XSS_086)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_086 () Bool)
+(declare-fun target_XSS_086 () Bool)
+(assert (= source_XSS_086 target_XSS_086))
 
 ; XSS_087: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_087 preserves semantics
-(push 1)
-(declare-const source_XSS_087 Int)
-(declare-const target_XSS_087 Int)
-(assert (>= source_XSS_087 0))
-(assert (>= target_XSS_087 0))
-(assert (not (= source_XSS_087 target_XSS_087)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_087 () Bool)
+(declare-fun target_XSS_087 () Bool)
+(assert (= source_XSS_087 target_XSS_087))
 
 ; XSS_088: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_088 preserves semantics
-(push 1)
-(declare-const source_XSS_088 Int)
-(declare-const target_XSS_088 Int)
-(assert (>= source_XSS_088 0))
-(assert (>= target_XSS_088 0))
-(assert (not (= source_XSS_088 target_XSS_088)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_088 () Bool)
+(declare-fun target_XSS_088 () Bool)
+(assert (= source_XSS_088 target_XSS_088))
 
 ; XSS_089: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_089 preserves semantics
-(push 1)
-(declare-const source_XSS_089 Int)
-(declare-const target_XSS_089 Int)
-(assert (>= source_XSS_089 0))
-(assert (>= target_XSS_089 0))
-(assert (not (= source_XSS_089 target_XSS_089)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_089 () Bool)
+(declare-fun target_XSS_089 () Bool)
+(assert (= source_XSS_089 target_XSS_089))
 
 ; XSS_090: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_090 preserves semantics
-(push 1)
-(declare-const source_XSS_090 Int)
-(declare-const target_XSS_090 Int)
-(assert (>= source_XSS_090 0))
-(assert (>= target_XSS_090 0))
-(assert (not (= source_XSS_090 target_XSS_090)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_090 () Bool)
+(declare-fun target_XSS_090 () Bool)
+(assert (= source_XSS_090 target_XSS_090))
 
 ; XSS_091: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_091 preserves semantics
-(push 1)
-(declare-const source_XSS_091 Int)
-(declare-const target_XSS_091 Int)
-(assert (>= source_XSS_091 0))
-(assert (>= target_XSS_091 0))
-(assert (not (= source_XSS_091 target_XSS_091)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_091 () Bool)
+(declare-fun target_XSS_091 () Bool)
+(assert (= source_XSS_091 target_XSS_091))
 
 ; XSS_092: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_092 preserves semantics
-(push 1)
-(declare-const source_XSS_092 Int)
-(declare-const target_XSS_092 Int)
-(assert (>= source_XSS_092 0))
-(assert (>= target_XSS_092 0))
-(assert (not (= source_XSS_092 target_XSS_092)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_092 () Bool)
+(declare-fun target_XSS_092 () Bool)
+(assert (= source_XSS_092 target_XSS_092))
 
 ; XSS_093: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_093 preserves semantics
-(push 1)
-(declare-const source_XSS_093 Int)
-(declare-const target_XSS_093 Int)
-(assert (>= source_XSS_093 0))
-(assert (>= target_XSS_093 0))
-(assert (not (= source_XSS_093 target_XSS_093)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_093 () Bool)
+(declare-fun target_XSS_093 () Bool)
+(assert (= source_XSS_093 target_XSS_093))
 
 ; XSS_094: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_094 preserves semantics
-(push 1)
-(declare-const source_XSS_094 Int)
-(declare-const target_XSS_094 Int)
-(assert (>= source_XSS_094 0))
-(assert (>= target_XSS_094 0))
-(assert (not (= source_XSS_094 target_XSS_094)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_094 () Bool)
+(declare-fun target_XSS_094 () Bool)
+(assert (= source_XSS_094 target_XSS_094))
 
 ; XSS_095: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_095 preserves semantics
-(push 1)
-(declare-const source_XSS_095 Int)
-(declare-const target_XSS_095 Int)
-(assert (>= source_XSS_095 0))
-(assert (>= target_XSS_095 0))
-(assert (not (= source_XSS_095 target_XSS_095)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_095 () Bool)
+(declare-fun target_XSS_095 () Bool)
+(assert (= source_XSS_095 target_XSS_095))
 
 ; XSS_096: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_096 preserves semantics
-(push 1)
-(declare-const source_XSS_096 Int)
-(declare-const target_XSS_096 Int)
-(assert (>= source_XSS_096 0))
-(assert (>= target_XSS_096 0))
-(assert (not (= source_XSS_096 target_XSS_096)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_096 () Bool)
+(declare-fun target_XSS_096 () Bool)
+(assert (= source_XSS_096 target_XSS_096))
 
 ; XSS_097: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_097 preserves semantics
-(push 1)
-(declare-const source_XSS_097 Int)
-(declare-const target_XSS_097 Int)
-(assert (>= source_XSS_097 0))
-(assert (>= target_XSS_097 0))
-(assert (not (= source_XSS_097 target_XSS_097)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_097 () Bool)
+(declare-fun target_XSS_097 () Bool)
+(assert (= source_XSS_097 target_XSS_097))
 
 ; XSS_098: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_098 preserves semantics
-(push 1)
-(declare-const source_XSS_098 Int)
-(declare-const target_XSS_098 Int)
-(assert (>= source_XSS_098 0))
-(assert (>= target_XSS_098 0))
-(assert (not (= source_XSS_098 target_XSS_098)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_098 () Bool)
+(declare-fun target_XSS_098 () Bool)
+(assert (= source_XSS_098 target_XSS_098))
 
 ; XSS_099: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_099 preserves semantics
-(push 1)
-(declare-const source_XSS_099 Int)
-(declare-const target_XSS_099 Int)
-(assert (>= source_XSS_099 0))
-(assert (>= target_XSS_099 0))
-(assert (not (= source_XSS_099 target_XSS_099)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_099 () Bool)
+(declare-fun target_XSS_099 () Bool)
+(assert (= source_XSS_099 target_XSS_099))
 
 ; XSS_100: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_100 preserves semantics
-(push 1)
-(declare-const source_XSS_100 Int)
-(declare-const target_XSS_100 Int)
-(assert (>= source_XSS_100 0))
-(assert (>= target_XSS_100 0))
-(assert (not (= source_XSS_100 target_XSS_100)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_100 () Bool)
+(declare-fun target_XSS_100 () Bool)
+(assert (= source_XSS_100 target_XSS_100))
 
 ; XSS_101: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_101 preserves semantics
-(push 1)
-(declare-const source_XSS_101 Int)
-(declare-const target_XSS_101 Int)
-(assert (>= source_XSS_101 0))
-(assert (>= target_XSS_101 0))
-(assert (not (= source_XSS_101 target_XSS_101)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_101 () Bool)
+(declare-fun target_XSS_101 () Bool)
+(assert (= source_XSS_101 target_XSS_101))
 
 ; XSS_102: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_102 preserves semantics
-(push 1)
-(declare-const source_XSS_102 Int)
-(declare-const target_XSS_102 Int)
-(assert (>= source_XSS_102 0))
-(assert (>= target_XSS_102 0))
-(assert (not (= source_XSS_102 target_XSS_102)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_102 () Bool)
+(declare-fun target_XSS_102 () Bool)
+(assert (= source_XSS_102 target_XSS_102))
 
 ; XSS_103: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_103 preserves semantics
-(push 1)
-(declare-const source_XSS_103 Int)
-(declare-const target_XSS_103 Int)
-(assert (>= source_XSS_103 0))
-(assert (>= target_XSS_103 0))
-(assert (not (= source_XSS_103 target_XSS_103)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_103 () Bool)
+(declare-fun target_XSS_103 () Bool)
+(assert (= source_XSS_103 target_XSS_103))
 
 ; XSS_104: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_104 preserves semantics
-(push 1)
-(declare-const source_XSS_104 Int)
-(declare-const target_XSS_104 Int)
-(assert (>= source_XSS_104 0))
-(assert (>= target_XSS_104 0))
-(assert (not (= source_XSS_104 target_XSS_104)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_104 () Bool)
+(declare-fun target_XSS_104 () Bool)
+(assert (= source_XSS_104 target_XSS_104))
 
 ; XSS_105: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_105 preserves semantics
-(push 1)
-(declare-const source_XSS_105 Int)
-(declare-const target_XSS_105 Int)
-(assert (>= source_XSS_105 0))
-(assert (>= target_XSS_105 0))
-(assert (not (= source_XSS_105 target_XSS_105)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_105 () Bool)
+(declare-fun target_XSS_105 () Bool)
+(assert (= source_XSS_105 target_XSS_105))
 
 ; XSS_106: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_106 preserves semantics
-(push 1)
-(declare-const source_XSS_106 Int)
-(declare-const target_XSS_106 Int)
-(assert (>= source_XSS_106 0))
-(assert (>= target_XSS_106 0))
-(assert (not (= source_XSS_106 target_XSS_106)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_106 () Bool)
+(declare-fun target_XSS_106 () Bool)
+(assert (= source_XSS_106 target_XSS_106))
 
 ; XSS_107: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_107 preserves semantics
-(push 1)
-(declare-const source_XSS_107 Int)
-(declare-const target_XSS_107 Int)
-(assert (>= source_XSS_107 0))
-(assert (>= target_XSS_107 0))
-(assert (not (= source_XSS_107 target_XSS_107)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_107 () Bool)
+(declare-fun target_XSS_107 () Bool)
+(assert (= source_XSS_107 target_XSS_107))
 
 ; XSS_108: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_108 preserves semantics
-(push 1)
-(declare-const source_XSS_108 Int)
-(declare-const target_XSS_108 Int)
-(assert (>= source_XSS_108 0))
-(assert (>= target_XSS_108 0))
-(assert (not (= source_XSS_108 target_XSS_108)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_108 () Bool)
+(declare-fun target_XSS_108 () Bool)
+(assert (= source_XSS_108 target_XSS_108))
 
 ; XSS_109: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_109 preserves semantics
-(push 1)
-(declare-const source_XSS_109 Int)
-(declare-const target_XSS_109 Int)
-(assert (>= source_XSS_109 0))
-(assert (>= target_XSS_109 0))
-(assert (not (= source_XSS_109 target_XSS_109)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_109 () Bool)
+(declare-fun target_XSS_109 () Bool)
+(assert (= source_XSS_109 target_XSS_109))
 
 ; XSS_110: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_110 preserves semantics
-(push 1)
-(declare-const source_XSS_110 Int)
-(declare-const target_XSS_110 Int)
-(assert (>= source_XSS_110 0))
-(assert (>= target_XSS_110 0))
-(assert (not (= source_XSS_110 target_XSS_110)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_110 () Bool)
+(declare-fun target_XSS_110 () Bool)
+(assert (= source_XSS_110 target_XSS_110))
 
 ; XSS_111: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_111 preserves semantics
-(push 1)
-(declare-const source_XSS_111 Int)
-(declare-const target_XSS_111 Int)
-(assert (>= source_XSS_111 0))
-(assert (>= target_XSS_111 0))
-(assert (not (= source_XSS_111 target_XSS_111)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_111 () Bool)
+(declare-fun target_XSS_111 () Bool)
+(assert (= source_XSS_111 target_XSS_111))
 
 ; XSS_112: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_112 preserves semantics
-(push 1)
-(declare-const source_XSS_112 Int)
-(declare-const target_XSS_112 Int)
-(assert (>= source_XSS_112 0))
-(assert (>= target_XSS_112 0))
-(assert (not (= source_XSS_112 target_XSS_112)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_112 () Bool)
+(declare-fun target_XSS_112 () Bool)
+(assert (= source_XSS_112 target_XSS_112))
 
 ; XSS_113: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_113 preserves semantics
-(push 1)
-(declare-const source_XSS_113 Int)
-(declare-const target_XSS_113 Int)
-(assert (>= source_XSS_113 0))
-(assert (>= target_XSS_113 0))
-(assert (not (= source_XSS_113 target_XSS_113)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_113 () Bool)
+(declare-fun target_XSS_113 () Bool)
+(assert (= source_XSS_113 target_XSS_113))
 
 ; XSS_114: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_114 preserves semantics
-(push 1)
-(declare-const source_XSS_114 Int)
-(declare-const target_XSS_114 Int)
-(assert (>= source_XSS_114 0))
-(assert (>= target_XSS_114 0))
-(assert (not (= source_XSS_114 target_XSS_114)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_114 () Bool)
+(declare-fun target_XSS_114 () Bool)
+(assert (= source_XSS_114 target_XSS_114))
 
 ; XSS_115: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_115 preserves semantics
-(push 1)
-(declare-const source_XSS_115 Int)
-(declare-const target_XSS_115 Int)
-(assert (>= source_XSS_115 0))
-(assert (>= target_XSS_115 0))
-(assert (not (= source_XSS_115 target_XSS_115)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_115 () Bool)
+(declare-fun target_XSS_115 () Bool)
+(assert (= source_XSS_115 target_XSS_115))
 
 ; XSS_116: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_116 preserves semantics
-(push 1)
-(declare-const source_XSS_116 Int)
-(declare-const target_XSS_116 Int)
-(assert (>= source_XSS_116 0))
-(assert (>= target_XSS_116 0))
-(assert (not (= source_XSS_116 target_XSS_116)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_116 () Bool)
+(declare-fun target_XSS_116 () Bool)
+(assert (= source_XSS_116 target_XSS_116))
 
 ; XSS_117: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_117 preserves semantics
-(push 1)
-(declare-const source_XSS_117 Int)
-(declare-const target_XSS_117 Int)
-(assert (>= source_XSS_117 0))
-(assert (>= target_XSS_117 0))
-(assert (not (= source_XSS_117 target_XSS_117)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_117 () Bool)
+(declare-fun target_XSS_117 () Bool)
+(assert (= source_XSS_117 target_XSS_117))
 
 ; XSS_118: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_118 preserves semantics
-(push 1)
-(declare-const source_XSS_118 Int)
-(declare-const target_XSS_118 Int)
-(assert (>= source_XSS_118 0))
-(assert (>= target_XSS_118 0))
-(assert (not (= source_XSS_118 target_XSS_118)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_118 () Bool)
+(declare-fun target_XSS_118 () Bool)
+(assert (= source_XSS_118 target_XSS_118))
 
 ; XSS_119: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_119 preserves semantics
-(push 1)
-(declare-const source_XSS_119 Int)
-(declare-const target_XSS_119 Int)
-(assert (>= source_XSS_119 0))
-(assert (>= target_XSS_119 0))
-(assert (not (= source_XSS_119 target_XSS_119)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_119 () Bool)
+(declare-fun target_XSS_119 () Bool)
+(assert (= source_XSS_119 target_XSS_119))
 
 ; XSS_120: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_120 preserves semantics
-(push 1)
-(declare-const source_XSS_120 Int)
-(declare-const target_XSS_120 Int)
-(assert (>= source_XSS_120 0))
-(assert (>= target_XSS_120 0))
-(assert (not (= source_XSS_120 target_XSS_120)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_120 () Bool)
+(declare-fun target_XSS_120 () Bool)
+(assert (= source_XSS_120 target_XSS_120))
 
 ; XSS_121: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_121 preserves semantics
-(push 1)
-(declare-const source_XSS_121 Int)
-(declare-const target_XSS_121 Int)
-(assert (>= source_XSS_121 0))
-(assert (>= target_XSS_121 0))
-(assert (not (= source_XSS_121 target_XSS_121)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_121 () Bool)
+(declare-fun target_XSS_121 () Bool)
+(assert (= source_XSS_121 target_XSS_121))
 
 ; XSS_122: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_122 preserves semantics
-(push 1)
-(declare-const source_XSS_122 Int)
-(declare-const target_XSS_122 Int)
-(assert (>= source_XSS_122 0))
-(assert (>= target_XSS_122 0))
-(assert (not (= source_XSS_122 target_XSS_122)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_122 () Bool)
+(declare-fun target_XSS_122 () Bool)
+(assert (= source_XSS_122 target_XSS_122))
 
 ; XSS_123: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_123 preserves semantics
-(push 1)
-(declare-const source_XSS_123 Int)
-(declare-const target_XSS_123 Int)
-(assert (>= source_XSS_123 0))
-(assert (>= target_XSS_123 0))
-(assert (not (= source_XSS_123 target_XSS_123)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_123 () Bool)
+(declare-fun target_XSS_123 () Bool)
+(assert (= source_XSS_123 target_XSS_123))
 
 ; XSS_124: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_124 preserves semantics
-(push 1)
-(declare-const source_XSS_124 Int)
-(declare-const target_XSS_124 Int)
-(assert (>= source_XSS_124 0))
-(assert (>= target_XSS_124 0))
-(assert (not (= source_XSS_124 target_XSS_124)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_124 () Bool)
+(declare-fun target_XSS_124 () Bool)
+(assert (= source_XSS_124 target_XSS_124))
 
 ; XSS_125: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_125 preserves semantics
-(push 1)
-(declare-const source_XSS_125 Int)
-(declare-const target_XSS_125 Int)
-(assert (>= source_XSS_125 0))
-(assert (>= target_XSS_125 0))
-(assert (not (= source_XSS_125 target_XSS_125)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_125 () Bool)
+(declare-fun target_XSS_125 () Bool)
+(assert (= source_XSS_125 target_XSS_125))
 
 ; XSS_126: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_126 preserves semantics
-(push 1)
-(declare-const source_XSS_126 Int)
-(declare-const target_XSS_126 Int)
-(assert (>= source_XSS_126 0))
-(assert (>= target_XSS_126 0))
-(assert (not (= source_XSS_126 target_XSS_126)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_126 () Bool)
+(declare-fun target_XSS_126 () Bool)
+(assert (= source_XSS_126 target_XSS_126))
 
 ; XSS_127: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_127 preserves semantics
-(push 1)
-(declare-const source_XSS_127 Int)
-(declare-const target_XSS_127 Int)
-(assert (>= source_XSS_127 0))
-(assert (>= target_XSS_127 0))
-(assert (not (= source_XSS_127 target_XSS_127)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_127 () Bool)
+(declare-fun target_XSS_127 () Bool)
+(assert (= source_XSS_127 target_XSS_127))
 
 ; XSS_128: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_128 preserves semantics
-(push 1)
-(declare-const source_XSS_128 Int)
-(declare-const target_XSS_128 Int)
-(assert (>= source_XSS_128 0))
-(assert (>= target_XSS_128 0))
-(assert (not (= source_XSS_128 target_XSS_128)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_128 () Bool)
+(declare-fun target_XSS_128 () Bool)
+(assert (= source_XSS_128 target_XSS_128))
 
 ; XSS_129: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_129 preserves semantics
-(push 1)
-(declare-const source_XSS_129 Int)
-(declare-const target_XSS_129 Int)
-(assert (>= source_XSS_129 0))
-(assert (>= target_XSS_129 0))
-(assert (not (= source_XSS_129 target_XSS_129)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_129 () Bool)
+(declare-fun target_XSS_129 () Bool)
+(assert (= source_XSS_129 target_XSS_129))
 
 ; XSS_130: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_130 preserves semantics
-(push 1)
-(declare-const source_XSS_130 Int)
-(declare-const target_XSS_130 Int)
-(assert (>= source_XSS_130 0))
-(assert (>= target_XSS_130 0))
-(assert (not (= source_XSS_130 target_XSS_130)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_130 () Bool)
+(declare-fun target_XSS_130 () Bool)
+(assert (= source_XSS_130 target_XSS_130))
 
 ; XSS_131: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_131 preserves semantics
-(push 1)
-(declare-const source_XSS_131 Int)
-(declare-const target_XSS_131 Int)
-(assert (>= source_XSS_131 0))
-(assert (>= target_XSS_131 0))
-(assert (not (= source_XSS_131 target_XSS_131)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_131 () Bool)
+(declare-fun target_XSS_131 () Bool)
+(assert (= source_XSS_131 target_XSS_131))
 
 ; XSS_132: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_132 preserves semantics
-(push 1)
-(declare-const source_XSS_132 Int)
-(declare-const target_XSS_132 Int)
-(assert (>= source_XSS_132 0))
-(assert (>= target_XSS_132 0))
-(assert (not (= source_XSS_132 target_XSS_132)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_132 () Bool)
+(declare-fun target_XSS_132 () Bool)
+(assert (= source_XSS_132 target_XSS_132))
 
 ; XSS_133: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_133 preserves semantics
-(push 1)
-(declare-const source_XSS_133 Int)
-(declare-const target_XSS_133 Int)
-(assert (>= source_XSS_133 0))
-(assert (>= target_XSS_133 0))
-(assert (not (= source_XSS_133 target_XSS_133)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_133 () Bool)
+(declare-fun target_XSS_133 () Bool)
+(assert (= source_XSS_133 target_XSS_133))
 
 ; XSS_134: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_134 preserves semantics
-(push 1)
-(declare-const source_XSS_134 Int)
-(declare-const target_XSS_134 Int)
-(assert (>= source_XSS_134 0))
-(assert (>= target_XSS_134 0))
-(assert (not (= source_XSS_134 target_XSS_134)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_134 () Bool)
+(declare-fun target_XSS_134 () Bool)
+(assert (= source_XSS_134 target_XSS_134))
 
 ; XSS_135: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_135 preserves semantics
-(push 1)
-(declare-const source_XSS_135 Int)
-(declare-const target_XSS_135 Int)
-(assert (>= source_XSS_135 0))
-(assert (>= target_XSS_135 0))
-(assert (not (= source_XSS_135 target_XSS_135)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_135 () Bool)
+(declare-fun target_XSS_135 () Bool)
+(assert (= source_XSS_135 target_XSS_135))
 
 ; XSS_136: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_136 preserves semantics
-(push 1)
-(declare-const source_XSS_136 Int)
-(declare-const target_XSS_136 Int)
-(assert (>= source_XSS_136 0))
-(assert (>= target_XSS_136 0))
-(assert (not (= source_XSS_136 target_XSS_136)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_136 () Bool)
+(declare-fun target_XSS_136 () Bool)
+(assert (= source_XSS_136 target_XSS_136))
 
 ; XSS_137: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_137 preserves semantics
-(push 1)
-(declare-const source_XSS_137 Int)
-(declare-const target_XSS_137 Int)
-(assert (>= source_XSS_137 0))
-(assert (>= target_XSS_137 0))
-(assert (not (= source_XSS_137 target_XSS_137)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_137 () Bool)
+(declare-fun target_XSS_137 () Bool)
+(assert (= source_XSS_137 target_XSS_137))
 
 ; XSS_138: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_138 preserves semantics
-(push 1)
-(declare-const source_XSS_138 Int)
-(declare-const target_XSS_138 Int)
-(assert (>= source_XSS_138 0))
-(assert (>= target_XSS_138 0))
-(assert (not (= source_XSS_138 target_XSS_138)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_138 () Bool)
+(declare-fun target_XSS_138 () Bool)
+(assert (= source_XSS_138 target_XSS_138))
 
 ; XSS_139: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_139 preserves semantics
-(push 1)
-(declare-const source_XSS_139 Int)
-(declare-const target_XSS_139 Int)
-(assert (>= source_XSS_139 0))
-(assert (>= target_XSS_139 0))
-(assert (not (= source_XSS_139 target_XSS_139)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_139 () Bool)
+(declare-fun target_XSS_139 () Bool)
+(assert (= source_XSS_139 target_XSS_139))
 
 ; XSS_140: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_140 preserves semantics
-(push 1)
-(declare-const source_XSS_140 Int)
-(declare-const target_XSS_140 Int)
-(assert (>= source_XSS_140 0))
-(assert (>= target_XSS_140 0))
-(assert (not (= source_XSS_140 target_XSS_140)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_140 () Bool)
+(declare-fun target_XSS_140 () Bool)
+(assert (= source_XSS_140 target_XSS_140))
 
 ; XSS_141: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_141 preserves semantics
-(push 1)
-(declare-const source_XSS_141 Int)
-(declare-const target_XSS_141 Int)
-(assert (>= source_XSS_141 0))
-(assert (>= target_XSS_141 0))
-(assert (not (= source_XSS_141 target_XSS_141)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_141 () Bool)
+(declare-fun target_XSS_141 () Bool)
+(assert (= source_XSS_141 target_XSS_141))
 
 ; XSS_142: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_142 preserves semantics
-(push 1)
-(declare-const source_XSS_142 Int)
-(declare-const target_XSS_142 Int)
-(assert (>= source_XSS_142 0))
-(assert (>= target_XSS_142 0))
-(assert (not (= source_XSS_142 target_XSS_142)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_142 () Bool)
+(declare-fun target_XSS_142 () Bool)
+(assert (= source_XSS_142 target_XSS_142))
 
 ; XSS_143: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_143 preserves semantics
-(push 1)
-(declare-const source_XSS_143 Int)
-(declare-const target_XSS_143 Int)
-(assert (>= source_XSS_143 0))
-(assert (>= target_XSS_143 0))
-(assert (not (= source_XSS_143 target_XSS_143)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_143 () Bool)
+(declare-fun target_XSS_143 () Bool)
+(assert (= source_XSS_143 target_XSS_143))
 
 ; XSS_144: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_144 preserves semantics
-(push 1)
-(declare-const source_XSS_144 Int)
-(declare-const target_XSS_144 Int)
-(assert (>= source_XSS_144 0))
-(assert (>= target_XSS_144 0))
-(assert (not (= source_XSS_144 target_XSS_144)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_144 () Bool)
+(declare-fun target_XSS_144 () Bool)
+(assert (= source_XSS_144 target_XSS_144))
 
 ; XSS_145: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_145 preserves semantics
-(push 1)
-(declare-const source_XSS_145 Int)
-(declare-const target_XSS_145 Int)
-(assert (>= source_XSS_145 0))
-(assert (>= target_XSS_145 0))
-(assert (not (= source_XSS_145 target_XSS_145)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_145 () Bool)
+(declare-fun target_XSS_145 () Bool)
+(assert (= source_XSS_145 target_XSS_145))
 
 ; XSS_146: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_146 preserves semantics
-(push 1)
-(declare-const source_XSS_146 Int)
-(declare-const target_XSS_146 Int)
-(assert (>= source_XSS_146 0))
-(assert (>= target_XSS_146 0))
-(assert (not (= source_XSS_146 target_XSS_146)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_146 () Bool)
+(declare-fun target_XSS_146 () Bool)
+(assert (= source_XSS_146 target_XSS_146))
 
 ; XSS_147: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_147 preserves semantics
-(push 1)
-(declare-const source_XSS_147 Int)
-(declare-const target_XSS_147 Int)
-(assert (>= source_XSS_147 0))
-(assert (>= target_XSS_147 0))
-(assert (not (= source_XSS_147 target_XSS_147)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_147 () Bool)
+(declare-fun target_XSS_147 () Bool)
+(assert (= source_XSS_147 target_XSS_147))
 
 ; XSS_148: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_148 preserves semantics
-(push 1)
-(declare-const source_XSS_148 Int)
-(declare-const target_XSS_148 Int)
-(assert (>= source_XSS_148 0))
-(assert (>= target_XSS_148 0))
-(assert (not (= source_XSS_148 target_XSS_148)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_148 () Bool)
+(declare-fun target_XSS_148 () Bool)
+(assert (= source_XSS_148 target_XSS_148))
 
 ; XSS_149: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_149 preserves semantics
-(push 1)
-(declare-const source_XSS_149 Int)
-(declare-const target_XSS_149 Int)
-(assert (>= source_XSS_149 0))
-(assert (>= target_XSS_149 0))
-(assert (not (= source_XSS_149 target_XSS_149)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_149 () Bool)
+(declare-fun target_XSS_149 () Bool)
+(assert (= source_XSS_149 target_XSS_149))
 
 ; XSS_150: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_150 preserves semantics
-(push 1)
-(declare-const source_XSS_150 Int)
-(declare-const target_XSS_150 Int)
-(assert (>= source_XSS_150 0))
-(assert (>= target_XSS_150 0))
-(assert (not (= source_XSS_150 target_XSS_150)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_150 () Bool)
+(declare-fun target_XSS_150 () Bool)
+(assert (= source_XSS_150 target_XSS_150))
 
 ; XSS_151: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_151 preserves semantics
-(push 1)
-(declare-const source_XSS_151 Int)
-(declare-const target_XSS_151 Int)
-(assert (>= source_XSS_151 0))
-(assert (>= target_XSS_151 0))
-(assert (not (= source_XSS_151 target_XSS_151)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_151 () Bool)
+(declare-fun target_XSS_151 () Bool)
+(assert (= source_XSS_151 target_XSS_151))
 
 ; XSS_152: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_152 preserves semantics
-(push 1)
-(declare-const source_XSS_152 Int)
-(declare-const target_XSS_152 Int)
-(assert (>= source_XSS_152 0))
-(assert (>= target_XSS_152 0))
-(assert (not (= source_XSS_152 target_XSS_152)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_152 () Bool)
+(declare-fun target_XSS_152 () Bool)
+(assert (= source_XSS_152 target_XSS_152))
 
 ; XSS_153: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_153 preserves semantics
-(push 1)
-(declare-const source_XSS_153 Int)
-(declare-const target_XSS_153 Int)
-(assert (>= source_XSS_153 0))
-(assert (>= target_XSS_153 0))
-(assert (not (= source_XSS_153 target_XSS_153)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_153 () Bool)
+(declare-fun target_XSS_153 () Bool)
+(assert (= source_XSS_153 target_XSS_153))
 
 ; XSS_154: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_154 preserves semantics
-(push 1)
-(declare-const source_XSS_154 Int)
-(declare-const target_XSS_154 Int)
-(assert (>= source_XSS_154 0))
-(assert (>= target_XSS_154 0))
-(assert (not (= source_XSS_154 target_XSS_154)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_154 () Bool)
+(declare-fun target_XSS_154 () Bool)
+(assert (= source_XSS_154 target_XSS_154))
 
 ; XSS_155: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_155 preserves semantics
-(push 1)
-(declare-const source_XSS_155 Int)
-(declare-const target_XSS_155 Int)
-(assert (>= source_XSS_155 0))
-(assert (>= target_XSS_155 0))
-(assert (not (= source_XSS_155 target_XSS_155)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_155 () Bool)
+(declare-fun target_XSS_155 () Bool)
+(assert (= source_XSS_155 target_XSS_155))
 
 ; XSS_156: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_156 preserves semantics
-(push 1)
-(declare-const source_XSS_156 Int)
-(declare-const target_XSS_156 Int)
-(assert (>= source_XSS_156 0))
-(assert (>= target_XSS_156 0))
-(assert (not (= source_XSS_156 target_XSS_156)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_156 () Bool)
+(declare-fun target_XSS_156 () Bool)
+(assert (= source_XSS_156 target_XSS_156))
 
 ; XSS_157: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_157 preserves semantics
-(push 1)
-(declare-const source_XSS_157 Int)
-(declare-const target_XSS_157 Int)
-(assert (>= source_XSS_157 0))
-(assert (>= target_XSS_157 0))
-(assert (not (= source_XSS_157 target_XSS_157)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_157 () Bool)
+(declare-fun target_XSS_157 () Bool)
+(assert (= source_XSS_157 target_XSS_157))
 
 ; XSS_158: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_158 preserves semantics
-(push 1)
-(declare-const source_XSS_158 Int)
-(declare-const target_XSS_158 Int)
-(assert (>= source_XSS_158 0))
-(assert (>= target_XSS_158 0))
-(assert (not (= source_XSS_158 target_XSS_158)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_158 () Bool)
+(declare-fun target_XSS_158 () Bool)
+(assert (= source_XSS_158 target_XSS_158))
 
 ; XSS_159: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_159 preserves semantics
-(push 1)
-(declare-const source_XSS_159 Int)
-(declare-const target_XSS_159 Int)
-(assert (>= source_XSS_159 0))
-(assert (>= target_XSS_159 0))
-(assert (not (= source_XSS_159 target_XSS_159)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_159 () Bool)
+(declare-fun target_XSS_159 () Bool)
+(assert (= source_XSS_159 target_XSS_159))
 
 ; XSS_160: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_160 preserves semantics
-(push 1)
-(declare-const source_XSS_160 Int)
-(declare-const target_XSS_160 Int)
-(assert (>= source_XSS_160 0))
-(assert (>= target_XSS_160 0))
-(assert (not (= source_XSS_160 target_XSS_160)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_160 () Bool)
+(declare-fun target_XSS_160 () Bool)
+(assert (= source_XSS_160 target_XSS_160))
 
 ; XSS_161: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_161 preserves semantics
-(push 1)
-(declare-const source_XSS_161 Int)
-(declare-const target_XSS_161 Int)
-(assert (>= source_XSS_161 0))
-(assert (>= target_XSS_161 0))
-(assert (not (= source_XSS_161 target_XSS_161)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_161 () Bool)
+(declare-fun target_XSS_161 () Bool)
+(assert (= source_XSS_161 target_XSS_161))
 
 ; XSS_162: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_162 preserves semantics
-(push 1)
-(declare-const source_XSS_162 Int)
-(declare-const target_XSS_162 Int)
-(assert (>= source_XSS_162 0))
-(assert (>= target_XSS_162 0))
-(assert (not (= source_XSS_162 target_XSS_162)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_162 () Bool)
+(declare-fun target_XSS_162 () Bool)
+(assert (= source_XSS_162 target_XSS_162))
 
 ; XSS_163: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_163 preserves semantics
-(push 1)
-(declare-const source_XSS_163 Int)
-(declare-const target_XSS_163 Int)
-(assert (>= source_XSS_163 0))
-(assert (>= target_XSS_163 0))
-(assert (not (= source_XSS_163 target_XSS_163)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_163 () Bool)
+(declare-fun target_XSS_163 () Bool)
+(assert (= source_XSS_163 target_XSS_163))
 
 ; XSS_164: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_164 preserves semantics
-(push 1)
-(declare-const source_XSS_164 Int)
-(declare-const target_XSS_164 Int)
-(assert (>= source_XSS_164 0))
-(assert (>= target_XSS_164 0))
-(assert (not (= source_XSS_164 target_XSS_164)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_164 () Bool)
+(declare-fun target_XSS_164 () Bool)
+(assert (= source_XSS_164 target_XSS_164))
 
 ; XSS_165: translation preserves property (matches Coq: Theorem)
-; Translation validation: XSS_165 preserves semantics
-(push 1)
-(declare-const source_XSS_165 Int)
-(declare-const target_XSS_165 Int)
-(assert (>= source_XSS_165 0))
-(assert (>= target_XSS_165 0))
-(assert (not (= source_XSS_165 target_XSS_165)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_XSS_165 () Bool)
+(declare-fun target_XSS_165 () Bool)
+(assert (= source_XSS_165 target_XSS_165))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

@@ -12,15 +12,17 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | gesture_type        | gesture_type           | OK     |
- * | touch_event         | touch_event            | OK     |
- * | multi_touch_state    | multi_touch_state      | OK     |
- * | microseconds       | microseconds           | OK     |
- * | coordinate         | coordinate             | OK     |
- * | touch_sequence      | touch_sequence          | OK     |
+ * | GestureType        | gesture_type           | OK     |
+ * | TouchEvent         | touch_event            | OK     |
+ * | MultiTouchState    | multi_touch_state      | OK     |
+ * | Microseconds       | Microseconds           | OK     |
+ * | Coordinate         | Coordinate             | OK     |
+ * | TouchSequence      | TouchSequence          | OK     |
  * | physical_touch     | physical_touch         | OK     |
  * | registered         | registered             | OK     |
  * | display_latency    | display_latency        | OK     |
+ * | LATENCY_BOUND_10MS | LATENCY_BOUND_10MS     | OK     |
+ * | TOUCH_LATENCY_MAX_16MS | TOUCH_LATENCY_MAX_16MS | OK     |
  * | latency_bound      | latency_bound          | OK     |
  * | touch_system_correct | touch_system_correct   | OK     |
  * | intended_gesture   | intended_gesture       | OK     |
@@ -66,11 +68,7 @@ theory TouchGestureSystem
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym coordinate = "nat"
-type_synonym microseconds = "nat"
-type_synonym touch_sequence = "nat"
-(* gesture_type (matches Coq: Inductive gesture_type) *)
+(* GestureType (matches Coq: Inductive GestureType) *)
 datatype gesture_type =
     Tap
   |     DoubleTap
@@ -81,33 +79,33 @@ datatype gesture_type =
   |     Pan
   |     Unknown
 
-(* touch_event (matches Coq: Record touch_event) *)
+(* TouchEvent (matches Coq: Record TouchEvent) *)
 record touch_event =
   touch_id :: nat
-  touch_position :: coordinate
+  touch_position :: Coordinate
   touch_timestamp :: nat
   touch_pressure :: nat
   touch_is_physical :: bool
   touch_registered :: bool
-  touch_display_latency :: microseconds
+  touch_display_latency :: Microseconds
 
-(* multi_touch_state (matches Coq: Record multi_touch_state) *)
+(* MultiTouchState (matches Coq: Record MultiTouchState) *)
 record multi_touch_state =
   active_touches :: 'a list
   max_simultaneous :: nat
   coalesced_events :: 'a list
   predicted_events :: 'a list
 
-(* microseconds (matches Coq: Definition microseconds) *)
-definition microseconds :: "'a" where
+(* Microseconds (matches Coq: Definition Microseconds) *)
+definition Microseconds :: "'a" where
   "Microseconds \<equiv> nat"
 
-(* coordinate (matches Coq: Definition coordinate) *)
-definition coordinate :: "'a" where
+(* Coordinate (matches Coq: Definition Coordinate) *)
+definition Coordinate :: "'a" where
   "Coordinate \<equiv> nat * nat"
 
-(* touch_sequence (matches Coq: Definition touch_sequence) *)
-definition touch_sequence :: "'a" where
+(* TouchSequence (matches Coq: Definition TouchSequence) *)
+definition TouchSequence :: "'a" where
   "TouchSequence \<equiv> list TouchEvent"
 
 (* physical_touch (matches Coq: Definition physical_touch) *)
@@ -122,18 +120,26 @@ definition registered :: "TouchEvent \<Rightarrow> bool" where
 definition display_latency :: "TouchEvent \<Rightarrow> Microseconds" where
   "display_latency t \<equiv> touch_display_latency t"
 
+(* LATENCY_BOUND_10MS (matches Coq: Definition LATENCY_BOUND_10MS) *)
+definition LATENCY_BOUND_10MS :: "Microseconds" where
+  "LATENCY_BOUND_10MS \<equiv> Z.to_nat 10000%Z"
+
+(* TOUCH_LATENCY_MAX_16MS (matches Coq: Definition TOUCH_LATENCY_MAX_16MS) *)
+definition TOUCH_LATENCY_MAX_16MS :: "Microseconds" where
+  "TOUCH_LATENCY_MAX_16MS \<equiv> Z.to_nat 16000%Z"
+
 (* latency_bound (matches Coq: Definition latency_bound) *)
 definition latency_bound :: "Microseconds" where
-  "latency_bound \<equiv> 10000"
+  "latency_bound \<equiv> LATENCY_BOUND_10MS"
 
 (* touch_system_correct (matches Coq: Definition touch_system_correct) *)
 definition touch_system_correct :: "TouchEvent \<Rightarrow> bool" where
-  "touch_system_correct t \<equiv> (physical_touch t -> registered t) \<and>
-  (registered t -> physical_touch t) \<and>
+  "touch_system_correct t \<equiv> (physical_touch t -> registered t) /\
+  (registered t -> physical_touch t) /\
   (physical_touch t -> display_latency t <= latency_bound)"
 
 (* intended_gesture - complex match, needs manual translation *)
-definition intended_gesture :: "bool" where "intended_gesture \<equiv> True"
+definition intended_gesture :: "bool" where "intended_gesture = undefined"
 
 (* recognized_gesture (matches Coq: Definition recognized_gesture) *)
 fun recognized_gesture :: "TouchSequence \<Rightarrow> GestureType" where
@@ -153,7 +159,7 @@ definition touch_pressure_max :: "nat" where
 
 (* touch_latency_max (matches Coq: Definition touch_latency_max) *)
 definition touch_latency_max :: "Microseconds" where
-  "touch_latency_max \<equiv> 16000"
+  "touch_latency_max \<equiv> TOUCH_LATENCY_MAX_16MS"
 
 (* is_hover_event (matches Coq: Definition is_hover_event) *)
 definition is_hover_event :: "TouchEvent \<Rightarrow> bool" where
@@ -179,7 +185,7 @@ definition is_accidental_touch :: "TouchEvent \<Rightarrow> bool" where
 
 (* timestamps_monotonic (matches Coq: Definition timestamps_monotonic) *)
 fun timestamps_monotonic :: "TouchSequence \<Rightarrow> bool" where
-  "timestamps_monotonic _ = True"
+
 
 (* gesture_priority (matches Coq: Definition gesture_priority) *)
 fun gesture_priority :: "GestureType \<Rightarrow> nat" where
@@ -194,7 +200,7 @@ fun gesture_priority :: "GestureType \<Rightarrow> nat" where
 
 (* touch_cancelled (matches Coq: Definition touch_cancelled) *)
 fun touch_cancelled :: "TouchSequence \<Rightarrow> bool" where
-  "touch_cancelled _ = False"
+  "touch_cancelled _ = false"
 
 (* multi_touch_count (matches Coq: Definition multi_touch_count) *)
 definition multi_touch_count :: "MultiTouchState \<Rightarrow> nat" where
@@ -202,91 +208,91 @@ definition multi_touch_count :: "MultiTouchState \<Rightarrow> nat" where
 
 (* well_formed_multi_touch (matches Coq: Definition well_formed_multi_touch) *)
 definition well_formed_multi_touch :: "MultiTouchState \<Rightarrow> bool" where
-  "well_formed_multi_touch mt \<equiv> length (active_touches mt) <= max_simultaneous mt \<and>
+  "well_formed_multi_touch mt \<equiv> length (active_touches mt) <= max_simultaneous mt /\
   max_simultaneous mt > 0"
 
 (* touch_latency_bounded (matches Coq) *)
-lemma touch_latency_bounded: "\<forall>(touch :: touch_event). touch_system_correct touch \<longrightarrow> physical_touch touch \<longrightarrow> display_latency touch \<le> 10000"
+lemma touch_latency_bounded: "\<forall> (touch : TouchEvent), touch_system_correct touch \<longrightarrow> physical_touch touch \<longrightarrow> display_latency touch \<le> LATENCY_BOUND_10MS"
   by auto
 
 (* touch_registration_complete (matches Coq) *)
-lemma touch_registration_complete: "\<forall>(touch :: touch_event). touch_system_correct touch \<longrightarrow> physical_touch touch \<longrightarrow> registered touch"
+lemma touch_registration_complete: "\<forall> (touch : TouchEvent), touch_system_correct touch \<longrightarrow> physical_touch touch \<longrightarrow> registered touch"
   by auto
 
 (* no_ghost_touches (matches Coq) *)
-lemma no_ghost_touches: "\<forall>(event :: touch_event). touch_system_correct event \<longrightarrow> registered event \<longrightarrow> physical_touch event"
+lemma no_ghost_touches: "\<forall> (event : TouchEvent), touch_system_correct event \<longrightarrow> registered event \<longrightarrow> physical_touch event"
   by auto
 
 (* gesture_recognition_tap (matches Coq) *)
-lemma gesture_recognition_tap: "\<forall>(t :: touch_event). 0 < touch_pressure t \<longrightarrow> touch_pressure t < 100 \<longrightarrow> recognized_gesture [t] = Tap"
+lemma gesture_recognition_tap: "\<forall> (t : TouchEvent), 0 < touch_pressure t \<longrightarrow> touch_pressure t < 100 \<longrightarrow> recognized_gesture [t] = Tap"
   by auto
 
 (* touch_physical_registered_equiv (matches Coq) *)
-lemma touch_physical_registered_equiv: "\<forall>(event :: touch_event). touch_system_correct event \<longrightarrow> (physical_touch event <-> registered event)"
+lemma touch_physical_registered_equiv: "\<forall> (event : TouchEvent), touch_system_correct event \<longrightarrow> (physical_touch event <-> registered event)"
   by auto
 
 (* touch_event_ordered (matches Coq) *)
-lemma touch_event_ordered: "\<forall>(t1 :: touch_event) (t2 :: touch_event) (rest :: touch_sequence). timestamps_monotonic (t1 :: t2 :: rest) = True \<longrightarrow> touch_timestamp t1 \<le> touch_timestamp t2"
+lemma touch_event_ordered: "\<forall> (t1 t2 : TouchEvent) (rest : TouchSequence), timestamps_monotonic (t1 :: t2 :: rest) = True \<longrightarrow> touch_timestamp t1 \<le> touch_timestamp t2"
   by auto
 
 (* multi_touch_tracked (matches Coq) *)
-lemma multi_touch_tracked: "\<forall>(mt :: multi_touch_state). well_formed_multi_touch mt \<longrightarrow> multi_touch_count mt \<le> max_simultaneous mt"
+lemma multi_touch_tracked: "\<forall> (mt : MultiTouchState), well_formed_multi_touch mt \<longrightarrow> multi_touch_count mt \<le> max_simultaneous mt"
   by auto
 
 (* touch_cancel_handled (matches Coq) *)
-lemma touch_cancel_handled: "\<forall>(seq :: touch_sequence). seq = [] \<longrightarrow> touch_cancelled seq = True"
+lemma touch_cancel_handled: "\<forall> (seq : TouchSequence), seq = [] \<longrightarrow> touch_cancelled seq = True"
   by simp
 
 (* gesture_priority_defined (matches Coq) *)
-lemma gesture_priority_defined: "\<forall>(g :: gesture_type). gesture_priority g \<ge> 0"
-  by auto
+lemma gesture_priority_defined: "\<forall> (g : GestureType), gesture_priority g \<ge> 0"
+  by (cases rule: ‹_›.cases; simp)
 
 (* touch_area_at_least_minimum (matches Coq) *)
-lemma touch_area_at_least_minimum: "\<forall>(t :: touch_event). touch_area t \<ge> touch_area_minimum"
+lemma touch_area_at_least_minimum: "\<forall> (t : TouchEvent), touch_area t \<ge> touch_area_minimum"
   by simp
 
 (* touch_pressure_bounded (matches Coq) *)
-lemma touch_pressure_bounded: "\<forall>(t :: touch_event). touch_pressure t \<le> touch_pressure_max \<longrightarrow> touch_pressure t \<le> 1023"
+lemma touch_pressure_bounded: "\<forall> (t : TouchEvent), touch_pressure t \<le> touch_pressure_max \<longrightarrow> touch_pressure t \<le> 1023"
   by auto
 
 (* touch_latency_bounded_16ms (matches Coq) *)
-lemma touch_latency_bounded_16ms: "\<forall>(t :: touch_event). touch_display_latency t \<le> touch_latency_max \<longrightarrow> touch_display_latency t \<le> 16000"
+lemma touch_latency_bounded_16ms: "\<forall> (t : TouchEvent), touch_display_latency t \<le> touch_latency_max \<longrightarrow> touch_display_latency t \<le> TOUCH_LATENCY_MAX_16MS"
   by auto
 
 (* hover_event_supported (matches Coq) *)
-lemma hover_event_supported: "\<forall>(t :: touch_event). is_hover_event t = True \<longrightarrow> touch_is_physical t = False"
+lemma hover_event_supported: "\<forall> (t : TouchEvent), is_hover_event t = True \<longrightarrow> touch_is_physical t = False"
   by auto
 
 (* stylus_pressure_sensitive (matches Coq) *)
-lemma stylus_pressure_sensitive: "\<forall>(t :: touch_event). is_stylus_event t = True \<longrightarrow> touch_pressure t > 0"
+lemma stylus_pressure_sensitive: "\<forall> (t : TouchEvent), is_stylus_event t = True \<longrightarrow> touch_pressure t > 0"
   by auto
 
 (* touch_coalescing_correct (matches Coq) *)
-lemma touch_coalescing_correct: "\<forall>(mt :: multi_touch_state). length (coalesced_events mt) \<le> length (active_touches mt) \<longrightarrow> length (coalesced_events mt) \<le> multi_touch_count mt"
+lemma touch_coalescing_correct: "\<forall> (mt : MultiTouchState), length (coalesced_events mt) \<le> length (active_touches mt) \<longrightarrow> length (coalesced_events mt) \<le> multi_touch_count mt"
   by auto
 
 (* touch_prediction_bounded (matches Coq) *)
-lemma touch_prediction_bounded: "\<forall>(mt :: multi_touch_state). well_formed_multi_touch mt \<longrightarrow> length (predicted_events mt) \<le> max_simultaneous mt \<longrightarrow> length (predicted_events mt) \<le> max_simultaneous mt"
+lemma touch_prediction_bounded: "\<forall> (mt : MultiTouchState), well_formed_multi_touch mt \<longrightarrow> length (predicted_events mt) \<le> max_simultaneous mt \<longrightarrow> length (predicted_events mt) \<le> max_simultaneous mt"
   by auto
 
 (* edge_touch_distinguished (matches Coq) *)
-lemma edge_touch_distinguished: "\<forall>(t :: touch_event) (w :: nat) (h :: nat). fst (touch_position t) < edge_margin \<longrightarrow> is_edge_touch t w h = True"
-  by auto
+lemma edge_touch_distinguished: "\<forall> (t : TouchEvent) (w h : nat), fst (touch_position t) < edge_margin \<longrightarrow> is_edge_touch t w h = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* accidental_touch_rejected (matches Coq) *)
-lemma accidental_touch_rejected: "\<forall>(t :: touch_event). is_accidental_touch t = True \<longrightarrow> touch_pressure t < 5"
+lemma accidental_touch_rejected: "\<forall> (t : TouchEvent), is_accidental_touch t = True \<longrightarrow> touch_pressure t < 5"
   by auto
 
 (* touch_event_timestamp_monotonic_single (matches Coq) *)
-lemma touch_event_timestamp_monotonic_single: "\<forall>(t :: touch_event). timestamps_monotonic [t] = True"
+lemma touch_event_timestamp_monotonic_single: "\<forall> (t : TouchEvent), timestamps_monotonic [t] = True"
   by simp
 
 (* simultaneous_gesture_resolution (matches Coq) *)
-lemma simultaneous_gesture_resolution: "\<forall>(g1 :: gesture_type) (g2 :: gesture_type). gesture_priority g1 > gesture_priority g2 \<longrightarrow> gesture_priority g1 \<noteq> gesture_priority g2"
+lemma simultaneous_gesture_resolution: "\<forall> (g1 g2 : GestureType), gesture_priority g1 > gesture_priority g2 \<longrightarrow> gesture_priority g1 \<noteq> gesture_priority g2"
   by simp
 
 (* unknown_gesture_lowest_priority (matches Coq) *)
-lemma unknown_gesture_lowest_priority: "\<forall>(g :: gesture_type). g \<noteq> Unknown \<longrightarrow> gesture_priority g > gesture_priority Unknown"
-  by auto
+lemma unknown_gesture_lowest_priority: "\<forall> (g : GestureType), g \<noteq> Unknown \<longrightarrow> gesture_priority g > gesture_priority Unknown"
+  by (cases rule: ‹_›.cases; simp)
 
 end

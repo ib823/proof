@@ -12,16 +12,17 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | encryption_key      | encryption_key         | OK     |
- * | encrypted_message   | encrypted_message      | OK     |
- * | decrypted_message   | decrypted_message      | OK     |
- * | key_derivation      | key_derivation         | OK     |
- * | secure_channel      | secure_channel         | OK     |
- * | encryption_operation | encryption_operation   | OK     |
- * | password_hash       | password_hash          | OK     |
- * | key_rotation        | key_rotation           | OK     |
- * | iv_tracker          | iv_tracker             | OK     |
- * | timing_test         | timing_test            | OK     |
+ * | EncryptionKey      | encryption_key         | OK     |
+ * | EncryptedMessage   | encrypted_message      | OK     |
+ * | DecryptedMessage   | decrypted_message      | OK     |
+ * | KeyDerivation      | key_derivation         | OK     |
+ * | SecureChannel      | secure_channel         | OK     |
+ * | EncryptionOperation | encryption_operation   | OK     |
+ * | PasswordHash       | password_hash          | OK     |
+ * | KeyRotation        | key_rotation           | OK     |
+ * | IVTracker          | iv_tracker             | OK     |
+ * | TimingTest         | timing_test            | OK     |
+ * | PASSWORD_HASH_MIN_ITERS | PASSWORD_HASH_MIN_ITERS | OK     |
  * | strong_encryption  | strong_encryption      | OK     |
  * | e2e_encrypted      | e2e_encrypted          | OK     |
  * | securely_managed   | securely_managed       | OK     |
@@ -76,7 +77,7 @@ theory EncryptionSystem
   imports Main
 begin
 
-(* encryption_key (matches Coq: Record encryption_key) *)
+(* EncryptionKey (matches Coq: Record EncryptionKey) *)
 record encryption_key =
   key_id :: nat
   key_bits :: nat
@@ -84,82 +85,86 @@ record encryption_key =
   key_is_private :: bool
   key_stored_in_se :: bool
 
-(* encrypted_message (matches Coq: Record encrypted_message) *)
+(* EncryptedMessage (matches Coq: Record EncryptedMessage) *)
 record encrypted_message =
   msg_id :: nat
-  encryption_key_used :: encryption_key
+  encryption_key_used :: EncryptionKey
   ciphertext :: 'a list
   plaintext_hash :: nat
   is_e2e :: bool
 
-(* decrypted_message (matches Coq: Record decrypted_message) *)
+(* DecryptedMessage (matches Coq: Record DecryptedMessage) *)
 record decrypted_message =
   dec_msg_id :: nat
-  decryption_key :: encryption_key
+  decryption_key :: EncryptionKey
   plaintext :: 'a list
   integrity_verified :: bool
 
-(* key_derivation (matches Coq: Record key_derivation) *)
+(* KeyDerivation (matches Coq: Record KeyDerivation) *)
 record key_derivation =
-  master_key :: encryption_key
-  derived_key :: encryption_key
+  master_key :: EncryptionKey
+  derived_key :: EncryptionKey
   derivation_salt :: nat
   derivation_iterations :: nat
 
-(* secure_channel (matches Coq: Record secure_channel) *)
+(* SecureChannel (matches Coq: Record SecureChannel) *)
 record secure_channel =
   channel_id :: nat
-  sender_key :: encryption_key
-  receiver_key :: encryption_key
+  sender_key :: EncryptionKey
+  receiver_key :: EncryptionKey
   forward_secrecy :: bool
   channel_encrypted :: bool
   channel_authenticated :: bool
 
-(* encryption_operation (matches Coq: Record encryption_operation) *)
+(* EncryptionOperation (matches Coq: Record EncryptionOperation) *)
 record encryption_operation =
   enc_op_id :: nat
   enc_op_plaintext :: 'a list
   enc_op_ciphertext :: 'a list
-  enc_op_key :: encryption_key
+  enc_op_key :: EncryptionKey
   enc_op_iv :: nat
   enc_op_aead_tag :: nat
   enc_op_aead_verified :: bool
 
-(* password_hash (matches Coq: Record password_hash) *)
+(* PasswordHash (matches Coq: Record PasswordHash) *)
 record password_hash =
   pwd_hash_value :: nat
   pwd_salt :: nat
   pwd_iterations :: nat
   pwd_algorithm :: nat
 
-(* key_rotation (matches Coq: Record key_rotation) *)
+(* KeyRotation (matches Coq: Record KeyRotation) *)
 record key_rotation =
-  kr_old_key :: encryption_key
-  kr_new_key :: encryption_key
+  kr_old_key :: EncryptionKey
+  kr_new_key :: EncryptionKey
   kr_rotation_complete :: bool
   kr_old_key_destroyed :: bool
 
-(* iv_tracker (matches Coq: Record iv_tracker) *)
+(* IVTracker (matches Coq: Record IVTracker) *)
 record iv_tracker =
   iv_current :: nat
   iv_used_list :: 'a list
   iv_unique :: bool
 
-(* timing_test (matches Coq: Record timing_test) *)
+(* TimingTest (matches Coq: Record TimingTest) *)
 record timing_test =
   tt_operation :: nat
   tt_time_ns :: nat
   tt_constant_time :: bool
 
+(* PASSWORD_HASH_MIN_ITERS (matches Coq: Definition PASSWORD_HASH_MIN_ITERS) *)
+definition PASSWORD_HASH_MIN_ITERS :: "nat" where
+  "PASSWORD_HASH_MIN_ITERS \<equiv> Z.to_nat 10000%Z"
+
 (* strong_encryption (matches Coq: Definition strong_encryption) *)
 definition strong_encryption :: "EncryptionKey \<Rightarrow> bool" where
-  "strong_encryption key \<equiv> key_bits key >= 256 \<and>
+  "strong_encryption key \<equiv> key_bits key >= 256 /\
   (key_algorithm key = 0 \/ key_algorithm key = 1)"
 
 (* e2e_encrypted (matches Coq: Definition e2e_encrypted) *)
 definition e2e_encrypted :: "EncryptedMessage \<Rightarrow> bool" where
-  "e2e_encrypted msg \<equiv> is_e2e msg = True \<and>
-  strong_encryption (encryption_key_used msg) \<and>
+  "e2e_encrypted msg \<equiv> is_e2e msg = True /\
+  strong_encryption (encryption_key_used msg) /\
   key_stored_in_se (encryption_key_used msg) = True"
 
 (* securely_managed (matches Coq: Definition securely_managed) *)
@@ -169,8 +174,8 @@ definition securely_managed :: "EncryptionKey \<Rightarrow> bool" where
 
 (* provides_confidentiality (matches Coq: Definition provides_confidentiality) *)
 definition provides_confidentiality :: "SecureChannel \<Rightarrow> bool" where
-  "provides_confidentiality ch \<equiv> channel_encrypted ch = True \<and>
-  strong_encryption (sender_key ch) \<and>
+  "provides_confidentiality ch \<equiv> channel_encrypted ch = True /\
+  strong_encryption (sender_key ch) /\
   strong_encryption (receiver_key ch)"
 
 (* provides_integrity (matches Coq: Definition provides_integrity) *)
@@ -179,14 +184,14 @@ definition provides_integrity :: "SecureChannel \<Rightarrow> bool" where
 
 (* full_e2e_security (matches Coq: Definition full_e2e_security) *)
 definition full_e2e_security :: "SecureChannel \<Rightarrow> bool" where
-  "full_e2e_security ch \<equiv> provides_confidentiality ch \<and>
-  provides_integrity ch \<and>
+  "full_e2e_security ch \<equiv> provides_confidentiality ch /\
+  provides_integrity ch /\
   forward_secrecy ch = True"
 
 (* correct_decryption (matches Coq: Definition correct_decryption) *)
-definition correct_decryption :: "EncryptedMessage \<Rightarrow> decrypted_message \<Rightarrow> bool" where
-  "correct_decryption enc dec \<equiv> msg_id enc = dec_msg_id dec \<and>
-  integrity_verified dec = True \<and>
+definition correct_decryption :: "EncryptedMessage \<Rightarrow> DecryptedMessage \<Rightarrow> bool" where
+  "correct_decryption enc dec \<equiv> msg_id enc = dec_msg_id dec /\
+  integrity_verified dec = True /\
   key_id (encryption_key_used enc) = key_id (decryption_key dec)"
 
 (* key_bits_sufficient (matches Coq: Definition key_bits_sufficient) *)
@@ -203,11 +208,11 @@ definition is_strong_key :: "EncryptionKey \<Rightarrow> bool" where
 
 (* encrypt_data (matches Coq: Definition encrypt_data) *)
 definition encrypt_data :: "nat \<Rightarrow> list nat" where
-  "encrypt_data key \<equiv> map (\<lambda>x. x + key) plaintext"
+  "encrypt_data key \<equiv> map (fun x => x + key) plaintext"
 
 (* decrypt_data (matches Coq: Definition decrypt_data) *)
 definition decrypt_data :: "nat \<Rightarrow> list nat" where
-  "decrypt_data key \<equiv> map (\<lambda>x. x - key) ciphertext"
+  "decrypt_data key \<equiv> map (fun x => x - key) ciphertext"
 
 (* encryption_decryption_inverse_prop (matches Coq: Definition encryption_decryption_inverse_prop) *)
 definition encryption_decryption_inverse_prop :: "nat \<Rightarrow> bool" where
@@ -219,8 +224,8 @@ definition key_length_sufficient_prop :: "EncryptionKey \<Rightarrow> bool" wher
 
 (* iv_never_reused (matches Coq: Definition iv_never_reused) *)
 definition iv_never_reused :: "IVTracker \<Rightarrow> bool" where
-  "iv_never_reused tracker \<equiv> iv_unique tracker = True \<and>
-  ~ (iv_current tracker) \<in> set (iv_used_list tracker)"
+  "iv_never_reused tracker \<equiv> iv_unique tracker = True /\
+  ~ In (iv_current tracker) (iv_used_list tracker)"
 
 (* aead_verified (matches Coq: Definition aead_verified) *)
 definition aead_verified :: "EncryptionOperation \<Rightarrow> bool" where
@@ -235,7 +240,7 @@ definition key_derivation_deterministic_prop :: "bool" where
 
 (* password_hash_one_way (matches Coq: Definition password_hash_one_way) *)
 definition password_hash_one_way :: "PasswordHash \<Rightarrow> bool" where
-  "password_hash_one_way h \<equiv> pwd_hash_value h > 0 \<and> pwd_iterations h >= 10000"
+  "password_hash_one_way h \<equiv> pwd_hash_value h > 0 /\ pwd_iterations h >= PASSWORD_HASH_MIN_ITERS"
 
 (* salt_unique (matches Coq: Definition salt_unique) *)
 definition salt_unique :: "bool" where
@@ -274,91 +279,91 @@ definition encryption_algorithm_approved :: "EncryptionKey \<Rightarrow> bool" w
   "encryption_algorithm_approved key \<equiv> key_algorithm key = 0 \/ key_algorithm key = 1"
 
 (* e2e_encryption_verified (matches Coq) *)
-lemma e2e_encryption_verified: "\<forall>(msg :: encrypted_message). e2e_encrypted msg \<longrightarrow> strong_encryption (encryption_key_used msg)"
+lemma e2e_encryption_verified: "\<forall> (msg : EncryptedMessage), e2e_encrypted msg \<longrightarrow> strong_encryption (encryption_key_used msg)"
   by auto
 
 (* private_keys_in_secure_enclave (matches Coq) *)
-lemma private_keys_in_secure_enclave: "\<forall>(key :: encryption_key). securely_managed key \<longrightarrow> key_is_private key = True \<longrightarrow> key_stored_in_se key = True"
+lemma private_keys_in_secure_enclave: "\<forall> (key : EncryptionKey), securely_managed key \<longrightarrow> key_is_private key = True \<longrightarrow> key_stored_in_se key = True"
   by auto
 
 (* e2e_channel_provides_security (matches Coq) *)
-lemma e2e_channel_provides_security: "\<forall>(ch :: secure_channel). full_e2e_security ch \<longrightarrow> provides_confidentiality ch \<and> provides_integrity ch"
+lemma e2e_channel_provides_security: "\<forall> (ch : SecureChannel), full_e2e_security ch \<longrightarrow> provides_confidentiality ch \<and> provides_integrity ch"
   by auto
 
 (* forward_secrecy_maintained (matches Coq) *)
-lemma forward_secrecy_maintained: "\<forall>(ch :: secure_channel). full_e2e_security ch \<longrightarrow> forward_secrecy ch = True"
+lemma forward_secrecy_maintained: "\<forall> (ch : SecureChannel), full_e2e_security ch \<longrightarrow> forward_secrecy ch = True"
   by auto
 
 (* strong_encryption_minimum_bits (matches Coq) *)
-lemma strong_encryption_minimum_bits: "\<forall>(key :: encryption_key). strong_encryption key \<longrightarrow> key_bits key \<ge> 256"
+lemma strong_encryption_minimum_bits: "\<forall> (key : EncryptionKey), strong_encryption key \<longrightarrow> key_bits key \<ge> 256"
   by auto
 
 (* decryption_verifies_integrity (matches Coq) *)
-lemma decryption_verifies_integrity: "\<forall>(enc :: encrypted_message) (dec :: decrypted_message). correct_decryption enc dec \<longrightarrow> integrity_verified dec = True"
+lemma decryption_verifies_integrity: "\<forall> (enc : EncryptedMessage) (dec : DecryptedMessage), correct_decryption enc dec \<longrightarrow> integrity_verified dec = True"
   by auto
 
 (* key_derivation_preserves_strength (matches Coq) *)
-lemma key_derivation_preserves_strength: "\<forall>(kd :: key_derivation). strong_encryption (master_key kd) \<longrightarrow> key_bits (derived_key kd) \<ge> key_bits (master_key kd) \<longrightarrow> key_algorithm (derived_key kd) = key_algorithm (master_key kd) \<longrightarrow> strong_encryption (derived_key kd)"
+lemma key_derivation_preserves_strength: "\<forall> (kd : KeyDerivation), strong_encryption (master_key kd) \<longrightarrow> key_bits (derived_key kd) \<ge> key_bits (master_key kd) \<longrightarrow> key_algorithm (derived_key kd) = key_algorithm (master_key kd) \<longrightarrow> strong_encryption (derived_key kd)"
   by auto
 
 (* encryption_decryption_inverse (matches Coq) *)
-lemma encryption_decryption_inverse: "\<forall>(key :: nat) (plaintext : list nat). (\<forall>x. x \<in> set plaintext \<longrightarrow> x \<ge> key) \<longrightarrow> decrypt_data key (encrypt_data key plaintext) = plaintext"
+lemma encryption_decryption_inverse: "\<forall> (key : nat) (plaintext : list nat), (\<forall> x, In x plaintext \<longrightarrow> x \<ge> key) \<longrightarrow> decrypt_data key (encrypt_data key plaintext) = plaintext"
   by simp
 
 (* key_generation_random (matches Coq) *)
-lemma key_generation_random: "\<forall>(k1 :: encryption_key) (k2 :: encryption_key). key_id k1 \<noteq> key_id k2 \<longrightarrow> k1 \<noteq> k2"
+lemma key_generation_random: "\<forall> (k1 k2 : EncryptionKey), key_id k1 \<noteq> key_id k2 \<longrightarrow> k1 \<noteq> k2"
   by simp
 
 (* key_length_sufficient (matches Coq) *)
-lemma key_length_sufficient: "\<forall>(key :: encryption_key). strong_encryption key \<longrightarrow> key_bits key \<ge> 256"
+lemma key_length_sufficient: "\<forall> (key : EncryptionKey), strong_encryption key \<longrightarrow> key_bits key \<ge> 256"
   by auto
 
 (* iv_never_reused_thm (matches Coq) *)
-lemma iv_never_reused_thm: "\<forall>(tracker :: iv_tracker). iv_never_reused tracker \<longrightarrow> ~ (iv_current tracker) \<in> set (iv_used_list tracker)"
+lemma iv_never_reused_thm: "\<forall> (tracker : IVTracker), iv_never_reused tracker \<longrightarrow> ~ In (iv_current tracker) (iv_used_list tracker)"
   by auto
 
 (* aead_authentication_verified (matches Coq) *)
-lemma aead_authentication_verified: "\<forall>(op :: encryption_operation). aead_verified op \<longrightarrow> enc_op_aead_verified op = True"
+lemma aead_authentication_verified: "\<forall> (op : EncryptionOperation), aead_verified op \<longrightarrow> enc_op_aead_verified op = True"
   by auto
 
 (* key_derivation_deterministic (matches Coq) *)
-lemma key_derivation_deterministic: "\<forall>(kd1 :: key_derivation) (kd2 :: key_derivation). key_derivation_deterministic_prop kd1 kd2 \<longrightarrow> derivation_salt kd1 = derivation_salt kd2 \<longrightarrow> derivation_iterations kd1 = derivation_iterations kd2 \<longrightarrow> key_id (master_key kd1) = key_id (master_key kd2) \<longrightarrow> key_id (derived_key kd1) = key_id (derived_key kd2)"
+lemma key_derivation_deterministic: "\<forall> (kd1 kd2 : KeyDerivation), key_derivation_deterministic_prop kd1 kd2 \<longrightarrow> derivation_salt kd1 = derivation_salt kd2 \<longrightarrow> derivation_iterations kd1 = derivation_iterations kd2 \<longrightarrow> key_id (master_key kd1) = key_id (master_key kd2) \<longrightarrow> key_id (derived_key kd1) = key_id (derived_key kd2)"
   by auto
 
 (* password_hash_one_way_thm (matches Coq) *)
-lemma password_hash_one_way_thm: "\<forall>(h :: password_hash). password_hash_one_way h \<longrightarrow> pwd_hash_value h > 0 \<and> pwd_iterations h \<ge> 10000"
+lemma password_hash_one_way_thm: "\<forall> (h : PasswordHash), password_hash_one_way h \<longrightarrow> pwd_hash_value h > 0 \<and> pwd_iterations h \<ge> PASSWORD_HASH_MIN_ITERS"
   by auto
 
 (* salt_unique_per_password (matches Coq) *)
-lemma salt_unique_per_password: "\<forall>(h1 :: password_hash) (h2 :: password_hash). salt_unique h1 h2 \<longrightarrow> pwd_salt h1 \<noteq> pwd_salt h2"
+lemma salt_unique_per_password: "\<forall> (h1 h2 : PasswordHash), salt_unique h1 h2 \<longrightarrow> pwd_salt h1 \<noteq> pwd_salt h2"
   by auto
 
 (* key_rotation_seamless_thm (matches Coq) *)
-lemma key_rotation_seamless_thm: "\<forall>(kr :: key_rotation). key_rotation_seamless kr \<longrightarrow> kr_rotation_complete kr = True \<longrightarrow> kr_old_key_destroyed kr = True"
+lemma key_rotation_seamless_thm: "\<forall> (kr : KeyRotation), key_rotation_seamless kr \<longrightarrow> kr_rotation_complete kr = True \<longrightarrow> kr_old_key_destroyed kr = True"
   by auto
 
 (* encrypted_data_indistinguishable_thm (matches Coq) *)
-lemma encrypted_data_indistinguishable_thm: "\<forall>(op1 :: encryption_operation) (op2 :: encryption_operation). encrypted_data_indistinguishable op1 op2 \<longrightarrow> enc_op_key op1 = enc_op_key op2 \<longrightarrow> length (enc_op_ciphertext op1) = length (enc_op_ciphertext op2) \<longrightarrow> length (enc_op_plaintext op1) = length (enc_op_plaintext op2)"
+lemma encrypted_data_indistinguishable_thm: "\<forall> (op1 op2 : EncryptionOperation), encrypted_data_indistinguishable op1 op2 \<longrightarrow> enc_op_key op1 = enc_op_key op2 \<longrightarrow> length (enc_op_ciphertext op1) = length (enc_op_ciphertext op2) \<longrightarrow> length (enc_op_plaintext op1) = length (enc_op_plaintext op2)"
   by auto
 
 (* padding_oracle_prevented_thm (matches Coq) *)
-lemma padding_oracle_prevented_thm: "\<forall>(op :: encryption_operation). padding_oracle_prevented op \<longrightarrow> enc_op_aead_verified op = True"
+lemma padding_oracle_prevented_thm: "\<forall> (op : EncryptionOperation), padding_oracle_prevented op \<longrightarrow> enc_op_aead_verified op = True"
   by auto
 
 (* timing_attack_prevented_thm (matches Coq) *)
-lemma timing_attack_prevented_thm: "\<forall>(tt :: timing_test). timing_attack_prevented tt \<longrightarrow> tt_constant_time tt = True"
+lemma timing_attack_prevented_thm: "\<forall> (tt : TimingTest), timing_attack_prevented tt \<longrightarrow> tt_constant_time tt = True"
   by auto
 
 (* key_zeroization_complete_thm (matches Coq) *)
-lemma key_zeroization_complete_thm: "\<forall>(kr :: key_rotation). key_zeroization_complete kr \<longrightarrow> kr_old_key_destroyed kr = True \<longrightarrow> key_bits (kr_old_key kr) \<ge> 0"
+lemma key_zeroization_complete_thm: "\<forall> (kr : KeyRotation), key_zeroization_complete kr \<longrightarrow> kr_old_key_destroyed kr = True \<longrightarrow> key_bits (kr_old_key kr) \<ge> 0"
   by auto
 
 (* hardware_key_storage (matches Coq) *)
-lemma hardware_key_storage: "\<forall>(key :: encryption_key). hardware_key_storage_prop key \<longrightarrow> key_is_private key = True \<longrightarrow> key_stored_in_se key = True"
+lemma hardware_key_storage: "\<forall> (key : EncryptionKey), hardware_key_storage_prop key \<longrightarrow> key_is_private key = True \<longrightarrow> key_stored_in_se key = True"
   by auto
 
 (* encryption_algorithm_approved_thm (matches Coq) *)
-lemma encryption_algorithm_approved_thm: "\<forall>(key :: encryption_key). encryption_algorithm_approved key \<longrightarrow> key_algorithm key = 0 \<or> key_algorithm key = 1"
+lemma encryption_algorithm_approved_thm: "\<forall> (key : EncryptionKey), encryption_algorithm_approved key \<longrightarrow> key_algorithm key = 0 \<or> key_algorithm key = 1"
   by auto
 
 end

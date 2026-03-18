@@ -12,8 +12,8 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | fi_type             | fi_type                | OK     |
- * | cloud_deployment    | cloud_deployment       | OK     |
+ * | FIType             | fi_type                | OK     |
+ * | CloudDeployment    | cloud_deployment       | OK     |
  * | governance_compliant | governance_compliant   | OK     |
  * | risk_framework_established | risk_framework_established | OK     |
  * | cyber_controls_adequate | cyber_controls_adequate | OK     |
@@ -63,12 +63,7 @@ theory MalaysiaBNMRMiT
   imports Main
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym bnm_incident = "nat"
-type_synonym financial_institution = "nat"
-type_synonym outsourcing_arrangement = "nat"
-type_synonym tech_refresh_status = "nat"
-(* fi_type (matches Coq: Inductive fi_type) *)
+(* FIType (matches Coq: Inductive FIType) *)
 datatype fi_type =
     Bank
   |     Insurer
@@ -77,7 +72,7 @@ datatype fi_type =
   |     DesignatedPaymentInstrument
   |     ApprovedElectronicMoney
 
-(* cloud_deployment (matches Coq: Inductive cloud_deployment) *)
+(* CloudDeployment (matches Coq: Inductive CloudDeployment) *)
 datatype cloud_deployment =
     OnPremise
   |     PrivateCloud
@@ -105,7 +100,7 @@ definition audit_compliant :: "FinancialInstitution \<Rightarrow> bool" where
   "audit_compliant fi \<equiv> fi_audit_completed fi = True"
 
 (* cloud_compliant - complex match, needs manual translation *)
-definition cloud_compliant :: "bool" where "cloud_compliant \<equiv> True"
+definition cloud_compliant :: "bool" where "cloud_compliant = undefined"
 
 (* third_party_compliant (matches Coq: Definition third_party_compliant) *)
 definition third_party_compliant :: "FinancialInstitution \<Rightarrow> bool" where
@@ -117,13 +112,13 @@ definition bcp_compliant :: "FinancialInstitution \<Rightarrow> bool" where
 
 (* rmit_fully_compliant (matches Coq: Definition rmit_fully_compliant) *)
 definition rmit_fully_compliant :: "FinancialInstitution \<Rightarrow> bool" where
-  "rmit_fully_compliant fi \<equiv> governance_compliant fi \<and>
-  risk_framework_established fi \<and>
-  cyber_controls_adequate fi \<and>
-  ops_resilience_verified fi \<and>
-  audit_compliant fi \<and>
-  cloud_compliant fi \<and>
-  third_party_compliant fi \<and>
+  "rmit_fully_compliant fi \<equiv> governance_compliant fi /\
+  risk_framework_established fi /\
+  cyber_controls_adequate fi /\
+  ops_resilience_verified fi /\
+  audit_compliant fi /\
+  cloud_compliant fi /\
+  third_party_compliant fi /\
   bcp_compliant fi"
 
 (* all_fi_types (matches Coq: Definition all_fi_types) *)
@@ -145,8 +140,8 @@ definition bnm_incident_reported_timely :: "BNMIncident \<Rightarrow> bool" wher
 
 (* outsourcing_compliant (matches Coq: Definition outsourcing_compliant) *)
 definition outsourcing_compliant :: "OutsourcingArrangement \<Rightarrow> bool" where
-  "outsourcing_compliant oa \<equiv> oa_risk_assessed oa = True \<and>
-  (oa_material oa = True -> oa_bnm_notified oa = True) \<and>
+  "outsourcing_compliant oa \<equiv> oa_risk_assessed oa = True /\
+  (oa_material oa = True -> oa_bnm_notified oa = True) /\
   oa_exit_strategy oa = True"
 
 (* tech_refresh_current (matches Coq: Definition tech_refresh_current) *)
@@ -154,115 +149,115 @@ definition tech_refresh_current :: "TechRefreshStatus \<Rightarrow> nat \<Righta
   "tech_refresh_current trs current_time \<equiv> current_time <= tr_last_refresh trs + tr_max_age trs"
 
 (* rmit_domain_1 (matches Coq) *)
-lemma rmit_domain_1: "\<forall>(fi :: financial_institution). fi_board_oversight fi = True \<longrightarrow> governance_compliant fi"
+lemma rmit_domain_1: "\<forall> (fi : FinancialInstitution), fi_board_oversight fi = True \<longrightarrow> governance_compliant fi"
   by simp
 
 (* rmit_domain_2 (matches Coq) *)
-lemma rmit_domain_2: "\<forall>(fi :: financial_institution). fi_risk_framework fi = True \<longrightarrow> risk_framework_established fi"
+lemma rmit_domain_2: "\<forall> (fi : FinancialInstitution), fi_risk_framework fi = True \<longrightarrow> risk_framework_established fi"
   by auto
 
 (* rmit_domain_3 (matches Coq) *)
-lemma rmit_domain_3: "\<forall>(fi :: financial_institution). fi_min_cyber_controls fi \<le> fi_cyber_controls fi \<longrightarrow> cyber_controls_adequate fi"
+lemma rmit_domain_3: "\<forall> (fi : FinancialInstitution), fi_min_cyber_controls fi \<le> fi_cyber_controls fi \<longrightarrow> cyber_controls_adequate fi"
   by auto
 
 (* rmit_domain_4 (matches Coq) *)
-lemma rmit_domain_4: "\<forall>(fi :: financial_institution). fi_ops_resilience_tested fi = True \<longrightarrow> ops_resilience_verified fi"
+lemma rmit_domain_4: "\<forall> (fi : FinancialInstitution), fi_ops_resilience_tested fi = True \<longrightarrow> ops_resilience_verified fi"
   by auto
 
 (* rmit_domain_5 (matches Coq) *)
-lemma rmit_domain_5: "\<forall>(fi :: financial_institution). fi_audit_completed fi = True \<longrightarrow> audit_compliant fi"
+lemma rmit_domain_5: "\<forall> (fi : FinancialInstitution), fi_audit_completed fi = True \<longrightarrow> audit_compliant fi"
   by simp
 
 (* rmit_domain_6_onprem (matches Coq) *)
-lemma rmit_domain_6_onprem: "\<forall>(fi :: financial_institution). fi_cloud_model fi = OnPremise \<longrightarrow> cloud_compliant fi"
+lemma rmit_domain_6_onprem: "\<forall> (fi : FinancialInstitution), fi_cloud_model fi = OnPremise \<longrightarrow> cloud_compliant fi"
   by simp
 
 (* rmit_domain_6_cloud (matches Coq) *)
-lemma rmit_domain_6_cloud: "\<forall>(fi :: financial_institution). fi_cloud_model fi \<noteq> OnPremise \<longrightarrow> fi_cloud_risk_assessed fi = True \<longrightarrow> cloud_compliant fi"
-  by auto
+lemma rmit_domain_6_cloud: "\<forall> (fi : FinancialInstitution), fi_cloud_model fi \<noteq> OnPremise \<longrightarrow> fi_cloud_risk_assessed fi = True \<longrightarrow> cloud_compliant fi"
+  by (cases rule: ‹_›.cases; simp)
 
 (* rmit_domain_7 (matches Coq) *)
-lemma rmit_domain_7: "\<forall>(fi :: financial_institution). fi_third_party_assessed fi = True \<longrightarrow> third_party_compliant fi"
+lemma rmit_domain_7: "\<forall> (fi : FinancialInstitution), fi_third_party_assessed fi = True \<longrightarrow> third_party_compliant fi"
   by simp
 
 (* rmit_domain_8 (matches Coq) *)
-lemma rmit_domain_8: "\<forall>(fi :: financial_institution). fi_bcp_tested fi = True \<longrightarrow> bcp_compliant fi"
+lemma rmit_domain_8: "\<forall> (fi : FinancialInstitution), fi_bcp_tested fi = True \<longrightarrow> bcp_compliant fi"
   by simp
 
 (* rmit_composition (matches Coq) *)
-lemma rmit_composition: "\<forall>(fi :: financial_institution). governance_compliant fi \<longrightarrow> risk_framework_established fi \<longrightarrow> cyber_controls_adequate fi \<longrightarrow> ops_resilience_verified fi \<longrightarrow> audit_compliant fi \<longrightarrow> cloud_compliant fi \<longrightarrow> third_party_compliant fi \<longrightarrow> bcp_compliant fi \<longrightarrow> rmit_fully_compliant fi"
+lemma rmit_composition: "\<forall> (fi : FinancialInstitution), governance_compliant fi \<longrightarrow> risk_framework_established fi \<longrightarrow> cyber_controls_adequate fi \<longrightarrow> ops_resilience_verified fi \<longrightarrow> audit_compliant fi \<longrightarrow> cloud_compliant fi \<longrightarrow> third_party_compliant fi \<longrightarrow> bcp_compliant fi \<longrightarrow> rmit_fully_compliant fi"
   by simp
 
 (* fi_type_coverage (matches Coq) *)
-lemma fi_type_coverage: "\<forall>(ft :: fi_type). ft \<in> set all_fi_types"
+lemma fi_type_coverage: "\<forall> (ft : FIType), In ft all_fi_types"
   by auto
 
 (* cyber_controls_strengthened (matches Coq) *)
-lemma cyber_controls_strengthened: "\<forall>(fi :: financial_institution) (extra :: nat). cyber_controls_adequate fi \<longrightarrow> fi_min_cyber_controls fi \<le> fi_cyber_controls fi + extra"
+lemma cyber_controls_strengthened: "\<forall> (fi : FinancialInstitution) (extra : nat), cyber_controls_adequate fi \<longrightarrow> fi_min_cyber_controls fi \<le> fi_cyber_controls fi + extra"
   by auto
 
 (* cloud_deployment_coverage (matches Coq) *)
-lemma cloud_deployment_coverage: "\<forall>(cd :: cloud_deployment). cd \<in> set all_cloud_deployments"
+lemma cloud_deployment_coverage: "\<forall> (cd : CloudDeployment), In cd all_cloud_deployments"
   by auto
 
 (* on_premise_always_compliant (matches Coq) *)
-lemma on_premise_always_compliant: "\<forall>(fi :: financial_institution). fi_cloud_model fi = OnPremise \<longrightarrow> cloud_compliant fi"
+lemma on_premise_always_compliant: "\<forall> (fi : FinancialInstitution), fi_cloud_model fi = OnPremise \<longrightarrow> cloud_compliant fi"
   by simp
 
 (* rmit_full_implies_governance (matches Coq) *)
-lemma rmit_full_implies_governance: "\<forall>(fi :: financial_institution). rmit_fully_compliant fi \<longrightarrow> governance_compliant fi"
+lemma rmit_full_implies_governance: "\<forall> (fi : FinancialInstitution), rmit_fully_compliant fi \<longrightarrow> governance_compliant fi"
   by auto
 
 (* rmit_full_implies_risk (matches Coq) *)
-lemma rmit_full_implies_risk: "\<forall>(fi :: financial_institution). rmit_fully_compliant fi \<longrightarrow> risk_framework_established fi"
+lemma rmit_full_implies_risk: "\<forall> (fi : FinancialInstitution), rmit_fully_compliant fi \<longrightarrow> risk_framework_established fi"
   by auto
 
 (* rmit_full_implies_cyber (matches Coq) *)
-lemma rmit_full_implies_cyber: "\<forall>(fi :: financial_institution). rmit_fully_compliant fi \<longrightarrow> cyber_controls_adequate fi"
+lemma rmit_full_implies_cyber: "\<forall> (fi : FinancialInstitution), rmit_fully_compliant fi \<longrightarrow> cyber_controls_adequate fi"
   by auto
 
 (* rmit_full_implies_ops (matches Coq) *)
-lemma rmit_full_implies_ops: "\<forall>(fi :: financial_institution). rmit_fully_compliant fi \<longrightarrow> ops_resilience_verified fi"
+lemma rmit_full_implies_ops: "\<forall> (fi : FinancialInstitution), rmit_fully_compliant fi \<longrightarrow> ops_resilience_verified fi"
   by auto
 
 (* rmit_full_implies_audit (matches Coq) *)
-lemma rmit_full_implies_audit: "\<forall>(fi :: financial_institution). rmit_fully_compliant fi \<longrightarrow> audit_compliant fi"
+lemma rmit_full_implies_audit: "\<forall> (fi : FinancialInstitution), rmit_fully_compliant fi \<longrightarrow> audit_compliant fi"
   by auto
 
 (* rmit_full_implies_cloud (matches Coq) *)
-lemma rmit_full_implies_cloud: "\<forall>(fi :: financial_institution). rmit_fully_compliant fi \<longrightarrow> cloud_compliant fi"
+lemma rmit_full_implies_cloud: "\<forall> (fi : FinancialInstitution), rmit_fully_compliant fi \<longrightarrow> cloud_compliant fi"
   by auto
 
 (* rmit_full_implies_third_party (matches Coq) *)
-lemma rmit_full_implies_third_party: "\<forall>(fi :: financial_institution). rmit_fully_compliant fi \<longrightarrow> third_party_compliant fi"
+lemma rmit_full_implies_third_party: "\<forall> (fi : FinancialInstitution), rmit_fully_compliant fi \<longrightarrow> third_party_compliant fi"
   by auto
 
 (* rmit_full_implies_bcp (matches Coq) *)
-lemma rmit_full_implies_bcp: "\<forall>(fi :: financial_institution). rmit_fully_compliant fi \<longrightarrow> bcp_compliant fi"
+lemma rmit_full_implies_bcp: "\<forall> (fi : FinancialInstitution), rmit_fully_compliant fi \<longrightarrow> bcp_compliant fi"
   by auto
 
 (* bnm_incident_reporting (matches Coq) *)
-lemma bnm_incident_reporting: "\<forall>(inc :: bnm_incident). bnm_inc_reported inc \<le> bnm_inc_detected inc + 6 \<longrightarrow> bnm_incident_reported_timely inc"
+lemma bnm_incident_reporting: "\<forall> (inc : BNMIncident), bnm_inc_reported inc \<le> bnm_inc_detected inc + 6 \<longrightarrow> bnm_incident_reported_timely inc"
   by auto
 
 (* bnm_late_incident_violation (matches Coq) *)
-lemma bnm_late_incident_violation: "\<forall>(inc :: bnm_incident). bnm_inc_detected inc + bnm_incident_deadline < bnm_inc_reported inc \<longrightarrow> ~ bnm_incident_reported_timely inc"
+lemma bnm_late_incident_violation: "\<forall> (inc : BNMIncident), bnm_inc_detected inc + bnm_incident_deadline < bnm_inc_reported inc \<longrightarrow> ~ bnm_incident_reported_timely inc"
   by auto
 
 (* outsourcing_risk_managed (matches Coq) *)
-lemma outsourcing_risk_managed: "\<forall>(oa :: outsourcing_arrangement). oa_risk_assessed oa = True \<longrightarrow> (oa_material oa = True \<longrightarrow> oa_bnm_notified oa = True) \<longrightarrow> oa_exit_strategy oa = True \<longrightarrow> outsourcing_compliant oa"
+lemma outsourcing_risk_managed: "\<forall> (oa : OutsourcingArrangement), oa_risk_assessed oa = True \<longrightarrow> (oa_material oa = True \<longrightarrow> oa_bnm_notified oa = True) \<longrightarrow> oa_exit_strategy oa = True \<longrightarrow> outsourcing_compliant oa"
   by simp
 
 (* non_material_no_notification (matches Coq) *)
-lemma non_material_no_notification: "\<forall>(oa :: outsourcing_arrangement). oa_material oa = False \<longrightarrow> oa_risk_assessed oa = True \<longrightarrow> oa_exit_strategy oa = True \<longrightarrow> outsourcing_compliant oa"
+lemma non_material_no_notification: "\<forall> (oa : OutsourcingArrangement), oa_material oa = False \<longrightarrow> oa_risk_assessed oa = True \<longrightarrow> oa_exit_strategy oa = True \<longrightarrow> outsourcing_compliant oa"
   by simp
 
 (* tech_refresh_valid (matches Coq) *)
-lemma tech_refresh_valid: "\<forall>(trs :: tech_refresh_status) (t :: nat). t \<le> tr_last_refresh trs + tr_max_age trs \<longrightarrow> tech_refresh_current trs t"
+lemma tech_refresh_valid: "\<forall> (trs : TechRefreshStatus) (t : nat), t \<le> tr_last_refresh trs + tr_max_age trs \<longrightarrow> tech_refresh_current trs t"
   by auto
 
 (* tech_refresh_expired (matches Coq) *)
-lemma tech_refresh_expired: "\<forall>(trs :: tech_refresh_status) (t :: nat). tr_last_refresh trs + tr_max_age trs < t \<longrightarrow> ~ tech_refresh_current trs t"
+lemma tech_refresh_expired: "\<forall> (trs : TechRefreshStatus) (t : nat), tr_last_refresh trs + tr_max_age trs < t \<longrightarrow> ~ tech_refresh_current trs t"
   by auto
 
 end

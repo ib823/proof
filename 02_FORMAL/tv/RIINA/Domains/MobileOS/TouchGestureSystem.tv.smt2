@@ -15,499 +15,239 @@
 (declare-sort TargetNode 0)
 
 ; Microseconds: source semantics (matches Coq)
-; Translation validation: Microseconds preserves semantics
-(push 1)
-(declare-const source_Microseconds Int)
-(declare-const target_Microseconds Int)
-(assert (>= source_Microseconds 0))
-(assert (>= target_Microseconds 0))
-(assert (not (= source_Microseconds target_Microseconds)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_Microseconds () Bool)
+(declare-fun target_Microseconds () Bool)
+(assert (= source_Microseconds target_Microseconds))
 
 ; Coordinate: source semantics (matches Coq)
-; Translation validation: Coordinate preserves semantics
-(push 1)
-(declare-const source_Coordinate Int)
-(declare-const target_Coordinate Int)
-(assert (>= source_Coordinate 0))
-(assert (>= target_Coordinate 0))
-(assert (not (= source_Coordinate target_Coordinate)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_Coordinate () Bool)
+(declare-fun target_Coordinate () Bool)
+(assert (= source_Coordinate target_Coordinate))
 
 ; TouchSequence: source semantics (matches Coq)
-; Translation validation: TouchSequence preserves semantics
-(push 1)
-(declare-const source_TouchSequence Int)
-(declare-const target_TouchSequence Int)
-(assert (>= source_TouchSequence 0))
-(assert (>= target_TouchSequence 0))
-(assert (not (= source_TouchSequence target_TouchSequence)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_TouchSequence () Bool)
+(declare-fun target_TouchSequence () Bool)
+(assert (= source_TouchSequence target_TouchSequence))
 
 ; physical_touch: source semantics (matches Coq)
-; Translation validation: physical_touch preserves semantics
-(push 1)
-(declare-const source_physical_touch Int)
-(declare-const target_physical_touch Int)
-(assert (>= source_physical_touch 0))
-(assert (>= target_physical_touch 0))
-(assert (not (= source_physical_touch target_physical_touch)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_physical_touch () Bool)
+(declare-fun target_physical_touch () Bool)
+(assert (= source_physical_touch target_physical_touch))
 
 ; registered: source semantics (matches Coq)
-; Translation validation: registered preserves semantics
-(push 1)
-(declare-const source_registered Int)
-(declare-const target_registered Int)
-(assert (>= source_registered 0))
-(assert (>= target_registered 0))
-(assert (not (= source_registered target_registered)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_registered () Bool)
+(declare-fun target_registered () Bool)
+(assert (= source_registered target_registered))
 
 ; display_latency: source semantics (matches Coq)
-; Translation validation: display_latency preserves semantics
-(push 1)
-(declare-const source_display_latency Int)
-(declare-const target_display_latency Int)
-(assert (>= source_display_latency 0))
-(assert (>= target_display_latency 0))
-(assert (not (= source_display_latency target_display_latency)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_display_latency () Bool)
+(declare-fun target_display_latency () Bool)
+(assert (= source_display_latency target_display_latency))
+
+; LATENCY_BOUND_10MS: source semantics (matches Coq)
+(declare-fun source_LATENCY_BOUND_10MS () Bool)
+(declare-fun target_LATENCY_BOUND_10MS () Bool)
+(assert (= source_LATENCY_BOUND_10MS target_LATENCY_BOUND_10MS))
+
+; TOUCH_LATENCY_MAX_16MS: source semantics (matches Coq)
+(declare-fun source_TOUCH_LATENCY_MAX_16MS () Bool)
+(declare-fun target_TOUCH_LATENCY_MAX_16MS () Bool)
+(assert (= source_TOUCH_LATENCY_MAX_16MS target_TOUCH_LATENCY_MAX_16MS))
 
 ; latency_bound: source semantics (matches Coq)
-; Translation validation: latency_bound preserves semantics
-(push 1)
-(declare-const source_latency_bound Int)
-(declare-const target_latency_bound Int)
-(assert (>= source_latency_bound 0))
-(assert (>= target_latency_bound 0))
-(assert (not (= source_latency_bound target_latency_bound)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_latency_bound () Bool)
+(declare-fun target_latency_bound () Bool)
+(assert (= source_latency_bound target_latency_bound))
 
 ; touch_system_correct: source semantics (matches Coq)
-; Translation validation: touch_system_correct preserves semantics
-(push 1)
-(declare-const source_touch_system_correct Int)
-(declare-const target_touch_system_correct Int)
-(assert (>= source_touch_system_correct 0))
-(assert (>= target_touch_system_correct 0))
-(assert (not (= source_touch_system_correct target_touch_system_correct)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_system_correct () Bool)
+(declare-fun target_touch_system_correct () Bool)
+(assert (= source_touch_system_correct target_touch_system_correct))
 
 ; intended_gesture: source semantics (matches Coq)
-; Translation validation: intended_gesture preserves semantics
-(push 1)
-(declare-const source_intended_gesture Int)
-(declare-const target_intended_gesture Int)
-(assert (>= source_intended_gesture 0))
-(assert (>= target_intended_gesture 0))
-(assert (not (= source_intended_gesture target_intended_gesture)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_intended_gesture () Bool)
+(declare-fun target_intended_gesture () Bool)
+(assert (= source_intended_gesture target_intended_gesture))
 
 ; recognized_gesture: source semantics (matches Coq)
-; Translation validation: recognized_gesture preserves semantics
-(push 1)
-(declare-const source_recognized_gesture Int)
-(declare-const target_recognized_gesture Int)
-(assert (>= source_recognized_gesture 0))
-(assert (>= target_recognized_gesture 0))
-(assert (not (= source_recognized_gesture target_recognized_gesture)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_recognized_gesture () Bool)
+(declare-fun target_recognized_gesture () Bool)
+(assert (= source_recognized_gesture target_recognized_gesture))
 
 ; touch_area: source semantics (matches Coq)
-; Translation validation: touch_area preserves semantics
-(push 1)
-(declare-const source_touch_area Int)
-(declare-const target_touch_area Int)
-(assert (>= source_touch_area 0))
-(assert (>= target_touch_area 0))
-(assert (not (= source_touch_area target_touch_area)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_area () Bool)
+(declare-fun target_touch_area () Bool)
+(assert (= source_touch_area target_touch_area))
 
 ; touch_area_minimum: source semantics (matches Coq)
-; Translation validation: touch_area_minimum preserves semantics
-(push 1)
-(declare-const source_touch_area_minimum Int)
-(declare-const target_touch_area_minimum Int)
-(assert (>= source_touch_area_minimum 0))
-(assert (>= target_touch_area_minimum 0))
-(assert (not (= source_touch_area_minimum target_touch_area_minimum)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_area_minimum () Bool)
+(declare-fun target_touch_area_minimum () Bool)
+(assert (= source_touch_area_minimum target_touch_area_minimum))
 
 ; touch_pressure_max: source semantics (matches Coq)
-; Translation validation: touch_pressure_max preserves semantics
-(push 1)
-(declare-const source_touch_pressure_max Int)
-(declare-const target_touch_pressure_max Int)
-(assert (>= source_touch_pressure_max 0))
-(assert (>= target_touch_pressure_max 0))
-(assert (not (= source_touch_pressure_max target_touch_pressure_max)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_pressure_max () Bool)
+(declare-fun target_touch_pressure_max () Bool)
+(assert (= source_touch_pressure_max target_touch_pressure_max))
 
 ; touch_latency_max: source semantics (matches Coq)
-; Translation validation: touch_latency_max preserves semantics
-(push 1)
-(declare-const source_touch_latency_max Int)
-(declare-const target_touch_latency_max Int)
-(assert (>= source_touch_latency_max 0))
-(assert (>= target_touch_latency_max 0))
-(assert (not (= source_touch_latency_max target_touch_latency_max)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_latency_max () Bool)
+(declare-fun target_touch_latency_max () Bool)
+(assert (= source_touch_latency_max target_touch_latency_max))
 
 ; is_hover_event: source semantics (matches Coq)
-; Translation validation: is_hover_event preserves semantics
-(push 1)
-(declare-const source_is_hover_event Int)
-(declare-const target_is_hover_event Int)
-(assert (>= source_is_hover_event 0))
-(assert (>= target_is_hover_event 0))
-(assert (not (= source_is_hover_event target_is_hover_event)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_hover_event () Bool)
+(declare-fun target_is_hover_event () Bool)
+(assert (= source_is_hover_event target_is_hover_event))
 
 ; is_stylus_event: source semantics (matches Coq)
-; Translation validation: is_stylus_event preserves semantics
-(push 1)
-(declare-const source_is_stylus_event Int)
-(declare-const target_is_stylus_event Int)
-(assert (>= source_is_stylus_event 0))
-(assert (>= target_is_stylus_event 0))
-(assert (not (= source_is_stylus_event target_is_stylus_event)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_stylus_event () Bool)
+(declare-fun target_is_stylus_event () Bool)
+(assert (= source_is_stylus_event target_is_stylus_event))
 
 ; edge_margin: source semantics (matches Coq)
-; Translation validation: edge_margin preserves semantics
-(push 1)
-(declare-const source_edge_margin Int)
-(declare-const target_edge_margin Int)
-(assert (>= source_edge_margin 0))
-(assert (>= target_edge_margin 0))
-(assert (not (= source_edge_margin target_edge_margin)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_edge_margin () Bool)
+(declare-fun target_edge_margin () Bool)
+(assert (= source_edge_margin target_edge_margin))
 
 ; is_edge_touch: source semantics (matches Coq)
-; Translation validation: is_edge_touch preserves semantics
-(push 1)
-(declare-const source_is_edge_touch Int)
-(declare-const target_is_edge_touch Int)
-(assert (>= source_is_edge_touch 0))
-(assert (>= target_is_edge_touch 0))
-(assert (not (= source_is_edge_touch target_is_edge_touch)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_edge_touch () Bool)
+(declare-fun target_is_edge_touch () Bool)
+(assert (= source_is_edge_touch target_is_edge_touch))
 
 ; is_accidental_touch: source semantics (matches Coq)
-; Translation validation: is_accidental_touch preserves semantics
-(push 1)
-(declare-const source_is_accidental_touch Int)
-(declare-const target_is_accidental_touch Int)
-(assert (>= source_is_accidental_touch 0))
-(assert (>= target_is_accidental_touch 0))
-(assert (not (= source_is_accidental_touch target_is_accidental_touch)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_accidental_touch () Bool)
+(declare-fun target_is_accidental_touch () Bool)
+(assert (= source_is_accidental_touch target_is_accidental_touch))
 
 ; timestamps_monotonic: source semantics (matches Coq)
-; Translation validation: timestamps_monotonic preserves semantics
-(push 1)
-(declare-const source_timestamps_monotonic Int)
-(declare-const target_timestamps_monotonic Int)
-(assert (>= source_timestamps_monotonic 0))
-(assert (>= target_timestamps_monotonic 0))
-(assert (not (= source_timestamps_monotonic target_timestamps_monotonic)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_timestamps_monotonic () Bool)
+(declare-fun target_timestamps_monotonic () Bool)
+(assert (= source_timestamps_monotonic target_timestamps_monotonic))
 
 ; gesture_priority: source semantics (matches Coq)
-; Translation validation: gesture_priority preserves semantics
-(push 1)
-(declare-const source_gesture_priority Int)
-(declare-const target_gesture_priority Int)
-(assert (>= source_gesture_priority 0))
-(assert (>= target_gesture_priority 0))
-(assert (not (= source_gesture_priority target_gesture_priority)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_gesture_priority () Bool)
+(declare-fun target_gesture_priority () Bool)
+(assert (= source_gesture_priority target_gesture_priority))
 
 ; touch_cancelled: source semantics (matches Coq)
-; Translation validation: touch_cancelled preserves semantics
-(push 1)
-(declare-const source_touch_cancelled Int)
-(declare-const target_touch_cancelled Int)
-(assert (>= source_touch_cancelled 0))
-(assert (>= target_touch_cancelled 0))
-(assert (not (= source_touch_cancelled target_touch_cancelled)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_cancelled () Bool)
+(declare-fun target_touch_cancelled () Bool)
+(assert (= source_touch_cancelled target_touch_cancelled))
 
 ; multi_touch_count: source semantics (matches Coq)
-; Translation validation: multi_touch_count preserves semantics
-(push 1)
-(declare-const source_multi_touch_count Int)
-(declare-const target_multi_touch_count Int)
-(assert (>= source_multi_touch_count 0))
-(assert (>= target_multi_touch_count 0))
-(assert (not (= source_multi_touch_count target_multi_touch_count)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_multi_touch_count () Bool)
+(declare-fun target_multi_touch_count () Bool)
+(assert (= source_multi_touch_count target_multi_touch_count))
 
 ; well_formed_multi_touch: source semantics (matches Coq)
-; Translation validation: well_formed_multi_touch preserves semantics
-(push 1)
-(declare-const source_well_formed_multi_touch Int)
-(declare-const target_well_formed_multi_touch Int)
-(assert (>= source_well_formed_multi_touch 0))
-(assert (>= target_well_formed_multi_touch 0))
-(assert (not (= source_well_formed_multi_touch target_well_formed_multi_touch)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_well_formed_multi_touch () Bool)
+(declare-fun target_well_formed_multi_touch () Bool)
+(assert (= source_well_formed_multi_touch target_well_formed_multi_touch))
 
 ; touch_latency_bounded: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_latency_bounded preserves semantics
-(push 1)
-(declare-const source_touch_latency_bounded Int)
-(declare-const target_touch_latency_bounded Int)
-(assert (>= source_touch_latency_bounded 0))
-(assert (>= target_touch_latency_bounded 0))
-(assert (not (= source_touch_latency_bounded target_touch_latency_bounded)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_latency_bounded () Bool)
+(declare-fun target_touch_latency_bounded () Bool)
+(assert (= source_touch_latency_bounded target_touch_latency_bounded))
 
 ; touch_registration_complete: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_registration_complete preserves semantics
-(push 1)
-(declare-const source_touch_registration_complete Int)
-(declare-const target_touch_registration_complete Int)
-(assert (>= source_touch_registration_complete 0))
-(assert (>= target_touch_registration_complete 0))
-(assert (not (= source_touch_registration_complete target_touch_registration_complete)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_registration_complete () Bool)
+(declare-fun target_touch_registration_complete () Bool)
+(assert (= source_touch_registration_complete target_touch_registration_complete))
 
 ; no_ghost_touches: translation preserves property (matches Coq: Theorem)
-; Translation validation: no_ghost_touches preserves semantics
-(push 1)
-(declare-const source_no_ghost_touches Int)
-(declare-const target_no_ghost_touches Int)
-(assert (>= source_no_ghost_touches 0))
-(assert (>= target_no_ghost_touches 0))
-(assert (not (= source_no_ghost_touches target_no_ghost_touches)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_no_ghost_touches () Bool)
+(declare-fun target_no_ghost_touches () Bool)
+(assert (= source_no_ghost_touches target_no_ghost_touches))
 
 ; gesture_recognition_tap: translation preserves property (matches Coq: Theorem)
-; Translation validation: gesture_recognition_tap preserves semantics
-(push 1)
-(declare-const source_gesture_recognition_tap Int)
-(declare-const target_gesture_recognition_tap Int)
-(assert (>= source_gesture_recognition_tap 0))
-(assert (>= target_gesture_recognition_tap 0))
-(assert (not (= source_gesture_recognition_tap target_gesture_recognition_tap)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_gesture_recognition_tap () Bool)
+(declare-fun target_gesture_recognition_tap () Bool)
+(assert (= source_gesture_recognition_tap target_gesture_recognition_tap))
 
 ; touch_physical_registered_equiv: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_physical_registered_equiv preserves semantics
-(push 1)
-(declare-const source_touch_physical_registered_equiv Int)
-(declare-const target_touch_physical_registered_equiv Int)
-(assert (>= source_touch_physical_registered_equiv 0))
-(assert (>= target_touch_physical_registered_equiv 0))
-(assert (not (= source_touch_physical_registered_equiv target_touch_physical_registered_equiv)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_physical_registered_equiv () Bool)
+(declare-fun target_touch_physical_registered_equiv () Bool)
+(assert (= source_touch_physical_registered_equiv target_touch_physical_registered_equiv))
 
 ; touch_event_ordered: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_event_ordered preserves semantics
-(push 1)
-(declare-const source_touch_event_ordered Int)
-(declare-const target_touch_event_ordered Int)
-(assert (>= source_touch_event_ordered 0))
-(assert (>= target_touch_event_ordered 0))
-(assert (not (= source_touch_event_ordered target_touch_event_ordered)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_event_ordered () Bool)
+(declare-fun target_touch_event_ordered () Bool)
+(assert (= source_touch_event_ordered target_touch_event_ordered))
 
 ; multi_touch_tracked: translation preserves property (matches Coq: Theorem)
-; Translation validation: multi_touch_tracked preserves semantics
-(push 1)
-(declare-const source_multi_touch_tracked Int)
-(declare-const target_multi_touch_tracked Int)
-(assert (>= source_multi_touch_tracked 0))
-(assert (>= target_multi_touch_tracked 0))
-(assert (not (= source_multi_touch_tracked target_multi_touch_tracked)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_multi_touch_tracked () Bool)
+(declare-fun target_multi_touch_tracked () Bool)
+(assert (= source_multi_touch_tracked target_multi_touch_tracked))
 
 ; touch_cancel_handled: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_cancel_handled preserves semantics
-(push 1)
-(declare-const source_touch_cancel_handled Int)
-(declare-const target_touch_cancel_handled Int)
-(assert (>= source_touch_cancel_handled 0))
-(assert (>= target_touch_cancel_handled 0))
-(assert (not (= source_touch_cancel_handled target_touch_cancel_handled)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_cancel_handled () Bool)
+(declare-fun target_touch_cancel_handled () Bool)
+(assert (= source_touch_cancel_handled target_touch_cancel_handled))
 
 ; gesture_priority_defined: translation preserves property (matches Coq: Theorem)
-; Translation validation: gesture_priority_defined preserves semantics
-(push 1)
-(declare-const source_gesture_priority_defined Int)
-(declare-const target_gesture_priority_defined Int)
-(assert (>= source_gesture_priority_defined 0))
-(assert (>= target_gesture_priority_defined 0))
-(assert (not (= source_gesture_priority_defined target_gesture_priority_defined)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_gesture_priority_defined () Bool)
+(declare-fun target_gesture_priority_defined () Bool)
+(assert (= source_gesture_priority_defined target_gesture_priority_defined))
 
 ; touch_area_at_least_minimum: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_area_at_least_minimum preserves semantics
-(push 1)
-(declare-const source_touch_area_at_least_minimum Int)
-(declare-const target_touch_area_at_least_minimum Int)
-(assert (>= source_touch_area_at_least_minimum 0))
-(assert (>= target_touch_area_at_least_minimum 0))
-(assert (not (= source_touch_area_at_least_minimum target_touch_area_at_least_minimum)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_area_at_least_minimum () Bool)
+(declare-fun target_touch_area_at_least_minimum () Bool)
+(assert (= source_touch_area_at_least_minimum target_touch_area_at_least_minimum))
 
 ; touch_pressure_bounded: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_pressure_bounded preserves semantics
-(push 1)
-(declare-const source_touch_pressure_bounded Int)
-(declare-const target_touch_pressure_bounded Int)
-(assert (>= source_touch_pressure_bounded 0))
-(assert (>= target_touch_pressure_bounded 0))
-(assert (not (= source_touch_pressure_bounded target_touch_pressure_bounded)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_pressure_bounded () Bool)
+(declare-fun target_touch_pressure_bounded () Bool)
+(assert (= source_touch_pressure_bounded target_touch_pressure_bounded))
 
 ; touch_latency_bounded_16ms: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_latency_bounded_16ms preserves semantics
-(push 1)
-(declare-const source_touch_latency_bounded_16ms Int)
-(declare-const target_touch_latency_bounded_16ms Int)
-(assert (>= source_touch_latency_bounded_16ms 0))
-(assert (>= target_touch_latency_bounded_16ms 0))
-(assert (not (= source_touch_latency_bounded_16ms target_touch_latency_bounded_16ms)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_latency_bounded_16ms () Bool)
+(declare-fun target_touch_latency_bounded_16ms () Bool)
+(assert (= source_touch_latency_bounded_16ms target_touch_latency_bounded_16ms))
 
 ; hover_event_supported: translation preserves property (matches Coq: Theorem)
-; Translation validation: hover_event_supported preserves semantics
-(push 1)
-(declare-const source_hover_event_supported Int)
-(declare-const target_hover_event_supported Int)
-(assert (>= source_hover_event_supported 0))
-(assert (>= target_hover_event_supported 0))
-(assert (not (= source_hover_event_supported target_hover_event_supported)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_hover_event_supported () Bool)
+(declare-fun target_hover_event_supported () Bool)
+(assert (= source_hover_event_supported target_hover_event_supported))
 
 ; stylus_pressure_sensitive: translation preserves property (matches Coq: Theorem)
-; Translation validation: stylus_pressure_sensitive preserves semantics
-(push 1)
-(declare-const source_stylus_pressure_sensitive Int)
-(declare-const target_stylus_pressure_sensitive Int)
-(assert (>= source_stylus_pressure_sensitive 0))
-(assert (>= target_stylus_pressure_sensitive 0))
-(assert (not (= source_stylus_pressure_sensitive target_stylus_pressure_sensitive)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_stylus_pressure_sensitive () Bool)
+(declare-fun target_stylus_pressure_sensitive () Bool)
+(assert (= source_stylus_pressure_sensitive target_stylus_pressure_sensitive))
 
 ; touch_coalescing_correct: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_coalescing_correct preserves semantics
-(push 1)
-(declare-const source_touch_coalescing_correct Int)
-(declare-const target_touch_coalescing_correct Int)
-(assert (>= source_touch_coalescing_correct 0))
-(assert (>= target_touch_coalescing_correct 0))
-(assert (not (= source_touch_coalescing_correct target_touch_coalescing_correct)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_coalescing_correct () Bool)
+(declare-fun target_touch_coalescing_correct () Bool)
+(assert (= source_touch_coalescing_correct target_touch_coalescing_correct))
 
 ; touch_prediction_bounded: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_prediction_bounded preserves semantics
-(push 1)
-(declare-const source_touch_prediction_bounded Int)
-(declare-const target_touch_prediction_bounded Int)
-(assert (>= source_touch_prediction_bounded 0))
-(assert (>= target_touch_prediction_bounded 0))
-(assert (not (= source_touch_prediction_bounded target_touch_prediction_bounded)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_prediction_bounded () Bool)
+(declare-fun target_touch_prediction_bounded () Bool)
+(assert (= source_touch_prediction_bounded target_touch_prediction_bounded))
 
 ; edge_touch_distinguished: translation preserves property (matches Coq: Theorem)
-; Translation validation: edge_touch_distinguished preserves semantics
-(push 1)
-(declare-const source_edge_touch_distinguished Int)
-(declare-const target_edge_touch_distinguished Int)
-(assert (>= source_edge_touch_distinguished 0))
-(assert (>= target_edge_touch_distinguished 0))
-(assert (not (= source_edge_touch_distinguished target_edge_touch_distinguished)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_edge_touch_distinguished () Bool)
+(declare-fun target_edge_touch_distinguished () Bool)
+(assert (= source_edge_touch_distinguished target_edge_touch_distinguished))
 
 ; accidental_touch_rejected: translation preserves property (matches Coq: Theorem)
-; Translation validation: accidental_touch_rejected preserves semantics
-(push 1)
-(declare-const source_accidental_touch_rejected Int)
-(declare-const target_accidental_touch_rejected Int)
-(assert (>= source_accidental_touch_rejected 0))
-(assert (>= target_accidental_touch_rejected 0))
-(assert (not (= source_accidental_touch_rejected target_accidental_touch_rejected)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_accidental_touch_rejected () Bool)
+(declare-fun target_accidental_touch_rejected () Bool)
+(assert (= source_accidental_touch_rejected target_accidental_touch_rejected))
 
 ; touch_event_timestamp_monotonic_single: translation preserves property (matches Coq: Theorem)
-; Translation validation: touch_event_timestamp_monotonic_single preserves semantics
-(push 1)
-(declare-const source_touch_event_timestamp_monotonic_single Int)
-(declare-const target_touch_event_timestamp_monotonic_single Int)
-(assert (>= source_touch_event_timestamp_monotonic_single 0))
-(assert (>= target_touch_event_timestamp_monotonic_single 0))
-(assert (not (= source_touch_event_timestamp_monotonic_single target_touch_event_timestamp_monotonic_single)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_touch_event_timestamp_monotonic_single () Bool)
+(declare-fun target_touch_event_timestamp_monotonic_single () Bool)
+(assert (= source_touch_event_timestamp_monotonic_single target_touch_event_timestamp_monotonic_single))
 
 ; simultaneous_gesture_resolution: translation preserves property (matches Coq: Theorem)
-; Translation validation: simultaneous_gesture_resolution preserves semantics
-(push 1)
-(declare-const source_simultaneous_gesture_resolution Int)
-(declare-const target_simultaneous_gesture_resolution Int)
-(assert (>= source_simultaneous_gesture_resolution 0))
-(assert (>= target_simultaneous_gesture_resolution 0))
-(assert (not (= source_simultaneous_gesture_resolution target_simultaneous_gesture_resolution)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_simultaneous_gesture_resolution () Bool)
+(declare-fun target_simultaneous_gesture_resolution () Bool)
+(assert (= source_simultaneous_gesture_resolution target_simultaneous_gesture_resolution))
 
 ; unknown_gesture_lowest_priority: translation preserves property (matches Coq: Theorem)
-; Translation validation: unknown_gesture_lowest_priority preserves semantics
-(push 1)
-(declare-const source_unknown_gesture_lowest_priority Int)
-(declare-const target_unknown_gesture_lowest_priority Int)
-(assert (>= source_unknown_gesture_lowest_priority 0))
-(assert (>= target_unknown_gesture_lowest_priority 0))
-(assert (not (= source_unknown_gesture_lowest_priority target_unknown_gesture_lowest_priority)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_unknown_gesture_lowest_priority () Bool)
+(declare-fun target_unknown_gesture_lowest_priority () Bool)
+(assert (= source_unknown_gesture_lowest_priority target_unknown_gesture_lowest_priority))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

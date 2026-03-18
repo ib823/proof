@@ -12,38 +12,38 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | cert_status         | cert_status            | OK     |
- * | frame_policy        | frame_policy           | OK     |
- * | sensitivity        | sensitivity            | OK     |
- * | breakpoint         | breakpoint             | OK     |
- * | error_severity      | error_severity         | OK     |
- * | display_style       | display_style          | OK     |
- * | recovery_action     | recovery_action        | OK     |
- * | point              | point                  | OK     |
- * | rect               | rect                   | OK     |
- * | ui_element          | ui_element             | OK     |
- * | ui_state            | ui_state               | OK     |
- * | origin             | origin                 | OK     |
- * | tab_state           | tab_state              | OK     |
- * | frame_state         | frame_state            | OK     |
- * | verified_browser_state | verified_browser_state | OK     |
- * | consent_record      | consent_record         | OK     |
- * | dialog_option       | dialog_option          | OK     |
- * | verified_dialog     | verified_dialog        | OK     |
- * | price_display       | price_display          | OK     |
- * | consent_state       | consent_state          | OK     |
- * | sensitive_action    | sensitive_action       | OK     |
- * | layout_input        | layout_input           | OK     |
- * | input_field         | input_field            | OK     |
- * | focus_state         | focus_state            | OK     |
- * | verified_focus_state | verified_focus_state   | OK     |
- * | viewport_bounds     | viewport_bounds        | OK     |
- * | color              | color                  | OK     |
- * | viewport           | viewport               | OK     |
- * | layout_element      | layout_element         | OK     |
- * | responsive_layout   | responsive_layout      | OK     |
- * | error_display       | error_display          | OK     |
- * | verified_error_display | verified_error_display | OK     |
+ * | CertStatus         | cert_status            | OK     |
+ * | FramePolicy        | frame_policy           | OK     |
+ * | Sensitivity        | sensitivity            | OK     |
+ * | Breakpoint         | breakpoint             | OK     |
+ * | ErrorSeverity      | error_severity         | OK     |
+ * | DisplayStyle       | display_style          | OK     |
+ * | RecoveryAction     | recovery_action        | OK     |
+ * | Point              | point                  | OK     |
+ * | Rect               | rect                   | OK     |
+ * | UIElement          | ui_element             | OK     |
+ * | UIState            | ui_state               | OK     |
+ * | Origin             | origin                 | OK     |
+ * | TabState           | tab_state              | OK     |
+ * | FrameState         | frame_state            | OK     |
+ * | VerifiedBrowserState | verified_browser_state | OK     |
+ * | ConsentRecord      | consent_record         | OK     |
+ * | DialogOption       | dialog_option          | OK     |
+ * | VerifiedDialog     | verified_dialog        | OK     |
+ * | PriceDisplay       | price_display          | OK     |
+ * | ConsentState       | consent_state          | OK     |
+ * | SensitiveAction    | sensitive_action       | OK     |
+ * | LayoutInput        | layout_input           | OK     |
+ * | InputField         | input_field            | OK     |
+ * | FocusState         | focus_state            | OK     |
+ * | VerifiedFocusState | verified_focus_state   | OK     |
+ * | ViewportBounds     | viewport_bounds        | OK     |
+ * | Color              | color                  | OK     |
+ * | Viewport           | viewport               | OK     |
+ * | LayoutElement      | layout_element         | OK     |
+ * | ResponsiveLayout   | responsive_layout      | OK     |
+ * | ErrorDisplay       | error_display          | OK     |
+ * | VerifiedErrorDisplay | verified_error_display | OK     |
  * | MIN_VISIBLE_OPACITY | MIN_VISIBLE_OPACITY    | OK     |
  * | point_in_rect      | point_in_rect          | OK     |
  * | is_visible         | is_visible             | OK     |
@@ -158,25 +158,21 @@ theory VerifiedUI
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym forall = "nat"
-type_synonym opacity = "nat"
-type_synonym z_index = "nat"
-(* cert_status (matches Coq: Inductive cert_status) *)
+(* CertStatus (matches Coq: Inductive CertStatus) *)
 datatype cert_status =
     CertValid
   |     CertInvalid
   |     CertExpired
   |     CertSelfSigned
 
-(* frame_policy (matches Coq: Inductive frame_policy) *)
+(* FramePolicy (matches Coq: Inductive FramePolicy) *)
 datatype frame_policy =
     FrameDeny
   |     FrameSameOrigin
   |     FrameAllowFrom
   |     FrameAllowAll
 
-(* sensitivity (matches Coq: Inductive sensitivity) *)
+(* Sensitivity (matches Coq: Inductive Sensitivity) *)
 datatype sensitivity =
     SensNone
   |     SensLow
@@ -184,172 +180,172 @@ datatype sensitivity =
   |     SensHigh
   |     SensCritical
 
-(* breakpoint (matches Coq: Inductive breakpoint) *)
+(* Breakpoint (matches Coq: Inductive Breakpoint) *)
 datatype breakpoint =
     BPMobile
   |     BPTablet
   |     BPDesktop
 
-(* error_severity (matches Coq: Inductive error_severity) *)
+(* ErrorSeverity (matches Coq: Inductive ErrorSeverity) *)
 datatype error_severity =
     SevInfo
   |     SevWarning
   |     SevError
   |     SevCritical
 
-(* display_style (matches Coq: Inductive display_style) *)
+(* DisplayStyle (matches Coq: Inductive DisplayStyle) *)
 datatype display_style =
     StyleNormal
   |     StyleAccented
   |     StyleWarning
   |     StyleDanger
 
-(* recovery_action (matches Coq: Inductive recovery_action) *)
+(* RecoveryAction (matches Coq: Inductive RecoveryAction) *)
 datatype recovery_action =
     ActionRetry
   |     ActionDismiss
   |     ActionNavigate
   |     ActionContact
 
-(* point (matches Coq: Record point) *)
+(* Point (matches Coq: Record Point) *)
 record point =
   px :: nat
   py :: nat
 
-(* rect (matches Coq: Record rect) *)
+(* Rect (matches Coq: Record Rect) *)
 record rect =
   rect_x :: nat
   rect_y :: nat
   rect_width :: nat
   rect_height :: nat
 
-(* ui_element (matches Coq: Record ui_element) *)
+(* UIElement (matches Coq: Record UIElement) *)
 record ui_element =
   elem_id :: nat
-  elem_bounds :: rect
-  elem_z_index :: z_index
-  elem_opacity :: opacity
+  elem_bounds :: Rect
+  elem_z_index :: ZIndex
+  elem_opacity :: Opacity
   elem_interactive :: bool
   elem_visible :: bool
 
-(* ui_state (matches Coq: Record ui_state) *)
+(* UIState (matches Coq: Record UIState) *)
 record ui_state =
   ui_elements :: 'a list
   ui_focus :: option
 
-(* origin (matches Coq: Record origin) *)
+(* Origin (matches Coq: Record Origin) *)
 record origin =
   origin_scheme :: string
   origin_host :: string
   origin_port :: nat
 
-(* tab_state (matches Coq: Record tab_state) *)
+(* TabState (matches Coq: Record TabState) *)
 record tab_state =
   tab_id :: nat
-  tab_loaded_origin :: origin
-  tab_content_origin :: origin
+  tab_loaded_origin :: Origin
+  tab_content_origin :: Origin
   tab_origin_match :: tab_loaded_origin
 
-(* frame_state (matches Coq: Record frame_state) *)
+(* FrameState (matches Coq: Record FrameState) *)
 record frame_state =
   frame_id :: nat
-  frame_origin :: origin
+  frame_origin :: Origin
   frame_parent_origin :: option
-  frame_policy :: frame_policy
+  frame_policy :: FramePolicy
 
-(* verified_browser_state (matches Coq: Record verified_browser_state) *)
+(* VerifiedBrowserState (matches Coq: Record VerifiedBrowserState) *)
 record verified_browser_state =
   browser_displayed_url :: string
-  browser_actual_origin :: origin
-  browser_cert_status :: cert_status
+  browser_actual_origin :: Origin
+  browser_cert_status :: CertStatus
   browser_tls_verified :: bool
   browser_tabs :: 'a list
   browser_frames :: 'a list
   browser_url_derived :: browser_displayed_url
   browser_tls_implies_https :: browser_tls_verified
 
-(* consent_record (matches Coq: Record consent_record) *)
+(* ConsentRecord (matches Coq: Record ConsentRecord) *)
 record consent_record =
   consent_action :: string
   consent_granted :: bool
   consent_timestamp :: nat
   consent_revocable :: bool
 
-(* dialog_option (matches Coq: Record dialog_option) *)
+(* DialogOption (matches Coq: Record DialogOption) *)
 record dialog_option =
   opt_label :: string
   opt_is_cancel :: bool
   opt_visual_weight :: nat
   opt_uses_neutral_language :: bool
 
-(* verified_dialog (matches Coq: Record verified_dialog) *)
+(* VerifiedDialog (matches Coq: Record VerifiedDialog) *)
 record verified_dialog =
   dialog_options :: 'a list
   dialog_balanced :: forall
   dialog_cancel_neutral :: forall
 
-(* price_display (matches Coq: Record price_display) *)
+(* PriceDisplay (matches Coq: Record PriceDisplay) *)
 record price_display =
   displayed_total :: nat
   actual_total :: nat
   price_verified :: displayed_total
 
-(* consent_state (matches Coq: Record consent_state) *)
+(* ConsentState (matches Coq: Record ConsentState) *)
 record consent_state =
   consent_records :: 'a list
-  consent_all_revocable :: forall
+  consent_all_revocable :: Forall
 
-(* sensitive_action (matches Coq: Record sensitive_action) *)
+(* SensitiveAction (matches Coq: Record SensitiveAction) *)
 record sensitive_action =
   action_name :: string
-  action_sensitivity :: sensitivity
+  action_sensitivity :: Sensitivity
 
-(* layout_input (matches Coq: Record layout_input) *)
+(* LayoutInput (matches Coq: Record LayoutInput) *)
 record layout_input =
   layout_viewport_width :: nat
   layout_viewport_height :: nat
   layout_elements :: 'a list
   layout_seed :: nat
 
-(* input_field (matches Coq: Record input_field) *)
+(* InputField (matches Coq: Record InputField) *)
 record input_field =
   field_data :: 'a list
   input_max_length :: nat
   input_allowed :: nat
   input_sanitized :: bool
 
-(* focus_state (matches Coq: Record focus_state) *)
+(* FocusState (matches Coq: Record FocusState) *)
 record focus_state =
   focused_element :: nat
   tab_order :: 'a list
   focus_modal_active :: bool
   focus_modal_elements :: 'a list
 
-(* verified_focus_state (matches Coq: Record verified_focus_state) *)
+(* VerifiedFocusState (matches Coq: Record VerifiedFocusState) *)
 record verified_focus_state =
-  vf_state :: focus_state
+  vf_state :: FocusState
   vf_valid :: focus_valid
   vf_visible_elements :: 'a list
   vf_tab_in_visible :: forall
   vf_modal_subset :: focus_modal_active
 
-(* viewport_bounds (matches Coq: Record viewport_bounds) *)
+(* ViewportBounds (matches Coq: Record ViewportBounds) *)
 record viewport_bounds =
   vp_min_x :: nat
   vp_min_y :: nat
   vp_max_x :: nat
   vp_max_y :: nat
 
-(* color (matches Coq: Record color) *)
+(* Color (matches Coq: Record Color) *)
 record color =
   color_lum :: nat
 
-(* viewport (matches Coq: Record viewport) *)
+(* Viewport (matches Coq: Record Viewport) *)
 record viewport =
   vp_width :: nat
   vp_height :: nat
 
-(* layout_element (matches Coq: Record layout_element) *)
+(* LayoutElement (matches Coq: Record LayoutElement) *)
 record layout_element =
   le_id :: nat
   le_width :: nat
@@ -357,27 +353,27 @@ record layout_element =
   le_font_size :: nat
   le_is_interactive :: bool
 
-(* responsive_layout (matches Coq: Record responsive_layout) *)
+(* ResponsiveLayout (matches Coq: Record ResponsiveLayout) *)
 record responsive_layout =
-  rl_viewport :: viewport
+  rl_viewport :: Viewport
   rl_elements :: 'a list
-  rl_all_fit :: forall
-  rl_touch_targets :: forall
-  rl_font_appropriate :: forall
+  rl_all_fit :: Forall
+  rl_touch_targets :: Forall
+  rl_font_appropriate :: Forall
 
-(* error_display (matches Coq: Record error_display) *)
+(* ErrorDisplay (matches Coq: Record ErrorDisplay) *)
 record error_display =
   err_message :: string
   err_actual_error :: string
-  err_severity :: error_severity
+  err_severity :: ErrorSeverity
   err_visible :: bool
   err_auto_dismiss :: bool
-  err_display_style :: display_style
-  err_recovery :: recovery_action
+  err_display_style :: DisplayStyle
+  err_recovery :: RecoveryAction
 
-(* verified_error_display (matches Coq: Record verified_error_display) *)
+(* VerifiedErrorDisplay (matches Coq: Record VerifiedErrorDisplay) *)
 record verified_error_display =
-  ve_display :: error_display
+  ve_display :: ErrorDisplay
   ve_always_visible :: err_visible
   ve_critical_persistent :: err_severity
   ve_style_matches :: err_display_style
@@ -388,11 +384,11 @@ definition MIN_VISIBLE_OPACITY :: "Opacity" where
   "MIN_VISIBLE_OPACITY \<equiv> 10"
 
 (* point_in_rect (matches Coq: Definition point_in_rect) *)
-definition point_in_rect :: "Point \<Rightarrow> rect \<Rightarrow> bool" where
-  "point_in_rect p r \<equiv> (rect_x r \<le> px p \<and>
-             px p < rect_x r + rect_width r \<and>
-             rect_y r \<le> py p \<and>
-             py p < rect_y r + rect_height r)"
+definition point_in_rect :: "Point \<Rightarrow> Rect \<Rightarrow> bool" where
+  "point_in_rect p r \<equiv> ((((\<and> \<le> (rect_x)) r \<and> px p))
+             (((px < p)) (rect_x r + rect_width r)))
+       ((((rect_y \<le> r) \<and> py p))
+             (((py < p)) (rect_y r + rect_height r)))"
 
 (* is_visible (matches Coq: Definition is_visible) *)
 definition is_visible :: "UIElement \<Rightarrow> bool" where
@@ -405,45 +401,45 @@ definition is_interactive :: "UIElement \<Rightarrow> bool" where
 (* element_well_formed (matches Coq: Definition element_well_formed) *)
 definition element_well_formed :: "UIElement \<Rightarrow> bool" where
   "element_well_formed e \<equiv> elem_interactive e = True -> 
-  (elem_visible e = True \<and> elem_opacity e >= MIN_VISIBLE_OPACITY)"
+  (elem_visible e = True /\ elem_opacity e >= MIN_VISIBLE_OPACITY)"
 
 (* verified_ui_state (matches Coq: Definition verified_ui_state) *)
 definition verified_ui_state :: "UIState \<Rightarrow> bool" where
-  "verified_ui_state ui \<equiv> forall element_well_formed (ui_elements ui)"
+  "verified_ui_state ui \<equiv> Forall element_well_formed (ui_elements ui)"
 
 (* find_topmost_at_point (matches Coq: Definition find_topmost_at_point) *)
 fun find_topmost_at_point :: "Point \<Rightarrow> option UIElement" where
   "find_topmost_at_point None = find_topmost_at_point"
 
 (* visually_at (matches Coq: Definition visually_at) *)
-definition visually_at :: "UIState \<Rightarrow> point \<Rightarrow> option UIElement" where
+definition visually_at :: "UIState \<Rightarrow> Point \<Rightarrow> option UIElement" where
   "visually_at ui p \<equiv> let visible_elements := filter is_visible (ui_elements ui) in
   find_topmost_at_point visible_elements p None"
 
 (* clickable_at (matches Coq: Definition clickable_at) *)
-definition clickable_at :: "UIState \<Rightarrow> point \<Rightarrow> option UIElement" where
+definition clickable_at :: "UIState \<Rightarrow> Point \<Rightarrow> option UIElement" where
   "clickable_at ui p \<equiv> let interactive_elements := filter is_interactive (ui_elements ui) in
   find_topmost_at_point interactive_elements p None"
 
 (* verified_clickable_at (matches Coq: Definition verified_clickable_at) *)
-definition verified_clickable_at :: "UIState \<Rightarrow> point \<Rightarrow> option UIElement" where
+definition verified_clickable_at :: "UIState \<Rightarrow> Point \<Rightarrow> option UIElement" where
   "verified_clickable_at ui p \<equiv> clickable_at ui p"
 
 (* origin_eq (matches Coq: Definition origin_eq) *)
 definition origin_eq :: "bool" where
-  "origin_eq \<equiv> (origin_scheme o1 = origin_scheme o2 \<and>
-             origin_host o1 = origin_host o2 \<and>
-             origin_port o1 = origin_port o2)"
+  "origin_eq \<equiv> (((String.(\<and> = (origin_scheme)) o1 \<and> origin_scheme o2))
+             (String.((origin_host = o1)) (origin_host o2)))
+       (((origin_port = o1)) (origin_port o2))"
 
 (* compute_layout (matches Coq: Definition compute_layout) *)
 definition compute_layout :: "LayoutInput \<Rightarrow> list UIElement" where
   "compute_layout input \<equiv> layout_elements input"
 
 (* frame_policy_allows (matches Coq: Definition frame_policy_allows) *)
-fun frame_policy_allows :: "FramePolicy \<Rightarrow> origin \<Rightarrow> bool" where
-  "frame_policy_allows FrameDeny = False"
-|   "frame_policy_allows FrameSameOrigin = True"
-|   "frame_policy_allows FrameAllowAll = True"
+fun frame_policy_allows :: "FramePolicy \<Rightarrow> Origin \<Rightarrow> bool" where
+  "frame_policy_allows FrameDeny = false"
+|   "frame_policy_allows FrameSameOrigin = true"
+|   "frame_policy_allows FrameAllowAll = true"
 
 (* frame_well_formed (matches Coq: Definition frame_well_formed) *)
 definition frame_well_formed :: "FrameState \<Rightarrow> bool" where
@@ -459,7 +455,7 @@ definition char_is_sql_meta :: "nat \<Rightarrow> bool" where
 
 (* contains_script_tag (matches Coq: Definition contains_script_tag) *)
 fun contains_script_tag :: "bool" where
-  "contains_script_tag _ = False"
+  "contains_script_tag _ = false"
 
 (* sanitize_chars (matches Coq: Definition sanitize_chars) *)
 definition sanitize_chars :: "list nat" where
@@ -477,7 +473,7 @@ definition sanitize_input :: "InputField \<Rightarrow> InputField" where
 
 (* input_is_safe (matches Coq: Definition input_is_safe) *)
 definition input_is_safe :: "InputField \<Rightarrow> bool" where
-  "input_is_safe field \<equiv> forall (\<lambda>c. input_allowed field c = True) (field_data field) \<and>
+  "input_is_safe field \<equiv> Forall (fun c => input_allowed field c = True) (field_data field) /\
   len (field_data field) <= input_max_length field"
 
 (* get_focused_id (matches Coq: Definition get_focused_id) *)
@@ -485,7 +481,7 @@ definition get_focused_id :: "FocusState \<Rightarrow> option nat" where
   "get_focused_id fs \<equiv> nth_error (tab_order fs) (focused_element fs)"
 
 (* focus_next - complex match, needs manual translation *)
-definition focus_next :: "bool" where "focus_next \<equiv> True"
+definition focus_next :: "bool" where "focus_next = undefined"
 
 (* focus_valid (matches Coq: Definition focus_valid) *)
 definition focus_valid :: "FocusState \<Rightarrow> bool" where
@@ -542,7 +538,7 @@ definition desktop_min :: "nat" where
   "desktop_min \<equiv> 12"
 
 (* breakpoint_eq - complex match, needs manual translation *)
-definition breakpoint_eq :: "bool" where "breakpoint_eq \<equiv> True"
+definition breakpoint_eq :: "bool" where "breakpoint_eq = undefined"
 
 (* classify_breakpoint (matches Coq: Definition classify_breakpoint) *)
 definition classify_breakpoint :: "nat \<Rightarrow> Breakpoint" where
@@ -568,205 +564,205 @@ fun required_style :: "ErrorSeverity \<Rightarrow> DisplayStyle" where
     HELPER LEMMAS
     ═══════════════════════════════════════════════════════════════════════════ *)
 (* filter_preserves_property (matches Coq) *)
-lemma filter_preserves_property: "\<forall>{A : Type} (f : A \<longrightarrow> bool) (P : A \<longrightarrow> Prop) (l : list A). (\<forall>x. f x = True \<longrightarrow> P x) \<longrightarrow> forall P (filter f l)"
+lemma filter_preserves_property: "\<forall> {A : Type} (f : A \<longrightarrow> bool) (P : A \<longrightarrow> Prop) (l : list A), (\<forall> x, f x = True \<longrightarrow> P x) \<longrightarrow> Forall P (filter f l)"
   by auto
 
 (* forall_filter_subset (matches Coq) *)
-lemma forall_filter_subset: "\<forall>{A : Type} (P : A \<longrightarrow> Prop) (f : A \<longrightarrow> bool) (l : list A). forall P l \<longrightarrow> forall P (filter f l)"
+lemma forall_filter_subset: "\<forall> {A : Type} (P : A \<longrightarrow> Prop) (f : A \<longrightarrow> bool) (l : list A), Forall P l \<longrightarrow> Forall P (filter f l)"
   by auto
 
 (* find_topmost_in_list (matches Coq) *)
-lemma find_topmost_in_list: "\<forall>es p current result. find_topmost_at_point es p current = Some result \<longrightarrow> result \<in> set es \<or> current = Some result"
-  by auto
+lemma find_topmost_in_list: "\<forall> es p current result, find_topmost_at_point es p current = Some result \<longrightarrow> In result es \<or> current = Some result"
+  by (cases rule: ‹_›.cases; simp)
 
 (* is_visible_implies_visible (matches Coq) *)
-lemma is_visible_implies_visible: "\<forall>e. is_visible e = True \<longrightarrow> elem_visible e = True"
+lemma is_visible_implies_visible: "\<forall> e, is_visible e = True \<longrightarrow> elem_visible e = True"
   by auto
 
 (* is_visible_implies_opacity (matches Coq) *)
-lemma is_visible_implies_opacity: "\<forall>e. is_visible e = True \<longrightarrow> elem_opacity e \<ge> MIN_VISIBLE_OPACITY"
+lemma is_visible_implies_opacity: "\<forall> e, is_visible e = True \<longrightarrow> elem_opacity e \<ge> MIN_VISIBLE_OPACITY"
   by auto
 
 (* UX_001_01_wysiwyk (matches Coq) *)
-lemma UX_001_01_wysiwyk: "\<forall>ui p elem. verified_ui_state ui \<longrightarrow> clickable_at ui p = Some elem \<longrightarrow> is_visible elem = True"
+lemma UX_001_01_wysiwyk: "\<forall> ui p elem, verified_ui_state ui \<longrightarrow> clickable_at ui p = Some elem \<longrightarrow> is_visible elem = True"
   by auto
 
 (* find_topmost_geq_current (matches Coq) *)
-lemma find_topmost_geq_current: "\<forall>es p c result. find_topmost_at_point es p (Some c) = Some result \<longrightarrow> elem_z_index c \<le> elem_z_index result"
+lemma find_topmost_geq_current: "\<forall> es p c result, find_topmost_at_point es p (Some c) = Some result \<longrightarrow> elem_z_index c \<le> elem_z_index result"
   by auto
 
 (* find_topmost_max_z (matches Coq) *)
-lemma find_topmost_max_z: "\<forall>es p current result. find_topmost_at_point es p current = Some result \<longrightarrow> \<forall>e. e \<in> set es \<longrightarrow> point_in_rect p (elem_bounds e) = True \<longrightarrow> elem_z_index e \<le> elem_z_index result"
+lemma find_topmost_max_z: "\<forall> es p current result, find_topmost_at_point es p current = Some result \<longrightarrow> \<forall> e, In e es \<longrightarrow> point_in_rect p (elem_bounds e) = True \<longrightarrow> elem_z_index e \<le> elem_z_index result"
   by auto
 
 (* UX_001_02_z_order_integrity (matches Coq) *)
-lemma UX_001_02_z_order_integrity: "\<forall>ui p elem1 elem2. clickable_at ui p = Some elem1 \<longrightarrow> elem2 \<in> set (filter is_interactive (ui_elements ui)) \<longrightarrow> point_in_rect p (elem_bounds elem2) = True \<longrightarrow> elem_z_index elem2 \<le> elem_z_index elem1"
+lemma UX_001_02_z_order_integrity: "\<forall> ui p elem1 elem2, clickable_at ui p = Some elem1 \<longrightarrow> In elem2 (filter is_interactive (ui_elements ui)) \<longrightarrow> point_in_rect p (elem_bounds elem2) = True \<longrightarrow> elem_z_index elem2 \<le> elem_z_index elem1"
   by auto
 
 (* UX_001_03_no_invisible_overlay (matches Coq) *)
-lemma UX_001_03_no_invisible_overlay: "\<forall>ui p elem. verified_ui_state ui \<longrightarrow> clickable_at ui p = Some elem \<longrightarrow> elem_opacity elem \<ge> MIN_VISIBLE_OPACITY"
+lemma UX_001_03_no_invisible_overlay: "\<forall> ui p elem, verified_ui_state ui \<longrightarrow> clickable_at ui p = Some elem \<longrightarrow> elem_opacity elem \<ge> MIN_VISIBLE_OPACITY"
   by auto
 
 (* UX_001_04_visual_consistency (matches Coq) *)
-lemma UX_001_04_visual_consistency: "\<forall>ui elem. verified_ui_state ui \<longrightarrow> elem \<in> set (ui_elements ui) \<longrightarrow> elem_interactive elem = True \<longrightarrow> elem_visible elem = True"
+lemma UX_001_04_visual_consistency: "\<forall> ui elem, verified_ui_state ui \<longrightarrow> In elem (ui_elements ui) \<longrightarrow> elem_interactive elem = True \<longrightarrow> elem_visible elem = True"
   by auto
 
 (* UX_001_05_layout_deterministic (matches Coq) *)
-lemma UX_001_05_layout_deterministic: "\<forall>input1 input2. input1 = input2 \<longrightarrow> compute_layout input1 = compute_layout input2"
+lemma UX_001_05_layout_deterministic: "\<forall> input1 input2, input1 = input2 \<longrightarrow> compute_layout input1 = compute_layout input2"
   by simp
 
 (* UX_001_06_origin_indicator_correct (matches Coq) *)
-lemma UX_001_06_origin_indicator_correct: "\<forall>bs. browser_displayed_url bs = origin_host (browser_actual_origin bs)"
+lemma UX_001_06_origin_indicator_correct: "\<forall> bs, browser_displayed_url bs = origin_host (browser_actual_origin bs)"
   by auto
 
 (* UX_001_07_cert_indicator_correct (matches Coq) *)
-lemma UX_001_07_cert_indicator_correct: "\<forall>bs. browser_cert_status bs = CertValid \<longrightarrow> browser_tls_verified bs = True \<longrightarrow> \<exists>o. browser_actual_origin bs = o \<and> origin_scheme o = "https"%string"
-  by auto
+lemma UX_001_07_cert_indicator_correct: "\<forall> bs, browser_cert_status bs = CertValid \<longrightarrow> browser_tls_verified bs = True \<longrightarrow> \<exists> o, browser_actual_origin bs = o \<and> origin_scheme o = "https"%string"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_001_08_no_url_spoof (matches Coq) *)
-lemma UX_001_08_no_url_spoof: "\<forall>bs fake_origin. browser_displayed_url bs = origin_host fake_origin \<longrightarrow> fake_origin = browser_actual_origin bs \<or> origin_host fake_origin = origin_host (browser_actual_origin bs)"
+lemma UX_001_08_no_url_spoof: "\<forall> bs fake_origin, browser_displayed_url bs = origin_host fake_origin \<longrightarrow> fake_origin = browser_actual_origin bs \<or> origin_host fake_origin = origin_host (browser_actual_origin bs)"
   by auto
 
 (* UX_001_09_frame_ancestry_correct (matches Coq) *)
-lemma UX_001_09_frame_ancestry_correct: "\<forall>frame parent_origin. frame_well_formed frame \<longrightarrow> frame_parent_origin frame = Some parent_origin \<longrightarrow> frame_policy frame \<noteq> FrameDeny"
+lemma UX_001_09_frame_ancestry_correct: "\<forall> frame parent_origin, frame_well_formed frame \<longrightarrow> frame_parent_origin frame = Some parent_origin \<longrightarrow> frame_policy frame \<noteq> FrameDeny"
   by auto
 
 (* UX_001_10_tab_integrity (matches Coq) *)
-lemma UX_001_10_tab_integrity: "\<forall>tab. tab_loaded_origin tab = tab_content_origin tab"
+lemma UX_001_10_tab_integrity: "\<forall> tab, tab_loaded_origin tab = tab_content_origin tab"
   by auto
 
 (* UX_001_11_consent_explicit (matches Coq) *)
-lemma UX_001_11_consent_explicit: "\<forall>action cs. action_sensitivity action \<noteq> SensNone \<longrightarrow> VerifiedExecution action cs \<longrightarrow> \<exists>c. c \<in> set (consent_records cs) \<and> consent_action c = action_name action \<and> consent_granted c = True"
+lemma UX_001_11_consent_explicit: "\<forall> action cs, action_sensitivity action \<noteq> SensNone \<longrightarrow> VerifiedExecution action cs \<longrightarrow> \<exists> c, In c (consent_records cs) \<and> consent_action c = action_name action \<and> consent_granted c = True"
   by auto
 
 (* UX_001_12_consent_revocable (matches Coq) *)
-lemma UX_001_12_consent_revocable: "\<forall>cs c. c \<in> set (consent_records cs) \<longrightarrow> consent_revocable c = True"
+lemma UX_001_12_consent_revocable: "\<forall> cs c, In c (consent_records cs) \<longrightarrow> consent_revocable c = True"
   by auto
 
 (* UX_001_13_no_confirmshaming (matches Coq) *)
-lemma UX_001_13_no_confirmshaming: "\<forall>dialog opt. opt \<in> set (dialog_options dialog) \<longrightarrow> opt_is_cancel opt = True \<longrightarrow> opt_uses_neutral_language opt = True"
+lemma UX_001_13_no_confirmshaming: "\<forall> dialog opt, In opt (dialog_options dialog) \<longrightarrow> opt_is_cancel opt = True \<longrightarrow> opt_uses_neutral_language opt = True"
   by auto
 
 (* UX_001_14_no_hidden_costs (matches Coq) *)
-lemma UX_001_14_no_hidden_costs: "\<forall>pd. displayed_total pd = actual_total pd"
+lemma UX_001_14_no_hidden_costs: "\<forall> pd, displayed_total pd = actual_total pd"
   by auto
 
 (* UX_001_15_equal_option_presentation (matches Coq) *)
-lemma UX_001_15_equal_option_presentation: "\<forall>dialog o1 o2. o1 \<in> set (dialog_options dialog) \<longrightarrow> o2 \<in> set (dialog_options dialog) \<longrightarrow> opt_visual_weight o1 \<le> opt_visual_weight o2 + 2 \<and> opt_visual_weight o2 \<le> opt_visual_weight o1 + 2"
+lemma UX_001_15_equal_option_presentation: "\<forall> dialog o1 o2, In o1 (dialog_options dialog) \<longrightarrow> In o2 (dialog_options dialog) \<longrightarrow> opt_visual_weight o1 \<le> opt_visual_weight o2 + 2 \<and> opt_visual_weight o2 \<le> opt_visual_weight o1 + 2"
   by auto
 
 (* firstn_length_le (matches Coq) *)
-lemma firstn_length_le: "\<forall>{A : Type} (n :: nat) (l : list A). len (firstn n l) \<le> n"
-  by auto
+lemma firstn_length_le: "\<forall> {A : Type} (n : nat) (l : list A), len (firstn n l) \<le> n"
+  by (cases rule: ‹_›.cases; simp)
 
 (* filter_all_true (matches Coq) *)
-lemma filter_all_true: "\<forall>{A : Type} (f : A \<longrightarrow> bool) (l : list A). forall (\<lambda>x. f x = True) (filter f l)"
+lemma filter_all_true: "\<forall> {A : Type} (f : A \<longrightarrow> bool) (l : list A), Forall (fun x => f x = True) (filter f l)"
   by auto
 
 (* firstn_forall (matches Coq) *)
-lemma firstn_forall: "\<forall>{A : Type} (P : A \<longrightarrow> Prop) (n :: nat) (l : list A). forall P l \<longrightarrow> forall P (firstn n l)"
+lemma firstn_forall: "\<forall> {A : Type} (P : A \<longrightarrow> Prop) (n : nat) (l : list A), Forall P l \<longrightarrow> Forall P (firstn n l)"
   by auto
 
 (* filter_length_le (matches Coq) *)
-lemma filter_length_le: "\<forall>{A : Type} (f : A \<longrightarrow> bool) (l : list A). len (filter f l) \<le> len l"
-  by auto
+lemma filter_length_le: "\<forall> {A : Type} (f : A \<longrightarrow> bool) (l : list A), len (filter f l) \<le> len l"
+  by (cases rule: ‹_›.cases; simp)
 
 (* firstn_length_le2 (matches Coq) *)
-lemma firstn_length_le2: "\<forall>{A : Type} (n :: nat) (l : list A). len (firstn n l) \<le> len l"
-  by auto
+lemma firstn_length_le2: "\<forall> {A : Type} (n : nat) (l : list A), len (firstn n l) \<le> len l"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_002_01: Input Length Bounded
     Sanitized input never exceeds max_length. *)
 (* UX_002_01_input_length_bounded (matches Coq) *)
-lemma UX_002_01_input_length_bounded: "\<forall>field. let result := sanitize_input field in len (field_data result) \<le> input_max_length result"
+lemma UX_002_01_input_length_bounded: "\<forall> field, let result := sanitize_input field in len (field_data result) \<le> input_max_length result"
   by simp
 
 (* UX_002_02: XSS Injection Impossible
     Sanitized input with a whitelist that rejects dangerous chars
     contains no dangerous characters. *)
 (* UX_002_02_xss_injection_impossible (matches Coq) *)
-lemma UX_002_02_xss_injection_impossible: "\<forall>field. (\<forall>c. input_allowed field c = True \<longrightarrow> char_is_dangerous c = False) \<longrightarrow> let result := sanitize_input field in forall (\<lambda>c. char_is_dangerous c = False) (field_data result)"
+lemma UX_002_02_xss_injection_impossible: "\<forall> field, (\<forall> c, input_allowed field c = True \<longrightarrow> char_is_dangerous c = False) \<longrightarrow> let result := sanitize_input field in Forall (fun c => char_is_dangerous c = False) (field_data result)"
   by auto
 
 (* UX_002_03: SQL Injection Impossible
     Sanitized input with a whitelist that rejects SQL metacharacters
     contains no SQL metacharacters. *)
 (* UX_002_03_sql_injection_impossible (matches Coq) *)
-lemma UX_002_03_sql_injection_impossible: "\<forall>field. (\<forall>c. input_allowed field c = True \<longrightarrow> char_is_sql_meta c = False) \<longrightarrow> let result := sanitize_input field in forall (\<lambda>c. char_is_sql_meta c = False) (field_data result)"
+lemma UX_002_03_sql_injection_impossible: "\<forall> field, (\<forall> c, input_allowed field c = True \<longrightarrow> char_is_sql_meta c = False) \<longrightarrow> let result := sanitize_input field in Forall (fun c => char_is_sql_meta c = False) (field_data result)"
   by auto
 
 (* filter_id_forall (matches Coq) *)
-lemma filter_id_forall: "\<forall>{A : Type} (f : A \<longrightarrow> bool) (l : list A). forall (\<lambda>x. f x = True) l \<longrightarrow> filter f l = l"
+lemma filter_id_forall: "\<forall> {A : Type} (f : A \<longrightarrow> bool) (l : list A), Forall (fun x => f x = True) l \<longrightarrow> filter f l = l"
   by simp
 
 (* firstn_all_le (matches Coq) *)
-lemma firstn_all_le: "\<forall>{A : Type} (n :: nat) (l : list A). len l \<le> n \<longrightarrow> firstn n l = l"
-  by auto
+lemma firstn_all_le: "\<forall> {A : Type} (n : nat) (l : list A), len l \<le> n \<longrightarrow> firstn n l = l"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_002_04: Input Sanitization Idempotent
     Sanitizing an already-sanitized input returns the same data. *)
 (* UX_002_04_input_idempotent (matches Coq) *)
-lemma UX_002_04_input_idempotent: "\<forall>field. input_is_safe field \<longrightarrow> field_data (sanitize_input field) = field_data field"
+lemma UX_002_04_input_idempotent: "\<forall> field, input_is_safe field \<longrightarrow> field_data (sanitize_input field) = field_data field"
   by auto
 
 (* UX_002_05: Empty Input Safe
     An empty input field is always safe after sanitization. *)
 (* UX_002_05_empty_input_safe (matches Coq) *)
-lemma UX_002_05_empty_input_safe: "\<forall>max_len allowed. let field := mkInputField [] max_len allowed False in let result := sanitize_input field in field_data result = [] \<and> input_sanitized result = True"
-  by auto
+lemma UX_002_05_empty_input_safe: "\<forall> max_len allowed, let field := mkInputField [] max_len allowed False in let result := sanitize_input field in field_data result = [] \<and> input_sanitized result = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_002_06: Sanitize Preserves Safe Input
     If input was already safe, sanitize returns the same content. *)
 (* UX_002_06_sanitize_preserves_safe (matches Coq) *)
-lemma UX_002_06_sanitize_preserves_safe: "\<forall>field. input_is_safe field \<longrightarrow> field_data (sanitize_input field) = field_data field"
+lemma UX_002_06_sanitize_preserves_safe: "\<forall> field, input_is_safe field \<longrightarrow> field_data (sanitize_input field) = field_data field"
   by auto
 
 (* UX_002_07: Sanitized Flag Set
     After sanitization, the sanitized flag is always true. *)
 (* UX_002_07_sanitized_flag_set (matches Coq) *)
-lemma UX_002_07_sanitized_flag_set: "\<forall>field. input_sanitized (sanitize_input field) = True"
+lemma UX_002_07_sanitized_flag_set: "\<forall> field, input_sanitized (sanitize_input field) = True"
   by simp
 
 (* UX_002_08: Sanitize Never Increases Length
     Sanitized output is never longer than the original input. *)
 (* UX_002_08_sanitize_never_increases (matches Coq) *)
-lemma UX_002_08_sanitize_never_increases: "\<forall>field. len (field_data (sanitize_input field)) \<le> len (field_data field)"
+lemma UX_002_08_sanitize_never_increases: "\<forall> field, len (field_data (sanitize_input field)) \<le> len (field_data field)"
   by auto
 
 (* UX_003_01: Focus Always Visible
     The focused element is always in the visible elements list. *)
 (* UX_003_01_focus_always_visible (matches Coq) *)
-lemma UX_003_01_focus_always_visible: "\<forall>vfs. tab_order (vf_state vfs) \<noteq> [] \<longrightarrow> \<exists>eid. get_focused_id (vf_state vfs) = Some eid \<and> eid \<in> set (vf_visible_elements vfs)"
-  by auto
+lemma UX_003_01_focus_always_visible: "\<forall> vfs, tab_order (vf_state vfs) \<noteq> [] \<longrightarrow> \<exists> eid, get_focused_id (vf_state vfs) = Some eid \<and> In eid (vf_visible_elements vfs)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_003_02: Focus Order Deterministic
     The same focus state always resolves to the same focused element. *)
 (* UX_003_02_focus_order_deterministic (matches Coq) *)
-lemma UX_003_02_focus_order_deterministic: "\<forall>fs1 fs2. focused_element fs1 = focused_element fs2 \<longrightarrow> tab_order fs1 = tab_order fs2 \<longrightarrow> get_focused_id fs1 = get_focused_id fs2"
+lemma UX_003_02_focus_order_deterministic: "\<forall> fs1 fs2, focused_element fs1 = focused_element fs2 \<longrightarrow> tab_order fs1 = tab_order fs2 \<longrightarrow> get_focused_id fs1 = get_focused_id fs2"
   by simp
 
 (* UX_003_03: Focus Wraps Around
     When focus is at the last element, focus_next goes to index 0. *)
 (* UX_003_03_focus_wraps_around (matches Coq) *)
-lemma UX_003_03_focus_wraps_around: "\<forall>fs. tab_order fs \<noteq> [] \<longrightarrow> focused_element fs = len (tab_order fs) - 1 \<longrightarrow> len (tab_order fs) \<ge> 1 \<longrightarrow> focused_element (focus_next fs) = 0"
-  by auto
+lemma UX_003_03_focus_wraps_around: "\<forall> fs, tab_order fs \<noteq> [] \<longrightarrow> focused_element fs = len (tab_order fs) - 1 \<longrightarrow> len (tab_order fs) \<ge> 1 \<longrightarrow> focused_element (focus_next fs) = 0"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_003_04: Focus Trap in Modal
     When a modal is active, focused elements are within the modal. *)
 (* UX_003_04_focus_trap_in_modal (matches Coq) *)
-lemma UX_003_04_focus_trap_in_modal: "\<forall>vfs eid. focus_modal_active (vf_state vfs) = True \<longrightarrow> eid \<in> set (tab_order (vf_state vfs)) \<longrightarrow> eid \<in> set (focus_modal_elements (vf_state vfs))"
+lemma UX_003_04_focus_trap_in_modal: "\<forall> vfs eid, focus_modal_active (vf_state vfs) = True \<longrightarrow> In eid (tab_order (vf_state vfs)) \<longrightarrow> In eid (focus_modal_elements (vf_state vfs))"
   by auto
 
 (* UX_003_05: No Focus Outside Tab Order
     The focused index is always within the tab order length. *)
 (* UX_003_05_no_focus_outside_bounds (matches Coq) *)
-lemma UX_003_05_no_focus_outside_bounds: "\<forall>fs. tab_order fs \<noteq> [] \<longrightarrow> focus_valid fs \<longrightarrow> focused_element (focus_next fs) < len (tab_order (focus_next fs))"
-  by auto
+lemma UX_003_05_no_focus_outside_bounds: "\<forall> fs, tab_order fs \<noteq> [] \<longrightarrow> focus_valid fs \<longrightarrow> focused_element (focus_next fs) < len (tab_order (focus_next fs))"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_003_06: Focus Moves Forward
     Tab key always moves focus to the next index (or wraps). *)
 (* UX_003_06_focus_moves_forward (matches Coq) *)
-lemma UX_003_06_focus_moves_forward: "\<forall>fs. tab_order fs \<noteq> [] \<longrightarrow> focus_valid fs \<longrightarrow> focused_element (focus_next fs) = focused_element fs + 1 \<or> focused_element (focus_next fs) = 0"
+lemma UX_003_06_focus_moves_forward: "\<forall> fs, tab_order fs \<noteq> [] \<longrightarrow> focus_valid fs \<longrightarrow> focused_element (focus_next fs) = focused_element fs + 1 \<or> focused_element (focus_next fs) = 0"
   by simp
 
 (* UX_004_01_wcag_aa_contrast (matches Coq) *)
@@ -780,17 +776,17 @@ lemma UX_004_02_wcag_aaa_contrast: "wcag_aaa black white"
 (* UX_004_03: Large Text Relaxed Threshold
     WCAG AAA compliance implies large text compliance (since 7:1 > 3:1). *)
 (* UX_004_03_large_text_relaxed (matches Coq) *)
-lemma UX_004_03_large_text_relaxed: "\<forall>c1 c2. wcag_aaa c1 c2 \<longrightarrow> wcag_large_text c1 c2"
+lemma UX_004_03_large_text_relaxed: "\<forall> c1 c2, wcag_aaa c1 c2 \<longrightarrow> wcag_large_text c1 c2"
   by simp
 
 (* UX_004_04: Contrast Symmetric
     Contrast between (a, b) equals contrast between (b, a). *)
 (* UX_004_04_contrast_symmetric (matches Coq) *)
-lemma UX_004_04_contrast_symmetric: "\<forall>c1 c2 ratio. contrast_meets_ratio c1 c2 ratio <-> contrast_meets_ratio c2 c1 ratio"
+lemma UX_004_04_contrast_symmetric: "\<forall> c1 c2 ratio, contrast_meets_ratio c1 c2 ratio <-> contrast_meets_ratio c2 c1 ratio"
   by auto
 
 (* UX_004_05_same_color_min_contrast (matches Coq) *)
-lemma UX_004_05_same_color_min_contrast: "\<forall>c. contrast_meets_ratio c c 10"
+lemma UX_004_05_same_color_min_contrast: "\<forall> c, contrast_meets_ratio c c 10"
   by simp
 
 (* UX_004_06: Black on White Passes AAA
@@ -802,121 +798,121 @@ lemma UX_004_06_black_white_max: "wcag_aaa black white"
 (* UX_004_07: AA Implies Large Text Compliance
     If colors meet AA normal text, they meet large text (3:1) too. *)
 (* UX_004_07_aa_implies_large_text (matches Coq) *)
-lemma UX_004_07_aa_implies_large_text: "\<forall>c1 c2. wcag_aa c1 c2 \<longrightarrow> wcag_large_text c1 c2"
+lemma UX_004_07_aa_implies_large_text: "\<forall> c1 c2, wcag_aa c1 c2 \<longrightarrow> wcag_large_text c1 c2"
   by simp
 
-(* UX_005_01: breakpoint Deterministic
+(* UX_005_01: Breakpoint Deterministic
     Same width always gives the same breakpoint classification. *)
 (* UX_005_01_breakpoint_deterministic (matches Coq) *)
-lemma UX_005_01_breakpoint_deterministic: "\<forall>w1 w2. w1 = w2 \<longrightarrow> classify_breakpoint w1 = classify_breakpoint w2"
+lemma UX_005_01_breakpoint_deterministic: "\<forall> w1 w2, w1 = w2 \<longrightarrow> classify_breakpoint w1 = classify_breakpoint w2"
   by simp
 
-(* UX_005_02: Elements Fit viewport
-    a \<in> set verified responsive layout, all element widths fit within viewport. *)
+(* UX_005_02: Elements Fit Viewport
+    In a verified responsive layout, all element widths fit within viewport. *)
 (* UX_005_02_elements_fit_viewport (matches Coq) *)
-lemma UX_005_02_elements_fit_viewport: "\<forall>rl e. e \<in> set (rl_elements rl) \<longrightarrow> le_width e \<le> vp_width (rl_viewport rl)"
+lemma UX_005_02_elements_fit_viewport: "\<forall> rl e, In e (rl_elements rl) \<longrightarrow> le_width e \<le> vp_width (rl_viewport rl)"
   by auto
 
 (* UX_005_03: No Horizontal Scroll
     Content width of any single element never exceeds viewport width,
     so no horizontal scrolling is needed. *)
 (* UX_005_03_no_horizontal_scroll (matches Coq) *)
-lemma UX_005_03_no_horizontal_scroll: "\<forall>rl. forall (\<lambda>e. le_width e \<le> vp_width (rl_viewport rl)) (rl_elements rl)"
+lemma UX_005_03_no_horizontal_scroll: "\<forall> rl, Forall (fun e => le_width e \<le> vp_width (rl_viewport rl)) (rl_elements rl)"
   by auto
 
 (* UX_005_04: Touch Targets Minimum Size
     Interactive elements in a verified layout are at least 44x44 px. *)
 (* UX_005_04_touch_targets_minimum_size (matches Coq) *)
-lemma UX_005_04_touch_targets_minimum_size: "\<forall>rl e. e \<in> set (rl_elements rl) \<longrightarrow> le_is_interactive e = True \<longrightarrow> le_width e \<ge> 44 \<and> le_height e \<ge> 44"
+lemma UX_005_04_touch_targets_minimum_size: "\<forall> rl e, In e (rl_elements rl) \<longrightarrow> le_is_interactive e = True \<longrightarrow> le_width e \<ge> 44 \<and> le_height e \<ge> 44"
   by auto
 
-(* UX_005_05: Text Readable at breakpoint
+(* UX_005_05: Text Readable at Breakpoint
     Font size meets minimum for the current breakpoint. *)
 (* UX_005_05_text_readable_at_breakpoint (matches Coq) *)
-lemma UX_005_05_text_readable_at_breakpoint: "\<forall>rl e. e \<in> set (rl_elements rl) \<longrightarrow> le_font_size e \<ge> (case classify_breakpoint (vp_width (rl_viewport rl)) of BPMobile => 14 | BPTablet => 14 | BPDesktop => 12)"
+lemma UX_005_05_text_readable_at_breakpoint: "\<forall> rl e, In e (rl_elements rl) \<longrightarrow> le_font_size e \<ge> match classify_breakpoint (vp_width (rl_viewport rl)) with | BPMobile => 14 | BPTablet => 14 | BPDesktop => 12 end"
   by auto
 
 (* UX_005_06: Layout Stable on Resize (Pure Function Property)
     Applying the same breakpoint classification twice yields the same result.
     This ensures no layout thrashing: the layout is a pure function of width. *)
 (* UX_005_06_layout_stable_on_resize (matches Coq) *)
-lemma UX_005_06_layout_stable_on_resize: "\<forall>w. classify_breakpoint w = classify_breakpoint w"
+lemma UX_005_06_layout_stable_on_resize: "\<forall> w, classify_breakpoint w = classify_breakpoint w"
   by simp
 
-(* UX_005_07: breakpoint Boundaries Correct
+(* UX_005_07: Breakpoint Boundaries Correct
     Width < 768 is Mobile, 768-1023 is Tablet, >= 1024 is Desktop. *)
 (* UX_005_07_breakpoint_boundaries (matches Coq) *)
-lemma UX_005_07_breakpoint_boundaries: "\<forall>w. (w < mobile_max \<longrightarrow> classify_breakpoint w = BPMobile) \<and> (mobile_max \<le> w < desktop_min \<longrightarrow> classify_breakpoint w = BPTablet) \<and> (desktop_min \<le> w \<longrightarrow> classify_breakpoint w = BPDesktop)"
-  by auto
+lemma UX_005_07_breakpoint_boundaries: "\<forall> w, (w < mobile_max \<longrightarrow> classify_breakpoint w = BPMobile) \<and> (mobile_max \<le> w < desktop_min \<longrightarrow> classify_breakpoint w = BPTablet) \<and> (desktop_min \<le> w \<longrightarrow> classify_breakpoint w = BPDesktop)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_006_01: Error Always Visible
-    a \<in> set verified error display, the error is always shown to the user. *)
+    In a verified error display, the error is always shown to the user. *)
 (* UX_006_01_error_always_visible (matches Coq) *)
-lemma UX_006_01_error_always_visible: "\<forall>ved. err_visible (ve_display ved) = True"
+lemma UX_006_01_error_always_visible: "\<forall> ved, err_visible (ve_display ved) = True"
   by auto
 
 (* UX_006_02: Error Persists Until Acknowledged
     Critical errors do not auto-dismiss. *)
 (* UX_006_02_error_persists_until_acknowledged (matches Coq) *)
-lemma UX_006_02_error_persists_until_acknowledged: "\<forall>ved. err_severity (ve_display ved) = SevCritical \<longrightarrow> err_auto_dismiss (ve_display ved) = False"
+lemma UX_006_02_error_persists_until_acknowledged: "\<forall> ved, err_severity (ve_display ved) = SevCritical \<longrightarrow> err_auto_dismiss (ve_display ved) = False"
   by auto
 
 (* UX_006_03: Error Message Matches Severity
     Critical errors use the danger display style. *)
 (* UX_006_03_error_message_matches_severity (matches Coq) *)
-lemma UX_006_03_error_message_matches_severity: "\<forall>ved. err_severity (ve_display ved) = SevCritical \<longrightarrow> err_display_style (ve_display ved) = StyleDanger"
-  by auto
+lemma UX_006_03_error_message_matches_severity: "\<forall> ved, err_severity (ve_display ved) = SevCritical \<longrightarrow> err_display_style (ve_display ved) = StyleDanger"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_006_04: No Silent Failure
     Every verified error display has a visible indicator —
     err_visible is true, guaranteeing the user sees the error. *)
 (* UX_006_04_no_silent_failure (matches Coq) *)
-lemma UX_006_04_no_silent_failure: "\<forall>ved. err_visible (ve_display ved) = True"
+lemma UX_006_04_no_silent_failure: "\<forall> ved, err_visible (ve_display ved) = True"
   by auto
 
 (* UX_006_05: Error Recoverable
     Every verified error display has an associated recovery action.
-    This is structural — the recovery_action field always exists. *)
+    This is structural — the RecoveryAction field always exists. *)
 (* UX_006_05_error_recoverable (matches Coq) *)
-lemma UX_006_05_error_recoverable: "\<forall>ved. \<exists>action. err_recovery (ve_display ved) = action"
+lemma UX_006_05_error_recoverable: "\<forall> ved, \<exists> action, err_recovery (ve_display ved) = action"
   by simp
 
 (* UX_006_06: Error Message Honest
     The displayed message matches the actual error in a verified display. *)
 (* UX_006_06_error_message_honest (matches Coq) *)
-lemma UX_006_06_error_message_honest: "\<forall>ved. err_message (ve_display ved) = err_actual_error (ve_display ved)"
+lemma UX_006_06_error_message_honest: "\<forall> ved, err_message (ve_display ved) = err_actual_error (ve_display ved)"
   by auto
 
 (* UX_006_07: Warning Style for Errors
     Errors (non-critical) use the warning display style. *)
 (* UX_006_07_warning_style_for_errors (matches Coq) *)
-lemma UX_006_07_warning_style_for_errors: "\<forall>ved. err_severity (ve_display ved) = SevError \<longrightarrow> err_display_style (ve_display ved) = StyleWarning"
-  by auto
+lemma UX_006_07_warning_style_for_errors: "\<forall> ved, err_severity (ve_display ved) = SevError \<longrightarrow> err_display_style (ve_display ved) = StyleWarning"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_006_08: Severity Level Monotonic
     Critical severity has the highest severity level. *)
 (* UX_006_08_severity_level_monotonic (matches Coq) *)
-lemma UX_006_08_severity_level_monotonic: "\<forall>s. severity_level s \<le> severity_level SevCritical"
-  by auto
+lemma UX_006_08_severity_level_monotonic: "\<forall> s, severity_level s \<le> severity_level SevCritical"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_006_09: Info Style Normal
     Info-level errors use normal display style. *)
 (* UX_006_09_info_style_normal (matches Coq) *)
-lemma UX_006_09_info_style_normal: "\<forall>ved. err_severity (ve_display ved) = SevInfo \<longrightarrow> err_display_style (ve_display ved) = StyleNormal"
-  by auto
+lemma UX_006_09_info_style_normal: "\<forall> ved, err_severity (ve_display ved) = SevInfo \<longrightarrow> err_display_style (ve_display ved) = StyleNormal"
+  by (cases rule: ‹_›.cases; simp)
 
 (* UX_007_01: Sanitized Input in Verified UI
     Combining input sanitization with verified UI state:
     if a field is displayed in a verified UI, its sanitized form is bounded. *)
 (* UX_007_01_sanitized_input_in_verified_ui (matches Coq) *)
-lemma UX_007_01_sanitized_input_in_verified_ui: "\<forall>field ui. verified_ui_state ui \<longrightarrow> let result := sanitize_input field in len (field_data result) \<le> input_max_length field \<and> input_sanitized result = True"
+lemma UX_007_01_sanitized_input_in_verified_ui: "\<forall> field ui, verified_ui_state ui \<longrightarrow> let result := sanitize_input field in len (field_data result) \<le> input_max_length field \<and> input_sanitized result = True"
   by auto
 
 (* UX_007_02: Accessible Error in Responsive Layout
     A verified error display in a responsive layout is both visible
     and fits within the viewport. *)
 (* UX_007_02_accessible_error_in_responsive (matches Coq) *)
-lemma UX_007_02_accessible_error_in_responsive: "\<forall>ved rl e. e \<in> set (rl_elements rl) \<longrightarrow> err_visible (ve_display ved) = True \<and> le_width e \<le> vp_width (rl_viewport rl)"
+lemma UX_007_02_accessible_error_in_responsive: "\<forall> ved rl e, In e (rl_elements rl) \<longrightarrow> err_visible (ve_display ved) = True \<and> le_width e \<le> vp_width (rl_viewport rl)"
   by auto
 
 end

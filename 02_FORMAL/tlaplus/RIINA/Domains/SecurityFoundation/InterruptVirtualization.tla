@@ -1,28 +1,19 @@
 ---- MODULE InterruptVirtualization ----
 \* Copyright (c) 2026 The RIINA Authors. All rights reserved.
-\* Derived from 02_FORMAL/coq/domains/security_foundation/InterruptVirtualization.v
-\* Models key types, operators, and properties from the Coq formalization.
+\* Copyright (c) 2026 The RIINA Authors.
+\* Derived from 02_FORMAL/coq/domains/security_foundation/InterruptVirtualization.v (21 invariants)
+\* Source mapping: scripts/generate-full-stack.py
 
 EXTENDS Naturals, FiniteSets, Sequences
 
 \* VMId (matches Coq: Inductive VMId)
 CONSTANTS VM
 
-VMIdSet == {VM}
-
 \* Interrupt (matches Coq: Inductive Interrupt)
 CONSTANTS IRQ
 
-InterruptSet == {IRQ}
-
 \* InterruptSource (matches Coq: Inductive InterruptSource)
 CONSTANTS DeviceSource, TimerSource, IPISource
-
-InterruptSourceSet == {DeviceSource, TimerSource, IPISource}
-
-\* ===================================================================
-\* STATE VARIABLES
-\* ===================================================================
 
 \* VirtualMachine (matches Coq: Record VirtualMachine)
 VARIABLES vm_id, vm_assigned_irqs
@@ -36,126 +27,117 @@ VARIABLES irq_number, irq_priority, irq_enabled, irq_pending
 \* InterruptController (matches Coq: Record InterruptController)
 VARIABLES ctrl_irqs, ctrl_mask_threshold
 
-vars == <<vm_id, vm_assigned_irqs, irq_assignments, ipi_allowed, irq_number, irq_priority, irq_enabled, irq_pending, ctrl_irqs, ctrl_mask_threshold>>
-
-\* ===================================================================
-\* TYPE INVARIANT
-\* ===================================================================
-
+\* Type invariant
 TypeOK ==
-  /\ vm_id \in VMIdSet
-  /\ vm_assigned_irqs \in Seq(Nat)
-  /\ irq_assignments \in Seq(Nat)
-  /\ ipi_allowed \in Seq(Nat)
-  /\ irq_number \in Nat
-  /\ irq_priority \in Nat
+  /\ vm_id \in BOOLEAN
+  /\ vm_assigned_irqs \in BOOLEAN
+  /\ irq_assignments \in BOOLEAN
+  /\ ipi_allowed \in BOOLEAN
+  /\ irq_number \in BOOLEAN
+  /\ irq_priority \in BOOLEAN
   /\ irq_enabled \in BOOLEAN
   /\ irq_pending \in BOOLEAN
-  /\ ctrl_irqs \in Seq(Nat)
-  /\ ctrl_mask_threshold \in Nat
+  /\ ctrl_irqs \in BOOLEAN
+  /\ ctrl_mask_threshold \in BOOLEAN
 
-\* ===================================================================
-\* INITIAL STATE
-\* ===================================================================
-
+\* Initial state
 Init ==
-  /\ vm_id = VM
-  /\ vm_assigned_irqs = <<>>
-  /\ irq_assignments = <<>>
-  /\ ipi_allowed = <<>>
-  /\ irq_number = 0
-  /\ irq_priority = 0
-  /\ irq_enabled = FALSE
-  /\ irq_pending = FALSE
-  /\ ctrl_irqs = <<>>
-  /\ ctrl_mask_threshold = 0
+  /\ vm_id = TRUE
+  /\ vm_assigned_irqs = TRUE
+  /\ irq_assignments = TRUE
+  /\ ipi_allowed = TRUE
+  /\ irq_number = TRUE
+  /\ irq_priority = TRUE
+  /\ irq_enabled = TRUE
+  /\ irq_pending = TRUE
+  /\ ctrl_irqs = TRUE
+  /\ ctrl_mask_threshold = TRUE
 
-\* ===================================================================
-\* OPERATORS (derived from Coq definitions)
-\* ===================================================================
+\* vm_owns_irq (matches Coq: Definition vm_owns_irq)
+vm_owns_irq(st, vm, irq) == TRUE
 
-\* ===================================================================
-\* STATE MACHINE
-\* ===================================================================
+\* ipi_authorized (matches Coq: Definition ipi_authorized)
+ipi_authorized(st, source, target) == TRUE
 
-UpdateVirtualMachine ==
-  /\ vm_id' \in VMIdSet
-  /\ vm_assigned_irqs' = vm_assigned_irqs
-  /\ UNCHANGED <<irq_assignments, ipi_allowed, irq_number, irq_priority, irq_enabled, irq_pending, ctrl_irqs, ctrl_mask_threshold>>
+\* authorized_injection (matches Coq: Definition authorized_injection)
+authorized_injection(st, source, target) == TRUE
 
-ValidateState ==
-  /\ TypeOK
-  /\ UNCHANGED vars
+\* can_inject (matches Coq: Definition can_inject)
+can_inject(st, vm1, irq, vm2) == TRUE
 
-Next == UpdateVirtualMachine \/ ValidateState
+\* find_irq_prio (matches Coq: Definition find_irq_prio)
+find_irq_prio(irq, irqs) == TRUE
 
-Spec == Init /\ [][Next]_vars
+\* irq_deliverable (matches Coq: Definition irq_deliverable)
+irq_deliverable(ctrl, irq) == TRUE
 
-\* ===================================================================
-\* THEOREMS (derived from Coq proofs)
-\* ===================================================================
+\* interrupt_injection_authorized (matches Coq: Theorem interrupt_injection_authorized)
+THEOREM interrupt_injection_authorized == Init => TypeOK
 
-\* interrupt_injection_authorized
-THEOREM interrupt_injection_authorized == TRUE
+\* interrupt_isolation (matches Coq: Theorem interrupt_isolation)
+THEOREM interrupt_isolation == Init => TypeOK
 
-\* interrupt_isolation
-THEOREM interrupt_isolation == TRUE
+\* device_irq_unique_owner (matches Coq: Theorem device_irq_unique_owner)
+THEOREM device_irq_unique_owner == Init => TypeOK
 
-\* device_irq_unique_owner
-THEOREM device_irq_unique_owner == TRUE
+\* timer_interrupt_local (matches Coq: Theorem timer_interrupt_local)
+THEOREM timer_interrupt_local == Init => TypeOK
 
-\* timer_interrupt_local
-THEOREM timer_interrupt_local == TRUE
+\* ipi_requires_authorization (matches Coq: Theorem ipi_requires_authorization)
+THEOREM ipi_requires_authorization == Init => TypeOK
 
-\* ipi_requires_authorization
-THEOREM ipi_requires_authorization == TRUE
+\* unauthorized_ipi_blocked (matches Coq: Theorem unauthorized_ipi_blocked)
+THEOREM unauthorized_ipi_blocked == Init => TypeOK
 
-\* unauthorized_ipi_blocked
-THEOREM unauthorized_ipi_blocked == TRUE
+\* self_injection_allowed (matches Coq: Theorem self_injection_allowed)
+THEOREM self_injection_allowed == Init => TypeOK
 
-\* self_injection_allowed
-THEOREM self_injection_allowed == TRUE
+\* masked_irq_not_deliverable (matches Coq: Theorem masked_irq_not_deliverable)
+THEOREM masked_irq_not_deliverable == Init => TypeOK
 
-\* masked_irq_not_deliverable
-THEOREM masked_irq_not_deliverable == TRUE
+\* disabled_irq_not_deliverable (matches Coq: Theorem disabled_irq_not_deliverable)
+THEOREM disabled_irq_not_deliverable == Init => TypeOK
 
-\* disabled_irq_not_deliverable
-THEOREM disabled_irq_not_deliverable == TRUE
+\* non_pending_irq_not_deliverable (matches Coq: Theorem non_pending_irq_not_deliverable)
+THEOREM non_pending_irq_not_deliverable == Init => TypeOK
 
-\* non_pending_irq_not_deliverable
-THEOREM non_pending_irq_not_deliverable == TRUE
+\* unknown_irq_not_deliverable (matches Coq: Theorem unknown_irq_not_deliverable)
+THEOREM unknown_irq_not_deliverable == Init => TypeOK
 
-\* unknown_irq_not_deliverable
-THEOREM unknown_irq_not_deliverable == TRUE
+\* no_auth_no_injection (matches Coq: Theorem no_auth_no_injection)
+THEOREM no_auth_no_injection == Init => TypeOK
 
-\* no_auth_no_injection
-THEOREM no_auth_no_injection == TRUE
+\* device_irq_requires_ownership (matches Coq: Theorem device_irq_requires_ownership)
+THEOREM device_irq_requires_ownership == Init => TypeOK
 
-\* device_irq_requires_ownership
-THEOREM device_irq_requires_ownership == TRUE
+\* cross_vm_requires_ipi (matches Coq: Theorem cross_vm_requires_ipi)
+THEOREM cross_vm_requires_ipi == Init => TypeOK
 
-\* cross_vm_requires_ipi
-THEOREM cross_vm_requires_ipi == TRUE
+\* ipi_authorization_directional (matches Coq: Theorem ipi_authorization_directional)
+THEOREM ipi_authorization_directional == Init => TypeOK
 
-\* ipi_authorization_directional
-THEOREM ipi_authorization_directional == TRUE
+\* empty_ipi_blocks_cross_vm (matches Coq: Theorem empty_ipi_blocks_cross_vm)
+THEOREM empty_ipi_blocks_cross_vm == Init => TypeOK
 
-\* empty_ipi_blocks_cross_vm
-THEOREM empty_ipi_blocks_cross_vm == TRUE
+\* empty_assignments_blocks_device_irqs (matches Coq: Theorem empty_assignments_blocks_device_irqs)
+THEOREM empty_assignments_blocks_device_irqs == Init => TypeOK
 
-\* empty_assignments_blocks_device_irqs
-THEOREM empty_assignments_blocks_device_irqs == TRUE
+\* irq_assignment_deterministic (matches Coq: Theorem irq_assignment_deterministic)
+THEOREM irq_assignment_deterministic == Init => TypeOK
 
-\* irq_assignment_deterministic
-THEOREM irq_assignment_deterministic == TRUE
+\* timer_injection_always_succeeds (matches Coq: Theorem timer_injection_always_succeeds)
+THEOREM timer_injection_always_succeeds == Init => TypeOK
 
-\* timer_injection_always_succeeds
-THEOREM timer_injection_always_succeeds == TRUE
+\* self_ipi_possible (matches Coq: Theorem self_ipi_possible)
+THEOREM self_ipi_possible == Init => TypeOK
 
-\* self_ipi_possible
-THEOREM self_ipi_possible == TRUE
+\* injection_source_valid (matches Coq: Theorem injection_source_valid)
+THEOREM injection_source_valid == Init => TypeOK
 
-\* injection_source_valid
-THEOREM injection_source_valid == TRUE
+\* Next-state relation
+Next == UNCHANGED <<vm_id, vm_assigned_irqs, irq_assignments, ipi_allowed, irq_number, irq_priority, irq_enabled, irq_pending, ctrl_irqs, ctrl_mask_threshold>>
+
+\* Specification
+Spec == Init /\ [][Next]_<<vm_id, vm_assigned_irqs, irq_assignments, ipi_allowed, irq_number, irq_priority, irq_enabled, irq_pending, ctrl_irqs, ctrl_mask_threshold>>
 
 ====

@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | gov_classification  | gov_classification     | OK     |
+ * | GovClassification  | gov_classification     | OK     |
  * | classification_level | classification_level   | OK     |
  * | data_sovereign     | data_sovereign         | OK     |
  * | controls_match_classification | controls_match_classification | OK     |
@@ -56,11 +56,7 @@ theory MalaysiaMAMPU
   imports Main
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym dkict_compliance = "nat"
-type_synonym gov_system = "nat"
-type_synonym rakkssa_assessment = "nat"
-(* gov_classification (matches Coq: Inductive gov_classification) *)
+(* GovClassification (matches Coq: Inductive GovClassification) *)
 datatype gov_classification =
     Terbuka
   |     Terhad
@@ -81,7 +77,7 @@ definition data_sovereign :: "GovSystem \<Rightarrow> bool" where
   "data_sovereign s \<equiv> gov_data_in_malaysia s = True"
 
 (* controls_match_classification - complex match, needs manual translation *)
-definition controls_match_classification :: "bool" where "controls_match_classification \<equiv> True"
+definition controls_match_classification :: "bool" where "controls_match_classification = undefined"
 
 (* security_assessed (matches Coq: Definition security_assessed) *)
 definition security_assessed :: "GovSystem \<Rightarrow> bool" where
@@ -93,8 +89,8 @@ definition isms_compliant :: "GovSystem \<Rightarrow> bool" where
 
 (* mampu_fully_compliant (matches Coq: Definition mampu_fully_compliant) *)
 definition mampu_fully_compliant :: "GovSystem \<Rightarrow> bool" where
-  "mampu_fully_compliant s \<equiv> data_sovereign s \<and>
-  controls_match_classification s \<and>
+  "mampu_fully_compliant s \<equiv> data_sovereign s /\
+  controls_match_classification s /\
   security_assessed s"
 
 (* all_gov_classifications (matches Coq: Definition all_gov_classifications) *)
@@ -103,63 +99,63 @@ definition all_gov_classifications :: "list GovClassification" where
 
 (* rakkssa_passed (matches Coq: Definition rakkssa_passed) *)
 definition rakkssa_passed :: "RAKKSSAAssessment \<Rightarrow> bool" where
-  "rakkssa_passed ra \<equiv> rk_vulnerability_scan ra = True \<and>
-  rk_penetration_test ra = True \<and>
-  rk_risk_assessment ra = True \<and>
-  rk_compliance_check ra = True \<and>
+  "rakkssa_passed ra \<equiv> rk_vulnerability_scan ra = True /\
+  rk_penetration_test ra = True /\
+  rk_risk_assessment ra = True /\
+  rk_compliance_check ra = True /\
   rk_score ra >= rk_min_score ra"
 
 (* mygovcloud_eligible (matches Coq: Definition mygovcloud_eligible) *)
 definition mygovcloud_eligible :: "GovSystem \<Rightarrow> bool" where
-  "mygovcloud_eligible s \<equiv> data_sovereign s \<and>
-  security_assessed s \<and>
+  "mygovcloud_eligible s \<equiv> data_sovereign s /\
+  security_assessed s /\
   (gov_classification s <> RahsiaBesar)"
 
 (* dkict_compliant (matches Coq: Definition dkict_compliant) *)
 definition dkict_compliant :: "DKICTCompliance \<Rightarrow> bool" where
-  "dkict_compliant d \<equiv> dkict_password_policy d = True \<and>
-  dkict_access_review d = True \<and>
-  dkict_incident_response d = True \<and>
+  "dkict_compliant d \<equiv> dkict_password_policy d = True /\
+  dkict_access_review d = True /\
+  dkict_incident_response d = True /\
   dkict_backup_tested d = True"
 
 (* mampu_sovereignty (matches Coq) *)
-lemma mampu_sovereignty: "\<forall>(s :: gov_system). gov_data_in_malaysia s = True \<longrightarrow> data_sovereign s"
+lemma mampu_sovereignty: "\<forall> (s : GovSystem), gov_data_in_malaysia s = True \<longrightarrow> data_sovereign s"
   by auto
 
 (* mampu_terbuka (matches Coq) *)
-lemma mampu_terbuka: "\<forall>(s :: gov_system). gov_classification s = Terbuka \<longrightarrow> controls_match_classification s"
+lemma mampu_terbuka: "\<forall> (s : GovSystem), gov_classification s = Terbuka \<longrightarrow> controls_match_classification s"
   by auto
 
 (* mampu_rahsia (matches Coq) *)
-lemma mampu_rahsia: "\<forall>(s :: gov_system). gov_classification s = Rahsia \<longrightarrow> gov_encrypted s = True \<longrightarrow> gov_access_controlled s = True \<longrightarrow> gov_audit_logged s = True \<longrightarrow> controls_match_classification s"
+lemma mampu_rahsia: "\<forall> (s : GovSystem), gov_classification s = Rahsia \<longrightarrow> gov_encrypted s = True \<longrightarrow> gov_access_controlled s = True \<longrightarrow> gov_audit_logged s = True \<longrightarrow> controls_match_classification s"
   by auto
 
 (* mampu_rahsia_besar (matches Coq) *)
-lemma mampu_rahsia_besar: "\<forall>(s :: gov_system). gov_classification s = RahsiaBesar \<longrightarrow> gov_encrypted s = True \<longrightarrow> gov_access_controlled s = True \<longrightarrow> gov_audit_logged s = True \<longrightarrow> gov_isms_certified s = True \<longrightarrow> controls_match_classification s"
+lemma mampu_rahsia_besar: "\<forall> (s : GovSystem), gov_classification s = RahsiaBesar \<longrightarrow> gov_encrypted s = True \<longrightarrow> gov_access_controlled s = True \<longrightarrow> gov_audit_logged s = True \<longrightarrow> gov_isms_certified s = True \<longrightarrow> controls_match_classification s"
   by auto
 
 (* mampu_assessment (matches Coq) *)
-lemma mampu_assessment: "\<forall>(s :: gov_system). gov_security_assessed s = True \<longrightarrow> security_assessed s"
+lemma mampu_assessment: "\<forall> (s : GovSystem), gov_security_assessed s = True \<longrightarrow> security_assessed s"
   by auto
 
 (* mampu_isms (matches Coq) *)
-lemma mampu_isms: "\<forall>(s :: gov_system). gov_isms_certified s = True \<longrightarrow> isms_compliant s"
+lemma mampu_isms: "\<forall> (s : GovSystem), gov_isms_certified s = True \<longrightarrow> isms_compliant s"
   by simp
 
 (* classification_ordering (matches Coq) *)
-lemma classification_ordering: "\<forall>(c1 :: gov_classification) (c2 :: gov_classification). classification_level c1 \<le> classification_level c2 \<or> classification_level c2 \<le> classification_level c1"
+lemma classification_ordering: "\<forall> (c1 c2 : GovClassification), classification_level c1 \<le> classification_level c2 \<or> classification_level c2 \<le> classification_level c1"
   by auto
 
 (* rahsia_besar_highest (matches Coq) *)
-lemma rahsia_besar_highest: "\<forall>(c :: gov_classification). classification_level c \<le> classification_level RahsiaBesar"
+lemma rahsia_besar_highest: "\<forall> (c : GovClassification), classification_level c \<le> classification_level RahsiaBesar"
   by auto
 
 (* mampu_composition (matches Coq) *)
-lemma mampu_composition: "\<forall>(s :: gov_system). data_sovereign s \<longrightarrow> controls_match_classification s \<longrightarrow> security_assessed s \<longrightarrow> mampu_fully_compliant s"
+lemma mampu_composition: "\<forall> (s : GovSystem), data_sovereign s \<longrightarrow> controls_match_classification s \<longrightarrow> security_assessed s \<longrightarrow> mampu_fully_compliant s"
   by simp
 
 (* gov_classification_coverage (matches Coq) *)
-lemma gov_classification_coverage: "\<forall>(c :: gov_classification). c \<in> set all_gov_classifications"
+lemma gov_classification_coverage: "\<forall> (c : GovClassification), In c all_gov_classifications"
   by auto
 
 (* terbuka_is_level_zero (matches Coq) *)
@@ -171,63 +167,63 @@ lemma rahsia_besar_is_level_four: "classification_level RahsiaBesar = 4"
   by simp
 
 (* classification_level_positive_for_non_terbuka (matches Coq) *)
-lemma classification_level_positive_for_non_terbuka: "\<forall>(c :: gov_classification). c \<noteq> Terbuka \<longrightarrow> classification_level c \<ge> 1"
-  by auto
+lemma classification_level_positive_for_non_terbuka: "\<forall> (c : GovClassification), c \<noteq> Terbuka \<longrightarrow> classification_level c \<ge> 1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* mampu_terhad (matches Coq) *)
-lemma mampu_terhad: "\<forall>(s :: gov_system). gov_classification s = Terhad \<longrightarrow> gov_access_controlled s = True \<longrightarrow> controls_match_classification s"
+lemma mampu_terhad: "\<forall> (s : GovSystem), gov_classification s = Terhad \<longrightarrow> gov_access_controlled s = True \<longrightarrow> controls_match_classification s"
   by auto
 
 (* mampu_sulit (matches Coq) *)
-lemma mampu_sulit: "\<forall>(s :: gov_system). gov_classification s = Sulit \<longrightarrow> gov_encrypted s = True \<longrightarrow> gov_access_controlled s = True \<longrightarrow> controls_match_classification s"
+lemma mampu_sulit: "\<forall> (s : GovSystem), gov_classification s = Sulit \<longrightarrow> gov_encrypted s = True \<longrightarrow> gov_access_controlled s = True \<longrightarrow> controls_match_classification s"
   by auto
 
 (* rahsia_besar_requires_encryption (matches Coq) *)
-lemma rahsia_besar_requires_encryption: "\<forall>(s :: gov_system). gov_classification s = RahsiaBesar \<longrightarrow> controls_match_classification s \<longrightarrow> gov_encrypted s = True"
+lemma rahsia_besar_requires_encryption: "\<forall> (s : GovSystem), gov_classification s = RahsiaBesar \<longrightarrow> controls_match_classification s \<longrightarrow> gov_encrypted s = True"
   by auto
 
 (* rahsia_besar_requires_access_control (matches Coq) *)
-lemma rahsia_besar_requires_access_control: "\<forall>(s :: gov_system). gov_classification s = RahsiaBesar \<longrightarrow> controls_match_classification s \<longrightarrow> gov_access_controlled s = True"
+lemma rahsia_besar_requires_access_control: "\<forall> (s : GovSystem), gov_classification s = RahsiaBesar \<longrightarrow> controls_match_classification s \<longrightarrow> gov_access_controlled s = True"
   by auto
 
 (* rahsia_besar_requires_audit (matches Coq) *)
-lemma rahsia_besar_requires_audit: "\<forall>(s :: gov_system). gov_classification s = RahsiaBesar \<longrightarrow> controls_match_classification s \<longrightarrow> gov_audit_logged s = True"
+lemma rahsia_besar_requires_audit: "\<forall> (s : GovSystem), gov_classification s = RahsiaBesar \<longrightarrow> controls_match_classification s \<longrightarrow> gov_audit_logged s = True"
   by auto
 
 (* rahsia_besar_requires_isms (matches Coq) *)
-lemma rahsia_besar_requires_isms: "\<forall>(s :: gov_system). gov_classification s = RahsiaBesar \<longrightarrow> controls_match_classification s \<longrightarrow> gov_isms_certified s = True"
+lemma rahsia_besar_requires_isms: "\<forall> (s : GovSystem), gov_classification s = RahsiaBesar \<longrightarrow> controls_match_classification s \<longrightarrow> gov_isms_certified s = True"
   by auto
 
 (* sovereignty_mandatory_for_all_levels (matches Coq) *)
-lemma sovereignty_mandatory_for_all_levels: "\<forall>(s :: gov_system). mampu_fully_compliant s \<longrightarrow> data_sovereign s"
+lemma sovereignty_mandatory_for_all_levels: "\<forall> (s : GovSystem), mampu_fully_compliant s \<longrightarrow> data_sovereign s"
   by auto
 
 (* sovereignty_violation_blocks_compliance (matches Coq) *)
-lemma sovereignty_violation_blocks_compliance: "\<forall>(s :: gov_system). gov_data_in_malaysia s = False \<longrightarrow> ~ data_sovereign s"
+lemma sovereignty_violation_blocks_compliance: "\<forall> (s : GovSystem), gov_data_in_malaysia s = False \<longrightarrow> ~ data_sovereign s"
   by auto
 
 (* rakkssa_assessment_complete (matches Coq) *)
-lemma rakkssa_assessment_complete: "\<forall>(ra :: rakkssa_assessment). rk_vulnerability_scan ra = True \<longrightarrow> rk_penetration_test ra = True \<longrightarrow> rk_risk_assessment ra = True \<longrightarrow> rk_compliance_check ra = True \<longrightarrow> rk_score ra \<ge> rk_min_score ra \<longrightarrow> rakkssa_passed ra"
+lemma rakkssa_assessment_complete: "\<forall> (ra : RAKKSSAAssessment), rk_vulnerability_scan ra = True \<longrightarrow> rk_penetration_test ra = True \<longrightarrow> rk_risk_assessment ra = True \<longrightarrow> rk_compliance_check ra = True \<longrightarrow> rk_score ra \<ge> rk_min_score ra \<longrightarrow> rakkssa_passed ra"
   by auto
 
 (* rakkssa_score_insufficient (matches Coq) *)
-lemma rakkssa_score_insufficient: "\<forall>(ra :: rakkssa_assessment). rk_score ra < rk_min_score ra \<longrightarrow> ~ (rk_score ra \<ge> rk_min_score ra)"
+lemma rakkssa_score_insufficient: "\<forall> (ra : RAKKSSAAssessment), rk_score ra < rk_min_score ra \<longrightarrow> ~ (rk_score ra \<ge> rk_min_score ra)"
   by simp
 
 (* mygovcloud_check (matches Coq) *)
-lemma mygovcloud_check: "\<forall>(s :: gov_system). gov_data_in_malaysia s = True \<longrightarrow> gov_security_assessed s = True \<longrightarrow> gov_classification s \<noteq> RahsiaBesar \<longrightarrow> mygovcloud_eligible s"
+lemma mygovcloud_check: "\<forall> (s : GovSystem), gov_data_in_malaysia s = True \<longrightarrow> gov_security_assessed s = True \<longrightarrow> gov_classification s \<noteq> RahsiaBesar \<longrightarrow> mygovcloud_eligible s"
   by auto
 
 (* dkict_full_compliance (matches Coq) *)
-lemma dkict_full_compliance: "\<forall>(d :: dkict_compliance). dkict_password_policy d = True \<longrightarrow> dkict_access_review d = True \<longrightarrow> dkict_incident_response d = True \<longrightarrow> dkict_backup_tested d = True \<longrightarrow> dkict_compliant d"
+lemma dkict_full_compliance: "\<forall> (d : DKICTCompliance), dkict_password_policy d = True \<longrightarrow> dkict_access_review d = True \<longrightarrow> dkict_incident_response d = True \<longrightarrow> dkict_backup_tested d = True \<longrightarrow> dkict_compliant d"
   by simp
 
 (* mampu_full_implies_sovereign (matches Coq) *)
-lemma mampu_full_implies_sovereign: "\<forall>(s :: gov_system). mampu_fully_compliant s \<longrightarrow> gov_data_in_malaysia s = True"
+lemma mampu_full_implies_sovereign: "\<forall> (s : GovSystem), mampu_fully_compliant s \<longrightarrow> gov_data_in_malaysia s = True"
   by auto
 
 (* mampu_full_implies_assessed (matches Coq) *)
-lemma mampu_full_implies_assessed: "\<forall>(s :: gov_system). mampu_fully_compliant s \<longrightarrow> gov_security_assessed s = True"
+lemma mampu_full_implies_assessed: "\<forall> (s : GovSystem), mampu_fully_compliant s \<longrightarrow> gov_security_assessed s = True"
   by auto
 
 end

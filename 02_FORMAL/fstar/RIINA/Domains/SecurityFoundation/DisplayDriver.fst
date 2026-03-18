@@ -43,72 +43,99 @@ type display_state = {
 }
 
 (* can_read_buffer — Coq Prop predicate stub *)
-let can_read_buffer (__x0: application) (__x1: frame_buffer) : Tot bool =
-  true
+assume val can_read_buffer : application -> frame_buffer -> bool
+
 (* captures_screen — Coq Prop predicate stub *)
-let captures_screen (__x0: application) (__x1: frame) : Tot bool =
-  true
+assume val captures_screen : application -> frame -> bool
+
 (* creates_overlay — Coq Prop predicate stub *)
-let creates_overlay (__x0: application) : Tot bool =
-  true
+assume val creates_overlay : application -> bool
+
 (* owns_buffer (matches Coq: Definition owns_buffer) *)
 let owns_buffer (p_app: application) (p_fb: frame_buffer) : Tot bool =
   true
+
 (* has_screen_capture_permission (matches Coq: Definition has_screen_capture_permission) *)
 let has_screen_capture_permission (p_app: application) : Tot bool =
   true
+
 (* has_overlay_permission (matches Coq: Definition has_overlay_permission) *)
 let has_overlay_permission (p_app: application) : Tot bool =
   true
+
 (* valid_framebuffer (matches Coq: Definition valid_framebuffer) *)
 let valid_framebuffer (p_fb: frame_buffer) : Tot bool =
   true
+
 (* pixel_count (matches Coq: Definition pixel_count) *)
 let pixel_count (p_fb: frame_buffer) : Tot nat =
-  0
+  p_fb.f_fb_width * p_fb.f_fb_height
+
 (* display_buffer_isolated (matches Coq: Theorem display_buffer_isolated) *)
-let display_buffer_isolated (p_app1: application) (p_app2: application) (p_buffer: frame_buffer) : Lemma True = ()
+let display_buffer_isolated (p_app1: application) (p_app2: application) (p_buffer: frame_buffer) : Lemma (requires (~(p_app1.f_app_id == p_app2.f_app_id) /\ owns_buffer p_app1 p_buffer == true /\ p_app2.f_app_screen_capture_perm == false)) (ensures (~(can_read_buffer p_app2 p_buffer == true))) = admit ()
+
 (* screen_capture_requires_permission (matches Coq: Theorem screen_capture_requires_permission) *)
-let screen_capture_requires_permission (p_app: application) (p_frame: frame) : Lemma True = ()
+let screen_capture_requires_permission (p_app: application) (p_frame: frame) : Lemma (requires (captures_screen p_app p_frame == true)) (ensures (has_screen_capture_permission p_app == true)) = admit ()
+
 (* protected_buffer_access (matches Coq: Theorem protected_buffer_access) *)
-let protected_buffer_access (p_app: application) (p_fb: frame_buffer) : Lemma True = ()
+let protected_buffer_access (p_app: application) (p_fb: frame_buffer) : Lemma (requires (p_fb.f_fb_protected == true /\ owns_buffer p_app p_fb == true)) (ensures (~(can_read_buffer p_app p_fb == true) \/ p_app.f_app_screen_capture_perm == true)) = admit ()
+
 (* no_permission_no_capture (matches Coq: Theorem no_permission_no_capture) *)
-let no_permission_no_capture (p_app: application) : Lemma True = ()
+let no_permission_no_capture (p_app: application) : Lemma (requires (p_app.f_app_screen_capture_perm == false)) (ensures ((forall (frame: _). ~(captures_screen p_app frame == true)))) = admit ()
+
 (* buffer_ownership_exclusive (matches Coq: Theorem buffer_ownership_exclusive) *)
-let buffer_ownership_exclusive (p_app1: application) (p_app2: application) (p_fb: frame_buffer) : Lemma True = ()
+let buffer_ownership_exclusive (p_app1: application) (p_app2: application) (p_fb: frame_buffer) : Lemma (requires (owns_buffer p_app1 p_fb == true /\ owns_buffer p_app2 p_fb == true)) (ensures (p_app1.f_app_id == p_app2.f_app_id)) = admit ()
+
 (* overlay_requires_permission (matches Coq: Theorem overlay_requires_permission) *)
-let overlay_requires_permission (p_app: application) : Lemma True = ()
+let overlay_requires_permission (p_app: application) : Lemma (requires (creates_overlay p_app == true)) (ensures (has_overlay_permission p_app == true)) = admit ()
+
 (* no_overlay_without_permission (matches Coq: Theorem no_overlay_without_permission) *)
-let no_overlay_without_permission (p_app: application) : Lemma True = ()
+let no_overlay_without_permission (p_app: application) : Lemma (requires (p_app.f_app_overlay_perm == false)) (ensures (~(creates_overlay p_app == true))) = admit ()
+
 (* display_output_integrity (matches Coq: Theorem display_output_integrity) *)
-let display_output_integrity (p_app: application) (p_fb: frame_buffer) (p_frame: frame) : Lemma True = ()
+let display_output_integrity (p_app: application) (p_fb: frame_buffer) (p_frame: frame) : Lemma (requires (owns_buffer p_app p_fb == true /\ p_frame.f_frame_source == p_fb.f_fb_id)) (ensures (p_fb.f_fb_owner == p_app.f_app_id)) = admit ()
+
 (* valid_fb_positive_pixels (matches Coq: Theorem valid_fb_positive_pixels) *)
-let valid_fb_positive_pixels (p_fb: frame_buffer) : Lemma True = ()
+let valid_fb_positive_pixels (p_fb: frame_buffer) : Lemma (requires (valid_framebuffer p_fb == true)) (ensures (pixel_count p_fb > 0)) = admit ()
+
 (* no_capture_perm_blocks_all_frames (matches Coq: Theorem no_capture_perm_blocks_all_frames) *)
-let no_capture_perm_blocks_all_frames (p_app: application) : Lemma True = ()
+let no_capture_perm_blocks_all_frames (p_app: application) : Lemma (requires (p_app.f_app_screen_capture_perm == false)) (ensures ((forall (f: _). ~(captures_screen p_app f == true)))) = admit ()
+
 (* protected_buffer_blocks_non_owner (matches Coq: Theorem protected_buffer_blocks_non_owner) *)
-let protected_buffer_blocks_non_owner (p_app: application) (p_fb: frame_buffer) : Lemma True = ()
+let protected_buffer_blocks_non_owner (p_app: application) (p_fb: frame_buffer) : Lemma (requires (p_fb.f_fb_protected == true /\ ~(p_fb.f_fb_owner == p_app.f_app_id) /\ p_app.f_app_screen_capture_perm == false)) (ensures (~(can_read_buffer p_app p_fb == true))) = admit ()
+
 (* read_requires_ownership_or_capture (matches Coq: Theorem read_requires_ownership_or_capture) *)
-let read_requires_ownership_or_capture (p_app: application) (p_fb: frame_buffer) : Lemma True = ()
+let read_requires_ownership_or_capture (p_app: application) (p_fb: frame_buffer) : Lemma (requires (can_read_buffer p_app p_fb == true)) (ensures ((owns_buffer p_app p_fb == true /\ p_fb.f_fb_protected == false) \/ p_app.f_app_screen_capture_perm == true)) = admit ()
+
 (* capture_perm_reads_all (matches Coq: Theorem capture_perm_reads_all) *)
-let capture_perm_reads_all (p_app: application) (p_fb: frame_buffer) : Lemma True = ()
+let capture_perm_reads_all (p_app: application) (p_fb: frame_buffer) : Lemma (requires (p_app.f_app_screen_capture_perm == true)) (ensures (can_read_buffer p_app p_fb == true)) = admit ()
+
 (* owner_reads_unprotected (matches Coq: Theorem owner_reads_unprotected) *)
-let owner_reads_unprotected (p_app: application) (p_fb: frame_buffer) : Lemma True = ()
+let owner_reads_unprotected (p_app: application) (p_fb: frame_buffer) : Lemma (requires (owns_buffer p_app p_fb == true /\ p_fb.f_fb_protected == false)) (ensures (can_read_buffer p_app p_fb == true)) = admit ()
+
 (* overlay_state_consistent (matches Coq: Theorem overlay_state_consistent) *)
-let overlay_state_consistent (p_ds: display_state) (p_app_id: app_id) : Lemma True = ()
+let overlay_state_consistent (p_ds: display_state) (p_app_id: app_id) : Lemma (requires (p_ds.f_active_overlay == Some p_app_id)) (ensures (~(p_ds.f_active_overlay == None))) = admit ()
+
 (* no_overlay_no_app (matches Coq: Theorem no_overlay_no_app) *)
-let no_overlay_no_app (p_ds: display_state) : Lemma True = ()
+let no_overlay_no_app (p_ds: display_state) : Lemma (requires (p_ds.f_active_overlay == None)) (ensures ((forall (aid: _). ~(p_ds.f_active_overlay == Some aid)))) = admit ()
+
 (* fb_id_determines_buffer (matches Coq: Theorem fb_id_determines_buffer) *)
-let fb_id_determines_buffer (p_fb1: frame_buffer) (p_fb2: frame_buffer) : Lemma True = ()
+let fb_id_determines_buffer (p_fb1: frame_buffer) (p_fb2: frame_buffer) : Lemma (requires (p_fb1.f_fb_id == p_fb2.f_fb_id /\ p_fb1.f_fb_owner == p_fb2.f_fb_owner /\ p_fb1.f_fb_width == p_fb2.f_fb_width /\ p_fb1.f_fb_height == p_fb2.f_fb_height /\ p_fb1.f_fb_protected == p_fb2.f_fb_protected)) (ensures (p_fb1 == p_fb2)) = admit ()
+
 (* display_isolation_symmetric (matches Coq: Theorem display_isolation_symmetric) *)
-let display_isolation_symmetric (p_app1: application) (p_app2: application) (p_fb: frame_buffer) : Lemma True = ()
+let display_isolation_symmetric (p_app1: application) (p_app2: application) (p_fb: frame_buffer) : Lemma (requires (~(p_app1.f_app_id == p_app2.f_app_id) /\ owns_buffer p_app2 p_fb == true /\ p_app1.f_app_screen_capture_perm == false)) (ensures (~(can_read_buffer p_app1 p_fb == true))) = admit ()
+
 (* capture_overlay_independent (matches Coq: Theorem capture_overlay_independent) *)
-let capture_overlay_independent (p_app: application) : Lemma True = ()
+let capture_overlay_independent (p_app: application) : Lemma (requires (p_app.f_app_screen_capture_perm == true /\ p_app.f_app_overlay_perm == false)) (ensures (has_screen_capture_permission p_app == true /\ ~(has_overlay_permission p_app == true))) = admit ()
+
 (* dual_perm_app (matches Coq: Theorem dual_perm_app) *)
-let dual_perm_app (p_app: application) : Lemma True = ()
+let dual_perm_app (p_app: application) : Lemma (requires (p_app.f_app_screen_capture_perm == true /\ p_app.f_app_overlay_perm == true)) (ensures (has_screen_capture_permission p_app == true /\ has_overlay_permission p_app == true)) = admit ()
+
 (* no_perm_app (matches Coq: Theorem no_perm_app) *)
-let no_perm_app (p_app: application) : Lemma True = ()
+let no_perm_app (p_app: application) : Lemma (requires (p_app.f_app_screen_capture_perm == false /\ p_app.f_app_overlay_perm == false)) (ensures (~(has_screen_capture_permission p_app == true) /\ ~(has_overlay_permission p_app == true))) = admit ()
+
 (* empty_display_no_read (matches Coq: Theorem empty_display_no_read) *)
-let empty_display_no_read (p_ds: display_state) (p_app: application) (p_fb: frame_buffer) : Lemma True = ()
+let empty_display_no_read (p_ds: display_state) (p_app: application) (p_fb: frame_buffer) : Lemma (requires (p_ds.f_frame_buffers == [] /\ List.Tot.memP p_fb (p_ds.f_frame_buffers))) (ensures (can_read_buffer p_app p_fb == true)) = admit ()
+
 (* frame_timestamp_order (matches Coq: Theorem frame_timestamp_order) *)
-let frame_timestamp_order (p_f1: frame) (p_f2: frame) : Lemma True = ()
+let frame_timestamp_order (p_f1: frame) (p_f2: frame) : Lemma (p_f1.f_frame_timestamp <= p_f2.f_frame_timestamp \/ p_f2.f_frame_timestamp < p_f1.f_frame_timestamp) = admit ()

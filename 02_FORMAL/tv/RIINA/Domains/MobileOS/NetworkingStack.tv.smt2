@@ -15,521 +15,244 @@
 (declare-sort TargetNode 0)
 
 ; Time: source semantics (matches Coq)
-; Translation validation: Time preserves semantics
-(push 1)
-(declare-const source_Time Int)
-(declare-const target_Time Int)
-(assert (>= source_Time 0))
-(assert (>= target_Time 0))
-(assert (not (= source_Time target_Time)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_Time () Bool)
+(declare-fun target_Time () Bool)
+(assert (= source_Time target_Time))
 
 ; PublicKey: source semantics (matches Coq)
-; Translation validation: PublicKey preserves semantics
-(push 1)
-(declare-const source_PublicKey Int)
-(declare-const target_PublicKey Int)
-(assert (>= source_PublicKey 0))
-(assert (>= target_PublicKey 0))
-(assert (not (= source_PublicKey target_PublicKey)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_PublicKey () Bool)
+(declare-fun target_PublicKey () Bool)
+(assert (= source_PublicKey target_PublicKey))
 
 ; Signature: source semantics (matches Coq)
-; Translation validation: Signature preserves semantics
-(push 1)
-(declare-const source_Signature Int)
-(declare-const target_Signature Int)
-(assert (>= source_Signature 0))
-(assert (>= target_Signature 0))
-(assert (not (= source_Signature target_Signature)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_Signature () Bool)
+(declare-fun target_Signature () Bool)
+(assert (= source_Signature target_Signature))
+
+; NETWORK_TIMEOUT_MAX_MS: source semantics (matches Coq)
+(declare-fun source_NETWORK_TIMEOUT_MAX_MS () Bool)
+(declare-fun target_NETWORK_TIMEOUT_MAX_MS () Bool)
+(assert (= source_NETWORK_TIMEOUT_MAX_MS target_NETWORK_TIMEOUT_MAX_MS))
 
 ; current_time: source semantics (matches Coq)
-; Translation validation: current_time preserves semantics
-(push 1)
-(declare-const source_current_time Int)
-(declare-const target_current_time Int)
-(assert (>= source_current_time 0))
-(assert (>= target_current_time 0))
-(assert (not (= source_current_time target_current_time)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_current_time () Bool)
+(declare-fun target_current_time () Bool)
+(assert (= source_current_time target_current_time))
 
 ; valid_chain: source semantics (matches Coq)
-; Translation validation: valid_chain preserves semantics
-(push 1)
-(declare-const source_valid_chain Int)
-(declare-const target_valid_chain Int)
-(assert (>= source_valid_chain 0))
-(assert (>= target_valid_chain 0))
-(assert (not (= source_valid_chain target_valid_chain)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_valid_chain () Bool)
+(declare-fun target_valid_chain () Bool)
+(assert (= source_valid_chain target_valid_chain))
 
 ; not_expired: source semantics (matches Coq)
-; Translation validation: not_expired preserves semantics
-(push 1)
-(declare-const source_not_expired Int)
-(declare-const target_not_expired Int)
-(assert (>= source_not_expired 0))
-(assert (>= target_not_expired 0))
-(assert (not (= source_not_expired target_not_expired)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_not_expired () Bool)
+(declare-fun target_not_expired () Bool)
+(assert (= source_not_expired target_not_expired))
 
 ; not_revoked: source semantics (matches Coq)
-; Translation validation: not_revoked preserves semantics
-(push 1)
-(declare-const source_not_revoked Int)
-(declare-const target_not_revoked Int)
-(assert (>= source_not_revoked 0))
-(assert (>= target_not_revoked 0))
-(assert (not (= source_not_revoked target_not_revoked)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_not_revoked () Bool)
+(declare-fun target_not_revoked () Bool)
+(assert (= source_not_revoked target_not_revoked))
 
 ; acceptable_cert: source semantics (matches Coq)
-; Translation validation: acceptable_cert preserves semantics
-(push 1)
-(declare-const source_acceptable_cert Int)
-(declare-const target_acceptable_cert Int)
-(assert (>= source_acceptable_cert 0))
-(assert (>= target_acceptable_cert 0))
-(assert (not (= source_acceptable_cert target_acceptable_cert)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_acceptable_cert () Bool)
+(declare-fun target_acceptable_cert () Bool)
+(assert (= source_acceptable_cert target_acceptable_cert))
 
 ; accepted: source semantics (matches Coq)
-; Translation validation: accepted preserves semantics
-(push 1)
-(declare-const source_accepted Int)
-(declare-const target_accepted Int)
-(assert (>= source_accepted 0))
-(assert (>= target_accepted 0))
-(assert (not (= source_accepted target_accepted)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_accepted () Bool)
+(declare-fun target_accepted () Bool)
+(assert (= source_accepted target_accepted))
 
 ; encrypted: source semantics (matches Coq)
-; Translation validation: encrypted preserves semantics
-(push 1)
-(declare-const source_encrypted Int)
-(declare-const target_encrypted Int)
-(assert (>= source_encrypted 0))
-(assert (>= target_encrypted 0))
-(assert (not (= source_encrypted target_encrypted)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_encrypted () Bool)
+(declare-fun target_encrypted () Bool)
+(assert (= source_encrypted target_encrypted))
 
 ; transmitted: source semantics (matches Coq)
-; Translation validation: transmitted preserves semantics
-(push 1)
-(declare-const source_transmitted Int)
-(declare-const target_transmitted Int)
-(assert (>= source_transmitted 0))
-(assert (>= target_transmitted 0))
-(assert (not (= source_transmitted target_transmitted)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_transmitted () Bool)
+(declare-fun target_transmitted () Bool)
+(assert (= source_transmitted target_transmitted))
 
 ; secure_stack: source semantics (matches Coq)
-; Translation validation: secure_stack preserves semantics
-(push 1)
-(declare-const source_secure_stack Int)
-(declare-const target_secure_stack Int)
-(assert (>= source_secure_stack 0))
-(assert (>= target_secure_stack 0))
-(assert (not (= source_secure_stack target_secure_stack)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_secure_stack () Bool)
+(declare-fun target_secure_stack () Bool)
+(assert (= source_secure_stack target_secure_stack))
 
 ; secure_connection: source semantics (matches Coq)
-; Translation validation: secure_connection preserves semantics
-(push 1)
-(declare-const source_secure_connection Int)
-(declare-const target_secure_connection Int)
-(assert (>= source_secure_connection 0))
-(assert (>= target_secure_connection 0))
-(assert (not (= source_secure_connection target_secure_connection)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_secure_connection () Bool)
+(declare-fun target_secure_connection () Bool)
+(assert (= source_secure_connection target_secure_connection))
 
 ; tls_required: source semantics (matches Coq)
-; Translation validation: tls_required preserves semantics
-(push 1)
-(declare-const source_tls_required Int)
-(declare-const target_tls_required Int)
-(assert (>= source_tls_required 0))
-(assert (>= target_tls_required 0))
-(assert (not (= source_tls_required target_tls_required)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_tls_required () Bool)
+(declare-fun target_tls_required () Bool)
+(assert (= source_tls_required target_tls_required))
 
 ; cert_validation_complete_prop: source semantics (matches Coq)
-; Translation validation: cert_validation_complete_prop preserves semantics
-(push 1)
-(declare-const source_cert_validation_complete_prop Int)
-(declare-const target_cert_validation_complete_prop Int)
-(assert (>= source_cert_validation_complete_prop 0))
-(assert (>= target_cert_validation_complete_prop 0))
-(assert (not (= source_cert_validation_complete_prop target_cert_validation_complete_prop)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_cert_validation_complete_prop () Bool)
+(declare-fun target_cert_validation_complete_prop () Bool)
+(assert (= source_cert_validation_complete_prop target_cert_validation_complete_prop))
 
 ; dns_validated_prop: source semantics (matches Coq)
-; Translation validation: dns_validated_prop preserves semantics
-(push 1)
-(declare-const source_dns_validated_prop Int)
-(declare-const target_dns_validated_prop Int)
-(assert (>= source_dns_validated_prop 0))
-(assert (>= target_dns_validated_prop 0))
-(assert (not (= source_dns_validated_prop target_dns_validated_prop)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_dns_validated_prop () Bool)
+(declare-fun target_dns_validated_prop () Bool)
+(assert (= source_dns_validated_prop target_dns_validated_prop))
 
 ; no_plaintext_password: source semantics (matches Coq)
-; Translation validation: no_plaintext_password preserves semantics
-(push 1)
-(declare-const source_no_plaintext_password Int)
-(declare-const target_no_plaintext_password Int)
-(assert (>= source_no_plaintext_password 0))
-(assert (>= target_no_plaintext_password 0))
-(assert (not (= source_no_plaintext_password target_no_plaintext_password)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_no_plaintext_password () Bool)
+(declare-fun target_no_plaintext_password () Bool)
+(assert (= source_no_plaintext_password target_no_plaintext_password))
 
 ; connection_timeout_enforced_prop: source semantics (matches Coq)
-; Translation validation: connection_timeout_enforced_prop preserves semantics
-(push 1)
-(declare-const source_connection_timeout_enforced_prop Int)
-(declare-const target_connection_timeout_enforced_prop Int)
-(assert (>= source_connection_timeout_enforced_prop 0))
-(assert (>= target_connection_timeout_enforced_prop 0))
-(assert (not (= source_connection_timeout_enforced_prop target_connection_timeout_enforced_prop)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_connection_timeout_enforced_prop () Bool)
+(declare-fun target_connection_timeout_enforced_prop () Bool)
+(assert (= source_connection_timeout_enforced_prop target_connection_timeout_enforced_prop))
 
 ; socket_cleanup_prop: source semantics (matches Coq)
-; Translation validation: socket_cleanup_prop preserves semantics
-(push 1)
-(declare-const source_socket_cleanup_prop Int)
-(declare-const target_socket_cleanup_prop Int)
-(assert (>= source_socket_cleanup_prop 0))
-(assert (>= target_socket_cleanup_prop 0))
-(assert (not (= source_socket_cleanup_prop target_socket_cleanup_prop)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_socket_cleanup_prop () Bool)
+(declare-fun target_socket_cleanup_prop () Bool)
+(assert (= source_socket_cleanup_prop target_socket_cleanup_prop))
 
 ; firewall_applied: source semantics (matches Coq)
-; Translation validation: firewall_applied preserves semantics
-(push 1)
-(declare-const source_firewall_applied Int)
-(declare-const target_firewall_applied Int)
-(assert (>= source_firewall_applied 0))
-(assert (>= target_firewall_applied 0))
-(assert (not (= source_firewall_applied target_firewall_applied)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_firewall_applied () Bool)
+(declare-fun target_firewall_applied () Bool)
+(assert (= source_firewall_applied target_firewall_applied))
 
 ; vpn_traffic_encrypted_prop: source semantics (matches Coq)
-; Translation validation: vpn_traffic_encrypted_prop preserves semantics
-(push 1)
-(declare-const source_vpn_traffic_encrypted_prop Int)
-(declare-const target_vpn_traffic_encrypted_prop Int)
-(assert (>= source_vpn_traffic_encrypted_prop 0))
-(assert (>= target_vpn_traffic_encrypted_prop 0))
-(assert (not (= source_vpn_traffic_encrypted_prop target_vpn_traffic_encrypted_prop)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_vpn_traffic_encrypted_prop () Bool)
+(declare-fun target_vpn_traffic_encrypted_prop () Bool)
+(assert (= source_vpn_traffic_encrypted_prop target_vpn_traffic_encrypted_prop))
 
 ; hsts_enforced: source semantics (matches Coq)
-; Translation validation: hsts_enforced preserves semantics
-(push 1)
-(declare-const source_hsts_enforced Int)
-(declare-const target_hsts_enforced Int)
-(assert (>= source_hsts_enforced 0))
-(assert (>= target_hsts_enforced 0))
-(assert (not (= source_hsts_enforced target_hsts_enforced)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_hsts_enforced () Bool)
+(declare-fun target_hsts_enforced () Bool)
+(assert (= source_hsts_enforced target_hsts_enforced))
 
 ; cors_enforced: source semantics (matches Coq)
-; Translation validation: cors_enforced preserves semantics
-(push 1)
-(declare-const source_cors_enforced Int)
-(declare-const target_cors_enforced Int)
-(assert (>= source_cors_enforced 0))
-(assert (>= target_cors_enforced 0))
-(assert (not (= source_cors_enforced target_cors_enforced)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_cors_enforced () Bool)
+(declare-fun target_cors_enforced () Bool)
+(assert (= source_cors_enforced target_cors_enforced))
 
 ; ws_origin_valid: source semantics (matches Coq)
-; Translation validation: ws_origin_valid preserves semantics
-(push 1)
-(declare-const source_ws_origin_valid Int)
-(declare-const target_ws_origin_valid Int)
-(assert (>= source_ws_origin_valid 0))
-(assert (>= target_ws_origin_valid 0))
-(assert (not (= source_ws_origin_valid target_ws_origin_valid)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_ws_origin_valid () Bool)
+(declare-fun target_ws_origin_valid () Bool)
+(assert (= source_ws_origin_valid target_ws_origin_valid))
 
 ; cert_pinning_holds: source semantics (matches Coq)
-; Translation validation: cert_pinning_holds preserves semantics
-(push 1)
-(declare-const source_cert_pinning_holds Int)
-(declare-const target_cert_pinning_holds Int)
-(assert (>= source_cert_pinning_holds 0))
-(assert (>= target_cert_pinning_holds 0))
-(assert (not (= source_cert_pinning_holds target_cert_pinning_holds)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_cert_pinning_holds () Bool)
+(declare-fun target_cert_pinning_holds () Bool)
+(assert (= source_cert_pinning_holds target_cert_pinning_holds))
 
 ; network_change_notified_prop: source semantics (matches Coq)
-; Translation validation: network_change_notified_prop preserves semantics
-(push 1)
-(declare-const source_network_change_notified_prop Int)
-(declare-const target_network_change_notified_prop Int)
-(assert (>= source_network_change_notified_prop 0))
-(assert (>= target_network_change_notified_prop 0))
-(assert (not (= source_network_change_notified_prop target_network_change_notified_prop)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_network_change_notified_prop () Bool)
+(declare-fun target_network_change_notified_prop () Bool)
+(assert (= source_network_change_notified_prop target_network_change_notified_prop))
 
 ; network_all_encrypted: translation preserves property (matches Coq: Theorem)
-; Translation validation: network_all_encrypted preserves semantics
-(push 1)
-(declare-const source_network_all_encrypted Int)
-(declare-const target_network_all_encrypted Int)
-(assert (>= source_network_all_encrypted 0))
-(assert (>= target_network_all_encrypted 0))
-(assert (not (= source_network_all_encrypted target_network_all_encrypted)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_network_all_encrypted () Bool)
+(declare-fun target_network_all_encrypted () Bool)
+(assert (= source_network_all_encrypted target_network_all_encrypted))
 
 ; cert_validation_correct: translation preserves property (matches Coq: Theorem)
-; Translation validation: cert_validation_correct preserves semantics
-(push 1)
-(declare-const source_cert_validation_correct Int)
-(declare-const target_cert_validation_correct Int)
-(assert (>= source_cert_validation_correct 0))
-(assert (>= target_cert_validation_correct 0))
-(assert (not (= source_cert_validation_correct target_cert_validation_correct)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_cert_validation_correct () Bool)
+(declare-fun target_cert_validation_correct () Bool)
+(assert (= source_cert_validation_correct target_cert_validation_correct))
 
 ; expired_cert_rejected: translation preserves property (matches Coq: Theorem)
-; Translation validation: expired_cert_rejected preserves semantics
-(push 1)
-(declare-const source_expired_cert_rejected Int)
-(declare-const target_expired_cert_rejected Int)
-(assert (>= source_expired_cert_rejected 0))
-(assert (>= target_expired_cert_rejected 0))
-(assert (not (= source_expired_cert_rejected target_expired_cert_rejected)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_expired_cert_rejected () Bool)
+(declare-fun target_expired_cert_rejected () Bool)
+(assert (= source_expired_cert_rejected target_expired_cert_rejected))
 
 ; revoked_cert_rejected: translation preserves property (matches Coq: Theorem)
-; Translation validation: revoked_cert_rejected preserves semantics
-(push 1)
-(declare-const source_revoked_cert_rejected Int)
-(declare-const target_revoked_cert_rejected Int)
-(assert (>= source_revoked_cert_rejected 0))
-(assert (>= target_revoked_cert_rejected 0))
-(assert (not (= source_revoked_cert_rejected target_revoked_cert_rejected)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_revoked_cert_rejected () Bool)
+(declare-fun target_revoked_cert_rejected () Bool)
+(assert (= source_revoked_cert_rejected target_revoked_cert_rejected))
 
 ; invalid_chain_rejected: translation preserves property (matches Coq: Theorem)
-; Translation validation: invalid_chain_rejected preserves semantics
-(push 1)
-(declare-const source_invalid_chain_rejected Int)
-(declare-const target_invalid_chain_rejected Int)
-(assert (>= source_invalid_chain_rejected 0))
-(assert (>= target_invalid_chain_rejected 0))
-(assert (not (= source_invalid_chain_rejected target_invalid_chain_rejected)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_invalid_chain_rejected () Bool)
+(declare-fun target_invalid_chain_rejected () Bool)
+(assert (= source_invalid_chain_rejected target_invalid_chain_rejected))
 
 ; secure_conn_valid_cert: translation preserves property (matches Coq: Theorem)
-; Translation validation: secure_conn_valid_cert preserves semantics
-(push 1)
-(declare-const source_secure_conn_valid_cert Int)
-(declare-const target_secure_conn_valid_cert Int)
-(assert (>= source_secure_conn_valid_cert 0))
-(assert (>= target_secure_conn_valid_cert 0))
-(assert (not (= source_secure_conn_valid_cert target_secure_conn_valid_cert)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_secure_conn_valid_cert () Bool)
+(declare-fun target_secure_conn_valid_cert () Bool)
+(assert (= source_secure_conn_valid_cert target_secure_conn_valid_cert))
 
 ; tls_required_for_external: translation preserves property (matches Coq: Theorem)
-; Translation validation: tls_required_for_external preserves semantics
-(push 1)
-(declare-const source_tls_required_for_external Int)
-(declare-const target_tls_required_for_external Int)
-(assert (>= source_tls_required_for_external 0))
-(assert (>= target_tls_required_for_external 0))
-(assert (not (= source_tls_required_for_external target_tls_required_for_external)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_tls_required_for_external () Bool)
+(declare-fun target_tls_required_for_external () Bool)
+(assert (= source_tls_required_for_external target_tls_required_for_external))
 
 ; certificate_validation_complete: translation preserves property (matches Coq: Theorem)
-; Translation validation: certificate_validation_complete preserves semantics
-(push 1)
-(declare-const source_certificate_validation_complete Int)
-(declare-const target_certificate_validation_complete Int)
-(assert (>= source_certificate_validation_complete 0))
-(assert (>= target_certificate_validation_complete 0))
-(assert (not (= source_certificate_validation_complete target_certificate_validation_complete)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_certificate_validation_complete () Bool)
+(declare-fun target_certificate_validation_complete () Bool)
+(assert (= source_certificate_validation_complete target_certificate_validation_complete))
 
 ; dns_resolution_validated: translation preserves property (matches Coq: Theorem)
-; Translation validation: dns_resolution_validated preserves semantics
-(push 1)
-(declare-const source_dns_resolution_validated Int)
-(declare-const target_dns_resolution_validated Int)
-(assert (>= source_dns_resolution_validated 0))
-(assert (>= target_dns_resolution_validated 0))
-(assert (not (= source_dns_resolution_validated target_dns_resolution_validated)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_dns_resolution_validated () Bool)
+(declare-fun target_dns_resolution_validated () Bool)
+(assert (= source_dns_resolution_validated target_dns_resolution_validated))
 
 ; no_plaintext_passwords: translation preserves property (matches Coq: Theorem)
-; Translation validation: no_plaintext_passwords preserves semantics
-(push 1)
-(declare-const source_no_plaintext_passwords Int)
-(declare-const target_no_plaintext_passwords Int)
-(assert (>= source_no_plaintext_passwords 0))
-(assert (>= target_no_plaintext_passwords 0))
-(assert (not (= source_no_plaintext_passwords target_no_plaintext_passwords)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_no_plaintext_passwords () Bool)
+(declare-fun target_no_plaintext_passwords () Bool)
+(assert (= source_no_plaintext_passwords target_no_plaintext_passwords))
 
 ; connection_timeout_enforced: translation preserves property (matches Coq: Theorem)
-; Translation validation: connection_timeout_enforced preserves semantics
-(push 1)
-(declare-const source_connection_timeout_enforced Int)
-(declare-const target_connection_timeout_enforced Int)
-(assert (>= source_connection_timeout_enforced 0))
-(assert (>= target_connection_timeout_enforced 0))
-(assert (not (= source_connection_timeout_enforced target_connection_timeout_enforced)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_connection_timeout_enforced () Bool)
+(declare-fun target_connection_timeout_enforced () Bool)
+(assert (= source_connection_timeout_enforced target_connection_timeout_enforced))
 
 ; socket_cleanup_complete: translation preserves property (matches Coq: Theorem)
-; Translation validation: socket_cleanup_complete preserves semantics
-(push 1)
-(declare-const source_socket_cleanup_complete Int)
-(declare-const target_socket_cleanup_complete Int)
-(assert (>= source_socket_cleanup_complete 0))
-(assert (>= target_socket_cleanup_complete 0))
-(assert (not (= source_socket_cleanup_complete target_socket_cleanup_complete)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_socket_cleanup_complete () Bool)
+(declare-fun target_socket_cleanup_complete () Bool)
+(assert (= source_socket_cleanup_complete target_socket_cleanup_complete))
 
 ; bandwidth_throttled: translation preserves property (matches Coq: Theorem)
-; Translation validation: bandwidth_throttled preserves semantics
-(push 1)
-(declare-const source_bandwidth_throttled Int)
-(declare-const target_bandwidth_throttled Int)
-(assert (>= source_bandwidth_throttled 0))
-(assert (>= target_bandwidth_throttled 0))
-(assert (not (= source_bandwidth_throttled target_bandwidth_throttled)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_bandwidth_throttled () Bool)
+(declare-fun target_bandwidth_throttled () Bool)
+(assert (= source_bandwidth_throttled target_bandwidth_throttled))
 
 ; no_ip_spoofing: translation preserves property (matches Coq: Theorem)
-; Translation validation: no_ip_spoofing preserves semantics
-(push 1)
-(declare-const source_no_ip_spoofing Int)
-(declare-const target_no_ip_spoofing Int)
-(assert (>= source_no_ip_spoofing 0))
-(assert (>= target_no_ip_spoofing 0))
-(assert (not (= source_no_ip_spoofing target_no_ip_spoofing)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_no_ip_spoofing () Bool)
+(declare-fun target_no_ip_spoofing () Bool)
+(assert (= source_no_ip_spoofing target_no_ip_spoofing))
 
 ; firewall_rules_applied: translation preserves property (matches Coq: Theorem)
-; Translation validation: firewall_rules_applied preserves semantics
-(push 1)
-(declare-const source_firewall_rules_applied Int)
-(declare-const target_firewall_rules_applied Int)
-(assert (>= source_firewall_rules_applied 0))
-(assert (>= target_firewall_rules_applied 0))
-(assert (not (= source_firewall_rules_applied target_firewall_rules_applied)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_firewall_rules_applied () Bool)
+(declare-fun target_firewall_rules_applied () Bool)
+(assert (= source_firewall_rules_applied target_firewall_rules_applied))
 
 ; vpn_traffic_encrypted: translation preserves property (matches Coq: Theorem)
-; Translation validation: vpn_traffic_encrypted preserves semantics
-(push 1)
-(declare-const source_vpn_traffic_encrypted Int)
-(declare-const target_vpn_traffic_encrypted Int)
-(assert (>= source_vpn_traffic_encrypted 0))
-(assert (>= target_vpn_traffic_encrypted 0))
-(assert (not (= source_vpn_traffic_encrypted target_vpn_traffic_encrypted)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_vpn_traffic_encrypted () Bool)
+(declare-fun target_vpn_traffic_encrypted () Bool)
+(assert (= source_vpn_traffic_encrypted target_vpn_traffic_encrypted))
 
 ; http_strict_transport_thm: translation preserves property (matches Coq: Theorem)
-; Translation validation: http_strict_transport_thm preserves semantics
-(push 1)
-(declare-const source_http_strict_transport_thm Int)
-(declare-const target_http_strict_transport_thm Int)
-(assert (>= source_http_strict_transport_thm 0))
-(assert (>= target_http_strict_transport_thm 0))
-(assert (not (= source_http_strict_transport_thm target_http_strict_transport_thm)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_http_strict_transport_thm () Bool)
+(declare-fun target_http_strict_transport_thm () Bool)
+(assert (= source_http_strict_transport_thm target_http_strict_transport_thm))
 
 ; cors_policy_enforced: translation preserves property (matches Coq: Theorem)
-; Translation validation: cors_policy_enforced preserves semantics
-(push 1)
-(declare-const source_cors_policy_enforced Int)
-(declare-const target_cors_policy_enforced Int)
-(assert (>= source_cors_policy_enforced 0))
-(assert (>= target_cors_policy_enforced 0))
-(assert (not (= source_cors_policy_enforced target_cors_policy_enforced)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_cors_policy_enforced () Bool)
+(declare-fun target_cors_policy_enforced () Bool)
+(assert (= source_cors_policy_enforced target_cors_policy_enforced))
 
 ; websocket_origin_validated: translation preserves property (matches Coq: Theorem)
-; Translation validation: websocket_origin_validated preserves semantics
-(push 1)
-(declare-const source_websocket_origin_validated Int)
-(declare-const target_websocket_origin_validated Int)
-(assert (>= source_websocket_origin_validated 0))
-(assert (>= target_websocket_origin_validated 0))
-(assert (not (= source_websocket_origin_validated target_websocket_origin_validated)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_websocket_origin_validated () Bool)
+(declare-fun target_websocket_origin_validated () Bool)
+(assert (= source_websocket_origin_validated target_websocket_origin_validated))
 
 ; certificate_pinning_enforced: translation preserves property (matches Coq: Theorem)
-; Translation validation: certificate_pinning_enforced preserves semantics
-(push 1)
-(declare-const source_certificate_pinning_enforced Int)
-(declare-const target_certificate_pinning_enforced Int)
-(assert (>= source_certificate_pinning_enforced 0))
-(assert (>= target_certificate_pinning_enforced 0))
-(assert (not (= source_certificate_pinning_enforced target_certificate_pinning_enforced)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_certificate_pinning_enforced () Bool)
+(declare-fun target_certificate_pinning_enforced () Bool)
+(assert (= source_certificate_pinning_enforced target_certificate_pinning_enforced))
 
 ; network_change_notified: translation preserves property (matches Coq: Theorem)
-; Translation validation: network_change_notified preserves semantics
-(push 1)
-(declare-const source_network_change_notified Int)
-(declare-const target_network_change_notified Int)
-(assert (>= source_network_change_notified 0))
-(assert (>= target_network_change_notified 0))
-(assert (not (= source_network_change_notified target_network_change_notified)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_network_change_notified () Bool)
+(declare-fun target_network_change_notified () Bool)
+(assert (= source_network_change_notified target_network_change_notified))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

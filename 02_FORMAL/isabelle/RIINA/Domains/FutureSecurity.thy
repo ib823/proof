@@ -14,28 +14,30 @@
  * |--------------------|------------------------|--------|
  * | PQ_KEM             | pq_kem                 | OK     |
  * | PQ_Signature       | pq__signature          | OK     |
- * | security_layer_type  | security_layer_type    | OK     |
- * | speculation_barrier | speculation_barrier    | OK     |
- * | leakage_source      | leakage_source         | OK     |
- * | verification_level  | verification_level     | OK     |
- * | adversary_capability | adversary_capability   | OK     |
- * | pq_crypto_config     | pq_crypto_config       | OK     |
- * | classical_crypto    | classical_crypto       | OK     |
- * | security_layer      | security_layer         | OK     |
- * | defense_in_depth     | defense_in_depth       | OK     |
- * | speculation_mitigation | speculation_mitigation | OK     |
- * | side_channel_mitigation | side_channel_mitigation | OK     |
- * | leakage_bound       | leakage_bound          | OK     |
- * | security_component  | security_component     | OK     |
- * | composed_security   | composed_security      | OK     |
- * | key_rotation_policy  | key_rotation_policy    | OK     |
- * | continuous_verification | continuous_verification | OK     |
- * | apt_resistance      | apt_resistance         | OK     |
- * | tls_config          | tls_config             | OK     |
- * | qkd_config          | qkd_config             | OK     |
- * | quantum_safe_network | quantum_safe_network   | OK     |
- * | formal_verification_config | formal_verification_config | OK     |
- * | mathematical_proof  | mathematical_proof     | OK     |
+ * | SecurityLayerType  | security_layer_type    | OK     |
+ * | SpeculationBarrier | speculation_barrier    | OK     |
+ * | LeakageSource      | leakage_source         | OK     |
+ * | VerificationLevel  | verification_level     | OK     |
+ * | AdversaryCapability | adversary_capability   | OK     |
+ * | PQCryptoConfig     | pq_crypto_config       | OK     |
+ * | ClassicalCrypto    | classical_crypto       | OK     |
+ * | SecurityLayer      | security_layer         | OK     |
+ * | DefenseInDepth     | defense_in_depth       | OK     |
+ * | SpeculationMitigation | speculation_mitigation | OK     |
+ * | SideChannelMitigation | side_channel_mitigation | OK     |
+ * | LeakageBound       | leakage_bound          | OK     |
+ * | SecurityComponent  | security_component     | OK     |
+ * | ComposedSecurity   | composed_security      | OK     |
+ * | KeyRotationPolicy  | key_rotation_policy    | OK     |
+ * | ContinuousVerification | continuous_verification | OK     |
+ * | APTResistance      | apt_resistance         | OK     |
+ * | TLSConfig          | tls_config             | OK     |
+ * | QKDConfig          | qkd_config             | OK     |
+ * | QuantumSafeNetwork | quantum_safe_network   | OK     |
+ * | FormalVerificationConfig | formal_verification_config | OK     |
+ * | MathematicalProof  | mathematical_proof     | OK     |
+ * | APT_KEY_ROTATION_MAX_AGE_S | APT_KEY_ROTATION_MAX_AGE_S | OK     |
+ * | CV_ATTESTATION_INTERVAL_MAX_MS | CV_ATTESTATION_INTERVAL_MAX_MS | OK     |
  * | kem_security_level | kem_security_level     | OK     |
  * | sig_security_level | sig_security_level     | OK     |
  * | symmetric_quantum_safe | symmetric_quantum_safe | OK     |
@@ -93,8 +95,6 @@ theory FutureSecurity
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym prop = "nat"
 (* PQ_KEM (matches Coq: Inductive PQ_KEM) *)
 datatype pq_kem =
     ML_KEM_768
@@ -110,7 +110,7 @@ datatype pq__signature =
   |     SLH_DSA_192f
   |     SLH_DSA_256f
 
-(* security_layer_type (matches Coq: Inductive security_layer_type) *)
+(* SecurityLayerType (matches Coq: Inductive SecurityLayerType) *)
 datatype security_layer_type =
     NetworkPerimeter
   |     ApplicationFirewall
@@ -121,7 +121,7 @@ datatype security_layer_type =
   |     HardwareIsolation
   |     CryptoLayer
 
-(* speculation_barrier (matches Coq: Inductive speculation_barrier) *)
+(* SpeculationBarrier (matches Coq: Inductive SpeculationBarrier) *)
 datatype speculation_barrier =
     LFENCE
   |     MFENCE
@@ -129,7 +129,7 @@ datatype speculation_barrier =
   |     FullSerialize
   |     ConditionalBarrier
 
-(* leakage_source (matches Coq: Inductive leakage_source) *)
+(* LeakageSource (matches Coq: Inductive LeakageSource) *)
 datatype leakage_source =
     TimingLeak
   |     CacheLeak
@@ -138,7 +138,7 @@ datatype leakage_source =
   |     AcousticLeak
   |     SpeculativeLeak
 
-(* verification_level (matches Coq: Inductive verification_level) *)
+(* VerificationLevel (matches Coq: Inductive VerificationLevel) *)
 datatype verification_level =
     TypeChecked
   |     UnitTested
@@ -147,7 +147,7 @@ datatype verification_level =
   |     TheoremProved
   |     MachineCheckedProof
 
-(* adversary_capability (matches Coq: Inductive adversary_capability) *)
+(* AdversaryCapability (matches Coq: Inductive AdversaryCapability) *)
 datatype adversary_capability =
     ScriptKiddie
   |     SkilledHacker
@@ -155,7 +155,7 @@ datatype adversary_capability =
   |     QuantumCapable
   |     AGILevel
 
-(* pq_crypto_config (matches Coq: Record pq_crypto_config) *)
+(* PQCryptoConfig (matches Coq: Record PQCryptoConfig) *)
 record pq_crypto_config =
   pqc_kem :: PQ_KEM
   pqc_signature :: PQ_Signature
@@ -164,27 +164,27 @@ record pq_crypto_config =
   pqc_classical_kem :: option
   pqc_classical_sig :: option
 
-(* classical_crypto (matches Coq: Record classical_crypto) *)
+(* ClassicalCrypto (matches Coq: Record ClassicalCrypto) *)
 record classical_crypto =
   cc_rsa_bits :: option
   cc_dh_bits :: option
   cc_ecc_bits :: option
   cc_symmetric_bits :: nat
 
-(* security_layer (matches Coq: Record security_layer) *)
+(* SecurityLayer (matches Coq: Record SecurityLayer) *)
 record security_layer =
-  sl_type :: security_layer_type
+  sl_type :: SecurityLayerType
   sl_verified :: bool
   sl_independent :: bool
   sl_coverage :: nat
 
-(* defense_in_depth (matches Coq: Record defense_in_depth) *)
+(* DefenseInDepth (matches Coq: Record DefenseInDepth) *)
 record defense_in_depth =
   did_layers :: 'a list
   did_composition_verified :: bool
   did_no_common_mode_failure :: bool
 
-(* speculation_mitigation (matches Coq: Record speculation_mitigation) *)
+(* SpeculationMitigation (matches Coq: Record SpeculationMitigation) *)
 record speculation_mitigation =
   sm_barriers :: 'a list
   sm_retpoline :: bool
@@ -193,7 +193,7 @@ record speculation_mitigation =
   sm_ssbd :: bool
   sm_conservative :: bool
 
-(* side_channel_mitigation (matches Coq: Record side_channel_mitigation) *)
+(* SideChannelMitigation (matches Coq: Record SideChannelMitigation) *)
 record side_channel_mitigation =
   scm_constant_time :: bool
   scm_cache_partitioning :: bool
@@ -202,20 +202,20 @@ record side_channel_mitigation =
   scm_noise_injection :: bool
   scm_minimal_surface :: bool
 
-(* leakage_bound (matches Coq: Record leakage_bound) *)
+(* LeakageBound (matches Coq: Record LeakageBound) *)
 record leakage_bound =
   lb_bits_per_operation :: nat
   lb_total_bits :: nat
   lb_timing_variance_ns :: nat
 
-(* security_component (matches Coq: Record security_component) *)
+(* SecurityComponent (matches Coq: Record SecurityComponent) *)
 record security_component =
   sc_id :: nat
   sc_verified :: bool
   sc_assumptions :: 'a list
   sc_guarantees :: 'a list
 
-(* composed_security (matches Coq: Record composed_security) *)
+(* ComposedSecurity (matches Coq: Record ComposedSecurity) *)
 record composed_security =
   cs_components :: 'a list
   cs_composition_proof :: bool
@@ -223,7 +223,7 @@ record composed_security =
   cs_all_assumptions_met :: bool
   cs_emergent_analysis :: bool
 
-(* key_rotation_policy (matches Coq: Record key_rotation_policy) *)
+(* KeyRotationPolicy (matches Coq: Record KeyRotationPolicy) *)
 record key_rotation_policy =
   krp_max_age_seconds :: nat
   krp_max_operations :: nat
@@ -231,7 +231,7 @@ record key_rotation_policy =
   krp_compromise_recovery :: bool
   krp_automated :: bool
 
-(* continuous_verification (matches Coq: Record continuous_verification) *)
+(* ContinuousVerification (matches Coq: Record ContinuousVerification) *)
 record continuous_verification =
   cv_runtime_checks :: bool
   cv_periodic_attestation :: bool
@@ -240,16 +240,16 @@ record continuous_verification =
   cv_automatic_response :: bool
   cv_state_integrity :: bool
 
-(* apt_resistance (matches Coq: Record apt_resistance) *)
+(* APTResistance (matches Coq: Record APTResistance) *)
 record apt_resistance =
-  apt_key_rotation :: key_rotation_policy
-  apt_continuous_verify :: continuous_verification
+  apt_key_rotation :: KeyRotationPolicy
+  apt_continuous_verify :: ContinuousVerification
   apt_compartmentalization :: bool
   apt_least_privilege :: bool
   apt_audit_logging :: bool
   apt_threat_hunting :: bool
 
-(* tls_config (matches Coq: Record tls_config) *)
+(* TLSConfig (matches Coq: Record TLSConfig) *)
 record tls_config =
   tls_version :: nat
   tls_pq_kem :: option
@@ -257,7 +257,7 @@ record tls_config =
   tls_classical_kex :: option
   tls_hybrid :: bool
 
-(* qkd_config (matches Coq: Record qkd_config) *)
+(* QKDConfig (matches Coq: Record QKDConfig) *)
 record qkd_config =
   qkd_enabled :: bool
   qkd_protocol :: nat
@@ -265,28 +265,36 @@ record qkd_config =
   qkd_error_threshold :: nat
   qkd_authentication :: bool
 
-(* quantum_safe_network (matches Coq: Record quantum_safe_network) *)
+(* QuantumSafeNetwork (matches Coq: Record QuantumSafeNetwork) *)
 record quantum_safe_network =
-  qsn_tls :: tls_config
+  qsn_tls :: TLSConfig
   qsn_qkd :: option
   qsn_pq_required :: bool
   qsn_hybrid_mandatory :: bool
 
-(* formal_verification_config (matches Coq: Record formal_verification_config) *)
+(* FormalVerificationConfig (matches Coq: Record FormalVerificationConfig) *)
 record formal_verification_config =
-  fvc_level :: verification_level
+  fvc_level :: VerificationLevel
   fvc_proof_assistant :: nat
   fvc_spec_complete :: bool
   fvc_assumptions_explicit :: bool
   fvc_trusted_base_minimal :: bool
   fvc_proof_reviewed :: bool
 
-(* mathematical_proof (matches Coq: Record mathematical_proof) *)
+(* MathematicalProof (matches Coq: Record MathematicalProof) *)
 record mathematical_proof =
   mp_statement :: bool
   mp_proof_exists :: bool
   mp_machine_checked :: bool
   mp_assumptions :: 'a list
+
+(* APT_KEY_ROTATION_MAX_AGE_S (matches Coq: Definition APT_KEY_ROTATION_MAX_AGE_S) *)
+definition APT_KEY_ROTATION_MAX_AGE_S :: "nat" where
+  "APT_KEY_ROTATION_MAX_AGE_S \<equiv> Z.to_nat 86400%Z"
+
+(* CV_ATTESTATION_INTERVAL_MAX_MS (matches Coq: Definition CV_ATTESTATION_INTERVAL_MAX_MS) *)
+definition CV_ATTESTATION_INTERVAL_MAX_MS :: "nat" where
+  "CV_ATTESTATION_INTERVAL_MAX_MS \<equiv> Z.to_nat 60000%Z"
 
 (* kem_security_level (matches Coq: Definition kem_security_level) *)
 fun kem_security_level :: "PQ_KEM \<Rightarrow> nat" where
@@ -314,19 +322,19 @@ definition pq_config_secure :: "PQCryptoConfig \<Rightarrow> bool" where
   symmetric_quantum_safe (pqc_symmetric_bits cfg)"
 
 (* vulnerable_to_shor - complex match, needs manual translation *)
-definition vulnerable_to_shor :: "bool" where "vulnerable_to_shor \<equiv> True"
+definition vulnerable_to_shor :: "bool" where "vulnerable_to_shor = undefined"
 
 (* grover_effective_bits (matches Coq: Definition grover_effective_bits) *)
 definition grover_effective_bits :: "nat \<Rightarrow> nat" where
   "grover_effective_bits bits \<equiv> bits / 2"
 
 (* count_verified_layers (matches Coq: Definition count_verified_layers) *)
-definition count_verified_layers :: "nat" where
-  "count_verified_layers \<equiv> 0"
+fun count_verified_layers :: "nat" where
+
 
 (* all_layers_independent (matches Coq: Definition all_layers_independent) *)
-definition all_layers_independent :: "bool" where
-  "all_layers_independent \<equiv> True"
+fun all_layers_independent :: "bool" where
+
 
 (* did_robust (matches Coq: Definition did_robust) *)
 definition did_robust :: "DefenseInDepth \<Rightarrow> bool" where
@@ -336,8 +344,8 @@ definition did_robust :: "DefenseInDepth \<Rightarrow> bool" where
   did_no_common_mode_failure did"
 
 (* has_full_serialize (matches Coq: Definition has_full_serialize) *)
-definition has_full_serialize :: "bool" where
-  "has_full_serialize \<equiv> True"
+fun has_full_serialize :: "bool" where
+
 
 (* speculation_conservative (matches Coq: Definition speculation_conservative) *)
 definition speculation_conservative :: "SpeculationMitigation \<Rightarrow> bool" where
@@ -347,7 +355,7 @@ definition speculation_conservative :: "SpeculationMitigation \<Rightarrow> bool
 
 (* leakage_minimal (matches Coq: Definition leakage_minimal) *)
 definition leakage_minimal :: "LeakageBound \<Rightarrow> bool" where
-  "leakage_minimal lb \<equiv> (lb_bits_per_operation lb = 0) \<and>
+  "leakage_minimal lb \<equiv> ((lb_bits_per_operation = lb)) 0 \<and>
   ((lb_timing_variance_ns \<le> lb)) 1"
 
 (* scm_comprehensive (matches Coq: Definition scm_comprehensive) *)
@@ -358,12 +366,12 @@ definition scm_comprehensive :: "SideChannelMitigation \<Rightarrow> bool" where
   scm_minimal_surface scm"
 
 (* count_verified_components (matches Coq: Definition count_verified_components) *)
-definition count_verified_components :: "nat" where
-  "count_verified_components \<equiv> 0"
+fun count_verified_components :: "nat" where
+
 
 (* all_components_verified (matches Coq: Definition all_components_verified) *)
-definition all_components_verified :: "bool" where
-  "all_components_verified \<equiv> True"
+fun all_components_verified :: "bool" where
+
 
 (* composed_security_sound (matches Coq: Definition composed_security_sound) *)
 definition composed_security_sound :: "ComposedSecurity \<Rightarrow> bool" where
@@ -375,7 +383,7 @@ definition composed_security_sound :: "ComposedSecurity \<Rightarrow> bool" wher
 
 (* key_rotation_apt_safe (matches Coq: Definition key_rotation_apt_safe) *)
 definition key_rotation_apt_safe :: "KeyRotationPolicy \<Rightarrow> bool" where
-  "key_rotation_apt_safe krp \<equiv> ((krp_max_age_seconds \<le> krp)) 86400 \<and>  
+  "key_rotation_apt_safe krp \<equiv> ((krp_max_age_seconds \<le> krp)) APT_KEY_ROTATION_MAX_AGE_S \<and>  
   krp_forward_secrecy krp \<and>
   krp_compromise_recovery krp \<and>
   krp_automated krp"
@@ -384,7 +392,7 @@ definition key_rotation_apt_safe :: "KeyRotationPolicy \<Rightarrow> bool" where
 definition cv_comprehensive :: "ContinuousVerification \<Rightarrow> bool" where
   "cv_comprehensive cv \<equiv> cv_runtime_checks cv \<and>
   cv_periodic_attestation cv \<and>
-  ((cv_attestation_interval_ms \<le> cv)) 60000 \<and>  
+  ((cv_attestation_interval_ms \<le> cv)) CV_ATTESTATION_INTERVAL_MAX_MS \<and>  
   cv_anomaly_detection cv \<and>
   cv_state_integrity cv"
 
@@ -397,7 +405,7 @@ definition apt_resistance_adequate :: "APTResistance \<Rightarrow> bool" where
   apt_audit_logging apt"
 
 (* tls_pq_safe - complex match, needs manual translation *)
-definition tls_pq_safe :: "bool" where "tls_pq_safe \<equiv> True"
+definition tls_pq_safe :: "bool" where "tls_pq_safe = undefined"
 
 (* qkd_secure (matches Coq: Definition qkd_secure) *)
 definition qkd_secure :: "QKDConfig \<Rightarrow> bool" where
@@ -407,7 +415,7 @@ definition qkd_secure :: "QKDConfig \<Rightarrow> bool" where
   qkd_authentication qkd"
 
 (* qsn_secure - complex match, needs manual translation *)
-definition qsn_secure :: "bool" where "qsn_secure \<equiv> True"
+definition qsn_secure :: "bool" where "qsn_secure = undefined"
 
 (* verification_strength (matches Coq: Definition verification_strength) *)
 fun verification_strength :: "VerificationLevel \<Rightarrow> nat" where
@@ -436,86 +444,86 @@ fun adversary_capability_level :: "AdversaryCapability \<Rightarrow> nat" where
 (* proof_adversary_independent (matches Coq: Definition proof_adversary_independent) *)
 definition proof_adversary_independent :: "MathematicalProof \<Rightarrow> bool" where
   "proof_adversary_independent mp \<equiv> mp_machine_checked mp = True ->
-  forall (adv : adversary_capability), 
+  forall (adv : AdversaryCapability), 
     
     mp_proof_exists mp = True"
 
 (* future_security_complete (matches Coq: Definition future_security_complete) *)
 definition future_security_complete :: "bool" where
   "future_security_complete \<equiv> (forall c p, vulnerable_to_shor c = True -> pq_config_secure p = True -> 
-                  (3 \<le> (kem_security_level) (pqc_kem p)) = True) \<and>
-   (forall b, (256 \<le> b) = True -> (128 \<le> (grover_effective_bits) b) = True) \<and>
-   (forall d, did_robust d = True -> (3 \<le> (length) (did_layers d)) = True) \<and>
-   (forall s, speculation_conservative s = True -> sm_conservative s = True) \<and>
+                  (3 \<le> (kem_security_level) (pqc_kem p)) = True) /\
+   (forall b, (256 \<le> b) = True -> (128 \<le> (grover_effective_bits) b) = True) /\
+   (forall d, did_robust d = True -> (3 \<le> (length) (did_layers d)) = True) /\
+   (forall s, speculation_conservative s = True -> sm_conservative s = True) /\
    (forall s l, scm_comprehensive s = True -> leakage_minimal l = True -> 
-                  scm_constant_time s = True) \<and>
-   (forall c, composed_security_sound c = True -> cs_composition_proof c = True) \<and>
+                  scm_constant_time s = True) /\
+   (forall c, composed_security_sound c = True -> cs_composition_proof c = True) /\
    (forall a, apt_resistance_adequate a = True -> 
-                  key_rotation_apt_safe (apt_key_rotation a) = True) \<and>
+                  key_rotation_apt_safe (apt_key_rotation a) = True) /\
    (forall p, pq_config_secure p = True -> 
-                  (3 \<le> (sig_security_level) (pqc_signature p)) = True) \<and>
-   (forall q, qsn_secure q = True -> tls_pq_safe (qsn_tls q) = True) \<and>
-   (forall (f : formal_verification_config) (a :: adversary_capability), 
+                  (3 \<le> (sig_security_level) (pqc_signature p)) = True) /\
+   (forall q, qsn_secure q = True -> tls_pq_safe (qsn_tls q) = True) /\
+   (forall (f : FormalVerificationConfig) (a : AdversaryCapability), 
                   verification_rigorous f = True -> verification_rigorous f = True)"
 
 (* fut_001_quantum_shor_mitigated (matches Coq) *)
-lemma fut_001_quantum_shor_mitigated: "\<forall>(classical :: classical_crypto) (pq :: pq_crypto_config). vulnerable_to_shor classical = True \<longrightarrow> pq_config_secure pq = True \<longrightarrow> (3 \<le> (kem_security_level) (pqc_kem pq)) = True"
+lemma fut_001_quantum_shor_mitigated: "\<forall> (classical : ClassicalCrypto) (pq : PQCryptoConfig), vulnerable_to_shor classical = True \<longrightarrow> pq_config_secure pq = True \<longrightarrow> (3 \<le> (kem_security_level) (pqc_kem pq)) = True"
   by auto
 
 (* fut_001_hybrid_defense (matches Coq) *)
-lemma fut_001_hybrid_defense: "\<forall>(pq :: pq_crypto_config). pqc_hybrid_mode pq = True \<longrightarrow> pq_config_secure pq = True \<longrightarrow> pqc_hybrid_mode pq = True \<and> pq_config_secure pq = True"
+lemma fut_001_hybrid_defense: "\<forall> (pq : PQCryptoConfig), pqc_hybrid_mode pq = True \<longrightarrow> pq_config_secure pq = True \<longrightarrow> pqc_hybrid_mode pq = True \<and> pq_config_secure pq = True"
   by auto
 
 (* fut_002_quantum_grover_mitigated (matches Coq) *)
-lemma fut_002_quantum_grover_mitigated: "\<forall>(bits :: nat). (256 \<le> bits) = True \<longrightarrow> (128 \<le> (grover_effective_bits) bits) = True"
+lemma fut_002_quantum_grover_mitigated: "\<forall> (bits : nat), (256 \<le> bits) = True \<longrightarrow> (128 \<le> (grover_effective_bits) bits) = True"
   by auto
 
 (* fut_002_symmetric_quantum_safe (matches Coq) *)
-lemma fut_002_symmetric_quantum_safe: "\<forall>(pq :: pq_crypto_config). pq_config_secure pq = True \<longrightarrow> symmetric_quantum_safe (pqc_symmetric_bits pq) = True"
+lemma fut_002_symmetric_quantum_safe: "\<forall> (pq : PQCryptoConfig), pq_config_secure pq = True \<longrightarrow> symmetric_quantum_safe (pqc_symmetric_bits pq) = True"
   by auto
 
 (* fut_003_ai_exploit_mitigated (matches Coq) *)
-lemma fut_003_ai_exploit_mitigated: "\<forall>(did :: defense_in_depth). did_robust did = True \<longrightarrow> (3 \<le> (length) (did_layers did)) = True \<and> (2 \<le> (count_verified_layers) (did_layers did)) = True \<and> did_composition_verified did = True"
+lemma fut_003_ai_exploit_mitigated: "\<forall> (did : DefenseInDepth), did_robust did = True \<longrightarrow> (3 \<le> (length) (did_layers did)) = True \<and> (2 \<le> (count_verified_layers) (did_layers did)) = True \<and> did_composition_verified did = True"
   by auto
 
 (* fut_003_verified_layer_guarantee (matches Coq) *)
-lemma fut_003_verified_layer_guarantee: "\<forall>(layers : list security_layer). count_verified_layers layers \<ge> 1 \<longrightarrow> \<exists>l. l \<in> set layers \<and> sl_verified l = True"
-  by auto
+lemma fut_003_verified_layer_guarantee: "\<forall> (layers : list SecurityLayer), count_verified_layers layers \<ge> 1 \<longrightarrow> \<exists> l, In l layers \<and> sl_verified l = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* fut_004_unknown_cpu_vuln_mitigated (matches Coq) *)
-lemma fut_004_unknown_cpu_vuln_mitigated: "\<forall>(sm :: speculation_mitigation). speculation_conservative sm = True \<longrightarrow> sm_conservative sm = True \<and> sm_ssbd sm = True"
+lemma fut_004_unknown_cpu_vuln_mitigated: "\<forall> (sm : SpeculationMitigation), speculation_conservative sm = True \<longrightarrow> sm_conservative sm = True \<and> sm_ssbd sm = True"
   by auto
 
 (* fut_004_full_serialize_safe (matches Coq) *)
-lemma fut_004_full_serialize_safe: "\<forall>(sm :: speculation_mitigation). has_full_serialize (sm_barriers sm) = True \<longrightarrow> sm_ssbd sm = True \<longrightarrow> has_full_serialize (sm_barriers sm) = True \<and> sm_ssbd sm = True"
+lemma fut_004_full_serialize_safe: "\<forall> (sm : SpeculationMitigation), has_full_serialize (sm_barriers sm) = True \<longrightarrow> sm_ssbd sm = True \<longrightarrow> has_full_serialize (sm_barriers sm) = True \<and> sm_ssbd sm = True"
   by auto
 
 (* fut_005_novel_side_channel_mitigated (matches Coq) *)
-lemma fut_005_novel_side_channel_mitigated: "\<forall>(scm :: side_channel_mitigation) (lb :: leakage_bound). scm_comprehensive scm = True \<longrightarrow> leakage_minimal lb = True \<longrightarrow> scm_constant_time scm = True \<and> scm_no_secret_dependent_branches scm = True \<and> scm_no_secret_dependent_memory scm = True \<and> (lb_bits_per_operation lb = 0) = True"
+lemma fut_005_novel_side_channel_mitigated: "\<forall> (scm : SideChannelMitigation) (lb : LeakageBound), scm_comprehensive scm = True \<longrightarrow> leakage_minimal lb = True \<longrightarrow> scm_constant_time scm = True \<and> scm_no_secret_dependent_branches scm = True \<and> scm_no_secret_dependent_memory scm = True \<and> ((lb_bits_per_operation = lb)) 0 = True"
   by auto
 
 (* fut_005_minimal_surface_defense (matches Coq) *)
-lemma fut_005_minimal_surface_defense: "\<forall>(scm :: side_channel_mitigation). scm_minimal_surface scm = True \<longrightarrow> scm_constant_time scm = True \<longrightarrow> scm_minimal_surface scm = True \<and> scm_constant_time scm = True"
+lemma fut_005_minimal_surface_defense: "\<forall> (scm : SideChannelMitigation), scm_minimal_surface scm = True \<longrightarrow> scm_constant_time scm = True \<longrightarrow> scm_minimal_surface scm = True \<and> scm_constant_time scm = True"
   by auto
 
 (* fut_006_emergent_combo_mitigated (matches Coq) *)
-lemma fut_006_emergent_combo_mitigated: "\<forall>(cs :: composed_security). composed_security_sound cs = True \<longrightarrow> all_components_verified (cs_components cs) = True \<and> cs_composition_proof cs = True \<and> cs_emergent_analysis cs = True"
+lemma fut_006_emergent_combo_mitigated: "\<forall> (cs : ComposedSecurity), composed_security_sound cs = True \<longrightarrow> all_components_verified (cs_components cs) = True \<and> cs_composition_proof cs = True \<and> cs_emergent_analysis cs = True"
   by auto
 
 (* fut_006_no_circular_vulnerabilities (matches Coq) *)
-lemma fut_006_no_circular_vulnerabilities: "\<forall>(cs :: composed_security). cs_no_assumption_cycles cs = True \<longrightarrow> cs_all_assumptions_met cs = True \<longrightarrow> cs_no_assumption_cycles cs = True \<and> cs_all_assumptions_met cs = True"
+lemma fut_006_no_circular_vulnerabilities: "\<forall> (cs : ComposedSecurity), cs_no_assumption_cycles cs = True \<longrightarrow> cs_all_assumptions_met cs = True \<longrightarrow> cs_no_assumption_cycles cs = True \<and> cs_all_assumptions_met cs = True"
   by auto
 
 (* fut_007_apt_mitigated (matches Coq) *)
-lemma fut_007_apt_mitigated: "\<forall>(apt :: apt_resistance). apt_resistance_adequate apt = True \<longrightarrow> key_rotation_apt_safe (apt_key_rotation apt) = True \<and> cv_comprehensive (apt_continuous_verify apt) = True \<and> apt_compartmentalization apt = True"
+lemma fut_007_apt_mitigated: "\<forall> (apt : APTResistance), apt_resistance_adequate apt = True \<longrightarrow> key_rotation_apt_safe (apt_key_rotation apt) = True \<and> cv_comprehensive (apt_continuous_verify apt) = True \<and> apt_compartmentalization apt = True"
   by auto
 
 (* fut_007_forward_secrecy_protection (matches Coq) *)
-lemma fut_007_forward_secrecy_protection: "\<forall>(krp :: key_rotation_policy). key_rotation_apt_safe krp = True \<longrightarrow> krp_forward_secrecy krp = True"
+lemma fut_007_forward_secrecy_protection: "\<forall> (krp : KeyRotationPolicy), key_rotation_apt_safe krp = True \<longrightarrow> krp_forward_secrecy krp = True"
   by auto
 
 (* fut_008_pq_signature_secure (matches Coq) *)
-lemma fut_008_pq_signature_secure: "\<forall>(pq :: pq_crypto_config). pq_config_secure pq = True \<longrightarrow> (3 \<le> (sig_security_level) (pqc_signature pq)) = True"
+lemma fut_008_pq_signature_secure: "\<forall> (pq : PQCryptoConfig), pq_config_secure pq = True \<longrightarrow> (3 \<le> (sig_security_level) (pqc_signature pq)) = True"
   by auto
 
 (* fut_008_ml_dsa_87_maximum (matches Coq) *)
@@ -527,27 +535,27 @@ lemma fut_008_slh_dsa_256_secure: "sig_security_level SLH_DSA_256f = 5"
   by simp
 
 (* fut_009_quantum_network_mitigated (matches Coq) *)
-lemma fut_009_quantum_network_mitigated: "\<forall>(qsn :: quantum_safe_network). qsn_secure qsn = True \<longrightarrow> tls_pq_safe (qsn_tls qsn) = True \<and> qsn_pq_required qsn = True"
+lemma fut_009_quantum_network_mitigated: "\<forall> (qsn : QuantumSafeNetwork), qsn_secure qsn = True \<longrightarrow> tls_pq_safe (qsn_tls qsn) = True \<and> qsn_pq_required qsn = True"
   by auto
 
 (* fut_009_qkd_option (matches Coq) *)
-lemma fut_009_qkd_option: "\<forall>(qkd :: qkd_config). qkd_secure qkd = True \<longrightarrow> qkd_enabled qkd = True \<and> ((qkd_error_threshold \<le> qkd)) 11 = True \<and> qkd_authentication qkd = True"
+lemma fut_009_qkd_option: "\<forall> (qkd : QKDConfig), qkd_secure qkd = True \<longrightarrow> qkd_enabled qkd = True \<and> ((qkd_error_threshold \<le> qkd)) 11 = True \<and> qkd_authentication qkd = True"
   by auto
 
 (* fut_010_math_truth_fundamental (matches Coq) *)
-lemma fut_010_math_truth_fundamental: "\<forall>(P :: prop). P \<longrightarrow> P"
+lemma fut_010_math_truth_fundamental: "\<forall> (P : Prop), P \<longrightarrow> P"
   by auto
 
 (* fut_010_agi_adversary_handled (matches Coq) *)
-lemma fut_010_agi_adversary_handled: "\<forall>(fvc :: formal_verification_config) (adv :: adversary_capability). verification_rigorous fvc = True \<longrightarrow> verification_rigorous fvc = True"
+lemma fut_010_agi_adversary_handled: "\<forall> (fvc : FormalVerificationConfig) (adv : AdversaryCapability), verification_rigorous fvc = True \<longrightarrow> verification_rigorous fvc = True"
   by auto
 
 (* fut_010_proof_assistant_guarantee (matches Coq) *)
-lemma fut_010_proof_assistant_guarantee: "\<forall>(fvc :: formal_verification_config). fvc_level fvc = MachineCheckedProof \<longrightarrow> fvc_spec_complete fvc = True \<longrightarrow> fvc_assumptions_explicit fvc = True \<longrightarrow> verification_strength (fvc_level fvc) = 6"
+lemma fut_010_proof_assistant_guarantee: "\<forall> (fvc : FormalVerificationConfig), fvc_level fvc = MachineCheckedProof \<longrightarrow> fvc_spec_complete fvc = True \<longrightarrow> fvc_assumptions_explicit fvc = True \<longrightarrow> verification_strength (fvc_level fvc) = 6"
   by simp
 
 (* fut_010_scaling_defense (matches Coq) *)
-lemma fut_010_scaling_defense: "\<forall>(adv :: adversary_capability) (fvc :: formal_verification_config). verification_rigorous fvc = True \<longrightarrow> \<forall>(adv' : adversary_capability). adversary_capability_level adv' > adversary_capability_level adv \<longrightarrow> verification_rigorous fvc = True"
+lemma fut_010_scaling_defense: "\<forall> (adv : AdversaryCapability) (fvc : FormalVerificationConfig), verification_rigorous fvc = True \<longrightarrow> \<forall> (adv' : AdversaryCapability), adversary_capability_level adv' > adversary_capability_level adv \<longrightarrow> verification_rigorous fvc = True"
   by auto
 
 (* all_future_theorems_proven (matches Coq) *)

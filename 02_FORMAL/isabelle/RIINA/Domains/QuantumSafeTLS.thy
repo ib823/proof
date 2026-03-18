@@ -12,28 +12,28 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | qtls_security_level      | qtls_security_level         | OK     |
- * | kem_scheme          | kem_scheme             | OK     |
- * | ecdh_curve          | ecdh_curve             | OK     |
- * | signature_scheme    | signature_scheme       | OK     |
+ * | SecurityLevel      | security_level         | OK     |
+ * | KEMScheme          | kem_scheme             | OK     |
+ * | ECDHCurve          | ecdh_curve             | OK     |
+ * | SignatureScheme    | signature_scheme       | OK     |
  * | TLSVersion         | tls_version            | OK     |
- * | cipher_suite        | cipher_suite           | OK     |
- * | kem_parameters      | kem_parameters         | OK     |
- * | kem_security_properties | kem_security_properties | OK     |
- * | ecdh_parameters     | ecdh_parameters        | OK     |
- * | hybrid_kex          | hybrid_kex             | OK     |
- * | hybrid_kex_config    | hybrid_kex_config      | OK     |
- * | pq_authentication   | pq_authentication      | OK     |
- * | signature_security_props | signature_security_props | OK     |
- * | tls_handshake       | tls_handshake          | OK     |
- * | tls_handshake_config | tls_handshake_config   | OK     |
- * | tls_13_extensions    | tls13_extensions       | OK     |
- * | tls_record          | tls_record             | OK     |
- * | aead_properties     | aead_properties        | OK     |
- * | forward_secrecy_config | forward_secrecy_config | OK     |
- * | algorithm_agility   | algorithm_agility      | OK     |
- * | quantum_safe_tls_config | quantum_safe_tls_config | OK     |
- * | quantum_safe_tls_full | quantum_safe_tls_full  | OK     |
+ * | CipherSuite        | cipher_suite           | OK     |
+ * | KEMParameters      | kem_parameters         | OK     |
+ * | KEMSecurityProperties | kem_security_properties | OK     |
+ * | ECDHParameters     | ecdh_parameters        | OK     |
+ * | HybridKEX          | hybrid_kex             | OK     |
+ * | HybridKEXConfig    | hybrid_kex_config      | OK     |
+ * | PQAuthentication   | pq_authentication      | OK     |
+ * | SignatureSecurityProps | signature_security_props | OK     |
+ * | TLSHandshake       | tls_handshake          | OK     |
+ * | TLSHandshakeConfig | tls_handshake_config   | OK     |
+ * | TLS13Extensions    | tls13_extensions       | OK     |
+ * | TLSRecord          | tls_record             | OK     |
+ * | AEADProperties     | aead_properties        | OK     |
+ * | ForwardSecrecyConfig | forward_secrecy_config | OK     |
+ * | AlgorithmAgility   | algorithm_agility      | OK     |
+ * | QuantumSafeTLSConfig | quantum_safe_tls_config | OK     |
+ * | QuantumSafeTLSFull | quantum_safe_tls_full  | OK     |
  * | level_leq          | level_leq              | OK     |
  * | level_min          | level_min              | OK     |
  * | level_max          | level_max              | OK     |
@@ -143,24 +143,22 @@
  *)
 
 theory QuantumSafeTLS
-  imports Main CoqCompat Syntax
+  imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym tls_13_extensions = "nat"
-(* qtls_security_level (matches Coq: Inductive qtls_security_level) *)
-datatype qtls_security_level =
+(* SecurityLevel (matches Coq: Inductive SecurityLevel) *)
+datatype security_level =
     Level1
   |     Level3
   |     Level5
 
-(* kem_scheme (matches Coq: Inductive kem_scheme) *)
+(* KEMScheme (matches Coq: Inductive KEMScheme) *)
 datatype kem_scheme =
     ML_KEM_512
   |     ML_KEM_768
   |     ML_KEM_1024
 
-(* ecdh_curve (matches Coq: Inductive ecdh_curve) *)
+(* ECDHCurve (matches Coq: Inductive ECDHCurve) *)
 datatype ecdh_curve =
     X25519
   |     X448
@@ -168,7 +166,7 @@ datatype ecdh_curve =
   |     P384
   |     P521
 
-(* signature_scheme (matches Coq: Inductive signature_scheme) *)
+(* SignatureScheme (matches Coq: Inductive SignatureScheme) *)
 datatype signature_scheme =
     ML_DSA_44
   |     ML_DSA_65
@@ -184,128 +182,128 @@ datatype tls_version =
     TLS_1_2
   |     TLS_1_3
 
-(* cipher_suite (matches Coq: Inductive cipher_suite) *)
+(* CipherSuite (matches Coq: Inductive CipherSuite) *)
 datatype cipher_suite =
     TLS_AES_128_GCM_SHA256
   |     TLS_AES_256_GCM_SHA384
   |     TLS_CHACHA20_POLY1305_SHA256
 
-(* kem_parameters (matches Coq: Record kem_parameters) *)
+(* KEMParameters (matches Coq: Record KEMParameters) *)
 record kem_parameters =
-  kem_scheme :: kem_scheme
+  kem_scheme :: KEMScheme
   kem_pk_size :: nat
   kem_sk_size :: nat
   kem_ct_size :: nat
   kem_ss_size :: nat
 
-(* kem_security_properties (matches Coq: Record kem_security_properties) *)
+(* KEMSecurityProperties (matches Coq: Record KEMSecurityProperties) *)
 record kem_security_properties =
   kem_sec_indcca2 :: bool
   kem_sec_module_lwe :: bool
   kem_sec_nist_approved :: bool
   kem_sec_constant_time :: bool
 
-(* ecdh_parameters (matches Coq: Record ecdh_parameters) *)
+(* ECDHParameters (matches Coq: Record ECDHParameters) *)
 record ecdh_parameters =
-  ecdh_curve :: ecdh_curve
+  ecdh_curve :: ECDHCurve
   ecdh_pk_size :: nat
   ecdh_sk_size :: nat
   ecdh_ss_size :: nat
 
-(* hybrid_kex (matches Coq: Record hybrid_kex) *)
+(* HybridKEX (matches Coq: Record HybridKEX) *)
 record hybrid_kex =
   hkex_classical :: bool
   hkex_post_quantum :: bool
   hkex_combined :: bool
 
-(* hybrid_kex_config (matches Coq: Record hybrid_kex_config) *)
+(* HybridKEXConfig (matches Coq: Record HybridKEXConfig) *)
 record hybrid_kex_config =
-  hybrid_kem :: kem_scheme
-  hybrid_ecdh :: ecdh_curve
+  hybrid_kem :: KEMScheme
+  hybrid_ecdh :: ECDHCurve
   hybrid_combiner :: bool
   hybrid_label :: bool
 
-(* pq_authentication (matches Coq: Record pq_authentication) *)
+(* PQAuthentication (matches Coq: Record PQAuthentication) *)
 record pq_authentication =
   pqa_classical_sig :: bool
   pqa_pq_sig :: bool
   pqa_certificate_chain :: bool
 
-(* signature_security_props (matches Coq: Record signature_security_props) *)
+(* SignatureSecurityProps (matches Coq: Record SignatureSecurityProps) *)
 record signature_security_props =
   sig_euf_cma :: bool
   sig_strong_euf :: bool
   sig_nist_approved :: bool
   sig_deterministic :: bool
 
-(* tls_handshake (matches Coq: Record tls_handshake) *)
+(* TLSHandshake (matches Coq: Record TLSHandshake) *)
 record tls_handshake =
   ths_forward_secrecy :: bool
   ths_downgrade_protection :: bool
   ths_replay_protection :: bool
   ths_key_confirmation :: bool
 
-(* tls_handshake_config (matches Coq: Record tls_handshake_config) *)
+(* TLSHandshakeConfig (matches Coq: Record TLSHandshakeConfig) *)
 record tls_handshake_config =
-  ths_version :: tls_version
-  ths_ciphersuite :: cipher_suite
+  ths_version :: TLSVersion
+  ths_ciphersuite :: CipherSuite
   ths_early_data :: bool
   ths_psk_mode :: bool
   ths_client_auth :: bool
 
-(* tls_13_extensions (matches Coq: Record tls_13_extensions) *)
+(* TLS13Extensions (matches Coq: Record TLS13Extensions) *)
 record tls13_extensions =
   ext_supported_versions :: bool
   ext_key_share :: bool
   ext_signature_algorithms :: bool
   ext_psk_key_exchange_modes :: bool
 
-(* tls_record (matches Coq: Record tls_record) *)
+(* TLSRecord (matches Coq: Record TLSRecord) *)
 record tls_record =
   rec_aead :: bool
   rec_sequence_numbers :: bool
   rec_padding :: bool
 
-(* aead_properties (matches Coq: Record aead_properties) *)
+(* AEADProperties (matches Coq: Record AEADProperties) *)
 record aead_properties =
   aead_confidentiality :: bool
   aead_integrity :: bool
   aead_authenticity :: bool
   aead_nonce_unique :: bool
 
-(* forward_secrecy_config (matches Coq: Record forward_secrecy_config) *)
+(* ForwardSecrecyConfig (matches Coq: Record ForwardSecrecyConfig) *)
 record forward_secrecy_config =
   fs_ephemeral_keys :: bool
   fs_key_deletion :: bool
   fs_no_static_dh :: bool
   fs_pfs_per_session :: bool
 
-(* algorithm_agility (matches Coq: Record algorithm_agility) *)
+(* AlgorithmAgility (matches Coq: Record AlgorithmAgility) *)
 record algorithm_agility =
   agility_negotiation :: bool
   agility_fallback :: bool
   agility_versioning :: bool
   agility_extension :: bool
 
-(* quantum_safe_tls_config (matches Coq: Record quantum_safe_tls_config) *)
+(* QuantumSafeTLSConfig (matches Coq: Record QuantumSafeTLSConfig) *)
 record quantum_safe_tls_config =
-  qstls_kex :: hybrid_kex
-  qstls_auth :: pq_authentication
-  qstls_handshake :: tls_handshake
-  qstls_record :: tls_record
+  qstls_kex :: HybridKEX
+  qstls_auth :: PQAuthentication
+  qstls_handshake :: TLSHandshake
+  qstls_record :: TLSRecord
   qstls_version_13 :: bool
 
-(* quantum_safe_tls_full (matches Coq: Record quantum_safe_tls_full) *)
+(* QuantumSafeTLSFull (matches Coq: Record QuantumSafeTLSFull) *)
 record quantum_safe_tls_full =
-  qstls_hybrid_config :: hybrid_kex_config
-  qstls_sig_scheme :: signature_scheme
-  qstls_hs_config :: tls_handshake_config
-  qstls_fs_config :: forward_secrecy_config
-  qstls_agility :: algorithm_agility
-  qstls_extensions :: tls_13_extensions
+  qstls_hybrid_config :: HybridKEXConfig
+  qstls_sig_scheme :: SignatureScheme
+  qstls_hs_config :: TLSHandshakeConfig
+  qstls_fs_config :: ForwardSecrecyConfig
+  qstls_agility :: AlgorithmAgility
+  qstls_extensions :: TLS13Extensions
 
 (* level_leq - complex match, needs manual translation *)
-definition level_leq :: "bool" where "level_leq \<equiv> True"
+definition level_leq :: "bool" where "level_leq = undefined"
 
 (* level_min (matches Coq: Definition level_min) *)
 definition level_min :: "SecurityLevel" where
@@ -366,9 +364,9 @@ fun sig_security_level :: "SignatureScheme \<Rightarrow> SecurityLevel" where
 
 (* sig_is_post_quantum (matches Coq: Definition sig_is_post_quantum) *)
 fun sig_is_post_quantum :: "SignatureScheme \<Rightarrow> bool" where
-  "sig_is_post_quantum ML_DSA_87 = True"
-|   "sig_is_post_quantum SLH_DSA_256 = True"
-|   "sig_is_post_quantum Ed25519 = False"
+  "sig_is_post_quantum ML_DSA_87 = true"
+|   "sig_is_post_quantum SLH_DSA_256 = true"
+|   "sig_is_post_quantum Ed25519 = false"
 
 (* sig_fully_secure (matches Coq: Definition sig_fully_secure) *)
 definition sig_fully_secure :: "SignatureSecurityProps \<Rightarrow> bool" where
@@ -494,20 +492,20 @@ definition riina_aead :: "AEADProperties" where
     SECTION 1: BASIC LEMMAS
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
-  by auto
+lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* orb_true_iff (matches Coq) *)
-lemma orb_true_iff: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = True"
-  by auto
+lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* negb_false_iff (matches Coq) *)
-lemma negb_false_iff: "\<forall>b : bool. (\<not> b) = False <-> b = True"
-  by auto
+lemma negb_false_iff: "\<forall> b : bool, (\<not> b) = False <-> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
-  by auto
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
+  by (cases rule: ‹_›.cases; simp)
 
 (* ============================================================================
     SECTION 13: THEOREMS - BASIC SECURITY PROPERTIES (QSTLS_001-012)
@@ -564,23 +562,23 @@ lemma QSTLS_012: "qstls_version_13 riina_qstls = True"
     SECTION 14: THEOREMS - HYBRID KEX EXTRACTION (QSTLS_013-018)
     ============================================================================ *)
 (* QSTLS_013 (matches Coq) *)
-lemma QSTLS_013: "\<forall>h. hybrid_kex_secure h = True \<longrightarrow> hkex_post_quantum h = True"
+lemma QSTLS_013: "\<forall> h, hybrid_kex_secure h = True \<longrightarrow> hkex_post_quantum h = True"
   by auto
 
 (* QSTLS_014 (matches Coq) *)
-lemma QSTLS_014: "\<forall>h. hybrid_kex_secure h = True \<longrightarrow> hkex_combined h = True"
+lemma QSTLS_014: "\<forall> h, hybrid_kex_secure h = True \<longrightarrow> hkex_combined h = True"
   by auto
 
 (* QSTLS_015 (matches Coq) *)
-lemma QSTLS_015: "\<forall>h. hybrid_kex_secure h = True \<longrightarrow> hkex_classical h = True"
+lemma QSTLS_015: "\<forall> h, hybrid_kex_secure h = True \<longrightarrow> hkex_classical h = True"
   by auto
 
 (* QSTLS_016 (matches Coq) *)
-lemma QSTLS_016: "\<forall>c. hybrid_config_valid c = True \<longrightarrow> hybrid_combiner c = True"
+lemma QSTLS_016: "\<forall> c, hybrid_config_valid c = True \<longrightarrow> hybrid_combiner c = True"
   by auto
 
 (* QSTLS_017 (matches Coq) *)
-lemma QSTLS_017: "\<forall>c. hybrid_config_valid c = True \<longrightarrow> hybrid_label c = True"
+lemma QSTLS_017: "\<forall> c, hybrid_config_valid c = True \<longrightarrow> hybrid_label c = True"
   by auto
 
 (* QSTLS_018 (matches Coq) *)
@@ -591,15 +589,15 @@ lemma QSTLS_018: "hybrid_config_valid riina_hybrid_config = True"
     SECTION 15: THEOREMS - PQ AUTHENTICATION (QSTLS_019-024)
     ============================================================================ *)
 (* QSTLS_019 (matches Coq) *)
-lemma QSTLS_019: "\<forall>p. pq_auth_secure p = True \<longrightarrow> pqa_pq_sig p = True"
+lemma QSTLS_019: "\<forall> p, pq_auth_secure p = True \<longrightarrow> pqa_pq_sig p = True"
   by auto
 
 (* QSTLS_020 (matches Coq) *)
-lemma QSTLS_020: "\<forall>p. pq_auth_secure p = True \<longrightarrow> pqa_classical_sig p = True"
+lemma QSTLS_020: "\<forall> p, pq_auth_secure p = True \<longrightarrow> pqa_classical_sig p = True"
   by auto
 
 (* QSTLS_021 (matches Coq) *)
-lemma QSTLS_021: "\<forall>p. pq_auth_secure p = True \<longrightarrow> pqa_certificate_chain p = True"
+lemma QSTLS_021: "\<forall> p, pq_auth_secure p = True \<longrightarrow> pqa_certificate_chain p = True"
   by auto
 
 (* QSTLS_022 (matches Coq) *)
@@ -618,54 +616,54 @@ lemma QSTLS_024: "sig_security_level ML_DSA_87 = Level5"
     SECTION 16: THEOREMS - HANDSHAKE PROPERTIES (QSTLS_025-030)
     ============================================================================ *)
 (* QSTLS_025 (matches Coq) *)
-lemma QSTLS_025: "\<forall>t. handshake_secure t = True \<longrightarrow> ths_forward_secrecy t = True"
+lemma QSTLS_025: "\<forall> t, handshake_secure t = True \<longrightarrow> ths_forward_secrecy t = True"
   by auto
 
 (* QSTLS_026 (matches Coq) *)
-lemma QSTLS_026: "\<forall>t. handshake_secure t = True \<longrightarrow> ths_downgrade_protection t = True"
+lemma QSTLS_026: "\<forall> t, handshake_secure t = True \<longrightarrow> ths_downgrade_protection t = True"
   by auto
 
 (* QSTLS_027 (matches Coq) *)
-lemma QSTLS_027: "\<forall>t. handshake_secure t = True \<longrightarrow> ths_replay_protection t = True"
+lemma QSTLS_027: "\<forall> t, handshake_secure t = True \<longrightarrow> ths_replay_protection t = True"
   by auto
 
 (* QSTLS_028 (matches Coq) *)
-lemma QSTLS_028: "\<forall>t. handshake_secure t = True \<longrightarrow> ths_key_confirmation t = True"
+lemma QSTLS_028: "\<forall> t, handshake_secure t = True \<longrightarrow> ths_key_confirmation t = True"
   by auto
 
 (* QSTLS_029 (matches Coq) *)
-lemma QSTLS_029: "\<forall>r. record_secure r = True \<longrightarrow> rec_aead r = True"
+lemma QSTLS_029: "\<forall> r, record_secure r = True \<longrightarrow> rec_aead r = True"
   by auto
 
 (* QSTLS_030 (matches Coq) *)
-lemma QSTLS_030: "\<forall>r. record_secure r = True \<longrightarrow> rec_sequence_numbers r = True"
+lemma QSTLS_030: "\<forall> r, record_secure r = True \<longrightarrow> rec_sequence_numbers r = True"
   by auto
 
 (* ============================================================================
     SECTION 17: THEOREMS - FULL CONFIG EXTRACTION (QSTLS_031-036)
     ============================================================================ *)
 (* QSTLS_031 (matches Coq) *)
-lemma QSTLS_031: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> hybrid_kex_secure (qstls_kex q) = True"
+lemma QSTLS_031: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> hybrid_kex_secure (qstls_kex q) = True"
   by auto
 
 (* QSTLS_032 (matches Coq) *)
-lemma QSTLS_032: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> pq_auth_secure (qstls_auth q) = True"
+lemma QSTLS_032: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> pq_auth_secure (qstls_auth q) = True"
   by auto
 
 (* QSTLS_033 (matches Coq) *)
-lemma QSTLS_033: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> handshake_secure (qstls_handshake q) = True"
+lemma QSTLS_033: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> handshake_secure (qstls_handshake q) = True"
   by auto
 
 (* QSTLS_034 (matches Coq) *)
-lemma QSTLS_034: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> record_secure (qstls_record q) = True"
+lemma QSTLS_034: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> record_secure (qstls_record q) = True"
   by auto
 
 (* QSTLS_035 (matches Coq) *)
-lemma QSTLS_035: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> qstls_version_13 q = True"
+lemma QSTLS_035: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> qstls_version_13 q = True"
   by auto
 
 (* QSTLS_036 (matches Coq) *)
-lemma QSTLS_036: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> hkex_post_quantum (qstls_kex q) = True"
+lemma QSTLS_036: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> hkex_post_quantum (qstls_kex q) = True"
   by auto
 
 (* ============================================================================
@@ -676,23 +674,23 @@ lemma QSTLS_037: "forward_secrecy_complete riina_fs_config = True"
   by simp
 
 (* QSTLS_038 (matches Coq) *)
-lemma QSTLS_038: "\<forall>f. forward_secrecy_complete f = True \<longrightarrow> fs_ephemeral_keys f = True"
+lemma QSTLS_038: "\<forall> f, forward_secrecy_complete f = True \<longrightarrow> fs_ephemeral_keys f = True"
   by auto
 
 (* QSTLS_039 (matches Coq) *)
-lemma QSTLS_039: "\<forall>f. forward_secrecy_complete f = True \<longrightarrow> fs_key_deletion f = True"
+lemma QSTLS_039: "\<forall> f, forward_secrecy_complete f = True \<longrightarrow> fs_key_deletion f = True"
   by auto
 
 (* QSTLS_040 (matches Coq) *)
-lemma QSTLS_040: "\<forall>f. forward_secrecy_complete f = True \<longrightarrow> fs_no_static_dh f = True"
+lemma QSTLS_040: "\<forall> f, forward_secrecy_complete f = True \<longrightarrow> fs_no_static_dh f = True"
   by auto
 
 (* QSTLS_041 (matches Coq) *)
-lemma QSTLS_041: "\<forall>f. forward_secrecy_complete f = True \<longrightarrow> fs_pfs_per_session f = True"
+lemma QSTLS_041: "\<forall> f, forward_secrecy_complete f = True \<longrightarrow> fs_pfs_per_session f = True"
   by auto
 
 (* QSTLS_042 (matches Coq) *)
-lemma QSTLS_042: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> ths_forward_secrecy (qstls_handshake q) = True"
+lemma QSTLS_042: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> ths_forward_secrecy (qstls_handshake q) = True"
   by auto
 
 (* ============================================================================
@@ -703,19 +701,19 @@ lemma QSTLS_043: "algorithm_agility_valid riina_agility = True"
   by simp
 
 (* QSTLS_044 (matches Coq) *)
-lemma QSTLS_044: "\<forall>a. algorithm_agility_valid a = True \<longrightarrow> agility_negotiation a = True"
+lemma QSTLS_044: "\<forall> a, algorithm_agility_valid a = True \<longrightarrow> agility_negotiation a = True"
   by auto
 
 (* QSTLS_045 (matches Coq) *)
-lemma QSTLS_045: "\<forall>a. algorithm_agility_valid a = True \<longrightarrow> agility_fallback a = True"
+lemma QSTLS_045: "\<forall> a, algorithm_agility_valid a = True \<longrightarrow> agility_fallback a = True"
   by auto
 
 (* QSTLS_046 (matches Coq) *)
-lemma QSTLS_046: "\<forall>a. algorithm_agility_valid a = True \<longrightarrow> agility_versioning a = True"
+lemma QSTLS_046: "\<forall> a, algorithm_agility_valid a = True \<longrightarrow> agility_versioning a = True"
   by auto
 
 (* QSTLS_047 (matches Coq) *)
-lemma QSTLS_047: "\<forall>a. algorithm_agility_valid a = True \<longrightarrow> agility_extension a = True"
+lemma QSTLS_047: "\<forall> a, algorithm_agility_valid a = True \<longrightarrow> agility_extension a = True"
   by auto
 
 (* QSTLS_048 (matches Coq) *)
@@ -730,19 +728,19 @@ lemma QSTLS_049: "kem_fully_secure riina_kem_security = True"
   by simp
 
 (* QSTLS_050 (matches Coq) *)
-lemma QSTLS_050: "\<forall>k. kem_fully_secure k = True \<longrightarrow> kem_sec_indcca2 k = True"
+lemma QSTLS_050: "\<forall> k, kem_fully_secure k = True \<longrightarrow> kem_sec_indcca2 k = True"
   by auto
 
 (* QSTLS_051 (matches Coq) *)
-lemma QSTLS_051: "\<forall>k. kem_fully_secure k = True \<longrightarrow> kem_sec_module_lwe k = True"
+lemma QSTLS_051: "\<forall> k, kem_fully_secure k = True \<longrightarrow> kem_sec_module_lwe k = True"
   by auto
 
 (* QSTLS_052 (matches Coq) *)
-lemma QSTLS_052: "\<forall>k. kem_fully_secure k = True \<longrightarrow> kem_sec_nist_approved k = True"
+lemma QSTLS_052: "\<forall> k, kem_fully_secure k = True \<longrightarrow> kem_sec_nist_approved k = True"
   by auto
 
 (* QSTLS_053 (matches Coq) *)
-lemma QSTLS_053: "\<forall>k. kem_fully_secure k = True \<longrightarrow> kem_sec_constant_time k = True"
+lemma QSTLS_053: "\<forall> k, kem_fully_secure k = True \<longrightarrow> kem_sec_constant_time k = True"
   by auto
 
 (* QSTLS_054 (matches Coq) *)
@@ -757,15 +755,15 @@ lemma QSTLS_055: "sig_fully_secure riina_sig_security = True"
   by simp
 
 (* QSTLS_056 (matches Coq) *)
-lemma QSTLS_056: "\<forall>s. sig_fully_secure s = True \<longrightarrow> sig_euf_cma s = True"
+lemma QSTLS_056: "\<forall> s, sig_fully_secure s = True \<longrightarrow> sig_euf_cma s = True"
   by auto
 
 (* QSTLS_057 (matches Coq) *)
-lemma QSTLS_057: "\<forall>s. sig_fully_secure s = True \<longrightarrow> sig_strong_euf s = True"
+lemma QSTLS_057: "\<forall> s, sig_fully_secure s = True \<longrightarrow> sig_strong_euf s = True"
   by auto
 
 (* QSTLS_058 (matches Coq) *)
-lemma QSTLS_058: "\<forall>s. sig_fully_secure s = True \<longrightarrow> sig_nist_approved s = True"
+lemma QSTLS_058: "\<forall> s, sig_fully_secure s = True \<longrightarrow> sig_nist_approved s = True"
   by auto
 
 (* QSTLS_059 (matches Coq) *)
@@ -788,11 +786,11 @@ lemma QSTLS_062: "aead_secure riina_aead = True"
   by simp
 
 (* QSTLS_063_complete (matches Coq) *)
-lemma QSTLS_063_complete: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> hkex_post_quantum (qstls_kex q) = True \<and> pqa_pq_sig (qstls_auth q) = True \<and> ths_forward_secrecy (qstls_handshake q) = True \<and> rec_aead (qstls_record q) = True \<and> qstls_version_13 q = True"
+lemma QSTLS_063_complete: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> hkex_post_quantum (qstls_kex q) = True \<and> pqa_pq_sig (qstls_auth q) = True \<and> ths_forward_secrecy (qstls_handshake q) = True \<and> rec_aead (qstls_record q) = True \<and> qstls_version_13 q = True"
   by auto
 
 (* QSTLS_064_hybrid_security (matches Coq) *)
-lemma QSTLS_064_hybrid_security: "\<forall>q. qstls_fully_secure q = True \<longrightarrow> hkex_classical (qstls_kex q) = True \<and> hkex_post_quantum (qstls_kex q) = True \<and> hkex_combined (qstls_kex q) = True"
+lemma QSTLS_064_hybrid_security: "\<forall> q, qstls_fully_secure q = True \<longrightarrow> hkex_classical (qstls_kex q) = True \<and> hkex_post_quantum (qstls_kex q) = True \<and> hkex_combined (qstls_kex q) = True"
   by auto
 
 (* QSTLS_065_full_chain (matches Coq) *)

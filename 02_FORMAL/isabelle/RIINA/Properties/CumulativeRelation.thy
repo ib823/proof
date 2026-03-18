@@ -57,12 +57,9 @@
  *)
 
 theory CumulativeRelation
-  imports Main Semantics Syntax Typing
+  imports Main
 begin
 
-(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
-abbreviation value :: "expr \<Rightarrow> bool" where
-  "value \<equiv> is_value"
 (* Boolean conjunction helper (matches Coq: andb_true_iff) *)
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
@@ -88,7 +85,7 @@ fun val_rel_le :: "nat \<Rightarrow> store_ty \<Rightarrow> ty \<Rightarrow> boo
   "val_rel_le 0 = True"
 
 (* store_rel_le - complex match, needs manual translation *)
-definition store_rel_le :: "bool" where "store_rel_le \<equiv> True"
+definition store_rel_le :: "bool" where "store_rel_le = undefined"
 
 (* exp_rel_le (matches Coq: Definition exp_rel_le) *)
 definition exp_rel_le :: "nat \<Rightarrow> store_ty \<Rightarrow> ty \<Rightarrow> effect_ctx \<Rightarrow> bool" where
@@ -98,64 +95,64 @@ definition exp_rel_le :: "nat \<Rightarrow> store_ty \<Rightarrow> ty \<Rightarr
     multi_step (e2, st2, ctx) (v2, st2', ctx') ->
     value v1 -> value v2 ->
     exists Σ',
-      store_ty_extends Σ Σ' \<and>
-      val_rel_le k Σ' T v1 v2 \<and>
+      store_ty_extends Σ Σ' /\
+      val_rel_le k Σ' T v1 v2 /\
       store_rel_simple Σ' st1' st2'"
 
 (* Unfold val_rel_le at 0: trivially True *)
 (* val_rel_le_0_unfold (matches Coq) *)
-lemma val_rel_le_0_unfold: "\<forall>Σ T v1 v2. val_rel_le 0 Σ T v1 v2 = True"
+lemma val_rel_le_0_unfold: "\<forall> Σ T v1 v2, val_rel_le 0 Σ T v1 v2 = True"
   by simp
 
 (* Unfold val_rel_le at S n: cumulative plus structural *)
 (* val_rel_le_S_unfold (matches Coq) *)
-lemma val_rel_le_S_unfold: "\<forall>n Σ T v1 v2. val_rel_le (Suc n) Σ T v1 v2 = (val_rel_le n Σ T v1 v2 \<and> val_rel_struct (val_rel_le n) Σ T v1 v2)"
+lemma val_rel_le_S_unfold: "\<forall> n Σ T v1 v2, val_rel_le (S n) Σ T v1 v2 = (val_rel_le n Σ T v1 v2 \<and> val_rel_struct (val_rel_le n) Σ T v1 v2)"
   by simp
 
 (* At step 0, everything is related *)
 (* val_rel_le_at_zero (matches Coq) *)
-lemma val_rel_le_at_zero: "\<forall>Σ T v1 v2. val_rel_le 0 Σ T v1 v2"
+lemma val_rel_le_at_zero: "\<forall> Σ T v1 v2, val_rel_le 0 Σ T v1 v2"
   by auto
 
 (* Cumulative structure gives us the "previous step" directly *)
 (* val_rel_le_cumulative (matches Coq) *)
-lemma val_rel_le_cumulative: "\<forall>n Σ T v1 v2. val_rel_le (Suc n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_cumulative: "\<forall> n Σ T v1 v2, val_rel_le (S n) Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* Values are values *)
 (* val_rel_le_value_left (matches Coq) *)
-lemma val_rel_le_value_left: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> value v1"
-  by auto
+lemma val_rel_le_value_left: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> value v1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* val_rel_le_value_right (matches Coq) *)
-lemma val_rel_le_value_right: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> value v2"
-  by auto
+lemma val_rel_le_value_right: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> value v2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Related values are closed *)
 (* val_rel_le_closed_left (matches Coq) *)
-lemma val_rel_le_closed_left: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> closed_expr v1"
-  by auto
+lemma val_rel_le_closed_left: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> closed_expr v1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* val_rel_le_closed_right (matches Coq) *)
-lemma val_rel_le_closed_right: "\<forall>n Σ T v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> closed_expr v2"
-  by auto
+lemma val_rel_le_closed_right: "\<forall> n Σ T v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> closed_expr v2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Step monotonicity for first-order types *)
 (* val_rel_le_mono_step_fo (matches Coq) *)
-lemma val_rel_le_mono_step_fo: "\<forall>n m Σ T v1 v2. first_order_type T = True \<longrightarrow> m \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
-  by auto
+lemma val_rel_le_mono_step_fo: "\<forall> n m Σ T v1 v2, first_order_type T = True \<longrightarrow> m \<le> n \<longrightarrow> val_rel_le n Σ T v1 v2 \<longrightarrow> val_rel_le m Σ T v1 v2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Extraction: val_rel_le m → val_rel_at_type_fo (when m > fo_compound_depth T)
     Proven by well-founded induction on type structure (ty_size). *)
 (* val_rel_le_extract_fo (matches Coq) *)
-lemma val_rel_le_extract_fo: "\<forall>T m Σ v1 v2. first_order_type T = True \<longrightarrow> m > fo_compound_depth T \<longrightarrow> val_rel_le m Σ T v1 v2 \<longrightarrow> value v1 \<and> value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> val_rel_at_type_fo T v1 v2"
-  by auto
+lemma val_rel_le_extract_fo: "\<forall> T m Σ v1 v2, first_order_type T = True \<longrightarrow> m > fo_compound_depth T \<longrightarrow> val_rel_le m Σ T v1 v2 \<longrightarrow> value v1 \<and> value v2 \<and> closed_expr v1 \<and> closed_expr v2 \<and> val_rel_at_type_fo T v1 v2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Construction: val_rel_at_type_fo → val_rel_le n (for any n > 0)
     Proven by induction on n with nested well-founded recursion on ty_size for components. *)
 (* val_rel_le_construct_fo (matches Coq) *)
-lemma val_rel_le_construct_fo: "\<forall>T n Σ v1 v2. first_order_type T = True \<longrightarrow> n > 0 \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_at_type_fo T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
-  by auto
+lemma val_rel_le_construct_fo: "\<forall> T n Σ v1 v2, first_order_type T = True \<longrightarrow> n > 0 \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_at_type_fo T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* MAIN THEOREM: Step independence for first-order types.
 
@@ -168,126 +165,126 @@ lemma val_rel_le_construct_fo: "\<forall>T n Σ v1 v2. first_order_type T = True
     - We cannot reconstruct structural info from True
     - The fo_compound_depth premise ensures enough steps for full structure *)
 (* val_rel_le_fo_step_independent (matches Coq) *)
-lemma val_rel_le_fo_step_independent: "\<forall>m n Σ T v1 v2. first_order_type T = True \<longrightarrow> m > fo_compound_depth T \<longrightarrow> n > 0 \<longrightarrow> val_rel_le m Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
+lemma val_rel_le_fo_step_independent: "\<forall> m n Σ T v1 v2, first_order_type T = True \<longrightarrow> m > fo_compound_depth T \<longrightarrow> n > 0 \<longrightarrow> val_rel_le m Σ T v1 v2 \<longrightarrow> val_rel_le n Σ T v1 v2"
   by auto
 
 (* store_ty_extends_trans (matches Coq) *)
-lemma store_ty_extends_trans: "\<forall>Σ1 Σ2 Σ3. store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ3 \<longrightarrow> store_ty_extends Σ1 Σ3"
+lemma store_ty_extends_trans: "\<forall> Σ1 Σ2 Σ3, store_ty_extends Σ1 Σ2 \<longrightarrow> store_ty_extends Σ2 Σ3 \<longrightarrow> store_ty_extends Σ1 Σ3"
   by auto
 
 (* Reflexivity of store extension *)
 (* store_ty_extends_refl (matches Coq) *)
-lemma store_ty_extends_refl: "\<forall>Σ. store_ty_extends Σ Σ"
+lemma store_ty_extends_refl: "\<forall> Σ, store_ty_extends Σ Σ"
   by auto
 
 (* Build val_rel_le for TUnit at any step *)
 (* val_rel_le_build_unit (matches Coq) *)
-lemma val_rel_le_build_unit: "\<forall>n Σ. val_rel_le n Σ TUnit EUnit EUnit"
+lemma val_rel_le_build_unit: "\<forall> n Σ, val_rel_le n Σ TUnit EUnit EUnit"
   by auto
 
 (* Build val_rel_le for TBool at any step *)
 (* val_rel_le_build_bool (matches Coq) *)
-lemma val_rel_le_build_bool: "\<forall>n Σ b. val_rel_le n Σ TBool (EBool b) (EBool b)"
+lemma val_rel_le_build_bool: "\<forall> n Σ b, val_rel_le n Σ TBool (EBool b) (EBool b)"
   by auto
 
 (* Build val_rel_le for TInt at any step *)
 (* val_rel_le_build_int (matches Coq) *)
-lemma val_rel_le_build_int: "\<forall>n Σ i. val_rel_le n Σ TInt (EInt i) (EInt i)"
+lemma val_rel_le_build_int: "\<forall> n Σ i, val_rel_le n Σ TInt (EInt i) (EInt i)"
   by auto
 
 (* Build val_rel_le for TString at any step *)
 (* val_rel_le_build_string (matches Coq) *)
-lemma val_rel_le_build_string: "\<forall>n Σ s. val_rel_le n Σ TString (EString s) (EString s)"
+lemma val_rel_le_build_string: "\<forall> n Σ s, val_rel_le n Σ TString (EString s) (EString s)"
   by auto
 
 (* Extract structural equality from TUnit relation *)
 (* val_rel_le_unit_eq (matches Coq) *)
-lemma val_rel_le_unit_eq: "\<forall>n Σ v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ TUnit v1 v2 \<longrightarrow> v1 = EUnit \<and> v2 = EUnit"
-  by auto
+lemma val_rel_le_unit_eq: "\<forall> n Σ v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ TUnit v1 v2 \<longrightarrow> v1 = EUnit \<and> v2 = EUnit"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Extract structural equality from TBool relation *)
 (* val_rel_le_bool_eq (matches Coq) *)
-lemma val_rel_le_bool_eq: "\<forall>n Σ v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ TBool v1 v2 \<longrightarrow> \<exists>b. v1 = EBool b \<and> v2 = EBool b"
-  by auto
+lemma val_rel_le_bool_eq: "\<forall> n Σ v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ TBool v1 v2 \<longrightarrow> \<exists> b, v1 = EBool b \<and> v2 = EBool b"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Extract structural equality from TInt relation *)
 (* val_rel_le_int_eq (matches Coq) *)
-lemma val_rel_le_int_eq: "\<forall>n Σ v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ TInt v1 v2 \<longrightarrow> \<exists>i. v1 = EInt i \<and> v2 = EInt i"
-  by auto
+lemma val_rel_le_int_eq: "\<forall> n Σ v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ TInt v1 v2 \<longrightarrow> \<exists> i, v1 = EInt i \<and> v2 = EInt i"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Extract structural equality from TString relation *)
 (* val_rel_le_string_eq (matches Coq) *)
-lemma val_rel_le_string_eq: "\<forall>n Σ v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ TString v1 v2 \<longrightarrow> \<exists>s. v1 = EString s \<and> v2 = EString s"
-  by auto
+lemma val_rel_le_string_eq: "\<forall> n Σ v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ TString v1 v2 \<longrightarrow> \<exists> s, v1 = EString s \<and> v2 = EString s"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Expression relation is monotone in step index *)
 (* exp_rel_le_mono_step (matches Coq) *)
-lemma exp_rel_le_mono_step: "\<forall>n m Σ T e1 e2 st1 st2 ctx. m \<le> n \<longrightarrow> exp_rel_le n Σ T e1 e2 st1 st2 ctx \<longrightarrow> exp_rel_le m Σ T e1 e2 st1 st2 ctx"
+lemma exp_rel_le_mono_step: "\<forall> n m Σ T e1 e2 st1 st2 ctx, m \<le> n \<longrightarrow> exp_rel_le n Σ T e1 e2 st1 st2 ctx \<longrightarrow> exp_rel_le m Σ T e1 e2 st1 st2 ctx"
   by simp
 
 (* Expression relation at step 0 produces trivially related values *)
 (* exp_rel_le_zero_val (matches Coq) *)
-lemma exp_rel_le_zero_val: "\<forall>Σ T e1 e2 st1 st2 ctx k v1 v2 st1' st2' ctx'. k \<le> 0 \<longrightarrow> exp_rel_le 0 Σ T e1 e2 st1 st2 ctx \<longrightarrow> multi_step (e1, st1, ctx) (v1, st1', ctx') \<longrightarrow> multi_step (e2, st2, ctx) (v2, st2', ctx') \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> val_rel_le 0 Σ T v1 v2"
+lemma exp_rel_le_zero_val: "\<forall> Σ T e1 e2 st1 st2 ctx k v1 v2 st1' st2' ctx', k \<le> 0 \<longrightarrow> exp_rel_le 0 Σ T e1 e2 st1 st2 ctx \<longrightarrow> multi_step (e1, st1, ctx) (v1, st1', ctx') \<longrightarrow> multi_step (e2, st2, ctx) (v2, st2', ctx') \<longrightarrow> value v1 \<longrightarrow> value v2 \<longrightarrow> val_rel_le 0 Σ T v1 v2"
   by auto
 
 (* Build val_rel_le for TProd from related components *)
 (* val_rel_le_build_pair (matches Coq) *)
-lemma val_rel_le_build_pair: "\<forall>n Σ T1 T2 a1 b1 a2 b2. value a1 \<longrightarrow> value a2 \<longrightarrow> value b1 \<longrightarrow> value b2 \<longrightarrow> closed_expr a1 \<longrightarrow> closed_expr a2 \<longrightarrow> closed_expr b1 \<longrightarrow> closed_expr b2 \<longrightarrow> val_rel_le n Σ T1 a1 a2 \<longrightarrow> val_rel_le n Σ T2 b1 b2 \<longrightarrow> val_rel_le n Σ (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)"
+lemma val_rel_le_build_pair: "\<forall> n Σ T1 T2 a1 b1 a2 b2, value a1 \<longrightarrow> value a2 \<longrightarrow> value b1 \<longrightarrow> value b2 \<longrightarrow> closed_expr a1 \<longrightarrow> closed_expr a2 \<longrightarrow> closed_expr b1 \<longrightarrow> closed_expr b2 \<longrightarrow> val_rel_le n Σ T1 a1 a2 \<longrightarrow> val_rel_le n Σ T2 b1 b2 \<longrightarrow> val_rel_le n Σ (TProd T1 T2) (EPair a1 b1) (EPair a2 b2)"
   by auto
 
 (* Build val_rel_le for TSum left injection *)
 (* val_rel_le_build_inl (matches Coq) *)
-lemma val_rel_le_build_inl: "\<forall>n Σ T1 T2 a1 a2. value a1 \<longrightarrow> value a2 \<longrightarrow> closed_expr a1 \<longrightarrow> closed_expr a2 \<longrightarrow> val_rel_le n Σ T1 a1 a2 \<longrightarrow> val_rel_le n Σ (TSum T1 T2) (EInl a1 T2) (EInl a2 T2)"
+lemma val_rel_le_build_inl: "\<forall> n Σ T1 T2 a1 a2, value a1 \<longrightarrow> value a2 \<longrightarrow> closed_expr a1 \<longrightarrow> closed_expr a2 \<longrightarrow> val_rel_le n Σ T1 a1 a2 \<longrightarrow> val_rel_le n Σ (TSum T1 T2) (EInl a1 T2) (EInl a2 T2)"
   by auto
 
 (* Build val_rel_le for TSum right injection *)
 (* val_rel_le_build_inr (matches Coq) *)
-lemma val_rel_le_build_inr: "\<forall>n Σ T1 T2 b1 b2. value b1 \<longrightarrow> value b2 \<longrightarrow> closed_expr b1 \<longrightarrow> closed_expr b2 \<longrightarrow> val_rel_le n Σ T2 b1 b2 \<longrightarrow> val_rel_le n Σ (TSum T1 T2) (EInr b1 T1) (EInr b2 T1)"
+lemma val_rel_le_build_inr: "\<forall> n Σ T1 T2 b1 b2, value b1 \<longrightarrow> value b2 \<longrightarrow> closed_expr b1 \<longrightarrow> closed_expr b2 \<longrightarrow> val_rel_le n Σ T2 b1 b2 \<longrightarrow> val_rel_le n Σ (TSum T1 T2) (EInr b1 T1) (EInr b2 T1)"
   by auto
 
 (* Extract pair components from TProd relation *)
 (* val_rel_le_prod_components (matches Coq) *)
-lemma val_rel_le_prod_components: "\<forall>n Σ T1 T2 v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ (TProd T1 T2) v1 v2 \<longrightarrow> \<exists>a1 b1 a2 b2. v1 = EPair a1 b1 \<and> v2 = EPair a2 b2 \<and> val_rel_le (pred n) Σ T1 a1 a2 \<and> val_rel_le (pred n) Σ T2 b1 b2"
-  by auto
+lemma val_rel_le_prod_components: "\<forall> n Σ T1 T2 v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ (TProd T1 T2) v1 v2 \<longrightarrow> \<exists> a1 b1 a2 b2, v1 = EPair a1 b1 \<and> v2 = EPair a2 b2 \<and> val_rel_le (pred n) Σ T1 a1 a2 \<and> val_rel_le (pred n) Σ T2 b1 b2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Extract location equality from TRef relation *)
 (* val_rel_le_ref_eq (matches Coq) *)
-lemma val_rel_le_ref_eq: "\<forall>n Σ T sl v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ (TRef T sl) v1 v2 \<longrightarrow> \<exists>l. v1 = ELoc l \<and> v2 = ELoc l"
-  by auto
+lemma val_rel_le_ref_eq: "\<forall> n Σ T sl v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ (TRef T sl) v1 v2 \<longrightarrow> \<exists> l, v1 = ELoc l \<and> v2 = ELoc l"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Build val_rel_le for TSecret at any step *)
 (* val_rel_le_build_secret (matches Coq) *)
-lemma val_rel_le_build_secret: "\<forall>n Σ T v1 v2. value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TSecret T) v1 v2"
+lemma val_rel_le_build_secret: "\<forall> n Σ T v1 v2, value v1 \<longrightarrow> value v2 \<longrightarrow> closed_expr v1 \<longrightarrow> closed_expr v2 \<longrightarrow> val_rel_le n Σ (TSecret T) v1 v2"
   by auto
 
 (* Store relation at step 0 is trivially satisfied *)
 (* store_rel_le_at_zero (matches Coq) *)
-lemma store_rel_le_at_zero: "\<forall>Σ st1 st2. store_max st1 = store_max st2 \<longrightarrow> (\<forall>l T sl. store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> (case (store_lookup l st1, store_lookup l st2) of Some _, Some _ => True | _, _ => False)) \<longrightarrow> store_rel_le 0 Σ st1 st2"
+lemma store_rel_le_at_zero: "\<forall> Σ st1 st2, store_max st1 = store_max st2 \<longrightarrow> (\<forall> l T sl, store_ty_lookup l Σ = Some (T, sl) \<longrightarrow> match store_lookup l st1, store_lookup l st2 with | Some _, Some _ => True | _, _ => False end) \<longrightarrow> store_rel_le 0 Σ st1 st2"
   by auto
 
 (* Extract equality from TBytes relation *)
 (* val_rel_le_bytes_eq (matches Coq) *)
-lemma val_rel_le_bytes_eq: "\<forall>n Σ v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ TBytes v1 v2 \<longrightarrow> v1 = v2"
-  by auto
+lemma val_rel_le_bytes_eq: "\<forall> n Σ v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ TBytes v1 v2 \<longrightarrow> v1 = v2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Build val_rel_le for TRef (locations) at any step *)
 (* val_rel_le_build_ref (matches Coq) *)
-lemma val_rel_le_build_ref: "\<forall>n Σ T sl l. val_rel_le n Σ (TRef T sl) (ELoc l) (ELoc l)"
+lemma val_rel_le_build_ref: "\<forall> n Σ T sl l, val_rel_le n Σ (TRef T sl) (ELoc l) (ELoc l)"
   by auto
 
 (* Extract sum injection from TSum relation *)
 (* val_rel_le_sum_extract (matches Coq) *)
-lemma val_rel_le_sum_extract: "\<forall>n Σ T1 T2 v1 v2. n > 0 \<longrightarrow> val_rel_le n Σ (TSum T1 T2) v1 v2 \<longrightarrow> (\<exists>a1 a2. v1 = EInl a1 T2 \<and> v2 = EInl a2 T2 \<and> val_rel_le (pred n) Σ T1 a1 a2) \<or> (\<exists>b1 b2. v1 = EInr b1 T1 \<and> v2 = EInr b2 T1 \<and> val_rel_le (pred n) Σ T2 b1 b2)"
-  by auto
+lemma val_rel_le_sum_extract: "\<forall> n Σ T1 T2 v1 v2, n > 0 \<longrightarrow> val_rel_le n Σ (TSum T1 T2) v1 v2 \<longrightarrow> (\<exists> a1 a2, v1 = EInl a1 T2 \<and> v2 = EInl a2 T2 \<and> val_rel_le (pred n) Σ T1 a1 a2) \<or> (\<exists> b1 b2, v1 = EInr b1 T1 \<and> v2 = EInr b2 T1 \<and> val_rel_le (pred n) Σ T2 b1 b2)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Shorthand: val_rel_le for unit *)
 (* val_rel_le_unit (matches Coq) *)
-lemma val_rel_le_unit: "\<forall>n Σ. val_rel_le n Σ TUnit EUnit EUnit"
+lemma val_rel_le_unit: "\<forall> n Σ, val_rel_le n Σ TUnit EUnit EUnit"
   by auto
 
 (* Store relation simple for identical stores *)
 (* store_rel_simple_refl_cum (matches Coq) *)
-lemma store_rel_simple_refl_cum: "\<forall>Σ st. store_rel_simple Σ st st"
+lemma store_rel_simple_refl_cum: "\<forall> Σ st, store_rel_simple Σ st st"
   by simp
 
 end

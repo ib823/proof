@@ -16,11 +16,11 @@
  * | ir_expr            | ir_expr                | OK     |
  * | src_ty             | src_ty                 | OK     |
  * | src_expr           | src_expr               | OK     |
- * | parsing_phase       | parsing_phase          | OK     |
- * | type_check_phase     | type_check_phase       | OK     |
- * | optimization_phase  | optimization_phase     | OK     |
- * | code_gen_phase       | code_gen_phase         | OK     |
- * | compiler_config     | compiler_config        | OK     |
+ * | ParsingPhase       | parsing_phase          | OK     |
+ * | TypeCheckPhase     | type_check_phase       | OK     |
+ * | OptimizationPhase  | optimization_phase     | OK     |
+ * | CodeGenPhase       | code_gen_phase         | OK     |
+ * | CompilerConfig     | compiler_config        | OK     |
  * | parsing_correct    | parsing_correct        | OK     |
  * | typecheck_sound    | typecheck_sound        | OK     |
  * | optimization_safe  | optimization_safe      | OK     |
@@ -116,12 +116,9 @@
  *)
 
 theory CompilerCorrectness
-  imports Main Semantics
+  imports Main
 begin
 
-(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
-abbreviation value :: "expr \<Rightarrow> bool" where
-  "value \<equiv> is_value"
 (* Boolean conjunction helper (matches Coq: andb_true_iff) *)
 lemma andb_true_iff: "(a \<and> b) = True \<longleftrightarrow> a = True \<and> b = True"
   by auto
@@ -168,37 +165,37 @@ datatype src_expr =
   |     Src_Inr
   |     Src_If
 
-(* parsing_phase (matches Coq: Record parsing_phase) *)
+(* ParsingPhase (matches Coq: Record ParsingPhase) *)
 record parsing_phase =
   pp_syntax_correct :: bool
   pp_ast_well_formed :: bool
   pp_error_recovery :: bool
 
-(* type_check_phase (matches Coq: Record type_check_phase) *)
+(* TypeCheckPhase (matches Coq: Record TypeCheckPhase) *)
 record type_check_phase =
   tc_type_soundness :: bool
   tc_inference_complete :: bool
   tc_constraint_solving :: bool
 
-(* optimization_phase (matches Coq: Record optimization_phase) *)
+(* OptimizationPhase (matches Coq: Record OptimizationPhase) *)
 record optimization_phase =
   op_semantics_preserved :: bool
   op_termination_preserved :: bool
   op_memory_safety_preserved :: bool
 
-(* code_gen_phase (matches Coq: Record code_gen_phase) *)
+(* CodeGenPhase (matches Coq: Record CodeGenPhase) *)
 record code_gen_phase =
   cg_instruction_correct :: bool
   cg_register_allocation :: bool
   cg_calling_convention :: bool
   cg_stack_layout :: bool
 
-(* compiler_config (matches Coq: Record compiler_config) *)
+(* CompilerConfig (matches Coq: Record CompilerConfig) *)
 record compiler_config =
-  cc_parsing :: parsing_phase
-  cc_typecheck :: type_check_phase
-  cc_optimization :: optimization_phase
-  cc_codegen :: code_gen_phase
+  cc_parsing :: ParsingPhase
+  cc_typecheck :: TypeCheckPhase
+  cc_optimization :: OptimizationPhase
+  cc_codegen :: CodeGenPhase
 
 (* parsing_correct (matches Coq: Definition parsing_correct) *)
 definition parsing_correct :: "ParsingPhase \<Rightarrow> bool" where
@@ -243,7 +240,7 @@ definition riina_compiler :: "CompilerConfig" where
 
 (* ir_equiv (matches Coq: Definition ir_equiv) *)
 definition ir_equiv :: "bool" where
-  "ir_equiv \<equiv> forall v, (e1 ==>* v \<and> ir_value v) <-> (e2 ==>* v \<and> ir_value v)"
+  "ir_equiv \<equiv> forall v, (e1 ==>* v /\ ir_value v) <-> (e2 ==>* v /\ ir_value v)"
 
 (* compile_ty (matches Coq: Definition compile_ty) *)
 fun compile_ty :: "src_ty \<Rightarrow> ir_ty" where
@@ -263,8 +260,8 @@ definition src_ir_equiv :: "src_expr \<Rightarrow> ir_expr \<Rightarrow> bool" w
     SECTION 2: COMPLIANCE PREDICATES
     ============================================================================ *)
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
-  by auto
+lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* ============================================================================
     SECTION 4: LEGACY THEOREMS (CC_001 - CC_030)
@@ -310,63 +307,63 @@ lemma CC_010: "cg_calling_convention riina_codegen = True"
   by simp
 
 (* CC_011 (matches Coq) *)
-lemma CC_011: "\<forall>p. parsing_correct p = True \<longrightarrow> pp_syntax_correct p = True"
+lemma CC_011: "\<forall> p, parsing_correct p = True \<longrightarrow> pp_syntax_correct p = True"
   by auto
 
 (* CC_012 (matches Coq) *)
-lemma CC_012: "\<forall>p. parsing_correct p = True \<longrightarrow> pp_ast_well_formed p = True"
+lemma CC_012: "\<forall> p, parsing_correct p = True \<longrightarrow> pp_ast_well_formed p = True"
   by auto
 
 (* CC_013 (matches Coq) *)
-lemma CC_013: "\<forall>t. typecheck_sound t = True \<longrightarrow> tc_type_soundness t = True"
+lemma CC_013: "\<forall> t, typecheck_sound t = True \<longrightarrow> tc_type_soundness t = True"
   by auto
 
 (* CC_014 (matches Coq) *)
-lemma CC_014: "\<forall>t. typecheck_sound t = True \<longrightarrow> tc_inference_complete t = True"
+lemma CC_014: "\<forall> t, typecheck_sound t = True \<longrightarrow> tc_inference_complete t = True"
   by auto
 
 (* CC_015 (matches Coq) *)
-lemma CC_015: "\<forall>o. optimization_safe o = True \<longrightarrow> op_semantics_preserved o = True"
+lemma CC_015: "\<forall> o, optimization_safe o = True \<longrightarrow> op_semantics_preserved o = True"
   by auto
 
 (* CC_016 (matches Coq) *)
-lemma CC_016: "\<forall>o. optimization_safe o = True \<longrightarrow> op_memory_safety_preserved o = True"
+lemma CC_016: "\<forall> o, optimization_safe o = True \<longrightarrow> op_memory_safety_preserved o = True"
   by auto
 
 (* CC_017 (matches Coq) *)
-lemma CC_017: "\<forall>c. codegen_correct c = True \<longrightarrow> cg_instruction_correct c = True"
+lemma CC_017: "\<forall> c, codegen_correct c = True \<longrightarrow> cg_instruction_correct c = True"
   by auto
 
 (* CC_018 (matches Coq) *)
-lemma CC_018: "\<forall>c. codegen_correct c = True \<longrightarrow> cg_stack_layout c = True"
+lemma CC_018: "\<forall> c, codegen_correct c = True \<longrightarrow> cg_stack_layout c = True"
   by auto
 
 (* CC_019 (matches Coq) *)
-lemma CC_019: "\<forall>c. compiler_verified c = True \<longrightarrow> parsing_correct (cc_parsing c) = True"
+lemma CC_019: "\<forall> c, compiler_verified c = True \<longrightarrow> parsing_correct (cc_parsing c) = True"
   by auto
 
 (* CC_020 (matches Coq) *)
-lemma CC_020: "\<forall>c. compiler_verified c = True \<longrightarrow> typecheck_sound (cc_typecheck c) = True"
+lemma CC_020: "\<forall> c, compiler_verified c = True \<longrightarrow> typecheck_sound (cc_typecheck c) = True"
   by auto
 
 (* CC_021 (matches Coq) *)
-lemma CC_021: "\<forall>c. compiler_verified c = True \<longrightarrow> optimization_safe (cc_optimization c) = True"
+lemma CC_021: "\<forall> c, compiler_verified c = True \<longrightarrow> optimization_safe (cc_optimization c) = True"
   by auto
 
 (* CC_022 (matches Coq) *)
-lemma CC_022: "\<forall>c. compiler_verified c = True \<longrightarrow> codegen_correct (cc_codegen c) = True"
+lemma CC_022: "\<forall> c, compiler_verified c = True \<longrightarrow> codegen_correct (cc_codegen c) = True"
   by auto
 
 (* CC_023 (matches Coq) *)
-lemma CC_023: "\<forall>c. compiler_verified c = True \<longrightarrow> tc_type_soundness (cc_typecheck c) = True"
+lemma CC_023: "\<forall> c, compiler_verified c = True \<longrightarrow> tc_type_soundness (cc_typecheck c) = True"
   by auto
 
 (* CC_024 (matches Coq) *)
-lemma CC_024: "\<forall>c. compiler_verified c = True \<longrightarrow> op_semantics_preserved (cc_optimization c) = True"
+lemma CC_024: "\<forall> c, compiler_verified c = True \<longrightarrow> op_semantics_preserved (cc_optimization c) = True"
   by auto
 
 (* CC_025 (matches Coq) *)
-lemma CC_025: "\<forall>c. compiler_verified c = True \<longrightarrow> cg_instruction_correct (cc_codegen c) = True"
+lemma CC_025: "\<forall> c, compiler_verified c = True \<longrightarrow> cg_instruction_correct (cc_codegen c) = True"
   by auto
 
 (* CC_026 (matches Coq) *)
@@ -382,205 +379,205 @@ lemma CC_028: "tc_type_soundness riina_typecheck = True \<and> op_semantics_pres
   by auto
 
 (* CC_029 (matches Coq) *)
-lemma CC_029: "\<forall>c. compiler_verified c = True \<longrightarrow> parsing_correct (cc_parsing c) = True \<and> codegen_correct (cc_codegen c) = True"
+lemma CC_029: "\<forall> c, compiler_verified c = True \<longrightarrow> parsing_correct (cc_parsing c) = True \<and> codegen_correct (cc_codegen c) = True"
   by auto
 
 (* CC_030_complete (matches Coq) *)
-lemma CC_030_complete: "\<forall>c. compiler_verified c = True \<longrightarrow> tc_type_soundness (cc_typecheck c) = True \<and> op_semantics_preserved (cc_optimization c) = True \<and> cg_instruction_correct (cc_codegen c) = True"
+lemma CC_030_complete: "\<forall> c, compiler_verified c = True \<longrightarrow> tc_type_soundness (cc_typecheck c) = True \<and> op_semantics_preserved (cc_optimization c) = True \<and> cg_instruction_correct (cc_codegen c) = True"
   by auto
 
 (* Values don't step *)
 (* ir_value_not_step (matches Coq) *)
-lemma ir_value_not_step: "\<forall>v e. ir_value v \<longrightarrow> ~ (v ==> e)"
+lemma ir_value_not_step: "\<forall> v e, ir_value v \<longrightarrow> ~ (v ==> e)"
   by auto
 
 (* IR Type Preservation Theorem *)
 (* ir_preservation (matches Coq) *)
-lemma ir_preservation: "\<forall>e e' T. ir_has_type e T \<longrightarrow> e ==> e' \<longrightarrow> ir_has_type e' T"
+lemma ir_preservation: "\<forall> e e' T, ir_has_type e T \<longrightarrow> e ==> e' \<longrightarrow> ir_has_type e' T"
   by auto
 
 (* Multi-step preserves typing *)
 (* ir_multi_preservation (matches Coq) *)
-lemma ir_multi_preservation: "\<forall>e e' T. ir_has_type e T \<longrightarrow> e ==>* e' \<longrightarrow> ir_has_type e' T"
+lemma ir_multi_preservation: "\<forall> e e' T, ir_has_type e T \<longrightarrow> e ==>* e' \<longrightarrow> ir_has_type e' T"
   by auto
 
 (* Helper: pair of values doesn't step *)
 (* ir_pair_value_not_step (matches Coq) *)
-lemma ir_pair_value_not_step: "\<forall>v1 v2 e. ir_value v1 \<longrightarrow> ir_value v2 \<longrightarrow> ~ (IR_Pair v1 v2 ==> e)"
+lemma ir_pair_value_not_step: "\<forall> v1 v2 e, ir_value v1 \<longrightarrow> ir_value v2 \<longrightarrow> ~ (IR_Pair v1 v2 ==> e)"
   by auto
 
 (* Helper: bool doesn't step *)
 (* ir_bool_not_step (matches Coq) *)
-lemma ir_bool_not_step: "\<forall>b e. ~ (IR_Bool b ==> e)"
+lemma ir_bool_not_step: "\<forall> b e, ~ (IR_Bool b ==> e)"
   by auto
 
 (* IR step is deterministic *)
 (* ir_step_deterministic (matches Coq) *)
-lemma ir_step_deterministic: "\<forall>e e1 e2. e ==> e1 \<longrightarrow> e ==> e2 \<longrightarrow> e1 = e2"
+lemma ir_step_deterministic: "\<forall> e e1 e2, e ==> e1 \<longrightarrow> e ==> e2 \<longrightarrow> e1 = e2"
   by auto
 
 (* IR Progress theorem *)
 (* ir_progress (matches Coq) *)
-lemma ir_progress: "\<forall>e T. ir_has_type e T \<longrightarrow> ir_value e \<or> \<exists>e'. e ==> e'"
+lemma ir_progress: "\<forall> e T, ir_has_type e T \<longrightarrow> ir_value e \<or> \<exists> e', e ==> e'"
   by auto
 
 (* Reflexivity of equivalence *)
 (* ir_equiv_refl (matches Coq) *)
-lemma ir_equiv_refl: "\<forall>e. ir_equiv e e"
+lemma ir_equiv_refl: "\<forall> e, ir_equiv e e"
   by auto
 
 (* Symmetry of equivalence *)
 (* ir_equiv_sym (matches Coq) *)
-lemma ir_equiv_sym: "\<forall>e1 e2. ir_equiv e1 e2 \<longrightarrow> ir_equiv e2 e1"
+lemma ir_equiv_sym: "\<forall> e1 e2, ir_equiv e1 e2 \<longrightarrow> ir_equiv e2 e1"
   by auto
 
 (* Transitivity of equivalence *)
 (* ir_equiv_trans (matches Coq) *)
-lemma ir_equiv_trans: "\<forall>e1 e2 e3. ir_equiv e1 e2 \<longrightarrow> ir_equiv e2 e3 \<longrightarrow> ir_equiv e1 e3"
+lemma ir_equiv_trans: "\<forall> e1 e2 e3, ir_equiv e1 e2 \<longrightarrow> ir_equiv e2 e3 \<longrightarrow> ir_equiv e1 e3"
   by auto
 
 (* Multi-step transitivity *)
 (* ir_multi_trans (matches Coq) *)
-lemma ir_multi_trans: "\<forall>e1 e2 e3. e1 ==>* e2 \<longrightarrow> e2 ==>* e3 \<longrightarrow> e1 ==>* e3"
+lemma ir_multi_trans: "\<forall> e1 e2 e3, e1 ==>* e2 \<longrightarrow> e2 ==>* e3 \<longrightarrow> e1 ==>* e3"
   by auto
 
 (* ir_multi_pair_cong1 (matches Coq) *)
-lemma ir_multi_pair_cong1: "\<forall>e1 e1' e2. e1 ==>* e1' \<longrightarrow> IR_Pair e1 e2 ==>* IR_Pair e1' e2"
+lemma ir_multi_pair_cong1: "\<forall> e1 e1' e2, e1 ==>* e1' \<longrightarrow> IR_Pair e1 e2 ==>* IR_Pair e1' e2"
   by auto
 
 (* Congruence for Pair (right) *)
 (* ir_multi_pair_cong2 (matches Coq) *)
-lemma ir_multi_pair_cong2: "\<forall>v1 e2 e2'. ir_value v1 \<longrightarrow> e2 ==>* e2' \<longrightarrow> IR_Pair v1 e2 ==>* IR_Pair v1 e2'"
+lemma ir_multi_pair_cong2: "\<forall> v1 e2 e2', ir_value v1 \<longrightarrow> e2 ==>* e2' \<longrightarrow> IR_Pair v1 e2 ==>* IR_Pair v1 e2'"
   by auto
 
 (* opt_if_true_sound (matches Coq) *)
-lemma opt_if_true_sound: "\<forall>e1 e2. IR_If (IR_Bool True) e1 e2 ==>* e1"
+lemma opt_if_true_sound: "\<forall> e1 e2, IR_If (IR_Bool True) e1 e2 ==>* e1"
   by auto
 
 (* opt_if_false_sound (matches Coq) *)
-lemma opt_if_false_sound: "\<forall>e1 e2. IR_If (IR_Bool False) e1 e2 ==>* e2"
+lemma opt_if_false_sound: "\<forall> e1 e2, IR_If (IR_Bool False) e1 e2 ==>* e2"
   by auto
 
 (* opt_fst_pair_sound (matches Coq) *)
-lemma opt_fst_pair_sound: "\<forall>v1 v2. ir_value v1 \<longrightarrow> ir_value v2 \<longrightarrow> IR_Fst (IR_Pair v1 v2) ==>* v1"
+lemma opt_fst_pair_sound: "\<forall> v1 v2, ir_value v1 \<longrightarrow> ir_value v2 \<longrightarrow> IR_Fst (IR_Pair v1 v2) ==>* v1"
   by auto
 
 (* opt_snd_pair_sound (matches Coq) *)
-lemma opt_snd_pair_sound: "\<forall>v1 v2. ir_value v1 \<longrightarrow> ir_value v2 \<longrightarrow> IR_Snd (IR_Pair v1 v2) ==>* v2"
+lemma opt_snd_pair_sound: "\<forall> v1 v2, ir_value v1 \<longrightarrow> ir_value v2 \<longrightarrow> IR_Snd (IR_Pair v1 v2) ==>* v2"
   by auto
 
 (* Values are normal forms *)
 (* ir_value_normal (matches Coq) *)
-lemma ir_value_normal: "\<forall>v. ir_value v \<longrightarrow> ~ \<exists>e. v ==> e"
+lemma ir_value_normal: "\<forall> v, ir_value v \<longrightarrow> ~ \<exists> e, v ==> e"
   by auto
 
 (* Values reduce to themselves *)
 (* ir_value_reduces_self (matches Coq) *)
-lemma ir_value_reduces_self: "\<forall>v. ir_value v \<longrightarrow> v ==>* v"
+lemma ir_value_reduces_self: "\<forall> v, ir_value v \<longrightarrow> v ==>* v"
   by auto
 
 (* Equivalence preserves typing *)
 (* equiv_preserves_typing (matches Coq) *)
-lemma equiv_preserves_typing: "\<forall>e1 e2 v T. ir_equiv e1 e2 \<longrightarrow> ir_has_type e1 T \<longrightarrow> ir_has_type e2 T \<longrightarrow> e1 ==>* v \<longrightarrow> ir_value v \<longrightarrow> ir_has_type v T"
+lemma equiv_preserves_typing: "\<forall> e1 e2 v T, ir_equiv e1 e2 \<longrightarrow> ir_has_type e1 T \<longrightarrow> ir_has_type e2 T \<longrightarrow> e1 ==>* v \<longrightarrow> ir_value v \<longrightarrow> ir_has_type v T"
   by auto
 
 (* Source values don't step *)
 (* src_value_not_step (matches Coq) *)
-lemma src_value_not_step: "\<forall>v e. src_value v \<longrightarrow> ~ (v ~> e)"
+lemma src_value_not_step: "\<forall> v e, src_value v \<longrightarrow> ~ (v ~> e)"
   by auto
 
 (* Source step is deterministic *)
 (* src_step_deterministic (matches Coq) *)
-lemma src_step_deterministic: "\<forall>e e1 e2. e ~> e1 \<longrightarrow> e ~> e2 \<longrightarrow> e1 = e2"
+lemma src_step_deterministic: "\<forall> e e1 e2, e ~> e1 \<longrightarrow> e ~> e2 \<longrightarrow> e1 = e2"
   by auto
 
 (* Source type preservation *)
 (* src_preservation (matches Coq) *)
-lemma src_preservation: "\<forall>e e' T. src_has_type e T \<longrightarrow> e ~> e' \<longrightarrow> src_has_type e' T"
+lemma src_preservation: "\<forall> e e' T, src_has_type e T \<longrightarrow> e ~> e' \<longrightarrow> src_has_type e' T"
   by auto
 
 (* Source progress *)
 (* src_progress (matches Coq) *)
-lemma src_progress: "\<forall>e T. src_has_type e T \<longrightarrow> src_value e \<or> \<exists>e'. e ~> e'"
+lemma src_progress: "\<forall> e T, src_has_type e T \<longrightarrow> src_value e \<or> \<exists> e', e ~> e'"
   by auto
 
 (* Compilation preserves values *)
 (* compile_preserves_value (matches Coq) *)
-lemma compile_preserves_value: "\<forall>e. src_value e \<longrightarrow> ir_value (compile_expr e)"
+lemma compile_preserves_value: "\<forall> e, src_value e \<longrightarrow> ir_value (compile_expr e)"
   by auto
 
 (* Compilation preserves typing *)
 (* compile_preserves_typing (matches Coq) *)
-lemma compile_preserves_typing: "\<forall>e T. src_has_type e T \<longrightarrow> ir_has_type (compile_expr e) (compile_ty T)"
+lemma compile_preserves_typing: "\<forall> e T, src_has_type e T \<longrightarrow> ir_has_type (compile_expr e) (compile_ty T)"
   by auto
 
 (* Forward simulation: source step implies IR step *)
 (* compile_forward_simulation (matches Coq) *)
-lemma compile_forward_simulation: "\<forall>e e'. e ~> e' \<longrightarrow> compile_expr e ==> compile_expr e'"
+lemma compile_forward_simulation: "\<forall> e e', e ~> e' \<longrightarrow> compile_expr e ==> compile_expr e'"
   by auto
 
 (* Forward simulation for multi-step *)
 (* compile_forward_multi_simulation (matches Coq) *)
-lemma compile_forward_multi_simulation: "\<forall>e e'. e ~>* e' \<longrightarrow> compile_expr e ==>* compile_expr e'"
+lemma compile_forward_multi_simulation: "\<forall> e e', e ~>* e' \<longrightarrow> compile_expr e ==>* compile_expr e'"
   by auto
 
 (* Helper: compiled value means source value *)
 (* compile_value_inv (matches Coq) *)
-lemma compile_value_inv: "\<forall>e. ir_value (compile_expr e) \<longrightarrow> src_value e"
+lemma compile_value_inv: "\<forall> e, ir_value (compile_expr e) \<longrightarrow> src_value e"
   by auto
 
 (* Backward simulation: IR step from compiled implies source step *)
 (* compile_backward_simulation (matches Coq) *)
-lemma compile_backward_simulation: "\<forall>e e_ir'. compile_expr e ==> e_ir' \<longrightarrow> \<exists>e'. e ~> e' \<and> compile_expr e' = e_ir'"
-  by auto
+lemma compile_backward_simulation: "\<forall> e e_ir', compile_expr e ==> e_ir' \<longrightarrow> \<exists> e', e ~> e' \<and> compile_expr e' = e_ir'"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Compilation establishes equivalence *)
 (* compile_establishes_equiv (matches Coq) *)
-lemma compile_establishes_equiv: "\<forall>e. src_ir_equiv e (compile_expr e)"
+lemma compile_establishes_equiv: "\<forall> e, src_ir_equiv e (compile_expr e)"
   by simp
 
 (* Equivalence is preserved by stepping *)
 (* equiv_preserved_forward (matches Coq) *)
-lemma equiv_preserved_forward: "\<forall>e_src e_src'. e_src ~> e_src' \<longrightarrow> src_ir_equiv e_src' (compile_expr e_src')"
+lemma equiv_preserved_forward: "\<forall> e_src e_src', e_src ~> e_src' \<longrightarrow> src_ir_equiv e_src' (compile_expr e_src')"
   by simp
 
 (* If source terminates at value, compiled terminates at corresponding value *)
 (* compile_terminates_equivalently (matches Coq) *)
-lemma compile_terminates_equivalently: "\<forall>e v. src_has_type e Src_TUnit \<or> src_has_type e Src_TBool \<or> src_has_type e Src_TInt \<longrightarrow> e ~>* v \<longrightarrow> src_value v \<longrightarrow> compile_expr e ==>* compile_expr v \<and> ir_value (compile_expr v)"
+lemma compile_terminates_equivalently: "\<forall> e v, src_has_type e Src_TUnit \<or> src_has_type e Src_TBool \<or> src_has_type e Src_TInt \<longrightarrow> e ~>* v \<longrightarrow> src_value v \<longrightarrow> compile_expr e ==>* compile_expr v \<and> ir_value (compile_expr v)"
   by auto
 
 (* Compilation preserves type-safety: compiled well-typed source is type-safe *)
 (* compile_type_safety (matches Coq) *)
-lemma compile_type_safety: "\<forall>e T. src_has_type e T \<longrightarrow> ir_value (compile_expr e) \<or> \<exists>e'. compile_expr e ==> e'"
+lemma compile_type_safety: "\<forall> e T, src_has_type e T \<longrightarrow> ir_value (compile_expr e) \<or> \<exists> e', compile_expr e ==> e'"
   by auto
 
 (* Dead code elimination: if (true) e1 e2 is equivalent to e1 *)
 (* opt_dead_code_if_true (matches Coq) *)
-lemma opt_dead_code_if_true: "\<forall>e1 e2. ir_equiv (IR_If (IR_Bool True) e1 e2) e1"
+lemma opt_dead_code_if_true: "\<forall> e1 e2, ir_equiv (IR_If (IR_Bool True) e1 e2) e1"
   by auto
 
 (* Dead code elimination: if (false) e1 e2 is equivalent to e2 *)
 (* opt_dead_code_if_false (matches Coq) *)
-lemma opt_dead_code_if_false: "\<forall>e1 e2. ir_equiv (IR_If (IR_Bool False) e1 e2) e2"
+lemma opt_dead_code_if_false: "\<forall> e1 e2, ir_equiv (IR_If (IR_Bool False) e1 e2) e2"
   by auto
 
 (* Pair projection optimization with type preservation *)
 (* opt_fst_pair_typed (matches Coq) *)
-lemma opt_fst_pair_typed: "\<forall>v1 v2 T1 T2. ir_value v1 \<longrightarrow> ir_value v2 \<longrightarrow> ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2) \<longrightarrow> ir_has_type v1 T1"
+lemma opt_fst_pair_typed: "\<forall> v1 v2 T1 T2, ir_value v1 \<longrightarrow> ir_value v2 \<longrightarrow> ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2) \<longrightarrow> ir_has_type v1 T1"
   by auto
 
 (* Pair projection optimization with type preservation *)
 (* opt_snd_pair_typed (matches Coq) *)
-lemma opt_snd_pair_typed: "\<forall>v1 v2 T1 T2. ir_value v1 \<longrightarrow> ir_value v2 \<longrightarrow> ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2) \<longrightarrow> ir_has_type v2 T2"
+lemma opt_snd_pair_typed: "\<forall> v1 v2 T1 T2, ir_value v1 \<longrightarrow> ir_value v2 \<longrightarrow> ir_has_type (IR_Pair v1 v2) (IR_TProd T1 T2) \<longrightarrow> ir_has_type v2 T2"
   by auto
 
 (* Constant propagation: compiling a known constant gives a value *)
 (* const_prop_bool (matches Coq) *)
-lemma const_prop_bool: "\<forall>b. ir_value (compile_expr (Src_Bool b))"
+lemma const_prop_bool: "\<forall> b, ir_value (compile_expr (Src_Bool b))"
   by auto
 
 (* const_prop_int (matches Coq) *)
-lemma const_prop_int: "\<forall>n. ir_value (compile_expr (Src_Int n))"
+lemma const_prop_int: "\<forall> n, ir_value (compile_expr (Src_Int n))"
   by auto
 
 (* const_prop_unit (matches Coq) *)
@@ -593,25 +590,25 @@ lemma parsing_correct_prop: "parsing_correctness"
 
 (* Optimization is correct: IR equivalence relation is an equivalence *)
 (* optimization_relation_reflexive (matches Coq) *)
-lemma optimization_relation_reflexive: "\<forall>e. ir_equiv e e"
+lemma optimization_relation_reflexive: "\<forall> e, ir_equiv e e"
   by auto
 
 (* optimization_relation_symmetric (matches Coq) *)
-lemma optimization_relation_symmetric: "\<forall>e1 e2. ir_equiv e1 e2 \<longrightarrow> ir_equiv e2 e1"
+lemma optimization_relation_symmetric: "\<forall> e1 e2, ir_equiv e1 e2 \<longrightarrow> ir_equiv e2 e1"
   by auto
 
 (* optimization_relation_transitive (matches Coq) *)
-lemma optimization_relation_transitive: "\<forall>e1 e2 e3. ir_equiv e1 e2 \<longrightarrow> ir_equiv e2 e3 \<longrightarrow> ir_equiv e1 e3"
+lemma optimization_relation_transitive: "\<forall> e1 e2 e3, ir_equiv e1 e2 \<longrightarrow> ir_equiv e2 e3 \<longrightarrow> ir_equiv e1 e3"
   by auto
 
 (* The full pipeline: source to IR preserves semantics *)
 (* full_pipeline_correctness (matches Coq) *)
-lemma full_pipeline_correctness: "\<forall>e T. src_has_type e T \<longrightarrow> ir_has_type (compile_expr e) (compile_ty T) \<and> (src_value e \<or> \<exists>e'. e ~> e') \<and> (\<forall>e'. e ~> e' \<longrightarrow> compile_expr e ==> compile_expr e')"
+lemma full_pipeline_correctness: "\<forall> e T, src_has_type e T \<longrightarrow> ir_has_type (compile_expr e) (compile_ty T) \<and> (src_value e \<or> \<exists> e', e ~> e') \<and> (\<forall> e', e ~> e' \<longrightarrow> compile_expr e ==> compile_expr e')"
   by auto
 
 (* The full pipeline: termination behavior is preserved *)
 (* full_pipeline_termination (matches Coq) *)
-lemma full_pipeline_termination: "\<forall>e v T. src_has_type e T \<longrightarrow> e ~>* v \<longrightarrow> src_value v \<longrightarrow> compile_expr e ==>* compile_expr v \<and> ir_value (compile_expr v) \<and> ir_has_type (compile_expr v) (compile_ty T)"
+lemma full_pipeline_termination: "\<forall> e v T, src_has_type e T \<longrightarrow> e ~>* v \<longrightarrow> src_value v \<longrightarrow> compile_expr e ==>* compile_expr v \<and> ir_value (compile_expr v) \<and> ir_has_type (compile_expr v) (compile_ty T)"
   by auto
 
 end

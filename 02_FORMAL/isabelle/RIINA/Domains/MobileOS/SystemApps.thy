@@ -12,15 +12,16 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | app_category        | app_category           | OK     |
- * | system_app          | system_app             | OK     |
- * | app_state           | app_state              | OK     |
- * | state_transition    | state_transition       | OK     |
- * | sync_operation      | sync_operation         | OK     |
- * | app_response        | app_response           | OK     |
- * | app_permission      | app_permission         | OK     |
- * | app_lifecycle       | app_lifecycle          | OK     |
- * | app_update          | app_update             | OK     |
+ * | AppCategory        | app_category           | OK     |
+ * | SystemApp          | system_app             | OK     |
+ * | AppState           | app_state              | OK     |
+ * | StateTransition    | state_transition       | OK     |
+ * | SyncOperation      | sync_operation         | OK     |
+ * | AppResponse        | app_response           | OK     |
+ * | AppPermission      | app_permission         | OK     |
+ * | AppLifecycle       | app_lifecycle          | OK     |
+ * | AppUpdate          | app_update             | OK     |
+ * | RESPONSE_TIME_MAX_US | RESPONSE_TIME_MAX_US   | OK     |
  * | system_app_correct | system_app_correct     | OK     |
  * | data_secure        | data_secure            | OK     |
  * | valid_transition   | valid_transition       | OK     |
@@ -69,7 +70,7 @@ theory SystemApps
   imports Main CoqCompat
 begin
 
-(* app_category (matches Coq: Inductive app_category) *)
+(* AppCategory (matches Coq: Inductive AppCategory) *)
 datatype app_category =
     Communication
   |     Productivity
@@ -77,44 +78,44 @@ datatype app_category =
   |     Utility
   |     Security
 
-(* system_app (matches Coq: Record system_app) *)
+(* SystemApp (matches Coq: Record SystemApp) *)
 record system_app =
   sys_app_id :: nat
-  app_category :: app_category
+  app_category :: AppCategory
   is_verified :: bool
   has_sandbox :: bool
   permissions_minimal :: bool
   data_encrypted :: bool
 
-(* app_state (matches Coq: Record app_state) *)
+(* AppState (matches Coq: Record AppState) *)
 record app_state =
   state_app_id :: nat
   state_data :: 'a list
   state_valid :: bool
   state_hash :: nat
 
-(* state_transition (matches Coq: Record state_transition) *)
+(* StateTransition (matches Coq: Record StateTransition) *)
 record state_transition =
   trans_app_id :: nat
-  from_state :: app_state
-  to_state :: app_state
+  from_state :: AppState
+  to_state :: AppState
   transition_type :: nat
 
-(* sync_operation (matches Coq: Record sync_operation) *)
+(* SyncOperation (matches Coq: Record SyncOperation) *)
 record sync_operation =
   sync_app_id :: nat
-  local_state :: app_state
-  remote_state :: app_state
-  merged_state :: app_state
+  local_state :: AppState
+  remote_state :: AppState
+  merged_state :: AppState
   sync_successful :: bool
 
-(* app_response (matches Coq: Record app_response) *)
+(* AppResponse (matches Coq: Record AppResponse) *)
 record app_response =
   response_app_id :: nat
   response_time_us :: nat
   response_correct :: bool
 
-(* app_permission (matches Coq: Record app_permission) *)
+(* AppPermission (matches Coq: Record AppPermission) *)
 record app_permission =
   perm_app_id :: nat
   perm_camera :: bool
@@ -125,7 +126,7 @@ record app_permission =
   perm_notification :: bool
   perm_granted_explicitly :: bool
 
-(* app_lifecycle (matches Coq: Record app_lifecycle) *)
+(* AppLifecycle (matches Coq: Record AppLifecycle) *)
 record app_lifecycle =
   lc_app_id :: nat
   lc_installed :: bool
@@ -136,7 +137,7 @@ record app_lifecycle =
   lc_data_on_disk :: bool
   lc_version :: nat
 
-(* app_update (matches Coq: Record app_update) *)
+(* AppUpdate (matches Coq: Record AppUpdate) *)
 record app_update =
   upd_app_id :: nat
   upd_old_version :: nat
@@ -145,20 +146,24 @@ record app_update =
   upd_applied :: bool
   upd_rollback_available :: bool
 
+(* RESPONSE_TIME_MAX_US (matches Coq: Definition RESPONSE_TIME_MAX_US) *)
+definition RESPONSE_TIME_MAX_US :: "nat" where
+  "RESPONSE_TIME_MAX_US \<equiv> Z.to_nat 100000%Z"
+
 (* system_app_correct (matches Coq: Definition system_app_correct) *)
 definition system_app_correct :: "SystemApp \<Rightarrow> bool" where
-  "system_app_correct app \<equiv> is_verified app = True \<and>
-  has_sandbox app = True \<and>
+  "system_app_correct app \<equiv> is_verified app = True /\
+  has_sandbox app = True /\
   permissions_minimal app = True"
 
 (* data_secure (matches Coq: Definition data_secure) *)
 definition data_secure :: "SystemApp \<Rightarrow> bool" where
-  "data_secure app \<equiv> data_encrypted app = True \<and>
+  "data_secure app \<equiv> data_encrypted app = True /\
   has_sandbox app = True"
 
 (* valid_transition (matches Coq: Definition valid_transition) *)
 definition valid_transition :: "StateTransition \<Rightarrow> bool" where
-  "valid_transition trans \<equiv> state_valid (from_state trans) = True \<and>
+  "valid_transition trans \<equiv> state_valid (from_state trans) = True /\
   state_valid (to_state trans) = True"
 
 (* state_preserved (matches Coq: Definition state_preserved) *)
@@ -173,7 +178,7 @@ definition sync_lossless :: "SyncOperation \<Rightarrow> bool" where
 
 (* response_timely (matches Coq: Definition response_timely) *)
 definition response_timely :: "AppResponse \<Rightarrow> bool" where
-  "response_timely resp \<equiv> response_time_us resp <= 100000"
+  "response_timely resp \<equiv> response_time_us resp <= RESPONSE_TIME_MAX_US"
 
 (* app_responds_correctly (matches Coq: Definition app_responds_correctly) *)
 definition app_responds_correctly :: "AppResponse \<Rightarrow> bool" where
@@ -181,7 +186,7 @@ definition app_responds_correctly :: "AppResponse \<Rightarrow> bool" where
 
 (* wellformed_system_app (matches Coq: Definition wellformed_system_app) *)
 definition wellformed_system_app :: "SystemApp \<Rightarrow> bool" where
-  "wellformed_system_app app \<equiv> system_app_correct app \<and> data_secure app"
+  "wellformed_system_app app \<equiv> system_app_correct app /\ data_secure app"
 
 (* check_app_security (matches Coq: Definition check_app_security) *)
 definition check_app_security :: "SystemApp \<Rightarrow> bool" where
@@ -192,15 +197,15 @@ definition transition_preserves_validity :: "StateTransition \<Rightarrow> bool"
   "transition_preserves_validity trans \<equiv> state_valid (from_state trans) \<and> state_valid (to_state trans)"
 
 (* app_sandbox_holds (matches Coq: Definition app_sandbox_holds) *)
-definition app_sandbox_holds :: "SystemApp \<Rightarrow> app_permission \<Rightarrow> bool" where
-  "app_sandbox_holds app perm \<equiv> has_sandbox app = True \<and>
-  perm_app_id perm = sys_app_id app \<and>
+definition app_sandbox_holds :: "SystemApp \<Rightarrow> AppPermission \<Rightarrow> bool" where
+  "app_sandbox_holds app perm \<equiv> has_sandbox app = True /\
+  perm_app_id perm = sys_app_id app /\
   perm_granted_explicitly perm = True"
 
 (* no_cross_app_access (matches Coq: Definition no_cross_app_access) *)
 definition no_cross_app_access :: "bool" where
   "no_cross_app_access \<equiv> sys_app_id app1 <> sys_app_id app2 ->
-  has_sandbox app1 = True \<and> has_sandbox app2 = True"
+  has_sandbox app1 = True /\ has_sandbox app2 = True"
 
 (* app_permission_runtime_check (matches Coq: Definition app_permission_runtime_check) *)
 definition app_permission_runtime_check :: "AppPermission \<Rightarrow> bool" where
@@ -221,7 +226,7 @@ definition install_is_verified :: "AppLifecycle \<Rightarrow> bool" where
 (* update_is_atomic (matches Coq: Definition update_is_atomic) *)
 definition update_is_atomic :: "AppUpdate \<Rightarrow> bool" where
   "update_is_atomic upd \<equiv> upd_applied upd = True ->
-  upd_signature_valid upd = True \<and>
+  upd_signature_valid upd = True /\
   upd_new_version upd > upd_old_version upd"
 
 (* uninstall_is_complete (matches Coq: Definition uninstall_is_complete) *)
@@ -229,99 +234,99 @@ definition uninstall_is_complete :: "AppLifecycle \<Rightarrow> bool" where
   "uninstall_is_complete lc \<equiv> lc_installed lc = False -> lc_data_on_disk lc = False"
 
 (* system_apps_verified_correct (matches Coq) *)
-lemma system_apps_verified_correct: "\<forall>(app :: system_app). wellformed_system_app app \<longrightarrow> system_app_correct app"
+lemma system_apps_verified_correct: "\<forall> (app : SystemApp), wellformed_system_app app \<longrightarrow> system_app_correct app"
   by auto
 
 (* system_app_data_encrypted (matches Coq) *)
-lemma system_app_data_encrypted: "\<forall>(app :: system_app). wellformed_system_app app \<longrightarrow> data_encrypted app = True"
+lemma system_app_data_encrypted: "\<forall> (app : SystemApp), wellformed_system_app app \<longrightarrow> data_encrypted app = True"
   by auto
 
 (* state_transition_valid (matches Coq) *)
-lemma state_transition_valid: "\<forall>(trans :: state_transition). valid_transition trans \<longrightarrow> state_valid (to_state trans) = True"
+lemma state_transition_valid: "\<forall> (trans : StateTransition), valid_transition trans \<longrightarrow> state_valid (to_state trans) = True"
   by auto
 
 (* sync_preserves_data (matches Coq) *)
-lemma sync_preserves_data: "\<forall>(sync :: sync_operation). sync_lossless sync \<longrightarrow> sync_successful sync = True \<longrightarrow> state_valid (merged_state sync) = True"
+lemma sync_preserves_data: "\<forall> (sync : SyncOperation), sync_lossless sync \<longrightarrow> sync_successful sync = True \<longrightarrow> state_valid (merged_state sync) = True"
   by auto
 
 (* system_apps_sandboxed (matches Coq) *)
-lemma system_apps_sandboxed: "\<forall>(app :: system_app). system_app_correct app \<longrightarrow> has_sandbox app = True"
+lemma system_apps_sandboxed: "\<forall> (app : SystemApp), system_app_correct app \<longrightarrow> has_sandbox app = True"
   by auto
 
 (* minimal_permissions_enforced (matches Coq) *)
-lemma minimal_permissions_enforced: "\<forall>(app :: system_app). system_app_correct app \<longrightarrow> permissions_minimal app = True"
+lemma minimal_permissions_enforced: "\<forall> (app : SystemApp), system_app_correct app \<longrightarrow> permissions_minimal app = True"
   by auto
 
 (* system_app_response_correct (matches Coq) *)
-lemma system_app_response_correct: "\<forall>(resp :: app_response). app_responds_correctly resp \<longrightarrow> response_correct resp = True"
+lemma system_app_response_correct: "\<forall> (resp : AppResponse), app_responds_correctly resp \<longrightarrow> response_correct resp = True"
   by auto
 
 (* security_apps_encrypted (matches Coq) *)
-lemma security_apps_encrypted: "\<forall>(app :: system_app). app_category app = Security \<longrightarrow> wellformed_system_app app \<longrightarrow> data_encrypted app = True \<and> has_sandbox app = True"
+lemma security_apps_encrypted: "\<forall> (app : SystemApp), app_category app = Security \<longrightarrow> wellformed_system_app app \<longrightarrow> data_encrypted app = True \<and> has_sandbox app = True"
   by auto
 
 (* app_sandbox_enforced (matches Coq) *)
-lemma app_sandbox_enforced: "\<forall>(app :: system_app) (perm :: app_permission). app_sandbox_holds app perm \<longrightarrow> has_sandbox app = True"
+lemma app_sandbox_enforced: "\<forall> (app : SystemApp) (perm : AppPermission), app_sandbox_holds app perm \<longrightarrow> has_sandbox app = True"
   by auto
 
 (* no_cross_app_data_access (matches Coq) *)
-lemma no_cross_app_data_access: "\<forall>(app1 :: system_app) (app2 :: system_app). no_cross_app_access app1 app2 \<longrightarrow> sys_app_id app1 \<noteq> sys_app_id app2 \<longrightarrow> has_sandbox app1 = True \<and> has_sandbox app2 = True"
+lemma no_cross_app_data_access: "\<forall> (app1 app2 : SystemApp), no_cross_app_access app1 app2 \<longrightarrow> sys_app_id app1 \<noteq> sys_app_id app2 \<longrightarrow> has_sandbox app1 = True \<and> has_sandbox app2 = True"
   by auto
 
 (* app_permission_checked_at_runtime (matches Coq) *)
-lemma app_permission_checked_at_runtime: "\<forall>(perm :: app_permission). app_permission_runtime_check perm \<longrightarrow> perm_granted_explicitly perm = True"
+lemma app_permission_checked_at_runtime: "\<forall> (perm : AppPermission), app_permission_runtime_check perm \<longrightarrow> perm_granted_explicitly perm = True"
   by auto
 
 (* background_app_limited (matches Coq) *)
-lemma background_app_limited: "\<forall>(lc :: app_lifecycle). background_app_is_limited lc \<longrightarrow> lc_background lc = True \<longrightarrow> lc_background_limited lc = True"
+lemma background_app_limited: "\<forall> (lc : AppLifecycle), background_app_is_limited lc \<longrightarrow> lc_background lc = True \<longrightarrow> lc_background_limited lc = True"
   by auto
 
 (* foreground_app_priority (matches Coq) *)
-lemma foreground_app_priority: "\<forall>(lc :: app_lifecycle). foreground_has_priority lc \<longrightarrow> lc_foreground lc = True \<longrightarrow> lc_background lc = False"
+lemma foreground_app_priority: "\<forall> (lc : AppLifecycle), foreground_has_priority lc \<longrightarrow> lc_foreground lc = True \<longrightarrow> lc_background lc = False"
   by auto
 
 (* app_install_verified (matches Coq) *)
-lemma app_install_verified: "\<forall>(lc :: app_lifecycle). install_is_verified lc \<longrightarrow> lc_installed lc = True \<longrightarrow> lc_install_verified lc = True"
+lemma app_install_verified: "\<forall> (lc : AppLifecycle), install_is_verified lc \<longrightarrow> lc_installed lc = True \<longrightarrow> lc_install_verified lc = True"
   by auto
 
 (* app_update_atomic (matches Coq) *)
-lemma app_update_atomic: "\<forall>(upd :: app_update). update_is_atomic upd \<longrightarrow> upd_applied upd = True \<longrightarrow> upd_signature_valid upd = True \<and> upd_new_version upd > upd_old_version upd"
+lemma app_update_atomic: "\<forall> (upd : AppUpdate), update_is_atomic upd \<longrightarrow> upd_applied upd = True \<longrightarrow> upd_signature_valid upd = True \<and> upd_new_version upd > upd_old_version upd"
   by auto
 
 (* app_uninstall_complete (matches Coq) *)
-lemma app_uninstall_complete: "\<forall>(lc :: app_lifecycle). uninstall_is_complete lc \<longrightarrow> lc_installed lc = False \<longrightarrow> lc_data_on_disk lc = False"
+lemma app_uninstall_complete: "\<forall> (lc : AppLifecycle), uninstall_is_complete lc \<longrightarrow> lc_installed lc = False \<longrightarrow> lc_data_on_disk lc = False"
   by auto
 
 (* app_data_encrypted_at_rest (matches Coq) *)
-lemma app_data_encrypted_at_rest: "\<forall>(app :: system_app). wellformed_system_app app \<longrightarrow> data_encrypted app = True"
+lemma app_data_encrypted_at_rest: "\<forall> (app : SystemApp), wellformed_system_app app \<longrightarrow> data_encrypted app = True"
   by auto
 
 (* app_network_permission_required (matches Coq) *)
-lemma app_network_permission_required: "\<forall>(perm :: app_permission). perm_network perm = True \<longrightarrow> perm_granted_explicitly perm = True \<longrightarrow> perm_network perm = True \<and> perm_granted_explicitly perm = True"
+lemma app_network_permission_required: "\<forall> (perm : AppPermission), perm_network perm = True \<longrightarrow> perm_granted_explicitly perm = True \<longrightarrow> perm_network perm = True \<and> perm_granted_explicitly perm = True"
   by auto
 
 (* clipboard_access_notified (matches Coq) *)
-lemma clipboard_access_notified: "\<forall>(perm :: app_permission). perm_clipboard perm = True \<longrightarrow> perm_granted_explicitly perm = True \<longrightarrow> perm_clipboard perm = True"
+lemma clipboard_access_notified: "\<forall> (perm : AppPermission), perm_clipboard perm = True \<longrightarrow> perm_granted_explicitly perm = True \<longrightarrow> perm_clipboard perm = True"
   by auto
 
 (* camera_access_indicator (matches Coq) *)
-lemma camera_access_indicator: "\<forall>(perm :: app_permission). perm_camera perm = True \<longrightarrow> app_permission_runtime_check perm \<longrightarrow> perm_camera perm = True \<and> perm_granted_explicitly perm = True"
+lemma camera_access_indicator: "\<forall> (perm : AppPermission), perm_camera perm = True \<longrightarrow> app_permission_runtime_check perm \<longrightarrow> perm_camera perm = True \<and> perm_granted_explicitly perm = True"
   by auto
 
 (* microphone_access_indicator (matches Coq) *)
-lemma microphone_access_indicator: "\<forall>(perm :: app_permission). perm_microphone perm = True \<longrightarrow> app_permission_runtime_check perm \<longrightarrow> perm_microphone perm = True \<and> perm_granted_explicitly perm = True"
+lemma microphone_access_indicator: "\<forall> (perm : AppPermission), perm_microphone perm = True \<longrightarrow> app_permission_runtime_check perm \<longrightarrow> perm_microphone perm = True \<and> perm_granted_explicitly perm = True"
   by auto
 
 (* location_access_indicator (matches Coq) *)
-lemma location_access_indicator: "\<forall>(perm :: app_permission). perm_location perm = True \<longrightarrow> app_permission_runtime_check perm \<longrightarrow> perm_location perm = True \<and> perm_granted_explicitly perm = True"
+lemma location_access_indicator: "\<forall> (perm : AppPermission), perm_location perm = True \<longrightarrow> app_permission_runtime_check perm \<longrightarrow> perm_location perm = True \<and> perm_granted_explicitly perm = True"
   by auto
 
 (* notification_permission_explicit (matches Coq) *)
-lemma notification_permission_explicit: "\<forall>(perm :: app_permission). perm_notification perm = True \<longrightarrow> perm_granted_explicitly perm = True \<longrightarrow> perm_notification perm = True \<and> perm_granted_explicitly perm = True"
+lemma notification_permission_explicit: "\<forall> (perm : AppPermission), perm_notification perm = True \<longrightarrow> perm_granted_explicitly perm = True \<longrightarrow> perm_notification perm = True \<and> perm_granted_explicitly perm = True"
   by auto
 
 (* check_app_security_correct (matches Coq) *)
-lemma check_app_security_correct: "\<forall>(app :: system_app). check_app_security app = True \<longrightarrow> is_verified app = True \<and> has_sandbox app = True \<and> permissions_minimal app = True \<and> data_encrypted app = True"
+lemma check_app_security_correct: "\<forall> (app : SystemApp), check_app_security app = True \<longrightarrow> is_verified app = True \<and> has_sandbox app = True \<and> permissions_minimal app = True \<and> data_encrypted app = True"
   by auto
 
 end

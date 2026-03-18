@@ -86,41 +86,9 @@
  *)
 
 theory CognitiveAccessibility
-  imports Main Syntax
+  imports Main
 begin
 
-(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
-abbreviation value :: "expr \<Rightarrow> bool" where
-  "value \<equiv> is_value"
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym animation_timing = "nat"
-type_synonym async_operation = "nat"
-type_synonym auto_save_form = "nat"
-type_synonym button_config = "nat"
-type_synonym button_label = "nat"
-type_synonym classified_animation = "nat"
-type_synonym confirmed_action = "nat"
-type_synonym consistent_app = "nat"
-type_synonym content_section = "nat"
-type_synonym dialog_display = "nat"
-type_synonym feedback_response = "nat"
-type_synonym form_state = "nat"
-type_synonym information_density = "nat"
-type_synonym interaction_type = "nat"
-type_synonym link_config = "nat"
-type_synonym menu_config = "nat"
-type_synonym nav_action = "nat"
-type_synonym outcome = "nat"
-type_synonym outcome_type = "nat"
-type_synonym page_config = "nat"
-type_synonym page_transition = "nat"
-type_synonym stable_layout = "nat"
-type_synonym ui_event = "nat"
-type_synonym ui_state = "nat"
-type_synonym ui_transition = "nat"
-type_synonym user_action = "nat"
-type_synonym user_interaction = "nat"
-type_synonym validation_error = "nat"
 (* expected_outcome_type (matches Coq: Definition expected_outcome_type) *)
 fun expected_outcome_type :: "InteractionType \<Rightarrow> OutcomeType" where
   "expected_outcome_type ButtonPress = ButtonActivated"
@@ -144,7 +112,7 @@ definition outcome :: "UserInteraction \<Rightarrow> Outcome" where
 
 (* outcome_eq (matches Coq: Definition outcome_eq) *)
 definition outcome_eq :: "bool" where
-  "outcome_eq \<equiv> outcome_type o1 = outcome_type o2 \<and>
+  "outcome_eq \<equiv> outcome_type o1 = outcome_type o2 /\
   outcome_context o1 = outcome_context o2"
 
 (* density_acceptable (matches Coq: Definition density_acceptable) *)
@@ -165,19 +133,19 @@ definition nav_structure_eq :: "bool" where
 
 (* undo_action (matches Coq: Definition undo_action) *)
 fun undo_action :: "UserAction \<Rightarrow> UserAction" where
-  "undo_action _ = undefined"
+
 
 (* is_destructive (matches Coq: Definition is_destructive) *)
 fun is_destructive :: "UserAction \<Rightarrow> bool" where
-  "is_destructive _ = False"
+  "is_destructive _ = false"
 
 (* error_field_idx (matches Coq: Definition error_field_idx) *)
 fun error_field_idx :: "ValidationError \<Rightarrow> nat" where
-  "error_field_idx _ = 0"
+
 
 (* errors_are_inline (matches Coq: Definition errors_are_inline) *)
 definition errors_are_inline :: "FormState \<Rightarrow> bool" where
-  "errors_are_inline fs \<equiv> forall e, e \<in> set (fs_errors fs) -> error_field_idx e < fs_field_count fs"
+  "errors_are_inline fs \<equiv> forall e, In e (fs_errors fs) -> error_field_idx e < fs_field_count fs"
 
 (* min_error_idx (matches Coq: Definition min_error_idx) *)
 fun min_error_idx :: "option nat" where
@@ -190,33 +158,33 @@ definition form_error_count :: "FormState \<Rightarrow> nat" where
 
 (* suggest_fix (matches Coq: Definition suggest_fix) *)
 fun suggest_fix :: "ValidationError \<Rightarrow> FixSuggestion" where
-  "suggest_fix _ = undefined"
+
 
 (* fix_targets_same_field - complex match, needs manual translation *)
-definition fix_targets_same_field :: "bool" where "fix_targets_same_field \<equiv> True"
+definition fix_targets_same_field :: "bool" where "fix_targets_same_field = undefined"
 
 (* easing_consistent (matches Coq: Definition easing_consistent) *)
 definition easing_consistent :: "bool" where
   "easing_consistent \<equiv> forall a1 a2,
-    a1 \<in> set anims -> a2 \<in> set anims ->
+    In a1 anims -> In a2 anims ->
     clan_class a1 = clan_class a2 ->
     at_easing_id (clan_timing a1) = at_easing_id (clan_timing a2)"
 
 (* layout_eq (matches Coq: Definition layout_eq) *)
 definition layout_eq :: "bool" where
-  "layout_eq \<equiv> le_x l1 = le_x l2 \<and> le_y l1 = le_y l2 \<and>
-  le_w l1 = le_w l2 \<and> le_h l1 = le_h l2"
+  "layout_eq \<equiv> le_x l1 = le_x l2 /\ le_y l1 = le_y l2 /\
+  le_w l1 = le_w l2 /\ le_h l1 = le_h l2"
 
 (* reverse_transition - complex match, needs manual translation *)
-definition reverse_transition :: "bool" where "reverse_transition \<equiv> True"
+definition reverse_transition :: "bool" where "reverse_transition = undefined"
 
 (* is_user_initiated (matches Coq: Definition is_user_initiated) *)
 fun is_user_initiated :: "UIEvent \<Rightarrow> bool" where
-  "is_user_initiated EvSystemTimer = False"
-|   "is_user_initiated EvNetworkResponse = False"
+  "is_user_initiated EvSystemTimer = false"
+|   "is_user_initiated EvNetworkResponse = false"
 
 (* handle_ui_event (matches Coq: Definition handle_ui_event) *)
-fun handle_ui_event :: "UIState \<Rightarrow> ui_event \<Rightarrow> UIState" where
+fun handle_ui_event :: "UIState \<Rightarrow> UIEvent \<Rightarrow> UIState" where
   "handle_ui_event EvSystemTimer = s"
 |   "handle_ui_event EvNetworkResponse = s"
 
@@ -234,273 +202,273 @@ fun nav_apply :: "NavAction \<Rightarrow> list nat" where
 |   "nav_apply nil = nil"
 
 (* ui_behavior_predictable (matches Coq) *)
-lemma ui_behavior_predictable: "\<forall>(pui :: RIINA_PredictableUI) (interaction :: user_interaction). outcome interaction = expected_outcome interaction"
+lemma ui_behavior_predictable: "\<forall> (pui : RIINA_PredictableUI) (interaction : UserInteraction), outcome interaction = expected_outcome interaction"
   by auto
 
 (* ui_behavior_predictable_direct (matches Coq) *)
-lemma ui_behavior_predictable_direct: "\<forall>(interaction :: user_interaction). outcome interaction = expected_outcome interaction"
+lemma ui_behavior_predictable_direct: "\<forall> (interaction : UserInteraction), outcome interaction = expected_outcome interaction"
   by simp
 
 (* interaction_type_decidable (matches Coq) *)
-lemma interaction_type_decidable: "\<forall>(t1 :: interaction_type) (t2 :: interaction_type). (t1 = t2) \<or> (t1 \<noteq> t2)"
+lemma interaction_type_decidable: "\<forall> (t1 t2 : InteractionType), {t1 = t2} + {t1 \<noteq> t2}"
   by simp
 
 (* outcome_type_decidable (matches Coq) *)
-lemma outcome_type_decidable: "\<forall>(o1 :: outcome_type) (o2 :: outcome_type). (o1 = o2) \<or> (o1 \<noteq> o2)"
+lemma outcome_type_decidable: "\<forall> (o1 o2 : OutcomeType), {o1 = o2} + {o1 \<noteq> o2}"
   by simp
 
 (* outcome_eq_reflexive (matches Coq) *)
-lemma outcome_eq_reflexive: "\<forall>(o :: outcome). outcome_eq o o"
+lemma outcome_eq_reflexive: "\<forall> (o : Outcome), outcome_eq o o"
   by simp
 
 (* outcome_eq_symmetric (matches Coq) *)
-lemma outcome_eq_symmetric: "\<forall>(o1 :: outcome) (o2 :: outcome). outcome_eq o1 o2 \<longrightarrow> outcome_eq o2 o1"
+lemma outcome_eq_symmetric: "\<forall> (o1 o2 : Outcome), outcome_eq o1 o2 \<longrightarrow> outcome_eq o2 o1"
   by auto
 
 (* expected_outcome_deterministic (matches Coq) *)
-lemma expected_outcome_deterministic: "\<forall>(i :: user_interaction). \<exists>! (o :: outcome). expected_outcome i = o"
+lemma expected_outcome_deterministic: "\<forall> (i : UserInteraction), \<exists>! (o : Outcome), expected_outcome i = o"
   by simp
 
 (* outcome_matches_interaction_type (matches Coq) *)
-lemma outcome_matches_interaction_type: "\<forall>(i :: user_interaction). outcome_type (outcome i) = expected_outcome_type (interaction_type i)"
+lemma outcome_matches_interaction_type: "\<forall> (i : UserInteraction), outcome_type (outcome i) = expected_outcome_type (interaction_type i)"
   by simp
 
 (* context_preserved (matches Coq) *)
-lemma context_preserved: "\<forall>(i :: user_interaction). outcome_context (outcome i) = context i"
+lemma context_preserved: "\<forall> (i : UserInteraction), outcome_context (outcome i) = context i"
   by simp
 
 (* interaction_type_exhaustive (matches Coq) *)
-lemma interaction_type_exhaustive: "\<forall>(t :: interaction_type). t = ButtonPress \<or> t = MenuOpen \<or> t = NavigationPush \<or> t = NavigationPop \<or> t = ModalPresent \<or> t = ModalDismiss \<or> t = TextInput \<or> t = ListScroll \<or> t = SwipeGesture \<or> t = LongPress"
+lemma interaction_type_exhaustive: "\<forall> (t : InteractionType), t = ButtonPress \<or> t = MenuOpen \<or> t = NavigationPush \<or> t = NavigationPop \<or> t = ModalPresent \<or> t = ModalDismiss \<or> t = TextInput \<or> t = ListScroll \<or> t = SwipeGesture \<or> t = LongPress"
   by auto
 
 (* outcome_type_exhaustive (matches Coq) *)
-lemma outcome_type_exhaustive: "\<forall>(o :: outcome_type). o = ButtonActivated \<or> o = MenuDisplayed \<or> o = ScreenPushed \<or> o = ScreenPopped \<or> o = ModalShown \<or> o = ModalHidden \<or> o = TextEntered \<or> o = ListScrolled \<or> o = SwipeCompleted \<or> o = LongPressActivated"
+lemma outcome_type_exhaustive: "\<forall> (o : OutcomeType), o = ButtonActivated \<or> o = MenuDisplayed \<or> o = ScreenPushed \<or> o = ScreenPopped \<or> o = ModalShown \<or> o = ModalHidden \<or> o = TextEntered \<or> o = ListScrolled \<or> o = SwipeCompleted \<or> o = LongPressActivated"
   by auto
 
 (* Theorem: information_density_bounded
     RIINA UI limits the number of elements per viewport.
-    Any information_density whose element_count is at most the threshold
+    Any InformationDensity whose element_count is at most the threshold
     satisfies density_acceptable. *)
 (* information_density_bounded (matches Coq) *)
-lemma information_density_bounded: "\<forall>(id :: information_density). element_count id \<le> riina_density_threshold \<longrightarrow> density_acceptable id riina_density_threshold"
+lemma information_density_bounded: "\<forall> (id : InformationDensity), element_count id \<le> riina_density_threshold \<longrightarrow> density_acceptable id riina_density_threshold"
   by auto
 
 (* Theorem: progressive_disclosure
     Complex information always shows the summary first.  Every
-    content_section starts at Summary level and the summary text is
+    ContentSection starts at Summary level and the summary text is
     no longer than the expanded text. *)
 (* progressive_disclosure (matches Coq) *)
-lemma progressive_disclosure: "\<forall>(cs :: content_section). cs_initial_level cs = Summary \<and> cs_summary_len cs \<le> cs_expanded_len cs"
+lemma progressive_disclosure: "\<forall> (cs : ContentSection), cs_initial_level cs = Summary \<and> cs_summary_len cs \<le> cs_expanded_len cs"
   by auto
 
 (* Theorem: choice_overload_prevention
     RIINA menus never exceed 7 items, preventing choice overload and
     keeping Hick's-Law decision time O(log 7) ~ constant. *)
 (* choice_overload_prevention (matches Coq) *)
-lemma choice_overload_prevention: "\<forall>(mc :: menu_config). length (menu_items mc) \<le> hicks_bound"
+lemma choice_overload_prevention: "\<forall> (mc : MenuConfig), length (menu_items mc) \<le> hicks_bound"
   by auto
 
 (* Theorem: consistent_navigation
-    a \<in> set consistent_app, the navigation structure is identical across all pages. *)
+    In a ConsistentApp, the navigation structure is identical across all pages. *)
 (* consistent_navigation (matches Coq) *)
-lemma consistent_navigation: "\<forall>(app :: consistent_app) (p1 :: NavigationStructure) (p2 :: NavigationStructure). p1 \<in> set (app_pages app) \<longrightarrow> p2 \<in> set (app_pages app) \<longrightarrow> nav_structure_eq p1 p2"
+lemma consistent_navigation: "\<forall> (app : ConsistentApp) (p1 p2 : NavigationStructure), In p1 (app_pages app) \<longrightarrow> In p2 (app_pages app) \<longrightarrow> nav_structure_eq p1 p2"
   by auto
 
 (* Theorem: breadcrumb_always_available
     Every page that is not at the root level shows a breadcrumb trail. *)
 (* breadcrumb_always_available (matches Coq) *)
-lemma breadcrumb_always_available: "\<forall>(pc :: page_config). pc_depth pc \<noteq> RootLevel \<longrightarrow> pc_has_breadcrumb pc = True"
+lemma breadcrumb_always_available: "\<forall> (pc : PageConfig), pc_depth pc \<noteq> RootLevel \<longrightarrow> pc_has_breadcrumb pc = True"
   by auto
 
 (* Theorem: loading_state_always_shown
     Whenever an async operation is in the Loading state, a loading
     indicator is visible. *)
 (* loading_state_always_shown (matches Coq) *)
-lemma loading_state_always_shown: "\<forall>(op :: async_operation). ao_status op = Loading \<longrightarrow> ao_shows_loading op = True"
+lemma loading_state_always_shown: "\<forall> (op : AsyncOperation), ao_status op = Loading \<longrightarrow> ao_shows_loading op = True"
   by auto
 
 (* Theorem: undo_always_available
     Every user action has an inverse, and applying undo twice
     yields the original action (involution). *)
 (* undo_always_available (matches Coq) *)
-lemma undo_always_available: "\<forall>(a :: user_action). undo_action (undo_action a) = a"
-  by auto
+lemma undo_always_available: "\<forall> (a : UserAction), undo_action (undo_action a) = a"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Lemma: undo is distinct from the original for non-trivial edits. *)
 (* undo_edit_swaps (matches Coq) *)
-lemma undo_edit_swaps: "\<forall>fid old_v new_v. old_v \<noteq> new_v \<longrightarrow> undo_action (EditAction fid old_v new_v) \<noteq> EditAction fid old_v new_v"
+lemma undo_edit_swaps: "\<forall> fid old_v new_v, old_v \<noteq> new_v \<longrightarrow> undo_action (EditAction fid old_v new_v) \<noteq> EditAction fid old_v new_v"
   by auto
 
 (* Theorem: confirmation_for_destructive
     Every destructive action must have user confirmation. *)
 (* confirmation_for_destructive (matches Coq) *)
-lemma confirmation_for_destructive: "\<forall>(ca :: confirmed_action). is_destructive (ca_action ca) = True \<longrightarrow> ca_confirmed ca = True"
+lemma confirmation_for_destructive: "\<forall> (ca : ConfirmedAction), is_destructive (ca_action ca) = True \<longrightarrow> ca_confirmed ca = True"
   by auto
 
 (* Theorem: inline_validation
-    Every error in a form_state is associated with a specific field
+    Every error in a FormState is associated with a specific field
     index that falls within the form's field range. *)
 (* inline_validation (matches Coq) *)
-lemma inline_validation: "\<forall>(fs :: form_state). errors_are_inline fs"
+lemma inline_validation: "\<forall> (fs : FormState), errors_are_inline fs"
   by auto
 
 (* An error message is specific if it identifies exactly one field. We
     prove that every error constructor carries a unique field index. *)
 (* error_message_specific (matches Coq) *)
-lemma error_message_specific: "\<forall>(fs :: form_state) (e :: validation_error). e \<in> set (fs_errors fs) \<longrightarrow> \<exists>idx. error_field_idx e = idx \<and> idx < fs_field_count fs"
+lemma error_message_specific: "\<forall> (fs : FormState) (e : ValidationError), In e (fs_errors fs) \<longrightarrow> \<exists> idx, error_field_idx e = idx \<and> idx < fs_field_count fs"
   by auto
 
 (* Theorem: auto_save_prevents_loss
     When a form has unsaved changes (dirty = true), the auto-save
     snapshot contains the current field values. *)
 (* auto_save_prevents_loss (matches Coq) *)
-lemma auto_save_prevents_loss: "\<forall>(asf :: auto_save_form). asf_dirty asf = True \<longrightarrow> snap_field_values (asf_snapshot asf) = asf_field_values asf"
+lemma auto_save_prevents_loss: "\<forall> (asf : AutoSaveForm), asf_dirty asf = True \<longrightarrow> snap_field_values (asf_snapshot asf) = asf_field_values asf"
   by auto
 
 (* Lemma: min_error_idx returns Some for non-empty error lists. *)
 (* min_error_idx_nonempty (matches Coq) *)
-lemma min_error_idx_nonempty: "\<forall>(errs : list validation_error). errs \<noteq> nil \<longrightarrow> \<exists>n. min_error_idx errs = Some n"
-  by auto
+lemma min_error_idx_nonempty: "\<forall> (errs : list ValidationError), errs \<noteq> nil \<longrightarrow> \<exists> n, min_error_idx errs = Some n"
+  by (cases rule: ‹_›.cases; simp)
 
 (* The minimum is at most the index of the first error. *)
 (* min_error_idx_le_head (matches Coq) *)
-lemma min_error_idx_le_head: "\<forall>(e :: validation_error) (rest : list validation_error) (m :: nat). min_error_idx (e :: rest) = Some m \<longrightarrow> m \<le> error_field_idx e"
-  by auto
+lemma min_error_idx_le_head: "\<forall> (e : ValidationError) (rest : list ValidationError) (m : nat), min_error_idx (e :: rest) = Some m \<longrightarrow> m \<le> error_field_idx e"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Helper: min_error_idx on a non-empty list returns a value that
     is <= the field index of every element. *)
 (* min_error_idx_le_all (matches Coq) *)
-lemma min_error_idx_le_all: "\<forall>(errs : list validation_error) (m :: nat). min_error_idx errs = Some m \<longrightarrow> \<forall>e. e \<in> set errs \<longrightarrow> m \<le> error_field_idx e"
-  by auto
+lemma min_error_idx_le_all: "\<forall> (errs : list ValidationError) (m : nat), min_error_idx errs = Some m \<longrightarrow> \<forall> e, In e errs \<longrightarrow> m \<le> error_field_idx e"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Theorem: scroll_to_first_error
     When a form has errors, there exists a minimum field index that
     the viewport should scroll to, and it is at most every individual
     error's field index. *)
 (* scroll_to_first_error (matches Coq) *)
-lemma scroll_to_first_error: "\<forall>(fs :: form_state). fs_errors fs \<noteq> nil \<longrightarrow> \<exists>min_idx. min_error_idx (fs_errors fs) = Some min_idx \<and> \<forall>e. e \<in> set (fs_errors fs) \<longrightarrow> min_idx \<le> error_field_idx e"
+lemma scroll_to_first_error: "\<forall> (fs : FormState), fs_errors fs \<noteq> nil \<longrightarrow> \<exists> min_idx, min_error_idx (fs_errors fs) = Some min_idx \<and> \<forall> e, In e (fs_errors fs) \<longrightarrow> min_idx \<le> error_field_idx e"
   by auto
 
 (* Theorem: error_count_visible
     The error count is always computable and equals the number of
     validation errors.  A zero count is equivalent to no errors. *)
 (* error_count_visible (matches Coq) *)
-lemma error_count_visible: "\<forall>(fs :: form_state). form_error_count fs = 0 <-> fs_errors fs = nil"
-  by auto
+lemma error_count_visible: "\<forall> (fs : FormState), form_error_count fs = 0 <-> fs_errors fs = nil"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Lemma: adding an error increments the count. *)
 (* error_count_monotone (matches Coq) *)
-lemma error_count_monotone: "\<forall>(errs : list validation_error) (e :: validation_error). length (e :: errs) = Suc (length errs)"
+lemma error_count_monotone: "\<forall> (errs : list ValidationError) (e : ValidationError), length (e :: errs) = S (length errs)"
   by simp
 
 (* Theorem: error_fixable
     Every validation error has a clear fix action that targets the
     same field. *)
 (* error_fixable (matches Coq) *)
-lemma error_fixable: "\<forall>(e :: validation_error). fix_targets_same_field e (suggest_fix e)"
-  by auto
+lemma error_fixable: "\<forall> (e : ValidationError), fix_targets_same_field e (suggest_fix e)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Theorem: animation_duration_bounded
     All RIINA animations have duration in [200, 500] ms. *)
 (* animation_duration_bounded (matches Coq) *)
-lemma animation_duration_bounded: "\<forall>(anim :: animation_timing). 200 \<le> at_duration_ms anim \<and> at_duration_ms anim \<le> 500"
+lemma animation_duration_bounded: "\<forall> (anim : AnimationTiming), 200 \<le> at_duration_ms anim \<and> at_duration_ms anim \<le> 500"
   by auto
 
 (* Decidable equality on action classes. *)
 (* action_class_eq_dec (matches Coq) *)
-lemma action_class_eq_dec: "\<forall>(a :: ActionClass) (b :: ActionClass). (a = b) \<or> (a \<noteq> b)"
+lemma action_class_eq_dec: "\<forall> (a b : ActionClass), {a = b} + {a \<noteq> b}"
   by simp
 
 (* Theorem: easing_consistent (singleton — trivially consistent) *)
 (* easing_consistent_singleton (matches Coq) *)
-lemma easing_consistent_singleton: "\<forall>(a :: classified_animation). easing_consistent (a :: nil)"
+lemma easing_consistent_singleton: "\<forall> (a : ClassifiedAnimation), easing_consistent (a :: nil)"
   by simp
 
 (* Theorem: no_layout_shift
     Elements do not move after the initial render (CLS = 0). *)
 (* no_layout_shift (matches Coq) *)
-lemma no_layout_shift: "\<forall>(sl :: stable_layout). sl_initial sl = sl_final sl"
+lemma no_layout_shift: "\<forall> (sl : StableLayout), sl_initial sl = sl_final sl"
   by auto
 
 (* Theorem: feedback_immediate
     User actions receive visual feedback within 100ms. *)
 (* feedback_immediate (matches Coq) *)
-lemma feedback_immediate: "\<forall>(fr :: feedback_response). fr_latency_ms fr \<le> 100"
+lemma feedback_immediate: "\<forall> (fr : FeedbackResponse), fr_latency_ms fr \<le> 100"
   by auto
 
 (* Theorem: transition_reversible
     Back navigation reverses the forward transition. Reversing twice
     yields the original transition (involution). *)
 (* transition_reversible (matches Coq) *)
-lemma transition_reversible: "\<forall>(t :: ui_transition). reverse_transition (reverse_transition t) = t"
-  by auto
+lemma transition_reversible: "\<forall> (t : UITransition), reverse_transition (reverse_transition t) = t"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Lemma: reversing swaps endpoints. *)
 (* reverse_swaps_endpoints (matches Coq) *)
-lemma reverse_swaps_endpoints: "\<forall>(t :: ui_transition). tr_from (reverse_transition t) = tr_to t \<and> tr_to (reverse_transition t) = tr_from t"
+lemma reverse_swaps_endpoints: "\<forall> (t : UITransition), tr_from (reverse_transition t) = tr_to t \<and> tr_to (reverse_transition t) = tr_from t"
   by simp
 
 (* Lemma: reversing preserves the animation style. *)
 (* reverse_preserves_anim_style (matches Coq) *)
-lemma reverse_preserves_anim_style: "\<forall>(t :: ui_transition). tr_anim_style (reverse_transition t) = tr_anim_style t"
+lemma reverse_preserves_anim_style: "\<forall> (t : UITransition), tr_anim_style (reverse_transition t) = tr_anim_style t"
   by simp
 
 (* Theorem: same_input_same_output
     Identical UI states + identical events produce identical results.
     This is the core determinism property of RIINA's UI model. *)
 (* same_input_same_output (matches Coq) *)
-lemma same_input_same_output: "\<forall>(s1 :: ui_state) (s2 :: ui_state) (e1 :: ui_event) (e2 :: ui_event). s1 = s2 \<longrightarrow> e1 = e2 \<longrightarrow> handle_ui_event s1 e1 = handle_ui_event s2 e2"
+lemma same_input_same_output: "\<forall> (s1 s2 : UIState) (e1 e2 : UIEvent), s1 = s2 \<longrightarrow> e1 = e2 \<longrightarrow> handle_ui_event s1 e1 = handle_ui_event s2 e2"
   by simp
 
 (* Stronger form: handle_ui_event is a genuine function (reflexivity). *)
 (* handle_ui_event_deterministic (matches Coq) *)
-lemma handle_ui_event_deterministic: "\<forall>(s :: ui_state) (e :: ui_event). handle_ui_event s e = handle_ui_event s e"
+lemma handle_ui_event_deterministic: "\<forall> (s : UIState) (e : UIEvent), handle_ui_event s e = handle_ui_event s e"
   by simp
 
 (* Theorem: no_surprise_popups
     Dialogs appear only as a result of explicit user action. *)
 (* no_surprise_popups (matches Coq) *)
-lemma no_surprise_popups: "\<forall>(dd :: dialog_display). is_user_initiated (dd_trigger dd) = True"
+lemma no_surprise_popups: "\<forall> (dd : DialogDisplay), is_user_initiated (dd_trigger dd) = True"
   by auto
 
 (* Theorem: button_does_what_it_says
     The runtime effect of every button matches its visible label. *)
 (* button_does_what_it_says (matches Coq) *)
-lemma button_does_what_it_says: "\<forall>(bc :: button_config). bc_effect bc = label_to_effect (bc_label bc)"
+lemma button_does_what_it_says: "\<forall> (bc : ButtonConfig), bc_effect bc = label_to_effect (bc_label bc)"
   by auto
 
 (* Corollary: label_to_effect is injective (distinct labels => distinct effects). *)
 (* label_to_effect_injective (matches Coq) *)
-lemma label_to_effect_injective: "\<forall>l1 l2. label_to_effect l1 = label_to_effect l2 \<longrightarrow> l1 = l2"
-  by auto
+lemma label_to_effect_injective: "\<forall> l1 l2, label_to_effect l1 = label_to_effect l2 \<longrightarrow> l1 = l2"
+  by (cases rule: ‹_›.cases; simp)
 
 (* Theorem: back_button_goes_back
     Pushing a page and then popping (back) returns to the original stack. *)
 (* back_button_goes_back (matches Coq) *)
-lemma back_button_goes_back: "\<forall>(stack : list nat) (page :: nat). nav_apply (nav_apply stack (NavPush page)) NavPop = stack"
+lemma back_button_goes_back: "\<forall> (stack : list nat) (page : nat), nav_apply (nav_apply stack (NavPush page)) NavPop = stack"
   by simp
 
 (* Lemma: push strictly grows the stack. *)
 (* nav_push_grows (matches Coq) *)
-lemma nav_push_grows: "\<forall>(stack : list nat) (page :: nat). length (nav_apply stack (NavPush page)) = Suc (length stack)"
+lemma nav_push_grows: "\<forall> (stack : list nat) (page : nat), length (nav_apply stack (NavPush page)) = S (length stack)"
   by simp
 
 (* Lemma: pop on non-empty stack shrinks it. *)
 (* nav_pop_shrinks (matches Coq) *)
-lemma nav_pop_shrinks: "\<forall>(p :: nat) (stack : list nat). length (nav_apply (p :: stack) NavPop) = length stack"
+lemma nav_pop_shrinks: "\<forall> (p : nat) (stack : list nat), length (nav_apply (p :: stack) NavPop) = length stack"
   by simp
 
 (* Theorem: link_destination_visible
     Every link shows its destination before the user clicks. *)
 (* link_destination_visible (matches Coq) *)
-lemma link_destination_visible: "\<forall>(lc :: link_config). lc_dest_visible lc = True"
+lemma link_destination_visible: "\<forall> (lc : LinkConfig), lc_dest_visible lc = True"
   by auto
 
 (* Theorem: no_auto_redirect
     Page transitions never occur automatically — they always require
     explicit user consent via a user-initiated event. *)
 (* no_auto_redirect (matches Coq) *)
-lemma no_auto_redirect: "\<forall>(pt :: page_transition). is_user_initiated (pt_trigger pt) = True"
+lemma no_auto_redirect: "\<forall> (pt : PageTransition), is_user_initiated (pt_trigger pt) = True"
   by auto
 
 end

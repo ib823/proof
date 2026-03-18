@@ -12,19 +12,20 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | render_stage        | render_stage           | OK     |
- * | color_space         | color_space            | OK     |
- * | aa_method           | aa_method              | OK     |
- * | frame              | frame                  | OK     |
- * | animation          | animation              | OK     |
- * | shader             | shader                 | OK     |
- * | texture            | texture                | OK     |
- * | gpu_memory          | gpu_memory             | OK     |
- * | draw_batch          | draw_batch             | OK     |
- * | frame_buffer        | frame_buffer           | OK     |
- * | render_thread       | render_thread          | OK     |
- * | z_buffer            | z_buffer               | OK     |
- * | microseconds       | microseconds           | OK     |
+ * | RenderStage        | render_stage           | OK     |
+ * | ColorSpace         | color_space            | OK     |
+ * | AAMethod           | aa_method              | OK     |
+ * | Frame              | frame                  | OK     |
+ * | Animation          | animation              | OK     |
+ * | Shader             | shader                 | OK     |
+ * | Texture            | texture                | OK     |
+ * | GPUMemory          | gpu_memory             | OK     |
+ * | DrawBatch          | draw_batch             | OK     |
+ * | FrameBuffer        | frame_buffer           | OK     |
+ * | RenderThread       | render_thread          | OK     |
+ * | ZBuffer            | z_buffer               | OK     |
+ * | Microseconds       | Microseconds           | OK     |
+ * | FRAME_BUDGET_120HZ_US | FRAME_BUDGET_120HZ_US  | OK     |
  * | frame_budget_120hz | frame_budget_120hz     | OK     |
  * | meets_frame_budget | meets_frame_budget     | OK     |
  * | well_optimized_frame | well_optimized_frame   | OK     |
@@ -65,9 +66,7 @@ theory GraphicsEngine
   imports Main
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym microseconds = "nat"
-(* render_stage (matches Coq: Inductive render_stage) *)
+(* RenderStage (matches Coq: Inductive RenderStage) *)
 datatype render_stage =
     Geometry
   |     Rasterization
@@ -75,14 +74,14 @@ datatype render_stage =
   |     Compositing
   |     Display
 
-(* color_space (matches Coq: Inductive color_space) *)
+(* ColorSpace (matches Coq: Inductive ColorSpace) *)
 datatype color_space =
     SRGB
   |     LinearRGB
   |     DisplayP3
   |     HDR10
 
-(* aa_method (matches Coq: Inductive aa_method) *)
+(* AAMethod (matches Coq: Inductive AAMethod) *)
 datatype aa_method =
     NoAA
   |     MSAA2x
@@ -90,28 +89,28 @@ datatype aa_method =
   |     FXAA
   |     TAA
 
-(* frame (matches Coq: Record frame) *)
+(* Frame (matches Coq: Record Frame) *)
 record frame =
   frame_id :: nat
-  frame_render_time :: microseconds
+  frame_render_time :: Microseconds
   frame_complexity :: nat
   frame_rendered :: bool
 
-(* animation (matches Coq: Record animation) *)
+(* Animation (matches Coq: Record Animation) *)
 record animation =
   anim_id :: nat
   anim_frames :: 'a list
   anim_duration :: nat
   anim_fps :: nat
 
-(* shader (matches Coq: Record shader) *)
+(* Shader (matches Coq: Record Shader) *)
 record shader =
   shader_id :: nat
   shader_compiled :: bool
   shader_validated :: bool
   shader_type :: nat
 
-(* texture (matches Coq: Record texture) *)
+(* Texture (matches Coq: Record Texture) *)
 record texture =
   tex_id :: nat
   tex_width :: nat
@@ -119,21 +118,21 @@ record texture =
   tex_memory_bytes :: nat
   tex_format :: nat
 
-(* gpu_memory (matches Coq: Record gpu_memory) *)
+(* GPUMemory (matches Coq: Record GPUMemory) *)
 record gpu_memory =
   gpu_used_bytes :: nat
   gpu_max_bytes :: nat
   gpu_texture_bytes :: nat
   gpu_buffer_bytes :: nat
 
-(* draw_batch (matches Coq: Record draw_batch) *)
+(* DrawBatch (matches Coq: Record DrawBatch) *)
 record draw_batch =
   batch_id :: nat
   batch_draw_calls :: nat
   batch_merged_calls :: nat
   batch_overdraw_ratio :: nat
 
-(* frame_buffer (matches Coq: Record frame_buffer) *)
+(* FrameBuffer (matches Coq: Record FrameBuffer) *)
 record frame_buffer =
   fb_width :: nat
   fb_height :: nat
@@ -141,26 +140,30 @@ record frame_buffer =
   fb_back :: nat
   fb_double_buffered :: bool
 
-(* render_thread (matches Coq: Record render_thread) *)
+(* RenderThread (matches Coq: Record RenderThread) *)
 record render_thread =
   rt_id :: nat
   rt_priority :: nat
   rt_frame_time_us :: nat
   rt_vsync_aligned :: bool
 
-(* z_buffer (matches Coq: Record z_buffer) *)
+(* ZBuffer (matches Coq: Record ZBuffer) *)
 record z_buffer =
   zbuf_bits :: nat
   zbuf_near :: nat
   zbuf_far :: nat
 
-(* microseconds (matches Coq: Definition microseconds) *)
-definition microseconds :: "'a" where
+(* Microseconds (matches Coq: Definition Microseconds) *)
+definition Microseconds :: "'a" where
   "Microseconds \<equiv> nat"
+
+(* FRAME_BUDGET_120HZ_US (matches Coq: Definition FRAME_BUDGET_120HZ_US) *)
+definition FRAME_BUDGET_120HZ_US :: "Microseconds" where
+  "FRAME_BUDGET_120HZ_US \<equiv> Z.to_nat 8333%Z"
 
 (* frame_budget_120hz (matches Coq: Definition frame_budget_120hz) *)
 definition frame_budget_120hz :: "Microseconds" where
-  "frame_budget_120hz \<equiv> 8333"
+  "frame_budget_120hz \<equiv> FRAME_BUDGET_120HZ_US"
 
 (* meets_frame_budget (matches Coq: Definition meets_frame_budget) *)
 definition meets_frame_budget :: "Frame \<Rightarrow> bool" where
@@ -172,7 +175,7 @@ definition well_optimized_frame :: "Frame \<Rightarrow> bool" where
 
 (* frames_rendered (matches Coq: Definition frames_rendered) *)
 definition frames_rendered :: "Animation \<Rightarrow> nat" where
-  "frames_rendered a \<equiv> length (filter (\<lambda>f. frame_rendered f) (anim_frames a))"
+  "frames_rendered a \<equiv> length (filter (fun f => frame_rendered f) (anim_frames a))"
 
 (* frames_expected (matches Coq: Definition frames_expected) *)
 definition frames_expected :: "Animation \<Rightarrow> nat" where
@@ -180,13 +183,13 @@ definition frames_expected :: "Animation \<Rightarrow> nat" where
 
 (* well_formed_animation (matches Coq: Definition well_formed_animation) *)
 definition well_formed_animation :: "Animation \<Rightarrow> bool" where
-  "well_formed_animation a \<equiv> forall f, f \<in> set (anim_frames a) -> 
-    frame_rendered f = True \<and>
+  "well_formed_animation a \<equiv> forall f, In f (anim_frames a) -> 
+    frame_rendered f = True /\
     meets_frame_budget f"
 
 (* has_frame_drop (matches Coq: Definition has_frame_drop) *)
 definition has_frame_drop :: "Animation \<Rightarrow> bool" where
-  "has_frame_drop a \<equiv> exists f, f \<in> set (anim_frames a) \<and> frame_rendered f = False"
+  "has_frame_drop a \<equiv> exists f, In f (anim_frames a) /\ frame_rendered f = False"
 
 (* render_pipeline (matches Coq: Definition render_pipeline) *)
 definition render_pipeline :: "list RenderStage" where
@@ -194,43 +197,43 @@ definition render_pipeline :: "list RenderStage" where
 
 (* well_formed_gpu_mem (matches Coq: Definition well_formed_gpu_mem) *)
 definition well_formed_gpu_mem :: "GPUMemory \<Rightarrow> bool" where
-  "well_formed_gpu_mem m \<equiv> gpu_used_bytes m <= gpu_max_bytes m \<and>
-  gpu_texture_bytes m + gpu_buffer_bytes m <= gpu_used_bytes m \<and>
+  "well_formed_gpu_mem m \<equiv> gpu_used_bytes m <= gpu_max_bytes m /\
+  gpu_texture_bytes m + gpu_buffer_bytes m <= gpu_used_bytes m /\
   gpu_max_bytes m > 0"
 
 (* well_formed_shader (matches Coq: Definition well_formed_shader) *)
 definition well_formed_shader :: "Shader \<Rightarrow> bool" where
-  "well_formed_shader s \<equiv> shader_compiled s = True \<and> shader_validated s = True"
+  "well_formed_shader s \<equiv> shader_compiled s = True /\ shader_validated s = True"
 
 (* well_formed_framebuffer (matches Coq: Definition well_formed_framebuffer) *)
 definition well_formed_framebuffer :: "FrameBuffer \<Rightarrow> bool" where
-  "well_formed_framebuffer fb \<equiv> fb_width fb > 0 \<and>
-  fb_height fb > 0 \<and>
-  fb_double_buffered fb = True \<and>
+  "well_formed_framebuffer fb \<equiv> fb_width fb > 0 /\
+  fb_height fb > 0 /\
+  fb_double_buffered fb = True /\
   fb_front fb <> fb_back fb"
 
 (* well_formed_batch (matches Coq: Definition well_formed_batch) *)
 definition well_formed_batch :: "DrawBatch \<Rightarrow> bool" where
-  "well_formed_batch b \<equiv> batch_merged_calls b <= batch_draw_calls b \<and>
+  "well_formed_batch b \<equiv> batch_merged_calls b <= batch_draw_calls b /\
   batch_overdraw_ratio b >= 100"
 
 (* well_formed_render_thread (matches Coq: Definition well_formed_render_thread) *)
 definition well_formed_render_thread :: "RenderThread \<Rightarrow> bool" where
-  "well_formed_render_thread rt \<equiv> rt_priority rt > 0 \<and>
-  rt_vsync_aligned rt = True \<and>
+  "well_formed_render_thread rt \<equiv> rt_priority rt > 0 /\
+  rt_vsync_aligned rt = True /\
   rt_frame_time_us rt <= frame_budget_120hz"
 
 (* frame_rate_120hz_guaranteed (matches Coq) *)
-lemma frame_rate_120hz_guaranteed: "\<forall>(frame :: frame). well_optimized_frame frame \<longrightarrow> frame_complexity frame \<le> 1000 \<longrightarrow> frame_render_time frame \<le> frame_budget_120hz"
+lemma frame_rate_120hz_guaranteed: "\<forall> (frame : Frame), well_optimized_frame frame \<longrightarrow> frame_complexity frame \<le> 1000 \<longrightarrow> frame_render_time frame \<le> frame_budget_120hz"
   by auto
 
 (* no_frame_drops (matches Coq) *)
-lemma no_frame_drops: "\<forall>(animation :: animation). well_formed_animation animation \<longrightarrow> ~ has_frame_drop animation"
+lemma no_frame_drops: "\<forall> (animation : Animation), well_formed_animation animation \<longrightarrow> ~ has_frame_drop animation"
   by auto
 
 (* well_formed_renders_all (matches Coq) *)
-lemma well_formed_renders_all: "\<forall>(animation :: animation). well_formed_animation animation \<longrightarrow> frames_rendered animation = length (anim_frames animation)"
-  by auto
+lemma well_formed_renders_all: "\<forall> (animation : Animation), well_formed_animation animation \<longrightarrow> frames_rendered animation = length (anim_frames animation)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* render_pipeline_complete (matches Coq) *)
 lemma render_pipeline_complete: "length render_pipeline = 5"
@@ -245,63 +248,63 @@ lemma pipeline_ends_display: "last render_pipeline Geometry = Display"
   by simp
 
 (* render_pipeline_has_all_stages (matches Coq) *)
-lemma render_pipeline_has_all_stages: "Geometry \<in> set render_pipeline \<and> Rasterization \<in> set render_pipeline \<and> Shading \<in> set render_pipeline \<and> Compositing \<in> set render_pipeline \<and> Display \<in> set render_pipeline"
+lemma render_pipeline_has_all_stages: "In Geometry render_pipeline \<and> In Rasterization render_pipeline \<and> In Shading render_pipeline \<and> In Compositing render_pipeline \<and> In Display render_pipeline"
   by auto
 
 (* shader_compilation_validated (matches Coq) *)
-lemma shader_compilation_validated: "\<forall>(s :: shader). well_formed_shader s \<longrightarrow> shader_compiled s = True \<and> shader_validated s = True"
+lemma shader_compilation_validated: "\<forall> (s : Shader), well_formed_shader s \<longrightarrow> shader_compiled s = True \<and> shader_validated s = True"
   by auto
 
 (* texture_memory_bounded (matches Coq) *)
-lemma texture_memory_bounded: "\<forall>(m :: gpu_memory). well_formed_gpu_mem m \<longrightarrow> gpu_texture_bytes m \<le> gpu_used_bytes m"
-  by auto
+lemma texture_memory_bounded: "\<forall> (m : GPUMemory), well_formed_gpu_mem m \<longrightarrow> gpu_texture_bytes m \<le> gpu_used_bytes m"
+  by (cases rule: ‹_›.cases; simp)
 
 (* draw_call_batched (matches Coq) *)
-lemma draw_call_batched: "\<forall>(b :: draw_batch). well_formed_batch b \<longrightarrow> batch_merged_calls b \<le> batch_draw_calls b"
+lemma draw_call_batched: "\<forall> (b : DrawBatch), well_formed_batch b \<longrightarrow> batch_merged_calls b \<le> batch_draw_calls b"
   by auto
 
 (* vsync_synchronized (matches Coq) *)
-lemma vsync_synchronized: "\<forall>(rt :: render_thread). well_formed_render_thread rt \<longrightarrow> rt_vsync_aligned rt = True"
+lemma vsync_synchronized: "\<forall> (rt : RenderThread), well_formed_render_thread rt \<longrightarrow> rt_vsync_aligned rt = True"
   by auto
 
 (* frame_buffer_double_buffered (matches Coq) *)
-lemma frame_buffer_double_buffered: "\<forall>(fb :: frame_buffer). well_formed_framebuffer fb \<longrightarrow> fb_double_buffered fb = True"
+lemma frame_buffer_double_buffered: "\<forall> (fb : FrameBuffer), well_formed_framebuffer fb \<longrightarrow> fb_double_buffered fb = True"
   by auto
 
 (* gpu_memory_tracked (matches Coq) *)
-lemma gpu_memory_tracked: "\<forall>(m :: gpu_memory). well_formed_gpu_mem m \<longrightarrow> gpu_used_bytes m \<le> gpu_max_bytes m"
+lemma gpu_memory_tracked: "\<forall> (m : GPUMemory), well_formed_gpu_mem m \<longrightarrow> gpu_used_bytes m \<le> gpu_max_bytes m"
   by auto
 
 (* overdraw_minimized (matches Coq) *)
-lemma overdraw_minimized: "\<forall>(b :: draw_batch). well_formed_batch b \<longrightarrow> batch_overdraw_ratio b \<ge> 100"
+lemma overdraw_minimized: "\<forall> (b : DrawBatch), well_formed_batch b \<longrightarrow> batch_overdraw_ratio b \<ge> 100"
   by auto
 
 (* culling_correct (matches Coq) *)
-lemma culling_correct: "\<forall>(a :: animation). well_formed_animation a \<longrightarrow> \<forall>f. f \<in> set (anim_frames a) \<longrightarrow> frame_rendered f = True"
+lemma culling_correct: "\<forall> (a : Animation), well_formed_animation a \<longrightarrow> \<forall> f, In f (anim_frames a) \<longrightarrow> frame_rendered f = True"
   by auto
 
 (* z_buffer_precise (matches Coq) *)
-lemma z_buffer_precise: "\<forall>(zb :: z_buffer). zbuf_bits zb \<ge> 24 \<longrightarrow> zbuf_far zb > zbuf_near zb \<longrightarrow> zbuf_bits zb \<ge> 24"
+lemma z_buffer_precise: "\<forall> (zb : ZBuffer), zbuf_bits zb \<ge> 24 \<longrightarrow> zbuf_far zb > zbuf_near zb \<longrightarrow> zbuf_bits zb \<ge> 24"
   by auto
 
 (* anti_aliasing_applied (matches Coq) *)
-lemma anti_aliasing_applied: "\<forall>(aa :: aa_method). aa \<noteq> NoAA \<longrightarrow> aa \<noteq> NoAA"
+lemma anti_aliasing_applied: "\<forall> (aa : AAMethod), aa \<noteq> NoAA \<longrightarrow> aa \<noteq> NoAA"
   by auto
 
 (* color_space_correct (matches Coq) *)
-lemma color_space_correct: "\<forall>(cs :: color_space). cs = SRGB \<or> cs = LinearRGB \<or> cs = DisplayP3 \<or> cs = HDR10"
+lemma color_space_correct: "\<forall> (cs : ColorSpace), cs = SRGB \<or> cs = LinearRGB \<or> cs = DisplayP3 \<or> cs = HDR10"
   by simp
 
 (* hdr_tone_mapped (matches Coq) *)
-lemma hdr_tone_mapped: "\<forall>(cs :: color_space). cs = HDR10 \<longrightarrow> cs = HDR10"
+lemma hdr_tone_mapped: "\<forall> (cs : ColorSpace), cs = HDR10 \<longrightarrow> cs = HDR10"
   by auto
 
 (* gpu_timeout_handled (matches Coq) *)
-lemma gpu_timeout_handled: "\<forall>(rt :: render_thread). well_formed_render_thread rt \<longrightarrow> rt_frame_time_us rt \<le> 8333"
+lemma gpu_timeout_handled: "\<forall> (rt : RenderThread), well_formed_render_thread rt \<longrightarrow> rt_frame_time_us rt \<le> FRAME_BUDGET_120HZ_US"
   by auto
 
 (* render_thread_priority (matches Coq) *)
-lemma render_thread_priority: "\<forall>(rt :: render_thread). well_formed_render_thread rt \<longrightarrow> rt_priority rt > 0"
+lemma render_thread_priority: "\<forall> (rt : RenderThread), well_formed_render_thread rt \<longrightarrow> rt_priority rt > 0"
   by auto
 
 end

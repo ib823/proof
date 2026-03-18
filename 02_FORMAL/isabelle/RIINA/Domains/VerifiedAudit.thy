@@ -12,7 +12,7 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | merkle_node         | merkle_node            | OK     |
+ * | MerkleNode         | merkle_node            | OK     |
  * | log_append_only    | log_append_only        | OK     |
  * | sequence_monotonic | sequence_monotonic     | OK     |
  * | verify_inclusion   | verify_inclusion       | OK     |
@@ -67,22 +67,14 @@ theory VerifiedAudit
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym audit_entry = "nat"
-type_synonym audit_log = "nat"
-type_synonym checkpoint = "nat"
-type_synonym consistency_proof = "nat"
-type_synonym inclusion_proof = "nat"
-type_synonym merkle_path = "nat"
-type_synonym witness_signature = "nat"
-(* merkle_node (matches Coq: Inductive merkle_node) *)
+(* MerkleNode (matches Coq: Inductive MerkleNode) *)
 datatype merkle_node =
     Leaf
   |     Branch
 
 (* log_append_only (matches Coq: Definition log_append_only) *)
 definition log_append_only :: "bool" where
-  "log_append_only \<equiv> (log_sequence old_log \<le> log_sequence new_log)
+  "log_append_only \<equiv> (((log_sequence \<le> old_log) \<and> log_sequence new_log))
        (((length \<le> (log_entries) old_log)) (length (log_entries new_log)))"
 
 (* sequence_monotonic (matches Coq: Definition sequence_monotonic) *)
@@ -107,7 +99,7 @@ definition witnesses_sufficient :: "Checkpoint \<Rightarrow> nat \<Rightarrow> b
 
 (* witness_root_matches (matches Coq: Definition witness_root_matches) *)
 definition witness_root_matches :: "WitnessSignature \<Rightarrow> nat \<Rightarrow> bool" where
-  "witness_root_matches ws expected \<equiv> (witness_root ws = expected)"
+  "witness_root_matches ws expected \<equiv> ((witness_root = ws)) expected"
 
 (* timestamp_ordered (matches Coq: Definition timestamp_ordered) *)
 definition timestamp_ordered :: "bool" where
@@ -134,7 +126,7 @@ definition log_not_empty :: "AuditLog \<Rightarrow> bool" where
   "log_not_empty log \<equiv> (0 < (length) (log_entries log))"
 
 (* checkpoint_seq_valid (matches Coq: Definition checkpoint_seq_valid) *)
-definition checkpoint_seq_valid :: "Checkpoint \<Rightarrow> audit_log \<Rightarrow> bool" where
+definition checkpoint_seq_valid :: "Checkpoint \<Rightarrow> AuditLog \<Rightarrow> bool" where
   "checkpoint_seq_valid cp log \<equiv> ((cp_sequence \<le> cp)) (log_sequence log)"
 
 (* witness_recent (matches Coq: Definition witness_recent) *)
@@ -171,110 +163,110 @@ definition storage_redundant :: "bool" where
 
 (* tamper_detected (matches Coq: Definition tamper_detected) *)
 definition tamper_detected :: "bool" where
-  "tamper_detected \<equiv> (\<not> (=) stored_hash computed_hash)"
+  "tamper_detected \<equiv> (\<not> (Nat.eqb) stored_hash computed_hash)"
 
 (* audit_layers (matches Coq: Definition audit_layers) *)
 definition audit_layers :: "bool" where
-  "audit_layers \<equiv> (merkle \<and> witness \<and> immutable \<and> complete)"
+  "audit_layers \<equiv> (merkle \<and> (andb) witness ((immutable \<and> complete)))"
 
 (* audit_001_entry_hashed (matches Coq) *)
-lemma audit_001_entry_hashed: "\<forall>(entry :: audit_entry). entry_hash entry = entry_hash entry"
+lemma audit_001_entry_hashed: "\<forall> (entry : AuditEntry), entry_hash entry = entry_hash entry"
   by simp
 
 (* audit_002_append_only (matches Coq) *)
-lemma audit_002_append_only: "\<forall>(old_log :: audit_log) (new_log :: audit_log). log_append_only old_log new_log = True \<longrightarrow> log_sequence old_log \<le> log_sequence new_log"
+lemma audit_002_append_only: "\<forall> (old_log new_log : AuditLog), log_append_only old_log new_log = True \<longrightarrow> log_sequence old_log \<le> log_sequence new_log"
   by auto
 
 (* audit_003_sequence_monotonic (matches Coq) *)
-lemma audit_003_sequence_monotonic: "\<forall>(entries : list audit_entry). sequence_monotonic entries \<longrightarrow> sequence_monotonic entries"
+lemma audit_003_sequence_monotonic: "\<forall> (entries : list AuditEntry), sequence_monotonic entries \<longrightarrow> sequence_monotonic entries"
   by auto
 
 (* audit_004_inclusion_valid (matches Coq) *)
-lemma audit_004_inclusion_valid: "\<forall>(proof :: inclusion_proof). verify_inclusion proof = True \<longrightarrow> length (incl_path proof) > 0"
+lemma audit_004_inclusion_valid: "\<forall> (proof : InclusionProof), verify_inclusion proof = True \<longrightarrow> length (incl_path proof) > 0"
   by auto
 
 (* audit_005_consistency_order (matches Coq) *)
-lemma audit_005_consistency_order: "\<forall>(proof :: consistency_proof). consistency_size_order proof = True \<longrightarrow> cons_old_size proof \<le> cons_new_size proof"
+lemma audit_005_consistency_order: "\<forall> (proof : ConsistencyProof), consistency_size_order proof = True \<longrightarrow> cons_old_size proof \<le> cons_new_size proof"
   by auto
 
 (* audit_006_witnesses_sufficient (matches Coq) *)
-lemma audit_006_witnesses_sufficient: "\<forall>(cp :: checkpoint) (min_witnesses :: nat). witnesses_sufficient cp min_witnesses = True \<longrightarrow> min_witnesses \<le> length (cp_witnesses cp)"
+lemma audit_006_witnesses_sufficient: "\<forall> (cp : Checkpoint) (min_witnesses : nat), witnesses_sufficient cp min_witnesses = True \<longrightarrow> min_witnesses \<le> length (cp_witnesses cp)"
   by auto
 
 (* audit_007_witness_root (matches Coq) *)
-lemma audit_007_witness_root: "\<forall>(ws :: witness_signature) (expected :: nat). witness_root_matches ws expected = True \<longrightarrow> witness_root ws = expected"
+lemma audit_007_witness_root: "\<forall> (ws : WitnessSignature) (expected : nat), witness_root_matches ws expected = True \<longrightarrow> witness_root ws = expected"
   by auto
 
 (* audit_008_timestamp_ordered (matches Coq) *)
-lemma audit_008_timestamp_ordered: "\<forall>(e1 :: audit_entry) (e2 :: audit_entry). timestamp_ordered e1 e2 = True \<longrightarrow> entry_timestamp e1 \<le> entry_timestamp e2"
+lemma audit_008_timestamp_ordered: "\<forall> (e1 e2 : AuditEntry), timestamp_ordered e1 e2 = True \<longrightarrow> entry_timestamp e1 \<le> entry_timestamp e2"
   by auto
 
 (* audit_009_principal_logged (matches Coq) *)
-lemma audit_009_principal_logged: "\<forall>(entry :: audit_entry). principal_logged entry = True \<longrightarrow> entry_principal entry > 0"
+lemma audit_009_principal_logged: "\<forall> (entry : AuditEntry), principal_logged entry = True \<longrightarrow> entry_principal entry > 0"
   by auto
 
 (* audit_010_action_logged (matches Coq) *)
-lemma audit_010_action_logged: "\<forall>(entry :: audit_entry). action_logged entry = True \<longrightarrow> entry_action entry > 0"
+lemma audit_010_action_logged: "\<forall> (entry : AuditEntry), action_logged entry = True \<longrightarrow> entry_action entry > 0"
   by auto
 
 (* audit_011_resource_logged (matches Coq) *)
-lemma audit_011_resource_logged: "\<forall>(entry :: audit_entry). resource_logged entry = True \<longrightarrow> entry_resource entry > 0"
+lemma audit_011_resource_logged: "\<forall> (entry : AuditEntry), resource_logged entry = True \<longrightarrow> entry_resource entry > 0"
   by auto
 
 (* audit_012_hash_binds (matches Coq) *)
-lemma audit_012_hash_binds: "\<forall>(computed :: nat) (stored :: nat). hash_matches computed stored = True \<longrightarrow> computed = stored"
+lemma audit_012_hash_binds: "\<forall> (computed stored : nat), hash_matches computed stored = True \<longrightarrow> computed = stored"
   by auto
 
 (* audit_013_log_not_empty (matches Coq) *)
-lemma audit_013_log_not_empty: "\<forall>(log :: audit_log). log_not_empty log = True \<longrightarrow> length (log_entries log) > 0"
+lemma audit_013_log_not_empty: "\<forall> (log : AuditLog), log_not_empty log = True \<longrightarrow> length (log_entries log) > 0"
   by auto
 
 (* audit_014_checkpoint_seq (matches Coq) *)
-lemma audit_014_checkpoint_seq: "\<forall>(cp :: checkpoint) (log :: audit_log). checkpoint_seq_valid cp log = True \<longrightarrow> cp_sequence cp \<le> log_sequence log"
+lemma audit_014_checkpoint_seq: "\<forall> (cp : Checkpoint) (log : AuditLog), checkpoint_seq_valid cp log = True \<longrightarrow> cp_sequence cp \<le> log_sequence log"
   by auto
 
 (* audit_015_witness_recent (matches Coq) *)
-lemma audit_015_witness_recent: "\<forall>(ws :: witness_signature) (current :: nat) (max_age :: nat). witness_recent ws current max_age = True \<longrightarrow> current - witness_timestamp ws \<le> max_age"
+lemma audit_015_witness_recent: "\<forall> (ws : WitnessSignature) (current max_age : nat), witness_recent ws current max_age = True \<longrightarrow> current - witness_timestamp ws \<le> max_age"
   by auto
 
 (* audit_016_witnesses_diverse (matches Coq) *)
-lemma audit_016_witnesses_diverse: "\<forall>(sigs : list witness_signature). witnesses_diverse sigs \<longrightarrow> NoDup (map witness_id sigs)"
+lemma audit_016_witnesses_diverse: "\<forall> (sigs : list WitnessSignature), witnesses_diverse sigs \<longrightarrow> NoDup (map witness_id sigs)"
   by auto
 
 (* audit_017_path_bounded (matches Coq) *)
-lemma audit_017_path_bounded: "\<forall>(path :: merkle_path) (max_depth :: nat). path_length_ok path max_depth = True \<longrightarrow> length path \<le> max_depth"
+lemma audit_017_path_bounded: "\<forall> (path : MerklePath) (max_depth : nat), path_length_ok path max_depth = True \<longrightarrow> length path \<le> max_depth"
   by auto
 
 (* audit_018_root_unique (matches Coq) *)
-lemma audit_018_root_unique: "\<forall>(log :: audit_log). log_root_hash log = log_root_hash log"
+lemma audit_018_root_unique: "\<forall> (log : AuditLog), log_root_hash log = log_root_hash log"
   by simp
 
 (* audit_019_entry_unique (matches Coq) *)
-lemma audit_019_entry_unique: "\<forall>(entries : list audit_entry). entry_ids_unique entries \<longrightarrow> NoDup (map entry_id entries)"
+lemma audit_019_entry_unique: "\<forall> (entries : list AuditEntry), entry_ids_unique entries \<longrightarrow> NoDup (map entry_id entries)"
   by auto
 
 (* audit_020_signature_valid (matches Coq) *)
-lemma audit_020_signature_valid: "\<forall>(sig :: nat) (expected :: nat). signature_valid sig expected = True \<longrightarrow> sig = expected"
+lemma audit_020_signature_valid: "\<forall> (sig expected : nat), signature_valid sig expected = True \<longrightarrow> sig = expected"
   by auto
 
 (* audit_021_retention (matches Coq) *)
-lemma audit_021_retention: "\<forall>(entry_age :: nat) (max_age :: nat). retention_ok entry_age max_age = True \<longrightarrow> entry_age \<le> max_age"
+lemma audit_021_retention: "\<forall> (entry_age max_age : nat), retention_ok entry_age max_age = True \<longrightarrow> entry_age \<le> max_age"
   by auto
 
 (* audit_022_query_complete (matches Coq) *)
-lemma audit_022_query_complete: "\<forall>(matching :: nat) (returned :: nat). query_complete matching returned = True \<longrightarrow> matching = returned"
+lemma audit_022_query_complete: "\<forall> (matching returned : nat), query_complete matching returned = True \<longrightarrow> matching = returned"
   by auto
 
 (* audit_023_storage_redundant (matches Coq) *)
-lemma audit_023_storage_redundant: "\<forall>(copies :: nat) (min_copies :: nat). storage_redundant copies min_copies = True \<longrightarrow> min_copies \<le> copies"
+lemma audit_023_storage_redundant: "\<forall> (copies min_copies : nat), storage_redundant copies min_copies = True \<longrightarrow> min_copies \<le> copies"
   by auto
 
 (* audit_024_tamper_detected (matches Coq) *)
-lemma audit_024_tamper_detected: "\<forall>(stored :: nat) (computed :: nat). tamper_detected stored computed = True \<longrightarrow> stored \<noteq> computed"
+lemma audit_024_tamper_detected: "\<forall> (stored computed : nat), tamper_detected stored computed = True \<longrightarrow> stored \<noteq> computed"
   by auto
 
 (* audit_025_defense_in_depth (matches Coq) *)
-lemma audit_025_defense_in_depth: "\<forall>m w i c. audit_layers m w i c = True \<longrightarrow> m = True \<and> w = True \<and> i = True \<and> c = True"
+lemma audit_025_defense_in_depth: "\<forall> m w i c, audit_layers m w i c = True \<longrightarrow> m = True \<and> w = True \<and> i = True \<and> c = True"
   by auto
 
 end

@@ -75,60 +75,57 @@
  *)
 
 theory FirstOrderComplete
-  imports Main CoqCompat Syntax
+  imports Main CoqCompat
 begin
 
-(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
-abbreviation value :: "expr \<Rightarrow> bool" where
-  "value \<equiv> is_value"
 (* is_base_type (matches Coq: Definition is_base_type) *)
 fun is_base_type :: "ty \<Rightarrow> bool" where
-  "is_base_type TBytes = True"
-|   "is_base_type _ = False"
+  "is_base_type TBytes = true"
+|   "is_base_type _ = false"
 
 (* store_independent (matches Coq: Definition store_independent) *)
 definition store_independent :: "bool" where
   "store_independent \<equiv> forall T, first_order_type T = True -> P T"
 
 (* expr_eqb - complex match, needs manual translation *)
-definition expr_eqb :: "bool" where "expr_eqb \<equiv> True"
+definition expr_eqb :: "bool" where "expr_eqb = undefined"
 
 (* ty_eqb - complex match, needs manual translation *)
-definition ty_eqb :: "bool" where "ty_eqb \<equiv> True"
+definition ty_eqb :: "bool" where "ty_eqb = undefined"
 
 (* First-order types are closed under subtyping *)
 (* first_order_subtype (matches Coq) *)
-lemma first_order_subtype: "\<forall>T. first_order_type T = True \<longrightarrow> (case T of TProd T1 T2 => first_order_type T1 = True \<and> first_order_type T2 = True | TSum T1 T2 => first_order_type T1 = True \<and> first_order_type T2 = True | TList T' => first_order_type T' = True | TOption T' => first_order_type T' = True | TRef T' _ => first_order_type T' = True | TSecret T' => first_order_type T' = True | TLabeled T' _ => first_order_type T' = True | TTainted T' _ => first_order_type T' = True | TSanitized T' _ => first_order_type T' = True | TProof T' => first_order_type T' = True | TConstantTime T' => first_order_type T' = True | TZeroizing T' => first_order_type T' = True | _ => True)"
+lemma first_order_subtype: "\<forall> T, first_order_type T = True \<longrightarrow> match T with | TProd T1 T2 => first_order_type T1 = True \<and> first_order_type T2 = True | TSum T1 T2 => first_order_type T1 = True \<and> first_order_type T2 = True | TList T' => first_order_type T' = True | TOption T' => first_order_type T' = True | TRef T' _ => first_order_type T' = True | TSecret T' => first_order_type T' = True | TLabeled T' _ => first_order_type T' = True | TTainted T' _ => first_order_type T' = True | TSanitized T' _ => first_order_type T' = True | TProof T' => first_order_type T' = True | TConstantTime T' => first_order_type T' = True | TZeroizing T' => first_order_type T' = True | _ => True end"
   by auto
 
 (* All immediate subtypes of a first-order type are first-order *)
 (* first_order_subtypes_fo (matches Coq) *)
-lemma first_order_subtypes_fo: "\<forall>T. first_order_type T = True \<longrightarrow> \<forall>T'. (\<exists>T2. T = TProd T' T2) \<or> (\<exists>T1. T = TProd T1 T') \<or> (\<exists>T2. T = TSum T' T2) \<or> (\<exists>T1. T = TSum T1 T') \<or> T = TList T' \<or> T = TOption T' \<or> (\<exists>sl. T = TRef T' sl) \<or> T = TSecret T' \<or> (\<exists>sl. T = TLabeled T' sl) \<or> (\<exists>src. T = TTainted T' src) \<or> (\<exists>san. T = TSanitized T' san) \<or> T = TProof T' \<or> T = TConstantTime T' \<or> T = TZeroizing T' \<longrightarrow> first_order_type T' = True"
+lemma first_order_subtypes_fo: "\<forall> T, first_order_type T = True \<longrightarrow> \<forall> T', (\<exists> T2, T = TProd T' T2) \<or> (\<exists> T1, T = TProd T1 T') \<or> (\<exists> T2, T = TSum T' T2) \<or> (\<exists> T1, T = TSum T1 T') \<or> T = TList T' \<or> T = TOption T' \<or> (\<exists> sl, T = TRef T' sl) \<or> T = TSecret T' \<or> (\<exists> sl, T = TLabeled T' sl) \<or> (\<exists> src, T = TTainted T' src) \<or> (\<exists> san, T = TSanitized T' san) \<or> T = TProof T' \<or> T = TConstantTime T' \<or> T = TZeroizing T' \<longrightarrow> first_order_type T' = True"
   by auto
 
 (* base_type_first_order (matches Coq) *)
-lemma base_type_first_order: "\<forall>T. is_base_type T = True \<longrightarrow> first_order_type T = True"
+lemma base_type_first_order: "\<forall> T, is_base_type T = True \<longrightarrow> first_order_type T = True"
   by auto
 
 (* base_type_size_one (matches Coq) *)
-lemma base_type_size_one: "\<forall>T. is_base_type T = True \<longrightarrow> ty_size T = 1"
+lemma base_type_size_one: "\<forall> T, is_base_type T = True \<longrightarrow> ty_size T = 1"
   by auto
 
 (* First-order value relations are structurally determined *)
 (* first_order_value_structure (matches Coq) *)
-lemma first_order_value_structure: "\<forall>T. first_order_type T = True \<longrightarrow> (case T of TUnit => True | TBool => True | TInt => True | TString => True | TBytes => True | TCapability _ => True | TCapabilityFull _ => True | TProd T1 T2 => first_order_type T1 = True \<and> first_order_type T2 = True | TSum T1 T2 => first_order_type T1 = True \<and> first_order_type T2 = True | TList T' => first_order_type T' = True | TOption T' => first_order_type T' = True | TRef T' _ => first_order_type T' = True | TSecret T' => first_order_type T' = True | TLabeled T' _ => first_order_type T' = True | TTainted T' _ => first_order_type T' = True | TSanitized T' _ => first_order_type T' = True | TProof T' => first_order_type T' = True | TConstantTime T' => first_order_type T' = True | TZeroizing T' => first_order_type T' = True | TFn _ _ _ => False | TChan _ => False | TSecureChan _ _ => False)"
+lemma first_order_value_structure: "\<forall> T, first_order_type T = True \<longrightarrow> match T with | TUnit => True | TBool => True | TInt => True | TString => True | TBytes => True | TCapability _ => True | TCapabilityFull _ => True | TProd T1 T2 => first_order_type T1 = True \<and> first_order_type T2 = True | TSum T1 T2 => first_order_type T1 = True \<and> first_order_type T2 = True | TList T' => first_order_type T' = True | TOption T' => first_order_type T' = True | TRef T' _ => first_order_type T' = True | TSecret T' => first_order_type T' = True | TLabeled T' _ => first_order_type T' = True | TTainted T' _ => first_order_type T' = True | TSanitized T' _ => first_order_type T' = True | TProof T' => first_order_type T' = True | TConstantTime T' => first_order_type T' = True | TZeroizing T' => first_order_type T' = True | TFn _ _ _ => False | TChan _ => False | TSecureChan _ _ => False end"
   by auto
 
 (* first_order_induction_simple (matches Coq) *)
-lemma first_order_induction_simple: "\<forall>(P : ty \<longrightarrow> Prop). P TUnit \<longrightarrow> P TBool \<longrightarrow> P TInt \<longrightarrow> P TString \<longrightarrow> P TBytes \<longrightarrow> (\<forall>k. P (TCapability k)) \<longrightarrow> (\<forall>cap. P (TCapabilityFull cap)) \<longrightarrow> (\<forall>T1 T2. first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> P (TProd T1 T2)) \<longrightarrow> (\<forall>T1 T2. first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> P (TSum T1 T2)) \<longrightarrow> (\<forall>T. first_order_type T = True \<longrightarrow> P (TList T)) \<longrightarrow> (\<forall>T. first_order_type T = True \<longrightarrow> P (TOption T)) \<longrightarrow> (\<forall>T sl. first_order_type T = True \<longrightarrow> P (TRef T sl)) \<longrightarrow> (\<forall>T. first_order_type T = True \<longrightarrow> P (TSecret T)) \<longrightarrow> (\<forall>T sl. first_order_type T = True \<longrightarrow> P (TLabeled T sl)) \<longrightarrow> (\<forall>T src. first_order_type T = True \<longrightarrow> P (TTainted T src)) \<longrightarrow> (\<forall>T san. first_order_type T = True \<longrightarrow> P (TSanitized T san)) \<longrightarrow> (\<forall>T. first_order_type T = True \<longrightarrow> P (TProof T)) \<longrightarrow> (\<forall>T. first_order_type T = True \<longrightarrow> P (TConstantTime T)) \<longrightarrow> (\<forall>T. first_order_type T = True \<longrightarrow> P (TZeroizing T)) \<longrightarrow> \<forall>T. first_order_type T = True \<longrightarrow> P T"
+lemma first_order_induction_simple: "\<forall> (P : ty \<longrightarrow> Prop), P TUnit \<longrightarrow> P TBool \<longrightarrow> P TInt \<longrightarrow> P TString \<longrightarrow> P TBytes \<longrightarrow> (\<forall> k, P (TCapability k)) \<longrightarrow> (\<forall> cap, P (TCapabilityFull cap)) \<longrightarrow> (\<forall> T1 T2, first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> P (TProd T1 T2)) \<longrightarrow> (\<forall> T1 T2, first_order_type T1 = True \<longrightarrow> first_order_type T2 = True \<longrightarrow> P (TSum T1 T2)) \<longrightarrow> (\<forall> T, first_order_type T = True \<longrightarrow> P (TList T)) \<longrightarrow> (\<forall> T, first_order_type T = True \<longrightarrow> P (TOption T)) \<longrightarrow> (\<forall> T sl, first_order_type T = True \<longrightarrow> P (TRef T sl)) \<longrightarrow> (\<forall> T, first_order_type T = True \<longrightarrow> P (TSecret T)) \<longrightarrow> (\<forall> T sl, first_order_type T = True \<longrightarrow> P (TLabeled T sl)) \<longrightarrow> (\<forall> T src, first_order_type T = True \<longrightarrow> P (TTainted T src)) \<longrightarrow> (\<forall> T san, first_order_type T = True \<longrightarrow> P (TSanitized T san)) \<longrightarrow> (\<forall> T, first_order_type T = True \<longrightarrow> P (TProof T)) \<longrightarrow> (\<forall> T, first_order_type T = True \<longrightarrow> P (TConstantTime T)) \<longrightarrow> (\<forall> T, first_order_type T = True \<longrightarrow> P (TZeroizing T)) \<longrightarrow> \<forall> T, first_order_type T = True \<longrightarrow> P T"
   by auto
 
 (* ty_eqb_refl (matches Coq) *)
-lemma ty_eqb_refl: "\<forall>T. ty_eqb T T = True"
+lemma ty_eqb_refl: "\<forall> T, ty_eqb T T = True"
   by simp
 
 (* ty_eqb_eq (matches Coq) *)
-lemma ty_eqb_eq: "\<forall>T1 T2. ty_eqb T1 T2 = True \<longrightarrow> (case (T1, T2) of TUnit, TUnit => True | TBool, TBool => True | TInt, TInt => True | TString, TString => True | TBytes, TBytes => True | _, _ => True)"
+lemma ty_eqb_eq: "\<forall> T1 T2, ty_eqb T1 T2 = True \<longrightarrow> match T1, T2 with | TUnit, TUnit => True | TBool, TBool => True | TInt, TInt => True | TString, TString => True | TBytes, TBytes => True | _, _ => True end"
   by auto
 
 (* ty_eqb is false for mismatched constructors *)
@@ -157,35 +154,35 @@ lemma ty_eqb_unit_string_false: "ty_eqb TUnit TString = False"
   by simp
 
 (* fn_not_first_order (matches Coq) *)
-lemma fn_not_first_order: "\<forall>T1 T2 eff. first_order_type (TFn T1 T2 eff) = False"
+lemma fn_not_first_order: "\<forall> T1 T2 eff, first_order_type (TFn T1 T2 eff) = False"
   by simp
 
 (* chan_not_first_order (matches Coq) *)
-lemma chan_not_first_order: "\<forall>s. first_order_type (TChan s) = False"
+lemma chan_not_first_order: "\<forall> s, first_order_type (TChan s) = False"
   by simp
 
 (* securechan_not_first_order (matches Coq) *)
-lemma securechan_not_first_order: "\<forall>s sl. first_order_type (TSecureChan s sl) = False"
+lemma securechan_not_first_order: "\<forall> s sl, first_order_type (TSecureChan s sl) = False"
   by simp
 
 (* base_type_not_fn (matches Coq) *)
-lemma base_type_not_fn: "\<forall>T. is_base_type T = True \<longrightarrow> \<forall>T1 T2 eff. T \<noteq> TFn T1 T2 eff"
+lemma base_type_not_fn: "\<forall> T, is_base_type T = True \<longrightarrow> \<forall> T1 T2 eff, T \<noteq> TFn T1 T2 eff"
   by auto
 
 (* base_type_not_prod (matches Coq) *)
-lemma base_type_not_prod: "\<forall>T. is_base_type T = True \<longrightarrow> \<forall>T1 T2. T \<noteq> TProd T1 T2"
+lemma base_type_not_prod: "\<forall> T, is_base_type T = True \<longrightarrow> \<forall> T1 T2, T \<noteq> TProd T1 T2"
   by auto
 
 (* base_type_not_sum (matches Coq) *)
-lemma base_type_not_sum: "\<forall>T. is_base_type T = True \<longrightarrow> \<forall>T1 T2. T \<noteq> TSum T1 T2"
+lemma base_type_not_sum: "\<forall> T, is_base_type T = True \<longrightarrow> \<forall> T1 T2, T \<noteq> TSum T1 T2"
   by auto
 
 (* base_type_not_list (matches Coq) *)
-lemma base_type_not_list: "\<forall>T. is_base_type T = True \<longrightarrow> \<forall>T'. T \<noteq> TList T'"
+lemma base_type_not_list: "\<forall> T, is_base_type T = True \<longrightarrow> \<forall> T', T \<noteq> TList T'"
   by auto
 
 (* base_type_not_option (matches Coq) *)
-lemma base_type_not_option: "\<forall>T. is_base_type T = True \<longrightarrow> \<forall>T'. T \<noteq> TOption T'"
+lemma base_type_not_option: "\<forall> T, is_base_type T = True \<longrightarrow> \<forall> T', T \<noteq> TOption T'"
   by auto
 
 (* fo_compound_depth_unit (matches Coq) *)
@@ -209,28 +206,28 @@ lemma fo_compound_depth_bytes: "fo_compound_depth TBytes = 0"
   by simp
 
 (* fo_compound_depth_list (matches Coq) *)
-lemma fo_compound_depth_list: "\<forall>T. fo_compound_depth (TList T) = 0"
+lemma fo_compound_depth_list: "\<forall> T, fo_compound_depth (TList T) = 0"
   by simp
 
 (* fo_compound_depth_option (matches Coq) *)
-lemma fo_compound_depth_option: "\<forall>T. fo_compound_depth (TOption T) = 0"
+lemma fo_compound_depth_option: "\<forall> T, fo_compound_depth (TOption T) = 0"
   by simp
 
 (* fo_compound_depth_ref (matches Coq) *)
-lemma fo_compound_depth_ref: "\<forall>T sl. fo_compound_depth (TRef T sl) = 0"
+lemma fo_compound_depth_ref: "\<forall> T sl, fo_compound_depth (TRef T sl) = 0"
   by simp
 
 (* fo_compound_depth_secret (matches Coq) *)
-lemma fo_compound_depth_secret: "\<forall>T. fo_compound_depth (TSecret T) = 0"
+lemma fo_compound_depth_secret: "\<forall> T, fo_compound_depth (TSecret T) = 0"
   by simp
 
 (* fo_compound_depth_fn (matches Coq) *)
-lemma fo_compound_depth_fn: "\<forall>T1 T2 eff. fo_compound_depth (TFn T1 T2 eff) = 0"
+lemma fo_compound_depth_fn: "\<forall> T1 T2 eff, fo_compound_depth (TFn T1 T2 eff) = 0"
   by simp
 
 (* ty_eqb_sym (matches Coq) *)
-lemma ty_eqb_sym: "\<forall>T1 T2. ty_eqb T1 T2 = ty_eqb T2 T1"
-  by auto
+lemma ty_eqb_sym: "\<forall> T1 T2, ty_eqb T1 T2 = ty_eqb T2 T1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* expr_eqb for base values *)
 (* expr_eqb_unit (matches Coq) *)
@@ -238,23 +235,23 @@ lemma expr_eqb_unit: "expr_eqb EUnit EUnit = True"
   by simp
 
 (* expr_eqb_bool (matches Coq) *)
-lemma expr_eqb_bool: "\<forall>b. expr_eqb (EBool b) (EBool b) = True"
+lemma expr_eqb_bool: "\<forall> b, expr_eqb (EBool b) (EBool b) = True"
   by auto
 
 (* expr_eqb_int (matches Coq) *)
-lemma expr_eqb_int: "\<forall>n. expr_eqb (EInt n) (EInt n) = True"
+lemma expr_eqb_int: "\<forall> n, expr_eqb (EInt n) (EInt n) = True"
   by auto
 
 (* expr_eqb_string (matches Coq) *)
-lemma expr_eqb_string: "\<forall>s. expr_eqb (EString s) (EString s) = True"
+lemma expr_eqb_string: "\<forall> s, expr_eqb (EString s) (EString s) = True"
   by auto
 
 (* expr_eqb_loc (matches Coq) *)
-lemma expr_eqb_loc: "\<forall>l. expr_eqb (ELoc l) (ELoc l) = True"
+lemma expr_eqb_loc: "\<forall> l, expr_eqb (ELoc l) (ELoc l) = True"
   by auto
 
 (* expr_eqb_var (matches Coq) *)
-lemma expr_eqb_var: "\<forall>x. expr_eqb (EVar x) (EVar x) = True"
+lemma expr_eqb_var: "\<forall> x, expr_eqb (EVar x) (EVar x) = True"
   by auto
 
 (* is_base_type_unit (matches Coq) *)
@@ -278,51 +275,51 @@ lemma is_base_type_bytes: "is_base_type TBytes = True"
   by simp
 
 (* first_order_type_prod_iff (matches Coq) *)
-lemma first_order_type_prod_iff: "\<forall>T1 T2. first_order_type (TProd T1 T2) = True <-> first_order_type T1 = True \<and> first_order_type T2 = True"
+lemma first_order_type_prod_iff: "\<forall> T1 T2, first_order_type (TProd T1 T2) = True <-> first_order_type T1 = True \<and> first_order_type T2 = True"
   by auto
 
 (* first_order_type_sum_iff (matches Coq) *)
-lemma first_order_type_sum_iff: "\<forall>T1 T2. first_order_type (TSum T1 T2) = True <-> first_order_type T1 = True \<and> first_order_type T2 = True"
+lemma first_order_type_sum_iff: "\<forall> T1 T2, first_order_type (TSum T1 T2) = True <-> first_order_type T1 = True \<and> first_order_type T2 = True"
   by auto
 
 (* first_order_type_secret_iff (matches Coq) *)
-lemma first_order_type_secret_iff: "\<forall>T. first_order_type (TSecret T) = first_order_type T"
+lemma first_order_type_secret_iff: "\<forall> T, first_order_type (TSecret T) = first_order_type T"
   by simp
 
 (* ty_eqb_prod (matches Coq) *)
-lemma ty_eqb_prod: "\<forall>T1 T2 T3 T4. ty_eqb (TProd T1 T2) (TProd T3 T4) = (ty_eqb T1 T3 && ty_eqb T2 T4)%bool"
+lemma ty_eqb_prod: "\<forall> T1 T2 T3 T4, ty_eqb (TProd T1 T2) (TProd T3 T4) = (ty_eqb T1 T3 && ty_eqb T2 T4)%bool"
   by simp
 
 (* ty_eqb_sum (matches Coq) *)
-lemma ty_eqb_sum: "\<forall>T1 T2 T3 T4. ty_eqb (TSum T1 T2) (TSum T3 T4) = (ty_eqb T1 T3 && ty_eqb T2 T4)%bool"
+lemma ty_eqb_sum: "\<forall> T1 T2 T3 T4, ty_eqb (TSum T1 T2) (TSum T3 T4) = (ty_eqb T1 T3 && ty_eqb T2 T4)%bool"
   by simp
 
 (* base_type_not_ref (matches Coq) *)
-lemma base_type_not_ref: "\<forall>T. is_base_type T = True \<longrightarrow> \<forall>T' sl. T \<noteq> TRef T' sl"
+lemma base_type_not_ref: "\<forall> T, is_base_type T = True \<longrightarrow> \<forall> T' sl, T \<noteq> TRef T' sl"
   by auto
 
 (* base_type_not_secret (matches Coq) *)
-lemma base_type_not_secret: "\<forall>T. is_base_type T = True \<longrightarrow> \<forall>T'. T \<noteq> TSecret T'"
+lemma base_type_not_secret: "\<forall> T, is_base_type T = True \<longrightarrow> \<forall> T', T \<noteq> TSecret T'"
   by auto
 
 (* first_order_type_list_iff (matches Coq) *)
-lemma first_order_type_list_iff: "\<forall>T. first_order_type (TList T) = first_order_type T"
+lemma first_order_type_list_iff: "\<forall> T, first_order_type (TList T) = first_order_type T"
   by simp
 
 (* first_order_type_option_iff (matches Coq) *)
-lemma first_order_type_option_iff: "\<forall>T. first_order_type (TOption T) = first_order_type T"
+lemma first_order_type_option_iff: "\<forall> T, first_order_type (TOption T) = first_order_type T"
   by simp
 
 (* ty_eqb_list (matches Coq) *)
-lemma ty_eqb_list: "\<forall>T1 T2. ty_eqb (TList T1) (TList T2) = ty_eqb T1 T2"
+lemma ty_eqb_list: "\<forall> T1 T2, ty_eqb (TList T1) (TList T2) = ty_eqb T1 T2"
   by simp
 
 (* ty_eqb_option (matches Coq) *)
-lemma ty_eqb_option: "\<forall>T1 T2. ty_eqb (TOption T1) (TOption T2) = ty_eqb T1 T2"
+lemma ty_eqb_option: "\<forall> T1 T2, ty_eqb (TOption T1) (TOption T2) = ty_eqb T1 T2"
   by simp
 
 (* base_type_not_labeled (matches Coq) *)
-lemma base_type_not_labeled: "\<forall>T. is_base_type T = True \<longrightarrow> \<forall>T' sl. T \<noteq> TLabeled T' sl"
+lemma base_type_not_labeled: "\<forall> T, is_base_type T = True \<longrightarrow> \<forall> T' sl, T \<noteq> TLabeled T' sl"
   by auto
 
 end

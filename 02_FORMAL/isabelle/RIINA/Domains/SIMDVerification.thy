@@ -12,8 +12,8 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | mem_result          | mem_result             | OK     |
- * | loop               | loop                   | OK     |
+ * | MemResult          | mem_result             | OK     |
+ * | Loop               | loop                   | OK     |
  * | scalar_add         | scalar_add             | OK     |
  * | scalar_mul         | scalar_mul             | OK     |
  * | scalar_cmp         | scalar_cmp             | OK     |
@@ -65,16 +65,12 @@ theory SIMDVerification
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym simd_bool_vec = "nat"
-type_synonym simd_mask = "nat"
-type_synonym simd_vec = "nat"
-(* mem_result (matches Coq: Inductive mem_result) *)
+(* MemResult (matches Coq: Inductive MemResult) *)
 datatype mem_result =
     MemOK
   |     MemUB
 
-(* loop (matches Coq: Record loop) *)
+(* Loop (matches Coq: Record Loop) *)
 record loop =
   loop_iterations :: nat
   loop_body_reads :: 'a list
@@ -109,7 +105,7 @@ definition simd_broadcast :: "nat \<Rightarrow> SIMDVec" where
   "simd_broadcast x \<equiv> Vector.const x VWidth"
 
 (* simd_reduce (matches Coq: Definition simd_reduce) *)
-definition simd_reduce :: "nat \<Rightarrow> simd_vec \<Rightarrow> nat" where
+definition simd_reduce :: "nat \<Rightarrow> SIMDVec \<Rightarrow> nat" where
   "simd_reduce init v \<equiv> Vector.fold_left op init v"
 
 (* is_aligned (matches Coq: Definition is_aligned) *)
@@ -127,7 +123,7 @@ definition simd_masked_add :: "SIMDMask \<Rightarrow> SIMDVec" where
 
 (* has_carried_dependency (matches Coq: Definition has_carried_dependency) *)
 definition has_carried_dependency :: "Loop \<Rightarrow> bool" where
-  "has_carried_dependency l \<equiv> existsb (\<lambda>w. existsb ((w) = (loop_body_reads) l)) (loop_body_writes l)"
+  "has_carried_dependency l \<equiv> existsb (fun w => existsb ((w) = (loop_body_reads) l)) (loop_body_writes l)"
 
 (* vectorizable (matches Coq: Definition vectorizable) *)
 definition vectorizable :: "Loop \<Rightarrow> bool" where
@@ -135,15 +131,15 @@ definition vectorizable :: "Loop \<Rightarrow> bool" where
 
 (* indices_in_bounds (matches Coq: Definition indices_in_bounds) *)
 definition indices_in_bounds :: "nat \<Rightarrow> bool" where
-  "indices_in_bounds bound \<equiv> forallb (\<lambda>i. (i < bound)) indices"
+  "indices_in_bounds bound \<equiv> forallb (fun i => (i < bound)) indices"
 
 (* gather (matches Coq: Definition gather) *)
 definition gather :: "option SIMDVec" where
   "gather \<equiv> let check := Vector.fold_left 
-    (\<lambda>acc i. acc \<and> i < length mem)
+    (fun acc i => acc \<and> ((i < (length) mem))) 
     True indices in
   if check then
-    Some (Vector.map (\<lambda>i. List.nth i mem 0) indices)
+    Some (Vector.map (fun i => List.nth i mem 0) indices)
   else
     None"
 
@@ -167,19 +163,19 @@ definition aligned_load :: "nat \<Rightarrow> MemResult" where
 
 (* list_add (matches Coq: Definition list_add) *)
 definition list_add :: "list nat" where
-  "list_add \<equiv> List.map (\<lambda>p. fst p + snd p) (combine a b)"
+  "list_add \<equiv> List.map (fun p => fst p + snd p) (combine a b)"
 
 (* list_mul (matches Coq: Definition list_mul) *)
 definition list_mul :: "list nat" where
-  "list_mul \<equiv> List.map (\<lambda>p. fst p * snd p) (combine a b)"
+  "list_mul \<equiv> List.map (fun p => fst p * snd p) (combine a b)"
 
 (* list_cmp (matches Coq: Definition list_cmp) *)
 definition list_cmp :: "list bool" where
-  "list_cmp \<equiv> List.map (\<lambda>p. ((fst \<le> p)) (snd p)) (combine a b)"
+  "list_cmp \<equiv> List.map (fun p => ((fst \<le> p)) (snd p)) (combine a b)"
 
 (* scalar_exec_add (matches Coq: Definition scalar_exec_add) *)
 definition scalar_exec_add :: "list nat" where
-  "scalar_exec_add \<equiv> List.map (\<lambda>p. fst p + snd p) (combine a b)"
+  "scalar_exec_add \<equiv> List.map (fun p => fst p + snd p) (combine a b)"
 
 (* all_true_mask (matches Coq: Definition all_true_mask) *)
 definition all_true_mask :: "SIMDMask" where
@@ -190,91 +186,91 @@ definition all_false_mask :: "SIMDMask" where
   "all_false_mask \<equiv> Vector.const False VWidth"
 
 (* PERF_003_01_simd_add_equivalence (matches Coq) *)
-lemma PERF_003_01_simd_add_equivalence: "\<forall>(a :: simd_vec) (b :: simd_vec). simd_add a b = Vector.map2 Nat.add a b"
+lemma PERF_003_01_simd_add_equivalence: "\<forall> (a b : SIMDVec), simd_add a b = Vector.map2 Nat.add a b"
   by simp
 
 (* PERF_003_02_simd_mul_equivalence (matches Coq) *)
-lemma PERF_003_02_simd_mul_equivalence: "\<forall>(a :: simd_vec) (b :: simd_vec). simd_mul a b = Vector.map2 Nat.mul a b"
+lemma PERF_003_02_simd_mul_equivalence: "\<forall> (a b : SIMDVec), simd_mul a b = Vector.map2 Nat.mul a b"
   by simp
 
 (* PERF_003_03_simd_cmp_equivalence (matches Coq) *)
-lemma PERF_003_03_simd_cmp_equivalence: "\<forall>(a :: simd_vec) (b :: simd_vec). simd_cmp a b = Vector.map2 (a \<le> b)"
+lemma PERF_003_03_simd_cmp_equivalence: "\<forall> (a b : SIMDVec), simd_cmp a b = Vector.map2 (a \<le> b)"
   by simp
 
 (* PERF_003_04_simd_shuffle_correctness (matches Coq) *)
-lemma PERF_003_04_simd_shuffle_correctness: "\<forall>(v :: simd_vec) (perm : Vector.t (Fin.t VWidth) VWidth) (i : Fin.t VWidth). Vector.nth (simd_shuffle v perm) i = Vector.nth v (Vector.nth perm i)"
+lemma PERF_003_04_simd_shuffle_correctness: "\<forall> (v : SIMDVec) (perm : Vector.t (Fin.t VWidth) VWidth) (i : Fin.t VWidth), Vector.nth (simd_shuffle v perm) i = Vector.nth v (Vector.nth perm i)"
   by simp
 
 (* PERF_003_05_simd_alignment_requirement (matches Coq) *)
-lemma PERF_003_05_simd_alignment_requirement: "\<forall>(mem : list nat) (addr :: nat). (\<exists>v. aligned_load mem addr = MemOK v) <-> (is_aligned addr VWidth = True \<and> ((addr \<le> +) VWidth) (length mem) = True)"
+lemma PERF_003_05_simd_alignment_requirement: "\<forall> (mem : list nat) (addr : nat), (\<exists> v, aligned_load mem addr = MemOK v) <-> (is_aligned addr VWidth = True \<and> ((addr \<le> +) VWidth) (length mem) = True)"
   by simp
 
 (* PERF_003_06_simd_lane_independence (matches Coq) *)
-lemma PERF_003_06_simd_lane_independence: "\<forall>(a :: simd_vec) (b :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_add a b) i = scalar_add (Vector.nth a i) (Vector.nth b i)"
+lemma PERF_003_06_simd_lane_independence: "\<forall> (a b : SIMDVec) (i : Fin.t VWidth), Vector.nth (simd_add a b) i = scalar_add (Vector.nth a i) (Vector.nth b i)"
   by simp
 
 (* PERF_003_07_simd_reduce_equivalence (matches Coq) *)
-lemma PERF_003_07_simd_reduce_equivalence: "\<forall>(v :: simd_vec) (init :: nat). simd_reduce Nat.add init v = List.fold_left Nat.add (Vector.to_list v) init"
+lemma PERF_003_07_simd_reduce_equivalence: "\<forall> (v : SIMDVec) (init : nat), simd_reduce Nat.add init v = List.fold_left Nat.add (Vector.to_list v) init"
   by simp
 
 (* PERF_003_08_simd_broadcast_correctness (matches Coq) *)
-lemma PERF_003_08_simd_broadcast_correctness: "\<forall>(x :: nat) (i : Fin.t VWidth). Vector.nth (simd_broadcast x) i = x"
+lemma PERF_003_08_simd_broadcast_correctness: "\<forall> (x : nat) (i : Fin.t VWidth), Vector.nth (simd_broadcast x) i = x"
   by auto
 
 (* fold_and_all_true (matches Coq) *)
-lemma fold_and_all_true: "\<forall>{n} (v : Vector.t nat n) (f : nat \<longrightarrow> bool). (\<forall>i. f (Vector.nth v i) = True) \<longrightarrow> Vector.fold_left (fun acc x => acc && f x) True v = True"
+lemma fold_and_all_true: "\<forall> {n} (v : Vector.t nat n) (f : nat \<longrightarrow> bool), (\<forall> i, f (Vector.nth v i) = True) \<longrightarrow> Vector.fold_left (fun acc x => acc && f x) True v = True"
   by simp
 
 (* PERF_003_09_simd_gather_safety (matches Coq) *)
-lemma PERF_003_09_simd_gather_safety: "\<forall>(mem : list nat) (indices : Vector.t nat VWidth). (\<forall>i : Fin.t VWidth. Vector.nth indices i < length mem) \<longrightarrow> \<exists>result. gather mem indices = Some result"
+lemma PERF_003_09_simd_gather_safety: "\<forall> (mem : list nat) (indices : Vector.t nat VWidth), (\<forall> i : Fin.t VWidth, Vector.nth indices i < length mem) \<longrightarrow> \<exists> result, gather mem indices = Some result"
   by simp
 
 (* PERF_003_10_simd_masking_correctness (matches Coq) *)
-lemma PERF_003_10_simd_masking_correctness: "\<forall>(mask :: simd_mask) (a b old : simd_vec) (i : Fin.t VWidth). Vector.nth (simd_masked_add mask a b old) i = if Vector.nth mask i then Vector.nth (simd_add a b) i else Vector.nth old i"
-  by auto
+lemma PERF_003_10_simd_masking_correctness: "\<forall> (mask : SIMDMask) (a b old : SIMDVec) (i : Fin.t VWidth), Vector.nth (simd_masked_add mask a b old) i = if Vector.nth mask i then Vector.nth (simd_add a b) i else Vector.nth old i"
+  by (cases rule: ‹_›.cases; simp)
 
 (* PERF_003_11_vectorization_legality (matches Coq) *)
-lemma PERF_003_11_vectorization_legality: "\<forall>(l :: loop). vectorizable l = True <-> has_carried_dependency l = False"
+lemma PERF_003_11_vectorization_legality: "\<forall> (l : Loop), vectorizable l = True <-> has_carried_dependency l = False"
   by auto
 
 (* to_list_map2 (matches Coq) *)
-lemma to_list_map2: "\<forall>{A B C : Type} {n : nat} (f : A \<longrightarrow> B \<longrightarrow> C) (v1 : Vector.t A n) (v2 : Vector.t B n). Vector.to_list (Vector.map2 f v1 v2) = List.map (\<lambda>p. f (fst p) (snd p)) (combine (Vector.to_list v1) (Vector.to_list v2))"
+lemma to_list_map2: "\<forall> {A B C : Type} {n : nat} (f : A \<longrightarrow> B \<longrightarrow> C) (v1 : Vector.t A n) (v2 : Vector.t B n), Vector.to_list (Vector.map2 f v1 v2) = List.map (fun p => f (fst p) (snd p)) (combine (Vector.to_list v1) (Vector.to_list v2))"
   by simp
 
 (* PERF_003_12_simd_semantic_preservation (matches Coq) *)
-lemma PERF_003_12_simd_semantic_preservation: "\<forall>(a :: simd_vec) (b :: simd_vec). Vector.to_list (simd_add a b) = scalar_exec_add (Vector.to_list a) (Vector.to_list b)"
+lemma PERF_003_12_simd_semantic_preservation: "\<forall> (a b : SIMDVec), Vector.to_list (simd_add a b) = scalar_exec_add (Vector.to_list a) (Vector.to_list b)"
   by simp
 
 (* PERF_003_13_simd_mul_lane_independence (matches Coq) *)
-lemma PERF_003_13_simd_mul_lane_independence: "\<forall>(a :: simd_vec) (b :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_mul a b) i = scalar_mul (Vector.nth a i) (Vector.nth b i)"
+lemma PERF_003_13_simd_mul_lane_independence: "\<forall> (a b : SIMDVec) (i : Fin.t VWidth), Vector.nth (simd_mul a b) i = scalar_mul (Vector.nth a i) (Vector.nth b i)"
   by simp
 
 (* PERF_003_14_simd_cmp_lane_independence (matches Coq) *)
-lemma PERF_003_14_simd_cmp_lane_independence: "\<forall>(a :: simd_vec) (b :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_cmp a b) i = scalar_cmp (Vector.nth a i) (Vector.nth b i)"
+lemma PERF_003_14_simd_cmp_lane_independence: "\<forall> (a b : SIMDVec) (i : Fin.t VWidth), Vector.nth (simd_cmp a b) i = scalar_cmp (Vector.nth a i) (Vector.nth b i)"
   by simp
 
 (* PERF_003_15_broadcast_add_equiv (matches Coq) *)
-lemma PERF_003_15_broadcast_add_equiv: "\<forall>(v :: simd_vec) (x :: nat) (i : Fin.t VWidth). Vector.nth (simd_add v (simd_broadcast x)) i = scalar_add (Vector.nth v i) x"
+lemma PERF_003_15_broadcast_add_equiv: "\<forall> (v : SIMDVec) (x : nat) (i : Fin.t VWidth), Vector.nth (simd_add v (simd_broadcast x)) i = scalar_add (Vector.nth v i) x"
   by simp
 
 (* PERF_003_16_identity_shuffle (matches Coq) *)
-lemma PERF_003_16_identity_shuffle: "\<forall>(v :: simd_vec) (perm : Vector.t (Fin.t VWidth) VWidth). (\<forall>i : Fin.t VWidth. Vector.nth perm i = i) \<longrightarrow> simd_shuffle v perm = v"
+lemma PERF_003_16_identity_shuffle: "\<forall> (v : SIMDVec) (perm : Vector.t (Fin.t VWidth) VWidth), (\<forall> i : Fin.t VWidth, Vector.nth perm i = i) \<longrightarrow> simd_shuffle v perm = v"
   by simp
 
 (* PERF_003_17_simd_add_commutative (matches Coq) *)
-lemma PERF_003_17_simd_add_commutative: "\<forall>(a :: simd_vec) (b :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_add a b) i = Vector.nth (simd_add b a) i"
+lemma PERF_003_17_simd_add_commutative: "\<forall> (a b : SIMDVec) (i : Fin.t VWidth), Vector.nth (simd_add a b) i = Vector.nth (simd_add b a) i"
   by simp
 
 (* PERF_003_18_all_true_mask_selects_new (matches Coq) *)
-lemma PERF_003_18_all_true_mask_selects_new: "\<forall>(old :: simd_vec) (new_val :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_select all_true_mask old new_val) i = Vector.nth new_val i"
+lemma PERF_003_18_all_true_mask_selects_new: "\<forall> (old new_val : SIMDVec) (i : Fin.t VWidth), Vector.nth (simd_select all_true_mask old new_val) i = Vector.nth new_val i"
   by simp
 
 (* PERF_003_19_all_false_mask_preserves_old (matches Coq) *)
-lemma PERF_003_19_all_false_mask_preserves_old: "\<forall>(old :: simd_vec) (new_val :: simd_vec) (i : Fin.t VWidth). Vector.nth (simd_select all_false_mask old new_val) i = Vector.nth old i"
+lemma PERF_003_19_all_false_mask_preserves_old: "\<forall> (old new_val : SIMDVec) (i : Fin.t VWidth), Vector.nth (simd_select all_false_mask old new_val) i = Vector.nth old i"
   by simp
 
 (* PERF_003_20_zero_aligned (matches Coq) *)
-lemma PERF_003_20_zero_aligned: "\<forall>alignment : nat. alignment > 0 \<longrightarrow> is_aligned 0 alignment = True"
+lemma PERF_003_20_zero_aligned: "\<forall> alignment : nat, alignment > 0 \<longrightarrow> is_aligned 0 alignment = True"
   by simp
 
 end

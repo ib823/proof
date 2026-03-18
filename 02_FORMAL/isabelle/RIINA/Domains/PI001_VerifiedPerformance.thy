@@ -12,11 +12,11 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | veb_tree            | veb_tree               | OK     |
- * | cas_result          | cas_result             | OK     |
- * | opt_expr            | opt_expr               | OK     |
- * | ms_queue            | ms_queue               | OK     |
- * | lin_point           | lin_point              | OK     |
+ * | VEBTree            | veb_tree               | OK     |
+ * | CASResult          | cas_result             | OK     |
+ * | OptExpr            | opt_expr               | OK     |
+ * | MSQueue            | ms_queue               | OK     |
+ * | LinPoint           | lin_point              | OK     |
  * | scalar_add         | scalar_add             | OK     |
  * | simd_add           | simd_add               | OK     |
  * | scalar_mul         | scalar_mul             | OK     |
@@ -80,20 +80,17 @@ theory PI001_VerifiedPerformance
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym opt_env = "nat"
-type_synonym simd_reg = "nat"
-(* veb_tree (matches Coq: Inductive veb_tree) *)
+(* VEBTree (matches Coq: Inductive VEBTree) *)
 datatype veb_tree =
     VEBLeaf
   |     VEBNode
 
-(* cas_result (matches Coq: Inductive cas_result) *)
+(* CASResult (matches Coq: Inductive CASResult) *)
 datatype cas_result =
     CASSuccess
   |     CASFailure
 
-(* opt_expr (matches Coq: Inductive opt_expr) *)
+(* OptExpr (matches Coq: Inductive OptExpr) *)
 datatype opt_expr =
     OConst
   |     OVar
@@ -101,27 +98,27 @@ datatype opt_expr =
   |     OMul
   |     OIf
 
-(* ms_queue (matches Coq: Record ms_queue) *)
+(* MSQueue (matches Coq: Record MSQueue) *)
 record ms_queue =
   msq_items :: 'a list
   msq_head :: nat
   msq_tail :: nat
 
-(* lin_point (matches Coq: Record lin_point) *)
+(* LinPoint (matches Coq: Record LinPoint) *)
 record lin_point =
   lp_op :: nat
   lp_time :: nat
   lp_result :: nat
 
 (* scalar_add - complex match, needs manual translation *)
-definition scalar_add :: "bool" where "scalar_add \<equiv> True"
+definition scalar_add :: "bool" where "scalar_add = undefined"
 
 (* simd_add (matches Coq: Definition simd_add) *)
 definition simd_add :: "SIMDReg" where
   "simd_add \<equiv> scalar_add a b"
 
 (* scalar_mul - complex match, needs manual translation *)
-definition scalar_mul :: "bool" where "scalar_mul \<equiv> True"
+definition scalar_mul :: "bool" where "scalar_mul = undefined"
 
 (* simd_mul (matches Coq: Definition simd_mul) *)
 definition simd_mul :: "SIMDReg" where
@@ -137,27 +134,27 @@ definition vec_sum :: "nat" where
 
 (* veb_value (matches Coq: Definition veb_value) *)
 fun veb_value :: "VEBTree \<Rightarrow> nat" where
-  "veb_value _ = 0"
+
 
 (* veb_height (matches Coq: Definition veb_height) *)
 fun veb_height :: "VEBTree \<Rightarrow> nat" where
-  "veb_height _ = 0"
+
 
 (* veb_size (matches Coq: Definition veb_size) *)
 fun veb_size :: "VEBTree \<Rightarrow> nat" where
-  "veb_size _ = 0"
+
 
 (* veb_inorder (matches Coq: Definition veb_inorder) *)
 fun veb_inorder :: "VEBTree \<Rightarrow> list nat" where
-  "veb_inorder _ = undefined"
+
 
 (* sorted (matches Coq: Definition sorted) *)
-definition sorted :: "bool" where
-  "sorted \<equiv> True"
+fun sorted :: "bool" where
+
 
 (* veb_search (matches Coq: Definition veb_search) *)
 fun veb_search :: "VEBTree \<Rightarrow> nat \<Rightarrow> bool" where
-  "veb_search _ = True"
+
 
 (* cas (matches Coq: Definition cas) *)
 definition cas :: "CASResult" where
@@ -172,18 +169,18 @@ definition msq_empty :: "MSQueue" where
 definition msq_enqueue :: "MSQueue \<Rightarrow> nat \<Rightarrow> MSQueue" where
   "msq_enqueue q v \<equiv> {| msq_items := msq_items q ++ [v];
      msq_head := msq_head q;
-     msq_tail := Suc (msq_tail q) |}"
+     msq_tail := S (msq_tail q) |}"
 
 (* msq_dequeue - complex match, needs manual translation *)
-definition msq_dequeue :: "bool" where "msq_dequeue \<equiv> True"
+definition msq_dequeue :: "bool" where "msq_dequeue = undefined"
 
 (* lin_ordered (matches Coq: Definition lin_ordered) *)
 definition lin_ordered :: "bool" where
   "lin_ordered \<equiv> sorted (map lp_time points)"
 
 (* opt_eval (matches Coq: Definition opt_eval) *)
-fun opt_eval :: "OptEnv \<Rightarrow> opt_expr \<Rightarrow> nat" where
-  "opt_eval _ = 0"
+fun opt_eval :: "OptEnv \<Rightarrow> OptExpr \<Rightarrow> nat" where
+
 
 (* dce (matches Coq: Definition dce) *)
 fun dce :: "OptExpr \<Rightarrow> OptExpr" where
@@ -209,62 +206,62 @@ definition puzzle_verify :: "bool" where
     PROOFS: SIMD EQUIVALENCE (8 theorems)
     =============================================================================== *)
 (* PI_001_01_simd_add_equiv (matches Coq) *)
-lemma PI_001_01_simd_add_equiv: "\<forall>a b. simd_add a b = scalar_add a b"
+lemma PI_001_01_simd_add_equiv: "\<forall> a b, simd_add a b = scalar_add a b"
   by simp
 
 (* PI_001_02_simd_mul_equiv (matches Coq) *)
-lemma PI_001_02_simd_mul_equiv: "\<forall>a b. simd_mul a b = scalar_mul a b"
+lemma PI_001_02_simd_mul_equiv: "\<forall> a b, simd_mul a b = scalar_mul a b"
   by simp
 
 (* PI_001_03_scalar_add_length (matches Coq) *)
-lemma PI_001_03_scalar_add_length: "\<forall>a b. length a = length b \<longrightarrow> length (scalar_add a b) = length a"
-  by auto
+lemma PI_001_03_scalar_add_length: "\<forall> a b, length a = length b \<longrightarrow> length (scalar_add a b) = length a"
+  by (cases rule: ‹_›.cases; simp)
 
 (* PI_001_04_scalar_add_comm (matches Coq) *)
-lemma PI_001_04_scalar_add_comm: "\<forall>a b. length a = length b \<longrightarrow> scalar_add a b = scalar_add b a"
-  by auto
+lemma PI_001_04_scalar_add_comm: "\<forall> a b, length a = length b \<longrightarrow> scalar_add a b = scalar_add b a"
+  by (cases rule: ‹_›.cases; simp)
 
 (* PI_001_05_scalar_add_assoc (matches Coq) *)
-lemma PI_001_05_scalar_add_assoc: "\<forall>a b c. length a = length b \<longrightarrow> length b = length c \<longrightarrow> scalar_add (scalar_add a b) c = scalar_add a (scalar_add b c)"
-  by auto
+lemma PI_001_05_scalar_add_assoc: "\<forall> a b c, length a = length b \<longrightarrow> length b = length c \<longrightarrow> scalar_add (scalar_add a b) c = scalar_add a (scalar_add b c)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* PI_001_06_scalar_mul_length (matches Coq) *)
-lemma PI_001_06_scalar_mul_length: "\<forall>a b. length a = length b \<longrightarrow> length (scalar_mul a b) = length a"
-  by auto
+lemma PI_001_06_scalar_mul_length: "\<forall> a b, length a = length b \<longrightarrow> length (scalar_mul a b) = length a"
+  by (cases rule: ‹_›.cases; simp)
 
 (* PI_001_07_dot_product_zero_left (matches Coq) *)
-lemma PI_001_07_dot_product_zero_left: "\<forall>b. dot_product [] b = 0"
+lemma PI_001_07_dot_product_zero_left: "\<forall> b, dot_product [] b = 0"
   by simp
 
 (* PI_001_08_simd_preserves_length (matches Coq) *)
-lemma PI_001_08_simd_preserves_length: "\<forall>a b. length a = length b \<longrightarrow> length (simd_add a b) = length a"
+lemma PI_001_08_simd_preserves_length: "\<forall> a b, length a = length b \<longrightarrow> length (simd_add a b) = length a"
   by auto
 
 (* ===============================================================================
     PROOFS: CACHE-OBLIVIOUS PROPERTIES (6 theorems)
     =============================================================================== *)
 (* PI_002_01_veb_search_root (matches Coq) *)
-lemma PI_002_01_veb_search_root: "\<forall>v l r. veb_search (VEBNode v l r) v = True"
+lemma PI_002_01_veb_search_root: "\<forall> v l r, veb_search (VEBNode v l r) v = True"
   by simp
 
 (* PI_002_02_veb_leaf_search (matches Coq) *)
-lemma PI_002_02_veb_leaf_search: "\<forall>v. veb_search (VEBLeaf v) v = True"
+lemma PI_002_02_veb_leaf_search: "\<forall> v, veb_search (VEBLeaf v) v = True"
   by simp
 
 (* PI_002_03_veb_height_positive (matches Coq) *)
-lemma PI_002_03_veb_height_positive: "\<forall>v l r. veb_height (VEBNode v l r) > 0"
+lemma PI_002_03_veb_height_positive: "\<forall> v l r, veb_height (VEBNode v l r) > 0"
   by simp
 
 (* PI_002_04_veb_size_positive (matches Coq) *)
-lemma PI_002_04_veb_size_positive: "\<forall>t. veb_size t > 0"
+lemma PI_002_04_veb_size_positive: "\<forall> t, veb_size t > 0"
   by simp
 
 (* PI_002_05_veb_inorder_nonempty (matches Coq) *)
-lemma PI_002_05_veb_inorder_nonempty: "\<forall>t. veb_inorder t \<noteq> []"
+lemma PI_002_05_veb_inorder_nonempty: "\<forall> t, veb_inorder t \<noteq> []"
   by auto
 
 (* PI_002_06_veb_height_bound (matches Coq) *)
-lemma PI_002_06_veb_height_bound: "\<forall>t. veb_height t < veb_size t"
+lemma PI_002_06_veb_height_bound: "\<forall> t, veb_height t < veb_size t"
   by simp
 
 (* ===============================================================================
@@ -275,23 +272,23 @@ lemma PI_003_01_msq_empty_dequeue: "msq_dequeue msq_empty = (msq_empty, None)"
   by simp
 
 (* PI_003_02_msq_enqueue_nonempty (matches Coq) *)
-lemma PI_003_02_msq_enqueue_nonempty: "\<forall>q v. msq_items (msq_enqueue q v) \<noteq> []"
+lemma PI_003_02_msq_enqueue_nonempty: "\<forall> q v, msq_items (msq_enqueue q v) \<noteq> []"
   by auto
 
 (* PI_003_03_msq_fifo (matches Coq) *)
-lemma PI_003_03_msq_fifo: "\<forall>v. let q := msq_enqueue msq_empty v in msq_dequeue q = ({| msq_items := []; msq_head := 1; msq_tail := 1 |}, Some v)"
+lemma PI_003_03_msq_fifo: "\<forall> v, let q := msq_enqueue msq_empty v in msq_dequeue q = ({| msq_items := []; msq_head := 1; msq_tail := 1 |}, Some v)"
   by simp
 
 (* PI_003_04_msq_enqueue_length (matches Coq) *)
-lemma PI_003_04_msq_enqueue_length: "\<forall>q v. length (msq_items (msq_enqueue q v)) = Suc (length (msq_items q))"
+lemma PI_003_04_msq_enqueue_length: "\<forall> q v, length (msq_items (msq_enqueue q v)) = S (length (msq_items q))"
   by simp
 
 (* PI_003_05_cas_success (matches Coq) *)
-lemma PI_003_05_cas_success: "\<forall>v new_val. cas v v new_val = CASSuccess"
+lemma PI_003_05_cas_success: "\<forall> v new_val, cas v v new_val = CASSuccess"
   by simp
 
 (* PI_003_06_cas_failure (matches Coq) *)
-lemma PI_003_06_cas_failure: "\<forall>loc expected new_val. loc \<noteq> expected \<longrightarrow> \<exists>v. cas loc expected new_val = CASFailure v"
+lemma PI_003_06_cas_failure: "\<forall> loc expected new_val, loc \<noteq> expected \<longrightarrow> \<exists> v, cas loc expected new_val = CASFailure v"
   by simp
 
 (* PI_003_07_linearization_empty (matches Coq) *)
@@ -302,54 +299,54 @@ lemma PI_003_07_linearization_empty: "lin_ordered [] = True"
     PROOFS: COMPILER OPTIMIZATION CORRECTNESS (8 theorems)
     =============================================================================== *)
 (* PI_004_01_dce_false_branch (matches Coq) *)
-lemma PI_004_01_dce_false_branch: "\<forall>t f env. opt_eval env (dce (OIf (OConst 0) t f)) = opt_eval env (dce f)"
+lemma PI_004_01_dce_false_branch: "\<forall> t f env, opt_eval env (dce (OIf (OConst 0) t f)) = opt_eval env (dce f)"
   by simp
 
 (* PI_004_02_dce_true_branch (matches Coq) *)
-lemma PI_004_02_dce_true_branch: "\<forall>n t f env. n > 0 \<longrightarrow> opt_eval env (dce (OIf (OConst n) t f)) = opt_eval env (dce t)"
-  by auto
+lemma PI_004_02_dce_true_branch: "\<forall> n t f env, n > 0 \<longrightarrow> opt_eval env (dce (OIf (OConst n) t f)) = opt_eval env (dce t)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* PI_004_03_const_fold_add (matches Coq) *)
-lemma PI_004_03_const_fold_add: "\<forall>a b env. opt_eval env (const_fold (OAdd (OConst a) (OConst b))) = a + b"
+lemma PI_004_03_const_fold_add: "\<forall> a b env, opt_eval env (const_fold (OAdd (OConst a) (OConst b))) = a + b"
   by simp
 
 (* PI_004_04_const_fold_mul (matches Coq) *)
-lemma PI_004_04_const_fold_mul: "\<forall>a b env. opt_eval env (const_fold (OMul (OConst a) (OConst b))) = a * b"
+lemma PI_004_04_const_fold_mul: "\<forall> a b env, opt_eval env (const_fold (OMul (OConst a) (OConst b))) = a * b"
   by simp
 
 (* PI_004_05_const_preserves (matches Coq) *)
-lemma PI_004_05_const_preserves: "\<forall>n env. opt_eval env (const_fold (OConst n)) = opt_eval env (OConst n)"
+lemma PI_004_05_const_preserves: "\<forall> n env, opt_eval env (const_fold (OConst n)) = opt_eval env (OConst n)"
   by simp
 
 (* PI_004_06_var_preserves (matches Coq) *)
-lemma PI_004_06_var_preserves: "\<forall>x env. opt_eval env (const_fold (OVar x)) = opt_eval env (OVar x)"
+lemma PI_004_06_var_preserves: "\<forall> x env, opt_eval env (const_fold (OVar x)) = opt_eval env (OVar x)"
   by simp
 
 (* PI_004_07_dce_const_preserves (matches Coq) *)
-lemma PI_004_07_dce_const_preserves: "\<forall>n env. opt_eval env (dce (OConst n)) = n"
+lemma PI_004_07_dce_const_preserves: "\<forall> n env, opt_eval env (dce (OConst n)) = n"
   by simp
 
 (* PI_004_08_dce_var_preserves (matches Coq) *)
-lemma PI_004_08_dce_var_preserves: "\<forall>x env. opt_eval env (dce (OVar x)) = env x"
+lemma PI_004_08_dce_var_preserves: "\<forall> x env, opt_eval env (dce (OVar x)) = env x"
   by simp
 
 (* ===============================================================================
     PROOFS: PUZZLE / RATE-LIMITING (5 theorems)
     =============================================================================== *)
 (* PI_005_01_puzzle_verify_sound (matches Coq) *)
-lemma PI_005_01_puzzle_verify_sound: "\<forall>x target. puzzle_valid x target = True \<longrightarrow> puzzle_verify x target = True"
+lemma PI_005_01_puzzle_verify_sound: "\<forall> x target, puzzle_valid x target = True \<longrightarrow> puzzle_verify x target = True"
   by auto
 
 (* PI_005_02_puzzle_verify_complete (matches Coq) *)
-lemma PI_005_02_puzzle_verify_complete: "\<forall>x target. puzzle_verify x target = True \<longrightarrow> puzzle_valid x target = True"
+lemma PI_005_02_puzzle_verify_complete: "\<forall> x target, puzzle_verify x target = True \<longrightarrow> puzzle_valid x target = True"
   by auto
 
 (* PI_005_03_puzzle_zero_target (matches Coq) *)
-lemma PI_005_03_puzzle_zero_target: "\<forall>x. puzzle_valid x 0 = False"
+lemma PI_005_03_puzzle_zero_target: "\<forall> x, puzzle_valid x 0 = False"
   by simp
 
 (* PI_005_04_puzzle_deterministic (matches Coq) *)
-lemma PI_005_04_puzzle_deterministic: "\<forall>x t1 t2. t1 = t2 \<longrightarrow> puzzle_valid x t1 = puzzle_valid x t2"
+lemma PI_005_04_puzzle_deterministic: "\<forall> x t1 t2, t1 = t2 \<longrightarrow> puzzle_valid x t1 = puzzle_valid x t2"
   by simp
 
 (* PI_005_05_vec_sum_nil (matches Coq) *)

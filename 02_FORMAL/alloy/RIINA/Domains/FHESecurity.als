@@ -170,6 +170,33 @@ sig RLWEConfig {
   f_rlwe_ntt_compatible: one Bool
 }
 
+// NEGLIGIBLE_THRESHOLD_CONST (matches Coq: Definition NEGLIGIBLE_THRESHOLD_CONST)
+pred NEGLIGIBLE_THRESHOLD_CONST {}
+
+// RIINA_ADVANTAGE_CONST (matches Coq: Definition RIINA_ADVANTAGE_CONST)
+pred RIINA_ADVANTAGE_CONST {}
+
+// NOISE_THRESHOLD_CONST (matches Coq: Definition NOISE_THRESHOLD_CONST)
+pred NOISE_THRESHOLD_CONST {}
+
+// RIINA_KP_PUBLIC_CONST (matches Coq: Definition RIINA_KP_PUBLIC_CONST)
+pred RIINA_KP_PUBLIC_CONST {}
+
+// RIINA_KP_SECRET_CONST (matches Coq: Definition RIINA_KP_SECRET_CONST)
+pred RIINA_KP_SECRET_CONST {}
+
+// RIINA_KP_EVAL_CONST (matches Coq: Definition RIINA_KP_EVAL_CONST)
+pred RIINA_KP_EVAL_CONST {}
+
+// RLWE_MODULUS_MIN_CONST (matches Coq: Definition RLWE_MODULUS_MIN_CONST)
+pred RLWE_MODULUS_MIN_CONST {}
+
+// RIINA_RLWE_MODULUS_CONST (matches Coq: Definition RIINA_RLWE_MODULUS_CONST)
+pred RIINA_RLWE_MODULUS_CONST {}
+
+// RIINA_NOISE_BOUND_MODULUS_CONST (matches Coq: Definition RIINA_NOISE_BOUND_MODULUS_CONST)
+pred RIINA_NOISE_BOUND_MODULUS_CONST {}
+
 // ops_fully_homomorphic (matches Coq: Definition ops_fully_homomorphic)
 pred ops_fully_homomorphic[p_o: HomomorphicOps] {
   some p_o

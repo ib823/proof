@@ -1,44 +1,99 @@
 (* Copyright (c) 2026 The RIINA Authors. All rights reserved. *)
 (* Copyright (c) 2026 The RIINA Authors. *)
-(* Derived from 02_FORMAL/coq/properties/ValRelMonotone.v (14 lemmas) *)
+(* Derived from 02_FORMAL/coq/properties/ValRelMonotone.v (28 lemmas) *)
 (* Source mapping: scripts/generate-full-stack.py *)
 module RIINA.Properties.ValRelMonotone
 open FStar.All
 
 (* value — Coq Prop predicate stub *)
-let value (__x0: nat) : Tot bool =
-  true
+assume val value : nat -> bool
+
 (* wf_session — Coq Prop predicate stub *)
-let wf_session (__x0: nat) : Tot bool =
-  true
+assume val wf_session : nat -> bool
+
 (* has_type — Coq Prop predicate stub *)
-let has_type (__x0: nat) (__x1: nat) (__x2: nat) (__x3: nat) (__x4: nat) (__x5: nat) : Tot bool =
-  true
+assume val has_type : nat -> nat -> nat -> nat -> nat -> nat -> bool
+
 (* val_rel_le_monotone (matches Coq: Theorem val_rel_le_monotone) *)
-let val_rel_le_monotone (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_monotone (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_m <= p_n /\ val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_m p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_pred (matches Coq: Lemma val_rel_le_pred) *)
-let val_rel_le_pred (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_pred (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le ((p_n + 1)) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_trans_mono (matches Coq: Lemma val_rel_le_trans_mono) *)
-let val_rel_le_trans_mono (p_k: _) (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_trans_mono (p_k: _) (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_k <= p_m /\ p_m <= p_n /\ val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_k p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_max (matches Coq: Lemma val_rel_le_max) *)
-let val_rel_le_max (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_max (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_m p_sigma p_t p_v1 p_v2 == true /\ val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le (max p_m p_n) p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_from_max (matches Coq: Lemma val_rel_le_from_max) *)
-let val_rel_le_from_max (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_from_max (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le (max p_m p_n) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_m p_sigma p_t p_v1 p_v2 == true /\ val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_to_min (matches Coq: Lemma val_rel_le_to_min) *)
-let val_rel_le_to_min (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_to_min (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_m p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le (min p_m p_n) p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_to_min_r (matches Coq: Lemma val_rel_le_to_min_r) *)
-let val_rel_le_to_min_r (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_to_min_r (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le (min p_m p_n) p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_drop (matches Coq: Lemma val_rel_le_drop) *)
-let val_rel_le_drop (p_k: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_drop (p_k: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le (p_n + p_k) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_double_mono (matches Coq: Lemma val_rel_le_double_mono) *)
-let val_rel_le_double_mono (p_m: _) (p_n: _) (p_k: _) (p_l: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_double_mono (p_m: _) (p_n: _) (p_k: _) (p_l: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_m <= p_n /\ p_k <= p_l /\ val_rel_le (Nat.max p_n p_l) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le (Nat.min p_m p_k) p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_step_down_1 (matches Coq: Lemma val_rel_le_step_down_1) *)
-let val_rel_le_step_down_1 (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_step_down_1 (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le ((p_n + 1)) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_step_down_2 (matches Coq: Lemma val_rel_le_step_down_2) *)
-let val_rel_le_step_down_2 (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_step_down_2 (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le ((((p_n + 1)) + 1)) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_from_succ (matches Coq: Lemma val_rel_le_from_succ) *)
-let val_rel_le_from_succ (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_from_succ (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n > 0 /\ val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le (p_n - 1) p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_mono_witness (matches Coq: Lemma val_rel_le_mono_witness) *)
-let val_rel_le_mono_witness (p_n: _) (p_m: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_mono_witness (p_n: _) (p_m: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true /\ p_m <= p_n)) (ensures (val_rel_le p_m p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
 (* val_rel_le_half (matches Coq: Lemma val_rel_le_half) *)
-let val_rel_le_half (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma True = ()
+let val_rel_le_half (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le (2 * p_n) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_sub (matches Coq: Lemma val_rel_le_sub) *)
+let val_rel_le_sub (p_k: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_k <= p_n /\ val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le (p_n - p_k) p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_div2 (matches Coq: Lemma val_rel_le_div2) *)
+let val_rel_le_div2 (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le (p_n / 2) p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_both_min (matches Coq: Lemma val_rel_le_both_min) *)
+let val_rel_le_both_min (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_m p_sigma p_t p_v1 p_v2 == true /\ val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le (min p_m p_n) p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_step_down_3 (matches Coq: Lemma val_rel_le_step_down_3) *)
+let val_rel_le_step_down_3 (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le ((((((p_n + 1)) + 1)) + 1)) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_from_ge (matches Coq: Lemma val_rel_le_from_ge) *)
+let val_rel_le_from_ge (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n >= p_m /\ val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_m p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_pred_nat (matches Coq: Lemma val_rel_le_pred_nat) *)
+let val_rel_le_pred_nat (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le (Nat.pred p_n) p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_from_max_l (matches Coq: Lemma val_rel_le_from_max_l) *)
+let val_rel_le_from_max_l (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le (max p_m p_n) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_m p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_from_max_r (matches Coq: Lemma val_rel_le_from_max_r) *)
+let val_rel_le_from_max_r (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le (max p_m p_n) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_zero_trivial (matches Coq: Lemma val_rel_le_zero_trivial) *)
+let val_rel_le_zero_trivial (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (val_rel_le 0 p_sigma p_t p_v1 p_v2 == true) = admit ()
+
+(* val_rel_le_step_down_4 (matches Coq: Lemma val_rel_le_step_down_4) *)
+let val_rel_le_step_down_4 (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le ((((((((p_n + 1)) + 1)) + 1)) + 1)) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_from_add (matches Coq: Lemma val_rel_le_from_add) *)
+let val_rel_le_from_add (p_m: _) (p_k: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_n == p_m + p_k /\ val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_m p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_from_max_min (matches Coq: Lemma val_rel_le_from_max_min) *)
+let val_rel_le_from_max_min (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le (max p_m p_n) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le (min p_m p_n) p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_from_double (matches Coq: Lemma val_rel_le_from_double) *)
+let val_rel_le_from_double (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (val_rel_le (p_n + p_n) p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) = admit ()
+
+(* val_rel_le_in_range (matches Coq: Lemma val_rel_le_in_range) *)
+let val_rel_le_in_range (p_m: _) (p_n: _) (p_sigma: _) (p_t: _) (p_v1: _) (p_v2: _) : Lemma (requires (p_m <= p_n /\ val_rel_le p_n p_sigma p_t p_v1 p_v2 == true)) (ensures (val_rel_le p_m p_sigma p_t p_v1 p_v2 == true)) = admit ()

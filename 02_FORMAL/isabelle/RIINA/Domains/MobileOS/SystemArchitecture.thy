@@ -12,17 +12,18 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | device_state        | device_state           | OK     |
- * | update_result       | update_result          | OK     |
- * | privilege_level     | privilege_level        | OK     |
- * | device             | device                 | OK     |
- * | system_update       | system_update          | OK     |
- * | system             | system                 | OK     |
- * | process            | process                | OK     |
- * | ext_process         | ext_process            | OK     |
- * | syscall            | syscall                | OK     |
- * | ip_c_channel         | ipc_channel            | OK     |
- * | scheduler_state     | scheduler_state        | OK     |
+ * | DeviceState        | device_state           | OK     |
+ * | UpdateResult       | update_result          | OK     |
+ * | PrivilegeLevel     | privilege_level        | OK     |
+ * | Device             | device                 | OK     |
+ * | SystemUpdate       | system_update          | OK     |
+ * | System             | system                 | OK     |
+ * | Process            | process                | OK     |
+ * | ExtProcess         | ext_process            | OK     |
+ * | Syscall            | syscall                | OK     |
+ * | IPCChannel         | ipc_channel            | OK     |
+ * | SchedulerState     | scheduler_state        | OK     |
+ * | KERNEL_MEM_BOUNDARY | KERNEL_MEM_BOUNDARY    | OK     |
  * | verified_boot      | verified_boot          | OK     |
  * | boot_time          | boot_time              | OK     |
  * | boots_successfully | boots_successfully     | OK     |
@@ -76,10 +77,7 @@ theory SystemArchitecture
   imports Main CoqCompat
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym ip_c_channel = "nat"
-type_synonym process_table = "nat"
-(* device_state (matches Coq: Inductive device_state) *)
+(* DeviceState (matches Coq: Inductive DeviceState) *)
 datatype device_state =
     Uninitialized
   |     Booting
@@ -88,64 +86,64 @@ datatype device_state =
   |     Suspended
   |     ShuttingDown
 
-(* update_result (matches Coq: Inductive update_result) *)
+(* UpdateResult (matches Coq: Inductive UpdateResult) *)
 datatype update_result =
     UpdateSuccess
   |     UpdateFailed
   |     UpdateRollback
 
-(* privilege_level (matches Coq: Inductive privilege_level) *)
+(* PrivilegeLevel (matches Coq: Inductive PrivilegeLevel) *)
 datatype privilege_level =
     KernelMode
   |     SupervisorMode
   |     UserMode
 
-(* device (matches Coq: Record device) *)
+(* Device (matches Coq: Record Device) *)
 record device =
   device_id :: nat
-  device_state :: device_state
+  device_state :: DeviceState
   boot_verified :: bool
   secure_boot_chain :: bool
   boot_time_ms :: nat
 
-(* system_update (matches Coq: Record system_update) *)
+(* SystemUpdate (matches Coq: Record SystemUpdate) *)
 record system_update =
   update_id :: nat
   update_version :: nat
   update_signature_valid :: bool
   update_integrity_verified :: bool
 
-(* system (matches Coq: Record system) *)
+(* System (matches Coq: Record System) *)
 record system =
   system_version :: nat
-  system_state :: device_state
+  system_state :: DeviceState
   update_pending :: option
 
-(* process (matches Coq: Record process) *)
+(* Process (matches Coq: Record Process) *)
 record process =
   process_id :: nat
   process_memory_region :: nat
   process_permissions :: 'a list
 
-(* ext_process (matches Coq: Record ext_process) *)
+(* ExtProcess (matches Coq: Record ExtProcess) *)
 record ext_process =
   ext_pid :: nat
   ext_mem_start :: nat
   ext_mem_size :: nat
-  ext_privilege :: privilege_level
+  ext_privilege :: PrivilegeLevel
   ext_alive :: bool
   ext_parent_pid :: nat
   ext_resource_limit :: nat
   ext_resource_used :: nat
 
-(* syscall (matches Coq: Record syscall) *)
+(* Syscall (matches Coq: Record Syscall) *)
 record syscall =
   syscall_id :: nat
-  syscall_caller_privilege :: privilege_level
-  syscall_required_privilege :: privilege_level
+  syscall_caller_privilege :: PrivilegeLevel
+  syscall_required_privilege :: PrivilegeLevel
   syscall_validated :: bool
 
-(* ip_c_channel (matches Coq: Record ip_c_channel) *)
+(* IPCChannel (matches Coq: Record IPCChannel) *)
 record ipc_channel =
   ipc_id :: nat
   ipc_sender_pid :: nat
@@ -154,16 +152,20 @@ record ipc_channel =
   ipc_capacity :: nat
   ipc_current_size :: nat
 
-(* scheduler_state (matches Coq: Record scheduler_state) *)
+(* SchedulerState (matches Coq: Record SchedulerState) *)
 record scheduler_state =
   sched_running_pid :: nat
   sched_ready_queue :: 'a list
   sched_time_slice :: nat
   sched_context_saved :: bool
 
+(* KERNEL_MEM_BOUNDARY (matches Coq: Definition KERNEL_MEM_BOUNDARY) *)
+definition KERNEL_MEM_BOUNDARY :: "nat" where
+  "KERNEL_MEM_BOUNDARY \<equiv> Z.to_nat 1073741824%Z"
+
 (* verified_boot (matches Coq: Definition verified_boot) *)
 definition verified_boot :: "Device \<Rightarrow> bool" where
-  "verified_boot d \<equiv> boot_verified d = True \<and> secure_boot_chain d = True"
+  "verified_boot d \<equiv> boot_verified d = True /\ secure_boot_chain d = True"
 
 (* boot_time (matches Coq: Definition boot_time) *)
 definition boot_time :: "Device \<Rightarrow> nat" where
@@ -174,7 +176,7 @@ definition boots_successfully :: "Device \<Rightarrow> bool" where
   "boots_successfully d \<equiv> device_state d = Running"
 
 (* apply_update (matches Coq: Definition apply_update) *)
-definition apply_update :: "System \<Rightarrow> system_update \<Rightarrow> system * UpdateResult" where
+definition apply_update :: "System \<Rightarrow> SystemUpdate \<Rightarrow> System * UpdateResult" where
   "apply_update sys upd \<equiv> if (update_signature_valid upd \<and> update_integrity_verified upd) then
     (mkSystem (update_version upd) Running None, UpdateSuccess)
   else
@@ -182,10 +184,10 @@ definition apply_update :: "System \<Rightarrow> system_update \<Rightarrow> sys
 
 (* update_succeeds (matches Coq: Definition update_succeeds) *)
 definition update_succeeds :: "SystemUpdate \<Rightarrow> bool" where
-  "update_succeeds upd \<equiv> update_signature_valid upd = True \<and> update_integrity_verified upd = True"
+  "update_succeeds upd \<equiv> update_signature_valid upd = True /\ update_integrity_verified upd = True"
 
 (* system_unchanged (matches Coq: Definition system_unchanged) *)
-definition system_unchanged :: "System \<Rightarrow> system \<Rightarrow> bool" where
+definition system_unchanged :: "System \<Rightarrow> System \<Rightarrow> bool" where
   "system_unchanged sys new_sys \<equiv> system_version sys = system_version new_sys"
 
 (* always (matches Coq: Definition always) *)
@@ -212,7 +214,7 @@ definition memory_disjoint :: "bool" where
 
 (* well_isolated_processes (matches Coq: Definition well_isolated_processes) *)
 definition well_isolated_processes :: "bool" where
-  "well_isolated_processes \<equiv> forall p1 p2, p1 \<in> set procs -> p2 \<in> set procs -> 
+  "well_isolated_processes \<equiv> forall p1 p2, In p1 procs -> In p2 procs -> 
     p1 <> p2 -> memory_disjoint p1 p2"
 
 (* privilege_rank (matches Coq: Definition privilege_rank) *)
@@ -227,25 +229,25 @@ definition privilege_geq :: "bool" where
 
 (* syscall_authorized (matches Coq: Definition syscall_authorized) *)
 definition syscall_authorized :: "Syscall \<Rightarrow> bool" where
-  "syscall_authorized sc \<equiv> privilege_geq (syscall_caller_privilege sc) (syscall_required_privilege sc) \<and>
+  "syscall_authorized sc \<equiv> privilege_geq (syscall_caller_privilege sc) (syscall_required_privilege sc) /\
   syscall_validated sc = True"
 
 (* pid_in_table (matches Coq: Definition pid_in_table) *)
-definition pid_in_table :: "nat \<Rightarrow> process_table \<Rightarrow> bool" where
-  "pid_in_table pid pt \<equiv> exists p, p \<in> set pt \<and> ext_pid p = pid"
+definition pid_in_table :: "nat \<Rightarrow> ProcessTable \<Rightarrow> bool" where
+  "pid_in_table pid pt \<equiv> exists p, In p pt /\ ext_pid p = pid"
 
 (* all_pids_unique (matches Coq: Definition all_pids_unique) *)
 definition all_pids_unique :: "ProcessTable \<Rightarrow> bool" where
-  "all_pids_unique pt \<equiv> forall p1 p2, p1 \<in> set pt -> p2 \<in> set pt ->
+  "all_pids_unique pt \<equiv> forall p1 p2, In p1 pt -> In p2 pt ->
     ext_pid p1 = ext_pid p2 -> p1 = p2"
 
 (* all_alive (matches Coq: Definition all_alive) *)
 definition all_alive :: "ProcessTable \<Rightarrow> bool" where
-  "all_alive pt \<equiv> forall p, p \<in> set pt -> ext_alive p = True"
+  "all_alive pt \<equiv> forall p, In p pt -> ext_alive p = True"
 
 (* init_process_present (matches Coq: Definition init_process_present) *)
 definition init_process_present :: "ProcessTable \<Rightarrow> bool" where
-  "init_process_present pt \<equiv> exists p, p \<in> set pt \<and> ext_pid p = 1 \<and> ext_alive p = True"
+  "init_process_present pt \<equiv> exists p, In p pt /\ ext_pid p = 1 /\ ext_alive p = True"
 
 (* ext_mem_disjoint (matches Coq: Definition ext_mem_disjoint) *)
 definition ext_mem_disjoint :: "bool" where
@@ -254,7 +256,7 @@ definition ext_mem_disjoint :: "bool" where
 
 (* kernel_mem_boundary (matches Coq: Definition kernel_mem_boundary) *)
 definition kernel_mem_boundary :: "nat" where
-  "kernel_mem_boundary \<equiv> 1073741824"
+  "kernel_mem_boundary \<equiv> KERNEL_MEM_BOUNDARY"
 
 (* in_user_space (matches Coq: Definition in_user_space) *)
 definition in_user_space :: "ExtProcess \<Rightarrow> bool" where
@@ -270,94 +272,94 @@ definition resource_within_limit :: "ExtProcess \<Rightarrow> bool" where
 
 (* process_cleanly_terminated (matches Coq: Definition process_cleanly_terminated) *)
 definition process_cleanly_terminated :: "ExtProcess \<Rightarrow> bool" where
-  "process_cleanly_terminated p \<equiv> ext_alive p = False \<and> ext_resource_used p = 0"
+  "process_cleanly_terminated p \<equiv> ext_alive p = False /\ ext_resource_used p = 0"
 
 (* boot_time_bounded (matches Coq) *)
-lemma boot_time_bounded: "\<forall>(device :: device). well_formed_device device \<longrightarrow> verified_boot device \<longrightarrow> boot_time device \<le> 5000"
+lemma boot_time_bounded: "\<forall> (device : Device), well_formed_device device \<longrightarrow> verified_boot device \<longrightarrow> boot_time device \<le> 5000"
   by auto
 
 (* ota_update_atomic (matches Coq) *)
-lemma ota_update_atomic: "\<forall>(sys :: system) (upd :: system_update). let (new_sys, result) := apply_update sys upd in result = UpdateSuccess \<or> system_unchanged sys new_sys"
-  by auto
+lemma ota_update_atomic: "\<forall> (sys : System) (upd : SystemUpdate), let (new_sys, result) := apply_update sys upd in result = UpdateSuccess \<or> system_unchanged sys new_sys"
+  by (cases rule: ‹_›.cases; simp)
 
 (* no_boot_loop (matches Coq) *)
-lemma no_boot_loop: "\<forall>(device :: device). valid_boot_device device \<longrightarrow> verified_boot device \<longrightarrow> always (eventually boots_successfully) device"
+lemma no_boot_loop: "\<forall> (device : Device), valid_boot_device device \<longrightarrow> verified_boot device \<longrightarrow> always (eventually boots_successfully) device"
   by auto
 
 (* process_isolation_sound (matches Coq) *)
-lemma process_isolation_sound: "\<forall>(procs : list process). well_isolated_processes procs \<longrightarrow> \<forall>p1 p2. p1 \<in> set procs \<longrightarrow> p2 \<in> set procs \<longrightarrow> p1 \<noteq> p2 \<longrightarrow> memory_disjoint p1 p2"
+lemma process_isolation_sound: "\<forall> (procs : list Process), well_isolated_processes procs \<longrightarrow> \<forall> p1 p2, In p1 procs \<longrightarrow> In p2 procs \<longrightarrow> p1 \<noteq> p2 \<longrightarrow> memory_disjoint p1 p2"
   by auto
 
 (* process_isolation_enforced (matches Coq) *)
-lemma process_isolation_enforced: "\<forall>(pt :: process_table). (\<forall>p1 p2. p1 \<in> set pt \<longrightarrow> p2 \<in> set pt \<longrightarrow> p1 \<noteq> p2 \<longrightarrow> ext_mem_disjoint p1 p2) \<longrightarrow> \<forall>p1 p2. p1 \<in> set pt \<longrightarrow> p2 \<in> set pt \<longrightarrow> p1 \<noteq> p2 \<longrightarrow> ext_mem_start p1 + ext_mem_size p1 \<le> ext_mem_start p2 \<or> ext_mem_start p2 + ext_mem_size p2 \<le> ext_mem_start p1"
+lemma process_isolation_enforced: "\<forall> (pt : ProcessTable), (\<forall> p1 p2, In p1 pt \<longrightarrow> In p2 pt \<longrightarrow> p1 \<noteq> p2 \<longrightarrow> ext_mem_disjoint p1 p2) \<longrightarrow> \<forall> p1 p2, In p1 pt \<longrightarrow> In p2 pt \<longrightarrow> p1 \<noteq> p2 \<longrightarrow> ext_mem_start p1 + ext_mem_size p1 \<le> ext_mem_start p2 \<or> ext_mem_start p2 + ext_mem_size p2 \<le> ext_mem_start p1"
   by auto
 
 (* memory_space_disjoint (matches Coq) *)
-lemma memory_space_disjoint: "\<forall>(p1 :: ext_process) (p2 :: ext_process). ext_mem_disjoint p1 p2 \<longrightarrow> \<forall>addr. (ext_mem_start p1 \<le> addr \<and> addr < ext_mem_start p1 + ext_mem_size p1) \<longrightarrow> ~ (ext_mem_start p2 \<le> addr \<and> addr < ext_mem_start p2 + ext_mem_size p2)"
-  by auto
+lemma memory_space_disjoint: "\<forall> (p1 p2 : ExtProcess), ext_mem_disjoint p1 p2 \<longrightarrow> \<forall> addr, (ext_mem_start p1 \<le> addr \<and> addr < ext_mem_start p1 + ext_mem_size p1) \<longrightarrow> ~ (ext_mem_start p2 \<le> addr \<and> addr < ext_mem_start p2 + ext_mem_size p2)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* syscall_validation_complete (matches Coq) *)
-lemma syscall_validation_complete: "\<forall>(sc :: syscall). syscall_authorized sc \<longrightarrow> syscall_validated sc = True"
+lemma syscall_validation_complete: "\<forall> (sc : Syscall), syscall_authorized sc \<longrightarrow> syscall_validated sc = True"
   by auto
 
 (* privilege_escalation_impossible (matches Coq) *)
-lemma privilege_escalation_impossible: "\<forall>(sc :: syscall). syscall_caller_privilege sc = UserMode \<longrightarrow> syscall_required_privilege sc = KernelMode \<longrightarrow> ~ syscall_authorized sc"
+lemma privilege_escalation_impossible: "\<forall> (sc : Syscall), syscall_caller_privilege sc = UserMode \<longrightarrow> syscall_required_privilege sc = KernelMode \<longrightarrow> ~ syscall_authorized sc"
   by simp
 
 (* kernel_memory_protected (matches Coq) *)
-lemma kernel_memory_protected: "\<forall>(p :: ext_process). in_user_space p \<longrightarrow> ext_mem_size p > 0 \<longrightarrow> ~ in_kernel_space (ext_mem_start p)"
+lemma kernel_memory_protected: "\<forall> (p : ExtProcess), in_user_space p \<longrightarrow> ext_mem_size p > 0 \<longrightarrow> ~ in_kernel_space (ext_mem_start p)"
   by simp
 
 (* user_space_bounded (matches Coq) *)
-lemma user_space_bounded: "\<forall>(p :: ext_process). in_user_space p \<longrightarrow> ext_mem_start p \<ge> kernel_mem_boundary"
+lemma user_space_bounded: "\<forall> (p : ExtProcess), in_user_space p \<longrightarrow> ext_mem_start p \<ge> kernel_mem_boundary"
   by auto
 
 (* ipc_channels_typed (matches Coq) *)
-lemma ipc_channels_typed: "\<forall>(ch :: ip_c_channel). ipc_typed ch = True \<longrightarrow> ipc_current_size ch \<le> ipc_capacity ch \<longrightarrow> ipc_typed ch = True \<and> ipc_current_size ch \<le> ipc_capacity ch"
+lemma ipc_channels_typed: "\<forall> (ch : IPCChannel), ipc_typed ch = True \<longrightarrow> ipc_current_size ch \<le> ipc_capacity ch \<longrightarrow> ipc_typed ch = True \<and> ipc_current_size ch \<le> ipc_capacity ch"
   by auto
 
 (* resource_limits_enforced (matches Coq) *)
-lemma resource_limits_enforced: "\<forall>(p :: ext_process). resource_within_limit p \<longrightarrow> ext_resource_used p \<le> ext_resource_limit p"
+lemma resource_limits_enforced: "\<forall> (p : ExtProcess), resource_within_limit p \<longrightarrow> ext_resource_used p \<le> ext_resource_limit p"
   by auto
 
 (* process_termination_clean (matches Coq) *)
-lemma process_termination_clean: "\<forall>(p :: ext_process). process_cleanly_terminated p \<longrightarrow> ext_resource_used p = 0"
+lemma process_termination_clean: "\<forall> (p : ExtProcess), process_cleanly_terminated p \<longrightarrow> ext_resource_used p = 0"
   by auto
 
 (* zombie_process_impossible (matches Coq) *)
-lemma zombie_process_impossible: "\<forall>(pt :: process_table). (\<forall>p. p \<in> set pt \<longrightarrow> ext_alive p = True \<or> process_cleanly_terminated p) \<longrightarrow> \<forall>p. p \<in> set pt \<longrightarrow> ext_alive p = False \<longrightarrow> ext_resource_used p = 0"
+lemma zombie_process_impossible: "\<forall> (pt : ProcessTable), (\<forall> p, In p pt \<longrightarrow> ext_alive p = True \<or> process_cleanly_terminated p) \<longrightarrow> \<forall> p, In p pt \<longrightarrow> ext_alive p = False \<longrightarrow> ext_resource_used p = 0"
   by auto
 
 (* init_process_always_running (matches Coq) *)
-lemma init_process_always_running: "\<forall>(pt :: process_table). init_process_present pt \<longrightarrow> \<exists>p. p \<in> set pt \<and> ext_pid p = 1 \<and> ext_alive p = True"
+lemma init_process_always_running: "\<forall> (pt : ProcessTable), init_process_present pt \<longrightarrow> \<exists> p, In p pt \<and> ext_pid p = 1 \<and> ext_alive p = True"
   by auto
 
 (* pid_uniqueness (matches Coq) *)
-lemma pid_uniqueness: "\<forall>(pt :: process_table). all_pids_unique pt \<longrightarrow> \<forall>p1 p2. p1 \<in> set pt \<longrightarrow> p2 \<in> set pt \<longrightarrow> ext_pid p1 = ext_pid p2 \<longrightarrow> p1 = p2"
+lemma pid_uniqueness: "\<forall> (pt : ProcessTable), all_pids_unique pt \<longrightarrow> \<forall> p1 p2, In p1 pt \<longrightarrow> In p2 pt \<longrightarrow> ext_pid p1 = ext_pid p2 \<longrightarrow> p1 = p2"
   by auto
 
 (* scheduler_fairness (matches Coq) *)
-lemma scheduler_fairness: "\<forall>(sched :: scheduler_state) (pid :: nat). pid \<in> set (sched_ready_queue sched) \<longrightarrow> sched_time_slice sched > 0 \<longrightarrow> \<exists>ts. ts > 0 \<and> ts = sched_time_slice sched"
+lemma scheduler_fairness: "\<forall> (sched : SchedulerState) (pid : nat), In pid (sched_ready_queue sched) \<longrightarrow> sched_time_slice sched > 0 \<longrightarrow> \<exists> ts, ts > 0 \<and> ts = sched_time_slice sched"
   by auto
 
 (* context_switch_atomic (matches Coq) *)
-lemma context_switch_atomic: "\<forall>(sched :: scheduler_state). sched_context_saved sched = True \<longrightarrow> sched_ready_queue sched \<noteq> [] \<longrightarrow> sched_context_saved sched = True"
+lemma context_switch_atomic: "\<forall> (sched : SchedulerState), sched_context_saved sched = True \<longrightarrow> sched_ready_queue sched \<noteq> [] \<longrightarrow> sched_context_saved sched = True"
   by auto
 
 (* signal_delivery_guaranteed (matches Coq) *)
-lemma signal_delivery_guaranteed: "\<forall>(pt :: process_table) (target_pid :: nat). pid_in_table target_pid pt \<longrightarrow> (\<forall>p. p \<in> set pt \<longrightarrow> ext_pid p = target_pid \<longrightarrow> ext_alive p = True) \<longrightarrow> \<exists>p. p \<in> set pt \<and> ext_pid p = target_pid \<and> ext_alive p = True"
+lemma signal_delivery_guaranteed: "\<forall> (pt : ProcessTable) (target_pid : nat), pid_in_table target_pid pt \<longrightarrow> (\<forall> p, In p pt \<longrightarrow> ext_pid p = target_pid \<longrightarrow> ext_alive p = True) \<longrightarrow> \<exists> p, In p pt \<and> ext_pid p = target_pid \<and> ext_alive p = True"
   by auto
 
 (* supervisor_cannot_kernel (matches Coq) *)
-lemma supervisor_cannot_kernel: "\<forall>(sc :: syscall). syscall_caller_privilege sc = SupervisorMode \<longrightarrow> syscall_required_privilege sc = KernelMode \<longrightarrow> ~ syscall_authorized sc"
+lemma supervisor_cannot_kernel: "\<forall> (sc : Syscall), syscall_caller_privilege sc = SupervisorMode \<longrightarrow> syscall_required_privilege sc = KernelMode \<longrightarrow> ~ syscall_authorized sc"
   by simp
 
 (* user_kernel_memory_separation (matches Coq) *)
-lemma user_kernel_memory_separation: "\<forall>(p :: ext_process) (kaddr :: nat). in_user_space p \<longrightarrow> in_kernel_space kaddr \<longrightarrow> ~ (ext_mem_start p \<le> kaddr \<and> kaddr < ext_mem_start p + ext_mem_size p)"
+lemma user_kernel_memory_separation: "\<forall> (p : ExtProcess) (kaddr : nat), in_user_space p \<longrightarrow> in_kernel_space kaddr \<longrightarrow> ~ (ext_mem_start p \<le> kaddr \<and> kaddr < ext_mem_start p + ext_mem_size p)"
   by simp
 
 (* resource_usage_bounded (matches Coq) *)
-lemma resource_usage_bounded: "\<forall>(p :: ext_process) (extra :: nat). resource_within_limit p \<longrightarrow> ext_resource_used p + extra \<le> ext_resource_limit p \<longrightarrow> ext_resource_used p + extra \<le> ext_resource_limit p"
+lemma resource_usage_bounded: "\<forall> (p : ExtProcess) (extra : nat), resource_within_limit p \<longrightarrow> ext_resource_used p + extra \<le> ext_resource_limit p \<longrightarrow> ext_resource_used p + extra \<le> ext_resource_limit p"
   by auto
 
 end

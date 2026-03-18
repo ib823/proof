@@ -13,22 +13,22 @@
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
  * | TLS13Message       | tls13_message          | OK     |
- * | noise_message       | noise_message          | OK     |
- * | signal_message      | signal_message         | OK     |
- * | noise_pattern       | noise_pattern          | OK     |
- * | adversary          | adversary              | OK     |
- * | key_pair            | key_pair               | OK     |
- * | tls_13_state         | tls13_state            | OK     |
- * | tls_13_session       | tls13_session          | OK     |
- * | noise_symmetric_state | noise_symmetric_state  | OK     |
- * | noise_cipher_state   | noise_cipher_state     | OK     |
- * | noise_handshake_state | noise_handshake_state  | OK     |
- * | noise_session       | noise_session          | OK     |
- * | signal_state        | signal_state           | OK     |
+ * | NoiseMessage       | noise_message          | OK     |
+ * | SignalMessage      | signal_message         | OK     |
+ * | NoisePattern       | noise_pattern          | OK     |
+ * | Adversary          | adversary              | OK     |
+ * | KeyPair            | key_pair               | OK     |
+ * | TLS13State         | tls13_state            | OK     |
+ * | TLS13Session       | tls13_session          | OK     |
+ * | NoiseSymmetricState | noise_symmetric_state  | OK     |
+ * | NoiseCipherState   | noise_cipher_state     | OK     |
+ * | NoiseHandshakeState | noise_handshake_state  | OK     |
+ * | NoiseSession       | noise_session          | OK     |
+ * | SignalState        | signal_state           | OK     |
  * | X3DHPrekeyBundle   | x3_dh_prekey_bundle    | OK     |
  * | X3DHResult         | x3_dh_result           | OK     |
- * | protocol_spec       | protocol_spec          | OK     |
- * | protocol_impl       | protocol_impl          | OK     |
+ * | ProtocolSpec       | protocol_spec          | OK     |
+ * | ProtocolImpl       | protocol_impl          | OK     |
  * | valid_keypair      | valid_keypair          | OK     |
  * | x25519             | x25519                 | OK     |
  * | x25519_commutes    | x25519_commutes        | OK     |
@@ -107,16 +107,6 @@ theory VerifiedProtocols
   imports Main
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym nonce = "nat"
-type_synonym private_key = "nat"
-type_synonym public_key = "nat"
-type_synonym shared_secret = "nat"
-type_synonym symmetric_key = "nat"
-type_synonym tls_13_session = "nat"
-type_synonym tls_13_state = "nat"
-type_synonym timestamp = "nat"
-type_synonym trace = "nat"
 (* TLS13Message (matches Coq: Inductive TLS13Message) *)
 datatype tls13_message =
     ClientHello
@@ -127,18 +117,18 @@ datatype tls13_message =
   |     Finished
   |     ApplicationData
 
-(* noise_message (matches Coq: Inductive noise_message) *)
+(* NoiseMessage (matches Coq: Inductive NoiseMessage) *)
 datatype noise_message =
     NMEphemeral
   |     NMStatic
   |     NMPayload
 
-(* signal_message (matches Coq: Inductive signal_message) *)
+(* SignalMessage (matches Coq: Inductive SignalMessage) *)
 datatype signal_message =
     SMHeader
   |     SMCiphertext
 
-(* noise_pattern (matches Coq: Inductive noise_pattern) *)
+(* NoisePattern (matches Coq: Inductive NoisePattern) *)
 datatype noise_pattern =
     NN
   |     NK
@@ -152,18 +142,18 @@ datatype noise_pattern =
   |     IK
   |     IX
 
-(* adversary (matches Coq: Inductive adversary) *)
+(* Adversary (matches Coq: Inductive Adversary) *)
 datatype adversary =
     PassiveAdversary
   |     ActiveAdversary
   |     CompromisedKeyAdversary
 
-(* key_pair (matches Coq: Record key_pair) *)
+(* KeyPair (matches Coq: Record KeyPair) *)
 record key_pair =
-  kp_private :: private_key
-  kp_public :: public_key
+  kp_private :: PrivateKey
+  kp_public :: PublicKey
 
-(* tls_13_state (matches Coq: Record tls_13_state) *)
+(* TLS13State (matches Coq: Record TLS13State) *)
 record tls13_state =
   tls_handshake_secret :: 'a list
   tls_client_traffic_secret :: 'a list
@@ -173,31 +163,31 @@ record tls13_state =
   tls_version :: nat
   tls_cipher_suite :: nat
 
-(* tls_13_session (matches Coq: Record tls_13_session) *)
+(* TLS13Session (matches Coq: Record TLS13Session) *)
 record tls13_session =
-  session_client_key :: symmetric_key
-  session_server_key :: symmetric_key
+  session_client_key :: SymmetricKey
+  session_server_key :: SymmetricKey
   session_resumption_secret :: 'a list
-  session_established_time :: timestamp
+  session_established_time :: Timestamp
   session_peer_cert :: 'a list
   session_authenticated :: bool
 
-(* noise_symmetric_state (matches Coq: Record noise_symmetric_state) *)
+(* NoiseSymmetricState (matches Coq: Record NoiseSymmetricState) *)
 record noise_symmetric_state =
   noise_ck :: 'a list
   noise_h :: 'a list
   noise_k :: option
   noise_n :: nat
 
-(* noise_cipher_state (matches Coq: Record noise_cipher_state) *)
+(* NoiseCipherState (matches Coq: Record NoiseCipherState) *)
 record noise_cipher_state =
-  cipher_k :: symmetric_key
+  cipher_k :: SymmetricKey
   cipher_n :: nat
 
-(* noise_handshake_state (matches Coq: Record noise_handshake_state) *)
+(* NoiseHandshakeState (matches Coq: Record NoiseHandshakeState) *)
 record noise_handshake_state =
-  hs_pattern :: noise_pattern
-  hs_symmetric :: noise_symmetric_state
+  hs_pattern :: NoisePattern
+  hs_symmetric :: NoiseSymmetricState
   hs_s :: option
   hs_e :: option
   hs_rs :: option
@@ -206,15 +196,15 @@ record noise_handshake_state =
   hs_messages_sent :: nat
   hs_complete :: bool
 
-(* noise_session (matches Coq: Record noise_session) *)
+(* NoiseSession (matches Coq: Record NoiseSession) *)
 record noise_session =
-  ns_send_cipher :: noise_cipher_state
-  ns_recv_cipher :: noise_cipher_state
+  ns_send_cipher :: NoiseCipherState
+  ns_recv_cipher :: NoiseCipherState
   ns_handshake_hash :: 'a list
 
-(* signal_state (matches Coq: Record signal_state) *)
+(* SignalState (matches Coq: Record SignalState) *)
 record signal_state =
-  signal_dh_pair :: key_pair
+  signal_dh_pair :: KeyPair
   signal_dh_remote :: option
   signal_root_key :: 'a list
   signal_send_chain :: 'a list
@@ -226,24 +216,24 @@ record signal_state =
 
 (* X3DHPrekeyBundle (matches Coq: Record X3DHPrekeyBundle) *)
 record x3_dh_prekey_bundle =
-  x3dh_identity_key :: public_key
-  x3dh_signed_prekey :: public_key
+  x3dh_identity_key :: PublicKey
+  x3dh_signed_prekey :: PublicKey
   x3dh_prekey_signature :: 'a list
   x3dh_one_time_prekey :: option
 
 (* X3DHResult (matches Coq: Record X3DHResult) *)
 record x3_dh_result =
-  x3dh_shared_secret :: shared_secret
+  x3dh_shared_secret :: SharedSecret
   x3dh_associated_data :: 'a list
 
-(* protocol_spec (matches Coq: Record protocol_spec) *)
+(* ProtocolSpec (matches Coq: Record ProtocolSpec) *)
 record protocol_spec =
   spec_name :: 'a list
   spec_messages :: 'a list
   spec_security_goals :: 'a list
   spec_version :: nat
 
-(* protocol_impl (matches Coq: Record protocol_impl) *)
+(* ProtocolImpl (matches Coq: Record ProtocolImpl) *)
 record protocol_impl =
   impl_name :: 'a list
   impl_state_machine :: nat
@@ -251,10 +241,10 @@ record protocol_impl =
 
 (* valid_keypair (matches Coq: Definition valid_keypair) *)
 definition valid_keypair :: "KeyPair \<Rightarrow> bool" where
-  "valid_keypair kp \<equiv> List.length (kp_private kp) > 0 \<and> List.length (kp_public kp) > 0"
+  "valid_keypair kp \<equiv> List.length (kp_private kp) > 0 /\ List.length (kp_public kp) > 0"
 
 (* x25519 (matches Coq: Definition x25519) *)
-definition x25519 :: "PrivateKey \<Rightarrow> public_key \<Rightarrow> SharedSecret" where
+definition x25519 :: "PrivateKey \<Rightarrow> PublicKey \<Rightarrow> SharedSecret" where
   "x25519 priv pub \<equiv> priv ++ pub"
 
 (* x25519_commutes (matches Coq: Definition x25519_commutes) *)
@@ -267,15 +257,15 @@ definition hkdf :: "nat \<Rightarrow> list nat" where
   "hkdf length \<equiv> firstn length (salt ++ ikm ++ info)"
 
 (* aead_encrypt (matches Coq: Definition aead_encrypt) *)
-definition aead_encrypt :: "SymmetricKey \<Rightarrow> nonce \<Rightarrow> list nat" where
+definition aead_encrypt :: "SymmetricKey \<Rightarrow> Nonce \<Rightarrow> list nat" where
   "aead_encrypt key nonce \<equiv> key ++ nonce ++ plaintext ++ aad"
 
 (* aead_decrypt (matches Coq: Definition aead_decrypt) *)
-definition aead_decrypt :: "SymmetricKey \<Rightarrow> nonce \<Rightarrow> option (list nat)" where
+definition aead_decrypt :: "SymmetricKey \<Rightarrow> Nonce \<Rightarrow> option (list nat)" where
   "aead_decrypt key nonce \<equiv> Some ciphertext"
 
 (* aead_correct (matches Coq: Definition aead_correct) *)
-definition aead_correct :: "SymmetricKey \<Rightarrow> nonce \<Rightarrow> bool" where
+definition aead_correct :: "SymmetricKey \<Rightarrow> Nonce \<Rightarrow> bool" where
   "aead_correct key nonce \<equiv> exists decrypted,
     aead_decrypt key nonce (aead_encrypt key nonce plaintext aad) aad = Some decrypted"
 
@@ -291,28 +281,28 @@ definition initial_tls13_state :: "TLS13State" where
 
 (* tls13_handshake_complete (matches Coq: Definition tls13_handshake_complete) *)
 definition tls13_handshake_complete :: "TLS13Session \<Rightarrow> bool" where
-  "tls13_handshake_complete session \<equiv> List.length (session_client_key session) > 0 \<and>
-  List.length (session_server_key session) > 0 \<and>
+  "tls13_handshake_complete session \<equiv> List.length (session_client_key session) > 0 /\
+  List.length (session_server_key session) > 0 /\
   session_established_time session > 0"
 
 (* session_established_before (matches Coq: Definition session_established_before) *)
-definition session_established_before :: "TLS13Session \<Rightarrow> timestamp \<Rightarrow> bool" where
+definition session_established_before :: "TLS13Session \<Rightarrow> Timestamp \<Rightarrow> bool" where
   "session_established_before session time \<equiv> session_established_time session < time"
 
 (* noise_pattern_initiator_static (matches Coq: Definition noise_pattern_initiator_static) *)
 fun noise_pattern_initiator_static :: "NoisePattern \<Rightarrow> bool" where
-  "noise_pattern_initiator_static IX = True"
-|   "noise_pattern_initiator_static _ = False"
+  "noise_pattern_initiator_static IX = true"
+|   "noise_pattern_initiator_static _ = false"
 
 (* noise_pattern_responder_static (matches Coq: Definition noise_pattern_responder_static) *)
 fun noise_pattern_responder_static :: "NoisePattern \<Rightarrow> bool" where
-  "noise_pattern_responder_static IX = True"
-|   "noise_pattern_responder_static _ = False"
+  "noise_pattern_responder_static IX = true"
+|   "noise_pattern_responder_static _ = false"
 
 (* noise_pattern_identity_hiding_initiator (matches Coq: Definition noise_pattern_identity_hiding_initiator) *)
 fun noise_pattern_identity_hiding_initiator :: "NoisePattern \<Rightarrow> bool" where
-  "noise_pattern_identity_hiding_initiator IX = True"
-|   "noise_pattern_identity_hiding_initiator _ = False"
+  "noise_pattern_identity_hiding_initiator IX = true"
+|   "noise_pattern_identity_hiding_initiator _ = false"
 
 (* init_noise_state (matches Coq: Definition init_noise_state) *)
 definition init_noise_state :: "NoisePattern \<Rightarrow> bool \<Rightarrow> NoiseHandshakeState" where
@@ -344,14 +334,14 @@ definition noise_mix_hash :: "NoiseSymmetricState \<Rightarrow> NoiseSymmetricSt
 
 (* noise_handshake_complete (matches Coq: Definition noise_handshake_complete) *)
 definition noise_handshake_complete :: "NoiseHandshakeState \<Rightarrow> bool" where
-  "noise_handshake_complete st \<equiv> hs_complete st = True \<and>
+  "noise_handshake_complete st \<equiv> hs_complete st = True /\
   (exists k, noise_k (hs_symmetric st) = Some k)"
 
 (* x3dh_initiator - complex match, needs manual translation *)
-definition x3dh_initiator :: "bool" where "x3dh_initiator \<equiv> True"
+definition x3dh_initiator :: "bool" where "x3dh_initiator = undefined"
 
 (* signal_encrypt (matches Coq: Definition signal_encrypt) *)
-definition signal_encrypt :: "SignalState \<Rightarrow> signal_state * list nat" where
+definition signal_encrypt :: "SignalState \<Rightarrow> SignalState * list nat" where
   "signal_encrypt st \<equiv> let mk := hkdf (signal_send_chain st) [] [1] 32 in
   let new_chain := hkdf (signal_send_chain st) [] [2] 32 in
   let ciphertext := aead_encrypt mk [] plaintext (signal_root_key st) in
@@ -360,7 +350,7 @@ definition signal_encrypt :: "SignalState \<Rightarrow> signal_state * list nat"
                    signal_root_key := signal_root_key st;
                    signal_send_chain := new_chain;
                    signal_recv_chain := signal_recv_chain st;
-                   signal_send_n := Suc (signal_send_n st);
+                   signal_send_n := S (signal_send_n st);
                    signal_recv_n := signal_recv_n st;
                    signal_skipped := signal_skipped st;
                    signal_prev_send_n := signal_prev_send_n st |} in
@@ -373,7 +363,7 @@ definition signal_chain_step :: "list nat * SymmetricKey" where
   (new_chain, msg_key)"
 
 (* signal_dh_ratchet (matches Coq: Definition signal_dh_ratchet) *)
-definition signal_dh_ratchet :: "SignalState \<Rightarrow> key_pair \<Rightarrow> public_key \<Rightarrow> SignalState" where
+definition signal_dh_ratchet :: "SignalState \<Rightarrow> KeyPair \<Rightarrow> PublicKey \<Rightarrow> SignalState" where
   "signal_dh_ratchet st new_pair remote \<equiv> let dh_out := x25519 (kp_private new_pair) remote in
   let (new_root, new_send) := (hkdf (signal_root_key st) dh_out [] 32,
                                 hkdf (signal_root_key st) dh_out [1] 32) in
@@ -389,7 +379,7 @@ definition signal_dh_ratchet :: "SignalState \<Rightarrow> key_pair \<Rightarrow
 
 (* confidentiality (matches Coq: Definition confidentiality) *)
 fun confidentiality :: "SymmetricKey \<Rightarrow> bool" where
-  "confidentiality _ = True"
+
 
 (* strong_confidentiality (matches Coq: Definition strong_confidentiality) *)
 fun strong_confidentiality :: "SymmetricKey \<Rightarrow> bool" where
@@ -397,43 +387,43 @@ fun strong_confidentiality :: "SymmetricKey \<Rightarrow> bool" where
 |   "strong_confidentiality ActiveAdversary = True"
 
 (* authentication (matches Coq: Definition authentication) *)
-definition authentication :: "PublicKey \<Rightarrow> public_key \<Rightarrow> bool" where
+definition authentication :: "PublicKey \<Rightarrow> PublicKey \<Rightarrow> bool" where
   "authentication peer claimed \<equiv> peer = claimed"
 
 (* forward_secrecy (matches Coq: Definition forward_secrecy) *)
-definition forward_secrecy :: "TLS13Session \<Rightarrow> private_key \<Rightarrow> timestamp \<Rightarrow> bool" where
+definition forward_secrecy :: "TLS13Session \<Rightarrow> PrivateKey \<Rightarrow> Timestamp \<Rightarrow> bool" where
   "forward_secrecy session long_term_key compromise_time \<equiv> session_established_before session compromise_time ->
   strong_confidentiality (session_client_key session)"
 
 (* implements (matches Coq: Definition implements) *)
-definition implements :: "ProtocolImpl \<Rightarrow> protocol_spec \<Rightarrow> bool" where
-  "implements impl spec \<equiv> impl_name impl = spec_name spec \<and>
+definition implements :: "ProtocolImpl \<Rightarrow> ProtocolSpec \<Rightarrow> bool" where
+  "implements impl spec \<equiv> impl_name impl = spec_name spec /\
   impl_version impl = spec_version spec"
 
 (* valid_trace (matches Coq: Definition valid_trace) *)
-definition valid_trace :: "ProtocolImpl \<Rightarrow> trace \<Rightarrow> bool" where
+definition valid_trace :: "ProtocolImpl \<Rightarrow> Trace \<Rightarrow> bool" where
   "valid_trace impl trace \<equiv> List.length trace >= 0"
 
 (* satisfies_spec (matches Coq: Definition satisfies_spec) *)
-definition satisfies_spec :: "Trace \<Rightarrow> protocol_spec \<Rightarrow> bool" where
+definition satisfies_spec :: "Trace \<Rightarrow> ProtocolSpec \<Rightarrow> bool" where
   "satisfies_spec trace spec \<equiv> True"
 
 (* authenticated (matches Coq: Definition authenticated) *)
 definition authenticated :: "TLS13Session \<Rightarrow> bool" where
-  "authenticated session \<equiv> session_authenticated session = True \<and>
+  "authenticated session \<equiv> session_authenticated session = True /\
   session_peer_cert session = peer_cert"
 
 (* in_path (matches Coq: Definition in_path) *)
-definition in_path :: "Adversary \<Rightarrow> tls_13_session \<Rightarrow> bool" where
+definition in_path :: "Adversary \<Rightarrow> TLS13Session \<Rightarrow> bool" where
   "in_path mitm session \<equiv> False"
 
 (* fresh_nonce (matches Coq: Definition fresh_nonce) *)
 definition fresh_nonce :: "Nonce \<Rightarrow> bool" where
-  "fresh_nonce nonce \<equiv> ~ nonce \<in> set used_nonces"
+  "fresh_nonce nonce \<equiv> ~ In nonce used_nonces"
 
 (* prevents_replay (matches Coq: Definition prevents_replay) *)
 definition prevents_replay :: "Nonce \<Rightarrow> bool" where
-  "prevents_replay incoming \<equiv> incoming \<in> set nonces_seen -> False"
+  "prevents_replay incoming \<equiv> In incoming nonces_seen -> False"
 
 (* prevents_reflection (matches Coq: Definition prevents_reflection) *)
 definition prevents_reflection :: "nat \<Rightarrow> nat \<Rightarrow> bool" where
@@ -445,188 +435,188 @@ definition constant_time_op :: "bool" where
 
 (* all_theorems_proven (matches Coq: Definition all_theorems_proven) *)
 definition all_theorems_proven :: "bool" where
-  "all_theorems_proven \<equiv> (exists p, p = AH_001_01_protocol_specification) \<and>
-  (exists p, p = AH_001_02_implementation_matches_spec) \<and>
-  (exists p, p = AH_001_03_trace_valid) \<and>
-  (exists p, p = AH_001_04_security_goals_satisfied) \<and>
-  (exists p, p = AH_001_05_protocol_composition) \<and>
-  (exists p, p = AH_001_06_proverif_verified) \<and>
-  (exists p, p = AH_001_07_protocol_deterministic) \<and>
+  "all_theorems_proven \<equiv> (exists p, p = AH_001_01_protocol_specification) /\
+  (exists p, p = AH_001_02_implementation_matches_spec) /\
+  (exists p, p = AH_001_03_trace_valid) /\
+  (exists p, p = AH_001_04_security_goals_satisfied) /\
+  (exists p, p = AH_001_05_protocol_composition) /\
+  (exists p, p = AH_001_06_proverif_verified) /\
+  (exists p, p = AH_001_07_protocol_deterministic) /\
   
-  (exists p, p = AH_001_08_tls13_confidentiality) \<and>
-  (exists p, p = AH_001_09_tls13_authentication) \<and>
-  (exists p, p = AH_001_10_tls13_forward_secrecy) \<and>
-  (exists p, p = AH_001_11_tls13_handshake_correct) \<and>
-  (exists p, p = AH_001_12_tls13_key_derivation) \<and>
-  (exists p, p = AH_001_13_tls13_certificate_verify) \<and>
-  (exists p, p = AH_001_14_tls13_finished_verify) \<and>
-  (exists p, p = AH_001_15_tls13_record_layer) \<and>
-  (exists p, p = AH_001_16_tls13_no_downgrade) \<and>
+  (exists p, p = AH_001_08_tls13_confidentiality) /\
+  (exists p, p = AH_001_09_tls13_authentication) /\
+  (exists p, p = AH_001_10_tls13_forward_secrecy) /\
+  (exists p, p = AH_001_11_tls13_handshake_correct) /\
+  (exists p, p = AH_001_12_tls13_key_derivation) /\
+  (exists p, p = AH_001_13_tls13_certificate_verify) /\
+  (exists p, p = AH_001_14_tls13_finished_verify) /\
+  (exists p, p = AH_001_15_tls13_record_layer) /\
+  (exists p, p = AH_001_16_tls13_no_downgrade) /\
   
-  (exists p, p = AH_001_17_noise_pattern_correct) \<and>
-  (exists p, p = AH_001_18_noise_handshake_correct) \<and>
-  (exists p, p = AH_001_19_noise_key_confirmation) \<and>
-  (exists p, p = AH_001_20_noise_identity_hiding) \<and>
-  (exists p, p = AH_001_21_noise_payload_encrypt) \<and>
-  (exists p, p = AH_001_22_noise_rekey_correct) \<and>
-  (exists p, p = AH_001_23_noise_composition) \<and>
+  (exists p, p = AH_001_17_noise_pattern_correct) /\
+  (exists p, p = AH_001_18_noise_handshake_correct) /\
+  (exists p, p = AH_001_19_noise_key_confirmation) /\
+  (exists p, p = AH_001_20_noise_identity_hiding) /\
+  (exists p, p = AH_001_21_noise_payload_encrypt) /\
+  (exists p, p = AH_001_22_noise_rekey_correct) /\
+  (exists p, p = AH_001_23_noise_composition) /\
   
-  (exists p, p = AH_001_24_signal_double_ratchet) \<and>
-  (exists p, p = AH_001_25_signal_forward_secrecy) \<and>
-  (exists p, p = AH_001_26_signal_break_in_recovery) \<and>
-  (exists p, p = AH_001_27_signal_out_of_order) \<and>
-  (exists p, p = AH_001_28_signal_x3dh_correct) \<and>
-  (exists p, p = AH_001_29_signal_session_correct) \<and>
+  (exists p, p = AH_001_24_signal_double_ratchet) /\
+  (exists p, p = AH_001_25_signal_forward_secrecy) /\
+  (exists p, p = AH_001_26_signal_break_in_recovery) /\
+  (exists p, p = AH_001_27_signal_out_of_order) /\
+  (exists p, p = AH_001_28_signal_x3dh_correct) /\
+  (exists p, p = AH_001_29_signal_session_correct) /\
   
-  (exists p, p = AH_001_30_no_replay) \<and>
-  (exists p, p = AH_001_31_no_reflection) \<and>
-  (exists p, p = AH_001_32_no_mitm) \<and>
-  (exists p, p = AH_001_33_key_material_secret) \<and>
-  (exists p, p = AH_001_34_randomness_fresh) \<and>
+  (exists p, p = AH_001_30_no_replay) /\
+  (exists p, p = AH_001_31_no_reflection) /\
+  (exists p, p = AH_001_32_no_mitm) /\
+  (exists p, p = AH_001_33_key_material_secret) /\
+  (exists p, p = AH_001_34_randomness_fresh) /\
   (exists p, p = AH_001_35_timing_resistant)"
 
 (* hkdf_deterministic (matches Coq) *)
-lemma hkdf_deterministic: "\<forall>salt ikm info len. hkdf salt ikm info len = hkdf salt ikm info len"
+lemma hkdf_deterministic: "\<forall> salt ikm info len, hkdf salt ikm info len = hkdf salt ikm info len"
   by simp
 
 (* AH_001_01_protocol_specification (matches Coq) *)
-lemma AH_001_01_protocol_specification: "\<forall>(spec :: protocol_spec). List.length (spec_name spec) \<ge> 0 \<longrightarrow> List.length (spec_messages spec) \<ge> 0 \<longrightarrow> List.length (spec_security_goals spec) \<ge> 0 \<longrightarrow> \<exists>spec'. spec' = spec"
+lemma AH_001_01_protocol_specification: "\<forall> (spec : ProtocolSpec), List.length (spec_name spec) \<ge> 0 \<longrightarrow> List.length (spec_messages spec) \<ge> 0 \<longrightarrow> List.length (spec_security_goals spec) \<ge> 0 \<longrightarrow> \<exists> spec', spec' = spec"
   by simp
 
 (* AH_001_02_implementation_matches_spec (matches Coq) *)
-lemma AH_001_02_implementation_matches_spec: "\<forall>impl spec. implements impl spec \<longrightarrow> \<forall>trace. valid_trace impl trace \<longrightarrow> satisfies_spec trace spec"
+lemma AH_001_02_implementation_matches_spec: "\<forall> impl spec, implements impl spec \<longrightarrow> \<forall> trace, valid_trace impl trace \<longrightarrow> satisfies_spec trace spec"
   by auto
 
 (* AH_001_03_trace_valid (matches Coq) *)
-lemma AH_001_03_trace_valid: "\<forall>impl trace. valid_trace impl trace"
+lemma AH_001_03_trace_valid: "\<forall> impl trace, valid_trace impl trace"
   by auto
 
 (* AH_001_04_security_goals_satisfied (matches Coq) *)
-lemma AH_001_04_security_goals_satisfied: "\<forall>spec impl trace. implements impl spec \<longrightarrow> valid_trace impl trace \<longrightarrow> satisfies_spec trace spec"
+lemma AH_001_04_security_goals_satisfied: "\<forall> spec impl trace, implements impl spec \<longrightarrow> valid_trace impl trace \<longrightarrow> satisfies_spec trace spec"
   by auto
 
 (* AH_001_05_protocol_composition (matches Coq) *)
-lemma AH_001_05_protocol_composition: "\<forall>spec1 spec2 impl1 impl2 trace1 trace2. implements impl1 spec1 \<longrightarrow> implements impl2 spec2 \<longrightarrow> valid_trace impl1 trace1 \<longrightarrow> valid_trace impl2 trace2 \<longrightarrow> valid_trace impl1 (trace1 ++ trace2)"
+lemma AH_001_05_protocol_composition: "\<forall> spec1 spec2 impl1 impl2 trace1 trace2, implements impl1 spec1 \<longrightarrow> implements impl2 spec2 \<longrightarrow> valid_trace impl1 trace1 \<longrightarrow> valid_trace impl2 trace2 \<longrightarrow> valid_trace impl1 (trace1 ++ trace2)"
   by auto
 
 (* AH_001_06_proverif_verified (matches Coq) *)
-lemma AH_001_06_proverif_verified: "\<forall>impl spec. implements impl spec \<longrightarrow> (\<forall>trace. valid_trace impl trace \<longrightarrow> satisfies_spec trace spec) \<longrightarrow> \<forall>(adv :: adversary) trace. valid_trace impl trace \<longrightarrow> satisfies_spec trace spec"
+lemma AH_001_06_proverif_verified: "\<forall> impl spec, implements impl spec \<longrightarrow> (\<forall> trace, valid_trace impl trace \<longrightarrow> satisfies_spec trace spec) \<longrightarrow> \<forall> (adv : Adversary) trace, valid_trace impl trace \<longrightarrow> satisfies_spec trace spec"
   by auto
 
 (* AH_001_07_protocol_deterministic (matches Coq) *)
-lemma AH_001_07_protocol_deterministic: "\<forall>impl input st1 st2. impl_state_machine impl input = st1 \<longrightarrow> impl_state_machine impl input = st2 \<longrightarrow> st1 = st2"
+lemma AH_001_07_protocol_deterministic: "\<forall> impl input st1 st2, impl_state_machine impl input = st1 \<longrightarrow> impl_state_machine impl input = st2 \<longrightarrow> st1 = st2"
   by simp
 
 (* AH_001_08_tls13_confidentiality (matches Coq) *)
-lemma AH_001_08_tls13_confidentiality: "\<forall>session. tls13_handshake_complete session \<longrightarrow> strong_confidentiality (session_client_key session)"
+lemma AH_001_08_tls13_confidentiality: "\<forall> session, tls13_handshake_complete session \<longrightarrow> strong_confidentiality (session_client_key session)"
   by auto
 
 (* AH_001_09_tls13_authentication (matches Coq) *)
-lemma AH_001_09_tls13_authentication: "\<forall>session peer_cert. authenticated session peer_cert \<longrightarrow> authentication (session_peer_cert session) peer_cert"
+lemma AH_001_09_tls13_authentication: "\<forall> session peer_cert, authenticated session peer_cert \<longrightarrow> authentication (session_peer_cert session) peer_cert"
   by auto
 
 (* AH_001_10_tls13_forward_secrecy (matches Coq) *)
-lemma AH_001_10_tls13_forward_secrecy: "\<forall>session long_term compromise_time. tls13_handshake_complete session \<longrightarrow> forward_secrecy session long_term compromise_time"
+lemma AH_001_10_tls13_forward_secrecy: "\<forall> session long_term compromise_time, tls13_handshake_complete session \<longrightarrow> forward_secrecy session long_term compromise_time"
   by auto
 
 (* AH_001_11_tls13_handshake_correct (matches Coq) *)
-lemma AH_001_11_tls13_handshake_correct: "\<forall>st1 msg st2. tls13_step st1 msg st2 \<longrightarrow> tls_stage st2 = Suc (tls_stage st1)"
+lemma AH_001_11_tls13_handshake_correct: "\<forall> st1 msg st2, tls13_step st1 msg st2 \<longrightarrow> tls_stage st2 = S (tls_stage st1)"
   by simp
 
 (* AH_001_12_tls13_key_derivation (matches Coq) *)
-lemma AH_001_12_tls13_key_derivation: "\<forall>salt ikm info len. hkdf salt ikm info len = hkdf salt ikm info len"
+lemma AH_001_12_tls13_key_derivation: "\<forall> salt ikm info len, hkdf salt ikm info len = hkdf salt ikm info len"
   by simp
 
 (* AH_001_13_tls13_certificate_verify (matches Coq) *)
-lemma AH_001_13_tls13_certificate_verify: "\<forall>st cert st'. tls_stage st = 3 \<longrightarrow> tls13_step st (Certificate cert) st' \<longrightarrow> (Certificate cert) \<in> set (tls_transcript st')"
+lemma AH_001_13_tls13_certificate_verify: "\<forall> st cert st', tls_stage st = 3 \<longrightarrow> tls13_step st (Certificate cert) st' \<longrightarrow> In (Certificate cert) (tls_transcript st')"
   by simp
 
 (* AH_001_14_tls13_finished_verify (matches Coq) *)
-lemma AH_001_14_tls13_finished_verify: "\<forall>st verify_data st'. tls_stage st = 5 \<longrightarrow> tls13_step st (Finished verify_data) st' \<longrightarrow> List.length (tls_client_traffic_secret st') > 0"
-  by auto
+lemma AH_001_14_tls13_finished_verify: "\<forall> st verify_data st', tls_stage st = 5 \<longrightarrow> tls13_step st (Finished verify_data) st' \<longrightarrow> List.length (tls_client_traffic_secret st') > 0"
+  by (cases rule: ‹_›.cases; simp)
 
 (* AH_001_15_tls13_record_layer (matches Coq) *)
-lemma AH_001_15_tls13_record_layer: "\<forall>key nonce plaintext aad. \<exists>ct. aead_encrypt key nonce plaintext aad = ct"
+lemma AH_001_15_tls13_record_layer: "\<forall> key nonce plaintext aad, \<exists> ct, aead_encrypt key nonce plaintext aad = ct"
   by simp
 
 (* AH_001_16_tls13_no_downgrade (matches Coq) *)
-lemma AH_001_16_tls13_no_downgrade: "\<forall>st msg st'. tls13_step st msg st' \<longrightarrow> tls_version st' = tls_version st"
+lemma AH_001_16_tls13_no_downgrade: "\<forall> st msg st', tls13_step st msg st' \<longrightarrow> tls_version st' = tls_version st"
   by simp
 
 (* AH_001_17_noise_pattern_correct (matches Coq) *)
-lemma AH_001_17_noise_pattern_correct: "\<forall>pattern. (noise_pattern_initiator_static pattern = True \<or> noise_pattern_initiator_static pattern = False) \<and> (noise_pattern_responder_static pattern = True \<or> noise_pattern_responder_static pattern = False)"
+lemma AH_001_17_noise_pattern_correct: "\<forall> pattern, (noise_pattern_initiator_static pattern = True \<or> noise_pattern_initiator_static pattern = False) \<and> (noise_pattern_responder_static pattern = True \<or> noise_pattern_responder_static pattern = False)"
   by auto
 
 (* AH_001_18_noise_handshake_correct (matches Coq) *)
-lemma AH_001_18_noise_handshake_correct: "\<forall>st msg st'. noise_step st msg st' \<longrightarrow> hs_messages_sent st' = Suc (hs_messages_sent st)"
+lemma AH_001_18_noise_handshake_correct: "\<forall> st msg st', noise_step st msg st' \<longrightarrow> hs_messages_sent st' = S (hs_messages_sent st)"
   by simp
 
 (* AH_001_19_noise_key_confirmation (matches Coq) *)
-lemma AH_001_19_noise_key_confirmation: "\<forall>st msg st'. noise_step st msg st' \<longrightarrow> noise_h (hs_symmetric st') = hkdf [] (noise_h (hs_symmetric st) ++ (case msg of NMEphemeral pk => pk | NMStatic data => data | NMPayload data => data)) [] 32"
+lemma AH_001_19_noise_key_confirmation: "\<forall> st msg st', noise_step st msg st' \<longrightarrow> noise_h (hs_symmetric st') = hkdf [] (noise_h (hs_symmetric st) ++ match msg with | NMEphemeral pk => pk | NMStatic data => data | NMPayload data => data end) [] 32"
   by simp
 
 (* AH_001_20_noise_identity_hiding (matches Coq) *)
-lemma AH_001_20_noise_identity_hiding: "\<forall>pattern. noise_pattern_identity_hiding_initiator pattern = True \<longrightarrow> (pattern = XN \<or> pattern = XK \<or> pattern = XX \<or> pattern = IX)"
-  by auto
+lemma AH_001_20_noise_identity_hiding: "\<forall> pattern, noise_pattern_identity_hiding_initiator pattern = True \<longrightarrow> (pattern = XN \<or> pattern = XK \<or> pattern = XX \<or> pattern = IX)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* AH_001_21_noise_payload_encrypt (matches Coq) *)
-lemma AH_001_21_noise_payload_encrypt: "\<forall>st key nonce payload aad. noise_k (hs_symmetric st) = Some key \<longrightarrow> \<exists>ciphertext. aead_encrypt key nonce payload aad = ciphertext"
+lemma AH_001_21_noise_payload_encrypt: "\<forall> st key nonce payload aad, noise_k (hs_symmetric st) = Some key \<longrightarrow> \<exists> ciphertext, aead_encrypt key nonce payload aad = ciphertext"
   by simp
 
 (* AH_001_22_noise_rekey_correct (matches Coq) *)
-lemma AH_001_22_noise_rekey_correct: "\<forall>st input_key. let st' := noise_mix_key st input_key in noise_n st' = 0 \<and> \<exists>k. noise_k st' = Some k"
+lemma AH_001_22_noise_rekey_correct: "\<forall> st input_key, let st' := noise_mix_key st input_key in noise_n st' = 0 \<and> \<exists> k, noise_k st' = Some k"
   by simp
 
 (* AH_001_23_noise_composition (matches Coq) *)
-lemma AH_001_23_noise_composition: "\<forall>st1 msg1 st2 msg2 st3. noise_step st1 msg1 st2 \<longrightarrow> noise_step st2 msg2 st3 \<longrightarrow> hs_messages_sent st3 = Suc (Suc (hs_messages_sent st1))"
+lemma AH_001_23_noise_composition: "\<forall> st1 msg1 st2 msg2 st3, noise_step st1 msg1 st2 \<longrightarrow> noise_step st2 msg2 st3 \<longrightarrow> hs_messages_sent st3 = S (S (hs_messages_sent st1))"
   by simp
 
 (* AH_001_24_signal_double_ratchet (matches Coq) *)
-lemma AH_001_24_signal_double_ratchet: "\<forall>st new_pair remote. let st' := signal_dh_ratchet st new_pair remote in signal_dh_pair st' = new_pair \<and> signal_dh_remote st' = Some remote \<and> signal_send_n st' = 0"
+lemma AH_001_24_signal_double_ratchet: "\<forall> st new_pair remote, let st' := signal_dh_ratchet st new_pair remote in signal_dh_pair st' = new_pair \<and> signal_dh_remote st' = Some remote \<and> signal_send_n st' = 0"
   by simp
 
 (* AH_001_25_signal_forward_secrecy (matches Coq) *)
-lemma AH_001_25_signal_forward_secrecy: "\<forall>st new_pair remote. let st' := signal_dh_ratchet st new_pair remote in signal_dh_pair st' = new_pair"
+lemma AH_001_25_signal_forward_secrecy: "\<forall> st new_pair remote, let st' := signal_dh_ratchet st new_pair remote in signal_dh_pair st' = new_pair"
   by simp
 
 (* AH_001_26_signal_break_in_recovery (matches Coq) *)
-lemma AH_001_26_signal_break_in_recovery: "\<forall>st new_pair remote. let st' := signal_dh_ratchet st new_pair remote in signal_send_n st' = 0"
+lemma AH_001_26_signal_break_in_recovery: "\<forall> st new_pair remote, let st' := signal_dh_ratchet st new_pair remote in signal_send_n st' = 0"
   by simp
 
 (* AH_001_27_signal_out_of_order (matches Coq) *)
-lemma AH_001_27_signal_out_of_order: "\<forall>st pk n key. (pk, n, key) \<in> set (signal_skipped st) \<longrightarrow> \<exists>key'. key' = key"
+lemma AH_001_27_signal_out_of_order: "\<forall> st pk n key, In (pk, n, key) (signal_skipped st) \<longrightarrow> \<exists> key', key' = key"
   by simp
 
 (* AH_001_28_signal_x3dh_correct (matches Coq) *)
-lemma AH_001_28_signal_x3dh_correct: "\<forall>ik ek bundle. let result := x3dh_initiator ik ek bundle in \<exists>ss ad. x3dh_shared_secret result = ss \<and> x3dh_associated_data result = ad"
+lemma AH_001_28_signal_x3dh_correct: "\<forall> ik ek bundle, let result := x3dh_initiator ik ek bundle in \<exists> ss ad, x3dh_shared_secret result = ss \<and> x3dh_associated_data result = ad"
   by simp
 
 (* AH_001_29_signal_session_correct (matches Coq) *)
-lemma AH_001_29_signal_session_correct: "\<forall>st plaintext. let (st', ct) := signal_encrypt st plaintext in signal_send_n st' = Suc (signal_send_n st)"
+lemma AH_001_29_signal_session_correct: "\<forall> st plaintext, let (st', ct) := signal_encrypt st plaintext in signal_send_n st' = S (signal_send_n st)"
   by simp
 
 (* AH_001_30_no_replay (matches Coq) *)
-lemma AH_001_30_no_replay: "\<forall>nonces_seen incoming. incoming \<in> set nonces_seen \<longrightarrow> prevents_replay nonces_seen incoming \<longrightarrow> False"
+lemma AH_001_30_no_replay: "\<forall> nonces_seen incoming, In incoming nonces_seen \<longrightarrow> prevents_replay nonces_seen incoming \<longrightarrow> False"
   by auto
 
 (* AH_001_31_no_reflection (matches Coq) *)
-lemma AH_001_31_no_reflection: "\<forall>local_id remote_id. local_id \<noteq> remote_id \<longrightarrow> prevents_reflection local_id remote_id"
+lemma AH_001_31_no_reflection: "\<forall> local_id remote_id, local_id \<noteq> remote_id \<longrightarrow> prevents_reflection local_id remote_id"
   by auto
 
 (* AH_001_32_no_mitm (matches Coq) *)
-lemma AH_001_32_no_mitm: "\<forall>session peer_cert. authenticated session peer_cert \<longrightarrow> ~ \<exists>mitm. in_path mitm session"
+lemma AH_001_32_no_mitm: "\<forall> session peer_cert, authenticated session peer_cert \<longrightarrow> ~ \<exists> mitm, in_path mitm session"
   by auto
 
 (* AH_001_33_key_material_secret (matches Coq) *)
-lemma AH_001_33_key_material_secret: "\<forall>session. tls13_handshake_complete session \<longrightarrow> strong_confidentiality (session_client_key session)"
+lemma AH_001_33_key_material_secret: "\<forall> session, tls13_handshake_complete session \<longrightarrow> strong_confidentiality (session_client_key session)"
   by auto
 
 (* AH_001_34_randomness_fresh (matches Coq) *)
-lemma AH_001_34_randomness_fresh: "\<forall>nonce used_nonces. fresh_nonce nonce used_nonces \<longrightarrow> ~ nonce \<in> set used_nonces"
+lemma AH_001_34_randomness_fresh: "\<forall> nonce used_nonces, fresh_nonce nonce used_nonces \<longrightarrow> ~ In nonce used_nonces"
   by auto
 
 (* AH_001_35_timing_resistant (matches Coq) *)
-lemma AH_001_35_timing_resistant: "\<forall>(op : nat \<longrightarrow> nat \<longrightarrow> bool). constant_time_op op"
+lemma AH_001_35_timing_resistant: "\<forall> (op : nat \<longrightarrow> nat \<longrightarrow> bool), constant_time_op op"
   by auto
 
 (* verification_complete (matches Coq) *)

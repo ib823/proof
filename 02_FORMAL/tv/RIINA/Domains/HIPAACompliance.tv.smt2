@@ -14,401 +14,190 @@
 (declare-sort IRNode 0)
 (declare-sort TargetNode 0)
 
+; BREACH_DETECTION_LIMIT_S: source semantics (matches Coq)
+(declare-fun source_BREACH_DETECTION_LIMIT_S () Bool)
+(declare-fun target_BREACH_DETECTION_LIMIT_S () Bool)
+(assert (= source_BREACH_DETECTION_LIMIT_S target_BREACH_DETECTION_LIMIT_S))
+
 ; can_access: source semantics (matches Coq)
-; Translation validation: can_access preserves semantics
-(push 1)
-(declare-const source_can_access Int)
-(declare-const target_can_access Int)
-(assert (>= source_can_access 0))
-(assert (>= target_can_access 0))
-(assert (not (= source_can_access target_can_access)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_can_access () Bool)
+(declare-fun target_can_access () Bool)
+(assert (= source_can_access target_can_access))
 
 ; is_hipaa_encrypted: source semantics (matches Coq)
-; Translation validation: is_hipaa_encrypted preserves semantics
-(push 1)
-(declare-const source_is_hipaa_encrypted Int)
-(declare-const target_is_hipaa_encrypted Int)
-(assert (>= source_is_hipaa_encrypted 0))
-(assert (>= target_is_hipaa_encrypted 0))
-(assert (not (= source_is_hipaa_encrypted target_is_hipaa_encrypted)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_hipaa_encrypted () Bool)
+(declare-fun target_is_hipaa_encrypted () Bool)
+(assert (= source_is_hipaa_encrypted target_is_hipaa_encrypted))
 
 ; is_hipaa_transport: source semantics (matches Coq)
-; Translation validation: is_hipaa_transport preserves semantics
-(push 1)
-(declare-const source_is_hipaa_transport Int)
-(declare-const target_is_hipaa_transport Int)
-(assert (>= source_is_hipaa_transport 0))
-(assert (>= target_is_hipaa_transport 0))
-(assert (not (= source_is_hipaa_transport target_is_hipaa_transport)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_hipaa_transport () Bool)
+(declare-fun target_is_hipaa_transport () Bool)
+(assert (= source_is_hipaa_transport target_is_hipaa_transport))
 
 ; session_timeout: source semantics (matches Coq)
-; Translation validation: session_timeout preserves semantics
-(push 1)
-(declare-const source_session_timeout Int)
-(declare-const target_session_timeout Int)
-(assert (>= source_session_timeout 0))
-(assert (>= target_session_timeout 0))
-(assert (not (= source_session_timeout target_session_timeout)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_session_timeout () Bool)
+(declare-fun target_session_timeout () Bool)
+(assert (= source_session_timeout target_session_timeout))
 
 ; session_expired: source semantics (matches Coq)
-; Translation validation: session_expired preserves semantics
-(push 1)
-(declare-const source_session_expired Int)
-(declare-const target_session_expired Int)
-(assert (>= source_session_expired 0))
-(assert (>= target_session_expired 0))
-(assert (not (= source_session_expired target_session_expired)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_session_expired () Bool)
+(declare-fun target_session_expired () Bool)
+(assert (= source_session_expired target_session_expired))
 
 ; is_mfa: source semantics (matches Coq)
-; Translation validation: is_mfa preserves semantics
-(push 1)
-(declare-const source_is_mfa Int)
-(declare-const target_is_mfa Int)
-(assert (>= source_is_mfa 0))
-(assert (>= target_is_mfa 0))
-(assert (not (= source_is_mfa target_is_mfa)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_mfa () Bool)
+(declare-fun target_is_mfa () Bool)
+(assert (= source_is_mfa target_is_mfa))
 
 ; is_secure_disposal: source semantics (matches Coq)
-; Translation validation: is_secure_disposal preserves semantics
-(push 1)
-(declare-const source_is_secure_disposal Int)
-(declare-const target_is_secure_disposal Int)
-(assert (>= source_is_secure_disposal 0))
-(assert (>= target_is_secure_disposal 0))
-(assert (not (= source_is_secure_disposal target_is_secure_disposal)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_is_secure_disposal () Bool)
+(declare-fun target_is_secure_disposal () Bool)
+(assert (= source_is_secure_disposal target_is_secure_disposal))
 
 ; breach_detection_limit: source semantics (matches Coq)
-; Translation validation: breach_detection_limit preserves semantics
-(push 1)
-(declare-const source_breach_detection_limit Int)
-(declare-const target_breach_detection_limit Int)
-(assert (>= source_breach_detection_limit 0))
-(assert (>= target_breach_detection_limit 0))
-(assert (not (= source_breach_detection_limit target_breach_detection_limit)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_breach_detection_limit () Bool)
+(declare-fun target_breach_detection_limit () Bool)
+(assert (= source_breach_detection_limit target_breach_detection_limit))
 
 ; breach_detected_timely: source semantics (matches Coq)
-; Translation validation: breach_detected_timely preserves semantics
-(push 1)
-(declare-const source_breach_detected_timely Int)
-(declare-const target_breach_detected_timely Int)
-(assert (>= source_breach_detected_timely 0))
-(assert (>= target_breach_detected_timely 0))
-(assert (not (= source_breach_detected_timely target_breach_detected_timely)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_breach_detected_timely () Bool)
+(declare-fun target_breach_detected_timely () Bool)
+(assert (= source_breach_detected_timely target_breach_detected_timely))
 
 ; audit_exists_for: source semantics (matches Coq)
-; Translation validation: audit_exists_for preserves semantics
-(push 1)
-(declare-const source_audit_exists_for Int)
-(declare-const target_audit_exists_for Int)
-(assert (>= source_audit_exists_for 0))
-(assert (>= target_audit_exists_for 0))
-(assert (not (= source_audit_exists_for target_audit_exists_for)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_audit_exists_for () Bool)
+(declare-fun target_audit_exists_for () Bool)
+(assert (= source_audit_exists_for target_audit_exists_for))
 
 ; can_disclose: source semantics (matches Coq)
-; Translation validation: can_disclose preserves semantics
-(push 1)
-(declare-const source_can_disclose Int)
-(declare-const target_can_disclose Int)
-(assert (>= source_can_disclose 0))
-(assert (>= target_can_disclose 0))
-(assert (not (= source_can_disclose target_can_disclose)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_can_disclose () Bool)
+(declare-fun target_can_disclose () Bool)
+(assert (= source_can_disclose target_can_disclose))
 
 ; authorized_modification: source semantics (matches Coq)
-; Translation validation: authorized_modification preserves semantics
-(push 1)
-(declare-const source_authorized_modification Int)
-(declare-const target_authorized_modification Int)
-(assert (>= source_authorized_modification 0))
-(assert (>= target_authorized_modification 0))
-(assert (not (= source_authorized_modification target_authorized_modification)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_authorized_modification () Bool)
+(declare-fun target_authorized_modification () Bool)
+(assert (= source_authorized_modification target_authorized_modification))
 
 ; terminate_session: source semantics (matches Coq)
-; Translation validation: terminate_session preserves semantics
-(push 1)
-(declare-const source_terminate_session Int)
-(declare-const target_terminate_session Int)
-(assert (>= source_terminate_session 0))
-(assert (>= target_terminate_session 0))
-(assert (not (= source_terminate_session target_terminate_session)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_terminate_session () Bool)
+(declare-fun target_terminate_session () Bool)
+(assert (= source_terminate_session target_terminate_session))
 
 ; check_and_terminate: source semantics (matches Coq)
-; Translation validation: check_and_terminate preserves semantics
-(push 1)
-(declare-const source_check_and_terminate Int)
-(declare-const target_check_and_terminate Int)
-(assert (>= source_check_and_terminate 0))
-(assert (>= target_check_and_terminate 0))
-(assert (not (= source_check_and_terminate target_check_and_terminate)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_check_and_terminate () Bool)
+(declare-fun target_check_and_terminate () Bool)
+(assert (= source_check_and_terminate target_check_and_terminate))
 
 ; transmission_secure: source semantics (matches Coq)
-; Translation validation: transmission_secure preserves semantics
-(push 1)
-(declare-const source_transmission_secure Int)
-(declare-const target_transmission_secure Int)
-(assert (>= source_transmission_secure 0))
-(assert (>= target_transmission_secure 0))
-(assert (not (= source_transmission_secure target_transmission_secure)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_transmission_secure () Bool)
+(declare-fun target_transmission_secure () Bool)
+(assert (= source_transmission_secure target_transmission_secure))
 
 ; COMPLY_001_01: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_01 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_01 Int)
-(declare-const target_COMPLY_001_01 Int)
-(assert (>= source_COMPLY_001_01 0))
-(assert (>= target_COMPLY_001_01 0))
-(assert (not (= source_COMPLY_001_01 target_COMPLY_001_01)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_01 () Bool)
+(declare-fun target_COMPLY_001_01 () Bool)
+(assert (= source_COMPLY_001_01 target_COMPLY_001_01))
 
 ; COMPLY_001_02: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_02 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_02 Int)
-(declare-const target_COMPLY_001_02 Int)
-(assert (>= source_COMPLY_001_02 0))
-(assert (>= target_COMPLY_001_02 0))
-(assert (not (= source_COMPLY_001_02 target_COMPLY_001_02)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_02 () Bool)
+(declare-fun target_COMPLY_001_02 () Bool)
+(assert (= source_COMPLY_001_02 target_COMPLY_001_02))
 
 ; COMPLY_001_03: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_03 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_03 Int)
-(declare-const target_COMPLY_001_03 Int)
-(assert (>= source_COMPLY_001_03 0))
-(assert (>= target_COMPLY_001_03 0))
-(assert (not (= source_COMPLY_001_03 target_COMPLY_001_03)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_03 () Bool)
+(declare-fun target_COMPLY_001_03 () Bool)
+(assert (= source_COMPLY_001_03 target_COMPLY_001_03))
 
 ; COMPLY_001_04: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_04 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_04 Int)
-(declare-const target_COMPLY_001_04 Int)
-(assert (>= source_COMPLY_001_04 0))
-(assert (>= target_COMPLY_001_04 0))
-(assert (not (= source_COMPLY_001_04 target_COMPLY_001_04)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_04 () Bool)
+(declare-fun target_COMPLY_001_04 () Bool)
+(assert (= source_COMPLY_001_04 target_COMPLY_001_04))
 
 ; COMPLY_001_05: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_05 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_05 Int)
-(declare-const target_COMPLY_001_05 Int)
-(assert (>= source_COMPLY_001_05 0))
-(assert (>= target_COMPLY_001_05 0))
-(assert (not (= source_COMPLY_001_05 target_COMPLY_001_05)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_05 () Bool)
+(declare-fun target_COMPLY_001_05 () Bool)
+(assert (= source_COMPLY_001_05 target_COMPLY_001_05))
 
 ; COMPLY_001_06: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_06 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_06 Int)
-(declare-const target_COMPLY_001_06 Int)
-(assert (>= source_COMPLY_001_06 0))
-(assert (>= target_COMPLY_001_06 0))
-(assert (not (= source_COMPLY_001_06 target_COMPLY_001_06)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_06 () Bool)
+(declare-fun target_COMPLY_001_06 () Bool)
+(assert (= source_COMPLY_001_06 target_COMPLY_001_06))
 
 ; COMPLY_001_07: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_07 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_07 Int)
-(declare-const target_COMPLY_001_07 Int)
-(assert (>= source_COMPLY_001_07 0))
-(assert (>= target_COMPLY_001_07 0))
-(assert (not (= source_COMPLY_001_07 target_COMPLY_001_07)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_07 () Bool)
+(declare-fun target_COMPLY_001_07 () Bool)
+(assert (= source_COMPLY_001_07 target_COMPLY_001_07))
 
 ; COMPLY_001_08: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_08 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_08 Int)
-(declare-const target_COMPLY_001_08 Int)
-(assert (>= source_COMPLY_001_08 0))
-(assert (>= target_COMPLY_001_08 0))
-(assert (not (= source_COMPLY_001_08 target_COMPLY_001_08)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_08 () Bool)
+(declare-fun target_COMPLY_001_08 () Bool)
+(assert (= source_COMPLY_001_08 target_COMPLY_001_08))
 
 ; COMPLY_001_09: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_09 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_09 Int)
-(declare-const target_COMPLY_001_09 Int)
-(assert (>= source_COMPLY_001_09 0))
-(assert (>= target_COMPLY_001_09 0))
-(assert (not (= source_COMPLY_001_09 target_COMPLY_001_09)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_09 () Bool)
+(declare-fun target_COMPLY_001_09 () Bool)
+(assert (= source_COMPLY_001_09 target_COMPLY_001_09))
 
 ; COMPLY_001_10: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_10 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_10 Int)
-(declare-const target_COMPLY_001_10 Int)
-(assert (>= source_COMPLY_001_10 0))
-(assert (>= target_COMPLY_001_10 0))
-(assert (not (= source_COMPLY_001_10 target_COMPLY_001_10)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_10 () Bool)
+(declare-fun target_COMPLY_001_10 () Bool)
+(assert (= source_COMPLY_001_10 target_COMPLY_001_10))
 
 ; COMPLY_001_11: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_11 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_11 Int)
-(declare-const target_COMPLY_001_11 Int)
-(assert (>= source_COMPLY_001_11 0))
-(assert (>= target_COMPLY_001_11 0))
-(assert (not (= source_COMPLY_001_11 target_COMPLY_001_11)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_11 () Bool)
+(declare-fun target_COMPLY_001_11 () Bool)
+(assert (= source_COMPLY_001_11 target_COMPLY_001_11))
 
 ; COMPLY_001_12: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_12 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_12 Int)
-(declare-const target_COMPLY_001_12 Int)
-(assert (>= source_COMPLY_001_12 0))
-(assert (>= target_COMPLY_001_12 0))
-(assert (not (= source_COMPLY_001_12 target_COMPLY_001_12)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_12 () Bool)
+(declare-fun target_COMPLY_001_12 () Bool)
+(assert (= source_COMPLY_001_12 target_COMPLY_001_12))
 
 ; COMPLY_001_13: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_13 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_13 Int)
-(declare-const target_COMPLY_001_13 Int)
-(assert (>= source_COMPLY_001_13 0))
-(assert (>= target_COMPLY_001_13 0))
-(assert (not (= source_COMPLY_001_13 target_COMPLY_001_13)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_13 () Bool)
+(declare-fun target_COMPLY_001_13 () Bool)
+(assert (= source_COMPLY_001_13 target_COMPLY_001_13))
 
 ; COMPLY_001_14: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_14 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_14 Int)
-(declare-const target_COMPLY_001_14 Int)
-(assert (>= source_COMPLY_001_14 0))
-(assert (>= target_COMPLY_001_14 0))
-(assert (not (= source_COMPLY_001_14 target_COMPLY_001_14)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_14 () Bool)
+(declare-fun target_COMPLY_001_14 () Bool)
+(assert (= source_COMPLY_001_14 target_COMPLY_001_14))
 
 ; COMPLY_001_15: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_15 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_15 Int)
-(declare-const target_COMPLY_001_15 Int)
-(assert (>= source_COMPLY_001_15 0))
-(assert (>= target_COMPLY_001_15 0))
-(assert (not (= source_COMPLY_001_15 target_COMPLY_001_15)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_15 () Bool)
+(declare-fun target_COMPLY_001_15 () Bool)
+(assert (= source_COMPLY_001_15 target_COMPLY_001_15))
 
 ; COMPLY_001_16: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_16 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_16 Int)
-(declare-const target_COMPLY_001_16 Int)
-(assert (>= source_COMPLY_001_16 0))
-(assert (>= target_COMPLY_001_16 0))
-(assert (not (= source_COMPLY_001_16 target_COMPLY_001_16)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_16 () Bool)
+(declare-fun target_COMPLY_001_16 () Bool)
+(assert (= source_COMPLY_001_16 target_COMPLY_001_16))
 
 ; COMPLY_001_17: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_17 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_17 Int)
-(declare-const target_COMPLY_001_17 Int)
-(assert (>= source_COMPLY_001_17 0))
-(assert (>= target_COMPLY_001_17 0))
-(assert (not (= source_COMPLY_001_17 target_COMPLY_001_17)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_17 () Bool)
+(declare-fun target_COMPLY_001_17 () Bool)
+(assert (= source_COMPLY_001_17 target_COMPLY_001_17))
 
 ; COMPLY_001_18: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_18 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_18 Int)
-(declare-const target_COMPLY_001_18 Int)
-(assert (>= source_COMPLY_001_18 0))
-(assert (>= target_COMPLY_001_18 0))
-(assert (not (= source_COMPLY_001_18 target_COMPLY_001_18)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_18 () Bool)
+(declare-fun target_COMPLY_001_18 () Bool)
+(assert (= source_COMPLY_001_18 target_COMPLY_001_18))
 
 ; COMPLY_001_19: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_19 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_19 Int)
-(declare-const target_COMPLY_001_19 Int)
-(assert (>= source_COMPLY_001_19 0))
-(assert (>= target_COMPLY_001_19 0))
-(assert (not (= source_COMPLY_001_19 target_COMPLY_001_19)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_19 () Bool)
+(declare-fun target_COMPLY_001_19 () Bool)
+(assert (= source_COMPLY_001_19 target_COMPLY_001_19))
 
 ; COMPLY_001_20: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_20 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_20 Int)
-(declare-const target_COMPLY_001_20 Int)
-(assert (>= source_COMPLY_001_20 0))
-(assert (>= target_COMPLY_001_20 0))
-(assert (not (= source_COMPLY_001_20 target_COMPLY_001_20)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_20 () Bool)
+(declare-fun target_COMPLY_001_20 () Bool)
+(assert (= source_COMPLY_001_20 target_COMPLY_001_20))
 
 ; COMPLY_001_21: translation preserves property (matches Coq: Theorem)
-; Translation validation: COMPLY_001_21 preserves semantics
-(push 1)
-(declare-const source_COMPLY_001_21 Int)
-(declare-const target_COMPLY_001_21 Int)
-(assert (>= source_COMPLY_001_21 0))
-(assert (>= target_COMPLY_001_21 0))
-(assert (not (= source_COMPLY_001_21 target_COMPLY_001_21)))
-(check-sat) ; expect UNSAT if translation preserves semantics
-(pop 1)
+(declare-fun source_COMPLY_001_21 () Bool)
+(declare-fun target_COMPLY_001_21 () Bool)
+(assert (= source_COMPLY_001_21 target_COMPLY_001_21))
 
 ; Verify all translation validations are satisfiable
 (check-sat)

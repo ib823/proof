@@ -52,11 +52,6 @@ theory IrisSeparationLogic
   imports Main
 begin
 
-(* Compatibility: Coq "value" maps to Isabelle "is_value" *)
-abbreviation value :: "expr \<Rightarrow> bool" where
-  "value \<equiv> is_value"
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym prop = "nat"
 (* hprop (matches Coq: Inductive hprop) *)
 datatype hprop =
     HEmpty
@@ -78,11 +73,11 @@ definition dom :: "heap \<Rightarrow> list loc" where
 
 (* mem (matches Coq: Definition mem) *)
 fun mem :: "nat \<Rightarrow> bool" where
-  "mem _ = True"
+
 
 (* disjoint (matches Coq: Definition disjoint) *)
 definition disjoint :: "bool" where
-  "disjoint \<equiv> forall l, l \<in> set (dom h1) -> l \<notin> set (dom h2)"
+  "disjoint \<equiv> forall l, In l (dom h1) -> ~ In l (dom h2)"
 
 (* heap_union (matches Coq: Definition heap_union) *)
 definition heap_union :: "heap" where
@@ -90,7 +85,7 @@ definition heap_union :: "heap" where
 
 (* heap_lookup (matches Coq: Definition heap_lookup) *)
 fun heap_lookup :: "heap \<Rightarrow> loc \<Rightarrow> option val" where
-  "heap_lookup _ = None"
+
 
 (* satisfies (matches Coq: Definition satisfies) *)
 fun satisfies :: "heap \<Rightarrow> hprop \<Rightarrow> bool" where
@@ -98,7 +93,7 @@ fun satisfies :: "heap \<Rightarrow> hprop \<Rightarrow> bool" where
 
 (* fempty (matches Coq: Definition fempty) *)
 definition fempty :: "fheap" where
-  "fempty \<equiv> \<lambda>_. None"
+  "fempty \<equiv> fun _ => None"
 
 (* fsingleton (matches Coq: Definition fsingleton) *)
 definition fsingleton :: "loc \<Rightarrow> val \<Rightarrow> fheap" where
@@ -109,94 +104,94 @@ definition fdisjoint :: "bool" where
   "fdisjoint \<equiv> forall l, h1 l = None \/ h2 l = None"
 
 (* funion - complex match, needs manual translation *)
-definition funion :: "bool" where "funion \<equiv> True"
+definition funion :: "bool" where "funion = undefined"
 
 (* fsat (matches Coq: Definition fsat) *)
 fun fsat :: "fheap \<Rightarrow> fprop \<Rightarrow> bool" where
   "fsat FEmpty = forall"
 
 (* 1 (matches Coq) *)
-lemma lemma_1: "Empty heap satisfies emp Theorem emp_empty : satisfies [] HEmpty"
+lemma 1: "Empty heap satisfies emp Theorem emp_empty : satisfies [] HEmpty"
   by simp
 
 (* 2 (matches Coq) *)
-lemma lemma_2: "Singleton heap satisfies points-to Theorem points_to_singleton : \<forall>l v. satisfies [(l, v)] (HPointsTo l v)"
+lemma 2: "Singleton heap satisfies points-to Theorem points_to_singleton : \<forall> l v, satisfies [(l, v)] (HPointsTo l v)"
   by simp
 
 (* disjoint_sym (matches Coq) *)
-lemma disjoint_sym: "\<forall>h1 h2. disjoint h1 h2 \<longrightarrow> disjoint h2 h1"
+lemma disjoint_sym: "\<forall> h1 h2, disjoint h1 h2 \<longrightarrow> disjoint h2 h1"
   by auto
 
 (* 3 (matches Coq) *)
-lemma lemma_3: "Star is commutative Theorem star_comm : \<forall>p1 p2 h. fsat h (FStar p1 p2) \<longrightarrow> fsat h (FStar p2 p1)"
+lemma 3: "Star is commutative Theorem star_comm : \<forall> p1 p2 h, fsat h (FStar p1 p2) \<longrightarrow> fsat h (FStar p2 p1)"
   by auto
 
 (* 4 (matches Coq) *)
-lemma lemma_4: "Star with emp is identity Theorem star_emp_l : \<forall>p h. fsat h p \<longrightarrow> fsat h (FStar FEmpty p)"
+lemma 4: "Star with emp is identity Theorem star_emp_l : \<forall> p h, fsat h p \<longrightarrow> fsat h (FStar FEmpty p)"
   by auto
 
 (* 5 (matches Coq) *)
-lemma lemma_5: "Points-to is exclusive Theorem points_to_exclusive : \<forall>l v1 v2 h. fsat h (FStar (FPointsTo l v1) (FPointsTo l v2)) \<longrightarrow> False"
+lemma 5: "Points-to is exclusive Theorem points_to_exclusive : \<forall> l v1 v2 h, fsat h (FStar (FPointsTo l v1) (FPointsTo l v2)) \<longrightarrow> False"
   by auto
 
 (* frame_rule (matches Coq) *)
-lemma frame_rule: "\<forall>p f h1 h2. fsat h1 p \<longrightarrow> fsat h2 f \<longrightarrow> fdisjoint h1 h2 \<longrightarrow> fsat (funion h1 h2) (FStar p f)"
+lemma frame_rule: "\<forall> p f h1 h2, fsat h1 p \<longrightarrow> fsat h2 f \<longrightarrow> fdisjoint h1 h2 \<longrightarrow> fsat (funion h1 h2) (FStar p f)"
   by simp
 
 (* 7 (matches Coq) *)
-lemma lemma_7: "Empty heap is disjoint with any heap Theorem fdisjoint_empty_l : \<forall>h. fdisjoint fempty h"
+lemma 7: "Empty heap is disjoint with any heap Theorem fdisjoint_empty_l : \<forall> h, fdisjoint fempty h"
   by simp
 
 (* fdisjoint_empty_r (matches Coq) *)
-lemma fdisjoint_empty_r: "\<forall>h. fdisjoint h fempty"
+lemma fdisjoint_empty_r: "\<forall> h, fdisjoint h fempty"
   by simp
 
 (* 9 (matches Coq) *)
-lemma lemma_9: "Union with empty is identity Theorem funion_empty_l : \<forall>h l. funion fempty h l = h l"
+lemma 9: "Union with empty is identity Theorem funion_empty_l : \<forall> h l, funion fempty h l = h l"
   by simp
 
 (* funion_empty_r (matches Coq) *)
-lemma funion_empty_r: "\<forall>h l. funion h fempty l = h l"
+lemma funion_empty_r: "\<forall> h l, funion h fempty l = h l"
   by simp
 
 (* 11 (matches Coq) *)
-lemma lemma_11: "Disjointness is symmetric Theorem fdisjoint_sym : \<forall>h1 h2. fdisjoint h1 h2 \<longrightarrow> fdisjoint h2 h1"
+lemma 11: "Disjointness is symmetric Theorem fdisjoint_sym : \<forall> h1 h2, fdisjoint h1 h2 \<longrightarrow> fdisjoint h2 h1"
   by auto
 
 (* 12 (matches Coq) *)
-lemma lemma_12: "Pure proposition extraction Theorem pure_extract : \<forall>(P :: prop) h. fsat h (FPure P) \<longrightarrow> P"
+lemma 12: "Pure proposition extraction Theorem pure_extract : \<forall> (P : Prop) h, fsat h (FPure P) \<longrightarrow> P"
   by auto
 
 (* 13 (matches Coq) *)
-lemma lemma_13: "Pure proposition implies empty heap Theorem pure_empty_heap : \<forall>(P :: prop) h. fsat h (FPure P) \<longrightarrow> \<forall>l. h l = None"
+lemma 13: "Pure proposition implies empty heap Theorem pure_empty_heap : \<forall> (P : Prop) h, fsat h (FPure P) \<longrightarrow> \<forall> l, h l = None"
   by auto
 
 (* 14 (matches Coq) *)
-lemma lemma_14: "Points-to determines heap value Theorem points_to_read : \<forall>l v h. fsat h (FPointsTo l v) \<longrightarrow> h l = Some v"
+lemma 14: "Points-to determines heap value Theorem points_to_read : \<forall> l v h, fsat h (FPointsTo l v) \<longrightarrow> h l = Some v"
   by auto
 
 (* 15 (matches Coq) *)
-lemma lemma_15: "Points-to is exclusive for other locations Theorem points_to_other_none : \<forall>l v h l'. fsat h (FPointsTo l v) \<longrightarrow> l' \<noteq> l \<longrightarrow> h l' = None"
+lemma 15: "Points-to is exclusive for other locations Theorem points_to_other_none : \<forall> l v h l', fsat h (FPointsTo l v) \<longrightarrow> l' \<noteq> l \<longrightarrow> h l' = None"
   by auto
 
 (* 16 (matches Coq) *)
-lemma lemma_16: "Empty heap satisfies emp Theorem fempty_sat_empty : fsat fempty FEmpty"
+lemma 16: "Empty heap satisfies emp Theorem fempty_sat_empty : fsat fempty FEmpty"
   by simp
 
 (* 17 (matches Coq) *)
-lemma lemma_17: "Singleton heap satisfies points-to Theorem fsingleton_sat : \<forall>l v. fsat (fsingleton l v) (FPointsTo l v)"
-  by auto
+lemma 17: "Singleton heap satisfies points-to Theorem fsingleton_sat : \<forall> l v, fsat (fsingleton l v) (FPointsTo l v)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* 18 (matches Coq) *)
-lemma lemma_18: "Singleton lookup Theorem fsingleton_lookup_neq : \<forall>l l' v. l' \<noteq> l \<longrightarrow> fsingleton l v l' = None"
+lemma 18: "Singleton lookup Theorem fsingleton_lookup_neq : \<forall> l l' v, l' \<noteq> l \<longrightarrow> fsingleton l v l' = None"
   by simp
 
 (* 19 (matches Coq) *)
-lemma lemma_19: "Disjoint singletons for different locations Theorem fdisjoint_singletons : \<forall>l1 l2 v1 v2. l1 \<noteq> l2 \<longrightarrow> fdisjoint (fsingleton l1 v1) (fsingleton l2 v2)"
+lemma 19: "Disjoint singletons for different locations Theorem fdisjoint_singletons : \<forall> l1 l2 v1 v2, l1 \<noteq> l2 \<longrightarrow> fdisjoint (fsingleton l1 v1) (fsingleton l2 v2)"
   by simp
 
 (* 20 (matches Coq) *)
-lemma lemma_20: "Empty satisfies pure True Theorem fempty_pure_true : fsat fempty (FPure True)"
+lemma 20: "Empty satisfies pure True Theorem fempty_pure_true : fsat fempty (FPure True)"
   by auto
 
 end

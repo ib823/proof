@@ -54,28 +54,28 @@
  *)
 
 theory LexOrder
-  imports Main Semantics Syntax
+  imports Main
 begin
 
 (* lex_lt (matches Coq: Definition lex_lt) *)
 definition lex_lt :: "bool" where
   "lex_lt \<equiv> let (m1, m2) := p1 in
   let (n1, n2) := p2 in
-  m1 < n1 \/ (m1 = n1 \<and> m2 < n2)"
+  m1 < n1 \/ (m1 = n1 /\ m2 < n2)"
 
 (* step_ty_lt (matches Coq: Definition step_ty_lt) *)
 definition step_ty_lt :: "bool" where
   "step_ty_lt \<equiv> let (n1, T1) := p1 in
   let (n2, T2) := p2 in
-  n1 < n2 \/ (n1 = n2 \<and> ty_size T1 < ty_size T2)"
+  n1 < n2 \/ (n1 = n2 /\ ty_size T1 < ty_size T2)"
 
 (* triple_lt (matches Coq: Definition triple_lt) *)
 definition triple_lt :: "bool" where
   "triple_lt \<equiv> let '(a1, b1, c1) := p1 in
   let '(a2, b2, c2) := p2 in
   a1 < a2 \/
-  (a1 = a2 \<and> b1 < b2) \/
-  (a1 = a2 \<and> b1 = b2 \<and> c1 < c2)"
+  (a1 = a2 /\ b1 < b2) \/
+  (a1 = a2 /\ b1 = b2 /\ c1 < c2)"
 
 (* Direct proof using nested well-founded induction *)
 (* lex_lt_wf (matches Coq) *)
@@ -83,15 +83,15 @@ lemma lex_lt_wf: "well_founded lex_lt"
   by auto
 
 (* lex_induction (matches Coq) *)
-lemma lex_induction: "\<forall>(P : nat \<longrightarrow> nat \<longrightarrow> Prop). (\<forall>n m. (\<forall>n' m'. lex_lt (n', m') (n, m) \<longrightarrow> P n' m') \<longrightarrow> P n m) \<longrightarrow> \<forall>n m. P n m"
+lemma lex_induction: "\<forall> (P : nat \<longrightarrow> nat \<longrightarrow> Prop), (\<forall> n m, (\<forall> n' m', lex_lt (n', m') (n, m) \<longrightarrow> P n' m') \<longrightarrow> P n m) \<longrightarrow> \<forall> n m, P n m"
   by auto
 
 (* lex_lt_left (matches Coq) *)
-lemma lex_lt_left: "\<forall>n m n' m'. n' < n \<longrightarrow> lex_lt (n', m') (n, m)"
+lemma lex_lt_left: "\<forall> n m n' m', n' < n \<longrightarrow> lex_lt (n', m') (n, m)"
   by auto
 
 (* lex_lt_right (matches Coq) *)
-lemma lex_lt_right: "\<forall>n m m'. m' < m \<longrightarrow> lex_lt (n, m') (n, m)"
+lemma lex_lt_right: "\<forall> n m m', m' < m \<longrightarrow> lex_lt (n, m') (n, m)"
   by auto
 
 (* step_ty_lt is well-founded *)
@@ -101,50 +101,50 @@ lemma step_ty_lt_wf: "well_founded step_ty_lt"
 
 (* Induction principle for step-type pairs *)
 (* step_ty_induction (matches Coq) *)
-lemma step_ty_induction: "\<forall>(P : nat \<longrightarrow> ty \<longrightarrow> Prop). (\<forall>n T. (\<forall>n' T'. step_ty_lt (n', T') (n, T) \<longrightarrow> P n' T') \<longrightarrow> P n T) \<longrightarrow> \<forall>n T. P n T"
+lemma step_ty_induction: "\<forall> (P : nat \<longrightarrow> ty \<longrightarrow> Prop), (\<forall> n T, (\<forall> n' T', step_ty_lt (n', T') (n, T) \<longrightarrow> P n' T') \<longrightarrow> P n T) \<longrightarrow> \<forall> n T, P n T"
   by auto
 
 (* Decreasing step index (the primary decrease for TFn) *)
 (* step_ty_lt_step (matches Coq) *)
-lemma step_ty_lt_step: "\<forall>n T T'. step_ty_lt (n, T') (Suc n, T)"
+lemma step_ty_lt_step: "\<forall> n T T', step_ty_lt (n, T') (S n, T)"
   by simp
 
 (* Decreasing type size at same step (for recursive types) *)
 (* step_ty_lt_ty (matches Coq) *)
-lemma step_ty_lt_ty: "\<forall>n T T'. ty_size T' < ty_size T \<longrightarrow> step_ty_lt (n, T') (n, T)"
+lemma step_ty_lt_ty: "\<forall> n T T', ty_size T' < ty_size T \<longrightarrow> step_ty_lt (n, T') (n, T)"
   by auto
 
 (* TFn argument is smaller *)
 (* step_ty_lt_fn_arg (matches Coq) *)
-lemma step_ty_lt_fn_arg: "\<forall>n T1 T2 eff. step_ty_lt (n, T1) (n, TFn T1 T2 eff)"
+lemma step_ty_lt_fn_arg: "\<forall> n T1 T2 eff, step_ty_lt (n, T1) (n, TFn T1 T2 eff)"
   by auto
 
 (* TFn result is smaller *)
 (* step_ty_lt_fn_res (matches Coq) *)
-lemma step_ty_lt_fn_res: "\<forall>n T1 T2 eff. step_ty_lt (n, T2) (n, TFn T1 T2 eff)"
+lemma step_ty_lt_fn_res: "\<forall> n T1 T2 eff, step_ty_lt (n, T2) (n, TFn T1 T2 eff)"
   by auto
 
 (* TProd components are smaller *)
 (* step_ty_lt_prod_left (matches Coq) *)
-lemma step_ty_lt_prod_left: "\<forall>n T1 T2. step_ty_lt (n, T1) (n, TProd T1 T2)"
+lemma step_ty_lt_prod_left: "\<forall> n T1 T2, step_ty_lt (n, T1) (n, TProd T1 T2)"
   by auto
 
 (* step_ty_lt_prod_right (matches Coq) *)
-lemma step_ty_lt_prod_right: "\<forall>n T1 T2. step_ty_lt (n, T2) (n, TProd T1 T2)"
+lemma step_ty_lt_prod_right: "\<forall> n T1 T2, step_ty_lt (n, T2) (n, TProd T1 T2)"
   by auto
 
 (* TSum components are smaller *)
 (* step_ty_lt_sum_left (matches Coq) *)
-lemma step_ty_lt_sum_left: "\<forall>n T1 T2. step_ty_lt (n, T1) (n, TSum T1 T2)"
+lemma step_ty_lt_sum_left: "\<forall> n T1 T2, step_ty_lt (n, T1) (n, TSum T1 T2)"
   by auto
 
 (* step_ty_lt_sum_right (matches Coq) *)
-lemma step_ty_lt_sum_right: "\<forall>n T1 T2. step_ty_lt (n, T2) (n, TSum T1 T2)"
+lemma step_ty_lt_sum_right: "\<forall> n T1 T2, step_ty_lt (n, T2) (n, TSum T1 T2)"
   by auto
 
 (* Step decrease combined with type *)
 (* step_ty_lt_step_any (matches Coq) *)
-lemma step_ty_lt_step_any: "\<forall>n n' T T'. n' < n \<longrightarrow> step_ty_lt (n', T') (n, T)"
+lemma step_ty_lt_step_any: "\<forall> n n' T T', n' < n \<longrightarrow> step_ty_lt (n', T') (n, T)"
   by auto
 
 (* triple_lt_wf (matches Coq) *)
@@ -153,102 +153,102 @@ lemma triple_lt_wf: "well_founded triple_lt"
 
 (* lex_lt is transitive *)
 (* lex_lt_trans (matches Coq) *)
-lemma lex_lt_trans: "\<forall>p1 p2 p3. lex_lt p1 p2 \<longrightarrow> lex_lt p2 p3 \<longrightarrow> lex_lt p1 p3"
-  by auto
+lemma lex_lt_trans: "\<forall> p1 p2 p3, lex_lt p1 p2 \<longrightarrow> lex_lt p2 p3 \<longrightarrow> lex_lt p1 p3"
+  by (cases rule: ‹_›.cases; simp)
 
 (* lex_lt is irreflexive *)
 (* lex_lt_irrefl (matches Coq) *)
-lemma lex_lt_irrefl: "\<forall>p. ~ lex_lt p p"
+lemma lex_lt_irrefl: "\<forall> p, ~ lex_lt p p"
   by simp
 
 (* step_ty_lt is transitive *)
 (* step_ty_lt_trans (matches Coq) *)
-lemma step_ty_lt_trans: "\<forall>p1 p2 p3. step_ty_lt p1 p2 \<longrightarrow> step_ty_lt p2 p3 \<longrightarrow> step_ty_lt p1 p3"
-  by auto
+lemma step_ty_lt_trans: "\<forall> p1 p2 p3, step_ty_lt p1 p2 \<longrightarrow> step_ty_lt p2 p3 \<longrightarrow> step_ty_lt p1 p3"
+  by (cases rule: ‹_›.cases; simp)
 
 (* step_ty_lt is irreflexive *)
 (* step_ty_lt_irrefl (matches Coq) *)
-lemma step_ty_lt_irrefl: "\<forall>p. ~ step_ty_lt p p"
+lemma step_ty_lt_irrefl: "\<forall> p, ~ step_ty_lt p p"
   by simp
 
 (* triple_lt is transitive *)
 (* triple_lt_trans (matches Coq) *)
-lemma triple_lt_trans: "\<forall>p1 p2 p3. triple_lt p1 p2 \<longrightarrow> triple_lt p2 p3 \<longrightarrow> triple_lt p1 p3"
-  by auto
+lemma triple_lt_trans: "\<forall> p1 p2 p3, triple_lt p1 p2 \<longrightarrow> triple_lt p2 p3 \<longrightarrow> triple_lt p1 p3"
+  by (cases rule: ‹_›.cases; simp)
 
 (* triple_lt is irreflexive *)
 (* triple_lt_irrefl (matches Coq) *)
-lemma triple_lt_irrefl: "\<forall>p. ~ triple_lt p p"
+lemma triple_lt_irrefl: "\<forall> p, ~ triple_lt p p"
   by simp
 
 (* TList component is smaller *)
 (* step_ty_lt_list (matches Coq) *)
-lemma step_ty_lt_list: "\<forall>n T. step_ty_lt (n, T) (n, TList T)"
+lemma step_ty_lt_list: "\<forall> n T, step_ty_lt (n, T) (n, TList T)"
   by simp
 
 (* TOption component is smaller *)
 (* step_ty_lt_option (matches Coq) *)
-lemma step_ty_lt_option: "\<forall>n T. step_ty_lt (n, T) (n, TOption T)"
+lemma step_ty_lt_option: "\<forall> n T, step_ty_lt (n, T) (n, TOption T)"
   by simp
 
 (* TRef component is smaller *)
 (* step_ty_lt_ref (matches Coq) *)
-lemma step_ty_lt_ref: "\<forall>n T sl. step_ty_lt (n, T) (n, TRef T sl)"
+lemma step_ty_lt_ref: "\<forall> n T sl, step_ty_lt (n, T) (n, TRef T sl)"
   by auto
 
 (* TLabeled component is smaller *)
 (* step_ty_lt_labeled (matches Coq) *)
-lemma step_ty_lt_labeled: "\<forall>n T sl. step_ty_lt (n, T) (n, TLabeled T sl)"
+lemma step_ty_lt_labeled: "\<forall> n T sl, step_ty_lt (n, T) (n, TLabeled T sl)"
   by simp
 
 (* TSecret inner type is smaller *)
 (* step_ty_lt_secret (matches Coq) *)
-lemma step_ty_lt_secret: "\<forall>n T. step_ty_lt (n, T) (n, TSecret T)"
+lemma step_ty_lt_secret: "\<forall> n T, step_ty_lt (n, T) (n, TSecret T)"
   by simp
 
 (* TTainted inner type is smaller *)
 (* step_ty_lt_tainted (matches Coq) *)
-lemma step_ty_lt_tainted: "\<forall>n T src. step_ty_lt (n, T) (n, TTainted T src)"
+lemma step_ty_lt_tainted: "\<forall> n T src, step_ty_lt (n, T) (n, TTainted T src)"
   by simp
 
 (* TSanitized inner type is smaller *)
 (* step_ty_lt_sanitized (matches Coq) *)
-lemma step_ty_lt_sanitized: "\<forall>n T san. step_ty_lt (n, T) (n, TSanitized T san)"
+lemma step_ty_lt_sanitized: "\<forall> n T san, step_ty_lt (n, T) (n, TSanitized T san)"
   by simp
 
 (* TConstantTime inner type is smaller *)
 (* step_ty_lt_constant_time (matches Coq) *)
-lemma step_ty_lt_constant_time: "\<forall>n T. step_ty_lt (n, T) (n, TConstantTime T)"
+lemma step_ty_lt_constant_time: "\<forall> n T, step_ty_lt (n, T) (n, TConstantTime T)"
   by simp
 
 (* TZeroizing inner type is smaller *)
 (* step_ty_lt_zeroizing (matches Coq) *)
-lemma step_ty_lt_zeroizing: "\<forall>n T. step_ty_lt (n, T) (n, TZeroizing T)"
+lemma step_ty_lt_zeroizing: "\<forall> n T, step_ty_lt (n, T) (n, TZeroizing T)"
   by simp
 
 (* Nothing is lexicographically less than (0, 0) *)
 (* lex_lt_zero_zero_absurd (matches Coq) *)
-lemma lex_lt_zero_zero_absurd: "\<forall>p. lex_lt p (0, 0) \<longrightarrow> False"
+lemma lex_lt_zero_zero_absurd: "\<forall> p, lex_lt p (0, 0) \<longrightarrow> False"
   by simp
 
 (* Nothing is less than (0, T) when ty_size T = 0 *)
 (* step_ty_lt_zero_absurd (matches Coq) *)
-lemma step_ty_lt_zero_absurd: "\<forall>T T'. ty_size T = 0 \<longrightarrow> step_ty_lt (0, T') (0, T) \<longrightarrow> False"
+lemma step_ty_lt_zero_absurd: "\<forall> T T', ty_size T = 0 \<longrightarrow> step_ty_lt (0, T') (0, T) \<longrightarrow> False"
   by simp
 
 (* First component strictly decreases in triple order *)
 (* triple_lt_first (matches Coq) *)
-lemma triple_lt_first: "\<forall>a a' b b' c c'. a' < a \<longrightarrow> triple_lt (a', b', c') (a, b, c)"
+lemma triple_lt_first: "\<forall> a a' b b' c c', a' < a \<longrightarrow> triple_lt (a', b', c') (a, b, c)"
   by auto
 
 (* Second component strictly decreases (first equal) in triple order *)
 (* triple_lt_second (matches Coq) *)
-lemma triple_lt_second: "\<forall>a b b' c c'. b' < b \<longrightarrow> triple_lt (a, b', c') (a, b, c)"
+lemma triple_lt_second: "\<forall> a b b' c c', b' < b \<longrightarrow> triple_lt (a, b', c') (a, b, c)"
   by auto
 
 (* Third component strictly decreases (first two equal) in triple order *)
 (* triple_lt_third (matches Coq) *)
-lemma triple_lt_third: "\<forall>a b c c'. c' < c \<longrightarrow> triple_lt (a, b, c') (a, b, c)"
+lemma triple_lt_third: "\<forall> a b c c', c' < c \<longrightarrow> triple_lt (a, b, c') (a, b, c)"
   by auto
 
 end

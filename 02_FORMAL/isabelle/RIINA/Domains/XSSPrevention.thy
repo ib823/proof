@@ -12,17 +12,18 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | xss_context         | xss_context            | OK     |
- * | taint_level         | taint_level            | OK     |
- * | output_encoding     | output_encoding        | OK     |
- * | content_security_policy | content_security_policy | OK     |
- * | dom_sanitizer       | dom_sanitizer          | OK     |
- * | input_validator     | input_validator        | OK     |
- * | tainted_string      | tainted_string         | OK     |
- * | xss_config          | xss_config             | OK     |
- * | reflected_xss_scenario | reflected_xss_scenario | OK     |
- * | stored_xss_scenario  | stored_xss_scenario    | OK     |
- * | dom_based_xss_scenario | dom_based_xss_scenario | OK     |
+ * | XSSContext         | xss_context            | OK     |
+ * | TaintLevel         | taint_level            | OK     |
+ * | OutputEncoding     | output_encoding        | OK     |
+ * | ContentSecurityPolicy | content_security_policy | OK     |
+ * | DOMSanitizer       | dom_sanitizer          | OK     |
+ * | InputValidator     | input_validator        | OK     |
+ * | TaintedString      | tainted_string         | OK     |
+ * | XSSConfig          | xss_config             | OK     |
+ * | ReflectedXSSScenario | reflected_xss_scenario | OK     |
+ * | StoredXSSScenario  | stored_xss_scenario    | OK     |
+ * | DOMBasedXSSScenario | dom_based_xss_scenario | OK     |
+ * | INPUT_MAX_LENGTH_DEFAULT | INPUT_MAX_LENGTH_DEFAULT | OK     |
  * | output_safe        | output_safe            | OK     |
  * | csp_enforced       | csp_enforced           | OK     |
  * | csp_maximum        | csp_maximum            | OK     |
@@ -232,7 +233,7 @@ theory XSSPrevention
   imports Main CoqCompat
 begin
 
-(* xss_context (matches Coq: Inductive xss_context) *)
+(* XSSContext (matches Coq: Inductive XSSContext) *)
 datatype xss_context =
     CtxHTML
   |     CtxAttribute
@@ -240,21 +241,21 @@ datatype xss_context =
   |     CtxCSS
   |     CtxURL
 
-(* taint_level (matches Coq: Inductive taint_level) *)
+(* TaintLevel (matches Coq: Inductive TaintLevel) *)
 datatype taint_level =
     TaintUntrusted
   |     TaintValidated
   |     TaintSanitized
   |     TaintTrusted
 
-(* output_encoding (matches Coq: Record output_encoding) *)
+(* OutputEncoding (matches Coq: Record OutputEncoding) *)
 record output_encoding =
   oe_html_escape :: bool
   oe_js_escape :: bool
   oe_url_encode :: bool
   oe_css_escape :: bool
 
-(* content_security_policy (matches Coq: Record content_security_policy) *)
+(* ContentSecurityPolicy (matches Coq: Record ContentSecurityPolicy) *)
 record content_security_policy =
   csp_script_src :: bool
   csp_style_src :: bool
@@ -264,7 +265,7 @@ record content_security_policy =
   csp_frame_ancestors :: bool
   csp_report_uri :: bool
 
-(* dom_sanitizer (matches Coq: Record dom_sanitizer) *)
+(* DOMSanitizer (matches Coq: Record DOMSanitizer) *)
 record dom_sanitizer =
   dom_remove_scripts :: bool
   dom_remove_event_handlers :: bool
@@ -272,46 +273,50 @@ record dom_sanitizer =
   dom_allowlist_tags :: bool
   dom_allowlist_attrs :: bool
 
-(* input_validator (matches Coq: Record input_validator) *)
+(* InputValidator (matches Coq: Record InputValidator) *)
 record input_validator =
   iv_max_length :: nat
   iv_encoding_validation :: bool
   iv_strip_null_bytes :: bool
   iv_normalize_unicode :: bool
 
-(* tainted_string (matches Coq: Record tainted_string) *)
+(* TaintedString (matches Coq: Record TaintedString) *)
 record tainted_string =
   ts_data :: 'a list
-  ts_taint :: taint_level
-  ts_context :: xss_context
+  ts_taint :: TaintLevel
+  ts_context :: XSSContext
 
-(* xss_config (matches Coq: Record xss_config) *)
+(* XSSConfig (matches Coq: Record XSSConfig) *)
 record xss_config =
-  xss_output :: output_encoding
-  xss_csp :: content_security_policy
-  xss_dom :: dom_sanitizer
-  xss_input :: input_validator
+  xss_output :: OutputEncoding
+  xss_csp :: ContentSecurityPolicy
+  xss_dom :: DOMSanitizer
+  xss_input :: InputValidator
   xss_dom_sanitization :: bool
 
-(* reflected_xss_scenario (matches Coq: Record reflected_xss_scenario) *)
+(* ReflectedXSSScenario (matches Coq: Record ReflectedXSSScenario) *)
 record reflected_xss_scenario =
-  rx_input_taint :: taint_level
+  rx_input_taint :: TaintLevel
   rx_sanitization_applied :: bool
   rx_output_encoded :: bool
 
-(* stored_xss_scenario (matches Coq: Record stored_xss_scenario) *)
+(* StoredXSSScenario (matches Coq: Record StoredXSSScenario) *)
 record stored_xss_scenario =
   sx_input_validated :: bool
   sx_storage_sanitized :: bool
   sx_retrieval_encoded :: bool
   sx_output_context_aware :: bool
 
-(* dom_based_xss_scenario (matches Coq: Record dom_based_xss_scenario) *)
+(* DOMBasedXSSScenario (matches Coq: Record DOMBasedXSSScenario) *)
 record dom_based_xss_scenario =
   dx_source_sanitized :: bool
   dx_sink_safe :: bool
   dx_trusted_types :: bool
   dx_no_eval :: bool
+
+(* INPUT_MAX_LENGTH_DEFAULT (matches Coq: Definition INPUT_MAX_LENGTH_DEFAULT) *)
+definition INPUT_MAX_LENGTH_DEFAULT :: "nat" where
+  "INPUT_MAX_LENGTH_DEFAULT \<equiv> Z.to_nat 65536%Z"
 
 (* output_safe (matches Coq: Definition output_safe) *)
 definition output_safe :: "OutputEncoding \<Rightarrow> bool" where
@@ -349,9 +354,9 @@ definition xss_maximum_protection :: "XSSConfig \<Rightarrow> bool" where
 
 (* taint_safe (matches Coq: Definition taint_safe) *)
 fun taint_safe :: "TaintLevel \<Rightarrow> bool" where
-  "taint_safe TaintSanitized = True"
-|   "taint_safe TaintTrusted = True"
-|   "taint_safe _ = False"
+  "taint_safe TaintSanitized = true"
+|   "taint_safe TaintTrusted = true"
+|   "taint_safe _ = false"
 
 (* riina_output (matches Coq: Definition riina_output) *)
 definition riina_output :: "OutputEncoding" where
@@ -367,14 +372,14 @@ definition riina_dom :: "DOMSanitizer" where
 
 (* riina_input (matches Coq: Definition riina_input) *)
 definition riina_input :: "InputValidator" where
-  "riina_input \<equiv> mkInputVal 65536 True True True"
+  "riina_input \<equiv> mkInputVal INPUT_MAX_LENGTH_DEFAULT True True True"
 
 (* riina_xss (matches Coq: Definition riina_xss) *)
 definition riina_xss :: "XSSConfig" where
   "riina_xss \<equiv> mkXSS riina_output riina_csp riina_dom riina_input True"
 
 (* propagate_taint - complex match, needs manual translation *)
-definition propagate_taint :: "bool" where "propagate_taint \<equiv> True"
+definition propagate_taint :: "bool" where "propagate_taint = undefined"
 
 (* reflected_xss_safe (matches Coq: Definition reflected_xss_safe) *)
 definition reflected_xss_safe :: "ReflectedXSSScenario \<Rightarrow> bool" where
@@ -496,24 +501,24 @@ definition css_escape :: "list nat" where
   "css_escape \<equiv> flat_map css_escape_char data"
 
 (* andb_true_iff (matches Coq) *)
-lemma andb_true_iff: "\<forall>a b : bool. a && b = True <-> a = True \<and> b = True"
-  by auto
+lemma andb_true_iff: "\<forall> a b : bool, a && b = True <-> a = True \<and> b = True"
+  by (cases rule: ‹_›.cases; simp)
 
 (* andb_false_iff (matches Coq) *)
-lemma andb_false_iff: "\<forall>a b : bool. a && b = False <-> a = False \<or> b = False"
+lemma andb_false_iff: "\<forall> a b : bool, a && b = False <-> a = False \<or> b = False"
   by auto
 
 (* orb_true_iff (matches Coq) *)
-lemma orb_true_iff: "\<forall>a b : bool. a || b = True <-> a = True \<or> b = True"
+lemma orb_true_iff: "\<forall> a b : bool, a || b = True <-> a = True \<or> b = True"
   by auto
 
 (* negb_true_iff (matches Coq) *)
-lemma negb_true_iff: "\<forall>b : bool. (\<not> b) = True <-> b = False"
+lemma negb_true_iff: "\<forall> b : bool, (\<not> b) = True <-> b = False"
   by auto
 
 (* forallb_true (matches Coq) *)
-lemma forallb_true: "\<forall>{A} (f : A \<longrightarrow> bool) (l : list A). \<forall>b f l = True <-> (\<forall> x. x \<in> set l \<longrightarrow> f x = True)"
-  by auto
+lemma forallb_true: "\<forall> {A} (f : A \<longrightarrow> bool) (l : list A), \<forall>b f l = True <-> (\<forall> x, In x l \<longrightarrow> f x = True)"
+  by (cases rule: ‹_›.cases; simp)
 
 (* XSS_001 (matches Coq) *)
 lemma XSS_001: "output_safe riina_output = True"
@@ -548,39 +553,39 @@ lemma XSS_008: "xss_dom_sanitization riina_xss = True"
   by simp
 
 (* XSS_009 (matches Coq) *)
-lemma XSS_009: "\<forall>o. output_safe o = True \<longrightarrow> oe_html_escape o = True"
+lemma XSS_009: "\<forall> o, output_safe o = True \<longrightarrow> oe_html_escape o = True"
   by auto
 
 (* XSS_010 (matches Coq) *)
-lemma XSS_010: "\<forall>o. output_safe o = True \<longrightarrow> oe_js_escape o = True"
+lemma XSS_010: "\<forall> o, output_safe o = True \<longrightarrow> oe_js_escape o = True"
   by auto
 
 (* XSS_011 (matches Coq) *)
-lemma XSS_011: "\<forall>c. csp_enforced c = True \<longrightarrow> csp_script_src c = True"
+lemma XSS_011: "\<forall> c, csp_enforced c = True \<longrightarrow> csp_script_src c = True"
   by auto
 
 (* XSS_012 (matches Coq) *)
-lemma XSS_012: "\<forall>c. csp_enforced c = True \<longrightarrow> csp_nonce_support c = True"
+lemma XSS_012: "\<forall> c, csp_enforced c = True \<longrightarrow> csp_nonce_support c = True"
   by auto
 
 (* XSS_013 (matches Coq) *)
-lemma XSS_013: "\<forall>x. xss_protected x = True \<longrightarrow> output_safe (xss_output x) = True"
+lemma XSS_013: "\<forall> x, xss_protected x = True \<longrightarrow> output_safe (xss_output x) = True"
   by auto
 
 (* XSS_014 (matches Coq) *)
-lemma XSS_014: "\<forall>x. xss_protected x = True \<longrightarrow> csp_enforced (xss_csp x) = True"
+lemma XSS_014: "\<forall> x, xss_protected x = True \<longrightarrow> csp_enforced (xss_csp x) = True"
   by auto
 
 (* XSS_015 (matches Coq) *)
-lemma XSS_015: "\<forall>x. xss_protected x = True \<longrightarrow> xss_dom_sanitization x = True"
+lemma XSS_015: "\<forall> x, xss_protected x = True \<longrightarrow> xss_dom_sanitization x = True"
   by auto
 
 (* XSS_016 (matches Coq) *)
-lemma XSS_016: "\<forall>x. xss_protected x = True \<longrightarrow> oe_html_escape (xss_output x) = True"
+lemma XSS_016: "\<forall> x, xss_protected x = True \<longrightarrow> oe_html_escape (xss_output x) = True"
   by auto
 
 (* XSS_017 (matches Coq) *)
-lemma XSS_017: "\<forall>x. xss_protected x = True \<longrightarrow> csp_script_src (xss_csp x) = True"
+lemma XSS_017: "\<forall> x, xss_protected x = True \<longrightarrow> csp_script_src (xss_csp x) = True"
   by auto
 
 (* XSS_018 (matches Coq) *)
@@ -596,15 +601,15 @@ lemma XSS_020: "csp_script_src riina_csp = True \<and> csp_nonce_support riina_c
   by auto
 
 (* XSS_021 (matches Coq) *)
-lemma XSS_021: "\<forall>o. output_safe o = True \<longrightarrow> oe_html_escape o = True \<and> oe_js_escape o = True"
+lemma XSS_021: "\<forall> o, output_safe o = True \<longrightarrow> oe_html_escape o = True \<and> oe_js_escape o = True"
   by auto
 
 (* XSS_022 (matches Coq) *)
-lemma XSS_022: "\<forall>c. csp_enforced c = True \<longrightarrow> csp_script_src c = True \<and> csp_nonce_support c = True"
+lemma XSS_022: "\<forall> c, csp_enforced c = True \<longrightarrow> csp_script_src c = True \<and> csp_nonce_support c = True"
   by auto
 
 (* XSS_023 (matches Coq) *)
-lemma XSS_023: "\<forall>x. xss_protected x = True \<longrightarrow> output_safe (xss_output x) = True \<and> csp_enforced (xss_csp x) = True"
+lemma XSS_023: "\<forall> x, xss_protected x = True \<longrightarrow> output_safe (xss_output x) = True \<and> csp_enforced (xss_csp x) = True"
   by auto
 
 (* XSS_024 (matches Coq) *)
@@ -612,7 +617,7 @@ lemma XSS_024: "xss_protected riina_xss = True \<and> xss_dom_sanitization riina
   by auto
 
 (* XSS_025_complete (matches Coq) *)
-lemma XSS_025_complete: "\<forall>x. xss_protected x = True \<longrightarrow> oe_html_escape (xss_output x) = True \<and> csp_script_src (xss_csp x) = True \<and> xss_dom_sanitization x = True"
+lemma XSS_025_complete: "\<forall> x, xss_protected x = True \<longrightarrow> oe_html_escape (xss_output x) = True \<and> csp_script_src (xss_csp x) = True \<and> xss_dom_sanitization x = True"
   by auto
 
 (* XSS_026 (matches Coq) *)
@@ -624,27 +629,27 @@ lemma XSS_027: "oe_css_escape riina_output = True"
   by simp
 
 (* XSS_028 (matches Coq) *)
-lemma XSS_028: "\<forall>o. output_safe o = True \<longrightarrow> oe_url_encode o = True"
+lemma XSS_028: "\<forall> o, output_safe o = True \<longrightarrow> oe_url_encode o = True"
   by auto
 
 (* XSS_029 (matches Coq) *)
-lemma XSS_029: "\<forall>o. output_safe o = True \<longrightarrow> oe_css_escape o = True"
+lemma XSS_029: "\<forall> o, output_safe o = True \<longrightarrow> oe_css_escape o = True"
   by auto
 
 (* XSS_030 (matches Coq) *)
-lemma XSS_030: "\<forall>o. output_safe o = True \<longrightarrow> oe_url_encode o = True \<and> oe_css_escape o = True"
+lemma XSS_030: "\<forall> o, output_safe o = True \<longrightarrow> oe_url_encode o = True \<and> oe_css_escape o = True"
   by auto
 
 (* XSS_031 (matches Coq) *)
-lemma XSS_031: "\<forall>x. xss_protected x = True \<longrightarrow> oe_url_encode (xss_output x) = True"
+lemma XSS_031: "\<forall> x, xss_protected x = True \<longrightarrow> oe_url_encode (xss_output x) = True"
   by auto
 
 (* XSS_032 (matches Coq) *)
-lemma XSS_032: "\<forall>x. xss_protected x = True \<longrightarrow> oe_css_escape (xss_output x) = True"
+lemma XSS_032: "\<forall> x, xss_protected x = True \<longrightarrow> oe_css_escape (xss_output x) = True"
   by auto
 
 (* XSS_033 (matches Coq) *)
-lemma XSS_033: "\<forall>o. output_safe o = True \<longrightarrow> oe_html_escape o = True \<and> oe_js_escape o = True \<and> oe_url_encode o = True \<and> oe_css_escape o = True"
+lemma XSS_033: "\<forall> o, output_safe o = True \<longrightarrow> oe_html_escape o = True \<and> oe_js_escape o = True \<and> oe_url_encode o = True \<and> oe_css_escape o = True"
   by auto
 
 (* XSS_034 (matches Coq) *)
@@ -652,7 +657,7 @@ lemma XSS_034: "oe_url_encode riina_output = True \<and> oe_css_escape riina_out
   by auto
 
 (* XSS_035 (matches Coq) *)
-lemma XSS_035: "\<forall>x. xss_protected x = True \<longrightarrow> oe_url_encode (xss_output x) = True \<and> oe_css_escape (xss_output x) = True"
+lemma XSS_035: "\<forall> x, xss_protected x = True \<longrightarrow> oe_url_encode (xss_output x) = True \<and> oe_css_escape (xss_output x) = True"
   by auto
 
 (* XSS_036 (matches Coq) *)
@@ -676,11 +681,11 @@ lemma XSS_040: "csp_report_uri riina_csp = True"
   by simp
 
 (* XSS_041 (matches Coq) *)
-lemma XSS_041: "\<forall>c. csp_enforced c = True \<longrightarrow> csp_style_src c = True"
+lemma XSS_041: "\<forall> c, csp_enforced c = True \<longrightarrow> csp_style_src c = True"
   by auto
 
 (* XSS_042 (matches Coq) *)
-lemma XSS_042: "\<forall>c. csp_enforced c = True \<longrightarrow> csp_default_src c = True"
+lemma XSS_042: "\<forall> c, csp_enforced c = True \<longrightarrow> csp_default_src c = True"
   by auto
 
 (* XSS_043 (matches Coq) *)
@@ -688,31 +693,31 @@ lemma XSS_043: "csp_maximum riina_csp = True"
   by simp
 
 (* XSS_044 (matches Coq) *)
-lemma XSS_044: "\<forall>c. csp_maximum c = True \<longrightarrow> csp_enforced c = True"
+lemma XSS_044: "\<forall> c, csp_maximum c = True \<longrightarrow> csp_enforced c = True"
   by auto
 
 (* XSS_045 (matches Coq) *)
-lemma XSS_045: "\<forall>c. csp_maximum c = True \<longrightarrow> csp_strict_dynamic c = True"
+lemma XSS_045: "\<forall> c, csp_maximum c = True \<longrightarrow> csp_strict_dynamic c = True"
   by auto
 
 (* XSS_046 (matches Coq) *)
-lemma XSS_046: "\<forall>c. csp_maximum c = True \<longrightarrow> csp_frame_ancestors c = True"
+lemma XSS_046: "\<forall> c, csp_maximum c = True \<longrightarrow> csp_frame_ancestors c = True"
   by auto
 
 (* XSS_047 (matches Coq) *)
-lemma XSS_047: "\<forall>c. csp_maximum c = True \<longrightarrow> csp_report_uri c = True"
+lemma XSS_047: "\<forall> c, csp_maximum c = True \<longrightarrow> csp_report_uri c = True"
   by auto
 
 (* XSS_048 (matches Coq) *)
-lemma XSS_048: "\<forall>x. xss_protected x = True \<longrightarrow> csp_style_src (xss_csp x) = True"
+lemma XSS_048: "\<forall> x, xss_protected x = True \<longrightarrow> csp_style_src (xss_csp x) = True"
   by auto
 
 (* XSS_049 (matches Coq) *)
-lemma XSS_049: "\<forall>x. xss_protected x = True \<longrightarrow> csp_default_src (xss_csp x) = True"
+lemma XSS_049: "\<forall> x, xss_protected x = True \<longrightarrow> csp_default_src (xss_csp x) = True"
   by auto
 
 (* XSS_050 (matches Coq) *)
-lemma XSS_050: "\<forall>c. csp_maximum c = True \<longrightarrow> csp_script_src c = True \<and> csp_style_src c = True \<and> csp_default_src c = True \<and> csp_nonce_support c = True \<and> csp_strict_dynamic c = True \<and> csp_frame_ancestors c = True \<and> csp_report_uri c = True"
+lemma XSS_050: "\<forall> c, csp_maximum c = True \<longrightarrow> csp_script_src c = True \<and> csp_style_src c = True \<and> csp_default_src c = True \<and> csp_nonce_support c = True \<and> csp_strict_dynamic c = True \<and> csp_frame_ancestors c = True \<and> csp_report_uri c = True"
   by auto
 
 (* XSS_051 (matches Coq) *)
@@ -740,35 +745,35 @@ lemma XSS_056: "dom_sanitizer_complete riina_dom = True"
   by simp
 
 (* XSS_057 (matches Coq) *)
-lemma XSS_057: "\<forall>d. dom_sanitizer_complete d = True \<longrightarrow> dom_remove_scripts d = True"
+lemma XSS_057: "\<forall> d, dom_sanitizer_complete d = True \<longrightarrow> dom_remove_scripts d = True"
   by auto
 
 (* XSS_058 (matches Coq) *)
-lemma XSS_058: "\<forall>d. dom_sanitizer_complete d = True \<longrightarrow> dom_remove_event_handlers d = True"
+lemma XSS_058: "\<forall> d, dom_sanitizer_complete d = True \<longrightarrow> dom_remove_event_handlers d = True"
   by auto
 
 (* XSS_059 (matches Coq) *)
-lemma XSS_059: "\<forall>d. dom_sanitizer_complete d = True \<longrightarrow> dom_sanitize_urls d = True"
+lemma XSS_059: "\<forall> d, dom_sanitizer_complete d = True \<longrightarrow> dom_sanitize_urls d = True"
   by auto
 
 (* XSS_060 (matches Coq) *)
-lemma XSS_060: "\<forall>d. dom_sanitizer_complete d = True \<longrightarrow> dom_allowlist_tags d = True"
+lemma XSS_060: "\<forall> d, dom_sanitizer_complete d = True \<longrightarrow> dom_allowlist_tags d = True"
   by auto
 
 (* XSS_061 (matches Coq) *)
-lemma XSS_061: "\<forall>d. dom_sanitizer_complete d = True \<longrightarrow> dom_allowlist_attrs d = True"
+lemma XSS_061: "\<forall> d, dom_sanitizer_complete d = True \<longrightarrow> dom_allowlist_attrs d = True"
   by auto
 
 (* XSS_062 (matches Coq) *)
-lemma XSS_062: "\<forall>d. dom_sanitizer_complete d = True \<longrightarrow> dom_remove_scripts d = True \<and> dom_remove_event_handlers d = True"
+lemma XSS_062: "\<forall> d, dom_sanitizer_complete d = True \<longrightarrow> dom_remove_scripts d = True \<and> dom_remove_event_handlers d = True"
   by auto
 
 (* XSS_063 (matches Coq) *)
-lemma XSS_063: "\<forall>d. dom_sanitizer_complete d = True \<longrightarrow> dom_sanitize_urls d = True \<and> dom_allowlist_tags d = True \<and> dom_allowlist_attrs d = True"
+lemma XSS_063: "\<forall> d, dom_sanitizer_complete d = True \<longrightarrow> dom_sanitize_urls d = True \<and> dom_allowlist_tags d = True \<and> dom_allowlist_attrs d = True"
   by auto
 
 (* XSS_064 (matches Coq) *)
-lemma XSS_064: "\<forall>d. dom_sanitizer_complete d = True \<longrightarrow> dom_remove_scripts d = True \<and> dom_remove_event_handlers d = True \<and> dom_sanitize_urls d = True \<and> dom_allowlist_tags d = True \<and> dom_allowlist_attrs d = True"
+lemma XSS_064: "\<forall> d, dom_sanitizer_complete d = True \<longrightarrow> dom_remove_scripts d = True \<and> dom_remove_event_handlers d = True \<and> dom_sanitize_urls d = True \<and> dom_allowlist_tags d = True \<and> dom_allowlist_attrs d = True"
   by auto
 
 (* XSS_065 (matches Coq) *)
@@ -788,7 +793,7 @@ lemma XSS_068: "iv_normalize_unicode riina_input = True"
   by simp
 
 (* XSS_069 (matches Coq) *)
-lemma XSS_069: "iv_max_length riina_input = 65536"
+lemma XSS_069: "iv_max_length riina_input = INPUT_MAX_LENGTH_DEFAULT"
   by simp
 
 (* XSS_070 (matches Coq) *)
@@ -796,23 +801,23 @@ lemma XSS_070: "input_validation_complete riina_input = True"
   by simp
 
 (* XSS_071 (matches Coq) *)
-lemma XSS_071: "\<forall>i. input_validation_complete i = True \<longrightarrow> iv_encoding_validation i = True"
+lemma XSS_071: "\<forall> i, input_validation_complete i = True \<longrightarrow> iv_encoding_validation i = True"
   by auto
 
 (* XSS_072 (matches Coq) *)
-lemma XSS_072: "\<forall>i. input_validation_complete i = True \<longrightarrow> iv_strip_null_bytes i = True"
+lemma XSS_072: "\<forall> i, input_validation_complete i = True \<longrightarrow> iv_strip_null_bytes i = True"
   by auto
 
 (* XSS_073 (matches Coq) *)
-lemma XSS_073: "\<forall>i. input_validation_complete i = True \<longrightarrow> iv_normalize_unicode i = True"
+lemma XSS_073: "\<forall> i, input_validation_complete i = True \<longrightarrow> iv_normalize_unicode i = True"
   by auto
 
 (* XSS_074 (matches Coq) *)
-lemma XSS_074: "\<forall>i. input_validation_complete i = True \<longrightarrow> 0 < iv_max_length i"
+lemma XSS_074: "\<forall> i, input_validation_complete i = True \<longrightarrow> 0 < iv_max_length i"
   by auto
 
 (* XSS_075 (matches Coq) *)
-lemma XSS_075: "\<forall>i. input_validation_complete i = True \<longrightarrow> iv_encoding_validation i = True \<and> iv_strip_null_bytes i = True \<and> iv_normalize_unicode i = True"
+lemma XSS_075: "\<forall> i, input_validation_complete i = True \<longrightarrow> iv_encoding_validation i = True \<and> iv_strip_null_bytes i = True \<and> iv_normalize_unicode i = True"
   by auto
 
 (* XSS_076 (matches Coq) *)
@@ -832,11 +837,11 @@ lemma XSS_079: "taint_safe TaintValidated = False"
   by simp
 
 (* XSS_080 (matches Coq) *)
-lemma XSS_080: "\<forall>t. taint_safe t = True \<longrightarrow> t = TaintSanitized \<or> t = TaintTrusted"
+lemma XSS_080: "\<forall> t, taint_safe t = True \<longrightarrow> t = TaintSanitized \<or> t = TaintTrusted"
   by auto
 
 (* XSS_081 (matches Coq) *)
-lemma XSS_081: "\<forall>t. taint_safe t = False \<longrightarrow> t = TaintUntrusted \<or> t = TaintValidated"
+lemma XSS_081: "\<forall> t, taint_safe t = False \<longrightarrow> t = TaintUntrusted \<or> t = TaintValidated"
   by auto
 
 (* XSS_082 (matches Coq) *)
@@ -848,11 +853,11 @@ lemma XSS_083: "propagate_taint TaintSanitized TaintSanitized = TaintSanitized"
   by simp
 
 (* XSS_084 (matches Coq) *)
-lemma XSS_084: "\<forall>t. propagate_taint TaintUntrusted t = TaintUntrusted"
+lemma XSS_084: "\<forall> t, propagate_taint TaintUntrusted t = TaintUntrusted"
   by simp
 
 (* XSS_085 (matches Coq) *)
-lemma XSS_085: "\<forall>t. propagate_taint t TaintUntrusted = TaintUntrusted"
+lemma XSS_085: "\<forall> t, propagate_taint t TaintUntrusted = TaintUntrusted"
   by simp
 
 (* XSS_086 (matches Coq) *)
@@ -860,15 +865,15 @@ lemma XSS_086: "reflected_xss_safe riina_reflected = True"
   by simp
 
 (* XSS_087 (matches Coq) *)
-lemma XSS_087: "\<forall>r. reflected_xss_safe r = True \<longrightarrow> rx_sanitization_applied r = True"
+lemma XSS_087: "\<forall> r, reflected_xss_safe r = True \<longrightarrow> rx_sanitization_applied r = True"
   by auto
 
 (* XSS_088 (matches Coq) *)
-lemma XSS_088: "\<forall>r. reflected_xss_safe r = True \<longrightarrow> rx_output_encoded r = True"
+lemma XSS_088: "\<forall> r, reflected_xss_safe r = True \<longrightarrow> rx_output_encoded r = True"
   by auto
 
 (* XSS_089 (matches Coq) *)
-lemma XSS_089: "\<forall>r. reflected_xss_safe r = True \<longrightarrow> rx_sanitization_applied r = True \<and> rx_output_encoded r = True"
+lemma XSS_089: "\<forall> r, reflected_xss_safe r = True \<longrightarrow> rx_sanitization_applied r = True \<and> rx_output_encoded r = True"
   by auto
 
 (* XSS_090 (matches Coq) *)
@@ -876,15 +881,15 @@ lemma XSS_090: "rx_input_taint riina_reflected = TaintUntrusted \<and> reflected
   by auto
 
 (* XSS_091 (matches Coq) *)
-lemma XSS_091: "\<forall>r. rx_sanitization_applied r = False \<longrightarrow> reflected_xss_safe r = False"
+lemma XSS_091: "\<forall> r, rx_sanitization_applied r = False \<longrightarrow> reflected_xss_safe r = False"
   by simp
 
 (* XSS_092 (matches Coq) *)
-lemma XSS_092: "\<forall>r. rx_output_encoded r = False \<longrightarrow> reflected_xss_safe r = False"
+lemma XSS_092: "\<forall> r, rx_output_encoded r = False \<longrightarrow> reflected_xss_safe r = False"
   by simp
 
 (* XSS_093 (matches Coq) *)
-lemma XSS_093: "\<forall>r. reflected_xss_safe r = True <-> rx_sanitization_applied r = True \<and> rx_output_encoded r = True"
+lemma XSS_093: "\<forall> r, reflected_xss_safe r = True <-> rx_sanitization_applied r = True \<and> rx_output_encoded r = True"
   by auto
 
 (* XSS_094 (matches Coq) *)
@@ -900,31 +905,31 @@ lemma XSS_096: "stored_xss_safe riina_stored = True"
   by simp
 
 (* XSS_097 (matches Coq) *)
-lemma XSS_097: "\<forall>s. stored_xss_safe s = True \<longrightarrow> sx_input_validated s = True"
+lemma XSS_097: "\<forall> s, stored_xss_safe s = True \<longrightarrow> sx_input_validated s = True"
   by auto
 
 (* XSS_098 (matches Coq) *)
-lemma XSS_098: "\<forall>s. stored_xss_safe s = True \<longrightarrow> sx_storage_sanitized s = True"
+lemma XSS_098: "\<forall> s, stored_xss_safe s = True \<longrightarrow> sx_storage_sanitized s = True"
   by auto
 
 (* XSS_099 (matches Coq) *)
-lemma XSS_099: "\<forall>s. stored_xss_safe s = True \<longrightarrow> sx_retrieval_encoded s = True"
+lemma XSS_099: "\<forall> s, stored_xss_safe s = True \<longrightarrow> sx_retrieval_encoded s = True"
   by auto
 
 (* XSS_100 (matches Coq) *)
-lemma XSS_100: "\<forall>s. stored_xss_safe s = True \<longrightarrow> sx_output_context_aware s = True"
+lemma XSS_100: "\<forall> s, stored_xss_safe s = True \<longrightarrow> sx_output_context_aware s = True"
   by auto
 
 (* XSS_101 (matches Coq) *)
-lemma XSS_101: "\<forall>s. stored_xss_safe s = True \<longrightarrow> sx_input_validated s = True \<and> sx_storage_sanitized s = True"
+lemma XSS_101: "\<forall> s, stored_xss_safe s = True \<longrightarrow> sx_input_validated s = True \<and> sx_storage_sanitized s = True"
   by auto
 
 (* XSS_102 (matches Coq) *)
-lemma XSS_102: "\<forall>s. stored_xss_safe s = True \<longrightarrow> sx_retrieval_encoded s = True \<and> sx_output_context_aware s = True"
+lemma XSS_102: "\<forall> s, stored_xss_safe s = True \<longrightarrow> sx_retrieval_encoded s = True \<and> sx_output_context_aware s = True"
   by auto
 
 (* XSS_103 (matches Coq) *)
-lemma XSS_103: "\<forall>s. stored_xss_safe s = True \<longrightarrow> sx_input_validated s = True \<and> sx_storage_sanitized s = True \<and> sx_retrieval_encoded s = True \<and> sx_output_context_aware s = True"
+lemma XSS_103: "\<forall> s, stored_xss_safe s = True \<longrightarrow> sx_input_validated s = True \<and> sx_storage_sanitized s = True \<and> sx_retrieval_encoded s = True \<and> sx_output_context_aware s = True"
   by auto
 
 (* XSS_104 (matches Coq) *)
@@ -940,31 +945,31 @@ lemma XSS_106: "dom_xss_safe riina_dom_based = True"
   by simp
 
 (* XSS_107 (matches Coq) *)
-lemma XSS_107: "\<forall>d. dom_xss_safe d = True \<longrightarrow> dx_source_sanitized d = True"
+lemma XSS_107: "\<forall> d, dom_xss_safe d = True \<longrightarrow> dx_source_sanitized d = True"
   by auto
 
 (* XSS_108 (matches Coq) *)
-lemma XSS_108: "\<forall>d. dom_xss_safe d = True \<longrightarrow> dx_sink_safe d = True"
+lemma XSS_108: "\<forall> d, dom_xss_safe d = True \<longrightarrow> dx_sink_safe d = True"
   by auto
 
 (* XSS_109 (matches Coq) *)
-lemma XSS_109: "\<forall>d. dom_xss_safe d = True \<longrightarrow> dx_trusted_types d = True"
+lemma XSS_109: "\<forall> d, dom_xss_safe d = True \<longrightarrow> dx_trusted_types d = True"
   by auto
 
 (* XSS_110 (matches Coq) *)
-lemma XSS_110: "\<forall>d. dom_xss_safe d = True \<longrightarrow> dx_no_eval d = True"
+lemma XSS_110: "\<forall> d, dom_xss_safe d = True \<longrightarrow> dx_no_eval d = True"
   by auto
 
 (* XSS_111 (matches Coq) *)
-lemma XSS_111: "\<forall>d. dom_xss_safe d = True \<longrightarrow> dx_source_sanitized d = True \<and> dx_sink_safe d = True"
+lemma XSS_111: "\<forall> d, dom_xss_safe d = True \<longrightarrow> dx_source_sanitized d = True \<and> dx_sink_safe d = True"
   by auto
 
 (* XSS_112 (matches Coq) *)
-lemma XSS_112: "\<forall>d. dom_xss_safe d = True \<longrightarrow> dx_trusted_types d = True \<and> dx_no_eval d = True"
+lemma XSS_112: "\<forall> d, dom_xss_safe d = True \<longrightarrow> dx_trusted_types d = True \<and> dx_no_eval d = True"
   by auto
 
 (* XSS_113 (matches Coq) *)
-lemma XSS_113: "\<forall>d. dom_xss_safe d = True \<longrightarrow> dx_source_sanitized d = True \<and> dx_sink_safe d = True \<and> dx_trusted_types d = True \<and> dx_no_eval d = True"
+lemma XSS_113: "\<forall> d, dom_xss_safe d = True \<longrightarrow> dx_source_sanitized d = True \<and> dx_sink_safe d = True \<and> dx_trusted_types d = True \<and> dx_no_eval d = True"
   by auto
 
 (* XSS_114 (matches Coq) *)
@@ -1004,7 +1009,7 @@ lemma XSS_122: "html_encode [60; 115; 99; 114; 105; 112; 116; 62] = [38; 108; 11
   by simp
 
 (* XSS_123 (matches Coq) *)
-lemma XSS_123: "\<forall>c. is_html_dangerous c = False \<longrightarrow> html_encode_char c = [c]"
+lemma XSS_123: "\<forall> c, is_html_dangerous c = False \<longrightarrow> html_encode_char c = [c]"
   by simp
 
 (* XSS_124 (matches Coq) *)
@@ -1012,8 +1017,8 @@ lemma XSS_124: "html_encode [] = []"
   by simp
 
 (* XSS_125 (matches Coq) *)
-lemma XSS_125: "\<forall>c. length (html_encode_char c) \<ge> 1"
-  by auto
+lemma XSS_125: "\<forall> c, length (html_encode_char c) \<ge> 1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* XSS_126 (matches Coq) *)
 lemma XSS_126: "js_escape_char 34 = [92; 34]"
@@ -1044,7 +1049,7 @@ lemma XSS_132: "js_escape [] = []"
   by simp
 
 (* XSS_133 (matches Coq) *)
-lemma XSS_133: "\<forall>c. is_js_dangerous c = False \<longrightarrow> js_escape_char c = [c]"
+lemma XSS_133: "\<forall> c, is_js_dangerous c = False \<longrightarrow> js_escape_char c = [c]"
   by simp
 
 (* XSS_134 (matches Coq) *)
@@ -1052,8 +1057,8 @@ lemma XSS_134: "js_escape [60; 47; 115; 99; 114; 105; 112; 116; 62] = [92; 117; 
   by simp
 
 (* XSS_135 (matches Coq) *)
-lemma XSS_135: "\<forall>c. length (js_escape_char c) \<ge> 1"
-  by auto
+lemma XSS_135: "\<forall> c, length (js_escape_char c) \<ge> 1"
+  by (cases rule: ‹_›.cases; simp)
 
 (* XSS_136 (matches Coq) *)
 lemma XSS_136: "url_encode_char 65 = [65]"
@@ -1076,7 +1081,7 @@ lemma XSS_140: "url_encode [] = []"
   by simp
 
 (* XSS_141 (matches Coq) *)
-lemma XSS_141: "\<forall>c. needs_url_encoding c = False \<longrightarrow> url_encode_char c = [c]"
+lemma XSS_141: "\<forall> c, needs_url_encoding c = False \<longrightarrow> url_encode_char c = [c]"
   by simp
 
 (* XSS_142 (matches Coq) *)
@@ -1112,7 +1117,7 @@ lemma XSS_149: "css_escape [] = []"
   by simp
 
 (* XSS_150 (matches Coq) *)
-lemma XSS_150: "\<forall>c. is_css_dangerous c = False \<longrightarrow> css_escape_char c = [c]"
+lemma XSS_150: "\<forall> c, is_css_dangerous c = False \<longrightarrow> css_escape_char c = [c]"
   by simp
 
 (* XSS_151 (matches Coq) *)
@@ -1140,23 +1145,23 @@ lemma XSS_156: "xss_maximum_protection riina_xss = True"
   by simp
 
 (* XSS_157 (matches Coq) *)
-lemma XSS_157: "\<forall>x. xss_maximum_protection x = True \<longrightarrow> xss_dom_sanitization x = True \<longrightarrow> xss_protected x = True"
+lemma XSS_157: "\<forall> x, xss_maximum_protection x = True \<longrightarrow> xss_dom_sanitization x = True \<longrightarrow> xss_protected x = True"
   by auto
 
 (* XSS_158 (matches Coq) *)
-lemma XSS_158: "\<forall>x. xss_maximum_protection x = True \<longrightarrow> output_safe (xss_output x) = True"
+lemma XSS_158: "\<forall> x, xss_maximum_protection x = True \<longrightarrow> output_safe (xss_output x) = True"
   by auto
 
 (* XSS_159 (matches Coq) *)
-lemma XSS_159: "\<forall>x. xss_maximum_protection x = True \<longrightarrow> csp_maximum (xss_csp x) = True"
+lemma XSS_159: "\<forall> x, xss_maximum_protection x = True \<longrightarrow> csp_maximum (xss_csp x) = True"
   by auto
 
 (* XSS_160 (matches Coq) *)
-lemma XSS_160: "\<forall>x. xss_maximum_protection x = True \<longrightarrow> dom_sanitizer_complete (xss_dom x) = True"
+lemma XSS_160: "\<forall> x, xss_maximum_protection x = True \<longrightarrow> dom_sanitizer_complete (xss_dom x) = True"
   by auto
 
 (* XSS_161 (matches Coq) *)
-lemma XSS_161: "\<forall>x. xss_maximum_protection x = True \<longrightarrow> input_validation_complete (xss_input x) = True"
+lemma XSS_161: "\<forall> x, xss_maximum_protection x = True \<longrightarrow> input_validation_complete (xss_input x) = True"
   by auto
 
 (* XSS_162 (matches Coq) *)

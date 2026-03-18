@@ -12,14 +12,14 @@
  *
  * | Coq Definition     | Isabelle Definition    | Status |
  * |--------------------|------------------------|--------|
- * | stmt               | stmt                   | OK     |
- * | cache_state         | cache_state            | OK     |
- * | branch_state        | branch_state           | OK     |
- * | abstract_cache_state | abstract_cache_state   | OK     |
- * | hw_params           | hw_params              | OK     |
- * | task               | task                   | OK     |
- * | exec_context        | exec_context           | OK     |
- * | d_mac_onfig          | dma_config             | OK     |
+ * | Stmt               | stmt                   | OK     |
+ * | CacheState         | cache_state            | OK     |
+ * | BranchState        | branch_state           | OK     |
+ * | AbstractCacheState | abstract_cache_state   | OK     |
+ * | HWParams           | hw_params              | OK     |
+ * | Task               | task                   | OK     |
+ * | ExecContext        | exec_context           | OK     |
+ * | DMAConfig          | dma_config             | OK     |
  * | hw_wellformed      | hw_wellformed          | OK     |
  * | default_hw         | default_hw             | OK     |
  * | wcet               | wcet                   | OK     |
@@ -84,10 +84,7 @@ theory WCETBounds
   imports Main
 begin
 
-(* Auto-generated type synonyms for Coq compatibility *)
-type_synonym d_mac_onfig = "nat"
-type_synonym time = "nat"
-(* stmt (matches Coq: Inductive stmt) *)
+(* Stmt (matches Coq: Inductive Stmt) *)
 datatype stmt =
     SUnit
   |     SAssign
@@ -98,46 +95,46 @@ datatype stmt =
   |     SFor
   |     SCall
 
-(* cache_state (matches Coq: Inductive cache_state) *)
+(* CacheState (matches Coq: Inductive CacheState) *)
 datatype cache_state =
     CacheHit
   |     CacheMiss
 
-(* branch_state (matches Coq: Inductive branch_state) *)
+(* BranchState (matches Coq: Inductive BranchState) *)
 datatype branch_state =
     BranchCorrect
   |     BranchMispredict
 
-(* abstract_cache_state (matches Coq: Inductive abstract_cache_state) *)
+(* AbstractCacheState (matches Coq: Inductive AbstractCacheState) *)
 datatype abstract_cache_state =
     ACSMustHit
   |     ACSMayMiss
   |     ACSMustMiss
 
-(* hw_params (matches Coq: Record hw_params) *)
+(* HWParams (matches Coq: Record HWParams) *)
 record hw_params =
-  hw_cache_hit :: time
-  hw_cache_miss :: time
-  hw_call_overhead :: time
-  hw_branch_penalty :: time
+  hw_cache_hit :: Time
+  hw_cache_miss :: Time
+  hw_call_overhead :: Time
+  hw_branch_penalty :: Time
   hw_pipeline_depth :: nat
 
-(* task (matches Coq: Record task) *)
+(* Task (matches Coq: Record Task) *)
 record task =
-  task_wcet :: time
-  task_period :: time
-  task_deadline :: time
+  task_wcet :: Time
+  task_period :: Time
+  task_deadline :: Time
 
-(* exec_context (matches Coq: Record exec_context) *)
+(* ExecContext (matches Coq: Record ExecContext) *)
 record exec_context =
-  exec_cache :: cache_state
-  exec_branch :: branch_state
+  exec_cache :: CacheState
+  exec_branch :: BranchState
   exec_iterations :: nat
 
-(* d_mac_onfig (matches Coq: Record d_mac_onfig) *)
+(* DMAConfig (matches Coq: Record DMAConfig) *)
 record dma_config =
   dma_bandwidth :: nat
-  dma_setup :: time
+  dma_setup :: Time
 
 (* hw_wellformed (matches Coq: Definition hw_wellformed) *)
 definition hw_wellformed :: "HWParams \<Rightarrow> bool" where
@@ -148,7 +145,7 @@ definition default_hw :: "HWParams" where
   "default_hw \<equiv> mkHW 1 100 5 10 5"
 
 (* wcet (matches Coq: Definition wcet) *)
-fun wcet :: "HWParams \<Rightarrow> stmt \<Rightarrow> Time" where
+fun wcet :: "HWParams \<Rightarrow> Stmt \<Rightarrow> Time" where
   "wcet SUnit = 1"
 
 (* utilization (matches Coq: Definition utilization) *)
@@ -156,21 +153,21 @@ definition utilization :: "Task \<Rightarrow> nat" where
   "utilization t \<equiv> (task_wcet t * 100) / task_period t"
 
 (* cache_latency (matches Coq: Definition cache_latency) *)
-fun cache_latency :: "HWParams \<Rightarrow> cache_state \<Rightarrow> Time" where
+fun cache_latency :: "HWParams \<Rightarrow> CacheState \<Rightarrow> Time" where
   "cache_latency CacheHit = hw_cache_hit"
 |   "cache_latency CacheMiss = hw_cache_miss"
 
 (* branch_cost (matches Coq: Definition branch_cost) *)
-fun branch_cost :: "HWParams \<Rightarrow> branch_state \<Rightarrow> Time" where
+fun branch_cost :: "HWParams \<Rightarrow> BranchState \<Rightarrow> Time" where
   "branch_cost BranchCorrect = 0"
 |   "branch_cost BranchMispredict = hw_branch_penalty"
 
 (* worst_context (matches Coq: Definition worst_context) *)
 definition worst_context :: "nat \<Rightarrow> ExecContext" where
-  "worst_context max_iter \<equiv> mkExec CacheMiss BranchMispredict (\<lambda>_. max_iter)"
+  "worst_context max_iter \<equiv> mkExec CacheMiss BranchMispredict (fun _ => max_iter)"
 
 (* actual_time (matches Coq: Definition actual_time) *)
-fun actual_time :: "HWParams \<Rightarrow> exec_context \<Rightarrow> stmt \<Rightarrow> Time" where
+fun actual_time :: "HWParams \<Rightarrow> ExecContext \<Rightarrow> Stmt \<Rightarrow> Time" where
   "actual_time SUnit = 1"
 
 (* recursive_calls (matches Coq: Definition recursive_calls) *)
@@ -190,7 +187,7 @@ definition dma_wcet :: "DMAConfig \<Rightarrow> nat \<Rightarrow> Time" where
   "dma_wcet cfg transfer_size \<equiv> dma_setup cfg + (transfer_size / max 1 (dma_bandwidth cfg)) + 1"
 
 (* abstract_cache_wcet (matches Coq: Definition abstract_cache_wcet) *)
-fun abstract_cache_wcet :: "HWParams \<Rightarrow> abstract_cache_state \<Rightarrow> Time" where
+fun abstract_cache_wcet :: "HWParams \<Rightarrow> AbstractCacheState \<Rightarrow> Time" where
   "abstract_cache_wcet ACSMustHit = hw_cache_hit"
 |   "abstract_cache_wcet ACSMayMiss = hw_cache_miss"
 |   "abstract_cache_wcet ACSMustMiss = hw_cache_miss"
@@ -224,135 +221,135 @@ lemma default_hw_wellformed: "hw_wellformed default_hw"
   by simp
 
 (* cache_latency_bound (matches Coq) *)
-lemma cache_latency_bound: "\<forall>hw cs. hw_wellformed hw \<longrightarrow> cache_latency hw cs \<le> hw_cache_miss hw"
-  by auto
+lemma cache_latency_bound: "\<forall> hw cs, hw_wellformed hw \<longrightarrow> cache_latency hw cs \<le> hw_cache_miss hw"
+  by (cases rule: ‹_›.cases; simp)
 
 (* branch_cost_bound (matches Coq) *)
-lemma branch_cost_bound: "\<forall>hw bs. branch_cost hw bs \<le> hw_branch_penalty hw"
-  by auto
+lemma branch_cost_bound: "\<forall> hw bs, branch_cost hw bs \<le> hw_branch_penalty hw"
+  by (cases rule: ‹_›.cases; simp)
 
 (* max_lub (matches Coq) *)
-lemma max_lub: "\<forall>a b c. a \<le> c \<longrightarrow> b \<le> c \<longrightarrow> max a b \<le> c"
+lemma max_lub: "\<forall> a b c, a \<le> c \<longrightarrow> b \<le> c \<longrightarrow> max a b \<le> c"
   by auto
 
 (* le_max_l (matches Coq) *)
-lemma le_max_l: "\<forall>a b. a \<le> max a b"
+lemma le_max_l: "\<forall> a b, a \<le> max a b"
   by auto
 
 (* le_max_r (matches Coq) *)
-lemma le_max_r: "\<forall>a b. b \<le> max a b"
+lemma le_max_r: "\<forall> a b, b \<le> max a b"
   by auto
 
 (* PERF_001_01_constant_time_bound (matches Coq) *)
-lemma PERF_001_01_constant_time_bound: "\<forall>hw. wcet hw SUnit = 1 \<and> \<forall>x v. wcet hw (SAssign x v) = 1"
+lemma PERF_001_01_constant_time_bound: "\<forall> hw, wcet hw SUnit = 1 \<and> \<forall> x v, wcet hw (SAssign x v) = 1"
   by simp
 
 (* PERF_001_02_seq_composition_bound (matches Coq) *)
-lemma PERF_001_02_seq_composition_bound: "\<forall>hw s1 s2. wcet hw (SSeq s1 s2) = wcet hw s1 + wcet hw s2"
+lemma PERF_001_02_seq_composition_bound: "\<forall> hw s1 s2, wcet hw (SSeq s1 s2) = wcet hw s1 + wcet hw s2"
   by simp
 
 (* PERF_001_03_branch_bound (matches Coq) *)
-lemma PERF_001_03_branch_bound: "\<forall>hw c s1 s2. wcet hw (SIf c s1 s2) \<ge> max (wcet hw s1) (wcet hw s2)"
+lemma PERF_001_03_branch_bound: "\<forall> hw c s1 s2, wcet hw (SIf c s1 s2) \<ge> max (wcet hw s1) (wcet hw s2)"
   by simp
 
 (* PERF_001_03_branch_exact (matches Coq) *)
-lemma PERF_001_03_branch_exact: "\<forall>hw c s1 s2. wcet hw (SIf c s1 s2) = 1 + hw_branch_penalty hw + max (wcet hw s1) (wcet hw s2)"
+lemma PERF_001_03_branch_exact: "\<forall> hw c s1 s2, wcet hw (SIf c s1 s2) = 1 + hw_branch_penalty hw + max (wcet hw s1) (wcet hw s2)"
   by simp
 
 (* PERF_001_04_loop_bound (matches Coq) *)
-lemma PERF_001_04_loop_bound: "\<forall>hw n body. wcet hw (SFor n body) = n * wcet hw body + n + 1"
+lemma PERF_001_04_loop_bound: "\<forall> hw n body, wcet hw (SFor n body) = n * wcet hw body + n + 1"
   by simp
 
 (* PERF_001_04_loop_lower_bound (matches Coq) *)
-lemma PERF_001_04_loop_lower_bound: "\<forall>hw n body. wcet hw (SFor n body) \<ge> n * wcet hw body"
+lemma PERF_001_04_loop_lower_bound: "\<forall> hw n body, wcet hw (SFor n body) \<ge> n * wcet hw body"
   by simp
 
 (* PERF_001_05_call_bound (matches Coq) *)
-lemma PERF_001_05_call_bound: "\<forall>hw f_wcet. wcet hw (SCall f_wcet) = hw_call_overhead hw + f_wcet"
+lemma PERF_001_05_call_bound: "\<forall> hw f_wcet, wcet hw (SCall f_wcet) = hw_call_overhead hw + f_wcet"
   by simp
 
 (* PERF_001_05_call_overhead_included (matches Coq) *)
-lemma PERF_001_05_call_overhead_included: "\<forall>hw f_wcet. wcet hw (SCall f_wcet) \<ge> f_wcet"
+lemma PERF_001_05_call_overhead_included: "\<forall> hw f_wcet, wcet hw (SCall f_wcet) \<ge> f_wcet"
   by simp
 
 (* PERF_001_06_recursion_depth_bound (matches Coq) *)
-lemma PERF_001_06_recursion_depth_bound: "\<forall>hw n f_body_wcet. wcet hw (recursive_calls n f_body_wcet) \<le> n * (hw_call_overhead hw + f_body_wcet) + 1"
+lemma PERF_001_06_recursion_depth_bound: "\<forall> hw n f_body_wcet, wcet hw (recursive_calls n f_body_wcet) \<le> n * (hw_call_overhead hw + f_body_wcet) + 1"
   by simp
 
 (* PERF_001_07_memory_access_bound (matches Coq) *)
-lemma PERF_001_07_memory_access_bound: "\<forall>hw ptr val. wcet hw (SLoad ptr val) = hw_cache_miss hw \<and> wcet hw (SStore ptr val) = hw_cache_miss hw"
+lemma PERF_001_07_memory_access_bound: "\<forall> hw ptr val, wcet hw (SLoad ptr val) = hw_cache_miss hw \<and> wcet hw (SStore ptr val) = hw_cache_miss hw"
   by simp
 
 (* PERF_001_07_memory_actual_bound (matches Coq) *)
-lemma PERF_001_07_memory_actual_bound: "\<forall>hw ctx ptr val. hw_wellformed hw \<longrightarrow> actual_time hw ctx (SLoad ptr val) \<le> wcet hw (SLoad ptr val) \<and> actual_time hw ctx (SStore ptr val) \<le> wcet hw (SStore ptr val)"
+lemma PERF_001_07_memory_actual_bound: "\<forall> hw ctx ptr val, hw_wellformed hw \<longrightarrow> actual_time hw ctx (SLoad ptr val) \<le> wcet hw (SLoad ptr val) \<and> actual_time hw ctx (SStore ptr val) \<le> wcet hw (SStore ptr val)"
   by auto
 
 (* PERF_001_08_pipeline_stall_bound (matches Coq) *)
-lemma PERF_001_08_pipeline_stall_bound: "\<forall>hw c s1 s2. wcet hw (SIf c s1 s2) \<ge> hw_branch_penalty hw"
+lemma PERF_001_08_pipeline_stall_bound: "\<forall> hw c s1 s2, wcet hw (SIf c s1 s2) \<ge> hw_branch_penalty hw"
   by simp
 
 (* PERF_001_08_pipeline_conservative (matches Coq) *)
-lemma PERF_001_08_pipeline_conservative: "\<forall>hw. hw_branch_penalty hw \<ge> 0"
+lemma PERF_001_08_pipeline_conservative: "\<forall> hw, hw_branch_penalty hw \<ge> 0"
   by simp
 
 (* PERF_001_09_critical_section_bound (matches Coq) *)
-lemma PERF_001_09_critical_section_bound: "\<forall>hw stmts. wcet hw (critical_section stmts) = fold_right (fun s acc => wcet hw s + acc) 1 stmts"
+lemma PERF_001_09_critical_section_bound: "\<forall> hw stmts, wcet hw (critical_section stmts) = fold_right (fun s acc => wcet hw s + acc) 1 stmts"
   by simp
 
 (* PERF_001_09_no_preemption_additive (matches Coq) *)
-lemma PERF_001_09_no_preemption_additive: "\<forall>hw s1 s2 s3. wcet hw (critical_section [s1; s2; s3]) = wcet hw s1 + wcet hw s2 + wcet hw s3 + 1"
+lemma PERF_001_09_no_preemption_additive: "\<forall> hw s1 s2 s3, wcet hw (critical_section [s1; s2; s3]) = wcet hw s1 + wcet hw s2 + wcet hw s3 + 1"
   by simp
 
 (* PERF_001_10_dma_transfer_bound (matches Coq) *)
-lemma PERF_001_10_dma_transfer_bound: "\<forall>cfg size. dma_wcet cfg size \<ge> dma_setup cfg"
+lemma PERF_001_10_dma_transfer_bound: "\<forall> cfg size, dma_wcet cfg size \<ge> dma_setup cfg"
   by simp
 
 (* PERF_001_10_dma_size_scaling (matches Coq) *)
-lemma PERF_001_10_dma_size_scaling: "\<forall>cfg size1 size2. size1 \<le> size2 \<longrightarrow> dma_wcet cfg size1 \<le> dma_wcet cfg size2"
+lemma PERF_001_10_dma_size_scaling: "\<forall> cfg size1 size2, size1 \<le> size2 \<longrightarrow> dma_wcet cfg size1 \<le> dma_wcet cfg size2"
   by simp
 
 (* PERF_001_11_cache_abstraction_sound (matches Coq) *)
-lemma PERF_001_11_cache_abstraction_sound: "\<forall>hw acs cs. hw_wellformed hw \<longrightarrow> (acs = ACSMayMiss \<or> acs = ACSMustMiss \<or> (acs = ACSMustHit \<and> cs = CacheHit)) \<longrightarrow> cache_latency hw cs \<le> abstract_cache_wcet hw acs"
-  by auto
+lemma PERF_001_11_cache_abstraction_sound: "\<forall> hw acs cs, hw_wellformed hw \<longrightarrow> (acs = ACSMayMiss \<or> acs = ACSMustMiss \<or> (acs = ACSMustHit \<and> cs = CacheHit)) \<longrightarrow> cache_latency hw cs \<le> abstract_cache_wcet hw acs"
+  by (cases rule: ‹_›.cases; simp)
 
 (* PERF_001_11_may_analysis_safe (matches Coq) *)
-lemma PERF_001_11_may_analysis_safe: "\<forall>hw cs. hw_wellformed hw \<longrightarrow> cache_latency hw cs \<le> abstract_cache_wcet hw ACSMayMiss"
+lemma PERF_001_11_may_analysis_safe: "\<forall> hw cs, hw_wellformed hw \<longrightarrow> cache_latency hw cs \<le> abstract_cache_wcet hw ACSMayMiss"
   by auto
 
 (* PERF_001_12_wcet_monotonicity_loop (matches Coq) *)
-lemma PERF_001_12_wcet_monotonicity_loop: "\<forall>hw n1 n2 body. n1 \<le> n2 \<longrightarrow> wcet hw (SFor n1 body) \<le> wcet hw (SFor n2 body)"
+lemma PERF_001_12_wcet_monotonicity_loop: "\<forall> hw n1 n2 body, n1 \<le> n2 \<longrightarrow> wcet hw (SFor n1 body) \<le> wcet hw (SFor n2 body)"
   by simp
 
 (* PERF_001_12_wcet_monotonicity_recursion (matches Coq) *)
-lemma PERF_001_12_wcet_monotonicity_recursion: "\<forall>hw n1 n2 f_wcet. n1 \<le> n2 \<longrightarrow> wcet hw (recursive_calls n1 f_wcet) \<le> wcet hw (recursive_calls n2 f_wcet)"
+lemma PERF_001_12_wcet_monotonicity_recursion: "\<forall> hw n1 n2 f_wcet, n1 \<le> n2 \<longrightarrow> wcet hw (recursive_calls n1 f_wcet) \<le> wcet hw (recursive_calls n2 f_wcet)"
   by simp
 
 (* PERF_001_13_parallel_wcet_bound (matches Coq) *)
-lemma PERF_001_13_parallel_wcet_bound: "\<forall>t1 t2. parallel_wcet t1 t2 \<ge> t1 \<and> parallel_wcet t1 t2 \<ge> t2"
+lemma PERF_001_13_parallel_wcet_bound: "\<forall> t1 t2, parallel_wcet t1 t2 \<ge> t1 \<and> parallel_wcet t1 t2 \<ge> t2"
   by auto
 
 (* PERF_001_13_parallel_wcet_tight (matches Coq) *)
-lemma PERF_001_13_parallel_wcet_tight: "\<forall>t1 t2. parallel_wcet t1 t2 = t1 \<or> parallel_wcet t1 t2 = t2"
+lemma PERF_001_13_parallel_wcet_tight: "\<forall> t1 t2, parallel_wcet t1 t2 = t1 \<or> parallel_wcet t1 t2 = t2"
   by auto
 
 (* PERF_001_13_parallel_list_bound (matches Coq) *)
-lemma PERF_001_13_parallel_list_bound: "\<forall>times t. t \<in> set times \<longrightarrow> t \<le> parallel_wcet_list times"
-  by auto
+lemma PERF_001_13_parallel_list_bound: "\<forall> times t, In t times \<longrightarrow> t \<le> parallel_wcet_list times"
+  by (cases rule: ‹_›.cases; simp)
 
 (* PERF_001_14_safe_wcet_margin (matches Coq) *)
-lemma PERF_001_14_safe_wcet_margin: "\<forall>hw ctx s. hw_wellformed hw \<longrightarrow> actual_time hw ctx s \<le> wcet hw s"
-  by auto
+lemma PERF_001_14_safe_wcet_margin: "\<forall> hw ctx s, hw_wellformed hw \<longrightarrow> actual_time hw ctx s \<le> wcet hw s"
+  by (cases rule: ‹_›.cases; simp)
 
 (* PERF_001_14_margin_nonnegative (matches Coq) *)
-lemma PERF_001_14_margin_nonnegative: "\<forall>hw ctx s. hw_wellformed hw \<longrightarrow> wcet hw s - actual_time hw ctx s \<ge> 0"
+lemma PERF_001_14_margin_nonnegative: "\<forall> hw ctx s, hw_wellformed hw \<longrightarrow> wcet hw s - actual_time hw ctx s \<ge> 0"
   by simp
 
 (* PERF_001_15_schedulability_check (matches Coq) *)
-lemma PERF_001_15_schedulability_check: "\<forall>tasks. total_utilization tasks \<le> utilization_bound \<longrightarrow> schedulable tasks"
+lemma PERF_001_15_schedulability_check: "\<forall> tasks, total_utilization tasks \<le> utilization_bound \<longrightarrow> schedulable tasks"
   by auto
 
 (* PERF_001_15_utilization_monotonic (matches Coq) *)
-lemma PERF_001_15_utilization_monotonic: "\<forall>t tasks. total_utilization tasks \<le> total_utilization (t :: tasks)"
+lemma PERF_001_15_utilization_monotonic: "\<forall> t tasks, total_utilization tasks \<le> total_utilization (t :: tasks)"
   by simp
 
 (* PERF_001_15_empty_schedulable (matches Coq) *)
@@ -360,19 +357,19 @@ lemma PERF_001_15_empty_schedulable: "schedulable []"
   by simp
 
 (* PERF_001_15_single_task_schedulable (matches Coq) *)
-lemma PERF_001_15_single_task_schedulable: "\<forall>t. utilization t \<le> utilization_bound \<longrightarrow> schedulable [t]"
+lemma PERF_001_15_single_task_schedulable: "\<forall> t, utilization t \<le> utilization_bound \<longrightarrow> schedulable [t]"
   by simp
 
 (* PERF_001_15_deadline_feasibility (matches Coq) *)
-lemma PERF_001_15_deadline_feasibility: "\<forall>t. task_wcet t \<le> task_deadline t \<longrightarrow> task_wcet t \<le> task_period t \<longrightarrow> True. "
+lemma PERF_001_15_deadline_feasibility: "\<forall> t, task_wcet t \<le> task_deadline t \<longrightarrow> task_wcet t \<le> task_period t \<longrightarrow> True. "
   by auto
 
 (* PERF_001_15_response_time_valid (matches Coq) *)
-lemma PERF_001_15_response_time_valid: "\<forall>t. response_time_bound t = task_wcet t"
+lemma PERF_001_15_response_time_valid: "\<forall> t, response_time_bound t = task_wcet t"
   by simp
 
 (* WCET_bounds_soundness (matches Coq) *)
-lemma WCET_bounds_soundness: "\<forall>hw s ctx. hw_wellformed hw \<longrightarrow> actual_time hw ctx s \<le> wcet hw s"
+lemma WCET_bounds_soundness: "\<forall> hw s ctx, hw_wellformed hw \<longrightarrow> actual_time hw ctx s \<le> wcet hw s"
   by auto
 
 end
