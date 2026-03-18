@@ -6,7 +6,7 @@
 > Do not use it as the live execution source of truth.
 > Use `04_SPECS/execution/RIINA_A_TO_Z_EXECUTION_BOARD.md`, `PROOF_STATUS.md`, and `website/public/metrics.json`.
 
-**Verification:** 10,803 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2081 Rust tests
+**Verification:** 10,854 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2112 Rust tests
 
 ```
 Version: 1.0.0

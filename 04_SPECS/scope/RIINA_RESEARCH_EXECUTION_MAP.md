@@ -1,6 +1,6 @@
 # RIINA RESEARCH-EXECUTION MAP
 
-**Verification:** 10,803 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2081 Rust tests
+**Verification:** 10,854 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2112 Rust tests
 
 ## Version 1.0.0 — Complete Mapping of 218 Research Tracks to Language Features
 

@@ -178,9 +178,9 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-core** | `05_TOOLING/crates/riina-core/` | Implemented | Cryptographic primitives (AES, SHA-3) |
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
-| **Coq proofs** | `02_FORMAL/coq/` | 10,803 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 292 files, 10,229 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
-| **Isabelle proofs** | `02_FORMAL/isabelle/` | 329 files, 10,402 lemmas, 10 core theories compile, 0 sorry | Mechanized |
+| **Coq proofs** | `02_FORMAL/coq/` | 10,854 Qed, 0 Admitted | Primary formal verification |
+| **Lean proofs** | `02_FORMAL/lean/` | 307 files, 11,045 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
+| **Isabelle proofs** | `02_FORMAL/isabelle/` | 344 files, 11,233 lemmas, 10 core theories compile, 0 sorry | Mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 267 files, 11,843 assertions, 267/267 Z3-verified | Mechanized |
 | **F\* proofs** | `02_FORMAL/fstar/` | 265 files, 0 assume val | Compiled |
 | **TLA+ specs** | `02_FORMAL/tlaplus/` | 267 files, 5,893 theorems, SANY+TLC verified | Compiled |
@@ -225,11 +225,11 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 | Metric | Value | Command |
 |--------|-------|---------|
-| Qed proofs (active build) | 10,803 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
+| Qed proofs (active build) | 10,854 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
 | .v files (active) | 292 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
-| Qed (archive) | 758 | Total 10,796 minus active 10,803 |
+| Qed (archive) | 758 | Total 10,796 minus active 10,854 |
 | Admitted (archive) | 98 | In `properties/_archive_deprecated/` |
 | Compilation | PASSES | `cd 02_FORMAL/coq && make` |
 
@@ -250,7 +250,7 @@ but the compiler does not yet enforce them.
 | Metric | Value | Notes |
 |--------|-------|-------|
 | `.lean` files in `02_FORMAL/lean/RIINA` | 155 | Strict mechanization gate scope (excludes `_wip`) |
-| Theorem/lemma declarations | 10,229 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
+| Theorem/lemma declarations | 11,045 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
 | `lake build RIINA` | PASSES | Full Lean lane builds successfully (19 domain files fixed 2026-03-14) |
 | `sorry` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
 | `axiom` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
@@ -270,7 +270,7 @@ strict-positivity restriction while preserving the active-lane theorem surface.
 | .thy files | 307 | Repo-wide total from `find 02_FORMAL/isabelle/ -name "*.thy"` |
 | Compiled theories | 1 | `RIINA_CORE` currently compiles `Syntax.thy` |
 | Compilation | PASSES (`RIINA_CORE`) | `isabelle build -d 02_FORMAL/isabelle/RIINA/Core -b RIINA_CORE` |
-| Lemma count (grep) | ~10,402 | Repo-wide grep; mechanized via Isabelle build |
+| Lemma count (grep) | ~11,233 | Repo-wide grep; mechanized via Isabelle build |
 
 **Honest assessment:** `Syntax.thy` now compiles in Isabelle/HOL via the `RIINA_CORE`
 smoke session. The Isabelle lane contains 307 `.thy` files with mechanized compilation.
@@ -404,7 +404,7 @@ All public-facing metrics are command-derived, not copied from docs.
 ### Phase 1: PROOF DEPTH — Coq Foundation
 
 **Goal:** Deepen the Coq proof base with real, hard proofs. Move from "broad but shallow"
-(10,803 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
+(10,854 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
 
 **The 13 Verification Dimensions** (from `04_SPECS/requirements/RIINA_10_PROVER_DOMINANCE_STRATEGY.md`):
 
@@ -451,7 +451,7 @@ See Part 5 for detailed per-prover closure criteria.
 
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
-| Lean 4 | 292 files, 10,229 declarations, 0 `sorry`, 0 axioms | Full lane builds; strict active lane mechanized via step-indexed `AlgebraicEffects` typing | DONE | High |
+| Lean 4 | 307 files, 11,045 declarations, 0 `sorry`, 0 axioms | Full lane builds; strict active lane mechanized via step-indexed `AlgebraicEffects` typing | DONE | High |
 | Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | DONE (smoke; requires provisioning to re-verify) | High |
 | F* | 1 smoke-compiled active module (22 lemmas) | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | DONE (smoke; requires provisioning to re-verify) | High (HACL* templates) |
 | TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | DONE (smoke; requires provisioning to re-verify) | Very High |
@@ -973,7 +973,7 @@ X = primary role, o = supporting role
 | Metric | Value |
 |--------|-------|
 | Files | 259 active |
-| Qed | 10,803 |
+| Qed | 10,854 |
 | Admitted | 0 active (98 in archive) |
 | Axioms | 0 active |
 | Compilation | PASSES |
@@ -997,7 +997,7 @@ X = primary role, o = supporting role
 |--------|-------|
 | Files | 272 |
 | `.lean` files in `02_FORMAL/lean/RIINA` | 155 |
-| Theorem/lemma declarations | 10,229 |
+| Theorem/lemma declarations | 11,045 |
 | `sorry` (full lane) | 0 |
 | Axioms | 0 |
 | `lake build RIINA` | PASSES |
@@ -1063,7 +1063,7 @@ constructor names PascalCase, `induction` doesn't work on mutual inductives.
 |--------|-------|
 | Files | 307 (repo total) |
 | Compiled | 1 (`Syntax` in `RIINA_CORE`) |
-| Lemma count (grep) | ~10,402 (repo-wide; mechanized) |
+| Lemma count (grep) | ~11,233 (repo-wide; mechanized) |
 
 **Closure criteria:**
 1. First successful `isabelle build` on at least one file
