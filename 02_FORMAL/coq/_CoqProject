@@ -380,3 +380,5 @@ domains/MobileAppSecurity.v
 domains/CriticalInfrastructure.v
 domains/PrivacyEngineering.v
 domains/AlgorithmicFairness.v
+domains/ChoreographyTypes.v
+domains/ChoreographyProjection.v
