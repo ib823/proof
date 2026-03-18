@@ -2313,3 +2313,536 @@ fn test_parse_linearity_paling_in_function() {
         other => panic!("Expected Function, got {:?}", other),
     }
 }
+
+// =============================================================================
+// JALINAN PHASE 6: CHOREOGRAPHY TESTS
+// =============================================================================
+
+#[test]
+fn test_parse_choreography_basic() {
+    let source = "koreografi Proto { peranan A, B; A -> B: hantar Msg; tamat; }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Expr(e) => match e.as_ref() {
+            Expr::ChoreographyBlock { name, roles, protocol } => {
+                assert_eq!(name, "Proto");
+                assert_eq!(roles, &["A".to_string(), "B".to_string()]);
+                match protocol {
+                    SessionType::Send(ty, cont) => {
+                        assert_eq!(**ty, Ty::Any); // Msg → Any
+                        assert_eq!(**cont, SessionType::End);
+                    }
+                    other => panic!("Expected Send, got {:?}", other),
+                }
+            }
+            other => panic!("Expected ChoreographyBlock, got {:?}", other),
+        },
+        other => panic!("Expected Expr, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_choreography_multi_role() {
+    let source = "koreografi Proto { peranan A, B, C; tamat; }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Expr(e) => match e.as_ref() {
+            Expr::ChoreographyBlock { roles, protocol, .. } => {
+                assert_eq!(roles.len(), 3);
+                assert_eq!(roles[2], "C");
+                assert_eq!(*protocol, SessionType::End);
+            }
+            other => panic!("Expected ChoreographyBlock, got {:?}", other),
+        },
+        other => panic!("Expected Expr, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_choreography_multi_interaction() {
+    let source = "koreografi Proto { peranan A, B; A -> B: hantar Req; B -> A: hantar Resp; tamat; }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Expr(e) => match e.as_ref() {
+            Expr::ChoreographyBlock { protocol, .. } => {
+                match protocol {
+                    SessionType::Send(_, cont) => match cont.as_ref() {
+                        SessionType::Send(_, cont2) => {
+                            assert_eq!(**cont2, SessionType::End);
+                        }
+                        other => panic!("Expected nested Send, got {:?}", other),
+                    },
+                    other => panic!("Expected Send, got {:?}", other),
+                }
+            }
+            other => panic!("Expected ChoreographyBlock, got {:?}", other),
+        },
+        other => panic!("Expected Expr, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_choreography_with_choice() {
+    let source = "koreografi Proto { peranan A, B; pilih { Lulus -> { A -> B: hantar Respon; tamat; }, Tolak -> { A -> B: hantar Sebab; tamat; } } }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Expr(e) => match e.as_ref() {
+            Expr::ChoreographyBlock { protocol, .. } => {
+                match protocol {
+                    SessionType::Select(s1, s2) => {
+                        assert!(matches!(s1.as_ref(), SessionType::Send(_, _)));
+                        assert!(matches!(s2.as_ref(), SessionType::Send(_, _)));
+                    }
+                    other => panic!("Expected Select, got {:?}", other),
+                }
+            }
+            other => panic!("Expected ChoreographyBlock, got {:?}", other),
+        },
+        other => panic!("Expected Expr, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_choreography_known_type() {
+    let source = "koreografi Proto { peranan A, B; A -> B: hantar Nombor; tamat; }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Expr(e) => match e.as_ref() {
+            Expr::ChoreographyBlock { protocol, .. } => {
+                match protocol {
+                    SessionType::Send(ty, _) => {
+                        assert_eq!(**ty, Ty::Int);
+                    }
+                    other => panic!("Expected Send, got {:?}", other),
+                }
+            }
+            other => panic!("Expected ChoreographyBlock, got {:?}", other),
+        },
+        other => panic!("Expected Expr, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_choreography_error_missing_role() {
+    let source = "koreografi Proto { A -> B: hantar Msg; tamat; }";
+    let mut p = Parser::new(source);
+    let result = p.parse_program();
+    assert!(result.is_err(), "Expected error when peranan is missing");
+}
+
+#[test]
+fn test_parse_choreography_error_missing_brace() {
+    let source = "koreografi Proto { peranan A, B; A -> B: hantar Msg; tamat;";
+    let mut p = Parser::new(source);
+    let result = p.parse_program();
+    assert!(result.is_err(), "Expected error when closing brace is missing");
+}
+
+// =============================================================================
+// JALINAN PHASE 6: ACTOR DECLARATION TESTS
+// =============================================================================
+
+#[test]
+fn test_parse_actor_basic() {
+    let source = "pelakon MyActor { keadaan: Nombor kendalikan Msg(p) { p } }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Expr(e) => match e.as_ref() {
+            Expr::ActorDecl { name, state_ty, message_ty, handler, .. } => {
+                assert_eq!(name, "MyActor");
+                assert_eq!(*state_ty, Ty::Int);
+                assert_eq!(*message_ty, Ty::Any);
+                assert!(matches!(handler.as_ref(), Expr::Lam(_, _, _)));
+            }
+            other => panic!("Expected ActorDecl, got {:?}", other),
+        },
+        other => panic!("Expected Expr, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_actor_multi_handler() {
+    let source = "pelakon MyActor { keadaan: Benar kendalikan MsgA(a) { a } kendalikan MsgB(b) { b } }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Expr(e) => match e.as_ref() {
+            Expr::ActorDecl { name, handler, .. } => {
+                assert_eq!(name, "MyActor");
+                assert!(matches!(handler.as_ref(), Expr::Let(_, _, _, _)));
+            }
+            other => panic!("Expected ActorDecl, got {:?}", other),
+        },
+        other => panic!("Expected Expr, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_actor_with_state_type() {
+    let source = "pelakon Counter { keadaan: Nombor kendalikan Inc(x) { x } }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Expr(e) => match e.as_ref() {
+            Expr::ActorDecl { state_ty, .. } => {
+                assert_eq!(*state_ty, Ty::Int);
+            }
+            other => panic!("Expected ActorDecl, got {:?}", other),
+        },
+        other => panic!("Expected Expr, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_actor_handler_body() {
+    let source = "pelakon Echo { keadaan: Unit kendalikan Ping(m) { 42 } }";
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    match &program.decls[0] {
+        TopLevelDecl::Expr(e) => match e.as_ref() {
+            Expr::ActorDecl { handler, .. } => {
+                match handler.as_ref() {
+                    Expr::Lam(param, _, body) => {
+                        assert_eq!(param, "m");
+                        assert_eq!(**body, Expr::Int(42));
+                    }
+                    other => panic!("Expected Lam, got {:?}", other),
+                }
+            }
+            other => panic!("Expected ActorDecl, got {:?}", other),
+        },
+        other => panic!("Expected Expr, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_actor_error_missing_keadaan() {
+    let source = "pelakon MyActor { kendalikan Msg(p) { p } }";
+    let mut p = Parser::new(source);
+    let result = p.parse_program();
+    assert!(result.is_err(), "Expected error when keadaan is missing");
+}
+
+#[test]
+fn test_parse_actor_error_missing_brace() {
+    let source = "pelakon MyActor { keadaan: Nombor kendalikan Msg(p) { p }";
+    let mut p = Parser::new(source);
+    let result = p.parse_program();
+    assert!(result.is_err(), "Expected error when closing brace is missing");
+}
+
+// =============================================================================
+// JALINAN PHASE 6: SPAWN TESTS
+// =============================================================================
+
+#[test]
+fn test_parse_spawn_basic() {
+    let mut p = Parser::new("lahir MyActor(0)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::Spawn(actor, init) => {
+            assert_eq!(*actor, Expr::Var("MyActor".to_string()));
+            assert_eq!(*init, Expr::Int(0));
+        }
+        other => panic!("Expected Spawn, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_spawn_with_var() {
+    let mut p = Parser::new("lahir Counter(initial)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::Spawn(actor, init) => {
+            assert_eq!(*actor, Expr::Var("Counter".to_string()));
+            assert_eq!(*init, Expr::Var("initial".to_string()));
+        }
+        other => panic!("Expected Spawn, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_spawn_with_unit() {
+    let mut p = Parser::new("lahir Echo(())");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::Spawn(_, init) => {
+            assert_eq!(*init, Expr::Unit);
+        }
+        other => panic!("Expected Spawn, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_spawn_error_missing_paren() {
+    let mut p = Parser::new("lahir MyActor");
+    let result = p.parse_expr();
+    assert!(result.is_err(), "Expected error when parens are missing");
+}
+
+// =============================================================================
+// JALINAN PHASE 6: ACTOR SEND TESTS
+// =============================================================================
+
+#[test]
+fn test_parse_actor_send_basic() {
+    let mut p = Parser::new("hantar(pelaku, mesej)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::ActorSend(a, m) => {
+            assert_eq!(*a, Expr::Var("pelaku".to_string()));
+            assert_eq!(*m, Expr::Var("mesej".to_string()));
+        }
+        other => panic!("Expected ActorSend, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_actor_send_with_literal() {
+    let mut p = Parser::new("hantar(x, 42)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::ActorSend(a, m) => {
+            assert_eq!(*a, Expr::Var("x".to_string()));
+            assert_eq!(*m, Expr::Int(42));
+        }
+        other => panic!("Expected ActorSend, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_actor_send_with_string() {
+    let mut p = Parser::new("hantar(pemohon, \"hello\")");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::ActorSend(a, m) => {
+            assert_eq!(*a, Expr::Var("pemohon".to_string()));
+            assert_eq!(*m, Expr::String("hello".to_string()));
+        }
+        other => panic!("Expected ActorSend, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_actor_send_error_missing_comma() {
+    let mut p = Parser::new("hantar(pelaku mesej)");
+    let result = p.parse_expr();
+    assert!(result.is_err(), "Expected error when comma is missing");
+}
+
+// =============================================================================
+// JALINAN PHASE 6: ACTOR RECV TESTS
+// =============================================================================
+
+#[test]
+fn test_parse_actor_recv_basic() {
+    let mut p = Parser::new("terima(pelaku)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::ActorRecv(a) => {
+            assert_eq!(*a, Expr::Var("pelaku".to_string()));
+        }
+        other => panic!("Expected ActorRecv, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_actor_recv_with_var() {
+    let mut p = Parser::new("terima(pemohon)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::ActorRecv(a) => {
+            assert_eq!(*a, Expr::Var("pemohon".to_string()));
+        }
+        other => panic!("Expected ActorRecv, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_actor_recv_error_missing_paren() {
+    let mut p = Parser::new("terima pelaku)");
+    let result = p.parse_expr();
+    assert!(result.is_err(), "Expected error when opening paren is missing");
+}
+
+// =============================================================================
+// JALINAN PHASE 6: CRDT MERGE TESTS
+// =============================================================================
+
+#[test]
+fn test_parse_crdt_merge_basic() {
+    let mut p = Parser::new("gabung(a, b)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::CRDTMerge(x, y) => {
+            assert_eq!(*x, Expr::Var("a".to_string()));
+            assert_eq!(*y, Expr::Var("b".to_string()));
+        }
+        other => panic!("Expected CRDTMerge, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_crdt_merge_with_exprs() {
+    let mut p = Parser::new("gabung(x, y)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::CRDTMerge(a, b) => {
+            assert_eq!(*a, Expr::Var("x".to_string()));
+            assert_eq!(*b, Expr::Var("y".to_string()));
+        }
+        other => panic!("Expected CRDTMerge, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_crdt_merge_error_missing_arg() {
+    let mut p = Parser::new("gabung(a)");
+    let result = p.parse_expr();
+    assert!(result.is_err(), "Expected error when second arg is missing");
+}
+
+// =============================================================================
+// JALINAN PHASE 6: CONTENT HASH TESTS
+// =============================================================================
+
+#[test]
+fn test_parse_content_hash_basic() {
+    let mut p = Parser::new("cincang(x)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::ContentHash(e) => {
+            assert_eq!(*e, Expr::Var("x".to_string()));
+        }
+        other => panic!("Expected ContentHash, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_content_hash_with_literal() {
+    let mut p = Parser::new("cincang(42)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::ContentHash(e) => {
+            assert_eq!(*e, Expr::Int(42));
+        }
+        other => panic!("Expected ContentHash, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_content_hash_error_missing_paren() {
+    let mut p = Parser::new("cincang x");
+    let result = p.parse_expr();
+    assert!(result.is_err(), "Expected error when parens are missing");
+}
+
+// =============================================================================
+// JALINAN PHASE 6: INTEGRATION TESTS
+// =============================================================================
+
+#[test]
+fn test_parse_jalinan_spawn_send_recv_chain() {
+    let source = "biar a = lahir MyActor(0); hantar(a, 1); terima(a)";
+    let mut p = Parser::new(source);
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::Let(name, _, val, cont) => {
+            assert_eq!(name, "a");
+            assert!(matches!(*val, Expr::Spawn(_, _)));
+            match *cont {
+                Expr::Let(_, _, send_expr, recv_cont) => {
+                    assert!(matches!(*send_expr, Expr::ActorSend(_, _)));
+                    assert!(matches!(*recv_cont, Expr::ActorRecv(_)));
+                }
+                other => panic!("Expected Let chain, got {:?}", other),
+            }
+        }
+        other => panic!("Expected Let, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_jalinan_content_hash_of_merge() {
+    let mut p = Parser::new("cincang(gabung(a, b))");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::ContentHash(inner) => {
+            assert!(matches!(*inner, Expr::CRDTMerge(_, _)));
+        }
+        other => panic!("Expected ContentHash, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_jalinan_send_to_spawned() {
+    let mut p = Parser::new("hantar(lahir Echo(0), 42)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::ActorSend(actor, msg) => {
+            assert!(matches!(*actor, Expr::Spawn(_, _)));
+            assert_eq!(*msg, Expr::Int(42));
+        }
+        other => panic!("Expected ActorSend, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_jalinan_choreography_program() {
+    let source = r#"koreografi Beli {
+        peranan Pembeli, Penjual;
+        Pembeli -> Penjual: hantar Pesanan;
+        Penjual -> Pembeli: hantar Pengesahan;
+        tamat;
+    }"#;
+    let mut p = Parser::new(source);
+    let program = p.parse_program().unwrap();
+    assert_eq!(program.decls.len(), 1);
+    match &program.decls[0] {
+        TopLevelDecl::Expr(e) => match e.as_ref() {
+            Expr::ChoreographyBlock { name, roles, protocol } => {
+                assert_eq!(name, "Beli");
+                assert_eq!(roles.len(), 2);
+                match protocol {
+                    SessionType::Send(_, cont) => match cont.as_ref() {
+                        SessionType::Send(_, cont2) => {
+                            assert_eq!(**cont2, SessionType::End);
+                        }
+                        other => panic!("Expected inner Send, got {:?}", other),
+                    },
+                    other => panic!("Expected Send, got {:?}", other),
+                }
+            }
+            other => panic!("Expected ChoreographyBlock, got {:?}", other),
+        },
+        other => panic!("Expected Expr, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_jalinan_bm_keywords_spawn() {
+    let mut p = Parser::new("lahir Pelakon(0)");
+    let expr = p.parse_expr().unwrap();
+    assert!(matches!(expr, Expr::Spawn(_, _)));
+}
+
+#[test]
+fn test_parse_jalinan_merge_and_hash_composition() {
+    let source = "biar merged = gabung(x, y); cincang(merged)";
+    let mut p = Parser::new(source);
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::Let(name, _, val, cont) => {
+            assert_eq!(name, "merged");
+            assert!(matches!(*val, Expr::CRDTMerge(_, _)));
+            assert!(matches!(*cont, Expr::ContentHash(_)));
+        }
+        other => panic!("Expected Let, got {:?}", other),
+    }
+}

@@ -205,6 +205,8 @@ impl<'a> Parser<'a> {
                 }
                 self.parse_top_level_decl()
             }
+            Some(TokenKind::KwChoreography) => self.parse_choreography(),
+            Some(TokenKind::KwActor) => self.parse_actor_decl(),
             Some(TokenKind::KwTest) => self.parse_test_block(),
             Some(TokenKind::KwExtern) => self.parse_extern_block(),
             Some(TokenKind::KwPub) => {
@@ -682,6 +684,11 @@ impl<'a> Parser<'a> {
                 | Some(TokenKind::KwProve)
                 | Some(TokenKind::KwInl)
                 | Some(TokenKind::KwInr)
+                | Some(TokenKind::KwSpawn)
+                | Some(TokenKind::KwSend)
+                | Some(TokenKind::KwRecv)
+                | Some(TokenKind::KwMerge)
+                | Some(TokenKind::KwContentHash)
         )
     }
 
@@ -759,6 +766,11 @@ impl<'a> Parser<'a> {
                 let ty = self.parse_ty()?;
                 Ok(Expr::Inr(Box::new(e), ty))
             }
+            Some(TokenKind::KwSpawn) => self.parse_spawn(),
+            Some(TokenKind::KwSend) => self.parse_actor_send(),
+            Some(TokenKind::KwRecv) => self.parse_actor_recv(),
+            Some(TokenKind::KwMerge) => self.parse_crdt_merge(),
+            Some(TokenKind::KwContentHash) => self.parse_content_hash(),
             _ => self.parse_atom(),
         }
     }
@@ -1305,6 +1317,208 @@ impl<'a> Parser<'a> {
                 span: self.current_span,
             }),
         }
+    }
+
+    // ── JALINAN Phase 6: Choreography & Actor parsing ──────────────────
+
+    /// Parse: koreografi Name { peranan R1, R2; interactions... }
+    fn parse_choreography(&mut self) -> Result<TopLevelDecl, ParseError> {
+        self.consume(TokenKind::KwChoreography)?;
+        let name = self.parse_ident()?;
+        self.consume(TokenKind::LBrace)?;
+        self.consume(TokenKind::KwRole)?;
+        let mut roles = vec![self.parse_ident()?];
+        while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+            self.consume(TokenKind::Comma)?;
+            roles.push(self.parse_ident()?);
+        }
+        self.consume(TokenKind::Semi)?;
+        let protocol = self.parse_choreography_protocol()?;
+        self.consume(TokenKind::RBrace)?;
+        Ok(TopLevelDecl::Expr(Box::new(Expr::ChoreographyBlock {
+            name,
+            roles,
+            protocol,
+        })))
+    }
+
+    /// Parse choreography interaction sequence into a SessionType.
+    fn parse_choreography_protocol(&mut self) -> Result<SessionType, ParseError> {
+        match self.peek().map(|t| &t.kind) {
+            // tamat; → End
+            Some(TokenKind::KwEnd) => {
+                self.consume(TokenKind::KwEnd)?;
+                self.consume(TokenKind::Semi)?;
+                Ok(SessionType::End)
+            }
+            // pilih { Label -> { ... }, Label -> { ... } }
+            Some(TokenKind::KwSelect) => {
+                self.consume(TokenKind::KwSelect)?;
+                self.consume(TokenKind::LBrace)?;
+                let _label1 = self.parse_ident()?;
+                self.consume(TokenKind::Arrow)?;
+                self.consume(TokenKind::LBrace)?;
+                let s1 = self.parse_choreography_protocol()?;
+                self.consume(TokenKind::RBrace)?;
+                self.consume(TokenKind::Comma)?;
+                let _label2 = self.parse_ident()?;
+                self.consume(TokenKind::Arrow)?;
+                self.consume(TokenKind::LBrace)?;
+                let s2 = self.parse_choreography_protocol()?;
+                self.consume(TokenKind::RBrace)?;
+                self.consume(TokenKind::RBrace)?;
+                // Check for continuation after choice block
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace)) {
+                    // End of enclosing block, no continuation
+                    Ok(SessionType::Select(Box::new(s1), Box::new(s2)))
+                } else {
+                    // There is a continuation (e.g. tamat;)
+                    let _cont = self.parse_choreography_protocol()?;
+                    Ok(SessionType::Select(Box::new(s1), Box::new(s2)))
+                }
+            }
+            // RBrace → implicit end (closing an enclosing block)
+            Some(TokenKind::RBrace) => Ok(SessionType::End),
+            // Identifier: role -> role: hantar Type; continuation
+            Some(TokenKind::Identifier(_)) => {
+                let _sender = self.parse_ident()?;
+                self.consume(TokenKind::Arrow)?;
+                let _receiver = self.parse_ident()?;
+                self.consume(TokenKind::Colon)?;
+                self.consume(TokenKind::KwSend)?;
+                let msg_ident = self.parse_ident()?;
+                self.consume(TokenKind::Semi)?;
+                let msg_ty = self.ident_to_ty(&msg_ident);
+                let continuation = self.parse_choreography_protocol()?;
+                Ok(SessionType::Send(
+                    Box::new(msg_ty),
+                    Box::new(continuation),
+                ))
+            }
+            _ => Err(ParseError {
+                kind: ParseErrorKind::ExpectedExpression,
+                span: self.current_span,
+            }),
+        }
+    }
+
+    /// Map an identifier to a Ty for choreography message types.
+    fn ident_to_ty(&self, ident: &str) -> Ty {
+        match ident {
+            "Nombor" | "Int" => Ty::Int,
+            "Benar" | "Bool" => Ty::Bool,
+            "Teks" | "String" => Ty::String,
+            "Unit" => Ty::Unit,
+            _ => Ty::Any,
+        }
+    }
+
+    /// Parse: pelakon Name { keadaan: Type kendalikan Msg(param) { body } ... }
+    fn parse_actor_decl(&mut self) -> Result<TopLevelDecl, ParseError> {
+        self.consume(TokenKind::KwActor)?;
+        let name = self.parse_ident()?;
+        self.consume(TokenKind::LBrace)?;
+
+        // State type: keadaan: Type
+        self.consume(TokenKind::KwState)?;
+        self.consume(TokenKind::Colon)?;
+        let state_ty = self.parse_ty()?;
+
+        // Message handlers: kendalikan Msg(param) { body }
+        let mut handlers: Vec<(Ident, Ident, Expr)> = Vec::new();
+        while matches!(
+            self.peek().map(|t| &t.kind),
+            Some(TokenKind::Identifier(s)) if s == "kendalikan"
+        ) {
+            self.next(); // consume "kendalikan" identifier
+            let msg_name = self.parse_ident()?;
+            self.consume(TokenKind::LParen)?;
+            let param = self.parse_ident()?;
+            self.consume(TokenKind::RParen)?;
+            self.consume(TokenKind::LBrace)?;
+            let body = self.parse_expr()?;
+            self.consume(TokenKind::RBrace)?;
+            handlers.push((msg_name, param, body));
+        }
+
+        self.consume(TokenKind::RBrace)?;
+
+        // Build handler expression
+        let handler = if handlers.is_empty() {
+            Expr::Unit
+        } else if handlers.len() == 1 {
+            let (_msg, param, body) = handlers.into_iter().next().unwrap();
+            Expr::Lam(param, Ty::Any, Box::new(body))
+        } else {
+            // Multiple handlers: chain as nested Let bindings of lambdas
+            let mut result = Expr::Unit;
+            for (_msg, param, body) in handlers.into_iter().rev() {
+                let lam = Expr::Lam(param, Ty::Any, Box::new(body));
+                result = Expr::Let("_handler".to_string(), None, Box::new(lam), Box::new(result));
+            }
+            result
+        };
+
+        Ok(TopLevelDecl::Expr(Box::new(Expr::ActorDecl {
+            name,
+            state_ty,
+            message_ty: Ty::Any,
+            init_state: Box::new(Expr::Unit),
+            handler: Box::new(handler),
+        })))
+    }
+
+    /// Parse: lahir ActorType(init_state)
+    fn parse_spawn(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwSpawn)?;
+        let actor_name = self.parse_ident()?;
+        self.consume(TokenKind::LParen)?;
+        let init = self.parse_control_flow()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::Spawn(
+            Box::new(Expr::Var(actor_name)),
+            Box::new(init),
+        ))
+    }
+
+    /// Parse: hantar(actor, message)
+    fn parse_actor_send(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwSend)?;
+        self.consume(TokenKind::LParen)?;
+        let actor = self.parse_control_flow()?;
+        self.consume(TokenKind::Comma)?;
+        let msg = self.parse_control_flow()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::ActorSend(Box::new(actor), Box::new(msg)))
+    }
+
+    /// Parse: terima(actor)
+    fn parse_actor_recv(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwRecv)?;
+        self.consume(TokenKind::LParen)?;
+        let actor = self.parse_control_flow()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::ActorRecv(Box::new(actor)))
+    }
+
+    /// Parse: gabung(a, b)
+    fn parse_crdt_merge(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwMerge)?;
+        self.consume(TokenKind::LParen)?;
+        let a = self.parse_control_flow()?;
+        self.consume(TokenKind::Comma)?;
+        let b = self.parse_control_flow()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::CRDTMerge(Box::new(a), Box::new(b)))
+    }
+
+    /// Parse: cincang(expr)
+    fn parse_content_hash(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwContentHash)?;
+        self.consume(TokenKind::LParen)?;
+        let e = self.parse_control_flow()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::ContentHash(Box::new(e)))
     }
 
     fn parse_capability_kind(&mut self) -> Result<CapabilityKind, ParseError> {
