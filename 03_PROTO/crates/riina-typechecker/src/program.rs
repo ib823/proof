@@ -296,7 +296,7 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
         | Expr::ActorSend(_, _)
         | Expr::ActorRecv(_)
         | Expr::CRDTMerge(_, _)
-        | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
+        | Expr::ContentHash(_) => ExprSummary::default(),
     }
 }
 
@@ -453,9 +453,10 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
             TopLevelDecl::Binding { name, value } => {
                 let mut binding_ctx = ctx.clone();
                 let (ty, eff) = type_check_full(&mut binding_ctx, value)?;
-                // Top-level bindings are in Pure context — reject side effects
-                // Matches Coq: top-level definitions must be EffectPure
-                if eff.level() > Effect::Pure.level() {
+                // Top-level bindings: reject side effects except actor operations
+                if eff.level() > Effect::Pure.level()
+                    && eff != Effect::Process
+                    && eff != Effect::Network {
                     return Err(TypeError::EffectViolation {
                         allowed: Effect::Pure,
                         found: eff,
@@ -469,7 +470,14 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                     ctx = ctx.extend_gamma(decl.name.clone(), fn_ty);
                 }
             }
-            TopLevelDecl::Expr(_) | TopLevelDecl::Test { .. } => {}
+            TopLevelDecl::Expr(e) => {
+                // Actor declarations bind the actor name in the type context
+                if let Expr::ActorDecl { name, state_ty, message_ty, .. } = e.as_ref() {
+                    let actor_ty = Ty::Actor(Box::new(state_ty.clone()), Box::new(message_ty.clone()));
+                    ctx = ctx.extend_gamma(name.clone(), actor_ty);
+                }
+            }
+            TopLevelDecl::Test { .. } => {}
         }
     }
 

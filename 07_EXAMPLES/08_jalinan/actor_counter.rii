@@ -1,0 +1,5 @@
+// JALINAN End-to-End: pelakon + lahir + hantar + terima
+pelakon Pembilang { keadaan: Nombor kendalikan Tambah(n) { n } }
+biar k = lahir Pembilang(0);
+hantar(k, 5);
+terima(k)

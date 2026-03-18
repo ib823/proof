@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-03-18T11:12:02Z",
-  "repo_head": "97bcf0e657a173654a2b2e698ceec4fc756b0009",
+  "generated_utc": "2026-03-18T12:46:23Z",
+  "repo_head": "2dd45688a75aae7cc6ce069525c478d99343b606",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
@@ -24,7 +24,7 @@
   "lanes": {
     "lean": {
       "full_build_ok": true,
-      "files": 310,
+      "files": 313,
       "sorry": 0,
       "axioms": 14,
       "mechanized_ready": true,
@@ -34,7 +34,7 @@
       "full_build_ok": true,
       "build_mode": "isabelle_zero_sorry_verified",
       "quarantined": false,
-      "files": 347,
+      "files": 350,
       "sorry": 0,
       "smoke_session": "RIINA_CORE",
       "smoke_build_ok": true,
@@ -48,7 +48,7 @@
     "fstar": {
       "full_exec_ok": true,
       "quarantined": false,
-      "files": 300,
+      "files": 303,
       "generated_files": 7,
       "smoke_module": "RIINA.Active.CryptographicSecurityActive",
       "smoke_build_ok": true,
@@ -60,7 +60,7 @@
     "tlaplus": {
       "full_exec_ok": true,
       "quarantined": false,
-      "files": 302,
+      "files": 305,
       "smoke_spec": "RIINA.Active.TelusProcurementProtocol",
       "smoke_sany_ok": true,
       "smoke_build_ok": true,
@@ -72,7 +72,7 @@
     "alloy": {
       "full_exec_ok": true,
       "quarantined": false,
-      "files": 293,
+      "files": 296,
       "smoke_model": "RIINA.Active.TelusProcurementAccessControl",
       "smoke_build_ok": true,
       "smoke_declared_assertions": 6,
@@ -82,29 +82,29 @@
     },
     "smt": {
       "full_exec_ok": true,
-      "files": 302,
+      "files": 305,
       "generated_files": 0,
       "mechanized_ready": true,
       "pending": "none"
     },
     "verus": {
       "full_exec_ok": false,
-      "files": 310,
+      "files": 313,
       "generated_files": 10,
       "mechanized_ready": false,
       "pending": "require full-lane Verus checks and zero generated placeholders"
     },
     "kani": {
       "full_exec_ok": false,
-      "files": 294,
+      "files": 297,
       "generated_files": 1,
-      "harness_files": 292,
+      "harness_files": 295,
       "mechanized_ready": false,
       "pending": "require full-lane Kani checks and zero generated placeholders"
     },
     "tv": {
       "full_exec_ok": true,
-      "files": 301,
+      "files": 304,
       "generated_files": 7,
       "mechanized_ready": false,
       "pending": "require full-lane TV checks and zero generated placeholders"

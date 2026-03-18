@@ -178,6 +178,8 @@ pub struct Interpreter {
     security_context: SecurityLevel,
     /// Next actor ID counter (JALINAN Phase 6)
     next_actor_id: u64,
+    /// Registered actor definitions (JALINAN Phase 6)
+    actor_defs: std::collections::HashMap<String, Expr>,
 }
 
 impl Interpreter {
@@ -190,6 +192,7 @@ impl Interpreter {
             caps: Capabilities::new(),
             security_context: SecurityLevel::Public,
             next_actor_id: 0,
+            actor_defs: std::collections::HashMap::new(),
         }
     }
 
@@ -627,10 +630,12 @@ impl Interpreter {
             // ═══════════════════════════════════════════════════════════════
             // JALINAN Phase 6 (Actor, Choreography, CRDT, Content-Addressed)
             // ═══════════════════════════════════════════════════════════════
-            Expr::ActorDecl { name: _, init_state, handler, .. } => {
-                // Evaluate init state and handler to verify they're valid
+            Expr::ActorDecl { name, init_state, handler, .. } => {
+                // Register actor type: evaluate and store handler for spawn
                 let _init = self.eval_with_env(env, init_state)?;
                 let _handler = self.eval_with_env(env, handler)?;
+                // Store actor definition for later use by Spawn
+                self.actor_defs.insert(name.clone(), handler.as_ref().clone());
                 Ok(Value::Unit)
             }
 
@@ -640,8 +645,11 @@ impl Interpreter {
             }
 
             Expr::Spawn(actor_expr, state_expr) => {
-                // Evaluate subexpressions for side effects
-                let _actor = self.eval_with_env(env, actor_expr)?;
+                // Resolve actor name (may be Var("ActorName") from actor_defs)
+                let _actor = match actor_expr.as_ref() {
+                    Expr::Var(name) if self.actor_defs.contains_key(name) => Value::Unit,
+                    _ => self.eval_with_env(env, actor_expr)?,
+                };
                 let _state = self.eval_with_env(env, state_expr)?;
                 self.next_actor_id += 1;
                 Ok(Value::ActorRef(self.next_actor_id))

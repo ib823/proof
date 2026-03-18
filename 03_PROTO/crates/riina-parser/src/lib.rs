@@ -1459,11 +1459,18 @@ impl<'a> Parser<'a> {
             result
         };
 
+        // Default init state based on state type
+        let default_init = match &state_ty {
+            Ty::Int => Expr::Int(0),
+            Ty::Bool => Expr::Bool(false),
+            Ty::String => Expr::String(String::new()),
+            _ => Expr::Unit,
+        };
         Ok(TopLevelDecl::Expr(Box::new(Expr::ActorDecl {
             name,
             state_ty,
             message_ty: Ty::Any,
-            init_state: Box::new(Expr::Unit),
+            init_state: Box::new(default_init),
             handler: Box::new(handler),
         })))
     }

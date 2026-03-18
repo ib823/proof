@@ -1,0 +1,4 @@
+// Simplest JALINAN test — spawn, send, recv
+biar aktor = lahir(0);
+hantar(aktor, 42);
+terima(aktor)

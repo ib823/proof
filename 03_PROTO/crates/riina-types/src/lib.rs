@@ -772,7 +772,12 @@ impl Program {
         for decl in decls.into_iter().rev() {
             result = match decl {
                 TopLevelDecl::Expr(e) => {
-                    Expr::Let("_".to_string(), None, e, Box::new(result))
+                    // Actor declarations bind the actor name for subsequent spawn
+                    let bind_name = match e.as_ref() {
+                        Expr::ActorDecl { name, .. } => name.clone(),
+                        _ => "_".to_string(),
+                    };
+                    Expr::Let(bind_name, None, e, Box::new(result))
                 }
                 TopLevelDecl::Binding { name, value } => {
                     Expr::Let(name, None, value, Box::new(result))

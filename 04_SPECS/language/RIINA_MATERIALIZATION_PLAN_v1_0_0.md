@@ -1,6 +1,6 @@
 # RIINA Materialization Plan v1.0.0
 
-**Verification:** 11,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2233 Rust tests
+**Verification:** 11,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2282 Rust tests
 
 **Document ID:** `RIINA_MATERIALIZATION_PLAN_v1_0_0`
 **Date:** 2026-01-30
