@@ -3698,4 +3698,11 @@ mod tests {
         let pair_count = code.matches("riina_pair").count();
         assert!(pair_count >= 2);
     }
+
+    #[test]
+    fn test_emit_content_hash() {
+        let expr = Expr::ContentHash(Box::new(Expr::Int(42)));
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("riina_content_hash"));
+    }
 }

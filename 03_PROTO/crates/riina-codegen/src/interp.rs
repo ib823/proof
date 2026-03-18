@@ -1868,6 +1868,66 @@ mod tests {
     }
 
     #[test]
+    fn test_eval_content_hash_bool() {
+        let mut interp = Interpreter::new();
+        let t = Expr::ContentHash(Box::new(Expr::Bool(true)));
+        let f = Expr::ContentHash(Box::new(Expr::Bool(false)));
+        let rt = interp.eval(&t).unwrap();
+        let rf = interp.eval(&f).unwrap();
+        assert!(rt.is_hash());
+        assert!(rf.is_hash());
+        assert_ne!(rt, rf);
+    }
+
+    #[test]
+    fn test_eval_content_hash_zero() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ContentHash(Box::new(Expr::Int(0)));
+        let result = interp.eval(&expr).unwrap();
+        assert!(result.is_hash());
+        // Zero should produce a hash different from 1
+        let one = Expr::ContentHash(Box::new(Expr::Int(1)));
+        let r1 = interp.eval(&one).unwrap();
+        assert_ne!(result, r1);
+    }
+
+    #[test]
+    fn test_eval_content_hash_large_int() {
+        let mut interp = Interpreter::new();
+        let large = Expr::ContentHash(Box::new(Expr::Int(u64::MAX)));
+        let small = Expr::ContentHash(Box::new(Expr::Int(1)));
+        let rl = interp.eval(&large).unwrap();
+        let rs = interp.eval(&small).unwrap();
+        assert!(rl.is_hash());
+        assert_ne!(rl, rs);
+    }
+
+    #[test]
+    fn test_eval_content_hash_empty_string() {
+        let mut interp = Interpreter::new();
+        let empty = Expr::ContentHash(Box::new(Expr::String("".into())));
+        let nonempty = Expr::ContentHash(Box::new(Expr::String("a".into())));
+        let re = interp.eval(&empty).unwrap();
+        let rn = interp.eval(&nonempty).unwrap();
+        assert!(re.is_hash());
+        assert_ne!(re, rn);
+    }
+
+    #[test]
+    fn test_eval_content_hash_nested() {
+        let mut interp = Interpreter::new();
+        let inner = Expr::ContentHash(Box::new(Expr::Int(42)));
+        let outer = Expr::ContentHash(Box::new(inner));
+        let result = interp.eval(&outer).unwrap();
+        assert!(result.is_hash());
+        // Nested hash should be deterministic
+        let inner2 = Expr::ContentHash(Box::new(Expr::Int(42)));
+        let outer2 = Expr::ContentHash(Box::new(inner2));
+        let r2 = interp.eval(&outer2).unwrap();
+        assert_eq!(result, r2);
+    }
+
+    #[test]
     fn test_eval_actor_send_recv_roundtrip() {
         let mut interp = Interpreter::new();
         // Spawn an actor
