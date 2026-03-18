@@ -20,6 +20,8 @@ pub struct Manifest {
     pub allowed_effects: AllowedEffects,
     /// Workspace config (only present in workspace root).
     pub workspace: Option<WorkspaceConfig>,
+    /// Optional remote registry configuration.
+    pub registry: Option<RegistryConfig>,
 }
 
 #[derive(Debug, Clone)]
@@ -45,6 +47,12 @@ pub struct AllowedEffects {
 #[derive(Debug, Clone)]
 pub struct WorkspaceConfig {
     pub members: Vec<String>,
+}
+
+/// Optional remote registry configuration from `[registry]` in riina.toml.
+#[derive(Debug, Clone)]
+pub struct RegistryConfig {
+    pub url: String,
 }
 
 impl Manifest {
@@ -84,6 +92,7 @@ enum TableKind {
     DevKebergantungan,
     KesanDibenarkan,
     Workspace,
+    Registry,
     Unknown,
 }
 
@@ -101,6 +110,7 @@ impl<'a> TomlParser<'a> {
         let mut dev_deps = BTreeMap::new();
         let mut effects = AllowedEffects::default();
         let mut workspace = None::<WorkspaceConfig>;
+        let mut registry = None::<RegistryConfig>;
 
         let mut current_table = TableKind::Unknown;
         // temp storage for [pakej]
@@ -127,6 +137,7 @@ impl<'a> TomlParser<'a> {
                     "dev-kebergantungan" => TableKind::DevKebergantungan,
                     "kesan-dibenarkan" => TableKind::KesanDibenarkan,
                     "workspace" => TableKind::Workspace,
+                    "registry" => TableKind::Registry,
                     _ => TableKind::Unknown,
                 };
                 continue;
@@ -160,6 +171,12 @@ impl<'a> TomlParser<'a> {
                         workspace = Some(WorkspaceConfig { members });
                     }
                 }
+                TableKind::Registry => {
+                    if key == "url" {
+                        let url = value.as_str(line_idx + 1, &self.file)?;
+                        registry = Some(RegistryConfig { url });
+                    }
+                }
                 TableKind::Unknown => {}
             }
         }
@@ -174,7 +191,7 @@ impl<'a> TomlParser<'a> {
             field: "pakej".to_string(),
         })?;
 
-        Ok(Manifest { package, dependencies: deps, dev_dependencies: dev_deps, allowed_effects: effects, workspace })
+        Ok(Manifest { package, dependencies: deps, dev_dependencies: dev_deps, allowed_effects: effects, workspace, registry })
     }
 
     fn build_package(&self, fields: &BTreeMap<String, TomlValue>) -> Result<PackageMeta> {
