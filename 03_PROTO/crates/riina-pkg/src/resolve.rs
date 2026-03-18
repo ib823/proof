@@ -217,6 +217,7 @@ mod tests {
             dev_dependencies: BTreeMap::new(),
             allowed_effects: AllowedEffects::default(),
             workspace: None,
+            registry: None,
         }
     }
 

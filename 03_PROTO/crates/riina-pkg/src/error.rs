@@ -30,6 +30,10 @@ pub enum PkgError {
     IntegrityMismatch { name: String, expected: String, actual: String },
     /// Package already exists in registry.
     AlreadyPublished { name: String, version: String },
+    /// HTTP request failed with non-success status.
+    Http { url: String, status: u16, message: String },
+    /// Network or connection error.
+    Network { message: String },
     /// Workspace error.
     Workspace(String),
     /// Generic error.
@@ -66,6 +70,10 @@ impl fmt::Display for PkgError {
             Self::AlreadyPublished { name, version } => {
                 write!(f, "'{name}' v{version} already published")
             }
+            Self::Http { url, status, message } => {
+                write!(f, "HTTP {status} for {url}: {message}")
+            }
+            Self::Network { message } => write!(f, "network error: {message}"),
             Self::Workspace(msg) => write!(f, "workspace error: {msg}"),
             Self::Other(msg) => write!(f, "{msg}"),
         }
