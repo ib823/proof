@@ -1,10 +1,10 @@
 {
-  "generated": "2026-03-18T22:36:35Z",
-  "generatedHuman": "March 18, 2026 at 22:36 UTC",
+  "generated": "2026-03-18T23:03:36Z",
+  "generatedHuman": "March 18, 2026 at 23:03 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "85c391d1",
+    "commit": "2f3e183d",
     "branch": "main"
   },
   "proofs": {
@@ -124,9 +124,9 @@
     "tvStatus": "generated",
     "runtimeProofStatus": "generated",
     "nonCoqMechanization": {
-      "reportFresh": true,
+      "reportFresh": false,
       "overallMechanized": false,
-      "source": "strict_report",
+      "source": "cached_metrics",
       "pending": {
         "lean": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA",
         "isabelle": "none",
@@ -174,11 +174,11 @@
   "rust": {
     "tests": 2282,
     "testsVerified": 2282,
-    "testsEstimated": 2278,
+    "testsEstimated": 2290,
     "testsSource": "cached_verified",
     "crates": 16
   },
-  "examples": 139,
+  "examples": 143,
   "status": {
     "build": "passing",
     "grade": "A",
