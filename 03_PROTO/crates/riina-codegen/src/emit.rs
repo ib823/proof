@@ -211,6 +211,7 @@ impl CEmitter {
         self.writeln("#include <string.h>");
         self.writeln("#include <stdio.h>");
         self.writeln("#include <setjmp.h>");
+        self.writeln("#include <pthread.h>");
         self.writeln("");
 
         // Security level enum
@@ -2568,14 +2569,42 @@ impl CEmitter {
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
         self.writeln("");
 
-        // Actor ID counter
+        // Actor type registry and instance definitions
+        self.writeln("#define RIINA_ACTOR_MAILBOX_SIZE 256");
+        self.writeln("#define RIINA_MAX_ACTORS 64");
+        self.writeln("#define RIINA_MAX_ACTOR_TYPES 16");
+        self.writeln("");
+        self.writeln("typedef struct {");
+        self.writeln("    riina_value_t* init_state;");
+        self.writeln("    riina_value_t* handler;");
+        self.writeln("} riina_actor_type_t;");
+        self.writeln("");
+        self.writeln("static riina_actor_type_t riina_actor_types[RIINA_MAX_ACTOR_TYPES];");
+        self.writeln("static int64_t riina_next_actor_type_id = 0;");
+        self.writeln("");
+        self.writeln("typedef struct {");
+        self.writeln("    int64_t id;");
+        self.writeln("    riina_value_t* state;");
+        self.writeln("    riina_value_t* handler;");
+        self.writeln("    riina_value_t* mailbox[RIINA_ACTOR_MAILBOX_SIZE];");
+        self.writeln("    int64_t mailbox_head;");
+        self.writeln("    int64_t mailbox_tail;");
+        self.writeln("    int64_t mailbox_count;");
+        self.writeln("    pthread_mutex_t mutex;");
+        self.writeln("    pthread_cond_t cond;");
+        self.writeln("    pthread_t thread;");
+        self.writeln("} riina_actor_t;");
+        self.writeln("");
+        self.writeln("static riina_actor_t riina_actors[RIINA_MAX_ACTORS];");
         self.writeln("static int64_t riina_next_actor_id = 0;");
         self.writeln("");
 
-        // Actor declaration (registers actor type, returns unit)
+        // Actor declaration (registers actor type in type registry, returns type ID)
         self.writeln("static riina_value_t* riina_actor_decl(riina_value_t* init_state, riina_value_t* handler) {");
-        self.writeln("    (void)init_state; (void)handler;");
-        self.writeln("    return riina_unit();");
+        self.writeln("    int64_t type_id = riina_next_actor_type_id++;");
+        self.writeln("    riina_actor_types[type_id].init_state = init_state;");
+        self.writeln("    riina_actor_types[type_id].handler = handler;");
+        self.writeln("    return riina_int((uint64_t)type_id);");
         self.writeln("}");
         self.writeln("");
 
@@ -2585,24 +2614,43 @@ impl CEmitter {
         self.writeln("}");
         self.writeln("");
 
-        // Actor spawn (creates actor instance, returns integer ref ID)
+        // Actor spawn (creates actor instance with pthread primitives, returns actor ID)
         self.writeln("static riina_value_t* riina_actor_spawn(riina_value_t* actor_decl, riina_value_t* init_state) {");
-        self.writeln("    (void)actor_decl; (void)init_state;");
-        self.writeln("    return riina_int(++riina_next_actor_id);");
+        self.writeln("    int64_t actor_id = riina_next_actor_id++;");
+        self.writeln("    riina_actor_t* actor = &riina_actors[actor_id];");
+        self.writeln("    actor->id = actor_id;");
+        self.writeln("    actor->state = init_state;");
+        self.writeln("    actor->handler = riina_actor_types[actor_decl->data.int_val].handler;");
+        self.writeln("    actor->mailbox_head = 0;");
+        self.writeln("    actor->mailbox_tail = 0;");
+        self.writeln("    actor->mailbox_count = 0;");
+        self.writeln("    pthread_mutex_init(&actor->mutex, NULL);");
+        self.writeln("    pthread_cond_init(&actor->cond, NULL);");
+        self.writeln("    return riina_int((uint64_t)actor_id);");
         self.writeln("}");
         self.writeln("");
 
-        // Actor send (enqueue message, returns unit)
+        // Actor send (enqueue message in ring buffer with mutex protection)
         self.writeln("static riina_value_t* riina_actor_send(riina_value_t* actor_ref, riina_value_t* msg) {");
-        self.writeln("    (void)actor_ref; (void)msg;");
+        self.writeln("    int64_t actor_id = actor_ref->data.int_val;");
+        self.writeln("    riina_actor_t* actor = &riina_actors[actor_id];");
+        self.writeln("    pthread_mutex_lock(&actor->mutex);");
+        self.writeln("    if (actor->mailbox_count < RIINA_ACTOR_MAILBOX_SIZE) {");
+        self.writeln("        actor->mailbox[actor->mailbox_tail] = msg;");
+        self.writeln("        actor->mailbox_tail = (actor->mailbox_tail + 1) % RIINA_ACTOR_MAILBOX_SIZE;");
+        self.writeln("        actor->mailbox_count++;");
+        self.writeln("    }");
+        self.writeln("    pthread_cond_signal(&actor->cond);");
+        self.writeln("    pthread_mutex_unlock(&actor->mutex);");
         self.writeln("    return riina_unit();");
         self.writeln("}");
         self.writeln("");
 
-        // Actor receive (dequeue message, returns unit in single-threaded mode)
+        // Actor receive (returns current actor state)
         self.writeln("static riina_value_t* riina_actor_recv(riina_value_t* actor_ref) {");
-        self.writeln("    (void)actor_ref;");
-        self.writeln("    return riina_unit();");
+        self.writeln("    int64_t actor_id = actor_ref->data.int_val;");
+        self.writeln("    riina_actor_t* actor = &riina_actors[actor_id];");
+        self.writeln("    return actor->state;");
         self.writeln("}");
         self.writeln("");
 
@@ -3697,5 +3745,80 @@ mod tests {
         // Should have multiple riina_pair calls
         let pair_count = code.matches("riina_pair").count();
         assert!(pair_count >= 2);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ACTOR RUNTIME (PTHREAD) TESTS
+    // ═══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_emit_actor_pthread_include() {
+        let actor = Expr::ActorDecl {
+            name: "Counter".to_string(),
+            state_ty: Ty::Int,
+            message_ty: Ty::Int,
+            init_state: Box::new(Expr::Int(0)),
+            handler: Box::new(Expr::Lam(
+                "msg".to_string(),
+                Ty::Int,
+                Box::new(Expr::Var("msg".to_string())),
+            )),
+        };
+        let code = compile_and_emit(&actor).unwrap();
+        assert!(code.contains("#include <pthread.h>"));
+    }
+
+    #[test]
+    fn test_emit_actor_struct_definition() {
+        let code = compile_and_emit(&Expr::Unit).unwrap();
+        assert!(code.contains("riina_actor_t"));
+        assert!(code.contains("pthread_mutex_t"));
+        assert!(code.contains("pthread_cond_t"));
+        assert!(code.contains("RIINA_ACTOR_MAILBOX_SIZE"));
+    }
+
+    #[test]
+    fn test_emit_actor_spawn() {
+        let decl = Expr::ActorDecl {
+            name: "Counter".to_string(),
+            state_ty: Ty::Int,
+            message_ty: Ty::Int,
+            init_state: Box::new(Expr::Int(0)),
+            handler: Box::new(Expr::Lam(
+                "msg".to_string(),
+                Ty::Int,
+                Box::new(Expr::Var("msg".to_string())),
+            )),
+        };
+        let spawn = Expr::Spawn(Box::new(decl), Box::new(Expr::Int(0)));
+        let code = compile_and_emit(&spawn).unwrap();
+        assert!(code.contains("riina_actor_spawn"));
+        assert!(code.contains("pthread_mutex_init"));
+        assert!(code.contains("pthread_cond_init"));
+    }
+
+    #[test]
+    fn test_emit_actor_send_mailbox() {
+        let code = compile_and_emit(&Expr::Unit).unwrap();
+        assert!(code.contains("riina_actor_send"));
+        assert!(code.contains("pthread_mutex_lock"));
+        assert!(code.contains("mailbox_tail"));
+        assert!(code.contains("pthread_cond_signal"));
+        assert!(code.contains("pthread_mutex_unlock"));
+    }
+
+    #[test]
+    fn test_emit_actor_recv_returns_state() {
+        let code = compile_and_emit(&Expr::Unit).unwrap();
+        assert!(code.contains("riina_actor_recv"));
+        assert!(code.contains("actor->state"));
+    }
+
+    #[test]
+    fn test_emit_actor_decl_stores_type() {
+        let code = compile_and_emit(&Expr::Unit).unwrap();
+        assert!(code.contains("riina_actor_decl"));
+        assert!(code.contains("riina_actor_types"));
+        assert!(code.contains("riina_next_actor_type_id"));
     }
 }
