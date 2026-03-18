@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-03-18T08:36:38Z",
-  "repo_head": "b0a0826d7a2bdcef9d1f306fa63de0ee60702f2c",
+  "generated_utc": "2026-03-18T11:12:02Z",
+  "repo_head": "97bcf0e657a173654a2b2e698ceec4fc756b0009",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
@@ -24,9 +24,9 @@
   "lanes": {
     "lean": {
       "full_build_ok": true,
-      "files": 308,
+      "files": 310,
       "sorry": 0,
-      "axioms": 12,
+      "axioms": 14,
       "mechanized_ready": true,
       "pending": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA"
     },
@@ -34,7 +34,7 @@
       "full_build_ok": true,
       "build_mode": "isabelle_zero_sorry_verified",
       "quarantined": false,
-      "files": 345,
+      "files": 347,
       "sorry": 0,
       "smoke_session": "RIINA_CORE",
       "smoke_build_ok": true,
@@ -48,7 +48,7 @@
     "fstar": {
       "full_exec_ok": true,
       "quarantined": false,
-      "files": 298,
+      "files": 300,
       "generated_files": 7,
       "smoke_module": "RIINA.Active.CryptographicSecurityActive",
       "smoke_build_ok": true,
@@ -60,7 +60,7 @@
     "tlaplus": {
       "full_exec_ok": true,
       "quarantined": false,
-      "files": 300,
+      "files": 302,
       "smoke_spec": "RIINA.Active.TelusProcurementProtocol",
       "smoke_sany_ok": true,
       "smoke_build_ok": true,
@@ -82,7 +82,7 @@
     },
     "smt": {
       "full_exec_ok": true,
-      "files": 300,
+      "files": 302,
       "generated_files": 0,
       "mechanized_ready": true,
       "pending": "none"
@@ -104,7 +104,7 @@
     },
     "tv": {
       "full_exec_ok": true,
-      "files": 299,
+      "files": 301,
       "generated_files": 7,
       "mechanized_ready": false,
       "pending": "require full-lane TV checks and zero generated placeholders"
