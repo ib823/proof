@@ -929,6 +929,7 @@ person-years. TERAS-OS is Phase 9 for a reason — RIINA the language must work 
 | Self-hosting compiler (riinac compiles itself) | TODO |
 | RIINA Bijak learning platform | TODO |
 | Fine-tuned LLM for RIINA code generation | TODO |
+| Neural Theorem Proving for remaining verification dimensions (see `06_COORDINATION/llm_proof_pipeline_design.md`) | TODO |
 | Community + enterprise programs | TODO |
 | Academic papers (one per verification dimension) | TODO |
 | Vibe coding infrastructure (AI-native development) | TODO |

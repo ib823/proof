@@ -21,7 +21,7 @@ use std::str::FromStr;
 
 use riina_types::Expr;
 
-/// The 15 compliance profiles corresponding to 04_SPECS/industries/.
+/// The 16 compliance profiles corresponding to 04_SPECS/industries/.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ComplianceProfile {
     /// PCI-DSS (Payment Card Industry)
@@ -54,6 +54,8 @@ pub enum ComplianceProfile {
     MasTrm,
     /// ITAR (US Arms Export)
     Itar,
+    /// ESG/SDG (Environmental, Social, Governance / UN Sustainable Development Goals)
+    EsgSdg,
 }
 
 impl ComplianceProfile {
@@ -62,6 +64,7 @@ impl ComplianceProfile {
         Self::PciDss, Self::Pdpa, Self::Bnm, Self::Hipaa, Self::Cmmc,
         Self::Sox, Self::Gdpr, Self::Do178c, Self::Iec62443, Self::NercCip,
         Self::Fda21cfr, Self::Iso27001, Self::Nist80053, Self::MasTrm, Self::Itar,
+        Self::EsgSdg,
     ];
 
     /// CLI slug (lowercase, hyphenated).
@@ -82,6 +85,7 @@ impl ComplianceProfile {
             Self::Nist80053 => "nist-800-53",
             Self::MasTrm => "mas-trm",
             Self::Itar => "itar",
+            Self::EsgSdg => "esg-sdg",
         }
     }
 
@@ -103,6 +107,7 @@ impl ComplianceProfile {
             Self::Nist80053 => "NIST 800-53: Security and Privacy Controls for Federal Systems",
             Self::MasTrm => "MAS TRM: Monetary Authority of Singapore Technology Risk Management",
             Self::Itar => "ITAR: International Traffic in Arms Regulations",
+            Self::EsgSdg => "ESG/SDG: Environmental, Social, Governance / UN Sustainable Development Goals",
         }
     }
 }
@@ -127,6 +132,7 @@ impl FromStr for ComplianceProfile {
             "nist-800-53" => Ok(Self::Nist80053),
             "mas-trm" => Ok(Self::MasTrm),
             "itar" => Ok(Self::Itar),
+            "esg-sdg" => Ok(Self::EsgSdg),
             _ => Err(format!("Unknown compliance profile: '{s}'")),
         }
     }

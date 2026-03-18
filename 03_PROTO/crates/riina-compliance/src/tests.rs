@@ -1,6 +1,6 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
 
-//! Tests for compliance validation — 526 rules × 2+ tests each.
+//! Tests for compliance validation — 562 rules × 2+ tests each.
 
 use riina_types::{Expr, Ty, Effect};
 
@@ -63,8 +63,8 @@ fn parse_profiles_unknown() {
 }
 
 #[test]
-fn parse_profiles_all_15() {
-    assert_eq!(ComplianceProfile::ALL.len(), 15);
+fn parse_profiles_all_16() {
+    assert_eq!(ComplianceProfile::ALL.len(), 16);
 }
 
 #[test]
@@ -3802,6 +3802,88 @@ fn gdpr_gdpr_25_3_ok() {
             Box::new(Expr::Unit),
         ),
         ComplianceProfile::Gdpr, "GDPR-25.3",
+    );
+}
+
+// --- GDPR IFC-mapped rules ---
+#[test]
+fn gdpr_ifc_1_violation() {
+    assert_violation(
+        &make_let("controller_data", Expr::String("data".into())),
+        ComplianceProfile::Gdpr, "GDPR-IFC.1",
+    );
+}
+#[test]
+fn gdpr_ifc_1_ok() {
+    assert_no_violation(
+        &make_classified_let("controller_data", Expr::String("data".into())),
+        ComplianceProfile::Gdpr, "GDPR-IFC.1",
+    );
+}
+
+#[test]
+fn gdpr_ifc_2_violation() {
+    assert_violation(
+        &make_let("cross_border", Expr::String("eu_to_us".into())),
+        ComplianceProfile::Gdpr, "GDPR-IFC.2",
+    );
+}
+#[test]
+fn gdpr_ifc_2_ok() {
+    assert_no_violation(
+        &make_classified_let("cross_border", Expr::String("eu_to_us".into())),
+        ComplianceProfile::Gdpr, "GDPR-IFC.2",
+    );
+}
+
+#[test]
+fn gdpr_ifc_3_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::Gdpr, "GDPR-IFC.3",
+    );
+}
+#[test]
+fn gdpr_ifc_3_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::Gdpr, "GDPR-IFC.3",
+    );
+}
+
+#[test]
+fn gdpr_ifc_4_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("consent_withdrawn".into()))),
+        ComplianceProfile::Gdpr, "GDPR-IFC.4",
+    );
+}
+#[test]
+fn gdpr_ifc_4_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Gdpr, "GDPR-IFC.4",
+    );
+}
+
+#[test]
+fn gdpr_ifc_6_violation() {
+    assert_violation(
+        &make_let("automated_decision", Expr::Int(1)),
+        ComplianceProfile::Gdpr, "GDPR-IFC.6",
+    );
+}
+#[test]
+fn gdpr_ifc_6_ok() {
+    assert_no_violation(
+        &make_classified_let("automated_decision", Expr::Int(1)),
+        ComplianceProfile::Gdpr, "GDPR-IFC.6",
     );
 }
 
@@ -7778,5 +7860,171 @@ fn itar_itar_121_4_ok() {
     assert_no_violation(
         &Expr::String("aes256-gcm".into()),
         ComplianceProfile::Itar, "ITAR-121.4",
+    );
+}
+
+// ===========================================================================
+// ESG/SDG tests
+// ===========================================================================
+
+#[test]
+fn esg_parse_profile() {
+    let profiles = parse_profiles("esg-sdg").unwrap();
+    assert_eq!(profiles, vec![ComplianceProfile::EsgSdg]);
+}
+
+#[test]
+fn esg_sdg3_1_violation() {
+    assert_violation(
+        &make_let("health_outcome", Expr::String("data".into())),
+        ComplianceProfile::EsgSdg, "ESG-SDG3.1",
+    );
+}
+#[test]
+fn esg_sdg3_1_ok() {
+    assert_no_violation(
+        &make_classified_let("health_outcome", Expr::String("data".into())),
+        ComplianceProfile::EsgSdg, "ESG-SDG3.1",
+    );
+}
+
+#[test]
+fn esg_sdg5_1_violation() {
+    assert_violation(
+        &make_let("gender_parity", Expr::Int(75)),
+        ComplianceProfile::EsgSdg, "ESG-SDG5.1",
+    );
+}
+#[test]
+fn esg_sdg5_1_ok() {
+    assert_no_violation(
+        &make_classified_let("gender_parity", Expr::Int(75)),
+        ComplianceProfile::EsgSdg, "ESG-SDG5.1",
+    );
+}
+
+#[test]
+fn esg_sdg5_2_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::EsgSdg, "ESG-SDG5.2",
+    );
+}
+#[test]
+fn esg_sdg5_2_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::EsgSdg, "ESG-SDG5.2",
+    );
+}
+
+#[test]
+fn esg_sdg13_1_violation() {
+    assert_violation(
+        &make_let("carbon_emission", Expr::Int(1000)),
+        ComplianceProfile::EsgSdg, "ESG-SDG13.1",
+    );
+}
+#[test]
+fn esg_sdg13_1_ok() {
+    assert_no_violation(
+        &make_classified_let("carbon_emission", Expr::Int(1000)),
+        ComplianceProfile::EsgSdg, "ESG-SDG13.1",
+    );
+}
+
+#[test]
+fn esg_sdg13_2_violation() {
+    assert_violation(
+        &make_let("climate_reporting", Expr::Bool(false)),
+        ComplianceProfile::EsgSdg, "ESG-SDG13.2",
+    );
+}
+#[test]
+fn esg_sdg13_2_ok() {
+    assert_no_violation(
+        &make_let("climate_reporting", Expr::Bool(true)),
+        ComplianceProfile::EsgSdg, "ESG-SDG13.2",
+    );
+}
+
+#[test]
+fn esg_e1_violation() {
+    assert_violation(
+        &make_let("biodiversity_loss", Expr::Int(50)),
+        ComplianceProfile::EsgSdg, "ESG-E.1",
+    );
+}
+#[test]
+fn esg_e1_ok() {
+    assert_no_violation(
+        &make_classified_let("biodiversity_loss", Expr::Int(50)),
+        ComplianceProfile::EsgSdg, "ESG-E.1",
+    );
+}
+
+#[test]
+fn esg_s1_violation() {
+    assert_violation(
+        &make_let("worker_safety", Expr::String("incident".into())),
+        ComplianceProfile::EsgSdg, "ESG-S.1",
+    );
+}
+#[test]
+fn esg_s1_ok() {
+    assert_no_violation(
+        &make_classified_let("worker_safety", Expr::String("incident".into())),
+        ComplianceProfile::EsgSdg, "ESG-S.1",
+    );
+}
+
+#[test]
+fn esg_g2_violation() {
+    assert_violation(
+        &Expr::String("md5".into()),
+        ComplianceProfile::EsgSdg, "ESG-G.2",
+    );
+}
+#[test]
+fn esg_g2_ok() {
+    assert_no_violation(
+        &Expr::String("aes256-gcm".into()),
+        ComplianceProfile::EsgSdg, "ESG-G.2",
+    );
+}
+
+#[test]
+fn esg_sdvista1_violation() {
+    assert_violation(
+        &make_let("verified_impact", Expr::Int(100)),
+        ComplianceProfile::EsgSdg, "ESG-SDVISTA.1",
+    );
+}
+#[test]
+fn esg_sdvista1_ok() {
+    assert_no_violation(
+        &make_classified_let("verified_impact", Expr::Int(100)),
+        ComplianceProfile::EsgSdg, "ESG-SDVISTA.1",
+    );
+}
+
+#[test]
+fn esg_sdvista5_violation() {
+    assert_violation(
+        &make_let("verification_enabled", Expr::Bool(false)),
+        ComplianceProfile::EsgSdg, "ESG-SDVISTA.5",
+    );
+}
+#[test]
+fn esg_sdvista5_ok() {
+    assert_no_violation(
+        &make_let("verification_enabled", Expr::Bool(true)),
+        ComplianceProfile::EsgSdg, "ESG-SDVISTA.5",
     );
 }

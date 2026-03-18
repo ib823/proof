@@ -379,3 +379,4 @@ domains/MachineLearningSecurity.v
 domains/MobileAppSecurity.v
 domains/CriticalInfrastructure.v
 domains/PrivacyEngineering.v
+domains/AlgorithmicFairness.v

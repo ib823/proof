@@ -3,7 +3,7 @@
 //! Compliance rule definitions per profile.
 //! Spec: 04_SPECS/industries/
 //!
-//! 526 rules across 15 compliance profiles, each with AST-level detection.
+//! 562 rules across 16 compliance profiles, each with AST-level detection.
 
 use riina_types::{Expr, Effect};
 
@@ -31,7 +31,7 @@ pub fn rule_count(profile: ComplianceProfile) -> usize {
         ComplianceProfile::Hipaa => 33,
         ComplianceProfile::Cmmc => 63,
         ComplianceProfile::Sox => 18,
-        ComplianceProfile::Gdpr => 28,
+        ComplianceProfile::Gdpr => 34,
         ComplianceProfile::Do178c => 48,
         ComplianceProfile::Iec62443 => 32,
         ComplianceProfile::NercCip => 20,
@@ -40,6 +40,7 @@ pub fn rule_count(profile: ComplianceProfile) -> usize {
         ComplianceProfile::Nist80053 => 81,
         ComplianceProfile::MasTrm => 20,
         ComplianceProfile::Itar => 12,
+        ComplianceProfile::EsgSdg => 30,
     }
 }
 
@@ -63,6 +64,7 @@ pub fn rules_for_profiles(profiles: &[ComplianceProfile]) -> Vec<ComplianceRule>
             ComplianceProfile::Nist80053 => rules.extend(nist_rules()),
             ComplianceProfile::MasTrm => rules.extend(mas_trm_rules()),
             ComplianceProfile::Itar => rules.extend(itar_rules()),
+            ComplianceProfile::EsgSdg => rules.extend(esg_sdg_rules()),
         }
     }
     rules
@@ -1634,6 +1636,47 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             ComplianceProfile::Gdpr,
             "Data protection by design auth must use Crypto",
             &["privacy_auth", "data_protection_login", "gdpr_verify", "consent_auth"],
+            Severity::Error,
+        ),
+        // --- 6 IFC-mapped rules (leveraging RIINA's information flow lattice) ---
+        sensitive_let_rule(
+            "GDPR-IFC.1",
+            ComplianceProfile::Gdpr,
+            "Controller-processor data must be classified (IFC: Sulit level)",
+            &["controller_data", "processor_data", "data_controller", "joint_controller"],
+            Severity::Error,
+        ),
+        sensitive_let_rule(
+            "GDPR-IFC.2",
+            ComplianceProfile::Gdpr,
+            "Cross-border transfer data must be classified (IFC: Rahsia level)",
+            &["cross_border", "third_country", "adequacy_data", "transfer_impact"],
+            Severity::Error,
+        ),
+        declassify_prove_rule(
+            "GDPR-IFC.3",
+            ComplianceProfile::Gdpr,
+            "Data portability export requires Prove guard (IFC downgrade gate)",
+            Severity::Error,
+        ),
+        sensitive_network_send_rule(
+            "GDPR-IFC.4",
+            ComplianceProfile::Gdpr,
+            "Consent withdrawal data must not leak (IFC: no implicit flow)",
+            &["consent_withdrawn", "opt_out", "withdrawal_record", "revocation_data"],
+            Severity::Error,
+        ),
+        classify_without_audit_rule(
+            "GDPR-IFC.5",
+            ComplianceProfile::Gdpr,
+            "Pseudonymization must be audited (IFC label verification)",
+            Severity::Warning,
+        ),
+        sensitive_let_rule(
+            "GDPR-IFC.6",
+            ComplianceProfile::Gdpr,
+            "Automated decision data must be classified (Art 22 profiling)",
+            &["automated_decision", "profiling_data", "algorithmic_decision", "scoring_data"],
             Severity::Error,
         ),
     ]
@@ -4574,6 +4617,224 @@ fn itar_rules() -> Vec<ComplianceRule> {
             "ITAR-121.4",
             ComplianceProfile::Itar,
             "Weak crypto prohibited in ITAR systems",
+            Severity::Error,
+        ),
+    ]
+}
+
+// ===========================================================================
+// ESG/SDG rules (30)
+// Environmental, Social, Governance / UN Sustainable Development Goals
+// ===========================================================================
+
+fn esg_sdg_rules() -> Vec<ComplianceRule> {
+    vec![
+        // --- SDG 3: Good Health and Well-being ---
+        sensitive_let_rule(
+            "ESG-SDG3.1",
+            ComplianceProfile::EsgSdg,
+            "Health outcome data must be classified",
+            &["health_outcome", "mortality_rate", "disease_prevalence", "wellness_metric"],
+            Severity::Error,
+        ),
+        audit_trail_rule(
+            "ESG-SDG3.2",
+            ComplianceProfile::EsgSdg,
+            "Health impact operations require audit trail",
+            Severity::Warning,
+        ),
+        // --- SDG 5: Gender Equality ---
+        sensitive_let_rule(
+            "ESG-SDG5.1",
+            ComplianceProfile::EsgSdg,
+            "Gender parity data must be classified",
+            &["gender_ratio", "pay_gap", "gender_parity", "diversity_metric", "inclusion_score"],
+            Severity::Error,
+        ),
+        declassify_prove_rule(
+            "ESG-SDG5.2",
+            ComplianceProfile::EsgSdg,
+            "Declassification of diversity data requires Prove guard",
+            Severity::Error,
+        ),
+        // --- SDG 7: Affordable and Clean Energy ---
+        sensitive_let_rule(
+            "ESG-SDG7.1",
+            ComplianceProfile::EsgSdg,
+            "Energy consumption data must be classified",
+            &["energy_consumption", "renewable_share", "carbon_intensity", "grid_emission"],
+            Severity::Error,
+        ),
+        temporal_no_expiry_rule(
+            "ESG-SDG7.2",
+            ComplianceProfile::EsgSdg,
+            "Energy reporting periods must have temporal handling",
+            &["reporting_period", "measurement_date", "baseline_year", "target_year"],
+            Severity::Warning,
+        ),
+        // --- SDG 12: Responsible Consumption and Production ---
+        sensitive_let_rule(
+            "ESG-SDG12.1",
+            ComplianceProfile::EsgSdg,
+            "Waste and resource data must be classified",
+            &["waste_generated", "recycling_rate", "resource_usage", "circular_economy"],
+            Severity::Error,
+        ),
+        hardcoded_credential_rule(
+            "ESG-SDG12.2",
+            ComplianceProfile::EsgSdg,
+            "No hardcoded supply chain credentials",
+            &["supply_chain_key", "vendor_credential", "audit_token", "certification_secret"],
+            Severity::Error,
+        ),
+        // --- SDG 13: Climate Action ---
+        sensitive_let_rule(
+            "ESG-SDG13.1",
+            ComplianceProfile::EsgSdg,
+            "Carbon emission data must be classified",
+            &["carbon_emission", "ghg_scope1", "ghg_scope2", "ghg_scope3", "carbon_offset"],
+            Severity::Error,
+        ),
+        insecure_default_rule(
+            "ESG-SDG13.2",
+            ComplianceProfile::EsgSdg,
+            "Climate reporting defaults must be enabled",
+            &["climate_reporting", "emission_tracking", "carbon_accounting", "ghg_monitoring"],
+            Severity::Error,
+        ),
+        temporal_no_expiry_rule(
+            "ESG-SDG13.3",
+            ComplianceProfile::EsgSdg,
+            "Climate targets must have temporal handling",
+            &["target_date", "baseline_date", "ndc_deadline", "paris_target"],
+            Severity::Warning,
+        ),
+        // --- SDG 16: Peace, Justice and Strong Institutions ---
+        sensitive_let_rule(
+            "ESG-SDG16.1",
+            ComplianceProfile::EsgSdg,
+            "Governance and transparency data must be classified",
+            &["governance_score", "corruption_index", "transparency_metric", "rule_of_law"],
+            Severity::Error,
+        ),
+        broad_grant_rule(
+            "ESG-SDG16.2",
+            ComplianceProfile::EsgSdg,
+            "Overly broad grants undermine governance controls",
+            Severity::Warning,
+        ),
+        // --- ESG Environmental (E) ---
+        sensitive_let_rule(
+            "ESG-E.1",
+            ComplianceProfile::EsgSdg,
+            "Environmental impact data must be classified",
+            &["biodiversity_loss", "water_usage", "deforestation", "pollution_level"],
+            Severity::Error,
+        ),
+        classify_without_audit_rule(
+            "ESG-E.2",
+            ComplianceProfile::EsgSdg,
+            "Environmental classification must be audited (anti-greenwashing)",
+            Severity::Warning,
+        ),
+        insecure_network_rule(
+            "ESG-E.3",
+            ComplianceProfile::EsgSdg,
+            "Environmental data transmission must use secure channel",
+            Severity::Error,
+        ),
+        // --- ESG Social (S) ---
+        sensitive_let_rule(
+            "ESG-S.1",
+            ComplianceProfile::EsgSdg,
+            "Labor rights data must be classified",
+            &["worker_safety", "labor_rights", "child_labor", "living_wage", "union_membership"],
+            Severity::Error,
+        ),
+        sensitive_network_send_rule(
+            "ESG-S.2",
+            ComplianceProfile::EsgSdg,
+            "Social impact data must not leak over network",
+            &["worker_data", "community_impact", "human_rights", "labor_metric"],
+            Severity::Error,
+        ),
+        tainted_input_rule(
+            "ESG-S.3",
+            ComplianceProfile::EsgSdg,
+            "Stakeholder input must be taint-tracked",
+            &["stakeholder_input", "community_feedback", "worker_complaint", "grievance_data"],
+            Severity::Error,
+        ),
+        // --- ESG Governance (G) ---
+        auth_crypto_rule(
+            "ESG-G.1",
+            ComplianceProfile::EsgSdg,
+            "ESG report auth must use Crypto",
+            &["esg_auth", "audit_login", "compliance_verify", "report_auth"],
+            Severity::Error,
+        ),
+        weak_crypto_rule(
+            "ESG-G.2",
+            ComplianceProfile::EsgSdg,
+            "Weak crypto prohibited for ESG audit data",
+            Severity::Error,
+        ),
+        hardcoded_ip_rule(
+            "ESG-G.3",
+            ComplianceProfile::EsgSdg,
+            "No hardcoded IPs in ESG reporting systems",
+            Severity::Warning,
+        ),
+        debug_code_rule(
+            "ESG-G.4",
+            ComplianceProfile::EsgSdg,
+            "No debug code in ESG compliance systems",
+            Severity::Warning,
+        ),
+        ffi_review_rule(
+            "ESG-G.5",
+            ComplianceProfile::EsgSdg,
+            "FFI calls in ESG systems require review",
+            Severity::Warning,
+        ),
+        trivial_handle_rule(
+            "ESG-G.6",
+            ComplianceProfile::EsgSdg,
+            "ESG data handling errors must not be silently discarded",
+            Severity::Warning,
+        ),
+        // --- SD VISta / Gold Standard alignment ---
+        sensitive_let_rule(
+            "ESG-SDVISTA.1",
+            ComplianceProfile::EsgSdg,
+            "Verified impact data must be classified (SD VISta)",
+            &["verified_impact", "sdvista_metric", "gold_standard", "verra_credit"],
+            Severity::Error,
+        ),
+        insecure_url_rule(
+            "ESG-SDVISTA.2",
+            ComplianceProfile::EsgSdg,
+            "Impact verification URLs must use HTTPS",
+            Severity::Error,
+        ),
+        hardcoded_credential_rule(
+            "ESG-SDVISTA.3",
+            ComplianceProfile::EsgSdg,
+            "No hardcoded verification credentials",
+            &["registry_key", "verification_token", "carbon_credit_secret", "offset_credential"],
+            Severity::Error,
+        ),
+        excessive_grant_rule(
+            "ESG-SDVISTA.4",
+            ComplianceProfile::EsgSdg,
+            "Excessive grants in verification systems flagged",
+            Severity::Warning,
+        ),
+        insecure_default_rule(
+            "ESG-SDVISTA.5",
+            ComplianceProfile::EsgSdg,
+            "Verification defaults must be enabled",
+            &["verification_enabled", "audit_required", "double_counting_check", "additionality_check"],
             Severity::Error,
         ),
     ]
