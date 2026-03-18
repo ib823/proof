@@ -1,6 +1,6 @@
 # Research Track → Coq Proof Coverage Matrix
 
-**Verification:** 11,120 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2204 Rust tests
+**Verification:** 11,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2233 Rust tests
 
 > Auto-generated: 2026-02-02
 > Method: `grep -c "^Qed\."` on each .v file; `find -name "*.md"` on each research dir

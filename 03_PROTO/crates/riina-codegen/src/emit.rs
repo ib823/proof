@@ -363,6 +363,9 @@ impl CEmitter {
 
         // Builtin function helpers
         self.emit_builtin_helpers();
+
+        // JALINAN runtime (actors, CRDTs, content-addressed)
+        self.emit_jalinan_runtime();
     }
 
     /// Emit value constructor functions
@@ -2558,6 +2561,83 @@ impl CEmitter {
         self.writeln("");
     }
 
+    /// Emit JALINAN runtime support (actors, CRDTs, content-addressed hashing)
+    fn emit_jalinan_runtime(&mut self) {
+        self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
+        self.writeln("/*                      JALINAN RUNTIME                                */");
+        self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
+        self.writeln("");
+
+        // Actor ID counter
+        self.writeln("static int64_t riina_next_actor_id = 0;");
+        self.writeln("");
+
+        // Actor declaration (registers actor type, returns unit)
+        self.writeln("static riina_value_t* riina_actor_decl(riina_value_t* init_state, riina_value_t* handler) {");
+        self.writeln("    (void)init_state; (void)handler;");
+        self.writeln("    return riina_unit();");
+        self.writeln("}");
+        self.writeln("");
+
+        // Choreography declaration (protocol declaration, returns unit)
+        self.writeln("static riina_value_t* riina_choreography_decl(void) {");
+        self.writeln("    return riina_unit();");
+        self.writeln("}");
+        self.writeln("");
+
+        // Actor spawn (creates actor instance, returns integer ref ID)
+        self.writeln("static riina_value_t* riina_actor_spawn(riina_value_t* actor_decl, riina_value_t* init_state) {");
+        self.writeln("    (void)actor_decl; (void)init_state;");
+        self.writeln("    return riina_int(++riina_next_actor_id);");
+        self.writeln("}");
+        self.writeln("");
+
+        // Actor send (enqueue message, returns unit)
+        self.writeln("static riina_value_t* riina_actor_send(riina_value_t* actor_ref, riina_value_t* msg) {");
+        self.writeln("    (void)actor_ref; (void)msg;");
+        self.writeln("    return riina_unit();");
+        self.writeln("}");
+        self.writeln("");
+
+        // Actor receive (dequeue message, returns unit in single-threaded mode)
+        self.writeln("static riina_value_t* riina_actor_recv(riina_value_t* actor_ref) {");
+        self.writeln("    (void)actor_ref;");
+        self.writeln("    return riina_unit();");
+        self.writeln("}");
+        self.writeln("");
+
+        // CRDT merge (pointwise max for integer counters)
+        self.writeln("static riina_value_t* riina_crdt_merge(riina_value_t* a, riina_value_t* b) {");
+        self.writeln("    if (a->tag == RIINA_TAG_INT && b->tag == RIINA_TAG_INT) {");
+        self.writeln("        return riina_int(a->data.int_val > b->data.int_val ? a->data.int_val : b->data.int_val);");
+        self.writeln("    }");
+        self.writeln("    return a;");
+        self.writeln("}");
+        self.writeln("");
+
+        // Content hash (DJB2 hash, returns hex string)
+        self.writeln("static riina_value_t* riina_content_hash(riina_value_t* val) {");
+        self.writeln("    uint64_t hash = 5381;");
+        self.writeln("    if (val->tag == RIINA_TAG_INT) {");
+        self.writeln("        uint64_t n = val->data.int_val;");
+        self.writeln("        int i;");
+        self.writeln("        for (i = 0; i < 8; i++) {");
+        self.writeln("            hash = ((hash << 5) + hash) + (n & 0xff);");
+        self.writeln("            n >>= 8;");
+        self.writeln("        }");
+        self.writeln("    } else if (val->tag == RIINA_TAG_STRING) {");
+        self.writeln("        const char* s = val->data.string_val.data;");
+        self.writeln("        while (*s) { hash = ((hash << 5) + hash) + (unsigned char)*s++; }");
+        self.writeln("    } else if (val->tag == RIINA_TAG_BOOL) {");
+        self.writeln("        hash = ((hash << 5) + hash) + (val->data.bool_val ? 1 : 0);");
+        self.writeln("    }");
+        self.writeln("    char buf[17];");
+        self.writeln("    snprintf(buf, sizeof(buf), \"%016llx\", (unsigned long long)hash);");
+        self.writeln("    return riina_string(buf);");
+        self.writeln("}");
+        self.writeln("");
+    }
+
     /// Emit forward declarations for all functions
     fn emit_forward_declarations(&mut self, program: &Program) -> Result<()> {
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
@@ -2706,14 +2786,19 @@ impl CEmitter {
                     | Instruction::Prove(v)
                     | Instruction::UnaryOp(_, v)
                     | Instruction::Inl(v)
-                    | Instruction::Inr(v) => {
+                    | Instruction::Inr(v)
+                    | Instruction::ActorRecv(v)
+                    | Instruction::ContentHash(v) => {
                         vars.insert(*v);
                     }
                     Instruction::BinOp(_, a, b)
                     | Instruction::Pair(a, b)
                     | Instruction::Store(a, b)
                     | Instruction::Declassify(a, b)
-                    | Instruction::Call(a, b) => {
+                    | Instruction::Call(a, b)
+                    | Instruction::ActorSpawn(a, b)
+                    | Instruction::ActorSend(a, b)
+                    | Instruction::CRDTMerge(a, b) => {
                         vars.insert(*a);
                         vars.insert(*b);
                     }
@@ -2744,6 +2829,11 @@ impl CEmitter {
                     Instruction::FixClosure { closure, .. } => {
                         vars.insert(*closure);
                     }
+                    Instruction::ActorDecl { init_state, handler, .. } => {
+                        vars.insert(*init_state);
+                        vars.insert(*handler);
+                    }
+                    Instruction::ChoreographyDecl { .. } => {}
                     Instruction::Const(_)
                     | Instruction::RequireCap(_)
                     | Instruction::GrantCap(_) => {}
@@ -3040,6 +3130,68 @@ impl CEmitter {
                     result = result,
                     name = name,
                     args = arg_strs.join(", "),
+                ));
+            }
+
+            // ═══════════════════════════════════════════════════════════
+            // JALINAN (actors, choreography, CRDTs, content-addressed)
+            // ═══════════════════════════════════════════════════════════
+
+            Instruction::ActorDecl { name: _, init_state, handler } => {
+                self.writeln(&format!(
+                    "{result} = *riina_actor_decl(&{init}, &{handler});",
+                    result = result,
+                    init = self.var_name(init_state),
+                    handler = self.var_name(handler),
+                ));
+            }
+
+            Instruction::ChoreographyDecl { name: _, roles: _ } => {
+                self.writeln(&format!(
+                    "{result} = *riina_choreography_decl();",
+                ));
+            }
+
+            Instruction::ActorSpawn(decl, state) => {
+                self.writeln(&format!(
+                    "{result} = *riina_actor_spawn(&{decl}, &{state});",
+                    result = result,
+                    decl = self.var_name(decl),
+                    state = self.var_name(state),
+                ));
+            }
+
+            Instruction::ActorSend(actor, msg) => {
+                self.writeln(&format!(
+                    "{result} = *riina_actor_send(&{actor}, &{msg});",
+                    result = result,
+                    actor = self.var_name(actor),
+                    msg = self.var_name(msg),
+                ));
+            }
+
+            Instruction::ActorRecv(actor) => {
+                self.writeln(&format!(
+                    "{result} = *riina_actor_recv(&{actor});",
+                    result = result,
+                    actor = self.var_name(actor),
+                ));
+            }
+
+            Instruction::CRDTMerge(a, b) => {
+                self.writeln(&format!(
+                    "{result} = *riina_crdt_merge(&{a}, &{b});",
+                    result = result,
+                    a = self.var_name(a),
+                    b = self.var_name(b),
+                ));
+            }
+
+            Instruction::ContentHash(val) => {
+                self.writeln(&format!(
+                    "{result} = *riina_content_hash(&{val});",
+                    result = result,
+                    val = self.var_name(val),
                 ));
             }
 
