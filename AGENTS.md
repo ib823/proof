@@ -1,4 +1,4 @@
-# AGENTS.md — RIINA Repository Instructions for AI Agents
+# AGENTS.md — RIINA™ Repository Instructions for AI Agents
 
 **For Codex, Devin, and any autonomous AI agent entering this codebase.**
 

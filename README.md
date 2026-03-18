@@ -1,4 +1,4 @@
-# RIINA
+# RIINA™
 
 **Formally verified programming language.**
 
@@ -390,7 +390,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 10,038 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 1494 Rust tests
+**Verification:** 10,038 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2081 Rust tests
 
 | Area | Status |
 |------|--------|
@@ -490,3 +490,7 @@ SPARK ships mature compile-time proof integration for a well-defined Ada subset.
 *RIINA — Rigorous Immutable Invariant, No Assumptions*
 
 *Q.E.D. Aeternum.*
+
+---
+
+<sub>RIINA™ is a trademark of The RIINA Authors. First use in commerce: February 2026. All rights reserved.</sub>

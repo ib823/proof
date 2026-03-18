@@ -2,7 +2,7 @@
 
 ## Reporting
 
-If you discover a security issue in RIINA, please report it responsibly.
+If you discover a security issue in RIINA™, please report it responsibly.
 
 **Telegram:** [@ib823](https://t.me/ib823)
 

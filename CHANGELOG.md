@@ -1,8 +1,8 @@
 # Changelog
 
-**Verification:** 10,038 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 1494 Rust tests
+**Verification:** 10,038 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2081 Rust tests
 
-All notable changes to RIINA will be documented in this file.
+All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

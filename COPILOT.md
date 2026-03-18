@@ -1,4 +1,4 @@
-# COPILOT.md — RIINA Repository Instructions for GitHub Copilot
+# COPILOT.md — RIINA™ Repository Instructions for GitHub Copilot
 
 ## Before ANY Action
 

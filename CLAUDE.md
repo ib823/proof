@@ -1,4 +1,4 @@
-# CLAUDE.md — RIINA Proof Repository
+# CLAUDE.md — RIINA™ Proof Repository
 
 **READ `RIINA_MASTER_PLAN.md` FIRST. It is the ONLY planning authority.**
 **This file contains operational instructions only. No planning, no metrics, no status tracking.**

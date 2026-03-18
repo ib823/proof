@@ -65,7 +65,7 @@ const RiinaWebsite = () => {
       <div className="header-inner">
         <button className="header-logo" onClick={() => nav('home')}>
           <Logo size={24} />
-          <span>RIINA</span>
+          <span>RIINA<sup style={{fontSize:8,verticalAlign:'super',opacity:0.5}}>™</sup></span>
         </button>
 
         <button className="hamburger" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Menu">
@@ -957,7 +957,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
         <div>
           <div className="footer-brand">
             <Logo size={20} />
-            <span className="footer-brand__name">RIINA</span>
+            <span className="footer-brand__name">RIINA<sup style={{fontSize:8,verticalAlign:'super',opacity:0.5}}>™</sup></span>
           </div>
           <p className="footer-brand__tagline">Rigorous Immutable Invariant,<br/>No Assumptions</p>
         </div>

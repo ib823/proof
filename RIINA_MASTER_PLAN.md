@@ -1,4 +1,4 @@
-# RIINA MASTER PLAN
+# RIINA™ MASTER PLAN
 
 **Status: AUTHORITATIVE | Version: 2.2.1 | Date: 2026-03-12**
 **This is the ONLY planning document in this repository. All others have been deleted.**
