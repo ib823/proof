@@ -1,63 +1,114 @@
 {
+  "generated_utc": "2026-03-18T02:08:58Z",
+  "repo_head": "3539f3b5f8df8984a5b8d0df34f8b4ab283bd66a",
+  "repo_branch": "main",
+  "scope": "noncoq_lane_mechanization_readiness",
+  "tools": {
+    "lake": false,
+    "isabelle": true,
+    "docker": false,
+    "isabelle_bin": "/workspaces/proof/05_TOOLING/tools/isabelle/current/bin/isabelle",
+    "isabelle_local_error": "",
+    "java": true,
+    "z3": true,
+    "fstar": true,
+    "fstar_bin": "/workspaces/proof/05_TOOLING/tools/fstar/current/bin/fstar.exe",
+    "fstar_local_error": "",
+    "verus": false,
+    "kani": false,
+    "tla2tools_jar": true,
+    "alloy_jar": true,
+    "tla2tools_path": "/workspaces/proof/05_TOOLING/tools/formal/tla2tools.jar",
+    "alloy_path": "/workspaces/proof/05_TOOLING/tools/formal/alloy-6.2.0/lib/app/org.alloytools.alloy.dist.jar"
+  },
   "lanes": {
+    "lean": {
+      "full_build_ok": false,
+      "files": 292,
+      "sorry": 0,
+      "axioms": 12,
+      "mechanized_ready": false,
+      "pending": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA"
+    },
     "isabelle": {
       "full_build_ok": true,
       "build_mode": "isabelle_zero_sorry_verified",
       "quarantined": false,
-      "files": 307,
+      "files": 329,
       "sorry": 0,
-      "mechanized_ready": true,
-      "pending": "none"
-    },
-    "lean": {
-      "full_build_ok": true,
-      "files": 155,
-      "sorry": 0,
-      "axioms": 0,
+      "smoke_session": "RIINA_CORE",
+      "smoke_build_ok": true,
+      "smoke_declared_theories": 1,
+      "smoke_declared_lemmas": 5,
+      "smoke_compiled_theories": 1,
+      "smoke_compiled_lemmas": 5,
       "mechanized_ready": true,
       "pending": "none"
     },
     "fstar": {
-      "full_build_ok": false,
+      "full_exec_ok": false,
       "quarantined": false,
-      "files": 265,
-      "sorry": 0,
+      "files": 282,
+      "generated_files": 7,
+      "smoke_module": "RIINA.Active.CryptographicSecurityActive",
       "smoke_build_ok": true,
+      "smoke_declared_lemmas": 3,
       "smoke_compiled_lemmas": 3,
-      "generated_files": 0,
       "mechanized_ready": false,
-      "claim_level": "compiled",
-      "pending": "none",
-      "full_exec_ok": true
+      "pending": "partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending"
     },
     "tlaplus": {
       "full_exec_ok": true,
       "quarantined": false,
-      "files": 267,
+      "files": 284,
+      "smoke_spec": "RIINA.Active.TelusProcurementProtocol",
+      "smoke_sany_ok": true,
       "smoke_build_ok": true,
+      "smoke_declared_theorems": 5,
       "smoke_compiled_theorems": 5,
-      "generated_files": 0,
-      "mechanized_ready": false,
-      "claim_level": "compiled",
+      "mechanized_ready": true,
       "pending": "none"
     },
     "alloy": {
-      "full_exec_ok": true,
+      "full_exec_ok": false,
       "quarantined": false,
-      "files": 260,
+      "files": 277,
+      "smoke_model": "RIINA.Active.TelusProcurementAccessControl",
       "smoke_build_ok": true,
+      "smoke_declared_assertions": 6,
       "smoke_checked_assertions": 6,
-      "generated_files": 0,
       "mechanized_ready": false,
-      "claim_level": "compiled",
-      "pending": "none"
+      "pending": "partial TelusProcurementAccessControl smoke model checked; full-lane executable Alloy checks across corpus still pending"
     },
     "smt": {
       "full_exec_ok": true,
+      "files": 284,
       "generated_files": 0,
-      "mechanized_ready": true
+      "mechanized_ready": true,
+      "pending": "none"
+    },
+    "verus": {
+      "full_exec_ok": false,
+      "files": 294,
+      "generated_files": 10,
+      "mechanized_ready": false,
+      "pending": "require full-lane Verus checks and zero generated placeholders"
+    },
+    "kani": {
+      "full_exec_ok": false,
+      "files": 278,
+      "generated_files": 1,
+      "harness_files": 276,
+      "mechanized_ready": false,
+      "pending": "require full-lane Kani checks and zero generated placeholders"
+    },
+    "tv": {
+      "full_exec_ok": true,
+      "files": 283,
+      "generated_files": 7,
+      "mechanized_ready": false,
+      "pending": "require full-lane TV checks and zero generated placeholders"
     }
   },
-  "repo_head": "4a1564f97db6315153ab87ea11fb2d72b6da41f1",
-  "generated_utc": "2026-03-16T04:00:00Z"
+  "overall_noncoq_mechanized": false
 }

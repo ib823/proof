@@ -1,48 +1,48 @@
 {
-  "generated": "2026-03-17T23:20:57Z",
-  "generatedHuman": "March 17, 2026 at 23:20 UTC",
+  "generated": "2026-03-18T02:10:52Z",
+  "generatedHuman": "March 18, 2026 at 02:10 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "dc40558a",
+    "commit": "3539f3b5",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 10038,
+    "qedActive": 10803,
     "qedDeprecated": 758,
-    "qedTotal": 10796,
+    "qedTotal": 11561,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 316,
-    "filesActive": 276,
-    "domains": 219,
+    "filesTotal": 331,
+    "filesActive": 291,
+    "domains": 234,
     "prover": "Rocq 9.1.1"
   },
   "lean": {
-    "theorems": 4458,
+    "theorems": 10229,
     "sorry": 0,
-    "axioms": 0,
-    "files": 155,
-    "lines": 69696,
+    "axioms": 12,
+    "files": 292,
+    "lines": 118204,
     "prover": "Lean 4"
   },
   "isabelle": {
-    "lemmas": 9092,
-    "lemmasRaw": 9092,
-    "compiledTheories": 0,
-    "compiledLemmas": 0,
-    "smokeBuildOk": false,
+    "lemmas": 10402,
+    "lemmasRaw": 10402,
+    "compiledTheories": 1,
+    "compiledLemmas": 5,
+    "smokeBuildOk": true,
     "smokeSession": "RIINA_CORE",
     "quarantined": false,
     "sorry": 0,
     "sorryVerified": true,
     "axioms": 0,
-    "files": 307,
-    "lines": 101524,
+    "files": 329,
+    "lines": 108914,
     "prover": "Isabelle/HOL"
   },
   "fstar": {
@@ -52,72 +52,83 @@
     "smokeBuildOk": true,
     "smokeModule": "RIINA.Active.CryptographicSecurityActive",
     "quarantined": false,
-    "files": 265,
+    "files": 282,
     "prover": "F*"
   },
   "tlaplus": {
-    "theorems": 5893,
-    "theoremsRaw": 5893,
+    "theorems": 9972,
+    "theoremsRaw": 9972,
     "compiledTheorems": 5,
     "smokeBuildOk": true,
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
     "quarantined": false,
-    "files": 267,
+    "files": 284,
     "prover": "TLA+"
   },
   "alloy": {
-    "assertions": 8434,
-    "assertionsRaw": 8434,
+    "assertions": 9857,
+    "assertionsRaw": 9857,
     "compiledAssertions": 6,
     "smokeBuildOk": true,
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
     "quarantined": false,
-    "files": 260,
+    "files": 277,
     "prover": "Alloy 6"
   },
   "smt": {
-    "assertions": 11843,
-    "assertionsRaw": 11843,
+    "assertions": 10095,
+    "assertionsRaw": 10095,
     "quarantined": false,
-    "files": 267,
+    "files": 284,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
     "proofs": 0,
-    "proofsRaw": 2261,
+    "proofsRaw": 4625,
     "quarantined": true,
-    "files": 277,
+    "files": 294,
     "prover": "Verus"
   },
   "kani": {
     "harnesses": 0,
-    "harnessesRaw": 1515,
+    "harnessesRaw": 3894,
     "quarantined": true,
-    "files": 261,
+    "files": 278,
     "prover": "Kani"
   },
   "tv": {
     "validations": 0,
-    "validationsRaw": 38107,
+    "validationsRaw": 14791,
     "quarantined": true,
-    "files": 266,
+    "files": 283,
     "prover": "Translation Validation"
   },
   "multiProver": {
-    "tripleProverTheorems": 3153,
-    "totalProofsAllProvers": 49780,
+    "tripleProverTheorems": 8374,
+    "totalProofsAllProvers": 61380,
     "totalProvers": 10,
-    "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
+    "proverList": [
+      "Coq",
+      "Lean 4",
+      "Isabelle/HOL",
+      "F*",
+      "TLA+",
+      "Alloy 6",
+      "Z3/CVC5",
+      "Verus",
+      "Kani",
+      "Translation Validation"
+    ],
     "sorry": 0,
     "status": "ACTIVE_COQ_MECHANIZED"
   },
   "quality": {
     "coqCompiled": true,
-    "leanCompiled": true,
+    "leanCompiled": false,
     "isabelleCompiled": true,
-    "fstarStatus": "compiled",
-    "tlaplusStatus": "compiled",
-    "alloyStatus": "compiled",
+    "fstarStatus": "generated",
+    "tlaplusStatus": "mechanized",
+    "alloyStatus": "generated",
     "smtStatus": "mechanized",
     "verusStatus": "generated",
     "kaniStatus": "generated",
@@ -128,43 +139,48 @@
       "overallMechanized": false,
       "source": "strict_report",
       "pending": {
-        "lean": "none",
+        "lean": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA",
         "isabelle": "none",
         "fstar": "partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending",
-        "tlaplus": "partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending",
+        "tlaplus": "none",
         "alloy": "partial TelusProcurementAccessControl smoke model checked; full-lane executable Alloy checks across corpus still pending",
         "smt": "none",
-        "verus": "none",
-        "kani": "none",
-        "tv": "none"
+        "verus": "require full-lane Verus checks and zero generated placeholders",
+        "kani": "require full-lane Kani checks and zero generated placeholders",
+        "tv": "require full-lane TV checks and zero generated placeholders"
       },
       "backlog": {
         "leanSorry": 0,
-        "leanAxioms": 0,
+        "leanAxioms": 12,
         "isabelleSorry": 0,
-        "fstarGeneratedFiles": 0,
+        "fstarGeneratedFiles": 7,
         "smtGeneratedFiles": 0,
-        "verusGeneratedFiles": 0,
-        "kaniGeneratedFiles": 0,
-        "tvGeneratedFiles": 0
+        "verusGeneratedFiles": 10,
+        "kaniGeneratedFiles": 1,
+        "tvGeneratedFiles": 7
       }
     },
     "coqTiers": {
       "core": 1621,
-      "domain": 8417,
-      "domainTrivial": 1107
+      "domain": 9182,
+      "domainTrivial": 1392
     }
   },
   "claimLevels": {
-    "legend": ["generated", "compiled", "mechanized", "independently_audited"],
+    "legend": [
+      "generated",
+      "compiled",
+      "mechanized",
+      "independently_audited"
+    ],
     "overall": "generated",
     "independentlyAudited": false,
     "coq": "mechanized",
-    "lean": "mechanized",
+    "lean": "generated",
     "isabelle": "mechanized",
-    "fstar": "compiled",
-    "tlaplus": "compiled",
-    "alloy": "compiled",
+    "fstar": "generated",
+    "tlaplus": "mechanized",
+    "alloy": "generated",
     "smt": "mechanized",
     "verus": "generated",
     "kani": "generated",
@@ -172,8 +188,8 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 1494,
-    "testsVerified": 1494,
+    "tests": 2081,
+    "testsVerified": 2081,
     "testsEstimated": 0,
     "testsSource": "full_cargo_test",
     "crates": 15
@@ -185,12 +201,33 @@
     "threats": "1231+"
   },
   "milestones": [
-    { "date": "2026-02-07", "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) — claim levels apply per lane" },
-    { "date": "2026-02-07", "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)" },
-    { "date": "2026-02-07", "event": "SMT assertion corpus integrated into public metrics" },
-    { "date": "2026-02-06", "event": "Proof depth 20+ across all 250 domain files" },
-    { "date": "2026-02-06", "event": "Cross-prover mapping milestone recorded (current quality flags are authoritative)" },
-    { "date": "2026-02-10", "event": "Axiom token elimination: 4 → 0 (active-build explicit assumptions now 0)" },
-    { "date": "2026-02-01", "event": "Phase 7 complete: Platform Universality" }
+    {
+      "date": "2026-02-07",
+      "event": "10-lane verification corpus published (Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV) \u2014 claim levels apply per lane"
+    },
+    {
+      "date": "2026-02-07",
+      "event": "Lean 4 lane integrated into public metrics (see claim levels for current status)"
+    },
+    {
+      "date": "2026-02-07",
+      "event": "SMT assertion corpus integrated into public metrics"
+    },
+    {
+      "date": "2026-02-06",
+      "event": "Proof depth 20+ across all 250 domain files"
+    },
+    {
+      "date": "2026-02-06",
+      "event": "Cross-prover mapping milestone recorded (current quality flags are authoritative)"
+    },
+    {
+      "date": "2026-02-10",
+      "event": "Axiom token elimination: 4 \u2192 0 (active-build explicit assumptions now 0)"
+    },
+    {
+      "date": "2026-02-01",
+      "event": "Phase 7 complete: Platform Universality"
+    }
   ]
 }
