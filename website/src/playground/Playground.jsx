@@ -115,6 +115,22 @@ biar h = kuasa(2, 10);
 h`
   },
   {
+    name: 'Actors',
+    code: `// JALINAN: Actor-based concurrency
+// Define, spawn, send, receive
+
+pelakon Pembilang {
+    keadaan: Nombor
+    kendalikan Tambah(n) {
+        n + 1
+    }
+}
+
+biar k = lahir Pembilang(0);
+hantar(k, 5);
+terima(k)`
+  },
+  {
     name: 'Builtins',
     code: `// Built-in functions (bilingual)
 biar nama = "RIINA";
@@ -133,6 +149,7 @@ const KEYWORDS = new Set([
   'laksana', 'modul', 'guna', 'awam', 'kalau', 'lain', 'untuk', 'selagi',
   'ulang', 'pulang', 'padan', 'keluar', 'terus', 'kesan', 'masa_tetap',
   'sekali', 'benar', 'palsu', 'tiada',
+  'pelakon', 'lahir', 'hantar', 'terima', 'kendalikan', 'keadaan',
 ]);
 
 const TYPES = new Set([
