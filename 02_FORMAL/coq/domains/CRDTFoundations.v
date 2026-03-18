@@ -332,7 +332,7 @@ Proof.
   - subst. reflexivity.
   - subst. unfold gc_merge, gc_bottom, pointwise_max. simpl.
     f_equal.
-    + lia.
+    + apply Nat.max_0_l.
     + fold (pointwise_max (repeat 0 (length xs)) xs).
       fold (gc_merge (gc_bottom (length xs)) xs).
       apply IH. reflexivity.
@@ -351,7 +351,7 @@ Theorem gc_increment_length : forall gc node,
   length (gc_increment gc node) = length gc.
 Proof.
   intros gc node. unfold gc_increment.
-  rewrite map_length. rewrite combine_length.
+  rewrite length_map. rewrite combine_length.
   rewrite seq_length. lia.
 Qed.
 

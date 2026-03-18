@@ -260,7 +260,7 @@ Theorem map_merge_aux_lookup_in : forall m1 m2 k v,
 Proof.
   induction m1 as [|[k1 v1] rest IH]; intros m2 k v Hin Huniq.
   - destruct Hin.
-  - simpl. destruct Hin as [Heq | Hin].
+  - cbn. destruct Hin as [Heq | Hin].
     + injection Heq as Hk Hv. subst. rewrite Nat.eqb_refl. reflexivity.
     + destruct (Nat.eqb k k1) eqn:Ek.
       * apply Nat.eqb_eq in Ek. subst.
@@ -276,9 +276,9 @@ Theorem map_merge_aux_preserves : forall m1 m2 k,
 Proof.
   induction m1 as [|[k1 v1] rest IH]; intros m2 k Hhas.
   - simpl in Hhas. discriminate.
-  - simpl. destruct (Nat.eqb k k1) eqn:Ek.
+  - cbn. destruct (Nat.eqb k k1) eqn:Ek.
     + lia.
-    + apply IH. simpl in Hhas.
+    + apply IH. cbn in Hhas.
       destruct (Nat.eqb k k1) eqn:Ek2; [rewrite Ek in Ek2; discriminate | exact Hhas].
 Qed.
 
@@ -297,9 +297,9 @@ Theorem map_merge_aux_idem_key : forall m k,
 Proof.
   induction m as [|[k1 v1] rest IH]; intros k Hhas.
   - simpl in Hhas. discriminate.
-  - simpl. destruct (Nat.eqb k k1) eqn:Ek.
-    + apply Nat.eqb_eq in Ek. subst. simpl. rewrite Nat.eqb_refl. lia.
-    + apply IH. simpl in Hhas.
+  - cbn. destruct (Nat.eqb k k1) eqn:Ek.
+    + apply Nat.eqb_eq in Ek. subst. cbn. rewrite Nat.eqb_refl. lia.
+    + apply IH. cbn in Hhas.
       destruct (Nat.eqb k k1); [discriminate | exact Hhas].
 Qed.
 
@@ -999,9 +999,9 @@ Theorem map_merge_aux_has_key : forall m1 m2 k,
 Proof.
   induction m1 as [|[k1 v1] rest IH]; intros m2 k H.
   - simpl in H. discriminate.
-  - simpl in *. destruct (Nat.eqb k k1) eqn:Ek.
-    + simpl. rewrite Ek. reflexivity.
-    + simpl. rewrite Ek.
+  - cbn in *. destruct (Nat.eqb k k1) eqn:Ek.
+    + cbn. rewrite Ek. reflexivity.
+    + cbn. rewrite Ek.
       apply orb_true_iff in H. destruct H as [H | H].
       * rewrite Ek in H. discriminate.
       * apply IH. exact H.

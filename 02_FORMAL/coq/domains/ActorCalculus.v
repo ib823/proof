@@ -773,8 +773,9 @@ Proof.
   intros caps H. unfold can_spawn, has_cap_kind.
   induction caps as [| c rest IH].
   - reflexivity.
-  - simpl. assert (Hg : acap_granted c = false) by (apply H; left; reflexivity).
-    rewrite Hg. simpl. apply IH.
+  - destruct c as [k0 g0]. simpl.
+    assert (Hg : acap_granted (mkActorCap k0 g0) = false) by (apply H; left; reflexivity).
+    simpl in Hg. rewrite Hg. simpl. apply IH.
     intros c0 Hin. apply H. right. exact Hin.
 Qed.
 
