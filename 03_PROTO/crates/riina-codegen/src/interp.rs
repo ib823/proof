@@ -55,6 +55,15 @@ use riina_types::{BinOp, Effect, Expr, SecurityLevel};
 use std::collections::HashMap;
 use std::rc::Rc;
 
+fn declassify_proof_matches(secret_expr: &Expr, proof_expr: &Expr) -> bool {
+    match (secret_expr, proof_expr) {
+        (Expr::Classify(secret), Expr::Prove(inner_proof)) => {
+            matches!(inner_proof.as_ref(), Expr::Classify(proof_secret) if **secret == **proof_secret)
+        }
+        _ => false,
+    }
+}
+
 /// Mutable store (heap)
 #[derive(Debug, Clone, Default)]
 pub struct Store {
@@ -104,7 +113,10 @@ impl Store {
             *v = value;
             Ok(())
         } else {
-            Err(Error::InvalidReference(format!("location {} not found", loc)))
+            Err(Error::InvalidReference(format!(
+                "location {} not found",
+                loc
+            )))
         }
     }
 }
@@ -164,6 +176,8 @@ pub struct Interpreter {
     caps: Capabilities,
     /// Current security context
     security_context: SecurityLevel,
+    /// Next actor ID counter (JALINAN Phase 6)
+    next_actor_id: u64,
 }
 
 impl Interpreter {
@@ -175,6 +189,7 @@ impl Interpreter {
             handlers: Vec::new(),
             caps: Capabilities::new(),
             security_context: SecurityLevel::Public,
+            next_actor_id: 0,
         }
     }
 
@@ -228,25 +243,22 @@ impl Interpreter {
             // ═══════════════════════════════════════════════════════════════
 
             // E_Var: lookup ρ x = Some v -> eval ρ σ (EVar x) σ v
-            Expr::Var(name) => {
-                env.lookup(name)
-                    .cloned()
-                    .ok_or_else(|| Error::UnboundVariable(name.clone()))
-            }
+            Expr::Var(name) => env
+                .lookup(name)
+                .cloned()
+                .ok_or_else(|| Error::UnboundVariable(name.clone())),
 
             // ═══════════════════════════════════════════════════════════════
             // FUNCTIONS (E_Lam, E_App)
             // ═══════════════════════════════════════════════════════════════
 
             // E_Lam: eval ρ σ (ELam x T e) σ (VClosure ρ x T e)
-            Expr::Lam(param, param_ty, body) => {
-                Ok(Value::Closure(Closure {
-                    env: env.clone(),
-                    param: param.clone(),
-                    param_ty: param_ty.clone(),
-                    body: Rc::new((**body).clone()),
-                }))
-            }
+            Expr::Lam(param, param_ty, body) => Ok(Value::Closure(Closure {
+                env: env.clone(),
+                param: param.clone(),
+                param_ty: param_ty.clone(),
+                body: Rc::new((**body).clone()),
+            })),
 
             // E_App: Application rule
             Expr::App(func_expr, arg_expr) => {
@@ -262,10 +274,18 @@ impl Interpreter {
                     }
                     Value::Builtin(ref name) if crate::builtins::is_higher_order_builtin(name) => {
                         self.eval_higher_order_builtin(name, arg_val)?
-                            .ok_or_else(|| Error::InvalidOperation(format!("higher-order builtin {} failed", name)))
+                            .ok_or_else(|| {
+                                Error::InvalidOperation(format!(
+                                    "higher-order builtin {} failed",
+                                    name
+                                ))
+                            })
                     }
-                    Value::Builtin(name) => {
-                        crate::builtins::apply_builtin(&name, arg_val)
+                    Value::Builtin(name) => crate::builtins::apply_builtin(&name, arg_val),
+                    // Partially-applied builtin: form pair and complete the call
+                    Value::BuiltinPartial(name, first_arg) => {
+                        let pair = Value::Pair(first_arg, Box::new(arg_val));
+                        crate::builtins::apply_builtin(&name, pair)
                     }
                     _ => Err(Error::TypeMismatch {
                         expected: "function".to_string(),
@@ -368,7 +388,7 @@ impl Interpreter {
 
             // E_Let: eval ρ σ e1 σ' v1 -> eval (extend ρ x v1) σ' e2 σ'' v2
             //        -> eval ρ σ (ELet x e1 e2) σ'' v2
-            Expr::Let(name, binding, body) => {
+            Expr::Let(name, _, binding, body) => {
                 let bind_val = self.eval_with_env(env, binding)?;
                 let new_env = env.extend(name.clone(), bind_val);
                 self.eval_with_env(&new_env, body)
@@ -428,10 +448,9 @@ impl Interpreter {
                 // Look for a handler
                 if let Some(handler_ctx) = self.handlers.pop() {
                     // Run handler with payload
-                    let handler_env = handler_ctx.handler_env.extend(
-                        handler_ctx.handler_var.clone(),
-                        payload_val,
-                    );
+                    let handler_env = handler_ctx
+                        .handler_env
+                        .extend(handler_ctx.handler_var.clone(), payload_val);
                     let result = self.eval_with_env(&handler_env, &handler_ctx.handler)?;
                     self.handlers.push(handler_ctx);
                     Ok(result)
@@ -489,8 +508,7 @@ impl Interpreter {
                         let (val, level) = self.store.read_with_level(cell.location)?;
 
                         // Security check: don't leak high data to low context
-                        if !level.leq(self.security_context)
-                        {
+                        if !level.leq(self.security_context) {
                             return Err(Error::SecurityViolation {
                                 context_level: self.security_context,
                                 data_level: level,
@@ -550,8 +568,11 @@ impl Interpreter {
                 let secret_val = self.eval_with_env(env, secret)?;
                 let _proof_val = self.eval_with_env(env, proof)?;
 
-                // TODO: Verify proof is valid witness for declassification
-                // For now, we trust the proof exists
+                if !declassify_proof_matches(secret, proof) {
+                    return Err(Error::InvalidOperation(
+                        "invalid declassification proof".to_string(),
+                    ));
+                }
 
                 match secret_val {
                     Value::Secret(v) => Ok(*v),
@@ -595,29 +616,112 @@ impl Interpreter {
             // ═══════════════════════════════════════════════════════════════
             // FFI CALLS — cannot be interpreted
             // ═══════════════════════════════════════════════════════════════
-            Expr::FFICall { name, .. } => {
-                Err(Error::InvalidOperation(format!(
-                    "FFI call to '{}' cannot be interpreted; use `riinac build` to compile", name
-                )))
-            }
+            Expr::FFICall { name, .. } => Err(Error::InvalidOperation(format!(
+                "FFI call to '{}' cannot be interpreted; use `riinac build` to compile",
+                name
+            ))),
 
             // ═══════════════════════════════════════════════════════════════
             // BINARY OPERATIONS (Expr::BinOp)
             // ═══════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════
+            // JALINAN Phase 6 (Actor, Choreography, CRDT, Content-Addressed)
+            // ═══════════════════════════════════════════════════════════════
+            Expr::ActorDecl { name: _, init_state, handler, .. } => {
+                // Evaluate init state and handler to verify they're valid
+                let _init = self.eval_with_env(env, init_state)?;
+                let _handler = self.eval_with_env(env, handler)?;
+                Ok(Value::Unit)
+            }
+
+            Expr::ChoreographyBlock { .. } => {
+                // Protocol declaration — no runtime behavior
+                Ok(Value::Unit)
+            }
+
+            Expr::Spawn(actor_expr, state_expr) => {
+                // Evaluate subexpressions for side effects
+                let _actor = self.eval_with_env(env, actor_expr)?;
+                let _state = self.eval_with_env(env, state_expr)?;
+                self.next_actor_id += 1;
+                Ok(Value::ActorRef(self.next_actor_id))
+            }
+
+            Expr::ActorSend(actor_expr, msg_expr) => {
+                let _actor = self.eval_with_env(env, actor_expr)?;
+                let _msg = self.eval_with_env(env, msg_expr)?;
+                // Single-threaded: message send is a no-op
+                Ok(Value::Unit)
+            }
+
+            Expr::ActorRecv(actor_expr) => {
+                let _actor = self.eval_with_env(env, actor_expr)?;
+                // Single-threaded: no mailbox, return unit
+                Ok(Value::Unit)
+            }
+
+            Expr::CRDTMerge(a_expr, b_expr) => {
+                let a = self.eval_with_env(env, a_expr)?;
+                let b = self.eval_with_env(env, b_expr)?;
+                // GCounter merge: pointwise max for integers
+                match (&a, &b) {
+                    (Value::Int(x), Value::Int(y)) => Ok(Value::Int(std::cmp::max(*x, *y))),
+                    _ => Ok(a),
+                }
+            }
+
+            Expr::ContentHash(val_expr) => {
+                let val = self.eval_with_env(env, val_expr)?;
+                // DJB2 hash
+                let mut hash: u64 = 5381;
+                match &val {
+                    Value::Int(n) => {
+                        let mut n = *n;
+                        for _ in 0..8 {
+                            hash = hash.wrapping_mul(33).wrapping_add(n & 0xff);
+                            n >>= 8;
+                        }
+                    }
+                    Value::String(s) => {
+                        for b in s.bytes() {
+                            hash = hash.wrapping_mul(33).wrapping_add(u64::from(b));
+                        }
+                    }
+                    Value::Bool(b) => {
+                        hash = hash.wrapping_mul(33).wrapping_add(if *b { 1 } else { 0 });
+                    }
+                    _ => {}
+                }
+                let hex = format!("{hash:016x}");
+                Ok(Value::Hash(hex.into_bytes()))
+            }
+
             Expr::BinOp(op, lhs, rhs) => {
                 let l = self.eval_with_env(env, lhs)?;
                 let r = self.eval_with_env(env, rhs)?;
                 match (op, &l, &r) {
-                    (BinOp::Add, Value::Int(a), Value::Int(b)) => Ok(Value::Int(a.wrapping_add(*b))),
-                    (BinOp::Add, Value::String(a), Value::String(b)) => Ok(Value::String(format!("{a}{b}"))),
-                    (BinOp::Sub, Value::Int(a), Value::Int(b)) => Ok(Value::Int(a.wrapping_sub(*b))),
-                    (BinOp::Mul, Value::Int(a), Value::Int(b)) => Ok(Value::Int(a.wrapping_mul(*b))),
+                    (BinOp::Add, Value::Int(a), Value::Int(b)) => {
+                        Ok(Value::Int(a.wrapping_add(*b)))
+                    }
+                    (BinOp::Add, Value::String(a), Value::String(b)) => {
+                        Ok(Value::String(format!("{a}{b}")))
+                    }
+                    (BinOp::Sub, Value::Int(a), Value::Int(b)) => {
+                        Ok(Value::Int(a.wrapping_sub(*b)))
+                    }
+                    (BinOp::Mul, Value::Int(a), Value::Int(b)) => {
+                        Ok(Value::Int(a.wrapping_mul(*b)))
+                    }
                     (BinOp::Div, Value::Int(a), Value::Int(b)) => {
-                        if *b == 0 { return Err(Error::DivisionByZero); }
+                        if *b == 0 {
+                            return Err(Error::DivisionByZero);
+                        }
                         Ok(Value::Int(a / b))
                     }
                     (BinOp::Mod, Value::Int(a), Value::Int(b)) => {
-                        if *b == 0 { return Err(Error::DivisionByZero); }
+                        if *b == 0 {
+                            return Err(Error::DivisionByZero);
+                        }
                         Ok(Value::Int(a % b))
                     }
                     (BinOp::Eq, Value::Int(a), Value::Int(b)) => Ok(Value::Bool(a == b)),
@@ -653,19 +757,23 @@ impl Interpreter {
                     Value::Pair(list, func) => {
                         let items = match *list {
                             Value::List(items) => items,
-                            _ => return Err(Error::TypeMismatch {
-                                expected: "list".to_string(),
-                                found: format!("{:?}", list),
-                                context: "senarai_peta".to_string(),
-                            }),
+                            _ => {
+                                return Err(Error::TypeMismatch {
+                                    expected: "list".to_string(),
+                                    found: format!("{:?}", list),
+                                    context: "senarai_peta".to_string(),
+                                })
+                            }
                         };
                         let closure = match *func {
                             Value::Closure(c) => c,
-                            _ => return Err(Error::TypeMismatch {
-                                expected: "closure".to_string(),
-                                found: format!("{:?}", func),
-                                context: "senarai_peta".to_string(),
-                            }),
+                            _ => {
+                                return Err(Error::TypeMismatch {
+                                    expected: "closure".to_string(),
+                                    found: format!("{:?}", func),
+                                    context: "senarai_peta".to_string(),
+                                })
+                            }
                         };
                         let mut result = Vec::with_capacity(items.len());
                         for item in items {
@@ -688,19 +796,23 @@ impl Interpreter {
                     Value::Pair(list, func) => {
                         let items = match *list {
                             Value::List(items) => items,
-                            _ => return Err(Error::TypeMismatch {
-                                expected: "list".to_string(),
-                                found: format!("{:?}", list),
-                                context: "senarai_tapis".to_string(),
-                            }),
+                            _ => {
+                                return Err(Error::TypeMismatch {
+                                    expected: "list".to_string(),
+                                    found: format!("{:?}", list),
+                                    context: "senarai_tapis".to_string(),
+                                })
+                            }
                         };
                         let closure = match *func {
                             Value::Closure(c) => c,
-                            _ => return Err(Error::TypeMismatch {
-                                expected: "closure".to_string(),
-                                found: format!("{:?}", func),
-                                context: "senarai_tapis".to_string(),
-                            }),
+                            _ => {
+                                return Err(Error::TypeMismatch {
+                                    expected: "closure".to_string(),
+                                    found: format!("{:?}", func),
+                                    context: "senarai_tapis".to_string(),
+                                })
+                            }
                         };
                         let mut result = Vec::new();
                         for item in items {
@@ -725,21 +837,25 @@ impl Interpreter {
                     Value::Pair(list, init_and_func) => {
                         let items = match *list {
                             Value::List(items) => items,
-                            _ => return Err(Error::TypeMismatch {
-                                expected: "list".to_string(),
-                                found: format!("{:?}", list),
-                                context: "senarai_lipat".to_string(),
-                            }),
+                            _ => {
+                                return Err(Error::TypeMismatch {
+                                    expected: "list".to_string(),
+                                    found: format!("{:?}", list),
+                                    context: "senarai_lipat".to_string(),
+                                })
+                            }
                         };
                         match *init_and_func {
                             Value::Pair(init, func) => {
                                 let closure = match *func {
                                     Value::Closure(c) => c,
-                                    _ => return Err(Error::TypeMismatch {
-                                        expected: "closure".to_string(),
-                                        found: format!("{:?}", func),
-                                        context: "senarai_lipat".to_string(),
-                                    }),
+                                    _ => {
+                                        return Err(Error::TypeMismatch {
+                                            expected: "closure".to_string(),
+                                            found: format!("{:?}", func),
+                                            context: "senarai_lipat".to_string(),
+                                        })
+                                    }
                                 };
                                 let mut acc = *init;
                                 for item in items {
@@ -884,7 +1000,10 @@ mod tests {
         let pair = Expr::Pair(Box::new(Expr::Int(1)), Box::new(Expr::Int(2)));
         assert_eq!(
             interp.eval(&pair),
-            Ok(Value::Pair(Box::new(Value::Int(1)), Box::new(Value::Int(2))))
+            Ok(Value::Pair(
+                Box::new(Value::Int(1)),
+                Box::new(Value::Int(2))
+            ))
         );
     }
 
@@ -1008,6 +1127,7 @@ mod tests {
         // let x = 42 in x
         let let_expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(42)),
             Box::new(Expr::Var("x".to_string())),
         );
@@ -1020,16 +1140,20 @@ mod tests {
         // let x = 1 in let y = 2 in (x, y)
         let inner_let = Expr::Let(
             "y".to_string(),
+            None,
             Box::new(Expr::Int(2)),
             Box::new(Expr::Pair(
                 Box::new(Expr::Var("x".to_string())),
                 Box::new(Expr::Var("y".to_string())),
             )),
         );
-        let outer_let = Expr::Let("x".to_string(), Box::new(Expr::Int(1)), Box::new(inner_let));
+        let outer_let = Expr::Let("x".to_string(), None, Box::new(Expr::Int(1)), Box::new(inner_let));
         assert_eq!(
             interp.eval(&outer_let),
-            Ok(Value::Pair(Box::new(Value::Int(1)), Box::new(Value::Int(2))))
+            Ok(Value::Pair(
+                Box::new(Value::Int(1)),
+                Box::new(Value::Int(2))
+            ))
         );
     }
 
@@ -1052,6 +1176,7 @@ mod tests {
         // let r = ref 42 in !r
         let let_expr = Expr::Let(
             "r".to_string(),
+            None,
             Box::new(Expr::Ref(Box::new(Expr::Int(42)), SecurityLevel::Public)),
             Box::new(Expr::Deref(Box::new(Expr::Var("r".to_string())))),
         );
@@ -1064,6 +1189,7 @@ mod tests {
         // let r = ref 1 in (r := 2; !r)
         let inner = Expr::Let(
             "_".to_string(),
+            None,
             Box::new(Expr::Assign(
                 Box::new(Expr::Var("r".to_string())),
                 Box::new(Expr::Int(2)),
@@ -1072,6 +1198,7 @@ mod tests {
         );
         let let_expr = Expr::Let(
             "r".to_string(),
+            None,
             Box::new(Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Public)),
             Box::new(inner),
         );
@@ -1095,11 +1222,25 @@ mod tests {
     #[test]
     fn test_eval_declassify() {
         let mut interp = Interpreter::new();
-        // declassify (classify 42) with (prove ())
+        // declassify (classify 42) with (prove (classify 42))
+        let classified = Expr::Classify(Box::new(Expr::Int(42)));
+        let proof = Expr::Prove(Box::new(Expr::Classify(Box::new(Expr::Int(42)))));
+        let declassify = Expr::Declassify(Box::new(classified), Box::new(proof));
+        assert_eq!(interp.eval(&declassify), Ok(Value::Int(42)));
+    }
+
+    #[test]
+    fn test_eval_declassify_rejects_invalid_proof() {
+        let mut interp = Interpreter::new();
         let classified = Expr::Classify(Box::new(Expr::Int(42)));
         let proof = Expr::Prove(Box::new(Expr::Unit));
         let declassify = Expr::Declassify(Box::new(classified), Box::new(proof));
-        assert_eq!(interp.eval(&declassify), Ok(Value::Int(42)));
+        assert_eq!(
+            interp.eval(&declassify),
+            Err(Error::InvalidOperation(
+                "invalid declassification proof".to_string(),
+            ))
+        );
     }
 
     #[test]
@@ -1131,7 +1272,10 @@ mod tests {
         // require Network in 42 (without grant)
         let require = Expr::Require(Effect::Network, Box::new(Expr::Int(42)));
         let result = interp.eval(&require);
-        assert!(matches!(result, Err(Error::MissingCapability(Effect::Network))));
+        assert!(matches!(
+            result,
+            Err(Error::MissingCapability(Effect::Network))
+        ));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -1145,9 +1289,11 @@ mod tests {
         // let x = 5 in let y = x in (x, y)
         let expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(5)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Var("x".to_string())),
                 Box::new(Expr::Pair(
                     Box::new(Expr::Var("x".to_string())),
@@ -1157,7 +1303,10 @@ mod tests {
         );
         assert_eq!(
             interp.eval(&expr),
-            Ok(Value::Pair(Box::new(Value::Int(5)), Box::new(Value::Int(5))))
+            Ok(Value::Pair(
+                Box::new(Value::Int(5)),
+                Box::new(Value::Int(5))
+            ))
         );
     }
 
@@ -1228,32 +1377,11 @@ mod tests {
     #[test]
     fn test_eval_subtraction() {
         let mut interp = Interpreter::new();
-        let expr = Expr::Let(
-            "x".to_string(),
-            Box::new(Expr::Int(10)),
-            Box::new(Expr::Let(
-                "y".to_string(),
-                Box::new(Expr::Int(3)),
-                Box::new(Expr::App(
-                    Box::new(Expr::App(
-                        Box::new(Expr::Var("__sub".to_string())),
-                        Box::new(Expr::Var("x".to_string())),
-                    )),
-                    Box::new(Expr::Var("y".to_string())),
-                )),
-            )),
-        );
         // We can't directly test subtraction without the built-in,
         // so let's test nested pairs instead
         let pair_expr = Expr::Pair(
-            Box::new(Expr::Pair(
-                Box::new(Expr::Int(1)),
-                Box::new(Expr::Int(2)),
-            )),
-            Box::new(Expr::Pair(
-                Box::new(Expr::Int(3)),
-                Box::new(Expr::Int(4)),
-            )),
+            Box::new(Expr::Pair(Box::new(Expr::Int(1)), Box::new(Expr::Int(2)))),
+            Box::new(Expr::Pair(Box::new(Expr::Int(3)), Box::new(Expr::Int(4)))),
         );
         let result = interp.eval(&pair_expr).unwrap();
         assert!(result.is_pair());
@@ -1265,12 +1393,15 @@ mod tests {
         // let x = 1 in let y = 2 in let z = 3 in x
         let expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(1)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Int(2)),
                 Box::new(Expr::Let(
                     "z".to_string(),
+                    None,
                     Box::new(Expr::Int(3)),
                     Box::new(Expr::Var("x".to_string())),
                 )),
@@ -1285,12 +1416,15 @@ mod tests {
         // let x = 1 in let y = 2 in let z = 3 in z (innermost)
         let expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(1)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Int(2)),
                 Box::new(Expr::Let(
                     "z".to_string(),
+                    None,
                     Box::new(Expr::Int(3)),
                     Box::new(Expr::Var("z".to_string())),
                 )),
@@ -1394,6 +1528,7 @@ mod tests {
         // let a = 10 in (λx. a) 0 = 10
         let expr = Expr::Let(
             "a".to_string(),
+            None,
             Box::new(Expr::Int(10)),
             Box::new(Expr::App(
                 Box::new(Expr::Lam(
@@ -1417,14 +1552,22 @@ mod tests {
         // let rec f : Int -> Int = λn. if n <= 0 then 1 else n * f(n-1) in f(5)
         let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
         let body = Expr::If(
-            Box::new(Expr::BinOp(BinOp::Le, Box::new(Expr::Var("n".into())), Box::new(Expr::Int(0)))),
+            Box::new(Expr::BinOp(
+                BinOp::Le,
+                Box::new(Expr::Var("n".into())),
+                Box::new(Expr::Int(0)),
+            )),
             Box::new(Expr::Int(1)),
             Box::new(Expr::BinOp(
                 BinOp::Mul,
                 Box::new(Expr::Var("n".into())),
                 Box::new(Expr::App(
                     Box::new(Expr::Var("f".into())),
-                    Box::new(Expr::BinOp(BinOp::Sub, Box::new(Expr::Var("n".into())), Box::new(Expr::Int(1)))),
+                    Box::new(Expr::BinOp(
+                        BinOp::Sub,
+                        Box::new(Expr::Var("n".into())),
+                        Box::new(Expr::Int(1)),
+                    )),
                 )),
             )),
         );
@@ -1433,7 +1576,10 @@ mod tests {
             "f".into(),
             fn_ty,
             Box::new(lam),
-            Box::new(Expr::App(Box::new(Expr::Var("f".into())), Box::new(Expr::Int(5)))),
+            Box::new(Expr::App(
+                Box::new(Expr::Var("f".into())),
+                Box::new(Expr::Int(5)),
+            )),
         );
         assert_eq!(interp.eval(&letrec), Ok(Value::Int(120)));
     }
@@ -1444,11 +1590,19 @@ mod tests {
         // let rec count : Int -> Int = λn. if n <= 0 then 0 else count(n-1) in count(10)
         let fn_ty = Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure);
         let body = Expr::If(
-            Box::new(Expr::BinOp(BinOp::Le, Box::new(Expr::Var("n".into())), Box::new(Expr::Int(0)))),
+            Box::new(Expr::BinOp(
+                BinOp::Le,
+                Box::new(Expr::Var("n".into())),
+                Box::new(Expr::Int(0)),
+            )),
             Box::new(Expr::Int(0)),
             Box::new(Expr::App(
                 Box::new(Expr::Var("count".into())),
-                Box::new(Expr::BinOp(BinOp::Sub, Box::new(Expr::Var("n".into())), Box::new(Expr::Int(1)))),
+                Box::new(Expr::BinOp(
+                    BinOp::Sub,
+                    Box::new(Expr::Var("n".into())),
+                    Box::new(Expr::Int(1)),
+                )),
             )),
         );
         let lam = Expr::Lam("n".into(), Ty::Int, Box::new(body));
@@ -1456,8 +1610,243 @@ mod tests {
             "count".into(),
             fn_ty,
             Box::new(lam),
-            Box::new(Expr::App(Box::new(Expr::Var("count".into())), Box::new(Expr::Int(10)))),
+            Box::new(Expr::App(
+                Box::new(Expr::Var("count".into())),
+                Box::new(Expr::Int(10)),
+            )),
         );
         assert_eq!(interp.eval(&letrec), Ok(Value::Int(0)));
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // BUILTIN PARTIAL APPLICATION TESTS (curried pair-builtins)
+    // ═══════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_tegaskan_sama_curried() {
+        // tegaskan_sama(42, 42) as curried: App(App(tegaskan_sama, 42), 42)
+        let mut interp = Interpreter::new();
+        let expr = Expr::App(
+            Box::new(Expr::App(
+                Box::new(Expr::Var("tegaskan_sama".into())),
+                Box::new(Expr::Int(42)),
+            )),
+            Box::new(Expr::Int(42)),
+        );
+        assert_eq!(interp.eval_with_builtins(&expr), Ok(Value::Unit));
+    }
+
+    #[test]
+    fn test_tegaskan_sama_curried_fail() {
+        // tegaskan_sama(1, 2) should fail
+        let mut interp = Interpreter::new();
+        let expr = Expr::App(
+            Box::new(Expr::App(
+                Box::new(Expr::Var("tegaskan_sama".into())),
+                Box::new(Expr::Int(1)),
+            )),
+            Box::new(Expr::Int(2)),
+        );
+        assert!(interp.eval_with_builtins(&expr).is_err());
+    }
+
+    #[test]
+    fn test_tegaskan_beza_curried() {
+        // tegaskan_beza(1, 2) as curried: should pass (1 != 2)
+        let mut interp = Interpreter::new();
+        let expr = Expr::App(
+            Box::new(Expr::App(
+                Box::new(Expr::Var("tegaskan_beza".into())),
+                Box::new(Expr::Int(1)),
+            )),
+            Box::new(Expr::Int(2)),
+        );
+        assert_eq!(interp.eval_with_builtins(&expr), Ok(Value::Unit));
+    }
+
+    #[test]
+    fn test_gabung_teks_curried() {
+        // gabung_teks("hello", " world") as curried
+        let mut interp = Interpreter::new();
+        let expr = Expr::App(
+            Box::new(Expr::App(
+                Box::new(Expr::Var("gabung_teks".into())),
+                Box::new(Expr::String("hello".into())),
+            )),
+            Box::new(Expr::String(" world".into())),
+        );
+        assert_eq!(
+            interp.eval_with_builtins(&expr),
+            Ok(Value::String("hello world".into()))
+        );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // JALINAN Phase 6 TESTS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_eval_actor_decl() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ActorDecl {
+            name: "Counter".into(),
+            state_ty: Ty::Int,
+            message_ty: Ty::Int,
+            init_state: Box::new(Expr::Int(0)),
+            handler: Box::new(Expr::Lam(
+                "msg".into(),
+                Ty::Int,
+                Box::new(Expr::Var("msg".into())),
+            )),
+        };
+        assert_eq!(interp.eval(&expr), Ok(Value::Unit));
+    }
+
+    #[test]
+    fn test_eval_choreography_block() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ChoreographyBlock {
+            name: "TwoParty".into(),
+            roles: vec!["Alice".into(), "Bob".into()],
+            protocol: riina_types::SessionType::End,
+        };
+        assert_eq!(interp.eval(&expr), Ok(Value::Unit));
+    }
+
+    #[test]
+    fn test_eval_spawn() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::Spawn(
+            Box::new(Expr::Unit),
+            Box::new(Expr::Int(0)),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::ActorRef(1)));
+    }
+
+    #[test]
+    fn test_eval_spawn_unique_ids() {
+        let mut interp = Interpreter::new();
+        let spawn = Expr::Spawn(
+            Box::new(Expr::Unit),
+            Box::new(Expr::Int(0)),
+        );
+        let r1 = interp.eval(&spawn).unwrap();
+        let r2 = interp.eval(&spawn).unwrap();
+        let r3 = interp.eval(&spawn).unwrap();
+        assert_eq!(r1, Value::ActorRef(1));
+        assert_eq!(r2, Value::ActorRef(2));
+        assert_eq!(r3, Value::ActorRef(3));
+    }
+
+    #[test]
+    fn test_eval_actor_send() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ActorSend(
+            Box::new(Expr::Int(1)), // actor ref
+            Box::new(Expr::Int(42)), // message
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::Unit));
+    }
+
+    #[test]
+    fn test_eval_actor_recv() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ActorRecv(Box::new(Expr::Int(1)));
+        assert_eq!(interp.eval(&expr), Ok(Value::Unit));
+    }
+
+    #[test]
+    fn test_eval_crdt_merge_int() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Int(5)),
+            Box::new(Expr::Int(10)),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::Int(10)));
+    }
+
+    #[test]
+    fn test_eval_crdt_merge_int_reversed() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Int(10)),
+            Box::new(Expr::Int(5)),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::Int(10)));
+    }
+
+    #[test]
+    fn test_eval_crdt_merge_same() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Int(7)),
+            Box::new(Expr::Int(7)),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::Int(7)));
+    }
+
+    #[test]
+    fn test_eval_crdt_merge_zero() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Int(0)),
+            Box::new(Expr::Int(0)),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::Int(0)));
+    }
+
+    #[test]
+    fn test_eval_content_hash() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ContentHash(Box::new(Expr::Int(42)));
+        let result = interp.eval(&expr).unwrap();
+        assert!(result.is_hash());
+    }
+
+    #[test]
+    fn test_eval_content_hash_deterministic() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ContentHash(Box::new(Expr::Int(42)));
+        let r1 = interp.eval(&expr).unwrap();
+        let r2 = interp.eval(&expr).unwrap();
+        assert_eq!(r1, r2);
+    }
+
+    #[test]
+    fn test_eval_content_hash_different() {
+        let mut interp = Interpreter::new();
+        let e1 = Expr::ContentHash(Box::new(Expr::Int(1)));
+        let e2 = Expr::ContentHash(Box::new(Expr::Int(2)));
+        let r1 = interp.eval(&e1).unwrap();
+        let r2 = interp.eval(&e2).unwrap();
+        assert_ne!(r1, r2);
+    }
+
+    #[test]
+    fn test_eval_content_hash_string() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ContentHash(Box::new(Expr::String("hello".into())));
+        let result = interp.eval(&expr).unwrap();
+        assert!(result.is_hash());
+        // Hash of same string should be deterministic
+        let r2 = interp.eval(&expr).unwrap();
+        assert_eq!(result, r2);
+    }
+
+    #[test]
+    fn test_eval_actor_send_recv_roundtrip() {
+        let mut interp = Interpreter::new();
+        // Spawn an actor
+        let spawn = Expr::Spawn(Box::new(Expr::Unit), Box::new(Expr::Int(0)));
+        let _ref_val = interp.eval(&spawn).unwrap();
+        // Send a message
+        let send = Expr::ActorSend(
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(99)),
+        );
+        assert_eq!(interp.eval(&send), Ok(Value::Unit));
+        // Receive (single-threaded stub returns unit)
+        let recv = Expr::ActorRecv(Box::new(Expr::Int(1)));
+        assert_eq!(interp.eval(&recv), Ok(Value::Unit));
     }
 }

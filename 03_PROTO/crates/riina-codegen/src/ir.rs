@@ -480,6 +480,66 @@ pub enum Instruction {
         name: String,
         args: Vec<VarId>,
     },
+
+    // ═══════════════════════════════════════════════════════════════════
+    // JALINAN (actors, choreography, CRDTs, content-addressed)
+    // ═══════════════════════════════════════════════════════════════════
+
+    /// Declare an actor type with initial state and message handler
+    ///
+    /// ```text
+    /// v = actor_decl "Name" init_state handler
+    /// ```
+    ActorDecl {
+        name: String,
+        init_state: VarId,
+        handler: VarId,
+    },
+
+    /// Declare a choreography protocol
+    ///
+    /// ```text
+    /// v = choreography_decl "Name" ["RoleA", "RoleB"]
+    /// ```
+    ChoreographyDecl {
+        name: String,
+        roles: Vec<String>,
+    },
+
+    /// Spawn an actor instance
+    ///
+    /// ```text
+    /// v = actor_spawn actor_decl init_state
+    /// ```
+    ActorSpawn(VarId, VarId),
+
+    /// Send a message to an actor
+    ///
+    /// ```text
+    /// v = actor_send actor_ref message
+    /// ```
+    ActorSend(VarId, VarId),
+
+    /// Receive a message from an actor
+    ///
+    /// ```text
+    /// v = actor_recv actor_ref
+    /// ```
+    ActorRecv(VarId),
+
+    /// Merge two CRDT states
+    ///
+    /// ```text
+    /// v = crdt_merge crdt1 crdt2
+    /// ```
+    CRDTMerge(VarId, VarId),
+
+    /// Compute content hash of a value
+    ///
+    /// ```text
+    /// v = content_hash value
+    /// ```
+    ContentHash(VarId),
 }
 
 impl std::fmt::Display for Instruction {
@@ -547,6 +607,24 @@ impl std::fmt::Display for Instruction {
                 }
                 Ok(())
             }
+            Self::ActorDecl { name, init_state, handler } => {
+                write!(f, "actor_decl \"{name}\" {init_state} {handler}")
+            }
+            Self::ChoreographyDecl { name, roles } => {
+                write!(f, "choreography_decl \"{name}\" [")?;
+                for (i, r) in roles.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "\"{r}\"")?;
+                }
+                write!(f, "]")
+            }
+            Self::ActorSpawn(decl, state) => write!(f, "actor_spawn {decl} {state}"),
+            Self::ActorSend(actor, msg) => write!(f, "actor_send {actor} {msg}"),
+            Self::ActorRecv(actor) => write!(f, "actor_recv {actor}"),
+            Self::CRDTMerge(a, b) => write!(f, "crdt_merge {a} {b}"),
+            Self::ContentHash(v) => write!(f, "content_hash {v}"),
         }
     }
 }

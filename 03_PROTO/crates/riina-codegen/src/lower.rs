@@ -175,7 +175,7 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             fv.extend(free_vars(e2));
             fv
         }
-        Expr::Let(name, e1, e2) => {
+        Expr::Let(name, _, e1, e2) => {
             let mut fv = free_vars(e1);
             let mut fv2 = free_vars(e2);
             fv2.remove(name);
@@ -224,6 +224,18 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             }
             fv
         }
+        Expr::ActorDecl { init_state, handler, .. } => {
+            let mut fv = free_vars(init_state);
+            fv.extend(free_vars(handler));
+            fv
+        }
+        Expr::ChoreographyBlock { .. } => HashSet::new(),
+        Expr::Spawn(a, b) | Expr::ActorSend(a, b) | Expr::CRDTMerge(a, b) => {
+            let mut fv = free_vars(a);
+            fv.extend(free_vars(b));
+            fv
+        }
+        Expr::ActorRecv(a) | Expr::ContentHash(a) => free_vars(a),
     }
 }
 
@@ -365,7 +377,7 @@ impl Lower {
                 }
             }
             Expr::Assign(_, _) => Ty::Unit,
-            Expr::If(_, t, _) | Expr::Let(_, _, t) | Expr::LetRec(_, _, _, t) | Expr::Case(_, _, t, _, _) => self.infer_type(t),
+            Expr::If(_, t, _) | Expr::Let(_, _, _, t) | Expr::LetRec(_, _, _, t) | Expr::Case(_, _, t, _, _) => self.infer_type(t),
             Expr::App(e1, _) => {
                 if let Ty::Fn(_, ret, _) = self.infer_type(e1) {
                     *ret
@@ -384,6 +396,13 @@ impl Lower {
                 | BinOp::And | BinOp::Or => Ty::Bool,
             },
             Expr::FFICall { ret_ty, .. } => ret_ty.clone(),
+            Expr::ActorDecl { .. } => Ty::Unit,
+            Expr::ChoreographyBlock { .. } => Ty::Unit,
+            Expr::Spawn(_, _) => Ty::Int, // Actor ref as integer ID
+            Expr::ActorSend(_, _) => Ty::Unit,
+            Expr::ActorRecv(_) => Ty::Int, // Message as generic value
+            Expr::CRDTMerge(_, _) => Ty::Int, // Merged state
+            Expr::ContentHash(_) => Ty::String, // Hash as hex string
         }
     }
 
@@ -408,7 +427,7 @@ impl Lower {
                     .join(self.infer_effect(t))
                     .join(self.infer_effect(f))
             }
-            Expr::Let(_, e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
+            Expr::Let(_, _, e1, e2) => self.infer_effect(e1).join(self.infer_effect(e2)),
             Expr::App(e1, e2) => {
                 let base = self.infer_effect(e1).join(self.infer_effect(e2));
                 if let Ty::Fn(_, _, eff) = self.infer_type(e1) {
@@ -438,6 +457,19 @@ impl Lower {
                 }
                 eff
             }
+            Expr::ActorDecl { init_state, handler, .. } => {
+                self.infer_effect(init_state).join(self.infer_effect(handler))
+            }
+            Expr::ChoreographyBlock { .. } => Effect::Pure,
+            Expr::Spawn(a, b) => {
+                self.infer_effect(a).join(self.infer_effect(b)).join(Effect::Alloc)
+            }
+            Expr::ActorSend(a, b) => {
+                self.infer_effect(a).join(self.infer_effect(b)).join(Effect::Write)
+            }
+            Expr::ActorRecv(a) => self.infer_effect(a).join(Effect::Read),
+            Expr::CRDTMerge(a, b) => self.infer_effect(a).join(self.infer_effect(b)),
+            Expr::ContentHash(a) => self.infer_effect(a),
         }
     }
 
@@ -775,25 +807,17 @@ impl Lower {
                     }
                 }
 
-                // Infer the component types from the scrutinee's sum type
-                let scrut_ty = self.infer_type(scrutinee);
-                let (left_ty, right_ty) = if let Ty::Sum(l, r) = scrut_ty {
-                    (*l, *r)
-                } else {
-                    (Ty::Unit, Ty::Unit)
-                };
-
                 // Left branch (then block)
                 self.current_block = then_block;
                 let left_val = self.emit(
                     Instruction::UnwrapLeft(scrut_var),
-                    left_ty.clone(),
+                    Ty::Unit, // TODO: proper type
                     SecurityLevel::Public,
                     Effect::Pure,
                 );
 
                 let saved_env = self.env.clone();
-                self.env.bind(left_name.clone(), left_val, left_ty, SecurityLevel::Public);
+                self.env.bind(left_name.clone(), left_val, Ty::Unit, SecurityLevel::Public);
                 let left_result = self.lower_expr(left_branch)?;
                 self.env = saved_env;
 
@@ -812,13 +836,13 @@ impl Lower {
                 self.current_block = else_block;
                 let right_val = self.emit(
                     Instruction::UnwrapRight(scrut_var),
-                    right_ty.clone(),
+                    Ty::Unit, // TODO: proper type
                     SecurityLevel::Public,
                     Effect::Pure,
                 );
 
                 let saved_env = self.env.clone();
-                self.env.bind(right_name.clone(), right_val, right_ty, SecurityLevel::Public);
+                self.env.bind(right_name.clone(), right_val, Ty::Unit, SecurityLevel::Public);
                 let right_result = self.lower_expr(right_branch)?;
                 self.env = saved_env;
 
@@ -939,7 +963,7 @@ impl Lower {
                 ))
             }
 
-            Expr::Let(name, binding, body) => {
+            Expr::Let(name, _, binding, body) => {
                 let bind_var = self.lower_expr(binding)?;
                 let bind_ty = self.infer_type(binding);
 
@@ -965,18 +989,43 @@ impl Lower {
                 // placeholder as the self-reference.
                 let bind_var = self.lower_expr(binding)?;
 
-                // Find which capture index corresponds to placeholder
-                // and emit FixClosure to patch it to point to itself.
-                // The placeholder was captured by the lambda's free_vars analysis.
-                self.emit(
-                    Instruction::FixClosure {
-                        closure: bind_var,
-                        capture_index: 0, // placeholder is first free var (sorted)
-                    },
-                    Ty::Unit,
-                    SecurityLevel::Public,
-                    Effect::Pure,
-                );
+                // Only emit FixClosure if the binding actually captured the
+                // placeholder (i.e., the function is genuinely recursive).
+                // Check if the last emitted instruction for bind_var was a
+                // Closure that includes placeholder in its captures.
+                let needs_fix = {
+                    let func = self.program.functions.get(
+                        &self.current_func.unwrap_or(FuncId(0))
+                    );
+                    func.and_then(|f| {
+                        let block = f.blocks.iter().find(|b| b.id == self.current_block)?;
+                        // Find the Closure instruction that produced bind_var
+                        block.instrs.iter().find_map(|ai| {
+                            if ai.result == bind_var {
+                                if let Instruction::Closure { captures, .. } = &ai.instr {
+                                    // Find which capture index holds the placeholder
+                                    captures.iter().position(|v| *v == placeholder)
+                                } else {
+                                    None
+                                }
+                            } else {
+                                None
+                            }
+                        })
+                    })
+                };
+
+                if let Some(capture_index) = needs_fix {
+                    self.emit(
+                        Instruction::FixClosure {
+                            closure: bind_var,
+                            capture_index,
+                        },
+                        Ty::Unit,
+                        SecurityLevel::Public,
+                        Effect::Pure,
+                    );
+                }
 
                 // For the body, use bind_var as the resolved name
                 self.env.bind(name.clone(), bind_var, bind_ty, SecurityLevel::Public);
@@ -1212,6 +1261,86 @@ impl Lower {
                 ))
             }
 
+            Expr::ActorDecl { name, init_state, handler, .. } => {
+                let init_var = self.lower_expr(init_state)?;
+                let handler_var = self.lower_expr(handler)?;
+                Ok(self.emit(
+                    Instruction::ActorDecl {
+                        name: name.clone(),
+                        init_state: init_var,
+                        handler: handler_var,
+                    },
+                    Ty::Unit,
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                ))
+            }
+
+            Expr::ChoreographyBlock { name, roles, .. } => {
+                Ok(self.emit(
+                    Instruction::ChoreographyDecl {
+                        name: name.clone(),
+                        roles: roles.clone(),
+                    },
+                    Ty::Unit,
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                ))
+            }
+
+            Expr::Spawn(actor_expr, state_expr) => {
+                let actor_var = self.lower_expr(actor_expr)?;
+                let state_var = self.lower_expr(state_expr)?;
+                Ok(self.emit(
+                    Instruction::ActorSpawn(actor_var, state_var),
+                    Ty::Int,
+                    SecurityLevel::Public,
+                    Effect::Alloc,
+                ))
+            }
+
+            Expr::ActorSend(actor_expr, msg_expr) => {
+                let actor_var = self.lower_expr(actor_expr)?;
+                let msg_var = self.lower_expr(msg_expr)?;
+                Ok(self.emit(
+                    Instruction::ActorSend(actor_var, msg_var),
+                    Ty::Unit,
+                    SecurityLevel::Public,
+                    Effect::Write,
+                ))
+            }
+
+            Expr::ActorRecv(actor_expr) => {
+                let actor_var = self.lower_expr(actor_expr)?;
+                Ok(self.emit(
+                    Instruction::ActorRecv(actor_var),
+                    Ty::Int,
+                    SecurityLevel::Public,
+                    Effect::Read,
+                ))
+            }
+
+            Expr::CRDTMerge(a_expr, b_expr) => {
+                let a_var = self.lower_expr(a_expr)?;
+                let b_var = self.lower_expr(b_expr)?;
+                Ok(self.emit(
+                    Instruction::CRDTMerge(a_var, b_var),
+                    Ty::Int,
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                ))
+            }
+
+            Expr::ContentHash(val_expr) => {
+                let val_var = self.lower_expr(val_expr)?;
+                Ok(self.emit(
+                    Instruction::ContentHash(val_var),
+                    Ty::String,
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                ))
+            }
+
             Expr::BinOp(op, lhs, rhs) => {
                 let l = self.lower_expr(lhs)?;
                 let r = self.lower_expr(rhs)?;
@@ -1306,6 +1435,7 @@ mod tests {
         let mut lower = Lower::new();
         let let_expr = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(42)),
             Box::new(Expr::Var("x".to_string())),
         );
@@ -1539,9 +1669,11 @@ mod tests {
         let mut lower = Lower::new();
         let nested = Expr::Let(
             "x".to_string(),
+            None,
             Box::new(Expr::Int(1)),
             Box::new(Expr::Let(
                 "y".to_string(),
+                None,
                 Box::new(Expr::Int(2)),
                 Box::new(Expr::Var("x".to_string())),
             )),
@@ -1567,5 +1699,116 @@ mod tests {
             .filter(|i| matches!(i.instr, Instruction::Pair(_, _)))
             .count();
         assert!(pair_count >= 2);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // JALINAN Phase 6 LOWERING TESTS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_lower_actor_decl() {
+        let mut lower = Lower::new();
+        let expr = Expr::ActorDecl {
+            name: "Counter".into(),
+            state_ty: Ty::Int,
+            message_ty: Ty::Int,
+            init_state: Box::new(Expr::Int(0)),
+            handler: Box::new(Expr::Lam(
+                "msg".into(),
+                Ty::Int,
+                Box::new(Expr::Var("msg".into())),
+            )),
+        };
+        let prog = lower.compile(&expr).unwrap();
+        let main = prog.function(FuncId::MAIN).unwrap();
+        let has_actor_decl = main.blocks[0].instrs.iter().any(|i| {
+            matches!(i.instr, Instruction::ActorDecl { .. })
+        });
+        assert!(has_actor_decl);
+    }
+
+    #[test]
+    fn test_lower_choreography_block() {
+        let mut lower = Lower::new();
+        let expr = Expr::ChoreographyBlock {
+            name: "Protocol".into(),
+            roles: vec!["A".into(), "B".into()],
+            protocol: riina_types::SessionType::End,
+        };
+        let prog = lower.compile(&expr).unwrap();
+        let main = prog.function(FuncId::MAIN).unwrap();
+        let has_choreo = main.blocks[0].instrs.iter().any(|i| {
+            matches!(i.instr, Instruction::ChoreographyDecl { .. })
+        });
+        assert!(has_choreo);
+    }
+
+    #[test]
+    fn test_lower_spawn() {
+        let mut lower = Lower::new();
+        let expr = Expr::Spawn(
+            Box::new(Expr::Unit),
+            Box::new(Expr::Int(0)),
+        );
+        let prog = lower.compile(&expr).unwrap();
+        let main = prog.function(FuncId::MAIN).unwrap();
+        let has_spawn = main.blocks[0].instrs.iter().any(|i| {
+            matches!(i.instr, Instruction::ActorSpawn(_, _))
+        });
+        assert!(has_spawn);
+    }
+
+    #[test]
+    fn test_lower_actor_send() {
+        let mut lower = Lower::new();
+        let expr = Expr::ActorSend(
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(42)),
+        );
+        let prog = lower.compile(&expr).unwrap();
+        let main = prog.function(FuncId::MAIN).unwrap();
+        let has_send = main.blocks[0].instrs.iter().any(|i| {
+            matches!(i.instr, Instruction::ActorSend(_, _))
+        });
+        assert!(has_send);
+    }
+
+    #[test]
+    fn test_lower_actor_recv() {
+        let mut lower = Lower::new();
+        let expr = Expr::ActorRecv(Box::new(Expr::Int(1)));
+        let prog = lower.compile(&expr).unwrap();
+        let main = prog.function(FuncId::MAIN).unwrap();
+        let has_recv = main.blocks[0].instrs.iter().any(|i| {
+            matches!(i.instr, Instruction::ActorRecv(_))
+        });
+        assert!(has_recv);
+    }
+
+    #[test]
+    fn test_lower_crdt_merge() {
+        let mut lower = Lower::new();
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Int(5)),
+            Box::new(Expr::Int(10)),
+        );
+        let prog = lower.compile(&expr).unwrap();
+        let main = prog.function(FuncId::MAIN).unwrap();
+        let has_merge = main.blocks[0].instrs.iter().any(|i| {
+            matches!(i.instr, Instruction::CRDTMerge(_, _))
+        });
+        assert!(has_merge);
+    }
+
+    #[test]
+    fn test_lower_content_hash() {
+        let mut lower = Lower::new();
+        let expr = Expr::ContentHash(Box::new(Expr::Int(42)));
+        let prog = lower.compile(&expr).unwrap();
+        let main = prog.function(FuncId::MAIN).unwrap();
+        let has_hash = main.blocks[0].instrs.iter().any(|i| {
+            matches!(i.instr, Instruction::ContentHash(_))
+        });
+        assert!(has_hash);
     }
 }

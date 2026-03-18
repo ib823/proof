@@ -259,6 +259,25 @@ pub enum Value {
     ///
     /// Not in Coq — Rust-only extension for stdlib.
     Map(BTreeMap<String, Value>),
+
+    // ═══════════════════════════════════════════════════════════════════
+    // JALINAN VALUES (actor system, CRDTs, content-addressed)
+    // ═══════════════════════════════════════════════════════════════════
+
+    /// Actor reference (unique ID)
+    ///
+    /// Not in Coq — Rust-only extension for JALINAN Phase 6.
+    ActorRef(u64),
+
+    /// CRDT state (value + metadata for merge)
+    ///
+    /// Not in Coq — Rust-only extension for JALINAN Phase 6.
+    CRDTState(Box<Value>, Box<Value>),
+
+    /// Content hash (byte vector, typically 32 bytes for SHA-256)
+    ///
+    /// Not in Coq — Rust-only extension for JALINAN Phase 6.
+    Hash(Vec<u8>),
 }
 
 impl Value {
@@ -336,6 +355,24 @@ impl Value {
     #[must_use]
     pub fn map(entries: BTreeMap<String, Value>) -> Self {
         Self::Map(entries)
+    }
+
+    /// Create an actor reference value
+    #[must_use]
+    pub const fn actor_ref(id: u64) -> Self {
+        Self::ActorRef(id)
+    }
+
+    /// Create a CRDT state value
+    #[must_use]
+    pub fn crdt_state(value: Self, metadata: Self) -> Self {
+        Self::CRDTState(Box::new(value), Box::new(metadata))
+    }
+
+    /// Create a hash value
+    #[must_use]
+    pub fn hash(bytes: Vec<u8>) -> Self {
+        Self::Hash(bytes)
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -430,6 +467,24 @@ impl Value {
     #[must_use]
     pub const fn is_map(&self) -> bool {
         matches!(self, Self::Map(_))
+    }
+
+    /// Check if this is an actor reference
+    #[must_use]
+    pub const fn is_actor_ref(&self) -> bool {
+        matches!(self, Self::ActorRef(_))
+    }
+
+    /// Check if this is a CRDT state
+    #[must_use]
+    pub const fn is_crdt_state(&self) -> bool {
+        matches!(self, Self::CRDTState(_, _))
+    }
+
+    /// Check if this is a hash
+    #[must_use]
+    pub const fn is_hash(&self) -> bool {
+        matches!(self, Self::Hash(_))
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -596,6 +651,36 @@ impl Value {
         }
     }
 
+    /// Extract actor reference ID
+    #[must_use]
+    pub const fn as_actor_ref(&self) -> Option<u64> {
+        if let Self::ActorRef(id) = self {
+            Some(*id)
+        } else {
+            None
+        }
+    }
+
+    /// Extract CRDT state components
+    #[must_use]
+    pub fn as_crdt_state(&self) -> Option<(&Value, &Value)> {
+        if let Self::CRDTState(val, meta) = self {
+            Some((val, meta))
+        } else {
+            None
+        }
+    }
+
+    /// Extract hash bytes
+    #[must_use]
+    pub fn as_hash(&self) -> Option<&[u8]> {
+        if let Self::Hash(bytes) = self {
+            Some(bytes)
+        } else {
+            None
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════════
     // SECURITY ANALYSIS
     // ═══════════════════════════════════════════════════════════════════
@@ -685,6 +770,15 @@ impl std::fmt::Display for Value {
                     write!(f, "\"{k}\": {v}")?;
                 }
                 write!(f, "}}")
+            }
+            Self::ActorRef(id) => write!(f, "<actor:{id}>"),
+            Self::CRDTState(val, meta) => write!(f, "<crdt({val}, {meta})>"),
+            Self::Hash(bytes) => {
+                write!(f, "hash(")?;
+                for b in bytes {
+                    write!(f, "{b:02x}")?;
+                }
+                write!(f, ")")
             }
         }
     }
@@ -1045,5 +1139,63 @@ mod tests {
             Value::int(3)
         );
         assert_eq!(nested_pair.to_string(), "((1, 2), 3)");
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // JALINAN VALUE TESTS
+    // ═══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_actor_ref_value() {
+        let actor = Value::actor_ref(42);
+        assert!(actor.is_actor_ref());
+        assert_eq!(actor.as_actor_ref(), Some(42));
+        assert!(!actor.is_int());
+        assert_eq!(actor.as_int(), None);
+    }
+
+    #[test]
+    fn test_actor_ref_display() {
+        let actor = Value::actor_ref(7);
+        assert_eq!(actor.to_string(), "<actor:7>");
+    }
+
+    #[test]
+    fn test_hash_value() {
+        let hash = Value::hash(vec![0xde, 0xad, 0xbe, 0xef]);
+        assert!(hash.is_hash());
+        assert_eq!(hash.as_hash(), Some(&[0xde, 0xad, 0xbe, 0xef][..]));
+        assert!(!hash.is_string());
+    }
+
+    #[test]
+    fn test_hash_display() {
+        let hash = Value::hash(vec![0x0a, 0xff]);
+        assert_eq!(hash.to_string(), "hash(0aff)");
+    }
+
+    #[test]
+    fn test_crdt_state_value() {
+        let crdt = Value::crdt_state(Value::int(10), Value::int(1));
+        assert!(crdt.is_crdt_state());
+        let (val, meta) = crdt.as_crdt_state().unwrap();
+        assert_eq!(val, &Value::Int(10));
+        assert_eq!(meta, &Value::Int(1));
+    }
+
+    #[test]
+    fn test_crdt_state_display() {
+        let crdt = Value::crdt_state(Value::int(5), Value::int(0));
+        assert_eq!(crdt.to_string(), "<crdt(5, 0)>");
+    }
+
+    #[test]
+    fn test_jalinan_values_are_public() {
+        assert_eq!(Value::actor_ref(1).security_level(), SecurityLevel::Public);
+        assert_eq!(Value::hash(vec![1, 2, 3]).security_level(), SecurityLevel::Public);
+        assert_eq!(
+            Value::crdt_state(Value::int(1), Value::int(0)).security_level(),
+            SecurityLevel::Public
+        );
     }
 }

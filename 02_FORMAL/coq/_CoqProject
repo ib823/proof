@@ -384,3 +384,6 @@ domains/AlgorithmicFairness.v
 # Phase 17: Restored quarantined domain proofs (zero admits, zero axioms)
 domains/ActorSupervision.v
 domains/ChoreographyTypes.v
+domains/MerkleDAG.v
+domains/ContentAddressedState.v
+domains/AccessibilityVerification.v
