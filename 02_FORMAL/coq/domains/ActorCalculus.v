@@ -773,9 +773,9 @@ Proof.
   intros caps H. unfold can_spawn, has_cap_kind.
   induction caps as [| c rest IH].
   - reflexivity.
-  - destruct c as [k0 g0]. simpl.
-    assert (Hg : acap_granted (mkActorCap k0 g0) = false) by (apply H; left; reflexivity).
-    simpl in Hg. rewrite Hg. simpl. apply IH.
+  - destruct c as [k0 g0 r0 t0]. simpl.
+    assert (Hg : acap_granted (mkActorCap k0 g0 r0 t0) = false) by (apply H; left; reflexivity).
+    simpl in Hg. rewrite Hg. rewrite andb_false_r. simpl. apply IH.
     intros c0 Hin. apply H. right. exact Hin.
 Qed.
 
@@ -1351,19 +1351,19 @@ Proof.
   left. reflexivity.
 Qed.
 
-Theorem AC_182_message_not_lost_on_deliver : forall mb m,
+Theorem AC_182_message_not_lost_on_deliver : forall (mb : list Message) m,
   In m (mb ++ [m]).
 Proof.
   intros mb m. apply in_or_app. right. left. reflexivity.
 Qed.
 
-Theorem AC_183_old_messages_preserved : forall mb m' m,
+Theorem AC_183_old_messages_preserved : forall (mb : list Message) m' m,
   In m mb -> In m (mb ++ [m']).
 Proof.
   intros mb m' m H. apply in_or_app. left. exact H.
 Qed.
 
-Theorem AC_184_delivery_order_fifo : forall mb m1 m2,
+Theorem AC_184_delivery_order_fifo : forall (mb : list Message) m1 m2,
   mb ++ [m1] ++ [m2] = (mb ++ [m1]) ++ [m2].
 Proof. intros. rewrite app_assoc. reflexivity. Qed.
 
@@ -1448,7 +1448,7 @@ Proof. reflexivity. Qed.
     SECTION 18: INTEGRATION PROPERTIES (AC_193 - AC_210)
     ============================================================================ *)
 
-Theorem AC_193_well_typed_preserved_empty_deliver : forall ta target m,
+Theorem AC_193_well_typed_preserved_empty_deliver : forall ta target (m : Message),
   actor_well_typed ta = true ->
   actor_id (ta_state ta) <> target ->
   is_running (ta_state ta) = true.
@@ -1462,13 +1462,14 @@ Theorem AC_194_capability_required_for_spawn : forall caps,
 Proof.
   intros caps H c Hin.
   unfold can_spawn, has_cap_kind in H.
-  rewrite existsb_exists in H.
-  (* We know no element satisfies the predicate *)
   destruct (cap_kind_eqb (acap_kind c) CapSpawn) eqn:Ek.
   - destruct (acap_granted c) eqn:Eg.
-    + exfalso. apply H. exists c. split. exact Hin. simpl. rewrite Ek, Eg. reflexivity.
+    + exfalso.
+      assert (Hf: existsb (fun c0 => cap_kind_eqb (acap_kind c0) CapSpawn && acap_granted c0) caps = true).
+      { apply existsb_exists. exists c. split; [exact Hin |]. simpl. rewrite Ek, Eg. reflexivity. }
+      rewrite H in Hf. discriminate.
     + right. reflexivity.
-  - left. intro Heq. subst. simpl in Ek. discriminate.
+  - left. intro Heq. rewrite Heq in Ek. rewrite AC_066_cap_kind_eq_spawn in Ek. discriminate.
 Qed.
 
 Theorem AC_195_capability_required_for_send : forall caps,
@@ -1477,12 +1478,14 @@ Theorem AC_195_capability_required_for_send : forall caps,
 Proof.
   intros caps H c Hin.
   unfold can_send_cap, has_cap_kind in H.
-  rewrite existsb_exists in H.
   destruct (cap_kind_eqb (acap_kind c) CapSend) eqn:Ek.
   - destruct (acap_granted c) eqn:Eg.
-    + exfalso. apply H. exists c. split. exact Hin. simpl. rewrite Ek, Eg. reflexivity.
+    + exfalso.
+      assert (Hf: existsb (fun c0 => cap_kind_eqb (acap_kind c0) CapSend && acap_granted c0) caps = true).
+      { apply existsb_exists. exists c. split; [exact Hin |]. rewrite Ek, Eg. reflexivity. }
+      rewrite H in Hf. discriminate.
     + right. reflexivity.
-  - left. intro Heq. subst. simpl in Ek. discriminate.
+  - left. intro Heq. rewrite Heq in Ek. rewrite AC_067_cap_kind_eq_send in Ek. discriminate.
 Qed.
 
 Theorem AC_196_has_cap_kind_cons : forall c caps k,
@@ -1547,9 +1550,8 @@ Theorem AC_204_deliver_idempotent_absent : forall cfg target m1 m2,
   deliver_message (deliver_message cfg target m1) target m2 = cfg.
 Proof.
   intros cfg target m1 m2 H.
-  rewrite AC_175_deliver_to_absent_noop.
-  - apply AC_175_deliver_to_absent_noop. exact H.
-  - intros a Hin. apply H. exact Hin.
+  rewrite (AC_175_deliver_to_absent_noop cfg target m1 H).
+  apply AC_175_deliver_to_absent_noop. exact H.
 Qed.
 
 Theorem AC_205_spawn_then_find : forall new_id,

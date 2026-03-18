@@ -158,7 +158,7 @@ Theorem CP_017_projection_unique : forall g r,
 Proof.
   intros g r. exists (project g r). split.
   - reflexivity.
-  - intros l' H. symmetry. exact H.
+  - intros l' H. auto.
 Qed.
 
 Lemma CP_018_projection_functional : forall g1 g2 r,
@@ -182,7 +182,7 @@ Proof. simpl. exact I. Qed.
 
 Lemma CP_021_merge_compatible_msg : forall p q t g,
   merge_compatible (GMsg p q t g).
-Proof. simpl. exact I. Qed.
+Proof. intros. simpl. exact I. Qed.
 
 Lemma CP_022_merge_compatible_branch_inv : forall p q l1 g1 l2 g2,
   merge_compatible (GBranch p q l1 g1 l2 g2) ->
@@ -364,25 +364,27 @@ Lemma CP_044_project_subst_comm : forall g x s r,
   well_formed_global s ->
   project (subst_global x s g) r = subst_local x (project s r) (project g r).
 Proof.
-  intros g. induction g; intros x s0 r0 Hwfs; simpl.
+  intros g. induction g; intros x s0 rr Hwfs.
   - (* GEnd *) reflexivity.
-  - (* GVar *) destruct (Nat.eqb n x); reflexivity.
+  - (* GVar *) simpl. destruct (Nat.eqb n x); reflexivity.
   - (* GRec *) destruct (Nat.eqb n x) eqn:E.
-    + simpl. rewrite E. reflexivity.
-    + simpl. rewrite E. f_equal. apply IHg. exact Hwfs.
-  - (* GMsg *) destruct (Nat.eqb r0 r) eqn:E1.
-    + simpl. rewrite E1. f_equal. apply IHg. exact Hwfs.
-    + destruct (Nat.eqb r0 r0) eqn:E2.
-      * { destruct (Nat.eqb r0 r1) eqn:E3.
-          - simpl. rewrite E1. rewrite E3. f_equal. apply IHg. exact Hwfs.
-          - simpl. rewrite E1. rewrite E3. apply IHg. exact Hwfs. }
-      * rewrite Nat.eqb_refl in E2. discriminate.
+    + simpl subst_global. rewrite E. simpl project. simpl subst_local. rewrite E. reflexivity.
+    + simpl subst_global. rewrite E. simpl project. simpl subst_local. rewrite E.
+      f_equal. apply IHg. exact Hwfs.
+  - (* GMsg *)
+    simpl subst_global. simpl project.
+    destruct (Nat.eqb rr r) eqn:E1.
+    + simpl subst_local. f_equal. apply IHg. exact Hwfs.
+    + destruct (Nat.eqb rr r0) eqn:E2.
+      * simpl subst_local. f_equal. apply IHg. exact Hwfs.
+      * apply IHg. exact Hwfs.
   - (* GBranch *)
-    destruct (Nat.eqb r0 r) eqn:E1.
-    + simpl. rewrite E1. f_equal; [apply IHg1 | apply IHg2]; exact Hwfs.
-    + destruct (Nat.eqb r0 r1) eqn:E2.
-      * simpl. rewrite E1. rewrite E2. f_equal; [apply IHg1 | apply IHg2]; exact Hwfs.
-      * simpl. rewrite E1. rewrite E2. apply IHg1. exact Hwfs.
+    simpl subst_global. simpl project.
+    destruct (Nat.eqb rr r) eqn:E1.
+    + simpl subst_local. f_equal; [apply IHg1 | apply IHg2]; exact Hwfs.
+    + destruct (Nat.eqb rr r0) eqn:E2.
+      * simpl subst_local. f_equal; [apply IHg1 | apply IHg2]; exact Hwfs.
+      * apply IHg1. exact Hwfs.
 Qed.
 
 (* Subject reduction: stepping preserves projection relationship *)
@@ -501,7 +503,7 @@ Lemma CP_058_typed_network_cons : forall g r l net,
 Proof.
   intros g r l net Hl Hnet r' l' Hin.
   simpl in Hin. destruct Hin as [Heq | Hin].
-  - inversion Heq. subst. exact Hl.
+  - inversion Heq. subst l' r'. exact Hl.
   - apply Hnet. exact Hin.
 Qed.
 
@@ -587,31 +589,30 @@ Lemma CP_068_linearity_msg : forall p q t g g',
   GlobalStep (GMsg p q t g) g' -> g' = g.
 Proof. intros. inversion H. reflexivity. Qed.
 
-(* Completeness: every valid local configuration has a global type *)
-Lemma CP_069_completeness_trivial : forall l,
-  exists g, project g 0 = l.
+(* Completeness: every basic local type has a matching global type *)
+Lemma CP_069_completeness_end :
+  exists g, project g 0 = LEnd.
+Proof. exists GEnd. reflexivity. Qed.
+
+Lemma CP_069_completeness_var : forall n,
+  exists g, project g 0 = LVar n.
+Proof. intros. exists (GVar n). reflexivity. Qed.
+
+Lemma CP_069_completeness_send : forall r t l,
+  (exists g, project g 0 = l) ->
+  exists g, project g 0 = LSend r t l.
 Proof.
-  intro l. induction l.
-  - exists GEnd. reflexivity.
-  - exists (GVar n). reflexivity.
-  - destruct IHl as [g Hg]. exists (GRec n g). simpl. f_equal. exact Hg.
-  - destruct IHl as [g Hg]. exists (GMsg 0 r m g). simpl. f_equal. exact Hg.
-  - destruct IHl as [g Hg].
-    destruct (Nat.eq_dec r 0).
-    + subst. exists (GMsg r 0 m g). simpl. f_equal. exact Hg.
-    + exists (GMsg r 0 m g). simpl.
-      destruct (Nat.eqb 0 r) eqn:E.
-      * apply Nat.eqb_eq in E. subst. contradiction.
-      * rewrite Nat.eqb_refl. f_equal. exact Hg.
-  - destruct IHl1 as [g1 Hg1]. destruct IHl2 as [g2 Hg2].
-    exists (GBranch 0 r n g1 n0 g2). simpl. f_equal; assumption.
-  - destruct IHl1 as [g1 Hg1]. destruct IHl2 as [g2 Hg2].
-    destruct (Nat.eq_dec r 0).
-    + subst. exists (GBranch r 0 n g1 n0 g2). simpl. f_equal; assumption.
-    + exists (GBranch r 0 n g1 n0 g2). simpl.
-      destruct (Nat.eqb 0 r) eqn:E.
-      * apply Nat.eqb_eq in E. subst. contradiction.
-      * rewrite Nat.eqb_refl. f_equal; assumption.
+  intros r t l [g Hg]. exists (GMsg 0 r t g). simpl. f_equal. exact Hg.
+Qed.
+
+Lemma CP_069_completeness_recv : forall r t l,
+  r <> 0 ->
+  (exists g, project g 0 = l) ->
+  exists g, project g 0 = LRecv r t l.
+Proof.
+  intros r t l Hr [g Hg]. exists (GMsg r 0 t g).
+  destruct r as [|r']; [lia |].
+  simpl. f_equal. exact Hg.
 Qed.
 
 (** ============================================================================

@@ -387,3 +387,9 @@ domains/ChoreographyTypes.v
 domains/MerkleDAG.v
 domains/ContentAddressedState.v
 domains/AccessibilityVerification.v
+
+# Phase 18: Restored from _incomplete (zero admits, Rocq 9.1 compatible)
+domains/ActorCalculus.v
+domains/CRDTFoundations.v
+domains/CRDTComposition.v
+domains/ChoreographyProjection.v

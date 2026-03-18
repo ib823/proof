@@ -220,7 +220,7 @@ This is not a whitepaper. This is working software.
 
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
-| **Rocq 9.1.1** (Primary) | 11,386 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
+| **Rocq 9.1.1** (Primary) | 11,905 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
 | **Lean 4** (Secondary) | 4,458 theorem/lemma declarations | 155 files; 0 `sorry`, 0 axioms; claim level: mechanized (build passes) |
 | **Isabelle/HOL** (Tertiary) | 9,092 lemmas, mechanized | 307 .thy files; Isabelle mechanized lane |
 | **F\*** (Seed lane) | 22 lemmas, compiled | F* compiled lane |
@@ -390,7 +390,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 11,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2282 Rust tests
+**Verification:** 11,905 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2282 Rust tests
 
 | Area | Status |
 |------|--------|

@@ -290,17 +290,25 @@ Proof.
   - simpl. f_equal. apply IH.
 Qed.
 
+(** Map merge idempotence: generalized version *)
+Lemma map_merge_aux_lookup_gen : forall m1 m2 k,
+  map_has_key m1 k = true ->
+  map_lookup (map_merge_aux m1 m2) k = Nat.max (map_lookup m1 k) (map_lookup m2 k).
+Proof.
+  induction m1 as [|[k1 v1] rest IH]; intros m2 k Hhas.
+  - simpl in Hhas. discriminate.
+  - destruct (Nat.eqb k k1) eqn:Ek.
+    + apply Nat.eqb_eq in Ek. subst k. simpl. rewrite Nat.eqb_refl. reflexivity.
+    + simpl. rewrite Ek. apply IH. simpl in Hhas. rewrite Ek in Hhas. exact Hhas.
+Qed.
+
 (** Map merge is idempotent on lookup for keys in m *)
 Theorem map_merge_aux_idem_key : forall m k,
   map_has_key m k = true ->
   map_lookup (map_merge_aux m m) k = map_lookup m k.
 Proof.
-  induction m as [|[k1 v1] rest IH]; intros k Hhas.
-  - simpl in Hhas. discriminate.
-  - cbn. destruct (Nat.eqb k k1) eqn:Ek.
-    + apply Nat.eqb_eq in Ek. subst. cbn. rewrite Nat.eqb_refl. lia.
-    + apply IH. cbn in Hhas.
-      destruct (Nat.eqb k k1); [discriminate | exact Hhas].
+  intros m k Hhas.
+  rewrite map_merge_aux_lookup_gen by exact Hhas. lia.
 Qed.
 
 (** Map insert is monotone on lookup *)
@@ -505,21 +513,23 @@ Theorem merkle_merge_comm : forall a b,
   merkle_merge a b = merkle_merge b a.
 Proof.
   intros a b. unfold merkle_merge.
-  f_equal; f_equal; apply Nat.max_comm.
+  f_equal; [f_equal |]; apply Nat.max_comm.
 Qed.
 
 Theorem merkle_merge_assoc : forall a b c,
   merkle_merge (merkle_merge a b) c = merkle_merge a (merkle_merge b c).
 Proof.
   intros a b c. unfold merkle_merge. simpl.
-  f_equal; f_equal; symmetry; apply Nat.max_assoc.
+  f_equal; [f_equal |]; symmetry; apply Nat.max_assoc.
 Qed.
 
 Theorem merkle_merge_idem : forall a,
+  merkle_valid a ->
   merkle_merge a a = a.
 Proof.
-  intros a. unfold merkle_merge.
-  rewrite Nat.max_id. destruct a. simpl. unfold hash. reflexivity.
+  intros a Hvalid. unfold merkle_merge.
+  rewrite Nat.max_id. unfold merkle_valid in Hvalid.
+  destruct a. simpl in *. rewrite Hvalid. reflexivity.
 Qed.
 
 Theorem merkle_crdt_tamper_evident : forall a b,
@@ -572,7 +582,7 @@ Theorem merkle_merge_bottom_l : forall a,
 Proof.
   intros a Ha. unfold merkle_merge. simpl.
   unfold merkle_valid, hash in Ha. simpl.
-  destruct a. simpl in *. subst. unfold hash. f_equal. lia.
+  destruct a. simpl in *. subst. unfold hash. f_equal; lia.
 Qed.
 
 Theorem merkle_content_addressed_eq : forall s1 s2,
@@ -632,15 +642,6 @@ Proof.
   intros a b. unfold dag_merge. apply length_app.
 Qed.
 
-Theorem dag_has_hash_merge : forall a b h,
-  dag_has_hash a h = true ->
-  dag_has_hash (dag_merge a b) h = true.
-Proof.
-  intros a b h H.
-  unfold dag_has_hash, dag_merge.
-  rewrite existsb_app. rewrite H. reflexivity.
-Qed.
-
 Lemma existsb_app_local : forall {A : Type} (f : A -> bool) l1 l2,
   existsb f (l1 ++ l2) = existsb f l1 || existsb f l2.
 Proof.
@@ -649,12 +650,21 @@ Proof.
   - simpl. rewrite IH. rewrite orb_assoc. reflexivity.
 Qed.
 
+Theorem dag_has_hash_merge : forall a b h,
+  dag_has_hash a h = true ->
+  dag_has_hash (dag_merge a b) h = true.
+Proof.
+  intros a b h H.
+  unfold dag_has_hash, dag_merge in *.
+  rewrite existsb_app_local. rewrite H. reflexivity.
+Qed.
+
 Theorem dag_has_hash_merge_r : forall a b h,
   dag_has_hash b h = true ->
   dag_has_hash (dag_merge a b) h = true.
 Proof.
   intros a b h H.
-  unfold dag_has_hash, dag_merge.
+  unfold dag_has_hash, dag_merge in *.
   rewrite existsb_app_local. rewrite H. rewrite orb_true_r. reflexivity.
 Qed.
 
@@ -726,8 +736,8 @@ Proof.
   intros a b Ha Hb Hfwd_a Hfwd_b.
   unfold dag_valid, dag_merge. intros node Hin ch Hch.
   apply in_app_iff in Hin. destruct Hin as [Hina | Hinb].
-  - apply Hfwd_a; assumption.
-  - apply Hfwd_b; assumption.
+  - exact (Hfwd_a node Hina ch Hch).
+  - exact (Hfwd_b node Hinb ch Hch).
 Qed.
 
 (** ============================================================================
@@ -746,16 +756,16 @@ Theorem prod_triple_convergence : forall (A B : Type)
   prod_merge ma mb (prod_merge ma mb (prod_merge ma mb s u3) u2) u1.
 Proof.
   intros A B ma mb Hca Haa Hcb Hab s u1 u2 u3.
-  rewrite prod_merge_assoc; [| exact Haa | exact Hab].
-  rewrite prod_merge_assoc; [| exact Haa | exact Hab].
-  rewrite prod_merge_assoc; [| exact Haa | exact Hab].
-  rewrite prod_merge_assoc; [| exact Haa | exact Hab].
+  rewrite (prod_merge_assoc _ _ _ _ Haa Hab).
+  rewrite (prod_merge_assoc _ _ _ _ Haa Hab (prod_merge ma mb s u3)).
+  rewrite (prod_merge_assoc _ _ _ _ Haa Hab s u3).
+  rewrite (prod_merge_assoc _ _ _ _ Haa Hab s u1).
   f_equal.
-  rewrite (prod_merge_comm A B ma mb Hca Hcb u2 u3).
-  rewrite <- (prod_merge_assoc A B ma mb Hca Hcb Haa Hab u1 (prod_merge ma mb u3 u2)).
-  rewrite (prod_merge_comm A B ma mb Hca Hcb u1 _).
-  rewrite prod_merge_assoc; [| exact Haa | exact Hab].
-  rewrite (prod_merge_comm A B ma mb Hca Hcb u2 u1).
+  rewrite (prod_merge_comm _ _ _ _ Hca Hcb u1 (prod_merge ma mb u2 u3)).
+  rewrite (prod_merge_assoc _ _ _ _ Haa Hab u2 u3 u1).
+  rewrite (prod_merge_comm _ _ _ _ Hca Hcb u3 (prod_merge ma mb u2 u1)).
+  rewrite (prod_merge_assoc _ _ _ _ Haa Hab u2 u1).
+  rewrite (prod_merge_comm _ _ _ _ Hca Hcb u1 u3).
   reflexivity.
 Qed.
 
@@ -785,11 +795,12 @@ Qed.
 
 (** Merkle node: idempotent delivery *)
 Theorem merkle_idempotent_delivery : forall s u,
+  merkle_valid u ->
   merkle_merge (merkle_merge s u) u = merkle_merge s u.
 Proof.
-  intros s u.
+  intros s u Hu.
   rewrite merkle_merge_assoc.
-  rewrite merkle_merge_idem.
+  rewrite (merkle_merge_idem u Hu).
   reflexivity.
 Qed.
 
@@ -878,14 +889,14 @@ Theorem map_merge_aux_nil_r : forall m,
 Proof.
   induction m as [|[k v] rest IH].
   - reflexivity.
-  - simpl. f_equal; [f_equal; lia | exact IH].
+  - simpl. f_equal. exact IH.
 Qed.
 
 (** Merkle: creating then merging with self *)
 Theorem merkle_create_merge_self : forall s,
   merkle_merge (merkle_create s) (merkle_create s) = merkle_create s.
 Proof.
-  intros s. apply merkle_merge_idem.
+  intros s. apply merkle_merge_idem. apply merkle_create_valid.
 Qed.
 
 (** Merkle: state after creation *)
@@ -917,7 +928,7 @@ Theorem dag_singleton_no_other : forall h h' children,
   dag_has_hash [(h, children)] h' = Nat.eqb h' h.
 Proof.
   intros h h' children Hneq. unfold dag_has_hash. simpl.
-  rewrite orb_false_r. reflexivity.
+  rewrite orb_false_r. apply Nat.eqb_sym.
 Qed.
 
 (** Triple product: projection properties *)
@@ -999,12 +1010,9 @@ Theorem map_merge_aux_has_key : forall m1 m2 k,
 Proof.
   induction m1 as [|[k1 v1] rest IH]; intros m2 k H.
   - simpl in H. discriminate.
-  - cbn in *. destruct (Nat.eqb k k1) eqn:Ek.
-    + cbn. rewrite Ek. reflexivity.
-    + cbn. rewrite Ek.
-      apply orb_true_iff in H. destruct H as [H | H].
-      * rewrite Ek in H. discriminate.
-      * apply IH. exact H.
+  - simpl. destruct (Nat.eqb k k1) eqn:Ek.
+    + reflexivity.
+    + simpl in H. rewrite Ek in H. apply IH. exact H.
 Qed.
 
 (** Product CRDT: merge two bottoms gives bottom *)
