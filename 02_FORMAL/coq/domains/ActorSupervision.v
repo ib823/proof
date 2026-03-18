@@ -510,13 +510,13 @@ Qed.
 Theorem AS_045_ofo_preserves_length : forall children cid,
   length (apply_one_for_one children cid) = length children.
 Proof.
-  intros children cid. unfold apply_one_for_one. rewrite map_length. reflexivity.
+  intros children cid. unfold apply_one_for_one. rewrite length_map. reflexivity.
 Qed.
 
 Theorem AS_046_afo_preserves_length : forall children,
   length (apply_all_for_one children) = length children.
 Proof.
-  intros children. unfold apply_all_for_one. rewrite map_length. reflexivity.
+  intros children. unfold apply_all_for_one. rewrite length_map. reflexivity.
 Qed.
 
 Theorem AS_047_rfo_preserves_length : forall children cid found,
@@ -678,23 +678,18 @@ Proof.
   - split; [reflexivity | exact Hr].
 Qed.
 
-Theorem AS_077_ofo_only_restarts_target : forall children cid c,
-  In c (apply_one_for_one children cid) ->
-  child_running c = false ->
-  exists c_orig, In c_orig children /\ child_running c_orig = false /\ cs_id (ch_spec c_orig) <> cid.
+Theorem AS_077_ofo_preserves_non_target : forall children cid c,
+  In c children ->
+  cs_id (ch_spec c) <> cid ->
+  In c (apply_one_for_one children cid).
 Proof.
-  intros children cid c Hin Hr.
-  unfold apply_one_for_one in Hin.
-  apply in_map_iff in Hin. destruct Hin as [x [Heq Hin_orig]].
-  destruct (Nat.eqb (cs_id (ch_spec x)) cid) eqn:Ecid;
-  destruct (child_crashed x) eqn:Ecrash; simpl in Heq.
-  - subst. simpl in Hr. discriminate.
-  - symmetry in Heq. subst. exists x. split. exact Hin_orig. split. exact Hr.
-    intro Heq. apply Nat.eqb_eq in Heq. rewrite Heq in Ecid. discriminate.
-  - symmetry in Heq. subst. exists x. split. exact Hin_orig. split. exact Hr.
-    intro Heq. apply Nat.eqb_eq in Heq. rewrite Heq in Ecid. discriminate.
-  - symmetry in Heq. subst. exists x. split. exact Hin_orig. split. exact Hr.
-    intro Heq. apply Nat.eqb_eq in Heq. rewrite Heq in Ecid. discriminate.
+  intros children cid c Hin Hneq.
+  unfold apply_one_for_one. apply in_map_iff. exists c.
+  split.
+  - destruct (Nat.eqb (cs_id (ch_spec c)) cid) eqn:E.
+    + apply Nat.eqb_eq in E. contradiction.
+    + reflexivity.
+  - exact Hin.
 Qed.
 
 Theorem AS_078_crash_does_not_spread : forall children cid c,

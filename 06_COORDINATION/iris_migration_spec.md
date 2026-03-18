@@ -1,6 +1,6 @@
 # RIINA Iris Migration Specification v1.0.0
 
-**Verification:** 10,854 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2168 Rust tests
+**Verification:** 11,120 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2204 Rust tests
 
 **Document ID:** `RIINA_IRIS_MIGRATION_SPEC_v1_0_0`
 

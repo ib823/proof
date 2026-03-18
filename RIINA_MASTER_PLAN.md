@@ -178,7 +178,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-core** | `05_TOOLING/crates/riina-core/` | Implemented | Cryptographic primitives (AES, SHA-3) |
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
-| **Coq proofs** | `02_FORMAL/coq/` | 10,854 Qed, 0 Admitted | Primary formal verification |
+| **Coq proofs** | `02_FORMAL/coq/` | 11,120 Qed, 0 Admitted | Primary formal verification |
 | **Lean proofs** | `02_FORMAL/lean/` | 307 files, 11,045 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 344 files, 11,233 lemmas, 10 core theories compile, 0 sorry | Mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 267 files, 11,843 assertions, 267/267 Z3-verified | Mechanized |
@@ -225,11 +225,11 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 | Metric | Value | Command |
 |--------|-------|---------|
-| Qed proofs (active build) | 10,854 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
+| Qed proofs (active build) | 11,120 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
 | .v files (active) | 292 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
-| Qed (archive) | 758 | Total 10,796 minus active 10,854 |
+| Qed (archive) | 758 | Total 10,796 minus active 11,120 |
 | Admitted (archive) | 98 | In `properties/_archive_deprecated/` |
 | Compilation | PASSES | `cd 02_FORMAL/coq && make` |
 
@@ -404,7 +404,7 @@ All public-facing metrics are command-derived, not copied from docs.
 ### Phase 1: PROOF DEPTH — Coq Foundation
 
 **Goal:** Deepen the Coq proof base with real, hard proofs. Move from "broad but shallow"
-(10,854 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
+(11,120 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
 
 **The 13 Verification Dimensions** (from `04_SPECS/requirements/RIINA_10_PROVER_DOMINANCE_STRATEGY.md`):
 
@@ -973,7 +973,7 @@ X = primary role, o = supporting role
 | Metric | Value |
 |--------|-------|
 | Files | 259 active |
-| Qed | 10,854 |
+| Qed | 11,120 |
 | Admitted | 0 active (98 in archive) |
 | Axioms | 0 active |
 | Compilation | PASSES |

@@ -625,7 +625,7 @@ Qed.
 
 Theorem AC_054_mailbox_app_assoc : forall (mb1 mb2 mb3 : Mailbox),
   (mb1 ++ mb2) ++ mb3 = mb1 ++ (mb2 ++ mb3).
-Proof. intros. apply app_assoc. Qed.
+Proof. intros. symmetry. apply app_assoc. Qed.
 
 Theorem AC_055_mailbox_app_nil : forall (mb : Mailbox),
   mb ++ [] = mb.
@@ -634,7 +634,7 @@ Proof. intros. apply app_nil_r. Qed.
 Theorem AC_056_deliver_preserves_length : forall cfg target m,
   length (deliver_message cfg target m) = length cfg.
 Proof.
-  intros cfg target m. unfold deliver_message. rewrite map_length. reflexivity.
+  intros cfg target m. unfold deliver_message. rewrite length_map. reflexivity.
 Qed.
 
 Theorem AC_057_spawn_increases_length : forall cfg new_id,
@@ -646,13 +646,13 @@ Qed.
 Theorem AC_058_crash_preserves_length : forall cfg aid,
   length (crash_actor cfg aid) = length cfg.
 Proof.
-  intros cfg aid. unfold crash_actor. rewrite map_length. reflexivity.
+  intros cfg aid. unfold crash_actor. rewrite length_map. reflexivity.
 Qed.
 
 Theorem AC_059_restart_preserves_length : forall cfg aid,
   length (restart_actor cfg aid) = length cfg.
 Proof.
-  intros cfg aid. unfold restart_actor. rewrite map_length. reflexivity.
+  intros cfg aid. unfold restart_actor. rewrite length_map. reflexivity.
 Qed.
 
 Theorem AC_060_config_size_spawn : forall cfg new_id,

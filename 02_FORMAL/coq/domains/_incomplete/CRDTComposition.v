@@ -276,16 +276,14 @@ Theorem map_merge_aux_preserves : forall m1 m2 k,
 Proof.
   induction m1 as [|[k1 v1] rest IH]; intros m2 k Hhas.
   - simpl in Hhas. discriminate.
-  - simpl in *. destruct (Nat.eqb k k1) eqn:Ek.
-    + simpl. rewrite Ek. lia.
-    + simpl. rewrite Ek. apply IH.
-      apply orb_true_iff in Hhas. destruct Hhas as [H | H].
-      * rewrite Ek in H. discriminate.
-      * exact H.
+  - simpl. destruct (Nat.eqb k k1) eqn:Ek.
+    + lia.
+    + apply IH. simpl in Hhas.
+      destruct (Nat.eqb k k1) eqn:Ek2; [rewrite Ek in Ek2; discriminate | exact Hhas].
 Qed.
 
 Theorem map_merge_aux_length : forall m1 m2,
-  length (map_merge_aux m1 m2) = length m1.
+  length (map_merge_aux m1 m2) = length m1 + length m2.
 Proof.
   induction m1 as [|[k v] rest IH]; intros m2.
   - simpl. reflexivity.
@@ -300,10 +298,9 @@ Proof.
   induction m as [|[k1 v1] rest IH]; intros k Hhas.
   - simpl in Hhas. discriminate.
   - simpl. destruct (Nat.eqb k k1) eqn:Ek.
-    + simpl. rewrite Ek. apply Nat.eqb_eq in Ek. subst. simpl.
-      rewrite Nat.eqb_refl. lia.
-    + simpl. rewrite Ek. apply IH.
-      simpl in Hhas. rewrite Ek in Hhas. simpl in Hhas. exact Hhas.
+    + apply Nat.eqb_eq in Ek. subst. simpl. rewrite Nat.eqb_refl. lia.
+    + apply IH. simpl in Hhas.
+      destruct (Nat.eqb k k1); [discriminate | exact Hhas].
 Qed.
 
 (** Map insert is monotone on lookup *)

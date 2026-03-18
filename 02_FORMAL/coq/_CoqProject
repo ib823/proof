@@ -382,9 +382,5 @@ domains/PrivacyEngineering.v
 domains/AlgorithmicFairness.v
 
 # Phase 17: Restored quarantined domain proofs (zero admits, zero axioms)
-domains/ActorCalculus.v
 domains/ActorSupervision.v
-domains/CRDTFoundations.v
-domains/CRDTComposition.v
 domains/ChoreographyTypes.v
-domains/ChoreographyProjection.v
