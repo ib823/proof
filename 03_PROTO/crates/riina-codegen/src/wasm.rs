@@ -373,8 +373,8 @@ impl WasmBackend {
         if !func.captures.is_empty() {
             for i in 0..func.captures.len() {
                 let cap_var = VarId::new(i as u32);
-                if !var_to_local.contains_key(&cap_var) {
-                    var_to_local.insert(cap_var, local_count);
+                if let std::collections::hash_map::Entry::Vacant(e) = var_to_local.entry(cap_var) {
+                    e.insert(local_count);
                     local_count += 1;
                 }
             }
@@ -1054,6 +1054,18 @@ impl WasmBackend {
                     Self::emit_local_get(arg, ctx.var_map, code);
                 }
                 let _ = name;
+                code.push(Op::I32Const as u8);
+                wasm_encode::encode_sleb128(0, code);
+            }
+
+            // JALINAN Phase 6: stub — push 0 (unit/default)
+            Instruction::ActorDecl { .. }
+            | Instruction::ChoreographyDecl { .. }
+            | Instruction::ActorSpawn(_, _)
+            | Instruction::ActorSend(_, _)
+            | Instruction::ActorRecv(_)
+            | Instruction::CRDTMerge(_, _)
+            | Instruction::ContentHash(_) => {
                 code.push(Op::I32Const as u8);
                 wasm_encode::encode_sleb128(0, code);
             }
