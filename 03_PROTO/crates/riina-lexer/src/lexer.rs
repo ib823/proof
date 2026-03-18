@@ -507,6 +507,17 @@ impl<'a> Lexer<'a> {
             "combined" | "gabungan" => TokenKind::KwCombined,
             "zeroize" | "kosongkan" => TokenKind::KwZeroize,
 
+            // JALINAN Phase 6 (English | Bahasa Melayu)
+            "choreography" | "koreografi" => TokenKind::KwChoreography,
+            "actor" | "pelakon" => TokenKind::KwActor,
+            "role" | "peranan" => TokenKind::KwRole,
+            "state" | "keadaan" => TokenKind::KwState,
+            "supervisor" | "penyelia" => TokenKind::KwSupervisor,
+            "merge" | "gabung" => TokenKind::KwMerge,
+            "content_hash" | "cincang" => TokenKind::KwContentHash,
+            "verify" | "sahkan" => TokenKind::KwVerify,
+            "spawn" | "lahir" => TokenKind::KwSpawn,
+
             _ => TokenKind::Identifier(s),
         }
     }

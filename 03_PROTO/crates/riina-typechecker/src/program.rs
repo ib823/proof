@@ -290,6 +290,13 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
             }
         }
         Expr::FFICall { .. } => ExprSummary::default(),
+        Expr::ActorDecl { .. }
+        | Expr::ChoreographyBlock { .. }
+        | Expr::Spawn(_, _)
+        | Expr::ActorSend(_, _)
+        | Expr::ActorRecv(_)
+        | Expr::CRDTMerge(_, _)
+        | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
     }
 }
 

@@ -224,6 +224,13 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             }
             fv
         }
+        Expr::ActorDecl { .. }
+        | Expr::ChoreographyBlock { .. }
+        | Expr::Spawn(_, _)
+        | Expr::ActorSend(_, _)
+        | Expr::ActorRecv(_)
+        | Expr::CRDTMerge(_, _)
+        | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
     }
 }
 
@@ -384,6 +391,13 @@ impl Lower {
                 | BinOp::And | BinOp::Or => Ty::Bool,
             },
             Expr::FFICall { ret_ty, .. } => ret_ty.clone(),
+            Expr::ActorDecl { .. }
+            | Expr::ChoreographyBlock { .. }
+            | Expr::Spawn(_, _)
+            | Expr::ActorSend(_, _)
+            | Expr::ActorRecv(_)
+            | Expr::CRDTMerge(_, _)
+            | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
         }
     }
 
@@ -438,6 +452,13 @@ impl Lower {
                 }
                 eff
             }
+            Expr::ActorDecl { .. }
+            | Expr::ChoreographyBlock { .. }
+            | Expr::Spawn(_, _)
+            | Expr::ActorSend(_, _)
+            | Expr::ActorRecv(_)
+            | Expr::CRDTMerge(_, _)
+            | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
         }
     }
 
@@ -1228,6 +1249,14 @@ impl Lower {
                     Effect::System,
                 ))
             }
+
+            Expr::ActorDecl { .. }
+            | Expr::ChoreographyBlock { .. }
+            | Expr::Spawn(_, _)
+            | Expr::ActorSend(_, _)
+            | Expr::ActorRecv(_)
+            | Expr::CRDTMerge(_, _)
+            | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
 
             Expr::BinOp(op, lhs, rhs) => {
                 let l = self.lower_expr(lhs)?;

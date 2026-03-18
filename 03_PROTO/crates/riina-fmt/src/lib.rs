@@ -371,6 +371,16 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
             }
             out.push(')');
         }
+        Expr::ActorDecl { .. }
+        | Expr::ChoreographyBlock { .. }
+        | Expr::Spawn(_, _)
+        | Expr::ActorSend(_, _)
+        | Expr::ActorRecv(_)
+        | Expr::CRDTMerge(_, _)
+        | Expr::ContentHash(_) => {
+            indent(out, level, cfg);
+            out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
+        }
     }
 }
 
@@ -549,6 +559,15 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
             }
             out.push(')');
         }
+        Expr::ActorDecl { .. }
+        | Expr::ChoreographyBlock { .. }
+        | Expr::Spawn(_, _)
+        | Expr::ActorSend(_, _)
+        | Expr::ActorRecv(_)
+        | Expr::CRDTMerge(_, _)
+        | Expr::ContentHash(_) => {
+            out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
+        }
     }
 }
 
@@ -724,6 +743,13 @@ fn fmt_ty(out: &mut String, ty: &Ty) {
         Ty::CChar => out.push_str("CChar"),
         Ty::CInt => out.push_str("CInt"),
         Ty::CVoid => out.push_str("CVoid"),
+        Ty::Actor(_, _)
+        | Ty::Choreography(_, _)
+        | Ty::ContentAddressed(_)
+        | Ty::CRDT(_, _)
+        | Ty::Supervisor(_) => {
+            out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT type */");
+        }
     }
 }
 

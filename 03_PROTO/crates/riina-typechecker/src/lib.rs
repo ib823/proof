@@ -2916,6 +2916,15 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 }
             }
         }
+
+        // JALINAN Phase 6 variants
+        Expr::ActorDecl { .. }
+        | Expr::ChoreographyBlock { .. }
+        | Expr::Spawn(_, _)
+        | Expr::ActorSend(_, _)
+        | Expr::ActorRecv(_)
+        | Expr::CRDTMerge(_, _)
+        | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
     }
 }
 
@@ -3262,6 +3271,15 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                 }
             }
         }
+
+        // JALINAN Phase 6 variants
+        Expr::ActorDecl { .. }
+        | Expr::ChoreographyBlock { .. }
+        | Expr::Spawn(_, _)
+        | Expr::ActorSend(_, _)
+        | Expr::ActorRecv(_)
+        | Expr::CRDTMerge(_, _)
+        | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
     }
 }
 

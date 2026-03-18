@@ -621,6 +621,17 @@ impl Interpreter {
             // ═══════════════════════════════════════════════════════════════
             // BINARY OPERATIONS (Expr::BinOp)
             // ═══════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════
+            // JALINAN Phase 6 (Actor, Choreography, CRDT, Content-Addressed)
+            // ═══════════════════════════════════════════════════════════════
+            Expr::ActorDecl { .. }
+            | Expr::ChoreographyBlock { .. }
+            | Expr::Spawn(_, _)
+            | Expr::ActorSend(_, _)
+            | Expr::ActorRecv(_)
+            | Expr::CRDTMerge(_, _)
+            | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
+
             Expr::BinOp(op, lhs, rhs) => {
                 let l = self.eval_with_env(env, lhs)?;
                 let r = self.eval_with_env(env, rhs)?;

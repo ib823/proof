@@ -67,5 +67,13 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
                 walk_inner(arg, rules, out);
             }
         }
+
+        Expr::ActorDecl { .. }
+        | Expr::ChoreographyBlock { .. }
+        | Expr::Spawn(_, _)
+        | Expr::ActorSend(_, _)
+        | Expr::ActorRecv(_)
+        | Expr::CRDTMerge(_, _)
+        | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
     }
 }

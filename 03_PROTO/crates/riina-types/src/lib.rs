@@ -576,6 +576,19 @@ pub enum Ty {
     CInt,
     /// C void type
     CVoid,
+
+    // ── JALINAN Phase 6 types ──────────────────────────────────────────
+
+    /// Actor[State, Msg] — typed actor reference with state and message types
+    Actor(Box<Ty>, Box<Ty>),
+    /// Choreography[roles, protocol] — global multiparty session protocol
+    Choreography(Vec<Ident>, SessionType),
+    /// ContentAddressed[T] — content-addressed (Merkle) value
+    ContentAddressed(Box<Ty>),
+    /// CRDT[T, Op] — conflict-free replicated data type
+    CRDT(Box<Ty>, Box<Ty>),
+    /// Supervisor[T] — fault-tolerance supervisor for actor type T
+    Supervisor(Box<Ty>),
 }
 
 /// Binary operators
@@ -865,4 +878,31 @@ pub enum Expr {
         args: Vec<Expr>,
         ret_ty: Ty,
     },
+
+    // ── JALINAN Phase 6 expressions ────────────────────────────────────
+
+    /// Actor declaration: pelakon Name { keadaan: StateType, kendalikan msg { ... } }
+    ActorDecl {
+        name: Ident,
+        state_ty: Ty,
+        message_ty: Ty,
+        init_state: Box<Expr>,
+        handler: Box<Expr>,
+    },
+    /// Choreography block: koreografi ProtocolName { peranan A, B; ... }
+    ChoreographyBlock {
+        name: Ident,
+        roles: Vec<Ident>,
+        protocol: SessionType,
+    },
+    /// Spawn actor: lahir ActorType(init_state)
+    Spawn(Box<Expr>, Box<Expr>),
+    /// Send message to actor: hantar(actor, message)
+    ActorSend(Box<Expr>, Box<Expr>),
+    /// Receive message from actor: terima(actor)
+    ActorRecv(Box<Expr>),
+    /// CRDT merge: gabung(crdt1, crdt2)
+    CRDTMerge(Box<Expr>, Box<Expr>),
+    /// Content hash: cincang(value)
+    ContentHash(Box<Expr>),
 }

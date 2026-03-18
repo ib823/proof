@@ -149,6 +149,17 @@ pub enum TokenKind {
     KwPaling,     // paling / affine — use at most once
     KwMesti,      // mesti / relevant — must use at least once
 
+    // JALINAN Phase 6 keywords
+    KwChoreography, // koreografi / choreography — global multiparty protocol
+    KwActor,        // pelakon / actor — computation unit with local state
+    KwRole,         // peranan / role — participant in choreography
+    KwState,        // keadaan / state — actor-local mutable state
+    KwSupervisor,   // penyelia / supervisor — fault tolerance manager
+    KwMerge,        // gabung / merge — CRDT convergence operation
+    KwContentHash,  // cincang / hash — content-addressed hash
+    KwVerify,       // sahkan / verify — integrity verification
+    KwSpawn,        // lahir / spawn — create new actor
+
     // Logic keywords
     KwAnd,        // dan / and
     KwOr,         // atau / or
