@@ -124,6 +124,7 @@ const RiinaWebsite = () => {
         <p className="hero-stat-line">
           <span>{fmt(metrics.proofs.qedActive)}</span> Coq Qed &middot; <span>{metrics.proofs.admitted}</span> admitted &middot; <span>{metrics.proofs.axioms}</span> axioms
         </p>
+        <p style={{color:'var(--text-accent)',fontSize:14,marginTop:8}}>Now with JALINAN: session-typed actors and distributed computing</p>
         <div className="hero-cta">
           <button onClick={() => nav('playground')} className="btn btn--primary">Try It</button>
           <a href="https://github.com/ib823/riina" className="btn btn--outline">GitHub</a>
@@ -374,6 +375,13 @@ const RiinaWebsite = () => {
         { bm: 'Bersih', en: 'Pure' }, { bm: 'Baca', en: 'Read' }, { bm: 'Tulis', en: 'Write' },
         { bm: 'Rangkaian', en: 'Network' }, { bm: 'Kripto', en: 'Crypto' }, { bm: 'Sistem', en: 'System' },
       ],
+      jalinan: [
+        { bm: 'pelakon', en: 'actor' }, { bm: 'lahir', en: 'spawn' },
+        { bm: 'hantar', en: 'send' }, { bm: 'terima', en: 'recv' },
+        { bm: 'koreografi', en: 'choreography' }, { bm: 'peranan', en: 'role' },
+        { bm: 'keadaan', en: 'state' }, { bm: 'penyelia', en: 'supervisor' },
+        { bm: 'gabung', en: 'merge' }, { bm: 'cincang', en: 'hash' },
+      ],
     };
 
     const KwSection = ({ title, items }) => (
@@ -416,6 +424,7 @@ const RiinaWebsite = () => {
                 <KwSection title="Built-in Types" items={keywords.types} />
                 <KwSection title="Security" items={keywords.security} />
                 <KwSection title="Effects" items={keywords.effects} />
+                <KwSection title="JALINAN (Distributed)" items={keywords.jalinan} />
 
                 <h3 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16,marginTop:32}}>Example</h3>
                 <pre className="code-block">{`// pengesahan.rii — Authentication
@@ -851,6 +860,38 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="section--alt" style={{padding:'80px 24px'}}>
+        <div style={{maxWidth:'var(--max-w-page)',margin:'0 auto'}}>
+          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>JALINAN: Distributed by Construction</h2>
+          <p style={{color:'var(--text-secondary)',marginBottom:32}}>
+            JALINAN unifies local and distributed computing under formal verification. Session-typed actors, content-addressed state, and choreographic protocols — all proven at compile time.
+          </p>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:12,marginBottom:32}}>
+            {[
+              { name: 'Protocol = API', desc: 'Session types replace REST. Type-checked protocols ensure every message is expected, ordered, and complete.' },
+              { name: 'State = History', desc: 'Content-addressed Merkle DAGs make state verifiable. Every change is traceable and tamper-evident.' },
+              { name: 'Local = Distributed', desc: 'Actors with supervision trees. Code runs the same locally and distributed — no rewrite needed.' },
+            ].map((d, i) => (
+              <div key={i} className="card" style={{padding:'16px 20px'}}>
+                <div style={{fontSize:14,fontWeight:500,marginBottom:4}}>{d.name}</div>
+                <div style={{fontSize:13,color:'var(--text-secondary)'}}>{d.desc}</div>
+              </div>
+            ))}
+          </div>
+          <pre className="code-block">{`// JALINAN actor example
+pelakon Pembilang {
+    keadaan: Nombor
+    kendalikan Tambah(n) {
+        n + 1
+    }
+}
+
+biar k = lahir Pembilang(0);
+hantar(k, 5);
+terima(k)`}</pre>
         </div>
       </section>
     </div>
