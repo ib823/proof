@@ -538,7 +538,7 @@ The compilation pipeline is: `.rii` → parse → typecheck → IR → C/WASM �
 - WASM backend: .rii → WASM → wasmtime (recursive factorial, closures, if/else) ✓
 - Playground: riina_wasm.wasm (717KB) loads in browser, real-time typecheck/C/IR ✓
 - MCP server: riinac mcp (JSON-RPC 2.0, 4 tools) ✓
-- Website: metrics.json with 48,913 verified proofs, all from commands ✓
+- Website: metrics.json with 71,351 verified proofs, all from commands ✓
 
 ---
 
@@ -613,6 +613,17 @@ database migrations, API versioning, load balancer, audit logging, SBOM manageme
 ```
 
 **Implementation timeline: 18-30 months total (concurrent phases J1-J5).**
+
+**Phase J1 gate status (2026-03-18): PASSED.**
+- 9 bilingual keywords added to lexer (koreografi, pelakon, peranan, keadaan, penyelia, gabung, cincang, sahkan, lahir)
+- 5 new Ty variants + 7 new Expr variants in AST
+- Parser rules for koreografi/pelakon/lahir/hantar/terima blocks
+- Session type checker (56 tests)
+- C codegen for actors/choreography/CRDTs (860 LOC, 29 tests)
+- Actor runtime crate: riina-runtime (mailbox, supervisor, session channels, 49 tests)
+- Interpreter processes messages synchronously (Spawn stores state, Send applies handler, Recv returns state)
+- End-to-end: `.rii` with `pelakon` → parse → typecheck → run → emit-c ✓
+- Coq proofs: ActorCalculus (218), ActorSupervision (116), ChoreographyTypes (150), ChoreographyProjection (103), CRDTFoundations (95), CRDTComposition (103), MerkleDAG, ContentAddressedState, AccessibilityVerification
 
 #### CAHAYA: Type-Safe Aesthetics
 

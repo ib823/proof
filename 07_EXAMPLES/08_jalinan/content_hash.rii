@@ -1,0 +1,10 @@
+// content_hash.rii — Content-Addressed Values
+// Every value can be hashed for tamper evidence
+
+biar data = "Maklumat penting";
+biar hash1 = cincang(data);
+biar hash2 = cincang(data);
+
+// Same input → same hash (deterministic)
+// Modified data → different hash (tamper-evident)
+hash1

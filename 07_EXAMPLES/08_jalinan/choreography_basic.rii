@@ -1,0 +1,13 @@
+// choreography_basic.rii — JALINAN Choreography Example
+// Global multiparty session protocol
+
+koreografi Pembelian {
+    peranan Pemohon, Pelulus;
+
+    Pemohon -> Pelulus: hantar Permintaan;
+    Pelulus -> Pemohon: hantar Keputusan;
+    tamat;
+}
+
+// Each role implements its projected local session type
+// The compiler verifies all roles are compatible

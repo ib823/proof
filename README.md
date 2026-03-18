@@ -82,8 +82,9 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes (10,038 Coq + 4,458 Lean active-lane declarations + Isabelle/F*/TLA+/Alloy/SMT lanes) | No | No | Partial |
-| Multi-prover work | Yes (Coq primary, Lean active, Isabelle/F*/TLA+/Alloy/SMT lanes) | No | No | No |
+| Formal proof corpus in repo | Yes (11,905 Coq + 12,096 Lean + 12,287 Isabelle + 7 more prover lanes) | No | No | Partial |
+| Multi-prover work | Yes (10 provers: 5 mechanized, 2 compiled, 3 generated) | No | No | No |
+| Session-typed actors | Yes (JALINAN: pelakon, lahir, hantar, terima) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
 ---

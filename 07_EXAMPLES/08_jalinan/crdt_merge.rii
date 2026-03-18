@@ -1,0 +1,10 @@
+// crdt_merge.rii — Conflict-Free Replicated Data
+// CRDTs converge automatically — no conflicts
+
+biar kaunter_a = 5;
+biar kaunter_b = 8;
+biar gabungan = gabung(kaunter_a, kaunter_b);
+
+// gabung takes the max for counters (GCounter merge)
+// Proven: commutative, associative, idempotent
+gabungan
