@@ -1,4 +1,4 @@
-# RIINA
+# RIINA™
 
 **Formally verified programming language.**
 
@@ -82,7 +82,7 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes (9,171 Coq + 4,458 Lean active-lane declarations + Isabelle/F*/TLA+/Alloy/SMT lanes) | No | No | Partial |
+| Formal proof corpus in repo | Yes (10,038 Coq + 4,458 Lean active-lane declarations + Isabelle/F*/TLA+/Alloy/SMT lanes) | No | No | Partial |
 | Multi-prover work | Yes (Coq primary, Lean active, Isabelle/F*/TLA+/Alloy/SMT lanes) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
@@ -220,7 +220,7 @@ This is not a whitepaper. This is working software.
 
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
-| **Rocq 9.1.1** (Primary) | 9,171 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
+| **Rocq 9.1.1** (Primary) | 10,854 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
 | **Lean 4** (Secondary) | 4,458 theorem/lemma declarations | 155 files; 0 `sorry`, 0 axioms; claim level: mechanized (build passes) |
 | **Isabelle/HOL** (Tertiary) | 9,092 lemmas, mechanized | 307 .thy files; Isabelle mechanized lane |
 | **F\*** (Seed lane) | 22 lemmas, compiled | F* compiled lane |
@@ -236,7 +236,7 @@ This is not a whitepaper. This is working software.
 | Metric | Value |
 |--------|-------|
 | Rust crates | 15 |
-| Test count | 980 (all passing) |
+| Test count | 1,494 (all passing) |
 | External dependencies | **0** |
 | Lines of Rust | 31,043 |
 | Standard library builtins | 88 across 9 modules |
@@ -277,7 +277,7 @@ This is not a whitepaper. This is working software.
 
 ### Example Programs
 
-130 example `.rii` files across 10 categories:
+137 example `.rii` files across 10 categories:
 
 | Category | Examples | Topics |
 |----------|----------|--------|
@@ -306,12 +306,12 @@ The `05_TOOLING/` workspace contains 35,000+ lines of hand-written cryptographic
 
 ```
 riina/
-├── 02_FORMAL/coq/         299 Coq proof files (259 active)
+├── 02_FORMAL/coq/         317 Coq proof files (277 active)
 │   ├── foundations/        Core language semantics
 │   ├── type_system/        Progress, Preservation, Type Safety
 │   ├── properties/         Non-Interference, Declassification, Composition
 │   ├── effects/            Effect algebra and gate proofs
-│   ├── domains/            183 domain-specific proofs (R-Z, Σ, compliance)
+│   ├── domains/            201 domain-specific proofs (R-Z, Σ, compliance)
 │   ├── termination/        Strong normalization, sized types
 │   ├── compliance/         DO-178C, ISO-26262, Common Criteria models
 │   └── Industries/         Regulatory/domain formal models
@@ -390,7 +390,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 9,171 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 1276 Rust tests
+**Verification:** 10,854 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2112 Rust tests
 
 | Area | Status |
 |------|--------|
@@ -490,3 +490,7 @@ SPARK ships mature compile-time proof integration for a well-defined Ada subset.
 *RIINA — Rigorous Immutable Invariant, No Assumptions*
 
 *Q.E.D. Aeternum.*
+
+---
+
+<sub>RIINA™ is a trademark of The RIINA Authors. First use in commerce: February 2026. All rights reserved.</sub>
