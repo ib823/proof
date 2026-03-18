@@ -257,17 +257,33 @@ Proof.
   - simpl. apply IH. lia.
 Qed.
 
+Lemma fold_left_add_mono : forall l n m,
+  n >= m -> fold_left Nat.add l n >= fold_left Nat.add l m.
+Proof.
+  induction l as [|x xs IH]; intros n m Hnm; simpl.
+  - exact Hnm.
+  - apply IH. lia.
+Qed.
+
+Lemma pointwise_max_geq_l : forall a b,
+  length a = length b ->
+  forall n, fold_left Nat.add (pointwise_max a b) n >= fold_left Nat.add a n.
+Proof.
+  induction a as [|x xs IH]; intros b Hlen n.
+  - destruct b; [simpl; lia | simpl in Hlen; discriminate].
+  - destruct b as [|y ys]; [simpl in Hlen; discriminate |].
+    simpl.
+    apply Nat.le_trans with (m := fold_left Nat.add (pointwise_max xs ys) (n + x)).
+    + apply IH. simpl in Hlen. lia.
+    + apply fold_left_add_mono. lia.
+Qed.
+
 Theorem gc_merge_value_geq_l : forall a b,
   length a = length b ->
   gc_value (gc_merge a b) >= gc_value a.
 Proof.
-  unfold gc_value, gc_merge.
-  induction a as [|x xs IH]; intros b Hlen.
-  - destruct b; [simpl; lia | simpl in Hlen; discriminate].
-  - destruct b as [|y ys]; [simpl in Hlen; discriminate |].
-    simpl. apply Nat.le_trans with (m := fold_left Nat.add (pointwise_max xs ys) (0 + x)).
-    + apply IH. simpl in Hlen. lia.
-    + apply fold_left_add_le. lia.
+  unfold gc_value, gc_merge. intros.
+  apply pointwise_max_geq_l. exact H.
 Qed.
 
 Theorem gc_merge_value_geq_r : forall a b,
@@ -304,7 +320,7 @@ Theorem gc_bottom_leq : forall gc n,
   gc_leq (gc_bottom n) gc.
 Proof.
   intros gc n Hlen. unfold gc_leq, list_leq. split.
-  - rewrite gc_bottom_length. exact Hlen.
+  - rewrite gc_bottom_length. symmetry. exact Hlen.
   - intros i. rewrite gc_bottom_nth. lia.
 Qed.
 
@@ -316,7 +332,7 @@ Proof.
   - subst. reflexivity.
   - subst. unfold gc_merge, gc_bottom, pointwise_max. simpl.
     f_equal.
-    + lia.
+    + apply Nat.max_0_l.
     + fold (pointwise_max (repeat 0 (length xs)) xs).
       fold (gc_merge (gc_bottom (length xs)) xs).
       apply IH. reflexivity.

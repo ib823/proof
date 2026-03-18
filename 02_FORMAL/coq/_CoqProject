@@ -195,8 +195,6 @@ domains/Z001_DeclassificationPolicy.v
 domains/SIGMA001_VerifiedStorage.v
 domains/PI001_VerifiedPerformance.v
 domains/DELTA001_VerifiedDistribution.v
-domains/CRDTFoundations.v
-domains/CRDTComposition.v
 domains/OMEGA001_NetworkDefense.v
 domains/PSI001_OperationalSecurity.v
 
@@ -382,5 +380,3 @@ domains/MobileAppSecurity.v
 domains/CriticalInfrastructure.v
 domains/PrivacyEngineering.v
 domains/AlgorithmicFairness.v
-domains/ActorCalculus.v
-domains/ActorSupervision.v

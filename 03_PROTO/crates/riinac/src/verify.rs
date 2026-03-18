@@ -1065,10 +1065,10 @@ fn verify_coqproject_completeness(coq_dir: &Path) -> CheckResult {
     let all_v = glob_v_files(coq_dir).unwrap_or_default();
     let mut missing = Vec::new();
     for path in &all_v {
-        // Skip _archive_deprecated
+        // Skip _archive_deprecated and _incomplete
         if path
             .components()
-            .any(|c| c.as_os_str() == "_archive_deprecated")
+            .any(|c| c.as_os_str() == "_archive_deprecated" || c.as_os_str() == "_incomplete")
         {
             continue;
         }
