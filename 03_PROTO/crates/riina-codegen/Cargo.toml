@@ -20,6 +20,8 @@ Mode: Comprehensive Verification | Zero Trust
 [dependencies]
 # Internal dependencies - AST definitions
 riina-types.workspace = true
+# Actor runtime (JALINAN Phase 6)
+riina-runtime = { path = "../riina-runtime" }
 
 # No external dependencies (Law 8: Zero third-party deps)
 # All code generation is hand-written for maximum auditability

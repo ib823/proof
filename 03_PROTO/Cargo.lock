@@ -11,6 +11,7 @@ name = "riina-codegen"
 version = "0.2.0"
 dependencies = [
  "riina-parser",
+ "riina-runtime",
  "riina-typechecker",
  "riina-types",
 ]

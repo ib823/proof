@@ -2945,9 +2945,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
             match op {
                 BinOp::Add => {
-                    if *inner1 == Ty::String && *inner2 == Ty::String {
+                    if types_compatible(&Ty::String, &inner1) && types_compatible(&Ty::String, &inner2) {
                         Ok((label_result(Ty::String), eff))
-                    } else if *inner1 == Ty::Int && *inner2 == Ty::Int {
+                    } else if types_compatible(&Ty::Int, &inner1) && types_compatible(&Ty::Int, &inner2) {
                         Ok((label_result(Ty::Int), eff))
                     } else {
                         Err(TypeError::TypeMismatch {
@@ -2957,13 +2957,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     }
                 }
                 BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
-                    if *inner1 != Ty::Int {
+                    if !types_compatible(&Ty::Int, &inner1) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: inner1.clone(),
                         });
                     }
-                    if *inner2 != Ty::Int {
+                    if !types_compatible(&Ty::Int, &inner2) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: inner2.clone(),
@@ -2972,13 +2972,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     Ok((label_result(Ty::Int), eff))
                 }
                 BinOp::Eq | BinOp::Ne => {
-                    if inner1 != inner2 {
+                    if !types_compatible(&inner1, &inner2) {
                         return Err(TypeError::TypeMismatch {
                             expected: inner1.clone(),
                             found: inner2.clone(),
                         });
                     }
-                    if *inner1 != Ty::Int && *inner1 != Ty::Bool && *inner1 != Ty::String {
+                    if !types_compatible(&Ty::Int, &inner1) && !types_compatible(&Ty::Bool, &inner1) && !types_compatible(&Ty::String, &inner1) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: inner1.clone(),
@@ -2987,13 +2987,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     Ok((label_result(Ty::Bool), eff))
                 }
                 BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
-                    if *inner1 != Ty::Int {
+                    if !types_compatible(&Ty::Int, &inner1) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: inner1.clone(),
                         });
                     }
-                    if *inner2 != Ty::Int {
+                    if !types_compatible(&Ty::Int, &inner2) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: inner2.clone(),
@@ -3002,13 +3002,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     Ok((label_result(Ty::Bool), eff))
                 }
                 BinOp::And | BinOp::Or => {
-                    if *inner1 != Ty::Bool {
+                    if !types_compatible(&Ty::Bool, &inner1) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Bool,
                             found: inner1.clone(),
                         });
                     }
-                    if *inner2 != Ty::Bool {
+                    if !types_compatible(&Ty::Bool, &inner2) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Bool,
                             found: inner2.clone(),

@@ -180,6 +180,10 @@ pub struct Interpreter {
     next_actor_id: u64,
     /// Registered actor definitions (JALINAN Phase 6)
     actor_defs: std::collections::HashMap<String, Expr>,
+    /// Actor states: id → current state value (JALINAN Phase 6)
+    actor_states: std::collections::HashMap<u64, Value>,
+    /// Actor handlers: id → handler expression (JALINAN Phase 6)
+    actor_handlers: std::collections::HashMap<u64, Expr>,
 }
 
 impl Interpreter {
@@ -193,6 +197,8 @@ impl Interpreter {
             security_context: SecurityLevel::Public,
             next_actor_id: 0,
             actor_defs: std::collections::HashMap::new(),
+            actor_states: std::collections::HashMap::new(),
+            actor_handlers: std::collections::HashMap::new(),
         }
     }
 
@@ -645,26 +651,46 @@ impl Interpreter {
             }
 
             Expr::Spawn(actor_expr, state_expr) => {
-                // Resolve actor name (may be Var("ActorName") from actor_defs)
-                let _actor = match actor_expr.as_ref() {
-                    Expr::Var(name) if self.actor_defs.contains_key(name) => Value::Unit,
-                    _ => self.eval_with_env(env, actor_expr)?,
+                // Resolve actor handler from defs
+                let handler = match actor_expr.as_ref() {
+                    Expr::Var(name) => self.actor_defs.get(name).cloned(),
+                    _ => None,
                 };
-                let _state = self.eval_with_env(env, state_expr)?;
+                let state = self.eval_with_env(env, state_expr)?;
                 self.next_actor_id += 1;
-                Ok(Value::ActorRef(self.next_actor_id))
+                let id = self.next_actor_id;
+                self.actor_states.insert(id, state);
+                if let Some(h) = handler {
+                    self.actor_handlers.insert(id, h);
+                }
+                Ok(Value::ActorRef(id))
             }
 
             Expr::ActorSend(actor_expr, msg_expr) => {
-                let _actor = self.eval_with_env(env, actor_expr)?;
-                let _msg = self.eval_with_env(env, msg_expr)?;
-                // Single-threaded: message send is a no-op
+                let actor = self.eval_with_env(env, actor_expr)?;
+                let msg = self.eval_with_env(env, msg_expr)?;
+                // Synchronous message processing: apply handler lambda to message
+                if let Value::ActorRef(id) = actor {
+                    if let Some(handler) = self.actor_handlers.get(&id).cloned() {
+                        // Handler is a Lam(param, ty, body) — apply it to the message
+                        let app = Expr::App(Box::new(handler), Box::new(Expr::Int(
+                            msg.as_int().unwrap_or(0) as u64
+                        )));
+                        let result = self.eval_with_env(env, &app)?;
+                        self.actor_states.insert(id, result);
+                    }
+                }
                 Ok(Value::Unit)
             }
 
             Expr::ActorRecv(actor_expr) => {
-                let _actor = self.eval_with_env(env, actor_expr)?;
-                // Single-threaded: no mailbox, return unit
+                let actor = self.eval_with_env(env, actor_expr)?;
+                // Return current actor state
+                if let Value::ActorRef(id) = actor {
+                    if let Some(state) = self.actor_states.get(&id) {
+                        return Ok(state.clone());
+                    }
+                }
                 Ok(Value::Unit)
             }
 
