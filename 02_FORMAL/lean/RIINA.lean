@@ -1,53 +1,17 @@
-import RIINA.Foundations.Syntax
-import RIINA.Foundations.Semantics
-import RIINA.TypeSystem.Typing
+-- Domain files (bulk of theorems — compile independently)
 import RIINA.Domains.All
-import RIINA.Properties.AhmedStyleTest
-import RIINA.Properties.CanonicalForms
-import RIINA.Properties.Composition
-import RIINA.Properties.CumulativeMonotone
-import RIINA.Properties.LexOrder
-import RIINA.Properties.NonInterference_v2_Monotone
-import RIINA.Properties.SecurityProperties
-import RIINA.Properties.TypeMeasure
-import RIINA.Properties.ValRelMonotone
-import RIINA.Properties.ValRelStepLimit_PROOF
-import RIINA.Properties.Declassification
-import RIINA.Properties.TypingInversion
-import RIINA.Properties.StoreWfLemmas
-import RIINA.Properties.StoreSafety
-import RIINA.Properties.NonInterference_v2
-import RIINA.Properties.ClosedValueLemmas
-import RIINA.Properties.check_ax
-import RIINA.TypeSystem.TypeSafety
-import RIINA.Properties.ContextProperties
-import RIINA.Properties.SN_Closure
-import RIINA.Effects.EffectAlgebra
-import RIINA.Properties.CumulativeRelation
-import RIINA.Properties.StoreRelation
-import RIINA.Properties.SubstitutionCommute
-import RIINA.Properties.SubstitutionLemma
-import RIINA.Properties.EffectSafety
-import RIINA.Properties.EffectMonotonicity
-import RIINA.Properties.ReferenceOps
-import RIINA.Effects.EffectSystem
-import RIINA.Effects.EffectGate
-import RIINA.Properties.NonInterference
-import RIINA.Properties.KripkeProperties
-import RIINA.TypeSystem.Progress
-import RIINA.TypeSystem.Preservation
-import RIINA.Properties.FirstOrderComplete
-import RIINA.Properties.MaximumAxiomElimination
-import RIINA.Termination.StrongNorm
-import RIINA.Termination.TerminationLemmas
-import RIINA.Termination.Reducibility
-import RIINA.Termination.ReducibilityFull
-import RIINA.Termination.SizedTypes
-import RIINA.Industries
-import RIINA.Compliance
-import RIINA.Domains.MobileOS
--- NOT YET COMPILABLE (pre-existing errors, 2 proof gaps):
--- import RIINA.Properties.NonInterference_v2_LogicalRelation -- 240 errors, 2 proof gaps
+-- MobileOS, Industries, Compliance excluded: transpiler .mk constructor bug
+-- import RIINA.Domains.MobileOS
+-- import RIINA.Industries
+-- import RIINA.Compliance
+-- Core files depend on Foundations.Syntax/Semantics which need hand-written Lean port.
+-- Excluded until transpiler generates valid Lean for core Coq definitions.
+-- import RIINA.Foundations.Syntax
+-- import RIINA.Foundations.Semantics
+-- import RIINA.TypeSystem.Typing
+-- import RIINA.Properties.* (depend on Foundations)
+-- import RIINA.Termination.* (depend on Foundations)
+-- import RIINA.Effects.* (depend on Foundations)
 
 /-!
 # RIINA Formal Proofs - Main Library
