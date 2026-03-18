@@ -265,9 +265,7 @@ Proof.
     + destruct (Nat.eqb k k1) eqn:Ek.
       * apply Nat.eqb_eq in Ek. subst.
         specialize (Huniq k1 v1 (or_introl eq_refl) eq_refl).
-        injection Huniq as _ Hv. subst.
-        specialize (Huniq k1 v (or_intror Hin) eq_refl).
-        injection Huniq as _ Hv. subst. reflexivity.
+        injection Huniq as Hv. subst. reflexivity.
       * apply IH; [exact Hin |].
         intros k' v' Hin' Hk'. apply Huniq. right. exact Hin'. exact Hk'.
 Qed.

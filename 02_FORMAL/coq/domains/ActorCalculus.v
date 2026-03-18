@@ -602,7 +602,7 @@ Proof. reflexivity. Qed.
 Theorem AC_050_append_preserves_messages : forall (mb : Mailbox) (m : Message),
   length (mb ++ [m]) = S (length mb).
 Proof.
-  intros mb m. rewrite app_length. simpl. lia.
+  intros mb m. rewrite length_app. simpl. lia.
 Qed.
 
 Theorem AC_051_append_nonempty : forall (mb : Mailbox) (m : Message),
@@ -640,7 +640,7 @@ Qed.
 Theorem AC_057_spawn_increases_length : forall cfg new_id,
   length (spawn_actor cfg new_id) = S (length cfg).
 Proof.
-  intros cfg new_id. unfold spawn_actor. rewrite app_length. simpl. lia.
+  intros cfg new_id. unfold spawn_actor. rewrite length_app. simpl. lia.
 Qed.
 
 Theorem AC_058_crash_preserves_length : forall cfg aid,
