@@ -275,6 +275,7 @@ const PlaygroundPage = ({ onNavigate }) => {
   const [wasmReady, setWasmReady] = useState(false);
   const [wasmError, setWasmError] = useState(null);
   const [shared, setShared] = useState(false);
+  const [hasEdited, setHasEdited] = useState(false);
   const workerRef = useRef(null);
   const debounceRef = useRef(null);
   const reqIdRef = useRef(0);
@@ -473,12 +474,13 @@ const PlaygroundPage = ({ onNavigate }) => {
               <textarea
                 ref={textareaRef}
                 value={source}
-                onChange={(e) => setSource(e.target.value)}
+                onChange={(e) => { setSource(e.target.value); if (!hasEdited) setHasEdited(true); }}
                 onScroll={syncScroll}
                 spellCheck={false}
                 className="playground-textarea"
                 style={editorFont}
               />
+              {!hasEdited && <div className="playground-hint">Edit the code on the left. Results appear instantly on the right.</div>}
             </div>
           </div>
 

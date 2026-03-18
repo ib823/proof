@@ -297,6 +297,24 @@ const RiinaWebsite = () => {
           <p className="triple-prover__note" style={{marginTop:16}}>
             {metrics.multiProver.totalProvers} provers total &middot; {fmt(metrics.multiProver.totalProofsAllProvers)} combined proof artifacts &middot; <button style={{background:'none',border:'none',color:'var(--text-accent)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:13,padding:0}} onClick={() => nav('how')}>See all provers</button>
           </p>
+
+          <div className="claim-levels">
+            <h4 className="claim-levels__title">What do claim levels mean?</h4>
+            <div className="claim-levels__grid">
+              <div className="claim-levels__item">
+                <span className="claim-levels__badge claim-levels__badge--mechanized">mechanized</span>
+                <span className="claim-levels__desc">Proofs machine-checked by the tool. Builds pass.</span>
+              </div>
+              <div className="claim-levels__item">
+                <span className="claim-levels__badge claim-levels__badge--compiled">compiled</span>
+                <span className="claim-levels__desc">Code compiles and smoke-tests pass with the tool.</span>
+              </div>
+              <div className="claim-levels__item">
+                <span className="claim-levels__badge claim-levels__badge--generated">generated</span>
+                <span className="claim-levels__desc">Proof artifacts exist but tool verification not yet complete.</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -707,6 +725,8 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
               { name: 'Healthcare', regs: 'HIPAA, HITECH, HL7 FHIR', desc: 'PHI wrapped in security types that prevent unauthorized disclosure. Audit trails proven complete. De-identification verified at compile time.' },
               { name: 'Financial Services', regs: 'PCI-DSS, SOX, BNM RMiT', desc: 'Cardholder data isolation proven by construction. Transaction integrity with formal audit trails. Constant-time operations prevent timing attacks.' },
               { name: 'Aerospace & Aviation', regs: 'DO-178C DAL A, DO-326A', desc: 'Flight-critical software with formal verification evidence satisfying DAL A. Deterministic execution proven. WCET bounds verified.' },
+              { name: 'Technology / SaaS', regs: 'SOC 2, ISO 27001', desc: 'Access control and audit logging proven at compile time. Data isolation between tenants enforced by the type system.' },
+              { name: 'Energy / Utilities', regs: 'NERC CIP, IEC 62443', desc: 'Critical infrastructure protection with proven access boundaries. Control system integrity verified by construction.' },
             ].map((ind, i) => (
               <div key={i} className="industry-card">
                 <div className="industry-card__name">{ind.name}</div>
@@ -717,7 +737,7 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
           </div>
 
           <p style={{color:'var(--text-muted)',fontSize:14,textAlign:'center',marginBottom:48}}>
-            + 11 more compliance profiles: Energy, Telecom, Government, Transportation, Manufacturing, Retail, Media, Education, Agriculture, Real Estate, Legal
+            + 9 more compliance profiles: Telecom, Government, Transportation, Manufacturing, Retail, Media, Education, Agriculture, Legal
           </p>
 
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16}}>Proof certificate <span style={{color:'var(--text-muted)',fontWeight:400,textTransform:'none',letterSpacing:0,fontSize:11}}>(target workflow)</span></h2>
@@ -985,7 +1005,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
   return (
     <div className="app-root">
       <Header />
-      <main className="main-content">
+      <main className="main-content" key={currentPage}>
         {renderPage()}
       </main>
       <Footer />
