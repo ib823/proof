@@ -1,10 +1,10 @@
 {
-  "generated": "2026-03-18T10:01:55Z",
-  "generatedHuman": "March 18, 2026 at 10:01 UTC",
+  "generated": "2026-03-18T11:16:13Z",
+  "generatedHuman": "March 18, 2026 at 11:16 UTC",
   "version": "0.2.0",
   "session": 0,
   "git": {
-    "commit": "2a957018",
+    "commit": "97bcf0e6",
     "branch": "main"
   },
   "proofs": {
@@ -23,16 +23,16 @@
     "prover": "Rocq 9.1.1"
   },
   "lean": {
-    "theorems": 11045,
+    "theorems": 11311,
     "sorry": 0,
-    "axioms": 12,
-    "files": 308,
-    "lines": 123801,
+    "axioms": 14,
+    "files": 310,
+    "lines": 125688,
     "prover": "Lean 4"
   },
   "isabelle": {
-    "lemmas": 11233,
-    "lemmasRaw": 11233,
+    "lemmas": 11499,
+    "lemmasRaw": 11499,
     "compiledTheories": 1,
     "compiledLemmas": 5,
     "smokeBuildOk": true,
@@ -41,8 +41,8 @@
     "sorry": 0,
     "sorryVerified": true,
     "axioms": 0,
-    "files": 345,
-    "lines": 114095,
+    "files": 347,
+    "lines": 115863,
     "prover": "Isabelle/HOL"
   },
   "fstar": {
@@ -52,17 +52,17 @@
     "smokeBuildOk": true,
     "smokeModule": "RIINA.Active.CryptographicSecurityActive",
     "quarantined": false,
-    "files": 298,
+    "files": 300,
     "prover": "F*"
   },
   "tlaplus": {
-    "theorems": 10788,
-    "theoremsRaw": 10788,
+    "theorems": 11054,
+    "theoremsRaw": 11054,
     "compiledTheorems": 5,
     "smokeBuildOk": true,
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
     "quarantined": false,
-    "files": 300,
+    "files": 302,
     "prover": "TLA+"
   },
   "alloy": {
@@ -76,10 +76,10 @@
     "prover": "Alloy 6"
   },
   "smt": {
-    "assertions": 10911,
-    "assertionsRaw": 10911,
+    "assertions": 11177,
+    "assertionsRaw": 11177,
     "quarantined": false,
-    "files": 300,
+    "files": 302,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
@@ -98,14 +98,14 @@
   },
   "tv": {
     "validations": 0,
-    "validationsRaw": 15671,
+    "validationsRaw": 15990,
     "quarantined": true,
-    "files": 299,
+    "files": 301,
     "prover": "Translation Validation"
   },
   "multiProver": {
-    "tripleProverTheorems": 9205,
-    "totalProofsAllProvers": 65792,
+    "tripleProverTheorems": 9471,
+    "totalProofsAllProvers": 66856,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -140,7 +140,7 @@
       },
       "backlog": {
         "leanSorry": 0,
-        "leanAxioms": 12,
+        "leanAxioms": 14,
         "isabelleSorry": 0,
         "fstarGeneratedFiles": 7,
         "smtGeneratedFiles": 0,
