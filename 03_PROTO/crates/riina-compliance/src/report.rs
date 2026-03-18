@@ -478,7 +478,7 @@ mod tests {
     fn report_coverage_numbers() {
         let report = generate("t.rii", "s", &[ComplianceProfile::PciDss], &[]);
         let pci = &report.profiles[0];
-        assert_eq!(pci.rules_implemented, 25);
+        assert_eq!(pci.rules_implemented, 56);
         assert_eq!(pci.rules_total, 78);
     }
 
@@ -487,6 +487,6 @@ mod tests {
         let report = generate("t.rii", "s",
             &[ComplianceProfile::PciDss, ComplianceProfile::Pdpa, ComplianceProfile::Bnm], &[]);
         assert_eq!(report.profiles.len(), 3);
-        assert_eq!(report.total_rules_checked, 25 + 18 + 18); // 61 total
+        assert_eq!(report.total_rules_checked, 56 + 18 + 20); // 94 total
     }
 }

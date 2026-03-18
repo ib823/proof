@@ -1,6 +1,6 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
 
-//! Tests for compliance validation — 233 rules × 2+ tests each.
+//! Tests for compliance validation — 526 rules × 2+ tests each.
 
 use riina_types::{Expr, Ty, Effect};
 
@@ -2985,4 +2985,4798 @@ fn multiple_profiles_accumulate_violations() {
     assert!(violations.iter().any(|v| v.rule_id == "PCI-DSS-4.1"));
     assert!(violations.iter().any(|v| v.rule_id == "HIPAA-164.312-e1"));
     assert!(violations.iter().any(|v| v.rule_id == "GDPR-25.1"));
+}
+#[test]
+fn pci_dss_pci_dss_1_1_1_violation() {
+    assert_violation(
+        &make_let("firewall_config", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-1.1.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_1_1_1_ok() {
+    assert_no_violation(
+        &make_classified_let("firewall_config", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-1.1.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_1_2_1_violation() {
+    assert_violation(
+        &make_let("segmentation_enabled", Expr::Bool(false)),
+        ComplianceProfile::PciDss, "PCI-DSS-1.2.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_1_2_1_ok() {
+    assert_no_violation(
+        &make_let("segmentation_enabled", Expr::Bool(true)),
+        ComplianceProfile::PciDss, "PCI-DSS-1.2.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_1_3_3_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("cardholder".into()))),
+        ComplianceProfile::PciDss, "PCI-DSS-1.3.3",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_1_3_3_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::PciDss, "PCI-DSS-1.3.3",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_1_4_1_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("data".into()))),
+        ComplianceProfile::PciDss, "PCI-DSS-1.4.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_1_4_1_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::NetworkSecure, Box::new(Expr::Var("data".into()))),
+        ComplianceProfile::PciDss, "PCI-DSS-1.4.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_1_5_1_violation() {
+    assert_violation(
+        &make_let("network_diagram", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-1.5.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_1_5_1_ok() {
+    assert_no_violation(
+        &make_classified_let("network_diagram", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-1.5.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_2_1_1_violation() {
+    assert_violation(
+        &make_let("default_password", Expr::String("hardcoded".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-2.1.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_2_1_1_ok() {
+    assert_no_violation(
+        &make_let("default_password", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::PciDss, "PCI-DSS-2.1.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_2_3_1_violation() {
+    assert_violation(
+        &make_let("admin_encryption", Expr::Bool(false)),
+        ComplianceProfile::PciDss, "PCI-DSS-2.3.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_2_3_1_ok() {
+    assert_no_violation(
+        &make_let("admin_encryption", Expr::Bool(true)),
+        ComplianceProfile::PciDss, "PCI-DSS-2.3.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_3_1_1_violation() {
+    assert_violation(
+        &make_let("retention_data", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-3.1.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_3_1_1_ok() {
+    assert_no_violation(
+        &make_classified_let("retention_data", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-3.1.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_3_2_1_violation() {
+    assert_violation(
+        &make_let("auth_store", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-3.2.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_3_2_1_ok() {
+    assert_no_violation(
+        &make_classified_let("auth_store", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-3.2.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_3_3_1_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::PciDss, "PCI-DSS-3.3.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_3_3_1_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::PciDss, "PCI-DSS-3.3.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_3_7_1_violation() {
+    assert_violation(
+        &make_let("key_procedure", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-3.7.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_3_7_1_ok() {
+    assert_no_violation(
+        &make_classified_let("key_procedure", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-3.7.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_4_1_1_violation() {
+    assert_violation(
+        &Expr::String("md5".into()),
+        ComplianceProfile::PciDss, "PCI-DSS-4.1.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_4_1_1_ok() {
+    assert_no_violation(
+        &Expr::String("aes256-gcm".into()),
+        ComplianceProfile::PciDss, "PCI-DSS-4.1.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_4_2_2_violation() {
+    assert_violation(
+        &make_let("message_data", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-4.2.2",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_4_2_2_ok() {
+    assert_no_violation(
+        &make_classified_let("message_data", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-4.2.2",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_5_1_1_violation() {
+    assert_violation(
+        &make_let("scan_input", Expr::String("raw".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-5.1.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_5_1_1_ok() {
+    assert_no_violation(
+        &make_let("scan_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::PciDss, "PCI-DSS-5.1.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_5_2_1_violation() {
+    assert_violation(
+        &make_let("antimalware_enabled", Expr::Bool(false)),
+        ComplianceProfile::PciDss, "PCI-DSS-5.2.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_5_2_1_ok() {
+    assert_no_violation(
+        &make_let("antimalware_enabled", Expr::Bool(true)),
+        ComplianceProfile::PciDss, "PCI-DSS-5.2.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_6_3_2_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "ext_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::PciDss, "PCI-DSS-6.3.2",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_6_3_2_ok() {
+    assert_no_violation(
+        &Expr::App(Box::new(Expr::Var("safe_fn".into())), Box::new(Expr::Unit)),
+        ComplianceProfile::PciDss, "PCI-DSS-6.3.2",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_6_5_9_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "infinite".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Box::new(Expr::App(Box::new(Expr::Var("infinite".into())), Box::new(Expr::Unit))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::PciDss, "PCI-DSS-6.5.9",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_6_5_9_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "factorial".into(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Box::new(Expr::Lam("n".into(), Ty::Int, Box::new(Expr::If(
+                Box::new(Expr::Bool(true)),
+                Box::new(Expr::Int(1)),
+                Box::new(Expr::Int(0)),
+            )))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::PciDss, "PCI-DSS-6.5.9",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_7_1_2_violation() {
+    assert_violation(
+        &make_let("access_system", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-7.1.2",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_7_1_2_ok() {
+    assert_no_violation(
+        &make_classified_let("access_system", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-7.1.2",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_7_2_1_violation() {
+    assert_violation(
+        &Expr::Grant(Effect::System, Box::new(Expr::Unit)),
+        ComplianceProfile::PciDss, "PCI-DSS-7.2.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_7_2_1_ok() {
+    assert_no_violation(
+        &Expr::Grant(Effect::Read, Box::new(Expr::Unit)),
+        ComplianceProfile::PciDss, "PCI-DSS-7.2.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_7_3_1_violation() {
+    assert_violation(
+        &make_let("access_policy", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-7.3.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_7_3_1_ok() {
+    assert_no_violation(
+        &make_classified_let("access_policy", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-7.3.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_8_1_1_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "user_identify".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::PciDss, "PCI-DSS-8.1.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_8_1_1_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "user_identify".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::PciDss, "PCI-DSS-8.1.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_8_2_1_violation() {
+    assert_violation(
+        &make_let("user_password", Expr::String("hardcoded".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-8.2.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_8_2_1_ok() {
+    assert_no_violation(
+        &make_let("user_password", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::PciDss, "PCI-DSS-8.2.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_9_1_1_violation() {
+    assert_violation(
+        &make_let("badge_data", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-9.1.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_9_1_1_ok() {
+    assert_no_violation(
+        &make_classified_let("badge_data", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-9.1.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_10_1_1_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::PciDss, "PCI-DSS-10.1.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_10_1_1_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::PciDss, "PCI-DSS-10.1.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_10_4_1_violation() {
+    assert_violation(
+        &make_let_with_body("log_timestamp", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::PciDss, "PCI-DSS-10.4.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_10_4_1_ok() {
+    assert_no_violation(
+        &make_let_with_body("log_timestamp", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::PciDss, "PCI-DSS-10.4.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_10_5_1_violation() {
+    assert_violation(
+        &make_let("audit_trail", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-10.5.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_10_5_1_ok() {
+    assert_no_violation(
+        &make_classified_let("audit_trail", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-10.5.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_10_6_1_violation() {
+    assert_violation(
+        &make_let("log_review", Expr::Bool(false)),
+        ComplianceProfile::PciDss, "PCI-DSS-10.6.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_10_6_1_ok() {
+    assert_no_violation(
+        &make_let("log_review", Expr::Bool(true)),
+        ComplianceProfile::PciDss, "PCI-DSS-10.6.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_11_1_1_violation() {
+    assert_violation(
+        &make_let("wireless_ap", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-11.1.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_11_1_1_ok() {
+    assert_no_violation(
+        &make_classified_let("wireless_ap", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-11.1.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_11_3_1_violation() {
+    assert_violation(
+        &make_let("pentest_input", Expr::String("raw".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-11.3.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_11_3_1_ok() {
+    assert_no_violation(
+        &make_let("pentest_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::PciDss, "PCI-DSS-11.3.1",
+    );
+}
+
+#[test]
+fn pci_dss_pci_dss_12_1_1_violation() {
+    assert_violation(
+        &make_let("security_policy", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-12.1.1",
+    );
+}
+#[test]
+fn pci_dss_pci_dss_12_1_1_ok() {
+    assert_no_violation(
+        &make_classified_let("security_policy", Expr::String("val".into())),
+        ComplianceProfile::PciDss, "PCI-DSS-12.1.1",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_308_a2_violation() {
+    assert_violation(
+        &make_let("security_mgmt", Expr::Bool(false)),
+        ComplianceProfile::Hipaa, "HIPAA-164.308-a2",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_308_a2_ok() {
+    assert_no_violation(
+        &make_let("security_mgmt", Expr::Bool(true)),
+        ComplianceProfile::Hipaa, "HIPAA-164.308-a2",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_308_a4_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "access_mgmt".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Hipaa, "HIPAA-164.308-a4",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_308_a4_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "access_mgmt".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Hipaa, "HIPAA-164.308-a4",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_308_a6_violation() {
+    assert_violation(
+        &make_let("incident_data", Expr::String("val".into())),
+        ComplianceProfile::Hipaa, "HIPAA-164.308-a6",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_308_a6_ok() {
+    assert_no_violation(
+        &make_classified_let("incident_data", Expr::String("val".into())),
+        ComplianceProfile::Hipaa, "HIPAA-164.308-a6",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_308_a7_violation() {
+    assert_violation(
+        &make_let("contingency_data", Expr::String("val".into())),
+        ComplianceProfile::Hipaa, "HIPAA-164.308-a7",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_308_a7_ok() {
+    assert_no_violation(
+        &make_classified_let("contingency_data", Expr::String("val".into())),
+        ComplianceProfile::Hipaa, "HIPAA-164.308-a7",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_310_a1_violation() {
+    assert_violation(
+        &make_let("facility_access", Expr::String("val".into())),
+        ComplianceProfile::Hipaa, "HIPAA-164.310-a1",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_310_a1_ok() {
+    assert_no_violation(
+        &make_classified_let("facility_access", Expr::String("val".into())),
+        ComplianceProfile::Hipaa, "HIPAA-164.310-a1",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_310_b1_violation() {
+    assert_violation(
+        &make_let("workstation_data", Expr::String("val".into())),
+        ComplianceProfile::Hipaa, "HIPAA-164.310-b1",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_310_b1_ok() {
+    assert_no_violation(
+        &make_classified_let("workstation_data", Expr::String("val".into())),
+        ComplianceProfile::Hipaa, "HIPAA-164.310-b1",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_312_a3_violation() {
+    assert_violation(
+        &make_let("emergency_password", Expr::String("hardcoded".into())),
+        ComplianceProfile::Hipaa, "HIPAA-164.312-a3",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_312_a3_ok() {
+    assert_no_violation(
+        &make_let("emergency_password", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Hipaa, "HIPAA-164.312-a3",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_312_c3_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::Hipaa, "HIPAA-164.312-c3",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_312_c3_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::Hipaa, "HIPAA-164.312-c3",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_312_e3_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("phi".into()))),
+        ComplianceProfile::Hipaa, "HIPAA-164.312-e3",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_312_e3_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Hipaa, "HIPAA-164.312-e3",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_316_a1_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Hipaa, "HIPAA-164.316-a1",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_316_a1_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Hipaa, "HIPAA-164.316-a1",
+    );
+}
+
+#[test]
+fn hipaa_hipaa_164_316_b1_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "infinite".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Box::new(Expr::App(Box::new(Expr::Var("infinite".into())), Box::new(Expr::Unit))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Hipaa, "HIPAA-164.316-b1",
+    );
+}
+#[test]
+fn hipaa_hipaa_164_316_b1_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "factorial".into(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Box::new(Expr::Lam("n".into(), Ty::Int, Box::new(Expr::If(
+                Box::new(Expr::Bool(true)),
+                Box::new(Expr::Int(1)),
+                Box::new(Expr::Int(0)),
+            )))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Hipaa, "HIPAA-164.316-b1",
+    );
+}
+
+#[test]
+fn gdpr_gdpr_9_1_violation() {
+    assert_violation(
+        &make_let("biometric", Expr::String("val".into())),
+        ComplianceProfile::Gdpr, "GDPR-9.1",
+    );
+}
+#[test]
+fn gdpr_gdpr_9_1_ok() {
+    assert_no_violation(
+        &make_classified_let("biometric", Expr::String("val".into())),
+        ComplianceProfile::Gdpr, "GDPR-9.1",
+    );
+}
+
+#[test]
+fn gdpr_gdpr_17_2_violation() {
+    assert_violation(
+        &make_let_with_body("erasure_request_date", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::Gdpr, "GDPR-17.2",
+    );
+}
+#[test]
+fn gdpr_gdpr_17_2_ok() {
+    assert_no_violation(
+        &make_let_with_body("erasure_request_date", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::Gdpr, "GDPR-17.2",
+    );
+}
+
+#[test]
+fn gdpr_gdpr_33_1_violation() {
+    assert_violation(
+        &make_let("breach_notification", Expr::String("val".into())),
+        ComplianceProfile::Gdpr, "GDPR-33.1",
+    );
+}
+#[test]
+fn gdpr_gdpr_33_1_ok() {
+    assert_no_violation(
+        &make_classified_let("breach_notification", Expr::String("val".into())),
+        ComplianceProfile::Gdpr, "GDPR-33.1",
+    );
+}
+
+#[test]
+fn gdpr_gdpr_35_1_violation() {
+    assert_violation(
+        &make_let("dpia_enabled", Expr::Bool(false)),
+        ComplianceProfile::Gdpr, "GDPR-35.1",
+    );
+}
+#[test]
+fn gdpr_gdpr_35_1_ok() {
+    assert_no_violation(
+        &make_let("dpia_enabled", Expr::Bool(true)),
+        ComplianceProfile::Gdpr, "GDPR-35.1",
+    );
+}
+
+#[test]
+fn gdpr_gdpr_30_1_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Gdpr, "GDPR-30.1",
+    );
+}
+#[test]
+fn gdpr_gdpr_30_1_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Gdpr, "GDPR-30.1",
+    );
+}
+
+#[test]
+fn gdpr_gdpr_32_1_violation() {
+    assert_violation(
+        &make_let("processing_key", Expr::String("hardcoded".into())),
+        ComplianceProfile::Gdpr, "GDPR-32.1",
+    );
+}
+#[test]
+fn gdpr_gdpr_32_1_ok() {
+    assert_no_violation(
+        &make_let("processing_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Gdpr, "GDPR-32.1",
+    );
+}
+
+#[test]
+fn gdpr_gdpr_25_3_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "privacy_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Gdpr, "GDPR-25.3",
+    );
+}
+#[test]
+fn gdpr_gdpr_25_3_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "privacy_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Gdpr, "GDPR-25.3",
+    );
+}
+
+#[test]
+fn bnm_bnm_10_18_1_violation() {
+    assert_violation(
+        &Expr::String("192.168.1.1".into()),
+        ComplianceProfile::Bnm, "BNM-10.18-1",
+    );
+}
+#[test]
+fn bnm_bnm_10_18_1_ok() {
+    assert_no_violation(
+        &Expr::String("safe_value".into()),
+        ComplianceProfile::Bnm, "BNM-10.18-1",
+    );
+}
+
+#[test]
+fn bnm_bnm_10_63_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Bnm, "BNM-10.63",
+    );
+}
+#[test]
+fn bnm_bnm_10_63_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Bnm, "BNM-10.63",
+    );
+}
+
+#[test]
+fn bnm_bnm_10_64_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("bank_data".into()))),
+        ComplianceProfile::Bnm, "BNM-10.64",
+    );
+}
+#[test]
+fn bnm_bnm_10_64_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Bnm, "BNM-10.64",
+    );
+}
+
+#[test]
+fn mas_trm_mas_trm_6_1_1_violation() {
+    assert_violation(
+        &make_let("project_data", Expr::String("val".into())),
+        ComplianceProfile::MasTrm, "MAS-TRM-6.1.1",
+    );
+}
+#[test]
+fn mas_trm_mas_trm_6_1_1_ok() {
+    assert_no_violation(
+        &make_classified_let("project_data", Expr::String("val".into())),
+        ComplianceProfile::MasTrm, "MAS-TRM-6.1.1",
+    );
+}
+
+#[test]
+fn mas_trm_mas_trm_7_1_1_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::MasTrm, "MAS-TRM-7.1.1",
+    );
+}
+#[test]
+fn mas_trm_mas_trm_7_1_1_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::MasTrm, "MAS-TRM-7.1.1",
+    );
+}
+
+#[test]
+fn mas_trm_mas_trm_8_1_1_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "banking_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::MasTrm, "MAS-TRM-8.1.1",
+    );
+}
+#[test]
+fn mas_trm_mas_trm_8_1_1_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::MasTrm, "MAS-TRM-8.1.1",
+    );
+}
+
+#[test]
+fn mas_trm_mas_trm_10_1_1_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::MasTrm, "MAS-TRM-10.1.1",
+    );
+}
+#[test]
+fn mas_trm_mas_trm_10_1_1_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::MasTrm, "MAS-TRM-10.1.1",
+    );
+}
+
+#[test]
+fn mas_trm_mas_trm_13_1_2_violation() {
+    assert_violation(
+        &Expr::Handle(
+            Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Unit))),
+            "err".into(),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::MasTrm, "MAS-TRM-13.1.2",
+    );
+}
+#[test]
+fn mas_trm_mas_trm_13_1_2_ok() {
+    assert_no_violation(
+        &Expr::Handle(
+            Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Unit))),
+            "err".into(),
+            Box::new(Expr::String("error logged".into())),
+        ),
+        ComplianceProfile::MasTrm, "MAS-TRM-13.1.2",
+    );
+}
+
+#[test]
+fn nist_nist_ac_3_violation() {
+    assert_violation(
+        &make_let("access_list", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-3",
+    );
+}
+#[test]
+fn nist_nist_ac_3_ok() {
+    assert_no_violation(
+        &make_classified_let("access_list", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-3",
+    );
+}
+
+#[test]
+fn nist_nist_ac_4_violation() {
+    assert_violation(
+        &make_let("data_flow", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-4",
+    );
+}
+#[test]
+fn nist_nist_ac_4_ok() {
+    assert_no_violation(
+        &make_classified_let("data_flow", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-4",
+    );
+}
+
+#[test]
+fn nist_nist_ac_5_violation() {
+    assert_violation(
+        &make_let("separation_duty", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-5",
+    );
+}
+#[test]
+fn nist_nist_ac_5_ok() {
+    assert_no_violation(
+        &make_classified_let("separation_duty", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-5",
+    );
+}
+
+#[test]
+fn nist_nist_ac_7_violation() {
+    assert_violation(
+        &make_let("max_attempts", Expr::String("hardcoded".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-7",
+    );
+}
+#[test]
+fn nist_nist_ac_7_ok() {
+    assert_no_violation(
+        &make_let("max_attempts", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-AC-7",
+    );
+}
+
+#[test]
+fn nist_nist_ac_8_violation() {
+    assert_violation(
+        &make_let("login_banner", Expr::Bool(false)),
+        ComplianceProfile::Nist80053, "NIST-AC-8",
+    );
+}
+#[test]
+fn nist_nist_ac_8_ok() {
+    assert_no_violation(
+        &make_let("login_banner", Expr::Bool(true)),
+        ComplianceProfile::Nist80053, "NIST-AC-8",
+    );
+}
+
+#[test]
+fn nist_nist_ac_10_violation() {
+    assert_violation(
+        &make_let("session_limit", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-10",
+    );
+}
+#[test]
+fn nist_nist_ac_10_ok() {
+    assert_no_violation(
+        &make_classified_let("session_limit", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-10",
+    );
+}
+
+#[test]
+fn nist_nist_ac_11_violation() {
+    assert_violation(
+        &Expr::Grant(Effect::System, Box::new(Expr::Unit)),
+        ComplianceProfile::Nist80053, "NIST-AC-11",
+    );
+}
+#[test]
+fn nist_nist_ac_11_ok() {
+    assert_no_violation(
+        &Expr::Grant(Effect::Read, Box::new(Expr::Unit)),
+        ComplianceProfile::Nist80053, "NIST-AC-11",
+    );
+}
+
+#[test]
+fn nist_nist_ac_14_violation() {
+    assert_violation(
+        &make_let("anonymous_action", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-14",
+    );
+}
+#[test]
+fn nist_nist_ac_14_ok() {
+    assert_no_violation(
+        &make_classified_let("anonymous_action", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-14",
+    );
+}
+
+#[test]
+fn nist_nist_ac_17_violation() {
+    assert_violation(
+        &make_let("remote_password", Expr::String("hardcoded".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-17",
+    );
+}
+#[test]
+fn nist_nist_ac_17_ok() {
+    assert_no_violation(
+        &make_let("remote_password", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-AC-17",
+    );
+}
+
+#[test]
+fn nist_nist_ac_18_violation() {
+    assert_violation(
+        &make_let("wifi_key", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-18",
+    );
+}
+#[test]
+fn nist_nist_ac_18_ok() {
+    assert_no_violation(
+        &make_classified_let("wifi_key", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-18",
+    );
+}
+
+#[test]
+fn nist_nist_ac_19_violation() {
+    assert_violation(
+        &make_let("mobile_data", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-19",
+    );
+}
+#[test]
+fn nist_nist_ac_19_ok() {
+    assert_no_violation(
+        &make_classified_let("mobile_data", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-19",
+    );
+}
+
+#[test]
+fn nist_nist_ac_20_violation() {
+    assert_violation(
+        &make_let("external_trust", Expr::Bool(false)),
+        ComplianceProfile::Nist80053, "NIST-AC-20",
+    );
+}
+#[test]
+fn nist_nist_ac_20_ok() {
+    assert_no_violation(
+        &make_let("external_trust", Expr::Bool(true)),
+        ComplianceProfile::Nist80053, "NIST-AC-20",
+    );
+}
+
+#[test]
+fn nist_nist_ac_21_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("classified".into()))),
+        ComplianceProfile::Nist80053, "NIST-AC-21",
+    );
+}
+#[test]
+fn nist_nist_ac_21_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Nist80053, "NIST-AC-21",
+    );
+}
+
+#[test]
+fn nist_nist_ac_22_violation() {
+    assert_violation(
+        &make_let("public_content", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-22",
+    );
+}
+#[test]
+fn nist_nist_ac_22_ok() {
+    assert_no_violation(
+        &make_classified_let("public_content", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-22",
+    );
+}
+
+#[test]
+fn nist_nist_ac_23_violation() {
+    assert_violation(
+        &make_let("mining_data", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-23",
+    );
+}
+#[test]
+fn nist_nist_ac_23_ok() {
+    assert_no_violation(
+        &make_classified_let("mining_data", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-23",
+    );
+}
+
+#[test]
+fn nist_nist_ac_24_violation() {
+    assert_violation(
+        &make_let("access_decision", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-24",
+    );
+}
+#[test]
+fn nist_nist_ac_24_ok() {
+    assert_no_violation(
+        &make_classified_let("access_decision", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AC-24",
+    );
+}
+
+#[test]
+fn nist_nist_ac_25_violation() {
+    assert_violation(
+        &make_let("reference_monitor", Expr::Bool(false)),
+        ComplianceProfile::Nist80053, "NIST-AC-25",
+    );
+}
+#[test]
+fn nist_nist_ac_25_ok() {
+    assert_no_violation(
+        &make_let("reference_monitor", Expr::Bool(true)),
+        ComplianceProfile::Nist80053, "NIST-AC-25",
+    );
+}
+
+#[test]
+fn nist_nist_au_4_violation() {
+    assert_violation(
+        &make_let("audit_storage", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-4",
+    );
+}
+#[test]
+fn nist_nist_au_4_ok() {
+    assert_no_violation(
+        &make_classified_let("audit_storage", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-4",
+    );
+}
+
+#[test]
+fn nist_nist_au_5_violation() {
+    assert_violation(
+        &make_let("audit_failure_action", Expr::Bool(false)),
+        ComplianceProfile::Nist80053, "NIST-AU-5",
+    );
+}
+#[test]
+fn nist_nist_au_5_ok() {
+    assert_no_violation(
+        &make_let("audit_failure_action", Expr::Bool(true)),
+        ComplianceProfile::Nist80053, "NIST-AU-5",
+    );
+}
+
+#[test]
+fn nist_nist_au_6_violation() {
+    assert_violation(
+        &make_let("audit_review", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-6",
+    );
+}
+#[test]
+fn nist_nist_au_6_ok() {
+    assert_no_violation(
+        &make_classified_let("audit_review", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-6",
+    );
+}
+
+#[test]
+fn nist_nist_au_7_violation() {
+    assert_violation(
+        &make_let("audit_filter", Expr::String("hardcoded".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-7",
+    );
+}
+#[test]
+fn nist_nist_au_7_ok() {
+    assert_no_violation(
+        &make_let("audit_filter", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-AU-7",
+    );
+}
+
+#[test]
+fn nist_nist_au_8_violation() {
+    assert_violation(
+        &make_let_with_body("audit_timestamp", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::Nist80053, "NIST-AU-8",
+    );
+}
+#[test]
+fn nist_nist_au_8_ok() {
+    assert_no_violation(
+        &make_let_with_body("audit_timestamp", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-AU-8",
+    );
+}
+
+#[test]
+fn nist_nist_au_9_violation() {
+    assert_violation(
+        &make_let("audit_data", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-9",
+    );
+}
+#[test]
+fn nist_nist_au_9_ok() {
+    assert_no_violation(
+        &make_classified_let("audit_data", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-9",
+    );
+}
+
+#[test]
+fn nist_nist_au_10_violation() {
+    assert_violation(
+        &make_let("non_repudiation", Expr::Bool(false)),
+        ComplianceProfile::Nist80053, "NIST-AU-10",
+    );
+}
+#[test]
+fn nist_nist_au_10_ok() {
+    assert_no_violation(
+        &make_let("non_repudiation", Expr::Bool(true)),
+        ComplianceProfile::Nist80053, "NIST-AU-10",
+    );
+}
+
+#[test]
+fn nist_nist_au_11_violation() {
+    assert_violation(
+        &make_let("retention_policy", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-11",
+    );
+}
+#[test]
+fn nist_nist_au_11_ok() {
+    assert_no_violation(
+        &make_classified_let("retention_policy", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-11",
+    );
+}
+
+#[test]
+fn nist_nist_au_13_violation() {
+    assert_violation(
+        &make_let("monitor_target", Expr::String("hardcoded".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-13",
+    );
+}
+#[test]
+fn nist_nist_au_13_ok() {
+    assert_no_violation(
+        &make_let("monitor_target", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-AU-13",
+    );
+}
+
+#[test]
+fn nist_nist_au_14_violation() {
+    assert_violation(
+        &make_let("session_audit", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-14",
+    );
+}
+#[test]
+fn nist_nist_au_14_ok() {
+    assert_no_violation(
+        &make_classified_let("session_audit", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-AU-14",
+    );
+}
+
+#[test]
+fn nist_nist_au_16_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Nist80053, "NIST-AU-16",
+    );
+}
+#[test]
+fn nist_nist_au_16_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Nist80053, "NIST-AU-16",
+    );
+}
+
+#[test]
+fn nist_nist_ia_2_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "identify_user".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Nist80053, "NIST-IA-2",
+    );
+}
+#[test]
+fn nist_nist_ia_2_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "identify_user".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Nist80053, "NIST-IA-2",
+    );
+}
+
+#[test]
+fn nist_nist_ia_3_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "device_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Nist80053, "NIST-IA-3",
+    );
+}
+#[test]
+fn nist_nist_ia_3_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "device_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Nist80053, "NIST-IA-3",
+    );
+}
+
+#[test]
+fn nist_nist_ia_4_violation() {
+    assert_violation(
+        &make_let("user_id", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-IA-4",
+    );
+}
+#[test]
+fn nist_nist_ia_4_ok() {
+    assert_no_violation(
+        &make_classified_let("user_id", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-IA-4",
+    );
+}
+
+#[test]
+fn nist_nist_ia_7_violation() {
+    assert_violation(
+        &make_let("module_key", Expr::String("hardcoded".into())),
+        ComplianceProfile::Nist80053, "NIST-IA-7",
+    );
+}
+#[test]
+fn nist_nist_ia_7_ok() {
+    assert_no_violation(
+        &make_let("module_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-IA-7",
+    );
+}
+
+#[test]
+fn nist_nist_ia_8_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "external_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Nist80053, "NIST-IA-8",
+    );
+}
+#[test]
+fn nist_nist_ia_8_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "external_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Nist80053, "NIST-IA-8",
+    );
+}
+
+#[test]
+fn nist_nist_ia_9_violation() {
+    assert_violation(
+        &make_let("service_id", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-IA-9",
+    );
+}
+#[test]
+fn nist_nist_ia_9_ok() {
+    assert_no_violation(
+        &make_classified_let("service_id", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-IA-9",
+    );
+}
+
+#[test]
+fn nist_nist_ia_10_violation() {
+    assert_violation(
+        &make_let("risk_score", Expr::String("hardcoded".into())),
+        ComplianceProfile::Nist80053, "NIST-IA-10",
+    );
+}
+#[test]
+fn nist_nist_ia_10_ok() {
+    assert_no_violation(
+        &make_let("risk_score", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-IA-10",
+    );
+}
+
+#[test]
+fn nist_nist_ia_11_violation() {
+    assert_violation(
+        &make_let("reauth_token", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-IA-11",
+    );
+}
+#[test]
+fn nist_nist_ia_11_ok() {
+    assert_no_violation(
+        &make_classified_let("reauth_token", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-IA-11",
+    );
+}
+
+#[test]
+fn nist_nist_ia_12_violation() {
+    assert_violation(
+        &make_let_with_body("identity_proof_date", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::Nist80053, "NIST-IA-12",
+    );
+}
+#[test]
+fn nist_nist_ia_12_ok() {
+    assert_no_violation(
+        &make_let_with_body("identity_proof_date", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-IA-12",
+    );
+}
+
+#[test]
+fn nist_nist_sc_2_violation() {
+    assert_violation(
+        &make_let("partition_key", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-2",
+    );
+}
+#[test]
+fn nist_nist_sc_2_ok() {
+    assert_no_violation(
+        &make_classified_let("partition_key", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-2",
+    );
+}
+
+#[test]
+fn nist_nist_sc_7_violation() {
+    assert_violation(
+        &Expr::String("http://example.com/api".into()),
+        ComplianceProfile::Nist80053, "NIST-SC-7",
+    );
+}
+#[test]
+fn nist_nist_sc_7_ok() {
+    assert_no_violation(
+        &Expr::String("https://example.com/api".into()),
+        ComplianceProfile::Nist80053, "NIST-SC-7",
+    );
+}
+
+#[test]
+fn nist_nist_sc_8_1_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("integrity_data".into()))),
+        ComplianceProfile::Nist80053, "NIST-SC-8-1",
+    );
+}
+#[test]
+fn nist_nist_sc_8_1_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Nist80053, "NIST-SC-8-1",
+    );
+}
+
+#[test]
+fn nist_nist_sc_10_violation() {
+    assert_violation(
+        &make_let("session_timeout", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-10",
+    );
+}
+#[test]
+fn nist_nist_sc_10_ok() {
+    assert_no_violation(
+        &make_classified_let("session_timeout", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-10",
+    );
+}
+
+#[test]
+fn nist_nist_sc_15_violation() {
+    assert_violation(
+        &make_let("collab_session", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-15",
+    );
+}
+#[test]
+fn nist_nist_sc_15_ok() {
+    assert_no_violation(
+        &make_classified_let("collab_session", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-15",
+    );
+}
+
+#[test]
+fn nist_nist_sc_17_violation() {
+    assert_violation(
+        &make_let("pki_cert", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-17",
+    );
+}
+#[test]
+fn nist_nist_sc_17_ok() {
+    assert_no_violation(
+        &make_classified_let("pki_cert", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-17",
+    );
+}
+
+#[test]
+fn nist_nist_sc_18_violation() {
+    assert_violation(
+        &make_let("mobile_code", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-18",
+    );
+}
+#[test]
+fn nist_nist_sc_18_ok() {
+    assert_no_violation(
+        &make_classified_let("mobile_code", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-18",
+    );
+}
+
+#[test]
+fn nist_nist_sc_19_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("voip_data".into()))),
+        ComplianceProfile::Nist80053, "NIST-SC-19",
+    );
+}
+#[test]
+fn nist_nist_sc_19_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Nist80053, "NIST-SC-19",
+    );
+}
+
+#[test]
+fn nist_nist_sc_20_violation() {
+    assert_violation(
+        &make_let("dns_key", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-20",
+    );
+}
+#[test]
+fn nist_nist_sc_20_ok() {
+    assert_no_violation(
+        &make_classified_let("dns_key", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-20",
+    );
+}
+
+#[test]
+fn nist_nist_sc_23_violation() {
+    assert_violation(
+        &make_let("session_token", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-23",
+    );
+}
+#[test]
+fn nist_nist_sc_23_ok() {
+    assert_no_violation(
+        &make_classified_let("session_token", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-23",
+    );
+}
+
+#[test]
+fn nist_nist_sc_26_violation() {
+    assert_violation(
+        &make_let("honeypot_key", Expr::String("hardcoded".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-26",
+    );
+}
+#[test]
+fn nist_nist_sc_26_ok() {
+    assert_no_violation(
+        &make_let("honeypot_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-SC-26",
+    );
+}
+
+#[test]
+fn nist_nist_sc_29_violation() {
+    assert_violation(
+        &make_let("platform_config", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-29",
+    );
+}
+#[test]
+fn nist_nist_sc_29_ok() {
+    assert_no_violation(
+        &make_classified_let("platform_config", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-29",
+    );
+}
+
+#[test]
+fn nist_nist_sc_36_violation() {
+    assert_violation(
+        &make_let("distributed_key", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-36",
+    );
+}
+#[test]
+fn nist_nist_sc_36_ok() {
+    assert_no_violation(
+        &make_classified_let("distributed_key", Expr::String("val".into())),
+        ComplianceProfile::Nist80053, "NIST-SC-36",
+    );
+}
+
+#[test]
+fn nist_nist_si_3_violation() {
+    assert_violation(
+        &make_let("upload_data", Expr::String("raw".into())),
+        ComplianceProfile::Nist80053, "NIST-SI-3",
+    );
+}
+#[test]
+fn nist_nist_si_3_ok() {
+    assert_no_violation(
+        &make_let("upload_data", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-SI-3",
+    );
+}
+
+#[test]
+fn nist_nist_si_4_violation() {
+    assert_violation(
+        &Expr::String("debug".into()),
+        ComplianceProfile::Nist80053, "NIST-SI-4",
+    );
+}
+#[test]
+fn nist_nist_si_4_ok() {
+    assert_no_violation(
+        &Expr::String("production".into()),
+        ComplianceProfile::Nist80053, "NIST-SI-4",
+    );
+}
+
+#[test]
+fn nist_nist_si_5_violation() {
+    assert_violation(
+        &make_let("alert_input", Expr::String("raw".into())),
+        ComplianceProfile::Nist80053, "NIST-SI-5",
+    );
+}
+#[test]
+fn nist_nist_si_5_ok() {
+    assert_no_violation(
+        &make_let("alert_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-SI-5",
+    );
+}
+
+#[test]
+fn nist_nist_si_7_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "ext_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Nist80053, "NIST-SI-7",
+    );
+}
+#[test]
+fn nist_nist_si_7_ok() {
+    assert_no_violation(
+        &Expr::App(Box::new(Expr::Var("safe_fn".into())), Box::new(Expr::Unit)),
+        ComplianceProfile::Nist80053, "NIST-SI-7",
+    );
+}
+
+#[test]
+fn nist_nist_si_11_violation() {
+    assert_violation(
+        &make_let("error_input", Expr::String("raw".into())),
+        ComplianceProfile::Nist80053, "NIST-SI-11",
+    );
+}
+#[test]
+fn nist_nist_si_11_ok() {
+    assert_no_violation(
+        &make_let("error_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-SI-11",
+    );
+}
+
+#[test]
+fn nist_nist_si_12_violation() {
+    assert_violation(
+        &Expr::String("192.168.1.1".into()),
+        ComplianceProfile::Nist80053, "NIST-SI-12",
+    );
+}
+#[test]
+fn nist_nist_si_12_ok() {
+    assert_no_violation(
+        &Expr::String("safe_value".into()),
+        ComplianceProfile::Nist80053, "NIST-SI-12",
+    );
+}
+
+#[test]
+fn nist_nist_si_14_violation() {
+    assert_violation(
+        &make_let("volatile_input", Expr::String("raw".into())),
+        ComplianceProfile::Nist80053, "NIST-SI-14",
+    );
+}
+#[test]
+fn nist_nist_si_14_ok() {
+    assert_no_violation(
+        &make_let("volatile_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-SI-14",
+    );
+}
+
+#[test]
+fn nist_nist_si_16_violation() {
+    assert_violation(
+        &make_let("memory_input", Expr::String("raw".into())),
+        ComplianceProfile::Nist80053, "NIST-SI-16",
+    );
+}
+#[test]
+fn nist_nist_si_16_ok() {
+    assert_no_violation(
+        &make_let("memory_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-SI-16",
+    );
+}
+
+#[test]
+fn nist_nist_cm_2_violation() {
+    assert_violation(
+        &make_let("baseline_config", Expr::Bool(false)),
+        ComplianceProfile::Nist80053, "NIST-CM-2",
+    );
+}
+#[test]
+fn nist_nist_cm_2_ok() {
+    assert_no_violation(
+        &make_let("baseline_config", Expr::Bool(true)),
+        ComplianceProfile::Nist80053, "NIST-CM-2",
+    );
+}
+
+#[test]
+fn nist_nist_cm_3_violation() {
+    assert_violation(
+        &make_let("change_key", Expr::String("hardcoded".into())),
+        ComplianceProfile::Nist80053, "NIST-CM-3",
+    );
+}
+#[test]
+fn nist_nist_cm_3_ok() {
+    assert_no_violation(
+        &make_let("change_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Nist80053, "NIST-CM-3",
+    );
+}
+
+#[test]
+fn nist_nist_cm_7_violation() {
+    assert_violation(
+        &make_let("feature_flag", Expr::Bool(false)),
+        ComplianceProfile::Nist80053, "NIST-CM-7",
+    );
+}
+#[test]
+fn nist_nist_cm_7_ok() {
+    assert_no_violation(
+        &make_let("feature_flag", Expr::Bool(true)),
+        ComplianceProfile::Nist80053, "NIST-CM-7",
+    );
+}
+
+#[test]
+fn nist_nist_sa_4_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "vendor_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Nist80053, "NIST-SA-4",
+    );
+}
+#[test]
+fn nist_nist_sa_4_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Nist80053, "NIST-SA-4",
+    );
+}
+
+#[test]
+fn nist_nist_sa_9_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "external_service_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Nist80053, "NIST-SA-9",
+    );
+}
+#[test]
+fn nist_nist_sa_9_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Nist80053, "NIST-SA-9",
+    );
+}
+
+#[test]
+fn iso27001_iso_a5_3_violation() {
+    assert_violation(
+        &make_let("policy_enforcement", Expr::Bool(false)),
+        ComplianceProfile::Iso27001, "ISO-A5.3",
+    );
+}
+#[test]
+fn iso27001_iso_a5_3_ok() {
+    assert_no_violation(
+        &make_let("policy_enforcement", Expr::Bool(true)),
+        ComplianceProfile::Iso27001, "ISO-A5.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a5_4_violation() {
+    assert_violation(
+        &make_let("policy_review", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A5.4",
+    );
+}
+#[test]
+fn iso27001_iso_a5_4_ok() {
+    assert_no_violation(
+        &make_classified_let("policy_review", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A5.4",
+    );
+}
+
+#[test]
+fn iso27001_iso_a5_5_violation() {
+    assert_violation(
+        &make_let("policy_key", Expr::String("hardcoded".into())),
+        ComplianceProfile::Iso27001, "ISO-A5.5",
+    );
+}
+#[test]
+fn iso27001_iso_a5_5_ok() {
+    assert_no_violation(
+        &make_let("policy_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Iso27001, "ISO-A5.5",
+    );
+}
+
+#[test]
+fn iso27001_iso_a6_2_violation() {
+    assert_violation(
+        &make_let("mobile_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A6.2",
+    );
+}
+#[test]
+fn iso27001_iso_a6_2_ok() {
+    assert_no_violation(
+        &make_classified_let("mobile_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A6.2",
+    );
+}
+
+#[test]
+fn iso27001_iso_a6_3_violation() {
+    assert_violation(
+        &make_let("authority_contact", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A6.3",
+    );
+}
+#[test]
+fn iso27001_iso_a6_3_ok() {
+    assert_no_violation(
+        &make_classified_let("authority_contact", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A6.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a6_4_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "group_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Iso27001, "ISO-A6.4",
+    );
+}
+#[test]
+fn iso27001_iso_a6_4_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "group_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Iso27001, "ISO-A6.4",
+    );
+}
+
+#[test]
+fn iso27001_iso_a6_5_violation() {
+    assert_violation(
+        &make_let("project_secret", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A6.5",
+    );
+}
+#[test]
+fn iso27001_iso_a6_5_ok() {
+    assert_no_violation(
+        &make_classified_let("project_secret", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A6.5",
+    );
+}
+
+#[test]
+fn iso27001_iso_a7_2_violation() {
+    assert_violation(
+        &make_let("employee_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A7.2",
+    );
+}
+#[test]
+fn iso27001_iso_a7_2_ok() {
+    assert_no_violation(
+        &make_classified_let("employee_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A7.2",
+    );
+}
+
+#[test]
+fn iso27001_iso_a7_3_violation() {
+    assert_violation(
+        &make_let("hr_password", Expr::String("hardcoded".into())),
+        ComplianceProfile::Iso27001, "ISO-A7.3",
+    );
+}
+#[test]
+fn iso27001_iso_a7_3_ok() {
+    assert_no_violation(
+        &make_let("hr_password", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Iso27001, "ISO-A7.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a7_4_violation() {
+    assert_violation(
+        &make_let_with_body("termination_date", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::Iso27001, "ISO-A7.4",
+    );
+}
+#[test]
+fn iso27001_iso_a7_4_ok() {
+    assert_no_violation(
+        &make_let_with_body("termination_date", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::Iso27001, "ISO-A7.4",
+    );
+}
+
+#[test]
+fn iso27001_iso_a8_3_violation() {
+    assert_violation(
+        &make_let("media_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A8.3",
+    );
+}
+#[test]
+fn iso27001_iso_a8_3_ok() {
+    assert_no_violation(
+        &make_classified_let("media_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A8.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a8_4_violation() {
+    assert_violation(
+        &make_let("asset_return", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A8.4",
+    );
+}
+#[test]
+fn iso27001_iso_a8_4_ok() {
+    assert_no_violation(
+        &make_classified_let("asset_return", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A8.4",
+    );
+}
+
+#[test]
+fn iso27001_iso_a8_5_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Iso27001, "ISO-A8.5",
+    );
+}
+#[test]
+fn iso27001_iso_a8_5_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Iso27001, "ISO-A8.5",
+    );
+}
+
+#[test]
+fn iso27001_iso_a8_6_violation() {
+    assert_violation(
+        &make_let("label_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A8.6",
+    );
+}
+#[test]
+fn iso27001_iso_a8_6_ok() {
+    assert_no_violation(
+        &make_classified_let("label_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A8.6",
+    );
+}
+
+#[test]
+fn iso27001_iso_a8_7_violation() {
+    assert_violation(
+        &make_let("disposal_key", Expr::String("hardcoded".into())),
+        ComplianceProfile::Iso27001, "ISO-A8.7",
+    );
+}
+#[test]
+fn iso27001_iso_a8_7_ok() {
+    assert_no_violation(
+        &make_let("disposal_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Iso27001, "ISO-A8.7",
+    );
+}
+
+#[test]
+fn iso27001_iso_a9_3_violation() {
+    assert_violation(
+        &make_let("provisioning_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A9.3",
+    );
+}
+#[test]
+fn iso27001_iso_a9_3_ok() {
+    assert_no_violation(
+        &make_classified_let("provisioning_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A9.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a9_4_violation() {
+    assert_violation(
+        &make_let("access_review", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A9.4",
+    );
+}
+#[test]
+fn iso27001_iso_a9_4_ok() {
+    assert_no_violation(
+        &make_classified_let("access_review", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A9.4",
+    );
+}
+
+#[test]
+fn iso27001_iso_a9_5_violation() {
+    assert_violation(
+        &make_let("access_password", Expr::String("hardcoded".into())),
+        ComplianceProfile::Iso27001, "ISO-A9.5",
+    );
+}
+#[test]
+fn iso27001_iso_a9_5_ok() {
+    assert_no_violation(
+        &make_let("access_password", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Iso27001, "ISO-A9.5",
+    );
+}
+
+#[test]
+fn iso27001_iso_a9_6_violation() {
+    assert_violation(
+        &make_let("logon_secure", Expr::Bool(false)),
+        ComplianceProfile::Iso27001, "ISO-A9.6",
+    );
+}
+#[test]
+fn iso27001_iso_a9_6_ok() {
+    assert_no_violation(
+        &make_let("logon_secure", Expr::Bool(true)),
+        ComplianceProfile::Iso27001, "ISO-A9.6",
+    );
+}
+
+#[test]
+fn iso27001_iso_a9_7_violation() {
+    assert_violation(
+        &Expr::Grant(Effect::System, Box::new(Expr::Unit)),
+        ComplianceProfile::Iso27001, "ISO-A9.7",
+    );
+}
+#[test]
+fn iso27001_iso_a9_7_ok() {
+    assert_no_violation(
+        &Expr::Grant(Effect::Read, Box::new(Expr::Unit)),
+        ComplianceProfile::Iso27001, "ISO-A9.7",
+    );
+}
+
+#[test]
+fn iso27001_iso_a10_2_violation() {
+    assert_violation(
+        &make_let("key_management", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A10.2",
+    );
+}
+#[test]
+fn iso27001_iso_a10_2_ok() {
+    assert_no_violation(
+        &make_classified_let("key_management", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A10.2",
+    );
+}
+
+#[test]
+fn iso27001_iso_a10_3_violation() {
+    assert_violation(
+        &make_let("encryption_policy", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A10.3",
+    );
+}
+#[test]
+fn iso27001_iso_a10_3_ok() {
+    assert_no_violation(
+        &make_classified_let("encryption_policy", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A10.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a10_4_violation() {
+    assert_violation(
+        &make_let("master_key", Expr::String("hardcoded".into())),
+        ComplianceProfile::Iso27001, "ISO-A10.4",
+    );
+}
+#[test]
+fn iso27001_iso_a10_4_ok() {
+    assert_no_violation(
+        &make_let("master_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Iso27001, "ISO-A10.4",
+    );
+}
+
+#[test]
+fn iso27001_iso_a10_5_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::Iso27001, "ISO-A10.5",
+    );
+}
+#[test]
+fn iso27001_iso_a10_5_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::Iso27001, "ISO-A10.5",
+    );
+}
+
+#[test]
+fn iso27001_iso_a11_2_violation() {
+    assert_violation(
+        &make_let("equipment_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A11.2",
+    );
+}
+#[test]
+fn iso27001_iso_a11_2_ok() {
+    assert_no_violation(
+        &make_classified_let("equipment_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A11.2",
+    );
+}
+
+#[test]
+fn iso27001_iso_a11_3_violation() {
+    assert_violation(
+        &Expr::String("192.168.1.1".into()),
+        ComplianceProfile::Iso27001, "ISO-A11.3",
+    );
+}
+#[test]
+fn iso27001_iso_a11_3_ok() {
+    assert_no_violation(
+        &Expr::String("safe_value".into()),
+        ComplianceProfile::Iso27001, "ISO-A11.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a12_3_violation() {
+    assert_violation(
+        &make_let("capacity_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A12.3",
+    );
+}
+#[test]
+fn iso27001_iso_a12_3_ok() {
+    assert_no_violation(
+        &make_classified_let("capacity_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A12.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a12_4_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Iso27001, "ISO-A12.4",
+    );
+}
+#[test]
+fn iso27001_iso_a12_4_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Iso27001, "ISO-A12.4",
+    );
+}
+
+#[test]
+fn iso27001_iso_a12_5_violation() {
+    assert_violation(
+        &make_let("software_install", Expr::Bool(false)),
+        ComplianceProfile::Iso27001, "ISO-A12.5",
+    );
+}
+#[test]
+fn iso27001_iso_a12_5_ok() {
+    assert_no_violation(
+        &make_let("software_install", Expr::Bool(true)),
+        ComplianceProfile::Iso27001, "ISO-A12.5",
+    );
+}
+
+#[test]
+fn iso27001_iso_a12_6_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "ext_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Iso27001, "ISO-A12.6",
+    );
+}
+#[test]
+fn iso27001_iso_a12_6_ok() {
+    assert_no_violation(
+        &Expr::App(Box::new(Expr::Var("safe_fn".into())), Box::new(Expr::Unit)),
+        ComplianceProfile::Iso27001, "ISO-A12.6",
+    );
+}
+
+#[test]
+fn iso27001_iso_a13_2_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("transfer_data".into()))),
+        ComplianceProfile::Iso27001, "ISO-A13.2",
+    );
+}
+#[test]
+fn iso27001_iso_a13_2_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Iso27001, "ISO-A13.2",
+    );
+}
+
+#[test]
+fn iso27001_iso_a13_3_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("data".into()))),
+        ComplianceProfile::Iso27001, "ISO-A13.3",
+    );
+}
+#[test]
+fn iso27001_iso_a13_3_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::NetworkSecure, Box::new(Expr::Var("data".into()))),
+        ComplianceProfile::Iso27001, "ISO-A13.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a13_4_violation() {
+    assert_violation(
+        &make_let("nda_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A13.4",
+    );
+}
+#[test]
+fn iso27001_iso_a13_4_ok() {
+    assert_no_violation(
+        &make_classified_let("nda_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A13.4",
+    );
+}
+
+#[test]
+fn iso27001_iso_a14_2_violation() {
+    assert_violation(
+        &make_let("app_input", Expr::String("raw".into())),
+        ComplianceProfile::Iso27001, "ISO-A14.2",
+    );
+}
+#[test]
+fn iso27001_iso_a14_2_ok() {
+    assert_no_violation(
+        &make_let("app_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Iso27001, "ISO-A14.2",
+    );
+}
+
+#[test]
+fn iso27001_iso_a14_3_violation() {
+    assert_violation(
+        &make_let("test_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A14.3",
+    );
+}
+#[test]
+fn iso27001_iso_a14_3_ok() {
+    assert_no_violation(
+        &make_classified_let("test_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A14.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a14_4_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "infinite".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Box::new(Expr::App(Box::new(Expr::Var("infinite".into())), Box::new(Expr::Unit))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Iso27001, "ISO-A14.4",
+    );
+}
+#[test]
+fn iso27001_iso_a14_4_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "factorial".into(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Box::new(Expr::Lam("n".into(), Ty::Int, Box::new(Expr::If(
+                Box::new(Expr::Bool(true)),
+                Box::new(Expr::Int(1)),
+                Box::new(Expr::Int(0)),
+            )))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Iso27001, "ISO-A14.4",
+    );
+}
+
+#[test]
+fn iso27001_iso_a15_2_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "supplier_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Iso27001, "ISO-A15.2",
+    );
+}
+#[test]
+fn iso27001_iso_a15_2_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Iso27001, "ISO-A15.2",
+    );
+}
+
+#[test]
+fn iso27001_iso_a15_3_violation() {
+    assert_violation(
+        &make_let("supply_chain", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A15.3",
+    );
+}
+#[test]
+fn iso27001_iso_a15_3_ok() {
+    assert_no_violation(
+        &make_classified_let("supply_chain", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A15.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a16_2_violation() {
+    assert_violation(
+        &make_let("security_event", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A16.2",
+    );
+}
+#[test]
+fn iso27001_iso_a16_2_ok() {
+    assert_no_violation(
+        &make_classified_let("security_event", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A16.2",
+    );
+}
+
+#[test]
+fn iso27001_iso_a16_3_violation() {
+    assert_violation(
+        &make_let_with_body("incident_time", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::Iso27001, "ISO-A16.3",
+    );
+}
+#[test]
+fn iso27001_iso_a16_3_ok() {
+    assert_no_violation(
+        &make_let_with_body("incident_time", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::Iso27001, "ISO-A16.3",
+    );
+}
+
+#[test]
+fn iso27001_iso_a18_2_violation() {
+    assert_violation(
+        &make_let("privacy_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A18.2",
+    );
+}
+#[test]
+fn iso27001_iso_a18_2_ok() {
+    assert_no_violation(
+        &make_classified_let("privacy_data", Expr::String("val".into())),
+        ComplianceProfile::Iso27001, "ISO-A18.2",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_3_6_violation() {
+    assert_violation(
+        &make_let("avionics_config", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.3.6",
+    );
+}
+#[test]
+fn do178c_do178c_6_3_6_ok() {
+    assert_no_violation(
+        &make_classified_let("avionics_config", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.3.6",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_3_7_violation() {
+    assert_violation(
+        &make_let("safety_limit", Expr::String("hardcoded".into())),
+        ComplianceProfile::Do178c, "DO178C-6.3.7",
+    );
+}
+#[test]
+fn do178c_do178c_6_3_7_ok() {
+    assert_no_violation(
+        &make_let("safety_limit", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Do178c, "DO178C-6.3.7",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_3_8_violation() {
+    assert_violation(
+        &Expr::String("http://example.com/api".into()),
+        ComplianceProfile::Do178c, "DO178C-6.3.8",
+    );
+}
+#[test]
+fn do178c_do178c_6_3_8_ok() {
+    assert_no_violation(
+        &Expr::String("https://example.com/api".into()),
+        ComplianceProfile::Do178c, "DO178C-6.3.8",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_3_9_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "pilot_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.3.9",
+    );
+}
+#[test]
+fn do178c_do178c_6_3_9_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "pilot_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.3.9",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_3_10_violation() {
+    assert_violation(
+        &make_let("flight_plan", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.3.10",
+    );
+}
+#[test]
+fn do178c_do178c_6_3_10_ok() {
+    assert_no_violation(
+        &make_classified_let("flight_plan", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.3.10",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_3_11_violation() {
+    assert_violation(
+        &make_let("engine_data", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.3.11",
+    );
+}
+#[test]
+fn do178c_do178c_6_3_11_ok() {
+    assert_no_violation(
+        &make_classified_let("engine_data", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.3.11",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_3_12_violation() {
+    assert_violation(
+        &make_let("interlock_enabled", Expr::Bool(false)),
+        ComplianceProfile::Do178c, "DO178C-6.3.12",
+    );
+}
+#[test]
+fn do178c_do178c_6_3_12_ok() {
+    assert_no_violation(
+        &make_let("interlock_enabled", Expr::Bool(true)),
+        ComplianceProfile::Do178c, "DO178C-6.3.12",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_3_13_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.3.13",
+    );
+}
+#[test]
+fn do178c_do178c_6_3_13_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.3.13",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_4_9_violation() {
+    assert_violation(
+        &make_let("coverage_data", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.4.9",
+    );
+}
+#[test]
+fn do178c_do178c_6_4_9_ok() {
+    assert_no_violation(
+        &make_classified_let("coverage_data", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.4.9",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_4_10_violation() {
+    assert_violation(
+        &make_let("traceability_data", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.4.10",
+    );
+}
+#[test]
+fn do178c_do178c_6_4_10_ok() {
+    assert_no_violation(
+        &make_classified_let("traceability_data", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.4.10",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_4_11_violation() {
+    assert_violation(
+        &make_let("hardware_input", Expr::String("raw".into())),
+        ComplianceProfile::Do178c, "DO178C-6.4.11",
+    );
+}
+#[test]
+fn do178c_do178c_6_4_11_ok() {
+    assert_no_violation(
+        &make_let("hardware_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Do178c, "DO178C-6.4.11",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_4_12_violation() {
+    assert_violation(
+        &make_let("test_limit", Expr::String("hardcoded".into())),
+        ComplianceProfile::Do178c, "DO178C-6.4.12",
+    );
+}
+#[test]
+fn do178c_do178c_6_4_12_ok() {
+    assert_no_violation(
+        &make_let("test_limit", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Do178c, "DO178C-6.4.12",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_4_13_violation() {
+    assert_violation(
+        &Expr::Handle(
+            Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Unit))),
+            "err".into(),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.4.13",
+    );
+}
+#[test]
+fn do178c_do178c_6_4_13_ok() {
+    assert_no_violation(
+        &Expr::Handle(
+            Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Unit))),
+            "err".into(),
+            Box::new(Expr::String("error logged".into())),
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.4.13",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_4_14_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("flight_data".into()))),
+        ComplianceProfile::Do178c, "DO178C-6.4.14",
+    );
+}
+#[test]
+fn do178c_do178c_6_4_14_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Do178c, "DO178C-6.4.14",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_4_15_violation() {
+    assert_violation(
+        &make_let("test_mode", Expr::Bool(false)),
+        ComplianceProfile::Do178c, "DO178C-6.4.15",
+    );
+}
+#[test]
+fn do178c_do178c_6_4_15_ok() {
+    assert_no_violation(
+        &make_let("test_mode", Expr::Bool(true)),
+        ComplianceProfile::Do178c, "DO178C-6.4.15",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_4_16_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.4.16",
+    );
+}
+#[test]
+fn do178c_do178c_6_4_16_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.4.16",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_7_6_violation() {
+    assert_violation(
+        &make_let("evidence_data", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.7.6",
+    );
+}
+#[test]
+fn do178c_do178c_6_7_6_ok() {
+    assert_no_violation(
+        &make_classified_let("evidence_data", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.7.6",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_7_7_violation() {
+    assert_violation(
+        &make_let("ground_input", Expr::String("raw".into())),
+        ComplianceProfile::Do178c, "DO178C-6.7.7",
+    );
+}
+#[test]
+fn do178c_do178c_6_7_7_ok() {
+    assert_no_violation(
+        &make_let("ground_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Do178c, "DO178C-6.7.7",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_7_8_violation() {
+    assert_violation(
+        &make_let("redundancy_data", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.7.8",
+    );
+}
+#[test]
+fn do178c_do178c_6_7_8_ok() {
+    assert_no_violation(
+        &make_classified_let("redundancy_data", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.7.8",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_7_9_violation() {
+    assert_violation(
+        &Expr::String("192.168.1.1".into()),
+        ComplianceProfile::Do178c, "DO178C-6.7.9",
+    );
+}
+#[test]
+fn do178c_do178c_6_7_9_ok() {
+    assert_no_violation(
+        &Expr::String("safe_value".into()),
+        ComplianceProfile::Do178c, "DO178C-6.7.9",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_7_10_violation() {
+    assert_violation(
+        &Expr::Int(8080),
+        ComplianceProfile::Do178c, "DO178C-6.7.10",
+    );
+}
+#[test]
+fn do178c_do178c_6_7_10_ok() {
+    assert_no_violation(
+        &Expr::Int(12345),
+        ComplianceProfile::Do178c, "DO178C-6.7.10",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_7_11_violation() {
+    assert_violation(
+        &Expr::String("md5".into()),
+        ComplianceProfile::Do178c, "DO178C-6.7.11",
+    );
+}
+#[test]
+fn do178c_do178c_6_7_11_ok() {
+    assert_no_violation(
+        &Expr::String("aes256-gcm".into()),
+        ComplianceProfile::Do178c, "DO178C-6.7.11",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_7_12_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "infinite".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Box::new(Expr::App(Box::new(Expr::Var("infinite".into())), Box::new(Expr::Unit))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.7.12",
+    );
+}
+#[test]
+fn do178c_do178c_6_7_12_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "factorial".into(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Box::new(Expr::Lam("n".into(), Ty::Int, Box::new(Expr::If(
+                Box::new(Expr::Bool(true)),
+                Box::new(Expr::Int(1)),
+                Box::new(Expr::Int(0)),
+            )))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.7.12",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_7_13_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.7.13",
+    );
+}
+#[test]
+fn do178c_do178c_6_7_13_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::Do178c, "DO178C-6.7.13",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_8_1_violation() {
+    assert_violation(
+        &make_let("config_id", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.8.1",
+    );
+}
+#[test]
+fn do178c_do178c_6_8_1_ok() {
+    assert_no_violation(
+        &make_classified_let("config_id", Expr::String("val".into())),
+        ComplianceProfile::Do178c, "DO178C-6.8.1",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_8_2_violation() {
+    assert_violation(
+        &make_let_with_body("change_date", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::Do178c, "DO178C-6.8.2",
+    );
+}
+#[test]
+fn do178c_do178c_6_8_2_ok() {
+    assert_no_violation(
+        &make_let_with_body("change_date", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::Do178c, "DO178C-6.8.2",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_8_3_violation() {
+    assert_violation(
+        &make_let("config_password", Expr::String("hardcoded".into())),
+        ComplianceProfile::Do178c, "DO178C-6.8.3",
+    );
+}
+#[test]
+fn do178c_do178c_6_8_3_ok() {
+    assert_no_violation(
+        &make_let("config_password", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Do178c, "DO178C-6.8.3",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_8_4_violation() {
+    assert_violation(
+        &make_let("config_control", Expr::Bool(false)),
+        ComplianceProfile::Do178c, "DO178C-6.8.4",
+    );
+}
+#[test]
+fn do178c_do178c_6_8_4_ok() {
+    assert_no_violation(
+        &make_let("config_control", Expr::Bool(true)),
+        ComplianceProfile::Do178c, "DO178C-6.8.4",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_8_5_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "config_tool_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Do178c, "DO178C-6.8.5",
+    );
+}
+#[test]
+fn do178c_do178c_6_8_5_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Do178c, "DO178C-6.8.5",
+    );
+}
+
+#[test]
+fn do178c_do178c_6_8_6_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "ext_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Do178c, "DO178C-6.8.6",
+    );
+}
+#[test]
+fn do178c_do178c_6_8_6_ok() {
+    assert_no_violation(
+        &Expr::App(Box::new(Expr::Var("safe_fn".into())), Box::new(Expr::Unit)),
+        ComplianceProfile::Do178c, "DO178C-6.8.6",
+    );
+}
+
+#[test]
+fn sox_sox_302_5_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "financial_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Sox, "SOX-302-5",
+    );
+}
+#[test]
+fn sox_sox_302_5_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Sox, "SOX-302-5",
+    );
+}
+
+#[test]
+fn sox_sox_404_5_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Sox, "SOX-404-5",
+    );
+}
+#[test]
+fn sox_sox_404_5_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Sox, "SOX-404-5",
+    );
+}
+
+#[test]
+fn sox_sox_906_3_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("financial_report".into()))),
+        ComplianceProfile::Sox, "SOX-906-3",
+    );
+}
+#[test]
+fn sox_sox_906_3_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Sox, "SOX-906-3",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ac_5_violation() {
+    assert_violation(
+        &make_let("access_list", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-5",
+    );
+}
+#[test]
+fn cmmc_cmmc_ac_5_ok() {
+    assert_no_violation(
+        &make_classified_let("access_list", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-5",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ac_6_violation() {
+    assert_violation(
+        &make_let("flow_control", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-6",
+    );
+}
+#[test]
+fn cmmc_cmmc_ac_6_ok() {
+    assert_no_violation(
+        &make_classified_let("flow_control", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-6",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ac_7_violation() {
+    assert_violation(
+        &make_let("duty_separation", Expr::Bool(false)),
+        ComplianceProfile::Cmmc, "CMMC-AC-7",
+    );
+}
+#[test]
+fn cmmc_cmmc_ac_7_ok() {
+    assert_no_violation(
+        &make_let("duty_separation", Expr::Bool(true)),
+        ComplianceProfile::Cmmc, "CMMC-AC-7",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ac_8_violation() {
+    assert_violation(
+        &make_let("max_attempts", Expr::String("hardcoded".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-8",
+    );
+}
+#[test]
+fn cmmc_cmmc_ac_8_ok() {
+    assert_no_violation(
+        &make_let("max_attempts", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Cmmc, "CMMC-AC-8",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ac_9_violation() {
+    assert_violation(
+        &make_let("session_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-9",
+    );
+}
+#[test]
+fn cmmc_cmmc_ac_9_ok() {
+    assert_no_violation(
+        &make_classified_let("session_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-9",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ac_10_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("cui".into()))),
+        ComplianceProfile::Cmmc, "CMMC-AC-10",
+    );
+}
+#[test]
+fn cmmc_cmmc_ac_10_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Cmmc, "CMMC-AC-10",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ac_11_violation() {
+    assert_violation(
+        &make_let("remote_access", Expr::Bool(false)),
+        ComplianceProfile::Cmmc, "CMMC-AC-11",
+    );
+}
+#[test]
+fn cmmc_cmmc_ac_11_ok() {
+    assert_no_violation(
+        &make_let("remote_access", Expr::Bool(true)),
+        ComplianceProfile::Cmmc, "CMMC-AC-11",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ac_12_violation() {
+    assert_violation(
+        &make_let("wireless_key", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-12",
+    );
+}
+#[test]
+fn cmmc_cmmc_ac_12_ok() {
+    assert_no_violation(
+        &make_classified_let("wireless_key", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-12",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ac_13_violation() {
+    assert_violation(
+        &make_let("mobile_device", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-13",
+    );
+}
+#[test]
+fn cmmc_cmmc_ac_13_ok() {
+    assert_no_violation(
+        &make_classified_let("mobile_device", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AC-13",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ac_14_violation() {
+    assert_violation(
+        &Expr::Grant(Effect::System, Box::new(Expr::Unit)),
+        ComplianceProfile::Cmmc, "CMMC-AC-14",
+    );
+}
+#[test]
+fn cmmc_cmmc_ac_14_ok() {
+    assert_no_violation(
+        &Expr::Grant(Effect::Read, Box::new(Expr::Unit)),
+        ComplianceProfile::Cmmc, "CMMC-AC-14",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_at_1_violation() {
+    assert_violation(
+        &make_let("training_record", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AT-1",
+    );
+}
+#[test]
+fn cmmc_cmmc_at_1_ok() {
+    assert_no_violation(
+        &make_classified_let("training_record", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AT-1",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_at_2_violation() {
+    assert_violation(
+        &make_let("role_training", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AT-2",
+    );
+}
+#[test]
+fn cmmc_cmmc_at_2_ok() {
+    assert_no_violation(
+        &make_classified_let("role_training", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AT-2",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_au_3_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Cmmc, "CMMC-AU-3",
+    );
+}
+#[test]
+fn cmmc_cmmc_au_3_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-AU-3",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_au_4_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Cmmc, "CMMC-AU-4",
+    );
+}
+#[test]
+fn cmmc_cmmc_au_4_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-AU-4",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_au_5_violation() {
+    assert_violation(
+        &make_let("audit_log", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AU-5",
+    );
+}
+#[test]
+fn cmmc_cmmc_au_5_ok() {
+    assert_no_violation(
+        &make_classified_let("audit_log", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-AU-5",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_au_6_violation() {
+    assert_violation(
+        &make_let_with_body("audit_timestamp", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::Cmmc, "CMMC-AU-6",
+    );
+}
+#[test]
+fn cmmc_cmmc_au_6_ok() {
+    assert_no_violation(
+        &make_let_with_body("audit_timestamp", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::Cmmc, "CMMC-AU-6",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_au_7_violation() {
+    assert_violation(
+        &make_let("audit_alert", Expr::Bool(false)),
+        ComplianceProfile::Cmmc, "CMMC-AU-7",
+    );
+}
+#[test]
+fn cmmc_cmmc_au_7_ok() {
+    assert_no_violation(
+        &make_let("audit_alert", Expr::Bool(true)),
+        ComplianceProfile::Cmmc, "CMMC-AU-7",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_cm_1_violation() {
+    assert_violation(
+        &make_let("baseline_config", Expr::Bool(false)),
+        ComplianceProfile::Cmmc, "CMMC-CM-1",
+    );
+}
+#[test]
+fn cmmc_cmmc_cm_1_ok() {
+    assert_no_violation(
+        &make_let("baseline_config", Expr::Bool(true)),
+        ComplianceProfile::Cmmc, "CMMC-CM-1",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_cm_2_violation() {
+    assert_violation(
+        &make_let("config_key", Expr::String("hardcoded".into())),
+        ComplianceProfile::Cmmc, "CMMC-CM-2",
+    );
+}
+#[test]
+fn cmmc_cmmc_cm_2_ok() {
+    assert_no_violation(
+        &make_let("config_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Cmmc, "CMMC-CM-2",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_cm_3_violation() {
+    assert_violation(
+        &make_let("feature_enabled", Expr::Bool(false)),
+        ComplianceProfile::Cmmc, "CMMC-CM-3",
+    );
+}
+#[test]
+fn cmmc_cmmc_cm_3_ok() {
+    assert_no_violation(
+        &make_let("feature_enabled", Expr::Bool(true)),
+        ComplianceProfile::Cmmc, "CMMC-CM-3",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_cm_4_violation() {
+    assert_violation(
+        &make_let("software_inventory", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-CM-4",
+    );
+}
+#[test]
+fn cmmc_cmmc_cm_4_ok() {
+    assert_no_violation(
+        &make_classified_let("software_inventory", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-CM-4",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ia_1_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "defense_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-IA-1",
+    );
+}
+#[test]
+fn cmmc_cmmc_ia_1_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "defense_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-IA-1",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ia_2_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "device_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-IA-2",
+    );
+}
+#[test]
+fn cmmc_cmmc_ia_2_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "device_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-IA-2",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ia_3_violation() {
+    assert_violation(
+        &make_let("authenticator", Expr::String("hardcoded".into())),
+        ComplianceProfile::Cmmc, "CMMC-IA-3",
+    );
+}
+#[test]
+fn cmmc_cmmc_ia_3_ok() {
+    assert_no_violation(
+        &make_let("authenticator", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Cmmc, "CMMC-IA-3",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ia_4_violation() {
+    assert_violation(
+        &make_let("identity_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-IA-4",
+    );
+}
+#[test]
+fn cmmc_cmmc_ia_4_ok() {
+    assert_no_violation(
+        &make_classified_let("identity_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-IA-4",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ia_5_violation() {
+    assert_violation(
+        &make_let_with_body("auth_expiry", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::Cmmc, "CMMC-IA-5",
+    );
+}
+#[test]
+fn cmmc_cmmc_ia_5_ok() {
+    assert_no_violation(
+        &make_let_with_body("auth_expiry", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::Cmmc, "CMMC-IA-5",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ia_6_violation() {
+    assert_violation(
+        &make_let("auth_feedback", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-IA-6",
+    );
+}
+#[test]
+fn cmmc_cmmc_ia_6_ok() {
+    assert_no_violation(
+        &make_classified_let("auth_feedback", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-IA-6",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ia_7_violation() {
+    assert_violation(
+        &make_let("crypto_module", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-IA-7",
+    );
+}
+#[test]
+fn cmmc_cmmc_ia_7_ok() {
+    assert_no_violation(
+        &make_classified_let("crypto_module", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-IA-7",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ia_8_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "external_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-IA-8",
+    );
+}
+#[test]
+fn cmmc_cmmc_ia_8_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "external_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-IA-8",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ir_1_violation() {
+    assert_violation(
+        &make_let("incident_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-IR-1",
+    );
+}
+#[test]
+fn cmmc_cmmc_ir_1_ok() {
+    assert_no_violation(
+        &make_classified_let("incident_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-IR-1",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ir_2_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Cmmc, "CMMC-IR-2",
+    );
+}
+#[test]
+fn cmmc_cmmc_ir_2_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-IR-2",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ir_3_violation() {
+    assert_violation(
+        &make_let_with_body("incident_time", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::Cmmc, "CMMC-IR-3",
+    );
+}
+#[test]
+fn cmmc_cmmc_ir_3_ok() {
+    assert_no_violation(
+        &make_let_with_body("incident_time", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::Cmmc, "CMMC-IR-3",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ma_1_violation() {
+    assert_violation(
+        &make_let("maintenance_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-MA-1",
+    );
+}
+#[test]
+fn cmmc_cmmc_ma_1_ok() {
+    assert_no_violation(
+        &make_classified_let("maintenance_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-MA-1",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ma_2_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "ext_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Cmmc, "CMMC-MA-2",
+    );
+}
+#[test]
+fn cmmc_cmmc_ma_2_ok() {
+    assert_no_violation(
+        &Expr::App(Box::new(Expr::Var("safe_fn".into())), Box::new(Expr::Unit)),
+        ComplianceProfile::Cmmc, "CMMC-MA-2",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_mp_1_violation() {
+    assert_violation(
+        &make_let("media_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-MP-1",
+    );
+}
+#[test]
+fn cmmc_cmmc_mp_1_ok() {
+    assert_no_violation(
+        &make_classified_let("media_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-MP-1",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_mp_2_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-MP-2",
+    );
+}
+#[test]
+fn cmmc_cmmc_mp_2_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-MP-2",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_pe_1_violation() {
+    assert_violation(
+        &make_let("physical_access", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-PE-1",
+    );
+}
+#[test]
+fn cmmc_cmmc_pe_1_ok() {
+    assert_no_violation(
+        &make_classified_let("physical_access", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-PE-1",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_pe_2_violation() {
+    assert_violation(
+        &Expr::String("192.168.1.1".into()),
+        ComplianceProfile::Cmmc, "CMMC-PE-2",
+    );
+}
+#[test]
+fn cmmc_cmmc_pe_2_ok() {
+    assert_no_violation(
+        &Expr::String("safe_value".into()),
+        ComplianceProfile::Cmmc, "CMMC-PE-2",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ps_1_violation() {
+    assert_violation(
+        &make_let("screening_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-PS-1",
+    );
+}
+#[test]
+fn cmmc_cmmc_ps_1_ok() {
+    assert_no_violation(
+        &make_classified_let("screening_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-PS-1",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ra_1_violation() {
+    assert_violation(
+        &make_let("risk_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-RA-1",
+    );
+}
+#[test]
+fn cmmc_cmmc_ra_1_ok() {
+    assert_no_violation(
+        &make_classified_let("risk_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-RA-1",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_ra_2_violation() {
+    assert_violation(
+        &make_let("scan_input", Expr::String("raw".into())),
+        ComplianceProfile::Cmmc, "CMMC-RA-2",
+    );
+}
+#[test]
+fn cmmc_cmmc_ra_2_ok() {
+    assert_no_violation(
+        &make_let("scan_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Cmmc, "CMMC-RA-2",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_re_1_violation() {
+    assert_violation(
+        &make_let("backup_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-RE-1",
+    );
+}
+#[test]
+fn cmmc_cmmc_re_1_ok() {
+    assert_no_violation(
+        &make_classified_let("backup_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-RE-1",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_re_2_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "backup_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Cmmc, "CMMC-RE-2",
+    );
+}
+#[test]
+fn cmmc_cmmc_re_2_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Cmmc, "CMMC-RE-2",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_sc_5_violation() {
+    assert_violation(
+        &make_let("boundary_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-SC-5",
+    );
+}
+#[test]
+fn cmmc_cmmc_sc_5_ok() {
+    assert_no_violation(
+        &make_classified_let("boundary_data", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-SC-5",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_sc_6_violation() {
+    assert_violation(
+        &Expr::String("http://example.com/api".into()),
+        ComplianceProfile::Cmmc, "CMMC-SC-6",
+    );
+}
+#[test]
+fn cmmc_cmmc_sc_6_ok() {
+    assert_no_violation(
+        &Expr::String("https://example.com/api".into()),
+        ComplianceProfile::Cmmc, "CMMC-SC-6",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_sc_7_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("cui_data".into()))),
+        ComplianceProfile::Cmmc, "CMMC-SC-7",
+    );
+}
+#[test]
+fn cmmc_cmmc_sc_7_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Cmmc, "CMMC-SC-7",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_sc_8_violation() {
+    assert_violation(
+        &make_let("crypto_key", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-SC-8",
+    );
+}
+#[test]
+fn cmmc_cmmc_sc_8_ok() {
+    assert_no_violation(
+        &make_classified_let("crypto_key", Expr::String("val".into())),
+        ComplianceProfile::Cmmc, "CMMC-SC-8",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_sc_9_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-SC-9",
+    );
+}
+#[test]
+fn cmmc_cmmc_sc_9_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-SC-9",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_si_3_violation() {
+    assert_violation(
+        &make_let("system_input", Expr::String("raw".into())),
+        ComplianceProfile::Cmmc, "CMMC-SI-3",
+    );
+}
+#[test]
+fn cmmc_cmmc_si_3_ok() {
+    assert_no_violation(
+        &make_let("system_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Cmmc, "CMMC-SI-3",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_si_4_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "monitor_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Cmmc, "CMMC-SI-4",
+    );
+}
+#[test]
+fn cmmc_cmmc_si_4_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Cmmc, "CMMC-SI-4",
+    );
+}
+
+#[test]
+fn cmmc_cmmc_si_5_violation() {
+    assert_violation(
+        &Expr::Handle(
+            Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Unit))),
+            "err".into(),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-SI-5",
+    );
+}
+#[test]
+fn cmmc_cmmc_si_5_ok() {
+    assert_no_violation(
+        &Expr::Handle(
+            Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Unit))),
+            "err".into(),
+            Box::new(Expr::String("error logged".into())),
+        ),
+        ComplianceProfile::Cmmc, "CMMC-SI-5",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_13_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "scada_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-13",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_13_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "scada_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-13",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_14_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-14",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_14_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-14",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_15_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-15",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_15_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "secret",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-15",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_16_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("scada_data".into()))),
+        ComplianceProfile::Iec62443, "IEC62443-SR-16",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_16_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Iec62443, "IEC62443-SR-16",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_17_violation() {
+    assert_violation(
+        &make_let("operator_input", Expr::String("raw".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-17",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_17_ok() {
+    assert_no_violation(
+        &make_let("operator_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Iec62443, "IEC62443-SR-17",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_18_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "infinite".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Box::new(Expr::App(Box::new(Expr::Var("infinite".into())), Box::new(Expr::Unit))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-18",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_18_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "factorial".into(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Box::new(Expr::Lam("n".into(), Ty::Int, Box::new(Expr::If(
+                Box::new(Expr::Bool(true)),
+                Box::new(Expr::Int(1)),
+                Box::new(Expr::Int(0)),
+            )))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-18",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_19_violation() {
+    assert_violation(
+        &Expr::String("http://example.com/api".into()),
+        ComplianceProfile::Iec62443, "IEC62443-SR-19",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_19_ok() {
+    assert_no_violation(
+        &Expr::String("https://example.com/api".into()),
+        ComplianceProfile::Iec62443, "IEC62443-SR-19",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_20_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-20",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_20_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-20",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_21_violation() {
+    assert_violation(
+        &Expr::Grant(Effect::System, Box::new(Expr::Unit)),
+        ComplianceProfile::Iec62443, "IEC62443-SR-21",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_21_ok() {
+    assert_no_violation(
+        &Expr::Grant(Effect::Read, Box::new(Expr::Unit)),
+        ComplianceProfile::Iec62443, "IEC62443-SR-21",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_22_violation() {
+    assert_violation(
+        &make_let("zone_data", Expr::String("val".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-22",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_22_ok() {
+    assert_no_violation(
+        &make_classified_let("zone_data", Expr::String("val".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-22",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_23_violation() {
+    assert_violation(
+        &make_let("sis_data", Expr::String("val".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-23",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_23_ok() {
+    assert_no_violation(
+        &make_classified_let("sis_data", Expr::String("val".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-23",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_24_violation() {
+    assert_violation(
+        &make_let("maintenance_key", Expr::String("hardcoded".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-24",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_24_ok() {
+    assert_no_violation(
+        &make_let("maintenance_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Iec62443, "IEC62443-SR-24",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_25_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "modbus_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Iec62443, "IEC62443-SR-25",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_25_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Iec62443, "IEC62443-SR-25",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_26_violation() {
+    assert_violation(
+        &make_let("firmware_data", Expr::String("val".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-26",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_26_ok() {
+    assert_no_violation(
+        &make_classified_let("firmware_data", Expr::String("val".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-26",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_27_violation() {
+    assert_violation(
+        &make_let_with_body("cert_expiry", Expr::String("v".into()), Expr::Unit),
+        ComplianceProfile::Iec62443, "IEC62443-SR-27",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_27_ok() {
+    assert_no_violation(
+        &make_let_with_body("cert_expiry", Expr::String("v".into()),
+            Expr::Perform(Effect::Time, Box::new(Expr::Unit))),
+        ComplianceProfile::Iec62443, "IEC62443-SR-27",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_28_violation() {
+    assert_violation(
+        &make_let("patch_mgmt", Expr::Bool(false)),
+        ComplianceProfile::Iec62443, "IEC62443-SR-28",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_28_ok() {
+    assert_no_violation(
+        &make_let("patch_mgmt", Expr::Bool(true)),
+        ComplianceProfile::Iec62443, "IEC62443-SR-28",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_29_violation() {
+    assert_violation(
+        &Expr::String("192.168.1.1".into()),
+        ComplianceProfile::Iec62443, "IEC62443-SR-29",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_29_ok() {
+    assert_no_violation(
+        &Expr::String("safe_value".into()),
+        ComplianceProfile::Iec62443, "IEC62443-SR-29",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_30_violation() {
+    assert_violation(
+        &make_let("ics_incident", Expr::String("val".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-30",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_30_ok() {
+    assert_no_violation(
+        &make_classified_let("ics_incident", Expr::String("val".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-30",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_31_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "remote_access".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-31",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_31_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "remote_access".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Iec62443, "IEC62443-SR-31",
+    );
+}
+
+#[test]
+fn iec62443_iec62443_sr_32_violation() {
+    assert_violation(
+        &make_let("ics_backup", Expr::String("val".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-32",
+    );
+}
+#[test]
+fn iec62443_iec62443_sr_32_ok() {
+    assert_no_violation(
+        &make_classified_let("ics_backup", Expr::String("val".into())),
+        ComplianceProfile::Iec62443, "IEC62443-SR-32",
+    );
+}
+
+#[test]
+fn nerc_cip_nerc_cip_013_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "grid_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Pure),
+            Box::new(Expr::Lam("x".into(), Ty::String, Box::new(Expr::Bool(true)))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::NercCip, "NERC-CIP-013",
+    );
+}
+#[test]
+fn nerc_cip_nerc_cip_013_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "grid_auth".into(),
+            Ty::Fn(Box::new(Ty::String), Box::new(Ty::Bool), Effect::Crypto),
+            Box::new(Expr::Lam("x".into(), Ty::String,
+                Box::new(Expr::Perform(Effect::Crypto, Box::new(Expr::Var("x".into())))))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::NercCip, "NERC-CIP-013",
+    );
+}
+
+#[test]
+fn nerc_cip_nerc_cip_014_violation() {
+    assert_violation(
+        &make_let("physical_security", Expr::String("val".into())),
+        ComplianceProfile::NercCip, "NERC-CIP-014",
+    );
+}
+#[test]
+fn nerc_cip_nerc_cip_014_ok() {
+    assert_no_violation(
+        &make_classified_let("physical_security", Expr::String("val".into())),
+        ComplianceProfile::NercCip, "NERC-CIP-014",
+    );
+}
+
+#[test]
+fn nerc_cip_nerc_cip_015_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::NercCip, "NERC-CIP-015",
+    );
+}
+#[test]
+fn nerc_cip_nerc_cip_015_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::NercCip, "NERC-CIP-015",
+    );
+}
+
+#[test]
+fn nerc_cip_nerc_cip_016_violation() {
+    assert_violation(
+        &Expr::String("md5".into()),
+        ComplianceProfile::NercCip, "NERC-CIP-016",
+    );
+}
+#[test]
+fn nerc_cip_nerc_cip_016_ok() {
+    assert_no_violation(
+        &Expr::String("aes256-gcm".into()),
+        ComplianceProfile::NercCip, "NERC-CIP-016",
+    );
+}
+
+#[test]
+fn nerc_cip_nerc_cip_017_violation() {
+    assert_violation(
+        &make_let("grid_input", Expr::String("raw".into())),
+        ComplianceProfile::NercCip, "NERC-CIP-017",
+    );
+}
+#[test]
+fn nerc_cip_nerc_cip_017_ok() {
+    assert_no_violation(
+        &make_let("grid_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::NercCip, "NERC-CIP-017",
+    );
+}
+
+#[test]
+fn nerc_cip_nerc_cip_018_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("grid_data".into()))),
+        ComplianceProfile::NercCip, "NERC-CIP-018",
+    );
+}
+#[test]
+fn nerc_cip_nerc_cip_018_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::NercCip, "NERC-CIP-018",
+    );
+}
+
+#[test]
+fn nerc_cip_nerc_cip_019_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "ext_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::NercCip, "NERC-CIP-019",
+    );
+}
+#[test]
+fn nerc_cip_nerc_cip_019_ok() {
+    assert_no_violation(
+        &Expr::App(Box::new(Expr::Var("safe_fn".into())), Box::new(Expr::Unit)),
+        ComplianceProfile::NercCip, "NERC-CIP-019",
+    );
+}
+
+#[test]
+fn nerc_cip_nerc_cip_020_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::NercCip, "NERC-CIP-020",
+    );
+}
+#[test]
+fn nerc_cip_nerc_cip_020_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::NercCip, "NERC-CIP-020",
+    );
+}
+
+#[test]
+fn nerc_cip_nerc_cip_021_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "infinite".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Box::new(Expr::App(Box::new(Expr::Var("infinite".into())), Box::new(Expr::Unit))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::NercCip, "NERC-CIP-021",
+    );
+}
+#[test]
+fn nerc_cip_nerc_cip_021_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "factorial".into(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Box::new(Expr::Lam("n".into(), Ty::Int, Box::new(Expr::If(
+                Box::new(Expr::Bool(true)),
+                Box::new(Expr::Int(1)),
+                Box::new(Expr::Int(0)),
+            )))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::NercCip, "NERC-CIP-021",
+    );
+}
+
+#[test]
+fn nerc_cip_nerc_cip_022_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "iec61850_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::NercCip, "NERC-CIP-022",
+    );
+}
+#[test]
+fn nerc_cip_nerc_cip_022_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::NercCip, "NERC-CIP-022",
+    );
+}
+
+#[test]
+fn fda_fda_11_10_k_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::Fda21cfr, "FDA-11.10-k",
+    );
+}
+#[test]
+fn fda_fda_11_10_k_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::Fda21cfr, "FDA-11.10-k",
+    );
+}
+
+#[test]
+fn fda_fda_11_10_l_violation() {
+    assert_violation(
+        &Expr::String("md5".into()),
+        ComplianceProfile::Fda21cfr, "FDA-11.10-l",
+    );
+}
+#[test]
+fn fda_fda_11_10_l_ok() {
+    assert_no_violation(
+        &Expr::String("aes256-gcm".into()),
+        ComplianceProfile::Fda21cfr, "FDA-11.10-l",
+    );
+}
+
+#[test]
+fn fda_fda_11_10_m_violation() {
+    assert_violation(
+        &make_let("clinical_input", Expr::String("raw".into())),
+        ComplianceProfile::Fda21cfr, "FDA-11.10-m",
+    );
+}
+#[test]
+fn fda_fda_11_10_m_ok() {
+    assert_no_violation(
+        &make_let("clinical_input", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Fda21cfr, "FDA-11.10-m",
+    );
+}
+
+#[test]
+fn fda_fda_11_10_n_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("clinical_data".into()))),
+        ComplianceProfile::Fda21cfr, "FDA-11.10-n",
+    );
+}
+#[test]
+fn fda_fda_11_10_n_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Fda21cfr, "FDA-11.10-n",
+    );
+}
+
+#[test]
+fn fda_fda_11_50_a_violation() {
+    assert_violation(
+        &Expr::Handle(
+            Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Unit))),
+            "err".into(),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Fda21cfr, "FDA-11.50-a",
+    );
+}
+#[test]
+fn fda_fda_11_50_a_ok() {
+    assert_no_violation(
+        &Expr::Handle(
+            Box::new(Expr::Perform(Effect::Network, Box::new(Expr::Unit))),
+            "err".into(),
+            Box::new(Expr::String("error logged".into())),
+        ),
+        ComplianceProfile::Fda21cfr, "FDA-11.50-a",
+    );
+}
+
+#[test]
+fn fda_fda_11_50_b_violation() {
+    assert_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Unit,
+        ),
+        ComplianceProfile::Fda21cfr, "FDA-11.50-b",
+    );
+}
+#[test]
+fn fda_fda_11_50_b_ok() {
+    assert_no_violation(
+        &make_let_with_body(
+            "data",
+            Expr::Classify(Box::new(Expr::Int(42))),
+            Expr::Perform(Effect::Write, Box::new(Expr::String("audit".into()))),
+        ),
+        ComplianceProfile::Fda21cfr, "FDA-11.50-b",
+    );
+}
+
+#[test]
+fn fda_fda_11_50_c_violation() {
+    assert_violation(
+        &Expr::FFICall { name: "clinical_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Fda21cfr, "FDA-11.50-c",
+    );
+}
+#[test]
+fn fda_fda_11_50_c_ok() {
+    assert_no_violation(
+        &Expr::FFICall { name: "safe_fn".into(), args: vec![], ret_ty: Ty::Unit },
+        ComplianceProfile::Fda21cfr, "FDA-11.50-c",
+    );
+}
+
+#[test]
+fn fda_fda_11_50_d_violation() {
+    assert_violation(
+        &Expr::LetRec(
+            "infinite".into(),
+            Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Unit), Effect::Pure),
+            Box::new(Expr::App(Box::new(Expr::Var("infinite".into())), Box::new(Expr::Unit))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Fda21cfr, "FDA-11.50-d",
+    );
+}
+#[test]
+fn fda_fda_11_50_d_ok() {
+    assert_no_violation(
+        &Expr::LetRec(
+            "factorial".into(),
+            Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Pure),
+            Box::new(Expr::Lam("n".into(), Ty::Int, Box::new(Expr::If(
+                Box::new(Expr::Bool(true)),
+                Box::new(Expr::Int(1)),
+                Box::new(Expr::Int(0)),
+            )))),
+            Box::new(Expr::Unit),
+        ),
+        ComplianceProfile::Fda21cfr, "FDA-11.50-d",
+    );
+}
+
+#[test]
+fn itar_itar_121_1_violation() {
+    assert_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(0)),
+        ),
+        ComplianceProfile::Itar, "ITAR-121.1",
+    );
+}
+#[test]
+fn itar_itar_121_1_ok() {
+    assert_no_violation(
+        &Expr::Declassify(
+            Box::new(Expr::Classify(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Prove(Box::new(Expr::Bool(true)))),
+        ),
+        ComplianceProfile::Itar, "ITAR-121.1",
+    );
+}
+
+#[test]
+fn itar_itar_121_2_violation() {
+    assert_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::Var("munition".into()))),
+        ComplianceProfile::Itar, "ITAR-121.2",
+    );
+}
+#[test]
+fn itar_itar_121_2_ok() {
+    assert_no_violation(
+        &Expr::Perform(Effect::Network, Box::new(Expr::String("safe_val".into()))),
+        ComplianceProfile::Itar, "ITAR-121.2",
+    );
+}
+
+#[test]
+fn itar_itar_121_3_violation() {
+    assert_violation(
+        &make_let("export_key", Expr::String("hardcoded".into())),
+        ComplianceProfile::Itar, "ITAR-121.3",
+    );
+}
+#[test]
+fn itar_itar_121_3_ok() {
+    assert_no_violation(
+        &make_let("export_key", Expr::Perform(Effect::Read, Box::new(Expr::Unit))),
+        ComplianceProfile::Itar, "ITAR-121.3",
+    );
+}
+
+#[test]
+fn itar_itar_121_4_violation() {
+    assert_violation(
+        &Expr::String("md5".into()),
+        ComplianceProfile::Itar, "ITAR-121.4",
+    );
+}
+#[test]
+fn itar_itar_121_4_ok() {
+    assert_no_violation(
+        &Expr::String("aes256-gcm".into()),
+        ComplianceProfile::Itar, "ITAR-121.4",
+    );
 }
