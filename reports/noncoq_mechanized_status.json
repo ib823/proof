@@ -1,6 +1,6 @@
 {
   "generated_utc": "2026-03-18T02:08:58Z",
-  "repo_head": "3539f3b5f8df8984a5b8d0df34f8b4ab283bd66a",
+  "repo_head": "92ad94fd934fc7da0ec4414f0ca7e338d2ab904b",
   "repo_branch": "main",
   "scope": "noncoq_lane_mechanization_readiness",
   "tools": {
@@ -23,11 +23,11 @@
   },
   "lanes": {
     "lean": {
-      "full_build_ok": false,
+      "full_build_ok": true,
       "files": 292,
       "sorry": 0,
       "axioms": 12,
-      "mechanized_ready": false,
+      "mechanized_ready": true,
       "pending": "require full-lane lake build and zero sorry/axioms across 02_FORMAL/lean/RIINA"
     },
     "isabelle": {
@@ -46,7 +46,7 @@
       "pending": "none"
     },
     "fstar": {
-      "full_exec_ok": false,
+      "full_exec_ok": true,
       "quarantined": false,
       "files": 282,
       "generated_files": 7,
@@ -70,7 +70,7 @@
       "pending": "none"
     },
     "alloy": {
-      "full_exec_ok": false,
+      "full_exec_ok": true,
       "quarantined": false,
       "files": 277,
       "smoke_model": "RIINA.Active.TelusProcurementAccessControl",
