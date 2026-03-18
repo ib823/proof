@@ -86,6 +86,7 @@ fn spec_total_rules(profile: ComplianceProfile) -> usize {
         ComplianceProfile::Nist80053 => 326, // NIST 800-53 rev5 controls
         ComplianceProfile::MasTrm => 38,     // MAS TRM guidelines
         ComplianceProfile::Itar => 16,       // ITAR technical controls
+        ComplianceProfile::EsgSdg => 65,     // ESG/SDG reporting requirements (GRI + SD VISta)
     }
 }
 
