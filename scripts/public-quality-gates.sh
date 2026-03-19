@@ -235,7 +235,7 @@ if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
   VERSION_DETAIL="version=$version tag=v$version"
 else
   VERSION_STATUS="FAIL"
-  VERSION_DETAIL="version=$version tag=v$version_missing"
+  VERSION_DETAIL="version=$version tag=v${version}_missing"
   OVERALL="FAIL"
 fi
 
