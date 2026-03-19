@@ -179,8 +179,8 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 12,385 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 317 files, 12,576 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
-| **Isabelle proofs** | `02_FORMAL/isabelle/` | 354 files, 12,931 lemmas, 10 core theories compile, 0 sorry | Mechanized |
+| **Lean proofs** | `02_FORMAL/lean/` | 325 files, 12,576 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
+| **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, 12,931 lemmas, 10 core theories compile, 0 sorry | Mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 267 files, 11,843 assertions, 267/267 Z3-verified | Mechanized |
 | **F\* proofs** | `02_FORMAL/fstar/` | 265 files, 0 assume val | Compiled |
 | **TLA+ specs** | `02_FORMAL/tlaplus/` | 267 files, 5,893 theorems, SANY+TLC verified | Compiled |
@@ -451,7 +451,7 @@ See Part 5 for detailed per-prover closure criteria.
 
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
-| Lean 4 | 317 files, 12,576 declarations, 0 `sorry`, 0 axioms | Full lane builds; strict active lane mechanized via step-indexed `AlgebraicEffects` typing | DONE | High |
+| Lean 4 | 325 files, 12,576 declarations, 0 `sorry`, 0 axioms | Full lane builds; strict active lane mechanized via step-indexed `AlgebraicEffects` typing | DONE | High |
 | Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | DONE (smoke; requires provisioning to re-verify) | High |
 | F* | 1 smoke-compiled active module (22 lemmas) | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | DONE (smoke; requires provisioning to re-verify) | High (HACL* templates) |
 | TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | DONE (smoke; requires provisioning to re-verify) | Very High |
