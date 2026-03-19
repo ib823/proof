@@ -1,9 +1,10 @@
 -- Domain files (bulk of theorems — compile independently)
 import RIINA.Domains.All
--- MobileOS, Industries, Compliance excluded: transpiler .mk constructor bug
--- import RIINA.Domains.MobileOS
+-- Industries, Compliance, MobileOS excluded: redundant match alternatives
+-- and undefined types from transpiler. Domain files compile independently.
 -- import RIINA.Industries
 -- import RIINA.Compliance
+-- import RIINA.Domains.MobileOS
 -- Core files depend on Foundations.Syntax/Semantics which need hand-written Lean port.
 -- Excluded until transpiler generates valid Lean for core Coq definitions.
 -- import RIINA.Foundations.Syntax

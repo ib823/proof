@@ -270,7 +270,7 @@ proof (intro conjI allI impI)
 next
   fix l0 v0
   assume h: "store_lookup l0 (store_update l v st) = Some v0"
-  show "\<exists>T0 sl0. store_ty_lookup l0 \<Sigma> = Some (T0. sl0) \<and> is_value v0 \<and>
+  show "\<exists>T0 sl0. store_ty_lookup l0 \<Sigma> = Some (T0, sl0) \<and> is_value v0 \<and>
                   has_type [] \<Sigma> LPublic v0 T0 EffPure"
   proof (cases "l0 = l")
     case True
@@ -322,7 +322,7 @@ proof (intro conjI allI impI)
 next
   fix l0 v0
   assume h: "store_lookup l0 (store_update l v st) = Some v0"
-  show "\<exists>T0 sl0. store_ty_lookup l0 (store_ty_update l T sl \<Sigma>) = Some (T0. sl0) \<and> is_value v0 \<and>
+  show "\<exists>T0 sl0. store_ty_lookup l0 (store_ty_update l T sl \<Sigma>) = Some (T0, sl0) \<and> is_value v0 \<and>
                   has_type [] (store_ty_update l T sl \<Sigma>) LPublic v0 T0 EffPure"
   proof (cases "l0 = l")
     case True
@@ -399,7 +399,7 @@ lemma has_type_swap:
   shows "has_type ((y, B) # (x, A) # \<Gamma>) \<Sigma> \<Delta> e T \<epsilon>"
 proof -
   have "\<forall>z. free_in z e \<longrightarrow>
-    env_lookup z ((x. A) # (y, B) # \<Gamma>) = env_lookup z ((y, B) # (x, A) # \<Gamma>)"
+    env_lookup z ((x, A) # (y, B) # \<Gamma>) = env_lookup z ((y, B) # (x, A) # \<Gamma>)"
     using env_lookup_swap[OF assms(1)] by auto
   thus ?thesis using context_invariance[OF assms(2)] by blast
 qed
@@ -410,7 +410,7 @@ lemma has_type_shadow:
 proof -
   assume h: "has_type ((x, A) # (x, B) # \<Gamma>) \<Sigma> \<Delta> e T \<epsilon>"
   have "\<forall>z. free_in z e \<longrightarrow>
-    env_lookup z ((x. A) # (x, B) # \<Gamma>) = env_lookup z ((x, A) # \<Gamma>)"
+    env_lookup z ((x, A) # (x, B) # \<Gamma>) = env_lookup z ((x, A) # \<Gamma>)"
     by auto
   thus ?thesis using context_invariance[OF h] by blast
 qed

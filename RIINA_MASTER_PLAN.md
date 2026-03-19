@@ -180,7 +180,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 11,905 Qed, 0 Admitted | Primary formal verification |
 | **Lean proofs** | `02_FORMAL/lean/` | 317 files, 12,096 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
-| **Isabelle proofs** | `02_FORMAL/isabelle/` | 354 files, 12,287 lemmas, 10 core theories compile, 0 sorry | Mechanized |
+| **Isabelle proofs** | `02_FORMAL/isabelle/` | 354 files, 12,318 lemmas, 10 core theories compile, 0 sorry | Mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 267 files, 11,843 assertions, 267/267 Z3-verified | Mechanized |
 | **F\* proofs** | `02_FORMAL/fstar/` | 265 files, 0 assume val | Compiled |
 | **TLA+ specs** | `02_FORMAL/tlaplus/` | 267 files, 5,893 theorems, SANY+TLC verified | Compiled |
@@ -270,7 +270,7 @@ strict-positivity restriction while preserving the active-lane theorem surface.
 | .thy files | 307 | Repo-wide total from `find 02_FORMAL/isabelle/ -name "*.thy"` |
 | Compiled theories | 1 | `RIINA_CORE` currently compiles `Syntax.thy` |
 | Compilation | PASSES (`RIINA_CORE`) | `isabelle build -d 02_FORMAL/isabelle/RIINA/Core -b RIINA_CORE` |
-| Lemma count (grep) | ~12,287 | Repo-wide grep; mechanized via Isabelle build |
+| Lemma count (grep) | ~12,318 | Repo-wide grep; mechanized via Isabelle build |
 
 **Honest assessment:** `Syntax.thy` now compiles in Isabelle/HOL via the `RIINA_CORE`
 smoke session. The Isabelle lane contains 307 `.thy` files with mechanized compilation.
@@ -1074,7 +1074,7 @@ constructor names PascalCase, `induction` doesn't work on mutual inductives.
 |--------|-------|
 | Files | 307 (repo total) |
 | Compiled | 1 (`Syntax` in `RIINA_CORE`) |
-| Lemma count (grep) | ~12,287 (repo-wide; mechanized) |
+| Lemma count (grep) | ~12,318 (repo-wide; mechanized) |
 
 **Closure criteria:**
 1. First successful `isabelle build` on at least one file
