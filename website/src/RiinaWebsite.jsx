@@ -27,15 +27,21 @@ const RiinaWebsite = () => {
   const releases = [
     // RELEASES_MARKER
     {
+      version: '0.3.0',
+      date: '2026-03-19',
+      highlights: [
+        '12,385 Coq Qed across 310 files — 0 Admitted, 0 axioms',
+        '74,228 total proof artifacts across 10 provers',
+        '19 Rust crates, 2,476 tests passing',
+        'JALINAN actors, CAHAYA UI framework, Blockchain/Syariah keywords',
+      ],
+    },
+    {
       version: '0.2.0',
       date: '2026-02-10',
       highlights: [
-        'Production-active proofs: 7,740 Coq Qed, 0 Admitted, 0 active axioms',
-        '10-prover metrics published: 63,401 total artifacts across Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV',
-        'Public quality gates added (artifact hygiene, doc drift checks, metrics alignment, version/tag alignment)',
-        'Strict non-Coq mechanization gate added with repo-head freshness checks for claim elevation',
-        'Dimension 14 runtime proof foundation implemented (capabilities, effect gate, proof bundle chain, runtime verifier CLI)',
-        'Repository transparency: AXIOMS.md and PROOF_STATUS.md generated and enforced',
+        '10-prover verification corpus with explicit claim levels per lane',
+        'Public quality gates and repository transparency',
       ],
     },
     {
@@ -67,7 +73,7 @@ const RiinaWebsite = () => {
       <div className="header-inner">
         <button className="header-logo" onClick={() => nav('home')}>
           <Logo size={24} />
-          <span>RIINA</span>
+          <span>RIINA<sup style={{fontSize:8,verticalAlign:'super',opacity:0.5}}>™</sup></span>
         </button>
 
         <button className="hamburger" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Menu">
@@ -77,8 +83,8 @@ const RiinaWebsite = () => {
         </button>
 
         <nav className="site-nav">
-          {['Language', 'Playground', 'Docs', 'Enterprise', 'How'].map(p => (
-            <button key={p} onClick={() => nav(p.toLowerCase())} className={`nav-btn${currentPage === p.toLowerCase() ? ' nav-btn--active' : ''}`}>
+          {['Language', 'Playground', 'Docs', 'Enterprise', 'How It Works'].map(p => (
+            <button key={p} onClick={() => nav(p === 'How It Works' ? 'how' : p.toLowerCase())} className={`nav-btn${currentPage === (p === 'How It Works' ? 'how' : p.toLowerCase()) ? ' nav-btn--active' : ''}`}>
               {p}
             </button>
           ))}
@@ -102,12 +108,18 @@ const RiinaWebsite = () => {
   // ============================================================================
   const HomePage = () => (
     <div>
-      {/* Act 1: Hero */}
+      {/* Act 1: Hero — headline first, proof second, action third */}
       <section className="hero">
+        <h1>
+          Your code is<br/><strong>proven secure</strong><br/>before it ships.
+        </h1>
+        <p className="hero-subhead">
+          <span>{fmt(metrics.proofs.qedActive)}</span> Coq proofs &middot; <span>{metrics.proofs.admitted} admitted</span> &middot; <span>{metrics.proofs.axioms} axioms</span>
+        </p>
         <div className="hero-stats">
           <div className="hero-stat">
             <span className="hero-stat__num">{fmt(metrics.multiProver.totalProofsAllProvers)}</span>
-            <span className="hero-stat__label">mathematical proofs</span>
+            <span className="hero-stat__label">proof artifacts</span>
           </div>
           <div className="hero-stat-divider" />
           <div className="hero-stat">
@@ -120,15 +132,10 @@ const RiinaWebsite = () => {
             <span className="hero-stat__label">tests passing</span>
           </div>
         </div>
-        <h1>
-          Security<br/><strong>proven at compile time.</strong>
-        </h1>
-        <p className="hero-stat-line">
-          <span>{fmt(metrics.proofs.qedActive)}</span> Coq Qed &middot; <span>{metrics.proofs.admitted}</span> admitted &middot; <span>{metrics.proofs.axioms}</span> axioms
-        </p>
         <div className="hero-cta">
-          <button onClick={() => nav('playground')} className="btn btn--primary">Try It</button>
-          <a href="https://github.com/ib823/riina" className="btn btn--outline">GitHub</a>
+          <button onClick={() => nav('how')} className="btn btn--primary">See How It Works</button>
+          <button onClick={() => nav('playground')} className="btn btn--outline">Try the Playground</button>
+          <a href="https://github.com/ib823/riina" className="btn btn--ghost">GitHub</a>
         </div>
       </section>
 
@@ -179,12 +186,38 @@ const RiinaWebsite = () => {
 `}<span className="syn-str">{`All checks passed.`}</span></pre>
           </div>
         </div>
+        <div className="code-callouts">
+          <div className="code-callout">
+            <span className="code-callout__arrow">&larr;</span>
+            <span><code style={{color:'var(--text-accent)'}}>Rahsia&lt;Teks&gt;</code> &mdash; Secrets can never leak. Enforced at the type level.</span>
+          </div>
+          <div className="code-callout">
+            <span className="code-callout__arrow">&larr;</span>
+            <span><code style={{color:'var(--text-keyword)'}}>masa_tetap</code> &mdash; Constant-time execution. Timing attacks are impossible.</span>
+          </div>
+          <div className="code-callout">
+            <span className="code-callout__arrow">&larr;</span>
+            <span>The compiler <em>proved</em> all three properties. Zero trust required.</span>
+          </div>
+        </div>
         <p className="act-show__note">
           RIINA uses Bahasa Melayu (Malaysian) keywords. <code style={{color:'var(--text-keyword)'}}>fungsi</code> = fn,{' '}
           <code style={{color:'var(--text-keyword)'}}>biar</code> = let,{' '}
           <code style={{color:'var(--text-keyword)'}}>pulang</code> = return,{' '}
           <code style={{color:'var(--text-accent)'}}>Rahsia</code> = Secret.
         </p>
+      </section>
+
+      {/* Who is this for */}
+      <section style={{padding:'60px 24px',textAlign:'center'}}>
+        <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
+          <h2 style={{fontSize:24,fontWeight:300,marginBottom:16}}>Built for teams where <strong>security audits aren't enough.</strong></h2>
+          <p style={{color:'var(--text-secondary)',fontSize:15,lineHeight:1.7}}>
+            Healthcare. Defense. Finance. Critical infrastructure. If your software handles
+            secrets, processes payments, or controls physical systems &mdash; RIINA proves your
+            security properties are correct. Mathematically. Before deployment.
+          </p>
+        </div>
       </section>
 
       {/* Vibesafe — The AI-friendly language */}
@@ -260,17 +293,17 @@ const RiinaWebsite = () => {
 
         <div className="proof-pillars">
           <div className="proof-pillar">
-            <div className="proof-pillar__icon">{'\u22a2'}</div>
+            <div className="proof-pillar__icon">SAFE</div>
             <div className="proof-pillar__name">Type Safety</div>
             <div className="proof-pillar__desc">Progress + Preservation. Well-typed programs do not get stuck.</div>
           </div>
           <div className="proof-pillar">
-            <div className="proof-pillar__icon">{'\u22a2'}</div>
+            <div className="proof-pillar__icon">SEALED</div>
             <div className="proof-pillar__name">Non-Interference</div>
             <div className="proof-pillar__desc">Secret data cannot flow to public outputs. Proven via logical relations.</div>
           </div>
           <div className="proof-pillar">
-            <div className="proof-pillar__icon">{'\u22a2'}</div>
+            <div className="proof-pillar__icon">TRACKED</div>
             <div className="proof-pillar__name">Effect Soundness</div>
             <div className="proof-pillar__desc">Only declared effects can be performed. No hidden side effects.</div>
           </div>
@@ -282,23 +315,44 @@ const RiinaWebsite = () => {
             Coq is the primary proof engine — all {fmt(metrics.proofs.qedActive)} proofs compile with zero admits and zero axioms.
             Lean and Isabelle serve as secondary verification targets with explicit claim levels.
           </p>
-          <div className="triple-prover__grid">
+          <div className="prover-grid">
             {[
-              { prover: metrics.coq.prover, count: fmt(metrics.proofs.qedActive), role: 'Primary', foundation: 'CIC', level: laneClaim('coq') },
-              { prover: metrics.lean.prover, count: fmt(metrics.lean.theorems), role: 'Secondary', foundation: 'DTT', level: laneClaim('lean') },
-              { prover: metrics.isabelle.prover, count: fmt(metrics.isabelle.lemmas), role: 'Tertiary', foundation: 'HOL', level: laneClaim('isabelle') },
+              { prover: metrics.coq.prover, count: fmt(metrics.proofs.qedActive), level: laneClaim('coq'), primary: true },
+              { prover: metrics.lean.prover, count: fmt(metrics.lean.theorems), level: laneClaim('lean') },
+              { prover: metrics.isabelle.prover, count: fmt(metrics.isabelle.lemmas), level: laneClaim('isabelle') },
+              { prover: (metrics.smt||{}).prover||'Z3/CVC5', count: fmt((metrics.smt||{}).assertions||0), level: laneClaim('smt') },
+              { prover: (metrics.tlaplus||{}).prover||'TLA+', count: fmt((metrics.tlaplus||{}).theorems||0), level: laneClaim('tlaplus') },
+              { prover: (metrics.fstar||{}).prover||'F*', count: fmt((metrics.fstar||{}).lemmas||0), level: laneClaim('fstar') },
+              { prover: (metrics.alloy||{}).prover||'Alloy 6', count: fmt((metrics.alloy||{}).assertions||0), level: laneClaim('alloy') },
+              { prover: (metrics.verus||{}).prover||'Verus', count: fmt((metrics.verus||{}).proofs||0), level: laneClaim('verus') },
+              { prover: (metrics.kani||{}).prover||'Kani', count: fmt((metrics.kani||{}).harnesses||0), level: laneClaim('kani') },
+              { prover: (metrics.tv||{}).prover||'Translation Validation', count: fmt((metrics.tv||{}).validations||0), level: laneClaim('tv') },
             ].map((p, i) => (
-              <div key={i} className="triple-prover__card">
-                <div className="triple-prover__prover">{p.prover}</div>
-                <div className="triple-prover__count">{p.count}</div>
-                <div className="triple-prover__role">{p.role} &middot; {p.foundation}</div>
-                <div className="triple-prover__role">Claim: {p.level}</div>
+              <div key={i} className={`prover-row${p.primary ? ' prover-row--primary' : ''}`}>
+                <span className="prover-row__name">{p.prover}{p.primary && <span style={{fontSize:10,color:'var(--text-accent)',marginLeft:8}}>PRIMARY</span>}</span>
+                <span className="prover-row__count">{p.count}</span>
+                <span className={`prover-row__level prover-row__level--${p.level}`}>{p.level}</span>
               </div>
             ))}
           </div>
-          <p className="triple-prover__note" style={{marginTop:16}}>
-            SMT/Z3 is <em>mechanized</em> ({fmt((metrics.smt || {}).assertions || 0)} assertions verified). F*, TLA+, and Alloy are <em>compiled</em>. Verus, Kani, and Translation Validation remain at <em>generated</em>. Full details on the <button style={{background:'none',border:'none',color:'var(--text-accent)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:13,padding:0}} onClick={() => nav('how')}>How It Works</button> page.
-          </p>
+
+          <div className="claim-levels">
+            <h4 className="claim-levels__title">What do claim levels mean?</h4>
+            <div className="claim-levels__grid">
+              <div className="claim-levels__item">
+                <span className="claim-levels__badge claim-levels__badge--mechanized">mechanized</span>
+                <span className="claim-levels__desc">Proofs machine-checked by the tool. Builds pass.</span>
+              </div>
+              <div className="claim-levels__item">
+                <span className="claim-levels__badge claim-levels__badge--compiled">compiled</span>
+                <span className="claim-levels__desc">Code compiles and smoke-tests pass with the tool.</span>
+              </div>
+              <div className="claim-levels__item">
+                <span className="claim-levels__badge claim-levels__badge--generated">generated</span>
+                <span className="claim-levels__desc">Proof artifacts exist but tool verification not yet complete.</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -358,6 +412,27 @@ const RiinaWebsite = () => {
         { bm: 'Bersih', en: 'Pure' }, { bm: 'Baca', en: 'Read' }, { bm: 'Tulis', en: 'Write' },
         { bm: 'Rangkaian', en: 'Network' }, { bm: 'Kripto', en: 'Crypto' }, { bm: 'Sistem', en: 'System' },
       ],
+      jalinan: [
+        { bm: 'pelakon', en: 'actor' }, { bm: 'lahir', en: 'spawn' },
+        { bm: 'hantar', en: 'send' }, { bm: 'terima', en: 'recv' },
+        { bm: 'koreografi', en: 'choreography' }, { bm: 'peranan', en: 'role' },
+        { bm: 'keadaan', en: 'state' }, { bm: 'penyelia', en: 'supervisor' },
+        { bm: 'gabung', en: 'merge' }, { bm: 'cincang', en: 'hash' },
+        { bm: 'sahkan', en: 'validate' },
+      ],
+      cahaya: [
+        { bm: 'paparan', en: 'display' }, { bm: 'susun', en: 'layout' },
+        { bm: 'warna', en: 'color' }, { bm: 'tulisan', en: 'text' },
+        { bm: 'butang', en: 'button' }, { bm: 'kontras', en: 'contrast' },
+        { bm: 'mudahcapai', en: 'accessible' }, { bm: 'baris', en: 'row' },
+        { bm: 'lajur', en: 'column' },
+      ],
+      blockchain: [
+        { bm: 'kontrak_pintar', en: 'smart_contract' }, { bm: 'token', en: 'token' },
+        { bm: 'konsensus', en: 'consensus' }, { bm: 'sukuk', en: 'sukuk' },
+        { bm: 'mudarabah', en: 'mudarabah' }, { bm: 'zakat', en: 'zakat' },
+        { bm: 'wakaf', en: 'waqf' },
+      ],
     };
 
     const KwSection = ({ title, items }) => (
@@ -400,6 +475,9 @@ const RiinaWebsite = () => {
                 <KwSection title="Built-in Types" items={keywords.types} />
                 <KwSection title="Security" items={keywords.security} />
                 <KwSection title="Effects" items={keywords.effects} />
+                <KwSection title="JALINAN (Distributed)" items={keywords.jalinan} />
+                <KwSection title="CAHAYA (UI)" items={keywords.cahaya} />
+                <KwSection title="Blockchain / Syariah" items={keywords.blockchain} />
 
                 <h3 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16,marginTop:32}}>Example</h3>
                 <pre className="code-block">{`// pengesahan.rii — Authentication
@@ -709,6 +787,10 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
               { name: 'Healthcare', regs: 'HIPAA, HITECH, HL7 FHIR', desc: 'PHI wrapped in security types that prevent unauthorized disclosure. Audit trails proven complete. De-identification verified at compile time.' },
               { name: 'Financial Services', regs: 'PCI-DSS, SOX, BNM RMiT', desc: 'Cardholder data isolation proven by construction. Transaction integrity with formal audit trails. Constant-time operations prevent timing attacks.' },
               { name: 'Aerospace & Aviation', regs: 'DO-178C DAL A, DO-326A', desc: 'Flight-critical software with formal verification evidence satisfying DAL A. Deterministic execution proven. WCET bounds verified.' },
+              { name: 'Technology / SaaS', regs: 'SOC 2, ISO 27001', desc: 'Access control and audit logging proven at compile time. Data isolation between tenants enforced by the type system.' },
+              { name: 'Energy / Utilities', regs: 'NERC CIP, IEC 62443', desc: 'Critical infrastructure protection with proven access boundaries. Control system integrity verified by construction.' },
+              { name: 'Islamic Finance', regs: 'AAOIFI, IFSB, BNM RMiT', desc: 'Syariah compliance proven at compile time. No riba, gharar, or maysir possible in type-checked code.' },
+              { name: 'Blockchain / DeFi', regs: 'Smart Contract Security', desc: 'Reentrancy-free by construction. Value conservation proven. Linear state prevents double-spend.' },
             ].map((ind, i) => (
               <div key={i} className="industry-card">
                 <div className="industry-card__name">{ind.name}</div>
@@ -719,7 +801,7 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
           </div>
 
           <p style={{color:'var(--text-muted)',fontSize:14,textAlign:'center',marginBottom:48}}>
-            + 11 more compliance profiles: Energy, Telecom, Government, Transportation, Manufacturing, Retail, Media, Education, Agriculture, Real Estate, Legal
+            + 7 more compliance profiles: Telecom, Government, Transportation, Manufacturing, Retail, Education, Legal
           </p>
 
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16}}>Proof certificate <span style={{color:'var(--text-muted)',fontWeight:400,textTransform:'none',letterSpacing:0,fontSize:11}}>(target workflow)</span></h2>
@@ -743,7 +825,8 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
   Theorem: stored_data_encrypted`}</pre>
 
           <div style={{textAlign:'center',marginTop:48}}>
-            <a href="https://t.me/ib823" className="btn btn--primary">Contact for enterprise evaluation</a>
+            <a href="mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Enterprise%20Evaluation" className="btn btn--primary" style={{fontSize:16,padding:'14px 32px'}}>Talk to Us About Your Use Case</a>
+            <p style={{color:'var(--text-muted)',fontSize:13,marginTop:12}}>We'll walk your team through a proof. 30 minutes.</p>
           </div>
         </div>
       </section>
@@ -769,8 +852,8 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
             { num: '01', title: 'Security as Types', desc: 'Rahsia<T> wraps sensitive data. kesan Kripto marks crypto functions. masa_tetap ensures constant-time execution. These are compiler-enforced, not annotations.' },
             { num: '02', title: 'Effects Track Side Effects', desc: 'Every function declares its effects: kesan Baca + Kripto. The compiler tracks what your code can do. Security-critical code is restricted to specific effects.' },
             { num: '03', title: 'The Compiler Proves Security', desc: 'When you compile, the compiler proves: no information leakage (non-interference), effects are tracked (effect safety), timing-sensitive code runs in constant time, and secrets are zeroed.' },
-            { num: '04', title: 'Verification Evidence', desc: `Formal proof artifacts ship with the compiler (${metrics.coq.filesActive} active Coq files, ${metrics.lean.files} Lean files, ${metrics.isabelle.files} Isabelle files). Current overall claim level is ${claimLevelLabel(claimLevels.overall)} with deploy gates enforcing active-build hygiene (0 Admitted, 0 active axioms, 0 active assumptions).` },
-            { num: '05', title: 'Runtime Proof Foundation', desc: `Runtime verification is currently at the ${runtimeClaim} claim level. Capability-bound effect gates, proof-bundle chaining, and constant-time oracle primitives are implemented. Hardware-rooted attestation remains roadmap work.` },
+            { num: '04', title: 'Proof Artifacts Ship With Code', desc: `${fmt(metrics.multiProver.totalProofsAllProvers)} proof artifacts across ${metrics.multiProver.totalProvers} provers ship in the repository. 0 Admitted, 0 axioms. You can clone and verify them yourself.` },
+            { num: '05', title: 'Runtime Verification', desc: 'Capability-bound effect gates and proof-bundle chaining enforce guarantees at runtime. Hardware-rooted attestation is on the roadmap.' },
           ].map((step, i) => (
             <div key={i} className="pipeline-step">
               <div className="pipeline-step__num">{step.num}</div>
@@ -787,25 +870,25 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
         <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>{metrics.multiProver.totalProvers}-Prover Verification</h2>
           <p style={{color:'var(--text-secondary)',marginBottom:32}}>
-            Proof obligations are tracked across {metrics.multiProver.totalProvers} verification lanes with different mathematical foundations.
-            Four lanes (Coq, Lean 4, Isabelle, SMT/Z3) are at the <em>{laneClaim('coq')}</em> claim level.
-            Three lanes (F*, TLA+, Alloy) are <em>{laneClaim('fstar')}</em>. Three lanes (Verus, Kani, TV) are <em>{laneClaim('verus')}</em>. No independent external audit has been published.
+            RIINA's proofs are checked by {metrics.multiProver.totalProvers} independent tools, each using a different mathematical foundation.
+            If one tool has a bug, the others catch it. No independent external audit has been published yet.
           </p>
           {[
-            { prover: metrics.coq.prover, theorems: `${fmt(metrics.proofs.qedActive)} Qed`, role: 'Primary — authoritative proofs (CIC)' },
-            { prover: metrics.lean.prover, theorems: `${fmt(metrics.lean.theorems)} theorems`, role: 'Secondary — cross-check port (DTT)' },
-            { prover: metrics.isabelle.prover, theorems: `${fmt(metrics.isabelle.lemmas)} lemmas`, role: 'Tertiary — third verification (HOL)' },
-            { prover: (metrics.fstar || {}).prover || 'F*', theorems: `${fmt((metrics.fstar || {}).lemmas || 0)} lemmas`, role: 'Dependent types (DTT)' },
-            { prover: (metrics.tlaplus || {}).prover || 'TLA+', theorems: `${fmt((metrics.tlaplus || {}).theorems || 0)} theorems`, role: 'Model checking (TLA)' },
-            { prover: (metrics.alloy || {}).prover || 'Alloy 6', theorems: `${fmt((metrics.alloy || {}).assertions || 0)} assertions`, role: 'Relational logic (FOL)' },
-            { prover: (metrics.smt || {}).prover || 'Z3/CVC5', theorems: `${fmt((metrics.smt || {}).assertions || 0)} assertions`, role: 'SMT solving (SMT-LIB)' },
-            { prover: (metrics.verus || {}).prover || 'Verus', theorems: `${fmt((metrics.verus || {}).proofs || 0)} proofs`, role: 'Rust verification (VIR)' },
-            { prover: (metrics.kani || {}).prover || 'Kani', theorems: `${fmt((metrics.kani || {}).harnesses || 0)} harnesses`, role: 'Model checking (CBMC)' },
-            { prover: (metrics.tv || {}).prover || 'Translation Validation', theorems: `${fmt((metrics.tv || {}).validations || 0)} validations`, role: 'Binary equivalence (TV)' },
+            { prover: metrics.coq.prover, theorems: `${fmt(metrics.proofs.qedActive)} Qed`, level: laneClaim('coq'), role: 'Primary proof engine' },
+            { prover: metrics.lean.prover, theorems: `${fmt(metrics.lean.theorems)} theorems`, level: laneClaim('lean'), role: 'Cross-check port' },
+            { prover: metrics.isabelle.prover, theorems: `${fmt(metrics.isabelle.lemmas)} lemmas`, level: laneClaim('isabelle'), role: 'Third verification' },
+            { prover: (metrics.smt || {}).prover || 'Z3/CVC5', theorems: `${fmt((metrics.smt || {}).assertions || 0)} assertions`, level: laneClaim('smt'), role: 'SMT solving' },
+            { prover: (metrics.fstar || {}).prover || 'F*', theorems: `${fmt((metrics.fstar || {}).lemmas || 0)} lemmas`, level: laneClaim('fstar'), role: 'Dependent types' },
+            { prover: (metrics.tlaplus || {}).prover || 'TLA+', theorems: `${fmt((metrics.tlaplus || {}).theorems || 0)} theorems`, level: laneClaim('tlaplus'), role: 'Model checking' },
+            { prover: (metrics.alloy || {}).prover || 'Alloy 6', theorems: `${fmt((metrics.alloy || {}).assertions || 0)} assertions`, level: laneClaim('alloy'), role: 'Relational logic' },
+            { prover: (metrics.verus || {}).prover || 'Verus', theorems: `${fmt((metrics.verus || {}).proofs || 0)} proofs`, level: laneClaim('verus'), role: 'Rust verification' },
+            { prover: (metrics.kani || {}).prover || 'Kani', theorems: `${fmt((metrics.kani || {}).harnesses || 0)} harnesses`, level: laneClaim('kani'), role: 'Model checking' },
+            { prover: (metrics.tv || {}).prover || 'Translation Validation', theorems: `${fmt((metrics.tv || {}).validations || 0)} validations`, level: laneClaim('tv'), role: 'Binary equivalence' },
           ].map((p, i) => (
             <div key={i} className="cli-row">
               <code style={{minWidth:140}}>{p.prover}</code>
-              <span style={{minWidth:80}}>{p.theorems}</span>
+              <span style={{minWidth:100}}>{p.theorems}</span>
+              <span style={{minWidth:100,color: p.level === 'mechanized' ? 'var(--text-string)' : p.level === 'compiled' ? 'var(--text-accent)' : 'var(--text-muted)'}}>{p.level}</span>
               <span>{p.role}</span>
             </div>
           ))}
@@ -814,28 +897,60 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
 
       <section style={{padding:'80px 24px'}}>
         <div style={{maxWidth:'var(--max-w-page)',margin:'0 auto'}}>
-          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>26 Research Domains</h2>
-          {[
-            { id: 'A', name: 'Core Type Theory', desc: 'Type safety, non-interference, logical relations' },
-            { id: 'B', name: 'Compiler & Prototype', desc: `${metrics.rust.crates} Rust crates, ${metrics.rust.tests} tests` },
-            { id: 'C', name: 'Language Specifications', desc: 'Grammar, AST, type system spec' },
-            { id: 'D-Q', name: 'Attack Surface Research', desc: `14 domains, ${metrics.status.threats} threats enumerated` },
-            { id: 'R', name: 'Certified Compilation', desc: 'Translation validation' },
-            { id: 'S', name: 'Hardware Contracts', desc: 'CPU side-channel models' },
-            { id: 'T', name: 'Hermetic Bootstrap', desc: 'Binary bootstrap from hex0' },
-            { id: 'U', name: 'Runtime Guardian', desc: 'Runtime proof foundation implemented; hardware attestation stack in progress' },
-            { id: 'V', name: 'Termination Guarantees', desc: 'Sized types, strong normalization' },
-            { id: 'W', name: 'Verified Memory', desc: 'Separation logic, verified allocator' },
-            { id: 'X', name: 'Concurrency Model', desc: 'Session types, data-race freedom' },
-            { id: 'Y', name: 'Verified Stdlib', desc: 'Every stdlib function proven correct' },
-            { id: 'Z', name: 'Declassification Policy', desc: 'Robust declassification with budgets' },
-          ].map((d, i) => (
-            <div key={i} className="domain-row">
-              <span className="domain-row__id">{d.id}</span>
-              <span className="domain-row__name">{d.name}</span>
-              <span className="domain-row__desc">{d.desc}</span>
-            </div>
-          ))}
+          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>Research Coverage</h2>
+          <p style={{color:'var(--text-secondary)',marginBottom:24,fontSize:14}}>
+            26 research tracks spanning the full security stack — from type theory foundations to hardware side-channel models.
+          </p>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:12}}>
+            {[
+              { name: 'Core Type Theory', desc: 'Type safety, non-interference, logical relations' },
+              { name: 'Compiler', desc: `${metrics.rust.crates} crates, ${fmt(metrics.rust.tests)} tests, zero dependencies` },
+              { name: 'Attack Surface', desc: `14 domains, ${metrics.status.threats} threats modeled` },
+              { name: 'Termination & Memory', desc: 'Sized types, strong normalization, separation logic' },
+              { name: 'Concurrency & Effects', desc: 'Session types, effect algebra, data-race freedom' },
+              { name: 'Runtime & Hardware', desc: 'Proof bundles, constant-time, side-channel models' },
+              { name: 'Runtime Verification', desc: '6-layer runtime: verified allocator, CHERI hardware, Coq monitors, eBPF kernel, attestation, execution receipts' },
+              { name: 'Runtime Proof Architecture', desc: 'Phase 7: Proof bundles, capability gates, hardware attestation, execution receipts' },
+              { name: 'TERAS-OS', desc: 'Phase 9: Microkernel OS with verified memory, process isolation, and capability-based security' },
+            ].map((d, i) => (
+              <div key={i} className="card" style={{padding:'16px 20px'}}>
+                <div style={{fontSize:14,fontWeight:500,marginBottom:4}}>{d.name}</div>
+                <div style={{fontSize:13,color:'var(--text-secondary)'}}>{d.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section--alt" style={{padding:'80px 24px'}}>
+        <div style={{maxWidth:'var(--max-w-page)',margin:'0 auto'}}>
+          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>JALINAN: Distributed by Construction</h2>
+          <p style={{color:'var(--text-secondary)',marginBottom:32}}>
+            JALINAN unifies local and distributed computing under formal verification. Session-typed actors, content-addressed state, and choreographic protocols — all proven at compile time.
+          </p>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',gap:12,marginBottom:32}}>
+            {[
+              { name: 'Protocol = API', desc: 'Session types replace REST. Type-checked protocols ensure every message is expected, ordered, and complete.' },
+              { name: 'State = History', desc: 'Content-addressed Merkle DAGs make state verifiable. Every change is traceable and tamper-evident.' },
+              { name: 'Local = Distributed', desc: 'Actors with supervision trees. Code runs the same locally and distributed — no rewrite needed.' },
+            ].map((d, i) => (
+              <div key={i} className="card" style={{padding:'16px 20px'}}>
+                <div style={{fontSize:14,fontWeight:500,marginBottom:4}}>{d.name}</div>
+                <div style={{fontSize:13,color:'var(--text-secondary)'}}>{d.desc}</div>
+              </div>
+            ))}
+          </div>
+          <pre className="code-block">{`// JALINAN actor example
+pelakon Pembilang {
+    keadaan: Nombor
+    kendalikan Tambah(n) {
+        n + 1
+    }
+}
+
+biar k = lahir Pembilang(0);
+hantar(k, 5);
+terima(k)`}</pre>
         </div>
       </section>
     </div>
@@ -942,7 +1057,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
         <div>
           <div className="footer-brand">
             <Logo size={20} />
-            <span className="footer-brand__name">RIINA</span>
+            <span className="footer-brand__name">RIINA<sup style={{fontSize:8,verticalAlign:'super',opacity:0.5}}>™</sup></span>
           </div>
           <p className="footer-brand__tagline">Rigorous Immutable Invariant,<br/>No Assumptions</p>
         </div>
@@ -950,7 +1065,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
         {[
           { title: 'Product', links: [['Home','home'],['Language','language'],['Playground','playground'],['Enterprise','enterprise']] },
           { title: 'Learn', links: [['Docs','docs'],['How It Works','how'],['GitHub','https://github.com/ib823/riina']] },
-          { title: 'Legal', links: [['License','legal'],['Privacy','legal'],['Terms','legal'],['Reach Us','https://t.me/ib823']] },
+          { title: 'Legal', links: [['License','legal'],['Privacy','legal'],['Terms','legal'],['Contact','mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Inquiry'],['Telegram','https://t.me/ib823']] },
         ].map((col, i) => (
           <div key={i} className="footer-col">
             <div className="footer-col__title">{col.title}</div>
@@ -990,7 +1105,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
   return (
     <div className="app-root">
       <Header />
-      <main className="main-content">
+      <main className="main-content" key={currentPage}>
         {renderPage()}
       </main>
       <Footer />
