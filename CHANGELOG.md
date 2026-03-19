@@ -7,6 +7,38 @@ All notable changes to RIINA™ will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-03-19
+
+### JALINAN Phase J1 — Session-Typed Actors
+- **Actor system**: `pelakon` (actor), `lahir` (spawn), `hantar` (send), `terima` (recv) — full pipeline from parse to run to emit-c
+- **Choreography types**: `koreografi` (choreography), `peranan` (role) — global multiparty session protocols
+- **Content-addressed values**: `cincang` (hash) — FNV-1a hash with deterministic output
+- **CRDT merge**: `gabung` (merge) — conflict-free replicated data with GCounter semantics
+- **Actor runtime**: `riina-runtime` crate (16th crate) — mailbox, supervisor, session-typed channels
+- **C backend**: pthread-based actor runtime — real mutex/cond mailbox for native execution
+- **WASM backend**: actor instruction stubs for browser playground
+- **Interpreter**: synchronous message processing — Spawn stores state, Send applies handler, Recv returns state
+
+### Proofs & Verification
+- 11,905 Coq Qed (0 Admitted, 0 axioms, 301 active files)
+- 71,351 total proof artifacts across 10 provers
+- New Coq domains: ActorCalculus, ActorSupervision, ChoreographyTypes, ChoreographyProjection, CRDTFoundations, CRDTComposition, MerkleDAG, ContentAddressedState, AccessibilityVerification
+- 5 mechanized (Coq, Lean, Isabelle, TLA+, SMT), 2 compiled (F*, Alloy), 3 generated
+
+### Compiler & Tooling
+- 2,294 Rust tests (up from 1,282)
+- 500+ compliance rules across 15 profiles
+- HTTP package registry client (riina-pkg)
+- Session type checker (56 tests)
+- BinOp type checker uses types_compatible() for Any compatibility
+- Parser: multi-line actor syntax, koreografi/pelakon/lahir/hantar/terima blocks
+
+### Website & Documentation
+- RIINA™ trademark asserted across all public documents
+- Website: JALINAN section on How It Works page, actor example in playground
+- Claim level explainer (mechanized/compiled/generated)
+- GPG signing permanently configured for deployments
+
 ## [Unreleased]
 
 ### Added (Session 88 — 2026-03-16 — Linear Types, Multi-Prover Mechanization, WASM Backend)

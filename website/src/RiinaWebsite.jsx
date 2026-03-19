@@ -27,13 +27,21 @@ const RiinaWebsite = () => {
   const releases = [
     // RELEASES_MARKER
     {
+      version: '0.3.0',
+      date: '2026-03-19',
+      highlights: [
+        'JALINAN Phase J1: session-typed actors (pelakon, lahir, hantar, terima) — end-to-end pipeline',
+        'Actor runtime crate with pthread C backend, mailbox, supervisor, session channels',
+        '71,351 proof artifacts across 10 provers (5 mechanized, 2 compiled)',
+        'Content-addressed values (cincang) and CRDT merge (gabung) with real codegen',
+      ],
+    },
+    {
       version: '0.2.0',
       date: '2026-02-10',
       highlights: [
-        '10-prover verification corpus with Coq, Lean, Isabelle, F*, TLA+, Alloy, SMT, Verus, Kani, TV',
-        'Public quality gates: artifact hygiene, doc drift checks, metrics alignment',
-        'Runtime proof foundation: capability-bound effect gates, proof-bundle chaining',
-        'Repository transparency: AXIOMS.md and PROOF_STATUS.md generated and enforced',
+        '10-prover verification corpus with explicit claim levels per lane',
+        'Public quality gates and repository transparency',
       ],
     },
     {

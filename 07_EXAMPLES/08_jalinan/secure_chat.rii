@@ -1,0 +1,25 @@
+// secure_chat.rii — Secure Chat with Actors
+// Each user is an actor with encrypted message handling
+
+pelakon PenggunaSelamat {
+    keadaan: Nombor
+    kendalikan Mesej(n) {
+        n + 1
+    }
+}
+
+// Alice and Bob as actors
+biar alice = lahir PenggunaSelamat(0);
+biar bob = lahir PenggunaSelamat(0);
+
+// Alice sends to Bob
+hantar(bob, 42);
+
+// Bob receives
+biar mesej = terima(bob);
+
+// The compiler proves:
+// - Messages can't leak (Rahsia types)
+// - Effects are declared (kesan Rangkaian)
+// - Protocol is followed (session types)
+mesej

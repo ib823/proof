@@ -1,0 +1,15 @@
+// session_types.rii — Session-Typed Protocol
+// Compile-time protocol safety: can't send when you should receive
+
+koreografi Pemindahan {
+    peranan Penghantar, Penerima;
+
+    Penghantar -> Penerima: hantar Nombor;
+    Penerima -> Penghantar: hantar Benar;
+    tamat;
+}
+
+// The compiler projects this global protocol into
+// local types for each role, then verifies that
+// each implementation follows its projected type.
+// Protocol violations are compile errors, not runtime crashes.

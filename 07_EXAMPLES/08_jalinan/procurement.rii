@@ -1,0 +1,30 @@
+// procurement.rii — TELUS Procurement Workflow
+// Full JALINAN example: choreography + actors + state
+
+koreografi Perolehan {
+    peranan Pemohon, Pelulus, Vendor;
+
+    Pemohon -> Pelulus: hantar Nombor;
+    Pelulus -> Pemohon: pilih {
+        Lulus -> {
+            Pelulus -> Vendor: hantar Nombor;
+            Vendor -> Pemohon: hantar Nombor;
+        },
+        Tolak -> {
+            Pelulus -> Pemohon: hantar Nombor;
+        }
+    }
+    tamat;
+}
+
+// Each role is an actor
+pelakon PelakonPemohon { keadaan: Nombor kendalikan Permintaan(n) { n } }
+pelakon PelakonPelulus { keadaan: Nombor kendalikan Semak(n) { n } }
+
+biar pemohon = lahir PelakonPemohon(0);
+biar pelulus = lahir PelakonPelulus(0);
+
+hantar(pemohon, 1000);
+hantar(pelulus, 1000);
+
+terima(pelulus)
