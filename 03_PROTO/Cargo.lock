@@ -71,6 +71,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "riina-receipt"
+version = "0.3.0"
+
+[[package]]
 name = "riina-runtime"
 version = "0.3.0"
 

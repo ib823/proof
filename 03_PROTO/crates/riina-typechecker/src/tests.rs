@@ -4244,11 +4244,11 @@ mod jalinan_phase6_tests {
         let ctx = Context::new()
             .extend("alice".into(), token_ty.clone())
             .extend("bob".into(), token_ty.clone());
-        let expr = Expr::TokenTransfer(
-            Box::new(Expr::Var("alice".into())),
-            Box::new(Expr::Var("bob".into())),
-            Box::new(Expr::Int(25)),
-        );
+        let expr = Expr::TokenTransfer {
+            from: Box::new(Expr::Var("alice".into())),
+            to: Box::new(Expr::Var("bob".into())),
+            amount: Box::new(Expr::Int(25)),
+        };
         let (ty, eff) = type_check(&ctx, &expr).unwrap();
         assert_eq!(ty, token_ty);
         assert_eq!(eff, Effect::NetworkSecure);
@@ -4259,11 +4259,11 @@ mod jalinan_phase6_tests {
         let ctx = Context::new()
             .extend("alice".into(), Ty::Int)
             .extend("bob".into(), Ty::Token(Box::new(Ty::Int)));
-        let expr = Expr::TokenTransfer(
-            Box::new(Expr::Var("alice".into())),
-            Box::new(Expr::Var("bob".into())),
-            Box::new(Expr::Int(10)),
-        );
+        let expr = Expr::TokenTransfer {
+            from: Box::new(Expr::Var("alice".into())),
+            to: Box::new(Expr::Var("bob".into())),
+            amount: Box::new(Expr::Int(10)),
+        };
         match type_check(&ctx, &expr) {
             Err(TypeError::TypeMismatch { expected, found }) => {
                 assert_eq!(expected, Ty::Token(Box::new(Ty::Int)));
@@ -4278,11 +4278,11 @@ mod jalinan_phase6_tests {
         let ctx = Context::new()
             .extend("alice".into(), Ty::Token(Box::new(Ty::Int)))
             .extend("bob".into(), Ty::Token(Box::new(Ty::String)));
-        let expr = Expr::TokenTransfer(
-            Box::new(Expr::Var("alice".into())),
-            Box::new(Expr::Var("bob".into())),
-            Box::new(Expr::Int(10)),
-        );
+        let expr = Expr::TokenTransfer {
+            from: Box::new(Expr::Var("alice".into())),
+            to: Box::new(Expr::Var("bob".into())),
+            amount: Box::new(Expr::Int(10)),
+        };
         match type_check(&ctx, &expr) {
             Err(TypeError::TypeMismatch { expected, found }) => {
                 assert_eq!(expected, Ty::Token(Box::new(Ty::Int)));
@@ -4298,11 +4298,11 @@ mod jalinan_phase6_tests {
         let ctx = Context::new()
             .extend("alice".into(), token_ty.clone())
             .extend("bob".into(), token_ty);
-        let expr = Expr::TokenTransfer(
-            Box::new(Expr::Var("alice".into())),
-            Box::new(Expr::Var("bob".into())),
-            Box::new(Expr::String("sepuluh".into())),
-        );
+        let expr = Expr::TokenTransfer {
+            from: Box::new(Expr::Var("alice".into())),
+            to: Box::new(Expr::Var("bob".into())),
+            amount: Box::new(Expr::String("sepuluh".into())),
+        };
         match type_check(&ctx, &expr) {
             Err(TypeError::TypeMismatch { expected, found }) => {
                 assert_eq!(expected, Ty::Int);

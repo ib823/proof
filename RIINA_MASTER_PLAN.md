@@ -302,9 +302,9 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 2,392 passing |
+| Tests (03_PROTO/) | 2,410 passing |
 | Tests (05_TOOLING/) | 248 passing |
-| Crates | 16 |
+| Crates | 17 |
 | Clippy | Clean |
 | Example .rii files | 147 |
 

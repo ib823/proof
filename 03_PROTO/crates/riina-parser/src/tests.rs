@@ -2819,6 +2819,13 @@ fn test_parse_contract_deploy_basic() {
 }
 
 #[test]
+fn test_parse_contract_deploy_braced_form() {
+    let mut p = Parser::new("kontrak_pintar { 42 }");
+    let expr = p.parse_expr().unwrap();
+    assert_eq!(expr, Expr::ContractDeploy(Box::new(Expr::Int(42))));
+}
+
+#[test]
 fn test_parse_contract_deploy_english_alias() {
     let mut p = Parser::new("smart_contract(account)");
     let expr = p.parse_expr().unwrap();
@@ -2834,17 +2841,51 @@ fn test_parse_token_transfer_basic() {
     let expr = p.parse_expr().unwrap();
     assert_eq!(
         expr,
-        Expr::TokenTransfer(
-            Box::new(Expr::Var("alice".to_string())),
-            Box::new(Expr::Var("bob".to_string())),
-            Box::new(Expr::Int(25))
-        )
+        Expr::TokenTransfer {
+            from: Box::new(Expr::Var("alice".to_string())),
+            to: Box::new(Expr::Var("bob".to_string())),
+            amount: Box::new(Expr::Int(25)),
+        }
+    );
+}
+
+#[test]
+fn test_parse_token_transfer_path_form() {
+    let mut p = Parser::new("token::pindah(alice, bob, 25)");
+    let expr = p.parse_expr().unwrap();
+    assert_eq!(
+        expr,
+        Expr::TokenTransfer {
+            from: Box::new(Expr::Var("alice".to_string())),
+            to: Box::new(Expr::Var("bob".to_string())),
+            amount: Box::new(Expr::Int(25)),
+        }
+    );
+}
+
+#[test]
+fn test_parse_token_transfer_english_method_alias() {
+    let mut p = Parser::new("token::transfer(alice, bob, 25)");
+    let expr = p.parse_expr().unwrap();
+    assert_eq!(
+        expr,
+        Expr::TokenTransfer {
+            from: Box::new(Expr::Var("alice".to_string())),
+            to: Box::new(Expr::Var("bob".to_string())),
+            amount: Box::new(Expr::Int(25)),
+        }
     );
 }
 
 #[test]
 fn test_parse_token_transfer_error_missing_amount() {
     let mut p = Parser::new("token(alice, bob)");
+    assert!(p.parse_expr().is_err());
+}
+
+#[test]
+fn test_parse_token_transfer_error_unknown_method() {
+    let mut p = Parser::new("token::bakar(alice, bob, 25)");
     assert!(p.parse_expr().is_err());
 }
 

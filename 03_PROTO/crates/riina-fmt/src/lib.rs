@@ -384,13 +384,13 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
         }
         Expr::ContractDeploy(expr) => {
             indent(out, level, cfg);
-            out.push_str("kontrak_pintar(");
+            out.push_str("kontrak_pintar { ");
             fmt_expr_inline(out, expr, cfg);
-            out.push(')');
+            out.push_str(" }");
         }
-        Expr::TokenTransfer(from, to, amount) => {
+        Expr::TokenTransfer { from, to, amount } => {
             indent(out, level, cfg);
-            out.push_str("token(");
+            out.push_str("token::pindah(");
             fmt_expr_inline(out, from, cfg);
             out.push_str(", ");
             fmt_expr_inline(out, to, cfg);
@@ -606,12 +606,12 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
             out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
         }
         Expr::ContractDeploy(expr) => {
-            out.push_str("kontrak_pintar(");
+            out.push_str("kontrak_pintar { ");
             fmt_expr_inline(out, expr, cfg);
-            out.push(')');
+            out.push_str(" }");
         }
-        Expr::TokenTransfer(from, to, amount) => {
-            out.push_str("token(");
+        Expr::TokenTransfer { from, to, amount } => {
+            out.push_str("token::pindah(");
             fmt_expr_inline(out, from, cfg);
             out.push_str(", ");
             fmt_expr_inline(out, to, cfg);

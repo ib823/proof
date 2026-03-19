@@ -20,6 +20,7 @@ members = [
     "crates/riina-pkg",
     "crates/riina-wasm",
     "crates/riina-runtime",
+    "crates/riina-receipt",
     "crates/riinac",
 ]
 
@@ -47,6 +48,7 @@ riina-fmt = { path = "crates/riina-fmt" }
 riina-lsp = { path = "crates/riina-lsp" }
 riina-pkg = { path = "crates/riina-pkg" }
 riina-runtime = { path = "crates/riina-runtime" }
+riina-receipt = { path = "crates/riina-receipt" }
 riina-typechecker = { path = "crates/riina-typechecker" }
 riina-wasm = { path = "crates/riina-wasm" }
 

@@ -17,7 +17,7 @@
 | Lean theorems | 12,096 (317 files, 0 sorry) |
 | Isabelle lemmas | 12,303 (357 files, 0 sorry) |
 | Total proofs | 71,382 across 10 provers |
-| Rust tests | 2,392 (16 crates) |
+| Rust tests | 2,410 (17 crates) |
 | Examples | 147 .rii files |
 | Claims | 5 mechanized (Coq, Lean, Isabelle, TLA+, SMT), 2 compiled (F*, Alloy), 3 generated (Verus, Kani, TV) |
 
@@ -36,18 +36,18 @@
   - Session type checker (56 tests), C codegen with pthread actor runtime
   - Interpreter with synchronous message processing
   - riina-runtime crate (mailbox, supervisor, session channels)
-- **J2 Content-Addressed State**: 40% — FNV-1a hash in interpreter + C emit
+- **J2 Content-Addressed State**: 70% — interpreter content store + Merkle list roots + C emit
 - **J3 Actor Runtime**: 70% — runtime exists, wired to interpreter, C pthread backend
 - **J4 Proof-Carrying Execution**: 10% — concept only
-- **J5 CAHAYA (Verified UI)**: 20% — 14 keywords, 5 types, 8 expressions, parser rules
+- **J5 CAHAYA (Verified UI)**: 70% — terminal rendering + HTML emit + WCAG contrast
 
 ### Blockchain + Syariah Finance
-- Spec complete (~1500 lines in 01_RESEARCH/) — zero implementation
+- Rust lexer/types/parser/typechecker/interpreter/lowering surface implemented; Coq proofs pending
 
 ## What Needs to Happen Next
 
 ### Phase 6 Completion (J2-J6)
-1. Content-addressed codegen: Merkle DAG runtime, hash chains
+1. Complete native/C content-addressed codegen and hash chains
 2. Wire riina-runtime to C for native multi-threaded actors
 3. CAHAYA codegen: UI → HTML/terminal renderer
 4. WCAG contrast type checking
@@ -56,7 +56,7 @@
 7. Coq proofs: value_conservation, no_reentrancy, consensus_safety
 
 ### Phase 7: Runtime Proof Architecture
-8. Execution receipt format (EffectReceipt struct)
+8. Wire execution receipts into the runtime proof architecture
 9. Proof bundle Merkle chain
 10. Runtime monitor extraction from Coq
 11. eBPF kernel enforcement

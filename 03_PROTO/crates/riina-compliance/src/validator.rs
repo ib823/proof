@@ -83,7 +83,7 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
         Expr::ContractDeploy(expr) | Expr::ZakatCalculate(expr) => {
             walk_inner(expr, rules, out);
         }
-        Expr::TokenTransfer(from, to, amount) => {
+        Expr::TokenTransfer { from, to, amount } => {
             walk_inner(from, rules, out);
             walk_inner(to, rules, out);
             walk_inner(amount, rules, out);

@@ -966,10 +966,14 @@ pub enum Expr {
     ContentVerify(Box<Expr>, Box<Expr>),
 
     // ── Blockchain + Syariah Phase J6 expressions ───────────────────
-    /// Smart-contract deployment: kontrak_pintar(expr)
+    /// Smart-contract deployment: kontrak_pintar { expr }
     ContractDeploy(Box<Expr>),
-    /// Token transfer: token(from, to, amount)
-    TokenTransfer(Box<Expr>, Box<Expr>, Box<Expr>),
+    /// Token transfer: token::pindah(from, to, amount)
+    TokenTransfer {
+        from: Box<Expr>,
+        to: Box<Expr>,
+        amount: Box<Expr>,
+    },
     /// Zakat calculation: zakat(expr)
     ZakatCalculate(Box<Expr>),
 

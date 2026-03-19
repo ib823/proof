@@ -168,29 +168,16 @@ fn decode_hash_value(hash_value: &Value) -> Result<u64> {
     }
 }
 
-fn merkle_parent_hash(left: u64, right: u64) -> u64 {
-    let mut bytes = Vec::with_capacity(16);
-    bytes.extend_from_slice(&left.to_be_bytes());
-    bytes.extend_from_slice(&right.to_be_bytes());
-    fnv1a_hash_bytes(&bytes)
-}
-
 fn merkle_root_hash(leaves: &[u64]) -> u64 {
     if leaves.is_empty() {
         return fnv1a_hash_bytes(b"");
     }
 
-    let mut level = leaves.to_vec();
-    while level.len() > 1 {
-        let mut next = Vec::with_capacity(level.len().div_ceil(2));
-        for pair in level.chunks(2) {
-            let left = pair[0];
-            let right = pair.get(1).copied().unwrap_or(left);
-            next.push(merkle_parent_hash(left, right));
-        }
-        level = next;
+    let mut bytes = Vec::with_capacity(std::mem::size_of_val(leaves));
+    for leaf in leaves {
+        bytes.extend_from_slice(&leaf.to_be_bytes());
     }
-    level[0]
+    fnv1a_hash_bytes(&bytes)
 }
 
 /// Mutable store (heap)
@@ -902,7 +889,11 @@ impl Interpreter {
 
             Expr::ContractDeploy(contract_expr) => self.eval_with_env(env, contract_expr),
 
-            Expr::TokenTransfer(from_expr, to_expr, amount_expr) => {
+            Expr::TokenTransfer {
+                from: from_expr,
+                to: to_expr,
+                amount: amount_expr,
+            } => {
                 let _from = self.eval_with_env(env, from_expr)?;
                 let _to = self.eval_with_env(env, to_expr)?;
                 self.eval_with_env(env, amount_expr)
@@ -2393,6 +2384,24 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(hash, merkle_root_hash(&leaves));
         assert_eq!(interp.content_lookup(hash), Some(&list));
+    }
+
+    #[test]
+    fn test_content_hash_list_merkle_root_uses_leaf_hash_concatenation() {
+        let mut interp = Interpreter::new();
+        let list = Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)]);
+        let hash_value = interp.content_hash_value(list);
+        let hash = decode_hash_value(&hash_value).unwrap();
+        let leaf_hashes = [
+            fnv1a_hash_value(&Value::Int(1)),
+            fnv1a_hash_value(&Value::Int(2)),
+            fnv1a_hash_value(&Value::Int(3)),
+        ];
+        let mut expected_bytes = Vec::new();
+        for leaf_hash in leaf_hashes {
+            expected_bytes.extend_from_slice(&leaf_hash.to_be_bytes());
+        }
+        assert_eq!(hash, fnv1a_hash_bytes(&expected_bytes));
     }
 
     #[test]

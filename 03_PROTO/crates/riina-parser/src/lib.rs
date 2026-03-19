@@ -1612,18 +1612,69 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    /// Parse: kontrak_pintar(expr)
+    /// Parse: kontrak_pintar(expr) or kontrak_pintar { expr }
     fn parse_contract_deploy(&mut self) -> Result<Expr, ParseError> {
         self.consume(TokenKind::KwSmartContract)?;
-        self.consume(TokenKind::LParen)?;
-        let contract = self.parse_control_flow()?;
-        self.consume(TokenKind::RParen)?;
+        let contract = match self.peek().map(|t| t.kind.clone()) {
+            Some(TokenKind::LParen) => {
+                self.consume(TokenKind::LParen)?;
+                let contract = self.parse_control_flow()?;
+                self.consume(TokenKind::RParen)?;
+                contract
+            }
+            Some(TokenKind::LBrace) => {
+                self.consume(TokenKind::LBrace)?;
+                let contract = self.parse_control_flow()?;
+                self.consume(TokenKind::RBrace)?;
+                contract
+            }
+            Some(tok) => {
+                return Err(ParseError {
+                    kind: ParseErrorKind::UnexpectedToken(tok),
+                    span: self.current_span,
+                });
+            }
+            None => {
+                return Err(ParseError {
+                    kind: ParseErrorKind::UnexpectedEof,
+                    span: self.current_span,
+                });
+            }
+        };
         Ok(Expr::ContractDeploy(Box::new(contract)))
     }
 
-    /// Parse: token(from, to, amount)
+    /// Parse: token(from, to, amount) or token::pindah(from, to, amount)
     fn parse_token_transfer(&mut self) -> Result<Expr, ParseError> {
         self.consume(TokenKind::KwToken)?;
+        if matches!(
+            self.peek().map(|t| t.kind.clone()),
+            Some(TokenKind::ColonColon)
+        ) {
+            self.consume(TokenKind::ColonColon)?;
+            match self.peek().map(|t| t.kind.clone()) {
+                Some(TokenKind::KwMove) => {
+                    self.next();
+                }
+                Some(TokenKind::Identifier(method))
+                    if method == "pindah" || method == "transfer" =>
+                {
+                    self.next();
+                }
+                Some(tok) => {
+                    return Err(ParseError {
+                        kind: ParseErrorKind::UnexpectedToken(tok),
+                        span: self.current_span,
+                    });
+                }
+                None => {
+                    return Err(ParseError {
+                        kind: ParseErrorKind::UnexpectedEof,
+                        span: self.current_span,
+                    });
+                }
+            }
+        }
         self.consume(TokenKind::LParen)?;
         let from = self.parse_control_flow()?;
         self.consume(TokenKind::Comma)?;
@@ -1631,11 +1682,11 @@ impl<'a> Parser<'a> {
         self.consume(TokenKind::Comma)?;
         let amount = self.parse_control_flow()?;
         self.consume(TokenKind::RParen)?;
-        Ok(Expr::TokenTransfer(
-            Box::new(from),
-            Box::new(to),
-            Box::new(amount),
-        ))
+        Ok(Expr::TokenTransfer {
+            from: Box::new(from),
+            to: Box::new(to),
+            amount: Box::new(amount),
+        })
     }
 
     /// Parse: zakat(expr)

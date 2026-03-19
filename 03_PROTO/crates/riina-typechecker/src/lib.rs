@@ -3188,7 +3188,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             ))
         }
 
-        Expr::TokenTransfer(from, to, amount) => {
+        Expr::TokenTransfer { from, to, amount } => {
             let (from_ty, eff1) = type_check_full(ctx, from)?;
             let (to_ty, eff2) = type_check_full(ctx, to)?;
             let (amount_ty, eff3) = type_check_full(ctx, amount)?;
@@ -3788,7 +3788,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             ))
         }
 
-        Expr::TokenTransfer(from, to, amount) => {
+        Expr::TokenTransfer { from, to, amount } => {
             let (from_ty, eff1) = type_check(ctx, from)?;
             let (to_ty, eff2) = type_check(ctx, to)?;
             let (amount_ty, eff3) = type_check(ctx, amount)?;

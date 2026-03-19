@@ -300,7 +300,7 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
         | Expr::CRDTMerge(_, _)
         | Expr::ContentHash(_)
         | Expr::ContentVerify(_, _) => ExprSummary::default(),
-        Expr::TokenTransfer(from, to, amount) => {
+        Expr::TokenTransfer { from, to, amount } => {
             let from_summary = summarize_expr(from, env);
             let to_summary = summarize_expr(to, env);
             let amount_summary = summarize_expr(amount, env);
