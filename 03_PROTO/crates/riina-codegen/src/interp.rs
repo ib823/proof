@@ -697,35 +697,16 @@ impl Interpreter {
             Expr::CRDTMerge(a_expr, b_expr) => {
                 let a = self.eval_with_env(env, a_expr)?;
                 let b = self.eval_with_env(env, b_expr)?;
-                // GCounter merge: pointwise max for integers
-                match (&a, &b) {
-                    (Value::Int(x), Value::Int(y)) => Ok(Value::Int(std::cmp::max(*x, *y))),
-                    _ => Ok(a),
-                }
+                Ok(crdt_merge_values(&a, &b))
             }
 
             Expr::ContentHash(val_expr) => {
                 let val = self.eval_with_env(env, val_expr)?;
-                // DJB2 hash
-                let mut hash: u64 = 5381;
-                match &val {
-                    Value::Int(n) => {
-                        let mut n = *n;
-                        for _ in 0..8 {
-                            hash = hash.wrapping_mul(33).wrapping_add(n & 0xff);
-                            n >>= 8;
-                        }
-                    }
-                    Value::String(s) => {
-                        for b in s.bytes() {
-                            hash = hash.wrapping_mul(33).wrapping_add(u64::from(b));
-                        }
-                    }
-                    Value::Bool(b) => {
-                        hash = hash.wrapping_mul(33).wrapping_add(if *b { 1 } else { 0 });
-                    }
-                    _ => {}
+                // Idempotent: hash of hash returns same hash
+                if val.is_hash() {
+                    return Ok(val);
                 }
+                let hash = fnv1a_hash_value(&val);
                 let hex = format!("{hash:016x}");
                 Ok(Value::Hash(hex.into_bytes()))
             }
@@ -778,6 +759,74 @@ impl Interpreter {
                 }
             }
         }
+    }
+}
+
+/// FNV-1a hash: feed bytes from a Value into the running hash state.
+fn fnv1a_feed(hash: &mut u64, val: &Value) {
+    const FNV_PRIME: u64 = 1_099_511_628_211;
+    match val {
+        Value::Int(n) => {
+            let mut n = *n;
+            for _ in 0..8 {
+                *hash ^= n & 0xff;
+                *hash = hash.wrapping_mul(FNV_PRIME);
+                n >>= 8;
+            }
+        }
+        Value::String(s) => {
+            for b in s.bytes() {
+                *hash ^= u64::from(b);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+        }
+        Value::Bool(b) => {
+            *hash ^= if *b { 1 } else { 0 };
+            *hash = hash.wrapping_mul(FNV_PRIME);
+        }
+        Value::Pair(a, b) => {
+            // Tag bytes distinguish pairs from concatenated components
+            *hash ^= 0x01;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            fnv1a_feed(hash, a);
+            *hash ^= 0x02;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            fnv1a_feed(hash, b);
+        }
+        Value::Hash(bytes) => {
+            for &b in bytes {
+                *hash ^= u64::from(b);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Compute FNV-1a hash of a Value, returning the u64 digest.
+fn fnv1a_hash_value(val: &Value) -> u64 {
+    const FNV_OFFSET_BASIS: u64 = 14_695_981_039_346_656_037;
+    let mut hash = FNV_OFFSET_BASIS;
+    fnv1a_feed(&mut hash, val);
+    hash
+}
+
+/// CRDT merge: recursively merge two Values.
+/// - Integers: max (GCounter)
+/// - Strings: lexicographic max (LWW-Register)
+/// - Pairs: componentwise merge
+/// - Otherwise: return first argument
+fn crdt_merge_values(a: &Value, b: &Value) -> Value {
+    match (a, b) {
+        (Value::Int(x), Value::Int(y)) => Value::Int(std::cmp::max(*x, *y)),
+        (Value::String(x), Value::String(y)) => {
+            Value::String(if x >= y { x.clone() } else { y.clone() })
+        }
+        (Value::Pair(a1, a2), Value::Pair(b1, b2)) => Value::Pair(
+            Box::new(crdt_merge_values(a1, b1)),
+            Box::new(crdt_merge_values(a2, b2)),
+        ),
+        _ => a.clone(),
     }
 }
 
@@ -1942,5 +1991,155 @@ mod tests {
         // Receive (single-threaded stub returns unit)
         let recv = Expr::ActorRecv(Box::new(Expr::Int(1)));
         assert_eq!(interp.eval(&recv), Ok(Value::Unit));
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PHASE J2: CONTENT-ADDRESSED CODEGEN — NEW TESTS
+    // ═══════════════════════════════════════════════════════════════════
+
+    #[test]
+    fn test_eval_content_hash_pair() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ContentHash(Box::new(Expr::Pair(
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(2)),
+        )));
+        let result = interp.eval(&expr).unwrap();
+        assert!(result.is_hash());
+    }
+
+    #[test]
+    fn test_eval_content_hash_pair_different_order() {
+        let mut interp = Interpreter::new();
+        let e1 = Expr::ContentHash(Box::new(Expr::Pair(
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(2)),
+        )));
+        let e2 = Expr::ContentHash(Box::new(Expr::Pair(
+            Box::new(Expr::Int(2)),
+            Box::new(Expr::Int(1)),
+        )));
+        let r1 = interp.eval(&e1).unwrap();
+        let r2 = interp.eval(&e2).unwrap();
+        assert_ne!(r1, r2);
+    }
+
+    #[test]
+    fn test_eval_content_hash_idempotent() {
+        let mut interp = Interpreter::new();
+        let single = Expr::ContentHash(Box::new(Expr::Int(42)));
+        let double = Expr::ContentHash(Box::new(Expr::ContentHash(Box::new(Expr::Int(42)))));
+        let r1 = interp.eval(&single).unwrap();
+        let r2 = interp.eval(&double).unwrap();
+        // hash(hash(42)) == hash(42) — idempotent
+        assert_eq!(r1, r2);
+    }
+
+    #[test]
+    fn test_eval_content_hash_triple_idempotent() {
+        let mut interp = Interpreter::new();
+        let single = Expr::ContentHash(Box::new(Expr::Int(7)));
+        let triple = Expr::ContentHash(Box::new(Expr::ContentHash(Box::new(
+            Expr::ContentHash(Box::new(Expr::Int(7))),
+        ))));
+        let r1 = interp.eval(&single).unwrap();
+        let r3 = interp.eval(&triple).unwrap();
+        assert_eq!(r1, r3);
+    }
+
+    #[test]
+    fn test_eval_crdt_merge_string() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::String("hello".into())),
+            Box::new(Expr::String("world".into())),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::String("world".into())));
+    }
+
+    #[test]
+    fn test_eval_crdt_merge_string_commutative() {
+        let mut interp = Interpreter::new();
+        let e1 = Expr::CRDTMerge(
+            Box::new(Expr::String("world".into())),
+            Box::new(Expr::String("hello".into())),
+        );
+        assert_eq!(interp.eval(&e1), Ok(Value::String("world".into())));
+    }
+
+    #[test]
+    fn test_eval_crdt_merge_string_same() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::String("same".into())),
+            Box::new(Expr::String("same".into())),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::String("same".into())));
+    }
+
+    #[test]
+    fn test_eval_crdt_merge_pair() {
+        let mut interp = Interpreter::new();
+        // merge(Pair(3, 5), Pair(7, 2)) → Pair(7, 5)
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Pair(Box::new(Expr::Int(3)), Box::new(Expr::Int(5)))),
+            Box::new(Expr::Pair(Box::new(Expr::Int(7)), Box::new(Expr::Int(2)))),
+        );
+        assert_eq!(
+            interp.eval(&expr),
+            Ok(Value::Pair(
+                Box::new(Value::Int(7)),
+                Box::new(Value::Int(5))
+            ))
+        );
+    }
+
+    #[test]
+    fn test_eval_crdt_merge_pair_commutative() {
+        let mut interp = Interpreter::new();
+        let e1 = Expr::CRDTMerge(
+            Box::new(Expr::Pair(Box::new(Expr::Int(3)), Box::new(Expr::Int(5)))),
+            Box::new(Expr::Pair(Box::new(Expr::Int(7)), Box::new(Expr::Int(2)))),
+        );
+        let e2 = Expr::CRDTMerge(
+            Box::new(Expr::Pair(Box::new(Expr::Int(7)), Box::new(Expr::Int(2)))),
+            Box::new(Expr::Pair(Box::new(Expr::Int(3)), Box::new(Expr::Int(5)))),
+        );
+        let r1 = interp.eval(&e1).unwrap();
+        let r2 = interp.eval(&e2).unwrap();
+        assert_eq!(r1, r2);
+    }
+
+    #[test]
+    fn test_eval_crdt_merge_int_associative() {
+        let mut interp = Interpreter::new();
+        // merge(3, merge(8, 5)) == merge(merge(3, 8), 5)
+        let lhs = Expr::CRDTMerge(
+            Box::new(Expr::Int(3)),
+            Box::new(Expr::CRDTMerge(
+                Box::new(Expr::Int(8)),
+                Box::new(Expr::Int(5)),
+            )),
+        );
+        let rhs = Expr::CRDTMerge(
+            Box::new(Expr::CRDTMerge(
+                Box::new(Expr::Int(3)),
+                Box::new(Expr::Int(8)),
+            )),
+            Box::new(Expr::Int(5)),
+        );
+        assert_eq!(interp.eval(&lhs), interp.eval(&rhs));
+    }
+
+    #[test]
+    fn test_eval_content_hash_pair_deterministic() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ContentHash(Box::new(Expr::Pair(
+            Box::new(Expr::Int(10)),
+            Box::new(Expr::String("abc".into())),
+        )));
+        let r1 = interp.eval(&expr).unwrap();
+        let r2 = interp.eval(&expr).unwrap();
+        assert_eq!(r1, r2);
     }
 }
