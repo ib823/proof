@@ -236,6 +236,22 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             fv
         }
         Expr::ActorRecv(a) | Expr::ContentHash(a) => free_vars(a),
+        // CAHAYA Phase J5
+        Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
+            let mut fv = HashSet::new();
+            for e in elems {
+                fv.extend(free_vars(e));
+            }
+            fv
+        }
+        Expr::UIText(a, b)
+        | Expr::UIButton(a, b)
+        | Expr::UIContrastCheck(a, b) => {
+            let mut fv = free_vars(a);
+            fv.extend(free_vars(b));
+            fv
+        }
+        Expr::UIColor(_, _, _) | Expr::UIStyleDecl { .. } => HashSet::new(),
     }
 }
 
@@ -403,6 +419,13 @@ impl Lower {
             Expr::ActorRecv(_) => Ty::Int, // Message as generic value
             Expr::CRDTMerge(_, _) => Ty::Int, // Merged state
             Expr::ContentHash(_) => Ty::String, // Hash as hex string
+            // CAHAYA Phase J5
+            Expr::UIDisplay(_) | Expr::UIRow(_) | Expr::UIColumn(_) => Ty::Element,
+            Expr::UIText(_, _) => Ty::Element,
+            Expr::UIButton(_, _) => Ty::Element,
+            Expr::UIColor(_, _, _) => Ty::Color,
+            Expr::UIStyleDecl { .. } => Ty::UIStyle,
+            Expr::UIContrastCheck(_, _) => Ty::Bool,
         }
     }
 
@@ -470,6 +493,20 @@ impl Lower {
             Expr::ActorRecv(a) => self.infer_effect(a).join(Effect::Read),
             Expr::CRDTMerge(a, b) => self.infer_effect(a).join(self.infer_effect(b)),
             Expr::ContentHash(a) => self.infer_effect(a),
+            // CAHAYA Phase J5 — all UI expressions are pure
+            Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
+                let mut eff = Effect::Pure;
+                for e in elems {
+                    eff = eff.join(self.infer_effect(e));
+                }
+                eff
+            }
+            Expr::UIText(a, b)
+            | Expr::UIButton(a, b)
+            | Expr::UIContrastCheck(a, b) => {
+                self.infer_effect(a).join(self.infer_effect(b))
+            }
+            Expr::UIColor(_, _, _) | Expr::UIStyleDecl { .. } => Effect::Pure,
         }
     }
 
@@ -1340,6 +1377,16 @@ impl Lower {
                     Effect::Pure,
                 ))
             }
+
+            // CAHAYA Phase J5 — UI primitives (not yet lowered to IR)
+            Expr::UIDisplay(_)
+            | Expr::UIRow(_)
+            | Expr::UIColumn(_)
+            | Expr::UIText(_, _)
+            | Expr::UIButton(_, _)
+            | Expr::UIColor(_, _, _)
+            | Expr::UIStyleDecl { .. }
+            | Expr::UIContrastCheck(_, _) => todo!("CAHAYA Phase J5"),
 
             Expr::BinOp(op, lhs, rhs) => {
                 let l = self.lower_expr(lhs)?;

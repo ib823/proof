@@ -3146,6 +3146,41 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             let (inner_ty, eff) = type_check_full(ctx, expr)?;
             Ok((Ty::ContentAddressed(Box::new(inner_ty)), eff.join(Effect::Crypto)))
         }
+
+        // ════════════════════════════════════════════════════════════════════
+        // CAHAYA Phase J5: UI Primitives
+        // ════════════════════════════════════════════════════════════════════
+
+        Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
+            let mut eff = Effect::Pure;
+            for e in elems {
+                let (_, e_eff) = type_check_full(ctx, e)?;
+                eff = eff.join(e_eff);
+            }
+            Ok((Ty::Element, eff))
+        }
+
+        Expr::UIText(content, color) => {
+            let (_, eff1) = type_check_full(ctx, content)?;
+            let (_, eff2) = type_check_full(ctx, color)?;
+            Ok((Ty::Element, eff1.join(eff2)))
+        }
+
+        Expr::UIButton(label, handler) => {
+            let (_, eff1) = type_check_full(ctx, label)?;
+            let (_, eff2) = type_check_full(ctx, handler)?;
+            Ok((Ty::Element, eff1.join(eff2)))
+        }
+
+        Expr::UIColor(_, _, _) => Ok((Ty::Color, Effect::Pure)),
+
+        Expr::UIStyleDecl { .. } => Ok((Ty::UIStyle, Effect::Pure)),
+
+        Expr::UIContrastCheck(fg, bg) => {
+            let (_, eff1) = type_check_full(ctx, fg)?;
+            let (_, eff2) = type_check_full(ctx, bg)?;
+            Ok((Ty::Bool, eff1.join(eff2)))
+        }
     }
 }
 
@@ -3617,6 +3652,38 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         Expr::ContentHash(expr) => {
             let (inner_ty, eff) = type_check(ctx, expr)?;
             Ok((Ty::ContentAddressed(Box::new(inner_ty)), eff.join(Effect::Crypto)))
+        }
+
+        // CAHAYA Phase J5: UI Primitives
+        Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
+            let mut eff = Effect::Pure;
+            for e in elems {
+                let (_, e_eff) = type_check(ctx, e)?;
+                eff = eff.join(e_eff);
+            }
+            Ok((Ty::Element, eff))
+        }
+
+        Expr::UIText(content, color) => {
+            let (_, eff1) = type_check(ctx, content)?;
+            let (_, eff2) = type_check(ctx, color)?;
+            Ok((Ty::Element, eff1.join(eff2)))
+        }
+
+        Expr::UIButton(label, handler) => {
+            let (_, eff1) = type_check(ctx, label)?;
+            let (_, eff2) = type_check(ctx, handler)?;
+            Ok((Ty::Element, eff1.join(eff2)))
+        }
+
+        Expr::UIColor(_, _, _) => Ok((Ty::Color, Effect::Pure)),
+
+        Expr::UIStyleDecl { .. } => Ok((Ty::UIStyle, Effect::Pure)),
+
+        Expr::UIContrastCheck(fg, bg) => {
+            let (_, eff1) = type_check(ctx, fg)?;
+            let (_, eff2) = type_check(ctx, bg)?;
+            Ok((Ty::Bool, eff1.join(eff2)))
         }
     }
 }

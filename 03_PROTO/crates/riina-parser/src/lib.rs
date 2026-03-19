@@ -446,6 +446,11 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwFor) => self.parse_for_in(),
             Some(TokenKind::KwWhile) => self.parse_while(),
             Some(TokenKind::KwLoop) => self.parse_loop(),
+            // CAHAYA Phase J5 block forms
+            Some(TokenKind::KwDisplay) => self.parse_display(),
+            Some(TokenKind::KwRow) => self.parse_row(),
+            Some(TokenKind::KwColumn) => self.parse_column(),
+            Some(TokenKind::KwStyle) => self.parse_style_decl(),
             _ => self.parse_pipe(),
         }
     }
@@ -771,6 +776,11 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwRecv) => self.parse_actor_recv(),
             Some(TokenKind::KwMerge) => self.parse_crdt_merge(),
             Some(TokenKind::KwContentHash) => self.parse_content_hash(),
+            // CAHAYA Phase J5 prefix forms
+            Some(TokenKind::KwText_) => self.parse_ui_text(),
+            Some(TokenKind::KwButton) => self.parse_ui_button(),
+            Some(TokenKind::KwColor) => self.parse_ui_color(),
+            Some(TokenKind::KwContrast) => self.parse_ui_contrast(),
             _ => self.parse_atom(),
         }
     }
@@ -1526,6 +1536,175 @@ impl<'a> Parser<'a> {
         let e = self.parse_control_flow()?;
         self.consume(TokenKind::RParen)?;
         Ok(Expr::ContentHash(Box::new(e)))
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // CAHAYA Phase J5: UI Primitives
+    // ════════════════════════════════════════════════════════════════════
+
+    /// Parse a brace-delimited list of UI elements separated by `;`
+    fn parse_ui_block_elements(&mut self) -> Result<Vec<Expr>, ParseError> {
+        self.consume(TokenKind::LBrace)?;
+        let mut elements = Vec::new();
+        while !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace)) {
+            elements.push(self.parse_control_flow()?);
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Semi)) {
+                self.next();
+            }
+        }
+        self.consume(TokenKind::RBrace)?;
+        Ok(elements)
+    }
+
+    /// Parse `paparan { elements... }` / `display { elements... }`
+    fn parse_display(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwDisplay)?;
+        let elements = self.parse_ui_block_elements()?;
+        Ok(Expr::UIDisplay(elements))
+    }
+
+    /// Parse `baris { elements... }` / `row { elements... }`
+    fn parse_row(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwRow)?;
+        let elements = self.parse_ui_block_elements()?;
+        Ok(Expr::UIRow(elements))
+    }
+
+    /// Parse `lajur { elements... }` / `column { elements... }`
+    fn parse_column(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwColumn)?;
+        let elements = self.parse_ui_block_elements()?;
+        Ok(Expr::UIColumn(elements))
+    }
+
+    /// Parse `warna(r, g, b)` / `color(r, g, b)`
+    fn parse_ui_color(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwColor)?;
+        self.consume(TokenKind::LParen)?;
+        let r = self.parse_u8_literal()?;
+        self.consume(TokenKind::Comma)?;
+        let g = self.parse_u8_literal()?;
+        self.consume(TokenKind::Comma)?;
+        let b = self.parse_u8_literal()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::UIColor(r, g, b))
+    }
+
+    /// Parse a u8 integer literal (0-255)
+    fn parse_u8_literal(&mut self) -> Result<u8, ParseError> {
+        let tok = self.next().ok_or(ParseError { kind: ParseErrorKind::UnexpectedEof, span: self.current_span })?;
+        match &tok.kind {
+            TokenKind::LiteralInt(s, _) => {
+                let val: u64 = s.parse().map_err(|_| ParseError {
+                    kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
+                    span: tok.span,
+                })?;
+                if val > 255 {
+                    return Err(ParseError {
+                        kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
+                        span: tok.span,
+                    });
+                }
+                Ok(val as u8)
+            }
+            _ => Err(ParseError {
+                kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
+                span: tok.span,
+            }),
+        }
+    }
+
+    /// Parse `tulisan("text", color)` / `text("text", color)`
+    fn parse_ui_text(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwText_)?;
+        self.consume(TokenKind::LParen)?;
+        let content = self.parse_expr()?;
+        self.consume(TokenKind::Comma)?;
+        let color = self.parse_expr()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::UIText(Box::new(content), Box::new(color)))
+    }
+
+    /// Parse `butang("label", handler)` / `button("label", handler)`
+    fn parse_ui_button(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwButton)?;
+        self.consume(TokenKind::LParen)?;
+        let label = self.parse_expr()?;
+        self.consume(TokenKind::Comma)?;
+        let handler = self.parse_expr()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::UIButton(Box::new(label), Box::new(handler)))
+    }
+
+    /// Parse `kontras(fg, bg)` / `contrast(fg, bg)`
+    fn parse_ui_contrast(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwContrast)?;
+        self.consume(TokenKind::LParen)?;
+        let fg = self.parse_expr()?;
+        self.consume(TokenKind::Comma)?;
+        let bg = self.parse_expr()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::UIContrastCheck(Box::new(fg), Box::new(bg)))
+    }
+
+    /// Parse `gaya { pelapik: 16, saiz_fon: 14 }` / `style { padding: 16, font_size: 14 }`
+    fn parse_style_decl(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwStyle)?;
+        self.consume(TokenKind::LBrace)?;
+        let mut padding = None;
+        let mut font_size = None;
+        while !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace)) {
+            let prop = self.peek().map(|t| t.kind.clone());
+            match prop {
+                Some(TokenKind::KwPadding) => {
+                    self.consume(TokenKind::KwPadding)?;
+                    self.consume(TokenKind::Colon)?;
+                    let tok = self.next().ok_or(ParseError { kind: ParseErrorKind::UnexpectedEof, span: self.current_span })?;
+                    match &tok.kind {
+                        TokenKind::LiteralInt(s, _) => {
+                            padding = Some(s.parse::<u32>().map_err(|_| ParseError {
+                                kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
+                                span: tok.span,
+                            })?);
+                        }
+                        _ => return Err(ParseError {
+                            kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
+                            span: tok.span,
+                        }),
+                    }
+                }
+                Some(TokenKind::KwFontSize) => {
+                    self.consume(TokenKind::KwFontSize)?;
+                    self.consume(TokenKind::Colon)?;
+                    let tok = self.next().ok_or(ParseError { kind: ParseErrorKind::UnexpectedEof, span: self.current_span })?;
+                    match &tok.kind {
+                        TokenKind::LiteralInt(s, _) => {
+                            font_size = Some(s.parse::<u32>().map_err(|_| ParseError {
+                                kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
+                                span: tok.span,
+                            })?);
+                        }
+                        _ => return Err(ParseError {
+                            kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
+                            span: tok.span,
+                        }),
+                    }
+                }
+                _ => {
+                    let tok = self.next().ok_or(ParseError { kind: ParseErrorKind::UnexpectedEof, span: self.current_span })?;
+                    return Err(ParseError {
+                        kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
+                        span: tok.span,
+                    });
+                }
+            }
+            // consume optional comma separator
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                self.next();
+            }
+        }
+        self.consume(TokenKind::RBrace)?;
+        Ok(Expr::UIStyleDecl { padding, font_size })
     }
 
     fn parse_capability_kind(&mut self) -> Result<CapabilityKind, ParseError> {

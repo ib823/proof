@@ -518,6 +518,22 @@ impl<'a> Lexer<'a> {
             "verify" | "sahkan" => TokenKind::KwVerify,
             "spawn" | "lahir" => TokenKind::KwSpawn,
 
+            // CAHAYA Phase J5 (English | Bahasa Melayu)
+            "display" | "paparan" => TokenKind::KwDisplay,
+            "layout" | "susun" => TokenKind::KwLayout,
+            "color" | "warna" => TokenKind::KwColor,
+            "text" | "tulisan" => TokenKind::KwText_,
+            "button" | "butang" => TokenKind::KwButton,
+            "input" | "masukan" => TokenKind::KwInput,
+            "image" | "gambar" => TokenKind::KwImage,
+            "style" | "gaya" => TokenKind::KwStyle,
+            "contrast" | "kontras" => TokenKind::KwContrast,
+            "accessible" | "mudahcapai" => TokenKind::KwAccessible,
+            "row" | "baris" => TokenKind::KwRow,
+            "column" | "lajur" => TokenKind::KwColumn,
+            "padding" | "pelapik" => TokenKind::KwPadding,
+            "font_size" | "saiz_fon" => TokenKind::KwFontSize,
+
             _ => TokenKind::Identifier(s),
         }
     }
