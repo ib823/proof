@@ -3,7 +3,7 @@
 //! RIINA Formatter
 //!
 //! Pretty-prints RIINA ASTs with consistent style.
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 
 #![forbid(unsafe_code)]
 

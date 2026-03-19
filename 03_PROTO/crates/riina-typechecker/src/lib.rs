@@ -3,7 +3,7 @@
 //! RIINA Typechecker
 //!
 //! Implements the typing rules defined in `foundations/Typing.v`.
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 //!
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 

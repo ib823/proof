@@ -4,7 +4,7 @@
 //!
 //! Parses .rii files and generates HTML documentation.
 //! Extracts `///` doc comments and attaches them to declarations.
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 
 #![forbid(unsafe_code)]
 

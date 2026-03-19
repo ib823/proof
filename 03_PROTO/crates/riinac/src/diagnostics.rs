@@ -3,7 +3,7 @@
 //! RIINA Error Diagnostics
 //!
 //! Provides caret-style error display with source context.
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 
 use riina_lexer::Span;
 

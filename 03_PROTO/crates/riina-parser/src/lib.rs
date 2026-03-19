@@ -3,7 +3,7 @@
 //! RIINA Parser
 //!
 //! Parses token streams into ASTs defined in `riina-types`.
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 //!
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
