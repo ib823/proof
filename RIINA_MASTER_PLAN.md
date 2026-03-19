@@ -179,8 +179,8 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 11,905 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 307 files, 12,096 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
-| **Isabelle proofs** | `02_FORMAL/isabelle/` | 344 files, 12,287 lemmas, 10 core theories compile, 0 sorry | Mechanized |
+| **Lean proofs** | `02_FORMAL/lean/` | 317 files, 12,096 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
+| **Isabelle proofs** | `02_FORMAL/isabelle/` | 354 files, 12,287 lemmas, 10 core theories compile, 0 sorry | Mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 267 files, 11,843 assertions, 267/267 Z3-verified | Mechanized |
 | **F\* proofs** | `02_FORMAL/fstar/` | 265 files, 0 assume val | Compiled |
 | **TLA+ specs** | `02_FORMAL/tlaplus/` | 267 files, 5,893 theorems, SANY+TLC verified | Compiled |
@@ -229,7 +229,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
 | .v files (active) | 292 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
-| Qed (archive) | 758 | Total 10,796 minus active 11,905 |
+| Qed (archive) | 758 | Total 12,663 minus active 11,905 |
 | Admitted (archive) | 98 | In `properties/_archive_deprecated/` |
 | Compilation | PASSES | `cd 02_FORMAL/coq && make` |
 
@@ -451,7 +451,7 @@ See Part 5 for detailed per-prover closure criteria.
 
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
-| Lean 4 | 307 files, 12,096 declarations, 0 `sorry`, 0 axioms | Full lane builds; strict active lane mechanized via step-indexed `AlgebraicEffects` typing | DONE | High |
+| Lean 4 | 317 files, 12,096 declarations, 0 `sorry`, 0 axioms | Full lane builds; strict active lane mechanized via step-indexed `AlgebraicEffects` typing | DONE | High |
 | Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | DONE (smoke; requires provisioning to re-verify) | High |
 | F* | 1 smoke-compiled active module (22 lemmas) | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | DONE (smoke; requires provisioning to re-verify) | High (HACL* templates) |
 | TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | DONE (smoke; requires provisioning to re-verify) | Very High |
