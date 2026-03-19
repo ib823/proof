@@ -75,5 +75,19 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
         | Expr::ActorRecv(_)
         | Expr::CRDTMerge(_, _)
         | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
+
+        // CAHAYA Phase J5
+        Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
+            for e in elems {
+                walk_inner(e, rules, out);
+            }
+        }
+        Expr::UIText(a, b)
+        | Expr::UIButton(a, b)
+        | Expr::UIContrastCheck(a, b) => {
+            walk_inner(a, rules, out);
+            walk_inner(b, rules, out);
+        }
+        Expr::UIColor(_, _, _) | Expr::UIStyleDecl { .. } => {}
     }
 }

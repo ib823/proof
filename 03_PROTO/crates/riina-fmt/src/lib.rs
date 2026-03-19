@@ -381,6 +381,19 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
             indent(out, level, cfg);
             out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
         }
+
+        // CAHAYA Phase J5
+        Expr::UIDisplay(_)
+        | Expr::UIRow(_)
+        | Expr::UIColumn(_)
+        | Expr::UIText(_, _)
+        | Expr::UIButton(_, _)
+        | Expr::UIColor(_, _, _)
+        | Expr::UIStyleDecl { .. }
+        | Expr::UIContrastCheck(_, _) => {
+            indent(out, level, cfg);
+            out.push_str("/* CAHAYA Phase J5: UI primitives */");
+        }
     }
 }
 
@@ -568,6 +581,18 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
         | Expr::ContentHash(_) => {
             out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
         }
+
+        // CAHAYA Phase J5
+        Expr::UIDisplay(_)
+        | Expr::UIRow(_)
+        | Expr::UIColumn(_)
+        | Expr::UIText(_, _)
+        | Expr::UIButton(_, _)
+        | Expr::UIColor(_, _, _)
+        | Expr::UIStyleDecl { .. }
+        | Expr::UIContrastCheck(_, _) => {
+            out.push_str("/* CAHAYA Phase J5: UI primitives */");
+        }
     }
 }
 
@@ -750,6 +775,13 @@ fn fmt_ty(out: &mut String, ty: &Ty) {
         | Ty::Supervisor(_) => {
             out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT type */");
         }
+
+        // CAHAYA Phase J5
+        Ty::Color => out.push_str("Color"),
+        Ty::Element => out.push_str("Element"),
+        Ty::Layout => out.push_str("Layout"),
+        Ty::UIStyle => out.push_str("UIStyle"),
+        Ty::AccessibleText => out.push_str("AccessibleText"),
     }
 }
 

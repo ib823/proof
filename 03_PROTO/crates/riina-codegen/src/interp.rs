@@ -730,6 +730,16 @@ impl Interpreter {
                 Ok(Value::Hash(hex.into_bytes()))
             }
 
+            // CAHAYA Phase J5 — UI primitives (not yet interpreted)
+            Expr::UIDisplay(_)
+            | Expr::UIRow(_)
+            | Expr::UIColumn(_)
+            | Expr::UIText(_, _)
+            | Expr::UIButton(_, _)
+            | Expr::UIColor(_, _, _)
+            | Expr::UIStyleDecl { .. }
+            | Expr::UIContrastCheck(_, _) => todo!("CAHAYA Phase J5"),
+
             Expr::BinOp(op, lhs, rhs) => {
                 let l = self.eval_with_env(env, lhs)?;
                 let r = self.eval_with_env(env, rhs)?;

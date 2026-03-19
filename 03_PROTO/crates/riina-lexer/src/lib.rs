@@ -1565,4 +1565,134 @@ mod tests {
         assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwPaling);
         assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwMesti);
     }
+
+    // =========================================================================
+    // CAHAYA Phase J5: UI Primitive Keyword Tests
+    // =========================================================================
+
+    #[test]
+    fn test_cahaya_display_keyword() {
+        let input = "display paparan";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwDisplay);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwDisplay);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_layout_keyword() {
+        let input = "layout susun";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwLayout);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwLayout);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_color_keyword() {
+        let input = "color warna";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwColor);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwColor);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_text_keyword() {
+        let input = "text tulisan";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwText_);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwText_);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_button_keyword() {
+        let input = "button butang";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwButton);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwButton);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_input_keyword() {
+        let input = "input masukan";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwInput);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwInput);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_image_keyword() {
+        let input = "image gambar";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwImage);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwImage);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_style_keyword() {
+        let input = "style gaya";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwStyle);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwStyle);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_contrast_keyword() {
+        let input = "contrast kontras";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwContrast);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwContrast);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_accessible_keyword() {
+        let input = "accessible mudahcapai";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwAccessible);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwAccessible);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_row_keyword() {
+        let input = "row baris";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwRow);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwRow);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_column_keyword() {
+        let input = "column lajur";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwColumn);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwColumn);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_padding_keyword() {
+        let input = "padding pelapik";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwPadding);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwPadding);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_cahaya_font_size_keyword() {
+        let input = "font_size saiz_fon";
+        let mut lexer = Lexer::new(input);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwFontSize);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwFontSize);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
 }

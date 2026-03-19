@@ -297,6 +297,15 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
         | Expr::ActorRecv(_)
         | Expr::CRDTMerge(_, _)
         | Expr::ContentHash(_) => ExprSummary::default(),
+        // CAHAYA Phase J5
+        Expr::UIDisplay(_)
+        | Expr::UIRow(_)
+        | Expr::UIColumn(_)
+        | Expr::UIText(_, _)
+        | Expr::UIButton(_, _)
+        | Expr::UIColor(_, _, _)
+        | Expr::UIStyleDecl { .. }
+        | Expr::UIContrastCheck(_, _) => ExprSummary::default(),
     }
 }
 

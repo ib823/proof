@@ -160,6 +160,22 @@ pub enum TokenKind {
     KwVerify,       // sahkan / verify — integrity verification
     KwSpawn,        // lahir / spawn — create new actor
 
+    // CAHAYA Phase J5 keywords
+    KwDisplay,    // display / paparan — UI display block
+    KwLayout,     // layout / susun — layout container
+    KwColor,      // color / warna — color value
+    KwText_,      // text / tulisan — text element
+    KwButton,     // button / butang — interactive button
+    KwInput,      // input / masukan — user input field
+    KwImage,      // image / gambar — image element
+    KwStyle,      // style / gaya — style declaration
+    KwContrast,   // contrast / kontras — accessibility contrast
+    KwAccessible, // accessible / mudahcapai — accessibility annotation
+    KwRow,        // row / baris — horizontal layout
+    KwColumn,     // column / lajur — vertical layout
+    KwPadding,    // padding / pelapik — spacing
+    KwFontSize,   // font_size / saiz_fon — text size
+
     // Logic keywords
     KwAnd,        // dan / and
     KwOr,         // atau / or

@@ -2846,3 +2846,163 @@ fn test_parse_jalinan_merge_and_hash_composition() {
         other => panic!("Expected Let, got {:?}", other),
     }
 }
+
+// =============================================================================
+// CAHAYA PHASE J5: UI PRIMITIVE TESTS
+// =============================================================================
+
+#[test]
+fn test_parse_display_basic() {
+    let mut p = Parser::new("paparan { 42 }");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIDisplay(elems) => {
+            assert_eq!(elems.len(), 1);
+            assert_eq!(elems[0], Expr::Int(42));
+        }
+        other => panic!("Expected UIDisplay, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_display_multiple_elements() {
+    let mut p = Parser::new("paparan { 1; 2; 3 }");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIDisplay(elems) => {
+            assert_eq!(elems.len(), 3);
+        }
+        other => panic!("Expected UIDisplay, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_row_basic() {
+    let mut p = Parser::new("baris { 1; 2 }");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIRow(elems) => {
+            assert_eq!(elems.len(), 2);
+        }
+        other => panic!("Expected UIRow, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_column_basic() {
+    let mut p = Parser::new("lajur { 1; 2 }");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIColumn(elems) => {
+            assert_eq!(elems.len(), 2);
+        }
+        other => panic!("Expected UIColumn, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_color_basic() {
+    let mut p = Parser::new("warna(255, 128, 0)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIColor(r, g, b) => {
+            assert_eq!(r, 255);
+            assert_eq!(g, 128);
+            assert_eq!(b, 0);
+        }
+        other => panic!("Expected UIColor, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_color_english() {
+    let mut p = Parser::new("color(0, 0, 0)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIColor(r, g, b) => {
+            assert_eq!(r, 0);
+            assert_eq!(g, 0);
+            assert_eq!(b, 0);
+        }
+        other => panic!("Expected UIColor, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_text_basic() {
+    let mut p = Parser::new("tulisan(\"hello\", warna(0, 0, 0))");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIText(content, color) => {
+            assert_eq!(*content, Expr::String("hello".to_string()));
+            assert!(matches!(*color, Expr::UIColor(0, 0, 0)));
+        }
+        other => panic!("Expected UIText, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_button_basic() {
+    let mut p = Parser::new("butang(\"Click\", handler)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIButton(label, handler) => {
+            assert_eq!(*label, Expr::String("Click".to_string()));
+            assert_eq!(*handler, Expr::Var("handler".to_string()));
+        }
+        other => panic!("Expected UIButton, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_contrast_basic() {
+    let mut p = Parser::new("kontras(warna(0, 0, 0), warna(255, 255, 255))");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIContrastCheck(fg, bg) => {
+            assert!(matches!(*fg, Expr::UIColor(0, 0, 0)));
+            assert!(matches!(*bg, Expr::UIColor(255, 255, 255)));
+        }
+        other => panic!("Expected UIContrastCheck, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_style_decl() {
+    let mut p = Parser::new("gaya { pelapik: 16, saiz_fon: 14 }");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIStyleDecl { padding, font_size } => {
+            assert_eq!(padding, Some(16));
+            assert_eq!(font_size, Some(14));
+        }
+        other => panic!("Expected UIStyleDecl, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_style_decl_partial() {
+    let mut p = Parser::new("style { padding: 8 }");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIStyleDecl { padding, font_size } => {
+            assert_eq!(padding, Some(8));
+            assert_eq!(font_size, None);
+        }
+        other => panic!("Expected UIStyleDecl, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_display_nested() {
+    let mut p = Parser::new("paparan { baris { 1; 2 }; lajur { 3; 4 } }");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::UIDisplay(elems) => {
+            assert_eq!(elems.len(), 2);
+            assert!(matches!(elems[0], Expr::UIRow(_)));
+            assert!(matches!(elems[1], Expr::UIColumn(_)));
+        }
+        other => panic!("Expected UIDisplay, got {:?}", other),
+    }
+}

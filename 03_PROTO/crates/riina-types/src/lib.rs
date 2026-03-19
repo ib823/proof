@@ -589,6 +589,19 @@ pub enum Ty {
     CRDT(Box<Ty>, Box<Ty>),
     /// Supervisor[T] — fault-tolerance supervisor for actor type T
     Supervisor(Box<Ty>),
+
+    // ── CAHAYA Phase J5 types ──────────────────────────────────────
+
+    /// Color — RGBA color with compile-time contrast checking
+    Color,
+    /// Element — UI element type
+    Element,
+    /// Layout — container for UI elements
+    Layout,
+    /// Style — CSS-like style properties
+    UIStyle,
+    /// AccessibleText — text with proven WCAG contrast
+    AccessibleText,
 }
 
 /// Binary operators
@@ -910,4 +923,23 @@ pub enum Expr {
     CRDTMerge(Box<Expr>, Box<Expr>),
     /// Content hash: cincang(value)
     ContentHash(Box<Expr>),
+
+    // ── CAHAYA Phase J5 expressions ────────────────────────────────
+
+    /// UI display block: paparan { ... }
+    UIDisplay(Vec<Expr>),
+    /// Row layout: baris { child1; child2; ... }
+    UIRow(Vec<Expr>),
+    /// Column layout: lajur { child1; child2; ... }
+    UIColumn(Vec<Expr>),
+    /// Text element: tulisan("Hello", warna(255, 255, 255))
+    UIText(Box<Expr>, Box<Expr>),
+    /// Button: butang("Click", handler)
+    UIButton(Box<Expr>, Box<Expr>),
+    /// Color literal: warna(r, g, b)
+    UIColor(u8, u8, u8),
+    /// Style: gaya { pelapik: 16, saiz_fon: 14 }
+    UIStyleDecl { padding: Option<u32>, font_size: Option<u32> },
+    /// Contrast check: kontras(fg_color, bg_color) — returns Bool
+    UIContrastCheck(Box<Expr>, Box<Expr>),
 }
