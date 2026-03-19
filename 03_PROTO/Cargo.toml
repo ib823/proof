@@ -21,6 +21,8 @@ members = [
     "crates/riina-wasm",
     "crates/riina-runtime",
     "crates/riina-receipt",
+    "crates/riina-ui",
+    "crates/riina-os",
     "crates/riinac",
 ]
 
@@ -51,6 +53,10 @@ riina-runtime = { path = "crates/riina-runtime" }
 riina-receipt = { path = "crates/riina-receipt" }
 riina-typechecker = { path = "crates/riina-typechecker" }
 riina-wasm = { path = "crates/riina-wasm" }
+
+# Internal dependencies - Platform crates
+riina-ui = { path = "crates/riina-ui" }
+riina-os = { path = "crates/riina-os" }
 
 # No external dependencies (Law 8)
 
