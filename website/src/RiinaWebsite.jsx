@@ -83,8 +83,8 @@ const RiinaWebsite = () => {
         </button>
 
         <nav className="site-nav">
-          {['Language', 'Playground', 'Docs', 'Enterprise', 'How'].map(p => (
-            <button key={p} onClick={() => nav(p.toLowerCase())} className={`nav-btn${currentPage === p.toLowerCase() ? ' nav-btn--active' : ''}`}>
+          {['Language', 'Playground', 'Docs', 'Enterprise', 'How It Works'].map(p => (
+            <button key={p} onClick={() => nav(p === 'How It Works' ? 'how' : p.toLowerCase())} className={`nav-btn${currentPage === (p === 'How It Works' ? 'how' : p.toLowerCase()) ? ' nav-btn--active' : ''}`}>
               {p}
             </button>
           ))}
@@ -108,12 +108,18 @@ const RiinaWebsite = () => {
   // ============================================================================
   const HomePage = () => (
     <div>
-      {/* Act 1: Hero */}
+      {/* Act 1: Hero — headline first, proof second, action third */}
       <section className="hero">
+        <h1>
+          Your code is<br/><strong>proven secure</strong><br/>before it ships.
+        </h1>
+        <p className="hero-subhead">
+          <span>{fmt(metrics.proofs.qedActive)}</span> Coq proofs &middot; <span>{metrics.proofs.admitted} admitted</span> &middot; <span>{metrics.proofs.axioms} axioms</span>
+        </p>
         <div className="hero-stats">
           <div className="hero-stat">
             <span className="hero-stat__num">{fmt(metrics.multiProver.totalProofsAllProvers)}</span>
-            <span className="hero-stat__label">mathematical proofs</span>
+            <span className="hero-stat__label">proof artifacts</span>
           </div>
           <div className="hero-stat-divider" />
           <div className="hero-stat">
@@ -126,16 +132,10 @@ const RiinaWebsite = () => {
             <span className="hero-stat__label">tests passing</span>
           </div>
         </div>
-        <h1>
-          Security<br/><strong>proven at compile time.</strong>
-        </h1>
-        <p className="hero-stat-line">
-          <span>{fmt(metrics.proofs.qedActive)}</span> Coq Qed &middot; <span>{metrics.proofs.admitted}</span> admitted &middot; <span>{metrics.proofs.axioms}</span> axioms
-        </p>
-        <p style={{color:'var(--text-accent)',fontSize:14,marginTop:8}}>Now with JALINAN: session-typed actors and distributed computing</p>
         <div className="hero-cta">
-          <button onClick={() => nav('playground')} className="btn btn--primary">Try It</button>
-          <a href="https://github.com/ib823/riina" className="btn btn--outline">GitHub</a>
+          <button onClick={() => nav('how')} className="btn btn--primary">See How It Works</button>
+          <button onClick={() => nav('playground')} className="btn btn--outline">Try the Playground</button>
+          <a href="https://github.com/ib823/riina" className="btn btn--ghost">GitHub</a>
         </div>
       </section>
 
@@ -186,12 +186,38 @@ const RiinaWebsite = () => {
 `}<span className="syn-str">{`All checks passed.`}</span></pre>
           </div>
         </div>
+        <div className="code-callouts">
+          <div className="code-callout">
+            <span className="code-callout__arrow">&larr;</span>
+            <span><code style={{color:'var(--text-accent)'}}>Rahsia&lt;Teks&gt;</code> &mdash; Secrets can never leak. Enforced at the type level.</span>
+          </div>
+          <div className="code-callout">
+            <span className="code-callout__arrow">&larr;</span>
+            <span><code style={{color:'var(--text-keyword)'}}>masa_tetap</code> &mdash; Constant-time execution. Timing attacks are impossible.</span>
+          </div>
+          <div className="code-callout">
+            <span className="code-callout__arrow">&larr;</span>
+            <span>The compiler <em>proved</em> all three properties. Zero trust required.</span>
+          </div>
+        </div>
         <p className="act-show__note">
           RIINA uses Bahasa Melayu (Malaysian) keywords. <code style={{color:'var(--text-keyword)'}}>fungsi</code> = fn,{' '}
           <code style={{color:'var(--text-keyword)'}}>biar</code> = let,{' '}
           <code style={{color:'var(--text-keyword)'}}>pulang</code> = return,{' '}
           <code style={{color:'var(--text-accent)'}}>Rahsia</code> = Secret.
         </p>
+      </section>
+
+      {/* Who is this for */}
+      <section style={{padding:'60px 24px',textAlign:'center'}}>
+        <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
+          <h2 style={{fontSize:24,fontWeight:300,marginBottom:16}}>Built for teams where <strong>security audits aren't enough.</strong></h2>
+          <p style={{color:'var(--text-secondary)',fontSize:15,lineHeight:1.7}}>
+            Healthcare. Defense. Finance. Critical infrastructure. If your software handles
+            secrets, processes payments, or controls physical systems &mdash; RIINA proves your
+            security properties are correct. Mathematically. Before deployment.
+          </p>
+        </div>
       </section>
 
       {/* Vibesafe — The AI-friendly language */}
@@ -267,17 +293,17 @@ const RiinaWebsite = () => {
 
         <div className="proof-pillars">
           <div className="proof-pillar">
-            <div className="proof-pillar__icon">{'\u22a2'}</div>
+            <div className="proof-pillar__icon">SAFE</div>
             <div className="proof-pillar__name">Type Safety</div>
             <div className="proof-pillar__desc">Progress + Preservation. Well-typed programs do not get stuck.</div>
           </div>
           <div className="proof-pillar">
-            <div className="proof-pillar__icon">{'\u22a2'}</div>
+            <div className="proof-pillar__icon">SEALED</div>
             <div className="proof-pillar__name">Non-Interference</div>
             <div className="proof-pillar__desc">Secret data cannot flow to public outputs. Proven via logical relations.</div>
           </div>
           <div className="proof-pillar">
-            <div className="proof-pillar__icon">{'\u22a2'}</div>
+            <div className="proof-pillar__icon">TRACKED</div>
             <div className="proof-pillar__name">Effect Soundness</div>
             <div className="proof-pillar__desc">Only declared effects can be performed. No hidden side effects.</div>
           </div>
@@ -289,23 +315,26 @@ const RiinaWebsite = () => {
             Coq is the primary proof engine — all {fmt(metrics.proofs.qedActive)} proofs compile with zero admits and zero axioms.
             Lean and Isabelle serve as secondary verification targets with explicit claim levels.
           </p>
-          <div className="triple-prover__grid">
+          <div className="prover-grid">
             {[
-              { prover: metrics.coq.prover, count: fmt(metrics.proofs.qedActive), role: 'Primary', foundation: 'CIC', level: laneClaim('coq') },
-              { prover: metrics.lean.prover, count: fmt(metrics.lean.theorems), role: 'Secondary', foundation: 'DTT', level: laneClaim('lean') },
-              { prover: metrics.isabelle.prover, count: fmt(metrics.isabelle.lemmas), role: 'Tertiary', foundation: 'HOL', level: laneClaim('isabelle') },
+              { prover: metrics.coq.prover, count: fmt(metrics.proofs.qedActive), level: laneClaim('coq'), primary: true },
+              { prover: metrics.lean.prover, count: fmt(metrics.lean.theorems), level: laneClaim('lean') },
+              { prover: metrics.isabelle.prover, count: fmt(metrics.isabelle.lemmas), level: laneClaim('isabelle') },
+              { prover: (metrics.smt||{}).prover||'Z3/CVC5', count: fmt((metrics.smt||{}).assertions||0), level: laneClaim('smt') },
+              { prover: (metrics.tlaplus||{}).prover||'TLA+', count: fmt((metrics.tlaplus||{}).theorems||0), level: laneClaim('tlaplus') },
+              { prover: (metrics.fstar||{}).prover||'F*', count: fmt((metrics.fstar||{}).lemmas||0), level: laneClaim('fstar') },
+              { prover: (metrics.alloy||{}).prover||'Alloy 6', count: fmt((metrics.alloy||{}).assertions||0), level: laneClaim('alloy') },
+              { prover: (metrics.verus||{}).prover||'Verus', count: fmt((metrics.verus||{}).proofs||0), level: laneClaim('verus') },
+              { prover: (metrics.kani||{}).prover||'Kani', count: fmt((metrics.kani||{}).harnesses||0), level: laneClaim('kani') },
+              { prover: (metrics.tv||{}).prover||'Translation Validation', count: fmt((metrics.tv||{}).validations||0), level: laneClaim('tv') },
             ].map((p, i) => (
-              <div key={i} className="triple-prover__card">
-                <div className="triple-prover__prover">{p.prover}</div>
-                <div className="triple-prover__count">{p.count}</div>
-                <div className="triple-prover__role">{p.role} &middot; {p.foundation}</div>
-                <div className="triple-prover__role">Claim: {p.level}</div>
+              <div key={i} className={`prover-row${p.primary ? ' prover-row--primary' : ''}`}>
+                <span className="prover-row__name">{p.prover}{p.primary && <span style={{fontSize:10,color:'var(--text-accent)',marginLeft:8}}>PRIMARY</span>}</span>
+                <span className="prover-row__count">{p.count}</span>
+                <span className={`prover-row__level prover-row__level--${p.level}`}>{p.level}</span>
               </div>
             ))}
           </div>
-          <p className="triple-prover__note" style={{marginTop:16}}>
-            {metrics.multiProver.totalProvers} provers total &middot; {fmt(metrics.multiProver.totalProofsAllProvers)} combined proof artifacts &middot; <button style={{background:'none',border:'none',color:'var(--text-accent)',cursor:'pointer',fontFamily:'var(--font-mono)',fontSize:13,padding:0}} onClick={() => nav('how')}>See all provers</button>
-          </p>
 
           <div className="claim-levels">
             <h4 className="claim-levels__title">What do claim levels mean?</h4>
@@ -796,7 +825,8 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
   Theorem: stored_data_encrypted`}</pre>
 
           <div style={{textAlign:'center',marginTop:48}}>
-            <a href="https://t.me/ib823" className="btn btn--primary">Contact for enterprise evaluation</a>
+            <a href="mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Enterprise%20Evaluation" className="btn btn--primary" style={{fontSize:16,padding:'14px 32px'}}>Talk to Us About Your Use Case</a>
+            <p style={{color:'var(--text-muted)',fontSize:13,marginTop:12}}>We'll walk your team through a proof. 30 minutes.</p>
           </div>
         </div>
       </section>
@@ -1035,7 +1065,7 @@ terima(k)`}</pre>
         {[
           { title: 'Product', links: [['Home','home'],['Language','language'],['Playground','playground'],['Enterprise','enterprise']] },
           { title: 'Learn', links: [['Docs','docs'],['How It Works','how'],['GitHub','https://github.com/ib823/riina']] },
-          { title: 'Legal', links: [['License','legal'],['Privacy','legal'],['Terms','legal'],['Reach Us','https://t.me/ib823']] },
+          { title: 'Legal', links: [['License','legal'],['Privacy','legal'],['Terms','legal'],['Contact','mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Inquiry'],['Telegram','https://t.me/ib823']] },
         ].map((col, i) => (
           <div key={i} className="footer-col">
             <div className="footer-col__title">{col.title}</div>
