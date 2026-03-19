@@ -1,0 +1,16 @@
+// merkle_audit.rii — Content-Addressed Audit Trail
+// Builds a Merkle tree from transaction data.
+// cincang() hashes data; sahkan() verifies integrity against a root.
+
+biar data1 = "Transaksi A";
+biar data2 = "Transaksi B";
+
+// Hash individual transactions
+biar hash1 = cincang(data1);
+biar hash2 = cincang(data2);
+
+// Combine into Merkle root
+biar root = cincang(hash1 + hash2);
+
+// Verify: root must match re-hash of leaves
+sahkan(root, hash1 + hash2)

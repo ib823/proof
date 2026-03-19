@@ -744,6 +744,8 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
               { name: 'Aerospace & Aviation', regs: 'DO-178C DAL A, DO-326A', desc: 'Flight-critical software with formal verification evidence satisfying DAL A. Deterministic execution proven. WCET bounds verified.' },
               { name: 'Technology / SaaS', regs: 'SOC 2, ISO 27001', desc: 'Access control and audit logging proven at compile time. Data isolation between tenants enforced by the type system.' },
               { name: 'Energy / Utilities', regs: 'NERC CIP, IEC 62443', desc: 'Critical infrastructure protection with proven access boundaries. Control system integrity verified by construction.' },
+              { name: 'Islamic Finance', regs: 'AAOIFI, IFSB, BNM RMiT', desc: 'Syariah compliance proven at compile time. No riba, gharar, or maysir possible in type-checked code.' },
+              { name: 'Blockchain / DeFi', regs: 'Smart Contract Security', desc: 'Reentrancy-free by construction. Value conservation proven. Linear state prevents double-spend.' },
             ].map((ind, i) => (
               <div key={i} className="industry-card">
                 <div className="industry-card__name">{ind.name}</div>
@@ -754,7 +756,7 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
           </div>
 
           <p style={{color:'var(--text-muted)',fontSize:14,textAlign:'center',marginBottom:48}}>
-            + 9 more compliance profiles: Telecom, Government, Transportation, Manufacturing, Retail, Media, Education, Agriculture, Legal
+            + 7 more compliance profiles: Telecom, Government, Transportation, Manufacturing, Retail, Education, Legal
           </p>
 
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16}}>Proof certificate <span style={{color:'var(--text-muted)',fontWeight:400,textTransform:'none',letterSpacing:0,fontSize:11}}>(target workflow)</span></h2>
@@ -861,6 +863,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
               { name: 'Termination & Memory', desc: 'Sized types, strong normalization, separation logic' },
               { name: 'Concurrency & Effects', desc: 'Session types, effect algebra, data-race freedom' },
               { name: 'Runtime & Hardware', desc: 'Proof bundles, constant-time, side-channel models' },
+              { name: 'Runtime Verification', desc: '6-layer runtime: verified allocator, CHERI hardware, Coq monitors, eBPF kernel, attestation, execution receipts' },
             ].map((d, i) => (
               <div key={i} className="card" style={{padding:'16px 20px'}}>
                 <div style={{fontSize:14,fontWeight:500,marginBottom:4}}>{d.name}</div>

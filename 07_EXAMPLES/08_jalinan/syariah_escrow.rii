@@ -1,0 +1,11 @@
+// syariah_escrow.rii — Syariah-Compliant Escrow (Conceptual)
+// Escrow: buyer deposits, seller delivers, escrow releases.
+// No riba (interest) — funds held, not lent.
+// Wakaf-style: irrevocable deposit until conditions met.
+
+biar deposit = 1000;
+
+// Release only when deposit exists (no interest accumulation)
+biar released = kalau deposit > 0 { deposit } lain { 0 };
+
+released
