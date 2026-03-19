@@ -17,7 +17,7 @@
 | Lean theorems | 12,096 (317 files, 0 sorry) |
 | Isabelle lemmas | 12,303 (357 files, 0 sorry) |
 | Total proofs | 71,382 across 10 provers |
-| Rust tests | 2,410 (17 crates) |
+| Rust tests | 2,407 (17 crates) |
 | Examples | 147 .rii files |
 | Claims | 5 mechanized (Coq, Lean, Isabelle, TLA+, SMT), 2 compiled (F*, Alloy), 3 generated (Verus, Kani, TV) |
 
