@@ -56,6 +56,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "riina-os"
+version = "0.3.0"
+
+[[package]]
 name = "riina-parser"
 version = "0.3.0"
 dependencies = [
@@ -99,6 +103,13 @@ name = "riina-types"
 version = "0.3.0"
 dependencies = [
  "riina-lexer",
+]
+
+[[package]]
+name = "riina-ui"
+version = "0.3.0"
+dependencies = [
+ "riina-types",
 ]
 
 [[package]]
