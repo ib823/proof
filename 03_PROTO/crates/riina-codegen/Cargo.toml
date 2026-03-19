@@ -11,7 +11,7 @@ RIINA Code Generator
 Translates typed RIINA AST to executable representation.
 Maintains formal correspondence with Coq specification.
 
-RIINA = Rigorous Immutable Invariant — Normalized Axiom
+RIINA = Rigorous Immutable Invariant, No Assumptions
 
 Architecture: Custom IR → Reference Interpreter / C Emission
 Mode: Comprehensive Verification | Zero Trust

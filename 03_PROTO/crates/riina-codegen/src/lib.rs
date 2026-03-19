@@ -60,7 +60,7 @@
 //! - **Secure**: Security labels preserved through translation
 //! - **Traced**: Effect annotations maintained for verification
 //!
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 //!
 //! "QED Eternum."
 

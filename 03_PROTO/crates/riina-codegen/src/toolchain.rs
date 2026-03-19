@@ -16,7 +16,7 @@
 //!
 //! Detects Xcode via `xcrun` commands.
 //!
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 
 use std::env;
 use std::path::PathBuf;

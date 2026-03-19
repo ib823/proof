@@ -3,7 +3,7 @@
 //! RIINA Language Server Protocol
 //!
 //! Hand-written JSON-RPC over stdio for zero-dependency LSP.
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 
 #![forbid(unsafe_code)]
 

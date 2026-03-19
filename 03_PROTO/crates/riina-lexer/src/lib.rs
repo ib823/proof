@@ -3,7 +3,7 @@
 //! RIINA Lexer
 //!
 //! Tokenizes RIINA source code.
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 //!
 //! Reference: RIINA-LANG-LEXER-SPEC_v1_0_0.md
 //!

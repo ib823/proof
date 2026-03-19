@@ -27,7 +27,7 @@
 //! RiinaBridge.xcframework
 //! ```
 //!
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 
 use std::fs;
 use std::path::{Path, PathBuf};

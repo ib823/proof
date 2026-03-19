@@ -45,7 +45,9 @@ body {
   --border-light:    #3f3f46;
   --btn-primary-bg:  #e4e4e7;
   --btn-primary-text:#0a0a0b;
-  --font-sans:       -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --accent-warm:     #d4a846;
+  --accent-warm-hover: #c49a3a;
+  --font-sans:       'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-mono:       'SF Mono', 'Cascadia Code', 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
   --max-w-text:      720px;
   --max-w-code:      960px;
@@ -58,11 +60,9 @@ body {
    TYPOGRAPHY
    ============================================================================ */
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
+h1 { font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; }
+h2 { font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
+h3, h4, h5, h6 { font-weight: 400; line-height: 1.2; letter-spacing: -0.02em; }
 
 a {
   color: var(--text-accent);
@@ -141,12 +141,15 @@ code, pre {
 }
 
 .btn--primary {
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
+  background: var(--accent-warm);
+  color: #0a0a0b;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .btn--primary:hover {
-  opacity: 0.9;
+  background: var(--accent-warm-hover);
 }
 
 .btn--outline {
@@ -357,7 +360,7 @@ code, pre {
 .syn-ty { color: var(--text-accent); }
 .syn-str { color: var(--text-string); }
 .syn-cm { color: var(--text-comment); }
-.syn-fn { color: #fbbf24; }
+.syn-fn { color: var(--accent-warm); }
 
 /* Terminal block */
 .terminal-block {
@@ -508,18 +511,49 @@ code, pre {
   font-weight: 500;
 }
 
+.hero-positioning {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.hero-positioning strong {
+  color: var(--text-accent);
+  font-weight: 600;
+}
+
 .hero h1 {
-  font-size: 56px;
+  font-size: 64px;
   font-weight: 300;
   letter-spacing: -0.03em;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .hero h1 strong {
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.hero-explain {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 32px;
+  line-height: 1.7;
+}
+
+.hero-explain em {
+  color: var(--text-primary);
+  font-style: italic;
 }
 
 .hero-cta {
@@ -556,6 +590,19 @@ code, pre {
   margin-right: auto;
 }
 
+.act-show__lang-note {
+  text-align: center;
+  font-size: 15px;
+  color: var(--text-secondary);
+  max-width: var(--max-w-text);
+  margin: 0 auto 32px;
+  line-height: 1.7;
+  padding: 16px 24px;
+  border-left: 3px solid var(--text-accent);
+  background: var(--bg-secondary);
+  border-radius: 0 6px 6px 0;
+}
+
 /* ============================================================================
    HOMEPAGE — VIBESAFE SECTION
    ============================================================================ */
@@ -581,13 +628,13 @@ code, pre {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-accent);
-  border: 1px solid var(--text-accent);
-  border-radius: 100px;
-  padding: 4px 14px;
-  margin-bottom: 20px;
+  color: var(--text-muted);
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: 16px;
 }
 
 .act-vibesafe__title {
@@ -647,7 +694,8 @@ code, pre {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
 .vibesafe-flow__num {
@@ -662,8 +710,8 @@ code, pre {
   display: block;
   text-align: center;
   color: var(--text-muted);
-  font-size: 14px;
-  margin: 8px 0;
+  font-size: 16px;
+  margin: 12px 0;
   padding-left: 26px;
 }
 
@@ -1352,6 +1400,95 @@ code, pre {
 }
 
 /* ============================================================================
+   SECTION HEADING (reusable)
+   ============================================================================ */
+
+.section-heading {
+  font-size: 32px;
+  font-weight: 300;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+/* ============================================================================
+   WHY NOW SECTION
+   ============================================================================ */
+
+.why-now-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.why-now-item {
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.why-now-item__title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.why-now-item__desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ============================================================================
+   SOCIAL PROOF SECTION
+   ============================================================================ */
+
+.social-proof-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-bottom: 24px;
+}
+
+.social-proof-stats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.social-proof__num {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.social-proof__label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 180px;
+  text-align: center;
+}
+
+/* ============================================================================
+   ENTERPRISE INTRO
+   ============================================================================ */
+
+.enterprise-intro {
+  max-width: var(--max-w-text);
+  margin-bottom: 48px;
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.enterprise-intro p {
+  margin-bottom: 16px;
+}
+
+/* ============================================================================
    RESPONSIVE — 2 breakpoints only
    ============================================================================ */
 
@@ -1381,8 +1518,16 @@ code, pre {
     height: 28px;
   }
 
+  .hero-positioning {
+    font-size: 11px;
+  }
+
   .hero h1 {
     font-size: 36px;
+  }
+
+  .hero-explain {
+    font-size: 14px;
   }
 
   .hero {
@@ -1395,8 +1540,14 @@ code, pre {
 
   .proof-pillars,
   .start-cards,
-  .triple-prover__grid {
+  .triple-prover__grid,
+  .why-now-grid {
     grid-template-columns: 1fr;
+  }
+
+  .social-proof-stats {
+    flex-direction: column;
+    gap: 24px;
   }
 
   .industry-grid {
@@ -1428,6 +1579,10 @@ code, pre {
 @media (max-width: 480px) {
   .hero h1 {
     font-size: 28px;
+  }
+
+  .hero-positioning {
+    font-size: 10px;
   }
 
   .hero-stat-line {

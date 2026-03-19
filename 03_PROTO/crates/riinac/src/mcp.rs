@@ -21,7 +21,7 @@
 //! | `riina_run` | Interpret RIINA source code |
 //! | `riina_format` | Format RIINA source code |
 //!
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 
 use std::io;
 

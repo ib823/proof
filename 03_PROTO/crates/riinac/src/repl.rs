@@ -3,7 +3,7 @@
 //! RIINA REPL — Interactive Read-Eval-Print Loop
 //!
 //! Supports bilingual commands (Bahasa Melayu + English).
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 
 use std::io::{self, Write, BufRead};
 

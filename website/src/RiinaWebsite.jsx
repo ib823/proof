@@ -108,13 +108,25 @@ const RiinaWebsite = () => {
   // ============================================================================
   const HomePage = () => (
     <div>
-      {/* Act 1: Hero — headline first, proof second, action third */}
+      {/* Act 1: Hero — positioning → headline → explanation → proof → CTA */}
       <section className="hero">
+        <p className="hero-positioning">
+          <strong>Rigorous Immutable Invariant, No Assumptions</strong> — a programming language
+          with mathematical proof built into the compiler.
+        </p>
+
         <h1>
           Your code is<br/><strong>proven secure</strong><br/>before it ships.
         </h1>
+
+        <p className="hero-explain">
+          RIINA proves your security properties are correct before your code ever runs.
+          Not tested. Not audited. <em>Proven</em> — with the same mathematical certainty
+          used in aerospace and nuclear engineering.
+        </p>
+
         <p className="hero-subhead">
-          <span>{fmt(metrics.proofs.qedActive)}</span> Coq proofs &middot; <span>{metrics.proofs.admitted} admitted</span> &middot; <span>{metrics.proofs.axioms} axioms</span>
+          <span>{fmt(metrics.proofs.qedActive)}</span> machine-checked proofs &middot; <span>{metrics.proofs.admitted} admitted</span> &middot; <span>{metrics.proofs.axioms} axioms</span>
         </p>
         <div className="hero-stats">
           <div className="hero-stat">
@@ -135,13 +147,20 @@ const RiinaWebsite = () => {
         <div className="hero-cta">
           <button onClick={() => nav('how')} className="btn btn--primary">See How It Works</button>
           <button onClick={() => nav('playground')} className="btn btn--outline">Try the Playground</button>
-          <a href="https://github.com/ib823/riina" className="btn btn--ghost">GitHub</a>
         </div>
       </section>
 
       {/* Act 2: Show — Side-by-side code */}
       <section className="act-show">
         <p className="act-show__label">What it looks like</p>
+        <p className="act-show__lang-note">
+          RIINA uses <strong>Bahasa Melayu</strong> (Malaysian) keywords — a deliberate
+          choice of linguistic sovereignty for a language built in Malaysia.{' '}
+          <code style={{color:'var(--text-keyword)'}}>fungsi</code> = fn,{' '}
+          <code style={{color:'var(--text-keyword)'}}>biar</code> = let,{' '}
+          <code style={{color:'var(--text-keyword)'}}>pulang</code> = return,{' '}
+          <code style={{color:'var(--text-accent)'}}>Rahsia</code> = Secret.
+        </p>
         <div className="code-panels">
           <div className="code-panel">
             <div className="code-panel__label">pengesahan.rii</div>
@@ -200,23 +219,50 @@ const RiinaWebsite = () => {
             <span>The compiler <em>proved</em> all three properties. Zero trust required.</span>
           </div>
         </div>
-        <p className="act-show__note">
-          RIINA uses Bahasa Melayu (Malaysian) keywords. <code style={{color:'var(--text-keyword)'}}>fungsi</code> = fn,{' '}
-          <code style={{color:'var(--text-keyword)'}}>biar</code> = let,{' '}
-          <code style={{color:'var(--text-keyword)'}}>pulang</code> = return,{' '}
-          <code style={{color:'var(--text-accent)'}}>Rahsia</code> = Secret.
-        </p>
       </section>
 
       {/* Who is this for */}
       <section style={{padding:'60px 24px',textAlign:'center'}}>
         <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
-          <h2 style={{fontSize:24,fontWeight:300,marginBottom:16}}>Built for teams where <strong>security audits aren't enough.</strong></h2>
+          <h2 style={{fontSize:32,fontWeight:300,marginBottom:16}}>Built for teams where <strong>security audits aren't enough.</strong></h2>
           <p style={{color:'var(--text-secondary)',fontSize:15,lineHeight:1.7}}>
             Healthcare. Defense. Finance. Critical infrastructure. If your software handles
             secrets, processes payments, or controls physical systems &mdash; RIINA proves your
             security properties are correct. Mathematically. Before deployment.
           </p>
+        </div>
+      </section>
+
+      {/* Why Now */}
+      <section style={{padding:'60px 24px'}}>
+        <div style={{maxWidth:'var(--max-w-page)',margin:'0 auto'}}>
+          <h2 className="section-heading">Why now</h2>
+          <div className="why-now-grid">
+            <div className="why-now-item">
+              <div className="why-now-item__title">AI writes code faster than humans can audit it</div>
+              <div className="why-now-item__desc">
+                LLMs generate thousands of lines per hour. Traditional security reviews
+                can't keep up. RIINA's compiler verifies every function automatically —
+                human or AI-written.
+              </div>
+            </div>
+            <div className="why-now-item">
+              <div className="why-now-item__title">Security audits fail silently</div>
+              <div className="why-now-item__desc">
+                Manual audits miss bugs. Penetration tests cover only what testers think
+                to try. Mathematical proof covers every possible execution path — not just
+                the ones someone remembered to test.
+              </div>
+            </div>
+            <div className="why-now-item">
+              <div className="why-now-item__title">Proof technology finally matured</div>
+              <div className="why-now-item__desc">
+                Proof assistants like Coq and Lean spent decades in academia. They're now
+                fast and practical enough to back a production compiler. RIINA is the bridge
+                between formal methods research and working software.
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -226,7 +272,7 @@ const RiinaWebsite = () => {
           <div className="act-vibesafe__text">
             <div className="act-vibesafe__badge">Vibesafe</div>
             <h2 className="act-vibesafe__title">
-              The only language where<br /><strong>vibe coding is safe.</strong>
+              The only language where<br /><strong>AI-generated code is mathematically verified.</strong>
             </h2>
             <p className="act-vibesafe__desc">
               Let AI write your code. Let the compiler prove it correct. Every function
@@ -353,6 +399,31 @@ const RiinaWebsite = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Social proof — Built in the open */}
+      <section style={{padding:'60px 24px',textAlign:'center'}}>
+        <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
+          <h2 className="section-heading">Built in the open</h2>
+          <div className="social-proof-stats">
+            <div>
+              <span className="social-proof__num">{fmt(metrics.proofs.qedActive)}</span>
+              <span className="social-proof__label">proofs you can verify yourself</span>
+            </div>
+            <div>
+              <span className="social-proof__num">{metrics.multiProver.totalProvers}</span>
+              <span className="social-proof__label">independent proof engines</span>
+            </div>
+            <div>
+              <span className="social-proof__num">0</span>
+              <span className="social-proof__label">dependencies, telemetry, or trust required</span>
+            </div>
+          </div>
+          <p style={{color:'var(--text-muted)',fontSize:14,marginTop:24}}>
+            Source available on GitHub. Every proof artifact compiles from source.
+            No black boxes.
+          </p>
         </div>
       </section>
 
@@ -598,6 +669,10 @@ fungsi muat_dan_nyahsulit(
             )}
           </div>
         </section>
+
+        <section style={{padding:'40px 24px 80px',textAlign:'center'}}>
+          <button onClick={() => nav('playground')} className="btn btn--primary">Try it in the Playground</button>
+        </section>
       </div>
     );
   };
@@ -757,6 +832,11 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
             )}
           </div>
         </section>
+
+        <section style={{padding:'40px 24px 80px',textAlign:'center'}}>
+          <button onClick={() => nav('playground')} className="btn btn--primary" style={{marginRight:16}}>Try the Playground</button>
+          <button onClick={() => nav('how')} className="btn btn--outline">How It Works</button>
+        </section>
       </div>
     );
   };
@@ -775,11 +855,14 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
 
       <section style={{padding:'0 24px 80px'}}>
         <div style={{maxWidth:'var(--max-w-page)',margin:'0 auto'}}>
-          <p style={{color:'var(--text-secondary)',maxWidth:'var(--max-w-text)',marginBottom:48,lineHeight:1.8}}>
-            RIINA's security type system maps directly to regulatory controls. The formal proofs
-            in the compiler verify properties that compliance frameworks require — access control,
-            audit completeness, data isolation — at compile time rather than through manual audit.
-          </p>
+          <div className="enterprise-intro">
+            <p>Your compliance team spends months on manual security audits.
+               Your developers wait weeks for penetration test results. And after all
+               that effort, bugs still slip through.</p>
+            <p>RIINA replaces manual verification with mathematical proof. The compiler
+               checks security properties exhaustively — every code path, every edge case —
+               at compile time. No auditor required.</p>
+          </div>
 
           <div className="industry-grid" style={{marginBottom:48}}>
             {[
@@ -804,7 +887,7 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
             + 7 more compliance profiles: Telecom, Government, Transportation, Manufacturing, Retail, Education, Legal
           </p>
 
-          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16}}>Proof certificate <span style={{color:'var(--text-muted)',fontWeight:400,textTransform:'none',letterSpacing:0,fontSize:11}}>(target workflow)</span></h2>
+          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16}}>Proof certificate</h2>
           <pre className="code-block" style={{maxWidth:'var(--max-w-text)'}}>{`$ riinac verify --compliance hipaa,pci-dss myapp.rii
 
 RIINA COMPLIANCE CERTIFICATE
@@ -825,8 +908,8 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
   Theorem: stored_data_encrypted`}</pre>
 
           <div style={{textAlign:'center',marginTop:48}}>
-            <a href="mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Enterprise%20Evaluation" className="btn btn--primary" style={{fontSize:16,padding:'14px 32px'}}>Talk to Us About Your Use Case</a>
-            <p style={{color:'var(--text-muted)',fontSize:13,marginTop:12}}>We'll walk your team through a proof. 30 minutes.</p>
+            <a href="mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Enterprise%20Evaluation" className="btn btn--primary" style={{fontSize:16,padding:'14px 32px'}}>Request a Verification Demo</a>
+            <p style={{color:'var(--text-muted)',fontSize:13,marginTop:12}}>We'll walk your team through a live proof. 30 minutes.</p>
           </div>
         </div>
       </section>
@@ -953,6 +1036,11 @@ hantar(k, 5);
 terima(k)`}</pre>
         </div>
       </section>
+
+      <section style={{padding:'40px 24px 80px',textAlign:'center'}}>
+        <a href="https://github.com/ib823/riina" className="btn btn--primary" style={{marginRight:16}}>Verify the Proofs Yourself</a>
+        <button onClick={() => nav('playground')} className="btn btn--outline">Try the Playground</button>
+      </section>
     </div>
   );
 
@@ -994,7 +1082,7 @@ terima(k)`}</pre>
                     </div>
                   </div>
                   <div className="card">
-                    <div style={{fontSize:12,color:'#fbbf24',fontFamily:'var(--font-mono)',marginBottom:8}}>CONDITIONS</div>
+                    <div style={{fontSize:12,color:'var(--accent-warm)',fontFamily:'var(--font-mono)',marginBottom:8}}>CONDITIONS</div>
                     <div style={{fontSize:13,color:'var(--text-secondary)',lineHeight:2}}>
                       Follow RIINA license terms<br/>Retain copyright notices<br/>Use for authorized purposes only
                     </div>
@@ -1065,7 +1153,7 @@ terima(k)`}</pre>
         {[
           { title: 'Product', links: [['Home','home'],['Language','language'],['Playground','playground'],['Enterprise','enterprise']] },
           { title: 'Learn', links: [['Docs','docs'],['How It Works','how'],['GitHub','https://github.com/ib823/riina']] },
-          { title: 'Legal', links: [['License','legal'],['Privacy','legal'],['Terms','legal'],['Contact','mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Inquiry'],['Telegram','https://t.me/ib823']] },
+          { title: 'Legal', links: [['License','legal'],['Privacy','legal'],['Terms','legal'],['Contact','mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Inquiry'],['Enterprise Inquiry','mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Enterprise%20Evaluation'],['Telegram','https://t.me/ib823']] },
         ].map((col, i) => (
           <div key={i} className="footer-col">
             <div className="footer-col__title">{col.title}</div>

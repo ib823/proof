@@ -3,7 +3,7 @@
 //! RIINA Compiler Driver
 //!
 //! Main entry point for the RIINA compiler.
-//! RIINA = Rigorous Immutable Invariant — Normalized Axiom
+//! RIINA = Rigorous Immutable Invariant, No Assumptions
 //!
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
