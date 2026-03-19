@@ -39,7 +39,7 @@ definition progress_stmt :: bool where
      \<forall>e T \<epsilon> st ctx \<Sigma>.
        has_type [] \<Sigma> LPublic e T \<epsilon> \<longrightarrow>
        store_wf \<Sigma> st \<longrightarrow>
-       is_value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<longrightarrow> (e', st', ctx'))"
+       is_value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<leadsto> (e', st', ctx'))"
 
 
 section \<open>Canonical Forms (Closed Context Variants)\<close>
@@ -138,7 +138,7 @@ proof (intro allI impI)
   fix e T \<epsilon> st ctx \<Sigma>
   assume Hty: "has_type [] \<Sigma> LPublic e T \<epsilon>"
      and Hwf: "store_wf \<Sigma> st"
-  show "is_value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<longrightarrow> (e', st', ctx'))"
+  show "is_value e \<or> (\<exists>e' st' ctx'. (e, st, ctx) \<leadsto> (e', st', ctx'))"
     using Hty Hwf
   proof (induction "[] :: type_env" \<Sigma> LPublic e T \<epsilon> arbitrary: st ctx rule: has_type.induct)
     case (T_Unit \<Sigma> \<Delta>)
@@ -180,14 +180,14 @@ proof (intro allI impI)
         case False
         (* e2 steps *)
         from T_App.IH(2)[OF _ Hwf] False
-        obtain e2' st2' ctx2' where "(e2, st, ctx) \<longrightarrow> (e2', st2', ctx2')" by auto
+        obtain e2' st2' ctx2' where "(e2, st, ctx) \<leadsto> (e2', st2', ctx2')" by auto
         then show ?thesis using hv1 by (auto intro: step.ST_App2)
       qed
     next
       case False
       (* e1 steps *)
       from T_App.IH(1)[OF _ Hwf] False
-      obtain e1' st1' ctx1' where "(e1, st, ctx) \<longrightarrow> (e1', st1', ctx1')" by auto
+      obtain e1' st1' ctx1' where "(e1, st, ctx) \<leadsto> (e1', st1', ctx1')" by auto
       then show ?thesis by (auto intro: step.ST_App1)
     qed
   next
@@ -203,13 +203,13 @@ proof (intro allI impI)
       next
         case False
         from T_Pair.IH(2)[OF _ Hwf] False
-        obtain e2' st2' ctx2' where "(e2, st, ctx) \<longrightarrow> (e2', st2', ctx2')" by auto
+        obtain e2' st2' ctx2' where "(e2, st, ctx) \<leadsto> (e2', st2', ctx2')" by auto
         then show ?thesis using hv1 by (auto intro: step.ST_Pair2)
       qed
     next
       case False
       from T_Pair.IH(1)[OF _ Hwf] False
-      obtain e1' st1' ctx1' where "(e1, st, ctx) \<longrightarrow> (e1', st1', ctx1')" by auto
+      obtain e1' st1' ctx1' where "(e1, st, ctx) \<leadsto> (e1', st1', ctx1')" by auto
       then show ?thesis by (auto intro: step.ST_Pair1)
     qed
   next
@@ -224,7 +224,7 @@ proof (intro allI impI)
     next
       case False
       from T_Fst.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_FstStep)
     qed
   next
@@ -239,7 +239,7 @@ proof (intro allI impI)
     next
       case False
       from T_Snd.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_SndStep)
     qed
   next
@@ -252,7 +252,7 @@ proof (intro allI impI)
     next
       case False
       from T_Inl.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_InlStep)
     qed
   next
@@ -265,7 +265,7 @@ proof (intro allI impI)
     next
       case False
       from T_Inr.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_InrStep)
     qed
   next
@@ -288,7 +288,7 @@ proof (intro allI impI)
     next
       case False
       from T_Case.IH(1)[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_CaseStep)
     qed
   next
@@ -310,7 +310,7 @@ proof (intro allI impI)
     next
       case False
       from T_If.IH(1)[OF _ Hwf] False
-      obtain e1' st' ctx' where "(e1, st, ctx) \<longrightarrow> (e1', st', ctx')" by auto
+      obtain e1' st' ctx' where "(e1, st, ctx) \<leadsto> (e1', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_IfStep)
     qed
   next
@@ -323,7 +323,7 @@ proof (intro allI impI)
     next
       case False
       from T_Let.IH(1)[OF _ Hwf] False
-      obtain e1' st' ctx' where "(e1, st, ctx) \<longrightarrow> (e1', st', ctx')" by auto
+      obtain e1' st' ctx' where "(e1, st, ctx) \<leadsto> (e1', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_LetStep)
     qed
   next
@@ -336,7 +336,7 @@ proof (intro allI impI)
     next
       case False
       from T_Perform.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_PerformStep)
     qed
   next
@@ -349,7 +349,7 @@ proof (intro allI impI)
     next
       case False
       from T_Handle.IH(1)[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_HandleStep)
     qed
   next
@@ -363,7 +363,7 @@ proof (intro allI impI)
     next
       case False
       from T_Ref.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_RefStep)
     qed
   next
@@ -383,7 +383,7 @@ proof (intro allI impI)
     next
       case False
       from T_Deref.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_DerefStep)
     qed
   next
@@ -406,13 +406,13 @@ proof (intro allI impI)
       next
         case False
         from T_Assign.IH(2)[OF _ Hwf] False
-        obtain e2' st' ctx' where "(e2, st, ctx) \<longrightarrow> (e2', st', ctx')" by auto
+        obtain e2' st' ctx' where "(e2, st, ctx) \<leadsto> (e2', st', ctx')" by auto
         then show ?thesis using heq by (auto intro: step.ST_Assign2 is_value.VLoc)
       qed
     next
       case False
       from T_Assign.IH(1)[OF _ Hwf] False
-      obtain e1' st' ctx' where "(e1, st, ctx) \<longrightarrow> (e1', st', ctx')" by auto
+      obtain e1' st' ctx' where "(e1, st, ctx) \<leadsto> (e1', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_Assign1)
     qed
   next
@@ -425,7 +425,7 @@ proof (intro allI impI)
     next
       case False
       from T_Classify.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_ClassifyStep)
     qed
   next
@@ -447,13 +447,13 @@ proof (intro allI impI)
       next
         case False
         from T_Declassify.IH(2)[OF _ Hwf] False
-        obtain e2' st' ctx' where "(e2, st, ctx) \<longrightarrow> (e2', st', ctx')" by auto
+        obtain e2' st' ctx' where "(e2, st, ctx) \<leadsto> (e2', st', ctx')" by auto
         then show ?thesis using heq1 by (auto intro: step.ST_Declassify2 is_value.VClassify)
       qed
     next
       case False
       from T_Declassify.IH(1)[OF _ Hwf] False
-      obtain e1' st' ctx' where "(e1, st, ctx) \<longrightarrow> (e1', st', ctx')" by auto
+      obtain e1' st' ctx' where "(e1, st, ctx) \<leadsto> (e1', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_Declassify1)
     qed
   next
@@ -466,7 +466,7 @@ proof (intro allI impI)
     next
       case False
       from T_Prove.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_ProveStep)
     qed
   next
@@ -479,7 +479,7 @@ proof (intro allI impI)
     next
       case False
       from T_Require.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_RequireStep)
     qed
   next
@@ -492,7 +492,7 @@ proof (intro allI impI)
     next
       case False
       from T_Grant.IH[OF _ Hwf] False
-      obtain e' st' ctx' where "(e, st, ctx) \<longrightarrow> (e', st', ctx')" by auto
+      obtain e' st' ctx' where "(e, st, ctx) \<leadsto> (e', st', ctx')" by auto
       then show ?thesis by (auto intro: step.ST_GrantStep)
     qed
   qed
