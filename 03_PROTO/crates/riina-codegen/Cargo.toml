@@ -35,6 +35,7 @@ riina-typechecker = { path = "../riina-typechecker" }
 # All backends (interpreter, C emission) are always available
 
 [lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
 unsafe_code = "forbid"
 
 [lints.clippy]

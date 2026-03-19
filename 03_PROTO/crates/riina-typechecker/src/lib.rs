@@ -2286,6 +2286,22 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
         // Labeled types: covariant in inner type, must match security level
         (Ty::Labeled(t1, sl1), Ty::Labeled(t2, sl2)) => sl1 == sl2 && types_compatible(t1, t2),
 
+        // JALINAN / J6 structural types
+        (Ty::Actor(s1, m1), Ty::Actor(s2, m2)) => {
+            types_compatible(s1, s2) && types_compatible(m1, m2)
+        }
+        (Ty::ContentAddressed(t1), Ty::ContentAddressed(t2))
+        | (Ty::Supervisor(t1), Ty::Supervisor(t2))
+        | (Ty::SmartContract(t1), Ty::SmartContract(t2))
+        | (Ty::Token(t1), Ty::Token(t2))
+        | (Ty::SyariahCompliant(t1), Ty::SyariahCompliant(t2)) => types_compatible(t1, t2),
+        (Ty::CRDT(v1, op1), Ty::CRDT(v2, op2)) => {
+            types_compatible(v1, v2) && types_compatible(op1, op2)
+        }
+        (Ty::Choreography(roles1, proto1), Ty::Choreography(roles2, proto2)) => {
+            roles1 == roles2 && proto1 == proto2
+        }
+
         // No match
         _ => false,
     }
@@ -3164,6 +3180,62 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             }
         }
 
+        Expr::ContractDeploy(contract) => {
+            let (inner_ty, eff) = type_check_full(ctx, contract)?;
+            Ok((
+                Ty::SmartContract(Box::new(inner_ty)),
+                eff.join(Effect::NetworkSecure),
+            ))
+        }
+
+        Expr::TokenTransfer(from, to, amount) => {
+            let (from_ty, eff1) = type_check_full(ctx, from)?;
+            let (to_ty, eff2) = type_check_full(ctx, to)?;
+            let (amount_ty, eff3) = type_check_full(ctx, amount)?;
+            match (&from_ty, &to_ty) {
+                (Ty::Token(from_inner), Ty::Token(to_inner)) => {
+                    if !types_compatible(from_inner, to_inner) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Token(from_inner.clone()),
+                            found: to_ty,
+                        });
+                    }
+                    if !types_compatible(from_inner, &amount_ty) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: *from_inner.clone(),
+                            found: amount_ty,
+                        });
+                    }
+                    Ok((
+                        Ty::Token(from_inner.clone()),
+                        eff1.join(eff2).join(eff3).join(Effect::NetworkSecure),
+                    ))
+                }
+                (Ty::Token(_), _) => Err(TypeError::TypeMismatch {
+                    expected: from_ty,
+                    found: to_ty,
+                }),
+                _ => Err(TypeError::TypeMismatch {
+                    expected: Ty::Token(Box::new(amount_ty)),
+                    found: from_ty,
+                }),
+            }
+        }
+
+        Expr::ZakatCalculate(value) => {
+            let (value_ty, eff) = type_check_full(ctx, value)?;
+            match value_ty {
+                Ty::Int => Ok((Ty::Int, eff)),
+                Ty::Token(inner) if types_compatible(&Ty::Int, inner.as_ref()) => {
+                    Ok((Ty::Token(inner), eff))
+                }
+                found => Err(TypeError::TypeMismatch {
+                    expected: Ty::Int,
+                    found,
+                }),
+            }
+        }
+
         // ════════════════════════════════════════════════════════════════════
         // CAHAYA Phase J5: UI Primitives
         // ════════════════════════════════════════════════════════════════════
@@ -3705,6 +3777,62 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     Ok((Ty::Bool, eff1.join(eff2).join(Effect::Crypto)))
                 }
                 found => Err(TypeError::TypeMismatch { expected, found }),
+            }
+        }
+
+        Expr::ContractDeploy(contract) => {
+            let (inner_ty, eff) = type_check(ctx, contract)?;
+            Ok((
+                Ty::SmartContract(Box::new(inner_ty)),
+                eff.join(Effect::NetworkSecure),
+            ))
+        }
+
+        Expr::TokenTransfer(from, to, amount) => {
+            let (from_ty, eff1) = type_check(ctx, from)?;
+            let (to_ty, eff2) = type_check(ctx, to)?;
+            let (amount_ty, eff3) = type_check(ctx, amount)?;
+            match (&from_ty, &to_ty) {
+                (Ty::Token(from_inner), Ty::Token(to_inner)) => {
+                    if !types_compatible(from_inner, to_inner) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: Ty::Token(from_inner.clone()),
+                            found: to_ty,
+                        });
+                    }
+                    if !types_compatible(from_inner, &amount_ty) {
+                        return Err(TypeError::TypeMismatch {
+                            expected: *from_inner.clone(),
+                            found: amount_ty,
+                        });
+                    }
+                    Ok((
+                        Ty::Token(from_inner.clone()),
+                        eff1.join(eff2).join(eff3).join(Effect::NetworkSecure),
+                    ))
+                }
+                (Ty::Token(_), _) => Err(TypeError::TypeMismatch {
+                    expected: from_ty,
+                    found: to_ty,
+                }),
+                _ => Err(TypeError::TypeMismatch {
+                    expected: Ty::Token(Box::new(amount_ty)),
+                    found: from_ty,
+                }),
+            }
+        }
+
+        Expr::ZakatCalculate(value) => {
+            let (value_ty, eff) = type_check(ctx, value)?;
+            match value_ty {
+                Ty::Int => Ok((Ty::Int, eff)),
+                Ty::Token(inner) if types_compatible(&Ty::Int, inner.as_ref()) => {
+                    Ok((Ty::Token(inner), eff))
+                }
+                found => Err(TypeError::TypeMismatch {
+                    expected: Ty::Int,
+                    found,
+                }),
             }
         }
 

@@ -9,8 +9,8 @@
 
 #![forbid(unsafe_code)]
 
-mod rules;
 pub mod report;
+mod rules;
 mod validator;
 
 #[cfg(test)]
@@ -61,9 +61,21 @@ pub enum ComplianceProfile {
 impl ComplianceProfile {
     /// All profiles in order.
     pub const ALL: &'static [ComplianceProfile] = &[
-        Self::PciDss, Self::Pdpa, Self::Bnm, Self::Hipaa, Self::Cmmc,
-        Self::Sox, Self::Gdpr, Self::Do178c, Self::Iec62443, Self::NercCip,
-        Self::Fda21cfr, Self::Iso27001, Self::Nist80053, Self::MasTrm, Self::Itar,
+        Self::PciDss,
+        Self::Pdpa,
+        Self::Bnm,
+        Self::Hipaa,
+        Self::Cmmc,
+        Self::Sox,
+        Self::Gdpr,
+        Self::Do178c,
+        Self::Iec62443,
+        Self::NercCip,
+        Self::Fda21cfr,
+        Self::Iso27001,
+        Self::Nist80053,
+        Self::MasTrm,
+        Self::Itar,
         Self::EsgSdg,
     ];
 
@@ -101,13 +113,17 @@ impl ComplianceProfile {
             Self::Gdpr => "GDPR: EU General Data Protection Regulation",
             Self::Do178c => "DO-178C: Airborne Systems Software",
             Self::Iec62443 => "IEC 62443: Industrial Automation and Control Systems Security",
-            Self::NercCip => "NERC CIP: North American Electric Reliability Critical Infrastructure",
+            Self::NercCip => {
+                "NERC CIP: North American Electric Reliability Critical Infrastructure"
+            }
             Self::Fda21cfr => "FDA 21 CFR Part 11: Electronic Records and Signatures",
             Self::Iso27001 => "ISO 27001: Information Security Management Systems",
             Self::Nist80053 => "NIST 800-53: Security and Privacy Controls for Federal Systems",
             Self::MasTrm => "MAS TRM: Monetary Authority of Singapore Technology Risk Management",
             Self::Itar => "ITAR: International Traffic in Arms Regulations",
-            Self::EsgSdg => "ESG/SDG: Environmental, Social, Governance / UN Sustainable Development Goals",
+            Self::EsgSdg => {
+                "ESG/SDG: Environmental, Social, Governance / UN Sustainable Development Goals"
+            }
         }
     }
 }
@@ -171,8 +187,14 @@ pub struct ComplianceViolation {
 
 impl fmt::Display for ComplianceViolation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}] {}: {} — {}",
-            self.severity, self.profile.slug(), self.rule_id, self.message)
+        write!(
+            f,
+            "[{}] {}: {} — {}",
+            self.severity,
+            self.profile.slug(),
+            self.rule_id,
+            self.message
+        )
     }
 }
 

@@ -460,7 +460,7 @@ impl WasmModule {
         encode_uleb128(self.data.len() as u64, &mut buf);
         for seg in &self.data {
             buf.push(0x00); // active, memory 0
-            // offset expr: i32.const <offset>, end
+                            // offset expr: i32.const <offset>, end
             buf.push(Op::I32Const as u8);
             encode_sleb128(seg.offset as i64, &mut buf);
             buf.push(Op::End as u8);
@@ -583,7 +583,10 @@ mod tests {
         // WASM spec requires sections in ascending ID order.
         // Build a module with multiple sections and verify.
         let mut module = WasmModule::new();
-        module.types.push(FuncType { params: vec![], results: vec![ValType::I32] });
+        module.types.push(FuncType {
+            params: vec![],
+            results: vec![ValType::I32],
+        });
         module.functions.push(0);
         module.memories.push(MemoryType { min: 1, max: None });
         module.exports.push(Export {
@@ -594,7 +597,10 @@ mod tests {
         let mut code = Vec::new();
         code.push(Op::I32Const as u8);
         encode_sleb128(0, &mut code);
-        module.codes.push(FuncBody { locals: vec![], code });
+        module.codes.push(FuncBody {
+            locals: vec![],
+            code,
+        });
 
         let bytes = module.encode();
         // Walk sections and verify IDs are non-decreasing
@@ -602,9 +608,12 @@ mod tests {
         let mut last_id = 0u8;
         while pos < bytes.len() {
             let section_id = bytes[pos];
-            assert!(section_id >= last_id,
+            assert!(
+                section_id >= last_id,
                 "Section ID {} came after {}, violating WASM ordering",
-                section_id, last_id);
+                section_id,
+                last_id
+            );
             last_id = section_id;
             pos += 1;
             // Read section size (LEB128)
@@ -627,7 +636,10 @@ mod tests {
         let mut code = Vec::new();
         code.push(Op::LocalGet as u8);
         encode_uleb128(0, &mut code);
-        module.codes.push(FuncBody { locals: vec![], code });
+        module.codes.push(FuncBody {
+            locals: vec![],
+            code,
+        });
 
         let bytes = module.encode();
         // Find type section (ID=1)
@@ -641,7 +653,10 @@ mod tests {
     #[test]
     fn test_export_section_contains_start() {
         let mut module = WasmModule::new();
-        module.types.push(FuncType { params: vec![], results: vec![ValType::I32] });
+        module.types.push(FuncType {
+            params: vec![],
+            results: vec![ValType::I32],
+        });
         module.functions.push(0);
         module.exports.push(Export {
             name: "_start".to_string(),
@@ -651,7 +666,10 @@ mod tests {
         let mut code = Vec::new();
         code.push(Op::I32Const as u8);
         encode_sleb128(42, &mut code);
-        module.codes.push(FuncBody { locals: vec![], code });
+        module.codes.push(FuncBody {
+            locals: vec![],
+            code,
+        });
 
         let bytes = module.encode();
         // Verify export section exists and contains "_start"
@@ -660,27 +678,33 @@ mod tests {
         assert_eq!(section_body[0], 1);
         // Export name length
         assert_eq!(section_body[1], 6); // "_start" = 6 bytes
-        // Export name
+                                        // Export name
         assert_eq!(&section_body[2..8], b"_start");
     }
 
     #[test]
     fn test_code_section_contains_i32_const_42() {
         let mut module = WasmModule::new();
-        module.types.push(FuncType { params: vec![], results: vec![ValType::I32] });
+        module.types.push(FuncType {
+            params: vec![],
+            results: vec![ValType::I32],
+        });
         module.functions.push(0);
         let mut code = Vec::new();
         code.push(Op::I32Const as u8);
         encode_sleb128(42, &mut code);
-        module.codes.push(FuncBody { locals: vec![], code });
+        module.codes.push(FuncBody {
+            locals: vec![],
+            code,
+        });
 
         let bytes = module.encode();
         // Find code section
         let (section_body, _) = find_section(&bytes, SectionId::Code as u8);
         // The section should contain the i32.const 42 opcode sequence
-        let has_const_42 = section_body.windows(2).any(|w| {
-            w[0] == Op::I32Const as u8 && w[1] == 42
-        });
+        let has_const_42 = section_body
+            .windows(2)
+            .any(|w| w[0] == Op::I32Const as u8 && w[1] == 42);
         assert!(has_const_42, "code section should contain i32.const 42");
     }
 
@@ -697,7 +721,10 @@ mod tests {
     #[test]
     fn test_memory_section_one_page() {
         let mut module = WasmModule::new();
-        module.memories.push(MemoryType { min: 1, max: Some(256) });
+        module.memories.push(MemoryType {
+            min: 1,
+            max: Some(256),
+        });
         let bytes = module.encode();
         let (section_body, _) = find_section(&bytes, SectionId::Memory as u8);
         // Count = 1

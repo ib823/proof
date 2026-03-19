@@ -134,6 +134,65 @@ fn expect_color(value: Value, context: &str) -> Result<(u8, u8, u8)> {
     }
 }
 
+fn fnv1a_hash_bytes(bytes: &[u8]) -> u64 {
+    const FNV_OFFSET_BASIS: u64 = 14_695_981_039_346_656_037;
+    const FNV_PRIME: u64 = 1_099_511_628_211;
+
+    let mut hash = FNV_OFFSET_BASIS;
+    for &byte in bytes {
+        hash ^= u64::from(byte);
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    hash
+}
+
+fn encode_hash_value(hash: u64) -> Value {
+    Value::Hash(format!("{hash:016x}").into_bytes())
+}
+
+fn decode_hash_value(hash_value: &Value) -> Result<u64> {
+    match hash_value {
+        Value::Hash(bytes) => {
+            let hex = std::str::from_utf8(bytes).map_err(|_| {
+                Error::InvalidOperation("content hash bytes must be valid UTF-8 hex".to_string())
+            })?;
+            u64::from_str_radix(hex, 16).map_err(|_| {
+                Error::InvalidOperation("content hash must be a 16-digit hex string".to_string())
+            })
+        }
+        other => Err(Error::TypeMismatch {
+            expected: "hash".to_string(),
+            found: format!("{other:?}"),
+            context: "content lookup".to_string(),
+        }),
+    }
+}
+
+fn merkle_parent_hash(left: u64, right: u64) -> u64 {
+    let mut bytes = Vec::with_capacity(16);
+    bytes.extend_from_slice(&left.to_be_bytes());
+    bytes.extend_from_slice(&right.to_be_bytes());
+    fnv1a_hash_bytes(&bytes)
+}
+
+fn merkle_root_hash(leaves: &[u64]) -> u64 {
+    if leaves.is_empty() {
+        return fnv1a_hash_bytes(b"");
+    }
+
+    let mut level = leaves.to_vec();
+    while level.len() > 1 {
+        let mut next = Vec::with_capacity(level.len().div_ceil(2));
+        for pair in level.chunks(2) {
+            let left = pair[0];
+            let right = pair.get(1).copied().unwrap_or(left);
+            next.push(merkle_parent_hash(left, right));
+        }
+        level = next;
+    }
+    level[0]
+}
+
 /// Mutable store (heap)
 #[derive(Debug, Clone, Default)]
 pub struct Store {
@@ -254,6 +313,8 @@ pub struct Interpreter {
     actor_states: std::collections::HashMap<u64, Value>,
     /// Actor handlers: id → handler expression (JALINAN Phase 6)
     actor_handlers: std::collections::HashMap<u64, Expr>,
+    /// Content-addressed store: hash → original value (JALINAN Phase 6 J2)
+    content_store: HashMap<u64, Value>,
 }
 
 impl Interpreter {
@@ -269,6 +330,52 @@ impl Interpreter {
             actor_defs: std::collections::HashMap::new(),
             actor_states: std::collections::HashMap::new(),
             actor_handlers: std::collections::HashMap::new(),
+            content_store: HashMap::new(),
+        }
+    }
+
+    /// Hash a runtime value into the content-addressed store.
+    #[must_use]
+    pub fn content_hash_value(&mut self, value: Value) -> Value {
+        if value.is_hash() {
+            return value;
+        }
+        encode_hash_value(self.store_content_addressed_value(value))
+    }
+
+    /// Look up a stored value by its raw content hash.
+    #[must_use]
+    pub fn content_lookup(&self, hash: u64) -> Option<&Value> {
+        self.content_store.get(&hash)
+    }
+
+    /// Look up a stored value by a RIINA `Hash` value.
+    #[must_use]
+    pub fn content_lookup_hash(&self, hash_value: &Value) -> Option<&Value> {
+        decode_hash_value(hash_value)
+            .ok()
+            .and_then(|hash| self.content_store.get(&hash))
+    }
+
+    fn store_content_addressed_value(&mut self, value: Value) -> u64 {
+        match value {
+            Value::List(items) => {
+                let leaf_hashes = items
+                    .iter()
+                    .cloned()
+                    .map(|item| self.store_content_addressed_value(item))
+                    .collect::<Vec<_>>();
+                let root_hash = merkle_root_hash(&leaf_hashes);
+                self.content_store
+                    .entry(root_hash)
+                    .or_insert_with(|| Value::List(items));
+                root_hash
+            }
+            other => {
+                let hash = fnv1a_hash_value(&other);
+                self.content_store.entry(hash).or_insert(other);
+                hash
+            }
         }
     }
 
@@ -779,13 +886,7 @@ impl Interpreter {
 
             Expr::ContentHash(val_expr) => {
                 let val = self.eval_with_env(env, val_expr)?;
-                // Idempotent: hash of hash returns same hash
-                if val.is_hash() {
-                    return Ok(val);
-                }
-                let hash = fnv1a_hash_value(&val);
-                let hex = format!("{hash:016x}");
-                Ok(Value::Hash(hex.into_bytes()))
+                Ok(self.content_hash_value(val))
             }
 
             Expr::ContentVerify(expected_hash_expr, val_expr) => {
@@ -794,11 +895,29 @@ impl Interpreter {
                 let actual_hash = if val.is_hash() {
                     val
                 } else {
-                    let hash = fnv1a_hash_value(&val);
-                    let hex = format!("{hash:016x}");
-                    Value::Hash(hex.into_bytes())
+                    self.content_hash_value(val)
                 };
                 Ok(Value::Bool(expected_hash == actual_hash))
+            }
+
+            Expr::ContractDeploy(contract_expr) => self.eval_with_env(env, contract_expr),
+
+            Expr::TokenTransfer(from_expr, to_expr, amount_expr) => {
+                let _from = self.eval_with_env(env, from_expr)?;
+                let _to = self.eval_with_env(env, to_expr)?;
+                self.eval_with_env(env, amount_expr)
+            }
+
+            Expr::ZakatCalculate(value_expr) => {
+                let value = self.eval_with_env(env, value_expr)?;
+                match value {
+                    Value::Int(amount) => Ok(Value::Int(amount / 40)),
+                    other => Err(Error::TypeMismatch {
+                        expected: "integer".to_string(),
+                        found: format!("{other:?}"),
+                        context: "zakat".to_string(),
+                    }),
+                }
             }
 
             // CAHAYA Phase J5 — UI primitives
@@ -909,6 +1028,10 @@ impl Interpreter {
 fn fnv1a_feed(hash: &mut u64, val: &Value) {
     const FNV_PRIME: u64 = 1_099_511_628_211;
     match val {
+        Value::Unit => {
+            *hash ^= 0x00;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+        }
         Value::Int(n) => {
             let mut n = *n;
             for _ in 0..8 {
@@ -948,14 +1071,49 @@ fn fnv1a_feed(hash: &mut u64, val: &Value) {
                 *hash = hash.wrapping_mul(FNV_PRIME);
             }
         }
+        Value::List(items) => {
+            *hash ^= 0x03;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            for item in items {
+                fnv1a_feed(hash, item);
+                *hash ^= 0x04;
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+        }
+        Value::Map(entries) => {
+            *hash ^= 0x05;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            for (key, value) in entries {
+                for byte in key.bytes() {
+                    *hash ^= u64::from(byte);
+                    *hash = hash.wrapping_mul(FNV_PRIME);
+                }
+                *hash ^= 0x06;
+                *hash = hash.wrapping_mul(FNV_PRIME);
+                fnv1a_feed(hash, value);
+            }
+        }
+        Value::ActorRef(id) => {
+            for byte in id.to_le_bytes() {
+                *hash ^= u64::from(byte);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+        }
+        Value::CRDTState(value, metadata) => {
+            *hash ^= 0x07;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            fnv1a_feed(hash, value);
+            *hash ^= 0x08;
+            *hash = hash.wrapping_mul(FNV_PRIME);
+            fnv1a_feed(hash, metadata);
+        }
         _ => {}
     }
 }
 
 /// Compute FNV-1a hash of a Value, returning the u64 digest.
 fn fnv1a_hash_value(val: &Value) -> u64 {
-    const FNV_OFFSET_BASIS: u64 = 14_695_981_039_346_656_037;
-    let mut hash = FNV_OFFSET_BASIS;
+    let mut hash = fnv1a_hash_bytes(&[]);
     fnv1a_feed(&mut hash, val);
     hash
 }
@@ -2198,6 +2356,137 @@ mod tests {
             Box::new(Expr::Int(42)),
         );
         assert_eq!(interp.eval(&expr), Ok(Value::Bool(false)));
+    }
+
+    #[test]
+    fn test_content_store_roundtrip_scalar() {
+        let mut interp = Interpreter::new();
+        let original = Value::String("amanah".into());
+        let hash_value = interp.content_hash_value(original.clone());
+        assert_eq!(interp.content_lookup_hash(&hash_value), Some(&original));
+    }
+
+    #[test]
+    fn test_content_lookup_raw_hash_roundtrip() {
+        let mut interp = Interpreter::new();
+        let original = Value::Int(99);
+        let hash_value = interp.content_hash_value(original.clone());
+        let hash = decode_hash_value(&hash_value).unwrap();
+        assert_eq!(interp.content_lookup(hash), Some(&original));
+    }
+
+    #[test]
+    fn test_content_lookup_unknown_hash_is_none() {
+        let interp = Interpreter::new();
+        assert_eq!(interp.content_lookup(0xdead_beef_dead_beef), None);
+    }
+
+    #[test]
+    fn test_content_hash_list_merkle_root_matches_helper() {
+        let mut interp = Interpreter::new();
+        let list = Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)]);
+        let hash_value = interp.content_hash_value(list.clone());
+        let hash = decode_hash_value(&hash_value).unwrap();
+        let leaves = [Value::Int(1), Value::Int(2), Value::Int(3)]
+            .into_iter()
+            .map(|value| fnv1a_hash_value(&value))
+            .collect::<Vec<_>>();
+        assert_eq!(hash, merkle_root_hash(&leaves));
+        assert_eq!(interp.content_lookup(hash), Some(&list));
+    }
+
+    #[test]
+    fn test_content_hash_list_is_deterministic() {
+        let list = Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)]);
+        let mut interp_a = Interpreter::new();
+        let mut interp_b = Interpreter::new();
+        let hash_a = interp_a.content_hash_value(list.clone());
+        let hash_b = interp_b.content_hash_value(list);
+        assert_eq!(hash_a, hash_b);
+    }
+
+    #[test]
+    fn test_content_hash_list_is_order_sensitive() {
+        let mut interp = Interpreter::new();
+        let forward = interp.content_hash_value(Value::List(vec![
+            Value::Int(1),
+            Value::Int(2),
+            Value::Int(3),
+        ]));
+        let reverse = interp.content_hash_value(Value::List(vec![
+            Value::Int(3),
+            Value::Int(2),
+            Value::Int(1),
+        ]));
+        assert_ne!(forward, reverse);
+    }
+
+    #[test]
+    fn test_content_hash_list_stores_each_leaf() {
+        let mut interp = Interpreter::new();
+        let list = Value::List(vec![Value::Int(7), Value::String("nur".into())]);
+        let root_hash = decode_hash_value(&interp.content_hash_value(list.clone())).unwrap();
+        assert_eq!(
+            interp.content_lookup(fnv1a_hash_value(&Value::Int(7))),
+            Some(&Value::Int(7))
+        );
+        assert_eq!(
+            interp.content_lookup(fnv1a_hash_value(&Value::String("nur".into()))),
+            Some(&Value::String("nur".into()))
+        );
+        assert_eq!(interp.content_lookup(root_hash), Some(&list));
+    }
+
+    #[test]
+    fn test_content_hash_nested_list_stores_subtree() {
+        let mut interp = Interpreter::new();
+        let nested = Value::List(vec![
+            Value::Int(1),
+            Value::List(vec![Value::Int(2), Value::Int(3)]),
+        ]);
+        let root_hash = decode_hash_value(&interp.content_hash_value(nested.clone())).unwrap();
+        let inner = Value::List(vec![Value::Int(2), Value::Int(3)]);
+        let inner_hash = merkle_root_hash(&[
+            fnv1a_hash_value(&Value::Int(2)),
+            fnv1a_hash_value(&Value::Int(3)),
+        ]);
+        assert_eq!(interp.content_lookup(inner_hash), Some(&inner));
+        assert_eq!(interp.content_lookup(root_hash), Some(&nested));
+    }
+
+    #[test]
+    fn test_content_hash_empty_list_uses_empty_merkle_root() {
+        let mut interp = Interpreter::new();
+        let empty = Value::List(Vec::new());
+        let hash_value = interp.content_hash_value(empty.clone());
+        let hash = decode_hash_value(&hash_value).unwrap();
+        assert_eq!(hash, merkle_root_hash(&[]));
+        assert_eq!(interp.content_lookup(hash), Some(&empty));
+    }
+
+    #[test]
+    fn test_content_verify_list_merkle_true_via_store() {
+        let mut interp = Interpreter::new();
+        let list = Value::List(vec![Value::Int(5), Value::Int(8), Value::Int(13)]);
+        let expected = interp.content_hash_value(list.clone());
+        let actual = interp.content_hash_value(list);
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test_content_verify_list_merkle_false_via_store() {
+        let mut interp = Interpreter::new();
+        let expected = interp.content_hash_value(Value::List(vec![
+            Value::Int(5),
+            Value::Int(8),
+            Value::Int(13),
+        ]));
+        let actual = interp.content_hash_value(Value::List(vec![
+            Value::Int(5),
+            Value::Int(8),
+            Value::Int(21),
+        ]));
+        assert_ne!(expected, actual);
     }
 
     #[test]

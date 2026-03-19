@@ -215,9 +215,9 @@ impl Effect {
     pub const fn level(self) -> u8 {
         match self {
             Self::Pure => 0,
-            Self::Mut => 1,       // Local mutation (below Read)
+            Self::Mut => 1, // Local mutation (below Read)
             Self::Read => 2,
-            Self::Alloc => 3,     // Heap allocation
+            Self::Alloc => 3, // Heap allocation
             Self::Write => 4,
             Self::FileSystem => 5,
             Self::Network => 6,
@@ -245,8 +245,12 @@ impl Effect {
             Self::Network | Self::NetworkSecure => EffectCategory::Network,
             Self::Crypto | Self::Random => EffectCategory::Crypto,
             Self::System | Self::Time | Self::Process => EffectCategory::System,
-            Self::Panel | Self::Zirah | Self::Benteng
-            | Self::Sandi | Self::Menara | Self::Gapura => EffectCategory::Product,
+            Self::Panel
+            | Self::Zirah
+            | Self::Benteng
+            | Self::Sandi
+            | Self::Menara
+            | Self::Gapura => EffectCategory::Product,
         }
     }
 
@@ -578,7 +582,6 @@ pub enum Ty {
     CVoid,
 
     // ── JALINAN Phase 6 types ──────────────────────────────────────────
-
     /// Actor[State, Msg] — typed actor reference with state and message types
     Actor(Box<Ty>, Box<Ty>),
     /// Choreography[roles, protocol] — global multiparty session protocol
@@ -590,8 +593,15 @@ pub enum Ty {
     /// Supervisor[T] — fault-tolerance supervisor for actor type T
     Supervisor(Box<Ty>),
 
-    // ── CAHAYA Phase J5 types ──────────────────────────────────────
+    // ── Blockchain + Syariah Phase J6 types ─────────────────────────
+    /// SmartContract[T] — capability-gated smart-contract state
+    SmartContract(Box<Ty>),
+    /// Token[T] — conserved transferable value
+    Token(Box<Ty>),
+    /// SyariahCompliant[T] — effect-constrained value
+    SyariahCompliant(Box<Ty>),
 
+    // ── CAHAYA Phase J5 types ──────────────────────────────────────
     /// Color — RGBA color with compile-time contrast checking
     Color,
     /// Element — UI element type
@@ -608,11 +618,21 @@ pub enum Ty {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BinOp {
     // Arithmetic
-    Add, Sub, Mul, Div, Mod,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
     // Comparison
-    Eq, Ne, Lt, Le, Gt, Ge,
+    Eq,
+    Ne,
+    Lt,
+    Le,
+    Gt,
+    Ge,
     // Logical
-    And, Or,
+    And,
+    Or,
 }
 
 /// A source span (byte offsets) for LSP support.
@@ -632,8 +652,16 @@ impl Span {
     #[must_use]
     pub const fn merge(self, other: Self) -> Self {
         Self {
-            start: if self.start < other.start { self.start } else { other.start },
-            end: if self.end > other.end { self.end } else { other.end },
+            start: if self.start < other.start {
+                self.start
+            } else {
+                other.start
+            },
+            end: if self.end > other.end {
+                self.end
+            } else {
+                other.end
+            },
         }
     }
 }
@@ -651,22 +679,13 @@ pub enum TopLevelDecl {
         body: Box<Expr>,
     },
     /// biar name = expr;
-    Binding {
-        name: Ident,
-        value: Box<Expr>,
-    },
+    Binding { name: Ident, value: Box<Expr> },
     /// Expression at top level (the program's main expression)
     Expr(Box<Expr>),
     /// luaran "C" { ... } — extern block for FFI declarations
-    ExternBlock {
-        abi: String,
-        decls: Vec<ExternDecl>,
-    },
+    ExternBlock { abi: String, decls: Vec<ExternDecl> },
     /// ujian "name" { body } — inline test block
-    Test {
-        name: String,
-        body: Box<Expr>,
-    },
+    Test { name: String, body: Box<Expr> },
 }
 
 /// A single declaration inside an extern block.
@@ -697,13 +716,23 @@ pub struct Program {
 
 /// Desugar a single function decl into a LetRec binding.
 #[allow(clippy::boxed_local)]
-fn desugar_function(name: Ident, params: Vec<(Ident, Ty)>, return_ty: Ty, effect: Effect, body: Box<Expr>, continuation: Box<Expr>) -> Expr {
+fn desugar_function(
+    name: Ident,
+    params: Vec<(Ident, Ty)>,
+    return_ty: Ty,
+    effect: Effect,
+    body: Box<Expr>,
+    continuation: Box<Expr>,
+) -> Expr {
     let lam = params.iter().rev().fold(*body, |acc, (p, ty)| {
         Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
     });
-    let fn_ty = params.iter().rev().fold(return_ty.clone(), |ret, (_, param_ty)| {
-        Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
-    });
+    let fn_ty = params
+        .iter()
+        .rev()
+        .fold(return_ty.clone(), |ret, (_, param_ty)| {
+            Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
+        });
     Expr::LetRec(name, fn_ty, Box::new(lam), continuation)
 }
 
@@ -730,7 +759,10 @@ impl Program {
     /// Create a Program without span info (backwards compat).
     #[must_use]
     pub fn new(decls: Vec<TopLevelDecl>) -> Self {
-        Self { spans: Vec::new(), decls }
+        Self {
+            spans: Vec::new(),
+            decls,
+        }
     }
 
     /// Create a Program with span info.
@@ -757,9 +789,13 @@ impl Program {
             TopLevelDecl::Binding { name, value } => {
                 Expr::Let(name, None, value, Box::new(Expr::Unit))
             }
-            TopLevelDecl::Function { name, params, return_ty, effect, body } => {
-                desugar_function(name, params, return_ty, effect, body, Box::new(Expr::Unit))
-            }
+            TopLevelDecl::Function {
+                name,
+                params,
+                return_ty,
+                effect,
+                body,
+            } => desugar_function(name, params, return_ty, effect, body, Box::new(Expr::Unit)),
             TopLevelDecl::ExternBlock { decls: edecls, .. } => {
                 desugar_extern_block(edecls, Expr::Unit)
             }
@@ -795,9 +831,13 @@ impl Program {
                 TopLevelDecl::Binding { name, value } => {
                     Expr::Let(name, None, value, Box::new(result))
                 }
-                TopLevelDecl::Function { name, params, return_ty, effect, body } => {
-                    desugar_function(name, params, return_ty, effect, body, Box::new(result))
-                }
+                TopLevelDecl::Function {
+                    name,
+                    params,
+                    return_ty,
+                    effect,
+                    body,
+                } => desugar_function(name, params, return_ty, effect, body, Box::new(result)),
                 TopLevelDecl::ExternBlock { decls: edecls, .. } => {
                     desugar_extern_block(edecls, result)
                 }
@@ -898,7 +938,6 @@ pub enum Expr {
     },
 
     // ── JALINAN Phase 6 expressions ────────────────────────────────────
-
     /// Actor declaration: pelakon Name { keadaan: StateType, kendalikan msg { ... } }
     ActorDecl {
         name: Ident,
@@ -926,8 +965,15 @@ pub enum Expr {
     /// Content hash verification: sahkan(expected_hash, value)
     ContentVerify(Box<Expr>, Box<Expr>),
 
-    // ── CAHAYA Phase J5 expressions ────────────────────────────────
+    // ── Blockchain + Syariah Phase J6 expressions ───────────────────
+    /// Smart-contract deployment: kontrak_pintar(expr)
+    ContractDeploy(Box<Expr>),
+    /// Token transfer: token(from, to, amount)
+    TokenTransfer(Box<Expr>, Box<Expr>, Box<Expr>),
+    /// Zakat calculation: zakat(expr)
+    ZakatCalculate(Box<Expr>),
 
+    // ── CAHAYA Phase J5 expressions ────────────────────────────────
     /// UI display block: paparan { ... }
     UIDisplay(Vec<Expr>),
     /// Row layout: baris { child1; child2; ... }
@@ -941,7 +987,10 @@ pub enum Expr {
     /// Color literal: warna(r, g, b)
     UIColor(u8, u8, u8),
     /// Style: gaya { pelapik: 16, saiz_fon: 14 }
-    UIStyleDecl { padding: Option<u32>, font_size: Option<u32> },
+    UIStyleDecl {
+        padding: Option<u32>,
+        font_size: Option<u32>,
+    },
     /// Contrast check: kontras(fg_color, bg_color) — returns Bool
     UIContrastCheck(Box<Expr>, Box<Expr>),
 }

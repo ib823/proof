@@ -71,7 +71,11 @@ fn make_header(name: &str, size: usize, typeflag: u8) -> [u8; BLOCK] {
     header[..copy_len].copy_from_slice(&name_bytes[..copy_len]);
 
     // Mode (100..108) — 0644 for files, 0755 for dirs
-    let mode = if typeflag == b'5' { b"0000755\0" } else { b"0000644\0" };
+    let mode = if typeflag == b'5' {
+        b"0000755\0"
+    } else {
+        b"0000644\0"
+    };
     header[100..108].copy_from_slice(mode);
 
     // UID (108..116)
@@ -185,9 +189,7 @@ fn read_octal(header: &[u8], start: usize, max_len: usize) -> usize {
 
 /// Get the host portion from a URL for cache directory naming.
 pub(crate) fn host_from_url(url: &str) -> String {
-    let rest = url
-        .strip_prefix("http://")
-        .unwrap_or(url);
+    let rest = url.strip_prefix("http://").unwrap_or(url);
     let authority = match rest.find('/') {
         Some(i) => &rest[..i],
         None => rest,
@@ -258,7 +260,10 @@ mod tests {
 
     #[test]
     fn test_host_from_url() {
-        assert_eq!(host_from_url("http://registry.riina.dev/api/v1"), "registry.riina.dev");
+        assert_eq!(
+            host_from_url("http://registry.riina.dev/api/v1"),
+            "registry.riina.dev"
+        );
         assert_eq!(host_from_url("http://localhost:8080/api"), "localhost_8080");
     }
 }

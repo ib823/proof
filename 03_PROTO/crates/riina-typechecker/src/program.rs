@@ -192,7 +192,9 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
         | Expr::Deref(inner)
         | Expr::Classify(inner)
         | Expr::Prove(inner)
-        | Expr::Perform(_, inner) => ExprSummary {
+        | Expr::Perform(_, inner)
+        | Expr::ContractDeploy(inner)
+        | Expr::ZakatCalculate(inner) => ExprSummary {
             exec: summarize_expr(inner, env).exec,
             callable: None,
         },
@@ -298,6 +300,18 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
         | Expr::CRDTMerge(_, _)
         | Expr::ContentHash(_)
         | Expr::ContentVerify(_, _) => ExprSummary::default(),
+        Expr::TokenTransfer(from, to, amount) => {
+            let from_summary = summarize_expr(from, env);
+            let to_summary = summarize_expr(to, env);
+            let amount_summary = summarize_expr(amount, env);
+            ExprSummary {
+                exec: compose_exec(
+                    &compose_exec(&from_summary.exec, &to_summary.exec),
+                    &amount_summary.exec,
+                ),
+                callable: None,
+            }
+        }
         // CAHAYA Phase J5
         Expr::UIDisplay(_)
         | Expr::UIRow(_)
@@ -466,7 +480,8 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
                 // Top-level bindings: reject side effects except actor operations
                 if eff.level() > Effect::Pure.level()
                     && eff != Effect::Process
-                    && eff != Effect::Network {
+                    && eff != Effect::Network
+                {
                     return Err(TypeError::EffectViolation {
                         allowed: Effect::Pure,
                         found: eff,
@@ -482,8 +497,15 @@ fn validate_top_level_decls(program: &Program) -> Result<(), TypeError> {
             }
             TopLevelDecl::Expr(e) => {
                 // Actor declarations bind the actor name in the type context
-                if let Expr::ActorDecl { name, state_ty, message_ty, .. } = e.as_ref() {
-                    let actor_ty = Ty::Actor(Box::new(state_ty.clone()), Box::new(message_ty.clone()));
+                if let Expr::ActorDecl {
+                    name,
+                    state_ty,
+                    message_ty,
+                    ..
+                } = e.as_ref()
+                {
+                    let actor_ty =
+                        Ty::Actor(Box::new(state_ty.clone()), Box::new(message_ty.clone()));
                     ctx = ctx.extend_gamma(name.clone(), actor_ty);
                 }
             }
@@ -511,8 +533,8 @@ pub fn check_program(program: &Program) -> Result<(Expr, Ty, Effect), TypeError>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use riina_parser::Parser;
     use crate::TypeError;
+    use riina_parser::Parser;
     use riina_types::SecurityLevel;
 
     fn parse_program(source: &str) -> Program {

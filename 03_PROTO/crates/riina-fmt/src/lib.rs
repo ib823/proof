@@ -382,6 +382,28 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
             indent(out, level, cfg);
             out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
         }
+        Expr::ContractDeploy(expr) => {
+            indent(out, level, cfg);
+            out.push_str("kontrak_pintar(");
+            fmt_expr_inline(out, expr, cfg);
+            out.push(')');
+        }
+        Expr::TokenTransfer(from, to, amount) => {
+            indent(out, level, cfg);
+            out.push_str("token(");
+            fmt_expr_inline(out, from, cfg);
+            out.push_str(", ");
+            fmt_expr_inline(out, to, cfg);
+            out.push_str(", ");
+            fmt_expr_inline(out, amount, cfg);
+            out.push(')');
+        }
+        Expr::ZakatCalculate(expr) => {
+            indent(out, level, cfg);
+            out.push_str("zakat(");
+            fmt_expr_inline(out, expr, cfg);
+            out.push(')');
+        }
 
         // CAHAYA Phase J5
         Expr::UIDisplay(_)
@@ -583,6 +605,25 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
         | Expr::ContentVerify(_, _) => {
             out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
         }
+        Expr::ContractDeploy(expr) => {
+            out.push_str("kontrak_pintar(");
+            fmt_expr_inline(out, expr, cfg);
+            out.push(')');
+        }
+        Expr::TokenTransfer(from, to, amount) => {
+            out.push_str("token(");
+            fmt_expr_inline(out, from, cfg);
+            out.push_str(", ");
+            fmt_expr_inline(out, to, cfg);
+            out.push_str(", ");
+            fmt_expr_inline(out, amount, cfg);
+            out.push(')');
+        }
+        Expr::ZakatCalculate(expr) => {
+            out.push_str("zakat(");
+            fmt_expr_inline(out, expr, cfg);
+            out.push(')');
+        }
 
         // CAHAYA Phase J5
         Expr::UIDisplay(_)
@@ -776,6 +817,21 @@ fn fmt_ty(out: &mut String, ty: &Ty) {
         | Ty::CRDT(_, _)
         | Ty::Supervisor(_) => {
             out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT type */");
+        }
+        Ty::SmartContract(inner) => {
+            out.push_str("kontrak_pintar<");
+            fmt_ty(out, inner);
+            out.push('>');
+        }
+        Ty::Token(inner) => {
+            out.push_str("token<");
+            fmt_ty(out, inner);
+            out.push('>');
+        }
+        Ty::SyariahCompliant(inner) => {
+            out.push_str("patuh_syariah<");
+            fmt_ty(out, inner);
+            out.push('>');
         }
 
         // CAHAYA Phase J5

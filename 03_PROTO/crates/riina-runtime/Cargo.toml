@@ -10,6 +10,7 @@ description = "RIINA actor runtime: mailboxes, supervisors, session-typed channe
 [dependencies]
 
 [lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
 unsafe_code = "forbid"
 
 [lints.clippy]

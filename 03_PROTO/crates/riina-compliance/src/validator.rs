@@ -24,8 +24,12 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
 
     // Recurse into children
     match expr {
-        Expr::Unit | Expr::Bool(_) | Expr::Int(_) | Expr::String(_)
-        | Expr::Var(_) | Expr::Loc(_) => {}
+        Expr::Unit
+        | Expr::Bool(_)
+        | Expr::Int(_)
+        | Expr::String(_)
+        | Expr::Var(_)
+        | Expr::Loc(_) => {}
 
         Expr::Lam(_, _, body)
         | Expr::Fst(body)
@@ -76,6 +80,14 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
         | Expr::CRDTMerge(_, _)
         | Expr::ContentHash(_)
         | Expr::ContentVerify(_, _) => todo!("JALINAN Phase 6"),
+        Expr::ContractDeploy(expr) | Expr::ZakatCalculate(expr) => {
+            walk_inner(expr, rules, out);
+        }
+        Expr::TokenTransfer(from, to, amount) => {
+            walk_inner(from, rules, out);
+            walk_inner(to, rules, out);
+            walk_inner(amount, rules, out);
+        }
 
         // CAHAYA Phase J5
         Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
@@ -83,9 +95,7 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
                 walk_inner(e, rules, out);
             }
         }
-        Expr::UIText(a, b)
-        | Expr::UIButton(a, b)
-        | Expr::UIContrastCheck(a, b) => {
+        Expr::UIText(a, b) | Expr::UIButton(a, b) | Expr::UIContrastCheck(a, b) => {
             walk_inner(a, rules, out);
             walk_inner(b, rules, out);
         }

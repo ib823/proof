@@ -21,3 +21,6 @@ riina-parser.workspace = true
 riina-pkg.workspace = true
 riina-types.workspace = true
 riina-typechecker.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }

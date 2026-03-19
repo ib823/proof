@@ -372,9 +372,18 @@ impl<'a> Parser<'a> {
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwLet)) {
             self.consume(TokenKind::KwLet)?;
             let linearity = match self.peek().map(|t| &t.kind) {
-                Some(TokenKind::KwSekali) => { self.next(); Some(Linearity::Linear) }
-                Some(TokenKind::KwPaling) => { self.next(); Some(Linearity::Affine) }
-                Some(TokenKind::KwMesti) => { self.next(); Some(Linearity::Relevant) }
+                Some(TokenKind::KwSekali) => {
+                    self.next();
+                    Some(Linearity::Linear)
+                }
+                Some(TokenKind::KwPaling) => {
+                    self.next();
+                    Some(Linearity::Affine)
+                }
+                Some(TokenKind::KwMesti) => {
+                    self.next();
+                    Some(Linearity::Relevant)
+                }
                 _ => None,
             };
             let name = self.parse_ident()?;
@@ -391,7 +400,12 @@ impl<'a> Parser<'a> {
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Semi)) {
             self.consume(TokenKind::Semi)?;
             let rest = self.parse_stmt_sequence()?;
-            Ok(Expr::Let("_".to_string(), None, Box::new(first), Box::new(rest)))
+            Ok(Expr::Let(
+                "_".to_string(),
+                None,
+                Box::new(first),
+                Box::new(rest),
+            ))
         } else {
             Ok(first)
         }
@@ -695,6 +709,9 @@ impl<'a> Parser<'a> {
                 | Some(TokenKind::KwMerge)
                 | Some(TokenKind::KwContentHash)
                 | Some(TokenKind::KwVerify)
+                | Some(TokenKind::KwSmartContract)
+                | Some(TokenKind::KwToken)
+                | Some(TokenKind::KwZakat)
         )
     }
 
@@ -778,6 +795,9 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwMerge) => self.parse_crdt_merge(),
             Some(TokenKind::KwContentHash) => self.parse_content_hash(),
             Some(TokenKind::KwVerify) => self.parse_content_verify(),
+            Some(TokenKind::KwSmartContract) => self.parse_contract_deploy(),
+            Some(TokenKind::KwToken) => self.parse_token_transfer(),
+            Some(TokenKind::KwZakat) => self.parse_zakat_calculate(),
             // CAHAYA Phase J5 prefix forms
             Some(TokenKind::KwText_) => self.parse_ui_text(),
             Some(TokenKind::KwButton) => self.parse_ui_button(),
@@ -1150,11 +1170,50 @@ impl<'a> Parser<'a> {
                         self.consume(TokenKind::Gt)?;
                         Ok(Ty::SecureChan(st, level))
                     }
+                    "SmartContract" => {
+                        self.consume(TokenKind::Lt)?;
+                        let inner = self.parse_ty()?;
+                        self.consume(TokenKind::Gt)?;
+                        Ok(Ty::SmartContract(Box::new(inner)))
+                    }
+                    "Token" => {
+                        self.consume(TokenKind::Lt)?;
+                        let inner = self.parse_ty()?;
+                        self.consume(TokenKind::Gt)?;
+                        Ok(Ty::Token(Box::new(inner)))
+                    }
+                    "SyariahCompliant" => {
+                        self.consume(TokenKind::Lt)?;
+                        let inner = self.parse_ty()?;
+                        self.consume(TokenKind::Gt)?;
+                        Ok(Ty::SyariahCompliant(Box::new(inner)))
+                    }
                     _ => Err(ParseError {
                         kind: ParseErrorKind::ExpectedType,
                         span: self.current_span,
                     }),
                 }
+            }
+            Some(TokenKind::KwSmartContract) => {
+                self.next();
+                self.consume(TokenKind::Lt)?;
+                let inner = self.parse_ty()?;
+                self.consume(TokenKind::Gt)?;
+                Ok(Ty::SmartContract(Box::new(inner)))
+            }
+            Some(TokenKind::KwToken) => {
+                self.next();
+                self.consume(TokenKind::Lt)?;
+                let inner = self.parse_ty()?;
+                self.consume(TokenKind::Gt)?;
+                Ok(Ty::Token(Box::new(inner)))
+            }
+            Some(TokenKind::KwShariahCompliant) => {
+                self.next();
+                self.consume(TokenKind::Lt)?;
+                let inner = self.parse_ty()?;
+                self.consume(TokenKind::Gt)?;
+                Ok(Ty::SyariahCompliant(Box::new(inner)))
             }
             _ => Err(ParseError {
                 kind: ParseErrorKind::ExpectedType,
@@ -1402,10 +1461,7 @@ impl<'a> Parser<'a> {
                 self.consume(TokenKind::Semi)?;
                 let msg_ty = self.ident_to_ty(&msg_ident);
                 let continuation = self.parse_choreography_protocol()?;
-                Ok(SessionType::Send(
-                    Box::new(msg_ty),
-                    Box::new(continuation),
-                ))
+                Ok(SessionType::Send(Box::new(msg_ty), Box::new(continuation)))
             }
             _ => Err(ParseError {
                 kind: ParseErrorKind::ExpectedExpression,
@@ -1466,7 +1522,12 @@ impl<'a> Parser<'a> {
             let mut result = Expr::Unit;
             for (_msg, param, body) in handlers.into_iter().rev() {
                 let lam = Expr::Lam(param, Ty::Any, Box::new(body));
-                result = Expr::Let("_handler".to_string(), None, Box::new(lam), Box::new(result));
+                result = Expr::Let(
+                    "_handler".to_string(),
+                    None,
+                    Box::new(lam),
+                    Box::new(result),
+                );
             }
             result
         };
@@ -1494,10 +1555,7 @@ impl<'a> Parser<'a> {
         self.consume(TokenKind::LParen)?;
         let init = self.parse_control_flow()?;
         self.consume(TokenKind::RParen)?;
-        Ok(Expr::Spawn(
-            Box::new(Expr::Var(actor_name)),
-            Box::new(init),
-        ))
+        Ok(Expr::Spawn(Box::new(Expr::Var(actor_name)), Box::new(init)))
     }
 
     /// Parse: hantar(actor, message)
@@ -1554,6 +1612,41 @@ impl<'a> Parser<'a> {
         ))
     }
 
+    /// Parse: kontrak_pintar(expr)
+    fn parse_contract_deploy(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwSmartContract)?;
+        self.consume(TokenKind::LParen)?;
+        let contract = self.parse_control_flow()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::ContractDeploy(Box::new(contract)))
+    }
+
+    /// Parse: token(from, to, amount)
+    fn parse_token_transfer(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwToken)?;
+        self.consume(TokenKind::LParen)?;
+        let from = self.parse_control_flow()?;
+        self.consume(TokenKind::Comma)?;
+        let to = self.parse_control_flow()?;
+        self.consume(TokenKind::Comma)?;
+        let amount = self.parse_control_flow()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::TokenTransfer(
+            Box::new(from),
+            Box::new(to),
+            Box::new(amount),
+        ))
+    }
+
+    /// Parse: zakat(expr)
+    fn parse_zakat_calculate(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwZakat)?;
+        self.consume(TokenKind::LParen)?;
+        let value = self.parse_control_flow()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::ZakatCalculate(Box::new(value)))
+    }
+
     // ════════════════════════════════════════════════════════════════════
     // CAHAYA Phase J5: UI Primitives
     // ════════════════════════════════════════════════════════════════════
@@ -1608,7 +1701,10 @@ impl<'a> Parser<'a> {
 
     /// Parse a u8 integer literal (0-255)
     fn parse_u8_literal(&mut self) -> Result<u8, ParseError> {
-        let tok = self.next().ok_or(ParseError { kind: ParseErrorKind::UnexpectedEof, span: self.current_span })?;
+        let tok = self.next().ok_or(ParseError {
+            kind: ParseErrorKind::UnexpectedEof,
+            span: self.current_span,
+        })?;
         match &tok.kind {
             TokenKind::LiteralInt(s, _) => {
                 let val: u64 = s.parse().map_err(|_| ParseError {
@@ -1675,7 +1771,10 @@ impl<'a> Parser<'a> {
                 Some(TokenKind::KwPadding) => {
                     self.consume(TokenKind::KwPadding)?;
                     self.consume(TokenKind::Colon)?;
-                    let tok = self.next().ok_or(ParseError { kind: ParseErrorKind::UnexpectedEof, span: self.current_span })?;
+                    let tok = self.next().ok_or(ParseError {
+                        kind: ParseErrorKind::UnexpectedEof,
+                        span: self.current_span,
+                    })?;
                     match &tok.kind {
                         TokenKind::LiteralInt(s, _) => {
                             padding = Some(s.parse::<u32>().map_err(|_| ParseError {
@@ -1683,16 +1782,21 @@ impl<'a> Parser<'a> {
                                 span: tok.span,
                             })?);
                         }
-                        _ => return Err(ParseError {
-                            kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
-                            span: tok.span,
-                        }),
+                        _ => {
+                            return Err(ParseError {
+                                kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
+                                span: tok.span,
+                            })
+                        }
                     }
                 }
                 Some(TokenKind::KwFontSize) => {
                     self.consume(TokenKind::KwFontSize)?;
                     self.consume(TokenKind::Colon)?;
-                    let tok = self.next().ok_or(ParseError { kind: ParseErrorKind::UnexpectedEof, span: self.current_span })?;
+                    let tok = self.next().ok_or(ParseError {
+                        kind: ParseErrorKind::UnexpectedEof,
+                        span: self.current_span,
+                    })?;
                     match &tok.kind {
                         TokenKind::LiteralInt(s, _) => {
                             font_size = Some(s.parse::<u32>().map_err(|_| ParseError {
@@ -1700,14 +1804,19 @@ impl<'a> Parser<'a> {
                                 span: tok.span,
                             })?);
                         }
-                        _ => return Err(ParseError {
-                            kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
-                            span: tok.span,
-                        }),
+                        _ => {
+                            return Err(ParseError {
+                                kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
+                                span: tok.span,
+                            })
+                        }
                     }
                 }
                 _ => {
-                    let tok = self.next().ok_or(ParseError { kind: ParseErrorKind::UnexpectedEof, span: self.current_span })?;
+                    let tok = self.next().ok_or(ParseError {
+                        kind: ParseErrorKind::UnexpectedEof,
+                        span: self.current_span,
+                    })?;
                     return Err(ParseError {
                         kind: ParseErrorKind::UnexpectedToken(tok.kind.clone()),
                         span: tok.span,

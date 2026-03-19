@@ -187,5 +187,9 @@ fungsi utama() -> Nombor kesan Sistem {
     assert_eq!(code, 0);
     assert!(out.contains("RM1000"), "expected RM1000, got: {}", out);
     assert!(out.contains("OK"), "expected OK status, got: {}", out);
-    assert!(out.contains("1000"), "expected declassified 1000, got: {}", out);
+    assert!(
+        out.contains("1000"),
+        "expected declassified 1000, got: {}",
+        out
+    );
 }

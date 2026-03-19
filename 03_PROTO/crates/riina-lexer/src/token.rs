@@ -46,7 +46,7 @@ pub enum TokenKind {
 
     // Literals
     LiteralBool(bool),
-    LiteralInt(String, Option<String>), // value, suffix
+    LiteralInt(String, Option<String>),   // value, suffix
     LiteralFloat(String, Option<String>), // value, suffix
     LiteralChar(char),
     LiteralString(String),
@@ -124,14 +124,14 @@ pub enum TokenKind {
     KwSpeculationSafe,
     KwCombined,
     KwZeroize,
-    KwFst,            // fst / pertama
-    KwSnd,            // snd / kedua
-    KwRequire,        // require / perlukan
-    KwGrant,          // grant / beri
-    KwSome,           // Some / Ada
-    KwNone,           // None / Tiada
-    KwOk,             // Ok / Jadi
-    KwErr,            // Err / Gagal
+    KwFst,     // fst / pertama
+    KwSnd,     // snd / kedua
+    KwRequire, // require / perlukan
+    KwGrant,   // grant / beri
+    KwSome,    // Some / Ada
+    KwNone,    // None / Tiada
+    KwOk,      // Ok / Jadi
+    KwErr,     // Err / Gagal
     KwIn,
     KwIs,
     KwPure,
@@ -142,12 +142,12 @@ pub enum TokenKind {
     KwBorrow,
     KwCopy,
     KwClone,
-    KwLifetime,   // jangka / lifetime
+    KwLifetime, // jangka / lifetime
 
     // Linearity keywords
-    KwSekali,     // sekali / linear — must use exactly once
-    KwPaling,     // paling / affine — use at most once
-    KwMesti,      // mesti / relevant — must use at least once
+    KwSekali, // sekali / linear — must use exactly once
+    KwPaling, // paling / affine — use at most once
+    KwMesti,  // mesti / relevant — must use at least once
 
     // JALINAN Phase 6 keywords
     KwChoreography, // koreografi / choreography — global multiparty protocol
@@ -176,56 +176,69 @@ pub enum TokenKind {
     KwPadding,    // padding / pelapik — spacing
     KwFontSize,   // font_size / saiz_fon — text size
 
+    // Blockchain + Syariah Phase J6 keywords
+    KwSmartContract,    // kontrak_pintar / smart_contract
+    KwToken,            // token / token
+    KwConsensus,        // konsensus / consensus
+    KwShariahCompliant, // patuh_syariah / shariah_compliant
+    KwMudarabah,        // mudarabah
+    KwMusharakah,       // musharakah
+    KwSukuk,            // sukuk
+    KwZakat,            // zakat
+    KwTakaful,          // takaful
+    KwWakaf,            // wakaf
+    KwPurify,           // tathir / purify
+
     // Logic keywords
-    KwAnd,        // dan / and
-    KwOr,         // atau / or
-    KwNot,        // bukan / not
+    KwAnd, // dan / and
+    KwOr,  // atau / or
+    KwNot, // bukan / not
 
     // Guard clause
-    KwGuard,      // pastikan / guard
+    KwGuard, // pastikan / guard
 
     // Test keyword
-    KwTest,       // ujian / test
+    KwTest, // ujian / test
 
     // Expect keyword (for inline snapshot tests)
-    KwExpect,     // jangka / expect
+    KwExpect, // jangka / expect
 
     // Operators & Punctuation
-    Pipe,         // |>
-    Plus,       // +
-    Minus,      // -
-    Star,       // *
-    Slash,      // /
-    Percent,    // %
-    And,        // &
-    Or,         // |
-    Caret,      // ^
-    Not,        // !
-    Shl,        // <<
-    Shr,        // >>
-    
-    PlusEq,     // +=
-    MinusEq,    // -=
-    StarEq,     // *=
-    SlashEq,    // /=
-    PercentEq,  // %=
-    AndEq,      // &=
-    OrEq,       // |=
-    CaretEq,    // ^=
-    ShlEq,      // <<=
-    ShrEq,      // >>=
+    Pipe,    // |>
+    Plus,    // +
+    Minus,   // -
+    Star,    // *
+    Slash,   // /
+    Percent, // %
+    And,     // &
+    Or,      // |
+    Caret,   // ^
+    Not,     // !
+    Shl,     // <<
+    Shr,     // >>
 
-    Eq,         // =
-    EqEq,       // ==
-    Ne,         // !=
-    Lt,         // <
-    Gt,         // >
-    Le,         // <=
-    Ge,         // >=
-    
-    AndAnd,     // &&
-    OrOr,       // ||
-    
+    PlusEq,    // +=
+    MinusEq,   // -=
+    StarEq,    // *=
+    SlashEq,   // /=
+    PercentEq, // %=
+    AndEq,     // &=
+    OrEq,      // |=
+    CaretEq,   // ^=
+    ShlEq,     // <<=
+    ShrEq,     // >>=
+
+    Eq,   // =
+    EqEq, // ==
+    Ne,   // !=
+    Lt,   // <
+    Gt,   // >
+    Le,   // <=
+    Ge,   // >=
+
+    AndAnd, // &&
+    OrOr,   // ||
+
     Dot,        // .
     DotDot,     // ..
     DotDotEq,   // ..=
@@ -240,14 +253,14 @@ pub enum TokenKind {
     Arrow,      // ->
     FatArrow,   // =>
     ColonColon, // ::
-    
+
     // Delimiters
-    LParen,     // (
-    RParen,     // )
-    LBracket,   // [
-    RBracket,   // ]
-    LBrace,     // {
-    RBrace,     // }
+    LParen,   // (
+    RParen,   // )
+    LBracket, // [
+    RBracket, // ]
+    LBrace,   // {
+    RBrace,   // }
 
     // End of File
     Eof,

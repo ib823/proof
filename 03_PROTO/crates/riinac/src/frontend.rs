@@ -2,7 +2,9 @@
 
 //! Compatibility shim for the shared frontend checks.
 
-use riina_typechecker::{register_builtin_types, type_check_full, Context, TypeError, TypingContext};
+use riina_typechecker::{
+    register_builtin_types, type_check_full, Context, TypeError, TypingContext,
+};
 use riina_types::{Effect, Expr};
 
 pub(crate) use riina_typechecker::check_program;

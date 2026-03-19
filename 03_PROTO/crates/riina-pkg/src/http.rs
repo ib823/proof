@@ -158,11 +158,9 @@ fn read_response(stream: TcpStream, head_only: bool) -> Result<HttpResponse> {
     let mut headers = Vec::new();
     loop {
         let mut line = String::new();
-        reader
-            .read_line(&mut line)
-            .map_err(|e| PkgError::Network {
-                message: format!("failed to read header: {e}"),
-            })?;
+        reader.read_line(&mut line).map_err(|e| PkgError::Network {
+            message: format!("failed to read header: {e}"),
+        })?;
         let trimmed = line.trim_end_matches(['\r', '\n']);
         if trimmed.is_empty() {
             break;
@@ -217,18 +215,18 @@ fn read_body(reader: &mut BufReader<TcpStream>, headers: &[(String, String)]) ->
         read_chunked(reader)
     } else if let Some(len) = content_length {
         let mut buf = vec![0u8; len];
-        reader
-            .read_exact(&mut buf)
-            .map_err(|e| PkgError::Network {
-                message: format!("failed to read response body: {e}"),
-            })?;
+        reader.read_exact(&mut buf).map_err(|e| PkgError::Network {
+            message: format!("failed to read response body: {e}"),
+        })?;
         Ok(buf)
     } else {
         // No Content-Length, not chunked: read until EOF
         let mut buf = Vec::new();
-        reader.read_to_end(&mut buf).map_err(|e| PkgError::Network {
-            message: format!("failed to read response body: {e}"),
-        })?;
+        reader
+            .read_to_end(&mut buf)
+            .map_err(|e| PkgError::Network {
+                message: format!("failed to read response body: {e}"),
+            })?;
         Ok(buf)
     }
 }
@@ -244,10 +242,9 @@ fn read_chunked(reader: &mut BufReader<TcpStream>) -> Result<Vec<u8>> {
                 message: format!("failed to read chunk size: {e}"),
             })?;
         let size_str = size_line.trim();
-        let chunk_size =
-            usize::from_str_radix(size_str, 16).map_err(|_| PkgError::Network {
-                message: format!("invalid chunk size: {size_str}"),
-            })?;
+        let chunk_size = usize::from_str_radix(size_str, 16).map_err(|_| PkgError::Network {
+            message: format!("invalid chunk size: {size_str}"),
+        })?;
         if chunk_size == 0 {
             // Read trailing \r\n after final chunk
             let mut _trailer = String::new();
@@ -304,7 +301,10 @@ mod tests {
     #[test]
     fn test_parse_status_code() {
         assert_eq!(parse_status_code("HTTP/1.1 200 OK\r\n").unwrap(), 200);
-        assert_eq!(parse_status_code("HTTP/1.1 404 Not Found\r\n").unwrap(), 404);
+        assert_eq!(
+            parse_status_code("HTTP/1.1 404 Not Found\r\n").unwrap(),
+            404
+        );
         assert_eq!(parse_status_code("HTTP/1.0 301 Moved\r\n").unwrap(), 301);
     }
 

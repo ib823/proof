@@ -2,8 +2,8 @@
 
 //! JSON-RPC message reader/writer over stdio.
 
-use std::io::{self, BufRead, Write};
 use crate::json::{self, JsonValue};
+use std::io::{self, BufRead, Write};
 
 /// Read a JSON-RPC message from stdin (Content-Length framed).
 pub fn read_message(reader: &mut impl BufRead) -> io::Result<JsonValue> {
@@ -35,13 +35,19 @@ pub fn read_message_bounded(reader: &mut impl BufRead, max_bytes: usize) -> io::
         }
         if let Some(len_str) = line.strip_prefix("Content-Length: ") {
             content_length = len_str.parse().map_err(|e| {
-                io::Error::new(io::ErrorKind::InvalidData, format!("Bad Content-Length: {e}"))
+                io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("Bad Content-Length: {e}"),
+                )
             })?;
         }
     }
 
     if content_length == 0 {
-        return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "No Content-Length"));
+        return Err(io::Error::new(
+            io::ErrorKind::UnexpectedEof,
+            "No Content-Length",
+        ));
     }
 
     if content_length > max_bytes {
@@ -229,7 +235,10 @@ mod tests {
         let body2 = r#"{"id":2}"#;
         let input = format!(
             "Content-Length: {}\r\n\r\n{}Content-Length: {}\r\n\r\n{}",
-            body1.len(), body1, body2.len(), body2
+            body1.len(),
+            body1,
+            body2.len(),
+            body2
         );
         let mut reader = io::BufReader::new(input.as_bytes());
         let msg1 = read_message(&mut reader).unwrap();

@@ -8,3 +8,6 @@ description = "RIINA arena allocator for cache-friendly AST allocation"
 
 # Zero external dependencies (Law 8: No Dependencies)
 [dependencies]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }

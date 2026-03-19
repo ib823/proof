@@ -4218,6 +4218,131 @@ mod jalinan_phase6_tests {
         }
     }
 
+    #[test]
+    fn test_contract_deploy_wraps_inner_type() {
+        let ctx = Context::new();
+        let expr = Expr::ContractDeploy(Box::new(Expr::Int(7)));
+        let (ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::SmartContract(Box::new(Ty::Int)));
+        assert_eq!(eff, Effect::NetworkSecure);
+    }
+
+    #[test]
+    fn test_contract_deploy_preserves_inner_effects() {
+        let ctx = Context::new().extend("hash".into(), Ty::ContentAddressed(Box::new(Ty::Int)));
+        let expr = Expr::ContractDeploy(Box::new(Expr::ContentVerify(
+            Box::new(Expr::Var("hash".into())),
+            Box::new(Expr::Int(9)),
+        )));
+        let (_ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(eff, Effect::Crypto);
+    }
+
+    #[test]
+    fn test_token_transfer_ok() {
+        let token_ty = Ty::Token(Box::new(Ty::Int));
+        let ctx = Context::new()
+            .extend("alice".into(), token_ty.clone())
+            .extend("bob".into(), token_ty.clone());
+        let expr = Expr::TokenTransfer(
+            Box::new(Expr::Var("alice".into())),
+            Box::new(Expr::Var("bob".into())),
+            Box::new(Expr::Int(25)),
+        );
+        let (ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, token_ty);
+        assert_eq!(eff, Effect::NetworkSecure);
+    }
+
+    #[test]
+    fn test_token_transfer_rejects_non_token_sender() {
+        let ctx = Context::new()
+            .extend("alice".into(), Ty::Int)
+            .extend("bob".into(), Ty::Token(Box::new(Ty::Int)));
+        let expr = Expr::TokenTransfer(
+            Box::new(Expr::Var("alice".into())),
+            Box::new(Expr::Var("bob".into())),
+            Box::new(Expr::Int(10)),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::Token(Box::new(Ty::Int)));
+                assert_eq!(found, Ty::Int);
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_token_transfer_rejects_mismatched_recipient_type() {
+        let ctx = Context::new()
+            .extend("alice".into(), Ty::Token(Box::new(Ty::Int)))
+            .extend("bob".into(), Ty::Token(Box::new(Ty::String)));
+        let expr = Expr::TokenTransfer(
+            Box::new(Expr::Var("alice".into())),
+            Box::new(Expr::Var("bob".into())),
+            Box::new(Expr::Int(10)),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::Token(Box::new(Ty::Int)));
+                assert_eq!(found, Ty::Token(Box::new(Ty::String)));
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_token_transfer_rejects_wrong_amount_type() {
+        let token_ty = Ty::Token(Box::new(Ty::Int));
+        let ctx = Context::new()
+            .extend("alice".into(), token_ty.clone())
+            .extend("bob".into(), token_ty);
+        let expr = Expr::TokenTransfer(
+            Box::new(Expr::Var("alice".into())),
+            Box::new(Expr::Var("bob".into())),
+            Box::new(Expr::String("sepuluh".into())),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::Int);
+                assert_eq!(found, Ty::String);
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_zakat_calculate_int() {
+        let ctx = Context::new();
+        let expr = Expr::ZakatCalculate(Box::new(Expr::Int(1_000)));
+        let (ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Int);
+        assert_eq!(eff, Effect::Pure);
+    }
+
+    #[test]
+    fn test_zakat_calculate_token_int() {
+        let ctx = Context::new().extend("dana".into(), Ty::Token(Box::new(Ty::Int)));
+        let expr = Expr::ZakatCalculate(Box::new(Expr::Var("dana".into())));
+        let (ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Token(Box::new(Ty::Int)));
+        assert_eq!(eff, Effect::Pure);
+    }
+
+    #[test]
+    fn test_zakat_calculate_rejects_non_numeric_value() {
+        let ctx = Context::new();
+        let expr = Expr::ZakatCalculate(Box::new(Expr::Bool(true)));
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::Int);
+                assert_eq!(found, Ty::Bool);
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
     // ════════════════════════════════════════════════════════════════════
     // Integration & Error Tests (6)
     // ════════════════════════════════════════════════════════════════════

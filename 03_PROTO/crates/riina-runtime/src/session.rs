@@ -114,7 +114,10 @@ impl<T: Send + 'static, Cont: SessionType> SessionRecv<T, Cont> {
     /// Receive a value and transition to the continuation protocol.
     /// Consumes `self` — you cannot receive twice on the same state.
     pub fn recv(self) -> (T, Cont) {
-        let raw = self.rx.recv().expect("session: channel closed unexpectedly");
+        let raw = self
+            .rx
+            .recv()
+            .expect("session: channel closed unexpectedly");
         let val = *raw
             .downcast::<T>()
             .expect("session: type mismatch in channel");

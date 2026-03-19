@@ -304,7 +304,16 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             fv.extend(free_vars(b));
             fv
         }
-        Expr::ActorRecv(a) | Expr::ContentHash(a) => free_vars(a),
+        Expr::TokenTransfer(from, to, amount) => {
+            let mut fv = free_vars(from);
+            fv.extend(free_vars(to));
+            fv.extend(free_vars(amount));
+            fv
+        }
+        Expr::ActorRecv(a)
+        | Expr::ContentHash(a)
+        | Expr::ContractDeploy(a)
+        | Expr::ZakatCalculate(a) => free_vars(a),
         // CAHAYA Phase J5
         Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
             let mut fv = HashSet::new();
@@ -566,6 +575,15 @@ impl Lower {
             Expr::CRDTMerge(_, _) => Ty::Int, // Merged state
             Expr::ContentHash(_) => Ty::String, // Hash as hex string
             Expr::ContentVerify(_, _) => Ty::Bool,
+            Expr::ContractDeploy(expr) => Ty::SmartContract(Box::new(self.infer_type(expr))),
+            Expr::TokenTransfer(from, _, amount) => {
+                if let Ty::Token(inner) = self.infer_type(from) {
+                    Ty::Token(inner)
+                } else {
+                    Ty::Token(Box::new(self.infer_type(amount)))
+                }
+            }
+            Expr::ZakatCalculate(expr) => self.infer_type(expr),
             // CAHAYA Phase J5
             Expr::UIDisplay(_) | Expr::UIRow(_) | Expr::UIColumn(_) => Ty::Element,
             Expr::UIText(_, _) => Ty::Element,
@@ -647,6 +665,13 @@ impl Lower {
                 .infer_effect(a)
                 .join(self.infer_effect(b))
                 .join(Effect::Crypto),
+            Expr::ContractDeploy(a) => self.infer_effect(a).join(Effect::NetworkSecure),
+            Expr::TokenTransfer(from, to, amount) => self
+                .infer_effect(from)
+                .join(self.infer_effect(to))
+                .join(self.infer_effect(amount))
+                .join(Effect::NetworkSecure),
+            Expr::ZakatCalculate(a) => self.infer_effect(a),
             // CAHAYA Phase J5 — all UI expressions are pure
             Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
                 let mut eff = Effect::Pure;
@@ -1569,6 +1594,16 @@ impl Lower {
                     Effect::Crypto,
                 ))
             }
+
+            Expr::ContractDeploy(contract_expr) => self.lower_expr(contract_expr),
+
+            Expr::TokenTransfer(from_expr, to_expr, amount_expr) => {
+                let _from_var = self.lower_expr(from_expr)?;
+                let _to_var = self.lower_expr(to_expr)?;
+                self.lower_expr(amount_expr)
+            }
+
+            Expr::ZakatCalculate(value_expr) => self.lower_expr(value_expr),
 
             // CAHAYA Phase J5 — lower UI values to string-backed HTML
             Expr::UIDisplay(elements) | Expr::UIColumn(elements) => {

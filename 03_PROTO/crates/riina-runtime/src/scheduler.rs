@@ -108,7 +108,11 @@ impl Scheduler {
     pub fn shutdown(self) {
         // Signal shutdown.
         {
-            let mut shutdown = self.inner.shutdown.lock().expect("scheduler: lock poisoned");
+            let mut shutdown = self
+                .inner
+                .shutdown
+                .lock()
+                .expect("scheduler: lock poisoned");
             *shutdown = true;
         }
         self.inner.condvar.notify_all();

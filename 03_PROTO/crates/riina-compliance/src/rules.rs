@@ -5,7 +5,7 @@
 //!
 //! 562 rules across 16 compliance profiles, each with AST-level detection.
 
-use riina_types::{Expr, Effect};
+use riina_types::{Effect, Expr};
 
 use crate::{ComplianceProfile, ComplianceViolation, Severity};
 
@@ -93,13 +93,19 @@ fn contains_effect(expr: &Expr, target: Effect) -> bool {
             contains_effect(c, target) || contains_effect(t, target) || contains_effect(e, target)
         }
         Expr::Perform(_, inner) => contains_effect(inner, target),
-        Expr::BinOp(_, l, r) | Expr::Pair(l, r) | Expr::Assign(l, r)
-        | Expr::Declassify(l, r) => {
+        Expr::BinOp(_, l, r) | Expr::Pair(l, r) | Expr::Assign(l, r) | Expr::Declassify(l, r) => {
             contains_effect(l, target) || contains_effect(r, target)
         }
-        Expr::Classify(e) | Expr::Fst(e) | Expr::Snd(e) | Expr::Deref(e)
-        | Expr::Ref(e, _) | Expr::Inl(e, _) | Expr::Inr(e, _) | Expr::Prove(e)
-        | Expr::Require(_, e) | Expr::Grant(_, e) => contains_effect(e, target),
+        Expr::Classify(e)
+        | Expr::Fst(e)
+        | Expr::Snd(e)
+        | Expr::Deref(e)
+        | Expr::Ref(e, _)
+        | Expr::Inl(e, _)
+        | Expr::Inr(e, _)
+        | Expr::Prove(e)
+        | Expr::Require(_, e)
+        | Expr::Grant(_, e) => contains_effect(e, target),
         Expr::FFICall { args, .. } => args.iter().any(|a| contains_effect(a, target)),
         _ => false,
     }
@@ -112,16 +118,22 @@ fn contains_security_op(expr: &Expr) -> bool {
         Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
             contains_security_op(v) || contains_security_op(b)
         }
-        Expr::App(f, a) | Expr::Pair(f, a) | Expr::BinOp(_, f, a)
-        | Expr::Assign(f, a) => {
+        Expr::App(f, a) | Expr::Pair(f, a) | Expr::BinOp(_, f, a) | Expr::Assign(f, a) => {
             contains_security_op(f) || contains_security_op(a)
         }
         Expr::If(c, t, e) | Expr::Case(c, _, t, _, e) => {
             contains_security_op(c) || contains_security_op(t) || contains_security_op(e)
         }
-        Expr::Lam(_, _, b) | Expr::Fst(b) | Expr::Snd(b) | Expr::Inl(b, _)
-        | Expr::Inr(b, _) | Expr::Ref(b, _) | Expr::Deref(b) | Expr::Perform(_, b)
-        | Expr::Prove(b) | Expr::Require(_, b) => contains_security_op(b),
+        Expr::Lam(_, _, b)
+        | Expr::Fst(b)
+        | Expr::Snd(b)
+        | Expr::Inl(b, _)
+        | Expr::Inr(b, _)
+        | Expr::Ref(b, _)
+        | Expr::Deref(b)
+        | Expr::Perform(_, b)
+        | Expr::Prove(b)
+        | Expr::Require(_, b) => contains_security_op(b),
         _ => false,
     }
 }
@@ -133,15 +145,23 @@ fn has_if_or_case(expr: &Expr) -> bool {
         Expr::Let(_, _, v, b) | Expr::LetRec(_, _, v, b) | Expr::Handle(v, _, b) => {
             has_if_or_case(v) || has_if_or_case(b)
         }
-        Expr::Lam(_, _, b) | Expr::Fst(b) | Expr::Snd(b) | Expr::Perform(_, b)
-        | Expr::Classify(b) | Expr::Prove(b) | Expr::Deref(b) | Expr::Ref(b, _)
-        | Expr::Inl(b, _) | Expr::Inr(b, _) | Expr::Require(_, b) | Expr::Grant(_, b) => {
-            has_if_or_case(b)
-        }
-        Expr::App(f, a) | Expr::Pair(f, a) | Expr::BinOp(_, f, a)
-        | Expr::Assign(f, a) | Expr::Declassify(f, a) => {
-            has_if_or_case(f) || has_if_or_case(a)
-        }
+        Expr::Lam(_, _, b)
+        | Expr::Fst(b)
+        | Expr::Snd(b)
+        | Expr::Perform(_, b)
+        | Expr::Classify(b)
+        | Expr::Prove(b)
+        | Expr::Deref(b)
+        | Expr::Ref(b, _)
+        | Expr::Inl(b, _)
+        | Expr::Inr(b, _)
+        | Expr::Require(_, b)
+        | Expr::Grant(_, b) => has_if_or_case(b),
+        Expr::App(f, a)
+        | Expr::Pair(f, a)
+        | Expr::BinOp(_, f, a)
+        | Expr::Assign(f, a)
+        | Expr::Declassify(f, a) => has_if_or_case(f) || has_if_or_case(a),
         _ => false,
     }
 }
@@ -153,8 +173,7 @@ fn contains_var_matching(expr: &Expr, keywords: &[String]) -> bool {
         Expr::App(f, a) | Expr::Pair(f, a) | Expr::BinOp(_, f, a) => {
             contains_var_matching(f, keywords) || contains_var_matching(a, keywords)
         }
-        Expr::Fst(e) | Expr::Snd(e) | Expr::Classify(e) | Expr::Perform(_, e)
-        | Expr::Deref(e) => {
+        Expr::Fst(e) | Expr::Snd(e) | Expr::Classify(e) | Expr::Perform(_, e) | Expr::Deref(e) => {
             contains_var_matching(e, keywords)
         }
         _ => false,
@@ -189,7 +208,9 @@ fn sensitive_let_rule(
 ) -> ComplianceRule {
     let kw = to_owned_keywords(keywords);
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Let(name, _, value, _) = expr {
                 if name_matches(name, &kw) && !matches!(value.as_ref(), Expr::Classify(_)) {
@@ -216,7 +237,9 @@ fn hardcoded_credential_rule(
 ) -> ComplianceRule {
     let kw = to_owned_keywords(keywords);
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Let(name, _, value, _) = expr {
                 if name_matches(name, &kw) && matches!(value.as_ref(), Expr::String(_)) {
@@ -241,13 +264,16 @@ fn insecure_network_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Perform(Effect::Network, _) = expr {
                 return Some(ComplianceViolation {
                     rule_id: id,
                     profile,
-                    message: "Network communication must use secure channel (NetworkSecure effect)".into(),
+                    message: "Network communication must use secure channel (NetworkSecure effect)"
+                        .into(),
                     severity,
                 });
             }
@@ -264,12 +290,16 @@ fn weak_crypto_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::String(s) = expr {
                 let lower = s.to_lowercase();
-                if lower.contains("md5") || lower.contains("sha1")
-                    || lower.contains("des") || lower.contains("rc4")
+                if lower.contains("md5")
+                    || lower.contains("sha1")
+                    || lower.contains("des")
+                    || lower.contains("rc4")
                     || lower.contains("rot13")
                 {
                     return Some(ComplianceViolation {
@@ -293,7 +323,9 @@ fn insecure_url_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::String(s) = expr {
                 if s.contains("http://") {
@@ -320,14 +352,19 @@ fn auth_crypto_rule(
 ) -> ComplianceRule {
     let kw = to_owned_keywords(keywords);
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::LetRec(name, _ty, body, _) = expr {
                 if name_matches(name, &kw) && !contains_effect(body, Effect::Crypto) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
-                        message: format!("Authentication function '{}' must use Crypto effect", name),
+                        message: format!(
+                            "Authentication function '{}' must use Crypto effect",
+                            name
+                        ),
                         severity,
                     });
                 }
@@ -345,14 +382,17 @@ fn declassify_prove_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Declassify(_, proof) = expr {
                 if !matches!(proof.as_ref(), Expr::Prove(_)) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
-                        message: "Declassification requires a Prove guard for audit compliance".into(),
+                        message: "Declassification requires a Prove guard for audit compliance"
+                            .into(),
                         severity,
                     });
                 }
@@ -370,7 +410,9 @@ fn audit_trail_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Let(_, _, value, body) = expr {
                 if contains_security_op(value) && !contains_effect(body, Effect::Write) {
@@ -395,7 +437,9 @@ fn ffi_review_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::FFICall { name, .. } = expr {
                 return Some(ComplianceViolation {
@@ -418,7 +462,9 @@ fn trivial_handle_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Handle(_, _, body) = expr {
                 if matches!(body.as_ref(), Expr::Unit) {
@@ -443,7 +489,9 @@ fn broad_grant_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Grant(effect, _) = expr {
                 if matches!(effect, Effect::System | Effect::Process) {
@@ -470,7 +518,9 @@ fn sensitive_network_send_rule(
 ) -> ComplianceRule {
     let kw = to_owned_keywords(keywords);
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Perform(Effect::Network | Effect::NetworkSecure, arg) = expr {
                 if contains_var_matching(arg, &kw) {
@@ -495,14 +545,19 @@ fn unbounded_recursion_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::LetRec(name, _, body, _) = expr {
                 if !has_if_or_case(body) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
-                        message: format!("Recursive function '{}' has no visible base case (missing If/Case)", name),
+                        message: format!(
+                            "Recursive function '{}' has no visible base case (missing If/Case)",
+                            name
+                        ),
                         severity,
                     });
                 }
@@ -522,14 +577,19 @@ fn tainted_input_rule(
 ) -> ComplianceRule {
     let kw = to_owned_keywords(keywords);
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Let(name, _, value, _) = expr {
                 if name_matches(name, &kw) && !is_tainted_expr(value) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
-                        message: format!("Variable '{}' holds user input but is not taint-tracked", name),
+                        message: format!(
+                            "Variable '{}' holds user input but is not taint-tracked",
+                            name
+                        ),
                         severity,
                     });
                 }
@@ -547,7 +607,9 @@ fn hardcoded_ip_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::String(s) = expr {
                 // Simple heuristic: contains digit.digit.digit.digit pattern
@@ -559,8 +621,12 @@ fn hardcoded_ip_rule(
                         let mut parts = 0;
                         let mut j = i;
                         while j < bytes.len() && parts < 4 {
-                            if !bytes[j].is_ascii_digit() { break; }
-                            while j < bytes.len() && bytes[j].is_ascii_digit() { j += 1; }
+                            if !bytes[j].is_ascii_digit() {
+                                break;
+                            }
+                            while j < bytes.len() && bytes[j].is_ascii_digit() {
+                                j += 1;
+                            }
                             parts += 1;
                             if parts < 4 {
                                 if j < bytes.len() && bytes[j] == b'.' {
@@ -574,7 +640,10 @@ fn hardcoded_ip_rule(
                             return Some(ComplianceViolation {
                                 rule_id: id,
                                 profile,
-                                message: format!("Hardcoded IP address detected in string: '{}'", s),
+                                message: format!(
+                                    "Hardcoded IP address detected in string: '{}'",
+                                    s
+                                ),
                                 severity,
                             });
                         }
@@ -595,13 +664,14 @@ fn hardcoded_port_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Int(n) = expr {
                 let well_known: &[u64] = &[
-                    20, 21, 22, 23, 25, 53, 80, 110, 143, 443,
-                    445, 993, 995, 1433, 1521, 3306, 3389, 5432,
-                    5900, 6379, 8080, 8443, 9090, 27017,
+                    20, 21, 22, 23, 25, 53, 80, 110, 143, 443, 445, 993, 995, 1433, 1521, 3306,
+                    3389, 5432, 5900, 6379, 8080, 8443, 9090, 27017,
                 ];
                 if well_known.contains(n) {
                     return Some(ComplianceViolation {
@@ -625,13 +695,18 @@ fn debug_code_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::String(s) = expr {
                 let lower = s.to_lowercase();
-                if lower.contains("debug") || lower.contains("println")
-                    || lower.contains("console.log") || lower.contains("print_debug")
-                    || lower.contains("todo!") || lower.contains("fixme")
+                if lower.contains("debug")
+                    || lower.contains("println")
+                    || lower.contains("console.log")
+                    || lower.contains("print_debug")
+                    || lower.contains("todo!")
+                    || lower.contains("fixme")
                     || lower.contains("hack:")
                 {
                     return Some(ComplianceViolation {
@@ -657,14 +732,19 @@ fn insecure_default_rule(
 ) -> ComplianceRule {
     let kw = to_owned_keywords(keywords);
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Let(name, _, value, _) = expr {
                 if name_matches(name, &kw) && matches!(value.as_ref(), Expr::Bool(false)) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
-                        message: format!("Security setting '{}' defaults to false (insecure default)", name),
+                        message: format!(
+                            "Security setting '{}' defaults to false (insecure default)",
+                            name
+                        ),
                         severity,
                     });
                 }
@@ -684,7 +764,9 @@ fn temporal_no_expiry_rule(
 ) -> ComplianceRule {
     let kw = to_owned_keywords(keywords);
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Let(name, _, _value, body) = expr {
                 if name_matches(name, &kw) && !contains_effect(body, Effect::Time) {
@@ -709,14 +791,19 @@ fn excessive_grant_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Grant(effect, _) = expr {
                 if matches!(effect, Effect::FileSystem | Effect::Random | Effect::Time) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
-                        message: format!("Excessive capability grant: {:?} effect should be minimized", effect),
+                        message: format!(
+                            "Excessive capability grant: {:?} effect should be minimized",
+                            effect
+                        ),
                         severity,
                     });
                 }
@@ -734,10 +821,14 @@ fn classify_without_audit_rule(
     severity: Severity,
 ) -> ComplianceRule {
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::Let(_, _, value, body) = expr {
-                if matches!(value.as_ref(), Expr::Classify(_)) && !contains_effect(body, Effect::Write) {
+                if matches!(value.as_ref(), Expr::Classify(_))
+                    && !contains_effect(body, Effect::Write)
+                {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
@@ -761,14 +852,19 @@ fn sensitive_ffi_rule(
 ) -> ComplianceRule {
     let kw = to_owned_keywords(keywords);
     ComplianceRule {
-        id, profile, description,
+        id,
+        profile,
+        description,
         check: Box::new(move |expr| {
             if let Expr::FFICall { name, .. } = expr {
                 if name_matches(name, &kw) {
                     return Some(ComplianceViolation {
                         rule_id: id,
                         profile,
-                        message: format!("FFI call to sensitive function '{}' requires enhanced security review", name),
+                        message: format!(
+                            "FFI call to sensitive function '{}' requires enhanced security review",
+                            name
+                        ),
                         severity,
                     });
                 }
@@ -795,7 +891,8 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
                         return Some(ComplianceViolation {
                             rule_id: "PCI-DSS-3.4",
                             profile: ComplianceProfile::PciDss,
-                            message: "Declassification of secret data requires a Prove guard".into(),
+                            message: "Declassification of secret data requires a Prove guard"
+                                .into(),
                             severity: Severity::Error,
                         });
                     }
@@ -833,7 +930,9 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             check: Box::new(|expr| {
                 if let Expr::LetRec(name, _ty, body, _) = expr {
                     let lower = name.to_lowercase();
-                    if (lower.contains("auth") || lower.contains("login") || lower.contains("verify_password"))
+                    if (lower.contains("auth")
+                        || lower.contains("login")
+                        || lower.contains("verify_password"))
                         && !contains_effect(body, Effect::Crypto)
                     {
                         return Some(ComplianceViolation {
@@ -854,7 +953,13 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-3.5.1",
             ComplianceProfile::PciDss,
             "Encryption keys must be Secret-typed",
-            &["encryption_key", "aes_key", "private_key", "secret_key", "crypto_key"],
+            &[
+                "encryption_key",
+                "aes_key",
+                "private_key",
+                "secret_key",
+                "crypto_key",
+            ],
             Severity::Error,
         ),
         insecure_network_rule(
@@ -885,7 +990,13 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-6.5.5",
             ComplianceProfile::PciDss,
             "Hardcoded credentials detected",
-            &["password", "passwd", "api_key", "secret_token", "access_key"],
+            &[
+                "password",
+                "passwd",
+                "api_key",
+                "secret_token",
+                "access_key",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
@@ -943,14 +1054,26 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-2.2.1",
             ComplianceProfile::PciDss,
             "Security settings must not default to false",
-            &["encryption_enabled", "tls_required", "auth_required", "secure_mode", "verify_ssl"],
+            &[
+                "encryption_enabled",
+                "tls_required",
+                "auth_required",
+                "secure_mode",
+                "verify_ssl",
+            ],
             Severity::Error,
         ),
         temporal_no_expiry_rule(
             "PCI-DSS-3.6.1",
             ComplianceProfile::PciDss,
             "Cryptographic keys must have expiry handling",
-            &["key_created", "cert_date", "token_issued", "key_timestamp", "session_start"],
+            &[
+                "key_created",
+                "cert_date",
+                "token_issued",
+                "key_timestamp",
+                "session_start",
+            ],
             Severity::Warning,
         ),
         debug_code_rule(
@@ -1005,7 +1128,12 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-1.2.1",
             ComplianceProfile::PciDss,
             "Network segmentation must be enabled",
-            &["segmentation_enabled", "vlan_active", "zone_isolation", "network_partition"],
+            &[
+                "segmentation_enabled",
+                "vlan_active",
+                "zone_isolation",
+                "network_partition",
+            ],
             Severity::Error,
         ),
         sensitive_network_send_rule(
@@ -1025,7 +1153,12 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-1.5.1",
             ComplianceProfile::PciDss,
             "Network topology data must be classified",
-            &["network_diagram", "topology_data", "network_map", "infrastructure_data"],
+            &[
+                "network_diagram",
+                "topology_data",
+                "network_map",
+                "infrastructure_data",
+            ],
             Severity::Warning,
         ),
         // Requirement 2: Secure Configurations
@@ -1033,14 +1166,24 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-2.1.1",
             ComplianceProfile::PciDss,
             "No vendor-supplied default credentials",
-            &["default_password", "factory_key", "vendor_credential", "default_token"],
+            &[
+                "default_password",
+                "factory_key",
+                "vendor_credential",
+                "default_token",
+            ],
             Severity::Error,
         ),
         insecure_default_rule(
             "PCI-DSS-2.3.1",
             ComplianceProfile::PciDss,
             "Non-console admin access encryption enabled",
-            &["admin_encryption", "mgmt_tls", "console_secure", "admin_ssl"],
+            &[
+                "admin_encryption",
+                "mgmt_tls",
+                "console_secure",
+                "admin_ssl",
+            ],
             Severity::Error,
         ),
         // Requirement 3: Protect Stored Data
@@ -1048,14 +1191,24 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-3.1.1",
             ComplianceProfile::PciDss,
             "Data retention policy data must be classified",
-            &["retention_data", "purge_data", "data_lifecycle", "storage_policy"],
+            &[
+                "retention_data",
+                "purge_data",
+                "data_lifecycle",
+                "storage_policy",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "PCI-DSS-3.2.1",
             ComplianceProfile::PciDss,
             "Authentication data storage must be classified",
-            &["auth_store", "credential_cache", "token_store", "session_store"],
+            &[
+                "auth_store",
+                "credential_cache",
+                "token_store",
+                "session_store",
+            ],
             Severity::Error,
         ),
         declassify_prove_rule(
@@ -1068,7 +1221,12 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-3.7.1",
             ComplianceProfile::PciDss,
             "Key management procedures data must be classified",
-            &["key_procedure", "key_custodian", "key_ceremony", "key_split"],
+            &[
+                "key_procedure",
+                "key_custodian",
+                "key_ceremony",
+                "key_split",
+            ],
             Severity::Error,
         ),
         // Requirement 4: Encrypt Transmission
@@ -1082,7 +1240,12 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-4.2.2",
             ComplianceProfile::PciDss,
             "End-user messaging data must be classified",
-            &["message_data", "email_content", "chat_data", "notification_data"],
+            &[
+                "message_data",
+                "email_content",
+                "chat_data",
+                "notification_data",
+            ],
             Severity::Warning,
         ),
         // Requirement 5: Anti-Malware
@@ -1097,7 +1260,12 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-5.2.1",
             ComplianceProfile::PciDss,
             "Anti-malware must be enabled",
-            &["antimalware_enabled", "virus_scan_active", "malware_protection", "realtime_scan"],
+            &[
+                "antimalware_enabled",
+                "virus_scan_active",
+                "malware_protection",
+                "realtime_scan",
+            ],
             Severity::Error,
         ),
         // Requirement 6: Secure Development
@@ -1131,7 +1299,12 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-7.3.1",
             ComplianceProfile::PciDss,
             "Access policy data must be classified",
-            &["access_policy", "authorization_rule", "entitlement_data", "permission_set"],
+            &[
+                "access_policy",
+                "authorization_rule",
+                "entitlement_data",
+                "permission_set",
+            ],
             Severity::Warning,
         ),
         // Requirement 8: Authentication
@@ -1139,21 +1312,36 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-8.1.1",
             ComplianceProfile::PciDss,
             "User identification must use Crypto",
-            &["user_identify", "account_auth", "login_verify", "identity_check"],
+            &[
+                "user_identify",
+                "account_auth",
+                "login_verify",
+                "identity_check",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
             "PCI-DSS-8.2.1",
             ComplianceProfile::PciDss,
             "No hardcoded authentication credentials",
-            &["user_password", "login_credential", "auth_secret", "account_key"],
+            &[
+                "user_password",
+                "login_credential",
+                "auth_secret",
+                "account_key",
+            ],
             Severity::Error,
         ),
         temporal_no_expiry_rule(
             "PCI-DSS-8.3.1",
             ComplianceProfile::PciDss,
             "MFA tokens must have temporal handling",
-            &["mfa_token_time", "otp_expiry", "auth_timestamp", "session_timeout"],
+            &[
+                "mfa_token_time",
+                "otp_expiry",
+                "auth_timestamp",
+                "session_timeout",
+            ],
             Severity::Warning,
         ),
         // Requirement 9: Physical Access (logical checks)
@@ -1189,7 +1377,12 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-10.6.1",
             ComplianceProfile::PciDss,
             "Log review process must be enabled",
-            &["log_review", "alert_monitoring", "siem_enabled", "log_analysis"],
+            &[
+                "log_review",
+                "alert_monitoring",
+                "siem_enabled",
+                "log_analysis",
+            ],
             Severity::Warning,
         ),
         // Requirement 11: Testing
@@ -1204,7 +1397,12 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-11.3.1",
             ComplianceProfile::PciDss,
             "Penetration test input must be taint-tracked",
-            &["pentest_input", "scan_result", "vulnerability_data", "exploit_input"],
+            &[
+                "pentest_input",
+                "scan_result",
+                "vulnerability_data",
+                "exploit_input",
+            ],
             Severity::Warning,
         ),
         // Requirement 12: Security Policy
@@ -1212,7 +1410,12 @@ fn pci_dss_rules() -> Vec<ComplianceRule> {
             "PCI-DSS-12.1.1",
             ComplianceProfile::PciDss,
             "Security policy data must be classified",
-            &["security_policy", "compliance_data", "governance_data", "policy_document"],
+            &[
+                "security_policy",
+                "compliance_data",
+                "governance_data",
+                "policy_document",
+            ],
             Severity::Warning,
         ),
     ]
@@ -1235,7 +1438,12 @@ fn hipaa_rules() -> Vec<ComplianceRule> {
             "HIPAA-164.312-a2",
             ComplianceProfile::Hipaa,
             "Health system auth must use Crypto effect",
-            &["medical_auth", "health_login", "patient_verify", "clinical_auth"],
+            &[
+                "medical_auth",
+                "health_login",
+                "patient_verify",
+                "clinical_auth",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
@@ -1305,7 +1513,13 @@ fn hipaa_rules() -> Vec<ComplianceRule> {
             "HIPAA-164.310-a",
             ComplianceProfile::Hipaa,
             "Health system security defaults must be enabled",
-            &["encryption_enabled", "hipaa_mode", "audit_enabled", "phi_protection", "access_control"],
+            &[
+                "encryption_enabled",
+                "hipaa_mode",
+                "audit_enabled",
+                "phi_protection",
+                "access_control",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -1318,7 +1532,13 @@ fn hipaa_rules() -> Vec<ComplianceRule> {
             "HIPAA-164.312-c2",
             ComplianceProfile::Hipaa,
             "Health records must have retention handling",
-            &["record_date", "admission_date", "discharge_date", "prescription_date", "consent_date"],
+            &[
+                "record_date",
+                "admission_date",
+                "discharge_date",
+                "prescription_date",
+                "consent_date",
+            ],
             Severity::Warning,
         ),
         excessive_grant_rule(
@@ -1331,7 +1551,12 @@ fn hipaa_rules() -> Vec<ComplianceRule> {
             "HIPAA-164.530-a",
             ComplianceProfile::Hipaa,
             "Patient input must be taint-tracked",
-            &["patient_input", "medical_form", "health_data", "clinical_input"],
+            &[
+                "patient_input",
+                "medical_form",
+                "health_data",
+                "clinical_input",
+            ],
             Severity::Error,
         ),
         sensitive_ffi_rule(
@@ -1346,70 +1571,120 @@ fn hipaa_rules() -> Vec<ComplianceRule> {
             "HIPAA-164.308-a1",
             ComplianceProfile::Hipaa,
             "Risk analysis data must be classified",
-            &["risk_data", "threat_data", "vulnerability_data", "risk_assessment"],
+            &[
+                "risk_data",
+                "threat_data",
+                "vulnerability_data",
+                "risk_assessment",
+            ],
             Severity::Warning,
         ),
         insecure_default_rule(
             "HIPAA-164.308-a2",
             ComplianceProfile::Hipaa,
             "Security management process must be enabled",
-            &["security_mgmt", "risk_mgmt", "hipaa_compliance", "security_program"],
+            &[
+                "security_mgmt",
+                "risk_mgmt",
+                "hipaa_compliance",
+                "security_program",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "HIPAA-164.308-a3",
             ComplianceProfile::Hipaa,
             "Workforce security data must be classified",
-            &["workforce_data", "employee_access", "staff_clearance", "personnel_access"],
+            &[
+                "workforce_data",
+                "employee_access",
+                "staff_clearance",
+                "personnel_access",
+            ],
             Severity::Error,
         ),
         auth_crypto_rule(
             "HIPAA-164.308-a4",
             ComplianceProfile::Hipaa,
             "Information access management must use Crypto",
-            &["access_mgmt", "phi_access", "health_authorize", "clinical_access"],
+            &[
+                "access_mgmt",
+                "phi_access",
+                "health_authorize",
+                "clinical_access",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "HIPAA-164.308-a5",
             ComplianceProfile::Hipaa,
             "Security awareness data must be classified",
-            &["awareness_data", "training_data", "security_training", "compliance_training"],
+            &[
+                "awareness_data",
+                "training_data",
+                "security_training",
+                "compliance_training",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "HIPAA-164.308-a6",
             ComplianceProfile::Hipaa,
             "Incident response data must be classified",
-            &["incident_data", "breach_data", "security_incident", "phi_breach"],
+            &[
+                "incident_data",
+                "breach_data",
+                "security_incident",
+                "phi_breach",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "HIPAA-164.308-a7",
             ComplianceProfile::Hipaa,
             "Contingency plan data must be classified",
-            &["contingency_data", "backup_plan", "disaster_recovery", "emergency_plan"],
+            &[
+                "contingency_data",
+                "backup_plan",
+                "disaster_recovery",
+                "emergency_plan",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "HIPAA-164.310-a1",
             ComplianceProfile::Hipaa,
             "Facility access control data must be classified",
-            &["facility_access", "physical_access", "badge_data", "entry_control"],
+            &[
+                "facility_access",
+                "physical_access",
+                "badge_data",
+                "entry_control",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "HIPAA-164.310-b1",
             ComplianceProfile::Hipaa,
             "Workstation security data must be classified",
-            &["workstation_data", "desktop_config", "endpoint_data", "terminal_data"],
+            &[
+                "workstation_data",
+                "desktop_config",
+                "endpoint_data",
+                "terminal_data",
+            ],
             Severity::Warning,
         ),
         hardcoded_credential_rule(
             "HIPAA-164.312-a3",
             ComplianceProfile::Hipaa,
             "No hardcoded emergency access credentials",
-            &["emergency_password", "break_glass_key", "emergency_credential", "override_token"],
+            &[
+                "emergency_password",
+                "break_glass_key",
+                "emergency_credential",
+                "override_token",
+            ],
             Severity::Error,
         ),
         declassify_prove_rule(
@@ -1441,7 +1716,12 @@ fn hipaa_rules() -> Vec<ComplianceRule> {
             "HIPAA-164.530-c",
             ComplianceProfile::Hipaa,
             "Patient consent dates must have temporal handling",
-            &["consent_date", "authorization_date", "notice_date", "acknowledgment_date"],
+            &[
+                "consent_date",
+                "authorization_date",
+                "notice_date",
+                "acknowledgment_date",
+            ],
             Severity::Warning,
         ),
     ]
@@ -1464,7 +1744,13 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             "GDPR-5.1-b",
             ComplianceProfile::Gdpr,
             "No hardcoded personal data",
-            &["personal_name", "email_address", "home_address", "phone_number", "birth_date"],
+            &[
+                "personal_name",
+                "email_address",
+                "home_address",
+                "phone_number",
+                "birth_date",
+            ],
             Severity::Error,
         ),
         sensitive_network_send_rule(
@@ -1533,7 +1819,13 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             "GDPR-13.1",
             ComplianceProfile::Gdpr,
             "Privacy defaults must be enabled (privacy by default)",
-            &["consent_required", "data_protection", "privacy_mode", "gdpr_enabled", "anonymize"],
+            &[
+                "consent_required",
+                "data_protection",
+                "privacy_mode",
+                "gdpr_enabled",
+                "anonymize",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -1546,7 +1838,13 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             "GDPR-17.1",
             ComplianceProfile::Gdpr,
             "Personal data must have retention/expiry handling",
-            &["consent_date", "data_collected", "retention_start", "processing_date", "erasure_date"],
+            &[
+                "consent_date",
+                "data_collected",
+                "retention_start",
+                "processing_date",
+                "erasure_date",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
@@ -1574,21 +1872,37 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             "GDPR-6.1",
             ComplianceProfile::Gdpr,
             "Lawfulness basis data must be classified",
-            &["legal_basis", "consent_data", "legitimate_interest", "contract_basis"],
+            &[
+                "legal_basis",
+                "consent_data",
+                "legitimate_interest",
+                "contract_basis",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "GDPR-9.1",
             ComplianceProfile::Gdpr,
             "Special category data must be classified",
-            &["biometric", "genetic", "health_data", "political_opinion", "religious_belief"],
+            &[
+                "biometric",
+                "genetic",
+                "health_data",
+                "political_opinion",
+                "religious_belief",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "GDPR-13.1",
             ComplianceProfile::Gdpr,
             "Data subject notification data must be classified",
-            &["notification_data", "privacy_notice", "disclosure_info", "transparency_data"],
+            &[
+                "notification_data",
+                "privacy_notice",
+                "disclosure_info",
+                "transparency_data",
+            ],
             Severity::Warning,
         ),
         declassify_prove_rule(
@@ -1601,21 +1915,36 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             "GDPR-17.2",
             ComplianceProfile::Gdpr,
             "Erasure request dates must have temporal handling",
-            &["erasure_request_date", "deletion_deadline", "retention_end", "forget_date"],
+            &[
+                "erasure_request_date",
+                "deletion_deadline",
+                "retention_end",
+                "forget_date",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "GDPR-33.1",
             ComplianceProfile::Gdpr,
             "Breach notification data must be classified",
-            &["breach_notification", "incident_report", "dpa_notification", "breach_record"],
+            &[
+                "breach_notification",
+                "incident_report",
+                "dpa_notification",
+                "breach_record",
+            ],
             Severity::Error,
         ),
         insecure_default_rule(
             "GDPR-35.1",
             ComplianceProfile::Gdpr,
             "Data protection impact assessment must be enabled",
-            &["dpia_enabled", "impact_assessment", "risk_assessment", "privacy_impact"],
+            &[
+                "dpia_enabled",
+                "impact_assessment",
+                "risk_assessment",
+                "privacy_impact",
+            ],
             Severity::Warning,
         ),
         classify_without_audit_rule(
@@ -1628,14 +1957,24 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             "GDPR-32.1",
             ComplianceProfile::Gdpr,
             "No hardcoded security processing credentials",
-            &["processing_key", "encryption_credential", "pseudonymization_key", "anonymization_token"],
+            &[
+                "processing_key",
+                "encryption_credential",
+                "pseudonymization_key",
+                "anonymization_token",
+            ],
             Severity::Error,
         ),
         auth_crypto_rule(
             "GDPR-25.3",
             ComplianceProfile::Gdpr,
             "Data protection by design auth must use Crypto",
-            &["privacy_auth", "data_protection_login", "gdpr_verify", "consent_auth"],
+            &[
+                "privacy_auth",
+                "data_protection_login",
+                "gdpr_verify",
+                "consent_auth",
+            ],
             Severity::Error,
         ),
         // --- 6 IFC-mapped rules (leveraging RIINA's information flow lattice) ---
@@ -1643,14 +1982,24 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             "GDPR-IFC.1",
             ComplianceProfile::Gdpr,
             "Controller-processor data must be classified (IFC: Sulit level)",
-            &["controller_data", "processor_data", "data_controller", "joint_controller"],
+            &[
+                "controller_data",
+                "processor_data",
+                "data_controller",
+                "joint_controller",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "GDPR-IFC.2",
             ComplianceProfile::Gdpr,
             "Cross-border transfer data must be classified (IFC: Rahsia level)",
-            &["cross_border", "third_country", "adequacy_data", "transfer_impact"],
+            &[
+                "cross_border",
+                "third_country",
+                "adequacy_data",
+                "transfer_impact",
+            ],
             Severity::Error,
         ),
         declassify_prove_rule(
@@ -1663,7 +2012,12 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             "GDPR-IFC.4",
             ComplianceProfile::Gdpr,
             "Consent withdrawal data must not leak (IFC: no implicit flow)",
-            &["consent_withdrawn", "opt_out", "withdrawal_record", "revocation_data"],
+            &[
+                "consent_withdrawn",
+                "opt_out",
+                "withdrawal_record",
+                "revocation_data",
+            ],
             Severity::Error,
         ),
         classify_without_audit_rule(
@@ -1676,7 +2030,12 @@ fn gdpr_rules() -> Vec<ComplianceRule> {
             "GDPR-IFC.6",
             ComplianceProfile::Gdpr,
             "Automated decision data must be classified (Art 22 profiling)",
-            &["automated_decision", "profiling_data", "algorithmic_decision", "scoring_data"],
+            &[
+                "automated_decision",
+                "profiling_data",
+                "algorithmic_decision",
+                "scoring_data",
+            ],
             Severity::Error,
         ),
     ]
@@ -1722,7 +2081,8 @@ fn pdpa_rules() -> Vec<ComplianceRule> {
                         return Some(ComplianceViolation {
                             rule_id: "PDPA-S24",
                             profile: ComplianceProfile::Pdpa,
-                            message: "Sending personal data over network without sanitization".into(),
+                            message: "Sending personal data over network without sanitization"
+                                .into(),
                             severity: Severity::Error,
                         });
                     }
@@ -1735,7 +2095,13 @@ fn pdpa_rules() -> Vec<ComplianceRule> {
             "PDPA-S6",
             ComplianceProfile::Pdpa,
             "Personal data must be classified (consent principle)",
-            &["nama", "ic_number", "kad_pengenalan", "no_telefon", "alamat_emel"],
+            &[
+                "nama",
+                "ic_number",
+                "kad_pengenalan",
+                "no_telefon",
+                "alamat_emel",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
@@ -1799,7 +2165,13 @@ fn pdpa_rules() -> Vec<ComplianceRule> {
             "PDPA-S14",
             ComplianceProfile::Pdpa,
             "Data protection defaults must be enabled",
-            &["perlindungan", "data_protection", "consent_enabled", "privacy_mode", "kebenaran_data"],
+            &[
+                "perlindungan",
+                "data_protection",
+                "consent_enabled",
+                "privacy_mode",
+                "kebenaran_data",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -1812,7 +2184,13 @@ fn pdpa_rules() -> Vec<ComplianceRule> {
             "PDPA-S16",
             ComplianceProfile::Pdpa,
             "Personal data must have retention period",
-            &["tarikh_kutip", "data_collected", "tarikh_persetujuan", "consent_date", "tarikh_simpan"],
+            &[
+                "tarikh_kutip",
+                "data_collected",
+                "tarikh_persetujuan",
+                "consent_date",
+                "tarikh_simpan",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
@@ -1843,8 +2221,10 @@ fn contains_personal_data_var(expr: &Expr) -> bool {
     match expr {
         Expr::Var(name) => {
             let lower = name.to_lowercase();
-            lower.contains("personal") || lower.contains("user_data")
-                || lower.contains("nama") || lower.contains("ic_number")
+            lower.contains("personal")
+                || lower.contains("user_data")
+                || lower.contains("nama")
+                || lower.contains("ic_number")
         }
         Expr::App(f, a) => contains_personal_data_var(f) || contains_personal_data_var(a),
         Expr::Pair(l, r) => contains_personal_data_var(l) || contains_personal_data_var(r),
@@ -1953,7 +2333,13 @@ fn bnm_rules() -> Vec<ComplianceRule> {
             "BNM-10.53",
             ComplianceProfile::Bnm,
             "Financial security defaults must be enabled",
-            &["keselamatan", "encryption_enabled", "audit_mode", "tls_required", "pengesahan_aktif"],
+            &[
+                "keselamatan",
+                "encryption_enabled",
+                "audit_mode",
+                "tls_required",
+                "pengesahan_aktif",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -1966,14 +2352,25 @@ fn bnm_rules() -> Vec<ComplianceRule> {
             "BNM-10.59",
             ComplianceProfile::Bnm,
             "Financial records must have retention handling",
-            &["tarikh_transaksi", "transaction_date", "statement_date", "tarikh_audit", "maturity_date"],
+            &[
+                "tarikh_transaksi",
+                "transaction_date",
+                "statement_date",
+                "tarikh_audit",
+                "maturity_date",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
             "BNM-10.60",
             ComplianceProfile::Bnm,
             "Financial user input must be taint-tracked",
-            &["input_pelanggan", "customer_input", "form_bank", "transaction_input"],
+            &[
+                "input_pelanggan",
+                "customer_input",
+                "form_bank",
+                "transaction_input",
+            ],
             Severity::Error,
         ),
         excessive_grant_rule(
@@ -2000,7 +2397,12 @@ fn bnm_rules() -> Vec<ComplianceRule> {
             "BNM-10.64",
             ComplianceProfile::Bnm,
             "Financial data must not leak over network",
-            &["bank_data", "customer_data", "akaun_data", "transaction_data"],
+            &[
+                "bank_data",
+                "customer_data",
+                "akaun_data",
+                "transaction_data",
+            ],
             Severity::Error,
         ),
     ]
@@ -2081,7 +2483,13 @@ fn mas_trm_rules() -> Vec<ComplianceRule> {
             "MAS-TRM-9.2.2",
             ComplianceProfile::MasTrm,
             "Security defaults must be enabled",
-            &["encryption_enabled", "mfa_required", "audit_enabled", "tls_mode", "auth_required"],
+            &[
+                "encryption_enabled",
+                "mfa_required",
+                "audit_enabled",
+                "tls_mode",
+                "auth_required",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -2094,14 +2502,25 @@ fn mas_trm_rules() -> Vec<ComplianceRule> {
             "MAS-TRM-11.1.2",
             ComplianceProfile::MasTrm,
             "Financial data must have retention handling",
-            &["transaction_date", "statement_date", "audit_timestamp", "session_created", "token_issued"],
+            &[
+                "transaction_date",
+                "statement_date",
+                "audit_timestamp",
+                "session_created",
+                "token_issued",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
             "MAS-TRM-11.2.2",
             ComplianceProfile::MasTrm,
             "Customer input must be taint-tracked",
-            &["customer_input", "user_input", "form_data", "transaction_input"],
+            &[
+                "customer_input",
+                "user_input",
+                "form_data",
+                "transaction_input",
+            ],
             Severity::Error,
         ),
         excessive_grant_rule(
@@ -2115,7 +2534,12 @@ fn mas_trm_rules() -> Vec<ComplianceRule> {
             "MAS-TRM-6.1.1",
             ComplianceProfile::MasTrm,
             "IT project management data must be classified",
-            &["project_data", "change_data", "release_data", "deployment_data"],
+            &[
+                "project_data",
+                "change_data",
+                "release_data",
+                "deployment_data",
+            ],
             Severity::Warning,
         ),
         declassify_prove_rule(
@@ -2233,7 +2657,13 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-CM-6",
             ComplianceProfile::Nist80053,
             "Security configs must not default to false",
-            &["fips_mode", "encryption_enabled", "audit_enabled", "tls_required", "auth_required"],
+            &[
+                "fips_mode",
+                "encryption_enabled",
+                "audit_enabled",
+                "tls_required",
+                "auth_required",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -2246,7 +2676,13 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-SC-4",
             ComplianceProfile::Nist80053,
             "Sensitive data must have retention handling",
-            &["classification_date", "cert_expiry", "key_created", "session_start", "token_timestamp"],
+            &[
+                "classification_date",
+                "cert_expiry",
+                "key_created",
+                "session_start",
+                "token_timestamp",
+            ],
             Severity::Warning,
         ),
         excessive_grant_rule(
@@ -2281,35 +2717,60 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-AC-4",
             ComplianceProfile::Nist80053,
             "Information flow data must be classified",
-            &["data_flow", "information_flow", "flow_control", "transfer_data"],
+            &[
+                "data_flow",
+                "information_flow",
+                "flow_control",
+                "transfer_data",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "NIST-AC-5",
             ComplianceProfile::Nist80053,
             "Separation of duties data must be classified",
-            &["separation_duty", "duty_roster", "role_assignment", "privilege_set"],
+            &[
+                "separation_duty",
+                "duty_roster",
+                "role_assignment",
+                "privilege_set",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
             "NIST-AC-7",
             ComplianceProfile::Nist80053,
             "No hardcoded login attempt limits",
-            &["max_attempts", "lockout_threshold", "login_limit", "failed_attempts"],
+            &[
+                "max_attempts",
+                "lockout_threshold",
+                "login_limit",
+                "failed_attempts",
+            ],
             Severity::Warning,
         ),
         insecure_default_rule(
             "NIST-AC-8",
             ComplianceProfile::Nist80053,
             "System use notification must be enabled",
-            &["login_banner", "system_notification", "use_notice", "warning_banner"],
+            &[
+                "login_banner",
+                "system_notification",
+                "use_notice",
+                "warning_banner",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "NIST-AC-10",
             ComplianceProfile::Nist80053,
             "Concurrent session data must be classified",
-            &["session_limit", "concurrent_sessions", "active_sessions", "session_pool"],
+            &[
+                "session_limit",
+                "concurrent_sessions",
+                "active_sessions",
+                "session_pool",
+            ],
             Severity::Warning,
         ),
         broad_grant_rule(
@@ -2322,7 +2783,12 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-AC-14",
             ComplianceProfile::Nist80053,
             "Permitted actions without identification must be classified",
-            &["anonymous_action", "unauthenticated_access", "public_action", "guest_permission"],
+            &[
+                "anonymous_action",
+                "unauthenticated_access",
+                "public_action",
+                "guest_permission",
+            ],
             Severity::Warning,
         ),
         hardcoded_credential_rule(
@@ -2336,21 +2802,36 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-AC-18",
             ComplianceProfile::Nist80053,
             "Wireless access credentials must be classified",
-            &["wifi_key", "wireless_credential", "wpa_key", "wireless_token"],
+            &[
+                "wifi_key",
+                "wireless_credential",
+                "wpa_key",
+                "wireless_token",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "NIST-AC-19",
             ComplianceProfile::Nist80053,
             "Mobile device data must be classified",
-            &["mobile_data", "device_key", "mobile_credential", "byod_token"],
+            &[
+                "mobile_data",
+                "device_key",
+                "mobile_credential",
+                "byod_token",
+            ],
             Severity::Error,
         ),
         insecure_default_rule(
             "NIST-AC-20",
             ComplianceProfile::Nist80053,
             "External system connection defaults must be secure",
-            &["external_trust", "external_connection", "partner_access", "federation_enabled"],
+            &[
+                "external_trust",
+                "external_connection",
+                "partner_access",
+                "federation_enabled",
+            ],
             Severity::Error,
         ),
         sensitive_network_send_rule(
@@ -2364,28 +2845,48 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-AC-22",
             ComplianceProfile::Nist80053,
             "Publicly accessible content must be classified",
-            &["public_content", "published_data", "external_content", "shared_resource"],
+            &[
+                "public_content",
+                "published_data",
+                "external_content",
+                "shared_resource",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "NIST-AC-23",
             ComplianceProfile::Nist80053,
             "Data mining protection data must be classified",
-            &["mining_data", "analytics_raw", "bulk_data", "aggregation_source"],
+            &[
+                "mining_data",
+                "analytics_raw",
+                "bulk_data",
+                "aggregation_source",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "NIST-AC-24",
             ComplianceProfile::Nist80053,
             "Access control decisions must be classified",
-            &["access_decision", "policy_decision", "authorization_result", "access_verdict"],
+            &[
+                "access_decision",
+                "policy_decision",
+                "authorization_result",
+                "access_verdict",
+            ],
             Severity::Warning,
         ),
         insecure_default_rule(
             "NIST-AC-25",
             ComplianceProfile::Nist80053,
             "Reference monitor must be enabled",
-            &["reference_monitor", "access_mediation", "policy_enforcement", "access_guard"],
+            &[
+                "reference_monitor",
+                "access_mediation",
+                "policy_enforcement",
+                "access_guard",
+            ],
             Severity::Error,
         ),
         // AU (Audit) family
@@ -2393,28 +2894,48 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-AU-4",
             ComplianceProfile::Nist80053,
             "Audit storage capacity data must be classified",
-            &["audit_storage", "log_capacity", "audit_buffer", "log_retention"],
+            &[
+                "audit_storage",
+                "log_capacity",
+                "audit_buffer",
+                "log_retention",
+            ],
             Severity::Warning,
         ),
         insecure_default_rule(
             "NIST-AU-5",
             ComplianceProfile::Nist80053,
             "Audit failure response must be enabled",
-            &["audit_failure_action", "log_overflow_action", "audit_alert", "audit_shutdown"],
+            &[
+                "audit_failure_action",
+                "log_overflow_action",
+                "audit_alert",
+                "audit_shutdown",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "NIST-AU-6",
             ComplianceProfile::Nist80053,
             "Audit review data must be classified",
-            &["audit_review", "log_analysis", "audit_report", "security_review"],
+            &[
+                "audit_review",
+                "log_analysis",
+                "audit_report",
+                "security_review",
+            ],
             Severity::Warning,
         ),
         hardcoded_credential_rule(
             "NIST-AU-7",
             ComplianceProfile::Nist80053,
             "No hardcoded audit reduction values",
-            &["audit_filter", "log_filter", "audit_threshold", "alert_threshold"],
+            &[
+                "audit_filter",
+                "log_filter",
+                "audit_threshold",
+                "alert_threshold",
+            ],
             Severity::Warning,
         ),
         temporal_no_expiry_rule(
@@ -2435,28 +2956,48 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-AU-10",
             ComplianceProfile::Nist80053,
             "Non-repudiation must be enabled",
-            &["non_repudiation", "signing_enabled", "audit_signing", "log_integrity"],
+            &[
+                "non_repudiation",
+                "signing_enabled",
+                "audit_signing",
+                "log_integrity",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "NIST-AU-11",
             ComplianceProfile::Nist80053,
             "Audit record retention data must be classified",
-            &["retention_policy", "log_retention", "audit_archive", "record_retention"],
+            &[
+                "retention_policy",
+                "log_retention",
+                "audit_archive",
+                "record_retention",
+            ],
             Severity::Warning,
         ),
         hardcoded_credential_rule(
             "NIST-AU-13",
             ComplianceProfile::Nist80053,
             "No hardcoded monitoring parameters",
-            &["monitor_target", "surveillance_addr", "monitoring_endpoint", "alert_destination"],
+            &[
+                "monitor_target",
+                "surveillance_addr",
+                "monitoring_endpoint",
+                "alert_destination",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "NIST-AU-14",
             ComplianceProfile::Nist80053,
             "Session audit data must be classified",
-            &["session_audit", "session_record", "session_log", "user_session_data"],
+            &[
+                "session_audit",
+                "session_record",
+                "session_log",
+                "user_session_data",
+            ],
             Severity::Warning,
         ),
         classify_without_audit_rule(
@@ -2477,14 +3018,24 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-IA-3",
             ComplianceProfile::Nist80053,
             "Device identification must use Crypto effect",
-            &["device_auth", "machine_auth", "device_verify", "hardware_auth"],
+            &[
+                "device_auth",
+                "machine_auth",
+                "device_verify",
+                "hardware_auth",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "NIST-IA-4",
             ComplianceProfile::Nist80053,
             "Identifier management data must be classified",
-            &["user_id", "identity_record", "credential_store", "identity_db"],
+            &[
+                "user_id",
+                "identity_record",
+                "credential_store",
+                "identity_db",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
@@ -2498,35 +3049,60 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-IA-8",
             ComplianceProfile::Nist80053,
             "Non-org user identification must use Crypto",
-            &["external_auth", "partner_auth", "federated_login", "guest_auth"],
+            &[
+                "external_auth",
+                "partner_auth",
+                "federated_login",
+                "guest_auth",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "NIST-IA-9",
             ComplianceProfile::Nist80053,
             "Service identification data must be classified",
-            &["service_id", "service_credential", "api_identity", "service_cert"],
+            &[
+                "service_id",
+                "service_credential",
+                "api_identity",
+                "service_cert",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
             "NIST-IA-10",
             ComplianceProfile::Nist80053,
             "No hardcoded adaptive identification data",
-            &["risk_score", "trust_level", "auth_strength", "assurance_level"],
+            &[
+                "risk_score",
+                "trust_level",
+                "auth_strength",
+                "assurance_level",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "NIST-IA-11",
             ComplianceProfile::Nist80053,
             "Re-authentication data must be classified",
-            &["reauth_token", "session_refresh", "revalidation_key", "auth_renewal"],
+            &[
+                "reauth_token",
+                "session_refresh",
+                "revalidation_key",
+                "auth_renewal",
+            ],
             Severity::Error,
         ),
         temporal_no_expiry_rule(
             "NIST-IA-12",
             ComplianceProfile::Nist80053,
             "Identity proofing must have temporal handling",
-            &["identity_proof_date", "verification_date", "proofing_timestamp", "enrollment_date"],
+            &[
+                "identity_proof_date",
+                "verification_date",
+                "proofing_timestamp",
+                "enrollment_date",
+            ],
             Severity::Warning,
         ),
         // SC (System/Communications) family
@@ -2534,7 +3110,12 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-SC-2",
             ComplianceProfile::Nist80053,
             "Application partitioning data must be classified",
-            &["partition_key", "boundary_data", "separation_token", "domain_boundary"],
+            &[
+                "partition_key",
+                "boundary_data",
+                "separation_token",
+                "domain_boundary",
+            ],
             Severity::Warning,
         ),
         insecure_url_rule(
@@ -2547,28 +3128,49 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-SC-8-1",
             ComplianceProfile::Nist80053,
             "Transmission integrity must not leak data",
-            &["integrity_data", "transit_hash", "message_digest", "checksum_data"],
+            &[
+                "integrity_data",
+                "transit_hash",
+                "message_digest",
+                "checksum_data",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "NIST-SC-10",
             ComplianceProfile::Nist80053,
             "Network disconnect data must be classified",
-            &["session_timeout", "disconnect_timer", "idle_timeout", "connection_limit"],
+            &[
+                "session_timeout",
+                "disconnect_timer",
+                "idle_timeout",
+                "connection_limit",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "NIST-SC-15",
             ComplianceProfile::Nist80053,
             "Collaborative computing data must be classified",
-            &["collab_session", "shared_workspace", "remote_desktop", "screen_share"],
+            &[
+                "collab_session",
+                "shared_workspace",
+                "remote_desktop",
+                "screen_share",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "NIST-SC-17",
             ComplianceProfile::Nist80053,
             "PKI certificates must be classified",
-            &["pki_cert", "ca_cert", "root_cert", "certificate_chain", "tls_cert"],
+            &[
+                "pki_cert",
+                "ca_cert",
+                "root_cert",
+                "certificate_chain",
+                "tls_cert",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
@@ -2603,21 +3205,36 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-SC-26",
             ComplianceProfile::Nist80053,
             "No hardcoded honeypot credentials",
-            &["honeypot_key", "decoy_credential", "canary_token", "trap_password"],
+            &[
+                "honeypot_key",
+                "decoy_credential",
+                "canary_token",
+                "trap_password",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "NIST-SC-29",
             ComplianceProfile::Nist80053,
             "Heterogeneity data must be classified",
-            &["platform_config", "diversity_key", "heterogeneous_data", "variant_config"],
+            &[
+                "platform_config",
+                "diversity_key",
+                "heterogeneous_data",
+                "variant_config",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "NIST-SC-36",
             ComplianceProfile::Nist80053,
             "Distributed processing data must be classified",
-            &["distributed_key", "cluster_token", "node_credential", "replica_key"],
+            &[
+                "distributed_key",
+                "cluster_token",
+                "node_credential",
+                "replica_key",
+            ],
             Severity::Error,
         ),
         // SI (System Integrity) family
@@ -2625,7 +3242,12 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-SI-3",
             ComplianceProfile::Nist80053,
             "Malicious code protection: input must be taint-tracked",
-            &["upload_data", "attachment_data", "downloaded_file", "external_binary"],
+            &[
+                "upload_data",
+                "attachment_data",
+                "downloaded_file",
+                "external_binary",
+            ],
             Severity::Error,
         ),
         debug_code_rule(
@@ -2638,7 +3260,12 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-SI-5",
             ComplianceProfile::Nist80053,
             "Security alert input must be taint-tracked",
-            &["alert_input", "advisory_data", "threat_feed", "vulnerability_report"],
+            &[
+                "alert_input",
+                "advisory_data",
+                "threat_feed",
+                "vulnerability_report",
+            ],
             Severity::Warning,
         ),
         ffi_review_rule(
@@ -2664,7 +3291,12 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-SI-14",
             ComplianceProfile::Nist80053,
             "Non-persistence: input must be taint-tracked",
-            &["volatile_input", "ephemeral_data", "temp_input", "scratch_data"],
+            &[
+                "volatile_input",
+                "ephemeral_data",
+                "temp_input",
+                "scratch_data",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
@@ -2679,14 +3311,24 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-CM-2",
             ComplianceProfile::Nist80053,
             "Baseline configuration must be enabled",
-            &["baseline_config", "system_baseline", "config_standard", "hardened_config"],
+            &[
+                "baseline_config",
+                "system_baseline",
+                "config_standard",
+                "hardened_config",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
             "NIST-CM-3",
             ComplianceProfile::Nist80053,
             "No hardcoded configuration change control data",
-            &["change_key", "config_token", "deployment_key", "release_credential"],
+            &[
+                "change_key",
+                "config_token",
+                "deployment_key",
+                "release_credential",
+            ],
             Severity::Warning,
         ),
         insecure_default_rule(
@@ -2701,14 +3343,26 @@ fn nist_rules() -> Vec<ComplianceRule> {
             "NIST-SA-4",
             ComplianceProfile::Nist80053,
             "Acquisition process: FFI calls in procurement need review",
-            &["vendor", "supplier", "third_party", "acquisition", "procurement"],
+            &[
+                "vendor",
+                "supplier",
+                "third_party",
+                "acquisition",
+                "procurement",
+            ],
             Severity::Warning,
         ),
         sensitive_ffi_rule(
             "NIST-SA-9",
             ComplianceProfile::Nist80053,
             "External system services: FFI calls need review",
-            &["external_service", "cloud_service", "saas", "outsourced", "managed"],
+            &[
+                "external_service",
+                "cloud_service",
+                "saas",
+                "outsourced",
+                "managed",
+            ],
             Severity::Warning,
         ),
     ]
@@ -2800,7 +3454,13 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A8.2",
             ComplianceProfile::Iso27001,
             "Security defaults must be enabled",
-            &["encryption_enabled", "access_control", "audit_enabled", "secure_mode", "tls_required"],
+            &[
+                "encryption_enabled",
+                "access_control",
+                "audit_enabled",
+                "secure_mode",
+                "tls_required",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -2813,7 +3473,13 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A11.1",
             ComplianceProfile::Iso27001,
             "Data must have retention handling",
-            &["classification_date", "review_date", "access_granted_date", "cert_expiry", "policy_date"],
+            &[
+                "classification_date",
+                "review_date",
+                "access_granted_date",
+                "cert_expiry",
+                "policy_date",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
@@ -2842,21 +3508,36 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A5.3",
             ComplianceProfile::Iso27001,
             "Security policy enforcement must be enabled",
-            &["policy_enforcement", "security_policy", "compliance_check", "policy_active"],
+            &[
+                "policy_enforcement",
+                "security_policy",
+                "compliance_check",
+                "policy_active",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "ISO-A5.4",
             ComplianceProfile::Iso27001,
             "Policy review data must be classified",
-            &["policy_review", "policy_document", "security_directive", "governance_data"],
+            &[
+                "policy_review",
+                "policy_document",
+                "security_directive",
+                "governance_data",
+            ],
             Severity::Warning,
         ),
         hardcoded_credential_rule(
             "ISO-A5.5",
             ComplianceProfile::Iso27001,
             "No hardcoded policy parameters",
-            &["policy_key", "compliance_token", "governance_credential", "policy_secret"],
+            &[
+                "policy_key",
+                "compliance_token",
+                "governance_credential",
+                "policy_secret",
+            ],
             Severity::Warning,
         ),
         // A.6 Organization of Information Security
@@ -2864,28 +3545,48 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A6.2",
             ComplianceProfile::Iso27001,
             "Mobile/telework data must be classified",
-            &["mobile_data", "telework_data", "remote_access_data", "byod_data"],
+            &[
+                "mobile_data",
+                "telework_data",
+                "remote_access_data",
+                "byod_data",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "ISO-A6.3",
             ComplianceProfile::Iso27001,
             "Contact with authorities data must be classified",
-            &["authority_contact", "regulator_data", "incident_report_data", "law_enforcement"],
+            &[
+                "authority_contact",
+                "regulator_data",
+                "incident_report_data",
+                "law_enforcement",
+            ],
             Severity::Warning,
         ),
         auth_crypto_rule(
             "ISO-A6.4",
             ComplianceProfile::Iso27001,
             "Special interest group auth must use Crypto",
-            &["group_auth", "community_login", "forum_auth", "consortium_verify"],
+            &[
+                "group_auth",
+                "community_login",
+                "forum_auth",
+                "consortium_verify",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "ISO-A6.5",
             ComplianceProfile::Iso27001,
             "Project management security data must be classified",
-            &["project_secret", "project_credential", "dev_key", "project_token"],
+            &[
+                "project_secret",
+                "project_credential",
+                "dev_key",
+                "project_token",
+            ],
             Severity::Error,
         ),
         // A.7 Human Resource Security
@@ -2900,14 +3601,24 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A7.3",
             ComplianceProfile::Iso27001,
             "No hardcoded HR credentials",
-            &["hr_password", "personnel_key", "employee_token", "staff_credential"],
+            &[
+                "hr_password",
+                "personnel_key",
+                "employee_token",
+                "staff_credential",
+            ],
             Severity::Error,
         ),
         temporal_no_expiry_rule(
             "ISO-A7.4",
             ComplianceProfile::Iso27001,
             "Termination dates must have time handling",
-            &["termination_date", "contract_end", "employment_end", "offboard_date"],
+            &[
+                "termination_date",
+                "contract_end",
+                "employment_end",
+                "offboard_date",
+            ],
             Severity::Warning,
         ),
         // A.8 Asset Management
@@ -2915,14 +3626,24 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A8.3",
             ComplianceProfile::Iso27001,
             "Media handling data must be classified",
-            &["media_data", "removable_media", "backup_media", "archive_media"],
+            &[
+                "media_data",
+                "removable_media",
+                "backup_media",
+                "archive_media",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "ISO-A8.4",
             ComplianceProfile::Iso27001,
             "Asset return data must be classified",
-            &["asset_return", "equipment_data", "device_inventory", "asset_tracking"],
+            &[
+                "asset_return",
+                "equipment_data",
+                "device_inventory",
+                "asset_tracking",
+            ],
             Severity::Warning,
         ),
         classify_without_audit_rule(
@@ -2935,14 +3656,24 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A8.6",
             ComplianceProfile::Iso27001,
             "Information labeling data must be classified",
-            &["label_data", "classification_label", "marking_data", "sensitivity_label"],
+            &[
+                "label_data",
+                "classification_label",
+                "marking_data",
+                "sensitivity_label",
+            ],
             Severity::Warning,
         ),
         hardcoded_credential_rule(
             "ISO-A8.7",
             ComplianceProfile::Iso27001,
             "No hardcoded asset disposal credentials",
-            &["disposal_key", "wipe_credential", "sanitize_token", "decommission_key"],
+            &[
+                "disposal_key",
+                "wipe_credential",
+                "sanitize_token",
+                "decommission_key",
+            ],
             Severity::Warning,
         ),
         // A.9 Access Control
@@ -2950,28 +3681,48 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A9.3",
             ComplianceProfile::Iso27001,
             "User access provisioning data must be classified",
-            &["provisioning_data", "access_grant", "role_provision", "entitlement_data"],
+            &[
+                "provisioning_data",
+                "access_grant",
+                "role_provision",
+                "entitlement_data",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "ISO-A9.4",
             ComplianceProfile::Iso27001,
             "Access rights review data must be classified",
-            &["access_review", "entitlement_review", "privilege_audit", "rights_review"],
+            &[
+                "access_review",
+                "entitlement_review",
+                "privilege_audit",
+                "rights_review",
+            ],
             Severity::Warning,
         ),
         hardcoded_credential_rule(
             "ISO-A9.5",
             ComplianceProfile::Iso27001,
             "No hardcoded access management secrets",
-            &["access_password", "admin_key", "root_credential", "superuser_token"],
+            &[
+                "access_password",
+                "admin_key",
+                "root_credential",
+                "superuser_token",
+            ],
             Severity::Error,
         ),
         insecure_default_rule(
             "ISO-A9.6",
             ComplianceProfile::Iso27001,
             "Secure logon procedures must be enabled",
-            &["logon_secure", "login_policy", "auth_enforced", "mfa_required"],
+            &[
+                "logon_secure",
+                "login_policy",
+                "auth_enforced",
+                "mfa_required",
+            ],
             Severity::Error,
         ),
         broad_grant_rule(
@@ -2992,14 +3743,24 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A10.3",
             ComplianceProfile::Iso27001,
             "Encryption policy data must be classified",
-            &["encryption_policy", "crypto_standard", "cipher_config", "algorithm_config"],
+            &[
+                "encryption_policy",
+                "crypto_standard",
+                "cipher_config",
+                "algorithm_config",
+            ],
             Severity::Warning,
         ),
         hardcoded_credential_rule(
             "ISO-A10.4",
             ComplianceProfile::Iso27001,
             "No hardcoded cryptographic material",
-            &["master_key", "key_material", "crypto_seed", "key_derivation"],
+            &[
+                "master_key",
+                "key_material",
+                "crypto_seed",
+                "key_derivation",
+            ],
             Severity::Error,
         ),
         declassify_prove_rule(
@@ -3013,7 +3774,12 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A11.2",
             ComplianceProfile::Iso27001,
             "Equipment security data must be classified",
-            &["equipment_data", "hardware_config", "facility_data", "physical_access"],
+            &[
+                "equipment_data",
+                "hardware_config",
+                "facility_data",
+                "physical_access",
+            ],
             Severity::Warning,
         ),
         hardcoded_ip_rule(
@@ -3027,7 +3793,12 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A12.3",
             ComplianceProfile::Iso27001,
             "Capacity management data must be classified",
-            &["capacity_data", "resource_usage", "performance_data", "utilization_data"],
+            &[
+                "capacity_data",
+                "resource_usage",
+                "performance_data",
+                "utilization_data",
+            ],
             Severity::Warning,
         ),
         audit_trail_rule(
@@ -3040,7 +3811,12 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A12.5",
             ComplianceProfile::Iso27001,
             "Operational software controls must be enabled",
-            &["software_install", "change_control", "release_mgmt", "deployment_control"],
+            &[
+                "software_install",
+                "change_control",
+                "release_mgmt",
+                "deployment_control",
+            ],
             Severity::Warning,
         ),
         ffi_review_rule(
@@ -3054,7 +3830,12 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A13.2",
             ComplianceProfile::Iso27001,
             "Information transfer must not leak classified data",
-            &["transfer_data", "exchange_data", "shared_data", "exported_data"],
+            &[
+                "transfer_data",
+                "exchange_data",
+                "shared_data",
+                "exported_data",
+            ],
             Severity::Error,
         ),
         insecure_network_rule(
@@ -3067,7 +3848,12 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A13.4",
             ComplianceProfile::Iso27001,
             "Confidentiality agreement data must be classified",
-            &["nda_data", "confidentiality_agreement", "disclosure_data", "secrecy_data"],
+            &[
+                "nda_data",
+                "confidentiality_agreement",
+                "disclosure_data",
+                "secrecy_data",
+            ],
             Severity::Warning,
         ),
         // A.14 System Acquisition/Development
@@ -3075,7 +3861,12 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A14.2",
             ComplianceProfile::Iso27001,
             "Application input must be taint-tracked",
-            &["app_input", "service_input", "transaction_input", "business_input"],
+            &[
+                "app_input",
+                "service_input",
+                "transaction_input",
+                "business_input",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
@@ -3096,14 +3887,25 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A15.2",
             ComplianceProfile::Iso27001,
             "Supplier service delivery FFI needs review",
-            &["supplier", "vendor", "contractor", "outsource", "third_party"],
+            &[
+                "supplier",
+                "vendor",
+                "contractor",
+                "outsource",
+                "third_party",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "ISO-A15.3",
             ComplianceProfile::Iso27001,
             "ICT supply chain data must be classified",
-            &["supply_chain", "vendor_data", "procurement_data", "supplier_credential"],
+            &[
+                "supply_chain",
+                "vendor_data",
+                "procurement_data",
+                "supplier_credential",
+            ],
             Severity::Error,
         ),
         // A.16 Incident Management
@@ -3111,14 +3913,24 @@ fn iso27001_rules() -> Vec<ComplianceRule> {
             "ISO-A16.2",
             ComplianceProfile::Iso27001,
             "Security event data must be classified",
-            &["security_event", "incident_data", "breach_data", "alert_data"],
+            &[
+                "security_event",
+                "incident_data",
+                "breach_data",
+                "alert_data",
+            ],
             Severity::Error,
         ),
         temporal_no_expiry_rule(
             "ISO-A16.3",
             ComplianceProfile::Iso27001,
             "Incident response times must have temporal handling",
-            &["incident_time", "response_time", "breach_date", "detection_time"],
+            &[
+                "incident_time",
+                "response_time",
+                "breach_date",
+                "detection_time",
+            ],
             Severity::Warning,
         ),
         // A.18 Compliance
@@ -3150,7 +3962,8 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             description: "Dead code detection: Unit in non-terminal Let value",
             check: Box::new(|expr| {
                 if let Expr::Let(name, _, value, body) = expr {
-                    if matches!(value.as_ref(), Expr::Unit) && !matches!(body.as_ref(), Expr::Unit) {
+                    if matches!(value.as_ref(), Expr::Unit) && !matches!(body.as_ref(), Expr::Unit)
+                    {
                         return Some(ComplianceViolation {
                             rule_id: "DO178C-6.3.2",
                             profile: ComplianceProfile::Do178c,
@@ -3190,7 +4003,13 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.4.4",
             ComplianceProfile::Do178c,
             "Data flow: flight data must be classified",
-            &["flight", "altitude", "airspeed", "navigation", "sensor_data"],
+            &[
+                "flight",
+                "altitude",
+                "airspeed",
+                "navigation",
+                "sensor_data",
+            ],
             Severity::Error,
         ),
         broad_grant_rule(
@@ -3203,7 +4022,13 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.7.1",
             ComplianceProfile::Do178c,
             "Stack usage: no hardcoded safety-critical values",
-            &["altitude_limit", "speed_limit", "threshold", "max_altitude", "min_speed"],
+            &[
+                "altitude_limit",
+                "speed_limit",
+                "threshold",
+                "max_altitude",
+                "min_speed",
+            ],
             Severity::Warning,
         ),
         insecure_network_rule(
@@ -3229,7 +4054,13 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.4.6",
             ComplianceProfile::Do178c,
             "Safety defaults must be enabled",
-            &["safety_enabled", "redundancy_active", "failsafe_mode", "monitoring_enabled", "watchdog_active"],
+            &[
+                "safety_enabled",
+                "redundancy_active",
+                "failsafe_mode",
+                "monitoring_enabled",
+                "watchdog_active",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -3242,14 +4073,25 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.4.8",
             ComplianceProfile::Do178c,
             "Flight data must have temporal handling",
-            &["flight_time", "sensor_timestamp", "calibration_date", "maintenance_date", "inspection_date"],
+            &[
+                "flight_time",
+                "sensor_timestamp",
+                "calibration_date",
+                "maintenance_date",
+                "inspection_date",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
             "DO178C-6.7.3",
             ComplianceProfile::Do178c,
             "Sensor input must be taint-tracked",
-            &["sensor_input", "pilot_input", "radar_data", "telemetry_input"],
+            &[
+                "sensor_input",
+                "pilot_input",
+                "radar_data",
+                "telemetry_input",
+            ],
             Severity::Error,
         ),
         excessive_grant_rule(
@@ -3271,14 +4113,24 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.3.6",
             ComplianceProfile::Do178c,
             "Avionics configuration data must be classified",
-            &["avionics_config", "system_config", "aircraft_config", "mission_config"],
+            &[
+                "avionics_config",
+                "system_config",
+                "aircraft_config",
+                "mission_config",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
             "DO178C-6.3.7",
             ComplianceProfile::Do178c,
             "No hardcoded safety parameters",
-            &["safety_limit", "warning_threshold", "caution_limit", "alert_value"],
+            &[
+                "safety_limit",
+                "warning_threshold",
+                "caution_limit",
+                "alert_value",
+            ],
             Severity::Warning,
         ),
         insecure_url_rule(
@@ -3312,7 +4164,12 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.3.12",
             ComplianceProfile::Do178c,
             "Safety interlocks must be enabled",
-            &["interlock_enabled", "safety_lock", "arm_safety", "inhibit_active"],
+            &[
+                "interlock_enabled",
+                "safety_lock",
+                "arm_safety",
+                "inhibit_active",
+            ],
             Severity::Error,
         ),
         classify_without_audit_rule(
@@ -3326,14 +4183,24 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.4.9",
             ComplianceProfile::Do178c,
             "Test coverage data must be classified",
-            &["coverage_data", "test_result", "mc_dc_data", "branch_coverage"],
+            &[
+                "coverage_data",
+                "test_result",
+                "mc_dc_data",
+                "branch_coverage",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "DO178C-6.4.10",
             ComplianceProfile::Do178c,
             "Requirement traceability data must be classified",
-            &["traceability_data", "requirement_link", "trace_matrix", "verification_data"],
+            &[
+                "traceability_data",
+                "requirement_link",
+                "trace_matrix",
+                "verification_data",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
@@ -3347,7 +4214,12 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.4.12",
             ComplianceProfile::Do178c,
             "No hardcoded test parameters",
-            &["test_limit", "pass_threshold", "tolerance_value", "acceptance_criteria"],
+            &[
+                "test_limit",
+                "pass_threshold",
+                "tolerance_value",
+                "acceptance_criteria",
+            ],
             Severity::Warning,
         ),
         trivial_handle_rule(
@@ -3360,7 +4232,12 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.4.14",
             ComplianceProfile::Do178c,
             "Flight data must not leak over network",
-            &["flight_data", "avionics_data", "safety_data", "mission_data"],
+            &[
+                "flight_data",
+                "avionics_data",
+                "safety_data",
+                "mission_data",
+            ],
             Severity::Error,
         ),
         insecure_default_rule(
@@ -3381,7 +4258,12 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.7.6",
             ComplianceProfile::Do178c,
             "Verification evidence data must be classified",
-            &["evidence_data", "proof_data", "certification_data", "qualification_data"],
+            &[
+                "evidence_data",
+                "proof_data",
+                "certification_data",
+                "qualification_data",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
@@ -3395,7 +4277,12 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.7.8",
             ComplianceProfile::Do178c,
             "Redundancy management data must be classified",
-            &["redundancy_data", "backup_system", "failover_data", "standby_data"],
+            &[
+                "redundancy_data",
+                "backup_system",
+                "failover_data",
+                "standby_data",
+            ],
             Severity::Error,
         ),
         hardcoded_ip_rule(
@@ -3440,21 +4327,36 @@ fn do178c_rules() -> Vec<ComplianceRule> {
             "DO178C-6.8.2",
             ComplianceProfile::Do178c,
             "Configuration change dates must have temporal handling",
-            &["change_date", "release_date", "certification_date", "approval_date"],
+            &[
+                "change_date",
+                "release_date",
+                "certification_date",
+                "approval_date",
+            ],
             Severity::Warning,
         ),
         hardcoded_credential_rule(
             "DO178C-6.8.3",
             ComplianceProfile::Do178c,
             "No hardcoded configuration management credentials",
-            &["config_password", "release_key", "build_token", "deploy_credential"],
+            &[
+                "config_password",
+                "release_key",
+                "build_token",
+                "deploy_credential",
+            ],
             Severity::Warning,
         ),
         insecure_default_rule(
             "DO178C-6.8.4",
             ComplianceProfile::Do178c,
             "Configuration control must be enabled",
-            &["config_control", "change_control", "version_control", "baseline_lock"],
+            &[
+                "config_control",
+                "change_control",
+                "version_control",
+                "baseline_lock",
+            ],
             Severity::Error,
         ),
         sensitive_ffi_rule(
@@ -3483,14 +4385,25 @@ fn sox_rules() -> Vec<ComplianceRule> {
             "SOX-302-1",
             ComplianceProfile::Sox,
             "Financial data must be classified as Secret",
-            &["revenue", "profit", "earnings", "financial_report", "balance_sheet"],
+            &[
+                "revenue",
+                "profit",
+                "earnings",
+                "financial_report",
+                "balance_sheet",
+            ],
             Severity::Error,
         ),
         auth_crypto_rule(
             "SOX-302-2",
             ComplianceProfile::Sox,
             "Financial system auth must use Crypto",
-            &["financial_auth", "accounting_login", "audit_verify", "reporting_auth"],
+            &[
+                "financial_auth",
+                "accounting_login",
+                "audit_verify",
+                "reporting_auth",
+            ],
             Severity::Error,
         ),
         audit_trail_rule(
@@ -3503,7 +4416,12 @@ fn sox_rules() -> Vec<ComplianceRule> {
             "SOX-404-2",
             ComplianceProfile::Sox,
             "No hardcoded financial data",
-            &["revenue_amount", "profit_margin", "earning_value", "balance_total"],
+            &[
+                "revenue_amount",
+                "profit_margin",
+                "earning_value",
+                "balance_total",
+            ],
             Severity::Warning,
         ),
         trivial_handle_rule(
@@ -3547,7 +4465,13 @@ fn sox_rules() -> Vec<ComplianceRule> {
             "SOX-404-3",
             ComplianceProfile::Sox,
             "Financial security defaults must be enabled",
-            &["audit_enabled", "reporting_secure", "internal_control", "sox_compliance", "review_required"],
+            &[
+                "audit_enabled",
+                "reporting_secure",
+                "internal_control",
+                "sox_compliance",
+                "review_required",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -3560,14 +4484,25 @@ fn sox_rules() -> Vec<ComplianceRule> {
             "SOX-409-2",
             ComplianceProfile::Sox,
             "Financial records need retention handling",
-            &["report_date", "filing_date", "audit_date", "fiscal_period", "statement_date"],
+            &[
+                "report_date",
+                "filing_date",
+                "audit_date",
+                "fiscal_period",
+                "statement_date",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
             "SOX-802-2",
             ComplianceProfile::Sox,
             "Financial input must be taint-tracked",
-            &["financial_input", "accounting_input", "report_data", "audit_input"],
+            &[
+                "financial_input",
+                "accounting_input",
+                "report_data",
+                "audit_input",
+            ],
             Severity::Error,
         ),
         excessive_grant_rule(
@@ -3594,7 +4529,12 @@ fn sox_rules() -> Vec<ComplianceRule> {
             "SOX-906-3",
             ComplianceProfile::Sox,
             "Financial data must not leak over network",
-            &["financial_report", "earnings_data", "revenue_data", "balance_data"],
+            &[
+                "financial_report",
+                "earnings_data",
+                "revenue_data",
+                "balance_data",
+            ],
             Severity::Error,
         ),
     ]
@@ -3661,7 +4601,13 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-SC-3",
             ComplianceProfile::Cmmc,
             "Security defaults in defense context",
-            &["fips_enabled", "encryption_required", "cmmc_mode", "secure_boot", "access_control"],
+            &[
+                "fips_enabled",
+                "encryption_required",
+                "cmmc_mode",
+                "secure_boot",
+                "access_control",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -3674,7 +4620,13 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-SI-2",
             ComplianceProfile::Cmmc,
             "CUI must have retention handling",
-            &["classification_date", "cui_created", "access_granted", "clearance_date", "review_date"],
+            &[
+                "classification_date",
+                "cui_created",
+                "access_granted",
+                "clearance_date",
+                "review_date",
+            ],
             Severity::Warning,
         ),
         excessive_grant_rule(
@@ -3696,28 +4648,48 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-AC-6",
             ComplianceProfile::Cmmc,
             "Information flow enforcement data must be classified",
-            &["flow_control", "data_flow", "boundary_data", "transfer_rule"],
+            &[
+                "flow_control",
+                "data_flow",
+                "boundary_data",
+                "transfer_rule",
+            ],
             Severity::Error,
         ),
         insecure_default_rule(
             "CMMC-AC-7",
             ComplianceProfile::Cmmc,
             "Separation of duties must be enabled",
-            &["duty_separation", "role_separation", "function_isolation", "privilege_separation"],
+            &[
+                "duty_separation",
+                "role_separation",
+                "function_isolation",
+                "privilege_separation",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
             "CMMC-AC-8",
             ComplianceProfile::Cmmc,
             "No hardcoded login attempt limits in defense",
-            &["max_attempts", "lockout_count", "failed_login_limit", "account_lockout"],
+            &[
+                "max_attempts",
+                "lockout_count",
+                "failed_login_limit",
+                "account_lockout",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "CMMC-AC-9",
             ComplianceProfile::Cmmc,
             "Session data must be classified",
-            &["session_data", "session_token", "session_key", "active_session"],
+            &[
+                "session_data",
+                "session_token",
+                "session_key",
+                "active_session",
+            ],
             Severity::Error,
         ),
         sensitive_network_send_rule(
@@ -3731,21 +4703,36 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-AC-11",
             ComplianceProfile::Cmmc,
             "Remote access controls must be enabled",
-            &["remote_access", "vpn_enabled", "remote_auth", "telework_secure"],
+            &[
+                "remote_access",
+                "vpn_enabled",
+                "remote_auth",
+                "telework_secure",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "CMMC-AC-12",
             ComplianceProfile::Cmmc,
             "Wireless access data must be classified",
-            &["wireless_key", "wifi_credential", "wireless_data", "radio_key"],
+            &[
+                "wireless_key",
+                "wifi_credential",
+                "wireless_data",
+                "radio_key",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "CMMC-AC-13",
             ComplianceProfile::Cmmc,
             "Mobile device data must be classified",
-            &["mobile_device", "mobile_key", "device_credential", "mdm_data"],
+            &[
+                "mobile_device",
+                "mobile_key",
+                "device_credential",
+                "mdm_data",
+            ],
             Severity::Error,
         ),
         broad_grant_rule(
@@ -3759,14 +4746,24 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-AT-1",
             ComplianceProfile::Cmmc,
             "Training records must be classified",
-            &["training_record", "awareness_data", "certification_data", "training_log"],
+            &[
+                "training_record",
+                "awareness_data",
+                "certification_data",
+                "training_log",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "CMMC-AT-2",
             ComplianceProfile::Cmmc,
             "Role-based training data must be classified",
-            &["role_training", "security_training", "insider_threat_training", "cyber_training"],
+            &[
+                "role_training",
+                "security_training",
+                "insider_threat_training",
+                "cyber_training",
+            ],
             Severity::Warning,
         ),
         // AU (Audit) domain
@@ -3808,28 +4805,48 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-CM-1",
             ComplianceProfile::Cmmc,
             "Baseline configuration must be enabled",
-            &["baseline_config", "system_config", "hardened_config", "standard_config"],
+            &[
+                "baseline_config",
+                "system_config",
+                "hardened_config",
+                "standard_config",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
             "CMMC-CM-2",
             ComplianceProfile::Cmmc,
             "No hardcoded configuration management data",
-            &["config_key", "deployment_credential", "change_token", "release_key"],
+            &[
+                "config_key",
+                "deployment_credential",
+                "change_token",
+                "release_key",
+            ],
             Severity::Warning,
         ),
         insecure_default_rule(
             "CMMC-CM-3",
             ComplianceProfile::Cmmc,
             "Least functionality: unused features disabled",
-            &["feature_enabled", "optional_module", "debug_enabled", "test_mode"],
+            &[
+                "feature_enabled",
+                "optional_module",
+                "debug_enabled",
+                "test_mode",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "CMMC-CM-4",
             ComplianceProfile::Cmmc,
             "Software inventory data must be classified",
-            &["software_inventory", "installed_software", "software_list", "app_catalog"],
+            &[
+                "software_inventory",
+                "installed_software",
+                "software_list",
+                "app_catalog",
+            ],
             Severity::Warning,
         ),
         // IA (Identification/Authentication) domain
@@ -3837,14 +4854,24 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-IA-1",
             ComplianceProfile::Cmmc,
             "Defense user auth must use Crypto effect",
-            &["defense_auth", "dod_login", "military_verify", "cleared_auth"],
+            &[
+                "defense_auth",
+                "dod_login",
+                "military_verify",
+                "cleared_auth",
+            ],
             Severity::Error,
         ),
         auth_crypto_rule(
             "CMMC-IA-2",
             ComplianceProfile::Cmmc,
             "Device authentication must use Crypto",
-            &["device_auth", "machine_auth", "endpoint_verify", "hardware_auth"],
+            &[
+                "device_auth",
+                "machine_auth",
+                "endpoint_verify",
+                "hardware_auth",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
@@ -3858,21 +4885,36 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-IA-4",
             ComplianceProfile::Cmmc,
             "Identity management data must be classified",
-            &["identity_data", "credential_store", "identity_db", "user_registry"],
+            &[
+                "identity_data",
+                "credential_store",
+                "identity_db",
+                "user_registry",
+            ],
             Severity::Error,
         ),
         temporal_no_expiry_rule(
             "CMMC-IA-5",
             ComplianceProfile::Cmmc,
             "Authentication data must have temporal handling",
-            &["auth_expiry", "token_expiry", "credential_date", "cert_valid"],
+            &[
+                "auth_expiry",
+                "token_expiry",
+                "credential_date",
+                "cert_valid",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
             "CMMC-IA-6",
             ComplianceProfile::Cmmc,
             "Authenticator feedback data must be classified",
-            &["auth_feedback", "login_response", "auth_result", "verification_result"],
+            &[
+                "auth_feedback",
+                "login_response",
+                "auth_result",
+                "verification_result",
+            ],
             Severity::Warning,
         ),
         sensitive_let_rule(
@@ -3886,7 +4928,12 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-IA-8",
             ComplianceProfile::Cmmc,
             "Non-org user auth must use Crypto",
-            &["external_auth", "contractor_login", "partner_verify", "visitor_auth"],
+            &[
+                "external_auth",
+                "contractor_login",
+                "partner_verify",
+                "visitor_auth",
+            ],
             Severity::Error,
         ),
         // IR (Incident Response) domain
@@ -3894,7 +4941,12 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-IR-1",
             ComplianceProfile::Cmmc,
             "Incident response data must be classified",
-            &["incident_data", "breach_data", "security_event", "threat_data"],
+            &[
+                "incident_data",
+                "breach_data",
+                "security_event",
+                "threat_data",
+            ],
             Severity::Error,
         ),
         audit_trail_rule(
@@ -3907,7 +4959,12 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-IR-3",
             ComplianceProfile::Cmmc,
             "Incident timestamps must have temporal handling",
-            &["incident_time", "breach_date", "detection_time", "response_time"],
+            &[
+                "incident_time",
+                "breach_date",
+                "detection_time",
+                "response_time",
+            ],
             Severity::Warning,
         ),
         // MA (Maintenance) domain
@@ -3915,7 +4972,12 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-MA-1",
             ComplianceProfile::Cmmc,
             "Maintenance data must be classified",
-            &["maintenance_data", "service_record", "repair_data", "patch_data"],
+            &[
+                "maintenance_data",
+                "service_record",
+                "repair_data",
+                "patch_data",
+            ],
             Severity::Warning,
         ),
         ffi_review_rule(
@@ -3929,7 +4991,12 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-MP-1",
             ComplianceProfile::Cmmc,
             "Media protection data must be classified",
-            &["media_data", "storage_data", "removable_media", "backup_media"],
+            &[
+                "media_data",
+                "storage_data",
+                "removable_media",
+                "backup_media",
+            ],
             Severity::Error,
         ),
         declassify_prove_rule(
@@ -3943,7 +5010,12 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-PE-1",
             ComplianceProfile::Cmmc,
             "Physical access data must be classified",
-            &["physical_access", "badge_data", "facility_data", "entry_data"],
+            &[
+                "physical_access",
+                "badge_data",
+                "facility_data",
+                "entry_data",
+            ],
             Severity::Warning,
         ),
         hardcoded_ip_rule(
@@ -3957,7 +5029,12 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-PS-1",
             ComplianceProfile::Cmmc,
             "Personnel screening data must be classified",
-            &["screening_data", "background_check", "clearance_data", "vetting_data"],
+            &[
+                "screening_data",
+                "background_check",
+                "clearance_data",
+                "vetting_data",
+            ],
             Severity::Error,
         ),
         // RA (Risk Assessment) domain
@@ -3965,14 +5042,24 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-RA-1",
             ComplianceProfile::Cmmc,
             "Risk assessment data must be classified",
-            &["risk_data", "threat_assessment", "vulnerability_data", "risk_score"],
+            &[
+                "risk_data",
+                "threat_assessment",
+                "vulnerability_data",
+                "risk_score",
+            ],
             Severity::Warning,
         ),
         tainted_input_rule(
             "CMMC-RA-2",
             ComplianceProfile::Cmmc,
             "Vulnerability scan input must be taint-tracked",
-            &["scan_input", "vulnerability_input", "threat_feed", "risk_input"],
+            &[
+                "scan_input",
+                "vulnerability_input",
+                "threat_feed",
+                "risk_input",
+            ],
             Severity::Warning,
         ),
         // RE (Recovery) domain
@@ -3980,7 +5067,12 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-RE-1",
             ComplianceProfile::Cmmc,
             "Backup data must be classified",
-            &["backup_data", "recovery_data", "restore_point", "snapshot_data"],
+            &[
+                "backup_data",
+                "recovery_data",
+                "restore_point",
+                "snapshot_data",
+            ],
             Severity::Error,
         ),
         sensitive_ffi_rule(
@@ -3995,7 +5087,12 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-SC-5",
             ComplianceProfile::Cmmc,
             "Boundary protection data must be classified",
-            &["boundary_data", "firewall_rule", "dmz_config", "perimeter_data"],
+            &[
+                "boundary_data",
+                "firewall_rule",
+                "dmz_config",
+                "perimeter_data",
+            ],
             Severity::Error,
         ),
         insecure_url_rule(
@@ -4008,14 +5105,24 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-SC-7",
             ComplianceProfile::Cmmc,
             "Transmission must not leak CUI",
-            &["cui_data", "controlled_info", "defense_data", "classified_transit"],
+            &[
+                "cui_data",
+                "controlled_info",
+                "defense_data",
+                "classified_transit",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "CMMC-SC-8",
             ComplianceProfile::Cmmc,
             "Cryptographic key data must be classified",
-            &["crypto_key", "encryption_key", "signing_key", "key_material"],
+            &[
+                "crypto_key",
+                "encryption_key",
+                "signing_key",
+                "key_material",
+            ],
             Severity::Error,
         ),
         declassify_prove_rule(
@@ -4029,7 +5136,12 @@ fn cmmc_rules() -> Vec<ComplianceRule> {
             "CMMC-SI-3",
             ComplianceProfile::Cmmc,
             "Defense system input must be taint-tracked",
-            &["system_input", "command_input", "control_input", "operator_input"],
+            &[
+                "system_input",
+                "command_input",
+                "control_input",
+                "operator_input",
+            ],
             Severity::Error,
         ),
         sensitive_ffi_rule(
@@ -4109,7 +5221,13 @@ fn iec62443_rules() -> Vec<ComplianceRule> {
             "IEC62443-SR-9",
             ComplianceProfile::Iec62443,
             "ICS security defaults must be enabled",
-            &["safety_enabled", "scada_secure", "plc_auth", "hmi_locked", "network_segmented"],
+            &[
+                "safety_enabled",
+                "scada_secure",
+                "plc_auth",
+                "hmi_locked",
+                "network_segmented",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -4122,7 +5240,13 @@ fn iec62443_rules() -> Vec<ComplianceRule> {
             "IEC62443-SR-11",
             ComplianceProfile::Iec62443,
             "ICS data must have retention handling",
-            &["sensor_timestamp", "calibration_date", "maintenance_date", "alarm_time", "log_date"],
+            &[
+                "sensor_timestamp",
+                "calibration_date",
+                "maintenance_date",
+                "alarm_time",
+                "log_date",
+            ],
             Severity::Warning,
         ),
         excessive_grant_rule(
@@ -4162,7 +5286,12 @@ fn iec62443_rules() -> Vec<ComplianceRule> {
             "IEC62443-SR-17",
             ComplianceProfile::Iec62443,
             "ICS operator input must be taint-tracked",
-            &["operator_input", "control_input", "setpoint_input", "command_input"],
+            &[
+                "operator_input",
+                "control_input",
+                "setpoint_input",
+                "command_input",
+            ],
             Severity::Error,
         ),
         unbounded_recursion_rule(
@@ -4200,14 +5329,24 @@ fn iec62443_rules() -> Vec<ComplianceRule> {
             "IEC62443-SR-23",
             ComplianceProfile::Iec62443,
             "Safety instrumented system data must be classified",
-            &["sis_data", "safety_system", "emergency_shutdown", "trip_data"],
+            &[
+                "sis_data",
+                "safety_system",
+                "emergency_shutdown",
+                "trip_data",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
             "IEC62443-SR-24",
             ComplianceProfile::Iec62443,
             "No hardcoded ICS maintenance credentials",
-            &["maintenance_key", "service_credential", "engineer_password", "tech_token"],
+            &[
+                "maintenance_key",
+                "service_credential",
+                "engineer_password",
+                "tech_token",
+            ],
             Severity::Error,
         ),
         sensitive_ffi_rule(
@@ -4221,21 +5360,36 @@ fn iec62443_rules() -> Vec<ComplianceRule> {
             "IEC62443-SR-26",
             ComplianceProfile::Iec62443,
             "ICS firmware data must be classified",
-            &["firmware_data", "plc_program", "ladder_logic", "control_program"],
+            &[
+                "firmware_data",
+                "plc_program",
+                "ladder_logic",
+                "control_program",
+            ],
             Severity::Error,
         ),
         temporal_no_expiry_rule(
             "IEC62443-SR-27",
             ComplianceProfile::Iec62443,
             "ICS certificate dates must have temporal handling",
-            &["cert_expiry", "license_date", "calibration_due", "warranty_date"],
+            &[
+                "cert_expiry",
+                "license_date",
+                "calibration_due",
+                "warranty_date",
+            ],
             Severity::Warning,
         ),
         insecure_default_rule(
             "IEC62443-SR-28",
             ComplianceProfile::Iec62443,
             "ICS patch management must be enabled",
-            &["patch_mgmt", "update_enabled", "vulnerability_scan", "patch_policy"],
+            &[
+                "patch_mgmt",
+                "update_enabled",
+                "vulnerability_scan",
+                "patch_policy",
+            ],
             Severity::Warning,
         ),
         hardcoded_ip_rule(
@@ -4248,7 +5402,12 @@ fn iec62443_rules() -> Vec<ComplianceRule> {
             "IEC62443-SR-30",
             ComplianceProfile::Iec62443,
             "ICS incident response data must be classified",
-            &["ics_incident", "cyber_event", "control_breach", "safety_event"],
+            &[
+                "ics_incident",
+                "cyber_event",
+                "control_breach",
+                "safety_event",
+            ],
             Severity::Error,
         ),
         auth_crypto_rule(
@@ -4278,7 +5437,13 @@ fn nerc_cip_rules() -> Vec<ComplianceRule> {
             "NERC-CIP-004",
             ComplianceProfile::NercCip,
             "Grid/energy data must be classified as Secret",
-            &["grid", "substation", "generator", "transformer", "load_data"],
+            &[
+                "grid",
+                "substation",
+                "generator",
+                "transformer",
+                "load_data",
+            ],
             Severity::Error,
         ),
         insecure_network_rule(
@@ -4323,7 +5488,13 @@ fn nerc_cip_rules() -> Vec<ComplianceRule> {
             "NERC-CIP-008",
             ComplianceProfile::NercCip,
             "Energy security defaults must be enabled",
-            &["grid_protection", "scada_secure", "monitoring_enabled", "alarm_active", "failsafe_mode"],
+            &[
+                "grid_protection",
+                "scada_secure",
+                "monitoring_enabled",
+                "alarm_active",
+                "failsafe_mode",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -4336,7 +5507,13 @@ fn nerc_cip_rules() -> Vec<ComplianceRule> {
             "NERC-CIP-012",
             ComplianceProfile::NercCip,
             "Grid data must have retention handling",
-            &["outage_date", "maintenance_date", "inspection_date", "meter_timestamp", "load_date"],
+            &[
+                "outage_date",
+                "maintenance_date",
+                "inspection_date",
+                "meter_timestamp",
+                "load_date",
+            ],
             Severity::Warning,
         ),
         // --- 10 new NERC CIP rules ---
@@ -4344,14 +5521,24 @@ fn nerc_cip_rules() -> Vec<ComplianceRule> {
             "NERC-CIP-013",
             ComplianceProfile::NercCip,
             "Grid operator auth must use Crypto",
-            &["grid_auth", "operator_login", "dispatcher_auth", "control_verify"],
+            &[
+                "grid_auth",
+                "operator_login",
+                "dispatcher_auth",
+                "control_verify",
+            ],
             Severity::Error,
         ),
         sensitive_let_rule(
             "NERC-CIP-014",
             ComplianceProfile::NercCip,
             "Physical security data must be classified",
-            &["physical_security", "perimeter_data", "facility_access", "camera_data"],
+            &[
+                "physical_security",
+                "perimeter_data",
+                "facility_access",
+                "camera_data",
+            ],
             Severity::Warning,
         ),
         declassify_prove_rule(
@@ -4370,7 +5557,12 @@ fn nerc_cip_rules() -> Vec<ComplianceRule> {
             "NERC-CIP-017",
             ComplianceProfile::NercCip,
             "Grid control input must be taint-tracked",
-            &["grid_input", "dispatch_input", "load_input", "frequency_input"],
+            &[
+                "grid_input",
+                "dispatch_input",
+                "load_input",
+                "frequency_input",
+            ],
             Severity::Error,
         ),
         sensitive_network_send_rule(
@@ -4418,7 +5610,13 @@ fn fda_rules() -> Vec<ComplianceRule> {
             "FDA-11.10-a",
             ComplianceProfile::Fda21cfr,
             "Electronic health records must be classified",
-            &["patient_record", "drug_data", "clinical", "trial_data", "pharma"],
+            &[
+                "patient_record",
+                "drug_data",
+                "clinical",
+                "trial_data",
+                "pharma",
+            ],
             Severity::Error,
         ),
         auth_crypto_rule(
@@ -4464,7 +5662,13 @@ fn fda_rules() -> Vec<ComplianceRule> {
             "FDA-11.10-h",
             ComplianceProfile::Fda21cfr,
             "Clinical security defaults must be enabled",
-            &["validation_enabled", "audit_trail", "electronic_sig", "access_control", "data_integrity"],
+            &[
+                "validation_enabled",
+                "audit_trail",
+                "electronic_sig",
+                "access_control",
+                "data_integrity",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -4477,7 +5681,13 @@ fn fda_rules() -> Vec<ComplianceRule> {
             "FDA-11.10-j",
             ComplianceProfile::Fda21cfr,
             "Clinical trial data must have retention handling",
-            &["trial_date", "batch_date", "expiry_date", "approval_date", "manufacturing_date"],
+            &[
+                "trial_date",
+                "batch_date",
+                "expiry_date",
+                "approval_date",
+                "manufacturing_date",
+            ],
             Severity::Warning,
         ),
         // --- 8 new FDA rules ---
@@ -4497,7 +5707,12 @@ fn fda_rules() -> Vec<ComplianceRule> {
             "FDA-11.10-m",
             ComplianceProfile::Fda21cfr,
             "Clinical input must be taint-tracked",
-            &["clinical_input", "patient_input", "lab_input", "trial_input"],
+            &[
+                "clinical_input",
+                "patient_input",
+                "lab_input",
+                "trial_input",
+            ],
             Severity::Error,
         ),
         sensitive_network_send_rule(
@@ -4545,7 +5760,13 @@ fn itar_rules() -> Vec<ComplianceRule> {
             "ITAR-120.1",
             ComplianceProfile::Itar,
             "Defense/munitions data must be classified as Secret",
-            &["munition", "weapon", "defense", "military", "export_controlled"],
+            &[
+                "munition",
+                "weapon",
+                "defense",
+                "military",
+                "export_controlled",
+            ],
             Severity::Error,
         ),
         ffi_review_rule(
@@ -4583,7 +5804,13 @@ fn itar_rules() -> Vec<ComplianceRule> {
             "ITAR-120.7",
             ComplianceProfile::Itar,
             "Defense security defaults must be enabled",
-            &["export_control", "classification_enabled", "itar_mode", "dcs_required", "encryption_required"],
+            &[
+                "export_control",
+                "classification_enabled",
+                "itar_mode",
+                "dcs_required",
+                "encryption_required",
+            ],
             Severity::Error,
         ),
         hardcoded_port_rule(
@@ -4610,7 +5837,12 @@ fn itar_rules() -> Vec<ComplianceRule> {
             "ITAR-121.3",
             ComplianceProfile::Itar,
             "No hardcoded ITAR credentials",
-            &["export_key", "munitions_credential", "defense_token", "itar_secret"],
+            &[
+                "export_key",
+                "munitions_credential",
+                "defense_token",
+                "itar_secret",
+            ],
             Severity::Error,
         ),
         weak_crypto_rule(
@@ -4634,7 +5866,12 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-SDG3.1",
             ComplianceProfile::EsgSdg,
             "Health outcome data must be classified",
-            &["health_outcome", "mortality_rate", "disease_prevalence", "wellness_metric"],
+            &[
+                "health_outcome",
+                "mortality_rate",
+                "disease_prevalence",
+                "wellness_metric",
+            ],
             Severity::Error,
         ),
         audit_trail_rule(
@@ -4648,7 +5885,13 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-SDG5.1",
             ComplianceProfile::EsgSdg,
             "Gender parity data must be classified",
-            &["gender_ratio", "pay_gap", "gender_parity", "diversity_metric", "inclusion_score"],
+            &[
+                "gender_ratio",
+                "pay_gap",
+                "gender_parity",
+                "diversity_metric",
+                "inclusion_score",
+            ],
             Severity::Error,
         ),
         declassify_prove_rule(
@@ -4662,14 +5905,24 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-SDG7.1",
             ComplianceProfile::EsgSdg,
             "Energy consumption data must be classified",
-            &["energy_consumption", "renewable_share", "carbon_intensity", "grid_emission"],
+            &[
+                "energy_consumption",
+                "renewable_share",
+                "carbon_intensity",
+                "grid_emission",
+            ],
             Severity::Error,
         ),
         temporal_no_expiry_rule(
             "ESG-SDG7.2",
             ComplianceProfile::EsgSdg,
             "Energy reporting periods must have temporal handling",
-            &["reporting_period", "measurement_date", "baseline_year", "target_year"],
+            &[
+                "reporting_period",
+                "measurement_date",
+                "baseline_year",
+                "target_year",
+            ],
             Severity::Warning,
         ),
         // --- SDG 12: Responsible Consumption and Production ---
@@ -4677,14 +5930,24 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-SDG12.1",
             ComplianceProfile::EsgSdg,
             "Waste and resource data must be classified",
-            &["waste_generated", "recycling_rate", "resource_usage", "circular_economy"],
+            &[
+                "waste_generated",
+                "recycling_rate",
+                "resource_usage",
+                "circular_economy",
+            ],
             Severity::Error,
         ),
         hardcoded_credential_rule(
             "ESG-SDG12.2",
             ComplianceProfile::EsgSdg,
             "No hardcoded supply chain credentials",
-            &["supply_chain_key", "vendor_credential", "audit_token", "certification_secret"],
+            &[
+                "supply_chain_key",
+                "vendor_credential",
+                "audit_token",
+                "certification_secret",
+            ],
             Severity::Error,
         ),
         // --- SDG 13: Climate Action ---
@@ -4692,21 +5955,37 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-SDG13.1",
             ComplianceProfile::EsgSdg,
             "Carbon emission data must be classified",
-            &["carbon_emission", "ghg_scope1", "ghg_scope2", "ghg_scope3", "carbon_offset"],
+            &[
+                "carbon_emission",
+                "ghg_scope1",
+                "ghg_scope2",
+                "ghg_scope3",
+                "carbon_offset",
+            ],
             Severity::Error,
         ),
         insecure_default_rule(
             "ESG-SDG13.2",
             ComplianceProfile::EsgSdg,
             "Climate reporting defaults must be enabled",
-            &["climate_reporting", "emission_tracking", "carbon_accounting", "ghg_monitoring"],
+            &[
+                "climate_reporting",
+                "emission_tracking",
+                "carbon_accounting",
+                "ghg_monitoring",
+            ],
             Severity::Error,
         ),
         temporal_no_expiry_rule(
             "ESG-SDG13.3",
             ComplianceProfile::EsgSdg,
             "Climate targets must have temporal handling",
-            &["target_date", "baseline_date", "ndc_deadline", "paris_target"],
+            &[
+                "target_date",
+                "baseline_date",
+                "ndc_deadline",
+                "paris_target",
+            ],
             Severity::Warning,
         ),
         // --- SDG 16: Peace, Justice and Strong Institutions ---
@@ -4714,7 +5993,12 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-SDG16.1",
             ComplianceProfile::EsgSdg,
             "Governance and transparency data must be classified",
-            &["governance_score", "corruption_index", "transparency_metric", "rule_of_law"],
+            &[
+                "governance_score",
+                "corruption_index",
+                "transparency_metric",
+                "rule_of_law",
+            ],
             Severity::Error,
         ),
         broad_grant_rule(
@@ -4728,7 +6012,12 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-E.1",
             ComplianceProfile::EsgSdg,
             "Environmental impact data must be classified",
-            &["biodiversity_loss", "water_usage", "deforestation", "pollution_level"],
+            &[
+                "biodiversity_loss",
+                "water_usage",
+                "deforestation",
+                "pollution_level",
+            ],
             Severity::Error,
         ),
         classify_without_audit_rule(
@@ -4748,21 +6037,37 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-S.1",
             ComplianceProfile::EsgSdg,
             "Labor rights data must be classified",
-            &["worker_safety", "labor_rights", "child_labor", "living_wage", "union_membership"],
+            &[
+                "worker_safety",
+                "labor_rights",
+                "child_labor",
+                "living_wage",
+                "union_membership",
+            ],
             Severity::Error,
         ),
         sensitive_network_send_rule(
             "ESG-S.2",
             ComplianceProfile::EsgSdg,
             "Social impact data must not leak over network",
-            &["worker_data", "community_impact", "human_rights", "labor_metric"],
+            &[
+                "worker_data",
+                "community_impact",
+                "human_rights",
+                "labor_metric",
+            ],
             Severity::Error,
         ),
         tainted_input_rule(
             "ESG-S.3",
             ComplianceProfile::EsgSdg,
             "Stakeholder input must be taint-tracked",
-            &["stakeholder_input", "community_feedback", "worker_complaint", "grievance_data"],
+            &[
+                "stakeholder_input",
+                "community_feedback",
+                "worker_complaint",
+                "grievance_data",
+            ],
             Severity::Error,
         ),
         // --- ESG Governance (G) ---
@@ -4770,7 +6075,12 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-G.1",
             ComplianceProfile::EsgSdg,
             "ESG report auth must use Crypto",
-            &["esg_auth", "audit_login", "compliance_verify", "report_auth"],
+            &[
+                "esg_auth",
+                "audit_login",
+                "compliance_verify",
+                "report_auth",
+            ],
             Severity::Error,
         ),
         weak_crypto_rule(
@@ -4808,7 +6118,12 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-SDVISTA.1",
             ComplianceProfile::EsgSdg,
             "Verified impact data must be classified (SD VISta)",
-            &["verified_impact", "sdvista_metric", "gold_standard", "verra_credit"],
+            &[
+                "verified_impact",
+                "sdvista_metric",
+                "gold_standard",
+                "verra_credit",
+            ],
             Severity::Error,
         ),
         insecure_url_rule(
@@ -4821,7 +6136,12 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-SDVISTA.3",
             ComplianceProfile::EsgSdg,
             "No hardcoded verification credentials",
-            &["registry_key", "verification_token", "carbon_credit_secret", "offset_credential"],
+            &[
+                "registry_key",
+                "verification_token",
+                "carbon_credit_secret",
+                "offset_credential",
+            ],
             Severity::Error,
         ),
         excessive_grant_rule(
@@ -4834,7 +6154,12 @@ fn esg_sdg_rules() -> Vec<ComplianceRule> {
             "ESG-SDVISTA.5",
             ComplianceProfile::EsgSdg,
             "Verification defaults must be enabled",
-            &["verification_enabled", "audit_required", "double_counting_check", "additionality_check"],
+            &[
+                "verification_enabled",
+                "audit_required",
+                "double_counting_check",
+                "additionality_check",
+            ],
             Severity::Error,
         ),
     ]

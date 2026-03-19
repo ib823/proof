@@ -8,8 +8,8 @@
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST
 
 use riina_codegen::backend::{Backend, Target};
-use riina_codegen::wasm::WasmBackend;
 use riina_codegen::compile;
+use riina_codegen::wasm::WasmBackend;
 use riina_parser::Parser;
 use riina_typechecker::check_program;
 
@@ -26,7 +26,11 @@ fn compile_to_wasm(source: &str) -> Vec<u8> {
 
 /// Verify the WASM magic number (\0asm) and version (1).
 fn assert_valid_wasm_header(wasm: &[u8]) {
-    assert!(wasm.len() >= 8, "WASM binary too short: {} bytes", wasm.len());
+    assert!(
+        wasm.len() >= 8,
+        "WASM binary too short: {} bytes",
+        wasm.len()
+    );
     assert_eq!(&wasm[0..4], b"\x00asm", "Missing WASM magic bytes");
     assert_eq!(&wasm[4..8], &[1, 0, 0, 0], "Unexpected WASM version");
 }
@@ -123,7 +127,8 @@ fn wasm_e2e_function_call() {
 
 #[test]
 fn wasm_e2e_multi_arg_function() {
-    let source = "fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }\ntambah(3, 4)";
+    let source =
+        "fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih { x + y }\ntambah(3, 4)";
     let wasm = compile_to_wasm(source);
     assert_valid_wasm_header(&wasm);
 }
@@ -228,7 +233,11 @@ fn wasm_e2e_inl_inr() {
 #[test]
 fn wasm_e2e_binary_starts_with_magic() {
     let wasm = compile_to_wasm("0");
-    assert_eq!(&wasm[0..4], b"\x00asm", "WASM must start with magic bytes \\0asm");
+    assert_eq!(
+        &wasm[0..4],
+        b"\x00asm",
+        "WASM must start with magic bytes \\0asm"
+    );
 }
 
 #[test]

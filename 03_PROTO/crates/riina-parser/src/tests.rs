@@ -13,7 +13,9 @@
 #[allow(unused_imports)]
 use crate::{ParseError, ParseErrorKind, Parser};
 #[allow(unused_imports)]
-use riina_types::{BinOp, Effect, Expr, Linearity, Program, SecurityLevel, SessionType, TopLevelDecl, Ty};
+use riina_types::{
+    BinOp, Effect, Expr, Linearity, Program, SecurityLevel, SessionType, TopLevelDecl, Ty,
+};
 
 // =============================================================================
 // LITERAL TESTS
@@ -1776,6 +1778,34 @@ fn test_parse_capability_type() {
 }
 
 #[test]
+fn test_parse_smart_contract_type_keyword() {
+    let mut p = Parser::new("kontrak_pintar<Nombor>");
+    let ty = p.parse_ty().unwrap();
+    assert_eq!(ty, Ty::SmartContract(Box::new(Ty::Int)));
+}
+
+#[test]
+fn test_parse_smart_contract_type_pascal_case() {
+    let mut p = Parser::new("SmartContract<Int>");
+    let ty = p.parse_ty().unwrap();
+    assert_eq!(ty, Ty::SmartContract(Box::new(Ty::Int)));
+}
+
+#[test]
+fn test_parse_token_type_keyword() {
+    let mut p = Parser::new("token<Teks>");
+    let ty = p.parse_ty().unwrap();
+    assert_eq!(ty, Ty::Token(Box::new(Ty::String)));
+}
+
+#[test]
+fn test_parse_syariah_compliant_type_keyword() {
+    let mut p = Parser::new("patuh_syariah<Bool>");
+    let ty = p.parse_ty().unwrap();
+    assert_eq!(ty, Ty::SyariahCompliant(Box::new(Ty::Bool)));
+}
+
+#[test]
 fn test_parse_unknown_type_errors() {
     let mut p = Parser::new("FooBarBaz");
     let result = p.parse_ty();
@@ -2073,8 +2103,14 @@ fn test_parse_session_select_branch() {
     assert_eq!(
         ty,
         Ty::Chan(SessionType::Select(
-            Box::new(SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End))),
-            Box::new(SessionType::Send(Box::new(Ty::Bool), Box::new(SessionType::End)))
+            Box::new(SessionType::Send(
+                Box::new(Ty::Int),
+                Box::new(SessionType::End)
+            )),
+            Box::new(SessionType::Send(
+                Box::new(Ty::Bool),
+                Box::new(SessionType::End)
+            ))
         ))
     );
 }
@@ -2256,7 +2292,8 @@ fn test_parse_multiple_functions() {
 fn test_parse_multiple_functions_with_params() {
     // Input: Program with functions that have parameters
     // Rationale: Parameterized functions followed by calls must parse
-    let source = "fungsi tambah(a: Nombor, b: Nombor) -> Nombor kesan Bersih { a + b }\ntambah(1, 2)";
+    let source =
+        "fungsi tambah(a: Nombor, b: Nombor) -> Nombor kesan Bersih { a + b }\ntambah(1, 2)";
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     assert_eq!(program.decls.len(), 2);
@@ -2279,16 +2316,14 @@ fn test_parse_linearity_in_function() {
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
-        TopLevelDecl::Function { body, .. } => {
-            match body.as_ref() {
-                Expr::Let(name, lin, val, _) => {
-                    assert_eq!(name, "x");
-                    assert_eq!(*lin, Some(Linearity::Linear));
-                    assert_eq!(**val, Expr::Int(42));
-                }
-                other => panic!("Expected Let in function body, got {:?}", other),
+        TopLevelDecl::Function { body, .. } => match body.as_ref() {
+            Expr::Let(name, lin, val, _) => {
+                assert_eq!(name, "x");
+                assert_eq!(*lin, Some(Linearity::Linear));
+                assert_eq!(**val, Expr::Int(42));
             }
-        }
+            other => panic!("Expected Let in function body, got {:?}", other),
+        },
         other => panic!("Expected Function, got {:?}", other),
     }
 }
@@ -2301,15 +2336,13 @@ fn test_parse_linearity_paling_in_function() {
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
-        TopLevelDecl::Function { body, .. } => {
-            match body.as_ref() {
-                Expr::Let(name, lin, _, _) => {
-                    assert_eq!(name, "y");
-                    assert_eq!(*lin, Some(Linearity::Affine));
-                }
-                other => panic!("Expected Let in function body, got {:?}", other),
+        TopLevelDecl::Function { body, .. } => match body.as_ref() {
+            Expr::Let(name, lin, _, _) => {
+                assert_eq!(name, "y");
+                assert_eq!(*lin, Some(Linearity::Affine));
             }
-        }
+            other => panic!("Expected Let in function body, got {:?}", other),
+        },
         other => panic!("Expected Function, got {:?}", other),
     }
 }
@@ -2325,7 +2358,11 @@ fn test_parse_choreography_basic() {
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
         TopLevelDecl::Expr(e) => match e.as_ref() {
-            Expr::ChoreographyBlock { name, roles, protocol } => {
+            Expr::ChoreographyBlock {
+                name,
+                roles,
+                protocol,
+            } => {
                 assert_eq!(name, "Proto");
                 assert_eq!(roles, &["A".to_string(), "B".to_string()]);
                 match protocol {
@@ -2349,7 +2386,9 @@ fn test_parse_choreography_multi_role() {
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
         TopLevelDecl::Expr(e) => match e.as_ref() {
-            Expr::ChoreographyBlock { roles, protocol, .. } => {
+            Expr::ChoreographyBlock {
+                roles, protocol, ..
+            } => {
                 assert_eq!(roles.len(), 3);
                 assert_eq!(roles[2], "C");
                 assert_eq!(*protocol, SessionType::End);
@@ -2362,22 +2401,21 @@ fn test_parse_choreography_multi_role() {
 
 #[test]
 fn test_parse_choreography_multi_interaction() {
-    let source = "koreografi Proto { peranan A, B; A -> B: hantar Req; B -> A: hantar Resp; tamat; }";
+    let source =
+        "koreografi Proto { peranan A, B; A -> B: hantar Req; B -> A: hantar Resp; tamat; }";
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
         TopLevelDecl::Expr(e) => match e.as_ref() {
-            Expr::ChoreographyBlock { protocol, .. } => {
-                match protocol {
-                    SessionType::Send(_, cont) => match cont.as_ref() {
-                        SessionType::Send(_, cont2) => {
-                            assert_eq!(**cont2, SessionType::End);
-                        }
-                        other => panic!("Expected nested Send, got {:?}", other),
-                    },
-                    other => panic!("Expected Send, got {:?}", other),
-                }
-            }
+            Expr::ChoreographyBlock { protocol, .. } => match protocol {
+                SessionType::Send(_, cont) => match cont.as_ref() {
+                    SessionType::Send(_, cont2) => {
+                        assert_eq!(**cont2, SessionType::End);
+                    }
+                    other => panic!("Expected nested Send, got {:?}", other),
+                },
+                other => panic!("Expected Send, got {:?}", other),
+            },
             other => panic!("Expected ChoreographyBlock, got {:?}", other),
         },
         other => panic!("Expected Expr, got {:?}", other),
@@ -2391,15 +2429,13 @@ fn test_parse_choreography_with_choice() {
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
         TopLevelDecl::Expr(e) => match e.as_ref() {
-            Expr::ChoreographyBlock { protocol, .. } => {
-                match protocol {
-                    SessionType::Select(s1, s2) => {
-                        assert!(matches!(s1.as_ref(), SessionType::Send(_, _)));
-                        assert!(matches!(s2.as_ref(), SessionType::Send(_, _)));
-                    }
-                    other => panic!("Expected Select, got {:?}", other),
+            Expr::ChoreographyBlock { protocol, .. } => match protocol {
+                SessionType::Select(s1, s2) => {
+                    assert!(matches!(s1.as_ref(), SessionType::Send(_, _)));
+                    assert!(matches!(s2.as_ref(), SessionType::Send(_, _)));
                 }
-            }
+                other => panic!("Expected Select, got {:?}", other),
+            },
             other => panic!("Expected ChoreographyBlock, got {:?}", other),
         },
         other => panic!("Expected Expr, got {:?}", other),
@@ -2413,14 +2449,12 @@ fn test_parse_choreography_known_type() {
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
         TopLevelDecl::Expr(e) => match e.as_ref() {
-            Expr::ChoreographyBlock { protocol, .. } => {
-                match protocol {
-                    SessionType::Send(ty, _) => {
-                        assert_eq!(**ty, Ty::Int);
-                    }
-                    other => panic!("Expected Send, got {:?}", other),
+            Expr::ChoreographyBlock { protocol, .. } => match protocol {
+                SessionType::Send(ty, _) => {
+                    assert_eq!(**ty, Ty::Int);
                 }
-            }
+                other => panic!("Expected Send, got {:?}", other),
+            },
             other => panic!("Expected ChoreographyBlock, got {:?}", other),
         },
         other => panic!("Expected Expr, got {:?}", other),
@@ -2440,7 +2474,10 @@ fn test_parse_choreography_error_missing_brace() {
     let source = "koreografi Proto { peranan A, B; A -> B: hantar Msg; tamat;";
     let mut p = Parser::new(source);
     let result = p.parse_program();
-    assert!(result.is_err(), "Expected error when closing brace is missing");
+    assert!(
+        result.is_err(),
+        "Expected error when closing brace is missing"
+    );
 }
 
 // =============================================================================
@@ -2454,7 +2491,13 @@ fn test_parse_actor_basic() {
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
         TopLevelDecl::Expr(e) => match e.as_ref() {
-            Expr::ActorDecl { name, state_ty, message_ty, handler, .. } => {
+            Expr::ActorDecl {
+                name,
+                state_ty,
+                message_ty,
+                handler,
+                ..
+            } => {
                 assert_eq!(name, "MyActor");
                 assert_eq!(*state_ty, Ty::Int);
                 assert_eq!(*message_ty, Ty::Any);
@@ -2468,7 +2511,8 @@ fn test_parse_actor_basic() {
 
 #[test]
 fn test_parse_actor_multi_handler() {
-    let source = "pelakon MyActor { keadaan: Benar kendalikan MsgA(a) { a } kendalikan MsgB(b) { b } }";
+    let source =
+        "pelakon MyActor { keadaan: Benar kendalikan MsgA(a) { a } kendalikan MsgB(b) { b } }";
     let mut p = Parser::new(source);
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
@@ -2506,15 +2550,13 @@ fn test_parse_actor_handler_body() {
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
         TopLevelDecl::Expr(e) => match e.as_ref() {
-            Expr::ActorDecl { handler, .. } => {
-                match handler.as_ref() {
-                    Expr::Lam(param, _, body) => {
-                        assert_eq!(param, "m");
-                        assert_eq!(**body, Expr::Int(42));
-                    }
-                    other => panic!("Expected Lam, got {:?}", other),
+            Expr::ActorDecl { handler, .. } => match handler.as_ref() {
+                Expr::Lam(param, _, body) => {
+                    assert_eq!(param, "m");
+                    assert_eq!(**body, Expr::Int(42));
                 }
-            }
+                other => panic!("Expected Lam, got {:?}", other),
+            },
             other => panic!("Expected ActorDecl, got {:?}", other),
         },
         other => panic!("Expected Expr, got {:?}", other),
@@ -2534,7 +2576,10 @@ fn test_parse_actor_error_missing_brace() {
     let source = "pelakon MyActor { keadaan: Nombor kendalikan Msg(p) { p }";
     let mut p = Parser::new(source);
     let result = p.parse_program();
-    assert!(result.is_err(), "Expected error when closing brace is missing");
+    assert!(
+        result.is_err(),
+        "Expected error when closing brace is missing"
+    );
 }
 
 // =============================================================================
@@ -2668,7 +2713,10 @@ fn test_parse_actor_recv_with_var() {
 fn test_parse_actor_recv_error_missing_paren() {
     let mut p = Parser::new("terima pelaku)");
     let result = p.parse_expr();
-    assert!(result.is_err(), "Expected error when opening paren is missing");
+    assert!(
+        result.is_err(),
+        "Expected error when opening paren is missing"
+    );
 }
 
 // =============================================================================
@@ -2763,6 +2811,62 @@ fn test_parse_content_verify_error_missing_comma() {
     assert!(result.is_err(), "Expected error when comma is missing");
 }
 
+#[test]
+fn test_parse_contract_deploy_basic() {
+    let mut p = Parser::new("kontrak_pintar(42)");
+    let expr = p.parse_expr().unwrap();
+    assert_eq!(expr, Expr::ContractDeploy(Box::new(Expr::Int(42))));
+}
+
+#[test]
+fn test_parse_contract_deploy_english_alias() {
+    let mut p = Parser::new("smart_contract(account)");
+    let expr = p.parse_expr().unwrap();
+    assert_eq!(
+        expr,
+        Expr::ContractDeploy(Box::new(Expr::Var("account".to_string())))
+    );
+}
+
+#[test]
+fn test_parse_token_transfer_basic() {
+    let mut p = Parser::new("token(alice, bob, 25)");
+    let expr = p.parse_expr().unwrap();
+    assert_eq!(
+        expr,
+        Expr::TokenTransfer(
+            Box::new(Expr::Var("alice".to_string())),
+            Box::new(Expr::Var("bob".to_string())),
+            Box::new(Expr::Int(25))
+        )
+    );
+}
+
+#[test]
+fn test_parse_token_transfer_error_missing_amount() {
+    let mut p = Parser::new("token(alice, bob)");
+    assert!(p.parse_expr().is_err());
+}
+
+#[test]
+fn test_parse_zakat_calculate_basic() {
+    let mut p = Parser::new("zakat(1000)");
+    let expr = p.parse_expr().unwrap();
+    assert_eq!(expr, Expr::ZakatCalculate(Box::new(Expr::Int(1000))));
+}
+
+#[test]
+fn test_parse_zakat_calculate_nested_hash() {
+    let mut p = Parser::new("zakat(cincang(data))");
+    let expr = p.parse_expr().unwrap();
+    assert_eq!(
+        expr,
+        Expr::ZakatCalculate(Box::new(Expr::ContentHash(Box::new(Expr::Var(
+            "data".to_string()
+        )))))
+    );
+}
+
 // =============================================================================
 // JALINAN PHASE 6: INTEGRATION TESTS
 // =============================================================================
@@ -2826,7 +2930,11 @@ fn test_parse_jalinan_choreography_program() {
     assert_eq!(program.decls.len(), 1);
     match &program.decls[0] {
         TopLevelDecl::Expr(e) => match e.as_ref() {
-            Expr::ChoreographyBlock { name, roles, protocol } => {
+            Expr::ChoreographyBlock {
+                name,
+                roles,
+                protocol,
+            } => {
                 assert_eq!(name, "Beli");
                 assert_eq!(roles.len(), 2);
                 match protocol {

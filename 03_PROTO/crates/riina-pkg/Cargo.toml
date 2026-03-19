@@ -10,3 +10,6 @@ description = "RIINA package manager"
 riina-types.workspace = true
 
 [dev-dependencies]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }

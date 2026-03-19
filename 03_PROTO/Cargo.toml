@@ -52,6 +52,9 @@ riina-wasm = { path = "crates/riina-wasm" }
 
 # No external dependencies (Law 8)
 
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
+
 [profile.release]
 lto = true
 codegen-units = 1

@@ -114,7 +114,9 @@ fn json_err(msg: &str) -> String {
 
 fn do_parse(source: &str) -> Result<riina_types::Program, String> {
     let mut parser = riina_parser::Parser::new(source);
-    let program = parser.parse_program().map_err(|e| format!("Parse error: {e:?}"))?;
+    let program = parser
+        .parse_program()
+        .map_err(|e| format!("Parse error: {e:?}"))?;
     Ok(program)
 }
 
@@ -208,10 +210,9 @@ mod tests {
 
     #[test]
     fn do_typecheck_rejects_invalid_declassification() {
-        let program = do_parse("declassify classify 42 with prove classify 7")
-            .expect("program should parse");
-        let err =
-            do_typecheck(&program).expect_err("invalid declassification should fail");
+        let program =
+            do_parse("declassify classify 42 with prove classify 7").expect("program should parse");
+        let err = do_typecheck(&program).expect_err("invalid declassification should fail");
         assert!(err.contains("Invalid declassification"));
     }
 }

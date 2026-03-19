@@ -49,10 +49,13 @@ fn actor_processes_multiple_messages() {
 fn actor_state_mutation() {
     let (tx, rx) = mpsc::channel::<u64>();
     // Actor accumulates a running sum.
-    let actor = actor::spawn((0u64, tx), |state: &mut (u64, mpsc::Sender<u64>), msg: u64| {
-        state.0 += msg;
-        let _ = state.1.send(state.0);
-    });
+    let actor = actor::spawn(
+        (0u64, tx),
+        |state: &mut (u64, mpsc::Sender<u64>), msg: u64| {
+            state.0 += msg;
+            let _ = state.1.send(state.0);
+        },
+    );
     actor.send(10).unwrap();
     actor.send(20).unwrap();
     actor.send(30).unwrap();
@@ -148,9 +151,10 @@ fn actor_handles_many_messages() {
 #[test]
 fn actor_spawn_with_handle() {
     let (tx, rx) = mpsc::channel();
-    let (actor_ref, handle) = actor::spawn_with_handle(tx, |state: &mut mpsc::Sender<i32>, msg: i32| {
-        let _ = state.send(msg);
-    });
+    let (actor_ref, handle) =
+        actor::spawn_with_handle(tx, |state: &mut mpsc::Sender<i32>, msg: i32| {
+            let _ = state.send(msg);
+        });
     actor_ref.send(99).unwrap();
     assert_eq!(rx.recv_timeout(Duration::from_secs(2)).unwrap(), 99);
     assert_eq!(handle.id(), actor_ref.id());
@@ -486,7 +490,8 @@ fn session_three_step_protocol() {
 #[test]
 fn session_different_types_each_step() {
     // Send bool, recv i32, send String, recv u64, end.
-    type Proto = SessionSend<bool, SessionRecv<i32, SessionSend<String, SessionRecv<u64, SessionEnd>>>>;
+    type Proto =
+        SessionSend<bool, SessionRecv<i32, SessionSend<String, SessionRecv<u64, SessionEnd>>>>;
     let (client, server) = session::session_channel::<Proto>();
 
     let h = thread::spawn(move || {
@@ -633,7 +638,10 @@ fn session_send_unit() {
 #[test]
 fn session_complex_five_step() {
     // A 5-step ping-pong.
-    type Proto = SessionSend<u32, SessionRecv<u32, SessionSend<u32, SessionRecv<u32, SessionSend<u32, SessionEnd>>>>>;
+    type Proto = SessionSend<
+        u32,
+        SessionRecv<u32, SessionSend<u32, SessionRecv<u32, SessionSend<u32, SessionEnd>>>>,
+    >;
     let (client, server) = session::session_channel::<Proto>();
 
     let h = thread::spawn(move || {
@@ -709,7 +717,11 @@ fn scheduler_round_robin_fairness() {
     sched.spawn(move || {
         let n = c1.fetch_add(1, Ordering::SeqCst);
         log1.lock().unwrap().push('A');
-        if n >= 4 { TaskStatus::Done } else { TaskStatus::Ready }
+        if n >= 4 {
+            TaskStatus::Done
+        } else {
+            TaskStatus::Ready
+        }
     });
 
     let log2 = Arc::clone(&log);
@@ -718,7 +730,11 @@ fn scheduler_round_robin_fairness() {
     sched.spawn(move || {
         let n = c2.fetch_add(1, Ordering::SeqCst);
         log2.lock().unwrap().push('B');
-        if n >= 4 { TaskStatus::Done } else { TaskStatus::Ready }
+        if n >= 4 {
+            TaskStatus::Done
+        } else {
+            TaskStatus::Ready
+        }
     });
 
     thread::sleep(Duration::from_millis(300));
@@ -726,8 +742,8 @@ fn scheduler_round_robin_fairness() {
 
     let log = log.lock().unwrap();
     assert_eq!(log.len(), 10); // 5 + 5
-    // Fairness: A and B should interleave (ABABAB...).
-    // With a single worker and round-robin, the pattern should alternate.
+                               // Fairness: A and B should interleave (ABABAB...).
+                               // With a single worker and round-robin, the pattern should alternate.
     assert_eq!(log[0], 'A');
     assert_eq!(log[1], 'B');
 }
@@ -774,7 +790,11 @@ fn scheduler_multi_step_task() {
     let sched = Scheduler::new(1);
     sched.spawn(move || {
         let n = c.fetch_add(1, Ordering::SeqCst);
-        if n >= 9 { TaskStatus::Done } else { TaskStatus::Ready }
+        if n >= 9 {
+            TaskStatus::Done
+        } else {
+            TaskStatus::Ready
+        }
     });
 
     thread::sleep(Duration::from_millis(200));

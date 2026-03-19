@@ -8,3 +8,6 @@ description = "RIINA source location tracking with 8-byte packed spans"
 
 # Zero external dependencies (Law 8: No Dependencies)
 [dependencies]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
