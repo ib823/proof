@@ -141,6 +141,12 @@ paparan {
 }`
   },
   {
+    name: 'Blockchain',
+    code: `// Smart contract deployment
+biar kontrak = kontrak_pintar { 0 };
+kontrak`
+  },
+  {
     name: 'Builtins',
     code: `// Built-in functions (bilingual)
 biar nama = "RIINA";
@@ -161,6 +167,7 @@ const KEYWORDS = new Set([
   'sekali', 'benar', 'palsu', 'tiada',
   'pelakon', 'lahir', 'hantar', 'terima', 'kendalikan', 'keadaan',
   'paparan', 'tulisan', 'butang', 'warna', 'kontras', 'baris', 'lajur',
+  'kontrak_pintar', 'token', 'konsensus', 'sukuk', 'mudarabah', 'zakat', 'wakaf',
 ]);
 
 const TYPES = new Set([

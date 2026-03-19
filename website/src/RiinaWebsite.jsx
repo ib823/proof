@@ -30,10 +30,10 @@ const RiinaWebsite = () => {
       version: '0.3.0',
       date: '2026-03-19',
       highlights: [
-        'JALINAN Phase J1: session-typed actors (pelakon, lahir, hantar, terima) — end-to-end pipeline',
-        'Actor runtime crate with pthread C backend, mailbox, supervisor, session channels',
-        '71,351 proof artifacts across 10 provers (5 mechanized, 2 compiled)',
-        'Content-addressed values (cincang) and CRDT merge (gabung) with real codegen',
+        '12,385 Coq Qed across 310 files — 0 Admitted, 0 axioms',
+        '74,228 total proof artifacts across 10 provers',
+        '19 Rust crates, 2,476 tests passing',
+        'JALINAN actors, CAHAYA UI framework, Blockchain/Syariah keywords',
       ],
     },
     {
@@ -389,6 +389,20 @@ const RiinaWebsite = () => {
         { bm: 'koreografi', en: 'choreography' }, { bm: 'peranan', en: 'role' },
         { bm: 'keadaan', en: 'state' }, { bm: 'penyelia', en: 'supervisor' },
         { bm: 'gabung', en: 'merge' }, { bm: 'cincang', en: 'hash' },
+        { bm: 'sahkan', en: 'validate' },
+      ],
+      cahaya: [
+        { bm: 'paparan', en: 'display' }, { bm: 'susun', en: 'layout' },
+        { bm: 'warna', en: 'color' }, { bm: 'tulisan', en: 'text' },
+        { bm: 'butang', en: 'button' }, { bm: 'kontras', en: 'contrast' },
+        { bm: 'mudahcapai', en: 'accessible' }, { bm: 'baris', en: 'row' },
+        { bm: 'lajur', en: 'column' },
+      ],
+      blockchain: [
+        { bm: 'kontrak_pintar', en: 'smart_contract' }, { bm: 'token', en: 'token' },
+        { bm: 'konsensus', en: 'consensus' }, { bm: 'sukuk', en: 'sukuk' },
+        { bm: 'mudarabah', en: 'mudarabah' }, { bm: 'zakat', en: 'zakat' },
+        { bm: 'wakaf', en: 'waqf' },
       ],
     };
 
@@ -433,6 +447,8 @@ const RiinaWebsite = () => {
                 <KwSection title="Security" items={keywords.security} />
                 <KwSection title="Effects" items={keywords.effects} />
                 <KwSection title="JALINAN (Distributed)" items={keywords.jalinan} />
+                <KwSection title="CAHAYA (UI)" items={keywords.cahaya} />
+                <KwSection title="Blockchain / Syariah" items={keywords.blockchain} />
 
                 <h3 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:16,marginTop:32}}>Example</h3>
                 <pre className="code-block">{`// pengesahan.rii — Authentication
@@ -864,6 +880,8 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
               { name: 'Concurrency & Effects', desc: 'Session types, effect algebra, data-race freedom' },
               { name: 'Runtime & Hardware', desc: 'Proof bundles, constant-time, side-channel models' },
               { name: 'Runtime Verification', desc: '6-layer runtime: verified allocator, CHERI hardware, Coq monitors, eBPF kernel, attestation, execution receipts' },
+              { name: 'Runtime Proof Architecture', desc: 'Phase 7: Proof bundles, capability gates, hardware attestation, execution receipts' },
+              { name: 'TERAS-OS', desc: 'Phase 9: Microkernel OS with verified memory, process isolation, and capability-based security' },
             ].map((d, i) => (
               <div key={i} className="card" style={{padding:'16px 20px'}}>
                 <div style={{fontSize:14,fontWeight:500,marginBottom:4}}>{d.name}</div>
