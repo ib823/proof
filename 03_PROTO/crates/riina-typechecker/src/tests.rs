@@ -1049,24 +1049,13 @@ mod formalized_tests {
 
         // if (deref secret_ref) > 0 then public_ref := 1 else public_ref := 0
         // The deref is fine, the comparison is fine, but the assignments are implicit flows.
-        let cond = Expr::BinOp(
-            BinOp::Gt,
-            Box::new(deref),
-            Box::new(Expr::Int(0)),
-        );
-        let assign_then = Expr::Assign(
-            Box::new(public_ref.clone()),
-            Box::new(Expr::Int(1)),
-        );
+        let cond = Expr::BinOp(BinOp::Gt, Box::new(deref), Box::new(Expr::Int(0)));
+        let assign_then = Expr::Assign(Box::new(public_ref.clone()), Box::new(Expr::Int(1)));
         let assign_else = Expr::Assign(
             Box::new(Expr::Ref(Box::new(Expr::Int(0)), SecurityLevel::Public)),
             Box::new(Expr::Int(0)),
         );
-        let if_expr = Expr::If(
-            Box::new(cond),
-            Box::new(assign_then),
-            Box::new(assign_else),
-        );
+        let if_expr = Expr::If(Box::new(cond), Box::new(assign_then), Box::new(assign_else));
 
         // Must fail with ImplicitFlowViolation
         match type_check_full(&mut ctx, &if_expr) {
@@ -1121,7 +1110,10 @@ mod formalized_tests {
                 target_level: SecurityLevel::Internal,
                 ..
             }) => {} // Good: no-write-down enforced
-            other => panic!("Expected ImplicitFlowViolation (no-write-down), got {:?}", other),
+            other => panic!(
+                "Expected ImplicitFlowViolation (no-write-down), got {:?}",
+                other
+            ),
         }
     }
 
@@ -1179,11 +1171,7 @@ mod formalized_tests {
             Box::new(Expr::Ref(Box::new(Expr::Int(0)), SecurityLevel::Public)),
             Box::new(Expr::Int(1)),
         );
-        let if_expr = Expr::If(
-            Box::new(cond),
-            Box::new(assign),
-            Box::new(Expr::Unit),
-        );
+        let if_expr = Expr::If(Box::new(cond), Box::new(assign), Box::new(Expr::Unit));
         // Should succeed — no secret data involved
         type_check_full(&mut ctx, &if_expr).unwrap();
     }
@@ -2978,11 +2966,7 @@ mod formalized_tests {
     fn test_non_ct_values_unaffected() {
         // Normal (non-CT) values should work as before — no CT wrapper.
         let mut ctx = TypingContext::new();
-        let add = Expr::BinOp(
-            BinOp::Add,
-            Box::new(Expr::Int(1)),
-            Box::new(Expr::Int(2)),
-        );
+        let add = Expr::BinOp(BinOp::Add, Box::new(Expr::Int(1)), Box::new(Expr::Int(2)));
         let (ty, _eff) = type_check_full(&mut ctx, &add).unwrap();
         assert_eq!(ty, Ty::Int);
     }
@@ -3028,16 +3012,6 @@ mod formalized_tests {
     fn test_linear_variable_used_once_ok() {
         // Linear variable used exactly once in Let body → should succeed.
         // Corresponds to Coq LinearTypes.v TYPE_002_01.
-        let mut ctx = TypingContext::new();
-        // let lin x = 42 in x (use once → OK)
-        let expr = Expr::Let(
-            "x".into(),
-            None,
-            Box::new(Expr::Int(42)),
-            Box::new(Expr::Var("x".into())),
-        );
-        // Manually set up linear binding by extending with linearity
-        ctx = ctx.extend_gamma_linear("_dummy".into(), Ty::Unit, Linearity::Unrestricted);
         // For the test, we build the Let expression but we need to intercept
         // the binding to mark it as Linear. Since Let uses extend_gamma (Unrestricted),
         // we test directly via the TypeEnv API and then via a manual context.
@@ -3060,7 +3034,12 @@ mod formalized_tests {
         let _ = type_check_full(&mut ctx, &Expr::Var("x".into())).unwrap();
         // Second use: must error
         match type_check_full(&mut ctx, &Expr::Var("x".into())) {
-            Err(TypeError::LinearityViolation { var, linearity, usage, .. }) => {
+            Err(TypeError::LinearityViolation {
+                var,
+                linearity,
+                usage,
+                ..
+            }) => {
                 assert_eq!(var, "x");
                 assert_eq!(linearity, Linearity::Linear);
                 assert_eq!(usage, Usage::Many);
@@ -3077,7 +3056,12 @@ mod formalized_tests {
         let ctx = ctx.extend_gamma_linear("x".into(), Ty::Int, Linearity::Linear);
         // Don't use x at all
         match ctx.gamma.check_linearity_at_exit(&"x".into()) {
-            Err(TypeError::LinearityViolation { var, linearity, usage, .. }) => {
+            Err(TypeError::LinearityViolation {
+                var,
+                linearity,
+                usage,
+                ..
+            }) => {
                 assert_eq!(var, "x");
                 assert_eq!(linearity, Linearity::Linear);
                 assert_eq!(usage, Usage::Zero);
@@ -3126,7 +3110,9 @@ mod formalized_tests {
         let ctx = TypingContext::new();
         let ctx = ctx.extend_gamma_linear("x".into(), Ty::Int, Linearity::Relevant);
         match ctx.gamma.check_linearity_at_exit(&"x".into()) {
-            Err(TypeError::LinearityViolation { linearity, usage, .. }) => {
+            Err(TypeError::LinearityViolation {
+                linearity, usage, ..
+            }) => {
                 assert_eq!(linearity, Linearity::Relevant);
                 assert_eq!(usage, Usage::Zero);
             }
@@ -3187,7 +3173,10 @@ mod formalized_tests {
         // SecureChan type preserves both session type and security level.
         let mut ctx = TypingContext::new();
         let st = SessionType::Recv(Box::new(Ty::Bool), Box::new(SessionType::End));
-        ctx = ctx.extend_gamma("sch".into(), Ty::SecureChan(st.clone(), SecurityLevel::Secret));
+        ctx = ctx.extend_gamma(
+            "sch".into(),
+            Ty::SecureChan(st.clone(), SecurityLevel::Secret),
+        );
         let (ty, eff) = type_check_full(&mut ctx, &Expr::Var("sch".into())).unwrap();
         assert_eq!(ty, Ty::SecureChan(st, SecurityLevel::Secret));
         assert_eq!(eff, Effect::Pure);
@@ -3252,7 +3241,12 @@ mod formalized_tests {
             Box::new(Expr::Int(0)),
         );
         match type_check_full(&mut ctx, &expr) {
-            Err(TypeError::LinearityViolation { var, linearity, usage, .. }) => {
+            Err(TypeError::LinearityViolation {
+                var,
+                linearity,
+                usage,
+                ..
+            }) => {
                 assert_eq!(var, "x");
                 assert_eq!(linearity, Linearity::Linear);
                 assert_eq!(usage, Usage::Zero);
@@ -3286,7 +3280,12 @@ mod formalized_tests {
             Box::new(Expr::Int(0)),
         );
         match type_check_full(&mut ctx, &expr) {
-            Err(TypeError::LinearityViolation { var, linearity, usage, .. }) => {
+            Err(TypeError::LinearityViolation {
+                var,
+                linearity,
+                usage,
+                ..
+            }) => {
                 assert_eq!(var, "x");
                 assert_eq!(linearity, Linearity::Relevant);
                 assert_eq!(usage, Usage::Zero);
@@ -3450,10 +3449,7 @@ mod formalized_tests {
         let lam = Expr::Lam(
             "x".into(),
             Ty::Int,
-            Box::new(Expr::Ref(
-                Box::new(Expr::Int(42)),
-                SecurityLevel::Public,
-            )),
+            Box::new(Expr::Ref(Box::new(Expr::Int(42)), SecurityLevel::Public)),
         );
         // The lambda itself typechecks — the effect is in the function type.
         // The body has Mut effect, so the function type should reflect that.
@@ -3508,10 +3504,10 @@ mod formalized_tests {
 #[cfg(test)]
 mod jalinan_phase6_tests {
     use crate::{
-        is_dual, session_dual, session_subtype, type_check, type_check_full, types_compatible,
-        Context, TypeError, TypingContext,
+        is_dual, session_dual, session_subtype, type_check, type_check_full, Context, TypeError,
+        TypingContext,
     };
-    use riina_types::{Effect, Expr, SecurityLevel, SessionType, Ty};
+    use riina_types::{Effect, Expr, SessionType, Ty};
 
     // ── Helper: make a handler function Fn(msg_ty) -> state_ty ──
 
@@ -3563,27 +3559,15 @@ mod jalinan_phase6_tests {
 
     #[test]
     fn test_session_dual_select_to_branch() {
-        let s = SessionType::Select(
-            Box::new(SessionType::End),
-            Box::new(SessionType::End),
-        );
-        let expected = SessionType::Branch(
-            Box::new(SessionType::End),
-            Box::new(SessionType::End),
-        );
+        let s = SessionType::Select(Box::new(SessionType::End), Box::new(SessionType::End));
+        let expected = SessionType::Branch(Box::new(SessionType::End), Box::new(SessionType::End));
         assert_eq!(session_dual(&s), expected);
     }
 
     #[test]
     fn test_session_dual_branch_to_select() {
-        let s = SessionType::Branch(
-            Box::new(SessionType::End),
-            Box::new(SessionType::End),
-        );
-        let expected = SessionType::Select(
-            Box::new(SessionType::End),
-            Box::new(SessionType::End),
-        );
+        let s = SessionType::Branch(Box::new(SessionType::End), Box::new(SessionType::End));
+        let expected = SessionType::Select(Box::new(SessionType::End), Box::new(SessionType::End));
         assert_eq!(session_dual(&s), expected);
     }
 
@@ -3800,10 +3784,7 @@ mod jalinan_phase6_tests {
             Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)),
         );
         // init state is Bool, but actor expects Int
-        let expr = Expr::Spawn(
-            Box::new(Expr::Var("a".into())),
-            Box::new(Expr::Bool(true)),
-        );
+        let expr = Expr::Spawn(Box::new(Expr::Var("a".into())), Box::new(Expr::Bool(true)));
         match type_check(&ctx, &expr) {
             Err(TypeError::TypeMismatch { expected, found }) => {
                 assert_eq!(expected, Ty::Int);
@@ -3844,10 +3825,7 @@ mod jalinan_phase6_tests {
             Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)),
         );
         // send Int, but actor expects String messages
-        let expr = Expr::ActorSend(
-            Box::new(Expr::Var("a".into())),
-            Box::new(Expr::Int(42)),
-        );
+        let expr = Expr::ActorSend(Box::new(Expr::Var("a".into())), Box::new(Expr::Int(42)));
         match type_check(&ctx, &expr) {
             Err(TypeError::TypeMismatch { expected, found }) => {
                 assert_eq!(expected, Ty::String);
@@ -3860,10 +3838,7 @@ mod jalinan_phase6_tests {
     #[test]
     fn test_actor_send_non_actor() {
         let ctx = Context::new().extend("x".into(), Ty::Int);
-        let expr = Expr::ActorSend(
-            Box::new(Expr::Var("x".into())),
-            Box::new(Expr::Int(0)),
-        );
+        let expr = Expr::ActorSend(Box::new(Expr::Var("x".into())), Box::new(Expr::Int(0)));
         match type_check(&ctx, &expr) {
             Err(TypeError::ExpectedActor(_)) => {}
             other => panic!("Expected ExpectedActor, got {:?}", other),
@@ -3960,10 +3935,7 @@ mod jalinan_phase6_tests {
         let (ty, _eff) = type_check(&ctx, &expr).unwrap();
         assert_eq!(
             ty,
-            Ty::Choreography(
-                vec!["Client".into(), "Server".into()],
-                protocol,
-            )
+            Ty::Choreography(vec!["Client".into(), "Server".into()], protocol,)
         );
     }
 
@@ -4005,7 +3977,10 @@ mod jalinan_phase6_tests {
         let (ty, _) = type_check(&ctx, &expr).unwrap();
         match ty {
             Ty::Choreography(roles, _) => {
-                assert_eq!(roles, vec!["R1".to_string(), "R2".to_string(), "R3".to_string()]);
+                assert_eq!(
+                    roles,
+                    vec!["R1".to_string(), "R2".to_string(), "R3".to_string()]
+                );
             }
             other => panic!("Expected Choreography, got {:?}", other),
         }
@@ -4072,10 +4047,7 @@ mod jalinan_phase6_tests {
             protocol: protocol.clone(),
         };
         let (ty, _) = type_check(&ctx, &expr).unwrap();
-        assert_eq!(
-            ty,
-            Ty::Choreography(vec!["A".into(), "B".into()], protocol)
-        );
+        assert_eq!(ty, Ty::Choreography(vec!["A".into(), "B".into()], protocol));
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -4118,10 +4090,7 @@ mod jalinan_phase6_tests {
     fn test_crdt_merge_op_mismatch() {
         let ctx = Context::new()
             .extend("a".into(), Ty::CRDT(Box::new(Ty::Int), Box::new(Ty::Int)))
-            .extend(
-                "b".into(),
-                Ty::CRDT(Box::new(Ty::Int), Box::new(Ty::Bool)),
-            );
+            .extend("b".into(), Ty::CRDT(Box::new(Ty::Int), Box::new(Ty::Bool)));
         let expr = Expr::CRDTMerge(
             Box::new(Expr::Var("a".into())),
             Box::new(Expr::Var("b".into())),
@@ -4216,14 +4185,8 @@ mod jalinan_phase6_tests {
 
     #[test]
     fn test_content_verify_success() {
-        let ctx = Context::new().extend(
-            "hash".into(),
-            Ty::ContentAddressed(Box::new(Ty::Int)),
-        );
-        let expr = Expr::ContentVerify(
-            Box::new(Expr::Var("hash".into())),
-            Box::new(Expr::Int(42)),
-        );
+        let ctx = Context::new().extend("hash".into(), Ty::ContentAddressed(Box::new(Ty::Int)));
+        let expr = Expr::ContentVerify(Box::new(Expr::Var("hash".into())), Box::new(Expr::Int(42)));
         let (ty, eff) = type_check(&ctx, &expr).unwrap();
         assert_eq!(ty, Ty::Bool);
         assert_eq!(eff, Effect::Crypto);
@@ -4232,10 +4195,7 @@ mod jalinan_phase6_tests {
     #[test]
     fn test_content_verify_requires_content_addressed_hash() {
         let ctx = Context::new().extend("hash".into(), Ty::String);
-        let expr = Expr::ContentVerify(
-            Box::new(Expr::Var("hash".into())),
-            Box::new(Expr::Int(42)),
-        );
+        let expr = Expr::ContentVerify(Box::new(Expr::Var("hash".into())), Box::new(Expr::Int(42)));
         match type_check(&ctx, &expr) {
             Err(TypeError::TypeMismatch { expected, found }) => {
                 assert_eq!(expected, Ty::ContentAddressed(Box::new(Ty::Int)));
@@ -4247,14 +4207,8 @@ mod jalinan_phase6_tests {
 
     #[test]
     fn test_content_verify_rejects_mismatched_inner_type() {
-        let ctx = Context::new().extend(
-            "hash".into(),
-            Ty::ContentAddressed(Box::new(Ty::String)),
-        );
-        let expr = Expr::ContentVerify(
-            Box::new(Expr::Var("hash".into())),
-            Box::new(Expr::Int(42)),
-        );
+        let ctx = Context::new().extend("hash".into(), Ty::ContentAddressed(Box::new(Ty::String)));
+        let expr = Expr::ContentVerify(Box::new(Expr::Var("hash".into())), Box::new(Expr::Int(42)));
         match type_check(&ctx, &expr) {
             Err(TypeError::TypeMismatch { expected, found }) => {
                 assert_eq!(expected, Ty::ContentAddressed(Box::new(Ty::Int)));
@@ -4274,20 +4228,15 @@ mod jalinan_phase6_tests {
             "a".into(),
             Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)),
         );
-        let expr = Expr::Spawn(
-            Box::new(Expr::Var("a".into())),
-            Box::new(Expr::Int(0)),
-        );
+        let expr = Expr::Spawn(Box::new(Expr::Var("a".into())), Box::new(Expr::Int(0)));
         let (_ty, eff) = type_check(&ctx, &expr).unwrap();
         assert_eq!(eff, Effect::Process);
     }
 
     #[test]
     fn test_actor_recv_effect_is_network() {
-        let ctx = Context::new().extend(
-            "a".into(),
-            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::Bool)),
-        );
+        let ctx =
+            Context::new().extend("a".into(), Ty::Actor(Box::new(Ty::Int), Box::new(Ty::Bool)));
         let expr = Expr::ActorRecv(Box::new(Expr::Var("a".into())));
         let (_ty, eff) = type_check(&ctx, &expr).unwrap();
         assert_eq!(eff, Effect::Network);
@@ -4305,28 +4254,63 @@ mod jalinan_phase6_tests {
     }
 
     #[test]
+    fn test_ui_text_requires_color_argument() {
+        let ctx = Context::new();
+        let expr = Expr::UIText(
+            Box::new(Expr::String("hello".into())),
+            Box::new(Expr::String("#ffffff".into())),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::Color);
+                assert_eq!(found, Ty::String);
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_ui_contrast_white_on_black_passes() {
+        let ctx = Context::new();
+        let expr = Expr::UIContrastCheck(
+            Box::new(Expr::UIColor(255, 255, 255)),
+            Box::new(Expr::UIColor(0, 0, 0)),
+        );
+        let (ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Bool);
+        assert_eq!(eff, Effect::Pure);
+    }
+
+    #[test]
+    fn test_ui_contrast_requires_color_arguments() {
+        let ctx = Context::new();
+        let expr = Expr::UIContrastCheck(
+            Box::new(Expr::String("white".into())),
+            Box::new(Expr::UIColor(0, 0, 0)),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::Color);
+                assert_eq!(found, Ty::String);
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
     fn test_actor_full_lifecycle() {
         // Declare actor, then test send and recv in separate contexts
         let ctx = Context::new();
         let handler = make_handler(Ty::String, Ty::Int);
         let decl = make_actor_decl(Ty::Int, Ty::String, Expr::Int(0), handler);
         let (decl_ty, _) = type_check(&ctx, &decl).unwrap();
-        assert_eq!(
-            decl_ty,
-            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String))
-        );
+        assert_eq!(decl_ty, Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)));
 
         // Spawn: use the actor type in context
         let ctx2 = Context::new().extend("actor".into(), decl_ty);
-        let spawn_expr = Expr::Spawn(
-            Box::new(Expr::Var("actor".into())),
-            Box::new(Expr::Int(42)),
-        );
+        let spawn_expr = Expr::Spawn(Box::new(Expr::Var("actor".into())), Box::new(Expr::Int(42)));
         let (spawn_ty, _) = type_check(&ctx2, &spawn_expr).unwrap();
-        assert_eq!(
-            spawn_ty,
-            Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String))
-        );
+        assert_eq!(spawn_ty, Ty::Actor(Box::new(Ty::Int), Box::new(Ty::String)));
 
         // Send
         let ctx3 = Context::new().extend("spawned".into(), spawn_ty);

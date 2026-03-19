@@ -7,7 +7,9 @@
 //!
 //! Mode: ULTRA KIASU | FUCKING PARANOID | ZERO TRUST | ZERO LAZINESS
 
-use riina_types::{BinOp, Effect, Expr, Ident, Linearity, Location, SecurityLevel, SessionType, StoreTy, Ty, Usage};
+use riina_types::{
+    BinOp, Effect, Expr, Ident, Linearity, Location, SecurityLevel, SessionType, StoreTy, Ty, Usage,
+};
 use std::collections::{HashMap, HashSet};
 
 pub mod program;
@@ -2382,21 +2384,15 @@ fn strip_constant_time(ty: &Ty) -> (&Ty, bool) {
 pub fn session_dual(s: &SessionType) -> SessionType {
     match s {
         SessionType::End => SessionType::End,
-        SessionType::Send(ty, cont) => {
-            SessionType::Recv(ty.clone(), Box::new(session_dual(cont)))
-        }
-        SessionType::Recv(ty, cont) => {
-            SessionType::Send(ty.clone(), Box::new(session_dual(cont)))
-        }
+        SessionType::Send(ty, cont) => SessionType::Recv(ty.clone(), Box::new(session_dual(cont))),
+        SessionType::Recv(ty, cont) => SessionType::Send(ty.clone(), Box::new(session_dual(cont))),
         SessionType::Select(l, r) => {
             SessionType::Branch(Box::new(session_dual(l)), Box::new(session_dual(r)))
         }
         SessionType::Branch(l, r) => {
             SessionType::Select(Box::new(session_dual(l)), Box::new(session_dual(r)))
         }
-        SessionType::Rec(x, body) => {
-            SessionType::Rec(x.clone(), Box::new(session_dual(body)))
-        }
+        SessionType::Rec(x, body) => SessionType::Rec(x.clone(), Box::new(session_dual(body))),
         SessionType::Var(x) => SessionType::Var(x.clone()),
     }
 }
@@ -2426,9 +2422,7 @@ pub fn session_subtype(sub: &SessionType, sup: &SessionType) -> bool {
         (SessionType::Branch(l1, r1), SessionType::Branch(l2, r2)) => {
             session_subtype(l1, l2) && session_subtype(r1, r2)
         }
-        (SessionType::Rec(x1, b1), SessionType::Rec(x2, b2)) => {
-            x1 == x2 && session_subtype(b1, b2)
-        }
+        (SessionType::Rec(x1, b1), SessionType::Rec(x2, b2)) => x1 == x2 && session_subtype(b1, b2),
         (SessionType::Var(x1), SessionType::Var(x2)) => x1 == x2,
         _ => false,
     }
@@ -2568,9 +2562,8 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             match t {
                 Ty::Sum(t_left, t_right) => {
                     // IFC: Elevate Δ based on scrutinee's security level
-                    let scrutinee_level = security_level_of_type(
-                        &Ty::Sum(t_left.clone(), t_right.clone()),
-                    );
+                    let scrutinee_level =
+                        security_level_of_type(&Ty::Sum(t_left.clone(), t_right.clone()));
                     let branch_delta = ctx.delta.join(scrutinee_level);
 
                     let mut ctx1 = TypingContext {
@@ -2866,10 +2859,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             if !ctx.granted.is_empty() && !ctx.granted.contains(eff) {
                 return Err(TypeError::CapabilityViolation {
                     required: *eff,
-                    message: format!(
-                        "effect {:?} required but not granted in current scope",
-                        eff
-                    ),
+                    message: format!("effect {:?} required but not granted in current scope", eff),
                 });
             }
             let (t, e_eff) = type_check_full(ctx, e)?;
@@ -2945,9 +2935,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
             match op {
                 BinOp::Add => {
-                    if types_compatible(&Ty::String, inner1) && types_compatible(&Ty::String, inner2) {
+                    if types_compatible(&Ty::String, inner1)
+                        && types_compatible(&Ty::String, inner2)
+                    {
                         Ok((label_result(Ty::String), eff))
-                    } else if types_compatible(&Ty::Int, inner1) && types_compatible(&Ty::Int, inner2) {
+                    } else if types_compatible(&Ty::Int, inner1)
+                        && types_compatible(&Ty::Int, inner2)
+                    {
                         Ok((label_result(Ty::Int), eff))
                     } else {
                         Err(TypeError::TypeMismatch {
@@ -3025,7 +3019,6 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // ════════════════════════════════════════════════════════════════════
         // JALINAN Phase 6: Session Types, Actors, Choreography, CRDTs
         // ════════════════════════════════════════════════════════════════════
-
         Expr::ActorDecl {
             name: _,
             state_ty,
@@ -3147,7 +3140,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
         Expr::ContentHash(expr) => {
             let (inner_ty, eff) = type_check_full(ctx, expr)?;
-            Ok((Ty::ContentAddressed(Box::new(inner_ty)), eff.join(Effect::Crypto)))
+            Ok((
+                Ty::ContentAddressed(Box::new(inner_ty)),
+                eff.join(Effect::Crypto),
+            ))
         }
 
         Expr::ContentVerify(expected_hash, value) => {
@@ -3171,7 +3167,6 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // ════════════════════════════════════════════════════════════════════
         // CAHAYA Phase J5: UI Primitives
         // ════════════════════════════════════════════════════════════════════
-
         Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
             let mut eff = Effect::Pure;
             for e in elems {
@@ -3183,7 +3178,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
         Expr::UIText(content, color) => {
             let (_, eff1) = type_check_full(ctx, content)?;
-            let (_, eff2) = type_check_full(ctx, color)?;
+            let (color_ty, eff2) = type_check_full(ctx, color)?;
+            if !types_compatible(&Ty::Color, &color_ty) {
+                return Err(TypeError::TypeMismatch {
+                    expected: Ty::Color,
+                    found: color_ty,
+                });
+            }
             Ok((Ty::Element, eff1.join(eff2)))
         }
 
@@ -3198,8 +3199,20 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         Expr::UIStyleDecl { .. } => Ok((Ty::UIStyle, Effect::Pure)),
 
         Expr::UIContrastCheck(fg, bg) => {
-            let (_, eff1) = type_check_full(ctx, fg)?;
-            let (_, eff2) = type_check_full(ctx, bg)?;
+            let (fg_ty, eff1) = type_check_full(ctx, fg)?;
+            let (bg_ty, eff2) = type_check_full(ctx, bg)?;
+            if !types_compatible(&Ty::Color, &fg_ty) {
+                return Err(TypeError::TypeMismatch {
+                    expected: Ty::Color,
+                    found: fg_ty,
+                });
+            }
+            if !types_compatible(&Ty::Color, &bg_ty) {
+                return Err(TypeError::TypeMismatch {
+                    expected: Ty::Color,
+                    found: bg_ty,
+                });
+            }
             Ok((Ty::Bool, eff1.join(eff2)))
         }
     }
@@ -3552,7 +3565,6 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         // ════════════════════════════════════════════════════════════════════
         // JALINAN Phase 6: Session Types, Actors, Choreography, CRDTs
         // ════════════════════════════════════════════════════════════════════
-
         Expr::ActorDecl {
             name: _,
             state_ty,
@@ -3672,7 +3684,10 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
 
         Expr::ContentHash(expr) => {
             let (inner_ty, eff) = type_check(ctx, expr)?;
-            Ok((Ty::ContentAddressed(Box::new(inner_ty)), eff.join(Effect::Crypto)))
+            Ok((
+                Ty::ContentAddressed(Box::new(inner_ty)),
+                eff.join(Effect::Crypto),
+            ))
         }
 
         Expr::ContentVerify(expected_hash, value) => {
@@ -3705,7 +3720,13 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
 
         Expr::UIText(content, color) => {
             let (_, eff1) = type_check(ctx, content)?;
-            let (_, eff2) = type_check(ctx, color)?;
+            let (color_ty, eff2) = type_check(ctx, color)?;
+            if !types_compatible(&Ty::Color, &color_ty) {
+                return Err(TypeError::TypeMismatch {
+                    expected: Ty::Color,
+                    found: color_ty,
+                });
+            }
             Ok((Ty::Element, eff1.join(eff2)))
         }
 
@@ -3720,8 +3741,20 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         Expr::UIStyleDecl { .. } => Ok((Ty::UIStyle, Effect::Pure)),
 
         Expr::UIContrastCheck(fg, bg) => {
-            let (_, eff1) = type_check(ctx, fg)?;
-            let (_, eff2) = type_check(ctx, bg)?;
+            let (fg_ty, eff1) = type_check(ctx, fg)?;
+            let (bg_ty, eff2) = type_check(ctx, bg)?;
+            if !types_compatible(&Ty::Color, &fg_ty) {
+                return Err(TypeError::TypeMismatch {
+                    expected: Ty::Color,
+                    found: fg_ty,
+                });
+            }
+            if !types_compatible(&Ty::Color, &bg_ty) {
+                return Err(TypeError::TypeMismatch {
+                    expected: Ty::Color,
+                    found: bg_ty,
+                });
+            }
             Ok((Ty::Bool, eff1.join(eff2)))
         }
     }

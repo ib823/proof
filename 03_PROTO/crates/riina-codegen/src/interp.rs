@@ -64,6 +64,76 @@ fn declassify_proof_matches(secret_expr: &Expr, proof_expr: &Expr) -> bool {
     }
 }
 
+fn css_hex_color(r: u8, g: u8, b: u8) -> String {
+    format!("#{r:02x}{g:02x}{b:02x}")
+}
+
+fn ansi_colorize(text: &str, r: u8, g: u8, b: u8) -> String {
+    format!("\x1b[38;2;{r};{g};{b}m{text}\x1b[0m")
+}
+
+fn css_style_fragment(padding: Option<u32>, font_size: Option<u32>) -> String {
+    let mut styles = Vec::new();
+    if let Some(padding) = padding {
+        styles.push(format!("padding:{padding}px"));
+    }
+    if let Some(font_size) = font_size {
+        styles.push(format!("font-size:{font_size}px"));
+    }
+    styles.join(";")
+}
+
+fn render_ui_value(value: &Value) -> String {
+    match value {
+        Value::String(s) => s.clone(),
+        Value::Bool(b) => b.to_string(),
+        Value::Int(n) => n.to_string(),
+        Value::Unit => "()".to_string(),
+        Value::Color(r, g, b) => css_hex_color(*r, *g, *b),
+        _ => value.to_string(),
+    }
+}
+
+fn linearize_channel(channel: u8) -> f64 {
+    let srgb = f64::from(channel) / 255.0;
+    if srgb <= 0.039_28 {
+        srgb / 12.92
+    } else {
+        ((srgb + 0.055) / 1.055).powf(2.4)
+    }
+}
+
+fn relative_luminance(r: u8, g: u8, b: u8) -> f64 {
+    0.2126 * linearize_channel(r) + 0.7152 * linearize_channel(g) + 0.0722 * linearize_channel(b)
+}
+
+fn contrast_ratio(fg: (u8, u8, u8), bg: (u8, u8, u8)) -> f64 {
+    let fg_l = relative_luminance(fg.0, fg.1, fg.2);
+    let bg_l = relative_luminance(bg.0, bg.1, bg.2);
+    let (lighter, darker) = if fg_l >= bg_l {
+        (fg_l, bg_l)
+    } else {
+        (bg_l, fg_l)
+    };
+    (lighter + 0.05) / (darker + 0.05)
+}
+
+fn has_wcag_aa_contrast(fg: (u8, u8, u8), bg: (u8, u8, u8)) -> bool {
+    contrast_ratio(fg, bg) >= 4.5
+}
+
+fn expect_color(value: Value, context: &str) -> Result<(u8, u8, u8)> {
+    if let Value::Color(r, g, b) = value {
+        Ok((r, g, b))
+    } else {
+        Err(Error::TypeMismatch {
+            expected: "color".to_string(),
+            found: format!("{value:?}"),
+            context: context.to_string(),
+        })
+    }
+}
+
 /// Mutable store (heap)
 #[derive(Debug, Clone, Default)]
 pub struct Store {
@@ -636,12 +706,18 @@ impl Interpreter {
             // ═══════════════════════════════════════════════════════════════
             // JALINAN Phase 6 (Actor, Choreography, CRDT, Content-Addressed)
             // ═══════════════════════════════════════════════════════════════
-            Expr::ActorDecl { name, init_state, handler, .. } => {
+            Expr::ActorDecl {
+                name,
+                init_state,
+                handler,
+                ..
+            } => {
                 // Register actor type: evaluate and store handler for spawn
                 let _init = self.eval_with_env(env, init_state)?;
                 let _handler = self.eval_with_env(env, handler)?;
                 // Store actor definition for later use by Spawn
-                self.actor_defs.insert(name.clone(), handler.as_ref().clone());
+                self.actor_defs
+                    .insert(name.clone(), handler.as_ref().clone());
                 Ok(Value::Unit)
             }
 
@@ -673,9 +749,10 @@ impl Interpreter {
                 if let Value::ActorRef(id) = actor {
                     if let Some(handler) = self.actor_handlers.get(&id).cloned() {
                         // Handler is a Lam(param, ty, body) — apply it to the message
-                        let app = Expr::App(Box::new(handler), Box::new(Expr::Int(
-                            msg.as_int().unwrap_or(0)
-                        )));
+                        let app = Expr::App(
+                            Box::new(handler),
+                            Box::new(Expr::Int(msg.as_int().unwrap_or(0))),
+                        );
                         let result = self.eval_with_env(env, &app)?;
                         self.actor_states.insert(id, result);
                     }
@@ -724,15 +801,58 @@ impl Interpreter {
                 Ok(Value::Bool(expected_hash == actual_hash))
             }
 
-            // CAHAYA Phase J5 — UI primitives (not yet interpreted)
-            Expr::UIDisplay(_)
-            | Expr::UIRow(_)
-            | Expr::UIColumn(_)
-            | Expr::UIText(_, _)
-            | Expr::UIButton(_, _)
-            | Expr::UIColor(_, _, _)
-            | Expr::UIStyleDecl { .. }
-            | Expr::UIContrastCheck(_, _) => todo!("CAHAYA Phase J5"),
+            // CAHAYA Phase J5 — UI primitives
+            Expr::UIDisplay(elements) | Expr::UIColumn(elements) => {
+                let rendered = elements
+                    .iter()
+                    .map(|element| {
+                        self.eval_with_env(env, element)
+                            .map(|v| render_ui_value(&v))
+                    })
+                    .collect::<Result<Vec<_>>>()?
+                    .join("\n");
+                Ok(Value::String(rendered))
+            }
+
+            Expr::UIRow(elements) => {
+                let rendered = elements
+                    .iter()
+                    .map(|element| {
+                        self.eval_with_env(env, element)
+                            .map(|v| render_ui_value(&v))
+                    })
+                    .collect::<Result<Vec<_>>>()?
+                    .join(" ");
+                Ok(Value::String(rendered))
+            }
+
+            Expr::UIText(content_expr, color_expr) => {
+                let content = self.eval_with_env(env, content_expr)?;
+                let color = expect_color(self.eval_with_env(env, color_expr)?, "ui_text")?;
+                Ok(Value::String(ansi_colorize(
+                    &render_ui_value(&content),
+                    color.0,
+                    color.1,
+                    color.2,
+                )))
+            }
+
+            Expr::UIButton(label_expr, _handler_expr) => {
+                let label = self.eval_with_env(env, label_expr)?;
+                Ok(Value::String(format!("[{}]", render_ui_value(&label))))
+            }
+
+            Expr::UIColor(r, g, b) => Ok(Value::Color(*r, *g, *b)),
+
+            Expr::UIStyleDecl { padding, font_size } => {
+                Ok(Value::String(css_style_fragment(*padding, *font_size)))
+            }
+
+            Expr::UIContrastCheck(fg_expr, bg_expr) => {
+                let fg = expect_color(self.eval_with_env(env, fg_expr)?, "ui_contrast_check")?;
+                let bg = expect_color(self.eval_with_env(env, bg_expr)?, "ui_contrast_check")?;
+                Ok(Value::Bool(has_wcag_aa_contrast(fg, bg)))
+            }
 
             Expr::BinOp(op, lhs, rhs) => {
                 let l = self.eval_with_env(env, lhs)?;
@@ -819,6 +939,12 @@ fn fnv1a_feed(hash: &mut u64, val: &Value) {
         Value::Hash(bytes) => {
             for &b in bytes {
                 *hash ^= u64::from(b);
+                *hash = hash.wrapping_mul(FNV_PRIME);
+            }
+        }
+        Value::Color(r, g, b) => {
+            for &component in &[*r, *g, *b] {
+                *hash ^= u64::from(component);
                 *hash = hash.wrapping_mul(FNV_PRIME);
             }
         }
@@ -1253,7 +1379,12 @@ mod tests {
                 Box::new(Expr::Var("y".to_string())),
             )),
         );
-        let outer_let = Expr::Let("x".to_string(), None, Box::new(Expr::Int(1)), Box::new(inner_let));
+        let outer_let = Expr::Let(
+            "x".to_string(),
+            None,
+            Box::new(Expr::Int(1)),
+            Box::new(inner_let),
+        );
         assert_eq!(
             interp.eval(&outer_let),
             Ok(Value::Pair(
@@ -1822,20 +1953,14 @@ mod tests {
     #[test]
     fn test_eval_spawn() {
         let mut interp = Interpreter::new();
-        let expr = Expr::Spawn(
-            Box::new(Expr::Unit),
-            Box::new(Expr::Int(0)),
-        );
+        let expr = Expr::Spawn(Box::new(Expr::Unit), Box::new(Expr::Int(0)));
         assert_eq!(interp.eval(&expr), Ok(Value::ActorRef(1)));
     }
 
     #[test]
     fn test_eval_spawn_unique_ids() {
         let mut interp = Interpreter::new();
-        let spawn = Expr::Spawn(
-            Box::new(Expr::Unit),
-            Box::new(Expr::Int(0)),
-        );
+        let spawn = Expr::Spawn(Box::new(Expr::Unit), Box::new(Expr::Int(0)));
         let r1 = interp.eval(&spawn).unwrap();
         let r2 = interp.eval(&spawn).unwrap();
         let r3 = interp.eval(&spawn).unwrap();
@@ -1848,7 +1973,7 @@ mod tests {
     fn test_eval_actor_send() {
         let mut interp = Interpreter::new();
         let expr = Expr::ActorSend(
-            Box::new(Expr::Int(1)), // actor ref
+            Box::new(Expr::Int(1)),  // actor ref
             Box::new(Expr::Int(42)), // message
         );
         assert_eq!(interp.eval(&expr), Ok(Value::Unit));
@@ -1864,40 +1989,28 @@ mod tests {
     #[test]
     fn test_eval_crdt_merge_int() {
         let mut interp = Interpreter::new();
-        let expr = Expr::CRDTMerge(
-            Box::new(Expr::Int(5)),
-            Box::new(Expr::Int(10)),
-        );
+        let expr = Expr::CRDTMerge(Box::new(Expr::Int(5)), Box::new(Expr::Int(10)));
         assert_eq!(interp.eval(&expr), Ok(Value::Int(10)));
     }
 
     #[test]
     fn test_eval_crdt_merge_int_reversed() {
         let mut interp = Interpreter::new();
-        let expr = Expr::CRDTMerge(
-            Box::new(Expr::Int(10)),
-            Box::new(Expr::Int(5)),
-        );
+        let expr = Expr::CRDTMerge(Box::new(Expr::Int(10)), Box::new(Expr::Int(5)));
         assert_eq!(interp.eval(&expr), Ok(Value::Int(10)));
     }
 
     #[test]
     fn test_eval_crdt_merge_same() {
         let mut interp = Interpreter::new();
-        let expr = Expr::CRDTMerge(
-            Box::new(Expr::Int(7)),
-            Box::new(Expr::Int(7)),
-        );
+        let expr = Expr::CRDTMerge(Box::new(Expr::Int(7)), Box::new(Expr::Int(7)));
         assert_eq!(interp.eval(&expr), Ok(Value::Int(7)));
     }
 
     #[test]
     fn test_eval_crdt_merge_zero() {
         let mut interp = Interpreter::new();
-        let expr = Expr::CRDTMerge(
-            Box::new(Expr::Int(0)),
-            Box::new(Expr::Int(0)),
-        );
+        let expr = Expr::CRDTMerge(Box::new(Expr::Int(0)), Box::new(Expr::Int(0)));
         assert_eq!(interp.eval(&expr), Ok(Value::Int(0)));
     }
 
@@ -2006,10 +2119,7 @@ mod tests {
         let spawn = Expr::Spawn(Box::new(Expr::Unit), Box::new(Expr::Int(0)));
         let _ref_val = interp.eval(&spawn).unwrap();
         // Send a message
-        let send = Expr::ActorSend(
-            Box::new(Expr::Int(1)),
-            Box::new(Expr::Int(99)),
-        );
+        let send = Expr::ActorSend(Box::new(Expr::Int(1)), Box::new(Expr::Int(99)));
         assert_eq!(interp.eval(&send), Ok(Value::Unit));
         // Receive (single-threaded stub returns unit)
         let recv = Expr::ActorRecv(Box::new(Expr::Int(1)));
@@ -2062,9 +2172,9 @@ mod tests {
     fn test_eval_content_hash_triple_idempotent() {
         let mut interp = Interpreter::new();
         let single = Expr::ContentHash(Box::new(Expr::Int(7)));
-        let triple = Expr::ContentHash(Box::new(Expr::ContentHash(Box::new(
-            Expr::ContentHash(Box::new(Expr::Int(7))),
-        ))));
+        let triple = Expr::ContentHash(Box::new(Expr::ContentHash(Box::new(Expr::ContentHash(
+            Box::new(Expr::Int(7)),
+        )))));
         let r1 = interp.eval(&single).unwrap();
         let r3 = interp.eval(&triple).unwrap();
         assert_eq!(r1, r3);
@@ -2086,6 +2196,49 @@ mod tests {
         let expr = Expr::ContentVerify(
             Box::new(Expr::ContentHash(Box::new(Expr::Int(41)))),
             Box::new(Expr::Int(42)),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::Bool(false)));
+    }
+
+    #[test]
+    fn test_eval_ui_text_ansi_render() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::UIText(
+            Box::new(Expr::String("RIINA".into())),
+            Box::new(Expr::UIColor(255, 0, 0)),
+        );
+        assert_eq!(
+            interp.eval(&expr),
+            Ok(Value::String("\x1b[38;2;255;0;0mRIINA\x1b[0m".into()))
+        );
+    }
+
+    #[test]
+    fn test_eval_ui_display_nested_layout() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::UIDisplay(vec![
+            Expr::UIRow(vec![Expr::Int(1), Expr::Int(2)]),
+            Expr::UIButton(Box::new(Expr::String("Click".into())), Box::new(Expr::Unit)),
+        ]);
+        assert_eq!(interp.eval(&expr), Ok(Value::String("1 2\n[Click]".into())));
+    }
+
+    #[test]
+    fn test_eval_ui_contrast_white_on_black_passes() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::UIContrastCheck(
+            Box::new(Expr::UIColor(255, 255, 255)),
+            Box::new(Expr::UIColor(0, 0, 0)),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::Bool(true)));
+    }
+
+    #[test]
+    fn test_eval_ui_contrast_white_on_white_fails() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::UIContrastCheck(
+            Box::new(Expr::UIColor(255, 255, 255)),
+            Box::new(Expr::UIColor(255, 255, 255)),
         );
         assert_eq!(interp.eval(&expr), Ok(Value::Bool(false)));
     }

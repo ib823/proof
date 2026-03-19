@@ -302,10 +302,10 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 2,343 passing |
+| Tests (03_PROTO/) | 2,355 passing |
 | Tests (05_TOOLING/) | 248 passing |
 | Crates | 16 |
-| Clippy | Clean |
+| Clippy | Fails on `unexpected_cfgs` (`cfg(test)`) and lexer `too_many_lines` under `-D warnings` |
 | Example .rii files | 147 |
 
 **Compiler capabilities (honest):**

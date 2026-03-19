@@ -74,7 +74,7 @@ use crate::ir::{
     Terminator, UnaryOp, VarId,
 };
 use crate::Result;
-use riina_types::{Effect, SecurityLevel};
+use riina_types::{Effect, SecurityLevel, Ty};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write as FmtWrite;
 
@@ -2637,7 +2637,9 @@ impl CEmitter {
         self.writeln("    pthread_mutex_lock(&actor->mutex);");
         self.writeln("    if (actor->mailbox_count < RIINA_ACTOR_MAILBOX_SIZE) {");
         self.writeln("        actor->mailbox[actor->mailbox_tail] = msg;");
-        self.writeln("        actor->mailbox_tail = (actor->mailbox_tail + 1) % RIINA_ACTOR_MAILBOX_SIZE;");
+        self.writeln(
+            "        actor->mailbox_tail = (actor->mailbox_tail + 1) % RIINA_ACTOR_MAILBOX_SIZE;",
+        );
         self.writeln("        actor->mailbox_count++;");
         self.writeln("    }");
         self.writeln("    pthread_cond_signal(&actor->cond);");
@@ -2655,7 +2657,9 @@ impl CEmitter {
         self.writeln("");
 
         // CRDT merge (pointwise max for integer counters)
-        self.writeln("static riina_value_t* riina_crdt_merge(riina_value_t* a, riina_value_t* b) {");
+        self.writeln(
+            "static riina_value_t* riina_crdt_merge(riina_value_t* a, riina_value_t* b) {",
+        );
         self.writeln("    if (a->tag == RIINA_TAG_INT && b->tag == RIINA_TAG_INT) {");
         self.writeln("        return riina_int(a->data.int_val > b->data.int_val ? a->data.int_val : b->data.int_val);");
         self.writeln("    }");
@@ -2879,7 +2883,11 @@ impl CEmitter {
                     Instruction::FixClosure { closure, .. } => {
                         vars.insert(*closure);
                     }
-                    Instruction::ActorDecl { init_state, handler, .. } => {
+                    Instruction::ActorDecl {
+                        init_state,
+                        handler,
+                        ..
+                    } => {
                         vars.insert(*init_state);
                         vars.insert(*handler);
                     }
@@ -3186,8 +3194,11 @@ impl CEmitter {
             // ═══════════════════════════════════════════════════════════
             // JALINAN (actors, choreography, CRDTs, content-addressed)
             // ═══════════════════════════════════════════════════════════
-
-            Instruction::ActorDecl { name: _, init_state, handler } => {
+            Instruction::ActorDecl {
+                name: _,
+                init_state,
+                handler,
+            } => {
                 self.writeln(&format!(
                     "{result} = *riina_actor_decl(&{init}, &{handler});",
                     result = result,
@@ -3197,9 +3208,7 @@ impl CEmitter {
             }
 
             Instruction::ChoreographyDecl { name: _, roles: _ } => {
-                self.writeln(&format!(
-                    "{result} = *riina_choreography_decl();",
-                ));
+                self.writeln(&format!("{result} = *riina_choreography_decl();",));
             }
 
             Instruction::ActorSpawn(decl, state) => {
@@ -3376,6 +3385,11 @@ impl CEmitter {
 
     /// Emit main wrapper function
     fn emit_main_wrapper(&mut self, program: &Program) -> Result<()> {
+        let main_return_ty = program
+            .function(program.main)
+            .map(|f| f.return_ty.clone())
+            .unwrap_or(Ty::Unit);
+
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
         self.writeln("/*                         MAIN ENTRY POINT                            */");
         self.writeln("/* ═══════════════════════════════════════════════════════════════════ */");
@@ -3410,7 +3424,11 @@ impl CEmitter {
         self.writeln("    printf(\"%llu\\n\", (unsigned long long)result->data.int_val);");
         self.writeln("    break;");
         self.writeln("case RIINA_TAG_STRING:");
-        self.writeln("    printf(\"\\\"%s\\\"\\n\", result->data.string_val.data);");
+        if main_return_ty == Ty::Element {
+            self.writeln("    printf(\"%s\\n\", result->data.string_val.data);");
+        } else {
+            self.writeln("    printf(\"\\\"%s\\\"\\n\", result->data.string_val.data);");
+        }
         self.writeln("    break;");
         self.writeln("default:");
         self.writeln("    printf(\"<value>\\n\");");
@@ -3760,28 +3778,49 @@ mod tests {
     fn test_emit_content_hash_fnv_constants() {
         let expr = Expr::ContentHash(Box::new(Expr::Int(1)));
         let code = compile_and_emit(&expr).unwrap();
-        assert!(code.contains("14695981039346656037"), "FNV offset basis missing");
+        assert!(
+            code.contains("14695981039346656037"),
+            "FNV offset basis missing"
+        );
         assert!(code.contains("1099511628211"), "FNV prime missing");
     }
 
     #[test]
     fn test_emit_crdt_merge_present() {
-        let expr = Expr::CRDTMerge(
-            Box::new(Expr::Int(5)),
-            Box::new(Expr::Int(8)),
-        );
+        let expr = Expr::CRDTMerge(Box::new(Expr::Int(5)), Box::new(Expr::Int(8)));
         let code = compile_and_emit(&expr).unwrap();
         assert!(code.contains("riina_crdt_merge"));
     }
 
     #[test]
     fn test_emit_crdt_merge_int_max() {
-        let expr = Expr::CRDTMerge(
-            Box::new(Expr::Int(5)),
-            Box::new(Expr::Int(8)),
-        );
+        let expr = Expr::CRDTMerge(Box::new(Expr::Int(5)), Box::new(Expr::Int(8)));
         let code = compile_and_emit(&expr).unwrap();
-        assert!(code.contains("int_val > b->data.int_val"), "GCounter max logic missing");
+        assert!(
+            code.contains("int_val > b->data.int_val"),
+            "GCounter max logic missing"
+        );
+    }
+
+    #[test]
+    fn test_emit_ui_display_html() {
+        let expr = Expr::UIDisplay(vec![Expr::UIText(
+            Box::new(Expr::String("hello".into())),
+            Box::new(Expr::UIColor(255, 255, 255)),
+        )]);
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("<div style='display:flex;flex-direction:column'>"));
+        assert!(code.contains("<span style='color:"));
+        assert!(code.contains("#ffffff"));
+        assert!(code.contains("</span>"));
+    }
+
+    #[test]
+    fn test_emit_ui_main_prints_raw_markup() {
+        let expr = Expr::UIButton(Box::new(Expr::String("Click".into())), Box::new(Expr::Unit));
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("printf(\"%s\\n\", result->data.string_val.data);"));
+        assert!(!code.contains("printf(\"\\\"%s\\\"\\n\", result->data.string_val.data);"));
     }
 
     // ═══════════════════════════════════════════════════════════════════

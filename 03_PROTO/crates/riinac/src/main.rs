@@ -620,7 +620,17 @@ fn main() {
             }
         }
         Command::Run => match riina_codegen::eval_with_builtins(&expr) {
-            Ok(val) => println!("{:?}", val),
+            Ok(val) => {
+                if ty == riina_types::Ty::Element {
+                    if let riina_codegen::Value::String(rendered) = val {
+                        println!("{rendered}");
+                    } else {
+                        println!("{val}");
+                    }
+                } else {
+                    println!("{:?}", val);
+                }
+            }
             Err(e) => {
                 eprintln!("Runtime Error: {}", e);
                 process::exit(1);
