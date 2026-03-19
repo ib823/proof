@@ -1,6 +1,6 @@
 # TASK PROMPTS FOR CLAUDE AI (WEB)
 
-**Verification:** 11,905 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2407 Rust tests
+**Verification:** 12,385 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2476 Rust tests
 
 Use these by copying the CLAUDE_AI_DELEGATION_PROMPT.md first, then appending one of these tasks in Section 4.
 

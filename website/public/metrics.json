@@ -1,38 +1,38 @@
 {
-  "generated": "2026-03-19T05:26:27Z",
-  "generatedHuman": "March 19, 2026 at 05:26 UTC",
+  "generated": "2026-03-19T05:39:23Z",
+  "generatedHuman": "March 19, 2026 at 05:39 UTC",
   "version": "0.3.0",
   "session": 0,
   "git": {
-    "commit": "680a4646",
+    "commit": "7ee4fe15",
     "branch": "main"
   },
   "proofs": {
-    "qedActive": 11905,
+    "qedActive": 12385,
     "qedDeprecated": 758,
-    "qedTotal": 12663,
+    "qedTotal": 13143,
     "admitted": 0,
     "axioms": 0,
     "assumptions": 0,
     "axiomsJustified": true
   },
   "coq": {
-    "filesTotal": 341,
-    "filesActive": 301,
-    "domains": 244,
+    "filesTotal": 349,
+    "filesActive": 309,
+    "domains": 252,
     "prover": "Rocq 9.1.1"
   },
   "lean": {
-    "theorems": 12096,
+    "theorems": 12576,
     "sorry": 0,
     "axioms": 15,
-    "files": 317,
-    "lines": 131218,
+    "files": 325,
+    "lines": 134813,
     "prover": "Lean 4"
   },
   "isabelle": {
-    "lemmas": 12318,
-    "lemmasRaw": 12318,
+    "lemmas": 12931,
+    "lemmasRaw": 12931,
     "compiledTheories": 1,
     "compiledLemmas": 5,
     "smokeBuildOk": true,
@@ -41,8 +41,8 @@
     "sorry": 0,
     "sorryVerified": true,
     "axioms": 0,
-    "files": 357,
-    "lines": 122899,
+    "files": 368,
+    "lines": 125911,
     "prover": "Isabelle/HOL"
   },
   "fstar": {
@@ -52,60 +52,60 @@
     "smokeBuildOk": true,
     "smokeModule": "RIINA.Active.CryptographicSecurityActive",
     "quarantined": false,
-    "files": 307,
+    "files": 315,
     "prover": "F*"
   },
   "tlaplus": {
-    "theorems": 11839,
-    "theoremsRaw": 11839,
+    "theorems": 12282,
+    "theoremsRaw": 12282,
     "compiledTheorems": 5,
     "smokeBuildOk": true,
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
     "quarantined": false,
-    "files": 309,
+    "files": 317,
     "prover": "TLA+"
   },
   "alloy": {
-    "assertions": 11240,
-    "assertionsRaw": 11240,
+    "assertions": 11627,
+    "assertionsRaw": 11627,
     "compiledAssertions": 6,
     "smokeBuildOk": true,
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
     "quarantined": false,
-    "files": 299,
+    "files": 306,
     "prover": "Alloy 6"
   },
   "smt": {
-    "assertions": 11962,
-    "assertionsRaw": 11962,
+    "assertions": 12405,
+    "assertionsRaw": 12405,
     "quarantined": false,
-    "files": 309,
+    "files": 317,
     "prover": "Z3/CVC5 (SMT-LIB)"
   },
   "verus": {
     "proofs": 0,
-    "proofsRaw": 6008,
+    "proofsRaw": 6395,
     "quarantined": true,
-    "files": 316,
+    "files": 323,
     "prover": "Verus"
   },
   "kani": {
     "harnesses": 0,
-    "harnessesRaw": 5277,
+    "harnessesRaw": 5664,
     "quarantined": true,
-    "files": 300,
+    "files": 307,
     "prover": "Kani"
   },
   "tv": {
     "validations": 0,
-    "validationsRaw": 16917,
+    "validationsRaw": 17463,
     "quarantined": true,
-    "files": 308,
+    "files": 316,
     "prover": "Translation Validation"
   },
   "multiProver": {
-    "tripleProverTheorems": 10259,
-    "totalProofsAllProvers": 71382,
+    "tripleProverTheorems": 10745,
+    "totalProofsAllProvers": 74228,
     "totalProvers": 10,
     "proverList": ["Coq", "Lean 4", "Isabelle/HOL", "F*", "TLA+", "Alloy 6", "Z3/CVC5", "Verus", "Kani", "Translation Validation"],
     "sorry": 0,
@@ -151,8 +151,8 @@
     },
     "coqTiers": {
       "core": 1621,
-      "domain": 10284,
-      "domainTrivial": 1720
+      "domain": 10764,
+      "domainTrivial": 1939
     }
   },
   "claimLevels": {
@@ -172,13 +172,13 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 2407,
-    "testsVerified": 2407,
+    "tests": 2476,
+    "testsVerified": 2476,
     "testsEstimated": 0,
     "testsSource": "full_cargo_test",
-    "crates": 17
+    "crates": 19
   },
-  "examples": 147,
+  "examples": 153,
   "status": {
     "build": "passing",
     "grade": "A",

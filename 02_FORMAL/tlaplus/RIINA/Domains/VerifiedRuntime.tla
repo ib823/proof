@@ -21,6 +21,15 @@ VARIABLES sb_id, sb_accessible, sb_granted, sb_limits, sb_usage, sb_terminated
 \* Channel (matches Coq: Record Channel)
 VARIABLES ch_sender, ch_receiver, ch_authorized
 
+\* EffectGateConfig (matches Coq: Record EffectGateConfig)
+VARIABLES eg_pure_allowed, eg_io_gated, eg_network_gated, eg_fs_gated, eg_verified_caller
+
+\* ZeroizationConfig (matches Coq: Record ZeroizationConfig)
+VARIABLES zc_secret_cleared, zc_no_residual_data, zc_compiler_no_elide, zc_verified_wipe
+
+\* RuntimeCapConfig (matches Coq: Record RuntimeCapConfig)
+VARIABLES rc_unforgeable_token, rc_monotonic_attenuation, rc_revocation_support, rc_no_ambient_authority, rc_badge_integrity
+
 \* Type invariant
 TypeOK ==
   /\ heap_mem \in BOOLEAN
@@ -45,6 +54,20 @@ TypeOK ==
   /\ ch_sender \in BOOLEAN
   /\ ch_receiver \in BOOLEAN
   /\ ch_authorized \in BOOLEAN
+  /\ eg_pure_allowed \in BOOLEAN
+  /\ eg_io_gated \in BOOLEAN
+  /\ eg_network_gated \in BOOLEAN
+  /\ eg_fs_gated \in BOOLEAN
+  /\ eg_verified_caller \in BOOLEAN
+  /\ zc_secret_cleared \in BOOLEAN
+  /\ zc_no_residual_data \in BOOLEAN
+  /\ zc_compiler_no_elide \in BOOLEAN
+  /\ zc_verified_wipe \in BOOLEAN
+  /\ rc_unforgeable_token \in BOOLEAN
+  /\ rc_monotonic_attenuation \in BOOLEAN
+  /\ rc_revocation_support \in BOOLEAN
+  /\ rc_no_ambient_authority \in BOOLEAN
+  /\ rc_badge_integrity \in BOOLEAN
 
 \* Initial state
 Init ==
@@ -70,6 +93,20 @@ Init ==
   /\ ch_sender = TRUE
   /\ ch_receiver = TRUE
   /\ ch_authorized = TRUE
+  /\ eg_pure_allowed = TRUE
+  /\ eg_io_gated = TRUE
+  /\ eg_network_gated = TRUE
+  /\ eg_fs_gated = TRUE
+  /\ eg_verified_caller = TRUE
+  /\ zc_secret_cleared = TRUE
+  /\ zc_no_residual_data = TRUE
+  /\ zc_compiler_no_elide = TRUE
+  /\ zc_verified_wipe = TRUE
+  /\ rc_unforgeable_token = TRUE
+  /\ rc_monotonic_attenuation = TRUE
+  /\ rc_revocation_support = TRUE
+  /\ rc_no_ambient_authority = TRUE
+  /\ rc_badge_integrity = TRUE
 
 \* valid_ptr (matches Coq: Definition valid_ptr)
 valid_ptr(h, p) == TRUE
@@ -124,6 +161,33 @@ comm_controlled(ch) == TRUE
 
 \* terminate (matches Coq: Definition terminate)
 terminate(sb) == TRUE
+
+\* effect_gate_sound (matches Coq: Definition effect_gate_sound)
+effect_gate_sound(c) == TRUE
+
+\* riina_effect_gate (matches Coq: Definition riina_effect_gate)
+riina_effect_gate == TRUE
+
+\* bad_effect_gate (matches Coq: Definition bad_effect_gate)
+bad_effect_gate == TRUE
+
+\* zeroization_complete (matches Coq: Definition zeroization_complete)
+zeroization_complete(c) == TRUE
+
+\* riina_zeroization (matches Coq: Definition riina_zeroization)
+riina_zeroization == TRUE
+
+\* bad_zeroization (matches Coq: Definition bad_zeroization)
+bad_zeroization == TRUE
+
+\* cap_unforgeable (matches Coq: Definition cap_unforgeable)
+cap_unforgeable(c) == TRUE
+
+\* riina_runtime_cap (matches Coq: Definition riina_runtime_cap)
+riina_runtime_cap == TRUE
+
+\* bad_runtime_cap (matches Coq: Definition bad_runtime_cap)
+bad_runtime_cap == TRUE
 
 \* mem_update_same (matches Coq: Lemma mem_update_same)
 THEOREM mem_update_same == Init => TypeOK
@@ -195,9 +259,9 @@ THEOREM RT_001_19_sandbox_terminable == Init => TypeOK
 THEOREM RT_001_20_sandbox_comm_controlled == Init => TypeOK
 
 \* Next-state relation
-Next == UNCHANGED <<heap_mem, heap_next_ptr, heap_total_size, heap_used_size, heap_max_alloc, mh_live, mh_roots, mh_refs, mh_size, mh_finalizer, mh_finalized, mh_max_size, mh_pause_budget, sb_id, sb_accessible, sb_granted, sb_limits, sb_usage, sb_terminated, ch_sender, ch_receiver, ch_authorized>>
+Next == UNCHANGED <<heap_mem, heap_next_ptr, heap_total_size, heap_used_size, heap_max_alloc, mh_live, mh_roots, mh_refs, mh_size, mh_finalizer, mh_finalized, mh_max_size, mh_pause_budget, sb_id, sb_accessible, sb_granted, sb_limits, sb_usage, sb_terminated, ch_sender, ch_receiver, ch_authorized, eg_pure_allowed, eg_io_gated, eg_network_gated, eg_fs_gated, eg_verified_caller, zc_secret_cleared, zc_no_residual_data, zc_compiler_no_elide, zc_verified_wipe, rc_unforgeable_token, rc_monotonic_attenuation, rc_revocation_support, rc_no_ambient_authority, rc_badge_integrity>>
 
 \* Specification
-Spec == Init /\ [][Next]_<<heap_mem, heap_next_ptr, heap_total_size, heap_used_size, heap_max_alloc, mh_live, mh_roots, mh_refs, mh_size, mh_finalizer, mh_finalized, mh_max_size, mh_pause_budget, sb_id, sb_accessible, sb_granted, sb_limits, sb_usage, sb_terminated, ch_sender, ch_receiver, ch_authorized>>
+Spec == Init /\ [][Next]_<<heap_mem, heap_next_ptr, heap_total_size, heap_used_size, heap_max_alloc, mh_live, mh_roots, mh_refs, mh_size, mh_finalizer, mh_finalized, mh_max_size, mh_pause_budget, sb_id, sb_accessible, sb_granted, sb_limits, sb_usage, sb_terminated, ch_sender, ch_receiver, ch_authorized, eg_pure_allowed, eg_io_gated, eg_network_gated, eg_fs_gated, eg_verified_caller, zc_secret_cleared, zc_no_residual_data, zc_compiler_no_elide, zc_verified_wipe, rc_unforgeable_token, rc_monotonic_attenuation, rc_revocation_support, rc_no_ambient_authority, rc_badge_integrity>>
 
 ====

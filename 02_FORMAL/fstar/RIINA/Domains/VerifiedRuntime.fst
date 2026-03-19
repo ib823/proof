@@ -50,6 +50,32 @@ type channel = {
   f_ch_authorized: bool;
 }
 
+(* EffectGateConfig (matches Coq) *)
+type effect_gate_config = {
+  f_eg_pure_allowed: bool;
+  f_eg_io_gated: bool;
+  f_eg_network_gated: bool;
+  f_eg_fs_gated: bool;
+  f_eg_verified_caller: bool;
+}
+
+(* ZeroizationConfig (matches Coq) *)
+type zeroization_config = {
+  f_zc_secret_cleared: bool;
+  f_zc_no_residual_data: bool;
+  f_zc_compiler_no_elide: bool;
+  f_zc_verified_wipe: bool;
+}
+
+(* RuntimeCapConfig (matches Coq) *)
+type runtime_cap_config = {
+  f_rc_unforgeable_token: bool;
+  f_rc_monotonic_attenuation: bool;
+  f_rc_revocation_support: bool;
+  f_rc_no_ambient_authority: bool;
+  f_rc_badge_integrity: bool;
+}
+
 (* valid_ptr (matches Coq: Definition valid_ptr) *)
 let valid_ptr (p_h: heap) (p_p: nat) : Tot bool =
   true
@@ -124,6 +150,36 @@ let comm_controlled (p_ch: channel) : Tot bool =
 (* terminate (matches Coq: Definition terminate) *)
 let terminate (p_sb: sandbox) : Tot sandbox =
   {f_sb_id=(p_sb.f_sb_id); f_sb_accessible=(fun _ -> false); f_sb_granted=(fun _ -> false); f_sb_limits=(p_sb.f_sb_limits); f_sb_usage=(fun _ -> 0); f_sb_terminated=true}
+
+(* effect_gate_sound (matches Coq: Definition effect_gate_sound) *)
+let effect_gate_sound (p_c: effect_gate_config) : Tot bool =
+  p_c.f_eg_pure_allowed && p_c.f_eg_io_gated && p_c.f_eg_network_gated && p_c.f_eg_fs_gated && p_c.f_eg_verified_caller
+
+(* riina_effect_gate (matches Coq: Definition riina_effect_gate) *)
+let riina_effect_gate : effect_gate_config = {f_eg_pure_allowed=true; f_eg_io_gated=true; f_eg_network_gated=true; f_eg_fs_gated=true; f_eg_verified_caller=true}
+
+(* bad_effect_gate (matches Coq: Definition bad_effect_gate) *)
+let bad_effect_gate : effect_gate_config = {f_eg_pure_allowed=true; f_eg_io_gated=false; f_eg_network_gated=true; f_eg_fs_gated=true; f_eg_verified_caller=true}
+
+(* zeroization_complete (matches Coq: Definition zeroization_complete) *)
+let zeroization_complete (p_c: zeroization_config) : Tot bool =
+  p_c.f_zc_secret_cleared && p_c.f_zc_no_residual_data && p_c.f_zc_compiler_no_elide && p_c.f_zc_verified_wipe
+
+(* riina_zeroization (matches Coq: Definition riina_zeroization) *)
+let riina_zeroization : zeroization_config = {f_zc_secret_cleared=true; f_zc_no_residual_data=true; f_zc_compiler_no_elide=true; f_zc_verified_wipe=true}
+
+(* bad_zeroization (matches Coq: Definition bad_zeroization) *)
+let bad_zeroization : zeroization_config = {f_zc_secret_cleared=true; f_zc_no_residual_data=true; f_zc_compiler_no_elide=false; f_zc_verified_wipe=true}
+
+(* cap_unforgeable (matches Coq: Definition cap_unforgeable) *)
+let cap_unforgeable (p_c: runtime_cap_config) : Tot bool =
+  p_c.f_rc_unforgeable_token && p_c.f_rc_monotonic_attenuation && p_c.f_rc_revocation_support && p_c.f_rc_no_ambient_authority && p_c.f_rc_badge_integrity
+
+(* riina_runtime_cap (matches Coq: Definition riina_runtime_cap) *)
+let riina_runtime_cap : runtime_cap_config = {f_rc_unforgeable_token=true; f_rc_monotonic_attenuation=true; f_rc_revocation_support=true; f_rc_no_ambient_authority=true; f_rc_badge_integrity=true}
+
+(* bad_runtime_cap (matches Coq: Definition bad_runtime_cap) *)
+let bad_runtime_cap : runtime_cap_config = {f_rc_unforgeable_token=false; f_rc_monotonic_attenuation=true; f_rc_revocation_support=true; f_rc_no_ambient_authority=true; f_rc_badge_integrity=true}
 
 (* mem_update_same (matches Coq: Lemma mem_update_same) *)
 let mem_update_same (p_m: _) (p_p: _) (p_v: _) : Lemma (mem_update p_m p_p p_v p_p == p_v) = admit ()

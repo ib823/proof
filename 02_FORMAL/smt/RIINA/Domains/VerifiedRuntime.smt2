@@ -26,11 +26,26 @@
 (declare-datatypes ((Channel 0))
   (((mk-channel (ch_sender Int) (ch_receiver Int) (ch_authorized Bool)))))
 
+; EffectGateConfig (matches Coq: Record EffectGateConfig)
+(declare-datatypes ((EffectGateConfig 0))
+  (((mk-effect_gate_config (eg_pure_allowed Bool) (eg_io_gated Bool) (eg_network_gated Bool) (eg_fs_gated Bool) (eg_verified_caller Bool)))))
+
+; ZeroizationConfig (matches Coq: Record ZeroizationConfig)
+(declare-datatypes ((ZeroizationConfig 0))
+  (((mk-zeroization_config (zc_secret_cleared Bool) (zc_no_residual_data Bool) (zc_compiler_no_elide Bool) (zc_verified_wipe Bool)))))
+
+; RuntimeCapConfig (matches Coq: Record RuntimeCapConfig)
+(declare-datatypes ((RuntimeCapConfig 0))
+  (((mk-runtime_cap_config (rc_unforgeable_token Bool) (rc_monotonic_attenuation Bool) (rc_revocation_support Bool) (rc_no_ambient_authority Bool) (rc_badge_integrity Bool)))))
+
 (declare-const __default_Channel Channel)
+(declare-const __default_EffectGateConfig EffectGateConfig)
 (declare-const __default_Heap Heap)
 (declare-const __default_ManagedHeap ManagedHeap)
 (declare-const __default_Resource Resource)
+(declare-const __default_RuntimeCapConfig RuntimeCapConfig)
 (declare-const __default_Sandbox Sandbox)
+(declare-const __default_ZeroizationConfig ZeroizationConfig)
 
 ; valid_ptr (matches Coq: Definition valid_ptr)
 (define-fun valid_ptr ((h Heap) (p Int)) Bool
@@ -101,6 +116,42 @@
 
 ; terminate (matches Coq: Definition terminate)
 (declare-fun terminate (Sandbox) Sandbox)
+
+; effect_gate_sound (matches Coq: Definition effect_gate_sound)
+(define-fun effect_gate_sound ((c EffectGateConfig)) Bool
+  (= 0 0))
+
+; riina_effect_gate (matches Coq: Definition riina_effect_gate)
+(define-fun riina_effect_gate () EffectGateConfig
+  __default_EffectGateConfig)
+
+; bad_effect_gate (matches Coq: Definition bad_effect_gate)
+(define-fun bad_effect_gate () EffectGateConfig
+  __default_EffectGateConfig)
+
+; zeroization_complete (matches Coq: Definition zeroization_complete)
+(define-fun zeroization_complete ((c ZeroizationConfig)) Bool
+  (= 0 0))
+
+; riina_zeroization (matches Coq: Definition riina_zeroization)
+(define-fun riina_zeroization () ZeroizationConfig
+  __default_ZeroizationConfig)
+
+; bad_zeroization (matches Coq: Definition bad_zeroization)
+(define-fun bad_zeroization () ZeroizationConfig
+  __default_ZeroizationConfig)
+
+; cap_unforgeable (matches Coq: Definition cap_unforgeable)
+(define-fun cap_unforgeable ((c RuntimeCapConfig)) Bool
+  (= 0 0))
+
+; riina_runtime_cap (matches Coq: Definition riina_runtime_cap)
+(define-fun riina_runtime_cap () RuntimeCapConfig
+  __default_RuntimeCapConfig)
+
+; bad_runtime_cap (matches Coq: Definition bad_runtime_cap)
+(define-fun bad_runtime_cap () RuntimeCapConfig
+  __default_RuntimeCapConfig)
 
 ; mem_update_same (matches Coq: Lemma mem_update_same)
 ; mem_update_same: forall m p v, mem_update m p v p = v

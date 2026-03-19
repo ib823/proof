@@ -104,6 +104,51 @@
 (declare-fun target_terminate () Bool)
 (assert (= source_terminate target_terminate))
 
+; effect_gate_sound: source semantics (matches Coq)
+(declare-fun source_effect_gate_sound () Bool)
+(declare-fun target_effect_gate_sound () Bool)
+(assert (= source_effect_gate_sound target_effect_gate_sound))
+
+; riina_effect_gate: source semantics (matches Coq)
+(declare-fun source_riina_effect_gate () Bool)
+(declare-fun target_riina_effect_gate () Bool)
+(assert (= source_riina_effect_gate target_riina_effect_gate))
+
+; bad_effect_gate: source semantics (matches Coq)
+(declare-fun source_bad_effect_gate () Bool)
+(declare-fun target_bad_effect_gate () Bool)
+(assert (= source_bad_effect_gate target_bad_effect_gate))
+
+; zeroization_complete: source semantics (matches Coq)
+(declare-fun source_zeroization_complete () Bool)
+(declare-fun target_zeroization_complete () Bool)
+(assert (= source_zeroization_complete target_zeroization_complete))
+
+; riina_zeroization: source semantics (matches Coq)
+(declare-fun source_riina_zeroization () Bool)
+(declare-fun target_riina_zeroization () Bool)
+(assert (= source_riina_zeroization target_riina_zeroization))
+
+; bad_zeroization: source semantics (matches Coq)
+(declare-fun source_bad_zeroization () Bool)
+(declare-fun target_bad_zeroization () Bool)
+(assert (= source_bad_zeroization target_bad_zeroization))
+
+; cap_unforgeable: source semantics (matches Coq)
+(declare-fun source_cap_unforgeable () Bool)
+(declare-fun target_cap_unforgeable () Bool)
+(assert (= source_cap_unforgeable target_cap_unforgeable))
+
+; riina_runtime_cap: source semantics (matches Coq)
+(declare-fun source_riina_runtime_cap () Bool)
+(declare-fun target_riina_runtime_cap () Bool)
+(assert (= source_riina_runtime_cap target_riina_runtime_cap))
+
+; bad_runtime_cap: source semantics (matches Coq)
+(declare-fun source_bad_runtime_cap () Bool)
+(declare-fun target_bad_runtime_cap () Bool)
+(assert (= source_bad_runtime_cap target_bad_runtime_cap))
+
 ; mem_update_same: translation preserves property (matches Coq: Lemma)
 (declare-fun source_mem_update_same () Bool)
 (declare-fun target_mem_update_same () Bool)
