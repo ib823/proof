@@ -393,3 +393,13 @@ domains/ActorCalculus.v
 domains/CRDTFoundations.v
 domains/CRDTComposition.v
 domains/ChoreographyProjection.v
+
+# Phase 6-9: Domain proofs — blockchain, Syariah, runtime, UI, OS (zero admits, zero axioms)
+domains/BlockchainSafety.v
+domains/SyariahCompliance.v
+domains/RuntimeMonitor.v
+domains/ExecutionReceipts.v
+domains/VerifiedLayout.v
+domains/TerasKernel.v
+domains/TerasSecurity.v
+domains/TerasCapabilities.v
