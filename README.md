@@ -82,8 +82,9 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes (10,038 Coq + 4,458 Lean active-lane declarations + Isabelle/F*/TLA+/Alloy/SMT lanes) | No | No | Partial |
-| Multi-prover work | Yes (Coq primary, Lean active, Isabelle/F*/TLA+/Alloy/SMT lanes) | No | No | No |
+| Formal proof corpus in repo | Yes (11,905 Coq + 12,096 Lean + 12,287 Isabelle + 7 more prover lanes) | No | No | Partial |
+| Multi-prover work | Yes (10 provers: 5 mechanized, 2 compiled, 3 generated) | No | No | No |
+| Session-typed actors | Yes (JALINAN: pelakon, lahir, hantar, terima) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
 ---
@@ -220,7 +221,7 @@ This is not a whitepaper. This is working software.
 
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
-| **Rocq 9.1.1** (Primary) | 11,386 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
+| **Rocq 9.1.1** (Primary) | 11,905 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
 | **Lean 4** (Secondary) | 4,458 theorem/lemma declarations | 155 files; 0 `sorry`, 0 axioms; claim level: mechanized (build passes) |
 | **Isabelle/HOL** (Tertiary) | 9,092 lemmas, mechanized | 307 .thy files; Isabelle mechanized lane |
 | **F\*** (Seed lane) | 22 lemmas, compiled | F* compiled lane |
@@ -390,7 +391,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 11,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2233 Rust tests
+**Verification:** 11,905 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2294 Rust tests
 
 | Area | Status |
 |------|--------|
