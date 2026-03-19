@@ -8,7 +8,7 @@ Audit method authority:
 - [DOMAIN_AUDIT_QUEUE_v1_0_0.md](/workspaces/proof/06_COORDINATION/prompts/DOMAIN_AUDIT_QUEUE_v1_0_0.md)
 
 Tracker snapshot:
-- Tracker commit when written: `0293b678480d19c92843c34b2a25306bca54eb60`
+- Tracker commit when written: `5e861d69924fd904619cc56f2a6734d571ccbb06`
 - Program floor from queue:
   - `79` umbrella audits
   - `16` confirmed child-domain audits
@@ -20,8 +20,8 @@ Tracker snapshot:
 
 | Counter | Value | Basis |
 |--------|-------|-------|
-| Umbrella audits started | `7 / 79` | `AN_SYARIAH`, `AO_BLOCKCHAIN`, `AE_VERIFIED_AUDIT`, `AJ_VERIFIED_COMPLIANCE`, `AK_VERIFIED_PROCUREMENT`, `AL_VERIFIED_LAYOUT`, `RIINA_BANK` |
-| Umbrella audits fully closed | `7 / 79` | `AN_SYARIAH`, `AO_BLOCKCHAIN`, `AE_VERIFIED_AUDIT`, `AJ_VERIFIED_COMPLIANCE`, `AK_VERIFIED_PROCUREMENT`, `AL_VERIFIED_LAYOUT`, `RIINA_BANK` |
+| Umbrella audits started | `10 / 79` | `AN_SYARIAH`, `AO_BLOCKCHAIN`, `AE_VERIFIED_AUDIT`, `AJ_VERIFIED_COMPLIANCE`, `AK_VERIFIED_PROCUREMENT`, `AL_VERIFIED_LAYOUT`, `RIINA_BANK`, `RIINA_CAPITAL_MARKETS`, `RIINA_MOBILE_OS`, `A_TYPE_THEORY` |
+| Umbrella audits fully closed | `10 / 79` | `AN_SYARIAH`, `AO_BLOCKCHAIN`, `AE_VERIFIED_AUDIT`, `AJ_VERIFIED_COMPLIANCE`, `AK_VERIFIED_PROCUREMENT`, `AL_VERIFIED_LAYOUT`, `RIINA_BANK`, `RIINA_CAPITAL_MARKETS`, `RIINA_MOBILE_OS`, `A_TYPE_THEORY` |
 | Umbrella audits blocked on hostile review/reconciliation | `0 / 79` | none |
 | Child-domain audits started | `0 / 16 confirmed` | none yet |
 | Child-domain audits fully closed | `0 / 16 confirmed` | none yet |
@@ -38,6 +38,9 @@ Tracker snapshot:
 | `AK_VERIFIED_PROCUREMENT` | Verified Procurement | Umbrella | [AK_VERIFIED_PROCUREMENT_R5_AUDIT.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/AK_VERIFIED_PROCUREMENT_R5_AUDIT.md) | [AK_VERIFIED_PROCUREMENT_R5_REVIEW.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/AK_VERIFIED_PROCUREMENT_R5_REVIEW.md) | Yes | [README.md](/workspaces/proof/06_COORDINATION/remediation/AK_VERIFIED_PROCUREMENT/README.md) | `R1` | `0293b678480d19c92843c34b2a25306bca54eb60` | `CLOSED` | Revisit after a bounded live procurement slice, executable example coverage, and a real Coq lane exist |
 | `AL_VERIFIED_LAYOUT` | Verified Layout | Umbrella | [AL_VERIFIED_LAYOUT_R5_AUDIT.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/AL_VERIFIED_LAYOUT_R5_AUDIT.md) | [AL_VERIFIED_LAYOUT_R5_REVIEW.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/AL_VERIFIED_LAYOUT_R5_REVIEW.md) | Yes | [README.md](/workspaces/proof/06_COORDINATION/remediation/AL_VERIFIED_LAYOUT/README.md) | `R2` | `0293b678480d19c92843c34b2a25306bca54eb60` | `CLOSED` | Revisit after renderer integration, repaired canonical examples, and reduced public wording land |
 | `RIINA_BANK` | RIINA-BANK | Umbrella | [RIINA_BANK_R5_AUDIT.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/RIINA_BANK_R5_AUDIT.md) | [RIINA_BANK_R5_REVIEW.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/RIINA_BANK_R5_REVIEW.md) | Yes | [README.md](/workspaces/proof/06_COORDINATION/remediation/RIINA_BANK/README.md) | `R2` | `0293b678480d19c92843c34b2a25306bca54eb60` | `CLOSED` | Revisit after bounded live banking semantics, executable examples, and purged overclaim/generator noise land |
+| `RIINA_CAPITAL_MARKETS` | RIINA Capital Markets | Umbrella | [RIINA_CAPITAL_MARKETS_R5_AUDIT.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/RIINA_CAPITAL_MARKETS_R5_AUDIT.md) | [RIINA_CAPITAL_MARKETS_R5_REVIEW.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/RIINA_CAPITAL_MARKETS_R5_REVIEW.md) | Yes | [README.md](/workspaces/proof/06_COORDINATION/remediation/RIINA_CAPITAL_MARKETS/README.md) | `R2` | `5e861d69924fd904619cc56f2a6734d571ccbb06` | `CLOSED` | Revisit after bounded live order/trade/settlement semantics, executable examples, and reduced public wording land |
+| `RIINA_MOBILE_OS` | RIINA Mobile OS | Umbrella | [RIINA_MOBILE_OS_R5_AUDIT.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/RIINA_MOBILE_OS_R5_AUDIT.md) | [RIINA_MOBILE_OS_R5_REVIEW.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/RIINA_MOBILE_OS_R5_REVIEW.md) | Yes | [README.md](/workspaces/proof/06_COORDINATION/remediation/RIINA_MOBILE_OS/README.md) | `R2` | `5e861d69924fd904619cc56f2a6734d571ccbb06` | `CLOSED` | Revisit after bounded mobile bridges, OS primitives, and TERAS integration child domains become real and public wording is reduced accordingly |
+| `A_TYPE_THEORY` | Type Theory Foundations | Umbrella | [A_TYPE_THEORY_R5_AUDIT.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/A_TYPE_THEORY_R5_AUDIT.md) | [A_TYPE_THEORY_R5_REVIEW.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/A_TYPE_THEORY_R5_REVIEW.md) | Yes | [README.md](/workspaces/proof/06_COORDINATION/remediation/A_TYPE_THEORY/README.md) | `R2` | `5e861d69924fd904619cc56f2a6734d571ccbb06` | `CLOSED` | Revisit after `A_TYPE_THEORY_CORE` is scoped, canonical examples are repaired, and the umbrella is decomposed honestly |
 
 ## Clear State So Far
 
@@ -50,7 +53,10 @@ Tracker snapshot:
 | `AK_VERIFIED_PROCUREMENT` | Primary audit completed, hostile review completed, review accepted, remediation package created, domain is closed at `R1` until a bounded live procurement slice, executable example coverage, and a real Coq lane land |
 | `AL_VERIFIED_LAYOUT` | Primary audit completed, hostile review completed, review accepted, remediation package created, domain is closed at `R2` until renderer integration, repaired canonical examples, and reduced public wording land |
 | `RIINA_BANK` | Primary audit completed, hostile review completed with reductions, remediation package created, domain is closed at `R2` until bounded live banking semantics, executable examples, and purged overclaim/generator noise land |
-| Queue discipline | Under strict sequencing, the current umbrella blocker is cleared and the next new primary audit may start with `RIINA_CAPITAL_MARKETS` |
+| `RIINA_CAPITAL_MARKETS` | Primary audit completed, hostile review completed, remediation package created, domain is closed at `R2` until bounded live order/trade/settlement semantics, executable examples, and reduced public wording land |
+| `RIINA_MOBILE_OS` | Primary audit completed, hostile review completed, remediation package created, domain is closed at `R2` until bounded mobile bridges, OS primitives, TERAS/runtime integration, and reduced public wording justify re-audit |
+| `A_TYPE_THEORY` | Primary audit completed, hostile review downgraded the umbrella to `R2`, remediation package created, and the first serious child-domain target is now `A_TYPE_THEORY_CORE` |
+| Queue discipline | `A_TYPE_THEORY` is closed. Under strict sequencing, the next new primary audit may start with `B_EFFECT_SYSTEMS` |
 
 ## Update Protocol
 
