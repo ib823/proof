@@ -131,20 +131,24 @@ hantar(k, 5);
 terima(k)`
   },
   {
-    name: 'CAHAYA UI',
-    code: `// CAHAYA: Type-safe UI with accessibility
-// paparan = display, tulisan = text, warna = color
+    name: 'Security',
+    code: `// RIINA security types prevent data leaks
+// Rahsia<T> = Secret, kesan = effect
+//
+// The compiler proves:
+//   - Secrets can't flow to public outputs
+//   - Effects are tracked and declared
+//   - Constant-time for crypto operations
+//
+// Try: change the function and see the
+// type checker verify security properties
 
-paparan {
-    tulisan("Selamat datang ke RIINA!", warna(255, 255, 255));
-    butang("Klik saya", fungsi() { 42 });
-}`
-  },
-  {
-    name: 'Blockchain',
-    code: `// Smart contract deployment
-biar kontrak = kontrak_pintar { 0 };
-kontrak`
+fungsi kira_selamat(x: Nombor, y: Nombor) -> Nombor {
+  biar hasil = x + y;
+  hasil * 2
+}
+
+kira_selamat(21, 21)`
   },
   {
     name: 'Builtins',
