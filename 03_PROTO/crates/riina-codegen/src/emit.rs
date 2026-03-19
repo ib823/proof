@@ -2663,21 +2663,23 @@ impl CEmitter {
         self.writeln("}");
         self.writeln("");
 
-        // Content hash (DJB2 hash, returns hex string)
+        // Content hash (FNV-1a, returns hex string)
         self.writeln("static riina_value_t* riina_content_hash(riina_value_t* val) {");
-        self.writeln("    uint64_t hash = 5381;");
+        self.writeln("    uint64_t hash = 14695981039346656037ULL;");
+        self.writeln("    const uint64_t prime = 1099511628211ULL;");
         self.writeln("    if (val->tag == RIINA_TAG_INT) {");
-        self.writeln("        uint64_t n = val->data.int_val;");
+        self.writeln("        int64_t n = val->data.int_val;");
         self.writeln("        int i;");
         self.writeln("        for (i = 0; i < 8; i++) {");
-        self.writeln("            hash = ((hash << 5) + hash) + (n & 0xff);");
-        self.writeln("            n >>= 8;");
+        self.writeln("            hash ^= (n >> (i * 8)) & 0xFF;");
+        self.writeln("            hash *= prime;");
         self.writeln("        }");
         self.writeln("    } else if (val->tag == RIINA_TAG_STRING) {");
         self.writeln("        const char* s = val->data.string_val.data;");
-        self.writeln("        while (*s) { hash = ((hash << 5) + hash) + (unsigned char)*s++; }");
+        self.writeln("        while (*s) { hash ^= (unsigned char)*s++; hash *= prime; }");
         self.writeln("    } else if (val->tag == RIINA_TAG_BOOL) {");
-        self.writeln("        hash = ((hash << 5) + hash) + (val->data.bool_val ? 1 : 0);");
+        self.writeln("        hash ^= (val->data.bool_val ? 1 : 0);");
+        self.writeln("        hash *= prime;");
         self.writeln("    }");
         self.writeln("    char buf[17];");
         self.writeln("    snprintf(buf, sizeof(buf), \"%016llx\", (unsigned long long)hash);");
@@ -3752,6 +3754,34 @@ mod tests {
         let expr = Expr::ContentHash(Box::new(Expr::Int(42)));
         let code = compile_and_emit(&expr).unwrap();
         assert!(code.contains("riina_content_hash"));
+    }
+
+    #[test]
+    fn test_emit_content_hash_fnv_constants() {
+        let expr = Expr::ContentHash(Box::new(Expr::Int(1)));
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("14695981039346656037"), "FNV offset basis missing");
+        assert!(code.contains("1099511628211"), "FNV prime missing");
+    }
+
+    #[test]
+    fn test_emit_crdt_merge_present() {
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Int(5)),
+            Box::new(Expr::Int(8)),
+        );
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("riina_crdt_merge"));
+    }
+
+    #[test]
+    fn test_emit_crdt_merge_int_max() {
+        let expr = Expr::CRDTMerge(
+            Box::new(Expr::Int(5)),
+            Box::new(Expr::Int(8)),
+        );
+        let code = compile_and_emit(&expr).unwrap();
+        assert!(code.contains("int_val > b->data.int_val"), "GCounter max logic missing");
     }
 
     // ═══════════════════════════════════════════════════════════════════
