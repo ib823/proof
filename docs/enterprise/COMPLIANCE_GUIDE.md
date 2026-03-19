@@ -21,7 +21,7 @@ Every RIINA program gets these guarantees **without any flags**:
 | Effect safety | Functions cannot perform undeclared side effects | `properties/EffectSafety.v` |
 | Declassification correctness | Secrets only released through authorized policy | `properties/Declassification.v` |
 
-These are proven theorems in Coq (9,171 Qed proofs in active build, 0 admits, 0 active axioms). The compiler IS the security tool. The `--compliance` flag adds **industry-specific** rules on top of these universal guarantees.
+These are proven theorems in Coq (11,905 Qed proofs in active build, 0 admits, 0 active axioms). The compiler IS the security tool. The `--compliance` flag adds **industry-specific** rules on top of these universal guarantees.
 
 ---
 
@@ -91,7 +91,7 @@ riinac check myapp.rii --compliance pci-dss --report-json --report-output audit_
 ═══════════════════════════════════════════════════════════════════════
   RIINA COMPLIANCE REPORT
 ═══════════════════════════════════════════════════════════════════════
-  Compiler:    RIINA v0.2.0
+  Compiler:    RIINA v0.3.0
   File:        myapp.rii
   SHA-256:     a1b2c3d4...
   Timestamp:   2026-02-01T12:00:00Z
@@ -115,7 +115,7 @@ riinac check myapp.rii --compliance pci-dss --report-json --report-output audit_
 
 ```json
 {
-  "riina_version": "0.2.0",
+  "riina_version": "0.3.0",
   "file": "myapp.rii",
   "source_sha256": "a1b2c3d4...",
   "timestamp": "2026-02-01T12:00:00Z",
@@ -346,4 +346,4 @@ Every compliance claim maps to a named, machine-checked theorem in Coq. These ar
 
 ---
 
-*RIINA v0.2.0 — Compliance proven. Mathematically verified.*
+*RIINA v0.3.0 — Compliance proven. Mathematically verified.*

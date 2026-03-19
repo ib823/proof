@@ -16,7 +16,7 @@ This is not a test report. This is a mathematical proof that your program satisf
 ├──────────────────────────────────────────────────────┤
 │ Program     : myapp.rii                              │
 │ Compiled    : 2026-01-31T14:30:00Z                   │
-│ Compiler    : riinac 0.2.0                           │
+│ Compiler    : riinac 0.3.0                           │
 │ Prover      : Rocq 9.1.1                    │
 │ Certificate : SHA-256 of proof objects                │
 ├──────────────────────────────────────────────────────┤

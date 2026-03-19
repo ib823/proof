@@ -1,4 +1,4 @@
-# RIINA
+# RIINA™
 
 > Rigorous Immutable Invariant, No Assumptions
 
@@ -6,19 +6,26 @@ RIINA is a formally verified programming language with Bahasa Melayu (Malaysian)
 Security properties are mathematically proven at compile time.
 
 - File extension: `.rii`
+- Version: 0.3.0
 - Keywords: Bahasa Melayu (Malaysian) + English dual syntax
 - Repository: https://github.com/ib823/riina
 - License: Proprietary
 
-## Verified State (2026-02-17, command-derived)
+## Verified State (2026-03-19, command-derived)
 
-- Coq: 7,276 Qed (active build, 0 Admitted, 0 Axioms), 259 .v files
-- Lean 4: 33 compiled theorems (core files), toolchain v4.16.0
-- Isabelle: 275 .thy files (transpiled, uncompiled)
-- Extended provers (F*, TLA+, Alloy, SMT, Verus, Kani, TV): STUBS only
-- Rust prototype: 968 tests, 15 crates
-- Tooling: 240 tests
-- Examples: 130 .rii files
+- Coq: 11,905 Qed (active build, 0 Admitted, 0 Axioms), 301 .v files
+- Lean 4: 12,096 theorems (317 files, 0 sorry), claim: mechanized
+- Isabelle: 12,287 lemmas (354 files, 0 sorry), claim: mechanized
+- TLA+: 11,839 theorems (309 files), claim: mechanized
+- SMT/Z3: 11,962 assertions (309 files), claim: mechanized
+- F*: 22 lemmas (307 files), claim: compiled
+- Alloy: 11,240 assertions (299 files), claim: compiled
+- Verus: 6,008 proof fns (316 files), claim: generated
+- Kani: 5,277 harnesses (300 files), claim: generated
+- TV: 16,917 validations (308 files), claim: generated
+- Total: 71,351 proof artifacts across 10 provers
+- Rust: 2,294 tests, 16 crates, 0 external dependencies
+- Examples: 143 .rii files
 
 ## Session Protocol
 
@@ -33,25 +40,83 @@ Commit-Push-Deploy: stage specific files → commit [TRACK_X] TYPE: → push (ne
 - [Master Plan](RIINA_MASTER_PLAN.md): Single source of truth for all planning
 - [Claude Code Instructions](CLAUDE.md): Operational instructions for AI agents
 - [Language Specs](04_SPECS/): Formal specifications
-- [Examples](07_EXAMPLES/): 130 example .rii files
+- [Examples](07_EXAMPLES/): 143 example .rii files
 - [Formal Proofs](02_FORMAL/coq/): Coq proof library
+- [llms-full.txt](llms-full.txt): Complete language specification for LLMs
 
 ## Quick Syntax Reference
 
 ```riina
+// Functions with effect declarations
 fungsi tambah(x: Nombor, y: Nombor) -> Nombor kesan Bersih {
     pulang x + y;
 }
 
-fungsi utama() -> Nombor kesan Tulis {
-    biar hasil = tambah(3, 4);
-    pulang 0;
+// Actors (JALINAN Phase 6)
+pelakon Pembilang {
+    keadaan: Nombor
+    kendalikan Tambah(n) {
+        n + 1
+    }
+}
+
+biar k = lahir Pembilang(0);
+hantar(k, 5);
+terima(k)
+
+// Choreography (multiparty session types)
+koreografi Pembelian {
+    peranan Pemohon, Pelulus;
+    Pemohon -> Pelulus: hantar Nombor;
+    Pelulus -> Pemohon: hantar Benar;
+    tamat;
 }
 ```
 
 ## Keywords
 
+### Core
 fungsi (fn), biar (let), ubah (mut), kalau (if), lain (else), untuk (for),
-selagi (while), pulang (return), padan (match), rahsia (secret), dedah (declassify),
-kesan (effect), bersih (pure), bentuk (struct), pilihan (enum), sifat (trait),
-laksana (impl), awam (pub)
+selagi (while), pulang (return), padan (match), bentuk (struct), pilihan (enum),
+sifat (trait), laksana (impl), awam (pub), modul (mod), guna (use)
+
+### Security
+rahsia (secret), dedah (declassify), bukti (prove), masa_tetap (constant-time),
+tercemar (tainted), bersihkan (sanitize)
+
+### Effects
+kesan (effect), bersih (pure), laku (perform), kendali (handle)
+
+### Linearity
+sekali (linear), paling (affine), mesti (relevant)
+
+### JALINAN (Distributed Computing)
+pelakon (actor), lahir (spawn), hantar (send), terima (recv),
+koreografi (choreography), peranan (role), keadaan (state),
+penyelia (supervisor), gabung (merge), cincang (hash), sahkan (verify)
+
+### Capabilities
+keupayaan (capability), perlukan (require), beri (grant), tarik_balik (revoke)
+
+### Session Types
+sesi (session), pilih (select), cabang (branch), tamat (end)
+
+## CLI
+
+```bash
+riinac check file.rii     # Type-check + verify security
+riinac run file.rii       # Execute directly
+riinac build file.rii     # Compile to native via C
+riinac emit-c file.rii    # Generate C source
+riinac emit-ir file.rii   # Generate IR
+riinac repl               # Interactive mode
+riinac fmt file.rii       # Format source
+riinac doc file.rii       # Generate HTML docs
+riinac lsp                # Language server
+riinac verify --fast      # Quick verification (pre-commit)
+riinac verify --full      # Full verification (pre-push)
+riinac pkg init           # Initialize package
+riinac pkg add dep        # Add dependency
+riinac pkg build          # Build with dependencies
+riinac mcp                # MCP server for AI tools
+```
