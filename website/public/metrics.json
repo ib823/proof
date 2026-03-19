@@ -1,11 +1,11 @@
 {
-  "generated": "2026-03-19T05:39:23Z",
-  "generatedHuman": "March 19, 2026 at 05:39 UTC",
+  "generated": "2026-03-19T06:55:18Z",
+  "generatedHuman": "March 19, 2026 at 06:55 UTC",
   "version": "0.3.0",
   "session": 0,
   "git": {
-    "commit": "7ee4fe15",
-    "branch": "main"
+    "commit": "b37aa71",
+    "branch": "claude/verify-coq-compilation-ddiE0"
   },
   "proofs": {
     "qedActive": 12385,
@@ -174,8 +174,8 @@
   "rust": {
     "tests": 2476,
     "testsVerified": 2476,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "testsEstimated": 2472,
+    "testsSource": "cached_verified",
     "crates": 19
   },
   "examples": 153,

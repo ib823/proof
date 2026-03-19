@@ -179,8 +179,8 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 12,385 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 317 files, 12,576 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
-| **Isabelle proofs** | `02_FORMAL/isabelle/` | 354 files, 12,931 lemmas, 10 core theories compile, 0 sorry | Mechanized |
+| **Lean proofs** | `02_FORMAL/lean/` | 325 files, 12,576 theorems, `lake build` passes, 0 sorry, 15 axioms | Mechanized |
+| **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, 12,931 lemmas, 10 core theories compile, 0 sorry | Mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 267 files, 11,843 assertions, 267/267 Z3-verified | Mechanized |
 | **F\* proofs** | `02_FORMAL/fstar/` | 265 files, 0 assume val | Compiled |
 | **TLA+ specs** | `02_FORMAL/tlaplus/` | 267 files, 5,893 theorems, SANY+TLC verified | Compiled |

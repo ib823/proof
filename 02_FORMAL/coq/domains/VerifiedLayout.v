@@ -79,18 +79,16 @@ Proof. reflexivity. Qed.
 Definition zero_box : LayoutBox := mkLayoutBox 0 0 0 0 true.
 
 Theorem VL_007 : forall cw ch, box_in_bounds zero_box cw ch = true.
-Proof. intros cw ch. unfold box_in_bounds, zero_box. simpl.
-  apply andb_true_iff. split; apply Nat.leb_le; lia. Qed.
+Proof. intros cw ch. unfold box_in_bounds, zero_box. simpl. reflexivity. Qed.
 
 (* Overlap is symmetric *)
 Theorem VL_008 : forall a b, boxes_overlap a b = boxes_overlap b a.
-Proof. intros a b. unfold boxes_overlap.
-  f_equal. f_equal.
-  destruct (Nat.leb (lb_x a + lb_width a) (lb_x b)) eqn:E1;
-  destruct (Nat.leb (lb_x b + lb_width b) (lb_x a)) eqn:E2;
-  destruct (Nat.leb (lb_y a + lb_height a) (lb_y b)) eqn:E3;
-  destruct (Nat.leb (lb_y b + lb_height b) (lb_y a)) eqn:E4;
-  simpl; reflexivity. Qed.
+Proof. intros a b. unfold boxes_overlap. f_equal.
+  destruct (lb_x a + lb_width a <=? lb_x b) eqn:E1;
+  destruct (lb_x b + lb_width b <=? lb_x a) eqn:E2;
+  destruct (lb_y a + lb_height a <=? lb_y b) eqn:E3;
+  destruct (lb_y b + lb_height b <=? lb_y a) eqn:E4;
+  reflexivity. Qed.
 
 (* Box in larger container implies in even larger *)
 Theorem VL_009 : forall b cw1 ch1 cw2 ch2,
@@ -102,7 +100,7 @@ Proof. intros b cw1 ch1 cw2 ch2 H Hw Hh.
   apply andb_true_iff. split; apply Nat.leb_le; apply Nat.leb_le in H1; apply Nat.leb_le in H2; lia. Qed.
 
 (* Visible box with zero width doesn't overlap anything *)
-Theorem VL_010 : forall b, lb_width box2 > 0 -> boxes_overlap box1 box2 = false.
+Theorem VL_010 : forall (b : LayoutBox), lb_width box2 > 0 -> boxes_overlap box1 box2 = false.
 Proof. intros b _. reflexivity. Qed.
 
 (* Separated boxes don't overlap *)
