@@ -222,10 +222,10 @@ This is not a whitepaper. This is working software.
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
 | **Rocq 9.1.1** (Primary) | 11,905 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
-| **Lean 4** (Secondary) | 4,458 theorem/lemma declarations | 155 files; 0 `sorry`, 0 axioms; claim level: mechanized (build passes) |
-| **Isabelle/HOL** (Tertiary) | 9,092 lemmas, mechanized | 307 .thy files; Isabelle mechanized lane |
+| **Lean 4** (Secondary) | 12,096 theorem/lemma declarations | 317 files; 0 `sorry`, 0 axioms; claim level: mechanized (build passes) |
+| **Isabelle/HOL** (Tertiary) | 12,287 lemmas, mechanized | 354 .thy files; Isabelle mechanized lane |
 | **F\*** (Seed lane) | 22 lemmas, compiled | F* compiled lane |
-| **TLA+** (Protocol seed lane) | 5,893 theorems, compiled | 267 .tla files; TLA+ compiled lane |
+| **TLA+** (Protocol seed lane) | 11,839 theorems, mechanized | 309 .tla files; TLA+ mechanized lane |
 
 **Honest scope:**
 - Core Coq theorems cover foundations, type safety, effects, non-interference, declassification, and termination.
@@ -236,8 +236,8 @@ This is not a whitepaper. This is working software.
 
 | Metric | Value |
 |--------|-------|
-| Rust crates | 15 |
-| Test count | 1,494 (all passing) |
+| Rust crates | 16 |
+| Test count | 2,294 (all passing) |
 | External dependencies | **0** |
 | Lines of Rust | 31,043 |
 | Standard library builtins | 88 across 9 modules |
@@ -278,7 +278,7 @@ This is not a whitepaper. This is working software.
 
 ### Example Programs
 
-137 example `.rii` files across 10 categories:
+143 example `.rii` files across 10 categories:
 
 | Category | Examples | Topics |
 |----------|----------|--------|
@@ -317,7 +317,7 @@ riina/
 │   ├── compliance/         DO-178C, ISO-26262, Common Criteria models
 │   └── Industries/         Regulatory/domain formal models
 │
-├── 02_FORMAL/lean/          Lean 4 active lane (155 files, 4,458 declarations)
+├── 02_FORMAL/lean/          Lean 4 active lane (317 files, 12,096 declarations)
 │   └── RIINA/               Syntax, Semantics, Typing, Progress, Preservation,
 │                             TypeSafety, EffectAlgebra, EffectSystem, EffectGate,
 │                             NonInterference
@@ -326,7 +326,7 @@ riina/
 ├── 02_FORMAL/tlaplus/       TLA+ compiled lane (5,893 theorems, 267 .tla total)
 │   └── RIINA/               Mechanized Isabelle theories
 │
-├── 03_PROTO/               Rust compiler (15 crates, 980 tests, 0 deps)
+├── 03_PROTO/               Rust compiler (16 crates, 2,294 tests, 0 deps)
 │   └── crates/
 │       ├── riinac/         Compiler driver (11 subcommands)
 │       ├── riina-lexer/    Tokenizer
@@ -345,7 +345,7 @@ riina/
 │
 ├── 04_SPECS/               Language specifications, compliance specs
 ├── 05_TOOLING/             Crypto primitives, build system (35K lines Rust)
-├── 07_EXAMPLES/            130 example .rii files
+├── 07_EXAMPLES/            143 example .rii files
 ├── docs/                   Enterprise docs, multilingual READMEs
 ├── VERSION                 Semver source of truth (0.2.0)
 ├── CHANGELOG.md            Public-facing changelog
