@@ -1,0 +1,7 @@
+// hello_ui.rii — CAHAYA Hello World
+// Type-safe UI: paparan (display), tulisan (text), butang (button)
+
+paparan {
+    tulisan("Selamat datang ke RIINA!", warna(255, 255, 255));
+    butang("Klik saya", fungsi() { 42 });
+}

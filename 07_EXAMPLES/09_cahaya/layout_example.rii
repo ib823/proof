@@ -1,0 +1,10 @@
+// layout_example.rii — CAHAYA Layout System
+// paparan (display), baris (row), tulisan (text)
+
+paparan {
+    baris {
+        tulisan("Kiri", warna(200, 200, 200));
+        tulisan("Tengah", warna(200, 200, 200));
+        tulisan("Kanan", warna(200, 200, 200));
+    }
+}

@@ -131,6 +131,16 @@ hantar(k, 5);
 terima(k)`
   },
   {
+    name: 'CAHAYA UI',
+    code: `// CAHAYA: Type-safe UI with accessibility
+// paparan = display, tulisan = text, warna = color
+
+paparan {
+    tulisan("Selamat datang ke RIINA!", warna(255, 255, 255));
+    butang("Klik saya", fungsi() { 42 });
+}`
+  },
+  {
     name: 'Builtins',
     code: `// Built-in functions (bilingual)
 biar nama = "RIINA";
@@ -150,6 +160,7 @@ const KEYWORDS = new Set([
   'ulang', 'pulang', 'padan', 'keluar', 'terus', 'kesan', 'masa_tetap',
   'sekali', 'benar', 'palsu', 'tiada',
   'pelakon', 'lahir', 'hantar', 'terima', 'kendalikan', 'keadaan',
+  'paparan', 'tulisan', 'butang', 'warna', 'kontras', 'baris', 'lajur',
 ]);
 
 const TYPES = new Set([

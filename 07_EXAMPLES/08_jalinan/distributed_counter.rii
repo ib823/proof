@@ -1,0 +1,24 @@
+// distributed_counter.rii — Multi-Actor Distributed Counter
+// Three independent actor nodes, each maintaining local state.
+// Messages are sent concurrently; final sum aggregates all nodes.
+
+pelakon Nod {
+    keadaan: Nombor
+    kendalikan Tambah(n) {
+        n + keadaan
+    }
+}
+
+// Spawn three independent counter nodes
+biar nod1 = lahir Nod(0);
+biar nod2 = lahir Nod(0);
+biar nod3 = lahir Nod(0);
+
+// Each node processes its own increment
+hantar(nod1, 10);
+hantar(nod2, 20);
+hantar(nod3, 30);
+
+// Aggregate results from all nodes
+biar jumlah = terima(nod1) + terima(nod2) + terima(nod3);
+jumlah
