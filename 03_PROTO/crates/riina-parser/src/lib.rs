@@ -694,6 +694,7 @@ impl<'a> Parser<'a> {
                 | Some(TokenKind::KwRecv)
                 | Some(TokenKind::KwMerge)
                 | Some(TokenKind::KwContentHash)
+                | Some(TokenKind::KwVerify)
         )
     }
 
@@ -776,6 +777,7 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwRecv) => self.parse_actor_recv(),
             Some(TokenKind::KwMerge) => self.parse_crdt_merge(),
             Some(TokenKind::KwContentHash) => self.parse_content_hash(),
+            Some(TokenKind::KwVerify) => self.parse_content_verify(),
             // CAHAYA Phase J5 prefix forms
             Some(TokenKind::KwText_) => self.parse_ui_text(),
             Some(TokenKind::KwButton) => self.parse_ui_button(),
@@ -1536,6 +1538,20 @@ impl<'a> Parser<'a> {
         let e = self.parse_control_flow()?;
         self.consume(TokenKind::RParen)?;
         Ok(Expr::ContentHash(Box::new(e)))
+    }
+
+    /// Parse: sahkan(expected_hash, value)
+    fn parse_content_verify(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::KwVerify)?;
+        self.consume(TokenKind::LParen)?;
+        let expected_hash = self.parse_control_flow()?;
+        self.consume(TokenKind::Comma)?;
+        let value = self.parse_control_flow()?;
+        self.consume(TokenKind::RParen)?;
+        Ok(Expr::ContentVerify(
+            Box::new(expected_hash),
+            Box::new(value),
+        ))
     }
 
     // ════════════════════════════════════════════════════════════════════

@@ -219,7 +219,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 ## PART 2: CURRENT VERIFIED STATE
 
-**Last verified: 2026-03-17 by running commands listed in Part 0.**
+**Last verified: 2026-03-19 by running commands listed in Part 0.**
 
 ### Coq (Primary Prover)
 
@@ -302,11 +302,11 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 980 passing |
-| Tests (05_TOOLING/) | 240 passing |
-| Crates | 15 |
+| Tests (03_PROTO/) | 2,343 passing |
+| Tests (05_TOOLING/) | 248 passing |
+| Crates | 16 |
 | Clippy | Clean |
-| Example .rii files | 133 |
+| Example .rii files | 147 |
 
 **Compiler capabilities (honest):**
 - Lexes Bahasa Melayu keywords

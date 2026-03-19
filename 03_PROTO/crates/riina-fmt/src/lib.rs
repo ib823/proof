@@ -377,7 +377,8 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
         | Expr::ActorSend(_, _)
         | Expr::ActorRecv(_)
         | Expr::CRDTMerge(_, _)
-        | Expr::ContentHash(_) => {
+        | Expr::ContentHash(_)
+        | Expr::ContentVerify(_, _) => {
             indent(out, level, cfg);
             out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
         }
@@ -578,7 +579,8 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
         | Expr::ActorSend(_, _)
         | Expr::ActorRecv(_)
         | Expr::CRDTMerge(_, _)
-        | Expr::ContentHash(_) => {
+        | Expr::ContentHash(_)
+        | Expr::ContentVerify(_, _) => {
             out.push_str("/* JALINAN Phase 6: actor/choreography/CRDT */");
         }
 

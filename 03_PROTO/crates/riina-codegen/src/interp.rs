@@ -674,7 +674,7 @@ impl Interpreter {
                     if let Some(handler) = self.actor_handlers.get(&id).cloned() {
                         // Handler is a Lam(param, ty, body) — apply it to the message
                         let app = Expr::App(Box::new(handler), Box::new(Expr::Int(
-                            msg.as_int().unwrap_or(0) as u64
+                            msg.as_int().unwrap_or(0)
                         )));
                         let result = self.eval_with_env(env, &app)?;
                         self.actor_states.insert(id, result);
@@ -709,6 +709,19 @@ impl Interpreter {
                 let hash = fnv1a_hash_value(&val);
                 let hex = format!("{hash:016x}");
                 Ok(Value::Hash(hex.into_bytes()))
+            }
+
+            Expr::ContentVerify(expected_hash_expr, val_expr) => {
+                let expected_hash = self.eval_with_env(env, expected_hash_expr)?;
+                let val = self.eval_with_env(env, val_expr)?;
+                let actual_hash = if val.is_hash() {
+                    val
+                } else {
+                    let hash = fnv1a_hash_value(&val);
+                    let hex = format!("{hash:016x}");
+                    Value::Hash(hex.into_bytes())
+                };
+                Ok(Value::Bool(expected_hash == actual_hash))
             }
 
             // CAHAYA Phase J5 — UI primitives (not yet interpreted)
@@ -2055,6 +2068,26 @@ mod tests {
         let r1 = interp.eval(&single).unwrap();
         let r3 = interp.eval(&triple).unwrap();
         assert_eq!(r1, r3);
+    }
+
+    #[test]
+    fn test_eval_content_verify_true() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ContentVerify(
+            Box::new(Expr::ContentHash(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(42)),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::Bool(true)));
+    }
+
+    #[test]
+    fn test_eval_content_verify_false() {
+        let mut interp = Interpreter::new();
+        let expr = Expr::ContentVerify(
+            Box::new(Expr::ContentHash(Box::new(Expr::Int(41)))),
+            Box::new(Expr::Int(42)),
+        );
+        assert_eq!(interp.eval(&expr), Ok(Value::Bool(false)));
     }
 
     #[test]

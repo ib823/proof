@@ -2743,6 +2743,26 @@ fn test_parse_content_hash_error_missing_paren() {
     assert!(result.is_err(), "Expected error when parens are missing");
 }
 
+#[test]
+fn test_parse_content_verify_basic() {
+    let mut p = Parser::new("sahkan(cincang(x), x)");
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::ContentVerify(expected_hash, value) => {
+            assert!(matches!(*expected_hash, Expr::ContentHash(_)));
+            assert_eq!(*value, Expr::Var("x".to_string()));
+        }
+        other => panic!("Expected ContentVerify, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_content_verify_error_missing_comma() {
+    let mut p = Parser::new("sahkan(cincang(x) x)");
+    let result = p.parse_expr();
+    assert!(result.is_err(), "Expected error when comma is missing");
+}
+
 // =============================================================================
 // JALINAN PHASE 6: INTEGRATION TESTS
 // =============================================================================
@@ -2842,6 +2862,21 @@ fn test_parse_jalinan_merge_and_hash_composition() {
             assert_eq!(name, "merged");
             assert!(matches!(*val, Expr::CRDTMerge(_, _)));
             assert!(matches!(*cont, Expr::ContentHash(_)));
+        }
+        other => panic!("Expected Let, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_jalinan_hash_verify_composition() {
+    let source = "biar hash = cincang(data); sahkan(hash, data)";
+    let mut p = Parser::new(source);
+    let expr = p.parse_expr().unwrap();
+    match expr {
+        Expr::Let(name, _, val, cont) => {
+            assert_eq!(name, "hash");
+            assert!(matches!(*val, Expr::ContentHash(_)));
+            assert!(matches!(*cont, Expr::ContentVerify(_, _)));
         }
         other => panic!("Expected Let, got {:?}", other),
     }

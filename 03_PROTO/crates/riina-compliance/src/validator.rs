@@ -74,7 +74,8 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
         | Expr::ActorSend(_, _)
         | Expr::ActorRecv(_)
         | Expr::CRDTMerge(_, _)
-        | Expr::ContentHash(_) => todo!("JALINAN Phase 6"),
+        | Expr::ContentHash(_)
+        | Expr::ContentVerify(_, _) => todo!("JALINAN Phase 6"),
 
         // CAHAYA Phase J5
         Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {

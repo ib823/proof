@@ -4214,6 +4214,56 @@ mod jalinan_phase6_tests {
         assert_eq!(eff, Effect::Crypto);
     }
 
+    #[test]
+    fn test_content_verify_success() {
+        let ctx = Context::new().extend(
+            "hash".into(),
+            Ty::ContentAddressed(Box::new(Ty::Int)),
+        );
+        let expr = Expr::ContentVerify(
+            Box::new(Expr::Var("hash".into())),
+            Box::new(Expr::Int(42)),
+        );
+        let (ty, eff) = type_check(&ctx, &expr).unwrap();
+        assert_eq!(ty, Ty::Bool);
+        assert_eq!(eff, Effect::Crypto);
+    }
+
+    #[test]
+    fn test_content_verify_requires_content_addressed_hash() {
+        let ctx = Context::new().extend("hash".into(), Ty::String);
+        let expr = Expr::ContentVerify(
+            Box::new(Expr::Var("hash".into())),
+            Box::new(Expr::Int(42)),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::ContentAddressed(Box::new(Ty::Int)));
+                assert_eq!(found, Ty::String);
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_content_verify_rejects_mismatched_inner_type() {
+        let ctx = Context::new().extend(
+            "hash".into(),
+            Ty::ContentAddressed(Box::new(Ty::String)),
+        );
+        let expr = Expr::ContentVerify(
+            Box::new(Expr::Var("hash".into())),
+            Box::new(Expr::Int(42)),
+        );
+        match type_check(&ctx, &expr) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::ContentAddressed(Box::new(Ty::Int)));
+                assert_eq!(found, Ty::ContentAddressed(Box::new(Ty::String)));
+            }
+            other => panic!("Expected TypeMismatch, got {:?}", other),
+        }
+    }
+
     // ════════════════════════════════════════════════════════════════════
     // Integration & Error Tests (6)
     // ════════════════════════════════════════════════════════════════════

@@ -2945,9 +2945,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
             match op {
                 BinOp::Add => {
-                    if types_compatible(&Ty::String, &inner1) && types_compatible(&Ty::String, &inner2) {
+                    if types_compatible(&Ty::String, inner1) && types_compatible(&Ty::String, inner2) {
                         Ok((label_result(Ty::String), eff))
-                    } else if types_compatible(&Ty::Int, &inner1) && types_compatible(&Ty::Int, &inner2) {
+                    } else if types_compatible(&Ty::Int, inner1) && types_compatible(&Ty::Int, inner2) {
                         Ok((label_result(Ty::Int), eff))
                     } else {
                         Err(TypeError::TypeMismatch {
@@ -2957,13 +2957,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     }
                 }
                 BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
-                    if !types_compatible(&Ty::Int, &inner1) {
+                    if !types_compatible(&Ty::Int, inner1) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: inner1.clone(),
                         });
                     }
-                    if !types_compatible(&Ty::Int, &inner2) {
+                    if !types_compatible(&Ty::Int, inner2) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: inner2.clone(),
@@ -2972,13 +2972,16 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     Ok((label_result(Ty::Int), eff))
                 }
                 BinOp::Eq | BinOp::Ne => {
-                    if !types_compatible(&inner1, &inner2) {
+                    if !types_compatible(inner1, inner2) {
                         return Err(TypeError::TypeMismatch {
                             expected: inner1.clone(),
                             found: inner2.clone(),
                         });
                     }
-                    if !types_compatible(&Ty::Int, &inner1) && !types_compatible(&Ty::Bool, &inner1) && !types_compatible(&Ty::String, &inner1) {
+                    if !types_compatible(&Ty::Int, inner1)
+                        && !types_compatible(&Ty::Bool, inner1)
+                        && !types_compatible(&Ty::String, inner1)
+                    {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: inner1.clone(),
@@ -2987,13 +2990,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     Ok((label_result(Ty::Bool), eff))
                 }
                 BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge => {
-                    if !types_compatible(&Ty::Int, &inner1) {
+                    if !types_compatible(&Ty::Int, inner1) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: inner1.clone(),
                         });
                     }
-                    if !types_compatible(&Ty::Int, &inner2) {
+                    if !types_compatible(&Ty::Int, inner2) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: inner2.clone(),
@@ -3002,13 +3005,13 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     Ok((label_result(Ty::Bool), eff))
                 }
                 BinOp::And | BinOp::Or => {
-                    if !types_compatible(&Ty::Bool, &inner1) {
+                    if !types_compatible(&Ty::Bool, inner1) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Bool,
                             found: inner1.clone(),
                         });
                     }
-                    if !types_compatible(&Ty::Bool, &inner2) {
+                    if !types_compatible(&Ty::Bool, inner2) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Bool,
                             found: inner2.clone(),
@@ -3145,6 +3148,24 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         Expr::ContentHash(expr) => {
             let (inner_ty, eff) = type_check_full(ctx, expr)?;
             Ok((Ty::ContentAddressed(Box::new(inner_ty)), eff.join(Effect::Crypto)))
+        }
+
+        Expr::ContentVerify(expected_hash, value) => {
+            let (expected_ty, eff1) = type_check_full(ctx, expected_hash)?;
+            let (value_ty, eff2) = type_check_full(ctx, value)?;
+            let expected = Ty::ContentAddressed(Box::new(value_ty.clone()));
+            match expected_ty {
+                Ty::ContentAddressed(inner_ty) => {
+                    if !types_compatible(&inner_ty, &value_ty) {
+                        return Err(TypeError::TypeMismatch {
+                            expected,
+                            found: Ty::ContentAddressed(inner_ty),
+                        });
+                    }
+                    Ok((Ty::Bool, eff1.join(eff2).join(Effect::Crypto)))
+                }
+                found => Err(TypeError::TypeMismatch { expected, found }),
+            }
         }
 
         // ════════════════════════════════════════════════════════════════════
@@ -3652,6 +3673,24 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         Expr::ContentHash(expr) => {
             let (inner_ty, eff) = type_check(ctx, expr)?;
             Ok((Ty::ContentAddressed(Box::new(inner_ty)), eff.join(Effect::Crypto)))
+        }
+
+        Expr::ContentVerify(expected_hash, value) => {
+            let (expected_ty, eff1) = type_check(ctx, expected_hash)?;
+            let (value_ty, eff2) = type_check(ctx, value)?;
+            let expected = Ty::ContentAddressed(Box::new(value_ty.clone()));
+            match expected_ty {
+                Ty::ContentAddressed(inner_ty) => {
+                    if !types_compatible(&inner_ty, &value_ty) {
+                        return Err(TypeError::TypeMismatch {
+                            expected,
+                            found: Ty::ContentAddressed(inner_ty),
+                        });
+                    }
+                    Ok((Ty::Bool, eff1.join(eff2).join(Effect::Crypto)))
+                }
+                found => Err(TypeError::TypeMismatch { expected, found }),
+            }
         }
 
         // CAHAYA Phase J5: UI Primitives

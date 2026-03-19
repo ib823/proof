@@ -230,7 +230,10 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             fv
         }
         Expr::ChoreographyBlock { .. } => HashSet::new(),
-        Expr::Spawn(a, b) | Expr::ActorSend(a, b) | Expr::CRDTMerge(a, b) => {
+        Expr::Spawn(a, b)
+        | Expr::ActorSend(a, b)
+        | Expr::CRDTMerge(a, b)
+        | Expr::ContentVerify(a, b) => {
             let mut fv = free_vars(a);
             fv.extend(free_vars(b));
             fv
@@ -419,6 +422,7 @@ impl Lower {
             Expr::ActorRecv(_) => Ty::Int, // Message as generic value
             Expr::CRDTMerge(_, _) => Ty::Int, // Merged state
             Expr::ContentHash(_) => Ty::String, // Hash as hex string
+            Expr::ContentVerify(_, _) => Ty::Bool,
             // CAHAYA Phase J5
             Expr::UIDisplay(_) | Expr::UIRow(_) | Expr::UIColumn(_) => Ty::Element,
             Expr::UIText(_, _) => Ty::Element,
@@ -492,7 +496,12 @@ impl Lower {
             }
             Expr::ActorRecv(a) => self.infer_effect(a).join(Effect::Read),
             Expr::CRDTMerge(a, b) => self.infer_effect(a).join(self.infer_effect(b)),
-            Expr::ContentHash(a) => self.infer_effect(a),
+            Expr::ContentHash(a) => self.infer_effect(a).join(Effect::Crypto),
+            Expr::ContentVerify(a, b) => {
+                self.infer_effect(a)
+                    .join(self.infer_effect(b))
+                    .join(Effect::Crypto)
+            }
             // CAHAYA Phase J5 — all UI expressions are pure
             Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
                 let mut eff = Effect::Pure;
@@ -1374,7 +1383,24 @@ impl Lower {
                     Instruction::ContentHash(val_var),
                     Ty::String,
                     SecurityLevel::Public,
-                    Effect::Pure,
+                    Effect::Crypto,
+                ))
+            }
+
+            Expr::ContentVerify(expected_hash_expr, value_expr) => {
+                let expected_hash_var = self.lower_expr(expected_hash_expr)?;
+                let value_var = self.lower_expr(value_expr)?;
+                let actual_hash_var = self.emit(
+                    Instruction::ContentHash(value_var),
+                    Ty::String,
+                    SecurityLevel::Public,
+                    Effect::Crypto,
+                );
+                Ok(self.emit(
+                    Instruction::BinOp(IrBinOp::Eq, expected_hash_var, actual_hash_var),
+                    Ty::Bool,
+                    SecurityLevel::Public,
+                    Effect::Crypto,
                 ))
             }
 
@@ -1857,5 +1883,26 @@ mod tests {
             matches!(i.instr, Instruction::ContentHash(_))
         });
         assert!(has_hash);
+    }
+
+    #[test]
+    fn test_lower_content_verify() {
+        let mut lower = Lower::new();
+        let expr = Expr::ContentVerify(
+            Box::new(Expr::ContentHash(Box::new(Expr::Int(42)))),
+            Box::new(Expr::Int(42)),
+        );
+        let prog = lower.compile(&expr).unwrap();
+        let main = prog.function(FuncId::MAIN).unwrap();
+        let hash_count = main.blocks[0]
+            .instrs
+            .iter()
+            .filter(|i| matches!(i.instr, Instruction::ContentHash(_)))
+            .count();
+        let has_eq = main.blocks[0].instrs.iter().any(|i| {
+            matches!(i.instr, Instruction::BinOp(IrBinOp::Eq, _, _))
+        });
+        assert_eq!(hash_count, 2);
+        assert!(has_eq);
     }
 }

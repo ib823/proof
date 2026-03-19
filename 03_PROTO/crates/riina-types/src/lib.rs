@@ -923,6 +923,8 @@ pub enum Expr {
     CRDTMerge(Box<Expr>, Box<Expr>),
     /// Content hash: cincang(value)
     ContentHash(Box<Expr>),
+    /// Content hash verification: sahkan(expected_hash, value)
+    ContentVerify(Box<Expr>, Box<Expr>),
 
     // ── CAHAYA Phase J5 expressions ────────────────────────────────
 
