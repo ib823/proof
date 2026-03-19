@@ -173,13 +173,13 @@
 |------|-----------------------|----------|-------|
 | `G1` Canonical Identity | Partial | Canonical source set can be reconstructed from one research file, six Coq files, and a small Rust subset | The domain is still split between research ambition and a narrower live implementation |
 | `G2` Boundary Precision | Partial | Scope can be written precisely from files, but repo claims are broader than live coverage | Exclusions are not the public default wording today |
-| `G3` Workflow Inventory | Partial | Content hash/verify and receipt append/verify workflows are real; broader chain workflows are not | Smart-contract and consensus lifecycles are incomplete |
-| `G4` Threat and Failure Model | Partial | Research and formal files mention reentrancy, fork detection, tamper, and quorum assumptions | Failure/abuse modeling is not end-to-end and is not enforced live |
+| `G3` Workflow Inventory | Fail | Content hash/verify and receipt append/verify workflows are real, but the umbrella domain also claims consensus and smart-contract workflows that are not present end-to-end | Missing core blockchain workflows caps the umbrella below `R2` |
+| `G4` Threat and Failure Model | Fail | Research and formal files mention reentrancy, fork detection, tamper, and quorum assumptions, but there are no executable or toolchain-connected abuse models for consensus, reentrancy, or inflation | Conceptual failure talk is not enough for this gate |
 | `G5` Property Set | Partial | Integrity, conservation, agreement, and receipt-chain properties exist | Domain-critical execution and economic properties are incomplete |
-| `G6` Formal Model Depth | Partial | `DistributedConsensus.v` and `ExecutionReceipts.v` provide real local depth; several other domain files are definition-heavy | Stronger than pure theater, but not deep enough across the whole domain to justify higher claims |
-| `G7` Toolchain Enforcement | Partial | Content hash/verify and receipt verification are real; token rejection exists | Consensus is not implemented; smart-contract and token semantics are too thin for domain-wide enforcement |
-| `G8` Executable Evidence | Partial | Reproducible positive, negative, and tamper tests exist for covered subset | No end-to-end `.rii` blockchain workflow is shown to run in CI |
-| `G9` Adversarial Coverage | Partial | Tamper receipt tests, false verify tests, and token rejection tests exist | No broad attack corpus for reentrancy, inflation, or consensus abuse exists |
+| `G6` Formal Model Depth | Fail | `DistributedConsensus.v` and `ExecutionReceipts.v` provide narrow local depth, but the broader umbrella relies mostly on boolean-heavy models such as `BlockchainSafety.v` and `BlockchainConsensus.v` | The umbrella domain does not clear the nontrivial-proof bar for `R2` |
+| `G7` Toolchain Enforcement | Fail | Content hash/verify and receipt verification are real, but `consensus` is lexer-only downstream, `block/blok` is absent, and `ContractDeploy` is wrapper-level only | The umbrella domain lacks meaningful enforcement for the claimed blockchain surface |
+| `G8` Executable Evidence | Fail | Reproducible tests exist for a narrow subset, but no `.rii` blockchain workflows run end-to-end in CI | Static or partial evidence is not enough for umbrella executable support |
+| `G9` Adversarial Coverage | Fail | Tamper receipt tests and type mismatch tests exist, but there are no smart-contract, consensus, or inflation attack tests | Narrow subsystem tests do not satisfy umbrella adversarial coverage |
 | `G10` Evidence Honesty Across Prover Lanes | Fail | Lean/Isabelle are generated; SMT/Alloy/F*/TLA+/Verus/Kani/TV are vacuous or admitted for this domain | Multi-prover breadth is not safe to count as strong independent blockchain evidence |
 | `G11` Observability and Auditability | Partial | Claims can be traced to files and commands; receipt chain exists as a narrow observable subsystem | No domain-specific report or audit artifact ties the whole domain together |
 | `G12` Freshness and Reproducibility | Pass | Current commit captured, command-derived test count recomputed, `audit-docs.sh` rerun on live tree | Audit is reproducible on this snapshot |
@@ -188,25 +188,24 @@
 
 ## 10. Rating
 
-- Current rating: `R2`
-- Rating cap: `R2`
+- Current rating: `R1`
+- Rating cap: `R1`
 - Why this is not higher:
-  - The domain has real formal modeling and at least one nontrivial local proof cluster in `DistributedConsensus.v`, which is enough to exceed `R1`.
-  - The live toolchain enforces only a bounded subset: content-addressing, hash verification, and receipt-chain integrity, plus thin token-transfer rejection.
-  - The domain is not `R3` because consensus is not live, smart-contract/token semantics are skeletal, examples are not workflow-complete, and public claim discipline is still too strong.
+  - The umbrella domain still overclaims its actual structural scope: `block/blok` is missing, `consensus` is lexer-only downstream, and `ContractDeploy` is a passthrough wrapper.
+  - Although `DistributedConsensus.v` and `ExecutionReceipts.v` contain some nontrivial local depth, the broader umbrella depends mostly on boolean-heavy Coq files and vacuous non-Coq lanes.
+  - The live toolchain meaningfully supports only a narrow experimental subset around content-addressing and receipts, which is not enough to make the entire blockchain umbrella honestly `R2`.
 - Minimum work to reach next level:
-  - make the live scope explicit as a bounded blockchain-primitives subset
-  - complete downstream semantics for claimed syntax such as `consensus`, `block`, smart-contract execution rules, and token accounting invariants
-  - add end-to-end valid and invalid `.rii` blockchain workflows that run in CI
-  - complete compliance/runtime enforcement where current validators still contain `todo!()`
+  - drastically narrow the public scope to the actually implemented subset, or fully implement the missing umbrella primitives: blocks, consensus semantics, stateful contract execution, and accounting-safe token behavior
+  - replace boolean-heavy umbrella proofs with state and transition theorems tied to live workflows
+  - add end-to-end valid, invalid, and adversarial blockchain workflows that execute through the toolchain
   - reduce public wording until it matches the enforced subset
 
 ## 11. Safe Public Wording
 
 - Safe claim:
-  - `RIINA currently has a partial blockchain-primitives lane with real runtime support for content-addressed hashing and receipt chains, plus active but uneven formal modeling of Merkle, content-addressed, and consensus topics; it is not an end-to-end verified blockchain platform.`
+  - `RIINA's blockchain domain is a specified research topic with experimental runtime support for content-addressing and receipts, but it currently lacks enforced consensus, blocks, or functional smart contracts.`
 - Unsafe claim:
-  - `RIINA provides verified blockchain primitives including enforced consensus, smart-contract safety, and complete independent multi-prover confirmation.`
+  - `RIINA provides a formally modeled blockchain primitives lane with consensus, smart contracts, and independent multi-prover verification.`
 
 ## 12. Blocking Gaps
 
@@ -259,28 +258,28 @@
 ## 14. Sign-Off
 
 - Final verdict:
-  - `R2` is the maximum honest rating at commit `93ad08b8684ae7a2d3e94b35c6308f218c60f132`.
+  - `R1` is the maximum honest rating at commit `93ad08b8684ae7a2d3e94b35c6308f218c60f132`.
 - Reviewer notes:
-  - This audit applies the stricter no-theater standards already enforced by the `AN_SYARIAH` review.
-  - The strongest live evidence is content-addressing plus receipt chains.
-  - The weakest links are consensus implementation, thin smart-contract/token semantics, vacuous non-Coq lanes, and overstated public wording.
+  - Adversarial review completed with reductions.
+  - Accepted reviewer downgrades: `G3`, `G4`, `G6`, `G7`, `G8`, and `G9` to `Fail`.
+  - The strongest live evidence remains content-addressing plus receipt chains, but that is not enough to raise the entire umbrella above `R1`.
 - Follow-up date:
-  - after adversarial review and after any claim-discipline fixes land
+  - after scope is narrowed or the missing blockchain primitives are implemented and re-audited
 
 ## 15. Next Audit Handoff
 
 - Recommended next domain:
-  - `AO_EXECUTION_RECEIPTS`
+  - `AE_VERIFIED_AUDIT`
 - Recommended pattern:
-  - `executionreceipt|execution_receipt|execution receipt|receipt chain|receipt`
+  - `audit|auditable|receipt|evidence|trace|log|certification`
 - Why this should be next:
-  - it is the strongest adjacent narrow subsystem in the blockchain lane
-  - it already has live Rust enforcement, real tamper tests, and a dedicated Coq file
-  - auditing it separately will show whether a narrow domain can honestly reach `R3` sooner than the umbrella blockchain claim
+  - the current blockchain blocker is now closed
+  - the queue’s high-risk umbrella order now advances to `AE_VERIFIED_AUDIT`
+  - it is another claim-sensitive domain that likely interacts with receipts, evidence, and auditability
 - Files to start from:
-  - `02_FORMAL/coq/domains/ExecutionReceipts.v`
-  - `03_PROTO/crates/riina-receipt/src/lib.rs`
-  - `03_PROTO/crates/riina-codegen/src/interp.rs`
+  - `01_RESEARCH/50_DOMAIN_AE_VERIFIED_AUDIT/`
+  - `02_FORMAL/coq/domains/VerifiedAudit.v`
+  - domain-specific implementation files discovered during source mapping
 - Cross-domain risks to carry forward:
   - generated/vacuous non-Coq lanes
   - stale or overstated public wording

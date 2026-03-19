@@ -8,22 +8,14 @@ This plan does not change the current audit outcome. It defines how to earn a hi
 
 ## Current Truth
 
-As of the repo-stored audit in [AO_BLOCKCHAIN_R5_AUDIT.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/AO_BLOCKCHAIN_R5_AUDIT.md):
+As of [AO_BLOCKCHAIN_R5_AUDIT.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/AO_BLOCKCHAIN_R5_AUDIT.md) and [AO_BLOCKCHAIN_R5_REVIEW.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/AO_BLOCKCHAIN_R5_REVIEW.md):
+- `AO_BLOCKCHAIN` is `R1`
 - the umbrella domain has real implementation support for content-addressing and receipt chains
 - the umbrella domain has active formal artifacts, but much of the Coq surface is boolean-heavy
-- live smart-contract and token semantics are thin
-- consensus support is not live
-- public wording outruns the bounded live subset
-
-As of the hostile review summary provided outside the repo:
-- `AO_BLOCKCHAIN` should be treated as `R1`
 - `block/blok` is not implemented
 - `consensus` is lexer-only downstream
 - `ContractDeploy` is wrapper-level only
-- most domain proofs are definition-heavy except for a narrower local cluster in `DistributedConsensus.v`
-
-Because the hostile review artifact is not yet materialized in the workspace, this remediation package adopts the stricter operating baseline:
-- umbrella `AO_BLOCKCHAIN` is treated as `R1` for remediation planning
+- public wording outruns the bounded live subset
 
 ## Governing Rule
 

@@ -109,7 +109,7 @@ Do not claim `R5` if:
 
 ### First tranche
 
-- materialize the hostile blockchain review artifact in-repo and reconcile umbrella audit wording
+- keep umbrella wording fixed at reviewer-safe `R1`
 - create `AO_EXECUTION_RECEIPTS` audit ID and canonical scope
 - create stronger receipt formal model
 - connect receipts to runtime execution
