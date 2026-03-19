@@ -325,7 +325,7 @@ fun apply_subst :: "subst \<Rightarrow> expr \<Rightarrow> expr" where
 
 (* Helper: values only multi-step to themselves *)
 lemma value_multi_step_refl:
-  assumes "is_value v" and "(v, st, ctx) \<longrightarrow>* (v', st', ctx')"
+  assumes "is_value v" and "(v, st, ctx) \<leadsto>* (v', st', ctx')"
   shows "v' = v \<and> st' = st \<and> ctx' = ctx"
   using assms(2,1)
 proof (induction "(v, st, ctx)" "(v', st', ctx')" rule: multi_step.induct)
@@ -345,16 +345,16 @@ lemma val_rel_implies_exp_rel:
   unfolding exp_rel_def exp_rel_n_def
 proof (intro allI impI)
   fix n st1 st2 ctx1 ctx2 r1 st1' ctx1'
-  assume hmulti: "(v1, st1, ctx1) \<longrightarrow>* (r1, st1', ctx1')" and hval_r: "is_value r1"
+  assume hmulti: "(v1, st1, ctx1) \<leadsto>* (r1, st1', ctx1')" and hval_r: "is_value r1"
   (* v1 is a is_value, so it only multi-steps to itself *)
   have hv1: "is_value v1" using val_rel_value[OF assms] by simp
   from value_multi_step_refl[OF hv1 hmulti]
   have "r1 = v1" and "st1' = st1" and "ctx1' = ctx1" by auto
   (* v2 is also a is_value, multi-steps to itself via MS_Refl *)
   have hv2: "is_value v2" using val_rel_value[OF assms] by simp
-  show "\<exists>r2 st2' ctx2'. (v2, st2, ctx2) \<longrightarrow>* (r2, st2', ctx2') \<and> val_rel_n n \<Sigma> T r1 r2"
+  show "\<exists>r2 st2' ctx2'. (v2, st2, ctx2) \<leadsto>* (r2, st2', ctx2') \<and> val_rel_n n \<Sigma> T r1 r2"
   proof (intro exI conjI)
-    show "(v2, st2, ctx2) \<longrightarrow>* (v2, st2, ctx2)" by (rule MS_Refl)
+    show "(v2, st2, ctx2) \<leadsto>* (v2, st2, ctx2)" by (rule MS_Refl)
     show "val_rel_n n \<Sigma> T r1 v2" using assms \<open>r1 = v1\<close> unfolding val_rel_def by simp
   qed
 qed

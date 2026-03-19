@@ -136,137 +136,137 @@ type_synonym config = "expr \<times> store \<times> effect_ctx"
 section \<open>Small-Step Semantics\<close>
 
 text \<open>
-  The step relation: (e, st, ctx) \<longrightarrow> (e', st', ctx')
+  The step relation: (e, st, ctx) \<leadsto> (e', st', ctx')
   (matches Coq: Inductive step, 43 rules)
 \<close>
 
-inductive step :: "config \<Rightarrow> config \<Rightarrow> bool" (infix "\<longrightarrow>" 50) where
+inductive step :: "config \<Rightarrow> config \<Rightarrow> bool" (infix "\<leadsto>" 50) where
   (* Beta reduction *)
   ST_AppAbs: "is_value v \<Longrightarrow>
-              (EApp (ELam x T body) v, st, ctx) \<longrightarrow> (subst x v body, st, ctx)"
+              (EApp (ELam x T body) v, st, ctx) \<leadsto> (subst x v body, st, ctx)"
 
   (* Application congruence *)
-| ST_App1: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-            (EApp e1 e2, st, ctx) \<longrightarrow> (EApp e1' e2, st', ctx')"
+| ST_App1: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+            (EApp e1 e2, st, ctx) \<leadsto> (EApp e1' e2, st', ctx')"
 
-| ST_App2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<longrightarrow> (e2', st', ctx') \<Longrightarrow>
-            (EApp v1 e2, st, ctx) \<longrightarrow> (EApp v1 e2', st', ctx')"
+| ST_App2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<leadsto> (e2', st', ctx') \<Longrightarrow>
+            (EApp v1 e2, st, ctx) \<leadsto> (EApp v1 e2', st', ctx')"
 
   (* Pair reduction *)
-| ST_Pair1: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-             (EPair e1 e2, st, ctx) \<longrightarrow> (EPair e1' e2, st', ctx')"
+| ST_Pair1: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+             (EPair e1 e2, st, ctx) \<leadsto> (EPair e1' e2, st', ctx')"
 
-| ST_Pair2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<longrightarrow> (e2', st', ctx') \<Longrightarrow>
-             (EPair v1 e2, st, ctx) \<longrightarrow> (EPair v1 e2', st', ctx')"
+| ST_Pair2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<leadsto> (e2', st', ctx') \<Longrightarrow>
+             (EPair v1 e2, st, ctx) \<leadsto> (EPair v1 e2', st', ctx')"
 
   (* Projections *)
 | ST_Fst: "is_value v1 \<Longrightarrow> is_value v2 \<Longrightarrow>
-           (EFst (EPair v1 v2), st, ctx) \<longrightarrow> (v1, st, ctx)"
+           (EFst (EPair v1 v2), st, ctx) \<leadsto> (v1, st, ctx)"
 
 | ST_Snd: "is_value v1 \<Longrightarrow> is_value v2 \<Longrightarrow>
-           (ESnd (EPair v1 v2), st, ctx) \<longrightarrow> (v2, st, ctx)"
+           (ESnd (EPair v1 v2), st, ctx) \<leadsto> (v2, st, ctx)"
 
-| ST_FstStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-               (EFst e, st, ctx) \<longrightarrow> (EFst e', st', ctx')"
+| ST_FstStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+               (EFst e, st, ctx) \<leadsto> (EFst e', st', ctx')"
 
-| ST_SndStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-               (ESnd e, st, ctx) \<longrightarrow> (ESnd e', st', ctx')"
+| ST_SndStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+               (ESnd e, st, ctx) \<leadsto> (ESnd e', st', ctx')"
 
   (* Sum elimination *)
 | ST_CaseInl: "is_value v \<Longrightarrow>
-               (ECase (EInl v T) x1 e1 x2 e2, st, ctx) \<longrightarrow> (subst x1 v e1, st, ctx)"
+               (ECase (EInl v T) x1 e1 x2 e2, st, ctx) \<leadsto> (subst x1 v e1, st, ctx)"
 
 | ST_CaseInr: "is_value v \<Longrightarrow>
-               (ECase (EInr v T) x1 e1 x2 e2, st, ctx) \<longrightarrow> (subst x2 v e2, st, ctx)"
+               (ECase (EInr v T) x1 e1 x2 e2, st, ctx) \<leadsto> (subst x2 v e2, st, ctx)"
 
-| ST_CaseStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                (ECase e x1 e1 x2 e2, st, ctx) \<longrightarrow> (ECase e' x1 e1 x2 e2, st', ctx')"
+| ST_CaseStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                (ECase e x1 e1 x2 e2, st, ctx) \<leadsto> (ECase e' x1 e1 x2 e2, st', ctx')"
 
   (* Sum construction congruence *)
-| ST_InlStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-               (EInl e T, st, ctx) \<longrightarrow> (EInl e' T, st', ctx')"
+| ST_InlStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+               (EInl e T, st, ctx) \<leadsto> (EInl e' T, st', ctx')"
 
-| ST_InrStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-               (EInr e T, st, ctx) \<longrightarrow> (EInr e' T, st', ctx')"
+| ST_InrStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+               (EInr e T, st, ctx) \<leadsto> (EInr e' T, st', ctx')"
 
   (* Conditionals *)
-| ST_IfTrue: "(EIf (EBool True) e2 e3, st, ctx) \<longrightarrow> (e2, st, ctx)"
+| ST_IfTrue: "(EIf (EBool True) e2 e3, st, ctx) \<leadsto> (e2, st, ctx)"
 
-| ST_IfFalse: "(EIf (EBool False) e2 e3, st, ctx) \<longrightarrow> (e3, st, ctx)"
+| ST_IfFalse: "(EIf (EBool False) e2 e3, st, ctx) \<leadsto> (e3, st, ctx)"
 
-| ST_IfStep: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-              (EIf e1 e2 e3, st, ctx) \<longrightarrow> (EIf e1' e2 e3, st', ctx')"
+| ST_IfStep: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+              (EIf e1 e2 e3, st, ctx) \<leadsto> (EIf e1' e2 e3, st', ctx')"
 
   (* Let binding *)
 | ST_LetValue: "is_value v \<Longrightarrow>
-                (ELet x v e2, st, ctx) \<longrightarrow> (subst x v e2, st, ctx)"
+                (ELet x v e2, st, ctx) \<leadsto> (subst x v e2, st, ctx)"
 
-| ST_LetStep: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-               (ELet x e1 e2, st, ctx) \<longrightarrow> (ELet x e1' e2, st', ctx')"
+| ST_LetStep: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+               (ELet x e1 e2, st, ctx) \<leadsto> (ELet x e1' e2, st', ctx')"
 
   (* Effects *)
-| ST_PerformStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                   (EPerform eff e, st, ctx) \<longrightarrow> (EPerform eff e', st', ctx')"
+| ST_PerformStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                   (EPerform eff e, st, ctx) \<leadsto> (EPerform eff e', st', ctx')"
 
 | ST_PerformValue: "is_value v \<Longrightarrow>
-                    (EPerform eff v, st, ctx) \<longrightarrow> (v, st, ctx)"
+                    (EPerform eff v, st, ctx) \<leadsto> (v, st, ctx)"
 
-| ST_HandleStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                  (EHandle e x h, st, ctx) \<longrightarrow> (EHandle e' x h, st', ctx')"
+| ST_HandleStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                  (EHandle e x h, st, ctx) \<leadsto> (EHandle e' x h, st', ctx')"
 
 | ST_HandleValue: "is_value v \<Longrightarrow>
-                   (EHandle v x h, st, ctx) \<longrightarrow> (subst x v h, st, ctx)"
+                   (EHandle v x h, st, ctx) \<leadsto> (subst x v h, st, ctx)"
 
   (* References *)
-| ST_RefStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-               (ERef e sl, st, ctx) \<longrightarrow> (ERef e' sl, st', ctx')"
+| ST_RefStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+               (ERef e sl, st, ctx) \<leadsto> (ERef e' sl, st', ctx')"
 
 | ST_RefValue: "is_value v \<Longrightarrow> l = fresh_loc st \<Longrightarrow>
-                (ERef v sl, st, ctx) \<longrightarrow> (ELoc l, store_update l v st, ctx)"
+                (ERef v sl, st, ctx) \<leadsto> (ELoc l, store_update l v st, ctx)"
 
-| ST_DerefStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                 (EDeref e, st, ctx) \<longrightarrow> (EDeref e', st', ctx')"
+| ST_DerefStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                 (EDeref e, st, ctx) \<leadsto> (EDeref e', st', ctx')"
 
 | ST_DerefLoc: "store_lookup l st = Some v \<Longrightarrow>
-                (EDeref (ELoc l), st, ctx) \<longrightarrow> (v, st, ctx)"
+                (EDeref (ELoc l), st, ctx) \<leadsto> (v, st, ctx)"
 
-| ST_Assign1: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-               (EAssign e1 e2, st, ctx) \<longrightarrow> (EAssign e1' e2, st', ctx')"
+| ST_Assign1: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+               (EAssign e1 e2, st, ctx) \<leadsto> (EAssign e1' e2, st', ctx')"
 
-| ST_Assign2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<longrightarrow> (e2', st', ctx') \<Longrightarrow>
-               (EAssign v1 e2, st, ctx) \<longrightarrow> (EAssign v1 e2', st', ctx')"
+| ST_Assign2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<leadsto> (e2', st', ctx') \<Longrightarrow>
+               (EAssign v1 e2, st, ctx) \<leadsto> (EAssign v1 e2', st', ctx')"
 
 | ST_AssignLoc: "store_lookup l st = Some v1 \<Longrightarrow> is_value v2 \<Longrightarrow>
-                 (EAssign (ELoc l) v2, st, ctx) \<longrightarrow> (EUnit, store_update l v2 st, ctx)"
+                 (EAssign (ELoc l) v2, st, ctx) \<leadsto> (EUnit, store_update l v2 st, ctx)"
 
   (* Security *)
-| ST_ClassifyStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                    (EClassify e, st, ctx) \<longrightarrow> (EClassify e', st', ctx')"
+| ST_ClassifyStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                    (EClassify e, st, ctx) \<leadsto> (EClassify e', st', ctx')"
 
-| ST_Declassify1: "(e1, st, ctx) \<longrightarrow> (e1', st', ctx') \<Longrightarrow>
-                   (EDeclassify e1 e2, st, ctx) \<longrightarrow> (EDeclassify e1' e2, st', ctx')"
+| ST_Declassify1: "(e1, st, ctx) \<leadsto> (e1', st', ctx') \<Longrightarrow>
+                   (EDeclassify e1 e2, st, ctx) \<leadsto> (EDeclassify e1' e2, st', ctx')"
 
-| ST_Declassify2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<longrightarrow> (e2', st', ctx') \<Longrightarrow>
-                   (EDeclassify v1 e2, st, ctx) \<longrightarrow> (EDeclassify v1 e2', st', ctx')"
+| ST_Declassify2: "is_value v1 \<Longrightarrow> (e2, st, ctx) \<leadsto> (e2', st', ctx') \<Longrightarrow>
+                   (EDeclassify v1 e2, st, ctx) \<leadsto> (EDeclassify v1 e2', st', ctx')"
 
 | ST_DeclassifyValue: "is_value v \<Longrightarrow> declass_ok (EClassify v) p \<Longrightarrow>
-                       (EDeclassify (EClassify v) p, st, ctx) \<longrightarrow> (v, st, ctx)"
+                       (EDeclassify (EClassify v) p, st, ctx) \<leadsto> (v, st, ctx)"
 
-| ST_ProveStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                 (EProve e, st, ctx) \<longrightarrow> (EProve e', st', ctx')"
+| ST_ProveStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                 (EProve e, st, ctx) \<leadsto> (EProve e', st', ctx')"
 
   (* Capabilities *)
-| ST_RequireStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                   (ERequire eff e, st, ctx) \<longrightarrow> (ERequire eff e', st', ctx')"
+| ST_RequireStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                   (ERequire eff e, st, ctx) \<leadsto> (ERequire eff e', st', ctx')"
 
 | ST_RequireValue: "is_value v \<Longrightarrow>
-                    (ERequire eff v, st, ctx) \<longrightarrow> (v, st, ctx)"
+                    (ERequire eff v, st, ctx) \<leadsto> (v, st, ctx)"
 
-| ST_GrantStep: "(e, st, ctx) \<longrightarrow> (e', st', ctx') \<Longrightarrow>
-                 (EGrant eff e, st, ctx) \<longrightarrow> (EGrant eff e', st', ctx')"
+| ST_GrantStep: "(e, st, ctx) \<leadsto> (e', st', ctx') \<Longrightarrow>
+                 (EGrant eff e, st, ctx) \<leadsto> (EGrant eff e', st', ctx')"
 
 | ST_GrantValue: "is_value v \<Longrightarrow>
-                  (EGrant eff v, st, ctx) \<longrightarrow> (v, st, ctx)"
+                  (EGrant eff v, st, ctx) \<leadsto> (v, st, ctx)"
 
 
 section \<open>Multi-step Reduction\<close>
@@ -274,9 +274,9 @@ section \<open>Multi-step Reduction\<close>
 text \<open>Reflexive-transitive closure of step.\<close>
 
 (* Multi-step reduction (matches Coq: Inductive multi_step) *)
-inductive multi_step :: "config \<Rightarrow> config \<Rightarrow> bool" (infix "\<longrightarrow>*" 50) where
-  MS_Refl: "cfg \<longrightarrow>* cfg"
-| MS_Step: "cfg1 \<longrightarrow> cfg2 \<Longrightarrow> cfg2 \<longrightarrow>* cfg3 \<Longrightarrow> cfg1 \<longrightarrow>* cfg3"
+inductive multi_step :: "config \<Rightarrow> config \<Rightarrow> bool" (infix "\<leadsto>*" 50) where
+  MS_Refl: "cfg \<leadsto>* cfg"
+| MS_Step: "cfg1 \<leadsto> cfg2 \<Longrightarrow> cfg2 \<leadsto>* cfg3 \<Longrightarrow> cfg1 \<leadsto>* cfg3"
 
 
 section \<open>Value Non-Stepping Lemmas\<close>
@@ -285,7 +285,7 @@ text \<open>Values do not step (matches Coq: value_not_step)\<close>
 
 lemma value_not_step:
   assumes "is_value v"
-  shows "\<not> (v, st, ctx) \<longrightarrow> cfg"
+  shows "\<not> (v, st, ctx) \<leadsto> cfg"
   using assms
 proof (induction v arbitrary: st ctx cfg rule: is_value.induct)
   case VUnit thus ?case by (auto elim: step.cases)
@@ -303,7 +303,7 @@ next
   case (VPair v1 v2)
   show ?case
   proof
-    assume "(EPair v1 v2, st, ctx) \<longrightarrow> cfg"
+    assume "(EPair v1 v2, st, ctx) \<leadsto> cfg"
     thus False
     proof (cases rule: step.cases)
       case ST_Pair1
@@ -317,7 +317,7 @@ next
   case (VInl v T)
   show ?case
   proof
-    assume "(EInl v T, st, ctx) \<longrightarrow> cfg"
+    assume "(EInl v T, st, ctx) \<leadsto> cfg"
     thus False
     proof (cases rule: step.cases)
       case ST_InlStep
@@ -328,7 +328,7 @@ next
   case (VInr v T)
   show ?case
   proof
-    assume "(EInr v T, st, ctx) \<longrightarrow> cfg"
+    assume "(EInr v T, st, ctx) \<leadsto> cfg"
     thus False
     proof (cases rule: step.cases)
       case ST_InrStep
@@ -339,7 +339,7 @@ next
   case (VClassify v)
   show ?case
   proof
-    assume "(EClassify v, st, ctx) \<longrightarrow> cfg"
+    assume "(EClassify v, st, ctx) \<leadsto> cfg"
     thus False
     proof (cases rule: step.cases)
       case ST_ClassifyStep
@@ -350,7 +350,7 @@ next
   case (VProve v)
   show ?case
   proof
-    assume "(EProve v, st, ctx) \<longrightarrow> cfg"
+    assume "(EProve v, st, ctx) \<leadsto> cfg"
     thus False
     proof (cases rule: step.cases)
       case ST_ProveStep
@@ -362,7 +362,7 @@ qed
 text \<open>Values do not step (alternative form) (matches Coq: value_does_not_step)\<close>
 
 lemma value_does_not_step:
-  assumes "is_value v" and "(v, st, ctx) \<longrightarrow> (e', st', ctx')"
+  assumes "is_value v" and "(v, st, ctx) \<leadsto> (e', st', ctx')"
   shows "False"
   using assms value_not_step by blast
 
@@ -372,7 +372,7 @@ section \<open>Determinism\<close>
 text \<open>Step is deterministic (matches Coq: step_deterministic_cfg)\<close>
 
 theorem step_deterministic_cfg:
-  assumes "(cfg::config) \<longrightarrow> cfg1" and "(cfg::config) \<longrightarrow> cfg2"
+  assumes "(cfg::config) \<leadsto> cfg1" and "(cfg::config) \<leadsto> cfg2"
   shows "cfg1 = cfg2"
   using assms
 proof (induction cfg cfg1 arbitrary: cfg2 rule: step.induct)
@@ -716,8 +716,8 @@ qed
 text \<open>Step is deterministic (matches Coq: step_deterministic)\<close>
 
 theorem step_deterministic:
-  assumes "(t, st, ctx) \<longrightarrow> (t1, st1, ctx1)"
-      and "(t, st, ctx) \<longrightarrow> (t2, st2, ctx2)"
+  assumes "(t, st, ctx) \<leadsto> (t1, st1, ctx1)"
+      and "(t, st, ctx) \<leadsto> (t2, st2, ctx2)"
   shows "t1 = t2 \<and> st1 = st2 \<and> ctx1 = ctx2"
   using step_deterministic_cfg[OF assms] by auto
 
@@ -762,7 +762,7 @@ qed
 text \<open>Step preserves store_has_values (matches Coq: step_preserves_store_values)\<close>
 
 lemma step_preserves_store_values:
-  assumes "(e, st, ctx) \<longrightarrow> (e', st', ctx')" and "store_has_values st"
+  assumes "(e, st, ctx) \<leadsto> (e', st', ctx')" and "store_has_values st"
   shows "store_has_values st'"
   using assms
 proof (induction "(e, st, ctx)" "(e', st', ctx')" arbitrary: e st ctx e' st' ctx' rule: step.induct)
@@ -777,7 +777,7 @@ text \<open>Multi-step preserves store_has_values
       (matches Coq: multi_step_preserves_store_values)\<close>
 
 lemma multi_step_preserves_store_values:
-  assumes "cfg1 \<longrightarrow>* cfg2" and "store_has_values (fst (snd cfg1))"
+  assumes "cfg1 \<leadsto>* cfg2" and "store_has_values (fst (snd cfg1))"
   shows "store_has_values (fst (snd cfg2))"
   using assms
 proof (induction rule: multi_step.induct)
