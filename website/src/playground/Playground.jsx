@@ -115,6 +115,42 @@ biar h = kuasa(2, 10);
 h`
   },
   {
+    name: 'Actors',
+    code: `// JALINAN: Actor-based concurrency
+// Define, spawn, send, receive
+
+pelakon Pembilang {
+    keadaan: Nombor
+    kendalikan Tambah(n) {
+        n + 1
+    }
+}
+
+biar k = lahir Pembilang(0);
+hantar(k, 5);
+terima(k)`
+  },
+  {
+    name: 'Security',
+    code: `// RIINA security types prevent data leaks
+// Rahsia<T> = Secret, kesan = effect
+//
+// The compiler proves:
+//   - Secrets can't flow to public outputs
+//   - Effects are tracked and declared
+//   - Constant-time for crypto operations
+//
+// Try: change the function and see the
+// type checker verify security properties
+
+fungsi kira_selamat(x: Nombor, y: Nombor) -> Nombor {
+  biar hasil = x + y;
+  hasil * 2
+}
+
+kira_selamat(21, 21)`
+  },
+  {
     name: 'Builtins',
     code: `// Built-in functions (bilingual)
 biar nama = "RIINA";
@@ -133,6 +169,9 @@ const KEYWORDS = new Set([
   'laksana', 'modul', 'guna', 'awam', 'kalau', 'lain', 'untuk', 'selagi',
   'ulang', 'pulang', 'padan', 'keluar', 'terus', 'kesan', 'masa_tetap',
   'sekali', 'benar', 'palsu', 'tiada',
+  'pelakon', 'lahir', 'hantar', 'terima', 'kendalikan', 'keadaan',
+  'paparan', 'tulisan', 'butang', 'warna', 'kontras', 'baris', 'lajur',
+  'kontrak_pintar', 'token', 'konsensus', 'sukuk', 'mudarabah', 'zakat', 'wakaf',
 ]);
 
 const TYPES = new Set([
@@ -275,11 +314,34 @@ const PlaygroundPage = ({ onNavigate }) => {
   const [wasmReady, setWasmReady] = useState(false);
   const [wasmError, setWasmError] = useState(null);
   const [shared, setShared] = useState(false);
+  const [hasEdited, setHasEdited] = useState(false);
+  const [splitRatio, setSplitRatio] = useState(0.5); // #55: Resizable split
   const workerRef = useRef(null);
   const debounceRef = useRef(null);
   const reqIdRef = useRef(0);
   const textareaRef = useRef(null);
   const highlightRef = useRef(null);
+  const splitRef = useRef(null);
+  const draggingRef = useRef(false);
+
+  // #55: Resize handle drag logic
+  const handleMouseDown = useCallback((e) => {
+    e.preventDefault();
+    draggingRef.current = true;
+    const onMouseMove = (e) => {
+      if (!draggingRef.current || !splitRef.current) return;
+      const rect = splitRef.current.getBoundingClientRect();
+      const ratio = (e.clientX - rect.left) / rect.width;
+      setSplitRatio(Math.max(0.25, Math.min(0.75, ratio)));
+    };
+    const onMouseUp = () => {
+      draggingRef.current = false;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, []);
 
   // Initialize Web Worker
   useEffect(() => {
@@ -454,10 +516,18 @@ const PlaygroundPage = ({ onNavigate }) => {
           </button>
         </div>
 
-        {/* Split pane */}
-        <div className="playground-split">
+        {/* #23: Mobile notice */}
+        <div className="playground-mobile-notice">
+          <p>The playground editor works best on a larger screen.</p>
+          <button onClick={() => onNavigate && onNavigate('docs')} className="btn btn--outline" style={{fontSize:14}}>
+            View install instructions instead
+          </button>
+        </div>
+
+        {/* #55: Split pane with resize handle */}
+        <div className="playground-split" ref={splitRef}>
           {/* Editor with syntax highlighting overlay */}
-          <div className="playground-editor-wrap">
+          <div className="playground-editor-wrap" style={{flex: `0 0 ${splitRatio * 100}%`}}>
             <div className="playground-editor-label">Source</div>
             <div className="playground-editor-container">
               <pre
@@ -473,14 +543,23 @@ const PlaygroundPage = ({ onNavigate }) => {
               <textarea
                 ref={textareaRef}
                 value={source}
-                onChange={(e) => setSource(e.target.value)}
+                onChange={(e) => { setSource(e.target.value); if (!hasEdited) setHasEdited(true); }}
                 onScroll={syncScroll}
                 spellCheck={false}
                 className="playground-textarea"
                 style={editorFont}
               />
+              {!hasEdited && <div className="playground-hint">Edit the code on the left. Results appear instantly on the right.</div>}
             </div>
           </div>
+
+          {/* #55: Resize handle */}
+          <div
+            className={`playground-resizer${draggingRef.current ? ' active' : ''}`}
+            onMouseDown={handleMouseDown}
+            role="separator"
+            aria-label="Resize editor panes"
+          />
 
           {/* Output */}
           <div className="playground-output-wrap">
@@ -503,7 +582,7 @@ const PlaygroundPage = ({ onNavigate }) => {
 
         {/* Footer info */}
         <div style={{ marginTop: 16, fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
-          RIINA Compiler v0.2.0 &middot; Proprietary
+          RIINA Compiler v0.3.0 &middot; Proprietary
         </div>
       </div>
     </div>

@@ -1,6 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PlaygroundPage from './playground/Playground.jsx';
 import { useMetrics, fmt } from './useMetrics.js';
+
+// ============================================================================
+// #39: COPYABLE CODE BLOCK COMPONENT
+// ============================================================================
+
+const CopyableCode = ({ children, className = "code-block", style }) => {
+  const [copied, setCopied] = useState(false);
+  const preRef = useRef(null);
+
+  const handleCopy = () => {
+    const text = preRef.current?.textContent || '';
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
+  };
+
+  return (
+    <div className="code-block-wrapper">
+      <button
+        className={`copy-btn${copied ? ' copy-btn--copied' : ''}`}
+        onClick={handleCopy}
+        aria-label="Copy to clipboard"
+      >
+        {copied ? 'Copied!' : 'Copy'}
+      </button>
+      <pre ref={preRef} className={className} style={style}>{children}</pre>
+    </div>
+  );
+};
 
 // ============================================================================
 // RIINA WEBSITE — 7-PAGE DARK-MODE REWRITE
@@ -22,6 +52,30 @@ const RiinaWebsite = () => {
     claimLevels.runtimeProofArchitecture || metrics.quality?.runtimeProofStatus || 'generated'
   );
   useEffect(() => { window.scrollTo(0, 0); }, [currentPage]);
+
+  // #42: IntersectionObserver for scroll-triggered animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    );
+    const elements = document.querySelectorAll('.animate-on-scroll');
+    elements.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, [currentPage]);
+
+  // #50: Register service worker for offline docs
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/riina/sw.js').catch(() => {});
+    }
+  }, []);
 
   // Release data (auto-updated by scripts/release.sh)
   const releases = [
@@ -69,38 +123,43 @@ const RiinaWebsite = () => {
   // HEADER
   // ============================================================================
   const Header = () => (
-    <header className="site-header">
-      <div className="header-inner">
-        <button className="header-logo" onClick={() => nav('home')}>
-          <Logo size={24} />
-          <span>RIINA<sup style={{fontSize:8,verticalAlign:'super',opacity:0.5}}>™</sup></span>
-        </button>
+    <>
+      {/* #7: Skip to content for keyboard/screen reader users */}
+      <a href="#main-content" className="skip-to-content">Skip to content</a>
+      <header className="site-header">
+        <div className="header-inner">
+          <button className="header-logo" onClick={() => nav('home')}>
+            <Logo size={24} />
+            <span>RIINA<sup style={{fontSize:8,verticalAlign:'super',opacity:0.5}}>™</sup></span>
+          </button>
 
-        <button className="hamburger" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Menu">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
+          <button className="hamburger" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
 
-        <nav className="site-nav">
-          {['Language', 'Playground', 'Docs', 'Enterprise', 'How It Works'].map(p => (
-            <button key={p} onClick={() => nav(p === 'How It Works' ? 'how' : p.toLowerCase())} className={`nav-btn${currentPage === (p === 'How It Works' ? 'how' : p.toLowerCase()) ? ' nav-btn--active' : ''}`}>
-              {p}
-            </button>
+          <nav className="site-nav">
+            {['Language', 'Playground', 'Docs', 'Enterprise', 'How It Works'].map(p => (
+              <button key={p} onClick={() => nav(p === 'How It Works' ? 'how' : p.toLowerCase())} className={`nav-btn${currentPage === (p === 'How It Works' ? 'how' : p.toLowerCase()) ? ' nav-btn--active' : ''}`}>
+                {p}
+              </button>
+            ))}
+          </nav>
+
+          {/* #6: External link with target="_blank" and rel="noopener" */}
+          <a className="header-github" href="https://github.com/ib823/riina" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+
+        <div className={`mobile-menu${mobileMenuOpen ? ' open' : ''}`}>
+          <button className="mobile-menu-close" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">&#x2715;</button>
+          {['Home', 'Language', 'Playground', 'Docs', 'Enterprise', 'How'].map(p => (
+            <button key={p} onClick={() => nav(p === 'Home' ? 'home' : p.toLowerCase())}>{p}</button>
           ))}
-        </nav>
-
-        <a className="header-github" href="https://github.com/ib823/riina">GitHub</a>
-      </div>
-
-      <div className={`mobile-menu${mobileMenuOpen ? ' open' : ''}`}>
-        <button className="mobile-menu-close" onClick={() => setMobileMenuOpen(false)}>&#x2715;</button>
-        {['Home', 'Language', 'Playground', 'Docs', 'Enterprise', 'How'].map(p => (
-          <button key={p} onClick={() => nav(p === 'Home' ? 'home' : p.toLowerCase())}>{p}</button>
-        ))}
-        <a href="https://github.com/ib823/riina">GitHub</a>
-      </div>
-    </header>
+          <a href="https://github.com/ib823/riina" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+      </header>
+    </>
   );
 
   // ============================================================================
@@ -110,25 +169,27 @@ const RiinaWebsite = () => {
     <div>
       {/* Act 1: Hero — positioning → headline → explanation → proof → CTA */}
       <section className="hero">
-        <p className="hero-positioning">
+        <p className="hero-positioning hero-animate">
           <strong>Rigorous Immutable Invariant, No Assumptions</strong> — a programming language
           with mathematical proof built into the compiler.
         </p>
 
-        <h1>
-          Your code is<br/><strong>proven secure</strong><br/>before it ships.
+        {/* #8: Explicit spaces around strong to prevent screen reader run-on */}
+        <h1 className="hero-animate">
+          Your code is{' '}<br/><strong>proven secure</strong>{' '}<br/>before it ships.
         </h1>
 
-        <p className="hero-explain">
+        <p className="hero-explain hero-animate">
           RIINA proves your security properties are correct before your code ever runs.
           Not tested. Not audited. <em>Proven</em> — with the same mathematical certainty
           used in aerospace and nuclear engineering.
         </p>
 
-        <p className="hero-subhead">
-          <span>{fmt(metrics.proofs.qedActive)}</span> machine-checked proofs &middot; <span>{metrics.proofs.admitted} admitted</span> &middot; <span>{metrics.proofs.axioms} axioms</span>
+        {/* #13: Highlight "admitted" and "axioms" as the impressive zero values */}
+        <p className="hero-subhead hero-animate">
+          {fmt(metrics.proofs.qedActive)} machine-checked proofs &middot; <span>{metrics.proofs.admitted} admitted</span> &middot; <span>{metrics.proofs.axioms} axioms</span>
         </p>
-        <div className="hero-stats">
+        <div className="hero-stats hero-animate">
           <div className="hero-stat">
             <span className="hero-stat__num">{fmt(metrics.multiProver.totalProofsAllProvers)}</span>
             <span className="hero-stat__label">proof artifacts</span>
@@ -144,14 +205,22 @@ const RiinaWebsite = () => {
             <span className="hero-stat__label">tests passing</span>
           </div>
         </div>
-        <div className="hero-cta">
-          <button onClick={() => nav('how')} className="btn btn--primary">See How It Works</button>
-          <button onClick={() => nav('playground')} className="btn btn--outline">Try the Playground</button>
+        {/* #11: CTA hierarchy — Playground is the conversion action, How It Works is secondary */}
+        <div className="hero-cta hero-animate">
+          <button onClick={() => nav('playground')} className="btn btn--primary">Try the Playground</button>
+          <button onClick={() => nav('how')} className="btn btn--outline">See How It Works</button>
+        </div>
+
+        {/* #9: Scroll affordance */}
+        <div className="scroll-indicator" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
         </div>
       </section>
 
       {/* Act 2: Show — Side-by-side code */}
-      <section className="act-show">
+      <section className="act-show animate-on-scroll">
         <p className="act-show__label">What it looks like</p>
         <p className="act-show__lang-note">
           RIINA uses <strong>Bahasa Melayu</strong> (Malaysian) keywords — a deliberate
@@ -222,7 +291,7 @@ const RiinaWebsite = () => {
       </section>
 
       {/* Who is this for */}
-      <section style={{padding:'60px 24px',textAlign:'center'}}>
+      <section className="animate-on-scroll" style={{padding:'60px 24px',textAlign:'center'}}>
         <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
           <h2 style={{fontSize:32,fontWeight:300,marginBottom:16}}>Built for teams where <strong>security audits aren't enough.</strong></h2>
           <p style={{color:'var(--text-secondary)',fontSize:15,lineHeight:1.7}}>
@@ -234,7 +303,7 @@ const RiinaWebsite = () => {
       </section>
 
       {/* Why Now */}
-      <section style={{padding:'60px 24px'}}>
+      <section className="animate-on-scroll" style={{padding:'60px 24px'}}>
         <div style={{maxWidth:'var(--max-w-page)',margin:'0 auto'}}>
           <h2 className="section-heading">Why now</h2>
           <div className="why-now-grid">
@@ -267,7 +336,7 @@ const RiinaWebsite = () => {
       </section>
 
       {/* Vibesafe — The AI-friendly language */}
-      <section className="act-vibesafe">
+      <section className="act-vibesafe animate-on-scroll">
         <div className="act-vibesafe__inner">
           <div className="act-vibesafe__text">
             <div className="act-vibesafe__badge">Vibesafe</div>
@@ -321,20 +390,31 @@ const RiinaWebsite = () => {
       </section>
 
       {/* Act 3: Proof — Terminal verification */}
-      <section className="act-proof">
+      <section className="act-proof animate-on-scroll">
         <div className="act-proof__header">
           <h2 className="act-proof__title">Don't trust us. <strong>Verify it.</strong></h2>
           <p className="act-proof__subtitle">Every claim has a machine-checked proof. Run them yourself.</p>
         </div>
 
-        <div className="terminal-block">
-          <div><span className="prompt">$ </span><span className="cmd">git clone https://github.com/ib823/riina.git && cd riina</span></div>
-          <div><span className="prompt">$ </span><span className="cmd">cd 02_FORMAL/coq && make</span></div>
-          <div style={{color:'var(--text-string)'}}>Compiling {metrics.coq.filesActive} files... done. 0 errors.</div>
-          <div><span className="prompt">$ </span><span className="cmd">grep -c "Qed\." **/*.v</span></div>
-          <div style={{color:'var(--text-accent)'}}>{metrics.proofs.qedActive}</div>
-          <div><span className="prompt">$ </span><span className="cmd">grep -c "Admitted\." **/*.v</span></div>
-          <div style={{color:'var(--text-string)'}}>{metrics.proofs.admitted}</div>
+        {/* #39: Copyable terminal block */}
+        <div className="code-block-wrapper">
+          <button
+            className="copy-btn"
+            onClick={() => {
+              const cmds = `git clone https://github.com/ib823/riina.git && cd riina\ncd 02_FORMAL/coq && make\ngrep -c "Qed\\." **/*.v\ngrep -c "Admitted\\." **/*.v`;
+              navigator.clipboard.writeText(cmds).catch(() => {});
+            }}
+            aria-label="Copy commands"
+          >Copy</button>
+          <div className="terminal-block">
+            <div><span className="prompt">$ </span><span className="cmd">git clone https://github.com/ib823/riina.git && cd riina</span></div>
+            <div><span className="prompt">$ </span><span className="cmd">cd 02_FORMAL/coq && make</span></div>
+            <div style={{color:'var(--text-string)'}}>Compiling {metrics.coq.filesActive} files... done. 0 errors.</div>
+            <div><span className="prompt">$ </span><span className="cmd">grep -c "Qed\." **/*.v</span></div>
+            <div style={{color:'var(--text-accent)'}}>{metrics.proofs.qedActive}</div>
+            <div><span className="prompt">$ </span><span className="cmd">grep -c "Admitted\." **/*.v</span></div>
+            <div style={{color:'var(--text-string)'}}>{metrics.proofs.admitted}</div>
+          </div>
         </div>
 
         <div className="proof-pillars">
@@ -403,7 +483,7 @@ const RiinaWebsite = () => {
       </section>
 
       {/* Social proof — Built in the open */}
-      <section style={{padding:'60px 24px',textAlign:'center'}}>
+      <section className="animate-on-scroll" style={{padding:'60px 24px',textAlign:'center'}}>
         <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
           <h2 className="section-heading">Built in the open</h2>
           <div className="social-proof-stats">
@@ -428,7 +508,7 @@ const RiinaWebsite = () => {
       </section>
 
       {/* Act 4: Start */}
-      <section className="act-start">
+      <section className="act-start animate-on-scroll">
         <div className="act-start__header">
           <h2 style={{fontSize:'28px',fontWeight:300}}>Get started</h2>
         </div>
@@ -540,7 +620,7 @@ const RiinaWebsite = () => {
             </div>
 
             {tab === 'syntax' && (
-              <div style={{maxWidth:'var(--max-w-code)'}}>
+              <div className="tab-content" style={{maxWidth:'var(--max-w-code)'}}>
                 <KwSection title="Declarations" items={keywords.declarations} />
                 <KwSection title="Control Flow" items={keywords.controlFlow} />
                 <KwSection title="Built-in Types" items={keywords.types} />
@@ -573,7 +653,7 @@ fungsi hash_kata_laluan(
             )}
 
             {tab === 'types' && (
-              <div style={{maxWidth:'var(--max-w-text)'}}>
+              <div className="tab-content" style={{maxWidth:'var(--max-w-text)'}}>
                 {[
                   { name: 'Rahsia<T>', en: 'Secret', desc: 'Wraps sensitive values. Cannot be logged, printed, or sent over the network. Must be explicitly declassified with dedah() and a policy proof.' },
                   { name: 'Terbuka<T>', en: 'Public', desc: 'Marks data as public. Can flow anywhere freely. Default for unannotated types.' },
@@ -605,7 +685,7 @@ fungsi proses(kad: Rahsia<Teks>) -> Teks kesan Kripto {
             )}
 
             {tab === 'effects' && (
-              <div style={{maxWidth:'var(--max-w-text)'}}>
+              <div className="tab-content" style={{maxWidth:'var(--max-w-text)'}}>
                 <p style={{color:'var(--text-secondary)',marginBottom:32}}>
                   Every side effect is declared in the function signature and tracked by the compiler.
                 </p>
@@ -643,7 +723,7 @@ fungsi muat_dan_nyahsulit(
             )}
 
             {tab === 'stdlib' && (
-              <div style={{maxWidth:'var(--max-w-text)'}}>
+              <div className="tab-content" style={{maxWidth:'var(--max-w-text)'}}>
                 <p style={{color:'var(--text-secondary)',marginBottom:32}}>
                   ~38 unique builtins with bilingual names (Bahasa Melayu and English). Effect-gated I/O.
                 </p>
@@ -700,10 +780,12 @@ fungsi muat_dan_nyahsulit(
               ))}
             </div>
 
+            {/* #40: Tab content transition */}
             {tab === 'quickstart' && (
-              <div style={{maxWidth:'var(--max-w-text)'}}>
+              <div className="tab-content" style={{maxWidth:'var(--max-w-text)'}}>
                 <h2 style={{fontSize:20,fontWeight:500,marginBottom:16}}>Install</h2>
-                <pre className="code-block" style={{marginBottom:32}}>{`# From source
+                {/* #39: Copyable code blocks, #59: Shell syntax highlighting */}
+                <CopyableCode style={{marginBottom:32}}>{`# From source
 git clone https://github.com/ib823/riina.git
 cd riina/03_PROTO
 cargo build --release
@@ -716,25 +798,25 @@ docker run --rm riina check myfile.rii
 curl -sSf https://ib823.github.io/riina/install.sh | bash
 
 # Nix
-nix run github:ib823/riina`}</pre>
+nix run github:ib823/riina`}</CopyableCode>
 
                 <h2 style={{fontSize:20,fontWeight:500,marginBottom:16}}>Hello World</h2>
-                <pre className="code-block" style={{marginBottom:16}}>{`// hello.rii
+                <CopyableCode style={{marginBottom:16}}>{`// hello.rii
 modul hello;
 guna std::io;
 
 awam fungsi utama() -> kesan Tulis {
     biar mesej = "Selamat datang ke RIINA!";
     laku Tulis cetak_baris(mesej);
-}`}</pre>
-                <pre className="code-block">{`riinac check hello.rii    # Type-check + verify
+}`}</CopyableCode>
+                <CopyableCode>{`riinac check hello.rii    # Type-check + verify
 riinac run hello.rii      # Run directly
-riinac build hello.rii    # Compile to native binary`}</pre>
+riinac build hello.rii    # Compile to native binary`}</CopyableCode>
               </div>
             )}
 
             {tab === 'reference' && (
-              <div style={{maxWidth:'var(--max-w-text)'}}>
+              <div className="tab-content" style={{maxWidth:'var(--max-w-text)'}}>
                 <h2 style={{fontSize:20,fontWeight:500,marginBottom:16}}>CLI Commands</h2>
                 {[
                   ['riinac check', 'Type-check and verify security properties'],
@@ -774,11 +856,11 @@ riinac build hello.rii    # Compile to native binary`}</pre>
             )}
 
             {tab === 'contributing' && (
-              <div style={{maxWidth:'var(--max-w-text)'}}>
+              <div className="tab-content" style={{maxWidth:'var(--max-w-text)'}}>
                 <p style={{color:'var(--text-secondary)',marginBottom:24}}>
                   RIINA's source code is publicly available under the RIINA Proprietary License. Contributions to the compiler, proofs, standard library, and documentation are welcome.
                 </p>
-                <pre className="code-block" style={{marginBottom:24}}>{`# Setup
+                <CopyableCode style={{marginBottom:24}}>{`# Setup
 git clone https://github.com/ib823/riina.git && cd riina
 cd 00_SETUP/scripts
 ./install_rust.sh && ./install_coq.sh && ./verify_setup.sh
@@ -787,13 +869,13 @@ cd 00_SETUP/scripts
 cd ../../02_FORMAL/coq && make
 
 # Build compiler & run tests
-cd ../../03_PROTO && cargo build --all && cargo test --all`}</pre>
+cd ../../03_PROTO && cargo build --all && cargo test --all`}</CopyableCode>
 
                 <h2 style={{fontSize:20,fontWeight:500,marginBottom:16}}>Commit format</h2>
-                <pre className="code-block" style={{marginBottom:24}}>{`[TRACK_X] TYPE: Brief description
+                <CopyableCode style={{marginBottom:24}}>{`[TRACK_X] TYPE: Brief description
 
 Tracks: A (Proofs), B (Compiler), C (Specs), F (Tooling)
-Types:  PROOF, IMPL, FIX, DOCS, REFACTOR`}</pre>
+Types:  PROOF, IMPL, FIX, DOCS, REFACTOR`}</CopyableCode>
 
                 <h2 style={{fontSize:20,fontWeight:500,marginBottom:16}}>Rules</h2>
                 <div style={{fontSize:14,color:'var(--text-secondary)',lineHeight:2}}>
@@ -809,9 +891,9 @@ Types:  PROOF, IMPL, FIX, DOCS, REFACTOR`}</pre>
             )}
 
             {tab === 'releases' && (
-              <div style={{maxWidth:'var(--max-w-text)'}}>
-                <pre className="code-block" style={{marginBottom:32}}>{`# Install latest
-curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
+              <div className="tab-content" style={{maxWidth:'var(--max-w-text)'}}>
+                <CopyableCode style={{marginBottom:32}}>{`# Install latest
+curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</CopyableCode>
                 {releases.map((rel, i) => (
                   <div key={i} className="card" style={{marginBottom:16}}>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:12}}>
@@ -823,7 +905,7 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
                         <li key={j} style={{fontSize:14,color:'var(--text-secondary)',padding:'4px 0'}}>{h}</li>
                       ))}
                     </ul>
-                    <a href={`https://github.com/ib823/riina/releases/tag/v${rel.version}`} style={{fontSize:13,marginTop:8,display:'inline-block'}}>
+                    <a href={`https://github.com/ib823/riina/releases/tag/v${rel.version}`} target="_blank" rel="noopener noreferrer" style={{fontSize:13,marginTop:8,display:'inline-block'}}>
                       Release notes
                     </a>
                   </div>
@@ -864,18 +946,20 @@ curl -fsSL https://ib823.github.io/riina/install.sh | bash`}</pre>
                at compile time. No auditor required.</p>
           </div>
 
+          {/* #57: Industry cards with abstract icons */}
           <div className="industry-grid" style={{marginBottom:48}}>
             {[
-              { name: 'Defence & Military', regs: 'CMMC, ITAR, NIST 800-171', desc: 'Classified data handling with proven compartmentalization. CUI isolation enforced at the type level. Side-channel resistance for signals intelligence.' },
-              { name: 'Healthcare', regs: 'HIPAA, HITECH, HL7 FHIR', desc: 'PHI wrapped in security types that prevent unauthorized disclosure. Audit trails proven complete. De-identification verified at compile time.' },
-              { name: 'Financial Services', regs: 'PCI-DSS, SOX, BNM RMiT', desc: 'Cardholder data isolation proven by construction. Transaction integrity with formal audit trails. Constant-time operations prevent timing attacks.' },
-              { name: 'Aerospace & Aviation', regs: 'DO-178C DAL A, DO-326A', desc: 'Flight-critical software with formal verification evidence satisfying DAL A. Deterministic execution proven. WCET bounds verified.' },
-              { name: 'Technology / SaaS', regs: 'SOC 2, ISO 27001', desc: 'Access control and audit logging proven at compile time. Data isolation between tenants enforced by the type system.' },
-              { name: 'Energy / Utilities', regs: 'NERC CIP, IEC 62443', desc: 'Critical infrastructure protection with proven access boundaries. Control system integrity verified by construction.' },
-              { name: 'Islamic Finance', regs: 'AAOIFI, IFSB, BNM RMiT', desc: 'Syariah compliance proven at compile time. No riba, gharar, or maysir possible in type-checked code.' },
-              { name: 'Blockchain / DeFi', regs: 'Smart Contract Security', desc: 'Reentrancy-free by construction. Value conservation proven. Linear state prevents double-spend.' },
+              { icon: '\u2694', name: 'Defence & Military', regs: 'CMMC, ITAR, NIST 800-171', desc: 'Classified data handling with proven compartmentalization. CUI isolation enforced at the type level. Side-channel resistance for signals intelligence.' },
+              { icon: '\u2695', name: 'Healthcare', regs: 'HIPAA, HITECH, HL7 FHIR', desc: 'PHI wrapped in security types that prevent unauthorized disclosure. Audit trails proven complete. De-identification verified at compile time.' },
+              { icon: '\u2696', name: 'Financial Services', regs: 'PCI-DSS, SOX, BNM RMiT', desc: 'Cardholder data isolation proven by construction. Transaction integrity with formal audit trails. Constant-time operations prevent timing attacks.' },
+              { icon: '\u2708', name: 'Aerospace & Aviation', regs: 'DO-178C DAL A, DO-326A', desc: 'Flight-critical software with formal verification evidence satisfying DAL A. Deterministic execution proven. WCET bounds verified.' },
+              { icon: '\u2601', name: 'Technology / SaaS', regs: 'SOC 2, ISO 27001', desc: 'Access control and audit logging proven at compile time. Data isolation between tenants enforced by the type system.' },
+              { icon: '\u26A1', name: 'Energy / Utilities', regs: 'NERC CIP, IEC 62443', desc: 'Critical infrastructure protection with proven access boundaries. Control system integrity verified by construction.' },
+              { icon: '\u2605', name: 'Islamic Finance', regs: 'AAOIFI, IFSB, BNM RMiT', desc: 'Syariah compliance proven at compile time. No riba, gharar, or maysir possible in type-checked code.' },
+              { icon: '\u26D3', name: 'Blockchain / DeFi', regs: 'Smart Contract Security', desc: 'Reentrancy-free by construction. Value conservation proven. Linear state prevents double-spend.' },
             ].map((ind, i) => (
               <div key={i} className="industry-card">
+                <div className="industry-card__icon">{ind.icon}</div>
                 <div className="industry-card__name">{ind.name}</div>
                 <div className="industry-card__regs">{ind.regs}</div>
                 <div className="industry-card__desc">{ind.desc}</div>
@@ -907,9 +991,19 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
   PROVEN: Cardholder data encrypted at rest
   Theorem: stored_data_encrypted`}</pre>
 
-          <div style={{textAlign:'center',marginTop:48}}>
-            <a href="mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Enterprise%20Evaluation" className="btn btn--primary" style={{fontSize:16,padding:'14px 32px'}}>Request a Verification Demo</a>
-            <p style={{color:'var(--text-muted)',fontSize:13,marginTop:12}}>We'll walk your team through a live proof. 30 minutes.</p>
+          {/* #63: Clear enterprise CTA with next steps */}
+          <div style={{textAlign:'center',marginTop:64,padding:'48px 32px',background:'var(--bg-secondary)',border:'1px solid var(--border)',borderRadius:'var(--radius-md)',maxWidth:'var(--max-w-text)'}}>
+            <h3 style={{fontSize:24,fontWeight:400,marginBottom:8}}>Ready to prove your compliance?</h3>
+            <p style={{color:'var(--text-secondary)',fontSize:15,marginBottom:24,maxWidth:480,margin:'0 auto 24px'}}>
+              We'll walk your team through a live proof verification against your compliance framework. 30 minutes.
+            </p>
+            <div style={{display:'flex',gap:16,justifyContent:'center',flexWrap:'wrap'}}>
+              <a href="mailto:ikmal.baharudin@gmail.com?subject=RIINA%20Enterprise%20Evaluation" target="_blank" rel="noopener noreferrer" className="btn btn--primary">Request a Demo</a>
+              <a href="https://t.me/ib823" target="_blank" rel="noopener noreferrer" className="btn btn--outline">Contact on Telegram</a>
+            </div>
+            <p style={{color:'var(--text-muted)',fontSize:12,marginTop:16,fontFamily:'var(--font-mono)'}}>
+              Free evaluation &middot; No commitment &middot; Source available
+            </p>
           </div>
         </div>
       </section>
@@ -1038,7 +1132,7 @@ terima(k)`}</pre>
       </section>
 
       <section style={{padding:'40px 24px 80px',textAlign:'center'}}>
-        <a href="https://github.com/ib823/riina" className="btn btn--primary" style={{marginRight:16}}>Verify the Proofs Yourself</a>
+        <a href="https://github.com/ib823/riina" target="_blank" rel="noopener noreferrer" className="btn btn--primary" style={{marginRight:16}}>Verify the Proofs Yourself</a>
         <button onClick={() => nav('playground')} className="btn btn--outline">Try the Playground</button>
       </section>
     </div>
@@ -1094,7 +1188,7 @@ terima(k)`}</pre>
                     </div>
                   </div>
                 </div>
-                <a href="https://github.com/ib823/riina/blob/main/LICENSE">Read full LICENSE on GitHub</a>
+                <a href="https://github.com/ib823/riina/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Read full LICENSE on GitHub</a>
               </div>
             )}
 
@@ -1158,8 +1252,8 @@ terima(k)`}</pre>
           <div key={i} className="footer-col">
             <div className="footer-col__title">{col.title}</div>
             {col.links.map(([label, target], j) => (
-              target.startsWith('http') ?
-                <a key={j} href={target}>{label}</a> :
+              target.startsWith('http') || target.startsWith('mailto') ?
+                <a key={j} href={target} target="_blank" rel="noopener noreferrer">{label}</a> :
                 <button key={j} onClick={() => nav(target)}>{label}</button>
             ))}
           </div>
@@ -1169,7 +1263,7 @@ terima(k)`}</pre>
       <div className="footer-bottom">
         <span>&copy; 2026 RIINA &middot; v{metrics.version}{metrics.generated ? ` \u00b7 ${new Date(metrics.generated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}</span>
         <div className="footer-status">
-          <span className="footer-dot" /> Build passing &middot; <a href="https://github.com/ib823/riina" style={{color:'var(--text-muted)',textDecoration:'none'}}>GitHub</a> &middot; Proprietary
+          <span className="footer-dot" /> Build passing &middot; <a href="https://github.com/ib823/riina" target="_blank" rel="noopener noreferrer" style={{color:'var(--text-muted)',textDecoration:'none'}}>GitHub</a> &middot; Proprietary
         </div>
       </div>
     </footer>
@@ -1193,7 +1287,7 @@ terima(k)`}</pre>
   return (
     <div className="app-root">
       <Header />
-      <main className="main-content" key={currentPage}>
+      <main className="main-content" id="main-content" key={currentPage}>
         {renderPage()}
       </main>
       <Footer />

@@ -3,24 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RIINA — Proven Security</title>
-    <meta name="description" content="RIINA is a proof-driven programming language with transparent verification metrics across 10 prover/tool lanes (Coq, Lean, Isabelle, F*, TLA+, Alloy, Z3/CVC5, Verus, Kani, Translation Validation) and explicit public claim levels." />
+    <title>RIINA™ — Proven Security</title>
+    <!-- #48: Human-readable meta description -->
+    <meta name="description" content="RIINA proves your security properties are correct before your code runs. Not tested. Not audited. Mathematically proven — with 10 independent verification engines." />
     <link rel="icon" type="image/svg+xml" href="/riina/favicon.svg" />
+    <!-- #46: Canonical URL -->
+    <link rel="canonical" href="https://ib823.github.io/riina/" />
+    <!-- #47: Apple touch icon -->
+    <link rel="apple-touch-icon" href="/riina/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- #49: Preconnect to GitHub since links are prominent -->
+    <link rel="preconnect" href="https://github.com">
+    <!-- #36: Load Inter + JetBrains Mono for consistent cross-platform rendering -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="RIINA™ — Security Proven at Compile Time" />
-    <meta property="og:description" content="12,385 mathematical proofs. 0 admitted. 0 axioms. The formally verified programming language." />
+    <meta property="og:description" content="Your code is proven secure before it ships. Mathematical certainty, not just testing." />
     <meta property="og:url" content="https://ib823.github.io/riina/" />
+    <!-- #44: OG image for social sharing -->
+    <meta property="og:image" content="https://ib823.github.io/riina/og-image.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <!-- #45: Large image card for maximum impact -->
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="RIINA™ — Security Proven at Compile Time" />
-    <meta name="twitter:description" content="12,385 mathematical proofs. 0 admitted. 0 axioms. Formally verified programming language." />
+    <meta name="twitter:description" content="Your code is proven secure before it ships. Mathematical certainty, not just testing." />
+    <meta name="twitter:image" content="https://ib823.github.io/riina/og-image.svg" />
+    <!-- #52: Critical CSS inlined for above-the-fold rendering -->
     <style>
       *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-      body { background: #0a0a0b; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      body { background: #0a0a0b; color: #e4e4e7; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      .site-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 56px; background: rgba(10,10,11,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid #27272a; }
+      .hero { padding: 120px 24px 80px; text-align: center; }
     </style>
   </head>
   <body>
