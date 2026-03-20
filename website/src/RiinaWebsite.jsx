@@ -55,19 +55,34 @@ const RiinaWebsite = () => {
 
   // #42: IntersectionObserver for scroll-triggered animations
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
-    );
-    const elements = document.querySelectorAll('.animate-on-scroll');
-    elements.forEach(el => observer.observe(el));
-    return () => observer.disconnect();
+    let observer;
+    const timer = requestAnimationFrame(() => {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.05 }
+      );
+      const elements = document.querySelectorAll('.animate-on-scroll');
+      elements.forEach(el => {
+        // Elements already in viewport on page load: show immediately
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          el.classList.add('visible');
+        } else {
+          observer.observe(el);
+        }
+      });
+    });
+    return () => {
+      cancelAnimationFrame(timer);
+      if (observer) observer.disconnect();
+    };
   }, [currentPage]);
 
   // #50: Register service worker for offline docs
