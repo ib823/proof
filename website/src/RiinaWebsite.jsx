@@ -53,7 +53,9 @@ const RiinaWebsite = () => {
   );
   useEffect(() => { window.scrollTo(0, 0); }, [currentPage]);
 
-  // #42: IntersectionObserver for scroll-triggered animations
+  // #42: Scroll-triggered entrance animations (progressive enhancement)
+  // Content is visible by default. JS adds will-animate to hide off-screen
+  // elements, then observer adds visible to reveal them on scroll.
   useEffect(() => {
     let observer;
     const timer = requestAnimationFrame(() => {
@@ -66,17 +68,17 @@ const RiinaWebsite = () => {
             }
           });
         },
-        { threshold: 0.05 }
+        { threshold: 0.1 }
       );
       const elements = document.querySelectorAll('.animate-on-scroll');
       elements.forEach(el => {
-        // Elements already in viewport on page load: show immediately
         const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-          el.classList.add('visible');
-        } else {
+        if (rect.top >= window.innerHeight) {
+          // Only hide elements that are BELOW the viewport
+          el.classList.add('will-animate');
           observer.observe(el);
         }
+        // Elements already in viewport: leave them visible (no will-animate)
       });
     });
     return () => {
@@ -184,27 +186,27 @@ const RiinaWebsite = () => {
     <div>
       {/* Act 1: Hero — positioning → headline → explanation → proof → CTA */}
       <section className="hero">
-        <p className="hero-positioning hero-animate">
+        <p className="hero-positioning">
           <strong>Rigorous Immutable Invariant, No Assumptions</strong> — a programming language
           with mathematical proof built into the compiler.
         </p>
 
         {/* #8: Explicit spaces around strong to prevent screen reader run-on */}
-        <h1 className="hero-animate">
+        <h1 className="hero-fade">
           Your code is{' '}<br/><strong>proven secure</strong>{' '}<br/>before it ships.
         </h1>
 
-        <p className="hero-explain hero-animate">
+        <p className="hero-explain">
           RIINA proves your security properties are correct before your code ever runs.
           Not tested. Not audited. <em>Proven</em> — with the same mathematical certainty
           used in aerospace and nuclear engineering.
         </p>
 
         {/* #13: Highlight "admitted" and "axioms" as the impressive zero values */}
-        <p className="hero-subhead hero-animate">
+        <p className="hero-subhead">
           {fmt(metrics.proofs.qedActive)} machine-checked proofs &middot; <span>{metrics.proofs.admitted} admitted</span> &middot; <span>{metrics.proofs.axioms} axioms</span>
         </p>
-        <div className="hero-stats hero-animate">
+        <div className="hero-stats">
           <div className="hero-stat">
             <span className="hero-stat__num">{fmt(metrics.multiProver.totalProofsAllProvers)}</span>
             <span className="hero-stat__label">proof artifacts</span>
@@ -221,7 +223,7 @@ const RiinaWebsite = () => {
           </div>
         </div>
         {/* #11: CTA hierarchy — Playground is the conversion action, How It Works is secondary */}
-        <div className="hero-cta hero-animate">
+        <div className="hero-cta">
           <button onClick={() => nav('playground')} className="btn btn--primary">Try the Playground</button>
           <button onClick={() => nav('how')} className="btn btn--outline">See How It Works</button>
         </div>
