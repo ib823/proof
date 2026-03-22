@@ -1,0 +1,5 @@
+WROTE: 06_COORDINATION/audit_outputs/domain_r5/SIGMA_VERIFIED_STORAGE_R5_REVIEW.md
+
+Review saved to [SIGMA_VERIFIED_STORAGE_R5_REVIEW.md](/workspaces/proof/06_COORDINATION/audit_outputs/domain_r5/SIGMA_VERIFIED_STORAGE_R5_REVIEW.md). It marks the snapshot as valid at `2d436b083b56005b101f18718a7bd0f0aab722e9`, rejects the primary `R2` rating, and sets the maximum honest rating to `R1`.
+
+I ran the required snapshot checks and `cargo test --all --manifest-path 03_PROTO/Cargo.toml`; tests passed.

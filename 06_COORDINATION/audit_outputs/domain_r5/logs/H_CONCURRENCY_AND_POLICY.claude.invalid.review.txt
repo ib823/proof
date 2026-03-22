@@ -1,0 +1,1 @@
+No material findings from `audit-docs.sh` — it passed with one stale Coq warning budget warning, which is unrelated to the H_CONCURRENCY_AND_POLICY domain audit. The review stands as written.

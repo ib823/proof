@@ -2,8 +2,12 @@
 //!
 //! These tests verify the full RIINA compilation pipeline:
 //! parse → typecheck → IR → C emit → cc → execute binary.
+//!
+//! Also includes .rii example regression gate tests that validate
+//! the parser/typechecker against the example corpus.
 
 use std::fs;
+use std::path::Path;
 use std::process::Command;
 
 /// Helper: compile a .rii source string to an executable and run it.
@@ -192,4 +196,162 @@ fungsi utama() -> Nombor kesan Sistem {
         "expected declassified 1000, got: {}",
         out
     );
+}
+
+// ============================================================================
+// .rii Example Regression Gate
+//
+// These tests load actual .rii files from 07_EXAMPLES/ and run them through
+// riinac check (parse + typecheck). They serve as a regression gate:
+// - The MINIMUM_PASS_COUNT must not decrease (catches parser regressions)
+// - As more syntax is implemented, the count should increase
+// ============================================================================
+
+/// Helper: run `riinac check` on a .rii file.
+/// Returns true if parse + typecheck succeeded (exit code 0, no error output).
+fn rii_check_passes(path: &Path) -> bool {
+    let output = Command::new(env!("CARGO_BIN_EXE_riinac"))
+        .args(["check", &path.to_string_lossy()])
+        .output()
+        .expect("failed to run riinac check");
+
+    output.status.success()
+        && !String::from_utf8_lossy(&output.stderr).contains("error")
+}
+
+/// Collect all .rii files from a directory.
+fn collect_rii_files(dir: &str) -> Vec<std::path::PathBuf> {
+    let base = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()  // crates/
+        .unwrap()
+        .parent()  // 03_PROTO/
+        .unwrap()
+        .parent()  // /workspaces/proof/
+        .unwrap()
+        .join(dir);
+
+    if !base.exists() {
+        return vec![];
+    }
+
+    fs::read_dir(&base)
+        .unwrap()
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| p.extension().map_or(false, |ext| ext == "rii"))
+        .collect()
+}
+
+#[test]
+fn rii_example_regression_gate_effects() {
+    let files = collect_rii_files("07_EXAMPLES/02_effects");
+    assert!(
+        !files.is_empty(),
+        "No .rii files found in 07_EXAMPLES/02_effects/"
+    );
+
+    let mut pass_count = 0;
+    let mut fail_names = vec![];
+
+    for f in &files {
+        if rii_check_passes(f) {
+            pass_count += 1;
+        } else {
+            fail_names.push(f.file_name().unwrap().to_string_lossy().to_string());
+        }
+    }
+
+    // Regression gate: this number must never decrease.
+    // As more syntax is implemented, increase this minimum.
+    let minimum_pass_count = 2;
+
+    assert!(
+        pass_count >= minimum_pass_count,
+        "Effect examples regression: {pass_count}/{} pass (minimum {minimum_pass_count}). \
+         Failures: {:?}",
+        files.len(),
+        fail_names
+    );
+
+    eprintln!(
+        "rii_example_regression_gate_effects: {pass_count}/{} pass ({} fail)",
+        files.len(),
+        fail_names.len()
+    );
+}
+
+#[test]
+fn rii_example_regression_gate_security() {
+    let files = collect_rii_files("07_EXAMPLES/01_security");
+    assert!(
+        !files.is_empty(),
+        "No .rii files found in 07_EXAMPLES/01_security/"
+    );
+
+    let mut pass_count = 0;
+    let mut fail_names = vec![];
+
+    for f in &files {
+        if rii_check_passes(f) {
+            pass_count += 1;
+        } else {
+            fail_names.push(f.file_name().unwrap().to_string_lossy().to_string());
+        }
+    }
+
+    // Regression gate: currently 0 security examples pass.
+    // When security syntax is implemented, increase this.
+    let minimum_pass_count = 0;
+
+    assert!(
+        pass_count >= minimum_pass_count,
+        "Security examples regression: {pass_count}/{} pass (minimum {minimum_pass_count}). \
+         Failures: {:?}",
+        files.len(),
+        fail_names
+    );
+
+    eprintln!(
+        "rii_example_regression_gate_security: {pass_count}/{} pass ({} fail)",
+        files.len(),
+        fail_names.len()
+    );
+}
+
+#[test]
+fn rii_example_regression_gate_all() {
+    // Scan ALL .rii example directories
+    let dirs = [
+        "07_EXAMPLES/00_basics",
+        "07_EXAMPLES/01_security",
+        "07_EXAMPLES/02_effects",
+        "07_EXAMPLES/03_advanced",
+        "07_EXAMPLES/04_compliance",
+        "07_EXAMPLES/05_patterns",
+        "07_EXAMPLES/06_ai_context",
+        "07_EXAMPLES/07_compiler",
+        "07_EXAMPLES/08_jalinan",
+    ];
+
+    let mut total = 0;
+    let mut pass = 0;
+
+    for dir in &dirs {
+        for f in collect_rii_files(dir) {
+            total += 1;
+            if rii_check_passes(&f) {
+                pass += 1;
+            }
+        }
+    }
+
+    // Overall regression gate
+    let minimum_pass_count = 2;
+
+    assert!(
+        pass >= minimum_pass_count,
+        "Overall .rii regression: {pass}/{total} pass (minimum {minimum_pass_count})"
+    );
+
+    eprintln!("rii_example_regression_gate_all: {pass}/{total} pass");
 }

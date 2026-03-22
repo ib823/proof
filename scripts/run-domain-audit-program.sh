@@ -8,7 +8,7 @@ QUEUE_PATH="06_COORDINATION/prompts/DOMAIN_AUDIT_QUEUE_v1_0_0.md"
 TRACKER_PATH="06_COORDINATION/audit_outputs/domain_r5/AUDIT_PROGRAM_STATUS_v1_0_0.md"
 PRIMARY_TEMPLATE="06_COORDINATION/prompts/CODEX_DOMAIN_PRIMARY_AUDIT_EXEC_TEMPLATE_v1_0_0.md"
 RECON_TEMPLATE="06_COORDINATION/prompts/CODEX_DOMAIN_RECONCILE_AND_REMEDIATE_EXEC_TEMPLATE_v1_0_0.md"
-GEMINI_REVIEW_SCRIPT="scripts/run-gemini-hostile-review.sh"
+HOSTILE_REVIEW_SCRIPT="scripts/run-hostile-review.sh"
 LOG_DIR="06_COORDINATION/audit_outputs/domain_r5/logs"
 
 COUNT=1
@@ -29,7 +29,7 @@ Options:
 Behavior:
   1. Select the next allowed domain from the audit queue
   2. Run Codex non-interactively for the primary audit
-  3. Run Gemini non-interactively for the hostile review
+  3. Run the hostile-review coordinator non-interactively for the hostile review
   4. Run Codex non-interactively for reconciliation + remediation
   5. Stop immediately on drift or unresolved failures unless --continue-on-failure is set
 
@@ -91,7 +91,7 @@ escape_sed_replacement() {
 }
 
 material_dirty_files() {
-  git status --porcelain | awk '{print $2}' | grep -Ev '^(06_COORDINATION/|website/public/metrics\.json$|scripts/run-gemini-hostile-review\.sh$|scripts/run-domain-audit-program\.sh$)' || true
+  git status --porcelain | awk '{print $2}' | grep -Ev '^(06_COORDINATION/|website/public/metrics\.json$|scripts/run-gemini-hostile-review\.sh$|scripts/run-claude-hostile-review\.sh$|scripts/run-hostile-review\.sh$|scripts/run-domain-audit-program\.sh$)' || true
 }
 
 ensure_repo_preconditions() {
@@ -99,9 +99,8 @@ ensure_repo_preconditions() {
   require_file "$TRACKER_PATH"
   require_file "$PRIMARY_TEMPLATE"
   require_file "$RECON_TEMPLATE"
-  require_file "$GEMINI_REVIEW_SCRIPT"
+  require_file "$HOSTILE_REVIEW_SCRIPT"
   require_bin codex
-  require_bin gemini
 
   local branch
   branch="$(git branch --show-current)"
@@ -285,7 +284,7 @@ run_hostile_review() {
   local domain_id="$1"
   local transcript="$LOG_DIR/${domain_id}.review.transcript.txt"
   mkdir -p "$LOG_DIR"
-  bash "$GEMINI_REVIEW_SCRIPT" "$domain_id" | tee "$transcript"
+  bash "$HOSTILE_REVIEW_SCRIPT" "$domain_id" | tee "$transcript"
   [[ -f "06_COORDINATION/audit_outputs/domain_r5/${domain_id}_R5_REVIEW.md" ]] || {
     echo "Hostile review not written for $domain_id" >&2
     return 1
