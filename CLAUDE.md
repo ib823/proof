@@ -94,13 +94,17 @@ bash scripts/provision-smoke-toolchains.sh
 **Follow `RIINA_MASTER_PLAN.md` Part 8 exactly.** The 8-step protocol is mandatory:
 
 1. **ORIENT** — Read master plan (Part 0, 1), read this file, `git status`
-2. **ASSESS** — Read Part 2 (metrics), Part 3 (requirements), Part 4 (phases)
-3. **DECIDE** — User task OR highest-priority TODO in current phase (no skipping phases)
-4. **VERIFY BEFORE** — Run baseline checks (Coq make, Rust tests, etc.)
+2. **ASSESS** — Read Part 2 (metrics), Part 3 (requirements), Part 4 (phases),
+   **Part 11 §Active Gate Marker** (current production-readiness gate)
+3. **DECIDE** — User task OR highest-priority TODO REQ in current active gate
+   (Part 11) before any phase-only TODO. P0 before P1 before P2. No skipping gates.
+4. **VERIFY BEFORE** — Run baseline checks (Coq make, Rust tests, `audit-docs.sh`,
+   `update-proof-ledger.sh --check`)
 5. **EXECUTE** — Do the work, commit incrementally with `[TRACK_X] TYPE:` format
 6. **VERIFY AFTER** — Same checks as step 4. No regressions. No metric decrease.
-7. **UPDATE** — Update master plan Part 2/3 if metrics or status changed
-8. **HANDOFF** — Clean tree, push to main, sync-public if requested
+   Re-run gate verification commands if closing a Part 11 REQ.
+7. **UPDATE** — Update master plan Part 2/3/11 if metrics, status, or gate progress changed
+8. **HANDOFF** — Clean tree, push to assigned branch, sync-public if requested
 
 ### Branch Policy
 

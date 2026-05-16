@@ -32,7 +32,11 @@ Security properties are mathematically proven at compile time.
 All LLM CLIs MUST follow RIINA_MASTER_PLAN.md Part 8 (8 mandatory steps):
 ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → UPDATE → HANDOFF
 
-All work on `main` branch only. Never commit to `public` or `gh-pages`.
+During ASSESS, read RIINA_MASTER_PLAN.md Part 11 §Active Gate Marker. Current active gate:
+`A — Truth-up & House Cleaning`. Highest-priority open REQs: REQ-21, REQ-22, REQ-23, REQ-24.
+
+All work on `main` branch only (unless a session-specific instruction pins you to a feature branch).
+Never commit to `public` or `gh-pages`.
 Commit-Push-Deploy: stage specific files → commit [TRACK_X] TYPE: → push (never --no-verify) → sync-public.sh → sync-metrics.sh → deploy-website.sh
 
 ## Docs

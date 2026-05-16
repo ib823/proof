@@ -24,9 +24,28 @@
 | Claims | Coq mechanized; Lean partial (15 axioms outstanding); Isabelle/F*/TLA+/Alloy/SMT smoke-mechanized; Verus/Kani/TV generated |
 
 **Active gaps a new session must NOT forget:**
-- 15 `axiom` declarations in `02_FORMAL/lean/RIINA/Domains/*.lean` and `Industries/IndustryFinancial.lean` (all flagged `-- fallback: unresolved match translation`)
-- 4 `Abort.` statements in active Coq scope: `domains/X001_ConcurrencyModel.v:703`, `V001_TerminationGuarantees.v:755`, `W001_VerifiedMemory.v:680`, `domains/mobile_os/LocationServices.v:228`
+- 15 `axiom` declarations in `02_FORMAL/lean/RIINA/Domains/*.lean` and `Industries/IndustryFinancial.lean` (all flagged `-- fallback: unresolved match translation`) — tracked as REQ-22
+- 4 `Abort.` statements in active Coq scope: `domains/X001_ConcurrencyModel.v:703`, `V001_TerminationGuarantees.v:755`, `W001_VerifiedMemory.v:680`, `domains/mobile_os/LocationServices.v:228` — tracked as REQ-21
 - See `PROOF_STATUS.md` for the live ledger
+
+## Next-Session Pickup (read this BEFORE picking a task)
+
+**Current active gate: `A — Truth-up & House Cleaning`** (RIINA_MASTER_PLAN.md Part 11).
+
+1. Open `RIINA_MASTER_PLAN.md` §Part 11 §Active Gate Marker — confirm gate is still A
+   (advance only after re-running gate verification commands).
+2. From `RIINA_MASTER_PLAN.md` §Part 3 Requirements Registry, pick the highest-priority
+   open TODO REQ assigned to the active gate. Today's Gate A open REQs (P0 first):
+   - **REQ-21** (P0): Eliminate 4 active Coq `Abort.` — requires Rocq toolchain
+   - **REQ-22** (P0): Eliminate 15 Lean `axiom` port-fallbacks — requires Lean toolchain
+   - **REQ-23** (P0): Audit 32 active Coq `Parameter` declarations
+   - **REQ-24** (P0): Install pre-commit + pre-push hooks
+   - **REQ-25** (P1): Decide fate of 5th stub `05_TOOLING/crates/riinac`
+   - **REQ-26** (P1): Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules,
+     .clinerules, CONTRIBUTING.md, SECURITY.md
+3. Decisions (REQ-29 D1-vs-D2, REQ-33 industry target, REQ-35 license, REQ-36 maintainers)
+   require the project owner; do not pre-decide.
+4. Follow `RIINA_MASTER_PLAN.md` Part 8 (universal session protocol) for the work itself.
 
 ## Phases Completed (0-5 + J1)
 

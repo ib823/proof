@@ -1,6 +1,6 @@
 # RIINA™ MASTER PLAN
 
-**Status: AUTHORITATIVE | Version: 2.2.1 | Date: 2026-03-12**
+**Status: AUTHORITATIVE | Version: 2.3.0 | Date: 2026-05-16**
 **This is the ONLY planning document in this repository. All others have been deleted.**
 
 Any LLM CLI (Claude Code, Codex, Cursor, Copilot, Gemini, or any future tool) entering this
@@ -367,6 +367,22 @@ research source, and detailed description.
 | REQ-18 | Self-hosting compiler | P3 | TODO | 10 |
 | REQ-19 | Blockchain primitive library in stdlib | P1 | TODO | 6 |
 | REQ-20 | Syariah-compliant financial type library | P2 | TODO | 6 |
+| REQ-21 | Eliminate 4 active Coq `Abort.` (X001/V001/W001/mobile_os) | P0 | TODO | Gate A |
+| REQ-22 | Eliminate 15 Lean `axiom` port-fallbacks | P0 | TODO | Gate A |
+| REQ-23 | Audit/justify/eliminate 32 active Coq `Parameter` declarations | P0 | TODO | Gate A |
+| REQ-24 | Install pre-commit + pre-push hooks; CI-gate `audit-docs.sh` | P0 | TODO | Gate A |
+| REQ-25 | Decide fate of 5th stub `05_TOOLING/crates/riinac` (18-LOC print stub) | P1 | TODO | Gate A |
+| REQ-26 | Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules, .clinerules, CONTRIBUTING.md, SECURITY.md | P1 | TODO | Gate A |
+| REQ-27 | Compiler enforcement parity with Coq theorems (linear/capability/session/full IFC/constant-time) | P0 | TODO | Gate B |
+| REQ-28 | External crypto audit of `riina-core` (NCC/ToB/Cure53 grade) | P0 | TODO | Gate C / Gate G |
+| REQ-29 | Public position on multi-prover claim (Path D1 industrialize vs D2 retract) | P0 | TODO | Gate D |
+| REQ-30 | Enable `03_PROTO/tests/fuzzing` workspace; continuous fuzz; ≥80% coverage gate | P1 | TODO | Gate E |
+| REQ-31 | Reproducible build attestation (Nix flake + SBOM + signed releases) | P1 | TODO | Gate F |
+| REQ-32 | Threat model document + CVE disclosure process + side-channel review of `masa_tetap` | P0 | TODO | Gate G |
+| REQ-33 | Choose primary target industry & compliance certification path | P0 | DECISION | Gate H |
+| REQ-34 | Language Reference + Getting Started + "Writing Secure RIINA" guide | P1 | TODO | Gate I |
+| REQ-35 | License decision (Proprietary → Apache-2.0 / BSL / AGPL / Dual) | P0 | DECISION | Gate J |
+| REQ-36 | Recruit ≥2 additional maintainers (current bus factor = 1) | P0 | DECISION | Gate J |
 
 ### Extension Protocol
 
@@ -1985,9 +2001,251 @@ Awam < Dalaman < Sesi < Pengguna < Sistem < Rahsia
 
 ---
 
+## PART 11: PRODUCTION-READINESS DISCIPLINE
+
+**Purpose:** Phases 0–10 (Part 4) describe how the *language* evolves. Part 11 describes
+how RIINA crosses from "promising research codebase" to "shippable to corporate/industry."
+It runs orthogonal to phases — each gate must hold continuously, regardless of phase
+progress.
+
+**ANY session entering the codebase MUST read this Part during Step 2 (ASSESS) of the
+universal protocol (Part 8). The current active gate determines the highest-priority TODO.**
+
+### Active Gate Marker
+
+**Current active gate: A — Truth-up & house cleaning.**
+Updated when all of a gate's exit criteria pass verification. Update method:
+1. Re-run the gate's verification commands.
+2. If every exit criterion passes, advance the marker to the next gate in this file.
+3. Commit with `[ALL] DOCS: Advance Part 11 active gate marker from X to Y` and include
+   the verification output as evidence.
+
+### Production-Readiness Maturity Pillars
+
+| Pillar | Current Level | Industry Min (L3) |
+|---|---|---|
+| Proof integrity | L2 (Coq core real; Lean has 15 axioms; 5 provers smoke-only; 3 generated) | All active scopes 0 admit/0 axiom/0 abort; ≥1 independently re-proven theorem |
+| Compiler maturity | L2 (full pipeline; partial enforcement vs Coq) | Every Coq-modeled security property has matching compiler check + negative tests |
+| Stdlib audit | L1 (no external audit) | External crypto audit clean; effect-typed I/O; numeric tower |
+| Operational maturity | L1 (hooks not always installed; no CI) | Hermetic builds + SBOM + signed releases + CVE process |
+| Governance | L1 (1 contributor, proprietary license, no public RFC) | ≥3 maintainers, public roadmap, RFC process, license clear |
+
+### Gate A — Truth-up & House Cleaning
+
+**Owns REQ-21..26.** Honesty before ambition. No marketing claim survives Gate A unproven.
+
+| Task | Verification command |
+|---|---|
+| Close 4 active Coq `Abort.` → `Qed.` OR move to `_incomplete/` with named issue | `find 02_FORMAL/coq -name '*.v' -type f ! -path '*/_archive_deprecated/*' ! -path '*/_incomplete/*' -exec grep -cP '^\s*Abort\.' {} \; \| awk '{s+=$1}END{print s}'` returns `0` |
+| Eliminate 15 Lean `axiom` port-fallbacks (NetworkDefense, FullstackSecurity, SessionTypes, EnterpriseERP, ActorCalculus, TimingSecurity, ChoreographyTypes, X001_ConcurrencyModel, SIGMA001_VerifiedStorage, MobileOS/ConcurrencyFramework, Industries/IndustryFinancial) | `grep -rP '^\s*axiom\s' 02_FORMAL/lean/RIINA --include='*.lean' \| grep -v '/_wip/' \| wc -l` returns `0` |
+| Audit & justify or eliminate 32 active Coq `Parameter` declarations | `grep -rP '^\s*Parameter\s' 02_FORMAL/coq --include='*.v' \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` ≤ documented count with rationale per remaining entry |
+| Install pre-commit + pre-push hooks; gate `audit-docs.sh` exit 0 | `bash scripts/audit-docs.sh` reports no "pre-commit hook NOT installed" ERROR |
+| Decide & act on 5th stub `05_TOOLING/crates/riinac` | Either deleted from workspace, or its `src/main.rs` no longer prints "Not yet implemented" |
+| Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules, .clinerules, CONTRIBUTING.md, SECURITY.md | `audit-docs.sh` output shows `[OK]` lines for each |
+| Refresh `VERIFICATION_MANIFEST.md` in a real environment with Rocq 9.1.1 + Lean 4.16 installed | Manifest shows PASS (not INHERITED) for Coq + Lean rows |
+
+**Exit criteria:** `PROOF_STATUS.md` shows 0 Admitted / 0 Axiom / 0 Abort in active scope.
+Lean strict-lane shows 0 sorry / 0 axiom. `audit-docs.sh` exits 0 with 0 ERRORs.
+All orientation docs (CLAUDE.md, AGENTS.md, llms.txt, README.md, COPILOT.md, .cursorrules,
+.clinerules, CONTRIBUTING.md, SECURITY.md) cross-reference the same `metrics.json`.
+
+### Gate B — Compiler Enforcement Parity (owns REQ-27)
+
+The Coq theorems and the Rust typechecker must enforce the same rules.
+
+| Task | Verification |
+|---|---|
+| Linear types (`sekali`/`paling`/`mesti`) — full compile-time enforcement | Negative tests in `riina-typechecker` reject every misuse case; Coq `linear_safety` theorem present |
+| Capability types — enforce capability-gated calls at every call site (not just top-level) | Negative tests; Coq `capability_safety` theorem proven Qed |
+| Session types end-to-end (parse + project + check against impl) | `koreografi` example type-checks; mismatching impl rejected; Coq `session_type_safety` Qed |
+| Full IFC lattice enforcement (currently "basic") | Counterexample suite covers implicit flows, side channels, reference aliasing |
+| Constant-time (`masa_tetap`) blocks — no secret-dependent branches in codegen | CT verification step using `verify_security_lattice.py` passes per program |
+| WASM target parity with C target | All 155 `.rii` examples emit valid WASM and execute under `wasmtime`; differential test framework green |
+| Resolve `todo!("JALINAN Phase 6")` in `03_PROTO/crates/riina-compliance/src/validator.rs:82` | `grep -rn 'todo!\|unimplemented!' 03_PROTO/crates --include='*.rs'` returns 0 in non-test code |
+| Resolve 5 documented `// TODO` in lexer/parser/codegen | Each closed with PR + linked test |
+
+**Exit criteria:** every Coq-stated security theorem has a matching Rust enforcement test
+(positive + negative). Zero `todo!()` / `unimplemented!()` outside test code.
+
+### Gate C — Standard Library Hardening (owns REQ-28 partial)
+
+| Module | Current | Required |
+|---|---|---|
+| Crypto (AES, SHA-3, ChaCha20-Poly1305, ML-KEM, ML-DSA) | Implemented in `05_TOOLING/crates/riina-core` | **External audit clean** (NCC / Trail of Bits / Cure53 grade), 0 findings ≥ Medium |
+| File I/O with effect tracking | Unclear | Implement + Coq model for read/write effects |
+| Networking (TCP/TLS/HTTP, effect-typed) | None | Implement; capability-gated |
+| Time / random / OS interface | Unclear | All effect-typed |
+| Collections (Vec, Map, Set) | Partial | Benchmarks + verified core algorithms |
+| Strings (Unicode-correct, confusables, NFC) | Partial | Normalization spec + tests |
+| Async runtime | Spec-only (JALINAN) | Phase 6 deliverable |
+| Numeric tower (BigInt, decimal, fixed-point) | None | Required for finance use cases |
+
+**Exit criteria:** external crypto audit clean; ≥1 non-trivial sample app shipping on stdlib.
+
+### Gate D — Extended Prover Honesty (owns REQ-29)
+
+Today's "10 provers" marketing must either be earned (D1) or retracted (D2).
+
+**Path D1 — Industrialize the smoke artifacts** (6–12 months):
+- F\*: ≥50 lemmas across multiple modules, `fstar` build in CI
+- TLA+: ≥5 protocol specs with TLC + Apalache invariants
+- Alloy: ≥10 access-control models bounded-checked
+- SMT/Z3: full security-lattice verification of every Coq IFC theorem
+- Isabelle: ≥20 theories building under `isabelle build`
+- Verus/Kani/TV: real harnesses for `03_PROTO` Rust code (not generated stubs)
+
+**Path D2 — Retract the marketing** (1 day):
+- Website + README: change "10 independent verification engines" → honest tier list
+- Move all generated placeholder files in `02_FORMAL/{fstar,tlaplus,alloy,smt,verus,kani,tv}/` to `99_ARCHIVE/` OR mark each with a `GENERATED-CORPUS-NOT-VERIFIED` header
+- `metrics.json` already tracks `quarantined: true` honestly — keep that as source of truth
+
+**Recommendation:** D2 immediately (single-day credibility fix), then D1 incrementally.
+
+### Gate E — Test Infrastructure & Benchmarks (owns REQ-30)
+
+| Task | Verification |
+|---|---|
+| Enable excluded `03_PROTO/tests/fuzzing` workspace | `cargo test` includes fuzz harnesses |
+| 24h continuous fuzz on parser + typechecker, 0 crashes | Fuzz corpus published per release |
+| Differential testing: every `.rii` example produces identical output via C and WASM targets | CI gate |
+| Performance benchmark suite (criterion already a dep) | Per-PR regression bot; numbers published |
+| Coverage measurement (tarpaulin/llvm-cov) ≥80% on `03_PROTO/crates` | Per-PR gate |
+| Coq build time tracking + warning budget enforcement | `audit-coq-warnings.py --mode build --enforce-budget` exits 0 |
+
+### Gate F — Reproducibility & Supply Chain (owns REQ-31)
+
+| Task | Verification |
+|---|---|
+| Hermetic `nix build` from clean machine | Two rebuilders produce identical SHA256 |
+| SBOM per build (cargo-sbom or syft) | Published with each release |
+| Signed releases (artifact-sign crate) | Key fingerprint in `SECURITY.md`; offline signing key |
+| Hash-chain attestation (hash-chain crate) | Wired into release pipeline |
+| Toolchain pinned to content hashes (Rocq 9.1.1, Lean 4.16, Rust 1.84) | `flake.lock` covers all |
+| SLSA-3 attestation | Independent verifier confirms |
+
+### Gate G — Security Posture (owns REQ-32)
+
+| Task | Verification |
+|---|---|
+| External crypto audit (riina-core) | Audit report published, 0 findings ≥ Medium |
+| Formal threat model (STRIDE/PASTA) for compiler + runtime | Document in `04_SPECS/security/` |
+| CVE disclosure: `security@` mailbox + 90-day disclosure policy | Documented in `SECURITY.md` |
+| Reproducible verification one-liner for outsiders | `make verify-all` re-derives every public metric |
+| Design doc for the 7 `unsafe` blocks (riina-arena, riina-wasm) | Per-block invariants + audit log |
+| Side-channel review of `masa_tetap` codegen | Independent reviewer signs off |
+| OSS-Fuzz or equivalent continuous fuzzing | Hooked + stable |
+
+### Gate H — Industry Compliance (owns REQ-33; decision-blocking)
+
+The codebase has Coq scaffolding (HIPAA.v, PCI-DSS.v, DO-178C/, etc.) but **no certification**.
+A real certification requires choosing a target and committing 6 months – 3 years.
+
+| Certification | Cost & Time |
+|---|---|
+| DO-178C Level A (avionics) | $500k–$2M, 18–36 months, requires TQAR |
+| ISO 26262 ASIL-D (automotive) | $300k–$1M, 12–24 months |
+| Common Criteria EAL4+ (general) | $200k–$800k, 12–24 months |
+| HIPAA (US healthcare) | Risk analysis + BAA + audit logs |
+| PCI-DSS (payments) | QSA assessment |
+| Syariah (AAOIFI SS 1-62) | Syariah board review + scholar attestation |
+| SOC 2 (SaaS tooling) | Auditor + 6–12 months control evidence |
+
+**No claim of "compliant" anywhere in the codebase until a real auditor signs.** Today's
+`compliance/` directory is research, not certification.
+
+### Gate I — Documentation for Humans (owns REQ-34)
+
+A new developer cannot use RIINA today without reading source.
+
+| Deliverable | Status |
+|---|---|
+| Language Reference (formal, complete, indexed) | Partial — `04_SPECS/` has fragments |
+| Getting Started in 10 minutes | Missing |
+| "Writing Secure RIINA" guide | Missing |
+| API docs for stdlib (auto-generated, deployed) | Generator exists; deployment unclear |
+| Tutorial corpus (graduated examples) | Partial |
+| Compiler internals doc | Missing |
+| Proof guide (how to read/write/extend Coq lane) | Missing |
+| Stability & migration policy | Missing — needs decision first |
+
+### Gate J — Governance & Community (owns REQ-35, REQ-36)
+
+| Task | Status today |
+|---|---|
+| License decision (Proprietary blocks open contribution) | Open — REQ-35 |
+| ≥3 maintainers with commit rights | **1** — REQ-36 |
+| Public RFC process | Missing |
+| Stability policy (semver guarantees) | Implicit |
+| Public roadmap with dates | Internal only |
+| Code of Conduct enforcement body | `CODE_OF_CONDUCT.md` exists, no enforcer |
+| DCO / CLA | Missing |
+| Trademark usage policy | RIINA™ asserted, policy missing |
+| Funding & sustainability | Not addressed |
+
+### Cross-Cutting Hygiene (always-on, never paused)
+
+1. **Paranoid verification protocol stays on** — every commit re-runs `audit-docs.sh`; no
+   number ever copied between docs by hand.
+2. **No-axiom invariant** is a CI gate, not a manual check. Active-scope Coq Axiom count
+   must stay 0. Lean axiom count must trend monotonically toward 0 from current 15.
+3. **Generated-corpus boundary** — every file in `02_FORMAL/{fstar,tlaplus,alloy,smt,verus,kani,tv}/`
+   marked `GENERATED-CORPUS` or `ACTIVE-MECHANIZED`. `metrics.json` is the public source of truth.
+4. **Drift-detection on every orientation doc** — extend `audit-docs.sh` continuously to cover
+   any new file a session might read first.
+5. **`01_RESEARCH/` boundary** — READ-ONLY per CLAUDE.md. Stale numbers there are historical
+   record, not current claims. Each top-level subdirectory should carry a one-line
+   `RESEARCH_FROZEN_AT.md` notice (Gate A.E task).
+6. **Bus-factor mitigation** — Master plan + CLAUDE.md + AGENTS.md must be sufficient for a
+   second engineer to onboard without verbal context.
+
+### Decisions Outstanding (block multiple gates)
+
+These cannot be made by a session; they require the project owner:
+
+| Decision | Blocks | Track in |
+|---|---|---|
+| License model (Proprietary / Apache-2.0 / BSL / AGPL / Dual) | Gates D2 publication, I community, J governance | REQ-35 |
+| Primary target industry first (avionics / automotive / fintech / general) | Gate H certification path | REQ-33 |
+| Multi-prover commitment (D1 industrialize vs D2 retract) | Gate D public position | REQ-29 |
+| Self-hosting target (Phase 10) or always Rust-hosted | Phase 10 effort sizing | REQ-18 |
+| External audit budget (~$100k–$500k for compiler verification audit) | Gates C, G | REQ-28, REQ-32 |
+| Maintainer recruitment plan (current bus factor 1) | Gate J | REQ-36 |
+| Trademark policy publication | Gate J | (new REQ when decided) |
+
+### Effort Sizing (rough, calendar time)
+
+| Gate | Effort | Blocks |
+|---|---|---|
+| A | 1–2 sessions / 1 person-week | All others |
+| B | 2–4 sessions / 1 person-month | Stdlib audit, real apps |
+| C | 3–5 sessions + external audit / 3–6 months | Any commercial use |
+| D2 (retract) | 1 session / 1 day | Public credibility |
+| D1 (industrialize) | 6–12 months | "10-prover" claim becomes true |
+| E | 2 sessions / 1 person-week | Regression confidence |
+| F | 1–2 sessions / 1 person-week | Supply-chain compliance |
+| G | 3–6 months + ~$50–200k | Regulated industry use |
+| H | Per cert: 6 months – 3 years / $100k–$2M each | Industry-specific |
+| I | 2–3 sessions of focused writing | Adoption |
+| J | Continuous, multi-quarter | Open-source community |
+
+**Total realistic timeline to industry-ready:** 12–24 months calendar with 1–2 dedicated
+engineers + budgeted external audit + at least one chosen compliance certification.
+
+### Next-Session Pickup Protocol
+
+A session entering the codebase MUST:
+1. Run Part 8 §ORIENT and §ASSESS as written.
+2. Open Part 11 §Active Gate Marker.
+3. Within that gate, pick the highest-priority TODO REQ from Part 3 (P0 before P1 before P2).
+4. If the gate has no TODO REQs left, re-run the gate's verification commands. If all pass,
+   advance the Active Gate Marker per the protocol in §Active Gate Marker.
+5. Never skip ahead. Never declare a gate done without re-running its verification commands.
+
+---
+
 *This document is the SOLE planning authority for the RIINA project.*
 *All requirement documents are preserved at `04_SPECS/requirements/` (15 files, 708KB).*
 *Research documents preserved at `01_RESEARCH/` (including domains 59-60: Syariah + Blockchain).*
 *All proofs are preserved at `02_FORMAL/` (coq, lean, isabelle, + 7 extended provers).*
 *Nothing was lost. Everything that matters is here or referenced here.*
-*Last updated: 2026-03-12 (Version 2.2.1)*
+*Last updated: 2026-05-16 (Version 2.3.0 — added Part 11 Production-Readiness Discipline, REQ-21..36)*
