@@ -606,36 +606,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "riina-lang-codegen"
-version = "0.2.0"
-dependencies = [
- "riina-core",
- "riina-lang-types",
-]
-
-[[package]]
-name = "riina-lang-lexer"
-version = "0.2.0"
-dependencies = [
- "riina-core",
-]
-
-[[package]]
-name = "riina-lang-parser"
-version = "0.2.0"
-dependencies = [
- "riina-core",
- "riina-lang-lexer",
-]
-
-[[package]]
-name = "riina-lang-types"
-version = "0.2.0"
-dependencies = [
- "riina-core",
-]
-
-[[package]]
 name = "riina-verify"
 version = "0.2.0"
 dependencies = [
@@ -648,10 +618,6 @@ version = "0.2.0"
 dependencies = [
  "clap",
  "riina-core",
- "riina-lang-codegen",
- "riina-lang-lexer",
- "riina-lang-parser",
- "riina-lang-types",
 ]
 
 [[package]]

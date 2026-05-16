@@ -12,10 +12,6 @@ resolver = "2"
 members = [
     "crates/riina-core",
     "crates/riina-effect",
-    "crates/riina-lang-lexer",
-    "crates/riina-lang-parser",
-    "crates/riina-lang-types",
-    "crates/riina-lang-codegen",
     "crates/riinac",
     "crates/riina-build",
     "crates/riina-verify",
@@ -44,10 +40,6 @@ authors = ["RIINA Team <security@riina.my>"]
 # =============================================================================
 riina-core = { path = "crates/riina-core" }
 riina-effect = { path = "crates/riina-effect" }
-riina-lang-lexer = { path = "crates/riina-lang-lexer" }
-riina-lang-parser = { path = "crates/riina-lang-parser" }
-riina-lang-types = { path = "crates/riina-lang-types" }
-riina-lang-codegen = { path = "crates/riina-lang-codegen" }
 
 # =============================================================================
 # BUILD-TIME ONLY DEPENDENCIES

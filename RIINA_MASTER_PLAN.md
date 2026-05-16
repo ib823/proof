@@ -178,13 +178,13 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-core** | `05_TOOLING/crates/riina-core/` | Implemented | Cryptographic primitives (AES, SHA-3) |
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
-| **Coq proofs** | `02_FORMAL/coq/` | 12,385 Qed, 0 Admitted | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 325 files, 12,576 theorems, `lake build` passes, 0 sorry, 0 axioms | Mechanized |
-| **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, 12,931 lemmas, 10 core theories compile, 0 sorry | Mechanized |
-| **SMT/Z3 proofs** | `02_FORMAL/smt/` | 267 files, 11,843 assertions, 267/267 Z3-verified | Mechanized |
-| **F\* proofs** | `02_FORMAL/fstar/` | 265 files, 0 assume val | Compiled |
-| **TLA+ specs** | `02_FORMAL/tlaplus/` | 267 files, 5,893 theorems, SANY+TLC verified | Compiled |
-| **Alloy models** | `02_FORMAL/alloy/` | 260 files, 8,434 assertions, analyzer verified | Compiled |
+| **Coq proofs** | `02_FORMAL/coq/` | 309 active files, 12,385 Qed, 0 Admitted, 4 Abort (active proof gaps) | Primary formal verification |
+| **Lean proofs** | `02_FORMAL/lean/` | 325 files, 12,576 theorems, `lake build` passes, 0 sorry, **15 axiom** (port fallbacks pending elimination) | Mechanized (partial — 15 axioms outstanding) |
+| **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep), 1 smoke theory (`RIINA_CORE`) compiles, 0 sorry | Smoke-mechanized |
+| **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with 11,843 Z3-verified assertions (rest generated corpora) | Smoke-mechanized |
+| **F\* proofs** | `02_FORMAL/fstar/` | 315 files, 1 smoke module compiled (22 lemmas), rest generated corpora | Smoke-compiled |
+| **TLA+ specs** | `02_FORMAL/tlaplus/` | 317 files, 1 smoke spec TLC-checked (5 theorems), rest generated corpora | Smoke-compiled |
+| **Alloy models** | `02_FORMAL/alloy/` | 306 files, 1 smoke model analyzer-checked (6 assertions), rest generated corpora | Smoke-compiled |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
 
@@ -219,7 +219,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 ## PART 2: CURRENT VERIFIED STATE
 
-**Last verified: 2026-03-19 by running commands listed in Part 0.**
+**Last verified: 2026-05-16 by running commands listed in Part 0.**
 
 ### Coq (Primary Prover)
 
@@ -227,11 +227,12 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 |--------|-------|---------|
 | Qed proofs (active build) | 12,385 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
+| Abort (active build) | 4 | Per-file `grep -cP "^\s*Abort\."` — incomplete proof attempts in `domains/X001_ConcurrencyModel.v`, `V001_TerminationGuarantees.v`, `W001_VerifiedMemory.v`, `domains/mobile_os/LocationServices.v` |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
-| .v files (active) | 292 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
-| Qed (archive) | 758 | Total 12,663 minus active 12,385 |
-| Admitted (archive) | 98 | In `properties/_archive_deprecated/` |
-| Compilation | PASSES | `cd 02_FORMAL/coq && make` |
+| .v files (active) | 309 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
+| Qed (archive) | 758 | Total 13,143 minus active 12,385 |
+| Admitted (archive) | 99 | In `properties/_archive_deprecated/` |
+| Compilation | PASSES | `cd 02_FORMAL/coq && make` (last verified upstream; container lacks Rocq) |
 
 **Quality tiers (honest):**
 
@@ -249,31 +250,37 @@ but the compiler does not yet enforce them.
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| `.lean` files in `02_FORMAL/lean/RIINA` | 155 | Strict mechanization gate scope (excludes `_wip`) |
+| `.lean` files in `02_FORMAL/lean/RIINA` | 325 | Strict mechanization gate scope (excludes `_wip`) |
 | Theorem/lemma declarations | 12,576 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| `lake build RIINA` | PASSES | Full Lean lane builds successfully (19 domain files fixed 2026-03-14) |
+| `lake build RIINA` | PASSES | Full Lean lane builds successfully (last verified upstream; container lacks elan) |
 | `sorry` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| `axiom` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| Mechanized readiness | READY | Full active lane now has zero `sorry` and zero `axiom` |
+| `axiom` count (full lane) | 15 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` — all flagged `-- fallback: unresolved match translation` from the Coq→Lean port (see assessment below) |
+| Mechanized readiness | PARTIAL | 0 `sorry`; 15 `axiom` declarations remain pending axiom-elimination |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
-**Honest assessment:** The full Lean namespace builds, and the strict active lane is now
-**mechanized-ready**: **0 `sorry`** and **0 `axiom`** across `02_FORMAL/lean/RIINA`
-excluding `_wip`. `Domains/AlgebraicEffects.lean` no longer relies on axioms for the
-typing relations; it uses a step-indexed `Nat → Prop` encoding that avoids Lean 4's
+**Honest assessment:** The full Lean namespace builds with **0 `sorry`**, but the strict active
+lane still contains **15 `axiom`** declarations across 11 files (`Domains/NetworkDefense.lean`,
+`FullstackSecurity.lean`, `SessionTypes.lean`, `EnterpriseERP.lean`, `ActorCalculus.lean`,
+`TimingSecurity.lean`, `ChoreographyTypes.lean`, `X001_ConcurrencyModel.lean`,
+`SIGMA001_VerifiedStorage.lean`, `MobileOS/ConcurrencyFramework.lean`,
+`Industries/IndustryFinancial.lean`). Each is a code-gen escape hatch from the Coq→Lean
+port flagged `-- fallback: unresolved match translation`; the lane is **not yet
+axiom-free**. `Domains/AlgebraicEffects.lean` no longer relies on axioms for the typing
+relations; it uses a step-indexed `Nat → Prop` encoding that avoids Lean 4's
 strict-positivity restriction while preserving the active-lane theorem surface.
 
 ### Isabelle/HOL (Tertiary Prover)
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| .thy files | 307 | Repo-wide total from `find 02_FORMAL/isabelle/ -name "*.thy"` |
+| .thy files | 368 | Repo-wide total from `find 02_FORMAL/isabelle/ -name "*.thy"` |
 | Compiled theories | 1 | `RIINA_CORE` currently compiles `Syntax.thy` |
 | Compilation | PASSES (`RIINA_CORE`) | `isabelle build -d 02_FORMAL/isabelle/RIINA/Core -b RIINA_CORE` |
 | Lemma count (grep) | ~12,931 | Repo-wide grep; mechanized via Isabelle build |
 
 **Honest assessment:** `Syntax.thy` now compiles in Isabelle/HOL via the `RIINA_CORE`
-smoke session. The Isabelle lane contains 307 `.thy` files with mechanized compilation.
+smoke session. The Isabelle lane contains 368 `.thy` files; only the `RIINA_CORE`
+smoke session is actually mechanized — the rest are generated corpora awaiting build wiring.
 
 ### Extended Provers (F*, TLA+, Alloy, SMT, Verus, Kani, TV)
 
@@ -302,11 +309,12 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 
 | Metric | Value |
 |--------|-------|
-| Tests (03_PROTO/) | 2,407 passing |
-| Tests (05_TOOLING/) | 248 passing |
-| Crates | 17 |
+| Tests (03_PROTO/) | 2,479 passing, 0 failed, 3 ignored |
+| Tests (05_TOOLING/) | 248 passing, 0 failed, 2 ignored |
+| Crates (03_PROTO) | 19 |
+| Crates (05_TOOLING) | 5 (post-cleanup; 4 stub `riina-lang-*` + stub-`riinac` dependency dropped 2026-05-16) |
 | Clippy | Clean |
-| Example .rii files | 147 |
+| Example .rii files | 155 |
 
 **Compiler capabilities (honest):**
 - Lexes Bahasa Melayu keywords
