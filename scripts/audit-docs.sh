@@ -517,6 +517,42 @@ if [ -f "$REPO_ROOT/PROGRESS.md" ]; then
 fi
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
+# ── Check AGENTS.md (agent orientation doc) ──────────────────────────
+# AGENTS.md is the entry-point file for non-Claude AI CLIs (Codex, Devin, etc.).
+# Stale metrics here cause new sessions to plan against a wrong state.
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking AGENTS.md...${NC}"
+fi
+
+if [ -f "$REPO_ROOT/AGENTS.md" ]; then
+    AG_QED=$(grep -oP '^\| Coq Qed \| \K[0-9,]+' "$REPO_ROOT/AGENTS.md" | tr -d ',' || echo "0")
+    AG_LEAN=$(grep -oP '^\| Lean theorems \| \K[0-9,]+' "$REPO_ROOT/AGENTS.md" | tr -d ',' || echo "0")
+    AG_EXAMPLES=$(grep -oP '^\| Examples \| \K\d+' "$REPO_ROOT/AGENTS.md" || echo "0")
+    check_value "Qed in AGENTS.md table" "$ACTUAL_QED" "$AG_QED" "AGENTS.md" || true
+    check_value "Lean theorems in AGENTS.md table" "$ACTUAL_LEAN" "$AG_LEAN" "AGENTS.md" || true
+    check_value "Examples in AGENTS.md table" "$ACTUAL_EXAMPLES" "$AG_EXAMPLES" "AGENTS.md" || true
+fi
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
+# ── Check llms.txt (LLM-facing project summary) ──────────────────────
+# llms.txt is the canonical "what is RIINA in machine-readable form" file
+# read by LLM consumers. Drift here misleads downstream tools.
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking llms.txt...${NC}"
+fi
+
+if [ -f "$REPO_ROOT/llms.txt" ]; then
+    LT_QED=$(grep -oP '^- Coq: \K[0-9,]+' "$REPO_ROOT/llms.txt" | tr -d ',' || echo "0")
+    LT_LEAN=$(grep -oP '^- Lean 4: \K[0-9,]+' "$REPO_ROOT/llms.txt" | tr -d ',' || echo "0")
+    LT_EXAMPLES=$(grep -oP '^- Examples: \K\d+' "$REPO_ROOT/llms.txt" || echo "0")
+    check_value "Qed in llms.txt" "$ACTUAL_QED" "$LT_QED" "llms.txt" || true
+    check_value "Lean theorems in llms.txt" "$ACTUAL_LEAN" "$LT_LEAN" "llms.txt" || true
+    check_value "Examples in llms.txt" "$ACTUAL_EXAMPLES" "$LT_EXAMPLES" "llms.txt" || true
+fi
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
 # ── Check website metrics.json ────────────────────────────────────────
 
 if [ "$QUICK_MODE" != "--quick" ]; then

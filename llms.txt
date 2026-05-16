@@ -11,21 +11,21 @@ Security properties are mathematically proven at compile time.
 - Repository: https://github.com/ib823/riina
 - License: Proprietary
 
-## Verified State (2026-03-19, command-derived)
+## Verified State (2026-05-16, command-derived)
 
-- Coq: 11,905 Qed (active build, 0 Admitted, 0 Axioms), 301 .v files
-- Lean 4: 12,096 theorems (317 files, 0 sorry), claim: mechanized
-- Isabelle: 12,287 lemmas (354 files, 0 sorry), claim: mechanized
-- TLA+: 11,839 theorems (309 files), claim: mechanized
-- SMT/Z3: 11,962 assertions (309 files), claim: mechanized
-- F*: 22 lemmas (307 files), claim: compiled
-- Alloy: 11,240 assertions (299 files), claim: compiled
-- Verus: 6,008 proof fns (316 files), claim: generated
-- Kani: 5,277 harnesses (300 files), claim: generated
-- TV: 16,917 validations (308 files), claim: generated
-- Total: 71,351 proof artifacts across 10 provers
-- Rust: 2,294 tests, 16 crates, 0 external dependencies
-- Examples: 143 .rii files
+- Coq: 12,385 Qed (active build, 0 Admitted, 0 Axioms, 4 Abort), 309 active .v files
+- Lean 4: 12,576 theorems (325 files, 0 sorry, **15 axiom** port-fallbacks pending elimination), claim: partial mechanization
+- Isabelle: ~12,931 lemmas (368 .thy files repo-wide; 1 smoke theory `RIINA_CORE` compiles, 0 sorry), claim: smoke-mechanized
+- TLA+: 12,282 raw theorems (317 .tla files; 1 smoke spec TLC-checked with 5 theorems), claim: smoke-compiled
+- SMT/Z3: 12,405 assertions (317 .smt2 files; 1 smoke verification with 11,843 Z3-verified assertions), claim: smoke-mechanized
+- F*: 22 compiled lemmas (315 .fst files; 1 smoke module compiled), claim: smoke-compiled
+- Alloy: 11,627 raw assertions (306 .als files; 1 smoke model with 6 analyzer-checked assertions), claim: smoke-compiled
+- Verus: 6,395 proof fns (323 files), claim: generated (quarantined)
+- Kani: 5,664 harnesses (307 files), claim: generated (quarantined)
+- TV: 17,463 validations (316 files), claim: generated (quarantined)
+- Authoritative live counts: `website/public/metrics.json`
+- Rust: 2,479 proto tests + 248 tooling tests = 2,727, 19 proto crates + 5 tooling crates (post 2026-05-16 stub removal), 0 external runtime deps
+- Examples: 155 .rii files
 
 ## Session Protocol
 
@@ -40,7 +40,7 @@ Commit-Push-Deploy: stage specific files → commit [TRACK_X] TYPE: → push (ne
 - [Master Plan](RIINA_MASTER_PLAN.md): Single source of truth for all planning
 - [Claude Code Instructions](CLAUDE.md): Operational instructions for AI agents
 - [Language Specs](04_SPECS/): Formal specifications
-- [Examples](07_EXAMPLES/): 143 example .rii files
+- [Examples](07_EXAMPLES/): 155 example .rii files
 - [Formal Proofs](02_FORMAL/coq/): Coq proof library
 - [llms-full.txt](llms-full.txt): Complete language specification for LLMs
 

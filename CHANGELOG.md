@@ -1,11 +1,25 @@
 # Changelog
 
-**Verification:** 12,385 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2476 Rust tests
+**Verification:** 12,385 Coq Qed (compiled, 0 Admitted, 0 active axioms, 4 Abort) | 10 prover lanes tracked with claim levels | 2,479 proto + 248 tooling Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] — 2026-05-16 — Documentation drift correction
+
+### Fixed
+- `RIINA_MASTER_PLAN.md` Part 2: corrected Coq active `.v` files (292 → 309), Lean files (155 → 325), Lean axiom count (0 → 15), Isabelle files (307 → 368), and extended-prover file counts to match `metrics.json`
+- `AGENTS.md`, `llms.txt`, `README.md`: refreshed verified-state tables; previous values were a session out of date
+- `VERIFICATION_MANIFEST.md`: refreshed SHA + tooling test count; clarified Coq/Lean build status as "not re-verified in ephemeral container"
+
+### Added
+- `PROOF_STATUS.md` (regenerated via `scripts/update-proof-ledger.sh`): new `Abort (active, incomplete proof attempts)` ledger surfacing 4 gaps in `domains/X001_ConcurrencyModel.v`, `V001_TerminationGuarantees.v`, `W001_VerifiedMemory.v`, `domains/mobile_os/LocationServices.v`
+- `scripts/audit-docs.sh`: added drift checks for AGENTS.md + llms.txt so the next session detects rot automatically
+
+### Removed
+- 4 stub crates in `05_TOOLING/crates/`: `riina-lang-{lexer,parser,types,codegen}` (each was a 4-LOC `forbid(unsafe_code)` header duplicating the real `03_PROTO/crates/riina-{lexer,parser,types,codegen}`). Workspace + dependency entries cleaned up; only consumer (also-stub `05_TOOLING/crates/riinac`) had its deps pruned without behavioral change.
 
 ## [0.3.0] — 2026-03-19
 

@@ -82,7 +82,7 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes (11,905 Coq + 12,096 Lean + 12,287 Isabelle + 7 more prover lanes) | No | No | Partial |
+| Formal proof corpus in repo | Yes (12,385 Coq + 12,576 Lean + ~12,931 Isabelle + 7 more prover lanes) | No | No | Partial |
 | Multi-prover work | Yes (10 provers: 5 mechanized, 2 compiled, 3 generated) | No | No | No |
 | Session-typed actors | Yes (JALINAN: pelakon, lahir, hantar, terima) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
@@ -221,25 +221,26 @@ This is not a whitepaper. This is working software.
 
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
-| **Rocq 9.1.1** (Primary) | 12,385 Qed, 0 Admitted, 0 active axioms | Primary formal lane; active build passes |
-| **Lean 4** (Secondary) | 12,096 theorem/lemma declarations | 317 files; 0 `sorry`, 0 axioms; claim level: mechanized (build passes) |
-| **Isabelle/HOL** (Tertiary) | 12,287 lemmas, mechanized | 354 .thy files; Isabelle mechanized lane |
-| **F\*** (Seed lane) | 22 lemmas, compiled | F* compiled lane |
-| **TLA+** (Protocol seed lane) | 11,839 theorems, mechanized | 309 .tla files; TLA+ mechanized lane |
+| **Rocq 9.1.1** (Primary) | 12,385 Qed, 0 Admitted, 0 active axioms, 4 Abort (incomplete proof attempts in 4 domain files) | Primary formal lane; active build passes |
+| **Lean 4** (Secondary) | 12,576 theorem/lemma declarations | 325 files; 0 `sorry`, **15 `axiom`** (port-fallback escape hatches pending elimination); claim level: partial mechanization (build passes) |
+| **Isabelle/HOL** (Tertiary) | ~12,931 lemmas (repo-grep) | 368 .thy files; 1 smoke session `RIINA_CORE` compiles; rest are generated corpora |
+| **F\*** (Seed lane) | 22 compiled lemmas | 315 .fst files; 1 smoke module compiled; rest generated |
+| **TLA+** (Protocol seed lane) | 12,282 raw theorems | 317 .tla files; 1 smoke spec TLC-checked (5 theorems); rest generated |
 
 **Honest scope:**
 - Core Coq theorems cover foundations, type safety, effects, non-interference, declassification, and termination.
 - Many domain files are formal models or specifications, not compiler-enforced guarantees.
-- F* (22 lemmas), TLA+ (5,893 theorems), Alloy (8,434 assertions), and SMT (11,843 assertions) are compiled or mechanized lanes with real artifacts.
+- F* (1 module, 22 lemmas compiled), TLA+ (1 spec, 5 theorems TLC-checked), Alloy (1 model, 6 assertions checked), and SMT (1 verification, 11,843 Z3-verified assertions) each have a single active smoke artifact; the remaining files in each lane are generated corpora.
+- See `website/public/metrics.json` for the authoritative live counts.
 
 ### Compiler & Toolchain (Rust)
 
 | Metric | Value |
 |--------|-------|
-| Rust crates | 16 |
-| Test count | 2,294 (all passing) |
-| External dependencies | **0** |
-| Lines of Rust | 31,043 |
+| Rust crates | 19 proto + 5 tooling = 24 |
+| Test count | 2,479 proto + 248 tooling = 2,727 (all passing) |
+| External dependencies | **0** at runtime |
+| Lines of Rust | ~73,500 (proto) |
 | Standard library builtins | 88 across 9 modules |
 
 **Crates:**
@@ -278,7 +279,7 @@ This is not a whitepaper. This is working software.
 
 ### Example Programs
 
-143 example `.rii` files across 10 categories:
+155 example `.rii` files across 10 categories:
 
 | Category | Examples | Topics |
 |----------|----------|--------|
@@ -317,16 +318,16 @@ riina/
 │   ├── compliance/         DO-178C, ISO-26262, Common Criteria models
 │   └── Industries/         Regulatory/domain formal models
 │
-├── 02_FORMAL/lean/          Lean 4 active lane (317 files, 12,096 declarations)
+├── 02_FORMAL/lean/          Lean 4 active lane (325 files, 12,576 declarations, 0 sorry, 15 axiom)
 │   └── RIINA/               Syntax, Semantics, Typing, Progress, Preservation,
 │                             TypeSafety, EffectAlgebra, EffectSystem, EffectGate,
 │                             NonInterference
 │
-├── 02_FORMAL/isabelle/      Isabelle/HOL mechanized lane (9,092 lemmas, 307 .thy total)
-├── 02_FORMAL/tlaplus/       TLA+ compiled lane (5,893 theorems, 267 .tla total)
+├── 02_FORMAL/isabelle/      Isabelle/HOL lane (368 .thy total, ~12,931 lemmas, 1 smoke theory compiles)
+├── 02_FORMAL/tlaplus/       TLA+ lane (317 .tla total, 12,282 raw theorems, 1 smoke spec TLC-checked)
 │   └── RIINA/               Mechanized Isabelle theories
 │
-├── 03_PROTO/               Rust compiler (16 crates, 2,294 tests, 0 deps)
+├── 03_PROTO/               Rust compiler (19 crates, 2,479 tests, 0 deps)
 │   └── crates/
 │       ├── riinac/         Compiler driver (11 subcommands)
 │       ├── riina-lexer/    Tokenizer
@@ -345,7 +346,7 @@ riina/
 │
 ├── 04_SPECS/               Language specifications, compliance specs
 ├── 05_TOOLING/             Crypto primitives, build system (35K lines Rust)
-├── 07_EXAMPLES/            143 example .rii files
+├── 07_EXAMPLES/            155 example .rii files
 ├── docs/                   Enterprise docs, multilingual READMEs
 ├── VERSION                 Semver source of truth (0.2.0)
 ├── CHANGELOG.md            Public-facing changelog
@@ -391,15 +392,15 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,385 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2476 Rust tests
+**Verification:** 12,385 Coq Qed (compiled, 0 Admitted, 0 active axioms, 4 Abort) | 10 prover lanes tracked with claim levels | 2,479 proto + 248 tooling Rust tests
 
 | Area | Status |
 |------|--------|
 | Core compiler | Lexer/parser/typechecker/codegen/interpreter build; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
-| Formal verification | Coq primary lane healthy; Lean mechanized lane healthy; Isabelle mechanized lane; F* compiled lane; TLA+ compiled lane; Alloy compiled lane (8,434 assertions); SMT mechanized lane (11,843 assertions) |
+| Formal verification | Coq primary lane healthy; Lean partial (15 axioms outstanding); Isabelle/F*/TLA+/Alloy/SMT have 1 active smoke artifact each (rest generated corpora) |
 | WASM/mobile backends | Present as scaffolding, not full production backends |
-| Extended provers | F* (22 lemmas, compiled), TLA+ (5,893 theorems, compiled), Alloy (8,434 assertions, compiled), SMT (11,843 assertions, mechanized) |
+| Extended provers | F* (1 smoke module, 22 lemmas), TLA+ (1 smoke spec, 5 theorems), Alloy (1 smoke model, 6 assertions), SMT (1 smoke verification, 11,843 assertions) — remainder generated corpora |
 
 ### What's next
 
