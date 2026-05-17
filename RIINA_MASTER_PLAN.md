@@ -227,8 +227,9 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 |--------|-------|---------|
 | Qed proofs (active build) | 12,385 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
-| Abort (active build) | 4 | Per-file `grep -cP "^\s*Abort\."` — incomplete proof attempts in `domains/X001_ConcurrencyModel.v`, `V001_TerminationGuarantees.v`, `W001_VerifiedMemory.v`, `domains/mobile_os/LocationServices.v` |
+| Abort (active build) | 0 | Per-file `grep -cP "^\s*Abort\."` — 4 abandoned first attempts in X001/V001/W001/mobile_os deleted 2026-05-17 (REQ-21 closed); each had a Qed-proven successor with the same theorem name, so deletion was pure dead-code removal. Audit-docs.sh now gates this at 0. |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
+| Parameter (active build) | 32 | `grep -rP "^\s*Parameter\s" 02_FORMAL/coq --include="*.v" \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` — 29 in `domains/PhysicalSecurity.v` (Trusted Hardware Primitives — EDA tool outputs, X-ray microscopy, PUFs, voltage/temp/mesh sensors, power traces; doctrine header at file top categorises and binds each to an external standard per REQ-23), 2 in `domains/StandardLibrary.v` (`NANOS_PER_SEC` + `NANOS_PER_SEC_pos` — SI specification kept opaque to avoid `simpl` unfolding a unary 10^9 literal), 1 in `domains/VerifiedIdentity.v` (`argon2id_hash` — RFC 9106 cryptographic primitive, implementation in `riina-core`, TCB until Verus harness). All 32 are part of the TCB. Audit-docs.sh pins this count. |
 | .v files (active) | 309 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
 | Qed (archive) | 758 | Total 13,143 minus active 12,385 |
 | Admitted (archive) | 99 | In `properties/_archive_deprecated/` |
