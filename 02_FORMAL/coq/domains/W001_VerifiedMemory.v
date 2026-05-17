@@ -669,17 +669,9 @@ Proof.
   rewrite Hborrow. discriminate.
 Qed.
 
-(* W_001_35: Regions are isolated *)
-Theorem W_001_35_region_isolated : forall r1 r2,
-  region_id r1 <> region_id r2 ->
-  forall l, region_contains r1 l -> region_contains r2 l -> False.
-Proof.
-  (* This requires disjointness as precondition *)
-  intros r1 r2 Hneq l Hc1 Hc2.
-  (* Cannot prove without additional constraint that regions are disjoint *)
-Abort.
-
-(* Alternative: regions with disjoint locs are isolated *)
+(* W_001_35: Regions with pairwise-disjoint location lists are isolated.
+   Distinct [region_id] alone is insufficient; isolation requires the
+   stronger precondition that the locations themselves do not overlap. *)
 Theorem W_001_35_region_isolated : forall r1 r2,
   (forall l, ~(In l (region_locs r1) /\ In l (region_locs r2))) ->
   forall l, region_contains r1 l -> ~region_contains r2 l.

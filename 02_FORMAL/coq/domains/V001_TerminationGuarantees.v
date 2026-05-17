@@ -734,29 +734,10 @@ Proof.
   - left. simpl. exact I.
 Qed.
 
-(* V_001_32: Pure RIINA subset is strongly normalizing *)
-Theorem V_001_32_strong_normalization : forall e,
-  pure e ->
-  well_typed e ->
-  is_value e \/ exists e', step e e'.
-Proof.
-  intros e Hpure Htyped.
-  destruct e.
-  - (* EVar: In closed terms, variables would be substituted. 
-       For open terms, we consider them as neutral/stuck.
-       Since is_value (EVar n) = False, we need another approach.
-       We show progress for closed well-typed terms. *)
-    right. exists (EVar n). (* Variables are stuck but well-formed *)
-    (* Actually step doesn't have a case for EVar alone, so this fails.
-       Let's reconsider: in strongly normalizing lambda calculus,
-       variables ARE values in the sense of being normal forms.
-       We'll update is_value to include variables. *)
-    Fail constructor.
-Abort.
-
-(* Strong normalization for pure RIINA expressions - treating variables as normal forms *)
-
-(* V_001_32: Pure RIINA expressions either normalize or can step *)
+(* V_001_32: Pure RIINA expressions either normalize or can step.
+   Variables, constants, lambdas, recursive defs, and case scrutinees are
+   treated as normal forms (the [is_value] predicate is too strict for open
+   terms, so this formulation uses a syntactic head-form pattern). *)
 Theorem V_001_32_strong_normalization : forall e,
   pure e ->
   well_typed e ->

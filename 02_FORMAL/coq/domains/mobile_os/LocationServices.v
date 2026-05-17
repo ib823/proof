@@ -215,19 +215,10 @@ Proof.
   - right. reflexivity.
 Qed.
 
-(* Spec: RESEARCH_MOBILEOS02 Section 4.2 - Background location requires always permission *)
-Theorem background_location_limited :
-  forall (config : LocationConfig),
-    loc_permission config = PermWhenInUse ->
-    loc_background_enabled config = true ->
-    False.
-Proof.
-  intros config Hperm Hbg.
-  (* This is a policy axiom: when-in-use permission cannot have background enabled.
-     We model it as: configurations satisfying both are ill-formed. *)
-Abort.
-
-(* We need a well-formed config predicate *)
+(* Spec: RESEARCH_MOBILEOS02 Section 4.2 - Background location requires always permission.
+   Formalised against a [well_formed_location_config] predicate: ill-formed
+   configurations that mix PermWhenInUse with background-enabled are
+   excluded by construction rather than deriving False from them directly. *)
 Definition well_formed_location_config (config : LocationConfig) : Prop :=
   (loc_permission config = PermWhenInUse -> loc_background_enabled config = false) /\
   (loc_permission config = PermNone -> loc_background_enabled config = false) /\

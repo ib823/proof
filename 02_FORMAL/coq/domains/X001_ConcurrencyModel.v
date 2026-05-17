@@ -692,16 +692,7 @@ Proof.
   lia.
 Qed.
 
-(* X_001_29: Semaphore operations are correct *)
-Theorem X_001_29_semaphore_correct : forall s,
-  sem_count s <= sem_max s.
-Proof.
-  intros s.
-  destruct s. simpl. 
-  (* This is an invariant that should be maintained *)
-  (* For a well-formed semaphore, count <= max *)
-Abort.
-
+(* X_001_29: Semaphore operations are correct (under precondition count <= max) *)
 Theorem X_001_29_semaphore_correct : forall count max,
   count <= max ->
   sem_count (mkSem count max) <= sem_max (mkSem count max).
