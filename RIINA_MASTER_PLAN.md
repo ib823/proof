@@ -380,12 +380,12 @@ research source, and detailed description.
 | REQ-18 | Self-hosting compiler | P3 | TODO | 10 |
 | REQ-19 | Blockchain primitive library in stdlib | P1 | TODO | 6 |
 | REQ-20 | Syariah-compliant financial type library | P2 | TODO | 6 |
-| REQ-21 | Eliminate 4 active Coq `Abort.` (X001/V001/W001/mobile_os) | P0 | TODO | Gate A |
+| REQ-21 | Eliminate 4 active Coq `Abort.` (X001/V001/W001/mobile_os) | P0 | DONE | Gate A |
 | REQ-22 | Eliminate 15 Lean `axiom` port-fallbacks | P0 | DONE | Gate A |
-| REQ-23 | Audit/justify/eliminate 32 active Coq `Parameter` declarations | P0 | TODO | Gate A |
-| REQ-24 | Install pre-commit + pre-push hooks; CI-gate `audit-docs.sh` | P0 | TODO | Gate A |
+| REQ-23 | Audit/justify/eliminate 32 active Coq `Parameter` declarations | P0 | DONE | Gate A |
+| REQ-24 | Install pre-commit + pre-push hooks; CI-gate `audit-docs.sh` | P0 | DONE | Gate A |
 | REQ-25 | Decide fate of 5th stub `05_TOOLING/crates/riinac` (18-LOC print stub) | P1 | TODO | Gate A |
-| REQ-26 | Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules, .clinerules, CONTRIBUTING.md, SECURITY.md | P1 | TODO | Gate A |
+| REQ-26 | Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules, .clinerules, CONTRIBUTING.md, SECURITY.md | P1 | DONE | Gate A |
 | REQ-27 | Compiler enforcement parity with Coq theorems (linear/capability/session/full IFC/constant-time) | P0 | TODO | Gate B |
 | REQ-28 | External crypto audit of `riina-core` (NCC/ToB/Cure53 grade) | P0 | TODO | Gate C / Gate G |
 | REQ-29 | Public position on multi-prover claim (Path D1 industrialize vs D2 retract) | P0 | TODO | Gate D |
@@ -2048,18 +2048,24 @@ Updated when all of a gate's exit criteria pass verification. Update method:
 
 | Task | Verification command |
 |---|---|
-| Close 4 active Coq `Abort.` → `Qed.` OR move to `_incomplete/` with named issue | `find 02_FORMAL/coq -name '*.v' -type f ! -path '*/_archive_deprecated/*' ! -path '*/_incomplete/*' -exec grep -cP '^\s*Abort\.' {} \; \| awk '{s+=$1}END{print s}'` returns `0` |
+| ~~Close 4 active Coq `Abort.` → `Qed.` OR move to `_incomplete/` with named issue~~ **DONE 2026-05-17 (REQ-21)** | `find 02_FORMAL/coq -name '*.v' -type f ! -path '*/_archive_deprecated/*' ! -path '*/_incomplete/*' -exec grep -cP '^\s*Abort\.' {} \; \| awk '{s+=$1}END{print s}'` returns `0` ✓ |
 | ~~Eliminate 15 Lean `axiom` port-fallbacks (NetworkDefense, FullstackSecurity, SessionTypes, EnterpriseERP, ActorCalculus, TimingSecurity, ChoreographyTypes, X001_ConcurrencyModel, SIGMA001_VerifiedStorage, MobileOS/ConcurrencyFramework, Industries/IndustryFinancial)~~ **DONE 2026-05-17 (commit 41b85893)** | `grep -rP '^\s*axiom\s' 02_FORMAL/lean/RIINA --include='*.lean' \| grep -v '/_wip/' \| wc -l` returns `0` ✓ |
-| Audit & justify or eliminate 32 active Coq `Parameter` declarations | `grep -rP '^\s*Parameter\s' 02_FORMAL/coq --include='*.v' \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` ≤ documented count with rationale per remaining entry |
-| Install pre-commit + pre-push hooks; gate `audit-docs.sh` exit 0 | `bash scripts/audit-docs.sh` reports no "pre-commit hook NOT installed" ERROR |
+| ~~Audit & justify or eliminate 32 active Coq `Parameter` declarations~~ **DONE 2026-05-17 (REQ-23)** | `grep -rP '^\s*Parameter\s' 02_FORMAL/coq --include='*.v' \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` ≤ documented count with rationale per remaining entry — pinned at 32, audit-docs.sh enforces ✓ |
+| ~~Install pre-commit + pre-push hooks; gate `audit-docs.sh` exit 0~~ **DONE 2026-05-17 (REQ-24)** | `bash scripts/audit-docs.sh` reports no "pre-commit hook NOT installed" ERROR ✓ (must re-run `bash 00_SETUP/scripts/install_hooks.sh` after every fresh clone — `.git/hooks/` is not tracked) |
 | Decide & act on 5th stub `05_TOOLING/crates/riinac` | Either deleted from workspace, or its `src/main.rs` no longer prints "Not yet implemented" |
-| Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules, .clinerules, CONTRIBUTING.md, SECURITY.md | `audit-docs.sh` output shows `[OK]` lines for each |
+| ~~Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules, .clinerules, CONTRIBUTING.md, SECURITY.md~~ **DONE 2026-05-17 (REQ-26)** | `audit-docs.sh` output shows `[OK]` lines for each ✓ (CONTRIBUTING.md and SECURITY.md already covered; COPILOT.md, .cursorrules, .clinerules added this session) |
 | Refresh `VERIFICATION_MANIFEST.md` in a real environment with Rocq 9.1.1 + Lean 4.16 installed | Manifest shows PASS (not INHERITED) for Coq + Lean rows |
 
 **Exit criteria:** `PROOF_STATUS.md` shows 0 Admitted / 0 Axiom / 0 Abort in active scope.
 Lean strict-lane shows 0 sorry / 0 axiom. `audit-docs.sh` exits 0 with 0 ERRORs.
 All orientation docs (CLAUDE.md, AGENTS.md, llms.txt, README.md, COPILOT.md, .cursorrules,
 .clinerules, CONTRIBUTING.md, SECURITY.md) cross-reference the same `metrics.json`.
+
+**Gate A progress (2026-05-17 session):** 5 of 7 tasks closed. Audit-docs.sh now exits 0
+(0 discrepancies, 1 unrelated warning about stale Coq warning-budget snapshot which requires
+Rocq to refresh). Remaining: REQ-25 (5th stub fate — P1) and the Rocq/Lean re-verification of
+`VERIFICATION_MANIFEST.md` (needs tool provisioning). Gate marker stays on **A** because P1
+REQ-25 is still open; advance only when EVERY exit criterion holds.
 
 ### Gate B — Compiler Enforcement Parity (owns REQ-27)
 
