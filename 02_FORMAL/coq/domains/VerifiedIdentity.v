@@ -129,8 +129,15 @@ Definition params_secure (p : Argon2Params) : bool :=
   Nat.leb 1 (parallelism p) &&
   Nat.leb SECURE_OUTPUT_LEN (output_len p).
 
-(* Abstract hash function - models Argon2id *)
-(* In reality this would be a cryptographic function; here we model its properties *)
+(* REQ-23 audit: [argon2id_hash] is the Coq interface for the Argon2id
+   password-hashing function (RFC 9106, July 2021; PHC winner 2015).
+   Implementation lives in [05_TOOLING/crates/riina-core] (Rust); the
+   declaration below axiomatises its existence as an opaque function so
+   identity-related theorems in this file can range over it. Treated as
+   TCB until the Rust implementation is itself proven equivalent (Verus
+   harness — Gate B). Do not derive [False] from this primitive
+   directly; downstream theorems must use [hash_deterministic_prop] and
+   [hash_collision_resistant] as explicit assumptions on the hash. *)
 Parameter argon2id_hash : list nat -> list nat -> Argon2Params -> list nat.
 
 (* Axiom-free model: hash produces deterministic output *)

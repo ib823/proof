@@ -347,7 +347,14 @@ Record ConnectionAudit : Type := mkConnAudit {
 (* TIME TYPES                                                              *)
 (* ======================================================================= *)
 
-(* Use a parameter instead of concrete large number to avoid stack overflow *)
+(* REQ-23 audit: NANOS_PER_SEC denotes the SI specification of 10^9
+   nanoseconds per second (BIPM SI Brochure, 9th ed., 2019). Kept opaque
+   as [Parameter] rather than [Definition NANOS_PER_SEC := 1_000_000_000]
+   because Coq's [simpl] tactic would unfold the latter into a unary nat
+   literal of size 10^9, blowing the elaboration stack across every
+   downstream proof that destructs a [Duration]. Only the positivity
+   property [NANOS_PER_SEC_pos] is used downstream; both Parameters
+   together model a single SI constant and are part of the TCB. *)
 Parameter NANOS_PER_SEC : nat.
 Parameter NANOS_PER_SEC_pos : NANOS_PER_SEC > 0.
 
