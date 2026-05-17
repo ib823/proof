@@ -61,6 +61,55 @@ count_admitted_active() {
     echo "$total"
 }
 
+# REQ-21 durability: active-scope Coq Abort count. Must stay 0 forever.
+count_abort_active() {
+    local total=0
+    while IFS= read -r f; do
+        local count=$(grep -cP '^\s*Abort\.' "$f" 2>/dev/null || true)
+        if [ -n "$count" ] && [ "$count" -gt 0 ] 2>/dev/null; then
+            total=$((total + count))
+        fi
+    done < <(find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f ! -path "*/_archive_deprecated/*" ! -path "*/_incomplete/*" 2>/dev/null)
+    echo "$total"
+}
+
+# REQ-23 durability: active-scope Coq Parameter declarations.
+# Every Parameter is an axiomatic primitive (TCB). The count is pinned in
+# RIINA_MASTER_PLAN.md Part 2; any drift requires (a) updating the doctrine
+# header in the owning .v file, (b) updating the master plan count, and
+# (c) commit message [TRACK_A] referencing the new primitive.
+# Subshell disables pipefail locally so grep returning 0 matches (exit 1)
+# doesn't abort the parent under `set -o pipefail`.
+count_parameter_active() {
+    (
+        set +o pipefail
+        grep -rP '^\s*Parameter\s' "$REPO_ROOT/02_FORMAL/coq" --include='*.v' 2>/dev/null \
+            | grep -v _archive_deprecated \
+            | grep -v _incomplete \
+            | wc -l
+    )
+}
+
+# REQ-22 durability: active-lane Lean axiom count. Must stay 0 forever.
+count_lean_axiom_active() {
+    (
+        set +o pipefail
+        grep -rP '^\s*axiom\s' "$REPO_ROOT/02_FORMAL/lean/RIINA" --include='*.lean' 2>/dev/null \
+            | grep -v '/_wip/' \
+            | wc -l
+    )
+}
+
+# REQ-22 durability: active-lane Lean sorry count. Must stay 0 forever.
+count_lean_sorry_active() {
+    (
+        set +o pipefail
+        grep -rP '\bsorry\b' "$REPO_ROOT/02_FORMAL/lean/RIINA" --include='*.lean' 2>/dev/null \
+            | grep -v '/_wip/' \
+            | wc -l
+    )
+}
+
 count_coq_files() {
     find "$REPO_ROOT/02_FORMAL/coq" -name "*.v" -type f 2>/dev/null | wc -l
 }
@@ -310,6 +359,10 @@ ACTUAL_TLAPLUS=$(count_tla_theorems)
 ACTUAL_TLAPLUS_SMOKE=$(count_tla_smoke_theorems)
 ACTUAL_ALLOY=$(count_alloy_assertions)
 ACTUAL_ALLOY_SMOKE=$(count_alloy_smoke_assertions)
+ACTUAL_ABORT=$(count_abort_active)
+ACTUAL_PARAMETER=$(count_parameter_active)
+ACTUAL_LEAN_AXIOM=$(count_lean_axiom_active)
+ACTUAL_LEAN_SORRY=$(count_lean_sorry_active)
 # Note: ACTUAL_TOTAL for audit checks only covers Coq+Lean+Isabelle (manually verified provers).
 # The full 10-prover total is in metrics.json and includes generated stubs.
 ACTUAL_TOTAL=$((ACTUAL_QED + ACTUAL_LEAN + ACTUAL_ISABELLE))
@@ -330,6 +383,10 @@ if [ "$QUICK_MODE" != "--quick" ]; then
     echo "  F*:            $ACTUAL_FSTAR raw lemmas, $ACTUAL_FSTAR_SMOKE smoke lemmas"
     echo "  TLA+:          $ACTUAL_TLAPLUS raw theorems, $ACTUAL_TLAPLUS_SMOKE smoke theorems"
     echo "  Alloy:         $ACTUAL_ALLOY raw assertions, $ACTUAL_ALLOY_SMOKE smoke assertions"
+    echo "  Coq Abort:     $ACTUAL_ABORT (active; must be 0)"
+    echo "  Coq Parameter: $ACTUAL_PARAMETER (active; TCB; pinned in master plan Part 2)"
+    echo "  Lean axiom:    $ACTUAL_LEAN_AXIOM (active lane; must be 0)"
+    echo "  Lean sorry:    $ACTUAL_LEAN_SORRY (active lane; must be 0)"
     echo "  Total proofs:  $ACTUAL_TOTAL"
     echo "  Examples:      $ACTUAL_EXAMPLES"
     echo "  Session:       $ACTUAL_SESSION"
@@ -756,6 +813,116 @@ if [ -f "$METRICS_FILE" ]; then
         fi
     done
 fi
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
+# ── Check Gate A invariants (REQ-21, REQ-22, REQ-23) ─────────────────
+# These are the always-on Gate A guarantees:
+#   - 0 active-scope Coq Abort (REQ-21)
+#   - 0 active-lane Lean axiom and sorry (REQ-22)
+#   - Active-scope Coq Parameter count pinned to master plan Part 2 (REQ-23)
+# Any drift is a hard discrepancy that blocks commit.
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking Gate A invariants...${NC}"
+fi
+
+# REQ-21: Coq Abort must remain 0 in active scope
+if [ "$ACTUAL_ABORT" -ne 0 ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${RED}[ERROR]${NC} Coq Abort count in active scope: $ACTUAL_ABORT (must be 0; REQ-21)"
+        echo "         Locate with: grep -rnP '^\\s*Abort\\.' 02_FORMAL/coq --include='*.v' | grep -v _archive_deprecated | grep -v _incomplete"
+    fi
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Coq Abort (active scope): 0 (REQ-21)"
+    fi
+fi
+
+# REQ-22: Lean axiom must remain 0 in active lane
+if [ "$ACTUAL_LEAN_AXIOM" -ne 0 ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${RED}[ERROR]${NC} Lean axiom count in active lane: $ACTUAL_LEAN_AXIOM (must be 0; REQ-22)"
+    fi
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Lean axiom (active lane): 0 (REQ-22)"
+    fi
+fi
+
+# REQ-22: Lean sorry must remain 0 in active lane
+if [ "$ACTUAL_LEAN_SORRY" -ne 0 ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${RED}[ERROR]${NC} Lean sorry count in active lane: $ACTUAL_LEAN_SORRY (must be 0; REQ-22)"
+    fi
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Lean sorry (active lane): 0 (REQ-22)"
+    fi
+fi
+
+# REQ-23: Coq Parameter count pinned to master plan Part 2
+# The master plan row reads: "| Parameter (active build) | N | ..."
+DOC_PARAMETER="0"
+if [ -f "$REPO_ROOT/RIINA_MASTER_PLAN.md" ]; then
+    DOC_PARAMETER=$(grep -oP '\| Parameter \(active build\) \| \K\d+' "$REPO_ROOT/RIINA_MASTER_PLAN.md" | head -1 || echo "0")
+fi
+if [ "$DOC_PARAMETER" = "0" ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${RED}[ERROR]${NC} master plan Part 2 missing 'Parameter (active build)' row (REQ-23)"
+    fi
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+elif [ "$ACTUAL_PARAMETER" != "$DOC_PARAMETER" ]; then
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${RED}[ERROR]${NC} Coq Parameter drift: actual=$ACTUAL_PARAMETER, documented=$DOC_PARAMETER (REQ-23)"
+        echo "         Every Parameter is TCB. If adding/removing one, also update master plan Part 2"
+        echo "         AND the doctrine header in the owning .v file."
+    fi
+    DISCREPANCIES=$((DISCREPANCIES + 1))
+else
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} Coq Parameter (active build): $ACTUAL_PARAMETER (matches master plan; REQ-23)"
+    fi
+fi
+
+if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
+
+# ── Check COPILOT.md / .cursorrules / .clinerules (REQ-26) ───────────
+# These are LLM-orientation files. They should not contain proof metrics
+# (those live in metrics.json), but historical numbers and stale prover
+# references must be caught if anyone copies them in.
+
+if [ "$QUICK_MODE" != "--quick" ]; then
+    echo -e "${CYAN}Checking LLM orientation docs (REQ-26)...${NC}"
+fi
+
+for orient_file in COPILOT.md .cursorrules .clinerules; do
+    full="$REPO_ROOT/$orient_file"
+    if [ ! -f "$full" ]; then
+        if [ "$QUICK_MODE" != "--quick" ]; then
+            echo -e "${YELLOW}[WARN]${NC} $orient_file missing (REQ-26 expects it)"
+        fi
+        WARNINGS=$((WARNINGS + 1))
+        continue
+    fi
+    # Stale Qed numbers
+    check_no_stale "$full" "6,193|6193" "Stale Qed count (6,193)" || true
+    check_no_stale "$full" "4,044|4044" "Stale Qed count (4,044)" || true
+    check_no_stale "$full" "4,885|4885" "Stale Qed count (4,885)" || true
+    # Stale Lean number
+    check_no_stale "$full" "8,923|8923" "Stale Lean theorem count (8,923)" || true
+    # Stale prover-version refs
+    check_no_stale "$full" "Coq 8\\.20" "Stale prover ref (should be Rocq 9.1.1)" || true
+    # Unsupported blanket claims
+    check_no_stale "$full" "If it compiles, it'?s secure|If your program compiles, it is secure" "Unsupported blanket compiler-security claim" || true
+    check_no_stale "$full" "10 independent provers" "Misleading active verification breadth claim" || true
+    if [ "$QUICK_MODE" != "--quick" ]; then
+        echo -e "${GREEN}[OK]${NC} $orient_file: present, no stale patterns"
+    fi
+done
+
 if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 
 # ── Check hooks are installed ─────────────────────────────────────────
