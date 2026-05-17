@@ -11,10 +11,10 @@ Security properties are mathematically proven at compile time.
 - Repository: https://github.com/ib823/riina
 - License: Proprietary
 
-## Verified State (2026-05-16, command-derived)
+## Verified State (2026-05-17, command-derived)
 
 - Coq: 12,385 Qed (active build, 0 Admitted, 0 Axioms, 4 Abort), 309 active .v files
-- Lean 4: 12,576 theorems (325 files, 0 sorry, **15 axiom** port-fallbacks pending elimination), claim: partial mechanization
+- Lean 4: 12,576 theorems (325 files, 0 sorry, 0 axiom — port-fallbacks eliminated 2026-05-17 / commit 41b85893), claim: active-lane audit-grep mechanized (per-file elaboration gaps remain outside default `lake build RIINA` target)
 - Isabelle: ~12,931 lemmas (368 .thy files repo-wide; 1 smoke theory `RIINA_CORE` compiles, 0 sorry), claim: smoke-mechanized
 - TLA+: 12,282 raw theorems (317 .tla files; 1 smoke spec TLC-checked with 5 theorems), claim: smoke-compiled
 - SMT/Z3: 12,405 assertions (317 .smt2 files; 1 smoke verification with 11,843 Z3-verified assertions), claim: smoke-mechanized

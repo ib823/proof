@@ -9,23 +9,23 @@
 3. Run `git status` — must be on `main` branch (or your assigned feature branch), check for dirty files
 4. Re-verify metrics by running the commands in `RIINA_MASTER_PLAN.md` Part 0 — do NOT trust the table below blindly
 
-## Current State (2026-05-16, verified)
+## Current State (2026-05-17, verified)
 
 | Metric | Value |
 |--------|-------|
 | Version | 0.3.0 (tagged) |
 | Coq Qed | 12,385 (0 Admitted, 0 axioms, 4 Abort, 309 active files) |
-| Lean theorems | 12,576 (325 files, 0 sorry, **15 axiom** — port-fallback escape hatches) |
+| Lean theorems | 12,576 (325 files, 0 sorry, 0 axiom — port-fallbacks eliminated 2026-05-17, commit 41b85893) |
 | Isabelle lemmas | ~12,931 (368 .thy files, 1 smoke theory `RIINA_CORE` compiles, 0 sorry) |
 | F* / TLA+ / Alloy / SMT | 1 active smoke artifact each; rest are generated corpora (`metrics.json` is authoritative) |
 | Total proofs | See `website/public/metrics.json` (single source of truth) |
 | Rust tests | 2,479 proto + 248 tooling = 2,727 (19 proto crates, 5 tooling crates post 2026-05-16 stub removal) |
 | Examples | 155 .rii files |
-| Claims | Coq mechanized; Lean partial (15 axioms outstanding); Isabelle/F*/TLA+/Alloy/SMT smoke-mechanized; Verus/Kani/TV generated |
+| Claims | Coq mechanized; Lean active-lane audit-grep mechanized (per-file elaboration gaps still exist outside default `lake build RIINA` target); Isabelle/F*/TLA+/Alloy/SMT smoke-mechanized; Verus/Kani/TV generated |
 
 **Active gaps a new session must NOT forget:**
-- 15 `axiom` declarations in `02_FORMAL/lean/RIINA/Domains/*.lean` and `Industries/IndustryFinancial.lean` (all flagged `-- fallback: unresolved match translation`) — tracked as REQ-22
 - 4 `Abort.` statements in active Coq scope: `domains/X001_ConcurrencyModel.v:703`, `V001_TerminationGuarantees.v:755`, `W001_VerifiedMemory.v:680`, `domains/mobile_os/LocationServices.v:228` — tracked as REQ-21
+- Lean per-file elaboration gaps: `lake env lean RIINA/Domains/<X>.lean` produces 60+ elaboration-time sorries in several domain files (e.g., `ActorCalculus.lean`), masked by the default `lake build RIINA` target going through the near-empty `Domains/All` shim. Not surfaced by the audit-grep "0 sorry / 0 axiom" — needs separate cleanup.
 - See `PROOF_STATUS.md` for the live ledger
 
 ## Next-Session Pickup (read this BEFORE picking a task)
@@ -37,7 +37,7 @@
 2. From `RIINA_MASTER_PLAN.md` §Part 3 Requirements Registry, pick the highest-priority
    open TODO REQ assigned to the active gate. Today's Gate A open REQs (P0 first):
    - **REQ-21** (P0): Eliminate 4 active Coq `Abort.` — requires Rocq toolchain
-   - **REQ-22** (P0): Eliminate 15 Lean `axiom` port-fallbacks — requires Lean toolchain
+   - ~~**REQ-22** (P0): Eliminate 15 Lean `axiom` port-fallbacks~~ — **DONE 2026-05-17 (commit 41b85893)**
    - **REQ-23** (P0): Audit 32 active Coq `Parameter` declarations
    - **REQ-24** (P0): Install pre-commit + pre-push hooks
    - **REQ-25** (P1): Decide fate of 5th stub `05_TOOLING/crates/riinac`

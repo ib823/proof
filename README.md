@@ -222,7 +222,7 @@ This is not a whitepaper. This is working software.
 | Prover | Verified state | Notes |
 |--------|----------------|-------|
 | **Rocq 9.1.1** (Primary) | 12,385 Qed, 0 Admitted, 0 active axioms, 4 Abort (incomplete proof attempts in 4 domain files) | Primary formal lane; active build passes |
-| **Lean 4** (Secondary) | 12,576 theorem/lemma declarations | 325 files; 0 `sorry`, **15 `axiom`** (port-fallback escape hatches pending elimination); claim level: partial mechanization (build passes) |
+| **Lean 4** (Secondary) | 12,576 theorem/lemma declarations | 325 files; 0 `sorry`, 0 `axiom` (port-fallbacks eliminated 2026-05-17, commit 41b85893); claim level: active-lane audit-grep mechanized (per-file elaboration gaps tracked separately) |
 | **Isabelle/HOL** (Tertiary) | ~12,931 lemmas (repo-grep) | 368 .thy files; 1 smoke session `RIINA_CORE` compiles; rest are generated corpora |
 | **F\*** (Seed lane) | 22 compiled lemmas | 315 .fst files; 1 smoke module compiled; rest generated |
 | **TLA+** (Protocol seed lane) | 12,282 raw theorems | 317 .tla files; 1 smoke spec TLC-checked (5 theorems); rest generated |
@@ -318,7 +318,7 @@ riina/
 │   ├── compliance/         DO-178C, ISO-26262, Common Criteria models
 │   └── Industries/         Regulatory/domain formal models
 │
-├── 02_FORMAL/lean/          Lean 4 active lane (325 files, 12,576 declarations, 0 sorry, 15 axiom)
+├── 02_FORMAL/lean/          Lean 4 active lane (325 files, 12,576 declarations, 0 sorry, 0 axiom)
 │   └── RIINA/               Syntax, Semantics, Typing, Progress, Preservation,
 │                             TypeSafety, EffectAlgebra, EffectSystem, EffectGate,
 │                             NonInterference
@@ -398,7 +398,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 |------|--------|
 | Core compiler | Lexer/parser/typechecker/codegen/interpreter build; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
-| Formal verification | Coq primary lane healthy; Lean partial (15 axioms outstanding); Isabelle/F*/TLA+/Alloy/SMT have 1 active smoke artifact each (rest generated corpora) |
+| Formal verification | Coq primary lane healthy; Lean active-lane audit-grep mechanized (0 axioms / 0 sorry; per-file elaboration gaps tracked separately); Isabelle/F*/TLA+/Alloy/SMT have 1 active smoke artifact each (rest generated corpora) |
 | WASM/mobile backends | Present as scaffolding, not full production backends |
 | Extended provers | F* (1 smoke module, 22 lemmas), TLA+ (1 smoke spec, 5 theorems), Alloy (1 smoke model, 6 assertions), SMT (1 smoke verification, 11,843 assertions) — remainder generated corpora |
 

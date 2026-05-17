@@ -179,7 +179,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 309 active files, 12,385 Qed, 0 Admitted, 4 Abort (active proof gaps) | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 325 files, 12,576 theorems, `lake build` passes, 0 sorry, **15 axiom** (port fallbacks pending elimination) | Mechanized (partial — 15 axioms outstanding) |
+| **Lean proofs** | `02_FORMAL/lean/` | 325 files, 12,576 theorems, `lake build` passes, 0 sorry, 0 axiom | Mechanized |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep), 1 smoke theory (`RIINA_CORE`) compiles, 0 sorry | Smoke-mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with 11,843 Z3-verified assertions (rest generated corpora) | Smoke-mechanized |
 | **F\* proofs** | `02_FORMAL/fstar/` | 315 files, 1 smoke module compiled (22 lemmas), rest generated corpora | Smoke-compiled |
@@ -252,22 +252,34 @@ but the compiler does not yet enforce them.
 |--------|-------|-------|
 | `.lean` files in `02_FORMAL/lean/RIINA` | 325 | Strict mechanization gate scope (excludes `_wip`) |
 | Theorem/lemma declarations | 12,576 | `grep -cP "^\s*(theorem\|lemma)\s"` across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| `lake build RIINA` | PASSES | Full Lean lane builds successfully (last verified upstream; container lacks elan) |
+| `lake build RIINA` | PASSES | Default target (`RIINA.lean` → `Domains/All` shim) builds; per-file `lean RIINA/Domains/<X>.lean` still emits elaboration-time sorries in many domain files |
 | `sorry` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` |
-| `axiom` count (full lane) | 15 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` — all flagged `-- fallback: unresolved match translation` from the Coq→Lean port (see assessment below) |
-| Mechanized readiness | PARTIAL | 0 `sorry`; 15 `axiom` declarations remain pending axiom-elimination |
+| `axiom` count (full lane) | 0 | Strict mechanization gate count across `02_FORMAL/lean/RIINA` excluding `_wip` — 15 generator port-fallbacks eliminated 2026-05-17 (commit 41b85893) |
+| Mechanized readiness | MET (audit-grep scope) | 0 `sorry`; 0 `axiom` at the source-token level |
 | Toolchain | leanprover/lean4:v4.16.0 | |
 
-**Honest assessment:** The full Lean namespace builds with **0 `sorry`**, but the strict active
-lane still contains **15 `axiom`** declarations across 11 files (`Domains/NetworkDefense.lean`,
-`FullstackSecurity.lean`, `SessionTypes.lean`, `EnterpriseERP.lean`, `ActorCalculus.lean`,
-`TimingSecurity.lean`, `ChoreographyTypes.lean`, `X001_ConcurrencyModel.lean`,
-`SIGMA001_VerifiedStorage.lean`, `MobileOS/ConcurrencyFramework.lean`,
-`Industries/IndustryFinancial.lean`). Each is a code-gen escape hatch from the Coq→Lean
-port flagged `-- fallback: unresolved match translation`; the lane is **not yet
-axiom-free**. `Domains/AlgebraicEffects.lean` no longer relies on axioms for the typing
-relations; it uses a step-indexed `Nat → Prop` encoding that avoids Lean 4's
-strict-positivity restriction while preserving the active-lane theorem surface.
+**Honest assessment:** The full Lean namespace builds and the strict active lane is
+**audit-grep-mechanized**: **0 `sorry`** and **0 `axiom`** across `02_FORMAL/lean/RIINA`
+excluding `_wip`. The 15 generator port-fallback axioms previously listed across
+`NetworkDefense`, `FullstackSecurity`, `SessionTypes`, `ActorCalculus`,
+`ChoreographyTypes`, `EnterpriseERP`, `TimingSecurity`, `X001_ConcurrencyModel`,
+`SIGMA001_VerifiedStorage`, `MobileOS/ConcurrencyFramework`, and
+`Industries/IndustryFinancial` were replaced with concrete `def`/`partial def`
+ports of the corresponding Coq sources (commit 41b85893, 2026-05-17). Recursive
+`dual`/`project` cases use `partial def` plus an `Inhabited` instance to avoid
+Lean 4 well-founded-recursion limitations through `List.map` while preserving
+Coq semantics. `Domains/AlgebraicEffects.lean` similarly uses a step-indexed
+`Nat → Prop` encoding that avoids Lean 4's strict-positivity restriction.
+
+**Caveat (not captured by grep):** Per-file `lake env lean RIINA/Domains/<X>.lean`
+runs reveal pre-existing elaboration-time sorries (e.g., 60+ in `ActorCalculus.lean`)
+caused by missing/mistyped supporting definitions in the transpiler output. These
+are NOT literal `sorry` tokens (grep returns 0), but Lean inserts them when proofs
+fail to elaborate. The default `lake build RIINA` target routes through the
+near-empty `Domains/All` shim and therefore does NOT exercise the individual
+domain files. The audit-grep "0 sorry / 0 axiom" status is therefore honest about
+*source tokens* but does not reflect true individual-file proof state. Tracked
+under the active gate marker (Part 11) for follow-up.
 
 ### Isabelle/HOL (Tertiary Prover)
 
@@ -368,7 +380,7 @@ research source, and detailed description.
 | REQ-19 | Blockchain primitive library in stdlib | P1 | TODO | 6 |
 | REQ-20 | Syariah-compliant financial type library | P2 | TODO | 6 |
 | REQ-21 | Eliminate 4 active Coq `Abort.` (X001/V001/W001/mobile_os) | P0 | TODO | Gate A |
-| REQ-22 | Eliminate 15 Lean `axiom` port-fallbacks | P0 | TODO | Gate A |
+| REQ-22 | Eliminate 15 Lean `axiom` port-fallbacks | P0 | DONE | Gate A |
 | REQ-23 | Audit/justify/eliminate 32 active Coq `Parameter` declarations | P0 | TODO | Gate A |
 | REQ-24 | Install pre-commit + pre-push hooks; CI-gate `audit-docs.sh` | P0 | TODO | Gate A |
 | REQ-25 | Decide fate of 5th stub `05_TOOLING/crates/riinac` (18-LOC print stub) | P1 | TODO | Gate A |
@@ -1030,13 +1042,12 @@ X = primary role, o = supporting role
 
 | Metric | Value |
 |--------|-------|
-| Files | 272 |
-| `.lean` files in `02_FORMAL/lean/RIINA` | 155 |
+| `.lean` files in `02_FORMAL/lean/RIINA` | 325 (excluding `_wip`) |
 | Theorem/lemma declarations | 12,576 |
 | `sorry` (full lane) | 0 |
-| Axioms | 0 |
-| `lake build RIINA` | PASSES |
-| Mechanized readiness | MET |
+| Axioms (full lane) | 0 (restored 2026-05-17 via commit 41b85893) |
+| `lake build RIINA` | PASSES (default target via `Domains/All` shim) |
+| Mechanized readiness | MET (audit-grep scope; per-file elaboration gaps tracked separately) |
 
 **Closure criteria:**
 1. Port all core type system theorems from Coq (Progress ✓, Preservation ✓, Safety ✓)
@@ -2024,7 +2035,7 @@ Updated when all of a gate's exit criteria pass verification. Update method:
 
 | Pillar | Current Level | Industry Min (L3) |
 |---|---|---|
-| Proof integrity | L2 (Coq core real; Lean has 15 axioms; 5 provers smoke-only; 3 generated) | All active scopes 0 admit/0 axiom/0 abort; ≥1 independently re-proven theorem |
+| Proof integrity | L2 (Coq core real; Lean active-lane 0 axioms at audit-grep scope but per-file elaboration gaps remain; 5 provers smoke-only; 3 generated) | All active scopes 0 admit/0 axiom/0 abort; ≥1 independently re-proven theorem |
 | Compiler maturity | L2 (full pipeline; partial enforcement vs Coq) | Every Coq-modeled security property has matching compiler check + negative tests |
 | Stdlib audit | L1 (no external audit) | External crypto audit clean; effect-typed I/O; numeric tower |
 | Operational maturity | L1 (hooks not always installed; no CI) | Hermetic builds + SBOM + signed releases + CVE process |
@@ -2037,7 +2048,7 @@ Updated when all of a gate's exit criteria pass verification. Update method:
 | Task | Verification command |
 |---|---|
 | Close 4 active Coq `Abort.` → `Qed.` OR move to `_incomplete/` with named issue | `find 02_FORMAL/coq -name '*.v' -type f ! -path '*/_archive_deprecated/*' ! -path '*/_incomplete/*' -exec grep -cP '^\s*Abort\.' {} \; \| awk '{s+=$1}END{print s}'` returns `0` |
-| Eliminate 15 Lean `axiom` port-fallbacks (NetworkDefense, FullstackSecurity, SessionTypes, EnterpriseERP, ActorCalculus, TimingSecurity, ChoreographyTypes, X001_ConcurrencyModel, SIGMA001_VerifiedStorage, MobileOS/ConcurrencyFramework, Industries/IndustryFinancial) | `grep -rP '^\s*axiom\s' 02_FORMAL/lean/RIINA --include='*.lean' \| grep -v '/_wip/' \| wc -l` returns `0` |
+| ~~Eliminate 15 Lean `axiom` port-fallbacks (NetworkDefense, FullstackSecurity, SessionTypes, EnterpriseERP, ActorCalculus, TimingSecurity, ChoreographyTypes, X001_ConcurrencyModel, SIGMA001_VerifiedStorage, MobileOS/ConcurrencyFramework, Industries/IndustryFinancial)~~ **DONE 2026-05-17 (commit 41b85893)** | `grep -rP '^\s*axiom\s' 02_FORMAL/lean/RIINA --include='*.lean' \| grep -v '/_wip/' \| wc -l` returns `0` ✓ |
 | Audit & justify or eliminate 32 active Coq `Parameter` declarations | `grep -rP '^\s*Parameter\s' 02_FORMAL/coq --include='*.v' \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` ≤ documented count with rationale per remaining entry |
 | Install pre-commit + pre-push hooks; gate `audit-docs.sh` exit 0 | `bash scripts/audit-docs.sh` reports no "pre-commit hook NOT installed" ERROR |
 | Decide & act on 5th stub `05_TOOLING/crates/riinac` | Either deleted from workspace, or its `src/main.rs` no longer prints "Not yet implemented" |
@@ -2187,7 +2198,7 @@ A new developer cannot use RIINA today without reading source.
 1. **Paranoid verification protocol stays on** — every commit re-runs `audit-docs.sh`; no
    number ever copied between docs by hand.
 2. **No-axiom invariant** is a CI gate, not a manual check. Active-scope Coq Axiom count
-   must stay 0. Lean axiom count must trend monotonically toward 0 from current 15.
+   must stay 0. Lean axiom count must stay 0 (restored 2026-05-17 via commit 41b85893).
 3. **Generated-corpus boundary** — every file in `02_FORMAL/{fstar,tlaplus,alloy,smt,verus,kani,tv}/`
    marked `GENERATED-CORPUS` or `ACTIVE-MECHANIZED`. `metrics.json` is the public source of truth.
 4. **Drift-detection on every orientation doc** — extend `audit-docs.sh` continuously to cover

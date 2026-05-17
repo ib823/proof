@@ -7,6 +7,30 @@ All notable changes to RIINA™ will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — 2026-05-17 — Lean active-lane axiom restoration
+
+### Fixed
+- Lean 4 active lane: replaced 15 generator-fallback `axiom` declarations
+  ("fallback: unresolved match translation") in `02_FORMAL/lean/RIINA/Domains/` and
+  `Industries/IndustryFinancial.lean` with concrete `def`/`partial def` ports of the
+  matching Coq sources. Affected: `netperm_eq`, `action_to_perm`, `action_target`
+  (NetworkDefense), `valid_transition` (FullstackSecurity), `dual` (SessionTypes +
+  X001_ConcurrencyModel), `ast_dual` (ActorCalculus), `interaction_dual`,
+  `can_communicate` (ChoreographyTypes), `assignment_active` (EnterpriseERP),
+  `time_010_check_timeout` (TimingSecurity), `project` (X001_ConcurrencyModel),
+  `exec_txn` (SIGMA001_VerifiedStorage), `all_typed` (MobileOS/ConcurrencyFramework),
+  `tx_final` (IndustryFinancial). Active-lane axiom grep returns 0; `lake build RIINA`
+  still passes (commit `41b85893`).
+
+### Tracked but not changed
+- Per-file `lake env lean RIINA/Domains/<X>.lean` runs reveal pre-existing
+  elaboration-time sorries (60+ in `ActorCalculus.lean` alone) caused by
+  upstream transpiler-output mistypes. These are NOT literal `sorry` tokens
+  (grep stays at 0), but Lean inserts them when proofs fail to elaborate.
+  Default `lake build RIINA` target routes through the near-empty `Domains/All`
+  shim and does not exercise individual domain files. Recorded in
+  RIINA_MASTER_PLAN.md Part 2 Lean caveat for follow-up.
+
 ## [Unreleased] — 2026-05-16 — Documentation drift correction
 
 ### Fixed
