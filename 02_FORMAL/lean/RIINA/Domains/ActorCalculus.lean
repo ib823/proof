@@ -494,7 +494,17 @@ def can_receive (a : ActorState) : Bool :=
   is_running a && negb (mailbox_full a)
 
 /-- ast_dual (matches Coq: Definition ast_dual) -/
-axiom ast_dual (s : ActorSessionType) : ActorSessionType -- fallback: unresolved match translation
+instance : Inhabited ActorSessionType := ⟨ActorSessionType.ASTEnd⟩
+
+partial def ast_dual (s : ActorSessionType) : ActorSessionType :=
+  match s with
+  | ActorSessionType.ASTSend t s' => ActorSessionType.ASTRecv t (ast_dual s')
+  | ActorSessionType.ASTRecv t s' => ActorSessionType.ASTSend t (ast_dual s')
+  | ActorSessionType.ASTSelect branches =>
+      ActorSessionType.ASTOffer (branches.map (fun p => (p.1, ast_dual p.2)))
+  | ActorSessionType.ASTOffer branches =>
+      ActorSessionType.ASTSelect (branches.map (fun p => (p.1, ast_dual p.2)))
+  | ActorSessionType.ASTEnd => ActorSessionType.ASTEnd
 
 /-- achan_fresh (matches Coq: Definition achan_fresh) -/
 def achan_fresh (ch : ActorChannel) : Bool :=

@@ -182,7 +182,11 @@ def pci_compliant (controls : PCI_DSS_Controls) : Bool :=
   security_policy controls
 
 /-- tx_final (matches Coq: Definition tx_final) -/
-axiom tx_final (s : TxStatus) : Bool -- fallback: unresolved match translation
+def tx_final (s : TxStatus) : Bool :=
+  match s with
+  | TxStatus.TxPending => false
+  | TxStatus.TxCommitted => true
+  | TxStatus.TxRolledBack => true
 
 /-- balance_valid (matches Coq: Definition balance_valid) -/
 def balance_valid (balance : Nat) : Bool :=

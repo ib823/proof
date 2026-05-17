@@ -103,7 +103,11 @@ def sod_satisfied (assignments : List RoleAssignment) (conflicts : ConflictingRo
        role_id (assign_role a1) = r1 /\ role_id (assign_role a2) = r2)
 
 /-- assignment_active (matches Coq: Definition assignment_active) -/
-axiom assignment_active (a : RoleAssignment) (current_time : Nat) : Bool -- fallback: unresolved match translation
+def assignment_active (a : RoleAssignment) (current_time : Nat) : Bool :=
+  andb (Nat.leb (assign_start a) current_time)
+       (match assign_end a with
+        | Option.some end_time => Nat.ltb current_time end_time
+        | Option.none => true)
 
 /-- check_sod (matches Coq: Definition check_sod) -/
 def check_sod (user_roles : List Nat) (conflicts : ConflictingRoles) : Bool :=

@@ -155,7 +155,17 @@ def msg_type_eqb (m1 m2 : MsgType) : Bool :=
   | _, _ => false
 
 /-- dual (matches Coq: Definition dual) -/
-axiom dual (s : SessionType) : SessionType -- fallback: unresolved match translation
+instance : Inhabited SessionType := ⟨SessionType.SEnd⟩
+
+partial def dual (s : SessionType) : SessionType :=
+  match s with
+  | SessionType.SSend t s' => SessionType.SRecv t (dual s')
+  | SessionType.SRecv t s' => SessionType.SSend t (dual s')
+  | SessionType.SSelect branches =>
+      SessionType.SOffer (branches.map (fun p => (p.1, dual p.2)))
+  | SessionType.SOffer branches =>
+      SessionType.SSelect (branches.map (fun p => (p.1, dual p.2)))
+  | SessionType.SEnd => SessionType.SEnd
 
 /-- channel_used (matches Coq: Definition channel_used) -/
 def channel_used (ch : Channel) : Channel := mkChan (chan_id ch) (chan_type ch) false

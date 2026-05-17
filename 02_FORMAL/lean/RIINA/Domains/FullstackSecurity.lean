@@ -108,7 +108,15 @@ inductive AuthState where
   deriving DecidableEq, Repr
 
 /-- valid_transition (matches Coq: Definition valid_transition) -/
-axiom valid_transition (from to : AuthState) : Bool -- fallback: unresolved match translation
+def valid_transition (f t : AuthState) : Bool :=
+  match f, t with
+  | AuthState.Unauthenticated, AuthState.PendingMFA => true
+  | AuthState.PendingMFA, AuthState.Authenticated => true
+  | AuthState.PendingMFA, AuthState.Unauthenticated => true
+  | AuthState.Authenticated, AuthState.Unauthenticated => true
+  | AuthState.Unauthenticated, AuthState.Locked => true
+  | AuthState.Locked, AuthState.Unauthenticated => true
+  | _, _ => false
 
 /-- is_safe_content (matches Coq: Definition is_safe_content) -/
 def is_safe_content (ct : ContentType) : Bool :=

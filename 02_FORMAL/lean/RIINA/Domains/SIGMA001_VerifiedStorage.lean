@@ -289,7 +289,11 @@ def all_ops_applied (ops : List TxnOp) (db1 db2 : Database) : Prop :=
   apply_ops ops db1 = db2
 
 /-- exec_txn (matches Coq: Definition exec_txn) -/
-axiom exec_txn (txn : Transaction) (db : Database) : Database * TxnStatus -- fallback: unresolved match translation
+def exec_txn (txn : Transaction) (db : Database) : Database * TxnStatus :=
+  match txn_status txn with
+  | TxnStatus.TxnPending => (apply_ops (txn_ops txn) db, TxnStatus.TxnCommitted)
+  | TxnStatus.TxnCommitted => (db, TxnStatus.TxnCommitted)
+  | TxnStatus.TxnAborted => (db, TxnStatus.TxnAborted)
 
 /-- wal_contains (matches Coq: Definition wal_contains) -/
 def wal_contains (wal : WAL) (txn : Transaction) : Prop :=

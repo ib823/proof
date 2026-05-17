@@ -311,7 +311,13 @@ def roles_of (g : GlobalType) : List Role :=
   | GBranch p q _ g1 _ g2 => p :: q :: roles_of g1 ++ roles_of g2
 
 /-- interaction_dual (matches Coq: Definition interaction_dual) -/
-axiom interaction_dual (l1 l2 : LocalType) : Prop -- fallback: unresolved match translation
+def interaction_dual (l1 l2 : LocalType) : Prop :=
+  match l1, l2 with
+  | LocalType.LSend _ t1 _, LocalType.LRecv _ t2 _ => t1 = t2
+  | LocalType.LSelect _ la1 _ lb1 _, LocalType.LOffer _ la2 _ lb2 _ => la1 = la2 /\ lb1 = lb2
+  | LocalType.LEnd, LocalType.LEnd => True
+  | LocalType.LVar n1, LocalType.LVar n2 => n1 = n2
+  | _, _ => False
 
 /-- network_of (matches Coq: Definition network_of) -/
 def network_of (g : GlobalType) (roles : List Role) : Network :=
@@ -340,7 +346,12 @@ def net_lookup (net : Network) (r : Role) : Option LocalType :=
   | (r', l) :: rest => if Nat.eqb r r' then Some l else net_lookup rest r
 
 /-- can_communicate (matches Coq: Definition can_communicate) -/
-axiom can_communicate (l1 l2 : LocalType) : Prop -- fallback: unresolved match translation
+def can_communicate (l1 l2 : LocalType) : Prop :=
+  match l1, l2 with
+  | LocalType.LSend _ t _, LocalType.LRecv _ t' _ => t = t'
+  | LocalType.LSelect _ _ _ _ _, LocalType.LOffer _ _ _ _ _ => True
+  | LocalType.LEnd, LocalType.LEnd => True
+  | _, _ => False
 
 /-- example_request_response (matches Coq: Definition example_request_response) -/
 def example_request_response : GlobalType :=

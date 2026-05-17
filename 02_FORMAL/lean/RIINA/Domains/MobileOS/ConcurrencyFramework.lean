@@ -207,7 +207,12 @@ def Program : Type :=
   List TypedExpr
 
 /-- all_typed (matches Coq: Definition all_typed) -/
-axiom all_typed (p : Program) : Bool -- fallback: unresolved match translation
+def all_typed (p : Program) : Bool :=
+  forallb (fun e =>
+    match expr_conc_type e with
+    | ConcurrencyType.Sendable => true
+    | ConcurrencyType.NonSendable => true
+    | ConcurrencyType.Isolated => true) p
 
 /-- well_typed (matches Coq: Definition well_typed) -/
 def well_typed (p : Program) : Prop :=

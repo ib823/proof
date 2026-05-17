@@ -361,7 +361,13 @@ def endpoint_eq (e1 e2 : Endpoint) : Bool :=
   Nat.eqb (ep_ip e1) (ep_ip e2) && Nat.eqb (ep_port e1) (ep_port e2)
 
 /-- netperm_eq (matches Coq: Definition netperm_eq) -/
-axiom netperm_eq (p1 p2 : NetPerm) : Bool -- fallback: unresolved match translation
+def netperm_eq (p1 p2 : NetPerm) : Bool :=
+  match p1, p2 with
+  | NetPerm.NPSend, NetPerm.NPSend => true
+  | NetPerm.NPReceive, NetPerm.NPReceive => true
+  | NetPerm.NPListen, NetPerm.NPListen => true
+  | NetPerm.NPConnect, NetPerm.NPConnect => true
+  | _, _ => false
 
 /-- verify_signature (matches Coq: Definition verify_signature) -/
 def verify_signature (pubkey : List Nat) (cap : NetCapability) : Bool :=
@@ -394,10 +400,20 @@ def cap_revoked (cap : NetCapability) (revoked : RevocationList) : Bool :=
   existsb (fun sig => if list_eq_dec Nat.eq_dec sig (cap_signature cap) then true else false) revoked
 
 /-- action_to_perm (matches Coq: Definition action_to_perm) -/
-axiom action_to_perm (a : NetworkAction) : NetPerm -- fallback: unresolved match translation
+def action_to_perm (a : NetworkAction) : NetPerm :=
+  match a with
+  | NetworkAction.NASend _ => NetPerm.NPSend
+  | NetworkAction.NAReceive _ => NetPerm.NPReceive
+  | NetworkAction.NAConnect _ => NetPerm.NPConnect
+  | NetworkAction.NAListen _ => NetPerm.NPListen
 
 /-- action_target (matches Coq: Definition action_target) -/
-axiom action_target (a : NetworkAction) : Endpoint -- fallback: unresolved match translation
+def action_target (a : NetworkAction) : Endpoint :=
+  match a with
+  | NetworkAction.NASend e => e
+  | NetworkAction.NAReceive e => e
+  | NetworkAction.NAConnect e => e
+  | NetworkAction.NAListen e => e
 
 /-- amplification_factor (matches Coq: Definition amplification_factor) -/
 def amplification_factor (request_size response_size : Nat) : Nat :=

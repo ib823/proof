@@ -251,7 +251,17 @@ def no_write_during_read (as_ : AccessState) : Prop :=
     as_ t2 l <> Some Exclusive
 
 /-- dual (matches Coq: Definition dual) -/
-axiom dual (s : SessionType) : SessionType -- fallback: unresolved match translation
+instance : Inhabited SessionType := ⟨SessionType.SEnd⟩
+
+partial def dual (s : SessionType) : SessionType :=
+  match s with
+  | SessionType.SSend t s' => SessionType.SRecv t (dual s')
+  | SessionType.SRecv t s' => SessionType.SSend t (dual s')
+  | SessionType.SSelect branches =>
+      SessionType.SOffer (branches.map (fun p => (p.1, dual p.2)))
+  | SessionType.SOffer branches =>
+      SessionType.SSelect (branches.map (fun p => (p.1, dual p.2)))
+  | SessionType.SEnd => SessionType.SEnd
 
 /-- channel_used (matches Coq: Definition channel_used) -/
 def channel_used (ch : Channel) : Channel := mkChan (chan_id ch) (chan_type ch) false
@@ -347,7 +357,18 @@ def mutex_release (m : MutexState) (t : ThreadId) : Option MutexState :=
   | None => None
 
 /-- project (matches Coq: Definition project) -/
-axiom project (g : GlobalType) (r : Role) : SessionType -- fallback: unresolved match translation
+partial def project (g : GlobalType) (r : Role) : SessionType :=
+  match g with
+  | GlobalType.GMsg sender receiver mt g' =>
+      if Nat.eqb sender r then SessionType.SSend mt (project g' r)
+      else if Nat.eqb receiver r then SessionType.SRecv mt (project g' r)
+      else project g' r
+  | GlobalType.GChoice decider branches =>
+      if Nat.eqb decider r then
+        SessionType.SSelect (branches.map (fun p => (p.1, project p.2 r)))
+      else
+        SessionType.SOffer (branches.map (fun p => (p.1, project p.2 r)))
+  | GlobalType.GEnd => SessionType.SEnd
 
 /-- conforms (matches Coq: Definition conforms) -/
 def conforms (e : CExpr) (s : SessionType) : Prop :=

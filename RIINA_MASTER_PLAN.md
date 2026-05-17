@@ -219,7 +219,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 ## PART 2: CURRENT VERIFIED STATE
 
-**Last verified: 2026-05-16 by running commands listed in Part 0.**
+**Last verified: 2026-05-17 by running commands listed in Part 0.**
 
 ### Coq (Primary Prover)
 
