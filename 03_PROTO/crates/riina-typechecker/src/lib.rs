@@ -2765,6 +2765,14 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             new_ctx_mut.gamma.check_linearity_at_exit(x)?;
             Ok((t2, eff1.join(eff2)))
         }
+        // `pulang e` — early return. Its operand is type-checked (and its effect
+        // propagated), but the return expression itself never yields to its
+        // evaluation context, so it has type `Any` (unifies with any sibling
+        // branch/sequence type via `types_compatible`).
+        Expr::Return(e) => {
+            let (_t, eff) = type_check_full(ctx, e)?;
+            Ok((Ty::Any, eff))
+        }
         Expr::LetRec(x, ty_ann, e1, e2) => {
             let ctx_rec = ctx.extend_gamma(x.clone(), ty_ann.clone());
             // Grant the function's declared effect so Require inside body is authorized.
@@ -3554,6 +3562,11 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             let ctx_new = ctx.extend(x.clone(), t1);
             let (t2, eff2) = type_check(&ctx_new, e2)?;
             Ok((t2, eff1.join(eff2)))
+        }
+        // `pulang e` — early return; type `Any` (see type_check_full).
+        Expr::Return(e) => {
+            let (_t, eff) = type_check(ctx, e)?;
+            Ok((Ty::Any, eff))
         }
         Expr::LetRec(x, ty_ann, e1, e2) => {
             // Typecheck binding with name already in scope (for recursion)

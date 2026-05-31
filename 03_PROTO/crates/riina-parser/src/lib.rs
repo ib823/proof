@@ -805,8 +805,10 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwGuard) => self.parse_guard(),
             Some(TokenKind::KwReturn) => {
                 self.consume(TokenKind::KwReturn)?;
-                // pulang expr — return is identity (desugars to just the expression)
-                self.parse_pipe()
+                // `pulang e` — early return. Evaluating it unwinds to the nearest
+                // enclosing function-application boundary (see Expr::Return).
+                let e = self.parse_pipe()?;
+                Ok(Expr::Return(Box::new(e)))
             }
             Some(TokenKind::KwFor) => self.parse_for_in(),
             Some(TokenKind::KwWhile) => self.parse_while(),

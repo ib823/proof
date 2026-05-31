@@ -369,6 +369,11 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
             out.push_str("bukti ");
             fmt_expr_inline(out, e, cfg);
         }
+        Expr::Return(e) => {
+            indent(out, level, cfg);
+            out.push_str("pulang ");
+            fmt_expr_inline(out, e, cfg);
+        }
         Expr::Require(eff, e) => {
             indent(out, level, cfg);
             out.push_str("perlukan ");
@@ -614,6 +619,10 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
         }
         Expr::Prove(e) => {
             out.push_str("bukti ");
+            fmt_expr_inline(out, e, cfg);
+        }
+        Expr::Return(e) => {
+            out.push_str("pulang ");
             fmt_expr_inline(out, e, cfg);
         }
         Expr::Require(eff, e) => {

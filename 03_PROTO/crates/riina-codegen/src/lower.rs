@@ -270,6 +270,7 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
         | Expr::Deref(e)
         | Expr::Classify(e)
         | Expr::Prove(e)
+        | Expr::Return(e)
         | Expr::Ref(e, _) => free_vars(e),
         Expr::Perform(_, e) | Expr::Require(_, e) | Expr::Grant(_, e) => free_vars(e),
         Expr::Handle(e, x, h) => {
@@ -532,6 +533,8 @@ impl Lower {
                 Box::new(self.infer_type(body)),
                 self.infer_effect(body),
             ),
+            // `pulang e` has type Any (it never yields to its own context).
+            Expr::Return(_) => Ty::Any,
             Expr::Classify(e) => Ty::Secret(Box::new(self.infer_type(e))),
             Expr::Declassify(e, _) => {
                 if let Ty::Secret(t) = self.infer_type(e) {
@@ -646,6 +649,7 @@ impl Lower {
                 .infer_effect(e1)
                 .join(self.infer_effect(e2))
                 .join(Effect::Write),
+            Expr::Return(e) => self.infer_effect(e),
             Expr::Classify(e) | Expr::Declassify(e, _) | Expr::Prove(e) => self.infer_effect(e),
             Expr::Require(eff, e) => self.infer_effect(e).join(*eff),
             Expr::Grant(_, e) => self.infer_effect(e),
@@ -1491,6 +1495,11 @@ impl Lower {
             }
 
             // ═══════════════════════════════════════════════════════════════
+            // `pulang e` — early return. The IR backend has no early-return
+            // instruction, so the operand is lowered and its value flows through
+            // (best-effort; the reference interpreter implements true unwinding).
+            Expr::Return(inner) => self.lower_expr(inner),
+
             // SECURITY (Expr::Classify, Expr::Declassify, Expr::Prove)
             // ═══════════════════════════════════════════════════════════════
             Expr::Classify(inner) => {

@@ -888,6 +888,11 @@ pub enum Expr {
     If(Box<Expr>, Box<Expr>, Box<Expr>),
     /// let x = e1 in e2 (with optional linearity qualifier)
     Let(Ident, Option<Linearity>, Box<Expr>, Box<Expr>),
+    /// Early return: `pulang e`. Evaluating it unwinds to the nearest enclosing
+    /// function-application boundary, yielding `e` as that call's result. Its own
+    /// type is `Any` (it never returns to its evaluation context), so it unifies
+    /// with any branch/sequence type.
+    Return(Box<Expr>),
 
     // Effects
     /// perform ε e

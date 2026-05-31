@@ -193,6 +193,7 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
         | Expr::Classify(inner)
         | Expr::Prove(inner)
         | Expr::Perform(_, inner)
+        | Expr::Return(inner)
         | Expr::ContractDeploy(inner)
         | Expr::ZakatCalculate(inner) => ExprSummary {
             exec: summarize_expr(inner, env).exec,

@@ -40,6 +40,7 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
         | Expr::Deref(body)
         | Expr::Classify(body)
         | Expr::Prove(body)
+        | Expr::Return(body)
         | Expr::Require(_, body)
         | Expr::Grant(_, body)
         | Expr::Perform(_, body) => {

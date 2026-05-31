@@ -380,13 +380,22 @@ impl Interpreter {
     /// ```
     pub fn eval(&mut self, expr: &Expr) -> Result<Value> {
         let env = Env::new();
-        self.eval_with_env(&env, expr)
+        Self::catch_toplevel_return(self.eval_with_env(&env, expr))
     }
 
     /// Evaluate with built-in functions pre-registered.
     pub fn eval_with_builtins(&mut self, expr: &Expr) -> Result<Value> {
         let env = crate::builtins::register_builtins(&Env::new());
-        self.eval_with_env(&env, expr)
+        Self::catch_toplevel_return(self.eval_with_env(&env, expr))
+    }
+
+    /// Catch a `pulang` that unwinds all the way to the top level (i.e. a return
+    /// used outside any function), treating its value as the program's result.
+    fn catch_toplevel_return(r: Result<Value>) -> Result<Value> {
+        match r {
+            Err(Error::Return(v)) => Ok(*v),
+            other => other,
+        }
     }
 
     /// Evaluate with an environment
@@ -442,8 +451,15 @@ impl Interpreter {
                     Value::Closure(closure) => {
                         // Extend closure environment with argument
                         let new_env = closure.env.extend(closure.param.clone(), arg_val);
-                        // Evaluate body
-                        self.eval_with_env(&new_env, &closure.body)
+                        // Evaluate body, catching an early `pulang` that unwinds
+                        // to this function-application boundary. A curried call
+                        // `f(a)(b)` only raises at the final application (earlier
+                        // ones just build closures), so catching here scopes each
+                        // return to its own function call.
+                        match self.eval_with_env(&new_env, &closure.body) {
+                            Err(Error::Return(v)) => Ok(*v),
+                            other => other,
+                        }
                     }
                     Value::Builtin(ref name) if crate::builtins::is_higher_order_builtin(name) => {
                         self.eval_higher_order_builtin(name, arg_val)?
@@ -605,6 +621,15 @@ impl Interpreter {
                 self.eval_with_env(&new_env, body)
             }
 
+            // E_Return: `pulang e` — evaluate the operand, then unwind to the
+            // nearest enclosing function-application boundary by raising the
+            // non-error `Error::Return` control-flow signal. The closure-call
+            // rule (and the top-level `eval` entry) catch it.
+            Expr::Return(e) => {
+                let v = self.eval_with_env(env, e)?;
+                Err(Error::Return(Box::new(v)))
+            }
+
             // E_LetRec: Recursive let binding (fix-point)
             // For a recursive function, we wrap the body in an expression
             // that re-binds the function name on each call.
@@ -635,8 +660,15 @@ impl Interpreter {
                         self.eval_with_env(&new_env, body)
                     }
                     _ => {
-                        // Non-lambda: treat like regular Let
-                        let bind_val = self.eval_with_env(env, binding)?;
+                        // Non-lambda binding. This is how a *zero-argument*
+                        // function desugars (its body becomes the binding,
+                        // evaluated eagerly), so the binding evaluation is itself
+                        // a function-return boundary: catch an early `pulang`
+                        // here and treat its value as the binding's value.
+                        let bind_val = match self.eval_with_env(env, binding) {
+                            Err(Error::Return(v)) => *v,
+                            other => other?,
+                        };
                         let new_env = env.extend(name.clone(), bind_val);
                         self.eval_with_env(&new_env, body)
                     }
@@ -2673,5 +2705,57 @@ mod tests {
         let r1 = interp.eval(&expr).unwrap();
         let r2 = interp.eval(&expr).unwrap();
         assert_eq!(r1, r2);
+    }
+
+    /// Parse `src` and evaluate with builtins, returning the resulting Value.
+    fn run_src(src: &str) -> Value {
+        let mut p = riina_parser::Parser::new(src);
+        let expr = p.parse_program().unwrap().desugar();
+        let mut interp = Interpreter::new();
+        interp.eval_with_builtins(&expr).unwrap()
+    }
+
+    #[test]
+    fn test_early_return_guard_taken() {
+        // The guard fires: `pulang 100` returns from `f`.
+        let v = run_src(
+            "fungsi f(n: Nombor) -> Nombor kesan Bersih { kalau n < 1 { pulang 100; } pulang n; } f(0)",
+        );
+        assert_eq!(v, Value::Int(100));
+    }
+
+    #[test]
+    fn test_early_return_guard_skipped() {
+        // The guard is skipped: control falls through to `pulang n`.
+        let v = run_src(
+            "fungsi f(n: Nombor) -> Nombor kesan Bersih { kalau n < 1 { pulang 100; } pulang n; } f(3)",
+        );
+        assert_eq!(v, Value::Int(3));
+    }
+
+    #[test]
+    fn test_early_return_scopes_to_nearest_function() {
+        // A nested function's `pulang` returns from *that* function only; it must
+        // not unwind past the enclosing `g`.
+        let v = run_src(
+            "fungsi g() -> Nombor kesan Bersih { fungsi inner() -> Nombor { pulang 1; } biar x = inner(); 99 } g()",
+        );
+        assert_eq!(v, Value::Int(99));
+    }
+
+    #[test]
+    fn test_early_return_recursive_accumulator_terminates() {
+        // Tail-style recursion that relies on an early-return base case now
+        // terminates (previously diverged because `pulang` was identity).
+        let v = run_src(
+            "fungsi fib(n: Nombor) -> Nombor kesan Bersih { fungsi akum(k: Nombor, a: Nombor, b: Nombor) -> Nombor { kalau k == 0 { pulang a; } pulang akum(k - 1, b, a + b); } pulang akum(n, 0, 1); } fib(10)",
+        );
+        assert_eq!(v, Value::Int(55));
+    }
+
+    #[test]
+    fn test_top_level_return() {
+        // A `pulang` at top level (outside any function) yields its value.
+        assert_eq!(run_src("pulang 42"), Value::Int(42));
     }
 }

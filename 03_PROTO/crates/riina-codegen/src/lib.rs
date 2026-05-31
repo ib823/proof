@@ -127,6 +127,13 @@ pub enum Error {
     UnhandledEffect(riina_types::Effect),
     /// Capability not held
     MissingCapability(riina_types::Effect),
+    /// Non-error control-flow signal: an early `pulang` (return) is unwinding to
+    /// the nearest enclosing function-application boundary, carrying its value.
+    /// This is never surfaced to the user — it is always caught when a closure
+    /// body is evaluated (see the interpreter's `App` rule). A `pulang` at top
+    /// level (outside any function) is caught by the top-level `eval` entry.
+    /// Boxed to keep `Error` small (it is the only otherwise-large variant).
+    Return(Box<Value>),
 }
 
 impl std::fmt::Display for Error {
@@ -160,6 +167,7 @@ impl std::fmt::Display for Error {
             Self::InvalidReference(msg) => write!(f, "invalid reference: {msg}"),
             Self::UnhandledEffect(eff) => write!(f, "unhandled effect: {eff:?}"),
             Self::MissingCapability(eff) => write!(f, "missing capability for effect: {eff:?}"),
+            Self::Return(_) => write!(f, "internal: uncaught early-return signal"),
         }
     }
 }
