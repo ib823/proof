@@ -3926,3 +3926,16 @@ fn test_parse_for_tuple_pattern() {
         other => panic!("expected App(senarai_peta), got {other:?}"),
     }
 }
+
+#[test]
+fn test_parse_fn_type_multi_param_arrow() {
+    // `Fn(A, B) -> C` (multi-param arrow form).
+    let mut p = Parser::new("Fn(Nombor, Nombor) -> Nombor");
+    match p.parse_ty().unwrap() {
+        Ty::Fn(a, r, _) => {
+            assert_eq!(*a, Ty::Int);
+            assert_eq!(*r, Ty::Int);
+        }
+        other => panic!("expected Fn, got {other:?}"),
+    }
+}

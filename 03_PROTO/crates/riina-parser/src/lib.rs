@@ -2312,6 +2312,15 @@ impl<'a> Parser<'a> {
             TokenKind::KwSafe => "selamat",
             TokenKind::KwCapability => "keupayaan",
             TokenKind::KwSecret => "rahsia",
+            TokenKind::KwRow => "baris",
+            TokenKind::KwColumn => "lajur",
+            TokenKind::KwMerge => "gabung",
+            TokenKind::KwColor => "warna",
+            TokenKind::KwStyle => "gaya",
+            // NOTE: `pertama`/`kedua` (KwFst/KwSnd) and `terus` (KwContinue) are
+            // intentionally NOT soft keywords — they are projection operators /
+            // control-flow in value position, so allowing them as names would be
+            // genuinely ambiguous.
             _ => return None,
         })
     }
@@ -2453,39 +2462,47 @@ impl<'a> Parser<'a> {
                     // Unit as the argument type.
                     "Fn" | "fungsi" => {
                         self.consume(TokenKind::LParen)?;
+                        // Collect comma-separated types inside the parens. A
+                        // trailing element that is an effect keyword (legacy
+                        // 3-arg form `Fn(P, R, Eff)`) is captured separately.
+                        let mut tys = Vec::new();
+                        let mut legacy_eff: Option<Effect> = None;
+                        if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
+                            tys.push(self.parse_ty()?);
+                            while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                                self.consume(TokenKind::Comma)?;
+                                // In the legacy form, the third element is an
+                                // effect, not a type. Detect an effect-starting
+                                // token and parse it as such.
+                                if tys.len() >= 2 && self.peek_starts_effect() {
+                                    legacy_eff = Some(self.parse_effect()?);
+                                    break;
+                                }
+                                tys.push(self.parse_ty()?);
+                            }
+                        }
+                        self.consume(TokenKind::RParen)?;
 
-                        // Empty parameter list `Fn()` (arrow form only, e.g.
-                        // `Fn() -> T`); the argument type defaults to Unit.
-                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
-                            self.consume(TokenKind::RParen)?;
+                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Arrow)) {
+                            // Arrow form `Fn(P0, P1, ...) -> Ret [kesan Eff]`. The
+                            // AST `Ty::Fn` is single-argument, so the first param
+                            // type is the representative (the type layer is not yet
+                            // fully curried); `Fn()` uses Unit.
                             self.consume(TokenKind::Arrow)?;
                             let ret_ty = self.parse_ty()?;
                             let eff = self.parse_optional_fn_effect()?;
-                            return Ok(Ty::Fn(Box::new(Ty::Unit), Box::new(ret_ty), eff));
-                        }
-
-                        let param_ty = self.parse_ty()?;
-
-                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
-                            // Legacy comma form: Fn(ParamTy, RetTy [, Effect]).
-                            self.consume(TokenKind::Comma)?;
-                            let ret_ty = self.parse_ty()?;
-                            let eff =
-                                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
-                                    self.consume(TokenKind::Comma)?;
-                                    self.parse_effect()?
-                                } else {
-                                    Effect::Pure
-                                };
-                            self.consume(TokenKind::RParen)?;
+                            let param_ty = tys.into_iter().next().unwrap_or(Ty::Unit);
                             Ok(Ty::Fn(Box::new(param_ty), Box::new(ret_ty), eff))
                         } else {
-                            // Arrow form: Fn(ParamTy) -> RetTy [kesan Eff].
-                            self.consume(TokenKind::RParen)?;
-                            self.consume(TokenKind::Arrow)?;
-                            let ret_ty = self.parse_ty()?;
-                            let eff = self.parse_optional_fn_effect()?;
-                            Ok(Ty::Fn(Box::new(param_ty), Box::new(ret_ty), eff))
+                            // Legacy comma form `Fn(ParamTy, RetTy [, Effect])`.
+                            let mut it = tys.into_iter();
+                            let param_ty = it.next().unwrap_or(Ty::Unit);
+                            let ret_ty = it.next().unwrap_or(Ty::Unit);
+                            Ok(Ty::Fn(
+                                Box::new(param_ty),
+                                Box::new(ret_ty),
+                                legacy_eff.unwrap_or(Effect::Pure),
+                            ))
                         }
                     }
                     // Labeled<T, Level> / Berlabel<T, Level>
@@ -2644,6 +2661,24 @@ impl<'a> Parser<'a> {
         } else {
             self.parse_effect()
         }
+    }
+
+    /// True when the next token is an identifier naming an effect (used to
+    /// distinguish the legacy `Fn(P, R, Eff)` third element from a type).
+    fn peek_starts_effect(&mut self) -> bool {
+        matches!(
+            self.peek().map(|t| &t.kind),
+            Some(TokenKind::Identifier(s)) if matches!(
+                s.as_str(),
+                "Pure" | "Bersih" | "Mut" | "Ubah" | "Alloc" | "Peruntuk"
+                | "Read" | "Baca" | "Write" | "Tulis" | "FileSystem" | "SistemFail"
+                | "Network" | "Rangkaian" | "NetworkSecure" | "RangkaianSelamat"
+                | "Crypto" | "Kripto" | "ConstantTime" | "MasaTetap" | "Random"
+                | "Rawak" | "System" | "Sistem" | "Time" | "Masa" | "Process"
+                | "Proses" | "Panel" | "Zirah" | "Benteng" | "Sandi" | "Menara"
+                | "Gapura"
+            )
+        )
     }
 
     fn parse_effect(&mut self) -> Result<Effect, ParseError> {
