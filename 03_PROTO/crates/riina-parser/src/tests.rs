@@ -1806,13 +1806,27 @@ fn test_parse_syariah_compliant_type_keyword() {
 }
 
 #[test]
-fn test_parse_unknown_type_errors() {
+fn test_parse_unknown_type_is_nominal_any() {
+    // User-defined nominal types (e.g. `jenis`-declared records) have no nominal
+    // semantics yet, so an unknown type name parses as the structural `Any` type
+    // rather than erroring. This mirrors the top-level `jenis` skip.
     let mut p = Parser::new("FooBarBaz");
-    let result = p.parse_ty();
-    assert!(
-        result.is_err(),
-        "Unknown type name should return error, not Unit"
-    );
+    assert_eq!(p.parse_ty().unwrap(), Ty::Any);
+}
+
+#[test]
+fn test_parse_unknown_generic_type_is_any() {
+    // Generic argument lists on unknown nominal types are consumed and discarded.
+    // (Names like `Keupayaan` are *known* parameterized types with their own
+    // argument grammar, so they are intentionally not covered here.)
+    for src in [
+        "JejakAudit<Teks>",
+        "Hasil<Rahsia<Teks>, Teks>",
+        "MyMap<K, List<V>>",
+    ] {
+        let mut p = Parser::new(src);
+        assert_eq!(p.parse_ty().unwrap(), Ty::Any, "should parse `{src}` as Any");
+    }
 }
 
 // =============================================================================
@@ -3234,5 +3248,28 @@ fn test_parse_jenis_generic_and_alias_and_marker() {
 #[test]
 fn test_parse_top_level_biar_type_annotation() {
     let mut p = Parser::new("biar n: Nombor = 42;\nn");
+    assert!(p.parse_program().is_ok());
+}
+
+// -- Grammar extensions round 2: nominal types, mut bindings, multi-effects --
+
+#[test]
+fn test_parse_biar_ubah_mut_binding() {
+    // `biar ubah x = e` (mutable binding) parses; the modifier is accepted.
+    let mut p = Parser::new("biar ubah i = 0; i");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Let(ref n, _, _, _) if n == "i"));
+}
+
+#[test]
+fn test_parse_multi_effect_annotation() {
+    // `kesan (E1, E2)` parses; effects are joined into the dominant one.
+    let mut p = Parser::new("fungsi f() -> Nombor kesan (Kripto, MasaTetap) {\n  0\n}\n0");
+    assert!(p.parse_program().is_ok());
+}
+
+#[test]
+fn test_parse_masatetap_as_effect() {
+    // MasaTetap (constant-time) is accepted in effect position.
+    let mut p = Parser::new("fungsi f() -> Nombor kesan MasaTetap {\n  0\n}\n0");
     assert!(p.parse_program().is_ok());
 }

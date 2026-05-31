@@ -251,6 +251,10 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwFn) => self.parse_function_decl(),
             Some(TokenKind::KwLet) => {
                 self.consume(TokenKind::KwLet)?;
+                // Optional `ubah` (mut) modifier, accepted and ignored.
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwMut)) {
+                    self.consume(TokenKind::KwMut)?;
+                }
                 let name = self.parse_ident()?;
                 // Optional type annotation `biar x: T = e` (parsed and discarded;
                 // type is inferred). Mirrors the in-function binding form.
@@ -291,7 +295,7 @@ impl<'a> Parser<'a> {
         // Optional effect annotation
         let effect = if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwEffect)) {
             self.consume(TokenKind::KwEffect)?;
-            self.parse_effect()?
+            self.parse_effect_annotation()?
         } else {
             Effect::Pure
         };
@@ -411,6 +415,12 @@ impl<'a> Parser<'a> {
         // Check if this is a let-binding
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwLet)) {
             self.consume(TokenKind::KwLet)?;
+            // Optional `ubah` (mut) modifier: `biar ubah x = e`. Accepted and
+            // ignored — the binding AST carries no mutability flag (matching how
+            // `ubah` is handled on function parameters).
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwMut)) {
+                self.consume(TokenKind::KwMut)?;
+            }
             let linearity = match self.peek().map(|t| &t.kind) {
                 Some(TokenKind::KwSekali) => {
                     self.next();
@@ -476,6 +486,39 @@ impl<'a> Parser<'a> {
     /// or end of input. Used to allow a trailing `;` after the final statement.
     fn at_sequence_end(&mut self) -> bool {
         matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace) | None)
+    }
+
+    /// Skip a `<...>` generic argument list (the leading `<` is still on the
+    /// input). Tracks `<`/`>` nesting so e.g. `Map<K, List<V>>` is consumed
+    /// fully. Used for unknown nominal types where generics carry no semantics
+    /// yet. `Shr` (`>>`) closes two levels at once.
+    fn skip_type_argument_list(&mut self) {
+        if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
+            return;
+        }
+        self.next(); // consume opening `<`
+        let mut depth = 1u32;
+        while depth > 0 {
+            match self.peek().map(|t| &t.kind) {
+                Some(TokenKind::Lt) => {
+                    self.next();
+                    depth += 1;
+                }
+                Some(TokenKind::Gt) => {
+                    self.next();
+                    depth -= 1;
+                }
+                Some(TokenKind::Shr) => {
+                    // `>>` closes two angle-bracket levels.
+                    self.next();
+                    depth = depth.saturating_sub(2);
+                }
+                None => break,
+                _ => {
+                    self.next();
+                }
+            }
+        }
     }
 
     /// Skip tokens up to and including the `}` that closes an already-consumed
@@ -1277,10 +1320,18 @@ impl<'a> Parser<'a> {
                         self.consume(TokenKind::Gt)?;
                         Ok(Ty::SyariahCompliant(Box::new(inner)))
                     }
-                    _ => Err(ParseError {
-                        kind: ParseErrorKind::ExpectedType,
-                        span: self.current_span,
-                    }),
+                    // User-defined nominal type (e.g. a `jenis`-declared record
+                    // like `JejakAudit`, `Taint`, or a generic `Keupayaan<HakBaca>`).
+                    // RIINA has no nominal-type semantics yet (matching the `jenis`
+                    // skip in top-level parsing), so an unknown type name is treated
+                    // structurally as `Any`. Any `<...>` generic argument list is
+                    // consumed (and discarded) so it parses.
+                    _ => {
+                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
+                            self.skip_type_argument_list();
+                        }
+                        Ok(Ty::Any)
+                    }
                 }
             }
             Some(TokenKind::KwSmartContract) => {
@@ -1327,6 +1378,29 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Parse an effect annotation that is either a single effect (`kesan Kripto`)
+    /// or a parenthesized list (`kesan (Kripto, MasaTetap)`). A list is combined
+    /// with `Effect::join` into the dominant effect, since the effect model has
+    /// no effect-rows yet. An empty `()` is `Pure`.
+    fn parse_effect_annotation(&mut self) -> Result<Effect, ParseError> {
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
+            self.consume(TokenKind::LParen)?;
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
+                self.consume(TokenKind::RParen)?;
+                return Ok(Effect::Pure);
+            }
+            let mut eff = self.parse_effect()?;
+            while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                self.consume(TokenKind::Comma)?;
+                eff = eff.join(self.parse_effect()?);
+            }
+            self.consume(TokenKind::RParen)?;
+            Ok(eff)
+        } else {
+            self.parse_effect()
+        }
+    }
+
     fn parse_effect(&mut self) -> Result<Effect, ParseError> {
         let ident = self.parse_ident()?;
         match ident.as_str() {
@@ -1339,6 +1413,10 @@ impl<'a> Parser<'a> {
             "Network" | "Rangkaian" => Ok(Effect::Network),
             "NetworkSecure" | "RangkaianSelamat" => Ok(Effect::NetworkSecure),
             "Crypto" | "Kripto" => Ok(Effect::Crypto),
+            // `MasaTetap` (constant-time) appears in effect position in many
+            // examples. It is a crypto-security guarantee, so it maps to the
+            // Crypto effect (there is no distinct constant-time effect variant).
+            "ConstantTime" | "MasaTetap" => Ok(Effect::Crypto),
             "Random" | "Rawak" => Ok(Effect::Random),
             "System" | "Sistem" => Ok(Effect::System),
             "Time" | "Masa" => Ok(Effect::Time),
