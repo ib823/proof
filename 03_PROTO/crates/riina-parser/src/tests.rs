@@ -3588,3 +3588,27 @@ fn test_parse_lambda_not_treated_as_nested_fn() {
     let mut p = Parser::new("fn(x: Nombor) x");
     assert!(matches!(p.parse_expr().unwrap(), Expr::Lam(_, _, _)));
 }
+
+// =============================================================================
+// LIST INDEXING e[i]
+// =============================================================================
+
+#[test]
+fn test_parse_index_desugars_to_list_get() {
+    // `e[i]` -> App(Var("senarai_dapat"), Pair(e, i)).
+    let mut p = Parser::new("s[0]");
+    match p.parse_expr().unwrap() {
+        Expr::App(f, arg) => {
+            assert_eq!(*f, Expr::Var("senarai_dapat".to_string()));
+            assert!(matches!(*arg, Expr::Pair(_, _)));
+        }
+        other => panic!("expected App, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_index_chains_with_field() {
+    // `s[0].0` parses (index then projection).
+    let mut p = Parser::new("s[0].0");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Fst(_)));
+}

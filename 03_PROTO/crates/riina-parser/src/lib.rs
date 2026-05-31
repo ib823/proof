@@ -1008,30 +1008,47 @@ impl<'a> Parser<'a> {
 
     fn parse_app(&mut self) -> Result<Expr, ParseError> {
         let mut expr = self.parse_unary()?;
-        // Postfix field/tuple access: `e.field`, or `e.0`/`e.1` for pairs.
-        // `.0` desugars to `pertama`/fst, `.1` to `kedua`/snd; any other field
-        // name becomes a structural FieldAccess. Chains left-to-right.
-        while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Dot)) {
-            self.consume(TokenKind::Dot)?;
-            match self.peek().map(|t| t.kind.clone()) {
-                Some(TokenKind::LiteralInt(ref n, _)) if n == "0" => {
-                    self.next();
-                    expr = Expr::Fst(Box::new(expr));
+        // Postfix accessors, chained left-to-right:
+        //   `e.field`      -> structural FieldAccess
+        //   `e.0` / `e.1`  -> Fst / Snd (pairs)
+        //   `e[i]`         -> list indexing, desugared to `senarai_dapat((e, i))`
+        loop {
+            match self.peek().map(|t| &t.kind) {
+                Some(TokenKind::Dot) => {
+                    self.consume(TokenKind::Dot)?;
+                    match self.peek().map(|t| t.kind.clone()) {
+                        Some(TokenKind::LiteralInt(ref n, _)) if n == "0" => {
+                            self.next();
+                            expr = Expr::Fst(Box::new(expr));
+                        }
+                        Some(TokenKind::LiteralInt(ref n, _)) if n == "1" => {
+                            self.next();
+                            expr = Expr::Snd(Box::new(expr));
+                        }
+                        Some(TokenKind::Identifier(name)) => {
+                            self.next();
+                            expr = Expr::FieldAccess(Box::new(expr), name);
+                        }
+                        _ => {
+                            return Err(ParseError {
+                                kind: ParseErrorKind::ExpectedIdentifier,
+                                span: self.current_span,
+                            });
+                        }
+                    }
                 }
-                Some(TokenKind::LiteralInt(ref n, _)) if n == "1" => {
-                    self.next();
-                    expr = Expr::Snd(Box::new(expr));
+                Some(TokenKind::LBracket) => {
+                    // Index access `e[i]` -> `senarai_dapat((e, i))`, reusing the
+                    // existing list-get builtin (which takes a (list, index) pair).
+                    self.consume(TokenKind::LBracket)?;
+                    let index = self.parse_pipe()?;
+                    self.consume(TokenKind::RBracket)?;
+                    expr = Expr::App(
+                        Box::new(Expr::Var("senarai_dapat".to_string())),
+                        Box::new(Expr::Pair(Box::new(expr), Box::new(index))),
+                    );
                 }
-                Some(TokenKind::Identifier(name)) => {
-                    self.next();
-                    expr = Expr::FieldAccess(Box::new(expr), name);
-                }
-                _ => {
-                    return Err(ParseError {
-                        kind: ParseErrorKind::ExpectedIdentifier,
-                        span: self.current_span,
-                    });
-                }
+                _ => break,
             }
         }
         // Check for parenthesized call syntax: f(a, b, c) → App(App(App(f, a), b), c)
