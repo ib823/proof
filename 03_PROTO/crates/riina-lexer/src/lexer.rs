@@ -465,7 +465,7 @@ impl<'a> Lexer<'a> {
             "const" | "tetap" => TokenKind::KwConst,
             "static" | "statik" => TokenKind::KwStatic,
             "type" | "jenis" => TokenKind::KwType,
-            "struct" | "bentuk" => TokenKind::KwStruct,
+            "struct" | "bentuk" | "struktur" => TokenKind::KwStruct,
             "enum" | "pilihan" => TokenKind::KwEnum,
             "union" | "kesatuan" => TokenKind::KwUnion,
             "trait" | "sifat" => TokenKind::KwTrait,

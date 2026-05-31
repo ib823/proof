@@ -2082,4 +2082,14 @@ mod tests {
         assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwFontSize);
         assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
     }
+
+    #[test]
+    fn test_struct_keyword_synonyms() {
+        // `struct`, `bentuk`, and `struktur` all tokenize to KwStruct.
+        let mut lexer = Lexer::new("struct bentuk struktur");
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwStruct);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwStruct);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwStruct);
+        assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
+    }
 }
