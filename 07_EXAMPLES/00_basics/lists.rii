@@ -26,7 +26,7 @@ fungsi operasi_senarai() -> Nombor kesan Bersih {
 
     /// Akses elemen dengan indeks
     /// Access element by index
-    biar pertama = senarai[0];          /// 1
+    biar elemen_pertama = senarai[0];          /// 1
     biar terakhir = senarai[4];         /// 5
 
     /// Tambah elemen (returns new list)

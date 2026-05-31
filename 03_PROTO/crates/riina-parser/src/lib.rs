@@ -2493,6 +2493,7 @@ impl<'a> Parser<'a> {
             TokenKind::KwColumn => "lajur",
             TokenKind::KwMod => "mod",
             TokenKind::KwMerge => "gabung",
+            TokenKind::KwCombined => "gabungan",
             TokenKind::KwColor => "warna",
             TokenKind::KwStyle => "gaya",
             // NOTE: `pertama`/`kedua` (KwFst/KwSnd) and `terus` (KwContinue) are
