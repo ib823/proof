@@ -134,9 +134,9 @@ Create `hello.rii`:
 // Keywords are in Bahasa Melayu (Malaysian Malay)
 // (This example type-checks and runs on the shipped compiler.)
 
-fungsi utama() -> Teks kesan Tulis {
+fungsi utama() -> Teks kesan Sistem {
     biar mesej = "Selamat datang ke RIINA!";
-    cetak(mesej);          // 'cetak' prints; effect is 'Tulis' (write)
+    cetak(mesej);          // 'cetak' prints; its effect is 'Sistem' (System)
     mesej                  // trailing expression is the return value (no 'pulang;')
 }
 ```

@@ -511,8 +511,8 @@ const RiinaWebsite = () => {
               <span className="social-proof__label">proofs you can verify yourself</span>
             </div>
             <div>
-              <span className="social-proof__num">{metrics.multiProver.totalProvers}</span>
-              <span className="social-proof__label">independent proof engines</span>
+              <span className="social-proof__num">1</span>
+              <span className="social-proof__label">fully mechanized prover (Coq)</span>
             </div>
             <div>
               <span className="social-proof__num">0</span>
@@ -820,13 +820,11 @@ curl -sSf https://ib823.github.io/riina/install.sh | bash
 nix run github:ib823/riina`}</CopyableCode>
 
                 <h2 style={{fontSize:20,fontWeight:500,marginBottom:16}}>Hello World</h2>
-                <CopyableCode style={{marginBottom:16}}>{`// hello.rii
-modul hello;
-guna std::io;
-
-awam fungsi utama() -> kesan Tulis {
+                <CopyableCode style={{marginBottom:16}}>{`// hello.rii — type-checks and runs on the shipped compiler
+fungsi utama() -> Teks kesan Sistem {
     biar mesej = "Selamat datang ke RIINA!";
-    laku Tulis cetak_baris(mesej);
+    cetak(mesej);   // 'cetak' carries the 'Sistem' (System) effect
+    mesej           // trailing expression = return value
 }`}</CopyableCode>
                 <CopyableCode>{`riinac check hello.rii    # Type-check + verify
 riinac run hello.rii      # Run directly
@@ -1066,8 +1064,10 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
         <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
           <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>{metrics.multiProver.totalProvers}-Prover Verification</h2>
           <p style={{color:'var(--text-secondary)',marginBottom:32}}>
-            RIINA's proofs are checked by {metrics.multiProver.totalProvers} independent tools, each using a different mathematical foundation.
-            If one tool has a bug, the others catch it. No independent external audit has been published yet.
+            RIINA's core type and effect system is machine-checked in Coq — the only fully mechanized lane.
+            The other prover trees in the repository are machine-generated from the Coq sources and are mostly
+            placeholders or small smoke artifacts (see per-lane claim levels), not independent re-verification.
+            No independent external audit has been published yet.
           </p>
           {[
             { prover: metrics.coq.prover, theorems: `${fmt(metrics.proofs.qedActive)} Qed`, level: laneClaim('coq'), role: 'Primary proof engine' },

@@ -20,8 +20,9 @@ The most common reasons an example does not yet parse:
   `Bersih, Ubah, Baca, Tulis, SistemFail, Rangkaian, Kripto, Rawak, Sistem, Masa,
   Proses`. Names like `IO` or `Crypto` (used in some examples and older docs) are
   **not** recognized.
-- **Builtins.** Use `cetak(...)` to print (effect `Tulis`). `cetakln` is not a
-  builtin.
+- **Builtins.** Use `cetak(...)` (or `cetakln(...)`) to print; the print builtins
+  carry the `Sistem` (System) effect, so a function that prints must declare
+  `kesan Sistem`.
 - **List literals, `Some(...)`, guard clauses, and `|` match arms** in some
   advanced examples are not yet parsed.
 
@@ -29,9 +30,9 @@ The most common reasons an example does not yet parse:
 
 ```riina
 // Type-checks and runs on the shipped compiler.
-fungsi utama() -> Teks kesan Tulis {
+fungsi utama() -> Teks kesan Sistem {
     biar mesej = "Selamat datang ke RIINA!";
-    cetak(mesej);   // print; effect is 'Tulis'
+    cetak(mesej);   // print; 'cetak' carries the 'Sistem' (System) effect
     mesej           // trailing expression = return value
 }
 ```
