@@ -2593,6 +2593,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     let total_eff = eff1.join(eff2).join(fn_eff);
                     Ok((*ret_ty, total_eff))
                 }
+                // Applying an `Any`-typed callee (e.g. a closure passed as an
+                // `Any` parameter, or a higher-order builtin result) yields `Any`.
+                Ty::Any => Ok((Ty::Any, eff1.join(eff2))),
                 _ => Err(TypeError::ExpectedFunction(t1)),
             }
         }
@@ -3477,6 +3480,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     let total_eff = eff1.join(eff2).join(fn_eff);
                     Ok((*ret_ty, total_eff))
                 }
+                Ty::Any => Ok((Ty::Any, eff1.join(eff2))),
                 _ => Err(TypeError::ExpectedFunction(t1)),
             }
         }
