@@ -460,6 +460,49 @@ impl<'a> Parser<'a> {
     /// A `biar` binding: `biar x = e1; rest` desugars to Let(x, e1, rest).
     /// A non-binding expression followed by `;`: `e1; rest` desugars to Let("_", e1, rest).
     fn parse_stmt_sequence(&mut self) -> Result<Expr, ParseError> {
+        // Local (nested) function declaration: `fungsi f(..) -> T { .. }` in
+        // statement position. Desugars to a recursive `LetRec` binding whose
+        // continuation is the rest of the sequence, mirroring how top-level
+        // functions desugar. Distinguished from a lambda (`fn(x: T) body`) by a
+        // *named* head: `fn`/`fungsi` immediately followed by an identifier.
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwFn))
+            && self.next_is_named_fn()
+        {
+            let decl = self.parse_function_decl()?;
+            let (name, params, return_ty, effect, body) = match decl {
+                TopLevelDecl::Function {
+                    name,
+                    params,
+                    return_ty,
+                    effect,
+                    body,
+                } => (name, params, return_ty, effect, body),
+                _ => unreachable!("parse_function_decl returns Function"),
+            };
+            let continuation = if self.at_sequence_end() {
+                Expr::Var(name.clone())
+            } else {
+                self.parse_stmt_sequence()?
+            };
+            // Build the curried lambda and its function type (right-fold over
+            // params), matching `riina_types::desugar_function`.
+            let lam = params.iter().rev().fold(*body, |acc, (p, ty)| {
+                Expr::Lam(p.clone(), ty.clone(), Box::new(acc))
+            });
+            let fn_ty = params
+                .iter()
+                .rev()
+                .fold(return_ty, |ret, (_, param_ty)| {
+                    Ty::Fn(Box::new(param_ty.clone()), Box::new(ret), effect)
+                });
+            return Ok(Expr::LetRec(
+                name,
+                fn_ty,
+                Box::new(lam),
+                Box::new(continuation),
+            ));
+        }
+
         // Check if this is a let-binding
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwLet)) {
             self.consume(TokenKind::KwLet)?;
@@ -627,6 +670,16 @@ impl<'a> Parser<'a> {
     /// cheap clone of the token stream for two-token lookahead; this avoids
     /// misreading a control-flow block as a record. A bare `{ }` (empty record)
     /// also qualifies.
+    /// True when the upcoming tokens are `fn`/`fungsi` followed by an identifier
+    /// — i.e. a *named* function declaration, as opposed to a lambda
+    /// (`fn(x: T) body`). Uses a cheap clone of the token stream for two-token
+    /// lookahead.
+    fn next_is_named_fn(&mut self) -> bool {
+        let mut ahead = self.lexer.clone();
+        ahead.next(); // skip `fn`/`fungsi`
+        matches!(ahead.next().map(|t| t.kind), Some(TokenKind::Identifier(_)))
+    }
+
     fn looks_like_record_literal(&mut self) -> bool {
         if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LBrace)) {
             return false;

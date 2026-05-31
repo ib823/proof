@@ -3562,3 +3562,29 @@ fn test_parse_plain_if_else_still_works() {
     let mut p = Parser::new("kalau betul { 1 } lain { 2 }");
     assert!(matches!(p.parse_expr().unwrap(), Expr::If(_, _, _)));
 }
+
+// =============================================================================
+// NESTED (LOCAL) FUNCTION DECLARATIONS
+// =============================================================================
+
+#[test]
+fn test_parse_nested_function_desugars_to_letrec() {
+    // A `fungsi` in statement position becomes a LetRec binding.
+    let mut p = Parser::new(
+        "fungsi luar(n: Nombor) -> Nombor kesan Bersih { fungsi tokok(x: Nombor) -> Nombor { x } tokok(n) }",
+    );
+    let prog = p.parse_program().unwrap();
+    match &prog.decls[0] {
+        TopLevelDecl::Function { body, .. } => {
+            assert!(matches!(**body, Expr::LetRec(_, _, _, _)));
+        }
+        other => panic!("expected Function, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_lambda_not_treated_as_nested_fn() {
+    // `fn(x: T) body` (lambda, no name) must still parse as Lam, not a decl.
+    let mut p = Parser::new("fn(x: Nombor) x");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Lam(_, _, _)));
+}
