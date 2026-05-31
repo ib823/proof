@@ -584,6 +584,37 @@ impl<'a> Parser<'a> {
                 }
                 _ => None,
             };
+            // Tuple-destructuring binding: `biar (a, b, ...) = e; rest`. Binds a
+            // fresh temp to `e`, then projects each name via Fst/Snd (left-nested
+            // pairs, matching how tuples are constructed). Nested patterns are not
+            // supported here — only a flat list of identifiers.
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
+                self.consume(TokenKind::LParen)?;
+                let mut names = vec![self.parse_ident()?];
+                while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                    self.consume(TokenKind::Comma)?;
+                    names.push(self.parse_ident()?);
+                }
+                self.consume(TokenKind::RParen)?;
+                self.consume(TokenKind::Eq)?;
+                let e1 = self.parse_control_flow()?;
+                self.consume(TokenKind::Semi)?;
+                let body = if self.at_sequence_end() {
+                    Expr::Unit
+                } else {
+                    self.parse_stmt_sequence()?
+                };
+                let tmp = self.fresh_var("padTup");
+                // Bind the names from the temp via Fst/Snd projection; the last
+                // element is the final `Snd` of the left-nested pair chain.
+                let mut bound = body;
+                let n = names.len();
+                for (i, nm) in names.iter().enumerate().rev() {
+                    let proj = self.tuple_proj(&tmp, i, n);
+                    bound = Expr::Let(nm.clone(), None, Box::new(proj), Box::new(bound));
+                }
+                return Ok(Expr::Let(tmp, linearity, Box::new(e1), Box::new(bound)));
+            }
             let name = self.parse_ident()?;
             // Optional type annotation: `biar x: T = e`. Accepted for ergonomics
             // and documentation; the binding's type is inferred by the
@@ -1571,17 +1602,26 @@ impl<'a> Parser<'a> {
                 } else {
                     let e = self.parse_expr()?;
 
-                    let is_comma = if let Some(token) = self.peek() {
-                        token.kind == TokenKind::Comma
-                    } else {
-                        false
-                    };
-
-                    if is_comma {
-                        self.next();
-                        let e2 = self.parse_expr()?;
+                    if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                        // Tuple. Collect all elements, then build a right-nested
+                        // pair chain `(a, (b, (c, ...)))` so n-tuples (n >= 2) are
+                        // supported uniformly (matching `tuple_proj`/Fst-Snd access
+                        // and destructuring).
+                        let mut elems = vec![e];
+                        while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                            self.consume(TokenKind::Comma)?;
+                            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
+                                break; // trailing comma
+                            }
+                            elems.push(self.parse_expr()?);
+                        }
                         self.consume(TokenKind::RParen)?;
-                        Ok(Expr::Pair(Box::new(e), Box::new(e2)))
+                        let mut iter = elems.into_iter().rev();
+                        let mut acc = iter.next().unwrap();
+                        for x in iter {
+                            acc = Expr::Pair(Box::new(x), Box::new(acc));
+                        }
+                        Ok(acc)
                     } else {
                         self.consume(TokenKind::RParen)?;
                         Ok(e)
@@ -2161,6 +2201,22 @@ impl<'a> Parser<'a> {
         let id = self.gensym;
         self.gensym += 1;
         format!("${hint}{id}")
+    }
+
+    /// Build a projection of element `i` (0-based) from an `n`-element tuple held
+    /// in variable `tmp`, where tuples are right-nested pairs
+    /// `(e0, (e1, (e2, ...)))`. Element `i` is `Snd` applied `i` times, then
+    /// `Fst` unless it is the last element (which is the final `Snd`).
+    fn tuple_proj(&self, tmp: &str, i: usize, n: usize) -> Expr {
+        let mut acc = Expr::Var(tmp.to_string());
+        for _ in 0..i {
+            acc = Expr::Snd(Box::new(acc));
+        }
+        if i + 1 < n {
+            Expr::Fst(Box::new(acc))
+        } else {
+            acc
+        }
     }
 
     fn parse_handle(&mut self) -> Result<Expr, ParseError> {

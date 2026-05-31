@@ -3858,3 +3858,24 @@ fn test_parse_enum_variant_pattern() {
     let mut p = Parser::new("padan x { Taint.Bersih -> 1, _ -> 0 }");
     assert!(p.parse_expr().is_ok());
 }
+
+// =============================================================================
+// TUPLE DESTRUCTURING `biar (a, b) = e` + n-TUPLES
+// =============================================================================
+
+#[test]
+fn test_parse_tuple_destructuring_let() {
+    // `biar (a, b) = e; body` desugars to a temp Let + Fst/Snd projections.
+    let mut p = Parser::new("fungsi f() -> Nombor kesan Bersih { biar (a, b) = (1, 2); a + b }");
+    assert!(p.parse_program().is_ok());
+}
+
+#[test]
+fn test_parse_three_tuple_construction() {
+    // `(a, b, c)` builds a right-nested pair chain.
+    let mut p = Parser::new("(1, 2, 3)");
+    match p.parse_expr().unwrap() {
+        Expr::Pair(_, rest) => assert!(matches!(*rest, Expr::Pair(_, _))),
+        other => panic!("expected nested Pair, got {other:?}"),
+    }
+}
