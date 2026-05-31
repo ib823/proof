@@ -4503,3 +4503,15 @@ mod jalinan_phase6_tests {
         assert_eq!(ty, crdt_ty);
     }
 }
+
+#[test]
+fn test_unannotated_inl_inr_infer_sum() {
+    // Inl/Inr with Ty::Any (from Some/Ok/Err/None desugaring) infer a sum type.
+    let ctx = Context::new();
+    let some = Expr::Inl(Box::new(Expr::Int(5)), Ty::Any);
+    let (ty, _eff) = type_check(&ctx, &some).unwrap();
+    assert!(matches!(ty, Ty::Sum(l, _) if *l == Ty::Int));
+    let err = Expr::Inr(Box::new(Expr::String("e".into())), Ty::Any);
+    let (ty2, _eff2) = type_check(&ctx, &err).unwrap();
+    assert!(matches!(ty2, Ty::Sum(_, r) if *r == Ty::String));
+}

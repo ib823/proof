@@ -2598,6 +2598,12 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 }
                 Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
             }
+            // Unannotated injection (from `Some(x)`/`Ok(x)` desugaring, carrying
+            // `Ty::Any`): infer the left arm from the payload; right arm open.
+            Ty::Any => {
+                let (te, eff) = type_check_full(ctx, e)?;
+                Ok((Ty::Sum(Box::new(te), Box::new(Ty::Any)), eff))
+            }
             _ => Err(TypeError::ExpectedSum(ty.clone())),
         },
         Expr::Inr(e, ty) => match ty {
@@ -2610,6 +2616,12 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     });
                 }
                 Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
+            }
+            // Unannotated injection (from `Err(x)`/`None` desugaring): infer the
+            // right arm from the payload; left arm open.
+            Ty::Any => {
+                let (te, eff) = type_check_full(ctx, e)?;
+                Ok((Ty::Sum(Box::new(Ty::Any), Box::new(te)), eff))
             }
             _ => Err(TypeError::ExpectedSum(ty.clone())),
         },
@@ -3445,6 +3457,10 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                 }
                 Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
             }
+            Ty::Any => {
+                let (te, eff) = type_check(ctx, e)?;
+                Ok((Ty::Sum(Box::new(te), Box::new(Ty::Any)), eff))
+            }
             _ => Err(TypeError::ExpectedSum(ty.clone())),
         },
         Expr::Inr(e, ty) => match ty {
@@ -3457,6 +3473,10 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     });
                 }
                 Ok((Ty::Sum(t1.clone(), t2.clone()), eff))
+            }
+            Ty::Any => {
+                let (te, eff) = type_check(ctx, e)?;
+                Ok((Ty::Sum(Box::new(Ty::Any), Box::new(te)), eff))
             }
             _ => Err(TypeError::ExpectedSum(ty.clone())),
         },
