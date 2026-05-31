@@ -101,8 +101,8 @@ const RiinaWebsite = () => {
       version: '0.3.0',
       date: '2026-03-19',
       highlights: [
-        '12,385 Coq Qed across 310 files — 0 Admitted, 0 axioms',
-        '74,228 total proof artifacts across 10 provers',
+        '12,385 Coq Qed across 310 files — 0 Admitted, 0 axioms (Coq is the only mechanized lane)',
+        'Other prover trees are generated from Coq (see per-lane claim levels)',
         '19 Rust crates, 2,476 tests passing',
         'JALINAN actors, CAHAYA UI framework, Blockchain/Syariah keywords',
       ],
@@ -214,7 +214,7 @@ const RiinaWebsite = () => {
           <div className="hero-stat-divider" />
           <div className="hero-stat">
             <span className="hero-stat__num">{metrics.multiProver.totalProvers}</span>
-            <span className="hero-stat__label">independent provers</span>
+            <span className="hero-stat__label">prover lanes (1 mechanized)</span>
           </div>
           <div className="hero-stat-divider" />
           <div className="hero-stat">
@@ -455,8 +455,10 @@ const RiinaWebsite = () => {
         <div className="triple-prover">
           <h3 className="triple-prover__title">Multi-prover verification</h3>
           <p className="triple-prover__desc">
-            Coq is the primary proof engine — all {fmt(metrics.proofs.qedActive)} proofs compile with zero admits and zero axioms.
-            Lean and Isabelle serve as secondary verification targets with explicit claim levels.
+            Coq is the only fully mechanized proof engine — all {fmt(metrics.proofs.qedActive)} proofs compile with zero admits and zero declared axioms
+            (the active build also relies on 32 <code>Parameter</code> assumptions). The other lanes below are machine-generated from the Coq
+            sources and are mostly unproven placeholders or single smoke artifacts; their claim level is shown per lane, and they are not
+            independent re-verification.
           </p>
           <div className="prover-grid">
             {[
@@ -1046,7 +1048,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
             { num: '01', title: 'Security as Types', desc: 'Rahsia<T> wraps sensitive data. kesan Kripto marks crypto functions. masa_tetap ensures constant-time execution. These are compiler-enforced, not annotations.' },
             { num: '02', title: 'Effects Track Side Effects', desc: 'Every function declares its effects: kesan Baca + Kripto. The compiler tracks what your code can do. Security-critical code is restricted to specific effects.' },
             { num: '03', title: 'The Compiler Proves Security', desc: 'When you compile, the compiler proves: no information leakage (non-interference), effects are tracked (effect safety), timing-sensitive code runs in constant time, and secrets are zeroed.' },
-            { num: '04', title: 'Proof Artifacts Ship With Code', desc: `${fmt(metrics.multiProver.totalProofsAllProvers)} proof artifacts across ${metrics.multiProver.totalProvers} provers ship in the repository. 0 Admitted, 0 axioms. You can clone and verify them yourself.` },
+            { num: '04', title: 'Proof Artifacts Ship With Code', desc: `${fmt(metrics.proofs.qedActive)} machine-checked Coq proofs ship in the repository — 0 Admitted, 0 axioms in the active build. You can clone and re-check them yourself. (Other prover lanes are generated from Coq and are not independent verification — see claim levels.)` },
             { num: '05', title: 'Runtime Verification', desc: 'Capability-bound effect gates and proof-bundle chaining enforce guarantees at runtime. Hardware-rooted attestation is on the roadmap.' },
           ].map((step, i) => (
             <div key={i} className="pipeline-step">

@@ -29,7 +29,7 @@ Security properties in RIINA are tracked as a mix of machine-checked proofs, com
 
 RIINA is a programming language that combines formal verification work with **AI-native** tooling. The repository contains machine-checked proofs, active compiler checks, and explicitly documented verification gaps, and it is designed from the ground up for AI agents to read, write, and reason about.
 
-**AI-Writability Score: 9.7/10** -- Consistent Bahasa Melayu keywords, minimal syntax, strong types, and deterministic compilation make RIINA one of the most AI-friendly languages ever designed.
+**AI-Writability: a design goal, not a benchmarked score.** Consistent Bahasa Melayu keywords, minimal syntax, strong types, and deterministic compilation are intended to make RIINA easy for AI agents to read and write. (Any single-number "writability score" is an internal self-assessment, not an externally validated metric.)
 
 AI agents: See [llms.txt](llms.txt) for a machine-readable language reference.
 
@@ -46,7 +46,7 @@ RIINA provides first-class support for AI-assisted development:
 
 ## What is RIINA?
 
-RIINA is a programming language with a large machine-checked proof corpus and a security-oriented compiler. The repository currently ships audited Coq proofs, a mechanized Lean lane, a mechanized Isabelle lane, compiled F*/TLA+/Alloy lanes, and a mechanized SMT lane. The shipped compiler enforces core type/effect checks today; broader proof coverage and known gaps are tracked explicitly in `RIINA_MASTER_PLAN.md` Part 2.
+RIINA is a programming language with a machine-checked Coq proof corpus and a security-oriented compiler. **Coq is the only fully mechanized lane.** The repository also contains Lean, Isabelle, F\*, TLA+, Alloy, and SMT trees, but these are machine-*generated* from the Coq sources and are mostly unproven placeholders or small smoke artifacts — they are tracked honestly with per-lane claim levels in `website/public/metrics.json`, not presented as independent verification. The shipped compiler enforces core type/effect checks today; broader proof coverage and known gaps are tracked explicitly in `RIINA_MASTER_PLAN.md` Part 2.
 
 Most languages ask you to *trust* that your code is secure. RIINA asks you to *verify* it.
 
@@ -82,8 +82,8 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes (12,385 Coq + 12,576 Lean + ~12,931 Isabelle + 7 more prover lanes) | No | No | Partial |
-| Multi-prover work | Yes (10 provers: 5 mechanized, 2 compiled, 3 generated) | No | No | No |
+| Formal proof corpus in repo | Yes — 12,385 Coq Qed (mechanized); other lanes generated, see below | No | No | Partial |
+| Multi-prover work | Coq mechanized; 9 other lanes are generated/smoke-only (not independent verification) | No | No | No |
 | Session-typed actors | Yes (JALINAN: pelakon, lahir, hantar, terima) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
 
@@ -132,11 +132,12 @@ Create `hello.rii`:
 ```riina
 // Hello World in RIINA
 // Keywords are in Bahasa Melayu (Malaysian Malay)
+// (This example type-checks and runs on the shipped compiler.)
 
-fungsi utama() -> Teks kesan IO {
+fungsi utama() -> Teks kesan Tulis {
     biar mesej = "Selamat datang ke RIINA!";
-    cetakln(mesej);
-    pulang mesej;
+    cetak(mesej);          // 'cetak' prints; effect is 'Tulis' (write)
+    mesej                  // trailing expression is the return value (no 'pulang;')
 }
 ```
 
@@ -146,7 +147,11 @@ riinac run hello.rii      # Run directly
 riinac build hello.rii    # Compile to native binary via C
 ```
 
-### Security in Action
+### Security in Action (illustrative — intended model)
+
+> The snippet below shows the *intended* information-flow model. It uses syntax
+> (`kesan Crypto`, `pulang …;`) that the shipped parser does not yet fully accept;
+> treat it as a design illustration, not a runnable example.
 
 ```riina
 // RIINA prevents information leaks at compile time
@@ -166,7 +171,11 @@ fungsi proses_pembayaran(kad: Rahsia<Teks>, jumlah: Nombor) -> Teks kesan Crypto
 
 This is the intended security model. Current compiler enforcement is narrower than the full proof corpus; see `RIINA_MASTER_PLAN.md` Part 2 for the verified state and current gaps.
 
-### Effect System
+### Effect System (illustrative — intended model)
+
+> As above, this illustrates the intended effect syntax; `kesan IO` and `pulang …;`
+> are not accepted by the shipped parser yet. Valid effect names today include
+> `Bersih`, `Tulis`, `Baca`, `Kripto`, `Rangkaian`, `Rawak`, `Masa`, `Sistem`.
 
 ```riina
 // Effects are explicit in the language and formal model
@@ -219,19 +228,20 @@ This is not a whitepaper. This is working software.
 
 ### Formal Proofs — Current Verified State
 
-| Prover | Verified state | Notes |
-|--------|----------------|-------|
-| **Rocq 9.1.1** (Primary) | 12,385 Qed, 0 Admitted, 0 active axioms, 4 Abort (incomplete proof attempts in 4 domain files) | Primary formal lane; active build passes |
-| **Lean 4** (Secondary) | 12,576 theorem/lemma declarations | 325 files; 0 `sorry`, 0 `axiom` (port-fallbacks eliminated 2026-05-17, commit 41b85893); claim level: active-lane audit-grep mechanized (per-file elaboration gaps tracked separately) |
-| **Isabelle/HOL** (Tertiary) | ~12,931 lemmas (repo-grep) | 368 .thy files; 1 smoke session `RIINA_CORE` compiles; rest are generated corpora |
-| **F\*** (Seed lane) | 22 compiled lemmas | 315 .fst files; 1 smoke module compiled; rest generated |
-| **TLA+** (Protocol seed lane) | 12,282 raw theorems | 317 .tla files; 1 smoke spec TLC-checked (5 theorems); rest generated |
+| Prover | What is actually proven | Notes |
+|--------|-------------------------|-------|
+| **Rocq 9.1.1** (Primary) | 12,385 Qed in the active build; 0 Admitted, 0 `Axiom`, 0 Abort | The only fully mechanized lane. Caveat: the active build also contains **32 `Parameter` declarations** (logically equivalent to axioms in Coq), ~7 of which assert propositions — see `PROOF_STATUS.md` |
+| **Lean 4** | **~28 theorems** actually compile (3 hand-corrected core files) | The other ~12,500 declarations are transpiler-generated with placeholder tactics (`simp_all [Bool.and_eq_true]`) that do **not** prove their goals. See `02_FORMAL/lean/COMPILATION_STATUS.md`. Claim level: **generated**, not mechanized |
+| **Isabelle/HOL** | 1 smoke session (`RIINA_CORE`) | 368 `.thy` files total, machine-generated from Coq; remainder unverified generated corpora |
+| **F\*** | Effectively nothing | 315 `.fst` files, but **`admit()` appears ~12,010 times** — nearly every lemma body is `admit ()`. Generated, not proven |
+| **TLA+ / Alloy / SMT** | 1 small hand-written smoke artifact each | Remainder are generated per-domain mirrors; only a handful have runnable configs |
+| **Verus / Kani / TV** | None | Explicitly quarantined (`quarantined: true` in metrics.json); generated stubs |
 
 **Honest scope:**
-- Core Coq theorems cover foundations, type safety, effects, non-interference, declassification, and termination.
-- Many domain files are formal models or specifications, not compiler-enforced guarantees.
-- F* (1 module, 22 lemmas compiled), TLA+ (1 spec, 5 theorems TLC-checked), Alloy (1 model, 6 assertions checked), and SMT (1 verification, 11,843 Z3-verified assertions) each have a single active smoke artifact; the remaining files in each lane are generated corpora.
-- See `website/public/metrics.json` for the authoritative live counts.
+- **Only the Coq active lane constitutes real machine-checked verification** (and even it rests on 32 `Parameter` assumptions).
+- The Lean, Isabelle, F\*, TLA+, Alloy, SMT, Verus, Kani, and TV trees were produced by `scripts/generate-full-stack.py` / `generate-multiprover.py` fanning the Coq tree into other syntaxes. They inflate file/theorem counts but are stubbed (`admit`/placeholder tactics) or are single small smoke artifacts — **not** nine additional independent verifications.
+- Core Coq theorems cover foundations, type safety, effects, non-interference, declassification, and termination. Many *domain* Coq files are formal models/specifications, not compiler-enforced guarantees.
+- See `website/public/metrics.json` for per-lane claim levels (the authoritative source of truth).
 
 ### Compiler & Toolchain (Rust)
 
@@ -279,19 +289,9 @@ This is not a whitepaper. This is working software.
 
 ### Example Programs
 
-155 example `.rii` files across 10 categories:
+155 example `.rii` files across 18 category directories (security, effects, compliance, design patterns, FFI, AI context, JALINAN, showcase, and more).
 
-| Category | Examples | Topics |
-|----------|----------|--------|
-| Basics | 20 | Arithmetic, closures, pattern matching, loops, pipes |
-| Security | 18 | Secret types, capabilities, information flow, secure channels |
-| Effects | 15 | IO, crypto, network, filesystem, effect composition |
-| Applications | 15 | Web server, chat app, password manager, API gateway |
-| Compliance | 10 | GDPR, HIPAA, PCI-DSS, PDPA, SOX, NIST |
-| Design Patterns | 15 | Builder, state machine, visitor, monad, phantom types |
-| FFI | 2 | C function calls (puts, abs, rand) |
-| Showcase | 3 | Secure web server, PQ messenger, HIPAA medical records |
-| AI Context | 1 | Complete corpus for LLM training |
+> **Parser-support caveat (honest):** Many of these examples — including most of `00_basics/` — use a multi-statement block-body function form that the *shipped* parser does not yet accept; only ~19 currently pass `riinac check`. They document the intended language surface. See [`07_EXAMPLES/README.md`](07_EXAMPLES/README.md) for exactly which forms compile today and a list of the verified-working examples.
 
 ### Cryptographic Tooling
 
@@ -318,14 +318,12 @@ riina/
 │   ├── compliance/         DO-178C, ISO-26262, Common Criteria models
 │   └── Industries/         Regulatory/domain formal models
 │
-├── 02_FORMAL/lean/          Lean 4 active lane (325 files, 12,576 declarations, 0 sorry, 0 axiom)
-│   └── RIINA/               Syntax, Semantics, Typing, Progress, Preservation,
-│                             TypeSafety, EffectAlgebra, EffectSystem, EffectGate,
-│                             NonInterference
+├── 02_FORMAL/lean/          Lean 4 (generated from Coq; ~28 theorems compile, rest placeholder tactics)
+│   └── RIINA/               See COMPILATION_STATUS.md for the honest per-file state
 │
-├── 02_FORMAL/isabelle/      Isabelle/HOL lane (368 .thy total, ~12,931 lemmas, 1 smoke theory compiles)
-├── 02_FORMAL/tlaplus/       TLA+ lane (317 .tla total, 12,282 raw theorems, 1 smoke spec TLC-checked)
-│   └── RIINA/               Mechanized Isabelle theories
+├── 02_FORMAL/isabelle/      Isabelle/HOL (368 .thy, generated; 1 smoke theory compiles)
+├── 02_FORMAL/tlaplus/       TLA+ (317 .tla, generated; 1 smoke spec TLC-checked)
+│   └── ...                  (F*, alloy, smt, verus, kani, tv: generated/quarantined — see metrics.json)
 │
 ├── 03_PROTO/               Rust compiler (19 crates, 2,479 tests, 0 deps)
 │   └── crates/
@@ -348,7 +346,7 @@ riina/
 ├── 05_TOOLING/             Crypto primitives, build system (35K lines Rust)
 ├── 07_EXAMPLES/            155 example .rii files
 ├── docs/                   Enterprise docs, multilingual READMEs
-├── VERSION                 Semver source of truth (0.2.0)
+├── VERSION                 Semver source of truth (0.3.0)
 ├── CHANGELOG.md            Public-facing changelog
 ├── website/                15-page Vite/React website (Why Proof, Enterprise, Playground, etc.)
 ├── scripts/                Build, install, release, deploy, sync scripts
@@ -392,21 +390,21 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,385 Coq Qed (compiled, 0 Admitted, 0 active axioms, 4 Abort) | 10 prover lanes tracked with claim levels | 2,479 proto + 248 tooling Rust tests
+**Verification:** 12,385 Coq Qed (active build: 0 Admitted, 0 `Axiom`, 0 Abort; 32 `Parameter` assumptions) | Coq is the only mechanized lane | 2,479 proto + 248 tooling Rust tests passing
 
 | Area | Status |
 |------|--------|
-| Core compiler | Lexer/parser/typechecker/codegen/interpreter build; end-to-end security alignment still in progress |
+| Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 2,727 tests; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
-| Formal verification | Coq primary lane healthy; Lean active-lane audit-grep mechanized (0 axioms / 0 sorry; per-file elaboration gaps tracked separately); Isabelle/F*/TLA+/Alloy/SMT have 1 active smoke artifact each (rest generated corpora) |
+| Formal verification | **Coq active lane is the only real machine-checked verification** (0 admit/0 axiom, modulo 32 `Parameter` assumptions). Lean/Isabelle/F*/TLA+/Alloy/SMT/Verus/Kani/TV are generated from Coq and are stubbed or single smoke artifacts — see `02_FORMAL/lean/COMPILATION_STATUS.md` and `metrics.json` |
 | WASM/mobile backends | Present as scaffolding, not full production backends |
-| Extended provers | F* (1 smoke module, 22 lemmas), TLA+ (1 smoke spec, 5 theorems), Alloy (1 smoke model, 6 assertions), SMT (1 smoke verification, 11,843 assertions) — remainder generated corpora |
+| Example programs | Many `.rii` examples use a block-statement syntax the shipped parser does not yet accept; see `07_EXAMPLES/README.md` for which forms currently compile |
 
 ### What's next
 
 - **Compiler alignment:** Switch the shipped compiler path to the Coq-matching checker.
-- **Axiom status:** Active build is axiom-free (`Axioms=0`, `Admitted=0`, explicit assumptions `=0`).
-- **Phase 4 PASSED:** All 5 tasks complete; Isabelle mechanized, F*/TLA+/Alloy compiled, SMT mechanized. Next requirement-driven work is compiler alignment (`REQ-12`).
+- **Axiom status:** Active Coq build has `Axiom = 0` and `Admitted = 0`, but carries **32 `Parameter` declarations** that are axioms in all but name (~7 assert propositions). These are the de-facto trusted assumptions; see `PROOF_STATUS.md`.
+- **Multi-prover honesty (Gate D):** The 9 non-Coq prover trees are generated/stubbed. The roadmap is to either industrialize them or retract the "multi-prover" framing — tracked as REQ-29.
 - **Compliance system:** `--compliance` exposes 15 profile names today, but only 3 have implemented heuristic checks so far.
 
 ---

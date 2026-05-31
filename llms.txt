@@ -2,8 +2,10 @@
 
 > Rigorous Immutable Invariant, No Assumptions
 
-RIINA is a formally verified programming language with Bahasa Melayu (Malaysian) keywords.
-Security properties are mathematically proven at compile time.
+RIINA is a programming language with Bahasa Melayu (Malaysian) keywords and a
+machine-checked Coq proof corpus for its core type/effect system. Note: the
+shipped compiler enforces a subset of the modeled security properties — the full
+proof corpus is not yet wired end-to-end into the compiler (see Verified State).
 
 - File extension: `.rii`
 - Version: 0.3.0
@@ -11,21 +13,31 @@ Security properties are mathematically proven at compile time.
 - Repository: https://github.com/ib823/riina
 - License: Proprietary
 
-## Verified State (2026-05-17, command-derived)
+## Verified State (command-derived)
 
-- Coq: 12,385 Qed (active build, 0 Admitted, 0 Axioms, 4 Abort), 309 active .v files
-- Lean 4: 12,576 theorems (325 files, 0 sorry, 0 axiom — port-fallbacks eliminated 2026-05-17 / commit 41b85893), claim: active-lane audit-grep mechanized (per-file elaboration gaps remain outside default `lake build RIINA` target)
-- Isabelle: ~12,931 lemmas (368 .thy files repo-wide; 1 smoke theory `RIINA_CORE` compiles, 0 sorry), claim: smoke-mechanized
-- TLA+: 12,282 raw theorems (317 .tla files; 1 smoke spec TLC-checked with 5 theorems), claim: smoke-compiled
-- SMT/Z3: 12,405 assertions (317 .smt2 files; 1 smoke verification with 11,843 Z3-verified assertions), claim: smoke-mechanized
-- F*: 22 compiled lemmas (315 .fst files; 1 smoke module compiled), claim: smoke-compiled
-- Alloy: 11,627 raw assertions (306 .als files; 1 smoke model with 6 analyzer-checked assertions), claim: smoke-compiled
-- Verus: 6,395 proof fns (323 files), claim: generated (quarantined)
-- Kani: 5,664 harnesses (307 files), claim: generated (quarantined)
-- TV: 17,463 validations (316 files), claim: generated (quarantined)
-- Authoritative live counts: `website/public/metrics.json`
-- Rust: 2,479 proto tests + 248 tooling tests = 2,727, 19 proto crates + 5 tooling crates (post 2026-05-16 stub removal), 0 external runtime deps
-- Examples: 155 .rii files
+IMPORTANT for AI agents: **Coq is the only fully mechanized prover lane.** The
+other lanes were machine-GENERATED from the Coq sources (via
+`scripts/generate-full-stack.py` / `generate-multiprover.py`) and are mostly
+unproven placeholders or single small smoke artifacts. Do NOT cite their raw
+theorem counts as "verified theorems."
+
+- Coq: 12,385 Qed (active build, 0 Admitted, 0 `Axiom`, 0 Abort), 309 active .v files.
+  Caveat: 32 active `Parameter` declarations are logically equivalent to axioms
+  (~7 assert propositions) — these are the de-facto trusted assumptions.
+- Lean 4: **~28 theorems actually compile** (3 hand-corrected core files). The
+  remaining ~12,500 declarations use placeholder tactics (`simp_all [Bool.and_eq_true]`)
+  that do NOT prove their goals. Claim: **generated**, not mechanized. See
+  `02_FORMAL/lean/COMPILATION_STATUS.md`.
+- F*: 315 .fst files but `admit()` appears ~12,010 times — effectively nothing is
+  proven. Claim: generated.
+- Isabelle: 368 .thy (generated); 1 smoke theory `RIINA_CORE` compiles. Claim: smoke.
+- TLA+ / Alloy / SMT: 1 small hand-written smoke artifact each; remainder generated mirrors.
+- Verus / Kani / TV: generated stubs, explicitly quarantined (`quarantined: true`).
+- Authoritative per-lane claim levels: `website/public/metrics.json`.
+- Rust: 2,479 proto tests + 248 tooling tests = 2,727 (all passing), 19 proto +
+  5 tooling crates, 0 external runtime deps (proto). This part is solid.
+- Examples: 155 .rii files, but only ~19 currently pass `riinac check` (the shipped
+  parser accepts a narrower grammar — see `07_EXAMPLES/README.md`).
 
 ## Session Protocol
 
