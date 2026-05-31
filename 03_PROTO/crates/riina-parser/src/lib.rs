@@ -265,7 +265,7 @@ impl<'a> Parser<'a> {
                     self.next();
                 }
                 self.consume(TokenKind::Semi)?;
-                self.parse_top_level_decl()
+                self.parse_next_decl_or_unit()
             }
             Some(TokenKind::KwStruct) | Some(TokenKind::KwEnum) => {
                 // bentuk/pilihan — skip declaration (no struct/enum semantics yet)
@@ -273,7 +273,7 @@ impl<'a> Parser<'a> {
                 let _name = self.parse_ident()?;
                 self.consume(TokenKind::LBrace)?;
                 self.skip_balanced_braces();
-                self.parse_top_level_decl()
+                self.parse_next_decl_or_unit()
             }
             Some(TokenKind::KwType) => {
                 // jenis — skip type/record declaration (no nominal type semantics
@@ -324,7 +324,7 @@ impl<'a> Parser<'a> {
                     // Marker type with no body: `jenis Name`
                     _ => {}
                 }
-                self.parse_top_level_decl()
+                self.parse_next_decl_or_unit()
             }
             Some(TokenKind::KwChoreography) => self.parse_choreography(),
             Some(TokenKind::KwActor) => self.parse_actor_decl(),
@@ -333,7 +333,7 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwPub) => {
                 // awam fungsi ... — consume visibility, delegate
                 self.consume(TokenKind::KwPub)?;
-                self.parse_top_level_decl()
+                self.parse_next_decl_or_unit()
             }
             Some(TokenKind::KwFn) => self.parse_function_decl(),
             Some(TokenKind::KwLet) => {
@@ -342,7 +342,7 @@ impl<'a> Parser<'a> {
                 if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwMut)) {
                     self.consume(TokenKind::KwMut)?;
                 }
-                let name = self.parse_ident()?;
+                let name = self.parse_binding_name()?;
                 // Optional type annotation `biar x: T = e` (parsed and discarded;
                 // type is inferred). Mirrors the in-function binding form.
                 if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Colon)) {
@@ -493,7 +493,7 @@ impl<'a> Parser<'a> {
             if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwMut)) {
                 self.consume(TokenKind::KwMut)?;
             }
-            let name = self.parse_ident()?;
+            let name = self.parse_binding_name()?;
             self.consume(TokenKind::Colon)?;
             let ty = self.parse_ty()?;
             params.push((name, ty));
@@ -503,7 +503,7 @@ impl<'a> Parser<'a> {
                 if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwMut)) {
                     self.consume(TokenKind::KwMut)?;
                 }
-                let name = self.parse_ident()?;
+                let name = self.parse_binding_name()?;
                 self.consume(TokenKind::Colon)?;
                 let ty = self.parse_ty()?;
                 params.push((name, ty));
@@ -615,7 +615,7 @@ impl<'a> Parser<'a> {
                 }
                 return Ok(Expr::Let(tmp, linearity, Box::new(e1), Box::new(bound)));
             }
-            let name = self.parse_ident()?;
+            let name = self.parse_binding_name()?;
             // Optional type annotation: `biar x: T = e`. Accepted for ergonomics
             // and documentation; the binding's type is inferred by the
             // typechecker, so the parsed `Ty` is intentionally discarded (the
@@ -824,7 +824,11 @@ impl<'a> Parser<'a> {
         ahead.next(); // skip `{`
         match ahead.next().map(|t| t.kind) {
             Some(TokenKind::RBrace) => true, // empty record `{}`
+            // A field name is an identifier or a soft keyword (e.g. `tahap:`).
             Some(TokenKind::Identifier(_)) => {
+                matches!(ahead.next().map(|t| t.kind), Some(TokenKind::Colon))
+            }
+            Some(ref k) if Self::soft_keyword_spelling(k).is_some() => {
                 matches!(ahead.next().map(|t| t.kind), Some(TokenKind::Colon))
             }
             _ => false,
@@ -837,7 +841,7 @@ impl<'a> Parser<'a> {
         self.consume(TokenKind::LBrace)?;
         let mut fields = Vec::new();
         while !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace) | None) {
-            let field = self.parse_ident()?;
+            let field = self.parse_binding_name()?;
             self.consume(TokenKind::Colon)?;
             let value = self.parse_control_flow()?;
             fields.push((field, value));
@@ -1307,6 +1311,12 @@ impl<'a> Parser<'a> {
                             }
                             expr = Expr::FieldAccess(Box::new(expr), name);
                         }
+                        // Soft-keyword field name, e.g. `rec.tahap`.
+                        Some(ref k) if Self::soft_keyword_spelling(k).is_some() => {
+                            let name = Self::soft_keyword_spelling(k).unwrap().to_string();
+                            self.next();
+                            expr = Expr::FieldAccess(Box::new(expr), name);
+                        }
                         _ => {
                             return Err(ParseError {
                                 kind: ParseErrorKind::ExpectedIdentifier,
@@ -1627,6 +1637,14 @@ impl<'a> Parser<'a> {
                         Ok(e)
                     }
                 }
+            }
+            // A "soft" keyword in value position (where an atom is expected) is a
+            // variable reference — the corpus uses words like `tahap`, `keadaan`,
+            // `jenis` as ordinary names. Treat it as `Var(canonical spelling)`.
+            Some(ref k) if Self::soft_keyword_spelling(k).is_some() => {
+                let name = Self::soft_keyword_spelling(k).unwrap().to_string();
+                self.next();
+                Ok(Expr::Var(name))
             }
             Some(kind) => Err(ParseError {
                 kind: ParseErrorKind::UnexpectedToken(kind),
@@ -2235,6 +2253,55 @@ impl<'a> Parser<'a> {
             Some(TokenKind::Identifier(s)) => {
                 self.next();
                 Ok(s)
+            }
+            Some(_) => Err(ParseError {
+                kind: ParseErrorKind::ExpectedIdentifier,
+                span: self.current_span,
+            }),
+            None => Err(ParseError {
+                kind: ParseErrorKind::UnexpectedEof,
+                span: self.current_span,
+            }),
+        }
+    }
+
+    /// The canonical Bahasa Melayu spelling for "soft" keyword tokens — domain
+    /// keywords that the example corpus also uses as ordinary variable, parameter,
+    /// and field names (e.g. `tahap`, `keadaan`, `jenis`, `input`). Returns `None`
+    /// for tokens that are *not* allowed as names (structural keywords like `fn`,
+    /// `let`, `if`, etc., whose use as a name would be genuinely ambiguous).
+    fn soft_keyword_spelling(kind: &TokenKind) -> Option<&'static str> {
+        Some(match kind {
+            TokenKind::KwLevel => "tahap",
+            TokenKind::KwState => "keadaan",
+            TokenKind::KwType => "jenis",
+            TokenKind::KwInput => "input",
+            TokenKind::KwToken => "token",
+            TokenKind::KwRole => "peranan",
+            TokenKind::KwChannel => "saluran",
+            TokenKind::KwPolicy => "dasar",
+            TokenKind::KwText_ => "tulisan",
+            TokenKind::KwDisplay => "paparan",
+            TokenKind::KwSafe => "selamat",
+            TokenKind::KwCapability => "keupayaan",
+            TokenKind::KwSecret => "rahsia",
+            _ => return None,
+        })
+    }
+
+    /// Parse a binding/parameter/field name. Accepts a normal identifier or a
+    /// "soft" keyword (see [`Parser::soft_keyword_spelling`]) used as a name,
+    /// which the example corpus does pervasively (`tahap: Teks`, `keadaan: ...`).
+    fn parse_binding_name(&mut self) -> Result<Ident, ParseError> {
+        match self.peek().map(|t| t.kind.clone()) {
+            Some(TokenKind::Identifier(s)) => {
+                self.next();
+                Ok(s)
+            }
+            Some(ref k) if Self::soft_keyword_spelling(k).is_some() => {
+                let name = Self::soft_keyword_spelling(k).unwrap().to_string();
+                self.next();
+                Ok(name)
             }
             Some(_) => Err(ParseError {
                 kind: ParseErrorKind::ExpectedIdentifier,

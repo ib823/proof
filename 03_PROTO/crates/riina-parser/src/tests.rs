@@ -3879,3 +3879,40 @@ fn test_parse_three_tuple_construction() {
         other => panic!("expected nested Pair, got {other:?}"),
     }
 }
+
+// =============================================================================
+// SOFT KEYWORDS AS NAMES (tahap/keadaan/jenis/... used as identifiers)
+// =============================================================================
+
+#[test]
+fn test_soft_keyword_as_binding_and_use() {
+    let mut p = Parser::new("biar tahap = 7; tahap");
+    assert!(p.parse_expr().is_ok());
+}
+
+#[test]
+fn test_soft_keyword_as_param_name() {
+    let mut p =
+        Parser::new("fungsi f(tahap: Teks, keadaan: Nombor) -> Nombor kesan Bersih { keadaan }");
+    assert!(p.parse_program().is_ok());
+}
+
+#[test]
+fn test_soft_keyword_as_record_field() {
+    let mut p = Parser::new("{ tahap: 3, keadaan: 4 }");
+    match p.parse_expr().unwrap() {
+        Expr::RecordLit(_, fields) => {
+            assert_eq!(fields[0].0, "tahap");
+            assert_eq!(fields[1].0, "keadaan");
+        }
+        other => panic!("expected RecordLit, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_jenis_still_a_decl_keyword() {
+    // `jenis` is a soft keyword as a name, but still a struct-decl keyword,
+    // including as the final declaration in a file (EOF-safe recursion).
+    let mut p = Parser::new("jenis Titik { x: Nombor }");
+    assert!(p.parse_program().is_ok());
+}
