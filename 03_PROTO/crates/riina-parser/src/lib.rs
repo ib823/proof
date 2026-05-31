@@ -1402,25 +1402,34 @@ impl<'a> Parser<'a> {
                         Box::new(Expr::Pair(Box::new(expr), Box::new(index))),
                     );
                 }
-                _ => break,
-            }
-        }
-        // Check for parenthesized call syntax: f(a, b, c) → App(App(App(f, a), b), c)
-        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
-            // Only treat as call if current expr could be a callee (Var or prior App)
-            if matches!(&expr, Expr::Var(_) | Expr::App(_, _)) {
-                self.consume(TokenKind::LParen)?;
-                if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
-                    let arg = self.parse_control_flow()?;
-                    expr = Expr::App(Box::new(expr), Box::new(arg));
-                    while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
-                        self.consume(TokenKind::Comma)?;
+                // Parenthesized call `e(a, b, ...)` -> App(App(e, a), b)... Treated
+                // as a call when the head could be a callee (a name, prior call,
+                // field access — i.e. a method `obj.m(..)` — or projection). Kept
+                // in this postfix loop so calls and field accesses chain freely,
+                // e.g. `m.peta(..).peta(..)` (multi-step method chains).
+                Some(TokenKind::LParen)
+                    if matches!(
+                        &expr,
+                        Expr::Var(_)
+                            | Expr::App(_, _)
+                            | Expr::FieldAccess(_, _)
+                            | Expr::Fst(_)
+                            | Expr::Snd(_)
+                    ) =>
+                {
+                    self.consume(TokenKind::LParen)?;
+                    if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
                         let arg = self.parse_control_flow()?;
                         expr = Expr::App(Box::new(expr), Box::new(arg));
+                        while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                            self.consume(TokenKind::Comma)?;
+                            let arg = self.parse_control_flow()?;
+                            expr = Expr::App(Box::new(expr), Box::new(arg));
+                        }
                     }
+                    self.consume(TokenKind::RParen)?;
                 }
-                self.consume(TokenKind::RParen)?;
-                return Ok(expr);
+                _ => break,
             }
         }
         // Juxtaposition application (`f x`). Only a callable head juxtaposes an

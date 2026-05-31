@@ -3964,3 +3964,12 @@ fn test_parse_pipe_lambda_target() {
         other => panic!("expected App(Lam), got {other:?}"),
     }
 }
+
+#[test]
+fn test_parse_chained_method_calls() {
+    // `m.peta(..).peta(..)` — multi-step method chain (call then call).
+    let mut p = Parser::new("m.f(1).g(2)");
+    // Outer is App(App(FieldAccess(App(App(FieldAccess(m,f),1)),g),2)) — just
+    // assert it parses to a nested App without error.
+    assert!(matches!(p.parse_expr().unwrap(), Expr::App(_, _)));
+}
