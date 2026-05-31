@@ -3273,3 +3273,26 @@ fn test_parse_masatetap_as_effect() {
     let mut p = Parser::new("fungsi f() -> Nombor kesan MasaTetap {\n  0\n}\n0");
     assert!(p.parse_program().is_ok());
 }
+
+#[test]
+fn test_parse_list_literal() {
+    let mut p = Parser::new("[1, 2, 3]");
+    match p.parse_expr().unwrap() {
+        Expr::ListLit(elems) => assert_eq!(elems.len(), 3),
+        other => panic!("expected ListLit, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_empty_and_nested_list() {
+    let mut p = Parser::new("[]");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::ListLit(ref v) if v.is_empty()));
+    let mut p2 = Parser::new("[[1, 2], [3, 4]]");
+    match p2.parse_expr().unwrap() {
+        Expr::ListLit(elems) => {
+            assert_eq!(elems.len(), 2);
+            assert!(matches!(elems[0], Expr::ListLit(_)));
+        }
+        other => panic!("expected nested ListLit, got {other:?}"),
+    }
+}

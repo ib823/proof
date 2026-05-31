@@ -479,6 +479,15 @@ impl Interpreter {
                 Ok(Value::Pair(Box::new(v1), Box::new(v2)))
             }
 
+            // List literal `[e1, e2, ...]` — evaluate each element left to right.
+            Expr::ListLit(elems) => {
+                let mut items = Vec::with_capacity(elems.len());
+                for e in elems {
+                    items.push(self.eval_with_env(env, e)?);
+                }
+                Ok(Value::List(items))
+            }
+
             // E_Fst: eval ρ σ e σ' (VPair v1 v2) -> eval ρ σ (EFst e) σ' v1
             Expr::Fst(e) => {
                 let v = self.eval_with_env(env, e)?;

@@ -90,7 +90,10 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
         }
 
         // CAHAYA Phase J5
-        Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
+        Expr::ListLit(elems)
+        | Expr::UIDisplay(elems)
+        | Expr::UIRow(elems)
+        | Expr::UIColumn(elems) => {
             for e in elems {
                 walk_inner(e, rules, out);
             }

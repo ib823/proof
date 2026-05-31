@@ -929,6 +929,10 @@ pub enum Expr {
     /// e1 op e2
     BinOp(BinOp, Box<Expr>, Box<Expr>),
 
+    // Collections
+    /// List literal: [e1, e2, ...]. Empty `[]` is the empty list.
+    ListLit(Vec<Expr>),
+
     // FFI
     /// Foreign function call
     FFICall {

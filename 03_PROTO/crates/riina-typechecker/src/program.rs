@@ -313,7 +313,9 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
             }
         }
         // CAHAYA Phase J5
-        Expr::UIDisplay(_)
+        // List literals carry no capability requirements of their own.
+        Expr::ListLit(_)
+        | Expr::UIDisplay(_)
         | Expr::UIRow(_)
         | Expr::UIColumn(_)
         | Expr::UIText(_, _)

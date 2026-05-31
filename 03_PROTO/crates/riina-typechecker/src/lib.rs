@@ -2471,6 +2471,27 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         Expr::Int(_) => Ok((Ty::Int, Effect::Pure)),
         Expr::String(_) => Ok((Ty::String, Effect::Pure)),
 
+        // List literal `[e1, e2, ...]`: every element must share a type; the
+        // result is `List<elem>`. An empty `[]` is `List<Any>`. The effect is
+        // the join of the element effects.
+        Expr::ListLit(elems) => {
+            let mut elem_ty = Ty::Any;
+            let mut eff = Effect::Pure;
+            for (i, e) in elems.iter().enumerate() {
+                let (t, ef) = type_check_full(ctx, e)?;
+                eff = eff.join(ef);
+                if i == 0 {
+                    elem_ty = t;
+                } else if elem_ty != Ty::Any && t != Ty::Any && t != elem_ty {
+                    return Err(TypeError::TypeMismatch {
+                        expected: elem_ty.clone(),
+                        found: t,
+                    });
+                }
+            }
+            Ok((Ty::List(Box::new(elem_ty)), eff))
+        }
+
         // T_Var: Γ(x) = T → has_type Γ Σ Δ (EVar x) T EffectPure
         Expr::Var(x) => {
             let ty = ctx
@@ -3303,6 +3324,24 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         Expr::Bool(_) => Ok((Ty::Bool, Effect::Pure)),
         Expr::Int(_) => Ok((Ty::Int, Effect::Pure)),
         Expr::String(_) => Ok((Ty::String, Effect::Pure)),
+        // List literal `[e1, ...]` — all elements share a type; result `List<T>`.
+        Expr::ListLit(elems) => {
+            let mut elem_ty = Ty::Any;
+            let mut eff = Effect::Pure;
+            for (i, e) in elems.iter().enumerate() {
+                let (t, ef) = type_check(ctx, e)?;
+                eff = eff.join(ef);
+                if i == 0 {
+                    elem_ty = t;
+                } else if elem_ty != Ty::Any && t != Ty::Any && t != elem_ty {
+                    return Err(TypeError::TypeMismatch {
+                        expected: elem_ty.clone(),
+                        found: t,
+                    });
+                }
+            }
+            Ok((Ty::List(Box::new(elem_ty)), eff))
+        }
         Expr::Var(x) => {
             let ty = ctx
                 .lookup(x)

@@ -206,6 +206,17 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
             fmt_expr_inline(out, b, cfg);
             out.push(')');
         }
+        Expr::ListLit(elems) => {
+            indent(out, level, cfg);
+            out.push('[');
+            for (i, e) in elems.iter().enumerate() {
+                if i > 0 {
+                    out.push_str(", ");
+                }
+                fmt_expr_inline(out, e, cfg);
+            }
+            out.push(']');
+        }
         Expr::Fst(e) => {
             indent(out, level, cfg);
             out.push_str("pertama ");
@@ -462,6 +473,16 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
             out.push_str(", ");
             fmt_expr_inline(out, b, cfg);
             out.push(')');
+        }
+        Expr::ListLit(elems) => {
+            out.push('[');
+            for (i, e) in elems.iter().enumerate() {
+                if i > 0 {
+                    out.push_str(", ");
+                }
+                fmt_expr_inline(out, e, cfg);
+            }
+            out.push(']');
         }
         Expr::Fst(e) => {
             out.push_str("pertama ");

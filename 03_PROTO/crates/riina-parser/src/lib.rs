@@ -958,6 +958,22 @@ impl<'a> Parser<'a> {
                 self.next();
                 Ok(Expr::Var(s))
             }
+            // List literal `[e1, e2, ...]`. A trailing comma is allowed; `[]` is
+            // the empty list.
+            Some(TokenKind::LBracket) => {
+                self.next();
+                let mut elems = Vec::new();
+                while !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBracket) | None) {
+                    elems.push(self.parse_control_flow()?);
+                    if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                        self.consume(TokenKind::Comma)?;
+                    } else {
+                        break;
+                    }
+                }
+                self.consume(TokenKind::RBracket)?;
+                Ok(Expr::ListLit(elems))
+            }
             // KwExpect (jangkakan/expect) is both a keyword and a builtin function.
             // When used as an expression, treat it as Var("jangkakan").
             Some(TokenKind::KwExpect) => {

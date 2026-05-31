@@ -315,7 +315,10 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
         | Expr::ContractDeploy(a)
         | Expr::ZakatCalculate(a) => free_vars(a),
         // CAHAYA Phase J5
-        Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
+        Expr::ListLit(elems)
+        | Expr::UIDisplay(elems)
+        | Expr::UIRow(elems)
+        | Expr::UIColumn(elems) => {
             let mut fv = HashSet::new();
             for e in elems {
                 fv.extend(free_vars(e));
@@ -584,6 +587,9 @@ impl Lower {
                 }
             }
             Expr::ZakatCalculate(expr) => self.infer_type(expr),
+            // List literal — element type is approximated as Any (the
+            // typechecker computes the precise element type).
+            Expr::ListLit(_) => Ty::List(Box::new(Ty::Any)),
             // CAHAYA Phase J5
             Expr::UIDisplay(_) | Expr::UIRow(_) | Expr::UIColumn(_) => Ty::Element,
             Expr::UIText(_, _) => Ty::Element,
@@ -672,6 +678,14 @@ impl Lower {
                 .join(self.infer_effect(amount))
                 .join(Effect::NetworkSecure),
             Expr::ZakatCalculate(a) => self.infer_effect(a),
+            // List literal — effect is the join of its elements.
+            Expr::ListLit(elems) => {
+                let mut eff = Effect::Pure;
+                for e in elems {
+                    eff = eff.join(self.infer_effect(e));
+                }
+                eff
+            }
             // CAHAYA Phase J5 — all UI expressions are pure
             Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
                 let mut eff = Effect::Pure;
@@ -701,6 +715,32 @@ impl Lower {
                 SecurityLevel::Public,
                 Effect::Pure,
             )),
+
+            // List literal `[e1, e2, ...]` is lowered to a nil-terminated cons
+            // chain of IR pairs: (e1, (e2, (... , unit))). This reuses the
+            // existing Pair instruction (no new IR op needed). The interpreter
+            // builds a first-class Value::List directly; this representation is
+            // for the C/WASM lowering path.
+            Expr::ListLit(elems) => {
+                let effect = self.infer_effect(expr);
+                let mut acc = self.emit(
+                    Instruction::Const(Constant::Unit),
+                    Ty::Unit,
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                );
+                for e in elems.iter().rev() {
+                    let head = self.lower_expr(e)?;
+                    let elem_ty = self.infer_type(e);
+                    acc = self.emit(
+                        Instruction::Pair(head, acc),
+                        Ty::List(Box::new(elem_ty)),
+                        SecurityLevel::Public,
+                        effect,
+                    );
+                }
+                Ok(acc)
+            }
 
             Expr::Bool(b) => Ok(self.emit(
                 Instruction::Const(Constant::Bool(*b)),
