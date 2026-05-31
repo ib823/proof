@@ -157,6 +157,9 @@ enum Pattern {
     /// Right-injection constructor (`None`/`Tiada`/`Err`/`Gagal`/`Ralat`/`inr`)
     /// with payload.
     CtorRight(Box<Pattern>),
+    /// Reference pattern `ruj(p)`: matches a reference, testing/binding the inner
+    /// pattern `p` against the dereferenced value.
+    Ref(Box<Pattern>),
 }
 
 /// One arm of a `padan` expression: a pattern, an optional `kalau` guard, and a
@@ -1985,6 +1988,13 @@ impl<'a> Parser<'a> {
                 let name = self.parse_ident()?;
                 Ok(Pattern::CtorRight(Box::new(Pattern::Var(name))))
             }
+            // Reference pattern `ruj(p)`: matches a reference, binding/testing the
+            // inner pattern against the dereferenced value.
+            Some(TokenKind::KwRef) => {
+                self.next();
+                let inner = self.parse_ctor_payload()?;
+                Ok(Pattern::Ref(inner))
+            }
             // Literal patterns.
             Some(TokenKind::LiteralInt(s, _)) => {
                 self.next();
@@ -2189,6 +2199,11 @@ impl<'a> Parser<'a> {
                 let (_test, binds) = self.pattern_test(&Expr::Var(tmp.clone()), pat);
                 let bound = self.wrap_lets(binds, body);
                 Ok(Expr::Let(tmp, None, Box::new(scrut), Box::new(bound)))
+            }
+            Pattern::Ref(inner) => {
+                // Reference payload: bind the inner pattern against the deref.
+                let deref = Expr::Deref(Box::new(scrut));
+                self.bind_pattern(deref, inner, body)
             }
         }
     }
@@ -2413,6 +2428,13 @@ impl<'a> Parser<'a> {
                     None => tag_test,
                 };
                 (Some(test), binds)
+            }
+            // Reference pattern `ruj(p)`: dereference the scrutinee and match the
+            // inner pattern against the pointed-to value. The reference itself is
+            // irrefutable (any ref matches `ruj(_)`); refutability comes from `p`.
+            Pattern::Ref(inner) => {
+                let deref = Expr::Deref(Box::new(scrut.clone()));
+                self.pattern_test(&deref, inner)
             }
         }
     }

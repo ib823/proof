@@ -4003,3 +4003,10 @@ fn test_parse_nested_ctor_in_tuple_pattern() {
     let mut p = Parser::new("padan p { (Ada(a), Ada(b)) -> a + b, _ -> 0 }");
     assert!(p.parse_expr().is_ok());
 }
+
+#[test]
+fn test_parse_ref_pattern() {
+    // `ruj(p)` reference pattern — deref + inner pattern.
+    let mut p = Parser::new("padan r { ruj(0) -> 1, ruj(x) -> x }");
+    assert!(p.parse_expr().is_ok());
+}
