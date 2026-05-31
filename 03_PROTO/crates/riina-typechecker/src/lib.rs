@@ -711,6 +711,12 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         "cetakln".to_string(),
         Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
     );
+    // `cetak_baris` ("print line") is the BM name the example corpus uses for a
+    // line-terminated print; same signature as `cetakln`.
+    c = c.extend(
+        "cetak_baris".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
+    );
     c = c.extend(
         "println".to_string(),
         Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),

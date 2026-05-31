@@ -30,6 +30,10 @@ pub fn register_builtins(env: &Env) -> Env {
     e = e.extend("cetak".to_string(), Value::Builtin("cetak".to_string()));
     e = e.extend("print".to_string(), Value::Builtin("cetak".to_string()));
     e = e.extend("cetakln".to_string(), Value::Builtin("cetakln".to_string()));
+    e = e.extend(
+        "cetak_baris".to_string(),
+        Value::Builtin("cetakln".to_string()),
+    );
     e = e.extend("println".to_string(), Value::Builtin("cetakln".to_string()));
 
     // String operations (existing)
