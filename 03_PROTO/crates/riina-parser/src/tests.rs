@@ -3674,3 +3674,22 @@ fn test_parse_equality_not_treated_as_assignment() {
         other => panic!("expected Let, got {other:?}"),
     }
 }
+
+#[test]
+fn test_parse_bare_return_is_unit() {
+    // `pulang;` (no operand) returns Unit.
+    let mut p = Parser::new("pulang;");
+    match p.parse_expr().unwrap() {
+        Expr::Return(e) => assert_eq!(*e, Expr::Unit),
+        other => panic!("expected Return, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_return_with_value() {
+    let mut p = Parser::new("pulang 5");
+    match p.parse_expr().unwrap() {
+        Expr::Return(e) => assert_eq!(*e, Expr::Int(5)),
+        other => panic!("expected Return, got {other:?}"),
+    }
+}

@@ -841,9 +841,17 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwGuard) => self.parse_guard(),
             Some(TokenKind::KwReturn) => {
                 self.consume(TokenKind::KwReturn)?;
-                // `pulang e` — early return. Evaluating it unwinds to the nearest
-                // enclosing function-application boundary (see Expr::Return).
-                let e = self.parse_pipe()?;
+                // `pulang e` — early return; unwinds to the nearest enclosing
+                // function-application boundary (see Expr::Return). A bare
+                // `pulang;` (no operand) returns Unit.
+                let e = if matches!(
+                    self.peek().map(|t| &t.kind),
+                    Some(TokenKind::Semi) | Some(TokenKind::RBrace) | Some(TokenKind::Eof) | None
+                ) {
+                    Expr::Unit
+                } else {
+                    self.parse_pipe()?
+                };
                 Ok(Expr::Return(Box::new(e)))
             }
             Some(TokenKind::KwFor) => self.parse_for_in(),
