@@ -994,13 +994,16 @@ fn test_error_unexpected_eof_in_let() {
 }
 
 #[test]
-fn test_error_unexpected_token_in_if() {
-    // Input: If without else
-    // Expected: ParseError::UnexpectedToken
-    // Rationale: Must require else branch
+fn test_if_without_else_is_guard() {
+    // `if c { e }` with no `else` is now valid: it is a statement-position guard
+    // (e.g. `kalau c { pulang x; }`). It parses to an `If` whose branches are
+    // both Unit-typed (the then-value is discarded), so the construct yields
+    // Unit. (Previously an else branch was mandatory.)
     let mut p = Parser::new("if true { 1 }");
-    let result = p.parse_expr();
-    assert!(result.is_err(), "If without else must produce error");
+    match p.parse_expr().unwrap() {
+        Expr::If(_, _, else_branch) => assert_eq!(*else_branch, Expr::Unit),
+        other => panic!("expected If, got {other:?}"),
+    }
 }
 
 #[test]
@@ -3528,4 +3531,34 @@ fn test_parse_fn_type_legacy_comma_still_works() {
         p.parse_ty().unwrap(),
         Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Write)
     );
+}
+
+// =============================================================================
+// IF-WITHOUT-ELSE GUARDS + ELSE-IF CHAINS + BLOCK-FORM STATEMENT SEQUENCING
+// =============================================================================
+
+#[test]
+fn test_parse_else_if_chain() {
+    // `lain kalau` chains parse as nested If.
+    let mut p = Parser::new("kalau salah { 1 } lain kalau betul { 2 } lain { 3 }");
+    match p.parse_expr().unwrap() {
+        Expr::If(_, _, else_branch) => {
+            assert!(matches!(*else_branch, Expr::If(_, _, _)));
+        }
+        other => panic!("expected If, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_guard_then_statement() {
+    // A block-form guard with no trailing `;` can be followed by more
+    // statements: `kalau c { pulang x; } pulang y;`.
+    let mut p = Parser::new("kalau betul { pulang 0; } pulang 9;");
+    assert!(p.parse_expr().is_ok());
+}
+
+#[test]
+fn test_parse_plain_if_else_still_works() {
+    let mut p = Parser::new("kalau betul { 1 } lain { 2 }");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::If(_, _, _)));
 }

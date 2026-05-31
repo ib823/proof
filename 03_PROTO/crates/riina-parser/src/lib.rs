@@ -506,6 +506,19 @@ impl<'a> Parser<'a> {
             return Ok(Expr::Let(name, linearity, Box::new(e1), Box::new(e2)));
         }
 
+        // A block-form statement (`kalau`/`padan`/`selagi`/`untuk`/`ulang`) may
+        // be used in statement position without a trailing `;`, e.g. an
+        // early-return guard `kalau c { pulang x; }` followed by more statements.
+        // Other expressions still require a `;` to start a sequence.
+        let first_is_block_form = matches!(
+            self.peek().map(|t| &t.kind),
+            Some(TokenKind::KwIf)
+                | Some(TokenKind::KwMatch)
+                | Some(TokenKind::KwWhile)
+                | Some(TokenKind::KwFor)
+                | Some(TokenKind::KwLoop)
+        );
+
         let first = self.parse_control_flow()?;
 
         // If next token is ';', this is a statement sequence
@@ -525,6 +538,17 @@ impl<'a> Parser<'a> {
                 Box::new(first),
                 Box::new(rest),
             ))
+        } else if first_is_block_form && !self.at_sequence_end() {
+            // No `;`, but a block-form statement is followed by more statements
+            // — e.g. `kalau c { pulang x; }` (a guard) then further statements.
+            // Sequence `first` (its value discarded) before the rest.
+            let rest = self.parse_stmt_sequence()?;
+            Ok(Expr::Let(
+                "_".to_string(),
+                None,
+                Box::new(first),
+                Box::new(rest),
+            ))
         } else {
             Ok(first)
         }
@@ -533,7 +557,10 @@ impl<'a> Parser<'a> {
     /// True when the next token ends a statement sequence — a block close `}`
     /// or end of input. Used to allow a trailing `;` after the final statement.
     fn at_sequence_end(&mut self) -> bool {
-        matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace) | None)
+        matches!(
+            self.peek().map(|t| &t.kind),
+            Some(TokenKind::RBrace) | Some(TokenKind::Eof) | None
+        )
     }
 
     /// Skip a `<...>` generic argument list (the leading `<` is still on the
@@ -1246,13 +1273,46 @@ impl<'a> Parser<'a> {
         self.consume(TokenKind::KwIf)?;
         let cond = self.parse_expr()?;
         self.consume(TokenKind::LBrace)?;
-        let e2 = self.parse_expr()?;
+        let then_branch = self.parse_expr()?;
         self.consume(TokenKind::RBrace)?;
-        self.consume(TokenKind::KwElse)?;
-        self.consume(TokenKind::LBrace)?;
-        let e3 = self.parse_expr()?;
-        self.consume(TokenKind::RBrace)?;
-        Ok(Expr::If(Box::new(cond), Box::new(e2), Box::new(e3)))
+
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwElse)) {
+            self.consume(TokenKind::KwElse)?;
+            // `lain kalau ...` (else-if): the else branch is itself an `if`,
+            // parsed recursively to chain conditions.
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwIf)) {
+                let else_branch = self.parse_if()?;
+                return Ok(Expr::If(
+                    Box::new(cond),
+                    Box::new(then_branch),
+                    Box::new(else_branch),
+                ));
+            }
+            self.consume(TokenKind::LBrace)?;
+            let else_branch = self.parse_expr()?;
+            self.consume(TokenKind::RBrace)?;
+            Ok(Expr::If(
+                Box::new(cond),
+                Box::new(then_branch),
+                Box::new(else_branch),
+            ))
+        } else {
+            // `kalau cond { ... }` with no `lain`: used as a statement (e.g. an
+            // early-return guard `kalau c { pulang x; }`). Both branches must
+            // agree in type, so the then-branch's value is discarded (sequenced
+            // to Unit) and the implicit else is Unit. The construct yields Unit.
+            let then_unit = Expr::Let(
+                "_".to_string(),
+                None,
+                Box::new(then_branch),
+                Box::new(Expr::Unit),
+            );
+            Ok(Expr::If(
+                Box::new(cond),
+                Box::new(then_unit),
+                Box::new(Expr::Unit),
+            ))
+        }
     }
 
     fn parse_lam(&mut self) -> Result<Expr, ParseError> {
