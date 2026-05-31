@@ -3190,3 +3190,49 @@ fn test_parse_display_nested() {
         other => panic!("Expected UIDisplay, got {:?}", other),
     }
 }
+
+// -- Grammar extensions: type annotations, trailing semicolons, `jenis` decls --
+
+#[test]
+fn test_parse_biar_type_annotation() {
+    // `biar x: T = e` — the annotation is accepted (and discarded).
+    let mut p = Parser::new("biar n: Nombor = 42; n");
+    let expr = p.parse_expr().unwrap();
+    assert!(matches!(expr, Expr::Let(ref name, _, _, _) if name == "n"));
+}
+
+#[test]
+fn test_parse_trailing_semicolon_in_block() {
+    // A trailing `;` before a block close `}` is allowed; `pulang x;` as the
+    // final statement returns `x`.
+    let mut p =
+        Parser::new("fungsi f(x: Nombor) -> Nombor {\n  biar a = x;\n  pulang a;\n}\n1");
+    let prog = p.parse_program();
+    assert!(prog.is_ok(), "trailing `;` before `}}` should parse: {prog:?}");
+}
+
+#[test]
+fn test_parse_jenis_record_decl() {
+    let mut p = Parser::new("jenis Titik { x: Nombor, y: Nombor, }\n1");
+    let prog = p.parse_program();
+    assert!(prog.is_ok(), "jenis record decl should parse: {prog:?}");
+}
+
+#[test]
+fn test_parse_jenis_generic_and_alias_and_marker() {
+    // Generic record, alias, and marker forms all parse.
+    for src in [
+        "jenis Box<T> { nilai: T, }\n1",
+        "jenis Umur = Nombor;\n1",
+        "jenis Penanda\n1",
+    ] {
+        let mut p = Parser::new(src);
+        assert!(p.parse_program().is_ok(), "should parse: {src}");
+    }
+}
+
+#[test]
+fn test_parse_top_level_biar_type_annotation() {
+    let mut p = Parser::new("biar n: Nombor = 42;\nn");
+    assert!(p.parse_program().is_ok());
+}

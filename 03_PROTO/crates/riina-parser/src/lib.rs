@@ -185,23 +185,57 @@ impl<'a> Parser<'a> {
                 self.next(); // consume KwStruct or KwEnum
                 let _name = self.parse_ident()?;
                 self.consume(TokenKind::LBrace)?;
-                // Skip until matching RBrace
-                let mut depth = 1u32;
-                while depth > 0 {
-                    match self.peek().map(|t| &t.kind) {
-                        Some(TokenKind::LBrace) => {
-                            self.next();
-                            depth += 1;
-                        }
-                        Some(TokenKind::RBrace) => {
-                            self.next();
-                            depth -= 1;
-                        }
-                        None => break,
-                        _ => {
-                            self.next();
+                self.skip_balanced_braces();
+                self.parse_top_level_decl()
+            }
+            Some(TokenKind::KwType) => {
+                // jenis — skip type/record declaration (no nominal type semantics
+                // yet; the typechecker infers structurally). Forms handled:
+                //   jenis Name { ... }
+                //   jenis Name<T, ...> { ... }
+                //   jenis Name            (marker type, no body)
+                self.next(); // consume KwType
+                let _name = self.parse_ident()?;
+                // Optional generic parameter list `<...>` — skip balanced angles.
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
+                    self.next();
+                    let mut depth = 1u32;
+                    while depth > 0 {
+                        match self.peek().map(|t| &t.kind) {
+                            Some(TokenKind::Lt) => {
+                                self.next();
+                                depth += 1;
+                            }
+                            Some(TokenKind::Gt) => {
+                                self.next();
+                                depth -= 1;
+                            }
+                            None => break,
+                            _ => {
+                                self.next();
+                            }
                         }
                     }
+                }
+                match self.peek().map(|t| &t.kind) {
+                    // Record body: `jenis Name { ... }`
+                    Some(TokenKind::LBrace) => {
+                        self.next();
+                        self.skip_balanced_braces();
+                    }
+                    // Type alias: `jenis Name = SomeType;` — skip to the `;`.
+                    Some(TokenKind::Eq) => {
+                        self.next();
+                        while !matches!(
+                            self.peek().map(|t| &t.kind),
+                            Some(TokenKind::Semi) | None
+                        ) {
+                            self.next();
+                        }
+                        let _ = self.consume(TokenKind::Semi);
+                    }
+                    // Marker type with no body: `jenis Name`
+                    _ => {}
                 }
                 self.parse_top_level_decl()
             }
@@ -218,6 +252,12 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwLet) => {
                 self.consume(TokenKind::KwLet)?;
                 let name = self.parse_ident()?;
+                // Optional type annotation `biar x: T = e` (parsed and discarded;
+                // type is inferred). Mirrors the in-function binding form.
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Colon)) {
+                    self.consume(TokenKind::Colon)?;
+                    let _annotated_ty = self.parse_ty()?;
+                }
                 self.consume(TokenKind::Eq)?;
                 let value = self.parse_control_flow()?;
                 self.consume(TokenKind::Semi)?;
@@ -387,10 +427,24 @@ impl<'a> Parser<'a> {
                 _ => None,
             };
             let name = self.parse_ident()?;
+            // Optional type annotation: `biar x: T = e`. Accepted for ergonomics
+            // and documentation; the binding's type is inferred by the
+            // typechecker, so the parsed `Ty` is intentionally discarded (the
+            // Let AST node carries no annotation slot).
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Colon)) {
+                self.consume(TokenKind::Colon)?;
+                let _annotated_ty = self.parse_ty()?;
+            }
             self.consume(TokenKind::Eq)?;
             let e1 = self.parse_control_flow()?;
             self.consume(TokenKind::Semi)?;
-            let e2 = self.parse_stmt_sequence()?;
+            // A trailing binding with nothing after it (`biar x = e;` then `}`/EOF)
+            // yields Unit as the block's value.
+            let e2 = if self.at_sequence_end() {
+                Expr::Unit
+            } else {
+                self.parse_stmt_sequence()?
+            };
             return Ok(Expr::Let(name, linearity, Box::new(e1), Box::new(e2)));
         }
 
@@ -399,6 +453,13 @@ impl<'a> Parser<'a> {
         // If next token is ';', this is a statement sequence
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Semi)) {
             self.consume(TokenKind::Semi)?;
+            // A trailing `;` before the block end (`expr;` then `}`/EOF) — e.g. a
+            // final `pulang x;` — yields `expr` as the block's value. RIINA marks
+            // returns explicitly with `pulang`, so `pulang x;}` is intended to
+            // return `x`, not discard it.
+            if self.at_sequence_end() {
+                return Ok(first);
+            }
             let rest = self.parse_stmt_sequence()?;
             Ok(Expr::Let(
                 "_".to_string(),
@@ -408,6 +469,34 @@ impl<'a> Parser<'a> {
             ))
         } else {
             Ok(first)
+        }
+    }
+
+    /// True when the next token ends a statement sequence — a block close `}`
+    /// or end of input. Used to allow a trailing `;` after the final statement.
+    fn at_sequence_end(&mut self) -> bool {
+        matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace) | None)
+    }
+
+    /// Skip tokens up to and including the `}` that closes an already-consumed
+    /// opening `{`. Tracks nesting so inner braces don't end the skip early.
+    fn skip_balanced_braces(&mut self) {
+        let mut depth = 1u32;
+        while depth > 0 {
+            match self.peek().map(|t| &t.kind) {
+                Some(TokenKind::LBrace) => {
+                    self.next();
+                    depth += 1;
+                }
+                Some(TokenKind::RBrace) => {
+                    self.next();
+                    depth -= 1;
+                }
+                None => break,
+                _ => {
+                    self.next();
+                }
+            }
         }
     }
 
