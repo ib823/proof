@@ -2919,6 +2919,30 @@ fn scan_tv(dir: &Path) -> Vec<CheckResult> {
 // Entry point
 // ---------------------------------------------------------------------------
 
+/// In `--full` mode the Coq toolchain is mandatory: without it no proof is
+/// machine-checked, so the gate must fail closed rather than report PASS on the
+/// strength of static scans alone. Pure over its input so it can be unit-tested.
+fn primary_verifier_result(status: ToolStatus) -> CheckResult {
+    match status {
+        ToolStatus::Found(p) => CheckResult {
+            name: "Primary Verifier (Coq) Present".into(),
+            passed: true,
+            blocking: true,
+            details: format!("coqc available at {}", p.display()),
+        },
+        ToolStatus::NotFound(msg) => CheckResult {
+            name: "Primary Verifier (Coq) Present".into(),
+            passed: false,
+            blocking: true,
+            details: format!(
+                "{msg}. `verify --full` cannot machine-check any proof without coqc, so it is \
+                 failing closed instead of reporting PASS. Install Rocq/Coq (see CLAUDE.md), or \
+                 use `verify --fast` for the Rust-only gate."
+            ),
+        },
+    }
+}
+
 /// Entry point for `riinac verify`.
 pub fn run(mode: Mode) -> i32 {
     let repo = match find_repo_root() {
@@ -3053,6 +3077,14 @@ pub fn run(mode: Mode) -> i32 {
             &lean_dir,
             &isabelle_dir,
         ));
+
+        // === Fail-closed guard ===
+        // A `--full` run that cannot execute its primary verifier (Coq) has not
+        // verified anything — it must FAIL rather than silently report PASS, so a
+        // missing toolchain can never be mistaken for "verified". Extended prover
+        // lanes stay informational; only the primary lane is mandatory here.
+        eprintln!("\n=== Fail-Closed Guard ===");
+        results.push(primary_verifier_result(detect_coqc()));
     }
 
     // Report
@@ -3125,6 +3157,22 @@ test result: ok. 5 passed; 1 failed; 0 ignored;";
         assert!(is_leap(2024));
         assert!(!is_leap(1900));
         assert!(!is_leap(2023));
+    }
+
+    #[test]
+    fn test_primary_verifier_missing_fails_closed() {
+        // When the Coq toolchain is absent, the guard must be a *blocking
+        // failure* so `verify --full` cannot report PASS without it.
+        let r = primary_verifier_result(ToolStatus::NotFound("coqc not found".into()));
+        assert!(!r.passed, "missing coqc must not pass");
+        assert!(r.blocking, "missing primary verifier must be blocking");
+    }
+
+    #[test]
+    fn test_primary_verifier_present_passes() {
+        let r = primary_verifier_result(ToolStatus::Found(PathBuf::from("/usr/bin/coqc")));
+        assert!(r.passed, "present coqc must pass");
+        assert!(r.blocking, "primary verifier check is always blocking");
     }
 
     // -- New tests --
