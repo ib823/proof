@@ -1516,7 +1516,10 @@ impl<'a> Parser<'a> {
             self.consume(TokenKind::RBrace)?;
             Ok(body)
         } else {
-            self.parse_pipe()
+            // Use parse_control_flow (not parse_pipe) so a bare arm body may be a
+            // control-flow expression — e.g. `0 -> pulang 99` or `_ -> kalau ...`.
+            // The `pulang`/`kalau` operand parsers stop at the arm-separating `,`.
+            self.parse_control_flow()
         }
     }
 

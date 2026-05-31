@@ -3693,3 +3693,11 @@ fn test_parse_return_with_value() {
         other => panic!("expected Return, got {other:?}"),
     }
 }
+
+#[test]
+fn test_parse_return_in_match_arm() {
+    // A bare match-arm body may be a control-flow expr like `pulang e`.
+    let mut p = Parser::new("padan x { 0 -> pulang 99, _ -> 1 }");
+    // Compiles to a Case/If; just assert it parses without error.
+    assert!(p.parse_expr().is_ok());
+}
