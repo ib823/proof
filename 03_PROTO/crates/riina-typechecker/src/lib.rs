@@ -696,22 +696,24 @@ impl Context {
 /// Uses Ty::Any for polymorphic builtins.
 pub fn register_builtin_types(ctx: &Context) -> Context {
     let mut c = ctx.clone();
-    // I/O builtins
+    // I/O builtins. Printing to stdout is a Write effect (`Tulis`), matching the
+    // documented effect vocabulary and the example corpus — a function that
+    // prints declares `kesan Tulis`.
     c = c.extend(
         "cetak".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
     );
     c = c.extend(
         "print".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
     );
     c = c.extend(
         "cetakln".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
     );
     c = c.extend(
         "println".to_string(),
-        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::System),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Unit), Effect::Write),
     );
     // String
     c = c.extend(
