@@ -1044,6 +1044,12 @@ impl Interpreter {
                     (BinOp::Add, Value::String(a), Value::String(b)) => {
                         Ok(Value::String(format!("{a}{b}")))
                     }
+                    // `+` concatenates lists (e.g. `[x] + akum`).
+                    (BinOp::Add, Value::List(a), Value::List(b)) => {
+                        let mut items = a.clone();
+                        items.extend(b.iter().cloned());
+                        Ok(Value::List(items))
+                    }
                     (BinOp::Sub, Value::Int(a), Value::Int(b)) => {
                         Ok(Value::Int(a.wrapping_sub(*b)))
                     }

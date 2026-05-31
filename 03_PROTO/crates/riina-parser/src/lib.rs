@@ -145,6 +145,13 @@ enum Pattern {
     Str(String),
     /// Tuple pattern `(p1, p2, ...)`.
     Tuple(Vec<Pattern>),
+    /// List pattern `[p0, p1, ...]` with an optional rest binding `..name`
+    /// (`tail` is `Some(name)` for `[a, b, ..rest]`, `None` for a fixed-length
+    /// `[a, b]`). An empty fixed list `[]` is `elems = [], tail = None`.
+    List {
+        elems: Vec<Pattern>,
+        tail: Option<Ident>,
+    },
     /// Left-injection constructor (`Some`/`Ada`/`Ok`/`Jadi`/`inl`) with payload.
     CtorLeft(Box<Pattern>),
     /// Right-injection constructor (`None`/`Tiada`/`Err`/`Gagal`/`Ralat`/`inr`)
@@ -1919,6 +1926,34 @@ impl<'a> Parser<'a> {
                     Ok(Pattern::Tuple(elems))
                 }
             }
+            // List pattern: `[]`, `[p0, p1, ...]`, or `[p0, ..rest]` (the rest
+            // binding `..name` captures the remaining elements as a list and must
+            // be last).
+            Some(TokenKind::LBracket) => {
+                self.consume(TokenKind::LBracket)?;
+                let mut elems = Vec::new();
+                let mut tail = None;
+                while !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBracket) | None) {
+                    if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::DotDot)) {
+                        // `..rest` rest-binding (or bare `..` to ignore the rest).
+                        self.consume(TokenKind::DotDot)?;
+                        if let Some(TokenKind::Identifier(_)) = self.peek().map(|t| &t.kind) {
+                            tail = Some(self.parse_ident()?);
+                        } else {
+                            tail = Some("_".to_string());
+                        }
+                        break;
+                    }
+                    elems.push(self.parse_pattern()?);
+                    if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                        self.consume(TokenKind::Comma)?;
+                    } else {
+                        break;
+                    }
+                }
+                self.consume(TokenKind::RBracket)?;
+                Ok(Pattern::List { elems, tail })
+            }
             // Sum constructors that are keywords: Some/Ada, Ok/Jadi -> left;
             // None/Tiada, Err/Gagal -> right.
             Some(TokenKind::KwSome) | Some(TokenKind::KwOk) => {
@@ -2145,6 +2180,16 @@ impl<'a> Parser<'a> {
                 // inner pattern directly against the (already-projected) value.
                 self.bind_pattern(scrut, inner, body)
             }
+            Pattern::List { .. } => {
+                // List pattern as a constructor payload (e.g. `Ada([x, ..r])`):
+                // bind a fresh temp to the value, then apply the list pattern's
+                // element/rest bindings (the length test is irrefutable here since
+                // the surrounding Case already selected this branch).
+                let tmp = self.fresh_var("padLst");
+                let (_test, binds) = self.pattern_test(&Expr::Var(tmp.clone()), pat);
+                let bound = self.wrap_lets(binds, body);
+                Ok(Expr::Let(tmp, None, Box::new(scrut), Box::new(bound)))
+            }
         }
     }
 
@@ -2289,6 +2334,57 @@ impl<'a> Parser<'a> {
                 let test = tests.into_iter().reduce(|a, b| {
                     Expr::BinOp(BinOp::And, Box::new(a), Box::new(b))
                 });
+                (test, binds)
+            }
+            Pattern::List { elems, tail } => {
+                // Length test: exact `== n` for a fixed list, `>= n` when a rest
+                // binding is present. Element `i` is `senarai_dapat((s, i))`; the
+                // rest is `senarai_potong((s, (n, senarai_panjang(s))))`.
+                let n = elems.len() as u64;
+                let len_expr = Expr::App(
+                    Box::new(Expr::Var("senarai_panjang".to_string())),
+                    Box::new(scrut.clone()),
+                );
+                let len_op = if tail.is_some() { BinOp::Ge } else { BinOp::Eq };
+                let mut tests = vec![Expr::BinOp(
+                    len_op,
+                    Box::new(len_expr.clone()),
+                    Box::new(Expr::Int(n)),
+                )];
+                let mut binds: Vec<(Ident, Expr)> = Vec::new();
+                for (i, elem) in elems.iter().enumerate() {
+                    let item = Expr::App(
+                        Box::new(Expr::Var("senarai_dapat".to_string())),
+                        Box::new(Expr::Pair(
+                            Box::new(scrut.clone()),
+                            Box::new(Expr::Int(i as u64)),
+                        )),
+                    );
+                    let (t, b) = self.pattern_test(&item, elem);
+                    if let Some(t) = t {
+                        tests.push(t);
+                    }
+                    binds.extend(b);
+                }
+                if let Some(rest_name) = tail {
+                    if rest_name != "_" {
+                        // rest = senarai_potong((s, (n, senarai_panjang(s))))
+                        let slice = Expr::App(
+                            Box::new(Expr::Var("senarai_potong".to_string())),
+                            Box::new(Expr::Pair(
+                                Box::new(scrut.clone()),
+                                Box::new(Expr::Pair(
+                                    Box::new(Expr::Int(n)),
+                                    Box::new(len_expr),
+                                )),
+                            )),
+                        );
+                        binds.push((rest_name.clone(), slice));
+                    }
+                }
+                let test = tests
+                    .into_iter()
+                    .reduce(|a, b| Expr::BinOp(BinOp::And, Box::new(a), Box::new(b)));
                 (test, binds)
             }
             // Constructor patterns are not handled by the If-chain compiler

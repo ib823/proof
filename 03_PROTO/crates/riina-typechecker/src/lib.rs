@@ -3074,14 +3074,38 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
             match op {
                 BinOp::Add => {
-                    if types_compatible(&Ty::String, inner1)
-                        && types_compatible(&Ty::String, inner2)
-                    {
+                    // `+` is overloaded for Int (addition) and String
+                    // (concatenation). If either operand is `Any` (its concrete
+                    // type unknown, e.g. a list element from `senarai_dapat`), the
+                    // result type is also `Any` rather than eagerly committing to
+                    // String — which would wrongly reject an Int at use sites.
+                    if *inner1 == Ty::Any || *inner2 == Ty::Any {
+                        Ok((label_result(Ty::Any), eff))
+                    } else if *inner1 == Ty::String && *inner2 == Ty::String {
                         Ok((label_result(Ty::String), eff))
                     } else if types_compatible(&Ty::Int, inner1)
                         && types_compatible(&Ty::Int, inner2)
                     {
                         Ok((label_result(Ty::Int), eff))
+                    } else if types_compatible(&Ty::String, inner1)
+                        && types_compatible(&Ty::String, inner2)
+                    {
+                        Ok((label_result(Ty::String), eff))
+                    } else if let (Ty::List(e1), Ty::List(e2)) = (inner1, inner2) {
+                        // `+` also concatenates lists (`[x] + akum`). The element
+                        // types must be compatible; the result keeps the more
+                        // concrete element type.
+                        if types_compatible(e1, e2) {
+                            Ok((label_result(Ty::List(Box::new(join_branch_types(
+                                (**e1).clone(),
+                                (**e2).clone(),
+                            )))), eff))
+                        } else {
+                            Err(TypeError::TypeMismatch {
+                                expected: inner1.clone(),
+                                found: inner2.clone(),
+                            })
+                        }
                     } else {
                         Err(TypeError::TypeMismatch {
                             expected: inner1.clone(),
@@ -3738,7 +3762,9 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             let eff = eff1.join(eff2);
             match op {
                 BinOp::Add => {
-                    if t1 == Ty::String && t2 == Ty::String {
+                    if t1 == Ty::Any || t2 == Ty::Any {
+                        Ok((Ty::Any, eff))
+                    } else if t1 == Ty::String && t2 == Ty::String {
                         Ok((Ty::String, eff))
                     } else if t1 == Ty::Int && t2 == Ty::Int {
                         Ok((Ty::Int, eff))
@@ -3750,13 +3776,13 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     }
                 }
                 BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
-                    if t1 != Ty::Int {
+                    if t1 != Ty::Int && t1 != Ty::Any {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: t1,
                         });
                     }
-                    if t2 != Ty::Int {
+                    if t2 != Ty::Int && t2 != Ty::Any {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
                             found: t2,

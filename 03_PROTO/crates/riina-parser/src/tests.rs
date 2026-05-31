@@ -3973,3 +3973,26 @@ fn test_parse_chained_method_calls() {
     // assert it parses to a nested App without error.
     assert!(matches!(p.parse_expr().unwrap(), Expr::App(_, _)));
 }
+
+// =============================================================================
+// LIST PATTERNS  [] / [x] / [x, y] / [x, ..rest]
+// =============================================================================
+
+#[test]
+fn test_parse_list_pattern_empty() {
+    let mut p = Parser::new("padan s { [] -> 0, _ -> 1 }");
+    assert!(p.parse_expr().is_ok());
+}
+
+#[test]
+fn test_parse_list_pattern_fixed_and_rest() {
+    let mut p = Parser::new("padan s { [x] -> x, [x, y] -> y, [h, ..t] -> h, _ -> 0 }");
+    assert!(p.parse_expr().is_ok());
+}
+
+#[test]
+fn test_parse_list_concat() {
+    // `+` over lists.
+    let mut p = Parser::new("[1] + akum");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::BinOp(BinOp::Add, _, _)));
+}
