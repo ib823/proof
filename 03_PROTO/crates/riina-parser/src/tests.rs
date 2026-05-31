@@ -3359,3 +3359,30 @@ fn test_parse_constructor_in_let() {
     let mut p = Parser::new("biar x = Some(5); x");
     assert!(p.parse_expr().is_ok());
 }
+
+#[test]
+fn test_parse_module_path_lowercase() {
+    // lowercase module -> module_function
+    let mut p = Parser::new("teks::mengandungi");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Var(n) if n == "teks_mengandungi"));
+}
+
+#[test]
+fn test_parse_module_path_capitalized() {
+    // capitalized module -> bare function name
+    let mut p = Parser::new("Masa::masa_unix");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Var(n) if n == "masa_unix"));
+}
+
+#[test]
+fn test_parse_module_path_drops_std() {
+    let mut p = Parser::new("std::teks::mengandungi");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Var(n) if n == "teks_mengandungi"));
+}
+
+#[test]
+fn test_parse_module_path_call() {
+    // qualified call composes with application
+    let mut p = Parser::new("teks::mengandungi(\"a\", \"b\")");
+    assert!(p.parse_expr().is_ok());
+}

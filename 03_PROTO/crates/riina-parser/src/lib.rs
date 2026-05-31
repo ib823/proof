@@ -588,6 +588,44 @@ impl<'a> Parser<'a> {
         Ok(Expr::RecordLit(type_name, fields))
     }
 
+    /// Parse a qualified module path `Module::function` (the first segment is
+    /// already consumed and passed as `first`). Resolves to a flat builtin name:
+    ///   - a leading `std` segment is dropped (`std::teks::mengandungi`);
+    ///   - a lowercase module (a type's own methods) maps to `module_function`
+    ///     (`teks::mengandungi` -> `teks_mengandungi`);
+    ///   - a capitalized module (a namespace) drops the module, using the final
+    ///     segment, which already carries its full builtin name
+    ///     (`Masa::masa_unix` -> `masa_unix`, `Kripto::jana_rawak_hex` ->
+    ///     `jana_rawak_hex`).
+    /// Names that resolve to a non-existent builtin fail later at type-check with
+    /// "Variable not found", which is the correct behavior.
+    fn parse_module_path(&mut self, first: Ident) -> Result<Ident, ParseError> {
+        let mut segments = vec![first];
+        while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::ColonColon)) {
+            self.consume(TokenKind::ColonColon)?;
+            segments.push(self.parse_ident()?);
+        }
+        // Drop a leading `std` namespace.
+        if segments.len() > 1 && segments[0] == "std" {
+            segments.remove(0);
+        }
+        if segments.len() == 1 {
+            return Ok(segments.pop().unwrap());
+        }
+        let module = &segments[0];
+        let func = segments.last().unwrap();
+        let starts_upper = module
+            .chars()
+            .next()
+            .map(|c| c.is_uppercase())
+            .unwrap_or(false);
+        if starts_upper {
+            Ok(func.clone())
+        } else {
+            Ok(format!("{module}_{func}"))
+        }
+    }
+
     /// Parse the argument of an Option/Result constructor: either parenthesized
     /// `(e)` (the common `Some(x)` form) or a bare unary expression (`Some x`).
     fn parse_constructor_arg(&mut self) -> Result<Expr, ParseError> {
@@ -1063,6 +1101,13 @@ impl<'a> Parser<'a> {
             }
             Some(TokenKind::Identifier(s)) => {
                 self.next();
+                // Qualified module path `Module::function` (e.g. `teks::mengandungi`,
+                // `Masa::masa_unix`). Resolve to the flat builtin name so the
+                // existing Var/builtin machinery handles it.
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::ColonColon)) {
+                    let resolved = self.parse_module_path(s)?;
+                    return Ok(Expr::Var(resolved));
+                }
                 // Record literal `Name { field: e, ... }`. Only treated as a
                 // record when the brace is immediately followed by `ident :`,
                 // so it cannot be confused with a control-flow block (those are
