@@ -53,6 +53,10 @@ pub fn register_builtins(env: &Env) -> Env {
         "julat_inklusif".to_string(),
         Value::Builtin("julat_inklusif".to_string()),
     );
+    // Sum (Option/Result) introspection for constructor-pattern desugaring.
+    for nm in ["adalah_kiri", "adalah_kanan", "nilai_kiri", "nilai_kanan"] {
+        e = e.extend(nm.to_string(), Value::Builtin(nm.to_string()));
+    }
 
     // Conversion (existing, moved to penukaran)
     e = e.extend("ke_teks".to_string(), Value::Builtin("ke_teks".to_string()));
@@ -221,6 +225,32 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
                     found: format!("{:?}", other),
                     context: "julat".to_string(),
                 }),
+            };
+        }
+        // Sum (Option/Result) introspection, used by the desugaring of
+        // constructor patterns (`Ada(x)`, `Ok(x)`, ...) in positions where a
+        // `Case` cannot be used directly (e.g. nested inside a tuple pattern):
+        //   adalah_kiri(s)  -> Bool : is this a left injection (Some/Ok/Ada)?
+        //   nilai_kiri(s)   -> the left payload   (caller guarantees left)
+        //   nilai_kanan(s)  -> the right payload  (caller guarantees right)
+        "adalah_kiri" => {
+            return Ok(Value::Bool(arg.is_left()));
+        }
+        "adalah_kanan" => {
+            return Ok(Value::Bool(arg.is_right()));
+        }
+        "nilai_kiri" => {
+            return match arg {
+                Value::Sum(crate::value::Sum::Left(v)) => Ok(*v),
+                Value::Sum(crate::value::Sum::Right(v)) => Ok(*v),
+                other => Ok(other), // be lenient: non-sum yields itself
+            };
+        }
+        "nilai_kanan" => {
+            return match arg {
+                Value::Sum(crate::value::Sum::Right(v)) => Ok(*v),
+                Value::Sum(crate::value::Sum::Left(v)) => Ok(*v),
+                other => Ok(other),
             };
         }
         _ => {}

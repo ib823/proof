@@ -2387,11 +2387,33 @@ impl<'a> Parser<'a> {
                     .reduce(|a, b| Expr::BinOp(BinOp::And, Box::new(a), Box::new(b)));
                 (test, binds)
             }
-            // Constructor patterns are not handled by the If-chain compiler
-            // (compile_match routes pure-constructor matches to Case). If one
-            // appears in a mixed match, treat it as an always-true catch-all
-            // binding nothing, so it at least does not crash compilation.
-            Pattern::CtorLeft(_) | Pattern::CtorRight(_) => (None, Vec::new()),
+            // Constructor patterns in the If-chain compiler (e.g. nested inside a
+            // tuple pattern like `(Ada(a), Ada(b))`, where a top-level `Case`
+            // can't be used). Test the sum tag with `adalah_kiri`/`adalah_kanan`
+            // and project the payload with `nilai_kiri`/`nilai_kanan`, recursing
+            // into the inner pattern.
+            Pattern::CtorLeft(inner) | Pattern::CtorRight(inner) => {
+                let is_left = matches!(pat, Pattern::CtorLeft(_));
+                let (tag_fn, val_fn) = if is_left {
+                    ("adalah_kiri", "nilai_kiri")
+                } else {
+                    ("adalah_kanan", "nilai_kanan")
+                };
+                let tag_test = Expr::App(
+                    Box::new(Expr::Var(tag_fn.to_string())),
+                    Box::new(scrut.clone()),
+                );
+                let payload = Expr::App(
+                    Box::new(Expr::Var(val_fn.to_string())),
+                    Box::new(scrut.clone()),
+                );
+                let (inner_test, binds) = self.pattern_test(&payload, inner);
+                let test = match inner_test {
+                    Some(t) => Expr::BinOp(BinOp::And, Box::new(tag_test), Box::new(t)),
+                    None => tag_test,
+                };
+                (Some(test), binds)
+            }
         }
     }
 

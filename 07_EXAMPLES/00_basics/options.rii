@@ -76,7 +76,7 @@ fungsi selamat_pembukaan(m: Mungkin<Teks>) -> Teks kesan Bersih {
     }
 }
 
-fungsi paksa_pembukaan(m: Mungkin<Nombor>) -> Nombor kesan Bersih {
+fungsi paksa_pembukaan(m: Mungkin<Nombor>) -> Nombor kesan Tulis {
     /// Buka dengan paksa (panics jika Tidak)
     /// Forced unwrap (panics if Tidak)
     padan m {

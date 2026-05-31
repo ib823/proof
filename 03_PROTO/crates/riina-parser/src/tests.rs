@@ -3996,3 +3996,10 @@ fn test_parse_list_concat() {
     let mut p = Parser::new("[1] + akum");
     assert!(matches!(p.parse_expr().unwrap(), Expr::BinOp(BinOp::Add, _, _)));
 }
+
+#[test]
+fn test_parse_nested_ctor_in_tuple_pattern() {
+    // `(Ada(a), Ada(b))` — constructor patterns nested in a tuple pattern.
+    let mut p = Parser::new("padan p { (Ada(a), Ada(b)) -> a + b, _ -> 0 }");
+    assert!(p.parse_expr().is_ok());
+}

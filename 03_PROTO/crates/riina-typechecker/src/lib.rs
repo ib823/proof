@@ -763,6 +763,23 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
             Effect::Pure,
         ),
     );
+    // Sum (Option/Result) introspection for constructor-pattern desugaring.
+    c = c.extend(
+        "adalah_kiri".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
+    );
+    c = c.extend(
+        "adalah_kanan".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Bool), Effect::Pure),
+    );
+    c = c.extend(
+        "nilai_kiri".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure),
+    );
+    c = c.extend(
+        "nilai_kanan".to_string(),
+        Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::Pure),
+    );
     // Conversion
     c = c.extend(
         "ke_teks".to_string(),
@@ -2314,6 +2331,15 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
 
         // Option types: covariant in element
         (Ty::Option(t1), Ty::Option(t2)) => types_compatible(t1, t2),
+
+        // Option <-> Sum: `Option<T>` is structurally `Sum(T, _)`. The Option/
+        // Result constructors (`Ada`/`Ok`/...) desugar to `Inl`/`Inr` producing a
+        // `Sum`, which must unify with a declared `Mungkin<T>` (Option) return
+        // type. The left arm must match the element; the right arm is unconstrained
+        // (the None/Tiada payload is unused).
+        (Ty::Option(t1), Ty::Sum(l2, _)) | (Ty::Sum(l2, _), Ty::Option(t1)) => {
+            types_compatible(t1, l2)
+        }
 
         // Reference types: covariant in inner type, must match security level
         (Ty::Ref(t1, sl1), Ty::Ref(t2, sl2)) => sl1 == sl2 && types_compatible(t1, t2),
