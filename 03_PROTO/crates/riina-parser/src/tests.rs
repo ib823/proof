@@ -3830,3 +3830,31 @@ fn test_parse_for_over_range_uses_list_map() {
         other => panic!("expected App(senarai_peta), got {other:?}"),
     }
 }
+
+// =============================================================================
+// ENUM-VARIANT ACCESS Type.Variant
+// =============================================================================
+
+#[test]
+fn test_parse_enum_variant_value_is_tag_string() {
+    // `Type.Variant` (both uppercase) -> string tag "Type.Variant".
+    let mut p = Parser::new("ArasKeselamatan.Awam");
+    assert_eq!(
+        p.parse_expr().unwrap(),
+        Expr::String("ArasKeselamatan.Awam".to_string())
+    );
+}
+
+#[test]
+fn test_parse_struct_field_access_still_works() {
+    // Lowercase field is still a FieldAccess, not an enum tag.
+    let mut p = Parser::new("rekod.medan");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::FieldAccess(_, _)));
+}
+
+#[test]
+fn test_parse_enum_variant_pattern() {
+    // `Type.Variant` works as a `padan` pattern (compiles without error).
+    let mut p = Parser::new("padan x { Taint.Bersih -> 1, _ -> 0 }");
+    assert!(p.parse_expr().is_ok());
+}

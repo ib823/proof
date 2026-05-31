@@ -1254,6 +1254,26 @@ impl<'a> Parser<'a> {
                         }
                         Some(TokenKind::Identifier(name)) => {
                             self.next();
+                            // Enum-variant access `Type.Variant`: when the base is
+                            // a bare uppercase type name and the field is also
+                            // uppercase, this is a nullary enum constructor rather
+                            // than a struct field access. There is no nominal enum
+                            // system yet, so it desugars to a unique string tag
+                            // `"Type.Variant"` — equality comparison then makes it
+                            // usable as both a value and a `padan` literal pattern.
+                            if let Expr::Var(type_name) = &expr {
+                                let base_upper = type_name
+                                    .chars()
+                                    .next()
+                                    .map(|c| c.is_uppercase())
+                                    .unwrap_or(false);
+                                let variant_upper =
+                                    name.chars().next().map(|c| c.is_uppercase()).unwrap_or(false);
+                                if base_upper && variant_upper {
+                                    expr = Expr::String(format!("{type_name}.{name}"));
+                                    continue;
+                                }
+                            }
                             expr = Expr::FieldAccess(Box::new(expr), name);
                         }
                         _ => {
@@ -1809,6 +1829,19 @@ impl<'a> Parser<'a> {
                     return Ok(Pattern::Wildcard);
                 }
                 let is_ctor = s.chars().next().map(|c| c.is_uppercase()).unwrap_or(false);
+                // Enum-variant pattern `Type.Variant` — matches the string tag
+                // that value-position `Type.Variant` desugars to (see parse_app).
+                if is_ctor && matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Dot)) {
+                    let mut ahead = self.lexer.clone();
+                    ahead.next(); // `.`
+                    if let Some(TokenKind::Identifier(v)) = ahead.next().map(|t| t.kind) {
+                        if v.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
+                            self.consume(TokenKind::Dot)?;
+                            self.parse_ident()?; // consume variant
+                            return Ok(Pattern::Str(format!("{s}.{v}")));
+                        }
+                    }
+                }
                 if is_ctor && matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
                     let inner = self.parse_ctor_payload()?;
                     // Named enum constructors map onto the right injection of the
