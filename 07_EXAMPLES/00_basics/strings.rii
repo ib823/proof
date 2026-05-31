@@ -6,11 +6,11 @@ fungsi operasiTeks() -> Teks kesan Bersih {
     biar nama = "Ahmad";
     biar salam = "Selamat datang";
 
-    /// Gabungan rentetan / String concatenation
+    /// Gabungan rentetan dengan + / String concatenation
     biar sapaan = "Selamat " + "pagi " + nama;
 
     /// Panjang rentetan / String length
-    biar panjang_nama = teks_panjang(nama);
+    biar panjang_nama = panjang(nama);
 
     pulang sapaan;
 }
