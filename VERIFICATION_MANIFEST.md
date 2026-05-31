@@ -1,7 +1,10 @@
 # RIINA Verification Manifest
-**Generated:** 2026-05-31T00:45:52Z
-**Git SHA:** eed7f6c1
+**Generated:** 2026-05-31T00:47:34Z
+**Git SHA:** e5070509
+**Mode:** fast
 **Status:** PASS
+
+> Scope: Rust tests + clippy only. NOT a proof-checked verification (no Coq/Lean/etc.). Run `verify --full` for proof lanes.
 
 | Check | Status | Details |
 |-------|--------|---------|

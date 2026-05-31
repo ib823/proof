@@ -2041,7 +2041,7 @@ fn git_sha(repo: &Path) -> String {
 }
 
 /// Write VERIFICATION_MANIFEST.md and auto-stage it.
-fn write_manifest(repo: &Path, results: &[CheckResult]) {
+fn write_manifest(repo: &Path, results: &[CheckResult], mode: Mode) {
     let sha = git_sha(repo);
     let now = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
@@ -2055,11 +2055,30 @@ fn write_manifest(repo: &Path, results: &[CheckResult]) {
     let all_pass = results.iter().all(|r| r.passed || !r.blocking);
     let status = if all_pass { "PASS" } else { "FAIL" };
 
+    // Record the mode so a fast-mode PASS (Rust tests + clippy only) can never be
+    // mistaken for a full proof-checked PASS. A `--fast` PASS makes no claim about
+    // any proof lane.
+    let (mode_label, scope_note) = match mode {
+        Mode::Fast => (
+            "fast",
+            "Scope: Rust tests + clippy only. NOT a proof-checked verification \
+             (no Coq/Lean/etc.). Run `verify --full` for proof lanes.",
+        ),
+        Mode::Full => (
+            "full",
+            "Scope: Rust + primary proof lane (Coq). Fails closed if the Coq \
+             toolchain is absent.",
+        ),
+    };
+
     let mut md = String::new();
     writeln!(md, "# RIINA Verification Manifest").unwrap();
     writeln!(md, "**Generated:** {now}").unwrap();
     writeln!(md, "**Git SHA:** {sha}").unwrap();
+    writeln!(md, "**Mode:** {mode_label}").unwrap();
     writeln!(md, "**Status:** {status}").unwrap();
+    writeln!(md).unwrap();
+    writeln!(md, "> {scope_note}").unwrap();
     writeln!(md).unwrap();
     writeln!(md, "| Check | Status | Details |").unwrap();
     writeln!(md, "|-------|--------|---------|").unwrap();
@@ -3102,7 +3121,7 @@ pub fn run(mode: Mode) -> i32 {
     }
     eprintln!();
 
-    write_manifest(&repo, &results);
+    write_manifest(&repo, &results, mode);
 
     if all_pass {
         eprintln!("Verification: PASS");
