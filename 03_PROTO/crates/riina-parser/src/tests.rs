@@ -3954,3 +3954,13 @@ fn test_literal_not_applied_to_following_atom() {
     // Parses as just `0` (the string is left for the caller / sequence).
     assert_eq!(p.parse_expr().unwrap(), Expr::Int(0));
 }
+
+#[test]
+fn test_parse_pipe_lambda_target() {
+    // `x |> fungsi(y) { .. }` — a lambda as pipe target.
+    let mut p = Parser::new("5 |> fungsi(x: Nombor) -> Nombor { x + 5 }");
+    match p.parse_expr().unwrap() {
+        Expr::App(f, _) => assert!(matches!(*f, Expr::Lam(_, _, _))),
+        other => panic!("expected App(Lam), got {other:?}"),
+    }
+}

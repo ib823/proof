@@ -1225,7 +1225,16 @@ impl<'a> Parser<'a> {
         }
         while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Pipe)) {
             self.consume(TokenKind::Pipe)?;
-            let func = self.parse_assignment()?;
+            // The pipe target is a single expression. A lambda (`x |> fungsi(y)
+            // { .. }`) is parsed directly so it works as a target, but the target
+            // must NOT consume further `|>` operators — pipe is left-associative
+            // (`x |> f |> g` is `g(f(x))`) — so we use `parse_assignment` for the
+            // general case (not `parse_control_flow`, which would recurse here).
+            let func = if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwFn)) {
+                self.parse_lam()?
+            } else {
+                self.parse_assignment()?
+            };
             expr = Expr::App(Box::new(func), Box::new(expr));
         }
         Ok(expr)
