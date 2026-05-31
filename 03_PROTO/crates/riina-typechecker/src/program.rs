@@ -579,7 +579,9 @@ mod tests {
     }
 
     #[test]
-    fn check_program_rejects_zero_arg_pure_function_with_system_effect() {
+    fn check_program_rejects_zero_arg_pure_function_with_write_effect() {
+        // `print`/`cetak` carry the Write effect, so using one inside a `kesan
+        // Bersih` (pure) function is an effect violation.
         let err = check_program(&parse_program(
             "fungsi bocor() -> Unit kesan Bersih { print 1 }",
         ))
@@ -587,7 +589,7 @@ mod tests {
         match err {
             TypeError::EffectViolation { allowed, found } => {
                 assert_eq!(allowed, Effect::Pure);
-                assert_eq!(found, Effect::System);
+                assert_eq!(found, Effect::Write);
             }
             other => panic!("expected EffectViolation, got {other:?}"),
         }
