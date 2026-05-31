@@ -1610,12 +1610,34 @@ impl<'a> Parser<'a> {
     fn parse_lam(&mut self) -> Result<Expr, ParseError> {
         self.consume(TokenKind::KwFn)?;
         self.consume(TokenKind::LParen)?;
-        let name = self.parse_ident()?;
-        self.consume(TokenKind::Colon)?;
-        let ty = self.parse_ty()?;
+        // Parameter list: zero or more `name: Type`, comma-separated. Multiple
+        // params curry into nested `Lam`s.
+        let params = self.parse_param_list()?;
         self.consume(TokenKind::RParen)?;
-        let body = self.parse_control_flow()?;
-        Ok(Expr::Lam(name, ty, Box::new(body)))
+        // Optional return-type annotation `-> T` (accepted; inferred, so ignored).
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Arrow)) {
+            self.consume(TokenKind::Arrow)?;
+            let _ret = self.parse_ty()?;
+        }
+        // Body: a `{ ... }` block or a bare control-flow expression.
+        let body = if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LBrace)) {
+            self.consume(TokenKind::LBrace)?;
+            let b = self.parse_stmt_sequence()?;
+            self.consume(TokenKind::RBrace)?;
+            b
+        } else {
+            self.parse_control_flow()?
+        };
+        // Curry parameters into nested lambdas (right-fold). A no-parameter
+        // `fungsi()` becomes a single Unit-typed parameter (a thunk).
+        if params.is_empty() {
+            Ok(Expr::Lam("_".to_string(), Ty::Unit, Box::new(body)))
+        } else {
+            Ok(params
+                .into_iter()
+                .rev()
+                .fold(body, |acc, (p, ty)| Expr::Lam(p, ty, Box::new(acc))))
+        }
     }
 
     /// Parse a `padan` (match) expression and compile it to the core calculus.

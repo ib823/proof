@@ -3770,3 +3770,30 @@ fn test_parse_qualified_fn_def_name() {
         other => panic!("expected Function, got {other:?}"),
     }
 }
+
+// =============================================================================
+// EXTENDED LAMBDA SYNTAX (multi-param, return type, block body)
+// =============================================================================
+
+#[test]
+fn test_parse_lambda_typed_return_block_body() {
+    // `fungsi(x: T) -> R { body }`
+    let mut p = Parser::new("fungsi(x: Nombor) -> Nombor { x + 1 }");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Lam(_, _, _)));
+}
+
+#[test]
+fn test_parse_lambda_multi_param_curries() {
+    // `fungsi(a, b) ...` curries into nested Lam.
+    let mut p = Parser::new("fungsi(a: Nombor, b: Nombor) -> Nombor { a + b }");
+    match p.parse_expr().unwrap() {
+        Expr::Lam(_, _, inner) => assert!(matches!(*inner, Expr::Lam(_, _, _))),
+        other => panic!("expected curried Lam, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_lambda_bare_body_still_works() {
+    let mut p = Parser::new("fungsi(x: Nombor) x");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Lam(_, _, _)));
+}
