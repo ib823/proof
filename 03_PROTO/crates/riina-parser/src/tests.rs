@@ -3644,3 +3644,33 @@ fn test_parse_named_record_still_works() {
         other => panic!("expected RecordLit, got {other:?}"),
     }
 }
+
+// =============================================================================
+// STATEMENT-POSITION REASSIGNMENT (rebinding)
+// =============================================================================
+
+#[test]
+fn test_parse_reassignment_desugars_to_let() {
+    // `i = e;` in statement position rebinds `i`.
+    let mut p = Parser::new("biar i = 0; i = i + 1; i");
+    // Outer is the `biar i = 0` Let; its body is the rebinding Let.
+    match p.parse_expr().unwrap() {
+        Expr::Let(name, _, _, body) => {
+            assert_eq!(name, "i");
+            assert!(matches!(*body, Expr::Let(_, _, _, _)));
+        }
+        other => panic!("expected Let, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_equality_not_treated_as_assignment() {
+    // `x == 5` must remain a comparison, not a reassignment.
+    let mut p = Parser::new("biar x = 5; x == 5");
+    match p.parse_expr().unwrap() {
+        Expr::Let(_, _, _, body) => {
+            assert!(matches!(*body, Expr::BinOp(BinOp::Eq, _, _)));
+        }
+        other => panic!("expected Let, got {other:?}"),
+    }
+}

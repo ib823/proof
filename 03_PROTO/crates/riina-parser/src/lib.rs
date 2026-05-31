@@ -549,6 +549,26 @@ impl<'a> Parser<'a> {
             return Ok(Expr::Let(name, linearity, Box::new(e1), Box::new(e2)));
         }
 
+        // Statement-position reassignment: `x = e;` rebinds `x` for the rest of
+        // the sequence (shadowing). RIINA bindings are immutable, so a true
+        // mutation has no AST node; for straight-line accumulator code
+        // (`x = x + 1;`) rebinding is observationally equivalent — later
+        // references see the new value. Detected as `ident =` where the next
+        // token is a single `=` (not `==`). Field/element assignments
+        // (`obj.f = e`) are not rebindable and fall through to normal parsing.
+        if let Some(name) = self.peek_simple_reassignment() {
+            self.parse_ident()?; // consume the name
+            self.consume(TokenKind::Eq)?;
+            let value = self.parse_control_flow()?;
+            self.consume(TokenKind::Semi)?;
+            let rest = if self.at_sequence_end() {
+                Expr::Var(name.clone())
+            } else {
+                self.parse_stmt_sequence()?
+            };
+            return Ok(Expr::Let(name, None, Box::new(value), Box::new(rest)));
+        }
+
         // A block-form statement (`kalau`/`padan`/`selagi`/`untuk`/`ulang`) may
         // be used in statement position without a trailing `;`, e.g. an
         // early-return guard `kalau c { pulang x; }` followed by more statements.
@@ -670,6 +690,22 @@ impl<'a> Parser<'a> {
     /// cheap clone of the token stream for two-token lookahead; this avoids
     /// misreading a control-flow block as a record. A bare `{ }` (empty record)
     /// also qualifies.
+    /// If the upcoming tokens are `<identifier> =` (a simple variable
+    /// reassignment, with a single `=` — not `==`, and not `ident.field =`),
+    /// return the identifier name. Uses a two-token clone-based lookahead so the
+    /// real stream is untouched.
+    fn peek_simple_reassignment(&mut self) -> Option<Ident> {
+        let mut ahead = self.lexer.clone();
+        let name = match ahead.next().map(|t| t.kind) {
+            Some(TokenKind::Identifier(s)) => s,
+            _ => return None,
+        };
+        match ahead.next().map(|t| t.kind) {
+            Some(TokenKind::Eq) => Some(name),
+            _ => None,
+        }
+    }
+
     /// True when the upcoming tokens are `fn`/`fungsi` followed by an identifier
     /// — i.e. a *named* function declaration, as opposed to a lambda
     /// (`fn(x: T) body`). Uses a cheap clone of the token stream for two-token
