@@ -1067,7 +1067,21 @@ impl<'a> Parser<'a> {
     /// Desugars to: map (fn(x: Any) body) iter
     fn parse_for_in(&mut self) -> Result<Expr, ParseError> {
         self.consume(TokenKind::KwFor)?;
-        let var = self.parse_ident()?;
+        // Loop variable: a single name, or a tuple pattern `(a, b, ...)` for
+        // destructuring each element.
+        let pattern_names: Vec<Ident> =
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
+                self.consume(TokenKind::LParen)?;
+                let mut names = vec![self.parse_binding_name()?];
+                while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                    self.consume(TokenKind::Comma)?;
+                    names.push(self.parse_binding_name()?);
+                }
+                self.consume(TokenKind::RParen)?;
+                names
+            } else {
+                vec![self.parse_binding_name()?]
+            };
         self.consume(TokenKind::KwIn)?;
         let iter = self.parse_pipe()?;
         self.consume(TokenKind::LBrace)?;
@@ -1078,7 +1092,20 @@ impl<'a> Parser<'a> {
         //   senarai_peta((iter, fungsi(x) body))
         // `senarai_peta` (list_map) is the higher-order builtin that iterates a
         // list and evaluates the closure for each element (running its effects).
-        let lam = Expr::Lam(var, Ty::Any, Box::new(body));
+        // For a tuple pattern `(a, b, ...)` the closure binds a fresh element and
+        // projects each name from it via Fst/Snd.
+        let lam = if pattern_names.len() == 1 {
+            Expr::Lam(pattern_names.into_iter().next().unwrap(), Ty::Any, Box::new(body))
+        } else {
+            let elem = self.fresh_var("forElem");
+            let n = pattern_names.len();
+            let mut bound = body;
+            for (i, nm) in pattern_names.iter().enumerate().rev() {
+                let proj = self.tuple_proj(&elem, i, n);
+                bound = Expr::Let(nm.clone(), None, Box::new(proj), Box::new(bound));
+            }
+            Expr::Lam(elem, Ty::Any, Box::new(bound))
+        };
         Ok(Expr::App(
             Box::new(Expr::Var("senarai_peta".into())),
             Box::new(Expr::Pair(Box::new(iter), Box::new(lam))),

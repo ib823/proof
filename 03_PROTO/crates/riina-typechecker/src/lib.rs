@@ -2609,6 +2609,9 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             let (t, eff) = type_check_full(ctx, e)?;
             match t {
                 Ty::Prod(t1, _) => Ok((*t1, eff)),
+                // Projecting a component of an `Any`-typed value (e.g. a closure
+                // parameter bound from a `untuk (a, b)` destructure) yields `Any`.
+                Ty::Any => Ok((Ty::Any, eff)),
                 _ => Err(TypeError::ExpectedProduct(t)),
             }
         }
@@ -2616,6 +2619,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             let (t, eff) = type_check_full(ctx, e)?;
             match t {
                 Ty::Prod(_, t2) => Ok((*t2, eff)),
+                Ty::Any => Ok((Ty::Any, eff)),
                 _ => Err(TypeError::ExpectedProduct(t)),
             }
         }
@@ -3487,6 +3491,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             let (t, eff) = type_check(ctx, e)?;
             match t {
                 Ty::Prod(t1, _) => Ok((*t1, eff)),
+                Ty::Any => Ok((Ty::Any, eff)),
                 _ => Err(TypeError::ExpectedProduct(t)),
             }
         }
@@ -3494,6 +3499,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             let (t, eff) = type_check(ctx, e)?;
             match t {
                 Ty::Prod(_, t2) => Ok((*t2, eff)),
+                Ty::Any => Ok((Ty::Any, eff)),
                 _ => Err(TypeError::ExpectedProduct(t)),
             }
         }

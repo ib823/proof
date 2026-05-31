@@ -3916,3 +3916,13 @@ fn test_jenis_still_a_decl_keyword() {
     let mut p = Parser::new("jenis Titik { x: Nombor }");
     assert!(p.parse_program().is_ok());
 }
+
+#[test]
+fn test_parse_for_tuple_pattern() {
+    // `untuk (a, b) dalam iter { .. }` destructures each element.
+    let mut p = Parser::new("untuk (a, b) dalam xs { a }");
+    match p.parse_expr().unwrap() {
+        Expr::App(f, _) => assert_eq!(*f, Expr::Var("senarai_peta".to_string())),
+        other => panic!("expected App(senarai_peta), got {other:?}"),
+    }
+}
