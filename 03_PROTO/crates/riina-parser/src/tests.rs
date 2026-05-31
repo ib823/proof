@@ -3405,3 +3405,58 @@ fn test_parse_deref_still_bang() {
     let mut p = Parser::new("!x");
     assert!(matches!(p.parse_expr().unwrap(), Expr::Deref(_)));
 }
+
+// =============================================================================
+// PADAN (pattern matching) COMPILATION TESTS
+// =============================================================================
+
+#[test]
+fn test_padan_arrow_literal_desugars_to_if() {
+    // `padan x { 0 -> 1, _ -> 2 }` compiles to a let-bound If chain.
+    let mut p = Parser::new("padan x { 0 -> 1, _ -> 2 }");
+    // Should parse without error and produce a Let (scrutinee binding).
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Let(_, _, _, _)));
+}
+
+#[test]
+fn test_padan_constructor_desugars_to_case() {
+    // Ada/Tidak constructor arms compile to a Case (sum elimination) with the
+    // payload variable used directly as the binder.
+    let mut p = Parser::new("padan m { Ada(n) -> n, Tidak -> 0 }");
+    match p.parse_expr().unwrap() {
+        Expr::Case(_, l, _, _, _) => assert_eq!(l, "n"),
+        other => panic!("expected Case, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_padan_legacy_inl_inr_still_case() {
+    // Backward compatibility: `inl x => .. , inr y => ..` with FatArrow.
+    let mut p = Parser::new("padan e { inl x => 1, inr y => 2 }");
+    match p.parse_expr().unwrap() {
+        Expr::Case(_, x, _, y, _) => {
+            assert_eq!(x, "x");
+            assert_eq!(y, "y");
+        }
+        other => panic!("expected Case, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_padan_guard_parses() {
+    // `kalau` guard on an arm.
+    let mut p = Parser::new("padan x { n kalau n > 5 -> 1, n -> 0 }");
+    assert!(p.parse_expr().is_ok());
+}
+
+#[test]
+fn test_padan_tuple_pattern_parses() {
+    let mut p = Parser::new("padan p { (0, 0) -> 1, (a, b) -> 2 }");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Let(_, _, _, _)));
+}
+
+#[test]
+fn test_padan_block_body_parses() {
+    let mut p = Parser::new("padan x { 1 -> { biar y = 2; y }, _ -> 0 }");
+    assert!(p.parse_expr().is_ok());
+}

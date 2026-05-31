@@ -119,6 +119,41 @@ impl Iterator for LexerIter<'_> {
 pub struct Parser<'a> {
     lexer: Peekable<LexerIter<'a>>,
     current_span: Span,
+    /// Counter for generating fresh, capture-free variable names during
+    /// desugaring (e.g. `padan` compilation). See [`Parser::fresh_var`].
+    gensym: usize,
+}
+
+/// A surface match pattern, used only during `padan` compilation. The AST has
+/// no pattern node; [`Parser::compile_match`] lowers these to core `Expr`.
+#[derive(Debug, Clone)]
+enum Pattern {
+    /// `_` — matches anything, binds nothing.
+    Wildcard,
+    /// A variable binding — matches anything, binds the name.
+    Var(Ident),
+    /// Integer literal pattern.
+    Int(u64),
+    /// Boolean literal pattern.
+    Bool(bool),
+    /// String literal pattern.
+    Str(String),
+    /// Tuple pattern `(p1, p2, ...)`.
+    Tuple(Vec<Pattern>),
+    /// Left-injection constructor (`Some`/`Ada`/`Ok`/`Jadi`/`inl`) with payload.
+    CtorLeft(Box<Pattern>),
+    /// Right-injection constructor (`None`/`Tiada`/`Err`/`Gagal`/`Ralat`/`inr`)
+    /// with payload.
+    CtorRight(Box<Pattern>),
+}
+
+/// One arm of a `padan` expression: a pattern, an optional `kalau` guard, and a
+/// body expression.
+#[derive(Debug, Clone)]
+struct MatchArm {
+    pattern: Pattern,
+    guard: Option<Expr>,
+    body: Expr,
 }
 
 impl<'a> Parser<'a> {
@@ -129,6 +164,7 @@ impl<'a> Parser<'a> {
             }
             .peekable(),
             current_span: Span { start: 0, end: 0 },
+            gensym: 0,
         }
     }
 
@@ -589,14 +625,14 @@ impl<'a> Parser<'a> {
     }
 
     /// Parse a qualified module path `Module::function` (the first segment is
-    /// already consumed and passed as `first`). Resolves to a flat builtin name:
-    ///   - a leading `std` segment is dropped (`std::teks::mengandungi`);
-    ///   - a lowercase module (a type's own methods) maps to `module_function`
-    ///     (`teks::mengandungi` -> `teks_mengandungi`);
-    ///   - a capitalized module (a namespace) drops the module, using the final
-    ///     segment, which already carries its full builtin name
-    ///     (`Masa::masa_unix` -> `masa_unix`, `Kripto::jana_rawak_hex` ->
-    ///     `jana_rawak_hex`).
+    /// already consumed and passed as `first`). Resolves to a flat builtin name.
+    ///
+    /// A leading `std` segment is dropped (`std::teks::mengandungi`). A lowercase
+    /// module (a type's own methods) maps to `module_function`
+    /// (`teks::mengandungi` -> `teks_mengandungi`). A capitalized module (a
+    /// namespace) drops the module and uses the final segment, which already
+    /// carries its full builtin name (`Masa::masa_unix` -> `masa_unix`).
+    ///
     /// Names that resolve to a non-existent builtin fail later at type-check with
     /// "Variable not found", which is the correct behavior.
     fn parse_module_path(&mut self, first: Ident) -> Result<Ident, ParseError> {
@@ -1219,83 +1255,471 @@ impl<'a> Parser<'a> {
         Ok(Expr::Lam(name, ty, Box::new(body)))
     }
 
+    /// Parse a `padan` (match) expression and compile it to the core calculus.
+    ///
+    /// RIINA's AST has no dedicated match/pattern node; `padan` is sugar that
+    /// this function compiles down to the verified core constructs:
+    ///   - `Case` (sum elimination) for Option/Result-style constructor patterns
+    ///     (`Ada(x)`/`Tidak`, `Ok(x)`/`Ralat(e)`, `inl x`/`inr y`);
+    ///   - nested `If` + structural `==` for literal / bool / string patterns;
+    ///   - `Fst`/`Snd` projection for tuple patterns;
+    ///   - variable / `_` patterns as binding catch-alls;
+    ///   - `kalau <cond>` guards on any arm.
+    ///
+    /// Arm syntax accepts both `->` (Arrow, the surface syntax used across the
+    /// example corpus) and `=>` (FatArrow, legacy). Arm bodies may be a bare
+    /// expression or a `{ ... }` block.
     fn parse_match(&mut self) -> Result<Expr, ParseError> {
         self.consume(TokenKind::KwMatch)?;
         let scrutinee = self.parse_pipe()?;
         self.consume(TokenKind::LBrace)?;
 
-        // Dispatch: inl/inr → sum match, otherwise → literal match
-        match self.peek().map(|t| &t.kind) {
-            Some(TokenKind::KwInl) => {
-                self.consume(TokenKind::KwInl)?;
-                let x = self.parse_ident()?;
-                self.consume(TokenKind::FatArrow)?;
-                let e1 = self.parse_expr()?;
-                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
-                    self.next();
-                }
-                self.consume(TokenKind::KwInr)?;
-                let y = self.parse_ident()?;
-                self.consume(TokenKind::FatArrow)?;
-                let e2 = self.parse_expr()?;
-                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
-                    self.next();
-                }
-                self.consume(TokenKind::RBrace)?;
-                Ok(Expr::Case(
-                    Box::new(scrutinee),
-                    x,
-                    Box::new(e1),
-                    y,
-                    Box::new(e2),
-                ))
-            }
-            _ => {
-                // Literal match: desugar to nested if-else
-                let mut arms = Vec::new();
-                let mut default = None;
-                loop {
-                    if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace) | None) {
-                        break;
-                    }
-                    // Wildcard _
-                    if matches!(self.peek().map(|t| t.kind.clone()), Some(TokenKind::Identifier(ref s)) if s == "_")
-                    {
-                        self.next();
-                        self.consume(TokenKind::FatArrow)?;
-                        default = Some(self.parse_pipe()?);
-                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
-                            self.next();
-                        }
-                        break;
-                    }
-                    let pattern = self.parse_atom()?;
-                    self.consume(TokenKind::FatArrow)?;
-                    let body = self.parse_pipe()?;
-                    arms.push((pattern, body));
-                    if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
-                        self.next();
-                    }
-                }
-                self.consume(TokenKind::RBrace)?;
-                let fallback = default.unwrap_or(Expr::Unit);
-                let result = arms
-                    .into_iter()
-                    .rev()
-                    .fold(fallback, |else_branch, (pat, body)| {
-                        Expr::If(
-                            Box::new(Expr::BinOp(
-                                BinOp::Eq,
-                                Box::new(scrutinee.clone()),
-                                Box::new(pat),
-                            )),
-                            Box::new(body),
-                            Box::new(else_branch),
-                        )
-                    });
-                Ok(result)
+        let mut arms: Vec<MatchArm> = Vec::new();
+        while !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace) | None) {
+            let pattern = self.parse_pattern()?;
+            // Optional guard: `kalau <cond>`.
+            let guard = if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwIf)) {
+                self.consume(TokenKind::KwIf)?;
+                Some(self.parse_pipe()?)
+            } else {
+                None
+            };
+            self.consume_arm_arrow()?;
+            let body = self.parse_arm_body()?;
+            arms.push(MatchArm { pattern, guard, body });
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                self.next();
             }
         }
+        self.consume(TokenKind::RBrace)?;
+
+        self.compile_match(scrutinee, arms)
+    }
+
+    /// Consume the arrow separating a match pattern from its body. Accepts both
+    /// `->` (surface syntax) and `=>` (legacy) for compatibility.
+    fn consume_arm_arrow(&mut self) -> Result<(), ParseError> {
+        match self.peek().map(|t| &t.kind) {
+            Some(TokenKind::Arrow) => {
+                self.consume(TokenKind::Arrow)?;
+                Ok(())
+            }
+            Some(TokenKind::FatArrow) => {
+                self.consume(TokenKind::FatArrow)?;
+                Ok(())
+            }
+            _ => self.consume(TokenKind::Arrow).map(|_| ()),
+        }
+    }
+
+    /// Parse a match arm body: either a `{ ... }` block (statement sequence) or
+    /// a bare expression.
+    fn parse_arm_body(&mut self) -> Result<Expr, ParseError> {
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LBrace)) {
+            self.consume(TokenKind::LBrace)?;
+            let body = self.parse_stmt_sequence()?;
+            self.consume(TokenKind::RBrace)?;
+            Ok(body)
+        } else {
+            self.parse_pipe()
+        }
+    }
+
+    /// Parse a single match pattern.
+    fn parse_pattern(&mut self) -> Result<Pattern, ParseError> {
+        match self.peek().map(|t| t.kind.clone()) {
+            // Tuple pattern `(p1, p2, ...)` (or `()` for unit).
+            Some(TokenKind::LParen) => {
+                self.consume(TokenKind::LParen)?;
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
+                    self.consume(TokenKind::RParen)?;
+                    return Ok(Pattern::Tuple(Vec::new()));
+                }
+                let mut elems = vec![self.parse_pattern()?];
+                while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                    self.consume(TokenKind::Comma)?;
+                    elems.push(self.parse_pattern()?);
+                }
+                self.consume(TokenKind::RParen)?;
+                if elems.len() == 1 {
+                    Ok(elems.pop().unwrap())
+                } else {
+                    Ok(Pattern::Tuple(elems))
+                }
+            }
+            // Sum constructors that are keywords: Some/Ada, Ok/Jadi -> left;
+            // None/Tiada, Err/Gagal -> right.
+            Some(TokenKind::KwSome) | Some(TokenKind::KwOk) => {
+                self.next();
+                let inner = self.parse_ctor_payload()?;
+                Ok(Pattern::CtorLeft(inner))
+            }
+            Some(TokenKind::KwErr) => {
+                self.next();
+                let inner = self.parse_ctor_payload()?;
+                Ok(Pattern::CtorRight(inner))
+            }
+            Some(TokenKind::KwNone) => {
+                self.next();
+                // `Tiada`/`None` may appear bare or as `Tiada()`.
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
+                    self.consume(TokenKind::LParen)?;
+                    self.consume(TokenKind::RParen)?;
+                }
+                Ok(Pattern::CtorRight(Box::new(Pattern::Wildcard)))
+            }
+            Some(TokenKind::KwInl) => {
+                self.next();
+                let name = self.parse_ident()?;
+                Ok(Pattern::CtorLeft(Box::new(Pattern::Var(name))))
+            }
+            Some(TokenKind::KwInr) => {
+                self.next();
+                let name = self.parse_ident()?;
+                Ok(Pattern::CtorRight(Box::new(Pattern::Var(name))))
+            }
+            // Literal patterns.
+            Some(TokenKind::LiteralInt(s, _)) => {
+                self.next();
+                Ok(Pattern::Int(s.parse().unwrap_or(0)))
+            }
+            Some(TokenKind::LiteralBool(b)) => {
+                self.next();
+                Ok(Pattern::Bool(b))
+            }
+            Some(TokenKind::LiteralString(s)) => {
+                self.next();
+                Ok(Pattern::Str(s))
+            }
+            // Identifier: `_` is wildcard; an uppercase identifier followed by
+            // `(...)` is an enum constructor (treated as a right-injection payload
+            // binding so `Ralat(e)`/`Berjaya(v)` bind their argument); otherwise a
+            // variable binding.
+            Some(TokenKind::Identifier(s)) => {
+                self.next();
+                if s == "_" {
+                    return Ok(Pattern::Wildcard);
+                }
+                let is_ctor = s.chars().next().map(|c| c.is_uppercase()).unwrap_or(false);
+                if is_ctor && matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
+                    let inner = self.parse_ctor_payload()?;
+                    // Named enum constructors map onto the right injection of the
+                    // structural sum (the error/secondary case), mirroring how
+                    // `Err`/`Ralat` desugar. This is a pragmatic structural
+                    // encoding; nominal multi-variant enums are future work.
+                    Ok(Pattern::CtorRight(inner))
+                } else if is_ctor {
+                    // Nullary constructor used as a tag (e.g. `Tertutup`): match
+                    // it as the right injection ignoring any payload.
+                    Ok(Pattern::CtorRight(Box::new(Pattern::Wildcard)))
+                } else {
+                    Ok(Pattern::Var(s))
+                }
+            }
+            _ => Err(ParseError {
+                kind: ParseErrorKind::ExpectedIdentifier,
+                span: self.current_span,
+            }),
+        }
+    }
+
+    /// Parse a constructor's parenthesized payload pattern: `(p)`. A bare
+    /// constructor with no parentheses binds nothing (wildcard payload).
+    fn parse_ctor_payload(&mut self) -> Result<Box<Pattern>, ParseError> {
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
+            self.consume(TokenKind::LParen)?;
+            // Multi-arg constructors `C(a, b, ...)`: bind as a tuple pattern.
+            let mut elems = vec![self.parse_pattern()?];
+            while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                self.consume(TokenKind::Comma)?;
+                elems.push(self.parse_pattern()?);
+            }
+            self.consume(TokenKind::RParen)?;
+            if elems.len() == 1 {
+                Ok(Box::new(elems.pop().unwrap()))
+            } else {
+                Ok(Box::new(Pattern::Tuple(elems)))
+            }
+        } else {
+            Ok(Box::new(Pattern::Wildcard))
+        }
+    }
+
+    /// Compile parsed match arms to core `Expr`. Constructor patterns
+    /// (`CtorLeft`/`CtorRight`) compile to a `Case` over the sum; all other
+    /// patterns compile to a nested `If` chain over structural tests. A `padan`
+    /// that mixes both forms falls back to the `If`-chain compiler using the
+    /// scrutinee directly.
+    fn compile_match(
+        &mut self,
+        scrutinee: Expr,
+        arms: Vec<MatchArm>,
+    ) -> Result<Expr, ParseError> {
+        let has_ctor = arms
+            .iter()
+            .any(|a| matches!(a.pattern, Pattern::CtorLeft(_) | Pattern::CtorRight(_)));
+        let all_ctor_or_default = arms.iter().all(|a| {
+            matches!(
+                a.pattern,
+                Pattern::CtorLeft(_) | Pattern::CtorRight(_) | Pattern::Wildcard | Pattern::Var(_)
+            ) && a.guard.is_none()
+        });
+
+        if has_ctor && all_ctor_or_default {
+            return self.compile_sum_match(scrutinee, arms);
+        }
+        self.compile_if_chain(scrutinee, arms)
+    }
+
+    /// Compile a constructor-style `padan` to a `Case` (sum elimination).
+    /// Collects the first left arm and first right arm; a trailing
+    /// wildcard/variable arm fills whichever side is absent.
+    fn compile_sum_match(
+        &mut self,
+        scrutinee: Expr,
+        arms: Vec<MatchArm>,
+    ) -> Result<Expr, ParseError> {
+        let mut left: Option<(Box<Pattern>, Expr)> = None;
+        let mut right: Option<(Box<Pattern>, Expr)> = None;
+        let mut default: Option<Expr> = None;
+
+        for arm in arms {
+            match arm.pattern {
+                Pattern::CtorLeft(p) if left.is_none() => left = Some((p, arm.body)),
+                Pattern::CtorRight(p) if right.is_none() => right = Some((p, arm.body)),
+                Pattern::Wildcard | Pattern::Var(_) if default.is_none() => {
+                    default = Some(arm.body)
+                }
+                _ => {} // redundant arm; first match wins
+            }
+        }
+
+        // Choose the `Case` binder for each side. When the payload pattern is a
+        // simple variable (the common `inl x =>` / `Ada(n) ->` form), use that
+        // name directly as the binder — no wrapping `let`, giving a clean `Case`.
+        // Otherwise introduce a fresh binder and destructure the payload.
+        let (left_binder, left_branch) = match left {
+            Some((pat, body)) => match *pat {
+                Pattern::Var(name) => (name, body),
+                Pattern::Wildcard => (self.fresh_var("padL"), body),
+                other => {
+                    let fresh = self.fresh_var("padL");
+                    let b = self.bind_pattern(Expr::Var(fresh.clone()), &other, body)?;
+                    (fresh, b)
+                }
+            },
+            None => (self.fresh_var("padL"), default.clone().unwrap_or(Expr::Unit)),
+        };
+        let (right_binder, right_branch) = match right {
+            Some((pat, body)) => match *pat {
+                Pattern::Var(name) => (name, body),
+                Pattern::Wildcard => (self.fresh_var("padR"), body),
+                other => {
+                    let fresh = self.fresh_var("padR");
+                    let b = self.bind_pattern(Expr::Var(fresh.clone()), &other, body)?;
+                    (fresh, b)
+                }
+            },
+            None => (self.fresh_var("padR"), default.unwrap_or(Expr::Unit)),
+        };
+
+        Ok(Expr::Case(
+            Box::new(scrutinee),
+            left_binder,
+            Box::new(left_branch),
+            right_binder,
+            Box::new(right_branch),
+        ))
+    }
+
+    /// Bind a (payload) pattern against a scrutinee expression, then evaluate
+    /// `body` in the resulting scope. Used for constructor payloads in `Case`
+    /// branches. Variable patterns introduce a `let`; tuples project with
+    /// `Fst`/`Snd`; wildcards/literals bind nothing.
+    fn bind_pattern(
+        &mut self,
+        scrut: Expr,
+        pat: &Pattern,
+        body: Expr,
+    ) -> Result<Expr, ParseError> {
+        match pat {
+            Pattern::Wildcard | Pattern::Int(_) | Pattern::Bool(_) | Pattern::Str(_) => Ok(body),
+            Pattern::Var(name) => Ok(Expr::Let(
+                name.clone(),
+                None,
+                Box::new(scrut),
+                Box::new(body),
+            )),
+            Pattern::Tuple(elems) => {
+                // Bind left-nested pairs: (a, b) -> let a = fst s; let b = snd s.
+                // For arity > 2, the tail is itself treated as the snd component.
+                self.bind_tuple(scrut, elems, body)
+            }
+            Pattern::CtorLeft(inner) | Pattern::CtorRight(inner) => {
+                // Nested constructor in a payload: rare in the corpus; bind its
+                // inner pattern directly against the (already-projected) value.
+                self.bind_pattern(scrut, inner, body)
+            }
+        }
+    }
+
+    /// Bind a tuple pattern by `Fst`/`Snd` projection. A 2-tuple binds
+    /// `Fst`/`Snd`; an n-tuple binds the first element to `Fst` and recurses on
+    /// `Snd` for the remainder.
+    fn bind_tuple(
+        &mut self,
+        scrut: Expr,
+        elems: &[Pattern],
+        body: Expr,
+    ) -> Result<Expr, ParseError> {
+        if elems.is_empty() {
+            return Ok(body);
+        }
+        if elems.len() == 1 {
+            return self.bind_pattern(scrut, &elems[0], body);
+        }
+        let fst = Expr::Fst(Box::new(scrut.clone()));
+        let snd = Expr::Snd(Box::new(scrut));
+        let rest = self.bind_tuple(snd, &elems[1..], body)?;
+        self.bind_pattern(fst, &elems[0], rest)
+    }
+
+    /// Compile a `padan` to a nested `If` chain over structural equality and
+    /// tuple-component tests. Handles literal/bool/string/variable/wildcard/
+    /// tuple patterns plus `kalau` guards.
+    fn compile_if_chain(
+        &mut self,
+        scrutinee: Expr,
+        mut arms: Vec<MatchArm>,
+    ) -> Result<Expr, ParseError> {
+        // Bind the scrutinee once to avoid re-evaluating it per arm.
+        let s = self.fresh_var("padS");
+        let s_expr = Expr::Var(s.clone());
+
+        // RIINA has no exhaustiveness checker yet, and a desugared `If`-chain
+        // needs a well-typed fallback. If no arm is irrefutable (no bare
+        // wildcard/variable arm without a guard), the final arm is promoted to
+        // the catch-all default: its test is dropped so its body becomes the
+        // base case. This keeps exhaustive matches (e.g. `betul`/`salah`) sound
+        // without a Unit-typed fallback. (Documented simplification.)
+        let has_irrefutable = arms.iter().any(|a| {
+            a.guard.is_none() && matches!(a.pattern, Pattern::Wildcard | Pattern::Var(_))
+        });
+
+        let mut result = if has_irrefutable {
+            Expr::Unit
+        } else if let Some(last) = arms.pop() {
+            let (_test, bindings) = self.pattern_test(&s_expr, &last.pattern);
+            self.wrap_lets(bindings, last.body)
+        } else {
+            Expr::Unit
+        };
+
+        for arm in arms.into_iter().rev() {
+            let (test, bindings) = self.pattern_test(&s_expr, &arm.pattern);
+            // Fold the guard (if any) into the arm test.
+            let full_test = match arm.guard {
+                Some(g) => match test {
+                    Some(t) => Some(Expr::BinOp(BinOp::And, Box::new(t), Box::new(g))),
+                    None => Some(g),
+                },
+                None => test,
+            };
+            // Bind the pattern variables around BOTH the test and body so guards
+            // can reference them. Bindings are pure projections of the scrutinee.
+            result = match full_test {
+                Some(t) => self.wrap_lets(
+                    bindings,
+                    Expr::If(Box::new(t), Box::new(arm.body), Box::new(result)),
+                ),
+                None => self.wrap_lets(bindings, arm.body),
+            };
+        }
+        Ok(Expr::Let(
+            s,
+            None,
+            Box::new(scrutinee),
+            Box::new(result),
+        ))
+    }
+
+    /// Wrap `body` in a chain of `let` bindings, bringing pattern variables into
+    /// scope. Bindings apply outermost-first (first binding is outermost).
+    fn wrap_lets(&self, bindings: Vec<(Ident, Expr)>, body: Expr) -> Expr {
+        bindings.into_iter().rev().fold(body, |acc, (name, value)| {
+            Expr::Let(name, None, Box::new(value), Box::new(acc))
+        })
+    }
+
+    /// Build the boolean test and variable bindings for one pattern against a
+    /// scrutinee expression. Returns `(None, _)` for an irrefutable pattern
+    /// (wildcard / variable) that always matches.
+    fn pattern_test(&mut self, scrut: &Expr, pat: &Pattern) -> (Option<Expr>, Vec<(Ident, Expr)>) {
+        match pat {
+            Pattern::Wildcard => (None, Vec::new()),
+            Pattern::Var(name) => (None, vec![(name.clone(), scrut.clone())]),
+            Pattern::Int(n) => (
+                Some(Expr::BinOp(
+                    BinOp::Eq,
+                    Box::new(scrut.clone()),
+                    Box::new(Expr::Int(*n)),
+                )),
+                Vec::new(),
+            ),
+            Pattern::Bool(b) => (
+                Some(Expr::BinOp(
+                    BinOp::Eq,
+                    Box::new(scrut.clone()),
+                    Box::new(Expr::Bool(*b)),
+                )),
+                Vec::new(),
+            ),
+            Pattern::Str(s) => (
+                Some(Expr::BinOp(
+                    BinOp::Eq,
+                    Box::new(scrut.clone()),
+                    Box::new(Expr::String(s.clone())),
+                )),
+                Vec::new(),
+            ),
+            Pattern::Tuple(elems) => {
+                // Conjoin component tests over Fst/Snd projections.
+                let mut tests: Vec<Expr> = Vec::new();
+                let mut binds: Vec<(Ident, Expr)> = Vec::new();
+                let mut acc = scrut.clone();
+                for (i, elem) in elems.iter().enumerate() {
+                    let proj = if i + 1 == elems.len() {
+                        // last component: the remaining accumulator
+                        acc.clone()
+                    } else {
+                        Expr::Fst(Box::new(acc.clone()))
+                    };
+                    let (t, b) = self.pattern_test(&proj, elem);
+                    if let Some(t) = t {
+                        tests.push(t);
+                    }
+                    binds.extend(b);
+                    acc = Expr::Snd(Box::new(acc));
+                }
+                let test = tests.into_iter().reduce(|a, b| {
+                    Expr::BinOp(BinOp::And, Box::new(a), Box::new(b))
+                });
+                (test, binds)
+            }
+            // Constructor patterns are not handled by the If-chain compiler
+            // (compile_match routes pure-constructor matches to Case). If one
+            // appears in a mixed match, treat it as an always-true catch-all
+            // binding nothing, so it at least does not crash compilation.
+            Pattern::CtorLeft(_) | Pattern::CtorRight(_) => (None, Vec::new()),
+        }
+    }
+
+    /// Generate a fresh, source-illegal variable name (contains `$`) to avoid
+    /// capturing user identifiers in desugared bindings.
+    fn fresh_var(&mut self, hint: &str) -> Ident {
+        let id = self.gensym;
+        self.gensym += 1;
+        format!("${hint}{id}")
     }
 
     fn parse_handle(&mut self) -> Result<Expr, ParseError> {

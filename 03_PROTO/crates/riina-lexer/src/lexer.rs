@@ -573,10 +573,14 @@ impl<'a> Lexer<'a> {
             "grant" | "beri" => TokenKind::KwGrant,
 
             // Option/Result constructors (English | Bahasa Melayu)
+            // Option/Result constructors. Each maps to a single token; the
+            // several Bahasa Melayu spellings are accepted as synonyms because
+            // the example corpus uses them interchangeably (Tidak/Tiada for
+            // None; Ralat/Gagal for Err; Berjaya/Jadi for Ok's success variant).
             "Some" | "Ada" => TokenKind::KwSome,
-            "None" | "Tiada" => TokenKind::KwNone,
-            "Ok" | "Jadi" => TokenKind::KwOk,
-            "Err" | "Gagal" => TokenKind::KwErr,
+            "None" | "Tiada" | "Tidak" => TokenKind::KwNone,
+            "Ok" | "Jadi" | "Berjaya" => TokenKind::KwOk,
+            "Err" | "Gagal" | "Ralat" => TokenKind::KwErr,
 
             // Session types (English | Bahasa Melayu)
             "session" | "sesi" => TokenKind::KwSession,

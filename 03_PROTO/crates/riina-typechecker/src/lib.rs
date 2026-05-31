@@ -2204,6 +2204,19 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     c
 }
 
+/// Select the result type when joining two branch types that are already known
+/// to be [`types_compatible`], preferring the more concrete type. If one side
+/// is `Any` (RIINA's wildcard, produced for example by unannotated
+/// Option/Result payloads), the other more concrete type is used; otherwise the
+/// first is returned (they are compatible, so either is acceptable).
+fn join_branch_types(t1: Ty, t2: Ty) -> Ty {
+    match (&t1, &t2) {
+        (Ty::Any, _) => t2,
+        (_, Ty::Any) => t1,
+        _ => t1,
+    }
+}
+
 /// Check if two types are compatible, considering:
 /// - Ty::Any as a wildcard
 /// - Tainted cannot flow to Sanitized (taint violation)
@@ -2651,14 +2664,19 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     };
                     let (t2, eff2) = type_check_full(&mut ctx2, e2)?;
 
-                    if t1 != t2 {
+                    // Branch result types must agree. `Any` (from unannotated
+                    // Option/Result payloads, e.g. a `padan` arm that returns the
+                    // bound payload) unifies with the concrete branch type; the
+                    // result is the more concrete of the two.
+                    if !types_compatible(&t1, &t2) {
                         return Err(TypeError::TypeMismatch {
                             expected: t1,
                             found: t2,
                         });
                     }
+                    let result_ty = join_branch_types(t1, t2);
 
-                    Ok((t1, eff.join(eff1).join(eff2)))
+                    Ok((result_ty, eff.join(eff1).join(eff2)))
                 }
                 _ => Err(TypeError::ExpectedSum(t)),
             }
@@ -2721,14 +2739,18 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             };
             let (t3, eff3) = type_check_full(&mut branch_ctx2, e3)?;
 
-            if t2 != t3 {
+            // Branch types must agree; `Any` (e.g. from a `padan` arm returning
+            // an unannotated Option/Result payload) unifies with the concrete
+            // branch type. The result is the more concrete of the two.
+            if !types_compatible(&t2, &t3) {
                 return Err(TypeError::TypeMismatch {
                     expected: t2,
                     found: t3,
                 });
             }
+            let result_ty = join_branch_types(t2, t3);
 
-            Ok((t2, eff1.join(eff2).join(eff3)))
+            Ok((result_ty, eff1.join(eff2).join(eff3)))
         }
         Expr::Let(x, linearity, e1, e2) => {
             let (t1, eff1) = type_check_full(ctx, e1)?;
@@ -3490,14 +3512,15 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                     let ctx2 = ctx.extend(y.clone(), *t_right);
                     let (t2, eff2) = type_check(&ctx2, e2)?;
 
-                    if t1 != t2 {
+                    if !types_compatible(&t1, &t2) {
                         return Err(TypeError::TypeMismatch {
                             expected: t1,
                             found: t2,
                         });
                     }
+                    let result_ty = join_branch_types(t1, t2);
 
-                    Ok((t1, eff.join(eff1).join(eff2)))
+                    Ok((result_ty, eff.join(eff1).join(eff2)))
                 }
                 _ => Err(TypeError::ExpectedSum(t)),
             }
@@ -3516,14 +3539,15 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             let (t2, eff2) = type_check(ctx, e2)?;
             let (t3, eff3) = type_check(ctx, e3)?;
 
-            if t2 != t3 {
+            if !types_compatible(&t2, &t3) {
                 return Err(TypeError::TypeMismatch {
                     expected: t2,
                     found: t3,
                 });
             }
+            let result_ty = join_branch_types(t2, t3);
 
-            Ok((t2, eff1.join(eff2).join(eff3)))
+            Ok((result_ty, eff1.join(eff2).join(eff3)))
         }
         Expr::Let(x, _, e1, e2) => {
             let (t1, eff1) = type_check(ctx, e1)?;
