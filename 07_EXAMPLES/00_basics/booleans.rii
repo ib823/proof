@@ -1,9 +1,9 @@
 /// BOOLEANS.RII - Boolean Logic & Operators
 /// Operasi logik boolean dalam RIINA
-/// Demonstrates: &&, ||, bukan, comparison operators
+/// Demonstrates: betul/salah, &&, ||, bukan, comparisons
 
 fungsi operasiLogik() -> Bool kesan Bersih {
-    /// Nilai boolean asas
+    /// Nilai boolean asas / Basic boolean values
     biar benar_nilai = betul;
     biar palsu_nilai = salah;
 
@@ -16,10 +16,7 @@ fungsi operasiLogik() -> Bool kesan Bersih {
     /// BUKAN logik (NOT)
     biar songsang = bukan betul;
 
-    /// Gabungan ungkapan
-    biar gabungan = (betul && salah) || (bukan salah);
-
-    pulang gabungan;
+    pulang hasil_dan && hasil_atau;
 }
 
 fungsi bandingan() -> Bool kesan Bersih {
