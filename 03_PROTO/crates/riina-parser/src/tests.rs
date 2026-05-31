@@ -3725,3 +3725,30 @@ fn test_parse_single_generic_unaffected() {
     let mut p = Parser::new("Senarai<Nombor>");
     assert!(p.parse_ty().is_ok());
 }
+
+// =============================================================================
+// format!(...) MACRO
+// =============================================================================
+
+#[test]
+fn test_parse_format_macro_desugars_to_concat() {
+    // `format!("x={}", a)` -> ("x=" + ke_teks(a)) + "".
+    let mut p = Parser::new("format!(\"x={}\", 5)");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::BinOp(BinOp::Add, _, _)));
+}
+
+#[test]
+fn test_parse_format_macro_no_args() {
+    let mut p = Parser::new("format!(\"hello\")");
+    assert_eq!(p.parse_expr().unwrap(), Expr::String("hello".to_string()));
+}
+
+#[test]
+fn test_parse_format_macro_escapes() {
+    // `{{`/`}}` unescape to `{`/`}`.
+    let mut p = Parser::new("format!(\"{{literal}}\")");
+    assert_eq!(
+        p.parse_expr().unwrap(),
+        Expr::String("{literal}".to_string())
+    );
+}

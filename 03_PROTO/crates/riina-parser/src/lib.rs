@@ -802,6 +802,98 @@ impl<'a> Parser<'a> {
     ///
     /// Names that resolve to a non-existent builtin fail later at type-check with
     /// "Variable not found", which is the correct behavior.
+    /// Parse a `format!("template", args...)` macro (the `format` identifier is
+    /// already consumed). Desugars to string concatenation: the template is split
+    /// on `{}` placeholders, and each placeholder is replaced by `ke_teks(arg)`
+    /// of the corresponding positional argument. Literal `{{`/`}}` are unescaped
+    /// to `{`/`}`. The result type is `Teks` (String).
+    ///
+    /// Example: `format!("a={} b={}", x, y)` becomes
+    /// `"a=" + ke_teks(x) + " b=" + ke_teks(y) + ""`.
+    fn parse_format_macro(&mut self) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::Not)?;
+        self.consume(TokenKind::LParen)?;
+        let template = match self.peek().map(|t| t.kind.clone()) {
+            Some(TokenKind::LiteralString(s)) => {
+                self.next();
+                s
+            }
+            _ => {
+                return Err(ParseError {
+                    kind: ParseErrorKind::UnexpectedToken(
+                        self.peek().map(|t| t.kind.clone()).unwrap_or(TokenKind::Eof),
+                    ),
+                    span: self.current_span,
+                });
+            }
+        };
+        // Parse the (optional) positional arguments.
+        let mut args = Vec::new();
+        while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+            self.consume(TokenKind::Comma)?;
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
+                break; // trailing comma
+            }
+            args.push(self.parse_control_flow()?);
+        }
+        self.consume(TokenKind::RParen)?;
+
+        // Split the template into literal segments around `{}` placeholders,
+        // honoring `{{`/`}}` escapes.
+        let mut segments: Vec<String> = Vec::new();
+        let mut cur = String::new();
+        let mut chars = template.chars().peekable();
+        let mut placeholders = 0usize;
+        while let Some(c) = chars.next() {
+            match c {
+                '{' if chars.peek() == Some(&'{') => {
+                    chars.next();
+                    cur.push('{');
+                }
+                '}' if chars.peek() == Some(&'}') => {
+                    chars.next();
+                    cur.push('}');
+                }
+                '{' => {
+                    // Placeholder `{}` or `{name}`/`{:spec}` — skip to the `}`.
+                    while let Some(&n) = chars.peek() {
+                        chars.next();
+                        if n == '}' {
+                            break;
+                        }
+                    }
+                    segments.push(std::mem::take(&mut cur));
+                    placeholders += 1;
+                }
+                _ => cur.push(c),
+            }
+        }
+        segments.push(cur);
+
+        // Build: seg0 + ke_teks(arg0) + seg1 + ke_teks(arg1) + ... + segN.
+        // `segments` has exactly `placeholders + 1` entries. Missing args (fewer
+        // than placeholders) stringify the empty string; extra args are ignored.
+        let mut result = Expr::String(segments[0].clone());
+        for (i, seg) in segments.iter().enumerate().skip(1) {
+            // Insert the stringified argument for the placeholder before this seg.
+            let arg_expr = match args.get(i - 1) {
+                Some(a) => Expr::App(
+                    Box::new(Expr::Var("ke_teks".to_string())),
+                    Box::new(a.clone()),
+                ),
+                None => Expr::String(String::new()),
+            };
+            result = Expr::BinOp(BinOp::Add, Box::new(result), Box::new(arg_expr));
+            result = Expr::BinOp(
+                BinOp::Add,
+                Box::new(result),
+                Box::new(Expr::String(seg.clone())),
+            );
+        }
+        let _ = placeholders;
+        Ok(result)
+    }
+
     fn parse_module_path(&mut self, first: Ident) -> Result<Ident, ParseError> {
         let mut segments = vec![first];
         while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::ColonColon)) {
@@ -1351,6 +1443,13 @@ impl<'a> Parser<'a> {
             }
             Some(TokenKind::Identifier(s)) => {
                 self.next();
+                // `format!("tmpl", args...)` macro — Rust-style string formatting
+                // used across the example corpus. Desugar to string concatenation
+                // of the template's literal segments interleaved with the
+                // stringified arguments (`ke_teks`).
+                if s == "format" && matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Not)) {
+                    return self.parse_format_macro();
+                }
                 // Qualified module path `Module::function` (e.g. `teks::mengandungi`,
                 // `Masa::masa_unix`). Resolve to the flat builtin name so the
                 // existing Var/builtin machinery handles it.
