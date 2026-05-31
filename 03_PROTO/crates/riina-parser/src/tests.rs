@@ -3752,3 +3752,21 @@ fn test_parse_format_macro_escapes() {
         Expr::String("{literal}".to_string())
     );
 }
+
+#[test]
+fn test_parse_effect_union_pipe() {
+    // `kesan (A | B)` parses the same as `kesan (A, B)` — joined effect.
+    let mut p = Parser::new("fungsi f() -> Nombor kesan (Bersih | SistemFail) { 0 }");
+    assert!(p.parse_program().is_ok());
+}
+
+#[test]
+fn test_parse_qualified_fn_def_name() {
+    // `fungsi Type::method(..)` is accepted and resolves to a flat name.
+    let mut p = Parser::new("fungsi teks::mengandungi(t: Teks, c: Teks) -> Benar kesan Bersih { betul }");
+    let prog = p.parse_program().unwrap();
+    match &prog.decls[0] {
+        TopLevelDecl::Function { name, .. } => assert_eq!(name, "teks_mengandungi"),
+        other => panic!("expected Function, got {other:?}"),
+    }
+}

@@ -366,7 +366,14 @@ impl<'a> Parser<'a> {
 
     fn parse_function_decl(&mut self) -> Result<TopLevelDecl, ParseError> {
         self.consume(TokenKind::KwFn)?;
-        let name = self.parse_ident()?;
+        let mut name = self.parse_ident()?;
+        // A qualified method-style definition name `Type::method` resolves to the
+        // flat builtin name `Type_method` for a lowercase module, or to the final
+        // segment for a capitalized namespace — matching how `::` call sites
+        // resolve (see `parse_module_path`), so definitions and calls line up.
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::ColonColon)) {
+            name = self.parse_module_path(name)?;
+        }
         // Optional generic parameter list `<T>`, `<E, T>`, `<T1, T2>`, etc.
         // RIINA's type system is monomorphic at this layer; generic parameters
         // carry no semantics yet, so the list is skipped (balanced-angle aware,
@@ -2397,9 +2404,14 @@ impl<'a> Parser<'a> {
                 self.consume(TokenKind::RParen)?;
                 return Ok(Effect::Pure);
             }
+            // A parenthesized effect set may be separated by `,` or `|`
+            // (`kesan (Bersih | SistemFail)`); both denote the joined effect.
             let mut eff = self.parse_effect()?;
-            while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
-                self.consume(TokenKind::Comma)?;
+            while matches!(
+                self.peek().map(|t| &t.kind),
+                Some(TokenKind::Comma) | Some(TokenKind::Or)
+            ) {
+                self.next();
                 eff = eff.join(self.parse_effect()?);
             }
             self.consume(TokenKind::RParen)?;
