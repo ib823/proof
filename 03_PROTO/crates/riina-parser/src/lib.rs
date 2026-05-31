@@ -317,14 +317,25 @@ impl<'a> Parser<'a> {
     fn parse_function_decl(&mut self) -> Result<TopLevelDecl, ParseError> {
         self.consume(TokenKind::KwFn)?;
         let name = self.parse_ident()?;
+        // Optional generic parameter list `<T>`, `<E, T>`, `<T1, T2>`, etc.
+        // RIINA's type system is monomorphic at this layer; generic parameters
+        // carry no semantics yet, so the list is skipped (balanced-angle aware,
+        // so bounds like `<T: Sifat>` and nested `<Map<K, V>>` are consumed).
+        self.skip_type_argument_list();
         self.consume(TokenKind::LParen)?;
         let params = self.parse_param_list()?;
         self.consume(TokenKind::RParen)?;
 
-        // Optional return type
+        // Optional return type. `-> kesan <eff>` (an arrow immediately followed
+        // by the effect keyword) denotes a Unit return with only an effect
+        // annotation, so the arrow consumes no type in that case.
         let return_ty = if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Arrow)) {
             self.consume(TokenKind::Arrow)?;
-            self.parse_ty()?
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwEffect)) {
+                Ty::Unit
+            } else {
+                self.parse_ty()?
+            }
         } else {
             Ty::Unit
         };
@@ -1750,6 +1761,17 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Parse an optional trailing `kesan <eff>` effect annotation on a function
+    /// type (e.g. `Fn(A) -> B kesan Tulis`). Defaults to `Effect::Pure`.
+    fn parse_optional_fn_effect(&mut self) -> Result<Effect, ParseError> {
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwEffect)) {
+            self.consume(TokenKind::KwEffect)?;
+            self.parse_effect_annotation()
+        } else {
+            Ok(Effect::Pure)
+        }
+    }
+
     fn parse_ty(&mut self) -> Result<Ty, ParseError> {
         let kind = self.peek().map(|t| t.kind.clone());
         match kind {
@@ -1842,22 +1864,49 @@ impl<'a> Parser<'a> {
                         self.consume(TokenKind::Gt)?;
                         Ok(Ty::Sum(Box::new(t1), Box::new(t2)))
                     }
-                    // Function type: Fn(T1, T2) or Fn(T1, T2, Effect)
-                    "Fn" => {
+                    // Function type. Two surface forms are accepted:
+                    //   Fn(Param) -> Ret            (Rust-style arrow; 0+ params)
+                    //   Fn(ParamTy, RetTy [, Eff])  (legacy comma form)
+                    // The AST `Ty::Fn` is single-argument; for multiple params the
+                    // first is kept as the representative argument type (the type
+                    // layer is not yet fully curried), and an empty `Fn()` uses
+                    // Unit as the argument type.
+                    "Fn" | "fungsi" => {
                         self.consume(TokenKind::LParen)?;
+
+                        // Empty parameter list `Fn()` (arrow form only, e.g.
+                        // `Fn() -> T`); the argument type defaults to Unit.
+                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
+                            self.consume(TokenKind::RParen)?;
+                            self.consume(TokenKind::Arrow)?;
+                            let ret_ty = self.parse_ty()?;
+                            let eff = self.parse_optional_fn_effect()?;
+                            return Ok(Ty::Fn(Box::new(Ty::Unit), Box::new(ret_ty), eff));
+                        }
+
                         let param_ty = self.parse_ty()?;
-                        self.consume(TokenKind::Comma)?;
-                        let ret_ty = self.parse_ty()?;
-                        // Optional effect as third argument
-                        let eff = if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma))
-                        {
+
+                        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                            // Legacy comma form: Fn(ParamTy, RetTy [, Effect]).
                             self.consume(TokenKind::Comma)?;
-                            self.parse_effect()?
+                            let ret_ty = self.parse_ty()?;
+                            let eff =
+                                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                                    self.consume(TokenKind::Comma)?;
+                                    self.parse_effect()?
+                                } else {
+                                    Effect::Pure
+                                };
+                            self.consume(TokenKind::RParen)?;
+                            Ok(Ty::Fn(Box::new(param_ty), Box::new(ret_ty), eff))
                         } else {
-                            Effect::Pure
-                        };
-                        self.consume(TokenKind::RParen)?;
-                        Ok(Ty::Fn(Box::new(param_ty), Box::new(ret_ty), eff))
+                            // Arrow form: Fn(ParamTy) -> RetTy [kesan Eff].
+                            self.consume(TokenKind::RParen)?;
+                            self.consume(TokenKind::Arrow)?;
+                            let ret_ty = self.parse_ty()?;
+                            let eff = self.parse_optional_fn_effect()?;
+                            Ok(Ty::Fn(Box::new(param_ty), Box::new(ret_ty), eff))
+                        }
                     }
                     // Labeled<T, Level> / Berlabel<T, Level>
                     "Labeled" | "Berlabel" => {

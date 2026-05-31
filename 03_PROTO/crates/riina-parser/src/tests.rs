@@ -3460,3 +3460,72 @@ fn test_padan_block_body_parses() {
     let mut p = Parser::new("padan x { 1 -> { biar y = 2; y }, _ -> 0 }");
     assert!(p.parse_expr().is_ok());
 }
+
+// =============================================================================
+// GENERIC FUNCTION PARAMS + FUNCTION-TYPE ARROW SYNTAX
+// =============================================================================
+
+#[test]
+fn test_parse_generic_fn_decl_single() {
+    // `fungsi f<T>(x: T) -> T` — generic params are skipped (monomorphic layer).
+    let mut p = Parser::new("fungsi identiti<T>(x: T) -> T kesan Bersih { x }");
+    let prog = p.parse_program().unwrap();
+    assert_eq!(prog.decls.len(), 1);
+}
+
+#[test]
+fn test_parse_generic_fn_decl_multi() {
+    let mut p = Parser::new("fungsi pasang<E, T>(x: T) -> T kesan Bersih { x }");
+    assert!(p.parse_program().is_ok());
+}
+
+#[test]
+fn test_parse_fn_decl_bare_effect_return() {
+    // `-> kesan Bersih` with no return type means a Unit return.
+    let mut p = Parser::new("fungsi tetapkan(k: Teks) -> kesan Bersih { () }");
+    let prog = p.parse_program().unwrap();
+    match &prog.decls[0] {
+        TopLevelDecl::Function { return_ty, .. } => assert_eq!(*return_ty, Ty::Unit),
+        other => panic!("expected Function, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_fn_type_arrow_form() {
+    // `Fn(A) -> B` arrow form.
+    let mut p = Parser::new("Fn(Nombor) -> Teks");
+    assert_eq!(
+        p.parse_ty().unwrap(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::String), Effect::Pure)
+    );
+}
+
+#[test]
+fn test_parse_fn_type_arrow_empty_params() {
+    // `Fn() -> B`: argument type defaults to Unit.
+    let mut p = Parser::new("Fn() -> Nombor");
+    assert_eq!(
+        p.parse_ty().unwrap(),
+        Ty::Fn(Box::new(Ty::Unit), Box::new(Ty::Int), Effect::Pure)
+    );
+}
+
+#[test]
+fn test_parse_fn_type_arrow_with_effect() {
+    // `Fn(A) -> B kesan Tulis`.
+    let mut p = Parser::new("Fn(Nombor) -> Nombor kesan Tulis");
+    assert_eq!(
+        p.parse_ty().unwrap(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Int), Effect::Write)
+    );
+}
+
+#[test]
+fn test_parse_fn_type_legacy_comma_still_works() {
+    // Backward compatibility: `Fn(A, B, Eff)` comma form.
+    let mut p = Parser::new("Fn(Int, Bool, Write)");
+    assert_eq!(
+        p.parse_ty().unwrap(),
+        Ty::Fn(Box::new(Ty::Int), Box::new(Ty::Bool), Effect::Write)
+    );
+}
