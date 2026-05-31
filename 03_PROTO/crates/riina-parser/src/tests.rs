@@ -3296,3 +3296,47 @@ fn test_parse_empty_and_nested_list() {
         other => panic!("expected nested ListLit, got {other:?}"),
     }
 }
+
+#[test]
+fn test_parse_record_literal() {
+    let mut p = Parser::new("Titik { x: 1, y: 2 }");
+    match p.parse_expr().unwrap() {
+        Expr::RecordLit(name, fields) => {
+            assert_eq!(name, "Titik");
+            assert_eq!(fields.len(), 2);
+            assert_eq!(fields[0].0, "x");
+        }
+        other => panic!("expected RecordLit, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_empty_record() {
+    let mut p = Parser::new("Kosong {}");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::RecordLit(ref n, ref f) if n == "Kosong" && f.is_empty()));
+}
+
+#[test]
+fn test_parse_field_access() {
+    let mut p = Parser::new("p.x");
+    match p.parse_expr().unwrap() {
+        Expr::FieldAccess(_, field) => assert_eq!(field, "x"),
+        other => panic!("expected FieldAccess, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_tuple_index_access() {
+    // `.0`/`.1` desugar to Fst/Snd.
+    let mut p = Parser::new("pair.0");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Fst(_)));
+    let mut p2 = Parser::new("pair.1");
+    assert!(matches!(p2.parse_expr().unwrap(), Expr::Snd(_)));
+}
+
+#[test]
+fn test_record_not_confused_with_if_block() {
+    // `kalau x { 1 } lain { 2 }` must NOT parse `x { 1 }` as a record literal.
+    let mut p = Parser::new("kalau benar { 1 } lain { 2 }");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::If(_, _, _)));
+}

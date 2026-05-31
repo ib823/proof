@@ -98,6 +98,12 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
                 walk_inner(e, rules, out);
             }
         }
+        Expr::RecordLit(_, fields) => {
+            for (_f, e) in fields {
+                walk_inner(e, rules, out);
+            }
+        }
+        Expr::FieldAccess(base, _) => walk_inner(base, rules, out),
         Expr::UIText(a, b) | Expr::UIButton(a, b) | Expr::UIContrastCheck(a, b) => {
             walk_inner(a, rules, out);
             walk_inner(b, rules, out);

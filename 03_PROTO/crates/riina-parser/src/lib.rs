@@ -103,6 +103,7 @@ impl ParseErrorKind {
     }
 }
 
+#[derive(Clone)]
 struct LexerIter<'a> {
     lexer: Lexer<'a>,
 }
@@ -547,6 +548,46 @@ impl<'a> Parser<'a> {
         self.lexer.peek()
     }
 
+    /// True when the current position begins a record-literal body: the next
+    /// token is `{` and the one after is an identifier followed by `:`. Uses a
+    /// cheap clone of the token stream for two-token lookahead; this avoids
+    /// misreading a control-flow block as a record. A bare `{ }` (empty record)
+    /// also qualifies.
+    fn looks_like_record_literal(&mut self) -> bool {
+        if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LBrace)) {
+            return false;
+        }
+        let mut ahead = self.lexer.clone();
+        ahead.next(); // skip `{`
+        match ahead.next().map(|t| t.kind) {
+            Some(TokenKind::RBrace) => true, // empty record `{}`
+            Some(TokenKind::Identifier(_)) => {
+                matches!(ahead.next().map(|t| t.kind), Some(TokenKind::Colon))
+            }
+            _ => false,
+        }
+    }
+
+    /// Parse a record-literal body starting at the `{` (the type name has been
+    /// consumed): `{ field1: e1, field2: e2, ... }`. Trailing comma allowed.
+    fn parse_record_literal_body(&mut self, type_name: Ident) -> Result<Expr, ParseError> {
+        self.consume(TokenKind::LBrace)?;
+        let mut fields = Vec::new();
+        while !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RBrace) | None) {
+            let field = self.parse_ident()?;
+            self.consume(TokenKind::Colon)?;
+            let value = self.parse_control_flow()?;
+            fields.push((field, value));
+            if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                self.consume(TokenKind::Comma)?;
+            } else {
+                break;
+            }
+        }
+        self.consume(TokenKind::RBrace)?;
+        Ok(Expr::RecordLit(type_name, fields))
+    }
+
     fn next(&mut self) -> Option<Token> {
         let token = self.lexer.next();
         if let Some(t) = &token {
@@ -789,6 +830,32 @@ impl<'a> Parser<'a> {
 
     fn parse_app(&mut self) -> Result<Expr, ParseError> {
         let mut expr = self.parse_unary()?;
+        // Postfix field/tuple access: `e.field`, or `e.0`/`e.1` for pairs.
+        // `.0` desugars to `pertama`/fst, `.1` to `kedua`/snd; any other field
+        // name becomes a structural FieldAccess. Chains left-to-right.
+        while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Dot)) {
+            self.consume(TokenKind::Dot)?;
+            match self.peek().map(|t| t.kind.clone()) {
+                Some(TokenKind::LiteralInt(ref n, _)) if n == "0" => {
+                    self.next();
+                    expr = Expr::Fst(Box::new(expr));
+                }
+                Some(TokenKind::LiteralInt(ref n, _)) if n == "1" => {
+                    self.next();
+                    expr = Expr::Snd(Box::new(expr));
+                }
+                Some(TokenKind::Identifier(name)) => {
+                    self.next();
+                    expr = Expr::FieldAccess(Box::new(expr), name);
+                }
+                _ => {
+                    return Err(ParseError {
+                        kind: ParseErrorKind::ExpectedIdentifier,
+                        span: self.current_span,
+                    });
+                }
+            }
+        }
         // Check for parenthesized call syntax: f(a, b, c) → App(App(App(f, a), b), c)
         if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
             // Only treat as call if current expr could be a callee (Var or prior App)
@@ -956,6 +1023,13 @@ impl<'a> Parser<'a> {
             }
             Some(TokenKind::Identifier(s)) => {
                 self.next();
+                // Record literal `Name { field: e, ... }`. Only treated as a
+                // record when the brace is immediately followed by `ident :`,
+                // so it cannot be confused with a control-flow block (those are
+                // parsed by their own keywords, never reaching here).
+                if self.looks_like_record_literal() {
+                    return self.parse_record_literal_body(s);
+                }
                 Ok(Expr::Var(s))
             }
             // List literal `[e1, e2, ...]`. A trailing comma is allowed; `[]` is

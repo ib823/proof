@@ -2492,6 +2492,24 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             Ok((Ty::List(Box::new(elem_ty)), eff))
         }
 
+        // Record literal — structural, no nominal type yet, so the result type
+        // is `Any`. Field expressions are still checked (for their effects).
+        Expr::RecordLit(_name, fields) => {
+            let mut eff = Effect::Pure;
+            for (_f, e) in fields {
+                let (_t, ef) = type_check_full(ctx, e)?;
+                eff = eff.join(ef);
+            }
+            Ok((Ty::Any, eff))
+        }
+
+        // Field access — the base is checked (for effects); the field type is
+        // `Any` (records are structural with no field-type table yet).
+        Expr::FieldAccess(base, _field) => {
+            let (_t, eff) = type_check_full(ctx, base)?;
+            Ok((Ty::Any, eff))
+        }
+
         // T_Var: Γ(x) = T → has_type Γ Σ Δ (EVar x) T EffectPure
         Expr::Var(x) => {
             let ty = ctx
@@ -3341,6 +3359,19 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
                 }
             }
             Ok((Ty::List(Box::new(elem_ty)), eff))
+        }
+        // Record literal / field access — structural, typed as `Any`.
+        Expr::RecordLit(_name, fields) => {
+            let mut eff = Effect::Pure;
+            for (_f, e) in fields {
+                let (_t, ef) = type_check(ctx, e)?;
+                eff = eff.join(ef);
+            }
+            Ok((Ty::Any, eff))
+        }
+        Expr::FieldAccess(base, _field) => {
+            let (_t, eff) = type_check(ctx, base)?;
+            Ok((Ty::Any, eff))
         }
         Expr::Var(x) => {
             let ty = ctx

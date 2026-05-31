@@ -148,6 +148,21 @@ fn fmt_decl(out: &mut String, decl: &TopLevelDecl, level: usize, cfg: &FmtConfig
     }
 }
 
+/// Format a record literal `Name { field: value, ... }` inline.
+fn fmt_record_inline(out: &mut String, name: &str, fields: &[(String, Expr)], cfg: &FmtConfig) {
+    out.push_str(name);
+    out.push_str(" { ");
+    for (i, (field, value)) in fields.iter().enumerate() {
+        if i > 0 {
+            out.push_str(", ");
+        }
+        out.push_str(field);
+        out.push_str(": ");
+        fmt_expr_inline(out, value, cfg);
+    }
+    out.push_str(" }");
+}
+
 fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
     match expr {
         Expr::Unit => {
@@ -216,6 +231,16 @@ fn fmt_expr(out: &mut String, expr: &Expr, level: usize, cfg: &FmtConfig) {
                 fmt_expr_inline(out, e, cfg);
             }
             out.push(']');
+        }
+        Expr::RecordLit(name, fields) => {
+            indent(out, level, cfg);
+            fmt_record_inline(out, name, fields, cfg);
+        }
+        Expr::FieldAccess(base, field) => {
+            indent(out, level, cfg);
+            fmt_expr_inline(out, base, cfg);
+            out.push('.');
+            out.push_str(field);
         }
         Expr::Fst(e) => {
             indent(out, level, cfg);
@@ -483,6 +508,12 @@ fn fmt_expr_inline(out: &mut String, expr: &Expr, cfg: &FmtConfig) {
                 fmt_expr_inline(out, e, cfg);
             }
             out.push(']');
+        }
+        Expr::RecordLit(name, fields) => fmt_record_inline(out, name, fields, cfg),
+        Expr::FieldAccess(base, field) => {
+            fmt_expr_inline(out, base, cfg);
+            out.push('.');
+            out.push_str(field);
         }
         Expr::Fst(e) => {
             out.push_str("pertama ");

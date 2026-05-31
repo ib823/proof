@@ -325,6 +325,14 @@ fn free_vars(expr: &Expr) -> HashSet<Ident> {
             }
             fv
         }
+        Expr::RecordLit(_, fields) => {
+            let mut fv = HashSet::new();
+            for (_f, e) in fields {
+                fv.extend(free_vars(e));
+            }
+            fv
+        }
+        Expr::FieldAccess(base, _) => free_vars(base),
         Expr::UIText(a, b) | Expr::UIButton(a, b) | Expr::UIContrastCheck(a, b) => {
             let mut fv = free_vars(a);
             fv.extend(free_vars(b));
@@ -590,6 +598,8 @@ impl Lower {
             // List literal — element type is approximated as Any (the
             // typechecker computes the precise element type).
             Expr::ListLit(_) => Ty::List(Box::new(Ty::Any)),
+            // Records and field access are structural — typed as Any.
+            Expr::RecordLit(_, _) | Expr::FieldAccess(_, _) => Ty::Any,
             // CAHAYA Phase J5
             Expr::UIDisplay(_) | Expr::UIRow(_) | Expr::UIColumn(_) => Ty::Element,
             Expr::UIText(_, _) => Ty::Element,
@@ -686,6 +696,15 @@ impl Lower {
                 }
                 eff
             }
+            // Record literal — join of field effects; field access — base effect.
+            Expr::RecordLit(_, fields) => {
+                let mut eff = Effect::Pure;
+                for (_f, e) in fields {
+                    eff = eff.join(self.infer_effect(e));
+                }
+                eff
+            }
+            Expr::FieldAccess(base, _) => self.infer_effect(base),
             // CAHAYA Phase J5 — all UI expressions are pure
             Expr::UIDisplay(elems) | Expr::UIRow(elems) | Expr::UIColumn(elems) => {
                 let mut eff = Effect::Pure;
@@ -741,6 +760,34 @@ impl Lower {
                 }
                 Ok(acc)
             }
+
+            // Record literal — lowered (for the C/WASM path) as a cons chain of
+            // its field values. The interpreter builds a first-class Map; field
+            // names are not retained in this representation.
+            Expr::RecordLit(_name, fields) => {
+                let effect = self.infer_effect(expr);
+                let mut acc = self.emit(
+                    Instruction::Const(Constant::Unit),
+                    Ty::Unit,
+                    SecurityLevel::Public,
+                    Effect::Pure,
+                );
+                for (_f, e) in fields.iter().rev() {
+                    let val = self.lower_expr(e)?;
+                    acc = self.emit(
+                        Instruction::Pair(val, acc),
+                        Ty::Any,
+                        SecurityLevel::Public,
+                        effect,
+                    );
+                }
+                Ok(acc)
+            }
+
+            // Field access — lower the base expression. Structural field
+            // resolution is handled by the interpreter; the C/WASM path returns
+            // the base aggregate.
+            Expr::FieldAccess(base, _field) => self.lower_expr(base),
 
             Expr::Bool(b) => Ok(self.emit(
                 Instruction::Const(Constant::Bool(*b)),

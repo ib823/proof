@@ -932,6 +932,12 @@ pub enum Expr {
     // Collections
     /// List literal: [e1, e2, ...]. Empty `[]` is the empty list.
     ListLit(Vec<Expr>),
+    /// Record literal: `Name { field1: e1, field2: e2, ... }`. The type name is
+    /// retained for diagnostics only; records are structural (string-keyed) at
+    /// runtime. Fields are stored in source order.
+    RecordLit(Ident, Vec<(Ident, Expr)>),
+    /// Field access: `e.field`.
+    FieldAccess(Box<Expr>, Ident),
 
     // FFI
     /// Foreign function call

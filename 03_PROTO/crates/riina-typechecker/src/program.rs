@@ -313,8 +313,13 @@ fn summarize_expr(expr: &Expr, env: &CapabilityEnv) -> ExprSummary {
             }
         }
         // CAHAYA Phase J5
-        // List literals carry no capability requirements of their own.
-        Expr::ListLit(_)
+        // Field access summarizes its base expression.
+        Expr::FieldAccess(base, _) => summarize_expr(base, env),
+        // Record literals and list literals carry no capability requirements of
+        // their own (element/field summaries are conservatively ignored, as for
+        // the UI/collection group).
+        Expr::RecordLit(_, _)
+        | Expr::ListLit(_)
         | Expr::UIDisplay(_)
         | Expr::UIRow(_)
         | Expr::UIColumn(_)

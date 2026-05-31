@@ -7,6 +7,7 @@ use crate::token::{Span, Token, TokenKind};
 use std::iter::Peekable;
 use std::str::Chars;
 
+#[derive(Clone)]
 pub struct Lexer<'a> {
     input: Peekable<Chars<'a>>,
     #[allow(dead_code)] // Reserved for future error recovery and span validation

@@ -488,6 +488,35 @@ impl Interpreter {
                 Ok(Value::List(items))
             }
 
+            // Record literal `Name { f: e, ... }` — evaluate to a string-keyed
+            // Map (records are structural at runtime).
+            Expr::RecordLit(_name, fields) => {
+                let mut map = std::collections::BTreeMap::new();
+                for (field, e) in fields {
+                    map.insert(field.clone(), self.eval_with_env(env, e)?);
+                }
+                Ok(Value::Map(map))
+            }
+
+            // Field access `e.field` — look the field up in the record Map.
+            Expr::FieldAccess(base, field) => {
+                let v = self.eval_with_env(env, base)?;
+                match v {
+                    Value::Map(map) => map.get(field).cloned().ok_or_else(|| {
+                        Error::TypeMismatch {
+                            expected: format!("record with field `{field}`"),
+                            found: "record without that field".to_string(),
+                            context: "field access".to_string(),
+                        }
+                    }),
+                    other => Err(Error::TypeMismatch {
+                        expected: "record".to_string(),
+                        found: format!("{other:?}"),
+                        context: "field access".to_string(),
+                    }),
+                }
+            }
+
             // E_Fst: eval ρ σ e σ' (VPair v1 v2) -> eval ρ σ (EFst e) σ' v1
             Expr::Fst(e) => {
                 let v = self.eval_with_env(env, e)?;
