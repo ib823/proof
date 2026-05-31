@@ -1038,11 +1038,15 @@ impl<'a> Parser<'a> {
         self.consume(TokenKind::LBrace)?;
         let body = self.parse_expr()?;
         self.consume(TokenKind::RBrace)?;
-        // Desugar: untuk x dalam list { body } → map(fn(x: Any) body, list)
+        // Desugar `untuk x dalam iter { body }` to a list map over the iterable,
+        // applying the body as a per-element closure:
+        //   senarai_peta((iter, fungsi(x) body))
+        // `senarai_peta` (list_map) is the higher-order builtin that iterates a
+        // list and evaluates the closure for each element (running its effects).
         let lam = Expr::Lam(var, Ty::Any, Box::new(body));
         Ok(Expr::App(
-            Box::new(Expr::App(Box::new(Expr::Var("map".into())), Box::new(lam))),
-            Box::new(iter),
+            Box::new(Expr::Var("senarai_peta".into())),
+            Box::new(Expr::Pair(Box::new(iter), Box::new(lam))),
         ))
     }
 
@@ -1111,6 +1115,22 @@ impl<'a> Parser<'a> {
     /// a |> f |> g  desugars to  App(g, App(f, a))
     fn parse_pipe(&mut self) -> Result<Expr, ParseError> {
         let mut expr = self.parse_assignment()?;
+        // Range expression `a..b` (exclusive) / `a..=b` (inclusive), desugared to
+        // the `julat`/`julat_inklusif` builtin producing the list [a, a+1, ...].
+        // Used mainly as the iterable in `untuk i dalam 0..n { ... }`.
+        if matches!(
+            self.peek().map(|t| &t.kind),
+            Some(TokenKind::DotDot) | Some(TokenKind::DotDotEq)
+        ) {
+            let inclusive = matches!(self.peek().map(|t| &t.kind), Some(TokenKind::DotDotEq));
+            self.next();
+            let end = self.parse_assignment()?;
+            let builtin = if inclusive { "julat_inklusif" } else { "julat" };
+            return Ok(Expr::App(
+                Box::new(Expr::Var(builtin.to_string())),
+                Box::new(Expr::Pair(Box::new(expr), Box::new(end))),
+            ));
+        }
         while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Pipe)) {
             self.consume(TokenKind::Pipe)?;
             let func = self.parse_assignment()?;

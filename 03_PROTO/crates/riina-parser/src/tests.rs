@@ -3797,3 +3797,36 @@ fn test_parse_lambda_bare_body_still_works() {
     let mut p = Parser::new("fungsi(x: Nombor) x");
     assert!(matches!(p.parse_expr().unwrap(), Expr::Lam(_, _, _)));
 }
+
+// =============================================================================
+// RANGE EXPRESSIONS a..b / a..=b
+// =============================================================================
+
+#[test]
+fn test_parse_range_exclusive() {
+    // `a..b` -> julat((a, b)).
+    let mut p = Parser::new("0..5");
+    match p.parse_expr().unwrap() {
+        Expr::App(f, _) => assert_eq!(*f, Expr::Var("julat".to_string())),
+        other => panic!("expected App(julat), got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_range_inclusive() {
+    let mut p = Parser::new("0..=5");
+    match p.parse_expr().unwrap() {
+        Expr::App(f, _) => assert_eq!(*f, Expr::Var("julat_inklusif".to_string())),
+        other => panic!("expected App(julat_inklusif), got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_for_over_range_uses_list_map() {
+    // `untuk i dalam 0..n { .. }` -> senarai_peta((0..n, fn)).
+    let mut p = Parser::new("untuk i dalam 0..3 { i }");
+    match p.parse_expr().unwrap() {
+        Expr::App(f, _) => assert_eq!(*f, Expr::Var("senarai_peta".to_string())),
+        other => panic!("expected App(senarai_peta), got {other:?}"),
+    }
+}

@@ -746,6 +746,23 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         "length".to_string(),
         Ty::Fn(Box::new(Ty::String), Box::new(Ty::Int), Effect::Pure),
     );
+    // Range constructors `a..b` / `a..=b`: (Int, Int) -> List<Int>.
+    c = c.extend(
+        "julat".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
+            Box::new(Ty::List(Box::new(Ty::Int))),
+            Effect::Pure,
+        ),
+    );
+    c = c.extend(
+        "julat_inklusif".to_string(),
+        Ty::Fn(
+            Box::new(Ty::Prod(Box::new(Ty::Int), Box::new(Ty::Int))),
+            Box::new(Ty::List(Box::new(Ty::Int))),
+            Effect::Pure,
+        ),
+    );
     // Conversion
     c = c.extend(
         "ke_teks".to_string(),

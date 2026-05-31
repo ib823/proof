@@ -47,6 +47,12 @@ pub fn register_builtins(env: &Env) -> Env {
     );
     e = e.extend("panjang".to_string(), Value::Builtin("panjang".to_string()));
     e = e.extend("length".to_string(), Value::Builtin("panjang".to_string()));
+    // Range constructors for the `a..b` / `a..=b` surface syntax.
+    e = e.extend("julat".to_string(), Value::Builtin("julat".to_string()));
+    e = e.extend(
+        "julat_inklusif".to_string(),
+        Value::Builtin("julat_inklusif".to_string()),
+    );
 
     // Conversion (existing, moved to penukaran)
     e = e.extend("ke_teks".to_string(), Value::Builtin("ke_teks".to_string()));
@@ -173,6 +179,47 @@ pub fn apply_builtin(name: &str, arg: Value) -> Result<Value> {
                     expected: "string".to_string(),
                     found: format!("{:?}", arg),
                     context: "panjang/length".to_string(),
+                }),
+            };
+        }
+        // Range constructors: `julat((a, b))` -> [a, a+1, ..., b-1] (exclusive);
+        // `julat_inklusif((a, b))` includes `b`. Used by the `a..b` / `a..=b`
+        // surface syntax (see parse_pipe). An empty range (a >= b) yields [].
+        "julat" | "julat_inklusif" => {
+            return match arg {
+                Value::Pair(a, b) => {
+                    let lo = match *a {
+                        Value::Int(n) => n,
+                        _ => {
+                            return Err(Error::TypeMismatch {
+                                expected: "int".to_string(),
+                                found: format!("{:?}", a),
+                                context: "julat".to_string(),
+                            })
+                        }
+                    };
+                    let hi = match *b {
+                        Value::Int(n) => n,
+                        _ => {
+                            return Err(Error::TypeMismatch {
+                                expected: "int".to_string(),
+                                found: format!("{:?}", b),
+                                context: "julat".to_string(),
+                            })
+                        }
+                    };
+                    let end = if name == "julat_inklusif" {
+                        hi.saturating_add(1)
+                    } else {
+                        hi
+                    };
+                    let items: Vec<Value> = (lo..end).map(Value::Int).collect();
+                    Ok(Value::List(items))
+                }
+                other => Err(Error::TypeMismatch {
+                    expected: "pair".to_string(),
+                    found: format!("{:?}", other),
+                    context: "julat".to_string(),
                 }),
             };
         }
