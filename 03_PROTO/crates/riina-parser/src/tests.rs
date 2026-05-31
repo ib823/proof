@@ -3386,3 +3386,22 @@ fn test_parse_module_path_call() {
     let mut p = Parser::new("teks::mengandungi(\"a\", \"b\")");
     assert!(p.parse_expr().is_ok());
 }
+
+#[test]
+fn test_parse_logical_not_desugars_to_if() {
+    // `bukan e` / `not e` -> If(e, false, true)
+    let mut p = Parser::new("bukan betul");
+    match p.parse_expr().unwrap() {
+        Expr::If(_, t, f) => {
+            assert_eq!(*t, Expr::Bool(false));
+            assert_eq!(*f, Expr::Bool(true));
+        }
+        other => panic!("expected If, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_deref_still_bang() {
+    let mut p = Parser::new("!x");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Deref(_)));
+}

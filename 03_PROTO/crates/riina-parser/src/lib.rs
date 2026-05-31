@@ -973,9 +973,21 @@ impl<'a> Parser<'a> {
         let kind = self.peek().map(|t| t.kind.clone());
         match kind {
             Some(TokenKind::Not) => {
+                // `!e` is dereference (ML-style), not logical negation.
                 self.consume(TokenKind::Not)?;
                 let e = self.parse_unary()?;
                 Ok(Expr::Deref(Box::new(e)))
+            }
+            Some(TokenKind::KwNot) => {
+                // `bukan e` / `not e` is logical negation, desugared to
+                // `kalau e { salah } lain { betul }` (reuses If — no new AST node).
+                self.consume(TokenKind::KwNot)?;
+                let e = self.parse_unary()?;
+                Ok(Expr::If(
+                    Box::new(e),
+                    Box::new(Expr::Bool(false)),
+                    Box::new(Expr::Bool(true)),
+                ))
             }
             Some(TokenKind::KwRef) => {
                 self.consume(TokenKind::KwRef)?;
