@@ -227,14 +227,36 @@ impl<'a> Parser<'a> {
         Ok(Program::with_spans(decls, spans))
     }
 
+    /// Continue parsing the next top-level declaration after a skipped one
+    /// (module/use/etc.). If the input is exhausted, yield a Unit expression
+    /// declaration instead of recursing into `parse_top_level_decl` (which would
+    /// try to parse an expression from EOF and fail).
+    fn parse_next_decl_or_unit(&mut self) -> Result<TopLevelDecl, ParseError> {
+        if matches!(
+            self.peek().map(|t| &t.kind),
+            Some(TokenKind::Eof) | None
+        ) {
+            return Ok(TopLevelDecl::Expr(Box::new(Expr::Unit)));
+        }
+        self.parse_top_level_decl()
+    }
+
     fn parse_top_level_decl(&mut self) -> Result<TopLevelDecl, ParseError> {
         match self.peek().map(|t| &t.kind) {
             Some(TokenKind::KwMod) => {
-                // modul name; — skip (no module system yet)
+                // Module declaration (no module system yet — both forms are
+                // skipped):
+                //   modul name;            (external/forward declaration)
+                //   modul name { ...decls } (inline module — body skipped)
                 self.consume(TokenKind::KwMod)?;
                 let _name = self.parse_ident()?;
-                self.consume(TokenKind::Semi)?;
-                self.parse_top_level_decl()
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LBrace)) {
+                    self.consume(TokenKind::LBrace)?;
+                    self.skip_balanced_braces();
+                } else {
+                    self.consume(TokenKind::Semi)?;
+                }
+                self.parse_next_decl_or_unit()
             }
             Some(TokenKind::KwUse) => {
                 // guna path::to::module; — skip (no module system yet)
