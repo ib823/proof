@@ -1,21 +1,29 @@
 # RIINA Examples
 
-This directory contains 155 `.rii` example files across 18 category directories.
+This directory contains 147 `.rii` example files across 18 category directories.
 
 ## ⚠️ Parser-support status (honest)
 
 These examples document the **intended** RIINA language surface. The *shipped*
 compiler (`03_PROTO/target/release/riinac`) accepts a narrower grammar than many
-of the examples assume. As of this writing, **only ~19 of the 155 examples pass
-`riinac check`**.
+of the examples assume. As of this writing, **~16 of the 147 examples pass
+`riinac check`** end-to-end, and closing that gap is active work
+(`RIINA_MASTER_PLAN.md` Gate B). The parser is being extended incrementally; the
+forms below are **now accepted** but most example files stack several advanced
+constructs and need all of them supported before they pass.
 
-The most common reasons an example does not yet parse:
+Recently added grammar support:
 
-- **Multi-statement block bodies.** The parser is expression-oriented. A function
-  body may contain `biar … ;` bindings followed by a **single trailing
-  expression** (the return value). The `pulang x;` form followed by more tokens,
-  and several statement-sequencing patterns used in the examples, are not yet
-  accepted.
+- **`biar x: T = e` type annotations** (in-function and top-level). Accepted and
+  inferred.
+- **Trailing `;` before a block close**, including a final `pulang x;` — now
+  returns `x`.
+- **Top-level `jenis` declarations** — record (`jenis Name { ... }`), generic
+  (`jenis Name<T> { ... }`), alias (`jenis Name = T;`), and marker (`jenis Name`)
+  forms parse (no nominal-type semantics yet; skipped like `bentuk`/`pilihan`).
+
+Still **not** accepted (the remaining Gate B work):
+
 - **Effect names.** Valid effect names today are Bahasa Melayu:
   `Bersih, Ubah, Baca, Tulis, SistemFail, Rangkaian, Kripto, Rawak, Sistem, Masa,
   Proses`. Names like `IO` or `Crypto` (used in some examples and older docs) are
@@ -23,8 +31,8 @@ The most common reasons an example does not yet parse:
 - **Builtins.** Use `cetak(...)` (or `cetakln(...)`) to print; the print builtins
   carry the `Sistem` (System) effect, so a function that prints must declare
   `kesan Sistem`.
-- **List literals, `Some(...)`, guard clauses, and `|` match arms** in some
-  advanced examples are not yet parsed.
+- **List literals `[...]`, `Some(...)`, guard clauses, `|` match arms**, and
+  generics in expression position are not yet parsed.
 
 ## What a currently-compiling program looks like
 
