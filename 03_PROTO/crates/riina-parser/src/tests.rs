@@ -3701,3 +3701,27 @@ fn test_parse_return_in_match_arm() {
     // Compiles to a Case/If; just assert it parses without error.
     assert!(p.parse_expr().is_ok());
 }
+
+// =============================================================================
+// NESTED GENERIC TYPES via `>>` (Shr) splitting
+// =============================================================================
+
+#[test]
+fn test_parse_nested_generic_double() {
+    let mut p = Parser::new("Mungkin<Senarai<Nombor>>");
+    assert!(p.parse_ty().is_ok());
+}
+
+#[test]
+fn test_parse_nested_generic_triple_unknown_inner() {
+    // Innermost `Peta<..>` is an unknown nominal type (uses the skip path);
+    // the `>>>` must close all three levels without over-consuming.
+    let mut p = Parser::new("Mungkin<Senarai<Peta<Teks, Nombor>>>");
+    assert!(p.parse_ty().is_ok());
+}
+
+#[test]
+fn test_parse_single_generic_unaffected() {
+    let mut p = Parser::new("Senarai<Nombor>");
+    assert!(p.parse_ty().is_ok());
+}

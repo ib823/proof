@@ -122,6 +122,11 @@ pub struct Parser<'a> {
     /// Counter for generating fresh, capture-free variable names during
     /// desugaring (e.g. `padan` compilation). See [`Parser::fresh_var`].
     gensym: usize,
+    /// A "virtual" closing `>` left over after splitting a `>>` (Shr) token while
+    /// closing nested generic type arguments (e.g. `Mungkin<Senarai<Nombor>>`).
+    /// When set, the next [`Parser::consume_type_close`] consumes it without
+    /// advancing the real token stream.
+    pending_gt: bool,
 }
 
 /// A surface match pattern, used only during `padan` compilation. The AST has
@@ -165,6 +170,29 @@ impl<'a> Parser<'a> {
             .peekable(),
             current_span: Span { start: 0, end: 0 },
             gensym: 0,
+            pending_gt: false,
+        }
+    }
+
+    /// Consume a closing `>` of a generic type-argument list, transparently
+    /// handling a `>>` (Shr) token that closes two nesting levels at once
+    /// (e.g. `Mungkin<Senarai<Nombor>>`). The lexer emits a single `Shr` for two
+    /// adjacent `>`; the first call splits it (consuming the `Shr` and leaving a
+    /// pending `>`), and the next call consumes the pending half.
+    fn consume_type_close(&mut self) -> Result<(), ParseError> {
+        if self.pending_gt {
+            self.pending_gt = false;
+            return Ok(());
+        }
+        match self.peek().map(|t| &t.kind) {
+            Some(TokenKind::Shr) => {
+                // `>>` closes two angle-bracket levels: consume the token, mark
+                // the second `>` pending for the enclosing generic's close.
+                self.next();
+                self.pending_gt = true;
+                Ok(())
+            }
+            _ => self.consume(TokenKind::Gt).map(|_| ()),
         }
     }
 
@@ -631,6 +659,10 @@ impl<'a> Parser<'a> {
     /// fully. Used for unknown nominal types where generics carry no semantics
     /// yet. `Shr` (`>>`) closes two levels at once.
     fn skip_type_argument_list(&mut self) {
+        // A pending `>` (left over from a `>>` split by an enclosing generic's
+        // close) accounts for this list's opening `<` having no real `<` token —
+        // but here we always require a real `<`, so just clear any stale pending
+        // first via the normal close path rather than special-casing it.
         if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Lt)) {
             return;
         }
@@ -647,9 +679,17 @@ impl<'a> Parser<'a> {
                     depth -= 1;
                 }
                 Some(TokenKind::Shr) => {
-                    // `>>` closes two angle-bracket levels.
                     self.next();
-                    depth = depth.saturating_sub(2);
+                    if depth >= 2 {
+                        // `>>` closes two levels that both belong to this list.
+                        depth -= 2;
+                    } else {
+                        // Only one level remains here; the second `>` belongs to
+                        // an enclosing generic — leave it pending so nested types
+                        // like `Peta<.., ..>>>` don't over-consume the outer `>`s.
+                        depth -= 1;
+                        self.pending_gt = true;
+                    }
                 }
                 None => break,
                 _ => {
@@ -2000,44 +2040,44 @@ impl<'a> Parser<'a> {
                     "List" | "Senarai" => {
                         self.consume(TokenKind::Lt)?;
                         let inner = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::List(Box::new(inner)))
                     }
                     "Option" | "Mungkin" => {
                         self.consume(TokenKind::Lt)?;
                         let inner = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Option(Box::new(inner)))
                     }
                     "Secret" | "Rahsia" => {
                         self.consume(TokenKind::Lt)?;
                         let inner = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Secret(Box::new(inner)))
                     }
                     "Proof" | "Bukti" => {
                         self.consume(TokenKind::Lt)?;
                         let inner = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Proof(Box::new(inner)))
                     }
                     "ConstantTime" | "MasaTetap" => {
                         self.consume(TokenKind::Lt)?;
                         let inner = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::ConstantTime(Box::new(inner)))
                     }
                     "Zeroizing" | "Sifar" => {
                         self.consume(TokenKind::Lt)?;
                         let inner = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Zeroizing(Box::new(inner)))
                     }
                     // Ref<T>@level
                     "Ref" | "Ruj" => {
                         self.consume(TokenKind::Lt)?;
                         let inner = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         self.consume(TokenKind::At)?;
                         let level = self.parse_security_level()?;
                         Ok(Ty::Ref(Box::new(inner), level))
@@ -2048,7 +2088,7 @@ impl<'a> Parser<'a> {
                         let t1 = self.parse_ty()?;
                         self.consume(TokenKind::Comma)?;
                         let t2 = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Sum(Box::new(t1), Box::new(t2)))
                     }
                     // Function type. Two surface forms are accepted:
@@ -2101,7 +2141,7 @@ impl<'a> Parser<'a> {
                         let inner = self.parse_ty()?;
                         self.consume(TokenKind::Comma)?;
                         let level = self.parse_security_level()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Labeled(Box::new(inner), level))
                     }
                     // Tainted<T, Source> / Tercemar<T, Source>
@@ -2110,7 +2150,7 @@ impl<'a> Parser<'a> {
                         let inner = self.parse_ty()?;
                         self.consume(TokenKind::Comma)?;
                         let source = self.parse_taint_source()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Tainted(Box::new(inner), source))
                     }
                     // Sanitized<T, Sanitizer> / Disanitasi<T, Sanitizer>
@@ -2119,7 +2159,7 @@ impl<'a> Parser<'a> {
                         let inner = self.parse_ty()?;
                         self.consume(TokenKind::Comma)?;
                         let san = self.parse_sanitizer()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Sanitized(Box::new(inner), san))
                     }
                     // FFI C types
@@ -2130,14 +2170,14 @@ impl<'a> Parser<'a> {
                     "Capability" | "Keupayaan" => {
                         self.consume(TokenKind::Lt)?;
                         let kind = self.parse_capability_kind()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Capability(kind))
                     }
                     // Chan<SessionType> / Saluran<SessionType>
                     "Chan" | "Saluran" => {
                         self.consume(TokenKind::Lt)?;
                         let st = self.parse_session_type()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Chan(st))
                     }
                     // SecureChan<SessionType, Level> / SaluranSelamat<SessionType, Level>
@@ -2146,25 +2186,25 @@ impl<'a> Parser<'a> {
                         let st = self.parse_session_type()?;
                         self.consume(TokenKind::Comma)?;
                         let level = self.parse_security_level()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::SecureChan(st, level))
                     }
                     "SmartContract" => {
                         self.consume(TokenKind::Lt)?;
                         let inner = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::SmartContract(Box::new(inner)))
                     }
                     "Token" => {
                         self.consume(TokenKind::Lt)?;
                         let inner = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::Token(Box::new(inner)))
                     }
                     "SyariahCompliant" => {
                         self.consume(TokenKind::Lt)?;
                         let inner = self.parse_ty()?;
-                        self.consume(TokenKind::Gt)?;
+                        self.consume_type_close()?;
                         Ok(Ty::SyariahCompliant(Box::new(inner)))
                     }
                     // User-defined nominal type (e.g. a `jenis`-declared record
@@ -2185,21 +2225,21 @@ impl<'a> Parser<'a> {
                 self.next();
                 self.consume(TokenKind::Lt)?;
                 let inner = self.parse_ty()?;
-                self.consume(TokenKind::Gt)?;
+                self.consume_type_close()?;
                 Ok(Ty::SmartContract(Box::new(inner)))
             }
             Some(TokenKind::KwToken) => {
                 self.next();
                 self.consume(TokenKind::Lt)?;
                 let inner = self.parse_ty()?;
-                self.consume(TokenKind::Gt)?;
+                self.consume_type_close()?;
                 Ok(Ty::Token(Box::new(inner)))
             }
             Some(TokenKind::KwShariahCompliant) => {
                 self.next();
                 self.consume(TokenKind::Lt)?;
                 let inner = self.parse_ty()?;
-                self.consume(TokenKind::Gt)?;
+                self.consume_type_close()?;
                 Ok(Ty::SyariahCompliant(Box::new(inner)))
             }
             _ => Err(ParseError {
@@ -2293,7 +2333,7 @@ impl<'a> Parser<'a> {
                 let payload = self.parse_ty()?;
                 self.consume(TokenKind::Comma)?;
                 let cont = self.parse_session_type()?;
-                self.consume(TokenKind::Gt)?;
+                self.consume_type_close()?;
                 Ok(SessionType::Send(Box::new(payload), Box::new(cont)))
             }
             // Recv<PayloadType, Continuation>
@@ -2302,7 +2342,7 @@ impl<'a> Parser<'a> {
                 let payload = self.parse_ty()?;
                 self.consume(TokenKind::Comma)?;
                 let cont = self.parse_session_type()?;
-                self.consume(TokenKind::Gt)?;
+                self.consume_type_close()?;
                 Ok(SessionType::Recv(Box::new(payload), Box::new(cont)))
             }
             // Select<S1, S2> — internal choice
@@ -2311,7 +2351,7 @@ impl<'a> Parser<'a> {
                 let s1 = self.parse_session_type()?;
                 self.consume(TokenKind::Comma)?;
                 let s2 = self.parse_session_type()?;
-                self.consume(TokenKind::Gt)?;
+                self.consume_type_close()?;
                 Ok(SessionType::Select(Box::new(s1), Box::new(s2)))
             }
             // Branch<S1, S2> — external choice
@@ -2320,7 +2360,7 @@ impl<'a> Parser<'a> {
                 let s1 = self.parse_session_type()?;
                 self.consume(TokenKind::Comma)?;
                 let s2 = self.parse_session_type()?;
-                self.consume(TokenKind::Gt)?;
+                self.consume_type_close()?;
                 Ok(SessionType::Branch(Box::new(s1), Box::new(s2)))
             }
             // End — session termination
@@ -2331,14 +2371,14 @@ impl<'a> Parser<'a> {
                 let var = self.parse_ident()?;
                 self.consume(TokenKind::Comma)?;
                 let body = self.parse_session_type()?;
-                self.consume(TokenKind::Gt)?;
+                self.consume_type_close()?;
                 Ok(SessionType::Rec(var, Box::new(body)))
             }
             // Var<X> — session type variable (for recursion)
             "SVar" | "PembolehubahSesi" => {
                 self.consume(TokenKind::Lt)?;
                 let var = self.parse_ident()?;
-                self.consume(TokenKind::Gt)?;
+                self.consume_type_close()?;
                 Ok(SessionType::Var(var))
             }
             _ => Err(ParseError {
