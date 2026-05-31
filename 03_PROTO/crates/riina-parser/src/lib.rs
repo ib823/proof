@@ -1160,16 +1160,46 @@ impl<'a> Parser<'a> {
     fn parse_guard(&mut self) -> Result<Expr, ParseError> {
         self.consume(TokenKind::KwGuard)?;
         let cond = self.parse_pipe()?;
-        self.consume(TokenKind::KwElse)?;
-        self.consume(TokenKind::LBrace)?;
-        let else_body = self.parse_expr()?;
-        self.consume(TokenKind::RBrace)?;
+
+        // Two surface forms:
+        //   1. `pastikan cond lain { else_body }; rest`  (Swift-style guard)
+        //   2. `pastikan cond ["message"]; rest`         (assertion guard)
+        // Both desugar to `kalau cond { rest } lain { else }`: execution proceeds
+        // to `rest` when the condition holds. Form 2 has no false-branch action
+        // (RIINA has no panic yet), so its else-branch is Unit — making the guard
+        // a proceed-iff-precondition-holds check.
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::KwElse)) {
+            self.consume(TokenKind::KwElse)?;
+            self.consume(TokenKind::LBrace)?;
+            let else_body = self.parse_expr()?;
+            self.consume(TokenKind::RBrace)?;
+            self.consume(TokenKind::Semi)?;
+            let continuation = self.parse_stmt_sequence()?;
+            return Ok(Expr::If(
+                Box::new(cond),
+                Box::new(continuation),
+                Box::new(else_body),
+            ));
+        }
+
+        // Assertion form: optional trailing message expression, then `;`.
+        if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Semi)) {
+            let _msg = self.parse_pipe()?; // message (informational; discarded)
+        }
         self.consume(TokenKind::Semi)?;
-        let continuation = self.parse_expr()?;
+        let continuation = if self.at_sequence_end() {
+            Expr::Unit
+        } else {
+            self.parse_stmt_sequence()?
+        };
+        // On guard failure, abort by returning (RIINA has no panic). Modeling the
+        // else-branch as an early `pulang` gives it type `Any`, so the whole `If`
+        // takes the continuation's (true-branch) type rather than collapsing to
+        // Unit — important when the enclosing function returns a non-Unit value.
         Ok(Expr::If(
             Box::new(cond),
             Box::new(continuation),
-            Box::new(else_body),
+            Box::new(Expr::Return(Box::new(Expr::Unit))),
         ))
     }
 
@@ -1384,12 +1414,23 @@ impl<'a> Parser<'a> {
                 return Ok(expr);
             }
         }
-        loop {
-            if self.is_expr_start() {
-                let arg = self.parse_unary()?;
-                expr = Expr::App(Box::new(expr), Box::new(arg));
-            } else {
-                break;
+        // Juxtaposition application (`f x`). Only a callable head juxtaposes an
+        // argument — a Var, a prior application, a field access (method-like), or
+        // a projection. This prevents a literal followed by another atom (e.g. the
+        // `0 "msg"` in `pastikan x >= 0 "msg"`) from being misread as the literal
+        // applied to the next token.
+        let head_is_callable = matches!(
+            &expr,
+            Expr::Var(_) | Expr::App(_, _) | Expr::FieldAccess(_, _) | Expr::Fst(_) | Expr::Snd(_)
+        );
+        if head_is_callable {
+            loop {
+                if self.is_expr_start() {
+                    let arg = self.parse_unary()?;
+                    expr = Expr::App(Box::new(expr), Box::new(arg));
+                } else {
+                    break;
+                }
             }
         }
         Ok(expr)
@@ -2314,6 +2355,7 @@ impl<'a> Parser<'a> {
             TokenKind::KwSecret => "rahsia",
             TokenKind::KwRow => "baris",
             TokenKind::KwColumn => "lajur",
+            TokenKind::KwMod => "mod",
             TokenKind::KwMerge => "gabung",
             TokenKind::KwColor => "warna",
             TokenKind::KwStyle => "gaya",

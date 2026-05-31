@@ -2671,15 +2671,22 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
         // REQ-12: IFC-aware case analysis — elevate Δ in branches
         Expr::Case(e, x, e1, y, e2) => {
             let (t, eff) = type_check_full(ctx, e)?;
-            match t {
-                Ty::Sum(t_left, t_right) => {
-                    // IFC: Elevate Δ based on scrutinee's security level
-                    let scrutinee_level =
-                        security_level_of_type(&Ty::Sum(t_left.clone(), t_right.clone()));
+            // Normalize the scrutinee to a (left, right) pair of branch-binder
+            // types. `Sum` is the native form; `Option<T>` is `(T, Unit)` (Ada
+            // carries T, Tidak carries Unit); `Any` binds both as `Any`.
+            let sum_arms: Option<(Ty, Ty)> = match &t {
+                Ty::Sum(l, r) => Some(((**l).clone(), (**r).clone())),
+                Ty::Option(inner) => Some(((**inner).clone(), Ty::Unit)),
+                Ty::Any => Some((Ty::Any, Ty::Any)),
+                _ => None,
+            };
+            match sum_arms {
+                Some((t_left, t_right)) => {
+                    let scrutinee_level = security_level_of_type(&t);
                     let branch_delta = ctx.delta.join(scrutinee_level);
 
                     let mut ctx1 = TypingContext {
-                        gamma: ctx.gamma.extend(x.clone(), *t_left),
+                        gamma: ctx.gamma.extend(x.clone(), t_left),
                         sigma: ctx.sigma.clone(),
                         delta: branch_delta,
                         granted: ctx.granted.clone(),
@@ -2687,7 +2694,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     let (t1, eff1) = type_check_full(&mut ctx1, e1)?;
 
                     let mut ctx2 = TypingContext {
-                        gamma: ctx.gamma.extend(y.clone(), *t_right),
+                        gamma: ctx.gamma.extend(y.clone(), t_right),
                         sigma: ctx.sigma.clone(),
                         delta: branch_delta,
                         granted: ctx.granted.clone(),
@@ -2708,7 +2715,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
 
                     Ok((result_ty, eff.join(eff1).join(eff2)))
                 }
-                _ => Err(TypeError::ExpectedSum(t)),
+                None => Err(TypeError::ExpectedSum(t)),
             }
         }
 
@@ -2733,7 +2740,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                 });
             }
 
-            if *inner_cond != Ty::Bool {
+            // The condition must be Bool; `Any` (the wildcard, e.g. from a method
+            // call or indexing that the structural checker types as Any) is also
+            // accepted.
+            if *inner_cond != Ty::Bool && *inner_cond != Ty::Any {
                 return Err(TypeError::TypeMismatch {
                     expected: Ty::Bool,
                     found: inner_cond.clone(),
@@ -3545,12 +3555,19 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         },
         Expr::Case(e, x, e1, y, e2) => {
             let (t, eff) = type_check(ctx, e)?;
-            match t {
-                Ty::Sum(t_left, t_right) => {
-                    let ctx1 = ctx.extend(x.clone(), *t_left);
+            // Normalize Sum / Option<T> / Any to a (left, right) binder pair.
+            let sum_arms: Option<(Ty, Ty)> = match &t {
+                Ty::Sum(l, r) => Some(((**l).clone(), (**r).clone())),
+                Ty::Option(inner) => Some(((**inner).clone(), Ty::Unit)),
+                Ty::Any => Some((Ty::Any, Ty::Any)),
+                _ => None,
+            };
+            match sum_arms {
+                Some((t_left, t_right)) => {
+                    let ctx1 = ctx.extend(x.clone(), t_left);
                     let (t1, eff1) = type_check(&ctx1, e1)?;
 
-                    let ctx2 = ctx.extend(y.clone(), *t_right);
+                    let ctx2 = ctx.extend(y.clone(), t_right);
                     let (t2, eff2) = type_check(&ctx2, e2)?;
 
                     if !types_compatible(&t1, &t2) {
@@ -3563,14 +3580,14 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
 
                     Ok((result_ty, eff.join(eff1).join(eff2)))
                 }
-                _ => Err(TypeError::ExpectedSum(t)),
+                None => Err(TypeError::ExpectedSum(t)),
             }
         }
 
         // VERIFIED: Control
         Expr::If(cond, e2, e3) => {
             let (t_cond, eff1) = type_check(ctx, cond)?;
-            if t_cond != Ty::Bool {
+            if t_cond != Ty::Bool && t_cond != Ty::Any {
                 return Err(TypeError::TypeMismatch {
                     expected: Ty::Bool,
                     found: t_cond,

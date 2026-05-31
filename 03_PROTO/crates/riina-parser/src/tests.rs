@@ -3939,3 +3939,18 @@ fn test_parse_fn_type_multi_param_arrow() {
         other => panic!("expected Fn, got {other:?}"),
     }
 }
+
+#[test]
+fn test_parse_guard_assertion_form() {
+    // `pastikan cond "msg"; rest` (assertion guard with message).
+    let mut p = Parser::new("fungsi f(x: Nombor) -> Nombor kesan Bersih { pastikan x >= 0 \"msg\"; pulang x; }");
+    assert!(p.parse_program().is_ok());
+}
+
+#[test]
+fn test_literal_not_applied_to_following_atom() {
+    // `0 "msg"` must not parse as application of `0` to `"msg"`.
+    let mut p = Parser::new("0 \"msg\"");
+    // Parses as just `0` (the string is left for the caller / sequence).
+    assert_eq!(p.parse_expr().unwrap(), Expr::Int(0));
+}
