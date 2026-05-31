@@ -3612,3 +3612,35 @@ fn test_parse_index_chains_with_field() {
     let mut p = Parser::new("s[0].0");
     assert!(matches!(p.parse_expr().unwrap(), Expr::Fst(_)));
 }
+
+// =============================================================================
+// ANONYMOUS (BRACED) RECORD LITERALS
+// =============================================================================
+
+#[test]
+fn test_parse_anonymous_record_literal() {
+    // `{ field: e, ... }` with no type name -> RecordLit("", fields).
+    let mut p = Parser::new("{ x: 1, y: 2 }");
+    match p.parse_expr().unwrap() {
+        Expr::RecordLit(name, fields) => {
+            assert_eq!(name, "");
+            assert_eq!(fields.len(), 2);
+        }
+        other => panic!("expected RecordLit, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_anonymous_empty_record() {
+    let mut p = Parser::new("{}");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::RecordLit(_, _)));
+}
+
+#[test]
+fn test_parse_named_record_still_works() {
+    let mut p = Parser::new("Titik { x: 1 }");
+    match p.parse_expr().unwrap() {
+        Expr::RecordLit(name, _) => assert_eq!(name, "Titik"),
+        other => panic!("expected RecordLit, got {other:?}"),
+    }
+}

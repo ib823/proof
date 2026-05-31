@@ -1245,6 +1245,14 @@ impl<'a> Parser<'a> {
     fn parse_atom(&mut self) -> Result<Expr, ParseError> {
         let kind = self.peek().map(|t| t.kind.clone());
         match kind {
+            // Anonymous (braced) record literal: `{ field: e, ... }` with no
+            // type name (e.g. `pulang { hos: "localhost", port: 8080 }`). Records
+            // are structural, so the type name is empty. Disambiguated from a
+            // block via `looks_like_record_literal` (next-next token is `ident :`,
+            // or `}` for the empty record).
+            Some(TokenKind::LBrace) if self.looks_like_record_literal() => {
+                self.parse_record_literal_body(String::new())
+            }
             Some(TokenKind::LiteralInt(s, _)) => {
                 self.next();
                 Ok(Expr::Int(s.parse().unwrap_or(0)))
