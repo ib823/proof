@@ -3340,3 +3340,22 @@ fn test_record_not_confused_with_if_block() {
     let mut p = Parser::new("kalau benar { 1 } lain { 2 }");
     assert!(matches!(p.parse_expr().unwrap(), Expr::If(_, _, _)));
 }
+
+#[test]
+fn test_parse_option_result_constructors() {
+    // Some/Ok -> Inl; Err/None -> Inr.
+    let mut p = Parser::new("Some(5)");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Inl(_, _)));
+    let mut p = Parser::new("Ok(42)");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Inl(_, _)));
+    let mut p = Parser::new("Err(\"bad\")");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Inr(_, _)));
+    let mut p = Parser::new("None");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Inr(_, _)));
+}
+
+#[test]
+fn test_parse_constructor_in_let() {
+    let mut p = Parser::new("biar x = Some(5); x");
+    assert!(p.parse_expr().is_ok());
+}

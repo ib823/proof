@@ -588,6 +588,19 @@ impl<'a> Parser<'a> {
         Ok(Expr::RecordLit(type_name, fields))
     }
 
+    /// Parse the argument of an Option/Result constructor: either parenthesized
+    /// `(e)` (the common `Some(x)` form) or a bare unary expression (`Some x`).
+    fn parse_constructor_arg(&mut self) -> Result<Expr, ParseError> {
+        if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
+            self.consume(TokenKind::LParen)?;
+            let e = self.parse_control_flow()?;
+            self.consume(TokenKind::RParen)?;
+            Ok(e)
+        } else {
+            self.parse_unary()
+        }
+    }
+
     fn next(&mut self) -> Option<Token> {
         let token = self.lexer.next();
         if let Some(t) = &token {
@@ -902,6 +915,10 @@ impl<'a> Parser<'a> {
                 | Some(TokenKind::KwProve)
                 | Some(TokenKind::KwInl)
                 | Some(TokenKind::KwInr)
+                | Some(TokenKind::KwSome)
+                | Some(TokenKind::KwNone)
+                | Some(TokenKind::KwOk)
+                | Some(TokenKind::KwErr)
                 | Some(TokenKind::KwSpawn)
                 | Some(TokenKind::KwSend)
                 | Some(TokenKind::KwRecv)
@@ -987,6 +1004,29 @@ impl<'a> Parser<'a> {
                 self.consume(TokenKind::Colon)?;
                 let ty = self.parse_ty()?;
                 Ok(Expr::Inr(Box::new(e), ty))
+            }
+            // Option/Result constructors desugar onto the existing sum type:
+            //   Some(x)/Ada(x)  -> Inl x      None/Tiada      -> Inr unit
+            //   Ok(x)/Jadi(x)   -> Inl x      Err(x)/Gagal(x) -> Inr x
+            // The carried type is `Any` (structural; Option and Result are not
+            // yet distinguished nominally by the typechecker).
+            Some(TokenKind::KwSome) | Some(TokenKind::KwOk) => {
+                self.next();
+                let inner = self.parse_constructor_arg()?;
+                Ok(Expr::Inl(Box::new(inner), Ty::Any))
+            }
+            Some(TokenKind::KwErr) => {
+                self.next();
+                let inner = self.parse_constructor_arg()?;
+                Ok(Expr::Inr(Box::new(inner), Ty::Any))
+            }
+            Some(TokenKind::KwNone) => {
+                self.next();
+                if matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
+                    self.consume(TokenKind::LParen)?;
+                    self.consume(TokenKind::RParen)?;
+                }
+                Ok(Expr::Inr(Box::new(Expr::Unit), Ty::Any))
             }
             Some(TokenKind::KwSpawn) => self.parse_spawn(),
             Some(TokenKind::KwSend) => self.parse_actor_send(),
