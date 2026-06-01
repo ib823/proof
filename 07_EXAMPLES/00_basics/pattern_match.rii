@@ -63,7 +63,7 @@ fungsi padanGanda(x: Nombor, y: Nombor) -> Teks kesan Bersih {
     }
 }
 
-fungsi padanRujukan(r: Ruj<Nombor>@Awam) -> Teks kesan Bersih {
+fungsi padanRujukan(r: Ruj<Nombor>@Awam) -> Teks kesan Baca {
     /// Padan dengan rujukan (reference)
     /// Match with reference
     padan r {

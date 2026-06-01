@@ -59,7 +59,7 @@ fungsi gunakan_pada_senarai(
 
 /// Fungsi dengan Rujukan (Reference)
 /// Function with Reference type
-fungsi ubah_ruj(r: Ruj<Nombor>@Dalaman) -> Nombor kesan Bersih {
+fungsi ubah_ruj(r: Ruj<Nombor>@Awam) -> Nombor kesan Baca {
     padan r {
         ruj(n) -> n,
     }

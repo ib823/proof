@@ -2315,7 +2315,12 @@ pub fn types_compatible(expected: &Ty, found: &Ty) -> bool {
     match (expected, found) {
         // Function types: contravariant in argument, covariant in return
         (Ty::Fn(a1, r1, e1), Ty::Fn(a2, r2, e2)) => {
-            types_compatible(a1, a2) && types_compatible(r1, r2) && e1 == e2
+            // Effect subsumption: a function whose body has a *smaller* effect
+            // (`e2`, found) satisfies a declaration of a *wider* effect (`e1`,
+            // expected) — you may always declare more effect than you use (e.g. a
+            // `kesan Baca` stub whose body is actually Pure). Argument/return
+            // types must be compatible as before.
+            types_compatible(a1, a2) && types_compatible(r1, r2) && e2.level() <= e1.level()
         }
 
         // Product types: covariant in both components
