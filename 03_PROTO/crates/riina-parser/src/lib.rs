@@ -1067,6 +1067,20 @@ impl<'a> Parser<'a> {
             Some(TokenKind::KwFor) => self.parse_for_in(),
             Some(TokenKind::KwWhile) => self.parse_while(),
             Some(TokenKind::KwLoop) => self.parse_loop(),
+            // `putus` (break) / `lanjut` (continue). Loops currently desugar to
+            // a single bounded iteration, so loop control has no extra runtime
+            // effect to model — both desugar to a no-op `()` that typechecks in
+            // statement position. An optional `'label` is accepted and ignored.
+            Some(TokenKind::KwBreak) | Some(TokenKind::KwContinue) => {
+                self.next();
+                if matches!(
+                    self.peek().map(|t| &t.kind),
+                    Some(TokenKind::Lifetime(_)) | Some(TokenKind::Label(_))
+                ) {
+                    self.next();
+                }
+                Ok(Expr::Unit)
+            }
             // CAHAYA Phase J5 block forms
             Some(TokenKind::KwDisplay) => self.parse_display(),
             Some(TokenKind::KwRow) => self.parse_row(),
@@ -1441,6 +1455,11 @@ impl<'a> Parser<'a> {
                             expr = Expr::App(Box::new(expr), Box::new(arg));
                         }
                     }
+                    // NOTE: empty parens `f()` are a no-op suffix. A zero-arg
+                    // function is modeled as a global thunk whose type is its
+                    // return type, so `f` already denotes the result value and
+                    // the `()` carries no application. (Applying to `()` here
+                    // would break every zero-arg call site.)
                     self.consume(TokenKind::RParen)?;
                 }
                 _ => break,

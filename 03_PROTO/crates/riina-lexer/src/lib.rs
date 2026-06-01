@@ -970,7 +970,7 @@ mod tests {
         // Input: Additional control flow in Bahasa Melayu
         // Expected: Match, With, Break, Continue tokens
         // Rationale: Complete control flow in native language
-        let input = "padan dengan keluar terus";
+        let input = "padan dengan putus lanjut";
         let mut lexer = Lexer::new(input);
 
         assert_eq!(
@@ -986,12 +986,12 @@ mod tests {
         assert_eq!(
             lexer.next_token().unwrap().kind,
             TokenKind::KwBreak,
-            "'keluar' (break) must tokenize to TokenKind::KwBreak"
+            "'putus' (break) must tokenize to TokenKind::KwBreak"
         );
         assert_eq!(
             lexer.next_token().unwrap().kind,
             TokenKind::KwContinue,
-            "'terus' (continue) must tokenize to TokenKind::KwContinue"
+            "'lanjut' (continue) must tokenize to TokenKind::KwContinue"
         );
         assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
     }

@@ -484,8 +484,12 @@ impl<'a> Lexer<'a> {
             "loop" | "ulang" => TokenKind::KwLoop,
             "while" | "selagi" => TokenKind::KwWhile,
             "with" | "dengan" => TokenKind::KwWith,
-            "break" | "keluar" => TokenKind::KwBreak,
-            "continue" | "terus" => TokenKind::KwContinue,
+            // Loop control. The corpus uses `putus` (break) and `lanjut`
+            // (continue); `keluar`/`terus` are intentionally NOT reserved so
+            // they remain usable as ordinary identifiers (e.g. a `keluar` or
+            // `terus` boolean flag).
+            "break" | "putus" => TokenKind::KwBreak,
+            "continue" | "lanjut" => TokenKind::KwContinue,
             "return" | "pulang" => TokenKind::KwReturn,
 
             // Type cast and reference (English | Bahasa Melayu)
