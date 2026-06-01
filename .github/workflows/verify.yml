@@ -1,0 +1,84 @@
+# RIINA verification CI
+#
+# Runs the repository's OWN verification commands (the same ones documented in
+# CLAUDE.md and RIINA_MASTER_PLAN.md Part 11) so the public claims in
+# website/public/metrics.json and PROOF_STATUS.md cannot silently drift.
+#
+# Jobs are independent; each maps to a gate-relevant invariant:
+#   rust-proto / rust-tooling -> "build: passing" + the 2,579-test claim
+#   docs-audit                -> scripts/audit-docs.sh (metrics vs docs parity)
+#   coq                       -> Admitted=0 / Axiom=0 in the active _CoqProject set
+#
+# NOTE: CLAUDE.md historically forbade external CI ("RIINA uses `riinac verify`
+# internally"). This workflow was added at the repository owner's explicit
+# direction; it wraps the internal verification rather than replacing it. If the
+# policy is reaffirmed, delete this file. See assessment thread for context.
+
+name: verify
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust-proto:
+    name: Rust tests (03_PROTO)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.84.0
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "03_PROTO -> target"
+      - name: cargo test --all
+        run: cargo test --all --manifest-path 03_PROTO/Cargo.toml
+
+  rust-tooling:
+    name: Rust tests (05_TOOLING)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.84.0
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "05_TOOLING -> target"
+      - name: cargo test --all
+        run: cargo test --all --manifest-path 05_TOOLING/Cargo.toml
+
+  docs-audit:
+    name: Docs / metrics parity (audit-docs.sh)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # audit-docs.sh uses git history
+      - name: scripts/audit-docs.sh
+        run: bash scripts/audit-docs.sh
+
+  coq:
+    name: Coq active build (Rocq 9.1.1)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "5.2"
+      # The corpus uses `From Stdlib`, so it requires the Rocq 9.x prover, not
+      # legacy Coq 8.x. If the exact package name/version differs in the opam
+      # repo, pin it here to match the toolchain in CLAUDE.md (Rocq 9.1.1).
+      - name: Install Rocq 9.1.1
+        run: |
+          opam install -y rocq-prover.9.1.1 rocq-stdlib.9.1.1 || \
+          opam install -y rocq-prover rocq-stdlib
+      - name: make (active _CoqProject set)
+        run: opam exec -- make -C 02_FORMAL/coq

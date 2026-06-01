@@ -27,6 +27,9 @@
 *.tar.gz
 dist/
 
+# Stray compiled binaries / build artifacts that must never be committed
+05_TOOLING/test_inversion
+
 # IDE & tool artifacts
 .DS_Store
 .gemini/
