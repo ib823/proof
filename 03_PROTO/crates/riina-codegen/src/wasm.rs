@@ -428,7 +428,10 @@ impl WasmBackend {
         // Reserve two scratch i32 locals for the integer-printing (itoa) routine.
         let itoa_v = local_count;
         let itoa_p = local_count + 1;
-        local_count += 2;
+        // Six more scratch i32 locals for the string builtins (ke_teks /
+        // gabung_teks): result ptr, lengths, source ptrs, copy index.
+        let scratch = local_count + 2;
+        local_count += 8;
 
         // Map each IR value to its static type so `cetak` can pick an int vs
         // string-pointer print path.
@@ -455,6 +458,7 @@ impl WasmBackend {
             var_to_ty: &var_to_ty,
             itoa_v,
             itoa_p,
+            scratch,
         };
 
         // Load captures from closure memory into locals.
@@ -832,6 +836,212 @@ impl WasmBackend {
         code.push(Op::Call as u8);
         wasm_encode::encode_uleb128(0, code); // fd_write
         code.push(Op::Drop as u8);
+    }
+
+    /// `ke_teks(int)` → a heap string `[len:u32][ascii digits]`; leaves the
+    /// pointer on the stack. Two passes: count digits, alloc, write digits.
+    fn emit_ke_teks(arg: &VarId, ctx: &EmitCtx, code: &mut Vec<u8>) {
+        let v = ctx.itoa_v;
+        let wp = ctx.itoa_p;
+        let rp = ctx.scratch;
+        let cnt = ctx.scratch + 1;
+        let get = |c: &mut Vec<u8>, l: u32| {
+            c.push(Op::LocalGet as u8);
+            wasm_encode::encode_uleb128(l as u64, c);
+        };
+        let set = |c: &mut Vec<u8>, l: u32| {
+            c.push(Op::LocalSet as u8);
+            wasm_encode::encode_uleb128(l as u64, c);
+        };
+        // Pass 1: count digits (always >= 1). v = arg; cnt = 0.
+        Self::emit_local_get(arg, ctx.var_map, code);
+        set(code, v);
+        wasm_i32c(code, 0);
+        set(code, cnt);
+        code.push(Op::Loop as u8);
+        code.push(0x40);
+        get(code, cnt);
+        wasm_i32c(code, 1);
+        code.push(Op::I32Add as u8);
+        set(code, cnt);
+        get(code, v);
+        wasm_i32c(code, 10);
+        code.push(Op::I32DivU as u8);
+        set(code, v);
+        get(code, v);
+        code.push(Op::BrIf as u8);
+        wasm_encode::encode_uleb128(0, code);
+        code.push(Op::End as u8);
+        // rp = alloc(align4(4 + cnt)) — keep the bump pointer 4-aligned so the
+        // i32 length-prefix store below stays aligned.
+        wasm_i32c(code, 4);
+        get(code, cnt);
+        code.push(Op::I32Add as u8);
+        wasm_i32c(code, 3);
+        code.push(Op::I32Add as u8);
+        wasm_i32c(code, -4); // & ~3
+        code.push(Op::I32And as u8);
+        code.push(Op::Call as u8);
+        wasm_encode::encode_uleb128(ctx.alloc_func_index as u64, code);
+        set(code, rp);
+        // mem[rp] = cnt (length prefix)
+        get(code, rp);
+        get(code, cnt);
+        code.push(Op::I32Store as u8);
+        code.push(0x02);
+        code.push(0x00);
+        // Pass 2: write digits backward into [rp+4, rp+4+cnt). v = arg; wp = rp+4+cnt.
+        Self::emit_local_get(arg, ctx.var_map, code);
+        set(code, v);
+        get(code, rp);
+        wasm_i32c(code, 4);
+        code.push(Op::I32Add as u8);
+        get(code, cnt);
+        code.push(Op::I32Add as u8);
+        set(code, wp);
+        code.push(Op::Loop as u8);
+        code.push(0x40);
+        get(code, wp);
+        wasm_i32c(code, 1);
+        code.push(Op::I32Sub as u8);
+        set(code, wp);
+        get(code, wp);
+        get(code, v);
+        wasm_i32c(code, 10);
+        code.push(Op::I32RemU as u8);
+        wasm_i32c(code, 48);
+        code.push(Op::I32Add as u8);
+        code.push(Op::I32Store8 as u8);
+        code.push(0x00);
+        code.push(0x00);
+        get(code, v);
+        wasm_i32c(code, 10);
+        code.push(Op::I32DivU as u8);
+        set(code, v);
+        get(code, v);
+        code.push(Op::BrIf as u8);
+        wasm_encode::encode_uleb128(0, code);
+        code.push(Op::End as u8);
+        // result = rp
+        get(code, rp);
+    }
+
+    /// `gabung_teks((s1, s2))` → a freshly-allocated heap string that is the
+    /// concatenation of the two `[len][bytes]` strings; leaves the pointer on
+    /// the stack. `arg` is a pair pointer `[s1:i32][s2:i32]`.
+    fn emit_gabung_teks(arg: &VarId, ctx: &EmitCtx, code: &mut Vec<u8>) {
+        let s1 = ctx.scratch;
+        let s2 = ctx.scratch + 1;
+        let len1 = ctx.scratch + 2;
+        let len2 = ctx.scratch + 3;
+        let rp = ctx.scratch + 4;
+        let idx = ctx.itoa_v;
+        let get = |c: &mut Vec<u8>, l: u32| {
+            c.push(Op::LocalGet as u8);
+            wasm_encode::encode_uleb128(l as u64, c);
+        };
+        let set = |c: &mut Vec<u8>, l: u32| {
+            c.push(Op::LocalSet as u8);
+            wasm_encode::encode_uleb128(l as u64, c);
+        };
+        let load = |c: &mut Vec<u8>, off: u8| {
+            c.push(Op::I32Load as u8);
+            c.push(0x02);
+            c.push(off);
+        };
+        // s1 = mem[arg+0]; s2 = mem[arg+4]
+        Self::emit_local_get(arg, ctx.var_map, code);
+        load(code, 0x00);
+        set(code, s1);
+        Self::emit_local_get(arg, ctx.var_map, code);
+        load(code, 0x04);
+        set(code, s2);
+        // len1 = mem[s1]; len2 = mem[s2]
+        get(code, s1);
+        load(code, 0x00);
+        set(code, len1);
+        get(code, s2);
+        load(code, 0x00);
+        set(code, len2);
+        // rp = alloc(align4(4 + len1 + len2)) — keep the bump pointer 4-aligned.
+        wasm_i32c(code, 4);
+        get(code, len1);
+        code.push(Op::I32Add as u8);
+        get(code, len2);
+        code.push(Op::I32Add as u8);
+        wasm_i32c(code, 3);
+        code.push(Op::I32Add as u8);
+        wasm_i32c(code, -4);
+        code.push(Op::I32And as u8);
+        code.push(Op::Call as u8);
+        wasm_encode::encode_uleb128(ctx.alloc_func_index as u64, code);
+        set(code, rp);
+        // mem[rp] = len1 + len2
+        get(code, rp);
+        get(code, len1);
+        get(code, len2);
+        code.push(Op::I32Add as u8);
+        code.push(Op::I32Store as u8);
+        code.push(0x02);
+        code.push(0x00);
+        // copy_loop(dst_base, src, len): emit a `while idx < len` byte copy.
+        let copy = |c: &mut Vec<u8>, dst_extra: &dyn Fn(&mut Vec<u8>), src: u32, len: u32| {
+            wasm_i32c(c, 0);
+            set(c, idx);
+            c.push(Op::Block as u8);
+            c.push(0x40);
+            c.push(Op::Loop as u8);
+            c.push(0x40);
+            // if idx >= len, break out of block (depth 1)
+            get(c, idx);
+            get(c, len);
+            c.push(Op::I32GeU as u8);
+            c.push(Op::BrIf as u8);
+            wasm_encode::encode_uleb128(1, c);
+            // dst addr = rp + 4 + <dst_extra> + idx
+            get(c, rp);
+            wasm_i32c(c, 4);
+            c.push(Op::I32Add as u8);
+            dst_extra(c);
+            get(c, idx);
+            c.push(Op::I32Add as u8);
+            // src byte = mem[src + 4 + idx]
+            get(c, src);
+            wasm_i32c(c, 4);
+            c.push(Op::I32Add as u8);
+            get(c, idx);
+            c.push(Op::I32Add as u8);
+            c.push(Op::I32Load8U as u8);
+            c.push(0x00);
+            c.push(0x00);
+            // store byte
+            c.push(Op::I32Store8 as u8);
+            c.push(0x00);
+            c.push(0x00);
+            // idx++
+            get(c, idx);
+            wasm_i32c(c, 1);
+            c.push(Op::I32Add as u8);
+            set(c, idx);
+            c.push(Op::Br as u8);
+            wasm_encode::encode_uleb128(0, c);
+            c.push(Op::End as u8); // loop
+            c.push(Op::End as u8); // block
+        };
+        // copy s1 into [rp+4 ..)
+        copy(code, &|_c: &mut Vec<u8>| {}, s1, len1);
+        // copy s2 into [rp+4+len1 ..)
+        copy(
+            code,
+            &|c: &mut Vec<u8>| {
+                get(c, len1);
+                c.push(Op::I32Add as u8);
+            },
+            s2,
+            len2,
+        );
+        // result = rp
+        get(code, rp);
     }
 
     /// Emit a single IR instruction as WASM instructions.
@@ -1231,9 +1441,21 @@ impl WasmBackend {
                         code.push(Op::Drop as u8); // drop fd_write return value
                     }
 
+                    // `cetakln` (println) appends a newline; `cetak` does not.
+                    if name == "cetakln" {
+                        wasm_write_bytes(code, b"\n");
+                    }
+
                     // push unit (0) as result
                     code.push(Op::I32Const as u8);
                     wasm_encode::encode_sleb128(0, code);
+                } else if (name == "ke_teks" || name == "nombor_ke_teks")
+                    && matches!(ctx.var_to_ty.get(arg), Some(Ty::Int) | Some(Ty::CInt))
+                {
+                    // Int → string. (Non-Int ke_teks falls through to the stub.)
+                    Self::emit_ke_teks(arg, ctx, code);
+                } else if name == "gabung_teks" {
+                    Self::emit_gabung_teks(arg, ctx, code);
                 } else {
                     // Other builtins: push 0 (stub)
                     code.push(Op::I32Const as u8);
@@ -1523,6 +1745,8 @@ struct EmitCtx<'a> {
     /// Two reserved scratch i32 locals for the integer-printing routine.
     itoa_v: u32,
     itoa_p: u32,
+    /// Base index of 6 extra scratch i32 locals (string builtins).
+    scratch: u32,
 }
 
 impl Backend for WasmBackend {

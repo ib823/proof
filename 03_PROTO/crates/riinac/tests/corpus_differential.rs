@@ -12,9 +12,10 @@
 //! divergence. Requires `cc` + `wasmtime`; skips when either is absent (CI).
 //!
 //! Measured 2026-06-01 (wasmtime 27.0.0): of 155 examples, 30 build+run in both
-//! backends — 16 byte-equal, 14 in KNOWN_DIVERGENT; the rest don't compile/run
-//! under one or both backends. (16 equal is up from 10 after the `main.return_ty`
-//! lowering fix made computed-Int programs echo correctly.)
+//! backends — 24 byte-equal, 6 in KNOWN_DIVERGENT; the rest don't compile/run
+//! under one or both backends. (24 equal is up from 10 over the session: the
+//! `main.return_ty` lowering fix, WASM `ke_teks`/`gabung_teks` string builtins,
+//! and the `cetakln` newline together moved 14 examples to byte-equal.)
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -24,26 +25,13 @@ use std::process::Command;
 /// root cause. These are tracked, not silently ignored. Removing a WASM bug
 /// should remove the corresponding entries here.
 const KNOWN_DIVERGENT: &[&str] = &[
-    // Computed/variable Int echoed by C (runtime tag) but the IR `main.return_ty`
-    // is Unit, so WASM's static-typed echo skips it. (Type-soundness gap.)
-    // Recursion: the recursive-call result Int is not echoed under WASM yet
-    // (residual of the computed-int path; the non-recursive cases were fixed
-    // 2026-06-01 by correcting `main.return_ty` in the lowerer).
-    "demos/faktorial.rii",
-    // String concatenation / multi-value rendering differs under WASM.
-    "demos/selamat_datang.rii",
-    "demos/pasangan.rii",
+    // Residual string/loop rendering differences under WASM.
     "rentetan.rii",
     "gelung.rii",
     "00_basics/pattern_match.rii",
-    // Programs whose top-level value type C prints via runtime tag (incl. the
+    // Program whose top-level value type C prints via runtime tag (incl. the
     // "<value>" default) but WASM renders differently.
-    "compiler/codegen.rii",
-    "compiler/lexer.rii",
     "compiler/main.rii",
-    "compiler/parser.rii",
-    "compiler/typechecker.rii",
-    "compiler/types.rii",
     // UI / CAHAYA markup echoed by C but not yet by WASM for these shapes.
     "09_cahaya/hello_ui.rii",
     "09_cahaya/layout_example.rii",
