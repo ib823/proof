@@ -2078,23 +2078,27 @@ The Coq theorems and the Rust typechecker must enforce the same rules.
 |---|---|
 | Linear types (`sekali`/`paling`/`mesti`) — full compile-time enforcement | Negative tests in `riina-typechecker` reject every misuse case; Coq `linear_safety` theorem present. **Pos+neg verified 2026-06-01**: `gate_b_parity::linear_variable_used_{twice_is_rejected,once_is_accepted}` |
 | Capability types — enforce capability-gated calls at every call site (not just top-level) | Negative tests; Coq `capability_safety` theorem proven Qed. **Pos+neg added 2026-06-01 (capability had 0 tests before)**: `gate_b_parity::capability_require_{ungranted_is_rejected,granted_is_accepted}` (T_Require/T_Grant). Call-site-everywhere coverage still partial |
-| Session types end-to-end (parse + project + check against impl) | `koreografi` example type-checks; mismatching impl rejected; Coq `session_type_safety` Qed — **still open** (no parity test yet) |
+| Session types end-to-end (parse + project + check against impl) | `koreografi` example type-checks; mismatching impl rejected; Coq `session_type_safety` Qed. **Pos+neg verified 2026-06-01**: `gate_b_parity::{session_dual_protocols_are_accepted, session_non_dual_protocols_are_rejected, choreography_two_roles_is_accepted, choreography_underspecified_roles_are_rejected}` (protocol duality via `is_dual` + choreography well-formedness). Full parse→project→impl-check pipeline still partial |
 | Full IFC lattice enforcement (currently "basic") | Counterexample suite covers implicit flows, side channels, reference aliasing. **Pos+neg verified 2026-06-01** for no-write-down (`gate_b_parity::ifc_write_down_is_rejected`) + no-read-up (`gate_b_parity::ifc_read_up_is_rejected`); full side-channel/aliasing counterexample suite still open |
 | Constant-time (`masa_tetap`) blocks — no secret-dependent branches in codegen | CT verification step using `verify_security_lattice.py` passes per program. **Pos+neg verified 2026-06-01**: `gate_b_parity::constant_time_{branch_is_rejected,plain_branch_is_accepted}`; per-program codegen CT pass still open |
-| WASM target parity with C target | All 155 `.rii` examples emit valid WASM and execute under `wasmtime`; differential test framework green |
+| WASM target parity with C target | All 155 `.rii` examples emit valid WASM and execute under `wasmtime`; differential test framework green. **Differential VERIFIED 2026-06-01 (wasmtime 27.0.0) — NOT at parity (open):** WASM runs string programs under WASI `fd_write`, but `cetak(42)` prints nothing under WASM while C prints it. Root cause: IR `BuiltinCall { name, arg }` carries no arg type, so the WASM backend's `cetak` assumes a string pointer `[len][bytes]` and misreads integers (same IR var→type gap as `lower.rs`). Also cosmetic: the program's trailing Unit value renders inconsistently (interp `Unit`, C `()`, WASM nothing). Fix needs IR type-threading + a WASM itoa routine. Reproduce: `riinac build --target wasm32 p.rii && wasmtime run p.wasm` vs `riinac emit-c p.rii \| cc`. |
 | ~~Resolve `todo!("JALINAN Phase 6")` in `03_PROTO/crates/riina-compliance/src/validator.rs`~~ **DONE 2026-06-01**: the compliance walker now recurses into actor/content-addressed sub-expressions (was a panic stub); +2 regression tests (`jalinan_walk_recurses_into_subexprs`, `jalinan_choreography_block_walks_without_panic`) | `grep -rnE '\b(todo!\|unimplemented!)\s*\(' 03_PROTO/crates 05_TOOLING/crates --include='*.rs'` outside `tests` returns 0 ✓ (Gate B exit criterion met). `cargo test --all` = 2581 pass / 0 fail |
 | Resolve 5 documented `// TODO` in lexer/parser/codegen — **PARTIAL 2026-06-01 (1/5)**: `interp.rs` effect-inference TODO closed by removing the dead `HandlerContext.effect` field (handler matching is LIFO/effect-agnostic per Coq `T_Handle`) + test `test_eval_handle_perform_runs_handler`. The other 4 are feature-gated, NOT quick fixes (kept as honest TODOs): (a) `lexer.rs` int-suffix — no surface grammar/examples use typed suffixes; needs lexer+parser+typechecker support; (b,c) `lower.rs` 2× `Ty::Unit` on sum-unwrap — needs IR var→type tracking in the lowerer (does not exist today); (d) `typechecker` Perform payload — needs effect signatures (pending `Typing.v` formalization) | Each closed with PR + linked test |
 
 **Enforcement-parity test surface (added 2026-06-01):**
-`03_PROTO/crates/riina-typechecker/src/tests.rs` mod `gate_b_parity` — 5 security
+`03_PROTO/crates/riina-typechecker/src/tests.rs` mod `gate_b_parity` — **6** security
 properties, each with a negative (violation rejected with the matching `TypeError`)
 and positive (valid program accepted) test, verified end-to-end against
 `type_check_full`: capability (T_Require/T_Grant), IFC no-write-down (T_Assign
 Bell-LaPadula), IFC no-read-up (T_Deref), constant-time (A2), linear types
-(`linear_safety`). All green; `cargo test --all` = 2592 pass / 0 fail. Capability
-enforcement previously had **0** tests. Still open for full parity: session types
-end-to-end, WASM/C differential parity, and the full IFC side-channel/aliasing
-counterexample suite.
+(`linear_safety`), and session types (protocol duality + choreography
+well-formedness). All green; `cargo test --all` = 2596 pass / 0 fail. Capability
+enforcement previously had **0** tests.
+
+Still open for full parity: **WASM/C differential** — verified 2026-06-01 with
+wasmtime 27.0.0 and found NOT at parity (WASM does not print integers; see the
+WASM row above for root cause); the full parse→project→impl session-type
+pipeline; and the full IFC side-channel/aliasing counterexample suite.
 
 **Exit criteria:** every Coq-stated security theorem has a matching Rust enforcement test
 (positive + negative). Zero `todo!()` / `unimplemented!()` outside test code.

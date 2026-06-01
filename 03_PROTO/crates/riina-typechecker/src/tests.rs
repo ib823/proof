@@ -4526,8 +4526,8 @@ mod jalinan_phase6_tests {
 // ===========================================================================
 #[cfg(test)]
 mod gate_b_parity {
-    use crate::{type_check_full, TypeError, TypingContext};
-    use riina_types::{Effect, Expr, Linearity, SecurityLevel, Ty};
+    use crate::{is_dual, type_check_full, TypeError, TypingContext};
+    use riina_types::{Effect, Expr, Linearity, SecurityLevel, SessionType, Ty};
 
     // ── Property 1: Capability safety — Coq T_Require / T_Grant (Typing.v:207-213)
     #[test]
@@ -4685,5 +4685,55 @@ mod gate_b_parity {
         let (ty, _eff) =
             type_check_full(&mut ctx, &Expr::Var("x".into())).expect("single use must typecheck");
         assert_eq!(ty, Ty::Int);
+    }
+
+    // ── Property 6: Session types — Coq session_type_safety (protocol duality)
+    #[test]
+    fn session_non_dual_protocols_are_rejected() {
+        // Two endpoints that both Send are NOT compatible (dual of Send is Recv).
+        let send_int = SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End));
+        assert!(
+            !is_dual(&send_int, &send_int),
+            "two Send endpoints must not be dual-compatible"
+        );
+    }
+
+    #[test]
+    fn session_dual_protocols_are_accepted() {
+        // Send(Int).End is dual to Recv(Int).End → compatible endpoints.
+        let send_int = SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::End));
+        let recv_int = SessionType::Recv(Box::new(Ty::Int), Box::new(SessionType::End));
+        assert!(
+            is_dual(&send_int, &recv_int),
+            "Send/Recv endpoints of the same type must be dual"
+        );
+    }
+
+    #[test]
+    fn choreography_underspecified_roles_are_rejected() {
+        // A choreography with < 2 roles is malformed → rejected (T_Choreography).
+        let mut ctx = TypingContext::new();
+        let choreo = Expr::ChoreographyBlock {
+            name: "P".into(),
+            roles: vec!["A".into()],
+            protocol: SessionType::End,
+        };
+        match type_check_full(&mut ctx, &choreo) {
+            Err(TypeError::ChoreographyError { .. }) => {}
+            other => panic!("expected ChoreographyError, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn choreography_two_roles_is_accepted() {
+        let mut ctx = TypingContext::new();
+        let choreo = Expr::ChoreographyBlock {
+            name: "P".into(),
+            roles: vec!["A".into(), "B".into()],
+            protocol: SessionType::End,
+        };
+        let (ty, _eff) = type_check_full(&mut ctx, &choreo)
+            .expect("well-formed choreography must typecheck");
+        assert!(matches!(ty, Ty::Choreography(..)));
     }
 }
