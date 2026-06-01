@@ -180,10 +180,10 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 309 active files, 12,386 Qed, 0 Admitted, 4 Abort (active proof gaps) | Primary formal verification |
 | **Lean proofs** | `02_FORMAL/lean/` | 326 files, 12,576 theorem *declarations* (port). Measured 2026-06-01 under Lean 4.16.0: **only 7/326 files elaborate (215 thms); `lake build RIINA` passes but builds only the 0-theorem `Domains/All` shim**; core type-safety files do not elaborate. See `02_FORMAL/lean/COMPILATION_STATUS.md` | Generated (not mechanized) |
-| **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep), 1 smoke theory (`RIINA_CORE`) compiles, 0 sorry | Smoke-mechanized |
-| **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with 11,843 Z3-verified assertions (rest generated corpora) | Smoke-mechanized |
+| **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep). `metrics.json` records `smokeBuildOk:false` / `compiledLemmas:0` — the `RIINA_CORE` smoke theory is **not currently verified**, and could not be re-checked 2026-06-01 (Isabelle download 403 in this environment). 12,931 = raw grep, unverified | Generated (smoke unverified) |
+| **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with **25** Z3-verified security-lattice properties (re-verified 2026-06-01, Z3 4.8.12: 25 unsat). "12,405" = raw corpus-wide asserts; rest generated. (The prior "11,843 verified" figure was a counting error.) | Smoke-verified |
 | **F\* proofs** | `02_FORMAL/fstar/` | 315 files. 1 smoke module **verifies** (3 trivial lemmas; re-verified 2026-06-01, F* 2025.12.15). "22 lemmas" = raw `lemma_`-named decls corpus-wide, not all verified; the corpus carries ~11,935 `admit ()`. Rest generated | Smoke-verified |
-| **TLA+ specs** | `02_FORMAL/tlaplus/` | 317 files, 1 smoke spec TLC-checked (5 theorems), rest generated corpora | Smoke-compiled |
+| **TLA+ specs** | `02_FORMAL/tlaplus/` | 317 files, 1 smoke spec TLC-checked (5 theorems; re-verified 2026-06-01, TLA2Tools). 12,282 raw THEOREMs corpus-wide; rest generated | Smoke-verified |
 | **Alloy models** | `02_FORMAL/alloy/` | 306 files, 1 smoke model analyzer-checked (6 assertions), rest generated corpora | Smoke-compiled |
 
 #### Specified But Not Implemented (Future phases, specifications in 04_SPECS/requirements/)
@@ -306,7 +306,7 @@ smoke session is actually mechanized — the rest are generated corpora awaiting
 | Alloy active smoke model | 1 | `RIINA/Active/TelusProcurementAccessControl.als` |
 | Alloy checked assertions | 6 | Alloy `exec` smoke run checks 6 assertions in the active model |
 | SMT (Z3) active verification | 1 | `RIINA/Active/SecurityLatticeVerification.smt2` + `verify_security_lattice.py` |
-| SMT (Z3) verified assertions | 11,843 | Z3-verified security lattice properties (matching 22 Coq lemmas + 3 IFC properties) |
+| SMT (Z3) verified assertions | 25 | Z3-verified security-lattice properties (reflexivity/transitivity/antisymmetry of the 6-level Denning lattice); re-verified 2026-06-01 (Z3 4.8.12 → 25 unsat). NB: 12,405 = raw corpus-wide asserts, only these 25 verify; the prior "11,843" was a counting error |
 | Verus / Kani / TV | 0 real artifacts | Still quarantined generated corpora |
 
 **Honest assessment:** F* now has one manually maintained smoke-verified module with 3
@@ -314,7 +314,7 @@ compiled lemmas (22 = raw corpus-wide `lemma_` decls; the rest carry ~11,935 `ad
 TLA+ now has one manually maintained TLC-checked procurement smoke model with
 five counted `THEOREM` declarations, Alloy now has one manually maintained bounded
 access-control model with six checked assertions, and SMT/Z3 now has one manually
-maintained security lattice verification with 11,843 Z3-verified assertions (encoding the
+maintained security lattice verification with 25 Z3-verified properties (encoding the
 6-level Denning lattice from `02_FORMAL/coq/foundations/Syntax.v`). The remaining
 `.fst` / `.tla` / `.als` / `.smt2` files, and all other extended prover lanes (Verus,
 Kani, TV), are still generated placeholders and must not be counted as verified proofs.
@@ -490,11 +490,11 @@ See Part 5 for detailed per-prover closure criteria.
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
 | Lean 4 | 326 files, 12,576 declarations (0 literal `sorry` outside `_wip`; 2 in `_wip`) | **Generated, NOT mechanized.** Measured 2026-06-01 (Lean 4.16.0): 7/326 files elaborate (215 thms); 304 files carry placeholder tactics; core + `AlgebraicEffects` do not elaborate. `lake build RIINA` only builds the 0-theorem shim. See `COMPILATION_STATUS.md` | Generated | Low |
-| Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | DONE (smoke; requires provisioning to re-verify) | High |
+| Isabelle | claimed 1 compiled theory (`Syntax` in `RIINA_CORE`) | **Unverified**: `metrics.json` records `smokeBuildOk:false`; could not re-check 2026-06-01 (Isabelle download 403 here) | Unverified | Low |
 | F* | 1 smoke-verified active module (3 trivial lemmas) | constant-time u8 eq (reflexive/symmetric) + zeroize length — **NOT** ML-KEM/ML-DSA/X25519/Ed25519 (those are unproven generated corpora with ~11,935 `admit ()`) | Smoke (re-verified 2026-06-01, F* 2025.12.15) | Low |
-| TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | DONE (smoke; requires provisioning to re-verify) | Very High |
-| Alloy | 1 smoke-checked active model (6 assertions) | Access control model verified | DONE (smoke; requires provisioning to re-verify) | Very High |
-| SMT/Z3 | 1 active verification (11,843 Z3-verified assertions) | Security lattice verified; refinement type checking next | DONE (smoke) | Very High |
+| TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | bounded TELUS procurement smoke model — re-verified 2026-06-01 (TLA2Tools, smoke check passed). 12,282 raw THEOREMs corpus-wide; only these 5 checked | Smoke (re-verified 2026-06-01) | Low |
+| Alloy | 1 smoke-checked active model (6 assertions) | bounded access-control smoke model — re-verified 2026-06-01 (Alloy 6.2.0, smoke check passed). 11,627 raw checks corpus-wide; only these 6 bounded-checked | Smoke (re-verified 2026-06-01) | Low |
+| SMT/Z3 | 1 active verification (**25** Z3-verified lattice properties) | 6-level Denning lattice (reflexivity/transitivity/antisymmetry) — re-verified 2026-06-01, Z3 4.8.12 (25 unsat). 12,405 raw asserts corpus-wide; prior "11,843" was a counting error | Smoke (re-verified 2026-06-01) | Low |
 | Verus | 0 real annotations | Type checker implementation verified | 1,200-2,400 hrs | Medium |
 | Kani | 0 real harnesses | Bounded model checking of type checker | 200-400 hrs | High |
 | TV | 0 real validations | C backend translation validation | 200-400 hrs | High |

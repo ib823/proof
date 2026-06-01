@@ -71,9 +71,11 @@
   "tlaplus": {
     "theorems": 12282,
     "theoremsRaw": 12282,
-    "compiledTheorems": 0,
-    "smokeBuildOk": false,
+    "compiledTheorems": 5,
+    "smokeBuildOk": true,
+    "smokeVerified": "2026-06-01 (TLA2Tools): smoke check passed",
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
+    "smokeNote": "12282 = raw corpus-wide THEOREM count; only the 5 in the smoke spec are TLC-checked",
     "quarantined": false,
     "files": 317,
     "prover": "TLA+"
@@ -81,9 +83,11 @@
   "alloy": {
     "assertions": 11627,
     "assertionsRaw": 11627,
-    "compiledAssertions": 0,
-    "smokeBuildOk": false,
+    "compiledAssertions": 6,
+    "smokeBuildOk": true,
+    "smokeVerified": "2026-06-01 (Alloy 6.2.0): smoke check passed",
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
+    "smokeNote": "11627 = raw corpus-wide check count; only the 6 in the smoke model are bounded-checked",
     "quarantined": false,
     "files": 306,
     "prover": "Alloy 6"
@@ -91,6 +95,11 @@
   "smt": {
     "assertions": 12405,
     "assertionsRaw": 12405,
+    "compiledAssertions": 25,
+    "smokeBuildOk": true,
+    "smokeVerified": "2026-06-01 (Z3 4.8.12): 25 unsat (security-lattice properties)",
+    "smokeModule": "RIINA.Active.SecurityLatticeVerification",
+    "smokeNote": "12405 = raw corpus-wide assert count; only the 25 lattice properties in the smoke file actually verify (the prior '11,843 verified' figure was a counting error)",
     "quarantined": false,
     "files": 317,
     "prover": "Z3/CVC5 (SMT-LIB)"

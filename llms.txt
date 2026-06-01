@@ -36,8 +36,12 @@ theorem counts as "verified theorems."
   3 trivial lemmas (constant-time eq + zeroize length; re-verified 2026-06-01,
   F* 2025.12.15). The rest carry ~11,935 `admit ()` — effectively nothing else is
   proven. Claim: generated (1 trivial smoke module aside).
-- Isabelle: 368 .thy (generated); 1 smoke theory `RIINA_CORE` compiles. Claim: smoke.
-- TLA+ / Alloy / SMT: 1 small hand-written smoke artifact each; remainder generated mirrors.
+- Isabelle: 368 .thy (generated). 12,931 = raw grep; the `RIINA_CORE` smoke theory is
+  UNVERIFIED (metrics `smokeBuildOk:false`; toolchain not provisionable here, download 403).
+- TLA+ / Alloy / SMT: 1 small hand-written smoke artifact each, re-verified 2026-06-01 —
+  TLA+ 5 THEOREMs (TLA2Tools), Alloy 6 assertions (Alloy 6.2.0), SMT 25 Z3-unsat lattice
+  properties (Z3 4.8.12). Raw corpus counts (12,282 / 11,627 / 12,405) are generated mirrors,
+  NOT verified. (The SMT "11,843 verified" figure cited elsewhere was a counting error → 25.)
 - Verus / Kani / TV: generated stubs, explicitly quarantined (`quarantined: true`).
 - Authoritative per-lane claim levels: `website/public/metrics.json`.
 - Rust: 2,479 proto tests + 248 tooling tests = 2,727 (all passing), 19 proto +

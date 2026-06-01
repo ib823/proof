@@ -232,7 +232,7 @@ This is not a whitepaper. This is working software.
 |--------|-------------------------|-------|
 | **Rocq 9.1.1** (Primary) | 12,386 Qed in the active build; 0 Admitted, 0 `Axiom`, 0 Abort | The only fully mechanized lane. Caveat: the active build also contains **30 `Parameter` declarations** (logically equivalent to axioms in Coq), the propositional ones modelling the trusted hardware interface — see `PROOF_STATUS.md` |
 | **Lean 4** | **215 theorems across 7 files** actually elaborate (measured 2026-06-01, Lean 4.16.0; self-contained `Domains/Verified*` files — the core type-safety files do **not** compile) | The other ~12,360 declarations are transpiler-generated with placeholder tactics (`simp_all [Bool.and_eq_true]`, in 304 files) that do **not** prove their goals; `lake build RIINA` passes only because its default target is a 0-theorem shim. See `02_FORMAL/lean/COMPILATION_STATUS.md`. Claim level: **generated**, not mechanized |
-| **Isabelle/HOL** | 1 smoke session (`RIINA_CORE`) | 368 `.thy` files total, machine-generated from Coq; remainder unverified generated corpora |
+| **Isabelle/HOL** | `RIINA_CORE` smoke session — **unverified** (`smokeBuildOk:false`; toolchain download 403 here) | 368 `.thy` files total, machine-generated from Coq; remainder unverified generated corpora |
 | **F\*** | Effectively nothing | 315 `.fst` files, but **`admit()` appears ~12,010 times** — nearly every lemma body is `admit ()`. Generated, not proven |
 | **TLA+ / Alloy / SMT** | 1 small hand-written smoke artifact each | Remainder are generated per-domain mirrors; only a handful have runnable configs |
 | **Verus / Kani / TV** | None | Explicitly quarantined (`quarantined: true` in metrics.json); generated stubs |
@@ -321,7 +321,7 @@ riina/
 ├── 02_FORMAL/lean/          Lean 4 (generated from Coq; 215 thms across 7 files elaborate, rest placeholder tactics)
 │   └── RIINA/               See COMPILATION_STATUS.md for the honest per-file state
 │
-├── 02_FORMAL/isabelle/      Isabelle/HOL (368 .thy, generated; 1 smoke theory compiles)
+├── 02_FORMAL/isabelle/      Isabelle/HOL (368 .thy, generated; smoke theory unverified)
 ├── 02_FORMAL/tlaplus/       TLA+ (317 .tla, generated; 1 smoke spec TLC-checked)
 │   └── ...                  (F*, alloy, smt, verus, kani, tv: generated/quarantined — see metrics.json)
 │
