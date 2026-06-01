@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Verified (by command, not copied)
 - `07_EXAMPLES/00_basics/` passes `riinac check` 20/20; full corpus 47/147
-  git-tracked (51/155 on disk). `03_PROTO` test suite: 2,596 pass / 0 fail;
+  git-tracked (51/155 on disk). `03_PROTO` test suite: 2,598 pass / 0 fail;
   `cargo clippy --all` reports 0 warnings.
 
 ## [Unreleased] — 2026-05-17 — Lean active-lane axiom restoration

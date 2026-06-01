@@ -47,6 +47,7 @@ use crate::ir::{
     BasicBlock, BinOp, BlockId, Constant, FuncId, Function, Instruction, Program, Terminator,
     UnaryOp, VarId,
 };
+use riina_types::Ty;
 use crate::wasm_encode::{
     self, DataSegment, ElemSegment, Export, ExportKind, FuncBody, FuncType, GlobalType, Import,
     ImportKind, MemoryType, Op, TableType, ValType, WasmModule,
@@ -391,6 +392,20 @@ impl WasmBackend {
             }
         }
 
+        // Reserve two scratch i32 locals for the integer-printing (itoa) routine.
+        let itoa_v = local_count;
+        let itoa_p = local_count + 1;
+        local_count += 2;
+
+        // Map each IR value to its static type so `cetak` can pick an int vs
+        // string-pointer print path.
+        let mut var_to_ty: HashMap<VarId, Ty> = HashMap::new();
+        for block in &func.blocks {
+            for instr in &block.instrs {
+                var_to_ty.insert(instr.result, instr.ty.clone());
+            }
+        }
+
         // Finalize locals: subtract 2 params (closure_ptr, arg)
         let extra_locals = local_count.saturating_sub(2);
         if extra_locals > 0 {
@@ -404,6 +419,9 @@ impl WasmBackend {
             string_table,
             alloc_func_index,
             user_func_type_idx,
+            var_to_ty: &var_to_ty,
+            itoa_v,
+            itoa_p,
         };
 
         // Load captures from closure memory into locals.
@@ -683,6 +701,104 @@ impl WasmBackend {
             code.push(Op::LocalGet as u8);
             wasm_encode::encode_uleb128(*local as u64, code);
         }
+    }
+
+    /// Emit code that prints the integer in `arg` as unsigned decimal ASCII via
+    /// WASI `fd_write`. Digits are written backwards into heap scratch
+    /// (`heap_ptr+16..heap_ptr+48`); the iovec lives at `heap_ptr` and
+    /// `nwritten` at `heap_ptr+8`, matching the string path's scratch layout.
+    fn emit_print_int(arg: &VarId, ctx: &EmitCtx, code: &mut Vec<u8>) {
+        let set_v = |c: &mut Vec<u8>| {
+            c.push(Op::LocalSet as u8);
+            wasm_encode::encode_uleb128(ctx.itoa_v as u64, c);
+        };
+        let get_v = |c: &mut Vec<u8>| {
+            c.push(Op::LocalGet as u8);
+            wasm_encode::encode_uleb128(ctx.itoa_v as u64, c);
+        };
+        let set_p = |c: &mut Vec<u8>| {
+            c.push(Op::LocalSet as u8);
+            wasm_encode::encode_uleb128(ctx.itoa_p as u64, c);
+        };
+        let get_p = |c: &mut Vec<u8>| {
+            c.push(Op::LocalGet as u8);
+            wasm_encode::encode_uleb128(ctx.itoa_p as u64, c);
+        };
+        let heap = |c: &mut Vec<u8>| {
+            c.push(Op::GlobalGet as u8);
+            wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, c);
+        };
+        let i32c = |c: &mut Vec<u8>, n: i64| {
+            c.push(Op::I32Const as u8);
+            wasm_encode::encode_sleb128(n, c);
+        };
+
+        // $v = arg
+        Self::emit_local_get(arg, ctx.var_map, code);
+        set_v(code);
+        // $p = heap_ptr + 48  (one past the digit buffer; we write backwards)
+        heap(code);
+        i32c(code, 48);
+        code.push(Op::I32Add as u8);
+        set_p(code);
+
+        // do { p--; mem[p] = '0' + (v % 10); v = v / 10 } while (v != 0)
+        code.push(Op::Loop as u8);
+        code.push(0x40); // empty block type
+        {
+            // p = p - 1
+            get_p(code);
+            i32c(code, 1);
+            code.push(Op::I32Sub as u8);
+            set_p(code);
+            // mem[p] = 48 + (v % 10)   (i32.store8: addr then value)
+            get_p(code);
+            get_v(code);
+            i32c(code, 10);
+            code.push(Op::I32RemU as u8);
+            i32c(code, 48); // '0'
+            code.push(Op::I32Add as u8);
+            code.push(Op::I32Store8 as u8);
+            code.push(0x00); // align 0 (1-byte)
+            code.push(0x00); // offset 0
+            // v = v / 10
+            get_v(code);
+            i32c(code, 10);
+            code.push(Op::I32DivU as u8);
+            set_v(code);
+            // if v != 0, branch back to loop (depth 0)
+            get_v(code);
+            code.push(Op::BrIf as u8);
+            wasm_encode::encode_uleb128(0, code);
+        }
+        code.push(Op::End as u8);
+
+        // iovec.ptr = $p   → store at heap_ptr[0]
+        heap(code);
+        get_p(code);
+        code.push(Op::I32Store as u8);
+        code.push(0x02);
+        code.push(0x00);
+        // iovec.len = (heap_ptr + 48) - $p   → store at heap_ptr[4]
+        heap(code);
+        heap(code);
+        i32c(code, 48);
+        code.push(Op::I32Add as u8);
+        get_p(code);
+        code.push(Op::I32Sub as u8);
+        code.push(Op::I32Store as u8);
+        code.push(0x02);
+        code.push(0x04); // offset 4
+        // fd_write(1, heap_ptr, 1, heap_ptr+8)
+        i32c(code, 1);
+        heap(code);
+        i32c(code, 1);
+        heap(code);
+        i32c(code, 8);
+        code.push(Op::I32Add as u8);
+        code.push(Op::Call as u8);
+        wasm_encode::encode_uleb128(0, code); // fd_write
+        code.push(Op::Drop as u8);
     }
 
     /// Emit a single IR instruction as WASM instructions.
@@ -1026,53 +1142,61 @@ impl WasmBackend {
             Instruction::BuiltinCall { name, arg } => {
                 // Route builtins: cetakln/cetak → WASI fd_write(stdout)
                 if name == "cetakln" || name == "cetak" {
-                    // arg is a string pointer (len-prefixed in data section)
-                    // Layout in data section: [len:u32][bytes...]
-                    // fd_write needs an iovec {ptr, len} at a known memory location.
-                    // We use heap scratch space: write iovec at heap_ptr, nwritten at heap_ptr+8.
+                    if matches!(ctx.var_to_ty.get(arg), Some(Ty::Int) | Some(Ty::CInt)) {
+                        // Integer argument: convert to decimal ASCII (itoa) and
+                        // write via WASI fd_write. (C uses a runtime-tagged
+                        // riina_format; WASM values are untagged i32, so we
+                        // dispatch on the static IR type here.)
+                        Self::emit_print_int(arg, ctx, code);
+                    } else {
+                        // String pointer (len-prefixed in data section):
+                        // Layout: [len:u32][bytes...]. fd_write needs an iovec
+                        // {ptr, len} at a known memory location; use heap scratch:
+                        // iovec at heap_ptr, nwritten at heap_ptr+8.
 
-                    // Store data ptr (arg+4) at scratch[0]
-                    code.push(Op::GlobalGet as u8);
-                    wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
-                    Self::emit_local_get(arg, ctx.var_map, code);
-                    code.push(Op::I32Const as u8);
-                    wasm_encode::encode_sleb128(4, code);
-                    code.push(Op::I32Add as u8); // ptr + 4 = data start
-                    code.push(Op::I32Store as u8);
-                    code.push(0x02);
-                    code.push(0x00); // store at scratch[0]
+                        // Store data ptr (arg+4) at scratch[0]
+                        code.push(Op::GlobalGet as u8);
+                        wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
+                        Self::emit_local_get(arg, ctx.var_map, code);
+                        code.push(Op::I32Const as u8);
+                        wasm_encode::encode_sleb128(4, code);
+                        code.push(Op::I32Add as u8); // ptr + 4 = data start
+                        code.push(Op::I32Store as u8);
+                        code.push(0x02);
+                        code.push(0x00); // store at scratch[0]
 
-                    // Store len at scratch[4]
-                    code.push(Op::GlobalGet as u8);
-                    wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
-                    code.push(Op::I32Const as u8);
-                    wasm_encode::encode_sleb128(4, code);
-                    code.push(Op::I32Add as u8); // scratch + 4
-                    Self::emit_local_get(arg, ctx.var_map, code);
-                    code.push(Op::I32Load as u8);
-                    code.push(0x02);
-                    code.push(0x00); // load len from arg
-                    code.push(Op::I32Store as u8);
-                    code.push(0x02);
-                    code.push(0x00); // store at scratch[4]
+                        // Store len at scratch[4]
+                        code.push(Op::GlobalGet as u8);
+                        wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
+                        code.push(Op::I32Const as u8);
+                        wasm_encode::encode_sleb128(4, code);
+                        code.push(Op::I32Add as u8); // scratch + 4
+                        Self::emit_local_get(arg, ctx.var_map, code);
+                        code.push(Op::I32Load as u8);
+                        code.push(0x02);
+                        code.push(0x00); // load len from arg
+                        code.push(Op::I32Store as u8);
+                        code.push(0x02);
+                        code.push(0x00); // store at scratch[4]
 
-                    // Call fd_write(1, scratch, 1, scratch+8)
-                    code.push(Op::I32Const as u8);
-                    wasm_encode::encode_sleb128(1, code); // fd = stdout
-                    code.push(Op::GlobalGet as u8);
-                    wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code); // iovs = scratch
-                    code.push(Op::I32Const as u8);
-                    wasm_encode::encode_sleb128(1, code); // iovs_len = 1
-                    code.push(Op::GlobalGet as u8);
-                    wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
-                    code.push(Op::I32Const as u8);
-                    wasm_encode::encode_sleb128(8, code);
-                    code.push(Op::I32Add as u8); // nwritten = scratch + 8
+                        // Call fd_write(1, scratch, 1, scratch+8)
+                        code.push(Op::I32Const as u8);
+                        wasm_encode::encode_sleb128(1, code); // fd = stdout
+                        code.push(Op::GlobalGet as u8);
+                        wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code); // iovs = scratch
+                        code.push(Op::I32Const as u8);
+                        wasm_encode::encode_sleb128(1, code); // iovs_len = 1
+                        code.push(Op::GlobalGet as u8);
+                        wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
+                        code.push(Op::I32Const as u8);
+                        wasm_encode::encode_sleb128(8, code);
+                        code.push(Op::I32Add as u8); // nwritten = scratch + 8
 
-                    code.push(Op::Call as u8);
-                    wasm_encode::encode_uleb128(0, code); // import index 0 = fd_write
+                        code.push(Op::Call as u8);
+                        wasm_encode::encode_uleb128(0, code); // import index 0 = fd_write
 
-                    code.push(Op::Drop as u8); // drop fd_write return value
+                        code.push(Op::Drop as u8); // drop fd_write return value
+                    }
 
                     // push unit (0) as result
                     code.push(Op::I32Const as u8);
@@ -1219,6 +1343,12 @@ struct EmitCtx<'a> {
     string_table: &'a HashMap<String, u32>,
     alloc_func_index: u32,
     user_func_type_idx: u32,
+    /// Static type of each IR value, so builtins (e.g. `cetak`) can choose an
+    /// int-printing (itoa) path vs. a string-pointer path.
+    var_to_ty: &'a HashMap<VarId, Ty>,
+    /// Two reserved scratch i32 locals for the integer-printing routine.
+    itoa_v: u32,
+    itoa_p: u32,
 }
 
 impl Backend for WasmBackend {

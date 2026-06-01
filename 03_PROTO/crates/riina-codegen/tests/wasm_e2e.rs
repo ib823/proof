@@ -355,3 +355,30 @@ fn wasm_e2e_classify_sulit() {
     let wasm = compile_to_wasm("biar x = sulit 42; x");
     assert_valid_wasm_header(&wasm);
 }
+
+#[test]
+fn wasm_e2e_cetak_int_emits_itoa() {
+    // `cetak` of an integer must take the integer-printing (itoa) path, not the
+    // string-pointer path. The itoa routine is the only place these opcodes are
+    // emitted: I32RemU (0x70), I32DivU (0x6E), I32Store8 (0x3A). Verified to
+    // print "42" under wasmtime 27.0.0 (see RIINA_MASTER_PLAN.md Gate B).
+    let wasm =
+        compile_to_wasm("fungsi utama() -> Nombor kesan Sistem {\n    cetak(42);\n    pulang 0\n}");
+    assert_valid_wasm_header(&wasm);
+    assert!(wasm.contains(&0x70), "expected I32RemU (itoa) in int cetak");
+    assert!(wasm.contains(&0x6E), "expected I32DivU (itoa) in int cetak");
+    assert!(wasm.contains(&0x3A), "expected I32Store8 (itoa) in int cetak");
+}
+
+#[test]
+fn wasm_e2e_cetak_string_no_itoa() {
+    // `cetak` of a string must NOT take the itoa path: no I32Store8 (0x3A).
+    let wasm = compile_to_wasm(
+        "fungsi utama() -> Nombor kesan Sistem {\n    cetak(\"hi\");\n    pulang 0\n}",
+    );
+    assert_valid_wasm_header(&wasm);
+    assert!(
+        !wasm.contains(&0x3A),
+        "string cetak must not emit I32Store8 (itoa-only opcode)"
+    );
+}
