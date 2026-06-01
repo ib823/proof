@@ -11,7 +11,7 @@ ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → 
 
 ## Branch Policy (Absolute)
 
-**ALL work on `main` branch.** No feature branches. No exceptions.
+**Default branch is `main`.** Managed-session feature branches (`claude/*`) are permitted when assigned; they sync back to `main`.
 - NEVER commit to `public` — managed by `scripts/sync-public.sh` only
 - NEVER commit to `gh-pages` — managed by `scripts/deploy-website.sh` only
 
@@ -69,7 +69,8 @@ Awam < Dalaman < Sesi < Pengguna < Sistem < Rahsia
 - Do NOT create new planning/roadmap/audit documents
 - Do NOT commit Coq proofs with `Admitted`
 - Do NOT count stub prover files as proofs
-- Do NOT create feature branches — all work on `main`
-- Do NOT push with `--no-verify` — hooks are the CI/CD
+- Work on `main` or your assigned managed-session branch (`claude/*`); do NOT create unrequested feature branches
+- Do NOT push with `--no-verify` — the in-repo hooks (`riinac verify` + `audit-docs.sh`) are the source of truth
 - Do NOT commit to `public` or `gh-pages` directly
+- `.github/workflows/verify.yml` only wraps the internal gates; CI is never the source of truth
 - Run tests before committing

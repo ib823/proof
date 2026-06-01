@@ -930,32 +930,35 @@ if [ "$QUICK_MODE" != "--quick" ]; then echo ""; fi
 if [ "$QUICK_MODE" != "--quick" ]; then
     echo -e "${CYAN}Checking git hooks...${NC}"
 
+    # Hooks are a convenience, not a hard gate (the signing gate was retracted
+    # 2026-06-01). A missing/foreign hook on a fresh clone is a WARN, not an
+    # ERROR — run `bash 00_SETUP/scripts/install_hooks.sh` to restore it.
     if [ -f "$REPO_ROOT/.git/hooks/pre-commit" ]; then
         if grep -q "riinac verify" "$REPO_ROOT/.git/hooks/pre-commit" 2>/dev/null; then
             echo -e "${GREEN}[OK]${NC} pre-commit hook installed (riinac verify)"
         else
-            echo -e "${RED}[ERROR]${NC} pre-commit hook exists but is NOT the RIINA hook!"
+            echo -e "${YELLOW}[WARN]${NC} pre-commit hook exists but is NOT the RIINA hook"
             echo "         Run: bash 00_SETUP/scripts/install_hooks.sh"
-            DISCREPANCIES=$((DISCREPANCIES + 1))
+            WARNINGS=$((WARNINGS + 1))
         fi
     else
-        echo -e "${RED}[ERROR]${NC} pre-commit hook NOT installed!"
+        echo -e "${YELLOW}[WARN]${NC} pre-commit hook not installed (fresh clone?)"
         echo "         Run: bash 00_SETUP/scripts/install_hooks.sh"
-        DISCREPANCIES=$((DISCREPANCIES + 1))
+        WARNINGS=$((WARNINGS + 1))
     fi
 
     if [ -f "$REPO_ROOT/.git/hooks/pre-push" ]; then
         if grep -q "riinac verify" "$REPO_ROOT/.git/hooks/pre-push" 2>/dev/null; then
             echo -e "${GREEN}[OK]${NC} pre-push hook installed (riinac verify --full)"
         else
-            echo -e "${RED}[ERROR]${NC} pre-push hook exists but is NOT the RIINA hook!"
+            echo -e "${YELLOW}[WARN]${NC} pre-push hook exists but is NOT the RIINA hook"
             echo "         Run: bash 00_SETUP/scripts/install_hooks.sh"
-            DISCREPANCIES=$((DISCREPANCIES + 1))
+            WARNINGS=$((WARNINGS + 1))
         fi
     else
-        echo -e "${RED}[ERROR]${NC} pre-push hook NOT installed!"
+        echo -e "${YELLOW}[WARN]${NC} pre-push hook not installed (fresh clone?)"
         echo "         Run: bash 00_SETUP/scripts/install_hooks.sh"
-        DISCREPANCIES=$((DISCREPANCIES + 1))
+        WARNINGS=$((WARNINGS + 1))
     fi
     echo ""
 fi

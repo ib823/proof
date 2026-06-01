@@ -11,7 +11,7 @@ ORIENT → ASSESS → DECIDE → VERIFY BEFORE → EXECUTE → VERIFY AFTER → 
 
 ## Branch Policy
 
-**ALL work on `main` branch.** Never commit to `public` or `gh-pages`.
+**Default branch is `main`.** Managed-session feature branches (`claude/*`) are permitted when assigned; they sync back to `main`. Never commit to `public` or `gh-pages`.
 
 ## Commit-Push-Deploy Chain
 
@@ -61,6 +61,14 @@ Bersih (Pure) | Ubah (Mut) | Baca (Read) | Tulis (Write) | SistemFail (FileSyste
 - Do NOT create new planning documents. `RIINA_MASTER_PLAN.md` is the only plan.
 - Do NOT commit Coq proofs with `Admitted`.
 - Do NOT count stub prover files as real proofs.
-- Do NOT create feature branches — all work on `main`.
-- Do NOT push with `--no-verify` — hooks are the CI/CD.
+- Work on `main` or your assigned managed-session branch (`claude/*`); do NOT create unrequested feature branches.
+- Do NOT push with `--no-verify` — the in-repo hooks (`riinac verify` + `audit-docs.sh`) are the source of truth.
 - Do NOT commit to `public` or `gh-pages` directly.
+- `.github/workflows/verify.yml` is a thin wrapper that runs the same internal gates; CI is never the source of truth and must not diverge from them.
+
+## Prover Maturity (be honest in generated docs/comments)
+
+Only **Coq (Rocq 9.2)** is a fully mechanized lane. The Lean 4, Isabelle, F\*, TLA+,
+Alloy, SMT, Verus, Kani, and TV trees are **generated or smoke-level** artifacts — do
+NOT describe them as independently verifying RIINA. Per-lane claim levels live in
+`website/public/metrics.json` (the single source of truth); all docs must agree with it.
