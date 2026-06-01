@@ -22,6 +22,9 @@ pub use lexer::Lexer;
 pub use token::{Span, Token, TokenKind};
 
 #[cfg(test)]
+// Test code legitimately uses unwrap/expect on known-good inputs, and pedantic
+// style lints (inlined format args, trailing semicolons) add no value in tests.
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::pedantic)]
 mod tests {
     use super::*;
 

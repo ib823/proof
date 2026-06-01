@@ -701,6 +701,6 @@ mod tests {
         // Verify constants are reasonable
         assert_eq!(MAX_MESSAGE_BYTES, 1_048_576); // 1 MiB
         assert_eq!(MAX_SOURCE_BYTES, 262_144); // 256 KiB
-        assert!(MAX_SOURCE_BYTES < MAX_MESSAGE_BYTES);
+        const { assert!(MAX_SOURCE_BYTES < MAX_MESSAGE_BYTES) };
     }
 }

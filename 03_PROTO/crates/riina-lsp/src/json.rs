@@ -277,6 +277,8 @@ mod tests {
     }
 
     #[test]
+    // -3.14 is an arbitrary number-parsing test value, not an approximation of π.
+    #[allow(clippy::approx_constant)]
     fn test_parse_number() {
         assert_eq!(parse("42").unwrap(), JsonValue::Number(42.0));
         assert_eq!(parse("-3.14").unwrap(), JsonValue::Number(-3.14));

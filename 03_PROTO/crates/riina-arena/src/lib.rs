@@ -355,6 +355,9 @@ impl fmt::Debug for Arena {
 }
 
 #[cfg(test)]
+// Tests cast small loop indices to i32 for value comparisons; truncation/wrap
+// cannot occur for these bounded values.
+#[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
 mod tests {
     use super::*;
 

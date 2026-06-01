@@ -1,6 +1,7 @@
 // Copyright (c) 2026 The RIINA Authors. All rights reserved.
 
 #[cfg(test)]
+#[allow(clippy::module_inception)]
 mod tests {
     use crate::{type_check, Context, TypeError};
     use riina_types::{BinOp, Effect, Expr, SecurityLevel, Ty};
