@@ -103,7 +103,7 @@ const RiinaWebsite = () => {
       highlights: [
         '12,385 Coq Qed across 310 files — 0 Admitted, 0 axioms (Coq is the only mechanized lane)',
         'Other prover trees are generated from Coq (see per-lane claim levels)',
-        '19 Rust crates, 2,476 tests passing',
+        '19 Rust crates, 2,579 tests passing',
         'JALINAN actors, CAHAYA UI framework, Blockchain/Syariah keywords',
       ],
     },
@@ -566,7 +566,7 @@ const RiinaWebsite = () => {
       controlFlow: [
         { bm: 'kalau', en: 'if' }, { bm: 'lain', en: 'else' }, { bm: 'untuk', en: 'for' },
         { bm: 'selagi', en: 'while' }, { bm: 'ulang', en: 'loop' }, { bm: 'pulang', en: 'return' },
-        { bm: 'padan', en: 'match' }, { bm: 'keluar', en: 'break' }, { bm: 'terus', en: 'continue' },
+        { bm: 'padan', en: 'match' }, { bm: 'putus', en: 'break' }, { bm: 'lanjut', en: 'continue' },
       ],
       types: [
         { bm: 'Nombor', en: 'Int' }, { bm: 'Teks', en: 'String' }, { bm: 'Benar', en: 'Bool' },
