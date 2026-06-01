@@ -4515,3 +4515,175 @@ mod jalinan_phase6_tests {
         assert!(matches!(ty2, Ty::Sum(_, r) if *r == Ty::String));
     }
 }
+
+// ===========================================================================
+// GATE B — Compiler ⇄ Coq enforcement-parity surface.
+//
+// For each Coq-stated security property, a NEGATIVE test (a violating program
+// is rejected with the matching `TypeError`) and a POSITIVE test (a valid
+// program is accepted). Verified end-to-end against `type_check_full`
+// (2026-06-01). Each property names the Coq rule it mirrors.
+// ===========================================================================
+#[cfg(test)]
+mod gate_b_parity {
+    use crate::{type_check_full, TypeError, TypingContext};
+    use riina_types::{Effect, Expr, Linearity, SecurityLevel, Ty};
+
+    // ── Property 1: Capability safety — Coq T_Require / T_Grant (Typing.v:207-213)
+    #[test]
+    fn capability_require_ungranted_is_rejected() {
+        // grant Network in (require Write in 1) → Write ∉ {Network} → rejected
+        let mut ctx = TypingContext::new();
+        let expr = Expr::Grant(
+            Effect::Network,
+            Box::new(Expr::Require(Effect::Write, Box::new(Expr::Int(1)))),
+        );
+        match type_check_full(&mut ctx, &expr) {
+            Err(TypeError::CapabilityViolation { required, .. }) => {
+                assert_eq!(required, Effect::Write);
+            }
+            other => panic!("expected CapabilityViolation, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn capability_require_granted_is_accepted() {
+        // grant Write in (require Write in 1) → ok
+        let mut ctx = TypingContext::new();
+        let expr = Expr::Grant(
+            Effect::Write,
+            Box::new(Expr::Require(Effect::Write, Box::new(Expr::Int(1)))),
+        );
+        let (ty, _eff) = type_check_full(&mut ctx, &expr).expect("granted require must typecheck");
+        assert_eq!(ty, Ty::Int);
+    }
+
+    // ── Property 2: IFC no-write-down — Coq T_Assign Bell-LaPadula *-property
+    #[test]
+    fn ifc_write_down_is_rejected() {
+        // Δ=Secret writing to a Public ref → Secret ⊑ Public is false → rejected
+        let mut ctx = TypingContext::with_level(SecurityLevel::Secret);
+        let assign = Expr::Assign(
+            Box::new(Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Public)),
+            Box::new(Expr::Int(2)),
+        );
+        match type_check_full(&mut ctx, &assign) {
+            Err(TypeError::ImplicitFlowViolation {
+                branch_level,
+                target_level,
+                ..
+            }) => {
+                assert_eq!(branch_level, SecurityLevel::Secret);
+                assert_eq!(target_level, SecurityLevel::Public);
+            }
+            other => panic!("expected ImplicitFlowViolation, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn ifc_write_same_level_is_accepted() {
+        // Δ=Secret writing to a Secret ref → Secret ⊑ Secret → ok
+        let mut ctx = TypingContext::with_level(SecurityLevel::Secret);
+        let assign = Expr::Assign(
+            Box::new(Expr::Ref(Box::new(Expr::Int(1)), SecurityLevel::Secret)),
+            Box::new(Expr::Int(2)),
+        );
+        type_check_full(&mut ctx, &assign).expect("same-level write must typecheck");
+    }
+
+    // ── Property 3: IFC no-read-up — Coq T_Deref (l ⊑ Δ)
+    #[test]
+    fn ifc_read_up_is_rejected() {
+        // Δ=Public dereferencing a Secret ref → Secret ⊑ Public false → rejected
+        let mut ctx = TypingContext::new() // Δ defaults to Public
+            .extend_gamma(
+                "sref".into(),
+                Ty::Ref(Box::new(Ty::Int), SecurityLevel::Secret),
+            );
+        let deref = Expr::Deref(Box::new(Expr::Var("sref".into())));
+        match type_check_full(&mut ctx, &deref) {
+            Err(TypeError::SecurityViolation { found, expected, .. }) => {
+                assert_eq!(found, SecurityLevel::Secret);
+                assert_eq!(expected, SecurityLevel::Public);
+            }
+            other => panic!("expected SecurityViolation, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn ifc_read_at_level_is_accepted() {
+        // Δ=Public dereferencing a Public ref → Public ⊑ Public → ok
+        let mut ctx = TypingContext::new().extend_gamma(
+            "pref".into(),
+            Ty::Ref(Box::new(Ty::Int), SecurityLevel::Public),
+        );
+        let deref = Expr::Deref(Box::new(Expr::Var("pref".into())));
+        let (ty, _eff) = type_check_full(&mut ctx, &deref).expect("public deref must typecheck");
+        assert_eq!(ty, Ty::Int);
+    }
+
+    // ── Property 4: Constant-time — A2 (no secret-dependent branching)
+    #[test]
+    fn constant_time_branch_is_rejected() {
+        // Branching on a ConstantTime value reveals it through control flow.
+        let mut ctx = TypingContext::new()
+            .extend_gamma("ct".into(), Ty::ConstantTime(Box::new(Ty::Bool)));
+        let if_expr = Expr::If(
+            Box::new(Expr::Var("ct".into())),
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(0)),
+        );
+        match type_check_full(&mut ctx, &if_expr) {
+            Err(TypeError::ConstantTimeViolation { context }) => {
+                assert_eq!(context, "branch condition");
+            }
+            other => panic!("expected ConstantTimeViolation, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn constant_time_plain_branch_is_accepted() {
+        // Branching on a plain Bool is fine.
+        let mut ctx = TypingContext::new();
+        let if_expr = Expr::If(
+            Box::new(Expr::Bool(true)),
+            Box::new(Expr::Int(1)),
+            Box::new(Expr::Int(0)),
+        );
+        type_check_full(&mut ctx, &if_expr).expect("plain bool branch must typecheck");
+    }
+
+    // ── Property 5: Linear types — Coq linear_safety (LinearTypes.v)
+    #[test]
+    fn linear_variable_used_twice_is_rejected() {
+        // A `Linear` variable used twice (here, both halves of a pair) is rejected.
+        let mut ctx = TypingContext::new().extend_gamma_linear(
+            "x".into(),
+            Ty::Int,
+            Linearity::Linear,
+        );
+        let used_twice = Expr::Pair(
+            Box::new(Expr::Var("x".into())),
+            Box::new(Expr::Var("x".into())),
+        );
+        match type_check_full(&mut ctx, &used_twice) {
+            Err(TypeError::LinearityViolation { linearity, .. }) => {
+                assert_eq!(linearity, Linearity::Linear);
+            }
+            other => panic!("expected LinearityViolation, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn linear_variable_used_once_is_accepted() {
+        // A `Linear` variable used exactly once is accepted.
+        let mut ctx = TypingContext::new().extend_gamma_linear(
+            "x".into(),
+            Ty::Int,
+            Linearity::Linear,
+        );
+        let (ty, _eff) =
+            type_check_full(&mut ctx, &Expr::Var("x".into())).expect("single use must typecheck");
+        assert_eq!(ty, Ty::Int);
+    }
+}
