@@ -1,11 +1,11 @@
 {
-  "generated": "2026-05-31T01:05:44Z",
-  "generatedHuman": "May 31, 2026 at 01:05 UTC",
+  "generated": "2026-06-01T22:42:37Z",
+  "generatedHuman": "June 01, 2026 at 22:42 UTC",
   "version": "0.3.0",
   "session": 0,
   "git": {
-    "commit": "4db229c7",
-    "branch": "main"
+    "commit": "1f749cca",
+    "branch": "claude/codebase-assessment-eKjkJ"
   },
   "proofs": {
     "qedActive": 12386,
@@ -20,23 +20,23 @@
     "filesTotal": 349,
     "filesActive": 309,
     "domains": 252,
-    "prover": "Rocq 9.1.1"
+    "prover": "Rocq 9.2"
   },
   "lean": {
     "theorems": 12576,
-    "theoremsNote": "12576 is a count of theorem DECLARATIONS in the generated port, not verified proofs",
+    "theoremsNote": "Count of theorem DECLARATIONS in the generated port, not verified proofs",
     "sorry": 0,
     "sorryNote": "0 literal sorry in the strict lane; 2 literal sorry exist in Properties/_wip; most proofs are non-elaborating (not visible to grep)",
     "axioms": 0,
     "files": 325,
     "lines": 134910,
-    "prover": "Lean 4",
     "elaborationMeasured": "2026-06-01 (Lean 4.16.0)",
     "filesTotal": 326,
     "filesElaboratingClean": 7,
     "theoremsElaborating": 215,
     "defaultBuildTheorems": 0,
-    "defaultBuildNote": "lake build RIINA passes but builds only the 0-theorem Domains/All shim; see 02_FORMAL/lean/COMPILATION_STATUS.md"
+    "defaultBuildNote": "lake build RIINA passes but builds only the 0-theorem Domains/All shim; see 02_FORMAL/lean/COMPILATION_STATUS.md",
+    "prover": "Lean 4"
   },
   "isabelle": {
     "lemmas": 12931,
@@ -56,7 +56,7 @@
   "fstar": {
     "lemmas": 22,
     "lemmasRaw": 22,
-    "lemmasRawNote": "22 = corpus-wide count of `lemma_`-named declarations; NOT all verified",
+    "lemmasRawNote": "Corpus-wide count of `lemma_`-named declarations; NOT all verified",
     "compiledLemmas": 3,
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (F* 2025.12.15): 'All verification conditions discharged successfully'",
@@ -75,7 +75,7 @@
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (TLA2Tools): smoke check passed",
     "smokeSpec": "RIINA.Active.TelusProcurementProtocol",
-    "smokeNote": "12282 = raw corpus-wide THEOREM count; only the 5 in the smoke spec are TLC-checked",
+    "smokeNote": "theoremsRaw is the corpus-wide THEOREM count; only the smoke-spec theorems are TLC-checked",
     "quarantined": false,
     "files": 317,
     "prover": "TLA+"
@@ -87,7 +87,7 @@
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Alloy 6.2.0): smoke check passed",
     "smokeModel": "RIINA.Active.TelusProcurementAccessControl",
-    "smokeNote": "11627 = raw corpus-wide check count; only the 6 in the smoke model are bounded-checked",
+    "smokeNote": "assertionsRaw is the corpus-wide check count; only the smoke-model assertions are bounded-checked",
     "quarantined": false,
     "files": 306,
     "prover": "Alloy 6"
@@ -99,7 +99,7 @@
     "smokeBuildOk": true,
     "smokeVerified": "2026-06-01 (Z3 4.8.12): 25 unsat (security-lattice properties)",
     "smokeModule": "RIINA.Active.SecurityLatticeVerification",
-    "smokeNote": "12405 = raw corpus-wide assert count; only the 25 lattice properties in the smoke file actually verify (the prior '11,843 verified' figure was a counting error)",
+    "smokeNote": "assertionsRaw is the corpus-wide assert count; only the 25 lattice properties in the smoke file actually verify (the prior '11,843 verified' figure was a counting error)",
     "quarantined": false,
     "files": 317,
     "prover": "Z3/CVC5 (SMT-LIB)"
@@ -137,9 +137,9 @@
     "coqCompiled": true,
     "leanCompiled": false,
     "isabelleCompiled": false,
-    "fstarStatus": "generated",
-    "tlaplusStatus": "generated",
-    "alloyStatus": "generated",
+    "fstarStatus": "compiled",
+    "tlaplusStatus": "compiled",
+    "alloyStatus": "compiled",
     "smtStatus": "generated",
     "verusStatus": "generated",
     "kaniStatus": "generated",
@@ -152,9 +152,9 @@
       "pending": {
         "lean": "noncoq_report_missing_or_stale",
         "isabelle": "noncoq_report_missing_or_stale",
-        "fstar": "noncoq_report_missing_or_stale",
-        "tlaplus": "noncoq_report_missing_or_stale",
-        "alloy": "noncoq_report_missing_or_stale",
+        "fstar": "partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending",
+        "tlaplus": "partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending",
+        "alloy": "partial TelusProcurementAccessControl smoke model checked; full-lane executable Alloy checks across corpus still pending",
         "smt": "noncoq_report_missing_or_stale",
         "verus": "noncoq_report_missing_or_stale",
         "kani": "noncoq_report_missing_or_stale",
@@ -173,7 +173,7 @@
     },
     "coqTiers": {
       "core": 1621,
-      "domain": 10764,
+      "domain": 10765,
       "domainTrivial": 1939
     }
   },
@@ -184,9 +184,9 @@
     "coq": "mechanized",
     "lean": "generated",
     "isabelle": "generated",
-    "fstar": "generated",
-    "tlaplus": "generated",
-    "alloy": "generated",
+    "fstar": "compiled",
+    "tlaplus": "compiled",
+    "alloy": "compiled",
     "smt": "generated",
     "verus": "generated",
     "kani": "generated",

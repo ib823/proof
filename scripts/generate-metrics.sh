@@ -1185,14 +1185,22 @@ cat > "$OUTPUT_FILE" << EOF
     "filesTotal": $COQ_FILES,
     "filesActive": $COQ_ACTIVE_FILES,
     "domains": $RESEARCH_DOMAINS,
-    "prover": "Rocq 9.1.1"
+    "prover": "Rocq 9.2"
   },
   "lean": {
     "theorems": $LEAN_THEOREMS,
+    "theoremsNote": "Count of theorem DECLARATIONS in the generated port, not verified proofs",
     "sorry": $LEAN_SORRY,
+    "sorryNote": "0 literal sorry in the strict lane; 2 literal sorry exist in Properties/_wip; most proofs are non-elaborating (not visible to grep)",
     "axioms": $LEAN_AXIOMS,
     "files": $LEAN_FILES,
     "lines": $LEAN_LINES,
+    "elaborationMeasured": "2026-06-01 (Lean 4.16.0)",
+    "filesTotal": 326,
+    "filesElaboratingClean": 7,
+    "theoremsElaborating": 215,
+    "defaultBuildTheorems": 0,
+    "defaultBuildNote": "lake build RIINA passes but builds only the 0-theorem Domains/All shim; see 02_FORMAL/lean/COMPILATION_STATUS.md",
     "prover": "Lean 4"
   },
   "isabelle": {
@@ -1213,9 +1221,14 @@ cat > "$OUTPUT_FILE" << EOF
   "fstar": {
     "lemmas": $FSTAR_LEMMAS_PUBLIC,
     "lemmasRaw": $FSTAR_LEMMAS,
+    "lemmasRawNote": "Corpus-wide count of \`lemma_\`-named declarations; NOT all verified",
     "compiledLemmas": $FSTAR_COMPILED_LEMMAS,
     "smokeBuildOk": $FSTAR_SMOKE_BUILD_OK,
+    "smokeVerified": "2026-06-01 (F* 2025.12.15): 'All verification conditions discharged successfully'",
+    "smokeLemmas": 3,
+    "smokeContent": "3 trivial lemmas (constant-time u8 eq reflexive/symmetric, zeroize length) — NOT the named crypto algorithms",
     "smokeModule": "$(escape_json "$FSTAR_SMOKE_MODULE")",
+    "corpusAdmits": 11935,
     "quarantined": $FSTAR_QUARANTINED,
     "files": $FSTAR_FILES,
     "prover": "F*"
@@ -1225,7 +1238,9 @@ cat > "$OUTPUT_FILE" << EOF
     "theoremsRaw": $TLAPLUS_THEOREMS,
     "compiledTheorems": $TLAPLUS_COMPILED_THEOREMS,
     "smokeBuildOk": $TLAPLUS_SMOKE_BUILD_OK,
+    "smokeVerified": "2026-06-01 (TLA2Tools): smoke check passed",
     "smokeSpec": "$(escape_json "$TLAPLUS_SMOKE_SPEC")",
+    "smokeNote": "theoremsRaw is the corpus-wide THEOREM count; only the smoke-spec theorems are TLC-checked",
     "quarantined": $TLAPLUS_QUARANTINED,
     "files": $TLAPLUS_FILES,
     "prover": "TLA+"
@@ -1235,7 +1250,9 @@ cat > "$OUTPUT_FILE" << EOF
     "assertionsRaw": $ALLOY_ASSERTIONS,
     "compiledAssertions": $ALLOY_COMPILED_ASSERTIONS,
     "smokeBuildOk": $ALLOY_SMOKE_BUILD_OK,
+    "smokeVerified": "2026-06-01 (Alloy 6.2.0): smoke check passed",
     "smokeModel": "$(escape_json "$ALLOY_SMOKE_MODEL")",
+    "smokeNote": "assertionsRaw is the corpus-wide check count; only the smoke-model assertions are bounded-checked",
     "quarantined": $ALLOY_QUARANTINED,
     "files": $ALLOY_FILES,
     "prover": "Alloy 6"
@@ -1243,6 +1260,11 @@ cat > "$OUTPUT_FILE" << EOF
   "smt": {
     "assertions": $SMT_ASSERTIONS_PUBLIC,
     "assertionsRaw": $SMT_ASSERTIONS,
+    "compiledAssertions": 25,
+    "smokeBuildOk": true,
+    "smokeVerified": "2026-06-01 (Z3 4.8.12): 25 unsat (security-lattice properties)",
+    "smokeModule": "RIINA.Active.SecurityLatticeVerification",
+    "smokeNote": "assertionsRaw is the corpus-wide assert count; only the 25 lattice properties in the smoke file actually verify (the prior '11,843 verified' figure was a counting error)",
     "quarantined": $SMT_QUARANTINED,
     "files": $SMT_FILES,
     "prover": "Z3/CVC5 (SMT-LIB)"
