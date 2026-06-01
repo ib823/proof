@@ -489,119 +489,15 @@ impl WasmBackend {
             .map(|(i, b)| (b.id, i))
             .collect();
 
-        // Track which block indices (positions in func.blocks) have been
-        // inlined as part of structured if/else emission, so we skip them
-        // in the main loop.
-        let mut inlined: std::collections::HashSet<usize> = std::collections::HashSet::new();
-
-        for (block_idx, block) in func.blocks.iter().enumerate() {
-            if inlined.contains(&block_idx) {
-                continue;
-            }
-
-            // Emit the block's instructions (not the terminator)
-            self.emit_block_instrs(block, &ctx, &mut code)?;
-
-            match &block.terminator {
-                Some(Terminator::CondBranch {
-                    cond,
-                    then_block,
-                    else_block,
-                }) => {
-                    // Structured if/else emission:
-                    // Stack: push condition, then if (result i32) ... else ... end
-                    if let Some(local) = ctx.var_map.get(cond) {
-                        code.push(Op::LocalGet as u8);
-                        wasm_encode::encode_uleb128(*local as u64, &mut code);
-                    }
-
-                    // if (result i32)
-                    code.push(Op::If as u8);
-                    code.push(ValType::I32 as u8); // block type: result i32
-
-                    // Emit then block inline
-                    if let Some(&then_idx) = block_map.get(then_block) {
-                        let then_blk = &func.blocks[then_idx];
-                        inlined.insert(then_idx);
-                        self.emit_block_instrs(then_blk, &ctx, &mut code)?;
-                        // Push the then result onto the stack.
-                        self.emit_phi_value_for_branch(
-                            then_blk,
-                            &func.blocks,
-                            &block_map,
-                            &ctx,
-                            &mut code,
-                        )?;
-                    } else {
-                        // Fallback: push 0
-                        code.push(Op::I32Const as u8);
-                        wasm_encode::encode_sleb128(0, &mut code);
-                    }
-
-                    // else
-                    code.push(Op::Else as u8);
-
-                    // Emit else block inline
-                    if let Some(&else_idx) = block_map.get(else_block) {
-                        let else_blk = &func.blocks[else_idx];
-                        inlined.insert(else_idx);
-                        self.emit_block_instrs(else_blk, &ctx, &mut code)?;
-                        self.emit_phi_value_for_branch(
-                            else_blk,
-                            &func.blocks,
-                            &block_map,
-                            &ctx,
-                            &mut code,
-                        )?;
-                    } else {
-                        code.push(Op::I32Const as u8);
-                        wasm_encode::encode_sleb128(0, &mut code);
-                    }
-
-                    // end
-                    code.push(Op::End as u8);
-
-                    // The if/else/end block leaves the result on the stack.
-                    // Find the merge block and its phi node, then local.set the phi result.
-                    let merge_block_id = self.find_merge_block(&func.blocks, &block_map);
-                    if let Some((merge_idx, merge_blk_ref)) = merge_block_id {
-                        // Store the if/else result into the phi variable
-                        for instr in &merge_blk_ref.instrs {
-                            if let Instruction::Phi(_) = &instr.instr {
-                                if let Some(local) = ctx.var_map.get(&instr.result) {
-                                    code.push(Op::LocalSet as u8);
-                                    wasm_encode::encode_uleb128(*local as u64, &mut code);
-                                }
-                                break;
-                            }
-                        }
-                        // Emit merge block if not already processed
-                        if !inlined.contains(&merge_idx) {
-                            inlined.insert(merge_idx);
-                            self.emit_block_instrs(merge_blk_ref, &ctx, &mut code)?;
-                            self.emit_block_terminator(merge_blk_ref, &ctx, &mut code)?;
-                        }
-                    }
-                }
-                Some(Terminator::Return(var)) => {
-                    if let Some(local) = ctx.var_map.get(var) {
-                        code.push(Op::LocalGet as u8);
-                        wasm_encode::encode_uleb128(*local as u64, &mut code);
-                    }
-                    code.push(Op::Return as u8);
-                }
-                Some(Terminator::Branch(_target)) => {
-                    // Unconditional branch: in structured emission, the target
-                    // block will be emitted next in sequence (or was already
-                    // inlined). Nothing to emit for the branch itself.
-                }
-                Some(Terminator::Handle { .. }) => {}
-                Some(Terminator::Unreachable) => {
-                    code.push(Op::Unreachable as u8);
-                }
-                None => {}
-            }
-        }
+        // Emit the function body as structured control flow starting from the
+        // entry block. The recursion reconstructs nested AND sequential if/else
+        // from the lowerer's CondBranch/merge CFG. (The previous ad-hoc loop
+        // only handled a single if/else per function — a second sequential
+        // if/else had its then/else blocks emitted flat, so both branches ran.)
+        // Start at the entry block's index (via block_map, since blocks may
+        // share a BlockId and the map keeps the last — e.g. hand-built test IR).
+        let entry_idx = block_map.get(&func.entry).copied().unwrap_or(0);
+        self.emit_structured(entry_idx, None, func, &ctx, &block_map, &mut code)?;
 
         if code.is_empty() || !matches!(code.last(), Some(&b) if b == Op::Return as u8) {
             code.push(Op::I32Const as u8);
@@ -609,6 +505,112 @@ impl WasmBackend {
         }
 
         Ok(FuncBody { locals, code })
+    }
+
+    /// Emit a region of the CFG as structured WASM control flow, from block
+    /// `entry` up to (but not including) `stop`. Reconstructs nested AND
+    /// sequential if/else from `CondBranch` terminators; the merge of each
+    /// `CondBranch` is the block its then/else branches rejoin at.
+    fn emit_structured(
+        &self,
+        entry: usize,
+        stop: Option<usize>,
+        func: &Function,
+        ctx: &EmitCtx<'_>,
+        block_map: &HashMap<BlockId, usize>,
+        code: &mut Vec<u8>,
+    ) -> Result<()> {
+        let mut cur = entry;
+        loop {
+            if Some(cur) == stop {
+                return Ok(());
+            }
+            let block = &func.blocks[cur];
+            self.emit_block_instrs(block, ctx, code)?;
+            match &block.terminator {
+                Some(Terminator::Return(var)) => {
+                    if let Some(local) = ctx.var_map.get(var) {
+                        code.push(Op::LocalGet as u8);
+                        wasm_encode::encode_uleb128(*local as u64, code);
+                    }
+                    code.push(Op::Return as u8);
+                    return Ok(());
+                }
+                Some(Terminator::Unreachable) => {
+                    code.push(Op::Unreachable as u8);
+                    return Ok(());
+                }
+                Some(Terminator::Branch(target)) => match block_map.get(target) {
+                    Some(&t) => cur = t,
+                    None => return Ok(()),
+                },
+                Some(Terminator::CondBranch {
+                    cond,
+                    then_block,
+                    else_block,
+                }) => {
+                    let (Some(&then_idx), Some(&else_idx)) =
+                        (block_map.get(then_block), block_map.get(else_block))
+                    else {
+                        return Ok(());
+                    };
+                    // The merge is where the two branches rejoin: the Branch
+                    // target of the then (or else) branch.
+                    let merge = Self::branch_target(&func.blocks[then_idx], block_map)
+                        .or_else(|| Self::branch_target(&func.blocks[else_idx], block_map));
+
+                    if let Some(local) = ctx.var_map.get(cond) {
+                        code.push(Op::LocalGet as u8);
+                        wasm_encode::encode_uleb128(*local as u64, code);
+                    }
+                    code.push(Op::If as u8);
+                    code.push(ValType::I32 as u8);
+                    self.emit_structured(then_idx, merge, func, ctx, block_map, code)?;
+                    self.emit_phi_value_for_branch(
+                        &func.blocks[then_idx],
+                        &func.blocks,
+                        block_map,
+                        ctx,
+                        code,
+                    )?;
+                    code.push(Op::Else as u8);
+                    self.emit_structured(else_idx, merge, func, ctx, block_map, code)?;
+                    self.emit_phi_value_for_branch(
+                        &func.blocks[else_idx],
+                        &func.blocks,
+                        block_map,
+                        ctx,
+                        code,
+                    )?;
+                    code.push(Op::End as u8);
+                    // Store the if/else result into the merge's phi local.
+                    if let Some(m) = merge {
+                        for instr in &func.blocks[m].instrs {
+                            if let Instruction::Phi(_) = &instr.instr {
+                                if let Some(local) = ctx.var_map.get(&instr.result) {
+                                    code.push(Op::LocalSet as u8);
+                                    wasm_encode::encode_uleb128(*local as u64, code);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    match merge {
+                        Some(m) => cur = m,
+                        None => return Ok(()),
+                    }
+                }
+                Some(Terminator::Handle { .. }) | None => return Ok(()),
+            }
+        }
+    }
+
+    /// The block index a block unconditionally branches to, if any.
+    fn branch_target(block: &BasicBlock, block_map: &HashMap<BlockId, usize>) -> Option<usize> {
+        match &block.terminator {
+            Some(Terminator::Branch(t)) => block_map.get(t).copied(),
+            _ => None,
+        }
     }
 
     /// Emit only the instructions of a block (no terminator).
@@ -622,50 +624,6 @@ impl WasmBackend {
             self.emit_instruction(&instr.instr, Some(instr.result), ctx, code)?;
         }
         Ok(())
-    }
-
-    /// Emit the terminator of a block (for merge blocks after if/else).
-    fn emit_block_terminator(
-        &self,
-        block: &BasicBlock,
-        ctx: &EmitCtx<'_>,
-        code: &mut Vec<u8>,
-    ) -> Result<()> {
-        match &block.terminator {
-            Some(Terminator::Return(var)) => {
-                if let Some(local) = ctx.var_map.get(var) {
-                    code.push(Op::LocalGet as u8);
-                    wasm_encode::encode_uleb128(*local as u64, code);
-                }
-                code.push(Op::Return as u8);
-            }
-            Some(Terminator::Unreachable) => {
-                code.push(Op::Unreachable as u8);
-            }
-            Some(Terminator::Branch(_)) | Some(Terminator::Handle { .. }) | None => {}
-            Some(Terminator::CondBranch { .. }) => {
-                // Nested conditionals would need recursive handling;
-                // for now this is not expected in a merge block.
-            }
-        }
-        Ok(())
-    }
-
-    /// Find the merge block for a CondBranch (block with a Phi node).
-    /// Returns the block index and a reference to the block.
-    fn find_merge_block<'a>(
-        &self,
-        blocks: &'a [BasicBlock],
-        _block_map: &HashMap<BlockId, usize>,
-    ) -> Option<(usize, &'a BasicBlock)> {
-        for (idx, blk) in blocks.iter().enumerate() {
-            for instr in &blk.instrs {
-                if let Instruction::Phi(_) = &instr.instr {
-                    return Some((idx, blk));
-                }
-            }
-        }
-        None
     }
 
     /// For a then/else block that branches to a merge block with a Phi,

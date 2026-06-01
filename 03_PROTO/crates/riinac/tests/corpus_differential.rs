@@ -12,10 +12,11 @@
 //! divergence. Requires `cc` + `wasmtime`; skips when either is absent (CI).
 //!
 //! Measured 2026-06-01 (wasmtime 27.0.0): of 155 examples, 30 build+run in both
-//! backends — 24 byte-equal, 6 in KNOWN_DIVERGENT; the rest don't compile/run
-//! under one or both backends. (24 equal is up from 10 over the session: the
+//! backends — 26 byte-equal, 4 in KNOWN_DIVERGENT; the rest don't compile/run
+//! under one or both backends. (26 equal is up from 10 over the session: the
 //! `main.return_ty` lowering fix, WASM `ke_teks`/`gabung_teks` string builtins,
-//! and the `cetakln` newline together moved 14 examples to byte-equal.)
+//! the `cetakln` newline, and a structured-control-flow relooper fix for
+//! sequential if/else together moved 16 examples to byte-equal.)
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -25,9 +26,7 @@ use std::process::Command;
 /// root cause. These are tracked, not silently ignored. Removing a WASM bug
 /// should remove the corresponding entries here.
 const KNOWN_DIVERGENT: &[&str] = &[
-    // Residual string/loop rendering differences under WASM.
-    "rentetan.rii",
-    "gelung.rii",
+    // Pattern-match branch selection + string-template (`{a}`) substitution.
     "00_basics/pattern_match.rii",
     // Program whose top-level value type C prints via runtime tag (incl. the
     // "<value>" default) but WASM renders differently.
