@@ -11,12 +11,14 @@
 //! This guards the matching subset against regressions and surfaces any NEW
 //! divergence. Requires `cc` + `wasmtime`; skips when either is absent (CI).
 //!
-//! Measured 2026-06-01 (wasmtime 27.0.0): of 155 examples, 30 build+run in both
-//! backends — 26 byte-equal, 4 in KNOWN_DIVERGENT; the rest don't compile/run
-//! under one or both backends. (26 equal is up from 10 over the session: the
-//! `main.return_ty` lowering fix, WASM `ke_teks`/`gabung_teks` string builtins,
-//! the `cetakln` newline, and a structured-control-flow relooper fix for
-//! sequential if/else together moved 16 examples to byte-equal.)
+//! Measured 2026-06-01: of 155 examples, 30 build+run in both backends — 26
+//! byte-equal, 4 in KNOWN_DIVERGENT; the rest don't compile/run under one or both
+//! backends. Re-verified across a wasmtime major-version jump: identical result
+//! under **wasmtime 27.0.0 and 45.0.0** (the byte-equality is robust to the runtime
+//! version). (26 equal is up from 10 over the session: the `main.return_ty`
+//! lowering fix, WASM `ke_teks`/`gabung_teks` string builtins, the `cetakln`
+//! newline, and a structured-control-flow relooper fix for sequential if/else
+//! together moved 16 examples to byte-equal.)
 
 use std::fs;
 use std::path::{Path, PathBuf};
