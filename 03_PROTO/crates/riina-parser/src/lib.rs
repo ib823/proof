@@ -160,6 +160,10 @@ enum Pattern {
     /// Reference pattern `ruj(p)`: matches a reference, testing/binding the inner
     /// pattern `p` against the dereferenced value.
     Ref(Box<Pattern>),
+    /// Named (nominal-enum) constructor pattern `C(p0, p1, ...)` or nullary `C`.
+    /// Matches a structurally-tagged value `("C", payload)`: tests the tag string
+    /// and binds the argument pattern(s) against the payload.
+    NamedCtor { name: String, args: Vec<Pattern> },
 }
 
 /// One arm of a `padan` expression: a pattern, an optional `kalau` guard, and a
@@ -1670,6 +1674,52 @@ impl<'a> Parser<'a> {
                 if self.looks_like_record_literal() {
                     return self.parse_record_literal_body(s);
                 }
+                // Named (nominal-enum) constructor. An uppercase identifier is a
+                // data constructor: `C(args)` builds the structural tagged value
+                // `Pair("C", payload)` (payload = the single arg, a tuple of args,
+                // or Unit), and a bare uppercase `C` builds the tag string "C".
+                // Lowercase identifiers remain variables/functions. `Titik {..}`
+                // record literals are handled above; `T::m` paths and `T.V`
+                // variants are handled elsewhere.
+                let is_ctor = s.chars().next().map(|c| c.is_uppercase()).unwrap_or(false);
+                if is_ctor && matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
+                    self.consume(TokenKind::LParen)?;
+                    let mut args = Vec::new();
+                    if !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::RParen)) {
+                        args.push(self.parse_control_flow()?);
+                        while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                            self.consume(TokenKind::Comma)?;
+                            args.push(self.parse_control_flow()?);
+                        }
+                    }
+                    self.consume(TokenKind::RParen)?;
+                    // payload: Unit for nullary, the arg for one, a right-nested
+                    // tuple for many (matching tuple construction / projection).
+                    let payload = match args.len() {
+                        0 => Expr::Unit,
+                        1 => args.pop().unwrap(),
+                        _ => {
+                            let mut it = args.into_iter().rev();
+                            let mut acc = it.next().unwrap();
+                            for x in it {
+                                acc = Expr::Pair(Box::new(x), Box::new(acc));
+                            }
+                            acc
+                        }
+                    };
+                    return Ok(Expr::Pair(
+                        Box::new(Expr::String(s)),
+                        Box::new(payload),
+                    ));
+                }
+                // Bare uppercase identifier = nullary nominal-enum constructor,
+                // built as the tag string "C" (matches the nullary `NamedCtor`
+                // pattern). Excludes a following `.` — that is a `Type.Variant`
+                // access handled in parse_app. Lowercase identifiers stay
+                // variables.
+                if is_ctor && !matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Dot)) {
+                    return Ok(Expr::String(s));
+                }
                 Ok(Expr::Var(s))
             }
             // List literal `[e1, e2, ...]`. A trailing comma is allowed; `[]` is
@@ -2032,16 +2082,24 @@ impl<'a> Parser<'a> {
                     }
                 }
                 if is_ctor && matches!(self.peek().map(|t| &t.kind), Some(TokenKind::LParen)) {
-                    let inner = self.parse_ctor_payload()?;
-                    // Named enum constructors map onto the right injection of the
-                    // structural sum (the error/secondary case), mirroring how
-                    // `Err`/`Ralat` desugar. This is a pragmatic structural
-                    // encoding; nominal multi-variant enums are future work.
-                    Ok(Pattern::CtorRight(inner))
+                    // Named (nominal-enum) constructor with arguments, e.g.
+                    // `Bulatan(r)` or `Segi(p, l)`. Matches the structural tag
+                    // `("Bulatan", payload)` (see parse_atom construction).
+                    self.consume(TokenKind::LParen)?;
+                    let mut args = vec![self.parse_pattern()?];
+                    while matches!(self.peek().map(|t| &t.kind), Some(TokenKind::Comma)) {
+                        self.consume(TokenKind::Comma)?;
+                        args.push(self.parse_pattern()?);
+                    }
+                    self.consume(TokenKind::RParen)?;
+                    Ok(Pattern::NamedCtor { name: s, args })
                 } else if is_ctor {
-                    // Nullary constructor used as a tag (e.g. `Tertutup`): match
-                    // it as the right injection ignoring any payload.
-                    Ok(Pattern::CtorRight(Box::new(Pattern::Wildcard)))
+                    // Nullary constructor used as a tag (e.g. `Tertutup`): matches
+                    // the bare tag string "Tertutup".
+                    Ok(Pattern::NamedCtor {
+                        name: s,
+                        args: Vec::new(),
+                    })
                 } else {
                     Ok(Pattern::Var(s))
                 }
@@ -2204,6 +2262,14 @@ impl<'a> Parser<'a> {
                 // Reference payload: bind the inner pattern against the deref.
                 let deref = Expr::Deref(Box::new(scrut));
                 self.bind_pattern(deref, inner, body)
+            }
+            Pattern::NamedCtor { .. } => {
+                // Named-constructor pattern as a payload: bind a fresh temp and
+                // apply its (irrefutable-here) variable bindings.
+                let tmp = self.fresh_var("padCtor");
+                let (_t, binds) = self.pattern_test(&Expr::Var(tmp.clone()), pat);
+                let bound = self.wrap_lets(binds, body);
+                Ok(Expr::Let(tmp, None, Box::new(scrut), Box::new(bound)))
             }
         }
     }
@@ -2435,6 +2501,45 @@ impl<'a> Parser<'a> {
             Pattern::Ref(inner) => {
                 let deref = Expr::Deref(Box::new(scrut.clone()));
                 self.pattern_test(&deref, inner)
+            }
+            // Named (nominal-enum) constructor `C(p0, ...)` matches the structural
+            // tagged value `("C", payload)`: test `fst(scrut) == "C"`, then match
+            // the argument pattern(s) against `snd(scrut)` (the payload). A nullary
+            // `C` matches the bare tag string "C".
+            Pattern::NamedCtor { name, args } => {
+                if args.is_empty() {
+                    // Bare tag: the value is the string "C" itself.
+                    let test = Expr::BinOp(
+                        BinOp::Eq,
+                        Box::new(scrut.clone()),
+                        Box::new(Expr::String(name.clone())),
+                    );
+                    return (Some(test), Vec::new());
+                }
+                let tag = Expr::Fst(Box::new(scrut.clone()));
+                let payload = Expr::Snd(Box::new(scrut.clone()));
+                let mut tests = vec![Expr::BinOp(
+                    BinOp::Eq,
+                    Box::new(tag),
+                    Box::new(Expr::String(name.clone())),
+                )];
+                let mut binds = Vec::new();
+                // Match the argument pattern(s) against the payload. One arg
+                // matches the payload directly; many match a right-nested tuple.
+                let arg_pat = if args.len() == 1 {
+                    args[0].clone()
+                } else {
+                    Pattern::Tuple(args.clone())
+                };
+                let (t, b) = self.pattern_test(&payload, &arg_pat);
+                if let Some(t) = t {
+                    tests.push(t);
+                }
+                binds.extend(b);
+                let test = tests
+                    .into_iter()
+                    .reduce(|a, b| Expr::BinOp(BinOp::And, Box::new(a), Box::new(b)));
+                (test, binds)
             }
         }
     }

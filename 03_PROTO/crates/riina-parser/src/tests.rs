@@ -4010,3 +4010,48 @@ fn test_parse_ref_pattern() {
     let mut p = Parser::new("padan r { ruj(0) -> 1, ruj(x) -> x }");
     assert!(p.parse_expr().is_ok());
 }
+
+// =============================================================================
+// NAMED (NOMINAL-ENUM) CONSTRUCTORS  C(args) / nullary C
+// =============================================================================
+
+#[test]
+fn test_parse_named_ctor_construction() {
+    // `Bulatan(5)` -> Pair(String("Bulatan"), Int(5)).
+    let mut p = Parser::new("Bulatan(5)");
+    match p.parse_expr().unwrap() {
+        Expr::Pair(tag, payload) => {
+            assert_eq!(*tag, Expr::String("Bulatan".to_string()));
+            assert_eq!(*payload, Expr::Int(5));
+        }
+        other => panic!("expected Pair, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_parse_named_ctor_multi_arg() {
+    // `Segi(4, 5)` -> Pair("Segi", Pair(4, 5)).
+    let mut p = Parser::new("Segi(4, 5)");
+    assert!(matches!(p.parse_expr().unwrap(), Expr::Pair(_, _)));
+}
+
+#[test]
+fn test_parse_nullary_ctor_is_tag() {
+    // Bare uppercase `Tamat` -> String("Tamat").
+    let mut p = Parser::new("Tamat");
+    assert_eq!(p.parse_expr().unwrap(), Expr::String("Tamat".to_string()));
+}
+
+#[test]
+fn test_parse_named_ctor_match() {
+    // Multi-variant enum match parses and compiles.
+    let mut p = Parser::new("padan b { Bulatan(r) -> r, Segi(p, l) -> p, Segitiga(a, x, c) -> a }");
+    assert!(p.parse_expr().is_ok());
+}
+
+#[test]
+fn test_lowercase_ident_still_var() {
+    // Lowercase identifiers are NOT constructors.
+    let mut p = Parser::new("bulatan");
+    assert_eq!(p.parse_expr().unwrap(), Expr::Var("bulatan".to_string()));
+}
