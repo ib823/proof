@@ -51,6 +51,7 @@ Use these for live execution decisions:
 | Category | Count | Execution Status |
 |----------|-------|------------------|
 | **Core Research Domains (A-L)** | 175 sessions | 🟡 Partially executed |
+| **2026 H1 Refresh (Batch 1)** | 3 dossier topics | ✅ Done — `01_RESEARCH/29_REFRESH_2026H1/` (NN-verification SOTA, transient-execution attacks, PQC FIPS roll-out) |
 | **Zero-Trust Tracks (R-Z)** | 9 tracks | 📋 Defined only |
 | **Greek Tracks (Σ, Π, etc.)** | 14 tracks | 📋 Defined only |
 | **Extended Tracks (AA-AJ)** | 10 tracks | 📋 Defined only |
