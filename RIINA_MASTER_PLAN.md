@@ -2082,7 +2082,7 @@ The Coq theorems and the Rust typechecker must enforce the same rules.
 | Full IFC lattice enforcement (currently "basic") | Counterexample suite covers implicit flows, side channels, reference aliasing |
 | Constant-time (`masa_tetap`) blocks — no secret-dependent branches in codegen | CT verification step using `verify_security_lattice.py` passes per program |
 | WASM target parity with C target | All 155 `.rii` examples emit valid WASM and execute under `wasmtime`; differential test framework green |
-| Resolve `todo!("JALINAN Phase 6")` in `03_PROTO/crates/riina-compliance/src/validator.rs:82` | `grep -rn 'todo!\|unimplemented!' 03_PROTO/crates --include='*.rs'` returns 0 in non-test code |
+| ~~Resolve `todo!("JALINAN Phase 6")` in `03_PROTO/crates/riina-compliance/src/validator.rs`~~ **DONE 2026-06-01**: the compliance walker now recurses into actor/content-addressed sub-expressions (was a panic stub); +2 regression tests (`jalinan_walk_recurses_into_subexprs`, `jalinan_choreography_block_walks_without_panic`) | `grep -rnE '\b(todo!\|unimplemented!)\s*\(' 03_PROTO/crates 05_TOOLING/crates --include='*.rs'` outside `tests` returns 0 ✓ (Gate B exit criterion met). `cargo test --all` = 2581 pass / 0 fail |
 | Resolve 5 documented `// TODO` in lexer/parser/codegen | Each closed with PR + linked test |
 
 **Exit criteria:** every Coq-stated security theorem has a matching Rust enforcement test

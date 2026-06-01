@@ -10687,3 +10687,59 @@ fn esg_sdvista5_ok() {
         "ESG-SDVISTA.5",
     );
 }
+
+// ===========================================================================
+// JALINAN Phase 6 — the compliance walker must recurse into actor /
+// content-addressed sub-expressions instead of panicking. Regression for the
+// former `todo!("JALINAN Phase 6")` arm in `validator.rs` (Gate B exit
+// criterion: zero `todo!()` outside test code).
+// ===========================================================================
+
+/// A `declassify` without a `prove` — triggers `PCI-DSS-3.4`. Used as the
+/// nested payload to prove the walker descends into each JALINAN expression.
+fn violating_declassify() -> Expr {
+    Expr::Declassify(
+        Box::new(Expr::Classify(Box::new(Expr::Int(4242)))),
+        Box::new(Expr::Int(0)),
+    )
+}
+
+#[test]
+fn jalinan_walk_recurses_into_subexprs() {
+    let inner = violating_declassify();
+    let cases = vec![
+        Expr::ContentVerify(Box::new(inner.clone()), Box::new(Expr::Int(0))),
+        Expr::Spawn(Box::new(inner.clone()), Box::new(Expr::Int(0))),
+        Expr::ActorSend(Box::new(inner.clone()), Box::new(Expr::Int(0))),
+        Expr::CRDTMerge(Box::new(inner.clone()), Box::new(Expr::Int(0))),
+        Expr::ActorRecv(Box::new(inner.clone())),
+        Expr::ContentHash(Box::new(inner.clone())),
+        Expr::ActorDecl {
+            name: "Akaun".into(),
+            state_ty: Ty::Unit,
+            message_ty: Ty::Unit,
+            init_state: Box::new(inner.clone()),
+            handler: Box::new(Expr::Unit),
+        },
+    ];
+    for expr in &cases {
+        let violations = validate(expr, &[ComplianceProfile::PciDss]);
+        assert!(
+            violations.iter().any(|v| v.rule_id == "PCI-DSS-3.4"),
+            "compliance walker did not recurse into JALINAN expression: {expr:?}"
+        );
+    }
+}
+
+#[test]
+fn jalinan_choreography_block_walks_without_panic() {
+    // ChoreographyBlock has no value sub-expressions; walking it must be a
+    // no-op that does not panic.
+    let expr = Expr::ChoreographyBlock {
+        name: "Protokol".into(),
+        roles: vec!["A".into(), "B".into()],
+        protocol: riina_types::SessionType::End,
+    };
+    let violations = validate(&expr, &[ComplianceProfile::PciDss]);
+    assert!(violations.is_empty());
+}

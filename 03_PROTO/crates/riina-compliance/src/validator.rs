@@ -73,14 +73,28 @@ fn walk_inner(expr: &Expr, rules: &[ComplianceRule], out: &mut Vec<ComplianceVio
             }
         }
 
-        Expr::ActorDecl { .. }
-        | Expr::ChoreographyBlock { .. }
-        | Expr::Spawn(_, _)
-        | Expr::ActorSend(_, _)
-        | Expr::ActorRecv(_)
-        | Expr::CRDTMerge(_, _)
-        | Expr::ContentHash(_)
-        | Expr::ContentVerify(_, _) => todo!("JALINAN Phase 6"),
+        // JALINAN Phase 6: recurse into sub-expressions so compliance rules
+        // apply inside actor / content-addressed constructs (previously an
+        // unfinished stub that panicked on these variants).
+        Expr::ActorDecl {
+            init_state, handler, ..
+        } => {
+            walk_inner(init_state, rules, out);
+            walk_inner(handler, rules, out);
+        }
+        // ChoreographyBlock carries only a name, roles, and a SessionType —
+        // no value sub-expressions to walk.
+        Expr::ChoreographyBlock { .. } => {}
+        Expr::Spawn(a, b)
+        | Expr::ActorSend(a, b)
+        | Expr::CRDTMerge(a, b)
+        | Expr::ContentVerify(a, b) => {
+            walk_inner(a, rules, out);
+            walk_inner(b, rules, out);
+        }
+        Expr::ActorRecv(e) | Expr::ContentHash(e) => {
+            walk_inner(e, rules, out);
+        }
         Expr::ContractDeploy(expr) | Expr::ZakatCalculate(expr) => {
             walk_inner(expr, rules, out);
         }
