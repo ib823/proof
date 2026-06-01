@@ -53,6 +53,7 @@ Use these for live execution decisions:
 | **Core Research Domains (A-L)** | 175 sessions | 🟡 Partially executed |
 | **2026 H1 Refresh (Batch 1)** | 3 dossier topics | ✅ Done — `01_RESEARCH/29_REFRESH_2026H1/` (NN-verification SOTA, transient-execution attacks, PQC FIPS roll-out) |
 | **2026 H1 Refresh (Batch 2)** | 3 dossier topics | ✅ Done — `01_RESEARCH/29_REFRESH_2026H1/` (verified quantum SQIR/VOQC, ZKP SNARK-vs-STARK, LLM-assisted proving) |
+| **2026 H1 Refresh (Batch 3)** | 3 dossier topics | ✅ Done — `01_RESEARCH/29_REFRESH_2026H1/` (CHERI + hardware-software leakage contracts, mobile MTE/MIE, anti-jam mesh) |
 | **Zero-Trust Tracks (R-Z)** | 9 tracks | 📋 Defined only |
 | **Greek Tracks (Σ, Π, etc.)** | 14 tracks | 📋 Defined only |
 | **Extended Tracks (AA-AJ)** | 10 tracks | 📋 Defined only |
