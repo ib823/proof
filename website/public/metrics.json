@@ -194,8 +194,8 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 2581,
-    "testsVerified": 2581,
+    "tests": 2582,
+    "testsVerified": 2582,
     "testsEstimated": 0,
     "testsSource": "full_cargo_test",
     "crates": 19

@@ -240,9 +240,10 @@ impl Store {
 /// Effect handler context
 #[derive(Debug, Clone)]
 struct HandlerContext {
-    /// Effect being handled
-    #[allow(dead_code)]
-    effect: Effect,
+    // NB: handler matching is LIFO and effect-agnostic (the most recently
+    // installed handler runs for any `perform`), matching the Coq `T_Handle`
+    // rule which joins effects rather than discriminating by effect tag.
+    // There is therefore no per-handler effect to track here.
     /// Handler variable name
     handler_var: String,
     /// Handler expression
@@ -703,11 +704,11 @@ impl Interpreter {
                 }
             }
 
-            // E_Handle: Install effect handler
+            // E_Handle: Install effect handler (LIFO, effect-agnostic — see
+            // HandlerContext; the topmost handler runs for any `perform`).
             Expr::Handle(body, handler_var, handler) => {
                 // Push handler context
                 self.handlers.push(HandlerContext {
-                    effect: Effect::System, // TODO: infer effect
                     handler_var: handler_var.clone(),
                     handler: Rc::new((**handler).clone()),
                     handler_env: env.clone(),
@@ -1740,6 +1741,23 @@ mod tests {
             result,
             Err(Error::MissingCapability(Effect::Network))
         ));
+    }
+
+    #[test]
+    fn test_eval_handle_perform_runs_handler() {
+        // grant Network in (handle (perform Network 7) with x => x)  ==> 7
+        // Verifies that the installed handler receives the performed payload.
+        // Regression for the HandlerContext effect-field cleanup: handler
+        // matching is LIFO / effect-agnostic and must still run the handler.
+        let mut interp = Interpreter::new();
+        let perform = Expr::Perform(Effect::Network, Box::new(Expr::Int(7)));
+        let handle = Expr::Handle(
+            Box::new(perform),
+            "x".to_string(),
+            Box::new(Expr::Var("x".to_string())),
+        );
+        let grant = Expr::Grant(Effect::Network, Box::new(handle));
+        assert_eq!(interp.eval(&grant), Ok(Value::Int(7)));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
