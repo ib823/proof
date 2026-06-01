@@ -824,7 +824,7 @@ riinac verify --full
 
 ## 15. Formal Verification
 
-All security properties proven in Coq (Rocq 9.1):
+All security properties proven in Coq (Rocq 9.2):
 - **Type safety**: Progress + Preservation
 - **Non-interference**: Secret data cannot influence public output
 - **Effect safety**: Effects tracked and enforced
