@@ -347,16 +347,20 @@ Record ConnectionAudit : Type := mkConnAudit {
 (* TIME TYPES                                                              *)
 (* ======================================================================= *)
 
-(* REQ-23 audit: NANOS_PER_SEC denotes the SI specification of 10^9
-   nanoseconds per second (BIPM SI Brochure, 9th ed., 2019). Kept opaque
-   as [Parameter] rather than [Definition NANOS_PER_SEC := 1_000_000_000]
-   because Coq's [simpl] tactic would unfold the latter into a unary nat
-   literal of size 10^9, blowing the elaboration stack across every
-   downstream proof that destructs a [Duration]. Only the positivity
-   property [NANOS_PER_SEC_pos] is used downstream; both Parameters
-   together model a single SI constant and are part of the TCB. *)
-Parameter NANOS_PER_SEC : nat.
-Parameter NANOS_PER_SEC_pos : NANOS_PER_SEC > 0.
+(* REQ-23: NANOS_PER_SEC denotes the SI specification of 10^9 nanoseconds per
+   second (BIPM SI Brochure, 9th ed., 2019). It is now a concrete [Definition]
+   (not an opaque [Parameter]), so [NANOS_PER_SEC_pos] is a proved [Qed] lemma
+   rather than an admitted assumption — both are removed from the TCB. We seal
+   it with [Global Opaque] immediately after proving positivity so that [simpl]/
+   [compute] never unfold the 10^9 literal in downstream [Duration] proofs (the
+   performance concern that originally motivated keeping it a [Parameter]).
+   Downstream code only needs [NANOS_PER_SEC_pos], which survives the seal.
+   Written as 1000*1000*1000 so each factor stays below the [abstract-large-
+   number] threshold (no warning) while [lia] still evaluates the product. *)
+Definition NANOS_PER_SEC : nat := 1000 * 1000 * 1000.
+Lemma NANOS_PER_SEC_pos : NANOS_PER_SEC > 0.
+Proof. unfold NANOS_PER_SEC. lia. Qed.
+Global Opaque NANOS_PER_SEC.
 
 Record Duration : Type := mkDuration {
   dur_secs : nat;

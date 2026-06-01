@@ -82,7 +82,7 @@ RIINA doesn't care what industry you're in. If you care about getting security r
 | Effect tracking | Implemented + formal model | None | Monads (no proof) | None |
 | Type safety | Formalized in Coq; checker active | Tested | Tested | Proven (SPARK subset) |
 | Zero external dependencies | Yes (compiler, crypto, stdlib) | No | No | No |
-| Formal proof corpus in repo | Yes — 12,385 Coq Qed (mechanized); other lanes generated, see below | No | No | Partial |
+| Formal proof corpus in repo | Yes — 12,386 Coq Qed (mechanized); other lanes generated, see below | No | No | Partial |
 | Multi-prover work | Coq mechanized; 9 other lanes are generated/smoke-only (not independent verification) | No | No | No |
 | Session-typed actors | Yes (JALINAN: pelakon, lahir, hantar, terima) | No | No | No |
 | Bahasa Melayu native syntax | Yes | No | No | No |
@@ -230,7 +230,7 @@ This is not a whitepaper. This is working software.
 
 | Prover | What is actually proven | Notes |
 |--------|-------------------------|-------|
-| **Rocq 9.1.1** (Primary) | 12,385 Qed in the active build; 0 Admitted, 0 `Axiom`, 0 Abort | The only fully mechanized lane. Caveat: the active build also contains **32 `Parameter` declarations** (logically equivalent to axioms in Coq), ~7 of which assert propositions — see `PROOF_STATUS.md` |
+| **Rocq 9.1.1** (Primary) | 12,386 Qed in the active build; 0 Admitted, 0 `Axiom`, 0 Abort | The only fully mechanized lane. Caveat: the active build also contains **30 `Parameter` declarations** (logically equivalent to axioms in Coq), the propositional ones modelling the trusted hardware interface — see `PROOF_STATUS.md` |
 | **Lean 4** | **~28 theorems** actually compile (3 hand-corrected core files) | The other ~12,500 declarations are transpiler-generated with placeholder tactics (`simp_all [Bool.and_eq_true]`) that do **not** prove their goals. See `02_FORMAL/lean/COMPILATION_STATUS.md`. Claim level: **generated**, not mechanized |
 | **Isabelle/HOL** | 1 smoke session (`RIINA_CORE`) | 368 `.thy` files total, machine-generated from Coq; remainder unverified generated corpora |
 | **F\*** | Effectively nothing | 315 `.fst` files, but **`admit()` appears ~12,010 times** — nearly every lemma body is `admit ()`. Generated, not proven |
@@ -238,7 +238,7 @@ This is not a whitepaper. This is working software.
 | **Verus / Kani / TV** | None | Explicitly quarantined (`quarantined: true` in metrics.json); generated stubs |
 
 **Honest scope:**
-- **Only the Coq active lane constitutes real machine-checked verification** (and even it rests on 32 `Parameter` assumptions).
+- **Only the Coq active lane constitutes real machine-checked verification** (and even it rests on 30 `Parameter` assumptions).
 - The Lean, Isabelle, F\*, TLA+, Alloy, SMT, Verus, Kani, and TV trees were produced by `scripts/generate-full-stack.py` / `generate-multiprover.py` fanning the Coq tree into other syntaxes. They inflate file/theorem counts but are stubbed (`admit`/placeholder tactics) or are single small smoke artifacts — **not** nine additional independent verifications.
 - Core Coq theorems cover foundations, type safety, effects, non-interference, declassification, and termination. Many *domain* Coq files are formal models/specifications, not compiler-enforced guarantees.
 - See `website/public/metrics.json` for per-lane claim levels (the authoritative source of truth).
@@ -390,20 +390,20 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,385 Coq Qed (active build: 0 Admitted, 0 `Axiom`, 0 Abort; 32 `Parameter` assumptions) | Coq is the only mechanized lane | 2,479 proto + 248 tooling Rust tests passing
+**Verification:** 12,386 Coq Qed (active build: 0 Admitted, 0 `Axiom`, 0 Abort; 30 `Parameter` assumptions) | Coq is the only mechanized lane | 2,479 proto + 248 tooling Rust tests passing
 
 | Area | Status |
 |------|--------|
 | Core compiler | Lexer/parser/typechecker/codegen/interpreter build and pass 2,727 tests; end-to-end security alignment still in progress |
 | Standard library and tools | Implemented and test-covered |
-| Formal verification | **Coq active lane is the only real machine-checked verification** (0 admit/0 axiom, modulo 32 `Parameter` assumptions). Lean/Isabelle/F*/TLA+/Alloy/SMT/Verus/Kani/TV are generated from Coq and are stubbed or single smoke artifacts — see `02_FORMAL/lean/COMPILATION_STATUS.md` and `metrics.json` |
+| Formal verification | **Coq active lane is the only real machine-checked verification** (0 admit/0 axiom, modulo 30 `Parameter` assumptions). Lean/Isabelle/F*/TLA+/Alloy/SMT/Verus/Kani/TV are generated from Coq and are stubbed or single smoke artifacts — see `02_FORMAL/lean/COMPILATION_STATUS.md` and `metrics.json` |
 | WASM/mobile backends | Present as scaffolding, not full production backends |
 | Example programs | Many `.rii` examples use a block-statement syntax the shipped parser does not yet accept; see `07_EXAMPLES/README.md` for which forms currently compile |
 
 ### What's next
 
 - **Compiler alignment:** Switch the shipped compiler path to the Coq-matching checker.
-- **Axiom status:** Active Coq build has `Axiom = 0` and `Admitted = 0`, but carries **32 `Parameter` declarations** that are axioms in all but name (~7 assert propositions). These are the de-facto trusted assumptions; see `PROOF_STATUS.md`.
+- **Axiom status:** Active Coq build has `Axiom = 0` and `Admitted = 0`, but carries **30 `Parameter` declarations** that are axioms in all but name (the propositional ones model the trusted hardware interface). These are the de-facto trusted assumptions; see `PROOF_STATUS.md`.
 - **Multi-prover honesty (Gate D):** The 9 non-Coq prover trees are generated/stubbed. The roadmap is to either industrialize them or retract the "multi-prover" framing — tracked as REQ-29.
 - **Compliance system:** `--compliance` exposes 15 profile names today, but only 3 have implemented heuristic checks so far.
 

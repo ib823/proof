@@ -14,7 +14,7 @@
 | Metric | Value |
 |--------|-------|
 | Version | 0.3.0 (tagged) |
-| Coq Qed | 12,385 (0 Admitted, 0 axioms, 4 Abort, 309 active files) |
+| Coq Qed | 12,386 (0 Admitted, 0 axioms, 4 Abort, 309 active files) |
 | Lean theorems | 12,576 (325 files, 0 sorry, 0 axiom — port-fallbacks eliminated 2026-05-17, commit 41b85893) |
 | Isabelle lemmas | ~12,931 (368 .thy files, 1 smoke theory `RIINA_CORE` compiles, 0 sorry) |
 | F* / TLA+ / Alloy / SMT | 1 active smoke artifact each; rest are generated corpora (`metrics.json` is authoritative) |

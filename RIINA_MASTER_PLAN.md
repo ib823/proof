@@ -178,7 +178,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-core** | `05_TOOLING/crates/riina-core/` | Implemented | Cryptographic primitives (AES, SHA-3) |
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
-| **Coq proofs** | `02_FORMAL/coq/` | 309 active files, 12,385 Qed, 0 Admitted, 4 Abort (active proof gaps) | Primary formal verification |
+| **Coq proofs** | `02_FORMAL/coq/` | 309 active files, 12,386 Qed, 0 Admitted, 4 Abort (active proof gaps) | Primary formal verification |
 | **Lean proofs** | `02_FORMAL/lean/` | 325 files, 12,576 theorems, `lake build` passes, 0 sorry, 0 axiom | Mechanized |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep), 1 smoke theory (`RIINA_CORE`) compiles, 0 sorry | Smoke-mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with 11,843 Z3-verified assertions (rest generated corpora) | Smoke-mechanized |
@@ -225,13 +225,13 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 
 | Metric | Value | Command |
 |--------|-------|---------|
-| Qed proofs (active build) | 12,385 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
+| Qed proofs (active build) | 12,386 | Per-file `grep -c "Qed."` (matches audit-docs.sh methodology) |
 | Admitted (active build) | 0 | Per-file `grep -cP "^\s*Admitted."` (matches audit-docs.sh methodology) |
 | Abort (active build) | 0 | Per-file `grep -cP "^\s*Abort\."` — 4 abandoned first attempts in X001/V001/W001/mobile_os deleted 2026-05-17 (REQ-21 closed); each had a Qed-proven successor with the same theorem name, so deletion was pure dead-code removal. Audit-docs.sh now gates this at 0. |
 | Axioms (active build) | 0 | `grep -rn "^Axiom " ... \| grep -v _archive_deprecated \| wc -l` |
-| Parameter (active build) | 32 | `grep -rP "^\s*Parameter\s" 02_FORMAL/coq --include="*.v" \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` — 29 in `domains/PhysicalSecurity.v` (Trusted Hardware Primitives — EDA tool outputs, X-ray microscopy, PUFs, voltage/temp/mesh sensors, power traces; doctrine header at file top categorises and binds each to an external standard per REQ-23), 2 in `domains/StandardLibrary.v` (`NANOS_PER_SEC` + `NANOS_PER_SEC_pos` — SI specification kept opaque to avoid `simpl` unfolding a unary 10^9 literal), 1 in `domains/VerifiedIdentity.v` (`argon2id_hash` — RFC 9106 cryptographic primitive, implementation in `riina-core`, TCB until Verus harness). All 32 are part of the TCB. Audit-docs.sh pins this count. |
+| Parameter (active build) | 30 | `grep -rP "^\s*Parameter\s" 02_FORMAL/coq --include="*.v" \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` — 29 in `domains/PhysicalSecurity.v` (Trusted Hardware Primitives — EDA tool outputs, X-ray microscopy, PUFs, voltage/temp/mesh sensors, power traces; doctrine header at file top categorises and binds each to an external standard per REQ-23), 1 in `domains/VerifiedIdentity.v` (`argon2id_hash` — RFC 9106 cryptographic primitive, an opaque *function* not a proposition; implementation in `riina-core`, TCB until Verus harness). The former 2 in `domains/StandardLibrary.v` (`NANOS_PER_SEC` + `NANOS_PER_SEC_pos`) were eliminated: `NANOS_PER_SEC` is now a concrete `Definition` (`1000*1000*1000`, sealed `Opaque` for proof performance) and `NANOS_PER_SEC_pos` a proved `Qed` lemma — removed from the TCB. All 30 remaining are part of the TCB. Audit-docs.sh pins this count. |
 | .v files (active) | 309 | `find ... -name "*.v" -not -path "*_archive*" \| wc -l` |
-| Qed (archive) | 758 | Total 13,143 minus active 12,385 |
+| Qed (archive) | 758 | Total 13,144 minus active 12,386 |
 | Admitted (archive) | 99 | In `properties/_archive_deprecated/` |
 | Compilation | PASSES | `cd 02_FORMAL/coq && make` (last verified upstream; container lacks Rocq) |
 
@@ -382,7 +382,7 @@ research source, and detailed description.
 | REQ-20 | Syariah-compliant financial type library | P2 | TODO | 6 |
 | REQ-21 | Eliminate 4 active Coq `Abort.` (X001/V001/W001/mobile_os) | P0 | DONE | Gate A |
 | REQ-22 | Eliminate 15 Lean `axiom` port-fallbacks | P0 | DONE | Gate A |
-| REQ-23 | Audit/justify/eliminate 32 active Coq `Parameter` declarations | P0 | DONE | Gate A |
+| REQ-23 | Audit/justify/eliminate active Coq `Parameter` declarations (32→30: `NANOS_PER_SEC`/`_pos` now Definition+proved lemma; 30 remain as documented hardware/crypto TCB) | P0 | DONE | Gate A |
 | REQ-24 | Install pre-commit + pre-push hooks; CI-gate `audit-docs.sh` | P0 | DONE | Gate A |
 | REQ-25 | Decide fate of 5th stub `05_TOOLING/crates/riinac` (18-LOC print stub) | P1 | TODO | Gate A |
 | REQ-26 | Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules, .clinerules, CONTRIBUTING.md, SECURITY.md | P1 | DONE | Gate A |
@@ -441,7 +441,7 @@ All public-facing metrics are command-derived, not copied from docs.
 ### Phase 1: PROOF DEPTH — Coq Foundation
 
 **Goal:** Deepen the Coq proof base with real, hard proofs. Move from "broad but shallow"
-(12,385 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
+(12,386 Qed mostly domain models) to "deep at the core" (logical relations, linear soundness).
 
 **The 13 Verification Dimensions** (from `04_SPECS/requirements/RIINA_10_PROVER_DOMINANCE_STRATEGY.md`):
 
@@ -1021,7 +1021,7 @@ X = primary role, o = supporting role
 | Metric | Value |
 |--------|-------|
 | Files | 259 active |
-| Qed | 12,385 |
+| Qed | 12,386 |
 | Admitted | 0 active (98 in archive) |
 | Axioms | 0 active |
 | Compilation | PASSES |
@@ -2052,7 +2052,7 @@ Updated when all of a gate's exit criteria pass verification. Update method:
 |---|---|
 | ~~Close 4 active Coq `Abort.` → `Qed.` OR move to `_incomplete/` with named issue~~ **DONE 2026-05-17 (REQ-21)** | `find 02_FORMAL/coq -name '*.v' -type f ! -path '*/_archive_deprecated/*' ! -path '*/_incomplete/*' -exec grep -cP '^\s*Abort\.' {} \; \| awk '{s+=$1}END{print s}'` returns `0` ✓ |
 | ~~Eliminate 15 Lean `axiom` port-fallbacks (NetworkDefense, FullstackSecurity, SessionTypes, EnterpriseERP, ActorCalculus, TimingSecurity, ChoreographyTypes, X001_ConcurrencyModel, SIGMA001_VerifiedStorage, MobileOS/ConcurrencyFramework, Industries/IndustryFinancial)~~ **DONE 2026-05-17 (commit 41b85893)** | `grep -rP '^\s*axiom\s' 02_FORMAL/lean/RIINA --include='*.lean' \| grep -v '/_wip/' \| wc -l` returns `0` ✓ |
-| ~~Audit & justify or eliminate 32 active Coq `Parameter` declarations~~ **DONE 2026-05-17 (REQ-23)** | `grep -rP '^\s*Parameter\s' 02_FORMAL/coq --include='*.v' \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` ≤ documented count with rationale per remaining entry — pinned at 32, audit-docs.sh enforces ✓ |
+| ~~Audit & justify or eliminate 32 active Coq `Parameter` declarations~~ **DONE 2026-05-17 (REQ-23); further reduced 32→30 (NANOS_PER_SEC_pos proven)** | `grep -rP '^\s*Parameter\s' 02_FORMAL/coq --include='*.v' \| grep -v _archive_deprecated \| grep -v _incomplete \| wc -l` ≤ documented count with rationale per remaining entry — pinned at 30, audit-docs.sh enforces ✓ |
 | ~~Install pre-commit + pre-push hooks; gate `audit-docs.sh` exit 0~~ **DONE 2026-05-17 (REQ-24)** | `bash scripts/audit-docs.sh` reports no "pre-commit hook NOT installed" ERROR ✓ (must re-run `bash 00_SETUP/scripts/install_hooks.sh` after every fresh clone — `.git/hooks/` is not tracked) |
 | Decide & act on 5th stub `05_TOOLING/crates/riinac` | Either deleted from workspace, or its `src/main.rs` no longer prints "Not yet implemented" |
 | ~~Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules, .clinerules, CONTRIBUTING.md, SECURITY.md~~ **DONE 2026-05-17 (REQ-26)** | `audit-docs.sh` output shows `[OK]` lines for each ✓ (CONTRIBUTING.md and SECURITY.md already covered; COPILOT.md, .cursorrules, .clinerules added this session) |

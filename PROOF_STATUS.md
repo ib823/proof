@@ -9,23 +9,30 @@ environment with `coqc` to regenerate.
 - Coq files (active via `_CoqProject`): 309
 - Coq files (total in repository): 349
 - Coq files (inactive or archived): 40
-- Qed proofs (active): 12385
+- Qed proofs (active): 12386
 - Admitted (active): 0
 - Abort (active, incomplete proof attempts): 0
 - Axioms (active, declared with `Axiom`): 0
-- `Parameter` declarations (active): 32  ← see caveat below
+- `Parameter` declarations (active): 30  ← see caveat below
 - Explicit semantic assumptions (active): 0
 
 ## Caveat: `Parameter` declarations are axioms in all but name
 In Coq, a `Parameter` is logically equivalent to an `Axiom`. The active build
-contains **32 `Parameter` declarations**, of which ~7 assert *propositions*
-(e.g. `..._sound`, `..._correct`, `NANOS_PER_SEC_pos`) — i.e. unproven
-assumptions admitted into the trusted base. The headline "Axioms (active) = 0"
-is therefore true only because these are spelled `Parameter`. They are
-concentrated in:
-- `domains/PhysicalSecurity.v` (29; the file's own header lists them as TCB)
-- `domains/StandardLibrary.v:358-359`
-- `domains/VerifiedIdentity.v:141`
+contains **30 `Parameter` declarations** (down from 32). The propositional
+ones (`..._sound`, `..._correct`, etc.) are the documented Trusted Hardware
+Primitive interface — unproven by design because they model external physical
+measurements, not Coq-provable facts. The headline "Axioms (active) = 0" is
+therefore true only because these are spelled `Parameter`. They are now:
+- `domains/PhysicalSecurity.v` (29; the file's own header lists each as TCB,
+  bound to an external standard — EDA tools, X-ray, PUF physics, FIPS 140-3)
+- `domains/VerifiedIdentity.v:141` (`argon2id_hash` — opaque crypto *function*,
+  not a proposition; RFC 9106, implemented in `riina-core`)
+
+The former `domains/StandardLibrary.v:358-359` pair (`NANOS_PER_SEC` +
+`NANOS_PER_SEC_pos`) was **eliminated** (REQ-23 follow-up): `NANOS_PER_SEC` is
+now a concrete `Definition` (`1000*1000*1000`, sealed `Global Opaque` so `simpl`
+never unfolds it downstream) and `NANOS_PER_SEC_pos` is a proved `Qed` lemma —
+no longer an assumption in the trusted base.
 
 The "4 active Abort sites" previously listed here (V001/W001/X001/LocationServices)
 were closed (REQ-21); the active Abort count is now 0.
