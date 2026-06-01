@@ -24,9 +24,10 @@ theorem counts as "verified theorems."
 - Coq: 12,385 Qed (active build, 0 Admitted, 0 `Axiom`, 0 Abort), 309 active .v files.
   Caveat: 32 active `Parameter` declarations are logically equivalent to axioms
   (~7 assert propositions) — these are the de-facto trusted assumptions.
-- Lean 4: **~28 theorems actually compile** (3 hand-corrected core files). The
-  remaining ~12,500 declarations use placeholder tactics (`simp_all [Bool.and_eq_true]`)
-  that do NOT prove their goals. Claim: **generated**, not mechanized. See
+- Lean 4: 12,576 theorem/lemma declarations, but **only ~28 actually compile**
+  (3 hand-corrected core files). The remaining ~12,500 declarations use
+  placeholder tactics (`simp_all [Bool.and_eq_true]`) that do NOT prove their
+  goals. Claim: **generated**, not mechanized. See
   `02_FORMAL/lean/COMPILATION_STATUS.md`.
 - F*: 315 .fst files but `admit()` appears ~12,010 times — effectively nothing is
   proven. Claim: generated.
@@ -36,8 +37,9 @@ theorem counts as "verified theorems."
 - Authoritative per-lane claim levels: `website/public/metrics.json`.
 - Rust: 2,479 proto tests + 248 tooling tests = 2,727 (all passing), 19 proto +
   5 tooling crates, 0 external runtime deps (proto). This part is solid.
-- Examples: 155 .rii files, but only ~19 currently pass `riinac check` (the shipped
-  parser accepts a narrower grammar — see `07_EXAMPLES/README.md`).
+- Examples: 155 .rii files, of which 51 currently pass `riinac check` (all 20 of
+  `00_basics/`); the shipped parser accepts a narrower grammar than some examples
+  assume — see `07_EXAMPLES/README.md`.
 
 ## Session Protocol
 

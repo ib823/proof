@@ -668,7 +668,7 @@ __loop ()
 
 ### 3.3 Loop (Parser Sugar)
 
-`ulang { body }` is an infinite loop with `keluar` (break). Same termination concern as while.
+`ulang { body }` is an infinite loop with `putus` (break). Same termination concern as while.
 
 **Same constraint as 3.2 applies.** Require fuel or effect annotation.
 

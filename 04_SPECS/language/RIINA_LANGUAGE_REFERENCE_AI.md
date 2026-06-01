@@ -35,9 +35,9 @@ RIINA is a formally verified programming language with Bahasa Melayu (Malaysian 
 | `lain` | else | `lain { ... }` |
 | `untuk` | for | `untuk i dalam 0..10 { }` |
 | `selagi` | while | `selagi aktif { }` |
-| `ulang` | loop | `ulang { ... keluar; }` |
-| `keluar` | break | `keluar;` |
-| `terus` | continue | `terus;` |
+| `ulang` | loop | `ulang { ... putus; }` |
+| `putus` | break | `putus;` |
+| `lanjut` | continue | `lanjut;` |
 | `pulang` | return | `pulang hasil;` |
 | `padan` | match | `padan nilai { 0 => "kosong", _ => "lain" }` |
 | `pastikan` | guard | `pastikan x > 0 lain { pulang Gagal(...); }` |
@@ -325,6 +325,7 @@ guna std::kripto;
 |---|---|---|---|
 | `cetak` | `print` | `Any -> ()` | System |
 | `cetakln` | `println` | `Any -> ()` | System |
+| `baca_garisan` | `read_line` | `() -> Teks` | Read |
 
 ### 6.2 String
 

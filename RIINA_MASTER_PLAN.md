@@ -1920,6 +1920,8 @@ SESSION END:
 | `untuk` | for | For loop |
 | `selagi` | while | While loop |
 | `ulang` | loop | Infinite loop |
+| `putus` | break | Break out of loop |
+| `lanjut` | continue | Continue to next iteration |
 | `pulang` | return | Return value |
 | `padan` | match | Pattern match |
 | `betul` | true | Boolean true |

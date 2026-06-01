@@ -7,6 +7,35 @@ All notable changes to RIINA™ will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — 2026-06-01 — Prototype: loop control, logical-not, example corpus
+
+### Added
+- **Loop control keywords** `putus` (break) and `lanjut` (continue), parsed in
+  `selagi` / `ulang` / `untuk` bodies (with an optional ignored loop label). The
+  spellings match the example corpus; `keluar` / `terus` are no longer reserved
+  and are usable as ordinary identifiers (e.g. loop-flag variables).
+- **`baca_garisan`** (read-line) builtin, typed as a `Teks` thunk.
+- `03_PROTO/.cargo/config.toml` sets `RUST_MIN_STACK=16 MiB` so `cargo test
+  --all` is green by default. In debug builds the large interpreter
+  `eval_with_env` match has a big stack frame, and the `letrec` countdown tests
+  overflowed the default 2 MiB spawned-thread stack; the release `riinac`
+  binary (8 MiB main thread) was never affected. No semantic change.
+
+### Changed
+- **`!` is now overloaded** as logical-not on `Bool`/`Any` (it keeps its deref
+  meaning on references), matching the language reference which already
+  documented `!` / `bukan` as the `not` operator.
+- Documentation aligned to the implemented loop-control vocabulary
+  (`04_SPECS/language/RIINA_LANGUAGE_REFERENCE_AI.md`,
+  `SYNTAX_IMPROVEMENT_SPEC_v2_0_0.md`, `RIINA_MASTER_PLAN.md` Part 9,
+  `07_EXAMPLES/06_ai_context/` cheatsheet + common-mistakes); corpus status
+  refreshed in `07_EXAMPLES/README.md`.
+
+### Verified (by command, not copied)
+- `07_EXAMPLES/00_basics/` passes `riinac check` 20/20; full corpus 47/147
+  git-tracked (51/155 on disk). `03_PROTO` test suite: 2,579 pass / 0 fail;
+  `cargo clippy --all` reports 0 warnings.
+
 ## [Unreleased] — 2026-05-17 — Lean active-lane axiom restoration
 
 ### Fixed

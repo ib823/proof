@@ -482,7 +482,7 @@ biar nilai = dedah(kunci, bukti: "enkripsi_sah_untuk_penghantaran");
 | `true` | `betul` |
 | `false` | `salah` |
 | `break` | `putus` |
-| `continue` | `terus` |
+| `continue` | `lanjut` |
 | `use` / `import` | `guna` |
 | `module` | `modul` |
 | `type` | `jenis` |
