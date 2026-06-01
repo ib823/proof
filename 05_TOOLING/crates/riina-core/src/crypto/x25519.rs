@@ -48,7 +48,7 @@ impl X25519KeyPair {
         let mut private_key = *random;
 
         // Key clamping as per RFC 7748
-        private_key[0] &= 248; // Clear bits 0, 1, 2
+        private_key[0] &= 0xF8; // Clear bits 0, 1, 2
         private_key[31] &= 127; // Clear bit 255
         private_key[31] |= 64; // Set bit 254
 

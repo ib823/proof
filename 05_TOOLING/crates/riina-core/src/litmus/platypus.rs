@@ -119,6 +119,7 @@ pub fn constant_power_compare(a: &[u8], b: &[u8]) -> bool {
 }
 
 #[cfg(test)]
+#[allow(clippy::assertions_on_constants)] // documentation tests asserting RIINA design reasoning
 mod tests {
     use super::*;
 

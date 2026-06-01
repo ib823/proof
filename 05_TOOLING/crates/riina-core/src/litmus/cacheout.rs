@@ -98,6 +98,7 @@ pub fn encrypted_secret_demo() -> [u8; 16] {
 }
 
 #[cfg(test)]
+#[allow(clippy::assertions_on_constants)] // documentation tests asserting RIINA design reasoning
 mod tests {
     use super::*;
 

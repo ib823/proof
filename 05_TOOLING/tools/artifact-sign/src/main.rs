@@ -192,7 +192,7 @@ impl KeyPair {
                 let mut random = [0u8; 32];
                 read_random_bytes(&mut random)?;
                 let kp = MlDsa65KeyPair::generate(&random).map_err(|e| {
-                    io::Error::new(io::ErrorKind::Other, format!("ML-DSA keygen failed: {e}"))
+                    io::Error::other(format!("ML-DSA keygen failed: {e}"))
                 })?;
                 let public_key = kp.verifying_key().as_bytes().to_vec();
                 let private_key = kp.signing_key().as_bytes().to_vec();
@@ -205,7 +205,7 @@ impl KeyPair {
                 let mut random = [0u8; 64];
                 read_random_bytes(&mut random)?;
                 let hsk = HybridSigningKey::generate(&random).map_err(|e| {
-                    io::Error::new(io::ErrorKind::Other, format!("Hybrid keygen failed: {e}"))
+                    io::Error::other(format!("Hybrid keygen failed: {e}"))
                 })?;
                 let public_key = hsk.public_key().to_vec();
                 // Store the seed so we can reconstruct later
@@ -323,6 +323,7 @@ fn hash_file(path: &Path) -> io::Result<String> {
     Ok(hex_encode(&digest))
 }
 
+#[allow(clippy::format_push_string)] // readable hex building in a loop
 fn hex_encode(bytes: &[u8]) -> String {
     let mut s = String::with_capacity(bytes.len() * 2);
     for b in bytes {
@@ -332,16 +333,13 @@ fn hex_encode(bytes: &[u8]) -> String {
 }
 
 fn hex_decode(s: &str) -> Option<Vec<u8>> {
-    if s.len() % 2 != 0 {
+    if !s.len().is_multiple_of(2) {
         return None;
     }
     let mut out = Vec::with_capacity(s.len() / 2);
     let mut chars = s.chars();
-    loop {
-        let hi = match chars.next() {
-            Some(c) => c.to_digit(16)?,
-            None => break,
-        };
+    while let Some(c) = chars.next() {
+        let hi = c.to_digit(16)?;
         let lo = chars.next()?.to_digit(16)?;
         out.push((hi * 16 + lo) as u8);
     }
@@ -444,7 +442,7 @@ fn sign_message_with_key(algorithm: &str, private_key: &[u8], message: &[u8]) ->
                 io::Error::new(io::ErrorKind::InvalidData, format!("ML-DSA key parse: {e}"))
             })?;
             let sig = sk.sign(message).map_err(|e| {
-                io::Error::new(io::ErrorKind::Other, format!("ML-DSA sign failed: {e}"))
+                io::Error::other(format!("ML-DSA sign failed: {e}"))
             })?;
             Ok(sig.to_vec())
         }
@@ -456,10 +454,10 @@ fn sign_message_with_key(algorithm: &str, private_key: &[u8], message: &[u8]) ->
                 ));
             }
             let hsk = HybridSigningKey::generate(private_key).map_err(|e| {
-                io::Error::new(io::ErrorKind::Other, format!("Hybrid key reconstruct: {e}"))
+                io::Error::other(format!("Hybrid key reconstruct: {e}"))
             })?;
             let sig = hsk.sign(message).map_err(|e| {
-                io::Error::new(io::ErrorKind::Other, format!("Hybrid sign failed: {e}"))
+                io::Error::other(format!("Hybrid sign failed: {e}"))
             })?;
             Ok(sig.to_vec())
         }
@@ -721,6 +719,7 @@ fn generate_sbom(
     Ok(())
 }
 
+#[allow(clippy::format_push_string)] // readable JSON assembly
 fn generate_cyclonedx(components: &[String], timestamp: u64) -> String {
     let mut json = String::from("{\n");
     json.push_str("  \"bomFormat\": \"CycloneDX\",\n");
@@ -754,6 +753,7 @@ fn generate_cyclonedx(components: &[String], timestamp: u64) -> String {
     json
 }
 
+#[allow(clippy::format_push_string)] // readable JSON assembly
 fn generate_spdx(components: &[String], timestamp: u64) -> String {
     let mut json = String::from("{\n");
     json.push_str("  \"spdxVersion\": \"SPDX-2.3\",\n");

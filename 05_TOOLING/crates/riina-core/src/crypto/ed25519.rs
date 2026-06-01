@@ -1000,7 +1000,7 @@ impl Ed25519SigningKey {
         // 2. Clamp the first 32 bytes to form the scalar
         let mut clamped = [0u8; 32];
         clamped.copy_from_slice(&expanded[..32]);
-        clamped[0] &= 248; // Clear lowest 3 bits
+        clamped[0] &= 0xF8; // Clear lowest 3 bits
         clamped[31] &= 127; // Clear highest bit
         clamped[31] |= 64; // Set second-highest bit
 

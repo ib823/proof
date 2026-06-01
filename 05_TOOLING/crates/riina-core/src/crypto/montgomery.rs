@@ -242,7 +242,7 @@ impl MontgomeryPoint {
     pub fn scalar_mul(&self, scalar: &[u8; 32]) -> Self {
         // Clamp the scalar (required for X25519)
         let mut clamped = *scalar;
-        clamped[0] &= 248; // Clear bits 0, 1, 2
+        clamped[0] &= 0xF8; // Clear bits 0, 1, 2
         clamped[31] &= 127; // Clear bit 255
         clamped[31] |= 64; // Set bit 254
 
@@ -460,7 +460,7 @@ mod tests {
 
         // Verify clamping rules by checking the scalar used
         let mut clamped = scalar;
-        clamped[0] &= 248; // Clear bits 0, 1, 2
+        clamped[0] &= 0xF8; // Clear bits 0, 1, 2
         clamped[31] &= 127; // Clear bit 255
         clamped[31] |= 64; // Set bit 254
 

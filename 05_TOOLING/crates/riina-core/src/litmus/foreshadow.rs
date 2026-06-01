@@ -78,6 +78,7 @@ impl LitmusTest for Foreshadow {
 /// RIINA's capability-based security operates in userspace
 /// with cryptographic enforcement, not hardware enclaves.
 #[cfg(test)]
+#[allow(clippy::assertions_on_constants)] // documentation tests asserting RIINA design reasoning
 mod tests {
     use super::*;
 

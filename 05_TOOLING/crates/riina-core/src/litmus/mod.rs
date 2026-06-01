@@ -161,7 +161,7 @@ mod tests {
         assert_eq!(tests.len(), 23);
 
         // Run all tests
-        for test in tests.iter() {
+        for test in &tests {
             let result = test.run();
             // All tests should be Safe or Inconclusive (never Vulnerable)
             assert!(
@@ -175,7 +175,7 @@ mod tests {
     #[test]
     fn test_all_tests_have_cve() {
         let tests = all_litmus_tests();
-        for test in tests.iter() {
+        for test in &tests {
             // All known vulnerabilities should have a CVE
             assert!(
                 test.cve().is_some(),
@@ -188,7 +188,7 @@ mod tests {
     #[test]
     fn test_all_tests_have_description() {
         let tests = all_litmus_tests();
-        for test in tests.iter() {
+        for test in &tests {
             assert!(
                 !test.description().is_empty(),
                 "Test '{}' has empty description",

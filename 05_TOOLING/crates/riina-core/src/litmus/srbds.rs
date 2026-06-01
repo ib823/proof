@@ -77,6 +77,7 @@ impl LitmusTest for Srbds {
 /// Even if SRBDS leaks RDRAND output, the mixed and HKDFed result
 /// remains cryptographically secure.
 #[cfg(test)]
+#[allow(clippy::assertions_on_constants)] // documentation tests asserting RIINA design reasoning
 mod tests {
     use super::*;
 
