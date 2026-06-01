@@ -12,7 +12,8 @@ resolver = "2"
 members = [
     "crates/riina-core",
     "crates/riina-effect",
-    "crates/riinac",
+    # NOTE: the former `crates/riinac` stub (a "Not yet implemented" placeholder)
+    # was retired 2026-06-01 — the real RIINA compiler lives in 03_PROTO/crates/riinac.
     "crates/riina-build",
     "crates/riina-verify",
     "tools/hash-chain",
