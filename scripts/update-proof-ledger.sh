@@ -55,6 +55,7 @@ active_admitted=0
 active_abort=0
 active_axioms=0
 active_assumptions=0
+active_parameters=0
 
 for rel in "${active_coq_files[@]}"; do
   path="$COQ_DIR/$rel"
@@ -66,12 +67,16 @@ for rel in "${active_coq_files[@]}"; do
   abort_hits="$(grep -Ec '^[[:space:]]*Abort\.' "$path" || true)"
   axiom_hits="$(grep -Ec '^[[:space:]]*Axiom[[:space:]]+' "$path" || true)"
   assumption_hits="$(grep -Ec '^[[:space:]]*Parameter[[:space:]]+val_rel_n_step_up[[:space:]]' "$path" || true)"
+  # Total `Parameter` declarations — logically axioms; the documented Trusted
+  # Computing Base (hardware/crypto interfaces). Surfaced for honesty.
+  parameter_hits="$(grep -Ec '^[[:space:]]*Parameter[[:space:]]+' "$path" || true)"
 
   active_qed=$((active_qed + qed_hits))
   active_admitted=$((active_admitted + admitted_hits))
   active_abort=$((active_abort + abort_hits))
   active_axioms=$((active_axioms + axiom_hits))
   active_assumptions=$((active_assumptions + assumption_hits))
+  active_parameters=$((active_parameters + parameter_hits))
 
   grep -nE '^[[:space:]]*Axiom[[:space:]]+' "$path" | sed "s|^|$rel:|" >> "$tmp_active_axiom_sites" || true
   grep -nE '^[[:space:]]*Parameter[[:space:]]+val_rel_n_step_up[[:space:]]' "$path" | sed "s|^|$rel:|" >> "$tmp_active_assumption_sites" || true
@@ -94,8 +99,20 @@ global_axioms="$(find "$REPO_ROOT/02_FORMAL" -name "*.v" -type f -exec grep -Eh 
   echo "- Qed proofs (active): $active_qed"
   echo "- Admitted (active): $active_admitted"
   echo "- Abort (active, incomplete proof attempts): $active_abort"
-  echo "- Axioms (active): $active_axioms"
+  echo "- Axioms (active, declared with \`Axiom\`): $active_axioms"
+  echo "- \`Parameter\` declarations (active): $active_parameters  ← see TCB caveat below"
   echo "- Explicit semantic assumptions (active): $active_assumptions"
+  echo ""
+  echo "## Caveat: \`Parameter\` declarations are axioms in all but name"
+  echo "In Coq a \`Parameter\` is logically equivalent to an \`Axiom\`. The active build"
+  echo "contains **$active_parameters \`Parameter\` declarations**. The propositional ones"
+  echo "(\`..._sound\`, \`..._correct\`, etc.) are the documented Trusted Hardware/Crypto"
+  echo "Primitive interface — unproven by design because they model external physical"
+  echo "measurements or opaque crypto functions, not Coq-provable facts (e.g."
+  echo "\`domains/PhysicalSecurity.v\` EDA/X-ray/PUF/FIPS-140-3 entries; \`argon2id_hash\`"
+  echo "in \`domains/VerifiedIdentity.v\`, RFC 9106). The headline \"Axioms (active) = 0\""
+  echo "is therefore true only because these are spelled \`Parameter\`; they are tracked"
+  echo "here separately and are NOT gated to 0."
   echo ""
   echo "## Active Abort Sites"
   if [ -s "$tmp_active_abort_sites" ]; then

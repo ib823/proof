@@ -8,7 +8,7 @@
 #   3) Effect soundness foundation (Coq effect gate + backend preservation hooks)
 #   4) Linear soundness foundation (Coq linear invariants + compiler signal)
 #   9) Protocol correctness foundation (Coq + TLA+ + Alloy artifacts)
-#  12) Trust-chain foundation (DDC/hermetic + signed-commit policy)
+#  12) Trust-chain foundation (DDC/hermetic + secret/Trojan-source gates; signing retracted)
 #
 # Usage:
 #   bash scripts/check-medium-gaps.sh
@@ -267,9 +267,12 @@ for p in "${trust_paths[@]}"; do
   [ -f "$p" ] || trust_files_exist=0
 done
 
-signed_policy=0
-if grep -q 'commit.gpgsign' "$REPO_ROOT/scripts/security-gates.sh"; then
-  signed_policy=1
+# Signed-commit gate retracted 2026-06-01 (unenforceable); trust chain now rests
+# on the enforceable secret + Trojan-source scans.
+security_gates=0
+if grep -q 'Scanning changed files for secrets' "$REPO_ROOT/scripts/security-gates.sh" \
+   && grep -q 'Trojan source' "$REPO_ROOT/scripts/security-gates.sh"; then
+  security_gates=1
 fi
 
 bootstrap_cmd=0
@@ -282,10 +285,10 @@ if [ -f "$COQ_DIR/domains/T001_HermeticBuild.v" ] && [ -f "$COQ_DIR/domains/Supp
   coq_ddc_theorems="$( (grep -Eh '^(Theorem|Lemma) ' "$COQ_DIR/domains/T001_HermeticBuild.v" "$COQ_DIR/domains/SupplyChainSecurity.v" || true) | wc -l | tr -d ' ' )"
 fi
 
-if [ "$trust_files_exist" -eq 1 ] && [ "$signed_policy" -eq 1 ] && [ "$bootstrap_cmd" -eq 1 ] && [ "$coq_ddc_theorems" -gt 0 ]; then
+if [ "$trust_files_exist" -eq 1 ] && [ "$security_gates" -eq 1 ] && [ "$bootstrap_cmd" -eq 1 ] && [ "$coq_ddc_theorems" -gt 0 ]; then
   ITEM12_STATUS="PASS"
 fi
-ITEM12_DETAIL="files=$trust_files_exist signed_policy=$signed_policy bootstrap_cmd=$bootstrap_cmd coq_thm=$coq_ddc_theorems"
+ITEM12_DETAIL="files=$trust_files_exist security_gates=$security_gates (signing retracted) bootstrap_cmd=$bootstrap_cmd coq_thm=$coq_ddc_theorems"
 
 # ---------------------------------------------------------------------------
 # Report + exit

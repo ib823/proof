@@ -1052,24 +1052,29 @@ if [ "$ISABELLE_SMOKE_BUILD_OK" = true ] && [ "$ISABELLE_COMPILED_THEORIES" -gt 
     fi
 fi
 
+# HONESTY POLICY (2026-06-01): a trivial *smoke* artifact compiling does NOT earn
+# a lane a "compiled" claim level — that overclaims (only a handful of trivial
+# lemmas/assertions compile, not the lane). The smoke success is preserved in the
+# per-lane data fields (smokeBuildOk, compiledLemmas, smokeVerified, smokeNote);
+# the LANE claim level stays "generated" unless a fresh full-lane verification
+# report (reports/noncoq_mechanized_status.json) vouches for it — which is exactly
+# what scripts/public-quality-gates.sh requires. This keeps the two scripts
+# consistent and matches REQ-08/09/10 = PARTIAL (smoke) in the master plan.
 if [ "$FSTAR_SMOKE_BUILD_OK" = true ] && [ "$FSTAR_COMPILED_LEMMAS" -gt 0 ]; then
-    FSTAR_COMPILED=true
     if [ "$FSTAR_MECHANIZED_READY" != true ]; then
-        FSTAR_PENDING_REASON="partial CryptographicSecurityActive smoke build verified; full Active+Domains F* compilation still pending"
+        FSTAR_PENDING_REASON="CryptographicSecurityActive smoke build verified (3 trivial lemmas); lane stays generated until full Active+Domains F* compilation"
     fi
 fi
 
 if [ "$TLAPLUS_SMOKE_BUILD_OK" = true ] && [ "$TLAPLUS_COMPILED_THEOREMS" -gt 0 ]; then
-    TLAPLUS_COMPILED=true
     if [ "$TLAPLUS_MECHANIZED_READY" != true ]; then
-        TLAPLUS_PENDING_REASON="partial TelusProcurementProtocol smoke model checked; full-lane executable SANY checks across TLA corpus still pending"
+        TLAPLUS_PENDING_REASON="TelusProcurementProtocol smoke model checked (5 theorems); lane stays generated until full-lane SANY checks across TLA corpus"
     fi
 fi
 
 if [ "$ALLOY_SMOKE_BUILD_OK" = true ] && [ "$ALLOY_COMPILED_ASSERTIONS" -gt 0 ]; then
-    ALLOY_COMPILED=true
     if [ "$ALLOY_MECHANIZED_READY" != true ]; then
-        ALLOY_PENDING_REASON="partial TelusProcurementAccessControl smoke model checked; full-lane executable Alloy checks across corpus still pending"
+        ALLOY_PENDING_REASON="TelusProcurementAccessControl smoke model checked (6 assertions); lane stays generated until full-lane Alloy checks across corpus"
     fi
 fi
 

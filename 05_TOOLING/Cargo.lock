@@ -613,14 +613,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "riinac"
-version = "0.2.0"
-dependencies = [
- "clap",
- "riina-core",
-]
-
-[[package]]
 name = "runtime-proof-verify"
 version = "0.2.0"
 dependencies = [

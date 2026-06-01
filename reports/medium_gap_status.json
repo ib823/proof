@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-02-16T14:54:49Z",
+  "generated_utc": "2026-06-01T22:53:00Z",
   "scope": "medium_items_1_2_3_4_9_12",
   "item_1_type_system_soundness": {
     "status": "PASS",
@@ -15,7 +15,7 @@
   },
   "item_4_linear_soundness_foundation": {
     "status": "PASS",
-    "detail": "files=1 tokens=1 compiler_signal=0"
+    "detail": "files=1 tokens=1 compiler_signal=1"
   },
   "item_9_protocol_foundation": {
     "status": "PASS",
@@ -23,7 +23,7 @@
   },
   "item_12_trust_chain_foundation": {
     "status": "PASS",
-    "detail": "files=1 signed_policy=1 bootstrap_cmd=1 coq_thm=65"
+    "detail": "files=1 security_gates=1 (signing retracted) bootstrap_cmd=1 coq_thm=65"
   },
   "overall": "PASS"
 }
