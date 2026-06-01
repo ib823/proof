@@ -760,6 +760,8 @@ impl Interpreter {
 
                         Ok(val.clone())
                     }
+                    // `!` overloaded as logical-not on Bool (Deref shares the `!` token).
+                    Value::Bool(b) => Ok(Value::Bool(!b)),
                     _ => Err(Error::TypeMismatch {
                         expected: "reference".to_string(),
                         found: format!("{:?}", ref_val),

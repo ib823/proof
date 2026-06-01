@@ -2925,6 +2925,10 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     };
                     Ok((result_ty, eff.join(Effect::Read)))
                 }
+                // `!` is overloaded: on a Bool it is logical negation (the corpus
+                // writes `!cond`); `Any` (unknown) is likewise treated as boolean.
+                Ty::Bool => Ok((Ty::Bool, eff)),
+                Ty::Any => Ok((Ty::Any, eff)),
                 _ => Err(TypeError::ExpectedRef(t)),
             }
         }
@@ -3713,6 +3717,9 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             let (t, eff) = type_check(ctx, e)?;
             match t {
                 Ty::Ref(inner, _l) => Ok((*inner, eff.join(Effect::Read))),
+                // `!` as logical negation on Bool/Any (see type_check_full).
+                Ty::Bool => Ok((Ty::Bool, eff)),
+                Ty::Any => Ok((Ty::Any, eff)),
                 _ => Err(TypeError::ExpectedRef(t)),
             }
         }
