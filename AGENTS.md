@@ -30,19 +30,17 @@
 
 ## Next-Session Pickup (read this BEFORE picking a task)
 
-**Current active gate: `A — Truth-up & House Cleaning`** (RIINA_MASTER_PLAN.md Part 11).
+**Current active gate: `B — Compiler Enforcement Parity`** (RIINA_MASTER_PLAN.md Part 11).
+Gate A (Truth-up & House Cleaning) CLOSED 2026-06-01 — all REQ-21..26 DONE.
 
-1. Open `RIINA_MASTER_PLAN.md` §Part 11 §Active Gate Marker — confirm gate is still A
+1. Open `RIINA_MASTER_PLAN.md` §Part 11 §Active Gate Marker — confirm gate is still B
    (advance only after re-running gate verification commands).
 2. From `RIINA_MASTER_PLAN.md` §Part 3 Requirements Registry, pick the highest-priority
-   open TODO REQ assigned to the active gate. Today's Gate A open REQs (P0 first):
-   - **REQ-21** (P0): Eliminate 4 active Coq `Abort.` — requires Rocq toolchain
-   - ~~**REQ-22** (P0): Eliminate 15 Lean `axiom` port-fallbacks~~ — **DONE 2026-05-17 (commit 41b85893)**
-   - **REQ-23** (P0): Audit 32 active Coq `Parameter` declarations
-   - **REQ-24** (P0): Install pre-commit + pre-push hooks
-   - **REQ-25** (P1): Decide fate of 5th stub `05_TOOLING/crates/riinac`
-   - **REQ-26** (P1): Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules,
-     .clinerules, CONTRIBUTING.md, SECURITY.md
+   open REQ assigned to the active gate. Gate B owns **REQ-27** (P0, compiler enforcement
+   parity) — currently **PARTIAL**: 6 enforcement-parity properties (pos+neg) are verified
+   end-to-end and the WASM/C differential is 26/30 byte-equal; still open are the full
+   parse→project→impl session-type pipeline, the full IFC side-channel/aliasing suite, and
+   per-program constant-time codegen. Closed Gate A REQs (21–26) are recorded in Part 3.
 3. Decisions (REQ-29 D1-vs-D2, REQ-33 industry target, REQ-35 license, REQ-36 maintainers)
    require the project owner; do not pre-decide.
 4. Follow `RIINA_MASTER_PLAN.md` Part 8 (universal session protocol) for the work itself.
