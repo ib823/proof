@@ -182,7 +182,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **Lean proofs** | `02_FORMAL/lean/` | 326 files, 12,576 theorem *declarations* (port). Measured 2026-06-01 under Lean 4.16.0: **only 7/326 files elaborate (215 thms); `lake build RIINA` passes but builds only the 0-theorem `Domains/All` shim**; core type-safety files do not elaborate. See `02_FORMAL/lean/COMPILATION_STATUS.md` | Generated (not mechanized) |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep), 1 smoke theory (`RIINA_CORE`) compiles, 0 sorry | Smoke-mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with 11,843 Z3-verified assertions (rest generated corpora) | Smoke-mechanized |
-| **F\* proofs** | `02_FORMAL/fstar/` | 315 files, 1 smoke module compiled (22 lemmas), rest generated corpora | Smoke-compiled |
+| **F\* proofs** | `02_FORMAL/fstar/` | 315 files. 1 smoke module **verifies** (3 trivial lemmas; re-verified 2026-06-01, F* 2025.12.15). "22 lemmas" = raw `lemma_`-named decls corpus-wide, not all verified; the corpus carries ~11,935 `admit ()`. Rest generated | Smoke-verified |
 | **TLA+ specs** | `02_FORMAL/tlaplus/` | 317 files, 1 smoke spec TLC-checked (5 theorems), rest generated corpora | Smoke-compiled |
 | **Alloy models** | `02_FORMAL/alloy/` | 306 files, 1 smoke model analyzer-checked (6 assertions), rest generated corpora | Smoke-compiled |
 
@@ -300,7 +300,7 @@ smoke session is actually mechanized — the rest are generated corpora awaiting
 | Metric | Value | Notes |
 |--------|-------|-------|
 | F* active smoke module | 1 | `RIINA/Active/CryptographicSecurityActive.fst` |
-| F* compiled lemmas | 22 | `fstar.exe --include 02_FORMAL/fstar 02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst` |
+| F* compiled (smoke) lemmas | 3 | `fstar.exe --include 02_FORMAL/fstar 02_FORMAL/fstar/RIINA/Active/CryptographicSecurityActive.fst` → "All verification conditions discharged" (re-verified 2026-06-01). NB: 22 = raw `lemma_`-named decls corpus-wide, only these 3 verify |
 | TLA+ active smoke spec | 1 | `RIINA/Active/TelusProcurementProtocol.tla` + `.cfg` |
 | TLA+ smoke theorem count | 5 | TLC-checked procurement smoke model counts 5 `THEOREM` declarations |
 | Alloy active smoke model | 1 | `RIINA/Active/TelusProcurementAccessControl.als` |
@@ -309,8 +309,9 @@ smoke session is actually mechanized — the rest are generated corpora awaiting
 | SMT (Z3) verified assertions | 11,843 | Z3-verified security lattice properties (matching 22 Coq lemmas + 3 IFC properties) |
 | Verus / Kani / TV | 0 real artifacts | Still quarantined generated corpora |
 
-**Honest assessment:** F* now has one manually maintained smoke-compiled module with 22
-compiled lemmas, TLA+ now has one manually maintained TLC-checked procurement smoke model with
+**Honest assessment:** F* now has one manually maintained smoke-verified module with 3
+compiled lemmas (22 = raw corpus-wide `lemma_` decls; the rest carry ~11,935 `admit ()`),
+TLA+ now has one manually maintained TLC-checked procurement smoke model with
 five counted `THEOREM` declarations, Alloy now has one manually maintained bounded
 access-control model with six checked assertions, and SMT/Z3 now has one manually
 maintained security lattice verification with 11,843 Z3-verified assertions (encoding the
@@ -490,7 +491,7 @@ See Part 5 for detailed per-prover closure criteria.
 |--------|---------|--------|--------|---------------|
 | Lean 4 | 326 files, 12,576 declarations (0 literal `sorry` outside `_wip`; 2 in `_wip`) | **Generated, NOT mechanized.** Measured 2026-06-01 (Lean 4.16.0): 7/326 files elaborate (215 thms); 304 files carry placeholder tactics; core + `AlgebraicEffects` do not elaborate. `lake build RIINA` only builds the 0-theorem shim. See `COMPILATION_STATUS.md` | Generated | Low |
 | Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | DONE (smoke; requires provisioning to re-verify) | High |
-| F* | 1 smoke-compiled active module (22 lemmas) | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | DONE (smoke; requires provisioning to re-verify) | High (HACL* templates) |
+| F* | 1 smoke-verified active module (3 trivial lemmas) | constant-time u8 eq (reflexive/symmetric) + zeroize length — **NOT** ML-KEM/ML-DSA/X25519/Ed25519 (those are unproven generated corpora with ~11,935 `admit ()`) | Smoke (re-verified 2026-06-01, F* 2025.12.15) | Low |
 | TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | DONE (smoke; requires provisioning to re-verify) | Very High |
 | Alloy | 1 smoke-checked active model (6 assertions) | Access control model verified | DONE (smoke; requires provisioning to re-verify) | Very High |
 | SMT/Z3 | 1 active verification (11,843 Z3-verified assertions) | Security lattice verified; refinement type checking next | DONE (smoke) | Very High |
@@ -1068,7 +1069,7 @@ constructor names PascalCase, `induction` doesn't work on mutual inductives.
 |--------|-------|
 | Files | 265 repo-wide `.fst` files |
 | Smoke-compiled active module | 1 (`CryptographicSecurityActive.fst`) |
-| Compiled lemmas | 22 |
+| Compiled (smoke) lemmas | 3 |
 | Full-lane mechanization | 0 (generated corpus still quarantined) |
 
 **Closure criteria:**

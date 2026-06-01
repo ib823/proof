@@ -56,9 +56,14 @@
   "fstar": {
     "lemmas": 22,
     "lemmasRaw": 22,
-    "compiledLemmas": 0,
-    "smokeBuildOk": false,
+    "lemmasRawNote": "22 = corpus-wide count of `lemma_`-named declarations; NOT all verified",
+    "compiledLemmas": 3,
+    "smokeBuildOk": true,
+    "smokeVerified": "2026-06-01 (F* 2025.12.15): 'All verification conditions discharged successfully'",
+    "smokeLemmas": 3,
+    "smokeContent": "3 trivial lemmas (constant-time u8 eq reflexive/symmetric, zeroize length) — NOT the named crypto algorithms",
     "smokeModule": "RIINA.Active.CryptographicSecurityActive",
+    "corpusAdmits": 11935,
     "quarantined": false,
     "files": 315,
     "prover": "F*"

@@ -32,8 +32,10 @@ theorem counts as "verified theorems."
   `lake build RIINA` passes only because its default target is a 0-theorem shim.
   Claim: **generated**, not mechanized. See
   `02_FORMAL/lean/COMPILATION_STATUS.md`.
-- F*: 315 .fst files but `admit()` appears ~12,010 times — effectively nothing is
-  proven. Claim: generated.
+- F*: 315 .fst files; 1 smoke module (`CryptographicSecurityActive.fst`) verifies
+  3 trivial lemmas (constant-time eq + zeroize length; re-verified 2026-06-01,
+  F* 2025.12.15). The rest carry ~11,935 `admit ()` — effectively nothing else is
+  proven. Claim: generated (1 trivial smoke module aside).
 - Isabelle: 368 .thy (generated); 1 smoke theory `RIINA_CORE` compiles. Claim: smoke.
 - TLA+ / Alloy / SMT: 1 small hand-written smoke artifact each; remainder generated mirrors.
 - Verus / Kani / TV: generated stubs, explicitly quarantined (`quarantined: true`).
