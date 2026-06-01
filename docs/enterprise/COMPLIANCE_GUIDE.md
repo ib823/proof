@@ -21,7 +21,7 @@ Every RIINA program gets these guarantees **without any flags**:
 | Effect safety | Functions cannot perform undeclared side effects | `properties/EffectSafety.v` |
 | Declassification correctness | Secrets only released through authorized policy | `properties/Declassification.v` |
 
-These are proven theorems in Coq (11,905 Qed proofs in active build, 0 admits, 0 active axioms). The compiler IS the security tool. The `--compliance` flag adds **industry-specific** rules on top of these universal guarantees.
+These are proven theorems in Coq (12,386 Qed proofs in active build, 0 admits, 0 active axioms). The compiler IS the security tool. The `--compliance` flag adds **industry-specific** rules on top of these universal guarantees.
 
 ---
 
@@ -29,7 +29,7 @@ These are proven theorems in Coq (11,905 Qed proofs in active build, 0 admits, 0
 
 | Slug | Regulation | Jurisdiction | Rule Count | Spec Total |
 |------|-----------|-------------|------------|------------|
-| `pci-dss` | PCI-DSS: Payment Card Industry Data Security Standard | Global | 3 | 78 |
+| `pci-dss` | PCI-DSS 4.0: Payment Card Industry Data Security Standard | Global | 3 | 78 |
 | `pdpa` | PDPA: Malaysia Personal Data Protection Act 2010 | Malaysia | 2 | 14 |
 | `bnm` | BNM RMiT: Bank Negara Malaysia Risk Management in Technology | Malaysia | 1 | 26 |
 | `hipaa` | HIPAA: US Health Insurance Portability and Accountability Act | United States | 0 | 54 |
@@ -100,7 +100,7 @@ riinac check myapp.rii --compliance pci-dss --report-json --report-output audit_
   Rules checked: 3   Violations: 0   Errors: 0   Warnings: 0
 ───────────────────────────────────────────────────────────────────────
 
-  PROFILE: PCI-DSS: Payment Card Industry Data Security Standard
+  PROFILE: PCI-DSS 4.0: Payment Card Industry Data Security Standard
   Coverage: 3/78 rules (3.8%)
   Status: CLEAN
 
@@ -127,7 +127,7 @@ riinac check myapp.rii --compliance pci-dss --report-json --report-output audit_
   "profiles": [
     {
       "profile": "pci-dss",
-      "description": "PCI-DSS: Payment Card Industry Data Security Standard",
+      "description": "PCI-DSS 4.0: Payment Card Industry Data Security Standard",
       "rules_implemented": 3,
       "rules_total": 78,
       "coverage_pct": 3.8,

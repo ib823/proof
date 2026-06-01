@@ -4,7 +4,7 @@
 
 We present CAHAYA (Cara Akses Hebat Antara-muka Yang Aksesibel), RIINA's
 UI framework with compile-time accessibility guarantees. CAHAYA uses the
-type system to enforce WCAG 2.1 AA compliance: color contrast ratios,
+type system to enforce WCAG 2.2 AA compliance: color contrast ratios,
 keyboard navigability, screen reader compatibility, and semantic structure
 are all checked statically. We formalize accessibility properties as types
 and prove that well-typed CAHAYA programs produce accessible interfaces.
@@ -12,7 +12,7 @@ and prove that well-typed CAHAYA programs produce accessible interfaces.
 ## Key Results
 
 - **Theorem: Contrast Compliance** — All text rendered by a well-typed
-  CAHAYA program meets WCAG 2.1 AA contrast ratios (4.5:1 for normal text,
+  CAHAYA program meets WCAG 2.2 AA contrast ratios (4.5:1 for normal text,
   3:1 for large text).
 - **Theorem: Keyboard Completeness** — Every interactive element in a
   well-typed CAHAYA program is keyboard-reachable and operable.
@@ -35,7 +35,7 @@ and prove that well-typed CAHAYA programs produce accessible interfaces.
 - Bigham et al. (2017) — Automated accessibility testing
 - Swallow, Petrie & Power (2014) — Compile-time UI verification
 - Brady (2013) — Idris type-driven development (inspiration for type-level proofs)
-- WCAG 2.1 (W3C 2018) — Web Content Accessibility Guidelines
+- WCAG 2.2 (W3C 2023; ISO/IEC 40500:2025) — Web Content Accessibility Guidelines
 
 ## Venue Target
 

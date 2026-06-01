@@ -37,7 +37,7 @@ paparan {
 
 ## WCAG Contrast Checking
 
-CAHAYA enforces WCAG AA contrast ratios (minimum 4.5:1 for normal text).
+CAHAYA enforces WCAG 2.2 AA contrast ratios (minimum 4.5:1 for normal text).
 
 ```riina
 biar putih = warna(255, 255, 255);
@@ -46,7 +46,7 @@ biar hitam = warna(0, 0, 0);
 biar lulus = kontras(putih, hitam);   // true (21:1 ratio)
 ```
 
-- `kontras(fg, bg)` — returns whether foreground/background meet WCAG AA
+- `kontras(fg, bg)` — returns whether foreground/background meet WCAG 2.2 AA
 - Compile-time error if contrast ratio is provably insufficient
 
 ## Layout
