@@ -1473,7 +1473,7 @@ find /workspaces/proof/07_EXAMPLES/ -name "*.rii" | wc -l                     # 
    - No `unsafe` in Rust without justification
    - No force push
    - No new planning documents
-   - No external CI/CD suggestions
+   - CI/CD must wrap internal verification, never replace it (CLAUDE.md §FORBIDDEN ACTIONS #6)
    - No stub prover files counted as proofs
 3. **Commit incrementally.** After each verified unit of work:
    ```bash
@@ -2041,7 +2041,7 @@ Updated when all of a gate's exit criteria pass verification. Update method:
 | Proof integrity | L2 (Coq core real; Lean active-lane 0 axioms at audit-grep scope but per-file elaboration gaps remain; 5 provers smoke-only; 3 generated) | All active scopes 0 admit/0 axiom/0 abort; ≥1 independently re-proven theorem |
 | Compiler maturity | L2 (full pipeline; partial enforcement vs Coq) | Every Coq-modeled security property has matching compiler check + negative tests |
 | Stdlib audit | L1 (no external audit) | External crypto audit clean; effect-typed I/O; numeric tower |
-| Operational maturity | L1 (hooks not always installed; no CI) | Hermetic builds + SBOM + signed releases + CVE process |
+| Operational maturity | L2 (CI added — `.github/workflows/verify.yml` wraps cargo test + audit-docs + Rocq `make`; hooks still not auto-installed on fresh clone) | Hermetic builds + SBOM + signed releases + CVE process |
 | Governance | L1 (1 contributor, proprietary license, no public RFC) | ≥3 maintainers, public roadmap, RFC process, license clear |
 
 ### Gate A — Truth-up & House Cleaning

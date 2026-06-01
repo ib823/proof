@@ -151,7 +151,11 @@ bash scripts/deploy-website.sh
 3. **NEVER** use `unsafe` in Rust without documented justification
 4. **NEVER** force push to main
 5. **NEVER** create new planning/roadmap/audit/strategy documents (update `RIINA_MASTER_PLAN.md`)
-6. **NEVER** suggest GitHub Actions or external CI — RIINA uses `riinac verify` internally
+6. **NEVER** let CI replace internal verification — the GitHub Actions workflow
+   (`.github/workflows/verify.yml`) is permitted, but only as a thin wrapper that runs
+   RIINA's own gates (`make`, `cargo test`, `scripts/audit-docs.sh`, `riinac verify`).
+   `riinac verify` and the in-repo scripts remain the source of truth; CI must never add
+   checks that diverge from them.
 7. **NEVER** count stub prover files as proofs
 8. **NEVER** copy metrics from docs — always re-derive from commands
 
