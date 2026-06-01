@@ -1229,6 +1229,41 @@ fn compile_coq(coq_dir: &Path) -> CheckResult {
 // Lean 4: compilation + static scan
 // ---------------------------------------------------------------------------
 
+/// Elaborate a single canary CORE Lean file and return its `error:` count.
+///
+/// `Some(0)` means the core type-safety file genuinely elaborates (real progress);
+/// `Some(n)` means it does not (the lane is a generated port); `None` means the
+/// probe could not run (lean missing/errored). This is what keeps the manifest
+/// from reporting a shim-only `lake build` as a Lean PASS.
+fn lean_core_canary_errors(lake_path: &Path, lean_dir: &Path) -> Option<u32> {
+    let canary = "RIINA/Foundations/Syntax.lean";
+    if !lean_dir.join(canary).exists() {
+        return None;
+    }
+    let out = run_with_timeout(
+        lake_path.to_str().unwrap_or("lake"),
+        &["env", "lean", canary],
+        lean_dir,
+        LEAN_TIMEOUT,
+    )
+    .ok()?;
+    if out.status.success() {
+        return Some(0);
+    }
+    // Timeout / spawn failure → inconclusive, not "0 errors".
+    if out.status.code() == Some(124) {
+        return None;
+    }
+    let combined = format!(
+        "{}\n{}",
+        String::from_utf8_lossy(&out.stdout),
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let errors = combined.lines().filter(|l| l.contains("error:")).count() as u32;
+    // Non-zero exit but no parsed "error:" lines still means "did not elaborate".
+    Some(errors.max(1))
+}
+
 /// Compile Lean proofs by running `lake build`.
 fn compile_lean(lean_dir: &Path) -> CheckResult {
     let lake_path = match detect_lake() {
@@ -1268,11 +1303,45 @@ fn compile_lean(lean_dir: &Path) -> CheckResult {
                 .count();
 
             if o.status.success() && sorry_warnings == 0 {
-                CheckResult {
-                    name: "Lean 4 Compilation".into(),
-                    passed: true,
-                    blocking: true,
-                    details: format!("Built in {:.0}s (0 sorry warnings)", elapsed.as_secs_f64()),
+                // A successful default `lake build` only proves the default target
+                // builds — which is the 0-theorem `Domains/All` shim, NOT the lane.
+                // Probe a canary CORE type-safety file to tell "lane genuinely
+                // elaborates" apart from "shim builds". Only the former is a real
+                // PASS; otherwise the lane is generated/not-mechanized (WARN), so
+                // the manifest never claims an inherited Lean PASS.
+                let canary_errors = lean_core_canary_errors(&lake_path, lean_dir);
+                match canary_errors {
+                    Some(0) => CheckResult {
+                        name: "Lean 4 Compilation".into(),
+                        passed: true,
+                        blocking: true,
+                        details: format!(
+                            "Built in {:.0}s (0 sorry); core canary Foundations/Syntax.lean elaborates",
+                            elapsed.as_secs_f64()
+                        ),
+                    },
+                    Some(n) => CheckResult {
+                        name: "Lean 4 Compilation".into(),
+                        passed: false,
+                        blocking: false,
+                        details: format!(
+                            "GENERATED, not mechanized: default `lake build` builds only the \
+                             0-theorem `Domains/All` shim ({:.0}s); core Foundations/Syntax.lean \
+                             does NOT elaborate ({n} errors). See 02_FORMAL/lean/COMPILATION_STATUS.md",
+                            elapsed.as_secs_f64()
+                        ),
+                    },
+                    None => CheckResult {
+                        name: "Lean 4 Compilation".into(),
+                        passed: false,
+                        blocking: false,
+                        details: format!(
+                            "GENERATED, not mechanized: shim build succeeded ({:.0}s) but the core \
+                             canary could not be elaborated (lean unavailable/errored). \
+                             See 02_FORMAL/lean/COMPILATION_STATUS.md",
+                            elapsed.as_secs_f64()
+                        ),
+                    },
                 }
             } else if o.status.success() && sorry_warnings > 0 {
                 // Build succeeded but sorry found — non-blocking (transpiled)
@@ -2148,7 +2217,7 @@ fn days_to_ymd(mut days: u64) -> (u64, u64, u64) {
 }
 
 fn is_leap(y: u64) -> bool {
-    y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)
+    y.is_multiple_of(4) && (!y.is_multiple_of(100) || y.is_multiple_of(400))
 }
 
 // ---------------------------------------------------------------------------
