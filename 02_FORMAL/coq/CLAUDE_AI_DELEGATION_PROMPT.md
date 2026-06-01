@@ -48,7 +48,7 @@ RIINA is the world's **first formally verified programming language** where:
 ### 1.2 Coq Version and Environment
 
 ```
-Coq Version: Rocq 9.1 (Coq 8.21)
+Coq Version: Rocq 9.2
 Project Path: /workspaces/proof/02_FORMAL/coq/
 Namespace: RIINA
 Build Command: make (uses Makefile generated from _CoqProject)
@@ -831,7 +831,7 @@ Qed.
 
 **OUTPUT REQUIREMENTS:**
 
-1. **Coq Syntax**: Output MUST be valid Rocq 9.1 (Coq 8.21) syntax
+1. **Coq Syntax**: Output MUST be valid Rocq 9.2 syntax
 2. **Complete Proofs**: Every lemma MUST end with `Qed.` (NO `Admitted.`)
 3. **Bullet Structure**: Use `-`, `+`, `*`, `--`, `++`, `**` correctly
 4. **No Placeholders**: Every tactic must be concrete, no `...` or `TODO`

@@ -5,7 +5,7 @@
 Produce **two complete, compilable Coq files** that I can drop into my codebase to eliminate 3 of 5 axioms. The files must compile with `make clean && make -j4` with ZERO errors.
 
 **Repository:** https://github.com/ib823/proof (branch: `main`)
-**Coq version:** Rocq 9.1 (Coq 8.21)
+**Coq version:** Rocq 9.2
 **Build:** `cd 02_FORMAL/coq && make clean && make -j4`
 
 ---

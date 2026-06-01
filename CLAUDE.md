@@ -50,7 +50,7 @@ These override ALL other instructions on conflict:
 
 ### Coq/Rocq
 ```bash
-# Requires Rocq 9.1.1 (not Coq 8.20 — files use `From Stdlib`)
+# Requires Rocq 9.2 (not Coq 8.20 — files use `From Stdlib`)
 eval $(opam env --switch=rocq)
 cd /workspaces/proof/02_FORMAL/coq
 make                              # Build all proofs

@@ -1,13 +1,13 @@
 # Contributing to RIINA™
 
-**Verification:** 12,385 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2476 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2,607 Rust tests
 
 Thank you for your interest in RIINA. This guide covers how to contribute effectively.
 
 ## Prerequisites
 
 - **Rust** 1.84.0+ — `rustup install stable`
-- **Rocq 9.1.1** — Only needed for formal proof work (files use `From Stdlib`)
+- **Rocq 9.2** — Only needed for formal proof work (files use `From Stdlib`)
 - No external dependencies required
 
 ## Getting Started

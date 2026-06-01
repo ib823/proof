@@ -7,7 +7,7 @@ Bahasa Melayu keywords and compile-time security enforcement. RIINA combines a
 standard simply-typed lambda calculus core with an information flow control (IFC)
 security lattice, algebraic effects, and linear types. We prove progress and
 preservation for the full language, including security label interactions, effect
-annotations, and substructural typing. All proofs are mechanized in Coq (Rocq 9.1.1).
+annotations, and substructural typing. All proofs are mechanized in Coq (Rocq 9.2).
 
 ## Key Results
 

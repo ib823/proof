@@ -3,7 +3,7 @@
 ## Abstract
 
 We describe RIINA's multi-prover verification architecture, which uses
-Coq (Rocq 9.1.1) as the primary proof assistant with cross-validation
+Coq (Rocq 9.2) as the primary proof assistant with cross-validation
 in Lean 4 and Isabelle. This architecture increases assurance by verifying
 critical properties in independent proof assistants with different trusted
 computing bases. We present the methodology for translating proof obligations
@@ -26,7 +26,7 @@ across provers, maintaining consistency, and resolving discrepancies.
 
 | Prover | Role | Toolchain |
 |--------|------|-----------|
-| Coq (Rocq 9.1.1) | Primary — all core proofs | `02_FORMAL/coq/` |
+| Coq (Rocq 9.2) | Primary — all core proofs | `02_FORMAL/coq/` |
 | Lean 4 (v4.16.0) | Secondary — cross-validation | `02_FORMAL/lean/` |
 | Isabelle | Tertiary — selected properties | `02_FORMAL/isabelle/` |
 

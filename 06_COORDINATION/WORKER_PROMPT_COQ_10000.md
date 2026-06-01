@@ -5,7 +5,7 @@
 ## CURRENT STATE
 - 9,171 Qed proofs across 260 active .v files
 - 0 Admitted, 0 Axioms, 0 Assumptions
-- Compiler: Rocq 9.1.1 (files use `From Stdlib`)
+- Compiler: Rocq 9.2 (files use `From Stdlib`)
 - Build: `eval $(opam env --switch=rocq) && cd 02_FORMAL/coq && make`
 
 ## WHERE TO ADD PROOFS
@@ -59,7 +59,7 @@ Qed.
 2. **NEVER add `Axiom`** — derive everything from existing definitions
 3. **All files must compile**: `eval $(opam env --switch=rocq) && cd 02_FORMAL/coq && rocq compile -Q . RIINA <file>`
 4. **Add new files to `_CoqProject`** if creating new .v files
-5. **Use `From Stdlib`** not `From Coq` (Rocq 9.1.1)
+5. **Use `From Stdlib`** not `From Coq` (Rocq 9.2)
 
 ## BUILD & VERIFY
 

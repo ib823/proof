@@ -1015,7 +1015,7 @@ X = primary role, o = supporting role
 
 ### Per-Prover Detailed Status
 
-#### 1. Rocq 9.1.1 (Primary)
+#### 1. Rocq 9.2 (Primary)
 
 **Role:** Authoritative foundation across type system and security properties (Dims 1-5, support 7).
 
@@ -2057,7 +2057,7 @@ Updated when all of a gate's exit criteria pass verification. Update method:
 | ~~Install pre-commit + pre-push hooks; gate `audit-docs.sh` exit 0~~ **DONE 2026-05-17 (REQ-24)** | `bash scripts/audit-docs.sh` reports no "pre-commit hook NOT installed" ERROR ✓ (must re-run `bash 00_SETUP/scripts/install_hooks.sh` after every fresh clone — `.git/hooks/` is not tracked) |
 | Decide & act on 5th stub `05_TOOLING/crates/riinac` | Either deleted from workspace, or its `src/main.rs` no longer prints "Not yet implemented" |
 | ~~Extend `audit-docs.sh` to cover COPILOT.md, .cursorrules, .clinerules, CONTRIBUTING.md, SECURITY.md~~ **DONE 2026-05-17 (REQ-26)** | `audit-docs.sh` output shows `[OK]` lines for each ✓ (CONTRIBUTING.md and SECURITY.md already covered; COPILOT.md, .cursorrules, .clinerules added this session) |
-| Refresh `VERIFICATION_MANIFEST.md` in a real environment with Rocq 9.1.1 + Lean 4.16 installed | Manifest shows PASS (not INHERITED) for Coq + Lean rows |
+| Refresh `VERIFICATION_MANIFEST.md` in a real environment with Rocq 9.2 + Lean 4.16 installed | Manifest shows PASS (not INHERITED) for Coq + Lean rows |
 
 **Exit criteria:** `PROOF_STATUS.md` shows 0 Admitted / 0 Axiom / 0 Abort in active scope.
 Lean strict-lane shows 0 sorry / 0 axiom. `audit-docs.sh` exits 0 with 0 ERRORs.
@@ -2157,7 +2157,7 @@ Today's "10 provers" marketing must either be earned (D1) or retracted (D2).
 | SBOM per build (cargo-sbom or syft) | Published with each release |
 | Signed releases (artifact-sign crate) | Key fingerprint in `SECURITY.md`; offline signing key |
 | Hash-chain attestation (hash-chain crate) | Wired into release pipeline |
-| Toolchain pinned to content hashes (Rocq 9.1.1, Lean 4.16, Rust 1.84) | `flake.lock` covers all |
+| Toolchain pinned to content hashes (Rocq 9.2, Lean 4.16, Rust 1.84) | `flake.lock` covers all |
 | SLSA-3 attestation | Independent verifier confirms |
 
 ### Gate G — Security Posture (owns REQ-32)

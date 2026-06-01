@@ -52,7 +52,7 @@ RIINA COMPLIANCE CERTIFICATE
 Program: myapp.rii
 Date: 2026-01-31
 Compiler: riinac 0.3.0
-Prover: Rocq 9.1.1
+Prover: Rocq 9.2
 
 HIPAA §164.312(a) — Access Control
   PROVEN: All PHI access gated by role-based authorization
