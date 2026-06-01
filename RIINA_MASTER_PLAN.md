@@ -379,7 +379,7 @@ research source, and detailed description.
 | REQ-16 | JALINAN session types implementation | P2 | TODO | 6 |
 | REQ-17 | CAHAYA syntax extensions | P2 | TODO | 6 |
 | REQ-18 | Self-hosting compiler | P3 | TODO | 10 |
-| REQ-19 | Blockchain primitive library in stdlib | P1 | TODO | 6 |
+| REQ-19 | Blockchain primitive library in stdlib (design constraint, 2026 research Batch 2: if ZKP support is added, **default to zk-STARK** — transparent, post-quantum, no trusted setup; a zk-SNARK's trusted setup is a trusted *assumption* that collides with the "No Assumptions" prime directive and must be declared as TCB if ever offered. See `01_RESEARCH/29_REFRESH_2026H1/`) | P1 | TODO | 6 |
 | REQ-20 | Syariah-compliant financial type library | P2 | TODO | 6 |
 | REQ-21 | Eliminate 4 active Coq `Abort.` (X001/V001/W001/mobile_os) | P0 | DONE | Gate A |
 | REQ-22 | Eliminate 15 Lean `axiom` port-fallbacks | P0 | DONE | Gate A |
@@ -978,7 +978,7 @@ person-years. TERAS-OS is Phase 9 for a reason — RIINA the language must work 
 | Self-hosting compiler (riinac compiles itself) | TODO |
 | RIINA Bijak learning platform | TODO |
 | Fine-tuned LLM for RIINA code generation | TODO |
-| Neural Theorem Proving for remaining verification dimensions (see `06_COORDINATION/llm_proof_pipeline_design.md`) | TODO |
+| Neural Theorem Proving for remaining verification dimensions (see `06_COORDINATION/llm_proof_pipeline_design.md`). **Prerequisite (2026 research Batch 2):** the open LLM-proving SOTA (DeepSeek-Prover-V2, Goedel-Prover-V2, AlphaProof — 5/6 IMO 2025) all target **Lean 4**, and the autoformalization loop needs an *elaborating* library for prover feedback. RIINA's Lean lane is `generated`/non-elaborating (7/326 files), so this depends on first **fixing Lean elaboration** — that work is the enabling step here, not a cosmetic multi-prover nicety, and it ranks above any Lean *version* bump. See `01_RESEARCH/29_REFRESH_2026H1/` | TODO |
 | Community + enterprise programs | TODO |
 | Academic papers (one per verification dimension) | TODO |
 | Vibe coding infrastructure (AI-native development) | TODO |
