@@ -208,13 +208,13 @@ const RiinaWebsite = () => {
         </p>
         <div className="hero-stats">
           <div className="hero-stat">
-            <span className="hero-stat__num">{fmt(metrics.multiProver.totalProofsAllProvers)}</span>
-            <span className="hero-stat__label">proof artifacts</span>
+            <span className="hero-stat__num">{fmt(metrics.proofs.qedActive)}</span>
+            <span className="hero-stat__label">mechanized proofs (Coq)</span>
           </div>
           <div className="hero-stat-divider" />
           <div className="hero-stat">
             <span className="hero-stat__num">{metrics.multiProver.totalProvers}</span>
-            <span className="hero-stat__label">prover lanes (1 mechanized)</span>
+            <span className="hero-stat__label">prover lanes (1 mechanized, rest generated)</span>
           </div>
           <div className="hero-stat-divider" />
           <div className="hero-stat">
@@ -1062,7 +1062,7 @@ PCI-DSS Req 3 — Protect Stored Cardholder Data
 
       <section className="section--alt" style={{padding:'80px 24px'}}>
         <div style={{maxWidth:'var(--max-w-text)',margin:'0 auto'}}>
-          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>{metrics.multiProver.totalProvers}-Prover Verification</h2>
+          <h2 style={{fontSize:12,fontFamily:'var(--font-mono)',color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:24}}>{metrics.multiProver.totalProvers}-Lane Corpus · 1 mechanized (Coq)</h2>
           <p style={{color:'var(--text-secondary)',marginBottom:32}}>
             RIINA's core type and effect system is machine-checked in Coq — the only fully mechanized lane.
             The other prover trees in the repository are machine-generated from the Coq sources and are mostly
