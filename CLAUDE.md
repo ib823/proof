@@ -67,7 +67,7 @@ PATH="$HOME/.elan/bin:$PATH" lake build RIINA
 ### Rust
 ```bash
 # PATH setup (required in background tasks):
-export PATH="$HOME/.cargo/bin:$HOME/.rustup/toolchains/1.84.0-x86_64-unknown-linux-gnu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export PATH="$HOME/.cargo/bin:$HOME/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 cargo test --all --manifest-path /workspaces/proof/03_PROTO/Cargo.toml
 cargo test --all --manifest-path /workspaces/proof/05_TOOLING/Cargo.toml

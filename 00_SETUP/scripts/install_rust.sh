@@ -12,8 +12,8 @@ if command -v rustc &> /dev/null; then
     VERSION=$(rustc --version)
     echo "Rust already installed: $VERSION"
     
-    # Check if correct version
-    if [[ "$VERSION" == *"1.84"* ]] || [[ "$VERSION" == *"1.85"* ]] || [[ "$VERSION" == *"1.86"* ]]; then
+    # Check if correct version (pinned to 1.94.x; see rust-toolchain.toml)
+    if [[ "$VERSION" == *"1.94"* ]]; then
         echo "Version is compatible"
         exit 0
     fi

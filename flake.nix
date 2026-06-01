@@ -38,7 +38,7 @@
         let pkgs = pkgsFor system; in {
           default = pkgs.mkShell {
             buildInputs = with pkgs; [
-              (rust-bin.stable."1.84.0".default)
+              (rust-bin.stable."1.94.1".default)
               coq
               gcc
             ];

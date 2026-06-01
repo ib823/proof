@@ -509,7 +509,7 @@ fn generate_manifest(ctx: &BuildContext, output: &Path) -> Result<(), BuildError
   }},
   "components": {{
     "rust": {{
-      "toolchain": "1.84.0",
+      "toolchain": "1.94.1",
       "status": "pending"
     }},
     "ada": {{

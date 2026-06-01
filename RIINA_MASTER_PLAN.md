@@ -92,7 +92,7 @@ cd 02_FORMAL/lean && PATH="$HOME/.elan/bin:$PATH" lake build RIINA
 find 02_FORMAL/isabelle/ -name "*.thy" | wc -l
 
 # Rust tests (proto)
-PATH="$HOME/.cargo/bin:$HOME/.rustup/toolchains/1.84.0-x86_64-unknown-linux-gnu/bin:$PATH"
+PATH="$HOME/.cargo/bin:$HOME/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/bin:$PATH"
 cargo test --all --manifest-path 03_PROTO/Cargo.toml 2>&1 | grep "^test result" | awk '{sum += $4} END {print sum}'
 
 # Rust tests (tooling)
@@ -1439,7 +1439,7 @@ cd /workspaces/proof/02_FORMAL/lean
 PATH="$HOME/.elan/bin:$PATH" lake build RIINA 2>&1 | tail -5                  # Must PASS
 
 # 4c. If working on Rust:
-export PATH="$HOME/.cargo/bin:$HOME/.rustup/toolchains/1.84.0-x86_64-unknown-linux-gnu/bin:$PATH"
+export PATH="$HOME/.cargo/bin:$HOME/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/bin:$PATH"
 cargo test --all --manifest-path /workspaces/proof/03_PROTO/Cargo.toml 2>&1 | grep "^test result"   # Record baseline
 cargo test --all --manifest-path /workspaces/proof/05_TOOLING/Cargo.toml 2>&1 | grep "^test result" # Record baseline
 
@@ -2164,7 +2164,7 @@ Today's "10 provers" marketing must either be earned (D1) or retracted (D2).
 | SBOM per build (cargo-sbom or syft) | Published with each release |
 | Signed releases (artifact-sign crate) | Key fingerprint in `SECURITY.md`; offline signing key |
 | Hash-chain attestation (hash-chain crate) | Wired into release pipeline |
-| Toolchain pinned to content hashes (Rocq 9.2, Lean 4.16, Rust 1.84) | `flake.lock` covers all |
+| Toolchain pinned to content hashes (Rocq 9.2, Lean 4.16, Rust 1.94.1) | `flake.lock` covers all |
 | SLSA-3 attestation | Independent verifier confirms |
 
 ### Gate G — Security Posture (owns REQ-32)

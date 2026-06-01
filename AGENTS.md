@@ -145,7 +145,7 @@ eval $(opam env --switch=rocq) && cd 02_FORMAL/coq && make -j$(nproc)
 cd 02_FORMAL/lean && /home/codespace/.elan/bin/lake build RIINA
 
 # Rust
-export PATH="/home/codespace/.rustup/toolchains/1.84.0-x86_64-unknown-linux-gnu/bin:$PATH"
+export PATH="$HOME/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/bin:$PATH"
 cargo test --all --manifest-path 03_PROTO/Cargo.toml
 
 # Website
