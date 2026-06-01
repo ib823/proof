@@ -249,14 +249,47 @@ impl WasmBackend {
             wasm_encode::encode_sleb128(0, &mut trampoline_code);
             trampoline_code.push(Op::I32Const as u8);
             wasm_encode::encode_sleb128(0, &mut trampoline_code);
-            // Call main
+            // Call main; result (i32) is on the stack. Store it in local 0.
             trampoline_code.push(Op::Call as u8);
             wasm_encode::encode_uleb128(main_idx as u64, &mut trampoline_code);
-            // Drop the result (main returns i32, _start returns void)
-            trampoline_code.push(Op::Drop as u8);
+            wasm_local(&mut trampoline_code, Op::LocalSet, 0); // result = local 0
+
+            // Echo the program's final value, byte-identical to the C `main`
+            // echo: skip Unit (the `cetak`-then-return-Unit case), otherwise
+            // print Int/Bool/String/Element + newline. Locals 1,2 are itoa
+            // scratch. `return_ty` is the typechecker-inferred result type,
+            // which matches the runtime value (verified against the C backend).
+            let main_ret = program
+                .function(FuncId::MAIN)
+                .map(|f| f.return_ty.clone())
+                .unwrap_or(Ty::Unit);
+            match main_ret {
+                Ty::Unit => { /* no echo */ }
+                Ty::Int | Ty::CInt => wasm_echo_int(&mut trampoline_code, 0, 1, 2),
+                Ty::Bool => {
+                    wasm_local(&mut trampoline_code, Op::LocalGet, 0);
+                    trampoline_code.push(Op::If as u8);
+                    trampoline_code.push(0x40);
+                    wasm_write_bytes(&mut trampoline_code, b"true\n");
+                    trampoline_code.push(Op::Else as u8);
+                    wasm_write_bytes(&mut trampoline_code, b"false\n");
+                    trampoline_code.push(Op::End as u8);
+                }
+                Ty::Element => {
+                    wasm_echo_strptr(&mut trampoline_code, 0);
+                    wasm_write_bytes(&mut trampoline_code, b"\n");
+                }
+                Ty::String => {
+                    wasm_write_bytes(&mut trampoline_code, b"\"");
+                    wasm_echo_strptr(&mut trampoline_code, 0);
+                    wasm_write_bytes(&mut trampoline_code, b"\"\n");
+                }
+                _ => wasm_write_bytes(&mut trampoline_code, b"<value>\n"),
+            }
 
             module.codes.push(FuncBody {
-                locals: vec![],
+                // locals 0 = main result, 1/2 = itoa scratch
+                locals: vec![(3, ValType::I32)],
                 code: trampoline_code,
             });
 
@@ -1335,6 +1368,147 @@ export function getOutput() {
     }
 }
 
+// ── WASM result-echo helpers ────────────────────────────────────────────────
+// These emit raw WASM that prints the program's final value to stdout, matching
+// the C `main` echo byte-for-byte. Used by the `_start` trampoline. They use
+// heap scratch: iovec at heap_ptr[0..8], nwritten at heap_ptr[8], a literal/
+// digit buffer at heap_ptr+16.. .
+
+fn wasm_heap(code: &mut Vec<u8>) {
+    code.push(Op::GlobalGet as u8);
+    wasm_encode::encode_uleb128(GLOBAL_HEAP_PTR as u64, code);
+}
+fn wasm_i32c(code: &mut Vec<u8>, n: i64) {
+    code.push(Op::I32Const as u8);
+    wasm_encode::encode_sleb128(n, code);
+}
+fn wasm_local(code: &mut Vec<u8>, op: Op, idx: u32) {
+    code.push(op as u8);
+    wasm_encode::encode_uleb128(idx as u64, code);
+}
+/// Emit fd_write(1, heap_ptr, 1, heap_ptr+8) (iovec already set up at heap_ptr).
+fn wasm_fd_write(code: &mut Vec<u8>) {
+    wasm_i32c(code, 1);
+    wasm_heap(code);
+    wasm_i32c(code, 1);
+    wasm_heap(code);
+    wasm_i32c(code, 8);
+    code.push(Op::I32Add as u8);
+    code.push(Op::Call as u8);
+    wasm_encode::encode_uleb128(0, code); // fd_write import
+    code.push(Op::Drop as u8);
+}
+/// Write `bytes` literally to stdout (copied into heap scratch at heap_ptr+16).
+fn wasm_write_bytes(code: &mut Vec<u8>, bytes: &[u8]) {
+    for (i, b) in bytes.iter().enumerate() {
+        wasm_heap(code);
+        wasm_i32c(code, 16 + i as i64);
+        code.push(Op::I32Add as u8);
+        wasm_i32c(code, i64::from(*b));
+        code.push(Op::I32Store8 as u8);
+        code.push(0x00);
+        code.push(0x00);
+    }
+    // iovec.ptr = heap+16
+    wasm_heap(code);
+    wasm_heap(code);
+    wasm_i32c(code, 16);
+    code.push(Op::I32Add as u8);
+    code.push(Op::I32Store as u8);
+    code.push(0x02);
+    code.push(0x00);
+    // iovec.len = bytes.len()
+    wasm_heap(code);
+    wasm_i32c(code, bytes.len() as i64);
+    code.push(Op::I32Store as u8);
+    code.push(0x02);
+    code.push(0x04);
+    wasm_fd_write(code);
+}
+/// Write the contents of a length-prefixed string `[len:u32][bytes]` whose
+/// pointer is in local `ptr_local` (no quotes, no newline).
+fn wasm_echo_strptr(code: &mut Vec<u8>, ptr_local: u32) {
+    // iovec.ptr = ptr_local + 4
+    wasm_heap(code);
+    wasm_local(code, Op::LocalGet, ptr_local);
+    wasm_i32c(code, 4);
+    code.push(Op::I32Add as u8);
+    code.push(Op::I32Store as u8);
+    code.push(0x02);
+    code.push(0x00);
+    // iovec.len = load len from ptr_local
+    wasm_heap(code);
+    wasm_local(code, Op::LocalGet, ptr_local);
+    code.push(Op::I32Load as u8);
+    code.push(0x02);
+    code.push(0x00);
+    code.push(Op::I32Store as u8);
+    code.push(0x02);
+    code.push(0x04);
+    wasm_fd_write(code);
+}
+/// Write the unsigned integer in local `v_local` as decimal ASCII + newline.
+/// `tv`/`tp` are scratch i32 locals.
+fn wasm_echo_int(code: &mut Vec<u8>, v_local: u32, tv: u32, tp: u32) {
+    // $v = v_local
+    wasm_local(code, Op::LocalGet, v_local);
+    wasm_local(code, Op::LocalSet, tv);
+    // mem[heap+48] = '\n'
+    wasm_heap(code);
+    wasm_i32c(code, 48);
+    code.push(Op::I32Add as u8);
+    wasm_i32c(code, 10);
+    code.push(Op::I32Store8 as u8);
+    code.push(0x00);
+    code.push(0x00);
+    // $p = heap + 48
+    wasm_heap(code);
+    wasm_i32c(code, 48);
+    code.push(Op::I32Add as u8);
+    wasm_local(code, Op::LocalSet, tp);
+    // do { p--; mem[p] = '0'+(v%10); v/=10 } while (v != 0)
+    code.push(Op::Loop as u8);
+    code.push(0x40);
+    wasm_local(code, Op::LocalGet, tp);
+    wasm_i32c(code, 1);
+    code.push(Op::I32Sub as u8);
+    wasm_local(code, Op::LocalSet, tp);
+    wasm_local(code, Op::LocalGet, tp);
+    wasm_local(code, Op::LocalGet, tv);
+    wasm_i32c(code, 10);
+    code.push(Op::I32RemU as u8);
+    wasm_i32c(code, 48);
+    code.push(Op::I32Add as u8);
+    code.push(Op::I32Store8 as u8);
+    code.push(0x00);
+    code.push(0x00);
+    wasm_local(code, Op::LocalGet, tv);
+    wasm_i32c(code, 10);
+    code.push(Op::I32DivU as u8);
+    wasm_local(code, Op::LocalSet, tv);
+    wasm_local(code, Op::LocalGet, tv);
+    code.push(Op::BrIf as u8);
+    wasm_encode::encode_uleb128(0, code);
+    code.push(Op::End as u8);
+    // iovec.ptr = $p
+    wasm_heap(code);
+    wasm_local(code, Op::LocalGet, tp);
+    code.push(Op::I32Store as u8);
+    code.push(0x02);
+    code.push(0x00);
+    // iovec.len = (heap+49) - $p
+    wasm_heap(code);
+    wasm_heap(code);
+    wasm_i32c(code, 49);
+    code.push(Op::I32Add as u8);
+    wasm_local(code, Op::LocalGet, tp);
+    code.push(Op::I32Sub as u8);
+    code.push(Op::I32Store as u8);
+    code.push(0x02);
+    code.push(0x04);
+    wasm_fd_write(code);
+}
+
 /// Emission context passed through instruction emission.
 struct EmitCtx<'a> {
     var_map: &'a HashMap<VarId, u32>,
@@ -1951,13 +2125,10 @@ mod tests {
             "WASM binary should contain at least 2 End opcodes (if/else block + function end), got {}",
             end_count);
 
-        // Should NOT contain bare BrIf (0x0D) — we use structured if/else now
-        // Note: BrIf might still appear in other contexts, but for this simple
-        // program it should not be present
-        assert!(
-            !binary.contains(&(Op::BrIf as u8)),
-            "WASM binary should NOT contain BrIf — should use structured if/else"
-        );
+        // The if/else control flow itself is structured (proven by the If/Else
+        // opcodes above). We no longer assert the *whole* binary is BrIf-free:
+        // the `_start` result-echo prints non-Unit results, and its integer
+        // itoa routine legitimately uses a `loop` + `BrIf`.
     }
 
     #[test]

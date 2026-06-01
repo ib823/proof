@@ -3410,12 +3410,15 @@ impl CEmitter {
         ));
         self.writeln("");
 
-        // Print result
-        self.writeln("/* Print result */");
+        // Echo the program's final value to stdout — EXCEPT Unit. A Unit result
+        // means the program already performed its I/O via `cetak` and returns
+        // nothing, so echoing "()" would diverge from the WASM backend (whose
+        // result-echo also skips Unit). Non-Unit results — a bare-expression
+        // value, UI markup, etc. — are still echoed, byte-identical to WASM.
+        self.writeln("/* Echo non-Unit result (Unit = already did I/O via cetak) */");
         self.writeln("switch (result->tag) {");
         self.indent();
         self.writeln("case RIINA_TAG_UNIT:");
-        self.writeln("    printf(\"()\\n\");");
         self.writeln("    break;");
         self.writeln("case RIINA_TAG_BOOL:");
         self.writeln("    printf(\"%s\\n\", result->data.bool_val ? \"true\" : \"false\");");
