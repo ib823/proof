@@ -11,9 +11,10 @@
 //! This guards the matching subset against regressions and surfaces any NEW
 //! divergence. Requires `cc` + `wasmtime`; skips when either is absent (CI).
 //!
-//! Measured 2026-06-01 (wasmtime 27.0.0): of 155 examples, 29 build+run in both
-//! backends — 10 byte-equal, 19 in KNOWN_DIVERGENT; the rest don't compile/run
-//! under one or both backends.
+//! Measured 2026-06-01 (wasmtime 27.0.0): of 155 examples, 30 build+run in both
+//! backends — 16 byte-equal, 14 in KNOWN_DIVERGENT; the rest don't compile/run
+//! under one or both backends. (16 equal is up from 10 after the `main.return_ty`
+//! lowering fix made computed-Int programs echo correctly.)
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -25,12 +26,10 @@ use std::process::Command;
 const KNOWN_DIVERGENT: &[&str] = &[
     // Computed/variable Int echoed by C (runtime tag) but the IR `main.return_ty`
     // is Unit, so WASM's static-typed echo skips it. (Type-soundness gap.)
-    "00_basics/arithmetic.rii",
-    "00_basics/functions.rii",
-    "00_basics/conditionals.rii",
+    // Recursion: the recursive-call result Int is not echoed under WASM yet
+    // (residual of the computed-int path; the non-recursive cases were fixed
+    // 2026-06-01 by correcting `main.return_ty` in the lowerer).
     "demos/faktorial.rii",
-    "08_jalinan/syariah_escrow.rii",
-    "mudah.rii",
     // String concatenation / multi-value rendering differs under WASM.
     "demos/selamat_datang.rii",
     "demos/pasangan.rii",
@@ -46,7 +45,6 @@ const KNOWN_DIVERGENT: &[&str] = &[
     "compiler/typechecker.rii",
     "compiler/types.rii",
     // UI / CAHAYA markup echoed by C but not yet by WASM for these shapes.
-    "09_cahaya/contrast_check.rii",
     "09_cahaya/hello_ui.rii",
     "09_cahaya/layout_example.rii",
 ];

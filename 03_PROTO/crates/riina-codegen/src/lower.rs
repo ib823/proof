@@ -376,7 +376,11 @@ impl Lower {
     ///
     /// Creates a main function that evaluates the expression.
     pub fn compile(&mut self, expr: &Expr) -> Result<Program> {
-        // Create main function
+        // Create main function. The return type is a placeholder here and is
+        // corrected after lowering from the actual result value's type — the
+        // pre-lowering `infer_type` cannot resolve named functions (empty env),
+        // which previously left `main.return_ty = Unit` for programs like
+        // `tambah(3, 4)` even though they return `Int`.
         let main_func = Function::new(
             FuncId::MAIN,
             "main".to_string(),
@@ -392,14 +396,35 @@ impl Lower {
         // Lower the expression
         let result = self.lower_expr(expr)?;
 
+        // Correct main's return type from the lowered result value, falling
+        // back to the structural estimate if the value has no recorded type.
+        let ret_ty = self
+            .result_var_ty(FuncId::MAIN, result)
+            .unwrap_or_else(|| self.infer_type(expr));
+
         // Add return terminator
         if let Some(func) = self.program.function_mut(FuncId::MAIN) {
+            func.return_ty = ret_ty;
             if let Some(block) = func.block_mut(self.current_block) {
                 block.terminate(Terminator::Return(result));
             }
         }
 
         Ok(self.program.clone())
+    }
+
+    /// Look up the type the lowerer recorded for `var` (the result of some
+    /// emitted instruction) by scanning the function's blocks.
+    fn result_var_ty(&self, fid: FuncId, var: VarId) -> Option<Ty> {
+        let func = self.program.function(fid)?;
+        for block in &func.blocks {
+            for instr in &block.instrs {
+                if instr.result == var {
+                    return Some(instr.ty.clone());
+                }
+            }
+        }
+        None
     }
 
     /// Allocate a fresh variable ID
@@ -567,7 +592,11 @@ impl Lower {
             Expr::Perform(_, e) | Expr::Handle(e, _, _) => self.infer_type(e),
             Expr::Require(eff, _) => Ty::Capability(eff.to_capability_kind()),
             Expr::Grant(_, e) => self.infer_type(e),
-            Expr::Var(_) => Ty::Unit, // Would need type environment
+            Expr::Var(name) => self
+                .env
+                .lookup(name)
+                .and_then(|var| self.env.types.get(&var).cloned())
+                .unwrap_or(Ty::Unit), // unbound (e.g. a top-level function not yet in env) → Unit
             Expr::Loc(_) => Ty::Unit, // Runtime-only; actual type from store
             Expr::BinOp(op, _, _) => match op {
                 BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => Ty::Int,
