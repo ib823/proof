@@ -24,10 +24,13 @@ theorem counts as "verified theorems."
 - Coq: 12,386 Qed (active build, 0 Admitted, 0 `Axiom`, 0 Abort), 309 active .v files.
   Caveat: 32 active `Parameter` declarations are logically equivalent to axioms
   (the propositional ones model the trusted hardware interface) — these are the de-facto trusted assumptions.
-- Lean 4: 12,576 theorem/lemma declarations, but **only ~28 actually compile**
-  (3 hand-corrected core files). The remaining ~12,500 declarations use
-  placeholder tactics (`simp_all [Bool.and_eq_true]`) that do NOT prove their
-  goals. Claim: **generated**, not mechanized. See
+- Lean 4: 12,576 theorem/lemma declarations, but **only 215 across 7 files
+  actually elaborate** (measured 2026-06-01, Lean 4.16.0; self-contained
+  `Domains/Verified*` files — the core type-safety files do NOT compile). The
+  remaining ~12,360 declarations use placeholder tactics
+  (`simp_all [Bool.and_eq_true]`, in 304 files) that do NOT prove their goals.
+  `lake build RIINA` passes only because its default target is a 0-theorem shim.
+  Claim: **generated**, not mechanized. See
   `02_FORMAL/lean/COMPILATION_STATUS.md`.
 - F*: 315 .fst files but `admit()` appears ~12,010 times — effectively nothing is
   proven. Claim: generated.

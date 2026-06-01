@@ -179,7 +179,7 @@ Source: `04_SPECS/requirements/RIINA_SCOPE_CLARIFICATION_v1_0_0.md`
 | **riina-build** | `05_TOOLING/crates/riina-build/` | Implemented | Build orchestrator |
 | **riina-verify** | `05_TOOLING/crates/riina-verify/` | Implemented | Verification orchestrator |
 | **Coq proofs** | `02_FORMAL/coq/` | 309 active files, 12,386 Qed, 0 Admitted, 4 Abort (active proof gaps) | Primary formal verification |
-| **Lean proofs** | `02_FORMAL/lean/` | 325 files, 12,576 theorems, `lake build` passes, 0 sorry, 0 axiom | Mechanized |
+| **Lean proofs** | `02_FORMAL/lean/` | 326 files, 12,576 theorem *declarations* (port). Measured 2026-06-01 under Lean 4.16.0: **only 7/326 files elaborate (215 thms); `lake build RIINA` passes but builds only the 0-theorem `Domains/All` shim**; core type-safety files do not elaborate. See `02_FORMAL/lean/COMPILATION_STATUS.md` | Generated (not mechanized) |
 | **Isabelle proofs** | `02_FORMAL/isabelle/` | 368 files, ~12,931 lemmas (repo-grep), 1 smoke theory (`RIINA_CORE`) compiles, 0 sorry | Smoke-mechanized |
 | **SMT/Z3 proofs** | `02_FORMAL/smt/` | 317 files, 1 active smoke verification with 11,843 Z3-verified assertions (rest generated corpora) | Smoke-mechanized |
 | **F\* proofs** | `02_FORMAL/fstar/` | 315 files, 1 smoke module compiled (22 lemmas), rest generated corpora | Smoke-compiled |
@@ -365,7 +365,7 @@ research source, and detailed description.
 | REQ-03 | Single license (no contradictions) | P0 | DONE | 0 |
 | REQ-04 | Quarantine stub prover files | P1 | DONE | 0 |
 | REQ-05 | Coq active build: maintain 0 Admitted, 0 Axioms | P0 | DONE | Ongoing |
-| REQ-06 | Lean 4: full-lane build plus zero `sorry` / zero `axiom` | P1 | DONE | 2 |
+| REQ-06 | Lean 4: full-lane build plus zero `sorry` / zero `axiom` (NOTE: "build passes" only because the default target is the 0-theorem `Domains/All` shim; 7/326 files actually elaborate — generated, not mechanized; see COMPILATION_STATUS.md) | P1 | PARTIAL | 2 |
 | REQ-07 | Isabelle: first successful build | P1 | DONE | 2 |
 | REQ-08 | F*: first real proof (not stub) | P2 | DONE | 2 |
 | REQ-09 | TLA+: first real spec (not stub) | P2 | DONE | 2 |
@@ -488,7 +488,7 @@ See Part 5 for detailed per-prover closure criteria.
 
 | Prover | Current | Target | Effort | Achievability |
 |--------|---------|--------|--------|---------------|
-| Lean 4 | 325 files, 12,576 declarations, 0 `sorry`, 0 axioms | Full lane builds; strict active lane mechanized via step-indexed `AlgebraicEffects` typing | DONE | High |
+| Lean 4 | 326 files, 12,576 declarations (0 literal `sorry` outside `_wip`; 2 in `_wip`) | **Generated, NOT mechanized.** Measured 2026-06-01 (Lean 4.16.0): 7/326 files elaborate (215 thms); 304 files carry placeholder tactics; core + `AlgebraicEffects` do not elaborate. `lake build RIINA` only builds the 0-theorem shim. See `COMPILATION_STATUS.md` | Generated | Low |
 | Isabelle | 1 compiled theory (`Syntax` in `RIINA_CORE`) | First successful build, core theorems | DONE (smoke; requires provisioning to re-verify) | High |
 | F* | 1 smoke-compiled active module (22 lemmas) | Verified crypto: ML-KEM, ML-DSA, X25519, Ed25519 | DONE (smoke; requires provisioning to re-verify) | High (HACL* templates) |
 | TLA+ | 1 TLC-checked smoke spec (5 `THEOREM` declarations) | TELUS procurement protocol verified | DONE (smoke; requires provisioning to re-verify) | Very High |

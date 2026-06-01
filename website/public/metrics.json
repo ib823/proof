@@ -24,11 +24,19 @@
   },
   "lean": {
     "theorems": 12576,
+    "theoremsNote": "12576 is a count of theorem DECLARATIONS in the generated port, not verified proofs",
     "sorry": 0,
+    "sorryNote": "0 literal sorry in the strict lane; 2 literal sorry exist in Properties/_wip; most proofs are non-elaborating (not visible to grep)",
     "axioms": 0,
     "files": 325,
     "lines": 134910,
-    "prover": "Lean 4"
+    "prover": "Lean 4",
+    "elaborationMeasured": "2026-06-01 (Lean 4.16.0)",
+    "filesTotal": 326,
+    "filesElaboratingClean": 7,
+    "theoremsElaborating": 215,
+    "defaultBuildTheorems": 0,
+    "defaultBuildNote": "lake build RIINA passes but builds only the 0-theorem Domains/All shim; see 02_FORMAL/lean/COMPILATION_STATUS.md"
   },
   "isabelle": {
     "lemmas": 12931,

@@ -15,7 +15,7 @@
 |--------|-------|
 | Version | 0.3.0 (tagged) |
 | Coq Qed | 12,386 (0 Admitted, 0 axioms, 4 Abort, 309 active files) |
-| Lean theorems | 12,576 (325 files, 0 sorry, 0 axiom — port-fallbacks eliminated 2026-05-17, commit 41b85893) |
+| Lean theorems | 12,576 *declarations* (326 files) — but only **7/326 files elaborate (215 thms)**, measured 2026-06-01 (Lean 4.16.0); generated, NOT mechanized. See `02_FORMAL/lean/COMPILATION_STATUS.md` |
 | Isabelle lemmas | ~12,931 (368 .thy files, 1 smoke theory `RIINA_CORE` compiles, 0 sorry) |
 | F* / TLA+ / Alloy / SMT | 1 active smoke artifact each; rest are generated corpora (`metrics.json` is authoritative) |
 | Total proofs | See `website/public/metrics.json` (single source of truth) |
@@ -25,7 +25,7 @@
 
 **Active gaps a new session must NOT forget:**
 - 4 `Abort.` statements in active Coq scope: `domains/X001_ConcurrencyModel.v:703`, `V001_TerminationGuarantees.v:755`, `W001_VerifiedMemory.v:680`, `domains/mobile_os/LocationServices.v:228` — tracked as REQ-21
-- Lean per-file elaboration gaps: `lake env lean RIINA/Domains/<X>.lean` produces 60+ elaboration-time sorries in several domain files (e.g., `ActorCalculus.lean`), masked by the default `lake build RIINA` target going through the near-empty `Domains/All` shim. Not surfaced by the audit-grep "0 sorry / 0 axiom" — needs separate cleanup.
+- Lean per-file elaboration gaps (measured 2026-06-01, Lean 4.16.0): only **7 of 326 files elaborate cleanly (215 thms)**; 319 fail, including ALL core type-safety files (`Foundations/Syntax` 187 errors, `Semantics` 110, `AlgebraicEffects` 96) and 304 files carrying `simp_all [Bool.and_eq_true]` placeholders (`ActorCalculus.lean` = 561 errors). The default `lake build RIINA` target only builds the 0-theorem `Domains/All` shim, masking this. Not surfaced by the audit-grep "0 sorry / 0 axiom". Lane is `generated`, not mechanized — see `02_FORMAL/lean/COMPILATION_STATUS.md`.
 - See `PROOF_STATUS.md` for the live ledger
 
 ## Next-Session Pickup (read this BEFORE picking a task)
