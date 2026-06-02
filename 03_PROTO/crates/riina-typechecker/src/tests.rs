@@ -2678,6 +2678,22 @@ mod formalized_tests {
         }
     }
 
+    #[test]
+    fn test_single_path_file_ops_have_precise_result_types() {
+        let ctx = register_builtin_types(&Context::new());
+        let lit = || Box::new(Expr::String("p".to_string()));
+        for (name, expect) in [
+            ("file_exists", Ty::Bool),
+            ("file_size", Ty::Int),
+            ("file_delete", Ty::Unit),
+        ] {
+            let call = Expr::App(Box::new(Expr::Var(name.to_string())), lit());
+            let (ty, _eff) =
+                type_check(&ctx, &call).unwrap_or_else(|e| panic!("{name} should typecheck: {e:?}"));
+            assert_eq!(ty, expect, "{name} result type");
+        }
+    }
+
     // ── 6c: SSRF (CWE-918) ──
 
     #[test]

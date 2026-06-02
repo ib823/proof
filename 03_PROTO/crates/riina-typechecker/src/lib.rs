@@ -992,17 +992,17 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }
-    // Single-path file ops are hardened to take a `String` path, so a `Tainted`
-    // untrusted path is rejected at the I/O boundary (path-traversal prevention)
-    // — consistent with `file_read`. Result types stay `Any` (a later slice can
-    // make `file_exists`→Bool, `file_size`→Int, etc.).
-    for (bm, en) in &[
-        ("fail_ada", "file_exists"),
-        ("fail_buang", "file_delete"),
-        ("fail_panjang", "file_size"),
-        ("fail_senarai", "file_list_dir"),
+    // Single-path file ops take a `String` path (a `Tainted` untrusted path is
+    // rejected — path-traversal prevention, consistent with `file_read`) and now
+    // carry precise result types: exists→Bool, delete→Unit, size→Int. `list_dir`
+    // stays `Any` (a directory listing; a later slice can make it a tainted list).
+    for (bm, en, ret) in &[
+        ("fail_ada", "file_exists", Ty::Bool),
+        ("fail_buang", "file_delete", Ty::Unit),
+        ("fail_panjang", "file_size", Ty::Int),
+        ("fail_senarai", "file_list_dir", Ty::Any),
     ] {
-        let ty = Ty::Fn(Box::new(Ty::String), Box::new(Ty::Any), Effect::FileSystem);
+        let ty = Ty::Fn(Box::new(Ty::String), Box::new(ret.clone()), Effect::FileSystem);
         c = c.extend(bm.to_string(), ty.clone());
         c = c.extend(en.to_string(), ty);
     }

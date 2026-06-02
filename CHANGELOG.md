@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2658 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2659 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,8 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Single-path file ops — precise result types**: `file_exists`→`Bool`,
+  `file_delete`→`Unit`, `file_size`→`Int` (`file_list_dir` stays `Any`), atop the
+  `String`-path hardening. +1 test; differential 30/30.
 - **Single-path file ops hardened to `String` paths**: `file_exists`/`file_delete`/
-  `file_size`/`file_list_dir` retyped `Any → Any` ⇒ `String → Any`, so a `Tainted`
+  `file_size`/`file_list_dir` retyped `Any → Any` ⇒ `String → …`, so a `Tainted`
   untrusted path is rejected (path-traversal prevention), consistent with
   `file_read`. +1 test; differential 30/30.
 - **Capability-gating scope finding** (no code change beyond Network/Process):
