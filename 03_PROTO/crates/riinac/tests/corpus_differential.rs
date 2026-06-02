@@ -11,16 +11,18 @@
 //! This guards the matching subset against regressions and surfaces any NEW
 //! divergence. Requires `cc` + `wasmtime`; skips when either is absent (CI).
 //!
-//! Measured 2026-06-02: of 155 examples, 30 build+run in both backends — 27
-//! byte-equal, 3 in KNOWN_DIVERGENT; the rest don't compile/run under one or both
+//! Measured 2026-06-02: of 155 examples, 30 build+run in both backends — 28
+//! byte-equal, 2 in KNOWN_DIVERGENT; the rest don't compile/run under one or both
 //! backends. Re-verified across a wasmtime major-version jump: identical result
 //! under **wasmtime 27.0.0 and 45.0.0** (the byte-equality is robust to the runtime
-//! version). (27 equal is up from 10 over the session: the `main.return_ty`
+//! version). (28 equal is up from 10 over the session: the `main.return_ty`
 //! lowering fix, WASM `ke_teks`/`gabung_teks` string builtins, the `cetakln`
-//! newline, a structured-control-flow relooper fix for sequential if/else, and a
-//! nested-if/else fix — the merge `Phi` contribution is now pushed from each
-//! branch region's exit block, fixing `padan` integer/tuple matches that lower to
-//! a nested `If` chain — together moved 17 examples to byte-equal.)
+//! newline, a structured-control-flow relooper fix for sequential if/else, a
+//! nested-if/else fix (merge `Phi` pushed from each branch region's exit block,
+//! fixing `padan` integer/tuple matches that lower to a nested `If` chain), and
+//! struct field resolution (`FieldAccess` now lowers to the real positional
+//! projection over the struct's product layout — fixing `compiler/main`) —
+//! together moved 18 examples to byte-equal.)
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -30,9 +32,6 @@ use std::process::Command;
 /// root cause. These are tracked, not silently ignored. Removing a WASM bug
 /// should remove the corresponding entries here.
 const KNOWN_DIVERGENT: &[&str] = &[
-    // Program whose top-level value type C prints via runtime tag (incl. the
-    // "<value>" default) but WASM renders differently.
-    "compiler/main.rii",
     // UI / CAHAYA markup echoed by C but not yet by WASM for these shapes.
     "09_cahaya/hello_ui.rii",
     "09_cahaya/layout_example.rii",

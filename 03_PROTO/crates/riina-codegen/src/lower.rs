@@ -357,6 +357,18 @@ pub struct Lower {
     next_var: u32,
     /// Variable environment
     env: VarEnv,
+    /// Struct field layouts harvested from `RecordLit` nodes: struct name ->
+    /// ordered `(field name, field type)`. `RecordLit` lowers a struct to a
+    /// right-nested pair in field order, so field `i` is `Fst(Snd^i(base))`; the
+    /// field types let a struct bound to an opaque value (e.g. a function call)
+    /// still be typed as the matching product so projections recover field types.
+    struct_layouts: HashMap<String, Vec<(String, Ty)>>,
+    /// Functions whose result is a struct literal: fn name -> struct name.
+    /// Lets `FieldAccess` on a call result (`biar v = f(); v.field`) resolve.
+    fn_returns_struct: HashMap<String, String>,
+    /// Variables currently known to hold a struct value: var name -> struct
+    /// name. Scoped like `env` (saved/restored around each `Let` body).
+    var_struct: HashMap<String, String>,
 }
 
 impl Lower {
@@ -369,7 +381,138 @@ impl Lower {
             current_block: BlockId::ENTRY,
             next_var: 0,
             env: VarEnv::new(),
+            struct_layouts: HashMap::new(),
+            fn_returns_struct: HashMap::new(),
+            var_struct: HashMap::new(),
         }
+    }
+
+    /// Pre-pass over the whole desugared program: record every struct's field
+    /// order (from `RecordLit` nodes) and every function whose result is a
+    /// struct literal. This is what lets `FieldAccess` resolve to a real field
+    /// projection later, including `biar v = f(); v.field` where `v` comes from
+    /// a call. Variants without struct-bearing children fall through (`_`),
+    /// preserving the previous behavior for anything unresolved.
+    fn harvest_struct_info(&mut self, e: &Expr) {
+        match e {
+            Expr::RecordLit(name, fields) => {
+                if !self.struct_layouts.contains_key(name) {
+                    // Compute the layout (with field types) before inserting to
+                    // avoid borrowing `self` mutably and immutably at once.
+                    let layout: Vec<(String, Ty)> = fields
+                        .iter()
+                        .map(|(f, e)| (f.clone(), self.infer_type(e)))
+                        .collect();
+                    self.struct_layouts.insert(name.clone(), layout);
+                }
+                for (_, fe) in fields {
+                    self.harvest_struct_info(fe);
+                }
+            }
+            Expr::LetRec(name, _, bound, cont) => {
+                if let Some(s) = Self::result_struct_name(bound) {
+                    self.fn_returns_struct.entry(name.clone()).or_insert(s);
+                }
+                self.harvest_struct_info(bound);
+                self.harvest_struct_info(cont);
+            }
+            Expr::Lam(_, _, b)
+            | Expr::Fst(b)
+            | Expr::Snd(b)
+            | Expr::Inl(b, _)
+            | Expr::Inr(b, _)
+            | Expr::Return(b)
+            | Expr::Perform(_, b)
+            | Expr::Ref(b, _)
+            | Expr::Deref(b)
+            | Expr::Classify(b)
+            | Expr::Prove(b)
+            | Expr::Require(_, b)
+            | Expr::Grant(_, b)
+            | Expr::FieldAccess(b, _) => self.harvest_struct_info(b),
+            Expr::App(a, b)
+            | Expr::Pair(a, b)
+            | Expr::Assign(a, b)
+            | Expr::Declassify(a, b)
+            | Expr::BinOp(_, a, b)
+            | Expr::Handle(a, _, b) => {
+                self.harvest_struct_info(a);
+                self.harvest_struct_info(b);
+            }
+            Expr::Let(_, _, a, b) => {
+                self.harvest_struct_info(a);
+                self.harvest_struct_info(b);
+            }
+            Expr::If(a, b, c) | Expr::Case(a, _, b, _, c) => {
+                self.harvest_struct_info(a);
+                self.harvest_struct_info(b);
+                self.harvest_struct_info(c);
+            }
+            Expr::ListLit(es) => {
+                for x in es {
+                    self.harvest_struct_info(x);
+                }
+            }
+            Expr::FFICall { args, .. } => {
+                for x in args {
+                    self.harvest_struct_info(x);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// The struct name a (function-body) expression evaluates to, if its tail is
+    /// a struct literal — looking through `Lam`/`Return`/`Let`/`LetRec` wrappers
+    /// and into both arms of an `If`.
+    fn result_struct_name(e: &Expr) -> Option<String> {
+        match e {
+            Expr::RecordLit(name, _) => Some(name.clone()),
+            Expr::Lam(_, _, b)
+            | Expr::Return(b)
+            | Expr::Let(_, _, _, b)
+            | Expr::LetRec(_, _, _, b) => Self::result_struct_name(b),
+            Expr::If(_, t, f) => {
+                Self::result_struct_name(t).or_else(|| Self::result_struct_name(f))
+            }
+            _ => None,
+        }
+    }
+
+    /// The struct name an expression holds, if known: a direct `RecordLit`, a
+    /// variable tracked in `var_struct`, or a call to a struct-returning
+    /// function. Used to resolve `FieldAccess`.
+    fn struct_name_of(&self, e: &Expr) -> Option<String> {
+        match e {
+            Expr::RecordLit(name, _) => Some(name.clone()),
+            // A bare `Var` is either a struct-bound local or a no-arg function
+            // reference (a no-arg call desugars to the bare `Var`); either may
+            // name a struct value.
+            Expr::Var(x) => self
+                .var_struct
+                .get(x)
+                .or_else(|| self.fn_returns_struct.get(x))
+                .cloned(),
+            Expr::App(f, _) => match f.as_ref() {
+                Expr::Var(fname) => self.fn_returns_struct.get(fname).cloned(),
+                _ => None,
+            },
+            Expr::Return(b) => self.struct_name_of(b),
+            _ => None,
+        }
+    }
+
+    /// The product type for a known struct: `(t0, (t1, ... Unit))` over its
+    /// harvested field types, mirroring how `RecordLit` lowers.
+    fn struct_prod_ty(&self, name: &str) -> Option<Ty> {
+        self.struct_layouts.get(name).map(|layout| {
+            layout
+                .iter()
+                .rev()
+                .fold(Ty::Unit, |acc, (_, t)| {
+                    Ty::Prod(Box::new(t.clone()), Box::new(acc))
+                })
+        })
     }
 
     /// Compile an expression to IR
@@ -392,6 +535,10 @@ impl Lower {
         self.program.add_function(main_func);
         self.current_func = Some(FuncId::MAIN);
         self.current_block = BlockId::ENTRY;
+
+        // Pre-pass: harvest struct field layouts and struct-returning functions
+        // so `FieldAccess` can be lowered to the matching positional projection.
+        self.harvest_struct_info(expr);
 
         // Lower the expression
         let result = self.lower_expr(expr)?;
@@ -630,8 +777,39 @@ impl Lower {
             // List literal — element type is approximated as Any (the
             // typechecker computes the precise element type).
             Expr::ListLit(_) => Ty::List(Box::new(Ty::Any)),
-            // Records and field access are structural — typed as Any.
-            Expr::RecordLit(_, _) | Expr::FieldAccess(_, _) => Ty::Any,
+            // A record literal lowers to a right-nested pair in field order, so
+            // its type is the matching nested product `(t0, (t1, ... Unit))`.
+            // This lets `Fst`/`Snd` projections (and thus `FieldAccess`) recover
+            // each field's concrete type instead of collapsing to `Unit`.
+            Expr::RecordLit(_, fields) => fields
+                .iter()
+                .rev()
+                .fold(Ty::Unit, |acc, (_, e)| {
+                    Ty::Prod(Box::new(self.infer_type(e)), Box::new(acc))
+                }),
+            // Field access — the field's type when the struct/layout is known,
+            // resolved as `Fst(Snd^i(base))` over the base's product type.
+            Expr::FieldAccess(base, field) => {
+                let resolved = self.struct_name_of(base).and_then(|sname| {
+                    self.struct_layouts
+                        .get(&sname)
+                        .and_then(|layout| layout.iter().position(|(f, _)| f == field))
+                        .map(|idx| {
+                            let mut t = self.infer_type(base);
+                            for _ in 0..idx {
+                                t = match t {
+                                    Ty::Prod(_, t2) => *t2,
+                                    _ => Ty::Any,
+                                };
+                            }
+                            match t {
+                                Ty::Prod(t1, _) => *t1,
+                                _ => Ty::Any,
+                            }
+                        })
+                });
+                resolved.unwrap_or(Ty::Any)
+            }
             // CAHAYA Phase J5
             Expr::UIDisplay(_) | Expr::UIRow(_) | Expr::UIColumn(_) => Ty::Element,
             Expr::UIText(_, _) => Ty::Element,
@@ -817,10 +995,28 @@ impl Lower {
                 Ok(acc)
             }
 
-            // Field access — lower the base expression. Structural field
-            // resolution is handled by the interpreter; the C/WASM path returns
-            // the base aggregate.
-            Expr::FieldAccess(base, _field) => self.lower_expr(base),
+            // Field access — resolve to a positional projection over the struct's
+            // pair layout when the base's struct (and thus the field index) is
+            // known: field `i` is `Fst(Snd^i(base))`, matching how `RecordLit`
+            // builds its right-nested pair. Falls back to lowering the base
+            // aggregate when the struct/layout is unknown (prior behavior).
+            Expr::FieldAccess(base, field) => {
+                let proj = self.struct_name_of(base).and_then(|sname| {
+                    self.struct_layouts.get(&sname).and_then(|layout| {
+                        layout.iter().position(|(f, _)| f == field).map(|idx| {
+                            let mut p = (**base).clone();
+                            for _ in 0..idx {
+                                p = Expr::Snd(Box::new(p));
+                            }
+                            Expr::Fst(Box::new(p))
+                        })
+                    })
+                });
+                match proj {
+                    Some(p) => self.lower_expr(&p),
+                    None => self.lower_expr(base),
+                }
+            }
 
             Expr::Bool(b) => Ok(self.emit(
                 Instruction::Const(Constant::Bool(*b)),
@@ -1299,17 +1495,35 @@ impl Lower {
 
             Expr::Let(name, _, binding, body) => {
                 let bind_var = self.lower_expr(binding)?;
-                let bind_ty = self.infer_type(binding);
                 let bind_color = self.resolve_color_literal(binding);
+                let bind_struct = self.struct_name_of(binding);
+                // Type a struct binding as its product type (even when the value
+                // is opaque, e.g. a function call) so `FieldAccess` projections
+                // recover field types; otherwise use the structural estimate.
+                let bind_ty = bind_struct
+                    .as_ref()
+                    .and_then(|s| self.struct_prod_ty(s))
+                    .unwrap_or_else(|| self.infer_type(binding));
 
                 let saved_env = self.env.clone();
+                let saved_struct = self.var_struct.clone();
                 self.env
                     .bind(name.clone(), bind_var, bind_ty, SecurityLevel::Public);
                 if let Some(color) = bind_color {
                     self.env.bind_color(name.clone(), color);
                 }
+                // Track (or shadow) this binding's struct identity for FieldAccess.
+                match bind_struct {
+                    Some(s) => {
+                        self.var_struct.insert(name.clone(), s);
+                    }
+                    None => {
+                        self.var_struct.remove(name);
+                    }
+                }
                 let result = self.lower_expr(body)?;
                 self.env = saved_env;
+                self.var_struct = saved_struct;
 
                 Ok(result)
             }
