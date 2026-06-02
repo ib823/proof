@@ -913,6 +913,49 @@ impl WasmBackend {
     fn emit_gabung_teks(arg: &VarId, ctx: &EmitCtx, code: &mut Vec<u8>) {
         let s1 = ctx.scratch;
         let s2 = ctx.scratch + 1;
+        let set = |c: &mut Vec<u8>, l: u32| {
+            c.push(Op::LocalSet as u8);
+            wasm_encode::encode_uleb128(l as u64, c);
+        };
+        let load = |c: &mut Vec<u8>, off: u8| {
+            c.push(Op::I32Load as u8);
+            c.push(0x02);
+            c.push(off);
+        };
+        // s1 = mem[arg+0]; s2 = mem[arg+4]
+        Self::emit_local_get(arg, ctx.var_map, code);
+        load(code, 0x00);
+        set(code, s1);
+        Self::emit_local_get(arg, ctx.var_map, code);
+        load(code, 0x04);
+        set(code, s2);
+        Self::emit_str_concat_core(ctx, code);
+    }
+
+    /// String `Add` (concatenation) of two operand string pointers. UI/text
+    /// lowering emits concatenation as `BinOp(Add)` on `Ty::String`, so the
+    /// WASM `Add` path routes string-typed operands here instead of `i32.add`.
+    fn emit_str_add(lhs: &VarId, rhs: &VarId, ctx: &EmitCtx, code: &mut Vec<u8>) {
+        let s1 = ctx.scratch;
+        let s2 = ctx.scratch + 1;
+        let set = |c: &mut Vec<u8>, l: u32| {
+            c.push(Op::LocalSet as u8);
+            wasm_encode::encode_uleb128(l as u64, c);
+        };
+        Self::emit_local_get(lhs, ctx.var_map, code);
+        set(code, s1);
+        Self::emit_local_get(rhs, ctx.var_map, code);
+        set(code, s2);
+        Self::emit_str_concat_core(ctx, code);
+    }
+
+    /// Concatenate the two `[len][bytes]` heap strings whose pointers are held in
+    /// scratch locals `s1` (= `ctx.scratch`) and `s2` (= `ctx.scratch + 1`):
+    /// allocate a fresh `[len1+len2][bytes]` string and leave its pointer on the
+    /// stack. Shared by `gabung_teks` and the string `Add` path.
+    fn emit_str_concat_core(ctx: &EmitCtx, code: &mut Vec<u8>) {
+        let s1 = ctx.scratch;
+        let s2 = ctx.scratch + 1;
         let len1 = ctx.scratch + 2;
         let len2 = ctx.scratch + 3;
         let rp = ctx.scratch + 4;
@@ -930,13 +973,6 @@ impl WasmBackend {
             c.push(0x02);
             c.push(off);
         };
-        // s1 = mem[arg+0]; s2 = mem[arg+4]
-        Self::emit_local_get(arg, ctx.var_map, code);
-        load(code, 0x00);
-        set(code, s1);
-        Self::emit_local_get(arg, ctx.var_map, code);
-        load(code, 0x04);
-        set(code, s2);
         // len1 = mem[s1]; len2 = mem[s2]
         get(code, s1);
         load(code, 0x00);
@@ -1077,6 +1113,19 @@ impl WasmBackend {
                                  // Store returns unit (0)
                 code.push(Op::I32Const as u8);
                 wasm_encode::encode_sleb128(0, code);
+            }
+            Instruction::BinOp(op, lhs, rhs)
+                if matches!(op, BinOp::Add)
+                    && matches!(
+                        ctx.var_to_ty.get(lhs),
+                        Some(Ty::String | Ty::Element | Ty::Color | Ty::UIStyle)
+                    ) =>
+            {
+                // String concatenation is lowered as `Add` on `Ty::String`
+                // operands (see `emit_concat` / UI lowering); emit the heap-string
+                // concat routine rather than integer add. Leaves the result
+                // pointer on the stack for the generic result-store below.
+                Self::emit_str_add(lhs, rhs, ctx, code);
             }
             Instruction::BinOp(op, lhs, rhs) => {
                 Self::emit_local_get(lhs, ctx.var_map, code);
@@ -1430,11 +1479,26 @@ impl WasmBackend {
                     // push unit (0) as result
                     code.push(Op::I32Const as u8);
                     wasm_encode::encode_sleb128(0, code);
-                } else if (name == "ke_teks" || name == "nombor_ke_teks")
-                    && matches!(ctx.var_to_ty.get(arg), Some(Ty::Int) | Some(Ty::CInt))
-                {
-                    // Int → string. (Non-Int ke_teks falls through to the stub.)
-                    Self::emit_ke_teks(arg, ctx, code);
+                } else if name == "ke_teks" || name == "nombor_ke_teks" {
+                    match ctx.var_to_ty.get(arg) {
+                        Some(Ty::Int | Ty::CInt) => {
+                            // Int → heap string.
+                            Self::emit_ke_teks(arg, ctx, code);
+                        }
+                        Some(Ty::String | Ty::Element | Ty::Color | Ty::UIStyle) => {
+                            // `ke_teks` of a string-typed value is identity — the
+                            // value is already a `[len][bytes]` heap string. This
+                            // is what makes nested UI fragments (a `tulisan`/
+                            // `butang` inside a `paparan`) render: the element is
+                            // wrapped in `ke_teks` by `lower_to_text`.
+                            Self::emit_local_get(arg, ctx.var_map, code);
+                        }
+                        _ => {
+                            // Other types: stub 0 (prior behavior).
+                            code.push(Op::I32Const as u8);
+                            wasm_encode::encode_sleb128(0, code);
+                        }
+                    }
                 } else if name == "gabung_teks" {
                     Self::emit_gabung_teks(arg, ctx, code);
                 } else {

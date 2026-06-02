@@ -11,18 +11,20 @@
 //! This guards the matching subset against regressions and surfaces any NEW
 //! divergence. Requires `cc` + `wasmtime`; skips when either is absent (CI).
 //!
-//! Measured 2026-06-02: of 155 examples, 30 build+run in both backends — 28
-//! byte-equal, 2 in KNOWN_DIVERGENT; the rest don't compile/run under one or both
-//! backends. Re-verified across a wasmtime major-version jump: identical result
-//! under **wasmtime 27.0.0 and 45.0.0** (the byte-equality is robust to the runtime
-//! version). (28 equal is up from 10 over the session: the `main.return_ty`
-//! lowering fix, WASM `ke_teks`/`gabung_teks` string builtins, the `cetakln`
-//! newline, a structured-control-flow relooper fix for sequential if/else, a
-//! nested-if/else fix (merge `Phi` pushed from each branch region's exit block,
-//! fixing `padan` integer/tuple matches that lower to a nested `If` chain), and
-//! struct field resolution (`FieldAccess` now lowers to the real positional
-//! projection over the struct's product layout — fixing `compiler/main`) —
-//! together moved 18 examples to byte-equal.)
+//! Measured 2026-06-02: of 155 examples, 30 build+run in both backends and
+//! **all 30 are byte-equal** (`KNOWN_DIVERGENT` is empty); the rest don't
+//! compile/run under one or both backends. Re-verified across a wasmtime
+//! major-version jump: identical result under **wasmtime 27.0.0 and 45.0.0**
+//! (the byte-equality is robust to the runtime version). (30 equal is up from 10
+//! over the session: the `main.return_ty` lowering fix, WASM `ke_teks`/
+//! `gabung_teks` string builtins, the `cetakln` newline, a structured-control-flow
+//! relooper fix for sequential if/else, a nested-if/else fix (merge `Phi` pushed
+//! from each branch region's exit block, fixing `padan` integer/tuple matches
+//! that lower to a nested `If` chain), struct field resolution (`FieldAccess`
+//! lowers to the real positional projection over the struct's product layout —
+//! fixing `compiler/main`), and WASM string-`Add` concat + `ke_teks` string
+//! pass-through (fixing the CAHAYA UI `paparan`/`tulisan`/`butang` examples) —
+//! together moved 20 examples to byte-equal.)
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -31,11 +33,11 @@ use std::process::Command;
 /// Examples that run in both backends but currently differ, with the WASM-side
 /// root cause. These are tracked, not silently ignored. Removing a WASM bug
 /// should remove the corresponding entries here.
-const KNOWN_DIVERGENT: &[&str] = &[
-    // UI / CAHAYA markup echoed by C but not yet by WASM for these shapes.
-    "09_cahaya/hello_ui.rii",
-    "09_cahaya/layout_example.rii",
-];
+/// Examples whose two backends are known to differ, with the reason. The
+/// differential test tolerates these (so it tracks them without failing) but
+/// fails on any *new* divergence. **Empty as of 2026-06-02** — all 30
+/// dual-backend examples are byte-equal.
+const KNOWN_DIVERGENT: &[&str] = &[];
 
 fn tool_available(tool: &str) -> bool {
     Command::new(tool)
