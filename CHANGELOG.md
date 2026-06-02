@@ -86,6 +86,12 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
   Rust arm already matches it exactly. Adding a check would be a Rust rule with no
   Coq counterpart (a parity violation). Reworded to a design note + 2 `gate_b_parity`
   tests locking the rule.
+- **Lexer int-suffix TODO resolved** as a documented deferral: typed integer
+  suffixes (`0xFFu8`, `42i64`) need sized integer types, which RIINA lacks (single
+  `Nombor`/`Ty::Int`) — they belong to the numeric tower (Gate C). Lexing a suffix
+  no later stage can consume would be a stub, so the bare `// TODO: Suffix` was
+  replaced with that rationale. This resolves the last of the 5 documented
+  lexer/parser/codegen TODOs (now **5/5**).
 - **Taint-sink diagnostics wired live**: `TaintViolation`/`SanitizerMismatch` were
   declared (with help text + error codes) but never raised — taint at a sink was a
   generic `TypeMismatch`. The App rule now routes an incompatible `Sanitized<_,

@@ -416,9 +416,14 @@ impl<'a> Lexer<'a> {
                     self.advance();
                     s.push(c);
                     s.push_str(&self.consume_while(|ch| ch.is_ascii_hexdigit() || ch == '_'));
-                    // Check suffix
-                    // ...
-                    return TokenKind::LiteralInt(s, None); // TODO: Suffix
+                    // Typed integer suffixes (e.g. `0xFFu8`, `42i64`) are
+                    // intentionally NOT lexed: RIINA's type system has a single
+                    // `Nombor` (`Ty::Int`), so there is no sized integer type for
+                    // a suffix to denote. Suffix support is part of the numeric
+                    // tower (Gate C, REQ-28); lexing a suffix that no later stage
+                    // can consume would be a stub. The `Option<String>` suffix
+                    // slot is kept for forward compatibility (always `None`).
+                    return TokenKind::LiteralInt(s, None);
                 }
             }
         }
