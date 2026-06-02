@@ -1,6 +1,6 @@
 # RIINA Cross-Cutting Specifications
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2646 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2649 Rust tests
 
 This directory contains cross-cutting concerns that span multiple industries and domains.
 

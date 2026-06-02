@@ -2204,7 +2204,7 @@ a P0 external-firm dependency. The remaining stdlib rows below are each multi-se
 | Module | Current | Required |
 |---|---|---|
 | Crypto (AES, SHA-3, ChaCha20-Poly1305, ML-KEM, ML-DSA) | Implemented in `05_TOOLING/crates/riina-core`; per-primitive KATs + negative tests + a consolidated independent KAT-audit manifest (2026-06-02) | **External audit clean** (NCC / Trail of Bits / Cure53 grade), 0 findings ≥ Medium |
-| File I/O with effect tracking | Unclear | Implement + Coq model for read/write effects |
+| File I/O with effect tracking | `Effect::FileSystem` tracked on all `fail_*`/`file_*` builtins; **content-read hardened 2026-06-02**: `file_read`/`file_read_lines` now typed `String → Tainted<String, FileSystem>` (untrusted path rejected = path-traversal prevention; untrusted contents must be sanitized before any sink) +3 tests. Remaining: precise types for write/append/exists/size/list (multi-arg) + a Coq read/write-effect model | Implement + Coq model for read/write effects |
 | Networking (TCP/TLS/HTTP, effect-typed) | None | Implement; capability-gated |
 | Time / random / OS interface | Unclear | All effect-typed |
 | Collections (Vec, Map, Set) | Partial | Benchmarks + verified core algorithms |

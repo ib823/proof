@@ -975,15 +975,30 @@ pub fn register_builtin_types(ctx: &Context) -> Context {
     }
 
     // ── File I/O builtins (fail) — Effect::FileSystem ──
+    // Content-reading builtins are hardened (Gate C stdlib hardening): the path
+    // must be a `String`, so a `Tainted` untrusted path is rejected at the I/O
+    // boundary (path-traversal prevention, Coq `path_traversal_impossible`); and
+    // the returned contents are `Tainted<String, FileSystem>` — an untrusted
+    // source that must be sanitized before reaching any sink (Coq taint safety).
+    for (bm, en) in &[("fail_baca", "file_read"), ("fail_baca_baris", "file_read_lines")] {
+        let ty = Ty::Fn(
+            Box::new(Ty::String),
+            Box::new(Ty::Tainted(
+                Box::new(Ty::String),
+                riina_types::TaintSource::FileSystem,
+            )),
+            Effect::FileSystem,
+        );
+        c = c.extend(bm.to_string(), ty.clone());
+        c = c.extend(en.to_string(), ty);
+    }
     for (bm, en) in &[
-        ("fail_baca", "file_read"),
         ("fail_tulis", "file_write"),
         ("fail_tambah", "file_append"),
         ("fail_ada", "file_exists"),
         ("fail_buang", "file_delete"),
         ("fail_panjang", "file_size"),
         ("fail_senarai", "file_list_dir"),
-        ("fail_baca_baris", "file_read_lines"),
     ] {
         let ty = Ty::Fn(Box::new(Ty::Any), Box::new(Ty::Any), Effect::FileSystem);
         c = c.extend(bm.to_string(), ty.clone());

@@ -2589,6 +2589,70 @@ mod formalized_tests {
         }
     }
 
+    // ── Gate C stdlib hardening: file_read path + contents taint typing ──
+    // file_read : String -> Tainted<String, FileSystem>. An untrusted (tainted)
+    // path is rejected (path-traversal prevention); a literal path is accepted;
+    // the returned contents are tainted and may not reach a sink unsanitized.
+    #[test]
+    fn test_file_read_rejects_tainted_path() {
+        let ctx = register_builtin_types(&Context::new());
+        let tainted_path = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit),
+        );
+        let call = Expr::App(
+            Box::new(Expr::Var("file_read".to_string())),
+            Box::new(tainted_path),
+        );
+        match type_check(&ctx, &call) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::String, "file_read path must be a plain String");
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected tainted file path to be rejected, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_file_read_literal_path_yields_tainted_contents() {
+        let ctx = register_builtin_types(&Context::new());
+        let call = Expr::App(
+            Box::new(Expr::Var("file_read".to_string())),
+            Box::new(Expr::String("config.txt".to_string())),
+        );
+        let (ty, _eff) = type_check(&ctx, &call).expect("literal path must typecheck");
+        assert_eq!(
+            ty,
+            Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::FileSystem),
+            "file contents are untrusted (Tainted<_, FileSystem>)"
+        );
+    }
+
+    #[test]
+    fn test_file_read_contents_rejected_at_sink_unsanitized() {
+        // sql_execute(file_read("data.sql")) — untrusted file contents reaching a
+        // SQL sink without sanitization is a taint violation.
+        let ctx = register_builtin_types(&Context::new());
+        let contents = Expr::App(
+            Box::new(Expr::Var("file_read".to_string())),
+            Box::new(Expr::String("data.sql".to_string())),
+        );
+        let sink = Expr::App(
+            Box::new(Expr::Var("sql_execute".to_string())),
+            Box::new(contents),
+        );
+        match type_check(&ctx, &sink) {
+            Err(TypeError::TaintViolation { taint_source, required_sanitizer, .. }) => {
+                assert_eq!(taint_source, riina_types::TaintSource::FileSystem);
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::SqlParam);
+            }
+            other => panic!("Expected file contents rejected at SQL sink, got {:?}", other),
+        }
+    }
+
     // ── 6c: SSRF (CWE-918) ──
 
     #[test]

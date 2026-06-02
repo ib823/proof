@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2646 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2649 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
+
+### Added (Gate C stdlib hardening)
+- **File-content reads are taint-typed**: `file_read`/`file_read_lines`
+  (`fail_baca`/`fail_baca_baris`) retyped `Any → Any` ⇒ `String → Tainted<String,
+  FileSystem>`. An untrusted (`Tainted`) path is now rejected at the I/O boundary
+  (path-traversal prevention, Coq `path_traversal_impossible`), and file contents
+  are `Tainted<_, FileSystem>` — an untrusted source that must be sanitized before
+  reaching any sink (Coq taint safety). +3 tests (tainted-path rejected; literal
+  path ⇒ tainted contents; contents rejected at a SQL sink unsanitized). Full
+  suite 2646 → 2649; differential unchanged 30/30.
 
 ### Changed
 - **Active gate marker advanced B → C** (Part 11). Gate B (Compiler Enforcement
