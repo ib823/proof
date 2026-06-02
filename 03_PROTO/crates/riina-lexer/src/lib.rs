@@ -2095,4 +2095,80 @@ mod tests {
         assert_eq!(lexer.next_token().unwrap().kind, TokenKind::KwStruct);
         assert_eq!(lexer.next_token().unwrap().kind, TokenKind::Eof);
     }
+
+    // ── Numeric tower first slice: typed integer-literal suffixes ──
+
+    #[test]
+    fn test_int_suffix_lexed_into_token() {
+        // `255u8` is one token: LiteralInt("255", Some("u8")).
+        let mut lexer = Lexer::new("255u8 42i32");
+        match lexer.next_token().unwrap().kind {
+            TokenKind::LiteralInt(s, suf) => {
+                assert_eq!(s, "255");
+                assert_eq!(suf.as_deref(), Some("u8"));
+            }
+            other => panic!("expected suffixed LiteralInt, got {other:?}"),
+        }
+        match lexer.next_token().unwrap().kind {
+            TokenKind::LiteralInt(s, suf) => {
+                assert_eq!(s, "42");
+                assert_eq!(suf.as_deref(), Some("i32"));
+            }
+            other => panic!("expected suffixed LiteralInt, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_int_suffix_boundary_values_accepted() {
+        // u8 max (255) and i8 most-negative magnitude (128) are in range.
+        for src in ["255u8", "128i8", "65535u16", "0u64"] {
+            let mut lexer = Lexer::new(src);
+            assert!(
+                matches!(lexer.next_token().unwrap().kind, TokenKind::LiteralInt(_, Some(_))),
+                "{src} should lex as a suffixed int"
+            );
+        }
+    }
+
+    #[test]
+    fn test_int_suffix_overflow_rejected() {
+        // Out-of-range magnitudes are a lex error.
+        for src in ["256u8", "300i8", "65536u16", "4294967296u32"] {
+            let mut lexer = Lexer::new(src);
+            assert!(
+                lexer.next_token().is_err(),
+                "{src} should be rejected as out of range"
+            );
+        }
+    }
+
+    #[test]
+    fn test_unknown_suffix_does_not_consume_identifier() {
+        // `255abc` is NOT a typed literal — it stays `255` then ident `abc`,
+        // preserving existing tokenization (no behavior change for old programs).
+        let mut lexer = Lexer::new("255abc");
+        match lexer.next_token().unwrap().kind {
+            TokenKind::LiteralInt(s, suf) => {
+                assert_eq!(s, "255");
+                assert_eq!(suf, None);
+            }
+            other => panic!("expected bare LiteralInt, got {other:?}"),
+        }
+        assert!(matches!(
+            lexer.next_token().unwrap().kind,
+            TokenKind::Identifier(_)
+        ));
+    }
+
+    #[test]
+    fn test_plain_int_still_has_no_suffix() {
+        let mut lexer = Lexer::new("123");
+        match lexer.next_token().unwrap().kind {
+            TokenKind::LiteralInt(s, suf) => {
+                assert_eq!(s, "123");
+                assert_eq!(suf, None);
+            }
+            other => panic!("expected bare LiteralInt, got {other:?}"),
+        }
+    }
 }

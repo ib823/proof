@@ -317,7 +317,7 @@ impl<'a> Lexer<'a> {
             '"' => self.read_string(start)?,
             '\'' => self.read_char_or_lifetime(start)?,
 
-            _ if c.is_ascii_digit() => self.read_number(c),
+            _ if c.is_ascii_digit() => self.read_number(c, start)?,
             _ if is_ident_start(c) => self.read_identifier(c, start),
 
             _ => return Err(LexError::UnexpectedChar(c, start)),
@@ -405,25 +405,19 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn read_number(&mut self, first: char) -> TokenKind {
+    fn read_number(&mut self, first: char, start: usize) -> Result<TokenKind, LexError> {
         let mut s = String::new();
         s.push(first);
 
-        // Hex/Oct/Bin
+        // Hex/Oct/Bin. Typed suffixes on non-decimal bases (e.g. `0xFFu8`) are a
+        // later numeric-tower slice; for now hex/oct/bin literals carry no suffix.
         if first == '0' {
             if let Some(c) = self.peek() {
                 if c == 'x' || c == 'o' || c == 'b' {
                     self.advance();
                     s.push(c);
                     s.push_str(&self.consume_while(|ch| ch.is_ascii_hexdigit() || ch == '_'));
-                    // Typed integer suffixes (e.g. `0xFFu8`, `42i64`) are
-                    // intentionally NOT lexed: RIINA's type system has a single
-                    // `Nombor` (`Ty::Int`), so there is no sized integer type for
-                    // a suffix to denote. Suffix support is part of the numeric
-                    // tower (Gate C, REQ-28); lexing a suffix that no later stage
-                    // can consume would be a stub. The `Option<String>` suffix
-                    // slot is kept for forward compatibility (always `None`).
-                    return TokenKind::LiteralInt(s, None);
+                    return Ok(TokenKind::LiteralInt(s, None));
                 }
             }
         }
@@ -444,12 +438,47 @@ impl<'a> Lexer<'a> {
                     s.push_str(&self.consume_while(|ch| ch.is_ascii_digit() || ch == '_'));
                     // Exponent
                     // ...
-                    return TokenKind::LiteralFloat(s, None);
+                    return Ok(TokenKind::LiteralFloat(s, None));
                 }
             }
         }
 
-        TokenKind::LiteralInt(s, None) // Default
+        // Typed decimal integer suffix (u8/u16/u32/u64/i8/i16/i32/i64).
+        // **First slice of the numeric tower (Gate C, REQ-28):** the suffix is
+        // lexed and the literal is range-checked against the width *here*. The
+        // suffix is recorded in the token, but the value still types as
+        // `Nombor`/`Ty::Int` — distinct sized-integer TYPES and width-aware
+        // arithmetic/codegen are a later slice. A trailing identifier run that is
+        // not a known width (e.g. `255abc`) is left untouched for normal
+        // tokenization, so this does not change existing programs.
+        if let Some(suffix) = self.peek_int_suffix() {
+            self.advance_n(suffix.len());
+            check_int_literal_fits(&s, &suffix, start)?;
+            return Ok(TokenKind::LiteralInt(s, Some(suffix)));
+        }
+
+        Ok(TokenKind::LiteralInt(s, None)) // Default
+    }
+
+    /// Peek (without consuming) a trailing identifier run and return it iff it is
+    /// a known fixed-width integer suffix. Returns `None` (consuming nothing) for
+    /// any other trailing run, preserving existing tokenization.
+    fn peek_int_suffix(&self) -> Option<String> {
+        let mut look = self.input.clone();
+        let mut run = String::new();
+        while let Some(&ch) = look.peek() {
+            if is_ident_continue(ch) {
+                run.push(ch);
+                look.next();
+            } else {
+                break;
+            }
+        }
+        matches!(
+            run.as_str(),
+            "u8" | "u16" | "u32" | "u64" | "i8" | "i16" | "i32" | "i64"
+        )
+        .then_some(run)
     }
 
     #[allow(clippy::too_many_lines)]
@@ -672,4 +701,36 @@ fn is_ident_start(c: char) -> bool {
 
 fn is_ident_continue(c: char) -> bool {
     c.is_alphanumeric() || c == '_'
+}
+
+/// Range-check a decimal integer literal against a fixed-width suffix.
+///
+/// The lexer sees only the literal's magnitude (a leading `-` is a separate
+/// unary-minus token), so signed widths accept magnitudes up to `2^(N-1)` — this
+/// admits the most-negative value (e.g. `-128i8`) without tracking sign here.
+/// A magnitude that exceeds the width's range, or does not fit in `u128`, is an
+/// `InvalidNumericLiteral`.
+fn check_int_literal_fits(digits: &str, suffix: &str, pos: usize) -> Result<(), LexError> {
+    let clean: String = digits.chars().filter(|c| *c != '_').collect();
+    let value: u128 = clean
+        .parse()
+        .map_err(|_| LexError::InvalidNumericLiteral(format!("{clean}{suffix}"), pos))?;
+    let max: u128 = match suffix {
+        "u8" => u128::from(u8::MAX),
+        "u16" => u128::from(u16::MAX),
+        "u32" => u128::from(u32::MAX),
+        "u64" => u128::from(u64::MAX),
+        "i8" => 1u128 << 7,
+        "i16" => 1u128 << 15,
+        "i32" => 1u128 << 31,
+        "i64" => 1u128 << 63,
+        _ => return Ok(()), // unreachable: peek_int_suffix gates the suffix set
+    };
+    if value > max {
+        return Err(LexError::InvalidNumericLiteral(
+            format!("{clean}{suffix} (exceeds {suffix} range)"),
+            pos,
+        ));
+    }
+    Ok(())
 }

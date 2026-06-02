@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2649 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2654 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
 
 ### Added (Gate C stdlib hardening)
+- **Numeric tower, first slice — typed integer-literal suffixes**: the lexer now
+  recognizes decimal width suffixes (`u8/u16/u32/u64/i8/i16/i32/i64`) and
+  **range-validates them at lex time** — `256u8`, `300i8`, `4294967296u32` are
+  compile errors (`InvalidNumericLiteral`). A non-width trailing run (`255abc`) is
+  left for normal tokenization, so no existing program changes. +5 lexer tests.
+  (Distinct sized-integer *types* in `Ty`, width-aware arithmetic, codegen, and a
+  Coq numeric model are the next slices — the full tower is multi-session.)
 - **File-content reads are taint-typed**: `file_read`/`file_read_lines`
   (`fail_baca`/`fail_baca_baris`) retyped `Any → Any` ⇒ `String → Tainted<String,
   FileSystem>`. An untrusted (`Tainted`) path is now rejected at the I/O boundary
