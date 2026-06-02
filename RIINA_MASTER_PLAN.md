@@ -2101,8 +2101,26 @@ Bell-LaPadula), IFC no-read-up (T_Deref), constant-time (A2), linear types
 (`linear_safety`), and session types (protocol duality + choreography
 well-formedness). **Deepened 2026-06-02 to 18 tests** with reference-aliasing
 no-read-up (through a `let`-bound ref) and nested-call-site capability
-enforcement. All green; `cargo test --all` = 2630 pass / 0 fail (2628 + 2 sum-unwrap payload-type tests, 2026-06-02). Capability
+enforcement. All green; `cargo test --all` = 2633 pass / 0 fail (2628 + 2 sum-unwrap payload-type tests + 3 LDAP injection-parity tests, 2026-06-02). Capability
 enforcement previously had **0** tests.
+
+**Taint/injection enforcement parity (audited 2026-06-02):** beyond the
+`gate_b_parity` 6, the compiler also enforces the taint→sink discipline that
+Coq `domains/TaintSystemCorrectness.v` proves impossible per category
+(`sql_injection_impossible`, `xss_{html,js,css,url}_impossible`,
+`command_injection_impossible`, `ldap_injection_impossible`,
+`path_traversal_impossible`, `csrf_impossible`). A command-verified cross-check
+of each Coq `*_impossible` theorem against the Rust enforcement tests found one
+gap: **`ldap_injection_impossible` had the enforcement (`ldap_search` sink
+requiring `Sanitized<String, LdapEscape>`, `sanitize_ldap`) but no test** —
+**closed 2026-06-02** with `test_ldap_{injection_prevented,safe_with_sanitization,sanitizer_mismatch}`
+(positive + negative + wrong-sanitizer), mirroring the SQL/XML/path surface.
+The one remaining Coq taint theorem without a *taint-parity* test is
+`csrf_impossible`: RIINA models CSRF defence via the `csrf_generate`/HTTP-method
+layer (which **does** have tests, `test_csrf_*`), not as a taint `Sanitizer`
+variant (no `CsrfToken` in `riina_types::Sanitizer`), so there is no exact
+sink-sanitizer to test — a deliberate modeling difference, not a missing check.
+
 
 Still open for full parity (2026-06-02): the **WASM/C differential is now CLOSED
 (30/30 byte-equal, wired into CI)**, and the IFC reference-aliasing + nested

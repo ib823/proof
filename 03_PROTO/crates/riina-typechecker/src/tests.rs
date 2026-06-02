@@ -2579,6 +2579,97 @@ mod formalized_tests {
         }
     }
 
+    // ── LDAP injection — Coq `ldap_injection_impossible` (TaintSystemCorrectness.v):
+    //   has_type Γ e (TTainted T src) → ~ has_type Γ (EUseSink SanLdapEscape e) T.
+    // The Rust enforcement (`ldap_search` sink requiring Sanitized<String,
+    // LdapEscape>, `sanitize_ldap`) existed but had no parity test — this closes
+    // that gap (positive + negative), matching the SQL/XML/path-traversal surface.
+    #[test]
+    fn test_ldap_injection_prevented() {
+        // Tainted user input passed straight to ldap_search — REJECTED.
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_filter = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit),
+        );
+        let unsafe_search = Expr::App(
+            Box::new(Expr::Var("ldap_search".to_string())),
+            Box::new(user_filter),
+        );
+
+        match type_check(&ctx, &unsafe_search) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected LDAP injection to be prevented, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_ldap_safe_with_sanitization() {
+        // sanitize_ldap(input) → ldap_search — succeeds.
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_filter = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit),
+        );
+        let sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_ldap".to_string())),
+            Box::new(user_filter),
+        );
+        let safe_search = Expr::App(
+            Box::new(Expr::Var("ldap_search".to_string())),
+            Box::new(sanitized),
+        );
+
+        match type_check(&ctx, &safe_search) {
+            Ok((ty, _)) => assert_eq!(ty, Ty::Any),
+            Err(e) => panic!("Expected safe LDAP search to succeed, got error: {:?}", e),
+        }
+    }
+
+    #[test]
+    fn test_ldap_sanitizer_mismatch() {
+        // HTML-sanitized data fed to ldap_search — wrong sanitizer, REJECTED.
+        let ctx = register_builtin_types(&Context::new());
+
+        let user_filter = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit),
+        );
+        let html_sanitized = Expr::App(
+            Box::new(Expr::Var("sanitize_html".to_string())),
+            Box::new(user_filter),
+        );
+        let wrong_sink = Expr::App(
+            Box::new(Expr::Var("ldap_search".to_string())),
+            Box::new(html_sanitized),
+        );
+
+        match type_check(&ctx, &wrong_sink) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(
+                    expected,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)
+                );
+                assert_eq!(
+                    found,
+                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
+                );
+            }
+            other => panic!("Expected sanitizer mismatch for LDAP, got {:?}", other),
+        }
+    }
+
     // ── 6c: SSRF (CWE-918) ──
 
     #[test]

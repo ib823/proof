@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2630 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2633 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -53,11 +53,20 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
   hardcoded `Unit` — closing 2 of the 4 remaining feature-gated Gate B `// TODO`s
   (now **3/5** done), via the same `infer_type` idiom `Fst`/`Snd` already use.
   +2 tests; differential unchanged at 30/30 byte-equal.
+- **LDAP injection enforcement-parity test** closing a Gate B audit gap: a
+  command-verified cross-check of every Coq `*_impossible` theorem in
+  `domains/TaintSystemCorrectness.v` against the Rust taint tests found that
+  `ldap_injection_impossible` had the enforcement (`ldap_search` sink requiring
+  `Sanitized<String, LdapEscape>`, `sanitize_ldap`) but **no test**. Added
+  `test_ldap_{injection_prevented,safe_with_sanitization,sanitizer_mismatch}`
+  (positive + negative + wrong-sanitizer), matching the SQL/XML/path surface.
+  (CSRF is modeled via the `csrf_generate`/method layer, not a taint sanitizer —
+  documented as a deliberate modeling difference.)
 
 ### Verified (by command, not copied)
-- `03_PROTO` test suite: **2,630 pass / 0 fail** (`cargo test --all`; 2,628 + 2
-  sum-unwrap payload-type tests); `cargo clippy` 0 warnings. WASM/C differential
-  30/30 byte-equal under wasmtime 45.0.0.
+- `03_PROTO` test suite: **2,633 pass / 0 fail** (`cargo test --all`; 2,628 + 2
+  sum-unwrap payload-type tests + 3 LDAP injection-parity tests); `cargo clippy`
+  0 warnings. WASM/C differential 30/30 byte-equal under wasmtime 45.0.0.
   Coq active build 309 `.vo`, 0 `Admitted` / 0 `Axiom` (pre-push `riinac verify
   --full`). `gate_b_parity` deepened to 18 enforcement tests (added IFC
   reference-aliasing and nested-call-site capability), plus session-projection
