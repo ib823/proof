@@ -511,6 +511,14 @@ impl WasmBackend {
     /// `entry` up to (but not including) `stop`. Reconstructs nested AND
     /// sequential if/else from `CondBranch` terminators; the merge of each
     /// `CondBranch` is the block its then/else branches rejoin at.
+    ///
+    /// Returns the index of the block from which this region exits to `stop`
+    /// (i.e. the merge's actual predecessor), or `None` if the region diverges
+    /// (ends in `Return`/`Unreachable`) or has no merge. The caller uses this
+    /// exit block — not the region's entry — to push the branch's contribution
+    /// to the merge `Phi`. This is what makes a *nested* if/else correct: its
+    /// exit is an inner merge block, which is the block the lowerer keys the
+    /// outer `Phi` entry by; the entry block (an inner `CondBranch`) is not.
     fn emit_structured(
         &self,
         entry: usize,
@@ -519,11 +527,11 @@ impl WasmBackend {
         ctx: &EmitCtx<'_>,
         block_map: &HashMap<BlockId, usize>,
         code: &mut Vec<u8>,
-    ) -> Result<()> {
+    ) -> Result<Option<usize>> {
         let mut cur = entry;
         loop {
             if Some(cur) == stop {
-                return Ok(());
+                return Ok(None);
             }
             let block = &func.blocks[cur];
             self.emit_block_instrs(block, ctx, code)?;
@@ -534,15 +542,24 @@ impl WasmBackend {
                         wasm_encode::encode_uleb128(*local as u64, code);
                     }
                     code.push(Op::Return as u8);
-                    return Ok(());
+                    return Ok(None);
                 }
                 Some(Terminator::Unreachable) => {
                     code.push(Op::Unreachable as u8);
-                    return Ok(());
+                    return Ok(None);
                 }
                 Some(Terminator::Branch(target)) => match block_map.get(target) {
-                    Some(&t) => cur = t,
-                    None => return Ok(()),
+                    Some(&t) => {
+                        if Some(t) == stop {
+                            // `cur` is the region's exit: it rejoins the enclosing
+                            // merge. Report it so the caller pushes the right phi
+                            // contribution (for a nested if/else this is an inner
+                            // merge block, not the region's entry CondBranch).
+                            return Ok(Some(cur));
+                        }
+                        cur = t;
+                    }
+                    None => return Ok(None),
                 },
                 Some(Terminator::CondBranch {
                     cond,
@@ -552,7 +569,7 @@ impl WasmBackend {
                     let (Some(&then_idx), Some(&else_idx)) =
                         (block_map.get(then_block), block_map.get(else_block))
                     else {
-                        return Ok(());
+                        return Ok(None);
                     };
                     // The merge is where the two branches rejoin: the Branch
                     // target of the then (or else) branch.
@@ -565,18 +582,24 @@ impl WasmBackend {
                     }
                     code.push(Op::If as u8);
                     code.push(ValType::I32 as u8);
-                    self.emit_structured(then_idx, merge, func, ctx, block_map, code)?;
+                    // Emit each branch region, then push its contribution to the
+                    // merge phi from the region's EXIT block (its merge
+                    // predecessor), falling back to the entry block when the
+                    // region diverges (no exit-to-merge).
+                    let then_exit =
+                        self.emit_structured(then_idx, merge, func, ctx, block_map, code)?;
                     self.emit_phi_value_for_branch(
-                        &func.blocks[then_idx],
+                        &func.blocks[then_exit.unwrap_or(then_idx)],
                         &func.blocks,
                         block_map,
                         ctx,
                         code,
                     )?;
                     code.push(Op::Else as u8);
-                    self.emit_structured(else_idx, merge, func, ctx, block_map, code)?;
+                    let else_exit =
+                        self.emit_structured(else_idx, merge, func, ctx, block_map, code)?;
                     self.emit_phi_value_for_branch(
-                        &func.blocks[else_idx],
+                        &func.blocks[else_exit.unwrap_or(else_idx)],
                         &func.blocks,
                         block_map,
                         ctx,
@@ -597,10 +620,10 @@ impl WasmBackend {
                     }
                     match merge {
                         Some(m) => cur = m,
-                        None => return Ok(()),
+                        None => return Ok(None),
                     }
                 }
-                Some(Terminator::Handle { .. }) | None => return Ok(()),
+                Some(Terminator::Handle { .. }) | None => return Ok(None),
             }
         }
     }
