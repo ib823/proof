@@ -163,6 +163,17 @@ fn wcag_aa_contrast_ok(fg: (u8, u8, u8), bg: (u8, u8, u8)) -> bool {
     (lighter + 0.05) / (darker + 0.05) >= 4.5
 }
 
+/// Whether a type carries the constant-time discipline, looking through a
+/// security `Labeled` wrapper. Used for CT contagion in `infer_type` so the
+/// codegen constant-time verifier can see CT-derived IR values.
+fn ty_is_constant_time(ty: &Ty) -> bool {
+    match ty {
+        Ty::ConstantTime(_) => true,
+        Ty::Labeled(inner, _) => ty_is_constant_time(inner),
+        _ => false,
+    }
+}
+
 /// Variable environment during lowering
 #[derive(Debug, Clone, Default)]
 struct VarEnv {
@@ -745,17 +756,30 @@ impl Lower {
                 .and_then(|var| self.env.types.get(&var).cloned())
                 .unwrap_or(Ty::Unit), // unbound (e.g. a top-level function not yet in env) → Unit
             Expr::Loc(_) => Ty::Unit, // Runtime-only; actual type from store
-            Expr::BinOp(op, _, _) => match op {
-                BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => Ty::Int,
-                BinOp::Eq
-                | BinOp::Ne
-                | BinOp::Lt
-                | BinOp::Le
-                | BinOp::Gt
-                | BinOp::Ge
-                | BinOp::And
-                | BinOp::Or => Ty::Bool,
-            },
+            Expr::BinOp(op, lhs, rhs) => {
+                let base = match op {
+                    BinOp::Add | BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => Ty::Int,
+                    BinOp::Eq
+                    | BinOp::Ne
+                    | BinOp::Lt
+                    | BinOp::Le
+                    | BinOp::Gt
+                    | BinOp::Ge
+                    | BinOp::And
+                    | BinOp::Or => Ty::Bool,
+                };
+                // Constant-time contagion: a result derived from a ConstantTime
+                // operand stays ConstantTime, so the CT discipline is preserved
+                // in the IR annotations for the codegen CT verifier. Guarded on
+                // CT operands, so non-CT programs are unaffected.
+                if ty_is_constant_time(&self.infer_type(lhs))
+                    || ty_is_constant_time(&self.infer_type(rhs))
+                {
+                    Ty::ConstantTime(Box::new(base))
+                } else {
+                    base
+                }
+            }
             Expr::FFICall { ret_ty, .. } => ret_ty.clone(),
             Expr::ActorDecl { .. } => Ty::Unit,
             Expr::ChoreographyBlock { .. } => Ty::Unit,

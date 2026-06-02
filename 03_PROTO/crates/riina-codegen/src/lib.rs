@@ -70,6 +70,7 @@
 pub mod android_build;
 pub mod backend;
 pub mod builtins;
+pub mod ct_verify;
 pub mod emit;
 pub mod ffi;
 pub mod interp;
@@ -127,6 +128,10 @@ pub enum Error {
     UnhandledEffect(riina_types::Effect),
     /// Capability not held
     MissingCapability(riina_types::Effect),
+    /// The lowered IR violates the constant-time discipline (a secret-dependent
+    /// branch, or a variable-time operation on a `ConstantTime` value). Carries
+    /// the human-readable description of each violation found.
+    ConstantTimeViolation(Vec<String>),
     /// Non-error control-flow signal: an early `pulang` (return) is unwinding to
     /// the nearest enclosing function-application boundary, carrying its value.
     /// This is never surfaced to the user — it is always caught when a closure
@@ -167,6 +172,9 @@ impl std::fmt::Display for Error {
             Self::InvalidReference(msg) => write!(f, "invalid reference: {msg}"),
             Self::UnhandledEffect(eff) => write!(f, "unhandled effect: {eff:?}"),
             Self::MissingCapability(eff) => write!(f, "missing capability for effect: {eff:?}"),
+            Self::ConstantTimeViolation(msgs) => {
+                write!(f, "constant-time violation(s): {}", msgs.join("; "))
+            }
             Self::Return(_) => write!(f, "internal: uncaught early-return signal"),
         }
     }
@@ -224,7 +232,21 @@ pub fn eval_with_builtins(expr: &riina_types::Expr) -> Result<Value> {
 /// * `Err(Error)` - Compilation error
 pub fn compile(expr: &riina_types::Expr) -> Result<Program> {
     let mut lower = Lower::new();
-    lower.compile(expr)
+    let program = lower.compile(expr)?;
+    // Per-program constant-time gate over the lowered IR: independently certify
+    // that the artifact has no secret-dependent branch or variable-time operation
+    // on a `ConstantTime` value (defense-in-depth behind the source-level A2
+    // typecheck). Valid programs — including constant-time ones with no such
+    // hazard — pass unchanged.
+    if let Err(violations) = crate::ct_verify::verify_constant_time(&program) {
+        return Err(Error::ConstantTimeViolation(
+            violations
+                .iter()
+                .map(crate::ct_verify::CtViolation::message)
+                .collect(),
+        ));
+    }
+    Ok(program)
 }
 
 /// Compile an expression to C source code

@@ -4654,6 +4654,55 @@ mod gate_b_parity {
         type_check_full(&mut ctx, &if_expr).expect("plain bool branch must typecheck");
     }
 
+    #[test]
+    fn constant_time_division_is_rejected() {
+        // A2 (depth): integer division/modulo have data-dependent latency, so a
+        // ConstantTime operand leaks via timing — reject `ct / 2`.
+        let mut ctx = TypingContext::new()
+            .extend_gamma("ct".into(), Ty::ConstantTime(Box::new(Ty::Int)));
+        let div = Expr::BinOp(
+            riina_types::BinOp::Div,
+            Box::new(Expr::Var("ct".into())),
+            Box::new(Expr::Int(2)),
+        );
+        match type_check_full(&mut ctx, &div) {
+            Err(TypeError::ConstantTimeViolation { context }) => {
+                assert!(context.contains("division") || context.contains("modulo"));
+            }
+            other => panic!("expected ConstantTimeViolation for CT division, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn constant_time_modulo_is_rejected() {
+        let mut ctx = TypingContext::new()
+            .extend_gamma("ct".into(), Ty::ConstantTime(Box::new(Ty::Int)));
+        let modulo = Expr::BinOp(
+            riina_types::BinOp::Mod,
+            Box::new(Expr::Var("ct".into())),
+            Box::new(Expr::Int(7)),
+        );
+        assert!(matches!(
+            type_check_full(&mut ctx, &modulo),
+            Err(TypeError::ConstantTimeViolation { .. })
+        ));
+    }
+
+    #[test]
+    fn constant_time_addition_is_accepted() {
+        // Add/Sub/Mul are constant-time and keep the CT tag (no rejection).
+        let mut ctx = TypingContext::new()
+            .extend_gamma("ct".into(), Ty::ConstantTime(Box::new(Ty::Int)));
+        let add = Expr::BinOp(
+            riina_types::BinOp::Add,
+            Box::new(Expr::Var("ct".into())),
+            Box::new(Expr::Int(1)),
+        );
+        let (ty, _) = type_check_full(&mut ctx, &add).expect("CT addition must typecheck");
+        // The CT tag is preserved through the operation.
+        assert!(matches!(ty, Ty::ConstantTime(_)));
+    }
+
     // ── Property 5: Linear types — Coq linear_safety (LinearTypes.v)
     #[test]
     fn linear_variable_used_twice_is_rejected() {

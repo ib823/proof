@@ -3240,6 +3240,15 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
                     }
                 }
                 BinOp::Sub | BinOp::Mul | BinOp::Div | BinOp::Mod => {
+                    // A2: integer division and modulo have data-dependent latency
+                    // on real ISAs, so a ConstantTime operand would leak through
+                    // timing exactly like a secret-dependent branch. Reject CT
+                    // div/mod (Sub/Mul are constant-time and keep the CT tag).
+                    if any_ct && matches!(op, BinOp::Div | BinOp::Mod) {
+                        return Err(TypeError::ConstantTimeViolation {
+                            context: "variable-time division or modulo",
+                        });
+                    }
                     if !types_compatible(&Ty::Int, inner1) {
                         return Err(TypeError::TypeMismatch {
                             expected: Ty::Int,
