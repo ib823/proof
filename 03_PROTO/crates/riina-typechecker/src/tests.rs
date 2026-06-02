@@ -2653,6 +2653,31 @@ mod formalized_tests {
         }
     }
 
+    #[test]
+    fn test_file_exists_rejects_tainted_path() {
+        // Single-path file ops (exists/delete/size/list) also require a String
+        // path — a tainted path is rejected (path-traversal prevention).
+        let ctx = register_builtin_types(&Context::new());
+        let tainted_path = Expr::App(
+            Box::new(Expr::Var("read_line".to_string())),
+            Box::new(Expr::Unit),
+        );
+        let call = Expr::App(
+            Box::new(Expr::Var("file_exists".to_string())),
+            Box::new(tainted_path),
+        );
+        match type_check(&ctx, &call) {
+            Err(TypeError::TypeMismatch { expected, found }) => {
+                assert_eq!(expected, Ty::String);
+                assert_eq!(
+                    found,
+                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
+                );
+            }
+            other => panic!("Expected tainted path to file_exists rejected, got {:?}", other),
+        }
+    }
+
     // ── 6c: SSRF (CWE-918) ──
 
     #[test]
