@@ -1303,6 +1303,19 @@ impl Lower {
                 // Lower scrutinee
                 let scrut_var = self.lower_expr(scrutinee)?;
 
+                // Derive each branch's payload type from the scrutinee's sum type,
+                // mirroring the typechecker's T_Case normalization (Sum(l, r) ⇒
+                // (l, r); Option(t) ⇒ (t, Unit)). Falls back to Unit when the type
+                // can't be resolved, preserving prior behavior. This types the
+                // UnwrapLeft/UnwrapRight values and the branch bindings correctly
+                // (was hardcoded Unit), so downstream `infer_type` of the bound
+                // payload variable resolves to the real type.
+                let (left_ty, right_ty) = match self.infer_type(scrutinee) {
+                    Ty::Sum(l, r) => (*l, *r),
+                    Ty::Option(inner) => (*inner, Ty::Unit),
+                    _ => (Ty::Unit, Ty::Unit),
+                };
+
                 // Check if left or right
                 let is_left = self.emit(
                     Instruction::IsLeft(scrut_var),
@@ -1359,14 +1372,14 @@ impl Lower {
                 self.current_block = then_block;
                 let left_val = self.emit(
                     Instruction::UnwrapLeft(scrut_var),
-                    Ty::Unit, // TODO: proper type
+                    left_ty.clone(),
                     SecurityLevel::Public,
                     Effect::Pure,
                 );
 
                 let saved_env = self.env.clone();
                 self.env
-                    .bind(left_name.clone(), left_val, Ty::Unit, SecurityLevel::Public);
+                    .bind(left_name.clone(), left_val, left_ty, SecurityLevel::Public);
                 let left_result = self.lower_expr(left_branch)?;
                 self.env = saved_env;
 
@@ -1385,7 +1398,7 @@ impl Lower {
                 self.current_block = else_block;
                 let right_val = self.emit(
                     Instruction::UnwrapRight(scrut_var),
-                    Ty::Unit, // TODO: proper type
+                    right_ty.clone(),
                     SecurityLevel::Public,
                     Effect::Pure,
                 );
@@ -1394,7 +1407,7 @@ impl Lower {
                 self.env.bind(
                     right_name.clone(),
                     right_val,
-                    Ty::Unit,
+                    right_ty,
                     SecurityLevel::Public,
                 );
                 let right_result = self.lower_expr(right_branch)?;
@@ -2267,6 +2280,63 @@ mod tests {
         let main = prog.function(FuncId::MAIN).unwrap();
         // Case creates multiple blocks
         assert!(main.blocks.len() >= 3);
+    }
+
+    // Helper: scan all blocks for the (UnwrapLeft, UnwrapRight) result types.
+    fn unwrap_payload_types(main: &crate::ir::Function) -> (Option<Ty>, Option<Ty>) {
+        let (mut left, mut right) = (None, None);
+        for block in &main.blocks {
+            for ins in &block.instrs {
+                if matches!(ins.instr, Instruction::UnwrapLeft(_)) {
+                    left = Some(ins.ty.clone());
+                }
+                if matches!(ins.instr, Instruction::UnwrapRight(_)) {
+                    right = Some(ins.ty.clone());
+                }
+            }
+        }
+        (left, right)
+    }
+
+    #[test]
+    fn test_lower_case_sum_payload_types() {
+        // A `Case` over a `Sum(Int, String)` scrutinee must type the unwrapped
+        // payloads with the real branch types, not the old hardcoded `Unit`
+        // (mirrors the typechecker's T_Case normalization).
+        let mut lower = Lower::new();
+        let sum_ty = Ty::Sum(Box::new(Ty::Int), Box::new(Ty::String));
+        let case = Expr::Case(
+            Box::new(Expr::Inl(Box::new(Expr::Int(7)), sum_ty)),
+            "x".to_string(),
+            Box::new(Expr::Var("x".to_string())),
+            "y".to_string(),
+            Box::new(Expr::Var("y".to_string())),
+        );
+        let prog = lower.compile(&case).unwrap();
+        let main = prog.function(FuncId::MAIN).unwrap();
+        let (left, right) = unwrap_payload_types(main);
+        assert_eq!(left, Some(Ty::Int), "UnwrapLeft payload should be Int");
+        assert_eq!(right, Some(Ty::String), "UnwrapRight payload should be String");
+    }
+
+    #[test]
+    fn test_lower_case_option_payload_types() {
+        // `Option(T)` normalizes to (T, Unit): the present arm carries T, the
+        // absent arm carries Unit.
+        let mut lower = Lower::new();
+        let opt_ty = Ty::Option(Box::new(Ty::Bool));
+        let case = Expr::Case(
+            Box::new(Expr::Inl(Box::new(Expr::Bool(true)), opt_ty)),
+            "x".to_string(),
+            Box::new(Expr::Var("x".to_string())),
+            "y".to_string(),
+            Box::new(Expr::Var("y".to_string())),
+        );
+        let prog = lower.compile(&case).unwrap();
+        let main = prog.function(FuncId::MAIN).unwrap();
+        let (left, right) = unwrap_payload_types(main);
+        assert_eq!(left, Some(Ty::Bool), "present-arm payload should be Bool");
+        assert_eq!(right, Some(Ty::Unit), "absent-arm payload should be Unit");
     }
 
     // ═══════════════════════════════════════════════════════════════════

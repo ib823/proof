@@ -1,10 +1,10 @@
 {
-  "generated": "2026-06-02T05:20:06Z",
-  "generatedHuman": "June 02, 2026 at 05:20 UTC",
+  "generated": "2026-06-02T06:29:36Z",
+  "generatedHuman": "June 02, 2026 at 06:29 UTC",
   "version": "0.3.0",
   "session": 0,
   "git": {
-    "commit": "5b78c1dc",
+    "commit": "ab35ea06",
     "branch": "main"
   },
   "proofs": {
@@ -148,7 +148,7 @@
     "nonCoqMechanization": {
       "reportFresh": false,
       "overallMechanized": false,
-      "source": "missing_or_stale",
+      "source": "cached_metrics",
       "pending": {
         "lean": "noncoq_report_missing_or_stale",
         "isabelle": "noncoq_report_missing_or_stale",
@@ -194,10 +194,10 @@
     "runtimeProofArchitecture": "generated"
   },
   "rust": {
-    "tests": 2628,
-    "testsVerified": 2628,
-    "testsEstimated": 0,
-    "testsSource": "full_cargo_test",
+    "tests": 2630,
+    "testsVerified": 2630,
+    "testsEstimated": 2626,
+    "testsSource": "cached_verified",
     "crates": 19
   },
   "examples": 155,

@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2628 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2630 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -45,10 +45,19 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
   stay constant-time and keep the CT tag. The lowerer's `infer_type` propagates
   the CT tag through `BinOp` (guarded on CT operands — non-CT programs are
   byte-identical).
+- **Sum-elimination payload types in lowering** (`riina-codegen/src/lower.rs`):
+  `Expr::Case` now derives each branch's payload type from `infer_type(scrutinee)`,
+  mirroring the typechecker's `T_Case` normalization (`Sum(l,r) ⇒ (l,r)`;
+  `Option(t) ⇒ (t,Unit)`; `Unit` fallback). The `UnwrapLeft`/`UnwrapRight` IR
+  values **and** the branch bindings now carry the real payload type instead of a
+  hardcoded `Unit` — closing 2 of the 4 remaining feature-gated Gate B `// TODO`s
+  (now **3/5** done), via the same `infer_type` idiom `Fst`/`Snd` already use.
+  +2 tests; differential unchanged at 30/30 byte-equal.
 
 ### Verified (by command, not copied)
-- `03_PROTO` test suite: **2,628 pass / 0 fail** (`cargo test --all`); `cargo
-  clippy` 0 warnings. WASM/C differential 30/30 byte-equal under wasmtime.
+- `03_PROTO` test suite: **2,630 pass / 0 fail** (`cargo test --all`; 2,628 + 2
+  sum-unwrap payload-type tests); `cargo clippy` 0 warnings. WASM/C differential
+  30/30 byte-equal under wasmtime 45.0.0.
   Coq active build 309 `.vo`, 0 `Admitted` / 0 `Axiom` (pre-push `riinac verify
   --full`). `gate_b_parity` deepened to 18 enforcement tests (added IFC
   reference-aliasing and nested-call-site capability), plus session-projection
