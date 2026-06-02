@@ -12,6 +12,7 @@ use riina_types::{
 };
 use std::collections::{HashMap, HashSet};
 
+pub mod multiparty;
 pub mod program;
 pub use program::check_program;
 

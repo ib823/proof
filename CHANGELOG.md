@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2637 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2646 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -29,6 +29,17 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
 - **CI `differential` job** (`.github/workflows/verify.yml`): installs
   `cc`+`wasmtime` so the WASM/C `corpus_differential` byte-equality test runs in
   CI instead of auto-skipping.
+- **N-party multiparty session-type core** (`riina-typechecker/src/multiparty.rs`):
+  role-annotated `GlobalType`/`LocalType` + `project(g, role)` + `mergeable` +
+  `is_projectable`, mirroring the mechanized Coq development (`GlobalType`
+  `ChoreographyTypes.v:160`, `LocalType` `:232`, `project` `:399`, `mergeableb`
+  `ChoreographyProjection.v:48`). The binary `riina_types::SessionType` cannot
+  carry peer roles, so >2-role projection needs this separate representation —
+  this lifts the `project_choreography` >2-role `None` limitation. +9 tests incl.
+  a genuine 3-party Buyer/Seller/Shipper protocol projected onto each role and
+  branch-projectability accept/reject. (Per-statement channel-op impl checking
+  and `koreografi`-surface wiring remain — RIINA has no session-channel surface
+  ops yet.)
 
 ### Changed
 - **WASM backend reaches byte-for-byte parity with C** across the dual-backend
@@ -83,9 +94,10 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
   precise variants — a stronger parity surface for the Coq `*_impossible` theorems.
 
 ### Verified (by command, not copied)
-- `03_PROTO` test suite: **2,637 pass / 0 fail** (`cargo test --all`; 2,628 + 2
+- `03_PROTO` test suite: **2,646 pass / 0 fail** (`cargo test --all`; 2,628 + 2
   sum-unwrap payload-type tests + 3 LDAP injection-parity tests + 2 Effect-Gate
-  binding-purity tests + 2 `T_Perform` parity tests); `cargo clippy` 0 warnings.
+  binding-purity tests + 2 `T_Perform` parity tests + 9 multiparty
+  global-type/projection tests); `cargo clippy` 0 warnings.
   WASM/C differential 30/30 byte-equal under wasmtime 45.0.0.
   Coq active build 309 `.vo`, 0 `Admitted` / 0 `Axiom` (pre-push `riinac verify
   --full`). `gate_b_parity` deepened to 18 enforcement tests (added IFC
@@ -93,9 +105,10 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
   and constant-time div/mod tests.
 
 ### Still open (honestly scoped)
-- Full **N-party multiparty** session global types and per-statement
-  channel-operation impl checking (RIINA has no session-channel surface ops yet —
-  only the projected local *type* is checked).
+- **Multiparty** per-statement channel-operation impl checking + `koreografi`-surface
+  wiring (the global-type + projection core now exists in `multiparty.rs`, but RIINA
+  has no session-channel surface ops yet, so only the projected local *type* is
+  checked — there is no operation sequence to check it against).
 - **DMP/GoFetch-class** microarchitectural constant-time channels (out of scope
   until the CHERI/hardware-contract era, Phase 7/9).
 
