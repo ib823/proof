@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms, 4 Abort) | 10 prover lanes tracked with claim levels | 2,479 proto + 248 tooling Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2607 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 

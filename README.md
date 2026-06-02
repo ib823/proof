@@ -390,7 +390,7 @@ Every research track in `01_RESEARCH/` (55 domains, A through AJ, plus Greek let
 ## Current Status
 
 **Build:** Passing.
-**Verification:** 12,386 Coq Qed (active build: 0 Admitted, 0 `Axiom`, 0 Abort; 30 `Parameter` assumptions) | Coq is the only mechanized lane | 2,479 proto + 248 tooling Rust tests passing
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2607 Rust tests
 
 | Area | Status |
 |------|--------|
