@@ -2101,8 +2101,21 @@ Bell-LaPadula), IFC no-read-up (T_Deref), constant-time (A2), linear types
 (`linear_safety`), and session types (protocol duality + choreography
 well-formedness). **Deepened 2026-06-02 to 18 tests** with reference-aliasing
 no-read-up (through a `let`-bound ref) and nested-call-site capability
-enforcement. All green; `cargo test --all` = 2633 pass / 0 fail (2628 + 2 sum-unwrap payload-type tests + 3 LDAP injection-parity tests, 2026-06-02). Capability
+enforcement. All green; `cargo test --all` = 2635 pass / 0 fail (2628 + 2 sum-unwrap payload-type tests + 3 LDAP injection-parity tests + 2 Effect-Gate top-level-binding-purity tests, 2026-06-02). Capability
 enforcement previously had **0** tests.
+
+**Effect-Gate enforcement parity (audited 2026-06-02):** a per-`TypeError`-variant
+coverage audit (each reachable variant must be asserted by ≥1 test) confirmed every
+*reachable* enforcement error is tested. It surfaced that `EffectViolation` has two
+distinct construction sites — function effect-discipline (body effect ≤ declared
+effect; covered by `check_program_rejects_zero_arg_pure_function_with_write_effect`)
+and **top-level binding purity** (module-level `biar` must be pure, no declared-effect
+annotation; previously untested) — the latter **closed 2026-06-02** with
+`check_program_{rejects_effectful_top_level_binding,allows_pure_top_level_binding}`
+(Coq effect-soundness: a term evaluates performing only effects in its declared set).
+The audit also noted `TaintViolation`/`SanitizerMismatch` are declared-but-never-raised
+variants (taint at a sink is enforced via `TypeMismatch` of `Sanitized` vs `Tainted`,
+which **is** tested) — a dead-variant cleanliness item, not an enforcement gap.
 
 **Taint/injection enforcement parity (audited 2026-06-02):** beyond the
 `gate_b_parity` 6, the compiler also enforces the taint→sink discipline that

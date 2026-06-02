@@ -650,4 +650,31 @@ mod tests {
         ))
         .expect("prior top-level grant should satisfy later capability-gated call");
     }
+
+    // ── Effect Gate parity (Coq effect-soundness: a term's evaluation performs
+    // only effects in its declared set). `EffectViolation` has two distinct
+    // enforcement sites; the function-effect-discipline site is covered by
+    // `check_program_rejects_zero_arg_pure_function_with_write_effect`, but the
+    // *top-level binding purity* site (module-level `biar` must be pure — no
+    // declared-effect annotation exists for bindings) was untested.
+    #[test]
+    fn check_program_rejects_effectful_top_level_binding() {
+        // A module-level binding whose initializer carries the Write effect
+        // (`print`) must be rejected — module initialization is implicitly pure.
+        let err = check_program(&parse_program("biar bocor = print 1;\nbocor")).unwrap_err();
+        match err {
+            TypeError::EffectViolation { allowed, found } => {
+                assert_eq!(allowed, Effect::Pure);
+                assert_eq!(found, Effect::Write);
+            }
+            other => panic!("expected EffectViolation for effectful binding, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn check_program_allows_pure_top_level_binding() {
+        // A pure module-level binding is accepted (the purity guard does not fire).
+        check_program(&parse_program("biar selamat = 1;\nselamat"))
+            .expect("a pure top-level binding must typecheck");
+    }
 }

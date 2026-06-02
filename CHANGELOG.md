@@ -1,6 +1,6 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2633 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2635 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
@@ -62,11 +62,20 @@ Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
   (positive + negative + wrong-sanitizer), matching the SQL/XML/path surface.
   (CSRF is modeled via the `csrf_generate`/method layer, not a taint sanitizer —
   documented as a deliberate modeling difference.)
+- **Effect-Gate top-level-binding-purity tests** closing a second Gate B parity
+  gap found by a per-`TypeError`-variant coverage audit: `EffectViolation` has two
+  enforcement sites and only the function effect-discipline one was tested. Added
+  `check_program_{rejects_effectful_top_level_binding,allows_pure_top_level_binding}`
+  (a module-level `biar` initialized with an effectful expression is rejected;
+  pure bindings accepted) — Coq effect-soundness parity. The audit also confirmed
+  every *reachable* `TypeError` variant is asserted by a test (`TaintViolation`/
+  `SanitizerMismatch` are dead variants; taint is enforced via `TypeMismatch`).
 
 ### Verified (by command, not copied)
-- `03_PROTO` test suite: **2,633 pass / 0 fail** (`cargo test --all`; 2,628 + 2
-  sum-unwrap payload-type tests + 3 LDAP injection-parity tests); `cargo clippy`
-  0 warnings. WASM/C differential 30/30 byte-equal under wasmtime 45.0.0.
+- `03_PROTO` test suite: **2,635 pass / 0 fail** (`cargo test --all`; 2,628 + 2
+  sum-unwrap payload-type tests + 3 LDAP injection-parity tests + 2 Effect-Gate
+  binding-purity tests); `cargo clippy` 0 warnings. WASM/C differential 30/30
+  byte-equal under wasmtime 45.0.0.
   Coq active build 309 `.vo`, 0 `Admitted` / 0 `Axiom` (pre-push `riinac verify
   --full`). `gate_b_parity` deepened to 18 enforcement tests (added IFC
   reference-aliasing and nested-call-site capability), plus session-projection
