@@ -97,10 +97,10 @@
 ║  | Ed25519 sign           | < 50 µs           | 100 µs            | < 512 bytes stack             |║
 ║  | Ed25519 verify         | < 100 µs          | 200 µs            | < 512 bytes stack             |║
 ║  | X25519 key exchange    | < 100 µs          | 200 µs            | < 512 bytes stack             |║
-║  | Kyber-768 encapsulate  | < 50 µs           | 100 µs            | < 4 KB stack                  |║
-║  | Kyber-768 decapsulate  | < 50 µs           | 100 µs            | < 4 KB stack                  |║
-║  | Dilithium sign         | < 200 µs          | 400 µs            | < 8 KB stack                  |║
-║  | Dilithium verify       | < 100 µs          | 200 µs            | < 8 KB stack                  |║
+║  | ML-KEM-768 encapsulate | < 50 µs           | 100 µs            | < 4 KB stack                  |║
+║  | ML-KEM-768 decapsulate | < 50 µs           | 100 µs            | < 4 KB stack                  |║
+║  | ML-DSA-65 sign         | < 200 µs          | 400 µs            | < 8 KB stack                  |║
+║  | ML-DSA-65 verify       | < 100 µs          | 200 µs            | < 8 KB stack                  |║
 ║                                                                                                      ║
 ║  All cryptographic operations MUST be constant-time (no timing side channels)                       ║
 ║                                                                                                      ║

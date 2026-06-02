@@ -570,7 +570,7 @@
 ║  ACCESSIBILITY AND INTERNATIONALIZATION                                                             ║
 ╠══════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║                                                                                                      ║
-║  WCAG 2.1 AA COMPLIANCE (Minimum):                                                                  ║
+║  WCAG 2.2 AA COMPLIANCE (Minimum):                                                                  ║
 ║  ═════════════════════════════════                                                                  ║
 ║                                                                                                      ║
 ║  • Color contrast: 4.5:1 for normal text, 3:1 for large text                                        ║

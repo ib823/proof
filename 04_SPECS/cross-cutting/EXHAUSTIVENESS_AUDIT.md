@@ -538,7 +538,7 @@ Current documents define targets like:
 ║                                                                                                      ║
 ║  UX-02: ACCESSIBILITY RESEARCH                                                                      ║
 ║  ───────────────────────────────                                                                    ║
-║  • WCAG 2.1 AAA compliance                        📋 MENTIONED                                      ║
+║  • WCAG 2.2 AAA compliance                        📋 MENTIONED                                      ║
 ║  • Screen reader optimization                     🔴 NO RESEARCH                                    ║
 ║  • Motor accessibility                            🔴 NO RESEARCH                                    ║
 ║  • Cognitive accessibility                        🔴 NO RESEARCH                                    ║
