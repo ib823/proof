@@ -2261,6 +2261,42 @@ fn join_branch_types(t1: Ty, t2: Ty) -> Ty {
     }
 }
 
+/// Refine an incompatible function-application argument error.
+///
+/// A sink whose parameter type is `Sanitized<_, required>` (e.g. `sql_execute`,
+/// `ldap_search`, `xml_parse_safe`) produces a taint-specific diagnostic that
+/// mirrors the Coq injection-prevention theorems in
+/// `domains/TaintSystemCorrectness.v`, rather than a generic `TypeMismatch`:
+/// - a `Tainted<_, src>` argument ⇒ `TaintViolation` (unsanitized data at a sink),
+/// - a `Sanitized<_, other>` argument with the wrong sanitizer ⇒ `SanitizerMismatch`.
+///
+/// Any other incompatibility falls back to `TypeMismatch`.
+fn sink_argument_error(arg_ty: Ty, found: Ty) -> TypeError {
+    if let Ty::Sanitized(_, required) = &arg_ty {
+        match &found {
+            Ty::Tainted(_, src) => {
+                return TypeError::TaintViolation {
+                    taint_source: *src,
+                    required_sanitizer: required.clone(),
+                    context: "sink argument",
+                };
+            }
+            Ty::Sanitized(_, found_san) if found_san != required => {
+                return TypeError::SanitizerMismatch {
+                    expected: required.clone(),
+                    found: found_san.clone(),
+                    context: "sink argument",
+                };
+            }
+            _ => {}
+        }
+    }
+    TypeError::TypeMismatch {
+        expected: arg_ty,
+        found,
+    }
+}
+
 /// Check if two types are compatible, considering:
 /// - Ty::Any as a wildcard
 /// - Tainted cannot flow to Sanitized (taint violation)
@@ -2707,10 +2743,7 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             match t1 {
                 Ty::Fn(arg_ty, ret_ty, fn_eff) => {
                     if !types_compatible(&arg_ty, &t2) {
-                        return Err(TypeError::TypeMismatch {
-                            expected: *arg_ty,
-                            found: t2,
-                        });
+                        return Err(sink_argument_error(*arg_ty, t2));
                     }
                     let total_eff = eff1.join(eff2).join(fn_eff);
                     Ok((*ret_ty, total_eff))
@@ -3643,10 +3676,7 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             match t1 {
                 Ty::Fn(arg_ty, ret_ty, fn_eff) => {
                     if !types_compatible(&arg_ty, &t2) {
-                        return Err(TypeError::TypeMismatch {
-                            expected: *arg_ty,
-                            found: t2,
-                        });
+                        return Err(sink_argument_error(*arg_ty, t2));
                     }
                     // Effect accumulation: eff1 + eff2 + fn_eff
                     let total_eff = eff1.join(eff2).join(fn_eff);
@@ -3798,9 +3828,13 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
         // UNVERIFIED: Effects (Pending formalization in Typing.v)
         Expr::Perform(eff, e) => {
             let (te, eff_e) = type_check(ctx, e)?;
-            // TODO: Validate payload type matches effect definition?
-            // For now, assume payload is generic or valid.
-            // In a real system, 'eff' would have a signature.
+            // Matches Coq T_Perform (Typing.v:168): `e : T ! ε  ⊢  perform eff e : T ! (ε ⊔ eff)`.
+            // The payload type passes through unchanged and the performed effect is
+            // joined. RIINA's effect model has no per-effect payload *signature*
+            // (T_Perform takes no signature premise), so there is deliberately no
+            // payload-vs-signature validation here — adding one would be a Rust rule
+            // with no Coq counterpart, violating Gate B enforcement parity. (The
+            // `type_check_full` Perform arm is identical.)
             Ok((te, eff_e.join(*eff)))
         }
         Expr::Handle(e, x, h) => {

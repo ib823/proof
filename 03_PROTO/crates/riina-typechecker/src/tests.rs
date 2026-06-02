@@ -1408,17 +1408,9 @@ mod formalized_tests {
         // - read_line() returns Tainted<String, UserInput>
         // - Tainted cannot flow to Sanitized
         match type_check(&ctx, &unsafe_sql) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                // Expected: Sanitized<String, SqlParam>
-                // Found: Tainted<String, UserInput>
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
-                );
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::SqlParam);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!("Expected TypeMismatch for SQL injection, got {:?}", other),
         }
@@ -1484,15 +1476,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &unsafe_html) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
-                );
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::HtmlEscape);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!("Expected TypeMismatch for XSS, got {:?}", other),
         }
@@ -1532,15 +1518,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &unsafe_shell) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CommandEscape)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
-                );
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::CommandEscape);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!(
                 "Expected TypeMismatch for command injection, got {:?}",
@@ -1592,15 +1572,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &wrong_sanitizer) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
-                );
+            Err(TypeError::SanitizerMismatch { expected, found, .. }) => {
+                assert_eq!(expected, riina_types::Sanitizer::SqlParam);
+                assert_eq!(found, riina_types::Sanitizer::HtmlEscape);
             }
             other => panic!("Expected TypeMismatch for wrong sanitizer, got {:?}", other),
         }
@@ -1766,15 +1740,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &wrong_context) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlEncode)
-                );
+            Err(TypeError::SanitizerMismatch { expected, found, .. }) => {
+                assert_eq!(expected, riina_types::Sanitizer::HtmlEscape);
+                assert_eq!(found, riina_types::Sanitizer::UrlEncode);
             }
             other => panic!("Expected TypeMismatch for wrong context, got {:?}", other),
         }
@@ -1803,15 +1771,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &wrong_context) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsEscape)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::CssEscape)
-                );
+            Err(TypeError::SanitizerMismatch { expected, found, .. }) => {
+                assert_eq!(expected, riina_types::Sanitizer::JsEscape);
+                assert_eq!(found, riina_types::Sanitizer::CssEscape);
             }
             other => panic!("Expected TypeMismatch for CSS→JS context, got {:?}", other),
         }
@@ -1872,8 +1834,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &unsafe_html) {
-            Err(TypeError::TypeMismatch { .. }) => {
-                // Good! Still tainted, still rejected
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::HtmlEscape);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!(
                 "Expected TypeMismatch for normalized but unsanitized data, got {:?}",
@@ -1943,18 +1906,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &reflected_xss) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Tainted(
-                        Box::new(Ty::String),
-                        riina_types::TaintSource::NetworkExternal
-                    )
-                );
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::HtmlEscape);
+                assert_eq!(taint_source, riina_types::TaintSource::NetworkExternal);
             }
             other => panic!("Expected TypeMismatch for reflected XSS, got {:?}", other),
         }
@@ -1996,8 +1950,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &stored_xss) {
-            Err(TypeError::TypeMismatch { .. }) => {
-                // Good! Stored XSS prevented
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::HtmlEscape);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!("Expected TypeMismatch for stored XSS, got {:?}", other),
         }
@@ -2379,15 +2334,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &unsafe_read) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
-                );
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::PathTraversal);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!("Expected path traversal to be prevented, got {:?}", other),
         }
@@ -2440,15 +2389,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &wrong_sink) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::SqlParam)
-                );
+            Err(TypeError::SanitizerMismatch { expected, found, .. }) => {
+                assert_eq!(expected, riina_types::Sanitizer::PathTraversal);
+                assert_eq!(found, riina_types::Sanitizer::SqlParam);
             }
             other => panic!(
                 "Expected sanitizer mismatch for path traversal, got {:?}",
@@ -2504,15 +2447,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &unsafe_parse) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
-                );
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::XmlEscape);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!("Expected XML injection to be prevented, got {:?}", other),
         }
@@ -2565,15 +2502,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &wrong_sink) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
-                );
+            Err(TypeError::SanitizerMismatch { expected, found, .. }) => {
+                assert_eq!(expected, riina_types::Sanitizer::XmlEscape);
+                assert_eq!(found, riina_types::Sanitizer::HtmlEscape);
             }
             other => panic!("Expected sanitizer mismatch for XML, got {:?}", other),
         }
@@ -2599,15 +2530,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &unsafe_search) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
-                );
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::LdapEscape);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!("Expected LDAP injection to be prevented, got {:?}", other),
         }
@@ -2656,15 +2581,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &wrong_sink) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::LdapEscape)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::HtmlEscape)
-                );
+            Err(TypeError::SanitizerMismatch { expected, found, .. }) => {
+                assert_eq!(expected, riina_types::Sanitizer::LdapEscape);
+                assert_eq!(found, riina_types::Sanitizer::HtmlEscape);
             }
             other => panic!("Expected sanitizer mismatch for LDAP, got {:?}", other),
         }
@@ -2688,15 +2607,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &unsafe_fetch) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
-                );
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::UrlAllowlist);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!("Expected SSRF to be prevented, got {:?}", other),
         }
@@ -2749,15 +2662,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &wrong_sink) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::PathTraversal)
-                );
+            Err(TypeError::SanitizerMismatch { expected, found, .. }) => {
+                assert_eq!(expected, riina_types::Sanitizer::UrlAllowlist);
+                assert_eq!(found, riina_types::Sanitizer::PathTraversal);
             }
             other => panic!("Expected sanitizer mismatch for SSRF, got {:?}", other),
         }
@@ -2779,15 +2686,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &unsafe_redirect) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::UrlAllowlist)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
-                );
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::UrlAllowlist);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!("Expected open redirect to be prevented, got {:?}", other),
         }
@@ -2902,15 +2803,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &unsafe_parse) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Tainted(Box::new(Ty::String), riina_types::TaintSource::UserInput)
-                );
+            Err(TypeError::TaintViolation { required_sanitizer, taint_source, .. }) => {
+                assert_eq!(required_sanitizer, riina_types::Sanitizer::JsonValidation);
+                assert_eq!(taint_source, riina_types::TaintSource::UserInput);
             }
             other => panic!(
                 "Expected unsafe deserialization to be prevented, got {:?}",
@@ -2969,15 +2864,9 @@ mod formalized_tests {
         );
 
         match type_check(&ctx, &wrong_sink) {
-            Err(TypeError::TypeMismatch { expected, found }) => {
-                assert_eq!(
-                    expected,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::JsonValidation)
-                );
-                assert_eq!(
-                    found,
-                    Ty::Sanitized(Box::new(Ty::String), riina_types::Sanitizer::XmlEscape)
-                );
+            Err(TypeError::SanitizerMismatch { expected, found, .. }) => {
+                assert_eq!(expected, riina_types::Sanitizer::JsonValidation);
+                assert_eq!(found, riina_types::Sanitizer::XmlEscape);
             }
             other => panic!(
                 "Expected sanitizer mismatch for deserialization, got {:?}",
@@ -5041,5 +4930,30 @@ mod gate_b_parity {
             Err(TypeError::ChoreographyError { .. }) => {}
             other => panic!("expected ChoreographyError for free session var, got {other:?}"),
         }
+    }
+
+    // ── Effect operations: Coq T_Perform (Typing.v:168) —
+    //   `e : T ! ε  ⊢  perform eff e : T ! (ε ⊔ eff)`.
+    // The payload type passes through unchanged and the performed effect is joined;
+    // there is no payload-vs-signature premise (RIINA's effect model has no per-effect
+    // signatures), so the Rust arm deliberately performs no extra validation — this
+    // test locks that parity in.
+    #[test]
+    fn perform_passes_payload_type_through_and_joins_effect() {
+        let mut ctx = TypingContext::new();
+        let e = Expr::Perform(Effect::Write, Box::new(Expr::Int(42)));
+        let (ty, eff) = type_check_full(&mut ctx, &e).expect("perform must typecheck");
+        assert_eq!(ty, Ty::Int, "payload type T passes through unchanged");
+        assert_eq!(eff, Effect::Write, "performed effect is joined into the result");
+    }
+
+    #[test]
+    fn perform_joins_effect_over_already_effectful_payload() {
+        let mut ctx = TypingContext::new();
+        let inner = Expr::Perform(Effect::Read, Box::new(Expr::Int(0)));
+        let outer = Expr::Perform(Effect::Write, Box::new(inner));
+        let (ty, eff) = type_check_full(&mut ctx, &outer).expect("nested perform must typecheck");
+        assert_eq!(ty, Ty::Int);
+        assert_eq!(eff, Effect::Read.join(Effect::Write));
     }
 }
