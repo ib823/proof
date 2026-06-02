@@ -4737,4 +4737,80 @@ mod gate_b_parity {
             .expect("well-formed choreography must typecheck");
         assert!(matches!(ty, Ty::Choreography(..)));
     }
+
+    // ── Property 3 (depth): IFC reference aliasing — the security level travels
+    // with a `let`-bound reference, so no-read-up is enforced through the alias,
+    // not just on a literal `ref`. Coq T_Deref (l ⊑ Δ) over a bound variable.
+    #[test]
+    fn ifc_aliased_secret_ref_read_up_is_rejected() {
+        // Δ=Public: `let r = ref@Secret 42 in deref(r)` — reading the Secret
+        // through the alias `r` is still a no-read-up violation.
+        let mut ctx = TypingContext::new(); // Δ defaults to Public
+        let e = Expr::Let(
+            "r".into(),
+            None,
+            Box::new(Expr::Ref(Box::new(Expr::Int(42)), SecurityLevel::Secret)),
+            Box::new(Expr::Deref(Box::new(Expr::Var("r".into())))),
+        );
+        match type_check_full(&mut ctx, &e) {
+            Err(TypeError::SecurityViolation {
+                found, expected, ..
+            }) => {
+                assert_eq!(found, SecurityLevel::Secret);
+                assert_eq!(expected, SecurityLevel::Public);
+            }
+            other => panic!("expected SecurityViolation through alias, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn ifc_aliased_secret_ref_read_at_level_is_accepted() {
+        // Δ=Secret: the same aliased read is allowed (Secret ⊑ Secret).
+        let mut ctx = TypingContext::with_level(SecurityLevel::Secret);
+        let e = Expr::Let(
+            "r".into(),
+            None,
+            Box::new(Expr::Ref(Box::new(Expr::Int(42)), SecurityLevel::Secret)),
+            Box::new(Expr::Deref(Box::new(Expr::Var("r".into())))),
+        );
+        type_check_full(&mut ctx, &e).expect("aliased read at level must typecheck");
+    }
+
+    // ── Property 1 (depth): Capability enforcement at a *nested* call site — a
+    // `require` inside an applied lambda body is checked against the grants in
+    // scope, not only top-level requires. Coq T_Require / T_Grant.
+    #[test]
+    fn capability_required_in_nested_call_is_rejected() {
+        // grant Network in ((λx. require Write in x) 1) — Write is required deep
+        // in the call but only Network is granted → rejected.
+        let mut ctx = TypingContext::new();
+        let lam = Expr::Lam(
+            "x".into(),
+            Ty::Int,
+            Box::new(Expr::Require(Effect::Write, Box::new(Expr::Var("x".into())))),
+        );
+        let app = Expr::App(Box::new(lam), Box::new(Expr::Int(1)));
+        let expr = Expr::Grant(Effect::Network, Box::new(app));
+        match type_check_full(&mut ctx, &expr) {
+            Err(TypeError::CapabilityViolation { required, .. }) => {
+                assert_eq!(required, Effect::Write);
+            }
+            other => panic!("expected CapabilityViolation at nested call site, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn capability_required_in_nested_call_is_accepted() {
+        // grant Write in ((λx. require Write in x) 1) — the matching grant in
+        // scope makes the nested require typecheck.
+        let mut ctx = TypingContext::new();
+        let lam = Expr::Lam(
+            "x".into(),
+            Ty::Int,
+            Box::new(Expr::Require(Effect::Write, Box::new(Expr::Var("x".into())))),
+        );
+        let app = Expr::App(Box::new(lam), Box::new(Expr::Int(1)));
+        let expr = Expr::Grant(Effect::Write, Box::new(app));
+        type_check_full(&mut ctx, &expr).expect("granted nested require must typecheck");
+    }
 }

@@ -82,3 +82,26 @@ jobs:
           opam install -y rocq-prover rocq-stdlib
       - name: make (active _CoqProject set)
         run: opam exec -- make -C 02_FORMAL/coq
+
+  differential:
+    name: WASM/C differential (byte-equality)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.84.0
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "03_PROTO -> target"
+      # `cc` ships on ubuntu-latest; `wasmtime` is the WASM runtime the
+      # differential harness shells out to. With both present the
+      # `corpus_differential` test actually runs (it auto-skips otherwise),
+      # asserting byte-for-byte identical stdout from the C and WASM backends
+      # across the dual-backend example corpus.
+      - name: Install wasmtime
+        run: |
+          curl https://wasmtime.dev/install.sh -sSf | bash
+          echo "$HOME/.wasmtime/bin" >> "$GITHUB_PATH"
+      - name: Toolchain present (cc + wasmtime)
+        run: cc --version && wasmtime --version
+      - name: corpus_differential (C vs WASM stdout)
+        run: cargo test -p riinac --test corpus_differential --manifest-path 03_PROTO/Cargo.toml -- --nocapture
