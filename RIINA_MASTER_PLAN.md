@@ -324,7 +324,7 @@ Kani, TV), are still generated placeholders and must not be counted as verified 
 | Metric | Value |
 |--------|-------|
 | Tests (03_PROTO/) | 2,479 passing, 0 failed, 3 ignored |
-| Tests (05_TOOLING/) | 248 passing, 0 failed, 2 ignored |
+| Tests (05_TOOLING/) | 256 passing, 0 failed, 2 ignored (incl. 8 consolidated crypto KAT-audit-manifest tests, 2026-06-02) |
 | Crates (03_PROTO) | 19 |
 | Crates (05_TOOLING) | 5 (post-cleanup; 4 stub `riina-lang-*` + stub-`riinac` dependency dropped 2026-05-16) |
 | Clippy | Clean |
@@ -2191,9 +2191,19 @@ until the CHERI/hardware-contract era, Phase 7/9). **Marker advanced B → C.**
 
 ### Gate C — Standard Library Hardening (owns REQ-28 partial)
 
+**Active gate (marker advanced B → C, 2026-06-02).** First crypto-audit-prep deliverable
+landed 2026-06-02: a consolidated **KAT audit manifest** (`05_TOOLING/crates/riina-core/tests/kat_audit.rs`)
+— one reproducible auditor-facing entry point (`cargo test -p riina-core --test kat_audit`)
+that re-verifies each primitive against an *independently transcribed* canonical vector
+from its governing standard, plus AEAD/signature tamper-rejection: SHA-256/512 (FIPS 180-4),
+HMAC-SHA256 (RFC 4231), HKDF-SHA256 (RFC 5869), AES-256 (FIPS 197), AES-256-GCM (GCM spec
+TC13 + tag-tamper), X25519 (RFC 7748), Ed25519 (sign/verify + forgery rejection). All 8 green.
+This is audit *preparation* — it does not replace the external audit (REQ-28), which remains
+a P0 external-firm dependency. The remaining stdlib rows below are each multi-session features.
+
 | Module | Current | Required |
 |---|---|---|
-| Crypto (AES, SHA-3, ChaCha20-Poly1305, ML-KEM, ML-DSA) | Implemented in `05_TOOLING/crates/riina-core` | **External audit clean** (NCC / Trail of Bits / Cure53 grade), 0 findings ≥ Medium |
+| Crypto (AES, SHA-3, ChaCha20-Poly1305, ML-KEM, ML-DSA) | Implemented in `05_TOOLING/crates/riina-core`; per-primitive KATs + negative tests + a consolidated independent KAT-audit manifest (2026-06-02) | **External audit clean** (NCC / Trail of Bits / Cure53 grade), 0 findings ≥ Medium |
 | File I/O with effect tracking | Unclear | Implement + Coq model for read/write effects |
 | Networking (TCP/TLS/HTTP, effect-typed) | None | Implement; capability-gated |
 | Time / random / OS interface | Unclear | All effect-typed |

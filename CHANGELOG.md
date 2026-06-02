@@ -7,6 +7,28 @@ All notable changes to RIINA™ will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — 2026-06-02 — Gate B CLOSED → Gate C opened (crypto-audit prep)
+
+### Changed
+- **Active gate marker advanced B → C** (Part 11). Gate B (Compiler Enforcement
+  Parity) exit criteria verified by command: 0 `todo!()`/`unimplemented!()` outside
+  tests; every compiler-enforceable Coq security property has pos+neg Rust tests;
+  `cargo test --all` (03_PROTO) = 2646/0; clippy 0; WASM/C differential 30/30; Coq
+  309 `.vo`, 0 Admitted/0 Axiom (`verify --full`). REQ-27 depth (multiparty surface
+  wiring, DMP/GoFetch CT) tracked as non-blocking follow-ups. Compiler-maturity
+  pillar L2 → L3.
+
+### Added
+- **Crypto-audit-prep KAT manifest** (`05_TOOLING/crates/riina-core/tests/kat_audit.rs`),
+  the first Gate C / REQ-28 deliverable: one reproducible auditor-facing entry point
+  (`cargo test -p riina-core --test kat_audit`) that re-verifies each primitive against
+  an *independently transcribed* canonical vector from its governing standard, plus
+  AEAD/signature tamper-rejection — SHA-256/512 (FIPS 180-4), HMAC-SHA256 (RFC 4231),
+  HKDF-SHA256 (RFC 5869), AES-256 (FIPS 197), AES-256-GCM (GCM spec TC13 + tag tamper),
+  X25519 (RFC 7748), Ed25519 (sign/verify + forgery rejection). All 8 green;
+  05_TOOLING suite 248 → 256. This is audit *preparation*, not a replacement for the
+  external audit (REQ-28), which stays a P0 external-firm dependency.
+
 ## [Unreleased] — 2026-06-02 — Gate B: WASM/C parity closed, session pipeline, constant-time
 
 Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
