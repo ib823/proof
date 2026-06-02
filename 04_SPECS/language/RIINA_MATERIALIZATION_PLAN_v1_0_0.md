@@ -99,7 +99,7 @@ This document is the **single, complete, self-contained plan** to take RIINA fro
 ### 0.3 Assumptions
 
 - You have access to the repository at `riina/`
-- Rust toolchain is installed (`rustc 1.84.0+`)
+- Rust toolchain is installed (`rustc 1.94.1+`)
 - Rocq is installed (`Rocq 9.2`) — only needed for Phase 3
 - You can run `cargo build`, `cargo test`, `cargo clippy` in `03_PROTO/`
 - Another worker (Track A) is independently handling Coq proof work in `02_FORMAL/coq/`. **Do NOT modify files under `02_FORMAL/`** unless explicitly working on Phase 3.

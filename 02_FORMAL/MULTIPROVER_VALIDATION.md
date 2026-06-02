@@ -4,13 +4,24 @@
 **Date:** 2026-02-06
 **Status:** ALL PHASES COMPLETE — 0 sorry across all provers
 
+> **⚠️ SUPERSEDED / read this first (2026-06-01).** This is a point-in-time report
+> and its body is **out of date and over-claims**. The single source of truth for
+> all counts and per-lane claim levels is `website/public/metrics.json`. Current
+> honest state: the **primary lane is Rocq 9.2** (not Coq 8.20.1) with **12,386 Qed**
+> (not "4,890+"), 0 Admitted / 0 Axioms. **Only Coq is mechanized.** Lean is
+> *generated, not elaborating* (7/326 files elaborate; core type-safety files fail —
+> see `02_FORMAL/lean/COMPILATION_STATUS.md`); Isabelle is an unverified smoke;
+> F*/TLA+/Alloy are trivial smoke artifacts. The "0 sorry across all provers" /
+> "independent verification" claims below do **not** hold and are retained only as
+> historical text. See `PROOF_STATUS.md` and `RIINA_MASTER_PLAN.md` Part 2/11.
+
 ---
 
 ## Executive Summary
 
 RIINA employs multi-prover verification to provide absolute confidence in formal proofs. This document tracks the validation status across three independent theorem provers:
 
-1. **Coq 8.20.1** (Primary) — Authoritative proofs
+1. **Rocq 9.2** (Primary) — Authoritative proofs
 2. **Lean 4** (Secondary) — Independent port
 3. **Isabelle/HOL** (Tertiary) — Third verification
 
@@ -21,7 +32,7 @@ RIINA employs multi-prover verification to provide absolute confidence in formal
 ║                  MULTI-PROVER VALIDATION                         ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║                                                                  ║
-║   Coq 8.20.1 (Primary)                                          ║
+║   Rocq 9.2 (Primary)                                          ║
 ║   ├── 02_FORMAL/coq/foundations/Syntax.v (585 lines, 3 Qed)     ║
 ║   ├── 02_FORMAL/coq/foundations/Semantics.v (590 lines)         ║
 ║   ├── 02_FORMAL/coq/foundations/Typing.v (648 lines)            ║
@@ -351,7 +362,7 @@ for declassification, matching the Coq architecture where the full proof is ~4,6
 
 ```
 02_FORMAL/
-├── coq/                           # Primary (Coq 8.20.1)
+├── coq/                           # Primary (Rocq 9.2)
 │   ├── _CoqProject
 │   ├── Makefile
 │   ├── foundations/
@@ -431,7 +442,7 @@ For each theorem ported:
 
 ## References
 
-1. Coq 8.20.1 Reference Manual
+1. Rocq 9.2 Reference Manual
 2. Lean 4 Theorem Proving in Lean 4
 3. Isabelle/HOL Tutorial
 4. MultiProverValidation.v (02_FORMAL/coq/domains/)

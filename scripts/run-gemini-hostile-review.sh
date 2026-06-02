@@ -184,7 +184,7 @@ Required minimum commands:
 - grep -RIn "== TRUE" 02_FORMAL/tlaplus/RIINA/Domains
 
 If live implementation support is claimed, also run:
-- export PATH="\$HOME/.cargo/bin:\$HOME/.rustup/toolchains/1.84.0-x86_64-unknown-linux-gnu/bin:\$PATH"
+- export PATH="\$HOME/.cargo/bin:\$HOME/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/bin:\$PATH"
 - cargo test --all --manifest-path 03_PROTO/Cargo.toml
 - cargo clippy --manifest-path 03_PROTO/Cargo.toml -- -D warnings
 - bash scripts/audit-docs.sh

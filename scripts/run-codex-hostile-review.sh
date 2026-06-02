@@ -89,7 +89,7 @@ Run these commands first:
 - grep -RIn "Derived from" 02_FORMAL
 
 If live implementation is claimed:
-- export PATH="\$HOME/.cargo/bin:\$HOME/.rustup/toolchains/1.84.0-x86_64-unknown-linux-gnu/bin:\$PATH"
+- export PATH="\$HOME/.cargo/bin:\$HOME/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/bin:\$PATH"
 - cargo test --all --manifest-path 03_PROTO/Cargo.toml
 
 Non-negotiable rules:
