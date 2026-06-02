@@ -2424,12 +2424,13 @@ fn test_parse_choreography_multi_interaction() {
     let program = p.parse_program().unwrap();
     match &program.decls[0] {
         TopLevelDecl::Expr(e) => match e.as_ref() {
+            // Viewpoint is roles[0] (A): `A -> B` is a Send, `B -> A` a Recv.
             Expr::ChoreographyBlock { protocol, .. } => match protocol {
                 SessionType::Send(_, cont) => match cont.as_ref() {
-                    SessionType::Send(_, cont2) => {
+                    SessionType::Recv(_, cont2) => {
                         assert_eq!(**cont2, SessionType::End);
                     }
-                    other => panic!("Expected nested Send, got {:?}", other),
+                    other => panic!("Expected nested Recv, got {:?}", other),
                 },
                 other => panic!("Expected Send, got {:?}", other),
             },
@@ -2995,12 +2996,14 @@ fn test_parse_jalinan_choreography_program() {
             } => {
                 assert_eq!(name, "Beli");
                 assert_eq!(roles.len(), 2);
+                // Viewpoint is roles[0] (Pembeli): the send to Penjual is a
+                // `Send`, the reply back is a `Recv`.
                 match protocol {
                     SessionType::Send(_, cont) => match cont.as_ref() {
-                        SessionType::Send(_, cont2) => {
+                        SessionType::Recv(_, cont2) => {
                             assert_eq!(**cont2, SessionType::End);
                         }
-                        other => panic!("Expected inner Send, got {:?}", other),
+                        other => panic!("Expected inner Recv, got {:?}", other),
                     },
                     other => panic!("Expected Send, got {:?}", other),
                 }

@@ -2491,6 +2491,93 @@ pub fn is_dual(s1: &SessionType, s2: &SessionType) -> bool {
     session_dual(s1) == *s2
 }
 
+/// A session type is well-formed (closed) when every recursion `Var` is bound by
+/// an enclosing `Rec`. A free session variable makes duality/projection
+/// meaningless, so the choreography checker rejects it.
+pub fn session_well_formed(s: &SessionType) -> bool {
+    fn go(s: &SessionType, bound: &mut Vec<Ident>) -> bool {
+        match s {
+            SessionType::End => true,
+            SessionType::Send(_, k) | SessionType::Recv(_, k) => go(k, bound),
+            SessionType::Select(a, b) | SessionType::Branch(a, b) => {
+                go(a, bound) && go(b, bound)
+            }
+            SessionType::Rec(x, body) => {
+                bound.push(x.clone());
+                let r = go(body, bound);
+                bound.pop();
+                r
+            }
+            SessionType::Var(x) => bound.iter().any(|b| b == x),
+        }
+    }
+    go(s, &mut Vec::new())
+}
+
+/// Project a choreography's global protocol onto one role's local session type.
+///
+/// The parser writes the stored `protocol` from the *first* role's perspective
+/// (role-relative: `A -> B : T` becomes `Send T` when `A` is `roles[0]` and
+/// `Recv T` when `B` is `roles[0]`). For a two-party choreography the first
+/// role's local type is therefore the protocol itself and the second role's is
+/// its dual — this is the binary-session specialisation of the Coq
+/// `project` fixpoint (`ChoreographyTypes.v`), and the projected endpoints are
+/// dual by construction (cf. `CT_103_projection_preserves_duality`).
+///
+/// Returns `None` for a role not in `roles`, or for choreographies with more
+/// than two roles (a binary `SessionType` cannot express an N-party local type;
+/// full multiparty projection is tracked as future work).
+pub fn project_choreography(
+    roles: &[Ident],
+    protocol: &SessionType,
+    role: &str,
+) -> Option<SessionType> {
+    let idx = roles.iter().position(|r| r == role)?;
+    if roles.len() != 2 {
+        return None;
+    }
+    match idx {
+        0 => Some(protocol.clone()),
+        1 => Some(session_dual(protocol)),
+        _ => None,
+    }
+}
+
+/// Verify that a choreography's roles and protocol compose safely: roles are
+/// distinct (≥2) and the protocol is closed, and — for the two-party case —
+/// projecting onto each role yields dual (compatible) local types, which
+/// guarantees deadlock-free composition (Coq `ST_020_dual_communicate` /
+/// `CT_117_choreography_deadlock_free`). Returns a human-readable reason on
+/// failure. Three-or-more-party protocols are accepted structurally
+/// (well-formed + distinct roles) but not yet projected (binary session types
+/// cannot express the per-role views — see `project_choreography`).
+pub fn choreography_compatible(roles: &[Ident], protocol: &SessionType) -> Result<(), String> {
+    if roles.len() < 2 {
+        return Err("a choreography requires at least 2 roles".to_string());
+    }
+    for (i, r) in roles.iter().enumerate() {
+        if roles[i + 1..].iter().any(|o| o == r) {
+            return Err(format!("duplicate role '{r}' in choreography"));
+        }
+    }
+    if !session_well_formed(protocol) {
+        return Err("protocol has a free (unbound) session variable".to_string());
+    }
+    if roles.len() == 2 {
+        let p0 = project_choreography(roles, protocol, &roles[0])
+            .expect("two-role projection is total for index 0");
+        let p1 = project_choreography(roles, protocol, &roles[1])
+            .expect("two-role projection is total for index 1");
+        if !is_dual(&p0, &p1) {
+            return Err(format!(
+                "projected endpoints for roles '{}' and '{}' are not dual",
+                roles[0], roles[1]
+            ));
+        }
+    }
+    Ok(())
+}
+
 /// Session type subtyping.
 /// - Send: covariant in payload, covariant in continuation
 /// - Recv: contravariant in payload, covariant in continuation
@@ -3266,9 +3353,12 @@ pub fn type_check_full(ctx: &mut TypingContext, expr: &Expr) -> Result<(Ty, Effe
             roles,
             protocol,
         } => {
-            if roles.len() < 2 {
+            // Parse → project → check: the protocol must be closed, its roles
+            // distinct, and (for the two-party case) its per-role projections
+            // dual. This wires the projection pipeline into typechecking.
+            if let Err(reason) = choreography_compatible(roles, protocol) {
                 return Err(TypeError::ChoreographyError {
-                    message: "Choreography requires at least 2 roles".into(),
+                    message: format!("ill-formed choreography: {reason}"),
                 });
             }
             Ok((
@@ -3927,9 +4017,12 @@ pub fn type_check(ctx: &Context, expr: &Expr) -> Result<(Ty, Effect), TypeError>
             roles,
             protocol,
         } => {
-            if roles.len() < 2 {
+            // Parse → project → check: the protocol must be closed, its roles
+            // distinct, and (for the two-party case) its per-role projections
+            // dual. This wires the projection pipeline into typechecking.
+            if let Err(reason) = choreography_compatible(roles, protocol) {
                 return Err(TypeError::ChoreographyError {
-                    message: "Choreography requires at least 2 roles".into(),
+                    message: format!("ill-formed choreography: {reason}"),
                 });
             }
             Ok((

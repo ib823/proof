@@ -3176,7 +3176,12 @@ impl<'a> Parser<'a> {
             roles.push(self.parse_ident()?);
         }
         self.consume(TokenKind::Semi)?;
-        let protocol = self.parse_choreography_protocol()?;
+        // Parse the protocol relative to the first role, so the stored
+        // `SessionType` is that role's local view: `A -> B : T` becomes `Send T`
+        // when A is roles[0] and `Recv T` when B is roles[0]. The other role's
+        // view is the dual (see `project_choreography` in the typechecker).
+        let viewpoint = roles.first().cloned().unwrap_or_default();
+        let protocol = self.parse_choreography_protocol(&viewpoint)?;
         self.consume(TokenKind::RBrace)?;
         Ok(TopLevelDecl::Expr(Box::new(Expr::ChoreographyBlock {
             name,
@@ -3185,8 +3190,13 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    /// Parse choreography interaction sequence into a SessionType.
-    fn parse_choreography_protocol(&mut self) -> Result<SessionType, ParseError> {
+    /// Parse a choreography interaction sequence into the `viewpoint` role's
+    /// local `SessionType` (a message *from* the viewpoint is a `Send`, *to* it
+    /// a `Recv`; a message between two other roles is skipped from this view).
+    fn parse_choreography_protocol(
+        &mut self,
+        viewpoint: &str,
+    ) -> Result<SessionType, ParseError> {
         match self.peek().map(|t| &t.kind) {
             // tamat; → End
             Some(TokenKind::KwEnd) => {
@@ -3194,20 +3204,21 @@ impl<'a> Parser<'a> {
                 self.consume(TokenKind::Semi)?;
                 Ok(SessionType::End)
             }
-            // pilih { Label -> { ... }, Label -> { ... } }
+            // pilih { Label -> { ... }, Label -> { ... } } — the viewpoint role
+            // selects (internal choice).
             Some(TokenKind::KwSelect) => {
                 self.consume(TokenKind::KwSelect)?;
                 self.consume(TokenKind::LBrace)?;
                 let _label1 = self.parse_ident()?;
                 self.consume(TokenKind::Arrow)?;
                 self.consume(TokenKind::LBrace)?;
-                let s1 = self.parse_choreography_protocol()?;
+                let s1 = self.parse_choreography_protocol(viewpoint)?;
                 self.consume(TokenKind::RBrace)?;
                 self.consume(TokenKind::Comma)?;
                 let _label2 = self.parse_ident()?;
                 self.consume(TokenKind::Arrow)?;
                 self.consume(TokenKind::LBrace)?;
-                let s2 = self.parse_choreography_protocol()?;
+                let s2 = self.parse_choreography_protocol(viewpoint)?;
                 self.consume(TokenKind::RBrace)?;
                 self.consume(TokenKind::RBrace)?;
                 // Check for continuation after choice block
@@ -3216,24 +3227,32 @@ impl<'a> Parser<'a> {
                     Ok(SessionType::Select(Box::new(s1), Box::new(s2)))
                 } else {
                     // There is a continuation (e.g. tamat;)
-                    let _cont = self.parse_choreography_protocol()?;
+                    let _cont = self.parse_choreography_protocol(viewpoint)?;
                     Ok(SessionType::Select(Box::new(s1), Box::new(s2)))
                 }
             }
             // RBrace → implicit end (closing an enclosing block)
             Some(TokenKind::RBrace) => Ok(SessionType::End),
-            // Identifier: role -> role: hantar Type; continuation
+            // Identifier: sender -> receiver: hantar Type; continuation
             Some(TokenKind::Identifier(_)) => {
-                let _sender = self.parse_ident()?;
+                let sender = self.parse_ident()?;
                 self.consume(TokenKind::Arrow)?;
-                let _receiver = self.parse_ident()?;
+                let receiver = self.parse_ident()?;
                 self.consume(TokenKind::Colon)?;
                 self.consume(TokenKind::KwSend)?;
                 let msg_ident = self.parse_ident()?;
                 self.consume(TokenKind::Semi)?;
                 let msg_ty = self.ident_to_ty(&msg_ident);
-                let continuation = self.parse_choreography_protocol()?;
-                Ok(SessionType::Send(Box::new(msg_ty), Box::new(continuation)))
+                let continuation = self.parse_choreography_protocol(viewpoint)?;
+                // Role-relative projection of a single message onto `viewpoint`.
+                if sender == viewpoint {
+                    Ok(SessionType::Send(Box::new(msg_ty), Box::new(continuation)))
+                } else if receiver == viewpoint {
+                    Ok(SessionType::Recv(Box::new(msg_ty), Box::new(continuation)))
+                } else {
+                    // Message between two other roles: invisible to this view.
+                    Ok(continuation)
+                }
             }
             _ => Err(ParseError {
                 kind: ParseErrorKind::ExpectedExpression,

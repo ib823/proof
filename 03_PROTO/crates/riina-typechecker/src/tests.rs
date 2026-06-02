@@ -4813,4 +4813,93 @@ mod gate_b_parity {
         let expr = Expr::Grant(Effect::Write, Box::new(app));
         type_check_full(&mut ctx, &expr).expect("granted nested require must typecheck");
     }
+
+    // ── Property 6 (depth): Session projection — projecting a choreography's
+    // global protocol onto its two roles yields dual local types (the binary
+    // specialisation of the Coq `project` fixpoint; projected endpoints are dual
+    // by construction → deadlock-free composition, CT_103/ST_020).
+    use crate::{choreography_compatible, project_choreography, session_well_formed};
+
+    #[test]
+    fn session_projection_yields_dual_endpoints() {
+        // Protocol (Buyer's view): Send Order . Recv Confirm . End
+        let roles = vec!["Buyer".to_string(), "Seller".to_string()];
+        let protocol = SessionType::Send(
+            Box::new(Ty::Int),
+            Box::new(SessionType::Recv(Box::new(Ty::Bool), Box::new(SessionType::End))),
+        );
+        let buyer = project_choreography(&roles, &protocol, "Buyer").expect("buyer projects");
+        let seller = project_choreography(&roles, &protocol, "Seller").expect("seller projects");
+        // Buyer's local type is the protocol; Seller's is its dual.
+        assert_eq!(buyer, protocol);
+        assert_eq!(
+            seller,
+            SessionType::Recv(
+                Box::new(Ty::Int),
+                Box::new(SessionType::Send(Box::new(Ty::Bool), Box::new(SessionType::End))),
+            )
+        );
+        assert!(is_dual(&buyer, &seller), "projected endpoints must be dual");
+    }
+
+    #[test]
+    fn session_projection_unknown_role_is_none() {
+        let roles = vec!["Buyer".to_string(), "Seller".to_string()];
+        let protocol = SessionType::End;
+        assert!(project_choreography(&roles, &protocol, "Courier").is_none());
+    }
+
+    #[test]
+    fn session_projection_multiparty_is_unsupported() {
+        // Binary session types cannot express a 3-party local view → None
+        // (tracked as future multiparty-global-type work).
+        let roles = vec!["A".to_string(), "B".to_string(), "C".to_string()];
+        assert!(project_choreography(&roles, &SessionType::End, "A").is_none());
+    }
+
+    #[test]
+    fn choreography_with_free_session_var_is_rejected() {
+        // A protocol with an unbound recursion variable is ill-formed.
+        let roles = vec!["A".to_string(), "B".to_string()];
+        let bad = SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::Var("X".into())));
+        assert!(!session_well_formed(&bad));
+        assert!(choreography_compatible(&roles, &bad).is_err());
+    }
+
+    #[test]
+    fn choreography_with_bound_recursion_is_accepted() {
+        // rec X. Send Int . X  — closed, so well-formed and compatible.
+        let roles = vec!["A".to_string(), "B".to_string()];
+        let ok = SessionType::Rec(
+            "X".into(),
+            Box::new(SessionType::Send(Box::new(Ty::Int), Box::new(SessionType::Var("X".into())))),
+        );
+        assert!(session_well_formed(&ok));
+        choreography_compatible(&roles, &ok).expect("closed recursive protocol is compatible");
+    }
+
+    #[test]
+    fn choreography_with_duplicate_roles_is_rejected() {
+        let roles = vec!["A".to_string(), "A".to_string()];
+        assert!(choreography_compatible(&roles, &SessionType::End).is_err());
+    }
+
+    #[test]
+    fn choreography_block_ill_formed_is_rejected_by_typechecker() {
+        // End-to-end: a ChoreographyBlock carrying a free session var is rejected
+        // by `type_check_full` with a ChoreographyError.
+        let mut ctx = TypingContext::new();
+        let choreo = Expr::ChoreographyBlock {
+            name: "P".into(),
+            roles: vec!["A".into(), "B".into()],
+            protocol: SessionType::Send(
+                Box::new(Ty::Int),
+                Box::new(SessionType::Var("Loose".into())),
+            ),
+        };
+        match type_check_full(&mut ctx, &choreo) {
+            Err(TypeError::ChoreographyError { .. }) => {}
+            other => panic!("expected ChoreographyError for free session var, got {other:?}"),
+        }
+    }
 }
