@@ -1,11 +1,65 @@
 # Changelog
 
-**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2607 Rust tests
+**Verification:** 12,386 Coq Qed (compiled, 0 Admitted, 0 active axioms) | 10 prover lanes tracked with claim levels | 2628 Rust tests
 
 All notable changes to RIINA™ will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased] — 2026-06-02 — Gate B: WASM/C parity closed, session pipeline, constant-time
+
+Compiler enforcement-parity work (REQ-27, Gate B). All verified by command.
+
+### Added
+- **Session-type parse→project→check pipeline** (`riina-typechecker`): choreography
+  protocols now parse **role-relative** to the first role, so the stored
+  `SessionType` is that role's local view (`A->B:T` ⇒ `Send T` when A is the
+  first role, `Recv T` when B is). New `project_choreography` (role ⇒ local
+  session type; role[0] ⇒ protocol, role[1] ⇒ `session_dual`; >2 roles ⇒
+  unsupported), `session_well_formed` (closed recursion), and
+  `choreography_compatible` (distinct roles + closed protocol + 2-party
+  projection duality ⇒ deadlock-free, per Coq `ST_020` / `CT_117`), wired into
+  `type_check_full` — ill-formed choreographies are now rejected.
+- **Per-program constant-time codegen pass** (`riina-codegen/src/ct_verify.rs`):
+  `verify_constant_time` re-checks the lowered IR for a `CondBranch` on a
+  `ConstantTime` condition or a `Div`/`Mod` on a `ConstantTime` operand
+  (propagated through data-flow to a fixpoint), wired into
+  `riina_codegen::compile` (new `Error::ConstantTimeViolation`).
+- **CI `differential` job** (`.github/workflows/verify.yml`): installs
+  `cc`+`wasmtime` so the WASM/C `corpus_differential` byte-equality test runs in
+  CI instead of auto-skipping.
+
+### Changed
+- **WASM backend reaches byte-for-byte parity with C** across the dual-backend
+  example corpus — `corpus_differential` is now **30/30 byte-equal**
+  (`KNOWN_DIVERGENT` empty), up from 26. Fixes this session: (a) nested-if/else
+  merge-`Phi` pushed from each branch region's exit block (fixes `padan`
+  integer/tuple matches → `pattern_match`); (b) struct `FieldAccess` lowered to
+  the real positional projection `Fst(Snd^i(base))` over the struct's product
+  layout (fixes `compiler/main` → `v0.1.0`); (c) WASM string-`Add` heap concat +
+  `ke_teks` string pass-through (fixes the CAHAYA UI `paparan`/`tulisan`/`butang`
+  examples).
+- **Constant-time typecheck rule extended**: a `ConstantTime` operand in integer
+  **division/modulo** is now rejected (data-dependent latency); `Add`/`Sub`/`Mul`
+  stay constant-time and keep the CT tag. The lowerer's `infer_type` propagates
+  the CT tag through `BinOp` (guarded on CT operands — non-CT programs are
+  byte-identical).
+
+### Verified (by command, not copied)
+- `03_PROTO` test suite: **2,628 pass / 0 fail** (`cargo test --all`); `cargo
+  clippy` 0 warnings. WASM/C differential 30/30 byte-equal under wasmtime.
+  Coq active build 309 `.vo`, 0 `Admitted` / 0 `Axiom` (pre-push `riinac verify
+  --full`). `gate_b_parity` deepened to 18 enforcement tests (added IFC
+  reference-aliasing and nested-call-site capability), plus session-projection
+  and constant-time div/mod tests.
+
+### Still open (honestly scoped)
+- Full **N-party multiparty** session global types and per-statement
+  channel-operation impl checking (RIINA has no session-channel surface ops yet —
+  only the projected local *type* is checked).
+- **DMP/GoFetch-class** microarchitectural constant-time channels (out of scope
+  until the CHERI/hardware-contract era, Phase 7/9).
 
 ## [Unreleased] — 2026-06-01 — Prototype: loop control, logical-not, example corpus
 
